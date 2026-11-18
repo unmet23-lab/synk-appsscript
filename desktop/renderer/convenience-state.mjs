@@ -35,6 +35,15 @@ export function trayShortcuts(prefs,allowed){
   return [...favorite.map(id=>({id,kind:'favorite'})),...recent.map(id=>({id,kind:'recent'}))].filter(row=>allowed.includes(row.id)&&!seen.has(row.id)&&seen.add(row.id)).slice(0,5);
 }
 export function notificationPreferences(value={}){return {banners:value?.banners!==false,mutedUntil:Math.max(0,Number(value?.mutedUntil)||0),schedule:value?.schedule===true,start:/^([01]\d|2[0-3]):[0-5]\d$/.test(value?.start)?value.start:'22:00',end:/^([01]\d|2[0-3]):[0-5]\d$/.test(value?.end)?value.end:'08:00',weekdays:value?.weekdays===true};}
+// 알림 설정 하나를 저장소와 함께 든다. 옛 설정 화면과 새 얼굴의 설정 방(2단계 둘째 조각 설계 6.4)이 같은 통로로 바꾸고, 배너 판단은 바뀐 값을 바로 쓴다
+export const NOTIFY_KEY='synk-platform-notifications-v1';
+export function notificationStore({storage,key=NOTIFY_KEY,onChange=()=>{}}={}){
+  let value=notificationPreferences();try{value=notificationPreferences(JSON.parse(storage?.getItem?.(key)));}catch{}
+  return {
+    get:()=>({...value}),
+    set(patch={}){value=notificationPreferences({...value,...(patch&&typeof patch==='object'&&!Array.isArray(patch)?patch:{})});try{storage?.setItem?.(key,JSON.stringify(value));}catch{}try{onChange({...value});}catch{}return {...value};}
+  };
+}
 export function isQuiet(prefs,now=new Date()){
   const value=notificationPreferences(prefs);if(value.mutedUntil>now.getTime())return true;if(!value.schedule||value.weekdays&&[0,6].includes(now.getDay()))return false;
   const minutes=time=>Number(time.slice(0,2))*60+Number(time.slice(3)),start=minutes(value.start),end=minutes(value.end),current=now.getHours()*60+now.getMinutes();if(start===end)return true;return start<end?current>=start&&current<end:current>=start||current<end;

@@ -12,15 +12,15 @@ async function readRow(row){
     // Public registration still accepts only catalog-owned names.
     const spec=get(row.service)?.spec||helpers.SERVICES[row.service];
     if(!spec||row.source!=='auto')return null;
-    if(!spec.apiKey&&!runtime.tools[row.service]?.path)return {state:'error',message:`${spec.label}용 공식 프로그램이 이 PC에서 보이지 않아요. 가이드의 설치 단계를 확인해 주세요.`};
+    if(!spec.apiKey&&!runtime.tools[row.service]?.path)return {state:'error',message:`${spec.label}용 공식 프로그램이 이 PC에서 보이지 않습니다. 계정 관리의 「계정 더하기」에서 설치 단계를 확인해 주세요.`};
     try{return await get(row.service).read(row);}
-    catch{return {state:'error',message:'읽는 중 문제가 생겼어요. 잠시 뒤 다시 확인해 주세요.'};}
+    catch{return {state:'error',message:'읽는 중 문제가 생겼습니다. 잠시 뒤 다시 확인해 주세요.'};}
   }
 async function reachable(service){
     const url=get(service)?.policy.reachable;if(!url||typeof fetchImpl!=='function')return true;
     try{await fetchImpl(url,{method:'HEAD',redirect:'manual',signal:AbortSignal.timeout(5000)});return true;}catch{return false;}
   }
-const offline=()=>({state:'error',message:'인터넷에 연결되지 않아 확인하지 못했어요. 로그인이 풀린 것은 아닐 수 있어요. 연결을 확인하고 다시 확인해 주세요.'});
+const offline=()=>({state:'error',message:'인터넷에 연결되지 않아 확인하지 못했습니다. 로그인이 풀린 것은 아닐 수 있습니다. 연결을 확인하고 다시 확인해 주세요.'});
 async function readConfirmed(row){
     const first=await readRow(row);
     // 못 읽었을 때 인터넷이 닿지 않으면 까닭을 짐작하지 않고 그렇다고 말한다(10-29 연결이 끊긴 사이 Claude 셋이 「구독 한도가 없어요」로 보였다).

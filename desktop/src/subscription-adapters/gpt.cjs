@@ -37,15 +37,15 @@ function codexSession(folder,steps){
 
 async function readCodex(row){
     const r=await codexSession(row.folder,[{method:'account/read',params:{}},{method:'account/rateLimits/read',params:{}}]);
-    if(!r.ok&&!r.results.length)return {state:'error',message:r.code==='TIMEOUT'?'Codex가 제때 답하지 않았어요. 잠시 뒤 다시 확인해 주세요.':'Codex를 실행하지 못했어요. 설치 상태를 확인해 주세요.'};
+    if(!r.ok&&!r.results.length)return {state:'error',message:r.code==='TIMEOUT'?'Codex가 제때 답하지 않았습니다. 잠시 뒤 다시 확인해 주세요.':'Codex를 실행하지 못했습니다. 설치 상태를 확인해 주세요.'};
     const account=r.results[0]?.account;
-    if(!account)return {state:'needs-login',message:'Codex(ChatGPT) 로그인이 필요해요. 다시 연결해 주세요.'};
+    if(!account)return {state:'needs-login',message:'Codex(ChatGPT) 로그인이 필요합니다. 다시 연결해 주세요.'};
     const limits=r.results[1];
-    if(!limits||limits.error)return {state:'error',email:account.email||null,plan:account.planType||null,message:'Codex 사용 한도를 읽지 못했어요.'};
+    if(!limits||limits.error)return {state:'error',email:account.email||null,plan:account.planType||null,message:'Codex 사용 한도를 읽지 못했습니다.'};
     const snap=limits.rateLimits||Object.values(limits.rateLimitsByLimitId||{})[0]||{};
     const windows=codexWindows(snap,now());
     // 한도 창을 하나도 주지 않으면 숫자 없이 「정상」으로 세지 않는다(Claude·Gemini와 같게).
-    if(!windows.session&&!windows.weekly)return {state:'error',email:account.email||null,plan:account.planType||null,message:'Codex가 사용 한도를 알려 주지 않았어요. ChatGPT 요금제 계정으로 로그인했는지 확인해 주세요.'};
+    if(!windows.session&&!windows.weekly)return {state:'error',email:account.email||null,plan:account.planType||null,message:'Codex가 사용 한도를 알려 주지 않았습니다. ChatGPT 요금제 계정으로 로그인했는지 확인해 주세요.'};
     return {state:'ok',email:account.email||null,plan:snap.planType||account.planType||null,live:{readAt:now(),session:windows.session,weekly:windows.weekly,models:[],reached:snap.rateLimitReachedType||null,resets:codexResets(limits.rateLimitResetCredits,now())}};
   }
  return {read:readCodex,verify:async folder=>{const r=await codexSession(folder,[{method:'account/read',params:{}}]);const acc=r.results[0]?.account;return acc?{ok:true,email:acc.email||null,plan:acc.planType||null}:{ok:false};}};

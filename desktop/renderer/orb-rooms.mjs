@@ -1,8 +1,10 @@
 // 솔리오 안쪽의 방(2단계 둘째 조각)의 상태와 동작. DOM이 없다. 컨트롤러(orb-face.mjs)가 만들고, 화면이 보낸 「room」 동작을 여기에 넘긴다.
-// 설계: docs/디자인/플랫폼_클라이언트_검정구_20261116/2단계_둘째조각_구현설계.md 1.3절 · 3~5절 · 8절. 구독과 모델별 토큰은 옛 구독 판이 쓰던 다리(options.subscriptions)를,
-// 내 계정은 런처가 넘기는 계정 어댑터(faceOptions.rooms.account, 뒤의 길은 옛 내 계정과 같은 다리)를 쓴다.
+// 설계: docs/디자인/플랫폼_클라이언트_검정구_20261116/2단계_둘째조각_구현설계.md 1.3절 · 3~6절 · 8절. 구독과 모델별 토큰은 옛 구독 판이 쓰던 다리(options.subscriptions)를,
+// 내 계정은 런처가 넘기는 계정 어댑터(faceOptions.rooms.account, 뒤의 길은 옛 내 계정과 같은 다리)를, 설정은 런처가 넘기는 PC 어댑터(faceOptions.rooms의 desktop ·
+// drafts · notices · updates · environment · copyDiagnostics, 뒤의 길은 옛 설정 화면과 같은 다리와 편의의 알림 통로)를 쓴다.
 // 되돌릴 수 없는 일의 첫 누름(armed)은 1분 장면이 와도 지워지지 않게 화면이 아니라 여기에 둔다(설계 8.2).
-import { manageRoom, costRow, tokRow, accountRoom, accountSay, checkName, dateTimeWords, ACCOUNT_SAY, ACCOUNT_CONFLICTS, CODE_SAY, codeSay, manageKey, manageOpenKey, addInfo, parseCost, parsePass, parseApi, parseFlow, parseManual, checkCode, checkKey, checkEmail, checkRate } from './solio-rooms.mjs';
+import { manageRoom, costRow, tokRow, accountRoom, accountSay, checkName, dateTimeWords, ACCOUNT_SAY, ACCOUNT_CONFLICTS, CODE_SAY, codeSay, manageKey, manageOpenKey, addInfo, parseCost, parsePass, parseApi, parseFlow, parseManual, checkCode, checkKey, checkEmail, checkRate,
+  settingsRoom, subTips, tipDoneWords, updateOf, updateAuto, checkShortcut, checkQuiet, desktopSay, ZOOMS, DIAG_SAY, DRAFT_SAY } from './solio-rooms.mjs';
 import { isUsedUp, num, nameOf } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, josa } from './solio-today.mjs';
 import { profileChange, pendingDeletion } from './account-page.mjs';
@@ -10,8 +12,13 @@ import { profileChange, pendingDeletion } from './account-page.mjs';
 /* 두 번 누르기의 막이(설계 8.2, 설계 검토 D1). 묻고 0.6초 안의 두 번째 누름은 받지 않고(더블클릭 · Enter 되풀이), 10초가 지나면 물음을 거둔다.
    account는 계정 요청 하나를 기다리는 한도(옛 내 계정과 같다), tokLive는 모델별 토큰 줄이 열린 동안 실시간을 다시 부탁하는 사이다(옛 구독 판과 같다) */
 export const ROOM_TIMING = Object.freeze({ armGuard: 600, armExpire: 10000, account: 15000, tokLive: 60000, tokPaint: 1000 });
-/* 펼침이나 구독 방에서 여는 방. 설정 방은 다음 묶음에서 더한다 */
-export const ASIDE_ROOMS = Object.freeze(['manage', 'account']);
+/* 펼침이나 구독 방에서 여는 방 */
+export const ASIDE_ROOMS = Object.freeze(['manage', 'account', 'settings']);
+const UPDATE_METHOD = Object.freeze({ 'update-check': 'check', 'update-download': 'download', 'update-install': 'install' });
+const PREF_KEYS = Object.freeze(['launchAtLogin', 'startHidden', 'closeToTray']);
+/* 알림 잠시 쉬기(옛 설정과 같은 30분 · 1시간 · 쉬지 않음) */
+const REST_MINUTES = Object.freeze({ 30: 30, 60: 60, 0: 0 });
+const hm = t => (d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'))(new Date(t));
 const TOK_RANGE_KEYS = Object.freeze(['today', 'week', 'month']);
 /* 내 계정 방의 줄 열쇠. 계정이 바뀌면 이 줄들의 진행 표시를 지운다 */
 const ACCOUNT_ROWS = Object.freeze(['name', 'login', 'places', 'data', 'del']);
@@ -28,9 +35,12 @@ const failCode = res => res?.code || res?.error?.code || null;
 const hasRows = res => !!res && res.ok !== false && Array.isArray(res.rows);
 
 /* account: 내 계정 어댑터 { request(op, params), identity(), security(section), securityOpened(), changed() }. 없으면 내 계정 방을 열지 않는다.
-   confirmLeave: 모든 곳에서 로그아웃 전 쓰던 글 확인(런처의 confirmDraftExit). signOut: 이 PC 로그아웃. openOld: 옛 내 계정 화면을 연다(마을 기록 · 내려받기) */
-export function createOrbRooms({ subs = null, account = null, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout, setTick = globalThis.setInterval, clearTick = globalThis.clearInterval, snapshot = () => null, accept = () => {}, reread = () => {}, copyText = null, changed = () => {}, sentence = s => s, confirmLeave = null, signOut = null, openOld = null, randomId = () => globalThis.crypto?.randomUUID?.() || Date.now().toString(16) + Math.random().toString(16).slice(2) } = {}) {
-  const st = { armed: null, grps: new Set(), add: { svc: '' }, relogin: null, kinds: {}, installing: new Set(), busy: null, notes: new Map(), ended: null, roomNote: '', tokRange: 'week', tokAll: false };
+   confirmLeave: 모든 곳에서 로그아웃 전 쓰던 글 확인(런처의 confirmDraftExit). signOut: 이 PC 로그아웃. openOld: 옛 내 계정 화면을 연다(마을 기록 · 내려받기)
+   pc: 설정 방의 어댑터 { desktop{get, update, onChange}, drafts{status, set, onChange}, notices{get, set}, updates{status, check, download, install, confirmInstall, onChange}, environment(), copyDiagnostics() }.
+       없는 칸은 그 줄을 세우지 않는다 */
+export function createOrbRooms({ subs = null, account = null, pc = {}, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout, setTick = globalThis.setInterval, clearTick = globalThis.clearInterval, snapshot = () => null, accept = () => {}, reread = () => {}, copyText = null, changed = () => {}, sentence = s => s, confirmLeave = null, signOut = null, openOld = null, randomId = () => globalThis.crypto?.randomUUID?.() || Date.now().toString(16) + Math.random().toString(16).slice(2) } = {}) {
+  const st = { armed: null, grps: new Set(), add: { svc: '' }, relogin: null, kinds: {}, installing: new Set(), busy: null, notes: new Map(), ended: null, roomNote: '', tokRange: 'week', tokAll: false, tipDone: new Map(), restChoice: '' };
+  const dev = pc && typeof pc === 'object' ? pc : {};
   let gen = 0, armTimer = null, lastLogin, loginEmail;
   let focusReq = null, openReq = null, closeReq = null, seq = 0, current = null;
   /* 모델별 토큰(설계 3.4, 설계 검토 D8). 솔리오에 들어오면 한 번 읽고 알림을 듣는다. 실시간은 줄이 열려 보이는 동안만 부탁한다 */
@@ -39,6 +49,11 @@ export function createOrbRooms({ subs = null, account = null, now = () => Date.n
   /* 내 계정(설계 5.4). 계정 세대(accGen)가 바뀌면 늦게 온 답을 버린다. 삭제 요청 id는 한 번 만들어 다시 보내도 같은 요청이 되게 한다(옛 251~262행) */
   const freshAcc = () => ({ data: null, identity: null, loading: false, error: '', identityError: false, allSessions: false, askDelete: false, askAt: 0 });
   let acc = freshAcc(), accGen = 0, deleteRequestId = null;
+  /* 설정(설계 6.4). 방이 열릴 때 데스크톱 설정 · 쓰던 글 되살리기 · 업데이트 상태를 읽고, 열린 동안 바뀜 알림을 듣고, 닫으면 듣기를 뗀다.
+     rev는 업데이트 판이 들어온 차례다. 동작을 보낸 뒤 알림으로 새 판이 먼저 오면 늦게 온 답으로 덮지 않는다(update-view.mjs와 같다).
+     member는 방을 그릴 때 받은 「회원으로 보이는가」다. 손님에게 잠긴 칸(쓰던 글 되살리기, 구독 팁)은 동작도 받지 않는다 */
+  const freshSet = () => ({ desktop: null, drafts: null, update: null, rev: 0, unsubs: [], member: false });
+  let sets = freshSet();
 
   const note = (key, text) => { if (text) st.notes.set(key, text); else st.notes.delete(key); };
   const ask = req => ({ ...req, seq: ++seq });
@@ -210,7 +225,91 @@ export function createOrbRooms({ subs = null, account = null, now = () => Date.n
     if (st.armed && ACCOUNT_ROWS.includes(st.armed.key)) disarm();
     for (const k of ACCOUNT_ROWS) st.notes.delete(k);
     if (current === 'account') void accLoad();
+    // 쓰던 글 되살리기는 계정마다 따로다. 설정 방이 열려 있으면 새 계정의 상태를 다시 읽는다
+    if (current === 'settings') { sets.drafts = null; readDrafts(); }
     changed();
+  }
+
+  /* ── 설정(설계 6.4) ── */
+  const envNow = () => { try { const e = dev.environment?.(); return e && typeof e === 'object' ? e : null; } catch { return null; } };
+  const noticesNow = () => { try { const n = dev.notices?.get?.(); return n && typeof n === 'object' ? n : null; } catch { return null; } };
+  function takeUpdate(value, s = sets) {
+    const next = updateOf(value);
+    if (!next || s !== sets) return false;
+    s.update = next;
+    s.rev += 1;
+    changed();
+    return true;
+  }
+  function readDrafts() {
+    if (typeof dev.drafts?.status !== 'function') return;
+    const my = gen, a = accGen, s = sets;
+    Promise.resolve().then(() => dev.drafts.status()).then(v => { if (my === gen && a === accGen && s === sets) { s.drafts = v && typeof v === 'object' ? v : { ok: false }; changed(); } }, () => { if (my === gen && a === accGen && s === sets) { s.drafts = { ok: false }; changed(); } });
+  }
+  function setStart() {
+    const my = gen, s = sets;
+    if (typeof dev.desktop?.get === 'function') Promise.resolve().then(() => dev.desktop.get()).then(v => { if (my === gen && s === sets && v?.ok === true) { s.desktop = v; changed(); } }, () => {});
+    readDrafts();
+    if (typeof dev.updates?.status === 'function') {
+      const start = s.rev;
+      Promise.resolve().then(() => dev.updates.status()).then(v => { if (my === gen && s === sets && s.rev === start && !takeUpdate(v, s)) takeUpdate({ ...(s.update || {}), state: 'error', code: 'UPDATE_UNAVAILABLE' }, s); },
+        () => { if (my === gen && s === sets && s.rev === start) takeUpdate({ ...(s.update || {}), state: 'error', code: 'UPDATE_UNAVAILABLE' }, s); });
+    }
+    const listen = (on, fn) => { try { const off = on(fn); if (typeof off === 'function') s.unsubs.push(off); } catch { /* 듣지 못하면 열 때 읽은 값으로 둔다 */ } };
+    if (typeof dev.desktop?.onChange === 'function') listen(dev.desktop.onChange, v => { if (s === sets && v?.ok === true) { s.desktop = v; changed(); } });
+    if (typeof dev.drafts?.onChange === 'function') listen(dev.drafts.onChange, () => { if (s === sets) readDrafts(); });
+    if (typeof dev.updates?.onChange === 'function') listen(dev.updates.onChange, v => { takeUpdate(v, s); });
+  }
+  function setStop() { for (const off of sets.unsubs) { try { off(); } catch { /* 무시 */ } } sets = freshSet(); }
+  /* 업데이트 동작(update-view.mjs run과 같은 규칙). 설치는 쓰던 글 확인(런처의 confirmUpdateInstall)을 먼저 거치고, 그사이 판이 바뀌었으면 보내지 않는다 */
+  async function updateRun(act) {
+    const u = dev.updates, s = sets, cur = s.update, platform = envNow()?.platform || '';
+    if (!u || !cur || st.busy || ['disabled', 'checking', 'downloading', 'opening'].includes(cur.state) || (cur.state === 'ready' && updateAuto(cur, platform))) return;
+    if ((act === 'update-download' && cur.state !== 'available') || (act === 'update-install' && cur.state !== 'ready')) return;
+    const method = UPDATE_METHOD[act];
+    if (typeof u[method] !== 'function') return;
+    const my = gen;
+    st.busy = 'update:' + act;
+    changed();
+    let start = s.rev;
+    try {
+      if (act === 'update-install') {
+        let go = false;
+        try { go = typeof u.confirmInstall === 'function' ? (await u.confirmInstall()) === true : false; } catch { go = false; }
+        if (!go || my !== gen || s !== sets || s.update?.state !== 'ready' || s.rev !== start) return;
+      }
+      start = s.rev;
+      const result = await u[method]();
+      if (my !== gen || s !== sets || s.rev !== start) return;
+      if (!takeUpdate(result, s) && result?.ok === false) takeUpdate({ ...s.update, state: 'error', code: result.code || result.error?.code }, s);
+      else if (!result?.state && !result?.status && typeof u.status === 'function') { const v = await u.status(); if (s.rev === start) takeUpdate(v, s); }
+    } catch {
+      if (my === gen && s === sets && s.rev === start) takeUpdate({ ...s.update, state: 'error', code: act === 'update-install' ? 'INSTALL_OPEN_FAILED' : 'UPDATE_UNAVAILABLE' }, s);
+    } finally {
+      if (my === gen) { st.busy = null; changed(); }
+    }
+  }
+  /* 데스크톱 설정 한 칸을 바꾼다. 본체가 바꾼 판을 돌려주고, 바뀜 알림으로도 같은 판이 온다 */
+  async function deskUpdate(key, act, patch, okText = '') {
+    if (typeof dev.desktop?.update !== 'function' || st.busy) return;
+    const my = gen, s = sets;
+    st.busy = key + ':' + act;
+    changed();
+    let res;
+    try { res = await dev.desktop.update(patch); } catch { res = { ok: false }; }
+    if (my !== gen) return;
+    st.busy = null;
+    if (res?.ok === true) { if (s === sets) s.desktop = res; note(key, okText); } else note(key, desktopSay(res?.code, patch));
+    changed();
+  }
+  /* 알림 설정은 편의(convenience.mjs)의 통로로 바꾼다. 편의가 저장하고 배너 판단에 바로 쓴다(설계 6.4) */
+  function noticeSet(key, patch) {
+    if (typeof dev.notices?.set !== 'function') return null;
+    let n = null;
+    try { n = dev.notices.set(patch); } catch { n = null; }
+    if (!n || typeof n !== 'object') { note(key, '알림 설정을 바꾸지 못했습니다. 잠시 뒤 다시 해 주세요.'); changed(); return null; }
+    changed();
+    return n;
   }
 
   async function handle(p = {}) {
@@ -406,8 +505,80 @@ export function createOrbRooms({ subs = null, account = null, now = () => Date.n
       case 'tip': {
         const [tipKey, action] = arg.split('|');
         if (!tipKey || !['helpful', 'stop'].includes(action)) return true;
-        await save(key, act, { tip: { key: tipKey, action } }, () => saved(key, null, action === 'stop' ? '이런 팁은 한동안 보이지 않습니다.' : '도움이 됐다고 남겼습니다.'));
+        // 구독 줄의 팁은 반응한 뒤에도 그 줄에 남아 반응 뒤의 한 줄을 보인다(옛 구독 판의 answered와 같다). 요금 줄의 연간 결제 팁은 쉬는 동안 빠진다
+        await save(key, act, { tip: { key: tipKey, action } }, res => { st.tipDone.set(tipKey, action); saved(key, null, tipDoneWords(action, res?.settings, tipKey)); });
         return true;
+      }
+      /* ── 설정(설계 6.4, 설계 검토 D7 · D9) ── */
+      case 'update-check': case 'update-download': case 'update-install': await updateRun(act); return true;
+      case 'pref': {
+        const p = sets.desktop?.preferences;
+        // 트레이로 시작은 자동 시작이 켜져 있을 때만 바꾼다
+        if (!p || !PREF_KEYS.includes(arg) || (arg === 'startHidden' && p.launchAtLogin !== true)) return true;
+        await deskUpdate(key, act, { [arg]: p[arg] !== true });
+        return true;
+      }
+      case 'shortcut-apply': {
+        const v = checkShortcut(fields.shortcut);
+        if (!v.ok) { note(key, v.say); changed(); return true; }
+        if (v.value === String(sets.desktop?.preferences?.globalShortcut || '')) { note(key, '지금 쓰는 단축키와 같습니다.'); changed(); return true; }
+        await deskUpdate(key, act, { globalShortcut: v.value }, '단축키를 바꿨습니다.');
+        return true;
+      }
+      case 'shortcut-off': if (sets.desktop?.preferences?.globalShortcut) await deskUpdate(key, act, { globalShortcut: '' }, '단축키를 껐습니다.'); return true;
+      case 'zoom': { const z = Number(arg); if (ZOOMS.includes(z)) await deskUpdate(key, act, { zoomFactor: z }); return true; }
+      case 'notice': {
+        const n = noticesNow();
+        if (n && (arg === 'banners' || arg === 'schedule')) noticeSet(key, { [arg]: n[arg] !== true });
+        return true;
+      }
+      case 'quiet-save': {
+        const v = checkQuiet(fields);
+        if (!v.ok) { note(key, v.say); changed(); return true; }
+        const n = noticeSet(key, v.value);
+        if (n) saved(key, 'quiet', n.schedule ? '저장했습니다.' : '저장했습니다. 조용한 시간을 켜면 이 시각에 배너를 띄우지 않습니다.');
+        return true;
+      }
+      case 'rest': {
+        if (!Object.hasOwn(REST_MINUTES, arg)) return true;
+        const m = REST_MINUTES[arg], until = m ? t + m * 60000 : 0;
+        if (!noticeSet(key, { mutedUntil: until })) return true;
+        st.restChoice = m ? arg : '';
+        note(key, m ? hm(until) + '까지 배너를 띄우지 않습니다.' : '배너를 다시 띄웁니다.');
+        changed(); return true;
+      }
+      case 'tips': {
+        const s = snap?.ok !== false ? snap : null;
+        if (!s?.settings || !sets.member) return true;
+        const off = s.settings.tipsOff === true;
+        await save(key, act, { settings: { tipsOff: !off } }, () => saved(key, null, off ? '구독 팁을 켰습니다.' : '구독 팁을 껐습니다. 구독 줄과 요금 줄에 팁을 띄우지 않습니다.'));
+        return true;
+      }
+      case 'draft': {
+        const d = sets.drafts;
+        if (typeof dev.drafts?.set !== 'function' || !(d?.ok === true && d.available === true) || !sets.member || st.busy) return true;
+        const my = gen, a = accGen, s = sets;
+        st.busy = 'draft:draft';
+        changed();
+        let res;
+        try { res = await dev.drafts.set(d.enabled !== true); } catch { res = { ok: false }; }
+        if (my !== gen) return true;
+        st.busy = null;
+        if (res?.ok === true) { if (a === accGen && s === sets) s.drafts = res; } else note(key, DRAFT_SAY);
+        changed(); return true;
+      }
+      // 문제 알리기용 정보: 편의와 같은 셈(safeDiagnostics)으로 버전과 연결 상태만 복사한다. 결과는 맨 아래 작은 줄에 쓴다
+      case 'diag-copy': {
+        if (st.busy) return true;
+        st.busy = 'settings:diag-copy';
+        changed();
+        let ok = false;
+        const my = gen;
+        try { ok = typeof dev.copyDiagnostics === 'function' ? (await dev.copyDiagnostics()) === true : false; } catch { ok = false; }
+        if (my !== gen) return true;
+        st.busy = null;
+        if (current === 'settings') st.roomNote = ok ? DIAG_SAY.ok : DIAG_SAY.no;
+        changed(); return true;
       }
       /* ── 모델별 토큰(설계 3.4) ── */
       case 'tok-on': {
@@ -564,18 +735,26 @@ export function createOrbRooms({ subs = null, account = null, now = () => Date.n
     }
     // 내 계정은 열 때마다 읽는다. 앞에 읽은 자료가 있으면 그것을 보이며 조용히 읽는다
     if (name === 'account') void accLoad({ quiet: !!acc.data });
+    // 설정은 열 때 읽고, 열린 동안 바뀜 알림을 듣는다(설계 6.4)
+    if (name === 'settings') setStart();
   }
   function close() {
     disarm();
-    st.notes.clear(); st.roomNote = ''; st.grps.clear(); st.ended = null;
+    // 구독 줄의 팁 알림 줄(svc:…)은 방과 상관없이 남긴다. 방을 닫을 때는 방의 줄 알림만 지운다
+    for (const k of [...st.notes.keys()]) if (!k.startsWith('svc:')) st.notes.delete(k);
+    st.roomNote = ''; st.grps.clear(); st.ended = null;
     acc.askDelete = false;
+    if (current === 'settings') setStop();
     focusReq = null; openReq = null; closeReq = null; current = null;
   }
   function reset() {
     gen += 1;
     accGen += 1;
     close();
-    Object.assign(st, { add: { svc: '' }, relogin: null, kinds: {}, busy: null, tokAll: false });
+    st.notes.clear();
+    Object.assign(st, { add: { svc: '' }, relogin: null, kinds: {}, busy: null, tokAll: false, restChoice: '' });
+    st.tipDone.clear();
+    setStop();
     st.installing.clear();
     lastLogin = undefined; loginEmail = undefined;
     tokReset();
@@ -593,15 +772,23 @@ export function createOrbRooms({ subs = null, account = null, now = () => Date.n
     hasAccount: () => !!account,
     costRow: () => costRow(snapshot(), view(), now()),
     tokRow: () => tokRow(tok.state, view(), now()),
+    /* 구독 줄 안쪽의 팁(설계 검토 D7). 서비스 → 팁 한 줄 */
+    subTips: () => subTips(snapshot(), view(), now()),
     tokStart,
     tokLoad,
     syncLive,
     accountChanged,
-    /* ctx: { checking, name(로그인 정보의 이름), accountKey } */
-    scene({ aside = null, checking = false, name = '', accountKey = '' } = {}) {
+    /* ctx: { checking, name(로그인 정보의 이름), accountKey, member(회원으로 보이는가) } */
+    scene({ aside = null, checking = false, name = '', accountKey = '', member = false } = {}) {
       const req = { focus: focusReq, opening: openReq, closing: closeReq };
       if (aside === 'manage') return { manage: { ...manageRoom(snapshot(), view(), now(), { checking, sentence }), ...req } };
       if (aside === 'account') return { account: { ...accountRoom(acc, view(), now(), { name, accountKey }), ...req } };
+      if (aside === 'settings') {
+        // 구독 팁 켜고 끄기는 회원의 구독 자료가 있을 때만 둔다(저장 자리가 구독 판의 settings.tipsOff다, 설계 검토 D7)
+        const snap = snapshot(), tipsOff = member && snap && snap.ok !== false && snap.settings ? snap.settings.tipsOff === true : null;
+        sets.member = !!member;
+        return { settings: { ...settingsRoom({ update: sets.update, desktop: sets.desktop, drafts: sets.drafts, notices: noticesNow(), env: envNow(), member: !!member, tipsOff }, view(), now()), ...req } };
+      }
       return null;
     },
   };

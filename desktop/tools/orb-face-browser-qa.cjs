@@ -215,11 +215,14 @@ if(!process.versions.electron){
           await key(w,'Escape');await wait(300);
           const back9=await w.js("(()=>({manage:document.querySelector('#portal-entry [data-room=manage]').hidden,solio:!document.querySelector('#portal-entry [data-room=solio]').hidden,focus:document.activeElement===document.querySelector('#portal-entry [data-orb-act=subs-manage]')}))()");
           check('9 Esc closes the room and gives focus back to 「계정 관리」',back9.manage&&back9.solio&&back9.focus,back9);
-          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.fan [data-foot="settings"]');await until(w,s=>s.mode==='legacy'&&s.ui==='app');
-          const hiddenRows=await w.js("['#personal-settings-open','#density','#view-settings [data-view=benefits]','#reset-preferences'].map(s=>{const e=document.querySelector(s);const r=e?.closest('.setting-row');return !r||getComputedStyle(r).display==='none';})");
-          check('9 settings hides the four library and pleasure rows',hiddenRows.every(Boolean),{hiddenRows});await captureWide(w,'legacy-settings');
-          await key(w,'Escape');const lb2=await until(w,s=>s.mode==='app');check('9 Esc leaves the old settings',lb2.ok,lb2.state);
-          await wait(700);check('17 coming back from an old screen with focus on the orb does not open the fan',!(await state(w)).fan&&await w.js("document.activeElement===document.querySelector('#portal-entry .here-orb')"));
+          // 펼침의 「설정」은 새 얼굴의 설정 방을 연다(2단계 둘째 조각 설계 9.2). 옛 설정 화면으로 가는 길은 없다
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await w.js("document.querySelector('.fan [data-foot=settings]').focus()");await click(w,'.fan [data-foot="settings"]');await wait(700);
+          const st9=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=settings]');return {shown:!!r&&!r.hidden,mode:document.documentElement.dataset.orbClient,onSay:document.activeElement===r?.querySelector('[data-aside-say]'),heading:document.querySelector('#portal-entry [data-orb-heading]').textContent};})()");
+          check('9 「설정」 opens the settings room in the face, not the old settings view',st9.shown&&st9.mode==='app'&&st9.onSay&&st9.heading==='설정',st9);await captureWide(w,'settings-room');
+          await key(w,'Escape');await wait(400);
+          const lb2=await w.js("(()=>({settings:document.querySelector('#portal-entry [data-room=settings]').hidden,solio:!document.querySelector('#portal-entry [data-room=solio]').hidden,mode:document.documentElement.dataset.orbClient}))()");
+          check('9 Esc closes the settings room back to Solio',lb2.settings&&lb2.solio&&lb2.mode==='app',lb2);
+          await wait(700);check('17 coming back from a room with focus on the orb does not open the fan',!(await state(w)).fan&&await w.js("document.activeElement===document.querySelector('#portal-entry .here-orb')"));
           // 「계정」은 새 얼굴의 내 계정 방을 연다(2단계 둘째 조각 설계 9.3). 옛 내 계정 화면은 그 방의 「마을 기록」으로만 간다
           await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.fan [data-foot="account"]');await wait(700);
           const ar=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=account]');return {shown:!!r&&!r.hidden,mode:document.documentElement.dataset.orbClient,say:(r?.querySelector('[data-aside-text]')||{}).textContent||'',onSay:document.activeElement===r?.querySelector('[data-aside-say]')};})()");
@@ -229,8 +232,8 @@ if(!process.versions.electron){
           await w.js(`(()=>{const t=[...${townSel}.nextElementSibling.querySelectorAll('[data-room-act]')].find(x=>x.dataset.roomAct==='town');t.focus();t.click();return true;})()`);
           const la=await until(w,s=>s.mode==='legacy'&&s.ui==='app');check('9 the town record in 내 계정 opens the old account view',la.ok,la.state);await capture(w,'legacy-account');
           // 옛 화면에서는 어떤 단추를 눌러도 옛 홈 · 라이브러리 · 혜택 · 맞춤 정보로 가지 않는다(Fable 최종)
-          const leak=await w.js("(async()=>{const tries=['[data-account-action=insight]','[data-account-action=workspace]','[data-view=home]','[data-view=library]','[data-view=benefits]'];const seen=[];for(const sel of tries){const b=document.querySelector(sel);if(b){b.click();await new Promise(r=>setTimeout(r,120));seen.push([sel,document.documentElement.dataset.view]);}}return {seen,hidden:getComputedStyle(document.querySelector('#view-account .setting-row:has([data-account-action=insight])')||document.body).display};})()");
-          check('9 the old screens cannot leak to home, library, benefits or insight',leak.seen.every(([,v])=>['solio','settings','account'].includes(v)),leak);
+          const leak=await w.js("(async()=>{const tries=['[data-account-action=insight]','[data-account-action=workspace]','[data-view=home]','[data-view=library]','[data-view=benefits]'];const seen=[];for(const sel of tries){const b=document.querySelector(sel);if(b){b.click();await new Promise(r=>setTimeout(r,120));seen.push([sel,document.documentElement.dataset.view]);}}return {seen,hidden:getComputedStyle(document.querySelector('#view-account .setting-row:has([data-account-action=insight])')||document.body).display,back:getComputedStyle(document.querySelector('#view-account .ap-back')||document.body).display};})()");
+          check('9 the old account view cannot leak to settings, home, library, benefits or insight, and its 「← 설정」 is hidden',leak.seen.every(([,v])=>v==='account')&&leak.back==='none',leak);
           await click(w,'[data-orb-act="legacy-back"]');await until(w,s=>s.mode==='app'&&s.ui==='app');await wait(400);
           const tb=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=account]'),a=document.activeElement;return {shown:!!r&&!r.hidden,onTown:a?.dataset?.roomAct==='town'};})()");
           check('9 coming back from the old account view returns to 내 계정 with focus on 「열기」',tb.shown&&tb.onTown,tb);
@@ -738,6 +741,119 @@ if(!process.versions.electron){
           check('18-15 a second press signs out everywhere, closes the room and goes back to the ask scene',lo.ok&&(await calls(w)).includes('revokeAll')&&after.room&&!after.dialog,{...lo.state,...after});
           w.win.destroy();
         }
+        // 18 셋째 묶음: 구독 줄 안의 팁(설계 검토 D7)과 설정 방(12.2절의 12). 숨은 창이라 누르기 전에 초점을 먼저 둔다
+        if(only('18')&&mode==='main'){
+          const subsTip={ok:true,seq:3,rows:[row('r-claude','claude',36,now+3*D,{passCount:1,passUntil:now+2*D}),row('r-gpt','gpt',40,now+5*D)],check:{at:now-5*60e3},checking:false,usage:{accounts:{}},settings:{}};
+          const w=await open();await boot(w,{subs:subsTip},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          // 구독 줄의 팁: 줄을 열면 작은 글 한 줄과 반응 단추 둘이 선다
+          const SUB='#portal-entry [data-rows] button.row[data-svc=claude]';
+          const tip=()=>w.js(`(()=>{const b=document.querySelector(${JSON.stringify(SUB)}),m=b.nextElementSibling;return {opened:b.classList.contains('opened'),tip:(m.querySelector('.more-tip')||{}).textContent||'',acts:[...m.querySelectorAll('[data-room-act=tip]')].map(x=>x.textContent),arg:(m.querySelector('[data-room-act=tip]')||{dataset:{}}).dataset.roomArg||'',live:[...m.querySelectorAll('.more-live')].map(x=>x.textContent).join(''),focusRow:document.activeElement===b};})()`);
+          await w.js(`document.querySelector(${JSON.stringify(SUB)}).click()`);await wait(500);
+          const tp0=await tip();
+          check('18-6 a subscription row carries one tip line with 「도움 됐습니다」 and 「이런 팁 그만」',tp0.opened&&/^Claude 초기화권 1장이 .+ 만료됩니다\./.test(tp0.tip)&&JSON.stringify(tp0.acts)==='["도움 됐습니다","이런 팁 그만"]'&&tp0.arg==='pass:claude|helpful',tp0);
+          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js(`document.querySelector(${JSON.stringify(SUB)}).scrollIntoView({block:'start'})`);await wait(150);await capture(w,`sub-tip-${W}`);}
+          w.win.setContentSize(1440,900);await wait(300);
+          await w.js(`(()=>{const x=[...document.querySelector(${JSON.stringify(SUB)}).nextElementSibling.querySelectorAll('[data-room-act=tip]')].find(q=>q.textContent==='이런 팁 그만');x.focus();x.click();return true;})()`);await wait(700);
+          const tp1=await tip(),tipSave=(await calls(w)).filter(c=>c.startsWith('subs-save:{"tip"'));
+          check('18-6 「이런 팁 그만」 saves like the old board, the buttons go, the line says how long it rests, and focus goes back to the row',tipSave.length===1&&tipSave[0]==='subs-save:{"tip":{"key":"pass:claude","action":"stop"}}'&&tp1.acts.length===0&&tp1.live==='이 종류의 팁은 4주 동안 쉽니다.'&&!!tp1.tip&&tp1.focusRow,{tp1,tipSave});
+          await w.js(`document.querySelector(${JSON.stringify(SUB)}).click()`);await wait(300);await w.js('document.activeElement&&document.activeElement.blur&&document.activeElement.blur()');
+          // 설정 방: 펼침의 「설정」이 새 얼굴의 방을 연다
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await w.js("document.querySelector('.fan [data-foot=settings]').focus()");await click(w,'.fan [data-foot="settings"]');await wait(900);
+          const S='#portal-entry [data-room=settings] ';
+          await w.js(`(()=>{window.__sq=key=>[...document.querySelectorAll(${JSON.stringify(S+'button.row[data-key]')})].find(x=>x.dataset.key===key)||null;
+            window.__sin=key=>window.__sq(key)?.nextElementSibling||null;
+            window.__sact=(key,act,arg)=>[...(window.__sin(key)?.querySelectorAll('[data-room-act]')||[])].find(x=>x.dataset.roomAct===act&&(arg===undefined||x.dataset.roomArg===arg))||null;
+            window.__slive=key=>((window.__sin(key)?.querySelector('[role=status]'))||{}).textContent||'';return true;})()`);
+          const sact=(key,a,arg)=>w.js('(()=>{const b=window.__sact('+JSON.stringify(key)+','+JSON.stringify(a)+(arg===undefined?'':','+JSON.stringify(arg))+');if(!b)return false;b.focus();b.click();return true;})()');
+          const sopen=key=>w.js('(()=>{const b=window.__sq('+JSON.stringify(key)+');if(!b.classList.contains("opened"))b.click();return true;})()');
+          const slive=key=>w.js('window.__slive('+JSON.stringify(key)+')');
+          const stype=(key,field,value)=>w.js('(()=>{const i=[...window.__sin('+JSON.stringify(key)+').querySelectorAll("input[data-f]")].find(x=>x.dataset.f==='+JSON.stringify(field)+');if(!i)return false;i.focus();i.value='+JSON.stringify(value)+';i.dispatchEvent(new Event("input",{bubbles:true}));return true;})()');
+          const stext=sel=>text(w,S+sel);
+          const sval=(key,cell)=>w.js('(window.__sq('+JSON.stringify(key)+')?.querySelector(".'+cell+'")||{}).textContent||""');
+          // 그 줄을 맨 위로 올려 다섯 크기로 찍는다(작은 창에서도 펼친 안쪽이 보이게)
+          const capRow=async(name,key)=>{for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js('window.__sq('+JSON.stringify(key)+').scrollIntoView({block:"start"})');await wait(150);await capture(w,`${name}-${W}`);}w.win.setContentSize(1440,900);await wait(300);};
+          const s0=await w.js(`(()=>{const r=document.querySelector('#portal-entry [data-room=settings]');return {shown:!!r&&!r.hidden,mode:document.documentElement.dataset.orbClient,solioHidden:document.querySelector('#portal-entry [data-room=solio]').hidden,say:r.querySelector('[data-aside-text]').textContent,then:r.querySelector('[data-aside-then]').textContent,foot:r.querySelector('[data-aside-foot]').textContent,act:r.querySelector('.read [data-room-act]').textContent,heading:document.querySelector('#portal-entry [data-orb-heading]').textContent,onSay:document.activeElement===r.querySelector('[data-aside-say]'),rows:[...r.querySelectorAll('button.row[data-key]')].map(b=>b.dataset.key)};})()`);
+          const c0=await calls(w);
+          check('18-12 「설정」 opens the settings room in the face with the update sentence, how it starts, and the version',s0.shown&&s0.mode==='app'&&s0.solioHidden&&s0.onSay&&s0.heading==='설정'&&s0.say==='이 PC의 SYNK는 최신 판입니다.'&&s0.then==='컴퓨터를 켤 때 함께 켜지 않습니다.'&&s0.foot==='SYNK Platform 0.4.97 · 시험판 · Windows'&&s0.act==='문제 알리기용 정보 복사'&&JSON.stringify(s0.rows)==='["update","start","key","view","notice","draft"]'&&['prefs-get','drafts-status','update-status'].every(c=>c0.includes(c)),s0);
+          await captureSizes(w,'settings-room');
+          // 업데이트: 지금 확인 → 확인 중 → 최신. 새 판이 나오면 받기와 받는 몫, 다 받으면 쓰던 글 확인 뒤 설치 파일 열기, 실패 문장
+          await sopen('update');await wait(300);await sact('update','update-check');await wait(80);
+          const u1=await stext('[data-aside-text]');await wait(700);const u2=await stext('[data-aside-text]');
+          check('18-12 「지금 확인」 checks and the top sentence follows the update state',(await calls(w)).includes('update-check')&&u1==='새 판이 있는지 보고 있습니다.'&&u2==='이 PC의 SYNK는 최신 판입니다.',{u1,u2});
+          await w.js("window.__orbFixture.setUpdate({state:'available',latestVersion:'0.4.98'})");await wait(300);
+          const u2b=await stext('[data-aside-text]');
+          await sact('update','update-download');await wait(400);
+          const u3={say:await stext('[data-aside-text]'),val:await sval('update','val'),when:await sval('update','when'),opened:await w.js("window.__sq('update').classList.contains('opened')"),inner:await w.js("(window.__sin('update').querySelector('.more-say')||{}).textContent")};
+          check('18-12 a new version is announced, then downloaded with its share in the line',u2b==='새 판(v0.4.98)이 나왔습니다.'&&(await calls(w)).includes('update-download')&&u3.say==='새 판을 받고 있습니다.'&&u3.val==='35%'&&u3.when==='새 판 0.4.98'&&u3.opened&&/^새 판\(v0\.4\.98\) 설치 파일을 받고 있습니다\./.test(u3.inner),{u2b,...u3});
+          await captureSizes(w,'settings-update-downloading');
+          await w.js("window.__orbFixture.setUpdate({state:'ready'})");await wait(300);
+          const instText=await w.js("(window.__sact('update','update-install')||{}).textContent||''");
+          await sact('update','update-install');await wait(700);
+          const u4={say:await stext('[data-aside-text]'),dialog:await w.js("!!document.querySelector('#leave-dialog[open]')")};
+          check('18-12 a ready installer opens with 「앱 끄고 설치 파일 열기」 once the unsaved-writing check finds nothing',instText==='앱 끄고 설치 파일 열기'&&(await calls(w)).includes('update-install')&&u4.say==='업데이트를 준비하고 있습니다.'&&!u4.dialog,{instText,...u4});
+          await w.js("window.__orbFixture.setUpdate({state:'error',code:'UPDATE_NETWORK_FAILED'})");await wait(300);
+          const u5={say:await stext('[data-aside-text]'),inner:await w.js("(window.__sin('update').querySelector('.more-say')||{}).textContent"),now:await w.js("window.__sq('update').classList.contains('now')")};
+          check('18-12 a failed update says so on top and inside the line',u5.say==='새 판을 받지 못했습니다.'&&/^새 판을 받지 못했습니다\. 인터넷 연결을 확인한 뒤 「지금 확인」을 다시 눌러 주세요\./.test(u5.inner)&&u5.now,u5);
+          await captureSizes(w,'settings-update-error');
+          await w.js("window.__orbFixture.setUpdate({state:'current',code:null})");await wait(300);
+          // 켜고 닫을 때: 트레이로 시작은 자동 시작을 켜야 누를 수 있다. 자동 시작을 켜면 줄이 열린 채 서고, 초점이 그 단추에 남고, 맨 위 둘째 줄이 바뀐다
+          await sopen('start');await wait(300);
+          const lock0=await w.js("window.__sact('start','pref','startHidden')?.getAttribute('aria-disabled')||null");
+          await sact('start','pref','startHidden');await wait(300);
+          const early=(await calls(w)).some(c=>c.startsWith('prefs-update:{"startHidden"'));
+          await sact('start','pref','launchAtLogin');await wait(700);
+          const st1=await w.js("(()=>{const b=window.__sq('start'),s=window.__sact('start','pref','launchAtLogin');return {opened:b.classList.contains('opened'),checked:s?.getAttribute('aria-checked'),focus:document.activeElement===s,then:document.querySelector('#portal-entry [data-room=settings] [data-aside-then]').textContent,mid:b.querySelector('.mid').textContent,lock:window.__sact('start','pref','startHidden')?.getAttribute('aria-disabled')||null};})()");
+          const prefs1=await w.js('window.__orbFixture.prefs()');
+          check('18-12 트레이로 시작 waits for 자동 시작; switching 자동 시작 on keeps the line open with focus on the switch, and the second top line changes',lock0==='true'&&!early&&st1.opened&&st1.checked==='true'&&st1.focus&&st1.then==='컴퓨터를 켜면 창과 함께 켜집니다.'&&st1.lock===null&&prefs1.launchAtLogin===true,{lock0,early,...st1,prefs1});
+          await capRow('settings-start','start');
+          // 어디서나 열기: 모양이 틀린 단축키와 다른 앱이 쓰는 단축키는 그 줄에서 거절하고, 맞는 단축키는 적용한다
+          await sopen('key');await wait(300);
+          await stype('key','shortcut','Shift+S');await sact('key','shortcut-apply');await wait(300);const k1=await slive('key');
+          await stype('key','shortcut','ctrl+alt+k');await sact('key','shortcut-apply');await wait(500);const k2=await slive('key');
+          await stype('key','shortcut','Ctrl+Alt+S');await sact('key','shortcut-apply');await wait(600);
+          const k3={live:await slive('key'),val:await sval('key','val'),mid:await sval('key','mid'),prefs:await w.js('window.__orbFixture.prefs()')};
+          check('18-12 a malformed shortcut and one another app holds are refused in the line, and a good one is applied',k1==='단축키 모양을 알아보지 못했습니다. 예: Ctrl+Alt+S'&&k2==='다른 앱이 쓰는 단축키입니다. 다른 조합을 골라 주세요.'&&k3.live==='단축키를 바꿨습니다.'&&k3.val==='Ctrl+Alt+S'&&k3.mid==='어느 화면에서든 이 단축키로 SYNK 창을 앞으로 띄웁니다'&&k3.prefs.globalShortcut==='Ctrl+Alt+S',{k1,k2,...k3});
+          // 화면 크기
+          await sopen('view');await wait(300);await sact('view','zoom','1.25');await wait(600);
+          const z1={mid:await sval('view','mid'),pressed:await w.js("window.__sact('view','zoom','1.25')?.getAttribute('aria-pressed')"),prefs:await w.js('window.__orbFixture.prefs()')};
+          check('18-12 a screen size is chosen and saved',z1.mid==='크기 125%'&&z1.pressed==='true'&&z1.prefs.zoomFactor===1.25,z1);
+          // 알림: 배너 끄기와 조용한 시각 저장이 편의 쪽 값(옛 설정 화면이 읽는 자리)과 같다
+          await sopen('notice');await wait(300);
+          await sact('notice','notice','banners');await wait(300);
+          await sact('notice','grp','quiet');await wait(400);
+          const q0=await w.js("(()=>{const g=window.__sin('notice').querySelector('[data-grp=quiet]');return {shown:!!g&&!g.hidden,fields:[...g.querySelectorAll('input[data-f]')].map(i=>i.dataset.f+'='+i.value)};})()");
+          check('18-12 「시각 고치기」 opens the quiet-hours fields inside the notice line',q0.shown&&JSON.stringify(q0.fields)==='["quietStart=22:00","quietEnd=08:00"]',q0);
+          await capRow('settings-notice-quiet','notice');
+          await stype('notice','quietStart','23:30');await stype('notice','quietEnd','07:00');
+          await w.js("(()=>{const b=[...window.__sin('notice').querySelectorAll('[data-pick][data-f=quietDays] button')].find(x=>x.dataset.pv==='weekdays');b.focus();b.click();return true;})()");await wait(100);
+          await sact('notice','quiet-save');await wait(500);
+          const n1=await w.js("(()=>{let saved=null;try{saved=JSON.parse(localStorage.getItem('synk-platform-notifications-v1'));}catch{}return {saved,live:window.__slive('notice'),grpHidden:window.__sin('notice').querySelector('[data-grp=quiet]').hidden,focus:document.activeElement===window.__sact('notice','grp','quiet'),old:{banners:document.getElementById('notification-banners')?.checked,start:document.getElementById('notification-start')?.value,end:document.getElementById('notification-end')?.value,weekdays:document.getElementById('notification-weekdays')?.checked}};})()");
+          check('18-12 the banner switch and the quiet hours are saved where the convenience notices read them, and the old settings shows the same',n1.saved?.banners===false&&n1.saved?.start==='23:30'&&n1.saved?.end==='07:00'&&n1.saved?.weekdays===true&&n1.live==='저장했습니다. 조용한 시간을 켜면 이 시각에 배너를 띄우지 않습니다.'&&n1.grpHidden&&n1.focus&&n1.old.banners===false&&n1.old.start==='23:30'&&n1.old.end==='07:00'&&n1.old.weekdays===true,n1);
+          await sact('notice','rest','30');await wait(400);
+          const r1={live:await slive('notice'),mid:await sval('notice','mid'),muted:await w.js("(JSON.parse(localStorage.getItem('synk-platform-notifications-v1'))||{}).mutedUntil||0")};
+          check('18-12 「30분」 rests the banners and says until when',/^\d\d:\d\d까지 배너를 띄우지 않습니다\.$/.test(r1.live)&&r1.mid===r1.live.slice(0,-1)&&r1.muted>Date.now()+25*60e3,r1);
+          await sact('notice','rest','0');await wait(400);
+          // 구독 팁 켜고 끄기: 옛 판과 같은 settings.tipsOff로 저장한다
+          const tg0=await w.js("window.__sact('notice','tips')?.getAttribute('aria-checked')||null");
+          await sact('notice','tips');await wait(600);
+          const tg1={checked:await w.js("window.__sact('notice','tips')?.getAttribute('aria-checked')||null"),live:await slive('notice'),saved:(await calls(w)).includes('subs-save:{"settings":{"tipsOff":true}}')};
+          check('18-6 「구독 팁」 in the notice line saves settings.tipsOff',tg0==='true'&&tg1.checked==='false'&&tg1.saved&&tg1.live==='구독 팁을 껐습니다. 구독 줄과 요금 줄에 팁을 띄우지 않습니다.',{tg0,...tg1});
+          // 쓰던 글 되살리기(회원): 본체 다리로 켠다
+          await sopen('draft');await wait(300);await sact('draft','draft');await wait(700);
+          const d1={checked:await w.js("window.__sact('draft','draft')?.getAttribute('aria-checked')||null"),val:await sval('draft','val'),drafts:await w.js('window.__orbFixture.drafts()')};
+          check('18-12 a member switches draft recovery on through the bridge',(await calls(w)).includes('drafts-set:true')&&d1.checked==='true'&&d1.val==='켜짐'&&d1.drafts.enabled===true,d1);
+          // 문제 알리기용 정보 복사: 버전과 연결 상태만 넘기고, 맨 아래 줄이 그렇게 말한다
+          await w.js("(()=>{const b=document.querySelector('#portal-entry [data-room=settings] .read [data-room-act]');b.focus();b.click();return true;})()");await wait(500);
+          const g1={foot:await stext('[data-aside-foot]'),diag:await w.js('window.__orbFixture.diag()')};
+          const diagText=JSON.stringify(g1.diag||{});
+          check('18-12 the problem report copies only versions and connection state, and the bottom line says so',(await calls(w)).includes('diag-copy')&&g1.foot==='버전과 연결 상태만 복사했습니다. 이름, 글, 파일 경로는 넣지 않았습니다.'&&!!g1.diag&&g1.diag.view==='settings'&&!/example\.com|합성 회원|20000000-/.test(diagText),g1);
+          // Esc는 펼친 줄을 먼저 접고 방을 닫는다. 구독 팁을 껐으므로 구독 줄에 팁이 없다
+          for(let i=0;i<4&&!(await w.js("document.querySelector('#portal-entry [data-room=settings]').hidden"));i++){await key(w,'Escape');await wait(300);}
+          const e1=await w.js(`(()=>{const b=document.querySelector(${JSON.stringify(SUB)});return {settings:document.querySelector('#portal-entry [data-room=settings]').hidden,solio:!document.querySelector('#portal-entry [data-room=solio]').hidden,tip:!!b?.nextElementSibling?.querySelector('.more-tip'),mode:document.documentElement.dataset.orbClient};})()`);
+          check('18-12 Esc closes the settings room back to Solio, and with 구독 팁 off the subscription row has no tip',e1.settings&&e1.solio&&!e1.tip&&e1.mode==='app',e1);
+          w.win.destroy();
+        }
         if(only('4'))for(const [dest,name,say] of [['/','workspace','Workspace를 열었습니다.'],['/pulse-app/','pulse','PULSE를 열었습니다.']]){
           const w=await open();await boot(w,{assignment:{status:'resolved',destinations:[dest],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
           const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});const c=await calls(w);
@@ -893,6 +1009,16 @@ if(!process.versions.electron){
           const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});
           check('12 QA guest path reaches Solio with the guest line',r.ok&&(await text(w,'[data-say]'))==='로그인하면 구독별 남은 양이 여기에 보입니다.',{...r.state,say:await text(w,'[data-say]')});await capture(w,'qa-guest');
           await click(w,'.here-orb');await until(w,s=>s.fan);check('12 the guest fan has only 「설정」',JSON.stringify(await w.js("[...document.querySelectorAll('.fan-foot button')].map(b=>b.textContent)"))==='["설정"]');await key(w,'Escape');await until(w,s=>!s.fan);await captureSizes(w,'guest-room');
+          // 손님도 설정 방에 온다. 쓰던 글 되살리기만 잠기고, 구독 팁 켜고 끄기는 없다(2단계 둘째 조각 설계 6절)
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await w.js("document.querySelector('.fan [data-foot=settings]').focus()");await click(w,'.fan [data-foot="settings"]');await wait(800);
+          const gq="(k=>[...document.querySelectorAll('#portal-entry [data-room=settings] button.row[data-key]')].find(b=>b.dataset.key===k))";
+          const gs=await w.js(`(()=>{const r=document.querySelector('#portal-entry [data-room=settings]'),q=${gq};const d=q('draft')?.nextElementSibling?.querySelector('[data-room-act=draft]');return {shown:!!r&&!r.hidden,rows:[...r.querySelectorAll('button.row[data-key]')].map(b=>b.dataset.key),draftLocked:d?.getAttribute('aria-disabled')==='true',tips:!!q('notice')?.nextElementSibling?.querySelector('[data-room-act=tips]')};})()`);
+          check('12 a guest opens the settings room; only draft recovery is locked and there is no tip switch',gs.shown&&JSON.stringify(gs.rows)==='["update","start","key","view","notice","draft"]'&&gs.draftLocked&&!gs.tips,gs);
+          await w.js(`(()=>{const b=${gq}('draft');b.click();return true;})()`);await wait(400);
+          await w.js(`(()=>{const d=${gq}('draft').nextElementSibling.querySelector('[data-room-act=draft]');d.focus();d.click();return true;})()`);await wait(400);
+          check('12 the locked draft switch sends nothing for a guest',!(await calls(w)).some(c=>c.startsWith('drafts-set')));
+          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js(`${gq}('draft').scrollIntoView({block:'start'})`);await wait(150);await capture(w,`guest-settings-${W}`);}
+          w.win.setContentSize(1440,900);await wait(300);
           w.win.destroy();
         }
         // 11. 움직임 줄이기

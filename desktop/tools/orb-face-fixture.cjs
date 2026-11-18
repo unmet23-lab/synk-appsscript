@@ -32,6 +32,17 @@ const accountOps={
   requestDeletion:()=>{const due=new Date(Date.now()+7*86400e3).toISOString();account.account.status='deletion-requested';account.learning={enabled:false,revision:account.learning.revision+1};account.dataRequests=[{kind:'delete',status:'pending',request_id:'qa-delete',due_at:due}];return {ok:true,request:{due_at:due}};},
   cancelDeletion:()=>{account.account.status='active';account.dataRequests=[];return {ok:true};},
 };
+// 설정 방(2단계 둘째 조각 6절)이 부르는 PC 다리. 본체(desktop-preferences.cjs, draft-recovery-ipc.cjs, 업데이트)의 답 모양만 흉내 내고 부른 것을 적는다.
+// 실제로 자동 시작을 등록하거나, 단축키를 잡거나, 새 판을 받거나, 설치 파일을 열지 않는다. 시험이 __orbFixture.setUpdate로 업데이트 판을 바꿔 알린다
+let prefs={closeToTray:true,launchAtLogin:false,startHidden:false,globalShortcut:'',zoomFactor:1},drafts={enabled:false},diag=null;
+let update={ok:true,state:'current',currentVersion:'0.4.97',latestVersion:null,progress:0,code:null,automatic:false};
+const prefListeners=new Set(),draftListeners=new Set(),updateListeners=new Set();
+const tell=(set,value)=>{for(const fn of set){try{fn(value);}catch{}}};
+const prefSnap=()=>({ok:true,preferences:{...prefs},capabilities:{launchAtLogin:true,globalShortcut:true,tray:true,encryptedDrafts:true}});
+// 본체처럼 다른 앱이 잡은 단축키는 거절한다. 시험에서는 Ctrl+Alt+K를 그런 단축키로 친다
+const prefUpdate=patch=>{if(patch?.globalShortcut==='Ctrl+Alt+K')return {ok:false,code:'SHORTCUT_UNAVAILABLE'};prefs={...prefs,...patch};const snap=prefSnap();setTimeout(()=>tell(prefListeners,snap),0);return snap;};
+const draftStatus=owner=>({ok:true,available:true,enabled:Boolean(owner)&&auth.signedIn===true&&drafts.enabled});
+const setUpdate=patch=>{update={...update,...patch};tell(updateListeners,{...update});return {...update};};
 let release=null;let restoring=new Promise(resolve=>{release=resolve;});
 let configured=null;const ready=new Promise(resolve=>{configured=resolve;});
 const emit=()=>{for(const fn of listeners){try{fn(auth);}catch{}}};
@@ -61,6 +72,21 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   handoffCompanyInviteLink:async req=>{calls.push('invite-link');return invite(req,'/');},
   openPulseAppInvite:async req=>{calls.push('invite-pulse');return invite(req,'/pulse-app/');},
   authSignUpUrl:undefined,
+  getDesktopPreferences:async()=>{calls.push('prefs-get');return prefSnap();},
+  updateDesktopPreferences:async patch=>{calls.push('prefs-update:'+JSON.stringify(patch));return prefUpdate(patch);},
+  onDesktopPreferences:fn=>{prefListeners.add(fn);return ()=>prefListeners.delete(fn);},
+  draftRecoveryStatus:async owner=>{calls.push('drafts-status');return draftStatus(owner);},
+  setDraftRecoveryEnabled:async(value,owner)=>{calls.push('drafts-set:'+value);if(!owner||auth.signedIn!==true)return {ok:false,available:true,code:'AUTH_REQUIRED'};drafts={enabled:value===true};setTimeout(()=>tell(draftListeners,{}),0);return draftStatus(owner);},
+  onDraftRecoveryChanged:fn=>{draftListeners.add(fn);return ()=>draftListeners.delete(fn);},
+  draftRecoveryLoad:async()=>({ok:true,enabled:drafts.enabled,draft:null}),
+  draftRecoverySave:async()=>({ok:true}),
+  draftRecoveryClear:async()=>({ok:true}),
+  updateStatus:async()=>{calls.push('update-status');return {...update};},
+  checkForUpdate:async()=>{calls.push('update-check');setTimeout(()=>setUpdate({state:'current',code:null}),300);return setUpdate({state:'checking',code:null});},
+  downloadUpdate:async()=>{calls.push('update-download');return setUpdate({state:'downloading',progress:35});},
+  installUpdate:async()=>{calls.push('update-install');return setUpdate({state:'opening'});},
+  onUpdateChanged:fn=>{updateListeners.add(fn);return ()=>updateListeners.delete(fn);},
+  copyPlatformDiagnostics:async summary=>{calls.push('diag-copy');diag=summary;return {ok:true};},
   setTrayShortcuts:async items=>{tray=items;return {ok:true};},
   // 본체(main.cjs subscriptionCall)처럼 계정이 signed-in이 아니면 구독 호출을 거절한다(Fable 다시 검수 -c)
   subscriptions:Object.freeze({
@@ -106,6 +132,11 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   subs:()=>JSON.parse(JSON.stringify(subs)),
   // 방문자 분석 요약의 답을 바꾼다(다음 읽기부터)
   setVisits:value=>{visits=value||null;},
+  // 설정 방: 업데이트 판을 바꿔 알리고, 데스크톱 설정 · 쓰던 글 되살리기 · 복사한 진단 정보를 읽는다
+  setUpdate:value=>setUpdate(value||{}),
+  prefs:()=>({...prefs}),
+  drafts:()=>({...drafts}),
+  diag:()=>(diag?JSON.parse(JSON.stringify(diag)):null),
   calls:()=>[...calls],
   tray:()=>JSON.parse(JSON.stringify(tray)),
 }));

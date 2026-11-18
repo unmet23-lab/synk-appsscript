@@ -266,7 +266,7 @@ test('cancelling while the sign-in is being verified adds no row',async()=>{
   f.service.submitCode(started.id,'abcDEF123456#state');
   await new Promise(r=>setImmediate(r));
   // 로그인 프로그램은 끝났고, 본체가 계정을 확인하는 중이다.
-  assert.equal(f.changes.at(-1).login.message,'연결을 확인하고 있어요.');
+  assert.equal(f.changes.at(-1).login.message,'연결을 확인하고 있습니다.');
   assert.deepEqual(f.service.cancelLogin(started.id),{ok:true});
   for(let i=0;i<20;i++)await new Promise(r=>setImmediate(r));
   const snap=await f.service.snapshot();
@@ -316,7 +316,7 @@ test('a sign-in approved in the browser with a different account is reported, no
   f.service.submitCode(started.id,'abcDEF123456#state');
   for(let i=0;i<40&&!['done','error'].includes(f.changes.at(-1)?.login?.stage);i++)await new Promise(r=>setTimeout(r,5));
   const last=f.changes.at(-1).login;
-  assert.equal(last.stage,'error');assert.match(last.message,/other@example.com 대신 브라우저에 로그인돼 있던 member@example.com/);
+  assert.equal(last.stage,'error');assert.match(last.message,/other@example.com 대신 브라우저에 로그인되어 있던 member@example.com/);
   const snap=await f.service.snapshot();assert.equal(snap.rows.filter(r=>r.email==='member@example.com').length,1);
 });
 
@@ -356,7 +356,7 @@ test('a Claude login keeps its official time limit, says plainly when it ends, a
   f.state.claudeUsageOverride='Failed to authenticate: this login reached its time limit and cannot be renewed. Run `claude auth login` to sign in again, or use `claude setup-token` and set CLAUDE_CODE_OAUTH_TOKEN for unattended jobs\n';
   f.state.claudeAuthOverride=JSON.stringify({loggedIn:false,authMethod:'none',loginExpiresAt:null});
   rows=(await f.service.check()).rows.filter(r=>r.service==='claude');
-  assert.equal(rows[0].state,'needs-login');assert.match(rows[0].stateMessage,/^Claude 로그인 기한이 끝났어요\./);
+  assert.equal(rows[0].state,'needs-login');assert.match(rows[0].stateMessage,/^Claude 로그인 기한이 끝났습니다\./);
   assert.equal(rows[0].loginUntil,Date.parse(second));
 });
 
@@ -453,7 +453,7 @@ test('Gemini rows split by the signed-in account: an old row takes the first mai
   const family=geminiRows(snap).find(r=>r.email==='unmet25@example.com');
   assert.equal(family.source,'auto');assert.equal(family.state,'ok');assert.equal(family.live.weekly.usedPercent,5);assert.match(family.id,/^r-[a-z0-9]{8}$/);
   main=snap.rows.find(r=>r.id==='r-gem00001');
-  assert.equal(main.state,'elsewhere');assert.equal(main.stateMessage,'지금 이 PC의 Antigravity에는 다른 계정이 로그인돼 있어요 — 마지막으로 읽은 값이에요.');
+  assert.equal(main.state,'elsewhere');assert.equal(main.stateMessage,'지금 이 PC의 Antigravity에는 다른 계정이 로그인되어 있습니다.');
   assert.equal(main.live.weekly.usedPercent,82);assert.equal(main.email,'77yuhbs@example.com');
   // 읽을 수 없는 게 맞는 줄은 「못 읽음」으로 세지 않는다(제목 아래 「n개 못 읽음」이 늘 뜨지 않게).
   assert.deepEqual([snap.check.total,snap.check.ok],[2,2]);
@@ -492,19 +492,19 @@ test('when the account mail cannot be read, Gemini numbers go nowhere they might
   two.state.geminiEmail=null;
   snap=await two.service.check();
   assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.live.weekly.usedPercent]),[['77yuhbs@example.com','error',82],['unmet25@example.com','elsewhere',5]]);
-  assert.match(snap.rows[0].stateMessage,/어느 계정이 로그인돼 있는지 확인하지 못해 이번 값은 넣지 않았어요/);
+  assert.match(snap.rows[0].stateMessage,/어느 계정이 로그인되어 있는지 확인하지 못해 이번 값은 넣지 않았습니다/);
   // agy 로그인이 풀리면 지금 계정 줄만 「다시 로그인」이고(다시 확인한 뒤), 다른 계정 줄은 마지막 값 그대로 두되
   // 「다른 계정이 로그인돼 있어요」가 아니라 「로그인된 계정이 없어요」로 알린다(Fable 10-22 P2-1).
   two.state.geminiLoggedIn=false;
   snap=await two.service.check();
   assert.deepEqual(geminiRows(snap).map(r=>[r.state,r.live.weekly.usedPercent,r.awayReason]),[['needs-login',82,null],['elsewhere',5,'none']]);
-  assert.equal(snap.rows[1].stateMessage,'지금 이 PC의 Antigravity에 로그인된 계정이 없어요 — 마지막으로 읽은 값이에요.');
+  assert.equal(snap.rows[1].stateMessage,'지금 이 PC의 Antigravity에 로그인된 계정이 없습니다.');
   assert.deepEqual(two.state.reachCalls,['https://oauth2.googleapis.com/','https://oauth2.googleapis.com/']);
   // 둘째 계정으로 로그인하면 그 줄이 지금 계정이 되고, 앞 계정 줄은 「다른 계정이 로그인돼 있음」이다.
   two.state.geminiLoggedIn=true;two.state.geminiEmail='unmet25@example.com';two.state.geminiUsage=agyUsage(0.9);
   snap=await two.service.check();
   assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.awayReason,r.live.weekly.usedPercent]),[['77yuhbs@example.com','elsewhere',null,82],['unmet25@example.com','ok',null,10]]);
-  assert.equal(snap.rows[0].stateMessage,'지금 이 PC의 Antigravity에는 다른 계정이 로그인돼 있어요 — 마지막으로 읽은 값이에요.');
+  assert.equal(snap.rows[0].stateMessage,'지금 이 PC의 Antigravity에는 다른 계정이 로그인되어 있습니다.');
   // `--log-file`을 모르는 옛 agy는 그 인자 없이 한 번 더 읽는다(메일은 모른 채, 줄이 메일 없는 하나뿐이라 넣는다).
   const old=fakeSystem();
   writeBoard(old,[{id:'r-gem00001',service:'gemini',source:'auto',label:'Gemini',kind:'weekly',state:'ok'}]);
@@ -535,7 +535,7 @@ test('connecting Gemini reports the account mail, and switching accounts waits u
   f.state.geminiEmail='unmet25@example.com';f.state.geminiUsage=agyUsage(0.95);
   t.mock.timers.tick(4000);
   for(let i=0;i<80&&f.changes.at(-1)?.login?.stage!=='done';i++)await new Promise(r=>setImmediate(r));
-  assert.equal(f.changes.at(-1).login.stage,'done');assert.match(f.changes.at(-1).login.message,/unmet25@example\.com 계정을 연결했어요/);
+  assert.equal(f.changes.at(-1).login.stage,'done');assert.match(f.changes.at(-1).login.message,/unmet25@example\.com 계정을 연결했습니다/);
   for(let i=0;i<80&&(await f.service.snapshot()).checking;i++)await new Promise(r=>setImmediate(r));
   snap=await f.service.snapshot();
   assert.deepEqual(geminiRows(snap).map(r=>[r.email,r.state,r.live.weekly.usedPercent]),[['77yuhbs@example.com','elsewhere',36],['unmet25@example.com','ok',5]]);
@@ -543,7 +543,7 @@ test('connecting Gemini reports the account mail, and switching accounts waits u
   const again=await f.service.startLogin('gemini');assert.equal(again.ok,true);
   await pump();f.state.consoles.at(-1).close();
   for(let i=0;i<80&&f.changes.at(-1)?.login?.stage==='console';i++)await new Promise(r=>setImmediate(r));
-  assert.equal(f.changes.at(-1).login.stage,'done');assert.match(f.changes.at(-1).login.message,/unmet25@example\.com 계정을 연결했어요/);
+  assert.equal(f.changes.at(-1).login.stage,'done');assert.match(f.changes.at(-1).login.message,/unmet25@example\.com 계정을 연결했습니다/);
   await settleChecks(f.service);f.service.dispose();
 });
 
@@ -570,7 +570,7 @@ test('switching Gemini also finishes after /logout → /login without a mail, an
   assert.equal((await g.service.startLogin('gemini')).ok,true);
   await pump();t.mock.timers.tick(10*60*1000);
   for(let i=0;i<400&&g.changes.at(-1)?.login?.stage!=='done';i++)await new Promise(r=>setImmediate(r));
-  assert.equal(g.changes.at(-1).login.stage,'done');assert.match(g.changes.at(-1).login.message,/77yuhbs@example\.com 계정을 연결했어요/);
+  assert.equal(g.changes.at(-1).login.stage,'done');assert.match(g.changes.at(-1).login.message,/77yuhbs@example\.com 계정을 연결했습니다/);
   assert.deepEqual(g.state.killed,[]);
   await settleChecks(g.service);g.service.dispose();
 });
@@ -781,7 +781,7 @@ test('Codex without any limit window is a read failure, not a silent ok',async()
   const f=fakeSystem();f.state.codexEmptyLimits=true;
   assert.equal((await f.service.useExisting('gpt')).ok,true);
   const snap=await f.service.snapshot(),row=snap.rows.find(r=>r.service==='gpt');
-  assert.equal(row.state,'error');assert.match(row.stateMessage,/사용 한도를 알려 주지 않았어요/);
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/사용 한도를 알려 주지 않았습니다/);
   assert.deepEqual([snap.check.total,snap.check.ok],[1,0]);
 });
 
@@ -873,7 +873,7 @@ test('Claude saying its token expired while the internet is down is a connection
   await f.service.useExisting('claude');
   f.state.claudeExpiredTimes=1;f.state.online=false;
   let row=(await f.service.check()).rows.find(r=>r.service==='claude');
-  assert.equal(row.state,'error');assert.match(row.stateMessage,/로그인이 풀린 것은 아닐 수 있어요/);
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/로그인이 풀린 것은 아닐 수 있습니다/);
   assert.deepEqual(f.state.reachCalls,['https://api.anthropic.com/']);
   f.state.online=true;
   row=(await f.service.check()).rows.find(r=>r.service==='claude');
@@ -901,23 +901,23 @@ test('a Claude login that is really gone is told apart from a usage screen that 
   // auth status를 못 읽었으면 로그인이 풀렸다고 단정하지 않는다.
   f.state.claudeAuthOverride='garbled';
   row=(await f.service.check()).rows.find(r=>r.service==='claude');
-  assert.equal(row.state,'error');assert.match(row.stateMessage,/사용량 화면을 읽지 못했어요/);
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/사용량 화면을 읽지 못했습니다/);
   // 로그인돼 있는데 구독이 없으면(API 키 로그인) 그렇게 알린다.
   f.state.claudeAuthOverride=JSON.stringify({loggedIn:true,authMethod:'apiKey',subscriptionType:null});
   row=(await f.service.check()).rows.find(r=>r.service==='claude');
-  assert.equal(row.state,'error');assert.match(row.stateMessage,/구독 한도가 없어요/);
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/구독 한도가 없습니다/);
   // 구독 계정이 숫자만 못 읽혔으면(첫 줄 「You are currently using your subscription …」만 옴) 구독이 없다고 하지 않는다(10-29 Max 계정 셋).
   f.state.claudeUsageOverride='You are currently using your subscription to power your Claude Code usage\n\nCould not load usage data.\n';
   f.state.claudeAuthOverride=JSON.stringify({loggedIn:true,email:f.state.claudeEmail,subscriptionType:'max'});
   row=(await f.service.check()).rows.find(r=>r.service==='claude');
-  assert.equal(row.state,'error');assert.match(row.stateMessage,/사용량 화면을 읽지 못했어요/);
+  assert.equal(row.state,'error');assert.match(row.stateMessage,/사용량 화면을 읽지 못했습니다/);
   // auth status를 못 읽었어도 그 첫 줄이면 구독이 있는 것이다. 다른 글이 구독·요금제를 말하면 예전처럼 구독 없음으로 본다.
   f.state.claudeAuthOverride='garbled';
   row=(await f.service.check()).rows.find(r=>r.service==='claude');
-  assert.match(row.stateMessage,/사용량 화면을 읽지 못했어요/);
+  assert.match(row.stateMessage,/사용량 화면을 읽지 못했습니다/);
   f.state.claudeUsageOverride='/usage is only available for subscription plans\n';
   row=(await f.service.check()).rows.find(r=>r.service==='claude');
-  assert.match(row.stateMessage,/구독 한도가 없어요/);
+  assert.match(row.stateMessage,/구독 한도가 없습니다/);
   // 못 읽었을 때 인터넷이 닿지 않으면 까닭을 짐작하지 않고 연결을 말한다.
   f.state.online=false;f.state.reachCalls.length=0;
   row=(await f.service.check()).rows.find(r=>r.service==='claude');

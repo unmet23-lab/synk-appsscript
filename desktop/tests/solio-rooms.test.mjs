@@ -2,7 +2,9 @@
 // 요금 줄, 계정 관리 방(계정 줄 · 사실 줄 · 고치는 칸 · 계정 더하기 · 막혔을 때), 입력 검사, 화면 글의 말투를 본다. 메일은 모두 example.com이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CODE_SAY, DEFAULT_SAY, codeSay, costRow, manageRoom, addItems, manageOpenKey, checkBillDay, parsePass, parseApi, parseFlow, parseCost, parseManual, checkCode, checkKey, checkEmail, checkRate, readWord, MANAGE_HELP, ADD_SERVICES, tokRow, TOK_SHOWN, accountRoom, accountSay, checkName, ACCOUNT_SAY, ACCOUNT_NETWORK_SAY, ACCOUNT_DEFAULT_SAY, SESSIONS_SHOWN } from '../renderer/solio-rooms.mjs';
+import { createRequire } from 'node:module';
+import { CODE_SAY, DEFAULT_SAY, codeSay, costRow, manageRoom, addItems, manageOpenKey, checkBillDay, parsePass, parseApi, parseFlow, parseCost, parseManual, checkCode, checkKey, checkEmail, checkRate, readWord, MANAGE_HELP, ADD_SERVICES, tokRow, TOK_SHOWN, accountRoom, accountSay, checkName, ACCOUNT_SAY, ACCOUNT_NETWORK_SAY, ACCOUNT_DEFAULT_SAY, SESSIONS_SHOWN,
+  settingsRoom, updateWords, updateSay, updateOf, checkShortcut, checkQuiet, desktopSay, ZOOMS, DIAG_SAY, DRAFT_SAY, SHORTCUT_SAY, tipWords, tipDoneWords, subTips } from '../renderer/solio-rooms.mjs';
 import { tokenDay } from '../renderer/subscriptions-tokens.mjs';
 
 const NOW = new Date(2026, 10, 18, 10, 0).getTime(), D = 864e5, H = 3600e3;
@@ -601,6 +603,172 @@ test('account errors take the 합니다 voice, and the name check keeps the old 
   assert.equal(checkName('  새 이름 ').value, '새 이름');
 });
 
+/* ── 설정 방(설계 6절, 설계 검토 D6 · D7 · D9 · D10)과 구독 줄 안쪽의 팁(D7) ── */
+const deskSnap = (prefs = {}, caps = {}, extra = {}) => ({ ok: true, preferences: { closeToTray: true, launchAtLogin: false, startHidden: false, globalShortcut: '', zoomFactor: 1, ...prefs }, capabilities: { launchAtLogin: true, globalShortcut: true, tray: true, encryptedDrafts: true, ...caps }, ...extra });
+const noticeVal = (extra = {}) => ({ banners: true, mutedUntil: 0, schedule: false, start: '22:00', end: '08:00', weekdays: false, ...extra });
+const WIN = { platform: 'win32', version: '0.4.97', mode: 'development' };
+const setSt = (extra = {}) => ({ notes: new Map(), grps: new Set(), ...extra });
+const setRoom = (s = {}, extra = {}) => settingsRoom({ update: { state: 'current', currentVersion: '0.4.97' }, desktop: deskSnap(), drafts: { ok: true, available: true, enabled: true }, notices: noticeVal(), env: WIN, member: true, tipsOff: false, ...s }, setSt(extra), NOW);
+const setRow = (room, key) => room.rows.find(r => r.key === key);
+const togs = row => row.more.filter(x => x[0] === 'tog');
+
+test('settings room: six rows, the first sentence from the update state, how it starts, and the version line at the bottom (설계 6.3)', () => {
+  const r = setRoom();
+  assert.deepEqual(r.rows.map(x => x.key), ['update', 'start', 'key', 'view', 'notice', 'draft']);
+  assert.deepEqual([r.say, r.then, r.foot], ['이 PC의 SYNK는 최신 판입니다.', '컴퓨터를 켤 때 함께 켜지 않습니다.', 'SYNK Platform 0.4.97 · 시험판 · Windows']);
+  assert.deepEqual(r.act, ['문제 알리기용 정보 복사', 'diag-copy', '']);
+  assert.equal(setRoom({ desktop: deskSnap({ launchAtLogin: true, startHidden: true }) }).then, '컴퓨터를 켜면 창 없이 함께 켜집니다.');
+  assert.equal(setRoom({ desktop: deskSnap({ launchAtLogin: true }) }).then, '컴퓨터를 켜면 창과 함께 켜집니다.');
+  assert.equal(setRoom({ desktop: deskSnap({ launchAtLogin: true, startHidden: true }, { tray: false }) }).then, '컴퓨터를 켜면 창과 함께 켜집니다.', 'without the tray it cannot start hidden');
+  assert.equal(setRoom({ desktop: deskSnap({}, { launchAtLogin: false }) }).then, '', 'a build that cannot start at sign-in says nothing about it');
+  assert.equal(setRoom({ env: { ...WIN, mode: 'release' } }).foot, 'SYNK Platform 0.4.97 · Windows');
+  assert.equal(setRoom({}, { roomNote: '버전과 연결 상태만 복사했습니다. 이름, 글, 파일 경로는 넣지 않았습니다.' }).foot, '버전과 연결 상태만 복사했습니다. 이름, 글, 파일 경로는 넣지 않았습니다.');
+  assert.equal(setRoom({}, { busy: 'settings:diag-copy' }).act[2], 'off');
+  assert.ok(!texts(r).some(t => /움직임/.test(t)), 'motion reduction is not offered (설계 검토 D6)');
+});
+
+test('settings room: update words keep the old rules for nine states, automatic and manual, Windows and Mac, and four error codes (설계 검토 D10)', () => {
+  const v = { latestVersion: '0.4.98' };
+  assert.deepEqual(['current', 'idle', 'checking', 'available', 'downloading', 'ready', 'opening', 'error', 'disabled'].map(state => updateSay({ state, ...v })), [
+    '이 PC의 SYNK는 최신 판입니다.', '이 PC의 SYNK는 쓰는 동안 새 판을 저절로 확인합니다.', '새 판이 있는지 보고 있습니다.', '새 판(v0.4.98)이 나왔습니다.', '새 판을 받고 있습니다.',
+    '새 판이 준비됐습니다.', '업데이트를 준비하고 있습니다.', '새 판을 받지 못했습니다.', '여기서는 새 판을 받을 수 없습니다.']);
+  assert.equal(updateWords({ state: 'downloading', automatic: true, ...v }, 'win32'), '새 판(v0.4.98)을 받고 있습니다. 다 받으면 바꾼 뒤 다시 엽니다. 받는 동안에도 지금 앱을 쓸 수 있습니다.');
+  assert.equal(updateWords({ state: 'downloading', automatic: true, ...v }, 'darwin'), '새 판(v0.4.98) 설치 파일을 받고 있습니다. 받는 동안에도 지금 앱을 쓸 수 있습니다.', 'Mac never installs by itself');
+  assert.match(updateWords({ state: 'ready', automatic: true, ...v }, 'win32'), /^새 판\(v0\.4\.98\)이 준비됐습니다\. 쓰던 글이 있는지 확인한 뒤/);
+  assert.match(updateWords({ state: 'ready', automatic: true, code: 'UPDATE_EXIT_CANCELLED' }, 'win32'), /^앱 끄기를 취소했습니다\./);
+  assert.match(updateWords({ state: 'ready', code: 'UPDATE_MANUAL_INSTALL' }, 'darwin'), /Applications 폴더로 옮겨 주세요\.$/);
+  assert.match(updateWords({ state: 'ready', ...v }, 'win32'), /앱을 끄고 설치 파일을 엽니다\.$/);
+  assert.match(updateWords({ state: 'error', code: 'UPDATE_STORAGE_FAILED' }, 'win32'), /^설치 파일을 저장하지 못했습니다\./);
+  assert.match(updateWords({ state: 'error', code: 'UPDATE_SAME_VERSION' }, 'win32'), /^지금 판과 올라온 설치 파일이 맞지 않습니다\./);
+  assert.match(updateWords({ state: 'error', code: 'UPDATE_HASH_MISMATCH' }, 'win32'), /^받은 업데이트 파일이 온전하지 않습니다\./);
+  assert.match(updateWords({ state: 'error', code: 'INSTALL_OPEN_FAILED' }, 'darwin'), /「설치 파일 열기」를 다시 눌러 주세요\./);
+  assert.match(updateWords({ state: 'error', code: 'UPDATE_NETWORK_FAILED' }, 'win32'), /^새 판을 받지 못했습니다\. 인터넷 연결을 확인한 뒤/);
+  assert.match(updateWords({ state: 'idle' }, 'darwin'), /받은 설치 파일을 열어 업데이트해 주세요\.$/);
+  const acts = (u, env = WIN) => setRow(setRoom({ update: u, env }), 'update').more.filter(x => x[0] === 'acts').flatMap(x => x[1]).map(a => [a[0], a[1], a[3]]);
+  assert.deepEqual(acts({ state: 'available', ...v }), [['지금 확인', 'update-check', ''], ['받기', 'update-download', '']]);
+  assert.deepEqual(acts({ state: 'ready', ...v }), [['지금 확인', 'update-check', ''], ['앱 끄고 설치 파일 열기', 'update-install', '']]);
+  assert.deepEqual(acts({ state: 'ready', ...v }, { ...WIN, platform: 'darwin' }), [['지금 확인', 'update-check', ''], ['설치 파일 열기', 'update-install', '']]);
+  assert.deepEqual(acts({ state: 'ready', automatic: true, ...v }), [['지금 확인', 'update-check', 'off']], 'an automatic install shows no install button and waits');
+  assert.deepEqual(acts({ state: 'disabled' }), []);
+  const down = setRow(setRoom({ update: { state: 'downloading', progress: 41.6, ...v } }), 'update');
+  assert.deepEqual([down.mid, down.val, down.when], ['새 판을 받고 있습니다', '42%', '새 판 0.4.98']);
+  assert.equal(setRow(setRoom(), 'update').when, '', 'the check time is not in the main snapshot, so it is not said (설계 15절)');
+  assert.equal(setRoom({ update: null }).say, '여기서는 새 판을 받을 수 없습니다.');
+  assert.deepEqual([updateOf({ status: { state: 'current' } })?.state, updateOf({ state: 'nope' }), updateOf(null)], ['current', null, null]);
+  assert.ok(!texts(setRoom({ update: { state: 'downloading', automatic: true, ...v } })).some(t => /깎/.test(t)), 'the orb carving scene does not exist yet');
+});
+
+test('settings room: rows that cannot change are left out, and 트레이로 시작 waits for 자동 시작 (편의 79행)', () => {
+  const start = setRow(setRoom(), 'start');
+  assert.deepEqual(togs(start).map(t => [t[1], t[3], t[4], t[5], t[6]]), [['자동 시작', false, 'pref', '', 'launchAtLogin'], ['트레이로 시작', false, 'pref', 'off', 'startHidden'], ['트레이에 남기기', true, 'pref', '', 'closeToTray']]);
+  assert.match(togs(start)[1][2], /자동 시작을 켜야 고를 수 있습니다$/);
+  assert.equal(start.mid, '자동 시작 안 함 · 닫아도 트레이에 남음');
+  assert.equal(togs(setRow(setRoom({ desktop: deskSnap({ launchAtLogin: true }) }), 'start'))[1][5], '', 'once 자동 시작 is on 트레이로 시작 can be pressed');
+  assert.deepEqual(togs(setRow(setRoom({ desktop: deskSnap({}, { launchAtLogin: false }) }), 'start')).map(t => t[6]), ['closeToTray']);
+  assert.equal(setRow(setRoom({ desktop: deskSnap({}, { launchAtLogin: false, tray: false }) }), 'start'), undefined);
+  assert.equal(setRow(setRoom({ desktop: deskSnap({}, { globalShortcut: false }) }), 'key'), undefined);
+  assert.equal(setRow(setRoom({ env: { ...WIN, platform: 'darwin' } }), 'key'), undefined, 'the anywhere shortcut is Windows only');
+  assert.deepEqual(setRoom({ desktop: null }).rows.map(r => r.key), ['update', 'notice', 'draft']);
+  assert.deepEqual(setRoom({ desktop: null, notices: null, drafts: null }).rows.map(r => r.key), ['update']);
+  assert.equal(togs(setRow(setRoom({}, { busy: 'start:pref' }), 'start'))[0][5], 'off', 'a change on its way blocks the next one');
+});
+
+test('settings room: the anywhere shortcut says what it really does, and the shortcut check keeps the main rule (설계 검토 D9)', () => {
+  const on = setRow(setRoom({ desktop: deskSnap({ globalShortcut: 'Ctrl+Alt+S' }) }), 'key');
+  assert.deepEqual([on.nm, on.mid, on.val, on.unread], ['어디서나 열기', '어느 화면에서든 이 단축키로 SYNK 창을 앞으로 띄웁니다', 'Ctrl+Alt+S', false]);
+  assert.deepEqual(on.more[0], ['fld', '단축키', 'Ctrl+Alt+S', '예: Ctrl+Alt+S', 'shortcut', 'text']);
+  const off = setRow(setRoom(), 'key');
+  assert.deepEqual([off.mid, off.val, off.unread], ['단축키를 정하지 않았습니다', '', true]);
+  assert.equal(actsOf(off.more).find(a => a[1] === 'shortcut-off')[3], 'off', 'nothing to switch off');
+  assert.ok(!texts(on).some(t => /빠른 검색/.test(t)), 'the shortcut does not open the quick search (설계 검토 D9)');
+  const taken = setRow(setRoom({ desktop: deskSnap({ globalShortcut: 'Ctrl+Alt+S' }, {}, { warning: 'SHORTCUT_UNAVAILABLE' }) }), 'key');
+  assert.ok(texts(taken).includes('저장한 단축키를 다른 앱이 쓰고 있어 지금은 듣지 않습니다. 다른 조합을 골라 주세요.'));
+  assert.equal(checkShortcut('').say, '단축키를 넣어 주세요.');
+  assert.equal(checkShortcut('ctrl + alt + s').value, 'Ctrl+Alt+S');
+  assert.equal(checkShortcut('Ctrl+Alt+space').value, 'Ctrl+Alt+Space');
+  assert.equal(checkShortcut('ctrl+shift+f12').value, 'Ctrl+Shift+F12');
+  for (const bad of ['Shift+A', 'S', 'Ctrl+Alt+Enter', 'Ctrl+Alt+Shift+Super+S', 'Ctrl+Alt+F25']) assert.equal(checkShortcut(bad).say, '단축키 모양을 알아보지 못했습니다. 예: Ctrl+Alt+S', bad);
+  const { validShortcut } = createRequire(import.meta.url)('../src/desktop-preferences.cjs');
+  for (const good of ['ctrl+alt+s', 'Alt+F4', 'CommandOrControl+Shift+K', 'ctrl+9']) assert.equal(validShortcut(checkShortcut(good).value), true, good + ' is what the main process takes');
+  assert.equal(desktopSay('SHORTCUT_UNAVAILABLE'), '다른 앱이 쓰는 단축키입니다. 다른 조합을 골라 주세요.');
+  assert.equal(desktopSay('INVALID_DESKTOP_PREFERENCES', { globalShortcut: 'x' }), '단축키 모양을 알아보지 못했습니다. 예: Ctrl+Alt+S');
+  assert.equal(desktopSay('STARTUP_UNAVAILABLE', { launchAtLogin: true }), '설정을 적용하지 못했습니다. 잠시 뒤 다시 해 주세요.');
+});
+
+test('settings room: the screen size picks 80 to 150 percent and keeps an odd saved value (설계 검토 D6)', () => {
+  const view = setRow(setRoom({ desktop: deskSnap({ zoomFactor: 1.25 }) }), 'view');
+  assert.equal(view.mid, '크기 125%');
+  const pick = view.more.find(x => x[0] === 'pick');
+  assert.deepEqual([pick[1], pick[2].map(o => o[0]), pick[3], pick[5]], ['화면 크기', ['80%', '90%', '100%', '110%', '125%', '150%'], '1.25', 'zoom']);
+  assert.deepEqual(ZOOMS, [0.8, 0.9, 1, 1.1, 1.25, 1.5]);
+  assert.deepEqual(setRow(setRoom({ desktop: deskSnap({ zoomFactor: 1.2 }) }), 'view').more.find(x => x[0] === 'pick')[2].map(o => o[0]), ['80%', '90%', '100%', '110%', '120%', '125%', '150%']);
+});
+
+test('settings room: notices say what the banner really does, the quiet hours have their own fields, resting says until when, and the tip switch sits in the same line (설계 검토 D7 · D10)', () => {
+  const n = setRow(setRoom(), 'notice');
+  assert.deepEqual(togs(n).map(t => [t[1], t[2], t[3], t[4], t[6]]), [
+    ['알림 배너', '앱 설치 파일이 준비됐거나 실패했을 때 배너를 띄웁니다', true, 'notice', 'banners'],
+    ['조용한 시간', '매일 22:00부터 08:00까지는 배너를 띄우지 않습니다', false, 'notice', 'schedule'],
+    ['구독 팁', '구독 줄과 요금 줄 안쪽에 아끼는 법과 막히지 않는 법을 한 줄씩 알려 드립니다', true, 'tips', undefined]]);
+  assert.equal(n.mid, '배너 켜짐');
+  assert.equal(n.more.find(x => x[0] === 'grp')[3], true, 'the quiet hours fields wait behind 「시각 고치기」');
+  const open = setRow(setRoom({}, { grps: new Set(['notice:quiet']) }), 'notice').more.find(x => x[0] === 'grp');
+  assert.deepEqual([open[3], open[2].filter(x => x[0] === 'fld').map(f => [f[1], f[2], f[4], f[5]])], [false, [['시작', '22:00', 'quietStart', 'time'], ['끝', '08:00', 'quietEnd', 'time']]]);
+  assert.deepEqual(open[2].find(x => x[0] === 'pick').slice(1, 5), ['요일', [['매일', ''], ['월요일부터 금요일만', 'weekdays']], '', 'quietDays']);
+  assert.equal(togs(setRow(setRoom({ notices: noticeVal({ schedule: true, weekdays: true }) }), 'notice'))[1][2], '평일 22:00부터 08:00까지는 배너를 띄우지 않습니다');
+  assert.equal(togs(setRow(setRoom({ notices: noticeVal({ start: '09:00', end: '09:00' }) }), 'notice'))[1][2], '하루 종일 배너를 띄우지 않습니다');
+  assert.equal(setRow(setRoom({ notices: noticeVal({ schedule: true, banners: false }), tipsOff: true }), 'notice').mid, '배너 꺼짐 · 조용한 시간 22:00~08:00 · 구독 팁 꺼짐');
+  const rest = setRow(setRoom({ notices: noticeVal({ mutedUntil: NOW + 30 * 60e3 }) }, { restChoice: '30' }), 'notice');
+  assert.equal(rest.mid, '10:30까지 배너를 띄우지 않습니다');
+  assert.deepEqual(rest.more.find(x => x[1] === '잠시 쉬기').slice(2, 6), [[['30분', '30'], ['1시간', '60'], ['쉬지 않음', '0']], '30', '', 'rest']);
+  assert.equal(setRow(setRoom(), 'notice').more.find(x => x[1] === '잠시 쉬기')[3], '0');
+  assert.ok(!togs(setRow(setRoom({ tipsOff: null }), 'notice')).some(t => t[4] === 'tips'), 'no tip switch without the subscription settings (a guest)');
+  assert.ok(!texts(n).some(t => /새 판이 준비됐을 때/.test(t)), 'the banner is not said to announce a new version (설계 검토 D10)');
+  assert.deepEqual(checkQuiet({ quietStart: '7:05', quietEnd: '23:59', quietDays: 'weekdays' }).value, { start: '07:05', end: '23:59', weekdays: true });
+  for (const bad of [{ quietStart: '', quietEnd: '08:00' }, { quietStart: '24:00', quietEnd: '08:00' }, { quietStart: '22:00', quietEnd: '8시' }]) assert.equal(checkQuiet(bad).say, '시각은 22:00처럼 넣어 주세요.');
+});
+
+test('settings room: draft recovery is locked for a guest or without encrypted storage', () => {
+  const on = setRow(setRoom(), 'draft');
+  assert.deepEqual([on.mid, on.val, on.unread, togs(on)[0].slice(1, 6)], ['창이 갑자기 닫혀도 쓰던 글을 7일 동안 되살립니다', '켜짐', false, ['되살리기', '이 PC에 암호화해 두고, 끄거나 로그아웃하면 지웁니다', true, 'draft', '']]);
+  for (const s of [{ member: false }, { drafts: { ok: true, available: false, enabled: true } }, { drafts: { ok: false } }]) {
+    const row = setRow(setRoom(s), 'draft');
+    assert.deepEqual([row.val, row.unread, togs(row)[0][2], togs(row)[0][3], togs(row)[0][5]], ['꺼짐', true, '로그인하고, 이 PC의 암호화 저장을 쓸 수 있을 때 켤 수 있습니다', false, 'off'], JSON.stringify(s));
+  }
+  assert.equal(setRow(setRoom({ drafts: null }), 'draft'), undefined);
+});
+
+test('tips: each tip type is one line in the 합니다 voice from the model’s numbers only', () => {
+  assert.equal(tipWords({ type: 'spike', service: 'higgsfield', ratio: 2.34, s7: 1240 }, NOW), 'Higgsfield를 지난 7일 동안 평소의 2.3배(1,240크레딧) 썼습니다.');
+  assert.equal(tipWords({ type: 'spike', service: 'typecast', ratio: null, s7: 5000 }, NOW), 'Typecast를 지난 7일 동안 평소보다 많이(5,000크레딧) 썼습니다.');
+  assert.equal(tipWords({ type: 'pace', service: 'gpt', many: true, live: 2, rate: 12 }, NOW), '최근 3일 동안 바로 쓸 계정 2개가 하루 평균 주간 한도의 12%씩 썼습니다.');
+  assert.equal(tipWords({ type: 'pass', service: 'claude', mode: 'now', many: true, name: 'work', release: NOW + 2 * D }, NOW), 'work 계정의 초기화권을 쓰면 하루 넘게 기다리지 않고 바로 다시 찹니다.');
+  assert.equal(tipWords({ type: 'pass', service: 'gpt', mode: 'expiry', count: 2, until: NOW + 2 * D, hint: { gpt: true, hint: 'reset', reset: NOW + D } }, NOW), 'Codex 초기화권 2장이 모레 오전 10시에 만료됩니다. 지금 쓰면 내일 오전 10시의 주간 초기화가 사라집니다. 초기화 뒤 많이 쓴 다음 만료 전에 쓰는 편이 낫습니다.');
+  assert.match(tipWords({ type: 'pass', service: 'claude', mode: 'expiry', many: true, name: 'work', count: 1, until: NOW + 2 * D, hint: { gpt: false, hint: 'used', used: 62 } }, NOW), /^work 계정의 초기화권 1장이 .+ 지금 주간 한도를 62% 썼습니다\. 지금 쓰면 쓴 만큼 다시 채워집니다\.$/);
+  assert.equal(tipWords({ type: 'size', service: 'claude', name: 'work', plan: 'max20x', rule: { to: 'max5x', limit: 20 }, saving: 100, table: { currency: 'USD' } }, NOW), 'work 계정(Ultra)은 4주 내내 주간 한도를 20%도 쓰지 않았습니다. Max로 낮춰도 넉넉할 가능성이 큽니다. 공식 요금으로 한 달 $100 덜 냅니다.');
+  assert.equal(tipWords({ type: 'idle', service: 'claude', name: 'home', days: 3, billAt: NOW + 3 * D, price: { amount: 29000, currency: 'KRW' } }, NOW), 'home 계정은 4주 동안 주간 한도를 5%도 쓰지 않았습니다. 11월 21일 결제(29,000원) 전에 계속 쓸지 정해 두면 좋습니다.');
+  assert.equal(tipWords({ type: 'idle', service: 'typecast', name: '…7890', credit: true, days: 0, billAt: NOW, price: null }, NOW), '…7890 키는 4주 동안 크레딧을 쓰지 않았습니다. 오늘이 결제일입니다. 다음 달에도 쓸지 정해 두면 좋습니다.');
+  assert.equal(tipWords({ type: 'annual', service: 'claude' }, NOW), '', 'the annual tip stays in the cost line');
+  assert.equal(tipDoneWords('helpful', {}, 'pass:claude'), '도움이 됐다고 남겼습니다. 같은 팁은 7일 동안 쉽니다.');
+  assert.equal(tipDoneWords('stop', { tips: { 'pass:claude': { stops: 1 } } }, 'pass:claude'), '이 종류의 팁은 4주 동안 쉽니다.');
+  assert.equal(tipDoneWords('stop', { tips: { 'pass:claude': { stops: 2 } } }, 'pass:claude'), '이 종류의 팁은 12주 동안 쉽니다.');
+});
+
+test('tips: the model picks the tip, an answered tip stays with its line, a resting one goes, and nothing shows when tips are off', () => {
+  const rows = [weekly('w', 'claude', 36, NOW + D, { passCount: 1, passUntil: NOW + 2 * D })];
+  const s = snap(rows);
+  const tip = subTips(s, setSt(), NOW).get('claude');
+  assert.deepEqual([tip.key, tip.done, tip.live, tip.busy], ['pass:claude', false, '', false]);
+  assert.match(tip.text, /^Claude 초기화권 1장이 .+에 만료됩니다\./);
+  const resting = snap(rows, { settings: { tips: { 'pass:claude': { until: NOW + 7 * D } } } });
+  assert.equal(subTips(resting, setSt(), NOW).size, 0, 'a resting tip is not shown');
+  const answered = subTips(resting, setSt({ tipDone: new Map([['pass:claude', 'helpful']]), notes: new Map([['svc:claude', '도움이 됐다고 남겼습니다. 같은 팁은 7일 동안 쉽니다.']]) }), NOW).get('claude');
+  assert.deepEqual([answered.done, answered.live], [true, '도움이 됐다고 남겼습니다. 같은 팁은 7일 동안 쉽니다.'], 'the tip just answered here stays with the line after it');
+  assert.equal(subTips(snap(rows, { settings: { tipsOff: true } }), setSt(), NOW).size, 0);
+  assert.equal(subTips(snap(rows, { usage: null }), setSt(), NOW).size, 0, 'no usage, no tip (옛 판과 같다)');
+  assert.equal(subTips(s, setSt({ busy: 'svc:claude:tip' }), NOW).get('claude').busy, true);
+});
+
 /* ── 화면 글: 합니다체이고, 「GEO」 · 「SEO」 같은 말이 없다(설계 1.3절 「화면 글」) ── */
 test('screen words: no 해요체 endings and no GEO or SEO anywhere the room functions write', () => {
   const rows = [
@@ -623,6 +791,15 @@ test('screen words: no 해요체 endings and no GEO or SEO anywhere the room fun
   for (const acc of [{ loading: true }, { error: ACCOUNT_NETWORK_SAY }, { data: view(), identity: who(), askDelete: true }, { data: pend }, { data: view({ account: { ...view().account, status: 'deletion-requested' } }) }, { data: view({ capabilities: {}, learning: { enabled: false } }), identity: who({ identities: [{ provider: 'google' }], newEmail: 'n@example.com' }) }])
     all.push(...texts(accountRoom(acc, accSt({ armed: { key: 'places', act: 'revoke-all', at: NOW } }), NOW, {})));
   all.push(...Object.values(ACCOUNT_SAY), ACCOUNT_NETWORK_SAY, ACCOUNT_DEFAULT_SAY, checkName('').say, checkName('가'.repeat(61)).say, checkName('\u0007').say);
+  // 설정 방과 구독 줄의 팁(셋째 묶음)
+  const ups = ['current', 'idle', 'checking', 'available', 'downloading', 'ready', 'opening', 'disabled'].flatMap(state => [{ state, latestVersion: '0.4.98' }, { state, automatic: true }])
+    .concat(['UPDATE_EXIT_CANCELLED', 'UPDATE_MANUAL_INSTALL'].map(code => ({ state: 'ready', code })), ['UPDATE_STORAGE_FAILED', 'UPDATE_SAME_VERSION', 'UPDATE_HASH_MISMATCH', 'INSTALL_OPEN_FAILED', 'X'].map(code => ({ state: 'error', code })));
+  for (const u of ups) for (const env of [WIN, { ...WIN, platform: 'darwin' }]) all.push(...texts(setRoom({ update: u, env })));
+  all.push(...texts(setRoom({ desktop: deskSnap({ globalShortcut: 'Ctrl+Alt+S', launchAtLogin: true, startHidden: true }, {}, { warning: 'SHORTCUT_UNAVAILABLE' }), notices: noticeVal({ mutedUntil: NOW + H, schedule: true, weekdays: true }), member: false, tipsOff: true }, { grps: new Set(['notice:quiet']) })));
+  all.push(...Object.values(SHORTCUT_SAY), ...Object.values(DIAG_SAY), DRAFT_SAY, desktopSay('X'), checkQuiet({}).say);
+  for (const t of [{ type: 'spike', service: 'higgsfield', ratio: 2, s7: 3 }, { type: 'pace', service: 'gpt', many: true, live: 2, rate: 3 }, { type: 'pass', service: 'claude', mode: 'now', release: NOW + D }, ...['reset', 'used', 'later'].flatMap(hint => [true, false].map(gpt => ({ type: 'pass', service: gpt ? 'gpt' : 'claude', mode: 'expiry', count: 1, until: NOW + D, hint: { gpt, hint, reset: NOW + H, used: 60 } }))), { type: 'size', service: 'claude', name: 'w', plan: 'max5x', rule: { to: 'pro', limit: 16 }, saving: 80 }, { type: 'idle', service: 'claude', name: 'w', days: 0, billAt: NOW }, { type: 'idle', service: 'typecast', name: 'k', credit: true, days: 2, billAt: NOW + 2 * D, price: { amount: 10, currency: 'USD' } }])
+    all.push(tipWords(t, NOW));
+  all.push(tipDoneWords('helpful', {}, 'k'), tipDoneWords('stop', {}, 'k'));
   const sentences = all.flatMap(t => t.split(/(?<=[.!?])\s+/));
   const yo = sentences.filter(x => /(어요|아요|해요|예요|에요|돼요)[.!?]?$/.test(x.trim()));
   assert.deepEqual(yo, [], 'every sentence ends in 합니다체');

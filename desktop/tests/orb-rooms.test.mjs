@@ -50,7 +50,7 @@ function harness({ rows = [weekly('c', 'claude', { price: 290000, billDay: 9 }),
 const removeLabel = (h, key) => h.line(key).more.filter(x => x[0] === 'acts').flatMap(x => x[1]).find(a => a[1] === 'remove');
 
 test('the rooms opened from the fan are listed, and the guard values are the reviewed ones (설계 검토 D1)', () => {
-  assert.deepEqual(ASIDE_ROOMS, ['manage', 'account']);
+  assert.deepEqual(ASIDE_ROOMS, ['manage', 'account', 'settings']);
   assert.deepEqual(ROOM_TIMING, { armGuard: 600, armExpire: 10000, account: 15000, tokLive: 60000, tokPaint: 1000 });
 });
 
@@ -567,4 +567,192 @@ test('when the launcher says the account changed, a late answer for the old acco
   assert.equal(h.room().say, '합성 회원 님으로 로그인했습니다.', 'the open room read the new account');
   h.rooms.reset();
   assert.equal(h.room().say, '계정 정보를 불러오고 있습니다.', 'a reset drops what was shown');
+});
+
+/* ── 셋째 묶음: 설정 방(설계 6.4, 설계 검토 D7 · D9)과 구독 줄의 팁(D7) ── */
+function setHarness({ desktop = { ok: true, preferences: { closeToTray: true, launchAtLogin: false, startHidden: false, globalShortcut: '', zoomFactor: 1 }, capabilities: { launchAtLogin: true, globalShortcut: true, tray: true } }, drafts = { ok: true, available: true, enabled: false }, update = { state: 'current', currentVersion: '0.4.97' }, answers = {}, confirm = true, rows = [weekly('c', 'claude', { passCount: 1, passUntil: NOW + 2 * D })], member = true } = {}) {
+  let clock = NOW, desk = desktop, draft = drafts, up = update, notices = { banners: true, mutedUntil: 0, schedule: false, start: '22:00', end: '08:00', weekdays: false };
+  let snap = { ok: true, seq: 1, rows, check: { at: NOW - 60e3 }, usage: { accounts: {} }, settings: {}, tools: {}, login: null };
+  const calls = [], listeners = { desktop: null, drafts: null, updates: null }, offs = [];
+  const answer = (name, fallback) => (...args) => { calls.push([name, ...args]); const a = answers[name]; return Promise.resolve(typeof a === 'function' ? a(...args) : a ?? fallback(...args)); };
+  const listen = name => fn => { listeners[name] = fn; return () => { offs.push(name); listeners[name] = null; }; };
+  const pc = {
+    desktop: { get: answer('desktop.get', () => desk), update: answer('desktop.update', patch => (desk = { ...desk, preferences: { ...desk.preferences, ...patch } })), onChange: listen('desktop') },
+    drafts: { status: answer('drafts.status', () => draft), set: answer('drafts.set', on => (draft = { ...draft, enabled: on })), onChange: listen('drafts') },
+    notices: { get: () => ({ ...notices }), set: patch => { calls.push(['notices.set', patch]); notices = { ...notices, ...patch }; return { ...notices }; } },
+    updates: { status: answer('updates.status', () => up), check: answer('updates.check', () => (up = { ...up, state: 'checking' })), download: answer('updates.download', () => (up = { ...up, state: 'downloading', progress: 0 })), install: answer('updates.install', () => (up = { ...up, state: 'opening' })), confirmInstall: answer('confirmInstall', () => confirm), onChange: listen('updates') },
+    environment: () => ({ platform: 'win32', version: '0.4.97', mode: 'development' }),
+    copyDiagnostics: answer('copyDiagnostics', () => true),
+  };
+  const subs = { save: answer('save', patch => (snap = { ...snap, seq: snap.seq + 1, settings: { ...snap.settings, ...(patch.settings || {}), ...(patch.tip ? { tips: { [patch.tip.key]: { until: clock + 28 * D, stops: 1 } } } : {}) } })) };
+  let changes = 0;
+  const rooms = createOrbRooms({ subs, pc, now: () => clock, setTimer: () => 0, clearTimer: () => {}, snapshot: () => snap, accept: v => { snap = v; }, changed: () => { changes++; } });
+  const room = () => rooms.scene({ aside: 'settings', member }).settings;
+  const line = key => room().rows.find(r => r.key === key);
+  const live = key => line(key).more.find(x => x[0] === 'live')[1];
+  const press = (key, act, arg = '', fields = {}) => rooms.handle({ room: 'settings', key, act, arg, fields });
+  return { rooms, calls, offs, listeners, room, line, live, press, names: () => calls.map(c => c[0]), setUp: v => { up = v; }, setDesk: v => { desk = v; }, setDraft: v => { draft = v; }, get notices() { return notices; }, get snap() { return snap; }, advance: ms => { clock += ms; } };
+}
+
+test('the settings room reads its bridges when it opens, follows their notices while open, and stops listening when it closes (설계 6.4)', async () => {
+  const h = setHarness();
+  assert.equal(h.rooms.scene({ aside: null }), null);
+  h.rooms.open('settings');
+  await settle();
+  assert.deepEqual(h.names().sort(), ['desktop.get', 'drafts.status', 'updates.status']);
+  assert.equal(h.room().say, '이 PC의 SYNK는 최신 판입니다.');
+  assert.deepEqual(h.room().rows.map(r => r.key), ['update', 'start', 'key', 'view', 'notice', 'draft']);
+  h.listeners.updates({ state: 'available', currentVersion: '0.4.97', latestVersion: '0.4.98' });
+  assert.equal(h.room().say, '새 판(v0.4.98)이 나왔습니다.');
+  h.listeners.desktop({ ok: true, preferences: { closeToTray: false, launchAtLogin: true, startHidden: false, globalShortcut: '', zoomFactor: 1.5 }, capabilities: { launchAtLogin: true, globalShortcut: true, tray: true } });
+  assert.deepEqual([h.room().then, h.line('view').mid], ['컴퓨터를 켜면 창과 함께 켜집니다.', '크기 150%'], 'a change made elsewhere (keyboard zoom, the tray) shows at once');
+  h.setDraft({ ok: true, available: true, enabled: true });
+  h.listeners.drafts();
+  await settle();
+  assert.equal(h.line('draft').val, '켜짐', 'a draft change notice reads the state again');
+  h.rooms.close();
+  assert.deepEqual(h.offs.sort(), ['desktop', 'drafts', 'updates']);
+  assert.equal(h.rooms.scene({ aside: 'settings', member: true }).settings.say, '여기서는 새 판을 받을 수 없습니다.', 'closed, the room forgets what it read and reads again next time');
+});
+
+test('pressing a start-up switch sends the flipped value; 트레이로 시작 is refused while 자동 시작 is off; a failure says so in the line', async () => {
+  const h = setHarness({ answers: { 'desktop.update': patch => (patch.launchAtLogin === true ? { ok: false, code: 'STARTUP_UNAVAILABLE' } : { ok: true, preferences: { closeToTray: true, launchAtLogin: false, startHidden: false, globalShortcut: '', zoomFactor: 1, ...patch }, capabilities: { launchAtLogin: true, globalShortcut: true, tray: true } }) } });
+  h.rooms.open('settings'); await settle();
+  await h.press('start', 'pref', 'startHidden');
+  assert.ok(!h.names().includes('desktop.update'), '트레이로 시작 waits for 자동 시작');
+  await h.press('start', 'pref', 'closeToTray');
+  assert.deepEqual(h.calls.find(c => c[0] === 'desktop.update')[1], { closeToTray: false });
+  assert.equal(h.line('start').mid, '자동 시작 안 함 · 닫으면 끔');
+  await h.press('start', 'pref', 'launchAtLogin');
+  assert.equal(h.live('start'), '설정을 적용하지 못했습니다. 잠시 뒤 다시 해 주세요.');
+  await h.press('start', 'pref', 'nope');
+  assert.equal(h.calls.filter(c => c[0] === 'desktop.update').length, 2, 'an unknown field is not sent');
+});
+
+test('the anywhere shortcut is checked before it is sent, a taken one is named, and switching it off clears it (설계 검토 D9)', async () => {
+  const h = setHarness({ answers: { 'desktop.update': patch => (patch.globalShortcut === 'Ctrl+Alt+K' ? { ok: false, code: 'SHORTCUT_UNAVAILABLE' } : { ok: true, preferences: { closeToTray: true, launchAtLogin: false, startHidden: false, zoomFactor: 1, globalShortcut: patch.globalShortcut }, capabilities: { launchAtLogin: true, globalShortcut: true, tray: true } }) } });
+  h.rooms.open('settings'); await settle();
+  await h.press('key', 'shortcut-apply', '', { shortcut: 'Shift+S' });
+  assert.equal(h.live('key'), '단축키 모양을 알아보지 못했습니다. 예: Ctrl+Alt+S');
+  await h.press('key', 'shortcut-apply', '', { shortcut: 'ctrl+alt+k' });
+  assert.equal(h.live('key'), '다른 앱이 쓰는 단축키입니다. 다른 조합을 골라 주세요.');
+  await h.press('key', 'shortcut-apply', '', { shortcut: 'Ctrl+Alt+S' });
+  assert.deepEqual([h.calls.filter(c => c[0] === 'desktop.update').at(-1)[1], h.live('key'), h.line('key').val], [{ globalShortcut: 'Ctrl+Alt+S' }, '단축키를 바꿨습니다.', 'Ctrl+Alt+S']);
+  await h.press('key', 'shortcut-apply', '', { shortcut: 'Ctrl+Alt+S' });
+  assert.equal(h.live('key'), '지금 쓰는 단축키와 같습니다.');
+  await h.press('key', 'shortcut-off');
+  assert.deepEqual([h.calls.filter(c => c[0] === 'desktop.update').at(-1)[1], h.live('key')], [{ globalShortcut: '' }, '단축키를 껐습니다.']);
+  await h.press('view', 'zoom', '1.25');
+  await h.press('view', 'zoom', '3');
+  assert.deepEqual(h.calls.filter(c => c[0] === 'desktop.update').slice(-1)[0][1], { zoomFactor: 1.25 }, 'only the listed sizes are sent');
+});
+
+test('updates follow the old rules: a check, a download, and an install that asks about unsaved writing first (설계 6.3)', async () => {
+  const h = setHarness({ update: { state: 'available', currentVersion: '0.4.97', latestVersion: '0.4.98' } });
+  h.rooms.open('settings'); await settle();
+  await h.press('update', 'update-install');
+  assert.ok(!h.names().includes('updates.install'), 'nothing to install before it is ready');
+  await h.press('update', 'update-download');
+  assert.deepEqual([h.names().includes('updates.download'), h.room().say], [true, '새 판을 받고 있습니다.']);
+  await h.press('update', 'update-check');
+  assert.ok(!h.names().includes('updates.check'), 'no check while downloading');
+  h.listeners.updates({ state: 'ready', currentVersion: '0.4.97', latestVersion: '0.4.98' });
+  await h.press('update', 'update-install');
+  assert.deepEqual(h.names().filter(n => n === 'confirmInstall' || n === 'updates.install'), ['confirmInstall', 'updates.install']);
+  assert.equal(h.room().say, '업데이트를 준비하고 있습니다.');
+  const kept = setHarness({ update: { state: 'ready', latestVersion: '0.4.98' }, confirm: false });
+  kept.rooms.open('settings'); await settle();
+  await kept.press('update', 'update-install');
+  assert.deepEqual(kept.names().filter(n => n === 'confirmInstall' || n === 'updates.install'), ['confirmInstall'], 'going back to save installs nothing');
+  let release;
+  const moved = setHarness({ update: { state: 'ready', latestVersion: '0.4.98' }, answers: { confirmInstall: () => new Promise(r => { release = r; }) } });
+  moved.rooms.open('settings'); await settle();
+  const pending = moved.press('update', 'update-install');
+  await settle();
+  moved.listeners.updates({ state: 'available', latestVersion: '0.4.99' });
+  release(true);
+  await pending;
+  assert.ok(!moved.names().includes('updates.install'), 'a new state during the question cancels the install');
+  const auto = setHarness({ update: { state: 'ready', automatic: true, latestVersion: '0.4.98' } });
+  auto.rooms.open('settings'); await settle();
+  await auto.press('update', 'update-install');
+  assert.ok(!auto.names().includes('confirmInstall'), 'an automatic install is the main process’s job');
+  const failed = setHarness({ answers: { 'updates.check': () => ({ ok: false, code: 'UPDATE_NETWORK_FAILED' }) } });
+  failed.rooms.open('settings'); await settle();
+  await failed.press('update', 'update-check');
+  assert.equal(failed.room().say, '새 판을 받지 못했습니다.');
+});
+
+test('notices go through the convenience channel: banner and quiet switches, quiet hours, and a rest that says until when (설계 6.4)', async () => {
+  const h = setHarness();
+  h.rooms.open('settings'); await settle();
+  await h.press('notice', 'notice', 'banners');
+  assert.deepEqual(h.calls.filter(c => c[0] === 'notices.set').at(-1)[1], { banners: false });
+  await h.press('notice', 'grp', 'quiet');
+  await h.press('notice', 'quiet-save', '', { quietStart: '7시', quietEnd: '08:00' });
+  assert.equal(h.live('notice'), '시각은 22:00처럼 넣어 주세요.');
+  await h.press('notice', 'quiet-save', '', { quietStart: '23:30', quietEnd: '7:00', quietDays: 'weekdays' });
+  assert.deepEqual(h.calls.filter(c => c[0] === 'notices.set').at(-1)[1], { start: '23:30', end: '07:00', weekdays: true });
+  assert.equal(h.live('notice'), '저장했습니다. 조용한 시간을 켜면 이 시각에 배너를 띄우지 않습니다.');
+  assert.equal(h.line('notice').more.find(x => x[0] === 'grp')[3], true, 'saving folds the fields');
+  assert.deepEqual(h.room().focus.act, 'grp', 'and focus goes back to 「시각 고치기」');
+  await h.press('notice', 'rest', '30');
+  assert.deepEqual([h.notices.mutedUntil, h.live('notice'), h.line('notice').mid], [NOW + 30 * 60e3, '10:30까지 배너를 띄우지 않습니다.', '10:30까지 배너를 띄우지 않습니다']);
+  assert.equal(h.line('notice').more.find(x => x[1] === '잠시 쉬기')[3], '30');
+  await h.press('notice', 'rest', '0');
+  assert.deepEqual([h.notices.mutedUntil, h.live('notice')], [0, '배너를 다시 띄웁니다.']);
+  await h.press('notice', 'rest', 'toString');
+  assert.equal(h.calls.filter(c => c[0] === 'notices.set').length, 4, 'an unknown rest is not saved');
+});
+
+test('the tip switch saves settings.tipsOff like the old board, and a member’s draft switch goes through the bridge (설계 검토 D7)', async () => {
+  const h = setHarness();
+  h.rooms.open('settings'); await settle();
+  assert.equal(h.line('notice').more.find(x => x[0] === 'tog' && x[4] === 'tips')[3], true, 'the room is drawn before anything is pressed');
+  await h.press('notice', 'tips');
+  assert.deepEqual(h.calls.find(c => c[0] === 'save')[1], { settings: { tipsOff: true } });
+  assert.equal(h.live('notice'), '구독 팁을 껐습니다. 구독 줄과 요금 줄에 팁을 띄우지 않습니다.');
+  assert.equal(h.rooms.subTips().size, 0, 'and the subscription rows lose their tips');
+  await h.press('notice', 'tips');
+  assert.deepEqual([h.calls.filter(c => c[0] === 'save').at(-1)[1], h.live('notice')], [{ settings: { tipsOff: false } }, '구독 팁을 켰습니다.']);
+  await h.press('draft', 'draft');
+  assert.deepEqual([h.calls.find(c => c[0] === 'drafts.set')[1], h.line('draft').val], [true, '켜짐']);
+  const fail = setHarness({ answers: { 'drafts.set': () => ({ ok: false }) } });
+  fail.rooms.open('settings'); await settle(); fail.room();
+  await fail.press('draft', 'draft');
+  assert.equal(fail.live('draft'), '쓰던 글 되살리기를 바꾸지 못했습니다. 로그인 상태와 PC 저장 공간을 봐 주세요.');
+  const guest = setHarness({ member: false });
+  guest.rooms.open('settings'); await settle(); guest.room();
+  await guest.press('draft', 'draft');
+  await guest.press('notice', 'tips');
+  assert.ok(!guest.names().includes('drafts.set') && !guest.names().includes('save'), 'a guest’s locked switches send nothing, even with encrypted storage on this PC');
+  assert.ok(!guest.line('notice').more.some(x => x[0] === 'tog' && x[4] === 'tips'), 'a guest has no tip switch');
+});
+
+test('the problem report copies through the bridge and the bottom line says what was copied, or that it failed', async () => {
+  const h = setHarness();
+  h.rooms.open('settings'); await settle();
+  assert.equal(h.room().foot, 'SYNK Platform 0.4.97 · 시험판 · Windows');
+  await h.press('', 'diag-copy');
+  assert.equal(h.room().foot, '버전과 연결 상태만 복사했습니다. 이름, 글, 파일 경로는 넣지 않았습니다.');
+  const fail = setHarness({ answers: { copyDiagnostics: () => false } });
+  fail.rooms.open('settings'); await settle();
+  await fail.press('', 'diag-copy');
+  assert.equal(fail.room().foot, '복사하지 못했습니다. 앱 창을 한 번 누른 뒤 다시 해 주세요.');
+  h.rooms.close(); h.rooms.open('settings');
+  assert.equal(h.room().foot, 'SYNK Platform 0.4.97 · 시험판 · Windows', 'the note goes when the room closes');
+});
+
+test('a tip reaction in a subscription row saves like the old board and keeps the tip with the line after it', async () => {
+  const h = setHarness();
+  const tip = h.rooms.subTips().get('claude');
+  assert.equal(tip.key, 'pass:claude');
+  await h.rooms.handle({ room: 'solio', key: 'svc:claude', act: 'tip', arg: 'pass:claude|stop' });
+  assert.deepEqual(h.calls.find(c => c[0] === 'save')[1], { tip: { key: 'pass:claude', action: 'stop' } });
+  const after = h.rooms.subTips().get('claude');
+  assert.deepEqual([after.done, after.live], [true, '이 종류의 팁은 4주 동안 쉽니다.']);
+  h.rooms.open('settings'); h.rooms.close();
+  assert.equal(h.rooms.subTips().get('claude').live, '이 종류의 팁은 4주 동안 쉽니다.', 'opening and closing a room keeps the line of the subscription row');
+  h.rooms.reset();
+  assert.equal(h.rooms.subTips().size, 0, 'another account forgets the answer, so the resting tip is gone');
 });

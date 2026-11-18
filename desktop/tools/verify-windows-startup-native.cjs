@@ -141,23 +141,23 @@ function observe(config){
       // 방이 다 드러난 뒤 찍는다. 곧바로 찍으면 도착 움직임 도중이라 문장이 아직 보이지 않았다(0.4.95 대역 빌드 캡처)
       await waitFor(contents,"(()=>{const s=document.querySelector('#portal-entry .orb-stage'),say=document.querySelector('#portal-entry [data-layer=app] [data-say]');return !!s&&!!say&&s.classList.contains('settled')&&getComputedStyle(say.closest('.rise')||say).opacity==='1';})()",'orb-solio-shown');
       await capture(created,'platform-orb-solio');
-      // 작은 구 → 구 곁의 펼침(2단계 첫 조각) → 「설정」 → 옛 설정 보기(legacy)의 업데이트 확인. 내려받기 보기는 새 얼굴에서 갈 길이 없어 뺀다
+      // 작은 구 → 구 곁의 펼침(2단계 첫 조각) → 「설정」 → 새 얼굴의 설정 방(2단계 둘째 조각 6절) → 업데이트 줄의 「지금 확인」. 옛 설정 화면으로 가는 길은 없다
       await clickVisible('#portal-entry .here-orb','orb small orb visible and unobscured');
       await waitFor(contents,"(()=>{const s=document.querySelector('#portal-entry .orb-stage'),f=document.querySelector('#portal-entry .fan-foot');return s?.dataset.fan==='1'&&!!f&&getComputedStyle(f).opacity==='1';})()",'orb-fan');
       await clickVisible('#portal-entry .fan [data-foot="settings"]','orb fan settings visible and unobscured');
-      await waitFor(contents,"document.documentElement.dataset.orbClient==='legacy'&&document.documentElement.dataset.view==='settings'",'orb-legacy-settings');
-      // 임시 옛 화면에서는 옛 런처의 잠금이 풀려 마우스와 자판으로 눌려야 한다(최종 검수). 프로그램 클릭은 잠긴 요소에도 통하므로 따로 본다
-      const unlocked=await run("(()=>{const l=document.querySelector('.launcher'),back=document.querySelector('#portal-entry .legacy-back'),r=back?.getBoundingClientRect();return {launcherInert:Boolean(l?.inert),launcherInertAttr:Boolean(l?.hasAttribute('inert')),launcherAriaHidden:l?.getAttribute('aria-hidden')??null,backVisible:!!back&&!back.hidden&&!!r&&r.width>0&&r.height>0};})()");
-      check('orb legacy view unlocks the old launcher and shows 「돌아가기」',!unlocked.launcherInert&&!unlocked.launcherInertAttr&&unlocked.launcherAriaHidden===null&&unlocked.backVisible,unlocked);
-      for(const view of ['settings']){
-        const prefix='platform-update-'+view;
-        await run("document.getElementById('"+prefix+"-check').scrollIntoView({block:'center'});true");await sleep(120);
-        await clickVisible('#'+prefix+'-check',view+' manual update check visible and unobscured');
-        await waitFor(contents,"document.getElementById('"+prefix+"').dataset.updateState==='current'&&!document.getElementById('"+prefix+"-check').disabled",view+'-update-current');
-        const ui=await run("(()=>({version:document.getElementById('"+prefix+"-version').innerText,status:document.getElementById('"+prefix+"-status').innerText,downloadHidden:document.getElementById('"+prefix+"-download').hidden,installHidden:document.getElementById('"+prefix+"-install').hidden,rootHidden:document.getElementById('"+prefix+"').hidden}))()");
-        check(view+' manual update displays the current candidate',!ui.rootHidden&&ui.version==='지금 v'+config.version+' · 시험판'&&ui.status.startsWith('최신 버전이에요.')&&ui.status.includes('쓰는 동안에도')&&ui.downloadHidden&&ui.installHidden,ui);
-        await capture(created,'platform-update-'+view);
-      }
+      await waitFor(contents,"(()=>{const r=document.querySelector('#portal-entry [data-room=settings]'),say=r?.querySelector('[data-aside-text]');return document.documentElement.dataset.orbClient==='app'&&!!r&&!r.hidden&&!!say&&getComputedStyle(say.closest('.rise')||say).opacity==='1';})()",'orb-settings-room');
+      // 설정 방은 새 얼굴 안의 방이다. 옛 런처는 잠긴 채이고 옛 설정 보기는 열리지 않는다
+      const room=await run("(()=>{const l=document.querySelector('.launcher'),r=document.querySelector('#portal-entry [data-room=settings]');return {launcherInert:Boolean(l?.inert),orbClient:document.documentElement.dataset.orbClient,say:(r.querySelector('[data-aside-text]')?.textContent||'').trim(),foot:(r.querySelector('[data-aside-foot]')?.textContent||'').trim(),rows:[...r.querySelectorAll('button.row[data-key]')].map(b=>b.dataset.key)};})()");
+      check('orb settings room opens in the face with the launcher still inert',room.launcherInert&&room.orbClient==='app'&&room.rows[0]==='update'&&room.foot.includes(config.version)&&room.foot.includes('시험판'),room);
+      const UPDATE_ROW='#portal-entry [data-room=settings] button.row[data-key="update"]';
+      await clickVisible(UPDATE_ROW,'settings update row visible and unobscured');
+      await waitFor(contents,"(()=>{const b=document.querySelector("+JSON.stringify(UPDATE_ROW)+"),c=b?.nextElementSibling?.querySelector('[data-room-act=\"update-check\"]');return !!b&&b.classList.contains('opened')&&!!c&&!b.nextElementSibling.inert&&getComputedStyle(c).opacity==='1';})()",'settings-update-open');
+      await run("(()=>{const c=document.querySelector("+JSON.stringify(UPDATE_ROW)+").nextElementSibling.querySelector('[data-room-act=\"update-check\"]');c.id='qa-settings-update-check';c.focus();return true;})()");
+      await clickVisible('#qa-settings-update-check','settings 「지금 확인」 visible and unobscured');
+      await waitFor(contents,"(()=>{const r=document.querySelector('#portal-entry [data-room=settings]'),b=document.querySelector("+JSON.stringify(UPDATE_ROW)+");return (r.querySelector('[data-aside-text]')?.textContent||'').trim()==='이 PC의 SYNK는 최신 판입니다.'&&(window.__qaUpdateStates||[]).includes('current');})()",'settings-update-current');
+      const ui=await run("(()=>{const r=document.querySelector('#portal-entry [data-room=settings]'),b=document.querySelector("+JSON.stringify(UPDATE_ROW)+"),m=b.nextElementSibling;return {say:(r.querySelector('[data-aside-text]')?.textContent||'').trim(),val:(b.querySelector('.val')?.textContent||'').trim(),inner:(m.querySelector('.more-say')?.textContent||'').trim(),download:!!m.querySelector('[data-room-act=\"update-download\"]'),install:!!m.querySelector('[data-room-act=\"update-install\"]')};})()");
+      check('settings room manual update displays the current candidate',ui.say==='이 PC의 SYNK는 최신 판입니다.'&&ui.val===config.version&&ui.inner==='최신 판입니다. 쓰는 동안에도 새 판이 있는지 저절로 확인합니다.'&&!ui.download&&!ui.install,ui);
+      await capture(created,'platform-update-settings-room');
       const events=await run('window.__qaUpdateOff();window.__qaUpdateStates');
       check('manual checks emit real checking and current events',events.join(',')==='checking,current'&&feedRequests===2,{events,feedRequests});
       check('only one main window opened',mainCount===1);

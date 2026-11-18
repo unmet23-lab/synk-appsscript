@@ -31,13 +31,13 @@ async function typecastSubscription(key){
   }
 
 async function readTypecast(row){
-    if(!secretsReady())return {state:'error',message:'이 PC에서 저장한 API 키를 열 수 없어요. 키를 다시 넣어 주세요.'};
+    if(!secretsReady())return {state:'error',message:'이 PC에서 저장한 API 키를 열 수 없습니다. 키를 다시 넣어 주세요.'};
     const key=row.folder?readKey(row.folder):null;
-    if(!key)return {state:'needs-login',message:'저장한 Typecast API 키를 찾지 못했어요. 키를 다시 넣어 주세요.'};
+    if(!key)return {state:'needs-login',message:'저장한 Typecast API 키를 찾지 못했습니다. 키를 다시 넣어 주세요.'};
     const sub=await typecastSubscription(key);
     if(sub.ok)return {state:'ok',plan:sub.plan,live:{readAt:now(),credits:sub.credits,planCredits:sub.planCredits}};
-    if(sub.code==='INVALID_KEY')return {state:'needs-login',message:'Typecast API 키가 더 이상 맞지 않아요. 새 키로 다시 연결해 주세요.'};
-    return {state:'error',message:sub.code==='NETWORK'?'Typecast에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 확인해 주세요.':'Typecast 크레딧을 읽지 못했어요. 잠시 뒤 다시 확인해 주세요.'};
+    if(sub.code==='INVALID_KEY')return {state:'needs-login',message:'Typecast API 키가 더 이상 맞지 않습니다. 새 키로 다시 연결해 주세요.'};
+    return {state:'error',message:sub.code==='NETWORK'?'Typecast에 연결하지 못했습니다. 인터넷 연결을 확인하고 다시 확인해 주세요.':'Typecast 크레딧을 읽지 못했습니다. 잠시 뒤 다시 확인해 주세요.'};
   }
  return {read:readTypecast,key:{ready:secretsReady,file:keyFile,validate:typecastSubscription}};
 }

@@ -41,16 +41,16 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
           ?{env:childEnv(homeEnv(service,folder)),shell:false,detached:true,stdio:'ignore',windowsHide:false,windowsVerbatimArguments:verbatim,...(cwd?{cwd}:{})}
           :{env:childEnv(homeEnv(service,folder)),shell:false,windowsHide:true,windowsVerbatimArguments:verbatim});
       }
-    }catch{finishLogin(current,'error','로그인 프로그램을 열지 못했어요.');return {ok:false,code:'SPAWN_FAILED'};}
-    current.child.on('error',()=>finishLogin(current,'error','로그인 프로그램을 열지 못했어요.'));
+    }catch{finishLogin(current,'error','로그인 프로그램을 열지 못했습니다.');return {ok:false,code:'SPAWN_FAILED'};}
+    current.child.on('error',()=>finishLogin(current,'error','로그인 프로그램을 열지 못했습니다.'));
     if(useConsole){
       current.stage='console';
-      current.message=behavior.consoleMessage||'검은 창이 열렸어요. 브라우저에서 승인하고, 코드가 나오면 검은 창에 붙여 넣어 주세요.';
+      current.message=behavior.consoleMessage||'검은 창이 열렸습니다. 브라우저에서 승인하고, 코드가 나오면 검은 창에 붙여 넣어 주세요.';
       // Windows: 런처가 끝나면 검은 창이 닫힌 것이다. 마지막으로 한 번 확인하고, 로그인이 안 됐으면 10분을 기다리지 않고 알린다.
       if(current.pid)current.child.on('close',async()=>{
         if(login!==current||['done','error','cancelled'].includes(current.stage))return;
         const v=await verifyLogin(service,folder);
-        if(v.ok)connected(current,v);else finishLogin(current,'error','검은 창이 닫혔는데 로그인이 확인되지 않았어요. 다시 시도해 주세요.');
+        if(v.ok)connected(current,v);else finishLogin(current,'error','검은 창이 닫혔는데 로그인이 확인되지 않았습니다. 다시 시도해 주세요.');
       });
       else current.child.unref?.();
       pollLogin(current);
@@ -59,16 +59,16 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
       const onData=data=>{
         current.output=(current.output+data).slice(-OUTPUT_LIMIT);
         const url=!current.url&&loginUrl(current.output,behavior.domains);
-        if(url){current.url=url;current.stage='browser';current.needsCode=!!behavior.needsCode;current.message=behavior.browserMessage||'브라우저에서 로그인을 마치면 자동으로 넘어가요.';emit();}
-        if(/port .*(in use|already)|address already in use|EADDRINUSE/i.test(current.output))finishLogin(current,'error','다른 로그인 창이 이미 열려 있어요. 그 창을 닫고 다시 시도해 주세요.');
+        if(url){current.url=url;current.stage='browser';current.needsCode=!!behavior.needsCode;current.message=behavior.browserMessage||'브라우저에서 로그인을 마치면 자동으로 넘어갑니다.';emit();}
+        if(/port .*(in use|already)|address already in use|EADDRINUSE/i.test(current.output))finishLogin(current,'error','다른 로그인 창이 이미 열려 있습니다. 그 창을 닫고 다시 시도해 주세요.');
       };
       current.child.stdout?.on('data',onData);current.child.stderr?.on('data',onData);
       current.child.on('close',async code=>{
         if(current.stage==='cancelled'||current.stage==='error'||current.stage==='done')return;
-        current.stage='verifying';current.message='연결을 확인하고 있어요.';emit();
+        current.stage='verifying';current.message='연결을 확인하고 있습니다.';emit();
         const v=await verifyLogin(service,folder);
         if(v.ok)connected(current,v);
-        else finishLogin(current,'error',code===0?'로그인을 확인하지 못했어요. 브라우저에서 연결할 계정이 맞는지 보고 다시 시도해 주세요.':'로그인을 마치지 못했어요. 가이드의 「막혔을 때」를 확인해 주세요.');
+        else finishLogin(current,'error',code===0?'로그인을 확인하지 못했습니다. 브라우저에서 연결할 계정이 맞는지 보고 다시 시도해 주세요.':'로그인을 마치지 못했습니다. 계정 관리의 「막혔을 때」를 확인해 주세요.');
       });
     }
     // Gemini 계정 바꾸기를 연 채 같은 계정으로 두면 기다림이 끝나지 않는다. 10분이 지났을 때 로그인이 살아 있으면 그 계정으로 마치고,
@@ -76,7 +76,7 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
     current.timer=setTimeout(async()=>{
       if(['done','error','cancelled'].includes(current.stage))return;
       if(behavior.acceptAtTimeout){const v=await verifyLogin(service,folder).catch(()=>({ok:false}));if(v.ok){connected(current,v);return;}if(['done','error','cancelled'].includes(current.stage))return;}
-      stopProcess(current.child,current.pid||current.child?.pid);finishLogin(current,'error','10분 동안 로그인이 끝나지 않아 멈췄어요. 다시 시도해 주세요.');
+      stopProcess(current.child,current.pid||current.child?.pid);finishLogin(current,'error','10분 동안 로그인이 끝나지 않아 멈췄습니다. 다시 시도해 주세요.');
     },LOGIN_TIMEOUT);
     emit();
     return {ok:true,id:current.id};
@@ -103,17 +103,17 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
   function connected(current,v){
     // 확인을 기다리는 사이에 취소·시간 초과로 끝났으면 줄을 더하지 않는다(그 계정 폴더는 이미 지워졌다).
     if(login!==current||['done','error','cancelled'].includes(current.stage))return;
-    try{rows();}catch{finishLogin(current,'error','AI 구독 관리 파일을 잠깐 열지 못했어요. 잠시 뒤 다시 연결해 주세요.');return;}
+    try{rows();}catch{finishLogin(current,'error','AI 구독 관리 파일을 잠깐 열지 못했습니다. 잠시 뒤 다시 연결해 주세요.');return;}
     // 새 폴더로 로그인했는데 이미 잘 읽히던 계정이 또 붙었다면, 브라우저에 남은 로그인으로 승인된 것이다. 겹쳐 넣지 않고 알린다.
     // 다만 그 계정으로 로그인하겠다고 메일을 넣고 시작했으면(줄의 「다시 로그인」) 로그인 기한을 새로 받는 일이다(Claude 11-16 — 기한 전에 미리 다시 로그인).
     // 그때는 그 줄을 새 폴더로 옮긴다(addRow가 옛 폴더를 지운다).
     const signedIn=v.email?String(v.email).toLowerCase():null;
     const wanted=current.email?current.email.toLowerCase():null,got=signedIn;
     const dup=signedIn&&current.folder&&wanted!==signedIn&&rows().find(row=>row.source==='auto'&&row.service===current.service&&row.state==='ok'&&row.folder!==current.folder&&String(row.email||'').toLowerCase()===signedIn);
-    if(dup){finishLogin(current,'error',`이미 연결된 ${v.email} 계정으로 다시 로그인됐어요. 다른 계정을 더하려면 「주소 복사」로 로그인 주소를 시크릿 창에 붙여 넣고 그 계정으로 로그인해 주세요.`);return;}
+    if(dup){finishLogin(current,'error',`이미 연결된 ${v.email} 계정으로 다시 로그인됐습니다. 다른 계정을 더하려면 「주소 복사」로 로그인 주소를 시크릿 창에 붙여 넣고 그 계정으로 로그인해 주세요.`);return;}
     const row=addRow(current.service,current.folder,v);
-    if(wanted&&got&&wanted!==got)finishLogin(current,'error',`${current.email} 대신 브라우저에 로그인돼 있던 ${v.email} 계정으로 연결됐어요. ${current.email}를 연결하려면 브라우저에서 그 계정으로 바꾼 뒤 다시 시도해 주세요.`);
-    else finishLogin(current,'done',`${v.email||providers.get(current.service).spec.label} 계정을 연결했어요.`);
+    if(wanted&&got&&wanted!==got)finishLogin(current,'error',`${current.email} 대신 브라우저에 로그인되어 있던 ${v.email} 계정으로 연결됐습니다. ${current.email}를 연결하려면 브라우저에서 그 계정으로 바꾼 뒤 다시 시도해 주세요.`);
+    else finishLogin(current,'done',`${v.email||providers.get(current.service).spec.label} 계정을 연결했습니다.`);
     check({ids:[row.id]}).catch(()=>{});
   }
   function finishLogin(current,stage,message){
@@ -130,13 +130,13 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
     const value=String(code||'').trim();
     if(value.length<8||value.length>2048||/[\r\n\s]/.test(value))return {ok:false,code:'INVALID_CODE'};
     try{login.child.stdin.write(value+'\n');}catch{return {ok:false,code:'WRITE_FAILED'};}
-    login.needsCode=false;login.stage='verifying';login.message='코드를 보냈어요. 연결을 확인하고 있어요.';emit();
+    login.needsCode=false;login.stage='verifying';login.message='코드를 보냈습니다. 연결을 확인하고 있습니다.';emit();
     return {ok:true};
   }
   function cancelLogin(id){
     if(!login||login.id!==id)return {ok:false,code:'NO_LOGIN'};
     const current=login;stopProcess(current.child,current.pid||current.child?.pid);
-    finishLogin(current,'cancelled','로그인을 취소했어요.');
+    finishLogin(current,'cancelled','로그인을 취소했습니다.');
     return {ok:true};
   }
   async function openLoginUrl(id){

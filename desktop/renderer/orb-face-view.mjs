@@ -28,10 +28,9 @@ export function railSettleMs(count) {
 }
 const CHEVRON = '<svg viewBox="0 0 8 5" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" d="M1 1l3 3 3-3"/></svg>';
 
-/* 펼침이나 구독 방에서 여는 방(2단계 둘째 조각 설계 1.3절, 시안 data-room="manage" · "account"). 맨 위 「돌아가기」, 결론 문장, 줄 묶음, 맨 아래 줄과 글 단추 하나다.
-   설정 방은 다음 묶음에서 이 표에 더한다 */
-const ASIDE_NAMES = Object.freeze(['manage', 'account']);
-const ASIDE_LABEL = Object.freeze({ manage: '연결한 계정', account: '내 계정' });
+/* 펼침이나 구독 방에서 여는 방(2단계 둘째 조각 설계 1.3절, 시안 data-room="manage" · "account" · "settings"). 맨 위 「돌아가기」, 결론 문장, 줄 묶음, 맨 아래 줄과 글 단추 하나다 */
+const ASIDE_NAMES = Object.freeze(['manage', 'account', 'settings']);
+const ASIDE_LABEL = Object.freeze({ manage: '연결한 계정', account: '내 계정', settings: '설정' });
 function asideMarkup(name) {
   return `<div class="room room-top room-aside" data-room="${name}" hidden>
       <button class="quiet up" type="button" data-orb-act="aside-back">돌아가기</button>
@@ -390,6 +389,19 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       put(row);
     }
     if (m.empty) put(el('p', 'more-note', m.empty));
+    // 팁 한 줄과 반응 단추 둘(설계 검토 D7). 반응한 뒤에는 단추 대신 알림 줄이 남는다
+    if (m.tip) {
+      put(el('p', 'more-note more-tip', m.tip.text));
+      if (!m.tip.done) {
+        const tipActs = el('p', 'more-acts');
+        for (const [text, action] of [['도움 됐습니다', 'helpful'], ['이런 팁 그만', 'stop']]) tipActs.append(actButton([text, 'tip', m.tip.key + '|' + action, m.tip.busy ? 'off' : ''], ''));
+        put(tipActs);
+      }
+      const live = el('p', 'more-note more-live', m.tip.live || '');
+      live.setAttribute('role', 'status');
+      live.setAttribute('aria-live', 'polite');
+      put(live);
+    }
     const acts = el('p', 'more-acts');
     // 어느 구독에서 눌렀는지 넘긴다. 계정 관리 방이 그 구독의 첫 계정 줄을 연 채 연다(2단계 둘째 조각 설계 9.3)
     acts.append(button('reread', '계정 관리', { 'data-orb-act': 'connect', 'data-orb-arg': String(r.key) }));
@@ -1021,7 +1033,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const out = [];
     for (const item of items) {
       if (!Array.isArray(item)) continue;
-      const [kind, a, b, c, d, e] = item;
+      const [kind, a, b, c, d, e, g] = item;
       if (kind === 'say') out.push(el('p', 'more-say', a));
       else if (kind === 'note') out.push(el('p', 'more-note', a));
       else if (kind === 'cmd') { const p = el('p', 'more-note more-cmd'); p.append(el('code', '', a)); out.push(p); }
@@ -1046,7 +1058,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
         q.setAttribute('aria-label', a);
         q.setAttribute('aria-describedby', mid.id);
         q.dataset.roomAct = d || '';
-        q.dataset.roomArg = '';
+        // 같은 동작의 켜고 끄는 것이 여럿이면(설정 방의 칸 이름) 인자로 가른다. 다시 그린 뒤 초점도 그 인자의 단추로 돌아온다
+        q.dataset.roomArg = g == null ? '' : String(g);
         if (flagsOf(e).includes('off')) q.setAttribute('aria-disabled', 'true');
         s.append(q);
         r.append(el('span', 'nm', a), mid, el('span', 'val', ''), s);
@@ -1116,7 +1129,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const pick = btn.closest('[data-pick]');
     if (pick && btn.dataset.pv !== undefined) setPick(pick, btn.dataset.pv);
     if (box && b) acted.set(box, b.dataset.key);
-    onAction('room', { room: btn.closest('.room')?.dataset.room || '', key: b?.dataset.key || '', act: btn.dataset.roomAct, arg: btn.dataset.roomArg || '', fields: more ? fieldsOf(more.firstElementChild) : {} });
+    // 구독 줄(data-svc)의 안쪽 단추(팁의 반응)는 「svc:서비스」를 열쇠로 보낸다. 알림 줄도 그 열쇠로 돌아온다
+    const key = b?.dataset.key || (b?.dataset.svc ? 'svc:' + b.dataset.svc : '');
+    onAction('room', { room: btn.closest('.room')?.dataset.room || '', key, act: btn.dataset.roomAct, arg: btn.dataset.roomArg || '', fields: more ? fieldsOf(more.firstElementChild) : {} });
   }
   /* 묻고 있던 줄에서 손이나 초점이 떠나면 물음을 거둔다. 그리는 중에 다시 그리지 않게 한 박자 뒤에 알린다 */
   function disarmRow(b) {
@@ -1160,6 +1175,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (s.layer === 'switch') return '공간 고르기';
     if (s.layer === 'app' && s.aside === 'manage') return '계정 관리';
     if (s.layer === 'app' && s.aside === 'account') return '내 계정';
+    if (s.layer === 'app' && s.aside === 'settings') return '설정';
     if (s.layer === 'app') return s.space === 'solio' ? '솔리오' : s.space === 'workspace' ? 'Workspace' : 'PULSE';
     if (s.phase === 'welcome') return 'SYNK Platform';
     return '';

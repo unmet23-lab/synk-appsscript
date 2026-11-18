@@ -1,5 +1,5 @@
 // 솔리오 안쪽의 나머지(2단계 둘째 조각)를 구독 스냅숏에서 만든다. DOM이 없다.
-// 설계: docs/디자인/플랫폼_클라이언트_검정구_20261116/2단계_둘째조각_구현설계.md 1~5절. 셈은 subscriptions-model.mjs를 그대로 쓰고,
+// 설계: docs/디자인/플랫폼_클라이언트_검정구_20261116/2단계_둘째조각_구현설계.md 1~6절. 셈은 subscriptions-model.mjs를 그대로 쓰고,
 // 이 파일은 그 숫자를 합니다체 글과 줄 자료로 옮긴다. 옛 구독 판(subscriptions.mjs)의 입력 검사 규칙은 닫힌 함수 안에 있어 여기에 옮겨 적었다(설계 14절 D3).
 // 모델별 토큰의 기간 묶기와 숫자 글은 subscriptions-tokens.mjs, 내 계정의 자료 읽기는 옛 내 계정(account-page.mjs)의 순수 함수를 그대로 쓴다.
 //
@@ -10,9 +10,10 @@
 //   ['acts', [단추…], 앞 글] — 단추는 [글, 동작, 인자, 표시]. 표시는 'far' · 'off' · 'warn' · 'enter' · 'top'(바깥 동작)을 띄어 적는다
 //   ['pick', 이름, [[글, 값]…], 지금 값, 칸 이름, 동작] · ['fld', 이름, 값, 도움말, 칸 이름, 종류] · ['qa', 물음, 답] · ['grp', 이름, [안쪽…], 숨김]
 //   ['gauge', 이름, 몫(0~100), 값, 오른쪽] · ['tog', 이름, 설명, 켜짐, 동작, 표시] · ['confirm', 물음, [사실…], [단추…]](줄 안에서 펼치는 확인, 설계 8.3)
+//   tog의 일곱째 칸은 그 단추의 인자다(설정 방의 칸 이름). 같은 동작의 tog가 여럿이어도 다시 그린 뒤 초점이 같은 단추로 돌아온다
 // 줄의 watch가 참이면 화면이 그 줄을 열고 접을 때 알린다(모델별 토큰의 실시간, 계정 지우기 확인 묶음).
-import { ORDER, num, nameOf, planName, planKey, accountState, passesOf, passPlan, apiCreditPlan, apiCreditOf, apiCreditEndsAtBill, apiCredits, API_CREDIT_SERVICES, flowCreditOf, flowCredits, officialPrice, costOf, billList, nextMonthlyBill, monthSummary, summaryOn, shownAnnual, serviceGroups, isUsedUp, nextBill, DAY_MS } from './subscriptions-model.mjs';
-import { SOLIO_TODAY_NAMES, josa, joinNames } from './solio-today.mjs';
+import { ORDER, num, nameOf, planName, planKey, accountState, passesOf, passPlan, apiCreditPlan, apiCreditOf, apiCreditEndsAtBill, apiCredits, API_CREDIT_SERVICES, flowCreditOf, flowCredits, officialPrice, costOf, billList, nextMonthlyBill, monthSummary, summaryOn, shownAnnual, serviceGroups, isUsedUp, nextBill, pickUsageTips, restWeeks, DAY_MS } from './subscriptions-model.mjs';
+import { SOLIO_TODAY_NAMES, josa, joinNames, whenWords } from './solio-today.mjs';
 import { TOKEN_RANGES, tokenSummary, tokenText } from './subscriptions-tokens.mjs';
 import { NAME_MAX, nameProblem, pendingDeletion, membershipLines, sessionRows, signInMethods } from './account-page.mjs';
 
@@ -852,4 +853,226 @@ function deleteRow(acc, st, pending, deleting, due, off) {
   more.push(live);
   // 줄이 접히면 확인 묶음도 접는다(화면이 접힘을 알린다)
   return { key: 'del', gap: true, unread: true, watch: true, nm: '계정 지우기', mid: '요청한 뒤 7일 동안은 취소할 수 있습니다', val: '', when: '', label: rowLabel(['계정 지우기', '요청한 뒤 7일 동안은 취소할 수 있습니다']), more };
+}
+
+/* ── 구독 줄 안쪽의 팁(설계 14절 D7, 설계 검토 16절). 고르는 일(쉬는 팁, 둘까지, 방향 순서, 팁 끄기)은 모델의 pickUsageTips가 하고,
+   여기서는 그 팁의 숫자로 합니다체 한 줄을 짓는다. 연간 결제 팁은 요금 줄 안쪽에 있다(costRow). 돌려주는 값: 서비스 → { key, text, done, live, busy } ── */
+const tipWhen = (t, now) => whenWords(t, now, { withTime: true });
+function passHint(h, now) {
+  if (h.gpt) {
+    if (h.hint === 'reset') return ' 지금 쓰면 ' + tipWhen(h.reset, now) + '의 주간 초기화가 사라집니다. 초기화 뒤 많이 쓴 다음 만료 전에 쓰는 편이 낫습니다.';
+    return h.hint === 'used' ? ' 지금 주간 한도를 ' + h.used + '% 썼습니다. 쓰면 쓴 만큼 다시 채워지고, 주간 초기화 날짜가 바뀝니다.' : ' 주간 한도를 많이 쓴 뒤에 쓰면 가장 많이 채워집니다.';
+  }
+  if (h.hint === 'reset') return ' 그 전에 ' + tipWhen(h.reset, now) + '에 주간 초기화가 옵니다. 초기화 뒤 많이 쓴 다음 만료 전에 쓰면 더 많이 채워집니다.';
+  return h.hint === 'used' ? ' 지금 주간 한도를 ' + h.used + '% 썼습니다. 지금 쓰면 쓴 만큼 다시 채워집니다.' : ' 주간 한도를 많이 쓴 뒤에 쓰면 가장 많이 채워집니다.';
+}
+export function tipWords(t, now = Date.now()) {
+  const name = SOLIO_TODAY_NAMES[t?.service] || String(t?.label || '').trim();
+  if (!t || !name) return '';
+  if (t.type === 'spike') return eul(name) + ' 지난 7일 동안 ' + (t.ratio !== null && t.ratio !== undefined ? '평소의 ' + t.ratio.toFixed(1) + '배' : '평소보다 많이') + '(' + fmt(t.s7) + '크레딧) 썼습니다.';
+  if (t.type === 'pace') return '최근 3일 동안 ' + (t.many ? '바로 쓸 계정 ' + t.live + '개가 ' : '') + '하루 평균 주간 한도의 ' + t.rate + '%씩 썼습니다.';
+  if (t.type === 'pass') {
+    const whose = t.many && t.name ? t.name + ' 계정의 ' : '';
+    if (t.mode === 'now') return whose + '초기화권을 쓰면 ' + (t.release ? '하루 넘게 기다리지 않고 ' : '') + '바로 다시 찹니다.';
+    return (whose || name + ' ') + '초기화권 ' + t.count + '장이 ' + tipWhen(t.until, now) + '에 만료됩니다.' + (t.hint ? passHint(t.hint, now) : '');
+  }
+  if (t.type === 'size') {
+    const from = planName(t.plan, 'claude'), to = planName(t.rule?.to, 'claude');
+    return (t.name || name) + ' 계정(' + from + ')은 4주 내내 주간 한도를 ' + t.rule.limit + '%도 쓰지 않았습니다. ' + to + '로 낮춰도 넉넉할 가능성이 큽니다.' + (t.saving ? ' 공식 요금으로 한 달 ' + money(Math.round(t.saving * 100) / 100, t.table?.currency || 'USD') + ' 덜 냅니다.' : '');
+  }
+  if (t.type === 'idle') {
+    const price = t.price ? '(' + money(t.price.amount, t.price.currency) + ')' : '';
+    const head = (t.name || name) + (t.service === 'typecast' ? ' 키는' : ' 계정은') + ' 4주 동안 ' + (t.credit ? '크레딧을 쓰지 않았습니다.' : '주간 한도를 5%도 쓰지 않았습니다.');
+    return head + (t.days === 0 ? ' 오늘이 결제일' + price + '입니다. 다음 달에도 쓸지 정해 두면 좋습니다.' : ' ' + (t.days === 1 ? '내일' : md(t.billAt)) + ' 결제' + price + ' 전에 계속 쓸지 정해 두면 좋습니다.');
+  }
+  return '';
+}
+/* 팁에 반응한 뒤 그 줄에 남기는 글. 「도움 됐습니다」는 같은 팁을 7일 쉬고, 「이런 팁 그만」은 처음 4주, 두 번째부터 12주 쉰다(본체 ai-subscriptions.cjs) */
+export function tipDoneWords(action, settings, key) {
+  return action === 'stop' ? '이 종류의 팁은 ' + restWeeks(settings, key) + '주 동안 쉽니다.' : '도움이 됐다고 남겼습니다. 같은 팁은 7일 동안 쉽니다.';
+}
+/* st: { tipDone(팁 열쇠 → 반응), notes, busy }. 이 화면에서 방금 반응한 팁은 쉬는 동안에도 그 줄에 남겨 반응 뒤의 한 줄을 보인다 */
+export function subTips(snapshot, st = {}, now = Date.now()) {
+  const out = new Map();
+  if (!snapshot?.usage || snapshot.settings?.tipsOff === true) return out;
+  const groups = serviceGroups(snapshot.rows || [], now, snapshot.check?.at || null).filter(g => g.service && g.accounts.some(a => !a.away));
+  const answered = Object.fromEntries([...(st.tipDone || new Map())].map(([k]) => [k, true]));
+  const { tips } = pickUsageTips(snapshot, groups, now, answered);
+  for (const [service, t] of tips) {
+    const text = tipWords(t, now);
+    if (!text) continue;
+    const key = 'svc:' + service;
+    out.set(service, { key: t.key, text, done: st.tipDone?.has?.(t.key) === true, live: st.notes?.get?.(key) || '', busy: st.busy === key + ':tip' });
+  }
+  return out;
+}
+
+/* ── 설정 방(설계 6절, 설계 검토 D6 · D7 · D9 · D10). 업데이트 갈래는 update-view.mjs의 규칙을 고치지 않고 옮겨 적었다(자동 설치 판정 포함) ── */
+const UPDATE_STATES = new Set(['disabled', 'idle', 'checking', 'current', 'available', 'downloading', 'ready', 'opening', 'error']);
+const verOf = v => (typeof v === 'string' && /^[0-9][0-9A-Za-z.+-]{0,47}$/.test(v) ? v : null);
+export const updateAuto = (u, platform) => u?.automatic === true && platform === 'win32' && u.code !== 'UPDATE_EXIT_CANCELLED';
+/* 본체가 주는 업데이트 판. { state }이거나 { status: { state } }다. 모르는 꼴이면 null */
+export const updateOf = value => { const next = value?.state ? value : value?.status; return next && UPDATE_STATES.has(next.state) ? { ...next } : null; };
+/* 줄 안쪽 문장. 판 번호는 괄호로 붙여 받침에 따라 갈리는 조사를 피한다. 새 판에서 구가 깎이는 장면은 아직 없어 말하지 않는다(설계 검토 D10) */
+export function updateWords(u, platform) {
+  const latest = verOf(u?.latestVersion), ver = latest ? '(v' + latest + ')' : '', auto = updateAuto(u, platform);
+  switch (u?.state) {
+    case 'disabled': return '여기서는 새 판을 받을 수 없습니다. 지금 앱은 그대로 쓸 수 있습니다.';
+    case 'checking': return '새 판이 있는지 보고 있습니다.';
+    case 'current': return '최신 판입니다. 쓰는 동안에도 새 판이 있는지 저절로 확인합니다.';
+    case 'available': return '새 판' + ver + '이 나왔습니다. 받는 동안에도 지금 앱을 쓸 수 있습니다.';
+    case 'downloading': return auto ? '새 판' + ver + '을 받고 있습니다. 다 받으면 바꾼 뒤 다시 엽니다. 받는 동안에도 지금 앱을 쓸 수 있습니다.' : '새 판' + ver + ' 설치 파일을 받고 있습니다. 받는 동안에도 지금 앱을 쓸 수 있습니다.';
+    case 'ready':
+      if (u.code === 'UPDATE_EXIT_CANCELLED') return '앱 끄기를 취소했습니다. 쓰던 글을 저장한 뒤 다시 설치해 주세요.';
+      if (auto) return '새 판' + ver + '이 준비됐습니다. 쓰던 글이 있는지 확인한 뒤 바꾸고 다시 엽니다.';
+      if (platform === 'darwin') return u.code === 'UPDATE_MANUAL_INSTALL' ? '설치 파일을 열었습니다. 쓰던 글을 저장하고 SYNK Platform을 끈 뒤, 열린 창의 앱을 Applications 폴더로 옮겨 주세요.' : '새 판' + ver + ' 설치 파일이 준비됐습니다. 파일을 연 뒤 쓰던 글을 저장하고 SYNK Platform을 꺼 주세요. 열린 창의 앱을 Applications 폴더로 옮기면 설치됩니다.';
+      return '새 판' + ver + ' 설치 파일이 준비됐습니다. 쓰던 글을 저장한 뒤 진행해 주세요. 앱을 끄고 설치 파일을 엽니다.';
+    case 'opening': return auto ? '업데이트를 준비하고 있습니다. 앱이 꺼지면 설치하고, 끝나면 다시 열립니다.' : '설치를 준비하고 있습니다. 앱이 꺼지면 열린 설치 파일에서 이어서 진행해 주세요.';
+    case 'error': {
+      const code = typeof u.code === 'string' ? u.code : '';
+      if (code === 'UPDATE_STORAGE_FAILED') return '설치 파일을 저장하지 못했습니다. PC 저장 공간을 비운 뒤 다시 받아 주세요. 지금 앱은 그대로 쓸 수 있습니다.';
+      if (/SAME_VERSION|BUILD_MISMATCH|VERSION_CONFLICT/.test(code)) return '지금 판과 올라온 설치 파일이 맞지 않습니다. synk.im에서 최신 설치 파일을 받아 다시 설치해 주세요. 지금 앱은 그대로 쓸 수 있습니다.';
+      if (/HASH|INTEGRITY|SIGNATURE|SIZE_MISMATCH|MANIFEST|UNTRUSTED|DOWNGRADE|INVALID_(RELEASE|ARTIFACT|CACHE|RESPONSE)/.test(code)) return '받은 업데이트 파일이 온전하지 않습니다. 「지금 확인」을 다시 눌러 주세요. 지금 앱은 그대로 쓸 수 있습니다.';
+      if (/OPEN|INSTALL/.test(code)) return '설치 파일을 열지 못했습니다. 「지금 확인」을 누른 뒤 「' + (platform === 'darwin' ? '설치 파일 열기' : '앱 끄고 설치 파일 열기') + '」를 다시 눌러 주세요. 지금 앱은 그대로 쓸 수 있습니다.';
+      return '새 판을 받지 못했습니다. 인터넷 연결을 확인한 뒤 「지금 확인」을 다시 눌러 주세요. 지금 앱은 그대로 쓸 수 있습니다.';
+    }
+    default: return platform === 'darwin' ? '켤 때와 쓰는 동안 새 판을 저절로 확인하고 받습니다. 받은 설치 파일을 열어 업데이트해 주세요.' : '켤 때와 쓰는 동안 새 판을 저절로 확인합니다. 새 판이 있으면 받아서 바꾼 뒤 다시 엽니다.';
+  }
+}
+/* 맨 위 문장(설계 6.3 표) */
+export function updateSay(u) {
+  const latest = verOf(u?.latestVersion);
+  return ({
+    current: '이 PC의 SYNK는 최신 판입니다.', idle: '이 PC의 SYNK는 쓰는 동안 새 판을 저절로 확인합니다.', checking: '새 판이 있는지 보고 있습니다.',
+    available: latest ? '새 판(v' + latest + ')이 나왔습니다.' : '새 판이 나왔습니다.', downloading: '새 판을 받고 있습니다.', ready: '새 판이 준비됐습니다.',
+    opening: '업데이트를 준비하고 있습니다.', error: '새 판을 받지 못했습니다.',
+  })[u?.state] || '여기서는 새 판을 받을 수 없습니다.';
+}
+const UPDATE_MID = Object.freeze({
+  current: '쓰는 동안에도 새 판이 있는지 저절로 확인합니다', idle: '쓰는 동안에도 새 판이 있는지 저절로 확인합니다', checking: '새 판이 있는지 보고 있습니다', available: '새 판이 나왔습니다',
+  downloading: '새 판을 받고 있습니다', ready: '새 판이 준비됐습니다', opening: '업데이트를 준비하고 있습니다', error: '새 판을 받지 못했습니다', disabled: '여기서는 새 판을 받을 수 없습니다',
+});
+/* 단축키(본체 desktop-preferences.cjs validShortcut과 같은 꼴). 「ctrl + alt + s」처럼 넣어도 같은 모양으로 고쳐 읽는다 */
+const SHORTCUT = /^(?:(?:CommandOrControl|Control|Ctrl|Alt|Shift|Super|Command)\+){1,3}(?:[A-Z0-9]|F(?:[1-9]|1[0-9]|2[0-4])|Space)$/;
+const SHORTCUT_MOD = /(?:CommandOrControl|Control|Ctrl|Alt|Super|Command)\+/;
+const MOD_NAME = Object.freeze({ ctrl: 'Ctrl', control: 'Control', commandorcontrol: 'CommandOrControl', cmdorctrl: 'CommandOrControl', alt: 'Alt', shift: 'Shift', super: 'Super', command: 'Command', cmd: 'Command' });
+export const SHORTCUT_SAY = Object.freeze({ empty: '단축키를 넣어 주세요.', shape: '단축키 모양을 알아보지 못했습니다. 예: Ctrl+Alt+S', taken: '다른 앱이 쓰는 단축키입니다. 다른 조합을 골라 주세요.' });
+export function checkShortcut(value) {
+  const raw = clean(value);
+  if (!raw) return bad(SHORTCUT_SAY.empty);
+  const parts = raw.split('+').map(p => p.trim());
+  const last = parts.pop() || '';
+  const key = /^space$/i.test(last) ? 'Space' : /^f\d{1,2}$/i.test(last) || last.length === 1 ? last.toUpperCase() : last;
+  const text = [...parts.map(p => MOD_NAME[p.toLowerCase()] || p), key].join('+');
+  return text.length <= 80 && SHORTCUT.test(text) && SHORTCUT_MOD.test(text) ? { ok: true, value: text } : bad(SHORTCUT_SAY.shape);
+}
+/* 데스크톱 설정을 바꾸지 못한 까닭 */
+export function desktopSay(code, patch = {}) {
+  if (code === 'SHORTCUT_UNAVAILABLE') return SHORTCUT_SAY.taken;
+  if (code === 'INVALID_DESKTOP_PREFERENCES' && Object.hasOwn(patch || {}, 'globalShortcut')) return SHORTCUT_SAY.shape;
+  return '설정을 적용하지 못했습니다. 잠시 뒤 다시 해 주세요.';
+}
+/* 조용한 시간의 시각(편의 convenience-state.mjs notificationPreferences와 같은 꼴 HH:MM) */
+const quietTime = v => { const m = /^(\d{1,2}):(\d{2})$/.exec(clean(v)); if (!m) return null; const h = Number(m[1]), mi = Number(m[2]); return h <= 23 && mi <= 59 ? pad(h) + ':' + pad(mi) : null; };
+export function checkQuiet(fields = {}) {
+  const start = quietTime(fields.quietStart), end = quietTime(fields.quietEnd);
+  if (!start || !end) return bad('시각은 22:00처럼 넣어 주세요.');
+  return { ok: true, value: { start, end, weekdays: fields.quietDays === 'weekdays' } };
+}
+export const ZOOMS = Object.freeze([0.8, 0.9, 1, 1.1, 1.25, 1.5]);
+const pctOf = z => Math.round(z * 100) + '%';
+const OS_NAME = Object.freeze({ win32: 'Windows', darwin: 'macOS', linux: 'Linux' });
+export const DIAG_SAY = Object.freeze({ ok: '버전과 연결 상태만 복사했습니다. 이름, 글, 파일 경로는 넣지 않았습니다.', no: '복사하지 못했습니다. 앱 창을 한 번 누른 뒤 다시 해 주세요.' });
+export const DRAFT_SAY = '쓰던 글 되살리기를 바꾸지 못했습니다. 로그인 상태와 PC 저장 공간을 봐 주세요.';
+
+/* s: { update(본체 판, 없으면 받을 수 없음), desktop(데스크톱 설정 판), drafts(쓰던 글 되살리기 상태), notices(알림 설정), env(판 정보), member(회원으로 보이는가), tipsOff(구독 팁을 껐는가, 구독 자료가 없으면 null) }
+   st: 방 상태(busy · notes · grps · roomNote · restChoice). 바꿀 수 없는 칸은 줄에서 뺀다(편의 79행과 같다) */
+export function settingsRoom(s = {}, st = {}, now = Date.now()) {
+  const env = s.env || {}, u = updateOf(s.update) || { state: 'disabled' };
+  const desk = s.desktop?.ok === true ? s.desktop : null, p = desk?.preferences || {}, cap = desk?.capabilities || {};
+  const rows = [updateRow(u, env, st), startRow(p, cap, st), keyRow(desk, env, st), viewRow(desk, st), noticeRow(s, st, now), draftRow(s, st)].filter(Boolean);
+  // 둘째 줄은 켜지는 방식이다(시안 세 갈래). 자동 시작을 바꿀 수 없는 판이면 비운다
+  const then = cap.launchAtLogin ? (!p.launchAtLogin ? '컴퓨터를 켤 때 함께 켜지 않습니다.' : p.startHidden && cap.tray ? '컴퓨터를 켜면 창 없이 함께 켜집니다.' : '컴퓨터를 켜면 창과 함께 켜집니다.') : '';
+  const version = verOf(u.currentVersion) || verOf(env.version);
+  const foot = st.roomNote || ['SYNK Platform' + (version ? ' ' + version : ''), env.mode && env.mode !== 'release' ? '시험판' : '', OS_NAME[env.platform] || ''].filter(Boolean).join(' · ');
+  return { say: updateSay(u), then, rows, foot, act: ['문제 알리기용 정보 복사', 'diag-copy', st.busy === 'settings:diag-copy' ? 'off' : ''] };
+}
+function updateRow(u, env, st) {
+  const platform = env.platform || '', state = u.state, auto = updateAuto(u, platform);
+  const pending = typeof st.busy === 'string' && st.busy.startsWith('update:');
+  const busy = pending || ['checking', 'downloading', 'opening'].includes(state) || (auto && state === 'ready');
+  const latest = verOf(u.latestVersion), current = verOf(u.currentVersion) || verOf(env.version);
+  const more = [['say', updateWords(u, platform)]], acts = [];
+  if (state !== 'disabled') acts.push(['지금 확인', 'update-check', '', flags(busy && 'off')]);
+  if (state === 'available') acts.push(['받기', 'update-download', '', flags(busy && 'off')]);
+  if (state === 'ready' && !auto) acts.push([platform === 'darwin' ? '설치 파일 열기' : '앱 끄고 설치 파일 열기', 'update-install', '', flags(busy && 'off')]);
+  if (acts.length) more.push(['acts', acts]);
+  more.push(['live', st.notes?.get?.('update') || '']);
+  const mid = UPDATE_MID[state] || UPDATE_MID.disabled;
+  // 받는 중에는 값 칸에 받은 몫을 쓴다. 확인한 때는 본체 판에 없어 쓰지 않는다(설계 15절)
+  const val = state === 'downloading' ? Math.round(Math.max(0, Math.min(100, Number(u.progress) || 0))) + '%' : current || '';
+  const when = latest && ['available', 'downloading', 'ready', 'opening'].includes(state) ? '새 판 ' + latest : '';
+  return { key: 'update', nm: '업데이트', mid, val, when, now: ['available', 'ready', 'error'].includes(state), label: rowLabel(['업데이트', mid, val, when]), more };
+}
+function startRow(p, cap, st) {
+  const busy = st.busy === 'start:pref' ? 'off' : '', togs = [];
+  if (cap.launchAtLogin) togs.push(['tog', '자동 시작', '컴퓨터를 켜면 SYNK도 함께 켭니다', p.launchAtLogin === true, 'pref', busy, 'launchAtLogin']);
+  // 트레이로 시작은 자동 시작이 켜져 있을 때만 누를 수 있다
+  if (cap.launchAtLogin && cap.tray) togs.push(['tog', '트레이로 시작', '자동으로 켤 때는 창을 띄우지 않고 작업 표시줄 오른쪽 끝의 작은 아이콘(트레이)으로만 둡니다' + (p.launchAtLogin ? '' : '. 자동 시작을 켜야 고를 수 있습니다'), p.startHidden === true, 'pref', flags(!p.launchAtLogin && 'off', busy), 'startHidden']);
+  if (cap.tray) togs.push(['tog', '트레이에 남기기', '닫기 단추를 눌러도 끄지 않고 그 아이콘으로 둡니다', p.closeToTray === true, 'pref', busy, 'closeToTray']);
+  if (!togs.length) return null;
+  const mid = [cap.launchAtLogin ? (p.launchAtLogin ? '자동 시작' : '자동 시작 안 함') : '', cap.launchAtLogin && cap.tray && p.launchAtLogin && p.startHidden ? '트레이로 시작' : '', cap.tray ? (p.closeToTray ? '닫아도 트레이에 남음' : '닫으면 끔') : ''].filter(Boolean).join(' · ');
+  return { key: 'start', nm: '켜고 닫을 때', mid, val: '', when: '', label: rowLabel(['켜고 닫을 때', mid]), more: [...togs, ['live', st.notes?.get?.('start') || '']] };
+}
+/* 어디서나 열기. 단축키는 창을 앞으로 띄운다(본체 main 278~282행). Windows가 아니면 줄을 뺀다(설계 검토 D9) */
+function keyRow(desk, env, st) {
+  if (desk?.capabilities?.globalShortcut !== true || (env.platform && env.platform !== 'win32')) return null;
+  const key = String(desk.preferences?.globalShortcut || ''), off = act => (st.busy === 'key:' + act ? 'off' : '');
+  const more = [['fld', '단축키', key, '예: Ctrl+Alt+S', 'shortcut', 'text'], ['acts', [['적용', 'shortcut-apply', '', flags('enter', off('shortcut-apply'))], ['끄기', 'shortcut-off', '', flags(!key && 'off', off('shortcut-off'))]]]];
+  if (key && desk.warning === 'SHORTCUT_UNAVAILABLE') more.push(['note', '저장한 단축키를 다른 앱이 쓰고 있어 지금은 듣지 않습니다. 다른 조합을 골라 주세요.']);
+  more.push(['note', '다른 앱이 쓰는 단축키면 적용하지 않고, 다른 조합을 고르라고 알립니다.'], ['live', st.notes?.get?.('key') || '']);
+  const mid = key ? '어느 화면에서든 이 단축키로 SYNK 창을 앞으로 띄웁니다' : '단축키를 정하지 않았습니다';
+  return { key: 'key', nm: '어디서나 열기', mid, val: key, when: '', unread: !key, label: rowLabel(['어디서나 열기', mid, key]), more };
+}
+/* 화면. 움직임 줄이기는 저장할 길이 없어 두지 않는다(설계 검토 D6) */
+function viewRow(desk, st) {
+  if (!desk) return null;
+  const z = Number(desk.preferences?.zoomFactor) || 1, list = ZOOMS.includes(z) ? ZOOMS : [...ZOOMS, z].sort((a, b) => a - b);
+  const mid = '크기 ' + pctOf(z);
+  return { key: 'view', nm: '화면', mid, val: '', when: '', label: rowLabel(['화면', mid]), more: [['pick', '화면 크기', list.map(v => [pctOf(v), String(v)]), String(z), '', 'zoom'], ['note', 'Ctrl과 +, − 키로도 바꿀 수 있습니다.'], ['live', st.notes?.get?.('view') || '']] };
+}
+/* 알림. 배너는 앱 설치 파일이 준비됐거나 실패했을 때만 뜬다(편의 31행, 설계 검토 D10). 구독 팁 켜고 끄기도 이 줄 안쪽이다(설계 검토 16절 D7) */
+function noticeRow(s, st, now) {
+  const n = s.notices;
+  if (!n || typeof n !== 'object') return null;
+  const resting = Number(n.mutedUntil) > now, open = !!st.grps?.has?.('notice:quiet');
+  const quietDesc = n.start === n.end ? (n.weekdays ? '평일에는 ' : '') + '하루 종일 배너를 띄우지 않습니다' : (n.weekdays ? '평일 ' : '매일 ') + n.start + '부터 ' + n.end + '까지는 배너를 띄우지 않습니다';
+  const more = [
+    ['tog', '알림 배너', '앱 설치 파일이 준비됐거나 실패했을 때 배너를 띄웁니다', n.banners === true, 'notice', '', 'banners'],
+    ['tog', '조용한 시간', quietDesc, n.schedule === true, 'notice', '', 'schedule'],
+    ['acts', [['시각 고치기', 'grp', 'quiet', open ? 'on' : '']]],
+    ['grp', 'quiet', [
+      ['fld', '시작', n.start || '', '', 'quietStart', 'time'],
+      ['fld', '끝', n.end || '', '시작과 끝을 같게 하면 하루 종일 쉽니다', 'quietEnd', 'time'],
+      ['pick', '요일', [['매일', ''], ['월요일부터 금요일만', 'weekdays']], n.weekdays ? 'weekdays' : '', 'quietDays'],
+      ['acts', [['저장', 'quiet-save', '', 'enter'], ['닫기', 'grp', 'quiet']]],
+    ], !open],
+    ['pick', '잠시 쉬기', [['30분', '30'], ['1시간', '60'], ['쉬지 않음', '0']], resting ? st.restChoice || '' : '0', '', 'rest'],
+  ];
+  if (s.tipsOff === true || s.tipsOff === false) more.push(['tog', '구독 팁', '구독 줄과 요금 줄 안쪽에 아끼는 법과 막히지 않는 법을 한 줄씩 알려 드립니다', s.tipsOff === false, 'tips', st.busy === 'notice:tips' ? 'off' : '']);
+  more.push(['live', st.notes?.get?.('notice') || '']);
+  const mid = resting ? hm(n.mutedUntil) + '까지 배너를 띄우지 않습니다'
+    : [n.banners ? '배너 켜짐' : '배너 꺼짐', n.schedule ? '조용한 시간 ' + (n.start === n.end ? '하루 종일' : n.start + '~' + n.end) : '', s.tipsOff === true ? '구독 팁 꺼짐' : ''].filter(Boolean).join(' · ');
+  return { key: 'notice', nm: '알림', mid, val: '', when: '', label: rowLabel(['알림', mid]), more };
+}
+/* 쓰던 글 되살리기. 로그인하지 않았거나 이 PC의 암호화 저장을 쓸 수 없으면 켜는 칸을 누를 수 없다(손님 포함) */
+function draftRow(s, st) {
+  const d = s.drafts;
+  if (!d || typeof d !== 'object') return null;
+  const can = d.ok === true && d.available === true && s.member === true, on = can && d.enabled === true;
+  const mid = '창이 갑자기 닫혀도 쓰던 글을 7일 동안 되살립니다', val = on ? '켜짐' : '꺼짐';
+  return { key: 'draft', nm: '쓰던 글 되살리기', mid, val, when: '', unread: !can, label: rowLabel(['쓰던 글 되살리기', mid, val]), more: [
+    ['tog', '되살리기', can ? '이 PC에 암호화해 두고, 끄거나 로그아웃하면 지웁니다' : '로그인하고, 이 PC의 암호화 저장을 쓸 수 있을 때 켤 수 있습니다', on, 'draft', flags(!can && 'off', st.busy === 'draft:draft' && 'off')],
+    ['live', st.notes?.get?.('draft') || ''],
+  ] };
 }

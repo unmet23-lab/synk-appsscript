@@ -4,7 +4,7 @@ const spec=Object.freeze({label:'Gemini',kind:'weekly',bin:'agy',home:null,folde
 // 요금제 · 포함된 크레딧(11-02): agy는 Google AI 요금제 등급을 알려 주지 않아 회원이 고르고(planChoices — family는 가족 공유로 받는 계정, ultra는 등급을 모르는 옛 값),
 // 요금제에 딸려 오는 Flow 크레딧 · Google Cloud(API) 크레딧의 남은 양은 읽는 공식 경로가 없어 회원이 넣는다(Claude · GPT의 API 크레딧과 같은 칸).
 // Cloud 크레딧은 받은 달마다 12개월씩 차례로 사라져 한 날짜로 말할 수 없어 만료 날짜는 받지 않는다(apiCreditUntil 없음 — 설계 검토 P1-1).
-const policy=Object.freeze({editable:['plan','apiCredit','flowCredit','flowCreditUntil'],planChoices:['plus','pro','ultra','ultra_5x','ultra_20x','family'],windowsDirectories:({env,home})=>{const local=env.LOCALAPPDATA||path.join(home,'AppData','Local');return [path.join(local,'agy','bin'),path.join(local,'Microsoft','WinGet','Links')];},installer:"irm https://antigravity.google/cli/install.ps1 | iex",macInstaller:"curl -fsSL https://antigravity.google/cli/install.sh | bash",reachable:"https://oauth2.googleapis.com/",login:{args:()=>[],trackPrevious:true,acceptAtTimeout:true,dataCwd:true,consoleMessage:'검은 창이 열렸어요. Enter로 「Google OAuth」를 고르고, 브라우저에서 계정을 고른 뒤 「로그인」을 눌러 주세요. 브라우저에 나온 코드를 「클립보드에 복사」해 검은 창에 붙여 넣고 Enter를 누르면 돼요(검은 창에서는 오른쪽 클릭이 붙여넣기예요).'},sharedAccount:{hiddenKey:'geminiHidden',hiddenMax:20,awayMessage:'지금 이 PC의 Antigravity에는 다른 계정이 로그인돼 있어요 — 마지막으로 읽은 값이에요.',nobodyMessage:'지금 이 PC의 Antigravity에 로그인된 계정이 없어요 — 마지막으로 읽은 값이에요.',unknownMessage:'Antigravity CLI에 어느 계정이 로그인돼 있는지 확인하지 못해 이번 값은 넣지 않았어요. 잠시 뒤 다시 확인해 주세요.'}});
+const policy=Object.freeze({editable:['plan','apiCredit','flowCredit','flowCreditUntil'],planChoices:['plus','pro','ultra','ultra_5x','ultra_20x','family'],windowsDirectories:({env,home})=>{const local=env.LOCALAPPDATA||path.join(home,'AppData','Local');return [path.join(local,'agy','bin'),path.join(local,'Microsoft','WinGet','Links')];},installer:"irm https://antigravity.google/cli/install.ps1 | iex",macInstaller:"curl -fsSL https://antigravity.google/cli/install.sh | bash",reachable:"https://oauth2.googleapis.com/",login:{args:()=>[],trackPrevious:true,acceptAtTimeout:true,dataCwd:true,consoleMessage:'검은 창이 열렸습니다. Enter로 「Google OAuth」를 고르고, 브라우저에서 계정을 고른 뒤 「로그인」을 눌러 주세요. 브라우저에 나온 코드를 「클립보드에 복사」해 검은 창에 붙여 넣고 Enter를 누르면 됩니다. 검은 창에서는 오른쪽 클릭이 붙여넣기입니다.'},sharedAccount:{hiddenKey:'geminiHidden',hiddenMax:20,awayMessage:'지금 이 PC의 Antigravity에는 다른 계정이 로그인되어 있습니다.',nobodyMessage:'지금 이 PC의 Antigravity에 로그인된 계정이 없습니다.',unknownMessage:'Antigravity CLI에 어느 계정이 로그인되어 있는지 확인하지 못해 이번 값은 넣지 않았습니다. 잠시 뒤 다시 확인해 주세요.'}});
 // 공급자 명령·출력·로그인 방식은 이 어댑터가 함께 소유한다.
 function create({runtime,accounts,system,now,helpers}){
  const {root,agyCwd}=accounts;
@@ -32,8 +32,8 @@ async function readGemini(){
     if(log&&/log-file/i.test(r.err+'\n'+r.out)&&/unknown (flag|option|argument)|flag provided but not defined/i.test(r.err+'\n'+r.out)){r=await runTool(runtime.tools.gemini.path,args,{timeout:45000,cwd});email=null;}
     const usage=parseAgyUsage(r.out);
     if(!usage||!usage.weekly&&!usage.session){
-      if(agyNeedsLogin(r.out+'\n'+r.err))return {state:'needs-login',email,message:'Gemini(Antigravity) 로그인이 필요해요. 다시 연결해 주세요.'};
-      return {state:'error',email,message:r.code===-2?'Antigravity CLI가 제때 답하지 않았어요. 잠시 뒤 다시 확인해 주세요.':'Antigravity CLI의 사용량을 읽지 못했어요.'};
+      if(agyNeedsLogin(r.out+'\n'+r.err))return {state:'needs-login',email,message:'Gemini(Antigravity) 로그인이 필요합니다. 다시 연결해 주세요.'};
+      return {state:'error',email,message:r.code===-2?'Antigravity CLI가 제때 답하지 않았습니다. 잠시 뒤 다시 확인해 주세요.':'Antigravity CLI의 사용량을 읽지 못했습니다.'};
     }
     return {state:'ok',email,live:{readAt:now(),session:usage.session,weekly:usage.weekly,models:usage.models}};
   }

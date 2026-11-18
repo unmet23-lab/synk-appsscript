@@ -376,6 +376,8 @@ html[data-orb-client="legacy"] #view-settings dd:has([data-pulse-legacy="open"])
 html[data-orb-client="legacy"] #view-settings dt:has(+ dd [data-pulse-legacy="open"]),
 html[data-orb-client="legacy"] #view-settings .setting-row:has(#keyboard-help),
 html[data-orb-client="legacy"] #view-settings .setting-row:has(#global-shortcut-form){display:none !important}
+/* 옛 내 계정 맨 위의 「← 설정」. 설정은 새 얼굴의 설정 방이 맡아 옛 설정 화면으로 가는 길을 닫는다. 돌아가는 길은 띠의 「돌아가기」다(2단계 둘째 조각 설계 9.2) */
+html[data-orb-client="legacy"] #view-account .ap-back{display:none !important}
 
 /* ── 새 얼굴이 보이는 동안 남기는 옛 알림 줄과 로그아웃 확인 대화상자를 검정으로 다시 칠한다 ── */
 html[data-orb-client] #toast{position:fixed;z-index:120;bottom:28px;padding:12px 20px;border-radius:999px;background:var(--pit,#0C0C0B);color:#F3F1EC;

@@ -205,9 +205,19 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
    * bind로 런처에 손잡이를 넘겨, 계정 생명주기가 바뀔 때 내 계정 자료를 버리게 한다. 런처가 넘기지 않으면 「계정」은 옛 화면을 연다 */
   const roomOptions = options.rooms && typeof options.rooms === 'object' ? options.rooms : {};
   const accountAdapter = roomOptions.account && typeof roomOptions.account.request === 'function' && typeof roomOptions.account.identity === 'function' ? roomOptions.account : null;
+  /* 설정 방의 PC 쪽 다리(설계 1.3절 표). 없는 칸은 그 줄을 세우지 않는다. 옛 설정 화면으로 가는 길은 이제 없다(설계 9.2) */
+  const roomPart = (name, keys) => { const v = roomOptions[name]; return v && typeof v === 'object' && keys.every(k => typeof v[k] === 'function') ? v : null; };
   const rooms = createOrbRooms({
     subs,
     account: accountAdapter,
+    pc: {
+      desktop: roomPart('desktop', ['get', 'update']),
+      drafts: roomPart('drafts', ['status', 'set']),
+      notices: roomPart('notices', ['get', 'set']),
+      updates: roomPart('updates', ['status', 'check', 'download', 'install']),
+      environment: typeof roomOptions.environment === 'function' ? () => roomOptions.environment() : null,
+      copyDiagnostics: typeof roomOptions.copyDiagnostics === 'function' ? () => roomOptions.copyDiagnostics() : null,
+    },
     now,
     setTimer,
     clearTimer,
@@ -354,7 +364,10 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 구독 줄 아래에 종류가 다른 줄을 붙인다(2단계 둘째 조각 설계 2절 · 3절). 요금 줄은 구독 줄이 하나라도 있을 때만 서고,
     // 모델별 토큰 줄은 볼 계정이면 구독이 없어도 선다(이 PC의 기록으로 센다, 설계 3.4)
     const extra = signedIn && sol.snapshot ? [today.rows?.length ? rooms.costRow() : null, rooms.tokRow()].filter(Boolean) : [];
-    return { ...today, extra, rereading: sol.checking || Boolean(sol.snapshot?.checking) };
+    // 팁은 그 구독 줄 안쪽에 작은 글 한 줄과 반응 단추 둘로 선다(설계 검토 D7). 고르는 일은 모델(pickUsageTips)이 한다
+    const tips = signedIn && sol.snapshot && today.rows?.length ? rooms.subTips() : null;
+    const rows = tips?.size ? today.rows.map(r => (tips.has(r.key) ? { ...r, more: { ...r.more, tip: tips.get(r.key) } } : r)) : today.rows;
+    return { ...today, rows, extra, rereading: sol.checking || Boolean(sol.snapshot?.checking) };
   }
 
   /* 이 계정이 볼 수 있는 방문자 분석. 그 계정이 받은 답만 쓴다. 다른 계정의 답이나 회원이 아닐 때는 보이지 않는다 */
@@ -439,7 +452,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       fan: mode === 'portal' ? null : { ...appSwitchScene(state), open: switchOpen, pin: fanPin },
       room: mode === 'portal' ? null : roomScene(state),
       aside: mode === 'portal' ? null : aside,
-      rooms: mode === 'portal' || !aside ? null : rooms.scene({ aside, checking: sol.checking, name: roomName(), accountKey: state.accountKey || '' }),
+      rooms: mode === 'portal' || !aside ? null : rooms.scene({ aside, checking: sol.checking, name: roomName(), accountKey: state.accountKey || '', member: memberShown(state) }),
       legacy: legacyKind,
       focus: focusKey,
       focusSeq,
@@ -1284,9 +1297,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
 
   function foot(action) {
     if (disposed || busyAction !== null) return;
-    // 「계정」은 내 계정 방을 연다(2단계 둘째 조각 설계 9.3). 「설정」은 설정 방을 지을 때까지 옛 화면이다
+    // 「계정」은 내 계정 방을, 「설정」은 설정 방을 연다(2단계 둘째 조각 설계 9.3). 설정 방은 손님에게도 있다
     if (action === 'account') { if (rooms.hasAccount()) openAside('account'); else openLegacy('account'); return; }
-    if (action === 'settings') { openLegacy(action); return; }
+    if (action === 'settings') { openAside('settings'); return; }
     if (action === 'logout') {
       closeSwitch();
       try { void options.onSignOut?.(); } catch { /* 옛 런처가 알림으로 알린다 */ }

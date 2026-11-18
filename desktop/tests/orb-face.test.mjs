@@ -1404,7 +1404,8 @@ test('with an old screen open, the orb closes it quietly and opens the fan pinne
   await settle();
   h.face.setState(signedIn());
   await settle();
-  h.face.handle('foot', 'settings');
+  // 계정 어댑터가 없는 호스트의 「계정」은 옛 내 계정 화면을 연다(남은 옛 화면 하나)
+  h.face.handle('foot', 'account');
   await settle();
   assert.equal(h.face.clientMode(), 'legacy');
   h.face.handle('open-switch');
@@ -1413,7 +1414,7 @@ test('with an old screen open, the orb closes it quietly and opens the fan pinne
   assert.deepEqual([h.view.last().fan.open, h.view.last().fan.pin], [true, true]);
 });
 
-test('「설정」 still opens the old screen until its room is built, 「계정」 falls back to it only without the account bridge, and the launcher no longer clicks the old board (설계 9.2)', async t => {
+test('「설정」 opens the settings room and never the old screen, 「계정」 falls back to it only without the account bridge, and the launcher keeps only the account branch (설계 9.2)', async t => {
   const h = harness(t);
   await settle();
   h.face.setState(signedIn());
@@ -1422,12 +1423,16 @@ test('「설정」 still opens the old screen until its room is built, 「계정
   await settle();
   assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1).slice(0, 2), ['openLegacy', 'account'], 'a host without faceOptions.rooms keeps the old screen');
   assert.ok(h.face.handle('escape'));
+  const before = h.calls.filter(c => c[0] === 'openLegacy').length;
   h.face.handle('foot', 'settings');
-  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1).slice(0, 2), ['openLegacy', 'settings']);
+  assert.deepEqual([h.view.last().aside, h.view.last().focus, h.face.clientMode()], ['settings', 'aside', 'app'], 'even a host without the settings bridge opens the room');
+  assert.equal(h.calls.filter(c => c[0] === 'openLegacy').length, before, 'the old settings screen is not opened');
+  assert.equal(h.view.last().rooms.settings.say, '여기서는 새 판을 받을 수 없습니다.');
   const launcher = fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8');
   assert.doesNotMatch(launcher, /data-subs="manage"|orbManageTimer/, 'the old 25-try click loop is gone');
-  assert.doesNotMatch(launcher, /kind==='subscriptions'/);
-  assert.match(launcher, /if\(kind==='account'\)\{showView\('account'\);return;\}/, 'the village record still uses the old account screen');
+  assert.doesNotMatch(launcher, /kind==='subscriptions'|kind==='settings'/);
+  assert.match(launcher, /function openOrbLegacy\(kind\)\{if\(kind==='account'\)\{showView\('account'\);return;\}\}/, 'the village record still uses the old account screen, and nothing else does');
+  assert.match(launcher, /if\(portalHost\?\.clientMode\?\.\(\)==='legacy'&&next!=='account'\)return;/, 'the old account screen cannot lead to the old settings or Solio views');
 });
 
 test('the view opens the fan only on Enter, Space or the down arrow, never on focus alone (설계 검토 1차 1)', () => {
@@ -1522,7 +1527,8 @@ test('Esc closes the fan first, then the old screen, then the room (설계 9.1)'
   assert.deepEqual([h.view.last().fan.open, h.view.last().aside], [true, 'manage'], 'the fan opens over the room');
   assert.ok(h.face.handle('escape'));
   assert.deepEqual([h.view.last().fan.open, h.view.last().aside], [false, 'manage'], 'Esc closes the fan and keeps the room');
-  h.face.handle('foot', 'settings');
+  // 계정 어댑터가 없는 호스트의 「계정」은 옛 내 계정 화면을 연다. 방은 그 밑에 남는다
+  h.face.handle('foot', 'account');
   assert.equal(h.face.clientMode(), 'legacy');
   assert.equal(h.view.last().aside, 'manage', 'the room is kept under the old screen');
   assert.ok(h.face.handle('escape'));
@@ -1759,4 +1765,86 @@ test('a guest cannot open 내 계정', async t => {
   await settle(30);
   h.face.handle('foot', 'account');
   assert.equal(h.view.last().aside ?? null, null);
+});
+
+/* ── 셋째 묶음: 설정 방(설계 6절)과 구독 줄의 팁(설계 검토 D7) ── */
+function settingsFaceHarness(t, { rows = [roomRow('c', 'claude', { passCount: 1, passUntil: Date.now() + 2 * 864e5 })], options = {} } = {}) {
+  let snap = { ok: true, seq: 1, rows, check: { at: Date.now() - 60e3 }, usage: { accounts: {} }, settings: {}, tools: {}, login: null };
+  const saved = [], pcalls = [];
+  const subscriptions = {
+    snapshot: async () => snap,
+    check: async () => ({ ...snap, seq: snap.seq + 1 }),
+    onChanged: () => () => {},
+    save: async patch => { saved.push(patch); snap = { ...snap, seq: snap.seq + 1, settings: { ...snap.settings, ...(patch.settings || {}) } }; return snap; },
+  };
+  const note = (name, value) => (...args) => { pcalls.push([name, ...args]); return Promise.resolve(typeof value === 'function' ? value(...args) : value); };
+  let notices = { banners: true, mutedUntil: 0, schedule: false, start: '22:00', end: '08:00', weekdays: false };
+  const rooms = {
+    desktop: { get: note('desktop.get', { ok: true, preferences: { closeToTray: true, launchAtLogin: false, startHidden: false, globalShortcut: '', zoomFactor: 1 }, capabilities: { launchAtLogin: true, globalShortcut: true, tray: true } }), update: note('desktop.update', { ok: true }), onChange: () => () => pcalls.push(['desktop.off']) },
+    drafts: { status: note('drafts.status', { ok: true, available: true, enabled: false }), set: note('drafts.set', { ok: true, available: true, enabled: true }), onChange: () => () => pcalls.push(['drafts.off']) },
+    notices: { get: () => ({ ...notices }), set: patch => { pcalls.push(['notices.set', patch]); notices = { ...notices, ...patch }; return { ...notices }; } },
+    updates: { status: note('updates.status', { state: 'current', currentVersion: '0.4.97' }), check: note('updates.check', { state: 'checking' }), download: note('updates.download', {}), install: note('updates.install', {}), confirmInstall: note('confirmInstall', true), onChange: () => () => pcalls.push(['updates.off']) },
+    environment: () => ({ platform: 'win32', version: '0.4.97', mode: 'development' }),
+    copyDiagnostics: note('copyDiagnostics', true),
+  };
+  const h = harness(t, { options: { subscriptions, rooms, ...options } });
+  return { ...h, saved, pcalls, pnames: () => pcalls.map(c => c[0]), room: () => h.view.last().rooms?.settings, solio: () => h.view.last().room?.solio };
+}
+const togOf = (row, act) => row.more.find(x => x[0] === 'tog' && x[4] === act);
+
+test('a guest opens the settings room from the fan: the bridges are read, the draft switch is locked, there is no tip switch, and Esc closes it (설계 6절)', async t => {
+  // 손님은 시험용 손님 길로 솔리오에 들어온다. 펼침에는 「설정」 하나만 있다
+  const h = settingsFaceHarness(t, { options: { initialState: { status: 'signed-out' }, allowGuestEntry: () => true, onBrowse: () => ({ ok: true, action: 'purpose' }), onSelectPurpose: () => ({ ok: true }) } });
+  await settle();
+  h.face.handle('qa-guest');
+  await settle(30);
+  h.face.handle('open-switch');
+  assert.deepEqual(h.view.last().fan.foot.map(f => f.action), ['settings']);
+  h.face.handle('foot', 'settings');
+  await settle();
+  assert.deepEqual([h.view.last().aside, h.view.last().focus], ['settings', 'aside']);
+  assert.deepEqual(h.pnames().sort(), ['desktop.get', 'drafts.status', 'updates.status']);
+  const room = h.room();
+  assert.equal(room.say, '이 PC의 SYNK는 최신 판입니다.');
+  assert.deepEqual(room.rows.map(r => r.key), ['update', 'start', 'key', 'view', 'notice', 'draft']);
+  const draft = room.rows.find(r => r.key === 'draft');
+  assert.equal(togOf(draft, 'draft')[5], 'off', 'a guest cannot switch draft recovery on');
+  assert.equal(togOf(room.rows.find(r => r.key === 'notice'), 'tips'), undefined, 'a guest has no tip switch');
+  h.face.handle('room', { room: 'settings', key: 'draft', act: 'draft' });
+  await settle();
+  assert.ok(!h.pnames().includes('drafts.set'));
+  assert.ok(h.face.handle('escape'));
+  assert.deepEqual([h.view.last().aside, h.view.last().focus], [null, 'aside-return']);
+  assert.deepEqual(h.pnames().filter(n => n.endsWith('.off')).sort(), ['desktop.off', 'drafts.off', 'updates.off'], 'closing stops listening');
+});
+
+test('a member’s subscription row carries its tip with two reactions; a reaction saves, and 「구독 팁」 off in the settings room hides it (설계 검토 D7)', async t => {
+  const h = settingsFaceHarness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle(30);
+  const row = h.solio().rows.find(r => r.key === 'claude');
+  assert.equal(row.more.tip.key, 'pass:claude');
+  assert.match(row.more.tip.text, /니다\.$/);
+  h.face.handle('room', { room: 'solio', key: 'svc:claude', act: 'tip', arg: 'pass:claude|helpful' });
+  await settle();
+  assert.deepEqual(h.saved.at(-1), { tip: { key: 'pass:claude', action: 'helpful' } });
+  const after = h.solio().rows.find(r => r.key === 'claude').more.tip;
+  assert.deepEqual([after.done, after.live], [true, '도움이 됐다고 남겼습니다. 같은 팁은 7일 동안 쉽니다.']);
+  h.face.handle('foot', 'settings');
+  await settle();
+  assert.equal(togOf(h.room().rows.find(r => r.key === 'notice'), 'tips')[3], true, 'a member sees 「구독 팁」 on');
+  h.face.handle('room', { room: 'settings', key: 'notice', act: 'tips' });
+  await settle();
+  assert.deepEqual(h.saved.at(-1), { settings: { tipsOff: true } });
+  assert.equal(togOf(h.room().rows.find(r => r.key === 'notice'), 'tips')[3], false);
+  assert.equal(h.solio().rows.find(r => r.key === 'claude').more.tip, undefined, 'the tip goes from the row');
+});
+
+test('the launcher hands the settings room its bridges: preferences, drafts, notices through convenience, updates with the install question, and the problem report', () => {
+  const launcher = fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8');
+  assert.match(launcher, /confirmInstall:\(\)=>confirmUpdateInstall\(\)/, 'the install asks about unsaved writing first, as the old screen did');
+  assert.match(launcher, /convenience\?\.notifications/, 'notices go through convenience, never straight to storage');
+  assert.match(launcher, /desktop,drafts,notices,updates,environment:\(\)=>environment,copyDiagnostics\}/);
+  assert.match(launcher, /safeDiagnostics\(\{environment,auth,clients,view:'settings',online:navigator\.onLine\}\)/);
 });
