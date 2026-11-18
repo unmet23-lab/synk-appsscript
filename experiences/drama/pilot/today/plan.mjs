@@ -220,7 +220,7 @@ function checkItem({ turns, lesson, plan, facts, entry, nowMs, tz, entryToday, s
  }
  if (entry && !entryToday) {
   const v = entry.venue || {};
-  return { kind: 'check', title: v.name ? `입장 검사 게임 · ${v.name} 근무` : '입장 검사 게임 한 판', minutes: MINUTES.entry, open: { type: 'game', game: 'entry', venueId: v.id || null },
+  return { kind: 'check', title: v.name ? `입장 검사 게임 · ${v.name} 근무` : '입장 검사 게임 한 판', minutes: MINUTES.entry, open: { type: 'game', game: 'entry', venueId: v.id || null, venueName: v.name || null },
    why: { code: `check.entry.${entry.patternId}`, text: entry.why, lead: entry.why, next: entry.next || null, evidence: { game: 'entry-check', patternId: entry.patternId, misses: entry.misses, seen: entry.seen, evidenceIds: entry.evidenceIds || [], targetId: entry.targetId || null, itemKey: entry.itemKey || null } } };
  }
  return null;

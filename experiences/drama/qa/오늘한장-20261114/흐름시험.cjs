@@ -31,7 +31,9 @@ fs.mkdirSync(out, { recursive: true });
  const scenario = args.includes('--s') ? args[args.indexOf('--s') + 1] : 'A';
  await page.goto(`${base}/?s=${scenario}`);
  await until(async () => (await F()?.$('.td [data-go]')));
- const rows = await F().$$eval('.td .td-item', (x) => x.map((e) => ({ kind: e.querySelector('.td-k')?.firstChild?.textContent || '', title: e.querySelector('h3')?.textContent || '' })));
+ // 11-18 장면 판부터 칸마다 data-kind(again · new · check)와 data-title(계약의 제목)을 단다 — 칸 이름 글은 화면에서 빠졌다.
+ const LABEL = { again: '복습', new: '오늘 공부', check: '점검' };
+ const rows = await F().$$eval('.td .td-scn-card', (x) => x.map((e) => ({ kind: e.dataset.kind, title: e.dataset.title || '' }))).then((r) => r.map((x) => ({ ...x, kind: LABEL[x.kind] || x.kind })));
  await page.waitForTimeout(1300); // 태오 한마디가 낱말마다 다 떠오를 때까지
  await shot('오늘');
  await F().click('.td [data-go]');

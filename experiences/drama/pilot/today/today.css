@@ -64,7 +64,6 @@ button.td-bub:disabled { cursor: default; transform: none; }
    11-18 GPT 맹검: 가로줄 · 회색 설명 · 오른쪽 「자세히」 줄 · 검정 알약 단추가 생산성 앱 목록 같았고, 위의 일력 생각이 아래로 이어지지 않았다.
    가로줄과 카드 테두리는 없다. 이유 문장은 앱이 무엇을 보고 골랐는지라 각주처럼 흐리게 두지 않는다. 다음 장(내일)의 줄도 같은 여백 칸을 쓴다. */
 .td-sec { display: flex; justify-content: space-between; align-items: baseline; margin: 10px 0 0; padding-bottom: 8px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); border-bottom: 1px solid var(--rule); }
-.td-r > .td-sec.td-lead { margin: 34px 0 0; padding: 0; border: 0; font-size: 12px; color: var(--ink-3); }
 .td-n { font-family: var(--num); font-size: 13px; font-weight: 600; color: var(--ink-0); }
 .td-row { position: relative; display: block; width: 100%; padding: 14px 0 15px; border: 0; border-bottom: 1px solid var(--rule); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .2s; }
 .td-row:active { background-color: rgba(23,22,15,.035); }
@@ -76,14 +75,6 @@ button.td-bub:disabled { cursor: default; transform: none; }
 .td-list .td-row:last-child { padding-bottom: 6px; }
 .td-list .td-k { flex-direction: column; align-items: flex-start; gap: 3px; padding-top: 3px; font-size: 12.5px; letter-spacing: -.01em; color: var(--ink-0); }
 .td-list .td-k b { font-weight: 500; font-size: 13px; color: var(--ink-2); }
-/* 펼침은 글로 말한다 — 「자세히」 · 「접기」(11-16 카본: 「+」 · 「⌄」 기호가 무엇인지 모호했다). 오늘 장에서는 이유 문장 끝에 먹색으로 붙는다. */
-.td-tog { margin-left: auto; font-weight: 600; color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(23,22,15,.25); }
-.td-list .td-tog { display: inline-flex; align-items: center; gap: 5px; margin-left: 2px; font-size: 12.5px; font-weight: 700; color: var(--ink-0); text-decoration: none; }
-.td-list .td-tog::after { content: ''; width: 5px; height: 5px; border: solid currentColor; border-width: 0 1.6px 1.6px 0; transform: translateY(-2px) rotate(45deg); transition: transform .25s var(--spring); }
-.td-list .td-row.open .td-tog::after { transform: translateY(1px) rotate(-135deg); }
-.td-end { display: inline-block; } /* 마지막 낱말과 「자세히」를 한 덩이로 — 칸보다 넓으면 안에서 줄을 바꾼다 */
-.td-tog .c, .td-row.open .td-tog .o { display: none; }
-.td-row.open .td-tog .c { display: inline; }
 .td h3 { margin: 3px 0 0; font-size: 17px; font-weight: 700; letter-spacing: -.03em; line-height: 1.32; }
 .td-list h3 { margin: 0; font-size: 17px; line-height: 1.36; word-break: keep-all; }
 .td-why { margin: 5px 0 0; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
@@ -169,7 +160,6 @@ button.td-bub:disabled { cursor: default; transform: none; }
  .td-date.small .td-num { font-size: 220px; }
  .td-wd b { font-size: 34px; } .td-wd span { font-size: 15px; }
  .td-say { grid-template-columns: minmax(0, 1fr) 176px; gap: 28px; margin-top: 36px; padding-top: 26px; }
- .td-today .td-say { grid-template-columns: minmax(0, 1fr) 236px; gap: 32px; }
  .td-who { font-size: 13px; }
  .td-line { font-size: 27px; }
  .td h3 { font-size: 19px; }
@@ -177,35 +167,15 @@ button.td-bub:disabled { cursor: default; transform: none; }
  /* 넓은 화면의 어둠은 종이 아래 한 띠 — 글은 두 기둥 끝에 맞춘다. 띠는 화면 아래에 고정하고, 종이는 그 위에서 스크롤된다 — 종이 안의 절대 위치였을 때 세로가 낮은 화면(1366×768)이나 줄을 펼친 뒤에
     띠가 목록을 덮었다(11-18 카본 A1). 종이의 아래 여백(td-into-sheet)이 띠 높이보다 커서 끝까지 내리면 마지막 줄이 띠 위에 선다. */
  .td-foot.td-into { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; padding: 0; }
- .td-foot.td-into .td-go { min-height: 88px; padding: 0 max(64px, calc(50% - 588px)); font-size: 24px; } /* 띠 글은 종이의 두 기둥 끝에 맞춘다 — 왼쪽 「오늘 시작」, 오른쪽 몇 분과 화살표 */
+ .td-foot.td-into .td-go { min-height: 88px; padding: 0 max(64px, calc(50% - 588px)); font-size: 24px; } /* 띠 글은 종이의 두 기둥 끝에 맞춘다(기둥 540 + 96 + 540 = 1176) — 오늘 장(장면 판)은 아래 장면 판 규칙 */
  .td-foot.td-into .td-m { font-size: 18px; }
  .td-list { --col: 76px; }
- /* 오늘 장 — 날짜가 위 한 줄을 다 쓰고, 그 아래 먹줄 하나에 왼쪽 태오의 한마디와 오른쪽 오늘 할 것이 같이 매달린다.
-    단추 띠의 글은 두 기둥 끝에 맞는다(11-18 맹검 1차: 목록이 날짜 중간 높이에 걸려 따로 떠 있었고, 목록 글이 날짜에 비해 각주처럼 작았다). */
- .td-today { grid-template-rows: auto auto 1fr; align-items: start; }
- .td-today > .td-l, .td-today > .td-r { display: contents; }
- .td-today .td-date { grid-column: 1 / -1; grid-row: 1; }
- .td-today .td-dn { justify-content: space-between; } /* 요일은 오른쪽 기둥 끝까지 — 숫자와 요일이 위 한 줄을 다 쓴다 */
- .td-today .td-wd { text-align: right; } .td-today .td-wd b { font-size: 44px; }
- .td-today .td-num { font-size: min(300px, 31vh); }
- .td-today .td-say { grid-column: 1; grid-row: 2 / span 2; margin-top: 30px; }
- .td-today .td-r > .td-sec { grid-column: 2; grid-row: 2; margin: 30px 0 0; padding: 26px 0 0; border-top: 1.5px solid var(--ink-0); font-size: 13px; }
- .td-today .td-list { grid-column: 2; grid-row: 3; --col: 84px; margin-top: 12px; }
- .td-today .td-list .td-k, .td-today .td-list .td-k b, .td-today .td-list .td-tog { font-size: 15px; }
- .td-today .td-list h3 { font-size: 24px; }
- .td-today .td-list .td-why { font-size: 17.5px; }
- .td-today .td-list .td-row { padding-bottom: 30px; }
  .td-top .td-r > .td-sec, .td-under .td-r > .td-sec { margin-top: 0; }
  .td-next { margin-top: 28px; }
 }
 /* 세로가 낮은 넓은 화면(1366×768 · 1536×864 노트북 등) — 세 줄과 이유가 띠 위 첫 화면에 다 들게 날짜와 여백을 줄인다(11-18 카본 A1 뒤 잼: 줄이기 전에는 셋째 줄 이유가 띠에 가렸다) */
 @media (min-width: 1024px) and (max-height: 880px) {
  .td-sheet.td-into-sheet { padding-top: 30px; padding-bottom: 104px; scroll-padding-bottom: 104px; }
- .td-today .td-num { font-size: min(300px, 24vh); }
- .td-today .td-wd b { font-size: 36px; }
- .td-today .td-say, .td-today .td-r > .td-sec { margin-top: 22px; padding-top: 20px; }
- .td-today .td-list { margin-top: 8px; }
- .td-today .td-list .td-row { padding-bottom: 18px; }
  .td-foot.td-into .td-go { min-height: 76px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -217,3 +187,71 @@ button.td-bub:disabled { cursor: default; transform: none; }
  .td.lifting .td-sheet, .td.tearing .td-top { animation: none; }
  .td * { transition: none !important; }
 }
+
+/* 장면 판(11-18 유호님 「드라마 장면 쪽으로」 · 「앱에 옮겨」) — 오늘 장만 이 꼴이다. 끝 화면(장 뜯기)은 위의 일력 그대로.
+   참고: 드라마 앱의 회차 목록(다음 장면은 큰 컷, 나머지는 장면 컷 + 글 줄) · 참고 사이트 장부 4절 평균(밝은 바탕 · 실물 한 덩어리) · 3절 한글 서비스(제목 700 · 자간 0).
+   맹검(GPT 눈, .tmp/미학맹검/today-redo-1118 ~ 1118f): 장면 컷 위 시간 표시 · 흰 재생 원 = 「기성 동영상 목록」, 검은 번호표 = 「강좌 목차」 — 둘 다 뺐다. */
+.td-scn-sheet { padding: 0 20px; }
+.td-scn-sheet > .td-scn-l, .td-scn-sheet > .td-scn-r { display: contents; }
+.td-scn-head { padding: max(18px, env(safe-area-inset-top)) 0 0; }
+.td-scn-date { margin: 0; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.td-scn-head h2 { margin: 24px 0 0; font-size: 28px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; word-break: keep-all; text-wrap: balance; }
+.td-scn-lead { margin: 6px 0 0; font-size: 16px; line-height: 1.5; color: var(--ink-2); word-break: keep-all; text-wrap: balance; } /* 두 줄이면 고르게 — 「해요.」만 홀로 떨어지지 않게 */
+.td-scn-card { position: relative; }
+.td-scn-hero { margin: 30px 0 0; }
+.td-shot { position: relative; display: block; overflow: hidden; aspect-ratio: 16 / 9; background: var(--paper-2); }
+.td-shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.td-scn-body { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.td-scn-hero .td-scn-body { padding-top: 14px; }
+.td-eb { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
+.td-act { display: block; margin-top: 4px; font-size: 19px; font-weight: 700; line-height: 1.35; letter-spacing: -.02em; word-break: keep-all; }
+.td-min { margin-left: 7px; font-size: 13px; font-weight: 600; color: var(--ink-3); letter-spacing: 0; }
+.td-chev { display: inline-block; width: 6px; height: 6px; margin-left: 8px; vertical-align: 3px; border: solid var(--ink-3); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); transition: transform .25s var(--spring); }
+.td-scn-card.open .td-chev { transform: translate(0, 3px) rotate(-135deg); }
+.td-say1 { display: block; margin-top: 6px; font-size: 16px; line-height: 1.5; color: var(--ink-0); word-break: keep-all; }
+.td-scn-card .td-more { display: grid; }
+.td-scn-card.open .td-more { grid-template-rows: 1fr; }
+.td-scn-body:focus-visible, .td-voice:focus-visible { outline: 2px solid var(--ink-0); outline-offset: 3px; }
+/* 나머지 장면 — 장면 컷 160 × 90과 글 줄 */
+.td-scn-r { display: contents; }
+.td-scn-card:not(.td-scn-hero) { display: grid; grid-template-columns: 160px minmax(0, 1fr); column-gap: 14px; align-items: start; margin: 26px 0 0; }
+.td-scn-card:not(.td-scn-hero) .td-act { margin-top: 3px; font-size: 16px; }
+.td-scn-card:not(.td-scn-hero) .td-say1 { margin-top: 3px; font-size: 14.5px; line-height: 1.45; }
+.td-scn-sheet .td-foot.td-into { margin-top: auto; }
+.td-scn-sheet::after { content: ''; display: block; flex: none; height: 28px; } /* 마지막 장면과 띠 사이 */
+/* 태오 한마디 — 첫 장면이 1화 식당이고 구운 한마디가 있을 때만. 장면 컷의 왼쪽 아래(얼굴을 덮지 않는 자리)에 누르는 단추로 둔다.
+   11-18 앱 화면 GPT 맹검: 작은 꼬리표는 아래 머리글과 함께 사진 설명처럼 읽혀 듣기 단추인 줄 몰랐다 — 재생 기호와 「듣기」를 늘 보이고, 말하는 동안은 소리 막대가 뛴다. */
+.td-voice { position: absolute; left: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 9px; min-height: 34px; padding: 0 14px 0 12px; border: 0; border-radius: 999px; background: rgba(23,22,15,.78); color: var(--paper); font: 700 13px/1 var(--sans); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.td-voice:active { opacity: .8; }
+.td-voice span { font-weight: 500; opacity: .86; } /* 누구의 말인지는 가볍게, 누르면 하는 일(「듣기」)은 굵게 — 두 번째 GPT 맹검: 같은 굵기면 긴 자막처럼 읽혔다 */
+.td-voice b { padding-left: 9px; border-left: 1px solid rgba(255,255,255,.35); font-weight: 800; }
+.td-voice i { width: 0; height: 0; border-left: 8px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+.td-scn-hero.speaking .td-voice i { width: 10px; height: 10px; border: 0; background: linear-gradient(currentColor, currentColor) 0 100% / 2px 100% no-repeat, linear-gradient(currentColor, currentColor) 50% 100% / 2px 60% no-repeat, linear-gradient(currentColor, currentColor) 100% 100% / 2px 80% no-repeat; animation: td-eq .7s ease-in-out infinite alternate; }
+@media (min-width: 1024px) {
+ /* 넓은 화면 — 머리는 두 기둥 위 한 줄, 그 아래 왼쪽에 큰 장면, 오른쪽에 나머지 장면이 같은 윗선에서 시작한다. 띠는 화면 아래에 고정(위의 td-into 규칙).
+    11-18 앱 화면 GPT 맹검: 오른쪽 목록이 큰 장면보다 36px 위에서 시작해 따로 떠 보였다. Opus 대체 검수 F1: 장면 판의 좌우 여백(20px)이 넓은 화면 여백(64px)을 이겼고,
+    띠 글 여백이 옛 기둥 합(1176)에 맞춰 있어 본문과 18~44px 어긋났다 — 기둥 합을 600 + 60 + 480 = 1140으로 두고 띠 글을 그 끝에 맞춘다. */
+ .td-sheet.td-scn-sheet { grid-template-columns: minmax(0, 600px) minmax(0, 480px); grid-template-rows: auto auto auto 1fr; column-gap: 60px; align-items: start; align-content: start; padding: 56px 64px 132px; }
+ .td-scn-head { grid-column: 1 / -1; grid-row: 1; padding-top: 0; }
+ .td-scn-hero { grid-column: 1; grid-row: 2 / span 3; margin-top: 36px; }
+ .td-scn-card:not(.td-scn-hero) { grid-column: 2; }
+ .td-scn .td-foot.td-into .td-go { justify-content: flex-start; gap: 18px; padding: 0 max(64px, calc(50% - 570px)); }
+ .td-scn .td-go .td-arr:first-child { margin-left: 0; } /* 「시작하기 →」 한 덩이 — 띠 양 끝에 1,000px 떨어져 있으면 글과 기호가 따로 보였다(GPT 맹검) */
+ .td-scn-date { font-size: 15px; }
+ .td-scn-head h2 { margin-top: 18px; font-size: 40px; }
+ .td-scn-lead { font-size: 18px; }
+ .td-act { font-size: 22px; } .td-say1 { font-size: 17px; }
+ .td-eb { font-size: 14px; } /* 넓은 화면의 어디 · 누구 — 12.5px 회색은 썸네일 옆에서 훑기 어려웠다(두 번째 GPT 맹검) */
+ .td-scn-card:not(.td-scn-hero) { grid-template-columns: 200px minmax(0, 1fr); column-gap: 20px; margin: 36px 0 0; }
+ .td-scn-card:not(.td-scn-hero) + .td-scn-card { margin-top: 30px; }
+ .td-scn-card:not(.td-scn-hero) .td-act { font-size: 18px; }
+ .td-scn-card:not(.td-scn-hero) .td-say1 { font-size: 15.5px; }
+ .td-scn-sheet::after { display: none; }
+}
+@media (min-width: 1024px) and (max-height: 880px) {
+ .td-sheet.td-scn-sheet { padding: 30px 64px 104px; }
+ .td-scn-head h2 { font-size: 34px; margin-top: 12px; }
+ .td-scn-hero, .td-scn-card:not(.td-scn-hero) { margin-top: 22px; }
+ .td-scn-card:not(.td-scn-hero) + .td-scn-card { margin-top: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { .td-scn-hero.speaking .td-voice i { animation: none; } }

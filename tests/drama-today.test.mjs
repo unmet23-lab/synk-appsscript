@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { world, read, doToday } from '../experiences/drama/qa/오늘한장-20261114/뽑기.mjs';
 import { buildToday, buildAfter, readTurns, revisitPlan, TAEO_LINES, dayKey, dayStart, dayParts } from '../experiences/drama/pilot/today/plan.mjs';
-import { POOL, NEW_ORDER, YO_LINES, TAEO_CALL, TAEO_MEDIA } from '../experiences/drama/pilot/today/content.mjs';
+import { POOL, NEW_ORDER, YO_LINES, TAEO_CALL, TAEO_MEDIA, SCENES, VENUE_IDS, sceneFor } from '../experiences/drama/pilot/today/content.mjs';
 import { planRevisit, REVISIT_DAYS } from '../experiences/drama/pilot/takes.mjs';
 import { STR } from '../experiences/drama/pilot/strings.mjs';
 
@@ -430,8 +430,8 @@ test('태오 한마디 영상 자리는 있는 틀에만, 정해 둔 이름으�
  assert.ok(TAEO_LINES.done && !/'요'/.test(TAEO_LINES.done));
 });
 
-test('태오 한마디와 이유 문장의 줄바꿈 덩이 — 문장마다 새 줄, 12자 이하 마디는 한 덩이, 마지막 낱말과 「자세히」는 한 덩이(11-18 Fable)', async () => {
- const { words, tail } = await import('../experiences/drama/pilot/today/screen.mjs');
+test('태오 한마디의 줄바꿈 덩이 — 문장마다 새 줄, 12자 이하 마디는 한 덩이(11-18 Fable · 이유 문장의 「자세히」 묶음은 장면 판에서 빠졌다)', async () => {
+ const { words } = await import('../experiences/drama/pilot/today/screen.mjs');
  const text = (h) => h.replace(/<[^>]+>/g, '');
  const count = (h, re) => (h.match(re) || []).length;
  // 문장 둘 → 새 줄 둘. 「식당에서 처음 만났죠?」(12자) · 「그 장면,」 · 「오늘 한 번 더 해요.」(12자)는 모두 한 덩이로 넘어간다.
@@ -453,9 +453,41 @@ test('태오 한마디와 이유 문장의 줄바꿈 덩이 — 문장마다 새
  const yo = words("이번엔 끝에 '요'까지 붙여서요.");
  assert.match(yo, /<em class="td-yo">「요」<\/em>까지/);
  assert.equal(count(yo, /<span class="cl">/g), 0);
- // 이유 문장 끝 — 마지막 낱말과 뒤에 붙일 것이 한 덩이, 앞은 그대로 흐른다.
- assert.equal(tail('어제 끝이 반말처럼 들렸어요.', '<i>자세히</i>'), '어제 끝이 반말처럼 <span class="td-end">들렸어요. <i>자세히</i></span>');
- assert.equal(tail('안녕하세요.', 'X'), '<span class="td-end">안녕하세요. X</span>');
- assert.match(tail("끝에 '요'", 'X'), /<span class="td-end"><em class="td-yo">「요」<\/em> X<\/span>$/);
- assert.equal(tail('<b> 굵게', 'X'), '&lt;b&gt; <span class="td-end">굵게 X</span>');
+});
+
+test('장면 판(11-18 유호님 「앱에 옮겨」): 할 일마다 장면 그림 · 곳 · 사람 · 할 일 · 한 줄이 서고, 촬영장 말과 답 낱말이 없다', async () => {
+ const { dramaLines, readEpisodes } = await import('../tools/build-world-speaking-talk.mjs');
+ const lines = new Map(dramaLines(await readEpisodes()).map((l) => [l.id, l]));
+ const keys = (id) => (lines.get(id)?.spec?.keys || []).flatMap((k) => [k.word, ...(k.alts || [])]).filter((w) => w && w.length >= 2);
+ // 기록 A · B가 내는 여섯 줄(복습 둘 · 전이 · 오늘 공부 · 입장 검사 · 나중 확인)과 오늘 공부 표의 모든 줄, 첫날의 1화 이어서 하기.
+ const items = [];
+ for (const s of ['A', 'B']) items.push(...(await read(await world({ scenario: s, now: morning() }), lesson)).today.items);
+ assert.deepEqual(items.map((x) => x.open.source || x.open.type), ['review', 'transfer', 'game', 'review', 'situation', 'delayed']);
+ for (const p of POOL) items.push({ kind: 'new', title: p.title, open: { type: 'situation', lineId: p.id } });
+ items.push({ kind: 'new', title: '1화 처음부터', open: { type: 'scene' }, why: { lead: '태오 선배와 학생 식당에서 처음 만나요.' } });
+ for (const it of items) {
+  const c = sceneFor(it, lesson);
+  const tag = `${it.kind} ${it.open.lineId || it.open.type}`;
+  assert.ok(c && c.scene?.img && c.scene.place && c.scene.who && c.action && c.say, `${tag}: ${JSON.stringify(c)}`);
+  for (const t of [c.scene.place, c.scene.who, c.action, c.say]) assert.ok(!STUDIO.test(t), `${tag}: ${t}`);
+  // 처음 해 보는 말하기(전이 · 오늘 공부 · 나중 확인)는 첫 제출 전에 답을 보이지 않는다 — 장면 칸의 글에도 그 줄의 답 낱말이 없다.
+  if (it.kind !== 'again' && it.open.lineId) for (const w of keys(it.open.lineId)) for (const t of [c.scene.place, c.scene.who, c.action, c.say]) assert.ok(!t.includes(w), `${tag}: 「${w}」가 「${t}」에 있다`);
+ }
+ // 장면 그림은 정해 둔 칸 이름으로만, 오늘 공부 표의 장면 칸은 모두 있는 칸이다. 입장 검사는 그 근무지의 게임 그림을 쓴다.
+ for (const [k, s] of Object.entries(SCENES)) assert.equal(s.img, `media/today-scene-${k}.webp`);
+ for (const p of POOL) assert.ok(SCENES[p.scene], `${p.id}: 장면 칸 ${p.scene}이 없다`);
+ const game = items.find((x) => x.open.type === 'game');
+ assert.ok(VENUE_IDS.includes(game.open.venueId), game.open.venueId);
+ assert.equal(sceneFor(game, lesson).scene.img, `media/today-venue-${game.open.venueId}.webp`);
+ assert.equal(sceneFor({ ...game, open: { ...game.open, venueId: 'nowhere' } }, lesson).scene.img, null);
+ // 날 수를 모르는 복습은 「오늘」이 아니라 「지난번」(null <= 0이 참이다 — 11-18 카본 A4).
+ const again = items[0];
+ // 복습 한 줄의 꼬리는 그 대사 글에서 — 내용 표(TAILS)에 없는 줄도 끝 두 어절로 서고, 글이 없으면 빈 낫표 없이 일반 문장(11-18 Opus 대체 검수 F3).
+ const extra = { ...lesson, scene: [...lesson.scene, { id: 's1e01-x', type: 'student', text: '오늘 처음 왔어요.' }] };
+ const at = (lineId, L) => sceneFor({ ...again, note: 'ending', why: { ...again.why, evidence: { ...again.why.evidence, lineId, yo: false } } }, L).say;
+ assert.equal(at('s1e01-x', extra), '「처음 왔어요」 끝맺음을 대사대로');
+ assert.equal(at('s1e01-zz', lesson), '그 대사를 끝까지 또렷하게');
+ // 입장 검사 칸의 머리글 둘째 자리는 말 거는 사람이 아니라 게임 이름이다(F5).
+ assert.equal(sceneFor(game, lesson).scene.who, '입장 검사 게임');
+ for (const [ago, when] of [[0, '오늘'], [1, '어제'], [3, '지난번'], [null, '지난번'], [undefined, '지난번']]) assert.equal(sceneFor({ ...again, why: { ...again.why, evidence: { ...again.why.evidence, ago } } }, lesson).action, `${when} 한 말 다시 하기`);
 });

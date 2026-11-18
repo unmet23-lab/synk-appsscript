@@ -1,22 +1,23 @@
 // 「오늘」 한 장 화면(11-14, 깃발 ?today=1 뒤 — pilot.mjs startToday가 부른다). 둘째 날부터 첫 화면 대신:
-//   일력 한 장(11-16 뼈대 다시 짜기 — 카본 맹검에서 옛 A안 3점 · 이 판 6점) — 큰 날짜 숫자가 주인공이고, 태오는 큰 말(왼쪽)과 1화 식당 장면 한 컷(오른쪽)으로
-//   한마디 한다(11-18 아래 절 다시 짓기 — GPT 맹검에서 옛 판 5점 기각 · 이 판 7점).
-//   종이 아래 끝의 먹색 띠 단추(「오늘 시작 · N분」) + 오늘 할 것 세 줄(복습 · 오늘 공부 · 점검)과 줄마다 앱이 본 것 한 문장(「자세히」로 나머지 까닭과 근거) →
-//   누르면 장이 들려 어두운 장면으로, 고르는 화면 없이 차례로 → 끝나면 그 장의 날짜에 동그라미, 오늘 달라진 것(전은 줄을 긋고 후는 체크),
-//   다음에 할 것(날짜별 다음 장) → 「오늘은 여기까지」로 이 장을 뜯으면 다음 장이 보인다.
+//   장면 판(11-18 유호님 「드라마 장면 쪽으로」 · 「앱에 옮겨」 — qa/오늘한장-20261114/현황.md 12절): 「오늘은 장면 세 개, 5분.」 아래에 할 일마다
+//   그 드라마의 장면 한 컷(첫 할 일은 크게)과 머리글(어디 · 누구) · 할 일 · 한 줄. 줄을 누르면 앱이 본 까닭과 근거가 펼쳐진다(content.mjs sceneFor).
+//   전에는 일력 한 장(11-16)이었다 — 같은 날 유호님 「누가봐도 슬롭같고 무슨 내용인지 하나도 이해가 안가」.
+//   종이 아래 끝의 먹색 띠 단추(「시작하기」 · 이어서 연 날은 「이어서」)를 누르면 장이 들려 어두운 장면으로, 고르는 화면 없이 차례로 →
+//   끝 화면은 일력 한 장 그대로다: 그 장의 날짜에 동그라미, 오늘 달라진 것(전은 줄을 긋고 후는 체크), 다음에 할 것(날짜별 다음 장) →
+//   「오늘은 여기까지」로 이 장을 뜯으면 다음 장이 보인다.
 // 값은 plan.mjs 계약(today · after)만 읽는다. 차례는 드라마 장면 함수를 그대로 부른다(새 상황 = runTransfer('today'),
 // 틀린 장면 복습 = runReview — 첫 화면과 같은 복습 화면이고, 「오늘」에서 열면 결과 화면의 「마치기」가 다음 차례로 간다).
 // 입장 검사는 드라마 틀 밖이라 부모 창 통로(SYNKTodayHost.open)로 연다 — 지금은 시연 대역(qa/오늘한장-20261114/오늘시험.mjs)에만 있다.
 // 중간에 나가도(창을 닫거나 다른 게임으로 가도) 버튼을 누른 때의 「오늘」과 한 차례가 이 탭(sessionStorage)에 남아 다시 열면 이어진다.
-// 목소리: 태오 한 줄을 구운 영상(content.mjs TAEO_MEDIA)이 있으면 장면 컷 안에서 소리와 함께 한 번 튼다. 막히면 컷이나 「듣기」를 눌러 듣는다.
-// 없으면 듣는 고리 영상과 글로만 보인다.
+// 목소리: 오늘 장(장면 판)은 첫 장면이 1화 식당이고 태오 한 줄을 구운 영상(content.mjs TAEO_MEDIA)이 있으면 큰 컷 모서리의 「태오 선배 한마디 듣기」
+// 단추로 그 소리를 한 번 낸다(heroVoice — 영상은 보이지 않는다). 막히면 그 단추를 눌러 듣는다. 없으면 단추가 없다.
+// 끝 화면의 태오 끝인사(sayBlock · voice)는 일력 때 그대로 장면 컷 안에서 소리와 함께 한 번 튼다.
 import { buildToday, buildAfter, dayKey, dayStart, proofLine as proof } from './plan.mjs';
-import { poolItem, TEXT } from './content.mjs';
+import { poolItem, TEXT, sceneFor } from './content.mjs';
 import { findLearningHost, readEvents, readRevisit, readEntry } from './gather.mjs';
 import { STR } from '../strings.mjs';
 
 const RUN = 'synk.drama.today.run';
-const KIND = { again: '복습', new: '오늘 공부', check: '점검' };
 const store = {
  get() { try { const r = JSON.parse(sessionStorage.getItem(RUN) || 'null'); return r && r.day === dayKey(Date.now()) ? r : null; } catch { return null; } },
  set(r) { try { sessionStorage.setItem(RUN, JSON.stringify(r)); } catch { /* 이 탭만 — 못 남기면 처음부터 */ } },
@@ -157,17 +158,20 @@ export async function start(ctx) {
   return reduce ? Promise.resolve() : new Promise((r) => setTimeout(r, ms));
  }
 
- /* ── 그리기 — 일력 한 장(11-16) ── */
+ /* ── 그리기 — 오늘 장은 장면 판(11-18), 끝 화면은 일력 한 장(11-16) ── */
  function hide() { if (T.root) { T.root.remove(); T.root = null; } }
  function paint(html, bind) {
   hide();
   const root = document.createElement('div');
-  root.className = 'td td-cal';
+  root.className = html.includes('td-scn-sheet') ? 'td td-cal td-scn' : 'td td-cal';
   root.innerHTML = html;
   document.body.append(root);
   T.root = root;
-  root.querySelectorAll('[data-card]').forEach((c) => c.addEventListener('click', () => { c.classList.toggle('open'); c.setAttribute('aria-expanded', c.classList.contains('open')); }));
+  root.querySelectorAll('[data-card]').forEach((c) => c.addEventListener('click', () => { c.classList.toggle('open'); c.setAttribute('aria-expanded', c.classList.contains('open')); c.closest('.td-scn-card')?.classList.toggle('open', c.classList.contains('open')); }));
+  // 장면 컷이 없는 작업본(재생 사본은 git 밖)이면 그림을 빼고 종이색 칸으로 둔다.
+  root.querySelectorAll('.td-shot img').forEach((img) => img.addEventListener('error', () => img.remove(), { once: true }));
   voice(root.querySelector('.td-sheet:not(.td-under) .td-say'));
+  heroVoice(root.querySelector('.td-scn-hero'));
   bind?.();
  }
  // 태오 한마디를 구운 영상이 있으면 소리 내어 한 번 — 끝나면 듣는 고리로 돌아간다. 소리 자동 재생이 막히면 이름 옆에 「듣기」가 뜨고,
@@ -183,6 +187,23 @@ export async function start(ctx) {
   const failed = (e) => { if (video.error || e?.name === 'NotSupportedError') { bub.disabled = true; say.classList.remove('tap'); } else say.classList.add('tap'); loop(); };
   speak().catch(failed);
   for (const b of say.querySelectorAll('[data-say], .td-listen')) b.addEventListener('click', () => speak().catch(failed));
+ }
+ // 장면 판의 태오 한마디 — 첫 장면이 1화 식당이고 그 한마디를 구웠으면, 장면 컷 아래 모서리의 「태오 선배 한마디」로 소리를 한 번 낸다
+ // (영상은 보이지 않고 소리만 — 장면 컷은 어깨 너머로 본 식당 그대로다). 막히면 「듣기」로 바뀌고 누르면 듣는다.
+ function heroVoice(card) {
+  const b = card?.querySelector('[data-say]');
+  if (!b) return;
+  const v = document.createElement('video');
+  v.playsInline = true; v.preload = 'auto'; v.hidden = true; v.src = b.dataset.say;
+  card.append(v);
+  const off = () => card.classList.remove('speaking');
+  // 재생 사본에 파일이 없거나 깨졌으면(자동 재생 막힘보다 늦게 알 수 있다) 단추를 접는다 — 「듣기」가 아무 소리 없이 남지 않게(11-18 카본 A1).
+  const gone = () => { off(); card.classList.remove('tap'); b.disabled = true; b.hidden = true; };
+  v.addEventListener('ended', off); v.addEventListener('pause', off); v.addEventListener('error', gone, { once: true });
+  const play = () => { card.classList.remove('tap'); card.classList.add('speaking'); try { v.currentTime = 0; } catch { /* 처음 */ }
+   return v.play().catch((e) => { off(); if (v.error || e?.name === 'NotSupportedError') gone(); else card.classList.add('tap'); }); };
+  b.addEventListener('click', play);
+  play();
  }
  const assets = () => ({ ...{ listenLoop: 'media/taeo-listen.mp4', poster: 'media/taeo-still.webp' }, ...(lesson.assets || {}) });
  // 일력의 풀칠한 머리 — 연월을 종이색으로 찍는다(11-16 카본: 아무 글 없는 검은 띠는 어색했다).
@@ -203,28 +224,42 @@ export async function start(ctx) {
   const ring = done ? '<svg class="td-ring" viewBox="0 0 220 140" aria-hidden="true"><path d="M150 16C96 2 30 14 16 58c-12 40 34 70 96 70 66 0 104-28 100-62C208 30 160 10 104 12 70 13 44 22 30 34" pathLength="1"/></svg>' : '';
   return `<header class="td-date${small ? ' small' : ''} rise"><div class="td-dn"><span class="td-num${w === 0 ? ' sun' : w === 6 ? ' sat' : ''}">${d.getDate()}${ring}</span><span class="td-wd"><b>${WD[w]}요일</b>${sub ? `<span>${esc(sub)}</span>` : ''}</span></div></header>`;
  }
+ // 장면 판 — 머리(날짜 · 「오늘은 장면 세 개, 5분.」 · 무엇을 하는 화면인지), 첫 할 일은 큰 장면 컷, 나머지는 장면 컷 + 글 줄.
+ // 11-18 GPT 맹검(유호님 「드라마 장면 쪽으로」 뒤 다섯 판): 장면 컷 위 시간 표시 · 흰 재생 원은 「기성 동영상 목록」, 검은 번호표와 장소 · 인물 꼬리표 반복은
+ // 「강좌 목차」로 졌다. 시간은 할 일 옆, 번호는 없다(차례는 위에서 아래). 「장면을 해 봐요」 · 「그 장면, 오늘 한 번 더 해요」는 처음 보는 사람이 뜻을 몰랐다 —
+ // 머리의 한 줄이 무엇을 하는 화면인지 말하고, 할 일마다 무엇을 하는지(복습은 고칠 것, 새 상황은 상황 글 첫 문장)를 쓴다.
+ const COUNT = ['', '하나', '두 개', '세 개'];
+ function sceneHead(ms, title, lead) {
+  const d = new Date(ms);
+  return `<header class="td-scn-head rise"><p class="td-scn-date">${d.getMonth() + 1}월 ${d.getDate()}일 ${WD[d.getDay()]}요일</p><h2>${esc(title)}</h2>${lead ? `<p class="td-scn-lead">${yo(lead)}</p>` : ''}</header>`;
+ }
+ function sceneCard(it, i, line) {
+  const sc = sceneFor(it, lesson) || { scene: {}, action: it.title, say: it.why.lead || it.why.text };
+  const hero = i === 0;
+  const img = sc.scene.img ? `<img src="${esc(sc.scene.img)}" alt="" decoding="async">` : '';
+  // 첫 장면이 1화 식당이고 태오 한마디를 구웠으면 그 소리를 내는 단추가 장면 컷 모서리에 붙는다.
+  const media = hero && sc.scene.who === '태오 선배' ? line?.media : null;
+  const say = media?.video ? `<button type="button" class="td-voice" data-say="${esc(media.video)}" aria-label="태오 선배 한마디 듣기: ${esc(line.text)}"><i aria-hidden="true"></i><span>태오 선배 한마디</span><b>듣기</b></button>` : '';
+  const head = [sc.scene.place, sc.scene.who].filter(Boolean).join(' · ');
+  // 펼친 까닭 글 — 한 줄(say1)로 이미 보인 문장은 되풀이하지 않는다(1화 이어서 하기 · 모르는 꼴은 한 줄이 까닭 글의 첫 문장이다, 11-18 카본 A3).
+  const rest = [sc.say ? it.why.text.replace(sc.say, '').trim() : it.why.text, it.why.next || ''].filter(Boolean).join(' ');
+  return `<div class="td-scn-card${hero ? ' td-scn-hero' : ''} rise" data-kind="${esc(it.kind)}" data-title="${esc(it.title)}" style="animation-delay:${120 + i * 70}ms"><span class="td-shot">${img}${say}</span>
+   <button type="button" class="td-scn-body" data-card aria-expanded="false">${head ? `<span class="td-eb">${esc(head)}</span>` : ''}<span class="td-act">${esc(sc.action)}<span class="td-min">${it.minutes}분</span><span class="td-chev" aria-hidden="true"></span></span>
+   ${sc.say ? `<span class="td-say1">${yo(sc.say)}</span>` : ''}<span class="td-more"><span>${rest ? `<span class="td-rest">${yo(rest)}</span>` : ''}<span class="td-proof">${esc(proof(it))}</span></span></span></button></div>`;
+ }
  function viewToday(t, { resume = false, empty = false } = {}) {
   const day = dayStart(Date.now()); // 학습일 날짜(새벽 4시 전이면 전날)
-  const say = sayBlock(t.line || t.empty);
-  if (empty) return `${band(day)}<article class="td-sheet td-into-sheet"><div class="td-l">${dateHead(day)}${say}</div>
-   <div class="td-r"><p class="td-why td-empty rise" style="animation-delay:200ms">${esc(t.empty?.text || '')}</p>
-   <div class="td-foot td-into rise" style="animation-delay:300ms"><button type="button" class="td-go" data-episode>1화 처음부터<span class="td-arr"></span></button></div></div></article>`;
-  // 줄마다 왼쪽 여백 칸(무엇 · 몇 분)과 오른쪽 본문(제목 · 앱이 본 것 한 문장)을 세로 먹줄 하나로 가른다 — 일력의 인쇄 여백처럼.
-  // 11-18 GPT 맹검: 가로줄 · 회색 설명 · 오른쪽 「자세히」 줄이 생산성 앱 목록 같았다. 가로줄을 없애고 이유 문장은 흐리게 두지 않는다.
-  // 「자세히」는 이유 문장 끝에 붙고 아래 꺾쇠가 달린다(11-18 맹검 1차: 여백 칸에 세 번 되풀이된 밑줄 「자세히」가 옛 웹의 보조 링크 같았다.
-  // 2차: 굵은 먹색 글만으로는 누르는 것보다 문장 속 강조처럼 보였다).
-  const rows = t.items.map((it, i) => {
-   const lead = it.why.lead || it.why.text;
-   const rest = [it.why.text.replace(lead, '').trim(), it.why.next || ''].filter(Boolean).join(' ');
-   return `<button type="button" class="td-row td-item rise" data-card aria-expanded="false" style="animation-delay:${240 + i * 60}ms">
-    <span class="td-k">${KIND[it.kind]}<b>${it.minutes}분</b></span><span class="td-body"><h3>${esc(it.title)}</h3><p class="td-why">${tail(lead, '<span class="td-tog" aria-hidden="true"><span class="o">자세히</span><span class="c">접기</span></span>')}</p>
-    <span class="td-more"><span>${rest ? `<span class="td-rest">${yo(rest)}</span>` : ''}<span class="td-proof">${esc(proof(it))}</span></span></span></span></button>`;
-  }).join('');
-  // 걸리는 시간은 단추 한 곳에만(11-16 카본: 칸 머리와 단추에 「5분」이 겹쳤다).
-  // 단추는 종이 아래의 어두운 장면이 드러난 자리다 — 누르면 이 종이가 들려 그 어둠이 장면이 된다(11-18, 둥근 검정 단추를 버림).
-  return `${band(day)}<article class="td-sheet td-today td-into-sheet"><div class="td-l">${dateHead(day)}${say}</div>
-   <div class="td-r"><p class="td-sec td-lead rise" style="animation-delay:200ms"><span>${resume ? '남은 것' : '오늘 할 것'}</span></p><div class="td-list">${rows}</div>
-   <div class="td-foot td-into rise" style="animation-delay:${300 + t.items.length * 60}ms"><button type="button" class="td-go" data-go>${resume ? '이어서' : '오늘 시작'}<span class="td-m">${t.minutes}분</span><span class="td-arr"></span></button></div></div></article>`;
+  if (empty) return `<article class="td-sheet td-scn-sheet td-into-sheet"><div class="td-scn-l">${sceneHead(day, '오늘은 새로 할 게 없어요.', t.empty?.text || '')}</div>
+   <div class="td-foot td-into rise" style="animation-delay:200ms"><button type="button" class="td-go" data-episode>1화 처음부터<span class="td-arr"></span></button></div></article>`;
+  const n = t.items.length;
+  const title = `${resume ? '남은 장면' : '오늘은 장면'} ${COUNT[n] || `${n}개`}, ${t.minutes}분.`;
+  const [first, ...more] = t.items;
+  // 단추는 종이 아래의 어두운 장면이 드러난 자리다 — 누르면 이 종이가 들려 그 어둠이 장면이 된다(11-18, 둥근 검정 단추를 버림). 시간은 머리에만.
+  // 머리 둘째 줄은 무엇을 하는 화면인지 — 입장 검사 게임은 말하기가 아니라서 그 줄이 있는 날은 함께 말한다(11-18 Opus 대체 검수 F5).
+  const lead = t.items.some((x) => x.open?.type === 'game') ? '드라마 속 인물에게 말해 보고, 입장 검사 게임도 한 판 해요.' : '드라마 속 인물에게 직접 말해 보는 연습이에요.';
+  return `<article class="td-sheet td-scn-sheet td-into-sheet"><div class="td-scn-l">${sceneHead(day, title, lead)}${sceneCard(first, 0, t.line)}</div>
+   <div class="td-scn-r">${more.map((it, i) => sceneCard(it, i + 1, null)).join('')}</div>
+   <div class="td-foot td-into rise" style="animation-delay:${260 + n * 70}ms"><button type="button" class="td-go" data-go>${resume ? '이어서' : '시작하기'}<span class="td-arr"></span></button></div></article>`;
  }
  function viewAfter(a) {
   const day = dayStart(Date.now());
@@ -263,9 +298,7 @@ const NEXT_KIND = { again: '복습', new: '새 상황', check: '점검' };
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // 「요」 한 글자는 낫표로 묶는다 — 따옴표 속 '요'만(11-16 카본 맹검: 노란 바탕은 군더더기로, 11-14 그림 검수: 따옴표는 좌우가 벌어져 보였다).
 const yo = (s) => esc(s).replace(/&#39;요&#39;/g, '<em class="td-yo">「요」</em>');
-// 이유 문장의 마지막 낱말과 「자세히」를 한 덩이로 묶는다 — 줄바꿈에 따라 「자세히」만 홀로 다음 줄에 떨어지지 않게(11-18 맹검 2차).
-// tail과 words는 시험(tests/drama-today.test.mjs)이 경계 사례를 보려고 내보낸다.
-export const tail = (s, after) => { const t = String(s ?? '').trim(); const k = t.lastIndexOf(' '); return k < 0 ? `<span class="td-end">${yo(t)} ${after}</span>` : `${yo(t.slice(0, k))} <span class="td-end">${yo(t.slice(k + 1))} ${after}</span>`; };
+// words는 시험(tests/drama-today.test.mjs)이 경계 사례를 보려고 내보낸다. (일력 오늘 장의 「자세히」 묶음 tail은 장면 판으로 바뀌어 11-18에 뺐다.)
 // 태오의 말은 문장마다 새 줄에서 시작하고, 쉼표로 나뉜 짧은 마디(12자 이하)는 한 줄 안에 붙여 둔다 — 「오늘 한 번 / 더 해요」처럼
 // 마디 가운데서 끊기지 않게(11-18 GPT 맹검: 말을 빠듯한 폭에 밀어 넣어 줄바꿈이 설계되지 않았다). 낱말은 하나씩 떠오른다.
 export const words = (s) => {
