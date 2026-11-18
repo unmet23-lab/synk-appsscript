@@ -57,11 +57,18 @@ h2{margin:0;font:var(--title);letter-spacing:-.012em}
 .opts{display:flex;flex-wrap:wrap;gap:6px 22px}
 .cand.hero .stage{max-width:640px}
 .tag.sub{padding-block:clamp(28px,5vh,52px) 4px}
+/* 펠트 큐브: 움직이지 않는 사진 세 장 */
+.felt{display:flex;flex-direction:column;gap:clamp(18px,3vh,30px);padding-block:clamp(28px,5vh,56px);border-bottom:1px solid var(--hair)}
+.felts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2vw,28px)}
+.felts figure{margin:0;display:flex;flex-direction:column;gap:12px}
+.felts img{display:block;width:100%;height:auto;background:var(--void)}
+.felts figcaption{font:var(--small);color:var(--dim)}
 .nogl{display:none;margin:18px 0 0;font:var(--small);color:var(--soft)}
 html[data-nogl] .nogl{display:block}
 .foot{margin:28px 0 0;font:var(--small);color:var(--dim)}
 
 @media (max-width:760px){
+  .felts{grid-template-columns:1fr;max-width:440px}
   .cand{grid-template-columns:1fr;gap:6px;padding-block:18px 34px}
   .stage{max-width:440px}
 }
@@ -71,9 +78,9 @@ html[data-nogl] .nogl{display:block}
 <body>
 <main class="wrap">
   <header class="head">
-    <p class="tag">SYNK 마스코트 시안 · 넷째 판과 다섯째 판</p>
-    <h1>깎은 큐브와 모놀리스,<span>눈은 같은 점 눈.</span></h1>
-    <p class="lead">위는 서서 도는 깎은 큐브이고, 아래는 점 눈을 단 모놀리스입니다. 둘 다 생각할 때 꼭짓점으로 섭니다. 큐브에 손을 올리면 그쪽을 보고, 누르면 생각합니다.</p>
+    <p class="tag">SYNK 마스코트 시안 · 여섯째 판</p>
+    <h1>깎은 꼭짓점 하나,<span>코랄 한 번, 로딩은 몸으로.</span></h1>
+    <p class="lead">만족하신 두 큐브에 세 가지를 넣었습니다. 꼭짓점 하나를 깎았고, 답이 나온 순간 눈이 코랄로 한 번 켜지고, 「로딩 보기」를 누르면 몸으로 진행을 보입니다. 큐브를 누르면 생각합니다.</p>
   </header>
 
   <div class="moods" role="group" aria-label="표정 바꾸기">
@@ -85,7 +92,44 @@ html[data-nogl] .nogl{display:block}
   </div>
   <p class="nogl">이 브라우저에서는 움직이는 큐브를 그리지 못합니다. 크롬이나 엣지에서 열어 주세요.</p>
 
-  <section class="cand hero" data-v="7">
+  <section class="cand hero" data-v="9">
+    <button class="stage" type="button" aria-label="여섯째 판, 꼭짓점 하나를 깎은 깎은 큐브. 누르면 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">여섯째 판</p>
+      <h2>깎은 큐브</h2>
+      <p class="say">앞 위 오른쪽 꼭짓점 하나를 깎았습니다. 서서 돌 때 그 면이 한 바퀴에 한 번 반짝입니다. 로딩은 면이 하나씩 깎여 나가는 것으로 보입니다. 답이 나오면 눈이 코랄로 한 번 켜졌다 돌아옵니다.</p>
+      <div class="opts"><button class="mood" type="button" id="load-9" data-load="9">로딩 보기</button></div>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <section class="cand hero" data-v="10">
+    <button class="stage" type="button" aria-label="여섯째 판, 꼭짓점 하나를 깎은 점 눈 모놀리스. 누르면 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">여섯째 판</p>
+      <h2>점 눈 모놀리스</h2>
+      <p class="say">앞 위 왼쪽 꼭짓점 하나를 깎았습니다. 깎은 면에도 테가 서고, 돌 때 한 번 반짝입니다. 로딩은 모서리 열두 개가 하나씩 켜지는 것으로 보입니다. 답이 나오면 눈이 코랄로 한 번 켜졌다 돌아옵니다.</p>
+      <div class="opts"><button class="mood" type="button" id="load-10" data-load="10">로딩 보기</button></div>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <section class="felt">
+    <div class="info">
+      <p class="key">펠트로 만든다면</p>
+      <h2>펠트 큐브</h2>
+      <p class="say">같은 큐브를 양모 펠트로 구운 사진입니다. 움직이지 않습니다. 색은 SYNK 로고의 잉크색과 종이색이고, 셋째는 꼭짓점 하나에만 코랄을 썼습니다.</p>
+    </div>
+    <div class="felts">
+      <figure><img src="assets/felt-ink.webp" width="900" height="900" alt="짙은 잉크색 양모 펠트 큐브. 앞면에 크림색 알약 모양 눈이 둘 있다."><figcaption>잉크 펠트</figcaption></figure>
+      <figure><img src="assets/felt-cream.webp" width="900" height="900" alt="크림색 양모 펠트 큐브. 앞면에 잉크색 알약 모양 눈이 둘 있다."><figcaption>크림 펠트</figcaption></figure>
+      <figure><img src="assets/felt-coral.webp" width="900" height="900" alt="잉크색 양모 펠트 큐브. 앞면 오른쪽 위 꼭짓점에 코랄색 세모가 있다."><figcaption>잉크 펠트, 꼭짓점에 코랄 세모</figcaption></figure>
+    </div>
+  </section>
+
+  <p class="tag sub">앞서 본 것</p>
+
+  <section class="cand" data-v="7">
     <button class="stage" type="button" aria-label="넷째 판, 깎은 큐브. 누르면 꼭짓점으로 서서 돕니다."><canvas></canvas></button>
     <div class="info">
       <p class="key">넷째 판</p>
@@ -95,7 +139,7 @@ html[data-nogl] .nogl{display:block}
     </div>
   </section>
 
-  <section class="cand hero" data-v="8">
+  <section class="cand" data-v="8">
     <button class="stage" type="button" aria-label="다섯째 판, 점 눈을 단 모놀리스. 누르면 꼭짓점으로 서서 돕니다."><canvas></canvas></button>
     <div class="info">
       <p class="key">다섯째 판</p>
@@ -104,8 +148,6 @@ html[data-nogl] .nogl{display:block}
       <div class="sizes" aria-label="작게 본 모습"></div>
     </div>
   </section>
-
-  <p class="tag sub">앞서 본 것</p>
 
   <section class="cand" data-v="6">
     <button class="stage" type="button" aria-label="셋째 판, 뚜껑이 떠오르는 큐브. 누르면 생각합니다."><canvas></canvas></button>
@@ -209,8 +251,11 @@ uniform vec3 uL, uOff, uCore;
 uniform vec4 uEye;
 uniform vec2 uGaze;
 uniform vec4 uSlab;
+uniform vec4 uCutV;
+uniform float uLoad, uTint;
 float gCover;
 const vec3 WARM = vec3(1.0, 0.982, 0.955);
+const vec3 CORAL = vec3(0.976, 0.408, 0.349);
 const float CAM = 6.0;
 const float FOV = 0.36;
 const float RO = 0.56;
@@ -306,9 +351,19 @@ float lidBody(vec3 p){
   float lid = ri(sdRB(ry(l, uSlab.x), vec3(1.0), 0.27), 0.31 - l.y, 0.03);
   return min(body, lid) * min(uSlab.z, uSlab.w);
 }
+/* 깎은 꼭짓점. uCutV.xyz는 깎을 꼭짓점의 부호, uCutV.w는 깎은 깊이다(0이면 깎지 않는다). 안쪽이 − 다 */
+float cutD(vec3 p){ return (dot(p, uCutV.xyz) - (3.0 - uCutV.w)) * 0.57735; }
 vec2 map(vec3 p){
-  if (uKind == 0) return vec2(sdRB(p, vec3(1.0), 0.17), 0.0);
-  if (uKind == 1) return vec2(sdRB(p, vec3(1.0), 0.02), 0.0);
+  if (uKind == 0) {
+    float d0 = sdRB(p, vec3(1.0), 0.17);
+    if (uCutV.w > 0.0) d0 = ri(d0, cutD(p), 0.03);
+    return vec2(d0, 0.0);
+  }
+  if (uKind == 1) {
+    float d1 = sdRB(p, vec3(1.0), 0.02);
+    if (uCutV.w > 0.0) d1 = ri(d1, cutD(p), 0.012);
+    return vec2(d1, 0.0);
+  }
   if (uKind == 6) {
     float d6 = lidBody(p);
     /* 뚜껑이 뜨면 그 사이에 빛 구슬이 생긴다. 닫혀 있을 때는 없다 */
@@ -368,11 +423,13 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
       if (pp.y > 0.30 + 0.5 * uSlab.y) { pp.y -= uSlab.y; ang = uSlab.x; }
     }
     vec3 pl = ry(pp, ang);
-    vec3 a = abs(ry(n, ang));
+    vec3 nl = ry(n, ang);
+    vec3 a = abs(nl);
     vec2 q; vec3 U3; vec3 V3;
-    if (a.z >= a.x && a.z >= a.y) { q = pl.xy; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 1.0, 0.0); }
-    else if (a.x >= a.y) { q = pl.zy; U3 = vec3(0.0, 0.0, 1.0); V3 = vec3(0.0, 1.0, 0.0); }
-    else { q = pl.xz; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 0.0, 1.0); }
+    float fr;   /* 로딩에서 이 면이 깎이는 차례: 앞, 오른쪽, 위, 왼쪽, 뒤, 아래 */
+    if (a.z >= a.x && a.z >= a.y) { q = pl.xy; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 1.0, 0.0); fr = nl.z > 0.0 ? 0.0 : 4.0; }
+    else if (a.x >= a.y) { q = pl.zy; U3 = vec3(0.0, 0.0, 1.0); V3 = vec3(0.0, 1.0, 0.0); fr = nl.x > 0.0 ? 1.0 : 3.0; }
+    else { q = pl.xz; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 0.0, 1.0); fr = nl.y > 0.0 ? 2.0 : 5.0; }
     float flatK = smoothstep(0.90, 0.995, max(a.x, max(a.y, a.z)));
     vec2 q2 = q * q;
     float r4 = sqrt(sqrt(dot(q2, q2)));
@@ -384,13 +441,24 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
     float sp = 0.03 * ppu * max(ndv, 0.05);
     float v1 = smoothstep(2.4, 6.0, sp) * flatK;
     float v2 = smoothstep(2.4, 6.0, sp / 5.0) * flatK;
+    /* 로딩: 면이 차례로, 가운데에서 바깥으로 깎여 나간다. 깎인 만큼이 진행이다(검정 구의 새 판 장면과 같다) */
+    float cutM = 1.0;
+    float seamL = 0.0;
+    if (uLoad >= 0.0) {
+      float fp = clamp(uLoad * 6.0 - fr, 0.0, 1.0);
+      float eC = fp * 1.30;
+      cutM = 1.0 - smoothstep(eC - 0.02, eC + 0.004, r4);
+      float dpx = (r4 - eC) * ppu / uDpr;
+      seamL = exp(-dpx * dpx / 1.5) * step(0.001, fp) * step(fp, 0.999) * flatK;
+    }
+    v1 *= cutM; v2 *= cutM;
     float e1 = clamp(7.5 / max(sp, 0.001), 0.06, 0.265);
     float e2 = clamp(7.5 / max(sp / 5.0, 0.001), 0.06, 0.265);
     float w1 = gw(6.2831853 * r4 / 0.03, e1);
     float w2 = gw(6.2831853 * r4 / 0.006, e2);
     vec3 nn = normalize(nW + Bw * (0.22 * w1 * v1 + 0.10 * w2 * v2));
     float tdh = dot(Tw, H);
-    float an = pow(max(1.0 - tdh * tdh, 0.0), 96.0) * pole * flatK * pow(max(dot(nW, H), 0.0), 1.2);
+    float an = pow(max(1.0 - tdh * tdh, 0.0), 96.0) * pole * flatK * pow(max(dot(nW, H), 0.0), 1.2) * mix(0.07, 1.0, cutM);
     float groove = 0.60 + 0.40 * (0.70 * w1 * v1 * (1.0 - 0.7 * v2) + 0.42 * w2 * v2);
     float spec = pow(max(dot(nn, H), 0.0), 30.0);
     float amb = 0.5 + 0.5 * dot(nn, normalize(vec3(-0.25, 0.7, 0.66)));
@@ -403,6 +471,12 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
     float pulse = 1.0 + 0.35 * uThink;
     c = vec3(0.005) + WARM * (an * side * groove * 0.78 * pulse + an2 * groove * 0.09 + rings + spec * 0.20 * side
       + bevel * (pow(max(dot(nW, H), 0.0), 18.0) * 0.55 * side + 0.030) + 0.010 * max(ndl, 0.0));
+    /* 아직 깎지 않은 면은 넓고 흐린 빛 하나만 받는다. 깎는 자리에는 가는 선이 선다 */
+    c += WARM * ((1.0 - cutM) * pow(max(dot(nW, H), 0.0), 9.0) * 0.085 * side * flatK + seamL * (0.10 + 0.30 * side));
+    /* 깎은 꼭짓점의 면: 결이 없는 매끈한 면이라 빛과 마주칠 때만 한 번 반짝인다 */
+    if (uKind == 0 && uCutV.w > 0.0 && dot(n, uCutV.xyz) * 0.57735 > 0.93) {
+      c = vec3(0.005) + WARM * (0.055 + pow(max(dot(nW, H), 0.0), 120.0) * 1.2 + 0.10 * pow(1.0 - ndv, 3.0));
+    }
     if (uKind == 5) {
       /* 틈 가까이의 옆면은 안쪽 빛을 조금 받는다 */
       float ay = abs(p.y);
@@ -431,7 +505,27 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
     float face = 0.012 * max(ndl, 0.0) + 0.034 * pow(1.0 - ndv, 4.0) * side;
     float yW = (p * uInv).y;
     float scan = exp(-abs(yW - uScan) / 0.014) * uThink * 0.55;
-    c = vec3(0.004) + WARM * (face + edge * eb * 0.85 + scan);
+    if (uLoad >= 0.0) {
+      /* 로딩: 모서리 열두 개가 아래 고리, 세로, 위 고리 차례로 하나씩 켜진다. 점이 어느 모서리에 있는지는 가장 작은 좌표의 축으로 안다 */
+      float rk;
+      if (a.y <= a.x && a.y <= a.z) rk = 4.0 + (p.x > 0.0 ? (p.z > 0.0 ? 0.0 : 1.0) : (p.z > 0.0 ? 3.0 : 2.0));
+      else {
+        float ring = p.y > 0.0 ? 8.0 : 0.0;
+        if (a.x <= a.z) rk = ring + (p.z > 0.0 ? 0.0 : 2.0);
+        else rk = ring + (p.x > 0.0 ? 1.0 : 3.0);
+      }
+      eb = 0.07 + 0.93 * clamp(uLoad * 12.0 - rk, 0.0, 1.0);
+    }
+    if (uCutV.w > 0.0) {
+      if (dot(n, uCutV.xyz) * 0.57735 > 0.9) {
+        /* 깎은 면: 테 세 줄과, 빛과 마주칠 때의 반짝임 */
+        float bd = 1.0 - max(p.x * uCutV.x, max(p.y * uCutV.y, p.z * uCutV.z));
+        edge = 1.0 - smoothstep(ew * 0.5, ew * 1.8, bd * 0.82);
+        eb = uLoad >= 0.0 ? 0.07 + 0.93 * smoothstep(0.92, 1.0, uLoad) : 0.45;
+        face = 0.05 + pow(max(dot(nW, H), 0.0), 160.0) * 0.55;
+      } else edge = max(edge, 1.0 - smoothstep(ew * 0.6, ew * 2.2, -cutD(p) * 1.22));
+    }
+    c = vec3(0.004) + WARM * (face + edge * (eb * 0.85 + min(uGlow, 1.0) * 0.8) + scan);
   } else {
     /* 판마다 가로로 결이 있어, 판이 도는 각에 따라 옆면의 밝기가 저마다 다르다 */
     vec3 To = cross(vec3(0.0, 1.0, 0.0), n);
@@ -454,7 +548,7 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
   if (uEye.x > 0.001 && face) {
     vec2 e = eyes(pe.xy - vec2(0.0, uEyeY), ppx, uEyeK, uEye.w, uEyeStyle);
     c *= 1.0 - e.y * uEye.x;
-    c += WARM * e.x * uEye.x * 0.96;
+    c += mix(WARM, CORAL, uTint) * e.x * uEye.x * 0.96;
   }
   return c * cover;
 }
@@ -564,7 +658,7 @@ void main(){
   col += g * 2.8 / 255.0;
   gl_FragColor = vec4(max(col, 0.0), 1.0);
 }`;
-const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uCuts', 'uEyeY', 'uEyeStyle', 'uRing', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
+const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uCuts', 'uEyeY', 'uEyeStyle', 'uRing', 'uCutV', 'uLoad', 'uTint', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
 
 const reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -604,12 +698,16 @@ const CUBES = [
   { kind: 6, yaw: -0.36, pitch: 0.27, scale: 0.92, eyeK: 1.75, sep: 5.5, eyeY: -0.26, eyeStyle: 2 },   /* 셋째 판: 눈이 크고 낮다 */
   { kind: 0, stand: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },   /* 넷째 판: 깎은 큐브 그대로, 생각할 때만 서서 돈다 */
   { kind: 1, yaw: 0.44, pitch: 0.34, scale: 0.94, eyeK: 1.55, sep: 5.5, eyeStyle: 0 },   /* 다섯째 판: 모놀리스 몸에 깎은 큐브의 점 눈 */
+  /* 여섯째 판: 꼭짓점 하나를 깎고(cut은 꼭짓점의 부호와 깊이), 답이 나온 순간 눈이 코랄로 켜진다. standTurn은 깎은 꼭짓점이 옆에 오게 서는 각이다 */
+  { kind: 0, stand: true, standTurn: Math.PI / 2, cut: [1, 1, 1, 0.55], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },
+  { kind: 1, cut: [-1, 1, 1, 0.36], ident: true, yaw: 0.44, pitch: 0.34, scale: 0.94, eyeK: 1.55, sep: 5.5, eyeStyle: 0 },
 ].map((c, i) => ({
   ...c, i, think: 0, wasThink: false, thinkUntil: 0, bootUntil: 0, smileUntil: 0, flash: 0,
   px: 0, py: 0, tx: 0, ty: 0, moodShown: 0, open: 1, lid: null, nextBlink: 2000 + i * 700,
   az: 0, spin: 0, slab: [0, 0, 0, 0], slabT: [0, 0, 0, 0], nextShuffle: 0, a4: 0.6 + i, b4: 0.2,
   R: qMat([0, 0, 0, 1]), L: [0, 0, 1], core: [0, 0, 0], glow: 0, scan: 0, lit: 1, eyeOn: 1, big: null, cuts: 1, eyeY: c.eyeY || 0, eyeStyle: c.eyeStyle !== undefined ? c.eyeStyle : (c.kind === 1 ? 1 : 0),
   lidA: 0, lidW: 0, lidHome: 0, lift: 0, pendingLand: false, bounce0: 0, hop: 0, gaze: [0, 0],
+  cutV: c.cut || [0, 0, 0, 0], load: -1, loadT0: 0, loadUntil: 0, coralUntil: 0, tint: 0,
 }));
 let mood = 'auto';
 
@@ -617,11 +715,15 @@ let mood = 'auto';
 function step(c, now, dt) {
   const t = now / 1000;
   const ph = (t + c.i * 2.3) % 12;
-  const want = !reduced && (mood === 'think' || now < c.thinkUntil || now < c.bootUntil || (mood === 'auto' && ph > 8.2 && ph < 10.6));
+  const want = !reduced && (mood === 'think' || now < c.thinkUntil || now < c.loadUntil || now < c.bootUntil || (mood === 'auto' && ph > 8.2 && ph < 10.6));
+  /* 로딩: 4.4초 동안 0에서 1로 간다. 로딩이 아니면 −1이다 */
+  c.load = now < c.loadUntil ? clamp((now - c.loadT0) / 4400, 0, 1) : -1;
+  c.tint = clamp((c.coralUntil - now) / 500, 0, 1);
   if (want && !c.wasThink) { const kick = [0.62, -0.36, 0.46, -0.72]; c.slabT = c.slabT.map((a, j) => a + kick[j]); c.nextShuffle = now + 420; }
   if (!want && c.wasThink) {
     /* 셋째 판은 뚜껑이 내려앉은 때에 웃는다 */
     if (c.kind === 6) c.pendingLand = true; else { c.smileUntil = now + 1300; c.flash = 1; }
+    if (c.ident) { c.coralUntil = now + 1500; c.smileUntil = now + 1700; }
     c.slabT = c.slabT.map(a => Math.round(a / (Math.PI / 2)) * (Math.PI / 2));
   }
   c.wasThink = want;
@@ -687,10 +789,10 @@ function step(c, now, dt) {
   if (c.kind === 1 || c.stand) {
     /* 생각할 때 꼭짓점 하나로 서서 돈다. 그동안 눈은 꺼진다 */
     c.spin += dt * 1.6 * c.think;
-    const stand = qMul(qAxis(AX, 0.26), qMul(qAxis(AY, c.spin), qMul(qAxis(AZ, 0.9553166), qAxis(AY, Math.PI / 4))));
+    const stand = qMul(qAxis(AX, 0.26), qMul(qAxis(AY, c.spin), qMul(qAxis(AZ, 0.9553166), qAxis(AY, Math.PI / 4 + (c.standTurn || 0)))));
     q = qSlerp(q, stand, easeIO(clamp(c.think, 0, 1)));
     c.eyeOn = 1 - clamp(c.think * 1.6, 0, 1);
-    if (c.kind === 1) c.scan = ((t * 0.55) % 1) * 3.8 - 1.9;
+    if (c.kind === 1) { c.scan = c.load >= 0 ? -9 : ((t * 0.55) % 1) * 3.8 - 1.9; c.glow = c.ident ? c.flash : 0; }
   }
   if (c.kind === 2 || c.kind === 5) {
     if (want && now > c.nextShuffle) {
@@ -752,6 +854,9 @@ function drawGL(tg, now) {
   gl.uniform1f(U.uLit, c.lit);
   gl.uniform1f(U.uEyeK, c.eyeK);
   gl.uniform1f(U.uCuts, c.cuts);
+  gl.uniform4f(U.uCutV, c.cutV[0], c.cutV[1], c.cutV[2], c.cutV[3]);
+  gl.uniform1f(U.uLoad, c.load);
+  gl.uniform1f(U.uTint, c.tint);
   gl.uniform1f(U.uEyeY, c.eyeY);
   gl.uniform1f(U.uEyeStyle, c.eyeStyle);
   gl.uniform1f(U.uRing, c.kind === 6 && !tg.fixed ? 1 : 0);
@@ -910,6 +1015,13 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) { can
 
 const t0 = performance.now();
 for (const c of CUBES) c.bootUntil = t0 + 1100 + c.i * 260;
+/* 여섯째 판: 「로딩 보기」를 누르면 그 큐브가 서서 돌며 몸으로 진행을 보인다 */
+for (const b of document.querySelectorAll('[data-load]')) b.addEventListener('click', () => {
+  if (reduced) return;
+  const c = CUBES[+b.dataset.load], now = performance.now();
+  c.loadT0 = now; c.loadUntil = now + 4400 + 450;
+  kick();
+});
 /* 셋째 판: 눈을 빛 눈(통통한 알약)과 점 눈(검정 구의 눈) 사이에서 바꿔 본다 */
 for (const b of document.querySelectorAll('[data-eye]')) b.addEventListener('click', () => {
   CUBES[6].eyeStyle = +b.dataset.eye;
