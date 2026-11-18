@@ -203,31 +203,44 @@ export function withOriginActivity(prev,next,{at,touch}){
 }
 // 귀속 뒤 브랜드 쪽 동작(pulse-workspaces) — 옛 브랜드 인물의 이력에서 원 의뢰의 일이 아닌 것.
 const BRAND_SIDE=new Set(['reuse_renewed','reuse_withdrawn','paused','unpaused','deletion_requested','deleting','retention_deleting']);
-// 칸이 없거나 어긋난 인물의 값(남기는 쪽 — 늦게 잡을수록 오래 남는다). 칸이 있으나 어긋났으면 max(칸, updatedAt).
-// 칸이 없으면: 브랜드 없는 인물은 updatedAt, 브랜드 인물과 시계가 지운 인물은 이력에서 사람이 한 원 의뢰 쪽 마지막 항목(브랜드 인물은 귀속과 귀속 뒤 데스크 일을
-// 넣고 브랜드 쪽 동작을 뺀다 — Fable 설계 검토 2), 못 찾으면 updatedAt.
-export function legacyOriginActivity(persona){
+// 칸이 없거나 어긋난 인물의 값. 칸이 있으나 어긋났으면 max(칸, updatedAt)(남기는 쪽). 칸이 없으면 브랜드 없는 살아 있는 인물은 updatedAt(그 인물의 사람 쓰기는
+// 모두 원 의뢰 쪽이고 시스템 쓰기는 updatedAt을 옮기지 않는다). 브랜드 인물과 시계가 지운 인물은 updatedAt을 쓰지 않는다 — 귀속 뒤 동의 연장 · 지우기가 옮긴다
+// (GPT 서버 다시 검수 -d GA2). 대신 원 의뢰 쪽 흔적의 마지막을 모은다: 만든 때, 이력에서 사람이 한 원 의뢰 쪽 항목(브랜드 쪽 동작과, 어느 방에서 했는지
+// 이력만으로는 모르는 사용 확인은 뺀다 — -d GA1), store가 있으면 잘리지 않는 기록(원 프로젝트에서 남긴 손님 확인, 원 프로젝트로 받은 인물 사진, 판을 연 때 ·
+// 판 파일 · 만드는 방식 · 보낸 때). 아무 흔적도 없는 망가진 문서만 updatedAt으로 둔다.
+export function legacyOriginActivity(persona,store=null){
   const own=Date.parse(persona?.updatedAt);
   if(typeof persona?.originActivityAt==='string'){const kept=Date.parse(persona.originActivityAt);return Number.isFinite(kept)&&Number.isFinite(own)?Math.max(kept,own):NaN;}
   const systemGone=(persona?.deletedAt||['deleting','deleted'].includes(persona?.status))&&persona?.deletion?.confirmedBy==='system';
   if(!persona?.workspaceId&&!systemGone)return own;
   let best=null;
-  for(const entry of Array.isArray(persona?.history)?persona.history:[]){
-    if(!entry||entry.actorKind==='system'||(persona.workspaceId&&BRAND_SIDE.has(entry.action)))continue;
-    const at=Date.parse(entry.at);if(Number.isFinite(at)&&(best===null||at>best))best=at;
+  const see=value=>{const at=Date.parse(value);if(Number.isFinite(at)&&(best===null||at>best))best=at;};
+  see(persona.createdAt);
+  for(const entry of Array.isArray(persona.history)?persona.history:[]){
+    if(!entry||entry.actorKind==='system'||/:usage$/.test(String(entry.action||''))||(persona.workspaceId&&BRAND_SIDE.has(entry.action)))continue;
+    see(entry.at);
+  }
+  if(store){
+    for(const approval of store.all(K.approvals))if(approval?.personaId===persona.id&&approval.projectId===persona.originProjectId)see(approval.at);
+    for(const source of store.all(K.sources))if(source?.personaId===persona.id&&source.projectId===persona.originProjectId)see(source.at);
+    for(const revision of store.all(K.revisions)){
+      if(revision?.personaId!==persona.id)continue;
+      see(revision.createdAt);see(revision.method?.at);see(revision.reference?.publishedAt);see(revision.motion?.publishedAt);
+      for(const asset of Array.isArray(revision.assets)?revision.assets:[])see(asset?.at);
+    }
   }
   return best??own;
 }
 export const originActivityAligned=persona=>typeof persona?.originActivityAt==='string'&&persona.originActivityRev===persona.revision;
 // 의뢰 기록 시계가 읽는 값. NaN이면 날짜를 못 읽음(지우지 않고 센다).
-export function originActivity(persona){return originActivityAligned(persona)?Date.parse(persona.originActivityAt):legacyOriginActivity(persona);}
+export function originActivity(persona,store=null){return originActivityAligned(persona)?Date.parse(persona.originActivityAt):legacyOriginActivity(persona,store);}
 // 쓸기 회차 머리(시작 회차 포함): 칸이 없거나 어긋난 인물을 다시 채운다. 시스템 쓰기다 — revision · updatedAt · 이력을 옮기지 않는다.
 export function backfillOriginActivity(store){
   let filled=0;
   for(const {id} of store.all(K.personas).filter(item=>item&&!originActivityAligned(item))){
     store.transaction(()=>{
       const persona=store.get(K.personas,id);if(!persona||originActivityAligned(persona))return;
-      const at=legacyOriginActivity(persona);if(!Number.isFinite(at))return;
+      const at=legacyOriginActivity(persona,store);if(!Number.isFinite(at))return;
       store.put(K.personas,id,{...persona,originActivityAt:new Date(at).toISOString(),originActivityRev:persona.revision});filled++;
     });
   }
@@ -240,7 +253,7 @@ export function requestClock(store,row,now){
   if(!Number.isFinite(touched)||!Number.isFinite(at))return {unclear:'date'};
   let last=touched;
   for(const persona of store.all(K.personas).filter(item=>item?.originProjectId===row.id)){
-    const own=originActivity(persona);if(!Number.isFinite(own))return {unclear:'date'};if(own>last)last=own;
+    const own=originActivity(persona,store);if(!Number.isFinite(own))return {unclear:'date'};if(own>last)last=own;
   }
   const clockAt=last+STOPPED_DAYS*DAY_MS,sent=Date.parse(row.requestRetentionNotice?.at),noticed=Number.isFinite(sent)&&sent>last;
   const iso=value=>new Date(value).toISOString();
