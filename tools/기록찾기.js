@@ -114,6 +114,22 @@ function 저장소길들(글) {
   return [...길];
 }
 
+// 입구의 문장 안에도 링크가 있다. 여기서는 같은 메모 폴더의 파일만 색인에 포함한다.
+function 목록링크(글) {
+  const 항목 = [];
+  let 코드블록 = '';
+  for (const 줄 of 글.split('\n')) {
+    const 울타리 = /^\s*(`{3,}|~{3,})/.exec(줄)?.[1];
+    if (울타리 && (!코드블록 || (울타리[0] === 코드블록[0] && 울타리.length >= 코드블록.length))) { 코드블록 = 코드블록 ? '' : 울타리; continue; }
+    if (코드블록 || !/^\s*[-*]\s+/.test(줄)) continue;
+    const 링크줄 = 줄.replace(/(`+).*?\1/g, s => ' '.repeat(s.length));
+    for (const m of 링크줄.matchAll(/\[([^\]]+)\]\((?:\.\/)?([^/\\:#?()]+?\.md)\)/gi)) {
+      if (m[2] !== 'MEMORY.md') 항목.push({ 제목: m[1], 파일: m[2], 뒤: 줄.slice(m.index + m[0].length) });
+    }
+  }
+  return 항목;
+}
+
 /** 메모 목록과 메모 파일의 상태. 메모 폴더가 없는 곳(CI, 다른 PC, GPT 세션)에서는 { 있음: false }. */
 function 메모점검() {
   const 폴더 = 메모폴더();
@@ -121,10 +137,7 @@ function 메모점검() {
   if (!fs.existsSync(목록길)) return { 있음: false, 폴더, 문제: [], 알림: [] };
   const 글 = 읽기(목록길);
   const 줄수 = 글.replace(/\n+$/, '').split('\n').length;
-  const 항목 = [...글.matchAll(/^- \[(.+?)\]\(([^)\s]+\.md)\)(.*)$/gm)].map((m) => ({ 제목: m[1], 파일: m[2], 뒤: m[3] }));
-  const 있는파일 = fs.readdirSync(폴더).filter((f) => f.endsWith('.md') && f !== 'MEMORY.md');
-  const 목록에없음 = 있는파일.filter((f) => !항목.some((x) => x.파일 === f));
-  const 파일없음 = 항목.filter((x) => !있는파일.includes(x.파일)).map((x) => x.파일);
+  const 있는파일 = fs.readdirSync(폴더, { withFileTypes: true }).filter(f => f.isFile() && f.name.endsWith('.md') && f.name !== 'MEMORY.md').map(f => f.name);
   const 공용 = 공용작업본(뿌리);
   const 없는길 = [];
   const 본문 = new Map();
@@ -133,6 +146,20 @@ function 메모점검() {
     본문.set(f, t);
     for (const 길 of 저장소길들(t)) if (!fs.existsSync(path.join(뿌리, 길)) && !fs.existsSync(path.join(공용, 길))) 없는길.push({ 메모: f, 길 });
   }
+  const 목차 = new Set(), 참조 = new Map(), 입구 = 목록링크(글);
+  const 목차제목 = /목차|색인|\bindex\b/i;
+  for (const x of 입구) {
+    const 제목 = /^#\s+(.+)$/m.exec(본문.get(x.파일) || '')?.[1] || '';
+    if (목차제목.test(x.제목) && 목차제목.test(제목)) 목차.add(x.파일);
+    else 참조.set(x.파일, { ...x, 구분: '현재 목록' });
+  }
+  // 직접 등록한 메모가 우선한다. 참조용 목차의 주제만 한 단계 읽고 일반 메모 속 링크는 따라가지 않는다.
+  for (const f of 목차) for (const x of 목록링크(본문.get(f))) {
+    if (!목차.has(x.파일) && !참조.has(x.파일)) 참조.set(x.파일, { ...x, 구분: '자료용' });
+  }
+  const 항목 = [...참조.values()];
+  const 목록에없음 = 있는파일.filter(f => !참조.has(f) && !목차.has(f));
+  const 파일없음 = [...참조.keys()].filter(f => !본문.has(f));
   const 문제 = [], 알림 = [];
   if (줄수 > 메모한도.줄) 문제.push(`메모 목록이 ${줄수}줄이다. 하네스는 앞 ${메모한도.줄}줄만 싣는다 — 뒤 ${줄수 - 메모한도.줄}줄의 메모는 세션에 보이지 않는다`);
   else if (줄수 >= 메모알림.줄) 알림.push(`메모 목록이 ${줄수}줄이다(한도 ${메모한도.줄}줄). 겹치는 메모를 합치거나 빈 줄을 줄인다`);
@@ -141,7 +168,7 @@ function 메모점검() {
   if (파일없음.length) 문제.push(`목록이 가리키는 메모 파일이 없다: ${파일없음.join(', ')}`);
   if (목록에없음.length) 문제.push(`목록에 없는 메모 파일이 있다(세션이 이 메모를 모른다): ${목록에없음.join(', ')}`);
   if (없는길.length) 알림.push(`메모가 가리키는 저장소 파일 ${없는길.length}개가 없다: ${없는길.slice(0, 8).map((x) => `${x.메모} → ${x.길}`).join(' · ')}${없는길.length > 8 ? ' …' : ''}`);
-  return { 있음: true, 폴더, 줄: 줄수, 글자: 글.length, 바이트: Buffer.byteLength(글), 항목, 파일수: 있는파일.length, 목록에없음, 파일없음, 없는길, 본문, 문제, 알림 };
+  return { 있음: true, 폴더, 줄: 줄수, 글자: 글.length, 바이트: Buffer.byteLength(글), 항목, 목차: [...목차], 파일수: 있는파일.length, 목록에없음, 파일없음, 없는길, 본문, 문제, 알림 };
 }
 
 function 메모찾기(점검, 맞나) {
@@ -149,7 +176,7 @@ function 메모찾기(점검, 맞나) {
   const 찾음 = [];
   for (const x of 점검.항목) {
     const 글 = `${x.제목} ${x.뒤}\n${점검.본문.get(x.파일) || ''}`;
-    if (맞나(글)) 찾음.push({ 파일: x.파일, 줄: null, 요약: `${x.제목}${x.뒤}` });
+    if (맞나(글)) 찾음.push({ 파일: x.파일, 줄: null, 구분: x.구분, 요약: (x.구분 === '자료용' ? '[자료용] ' : '') + x.제목 + x.뒤 });
   }
   for (const f of 점검.목록에없음) if (맞나(점검.본문.get(f) || '')) 찾음.push({ 파일: f, 줄: null, 요약: '(목록에 없는 메모 파일)' });
   return 찾음;
@@ -159,7 +186,7 @@ function 메모찾기(점검, 맞나) {
 function 찾기(낱말들, { 또는 = false, 곳 = 곳이름 } = {}) {
   const 맞나 = 판정만들기(낱말들, 또는);
   const 길 = 파일들();
-  const 점검 = 메모점검();
+  const 점검 = 곳.includes('메모') ? 메모점검() : { 문제: [], 알림: [] };
   const 결과 = {};
   for (const 이름 of 곳이름) {
     if (!곳.includes(이름)) continue;
@@ -235,6 +262,7 @@ function 메모점검화면(점검) {
     `  줄 ${점검.줄} / ${메모한도.줄} · 글자 ${점검.글자.toLocaleString('en-US')} / ${메모한도.글자.toLocaleString('en-US')} · 바이트 ${점검.바이트.toLocaleString('en-US')}`,
     `  목록의 메모 ${점검.항목.length}개 · 메모 파일 ${점검.파일수}개`,
   ];
+  if (점검.목차.length) 줄.push(`  입구에서 직접 찾는 메모 ${점검.항목.filter(x => x.구분 === '현재 목록').length}개 · 자료용 메모 ${점검.항목.filter(x => x.구분 === '자료용').length}개 · 상세 목차 ${점검.목차.length}개`);
   for (const 글 of 점검.문제) 줄.push(`✗ ${글}`);
   for (const 글 of 점검.알림) 줄.push(`· ${글}`);
   if (!점검.문제.length && !점검.알림.length) 줄.push('  걸린 것이 없다. 목록이 끝까지 실리고, 목록과 파일이 맞고, 메모가 가리키는 저장소 파일이 모두 있다.');

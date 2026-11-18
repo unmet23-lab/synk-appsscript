@@ -244,3 +244,37 @@ test('메모 폴더가 없는 곳에서도 찾기는 돌고, 모르는 플래그
   assert.match(돌리기('--메모점검').글, /메모 폴더가 없다/);
   assert.notEqual(돌리기('드라마', '--없는플래그').코드, 0);
 });
+
+test('짧은 메모 입구가 참조하는 목차의 주제는 자료용으로 검색하고 직접 등록 항목과 중복하지 않는다', t => {
+  const 메모 = {
+    'MEMORY.md': '# 입구\n- [현재 작업](current.md)\n- 이전 사례는 [참고 목차](catalog.md)에서 고른다.\n',
+    'catalog.md': '# 사례 색인\n- [옛 제목](current.md)\n- [보관 사례](example.md)\n',
+    'current.md': '공통낱말은 지금의 지시다.\n',
+    'example.md': '공통낱말을 사용했던 이전 사례다.\n',
+  };
+  const { 돌리기 } = 판(t, { 메모 });
+  const 점검 = 돌리기('--메모점검', '--json');
+  assert.equal(점검.코드, 0, 점검.글);
+  const r = JSON.parse(점검.글);
+  assert.deepEqual(r.목차, ['catalog.md']);
+  assert.deepEqual(r.항목.map(x => [x.파일, x.구분]), [['current.md', '현재 목록'], ['example.md', '자료용']]);
+  const 검색 = JSON.parse(돌리기('--곳', '메모', '공통낱말', '--json').글).결과.메모;
+  assert.deepEqual(검색.map(x => [x.파일, x.구분]), [['current.md', '현재 목록'], ['example.md', '자료용']]);
+  assert.match(돌리기('--곳', '메모', '공통낱말').글, /example\.md  \[자료용\]/);
+});
+
+test('실제 미등록·끊긴 상세 링크를 알리고 메모를 제외한 조회에서는 개인 파일을 읽지 않는다', t => {
+  const { 뿌리, 돌리기 } = 판(t, { 결정행: [행('2026-11-10', '입구 시험')], 메모: {
+    'MEMORY.md': '# 입구\n- 사례는 [참고 목차](catalog.md)에서 확인한다.\n- 표기 예 `[예시](lost.md)`\n',
+    'catalog.md': '# 자료 목차\n- [없는 파일](missing.md)\n~~~\n- [코드 예](lost.md)\n~~~\n',
+    'lost.md': '목록에 없는 사례 본문\n',
+  } });
+  const 점검 = 돌리기('--메모점검', '--json'), r = JSON.parse(점검.글);
+  assert.equal(점검.코드, 1);
+  assert.deepEqual(r.파일없음, ['missing.md']); assert.deepEqual(r.목록에없음, ['lost.md']);
+  fs.renameSync(path.join(뿌리, '_메모/MEMORY.md'), path.join(뿌리, '_메모/입구복사'));
+  fs.mkdirSync(path.join(뿌리, '_메모/MEMORY.md'));
+  const 결정 = 돌리기('--곳', '결정', '입구');
+  assert.equal(결정.코드, 0, 결정.오류); assert.match(결정.글, /입구 시험/);
+  assert.doesNotMatch(결정.글, /메모점검|목록에 없는/);
+});
