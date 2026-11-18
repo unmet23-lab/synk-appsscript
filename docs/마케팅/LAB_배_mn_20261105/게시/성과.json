@@ -308,6 +308,17 @@
             "completionRatePct": 15.5
           }
         }
+      },
+      {
+        "계정": "lab-nz-youtube",
+        "채널": "유튜브 @synklabnewzealand",
+        "주소": "https://www.youtube.com/watch?v=9M9XAoW-CbA",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-18T00:00:27.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
       }
     ]
   }
