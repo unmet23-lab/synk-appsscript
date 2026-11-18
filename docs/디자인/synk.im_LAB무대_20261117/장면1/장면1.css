@@ -99,6 +99,8 @@ button{font:inherit;color:inherit}
 /* 앞면: 위에 움직이는 그림 창, 아래에 번호와 낱말 */
 .sc-pic{position:relative;margin:9px 9px 0;aspect-ratio:4/5;border-radius:9px;overflow:hidden;background:var(--tone,#DDE6EE)}
 .sc-pic video,.sc-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.sc-cap{position:absolute;left:6%;right:6%;bottom:7%;z-index:2;padding:3px 6px 4px;border-radius:8px;background:rgba(23,23,26,.8);color:#fff;font-size:calc(var(--cw) * .07);font-weight:700;line-height:1.25;letter-spacing:.01em;text-align:center;opacity:0;pointer-events:none}
+.sc-cap:empty{display:none}
 .sc-pic::after{content:"";position:absolute;inset:0;border-radius:9px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);pointer-events:none}
 .sc-meta{position:relative;flex:1;display:flex;align-items:center;gap:10px;padding:0 14px 2px}
 .sc-num{flex:0 0 auto;display:grid;place-items:center;width:calc(var(--cw) * .11);height:calc(var(--cw) * .11);border-radius:50%;background:var(--ink);color:#fff;font-size:calc(var(--cw) * .058);font-weight:800;font-variant-numeric:tabular-nums}
@@ -250,6 +252,7 @@ a.sc-btn{text-decoration:none}
   .sc-word{font-size:calc(var(--cw) * .13);letter-spacing:-.05em}
   .sc-card.is-long .sc-word{font-size:calc(var(--cw) * .092)}
   .sc-mean{font-size:calc(var(--cw) * .104)}
+  .sc-cap{font-size:calc(var(--cw) * .1);padding:2px 4px 3px;border-radius:6px}
   .sc-card.has-mean .sc-word{font-size:calc(var(--cw) * .115)}
   .sc-card.has-mean.is-long .sc-word{font-size:calc(var(--cw) * .085)}
   .sc-back{padding:6px 8px}
@@ -318,7 +321,12 @@ a.sc-btn{text-decoration:none}
 .sc-seal.is-help b{font-size:calc(var(--cw) * .088);white-space:normal;text-align:center;line-height:1.08}
 .sc-after > *{transition:opacity .2s}
 .sc-after.is-tipped > :not(.sc-next){opacity:.08!important}
+/* 묻는 말 + 힌트 단추 한 줄(좁으면 접힌다) */
+.sc-pline{display:flex;flex-wrap:wrap;align-items:center;column-gap:14px;min-width:0}
+.sc-pline .sc-prompt{min-width:0}
+.sc-pline .sc-hintbtn{margin-top:10px}
 @media (max-width:900px){
+  .sc-pline .sc-hintbtn{margin-top:8px}
   .sc-hintbtn{margin-top:8px;height:30px;padding:0 10px 0 8px;font-size:12.5px;gap:6px}
   .sc-hint-ic{width:16px;height:16px}
   .sc-hintfig{padding:6px 6px 7px;border-radius:13px}

@@ -94,6 +94,8 @@
   /* ── 줄: 왼쪽 「지금」 자리(보기 세 칸)와 오른쪽 날 매듭 ── */
   // 보기 뜻: 영어 판은 한글 보기 밑에 뜻을 단다(?mean으로 미리 본다)
   const MEAN = new URLSearchParams(location.search).has('mean') ? { '안녕하세요.': 'Hello', '감사합니다.': 'Thank you', '다녀왔어요.': 'I’m home', '저는 수진이에요.': 'I’m Sujin', '저는 몽글이에요.': 'I’m Mongle' } : {};
+  // 읽는 법: 영어 판은 카드 속 인물이 말할 때 그 말의 읽는 법(LAB 발음 줄, tools/lib/한글표기.js latin)을 자막처럼 잠깐 띄운다
+  const PRON = new URLSearchParams(location.search).has('mean') ? { '안녕하세요.': 'an-nyeong-ha-se-yo', '감사합니다.': 'gam-sa-ham-ni-da', '다녀왔어요.': 'da-nyeo-wa-sseo-yo', '저는 수진이에요.': 'jeo-neun su-ji-ni-e-yo', '저는 몽글이에요.': 'jeo-neun mong-geu-ri-e-yo' } : {};
   const STOPS = [{ l: '지금', s: '지금' }, { l: '1분 뒤', s: '1분' }, { l: '내일', s: '1일' }, { l: '7일 뒤', s: '7일' }, { l: '30일 뒤', s: '30일' }];
   stopsEl.replaceChildren(...STOPS.map((s, i) => {
     const li = document.createElement('li'); li.className = 'sc-stop' + (i ? '' : ' is-today');
@@ -149,13 +151,13 @@
   const makeCard = (id, text, num) => {
     const el = document.createElement('div'); el.className = 'sc-card'; el.setAttribute('role', 'button'); el.setAttribute('aria-disabled', 'true'); el.tabIndex = 0;
     el.innerHTML = '<div class="sc-card-in"><div class="sc-box"><div class="sc-flip">'
-      + '<div class="sc-face sc-front"><div class="sc-pic"></div><div class="sc-meta"><span class="sc-num" aria-hidden="true"></span><span class="sc-wordbox"><span class="sc-word"></span><span class="sc-mean"></span></span></div><i class="sc-gloss"></i></div>'
+      + '<div class="sc-face sc-front"><div class="sc-pic"><span class="sc-cap" aria-hidden="true"></span></div><div class="sc-meta"><span class="sc-num" aria-hidden="true"></span><span class="sc-wordbox"><span class="sc-word"></span><span class="sc-mean"></span></span></div><i class="sc-gloss"></i></div>'
       + '<div class="sc-face sc-back" aria-hidden="true"><span class="sc-back-tag"></span><span class="sc-back-word"></span><i class="sc-back-rule"></i><span class="sc-stamps"></span><i class="sc-gloss"></i></div>'
       + '<i class="sc-side is-l"></i><i class="sc-side is-r"></i><i class="sc-side is-t"></i><i class="sc-side is-b"></i></div>'
       + '<span class="sc-pin" aria-hidden="true"><i class="sc-pin-b"></i><i class="sc-pin-a"></i></span></div></div>';
     const sh = document.createElement('div'); sh.className = 'sc-shadow'; sh.setAttribute('aria-hidden', 'true');
     layer.insertBefore(sh, probe); layer.insertBefore(el, probe);
-    const c = { el, sh, box: $('.sc-box', el), flip: $('.sc-flip', el), pic: $('.sc-pic', el), wordEl: $('.sc-word', el), meanEl: $('.sc-mean', el), numEl: $('.sc-num', el), backTag: $('.sc-back-tag', el), backWord: $('.sc-back-word', el), stamps: $('.sc-stamps', el), pin: $('.sc-pin', el),
+    const c = { el, sh, box: $('.sc-box', el), flip: $('.sc-flip', el), pic: $('.sc-pic', el), cap: $('.sc-cap', el), wordEl: $('.sc-word', el), meanEl: $('.sc-mean', el), numEl: $('.sc-num', el), backTag: $('.sc-back-tag', el), backWord: $('.sc-back-word', el), stamps: $('.sc-stamps', el), pin: $('.sc-pin', el),
       id, text, x: 0, y: -400, th: 0, w: 0, s: 1, lift: 0, op: 0, home: 'fly', at: null, moving: false, grab: false, vx: 0, px: 0, dip: 0, dipV: 0, dx: 0, fall: null, answerable: false,
       ps: 0, pv: 0, pt: 0, fx: 0, fv: 0, ft: 0, hover: false, video: null, picKey: null };
     setFace(c, id, text, num);
@@ -166,18 +168,23 @@
     const m = (winter && PICW[c.text]) || PIC[c.text]; if (!m || c.picKey === m.k) return; c.picKey = m.k; c.pm = m;
     c.pic.style.setProperty('--tone', m.tone);
     const img = new Image(); img.src = cardSrc(m.k, 'jpg'); img.alt = ''; img.decoding = 'async';
-    c.pic.replaceChildren(img); c.video = null;
+    c.pic.replaceChildren(img, c.cap); c.video = null;
     if (!VIDEO || (window.__CARDDATA && !window.__CARDDATA[m.k + '.mp4'])) return;   // 한 파일로 묶은 쪽에 영상이 없으면 그림만
     const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.poster = cardSrc(m.k, 'jpg');
-    v.addEventListener('loadeddata', () => { c.pic.append(v); c.video = v; }, { once: true });
+    v.addEventListener('loadeddata', () => { c.pic.insertBefore(v, c.cap); c.video = v; }, { once: true });
     v.src = cardSrc(m.k, 'mp4');
   }
   // 창 속 인물이 그 말을 몸으로 한다(처음부터 한 번). 이미 하고 있으면 그대로 둔다.
   // voice가 참이면 그 말을 소리로도 한다(처음 떨어질 때는 셋이 겹치므로 몸짓만).
+  const sayCap = (c, delay) => {
+    const t = PRON[c.text]; if (!t || !c.cap) return;
+    c.cap.textContent = t; gsap.killTweensOf(c.cap);
+    gsap.timeline({ delay }).fromTo(c.cap, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: reduce ? 0 : 0.2 }).to(c.cap, { opacity: 0, duration: reduce ? 0 : 0.35, delay: 1.7 });
+  };
   const act = (c, again = false, voice = false) => {
     const m = c.pm, v = c.video, busy = v && !v.paused && !v.ended;
     if (busy && !again) return;
-    if (voice && m) play('v' + m.v, { delay: v && !reduce ? m.say : 0 });
+    if (voice && m) { play('v' + m.v, { delay: v && !reduce ? m.say : 0 }); sayCap(c, v && !reduce ? m.say : 0); }
     if (!v || reduce) return;
     try { v.currentTime = 0; } catch { /* 아직 못 감음 */ } v.play().catch(() => {});
   };
@@ -581,6 +588,8 @@
     next.replaceChildren(b); play('pop', { delay: 0.05 });
     if (!reduce) gsap.fromTo(b, { scale: 0.7, opacity: 0, y: 8 }, { scale: 1, opacity: 1, y: 0, duration: 0.55, ease: 'back.out(2)' });
     b.focus({ preventScroll: true });
+    // 다음 단추가 화면 아래로 밀렸으면(영어 판의 긴 장면 글) 구역을 보고 있을 때만 보일 만큼 부드럽게 내린다
+    setTimeout(() => { const r = b.getBoundingClientRect(), R = root.getBoundingClientRect(); if (r.bottom > innerHeight - 8 && R.top < innerHeight / 2 && R.bottom > 0) window.scrollBy({ top: r.bottom - innerHeight + 24, behavior: reduce ? 'auto' : 'smooth' }); }, reduce ? 0 : 650);
     return b;
   };
   const leaveStage = () => new Promise((res) => { if (reduce) return res(); gsap.to([stage, after], { y: -18, opacity: 0, filter: 'blur(6px)', duration: 0.34, ease: 'power2.in', onComplete: res }); });
@@ -636,7 +645,8 @@
     const tail = side === 'top' || side === 'bottom' ? clamp(box.x + box.w / 2 - cx, 18, gw - 18) : clamp(box.y + box.h / 2 - y, 16, gh - 16);
     guide.style.setProperty('--tail', tail + 'px');
     // 말풍선이 장면 밑 설명 글 위에 서면 그 글을 잠깐 흐린다(글이 반쯤 가려져 잘린 것처럼 보이지 않게)
-    const ar = rel(after); after.classList.toggle('is-tipped', cx < ar.x + ar.w && cx + gw > ar.x && y < ar.y + ar.h && y + gh > ar.y);
+    const hit = (el) => { if (!el.textContent.trim()) return false; const r = rel(el); return cx < r.x + r.w && cx + gw > r.x && y < r.y + r.h && y + gh > r.y; };
+    after.classList.toggle('is-tipped', hit(say) || hit(sub));
     play('pop', { g: 0.55, rate: 1.15 });
     if (reduce) { gsap.set(guide, { x: cx, y, opacity: 1, scale: 1 }); return; }
     gsap.killTweensOf(guide);
@@ -683,7 +693,8 @@
   const qBox = promptEl.closest('.sc-q') || promptEl.parentElement;
   const hintBtn = document.createElement('button'); hintBtn.type = 'button'; hintBtn.className = 'sc-hintbtn'; hintBtn.tabIndex = -1;
   hintBtn.innerHTML = '<svg class="sc-hint-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg><b></b><span class="sc-hint-step"></span>';
-  promptEl.after(hintBtn);
+  // 묻는 말과 힌트 단추를 한 줄로 묶는다: 넓은 화면은 묻는 말 옆, 좁으면 밑으로 접힌다(줄 무대를 아래로 밀지 않게)
+  const pline = document.createElement('div'); pline.className = 'sc-pline'; promptEl.before(pline); pline.append(promptEl, hintBtn);
   const hintFig = document.createElement('figure'); hintFig.className = 'sc-hintfig'; hintFig.setAttribute('aria-hidden', 'true');
   hintFig.innerHTML = '<figcaption></figcaption><div class="sc-hintfig-in"><video muted playsinline preload="none"></video></div><button type="button" class="sc-hintfig-x"></button>';
   $('.sc-hintfig-x', hintFig).setAttribute('aria-label', H.close);
