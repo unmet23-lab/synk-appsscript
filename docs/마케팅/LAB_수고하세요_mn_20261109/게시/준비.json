@@ -297,6 +297,34 @@
           "instagram": "게시/01-ig-fb-mn/원고.json",
           "tiktok": "게시/01-ig-fb-mn/원고.json"
         }
+      },
+      "TW": {
+        "언어": "zh-Hant",
+        "파일": "게시/판본/TW/video.mp4",
+        "표지": "게시/판본/TW/cover.png",
+        "글": "게시/판본/TW/글.json",
+        "원고": {
+          "youtube": "게시/판본/TW/원고_youtube.json"
+        }
+      },
+      "LK": {
+        "언어": "si",
+        "파일": "게시/판본/LK/video.mp4",
+        "표지": "게시/판본/LK/cover.png",
+        "글": "게시/판본/LK/글.json",
+        "원고": {
+          "facebook": "게시/판본/LK/원고_facebook.json",
+          "youtube": "게시/판본/LK/원고_youtube.json"
+        }
+      },
+      "BR": {
+        "언어": "pt-BR",
+        "파일": "게시/판본/BR/video.mp4",
+        "표지": "게시/판본/BR/cover.png",
+        "글": "게시/판본/BR/글.json",
+        "원고": {
+          "youtube": "게시/판본/BR/원고_youtube.json"
+        }
       }
     }
   }
