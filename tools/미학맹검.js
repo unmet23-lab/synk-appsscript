@@ -56,6 +56,7 @@ const { 공용작업본 } = require('./lib/공용작업본.js');
 const { 마지막JSON } = require('./lib/그록호출.js');
 const 관문 = require('./lib/미학관문.js');
 const 그림눈 = require('./lib/그림눈.js');
+const { GPT검수 } = require('./lib/GPT검수모델.js');
 
 const 뿌리 = path.resolve(__dirname, '..');
 const 점검표 = path.join(뿌리, 'docs', '마케팅', '제작양식', '광고영상_슬롭점검표.md');
@@ -734,7 +735,8 @@ async function 적중시험(o, 손 = {}) {
   if (o.준비만) return 0;
   const j = 적중읽기(손.적중파일 || 적중파일);
   j.눈 = j.눈 || {};
-  j.눈[o.눈] = { 잰날: KST시각().slice(0, 10), ...점수, 시각대체: true, 지시문: 기준 ? '유호님 기준 붙임' : '11-08과 같은 맨 지시문', 모델: '구독(Codex — 모델 지정 못함)', 묶음: '한 대화 4장 · 쌍은 같은 대화' };
+  j.눈[o.눈] = { 잰날: KST시각().slice(0, 10), ...점수, 시각대체: true, 지시문: 기준 ? '유호님 기준 붙임' : '11-08과 같은 맨 지시문', 모델: `구독(Codex) · ${GPT검수.모델} · ${GPT검수.추론}`,   // 그림눈.GPT묻기가 같은 값을 -m · 추론으로 넘긴다(11-18 「싹다 6.2 SOL MAX로」)
+    묶음: '한 대화 4장 · 쌍은 같은 대화' };
   delete j.눈[o.눈].답없음; delete j.눈[o.눈].쌍수;
   fs.writeFileSync(손.적중파일 || 적중파일, `${JSON.stringify(j, null, 1)}\n`);
   console.log(`적중 기록 → ${저장소경로(손.적중파일 || 적중파일)}`);
