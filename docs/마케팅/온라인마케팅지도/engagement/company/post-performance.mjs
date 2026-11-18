@@ -521,8 +521,17 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
           } else if (at > checkpoint.closesAt || lock.leaseUntil < at) {
             next = { ...checkpoint, status: 'missed', timing: 'missed', nextAttemptAt: null, message: '모을 기간 안에 받기를 끝내지 못해 이 시점 숫자는 기록하지 않았어요. 본 값이 있으면 직접 넣어 주세요.' }; summary.missed++;
           } else {
-            const post = result?.posts?.find(item => { try { return normalizePerformancePostUrl(item.url).identity === row.postIdentity; } catch { return false; } });
-            const published = post?.publishedAt && Date.parse(post.publishedAt), mismatch = !!post && (!Number.isFinite(published) || Math.abs(published - Date.parse(row.publishedAt)) > 5 * 60000);
+            // 페이스북 수집기는 같은 게시물의 줄을 합치며 주 주소와 정체성이 다른 주소를 별칭(aliasUrls: 주소와 그 주소의 게시 시각)으로 단다. 기록이
+            // 별칭 주소로 등록됐으면 그 별칭의 게시 시각으로 견준다(11-19 페북 수집기 pagePostId 설계 검토 2).
+            const identityOf = value => { try { return normalizePerformancePostUrl(value).identity; } catch { return null; } };
+            let matchedAt = null;
+            const post = result?.posts?.find(item => {
+              if (identityOf(item?.url) === row.postIdentity) { matchedAt = item.publishedAt; return true; }
+              const alias = Array.isArray(item?.aliasUrls) ? item.aliasUrls.find(entry => typeof entry?.url === 'string' && identityOf(entry.url) === row.postIdentity) : null;
+              if (alias) { matchedAt = alias.publishedAt; return true; }
+              return false;
+            });
+            const published = matchedAt && Date.parse(matchedAt), mismatch = !!post && (!Number.isFinite(published) || Math.abs(published - Date.parse(row.publishedAt)) > 5 * 60000);
             const hasMetric = post && Object.values(valuesAndReasons(post.metrics, row.platform).metrics).some(value => value !== null);
             // 인사이트·Analytics의 일시 오류(한도·시간 초과·연결)로 지원 지표가 비었으면 바로 확정하지 않는다. 관측 기간 안에서 몇 번 더 본 뒤
             // 마지막 기회에만 있는 값으로 기록한다(10-20: 일시 오류 한 번이 조회·도달·공유·저장 없이 기록을 끝냈다). 늦게 반영되는 지표(laggedMetrics)는
@@ -534,7 +543,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             const absent = !error && !post && platformAnchored(row) && inventoryCovers(result, row.publishedAt);
             if (!error && post && !mismatch && hasMetric && (!gap || lastChance)) {
               next = observation(checkpoint, post.metrics, { observedAt: at, recordedAt: at, source: `api:${cleanText(result.coverage?.source || row.platform, 80)}`, unavailable: gap ? [] : result.coverage?.unavailableMetrics || [], platform: row.platform, details: post.metricDetails, transient: gap });
-              next.providerPublishedAt = post.publishedAt; summary.recorded++;
+              next.providerPublishedAt = matchedAt; summary.recorded++;
             } else if (gap) {
               const delay = (checkpoint.attempts === 1 ? 5 : checkpoint.attempts === 2 ? 15 : 30) * 60000;
               next = { ...checkpoint, status: 'retry', nextAttemptAt: new Date(Math.min(Date.parse(at) + delay, Date.parse(checkpoint.closesAt) - 10 * 60000)).toISOString(), lastErrorCode: String(result.coverage.collectionError.code || 'METRICS_PARTIAL').slice(0, 40),

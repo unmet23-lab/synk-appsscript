@@ -72,7 +72,7 @@ import { companyGuide } from './company-guide.mjs';
 import { createStudioService } from './studio-service.mjs';
 import { createPublicationPackageService } from './publication-package.mjs';
 import { createPublicationInboxService } from './publication-inbox.mjs';
-import { createPostPerformanceService } from './post-performance.mjs';
+import { createPostPerformanceService, normalizePerformancePostUrl } from './post-performance.mjs';
 import { createPublicationWorkflowService } from './publication-workflow.mjs';
 import { createPublicationLearningService } from './publication-learning.mjs';
 import { createPublicationReviewService } from './publication-review.mjs';
@@ -767,29 +767,56 @@ export function createCompanyApp(options={}) {
       const channelSnapshot={id:`${channel.id}:${date}`,channelId:channel.id,date,followers:count(result.channel.followers),views:count(result.channel.views),postCount:count(result.channel.metrics?.posts),collectedPostCount:result.posts.length,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership};
       if(mode==='full')store.put('channelSnapshots',channelSnapshot.id,channelSnapshot);
       const renewedPosts=new Set();
+      // 페이스북만: 같은 게시물의 저장 줄을 두 열쇠(pagePostId · videoId)로 찾아 잇는다(11-19 설계 검토 2 조건 1~5). 영상 목록만의 릴스는 post_id를
+      // 받은 회차와 못 받은 회차에 externalId가 다르고, 게시물 목록이 영상 대상 없이 같은 게시물을 줄 수도 있다. 다른 플랫폼은 예전 길 그대로다.
+      const facebook=channel.platform==='facebook',written=new Set(),runValues=new Map();let keyIndex=null;
+      const keysOf=p=>facebook?{post:typeof p.pagePostId==='string'&&/^\d{1,50}_\d{1,50}$/.test(p.pagePostId)?p.pagePostId:null,video:typeof p.videoId==='string'&&/^\d{1,40}$/.test(p.videoId)?p.videoId:null}:{post:null,video:null};
+      const indexOf=()=>{if(keyIndex)return keyIndex;keyIndex={live:{post:new Map(),video:new Map()},retired:{post:new Map(),video:new Map()}};
+        for(const row of store.all('posts')){if(row.channelId!==channel.id||!row.source?.startsWith('api:'))continue;const bucket=row.unavailableAt?keyIndex.retired:keyIndex.live;if(row.pagePostId&&!bucket.post.has(row.pagePostId))bucket.post.set(row.pagePostId,row.id);if(row.videoId&&!bucket.video.has(row.videoId))bucket.video.set(row.videoId,row.id);}
+        return keyIndex;};
+      // 찾는 순서: 활성 줄에서 채널:externalId → 같은 pagePostId → 같은 videoId(찾은 줄의 pagePostId가 들어온 값과 다르면 잇지 않는다). 없으면 내려간 줄에서
+      // 같은 순서로 찾아 되살린다. 그래도 없으면 새 줄이다. 이은 줄은 id · externalId를 그대로 두고 빈 열쇠만 채운다.
+      const rowFor=(p,keys)=>{const own=`${channel.id}:${p.externalId}`;if(!keys.post&&!keys.video)return own;
+        const ix=indexOf(),doc=store.get('posts',own),fits=id=>{const row=store.get('posts',id);return !!row&&(!keys.post||!row.pagePostId||row.pagePostId===keys.post);};
+        for(const [bucket,retired] of [[ix.live,false],[ix.retired,true]]){if(doc&&!!doc.unavailableAt===retired)return own;const byPost=keys.post&&bucket.post.get(keys.post);if(byPost)return byPost;const byVideo=keys.video&&bucket.video.get(keys.video);if(byVideo&&fits(byVideo))return byVideo;}
+        return own;};
+      const videoAddress=value=>{try{return normalizePerformancePostUrl(value).externalId.startsWith('video:');}catch{return false;}};
       for(const p of result.posts){
         if(!p.externalId||!p.publishedAt||Number.isNaN(Date.parse(p.publishedAt)))continue;
-        const id=`${channel.id}:${p.externalId}`,previous=store.get('posts',id);
-        const publishedDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(p.publishedAt));
+        const keys=keysOf(p),id=rowFor(p,keys),previous=store.get('posts',id),again=facebook&&written.has(id);
         const link=new URL(p.url);if(link.protocol!=='https:')continue;
+        // 페이스북: 저장 줄이 영상 주소인데 들어온 주소가 영상 주소가 아니면 영상 주소와 그 게시 시각을 둔다 — 자동 등록은 저장 줄의 영상 주소로만 한다
+        // (설계 검토 2 ㄷ · 넷째 검수 GA3). 한 회차에 같은 저장 줄로 풀린 뒤 줄은 앞 줄을 기준으로 빈 값만 채운다(조건 3).
+        const keep=facebook&&!!previous&&(again||videoAddress(previous.url)&&!videoAddress(link.href));
+        const url=keep?previous.url:link.href,publishedAt=keep?previous.publishedAt:p.publishedAt;
+        const publishedDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(publishedAt));
         const publicationFormat=['youtube-shorts','youtube-video','instagram-reels'].includes(p.publicationFormat)?p.publicationFormat:previous?.publicationFormat||null;
-        // 페이스북 페이지 게시물 번호(「페이지번호_게시물번호」). 이 번호가 있는 줄은 externalId도 같은 번호다(11-19 설계 검토 B) — 둘이 같을 때만 적는다.
-        // 그래서 앞 값이 남아도 늘 이 줄의 externalId와 같다.
-        const pagePostId=typeof p.pagePostId==='string'&&p.pagePostId===p.externalId&&/^\d{1,50}_\d{1,50}$/.test(p.pagePostId)?{pagePostId:p.pagePostId}:{};
-        store.put('posts',id,{...previous,id,channelId:channel.id,externalId:p.externalId,title:text(p.title,1000)||'제목 없음',url:link.href,publishedDate,publishedAt:p.publishedAt,thumbnailUrl:p.thumbnailUrl||null,publicationFormat,...pagePostId,source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
+        const postKey=previous?.pagePostId||keys.post,videoKey=previous?.videoId||keys.video;
+        const filled={...(postKey?{pagePostId:postKey}:{}),...(videoKey?{videoId:videoKey}:{})};
+        store.put('posts',id,{...previous,id,channelId:channel.id,externalId:facebook&&previous?.externalId||p.externalId,title:again?previous.title:text(p.title,1000)||'제목 없음',url,publishedDate,publishedAt,thumbnailUrl:again?previous.thumbnailUrl:p.thumbnailUrl||null,publicationFormat,...filled,source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
+        // 이번 회차에 받은 값. 같은 회차에 같은 저장 줄로 풀린 뒤 줄은 앞 줄의 이번 값을 기준으로 빈 값만 채운다(조건 3).
+        const raw={};for(const key of metricKeys)raw[key]=count(p.metrics?.[key]);
+        const earlierRun=again?runValues.get(id):null;
+        const values=earlierRun?Object.fromEntries(metricKeys.map(key=>[key,earlierRun.values[key]??raw[key]])):raw;
+        // 페이스북 당일 스냅샷: 이번 회차에도 못 받은(null) 수치는 같은 날 앞서 받은 값을 지우지 않는다 — 조회수는 따로 받는 영상 목록에서 와서 그 목록만
+        // 실패한 회차가 있다(넷째 검수 GA2 · 조건 6). 시각별 관측(hypeObservations)은 이번 회차 값 그대로다.
+        const before=earlierRun?earlierRun.before:facebook&&mode==='full'?store.get('snapshots',`${id}:${date}`)||null:null;
+        if(facebook)runValues.set(id,{values,before});
         const snapshot={id:`${id}:${date}`,postId:id,date,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership};
-        for(const key of metricKeys)snapshot[key]=count(p.metrics?.[key]);
+        for(const key of metricKeys)snapshot[key]=values[key]??before?.[key]??null;
         if(mode==='full')store.put('snapshots',snapshot.id,snapshot);
-        if(Date.parse(p.publishedAt)>=Date.parse(stamp)-HYPE_RECENT_MS&&Date.parse(p.publishedAt)<=Date.parse(stamp)){
-          const observation={...snapshot,id:`${id}:${stamp}`,channelId:channel.id,metricPeriods:result.coverage?.metricPeriods||{},expiresAt:new Date(Math.min(Date.parse(stamp)+HYPE_RETENTION_MS,expiresAt?Date.parse(expiresAt):Infinity)).toISOString()};
+        if(Date.parse(publishedAt)>=Date.parse(stamp)-HYPE_RECENT_MS&&Date.parse(publishedAt)<=Date.parse(stamp)){
+          const observation={...snapshot,...values,id:`${id}:${stamp}`,channelId:channel.id,metricPeriods:result.coverage?.metricPeriods||{},expiresAt:new Date(Math.min(Date.parse(stamp)+HYPE_RETENTION_MS,expiresAt?Date.parse(expiresAt):Infinity)).toISOString()};
           store.put('hypeObservations',observation.id,observation);
         }
-        renewedPosts.add(id);
+        renewedPosts.add(id);written.add(id);
+        if(keyIndex){if(postKey&&!keyIndex.live.post.has(postKey))keyIndex.live.post.set(postKey,id);if(videoKey&&!keyIndex.live.video.has(videoKey))keyIndex.live.video.set(videoKey,id);}
       }
       // 소유자 확인 YouTube의 보관 기한 연장. 게시물마다 snapshots 전체를 읽던 것을 한 번 읽기로 바꿨다(10-20: 3만 행·60편에서 9초 멈춤).
       if(mode==='full'&&channel.platform==='youtube'&&result.coverage?.ownerAuthorized){for(const old of store.all('snapshots'))if(renewedPosts.has(old.postId)&&old.source==='api:youtube')store.put('snapshots',old.id,{...old,expiresAt});}
       if(mode==='full'&&channel.platform==='youtube'&&result.coverage?.ownerAuthorized)for(const old of store.all('channelSnapshots').filter(s=>s.channelId===channel.id&&s.source==='api:youtube'))store.put('channelSnapshots',old.id,{...old,expiresAt});
-      if(mode==='full'&&result.coverage?.inventoryComplete===true){const seen=new Set(result.posts.map(p=>`${channel.id}:${p.externalId}`));for(const old of store.all('posts'))if(old.channelId===channel.id&&old.source?.startsWith('api:')&&!seen.has(old.id)&&!old.unavailableAt)store.put('posts',old.id,{...old,unavailableAt:stamp});}
+      // 안 보인 줄 판정은 찾아 이은 줄 번호도 본다(설계 검토 2 조건 4).
+      if(mode==='full'&&result.coverage?.inventoryComplete===true){const seen=new Set([...result.posts.map(p=>`${channel.id}:${p.externalId}`),...renewedPosts]);for(const old of store.all('posts'))if(old.channelId===channel.id&&old.source?.startsWith('api:')&&!seen.has(old.id)&&!old.unavailableAt)store.put('posts',old.id,{...old,unavailableAt:stamp});}
       const run=store.get('runs',runId);store.put('runs',runId,{...run,status:complete?'success':'partial',finishedAt:stamp,message:result.warnings?.join(' · ')||`콘텐츠 ${result.posts.length}개를 확인했어요`,postCount:result.posts.length,coverage:result.coverage,measuredMetrics:measuredApiMetrics(result)});
     };
     return withinTransaction?write():store.transaction(write);

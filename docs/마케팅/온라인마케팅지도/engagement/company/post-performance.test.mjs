@@ -402,6 +402,23 @@ test('Instagram estimated retention keeps its raw source in provenance and Faceb
   assert.equal(fb.metrics.views, 120, 'Facebook video views are no longer dropped'); assert.equal(fb.metrics.likes, 3);
 });
 
+// 11-19 페북 수집기 pagePostId 설계 검토 2 장면 5 · 6: 수집기가 같은 게시물의 영상 줄과 게시물 줄을 합치면 주 주소와 정체성이 다른 주소를
+// 별칭(aliasUrls: 주소와 그 주소의 게시 시각)으로 단다. 기록이 어느 주소로 등록됐어도 그 줄을 찾고, 그 주소의 시각으로 견준다.
+test('a Facebook checkpoint finds a merged post by its alias address and compares that address\'s own time', async t => {
+  const videoAt = new Date(Date.parse(BASE) + 10 * 60000).toISOString();
+  const f = fixture(t, { collector: async () => ({ posts: [{ url: 'https://www.facebook.com/reel/555/', publishedAt: videoAt, metrics: { views: 9, likes: 3 },
+    aliasUrls: [{ url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE }, { url: 42 }, null] }], coverage: { source: 'facebook-pages-api' } }) });
+  f.store.put('channels', 'fb', { ...f.channel, id: 'fb', platform: 'facebook', canonicalUrl: 'https://www.facebook.com/synk' }); f.store.setSecret('channel:fb', { accessToken: 'synthetic' });
+  f.now(1);
+  const byVideo = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/reel/555/', publishedAt: videoAt }).entry;
+  const byFeed = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE }).entry;
+  assert.notEqual(byVideo.id, byFeed.id);
+  f.now(24.5); await f.service.collectDue();
+  const point = id => f.service.list(f.owner).entries.find(entry => entry.id === id).checkpoints[0];
+  assert.equal(point(byVideo.id).metrics.views, 9); assert.equal(point(byVideo.id).providerPublishedAt, videoAt);
+  assert.equal(point(byFeed.id).metrics.views, 9, 'found through the alias address, compared with the alias time'); assert.equal(point(byFeed.id).providerPublishedAt, BASE);
+});
+
 test('an unconnected channel keeps its window waiting instead of closing it, and connecting it later still fills the point', async t => {
   const f = fixture(t, { windowCollector: readyWindow({ shares: 3 }) }); f.register(); f.store.deleteSecret('channel:channel');
   f.now(121); assert.equal((await f.service.collectDue()).windowRetried, 1); assert.equal(f.windowCalls(), 0);

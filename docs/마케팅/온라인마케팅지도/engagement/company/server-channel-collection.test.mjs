@@ -60,38 +60,100 @@ test('the shared public reader renews once with its original client and never su
   assert.equal(renewals,1);assert.equal(calls,2);assert.equal(f.app.store.secret('collection:youtube-public').refreshToken,'synthetic-refresh');
 });
 
-// 11-19: 페이스북 수집기가 남기는 페이지 게시물 번호(pagePostId). 게시 성과 판정이 게시결과의 번호를 서버 게시물과 짝짓는 데 쓴다.
-// 설계 검토 B: 이 번호가 있는 줄은 externalId도 같은 번호다. 서버는 둘이 같고 꼴이 맞을 때만 적는다.
-const again=async(f,set)=>{set();for(const c of f.app.store.all('channels'))if(c.id!=='excluded')f.app.store.put('channels',c.id,{...c,lastCollectedAt:null,lastAttemptAt:null,recentLastCollectedAt:null,recentLastAttemptAt:null});await f.app.scheduledTick();await f.app.waitForIdle();};
-const fbRow=(externalId,pagePostId,url)=>({...result({}).posts[0],externalId,pagePostId,url});
-test('a page post id is stored only in its exact form, only on the row whose externalId it is, and stays when a later collection lacks it',async t=>{
+// 11-19: 페이스북 수집기가 남기는 열쇠 둘(pagePostId · videoId)로 서버가 같은 게시물의 저장 줄을 찾아 잇는다(설계 검토 B · 설계 검토 2).
+// 장면 번호는 .tmp/검수/설계검토_수집기pagePostId_20261119_2.md의 시험 장면이다. 페이지 123, 영상 555, 게시물 700.
+async function fbFixture(t,collector){
+  const keys=['SYNK_COMPANY_BACKGROUND_JOBS_ENABLED','SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED'],before=keys.map(k=>process.env[k]);
+  process.env[keys[0]]='0';process.env[keys[1]]='1';
+  const directory=await mkdtemp(join(tmpdir(),'synk-fb-collection-')),seed=new Store(directory);
+  const user=seed.createUser({name:'Synthetic admin',email:'fb-collection@example.test',role:'admin'});
+  seed.put('settings','company',{enabled:true,hourKst:0});
+  seed.put('channels','fb',{id:'fb',platform:'facebook',canonicalUrl:'https://www.facebook.com/profile.php?id=123',handle:null,externalId:'123',ownerIds:[user.id],active:true,status:'ready'});
+  seed.setSecret('channel:fb',{accessToken:'synthetic-page-token',connectedBy:user.id});seed.close();
+  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,channelCollectionEnabled:true,synkIdentityConfig:null,synkCustomerIdentityConfig:null,teachingConfig:null,collector,dailyTrendsCollector:async()=>{throw Error('Unrelated background work');}});
+  t.after(async()=>{await app.stop();for(let i=0;i<keys.length;i++)if(before[i]===undefined)delete process.env[keys[i]];else process.env[keys[i]]=before[i];await rm(directory,{recursive:true,force:true});});
+  await app.start();await app.waitForIdle();
+  const again=async()=>{const c=app.store.get('channels','fb');app.store.put('channels','fb',{...c,lastCollectedAt:null,lastAttemptAt:null,recentLastCollectedAt:null,recentLastAttemptAt:null});await app.scheduledTick();await app.waitForIdle();};
+  const rows=()=>app.store.all('posts').filter(p=>p.channelId==='fb').map(p=>({id:p.id,externalId:p.externalId,pagePostId:p.pagePostId??null,videoId:p.videoId??null,url:p.url,publishedAt:p.publishedAt,retired:!!p.unavailableAt})).sort((x,y)=>x.id.localeCompare(y.id));
+  return {app,again,rows};
+}
+const fbResult=(posts,coverage={status:'complete',inventoryComplete:true,ownerAuthorized:true})=>({channel:{externalId:'123',followers:0,views:null,metrics:{}},posts,coverage});
+const REEL='https://www.facebook.com/reel/555/',FEED='https://www.facebook.com/synk/posts/700',AT='2026-10-10T00:00:00.000Z',AT_VIDEO='2026-10-10T00:10:00.000Z';
+const fbPost=(externalId,fields={})=>({externalId,url:REEL,title:'릴스',publishedAt:AT,pagePostId:null,videoId:null,...fields,metrics:{views:null,likes:null,comments:null,shares:null,...fields.metrics}});
+const PARTIAL={status:'partial',inventoryComplete:false,ownerAuthorized:true};
+
+test('a page post id is stored only in its exact form, a video id only as digits, and both stay when a later collection lacks them',async t=>{
   let round=1;
-  const reel='https://www.facebook.com/reel/555/';
-  const f=await fixture(t,{collector:async c=>({...result(c),posts:round===1
-    ?[fbRow('123_456','123_456',reel),fbRow('123_457','123_457&x',reel),fbRow('555','123_789',reel),fbRow('123_458','123_999',reel)]
-    :[fbRow('123_456',undefined,reel)]})});
-  const stored=()=>Object.fromEntries(f.app.store.all('posts').filter(p=>p.channelId==='lab').map(p=>[p.externalId,p.pagePostId]));
-  assert.deepEqual(stored(),{'123_456':'123_456','123_457':undefined,'555':undefined,'123_458':undefined});
-  await again(f,()=>{round=2;});
-  assert.deepEqual(stored(),{'123_456':'123_456','123_457':undefined,'555':undefined,'123_458':undefined});
+  const f=await fbFixture(t,async()=>fbResult(round===1
+    ?[fbPost('123_456',{pagePostId:'123_456',videoId:'456'}),fbPost('123_457',{pagePostId:'123_457&x',videoId:'45x'})]
+    :[fbPost('123_456'),fbPost('123_457')]));
+  const keys=()=>f.rows().map(r=>[r.externalId,r.pagePostId,r.videoId]);
+  assert.deepEqual(keys(),[['123_456','123_456','456'],['123_457',null,null]]);
+  round=2;await f.again();
+  assert.deepEqual(keys(),[['123_456','123_456','456'],['123_457',null,null]]);
 });
 
-// 설계 검토 B의 줄 수명: 영상 목록에서만 잡혔던 릴스(post_id를 받아 externalId가 게시물 번호)가 다음 회차에 게시물 목록으로 잡혀도 같은 줄이다.
-// post_id를 못 받은 영상 번호 줄은 번호가 없고, 앞 판처럼 완전한 전체 수집만 안 보인 줄을 내린다.
-test('a reel first seen only in the video list and later in the feed is one row; a numberless video row retires only on a complete full collection',async t=>{
+test('scene 1 and 4: a reel that loses its post_id, or comes back from the feed with a general post address, stays one row with its reel address',async t=>{
   let round=1;
-  const complete={status:'complete',inventoryComplete:true,ownerAuthorized:false},partial={status:'partial',inventoryComplete:false,ownerAuthorized:false};
-  const f=await fixture(t,{collector:async c=>round===1
-    ?{...result(c),posts:[fbRow('123_700','123_700','https://www.facebook.com/reel/555/'),fbRow('556',null,'https://www.facebook.com/reel/556/')],coverage:complete}
-    :{...result(c),posts:[fbRow('123_700','123_700','https://www.facebook.com/synk/posts/700'),fbRow('123_701','123_701','https://www.facebook.com/reel/556/')],coverage:round===2?partial:complete}});
-  const active=()=>f.app.store.all('posts').filter(p=>p.channelId==='lab'&&!p.unavailableAt).map(p=>[p.externalId,p.pagePostId??null]).sort();
-  assert.deepEqual(active(),[['123_700','123_700'],['556',null]]);
-  await again(f,()=>{round=2;});
-  assert.deepEqual(active(),[['123_700','123_700'],['123_701','123_701'],['556',null]],'a partial collection keeps the unseen row; the feed row is the same row');
-  assert.equal(f.app.store.get('posts','lab:123_700').url,'https://www.facebook.com/synk/posts/700');
-  assert.equal(f.app.store.all('snapshots').filter(s=>s.postId==='lab:123_700').length,1,'its history stays on one row');
-  await again(f,()=>{round=3;});
-  assert.deepEqual(active(),[['123_700','123_700'],['123_701','123_701']],'the complete full collection retires the numberless row, as before this change');
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('123_700',{pagePostId:'123_700',videoId:'555',publishedAt:AT_VIDEO,metrics:{views:9}})]
+    :round===2?[fbPost('555',{videoId:'555',publishedAt:AT_VIDEO,metrics:{views:11}})]
+    :[fbPost('123_700',{pagePostId:'123_700',url:FEED,publishedAt:AT,metrics:{likes:3}})],PARTIAL));
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.retired]),[['fb:123_700','123_700','555',false]],'no fb:555 row');
+  round=3;await f.again();
+  const [row]=f.rows();
+  assert.equal(f.rows().length,1);assert.equal(row.url,REEL,'the stored address auto-registration reads stays the reel address');assert.equal(row.publishedAt,AT_VIDEO,'with its own time');
+});
+
+test('scene 2: a numberless video row keeps its id and only gains the page post id; the feed row of that post joins it',async t=>{
+  let round=1;
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('555',{videoId:'555'})]
+    :round===2?[fbPost('123_700',{pagePostId:'123_700',videoId:'555'})]
+    :[fbPost('123_700',{pagePostId:'123_700',url:FEED})],PARTIAL));
+  round=2;await f.again();round=3;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.externalId,r.pagePostId,r.videoId,r.url]),[['fb:555','555','123_700','555',REEL]]);
+});
+
+test('scene 3: a same-day full collection without video views keeps the views of the day, while the new observation keeps what it got',async t=>{
+  let round=1;const recent=new Date(Date.now()-3600000).toISOString();
+  const f=await fbFixture(t,async()=>fbResult([fbPost('123_700',{pagePostId:'123_700',videoId:round===1?'555':null,publishedAt:recent,metrics:round===1?{views:9,likes:1}:{views:null,likes:2}})]));
+  round=2;await f.again();
+  const day=f.app.store.all('snapshots').filter(s=>s.postId==='fb:123_700');
+  assert.equal(day.length,1);assert.equal(day[0].views,9);assert.equal(day[0].likes,2);
+  const seen=f.app.store.all('hypeObservations').filter(o=>o.postId==='fb:123_700').sort((x,y)=>x.checkedAt.localeCompare(y.checkedAt));
+  assert.equal(seen.length,2);assert.equal(seen.at(-1).views,null,'an observation is what this collection got');assert.equal(seen.at(-1).likes,2);
+});
+
+test('scene 9: two rows of one collection that resolve to the same stored row merge with the first as the base',async t=>{
+  let round=1;
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('123_700',{pagePostId:'123_700',videoId:'555',metrics:{views:1,likes:1}})]
+    :[fbPost('123_700',{pagePostId:'123_700',url:FEED,title:'게시물',metrics:{likes:3,shares:1}}),fbPost('555',{videoId:'555',title:'영상',metrics:{views:9,likes:7}})]));
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>r.id),['fb:123_700']);
+  const day=f.app.store.all('snapshots').filter(s=>s.postId==='fb:123_700');
+  assert.equal(day.length,1);assert.deepEqual([day[0].likes,day[0].shares,day[0].views],[3,1,9]);
+  assert.equal(f.app.store.get('posts','fb:123_700').title,'게시물');
+});
+
+test('scene 10 and 11: a retired row comes back instead of a new one, and a video id never joins a different page post',async t=>{
+  let round=1;
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('123_700',{pagePostId:'123_700',videoId:'555'})]
+    :round===2?[fbPost('123_800',{pagePostId:'123_800'})]
+    :round===3?[fbPost('555',{videoId:'555'}),fbPost('123_800',{pagePostId:'123_800'})]
+    :[fbPost('123_701',{pagePostId:'123_701',videoId:'555'}),fbPost('123_800',{pagePostId:'123_800'})],round===3?PARTIAL:undefined));
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.retired]),[['fb:123_700',true],['fb:123_800',false]]);
+  round=3;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.retired]),[['fb:123_700',false],['fb:123_800',false]],'the retired row is revived, no fb:555');
+  round=4;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.retired]),[['fb:123_700','123_700','555',true],['fb:123_701','123_701','555',false],['fb:123_800','123_800',null,false]]);
+});
+
+test('scene 12: production-form rows without keys keep their ids and only gain the page post id',async t=>{
+  let round=1;
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('123_700'),fbPost('123_701')]:[fbPost('123_700',{pagePostId:'123_700'}),fbPost('123_701',{pagePostId:'123_701'})]));
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.retired]),[['fb:123_700','123_700',false],['fb:123_701','123_701',false]]);
 });
 
 test('complete inventory hides unavailable posts without erasing history; partial inventory never hides unseen posts',async t=>{

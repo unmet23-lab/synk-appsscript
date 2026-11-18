@@ -464,6 +464,38 @@ test('Facebook merges a video into the feed post its post_id names even without 
   assert.equal(urlless.coverage.videoPostIds.byPostId, 1);
 });
 
+// 설계 검토 2 장면 5 · 7 · 8: 합친 줄의 주소와 별칭, 영상 번호.
+// - 영상 대상 없는 게시물 줄에 post_id로 합치면(앞 판에서는 따로 영상 줄) 영상 주소 · 영상 시각이 주 주소 · 시각이고 게시물 주소가 별칭이다.
+// - 영상과 짝지은 게시물 줄(첨부 대상)은 주 주소를 그대로 두고 영상 주소를 별칭으로 단다.
+// - 깨진 영상 주소는 주소 없음으로 보고 뒤 영상을 막지 않는다.
+test('Facebook merged rows keep the other address as an alias with its own time and carry the confirmed video id', async () => {
+  const collect = (posts, videos) => collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: posts });
+    if (url.pathname.endsWith('/videos')) return ok({ data: videos });
+    throw new Error('unexpected');
+  } });
+  const feedAt = '2026-10-29T12:00:00Z', videoAt = '2026-10-29T12:10:00Z';
+  const byPostId = await collect([{ id: '123_700', created_time: feedAt, permalink_url: 'https://www.facebook.com/synk/posts/700' }],
+    [{ id: '555', post_id: '700', permalink_url: '/reel/555/', views: 9, published: true, created_time: videoAt }]);
+  assert.deepEqual(byPostId.posts.map(post => [post.externalId, post.url, post.publishedAt, post.videoId, post.aliasUrls]),
+    [['123_700', 'https://www.facebook.com/reel/555/', '2026-10-29T12:10:00.000Z', '555', [{ url: 'https://www.facebook.com/synk/posts/700', publishedAt: '2026-10-29T12:00:00.000Z' }]]]);
+  const byTarget = await collect([{ id: '123_700', created_time: feedAt, permalink_url: 'https://www.facebook.com/synk/posts/700', attachments: { data: [{ target: { id: '555' } }] } }],
+    [{ id: '555', post_id: '700', permalink_url: '/reel/555/', views: 9, published: true, created_time: videoAt }]);
+  assert.deepEqual(byTarget.posts.map(post => [post.externalId, post.url, post.publishedAt, post.videoId, post.aliasUrls]),
+    [['123_700', 'https://www.facebook.com/synk/posts/700', '2026-10-29T12:00:00.000Z', '555', [{ url: 'https://www.facebook.com/reel/555/', publishedAt: '2026-10-29T12:10:00.000Z' }]]]);
+  const targetOnly = await collect([{ id: '123_700', created_time: feedAt, permalink_url: 'https://www.facebook.com/synk/posts/700', attachments: { data: [{ target: { id: '901' } }] } }], []);
+  assert.equal(targetOnly.posts[0].videoId, null, 'an attachment target alone is not a video id');
+  const sameAddress = await collect([{ id: '123_700', created_time: feedAt, permalink_url: 'https://www.facebook.com/reel/555/' }],
+    [{ id: '555', post_id: '700', permalink_url: '/reel/555', views: 9, published: true, created_time: feedAt }]);
+  assert.equal(sameAddress.posts[0].aliasUrls, undefined, 'an address of the same identity is not an alias');
+  const broken = await collect([{ id: '123_700', created_time: feedAt, permalink_url: 'https://www.facebook.com/synk/posts/700' }],
+    [{ id: '555', post_id: '700', permalink_url: 'https://[', views: 9, published: true, created_time: videoAt }, { id: '556', permalink_url: 'https://[', views: 2, published: true, created_time: videoAt }, { id: '557', permalink_url: '/reel/557/', views: 3, published: true, created_time: videoAt }]);
+  assert.deepEqual(broken.posts.map(post => [post.externalId, post.url, post.metrics.views]), [['123_700', 'https://www.facebook.com/synk/posts/700', 9], ['556', null, 2], ['557', 'https://www.facebook.com/reel/557/', 3]]);
+  assert.equal(broken.coverage.inventoryComplete, true, 'a broken address does not stop the list');
+});
+
 // 다시 검수 GA4: 칸 거절은 첫 요청에서 난다. 둘째 쪽에서 난 400 · 100(커서 따위)으로 처음부터 다시 받지 않는다.
 test('Facebook does not refetch videos with fewer fields when a later page fails with code 100', async () => {
   let videoCalls = 0;
