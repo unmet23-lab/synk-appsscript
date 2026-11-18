@@ -38,54 +38,77 @@ function 브라우저수신(config, importedIds) {
   return JSON.parse(data);
 }
 
-async function PC지도갱신(folder, config, map) {
-  const feed = 브라우저수신(config.grok, 보고서읽기(folder).map((report) => report.reportId));
-  if (!(feed.receipts > 0) || !Array.isArray(feed.reports) || feed.reports.length > 24) {
-    throw Error('그록 수집 페이지의 회차 목록 형식이 맞지 않습니다.');
-  }
-  let imported = 0;
-  let candidates = 0;
-  for (const report of feed.reports) {
-    const result = await 가져오기(folder, report);
-    if (!result.already) {
-      imported++;
-      candidates += result.items.length;
-    }
-  }
+function PC지도생성(folder, map) {
   const rendered = spawnSync(process.execPath, [
     path.join(__dirname, '공모지도.js'), '--보관함', folder, '--출력', map,
   ], { encoding: 'utf8', windowsHide: true, timeout: 30000 });
   if (rendered.status !== 0 || !fs.existsSync(map)) {
-    throw Error('그록 회차는 보관했지만 공모 지도를 만들지 못했습니다. ' + (rendered.stderr || '').trim());
+    throw Error('PC 공모 지도를 만들지 못했습니다. ' + (rendered.error?.message || rendered.stderr || '').trim());
   }
-  return { reports: feed.receipts, imported, candidates, failedReports: feed.failures || [] };
+}
+
+async function 지도동기화(folder, config, { 수신 = 브라우저수신, 웹갱신 = 클로드지도갱신 } = {}) {
+  const map = path.join(folder, '공모지도.html');
+  const summary = { map, reports: null, imported: 0, candidates: 0, failedReports: [] };
+  try {
+    const feed = await 수신(config.grok, 보고서읽기(folder).map(report => report.reportId));
+    if (!(feed.receipts > 0) || !Array.isArray(feed.reports) || feed.reports.length > 24 ||
+        (feed.failures != null && !Array.isArray(feed.failures))) {
+      throw Error('그록 수집 페이지의 회차 목록 형식이 맞지 않습니다.');
+    }
+    summary.reports = feed.receipts;
+    summary.failedReports = [...(feed.failures || [])];
+    for (const report of feed.reports) {
+      try {
+        const result = await 가져오기(folder, report);
+        if (!result.already) {
+          summary.imported++;
+          summary.candidates += result.items.length;
+        }
+      } catch (error) {
+        const reportId = report?.reportId || '회차 미상';
+        summary.failedReports.push(reportId);
+        (summary.importErrors ??= []).push({ reportId, message: error.message });
+      }
+    }
+  } catch (error) {
+    summary.grokError = error.message;
+  }
+  try {
+    PC지도생성(folder, map);
+    summary.pc = 'rendered';
+  } catch (error) {
+    summary.pc = 'error';
+    summary.pcError = error.message;
+  }
+  if (config.artifact_sync) {
+    if (fs.existsSync(map)) {
+      summary.artifactSource = summary.pcError ? 'previous-pc-map' : 'rendered-pc-map';
+      try {
+        summary.artifact = await 웹갱신(config, map);
+      } catch (error) {
+        summary.artifact = { status: 'error', message: error.message };
+      }
+    } else {
+      summary.artifact = { status: 'skipped', message: '게시할 PC 공모 지도가 없습니다.' };
+    }
+  }
+  const failed = summary.grokError || summary.pcError || summary.failedReports.length ||
+    ['skipped', 'error'].includes(summary.artifact?.status);
+  summary.exitCode = failed ? 1 : summary.artifact?.status === 'deferred' ? 2 : 0;
+  return summary;
 }
 
 async function main(argv) {
   const folder = argv[0] ? path.resolve(argv[0]) : 기본보관함;
-  const config = 읽기(path.join(folder, '공모지도.json'));
-  const map = path.join(folder, '공모지도.html');
-  const summary = { map };
-  try {
-    Object.assign(summary, await PC지도갱신(folder, config, map));
-  } catch (error) {
-    if (!config.artifact_sync || !fs.existsSync(map)) throw error;
-    summary.pcError = error.message;
-    process.exitCode = 1;
-  }
-  if (config.artifact_sync) {
-    try {
-      summary.artifact = await 클로드지도갱신(config, map);
-    } catch (error) {
-      summary.artifact = { status: 'error', message: error.message };
-      process.exitCode = 1;
-    }
-  }
+  const summary = await 지도동기화(folder, 읽기(path.join(folder, '공모지도.json')));
   console.log(JSON.stringify(summary));
-  if (summary.failedReports?.length) process.exitCode = 1;
+  process.exitCode = summary.exitCode;
 }
 
 if (require.main === module) main(process.argv.slice(2)).catch((error) => {
   console.error(error.message);
   process.exitCode = 1;
 });
+
+module.exports = { 지도동기화 };

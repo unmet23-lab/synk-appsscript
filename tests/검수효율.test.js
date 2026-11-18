@@ -289,3 +289,27 @@ test('서비스 백엔드 끝 판 카본(11-14부터 상시): 통과한 Claude �
   assert.equal(끝판시험말({ ...목록, 정책: { 작성자: 'GPT' } }, 확인('lib/a.js')), null);
   assert.equal(끝판시험말({ ...목록, 이름: 'town-engine-끝판' }, 확인('lib/a.js')), null, '끝 판 묶음에서 또 안내하지 않는다');
 });
+
+test('집계는 같은 최종 후보 전체를 기본 수준 카본이 완독한 경우에만 중복 안내를 뺀다', async t => {
+  const api = await tool(), r = 임시저장소(t, { 'lib/a.js': 'a=1\n' });
+  r.쓰기('lib/a.js', 'a=2\n');
+  const { 폴더, 목록 } = await api.준비하기({ 이름: 'carbon-once', 저장소: r.저장소, 폴더: r.출력, 종류: '백엔드', 작성자: 'Claude', 바탕: r.바탕 });
+  await api.GPT보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 });
+  const 집계 = () => execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '집계', 폴더], { encoding: 'utf8' });
+  const 증명 = api.검수확인(폴더).증명;
+  assert.match(집계(), /끝 판 카본/);
+  await api.아르곤보내기(폴더, 목록, { call: 답하기(), 몫: 몫충분 });
+  assert.doesNotMatch(집계(), /끝 판 카본/);
+  assert.deepEqual(api.검수확인(폴더).증명, 증명);
+  const file = path.join(폴더, '아르곤-A.json'), answer = JSON.parse(fs.readFileSync(file, 'utf8'));
+  for (const 다른답 of [{ 모델: 'gemini-4-carbon-medium' }, { 모델: 'gemini-4-argon-high' }, { 원문: '{}' }, { 입력sha256: '옛 판' }]) {
+    fs.writeFileSync(file, JSON.stringify({ ...answer, ...다른답 }));
+    assert.match(집계(), /끝 판 카본/);
+  }
+  fs.writeFileSync(file, JSON.stringify(answer));
+  r.쓰기('lib/new.js', 'newFile()\n');
+  assert.match(집계(), /끝 판 카본/, '검수 당시 없던 파일도 마지막 판에 들어간다');
+  r.쓰기('lib/a.js', 'a=3\n');
+  assert.equal(api.검수확인(폴더).통과, false);
+  assert.equal(api.검수확인(폴더).카본전체판확인, undefined);
+});

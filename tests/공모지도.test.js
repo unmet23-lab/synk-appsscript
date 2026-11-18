@@ -9,8 +9,61 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const 지도 = require('../tools/공모지도.js');
+const { 지도동기화 } = require('../tools/공모지도동기화.cjs');
 
 const 도구 = path.join(__dirname, '..', 'tools', '공모지도.js');
+
+test('수신이 끊겨도 장부를 그리고, 잘못된 회차 뒤의 정상 회차는 한 번만 저장한다', async t => {
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-contest-sync-'));
+  t.after(() => fs.rmSync(folder, { recursive: true, force: true }));
+  const 현황 = 장부();
+  현황.items[0].name = '장부에서 수정한 공모';
+  fs.writeFileSync(path.join(folder, '신청현황.json'), JSON.stringify(현황));
+  fs.writeFileSync(path.join(folder, '통합목록.json'), JSON.stringify(목록()));
+  const config = { artifact_sync: {} };
+  const 웹갱신 = (_config, map) => {
+    assert.match(fs.readFileSync(map, 'utf8'), /장부에서 수정한 공모/);
+    return { status: 'current', version: 7 };
+  };
+  const offline = await 지도동기화(folder, config, { 수신: () => { throw Error('수신 실패'); }, 웹갱신 });
+  assert.equal(offline.grokError, '수신 실패');
+  assert.equal(offline.exitCode, 1);
+  assert.equal(offline.pc, 'rendered');
+  assert.equal(offline.artifactSource, 'rendered-pc-map');
+  assert.equal(offline.artifact.status, 'current');
+
+  const report = { schema: 'synk-grok-contests-v1', reportId: 'good', reports: ['fixture.md'], items: [] };
+  const feed = { receipts: 3, reports: [{ reportId: 'bad' }, report], failures: ['download'] };
+  const partial = await 지도동기화(folder, config, { 수신: () => feed, 웹갱신 });
+  assert.deepEqual(partial.failedReports, ['download', 'bad']);
+  assert.equal(partial.importErrors[0].reportId, 'bad');
+  assert.equal(partial.imported, 1);
+  assert.equal(partial.exitCode, 1);
+  assert.equal(partial.pc, 'rendered');
+  assert.equal(partial.artifact.status, 'current');
+  const retry = await 지도동기화(folder, config, { 수신: (_source, ids) => {
+    assert.deepEqual(ids, ['good']);
+    return { receipts: 1, reports: [report] };
+  }, 웹갱신 });
+  assert.deepEqual(retry.failedReports, []);
+  assert.equal(retry.imported, 0);
+  assert.equal(retry.exitCode, 0);
+  const waiting = await 지도동기화(folder, config, { 수신: () => ({ receipts: 1, reports: [] }),
+    웹갱신: () => ({ status: 'deferred', reset: '다음 회차' }) });
+  assert.equal(waiting.exitCode, 2);
+  assert.equal(waiting.pc, 'rendered');
+
+  const map = retry.map, saved = fs.readFileSync(map);
+  fs.writeFileSync(path.join(folder, '신청현황.json'), '{');
+  const prior = await 지도동기화(folder, config, { 수신: () => feed, 웹갱신 });
+  assert.equal(prior.pc, 'error');
+  assert.equal(prior.artifactSource, 'previous-pc-map');
+  assert.deepEqual(fs.readFileSync(map), saved);
+  fs.unlinkSync(map);
+  const missing = await 지도동기화(folder, config, { 수신: () => feed, 웹갱신 });
+  assert.equal(missing.artifact.status, 'skipped');
+  assert.equal(missing.exitCode, 1);
+});
 
 function 장부() {
   return {
