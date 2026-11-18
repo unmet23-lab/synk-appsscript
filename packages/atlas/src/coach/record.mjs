@@ -79,7 +79,7 @@ export async function openTrail({
   const nowMs = () => Math.round(clockNow() + record.clock.offsetMs);
   return {
     record,
-    add: (type, fields) => record.add(type, fields),
+    add: (type, fields, options) => record.add(type, fields, options),
     view: () => record.view(),
     // 「낸 것」 — 줄마다 사건 번호(id)가 실린다(단계 3 49935bb51, 계획 §16 ①). 번호 없는 서버 요약 줄은 id 칸 없이 그대로 온다.
     issued: () => record.issued(),

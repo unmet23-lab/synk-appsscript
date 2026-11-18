@@ -259,3 +259,109 @@ test('요약 단위 줄 — 코치 옵션 label이 넘긴 이름 사전이 지�
   assert.equal(line.label, '안녕하세요');
   coach.dispose();
 });
+
+// ── 판 응답을 빼는 문(§22-5 · 카본 A1 · Fable F6) ──
+const { createClient, createServer } = await import('../support/trail-sync.mjs');
+const { bank, indexOf, rng } = await import('../support/trail-world.mjs');
+
+// 다른 기기에서 낸 판 응답 하나(판 결정 · 마침 · 응답) — 그 번호를 이 기기에서 뺀다.
+async function elsewhereResponse(server) {
+  const other = await createClient(server, { name: 'respothr', port: memoryPort() });
+  const decided = other.record.add('decision.made', {
+    experienceId: 'world-practice',
+    variant: 'v1',
+    setId: 'set1',
+  });
+  const completed = other.record.add('experience.completed', {
+    decisionId: decided.event.id,
+    experienceId: 'world-practice',
+    variant: 'v1',
+    setId: 'set1',
+  });
+  const given = other.record.add('feedback.given', {
+    completionId: completed.event.id,
+    value: 'too_much',
+  });
+  await given.stored;
+  await other.push();
+  return given.event.id;
+}
+
+test('판 응답을 빼는 문 — 겨눈 응답이 기기에 없어도 「닿는 줄 없음」을 적어 계정 보기가 기다리지 않는다, 일반 제외는 그대로 기다린다', async () => {
+  const server = createServer({ random: rng(41), index: indexOf(bank(rng(40)), 'index-a') });
+  const target = await elsewhereResponse(server);
+  const plainPort = memoryPort();
+  const plain = await createClient(server, { name: 'respplan', port: plainPort });
+  await plain.push();
+  assert.equal(plain.record.view().waitAll, false, '시작');
+  await plain.record.add('record.excluded', { targetId: target }).stored;
+  assert.equal(
+    plain.record.view().waitAll,
+    true,
+    '일반 제외 — 기기에 없는 대상은 서버가 접을 때까지 기다린다(지금 그대로)',
+  );
+
+  const doorPort = memoryPort();
+  const door = await createClient(server, { name: 'respdoor', port: doorPort });
+  await door.push();
+  const made = door.record.add('record.excluded', { targetId: target }, { nothingTouched: true });
+  await made.stored;
+  assert.equal(door.record.view().waitAll, false, '판 응답을 빼는 문 — 기다리지 않는다');
+  const row = (await doorPort.read()).find(entry => entry.value.event?.id === made.event.id);
+  assert.deepEqual(row.value.touches, { units: [], skills: [] }, '「닿는 줄 없음」 메모');
+  const plainRow = (await plainPort.read()).find(
+    entry => entry.value.event?.type === 'record.excluded',
+  );
+  assert.equal(plainRow.value.touches, undefined, '일반 제외에는 빈 메모를 적지 않는다');
+});
+
+test('coach.excludeResponse — 판 응답만 받는다: 기기에 있는 다른 사건이면 던지고, 기기의 응답과 다른 기기의 응답은 뺀다', async () => {
+  const port = memoryPort();
+  const time = clock();
+  stores += 1;
+  const coach = createCoach({
+    gameId: 'world-life',
+    mapData: MAP_DATA,
+    dayOffset: 540,
+    host: { guest: true, port, key: `synk-atlas:world-me-${process.pid}-${stores}`, now: time.now },
+  });
+  await coach.ready;
+  const pid = coach.present({ itemKey: HELLO });
+  await coach.answer(pid, { correct: true, assessable: true }).stored;
+  const set = coach.finishSet({ kind: 'short' });
+  await set.folded;
+  const given = coach.feedback(set, 'want_more');
+  time.advance(1000);
+  assert.throws(() => coach.excludeResponse(pid), TypeError, '제시는 이 문으로 빼지 않는다');
+  assert.throws(() => coach.excludeResponse(set.completionId), TypeError, '판 마침도 아니다');
+  const dropped = coach.excludeResponse(given.id);
+  assert.equal(dropped.type, 'record.excluded');
+  assert.equal(dropped.targetId, given.id);
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const other = await lifeCoach();
+  const otherPid = other.coach.present({ itemKey: HELLO });
+  await other.coach.answer(otherPid, { correct: true, assessable: true }).stored;
+  const otherSet = other.coach.finishSet({ kind: 'short' });
+  await otherSet.folded;
+  const elsewhere = other.coach.feedback(otherSet, 'helpful');
+  other.coach.dispose();
+  const away = coach.excludeResponse(elsewhere.id);
+  assert.equal(
+    away.targetId,
+    elsewhere.id,
+    '기기에 없는 번호(다른 기기의 응답)도 판 응답 목록에서 온 것을 믿고 뺀다',
+  );
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const rows = await port.read();
+  assert.deepEqual(
+    rows.find(entry => entry.value.event?.id === away.id)?.value.touches,
+    { units: [], skills: [] },
+    '코치 길로도 「닿는 줄 없음」 메모가 기록부까지 간다',
+  );
+  assert.deepEqual(
+    rows.find(entry => entry.value.event?.id === dropped.id)?.value.touches,
+    { units: [], skills: [] },
+    '기기에 있는 응답을 뺄 때도 같은 메모 — 판 응답은 닿는 줄이 없다',
+  );
+  coach.dispose();
+});

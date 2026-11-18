@@ -237,9 +237,13 @@ function createHost({
   };
 
   // 사건 하나를 쓴다. fold(event → 답 · 본인 말 · 도움의 접기 사건)와 issued(event → 제시의 「낸 것」 줄)는 저장이 끝날 때까지
-  // 보기에 얹어 둔다. 둘 다 만든 사건(번호 · 시각)을 받아 짓는다.
-  function write(type, fields, { fold = null, issued = null } = {}) {
-    const made = state.trail.add(type, fields);
+  // 보기에 얹어 둔다. 둘 다 만든 사건(번호 · 시각)을 받아 짓는다. nothingTouched는 판 응답을 빼는 제외만 준다(기록부 valueOf).
+  function write(type, fields, { fold = null, issued = null, nothingTouched = false } = {}) {
+    const made = state.trail.add(
+      type,
+      fields,
+      nothingTouched ? { nothingTouched: true } : undefined,
+    );
     const id = made.event.id;
     const folded = fold ? fold(made.event) : null;
     const row = issued ? issued(made.event) : null;

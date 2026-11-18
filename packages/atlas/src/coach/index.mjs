@@ -335,6 +335,17 @@ export function createCoach(options = {}) {
       return live().exclude(eventId).event;
     },
 
+    // 판 응답(feedback.given)을 뺀다(단계 4 계획 §22-5 · 카본 A1 · Fable F6). 「내가 남긴 응답」 목록에서 온 번호만 받는다. 겨눈 사건이
+    // 기기에 있으면 판 응답인지 보고 아니면 던진다 — 이 문으로 접기 재료를 빼면 계정 보기가 서버를 기다리지 않은 채 그 근거가 남는다.
+    // 기기에 없으면(이틀 지나 치웠거나 다른 기기의 응답) 판 응답 목록에서 온 것을 믿고 「닿는 줄 없음」으로 적는다. 사건을 돌려준다.
+    excludeResponse(eventId) {
+      const session = live();
+      const held = state.host.trail.heldEvents().find(event => event.id === eventId);
+      if (held && held.type !== EVENT_TYPES.feedback)
+        throw new TypeError('Atlas: excludeResponse takes a set response (feedback.given)');
+      return session.excludeResponse(eventId).event;
+    },
+
     recheck() {
       return { status: 'unavailable', reason: 'retired', learningEffectClaim: false };
     },

@@ -569,11 +569,14 @@ export function createRecord({
   }
 
   // 기록 값 — 제외의 닿는 줄 메모(touches)는 저장 직전에 잰다: 겨눈 사건 · 그 묶음의 답이 아직 저장 중이면 든 사건에 없어 메모가
-  // 비었다(카본 끝 판 E3). 그래서 제외는 저장 중인 사건을 다 기다린 뒤에 잰다(store).
-  function valueOf(type, event) {
+  // 비었다(카본 끝 판 E3). 그래서 제외는 저장 중인 사건을 다 기다린 뒤에 잰다(store). nothingTouched는 판 응답을 빼는 문(코치
+  // excludeResponse — 단계 4 계획 §22-5)만 준다: 판 응답은 접기 재료가 아니라 닿는 줄이 없다. 겨눈 응답이 기기에 없을 때(이틀 지나
+  // 치웠거나 다른 기기의 응답)도 「닿는 줄 없음」을 빈 메모로 적어, 계정 보기가 그 제외를 서버가 접을 때까지 기다리지 않게 한다.
+  function valueOf(type, event, nothingTouched = false) {
     const touches =
       type === EVENT_TYPES.excluded
-        ? touchesOf([...state.held.values()].map(entryOf), event.targetId, index)
+        ? (touchesOf([...state.held.values()].map(entryOf), event.targetId, index) ??
+          (nothingTouched ? { units: [], skills: [] } : null))
         : null;
     return { kind: 'event', event, ...(touches ? { touches } : {}) };
   }
@@ -646,12 +649,13 @@ export function createRecord({
     clock: state.clock,
 
     // 사건 하나를 만들어 저장한다. 돌려주는 stored는 저장이 끝난 뒤의 값(true면 근거, false면 근거가 아니다).
-    add(type, fields) {
+    // nothingTouched: 판 응답을 빼는 제외만(위 valueOf).
+    add(type, fields, { nothingTouched = false } = {}) {
       const atMs = state.clock.next();
       const id = nextId(state, atMs, tag);
       const event = createEvent(type, fields, { id, atMs, revision: guest ? 0 : revision });
       if (type === EVENT_TYPES.presented) state.families.set(id, event.familyKey);
-      return { event, stored: store(type, event, () => valueOf(type, event)) };
+      return { event, stored: store(type, event, () => valueOf(type, event, nothingTouched)) };
     },
 
     // 보낼 대기열 — 받은 표지가 없고 버리지 않은 내 2판 사건(만든 차례). skip은 이 세션에 건너뛸 번호들(서버가 번호 없이 묶음째

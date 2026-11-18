@@ -569,6 +569,11 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       });
       return made;
     },
+    // 판 응답 빼기(단계 4 계획 §22-5) — 판 응답은 판 상태에 없으므로 다시 세우지 않는다. 겨눈 응답이 기기에 없어도 「닿는 줄 없음」으로
+    // 적는다(기록부 valueOf의 nothingTouched). 겨눈 것이 판 응답인지는 코치 겉(excludeResponse)이 본다.
+    excludeResponse(targetId) {
+      return write(EVENT_TYPES.excluded, { targetId }, { nothingTouched: true });
+    },
 
     close() {
       // 닫은 판 — 판 기록(finishSet)은 그 판 번호로 한 번만 남는다(아르곤 끝 판 C7).
