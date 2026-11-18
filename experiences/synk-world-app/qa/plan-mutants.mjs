@@ -68,6 +68,7 @@ export const PLAN_MUTANTS = [
   ['next', '말하기를 고른 학생의 시험 정보에 말하기를 붙이지 않는다', '    exam: speaking ? { ...info, speaking: true } : info,\n', '    exam: info,\n'],
   ['next', '계획에 「이 기기에서 센 수」 표지를 넘기지 않는다', "    doneScope: 'device',\n", ''],
   // ── 셸의 배선(world-learning-ui.mjs — weekNext · planOnce) ──
+  ['shell', '목표 창 「내 위치 보기」 수를 새 길 문서에서도 옛 world-home 요약으로 짓는다(단계4_계획 §22-1 5b · 설계 주인 11-18)', "  if(phase==='old'){let summary=empty;", "  if(true){let summary=empty;"],
   ['shell', '판이 끝나도 묶음 만남을 다시 묻지 않는다 — 진단 뒤에도 시작점이 그날 그대로다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),info.type,complete,summaryShape(summary)].join('|');\n"],
   ['shell', '목표 시험을 바꿔도 묶음 만남을 다시 묻지 않는다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,complete,summaryShape(summary)].join('|');\n"],
   ['shell', '기록이 다 와도 묶음 만남을 다시 묻지 않는다 — 기록 일부일 때의 판정이 그날 내내 굳는다(카본 A8)', KEY, "  const key=[homePlanner.todayKey(now),planEnds,info.type,summaryShape(summary)].join('|');\n"],

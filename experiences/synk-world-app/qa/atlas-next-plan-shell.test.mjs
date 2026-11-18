@@ -503,6 +503,30 @@ test('시험을 고르지 않은 학생은 새 길 홈에도 이번 주 계획�
   }
 });
 
+test('목표 창의 「내 위치 보기」 수 — 새 길 문서는 엔진 판일 때만 「내 위치」 판과 같은 새 요약으로 짓고, 확인 중이면 수 없이 그린다(단계4_계획 §22-1 5b · 설계 주인 11-18)', async () => {
+  const row = html => /data-view="position"[\s\S]*?<small>([^<]*)<\/small>/.exec(html)?.[1] ?? null;
+  // TOPIK II 학생의 엔진 판 — 새 판은 TOPIK II 항목으로 센다(옛 world-home 요약은 늘 TOPIK I 지도였다).
+  const app = shell({ values: { ...EXAM_T2 } });
+  try {
+    app.education.refresh();
+    await until(() => engineHome(app), '엔진 판의 이번 주 계획');
+    app.education.open();
+    assert.match(row(app.last()) ?? '', /^TOPIK II \d+개 항목: 혼자 해냄 \d+ · 연습 중 \d+ · 아직 \d+$/, '새 요약의 TOPIK II 수');
+  } finally {
+    app.dispose();
+  }
+  // 확인 중(플래너를 끝내 못 받음) — 옛 요약으로 수를 짓지 않고 수 없이 그린다.
+  const stuck = shell({ planner: () => new Promise(() => {}), fast: true });
+  try {
+    stuck.education.open();
+    const text = row(stuck.last()) ?? '';
+    assert.ok(text.length > 0, '줄은 선다');
+    assert.doesNotMatch(text, /혼자 해냄/, '확인 중에는 수가 없다');
+  } finally {
+    stuck.dispose();
+  }
+});
+
 test('새 길 홈이 확인 중일 때 연 이번 주 계획은 판이 설 때까지 기다린다 — 시험을 저장한 학생에게 목표 창을 열지 않는다(4-4b 끝 판 Fable F1)', async () => {
   const form = html => html.includes('world-study-form');
   // 문서를 연 직후의 ?exam= 바로가기 — 홈은 아직 확인 중이다.

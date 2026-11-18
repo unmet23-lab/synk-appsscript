@@ -26425,23 +26425,37 @@ function createWorldEducation({
     if (selected.route === "speaking" && typeof speakingPractice?.open === "function") return speakingPractice.open(selected.routeId);
     return startLesson(selected.lessonId);
   }
+  function positionRowMap() {
+    if (!view) return null;
+    const phase = homePhase();
+    if (phase === "old") {
+      let summary = empty2;
+      try {
+        summary = readCoach()?.summary() || empty2;
+      } catch {
+      }
+      try {
+        return summary.evidenceComplete ? position.buildPositionMap({ summary, policy: engine.POLICY }) : null;
+      } catch {
+        return null;
+      }
+    }
+    const P = homePlanner?.position, coachNow = phase === "engine" ? homeWatch?.coach?.() ?? null : null;
+    if (!coachNow || !P) return null;
+    try {
+      const board = nextData(coachNow, P).board;
+      return board?.complete ? board : null;
+    } catch {
+      return null;
+    }
+  }
   function open({ continueAfter = false, presetExam = null } = {}) {
     check3();
     const progress2 = getProgress(), saved = progress2.learningProfile(), profile = saved.profile, stored = settingsFor(progress2.learningProfileValues());
     let revision2 = profile.revision;
     const preset = position?.exam && Object.hasOwn(EXAM_GRADES2, presetExam) ? presetExam : null;
     const values = preset ? { ...stored, primaryReason: "exam", examType: preset, targetGrade: EXAM_GRADES2[preset].includes(stored.targetGrade) ? stored.targetGrade : null } : stored;
-    let summary = empty2;
-    try {
-      summary = readCoach()?.summary() || empty2;
-    } catch {
-    }
-    let map = null;
-    try {
-      if (view && summary.evidenceComplete) map = position.buildPositionMap({ summary, policy: engine.POLICY });
-    } catch {
-      map = null;
-    }
+    const map = positionRowMap();
     const reason = values.primaryReason || values.reasons?.[0] || "";
     const scoped = progress2.status().scoped, consentName = t2(scoped ? "goal.consent.account" : "goal.consent.device");
     const now = Date.now(), examDate = typeof values.examDate === "string" ? values.examDate : "", month = examDate.slice(0, 7), day = examDate.length > 7 ? String(Number(examDate.slice(8))) : "";
@@ -26469,7 +26483,7 @@ function createWorldEducation({
     <fieldset class="study-group"><legend>${t2("goal.minutes")}</legend><div class="study-pills study-segment">${radios("minutes", [["", t2("goal.minutes.any")], ...["3", "5", "10"].map((n) => [n, t2("goal.minutes.n", { n })])], values.minutes ? String(values.minutes) : "")}</div></fieldset>
     <fieldset class="study-group"><legend>${t2("goal.audio")}</legend><div class="study-pills study-segment">${radios("audio", { available: t2("goal.audio.available"), off: t2("goal.audio.off") }, values.audio === "off" ? "off" : "available")}</div></fieldset>
    </div>
-   ${view ? `<section class="study-position"><p class="life-section-label">MY POSITION</p><button type="button" class="life-row study-position-row" data-view="position"><span class="life-row-copy"><strong>${t2("position.open")}</strong><small>${escape3(map ? t2("position.summary", { ...map.counts, total: map.total }) : t2("position.row", { total: map?.total || topikTotal() }))}</small></span></button></section>` : ""}
+   ${view ? `<section class="study-position"><p class="life-section-label">MY POSITION</p><button type="button" class="life-row study-position-row" data-view="position"><span class="life-row-copy"><strong>${t2("position.open")}</strong><small>${escape3(map ? t2(map.exam === "topik2" ? "position.summary.topik2" : "position.summary", { ...map.counts, total: map.total }) : t2("position.row", { total: topikTotal() }))}</small></span></button></section>` : ""}
    <p class="study-scope">${t2(scoped ? "goal.scope.account" : "goal.scope.device")}</p>
    <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent ? "checked" : ""}><span><strong>${consentName}</strong><small>${t2("goal.consent.note")}</small></span></label>
    <p class="study-save-status" role="status">${escape3(tMessage2(progress2.status().message))}</p>

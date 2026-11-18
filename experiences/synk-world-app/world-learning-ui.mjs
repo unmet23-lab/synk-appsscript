@@ -430,15 +430,25 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(selected.route==='speaking'&&typeof speakingPractice?.open==='function')return speakingPractice.open(selected.routeId);
   return startLesson(selected.lessonId);
  }
+ // 목표 창 「내 위치 보기」 줄의 수(단계4_계획 §22-1 5b · 설계 주인 11-18): 「내 위치」 판과 같은 자리에서 짓는다. 지금 판 문서는 옛 world-home
+ // 요약으로(근거가 다 왔을 때만), 새 길 문서는 엔진 판일 때만 새 요약(nextData의 판 — 기록이 다 왔을 때만)으로 짓는다. 새 길 문서는 옛 요약을
+ // 읽지 않는다. 확인 중이거나 판을 못 지으면 null이다(수 없이 그린다).
+ function positionRowMap(){
+  if(!view)return null;
+  const phase=homePhase();
+  if(phase==='old'){let summary=empty;try{summary=readCoach()?.summary()||empty;}catch{}try{return summary.evidenceComplete?position.buildPositionMap({summary,policy:engine.POLICY}):null;}catch{return null;}}
+  const P=homePlanner?.position,coachNow=phase==='engine'?homeWatch?.coach?.()??null:null;
+  if(!coachNow||!P)return null;
+  try{const board=nextData(coachNow,P).board;return board?.complete?board:null;}catch{return null;}
+ }
  // presetExam(주소의 ?exam=, 아래 examLink): 「시험·자격 준비 → 그 시험」을 이 창에만 채워 둔다. 저장은 학생이 저장 스위치를 켜고 누를 때만이고,
  // 저장하면 이번 주 계획으로 간다. 이미 고른 목표 급이 그 시험의 급이 아니면 비운다.
  function open({continueAfter=false,presetExam=null}={}){
   check();const progress=getProgress(),saved=progress.learningProfile(),profile=saved.profile,stored=settingsFor(progress.learningProfileValues());let revision=profile.revision;
   const preset=position?.exam&&Object.hasOwn(EXAM_GRADES,presetExam)?presetExam:null;
   const values=preset?{...stored,primaryReason:'exam',examType:preset,targetGrade:EXAM_GRADES[preset].includes(stored.targetGrade)?stored.targetGrade:null}:stored;
-  let summary=empty;try{summary=readCoach()?.summary()||empty;}catch{}
-  // 「연습에서 본 것」 대신 「내 위치 보기」 한 줄(10-19 결정): 항목 지도의 세 칸 수를 미리 보이고, 누르면 내 위치 판이 열린다.
-  let map=null;try{if(view&&summary.evidenceComplete)map=position.buildPositionMap({summary,policy:engine.POLICY});}catch{map=null;}
+  // 「연습에서 본 것」 대신 「내 위치 보기」 한 줄(10-19 결정): 항목 지도의 세 칸 수를 미리 보이고, 누르면 내 위치 판이 열린다(수는 positionRowMap).
+  const map=positionRowMap();
   const reason=values.primaryReason||values.reasons?.[0]||'';
   const scoped=progress.status().scoped,consentName=t(scoped?'goal.consent.account':'goal.consent.device');
   // 시험 칸: 지금 값과, 시험일이 지났으면 「시험은 어땠어요?」(다음 목표 묻기).
@@ -469,7 +479,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
     <fieldset class="study-group"><legend>${t('goal.minutes')}</legend><div class="study-pills study-segment">${radios('minutes',[['',t('goal.minutes.any')],...['3','5','10'].map(n=>[n,t('goal.minutes.n',{n})])],values.minutes?String(values.minutes):'')}</div></fieldset>
     <fieldset class="study-group"><legend>${t('goal.audio')}</legend><div class="study-pills study-segment">${radios('audio',{available:t('goal.audio.available'),off:t('goal.audio.off')},values.audio==='off'?'off':'available')}</div></fieldset>
    </div>
-   ${view?`<section class="study-position"><p class="life-section-label">MY POSITION</p><button type="button" class="life-row study-position-row" data-view="position"><span class="life-row-copy"><strong>${t('position.open')}</strong><small>${escape(map?t('position.summary',{...map.counts,total:map.total}):t('position.row',{total:map?.total||topikTotal()}))}</small></span></button></section>`:''}
+   ${view?`<section class="study-position"><p class="life-section-label">MY POSITION</p><button type="button" class="life-row study-position-row" data-view="position"><span class="life-row-copy"><strong>${t('position.open')}</strong><small>${escape(map?t(map.exam==='topik2'?'position.summary.topik2':'position.summary',{...map.counts,total:map.total}):t('position.row',{total:topikTotal()}))}</small></span></button></section>`:''}
    <p class="study-scope">${t(scoped?'goal.scope.account':'goal.scope.device')}</p>
    <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent?'checked':''}><span><strong>${consentName}</strong><small>${t('goal.consent.note')}</small></span></label>
    <p class="study-save-status" role="status">${escape(tMessage(progress.status().message))}</p>
