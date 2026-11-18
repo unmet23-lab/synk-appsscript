@@ -31,6 +31,7 @@
 # 끝 코드: 0 다 만듦 · 2 못 만든 것이 있음(판목록 「못함」) · 1 입력 오류.
 # 시험: node --test tests/영상관문.test.js(워크플로 모의 실행 · 이음). 이 도구는 그림 라이브러리 · ffmpeg가 있어야 돌아 PC에서 실제 편으로 확인한다.
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -38,6 +39,7 @@ import subprocess
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+from io import BytesIO
 from pathlib import Path
 
 os.environ.setdefault("OPENCV_LOG_LEVEL", "ERROR")  # 얼굴 검출 때마다 찍히는 OpenCV 알림을 끈다
@@ -101,9 +103,18 @@ def 줄이기(im):
     return im if s >= 1.0 else im.resize((max(1, round(w * s)), max(1, round(h * s))), Image.LANCZOS)
 
 
-def 저장(im, 경로):
-    줄이기(im.convert("RGB")).save(경로, "JPEG", quality=90)
-    return str(Path(경로).resolve())
+def 저장(im, 경로, 지문=None):
+    그림 = 줄이기(im.convert("RGB"))
+    이름 = str(Path(경로).resolve())
+    if 지문 is None:
+        그림.save(경로, "JPEG", quality=90)
+    else:
+        with BytesIO() as 버퍼:
+            그림.save(버퍼, "JPEG", quality=90)
+            내용 = 버퍼.getvalue()
+        Path(경로).write_bytes(내용)
+        지문[이름] = hashlib.sha256(내용).hexdigest()
+    return 이름
 
 
 def 꼬리표(im, 글, 크기):
@@ -142,12 +153,12 @@ def 판짜기(그림들, 꼬리들, 비=None, 열=None):
     return 판
 
 
-def 나눠짜기(항목, 칸수, 이름앞, 출력, 비=None):
+def 나눠짜기(항목, 칸수, 이름앞, 출력, 비=None, 지문=None):
     """[(그림, 꼬리)] → 칸수씩 판 여러 장. 경로 목록을 돌려준다."""
     경로들 = []
     for k in range(0, len(항목), 칸수):
         조각 = 항목[k:k + 칸수]
-        경로들.append(저장(판짜기([g for g, _ in 조각], [c for _, c in 조각], 비), 출력 / f"{이름앞}_{k // 칸수 + 1}.jpg"))
+        경로들.append(저장(판짜기([g for g, _ in 조각], [c for _, c in 조각], 비), 출력 / f"{이름앞}_{k // 칸수 + 1}.jpg", 지문))
     return 경로들
 
 
@@ -425,7 +436,8 @@ def main(argv):
     if not 컷표.exists():
         print(f"컷표가 없다: {컷표}", file=sys.stderr)
         return 1
-    표 = json.loads(컷표.read_text(encoding="utf-8"))
+    표내용 = 컷표.read_bytes()
+    표 = json.loads(표내용)
     편 = 컷표.parent
     출력 = Path(o.출력).resolve() if o.출력 else 편 / "검수" / f"판_{o.관문}"
     출력.mkdir(parents=True, exist_ok=True)
@@ -436,6 +448,13 @@ def main(argv):
     if 최종 is not None and not 최종.exists():
         print(f"최종 영상이 없다: {최종}", file=sys.stderr)
         return 1
+    카본입력 = None
+    if o.관문 == "마감":
+        영상상태 = 최종.stat()
+        with 최종.open("rb") as 영상:
+            영상지문 = hashlib.file_digest(영상, "sha256").hexdigest()
+        카본입력 = {"최종": 영상지문, "컷표": hashlib.sha256(표내용).hexdigest(), "고른컷": o.컷 or "", "그림": {}}
+    그림지문 = 카본입력["그림"] if 카본입력 else None
     detail = 표.get("detail") or []
     if not detail:
         print("컷표에 detail이 없다 — 컷표 틀 2로 채운 뒤 돌린다", file=sys.stderr)
@@ -564,12 +583,12 @@ def main(argv):
                     항목["그림"].append(저장(판짜기(우리 + 원, [f"{c} 우리 {p}%" for p in (25, 50, 75)] + [f"원본 {p}%" for p in (25, 50, 75)], 비, 열=3),
                                             출력 / f"원본_{파일이름(c)}.jpg"))
             끝시각 = [max(0.0, 길이 - 3.0 + 0.125 + i * 0.25) for i in range(12)]
-            판["끝"] = 저장(판짜기(여러장(최종, 끝시각, 크기, 일꾼), [f"끝 {s:.2f}s" for s in 끝시각], 비), 출력 / "끝.jpg")
+            판["끝"] = 저장(판짜기(여러장(최종, 끝시각, 크기, 일꾼), [f"끝 {s:.2f}s" for s in 끝시각], 비), 출력 / "끝.jpg", 그림지문)
 
     # ── 전체 · 장면 판 ──
     있는컷 = [c for c in 컷들 if 대표.get(c) is not None]
     if 있는컷:
-        판["전체"] = 나눠짜기([(대표[c], c) for c in 있는컷], 판칸, "전체", 출력, 비)
+        판["전체"] = 나눠짜기([(대표[c], c) for c in 있는컷], 판칸, "전체", 출력, 비, 그림지문)
         장면순 = []
         for c in 있는컷:
             s = str(줄[c].get("장면") or "장면없음")
@@ -729,6 +748,14 @@ def main(argv):
         "숫자": str((출력 / "숫자.json").resolve()),
         "살펴볼움직임": 살펴볼, "도구": 도구, "못함": 못함,
     }
+    if 카본입력 is not None:
+        마지막 = 최종.stat()
+        if (영상상태.st_size, 영상상태.st_mtime_ns, 영상상태.st_ino) != (마지막.st_size, 마지막.st_mtime_ns, 마지막.st_ino) or 컷표.read_bytes() != 표내용:
+            print("판을 만드는 동안 최종 영상이나 컷표가 바뀌었습니다. 새 출력 위치에서 판을 다시 만드세요.", file=sys.stderr)
+            return 1
+        카본입력["판배치"] = [있는컷[i:i + 판칸] for i in range(0, len(있는컷), 판칸)]
+        카본입력["그림순서"] = [*판["전체"], 판["끝"]]
+        판목록["카본입력"] = 카본입력
     (출력 / "판목록.json").write_text(json.dumps(판목록, ensure_ascii=False, indent=1), encoding="utf-8")
     그림수 = sum(len(c["그림"]) for c in 컷목록) + len(기준목록) + len(판["전체"]) + len(판["장면"]) + len(판["얼굴"]) + (1 if 판["끝"] else 0)
     print(f"판목록 {출력 / '판목록.json'}")

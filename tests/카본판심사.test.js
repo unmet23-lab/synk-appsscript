@@ -86,3 +86,62 @@ test('인자 — --최종이나 --판이 없으면 1, 모르는 선택은 1', ()
   assert.equal(r.status, 1);
   assert.throws(() => 판심사.인자읽기(['x', '--모름']), /모르는 선택/);
 });
+
+test('공유 미리보기는 확인한 마감 자료만 보관하고 다시 실행해도 원문과 수기 기록을 바꾸지 않는다', async t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(),'공유마감-'));
+  t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+  const 판 = path.join(dir,'판'), 표 = path.join(dir,'컷표.json'), 최종 = path.join(dir,'최종.mp4');
+  fs.mkdirSync(판);
+  fs.writeFileSync(표,JSON.stringify(컷표)); fs.writeFileSync(최종,'합성 영상 A');
+  const 컷 = 컷표.detail.map(c=>c.cut), 전체 = [1,2,3].map(n=>path.join(판,'전체_'+n+'.jpg')), 끝 = path.join(판,'끝.jpg');
+  const 순서 = [...전체,끝];
+  순서.forEach((f,n)=>fs.writeFileSync(f,'합성 그림 '+n));
+  const sha = f=>require('node:crypto').createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+  const 입력 = {컷표:sha(표), 최종:sha(최종), 고른컷:'', 그림순서:순서, 그림:Object.fromEntries(순서.map(f=>[f,sha(f)])),
+    판배치:[컷.slice(0,8),컷.slice(8,16),컷.slice(16)]};
+  const 목록 = {관문:'마감', 컷표:표, 최종, 컷:컷.map(cut=>({cut})), 판:{전체,끝}, 카본입력:입력};
+  const 명세 = path.join(판,'판목록.json');
+  const 저장 = () => fs.writeFileSync(명세,JSON.stringify(목록));
+  저장();
+  const 명령 = [path.join(뿌리,'tools','카본판심사.js'),dir,'--판',판,'--최종',최종,'--미리보기'];
+  const 실행 = (args=[])=>spawnSync(process.execPath,[...명령,...args],{encoding:'utf8'});
+  const 실행동시 = require('node:util').promisify(require('node:child_process').execFile);
+  await Promise.all([실행동시(process.execPath,명령),실행동시(process.execPath,명령)]);
+  const 폴더 = path.join(판,'공유준비','카본'), json = path.join(폴더,'작업_1.json');
+  const job = JSON.parse(fs.readFileSync(json));
+  for (const [i,f] of 순서.entries()) {
+    assert.notEqual(job.files[i],f);
+    assert.deepEqual(fs.readFileSync(job.files[i]),fs.readFileSync(f));
+  }
+  assert.equal(fs.existsSync(job.out),false);
+  const 수기 = path.join(폴더,'보고.md');
+  fs.writeFileSync(수기,'담당자의 기존 판단\r\n'); fs.writeFileSync(job.out,'기존에 수신한 원문\n');
+  const 지킬파일 = [수기,job.out,...job.files,job.promptFile,json,path.join(폴더,'입력.sha256')];
+  const 과거 = new Date('2020-01-01T00:00:00Z');
+  지킬파일.forEach(f=>fs.utimesSync(f,과거,과거));
+  const 이전 = 지킬파일.map(f=>[sha(f),fs.statSync(f).mtimeMs]);
+  assert.equal(실행().status,0);
+  for (const f of [최종,표,전체[0],끝]) {
+    const 원본 = fs.readFileSync(f); fs.appendFileSync(f,' ');
+    assert.equal(실행().status,1,f); fs.writeFileSync(f,원본);
+  }
+  목록.판.전체 = [...전체].reverse(); 저장(); assert.equal(실행().status,1);
+  목록.판.전체 = 전체; 목록.카본입력.고른컷 = 'C1'; 저장(); assert.equal(실행().status,1);
+  목록.카본입력.고른컷=''; 목록.판.끝=''; 저장(); assert.equal(실행().status,1);
+  목록.판.끝=끝; 저장();
+  assert.deepEqual(지킬파일.map(f=>[sha(f),fs.statSync(f).mtimeMs]),이전);
+  const 다른 = path.join(dir,'옛 출력'); fs.mkdirSync(path.join(다른,'카본'),{recursive:true});
+  const 기존 = path.join(다른,'카본','보고.md'); fs.writeFileSync(기존,'독립 보고');
+  assert.equal(실행(['--출력',다른]).status,1);
+  assert.deepEqual(fs.readdirSync(path.dirname(기존)),['보고.md']);
+  assert.equal(fs.readFileSync(기존,'utf8'),'독립 보고');
+  // 원본이 읽힌 직후 바뀌어도 작업 JSON은 대조한 바이트만 참조한다.
+  const 주입 = path.join(dir,'파일교체.cjs');
+  fs.writeFileSync(주입,"const fs=require('node:fs'),read=fs.readFileSync;fs.readFileSync=function(f,...a){const b=read.call(this,f,...a);if(f==="+JSON.stringify(전체[0])+")fs.writeFileSync(f,'교체된 그림');return b};");
+  const 별도 = path.join(dir,'새 출력');
+  const r = spawnSync(process.execPath,['-r',주입,...명령,'--출력',별도],{encoding:'utf8'});
+  assert.equal(r.status,0,r.stderr);
+  const 새작업 = JSON.parse(fs.readFileSync(path.join(별도,'카본','작업_1.json')));
+  assert.equal(sha(새작업.files[0]),입력.그림[전체[0]]);
+  assert.notEqual(sha(전체[0]),sha(새작업.files[0]));
+});

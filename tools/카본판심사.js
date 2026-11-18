@@ -11,6 +11,8 @@
  *
  *   node tools/카본판심사.js <편 폴더> --최종 <최종.mp4> [--컷표 <컷표.json>] [--출력 <폴더>] [--미리보기]
  *   node tools/카본판심사.js <편 폴더> --판 <이미 만든 관문 판 폴더> [--출력 <폴더>] [--미리보기]
+ *   node tools/카본판심사.js <편 폴더> --판 <이번 마감 판> --최종 <최종.mp4> --미리보기
+ *   마지막 명령은 같은 최종 영상과 컷표로 만든 전체 판과 끝 그림을 확인하고 <판>/공유준비/카본에 보관한다.
  *
  *   --최종을 주면 먼저 tools/영상관문판.py(--관문 마감)로 판을 <출력>/판에 만든다(9분 안팎). --판을 주면 그 판을 쓴다.
  *   기본: 컷표 = <편>/컷표.json, 출력 = <편>/검수/카본판_<YYYYMMDD-HHmm>.
@@ -27,6 +29,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawn, spawnSync } = require('node:child_process');
+const { createHash } = require('node:crypto');
 
 const 뿌리 = path.join(__dirname, '..');
 const 판칸 = 8; // tools/영상관문판.py 판칸과 같다 — 전체 판 한 장의 컷 수
@@ -117,30 +120,89 @@ function 인자읽기(argv) {
   return o;
 }
 
-/** 작업 파일들을 만든다(보내지 않는다). 반환: { 카본폴더, 작업들: [{ 작업, 답, 묶음 }] } */
-function 준비(편, 컷표경로, 판폴더, 출력) {
-  const 컷표 = JSON.parse(fs.readFileSync(컷표경로, 'utf8'));
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+
+async function 공유자료읽기(판폴더, 컷표경로, 최종) {
   const 목록 = JSON.parse(fs.readFileSync(path.join(판폴더, '판목록.json'), 'utf8'));
+  const 입력 = 목록.카본입력;
+  if (목록.관문 !== '마감' || !입력?.그림 || 입력.고른컷 !== '' || !목록.판?.끝) throw Error('이번 최종 영상의 전체 마감 판과 끝 그림이 필요합니다.');
+  if (path.relative(컷표경로, 목록.컷표) || path.relative(최종, 목록.최종)) throw Error('판을 만든 컷표 또는 최종 영상의 경로가 다릅니다.');
+  const 표내용 = fs.readFileSync(컷표경로), 컷표 = JSON.parse(표내용);
+  if (sha(표내용) !== 입력.컷표) throw Error('판을 만든 뒤 컷표 내용이 바뀌었습니다.');
+  const h = createHash('sha256');
+  for await (const 조각 of fs.createReadStream(최종)) h.update(조각);
+  if (h.digest('hex') !== 입력.최종) throw Error('판을 만든 뒤 최종 영상이 바뀌었습니다.');
+  const 전체 = 목록.판.전체, 컷 = 컷표.detail.map(c => String(c.cut));
+  if (!Array.isArray(전체) || !전체.length || !컷.length || !Array.isArray(입력.판배치)
+      || 전체.length !== 입력.판배치.length || 전체.length !== Math.ceil(컷.length / 판칸)
+      || !입력.판배치.every((p,i) => JSON.stringify(p) === JSON.stringify(컷.slice(i*판칸, (i+1)*판칸)))
+      || JSON.stringify(목록.컷.map(c => String(c.cut))) !== JSON.stringify(컷)) throw Error('전체 판에 이번 컷표의 모든 컷이 순서대로 있어야 합니다.');
+  const 그림 = new Map();
+  const 순서 = [...전체, 목록.판.끝];
+  if (JSON.stringify(입력.그림순서) !== JSON.stringify(순서)) throw Error('판 그림 순서가 이 마감 회차와 다릅니다.');
+  for (const 파일 of 순서) {
+    if (그림.has(파일) || path.relative(fs.realpathSync(판폴더), path.dirname(fs.realpathSync(파일)))) throw Error('판 폴더에 중복되지 않은 원본 그림이 있어야 합니다.');
+    const 내용 = fs.readFileSync(파일);
+    if (sha(내용) !== 입력.그림[파일]) throw Error('판을 만든 뒤 그림이 바뀌었습니다. ' + path.basename(파일));
+    그림.set(파일, { 이름:path.join('그림', String(그림.size+1), path.basename(파일)), 내용 });
+  }
+  return { 목록, 컷표, 그림, 지문:sha(JSON.stringify([입력.최종, 입력.컷표, [...그림.keys()].map(f => 입력.그림[f])])) };
+}
+
+function 고정준비(카본, 자료) {
+  const 대조 = () => {
+    for (const [이름, 내용] of 자료) {
+      const 기존 = path.join(카본, 이름);
+      if (!fs.existsSync(기존) || !fs.readFileSync(기존).equals(Buffer.from(내용))) throw Error('기존 준비 자료가 없거나 다릅니다. 기존 파일을 보존했습니다. ' + 이름);
+    }
+  };
+  if (fs.existsSync(카본)) return 대조();
+  const 부모 = path.dirname(카본);
+  fs.mkdirSync(부모, {recursive:true});
+  const 임시 = fs.mkdtempSync(path.join(부모, '.카본준비-'));
+  try {
+    for (const [이름, 내용] of 자료) {
+      const 파일 = path.join(임시, 이름);
+      fs.mkdirSync(path.dirname(파일), {recursive:true});
+      fs.writeFileSync(파일, 내용, {flag:'wx'});
+    }
+    try { fs.renameSync(임시, 카본); }
+    catch (e) { if (!fs.existsSync(카본)) throw e; 대조(); }
+  } finally { fs.rmSync(임시, {recursive:true, force:true}); }
+}
+
+/** 작업 파일들을 만든다(보내지 않는다). 공유 미리보기는 검증한 그림 바이트를 같은 요청의 사본에 담는다. */
+function 준비(편, 컷표경로, 판폴더, 출력, 공유) {
+  const 컷표 = 공유?.컷표 || JSON.parse(fs.readFileSync(컷표경로, 'utf8'));
+  const 목록 = 공유?.목록 || JSON.parse(fs.readFileSync(path.join(판폴더, '판목록.json'), 'utf8'));
   const 판 = 목록.판 || {};
-  const 전체 = (판.전체 || []).filter((f) => fs.existsSync(f));
+  const 전체 = 공유 ? 판.전체 : (판.전체 || []).filter((f) => fs.existsSync(f));
   if (!전체.length) throw new Error(`전체 판이 없다: ${path.join(판폴더, '판목록.json')}`);
-  const 끝 = 판.끝 && fs.existsSync(판.끝) ? 판.끝 : '';
+  const 끝 = 공유 ? 판.끝 : (판.끝 && fs.existsSync(판.끝) ? 판.끝 : '');
   const 컷들 = (목록.컷 || []).map((c) => c.cut);
   const 카본 = path.join(출력, '카본');
-  fs.mkdirSync(카본, { recursive: true });
   const 요약 = path.join(카본, '컷표요약.txt');
-  fs.writeFileSync(요약, 컷표요약(컷표), 'utf8');
+  const 자료 = new Map([['컷표요약.txt', 컷표요약(컷표)]]);
   const 편칸 = 컷표.편 && typeof 컷표.편 === 'object' ? 컷표.편 : { 이름: 컷표.편 };
   const 편이름 = 한줄([편칸.이름 || path.basename(편), 편칸.비율, 편칸.길이 ? `${편칸.길이}초` : ''].filter(Boolean).join(' · '));
   const 묶음들 = 묶기(전체, 끝, 컷들);
   const 작업들 = 묶음들.map((b) => {
     const 지 = path.join(카본, `지시문_${b.번호}.txt`);
-    fs.writeFileSync(지, 지시문(b, 묶음들.length, 편이름) + '\n', 'utf8');
+    자료.set(path.basename(지), 지시문(b, 묶음들.length, 편이름) + '\n');
     const 답 = path.join(카본, `카본답_${b.번호}.md`);
     const 작업 = path.join(카본, `작업_${b.번호}.json`);
-    fs.writeFileSync(작업, JSON.stringify({ files: [...b.그림, 요약], promptFile: 지, out: 답 }, null, 1), 'utf8');
+    const 그림 = 공유 ? b.그림.map(f => path.join(카본, 공유.그림.get(f).이름)) : b.그림;
+    자료.set(path.basename(작업), JSON.stringify({ files: [...그림, 요약], promptFile: 지, out: 답 }, null, 1));
     return { 작업, 답, 묶음: b };
   });
+  if (공유) {
+    자료.set('입력.sha256', 공유.지문 + '\n');
+    for (const {이름, 내용} of 공유.그림.values()) 자료.set(이름, 내용);
+    고정준비(카본, 자료);
+  } else {
+    fs.mkdirSync(카본, {recursive:true});
+    for (const [이름, 내용] of 자료) fs.writeFileSync(path.join(카본, 이름), 내용, 'utf8');
+  }
   return { 카본폴더: 카본, 작업들 };
 }
 
@@ -178,7 +240,8 @@ async function main(argv) {
   if (!o.최종 && !o.판) { console.error('--최종(판을 새로 만든다)이나 --판(이미 만든 관문 판) 가운데 하나를 준다'); return 1; }
   const 컷표경로 = path.resolve(o.컷표 || path.join(편, '컷표.json'));
   if (!fs.existsSync(컷표경로)) { console.error(`컷표가 없다: ${컷표경로}`); return 1; }
-  const 출력 = path.resolve(o.출력 || path.join(편, '검수', `카본판_${지금글()}`));
+  const 공유미리보기 = o.판 && o.최종 && o.미리보기;
+  const 출력 = path.resolve(o.출력 || (공유미리보기 ? path.join(o.판, '공유준비') : path.join(편, '검수', `카본판_${지금글()}`)));
   let 판폴더 = o.판 ? path.resolve(o.판) : path.join(출력, '판');
   if (!o.판) {
     console.log(`판 만들기 — tools/영상관문판.py --관문 마감 → ${판폴더}`);
@@ -187,7 +250,10 @@ async function main(argv) {
   }
   if (!fs.existsSync(path.join(판폴더, '판목록.json'))) { console.error(`판목록이 없다: ${판폴더}`); return 1; }
   let 준비됨;
-  try { 준비됨 = 준비(편, 컷표경로, 판폴더, 출력); } catch (e) { console.error(e.message); return 1; }
+  try {
+    const 공유 = 공유미리보기 ? await 공유자료읽기(판폴더, 컷표경로, path.resolve(o.최종)) : null;
+    준비됨 = 준비(편, 컷표경로, 판폴더, 출력, 공유);
+  } catch (e) { console.error(e.message); return 1; }
   const { 카본폴더, 작업들 } = 준비됨;
   const { 점검, 작업읽기, 작업문제 } = require('./아르곤웹.js');
   const 점검결과 = 점검(작업들.map((w) => w.묶음 && path.join(카본폴더, `지시문_${w.묶음.번호}.txt`)));
