@@ -44,6 +44,20 @@ TRIM = os.path.join(PUB, "SYNK-PULSE-Paper-trim.png")   # 승인 로고(배치�
 KIT_LOGO = os.path.join(C.REPO, "docs", "홍보물", "마케팅실행_20260909", "브랜드킷", "배치용", "SYNK-PULSE-Paper.png")
 PUSH = 0.04
 LOGO_CX = 0.55   # 도담 끝 로고 묶음 가운데(화면 폭 몫) — 한국어 판은 0.5
+# 11-18 「편집만 먼저」(유호님, 결정 표 11-18) — 마감 관문 P1 두 자리를 크레딧 없이 편집으로 고친다. 영어 판만 바꾸고 한국어 판 컷은 그대로 둔다.
+#   C22(바로 뒤 C23과 같은 터빈이 거의 멈춘 채 두 번 나옴)를 빼고, 그 2초를 C21 거울 컷(판 0~84장, 3.5초 — 거울 속 트레일러가 움직이는 컷)이 메운다.
+#     첫 판은 C23을 1초 앞당겨 나눠 메웠는데, 카메라가 고정된 C23이 2.58초로 늘어 멈춘 사진처럼 읽혔다(관문 검수/마감_20261118-2007 P2). C24에 반을 주는 판과
+#     띠로 견준 GPT 맹검은 C21에 다 주는 판을 골랐다(8.5 · 8점).
+#   C34(노을 구간에서 혼자 낮빛이고 준호 깃이 다음 두 컷과 다름)를 빼고, C33 노을 터빈동을 그 자리까지 잇는다 — 「we send our baby out into the world」가 터빈 한 컷 위에 놓인다.
+#   C34를 C33 앞으로 옮긴 판과 띠로 견준 GPT 맹검은 뺀 판을 골랐다(8 · 7.5점 — 검수/편집_C22C34_20261118).
+#   뺀 컷은 길이 0으로 둔다. 그래서 컷 번호(소리 · 컷표가 쓰는 번호)와 나머지 경계 · 총 장 수는 한국어 판 그대로다.
+EDIT = {21: (0, 84), 22: (0, 0), 33: (0, 78), 34: (0, 0)}   # 컷 → (판 시작 장, 장 수)
+CUTS_EN = {n: (E.CUTS[n][0],) + EDIT.get(n, (E.CUTS[n][1], E.F[n] - E.F[n - 1])) for n in range(1, 38)}   # 컷 → (판, 판 시작 장, 장 수)
+F_EN = [0]
+for _n in range(1, 38):
+    F_EN.append(F_EN[-1] + CUTS_EN[_n][2])
+TF_EN = [f / E.FPS for f in F_EN]
+assert F_EN[36] == E.F[36] and F_EN[-1] == E.F[-1], "편집이 37컷 시작이나 총 장 수를 바꿨다 — 끝 로고 · 소리 자리가 어긋난다"
 
 # 영어 내레이션 아홉 줄 — (첫 낱말을 놓을 화면 초, 곡 dB, 목소리 띠 dB, [(자막 글, 줄 끝 낱말)]). 자리 · 내림 값은 한국어 판 「_초반」 그대로(최종소리.py 54~66줄).
 #   자막은 한 화면에 한 문장, 마침표 · 쉼표 없음(슬롭 점검표 6번). 숫자는 읽기 쉽게 300으로 적는다.
@@ -97,7 +111,7 @@ def sound(voice):
     SND.FINISH_BOOST = 2.0
     os.makedirs(OUT, exist_ok=True)
     wav = os.path.join(OUT, f"소리_{voice}.wav")
-    SND.build(wav, E.TF, timing_path=os.path.join(OUT, f"timing_{voice}.json"))
+    SND.build(wav, TF_EN, timing_path=os.path.join(OUT, f"timing_{voice}.json"))   # 영어 판 편집의 경계(뺀 컷은 길이 0 — 그 컷에 묶인 소리는 다음 컷 첫머리로 간다)
     sign_off(wav)
 
 
@@ -197,10 +211,19 @@ def picture(logo):
     os.makedirs(d, exist_ok=True)
     paths = []
     for n in range(1, 37):
-        p = os.path.join(KO_CUTS, f"{n:02d}.mp4")
-        k = E.F[n] - E.F[n - 1]
+        pid, a, k = CUTS_EN[n]
+        if k == 0:
+            continue                       # 뺀 컷(EDIT)
+        if n in EDIT:                      # 길이 · 시작을 바꾼 컷 — 한국어 판과 같은 cut_video로 판에서 다시 자른다
+            src = C.clip(pid)
+            if a + k > C.frames_of(src):
+                raise SystemExit(f"#{n} {pid}: {a}장부터 {k}장이 필요한데 {C.frames_of(src)}장뿐")
+            p = os.path.join(d, f"{n:02d}.mp4")
+            C.cut_video(src, a, k, E.W, E.H, E.FPS, p)
+        else:
+            p = os.path.join(KO_CUTS, f"{n:02d}.mp4")
         if not os.path.exists(p) or C.frames_of(p) != k:
-            raise SystemExit(f"한국어 판 컷 {p}가 없거나 {k}장이 아니다 — b2b-factory-20261026/최종편집.py 화면을 먼저 돌린다")
+            raise SystemExit(f"컷 {p}가 없거나 {k}장이 아니다 — 한국어 판 컷이면 b2b-factory-20261026/최종편집.py 화면을 먼저 돌린다")
         paths.append(p)
     END.L = types.SimpleNamespace(render=lambda h: LE.render(h, logo))   # 끝 로고 이름만 영문으로(표식 · 움직임은 한국어 판 그대로)
     END.CX = E.W * LOGO_CX     # 자리만 오른쪽으로 — 한가운데 두면 표식이 왼쪽 송전탑 애자와 맞닿을 듯했다(11-17 미학 맹검)
