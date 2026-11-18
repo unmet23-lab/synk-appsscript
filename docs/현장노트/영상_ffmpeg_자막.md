@@ -157,6 +157,12 @@
 - 고침: `select=…,setpts=N/24/TB`에 `-r 24`만 준다.
 - 다시 확인: 나온 파일 프레임 수를 `-count_frames`로 재 원본 컷 수와 맞춰 본다.
 
+### 옛 예제의 `-vsync 0`을 쓰면 「Unrecognized option 'vsync'」로 아무 장도 안 나온다 (2026-11-18 Claude)
+- 증상: 첫머리굳음 헛걸림을 보려고 `select` + `-vsync 0` + `-f rawvideo -`로 장을 꺼내자 파이썬에서 받은 바이트가 0이었고, 띠를 이으려던 `np.concatenate`가 「need at least one array」로 죽었다. stderr에는 「Unrecognized option 'vsync'」가 있었다.
+- 원인: 이 PC의 ffmpeg 9.0.2는 `-vsync`를 없앴다. 같은 일은 `-fps_mode`가 한다.
+- 고침: `-vsync 0` 대신 `-fps_mode passthrough`를 입력 뒤 · 출력 앞에 준다(`-r`은 같이 주지 않는다 — 위 항목).
+- 다시 확인: `ffmpeg -v error -f lavfi -i testsrc2=d=1 -vsync 0 -f null -`이 「Unrecognized option 'vsync'」를 찍는다.
+
 ### 드리미나 CLI 판(머리 60 fps)을 `select` + `-f rawvideo`로 꺼내면 같은 장이 2~3번씩 찬다 — rawvideo로 꺼낼 땐 `-fps_mode passthrough` (2026-11-07 Claude · 10번 도담중공업)
 - 증상: 10번 최종본 31컷(끝 밝기 램프를 넣으려고 장을 파이썬으로 받은 컷)만 24장 중 14장이 앞 장과 같아, 1초 내내 계단처럼 끊기며 느리게 나갔다. 판 6~29장이 아니라 6~15장이 나갔다. 같은 판을 `select` + libx264 `-r 24`로 자르면 멀쩡했다. Gemini · Fable · 그록 교차 검수가 이 컷을 「시선 내리기 없음」으로 봤다.
 - 원인: `-vf "select=…,setpts=N/24/TB" -frames:v k -f rawvideo -`에는 출력 속도가 없다. 그래서 필터가 물려받은 판 머리 속도(드리미나 CLI로 받은 판은 `r_frame_rate` 60/1, 실제는 24장/초)에 맞추느라 같은 장을 2~3번씩 채운다. `-frames:v k`가 그 앞쪽 k장에서 끊어 판의 뒤쪽은 통째로 빠진다. 머리가 24 fps인 판(웹으로 받은 판)은 탈이 없다 — 같은 함수를 쓰는 37컷(로고)은 멀쩡했다.

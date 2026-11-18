@@ -6,7 +6,7 @@
 #   보는데, SNS 두 브랜드 편은 옛 컷표이거나 컷표가 없고 편집에서 판을 잘라 키운 것은 컷표에 안 나온다. 그래서 최종 영상 하나만 보고 잰다 —
 #   올리기 전 검사 ⑳이 부르고(재연 · 진행자 편), 혼자 불러도 된다.
 #
-#   python -I -X utf8 tools/최종본검사.py <최종.mp4> [--json] [--항목 굳음,같은판,되풀이,끝,화소,조용,멈춤[,흐름][,말]] [--컷초 3.9,5.87,…]
+#   python -I -X utf8 tools/최종본검사.py <최종.mp4> [--json] [--항목 굳음,같은판,되풀이,끝,화소,조용,멈춤,첫머리[,흐름][,말]] [--컷초 3.9,5.87,…]
 #   「흐름」은 기본 항목이 아니다. 영상 마감 관문(tools/영상관문판.py)이 붙여 부른다. 맞춘 자료가 애니 공모전 한 편뿐이라 SNS 올리기 전 검사에는 아직 넣지 않았다.
 #   「말」도 기본 항목이 아니다(알림만 낸다). 최종 확인 묶음이 「--항목 기본,말」로 부르고, 만드는 세션은 렌더 뒤 「--항목 말」로 표를 본다(제작 절차 「순서」 2).
 #
@@ -14,6 +14,15 @@
 #   굳음      컷마다 사람움직임.py(카메라를 걷어 낸 사람 자리 움직임, 480×270 장당 px)의 「사람」 값 — 0.12 아래(점검표 26 문턱)이고 사람 자리를
 #             얼굴 · 실루엣으로 잡은 컷. 0.8초 아래 컷은 재지 않는다. 얼굴 극접사(「가까움」)는 값이 미덥지 않아 알림으로만
 #   구간굳음  3초 넘는 컷 안에서 1.5초 창(0.5초씩)이 잇달아 0.12 아래인 자리 — 컷 전체 값은 넘어도 뒤 절반이 멎은 꼴(B39 v10 54.4~57.0)
+#   첫머리굳음 컷 첫 0.25초가 굳은 채로 시작한다(11-18 서울로 1:48 C14s 「이 장면 시작할떄 0.1초정도 굳어있는 상태에서 시작」 · 11-14 1:08과 같은 짜임,
+#             점검표 26). 생성 영상(Omni · Seedance)은 0~1초를 느리게 출발하는데 편집이 원본 0.3초 언저리부터 쓰고, ease로 미는 창(첫 속도 0)이 겹친다.
+#             굳음 · 구간굳음은 컷 전체나 컷 안 1.5초 멈춤만 재서 이 짜임을 못 잡았다. 끝 코드를 바꾸지 않는 걸림이다(SOFT).
+#             어떻게: 긴 변 192 회색 장(컷 찾기 · 화면멈춤과 같은 장 — 더 풀지 않는다)의 이웃 장 차이에서 두 장 안의 큰 값을 장 움직임으로 보고,
+#             컷 경계 다음 6장의 평균이 그 컷 가운데(길이 30~70%) 평균의 0.3배 아래이고 컷이 1초 넘으면 걸린다. 경계는 찾은 경계에 --컷초를 더한다.
+#             걸릴 만한 컷만 카메라 옮김(위상 상관)을 재서, 카메라가 서 있다가 출발하는 컷(서울로 Q02 난간 접사)은 「알림」에만 적는다.
+#             영상 맨 앞 덩이(0초)와 검은 화면에서 밝아지는 첫머리(결이 없는 장)는 재지 않는다.
+#             맞춘 자료(서울로 라t · 라w 54컷): 라t C14s 0.27 · Q05b 0.18 · R06k 0.17 · Q09j 0.24가 걸리고 라w는 0곳. 맡긴 판정 그대로(장 차이 평균 ·
+#             절반)면 라w에서 15곳이 걸려 문턱을 0.3으로 내렸다(지나갈 컷 가운데 가장 낮은 것이 라w Q09j 0.34 · R14 0.36). 헛걸림 수와 다른 편 실측은 tests/최종본검사.test.js 머리에 있다.
 #   같은판    이웃한 두 컷의 경계 장이 한 그림의 배율 · 자리만 바꾼 것(닮음 변환이 화면 넓게 맞음 · 배율 6% 넘게 다르거나 25px 넘게 옮김) — 같은 판을 잘라 붙임
 #   같은구도  이웃한 두 컷이 배율 · 자리까지 같은 그림(점프 컷)
 #   되풀이    이웃하지 않은 두 컷의 가운데 장이 같은 그림(배율이 달라도) — 「똑같은 장면이 반복」(11-12 서울로) · 같은 판 두 번(B39 21.4초 = 54.4초)
@@ -72,7 +81,7 @@
 #             맞춘 자료와 헛걸림 수는 tests/최종본검사.test.js 머리에 있다.
 # 글자 판 · 표시가 컷을 넘어 그대로 남는 자리는 맞춤에서 뺀다 — 맞은 점이 화면 위아래로 네 줄(80px 칸) 넘게 퍼져야 그림으로 본다(자막 두 줄은 한두 줄).
 #
-# 끝 코드: 0 걸림 없음(조용구간 · 화면멈춤 · 흐름 셋만 걸려도 0) / 1 걸림 있음 / 2 잴 수 없음(파일 · ffmpeg). 판정(고칠 것 · 확인할 것)은 올리기 전 검사가 한다 — 이 도구는 잰 값과 자리만 낸다.
+# 끝 코드: 0 걸림 없음(조용구간 · 화면멈춤 · 첫머리굳음 · 흐름 셋만 걸려도 0) / 1 걸림 있음 / 2 잴 수 없음(파일 · ffmpeg). 판정(고칠 것 · 확인할 것)은 올리기 전 검사가 한다 — 이 도구는 잰 값과 자리만 낸다.
 #   조용구간이 끝 코드를 바꾸지 않는 까닭: 혼자 부르는 편집 스크립트 · 세션이 끝 코드 1을 「고칠 것」으로 읽어 멈추지 않게(새 항목은 어디서나 확인할 것이다).
 # 맞춘 자료(11-13): B39 「없는 판결」 v10(컷 전수 검수 표 — 같은판 4.4→5.5→7.4 · 9.7→11.0 · 54.4→57.0→58.5, 되풀이 21.4=54.4,
 #   굳음 4.4~5.5 · 21.4~23.4 · 54.4~57.0, 끝 3초 방 소리 −44dB, 끝 근접 2.55배). 시험: node --test tests/최종본검사.test.js
@@ -121,8 +130,8 @@ SPEECH_GAP = 1.0       # 「말 없는 자리」 표에 적는 가장 짧은 빈
 LINE_QUIET_DB = 13.0   # 작은 줄: 받아쓰기 줄 하나가 그 편 줄 크기 가운데 값보다 이만큼 넘게 작다(최종 확인 묶음이 짚는다 — 이 도구 걸림이 아니다).
                        # 묶음과 같은 셈으로 50편을 재니 필라테스예약 「되돌려 놔」 15.5dB만 넘고 나머지는 11.2dB(무료체험 「됐다」) 아래다 — 12~15 어디서도 같다
 LINE_MIN_SEC = 0.3     # 이보다 짧은 받아쓰기 구간은 줄 크기에서 뺀다
-SOFT = {"조용구간", "화면멈춤", "흐름갈림", "멈췄다감", "제자리바퀴"}     # 끝 코드를 바꾸지 않는 걸림 — 검사이력에도 등급 「확인」으로 남는다
-DEFAULT_ITEMS = "굳음,같은판,되풀이,끝,화소,조용,멈춤"
+SOFT = {"조용구간", "화면멈춤", "흐름갈림", "멈췄다감", "제자리바퀴", "첫머리굳음"}     # 끝 코드를 바꾸지 않는 걸림 — 검사이력에도 등급 「확인」으로 남는다
+DEFAULT_ITEMS = "굳음,같은판,되풀이,끝,화소,조용,멈춤,첫머리"
 # 흐름(컷 안 탈것 · 배경 움직임) — 값은 모두 「화면 너비 1000 기준 px/s」다
 FLOW_LONG = 1000       # 특징점 추적은 긴 변 1000으로 푼다
 FLOW_EDGE = 2          # 컷 앞뒤 2장(경계 · 전환)은 뺀다
@@ -145,6 +154,15 @@ ROT_MIN = 20.0         # ③ 한 열 위아래 가로 흐름이 반대로 이만
 BG_MAX = 10.0          # ③ 도는 자리 밖 칸 흐름의 90번째 값이 이 아래면 배경이 안 흐른다
 DENSE_LONG = 480       # ③ 조밀 흐름은 긴 변 480으로
 BANDS = ("위", "가운데", "아래")
+# 첫머리굳음(11-18, 점검표 26) — 값은 모두 긴 변 192 · 24fps 회색 장(컷 찾기 · 화면멈춤과 같은 장)에서 잰다
+HEAD_N = 6             # 컷 경계 다음 6장(0.25초)
+HEAD_RATIO = 0.3       # 첫머리 움직임이 그 컷 가운데(길이 30~70%)의 이 몫 아래면 걸림(장 차이 평균 · 0.5면 서울로 고친 판 54컷에서 15곳이 걸린다 — 시험 머리)
+HEAD_MIN_SEC = 1.0     # 1초 넘는 컷만 잰다
+HEAD_MID = (0.3, 0.7)
+HEAD_CAM = 0.25        # 카메라 출발: 카메라 옮김(위상 상관, 장당 px)이 이 위이고 첫머리 카메라가 그 절반 아래면 걸지 않는다(서울로 Q02 0.33~0.49 · 걸린 넷 0.15 아래)
+HEAD_NEXT = 18         # 카메라는 가운데와 첫머리 바로 뒤 18장(0.75초) 가운데 큰 쪽으로 본다 — 닦기 전환으로 다음 컷과 한 덩이가 되면 가운데가 다음 컷이다
+HEAD_FLAT = 4.0        # 첫머리 장의 결(회색 표준편차)이 이 아래면 한 색 화면이라 재지 않는다(검은 화면 0~1 · 그림 20~70)
+HEAD_NOTE = 0.5        # 이 몫 아래 컷은 걸리지 않아도 알림 「첫머리」에 적는다
 
 
 def probe(path):
@@ -679,6 +697,64 @@ def frozen_runs(dd, fps, th=FROZEN_DIFF):
     return sorted(out, key=lambda r: r[0] - r[1])
 
 
+def merged_segs(cuts, extra, n):
+    """장 차이로 찾은 경계(cuts)에 컷표 경계(extra, 장 번호)를 합친 (첫 장, 끝 장) 줄 — 3장 안은 하나로(찾은 경계가 이긴다).
+    컷표가 낡았어도 한 컷이 둘로 나뉠 뿐이다. 흐름 · 첫머리가 함께 쓴다"""
+    bs = sorted(set(cuts))
+    for e in sorted(set(extra)):
+        if 2 <= e <= n - 2 and all(abs(e - c) > 3 for c in bs):
+            bs.append(e)
+    bs = [0] + sorted(bs) + [n]
+    return [(bs[k], bs[k + 1]) for k in range(len(bs) - 1)]
+
+
+def small_camera(small):
+    """긴 변 192 장의 카메라 옮김 — 장 i → i+1의 위상 상관 옮김 크기(장당 px). 부른 쌍만 재고 기억한다(첫머리굳음은 걸릴 만한 컷만 묻는다)"""
+    memo, win = {}, []
+
+    def shift(i):
+        if i not in memo:
+            if not win:
+                win.append(cv2.createHanningWindow((small.shape[2], small.shape[1]), cv2.CV_32F))
+            (dx, dy), _r = cv2.phaseCorrelate(small[i].astype(np.float32), small[i + 1].astype(np.float32), win[0])
+            memo[i] = math.hypot(dx, dy)
+        return memo[i]
+    return shift
+
+
+def head_freeze(dd, segs, fps, shift, texture=None, th=HEAD_RATIO):
+    """첫머리굳음 — 컷마다 경계 다음 HEAD_N장의 움직임 평균을 그 컷 가운데(길이 30~70%)의 평균에 견준다 → [잰 줄](비 낮은 순).
+    잰 줄: {"a", "b", "비", "첫머리", "가운데", "카메라": [첫머리, 뒤] 또는 None, "걸림": bool}. shift(i)는 장 i → i+1의 카메라 옮김(장당 px),
+    texture(i)는 장 i의 결(회색 표준편차)이다 — 시험은 고정 자료의 값을 넣는다.
+    장 움직임은 이웃 장 차이 dd에서 두 장 안의 큰 값(max(dd[i], dd[i+1]))이다 — 한 그림을 두 장씩 쓰는 판(초당 12장, 서울로 H1 · E08 · 고친 R06k)은
+    장 차이가 0과 값을 번갈아 내 평균이 반으로 꺼진다. 비가 th 아래인 컷만 카메라를 재서, 카메라가 서 있다가 출발하는 컷은 걸지 않는다 —
+    가운데나 첫머리 바로 뒤 HEAD_NEXT장 가운데 큰 쪽의 카메라(가운데 값)가 HEAD_CAM 위이고 첫머리 카메라가 그 절반 아래(서울로 Q02 난간 접사).
+    재지 않는 컷: 영상 맨 앞 덩이(0초 — 경계가 아니다. SNS 최종본 두 편의 첫 장면 사진 · 손가락이 거기서 걸렸다), 첫머리가 결 없는 한 색인 컷
+    (검은 화면에서 밝아지는 첫머리 — 포트폴리오 p6 · rs), 장이 모자라거나 가운데가 아예 서 있는 컷"""
+    s = np.maximum(dd[:-1], dd[1:]) if len(dd) > 1 else np.zeros(0, np.float32)
+    out = []
+    for a, b in segs:
+        L = b - a
+        if a == 0 or L / fps <= HEAD_MIN_SEC:
+            continue
+        lo, hi = a + int(L * HEAD_MID[0]), a + int(math.ceil(L * HEAD_MID[1])) - 1
+        if a + HEAD_N > len(s) or hi > len(s) or hi - lo < 2:
+            continue
+        hm, mm = float(s[a:a + HEAD_N].mean()), float(s[lo:hi].mean())
+        if mm <= 0 or (texture is not None and float(np.mean([texture(i) for i in range(a, a + HEAD_N)])) < HEAD_FLAT):
+            continue
+        r = hm / mm
+        row = {"a": a, "b": b, "비": round(r, 2), "첫머리": round(hm, 2), "가운데": round(mm, 2), "카메라": None, "걸림": False}
+        if r < th:
+            ch = float(np.mean([shift(i) for i in range(a, a + HEAD_N)]))
+            nx = range(a + HEAD_N, min(a + HEAD_N + HEAD_NEXT, b - 1))
+            cm = max(float(np.median([shift(i) for i in range(lo, hi)])), float(np.median([shift(i) for i in nx])) if len(nx) >= 4 else 0.0)
+            row["카메라"] = [round(ch, 2), round(cm, 2)]
+            row["걸림"] = not (cm >= HEAD_CAM and ch < cm / 2)
+        out.append(row)
+    return sorted(out, key=lambda x: x["비"])
+
+
 def speech_runs(probs, hop=0.032, th=SPEECH_TH, join=SPEECH_JOIN, min_speech=0.1):
     """말 확률 줄(칸 hop초) → 말 구간 [(시작초, 끝초)] 시간 순. 확률이 th 위면 들어가고 th−0.15 아래로 내려가면 나온다.
     join초보다 짧은 쉼은 한 말로 잇고, min_speech초보다 짧은 조각은 버린다"""
@@ -789,7 +865,7 @@ def main(argv=None):
     ap.add_argument("mp4")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--항목", default=DEFAULT_ITEMS)
-    ap.add_argument("--컷초", default="", help="흐름만 쓴다: 컷이 바뀌는 초(쉼표) — 천 닦기 같은 전환은 장 차이로 못 찾아 컷표 경계를 더한다")
+    ap.add_argument("--컷초", default="", help="흐름 · 첫머리가 쓴다: 컷이 바뀌는 초(쉼표) — 천 닦기 같은 전환은 장 차이로 못 찾아 컷표 경계를 더한다")
     o = ap.parse_args(argv)
     want = set(o.항목.split(","))
     if "기본" in want:     # 「기본,말」 — 기본 항목에 더해 부른다(최종 확인 묶음)
@@ -808,6 +884,10 @@ def main(argv=None):
     cuts = find_cuts(small, fps)
     bounds = [0] + cuts + [n]
     segs = [(bounds[i], bounds[i + 1]) for i in range(len(bounds) - 1)]
+
+    def msegs():
+        """흐름 · 첫머리는 컷표 경계(--컷초)를 더한 덩이로 잰다 — 천 닦기 같은 전환은 장 차이로 못 찾는다. 항목 안에서 불러 --컷초가 틀려도 그 항목만 못잼이다"""
+        return merged_segs(cuts, [int(round(float(x) * fps)) for x in o.컷초.split(",") if x.strip()], n)
     t = lambda k: round(k / fps, 2)  # noqa: E731
     hits, notes, failed = [], [], []
 
@@ -935,9 +1015,17 @@ def main(argv=None):
 
     guard("조용", _quiet)
 
+    diffs = {}
+
+    def small_diffs():
+        """긴 변 192 장의 이웃 장 차이 — 멈춤 · 첫머리가 함께 쓰도록 한 번만 잰다(장은 컷 찾기에서 이미 풀었다)"""
+        if "dd" not in diffs:
+            diffs["dd"] = frame_diffs(small)
+        return diffs["dd"]
+
     def _frozen():
         if "멈춤" in want:
-            runs = frozen_runs(frame_diffs(small), fps)
+            runs = frozen_runs(small_diffs(), fps)
             body = [r for r in runs if not r[2]]
             for a_, b_, _end in body:
                 n_ = round(b_ - a_, 2)
@@ -949,6 +1037,21 @@ def main(argv=None):
             notes.append({"항목": "화면멈춤", "최장초": round(body[0][1] - body[0][0], 2) if body else 0})
 
     guard("멈춤", _frozen)
+
+    def _head():
+        if "첫머리" in want:
+            rows = head_freeze(small_diffs(), msegs(), fps, small_camera(small), lambda i: float(small[i].std()))
+            for r in sorted((x for x in rows if x["걸림"]), key=lambda x: x["a"]):
+                a_, b_ = t(r["a"]), t(r["b"])
+                hits.append({"항목": "첫머리굳음", "초": a_, "끝초": b_,
+                             "값": {"비": r["비"], "첫머리": r["첫머리"], "가운데": r["가운데"], "카메라": r["카메라"], "문턱": HEAD_RATIO},
+                             "글": f"{a_}~{b_}초 컷 첫 0.25초의 움직임(장 차이)이 그 컷 가운데의 {r['비']}배다 — 컷이 굳은 채로 시작해 보인다. "
+                                   f"원본 시작을 제 빠르기가 된 뒤로 옮기고, 첫머리를 미는 창은 고른 빠르기로 민다(점검표 26)"})
+            low = [r for r in rows if r["비"] < HEAD_NOTE]
+            notes.append({"항목": "첫머리", "잰컷": len(rows),
+                          "낮은컷": [{"초": t(r["a"]), "비": r["비"], **({"카메라출발": r["카메라"]} if r["카메라"] and not r["걸림"] else {})} for r in low]})
+
+    guard("첫머리", _head)
 
     def _speech():
         """말 시각(silero VAD) — 말 없는 자리 표와 마지막 말 뒤 꼬리를 「알림」에 낸다. 걸림은 내지 않는다(걸릴 편과 지나갈 편을 가르는 문턱이
@@ -970,16 +1073,7 @@ def main(argv=None):
 
     def _flow():
         if "흐름" in want:
-            fsegs = segs
-            extra = sorted({int(round(float(x) * fps)) for x in o.컷초.split(",") if x.strip()})
-            if extra:   # 장 차이로 찾은 경계와 합친다(3장 안은 하나로) — 컷표가 낡았어도 한 컷이 둘로 나뉠 뿐이다
-                bs = sorted(set(cuts))
-                for e in extra:
-                    if 2 <= e <= n - 2 and all(abs(e - c) > 3 for c in bs):
-                        bs.append(e)
-                bs = [0] + sorted(bs) + [n]
-                fsegs = [(bs[k], bs[k + 1]) for k in range(len(bs) - 1)]
-            hs, ns = measure_flow(o.mp4, fsegs, w, h)
+            hs, ns = measure_flow(o.mp4, msegs(), w, h)
             hits.extend(hs)
             notes.extend(ns)
 

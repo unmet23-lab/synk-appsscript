@@ -339,11 +339,153 @@ test('흐름은 기본 항목이 아니다 — 올리기 전 검사 ⑳이 부�
   const src = fs.readFileSync(tool, 'utf8');
   const m = src.match(/^DEFAULT_ITEMS = "([^"]+)"/m);
   assert.ok(m, 'DEFAULT_ITEMS 줄');
-  assert.deepEqual(m[1].split(','), ['굳음', '같은판', '되풀이', '끝', '화소', '조용', '멈춤'], '11-16 화면멈춤(「멈춤」)은 기본 항목이다');
+  assert.deepEqual(m[1].split(','), ['굳음', '같은판', '되풀이', '끝', '화소', '조용', '멈춤', '첫머리'], '11-16 화면멈춤(「멈춤」) · 11-18 첫머리굳음(「첫머리」)은 기본 항목이다');
   assert.ok(!m[1].split(',').includes('흐름'));
   for (const k of 흐름이름) assert.ok(new RegExp(`SOFT = \\{[^}]*"${k}"`).test(src), `${k}는 끝 코드를 바꾸지 않는다(SOFT)`);
   const gate = fs.readFileSync(path.join(__dirname, '..', 'tools', '영상관문판.py'), 'utf8');
   assert.ok(/최종본항목 = "[^"]*흐름/.test(gate), '마감 관문 판이 흐름을 붙여 부른다');
+});
+
+// ── 첫머리굳음(11-18 — 서울로 1:48 C14s 「이 장면 시작할떄 0.1초정도 굳어있는 상태에서 시작」, 11-14 1:08과 같은 짜임 · 점검표 26) ──
+// 생성 영상(Omni · Seedance)은 0~1초를 느리게 출발하는데 편집이 원본 0.3초 언저리부터 쓰고 ease로 미는 창(첫 속도 0)이 겹쳐, 컷 첫 0.1~0.5초가
+// 굳어 보였다. 굳음 · 구간굳음은 컷 전체나 컷 안 1.5초 멈춤만 재서 못 잡았다. 끝 코드를 바꾸지 않는 「확인」이다.
+// 판정: 긴 변 192 회색 장(컷 찾기와 같은 장 — 더 풀지 않는다)의 이웃 장 차이에서 두 장 안의 큰 값을 장 움직임으로 보고, 컷 경계 다음 6장의 평균이
+//   그 컷 가운데(길이 30~70%) 평균의 0.3배 아래이고 컷이 1초 넘으면 걸린다. 카메라가 서 있다가 출발하는 컷과 영상 맨 앞 덩이, 검은 첫머리는 뺀다.
+// 실측 고정 자료(tests/fixtures/첫머리굳음_실측.json): 서울로 라t(옛 판)와 라w(네 컷의 원본 시작을 옮기고 C14s 창을 고른 빠르기로 바꾼 판).
+//   라t: C14s 107.62초 0.27 · Q05b 13.21초 0.18 · R06k 61.67초 0.17이 걸린다. Q09j 28.88초 0.24도 걸린다(같은 날 시작을 옮긴 넷째 컷).
+//   라w: 걸림 0곳. C14s 0.78 · Q05b 0.74가 지나가고, 경계로 본 R06k 0.44 · Q09j 0.34도 지나간다.
+//   Q02 3.92초(사람 없는 난간 접사, 카메라가 서 있다가 출발)는 비가 0.09지만 카메라 옮김(첫머리 0.01 → 가운데 0.49 · 컷표 없이 묶이면 바로 뒤 0.33)으로 뺀다.
+//   R07r 65.58초(0.75초 뒤 카메라가 움직임)도 같은 까닭으로 뺀다. 헛걸림은 두 판 모두 0곳이다.
+// 문턱과 조건을 정한 까닭:
+//   - 맡긴 판정 그대로(이웃 장 차이 평균 · 절반)면 라w에서 15곳, 라t에서 17곳이 걸린다. 카메라가 천천히 빨라지는 C08 · R14 · Q04 · E05, 한 그림을 두 장씩 쓰는
+//     H1 · E08, 컷 전체가 거의 서 있는 C15 같은 컷이다. 0.3으로 내리면 걸린 넷(가장 높은 C14s 0.27)과 지나갈 컷(가장 낮은 라w Q09j 0.34 · R14 0.36)이 갈린다.
+//   - 장 차이를 그대로 쓰면 두 장씩 쓰는 H1이 0.0과 0.9를 번갈아 내 0.30으로 내려간다. 그래서 두 장 안의 큰 값을 쓴다(H1 0.44).
+//   - 카메라를 걷어 낸 장 차이(192 장 위상 상관 · ECC 닮음 맞춤)도 해 봤다. Q02의 가운데가 4~6으로 남아 Q02가 그대로 걸렸다. 사람움직임.py 값은 컷 앞 2장을
+//     빼고 얼굴 모델 · rembg가 들어 쓰지 않았다. 그래서 카메라 옮김 크기로 「카메라가 출발하는 컷」만 가른다.
+//   - 해상도는 판정을 바꾸지 않았다(원본 2000 · 1000 · 640 · 192에서 걸리는 컷이 같다).
+// 다른 최종본(11-18 공용 작업본, 컷표 없이 찾은 경계로만):
+//   SNS 재연 · 진행자 23편(잰 컷 약 250)에서 1곳 — 발주메모 22.92초 그래픽 카드(글이 늦게 뜬다, 헛걸림).
+//   공모전 · 포트폴리오 16편에서 10곳 — 잠깐 18.12 · 19.25초, rs 22.0 · 153.33 · 159.25 · 191.62초, s4 10.46초, p8 18.96초, 또나와 54.71초는 사람 컷의
+//   첫 0.3~1초가 거의 그대로인 같은 짜임이다. rs 264.67초(하늘이 비친 물)는 판정하지 못했다.
+//   검은 화면에서 밝아지는 첫머리 두 곳(p6 34.54 · rs 255.38초)은 결 조건으로, 영상 맨 앞 덩이 두 곳(빈방채우기 · 요금제질문셋 0초)은 0초 제외로 뺐다.
+// 시간: 장 차이는 화면멈춤과 같은 줄을 다시 쓰고, 카메라는 걸릴 만한 컷만 잰다. 서울로 178초 편에서 이 항목만 1초 안팎이다.
+const 첫머리자료 = path.join(__dirname, 'fixtures', '첫머리굳음_실측.json');
+const 첫머리실측 = () => {
+  const code = [
+    'import importlib.util, json, sys',
+    'import numpy as np',
+    'spec = importlib.util.spec_from_file_location("최종본검사", sys.argv[1]); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)',
+    'd = json.load(open(sys.argv[2], encoding="utf-8")); fps = d["fps"]; 컷 = d["컷표"]',
+    'name = lambda a: max((c for c in 컷 if round(c["시작"] * fps) <= a + 3), key=lambda c: c["시작"])["컷"]',
+    'out = {}',
+    'for k, v in d["영상"].items():',
+    '    dd = np.asarray(v["dd"], np.float64); n = v["장"]',
+    '    cam = {int(i): x for i, x in v["카메라"].items()}; tex = {int(i): x for i, x in v["결"].items()}',
+    '    modes = {"컷초": m.merged_segs(v["찾은컷"], [int(round(c["시작"] * fps)) for c in 컷], n), "찾은컷만": m.merged_segs(v["찾은컷"], [], n)}',
+    '    res = {}',
+    '    for mode, segs in modes.items():',
+    '        rows = m.head_freeze(dd, segs, fps, cam.__getitem__, tex.__getitem__)',
+    '        res[mode] = [{"컷": name(r["a"]), "초": round(r["a"] / fps, 2), "비": r["비"], "걸림": r["걸림"], "카메라": r["카메라"]} for r in rows]',
+    // 문턱 0.5로 돌린 줄 — 0.5 아래 컷 모두 카메라를 재고, 「걸림」은 카메라 출발이 아닌 컷이다
+    '    res["0.5"] = [{"컷": name(r["a"]), "비": r["비"], "걸림": r["걸림"]} for r in m.head_freeze(dd, modes["컷초"], fps, cam.__getitem__, tex.__getitem__, th=0.5)]',
+    '    plain = []',   // 맡긴 판정 그대로 — 이웃 장 차이 평균, 절반, 카메라 · 결 조건 없음
+    '    for a, b in modes["컷초"]:',
+    '        L = b - a',
+    '        if a == 0 or L / fps <= 1: continue',
+    '        if dd[a:a + 6].mean() < 0.5 * dd[a + int(L * 0.3): a + int(np.ceil(L * 0.7)) - 1].mean(): plain.append(name(a))',
+    '    res["그대로"] = plain',
+    '    out[k] = res',
+    'print(json.dumps(out, ensure_ascii=False))',
+  ].join('\n');
+  const r = spawnSync(py, ['-I', '-X', 'utf8', '-c', code, tool, 첫머리자료], { encoding: 'utf8', timeout: 120000 });
+  assert.equal(r.status, 0, r.stderr);
+  return JSON.parse(r.stdout.trim().split(/\r?\n/).pop());
+};
+
+test('첫머리굳음 실측 — 서울로 라t는 C14s · Q05b · R06k(와 Q09j)가 걸리고 라w는 하나도 안 걸린다(컷표 경계를 더해도 · 찾은 경계만으로도)', { skip: 그림라이브러리 ? false : 'numpy · cv2 없음' }, () => {
+  const t = 첫머리실측();
+  const 옛 = t.서울로_라t;
+  const 새 = t.서울로_라w;
+  for (const mode of ['컷초', '찾은컷만']) {
+    const hits = (rows) => rows.filter((r) => r.걸림);
+    assert.deepEqual(hits(옛[mode]).map((r) => r.컷).sort(), ['C14s', 'Q05b', 'Q09j', 'R06k'], `${mode} ${JSON.stringify(hits(옛[mode]))}`);
+    const at = Object.fromEntries(hits(옛[mode]).map((r) => [r.컷, r.초]));
+    for (const [c, s] of [['C14s', 107.62], ['Q05b', 13.21], ['R06k', 61.67], ['Q09j', 28.88]]) assert.ok(Math.abs(at[c] - s) <= 0.1, `${mode} ${c} ${at[c]}`);
+    assert.deepEqual(hits(새[mode]), [], `${mode} 라w는 걸림이 없다`);
+    const row = (rows, c) => rows.find((r) => r.컷 === c);
+    assert.ok(row(새[mode], 'C14s').비 >= 0.7 && row(새[mode], 'Q05b').비 >= 0.7, '고친 C14s · Q05b는 첫머리가 가운데만큼 움직인다');
+    assert.ok(row(새[mode], 'R06k').비 >= 0.4 && row(새[mode], 'Q09j').비 >= 0.33, '경계로 본 R06k · Q09j도 지나간다');
+    // Q02: 비는 가장 낮지만 카메라가 서 있다가 출발하는 컷이라 걸지 않는다(두 판 모두)
+    for (const rows of [옛[mode], 새[mode]]) {
+      const q = row(rows, 'Q02');
+      assert.ok(q && q.비 < 0.3 && !q.걸림 && q.카메라[1] >= 0.25 && q.카메라[0] < q.카메라[1] / 2, `${mode} Q02 ${JSON.stringify(q)}`);
+    }
+  }
+});
+
+test('첫머리굳음 문턱 — 맡긴 판정 그대로(장 차이 평균 · 절반)면 라w에서 15곳이 걸린다. 0.3에서 걸린 넷과 지나갈 컷이 갈린다', { skip: 그림라이브러리 ? false : 'numpy · cv2 없음' }, () => {
+  const t = 첫머리실측();
+  assert.equal(t.서울로_라w.그대로.length, 15, JSON.stringify(t.서울로_라w.그대로));
+  assert.equal(t.서울로_라t.그대로.length, 17, JSON.stringify(t.서울로_라t.그대로));
+  for (const c of ['Q02', 'C08', 'R14', 'H1', 'E08', 'C15']) assert.ok(t.서울로_라w.그대로.includes(c), `그대로 판정은 ${c}를 건다`);
+  // 카메라 출발이 아닌 컷 가운데 0.3 아래는 라t의 넷뿐이고(가장 높은 C14s 0.27), 그다음은 0.33 위다(라w Q09j 0.34 · R14 0.36).
+  // 카메라가 빨라지며 들어가는 C08(0.31)은 문턱 바로 위지만 0.5로 돌리면 카메라 출발로 빠진다
+  const named = (k) => t[k]['0.5'].map((r) => ({ ...r, 판: k }));
+  const live = [...named('서울로_라t'), ...named('서울로_라w')].filter((r) => r.걸림);
+  const low = live.filter((r) => r.비 < 0.3);
+  assert.deepEqual(low.map((r) => `${r.판} ${r.컷}`).sort(), ['서울로_라t C14s', '서울로_라t Q05b', '서울로_라t Q09j', '서울로_라t R06k']);
+  assert.ok(Math.max(...low.map((r) => r.비)) <= 0.27, JSON.stringify(low));
+  assert.ok(Math.min(...live.filter((r) => r.비 >= 0.3).map((r) => r.비)) >= 0.33, JSON.stringify(live.sort((a, b) => a.비 - b.비).slice(0, 6)));
+  assert.ok(named('서울로_라w').some((r) => r.컷 === 'C08' && r.비 > 0.3 && r.비 < 0.33 && !r.걸림), 'C08은 카메라 출발');
+  assert.match(fs.readFileSync(tool, 'utf8'), /^HEAD_RATIO = 0\.3 /m);
+});
+
+// 합성 영상(320×568 · 24fps): 0~1.5초 testsrc2(맨 앞 덩이 — 재지 않음), 1.5~3.35초 첫 장을 0.35초 세운 뒤 움직이는 만델브로(걸림),
+// 3.35~4.95초 처음부터 움직이는 생명 놀이(지나감), 4.95~6.95초 그림 한 장이 0.4초 서 있다가 옆으로 흐르는 카메라(카메라 출발 — 알림만),
+// 6.95~8.9초 검은 화면 0.35초 뒤 밝아지는 만델브로(결 없는 첫머리 — 재지 않음).
+function headClip(t) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), '최종본검사-첫머리-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const video = path.join(dir, 'head.mp4');
+  execFileSync('ffmpeg', ['-v', 'error', '-y',
+    '-f', 'lavfi', '-i', 'testsrc2=s=320x568:r=24:d=2', '-f', 'lavfi', '-i', 'mandelbrot=s=320x568:r=24',
+    '-f', 'lavfi', '-i', 'life=s=320x568:r=24:ratio=0.3:seed=7:mold=8', '-f', 'lavfi', '-i', 'testsrc2=s=640x568:r=24:d=1',
+    '-f', 'lavfi', '-i', 'mandelbrot=s=320x568:r=24:start_x=-0.75:start_y=0.1',
+    '-filter_complex', ['[0:v]trim=0:1.5,setpts=PTS-STARTPTS,format=yuv420p[a]',
+      '[1:v]trim=0:1.5,setpts=PTS-STARTPTS,tpad=start_duration=0.35:start_mode=clone,format=yuv420p[b]',
+      '[2:v]trim=0:1.6,setpts=PTS-STARTPTS,format=yuv420p[c]',
+      "[3:v]trim=start_frame=0:end_frame=1,loop=loop=47:size=1:start=0,setpts=N/24/TB,crop=320:568:'if(lt(t,0.4),0,(t-0.4)*240)':0,format=yuv420p[d]",
+      '[4:v]trim=0:1.6,setpts=PTS-STARTPTS,fade=in:st=0:d=0.6,tpad=start_duration=0.35:color=black,format=yuv420p[e]',
+      '[a][b][c][d][e]concat=n=5:v=1:a=0[v]'].join(';'),
+    '-map', '[v]', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24', video]);
+  return { dir, video };
+}
+
+test('첫머리굳음 — 첫 장을 0.35초 세운 컷만 걸리고(끝 코드 0 · 이력 등급 확인), 카메라 출발 · 처음부터 움직임 · 검은 첫머리 · 맨 앞 덩이는 지나간다', { skip: 없음 }, (t) => {
+  const { dir, video } = headClip(t);
+  fs.mkdirSync(path.join(dir, '게시'));
+  fs.writeFileSync(path.join(dir, '게시', '준비.json'), '{"브랜드":"synkbrief"}');
+  const r = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '첫머리', '--json'], { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_검사편: dir, SYNK_검사이력: '' } });
+  assert.equal(r.status, 0, `첫머리굳음만 걸리면 끝 코드 0 — ${r.stderr}`);
+  const j = lastJson(r.stdout);
+  assert.equal(j.못잼, undefined, JSON.stringify(j.못잼));
+  assert.deepEqual(j.컷, [1.5, 3.33, 4.92, 6.92], '합성 영상의 네 경계');
+  assert.deepEqual(j.걸림.map((h) => [h.항목, h.초]), [['첫머리굳음', 1.5]], JSON.stringify(j.걸림));
+  assert.ok(j.걸림[0].값.비 < 0.1 && j.걸림[0].끝초 > 3.2, JSON.stringify(j.걸림[0]));
+  const note = j.알림.find((n) => n.항목 === '첫머리');
+  assert.equal(note.잰컷, 3, '맨 앞 덩이와 검은 첫머리는 재지 않는다');
+  const cam = note.낮은컷.find((x) => Math.abs(x.초 - 4.92) < 0.05);
+  assert.ok(cam && cam.카메라출발 && cam.카메라출발[1] >= 1, `카메라 출발은 알림에만 — ${JSON.stringify(note)}`);
+  const 줄 = fs.readFileSync(path.join(dir, '게시', '검사이력.jsonl'), 'utf8').trim().split(/\r?\n/).map((l) => JSON.parse(l)).pop();
+  assert.deepEqual([줄.결과, 줄.끝코드, 줄.걸림.map((g) => [g.규칙, g.등급])], ['확인', 0, [['첫머리굳음', '확인']]]);
+  // 컷표 경계(--컷초)를 줘도 같은 경계라 판정이 같다. 「첫머리」를 빼면 재지 않는다
+  const withCuts = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '첫머리', '--컷초', '1.5,3.35,4.95,6.95', '--json'], { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_검사이력: '끔' } });
+  assert.deepEqual(lastJson(withCuts.stdout).걸림.map((h) => h.초), [1.5]);
+  const off = spawnSync(py, ['-I', '-X', 'utf8', tool, video, '--항목', '멈춤', '--json'], { encoding: 'utf8', timeout: 300000, env: { ...process.env, SYNK_검사이력: '끔' } });
+  assert.ok(!lastJson(off.stdout).걸림.some((x) => x.항목 === '첫머리굳음'));
+  assert.ok(/SOFT = \{[^}]*"첫머리굳음"/.test(fs.readFileSync(tool, 'utf8')), '첫머리굳음은 끝 코드를 바꾸지 않는다(SOFT)');
+  const gate = fs.readFileSync(path.join(__dirname, '..', 'tools', '영상관문판.py'), 'utf8');
+  assert.ok(/최종본항목 = "[^"]*첫머리/.test(gate) && /확인항목 = [^\n]*"첫머리굳음"/.test(gate), '마감 관문 판이 첫머리를 붙여 부르고 확인으로 센다');
 });
 
 test('없는 파일은 끝 코드 2와 오류 한 줄', { skip: 없음 }, () => {
