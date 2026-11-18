@@ -46,17 +46,19 @@ function resolveProject(cmd, callerCwd, root) {
 /* 배포 대상 파일 패턴 — **.claspignore가 유일 정본**이다(목록을 베끼지 않는다).
  * .claspignore 가 없는 프로젝트(crewcard 가 그렇다 — clasp 가 디렉터리 전부를 민다)는 넓게 잡는다.
  * .html 을 빼면 카드_kr/mn.html 이 미커밋인 채 배포될 수 있는데, 그 둘이 크루카드 화면 자체다. */
+function parseDeployTargets(text) {
+  const pats = text.split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('!'))
+    .map((l) => l.slice(1).trim())
+    .filter(Boolean);
+  return pats.length ? pats : ['appsscript.json', '*.js', '*.gs', '*.html', '*.json'];
+}
+
 function deployTargets(projRoot) {
   try {
-    const pats = fs.readFileSync(path.join(projRoot, '.claspignore'), 'utf8')
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter((l) => l.startsWith('!'))
-      .map((l) => l.slice(1).trim())
-      .filter(Boolean);
-    if (pats.length) return pats;
-  } catch (_) {}
-  return ['appsscript.json', '*.js', '*.gs', '*.html', '*.json'];
+    return parseDeployTargets(fs.readFileSync(path.join(projRoot, '.claspignore'), 'utf8'));
+  } catch (_) { return parseDeployTargets(''); }
 }
 
 function globToRe(g) {
@@ -68,15 +70,21 @@ function globToRe(g) {
  * ⚠ 함정: 글롭의 `*` 는 `[^/]*` 라 디렉터리를 건너지 않는다. 그래서 접두사를 떼지 않으면
  *   `crewcard/상담시트.js` 가 `*.js` 에 **안 걸려 전부 통과**한다(가드가 새는 방향은 언제나 통과).
  *   반대로 루트 배포에서는 같은 이유로 하위 디렉터리 파일이 자연히 빠진다 — 그게 맞는 동작이다. */
-function isDeployFile(repoRelPath, projRoot, root) {
+function deployFileMatcher(projRoot, root, targets = deployTargets(projRoot)) {
   const prefix = path.relative(root, projRoot).replace(/\\/g, '/');
-  const res = deployTargets(projRoot).map(globToRe);
-  let p = String(repoRelPath || '');
-  if (prefix) {
-    if (!p.startsWith(prefix + '/')) return false;
-    p = p.slice(prefix.length + 1);
-  }
-  return res.some((re) => re.test(p));
+  const res = targets.map(globToRe);
+  return (repoRelPath) => {
+    let p = String(repoRelPath || '');
+    if (prefix) {
+      if (!p.startsWith(prefix + '/')) return false;
+      p = p.slice(prefix.length + 1);
+    }
+    return res.some((re) => re.test(p));
+  };
+}
+
+function isDeployFile(repoRelPath, projRoot, root) {
+  return deployFileMatcher(projRoot, root)(repoRelPath);
 }
 
 /* 이 프로젝트를 검사하는 테스트 파일 목록.
@@ -147,4 +155,4 @@ function 원격초록(root, 실행) {
   return { 초록: !!r && r.status === 0, 출력 };
 }
 
-module.exports = { resolveProject, deployTargets, globToRe, isDeployFile, testsFor, 원격초록 };
+module.exports = { resolveProject, parseDeployTargets, deployTargets, globToRe, deployFileMatcher, isDeployFile, testsFor, 원격초록 };

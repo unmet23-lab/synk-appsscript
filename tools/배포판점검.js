@@ -522,11 +522,11 @@ function 안나간변경(root = ROOT, 프로젝트들목록 = null, { 도장 = t
   /* 프로젝트 목록을 인자로 열어 둔 이유는 **픽스처 하나** 때문이다 — `claspProjects()` 는
    * 자기 ROOT 고정이라, 이걸 안 열면 탐지력을 실저장소로만 잴 수 있고 그건 곧 CI 에서
    * 「자격증명이 없어서 초록」이 되는 그 자리다. 기본값은 그대로라 호출부는 안 바뀐다. */
-  const git = (args) => {
+  const git = (args, { separator = /\r?\n/, ...options } = {}) => {
     try {
       return execFileSync('git', ['-c', 'core.quotepath=false', ...args],
-        { cwd: root, encoding: 'utf8', timeout: 15000, windowsHide: true })
-        .split(/\r?\n/).filter(Boolean);
+        { cwd: root, encoding: 'utf8', timeout: 15000, windowsHide: true, ...options })
+        .split(separator).filter(Boolean);
     } catch (_) { return null; }   // 실패는 「변경 0」이 아니라 모름이다
   };
   /* 구분자를 안 쓴다 — 커밋 제목엔 한글·가운뎃점·괄호가 흔해 보이는 구분자를 못 쓰고,
@@ -551,8 +551,49 @@ function 안나간변경(root = ROOT, 프로젝트들목록 = null, { 도장 = t
   /* 수동 배포 검사의 실측 기록을 사용한다. */
   const 캐시 = new Map();
   const 바뀜을 = (base) => {
-    if (!캐시.has(base)) 캐시.set(base, git(['diff', '--name-only', base, 'HEAD']));
+    if (!캐시.has(base)) {
+      // -z는 이동 전후의 경로에 들어간 탭·줄바꿈을 그대로 보존한다.
+      const rows = git(['diff', '--no-renames', '--name-status', '-z', base, 'HEAD'], { separator: '\0', maxBuffer: Infinity });
+      if (!rows || rows.length % 2) return null;
+      const changes = [];
+      for (let i = 0; i < rows.length; i += 2) changes.push({ status: rows[i], file: rows[i + 1] });
+      캐시.set(base, changes);
+    }
     return 캐시.get(base);
+  };
+  const 배포규칙 = (ref, relative) => {
+    const file = path.posix.join(relative, '.claspignore');
+    const entries = git(['--literal-pathspecs', 'ls-tree', '-z', ref, '--', file], { separator: '\0' });
+    if (!entries) return null;
+    if (!entries.length) return 프로젝트.parseDeployTargets('');
+    const row = entries[0], tab = row.indexOf('\t');
+    if (entries.length !== 1 || tab < 0 || row.slice(tab + 1) !== file) return null;
+    const [mode, type, id] = row.slice(0, tab).split(' ');
+    if (type !== 'blob') return null;
+    let contents = git(['cat-file', 'blob', id], { separator: '\0' });
+    if (!contents) return null; // 파일이 트리에 있지만 그 blob을 받지 못한 경우다.
+    if (mode === '120000') {
+      const target = contents[0];
+      if (contents.length !== 1 || !target || path.posix.isAbsolute(target) || target.endsWith('/') || path.posix.basename(target) === '.') return null;
+      // 맨 앞의 './'만 뗀다. 중간 디렉터리와 '..'의 해석 순서는 Git에 맡긴다.
+      const targetPath = (relative ? relative + '/' : '') + target.replace(/^(?:\.\/)+/, '');
+      const result = git(['cat-file', '--batch-check=%(objecttype) %(objectname)', '--follow-symlinks', '-z'],
+        { input: ref + ':' + targetPath + '\0' });
+      const object = result && result.length === 1 && /^blob ([0-9a-f]+)$/.exec(result[0]);
+      if (!object) return null;
+      contents = git(['cat-file', 'blob', object[1]], { separator: '\0' });
+      if (!contents) return null;
+    }
+    const text = contents.join('\0');
+    const lines = text.split(/\r?\n/).map(s => s.trim()).filter(s => s && !s.startsWith('#'));
+    if (lines.shift() !== '**/*' || lines.some(s => !/^![^!?\[\]\\]+$/.test(s) || s.includes('**'))) return null;
+    return lines.length ? 프로젝트.parseDeployTargets(text) : [];
+  };
+  const 트리캐시 = new Map();
+  const 트리파일 = ref => {
+    if (!트리캐시.has(ref)) 트리캐시.set(ref, git(['ls-tree', '-r', '--name-only', '-z', ref],
+      { separator: '\0', maxBuffer: Infinity }));
+    return 트리캐시.get(ref);
   };
   const 거리캐시 = new Map();
   /** HEAD 까지의 커밋 수 — **클수록 오래된 판**이다. 못 재면 `null`(모름 → 갈아끼우지 않는다). */
@@ -585,7 +626,23 @@ function 안나간변경(root = ROOT, 프로젝트들목록 = null, { 도장 = t
     기준선.push({ 이름, ...기준 });
     const 바뀜 = 바뀜을(기준.sha);
     if (바뀜 === null) return null;                       // 못 잼은 「변경 0」이 아니다
-    const 파일들 = 바뀜.filter((f) => 프로젝트.isDeployFile(f, p, root));
+    if (!바뀜.length) continue;
+    let 파일들;
+    try {
+      const 새규칙 = 배포규칙('HEAD', 상대), 옛규칙 = 배포규칙(기준.sha, 상대);
+      if (!새규칙 || !옛규칙) return null;
+      const 현재 = 프로젝트.deployFileMatcher(p, root, 새규칙);
+      const 이전 = 프로젝트.deployFileMatcher(p, root, 옛규칙);
+      const 대상 = new Set(바뀜.filter(x => x.status === 'D' ? 이전(x.file) : 현재(x.file)).map(x => x.file));
+      if (JSON.stringify(새규칙) !== JSON.stringify(옛규칙)) {
+        // 파일 자체가 그대로여도 허용 규칙을 바꾸면 배포 집합에서는 추가되거나 삭제된다.
+        const 옛파일 = 트리파일(기준.sha), 새파일 = 트리파일('HEAD');
+        if (!옛파일 || !새파일) return null;
+        for (const f of 옛파일) if (이전(f) && !현재(f)) 대상.add(f);
+        for (const f of 새파일) if (현재(f) && !이전(f)) 대상.add(f);
+      }
+      파일들 = [...대상].sort();
+    } catch (_) { return null; }
     if (!파일들.length) continue;
     const 항 = { 이름, 경로: 상대 || '.', 파일들, 기준 };
     /* 도장 이름은 `점검()` 이 쓰는 것과 **같은 규칙**으로 만들어진다(`path.relative || '(루트)'`).
