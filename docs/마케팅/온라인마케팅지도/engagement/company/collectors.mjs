@@ -531,36 +531,49 @@ async function facebook(channel, credentials, request, recent) {
   page = await api('me', { fields: 'id,name,username,link,fan_count,followers_count' });
   if (!page?.id || !facebookMatches(channel, page) || (credentials.accountId && credentials.accountId !== String(page.id))) throw mismatch();
   const pageId = graphId(String(page.id));
+  // pagePostId는 그 게시물의 페이지 게시물 번호(「페이지번호_게시물번호」)다. 게시결과에는 이 번호가 적힌다. /posts는 id가 그 꼴이고, /videos에서만
+  // 찾은 릴스는 영상의 post_id로 채운다. post_id는 Graph API Video 참조(v19.0)에 "identifier of the post this video belongs to"로 적힌 칸이다.
+  // 숫자만 오면 이 페이지 번호를 앞에 붙인다(11-19).
+  const fullPostId = value => typeof value === 'string' && /^\d{1,50}_\d{1,50}$/.test(value) ? value : null;
+  const videoPostId = value => fullPostId(value) || (typeof value === 'string' && /^\d{1,50}$/.test(value) ? `${pageId}_${value}` : null);
   const list = await graphList(`${pageId}/posts`, { fields: 'id,message,created_time,permalink_url,attachments{target},shares,reactions.type(LIKE).limit(0).summary(true),comments.limit(0).summary(true)' }, api, cap, recent, post => post.created_time);
-  const posts = list.entries.map(post => ({ externalId: String(post.id), url: safeUrl(post.permalink_url), title: text(post.message), publishedAt: isoDate(post.created_time), thumbnailUrl: null, metrics: metrics({ likes: post.reactions?.summary?.total_count, comments: post.comments?.summary?.total_count, shares: post.shares?.count }) }));
+  const posts = list.entries.map(post => ({ externalId: String(post.id), url: safeUrl(post.permalink_url), title: text(post.message), publishedAt: isoDate(post.created_time), thumbnailUrl: null, pagePostId: fullPostId(String(post.id)), metrics: metrics({ likes: post.reactions?.summary?.total_count, comments: post.comments?.summary?.total_count, shares: post.shares?.count }) }));
   const warnings = [...list.warnings, 'Facebook은 영상 조회수와 게시물 좋아요를 받은 그대로 적어요. 일반 게시물 조회수·저장·도달과 받지 못한 공유 수는 비워 둬요.'];
-  let videosPartial=false,hasMore=list.hasMore,pages=list.pages;
+  let videosPartial=false,hasMore=list.hasMore,pages=list.pages,videoPostIds=null;
   const videoId=url=>{try{const u=new URL(url,'https://www.facebook.com');return u.searchParams.get('v')||u.pathname.match(/\/(?:reel|videos)\/(\d+)/)?.[1]||null;}catch{return null;}};
   const known=new Map();list.entries.forEach((p,i)=>{known.set(String(p.id),posts[i]);for(const attachment of p.attachments?.data||[])if(attachment.target?.id)known.set(String(attachment.target.id),posts[i]);const id=videoId(p.permalink_url);if(id)known.set(id,posts[i]);});
   if(posts.length<cap.maxPosts&&pages<cap.maxPages){
     try{
       // /videos에는 예약·초안처럼 아직 공개하지 않은 영상(published:false)도 업로드 시각으로 나온다. 게시물로 세면 집계와 성과 자동 등록이
       // 공개 전 시각으로 잡히고, 예약 릴스는 공개 때 다른 번호로 나와 그 번호는 끝내 목록에서 사라진다(10-31 운영: 페이스북 SYNK의 놓친 관측 전부).
-      // 공개 여부 칸을 받지 못하는 응답(400)이면 예전처럼 칸 없이 한 번 더 받고 그렇다고 적는다.
+      // 공개 여부(published)나 페이지 게시물 번호(post_id) 칸을 받지 못하는 응답(400)이면 뒤 칸부터 하나씩 빼고 다시 받고, 그렇다고 적는다.
       const videoFields='id,title,description,created_time,permalink_url,views,likes.limit(0).summary(true),comments.limit(0).summary(true)',videoCap={...cap,maxPosts:cap.maxPosts-posts.length,maxPages:cap.maxPages-pages};
-      let videos,publishedKnown=true,unpublished=0;
-      try{videos=await graphList(`${pageId}/videos`,{fields:videoFields+',published'},api,videoCap,recent,v=>v.created_time);}
-      catch(error){if(error.code!=='API_ERROR'||error.status!==400)throw error;publishedKnown=false;videos=await graphList(`${pageId}/videos`,{fields:videoFields},api,videoCap,recent,v=>v.created_time);}
+      let videos,asked='',unpublished=0,videoOnly=0;
+      for(const extra of [',published,post_id',',published','']){
+        try{videos=await graphList(`${pageId}/videos`,{fields:videoFields+extra},api,videoCap,recent,v=>v.created_time);asked=extra;break;}
+        catch(error){if(!extra||error.code!=='API_ERROR'||error.status!==400)throw error;}
+      }
+      const publishedKnown=asked.includes('published'),postIdKnown=asked.includes('post_id');
       hasMore=hasMore||videos.hasMore;pages+=videos.pages;warnings.push(...videos.warnings);
       if(!publishedKnown)warnings.push('Facebook이 영상의 공개 여부를 알려 주지 않아, 예약·초안 영상이 게시물에 섞였을 수 있어요.');
+      // 게시물 목록과 짝지은 영상은 영상의 post_id가 그 게시물 번호와 같은지 센다. 운영에서 post_id를 제대로 읽는지 이 수로 확인한다.
+      videoPostIds={asked:postIdKnown,videos:0,withPostId:0,matched:0,agreed:0};
       for(const video of videos.entries){
         if(video.published===false){unpublished++;continue;}
-        const id=String(video.id),existing=known.get(id);
-        if(existing){existing.metrics.views=number(video.views);continue;}
+        const id=String(video.id),existing=known.get(id),postId=postIdKnown?videoPostId(video.post_id):null;
+        videoPostIds.videos++;if(postId)videoPostIds.withPostId++;
+        if(existing){existing.metrics.views=number(video.views);videoPostIds.matched++;if(postId&&postId===existing.pagePostId)videoPostIds.agreed++;continue;}
         const url=typeof video.permalink_url==='string'?safeUrl(new URL(video.permalink_url,'https://www.facebook.com').href):null;
-        posts.push({externalId:id,url,title:text(video.title)||text(video.description),publishedAt:isoDate(video.created_time),thumbnailUrl:null,metrics:metrics({views:video.views,likes:video.likes?.summary?.total_count,comments:video.comments?.summary?.total_count})});
-        known.set(id,posts.at(-1));
+        posts.push({externalId:id,url,title:text(video.title)||text(video.description),publishedAt:isoDate(video.created_time),thumbnailUrl:null,pagePostId:postId,metrics:metrics({views:video.views,likes:video.likes?.summary?.total_count,comments:video.comments?.summary?.total_count})});
+        known.set(id,posts.at(-1));videoOnly++;
       }
       if(unpublished)warnings.push(`예약·초안처럼 아직 공개하지 않은 영상 ${unpublished}개는 게시물로 세지 않았어요.`);
+      if(!postIdKnown&&videoOnly)warnings.push(`Facebook이 영상의 페이지 게시물 번호를 알려 주지 않아, 영상 목록에서만 찾은 ${videoOnly}개는 게시물 번호 없이 적었어요.`);
     }catch(error){if(error.code==='CANCELLED')throw error;optionalFailure(error,recent,true);videosPartial=true;warnings.push('Facebook 영상·릴스 목록을 받지 못해 전체 게시물 수와 영상 조회수가 일부만 모였어요.');}
   }else{hasMore=true;warnings.push(capWarning(cap));}
   const collected=result({ externalId: pageId, displayName: text(page.name) || channel.handle || pageId, followers: number(page.followers_count), views: null, metrics: { likes: number(page.fan_count) } }, posts, { warnings, partial:videosPartial,hasMore, pages, ownerAuthorized: true, source: 'facebook-pages-api', unavailable: ['saves', 'reach', 'channel.views',...(posts.some(p=>p.metrics.views!==null)?[]:['views'])] });
   if(videosPartial)collected.coverage.inventoryComplete=false;
+  if(videoPostIds)collected.coverage.videoPostIds=videoPostIds;
   return collected;
 }
 

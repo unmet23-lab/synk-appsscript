@@ -60,6 +60,19 @@ test('the shared public reader renews once with its original client and never su
   assert.equal(renewals,1);assert.equal(calls,2);assert.equal(f.app.store.secret('collection:youtube-public').refreshToken,'synthetic-refresh');
 });
 
+// 11-19: 페이스북 수집기가 남기는 페이지 게시물 번호(pagePostId). 게시 성과 판정이 게시결과의 번호를 서버 게시물과 짝짓는 데 쓴다.
+test('a page post id is stored only in its exact form and a later collection without it keeps the stored one',async t=>{
+  let round=1;
+  const base=result({}).posts[0],video=id=>({...base,externalId:id,url:'https://www.youtube.com/watch?v='+id});
+  const posts=()=>[{...base,pagePostId:round===1?'123_456':undefined},{...video('lmnopqrstuv'),pagePostId:'123_456&x'},{...video('zyxwvutsrqp'),pagePostId:round===1?null:'123_789'}];
+  const f=await fixture(t,{collector:async c=>({...result(c),posts:posts()})});
+  const stored=()=>Object.fromEntries(f.app.store.all('posts').filter(p=>p.channelId==='lab').map(p=>[p.externalId,p.pagePostId]));
+  assert.deepEqual(stored(),{abcdefghijk:'123_456',lmnopqrstuv:undefined,zyxwvutsrqp:undefined});
+  round=2;for(const c of f.app.store.all('channels'))if(c.id!=='excluded')f.app.store.put('channels',c.id,{...c,lastCollectedAt:null,lastAttemptAt:null,recentLastCollectedAt:null,recentLastAttemptAt:null});
+  await f.app.scheduledTick();await f.app.waitForIdle();
+  assert.deepEqual(stored(),{abcdefghijk:'123_456',lmnopqrstuv:undefined,zyxwvutsrqp:'123_789'});
+});
+
 test('complete inventory hides unavailable posts without erasing history; partial inventory never hides unseen posts',async t=>{
   let complete=true,items=true;
   const f=await fixture(t,{collector:async c=>({...result(c),posts:items?result(c).posts:[],coverage:{status:complete?'complete':'partial',inventoryComplete:complete,ownerAuthorized:false}})});

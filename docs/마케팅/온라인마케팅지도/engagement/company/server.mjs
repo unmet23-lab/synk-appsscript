@@ -773,7 +773,9 @@ export function createCompanyApp(options={}) {
         const publishedDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(p.publishedAt));
         const link=new URL(p.url);if(link.protocol!=='https:')continue;
         const publicationFormat=['youtube-shorts','youtube-video','instagram-reels'].includes(p.publicationFormat)?p.publicationFormat:previous?.publicationFormat||null;
-        store.put('posts',id,{...previous,id,channelId:channel.id,externalId:p.externalId,title:text(p.title,1000)||'제목 없음',url:link.href,publishedDate,publishedAt:p.publishedAt,thumbnailUrl:p.thumbnailUrl||null,publicationFormat,source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
+        // 페이스북 페이지 게시물 번호(「페이지번호_게시물번호」). 수집기가 그 번호를 받았을 때만 적고, 못 받은 회차는 앞 값을 둔다.
+        const pagePostId=typeof p.pagePostId==='string'&&/^\d{1,50}_\d{1,50}$/.test(p.pagePostId)?{pagePostId:p.pagePostId}:{};
+        store.put('posts',id,{...previous,id,channelId:channel.id,externalId:p.externalId,title:text(p.title,1000)||'제목 없음',url:link.href,publishedDate,publishedAt:p.publishedAt,thumbnailUrl:p.thumbnailUrl||null,publicationFormat,...pagePostId,source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
         const snapshot={id:`${id}:${date}`,postId:id,date,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership};
         for(const key of metricKeys)snapshot[key]=count(p.metrics?.[key]);
         if(mode==='full')store.put('snapshots',snapshot.id,snapshot);

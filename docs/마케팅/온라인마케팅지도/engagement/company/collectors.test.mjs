@@ -379,12 +379,13 @@ test('Facebook reads videos once more without the published field only when Meta
     if (url.pathname.endsWith('/me')) return ok({ id: '123' });
     if (url.pathname.endsWith('/posts')) return ok({ data: [] });
     if (url.pathname.endsWith('/videos')) {
-      const asked = url.searchParams.get('fields').split(',').includes('published'); videoFields.push(asked);
+      const fields = url.searchParams.get('fields').split(','), asked = fields.includes('published'); videoFields.push([asked, fields.includes('post_id')]);
       return asked ? fail(400, { error: { code: 100, message: 'FIXTURE_SECRET (#100) nonexisting field (published)' } }) : ok({ data: [{ id: '900', created_time: '2026-10-29T12:00:00Z', permalink_url: '/reel/900/', views: 7 }] });
     }
     throw new Error('unexpected');
   } });
-  assert.deepEqual(videoFields, [true, false]);
+  // 페이지 게시물 번호 칸(post_id)을 먼저 빼고, 그래도 거절하면 공개 여부 칸까지 뺀다.
+  assert.deepEqual(videoFields, [[true, true], [true, false], [false, false]]);
   assert.deepEqual(result.posts.map(post => [post.externalId, post.metrics.views]), [['900', 7]]);
   assert.ok(result.warnings.some(warning => /공개 여부를 알려 주지 않아/.test(warning)));
   assert.equal(result.coverage.status, 'complete');
@@ -398,6 +399,74 @@ test('Facebook reads videos once more without the published field only when Meta
     limited++; return fail(400, { error: { code: 4, message: 'limit' } });
   } });
   assert.equal(limited, 1); assert.equal(halted.coverage.inventoryComplete, false);
+});
+
+// 11-19: 게시결과에는 페이스북 페이지 게시물 번호가 적힌다. /videos에서만 찾은 릴스는 externalId가 영상 번호뿐이라 그 번호를 영상의 post_id로 남긴다.
+test('Facebook keeps the page post id of feed posts and of reels found only in the video list', async () => {
+  const videoFields = [];
+  const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:00Z', permalink_url: 'https://www.facebook.com/reel/555/', attachments: { data: [{ target: { id: '555' } }] } }] });
+    if (url.pathname.endsWith('/videos')) {
+      videoFields.push(url.searchParams.get('fields').split(',').filter(field => ['published', 'post_id'].includes(field)));
+      return ok({ data: [
+        { id: '555', post_id: '700', views: 5, published: true, created_time: '2026-10-29T12:00:00Z' },
+        { id: '556', post_id: '801', permalink_url: '/reel/556/', views: 6, published: true, created_time: '2026-10-29T13:00:00Z' },
+        { id: '557', post_id: '123_802', permalink_url: '/reel/557/', published: true, created_time: '2026-10-29T14:00:00Z' },
+        { id: '558', permalink_url: '/reel/558/', published: true, created_time: '2026-10-29T15:00:00Z' },
+        { id: '559', post_id: '80_3', permalink_url: '/reel/559/', published: true, created_time: '2026-10-29T16:00:00Z' },
+        { id: '560', post_id: 'x803', permalink_url: '/reel/560/', published: true, created_time: '2026-10-29T17:00:00Z' },
+        { id: '561', post_id: 804, permalink_url: '/reel/561/', published: true, created_time: '2026-10-29T18:00:00Z' },
+        { id: '562', post_id: '805', permalink_url: '/reel/562/', published: false, created_time: '2026-10-29T19:00:00Z' },
+      ] });
+    }
+    throw new Error('unexpected ' + url.pathname);
+  } });
+  assert.deepEqual(videoFields, [['published', 'post_id']]);
+  assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [
+    ['123_700', '123_700', 5], ['556', '123_801', 6], ['557', '123_802', null], ['558', null, null], ['559', '80_3', null], ['560', null, null], ['561', null, null],
+  ]);
+  assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 7, withPostId: 4, matched: 1, agreed: 1 }, 'a bare post_id 700 becomes the feed id 123_700 once the page id is added');
+  assert.ok(!result.warnings.some(warning => /게시물 번호/.test(warning)));
+});
+
+test('Facebook counts a video whose post_id names the feed post it was matched to', async () => {
+  const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:00Z', permalink_url: 'https://www.facebook.com/reel/555/' }, { id: '123_701', created_time: '2026-10-29T11:00:00Z', permalink_url: 'https://www.facebook.com/reel/554/' }] });
+    if (url.pathname.endsWith('/videos')) return ok({ data: [{ id: '555', post_id: '123_700', views: 5, published: true }, { id: '554', post_id: '999', views: 1, published: true }] });
+    throw new Error('unexpected');
+  } });
+  assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [['123_700', '123_700', 5], ['123_701', '123_701', 1]]);
+  assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 2, withPostId: 2, matched: 2, agreed: 1 });
+});
+
+test('Facebook reads videos again without post_id only when Meta rejects that field, and says so only when a reel lost its number', async () => {
+  const videoFields = [];
+  const collect = data => collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:00Z', permalink_url: 'https://www.facebook.com/reel/555/' }] });
+    if (url.pathname.endsWith('/videos')) {
+      const fields = url.searchParams.get('fields').split(','); videoFields.push([fields.includes('published'), fields.includes('post_id')]);
+      return fields.includes('post_id') ? fail(400, { error: { code: 100, message: 'FIXTURE_SECRET (#100) nonexisting field (post_id)' } }) : ok({ data });
+    }
+    throw new Error('unexpected');
+  } });
+  const result = await collect([{ id: '555', views: 5, published: true }, { id: '556', post_id: '801', permalink_url: '/reel/556/', published: true, created_time: '2026-10-29T13:00:00Z' }, { id: '557', permalink_url: '/reel/557/', published: false, created_time: '2026-10-29T14:00:00Z' }]);
+  assert.deepEqual(videoFields, [[true, true], [true, false]]);
+  assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [['123_700', '123_700', 5], ['556', null, null]], 'a post_id the request did not ask for is not trusted');
+  assert.ok(result.warnings.some(warning => /영상 목록에서만 찾은 1개는 게시물 번호 없이/.test(warning)));
+  assert.ok(!result.warnings.some(warning => /공개 여부를 알려 주지 않아/.test(warning)));
+  assert.deepEqual(result.coverage.videoPostIds, { asked: false, videos: 2, withPostId: 0, matched: 1, agreed: 0 });
+  assert.equal(result.coverage.status, 'complete');
+  assert.ok(!JSON.stringify(result).includes('FIXTURE_SECRET'));
+  videoFields.length = 0;
+  const feedOnly = await collect([{ id: '555', views: 5, published: true }]);
+  assert.deepEqual(videoFields, [[true, true], [true, false]]);
+  assert.ok(!feedOnly.warnings.some(warning => /게시물 번호/.test(warning)), 'no reel lost its number');
 });
 
 test('Meta rate limit halts optional insights without request storm or exposing error payloads', async () => {
