@@ -1555,6 +1555,7 @@ export default {
  'speaking.mic.denied':{ko:'마이크를 쓸 수 없어요. 브라우저 설정에서 마이크를 허용하면 녹음할 수 있어요. 녹음 없이도 문제와 예시 답은 볼 수 있어요.',en:'The microphone isn’t available. Allow it in your browser settings to record. You can still see the question and the sample answer.',mn:'Микрофон ашиглах боломжгүй байна. Хөтчийн тохиргооноос микрофоныг зөвшөөрвөл бичлэг хийх боломжтой. Бичлэггүйгээр ч даалгавар, жишээ хариултыг харж болно.'},
  'speaking.mic.none':{ko:'이 기기에서 마이크를 찾지 못했어요. 마이크를 연결하면 녹음할 수 있어요.',en:'No microphone was found on this device. Connect one to record.',mn:'Энэ төхөөрөмжөөс микрофон олдсонгүй. Микрофон холбовол бичлэг хийх боломжтой.'},
  'speaking.mic.unsupported':{ko:'이 브라우저에서는 녹음을 할 수 없어요. 다른 브라우저에서 열어 주세요.',en:'This browser can’t record. Please open this in another browser.',mn:'Энэ хөтөч дээр бичлэг хийх боломжгүй. Өөр хөтчөөр нээнэ үү.'},
+ 'speaking.mic.failed':{ko:'지금 마이크를 켤 수 없어요. 잠시 후 다시 시도해 주세요.',en:'We couldn’t start the microphone. Please try again in a moment.',mn:'Одоогоор микрофоныг асаах боломжгүй байна. Түр хүлээгээд дахин оролдоно уу.'},
  'speaking.mic.notCounted':{ko:'녹음이 안 되거나 잘 안 들린 것은 연습 기록에 세지 않아요.',en:'Recordings that fail or are hard to hear never count in your practice record.',mn:'Бичлэг хийгдээгүй эсвэл сайн сонсогдоогүй бичлэгийг дасгалын бүртгэлд тооцохгүй.'},
  'speaking.mic.level':{ko:'마이크 소리 크기',en:'Microphone level',mn:'Микрофоны дууны түвшин'},
  'speaking.mic.opening':{ko:'마이크를 켜고 있어요.',en:'Turning on the microphone.',mn:'Микрофоныг асааж байна.'},

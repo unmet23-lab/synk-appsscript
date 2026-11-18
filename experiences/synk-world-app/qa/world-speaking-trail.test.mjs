@@ -8,6 +8,7 @@ import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
 import {createSpeakingPractice,loadSpeakingBank,speakingCandidates,speakingWeek,speakingTrailAttempts,SPEAKING_CANDIDATES,SPEAKING_SKILLS,writeSpeakingExam} from '../world-speaking-practice.mjs';
 import {worldLearning,worldMap} from '../world-learning-map.mjs';
+import strings from '../../brand-opening/world-strings.mjs';
 import {followupRows} from '../world-learning-followups.mjs';
 import {buildPositionMap} from '../world-position.mjs';
 const require=createRequire(import.meta.url);
@@ -29,13 +30,14 @@ const memory=()=>{const values=new Map();return {get length(){return values.size
 function sheet(){
  const node=()=>({textContent:'',innerHTML:'',hidden:false,disabled:false,dataset:{},style:{setProperty(){}},focus(){},setAttribute(){},removeAttribute(){},
   querySelector:()=>node(),querySelectorAll:()=>[],contains:()=>true,closest:()=>null,previousElementSibling:null,tagName:'DIV'});
- let handler=null,html='';const stage=node();
+ let handler=null,html='';const stage=node(),zone=node();
+ stage.querySelector=selector=>selector==='[data-wsp-zone]'?zone:node();
  const root={...node(),addEventListener:(type,fn)=>{if(type==='click')handler=fn;},removeEventListener(){},closest:()=>null,get firstElementChild(){return stage;}};
  Object.defineProperty(root,'innerHTML',{get:()=>html,set:value=>{html=value;}});
  stage.parentElement=root;
  const doc={querySelector:selector=>selector==='#panel-content [data-wsp-stage]'?stage:null,activeElement:null,body:{}};
  const press=(attr,dataset={})=>{const button={...node(),dataset,hasAttribute:name=>name===attr,closest:()=>button};handler?.({target:button});};
- return {doc,press,html:()=>html,dispose:[]};
+ return {doc,press,html:()=>html,zone:()=>zone.innerHTML,dispose:[]};
 }
 class FakeRecorder{constructor(){this.state='inactive';this.mimeType='audio/webm';}static isTypeSupported(){return true;}start(){this.state='recording';}
  stop(){if(this.state==='inactive')return;this.state='inactive';this.ondataavailable?.({data:new Blob(['소리'])});queueMicrotask(()=>this.onstop?.());}}
@@ -43,12 +45,12 @@ class FakeAudio{constructor(src){this.src=src;this.on={};this.volume=1;}addEvent
 const FEEDBACK={status:'ok',covered:[0],heard:{transcript:'주말에 공원에 가요.'},elements:{task:{good:'과제를 했어요.'},language:{good:'잘 말했어요.'},delivery:{good:'잘 들려요.'}}};
 
 // 말하기 화면 하나: 실제 WORLD 코치(기기 기록) · 측정 조회 · 가짜 문서 · 가짜 마이크. measure:false면 옛 계정 묶음(조회 없음).
-function practiceBench({measure=true,feedback=null,owner='guest',coachOn=()=>true}={}){
+function practiceBench({measure=true,feedback=null,owner='guest',coachOn=()=>true,mic=async()=>({getTracks:()=>[{stop(){}}]})}={}){
  let tick=Date.parse('2026-11-09T03:00:00Z');const clock=()=>new Date(tick+=1000).toISOString(),now=()=>tick;
  const storage=memory(),coachStorage=memory(),page=sheet();
  storage.setItem(`synk.world.speaking.v1:${owner}`,JSON.stringify({consent:{at:'2026-11-01T00:00:00.000Z',version:1},log:[]}));
  const coach=worldLearning.engine.createGame({gameId:'world-speaking',storage:coachStorage,clock});
- const win={navigator:{mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){}}]})}},MediaRecorder:FakeRecorder,Audio:FakeAudio};
+ const win={navigator:{mediaDevices:{getUserMedia:mic}},MediaRecorder:FakeRecorder,Audio:FakeAudio};
  const practice=createSpeakingPractice({show(){},home:{attachPanelResource:resource=>page.dispose.push(resource),toast(){}},getOwner:()=>owner,storage,feedback,
   coach:()=>coachOn()?coach:null,measure:measure?worldLearning.speaking.measure:null,now,doc:page.doc,win,fetcher:async()=>{throw Error('bank is preloaded');}});
  const events=type=>coach.events().filter(e=>!type||e.type===type);
@@ -57,6 +59,40 @@ function practiceBench({measure=true,feedback=null,owner='guest',coachOn=()=>tru
 }
 // 시험 형식 한 판: 준비 시작 → 바로 말하기 → 다 말했어요 → 다시 듣기 단계.
 async function speak(b){b.page.press('data-wsp-start');await flush();b.page.press('data-wsp-skip');b.page.press('data-wsp-stop');await flush();await flush();}
+
+test('마이크 오류 뒤 안내가 원인과 맞고 시험과 역할극에서 다시 녹음할 수 있다',async t=>{
+ await bankReady;
+ for(const roleplay of [false,true])await t.test(roleplay?'역할극':'시험',async t=>{
+  let nextError=null,calls=0;
+  const b=practiceBench({mic:async()=>{
+   calls++;
+   if(nextError)throw new DOMException('',nextError);
+   return {getTracks:()=>[{stop(){}}]};
+  }});
+  t.after(()=>b.practice.dispose());
+  const action=roleplay?'data-wsp-rp-speak':'data-wsp-start';
+  const html=roleplay?b.page.html:b.page.zone;
+  await b.practice.open(roleplay?'speaking:rp-cafe-tea':'speaking:1');
+  if(roleplay){b.page.press('data-wsp-rp-start');await flush(5);}
+  for(const [error,message] of [['NotReadableError','failed'],['NotAllowedError','denied'],['SecurityError','denied'],['NotFoundError','none'],['OverconstrainedError','none']]){
+   nextError=error;b.page.press(action);await flush();
+   assert.ok(html().includes(strings['speaking.mic.'+message].ko),error);
+   assert.ok(html().includes('role="alert"')&&html().includes(action),error);
+   assert.deepEqual(b.log(),[]);assert.deepEqual(b.events(),[]);
+  }
+  // 브라우저에 직전 판의 번역표가 남았을 때도 내부 열쇠 대신 재시도 안내를 읽는다.
+  const failed=strings['speaking.mic.failed'];
+  try{
+   delete strings['speaking.mic.failed'];nextError='NotReadableError';b.page.press(action);await flush();
+   assert.ok(html().includes('role="alert">'+strings['speaking.task.retry'].ko+'</p>'));
+  }finally{strings['speaking.mic.failed']=failed;}
+  nextError=null;b.page.press(action);await flush();
+  if(!roleplay)b.page.press('data-wsp-skip');
+  assert.ok(html().includes(roleplay?'data-wsp-rp-stop':'data-wsp-stop'));
+  assert.ok(!html().includes('role="alert"'));
+  assert.equal(calls,7);
+ });
+});
 
 test('문항을 열기만 하면 남지 않고, 스스로 확인한 시도는 「채점 안 함」 하나로 남는다 — 측정은 Strata 조회(spoken · 난도 1)',async()=>{
  await bankReady;const b=practiceBench();

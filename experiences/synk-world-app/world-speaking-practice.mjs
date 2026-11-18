@@ -25,7 +25,7 @@ import {tutorPhoto} from '../brand-opening/tutor-photos.mjs';
 import * as worldSound from '../brand-opening/world-sound.mjs';
 const micSignal=open=>{try{worldSound.recordingSignal?.(open);}catch{}};
 // 화면 글은 공용 글 표(brand-opening/world-strings.mjs)의 speaking.* 줄이다(10-21 운영 통로와 함께 시범 글 표에서 옮김).
-const st=(key,vars)=>t(`speaking.${key}`,vars);
+const st=(key,vars)=>t(key==='mic.failed'&&!hasString('speaking.mic.failed')?'speaking.task.retry':`speaking.${key}`,vars);
 if(globalThis.document&&!document.querySelector('[data-speaking-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('./world-speaking.css',import.meta.url).href;style.dataset.speakingStyle='true';document.head.append(style);}
 
 export const SPEAKING_FLAG_KEY='synk.world.speaking.preview';
@@ -197,7 +197,7 @@ export function createSpeakingPractice({show,home,getOwner=()=>'guest',tutor=()=
  async function openMic(){
   if(!recordingSupport(win))throw Object.assign(Error('mic'),{code:'unsupported'});
   try{const stream=await win.navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});micSignal(true);return stream;}
-  catch(error){throw Object.assign(Error('mic'),{code:error?.name==='NotFoundError'||error?.name==='OverconstrainedError'?'none':error?.name==='NotAllowedError'||error?.name==='SecurityError'?'denied':'denied'});}
+  catch(error){throw Object.assign(Error('mic'),{code:error?.name==='NotFoundError'||error?.name==='OverconstrainedError'?'none':error?.name==='NotAllowedError'||error?.name==='SecurityError'?'denied':'failed'});}
  }
  function closeMic(){if(!mic)return;try{mic.recorder?.state==='recording'&&mic.recorder.stop();}catch{}cancelAnimationFrame(mic.raf);try{mic.source?.disconnect();}catch{}for(const track of mic.stream?.getTracks?.()||[])try{track.stop();}catch{}mic=null;micSignal(false);}
  function startRecorder(stream,onLevel){
