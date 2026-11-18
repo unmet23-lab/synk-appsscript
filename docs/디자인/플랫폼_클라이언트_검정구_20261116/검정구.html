@@ -191,6 +191,7 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 .week i{display:block;width:2px;height:var(--h);min-height:1px;background:rgba(243,241,236,.38)}
 .week i.today{background:var(--paper)}
 .up{display:inline-block;margin-bottom:clamp(16px,3cqh,30px)}
+.up + .up{margin-left:22px}
 .acts{display:flex;gap:22px}
 /* 안쪽으로 들어가면 첫 화면이 물러나고 같은 짜임(한 문장과 줄)의 방이 뜬다 */
 #stage[data-space="solio"][data-prog="backup"] .room[data-room="solio"]{display:none}
@@ -203,8 +204,37 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 .row.now .mid,button.row:hover .mid,button.row.opened .mid{color:rgba(243,241,236,.84)}
 .row.unread .val{color:var(--dim)}
 .more-in .row .mid{color:var(--dim)}
+/* 솔리오 안쪽의 나머지(요금, 모델별 토큰, 계정 관리, 내 계정, 설정). 짜임은 같다: 한 문장과 줄, 다가가면 그 자리에서 펼쳐진다 */
+/* 종류가 다른 줄 사이에는 틈을 둔다(구독 줄 아래의 요금과 모델별 토큰) */
+.row.gap{margin-top:clamp(14px,2.6cqh,26px)}
+.more:has(+ .row.gap){border-bottom:1px solid var(--hair)}
+/* 안쪽에서 할 수 있는 일은 조용한 글 단추 한 줄이다. 고르는 것은 지금 것만 밝다 */
+.more-acts{margin:0;padding:6px 0 16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px}
+.more-acts .lab{font:var(--small);color:var(--dim)}
+.more-acts .quiet[aria-pressed="false"]{border-bottom-color:transparent;color:var(--dim)}
+.more-acts .quiet[aria-pressed="true"],.quiet[aria-checked="true"],.quiet.warn{color:var(--paper);border-bottom-color:var(--paper)}
+.quiet[aria-checked="false"]{color:var(--dim)}
+.quiet:disabled{opacity:.42;cursor:default}
+/* 물음과 답: 물음을 누르면 답이 바로 아래에 나온다 */
+.more-acts.qa{padding:5px 0}
+.more-acts.qa + .more-note{padding:2px 0 12px;max-width:46em}
+.more-in .row .quiet{white-space:nowrap}
+/* 글을 넣는 칸은 로그인 화면의 초대코드 칸과 같이 밑줄 한 줄이다 */
+.fld{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-items:center;padding:5px 0}
+.fld label{font:var(--body);color:var(--dim)}
+.fld input{width:min(280px,100%);height:34px;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;outline:0;padding:0 2px;font:400 15px/1 var(--sans);color:var(--paper);user-select:text;-webkit-user-select:text;transition:border-color .3s ease}
+.fld input:hover{border-bottom-color:rgba(243,241,236,.6)}
+.fld input:focus{border-bottom-color:var(--paper)}
+.fld .hint{grid-column:3 / -1;justify-self:end;text-align:right;font:var(--small);color:var(--dim)}
+/* 안쪽의 묶음: 눌렀을 때만 나오는 칸들(요금 고치기, 계정 더하기의 단계) */
+.grp{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-content:start}
+.grp > *{grid-column:1 / -1}
+.grp[hidden]{display:none}
+.grp > .more-acts{padding-top:10px}
+/* 다시 지은 줄은 펼쳐지는 움직임 없이 열린 채로 선다 */
+.more.snap,.more.snap .more-in > *{transition:none !important}
 #stage[data-aside][data-space] .room[data-room]{display:none}
-#stage[data-aside="account"][data-space] .room[data-room="account"],#stage[data-aside="settings"][data-space] .room[data-room="settings"]{display:block}
+#stage[data-aside="account"][data-space] .room[data-room="account"],#stage[data-aside="settings"][data-space] .room[data-room="settings"],#stage[data-aside="manage"][data-space] .room[data-room="manage"]{display:block}
 .room.enter > *{animation:up .55s cubic-bezier(.2,.7,.2,1) both}
 .room.enter > :nth-child(2){animation-delay:.05s}
 .room.enter > :nth-child(3){animation-delay:.1s}
@@ -262,6 +292,10 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 #meta button[aria-pressed="true"]{color:var(--paper);background:rgba(243,241,236,.11)}
 #meta button:focus-visible{outline:1px solid var(--ring);outline-offset:1px}
 
+/* 가운데 폭의 창(641~900px)에서는 이름 칸과 오른쪽 칸을 줄여 설명 칸에 자리를 준다. 그대로 두면 설명이 120px 남짓에 갇혀 서너 줄로 꺾인다 */
+@container stage (min-width:641px) and (max-width:900px){
+  .rows.vis{grid-template-columns:minmax(96px,128px) minmax(0,1fr) 6.2em minmax(96px,auto)}
+}
 @container stage (max-width:640px){
   .rows{grid-template-columns:minmax(0,1fr)}
   /* 방문자 분석의 줄도 좁은 창에서는 한 칸으로 쌓는다. 이 줄이 없으면 네 칸이 남아 큰 숫자가 창 밖으로 밀린다 */
@@ -272,6 +306,9 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
   .mid{grid-column:1 / -1;grid-row:2}
   .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
   .row-plain > :last-child{grid-column:2;grid-row:1}
+  /* 글을 넣는 칸도 좁은 창에서는 이름 아래로 내려온다 */
+  .fld{grid-template-columns:minmax(0,1fr);row-gap:2px;padding:8px 0}
+  .fld .hint{grid-column:1;justify-self:start;text-align:left}
   /* 좁은 창에서는 줄이 다 들어가지 않으므로 방 안에서 스크롤한다 */
   .room{top:clamp(84px,13cqh,128px);max-height:none;bottom:calc(78px + env(safe-area-inset-bottom,0px));left:calc(clamp(20px,9.5cqw,168px) - 6px);right:calc(clamp(20px,9.5cqw,168px) - 6px);padding:0 6px 36px;overflow-y:auto;scrollbar-width:none}
   .rows{margin-top:28px}
@@ -362,7 +399,7 @@ body.sized #stage{position:absolute;left:50%;top:calc(50% - 28px);transform:tran
         <button type="button" data-svc="gemini" class="row rise" style="--i:5"><span class="nm">Gemini</span><span class="gauge" aria-hidden="true"><i style="--v:88%"></i></span><span class="val">88% 남음</span><span class="when">일 00:00 초기화</span></button>
         <button type="button" data-svc="higgsfield" class="row rise" style="--i:6"><span class="nm">Higgsfield</span><span class="gauge" aria-hidden="true"><i style="--v:41%"></i></span><span class="val">41% 남음</span><span class="when">1,240 / 3,000 크레딧 · 12월 3일 결제</span></button>
       </div>
-      <p class="read rise" style="--i:7"><span id="read-when">방금 읽은 값입니다.</span><button class="reread" id="reread" type="button">다시 읽기</button></p>
+      <p class="read rise" style="--i:7"><span id="read-when">방금 읽은 값입니다.</span><span class="acts"><button class="reread" id="to-manage" type="button">계정 관리</button><button class="reread" id="reread" type="button">다시 읽기</button></span></p>
     </div>
 
     <div class="room" data-room="solio-backup">
@@ -374,13 +411,25 @@ body.sized #stage{position:absolute;left:50%;top:calc(50% - 28px);transform:tran
       <div class="rows vis" id="vis-rows" role="group" aria-label="synk.im 방문자 분석"></div>
       <p class="read"><span id="vis-when"></span><span id="vis-scope"></span></p>
     </div>
+    <!-- 계정 관리: 구독에 연결한 계정을 더하고, 고치고, 지우는 방. 구독 방의 「계정 관리」로 온다 -->
+    <div class="room" data-room="manage">
+      <button class="quiet up" type="button" data-aside-back>돌아가기</button><button class="quiet up" type="button" id="mg-add">계정 더하기</button>
+      <p class="say"></p>
+      <div class="rows vis" role="group" aria-label="연결한 계정"></div>
+      <p class="read"></p>
+    </div>
+    <!-- 내 계정과 설정: 구 곁의 펼침 아래에서 온다. 어느 공간에 있든 열리고, 닫으면 있던 방으로 돌아간다 -->
     <div class="room" data-room="account">
       <button class="quiet up" type="button" data-aside-back>돌아가기</button>
-      <p class="say">계정<span class="then">로그인한 계정과 보안을 다루는 자리입니다. 안쪽 화면은 다음 시안에서 짓습니다.</span></p>
+      <p class="say"></p>
+      <div class="rows vis" role="group" aria-label="내 계정"></div>
+      <p class="read"></p>
     </div>
     <div class="room" data-room="settings">
       <button class="quiet up" type="button" data-aside-back>돌아가기</button>
-      <p class="say">설정<span class="then">소리와 움직임, 업데이트를 다루는 자리입니다. 안쪽 화면은 다음 시안에서 짓습니다.</span></p>
+      <p class="say"></p>
+      <div class="rows vis" role="group" aria-label="설정"></div>
+      <p class="read"></p>
     </div>
 
     <div class="room" data-room="workspace">
@@ -426,6 +475,7 @@ body.sized #stage{position:absolute;left:50%;top:calc(50% - 28px);transform:tran
   <button type="button" id="grandbtn" aria-pressed="false">웅장한 판 꺼짐</button>
   <button type="button" id="sizebtn">창 크기 · 꽉 참</button>
   <button type="button" id="visbtn">방문 숫자 · 있음</button>
+  <button type="button" id="fixbtn">구독 계정 · 평소</button>
   <button type="button" id="sound" aria-pressed="false">소리 꺼짐</button>
 </nav>
 
@@ -775,7 +825,7 @@ function buildMore() {
     d.week.forEach((x, k) => { const i = el('i', k === d.week.length - 1 ? 'today' : ''); i.style.setProperty('--h', Math.round(x / top * 100) + '%'); wk.appendChild(i); });
     w.append(el('span', 'nm', '지난 7일'), wk, el('span', 'val', d.avg)); put(w);
     const p = el('div', 'row sub row-plain'), acts = el('span', 'acts');
-    for (const t of ['계정 더하기', '모델별 토큰']) { const a = el('button', 'reread', t); a.type = 'button'; a.dataset.later = ''; acts.appendChild(a); }
+    { const a = el('button', 'reread', '계정 관리'); a.type = 'button'; a.addEventListener('click', () => { snd.tick(); openManage(b.dataset.svc); }); acts.appendChild(a); }
     p.append(el('span', 'nm', '요금'), el('span', 'note', d.plan + ' · ' + d.pay), acts); put(p);
     const note = el('p', 'more-note'); note.setAttribute('role', 'status'); put(note);
     m.appendChild(inn); b.after(m); b.setAttribute('aria-expanded', 'false');
@@ -788,12 +838,12 @@ function setMore(b, on) {
   m.classList.toggle('open', on); b.classList.toggle('opened', on); b.setAttribute('aria-expanded', String(on)); if (!on) b.classList.remove('pin');
 }
 function openMore(svc, pin = false) {
-  const rows = $$('button.row[data-svc]'), i = rows.findIndex(b => b.dataset.svc === svc); if (i < 0) return;
+  const rows = $$('.room[data-room="solio"] .rows > button.row'), i = rows.findIndex(b => b.dataset.svc === svc); if (i < 0) return;
   rows.forEach((b, k) => { if (k > i && !b.classList.contains('pin')) setMore(b, false); });
   if (pin) rows[i].classList.add('pin');
   setMore(rows[i], true);
 }
-function closeMores(all = false) { $$('button.row[data-svc], button.row[data-vis]').forEach(b => { if (all || !b.classList.contains('pin')) setMore(b, false); }); }
+function closeMores(all = false) { $$('button.row[aria-expanded]').forEach(b => { if (all || !b.classList.contains('pin')) setMore(b, false); }); }
 /* 다가가서 잠깐 머물러야 열리고, 벗어나서 잠깐 지나야 닫힌다. 스치기만 해서는 아무것도 움직이지 않는다 */
 const NEAR = { open: 150, fast: 260, row: 120, prog: 180, close: 400 };
 let moreTimer = 0, moreLeave = 0;
@@ -809,7 +859,6 @@ $$('button.row[data-svc]').forEach(b => {
   box.addEventListener('pointerenter', () => clearTimeout(moreLeave));
   box.addEventListener('pointerleave', () => { clearTimeout(moreTimer); clearTimeout(moreLeave); moreLeave = setTimeout(() => closeMores(), NEAR.close); });
 }
-$$('[data-later]').forEach(b => b.addEventListener('click', () => { b.closest('.more-in').querySelector('.more-note').textContent = '「' + b.textContent + '」는 다음 시안에서 짓습니다.'; }));
 
 /* ── 방문자 분석. synk.im이 일을 하고 있는지를 한 문장과 다섯 줄로 본다. 숫자는 보기이고, 이 PC가 하루에 한 번 모은 요약에서 온다.
       full은 숫자가 쌓인 뒤, early는 막 모으기 시작한 때다. 아직 재지 못한 줄은 「측정 전」과 까닭을 사실대로 말한다 ── */
@@ -905,6 +954,374 @@ buildVis('full');
   box.addEventListener('pointerleave', () => { clearTimeout(visTimer); clearTimeout(leave); leave = setTimeout(() => closeMores(), NEAR.close); });
 }
 $('#visbtn').addEventListener('click', () => { buildVis(visState === 'full' ? 'early' : 'full'); if (stage.dataset.prog === 'visits' && !stage.dataset.aside) flashRoom('solio-visits'); });
+
+/* ── 솔리오 안쪽의 나머지. 구독 방의 요금과 모델별 토큰 줄, 그리고 계정 관리 · 내 계정 · 설정 방이다.
+      짜임은 구독 방과 같다: 맨 위 문장이 결론을 말하고, 줄에 다가가면 그 자리에서 안쪽이 펼쳐진다. 이름과 숫자는 예시 값이고 오늘은 11월 26일로 친다.
+      안쪽의 한 줄은 [종류, …]로 적는다. say 문장, note 작은 글, live 방금 한 일을 알리는 줄, row 이름 · 가운데 · 값 · 오른쪽(칸에 [글, 할 일]을 주면 조용한 단추),
+      gauge 몫을 그은 선, tog 켜고 끄는 것, acts 조용한 글 단추, pick 하나를 고르는 것, fld 글을 넣는 칸, qa 물음과 답, grp 눌렀을 때만 나오는 묶음 ── */
+const won = n => n.toLocaleString('ko-KR') + '원';
+let fldSeq = 0, rowTimer = 0, simTimer = 0;
+const quietBtn = (t, fn, cls) => { const q = el('button', 'quiet' + (cls ? ' ' + cls : ''), t); q.type = 'button'; q.addEventListener('click', e => { snd.tick(); fn(q, e); }); return q; };
+const cellOf = (cls, v) => { if (!Array.isArray(v)) return el('span', cls, v || ''); const s = el('span', cls); s.appendChild(quietBtn(v[0], v[1])); return s; };
+function nodesOf(items) {
+  const out = [];
+  for (const [kind, a, b, c, d, e] of items) {
+    if (kind === 'say') out.push(el('p', 'more-say', a));
+    else if (kind === 'note') out.push(el('p', 'more-note', a));
+    else if (kind === 'live') { const p = el('p', 'more-note'); p.setAttribute('role', 'status'); p.dataset.live = ''; out.push(p); }
+    else if (kind === 'row') { const r = el('div', 'row sub' + (e ? ' now' : '')); r.append(el('span', 'nm', a), cellOf('mid', b), cellOf('val', c), cellOf('when', d)); out.push(r); }
+    else if (kind === 'gauge') { const r = el('div', 'row sub'), g = el('span', 'gauge'), bar = el('i'); g.setAttribute('aria-hidden', 'true'); bar.style.setProperty('--v', b + '%'); g.appendChild(bar); r.append(el('span', 'nm', a), g, el('span', 'val', c), el('span', 'when', d)); out.push(r); }
+    else if (kind === 'tog') {
+      const r = el('div', 'row sub'), s = el('span', 'val');
+      const q = quietBtn(c ? '켜짐' : '꺼짐', () => { const on = q.getAttribute('aria-checked') !== 'true'; q.setAttribute('aria-checked', String(on)); q.textContent = on ? '켜짐' : '꺼짐'; if (d) d(on, q); });
+      q.setAttribute('role', 'switch'); q.setAttribute('aria-checked', String(!!c)); q.setAttribute('aria-label', a); s.appendChild(q);
+      r.append(el('span', 'nm', a), el('span', 'mid', b), s, el('span', 'when', '')); out.push(r);
+    }
+    else if (kind === 'acts') { const p = el('p', 'more-acts'); if (b) p.appendChild(el('span', 'lab', b)); for (const [t, fn, cls] of a) p.appendChild(quietBtn(t, fn, cls)); out.push(p); }
+    else if (kind === 'pick') {
+      const p = el('p', 'more-acts'); p.setAttribute('role', 'group'); p.setAttribute('aria-label', a); p.appendChild(el('span', 'lab', a));
+      b.forEach((t, k) => { const q = quietBtn(t, () => { $$('.quiet', p).forEach(x => x.setAttribute('aria-pressed', String(x === q))); if (d) d(k, q); }); q.setAttribute('aria-pressed', String(k === c)); p.appendChild(q); });
+      out.push(p);
+    }
+    else if (kind === 'fld') { const f = el('div', 'fld'), l = el('label', '', a), i = el('input'); i.id = l.htmlFor = 'fld-' + (++fldSeq); i.type = e ? 'password' : 'text'; i.value = b || ''; i.autocomplete = 'off'; i.spellcheck = false; if (d) i.dataset.f = d; f.append(l, i, el('span', 'hint', c || '')); out.push(f); }
+    else if (kind === 'qa') { const p = el('p', 'more-acts qa'), n = el('p', 'more-note', b); n.hidden = true; const q = quietBtn(a, () => { n.hidden = !n.hidden; q.setAttribute('aria-expanded', String(!n.hidden)); }); q.setAttribute('aria-expanded', 'false'); p.appendChild(q); out.push(p, n); }
+    else if (kind === 'grp') { const g = el('div', 'grp'); g.dataset.grp = a; g.hidden = !!c; g.append(...nodesOf(b)); out.push(g); }
+  }
+  return out;
+}
+function moreOf(items) { const m = el('div', 'more'), inn = el('div', 'more-in'); nodesOf(items).forEach((n, j) => { n.style.setProperty('--j', j); inn.appendChild(n); }); m.appendChild(inn); return m; }
+const tell = (q, t) => { const n = $('[data-live]', q.closest('.more')); if (n) n.textContent = t; };
+const tellRow = (room, key, t) => { const b = $('.room[data-room="' + room + '"] button.row[data-key="' + key + '"]'), n = b && $('[data-live]', b.nextElementSibling); if (n) n.textContent = t; };
+const grpOf = (q, name) => $('[data-grp="' + name + '"]', q.closest('.more'));
+const fldOf = (q, name) => $('[data-f="' + name + '"]', q.closest('.more')).value.trim();
+/* 되돌릴 수 없는 일은 한 번 누르면 무엇이 지워지는지 말하고, 한 번 더 눌러야 한다. 손이 그 줄의 안쪽을 떠나면 물음을 거둔다 */
+function twice(q, ask, note, fn) {
+  if (q.dataset.armed) { fn(); return; }
+  const m = q.closest('.more'), was = q.textContent;
+  q.dataset.armed = '1'; q.textContent = ask; q.classList.add('warn'); tell(q, note);
+  const off = () => { m.removeEventListener('pointerleave', off); if (!q.isConnected || !q.dataset.armed) return; delete q.dataset.armed; q.textContent = was; q.classList.remove('warn'); tell(q, ''); };
+  m.addEventListener('pointerleave', off);
+}
+/* 줄 하나를 펼친다. 구독 줄과 같은 규칙이다: 아래에 열려 있던 줄은 접고, 눌러서 연 줄은 손이 떠나도 열어 둔다 */
+function openRow(b, pin = false) {
+  const rows = Array.from(b.parentElement.children).filter(x => x.matches('button.row')), i = rows.indexOf(b);
+  rows.forEach((r, k) => { if (k > i && !r.classList.contains('pin')) setMore(r, false); });
+  if (pin) b.classList.add('pin');
+  setMore(b, true);
+}
+function rowOf(r) {
+  const b = el('button', 'row' + (r.now ? ' now' : '') + (r.unread ? ' unread' : '') + (r.gap ? ' gap' : '')); b.type = 'button'; b.dataset.key = r.key; b.setAttribute('aria-expanded', 'false');
+  const nm = el('span', 'nm', r.nm); if (r.sub) nm.appendChild(el('small', '', r.sub));
+  b.append(nm, el('span', 'mid', r.mid || ''), el('span', 'val', r.val || ''), el('span', 'when', r.when || ''));
+  b.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(rowTimer); rowTimer = setTimeout(() => openRow(b), NEAR.row); });
+  b.addEventListener('pointerleave', () => clearTimeout(rowTimer));
+  b.addEventListener('focus', () => { if (b.matches(':focus-visible')) openRow(b); });
+  b.addEventListener('click', () => { if (b.classList.contains('pin')) setMore(b, false); else { openRow(b, true); showRow(b); } snd.tick(); });
+  return b;
+}
+/* 눌러서 연 줄의 안쪽이 방 아래에 걸리면, 그 줄이 방 위쪽에 오게 내린다. 다가가서 열린 줄은 손 밑에서 움직이지 않게 그대로 둔다 */
+function showRow(b) {
+  const r = b.closest('.room');
+  setTimeout(() => {
+    if (!b.isConnected) return;
+    const top = b.offsetTop, end = top + b.offsetHeight + b.nextElementSibling.firstElementChild.scrollHeight;
+    if (top < r.scrollTop + 40 || end > r.scrollTop + r.clientHeight - 34) r.scrollTo({ top: Math.max(0, top - 44), behavior: stage.classList.contains('still') ? 'auto' : 'smooth' });
+  }, 60);
+}
+/* 안쪽에서 무언가를 누르거나 글을 넣기 시작하면, 손이 떠나도 그 줄은 열어 둔다(쓰던 칸이 저절로 접히지 않게) */
+function holdBox(box) {
+  const hold = e => { const m = e.target.closest && e.target.closest('.more'); if (m && m.classList.contains('open') && m.previousElementSibling) m.previousElementSibling.classList.add('pin'); };
+  box.addEventListener('pointerdown', hold); box.addEventListener('focusin', hold);
+  /* 마지막으로 안쪽을 누른 줄을 적어 둔다. 그 줄의 안쪽이 길어져 방 아래에 걸리면 putRows가 그 줄을 위로 올린다 */
+  box.addEventListener('click', e => { const m = e.target.closest && e.target.closest('.more'); if (m && m.previousElementSibling) box._acted = m.previousElementSibling.dataset.key; }, true);
+}
+function wireBox(box) {
+  let leave = 0;
+  box.addEventListener('pointerenter', () => clearTimeout(leave));
+  box.addEventListener('pointerleave', () => { clearTimeout(rowTimer); clearTimeout(leave); leave = setTimeout(() => closeMores(), NEAR.close); });
+  holdBox(box);
+}
+/* 줄을 다시 지어도 열려 있던 줄은 열린 채로 서고, 누르던 단추에 초점이 남는다 */
+function putRows(box, rows, keep) {
+  const sel = ':scope > button.row[data-key]', open = $$(sel + '.opened', box).map(b => [b.dataset.key, b.classList.contains('pin')]);
+  const af = document.activeElement, lab = af && box.contains(af) && af.matches('button.quiet') ? (af.getAttribute('aria-label') || af.textContent) : null;
+  $$(sel, box).forEach(b => { b.nextElementSibling.remove(); b.remove(); });
+  if (!keep) box.textContent = '';
+  for (const r of rows) box.append(rowOf(r), moreOf(r.more || []));
+  for (const [k, pin] of open) {
+    const b = $(sel.replace('[data-key]', '[data-key="' + k + '"]'), box); if (!b) continue;
+    const m = b.nextElementSibling; m.classList.add('snap'); setMore(b, true); if (pin) b.classList.add('pin');
+    requestAnimationFrame(() => requestAnimationFrame(() => m.classList.remove('snap')));
+  }
+  if (lab) { const again = $$('.more.open button.quiet', box).find(x => (x.getAttribute('aria-label') || x.textContent) === lab); if (again) again.focus({ preventScroll: true }); }
+  /* 방금 누른 줄의 안쪽이 길어졌으면(계정 더하기의 다음 차례처럼) 지금 할 일이 보이게 올린다. 그 줄이 화면에 걸쳐 있을 때만 한다 */
+  if (box._acted) {
+    const hb = $(sel.replace('[data-key]', '[data-key="' + box._acted + '"]') + '.opened', box), r = box.closest('.room');
+    if (hb && r && hb.offsetTop < r.scrollTop + r.clientHeight && hb.offsetTop + hb.offsetHeight > r.scrollTop) showRow(hb);
+  }
+}
+function setRoom(name, d) {
+  const r = $('.room[data-room="' + name + '"]'), say = $('.say', r), read = $('.read', r);
+  say.textContent = d.say; say.appendChild(el('span', 'then', d.then));
+  putRows($('.rows', r), d.rows);
+  read.textContent = ''; read.appendChild(el('span', '', d.foot || ''));
+  if (d.act) { const q = el('button', 'reread', d.act[0]); q.type = 'button'; q.addEventListener('click', () => { snd.tick(); d.act[1](q); }); read.appendChild(q); }
+}
+
+/* 구독 방의 두 줄. 요금은 모든 구독의 결제를 날짜순으로 모으고, 모델별 토큰은 이 PC에 남은 대화 기록으로 센다(기본은 꺼짐이고, 여기서는 켠 모습을 먼저 보인다) */
+const TOK = { on: true, range: 1, total: [51e6, 420e6, 1700e6], resp: [240, 1840, 7300], span: ['오늘', '지난 7일', '지난 30일'],
+  models: [['Opus', 'Claude Code', .61, .61], ['Sonnet', 'Claude Code', .22, .22], ['Codex', 'Codex', .14, .15], ['Grok', 'Grok CLI', .03, .02]] };
+const tokText = n => n >= 1e8 ? String(Math.round(n / 1e7) / 10) + '억' : Math.round(n / 1e4).toLocaleString('ko-KR') + '만';
+function costRow() {
+  return { key: 'cost', gap: 1, nm: '요금', mid: '한 달 약 1,445,000원 · 7일 안 결제 2건', when: '다음 결제 12월 2일 Codex', more: [
+    ['say', '한 달에 약 1,445,000원을 냅니다. 7일 안에 Codex와 Higgsfield가 결제됩니다.'],
+    ['row', '12월 2일', 'Codex · 업무용', '290,000원', '6일 뒤', 1],
+    ['row', '12월 3일', 'Higgsfield · 업무용', '360,000원', '7일 뒤', 1],
+    ['row', '12월 9일', 'Claude · 업무용', '290,000원', ''],
+    ['row', '12월 11일', 'Gemini · 업무용', '360,000원', ''],
+    ['row', '12월 20일', 'Codex · 개인', '145,000원', ''],
+    ['row', '구독에 든 크레딧', 'Claude API $50 · Codex API $30 · Flow 1,200', '', '12월 2일에 $30가 사라짐'],
+    ['note', '넣은 요금을 먼저 쓰고, 넣지 않은 계정은 공식 요금으로 셈합니다. 달러는 1달러에 1,400원으로 칩니다. 요금과 결제일은 계정 관리에서 고칩니다.'],
+  ] };
+}
+function tokRow() {
+  if (!TOK.on) return { key: 'tok', unread: 1, nm: '모델별 토큰', mid: '꺼져 있습니다', more: [
+    ['say', '모델마다 출력 토큰을 얼마나 썼는지 셉니다. 토큰은 AI가 읽고 쓴 글의 양입니다.'],
+    ['note', '켜면 이 PC에 남은 대화 기록에서 모델 이름과 토큰 수만 꺼내 더합니다. 대화 내용은 꺼내 두지 않고 밖으로 보내지 않습니다. 로그인 정보 파일은 열지 않습니다.'],
+    ['acts', [['모델별 토큰 켜기', () => { TOK.on = true; buildExtras(); tellRow('solio', 'tok', '켰습니다. 기록이 많으면 처음 세는 데 몇 분 걸립니다.'); }]]],
+  ] };
+  const total = TOK.total[TOK.range], resp = TOK.resp[TOK.range];
+  return { key: 'tok', nm: '모델별 토큰', mid: TOK.models.map(m => m[0] + ' ' + Math.round(m[2] * 100) + '%').join(' · '), val: tokText(total), when: TOK.span[TOK.range] + ' · 응답 ' + resp.toLocaleString('ko-KR') + '번', more: [
+    ['pick', '기간', ['오늘', '7일', '30일'], TOK.range, k => { TOK.range = k; buildExtras(); }],
+    ...TOK.models.map(m => ['gauge', m[0], Math.round(m[2] * 100), tokText(total * m[2]), m[1] + ' · 응답 ' + Math.round(resp * m[3]).toLocaleString('ko-KR') + '번']),
+    ['note', '출력 토큰이 많은 순서입니다. 이 PC에 기록이 남지 않는 웹과 휴대폰 사용은 빠집니다. 06:12에 마지막으로 셌습니다.'],
+    ['acts', [['다시 세기', q => tell(q, '기록 파일을 다시 세고 있습니다.')], ['끄기', q => twice(q, '한 번 더 누르면 끄고 지웁니다', '끄면 모은 숫자를 지웁니다. 다시 켜면 처음부터 다시 셉니다.', () => { TOK.on = false; buildExtras(); })]]],
+    ['live'],
+  ] };
+}
+function buildExtras() { putRows($('.room[data-room="solio"] .rows'), [costRow(), tokRow()], true); }
+
+/* 계정 관리. 줄 하나가 계정 하나다. 줄을 열면 그 계정의 사실과 할 수 있는 일(다시 로그인, 요금과 결제일, 지우기)이 나온다.
+   맨 아래 두 줄은 계정 더하기(고른 서비스의 차례를 그 자리에서 밟는다)와 막혔을 때다 */
+const MG = { fix: false, seq: 0, list: [
+  { id: 'c1', svc: 'claude', nm: 'Claude', acc: '업무용', plan: 'Ultra', state: '64% 남음', read: '방금 읽음', price: 290000, day: 9, say: 'Claude 업무용은 초기화 전에 바닥나지 않습니다. 목요일 09:00에 다시 찹니다.',
+    facts: [['row', '로그인', '한 번 로그인하면 4주쯤 이어집니다', '', '12월 14일까지'], ['row', '초기화권', '주간 한도를 한 번 다시 채웁니다', '1장', '12월 20일까지'], ['row', 'API 크레딧', '구독에 든 금액입니다', '$50', '12월 9일에 사라짐']] },
+  { id: 'x1', svc: 'codex', nm: 'Codex', acc: '업무용', plan: 'Pro 200', state: '12% 남음', read: '방금 읽음', price: 290000, day: 2, say: 'Codex 업무용은 내일 오후 3시쯤 막힙니다. 토요일 14:00에 다시 찹니다.',
+    facts: [['row', '초기화권', 'Codex가 알려 준 값입니다', '2장', '12월 31일까지'], ['row', 'API 크레딧', '구독에 든 금액입니다', '$30', '12월 2일에 사라짐']] },
+  { id: 'x2', svc: 'codex', nm: 'Codex', acc: '개인', plan: 'Pro 100', state: '다 썼습니다', read: '목 09:00에 다시 열립니다', price: 145000, day: 20, say: 'Codex 개인은 다 썼습니다. 목요일 09:00에 다시 열립니다.', facts: [] },
+  { id: 'g1', svc: 'gemini', nm: 'Gemini', acc: '업무용', plan: 'Ultra 20x', state: '88% 남음', read: '방금 읽음', price: 360000, day: 11, say: 'Gemini 업무용은 넉넉합니다. 일요일 00:00에 다시 찹니다.',
+    facts: [['row', 'Flow 크레딧', '영상과 그림에 씁니다', '1,200', '12월 11일에 다시 참']] },
+  { id: 'h1', svc: 'higgsfield', nm: 'Higgsfield', acc: '업무용', plan: 'Ultra', state: '1,240 크레딧', read: '방금 읽음', price: 360000, day: 3, say: 'Higgsfield 업무용은 결제일까지 남습니다. 12월 3일에 3,000크레딧이 다시 찹니다.', facts: [] },
+] };
+const ADD = {
+  claude: { nm: 'Claude', plan: 'Claude Pro, Max, Ultra 요금제가 있어야 합니다. 무료 요금제로는 읽지 못합니다.', tool: 'Claude Code', ver: '2.1', code: 1 },
+  codex: { nm: 'Codex', plan: 'ChatGPT 계정으로 로그인합니다. 요금제마다 한도가 다릅니다.', tool: 'Codex', ver: '0.61' },
+  gemini: { nm: 'Gemini', plan: 'Antigravity CLI에 로그인한 Google 계정의 한도를 읽습니다. 한 번에 한 계정만 로그인됩니다.', tool: 'Antigravity CLI', ver: '1.3', dark: 1 },
+  higgsfield: { nm: 'Higgsfield', plan: '남은 크레딧을 읽습니다. 계정 여러 개를 하나씩 연결할 수 있습니다.', tool: 'Higgsfield CLI', ver: '' },
+  typecast: { nm: 'Typecast', plan: 'API 요금제의 이번 달 남은 크레딧을 읽습니다. 설치할 프로그램은 없습니다.', key: 1 },
+  other: { nm: '그 밖의 구독', manual: 1 },
+};
+let addAt = { svc: '', step: '' };
+const BROWSER = '기본 브라우저에서 엽니다.';
+function addGo(step, msg) { clearTimeout(simTimer); addAt.step = step; buildManage(); if (msg) tellRow('manage', 'add', msg); }
+function addDone(a) {
+  clearTimeout(simTimer); MG.list.push(Object.assign({ id: 'n' + (++MG.seq), facts: [], price: 0, day: 0 }, a)); addAt = { svc: '', step: '' }; buildManage();
+  tellRow('manage', 'add', '「' + a.nm + ' ' + a.acc + '」 줄을 더했습니다. 요금과 결제일은 그 줄을 열어 고칩니다.');
+}
+function addItems() {
+  const keys = Object.keys(ADD), s = ADD[addAt.svc], step = addAt.step;
+  const items = [['pick', '무엇을 더할까요', keys.map(k => ADD[k].nm), keys.indexOf(addAt.svc), k => { addAt.svc = keys[k]; addGo(ADD[keys[k]].ver === '' ? 'install' : 'ready'); }]];
+  if (!s) return items.concat([['note', '고르면 그 자리에서 차례대로 안내합니다. 연결하면 바로 한 번 읽습니다.'], ['live']]);
+  const plan = ['row', '1 요금제', s.plan, '', ['요금제 보기 ↗', q => tell(q, BROWSER)]];
+  if (s.manual) return items.concat([
+    ['note', 'Suno나 Midjourney처럼 저절로 읽지 못하는 구독은 결제일과 요금을 직접 넣어 둡니다.'],
+    ['fld', '서비스 이름', '', '예: Suno', 'label'], ['pick', '한도 종류', ['주간 한도', '크레딧', '월 구독만'], 2],
+    ['fld', '월 구독료', '', '원', 'price'], ['fld', '결제일', '', '매월 며칠인지', 'day'],
+    ['acts', [['넣기', q => { const label = fldOf(q, 'label'); if (!label) { tell(q, '서비스 이름을 넣어 주세요.'); return; }
+      addDone({ svc: 'other', nm: label, acc: '직접 넣음', plan: '월 구독', state: '한도는 읽지 않습니다', read: '직접 넣은 값', price: Number(fldOf(q, 'price').replace(/[^\d]/g, '')), day: Number(fldOf(q, 'day').replace(/[^\d]/g, '')), say: '직접 넣은 구독입니다. 한도는 읽지 않고, 넣은 요금과 결제일만 셉니다.' }); }]]],
+    ['live']]);
+  if (s.key) return items.concat([plan,
+    ['row', '2 API 키', 'Typecast 개발자 화면에서 키를 복사합니다. 키를 새로 만들면 예전 키는 쓸 수 없습니다.', '', ['키 화면 열기 ↗', q => tell(q, BROWSER)]],
+    ['fld', '3 키 붙여 넣기', '', '이 PC에만 암호화해 둡니다. 화면에는 끝 네 글자만 보입니다', 'key', 1],
+    ['acts', [['연결', q => { if (!fldOf(q, 'key')) { tell(q, '복사한 키를 붙여 넣어 주세요.'); return; } addDone({ svc: 'typecast', nm: 'Typecast', acc: '키 ····a41c', plan: 'API Lite', state: '38,000 크레딧', read: '방금 읽음', say: 'Typecast는 이번 달 크레딧이 남아 있습니다.' }); }]]],
+    ['live']]);
+  const has = s.tool + (s.ver ? ' ' + s.ver : '');
+  const done = () => addDone({ svc: addAt.svc, nm: s.nm, acc: '새 계정', plan: '요금제 읽음', state: '100% 남음', read: '방금 읽음', say: s.nm + ' 새 계정은 방금 처음 읽었습니다.' });
+  if (step === 'install' || step === 'installing') return items.concat([plan,
+    ['row', '2 설치', s.tool + '가 이 PC에 없습니다. 설치 창을 열면 공식 설치 명령이 돌아갑니다. 1~2분 걸립니다.', '', step === 'installing' ? '설치 창이 열려 있음' : '아직 없음', 1],
+    ['row', '3 로그인', '설치가 끝나면 열립니다', '', ''],
+    ['acts', step === 'installing' ? [['설치가 끝났습니다 · 다시 확인', () => { s.ver = '0.9'; addGo('ready', s.tool + '가 설치된 것을 확인했습니다.'); }]] : [['설치 창 열기', () => addGo('installing', s.tool + ' 설치 창을 열었습니다. 창을 닫지 말고 끝날 때까지 기다려 주세요.')]]],
+    ['live']]);
+  const tool = ['row', '2 설치', has + '가 이 PC에 있습니다', '', '확인'];
+  if (step === 'wait') return items.concat([plan, tool,
+    ['row', '3 로그인', '브라우저에서 로그인을 마쳐 주세요. 끝나면 저절로 넘어갑니다.', '', '기다리는 중', 1],
+    ['acts', [['로그인 화면 다시 열기', q => tell(q, BROWSER)], ['주소 복사', q => tell(q, '주소를 복사했습니다. 다른 계정으로 로그인하려면 시크릿 창에 붙여 넣습니다.')], ['취소', () => addGo('ready', '로그인을 취소했습니다.')]]],
+    ['live']]);
+  if (step === 'code') return items.concat([plan, tool,
+    ['row', '3 로그인', '브라우저에 코드가 보입니다. 아래에 붙여 넣으면 연결됩니다.', '', '코드를 기다리는 중', 1],
+    ['fld', '브라우저에 보이는 코드', '', '붙여 넣기는 Ctrl+V', 'code'],
+    ['acts', [['연결', q => { if (fldOf(q, 'code').length < 8) { tell(q, '코드를 끝까지 붙여 넣어 주세요.'); return; } done(); }], ['취소', () => addGo('ready', '로그인을 취소했습니다.')]]],
+    ['live']]);
+  return items.concat([plan, tool,
+    ['row', '3 로그인', s.dark ? '검은 창이 열립니다. /logout과 /login을 차례로 치고, 브라우저에서 계정을 고릅니다.' : '브라우저에서 로그인합니다. 이 PC에 이미 로그인해 둔 계정이 있으면 그대로 가져올 수 있습니다.', '', '', 1],
+    ['acts', s.dark ? [['Gemini 로그인', () => { addGo('wait'); simTimer = setTimeout(done, 2600); }]]
+      : [['새 계정 연결', () => { addGo('wait'); simTimer = setTimeout(() => (s.code ? addGo('code') : done()), 2600); }], ['이 PC의 기존 로그인 쓰기', done]]],
+    ['live']]);
+}
+const HELP = [
+  ['설치했는데 「설치 안 됨」으로 나옵니다', '설치 창이 끝난 뒤 그 창을 닫고 「설치가 끝났습니다 · 다시 확인」을 눌러 주세요.'],
+  ['로그인 화면이 열리지 않습니다', '「로그인 화면 다시 열기」를 누르거나, 「주소 복사」로 주소를 브라우저에 직접 붙여 넣습니다.'],
+  ['다른 계정으로 로그인됩니다', '브라우저에 로그인돼 있던 계정으로 연결된 것입니다. 「주소 복사」로 주소를 시크릿 창에 붙여 넣고 더할 계정으로 로그인합니다.'],
+  ['코드를 붙여 넣어도 넘어가지 않습니다', 'Claude는 검은 창으로 로그인하는 길이 따로 있습니다. 코드가 들어가지 않으면 그 길로 로그인합니다.'],
+  ['「구독 한도가 없다」고 나옵니다', 'Claude 무료 요금제로는 읽지 못합니다. Pro, Max, Ultra 요금제인지 확인합니다.'],
+  ['ChatGPT가 휴대폰 인증을 요구합니다', '안내대로 인증을 마치면 이 화면이 저절로 넘어갑니다.'],
+  ['Gemini 검은 창에서 막혔습니다', '검은 창에 /logout을 치고 Enter, /login을 치고 Enter를 누릅니다. 「1. Google OAuth」를 고르고 브라우저에서 계정을 고른 뒤, 복사한 코드를 검은 창에 오른쪽 클릭으로 붙여 넣고 Enter를 누릅니다.'],
+  ['Typecast 키가 맞지 않다고 나옵니다', '키를 새로 만들면 예전 키는 쓸 수 없습니다. 개발자 화면에서 지금 키를 다시 복사해 넣습니다.'],
+  ['연결을 끊고 싶습니다', '그 계정 줄을 열고 「지우기」를 두 번 누릅니다. 이 앱이 만든 로그인 폴더까지 지웁니다. 기존 로그인을 가져온 계정은 목록에서만 빠집니다.'],
+  ['Claude API 크레딧 남은 금액은 어디서 봅니까', 'Claude Console의 결제 화면에 남은 금액과 만료 날짜가 있습니다. 그 값을 계정 줄에 넣어 둡니다.'],
+  ['Codex API 크레딧 남은 금액은 어디서 봅니까', 'OpenAI 플랫폼의 Credit grants 표에서 BALANCE 앞 숫자와 EXPIRES를 봅니다.'],
+  ['Gemini 크레딧은 어디서 봅니까', 'API 크레딧은 AI Studio의 결제 화면에, Flow 크레딧은 Flow에 있습니다.'],
+];
+function relogin(a, q) {
+  tell(q, '브라우저에서 ' + a.nm + ' 로그인을 마쳐 주세요. 끝나면 이 줄이 저절로 바뀝니다.');
+  clearTimeout(simTimer); simTimer = setTimeout(() => { if (a.id === 'x2') MG.fix = false; buildManage(); tellRow('manage', a.id, '다시 연결했습니다. 바로 한 번 읽었습니다.'); }, 2600);
+}
+function saveCost(a, q) {
+  const price = Number(fldOf(q, 'price').replace(/[^\d]/g, '')), day = Number(fldOf(q, 'day').replace(/[^\d]/g, ''));
+  if (day < 1 || day > 31) { tell(q, '결제일은 1부터 31 사이로 넣어 주세요.'); return; }
+  a.price = price; a.day = day; buildManage(); tellRow('manage', a.id, '저장했습니다.');
+}
+function buildManage() {
+  const n = MG.list.length, cnt = ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟'][n] || n + '개';
+  const rows = MG.list.map(a => {
+    const fix = MG.fix && a.id === 'x2';
+    return { key: a.id, now: fix, nm: a.nm, sub: a.acc + ' · ' + a.plan, mid: fix ? '다시 로그인해야 합니다' : a.state + ' · ' + a.read, val: a.price ? '월 ' + won(a.price) : '', when: a.day ? '매월 ' + a.day + '일 결제' : '요금을 넣지 않음', more: [
+      ['say', fix ? a.nm + ' ' + a.acc + '은 로그인이 풀렸습니다. 다시 로그인하면 이어서 읽습니다.' : a.say],
+      ...a.facts,
+      ['acts', [['다시 로그인', q => relogin(a, q)], ['요금과 결제일', q => { const g = grpOf(q, 'cost'); g.hidden = !g.hidden; if (!g.hidden) $('input', g).focus(); }],
+        ['지우기', q => twice(q, '한 번 더 누르면 지웁니다', '이 앱이 만든 로그인 폴더와 쌓인 사용 기록을 함께 지웁니다. 되돌릴 수 없습니다.', () => { MG.list = MG.list.filter(x => x !== a); if (a.id === 'x2') MG.fix = false; buildManage(); })]]],
+      ['grp', 'cost', [
+        ['fld', '월 구독료', a.price ? a.price.toLocaleString('ko-KR') : '', '원. 연간 결제면 1년 치를 12로 나눈 값', 'price'],
+        ['fld', '결제일', a.day ? String(a.day) : '', '매월 며칠인지', 'day'],
+        ['pick', '결제 주기', ['월 결제', '연간 결제'], 0],
+        ['acts', [['저장', q => saveCost(a, q)], ['닫기', q => { grpOf(q, 'cost').hidden = true; }]]],
+      ], 1],
+      ['live'],
+    ] };
+  });
+  rows.push({ key: 'add', gap: 1, nm: '계정 더하기', mid: Object.keys(ADD).map(k => ADD[k].nm).join(' · '), more: addItems() });
+  rows.push({ key: 'help', nm: '막혔을 때', mid: '설치, 로그인, 코드, 키에서 막힐 때 보는 열두 가지', more: HELP.map(h => ['qa', h[0], h[1]]) });
+  setRoom('manage', { say: n ? '연결한 계정은 ' + cnt + '입니다.' : '아직 연결한 계정이 없습니다.', then: MG.fix ? 'Codex 개인은 다시 로그인해야 합니다.' : '로그인 정보는 이 PC 밖으로 나가지 않습니다.',
+    foot: '공식 프로그램이 이 PC에서만 사용량을 읽습니다.', act: ['모두 다시 읽기', q => { $('span', q.parentElement).textContent = '방금 모두 다시 읽었습니다.'; }], rows });
+  /* 손볼 계정이 있으면 구독 방의 맨 위 문장이 둘째 줄에서 그것을 말한다 */
+  $('.room[data-room="solio"] .say .then').textContent = MG.fix ? 'Codex 개인은 다시 로그인해야 합니다.' : 'Claude와 Gemini는 이번 주 내내 넉넉합니다.';
+  $('#read-when').textContent = MG.fix ? '손볼 계정이 하나 있습니다.' : '방금 읽은 값입니다.';
+  $('#fixbtn').textContent = '구독 계정 · ' + (MG.fix ? '손볼 것 있음' : '평소');
+}
+/* 구독 방에서 계정 관리로 온다. 어느 구독의 안쪽에서 왔으면 그 구독의 첫 계정을 열어 둔다. 손볼 계정이 있으면 그 계정을 연다 */
+function openManage(svc) {
+  openAside('manage');
+  const a = MG.fix ? MG.list.find(x => x.id === 'x2') : svc && MG.list.find(x => x.svc === svc), b = a && $('.room[data-room="manage"] button.row[data-key="' + a.id + '"]');
+  if (b) { openRow(b, true); showRow(b); }
+}
+
+/* 내 계정. 날마다 쓰는 것이 아니라서 구 곁의 펼침 아래에서 온다. 비밀번호와 로그인 이메일은 브라우저에서 바꾼다(PC 앱은 비밀번호를 받지 않는다) */
+const ME = { name: '하윤', learn: true, del: false, places: [['이 PC', 'SYNK Platform · 지금 쓰는 중'], ['휴대폰', '브라우저 · 11월 25일 21:10에 사용'], ['집 노트북', 'SYNK Platform · 11월 22일 08:40에 사용']] };
+const signOut = () => { setMode('first'); boot(); };
+function buildAccount() {
+  const n = ME.places.length, old = q => tell(q, '지금 앱의 그 화면을 그대로 엽니다. 이 방처럼 다시 짓는 것은 그다음 일입니다.');
+  setRoom('account', {
+    say: ME.del ? '계정을 지워 달라고 요청했습니다.' : ME.name + ' 님으로 로그인했습니다.',
+    then: ME.del ? '12월 3일까지는 이 자리에서 취소할 수 있습니다.' : n > 1 ? '이 PC를 포함해 ' + (['', '한', '두', '세', '네'][n] || n) + ' 곳에서 쓰고 있습니다.' : '이 PC에서만 쓰고 있습니다.',
+    foot: '문의할 때 쓰는 계정 번호 7f3a-21c9-b04e', act: ['로그아웃', signOut],
+    rows: [
+      { key: 'name', nm: '이름', mid: 'SYNK 앱마다 이 이름으로 보입니다', val: ME.name, when: '2026년 3월 2일 가입', more: [
+        ['fld', '새 이름', ME.name, '60자까지', 'name'],
+        ['acts', [['저장', q => { const v = fldOf(q, 'name'); if (!v) { tell(q, '이름을 넣어 주세요.'); return; } if (v.length > 60) { tell(q, '이름은 60자 안으로 적어 주세요.'); return; } ME.name = v; buildAccount(); tellRow('account', 'name', '이름을 바꿨습니다. SYNK 앱마다 다음에 열 때 새 이름이 보입니다.'); }]]],
+        ['row', '소속', '학교나 회사와 연결된 소속이 없습니다', '', ''],
+        ['live'],
+      ] },
+      { key: 'login', nm: '로그인', mid: '이메일과 비밀번호 · Google', when: 'ha•••@example.com', more: [
+        ['say', '비밀번호와 로그인 이메일은 브라우저에서 바꿉니다. PC 앱은 비밀번호를 받지 않습니다.'],
+        ['row', '로그인 이메일', 'ha•••@example.com', '', ['바꾸기 ↗', q => tell(q, '기본 브라우저에서 SYNK ID의 「로그인과 보안」을 열었습니다.')]],
+        ['row', '비밀번호', '바꾸면 이 PC 앱도 로그아웃됩니다. 새 비밀번호로 다시 로그인합니다', '', ['바꾸기 ↗', q => tell(q, '기본 브라우저에서 SYNK ID의 「로그인과 보안」을 열었습니다.')]],
+        ['row', 'Google', '연결되어 있습니다', '', ''],
+        ['live'],
+      ] },
+      { key: 'places', nm: '로그인한 곳', mid: ME.places.map(p => p[0]).join(' · '), val: n + '곳', more: [
+        ...ME.places.map((p, i) => ['row', p[0], p[1], '', i ? ['로그아웃시키기', () => { ME.places.splice(i, 1); buildAccount(); tellRow('account', 'places', '그 기기의 로그인을 끝냈습니다.'); }] : '', !i]),
+        ['acts', [['모든 곳에서 로그아웃', q => twice(q, '한 번 더 누르면 모두 로그아웃합니다', '이 PC를 포함해 다른 기기와 브라우저의 SYNK 로그인을 모두 끝냅니다. 저장하지 않은 글이 있으면 먼저 저장해 주세요.', signOut)]]],
+        ['live'],
+      ] },
+      { key: 'data', nm: '내 데이터', mid: '학습 기록 연결 ' + (ME.learn ? '켜짐' : '꺼짐') + ' · 연습 기록 · 마을 기록 · 내 성향', more: [
+        ['tog', '학습 기록 연결', 'SYNK 앱들이 내 연습 기록을 이어서 씁니다', ME.learn, on => { ME.learn = on; buildAccount(); }],
+        ['row', '연습 기록', '내 기록을 파일 하나로 받습니다', '', ['내려받기', q => tell(q, '연습 기록 파일을 준비했습니다. 저장할 곳을 골라 주세요.')]],
+        ['row', '마을 기록', '싱크타운의 주민이 기억하는 일을 보고, 빼거나 비울 수 있습니다', '', ['열기', old]],
+        ['row', '내 성향', 'SYNK가 맞춰 둔 도움 방식과 설명 분량입니다', '', ['보기', old]],
+        ['live'],
+      ] },
+      ME.del ? { key: 'del', gap: 1, now: 1, nm: '계정 지우기', mid: '12월 3일에 지웁니다', val: '요청됨', more: [
+        ['say', '12월 3일에 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지웁니다. 그 전에는 취소할 수 있습니다.'],
+        ['acts', [['요청 취소', () => { ME.del = false; buildAccount(); tellRow('account', 'del', '삭제 요청을 취소했습니다.'); }]]],
+        ['live'],
+      ] } : { key: 'del', gap: 1, unread: 1, nm: '계정 지우기', mid: '요청한 뒤 7일 동안은 취소할 수 있습니다', more: [
+        ['say', '계정을 지우면 학습 기록, 맞춤 기억, 로그인 정보가 함께 지워집니다.'],
+        ['note', '요청하면 학습 기록 연결을 바로 멈춥니다. 7일이 지나면 되돌릴 수 없습니다. 회사 작업실 자료와 학교 소속 기록은 그곳에서 따로 정리합니다.'],
+        ['acts', [['지우기 요청', q => twice(q, '한 번 더 누르면 요청을 보냅니다', '7일 뒤에 계정과 기록을 지웁니다. 그 전에는 이 자리에서 취소할 수 있습니다.', () => { ME.del = true; ME.learn = false; buildAccount(); })]]],
+        ['live'],
+      ] },
+    ],
+  });
+}
+
+/* 설정. 이 PC에서 SYNK가 켜지고, 열리고, 알리는 방식만 남겼다. 라이브러리와 플레저에만 쓰이던 설정은 그 화면과 함께 거둔다 */
+const SET = { auto: true, tray: true, keep: true, key: 'Ctrl+Alt+S', zoom: 2, calm: false, banner: true, rest: 2, quiet: true, draft: true };
+const ZOOMS = ['80%', '90%', '100%', '110%', '125%', '150%'];
+function buildSettings() {
+  const flip = name => on => { SET[name] = on; buildSettings(); };
+  setRoom('settings', {
+    say: '이 PC의 SYNK는 최신 판입니다.',
+    then: !SET.auto ? '컴퓨터를 켤 때 함께 시작하지 않습니다.' : SET.tray ? '컴퓨터를 켜면 트레이에서 조용히 함께 시작합니다.' : '컴퓨터를 켜면 함께 시작합니다.',
+    foot: 'SYNK Platform 0.4.97 · 시험판 · Windows',
+    act: ['문제 알리기용 정보 복사', q => { $('span', q.parentElement).textContent = '버전과 연결 상태만 복사했습니다. 이름, 글, 파일 경로는 넣지 않았습니다.'; }],
+    rows: [
+      { key: 'update', nm: '업데이트', mid: '쓰는 동안에도 새 판이 있는지 저절로 확인합니다', val: '0.4.97', when: '방금 확인', more: [
+        ['say', '새 판이 나오면 받아 두었다가, 구가 새로 깎이면서 바뀝니다. 쓰던 글이 있으면 먼저 묻습니다.'],
+        ['acts', [['지금 확인', q => { tell(q, '새 판이 있는지 보는 중입니다.'); clearTimeout(simTimer); simTimer = setTimeout(() => tell(q, '최신 판입니다.'), 1500); }]]],
+        ['live'],
+      ] },
+      { key: 'start', nm: '켜고 닫을 때', mid: [SET.auto ? '자동 시작' : '자동 시작 안 함', SET.auto && SET.tray ? '트레이로 시작' : '', SET.keep ? '닫아도 트레이에 남음' : '닫으면 끔'].filter(Boolean).join(' · '), more: [
+        ['tog', '자동 시작', '컴퓨터를 켜면 SYNK도 함께 켭니다', SET.auto, flip('auto')],
+        ['tog', '트레이로 시작', '자동으로 켤 때는 창을 띄우지 않습니다', SET.tray, flip('tray')],
+        ['tog', '트레이에 남기기', '닫기 단추를 눌러도 끄지 않고 트레이에 둡니다', SET.keep, flip('keep')],
+      ] },
+      { key: 'key', nm: '어디서나 열기', mid: SET.key ? '어느 화면에서든 이 단축키로 SYNK를 엽니다' : '단축키를 정하지 않았습니다', val: SET.key, more: [
+        ['fld', '단축키', SET.key, '예: Ctrl+Alt+S', 'key'],
+        ['acts', [['적용', q => { const v = fldOf(q, 'key'); if (!v) { tell(q, '단축키를 넣어 주세요.'); return; } SET.key = v; buildSettings(); tellRow('settings', 'key', '단축키를 바꿨습니다.'); }], ['끄기', () => { SET.key = ''; buildSettings(); tellRow('settings', 'key', '단축키를 껐습니다.'); }]]],
+        ['note', '다른 앱이 쓰는 단축키면 적용하지 않고, 다른 조합을 고르라고 알립니다.'],
+        ['live'],
+      ] },
+      { key: 'view', nm: '화면', mid: '크기 ' + ZOOMS[SET.zoom] + ' · 움직임 ' + (SET.calm ? '줄임' : '그대로'), more: [
+        ['pick', '화면 크기', ZOOMS, SET.zoom, k => { SET.zoom = k; buildSettings(); }],
+        ['tog', '움직임 줄이기', '구와 줄이 움직이지 않고 바로 바뀝니다', SET.calm, flip('calm')],
+      ] },
+      { key: 'notice', nm: '알림', mid: [SET.banner ? '배너 켜짐' : '배너 꺼짐', SET.quiet ? '조용한 시간 22:00~08:00' : ''].filter(Boolean).join(' · '), more: [
+        ['tog', '알림 배너', '새 판이 준비됐을 때처럼 알릴 일이 있으면 배너를 띄웁니다', SET.banner, flip('banner')],
+        ['tog', '조용한 시간', '매일 22:00부터 08:00까지는 배너를 띄우지 않습니다', SET.quiet, flip('quiet')],
+        ['pick', '잠시 쉬기', ['30분', '1시간', '쉬지 않음'], SET.rest, k => { SET.rest = k; }],
+      ] },
+      { key: 'draft', nm: '쓰던 글 되살리기', mid: '창이 갑자기 닫혀도 쓰던 글을 7일 동안 되살립니다', val: SET.draft ? '켜짐' : '꺼짐', more: [
+        ['tog', '되살리기', '이 PC에 암호화해 두고, 끄거나 로그아웃하면 지웁니다', SET.draft, flip('draft')],
+      ] },
+    ],
+  });
+}
+buildExtras(); holdBox($('.room[data-room="solio"] .rows'));
+buildManage(); buildAccount(); buildSettings();
+for (const name of ['manage', 'account', 'settings']) wireBox($('.room[data-room="' + name + '"] .rows'));
+$('#to-manage').addEventListener('click', () => { snd.tick(); openManage(); });
+$('#mg-add').addEventListener('click', () => { snd.tick(); const b = $('.room[data-room="manage"] button.row[data-key="add"]'); openRow(b, true); showRow(b); });
+$('#fixbtn').addEventListener('click', () => { MG.fix = !MG.fix; buildManage(); });
 
 /* ── 이 공간의 프로그램. 구 옆에 작은 오브제로 놓인다. 다가가면 이름이 펼쳐지고, 그 위에 잠깐 머물면 그 프로그램이 열린다 ── */
 let progTimer = 0, railSince = -1e9;   // railSince: 오브제의 이름이 펼쳐지기 시작한 때
@@ -1102,7 +1519,7 @@ stage.addEventListener('pointerleave', () => { ptr.x = .5; ptr.y = .5; ptrPx.x =
 document.addEventListener('keydown', e => {
   wakeMeta();
   const typing = e.target instanceof HTMLInputElement;
-  if (e.key === 'Escape') { if (fanOn) { closeFan(); orbBtn.blur(); $('#here-name').blur(); } else if (ui === 'switch') closeSwitch(); else if (ui === 'ask' && stage.dataset.wait) askBack(); else if (ui === 'app' && stage.dataset.aside) closeAside(); else if (ui === 'app' && $('.more.open')) { closeMores(true); if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); } else if (typing) e.target.blur(); return; }
+  if (e.key === 'Escape') { if (fanOn) { closeFan(); orbBtn.blur(); $('#here-name').blur(); } else if (ui === 'switch') closeSwitch(); else if (ui === 'ask' && stage.dataset.wait) askBack(); else if (ui === 'app' && $('.more.open')) { closeMores(true); if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); } else if (ui === 'app' && stage.dataset.aside) closeAside(); else if (typing) e.target.blur(); return; }
   if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
   if ((e.key === 'Enter' || e.key === ' ') && stage.dataset.boot && !(e.target instanceof HTMLButtonElement && meta.contains(e.target))) { e.preventDefault(); hurryBoot(); return; }
   if (e.key === 'Enter' && ui === 'ask' && !stage.dataset.wait && !(e.target instanceof HTMLButtonElement)) { $('.way').click(); return; }
@@ -1534,6 +1951,9 @@ window.__orb = {
     fanOn = false; fanPin = false; delete stage.dataset.fan; sweep.fill(1); closeMores(true); nearK = 0; requestAnimationFrame(() => $$('.room').forEach(roomFade));
     stage.dataset.prog = opt.prog || 'subs'; $$('.obj').forEach(o => o.setAttribute('aria-current', String(o.dataset.prog === stage.dataset.prog))); $('.rail').classList.toggle('near', !!opt.near);
     if (opt.vis) buildVis(opt.vis); faceWant = null; snap(map[0]); setUI(map[1]); if (opt.visRow) { const vb = $('button.row[data-vis="' + opt.visRow + '"]'); if (vb) openVis(vb, true); } if (opt.wait) { askWait(opt.wait); glintBoost = 1; } if (opt.error) askError(opt.error); $('#ask-note').textContent = opt.note || ''; if (opt.sub) openMore(opt.sub, true); if (opt.aside) stage.dataset.aside = opt.aside;
+    /* fix는 손볼 계정이 있는 모습, row는 지금 방에서 안쪽을 펼칠 줄의 열쇠다(cost, tok, 계정의 id, add, help, name, login, places, data, del, update, start, key, view, notice, draft) */
+    if (opt.fix !== undefined && MG.fix !== !!opt.fix) { MG.fix = !!opt.fix; buildManage(); }
+    if (opt.row) { const gb = $('.room[data-room="' + roomNow() + '"] button.row[data-key="' + opt.row + '"]'); if (gb) { openRow(gb, true); showRow(gb); } }
     cut = 1; cutOn = cutOnWant = 0; delete stage.dataset.forge;
     if (scene === 'forge') { setGrand(!!opt.grand); const p = opt.ready ? 0 : (opt.p === undefined ? .4 : opt.p); forgeP = p; layoutForge(); snap('forge'); cut = opt.failed ? 1 : p; cutOn = cutOnWant = opt.failed ? 0 : 1; if (opt.failed) S.lit = .5; if (opt.ready || opt.failed) stage.dataset.forge = opt.ready ? 'ready' : 'failed'; forgeText(p, opt); }
     pointAt(opt.point || null); for (let i = 0; i < 3; i++) hot[i] = hotWant === i ? 1 : 0;
