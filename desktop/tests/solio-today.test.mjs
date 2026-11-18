@@ -82,7 +82,7 @@ test('several accounts of one service show the count and the account to use now'
   const a = weekly('claude', 80, NOW + 3 * D), b = weekly('claude', 30, NOW + 4 * D);
   const r = solioToday({ snapshot: snap([a, b], { [a.id]: 1, [b.id]: 1 }) }, NOW).rows[0];
   assert.deepEqual([r.name, r.sub, r.val], ['Claude', '계정 2개', '70% 남음']);
-  assert.match(r.label, /^Claude, 계정 2개, 70% 남음, .+ 초기화\. 누르면 자세히 펼칩니다\.$/);
+  assert.match(r.label, /^Claude, 계정 2개, 70% 남음, .+ 초기화\. 자세한 내용은 이 줄 아래에 펼쳐집니다\.$/);
 });
 
 test('no subscriptions, guest, preview and read errors', () => {
@@ -337,6 +337,12 @@ test('row inside: the price line keeps entered values first and marks official, 
   const unknown = weekly('claude', 20, NOW + 3 * D, { email: 'u@example.com', plan: 'odd' });
   const m3 = moreOf([known, unknown])[0].more;
   assert.deepEqual([m3.cost.val, m3.cost.note], ['월 30,000원', '계정 2개 가운데 1개의 금액만 압니다']);
+  // 가족 공유와 금액을 모르는 계정이 섞여도 서로 어긋나지 않는다(카본 A3)
+  const fam = weekly('claude', 20, NOW + 3 * D, { email: 'f@example.com', plan: 'family', price: 0, currency: 'KRW' });
+  const m4 = moreOf([fam, unknown])[0].more;
+  assert.deepEqual([m4.cost.val, m4.cost.note], ['가족 공유', '계정 2개 가운데 1개의 금액만 압니다'], 'family plus unknown keeps the unknown note');
+  const m5 = moreOf([known, fam, unknown])[0].more;
+  assert.deepEqual([m5.cost.val, m5.cost.note], ['월 30,000원', '가족 공유 1개 · 계정 3개 가운데 2개의 금액만 압니다'], 'a family account counts as one whose price is known');
   assert.equal(moreOf([weekly('gpt', 20, NOW + 3 * D)], { prices: PRICES })[0].more.cost, null, 'no price means no price line');
 });
 

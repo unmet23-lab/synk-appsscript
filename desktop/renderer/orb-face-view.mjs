@@ -290,10 +290,15 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (rows.length && old.length === rows.length && old.every((b, i) => b.dataset.svc === String(rows[i].key))) { rows.forEach((r, i) => fillSubRow(old[i], r)); return; }
     const kept = new Map(rows.length ? old.filter(b => b.classList.contains('opened')).map(b => [b.dataset.svc, b.classList.contains('pin')]) : []);
     const focused = rows.length ? old.find(b => b === doc.activeElement)?.dataset.svc : undefined;
+    // 줄 안쪽(계정 관리 단추)에 있던 초점도 줄과 동작으로 기억해 둔다(카본 A4)
+    const fa = doc.activeElement, inMore = rows.length && fa && app.rows.contains(fa) ? fa.closest?.('.more') : null;
+    const innerAt = inMore ? { svc: inMore.previousElementSibling?.dataset.svc, act: fa.dataset?.orbAct || '' } : null;
     app.rows.replaceChildren(...rows.flatMap(subRow));
     for (const b of app.rows.querySelectorAll('button.row[data-svc]')) if (kept.has(b.dataset.svc)) { setMore(b, true); if (kept.get(b.dataset.svc)) b.classList.add('pin'); }
     const again = focused === undefined ? null : [...app.rows.querySelectorAll('button.row[data-svc]')].find(b => b.dataset.svc === focused);
     if (again) { restoringVis = true; try { again.focus({ preventScroll: true }); } catch {} finally { restoringVis = false; } }
+    const home = innerAt ? [...app.rows.querySelectorAll('button.row[data-svc]')].find(b => b.dataset.svc === innerAt.svc) : null;
+    if (home) refocusIn(home, innerAt.act);
   }
   function subRow(r) {
     const b = el('button', 'row');
@@ -323,6 +328,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const m = r.more || {}, moreKey = JSON.stringify(m);
     if (moreKeys.get(inner) === moreKey) return;
     moreKeys.set(inner, moreKey);
+    // 안쪽 단추에 있던 초점은 같은 동작의 새 단추로 옮긴다. 새로 지으면서 body로 풀리지 않게 한다(카본 A4)
+    const fa = doc.activeElement, keepAct = fa && inner.contains(fa) ? fa.dataset?.orbAct || '' : null;
     inner.replaceChildren();
     let j = 0;
     const put = n => { n.style.setProperty('--j', String(j++)); inner.append(n); };
@@ -351,6 +358,14 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const acts = el('p', 'more-acts');
     acts.append(button('reread', '계정 관리', { 'data-orb-act': 'connect' }));
     put(acts);
+    if (keepAct !== null) refocusIn(b, keepAct);
+  }
+  /* 줄 안쪽에 있던 초점을 되살린다. 그 동작의 단추가 열린 안쪽에 있으면 거기로, 없으면 줄 단추로 돌린다 */
+  function refocusIn(b, act) {
+    const more = b.nextElementSibling;
+    const t = act && more && !more.inert ? more.querySelector(`[data-orb-act="${act}"]`) : null;
+    restoringVis = true;
+    try { (t || b).focus?.({ preventScroll: true }); } catch {} finally { restoringVis = false; }
   }
 
   function renderApp(s) {
@@ -642,6 +657,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (open) { if (stageEl.dataset.fan !== '1') stageEl.dataset.fan = '1'; } else if ('fan' in stageEl.dataset) delete stageEl.dataset.fan;
     for (const b of [app.orbBtn, app.nameBtn]) if (b.getAttribute('aria-expanded') !== String(open)) b.setAttribute('aria-expanded', String(open));
     app.fan.inert = !open;
+    // 펼친 동안 물러난 이름 단추와 오브제 줄, 흐린 방은 Tab 차례에서도 빠진다. 그 안에 있던 초점은 보이는 구 단추로 먼저 옮긴다(카본 A1)
+    const back = [app.nameBtn, app.rail, app.solio, app.visits, app.space].filter(Boolean);
+    if (open) { const a = doc.activeElement; if (a && back.some(x => x.contains(a))) app.orbBtn.focus?.({ preventScroll: true }); }
+    for (const x of back) if (x.inert !== open) x.inert = open;
     for (const b of app.fan.querySelectorAll('button')) b.disabled = s.busy;
     if (open && !fanWasOpen) {
       // 펼칠 때 오브제와 줄의 머묾 타이머를 지운다. 흐린 방 위에서 걸려 있던 머묾이 펼친 뒤에 열리지 않게 한다(설계 검토 1차 4)
@@ -996,7 +1015,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (mode === 'legacy' && (dialogOutside() || typing || (t && !root.contains(t) && t.closest?.('dialog')))) return;
       if (dialogOutside()) return;
       // 펼친 줄이 있으면 Esc가 먼저 접는다(시안). 줄 안쪽에 있던 초점은 그 줄로 돌린다
-      if (mode === 'app' && scene?.layer === 'app' && !scene.fan?.open && root.querySelector('.more.open')) {
+      // 숨은 방에 남은 고정 줄은 보지 않는다. 보이는 방에 펼친 줄이 없으면 Esc는 원래 일을 한다(카본 A6)
+      if (mode === 'app' && scene?.layer === 'app' && !scene.fan?.open && [...root.querySelectorAll('.more.open')].some(m => !m.closest('[hidden]'))) {
         const inMore = t?.closest?.('.more');
         closeMores(true);
         if (inMore) inMore.previousElementSibling?.focus?.({ preventScroll: true });

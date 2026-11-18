@@ -407,6 +407,13 @@ if(!process.versions.electron){
           check('17 Enter on the orb opens the fan and Enter again closes it',k3.ok&&k4.ok,{open:k3.state,close:k4.state});
           await wait(450);await key(w,'Space');const k5=await until(w,s=>s.fan,{timeout:2000});await wait(450);await key(w,'Escape');await until(w,s=>!s.fan,{timeout:2000});
           check('17 Space on the orb opens the fan',k5.ok,k5.state);
+          // 이름 단추에서 펼치면 초점이 보이는 구로 옮겨 가고, 물러난 이름 · 오브제 줄 · 흐린 방은 Tab 차례에서 빠진다(카본 A1)
+          await wait(450);await w.js("document.querySelector('#portal-entry .here-name').focus()");await key(w,'Down');const k6=await until(w,s=>s.fan,{timeout:2000});await wait(450);
+          const back=await w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s);return {onOrb:document.activeElement===q('.here-orb'),name:q('.here-name').inert,room:q('[data-room=solio]').inert,fan:q('.fan').inert};})()");
+          await key(w,'Tab');const tabbed=await w.js("document.activeElement===document.querySelector('#portal-entry .fan-go')");
+          check('17 opening from the name moves focus to the orb, and Tab goes into the fan past the hidden name and the dimmed room',k6.ok&&back.onOrb&&back.name&&back.room&&!back.fan&&tabbed,{...back,tabbed});
+          await key(w,'Escape');await until(w,s=>!s.fan,{timeout:2000});
+          check('17 closing the fan gives the name and the room back to the Tab order',await w.js("!document.querySelector('#portal-entry .here-name').inert&&!document.querySelector('#portal-entry [data-room=solio]').inert"));
           await w.js('document.activeElement&&document.activeElement.blur&&document.activeElement.blur()');
           // 구독 줄: 머물면 약 0.12초 뒤에 안쪽이 열리고, 줄 묶음을 벗어나 머물면 약 0.4초 뒤에 접힌다
           await wait(500);const r1=await rect('#portal-entry button.row[data-svc="claude"]');
@@ -421,13 +428,19 @@ if(!process.versions.electron){
           const pinned=await w.js("(()=>{const b=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]');return b.classList.contains('pin')&&b.nextElementSibling.classList.contains('open');})()");
           check('17 pressing a row pins its inside and leaving does not close it',pinned);
           await captureSizes(w,'subs-inside');
+          // 새 자료로 안쪽이 다시 지어져도 「계정 관리」에 있던 초점은 그 단추에 남는다(카본 A4). 1분마다 오는 장면처럼 구독 자료를 바꿔 보낸다
+          const withUsed=used=>({...subsRich,seq:used,rows:subsRich.rows.map(r=>r.id==='r-claude'?{...r,live:{...r.live,weekly:{...r.live.weekly,usedPercent:used}}}:r)});
+          await w.js("document.querySelector('#portal-entry button.row[data-svc=\"claude\"]').nextElementSibling.querySelector('[data-orb-act=connect]').focus()");
+          await w.js('window.__orbFixture.setSubs('+JSON.stringify(withUsed(38))+')');await wait(900);
+          const held=await w.js("(()=>{const m=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]').nextElementSibling,a=document.activeElement;return {onManage:!!a&&a.dataset.orbAct==='connect'&&m.contains(a),val:(m.querySelector('.row.sub .val')||{}).textContent||''};})()");
+          check('17 a redraw that rebuilds the inside keeps focus on 「계정 관리」',held.onManage&&/62%/.test(held.val),held);
+          await w.js('document.activeElement&&document.activeElement.blur&&document.activeElement.blur()');
+          // 펼침이 열린 채로 다시 그려져도 펼침의 단추와 고정한 줄은 그대로다(펼친 동안 방은 inert라 자료를 바꿔 보내 다시 그린다)
           await click(w,'#portal-entry .here-orb');await until(w,s=>s.fan);await wait(500);
           await w.js("window.__fanNode=document.querySelector('#portal-entry .fan-go');window.__rowNode=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]');true");
-          const before=(await calls(w)).filter(c=>c==='subs-check').length;
-          await click(w,'#portal-entry [data-orb-act="reread"]');await wait(1500);
-          const kept=await w.js("(()=>{const b=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]');return {fan:document.querySelector('#portal-entry .fan-go')===window.__fanNode,row:b===window.__rowNode,pin:b.classList.contains('pin'),open:document.querySelector('#portal-entry .orb-stage').dataset.fan==='1'};})()");
-          const after=(await calls(w)).filter(c=>c==='subs-check').length;
-          check('17 a redraw keeps the open fan, its buttons and the pinned row as they were',after>before&&kept.fan&&kept.row&&kept.pin&&kept.open,{...kept,reads:after-before});
+          await w.js('window.__orbFixture.setSubs('+JSON.stringify(withUsed(40))+')');await wait(900);
+          const kept=await w.js("(()=>{const b=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]');return {fan:document.querySelector('#portal-entry .fan-go')===window.__fanNode,row:b===window.__rowNode,pin:b.classList.contains('pin'),open:document.querySelector('#portal-entry .orb-stage').dataset.fan==='1',val:(b.querySelector('.val')||{}).textContent||''};})()");
+          check('17 a redraw keeps the open fan, its buttons and the pinned row as they were',/60%/.test(kept.val)&&kept.fan&&kept.row&&kept.pin&&kept.open,kept);
           w.win.destroy();
           // 구독이 없는 계정의 방도 다섯 크기로 찍는다
           const w2=await open();await boot(w2,{subs:subsNone},{restore:signedIn('none')});

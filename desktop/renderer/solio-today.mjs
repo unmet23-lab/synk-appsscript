@@ -1,7 +1,7 @@
 // 솔리오 첫 화면(PC 클라이언트 1단계, 2026-11-16)의 맨 위 문장과 구독별 줄을 구독 스냅숏에서 만든다. DOM이 없다.
 // 규칙의 원문은 docs/디자인/플랫폼_클라이언트_검정구_20261116/1단계_구현설계.md 8절이다. 셈은 subscriptions-model.mjs를 그대로 쓰고,
 // 새로 세는 것은 「쓰는 속도를 셀 기록이 사흘 안 됐는지」(rate3가 없는 계정이 있는지) 하나뿐이다.
-import { serviceGroups, paceTip, balance, monthCredits, nextBill, freshness, DAY_MS, usageDays, monthPrice, costOf, monthlyBill, nextRefill, planKey } from './subscriptions-model.mjs';
+import { serviceGroups, paceTip, balance, monthCredits, nextBill, freshness, DAY_MS, usageDays, monthPrice, monthlyBill, nextRefill, planKey } from './subscriptions-model.mjs';
 
 /* 서비스의 짧은 이름은 이 표 한 곳에서만 읽는다(문장 · 줄 · 화면 읽기 프로그램의 글). gpt 줄의 남은 양은 Codex가 알려 주는 한도다 */
 export const SOLIO_TODAY_NAMES = Object.freeze({ claude: 'Claude', gpt: 'Codex', gemini: 'Gemini', higgsfield: 'Higgsfield', typecast: 'Typecast' });
@@ -136,7 +136,8 @@ function rowOf(snapshot, g, fact, now, checking) {
     }
   }
   if (!row.spoken) row.spoken = row.when;
-  row.label = [row.name, row.sub, row.val, row.spoken].filter(Boolean).join(', ') + '. 누르면 자세히 펼칩니다.';
+  // 줄 단추는 aria-expanded로 펼침 상태를 알린다. 끝 글은 상태와 어긋나지 않게 「누르면 펼칩니다」 같은 지시가 아니라 자리만 말한다(카본 A5)
+  row.label = [row.name, row.sub, row.val, row.spoken].filter(Boolean).join(', ') + '. 자세한 내용은 이 줄 아래에 펼쳐집니다.';
   row.more = moreOf(snapshot, g, fact, now);
   return row;
 }
@@ -187,21 +188,22 @@ function accountLine(a, g, now) {
 function costLine(snapshot, g, now) {
   const rows = here(g).map(a => a.row);
   if (!rows.length) return null;
-  let krw = 0, known = 0, family = 0, official = false, approx = false;
+  let krw = 0, known = 0, family = 0, missing = 0, official = false, approx = false;
   for (const row of rows) {
     const p = monthPrice(snapshot, row, now);
-    if (!p) continue;
+    if (!p) { missing++; continue; }
     if (p.official && p.krw === 0) { family++; continue; }
     if (planKey(row.plan) === 'family' && p.krw === 0) { family++; continue; }
     known++; krw += p.krw;
     if (p.official) official = true;
     if ((p.official ? p.table?.currency : row.currency) === 'USD') approx = true;
   }
-  const unknown = costOf(snapshot, rows, now).unknown;
   const bills = rows.map(row => monthlyBill(row, now)).filter(d => d !== null);
   const bill = bills.length ? '다음 결제 ' + dateWords(dayAfter(now, Math.min(...bills))) : '';
-  if (!known) return family ? { val: '가족 공유', note: '', bill } : null;
-  const notes = [official ? '공식 요금' : '', family ? '가족 공유 ' + family + '개' : '', unknown ? '계정 ' + rows.length + '개 가운데 ' + known + '개의 금액만 압니다' : ''].filter(Boolean);
+  // 가족 공유도 금액을 아는 계정으로 센다. 금액을 모르는 계정이 섞이면 가족 공유만 있어도 그 사실을 남긴다(카본 A3)
+  const part = missing ? '계정 ' + rows.length + '개 가운데 ' + (known + family) + '개의 금액만 압니다' : '';
+  if (!known) return family ? { val: '가족 공유', note: part, bill } : null;
+  const notes = [official ? '공식 요금' : '', family ? '가족 공유 ' + family + '개' : '', part].filter(Boolean);
   return { val: '월 ' + (approx ? '약 ' : '') + fmt(krw) + '원', note: notes.join(' · '), bill };
 }
 
