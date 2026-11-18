@@ -292,4 +292,33 @@ a.sc-btn{text-decoration:none}
   .sc-guide-t{font-size:14px}
   .sc-guide-s{font-size:12.5px}
 }
+/* 힌트: 단추 하나로 두 단계(묻는 말 듣기 → 장면 보기) */
+.sc-hintbtn{appearance:none;display:inline-flex;align-items:center;gap:7px;margin-top:12px;height:34px;padding:0 12px 0 10px;border-radius:999px;border:1px solid var(--hair);background:#fff;color:var(--ink);font-size:13.5px;line-height:1;font-weight:600;cursor:pointer;box-shadow:0 6px 14px -10px rgba(23,23,26,.4);opacity:0;pointer-events:none;transition:border-color .2s,box-shadow .2s}
+.sc-hintbtn.is-on{pointer-events:auto}
+.sc-hintbtn:hover{border-color:rgba(23,23,26,.28);box-shadow:0 8px 18px -10px rgba(23,23,26,.45)}
+.sc-hintbtn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.sc-hintbtn b{font-weight:800;font-variant-numeric:tabular-nums}
+.sc-hint-step::before{content:"·";margin-right:6px;color:var(--ink3)}
+.sc-hint-ic{width:18px;height:18px;fill:none;stroke:var(--hot);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sc-hintbtn.is-reading .sc-hint-ic{animation:sc-bulb .9s ease-in-out infinite}
+@keyframes sc-bulb{50%{transform:scale(1.18)}}
+.sc-q.is-read .sc-prompt{position:relative}
+.sc-q.is-read .sc-prompt::after{content:"";position:absolute;left:0;bottom:-5px;height:2px;width:var(--rp,0%);border-radius:2px;background:var(--hot);opacity:var(--ro,1)}
+.sc-hintfig{position:absolute;left:0;top:0;z-index:7;margin:0;padding:8px 8px 9px;border-radius:16px;background:#fff;box-shadow:0 24px 44px -26px rgba(20,20,40,.6),0 0 0 1px rgba(23,23,26,.07);opacity:0;pointer-events:none}
+.sc-hintfig.is-on{pointer-events:auto}
+.sc-hintfig figcaption{display:flex;align-items:center;gap:7px;padding:3px 40px 9px 6px;font-size:13px;font-weight:700;color:var(--ink)}
+.sc-hintfig figcaption::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--hot);box-shadow:0 0 0 3px rgba(255,90,60,.2)}
+.sc-hintfig-in{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#EEF0F6}
+.sc-hintfig video{display:block;width:100%;height:100%;object-fit:cover}
+.sc-hintfig-x{position:absolute;top:7px;right:7px;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:rgba(23,23,26,.06);cursor:pointer}
+.sc-hintfig-x::before,.sc-hintfig-x::after{content:"";position:absolute;left:8px;right:8px;top:13px;height:2px;border-radius:1px;background:var(--ink);transform:rotate(45deg)}
+.sc-hintfig-x::after{transform:rotate(-45deg)}
+.sc-hintfig-x:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sc-seal.is-help{color:#A4570A}
+@media (max-width:900px){
+  .sc-hintbtn{margin-top:8px;height:30px;padding:0 10px 0 8px;font-size:12.5px;gap:6px}
+  .sc-hint-ic{width:16px;height:16px}
+  .sc-hintfig{padding:6px 6px 7px;border-radius:13px}
+  .sc-hintfig figcaption{font-size:12px;padding:2px 36px 7px 4px}
+}
 @media (prefers-reduced-motion:reduce){.sc *{transition:none!important;animation:none!important}}

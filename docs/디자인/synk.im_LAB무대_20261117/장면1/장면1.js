@@ -63,6 +63,7 @@
     chime: { f: 'sound/chime.wav', g: 0.5 }, notify: { f: 'sound/notify.wav', g: 0.4 },
     vhello: { f: 'sound/v-hello.mp3', g: 0.85 }, vthanks: { f: 'sound/v-thanks.mp3', g: 0.85 }, vhome: { f: 'sound/v-home.mp3', g: 0.85 }, vname: { f: 'sound/v-name.mp3', g: 0.85 },
     rain: { f: 'sound/rain.mp3', g: 0.3 }, wind: { f: 'sound/wind.mp3', g: 0.34 },
+    qfirst: { f: 'sound/q-first-ko.mp3', g: 0.95 }, qsecond: { f: 'sound/q-second-ko.mp3', g: 0.95 }, qd30: { f: 'sound/q-d30-ko.mp3', g: 0.95 },
   };
   const AC = window.AudioContext || window.webkitAudioContext;
   let ac = null, master = null, soundOn = true;
@@ -544,9 +545,10 @@
 
   /* ── 내 위치: 카드가 줄에서 풀려 앞으로 나오고, 기록 면에 큰 도장 ── */
   const showScale = () => (narrow ? 1.6 : 1.42);
-  const seal = (c, ok) => {
+  const seal = (c, ok, helped = false) => {
     const s = document.createElement('span'); s.className = `sc-seal ${ok ? 'is-ok' : 'is-x'}`;
     s.innerHTML = '<b></b><small></small>'; s.firstChild.textContent = ok ? '혼자 맞힘' : '다시 연습'; s.lastChild.textContent = ok ? '처음 보는 문제 · 도움 없이' : '1분 뒤 다시';
+    if (ok && helped) { s.firstChild.textContent = '힌트 보고 맞힘'; s.lastChild.textContent = '처음 보는 문제 · 힌트 씀'; s.classList.add('is-help'); }
     $('.sc-back', c.el).append(s);
     play('stamp', { g: 1.25, rate: 0.82 }); if (ok) play('chime', { delay: 0.25 }); c.fv -= 3.2; c.pv += sign() * 2;
     if (!reduce) { gsap.fromTo(s, { scale: 2.3, opacity: 0, rotation: -32 }, { scale: 1, opacity: 1, rotation: -13, duration: 0.36, ease: 'back.out(2.2)' }); gsap.fromTo(c, { s: showScale() * 0.94 }, { s: showScale(), duration: 0.5, ease: 'back.out(3)' }); }
@@ -596,12 +598,12 @@
 
   /* ── 안내(11-19 · 처음 보는 사람용, 게임 첫 판처럼): 지금 할 일 한 가지를 그 자리 옆 말풍선으로 보이고, 처음 한 번은 손가락이 먼저 해 보인다 ── */
   const G = {
-    pick: '알맞은 말을 골라 카드를 눌러 보세요', pickSub: '답하면 그 말이 언제 다시 나오는지 보여 드려요.',
+    pick: '알맞은 말을 골라 카드를 눌러 보세요', pickSub: '답하면 그 말이 언제 다시 나오는지 보여 드려요. 모르겠으면 「힌트」를 눌러 보세요.',
     record: '답한 말은 기록 카드가 돼요', recordSub: '이 카드에 「낱말 뜻 읽기」 실력이 기록돼요. 오늘 결과 도장이 찍혔어요.',
     line: '이 줄이 앞으로의 30일이에요', lineSub: '잊을 만할 때마다 1분 · 내일 · 7일 · 30일 뒤에 다시 물어봐요.',
     right: '맞았어요!', wrong: '아쉬워요. 정답은 {n}번이에요', rightSub1: '맞힌 말은 조금 더 있다가, 내일 다시 나와요.', wrongSub1: '처음 만난 분께는 「안녕하세요」라고 인사해요. 틀린 말은 더 빨리, 1분 뒤에 다시 나와요.',
     next: '눌러서 그날로 가 보세요', back: '그 말이 돌아왔어요', backSub: '이번에는 장면이 달라요. 다시 골라 보세요.',
-    shot: '그날 앱을 열면 보이는 화면이에요', check: '처음 보는 문제예요', checkSub: '도움 없이 혼자 골라 보세요.',
+    shot: '그날 앱을 열면 보이는 화면이에요', check: '처음 보는 문제예요', checkSub: '도움 없이 혼자 골라 보세요. 힌트를 쓰면 「힌트 보고 맞힘」으로 남아요.',
     me: '30일 동안 쌓인 기록이에요', meSub: '카드를 누르면 앞면과 기록 면이 바뀌어요.', off: '안내 끄기',
   };
   let guideOn = true, handTL = null, handBob = null;
@@ -670,6 +672,80 @@
   const guideLine = (c, t, s) => (narrow ? tip(t, s, union(stopLis.slice(1)), 'top') : guideCard(c, t, s));
   const guideButton = (b, t = G.next) => { if (!b) return; if (!narrow) tip(t, '', rel(b), 'right'); pointAt(b); b.addEventListener('click', () => { untip(); stopHand(); }, { once: true }); };
 
+  /* ── 힌트(11-19): 모르면 두 단계로 돕는다 — ① 튜터가 방문자 말로 묻는 말을 읽어 준다 ② 그 상황을 짧은 장면 영상으로 보인다.
+       30일 확인 문제에서 힌트를 쓰면 「혼자 맞힘」으로 세지 않는다(앱의 기록 원칙) ── */
+  const H = { btn: '힌트', step1: '질문 듣기', step2: '장면 보기', again: '장면 다시 보기', cap: '힌트 · 이런 상황이에요', close: '힌트 닫기', d30Say: '힌트를 보고 맞혔습니다', d30Sub: '힌트를 쓴 답은 「혼자 맞힘」으로 세지 않습니다. 30일 칸에는 힌트를 본 기록이 남습니다.' };
+  const HINTS = { first: { v: 'class', s: 'qfirst' }, second: { v: 'staff', s: 'qsecond' }, d30: { v: 'book', s: 'qd30' } };
+  const hintSrc = (k, ext) => (window.__CARDDATA && window.__CARDDATA[`hint/${k}.${ext}`]) || `hint/${k}.${ext}`;
+  let hintKey = null, hintStep = 0, hintUsed = false, hintCards = [], qSrc = null, readTw = null;
+  const qBox = promptEl.closest('.sc-q') || promptEl.parentElement;
+  const hintBtn = document.createElement('button'); hintBtn.type = 'button'; hintBtn.className = 'sc-hintbtn'; hintBtn.tabIndex = -1;
+  hintBtn.innerHTML = '<svg class="sc-hint-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg><b></b><span class="sc-hint-step"></span>';
+  promptEl.after(hintBtn);
+  const hintFig = document.createElement('figure'); hintFig.className = 'sc-hintfig'; hintFig.setAttribute('aria-hidden', 'true');
+  hintFig.innerHTML = '<figcaption></figcaption><div class="sc-hintfig-in"><video muted playsinline preload="none"></video></div><button type="button" class="sc-hintfig-x"></button>';
+  $('.sc-hintfig-x', hintFig).setAttribute('aria-label', H.close);
+  root.append(hintFig);
+  const hintVid = $('video', hintFig); hintVid.muted = true; hintVid.loop = true; hintVid.setAttribute('muted', ''); hintVid.setAttribute('playsinline', '');
+  const paintHint = () => {
+    // 몇 번째 힌트인지 숫자로(점 두 개는 처음 보는 사람이 뜻을 몰랐다): 힌트 1/2 · 질문 듣기 → 힌트 2/2 · 장면 보기 → 힌트 · 장면 다시 보기
+    $('b', hintBtn).textContent = hintStep < 2 ? `${H.btn} ${hintStep + 1}/2` : H.btn;
+    $('.sc-hint-step', hintBtn).textContent = hintStep === 0 ? H.step1 : hintStep === 1 ? H.step2 : H.again;
+    hintBtn.dataset.step = String(hintStep);
+    hintBtn.setAttribute('aria-label', `${$('b', hintBtn).textContent}: ${$('.sc-hint-step', hintBtn).textContent}`);
+  };
+  const stopReading = () => { try { qSrc?.stop(); } catch { /* 이미 끝남 */ } qSrc = null; readTw?.kill(); readTw = null; qBox.classList.remove('is-read'); hintBtn.classList.remove('is-reading'); };
+  const hideHintFig = () => { hintFig.classList.remove('is-on'); hintFig.setAttribute('aria-hidden', 'true'); gsap.to(hintFig, { opacity: 0, duration: reduce ? 0 : 0.2, onComplete: () => hintVid.pause() }); };
+  // 장면마다 부른다: 그 문제의 힌트를 처음 단계로
+  const setHint = (key, cs) => {
+    hintKey = key; hintStep = 0; hintUsed = false; hintCards = cs; stopReading(); hideHintFig(); paintHint();
+    hintBtn.classList.add('is-on'); hintBtn.tabIndex = 0;
+    if (!reduce) gsap.fromTo(hintBtn, { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(2)', delay: 0.2 });
+  };
+  const endHint = () => { const used = hintUsed; hintKey = null; stopReading(); hideHintFig(); hintBtn.classList.remove('is-on'); hintBtn.tabIndex = -1; gsap.to(hintBtn, { opacity: 0, duration: reduce ? 0 : 0.2 }); return used; };
+  // ① 묻는 말 읽기: 소리가 꺼져 있어도 이 단추는 듣겠다는 뜻이라 켠다. 읽는 동안 묻는 말 밑에 진행 줄이 그어진다
+  const sayQuestion = async (k) => {
+    if (!soundOn) { soundOn = true; paintSound(); }
+    loadAudio(); ac?.resume();
+    for (let i = 0; i < 25 && ac && !bufs[k]; i++) await wait(80);
+    stopReading();
+    const d = bufs[k]?.duration || 4.8;
+    if (ac && bufs[k]) { const src = ac.createBufferSource(); src.buffer = bufs[k]; const gn = ac.createGain(); gn.gain.value = SND[k].g; src.connect(gn).connect(master); src.start(); qSrc = src; }
+    window.__snd?.push({ t: Date.now(), k, g: SND[k].g, r: 1 });
+    qBox.classList.add('is-read'); hintBtn.classList.add('is-reading');
+    readTw = gsap.fromTo(qBox, { '--rp': '0%' }, { '--rp': '100%', duration: d, ease: 'none', onComplete: () => { hintBtn.classList.remove('is-reading'); gsap.to(qBox, { '--ro': 0, duration: 0.4, onComplete: () => { qBox.classList.remove('is-read'); gsap.set(qBox, { '--ro': 1 }); } }); } });
+  };
+  // ② 장면 영상: 넓은 화면은 보기 카드 오른쪽 빈 줄 아래, 좁은 화면은 카드 밑
+  const showHintFig = (v) => {
+    if (hintVid.dataset.v !== v) { hintVid.poster = hintSrc(v, 'jpg'); hintVid.src = hintSrc(v, 'mp4'); hintVid.dataset.v = v; }
+    $('figcaption', hintFig).textContent = H.cap;
+    const b = union(hintCards.map((k) => k.el)), RW = root.clientWidth;
+    let x, y, w;
+    // 넓은 화면: 줄에 걸린 다른 카드(30일 문제의 기록 카드)를 가리지 않게 그 앞에서 멈춘다
+    const others = [...cards].filter((k) => !hintCards.includes(k) && k.op > 0.5).map((k) => rel(k.el)).filter((o) => o.x > b.x + b.w);
+    const stop = Math.min(RW - 32, ...others.map((o) => o.x - 24));
+    if (narrow || stop - (b.x + b.w + 44) < 300) { w = Math.min(520, RW - 24); x = (RW - w) / 2; y = b.y + b.h + 12; }
+    else { x = b.x + b.w + 44; w = Math.min(480, stop - x); y = b.y - 4; }
+    hintFig.style.width = w + 'px';
+    hintFig.classList.add('is-on'); hintFig.removeAttribute('aria-hidden');
+    gsap.killTweensOf(hintFig);
+    if (reduce) gsap.set(hintFig, { x, y, opacity: 1, scale: 1 });
+    else gsap.fromTo(hintFig, { x, y: y + 14, opacity: 0, scale: 0.96 }, { x, y, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.8)' });
+    try { hintVid.currentTime = 0; } catch { /* 아직 못 감음 */ }
+    hintVid.play().catch(() => {});
+    play('whoosh', { g: 0.5, rate: 1.1 }); play('pop', { delay: 0.12 });
+    // 좁은 화면: 영상이 화면 아래로 잘리면 보일 만큼만 부드럽게 내린다
+    if (narrow) setTimeout(() => { const r = hintFig.getBoundingClientRect(); if (r.bottom > innerHeight - 8) window.scrollBy({ top: r.bottom - innerHeight + 16, behavior: reduce ? 'auto' : 'smooth' }); }, reduce ? 0 : 480);
+  };
+  hintBtn.addEventListener('pointerdown', () => play('press'));
+  hintBtn.addEventListener('click', () => {
+    if (!hintKey) return;
+    const h = HINTS[hintKey]; hintUsed = true; untip(); stopHand();
+    if (hintStep === 0) { hintStep = 1; paintHint(); sayQuestion(h.s); }
+    else { hintStep = 2; paintHint(); showHintFig(h.v); }
+  });
+  $('.sc-hintfig-x', hintFig).addEventListener('click', () => { play('press'); hideHintFig(); });
+
   /* ── 흐름 ── */
   const setQhead = (t) => {
     const no = document.createElement('span'); no.className = 'sc-qno'; no.textContent = String(sceneNo + 1).padStart(2, '0');
@@ -701,7 +777,7 @@
         if (picked.video) { picked.video.pause(); try { picked.video.currentTime = 0; } catch { /* 아직 못 감음 */ } }
         setTimeout(() => { correct.el.classList.add('is-right'); mark(correct.wordEl, 'under'); play('underline'); correct.w += sign() * 0.9; correct.pv += sign() * 2; act(correct, true, true); }, 640);
       }
-      done({ right, correct });
+      done({ right, correct, helped: endHint() });
     };
   });
   // 답한 뒤: 배울 말만 남기고 나머지는 떨어진다 → 남은 카드가 뒤집혀 기록 면에 그날의 도장을 받는다
@@ -720,7 +796,7 @@
     showQuestion(Q.first); enterStage(); setFull(true);
     const cs = Q.first.choices.map(([id, text], i) => makeCard(id, text, i + 1));
     await Promise.all(cs.map((c, i) => dropIn(c, { kind: 'slot', i }, 0.3 + i * 0.2)));
-    guidePick(cs, !again);
+    guidePick(cs, !again); setHint('first', cs);
     if (again) cs[0].el.focus({ preventScroll: true });   // 다시 할 때는 첫 카드로(처음 열릴 때는 쪽의 포커스를 뺏지 않는다)
     const r = await takeAnswer(cs, Q.first, { right: G.rightSub1, wrong: G.wrongSub1 });
     await settle(cs, r, '오늘 처음 만난 말', '지금');
@@ -751,7 +827,7 @@
       const k = makeCard(id, text, i + 1); drops.push(dropIn(k, { kind: 'slot', i }, 0.15 + drops.length * 0.2)); return k;
     });
     await Promise.all(drops);
-    guidePick(cs, false, G.back, G.backSub);
+    guidePick(cs, false, G.back, G.backSub); setHint('second', cs);
     c.el.classList.remove('is-called');
     if (!root.contains(document.activeElement)) cs[0].el.focus({ preventScroll: true });
     const r = await takeAnswer(cs, q);
@@ -767,7 +843,7 @@
     await wait(260);
     guideButton(r.right ? button(Q.toDay1, () => toTomorrow(r.correct)) : button(Q.toMinute, () => toMinute(r.correct)));
   }
-  const clearStage = (h) => { setQhead(h); ctxEl.textContent = ''; promptEl.textContent = ''; setAfter('', ''); next.replaceChildren(); };
+  const clearStage = (h) => { endHint(); setQhead(h); ctxEl.textContent = ''; promptEl.textContent = ''; setAfter('', ''); next.replaceChildren(); };
   // 내일: 앱을 열면 튜터 카드가 먼저 꺼낸다(실제 화면) → 카드가 돌아와 그 말을 한다 → 「내일」 칸 ✓
   async function toTomorrow(c) {
     hideHint(); hideShot(); await leaveStage(); setClock(2);
@@ -827,7 +903,7 @@
     showQuestion(q); setFull(true);
     const cs = q.choices.map(([id, text], i) => makeCard(id, text, i + 1));
     await Promise.all(cs.map((k, i) => dropIn(k, { kind: 'slot', i }, 0.15 + i * 0.2)));
-    guidePick(cs, false, G.check, G.checkSub);
+    guidePick(cs, false, G.check, G.checkSub); setHint('d30', cs);
     if (!root.contains(document.activeElement)) cs[0].el.focus({ preventScroll: true });
     const r = await takeAnswer(cs, q);
     await wait(r.right ? 1500 : 2300);
@@ -837,12 +913,12 @@
     await wait(700);
     c.el.classList.remove('is-called');
     stamp(c, r.right, '30일 뒤'); markStop(4, r.right);
-    setAfter(r.right ? q.right.say : q.wrong.say, r.right ? q.right.sub : q.wrong.sub);
+    setAfter(r.right ? (r.helped ? H.d30Say : q.right.say) : q.wrong.say, r.right ? (r.helped ? H.d30Sub : q.right.sub) : q.wrong.sub);
     await wait(900);
-    guideButton(button(q.next, () => toMe(c, r.right)));
+    guideButton(button(q.next, () => toMe(c, r.right, r.helped)));
   }
   // 내 위치: 집게에서 풀린 카드가 앞으로 나와 기록 면을 보이고 큰 도장을 받는다. 넓은 화면에서는 옆에 실제 「이렇게 본 근거」 화면.
-  async function toMe(c, right) {
+  async function toMe(c, right, helped = false) {
     hideHint(); await leaveStage(); setClock(5); endTag.classList.add('is-now'); root.classList.add('is-me'); c.el.classList.remove('is-right', 'is-called');
     clearStage(D.me.head);
     c.backTag.textContent = '30일 기록';
@@ -857,7 +933,7 @@
     await new Promise((res) => gsap.to(c, { x: cx, y: narrow ? 18 : 6, s: S, th: 0, duration: reduce ? 0 : 1.0, ease: 'power3.inOut', onComplete: res }));
     c.moving = false; play('clipsnap', { g: 0.45, rate: 0.8 });
     await wait(260);
-    seal(c, right);
+    seal(c, right, helped);
     setTimeout(() => tip(G.me, G.meSub, rel(c.el), narrow ? 'bottom' : 'left'), reduce ? 0 : 700);
     if (wide) {
       evid.style.left = (cx + (CW * S) / 2 + 36) + 'px'; evid.style.top = '18px'; evid.style.width = Math.min(380, W - (cx + (CW * S) / 2 + 36) - 24) + 'px';
@@ -869,7 +945,7 @@
     finalButtons();
   }
   async function restart() {
-    hideHint(); guideOn = true; hideShot(); hideShot(evid); await leaveStage();
+    hideHint(); endHint(); guideOn = true; hideShot(); hideShot(evid); await leaveStage();
     [...cards].forEach((c, i) => unclip(c, i * 140));
     setSky(null); winter = false; endTag.classList.remove('is-now'); root.classList.remove('is-me');
     await wait(700);
