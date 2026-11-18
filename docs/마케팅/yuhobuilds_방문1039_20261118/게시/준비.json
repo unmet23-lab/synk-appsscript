@@ -53,6 +53,17 @@
       "AI표시": true
     },
     {
+      "계정": "yuhobuilds-linkedin",
+      "파일": "docs/마케팅/yuhobuilds_방문1039_20261118/최종.mp4",
+      "시각": "2026-11-22T21:00+09:00",
+      "게시글": "docs/마케팅/yuhobuilds_방문1039_20261118/게시/게시글.md",
+      "훅": "A",
+      "원고": "docs/마케팅/yuhobuilds_방문1039_20261118/게시/05-yuho-linkedin/원고.json",
+      "표지": "docs/마케팅/yuhobuilds_방문1039_20261118/게시/표지_1080x1920.jpg",
+      "표지시각": 11.2,
+      "AI표시": true
+    },
+    {
       "계정": "yuhobuilds-threads",
       "파일": "docs/마케팅/yuhobuilds_방문1039_20261118/최종.mp4",
       "시각": "2026-11-22T21:00+09:00",
@@ -70,7 +81,7 @@
   "빠진판": {
     "yuhobuilds-tiktok": "쉼 — 11-01 유호님 「쉬게 해」(계정 전체 조회 0, sns-계정.json dailyBlocked)",
     "yuhobuilds-x": "11-17 유호님 「x는 이미 유호빌드로 가입되어있는데 이걸 변경해도 되」 — X @yuhobuilds를 PULSE 계정으로 바꾸므로 yuhobuilds 편은 X에 올리지 않는다(원장 dailyOff).",
-    "yuho-linkedin-primary": "11-17 유호님 「링크드인 대표 프로필은 pulse 중심으로 바꾸자」 — 대표 프로필에는 yuhobuilds 편을 올리지 않는다(원장 dailyOff)."
+    "yuho-linkedin-primary": "11-17 유호님 「링크드인 대표 프로필은 pulse 중심으로 바꾸자」 — 대표 프로필에는 yuhobuilds 편을 올리지 않는다(원장 dailyOff). 11-18에 쉬던 프로필(yuhobuilds-linkedin)을 다시 열어 그쪽 판으로 단다."
   },
   "틱톡없음": null,
   "표지": "docs/마케팅/yuhobuilds_방문1039_20261118/게시/표지_1080x1920.jpg",
@@ -98,7 +109,7 @@
   "작업실등록": true,
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-11-18T16:44:23+09:00",
+    "시각": "2026-11-18T16:58:21+09:00",
     "결과": "확인할 것",
     "고칠것": [],
     "확인할것": [
@@ -107,9 +118,9 @@
       "최종본 최종.mp4 · 14.17초 컷 경계의 앞뒤가 배율 · 자리까지 같은 그림이다(점프 컷, 점검표 50) — 한 판으로 잇거나 다른 각도를 끼운다(점검표 50)",
       "최종본 최종.mp4 · 2.71~7.92초 컷 안 3.29초부터 1.5초 넘게 사람이 멎는다(점검표 26) — 멎은 뒤 절반을 잘라 내거나 움직이는 판으로 바꾼다(점검표 26)",
       "최종본 최종.mp4 · 7.92~14.17초 컷 안 10.5초부터 1.5초 넘게 사람이 멎는다(점검표 26) — 멎은 뒤 절반을 잘라 내거나 움직이는 판으로 바꾼다(점검표 26)",
-      "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-threads · shift-tistory) · 표지 오른쪽 단추 자리 4군데 — 「十″′싸렛,′′\"*쯔렛쳠\"|1쬖쬖」 오른쪽 끝 949px(안전선 920) · 「′후,•′″|•••렛렛|•,쬖렛렛」 오른쪽 끝 986px(안전선 920)",
-      "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-threads · shift-tistory) · 표지 아래 앱 글자 자리 2군데 — 「十″′′″렛•″\"*통렛쬖1|,쬖쬖」 아래 끝 1477px(안전선 1428) · 「′ㆍ′′ㆍ,렛ㆍ′|,렛•,렛젤\"렛」 아래 끝 1589px(안전선 1428)",
-      "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-threads · shift-tistory) · 표지 왼쪽 가장자리 1군데 — 「′ㆍ′′ㆍ,렛ㆍ′|,렛•,렛젤\"렛」 왼쪽 끝 47px(안전선 65)",
+      "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-linkedin · yuhobuilds-threads · shift-tistory) · 표지 오른쪽 단추 자리 4군데 — 「十″′싸렛,′′\"*쯔렛쳠\"|1쬖쬖」 오른쪽 끝 949px(안전선 920) · 「′후,•′″|•••렛렛|•,쬖렛렛」 오른쪽 끝 986px(안전선 920)",
+      "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-linkedin · yuhobuilds-threads · shift-tistory) · 표지 아래 앱 글자 자리 2군데 — 「十″′′″렛•″\"*통렛쬖1|,쬖쬖」 아래 끝 1477px(안전선 1428) · 「′ㆍ′′ㆍ,렛ㆍ′|,렛•,렛젤\"렛」 아래 끝 1589px(안전선 1428)",
+      "표지(yuhobuilds-instagram · yuhobuilds-youtube · yuhobuilds-linkedin · yuhobuilds-threads · shift-tistory) · 표지 왼쪽 가장자리 1군데 — 「′ㆍ′′ㆍ,렛ㆍ′|,렛•,렛젤\"렛」 왼쪽 끝 47px(안전선 65)",
       "프롬프트 · 준비.json 「프롬프트」({\"id\",\"주소\"})가 없다 — 이 편의 가져갈 프롬프트를 synk.im/prompts에 올려 적는다(프롬프트가 맞지 않는 편이면 까닭을 남은위험에)"
     ],
     "파일": [
@@ -118,6 +129,7 @@
         "판": [
           "yuhobuilds-instagram",
           "yuhobuilds-youtube",
+          "yuhobuilds-linkedin",
           "yuhobuilds-threads"
         ],
         "바이트": 47723954,
@@ -143,7 +155,7 @@
           "최장": 0,
           "자리": 0
         },
-        "사전검사": ".tmp/올리기전검사/yuhobuilds_방문1039_20261118/영상사전검사_최종/inspection-cc944b20-267b-47e9-844e-758d7e8a772d/검사.json"
+        "사전검사": ".tmp/올리기전검사/yuhobuilds_방문1039_20261118/영상사전검사_최종/inspection-61970c8e-8f22-4e07-a855-81a5575225a9/검사.json"
       }
     ],
     "목소리": {
@@ -169,10 +181,20 @@
         "판": [
           "yuhobuilds-instagram",
           "yuhobuilds-youtube",
+          "yuhobuilds-linkedin",
           "yuhobuilds-threads"
         ],
         "첫장면": 0.212,
         "끝장면": 0.139,
+        "끝줄": 0
+      },
+      {
+        "편": "yuhobuilds_결제40만원_20261113",
+        "판": [
+          "yuhobuilds-linkedin"
+        ],
+        "첫장면": 0.723,
+        "끝장면": 0.711,
         "끝줄": 0
       }
     ],
