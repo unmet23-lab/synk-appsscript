@@ -785,6 +785,10 @@ export function createCompanyApp(options={}) {
         }
         renewedPosts.add(id);
       }
+      // 영상 목록에서만 찾았던 릴스가 이번에 게시물 목록의 그 게시물(externalId가 곧 페이지 게시물 번호)로 잡혔으면, 같은 번호의 옛 영상 줄을
+      // 목록에서 내린다(기록은 둔다). 완전한 전체 수집까지 기다리면 그사이 같은 게시물이 두 줄로 남는다(11-19 검수 GA2).
+      const feedPagePosts=new Set(result.posts.filter(p=>typeof p.pagePostId==='string'&&p.pagePostId===p.externalId&&/^\d{1,50}_\d{1,50}$/.test(p.pagePostId)&&renewedPosts.has(`${channel.id}:${p.externalId}`)).map(p=>p.pagePostId));
+      if(feedPagePosts.size)for(const old of store.all('posts'))if(old.channelId===channel.id&&old.source?.startsWith('api:')&&!old.unavailableAt&&!renewedPosts.has(old.id)&&feedPagePosts.has(old.pagePostId))store.put('posts',old.id,{...old,unavailableAt:stamp});
       // 소유자 확인 YouTube의 보관 기한 연장. 게시물마다 snapshots 전체를 읽던 것을 한 번 읽기로 바꿨다(10-20: 3만 행·60편에서 9초 멈춤).
       if(mode==='full'&&channel.platform==='youtube'&&result.coverage?.ownerAuthorized){for(const old of store.all('snapshots'))if(renewedPosts.has(old.postId)&&old.source==='api:youtube')store.put('snapshots',old.id,{...old,expiresAt});}
       if(mode==='full'&&channel.platform==='youtube'&&result.coverage?.ownerAuthorized)for(const old of store.all('channelSnapshots').filter(s=>s.channelId===channel.id&&s.source==='api:youtube'))store.put('channelSnapshots',old.id,{...old,expiresAt});

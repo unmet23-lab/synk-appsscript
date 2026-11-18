@@ -427,8 +427,45 @@ test('Facebook keeps the page post id of feed posts and of reels found only in t
   assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [
     ['123_700', '123_700', 5], ['556', '123_801', 6], ['557', '123_802', null], ['558', null, null], ['559', '80_3', null], ['560', null, null], ['561', null, null],
   ]);
-  assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 7, withPostId: 4, matched: 1, agreed: 1 }, 'a bare post_id 700 becomes the feed id 123_700 once the page id is added');
-  assert.ok(!result.warnings.some(warning => /게시물 번호/.test(warning)));
+  assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 7, withPostId: 4, matched: 1, agreed: 1, byPostId: 0 }, 'a bare post_id 700 becomes the feed id 123_700 once the page id is added');
+  // 칸을 받았어도 번호가 빈 영상 목록만의 릴스는 알린다(검수 GA4).
+  assert.ok(result.warnings.some(warning => /영상 목록에서만 찾은 3개는 게시물 번호 없이/.test(warning)));
+});
+
+// 검수 GA1: 게시물 목록이 영상 번호 없이(일반 게시물 주소, 대상 없음) 준 게시물도 영상의 post_id가 그 게시물이면 합친다. 같은 게시물의 영상 둘도 한 줄이다.
+test('Facebook merges a video into the feed post its post_id names even without a video id in the feed', async () => {
+  const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:00Z', permalink_url: 'https://www.facebook.com/synk/posts/700' }] });
+    if (url.pathname.endsWith('/videos')) return ok({ data: [
+      { id: '555', post_id: '700', views: 9, published: true, created_time: '2026-10-29T12:00:00Z' },
+      { id: '556', post_id: '123_701', permalink_url: '/reel/556/', views: 4, published: true, created_time: '2026-10-29T13:00:00Z' },
+      { id: '557', post_id: '701', permalink_url: '/reel/557/', views: 8, published: true, created_time: '2026-10-29T13:00:00Z' },
+    ] });
+    throw new Error('unexpected');
+  } });
+  assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [['123_700', '123_700', 9], ['556', '123_701', 4]]);
+  assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 3, withPostId: 3, matched: 0, agreed: 0, byPostId: 2 });
+  assert.equal(new Set(result.posts.map(post => post.pagePostId)).size, result.posts.length, 'one row per page post');
+});
+
+// 검수 GA3: 칸을 빼고 다시 묻는 것은 Meta 100(없는 칸)일 때만이다. 권한(10) · 앱 한도(341)는 한 번만 묻고, 341은 한도로 읽는다.
+test('Facebook asks for videos once on a permission or app-limit 400 and reads 341 as a rate limit', async () => {
+  for (const code of [10, 341]) {
+    let videoCalls = 0;
+    const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { recentSince: '2026-10-29T00:00:00Z', now: '2026-10-30T13:00:00Z', fetchImpl: async raw => {
+      const url = new URL(raw);
+      if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+      if (url.pathname.endsWith('/posts')) return ok({ data: [] });
+      if (url.pathname.endsWith('/videos')) { videoCalls++; return fail(400, { error: { code, message: 'FIXTURE_SECRET' } }); }
+      throw new Error('unexpected');
+    } });
+    assert.equal(videoCalls, 1, `code ${code}`);
+    assert.equal(result.coverage.inventoryComplete, false);
+    assert.equal(result.coverage.collectionError?.code, code === 341 ? 'RATE_LIMITED' : undefined);
+    assert.ok(!JSON.stringify(result).includes('FIXTURE_SECRET'));
+  }
 });
 
 test('Facebook counts a video whose post_id names the feed post it was matched to', async () => {
@@ -440,7 +477,7 @@ test('Facebook counts a video whose post_id names the feed post it was matched t
     throw new Error('unexpected');
   } });
   assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [['123_700', '123_700', 5], ['123_701', '123_701', 1]]);
-  assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 2, withPostId: 2, matched: 2, agreed: 1 });
+  assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 2, withPostId: 2, matched: 2, agreed: 1, byPostId: 0 });
 });
 
 test('Facebook reads videos again without post_id only when Meta rejects that field, and says so only when a reel lost its number', async () => {
@@ -460,7 +497,7 @@ test('Facebook reads videos again without post_id only when Meta rejects that fi
   assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [['123_700', '123_700', 5], ['556', null, null]], 'a post_id the request did not ask for is not trusted');
   assert.ok(result.warnings.some(warning => /영상 목록에서만 찾은 1개는 게시물 번호 없이/.test(warning)));
   assert.ok(!result.warnings.some(warning => /공개 여부를 알려 주지 않아/.test(warning)));
-  assert.deepEqual(result.coverage.videoPostIds, { asked: false, videos: 2, withPostId: 0, matched: 1, agreed: 0 });
+  assert.deepEqual(result.coverage.videoPostIds, { asked: false, videos: 2, withPostId: 0, matched: 1, agreed: 0, byPostId: 0 });
   assert.equal(result.coverage.status, 'complete');
   assert.ok(!JSON.stringify(result).includes('FIXTURE_SECRET'));
   videoFields.length = 0;

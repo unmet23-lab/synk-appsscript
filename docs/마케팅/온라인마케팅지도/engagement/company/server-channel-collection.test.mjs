@@ -73,6 +73,22 @@ test('a page post id is stored only in its exact form and a later collection wit
   assert.deepEqual(stored(),{abcdefghijk:'123_456',lmnopqrstuv:undefined,zyxwvutsrqp:'123_789'});
 });
 
+// 11-19 검수 GA2: 영상 목록에서만 찾았던 줄이 다음 최근 수집에서 게시물 목록의 그 게시물로 잡히면, 완전한 전체 수집을 기다리지 않고 옛 영상 줄을 내린다.
+test('a feed row of the same page post id retires the older video-only row even in a partial collection',async t=>{
+  let round=1;
+  const row=(externalId,pagePostId,url)=>({...result({}).posts[0],externalId,pagePostId,url});
+  const f=await fixture(t,{collector:async c=>round===1
+    ?{...result(c),posts:[row('555','123_700','https://www.facebook.com/reel/555/'),row('556','123_900','https://www.facebook.com/reel/556/')]}
+    :{...result(c),posts:[row('123_700','123_700','https://www.facebook.com/synk/posts/700'),row('557','123_700','https://www.facebook.com/reel/557/')],coverage:{status:'partial',inventoryComplete:false,ownerAuthorized:false}}});
+  round=2;for(const c of f.app.store.all('channels'))if(c.id!=='excluded')f.app.store.put('channels',c.id,{...c,lastCollectedAt:null,lastAttemptAt:null,recentLastCollectedAt:null,recentLastAttemptAt:null});
+  await f.app.scheduledTick();await f.app.waitForIdle();
+  for(const channel of ['lab','brief']){
+    const active=f.app.store.all('posts').filter(p=>p.channelId===channel&&!p.unavailableAt).map(p=>p.externalId).sort();
+    assert.deepEqual(active,['123_700','556','557'],channel+': the old video row is retired; a row seen in this collection and another post stay');
+    assert.ok(f.app.store.get('posts',channel+':555').unavailableAt,'history stays as a retired row');
+  }
+});
+
 test('complete inventory hides unavailable posts without erasing history; partial inventory never hides unseen posts',async t=>{
   let complete=true,items=true;
   const f=await fixture(t,{collector:async c=>({...result(c),posts:items?result(c).posts:[],coverage:{status:complete?'complete':'partial',inventoryComplete:complete,ownerAuthorized:false}})});
