@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T06:41:59.727Z",
+  "generatedAt": "2026-11-18T07:16:17.456Z",
   "sourceAsOf": {
     "registry": "2026-11-10",
     "social": "2026-09-21",
@@ -74,7 +74,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "cd4933ed682bc0cc33bfe9dba80beb9100171ca590c4668ccca6dbde9d951562"
+      "sha256": "0ed559f46bedeefc14606282205c76e87d9070aa3bc02dcdbd03e26817352e5f"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",

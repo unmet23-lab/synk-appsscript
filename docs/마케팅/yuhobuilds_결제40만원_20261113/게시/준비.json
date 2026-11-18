@@ -53,6 +53,17 @@
       "AI표시": true
     },
     {
+      "계정": "yuhobuilds-linkedin",
+      "파일": "docs/마케팅/yuhobuilds_결제40만원_20261113/최종.mp4",
+      "시각": "2026-11-21T21:00+09:00",
+      "게시글": "docs/마케팅/yuhobuilds_결제40만원_20261113/게시/게시글.md",
+      "훅": "A",
+      "원고": "docs/마케팅/yuhobuilds_결제40만원_20261113/게시/05-yuho-linkedin/원고.json",
+      "표지": "docs/마케팅/yuhobuilds_결제40만원_20261113/게시/표지_1080x1920.jpg",
+      "표지시각": 7.3,
+      "AI표시": true
+    },
+    {
       "계정": "yuhobuilds-threads",
       "파일": "docs/마케팅/yuhobuilds_결제40만원_20261113/최종.mp4",
       "시각": "2026-11-17T21:00+09:00",
@@ -70,7 +81,7 @@
   "빠진판": {
     "yuhobuilds-tiktok": "쉼 — 11-01 유호님 「쉬게 해」(계정 전체 조회 0, sns-계정.json dailyBlocked)",
     "yuhobuilds-x": "11-17 유호님 「x는 이미 유호빌드로 가입되어있는데 이걸 변경해도 되」 — X @yuhobuilds를 PULSE 계정으로 바꾸므로 yuhobuilds 편은 X에 올리지 않는다. 걸려 있던 예약을 거두고 판을 뺐다",
-    "yuho-linkedin-primary": "11-17 유호님 「링크드인 대표 프로필은 pulse 중심으로 바꾸자」 — 대표 프로필에는 yuhobuilds 편을 올리지 않는다. 걸려 있던 예약을 거두고 판을 뺐다. 쉬던 프로필(yuhobuilds-linkedin)에 들어가지면 그쪽에 다시 건다"
+    "yuho-linkedin-primary": "11-17 유호님 「링크드인 대표 프로필은 pulse 중심으로 바꾸자」 — 대표 프로필에는 yuhobuilds 편을 올리지 않는다. 걸려 있던 예약을 거두고 판을 뺐다. 11-18에 쉬던 프로필(yuhobuilds-linkedin)에 들어가 그쪽 판으로 다시 걸었다"
   },
   "틱톡없음": null,
   "표지": "docs/마케팅/yuhobuilds_결제40만원_20261113/게시/표지_1080x1920.jpg",
