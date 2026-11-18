@@ -108,6 +108,8 @@ export async function openTrail({
       }),
     heldEvent: id => record.heldEvent(id),
     heldEvents: () => record.heldEvents(),
+    // 받은 표지 — 서버가 받은 사건의 서버 순번(아직 받지 않았으면 undefined). 판 응답 목록이 상한에서 멈춘 읽기가 닿지 못한 내 응답을 가른다(§22-5).
+    acked: id => record.acked(id),
     // 단위마다의 근거 줄 전부 — 30일째 문장(coach.lookback, 단계 4 계획 §21-7). 사건을 치우지 않는 기록부만 처음부터 다 든다.
     unitRows: () => record.unitRows(),
     // 계열마다의 만남 줄과 그 판 번호 — 예상 급수의 근거(coach.firstAnswers, 단계 4 계획 §21-23의 2). 사건을 치우지 않는 기록부만.

@@ -113,10 +113,15 @@ test('손님 — 손님 저장소를 비우고 옛 엔진 기록도 비운다. �
   const coach = await guestCoach(w);
   await practise(w, coach, w.items.slice(0, 2));
   let wiped = 0;
+  let epoch = 'e1';
   const done = await coach.reset({
     legacy: {
-      read: () => ({ log: [legacyEvent(w, 'old-1')], ledger: null, epoch: 'e1' }),
-      clear: async () => (wiped += 1),
+      // 옛 엔진 reset은 빈 로그와 새 epoch을 쓴다.
+      read: () => ({ log: wiped ? [] : [legacyEvent(w, 'old-1')], ledger: null, epoch }),
+      clear: async () => {
+        wiped += 1;
+        epoch = 'e2';
+      },
     },
   });
   assert.deepEqual(done, { ok: true, path: 'guest', gen: 1, legacy: 'cleared' });
@@ -299,9 +304,16 @@ test('올리는 계정의 4b — 옛 손님 로그가 모두 그 계정으로 �
   );
   recs.close();
   let wiped = 0;
+  let now = old;
   const all = await a.reset({
     guestPort: w.guestPort,
-    legacy: { read: () => old, clear: async () => (wiped += 1) },
+    legacy: {
+      read: () => now,
+      clear: async () => {
+        wiped += 1;
+        now = { log: [], ledger: null, epoch: 'e2' };
+      },
+    },
   });
   assert.equal(all.guest.legacy, 'cleared');
   assert.equal(wiped, 1);
@@ -369,6 +381,56 @@ test('올리는 계정의 넷째 걸음 — 옮긴 「옮겨 오기 전 기록�
   assert.equal(rows.length, 1, '새 칸 하나만 담은 장부');
   assert.deepEqual(Object.keys(rows[0].value.event.families), ['t.f2']);
   reopened.dispose();
+});
+
+test('옛 엔진 비우기를 확인하지 못하면(비우기 문은 끝났는데 epoch이 그대로) 일부만 비움이고 바닥과 옮긴 장부 칸을 거두지 않는다 — 손님 · 계정 4b(설계 주인 11-18 승인 조건)', async () => {
+  const w = world(52);
+  const old = { log: [legacyEvent(w, 'old-1')], ledger: ledgerOf(['t.f0']), epoch: 'e1' };
+  const coach = await guestCoach(w, () => old);
+  const done = await coach.reset({ legacy: { read: () => old, clear: async () => {} } });
+  assert.equal(done.legacy, 'failed', '새 epoch을 못 봤다 — 일부만 비움');
+  assert.equal((await lastCleared(w.guestPort)).legacy?.epoch, 'e1', '바닥을 둔다');
+  coach.dispose();
+  // 다시 읽지 못해도 확인하지 못한 것이다.
+  const w1 = world(54);
+  const coach1 = await guestCoach(w1, () => old);
+  let reads = 0;
+  const unread = await coach1.reset({
+    legacy: {
+      read: () => {
+        reads += 1;
+        if (reads > 1) throw new Error('읽지 못함');
+        return old;
+      },
+      clear: async () => {},
+    },
+  });
+  assert.equal(unread.legacy, 'failed');
+  assert.equal((await lastCleared(w1.guestPort)).legacy?.epoch, 'e1');
+  coach1.dispose();
+  // 계정 4b — 모두 옮긴 옛 로그. 옮긴 장부 칸(cleared.carried)을 남긴다.
+  const w2 = world(53);
+  const old2 = { log: [legacyEvent(w2, 'old-1')], ledger: ledgerOf(['t.f0']), epoch: 'e1' };
+  const guest = await guestCoach(w2, () => old2);
+  guest.dispose();
+  const a = await accountCoach(w2, 'A');
+  const recs = await a.guestRecords({ port: w2.guestPort, legacy: () => old2 });
+  assert.equal(
+    (await recs.move({ postLegacy: async () => ({ ok: true, ids: ['old-1'] }) })).ok,
+    true,
+  );
+  recs.close();
+  const same = await a.reset({
+    guestPort: w2.guestPort,
+    legacy: { read: () => old2, clear: async () => {} },
+  });
+  assert.equal(same.guest.legacy, 'failed');
+  assert.deepEqual(
+    (await lastCleared(w2.guestPort)).carried?.families,
+    ['t.f0'],
+    '옮긴 장부 칸을 남긴다',
+  );
+  a.dispose();
 });
 
 test('다른 탭의 은퇴 알림 — 손님 저장소를 다른 탭이 비우면 이 탭의 늦은 답은 저장되지 않고, 셸에 저장소를 비웠다고 한 번 알린다', async () => {

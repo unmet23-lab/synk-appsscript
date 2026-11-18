@@ -201,8 +201,9 @@ test('moving keeps every event as it was (same ids), adds only what the account 
  const storage=memory();guestDay(storage,Date.parse(AT));
  const {events}=guestLearningEvents(storage);
  assert.deepEqual(new Set(events.map(event=>event.type)),new Set(['decision.made','practice.presented','practice.attempted','experience.completed']));
- // 계정 기록장: 이미 다른 기록이 있다. 손님 사건을 옮긴 뒤 같은 것을 또 옮겨도 늘지 않는다(사건 ID로 중복 제외).
- const accountStore=memory(),account=learningBrowser.engine.createGame({gameId:'world-account',storage:accountStore,storageScope:'account',accountKey:ACCOUNT,fold:false});
+ // 계정 기록장: 이미 다른 기록이 있다. 손님 사건을 옮긴 뒤 같은 것을 또 옮겨도 늘지 않는다(사건 ID로 중복 제외). 시계는 시험의 시각(LATER)이다 —
+ // 실제 시계로 두면 손님 사건(AT)이 30일 창 밖으로 밀려 근거 수가 0이 된다(11-18부터 master wide-tests 빨강).
+ const accountStore=memory(),account=learningBrowser.engine.createGame({gameId:'world-account',storage:accountStore,storageScope:'account',accountKey:ACCOUNT,fold:false,clock:()=>new Date(LATER).toISOString()});
  const pid=account.present({id:'own.1',itemKey:'own.1',familyKey:'own.1',skillId:'ko.reading.main',modality:'reading',difficulty:1,responseFormat:'single-choice'});account.answer(pid,{correct:true,assessable:true});
  const before=account.syncPort.events().length;
  const first=account.syncPort.importEvents(events),again=account.syncPort.importEvents(events);

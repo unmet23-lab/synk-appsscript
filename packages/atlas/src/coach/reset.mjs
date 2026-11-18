@@ -23,15 +23,20 @@ async function readLegacy(read) {
   }
 }
 
-// 옛 엔진의 손님 기록 비우기 — 'cleared' · 'busy'(다른 창이 쥠 — STORAGE_BUSY) · 'failed'(그 밖의 실패) · 'none'(비우는 문이 없다).
-async function wipeLegacy(legacy) {
+// 옛 엔진의 손님 기록 비우기 — 'cleared' · 'busy'(다른 창이 쥠 — STORAGE_BUSY) · 'failed'(그 밖의 실패, 또는 비운 뒤 새 epoch을 확인하지
+// 못함) · 'none'(비우는 문이 없다). before: 비우기 전에 읽은 옛 로그(readLegacy). 옛 엔진 reset은 빈 로그와 새 epoch을 쓴다 — 비운 뒤 다시 읽어
+// epoch이 바뀐 것을 본 때만 'cleared'다. 그때만 바닥과 옮긴 장부 칸(cleared.carried)을 거둔다(설계 주인 11-18 승인 조건). 앞 로그를 못 읽었거나
+// 다시 읽지 못하면 확인할 수 없어 둘 다 남긴다.
+async function wipeLegacy(legacy, before) {
   if (typeof legacy?.clear !== 'function') return 'none';
   try {
     await legacy.clear();
-    return 'cleared';
   } catch (error) {
     return error?.code === 'STORAGE_BUSY' ? 'busy' : 'failed';
   }
+  const after = await readLegacy(legacy.read);
+  const epoch = after.value?.epoch;
+  return before?.value && epoch != null && epoch !== before.value.epoch ? 'cleared' : 'failed';
 }
 
 // 손님(22-4 손님 1 · 2). 옛 로그의 바닥을 먼저 정하고(옛 로그가 없으면 바닥 없음, 못 읽으면 epoch을 모름) 손님 저장소를 한 트랜잭션으로 비운 뒤
@@ -49,7 +54,7 @@ export async function resetGuest(host, legacy) {
     return { ok: false, path: 'guest', step: 'store', code: codeOf(error, 'STORAGE_ERROR') };
   }
   host.landed();
-  const wiped = old.missing ? 'none' : await wipeLegacy(legacy);
+  const wiped = old.missing ? 'none' : await wipeLegacy(legacy, old);
   if (wiped === 'cleared') await host.turn('reset', () => record.liftFloor()).catch(() => {});
   return { ok: true, path: 'guest', gen, legacy: wiped };
 }
@@ -102,7 +107,7 @@ async function forgetMoved(account, legacy, open) {
       if (dropped) aside.landed();
       if (old.missing) return { ok: true, dropped, legacy: 'none' };
       if (!all) return { ok: true, dropped, legacy: 'kept' };
-      const wiped = await wipeLegacy(legacy);
+      const wiped = await wipeLegacy(legacy, old);
       if (wiped === 'cleared') await record.liftFloor();
       return { ok: true, dropped, legacy: wiped };
     });

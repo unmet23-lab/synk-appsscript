@@ -393,6 +393,14 @@ function createHost({
     syncStatus: () => sync.status(),
     // 아직 못 올린 내 사건이 남았나(이 세션에 서버가 받지 않아 건너뛴 것은 빼고 — 계정 비우기의 0 걸음). 손님은 0.
     unsentLeft: () => (guest ? 0 : sync.left()),
+    // 든 사건과 저장 중인 내 쓰기(판 응답 목록 — 단계 4 계획 §22-5). 고른 응답이 저장되기 전에도 목록 · 짧은 연습 길이에 바로 선다.
+    ownEvents: () => [
+      ...state.trail.heldEvents(),
+      ...[...saving.values()].filter(event => !state.trail.heldEvent(event.id)),
+    ],
+    // 마지막으로 읽은 판 응답의 서버 값(단계 4 계획 §22-5 · Fable새6) — 코치 responses({ server })가 적는다. 이 호스트(같은 저장소의 코치들)가
+    // 사는 동안만 들고 기기에 저장하지 않는다(은퇴 · 판 바뀜과 함께 버린다).
+    responsesRead: null,
     refresh,
     subscribe(listener) {
       listeners.add(listener);

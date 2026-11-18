@@ -13,6 +13,7 @@ import { EVENT_TYPES, FEEDBACK_VALUES } from '../record/events.mjs';
 import { firstAnswersOf } from '../record/first.mjs';
 import { unitLookback } from '../record/lookback.mjs';
 import { storeName } from '../record/port.mjs';
+import { responseRows, storedRead } from '../record/responses.mjs';
 import { elapsedDays, REASON_CODES } from '../reason/index.mjs';
 import { planActivities } from '../select/plan.mjs';
 import { dayKey } from '../select/session.mjs';
@@ -369,6 +370,36 @@ export function createCoach(options = {}) {
       if (held && held.type !== EVENT_TYPES.feedback)
         throw new TypeError('Atlas: excludeResponse takes a set response (feedback.given)');
       return session.excludeResponse(eventId).event;
+    },
+
+    // 판 응답 목록(단계 4 계획 §22-5 — 「내가 남긴 응답」 · 짧은 연습 길이). 셈은 record/responses.mjs(옛 엔진과 같은 뜻 — 판마다 가장 새 응답
+    // 하나, 뺀 것 제외, 30일 안, 새것부터)이고, 저장 중인 내 응답 · 빼기도 바로 든다. 손님과 동의를 끈 계정은 저장소의 사건으로 센다. 올리는
+    // 계정은 마지막으로 읽은 서버 값 위에 서버가 보지 못한 내 응답(답의 seen에 없는 것)과 기기의 빼기를 얹는다(Fable 5.2 설계 검토 F1). 줄
+    // 상한에서 멈춘 답이 닿지 못한 내 응답(받은 표지의 순번이 seenFrom 아래)은 앞 값대로 두고, 앞 값이 없으면 얹지 않는다(설계 주인 11-18).
+    // server(나르개 responses()의 답 — 입구가 읽는다)를 주면 그 값을 호스트에 둔다 — 같은 저장소의 코치들이 호스트가 사는 동안만 나누고 기기에
+    // 저장하지 않는다(Fable새6). 판이 다른 답 · 꼴이 아닌 답 · 둔 값보다 서버 시각이 앞선 옛 답(F2)은 버린다.
+    // 돌려주는 것: { complete, rows: [{ id, at, kind, value, completionId }] } — complete는 손님 · 동의를 끈 계정이면 참이고, 올리는 계정은 끝까지
+    // 읽은 서버 값이 있을 때만 참이다.
+    responses({ server = null } = {}) {
+      live();
+      const host = state.host;
+      if (!host.guest && server != null) {
+        host.responsesRead = storedRead(host.responsesRead, server, host.revision);
+      }
+      const read = host.guest ? null : host.responsesRead;
+      const rows = responseRows({
+        events: host.ownEvents(),
+        server: read?.rows ?? null,
+        known: read?.known ?? null,
+        seenFrom: read?.seenFrom ?? null,
+        held: read?.held ?? null,
+        acked: id => host.trail.acked(id),
+        now: host.now(),
+      });
+      return Object.freeze({
+        complete: host.guest || read?.complete === true,
+        rows: Object.freeze(rows),
+      });
     },
 
     recheck() {

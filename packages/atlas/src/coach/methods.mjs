@@ -32,4 +32,5 @@ export const COACH_METHODS = Object.freeze([
   'pull', // 지금 받기 — 서버 길 계정만, 학습일 답보다 기기가 뒤처졌을 때 셸이 그 답의 자리마다 한 번(단계 4 계획 §21-22)
   'firstAnswers', // 예상 급수의 근거 수 — 손님과 동의를 끈 계정(단계 4 계획 §21-23의 2, 서버 길 계정은 null)
   'excludeResponse', // 판 응답을 빼는 문 — 판 응답(feedback.given)만 받는다(단계 4 계획 §22-5)
+  'responses', // 판 응답 목록 — 「내가 남긴 응답」 · 짧은 연습 길이(단계 4 계획 §22-5)
 ]);

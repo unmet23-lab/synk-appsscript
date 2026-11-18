@@ -32,6 +32,7 @@
     'pull',
     'firstAnswers',
     'excludeResponse',
+    'responses',
   ];
   const TIMEOUT_MS = 20000;
   const scope = globalThis;

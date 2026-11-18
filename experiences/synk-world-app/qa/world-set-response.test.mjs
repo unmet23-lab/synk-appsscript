@@ -62,7 +62,7 @@ function setup({owner='account-a',responses=true,audio='off',values={},atlasNext
  const education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:()=>({selected:null,reason:''}),launchGame(){},startLesson(){},startReview(){},
   position:worldPosition,responses,target,...(atlasNext?{atlasNext}:{})});
  const events=()=>JSON.parse(storage.getItem(KEY)||'{"events":[]}').events;
- return {education,panels,toasts,storage,events,box:()=>box,tick:ms=>{now+=ms;}};
+ return {education,panels,toasts,storage,events,box:()=>box,tick:ms=>{now+=ms;},now:()=>now};
 }
 // 아직 처음 보는 읽기 문항이 가장 많이 남은 항목.
 function freshestSkill(env){
@@ -208,11 +208,13 @@ test('새 화면 글은 세 언어 모두 있고 영어·몽골어에는 한글�
  assert.deepEqual(['helpful','not_fit','too_much','want_more'].map(value=>STRINGS[`response.value.${value}`].en),['Good','Not for me','Too much','I want more']);
 });
 
-test('새 판 끝 화면에서 고른 길이 응답은 지금 판 끝 화면에서 다시 고르면 비운다 — 방금 지금 판에서 고른 응답이 다음 길이를 정한다(카본 끝 판 둘째 C)',async()=>{
- let nextOn=true;const fed=[];
- const nextCoach={finishSet:()=>'set.next.1',feedback:(set,value)=>{fed.push([set,value]);return {id:`r-${value}`};}};
+test('새 판 끝 화면에서 고른 길이 응답은 새 길 코치의 판 응답이라 다음 판 길이가 되고, 지금 판 끝 화면에서 다시 고르면 더 새 그 응답이 길이를 정한다(4-5 · 카본 끝 판 둘째 C)',async()=>{
+ let nextOn=true,env=null,last=null;const fed=[];
+ const nextCoach={finishSet:()=>'set.next.1',
+  feedback:(set,value)=>{fed.push([set,value]);last={id:`r-${value}`,at:new Date(env.now()).toISOString(),kind:'short',value,completionId:'done.next.1'};return {id:last.id};},
+  responses:()=>({complete:true,rows:last?[last]:[]})};
  const quiet={current:null,next:()=>null,preHelp(){},answer(){},unknown(){},skip(){},replay:()=>null,delivery(){},stop(){},results:()=>[],settled:async()=>[],freshLeft:()=>3,ending:{kind:'done'}};
- const env=setup({atlasNext:{practiceCoach:async()=>nextOn?nextCoach:null,createPracticeNextSession:()=>quiet}});
+ env=setup({atlasNext:{practiceCoach:async()=>nextOn?nextCoach:null,createPracticeNextSession:()=>quiet}});
  env.tick(60000);
  const [skillId]=freshestSkill(env);
  await env.education.practice(skillId);
@@ -225,4 +227,61 @@ test('새 판 끝 화면에서 고른 길이 응답은 지금 판 끝 화면에�
  run.box.press('data-set-response','want_more');
  run=await runPractice(env);
  assert.equal(run.total,Math.min(7,freshestSkillCount(env,run)),'지금 판에서 고른 더 하고 싶어요가 길이를 정한다');
+});
+
+test('짧은 연습 길이 — 새 길 코치의 판 응답이 빠지면(다른 기기에서 빼 서버 값으로 빠짐) 길이도 기본으로 돌아간다(Fable 5.2 설계 검토 시험 17)',async()=>{
+ let nextOn=true,env=null,rows=[];
+ const nextCoach={finishSet:()=>'set.next.1',
+  feedback:(set,value)=>{rows=[{id:`r-${value}`,at:new Date(env.now()).toISOString(),kind:'short',value,completionId:'done.next.1'}];return {id:rows[0].id};},
+  responses:()=>({complete:true,rows})};
+ const quiet={current:null,next:()=>null,preHelp(){},answer(){},unknown(){},skip(){},replay:()=>null,delivery(){},stop(){},results:()=>[],settled:async()=>[],freshLeft:()=>3,ending:{kind:'done'}};
+ env=setup({atlasNext:{practiceCoach:async()=>nextOn?nextCoach:null,createPracticeNextSession:()=>quiet}});
+ env.tick(60000);
+ const [skillId]=freshestSkill(env);
+ await env.education.practice(skillId);
+ for(let tick=0;tick<400&&!env.box()?.html.includes('data-practice-done');tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ env.box().press('data-set-response','too_much');
+ nextOn=false;
+ let run=await runPractice(env);
+ assert.equal(run.total,3,'방금 고른 많았어요가 길이에 바로 선다');
+ rows=[];
+ run=await runPractice(env);
+ assert.equal(run.total,5,'빠진 응답은 길이에서도 빠진다');
+});
+
+test('「내가 남긴 응답」은 지금 판 코치 셋과 새 길 코치의 판 응답을 새것부터 합치고, 빼기는 온 곳으로 보낸다 · 「내 계정」을 열면 서버 값을 다시 읽는다(4-5 — 단계4_계획 §22-5)',async()=>{
+ let nextOn=false,env=null;const own=[],server=[],excluded=[],asked=[];
+ const stamp=()=>new Date(env.now()).toISOString();
+ const nextCoach={finishSet:()=>'set.next.1',
+  feedback:(set,value)=>{own.splice(0,own.length,{id:`r-${value}`,at:stamp(),kind:'short',value,completionId:'done.next.1'});return {id:own[0].id};},
+  responses:()=>({complete:true,rows:[...own,...server].filter(row=>!excluded.includes(row.id)).sort((a,b)=>Date.parse(b.at)-Date.parse(a.at))}),
+  excludeResponse:id=>{excluded.push(id);}};
+ const quiet={current:null,next:()=>null,preHelp(){},answer(){},unknown(){},skip(){},replay:()=>null,delivery(){},stop(){},results:()=>[],settled:async()=>[],freshLeft:()=>3,ending:{kind:'done'}};
+ let reply=[];
+ env=setup({atlasNext:{practiceCoach:async()=>nextOn?nextCoach:null,createPracticeNextSession:()=>quiet,
+  readResponses:async coach=>{asked.push(coach);server.splice(0,server.length,...reply);return coach.responses();}}});
+ assert.equal(await env.education.readResponses(),false,'새 길 코치를 아직 모르면 읽지 않는다');
+ // 지금 판에서 하나, 새 길에서 하나.
+ const run=await runPractice(env);run.box.press('data-set-response','helpful');
+ nextOn=true;env.tick(60000);
+ const [skillId]=freshestSkill(env);
+ await env.education.practice(skillId);
+ for(let tick=0;tick<400&&!env.box()?.html.includes('data-practice-done');tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ env.box().press('data-set-response','want_more');
+ assert.deepEqual(env.education.responses().map(row=>[row.kind,row.value]),[['short','want_more'],['short','helpful']],'새것부터 합친다');
+ // 서버 값(다른 기기에서 남긴 시험 형식 응답 · 판 종류를 모르는 줄)을 다시 읽으면 목록이 바뀐다 — 이름을 붙일 수 없는 줄은 그리지 않는다.
+ reply=[{id:'r-other',at:new Date(env.now()-DAY).toISOString(),kind:'mock',value:'too_much',completionId:'done.other'},
+  {id:'r-unknown',at:new Date(env.now()-DAY).toISOString(),kind:null,value:'helpful',completionId:'done.unknown'}];
+ assert.equal(await env.education.readResponses(),true);
+ assert.equal(asked.length,1);assert.equal(asked[0],nextCoach,'응답을 남긴 새 길 코치로 묻는다');
+ assert.deepEqual(env.education.responses().map(row=>row.id),['r-want_more',env.education.responses()[1].id,'r-other']);
+ assert.equal(await env.education.readResponses(),false,'같은 값이면 바뀌지 않았다');
+ // 빼기는 온 곳으로 — 새 줄은 새 길 코치의 excludeResponse, 옛 줄은 옛 코치의 exclude.
+ assert.equal(env.education.removeResponse('r-want_more'),true);
+ assert.deepEqual(excluded,['r-want_more']);
+ const old=env.education.responses().find(row=>row.value==='helpful');
+ assert.equal(env.education.removeResponse(old.id),true);
+ assert.deepEqual(excluded,['r-want_more'],'옛 줄은 새 길 코치로 가지 않는다');
+ assert.deepEqual(env.education.responses().map(row=>row.id),['r-other']);
+ assert.equal(env.education.removeResponse('r-missing'),false);
 });

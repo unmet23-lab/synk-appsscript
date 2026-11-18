@@ -25868,6 +25868,8 @@ function createWorldEducation({
     lifeHost = b;
   });
   const answering = () => responses === true && owner !== "guest";
+  let responseCoach = null;
+  const NEXT_KINDS = /* @__PURE__ */ new Set(["short", "diagnostic", "mock"]);
   function finishSet(coachNow, kind) {
     if (!answering() || typeof coachNow?.finishSet !== "function" || typeof view?.renderSetResponse !== "function") return null;
     try {
@@ -25877,13 +25879,12 @@ function createWorldEducation({
     }
   }
   const PRACTICE_LENGTH = Object.freeze({ too_much: 3, want_more: 7 });
-  let nextShort = null;
   function practiceLength() {
     const base = position?.practice?.PRACTICE_POLICY?.count || 5;
     if (!answering()) return base;
-    if (nextShort) return PRACTICE_LENGTH[nextShort] || base;
     try {
-      const last = (readPracticeCoach()?.setFeedback?.() || []).filter((row) => row.kind === "short").at(-1);
+      const rows2 = [...readPracticeCoach()?.setFeedback?.() || [], ...nextRows()].filter((row) => row.kind === "short");
+      const last = rows2.reduce((best, row) => !best || Date.parse(row.at) >= Date.parse(best.at) ? row : best, null);
       return PRACTICE_LENGTH[last?.value] || base;
     } catch {
       return base;
@@ -25916,32 +25917,62 @@ function createWorldEducation({
         node.outerHTML = view.renderSetResponse({ kind, value: chosen, failed: failed2 });
         box.querySelector(`[data-set-response="${value}"]`)?.focus?.({ preventScroll: true });
       }
-      if (!failed2 && kind === "short") nextShort = next2 ? chosen : null;
+      if (!failed2 && typeof coachNow?.responses === "function") responseCoach = coachNow;
       const again = kind === "short" ? box.querySelector("[data-practice-again]") : null;
       if (again) again.innerHTML = next2 ? `${escape3(t2("practice.next.again", { n: practiceLength() }))} <span aria-hidden="true">\u2192</span>` : `${escape3(t2("practice.again", { n: Math.min(more, practiceLength()) }))} <span aria-hidden="true">\u2192</span>`;
     });
   }
   const responseView = (set, kind) => set ? { kind, value: null } : null;
   const RESPONSE_COACHES = [() => readPracticeCoach(), () => readCoach(), () => readMockCoach()];
-  function responseList() {
-    if (!answering()) return null;
+  function nextCoach() {
+    let home2 = null;
+    try {
+      home2 = homePhase() === "engine" ? homeWatch?.coach?.() ?? null : null;
+    } catch {
+      home2 = null;
+    }
+    return typeof home2?.responses === "function" ? home2 : responseCoach;
+  }
+  function nextRows() {
+    const coach2 = nextCoach();
+    if (typeof coach2?.responses !== "function") return [];
+    try {
+      return coach2.responses().rows.filter((row) => NEXT_KINDS.has(row.kind)).map((row) => ({ ...row, from: coach2, next: true }));
+    } catch {
+      return [];
+    }
+  }
+  function responseRows() {
     const rows2 = [];
     for (const read of RESPONSE_COACHES) {
       const coach2 = read();
-      for (const row of coach2?.setFeedback?.() || []) rows2.push(row);
+      for (const row of coach2?.setFeedback?.() || []) rows2.push({ ...row, from: coach2 });
     }
-    return rows2.sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).map((row) => ({ id: row.id, kind: row.kind, value: row.value }));
+    rows2.push(...nextRows());
+    return rows2.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+  }
+  function responseList() {
+    if (!answering()) return null;
+    return responseRows().map((row) => ({ id: row.id, kind: row.kind, value: row.value }));
   }
   function removeResponse(id) {
     if (!answering()) return false;
-    for (const read of RESPONSE_COACHES) {
-      const coach2 = read();
-      if ((coach2?.setFeedback?.() || []).some((row) => row.id === id)) {
-        coach2.exclude(id);
-        return true;
-      }
+    const row = responseRows().find((entry) => entry.id === id);
+    if (!row) return false;
+    if (row.next) row.from.excludeResponse(id);
+    else row.from.exclude(id);
+    return true;
+  }
+  async function readResponses() {
+    const coach2 = nextCoach();
+    if (!answering() || !coach2 || typeof atlasNext?.readResponses !== "function") return false;
+    const before = JSON.stringify(responseList());
+    try {
+      await atlasNext.readResponses(coach2);
+    } catch {
+      return false;
     }
-    return false;
+    return !stopped && JSON.stringify(responseList()) !== before;
   }
   const bankUrl = topikBankUrl || audioUrl("world-topik-items.json");
   let bankWait = null, bankFailedAt = -Infinity;
@@ -29238,7 +29269,7 @@ function createWorldEducation({
       return Promise.resolve();
     }
   }, life: engine.life || null });
-  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, plan: openPlan, mock: openMock, mockReady, townCheck, townEvidence } : {}, presentation() {
+  return { next, open, examLink, refresh, repaint, applyPreferences, planRow, examType, positionTotal: topikTotal, responses: responseList, removeResponse, readResponses, lifeLearning, ...position ? { position: openMyPosition, practice: startPractice, plan: openPlan, mock: openMock, mockReady, townCheck, townEvidence } : {}, presentation() {
     check3();
     const values = settingsFor(getProgress().learningProfileValues());
     return Object.fromEntries(["support", "explanation"].filter((k) => values[k]).map((k) => [k, values[k]]));

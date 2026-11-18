@@ -212,10 +212,17 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   const lookback=typeof client.trail.lookback==='function'?wrap(input=>client.trail.lookback(input)):null;
   // 예상 급수의 근거 읽기(4-4d — §21-23의 2) — 같은 감싸개. 묻는 값(game · days)은 셸의 근거 상자가 준다.
   const firstAnswers=typeof client.trail.firstAnswers==='function'?wrap(input=>client.trail.firstAnswers(input)):null;
+  // 연습 기록 비우기 · 판 응답 읽기 · 마지막 비우기 읽기(4-5 — §22-4 · §22-5) — 같은 감싸개. 비우기는 이 파일의 세션 닫기(clear)와 이름이 겹쳐
+  // clearTrail로 둔다. 마지막 비우기 읽기는 판을 묻지 않아 줄에 싣는다(비우기의 결과를 모르는 기기는 앞 판을 들고 있다).
+  const clearTrail=typeof client.trail.clear==='function'?wrap(input=>client.trail.clear(input)):null;
+  const responses=typeof client.trail.responses==='function'?wrap(input=>client.trail.responses(input)):null;
+  const lastClear=typeof client.trail.lastClear==='function'?wrap(input=>client.trail.lastClear(input)):null;
   // account: 이 줄의 주인 — 입구(world-atlas-next.mjs readLine)가 제 주인과 견준다(세션이 바뀐 뒤 앞 계정 입구가 읽어도 새 계정 줄을 쓰지 않게).
  return Object.freeze({account:id,learning:Object.freeze({enabled:prefs.enabled,revision:prefs.revision}),learningSync:currentAccount.capabilities?.learningSync===true,
    transport:revision=>Object.freeze({get:since=>get({revision,since}),post:(events,since)=>post({revision,events,since}),...(lookback?{lookback:offset=>lookback({revision,offset})}:{}),
-    ...(firstAnswers?{firstAnswers:({game,days})=>firstAnswers({revision,game,days})}:{})}),
+    ...(firstAnswers?{firstAnswers:({game,days})=>firstAnswers({revision,game,days})}:{}),...(clearTrail?{clear:()=>clearTrail({revision})}:{}),
+    ...(responses?{responses:()=>responses({revision})}:{})}),
+   ...(lastClear?{lastClear:()=>lastClear({})}:{}),
    postLegacy:legacy?events=>legacy({revision:prefs.revision,events}):null});
  }
  async function prepareHangulProgress({storage:cache=globalThis.localStorage,target=globalThis}={}){

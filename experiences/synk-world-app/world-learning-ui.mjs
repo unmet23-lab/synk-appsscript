@@ -111,6 +111,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // ── 연습 한 판의 응답(WORLD 학습자 응답 설계 §2·§3·§5) ──
  // 기능이 꺼졌거나 손님이면 응답 줄도 판 기록(finishSet)도 없다 — 손님은 「내 계정」을 열 수 없어 본인이 보고 뺄 자리가 없다.
  const answering=()=>responses===true&&owner!=='guest';
+ // 새 길 판 응답을 읽을 코치(아래 nextCoach — 홈 코치가 없을 때 이 화면에서 마지막으로 응답을 남긴 새 길 코치)와 이름을 붙일 수 있는 판 종류.
+ let responseCoach=null;
+ const NEXT_KINDS=new Set(['short','diagnostic','mock']);
  // 판 하나를 마칠 때 그 판의 결정·마침 한 쌍(코치 finishSet — 응답은 그 판에 붙는다). 남기지 못하면(옛 코치·저장 실패) 응답 줄을 그리지 않는다.
  function finishSet(coachNow,kind){
   if(!answering()||typeof coachNow?.finishSet!=='function'||typeof view?.renderSetResponse!=='function')return null;
@@ -119,16 +122,17 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 짧은 연습 한 판의 문항 수: 짧은 연습(코치 world-practice)에 남긴 마지막 응답 하나로 — 많았어요 3, 더 하고 싶어요 7, 그 밖·없음은 연습 규칙 그대로(5).
  // 따로 저장하는 상태가 없다(Core 분량 규칙과 같은 절대 규칙) — 응답을 빼거나 30일이 지나면 효과도 빠진다. 진단·시험 형식 응답은 길이를 움직이지 않는다.
  const PRACTICE_LENGTH=Object.freeze({too_much:3,want_more:7});
- // 새 판(Atlas 새 길)의 끝 화면에서 고른 짧은 연습 응답 — 새 코치의 판 응답은 기기 기록에만 있고 요약에 실리지 않아(다른 기기 ·
- // 30일 규칙을 읽을 자리가 아직 없다 — 단계4_계획 §18-5-7 ④e, 4-5에서 「나」 화면과 함께) 이 학습 화면 조각 동안만 든다. 계정은 창으로
- // 돌아올 때마다 셸이 생활 기록을 다시 세워(학습 화면을 새로 만든다) 비워지고, 그 뒤는 지금 판 코치의 마지막 응답(없으면 5문항)이다 —
- // 손님은 다시 세우기가 없어 문서 동안 남는다(4-5까지의 임시 자리 · 리허설에서만 닿는다, Fable 5.2 합친 끝 판 넘친 #29).
- let nextShort=null;
+ // 새 판(Atlas 새 길)의 판 응답도 같은 셈으로 읽는다(4-5 — 단계4_계획 §22-5): 지금 판 짧은 연습 코치의 응답과 새 길 코치의 판 응답 가운데 가장 새
+ // 「짧은 연습」 응답 하나로 정한다. 새 길 코치의 목록은 저장 중인 내 응답도 바로 들어, 끝 화면에서 고른 값이 「n문항 더 하기」에 곧바로 선다.
+ // 올리는 계정의 다른 기기 응답 · 30일 규칙은 「내 계정」을 열 때 읽은 서버 값(readResponses)이 더한다.
  function practiceLength(){
   const base=position?.practice?.PRACTICE_POLICY?.count||5;
   if(!answering())return base;
-  if(nextShort)return PRACTICE_LENGTH[nextShort]||base;
-  try{const last=(readPracticeCoach()?.setFeedback?.()||[]).filter(row=>row.kind==='short').at(-1);return PRACTICE_LENGTH[last?.value]||base;}catch{return base;}
+  try{
+   const rows=[...(readPracticeCoach()?.setFeedback?.()||[]),...nextRows()].filter(row=>row.kind==='short');
+   const last=rows.reduce((best,row)=>!best||Date.parse(row.at)>=Date.parse(best.at)?row:best,null);
+   return PRACTICE_LENGTH[last?.value]||base;
+  }catch{return base;}
  }
  // 끝 화면의 응답 줄 잇기: 고르면 코치에 남기고(같은 값은 그대로, 다른 값은 앞 응답을 대신한다) 그 줄만 다시 그린다.
  // 짧은 연습이면 길이가 바뀌므로 「새 문항 n개 더 하기」의 n도 고친다(more: 그 항목에 남은 새 문항 수).
@@ -146,9 +150,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    const ask=node.querySelector?.('#wpos-response-ask'),status=node.querySelector?.('[data-set-response-status]');
    if(text&&ask&&status){ask.textContent=text.ask;status.textContent=text.status;for(const pill of node.querySelectorAll('[data-set-response]'))pill.setAttribute('aria-pressed',pill.dataset.setResponse===chosen?'true':'false');}
    else{node.outerHTML=view.renderSetResponse({kind,value:chosen,failed});box.querySelector(`[data-set-response="${value}"]`)?.focus?.({preventScroll:true});}
-   // 새 판 끝 화면에서 고른 응답은 다음 새 판의 길이 — 지금 판 끝 화면에서 고르면 비운다(지금 판 코치의 마지막 응답이 길이를 정한다: 앞 새 판
-   // 응답이 방금 지금 판에서 고른 것을 가리던 것, 카본 끝 판 둘째 C).
-   if(!failed&&kind==='short')nextShort=next?chosen:null;
+   // 새 길 코치에 남긴 응답은 그 코치의 판 응답에 바로 든다 — 홈 코치가 없을 때 목록 · 길이가 읽을 코치로 둔다. 지금 판과 새 길 응답은 시각으로
+   // 가려 가장 새 것이 길이를 정한다(앞 새 판 응답이 방금 지금 판에서 고른 것을 가리지 않는다 — 카본 끝 판 둘째 C).
+   if(!failed&&typeof coachNow?.responses==='function')responseCoach=coachNow;
    const again=kind==='short'?box.querySelector('[data-practice-again]'):null;
    if(again)again.innerHTML=next?`${escape(t('practice.next.again',{n:practiceLength()}))} <span aria-hidden="true">→</span>`
     :`${escape(t('practice.again',{n:Math.min(more,practiceLength())}))} <span aria-hidden="true">→</span>`;
@@ -158,16 +162,41 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 「내 계정」의 「내가 남긴 응답」: 세 연습(짧은 연습·짧은 진단·시험 형식)의 판 응답(30일 안·뺀 것 제외)을 새것부터. 기능이 꺼졌거나 손님이면 null.
  // 각 줄 {id, kind, value}. 시각은 보이지 않는다(설계 §3). removeResponse(id): 그 응답을 뺀다(record.excluded — 목록과 쓰임에서 빠진다).
  const RESPONSE_COACHES=[()=>readPracticeCoach(),()=>readCoach(),()=>readMockCoach()];
+ // 새 길(4-5 — 단계4_계획 §22-5): 새 길 홈 코치(없으면 이 화면에서 마지막으로 응답을 남긴 새 길 코치 — 같은 판이면 같은 저장소라 목록이 같다)의
+ // 판 응답(코치 responses() — 30일 · 뺀 것 제외 · 판마다 가장 새 것)을 옛 코치 셋의 응답과 합친다. 판 종류를 모르는 줄은 이름을 붙일 수 없어
+ // 그리지 않는다. 줄마다 온 곳(from)을 들고, 빼기도 온 곳으로 보낸다(옛 줄은 그 옛 코치의 exclude, 새 줄은 판 응답을 빼는 문 excludeResponse).
+ function nextCoach(){
+  let home=null;try{home=homePhase()==='engine'?homeWatch?.coach?.()??null:null;}catch{home=null;}
+  return typeof home?.responses==='function'?home:responseCoach;
+ }
+ function nextRows(){
+  const coach=nextCoach();if(typeof coach?.responses!=='function')return [];
+  try{return coach.responses().rows.filter(row=>NEXT_KINDS.has(row.kind)).map(row=>({...row,from:coach,next:true}));}catch{return [];}
+ }
+ function responseRows(){
+  const rows=[];
+  for(const read of RESPONSE_COACHES){const coach=read();for(const row of coach?.setFeedback?.()||[])rows.push({...row,from:coach});}
+  rows.push(...nextRows());
+  return rows.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at));
+ }
  function responseList(){
   if(!answering())return null;
-  const rows=[];
-  for(const read of RESPONSE_COACHES){const coach=read();for(const row of coach?.setFeedback?.()||[])rows.push(row);}
-  return rows.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).map(row=>({id:row.id,kind:row.kind,value:row.value}));
+  return responseRows().map(row=>({id:row.id,kind:row.kind,value:row.value}));
  }
  function removeResponse(id){
   if(!answering())return false;
-  for(const read of RESPONSE_COACHES){const coach=read();if((coach?.setFeedback?.()||[]).some(row=>row.id===id)){coach.exclude(id);return true;}}
-  return false;
+  const row=responseRows().find(entry=>entry.id===id);if(!row)return false;
+  if(row.next)row.from.excludeResponse(id);else row.from.exclude(id);
+  return true;
+ }
+ // 「내 계정」을 열 때: 새 길 올리는 계정이면 서버의 판 응답(다른 기기에서 남긴 것 · 30일)을 다시 읽어 코치에 넘긴다(입구 readResponses). 목록이
+ // 바뀌었으면 참 — 셸이 그 칸만 다시 그린다.
+ async function readResponses(){
+  const coach=nextCoach();
+  if(!answering()||!coach||typeof atlasNext?.readResponses!=='function')return false;
+  const before=JSON.stringify(responseList());
+  try{await atlasNext.readResponses(coach);}catch{return false;}
+  return !stopped&&JSON.stringify(responseList())!==before;
  }
  // 공개 TOPIK 은행: 처음 추천·판을 열 때 한 번 불러오고(실패하면 다음에 다시), 다 불러오면 추천과 열려 있는 판을 다시 그린다.
  const bankUrl=topikBankUrl||audioUrl('world-topik-items.json');
@@ -1801,5 +1830,5 @@ async function townSend(coachNow,{wait=true}={}){
  // 생활 화면의 거울(life-ui.mjs learning): 코치를 읽고, 레슨 · 복습을 열 때 계정 통로를 준비한다(「다음 할 일」과 같은 prepare).
  // 생활 화면(life-ui.mjs)의 learning 인자 한 벌 — 코치 · 준비 · 거울 부품(engine.life). 셸은 생활 화면을 먼저 세워 늦게 읽는다(app-shell · life-standalone-entry).
  const lifeLearning=Object.freeze({coach:()=>{try{return readLifeCoach();}catch{return null;}},prepare:()=>{try{check();return Promise.resolve(prepare()).catch(()=>{});}catch{return Promise.resolve();}},life:engine.life||null});
- return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
+ return {next,open,examLink,refresh,repaint,applyPreferences,planRow,examType,positionTotal:topikTotal,responses:responseList,removeResponse,readResponses,lifeLearning,...(position?{position:openMyPosition,practice:startPractice,plan:openPlan,mock:openMock,mockReady,townCheck,townEvidence}:{}),presentation(){check();const values=settingsFor(getProgress().learningProfileValues());return Object.fromEntries(['support','explanation'].filter(k=>values[k]).map(k=>[k,values[k]]));},metrics:()=>({owner,plan:current}),today:()=>current?.today?{...current.today,selected:current.selected,selectedKind:current.selectedKind,reason:current.reason}:null,dispose(){stopped=true;wakePlanWaits();stopHearing();homeWatch?.dispose();release(coach);release(practiceCoach);release(mockCoach);release(lifeCoachNow);target.removeEventListener?.('focus',onFocus);}};
 }

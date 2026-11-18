@@ -29,14 +29,16 @@ const markOf=(storage,owner)=>JSON.parse(storage.getItem(NEXT_MARK+owner)??'{}')
 
 // 가짜 계정 길 — 셸의 trail()처럼 부를 때마다 지금 값을 돌려준다. get(since, revision)은 state.get이 정한다.
 // lookback(offset, revision)을 주면 나르개에 30일째 문장의 돌아보기 읽기가 있다(계정 클라이언트 trail.lookback — §21-22).
-function accountLine({enabled=true,revision=1,learningSync=true,get=async()=>({summary:null,serverTime:0}),lookback=null,firstAnswers=null}={}){
- const state={enabled,revision,learningSync,get,lookback,firstAnswers,reads:0,gets:[],lookbacks:[],firsts:[],legacy:[]};
+// responses(revision)를 주면 판 응답 읽기가 있다(계정 클라이언트 trail.responses — §22-5).
+function accountLine({enabled=true,revision=1,learningSync=true,get=async()=>({summary:null,serverTime:0}),lookback=null,firstAnswers=null,responses=null}={}){
+ const state={enabled,revision,learningSync,get,lookback,firstAnswers,responses,reads:0,gets:[],lookbacks:[],firsts:[],responseReads:[],legacy:[]};
  state.trail=async()=>{
   state.reads+=1;
   return {learning:{enabled:state.enabled,revision:state.revision},learningSync:state.learningSync,
    transport:at=>({get:since=>{state.gets.push({at,since});return state.get(since,at);},post:async()=>({accepted:[],clamped:[],summary:null,serverTime:0}),
     ...(state.lookback?{lookback:offset=>{state.lookbacks.push({at,offset});return state.lookback(offset,at);}}:{}),
-    ...(state.firstAnswers?{firstAnswers:query=>{state.firsts.push({at,query});return state.firstAnswers(query,at);}}:{})}),
+    ...(state.firstAnswers?{firstAnswers:query=>{state.firsts.push({at,query});return state.firstAnswers(query,at);}}:{}),
+    ...(state.responses?{responses:()=>{state.responseReads.push(at);return state.responses(at);}}:{})}),
    postLegacy:async events=>{state.legacy.push(events);return {ok:true};}};
  };
  return state;
@@ -768,6 +770,73 @@ test('리허설 나르개 — 운영 계정 클라이언트와 같은 꼴(머리
  await assert.rejects(refused());assert.equal(expired,1,'그 밖의 거절에는 알리지 않는다');
 });
 
+test('리허설 나르개 — 비우기 · 판 응답 읽기는 그 판으로, 마지막 비우기 읽기는 판 없이 줄에서(운영 계정 클라이언트 trail.clear · responses · lastClear와 같은 꼴 — 4-5 §22-4 · §22-5)',async()=>{
+ const calls=[];
+ const replies=[
+  {status:200,body:{ok:true,learning:{enabled:true,revision:3},capabilities:{learningSync:true}}},
+  {status:200,body:{ok:true,revision:3,complete:true,responses:[]}},
+  {status:200,body:{ok:true,learning:{enabled:true,revision:4},revision:4,removed:2,kept:0}},
+  {status:200,body:{ok:true,revision:4,lastClear:{revision:4,at:5}}},
+ ];
+ const fetcher=async(url,init)=>{calls.push([url,init]);const reply=replies.shift();return {ok:reply.status<400,status:reply.status,json:async()=>reply.body};};
+ const line=await rehearsalTrail({fetcher})();
+ const carrier=line.transport(3);
+ assert.equal((await carrier.responses()).complete,true);
+ assert.equal(calls[1][0],'/api/world/rehearsal/trail-responses?revision=3');assert.equal(calls[1][1].method,'GET');assert.equal(calls[1][1].body,undefined);
+ assert.equal((await carrier.clear()).revision,4);
+ assert.equal(calls[2][0],'/api/world/rehearsal/trail-clear');assert.equal(calls[2][1].method,'POST');assert.deepEqual(JSON.parse(calls[2][1].body),{revision:3});
+ assert.deepEqual((await line.lastClear()).lastClear,{revision:4,at:5});
+ assert.equal(calls[3][0],'/api/world/rehearsal/trail-clear');assert.equal(calls[3][1].method,'GET');assert.equal(calls[3][1].body,undefined);
+});
+
+test('판 응답 읽기(readResponses) — 올리는 길은 그 판 나르개로 서버를 읽어 코치에 넘기고, 못 읽으면 계기에 남긴 채 코치 목록 · 기기 길은 서버를 읽지 않는다 · 오프라인으로 연 길은 다시 닿으면 표지의 판으로 · 이 입구 코치가 아니면 null(4-5 — §22-5)',async()=>{
+ const withResponses=calls=>()=>{const made=fakeCoach();made.responses=input=>{calls.push(input);return {complete:false,rows:[]};};return made;};
+ const calls=[];let broken=null;
+ const line=accountLine({revision:4,responses:async at=>{if(broken)throw broken;return {ok:true,revision:at,complete:true,responses:[]};}});
+ const health=recorder();
+ const next=createAtlasNext({owner:'acct-r1',storage:memoryStorage(),trail:()=>line.trail(),load:fakeLoader(withResponses(calls)).load,health});
+ const coach=await next.practiceCoach(POOL);
+ assert.deepEqual(await next.readResponses(coach),{complete:false,rows:[]});
+ assert.deepEqual(calls,[{server:{ok:true,revision:4,complete:true,responses:[]}}],'그 판 나르개의 답을 코치에 넘긴다');
+ assert.deepEqual(line.responseReads,[4]);
+ broken=fail(503,'SERVICE_UNAVAILABLE',{retryable:true});calls.length=0;
+ assert.deepEqual(await next.readResponses(coach),{complete:false,rows:[]},'못 읽어도 코치의 목록');
+ assert.deepEqual(calls,[{}],'서버 값 없이');
+ assert.ok(health.notes.some(([kind,outcome])=>kind==='load'&&outcome.code==='RESPONSES_SERVICE_UNAVAILABLE'),JSON.stringify(health.notes));
+ assert.equal(await next.readResponses({responses:()=>({})}),null,'이 입구가 연 코치가 아니면 null');
+ next.dispose();
+ assert.equal(await next.readResponses(coach),null,'닫은 입구는 null');
+ // 기기 길(쓰기 문 닫힘) — 서버를 읽지 않고 코치의 목록
+ const deviceCalls=[];
+ const l2=accountLine({revision:2,learningSync:false,responses:async()=>assert.fail('기기 길은 서버를 읽지 않는다')});
+ const n2=createAtlasNext({owner:'acct-r2',storage:memoryStorage(),trail:()=>l2.trail(),load:fakeLoader(withResponses(deviceCalls)).load,health:recorder()});
+ const c2=await n2.practiceCoach(POOL);
+ assert.deepEqual(await n2.readResponses(c2),{complete:false,rows:[]});
+ assert.deepEqual(deviceCalls,[{}]);assert.deepEqual(l2.responseReads,[]);
+ n2.dispose();
+ // 오프라인으로 다시 연 올리는 길 — 못 닿으면 계기, 다시 닿으면 표지의 판 나르개로 읽는다. 다시 읽은 나르개에 읽기가 없으면 그 실패를 계기에.
+ const s3=memoryStorage([[NEXT_MARK+'acct-r3',JSON.stringify({went:true,path:'upload',revision:6})]]);
+ const l3=accountLine({revision:6,responses:async at=>({ok:true,revision:at,complete:true,responses:[]})});let down=true;
+ const h3=recorder(),c3calls=[];
+ const n3=createAtlasNext({owner:'acct-r3',storage:s3,trail:async()=>{if(down)throw fail(0,'NETWORK',{retryable:true});return l3.trail();},
+  load:fakeLoader(()=>{const made=withResponses(c3calls)();made.synced=async()=>({ok:false,kind:'offline',code:'NETWORK'});return made;}).load,health:h3});
+ const c3=await n3.practiceCoach(POOL);
+ await n3.readResponses(c3);
+ assert.deepEqual(c3calls,[{}]);assert.ok(h3.notes.some(([kind,outcome])=>kind==='load'&&outcome.code==='RESPONSES_NETWORK'),JSON.stringify(h3.notes));
+ down=false;c3calls.length=0;
+ await n3.readResponses(c3);
+ assert.deepEqual(c3calls,[{server:{ok:true,revision:6,complete:true,responses:[]}}]);assert.deepEqual(l3.responseReads,[6]);
+ n3.dispose();
+ const s4=memoryStorage([[NEXT_MARK+'acct-r4',JSON.stringify({went:true,path:'upload',revision:6})]]);
+ const l4=accountLine({revision:6});let off4=true;const h4=recorder();
+ const n4=createAtlasNext({owner:'acct-r4',storage:s4,trail:async()=>{if(off4)throw fail(0,'NETWORK',{retryable:true});return l4.trail();},
+  load:fakeLoader(()=>{const made=withResponses([])();made.synced=async()=>({ok:false,kind:'offline',code:'NETWORK'});return made;}).load,health:h4});
+ const c4=await n4.practiceCoach(POOL);off4=false;
+ await n4.readResponses(c4);
+ assert.ok(h4.notes.some(([kind,outcome])=>kind==='load'&&outcome.code==='RESPONSES_UNAVAILABLE'),JSON.stringify(h4.notes));
+ n4.dispose();
+});
+
 // ── 진짜 엔진 코치 + 리허설 trail 한 바퀴 ─────────────────────────────────────────────────────
 const readJson=url=>JSON.parse(fs.readFileSync(new URL(url,import.meta.url),'utf8'));
 const MAP_DATA={index:readJson('../../../packages/atlas/map/index.json'),units:readJson('../../../packages/atlas/map/units.json')};
@@ -843,6 +912,66 @@ test('한 바퀴 — 손님 연습 → 계정 첫 받기로 새 길 → 손님 �
  assert.equal(device.summary().storage.guest,true,'동의 꺼진 계정은 기기 길');
  assert.ok(ports.has(atlas.storeName({account:A_ID,revision:3,local:true})),'그 계정 · 그 판의 기기 저장소');
  next.dispose();
+});
+
+test('판 응답 한 바퀴 — 한 기기에서 남긴 응답이 올라가면 다른 기기가 「내 계정」을 열 때 서버에서 읽어 판 종류째 보이고, 그 기기에서 빼면 바로 빠지며, 처음 기기도 다시 읽으면 뺀 응답이 되살아나지 않는다(4-5 — §22-5)',{timeout:60_000},async()=>{
+ let now=Date.UTC(2026,10,12,1,0,0);
+ const time={now:()=>now,advance:ms=>{now+=ms;}};
+ const index=atlas.openMap({index:MAP_DATA.index}).foldIndex;
+ const server=createRehearsalTrail({atlas,index,now:time.now,warn:()=>{}});
+ const account={id:A_ID},headers={'x-synk-contract':'1','x-synk-product':'world'};
+ const fetcher=async(url,init={})=>{
+  const u=new URL(url,'http://local');
+  const reply=await server.handle({account,path:u.pathname.replace('/api/world/rehearsal/',''),method:init.method??'GET',query:u.searchParams,
+   body:init.body?Buffer.from(init.body):undefined,headers:new Headers(init.headers)});
+  return {ok:reply.status<400,status:reply.status,json:async()=>reply.body};
+ };
+ // 기기마다 제 저장소(포트)와 제 창(scope — 호스트 등록부)을 둔다. 한 프로세스에서는 같은 열쇠의 호스트를 나눠 써 두 기기가 한 기록을 본다.
+ let devices=0;
+ const loadFor=()=>{
+  const ports=new Map(),portOf=key=>{if(!ports.has(key))ports.set(key,atlas.memoryPort());return ports.get(key);};
+  const keyOf=host=>host.key??(host.guest?atlas.storeName({}):atlas.storeName({account:host.account,revision:host.revision}));
+  devices+=1;
+  const scope={location:{origin:`https://device-${devices}.test`},addEventListener(){},removeEventListener(){}};
+  scope.parent=scope;
+  return async()=>({SynkAtlas:{load:async()=>atlas},coach:options=>atlas.createCoach({...options,scope,mapData:MAP_DATA,dayOffset:540,host:{...options.host,port:portOf(keyOf(options.host)),now:time.now}})});
+ };
+ const plays={allowedPlays,nextPlay};
+ async function practise(coach,length=2){
+  const session=createPracticeNextSession({plays,coach,pool:READING,length});
+  while(session.next()){if(!session.current.heard)session.delivery('completed');session.answer(session.current.item.correctId);time.advance(30_000);}
+  return session.settled();
+ }
+ const serverRows=async()=>(await (await fetcher('/api/world/rehearsal/trail-responses?revision=1',{headers})).json()).responses;
+ // 처음 기기 — 짧은 연습 한 판을 마치고 「많았어요」
+ const one=createAtlasNext({owner:A_ID,storage:memoryStorage(),trail:rehearsalTrail({fetcher}),load:loadFor(),health:recorder()});
+ const first=await one.practiceCoach(READING);
+ await practise(first);
+ const set=first.finishSet({kind:'short'});
+ assert.ok(set.completionId,'판 기록을 남겼다');
+ await set.folded;
+ time.advance(1000);
+ const given=first.feedback(set,'too_much');
+ assert.deepEqual(first.responses().rows.map(row=>[row.id,row.kind,row.value]),[[given.id,'short','too_much']],'저장 중인 내 응답도 바로 든다');
+ // 올라갈 때까지(쓴 뒤 UPLOAD_DELAY_MS 뒤에 올린다)
+ const up=await until(async()=>{const rows=await serverRows();return rows.length?rows:null;},15_000);
+ assert.deepEqual(up.map(row=>[row.id,row.variant,row.value]),[[given.id,'short','too_much']]);
+ // 다른 기기 — 처음엔 비었고, 「내 계정」을 열면(readResponses) 서버에서 읽어 판 종류째 보인다
+ const two=createAtlasNext({owner:A_ID,storage:memoryStorage(),trail:rehearsalTrail({fetcher}),load:loadFor(),health:recorder()});
+ const second=await two.practiceCoach(READING);
+ assert.deepEqual(second.responses().rows,[]);
+ const read=await two.readResponses(second);
+ assert.equal(read.complete,true);
+ assert.deepEqual(read.rows.map(row=>[row.id,row.kind,row.value]),[[given.id,'short','too_much']]);
+ // 그 기기에서 빼면 바로 빠지고(서버 줄에도 듣는다), 올라가면 서버 목록에서도 빠진다
+ second.excludeResponse(given.id);
+ assert.deepEqual(second.responses().rows,[],'뺀 응답은 바로 빠진다');
+ await until(async()=>(await serverRows()).length===0,15_000);
+ // 처음 기기는 그 응답을 든 채다 — 다시 읽으면 서버가 이미 센 내 응답이라 서버 줄을 따라 빠진다
+ assert.deepEqual(first.responses().rows.map(row=>row.id),[given.id],'다시 읽기 전에는 든 사건으로 보인다');
+ const again=await one.readResponses(first);
+ assert.deepEqual(again.rows,[],'다른 기기에서 뺀 응답이 되살아나지 않는다');
+ one.dispose();two.dispose();
 });
 
 test('생활 코치를 여는 사이 판을 다시 정하면 앞 판 코치는 닫고 한 번만 다시 정해 새 판 코치를 준다 — 이번 생활이 지금 판으로 떨어지지 않는다(GPT · 카본 합친 끝 판 GC2 · C1)',async()=>{

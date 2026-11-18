@@ -138,7 +138,7 @@ test('비우기 — 판이 오르고 기록이 비며, 다시 지은 머리는 �
  const old=first.body.summary;
  assert.equal((await call('trail-clear',{method:'POST',body:{revision:2}})).body.error.code,'REVISION_CONFLICT');
  assert.equal((await call('trail-clear',{method:'POST',body:{revision:1,extra:true}})).body.error.code,'INVALID_ACTION');
- assert.equal((await call('trail-clear',{query:'revision=1'})).body.error.code,'INVALID_ACTION');
+ assert.equal((await call('trail-clear',{query:'revision=1'})).body.error.code,'INVALID_QUERY','GET은 마지막 비우기 읽기라 쿼리를 받지 않는다');
  tick(1000);
  const cleared=await call('trail-clear',{method:'POST',body:{revision:1}});
  assert.equal(cleared.status,200);
@@ -150,6 +150,118 @@ test('비우기 — 판이 오르고 기록이 비며, 다시 지은 머리는 �
  // 바닥 아래(비운 사건)는 부모로 치지 않고, 같은 번호를 새 판으로 다시 보내도 받지 않는다(번호는 계정 안에서 하나) — 여기서는 비운 뒤라 새 사건.
  const again=await call('trail',{method:'POST',body:{revision:2,events:[stated(2)]}});
  assert.equal(again.status,200);assert.equal(again.body.accepted[0].seq,3,'차례는 비운 뒤에도 이어 센다');
+});
+
+// 단계 4 계획 §22-4 · §22-5 — talk tests/atlas-trail-me.test.js의 마지막 비우기 읽기 · 판 응답 읽기와 같은 뜻.
+test('마지막 비우기 읽기(GET trail-clear) — 판 울타리 없이 지금 판과 비운 뒤의 새 판 · 시각을 주고, 동의를 껐다 켜 오른 판은 비우기로 치지 않는다',async()=>{
+ const {call,tick}=setup();
+ const first=await call('trail-clear');
+ assert.equal(first.status,200);
+ assert.deepEqual(first.body,{ok:true,scope:'synk-atlas-trail',revision:1,serverTime:T0,lastClear:null});
+ tick(1000);
+ await call('trail-clear',{method:'POST',body:{revision:1}});
+ assert.deepEqual((await call('trail-clear')).body.lastClear,{revision:2,at:T0+1000});
+ await call('trail-control',{method:'POST',body:{action:'consent',enabled:false}});
+ const off=await call('trail-clear');
+ assert.equal(off.status,200,'동의를 끈 동안에도 읽는다');
+ assert.equal(off.body.revision,3);
+ await call('trail-control',{method:'POST',body:{action:'consent',enabled:true}});
+ const back=await call('trail-clear');
+ assert.equal(back.body.revision,4);
+ assert.deepEqual(back.body.lastClear,{revision:2,at:T0+1000},'판만 오른 것은 비우기가 아니다');
+ await call('trail-control',{method:'POST',body:{action:'switch',enabled:false}});
+ assert.equal((await call('trail-clear')).body.error.code,'FEATURE_DISABLED');
+});
+
+test('판 응답 읽기(trail-responses) — 판(결정)마다 가장 새 응답, 응답 · 마침 · 결정을 겨눈 제외는 거르고, 받은 지 30일 넘은 응답은 빼며, 판 종류는 부모 마침에서',async()=>{
+ const {call,tick}=setup();
+ let clock=T0;
+ const advance=ms=>{tick(ms);clock+=ms;};
+ const make=(type,fields,revision=1)=>{n+=1;return atlas.createEvent(type,fields,{id:atlas.eventId(clock,n,'rehearse'),atMs:clock,revision});};
+ const E=atlas.EVENT_TYPES;
+ const set=(experienceId,variant)=>{
+  const decided=make(E.setDecided,{experienceId,variant});
+  return [decided,make(E.setCompleted,{decisionId:decided.id,experienceId,variant})];
+ };
+ const post=async events=>assert.equal((await call('trail',{method:'POST',body:{revision:1,events}})).status,200);
+ const [oldDecided,oldDone]=set('exp-old','short');
+ await post([oldDecided,oldDone,make(E.feedback,{completionId:oldDone.id,value:'helpful'})]);
+ advance(31*86_400_000);
+ const [aDecided,aDone]=set('exp-a','short');
+ const a1=make(E.feedback,{completionId:aDone.id,value:'too_much'});
+ advance(1000);
+ const a2=make(E.feedback,{completionId:aDone.id,value:'want_more'});
+ const [bDecided,bDone]=set('exp-b','mock');
+ const b1=make(E.feedback,{completionId:bDone.id,value:'helpful'});
+ advance(1000);
+ const b2=make(E.feedback,{completionId:bDone.id,value:'not_fit'});
+ const [cDecided,cDone]=set('exp-c','diagnostic');
+ const c1=make(E.feedback,{completionId:cDone.id,value:'helpful'});
+ const [dDecided,dDone]=set('exp-d','short');
+ const d1=make(E.feedback,{completionId:dDone.id,value:'want_more'});
+ await post([aDecided,aDone,a1,a2,bDecided,bDone,b1,b2,cDecided,cDone,c1,dDecided,dDone,d1]);
+ advance(1000);
+ // 가장 새 응답(b2)을 빼도 앞 응답(b1)은 되살아나지 않는다 · 마침(c)과 결정(d)을 겨눈 제외도 그 판의 응답을 거른다
+ await post([make(E.excluded,{targetId:b2.id}),make(E.excluded,{targetId:cDone.id}),make(E.excluded,{targetId:dDecided.id})]);
+ const read=await call('trail-responses',{query:'revision=1'});
+ assert.equal(read.status,200);
+ const now=T0+31*86_400_000+3000;
+ assert.equal(read.body.revision,1);assert.equal(read.body.serverTime,now);assert.equal(read.body.since,now-30*86_400_000);
+ assert.equal(read.body.complete,true);
+ assert.deepEqual(read.body.responses,[{id:a2.id,at:a2.at,value:'want_more',completionId:aDone.id,decisionId:aDecided.id,experienceId:'exp-a',variant:'short'}]);
+ // seen — 이번에 본 창 안 응답 전부(대신해진 · 뺀 · 뺀 판의 것까지). 받은 지 30일 넘은 응답은 들지 않는다(Fable 5.2 설계 검토 F1).
+ assert.deepEqual(new Set(read.body.seen),new Set([a1.id,a2.id,b1.id,b2.id,c1.id,d1.id]));
+ // seenFrom — 메모리라 늘 끝까지 읽어 null이다(talk는 줄 상한에서 멈추면 마지막으로 읽은 순번 — 설계 주인 11-18).
+ assert.equal(read.body.seenFrom,null);
+ // 판 울타리 · 쿼리
+ assert.equal((await call('trail-responses',{query:'revision=2'})).body.error.code,'REVISION_CONFLICT');
+ assert.equal((await call('trail-responses')).body.error.code,'REVISION_CONFLICT');
+ assert.equal((await call('trail-responses',{query:'revision=1&x=1'})).body.error.code,'INVALID_QUERY');
+ assert.equal((await call('trail-responses',{query:'revision=1&revision=1'})).body.error.code,'INVALID_QUERY');
+ assert.equal((await call('trail-responses',{method:'POST',body:{revision:1}})).body.error.code,'INVALID_QUERY');
+ // 비우면 바닥 아래라 아무 응답도 없다
+ await call('trail-clear',{method:'POST',body:{revision:1}});
+ const cleared=await call('trail-responses',{query:'revision=2'});
+ assert.equal(cleared.status,200);assert.deepEqual(cleared.body.responses,[]);
+});
+
+test('판 응답 읽기(trail-responses) — 판의 가장 새 응답은 받은 시각과 상관없이 그 판의 응답 전부로 고른다: 늦게 받은 앞선 응답이 더 새 응답을 덮지 않고, 가장 새 응답을 받은 지 30일이 넘었으면 그 판을 내지 않는다(talk와 같은 뜻 — 끝 판 카본 A1)',async()=>{
+ const {call,tick}=setup();
+ let clock=T0;
+ const advance=ms=>{tick(ms);clock+=ms;};
+ const make=(type,fields,revision=1)=>{n+=1;return atlas.createEvent(type,fields,{id:atlas.eventId(clock,n,'rehearse'),atMs:clock,revision});};
+ const E=atlas.EVENT_TYPES;
+ const post=async events=>assert.equal((await call('trail',{method:'POST',body:{revision:1,events}})).status,200);
+ // 두 기기가 같은 판을 끝냈다 — 결정 하나에 마침이 둘이고 마침마다 응답이 하나다.
+ const twoDevices=experienceId=>{
+  const decided=make(E.setDecided,{experienceId,variant:'short'});
+  const doneA=make(E.setCompleted,{decisionId:decided.id,experienceId,variant:'short'});
+  const doneB=make(E.setCompleted,{decisionId:decided.id,experienceId,variant:'short'});
+  return {decided,doneA,doneB};
+ };
+ // 판 y: 더 새 응답(B 기기)을 31일 전에 받았고, 앞선 응답(A 기기 — 오프라인이었다)은 지금 받는다.
+ const y=twoDevices('exp-y');
+ const yEarly=make(E.feedback,{completionId:y.doneA.id,value:'too_much'});
+ advance(1000);
+ const yNewer=make(E.feedback,{completionId:y.doneB.id,value:'helpful'});
+ await post([y.decided,y.doneA,y.doneB,yNewer]);
+ advance(31*86_400_000);
+ // 판 x: 둘 다 창 안이지만 더 새 응답을 먼저 받았다.
+ const x=twoDevices('exp-x');
+ const xEarly=make(E.feedback,{completionId:x.doneA.id,value:'too_much'});
+ advance(1000);
+ const xNewer=make(E.feedback,{completionId:x.doneB.id,value:'want_more'});
+ await post([x.decided,x.doneA,x.doneB,xNewer]);
+ advance(1000);
+ await post([xEarly,yEarly]);
+ const read=await call('trail-responses',{query:'revision=1'});
+ assert.equal(read.status,200);
+ assert.deepEqual(read.body.responses.map(r=>r.id),[xNewer.id],'늦게 받은 앞선 응답이 더 새 응답을 덮지 않고, 판 y는 가장 새 응답이 창 밖이라 내지 않는다');
+ assert.deepEqual(new Set(read.body.seen),new Set([xEarly.id,xNewer.id,yEarly.id]),'seen은 창 안 응답이다');
+ // 더 새 응답을 빼면 판 x가 빈다 — 앞선 응답이 되살아나지 않는다.
+ advance(1000);
+ await post([make(E.excluded,{targetId:xNewer.id})]);
+ assert.deepEqual((await call('trail-responses',{query:'revision=1'})).body.responses,[]);
 });
 
 test('입구 머리말 — 계약 판이 아니면 426, 제품이 world가 아니면 400, 다른 방법은 405, 모르는 길은 404',async()=>{

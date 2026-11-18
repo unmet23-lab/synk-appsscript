@@ -158,6 +158,13 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
       // 예상 급수의 근거 읽기(단계4_계획 §21-23의 2). game = 판 번호의 게임 이름, days = 1 ~ 365의 정수(제품은 90). 답은 complete · reason? ·
       // summaryAt · firstAnswers({ game, days, since, bySkill }) — 접기가 끝까지 갔을 때만 firstAnswers가 있다.
       firstAnswers: ({ revision, game, days, signal }) => request(`synk-learning?view=trail-first-answers&revision=${encodeURIComponent(revision)}&game=${encodeURIComponent(game)}&days=${encodeURIComponent(days)}`, undefined, { signal }),
+      // 마지막 비우기 읽기(단계4_계획 §22-4) — 판을 묻지 않는다(비우기의 결과를 모르는 기기는 앞 판을 들고 있다). 답은 revision(지금 판) ·
+      // lastClear({ revision, at } — 비운 뒤의 새 판과 그 시각, 비운 적이 없으면 null).
+      lastClear: ({ signal } = {}) => request('synk-learning?view=trail-clear', undefined, { signal }),
+      // 판 응답 읽기(단계4_계획 §22-5). 답은 serverTime · complete · since · seen(이번에 본 창 안 응답 번호 전부 — 기기는 여기 든 내 응답을 다시
+      // 얹지 않는다) · seenFrom(줄 상한에서 멈췄으면 마지막으로 읽은 순번, 창 안을 다 읽었으면 null) · responses([{ id, at, value, completionId,
+      // decisionId, experienceId, variant }] — 30일 안, 뺀 것 제외, 새것부터).
+      responses: ({ revision, signal }) => request(`synk-learning?view=trail-responses&revision=${encodeURIComponent(revision)}`, undefined, { signal }),
     }),
     // Core memory (lib/atlas/memory-sync.js): chosen presentation, content memories, declined offers.
     memory: Object.freeze({

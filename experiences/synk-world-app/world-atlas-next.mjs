@@ -417,7 +417,13 @@ export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args
           // 예상 급수의 근거 읽기(단계 4 계획 §21-23의 2) — game · days는 상자(world-month-answer.mjs FIRST_KIND)가 준다.
           firstAnswers: ({ game, days }) =>
             call(`rehearsal/trail-first-answers?${new URLSearchParams({ revision: String(at), game, days: String(days) })}`, {}, from),
+          // 연습 기록 비우기(단계 4 계획 §22-4) — 이 판으로 비운다. 답의 revision이 비운 뒤의 새 판이다.
+          clear: () => call('rehearsal/trail-clear', { method: 'POST', body: { revision: at } }, from),
+          // 판 응답 읽기(단계 4 계획 §22-5) — 30일 안, 뺀 것 제외, 새것부터.
+          responses: () => call(`rehearsal/trail-responses?${new URLSearchParams({ revision: String(at) })}`, {}, from),
         }),
+      // 마지막 비우기 읽기(단계 4 계획 §22-4) — 판을 묻지 않는다. 답은 revision(지금 판) · lastClear({ revision, at } | null).
+      lastClear: () => call('rehearsal/trail-clear', {}, from),
       postLegacy: events => call('rehearsal/trail-legacy', { method: 'POST', body: { revision, events } }, from),
     };
   };
@@ -708,6 +714,19 @@ export function createAtlasNext({
         if (typeof to.firstAnswers !== 'function')
           throw Object.assign(new Error('FIRST_ANSWERS_UNAVAILABLE'), { code: 'FIRST_ANSWERS_UNAVAILABLE' });
         return to.firstAnswers(query);
+      },
+      // 판 응답 읽기(§22-5)와 연습 기록 비우기(§22-4)도 같은 길로 잇는다 — 오프라인으로 연 뒤 다시 닿으면 그 판의 나르개로 한다. 문이 없는
+      // 나르개(옛 계정 클라이언트)면 그 실패로 던진다.
+      responses: async () => {
+        const to = await ready();
+        if (typeof to.responses !== 'function')
+          throw Object.assign(new Error('RESPONSES_UNAVAILABLE'), { code: 'RESPONSES_UNAVAILABLE' });
+        return to.responses();
+      },
+      clear: async () => {
+        const to = await ready();
+        if (typeof to.clear !== 'function') throw Object.assign(new Error('NO_CLEAR'), { code: 'NO_CLEAR' });
+        return to.clear();
       },
     });
   }
@@ -1049,6 +1068,28 @@ export function createAtlasNext({
       const plan = made && !gone.has(made) ? plans.get(made) : null;
       if (disposed || plan?.path !== 'upload' || typeof plan.transport?.firstAnswers !== 'function') return null;
       return Object.freeze({ revision: plan.revision, ask: query => plan.transport.firstAnswers(query) });
+    },
+    // 판 응답 읽기(4-5 — 단계4_계획 §22-5). 그 코치를 연 판이 올리는 길이면 서버를 읽어 코치에 넘기고(코치가 그 값을 호스트가 사는 동안 든다),
+    // 코치의 목록({ complete, rows })을 준다. 손님 · 기기 길은 서버를 읽지 않고 코치의 목록이다. 못 읽으면 앞 값 그대로이고 계기(load)에
+    // 남긴다. 이 입구가 연 코치가 아니거나 판을 다시 정해 닫은 코치 · 닫힌 코치면 null.
+    async readResponses(made) {
+      const plan = made && !gone.has(made) ? plans.get(made) : null;
+      if (disposed || !plan || typeof made.responses !== 'function') return null;
+      let server = null;
+      if (plan.path === 'upload' && typeof plan.transport?.responses === 'function') {
+        try {
+          server = await plan.transport.responses();
+        } catch (error) {
+          const code = failCode(error);
+          note('load', { ok: false, code: (code.startsWith('RESPONSES_') ? code : `RESPONSES_${code}`).slice(0, 40) });
+        }
+      }
+      if (disposed || gone.has(made)) return null;
+      try {
+        return made.responses(server == null ? {} : { server });
+      } catch {
+        return null;
+      }
     },
     // 이 기기의 판 기록(4-4b — 단계4_계획 §21-6 가): 그 코치의 저장소 이름으로 연다. 이 입구가 연 코치가 아니거나 엔진을 못 받았으면 null —
     // 계획이 이번 주에 한 판을 세지 못할 뿐이다. 저장소가 없는 입구(storage null — 시험)도 null.

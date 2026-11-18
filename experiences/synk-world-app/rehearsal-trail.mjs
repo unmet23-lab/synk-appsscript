@@ -23,6 +23,7 @@ export const TRAIL_PATHS = Object.freeze([
   'trail-clear',
   'trail-lookback',
   'trail-first-answers',
+  'trail-responses',
   'trail-account',
   'trail-control',
   'trail-legacy',
@@ -46,6 +47,14 @@ const stable = value =>
         )
       : v,
   );
+
+// 판 응답 읽기의 창(talk lib/atlas-trail-service.js RESPONSE_DAYS와 같다)과 두 응답 가운데 더 새 것(사건 시각, 같으면 사건 번호).
+const RESPONSE_DAYS = 30;
+const DAY_MS = 86_400_000;
+const laterResponse = (a, b) => {
+  const at = Date.parse(a.at) - Date.parse(b.at);
+  return at === 0 ? a.id > b.id : at > 0;
+};
 
 // since = { edition, seq, gen? } — talk sinceOf와 같다(edition · gen은 문자열만, 모르는 열쇠는 400).
 function sinceOf(value) {
@@ -312,6 +321,7 @@ export function createRehearsalTrail({
         enabled: true,
         writes: true,
         on: switchOn(id),
+        lastClear: null, // 마지막 비우기 — 비운 뒤의 새 판과 시각(talk engine.synk_practice_floors의 그 계정 줄)
         store: memoryAccount(atlas),
         lane: Promise.resolve(),
       };
@@ -495,6 +505,76 @@ export function createRehearsalTrail({
     return { ...base, complete: true, firstAnswers: { game, days, since, bySkill: await atlas.firstAnswersOfStore(store, { game, since }) } };
   }
 
+  // 판 응답 읽기(talk lib/atlas-trail-service.js responses와 같은 뜻 — 단계 4 계획 §22-5). 새 꼴 사건만, 받은 시각이 30일 안인 응답을 판(결정)마다
+  // 가장 새 것 하나로 고른 뒤, 그 응답이나 그 판의 마침 · 결정을 겨눈 제외를 거르고 새것부터 낸다. 판 종류와 결정은 부모 마침에서 읽는다.
+  // 리허설은 바닥 위 사건을 메모리에 다 들고 있어 읽는 상한이 없고, 창 밖의 부모 마침 · 제외도 다 본다(talk가 상한 · 다시 읽기로 맞추는 뜻).
+  // seen은 이번에 본 창 안 응답의 번호 전부다(기기가 서버가 본 내 응답을 다시 얹지 않게 — Fable 5.2 설계 검토 F1). 마침을 못 찾은 응답은 판을
+  // 몰라 내지 않고 끝까지 못 읽은 것으로 알린다(F6 — 부모 규칙상 없는 일). 판의 가장 새 응답은 그 판의 응답 전부(받은 시각과 상관없이)로
+  // 고르고, 그 응답이 창 안일 때만 낸다 — 늦게 받은 앞선 응답이 창 밖의 더 새 응답을 덮지 않게(talk와 같은 뜻 — 끝 판 카본 A1).
+  function responses(entry) {
+    const T = atlas.EVENT_TYPES;
+    const at = now();
+    const since = at - RESPONSE_DAYS * DAY_MS;
+    const records = entry.store.visible().filter(record => record.event.schema === atlas.EVENT_FORM.current);
+    const parents = new Map();
+    const excluded = new Set();
+    for (const { event } of records) {
+      if (event.type === T.setCompleted) parents.set(event.id, event);
+      else if (event.type === T.excluded) excluded.add(event.targetId);
+    }
+    const setOf = event => parents.get(event.completionId)?.decisionId ?? null;
+    const given = records.filter(({ event }) => event.type === T.feedback);
+    const receivedOf = new Map(given.map(({ event, receivedMs }) => [event.id, receivedMs]));
+    const found = given.filter(({ receivedMs }) => receivedMs >= since).map(({ event }) => event);
+    // 창 안 응답이 있는 판만 내고, 고르기는 그 판의 응답 전부로 한다.
+    const latest = new Map();
+    let complete = true;
+    for (const event of found) {
+      const key = setOf(event);
+      if (!key) {
+        complete = false;
+        continue;
+      }
+      latest.set(key, null);
+    }
+    for (const { event } of given) {
+      const key = setOf(event);
+      if (!latest.has(key)) continue;
+      const prior = latest.get(key);
+      if (!prior || laterResponse(event, prior)) latest.set(key, event);
+    }
+    const kept = [...latest]
+      .filter(
+        ([key, event]) =>
+          receivedOf.get(event.id) >= since && ![event.id, event.completionId, key].some(id => excluded.has(id)),
+      )
+      .map(([, event]) => event)
+      .sort((a, b) => (laterResponse(a, b) ? -1 : laterResponse(b, a) ? 1 : 0));
+    return {
+      ok: true,
+      scope: 'synk-atlas-trail',
+      revision: entry.revision,
+      serverTime: at,
+      since,
+      complete,
+      seen: found.map(event => event.id),
+      // 줄 상한에서 멈춘 읽기의 마지막 순번(talk와 같은 칸 — 설계 주인 11-18). 리허설은 메모리라 늘 끝까지 읽어 null이다.
+      seenFrom: null,
+      responses: kept.map(event => {
+        const parent = parents.get(event.completionId);
+        return {
+          id: event.id,
+          at: event.at,
+          value: event.value,
+          completionId: event.completionId,
+          decisionId: parent.decisionId,
+          experienceId: parent.experienceId,
+          variant: parent.variant,
+        };
+      }),
+    };
+  }
+
   // 옛 POST(talk synk-server.js learning POST와 같은 검사 — 범위 · 번호 · 같은 번호의 다른 사건 · 다른 판에서 받은 같은 번호는 409
   // EVENT_CONFLICT, ids 없음). 받은 판을 적어 두고 견준다 — 판을 안 보면 talk의 409가 리허설에서는 통과로 보였다(Fable 5.2 끝 판 넘친 #8 ①).
   // 부모 · 차례 · 꼴 검사는 talk에만 있다(파일 머리 — 4-8 리허설 대조에서).
@@ -583,13 +663,28 @@ export function createRehearsalTrail({
     }
     if (!entry.on) fail(403, 'FEATURE_DISABLED');
     if (name === 'trail-clear') {
+      // GET은 마지막 비우기 읽기(talk learning?view=trail-clear GET — 단계 4 계획 §22-4 「실패와 다시 누르기」). 판 울타리를 지나지 않고 쿼리를
+      // 받지 않는다. 지금 판과 비운 뒤의 새 판 · 시각(없으면 null)을 준다 — 동의를 껐다 켜서 오른 판은 비우기가 아니라 바꾸지 않는다.
+      if (method === 'GET') {
+        if ([...query.keys()].length) fail(400, 'INVALID_QUERY');
+        return { ok: true, scope: 'synk-atlas-trail', revision: entry.revision, serverTime: now(), lastClear: entry.lastClear };
+      }
       const body = method === 'POST' ? parse(raw) : undefined;
       if (method !== 'POST' || [...query.keys()].length || !plain(body) || Object.keys(body).some(k => k !== 'revision') || !integer(body.revision))
         fail(400, 'INVALID_ACTION');
       if (body.revision !== entry.revision) fail(409, 'REVISION_CONFLICT', { revision: entry.revision });
       const cleared = entry.store.clear();
       bump(entry);
+      entry.lastClear = { revision: entry.revision, at: now() };
       return { ok: true, learning: learningOf(entry), revision: entry.revision, ...cleared };
+    }
+    // 판 응답 읽기(talk learning?view=trail-responses — 단계 4 계획 §22-5). GET만, 쿼리는 revision 하나.
+    if (name === 'trail-responses') {
+      if (method !== 'GET' || [...query.keys()].some(k => k !== 'revision' || query.getAll(k).length !== 1))
+        fail(400, 'INVALID_QUERY');
+      const revision = query.get('revision');
+      fence(entry, /^(?:0|[1-9]\d{0,9})$/.test(revision ?? '') ? Number(revision) : -1);
+      return responses(entry);
     }
     // 30일째 문장의 돌아보기 읽기(talk learning?view=trail-lookback — 단계 4 계획 §21-22). GET만, 쿼리는 revision · offset 하나씩.
     if (name === 'trail-lookback') {

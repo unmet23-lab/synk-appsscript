@@ -65,6 +65,8 @@ function lazyAtlasNext(owner){
   // 30일째 문장의 돌아보기 읽기(4-4c 둘째 묶음 — 단계4_계획 §21-22): 입구가 연 코치의 판으로 묻는 줄. 입구를 받기 전이거나 닫았으면 null(문장 없이 그린다).
   lookbackOf:coach=>made&&!disposed?made.lookbackOf?.(coach)??null:null,
   firstAnswersOf:coach=>made&&!disposed?made.firstAnswersOf?.(coach)??null:null,
+  // 판 응답 읽기(4-5 — 단계4_계획 §22-5): 입구가 연 코치의 판이 올리는 길이면 서버를 읽어 코치에 넘기고 코치의 목록을 준다. 입구를 받기 전이거나 닫았으면 null.
+  readResponses:async coach=>made&&!disposed?(await made.readResponses?.(coach))??null:null,
   async guestMove(input){if(disposed)return null;const entry=await load();return disposed?null:entry.guestMove(input);},
   async noteLogout(){return made&&!disposed?made.noteLogout():false;},
   // 이 문서에서 학습 기록 설정(동의)을 바꾼 뒤 — 입구가 판을 다시 정한다(넘친 #18).
@@ -754,7 +756,27 @@ function mountResponses(){
   const buttons=next.querySelectorAll('[data-response-remove]');(buttons[Math.min(index,buttons.length-1)]||next.querySelector('h3'))?.focus?.();
  });
 }
-function profile(){if(!client.snapshot)return signIn();const tutorId=home.tutor?.()?.tutor,tutorName=TUTOR_NAMES[tutorId]?t(`tutor.name.${tutorId}`):null;show(t('account.meTitle'),`<div class="ws-me"><div class="ws-me-id"><span class="ws-me-portrait"><img src="${profilePortrait()}" alt=""></span><div><p class="ws-me-name">${tutorName?t('account.learningWith',{name:tutorName}):t('account.learningTogether')}</p><p class="ws-me-sub">${t('account.savedTo',{where:t(operating?'account.whereId':'account.whereTest')})}</p></div></div>${notice('SAVE',client.pending?'check':'ok',t(client.pending?'account.savePending':'account.saveOk'),t('account.revision',{revision:escape(client.snapshot.revision),kind:t(operating?'account.kindId':'account.kindTest')}))}${operating?`<section class="world-notice" data-tone="info" data-label="LEARNING"><strong>${t('account.learningRecords')}</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> ${t('account.learningSave')}</label><span>${t('account.learningNote')}</span>`:`<span>${t('account.learningElsewhere')}</span>`}<a class="felt-button" href="https://synk.im/account/client.html?product=world">${t('account.classSettings')} <span aria-hidden="true">→</span></a></section>`:''}${responsesSection()}<div id="world-classroom-lessons"></div><div id="world-classroom-homework"></div><div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">${t('wardrobe.open')}</button><button class="quiet-button" data-world="logout">${t('account.logout')}</button></div></div>`,'world-profile');mountResponses();if(home.isMaru){const actions=$('#panel-content .ws-me>.world-actions');if(actions)actions.before(hanger);else $('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId,guard=()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
+// 새 길의 판 응답(4-5 — 단계4_계획 §22-5): 「내 계정」을 열면 서버의 판 응답을 다시 읽고(학습 화면 readResponses), 목록이 바뀌었으면 그 칸만 다시
+// 그린다. 초점은 옮기지 않고, 펼친 「더 보기」는 펼친 채로 둔다. 그 사이 시트를 닫았거나 다른 시트로 바뀌었으면 그리지 않는다.
+function refreshResponses(){
+ const education=life.education;if(typeof education?.readResponses!=='function')return;
+ const sheet=$('#panel-content .ws-me');
+ void education.readResponses().then(changed=>{
+  if(!changed||!sheet||!sheet.isConnected)return;
+  const box=$('#panel-content [data-world-responses]'),html=responsesSection();
+  if(box){
+   const open=!box.querySelector('[data-responses-more]');
+   if(!html){box.remove();return;}
+   box.outerHTML=html;mountResponses();
+   const next=$('#panel-content [data-world-responses]');
+   if(open&&next){for(const row of next.querySelectorAll('[data-response-later]'))row.hidden=false;next.querySelector('[data-responses-more]')?.remove();}
+   return;
+  }
+  const anchor=$('#panel-content #world-classroom-lessons');if(!html||!anchor)return;
+  anchor.insertAdjacentHTML('beforebegin',html);mountResponses();
+ },()=>{});
+}
+function profile(){if(!client.snapshot)return signIn();const tutorId=home.tutor?.()?.tutor,tutorName=TUTOR_NAMES[tutorId]?t(`tutor.name.${tutorId}`):null;show(t('account.meTitle'),`<div class="ws-me"><div class="ws-me-id"><span class="ws-me-portrait"><img src="${profilePortrait()}" alt=""></span><div><p class="ws-me-name">${tutorName?t('account.learningWith',{name:tutorName}):t('account.learningTogether')}</p><p class="ws-me-sub">${t('account.savedTo',{where:t(operating?'account.whereId':'account.whereTest')})}</p></div></div>${notice('SAVE',client.pending?'check':'ok',t(client.pending?'account.savePending':'account.saveOk'),t('account.revision',{revision:escape(client.snapshot.revision),kind:t(operating?'account.kindId':'account.kindTest')}))}${operating?`<section class="world-notice" data-tone="info" data-label="LEARNING"><strong>${t('account.learningRecords')}</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> ${t('account.learningSave')}</label><span>${t('account.learningNote')}</span>`:`<span>${t('account.learningElsewhere')}</span>`}<a class="felt-button" href="https://synk.im/account/client.html?product=world">${t('account.classSettings')} <span aria-hidden="true">→</span></a></section>`:''}${responsesSection()}<div id="world-classroom-lessons"></div><div id="world-classroom-homework"></div><div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">${t('wardrobe.open')}</button><button class="quiet-button" data-world="logout">${t('account.logout')}</button></div></div>`,'world-profile');mountResponses();refreshResponses();if(home.isMaru){const actions=$('#panel-content .ws-me>.world-actions');if(actions)actions.before(hanger);else $('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId,guard=()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});};
  void addMe2Row();
  // 「우리 반 수업」은 반 연결 바로 위: 연결하면 이 시트를 다시 그려 같은 자리에 수업이 이어진다. 시트가 열려 있는 동안만 30초마다 묻는다.
  // 우리 반 수업·과제·반 연결은 이 시트 하나의 자원이다(시트를 바꾸거나 닫으면 함께 버린다).
