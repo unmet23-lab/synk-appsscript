@@ -1231,7 +1231,7 @@ const withHz = (inp) => { inp.timeline = { ...inp.timeline, end: planHz.end }; r
 function runPlan(name, extra = {}) {
   const plan = base.plans[name];
   const { newOnly, all, mnFull, ...rest } = extra; // 유학 몫 견주기: newOnly = 둘째 나라부터의 몫, all = 모든 나라의 몫
-  const MN = mnFull ? {} : (base.targets.mnStart || {}); // [11-14 유호님] 몽골은 D안(빌린 교실 먼저). mnFull = 처음부터 직영 4실 80%(개원 관문 비교)
+  const MN = mnFull ? {} : (base.targets.mnStart || {}); // [11-18 밤 유호님] 몽골도 처음부터 직영 4실 80%(mnStart = {}). mnFull은 같은 판을 관문 비교에 쓴다
   const runs = plan.countries.map((c, k) => { const ps = all ?? (k > 0 && newOnly != null ? newOnly : FILL.pathShare); return { c, res: run(withHz(k === 0 ? clone(base) : countryInp(c)), '기본', { ...FILL, ...(k === 0 ? MN : {}), ...rest, pathShare: ps, countryOnly: k > 0, plan }) }; });
   const rows = runs[0].res.rows.map((r0, i) => {
     const parts = runs.map(({ c, res }) => ({ c, r: res.rows[i] }));
@@ -1280,7 +1280,7 @@ const planChecks = (base.pathShareChecks || []).map((ck) => ({ label: ck.label, 
 const opGate = base.lab.opGate && opPlans ? (() => {
   const OG = base.lab.opGate; const L = base.lab; const A = L.acquisition; const P = base.path;
   const conv = A.leadToStudent['기본'];
-  const op80 = runPlan('보수적', { newOnly: base.opPlan.newPathShare, mnFull: true }); const mnRows = op80.rows; // [11-14] 관문은 처음부터 직영 4실로 열 때의 비교(운영 계획은 D안)
+  const op80 = runPlan('보수적', { newOnly: base.opPlan.newPathShare, mnFull: true }); const mnRows = op80.rows; // 관문은 처음부터 직영 4실로 열 때의 비교(11-18 밤부터 운영 계획도 같은 판)
   const rowAt = (m) => { const r = mnRows.find((x) => x.m === m); if (!r) throw new Error(`opGate: ${m} 줄 없음`); return r.parts[0].r; };
   const target = rowAt(L.openMonth).lab.newStudents; // 개원 달 새 등록(4실 정원 × labFill)
   const leads = target / conv;

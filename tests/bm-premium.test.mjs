@@ -181,14 +181,15 @@ test('11-18 K-drama weekend workshop and 2030 return home: workshop cost by clas
     const paid = classes - Math.min(classes, free);
     return { classes, cost: paid * W.leadHoursPerClass * W.leadHourlyMNT * w * si + classes * W.assistHoursPerClass * W.assistHourlyMNT * w * si + classes * W.productionPerClassMNT + (lab.stage === 'host' ? classes * W.sessionHours * W.hostRoomHourMNT * ri : 0) };
   };
-  // 빌린 교실 단계(대표가 한 반을 맡음)와 직영 단계(귀국 뒤 한국인 강사가 두 반까지)
+  // 대표가 울란바토르에 있는 동안(대표가 한 반을 맡음)과 귀국 뒤(한국인 강사가 두 반까지)
   for (const [m, free] of [['2027-10', W.founderClasses], ['2028-10', W.founderClasses], ['2030-10', W.krTeacherClasses]]) {
     const row = at(m); const e = expectWs(row, free);
     assert.equal(row.lab.wsClasses, e.classes, `${m} 워크숍 반 수`);
     close(row.lab.workshop, e.cost);
   }
-  assert.equal(at('2027-10').lab.stage, 'host');
-  assert.ok(at('2027-10').lab.wsRoom > 0 && at('2030-10').lab.wsRoom === 0, '주말 교실 사용료는 빌린 교실 단계에서만');
+  // [11-18 밤 유호님 「그 참고한거 삭제해버려」] 빌린 교실 단계를 지워 몽골도 처음부터 직영 4실(v23)로 연다. 주말 교실 사용료는 없다.
+  assert.equal(at('2027-10').lab.stage, 'v23');
+  assert.ok(at('2027-10').lab.wsRoom === 0 && at('2030-10').lab.wsRoom === 0, '직영 4실은 주말 교실 사용료가 없다');
   // 대표 시간: 울란바토르에 있는 동안 회화 + 교실 운영 30시간 + 워크숍 한 반, 귀국 달부터 교실 점검만 · 한국 쪽 유학 · 정착 시간
   const C = inp.company; const teach = C.premiumClasses * C.premiumTeachingHoursPerClass;
   close(at('2027-10').hours.lab, teach + 30 + W.leadHoursPerClass);
