@@ -1,16 +1,15 @@
 // LAB 몽골 M32 「수고하세요 ↔ 안녕히 계세요」(11-09) — 연구실을 나서는 몽글의 「교수님, 수고하세요!」에 교수 책상부터 서리가 번져 온 방이 언다(한 장면).
 // 되감아 「안녕히 계세요!」 하면 같은 방 · 같은 교수님이 햇살 속에서 손을 흔든다. 끝은 교수님의 「수고해요.」에 버릇처럼 「네! 수고하…」 → 서리가 다시 번지다 「안녕히 계세요!!」에 걷힌다.
 // 그림은 같은 구도로 구운 판 넷(판/*.txt — 누끼 없음). 서리는 얼음 판을 프랙탈 가면(소리/서리가면.py)으로 겹쳐 실제로 번지게 하고, 몽글 · 교수 손은 같은 판의 타원 조각으로 움직인다. 전부 useCurrentFrame()으로만.
+// 11-18 판본 틀: 그 나라 글(위 띠 · 팻말 · 말풍선 뜻 줄 · 읽는 법)과 글꼴 · 글자 크기 · 줄 높이는 판본 꾸러미 p(./판본/<KEY>.json)에서 받는다. 그림 · 한국어 · 소리 · 박자 · 카메라는 그대로다.
 import React from 'react';
 import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { EN, KO } from '../lib/fonts';
-import { fr, T, TEXTS, FONTS, TOTAL_FRAMES, FPS, SCENE } from './data';
-import type { Lang } from './data';
+import { fr, T, TOTAL_FRAMES, FPS, SAY, READ_AT, END_KO } from './data';
+import type { LocPack } from './판본';
 import { GLINTS } from './glints';
 
-export { TOTAL_FRAMES, FPS, SCENE };
-const LangCtx = React.createContext<Lang>('mn');
-const useFont = () => FONTS[React.useContext(LangCtx)];
+export { TOTAL_FRAMES, FPS };
 const INK = '#2F2420';
 const COLD = '#2C6F9E';
 const WARM = '#C8551B';
@@ -298,15 +297,13 @@ const Snow: React.FC<{ t: number }> = ({ t }) => {
   );
 };
 
-// 머리 글 — 쪽빛 펠트 + 바늘땀(지난 두 편의 카페 천 이름표 · 채팅 띠와 다르게)
-const Sign: React.FC<{ t: number; at: number; until: number; top?: number; size?: number; mmScale?: number; children: React.ReactNode }> = ({ t, at, until, top = 262, size = 60, mmScale = 0.82, children }) => {
-  const FONT = useFont();
-  const lang = React.useContext(LangCtx);
+// 머리 글 — 쪽빛 펠트 + 바늘땀(지난 두 편의 카페 천 이름표 · 채팅 띠와 다르게). 글자 크기는 판본 꾸러미의 띠마다 칸(…Size), 줄 높이는 lineH
+const Sign: React.FC<{ p: LocPack; t: number; at: number; until: number; top?: number; size: number; children: React.ReactNode }> = ({ p, t, at, until, top = 262, size, children }) => {
   if (t < at || t >= until) return null;
   const a = interpolate(t, [at, at + 0.16], [0, 1], { ...clamp, easing: EASE_OUT });
   return (
     <div style={{ position: 'absolute', left: 60, width: 960, top, transform: `translateY(${(1 - a) * 14}px)`, opacity: a, filter: 'drop-shadow(0 10px 14px rgba(20,12,4,0.42))' }}>
-      <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 30, padding: '24px 30px 28px', boxSizing: 'border-box', fontFamily: FONT, fontWeight: 800, fontSize: lang === 'mm' ? size * mmScale : size, lineHeight: lang === 'mm' ? 1.5 : 1.18, color: '#FFF6E4', textAlign: 'center', whiteSpace: 'pre-line', textShadow: '0 2px 2px rgba(10,10,20,0.5)' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 30, padding: '24px 30px 28px', boxSizing: 'border-box', fontFamily: p.font, fontWeight: 800, fontSize: size, lineHeight: p.lineH, color: '#FFF6E4', textAlign: 'center', whiteSpace: 'pre-line', textShadow: '0 2px 2px rgba(10,10,20,0.5)' }}>
         <Img src={staticFile('img/clothBlue.jpg')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 10, borderRadius: 22, border: '3px dashed rgba(255,240,215,0.5)' }} />
         <div style={{ position: 'relative' }}>{children}</div>
@@ -315,10 +312,8 @@ const Sign: React.FC<{ t: number; at: number; until: number; top?: number; size?
   );
 };
 
-// 말풍선 — 크림 펠트 + 바늘땀. 한글 크게 · 키릴 읽기 · 몽골 뜻. shout면 기울어 튀어나온다
-const Bubble: React.FC<{ t: number; from: number; until: number; left: number; top: number; w: number; h: number; tip: [number, number]; color?: string; size?: number; ko: React.ReactNode; read?: string; mn?: string; shout?: number }> = ({ t, from, until, left, top, w, h, tip, color = INK, size = 76, ko, read, mn, shout = 0 }) => {
-  const FONT = useFont();
-  const lang = React.useContext(LangCtx);
+// 말풍선 — 크림 펠트 + 바늘땀. 한글 크게 · 읽는 법(몽골판 키릴) · 그 나라 말 뜻 줄(판본 꾸러미 meanSize · meanLineH). shout면 기울어 튀어나온다
+const Bubble: React.FC<{ p: LocPack; t: number; from: number; until: number; left: number; top: number; w: number; h: number; tip: [number, number]; color?: string; size?: number; ko: React.ReactNode; read?: string; mn?: string; shout?: number }> = ({ p, t, from, until, left, top, w, h, tip, color = INK, size = 76, ko, read, mn, shout = 0 }) => {
   if (t < from || t >= until) return null;
   const a = shout ? interpolate(t, [from, from + 0.07, from + 0.2, from + 0.4], [0.3, 1.18, 0.97, 1], clamp) : interpolate(t, [from, from + 0.16], [0.82, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
   const rx = Math.min(50, h / 2);
@@ -337,7 +332,7 @@ const Bubble: React.FC<{ t: number; from: number; until: number; left: number; t
       <div style={{ position: 'absolute', left, top, width: w, height: h, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 4, boxSizing: 'border-box', textAlign: 'center' }}>
         <div style={{ fontFamily: KO, fontWeight: 900, fontSize: size, lineHeight: 1.1, color, whiteSpace: 'nowrap' }}>{ko}</div>
         {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1.18, color: '#5F4E42', whiteSpace: 'nowrap' }}>{read}</div> : null}
-        {mn ? <div style={{ fontFamily: FONT, fontWeight: 800, fontSize: 44, lineHeight: lang === 'mm' ? 1.5 : 1.16, color: MEAN, whiteSpace: 'nowrap' }}>{mn}</div> : null}
+        {mn ? <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.meanSize, lineHeight: p.meanLineH, color: MEAN, whiteSpace: 'nowrap' }}>{mn}</div> : null}
       </div>
     </div>
   );
@@ -417,12 +412,12 @@ const Sound: React.FC = () => (
   </>
 );
 
-export const Film: React.FC<{ scene?: boolean; lang?: Lang }> = ({ scene, lang = 'mn' }) => {
+// p = 판본 글(./판본/<KEY>.json). Root가 글이 다 찬 판본만 m32-<KEY>로 등록한다. 옛 m32-mn · m32-cn · m32-mm은 MN · CN · MM이다(장면 심사용 m32-scene은 뺐다).
+export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
   const frame = useCurrentFrame();
   const t = frame / FPS;
-  const TEXT = TEXTS[lang];
+  const r = p.reads;
   return (
-    <LangCtx.Provider value={lang}>
     <AbsoluteFill style={{ background: '#20262e' }}>
       <Plate t={t} />
       <Breath t={t} />
@@ -430,49 +425,45 @@ export const Film: React.FC<{ scene?: boolean; lang?: Lang }> = ({ scene, lang =
       {/* 온 방이 얼어붙는 순간 희게 번쩍 */}
       {t >= T.frozen - 0.05 && t < T.frozen + 0.3 ? <AbsoluteFill style={{ background: '#EAF6FF', opacity: interpolate(t, [T.frozen - 0.05, T.frozen, T.frozen + 0.3], [0, 0.45, 0], clamp) }} /> : null}
       {t >= T.sun && t < T.sun + 0.3 ? <AbsoluteFill style={{ background: '#FFF2CC', opacity: interpolate(t, [T.sun, T.sun + 0.03, T.sun + 0.3], [0.6, 0.7, 0], clamp) }} /> : null}
-      {!scene ? <Sign t={t} at={-1} until={T.freeze} size={58}>{TEXT.hook}</Sign> : null}
-      <Bubble t={t} from={T.a1} until={T.frozen} left={50} top={700} w={740} h={272} tip={[300, 1112]} color={CORAL} size={72} ko={TEXT.a1Ko} read={TEXT.a1Read} mn={TEXT.a1Mn} />
-      {!scene ? (
-        <>
-          <Sign t={t} at={T.why} until={T.rewind} size={54}>
-            {TEXT.whyKo}
-            {'\n'}
-            {TEXT.whyMn}
-          </Sign>
-          <Sign t={t} at={T.rewind} until={T.sun} size={52}>{TEXT.again}</Sign>
-          {t >= T.rewind && t < T.rewind + 0.62 ? <Rewind t={t} /> : null}
-          <Bubble t={t} from={T.a2} until={T.b1} left={70} top={700} w={640} h={272} tip={[330, 1112]} color={INK} size={84} ko={TEXT.a2Ko} read={TEXT.a2Read} mn={TEXT.a2Mn} />
-          <Bubble t={t} from={T.b1} until={T.rule} left={330} top={520} w={690} h={250} tip={[800, 860]} color={WARM} size={72} ko={TEXT.b1Ko} read={TEXT.b1Read} mn={TEXT.b1Mn} />
-          {t >= T.rule && t < T.gag ? (
-            <>
-              {/* 규칙 팻말은 두 판 사이 이음매에, ✕ · ✓는 글 없는 작은 표로 — 위 팻말 + 이름표 둘, 글 상자 셋이 「카드뉴스 틀 · 교수 머리와 인형 몸을 가림」(아르곤 맹검 v12 [K8] [K5] [C017]) */}
-              <Sign t={t} at={T.rule} until={T.gag} size={46} top={lang === 'mm' ? 850 : 872} mmScale={0.94}>
-                {TEXT.ruleFriend}
-                {': '}
-                <span style={{ fontFamily: KO, fontWeight: 900 }}>수고하세요</span>
-                {'\n'}
-                {TEXT.ruleElder}
-                {': '}
-                <span style={{ fontFamily: KO, fontWeight: 900 }}>안녕히 계세요</span>
-              </Sign>
-              <Tick t={t} at={T.rule + 0.15} left={880} top={70} color={COLD} mark="✕" />
-              <Tick t={t} at={T.rule + 1.0} left={880} top={1090} color={WARM} mark="✓" />
-            </>
-          ) : null}
-          <Sign t={t} at={T.gag + 0.1} until={T.a3} size={54}>{TEXT.gagMn}</Sign>
-          <Bubble t={t} from={T.gag + 0.12} until={T.a3 + 0.1} left={TEXT.b2Mn ? 330 : 430} top={TEXT.b2Mn ? 520 : 560} w={TEXT.b2Mn ? 690 : 560} h={TEXT.b2Mn ? 260 : 210} tip={[810, 860]} color={WARM} size={84} ko={TEXT.b2Ko} read={TEXT.b2Read} mn={TEXT.b2Mn || undefined} />
-          <Bubble t={t} from={T.a3} until={T.a4} left={70} top={760} w={560} h={210} tip={[320, 1112]} color={CORAL} size={84} ko={TEXT.a3Ko} read={TEXT.a3Read} />
-          <Bubble t={t} from={T.a4} until={T.end} left={50} top={700} w={700} h={272} tip={[330, 1112]} color={INK} size={84} ko={TEXT.a4Ko} read={TEXT.a4Read} mn={TEXT.a2Mn} shout={-3} />
-          <Sign t={t} at={T.end} until={T.total + 1} size={62}>
-            {TEXT.end}{' '}
-            <span style={{ fontFamily: KO, fontWeight: 900 }}>{TEXT.endKo}</span>
-          </Sign>
-        </>
-      ) : null}
+      <Sign p={p} t={t} at={-1} until={T.freeze} size={p.hookSize}>{p.hook}</Sign>
+      <Bubble p={p} t={t} from={T.a1} until={T.frozen} left={50} top={700} w={740} h={272} tip={[300, 1112]} color={CORAL} size={72} ko={SAY.a1} read={r[READ_AT.a1]} mn={p.a1Mean} />
+      <>
+        <Sign p={p} t={t} at={T.why} until={T.rewind} size={p.literalSize}>
+          {p.literal}
+          {'\n'}
+          {p.literalNote}
+        </Sign>
+        <Sign p={p} t={t} at={T.rewind} until={T.sun} size={p.againSize}>{p.again}</Sign>
+        {t >= T.rewind && t < T.rewind + 0.62 ? <Rewind t={t} /> : null}
+        <Bubble p={p} t={t} from={T.a2} until={T.b1} left={70} top={700} w={640} h={272} tip={[330, 1112]} color={INK} size={84} ko={SAY.a2} read={r[READ_AT.a2]} mn={p.a2Mean} />
+        <Bubble p={p} t={t} from={T.b1} until={T.rule} left={330} top={520} w={690} h={250} tip={[800, 860]} color={WARM} size={72} ko={SAY.b1} read={r[READ_AT.b1]} mn={p.b1Mean} />
+        {t >= T.rule && t < T.gag ? (
+          <>
+            {/* 규칙 팻말은 두 판 사이 이음매에, ✕ · ✓는 글 없는 작은 표로 — 위 팻말 + 이름표 둘, 글 상자 셋이 「카드뉴스 틀 · 교수 머리와 인형 몸을 가림」(아르곤 맹검 v12 [K8] [K5] [C017]) */}
+            <Sign p={p} t={t} at={T.rule} until={T.gag} size={p.ruleSize} top={p.ruleTop}>
+              {p.ruleFriend}
+              {': '}
+              <span style={{ fontFamily: KO, fontWeight: 900 }}>수고하세요</span>
+              {'\n'}
+              {p.ruleElder}
+              {': '}
+              <span style={{ fontFamily: KO, fontWeight: 900 }}>안녕히 계세요</span>
+            </Sign>
+            <Tick t={t} at={T.rule + 0.15} left={880} top={70} color={COLD} mark="✕" />
+            <Tick t={t} at={T.rule + 1.0} left={880} top={1090} color={WARM} mark="✓" />
+          </>
+        ) : null}
+        <Sign p={p} t={t} at={T.gag + 0.1} until={T.a3} size={p.gagSize}>{p.gag}</Sign>
+        {/* 「수고해요」 뜻 줄(b2Mean)은 선택 — 찬 판본(간체 · 버마어 두 채널 판)은 말풍선이 커지고 뜻 줄이 붙는다. 빈 판본(몽골판)은 작은 말풍선 */}
+        <Bubble p={p} t={t} from={T.gag + 0.12} until={T.a3 + 0.1} left={p.b2Mean ? 330 : 430} top={p.b2Mean ? 520 : 560} w={p.b2Mean ? 690 : 560} h={p.b2Mean ? 260 : 210} tip={[810, 860]} color={WARM} size={84} ko={SAY.b2} read={r[READ_AT.b2]} mn={p.b2Mean || undefined} />
+        <Bubble p={p} t={t} from={T.a3} until={T.a4} left={70} top={760} w={560} h={210} tip={[320, 1112]} color={CORAL} size={84} ko={SAY.a3} read={r[READ_AT.a3]} />
+        <Bubble p={p} t={t} from={T.a4} until={T.end} left={50} top={700} w={700} h={272} tip={[330, 1112]} color={INK} size={84} ko={SAY.a4} read={r[READ_AT.a4]} mn={p.a2Mean} shout={-3} />
+        <Sign p={p} t={t} at={T.end} until={T.total + 1} size={p.endSize}>
+          {p.end}{' '}
+          <span style={{ fontFamily: KO, fontWeight: 900 }}>{END_KO}</span>
+        </Sign>
+      </>
       <Sound />
     </AbsoluteFill>
-    </LangCtx.Provider>
   );
 };
-
-export const SceneFilm: React.FC = () => <Film scene />;
