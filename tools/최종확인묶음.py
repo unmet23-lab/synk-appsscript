@@ -3,6 +3,10 @@
 
   python -I -X utf8 tools/최종확인묶음.py <최종본.mp4> --out <폴더> [--ref <승인 얼굴.jpg>] [--up <올리기판.mp4>] [--skip-stt]
 
+  고친 장면을 비교할 때 등가 구간을 지정한다. --비교구간 5~8은 양쪽 5~8초가 같은 장면임을 확인한 경우다.
+  위치가 바뀌면 --비교구간 5~8=7~10(이전=수정)처럼 대응시킨다. 구간 안에서 컷 순서가 바뀌었으면 나눠 지정한다.
+  --비교전 <이전 영상> --비교전해시 <이전 검수 SHA-256> --비교구간 5~8 [--비교구간 15~18=16~19]
+
 왜: 11-11~14 최종 확인 세션은 이 일을 세션 임시 폴더의 스크립트(review.py)로 했다. 그 세션이 멈추자 아무도 같은 묶음을 만들 수 없었다.
 11-15 유호님 「예약으로 바꿔」 — 최종 확인을 예약 작업(synk-sns-final-check)이 하므로 묶음 도구를 저장소에 둔다.
 
@@ -42,6 +46,9 @@ ap.add_argument('--out', required=True)
 ap.add_argument('--ref')
 ap.add_argument('--up')
 ap.add_argument('--skip-stt', action='store_true')
+ap.add_argument('--비교전', help='재검할 때 대조할 이전 영상')
+ap.add_argument('--비교전해시', help='전후 비교에 필요한 이전 검수 기록의 SHA-256')
+ap.add_argument('--비교구간', action='append', help='양쪽에서 같은 장면으로 확인한 시작~끝 또는 이전시작~끝=수정시작~끝. 여러 번 지정 가능')
 a = ap.parse_args()
 MP4 = os.path.abspath(a.mp4)
 OUT = os.path.abspath(a.out)
@@ -73,6 +80,16 @@ def guard(name, fn):
 if not os.path.exists(MP4):
     print(json.dumps({'오류': f'파일이 없다: {MP4}'}, ensure_ascii=False))
     sys.exit(2)
+
+comparison_requested = bool(a.비교전 or a.비교구간 or a.비교전해시)
+comparison_start_hash = None
+if comparison_requested:
+    import hashlib
+    try:
+        with open(MP4, 'rb') as video:
+            comparison_start_hash = hashlib.file_digest(video, 'sha256').hexdigest()
+    except OSError:
+        pass  # 원본 검수는 계속한다. 비교 자료 단계가 누락을 알린다.
 
 try:
     pr = json.loads(run(['ffprobe', '-v', 'error', '-show_entries',
@@ -494,6 +511,31 @@ def speech_lines(fc):
     return out
 
 
+def comparison_note():
+    if not (a.비교전해시 or '').strip():
+        raise ValueError('이전 검수 기록의 SHA-256이 없어 전후 비교를 할 수 없습니다. --비교전해시를 지정하세요.')
+    # 이 도구는 -I로 실행한다. 공용 작업본과 다른 폴더의 동명 모듈을 불러오지 않는다.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('수정전후시트', os.path.join(HERE, '수정전후시트.py'))
+    paired = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(paired)
+    if comparison_start_hash is None:
+        raise ValueError('기본 묶음 시작 시 수정판 SHA-256을 확인하지 못했습니다.')
+    files = paired.create(a.비교전, MP4, a.비교구간, OUT, a.비교전해시, comparison_start_hash)
+    say(f'수정 전후 비교 시트 {len(files)}장 → ' + ', '.join(files))
+    return ('- 수정 전후 시트: ' + ', '.join(files) +
+            ' (왼쪽 이전, 오른쪽 수정). 오른쪽에 현재 남은 흠과 그 시각을 확인한다. 구판과 다르다는 사실만으로 흠이라고 판단하지 않는다.')
+
+
+comparison = None
+if comparison_requested:
+    try:
+        comparison = comparison_note()
+    except Exception as ex:
+        comparison = f'- 수정 전후 비교 자료를 만들지 못했다 ({type(ex).__name__}: {ex}). 이번 묶음은 현재 영상의 기존 검수 자료만 사용한다.'
+        say(comparison)
+
+
 def step_prompt():
     fc = info['최종본검사'] or {}
     machine = [f"- {h.get('초')}초: {h.get('항목')} — {json.dumps(h.get('값'), ensure_ascii=False)}" for h in (fc.get('걸림') or [])]
@@ -512,6 +554,8 @@ def step_prompt():
         "- end.jpg — 끝 3초(1/8초), top.jpg · bot.jpg — 위 · 아래 띠(앱 단추 · 캡션 자리 확인용, 위 빨간 줄이 안전선)",
         f"- z/f_<초>.jpg — 컷마다 가운데 한 장, 원화질의 절반({len(info['z'])}장)",
     ]
+    if comparison:
+        files.append(comparison)
     stt = ' / '.join(info['받아쓰기']) or '(받아쓰기 없음)'
     speech = speech_lines(fc)
     for ln in speech[:3]:
@@ -559,5 +603,8 @@ guard('독립 검수 지시문', step_prompt)
 if failed:
     rep.append('\n못 만든 것:\n' + '\n'.join(failed))
 open(os.path.join(OUT, 'report.txt'), 'w', encoding='utf-8').write('\n'.join(rep) + '\n')
-print(json.dumps({'폴더': OUT, '컷': info['컷'], '못만듦': failed}, ensure_ascii=False))
+result = {'폴더': OUT, '컷': info['컷'], '못만듦': failed}
+if comparison:
+    result['수정전후비교'] = comparison
+print(json.dumps(result, ensure_ascii=False))
 sys.exit(2 if failed else 0)
