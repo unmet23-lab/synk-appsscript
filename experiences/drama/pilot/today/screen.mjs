@@ -1,19 +1,20 @@
 // 「오늘」 한 장 화면(11-14, 깃발 ?today=1 뒤 — pilot.mjs startToday가 부른다). 둘째 날부터 첫 화면 대신:
-//   장면 판(11-18 유호님 「드라마 장면 쪽으로」 · 「앱에 옮겨」 — qa/오늘한장-20261114/현황.md 12절): 「오늘은 장면 세 개, 5분.」 아래에 할 일마다
-//   그 드라마의 장면 한 컷(첫 할 일은 크게)과 머리글(어디 · 누구) · 할 일 · 한 줄. 줄을 누르면 앱이 본 까닭과 근거가 펼쳐진다(content.mjs sceneFor).
-//   전에는 일력 한 장(11-16)이었다 — 같은 날 유호님 「누가봐도 슬롭같고 무슨 내용인지 하나도 이해가 안가」.
-//   종이 아래 끝의 먹색 띠 단추(「시작하기」 · 이어서 연 날은 「이어서」)를 누르면 장이 들려 어두운 장면으로, 고르는 화면 없이 차례로 →
+//   메신저 판(11-19 유호님 「a,b,c 다 괜찮은데 C가 가장 좋을것같네」 — qa/오늘한장-20261114/현황.md 14절, 그리기와 움직임은 msg.mjs):
+//   태오가 동그란 영상 메시지로 먼저 말을 걸고, 어제 내 대사를 인용해 고칠 것을 짚은 뒤, 오늘 할 장면 사진 앨범을 보낸다.
+//   전에는 장면 판(11-18)이었다 — 유호님 「하나도 눈에 안들어오고 모션그래픽도없고 이걸 왜 봐야하는지 모르겠어」. 그 전은 일력 한 장(11-16).
+//   답장 단추(「좋아요, 시작할게요」 · 이어서 연 날은 「이어서 할게요」)를 누르면 대화가 위로 물러나 어두운 장면으로, 고르는 화면 없이 차례로 →
 //   끝 화면은 일력 한 장 그대로다: 그 장의 날짜에 동그라미, 오늘 달라진 것(전은 줄을 긋고 후는 체크), 다음에 할 것(날짜별 다음 장) →
 //   「오늘은 여기까지」로 이 장을 뜯으면 다음 장이 보인다.
 // 값은 plan.mjs 계약(today · after)만 읽는다. 차례는 드라마 장면 함수를 그대로 부른다(새 상황 = runTransfer('today'),
 // 틀린 장면 복습 = runReview — 첫 화면과 같은 복습 화면이고, 「오늘」에서 열면 결과 화면의 「마치기」가 다음 차례로 간다).
 // 입장 검사는 드라마 틀 밖이라 부모 창 통로(SYNKTodayHost.open)로 연다 — 지금은 시연 대역(qa/오늘한장-20261114/오늘시험.mjs)에만 있다.
 // 중간에 나가도(창을 닫거나 다른 게임으로 가도) 버튼을 누른 때의 「오늘」과 한 차례가 이 탭(sessionStorage)에 남아 다시 열면 이어진다.
-// 목소리: 오늘 장(장면 판)은 첫 장면이 1화 식당이고 태오 한 줄을 구운 영상(content.mjs TAEO_MEDIA)이 있으면 큰 컷 모서리의 「태오 선배 한마디 듣기」
-// 단추로 그 소리를 한 번 낸다(heroVoice — 영상은 보이지 않는다). 막히면 그 단추를 눌러 듣는다. 없으면 단추가 없다.
+// 목소리: 오늘 장(메신저 판)은 태오 한 줄을 구운 영상(content.mjs TAEO_MEDIA)이 있으면 그 영상 메시지를 소리와 함께 튼다. 막히면 「눌러서 듣기」.
+// 없으면 듣는 고리 영상과 글로 말한다.
 // 끝 화면의 태오 끝인사(sayBlock · voice)는 일력 때 그대로 장면 컷 안에서 소리와 함께 한 번 튼다.
 import { buildToday, buildAfter, dayKey, dayStart, proofLine as proof } from './plan.mjs';
-import { poolItem, TEXT, sceneFor } from './content.mjs';
+import { poolItem, TEXT } from './content.mjs';
+import { msgView, msgPlay } from './msg.mjs';
 import { findLearningHost, readEvents, readRevisit, readEntry } from './gather.mjs';
 import { STR } from '../strings.mjs';
 
@@ -67,15 +68,22 @@ export async function start(ctx) {
   if (!T.run && today.firstDay) { S.today = null; return ctx.intro(); }
   // 버튼을 누른 뒤면 그때의 「오늘」(남은 차례)을, 아니면 지금 기록으로 지은 「오늘」을 보인다.
   const view = T.run ? { ...T.run.start, items: remaining().map(({ it }) => it), minutes: remaining().reduce((s, { it }) => s + it.minutes, 0) } : today;
-  if (!T.run && !today.items.length) return paint(viewToday(today, { empty: true }));
-  paint(viewToday(view, { resume: !!T.run }), () => {
+  const day = dayStart(Date.now()); // 학습일 날짜(새벽 4시 전이면 전날)
+  if (!T.run && !today.items.length) return paint(msgView({ t: today, lesson, line: today.line, assets: assets(), empty: true, day }), () => {
+   T.root.querySelector('[data-episode]')?.addEventListener('click', () => { hide(); S.today = null; ctx.intro(); });
+   msgPlay(T.root, { line: today.line, assets: assets(), empty: true });
+  });
+  const line = T.run ? T.run.start.line : today.line;
+  paint(msgView({ t: view, lesson, line, assets: assets(), resume: !!T.run, day }), () => {
    T.root.querySelector('[data-go]')?.addEventListener('click', (e) => {
     e.currentTarget.disabled = true;
     if (!T.run) { T.run = { day: dayKey(Date.now()), startAt: Date.now(), start: today, done: [], current: null, opened: null, entryTarget: null }; store.set(T.run); }
-    // 장이 위로 들리고 어두운 장면이 드러난 뒤 첫 차례를 연다(움직임 줄이기 설정이면 바로).
+    // 대화가 위로 물러나고 어두운 장면이 드러난 뒤 첫 차례를 연다(움직임 줄이기 설정이면 바로).
+    T.root.querySelectorAll('video').forEach((x) => x.pause());
     motion('lifting', 640).then(next);
    });
    T.root.querySelector('[data-episode]')?.addEventListener('click', () => { hide(); S.today = null; ctx.intro(); });
+   msgPlay(T.root, { line, assets: assets(), resume: !!T.run });
   });
  }
 
@@ -158,20 +166,19 @@ export async function start(ctx) {
   return reduce ? Promise.resolve() : new Promise((r) => setTimeout(r, ms));
  }
 
- /* ── 그리기 — 오늘 장은 장면 판(11-18), 끝 화면은 일력 한 장(11-16) ── */
+ /* ── 그리기 — 오늘 장은 메신저 판(11-19, msg.mjs), 끝 화면은 일력 한 장(11-16) ── */
  function hide() { if (T.root) { T.root.remove(); T.root = null; } }
  function paint(html, bind) {
   hide();
   const root = document.createElement('div');
-  root.className = html.includes('td-scn-sheet') ? 'td td-cal td-scn' : 'td td-cal';
+  root.className = html.includes('td-msg-app') ? 'td td-msg' : 'td td-cal';
   root.innerHTML = html;
   document.body.append(root);
   T.root = root;
   root.querySelectorAll('[data-card]').forEach((c) => c.addEventListener('click', () => { c.classList.toggle('open'); c.setAttribute('aria-expanded', c.classList.contains('open')); c.closest('.td-scn-card')?.classList.toggle('open', c.classList.contains('open')); }));
   // 장면 컷이 없는 작업본(재생 사본은 git 밖)이면 그림을 빼고 종이색 칸으로 둔다.
-  root.querySelectorAll('.td-shot img').forEach((img) => img.addEventListener('error', () => img.remove(), { once: true }));
+  root.querySelectorAll('.td-im img').forEach((img) => img.addEventListener('error', () => img.remove(), { once: true }));
   voice(root.querySelector('.td-sheet:not(.td-under) .td-say'));
-  heroVoice(root.querySelector('.td-scn-hero'));
   bind?.();
  }
  // 태오 한마디를 구운 영상이 있으면 소리 내어 한 번 — 끝나면 듣는 고리로 돌아간다. 소리 자동 재생이 막히면 이름 옆에 「듣기」가 뜨고,
@@ -187,23 +194,6 @@ export async function start(ctx) {
   const failed = (e) => { if (video.error || e?.name === 'NotSupportedError') { bub.disabled = true; say.classList.remove('tap'); } else say.classList.add('tap'); loop(); };
   speak().catch(failed);
   for (const b of say.querySelectorAll('[data-say], .td-listen')) b.addEventListener('click', () => speak().catch(failed));
- }
- // 장면 판의 태오 한마디 — 첫 장면이 1화 식당이고 그 한마디를 구웠으면, 장면 컷 아래 모서리의 「태오 선배 한마디」로 소리를 한 번 낸다
- // (영상은 보이지 않고 소리만 — 장면 컷은 어깨 너머로 본 식당 그대로다). 막히면 「듣기」로 바뀌고 누르면 듣는다.
- function heroVoice(card) {
-  const b = card?.querySelector('[data-say]');
-  if (!b) return;
-  const v = document.createElement('video');
-  v.playsInline = true; v.preload = 'auto'; v.hidden = true; v.src = b.dataset.say;
-  card.append(v);
-  const off = () => card.classList.remove('speaking');
-  // 재생 사본에 파일이 없거나 깨졌으면(자동 재생 막힘보다 늦게 알 수 있다) 단추를 접는다 — 「듣기」가 아무 소리 없이 남지 않게(11-18 카본 A1).
-  const gone = () => { off(); card.classList.remove('tap'); b.disabled = true; b.hidden = true; };
-  v.addEventListener('ended', off); v.addEventListener('pause', off); v.addEventListener('error', gone, { once: true });
-  const play = () => { card.classList.remove('tap'); card.classList.add('speaking'); try { v.currentTime = 0; } catch { /* 처음 */ }
-   return v.play().catch((e) => { off(); if (v.error || e?.name === 'NotSupportedError') gone(); else card.classList.add('tap'); }); };
-  b.addEventListener('click', play);
-  play();
  }
  const assets = () => ({ ...{ listenLoop: 'media/taeo-listen.mp4', poster: 'media/taeo-still.webp' }, ...(lesson.assets || {}) });
  // 일력의 풀칠한 머리 — 연월을 종이색으로 찍는다(11-16 카본: 아무 글 없는 검은 띠는 어색했다).
@@ -223,43 +213,6 @@ export async function start(ctx) {
   const d = new Date(ms), w = d.getDay();
   const ring = done ? '<svg class="td-ring" viewBox="0 0 220 140" aria-hidden="true"><path d="M150 16C96 2 30 14 16 58c-12 40 34 70 96 70 66 0 104-28 100-62C208 30 160 10 104 12 70 13 44 22 30 34" pathLength="1"/></svg>' : '';
   return `<header class="td-date${small ? ' small' : ''} rise"><div class="td-dn"><span class="td-num${w === 0 ? ' sun' : w === 6 ? ' sat' : ''}">${d.getDate()}${ring}</span><span class="td-wd"><b>${WD[w]}요일</b>${sub ? `<span>${esc(sub)}</span>` : ''}</span></div></header>`;
- }
- // 장면 판 — 머리(날짜 · 「오늘은 장면 세 개, 5분.」 · 무엇을 하는 화면인지), 첫 할 일은 큰 장면 컷, 나머지는 장면 컷 + 글 줄.
- // 11-18 GPT 맹검(유호님 「드라마 장면 쪽으로」 뒤 다섯 판): 장면 컷 위 시간 표시 · 흰 재생 원은 「기성 동영상 목록」, 검은 번호표와 장소 · 인물 꼬리표 반복은
- // 「강좌 목차」로 졌다. 시간은 할 일 옆, 번호는 없다(차례는 위에서 아래). 「장면을 해 봐요」 · 「그 장면, 오늘 한 번 더 해요」는 처음 보는 사람이 뜻을 몰랐다 —
- // 머리의 한 줄이 무엇을 하는 화면인지 말하고, 할 일마다 무엇을 하는지(복습은 고칠 것, 새 상황은 상황 글 첫 문장)를 쓴다.
- const COUNT = ['', '하나', '두 개', '세 개'];
- function sceneHead(ms, title, lead) {
-  const d = new Date(ms);
-  return `<header class="td-scn-head rise"><p class="td-scn-date">${d.getMonth() + 1}월 ${d.getDate()}일 ${WD[d.getDay()]}요일</p><h2>${esc(title)}</h2>${lead ? `<p class="td-scn-lead">${yo(lead)}</p>` : ''}</header>`;
- }
- function sceneCard(it, i, line) {
-  const sc = sceneFor(it, lesson) || { scene: {}, action: it.title, say: it.why.lead || it.why.text };
-  const hero = i === 0;
-  const img = sc.scene.img ? `<img src="${esc(sc.scene.img)}" alt="" decoding="async">` : '';
-  // 첫 장면이 1화 식당이고 태오 한마디를 구웠으면 그 소리를 내는 단추가 장면 컷 모서리에 붙는다.
-  const media = hero && sc.scene.who === '태오 선배' ? line?.media : null;
-  const say = media?.video ? `<button type="button" class="td-voice" data-say="${esc(media.video)}" aria-label="태오 선배 한마디 듣기: ${esc(line.text)}"><i aria-hidden="true"></i><span>태오 선배 한마디</span><b>듣기</b></button>` : '';
-  const head = [sc.scene.place, sc.scene.who].filter(Boolean).join(' · ');
-  // 펼친 까닭 글 — 한 줄(say1)로 이미 보인 문장은 되풀이하지 않는다(1화 이어서 하기 · 모르는 꼴은 한 줄이 까닭 글의 첫 문장이다, 11-18 카본 A3).
-  const rest = [sc.say ? it.why.text.replace(sc.say, '').trim() : it.why.text, it.why.next || ''].filter(Boolean).join(' ');
-  return `<div class="td-scn-card${hero ? ' td-scn-hero' : ''} rise" data-kind="${esc(it.kind)}" data-title="${esc(it.title)}" style="animation-delay:${120 + i * 70}ms"><span class="td-shot">${img}${say}</span>
-   <button type="button" class="td-scn-body" data-card aria-expanded="false">${head ? `<span class="td-eb">${esc(head)}</span>` : ''}<span class="td-act">${esc(sc.action)}<span class="td-min">${it.minutes}분</span><span class="td-chev" aria-hidden="true"></span></span>
-   ${sc.say ? `<span class="td-say1">${yo(sc.say)}</span>` : ''}<span class="td-more"><span>${rest ? `<span class="td-rest">${yo(rest)}</span>` : ''}<span class="td-proof">${esc(proof(it))}</span></span></span></button></div>`;
- }
- function viewToday(t, { resume = false, empty = false } = {}) {
-  const day = dayStart(Date.now()); // 학습일 날짜(새벽 4시 전이면 전날)
-  if (empty) return `<article class="td-sheet td-scn-sheet td-into-sheet"><div class="td-scn-l">${sceneHead(day, '오늘은 새로 할 게 없어요.', t.empty?.text || '')}</div>
-   <div class="td-foot td-into rise" style="animation-delay:200ms"><button type="button" class="td-go" data-episode>1화 처음부터<span class="td-arr"></span></button></div></article>`;
-  const n = t.items.length;
-  const title = `${resume ? '남은 장면' : '오늘은 장면'} ${COUNT[n] || `${n}개`}, ${t.minutes}분.`;
-  const [first, ...more] = t.items;
-  // 단추는 종이 아래의 어두운 장면이 드러난 자리다 — 누르면 이 종이가 들려 그 어둠이 장면이 된다(11-18, 둥근 검정 단추를 버림). 시간은 머리에만.
-  // 머리 둘째 줄은 무엇을 하는 화면인지 — 입장 검사 게임은 말하기가 아니라서 그 줄이 있는 날은 함께 말한다(11-18 Opus 대체 검수 F5).
-  const lead = t.items.some((x) => x.open?.type === 'game') ? '드라마 속 인물에게 말해 보고, 입장 검사 게임도 한 판 해요.' : '드라마 속 인물에게 직접 말해 보는 연습이에요.';
-  return `<article class="td-sheet td-scn-sheet td-into-sheet"><div class="td-scn-l">${sceneHead(day, title, lead)}${sceneCard(first, 0, t.line)}</div>
-   <div class="td-scn-r">${more.map((it, i) => sceneCard(it, i + 1, null)).join('')}</div>
-   <div class="td-foot td-into rise" style="animation-delay:${260 + n * 70}ms"><button type="button" class="td-go" data-go>${resume ? '이어서' : '시작하기'}<span class="td-arr"></span></button></div></article>`;
  }
  function viewAfter(a) {
   const day = dayStart(Date.now());

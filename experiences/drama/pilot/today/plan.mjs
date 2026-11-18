@@ -187,8 +187,9 @@ function newItem({ turns, scene, lesson, nowMs, tz, skip, avoid = [] }) {
   const ask = scene.find((x) => x.skill === B.skill) || null;
   const at = ask ? spokenTurns(turns, ask.id, 'scene').at(-1)?.at : null;
   return { kind: 'new', title: '같은 과 다른 선배에게 길 묻기', minutes: MINUTES.situation, open: { type: 'situation', lineId: B.id, source: 'transfer' },
-   why: { code: 'new.transfer', text: at != null ? `${whenWord(at, nowMs, tz)} 1화에서 선배에게 도서관이 어디 있는지 물어봤죠. 오늘은 처음 보는 선배에게 다른 곳을 물어봐요.` : '1화 다음에 이어지는 새 상황이에요.',
-    lead: at != null ? `${whenWord(at, nowMs, tz)} 1화에서 선배에게 도서관이 어디 있는지 물어봤죠.` : '1화 다음에 이어지는 새 상황이에요.',
+   // 까닭 글에도 이 새 상황의 답 낱말(어디 있는지 · 위치 · 가는 길 …)을 쓰지 않는다 — 오늘 화면에서 사진을 누르면 첫 제출 전에 보인다(11-19 카본 B4).
+   why: { code: 'new.transfer', text: at != null ? `${whenWord(at, nowMs, tz)} 1화에서 도서관을 찾느라 선배에게 길을 물어봤죠. 오늘은 처음 보는 선배에게 다른 곳을 물어봐요.` : '1화 다음에 이어지는 새 상황이에요.',
+    lead: at != null ? `${whenWord(at, nowMs, tz)} 1화에서 도서관을 찾느라 선배에게 길을 물어봤죠.` : '1화 다음에 이어지는 새 상황이에요.',
     evidence: { lineId: B.id, spoken: false, skill: B.skill || null, like: ask?.id || null, likeAt: at != null ? new Date(at).toISOString() : null } } };
  }
  for (const id of NEW_ORDER) {

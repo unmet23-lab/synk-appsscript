@@ -37,6 +37,13 @@ export const TAEO_MEDIA = Object.freeze({
  'again.review': { video: 'media/today-taeo-review.mp4' },
 });
 
+// 구운 한마디의 문장마다 말이 시작하는 초(영상 소리에서 잰 값 — ffmpeg silencedetect, 11-19). 메신저 판(screen.mjs)의 자막이 이 시각에 바뀐다.
+// 적지 않은 틀은 글자 수에 비례해 나눈다(태오굽기.py가 새로 넣은 줄도 바로 쓸 수 있게).
+export const TAEO_SAY_AT = Object.freeze({
+ 'again.call.s1e01-6.yo': [1.45, 3.3, 5.35],
+ 'again.review': [1.5],
+});
+
 const SEE_ABOVE = '(무엇을 말할지는 위 설명을 보세요.)';
 // 처음 보는 대사. title: 줄 위 짧은 제목. situation: 녹음 카드의 한국어 상황 글. prompt: 영어 설명. like: 1화의 어느 줄과 같은 말하기인지(까닭 글).
 export const POOL = Object.freeze([
@@ -126,10 +133,30 @@ export function sceneFor(it, lesson = {}) {
  if (it.kind === 'check' && it.open?.source === 'delayed') return { scene: SCENES.bus, action: '처음 보는 분께 길 묻기', say: first(lesson.delayed?.promptKo) };
  if (it.kind === 'check' && it.open?.type === 'game') {
   const id = it.open.venueId || null, name = it.open.venueName || (String(it.title || '').match(/·\s*(.+?)\s*근무$/) || [])[1] || '입장 검사';
-  // 머리글의 둘째 자리는 다른 칸에서는 말을 거는 사람이지만, 여기서는 학습자 자신이 알바라 「입장 검사 게임」이라고 한다(11-18 Opus 대체 검수 F5).
-  return { scene: { img: venueImg(id), place: name, who: '입장 검사 게임' }, action: '손님 표와 짐 확인', say: '손님의 표와 짐을 안내문과 하나씩 맞춰 봐요.' };
+  // 머리글의 둘째 자리는 다른 칸에서는 말을 거는 사람이지만, 여기서는 학습자 자신이 그곳 직원이 되는 게임이라 그렇게 말한다(11-18 Opus 대체 검수 F5).
+  // 「입장 검사 게임」은 처음 보는 사람이 무엇인지 몰랐다(11-19 움직임 시안 GPT 맹검 넷 다 이해 아니오) — 하는 일을 풀어 쓴다.
+  return { scene: { img: venueImg(id), place: name, who: '직원이 되어 보는 게임' }, action: '손님 표와 짐 맞춰 보기', say: '손님의 표와 짐을 안내문과 하나씩 맞춰 봐요.' };
  }
  return null;
+}
+/**
+ * 메신저 판(11-19 유호님 「C가 가장 좋을것같네」)에서 태오가 인용하는 내 대사 — 복습 할 일(again)에만. { label, tail, ghost, said, ask } | null.
+ * 복습은 그 대사를 다시 하는 일이라 대사를 보여도 된다(장면 판의 한 줄과 같은 꼬리). 「요」를 흘린 날은 꼬리 끝의 「요」를 흐리게 그리고(ghost),
+ * 태오가 「이번엔 「요」까지」라고 할 때 또렷해진다. 기록의 노트 갈래마다 태오가 짚는 말과 오늘 할 말이 다르다(짚는 말은 plan.mjs noteSaid와 같은 사실).
+ */
+const QUOTE_SAY = {
+ ending: ['끝맺음이 대사와 다르게 들렸어요.', '이번엔 대사 그대로 끝맺어 봐요.'],
+ length: ['말이 짧게 끝났어요.', '이번엔 끝까지 다 말해 봐요.'],
+ missing: ['꼭 들어가야 할 말이 하나 빠졌어요.', '이번엔 빠진 말 없이 해 봐요.'],
+};
+export function quoteFor(it, lesson = {}) {
+ if (it?.kind !== 'again') return null;
+ const ev = it.why?.evidence || {};
+ const tail = lineTail((lesson.scene || []).find((x) => x.id === ev.lineId)?.text, ev.lineId);
+ if (!tail) return null;
+ const yo = it.note === 'ending' && Boolean(ev.yo) && tail.endsWith('요');
+ const [said, ask] = yo ? ["끝이 반말처럼 들렸어요.", "이번엔 '요'까지 또렷하게 해 봐요."] : (QUOTE_SAY[it.note] || QUOTE_SAY.missing);
+ return { label: `${whenOf(ev.ago)} ${SCENES.cafe.place} · 내 대사`, tail: yo ? tail.slice(0, -1) : tail, ghost: yo ? '요' : '', said, ask };
 }
 /**
  * 끝 화면(오늘 달라진 것 · 다음에 할 것 · 뜯으면 보이는 다음 장)이 같은 할 일을 부르는 이름 — { place, who, action }.

@@ -191,70 +191,151 @@ button.td-bub:disabled { cursor: default; transform: none; }
  .td * { transition: none !important; }
 }
 
-/* 장면 판(11-18 유호님 「드라마 장면 쪽으로」 · 「앱에 옮겨」) — 오늘 장만 이 꼴이다. 끝 화면(장 뜯기)은 위의 일력 그대로.
-   참고: 드라마 앱의 회차 목록(다음 장면은 큰 컷, 나머지는 장면 컷 + 글 줄) · 참고 사이트 장부 4절 평균(밝은 바탕 · 실물 한 덩어리) · 3절 한글 서비스(제목 700 · 자간 0).
-   맹검(GPT 눈, .tmp/미학맹검/today-redo-1118 ~ 1118f): 장면 컷 위 시간 표시 · 흰 재생 원 = 「기성 동영상 목록」, 검은 번호표 = 「강좌 목차」 — 둘 다 뺐다. */
-.td-scn-sheet { padding: 0 20px; }
-.td-scn-sheet > .td-scn-l, .td-scn-sheet > .td-scn-r { display: contents; }
-.td-scn-head { padding: max(18px, env(safe-area-inset-top)) 0 0; }
-.td-scn-date { margin: 0; font-size: 14px; font-weight: 600; color: var(--ink-2); }
-.td-scn-head h2 { margin: 24px 0 0; font-size: 28px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; word-break: keep-all; text-wrap: balance; }
-.td-scn-lead { margin: 6px 0 0; font-size: 16px; line-height: 1.5; color: var(--ink-2); word-break: keep-all; text-wrap: balance; } /* 두 줄이면 고르게 — 「해요.」만 홀로 떨어지지 않게 */
-.td-scn-card { position: relative; }
-.td-scn-hero { margin: 30px 0 0; }
-.td-shot { position: relative; display: block; overflow: hidden; aspect-ratio: 16 / 9; background: var(--paper-2); }
-.td-shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.td-scn-body { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.td-scn-hero .td-scn-body { padding-top: 14px; }
-.td-eb { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
-.td-act { display: block; margin-top: 4px; font-size: 19px; font-weight: 700; line-height: 1.35; letter-spacing: -.02em; word-break: keep-all; }
-.td-min { margin-left: 7px; font-size: 13px; font-weight: 600; color: var(--ink-3); letter-spacing: 0; }
-.td-chev { display: inline-block; width: 6px; height: 6px; margin-left: 8px; vertical-align: 3px; border: solid var(--ink-3); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); transition: transform .25s var(--spring); }
-.td-scn-card.open .td-chev { transform: translate(0, 3px) rotate(-135deg); }
-.td-say1 { display: block; margin-top: 6px; font-size: 16px; line-height: 1.5; color: var(--ink-0); word-break: keep-all; }
-.td-scn-card .td-more { display: grid; }
-.td-scn-card.open .td-more { grid-template-rows: 1fr; }
-.td-scn-body:focus-visible, .td-voice:focus-visible { outline: 2px solid var(--ink-0); outline-offset: 3px; }
-/* 나머지 장면 — 장면 컷 160 × 90과 글 줄 */
-.td-scn-r { display: contents; }
-.td-scn-card:not(.td-scn-hero) { display: grid; grid-template-columns: 160px minmax(0, 1fr); column-gap: 14px; align-items: start; margin: 26px 0 0; }
-.td-scn-card:not(.td-scn-hero) .td-act { margin-top: 3px; font-size: 16px; }
-.td-scn-card:not(.td-scn-hero) .td-say1 { margin-top: 3px; font-size: 14.5px; line-height: 1.45; }
-.td-scn-sheet .td-foot.td-into { margin-top: auto; }
-.td-scn-sheet::after { content: ''; display: block; flex: none; height: 28px; } /* 마지막 장면과 띠 사이 */
-/* 태오 한마디 — 첫 장면이 1화 식당이고 구운 한마디가 있을 때만. 장면 컷의 왼쪽 아래(얼굴을 덮지 않는 자리)에 누르는 단추로 둔다.
-   11-18 앱 화면 GPT 맹검: 작은 꼬리표는 아래 머리글과 함께 사진 설명처럼 읽혀 듣기 단추인 줄 몰랐다 — 재생 기호와 「듣기」를 늘 보이고, 말하는 동안은 소리 막대가 뛴다. */
-.td-voice { position: absolute; left: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 9px; min-height: 34px; padding: 0 14px 0 12px; border: 0; border-radius: 999px; background: rgba(23,22,15,.78); color: var(--paper); font: 700 13px/1 var(--sans); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.td-voice:active { opacity: .8; }
-.td-voice span { font-weight: 500; opacity: .86; } /* 누구의 말인지는 가볍게, 누르면 하는 일(「듣기」)은 굵게 — 두 번째 GPT 맹검: 같은 굵기면 긴 자막처럼 읽혔다 */
-.td-voice b { padding-left: 9px; border-left: 1px solid rgba(255,255,255,.35); font-weight: 800; }
-.td-voice i { width: 0; height: 0; border-left: 8px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
-.td-scn-hero.speaking .td-voice i { width: 10px; height: 10px; border: 0; background: linear-gradient(currentColor, currentColor) 0 100% / 2px 100% no-repeat, linear-gradient(currentColor, currentColor) 50% 100% / 2px 60% no-repeat, linear-gradient(currentColor, currentColor) 100% 100% / 2px 80% no-repeat; animation: td-eq .7s ease-in-out infinite alternate; }
+/* 메신저 판(11-19 유호님 「C가 가장 좋을것같네」 — 오늘 장만 이 꼴, 그리기와 움직임은 msg.mjs). 끝 화면(장 뜯기)은 위의 일력 그대로.
+   시안 qa/오늘한장-20261114/움직임시안_20261118/c.html · 설계.md(참고: Loot 온보딩, 메신저의 동그란 영상 메시지). 노랑은 태오의 영상 고리와 고칠 「요」에만 쓴다. */
+.td-msg { --card: #fffdf8; background: var(--paper); }
+.td-msg-stage { flex: 1; min-height: 0; display: flex; }
+.td-msg-left { display: none; }
+.td-msg-app { flex: 1; min-width: 0; max-width: 460px; margin: 0 auto; display: flex; flex-direction: column; }
+/* 머리 — 보낸 사람. 얼굴 자리는 처음엔 이름 첫 글자, 영상 메시지를 다 보면 그 동그라미가 날아와 얼굴이 된다(같은 얼굴을 두 번 보이지 않는다 — 11-18 시안 GPT 맹검). */
+.td-msg-hd { flex: none; display: flex; align-items: center; gap: 11px; padding: max(14px, env(safe-area-inset-top)) 18px 12px; transform: translateY(-24px); opacity: 0; transition: transform .55s var(--spring), opacity .4s; }
+.td-msg.on .td-msg-hd { transform: none; opacity: 1; }
+.td-av { position: relative; flex: none; display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; overflow: hidden; background: var(--ink-0); color: var(--paper); font: 800 16px/1 var(--sans); box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--mark); cursor: default; }
+.td-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; transform: scale(1.9); transform-origin: 50% 22%; opacity: 0; transition: opacity .3s; }
+.td-av.face img { opacity: 1; }
+.td-av.face[data-say]:not(:disabled) { cursor: pointer; }
+.td-av.speaking { animation: td-pulse 1s ease-in-out infinite; }
+@keyframes td-pulse { 50% { box-shadow: 0 0 0 2px #fff, 0 0 0 7px var(--mark); } }
+.td-nm2 { flex: 1; min-width: 0; }
+.td-nm2 b { display: block; font-size: 16px; font-weight: 800; letter-spacing: -.01em; }
+.td-st { display: block; margin-top: 1px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.td-st.typing { color: #2f7d52; }
+.td-snd { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: none; box-shadow: inset 0 0 0 1px rgba(23,22,15,.16); color: var(--ink-0); font: 700 12.5px/1 var(--sans); cursor: pointer; }
+.td-snd i { width: 10px; height: 10px; background: linear-gradient(currentColor, currentColor) 0 100% / 2px 100% no-repeat, linear-gradient(currentColor, currentColor) 50% 100% / 2px 60% no-repeat, linear-gradient(currentColor, currentColor) 100% 100% / 2px 80% no-repeat; }
+.td-snd.off { color: var(--ink-3); }
+.td-snd.off i { background-size: 2px 20%, 2px 20%, 2px 20%; }
+/* 대화 */
+.td-thread { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; display: flex; flex-direction: column; gap: 8px; padding: 6px 18px 12px; }
+.td-thread::-webkit-scrollbar { display: none; }
+.td-thread > * { flex-shrink: 0; }
+.td-day { align-self: center; margin: 2px 0 4px; padding: 4px 11px; border-radius: 999px; background: rgba(23,22,15,.06); font-size: 12px; font-weight: 700; color: var(--ink-2); transition: opacity .4s; }
+.td-mg { align-self: flex-start; max-width: 86%; display: none; }
+.td-mg.in { display: block; animation: td-pop .45s var(--spring) both; transform-origin: 0 100%; }
+@keyframes td-pop { from { opacity: 0; transform: translateY(12px) scale(.92); } to { opacity: 1; transform: none; } }
+.gone { opacity: 0 !important; pointer-events: none; }
+/* 영상 메시지 — 보는 동안은 화면 가운데에 크게, 둘레의 노란 고리가 말하는 동안 차오른다. 자막은 동그라미 아래 문장마다. */
+.td-note-m { align-self: stretch; max-width: none; margin: auto 0; text-align: center; transition: opacity .5s, max-height .6s; }
+.td-note-m.in { animation: td-note-in .6s var(--spring) both; transform-origin: 50% 50%; }
+@keyframes td-note-in { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+.td-note { position: relative; display: block; width: min(300px, 74vw); aspect-ratio: 1; margin: 0 auto; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.td-note.still { cursor: default; }
+.td-note video { position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px); border-radius: 50%; object-fit: cover; object-position: 50% 26%; background: #2a2620; }
+.td-ring2 { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); pointer-events: none; }
+.td-ring2 circle { fill: none; stroke-width: 4; }
+.td-ring2 .tr { stroke: rgba(23,22,15,.08); }
+.td-ring2 .pg { stroke: var(--mark); stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.td-note.still .pg, .td-note.heard .pg { stroke-dashoffset: 0; }
+.td-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; align-items: center; gap: 8px; height: 44px; padding: 0 18px 0 15px; border-radius: 999px; background: rgba(23,22,15,.82); color: var(--paper); font: 700 14px/1 var(--sans); white-space: nowrap; }
+.td-play i { border-left: 10px solid currentColor; border-top: 6.5px solid transparent; border-bottom: 6.5px solid transparent; }
+.td-note.tap .td-play { display: inline-flex; }
+.td-cap { min-height: 2.9em; margin: 16px 8px 0; font-size: 20px; font-weight: 700; line-height: 1.45; letter-spacing: -.02em; word-break: keep-all; transition: opacity .4s; }
+.td-cap .w { display: inline-block; animation: td-word .4s var(--spring) both; }
+.td-note-m.kept { align-self: flex-start; margin: 0; text-align: left; }
+.td-note-m.kept .td-note { width: 168px; }
+.td-note-m.kept .td-cap { display: none; }
+/* 날아가는 동그라미 — 다 본 영상 메시지가 머리의 얼굴 자리로 */
+.td-fly { position: fixed; z-index: 5; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 3px var(--mark); pointer-events: none; }
+.td-fly video { width: 100%; height: 100%; object-fit: cover; object-position: 50% 26%; }
+/* 말풍선 — 태오 쪽 */
+.td-b { margin: 0; padding: 10px 14px; border-radius: 20px 20px 20px 6px; background: var(--card); box-shadow: 0 1px 0 rgba(23,22,15,.04), 0 6px 16px rgba(23,22,15,.05); font-size: 16px; font-weight: 500; line-height: 1.45; word-break: keep-all; }
+.td-b b { font-weight: 800; }
+/* 어제 내 대사를 인용한 칸 — 흐렸던 끝의 「요」가 「이번엔 '요'까지」와 함께 또렷해지며 노란 줄이 그어진다 */
+.td-qt { display: block; margin: 0 0 8px; padding: 7px 11px 8px; border-radius: 12px; background: rgba(23,22,15,.055); box-shadow: inset 3px 0 0 var(--mark); }
+.td-qk { display: block; font-size: 12px; font-weight: 700; color: var(--ink-2); }
+.td-ql { display: block; margin-top: 1px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
+.td-gh { display: inline-block; font-style: normal; opacity: .22; filter: blur(1.4px); background: linear-gradient(transparent 58%, var(--mark) 58%) 0 0 / 0% 100% no-repeat; transition: opacity .3s, filter .3s, background-size .45s .1s; }
+.td-gh.on { opacity: 1; filter: none; background-size: 100% 100%; animation: td-stamp .55s cubic-bezier(.34,1.56,.64,1); }
+@keyframes td-stamp { from { transform: scale(1.7); } to { transform: none; } }
+.td-dots { gap: 4px; padding: 13px 14px; border-radius: 20px 20px 20px 6px; background: var(--card); }
+.td-dots.in { display: inline-flex; }
+.td-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(23,22,15,.35); animation: td-dot 1s infinite; }
+.td-dots i:nth-child(2) { animation-delay: .15s; } .td-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes td-dot { 40% { transform: translateY(-4px); background: rgba(23,22,15,.6); } }
+/* 장면 사진 앨범 — 첫 장면은 크게, 사진 아래 흰 띠에 할 일 · 어디와 누구, 시간은 사진 위 작은 표. 도착할 때 부채처럼 펼쳐진다. */
+.td-al { width: 100%; max-width: 342px; border-radius: 20px 20px 20px 6px; overflow: hidden; background: rgba(23,22,15,.06); }
+.td-al.in { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; animation: none; }
+.td-ph { position: relative; background: var(--card); }
+.td-ph.big { grid-column: 1 / -1; }
+.td-al.in .td-ph { animation: td-fan .7s var(--spring) both; }
+.td-al.in .td-ph:nth-child(1) { --r: -7deg; } .td-al.in .td-ph:nth-child(2) { --r: 6deg; animation-delay: .13s; } .td-al.in .td-ph:nth-child(3) { --r: -4deg; animation-delay: .26s; }
+@keyframes td-fan { from { opacity: 0; transform: translateY(60px) rotate(var(--r, 0deg)) scale(.7); } to { opacity: 1; transform: none; } }
+.td-ph-b { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.td-ph-b[aria-expanded="true"] .td-t b { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+.td-im { position: relative; display: block; overflow: hidden; aspect-ratio: 16 / 10; background: var(--paper-2); }
+.td-ph.big .td-im { aspect-ratio: 2.2 / 1; }
+.td-im img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.td-al.in .td-im img { animation: td-ken 2.2s var(--spring) both; }
+@keyframes td-ken { from { transform: scale(1.25); } to { transform: scale(1.04); } }
+.td-no { position: absolute; left: 9px; top: 8px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--mark); color: var(--ink-0); font: 800 12px/1 var(--num); }
+.td-mn { position: absolute; right: 8px; top: 8px; padding: 3px 8px; border-radius: 999px; background: rgba(23,22,15,.66); color: #fff; font: 800 11px/1.2 var(--sans); }
+.td-t { display: block; padding: 7px 10px 9px; }
+.td-t b { display: block; font-size: 14px; font-weight: 800; line-height: 1.3; letter-spacing: -.01em; word-break: keep-all; }
+.td-ph.big .td-t b { font-size: 16px; }
+.td-t span { display: block; margin-top: 2px; font-size: 12px; font-weight: 600; color: var(--ink-2); word-break: keep-all; }
+.td-t .td-nb { display: inline-block; margin: 0; } /* 어디 · 누구는 덩이째 줄을 바꾼다 — 「게임」 한 낱말이나 가운뎃점이 줄 머리에 홀로 서지 않게(11-19 앱 맹검 · Fable F5) */
+.td-ph-b:focus-visible { outline: 2px solid var(--ink-0); outline-offset: -3px; }
+.td-note:focus-visible, .td-go2:focus-visible, .td-later:focus-visible, .td-snd:focus-visible, .td-av:focus-visible, .td-wait button:focus-visible { outline: 2px solid var(--ink-0); outline-offset: 3px; }
+/* 고른 장면의 까닭과 근거(장면 판의 펼침 글) */
+.td-detail { font-size: 14.5px; }
+.td-detail b { display: block; font-size: 15px; }
+.td-detail span { display: block; margin-top: 4px; }
+.td-detail .td-proof { margin-top: 6px; font-size: 12.5px; color: var(--ink-2); }
+/* 보는 동안 아래 — 다 보면 무엇이 오는지와 건너뛰기 */
+.td-wait { flex: none; display: flex; align-items: center; gap: 12px; padding: 12px 18px max(18px, env(safe-area-inset-bottom)); font-size: 14px; font-weight: 700; color: var(--ink-2); transition: opacity .4s; }
+.td-wait span { flex: 1; }
+.td-wait button { flex: none; height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: none; box-shadow: inset 0 0 0 1px rgba(23,22,15,.18); color: var(--ink-0); font: 700 13px/1 var(--sans); cursor: pointer; }
+.td-wait.gone { display: none; }
+.td-snd2 { display: none; } /* 보는 동안의 소리 단추 — 넓은 화면의 왼쪽 기둥에서만(휴대폰은 머리에 있다) */
+.td-msg-left .td-snd2 { display: inline-flex; }
+/* 답장 — 화면에서 가장 밝은 단추 하나. 누르면 내가 말한다(마이크). */
+.td-reply { flex: none; display: none; flex-direction: column; gap: 6px; padding: 10px 18px max(16px, env(safe-area-inset-bottom)); }
+.td-reply.in { display: flex; animation: td-rise .55s var(--spring) both; } /* 다 도착한 뒤에 답장 칸이 올라온다 — 보는 동안 아래가 비지 않게 자리도 그때 잡는다 */
+.td-go2 { display: flex; align-items: center; justify-content: center; gap: 10px; height: 58px; border: 0; border-radius: 999px; background: var(--ink-0); color: var(--paper); font: 800 17.5px/1 var(--sans); letter-spacing: -.01em; cursor: pointer; transition: transform .2s var(--spring); }
+.td-go2:active { transform: scale(.97); }
+.td-go2:disabled { cursor: default; }
+.td-go2 .td-mic { flex: none; color: var(--mark); }
+.td-gm { font-weight: 600; color: rgba(242,239,231,.6); }
+.td-later { height: 40px; border: 0; background: none; color: var(--ink-2); font: 700 14.5px/1 var(--sans); cursor: pointer; }
+/* 시작 — 대화가 위로 물러나고 어두운 장면이 드러난다 */
+.td-msg.lifting { background: #060608; transition: background .45s .15s; }
+.td-msg.lifting .td-msg-stage { animation: td-msg-out .62s cubic-bezier(.6,0,.75,.2) forwards; }
+@keyframes td-msg-out { to { opacity: 0; transform: translateY(-60px) scale(.96); } }
 @media (min-width: 1024px) {
- /* 넓은 화면 — 머리는 두 기둥 위 한 줄, 그 아래 왼쪽에 큰 장면, 오른쪽에 나머지 장면이 같은 윗선에서 시작한다. 띠는 화면 아래에 고정(위의 td-into 규칙).
-    11-18 앱 화면 GPT 맹검: 오른쪽 목록이 큰 장면보다 36px 위에서 시작해 따로 떠 보였다. Opus 대체 검수 F1: 장면 판의 좌우 여백(20px)이 넓은 화면 여백(64px)을 이겼고,
-    띠 글 여백이 옛 기둥 합(1176)에 맞춰 있어 본문과 18~44px 어긋났다 — 기둥 합을 600 + 60 + 480 = 1140으로 두고 띠 글을 그 끝에 맞춘다. */
- .td-sheet.td-scn-sheet { grid-template-columns: minmax(0, 600px) minmax(0, 480px); grid-template-rows: auto auto auto 1fr; column-gap: 60px; align-items: start; align-content: start; padding: 56px 64px 132px; }
- .td-scn-head { grid-column: 1 / -1; grid-row: 1; padding-top: 0; }
- .td-scn-hero { grid-column: 1; grid-row: 2 / span 3; margin-top: 36px; }
- .td-scn-card:not(.td-scn-hero) { grid-column: 2; }
- .td-scn .td-foot.td-into .td-go { justify-content: flex-start; gap: 18px; padding: 0 max(64px, calc(50% - 570px)); }
- .td-scn .td-go .td-arr:first-child { margin-left: 0; } /* 「시작하기 →」 한 덩이 — 띠 양 끝에 1,000px 떨어져 있으면 글과 기호가 따로 보였다(GPT 맹검) */
- .td-scn-date { font-size: 15px; }
- .td-scn-head h2 { margin-top: 18px; font-size: 40px; }
- .td-scn-lead { font-size: 18px; }
- .td-act { font-size: 22px; } .td-say1 { font-size: 17px; }
- .td-eb, .td-pt small, .td-nm small { font-size: 14px; } /* 넓은 화면의 어디 · 누구(끝 화면의 같은 머리글도) — 12.5px 회색은 썸네일 옆에서 훑기 어려웠다(두 번째 GPT 맹검) */
- .td-scn-card:not(.td-scn-hero) { grid-template-columns: 200px minmax(0, 1fr); column-gap: 20px; margin: 36px 0 0; }
- .td-scn-card:not(.td-scn-hero) + .td-scn-card { margin-top: 30px; }
- .td-scn-card:not(.td-scn-hero) .td-act { font-size: 18px; }
- .td-scn-card:not(.td-scn-hero) .td-say1 { font-size: 15.5px; }
- .td-scn-sheet::after { display: none; }
+ /* 넓은 화면 — 휴대폰 판을 큰 창에 띄운 꼴이 아니라 왼쪽에 태오(크게 · 다 말한 뒤에도 듣는 얼굴), 오른쪽에 대화(11-18 시안 GPT 맹검).
+    보는 동안은 태오만 가운데에 있고, 다 말하면 왼쪽으로 비키며 대화가 들어온다. */
+ .td-msg { background: radial-gradient(70% 80% at 30% 45%, #fbf8f1 0, var(--paper) 62%); }
+ .td-msg { --appw: min(500px, 44vw); --gap: clamp(40px, 6vw, 96px); --leftw: min(460px, 36vw); }
+ .td-msg-stage { align-items: center; justify-content: center; gap: var(--gap); padding: 0 clamp(24px, 4vw, 64px); }
+ .td-msg-left { display: flex; flex: none; width: var(--leftw); flex-direction: column; align-items: center; transition: transform .9s cubic-bezier(.65,0,.35,1); }
+ .td-msg.pre .td-msg-left { transform: translateX(calc((var(--appw) + var(--gap)) / 2)); }
+ .td-msg-left .td-note-m { margin: 0; }
+ .td-msg-left .td-note { width: var(--leftw); }
+ .td-msg-left .td-cap { font-size: 25px; min-height: 2.9em; margin-top: 22px; }
+ .td-who2 { margin: 6px 0 0; font-size: 14px; font-weight: 700; color: var(--ink-2); transition: opacity .4s; } /* 보는 동안만 — 대화가 오면 오른쪽 머리가 보낸 사람이다(같은 이름 두 번, 11-19 앱 맹검) */
+ .td-who2 b { color: var(--ink-0); font-weight: 800; }
+ .td-msg-left .td-wait { padding: 14px 0 0; gap: 14px; }
+ .td-msg-left .td-wait span { flex: none; }
+ .td-msg-app { flex: none; width: var(--appw); max-width: var(--appw); margin: 0; height: min(calc(100% - 40px), 860px); border-radius: 22px; overflow: hidden; background: rgba(255,253,248,.62); box-shadow: 0 1px 0 #fff inset, 0 10px 30px rgba(40,34,20,.06), 0 0 0 1px rgba(23,22,15,.07);
+  transition: opacity .8s .25s, transform .8s .25s var(--spring); }
+ .td-msg.pre .td-msg-app { opacity: 0; transform: translateX(80px); }
+ .td-msg:not(.solo) .td-av { display: none; } /* 넓은 화면은 왼쪽의 큰 얼굴이 보낸 사람이다 */
+ .td-msg-hd { padding-top: 18px; }
+ .td-al { max-width: none; } /* 앨범은 대화 칸 폭을 다 쓴다 — 아래 단추와 같은 폭(11-19 앱 맹검: 오른쪽에 빈 띠) */
+ .td-ph.big .td-im { aspect-ratio: 2.6 / 1; }
+ .td-im { aspect-ratio: 16 / 9; }
+ .td-pt small, .td-nm small { font-size: 14px; } /* 끝 화면의 어디 · 누구 — 12.5px 회색은 훑기 어려웠다(11-18 두 번째 GPT 맹검) */
 }
-@media (min-width: 1024px) and (max-height: 880px) {
- .td-sheet.td-scn-sheet { padding: 30px 64px 104px; }
- .td-scn-head h2 { font-size: 34px; margin-top: 12px; }
- .td-scn-hero, .td-scn-card:not(.td-scn-hero) { margin-top: 22px; }
- .td-scn-card:not(.td-scn-hero) + .td-scn-card { margin-top: 24px; }
+@media (prefers-reduced-motion: reduce) {
+ .td-reply.in, .td-mg.in, .td-note-m.in, .td-al.in .td-ph, .td-al.in .td-im img, .td-cap .w, .td-gh.on, .td-av.speaking, .td-dots i { animation: none !important; }
+ .td-msg.lifting .td-msg-stage { animation: none; }
 }
-@media (prefers-reduced-motion: reduce) { .td-scn-hero.speaking .td-voice i { animation: none; } }

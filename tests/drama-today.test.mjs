@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { world, read, doToday } from '../experiences/drama/qa/오늘한장-20261114/뽑기.mjs';
 import { buildToday, buildAfter, readTurns, revisitPlan, TAEO_LINES, dayKey, dayStart, dayParts } from '../experiences/drama/pilot/today/plan.mjs';
-import { POOL, NEW_ORDER, YO_LINES, TAEO_CALL, TAEO_MEDIA, SCENES, VENUE_IDS, sceneFor, nameFor } from '../experiences/drama/pilot/today/content.mjs';
+import { POOL, NEW_ORDER, YO_LINES, TAEO_CALL, TAEO_MEDIA, TAEO_SAY_AT, SCENES, VENUE_IDS, sceneFor, nameFor, quoteFor } from '../experiences/drama/pilot/today/content.mjs';
 import { planRevisit, REVISIT_DAYS } from '../experiences/drama/pilot/takes.mjs';
 import { STR } from '../experiences/drama/pilot/strings.mjs';
 
@@ -500,7 +500,52 @@ test('장면 판(11-18 유호님 「앱에 옮겨」): 할 일마다 장면 그�
  const at = (lineId, L) => sceneFor({ ...again, note: 'ending', why: { ...again.why, evidence: { ...again.why.evidence, lineId, yo: false } } }, L).say;
  assert.equal(at('s1e01-x', extra), '「처음 왔어요」 끝맺음을 대사대로');
  assert.equal(at('s1e01-zz', lesson), '그 대사를 끝까지 또렷하게');
- // 입장 검사 칸의 머리글 둘째 자리는 말 거는 사람이 아니라 게임 이름이다(F5).
- assert.equal(sceneFor(game, lesson).scene.who, '입장 검사 게임');
+ // 입장 검사 칸의 머리글 둘째 자리는 말 거는 사람이 아니라 그 게임이 무엇인지다(F5 · 11-19 맹검: 「입장 검사 게임」은 뜻을 몰랐다).
+ assert.equal(sceneFor(game, lesson).scene.who, '직원이 되어 보는 게임');
  for (const [ago, when] of [[0, '오늘'], [1, '어제'], [3, '지난번'], [null, '지난번'], [undefined, '지난번']]) assert.equal(sceneFor({ ...again, why: { ...again.why, evidence: { ...again.why.evidence, ago } } }, lesson).action, `${when} 한 말 다시 하기`);
+});
+
+test('메신저 판(11-19 유호님 「C가 가장 좋을것같네」): 태오가 인용하는 내 대사 · 자막 시각 · 앨범 칸 · 단추', async () => {
+ const { msgView } = await import('../experiences/drama/pilot/today/msg.mjs');
+ const assets = { listenLoop: 'media/taeo-listen.mp4', poster: 'media/taeo-still.webp' };
+ // 사진을 누르면 뜨는 까닭 글(<template>)도 첫 제출 전 화면 글이다 — 같이 본다(11-19 카본 B4).
+ const text = (html) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+ // 자막 시각은 구운 틀에만, 문장 수만큼.
+ for (const [code, at] of Object.entries(TAEO_SAY_AT)) {
+  assert.ok(TAEO_MEDIA[code], code);
+  assert.equal(at.length, TAEO_LINES[code].trim().split(/(?<=[.?!])\s+/).length, code);
+  assert.deepEqual([...at].sort((a, b) => a - b), at, code);
+ }
+ const A = (await read(await world({ scenario: 'A', now: morning() }), lesson)).today;
+ const B = (await read(await world({ scenario: 'B', now: morning() }), lesson)).today;
+ // 인용: 복습 할 일에만. 「요」를 흘린 날은 꼬리 끝 「요」를 흐리게 두고, 짚는 말은 기록 글(why.text)과 같은 사실이다.
+ const qa = quoteFor(A.items[0], lesson);
+ assert.deepEqual([qa.tail, qa.ghost], ['한참 헤맸어', '요']);
+ assert.match(qa.label, /^어제 학생 식당 · 내 대사$/);
+ assert.ok(/반말처럼/.test(qa.said) && /반말처럼/.test(A.items[0].why.text), qa.said);
+ const qb = quoteFor(B.items[0], lesson);
+ assert.equal(qb.ghost, '');
+ assert.ok(/짧게 끝났/.test(qb.said) && /짧게 끝났/.test(B.items[0].why.text), qb.said);
+ for (const it of [...A.items, ...B.items].filter((x) => x.kind !== 'again')) assert.equal(quoteFor(it, lesson), null);
+ for (const q of [qa, qb]) for (const t of Object.values(q)) assert.ok(!STUDIO.test(t), t);
+ // 오늘 장: 단추와 장면 칸은 처음부터 DOM에 있다(흐름 시험이 읽는다). 칸마다 data-kind · data-title, 화면 글에 촬영장 말과 새 상황의 답 낱말이 없다.
+ const { dramaLines, readEpisodes } = await import('../tools/build-world-speaking-talk.mjs');
+ const lines = new Map(dramaLines(await readEpisodes()).map((l) => [l.id, l]));
+ const keys = (id) => (lines.get(id)?.spec?.keys || []).flatMap((k) => [k.word, ...(k.alts || [])]).filter((w) => w && w.length >= 2);
+ for (const t of [A, B]) {
+  const html = msgView({ t, lesson, line: t.line, assets });
+  assert.match(html, /data-go/);
+  assert.equal((html.match(/class="td-scn-card/g) || []).length, t.items.length);
+  for (const it of t.items) assert.ok(html.includes(`data-kind="${it.kind}" data-title="${it.title.replace(/"/g, '&quot;')}"`), it.title);
+  const shown = text(html);
+  assert.ok(!STUDIO.test(shown), shown);
+  for (const it of t.items.filter((x) => x.kind !== 'again' && x.open.lineId)) for (const w of keys(it.open.lineId)) assert.ok(!shown.includes(w), `${it.title}: 「${w}」`);
+  // 구운 한마디가 있으면 영상 메시지(소리), 없으면 듣는 고리와 글.
+  assert.equal(/data-note[^>]*data-say=/.test(html), Boolean(t.line?.media?.video));
+ }
+ // 이어서 연 날은 영상 메시지를 다시 틀지 않고 「이어서 할게요」, 할 것이 없는 날은 1화로 가는 단추 하나.
+ const resume = msgView({ t: A, lesson, line: A.line, assets, resume: true });
+ assert.ok(!/data-note/.test(resume) && /이어서 할게요/.test(resume) && /class="td-av face"/.test(resume));
+ const empty = msgView({ t: { ...A, items: [], minutes: 0, empty: { text: '오늘 할 것은 다 했어요.' } }, lesson, line: { code: 'empty', text: TAEO_LINES.empty }, assets, empty: true });
+ assert.ok(/data-episode/.test(empty) && !/data-go/.test(empty) && !/td-scn-card/.test(empty));
 });
