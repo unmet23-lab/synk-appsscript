@@ -12,6 +12,7 @@ const {youtubeAboutUrl,readAbout} = require('./youtube-public.cjs');
 const {parseXhs} = require('../lib/외부통계파싱.cjs');
 const {officialScreen} = require('./official-screen.cjs');
 const {ownerCapture} = require('./owner-metrics.cjs');
+const {postLifetime,note} = require('./post-lifetime.cjs');
 const PUBLIC = new Set(['tiktok','brunch','x','instagram','behance','naver-clip','tistory','threads','facebook','linkedin','youtube','vk','rutube','kakao-channel','pinterest']);
 const json = (value) => JSON.stringify(value);
 const privateWrite = (file,content) => fs.writeFileSync(file,content,{flag:'wx'});
@@ -202,7 +203,18 @@ async function savePublic(ctx,snapshot) {
   return {more:true,reason:envelope?'limited':undefined};
 }
 
-async function capture(ctx,{ownerSource=ownerCapture,publicSource=nativeBrowser}={}) {
+// 게시물별 누적값(post-lifetime.cjs)은 계정 합계 수집을 마친 뒤 회차마다 따로 읽는다(11-19).
+// 게시물 값도 요청의 채운 지표로 세므로 먼저 읽으면 계정 합계(공식 일별 파일)를 건너뛰게 된다. 게시물 읽기 실패는 앞 결과를 바꾸지 않는다.
+async function capture(ctx,{ownerSource=ownerCapture,publicSource=nativeBrowser,postSource=postLifetime}={}) {
+  const result=await accountCapture(ctx,{ownerSource,publicSource});
+  if(result==='user_control'||ctx.signal?.aborted)return result;
+  let post;
+  try{post=await postSource(ctx,{pageJob,storeBatch});}
+  catch(error){post=handleFailure(error);note(ctx,post,error);}
+  if(post==='user_control')return post;
+  return post==='limited'&&result==='no_metrics'?'limited':result;
+}
+async function accountCapture(ctx,{ownerSource,publicSource}) {
   if(ctx.account.platform==='youtube' && Array.isArray(ctx.missing) && !ctx.missing.includes('views'))return 'no_metrics';
   let owner;
   try {

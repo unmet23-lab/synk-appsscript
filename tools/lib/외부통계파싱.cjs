@@ -22,6 +22,12 @@
  *   identity {accountId, handle}. 모든 줄의 글 번호·정식 주소(이 채널)·시각(있으면)을 검사한다. service:true이고 수치가 하나도 없는 줄만
  *   서비스 줄로 건너뛰고, 그 밖의 줄은 게시 시각과 조회수가 모두 있어야 한다. 좋아요·공유는 실제 수가 없으면 null.
  *   두 파서 모두 읽은 줄은 MAX_INPUT_ROWS(1000)개까지, 관측 한도 MAX_ROWS(200)는 서비스 줄·예약 노트를 뺀 관측 수에만 건다.
+ * parseDouyinWorks(evidence, identity) — https://creator.douyin.com/creator-micro/content/manage(内容管理)이 불러오는 작품 목록(11-19)
+ *   evidence {observedAt, sourceUrl, ownerUid, total, complete:true, rows:[{awemeId, awemeType, createTime(초), desc, authorUid, authorId, deleted, stats:{play,like,comment,share,collect}}]}
+ *   identity {accountId, handle(더우인 번호)}. 예약(게시 시각이 관측보다 뒤)과 지운 작품은 건너뛰고, 나머지는 조회·좋아요·댓글·공유·저장 다섯 칸이 모두 정확한 수여야 한다.
+ * parseThreadsInsights(evidence, identity) — https://www.threads.com/insights/ 「최신 게시물」 목록(11-19)
+ *   evidence {observedAt, sourceUrl, handle, rows:[{path:'/insights/post/<번호>', lines:[…, '<조회수>', '조회수']}], times:{<번호>: 게시 시각}}
+ *   identity {accountId, handle}. 조회수만 넣는다. 게시 시각은 같은 회차 프로필 화면의 time[datetime]이고, 목록의 모든 게시물에 있어야 한다.
  * parseNaverDaily(input, identity, observedAt) — https://admin.blog.naver.com/<blogId>/stat/download 조회수·일간 xlsx를 디코딩한 값
  *   input은 {sheets:[{name?, rows}]}(첫 장만) 또는 행 배열. 행은 칸 배열, 칸 주소 열쇠 객체({A8,B8,C8} — 모두 같은 행 번호이고 그 번호가
  *   배열 순서+1), 또는 A·B… / 0·1… 열 열쇠 객체. 머리 행의 「요일」 열은 날짜의 실제 요일과 맞는지만 보고 수치로 읽지 않는다.
@@ -200,6 +206,76 @@ function parseTelegram(evidence,identity){
   return {envelope:{sourceType:'public-page',sourceUrl,observedAt,evidenceSha256:null,identity:{accountId,handle},observations},summary:{rows:rows.length,posts:observations.length,service}};
 }
 
+const DOUYIN_SOURCE='https://creator.douyin.com/creator-micro/content/manage';
+// 더우인 크리에이터 센터 「内容管理」 화면이 스스로 불러오는 작품 목록(work_list)의 영상별 누적값이다(11-19). 화면의 播放·点赞·评论·分享·收藏 칸과 같은 값이다.
+// 모든 줄의 작성자가 화면을 연 로그인 계정(ownerUid)이고 더우인 번호(authorId)가 설정과 같아야 한다. 게시 시각이 관측보다 뒤인 작품(定时发布)과 지운 작품은 건너뛴다.
+function parseDouyinWorks(evidence,identity){
+  const accountId=accountIdOf(identity),handle=handleOf(identity);
+  if(!accountId||!/^[0-9]{6,20}$/.test(handle))throw fail('IDENTITY','더우인 설정에 accountId와 더우인 번호(handle, 숫자)가 있어야 해요.');
+  known(evidence,['observedAt','sourceUrl','ownerUid','total','complete','rows'],'더우인 증거');
+  const observedAt=instant(evidence.observedAt,'관측 시각(observedAt)');
+  if(evidence.sourceUrl!==DOUYIN_SOURCE)throw fail('SOURCE',`내용 관리 화면 주소는 ${DOUYIN_SOURCE} 이어야 해요.`);
+  if(typeof evidence.ownerUid!=='string'||!/^[0-9]{6,30}$/.test(evidence.ownerUid))throw fail('IDENTITY','화면을 연 로그인 계정 번호(ownerUid)가 없어요.');
+  const rows=rowsOf(evidence.rows),seen=new Set(),observations=[];
+  if(evidence.complete!==true||evidence.total!==rows.length)throw fail('INCOMPLETE',`작품 목록을 끝까지 읽었다는 표시(complete)와 전체 수(total ${evidence.total})가 읽은 작품 수(${rows.length})와 맞아야 해요.`);
+  let scheduled=0,deleted=0;
+  rows.forEach((row,i)=>{
+    const where=`${i+1}번째 작품`;
+    known(row,['awemeId','awemeType','createTime','desc','authorUid','authorId','deleted','stats'],where);
+    if(typeof row.awemeId!=='string'||!/^[0-9]{6,30}$/.test(row.awemeId))throw fail('ROW',`${where}: 작품 번호(awemeId)를 확인해 주세요.`);
+    if(seen.has(row.awemeId))throw fail('DUPLICATE',`${where}: 같은 작품이 두 번 있어요.`);
+    seen.add(row.awemeId);
+    if(row.authorUid!==evidence.ownerUid||row.authorId!==handle)throw fail('IDENTITY',`${where}: 작성자가 화면을 연 계정이나 설정의 더우인 번호와 달라요.`);
+    if(!Number.isSafeInteger(row.createTime)||row.createTime<1_500_000_000)throw fail('TIME',`${where}: 게시 시각(createTime, 초)을 확인해 주세요.`);
+    if(typeof row.deleted!=='boolean')throw fail('ROW',`${where}: 지운 작품 표시(deleted)는 true·false여야 해요.`);
+    const publishedAt=new Date(row.createTime*1000).toISOString();
+    if(row.deleted){deleted++;return;}
+    if(Date.parse(publishedAt)>Date.parse(observedAt)){scheduled++;return;}
+    known(row.stats,['play','like','comment','share','collect'],`${where} 수치`);
+    const metrics={views:count(row.stats.play,`${where} 播放`),likes:count(row.stats.like,`${where} 点赞`),comments:count(row.stats.comment,`${where} 评论`),
+      shares:count(row.stats.share,`${where} 分享`),saves:count(row.stats.collect,`${where} 收藏`)};
+    const url=`https://www.douyin.com/${row.awemeType===68?'note':'video'}/${row.awemeId}`;
+    observations.push({kind:'post-lifetime',post:{externalId:row.awemeId,url,publishedAt,title:optionalText(row.desc,120,`${where} 글`,true)},metrics});
+  });
+  if(!observations.length)throw fail('NO_ROWS','게시된 작품이 없어 보낼 관측이 없어요.');
+  capped(observations,'예약 · 지운 작품');
+  return {envelope:{sourceType:'creator-screen',sourceUrl:DOUYIN_SOURCE,observedAt,evidenceSha256:null,identity:{accountId,handle},
+    labels:{screenTitle:'抖音创作者中心 · 内容管理',timeZone:'Asia/Shanghai'},observations},summary:{rows:rows.length,published:observations.length,scheduled,deleted}};
+}
+
+const THREADS_SOURCE='https://www.threads.com/insights/';
+// 스레드 인사이트 화면 「최신 게시물」 목록의 게시물별 조회수다(11-19). 조회수 말고는 목록에 정확한 수가 없어 조회만 넣는다.
+// 게시 시각은 같은 회차에 로그인한 프로필 화면의 time[datetime]에서 읽는다. 목록의 모든 게시물에 시각이 있어야 한다.
+function parseThreadsInsights(evidence,identity){
+  const accountId=accountIdOf(identity),handle=handleOf(identity);
+  if(!accountId||!/^[A-Za-z0-9_.]{1,40}$/.test(handle))throw fail('IDENTITY','스레드 설정에 accountId와 계정 이름(handle)이 있어야 해요.');
+  known(evidence,['observedAt','sourceUrl','handle','rows','times'],'스레드 증거');
+  const observedAt=instant(evidence.observedAt,'관측 시각(observedAt)');
+  if(evidence.sourceUrl!==THREADS_SOURCE)throw fail('SOURCE',`인사이트 화면 주소는 ${THREADS_SOURCE} 이어야 해요.`);
+  if(evidence.handle!==handle)throw fail('IDENTITY','화면의 계정 이름이 설정과 정확히 같지 않아요. 다른 계정 화면일 수 있어요.');
+  if(!plain(evidence.times))throw fail('SHAPE','게시 시각 목록(times)이 없어요.');
+  const rows=rowsOf(evidence.rows),seen=new Set(),observations=[];
+  rows.forEach((row,i)=>{
+    const where=`${i+1}번째 게시물`;
+    known(row,['path','lines'],where);
+    const m=typeof row.path==='string'?/^\/insights\/post\/([A-Za-z0-9_-]{5,40})\/?$/.exec(row.path):null;
+    if(!m)throw fail('ROW',`${where}: 게시물 인사이트 주소(/insights/post/<번호>)가 아니에요.`);
+    const id=m[1];
+    if(seen.has(id))throw fail('DUPLICATE',`${where}: 같은 게시물이 두 번 있어요.`);
+    seen.add(id);
+    if(!Array.isArray(row.lines)||row.lines.length<2||row.lines.at(-1)!=='조회수')throw fail('ROW',`${where}: 마지막 줄이 「조회수」이고 그 앞 줄이 수여야 해요.`);
+    const views=count(row.lines.at(-2),`${where} 조회수`);
+    if(blank(evidence.times[id]))throw fail('INCOMPLETE',`${where}: 프로필 화면에서 게시 시각을 찾지 못했어요.`);
+    const publishedAt=instant(evidence.times[id],`${where} 게시 시각`);
+    if(Date.parse(publishedAt)>Date.parse(observedAt))throw fail('ROW',`${where}: 게시 시각이 관측 시각보다 뒤예요.`);
+    observations.push({kind:'post-lifetime',post:{externalId:id,url:`https://www.threads.com/@${handle}/post/${id}`,publishedAt},metrics:{views}});
+  });
+  if(!observations.length)throw fail('NO_ROWS','조회수가 있는 게시물이 없어 보낼 관측이 없어요.');
+  capped(observations,'없음');
+  return {envelope:{sourceType:'creator-screen',sourceUrl:THREADS_SOURCE,observedAt,evidenceSha256:null,identity:{accountId,handle},
+    labels:{screenTitle:'Threads 인사이트 · 최신 게시물'},observations},summary:{rows:rows.length,posts:observations.length}};
+}
+
 function sheetOf(input){
   const sheet=Array.isArray(input)?{rows:input}:plain(input)&&Array.isArray(input.sheets)?input.sheets[0]:null;
   if(!plain(sheet)||!Array.isArray(sheet.rows)||!sheet.rows.length||sheet.rows.length>MAX_ROWS+40)throw fail('SHAPE',`디코딩한 첫 장(sheets[0].rows)이 1~${MAX_ROWS+40}행 배열이어야 해요.`);
@@ -320,4 +396,4 @@ function periodSummaries(dailyRows,endDay,durations=[7,30,60,90]){
   })};
 }
 
-module.exports={parseXhs,parseTelegram,parseNaverDaily,periodSummaries,MAX_ROWS,MAX_INPUT_ROWS};
+module.exports={parseXhs,parseTelegram,parseDouyinWorks,parseThreadsInsights,parseNaverDaily,periodSummaries,MAX_ROWS,MAX_INPUT_ROWS};
