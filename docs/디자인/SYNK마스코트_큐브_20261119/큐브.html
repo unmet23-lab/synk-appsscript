@@ -71,9 +71,9 @@ html[data-nogl] .nogl{display:block}
 <body>
 <main class="wrap">
   <header class="head">
-    <p class="tag">SYNK 마스코트 시안 · 둘째 판</p>
-    <h1>맞춰지는 깎은 큐브,<span>가의 몸에 다의 몸짓.</span></h1>
-    <p class="lead">고르신 대로 섞었습니다. 큐브에 손을 올리면 그쪽을 보고, 누르면 생각합니다.</p>
+    <p class="tag">SYNK 마스코트 시안 · 셋째 판</p>
+    <h1>조금 더 귀엽게,<span>조금 더 미래에서.</span></h1>
+    <p class="lead">판을 여러 장으로 썰지 않고 한 번만 썰었습니다. 큐브에 손을 올리면 그쪽을 보고, 누르면 생각합니다.</p>
   </header>
 
   <div class="moods" role="group" aria-label="표정 바꾸기">
@@ -85,10 +85,27 @@ html[data-nogl] .nogl{display:block}
   </div>
   <p class="nogl">이 브라우저에서는 움직이는 큐브를 그리지 못합니다. 크롬이나 엣지에서 열어 주세요.</p>
 
-  <section class="cand hero" data-v="5">
-    <button class="stage" type="button" aria-label="가에 다를 섞은 큐브. 누르면 생각합니다."><canvas></canvas></button>
+  <section class="cand hero" data-v="6">
+    <button class="stage" type="button" aria-label="셋째 판, 뚜껑이 떠오르는 큐브. 누르면 생각합니다."><canvas></canvas></button>
     <div class="info">
-      <p class="key">가 + 다</p>
+      <p class="key">셋째 판</p>
+      <h2>뚜껑이 떠오르는 큐브</h2>
+      <p class="say">모서리를 더 둥글게 하고 눈을 크게, 낮게 달았습니다. 생각할 때 뚜껑이 떠올라 돌고 그 밑에 빛 구슬이 뜹니다. 답이 나오면 뚜껑이 내려와 딱 맞고, 큐브가 한 번 통 튑니다. 바닥의 가는 고리는 큐브가 떠 있다는 표시입니다.</p>
+      <div class="opts" role="group" aria-label="눈의 모양">
+        <button class="mood" type="button" id="eye-glow" data-eye="2" aria-pressed="true">빛 눈</button>
+        <button class="mood" type="button" id="eye-dot" data-eye="0" aria-pressed="false">점 눈</button>
+      </div>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <p class="tag sub">앞서 본 것</p>
+
+  <section class="cand" data-v="5">
+    <button class="stage" type="button" aria-label="둘째 판, 가에 다를 섞은 큐브. 누르면 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">둘째 판 · 가 + 다</p>
+      <h2>맞춰지는 깎은 큐브</h2>
       <p class="say">평소에는 가처럼 한 덩어리입니다. 생각하는 동안 판이 따로 돌아 빛줄기가 조각나고, 답이 나오면 딱 맞춰지면서 빛줄기가 하나로 이어집니다. 그때 틈으로 빛이 샙니다.</p>
       <div class="opts" role="group" aria-label="판의 수">
         <button class="mood" type="button" id="cuts-5" data-cuts="1" aria-pressed="true">판 다섯 장</button>
@@ -97,8 +114,6 @@ html[data-nogl] .nogl{display:block}
       <div class="sizes" aria-label="작게 본 모습"></div>
     </div>
   </section>
-
-  <p class="tag sub">앞서 본 다섯</p>
 
   <section class="cand" data-v="0">
     <button class="stage" type="button" aria-label="가, 깎은 큐브. 누르면 생각합니다."><canvas></canvas></button>
@@ -167,13 +182,14 @@ precision highp float;
 precision mediump float;
 #endif
 uniform vec2 uRes;
-uniform float uT, uDpr, uScale, uSeed, uThink, uGlow, uScan, uLit, uEyeK, uCuts;
+uniform float uT, uDpr, uScale, uSeed, uThink, uGlow, uScan, uLit, uEyeK, uCuts, uEyeY, uEyeStyle, uRing;
 uniform int uKind;
 uniform mat3 uInv;
 uniform vec3 uL, uOff, uCore;
 uniform vec4 uEye;
 uniform vec2 uGaze;
 uniform vec4 uSlab;
+float gCover;
 const vec3 WARM = vec3(1.0, 0.982, 0.955);
 const float CAM = 6.0;
 const float FOV = 0.36;
@@ -205,7 +221,8 @@ vec2 eyes(vec2 fp, float ppx, float k0, float sepCells, float slit){
   vec2 eL = vec2(-sepCells, 1.5) * g + gz;
   vec2 eR = vec2(sepCells, 1.5) * g + gz;
   vec2 cz = mix(vec2(0.050, 0.094), vec2(0.046, 0.064), small);
-  if (slit > 0.5 && uEye.z < 0.5) cz = mix(vec2(0.017, 0.125), vec2(0.030, 0.090), small);
+  if (slit > 0.5 && slit < 1.5 && uEye.z < 0.5) cz = mix(vec2(0.017, 0.125), vec2(0.030, 0.090), small);
+  if (slit > 1.5 && uEye.z < 0.5) cz = mix(vec2(0.056, 0.094), vec2(0.050, 0.066), small);
   float sd = min(eyeSd((fp - eL) / k, uEye.y, uEye.z, uT, cz), eyeSd((fp - eR) / k, uEye.y, uEye.z, uT, cz)) * k;
   float solid = 1.0 - smoothstep(-0.6, 0.6, sd * ppx);
   float e = solid;
@@ -260,9 +277,26 @@ float slabAng(float y){
   }
   return y > 0.0 ? uSlab.x : uSlab.z;
 }
+/* 셋째 판: 모서리가 더 둥근 큐브를 한 번만 썰었다. 윗부분(뚜껑)은 uSlab.y만큼 떠오르고 uSlab.x만큼 돈다.
+   uSlab.z와 uSlab.w는 몸이 눌리고 늘어나는 정도(가로, 세로)다 */
+float lidBody(vec3 p){
+  vec3 q = p / vec3(uSlab.z, uSlab.w, uSlab.z);
+  float body = ri(sdRB(q, vec3(1.0), 0.27), q.y - 0.29, 0.03);
+  vec3 l = q - vec3(0.0, uSlab.y, 0.0);
+  float lid = ri(sdRB(ry(l, uSlab.x), vec3(1.0), 0.27), 0.31 - l.y, 0.03);
+  return min(body, lid) * min(uSlab.z, uSlab.w);
+}
 vec2 map(vec3 p){
   if (uKind == 0) return vec2(sdRB(p, vec3(1.0), 0.17), 0.0);
   if (uKind == 1) return vec2(sdRB(p, vec3(1.0), 0.02), 0.0);
+  if (uKind == 6) {
+    float d6 = lidBody(p);
+    /* 뚜껑이 뜨면 그 사이에 빛 구슬이 생긴다. 닫혀 있을 때는 없다 */
+    vec3 q6 = p / vec3(uSlab.z, uSlab.w, uSlab.z);
+    float pr = length(q6 - vec3(0.0, 0.30 + min(0.5 * uSlab.y, 0.17), 0.0)) - (0.17 * smoothstep(0.03, 0.2, uSlab.y) - 0.02);
+    if (pr < d6) return vec2(pr, 1.0);
+    return vec2(d6, 0.0);
+  }
   float d = uKind == 5 ? mixSlabs(p) : slabs(p);
   float c = max(length(p.xz) - 0.86, abs(p.y) - 0.97);
   if (c < d) return vec2(c, 1.0);
@@ -291,6 +325,7 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
     if (dmin > pxo * 1.2) return vec3(0.0);
     t = tmin; cover = 1.0 - dmin / (pxo * 1.2);
   }
+  gCover = cover;
   if (id > 0.5) return WARM * min(uGlow, 1.0) * cover;
   vec3 p = ro + rd * t;
   vec3 n = nrm(p);
@@ -302,11 +337,17 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
   float side = smoothstep(-0.28, 0.32, ndl);
   float ppx = ppu / uDpr;
   vec3 c;
-  if (uKind == 0 || uKind == 5) {
+  if (uKind == 0 || uKind == 5 || uKind == 6) {
     /* 면마다 둥근 네모 모양으로 결을 깎았다. 결이 빛을 한 줄로 모아, 면의 가운데를 지나는 빛줄기가 생긴다.
        판으로 썬 큐브(가 + 다)는 판마다 제 각만큼 돌린 자리에서 결을 읽는다. 판이 어긋나면 빛줄기도 조각난다 */
-    float ang = uKind == 5 ? slabAng(p.y) : 0.0;
-    vec3 pl = ry(p, ang);
+    float ang = 0.0;
+    vec3 pp = p;
+    if (uKind == 5) ang = slabAng(p.y);
+    if (uKind == 6) {
+      pp = p / vec3(uSlab.z, uSlab.w, uSlab.z);
+      if (pp.y > 0.30 + 0.5 * uSlab.y) { pp.y -= uSlab.y; ang = uSlab.x; }
+    }
+    vec3 pl = ry(pp, ang);
     vec3 a = abs(ry(n, ang));
     vec2 q; vec3 U3; vec3 V3;
     if (a.z >= a.x && a.z >= a.y) { q = pl.xy; U3 = vec3(1.0, 0.0, 0.0); V3 = vec3(0.0, 1.0, 0.0); }
@@ -348,6 +389,15 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
       float spill = exp(-abs(ay - 0.38) / 0.03) + uCuts * exp(-abs(ay - 0.70) / 0.03);
       c += WARM * spill * min(uGlow, 1.0) * 0.09 * (1.0 - a.y);
     }
+    if (uKind == 6) {
+      /* 빛 구슬이 뚜껑의 밑면과 몸의 윗면을 비춘다. 닫혀 있을 때는 틈 가까이만 조금 밝다 */
+      vec3 pq = p / vec3(uSlab.z, uSlab.w, uSlab.z);
+      vec3 lp = vec3(0.0, 0.30 + min(0.5 * uSlab.y, 0.17), 0.0) - pq;
+      float d2 = dot(lp, lp);
+      float op = smoothstep(0.03, 0.2, uSlab.y);
+      float pt = min(max(dot(n, lp / sqrt(max(d2, 0.0001))), 0.0) / (0.10 + 3.0 * d2), 1.6);
+      c += WARM * min(uGlow, 1.2) * (op * pt * 0.55 + (1.0 - op) * exp(-abs(pq.y - 0.30) / 0.035) * 0.10 * (1.0 - a.y));
+    }
   } else if (uKind == 1) {
     /* 매끈한 검정. 모서리에만 빛이 걸린다 */
     vec3 a = abs(p);
@@ -379,8 +429,10 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
   float small = 1.0 - smoothstep(14.0, 60.0, ppx);
   bool face = n.z > 0.5;
   if (uKind == 2 || uKind == 5) face = face && abs(p.y) < 0.365 + 0.3 * small;
+  vec3 pe = p;
+  if (uKind == 6) { pe = p / vec3(uSlab.z, uSlab.w, uSlab.z); face = face && pe.y < 0.29; }
   if (uEye.x > 0.001 && face) {
-    vec2 e = eyes(p.xy, ppx, uEyeK, uEye.w, uKind == 1 ? 1.0 : 0.0);
+    vec2 e = eyes(pe.xy - vec2(0.0, uEyeY), ppx, uEyeK, uEye.w, uEyeStyle);
     c *= 1.0 - e.y * uEye.x;
     c += WARM * e.x * uEye.x * 0.96;
   }
@@ -470,18 +522,29 @@ void main(){
   vec3 rd = uInv * rdW;
   float ppu = uRes.y * uScale / (2.0 * FOV * CAM);
   vec3 col = vec3(0.0);
+  gCover = 0.0;
   float bq = dot(ro, rd);
-  float hq = bq * bq - (dot(ro, ro) - 3.1);
+  float hq = bq * bq - (dot(ro, ro) - 3.6);
   if (hq > 0.0) {
     float sq = sqrt(hq);
     if (uKind == 3) col = glass(ro, rd, rdW, ppu);
     else col = solid(ro, rd, rdW, -bq - sq, -bq + sq, ppu);
   }
+  if (uRing > 0.001 && rdW.y < -0.0001) {
+    /* 큐브 아래 바닥의 가는 빛 고리. 큐브가 떠 있다는 것을 알린다. 큐브에 가린 곳은 그리지 않는다 */
+    vec3 cam = vec3(0.0, 0.0, CAM);
+    float tf = (-1.45 - cam.y) / rdW.y;
+    vec3 hp = cam + rdW * tf;
+    float rr = length(hp.xz);
+    float fw = tf * 2.0 * FOV / uRes.y * mix(1.0, 1.0 / max(-rdW.y, 0.05), abs(hp.z) / max(rr, 0.001));
+    float line = 1.0 - smoothstep(0.004 + fw * 0.4, 0.004 + fw * 1.4, abs(rr - (1.34 + 0.10 * uThink)));
+    col += WARM * uRing * uLit * (line * 0.20 + exp(-rr * rr / 0.55) * 0.030) * (1.0 - gCover);
+  }
   float g = ign(f + uSeed * 7.31) + ign(f.yx + 17.0 + uSeed * 3.17) - 1.0;
   col += g * 2.8 / 255.0;
   gl_FragColor = vec4(max(col, 0.0), 1.0);
 }`;
-const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uCuts', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
+const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uCuts', 'uEyeY', 'uEyeStyle', 'uRing', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
 
 const reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -518,11 +581,13 @@ const CUBES = [
   { kind: 3, yaw: -0.60, pitch: 0.34, scale: 0.98, eyeK: 1.2, sep: 5.5 },
   { kind: 4, yaw: -0.50, pitch: 0.30, scale: 1, eyeK: 1, sep: 5.5 },
   { kind: 5, yaw: -0.42, pitch: 0.27, scale: 1.02, eyeK: 1.3, sep: 6.5 },   /* 가 + 다 */
+  { kind: 6, yaw: -0.36, pitch: 0.27, scale: 0.92, eyeK: 1.75, sep: 5.5, eyeY: -0.26, eyeStyle: 2 },   /* 셋째 판: 눈이 크고 낮다 */
 ].map((c, i) => ({
   ...c, i, think: 0, wasThink: false, thinkUntil: 0, bootUntil: 0, smileUntil: 0, flash: 0,
   px: 0, py: 0, tx: 0, ty: 0, moodShown: 0, open: 1, lid: null, nextBlink: 2000 + i * 700,
   az: 0, spin: 0, slab: [0, 0, 0, 0], slabT: [0, 0, 0, 0], nextShuffle: 0, a4: 0.6 + i, b4: 0.2,
-  R: qMat([0, 0, 0, 1]), L: [0, 0, 1], core: [0, 0, 0], glow: 0, scan: 0, lit: 1, eyeOn: 1, big: null, cuts: 1,
+  R: qMat([0, 0, 0, 1]), L: [0, 0, 1], core: [0, 0, 0], glow: 0, scan: 0, lit: 1, eyeOn: 1, big: null, cuts: 1, eyeY: c.eyeY || 0, eyeStyle: c.eyeStyle !== undefined ? c.eyeStyle : (c.kind === 1 ? 1 : 0),
+  lidA: 0, lidW: 0, lidHome: 0, lift: 0, pendingLand: false, bounce0: 0, hop: 0, gaze: [0, 0],
 }));
 let mood = 'auto';
 
@@ -532,7 +597,11 @@ function step(c, now, dt) {
   const ph = (t + c.i * 2.3) % 12;
   const want = !reduced && (mood === 'think' || now < c.thinkUntil || now < c.bootUntil || (mood === 'auto' && ph > 8.2 && ph < 10.6));
   if (want && !c.wasThink) { const kick = [0.62, -0.36, 0.46, -0.72]; c.slabT = c.slabT.map((a, j) => a + kick[j]); c.nextShuffle = now + 420; }
-  if (!want && c.wasThink) { c.smileUntil = now + 1300; c.flash = 1; c.slabT = c.slabT.map(a => Math.round(a / (Math.PI / 2)) * (Math.PI / 2)); }
+  if (!want && c.wasThink) {
+    /* 셋째 판은 뚜껑이 내려앉은 때에 웃는다 */
+    if (c.kind === 6) c.pendingLand = true; else { c.smileUntil = now + 1300; c.flash = 1; }
+    c.slabT = c.slabT.map(a => Math.round(a / (Math.PI / 2)) * (Math.PI / 2));
+  }
   c.wasThink = want;
   c.think += ((want ? 1 : 0) - c.think) * (1 - Math.exp(-dt * (want ? 3.2 : 4.4)));
   c.flash *= Math.exp(-dt * 2.4);
@@ -540,7 +609,7 @@ function step(c, now, dt) {
   c.py += (c.ty - c.py) * (1 - Math.exp(-dt * 6));
 
   /* 눈. 표정을 바꿀 때는 감았다 뜨는 사이에 바꾼다 */
-  const wantMood = mood === 'sleep' ? 2 : mood === 'smile' ? 1 : want ? 4 : now < c.smileUntil ? 1 : 0;
+  const wantMood = mood === 'sleep' ? 2 : mood === 'smile' ? 1 : want ? (c.kind === 6 ? 0 : 4) : now < c.smileUntil ? 1 : 0;
   if (!c.lid && c.moodShown !== wantMood) c.lid = { t0: now, swap: wantMood };
   if (!c.lid && c.moodShown === 0 && now > c.nextBlink && !reduced) { c.lid = { t0: now, swap: null }; c.nextBlink = now + 2600 + Math.random() * 3800; }
   if (c.lid) {
@@ -565,6 +634,34 @@ function step(c, now, dt) {
   }
   if (c.kind === 3) { c.spin += dt * (0.22 + 0.9 * c.think) * sway; yaw += c.spin; }
   let q = qMul(qAxis(AX, pitch), qAxis(AY, yaw));
+  c.gaze = [clamp(c.px * 1.6, -1.5, 1.5), clamp(-c.py * 1.6, -1.5, 1.5)];
+  c.hop = 0;
+  if (c.kind === 6) {
+    /* 생각할 때 뚜껑이 떠올라 돌고, 끝나면 가까운 맞는 자리까지 돌아 내려앉는다 */
+    if (want) { c.lidW += (2.0 - c.lidW) * (1 - Math.exp(-dt * 2.5)); c.lidA += c.lidW * dt; c.lidHome = null; }
+    else {
+      if (c.lidHome === null) c.lidHome = Math.ceil((c.lidA + 0.35) / (Math.PI / 2)) * (Math.PI / 2);
+      c.lidW = 0; c.lidA += (c.lidHome - c.lidA) * (1 - Math.exp(-dt * 7));
+    }
+    const up = want || Math.abs(c.lidHome - c.lidA) > 0.05;
+    const liftT = reduced ? 0.3 : up ? 0.38 : 0;
+    c.lift += (liftT - c.lift) * (1 - Math.exp(-dt * (up ? 5 : 10)));
+    if (c.pendingLand && !up && c.lift < 0.014) { c.pendingLand = false; c.smileUntil = now + 1500; c.flash = 1; c.bounce0 = now; }
+    /* 내려앉으면 몸이 한 번 눌렸다가 통 튄다 */
+    let sy = 1;
+    if (c.bounce0) {
+      const u = (now - c.bounce0) / 1000;
+      if (u < 0.9) { sy = 1 - 0.07 * Math.exp(-5 * u) * Math.cos(17 * u); c.hop = u < 0.32 ? 0.10 * Math.sin(Math.PI * u / 0.32) : 0; }
+      else c.bounce0 = 0;
+    }
+    c.slab = [c.lidA, c.lift, 1 / Math.sqrt(sy), sy];
+    const open = clamp((c.lift - 0.03) / 0.17, 0, 1);
+    c.glow = 0.22 + (0.55 + 0.22 * Math.sin(t * 5)) * open + 0.8 * c.flash;
+    /* 고개를 갸웃한다. 생각할 때는 눈이 위의 뚜껑을 올려다본다 */
+    const k = c.think;
+    q = qMul(qAxis(AZ, 0.12 * k + sway * 0.02 * Math.sin(t * 0.6) - c.px * 0.08), q);
+    c.gaze = [c.gaze[0] * (1 - k) + 0.9 * Math.sin(t * 1.3) * k, c.gaze[1] * (1 - k) + 1.4 * k];
+  }
   if (c.kind === 1) {
     /* 생각할 때 꼭짓점 하나로 서서 돈다 */
     c.spin += dt * 1.6 * c.think;
@@ -595,7 +692,7 @@ function step(c, now, dt) {
     c.glow = 0.22 + 0.6 * k * (0.7 + 0.3 * Math.sin(t * 9)) + 0.5 * c.flash;
   }
   if (c.kind === 4) { c.a4 += dt * (0.35 + 1.5 * c.think) * sway; c.b4 += dt * (0.21 + 0.7 * c.think) * sway; }
-  c.bob = sway * 0.05 * Math.sin(t * 0.8 + c.i * 1.7);
+  c.bob = sway * 0.05 * Math.sin(t * 0.8 + c.i * 1.7) + c.hop;
 }
 
 /* ── WebGL: 문맥 하나로 그리고 캔버스마다 옮겨 찍는다 ── */
@@ -633,13 +730,16 @@ function drawGL(tg, now) {
   gl.uniform1f(U.uLit, c.lit);
   gl.uniform1f(U.uEyeK, c.eyeK);
   gl.uniform1f(U.uCuts, c.cuts);
+  gl.uniform1f(U.uEyeY, c.eyeY);
+  gl.uniform1f(U.uEyeStyle, c.eyeStyle);
+  gl.uniform1f(U.uRing, c.kind === 6 && !tg.fixed ? 1 : 0);
   gl.uniform1i(U.uKind, c.kind);
   gl.uniformMatrix3fv(U.uInv, false, c.R);
   gl.uniform3f(U.uL, c.L[0], c.L[1], c.L[2]);
   gl.uniform3f(U.uOff, 0, c.bob || 0, 0);
   gl.uniform3f(U.uCore, c.core[0], c.core[1], c.core[2]);
   gl.uniform4f(U.uEye, c.eyeOn, c.open, c.moodShown, c.sep);
-  gl.uniform2f(U.uGaze, clamp(c.px * 1.6, -1.5, 1.5), clamp(-c.py * 1.6, -1.5, 1.5));
+  gl.uniform2f(U.uGaze, c.gaze[0], c.gaze[1]);
   gl.uniform4f(U.uSlab, c.slab[0], c.slab[1], c.slab[2], c.slab[3]);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   tg.ctx.drawImage(glc, 0, glc.height - h, w, h, 0, 0, w, h);
@@ -788,6 +888,12 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) { can
 
 const t0 = performance.now();
 for (const c of CUBES) c.bootUntil = t0 + 1100 + c.i * 260;
+/* 셋째 판: 눈을 빛 눈(통통한 알약)과 점 눈(검정 구의 눈) 사이에서 바꿔 본다 */
+for (const b of document.querySelectorAll('[data-eye]')) b.addEventListener('click', () => {
+  CUBES[6].eyeStyle = +b.dataset.eye;
+  for (const o of document.querySelectorAll('[data-eye]')) o.setAttribute('aria-pressed', String(o === b));
+  kick();
+});
 if (reduced) for (const c of [CUBES[2], CUBES[5]]) c.slab = c.slabT = [0.30, -0.16, 0.22, -0.38];
 kick();
 })();
