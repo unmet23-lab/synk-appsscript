@@ -185,18 +185,28 @@ export const stoppedDeleteDue=(clock,now)=>!!clock&&!clock.unclear&&clock.notice
 // 이력이 없는 옛 결제는 그때의 payment에서 만든 이력과 같다(pulse-requests seedPaymentLog — confirmedAt이 있으면 confirmed 한 줄).
 export const paymentEverConfirmed=request=>Array.isArray(request?.paymentLog)?request.paymentLog.some(entry=>entry?.kind==='confirmed'):!!request?.payment?.confirmedAt;
 // 돌려줌: null — 시계 없음(의뢰서를 내지 않음 · 이미 지운 의뢰 · 제작한 프로젝트). {unclear} — 날짜를 못 읽음(지우지 않고 센다).
-//   {lastAt,clockAt,noticeFrom,noticed,noticeAt,deleteAt,keepPayment?} — 마지막 움직임 = max(프로젝트 updatedAt, 이 프로젝트에서 나온 인물의 updatedAt)
-//   (인물 쪽 일이 더 늦으면 보인 날짜가 맞게 — 설계 검토 D4). 붙잡는 인물만이 아니라 이 프로젝트에서 나온 모든 인물을 본다 — 인물 일로 풀린 예고가 그 인물이 브랜드에
-//   묶여 붙잡지 않게 된 뒤 되살아나 예고 없이 지우지 않게(GPT 서버 검수 GA1). 시계가 지운(지우는 중 포함) 인물은 지우기 직전의 움직임으로 본다(personaActivity).
+//   {lastAt,clockAt,noticeFrom,noticed,noticeAt,deleteAt,keepPayment?} — 마지막 움직임 = max(프로젝트 updatedAt, 이 프로젝트에서 나온 인물의 마지막 움직임)
+//   (인물 쪽 일이 더 늦으면 보인 날짜가 맞게 — 설계 검토 D4). 붙잡는 인물만이 아니라 이 프로젝트에서 나온 모든 인물을 보되, 브랜드 인물은 귀속된 때까지,
+//   시계가 지운 인물은 지우기 직전까지다(personaActivity).
 //   예고는 마지막 움직임보다 «뒤»에 나간 것만, 지우는 날은 인물 시계와 같은 식.
 //   keepPayment — 결제가 확인됐다가 취소된 의뢰: 지울 때 결제 기록(payment · paymentLog)만 남긴다(설계 검토 D7).
-// 인물의 마지막 움직임(의뢰 기록 시계용). 시계가 지운(지우는 중 포함) 인물은 지우기 직전의 움직임으로 본다 — 지우기 기록이 updatedAt을 옮겨도, 그 앞 직원 일로 풀린
-// 의뢰 예고가 되살아나 예고 없이 지우지 않게(GPT 서버 다시 검수 GA3). 지우기 직전 날짜(deletion.lastActivityAt)가 없는 옛 묘비는 그 이력의 사람 손 항목, 그것도 없으면 null(보지 않음).
+// 인물 쪽에서 이 의뢰의 마지막 움직임(의뢰 기록 시계용). 셋으로 나눈다.
+// ① 브랜드에 귀속된 인물(묘비 포함)은 마지막으로 귀속된 때(이력의 reuse_approved — 귀속 취소 뒤 다시 들어가면 그때). 귀속 뒤 브랜드에서 한 일(다시 쓰기 동의 연장 ·
+//    지우기 요청 · 브랜드 시계의 지우기)은 원 의뢰의 움직임이 아니다(GPT 서버 다시 검수 GA1). 귀속 전의 일은 귀속된 때보다 앞이라 그 안에 들고, 귀속 자체가 움직임이라
+//    인물 일로 풀린 예고가 귀속 뒤 되살아나지 않는다(GPT 서버 검수 GA1). 이력에서 귀속된 때를 못 찾으면 NaN(날짜를 못 읽음 — 지우지 않고 센다).
+// ② 시계가 지운(지우는 중 포함) 브랜드 없는 인물은 지우기 직전의 움직임 — 지우기 기록이 updatedAt을 옮겨도 그 앞 직원 일로 풀린 예고가 되살아나지 않게(GA3).
+//    지우기 직전 날짜(deletion.lastActivityAt)가 없는 옛 묘비는 그 이력의 사람 손 항목, 그것도 없으면 null(보지 않음).
+// ③ 그 밖의 브랜드 없는 인물(이 의뢰를 붙잡는 인물 · 직원이 지운 인물)은 updatedAt.
 export function personaActivity(persona){
+  const history=Array.isArray(persona?.history)?persona.history:[];
+  if(persona?.workspaceId){
+    for(let i=history.length-1;i>=0;i--)if(history[i]?.action==='reuse_approved')return Date.parse(history[i].at);
+    return NaN;
+  }
   if(!((persona?.deletedAt||['deleting','deleted'].includes(persona?.status))&&persona?.deletion?.confirmedBy==='system'))return Date.parse(persona?.updatedAt);
   const kept=Date.parse(persona.deletion.lastActivityAt);if(Number.isFinite(kept))return kept;
   let best=null;
-  for(const entry of Array.isArray(persona.history)?persona.history:[]){if(!entry||entry.actorKind==='system')continue;const at=Date.parse(entry.at);if(Number.isFinite(at)&&(best===null||at>best))best=at;}
+  for(const entry of history){if(!entry||entry.actorKind==='system')continue;const at=Date.parse(entry.at);if(Number.isFinite(at)&&(best===null||at>best))best=at;}
   return best;
 }
 export function requestClock(store,row,now){

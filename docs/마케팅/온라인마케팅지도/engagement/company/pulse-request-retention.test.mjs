@@ -41,26 +41,38 @@ test('시계 계산: 의뢰서(동의)가 있고 제작 신호가 없을 때만 
   assert.equal(paymentEverConfirmed(refunded.studio.request),true);assert.equal(requestClock(store,refunded,isoOf(t0)).keepPayment,true);
   assert.equal(paymentEverConfirmed({payment:{status:'cancelled',confirmedAt:isoOf(t0),cancelledAt:isoOf(t0)}}),true,'이력이 없는 옛 결제는 그때의 payment로');
   assert.equal(paymentEverConfirmed({payment:{status:'requested'}}),false);assert.equal(requestClock(store,row({payment:{status:'requested'}}),isoOf(t0)).keepPayment,undefined);
-  // D4 · GA1: 이 프로젝트에서 나온 인물이 더 늦게 움직였으면 그날부터 — 브랜드에 묶인 인물도 본다(인물 일로 풀린 예고가 브랜드 보관 뒤 되살아나지 않게).
+  // D4: 이 프로젝트에서 나온 브랜드 없는 인물이 더 늦게 움직였으면 그날부터.
+  const kept=at=>[{id:'x',at:isoOf(at),action:'reuse_approved',actorKind:'member'}];
   personas.push({id:'a',originProjectId:'p1',workspaceId:null,status:'ready',updatedAt:isoOf(t0+30*DAY)},{id:'c',originProjectId:'p2',workspaceId:null,status:'ready',updatedAt:isoOf(t0+70*DAY)});
   assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+30*DAY),'다른 프로젝트의 인물은 보지 않는다');
-  personas.push({id:'b',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+60*DAY)});
-  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+60*DAY),'브랜드에 묶인 인물의 움직임도 이 의뢰의 움직임이다');
-  // 76일 예고 뒤 89일에 인물 일 → 예고가 풀리고, 그 인물이 92일에 브랜드에 묶여도 옛 예고는 되살아나지 않는다(GPT 서버 검수 GA1).
-  personas.length=0;personas.push({id:'e',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+92*DAY)});
+  // 브랜드에 귀속된 인물은 귀속된 때까지만 이 의뢰의 움직임이다 — 그 뒤 브랜드에서 한 일(동의 연장 등)은 원 의뢰를 늦추지 않는다(GPT 서버 다시 검수 GA1).
+  personas.push({id:'b',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+160*DAY),history:[{at:isoOf(t0+20*DAY),action:'request_update',actorKind:'staff'},...kept(t0+45*DAY),{at:isoOf(t0+160*DAY),action:'reuse_renewed',actorKind:'member'}]});
+  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+45*DAY),'브랜드 인물은 귀속된 때');
+  personas.length=0;personas.push({id:'b2',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+89*DAY),history:[...kept(t0+10*DAY),{at:isoOf(t0+89*DAY),action:'reuse_renewed',actorKind:'member'}]});
+  assert.equal(requestClock(store,row({},{requestRetentionNotice:{at:isoOf(t0+86*DAY)}}),isoOf(t0+90*DAY)).noticed,true,'귀속 뒤 동의 연장은 예고를 풀지 않는다');
+  // 귀속 취소 뒤 다시 귀속하면 그 마지막 귀속 때. 이력에서 귀속 때를 못 찾으면 날짜를 못 읽는 것으로 센다(지우지 않는다).
+  personas.length=0;personas.push({id:'b3',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+70*DAY),history:[...kept(t0+10*DAY),{at:isoOf(t0+40*DAY),action:'unassigned',actorKind:'staff'},...kept(t0+50*DAY)]});
+  assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0+50*DAY));
+  personas.length=0;personas.push({id:'b4',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+70*DAY)});
+  assert.deepEqual(requestClock(store,row(),isoOf(t0)),{unclear:'date'});
+  // 76일 예고 뒤 89일에 인물 일 → 예고가 풀리고, 그 인물이 92일에 브랜드에 귀속돼도 옛 예고는 되살아나지 않는다(귀속 자체가 움직임 — GPT 서버 검수 GA1).
+  personas.length=0;personas.push({id:'e',originProjectId:'p1',workspaceId:'w',status:'ready',updatedAt:isoOf(t0+92*DAY),history:[{at:isoOf(t0+89*DAY),action:'request_update',actorKind:'staff'},...kept(t0+92*DAY)]});
   assert.equal(requestClock(store,row({},{requestRetentionNotice:{at:isoOf(t0+76*DAY)}}),isoOf(t0+93*DAY)).noticed,false);
-  // 시계가 지운 인물은 지우기 기록이 아니라 지우기 직전의 움직임으로 보고(GPT 서버 다시 검수 GA3), 직원이 지운 인물은 지운 때가 움직임이다.
+  // 시계가 지운 브랜드 없는 인물은 지우기 기록이 아니라 지우기 직전의 움직임으로 보고(GPT 서버 다시 검수 GA3), 직원이 지운 인물은 지운 때가 움직임이다.
   personas.length=0;personas.push({id:'f',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+80*DAY),updatedAt:isoOf(t0+80*DAY),deletion:{confirmedBy:'system'}});
   assert.equal(requestClock(store,row(),isoOf(t0)).lastAt,isoOf(t0),'사람 손 움직임이 남지 않은 옛 묘비는 보지 않는다');
   // 76일 예고 뒤 80일에 직원이 인물을 손봤고, 그 인물을 시계가 100일에 지웠다 — 예고는 풀린 채로 남는다(지우기 기록 날짜가 앞 움직임을 지우지 않는다).
   const notice={requestRetentionNotice:{at:isoOf(t0+76*DAY)}};
-  personas.length=0;personas.push({id:'h',originProjectId:'p1',workspaceId:'w',status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system',lastActivityAt:isoOf(t0+80*DAY)}});
+  personas.length=0;personas.push({id:'h',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system',lastActivityAt:isoOf(t0+80*DAY)}});
   let gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY));assert.equal(gone.noticed,false);
   personas[0]={...personas[0],status:'deleting',deletedAt:undefined};
   gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY),'지우는 중인 인물도 같다');assert.equal(gone.noticed,false);
   // 지우기 직전 날짜가 없는 옛 묘비는 이력의 사람 손 항목(시스템 항목은 뺀다).
-  personas.length=0;personas.push({id:'i',originProjectId:'p1',workspaceId:'w',status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system'},
+  personas.length=0;personas.push({id:'i',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system'},
     history:[{at:isoOf(t0+80*DAY),actorKind:'staff'},{at:isoOf(t0+95*DAY),actorKind:'system'},{at:isoOf(t0+100*DAY),actorKind:'system'}]});
+  gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY));assert.equal(gone.noticed,false);
+  // 브랜드 인물은 묘비여도 귀속된 때 — 80일에 귀속, 브랜드 시계가 100일에 지웠으면 예고는 풀린 채로 남는다.
+  personas.length=0;personas.push({id:'j',originProjectId:'p1',workspaceId:'w',status:'deleted',deletedAt:isoOf(t0+100*DAY),updatedAt:isoOf(t0+100*DAY),deletion:{confirmedBy:'system',lastActivityAt:isoOf(t0+99*DAY)},history:kept(t0+80*DAY)});
   gone=requestClock(store,row({},notice),isoOf(t0+101*DAY));assert.equal(gone.lastAt,isoOf(t0+80*DAY));assert.equal(gone.noticed,false);
   personas.length=0;personas.push({id:'f',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+80*DAY),updatedAt:isoOf(t0+80*DAY),deletion:{confirmedBy:'system'}});
   personas.push({id:'g',originProjectId:'p1',workspaceId:null,status:'deleted',deletedAt:isoOf(t0+85*DAY),updatedAt:isoOf(t0+85*DAY),deletion:{confirmedBy:'staff-1'}});
