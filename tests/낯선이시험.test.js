@@ -134,10 +134,11 @@ test('회상 셋(11-18 유호님 「브랜드 회상 … 고정 질문 셋으로
     assert.match(p, /^1\. 이 영상이 말하려는 것/m, brand);
     assert.match(p, /^12\. 무슨 브랜드\(또는 제품 · 기관\)의 영상이었나 — .*「이야기에 붙음」 또는 「끝에만」/m, brand);
     assert.match(p, /^13\. 보고 난 기분 한 낱말과, 이 영상을 떠올리면 가장 먼저 떠오를 장면 하나/m, brand);
-    assert.ok(p.indexOf('\n11. ') < p.indexOf('\n12. ') && p.indexOf('\n12. ') < p.indexOf('\n13. '), '11 → 12 → 13 차례');
-    assert.match(p, /1~8번과 10~13번은 이 영상만 보고 답한 뒤/, '비교용 묶음은 12 · 13번을 답한 뒤에 연다');
+    assert.match(p, /^14\. 보는 동안 기분이 어떻게 바뀌었나 — 처음 · 가운데 · 끝을 한 낱말씩/m, brand);
+    assert.ok(p.indexOf('\n11. ') < p.indexOf('\n12. ') && p.indexOf('\n12. ') < p.indexOf('\n13. ') && p.indexOf('\n13. ') < p.indexOf('\n14. '), '11 → 12 → 13 → 14 차례');
+    assert.match(p, /1~8번과 10~14번은 이 영상만 보고 답한 뒤/, '비교용 묶음은 12~14번을 답한 뒤에 연다');
   }
-  for (const brand of ['synkbrief', 'yuhobuilds', 'lab-en']) assert.doesNotMatch(buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt' }), /^1[23]\. /m, brand);
+  for (const brand of ['synkbrief', 'yuhobuilds', 'lab-en']) assert.doesNotMatch(buildPrompt({ brand, sheets: ['s1.jpg'], speech: 'm.txt' }), /^1[234]\. /m, brand);
 });
 
 test('「다음:」 줄 아래 답 처리(11-16 흠 장부) — 사람편 브랜드는 흠갈래 「올린곳」 가운데 검수 질문 · 이 도구 자리의 「할것」을 한 줄씩(답 10 · 11), LAB은 없음, 흠갈래를 못 읽으면 「다음:」 줄만', (t) => {
