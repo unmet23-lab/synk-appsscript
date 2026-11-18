@@ -2,6 +2,7 @@
 # 자리(왼 · 가운데 · 오른 정렬, 높이) · 크기 · 색(짙은 INK · 밝은 PAPER) · 층(피사체 뒤 · 앞) 후보를 모두 재고 나은 순서로 낸다.
 #   python -X utf8 자리찾기.py <탐침> <화면> --검사 <가림검사 결과.json> [--편 p11|p12] --낱말 0,3,4 [--묶음 9,10,11] [--그림 <후보.jpg>]
 #   --묶음: 여러 낱말을 한 자리로(12번 속사포 컷처럼 자리가 컷마다 뛰면 어지러운 곳) — 프레임마다 그 프레임의 낱말로 잰다
+#   선택 설치: 이 폴더에서 python caption_overlap.py --build (rustc 필요). 설치하면 픽셀 집계를 Rust로 하고, 없으면 Python으로 계산한다.
 # 글자 모양은 SUIT ExtraBold를 PIL로 그려 탐침 프레임에 위치를 맞춘(보정) 뒤 쓴다. 고른 자리는 P11.tsx · P12.tsx에 넣고 다시 탐침 렌더 + 가림검사.py로 확인한다.
 # 점수: 괜찮은 프레임 몫(글자마다 88% 넘게 보이고 테두리 65% 넘게 대비 3:1)이 먼저, 그다음 S42 깊이(뒤 글자가 2~12% 덮임) · 원래 자리 · 크기 · INK를 조금씩 더 친다.
 import argparse
@@ -18,6 +19,8 @@ FONT_XB = str(REMO.parents[4] / "브랜드_폰트" / "SUIT" / "SUIT-ExtraBold.ot
 LABEL = str(REMO.parents[4] / "브랜드_폰트" / "SUIT" / "SUIT-SemiBold.otf")
 SEE, EDGE = 0.88, 0.65
 BOX_L = 28                           # abs(56, y, …)의 반 크기
+# 실측에서 반복해 빨랐던 가장 작은 탐색: 12개 배치 × 32프레임 × 그리는 글자 4개.
+MIN_NATIVE_GLYPH_FRAME_CHECKS = 1536
 
 
 def pill_full():
@@ -116,6 +119,11 @@ def union_mask(cut, film, cache={}):
     return cache[key]
 
 
+def prepare_overlap(data, word_of):
+    from caption_overlap import prepare
+    return prepare(data, word_of)
+
+
 def search(g, group, rows, pic_dir, cuts, film, cfg, top=5, step=1):
     big = cfg["big"]
     name, y0, s0, ylim = big[group[0]][:4]
@@ -137,16 +145,29 @@ def search(g, group, rows, pic_dir, cuts, film, cfg, top=5, step=1):
         pp = (np.maximum(L, lum(paper)) + 0.05) / (np.minimum(L, lum(paper)) + 0.05) >= 3.0
         data[f] = (S, pi, pp)
     sizes = sorted(set(cfg["only_sizes"]) if cfg.get("only_sizes") else {s0, *cfg["sizes"]}, reverse=True)
+    alignments = cfg.get("only_x", "lcr")
+    search_grid = [(size, cfg.get("only_y") or range(cfg["ymin"], ylim - size + 1, 20)) for size in sizes]
+    placements = len(alignments) * sum(len(heights) for _, heights in search_grid)
+    letters = {wi: sum(ch != " " for ch in big[wi][0]) for wi in group}
+    glyph_frames = sum(letters[word_of[f]] for f in allf)
+    overlap = None
+    if placements * glyph_frames >= MIN_NATIVE_GLYPH_FRAME_CHECKS:
+        overlap = prepare_overlap(data, word_of)
     res = []
-    for size in sizes:
-        for xm in cfg.get("only_x", "lcr"):
-            for yf in (cfg["only_y"] if cfg.get("only_y") else range(cfg["ymin"], ylim - size + 1, 20)):
-                geo, fit = {}, True
+    for size, heights in search_grid:
+        for xm in alignments:
+            for yf in heights:
+                geo, native_values, fit = {}, {}, True
                 for wi in group:
                     chars, line = g.layout(big[wi][0], size, xm, yf)
                     if line > g.box_w + 2:
                         fit = False
                         break
+                    if overlap is not None:
+                        measured = overlap.measure(wi, chars)
+                        if measured is not None:
+                            native_values.update(measured)
+                            continue
                     allg = np.maximum.reduce(chars) >= 40
                     ys, xs = np.nonzero(allg)
                     y_a, y_b, x_a, x_b = max(0, ys.min() - 8), min(SIZE['h'], ys.max() + 9), max(0, xs.min() - 8), min(SIZE['w'], xs.max() + 9)
@@ -162,22 +183,34 @@ def search(g, group, rows, pic_dir, cuts, film, cfg, top=5, step=1):
                         edges = []
                         worst = (9, None)
                         for f in allf:
-                            (y_a, y_b, x_a, x_b), cores, union, rings = geo[word_of[f]]
-                            S, pi, pp = data[f]
-                            Sc = S[y_a:y_b, x_a:x_b] if S is not None else None
-                            pc = (pi if col == "ink" else pp)[y_a:y_b, x_a:x_b]
-                            see_m, edge_m = 1.0, 1.0
-                            for c, rg in zip(cores, rings):
-                                n = c.sum()
-                                if layer == "behind" and Sc is not None:
-                                    see = 1 - (c & Sc).sum() / n
-                                    rv = rg & ~Sc
+                            if f in native_values:
+                                back_see, back_ink, back_paper, front_ink, front_paper, front_cover = native_values[f]
+                                Sc = data[f][0]
+                                if layer == "behind":
+                                    see_m = back_see
+                                    edge_m = back_ink if col == "ink" else back_paper
+                                    cf = 0.0
                                 else:
-                                    see, rv = 1.0, rg
-                                rn = rv.sum()
-                                e = (rv & pc).sum() / rn if rn else 0.0
-                                see_m, edge_m = min(see_m, see), min(edge_m, e)
-                            cf = float((union & Sc).sum()) / max(1, union.sum()) if layer == "front" and Sc is not None else 0.0
+                                    see_m = 1.0
+                                    edge_m = front_ink if col == "ink" else front_paper
+                                    cf = float(front_cover) if layer == "front" else 0.0
+                            else:
+                                (y_a, y_b, x_a, x_b), cores, union, rings = geo[word_of[f]]
+                                S, pi, pp = data[f]
+                                Sc = S[y_a:y_b, x_a:x_b] if S is not None else None
+                                pc = (pi if col == "ink" else pp)[y_a:y_b, x_a:x_b]
+                                see_m, edge_m = 1.0, 1.0
+                                for c, rg in zip(cores, rings):
+                                    n = c.sum()
+                                    if layer == "behind" and Sc is not None:
+                                        see = 1 - (c & Sc).sum() / n
+                                        rv = rg & ~Sc
+                                    else:
+                                        see, rv = 1.0, rg
+                                    rn = rv.sum()
+                                    e = (rv & pc).sum() / rn if rn else 0.0
+                                    see_m, edge_m = min(see_m, see), min(edge_m, e)
+                                cf = float((union & Sc).sum()) / max(1, union.sum()) if layer == "front" and Sc is not None else 0.0
                             if f in steady:
                                 ok += see_m >= SEE and edge_m >= EDGE and cf <= cmax
                                 edges.append(edge_m)
