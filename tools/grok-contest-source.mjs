@@ -3,9 +3,21 @@ const { botUrl, detailsName, pageTitle, downloadLock, importedIds } = contestSou
 const fs = await import('node:fs/promises');
 const { randomUUID } = await import('node:crypto');
 const spaceName = 'Grok contest map';
-const existing = (await listTaskSpaces()).find((space) => space.name === spaceName);
+// Grok 로그인은 「유호」 프로필에만 있다. ego는 새 프로필을 만들 때마다 기본 프로필을 그쪽으로 바꾸므로 기본에 기대지 않는다.
+const profileId = /^(Default|Profile \d+)$/.test(contestSource.profileId || '') ? contestSource.profileId : 'Profile 7';
+let existing = (await listTaskSpaces()).find((space) => space.name === spaceName);
+if (existing && existing.profileId && existing.profileId !== profileId) {
+  // 다른 프로필에서 열린 옛 공간에는 로그인이 없다. 닫고 「유호」 프로필에 새로 연다.
+  const stale = existing.ownership === 'user' ? await claimTaskSpace(existing.id)
+    : existing.ownership === 'agentDelegatedToUser' ? await takeOverTaskSpace(existing.id)
+      : await taskSpace(existing.id);
+  const closed = await stale.finish({ keep: [] });
+  if (!closed?.closedSpace) throw Error('다른 프로필(' + existing.profileId + ')에 남은 공모 지도 Ego 창을 닫지 못했습니다.');
+  existing = undefined;
+}
 if (existing?.ownership === 'agentDelegatedToUser') throw Error('공모 지도용 Ego 창을 사용자가 제어하고 있습니다.');
-const task = existing?.ownership === 'user' ? await claimTaskSpace(existing.id) : await taskSpace(existing?.id ?? spaceName);
+const task = existing?.ownership === 'user' ? await claimTaskSpace(existing.id)
+  : existing ? await taskSpace(existing.id) : await taskSpace(spaceName, { profileId });
 const tabs = await task.tabs();
 const current = tabs.find((tab) => tab.active) ?? tabs[0];
 const page = current.label ? task.page(current.label) : await task.adopt(current.page);

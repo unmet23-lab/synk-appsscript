@@ -23,6 +23,7 @@ function 브라우저수신(config, importedIds) {
   const source = fs.readFileSync(path.join(__dirname, 'grok-contest-source.mjs'), 'utf8');
   const command = 'const contestSource = ' + JSON.stringify({
     botUrl: config.botUrl, detailsName: config.detailsName, pageTitle: config.pageTitle, downloadLock: config.downloadLock, importedIds,
+    profileId: config.egoProfile,
   }) + ';\n' + source;
   const run = (input, timeout) => spawnSync(browserExe, ['nodejs'], {
     input, encoding: 'utf8', windowsHide: true, timeout, maxBuffer: 4 * 1024 * 1024,
