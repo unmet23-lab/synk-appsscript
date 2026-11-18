@@ -1,0 +1,11 @@
+Create exactly one image, landscape 1536x1024.
+
+Image 1 is only a style reference for how people are rendered: premium stylized 3D animated film look, soft matte clay-like materials, smooth simplified forms. Do not copy its set or its bright background.
+
+Scene: a cinematic wide shot from the very back of a dark lecture hall during an evening talk. Deep black surroundings, almost a silhouette picture. In the foreground and middle ground, three rows of seated audience members seen from behind as dark rounded silhouettes, about fourteen people, several with open laptops whose screens are plain soft white-blue glows with no content. Far away at the front, a low stage. On the stage one presenter, small in the frame, seen from behind and slightly from the side so that no face is visible: short dark hair, a dark knit sweater, one arm raised toward a very large blank projection screen that fills the upper middle of the image and glows a soft, even warm white with nothing on it. One narrow spotlight beam falls from the upper right onto the presenter, with a little haze in the beam. The glow of the big screen rims the shoulders and heads of the audience.
+
+Composition: the big screen and presenter sit in the right half of the image. The left third of the image is nearly pure black and empty, so that white text can be placed there later. The bottom edge is the dark backs of the last row of seats.
+
+Mood: calm, grand, focused, like a still from a high-end animated feature film. High contrast, very dark overall, clean, no clutter.
+
+No text, no letters, no numbers, no logos, nothing written on the screen or on the laptops.
