@@ -1721,13 +1721,14 @@
       "handle": "@synkbrief",
       "publisher": "direct-after-connection",
       "connection": "needs-meta-app-and-media-host",
-      "profileStatus": "bio-90-saved-and-full-public-profile-rechecked-2026-09-14; clickable-website-user-saved-and-agent-click-through-verified-2026-09-14; photo-name-unchanged; posts-remain-0",
+      "profileStatus": "bio-brief-ig-bio-saved-and-logged-out-public-rechecked-2026-11-18-via-ego-profile-19; bio-90-saved-and-full-public-profile-rechecked-2026-09-14; clickable-website-user-saved-and-agent-click-through-verified-2026-09-14; photo-name-unchanged; posts-remain-0",
       "websiteUrl": "https://synk.im/",
       "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate",
       "dailyLine": "synkbrief",
       "loginIdentityRef": "meta-main",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
-      "profileAudit20261118": "소개를 새 방향 원고로 바꾸려 했으나 ego에 이 계정 로그인이 없어 못 고침 — 원고 brief-ig-bio, 폰에서 유호님 · docs/마케팅/프로필점검_20261118/README.md"
+      "profileAudit20261118": "11-18 23:44 소개를 새 방향 원고(brief-ig-bio)로 바꾸고 로그인하지 않은 공개 화면에서 네 줄 같음을 확인 — ego Profile 19 「IG synkbrief」(이 계정 전용) · docs/마케팅/프로필점검_20261118/README.md",
+      "egoProfile": "Profile 19"
     },
     "synkbrief-tiktok": {
       "brand": "SHIFT",

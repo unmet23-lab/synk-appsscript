@@ -15,9 +15,9 @@
 
 ## 고친 것
 
-글 21칸의 원고와 까닭은 [원고.json](원고.json)에 있다. 그 가운데 16칸을 바꾸고 공개 화면을 다시 읽어 원고와 같은 것을 확인했다. 계정별 반영 기록은 [반영/](반영/)에 있다.
+글 21칸의 원고와 까닭은 [원고.json](원고.json)에 있다. 그 가운데 17칸을 바꾸고 공개 화면을 다시 읽어 원고와 같은 것을 확인했다. 계정별 반영 기록은 [반영/](반영/)에 있다.
 
-- 바꿈: 유튜브 설명 셋(synkbrief · yuhobuilds · PULSE)과 yuhobuilds 링크 이름, 스레드 @yuhobuilds, 틱톡 @synkbrief, 링크드인 회사 페이지 태그라인 · 소개, 텔레그램, 비핸스, 핀터레스트, 네이버 클립, 네이버 블로그 shiftclass · daily_with_247, yuhokorean 인스타 · 유튜브 · 페이스북.
+- 바꿈: 유튜브 설명 셋(synkbrief · yuhobuilds · PULSE)과 yuhobuilds 링크 이름, 인스타 @synkbrief(11-18 밤 로그인 뒤), 스레드 @yuhobuilds, 틱톡 @synkbrief, 링크드인 회사 페이지 태그라인 · 소개, 텔레그램, 비핸스, 핀터레스트, 네이버 클립, 네이버 블로그 shiftclass · daily_with_247, yuhokorean 인스타 · 유튜브 · 페이스북.
 - 그림: 유튜브 @synkpulse에 유호님이 고르신 배너 C(도담 25번 컷 · 영어 제목, [시안/굽기_PULSE유튜브.mjs](시안/굽기_PULSE유튜브.mjs))를 11-18 15:40에 처음 걸었다(11-18 「C로 걸어」, 공개 그림 대조 평균 차 0.59). 유튜브 @yuhobuilds 배너에서 PC 띠 오른쪽 아래에 잘려 보이던 노트북만 띠 밖으로 내렸다(꼴은 10-02 판 그대로, [시안/배너.html](시안/배너.html)).
 
 ## 검사
@@ -29,7 +29,10 @@
 ## 남은 것
 
 - **유호님이 고르실 것:** synkbrief 유튜브 배너를 글만 바꿔 걸지 아니면 재연 장면 컷으로 새로 지을지(같은 꼴인 yuhobuilds 배너도 함께). 보고 페이지 맨 위에 있다. 고르심 예측은 `docs/_ops/고르심기록.jsonl`의 `profile-pulse-yt-banner-20261118`, `profile-brief-yt-banner-20261118`.
-- **유호님 손(로그인이 없어 못 바꾼 다섯 칸):** 인스타 @synkbrief · @yuhobuilds · @synkpulse 소개(ego 「유호」의 인스타는 개인 계정이라 전환 목록이 없다), 틱톡 @synkpulse 소개(ego 로그인이 풀림 — 11-19 이름 변경 때도 필요), 카카오 채널 소개(카카오 로그인). 넣을 글은 원고.json의 `brief-ig-bio` · `builds-ig-bio` · `pulse-ig-bio` · `pulse-tt-bio` · `kakao-bio`.
+- **로그인이 없어 못 바꾼 칸:** 처음에는 인스타 @synkbrief · @yuhobuilds · @synkpulse, 틱톡 @synkpulse, 카카오 채널 다섯 칸이었다(ego 「유호」의 인스타는 개인 계정이라 전환 목록이 없고, 틱톡과 카카오는 로그인이 풀려 있었다). 11-18 「ego에 로그인할게」에 따라 계정마다 ego 프로필을 따로 만들고 로그인 화면을 넘겼다.
+  - 인스타 @synkbrief는 Profile 19 「IG synkbrief」에 로그인된 뒤 11-18 23:44에 소개를 바꿨다. 로그인하지 않은 공개 화면에서 네 줄 모두 원고와 같았다.
+  - 남은 넷은 ego 작업 공간 목록에 「로그인: 인스타 @yuhobuilds」(Profile 20), 「로그인: 인스타 @synkpulse」(Profile 21), 「로그인: 틱톡 @synkpulse」(Profile 7, 원장 그대로), 「로그인: 카카오 채널 synkshift」(Profile 22)로 넘겨 두었다. 아이디는 넣어 두었고(카카오는 비움), 유호님은 비밀번호만 넣으시면 된다. LAB 인스타 @synk.mn도 「로그인: 인스타 @synk.mn」(Profile 23)으로 함께 넘겼다([LAB 점검](../LAB프로필점검_20261118/README.md)의 1번).
+  - 로그인은 3분마다 감시한다. 로그인이 잡히면 원고.json의 `builds-ig-bio` · `pulse-ig-bio` · `pulse-tt-bio` · `kakao-bio`를 넣고 공개 화면에서 다시 읽는다. 틱톡 이름(SYNK PULSE, 11-19부터)은 이 일에 넣지 않는다.
 - **여쭐 것:** 네이버 블로그 synkshift는 이름 · 소개 · 커버가 9월 yuhobuilds 쪽(「유호 · AI와 회사 만들기」, 티스토리와 같은 이름)인데 글은 synkbrief 편이고 카테고리 다섯 가운데 넷이 비어 있다. 블로그 정체를 바꾸는 일이라 묻고 정한다. 링크드인 회사 페이지 커버도 광고 제작을 빼고 「교육과 콘텐츠」만 말한다. yuhokorean 다섯 계정과 몽글몽글 두 계정은 프로필 그림이 비어 있고 게시가 0이다 — 계속 쓸지와 함께 정한다.
 - **후속:** synk.im/en/pulse 첫 화면의 영어 두 문장(「led a web drama」, 「every cut as a scene image」)은 11-18에 PULSE 유튜브와 같은 문장으로 고쳐 공개했다. 정지 그림은 쪽 전체와 질문창 답에서 「still image」 · 「shot」으로 맞췄다(카본 검수 pulse-en-still-shot-20261118 0건, synk-policy fe29314). X · 링크드인 소개의 「AI ad films」도 영어 검사에서 「AI video ads」가 낫다고 나왔다(PULSE 계정 바꾸기 세션에 알림).
 - **참고:** 페이스북 PULSE 소개의 「광고영상」 띄어쓰기 한 곳은 ego 페이스북 로그인이 풀려 두었다. 유튜브 채널 키워드는 다섯 채널 모두 비어 있다.
