@@ -372,9 +372,18 @@ test('프레임 판정 — 글자 인식을 못 믿는 언어는 기준이 있�
   assert.deepEqual(빈.찾음.map((x) => `${x.수준}:${x.코드}`), ['확인할 것:프레임없음']);
 });
 
+// 게시묶음.repoOf와 loadAccounts가 임시 편을 검사할 때 시험 마당 안의 원장을 찾게 한다.
+function 시험마케팅폴더(방, accounts = {}) {
+  const 마케팅 = path.join(방, 'docs', '마케팅');
+  fs.mkdirSync(path.join(방, 'tools'), { recursive: true });
+  fs.mkdirSync(마케팅, { recursive: true });
+  fs.writeFileSync(path.join(마케팅, 'sns-계정.json'), JSON.stringify({ accounts }));
+  return 마케팅;
+}
+
 // 가짜 편 폴더(영상은 빈 바이트 — 프레임 검사는 대역으로 바꾼다)
 function 가짜편(방, 판본들) {
-  const 편 = path.join(방, 'LAB_시험편_20261111');
+  const 편 = path.join(시험마케팅폴더(방), 'LAB_시험편_20261111');
   fs.mkdirSync(path.join(편, '게시'), { recursive: true });
   const 판본 = {};
   for (const [k, 언어] of Object.entries(판본들)) {
@@ -588,7 +597,7 @@ test('엔진 잼(크롬) — 실제 크롬으로 넘침을 잰다', { skip: !fs.
 test('판본 명령 — 영상 프레임을 기준 판과 견주고 --기록이면 돌림.판본[키].검수.글자에 영상 지문을 적는다', { skip: (!도구있나('ffmpeg') || process.platform !== 'win32') && 'ffmpeg · 윈도우 OCR 없음' }, async () => {
   밀기필터실측();
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '글자검사-시험-'));
-  const 편 = path.join(방, 'LAB_시험편_20261110');
+  const 편 = path.join(시험마케팅폴더(방), 'LAB_시험편_20261110');
   fs.mkdirSync(path.join(편, '게시'), { recursive: true });
   // 판본 영상: 오른쪽 단추 자리(x 920 넘어)까지 흰 띠 · 기준 영상: 가운데 흰 띠
   const 굽기 = (out, box) => spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', 'color=c=0x3a6bd0:s=1080x1920:d=2:r=30',
@@ -773,17 +782,13 @@ test('메모 칸 — --눈확인 · --직접봄에 절대 경로가 있으면 �
 // 11-17 「배」에서 셋째 겹이 멕시코 · 파라과이 판본의 첫 카드를 각각 줄이다 둘 다 「¿Que el coreano es fácil?」가 됐고, 14시 올리기 전 검사
 // ⑫-2에서야 막혔다. 렌더 전 글자 검사가 같은 셈(tools/lib/같은언어묶음.js)으로 같은 편의 짝 판본 글.json과 견준다.
 function 묶음마당(방, { 브랜드 = 'LAB' } = {}) {
-  // repoOf가 이 방을 저장소로 보게(docs/마케팅 + tools) — 원장은 이 방의 것을 쓴다
-  fs.mkdirSync(path.join(방, 'tools'), { recursive: true });
-  const 마케팅 = path.join(방, 'docs', '마케팅');
-  fs.mkdirSync(마케팅, { recursive: true });
   const LAB = (platform, countryCode, language, 더 = {}) => ({ brand: 'LAB', platform, countryCode, language, ...더 });
-  fs.writeFileSync(path.join(마케팅, 'sns-계정.json'), JSON.stringify({ accounts: {
+  const 마케팅 = 시험마케팅폴더(방, {
     'lab-mx-youtube': LAB('youtube', 'MX', 'es'), 'lab-py-youtube': LAB('youtube', 'PY', 'es'), 'lab-mx-tiktok': LAB('tiktok', 'MX', 'es'),
     'lab-us-youtube': LAB('youtube', 'US', 'en'), 'lab-ca-youtube': LAB('youtube', 'CA', 'en'), 'lab-br-youtube': LAB('youtube', 'BR', 'pt-BR'),
     'lab-ph-youtube': LAB('youtube', 'PH', 'fil', { languageGroup: 'en' }),
     'brief-co-youtube': { brand: 'synkbrief', platform: 'youtube', countryCode: 'CO', language: 'es' },
-  } }));
+  });
   const 편 = path.join(마케팅, 'LAB_배_mn_20261105');
   fs.mkdirSync(path.join(편, '게시', '판본'), { recursive: true });
   // 렌더 전이라 PY는 아직 돌림에 없다 — 게시/판본/PY/글.json만 있다
