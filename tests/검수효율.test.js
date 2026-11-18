@@ -165,7 +165,8 @@ test('GPT 작성 카본 대체(정책 판 7 · 11-14 유호님 「웅 만약에 
   const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 작성자: 'GPT', 바탕: r.바탕, ...덧 });
   const 클로드 = async (x, 답 = 답하기()) => { for (const b of x.목록.묶음) api.검수받기(x.폴더, 'Claude', b.이름, (await 답({ prompt: fs.readFileSync(path.join(x.폴더, b.파일), 'utf8') })).text); };
   const 한도로 = 말 => async () => { throw new Error(말); };
-  const GPT한도 = 'You have hit your usage limit', 아르곤한도 = 'RESOURCE_EXHAUSTED quota';
+  // GPT 자리 대신은 이제 로그인 막힘에서만 본다 — GPT가 한도로 막히면 대신 없이 생략이다(11-18, 검수묶음.test.js 「GPT 한도 생략」)
+  const GPT한도 = 'GPT login 필요 — not logged in', 아르곤한도 = 'RESOURCE_EXHAUSTED quota';
   const 사유 = x => api.검수확인(x.폴더).사유.join(' / ');
   const 조건 = x => api.집계하기(x.목록, api.결과들읽기(x.폴더, x.목록), api.지적표읽기(x.폴더), api.결과들읽기(x.폴더, x.목록, 'GPT'), api.결과들읽기(x.폴더, x.목록, 'Claude')).조건;
   // 정책: 필수는 그대로 GPT · Claude이고, 대신은 GPT 자리에만 있다
@@ -175,11 +176,13 @@ test('GPT 작성 카본 대체(정책 판 7 · 11-14 유호님 「웅 만약에 
   assert.deepEqual(증명.대신할검수자(p, 'GPT'), ['GPT', '아르곤']); assert.deepEqual(증명.대신할검수자(p, '아르곤'), ['아르곤']); assert.deepEqual(증명.대신할검수자(p, 'Claude'), ['Claude']);
   assert.deepEqual(증명.다시검수자들(p, [{ 출처: '아르곤' }]), ['GPT'], '다시 검수자는 판 6과 같다');
   assert.deepEqual(증명.다시검수자들(p, [{ 출처: '아르곤' }], { 끝판: true }), ['GPT', 'Claude']);
-  assert.equal(증명.필수글(p), 'GPT · Claude(GPT가 한도·로그인 · 주간 문턱으로 막힌 증거가 있을 때만 카본(아르곤)이 GPT 자리를 대신 · Claude 자리는 대신 없음)');
+  assert.equal(증명.필수글(p), 'GPT · Claude(GPT가 한도로 막히면 GPT 몫은 생략 · 로그인으로 막힌 증거가 있을 때만 카본(아르곤)이 GPT 자리를 대신 · Claude 자리는 대신 없음)');
   assert.match(api.검수자들.GPT.막힘말(x.목록), /카본이 GPT 자리를 대신한다\(카본 p7-sub — 모든 묶음을 끝까지\).*Claude 검수는 그대로 받는다/);
   assert.match(api.검수자들.아르곤.막힘말(x.목록), /GPT가 막혔을 때 GPT 자리를 대신하는 검수자다.*둘 다 막혔거나 아르곤이 낸 지적을 아르곤이 다시 봐야 하면 더 내려가지 않고/);
   // 주간 문턱에 걸려 고를 계정이 없을 때 도구가 남기는 글도 한도 막힘이다
   assert.equal(증명.막힘증거('GPT', 'GPT quota — 주간 90% 아래인 Pro 계정이 없다')?.종류, '한도');
+  assert.equal(증명.막힘증거('GPT', 'GPT quota — 몫이 남은 Pro 계정이 없다(모두 주간이나 5시간 100%)')?.종류, '한도', '11-18 도구 글도 한도다');
+  assert.equal(증명.막힘증거('GPT', GPT한도)?.종류, '로그인');
   // ① GPT가 막히고 아무도 대신하지 않았으면 막는다
   await api.GPT보내기(x.폴더, x.목록, { call: 한도로(GPT한도), 몫: 몫충분 });
   await 클로드(x);

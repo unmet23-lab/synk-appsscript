@@ -256,7 +256,8 @@ test('준비 → 아르곤(가짜) → 처리 → 집계: 생성물은 빼고, �
   assert.equal(처음막힘[0].상태, '막힘');
   assert.ok(!집계하기(막힌목록, 처음막힘, 지적표읽기(새폴더)).조건.some(x => /Fable 검수로 대신/.test(x)), 'GPT를 안 돌렸으면 Fable 차례가 아니다');
   const { GPT보내기, 그록보내기 } = await tool();
-  const G막힘 = await GPT보내기(새폴더, 막힌목록, { call: async () => { throw new Error('You have hit your usage limit'); }, 몫 });
+  // GPT가 한도로 막히면 이제 생략이다(11-18) — 대신 사슬은 로그인 막힘으로 본다
+  const G막힘 = await GPT보내기(새폴더, 막힌목록, { call: async () => { throw new Error('GPT login 필요 — not logged in'); }, 몫 });
   assert.equal(G막힘[0].상태, '막힘');
   const 막힌집계 = (K = []) => 집계하기(막힌목록, 처음막힘, 지적표읽기(새폴더), G막힘, [], [], K).조건;
   assert.ok(막힌집계().some(x => /GPT·아르곤 검수가 막혀 그록 검수로 대신/.test(x)), 막힌집계().join(' / '));
@@ -1047,7 +1048,7 @@ test('정책 판 2·5: Claude 백엔드는 GPT 하나 — 막히면 아르곤 �
   const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
   // 판 5로 봉인한 묶음(11-08 판 6 전) — 판 6의 그록 차례는 아래 「그록 대체(정책 판 6 · 11-08)」 시험이 본다
   const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, 정책판: 5, ...덧 });
-  const 한도 = 누구 => async () => { throw new Error(누구 === 'GPT' ? 'You have hit your usage limit' : 'RESOURCE_EXHAUSTED quota'); };
+  const 한도 = 누구 => async () => { throw new Error(누구 === 'GPT' ? 'GPT login 필요 — not logged in' : 'RESOURCE_EXHAUSTED quota'); };   // GPT는 로그인 막힘 — 한도면 생략(11-18)
   // GPT 하나로 통과 — 아르곤은 돌리지 않는다
   const a = await 준비('gpt-only');
   assert.equal(a.목록.정책.판, 5); assert.deepEqual(a.목록.정책.필수, ['GPT']);
@@ -1057,13 +1058,13 @@ test('정책 판 2·5: Claude 백엔드는 GPT 하나 — 막히면 아르곤 �
   const s = api.집계하기(a.목록, [], api.지적표읽기(a.폴더), api.결과들읽기(a.폴더, a.목록, 'GPT'));
   assert.equal(s.한줄, 'GPT 0건(반영 0)'); assert.equal(s.배포조건충족, true);
   execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '집계', a.폴더], { encoding: 'utf8' });
-  assert.match(fs.readFileSync(path.join(a.폴더, '보고.md'), 'utf8'), /필수 검수: GPT\(한도·로그인으로 막히면 카본 → Fable\)/);
+  assert.match(fs.readFileSync(path.join(a.폴더, '보고.md'), 'utf8'), /필수 검수: GPT\(한도가 없으면 생략 · 로그인으로 막히면 카본 → Fable\)/);
   // 아르곤만으로는 안 된다 — GPT가 막힌 증거가 없으면 대신이 아니다
   const b = await 준비('argon-only');
   await api.아르곤보내기(b.폴더, b.목록, { call: 답하기(), 몫: 몫충분 });
   assert.match(api.검수확인(b.폴더).사유.join(' / '), /필수 GPT 검수 미완료/);
   assert.equal(api.집계하기(b.목록, api.결과들읽기(b.폴더, b.목록), api.지적표읽기(b.폴더)).한줄, '아르곤 0건(반영 0) · GPT 미실행');
-  // GPT가 한도로 막히면 아르곤이 대신한다
+  // GPT가 로그인으로 막히면 아르곤이 대신한다(한도면 생략 — 11-18)
   await api.GPT보내기(b.폴더, b.목록, { call: 한도('GPT'), 몫: 몫충분 });
   assert.deepEqual(api.검수확인(b.폴더).사유, []);
   assert.equal(api.집계하기(b.목록, api.결과들읽기(b.폴더, b.목록), api.지적표읽기(b.폴더), api.결과들읽기(b.폴더, b.목록, 'GPT')).배포조건충족, true);
@@ -1317,7 +1318,7 @@ test('GPT 부르기: codex exec를 본 계정·읽기 전용·빈 폴더·답 �
   await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000 }), e => /login/.test(e.message) && e.selectedModel === 'gpt-6.2-sol-max · 본 계정(~/.codex)');
   await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, thinking: 'xhigh', timeoutMs: 60_000, 계정: 굽기계정 }), e => /login/.test(e.message) && e.selectedModel === 'gpt-6.2-sol-xhigh · 굽기 장부 bake3');
   부름앞 = 가짜.부름수();
-  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000, 계정: null }), e => /quota — 주간 90% 아래인 Pro 계정이 없다/.test(e.message) && !('selectedModel' in e));
+  await assert.rejects(GPT부르기({ prompt: 'x', schema: 답꼴, timeoutMs: 60_000, 계정: null }), e => /GPT 계정 없음/.test(e.message) && !('selectedModel' in e));
   assert.equal(가짜.부름수(), 부름앞, '계정이 없으면 부르지 않는다');
 });
 
@@ -1721,12 +1722,15 @@ test('GPT 명령(11-14 후속): 계정·보내기·완료 안내에 이번 모�
   assert.equal(e.결과, null);
 });
 
-test('GPT 계정 고르기: Pro이고 주간 90% 아래인 계정 가운데 가장 덜 쓴 것, 없으면 null', async () => {
+test('GPT 계정 고르기(11-18 — 90% 문턱 없음): Pro이고 주간 · 5시간 몫이 100%에 닿지 않은 계정 가운데 주간을 가장 덜 쓴 것, 없으면 null', async () => {
   const { GPT계정가리기 } = await tool();
-  const 계정 = (이름, 요금제, 주간사용) => ({ 이름, home: 이름, 요금제, 주간사용 });
-  assert.equal(GPT계정가리기([계정(null, 'pro', 90), 계정('bake1', 'plus', 0), 계정('bake3', 'pro', 1)]).이름, 'bake3', '본 계정이 90%면 넘기고 plus는 안 쓴다');
-  assert.equal(GPT계정가리기([계정(null, 'pro', 30), 계정('bake3', 'pro', 50)]).이름, null);
-  assert.equal(GPT계정가리기([계정(null, 'pro', 95), 계정('bake3', 'pro', null)]), null, '못 읽은 계정은 고르지 않는다');
+  const 계정 = (이름, 요금제, 주간사용, 다섯시간사용 = null) => ({ 이름, home: 이름, 요금제, 주간사용, 다섯시간사용 });
+  // 11-18 실제 값: bake1 plus 100% · bake2 pro 92% · bake3 pro 100% — 92%인 bake2를 고른다(10% 남았다고 멈추지 않는다)
+  assert.equal(GPT계정가리기([계정('bake1', 'plus', 100), 계정('bake2', 'pro', 92), 계정('bake3', 'pro', 100)]).이름, 'bake2', '92%인 Pro 계정을 고른다');
+  assert.equal(GPT계정가리기([계정(null, 'pro', 99.5), 계정('bake1', 'plus', 0)]).이름, null, '99.5%여도 몫이 남았으면 쓴다(본 계정 이름은 null) · plus는 안 쓴다');
+  assert.equal(GPT계정가리기([계정(null, 'pro', 30), 계정('bake3', 'pro', 50)]).이름, null, '덜 쓴 계정부터');
+  assert.equal(GPT계정가리기([계정(null, 'pro', 100), 계정('bake3', 'pro', null)]), null, '다 쓴 계정과 못 읽은 계정은 고르지 않는다');
+  assert.equal(GPT계정가리기([계정(null, 'pro', 40, 100), 계정('bake2', 'pro', 95, 10)]).이름, 'bake2', '5시간 몫이 다 찬 계정은 넘긴다');
 });
 
 test('보내는 중 표시·지적표 잠금: 답을 기다리는 묶음은 관문을 막고, 주인 없는 표시·잠금은 걷는다, GPT 0건이어도 GPT지적표.md', async t => {
@@ -1943,7 +1947,7 @@ test('다시: 대상 지적 없는 고침(P2)도 정책의 첫 검수자가 보�
   r.쓰기('a.js', 'a=2 // 이름 고침\n');
   const y = await api.다시하기({ 이름: 'p2-again', 폴더: path.join(r.뿌리, 'p2-again'), 앞: x.폴더, 함께올림: '시험' });
   assert.deepEqual(y.목록.대상, []); assert.deepEqual(y.목록.검수자들, ['GPT']);
-  await api.GPT보내기(y.폴더, y.목록, { call: async () => { throw new Error('You have hit your usage limit'); }, 몫: 몫충분 });
+  await api.GPT보내기(y.폴더, y.목록, { call: async () => { throw new Error('GPT login 필요 — not logged in'); }, 몫: 몫충분 });
   assert.match(api.검수확인(y.폴더).사유.join(' / '), /다시 검수 아르곤 미완료.*GPT 검수가 한도·로그인으로 막혀 대신/);
   await api.아르곤보내기(y.폴더, y.목록, { call: 다시답하기(), 몫: 몫충분 });
   assert.deepEqual(api.검수확인(y.폴더).사유, []);
@@ -2034,7 +2038,8 @@ test('그록(11-07): 같은 묶음 · 같은 대조로 보내고 지적은 KA1�
 });
 
 // 그록 대체(정책 판 6 · 2026-11-08 눈가림 시험 뒤 유호님과 정함): Claude 백엔드는 GPT → 아르곤 → 그록 → Fable, 그록이 대신 본 사슬은 그록 P2도 처리.
-const 막힌말 = { GPT: 'You have hit your usage limit', 아르곤: 'RESOURCE_EXHAUSTED quota', 그록: '그록 사용량 한도 — 429' };
+// GPT는 로그인 막힘 — 한도면 대신 없이 생략이다(11-18 「GPT 한도 생략」 시험)
+const 막힌말 = { GPT: 'GPT login 필요 — not logged in', 아르곤: 'RESOURCE_EXHAUSTED quota', 그록: '그록 사용량 한도 — 429' };
 const 한도로 = 누구 => async () => { throw new Error(막힌말[누구]); };
 const GPT아르곤막기 = async (api, x) => {
   await api.GPT보내기(x.폴더, x.목록, { call: 한도로('GPT'), 몫: 몫충분 });
@@ -2051,7 +2056,7 @@ test('그록 대체(정책 판 6 · 11-08): 백엔드는 GPT·아르곤이 둘 �
   const a = await 준비('k-sub');
   assert.equal(증명.정책판, 7); assert.equal(a.목록.정책.판, 7); assert.deepEqual(a.목록.정책.필수, ['GPT']); assert.deepEqual(증명.실제필수(a.목록.정책), ['GPT']);
   assert.deepEqual(증명.대체순서(a.목록.정책), ['GPT', '아르곤', '그록', 'Fable']); assert.equal(증명.그록대체정책(a.목록.정책), true);
-  assert.equal(증명.필수글(a.목록.정책), 'GPT(한도·로그인으로 막히면 아르곤 → 그록 → Fable · 그록이 대신 본 사슬은 그록 P2도 처리를 적는다)');
+  assert.equal(증명.필수글(a.목록.정책), 'GPT(한도가 없으면 생략 · 로그인으로 막히면 아르곤 → 그록 → Fable · 그록이 대신 본 사슬은 그록 P2도 처리를 적는다)');
   assert.deepEqual(증명.대신할검수자(a.목록.정책, 'GPT'), ['GPT', '아르곤', '그록', 'Fable']);
   assert.deepEqual(증명.대신할검수자(a.목록.정책, '아르곤'), ['아르곤', 'GPT', '그록', 'Fable'], '아르곤이 다시 볼 때 막히면 그록보다 GPT가 먼저다');
   assert.deepEqual(증명.대신할검수자(a.목록.정책, '그록'), ['그록', 'Fable']); assert.deepEqual(증명.대신할검수자(a.목록.정책, 'Fable'), ['Fable']);
@@ -2070,7 +2075,7 @@ test('그록 대체(정책 판 6 · 11-08): 백엔드는 GPT·아르곤이 둘 �
   assert.equal(v.사유, ''); assert.equal(v.집계.배포조건충족, true, v.집계.조건.join(' / ')); assert.equal(v.집계.그록대신, true);
   assert.equal(v.집계.한줄, '아르곤 막힘(한도·로그인) · GPT 막힘(한도·로그인) · 그록 0건(반영 0)');
   execFileSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '집계', a.폴더], { encoding: 'utf8' });
-  assert.match(fs.readFileSync(path.join(a.폴더, '보고.md'), 'utf8'), /필수 검수: GPT\(한도·로그인으로 막히면 카본 → 그록 → Fable/);
+  assert.match(fs.readFileSync(path.join(a.폴더, '보고.md'), 'utf8'), /필수 검수: GPT\(한도가 없으면 생략 · 로그인으로 막히면 카본 → 그록 → Fable/);
   // ② 그록도 막히면 Fable이 대신한다(Fable 증명이 최종)
   const c = await 준비('k-all');
   await GPT아르곤막기(api, c);
@@ -2204,7 +2209,7 @@ test('그록 대체는 화면·GPT 작성·옛 판에 들지 않는다(11-08): �
   const o = await 준비('k-old', { 종류: '백엔드', 정책판: 5 });
   assert.deepEqual(o.목록.정책, { 판: 5, 작성자: 'Claude', 종류: '백엔드', GPT구독: '유지', 필수: ['GPT'], 예외: null });
   assert.deepEqual(증명.대체순서(o.목록.정책), ['GPT', '아르곤', 'Fable']); assert.deepEqual(증명.대신할검수자(o.목록.정책, 'GPT'), ['GPT', '아르곤', 'Fable']);
-  assert.equal(증명.필수글(o.목록.정책), 'GPT(한도·로그인으로 막히면 아르곤 → Fable)');
+  assert.equal(증명.필수글(o.목록.정책), 'GPT(한도가 없으면 생략 · 로그인으로 막히면 아르곤 → Fable)');
   assert.match(api.검수자들.GPT.막힘말(o.목록), /아르곤도 막히면 Fable\), 끝 보고에/);
   await GPT아르곤막기(api, o);
   await api.그록보내기(o.폴더, o.목록, { call: 답하기([지적하나('a.js:1', 'P2')]) });
@@ -2253,4 +2258,239 @@ test('보이는 이름(11-16): 화면 · md 글은 카본으로 바꾸고, 지�
   const 틀림 = spawnSync(process.execPath, [path.join(root, 'tools/검수묶음.mjs'), '검수받기', 폴더], { encoding: 'utf8' });
   const 첫줄 = 틀림.stderr.split(/\r?\n/)[0];
   assert.match(첫줄, /--검수자 Claude\|GPT\|카본/); assert.doesNotMatch(첫줄, 옛말);
+});
+
+// GPT 한도 생략(2026-11-18 유호님 「만약에 한도 있으면 진행하고 없으면 그냥 검수 생략해. 그리고 10% 남았다고 멈추지 말라고 진짜 몇번말해야돼 ?」)
+test('GPT 한도 생략(11-18): GPT가 한도로 막힌 고리는 GPT 몫을 생략으로 치고 대신 보는 검수자를 요구하지 않는다 — 로그인 막힘은 전처럼 대신, GPT 작성의 Claude 자리는 그대로, 다시 볼 GPT 지적은 Claude 반영으로 닫힌다', async t => {
+  const api = await tool(), 증명 = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  const r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, ...덧 });
+  const 한도 = async () => { throw new Error('GPT quota — 몫이 남은 Pro 계정이 없다(모두 주간이나 5시간 100%)'); };
+  const 로그인 = async () => { throw new Error('GPT login 필요 — not logged in'); };
+  // ① Claude 백엔드: 한도면 카본 없이 통과하고, 집계도 막지 않으며 「생략(한도 없음)」으로 보인다
+  const a = await 준비('skip-claude');
+  const 알림 = [];
+  const ga = await api.GPT보내기(a.폴더, a.목록, { call: 한도, 몫: 몫충분, 알리기: m => 알림.push(m) });
+  assert.equal(ga[0].상태, '막힘'); assert.equal(ga[0].차단증거.종류, '한도');
+  assert.ok(알림.some(m => /GPT 검수는 생략\(한도 없음\)/.test(m)), 알림.join('\n'));
+  assert.deepEqual(api.검수확인(a.폴더).사유, []);
+  const 집a = api.집계하기(a.목록, [], api.지적표읽기(a.폴더), api.결과들읽기(a.폴더, a.목록, 'GPT'));
+  assert.equal(집a.배포조건충족, true, 집a.조건.join(' / ')); assert.equal(집a.한줄, 'GPT 생략(한도 없음)');
+  // 보내기 전에 한 계정만 읽어 주간 몫이 0인 기록은 한도이지만 생략 증거가 아니다 — 다른 계정에 몫이 남았을 수 있어 전처럼 대신 차례(11-18 설계 검토 장면 3)
+  const a0 = await 준비('skip-zero');
+  await api.GPT보내기(a0.폴더, a0.목록, { 몫: () => ({ 주간: 0 }), call: async () => assert.fail('몫 0이면 부르지 않는다') });
+  assert.match(api.검수확인(a0.폴더).사유.join(' / '), /GPT 검수가 한도·로그인으로 막혀 대신/);
+  // ② 로그인 막힘은 한도가 아니다 — 전처럼 카본(아르곤)이 대신해야 한다
+  const b = await 준비('login-claude');
+  await api.GPT보내기(b.폴더, b.목록, { call: 로그인, 몫: 몫충분 });
+  assert.match(api.검수확인(b.폴더).사유.join(' / '), /필수 아르곤 검수 미완료.*GPT 검수가 한도·로그인으로 막혀 대신/);
+  assert.ok(api.집계하기(b.목록, [], api.지적표읽기(b.폴더), api.결과들읽기(b.폴더, b.목록, 'GPT')).조건.some(x => /GPT 검수가 막혀 아르곤 검수로 대신/.test(x)));
+  // ③ 생략된 고리에서도 다른 검수자가 낸 P0·P1은 처리해야 닫힌다
+  await api.아르곤보내기(a.폴더, a.목록, { call: 답하기([지적하나('a.js:1')]), 몫: 몫충분 });
+  assert.match(api.검수확인(a.폴더).사유.join(' / '), /A1 P1 미해결/);
+  // ④ GPT 작성(판 7): GPT 몫은 생략하고 Claude 자리는 그대로 받는다 — 카본이 대신할 차례가 아니다
+  const g = await 준비('skip-gpt-owner', { 작성자: 'GPT' });
+  await api.GPT보내기(g.폴더, g.목록, { call: 한도, 몫: 몫충분 });
+  const g사유 = api.검수확인(g.폴더).사유.join(' / ');
+  assert.match(g사유, /필수 Claude 검수 미완료/); assert.doesNotMatch(g사유, /아르곤|카본|GPT 검수 미완료/);
+  for (const bb of g.목록.묶음) api.검수받기(g.폴더, 'Claude', bb.이름, (await 답하기()({ prompt: fs.readFileSync(path.join(g.폴더, bb.파일), 'utf8') })).text);
+  assert.deepEqual(api.검수확인(g.폴더).사유, []);
+  // ⑤ 다시 검수: 앞 고리에서 GPT가 낸 P1을 반영했는데 다시 볼 GPT가 한도면 그 지적은 Claude 반영으로 닫힌다
+  const x = await 준비('skip-delta');
+  await api.GPT보내기(x.폴더, x.목록, { call: 답하기([지적하나('a.js:1')]), 몫: 몫충분 });
+  api.지적표고치기(x.폴더, 표 => api.처리하기(표, ['GA1=반영']));
+  r.쓰기('a.js', 'a=3\n');
+  const y = await api.다시하기({ 이름: 'skip-delta-b', 폴더: path.join(r.뿌리, 'skip-delta-b'), 앞: x.폴더 });
+  assert.deepEqual(y.목록.검수자들, ['GPT']);
+  assert.notDeepEqual(api.검수확인(y.폴더).사유, [], '보내기 전에는 닫히지 않는다');
+  await api.GPT보내기(y.폴더, y.목록, { call: 한도, 몫: 몫충분 });
+  assert.deepEqual(api.검수확인(y.폴더).사유, []);
+  const 집y = api.집계하기(y.목록, [], api.지적표읽기(y.폴더), api.결과들읽기(y.폴더, y.목록, 'GPT'));
+  assert.equal(집y.배포조건충족, true, 집y.조건.join(' / '));
+  // ⑥ 사용자지정과 직접 승인한 담당예외는 생략을 받지 않는다(그 승인 그대로)
+  assert.equal(증명.GPT한도생략정책({ 판: 7, 작성자: 'Claude', 종류: '백엔드', 필수: ['GPT'] }), true);
+  assert.equal(증명.GPT한도생략정책({ 판: 3, 사용자지정: { finalReviewer: 'GPT' } }), false);
+  assert.equal(증명.GPT한도생략정책({ 판: 7, 담당예외: { taskId: 'x' } }), false);
+});
+
+// 11-18 GPT 검수 gpt-quota-skip-b-20261118의 GA1~GA7 — 생략은 「정말 몫이 없을 때」만, 요약과 판정은 같게
+test('GPT 한도 생략 후속(11-18 GA1~GA7): 까닭 글 · 옛 90% 기록 · 묶음마다 계정 다시 고르기 · 집계와 원문 판정 · 앞 답이 남는 재시도', async t => {
+  const api = await tool(), 증명 = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  // GA1: 고를 계정이 없을 때의 까닭 — 모두 100%로 읽혔을 때만 한도다
+  const 계정 = (이름, 요금제, 주간사용, 다섯시간사용 = null) => ({ 이름, home: 이름, 요금제, 주간사용, 다섯시간사용 });
+  const 종류 = 글 => 증명.막힘증거('GPT', 글)?.종류 ?? null;
+  assert.equal(종류(api.GPT계정없음글([계정('bake2', 'pro', 100), 계정('bake3', 'pro', 40, 100)])), '한도');
+  assert.equal(종류(api.GPT계정없음글([계정(null, 'pro', null), 계정('bake3', 'pro', 100)])), null, '몫을 못 읽은 Pro 계정이 있으면 한도가 아니다');
+  assert.equal(종류(api.GPT계정없음글([계정('bake1', 'plus', 0)])), '로그인', 'Pro 로그인이 없으면 로그인 막힘이다');
+  assert.equal(종류(api.GPT계정없음글([])), '로그인');
+  // GA2: 11-17까지 90% 문턱이 남긴 옛 글은 한도 증거지만 생략 증거는 아니다
+  const 옛 = 증명.막힘증거('GPT', 'GPT quota — 주간 90% 아래인 Pro 계정이 없다');
+  assert.equal(옛.종류, '한도'); assert.equal(증명.한도생략증거(옛), false);
+  assert.equal(증명.한도생략증거(증명.막힘증거('GPT', 'GPT quota — 몫이 남은 Pro 계정이 없다(모두 주간이나 5시간 100%)')), true);
+  assert.equal(증명.한도생략증거(증명.막힘증거('GPT', 'GPT login 필요 — not logged in')), false);
+  const r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕, ...덧 });
+  const o = await 준비('old-90');
+  await api.GPT보내기(o.폴더, o.목록, { call: async () => { throw new Error('GPT quota — 주간 90% 아래인 Pro 계정이 없다'); }, 몫: 몫충분 });
+  assert.match(api.검수확인(o.폴더).사유.join(' / '), /필수 아르곤 검수 미완료.*GPT 검수가 한도·로그인으로 막혀 대신/, '옛 90% 기록은 생략이 아니라 전처럼 대신 차례');
+  assert.notEqual(api.집계하기(o.목록, [], api.지적표읽기(o.폴더), api.결과들읽기(o.폴더, o.목록, 'GPT')).한줄, 'GPT 생략(한도 없음)');
+  // GA3(묶음마다 계정을 다시 고르기)는 아래 「GPT 골라부르기(11-18 설계 검토)」 시험이 본다
+  // GA5 · GA7: 집계 요약 — 실패가 섞이면 생략이 아니고, 읽은 묶음에 지적이 있어도 생략을 적는다
+  const 두묶음 = { ...o.목록, 묶음: [o.목록.묶음[0], { ...o.목록.묶음[0], 이름: 'B' }] };
+  const 결과 = (묶음, 상태, 덧 = {}) => ({ 묶음, 상태, 입력sha256: o.목록.묶음[0].sha256, 초: 1, 빠진항목: [], ...덧 });
+  const 한도증거 = { 종류: '한도', 도구: 'codex', 원문: 'GPT quota — 몫이 남은 Pro 계정이 없다(모두 주간이나 5시간 100%)' };
+  const 빈표 = { 지적: [], 페이블: null }, 한건표 = { 지적: [{ 번호: 'GA1', 출처: 'GPT', 등급: 'P2', 처리: null }], 페이블: null };
+  const 섞임 = api.집계하기(두묶음, [], 빈표, [결과('A', '실패'), 결과('B', '막힘', { 차단증거: 한도증거 })]);
+  assert.equal(섞임.검수자별.find(x => x.이름 === 'GPT').생략, false); assert.equal(섞임.배포조건충족, false, '실패한 묶음이 있으면 생략이 아니다');
+  const 반쯤 = api.집계하기(두묶음, [], 한건표, [결과('A', '읽음'), 결과('B', '막힘', { 차단증거: 한도증거 })]);
+  assert.equal(반쯤.한줄, 'GPT 1건(반영 0) · 남은 묶음 생략(한도 없음)');
+  assert.equal(api.집계하기(두묶음, [], 빈표, [결과('A', '막힘', { 차단증거: 한도증거 })], [], [], [], { 검수대체: true }).검수자별.find(x => x.이름 === 'GPT').생략, false, 'Workspace 대체 승인 묶음은 생략이 아니다');
+  // GA6: 읽은 답이 있는 묶음을 --다시로 보내다 한도면 앞 답이 남는다 — 생략이라고 알리지 않는다
+  const k = await 준비('keep-read');
+  await api.GPT보내기(k.폴더, k.목록, { call: 답하기(), 몫: 몫충분 });
+  const 다시알림 = [];
+  await api.GPT보내기(k.폴더, k.목록, { call: async () => { throw new Error(한도증거.원문); }, 몫: 몫충분, 다시: true, 알리기: m => 다시알림.push(m) });
+  assert.ok(다시알림.some(m => /앞의 읽음 답이 이 묶음의 검수로 남는다/.test(m)), 다시알림.join('\n'));
+  assert.ok(!다시알림.some(m => /생략\(한도 없음\)/.test(m)), 다시알림.join('\n'));
+  assert.deepEqual(api.검수확인(k.폴더).사유, []);
+});
+// 11-18 Fable 5.2 설계 검토(.tmp/검수/설계검토_GPT계정차례_20261118.md) — 묶음마다 사진 한 장으로 고르고, 부르는 중 한도면 다른 계정으로, 생략 증거는 허용 문장 하나
+test('GPT 골라부르기(11-18 설계 검토): 사진 한 장 · 부르는 중 한도면 다른 계정 · 묶음 사이 상태 없음 · 못 읽음 · 무응답 · 생략 증거 허용 목록 · 공용 보내기 접점', async t => {
+  const api = await tool(), 증명 = await import(pathToFileURL(path.join(root, 'tools/lib/검수증명.mjs')));
+  const 계정 = (이름, 요금제, 주간사용, 다섯시간사용 = 0, 덧 = {}) => ({ 이름, home: 이름, 요금제, 주간사용, 다섯시간사용, 응답: true, ...덧 });
+  const 종류 = 글 => 증명.막힘증거('GPT', 글)?.종류 ?? null;
+  const 생략 = 글 => 증명.한도생략증거(증명.막힘증거('GPT', 글));
+  const 던짐 = p => p.then(() => assert.fail('던져야 한다'), e => e);
+  // 가짜 세계: 계정마다 사용률, 부르면 한도인 계정, 부르면 나는 다른 오류, 따로 읽을 때의 값
+  const 세계 = (목록, { 한도 = new Set(), 오류 = {}, 하나 = {}, 찬다 = false } = {}) => {
+    const 부른 = [], 읽은 = [];
+    return { 부른, 읽은, 덧: {
+      읽기: async () => 목록().map(a => ({ ...a })),
+      하나읽기: async 이름 => { 읽은.push(이름); return 하나[이름] ? 하나[이름]() : { ...목록().find(a => a.이름 === 이름) }; },
+      부르기: async ({ 계정: a }) => {
+        부른.push(a.이름);
+        if (오류[a.이름]) throw 오류[a.이름]();
+        if (한도.has(a.이름) && 찬다) 목록().find(b => b.이름 === a.이름).다섯시간사용 = 100;
+        if (한도.has(a.이름)) throw Object.assign(new Error("GPT 한도(quota) — You've hit your usage limit"), { invocationStarted: true, selectedModel: `m · ${a.이름}` });
+        return { text: '{}', selectedModel: `m · ${a.이름}`, invocationStarted: true };
+      },
+      몫읽기: async a => ({ 주간: 0.123, 다섯시간: 1, 이름: a.이름 }),
+    } };
+  };
+  // 1 · 2: 부르는 중 한도 — bake2(주간 20%, 5시간 95%)가 한도면 bake3(60%)로 다시 부르고 결과의 몫은 모두 bake3 값이다. 다시 찍은 사진에 bake2가 20%로 보여도 또 부르지 않는다
+  let 목록 = [계정('bake2', 'pro', 20, 95), 계정('bake3', 'pro', 60, 0)];
+  const w1 = 세계(() => 목록, { 한도: new Set(['bake2']) }), 알림 = [];
+  const r1 = await api.GPT골라부르기({ prompt: 'x' }, { ...w1.덧, 알리기: m => 알림.push(m) });
+  assert.deepEqual(w1.부른, ['bake2', 'bake3']);
+  assert.equal(r1.selectedModel, 'm · bake3'); assert.equal(r1.몫.앞.주간, 0.4); assert.equal(r1.몫.뒤.이름, 'bake3');
+  assert.ok(알림.some(m => /GPT 계정 바꿈: 굽기 장부 bake2 → 굽기 장부 bake3/.test(m)), 알림.join('\n'));
+  // 3: 모든 계정이 부르는 중 한도이고 다시 읽은 사진도 모두 다 찼다 — 계정 수만큼만 부르고 허용 문장을 던진다(생략 증거 참, 몫 없음, 마지막 모델 글)
+  const w3 = 세계(() => 목록, { 한도: new Set(['bake2', 'bake3']), 찬다: true });
+  const e3 = await 던짐(api.GPT골라부르기({}, w3.덧));
+  assert.deepEqual(w3.부른, ['bake2', 'bake3']); assert.equal(생략(e3.message), true, e3.message);
+  assert.deepEqual(e3.몫, { 앞: null, 뒤: null }); assert.equal(e3.invocationStarted, true); assert.equal(e3.selectedModel, 'm · bake3');
+  const 쿼터 = () => Object.assign(new Error("GPT 한도(quota) — You've hit your usage limit"), { invocationStarted: true });
+  // 3′(11-18 GPT 다시 검수 e~j): 모두 부르는 중 한도였는데 다시 읽은 사진에는 몫이 남아 보이면 덜 다시 부른 계정부터 돌아가며 다시 불러 본다.
+  //    사진이 낡아 계속 한도면 「계정 수 × 4 + 4」번에서 멈추고 그 실패는 한도가 아니다 — 생략은 마지막 사진이 모든 Pro 계정을 다 찬 것으로 보일 때만이다
+  목록 = [계정('bake2', 'pro', 50, 95), 계정('bake3', 'pro', 60, 0)];
+  const w3b = 세계(() => 목록, { 한도: new Set(['bake2', 'bake3']) });
+  const 알림b = [], e3b = await 던짐(api.GPT골라부르기({}, { ...w3b.덧, 알리기: m => 알림b.push(m) }));
+  assert.equal(알림b.filter(m => /다시 불러 본다$/.test(m)).length, 10, 'k GA1: 다시 부른다는 알림은 실제로 다시 부른 수(12번 가운데 처음 둘을 뺀 10번)만');
+  assert.deepEqual(w3b.부른, Array.from({ length: 12 }, (_, k) => (k % 2 ? 'bake3' : 'bake2')), '돌아가며 · 계정 수 × 4 + 4번까지');
+  assert.match(e3b.message, /GPT 계정 바꾸기 횟수 초과/); assert.equal(종류(e3b.message), null, e3b.message); assert.equal(생략(e3b.message), false);
+  //    j GA1 · GA3: bake3를 부르는 사이 bake2의 새 창이 열렸는데 사진 값이 앞과 똑같이 읽혀도 다시 불러 끝낸다
+  목록 = [계정('bake2', 'pro', 50, 95), 계정('bake3', 'pro', 60, 0)];
+  const 한도d = new Set(['bake2', 'bake3']), w3d = 세계(() => 목록, { 한도: 한도d });
+  const 부르기d = w3d.덧.부르기;
+  w3d.덧.부르기 = async x => { if (x.계정.이름 === 'bake3') { 목록 = [계정('bake2', 'pro', 50, 95), 계정('bake3', 'pro', 60, 100)]; 한도d.delete('bake2'); } return 부르기d(x); };
+  assert.equal((await api.GPT골라부르기({}, w3d.덧)).selectedModel, 'm · bake2'); assert.deepEqual(w3d.부른, ['bake2', 'bake3', 'bake2']);
+  //    낡은 사진의 계정 하나가 다시 부르기를 다 차지하지 않는다 — bake2(사진 20%)는 계속 한도이고 bake3(60%)는 풀렸으면 bake3도 차례가 온다
+  목록 = [계정('bake2', 'pro', 20, 0), 계정('bake3', 'pro', 60, 0)];
+  const 한도e = new Set(['bake2', 'bake3']), we = 세계(() => 목록, { 한도: 한도e });
+  const 부르기e = we.덧.부르기;
+  we.덧.부르기 = async x => { try { return await 부르기e(x); } finally { if (x.계정.이름 === 'bake3') 한도e.delete('bake3'); } };
+  assert.equal((await api.GPT골라부르기({}, we.덧)).selectedModel, 'm · bake3');
+  assert.deepEqual(we.부른, ['bake2', 'bake3', 'bake2', 'bake3']);
+  //    bake3를 부르는 사이 bake2의 5시간 창이 풀렸다(사용률 0%, 창 시각을 모름) — 같은 묶음에서 bake2를 다시 불러 끝낸다
+  목록 = [계정('bake2', 'pro', 50, 95), 계정('bake3', 'pro', 60, 0)];
+  const 한도c = new Set(['bake2', 'bake3']), w3c = 세계(() => 목록, { 한도: 한도c });
+  const 부르기c = w3c.덧.부르기;
+  w3c.덧.부르기 = async x => { if (x.계정.이름 === 'bake3') { 목록 = [계정('bake2', 'pro', 50, 0), 계정('bake3', 'pro', 60, 100)]; 한도c.delete('bake2'); } return 부르기c(x); };
+  const r3c = await api.GPT골라부르기({}, w3c.덧);
+  assert.deepEqual(w3c.부른, ['bake2', 'bake3', 'bake2']); assert.equal(r3c.selectedModel, 'm · bake2');
+  //    i GA1: 한 계정이 같은 묶음에서 두 번 넘게 한도였어도 사진 값이 달라질 때마다 다시 불러 본다 — 횟수로 자르지 않는다
+  let 창 = 1, 막힘 = 2;
+  목록 = [계정('bake2', 'pro', 50, 95, { 다섯시간초기화: 'T1' })];
+  const 부른i = [];
+  const ri = await api.GPT골라부르기({}, { ...세계(() => 목록).덧, 부르기: async ({ 계정: a }) => {
+    부른i.push(a.이름); 목록 = [계정('bake2', 'pro', 50, 95, { 다섯시간초기화: `T${++창}` })];
+    if (막힘-- > 0) throw 쿼터();
+    return { text: '{}', selectedModel: `m · ${a.이름}`, invocationStarted: true };
+  } });
+  assert.deepEqual(부른i, ['bake2', 'bake2', 'bake2']); assert.equal(ri.selectedModel, 'm · bake2');
+  //    사진이 계속 바뀌며 한도가 되풀이되면 「계정 수 × 4 + 4」번에서 멈추고, 그 실패는 한도가 아니다(생략 아님)
+  let n = 0, 부른f = 0;
+  const ef = await 던짐(api.GPT골라부르기({}, { ...세계(() => [계정('bake2', 'pro', 50, 0, { 다섯시간초기화: `T${n++}` })]).덧, 부르기: async () => { 부른f++; throw 쿼터(); } }));
+  assert.match(ef.message, /GPT 계정 바꾸기 횟수 초과/); assert.equal(종류(ef.message), null, ef.message); assert.equal(부른f, 8);
+  목록 = [계정('bake2', 'pro', 20, 95), 계정('bake3', 'pro', 60, 0)];
+  // 4: 하나는 부르는 중 한도, 남은 Pro 계정은 몫을 못 읽음 — 일반 실패(한도 증거도 생략 증거도 아님)
+  목록 = [계정('bake2', 'pro', 20), 계정('bake3', 'pro', null)];
+  const e4 = await 던짐(api.GPT골라부르기({}, 세계(() => 목록, { 한도: new Set(['bake2']), 찬다: true }).덧));
+  assert.match(e4.message, /GPT 몫 읽기 실패/); assert.equal(종류(e4.message), null, e4.message);
+  // 9: 사진에서 못 읽은 계정은 한 번 더 읽고, 두 번째에 읽히면 그 계정으로 부른다
+  목록 = [계정('bake2', 'pro', 100), 계정('bake3', 'pro', null)];
+  const w9 = 세계(() => 목록, { 하나: { bake3: async () => 계정('bake3', 'pro', 30) } });
+  const r9 = await api.GPT골라부르기({}, w9.덧);
+  assert.deepEqual(w9.읽은, ['bake3']); assert.deepEqual(w9.부른, ['bake3']); assert.equal(r9.몫.앞.주간, 0.7);
+  // 5: 묶음 사이 상태 없음(d GA1) — 앞 호출에서 bake2가 한도였어도 다음 호출의 사진에서 풀려 있으면 bake2를 고른다
+  목록 = [계정('bake2', 'pro', 20), 계정('bake3', 'pro', 60)];
+  const 한도5 = new Set(['bake2']), w5 = 세계(() => 목록, { 한도: 한도5 });
+  await api.GPT골라부르기({}, w5.덧);
+  한도5.clear();
+  await api.GPT골라부르기({}, w5.덧);
+  assert.deepEqual(w5.부른, ['bake2', 'bake3', 'bake2']);
+  목록 = [계정('bake2', 'pro', 20), 계정('bake3', 'pro', 60)];
+  // 6: 시간 초과와 로그인 오류는 다른 계정으로 다시 부르지 않는다 — 오류에 그 계정의 앞 몫(사진)과 뒤 몫(따로 읽음)이 붙는다
+  for (const 글 of ['codex exec 시간 초과(45분)', 'GPT login 필요 — not logged in']) {
+    const w6 = 세계(() => 목록, { 오류: { bake2: () => Object.assign(new Error(글), { invocationStarted: true }) } });
+    const e6 = await 던짐(api.GPT골라부르기({}, w6.덧));
+    assert.deepEqual(w6.부른, ['bake2'], 글); assert.equal(e6.message, 글); assert.equal(e6.몫.앞.주간, 0.8); assert.equal(e6.몫.뒤.이름, 'bake2');
+  }
+  // 7: 답하지 않은 계정 — bake2 100%, bake3 무응답이면 일반 실패. 모두 무응답이어도 로그인 증거가 아니다
+  목록 = [계정('bake2', 'pro', 100), 계정('bake3', null, null, null, { 응답: false })];
+  const e7 = await 던짐(api.GPT골라부르기({}, 세계(() => 목록).덧));
+  assert.match(e7.message, /GPT 계정 읽기 실패/); assert.equal(종류(e7.message), null, e7.message);
+  목록 = [계정(null, null, null, null, { 응답: false }), 계정('bake3', null, null, null, { 응답: false })];
+  assert.equal(종류((await 던짐(api.GPT골라부르기({}, 세계(() => 목록).덧))).message), null);
+  // 8: 모두 답했고 Pro 로그인이 정말 없으면 로그인 증거
+  목록 = [계정('bake1', 'plus', 0)];
+  assert.equal(종류((await 던짐(api.GPT골라부르기({}, 세계(() => 목록).덧))).message), '로그인');
+  // 11: 생략 증거는 허용 문장만 — codex의 날 한도 글, 몫 0 JSON, 옛 90% 글은 종류는 한도이고 생략 증거가 아니다
+  assert.equal(생략(증명.GPT한도생략문장), true);
+  for (const [글, 몫] of [["GPT 한도(quota) — You've hit your usage limit", null], ['주간 몫이 다 찼다 — limit remaining 0', { 주간: 0 }], ['GPT quota — 주간 90% 아래인 Pro 계정이 없다', null]]) {
+    const 증거 = 증명.막힘증거('GPT', 글, 몫);
+    assert.equal(증거?.종류, '한도', 글); assert.equal(증명.한도생략증거(증거), false, 글);
+  }
+  // 12: 한 계정만 본 한도 기록(codex의 날 한도 글)은 검수확인 · 집계에서 생략이 아니라 대신 차례다
+  const r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
+  const 준비 = 이름 => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 바탕: r.바탕 });
+  const 날 = await 준비('raw-quota');
+  await api.GPT보내기(날.폴더, 날.목록, { call: async () => { throw new Error("GPT 한도(quota) — You've hit your usage limit"); }, 몫: 몫충분 });
+  assert.match(api.검수확인(날.폴더).사유.join(' / '), /GPT 검수가 한도·로그인으로 막혀 대신/);
+  assert.equal(api.집계하기(날.목록, [], api.지적표읽기(날.폴더), api.결과들읽기(날.폴더, 날.목록, 'GPT')).검수자별.find(x => x.이름 === 'GPT').생략, false);
+  // 14: call이 몫을 주면 결과의 몫이 그 값이고, 저장된 증거가 판정기의 다시 계산과 맞는다 — 공용 몫은 보내기 전 한 번만 읽는다
+  const 붙음 = await 준비('call-share');
+  let 공용몫 = 0;
+  await api.GPT보내기(붙음.폴더, 붙음.목록, { 몫: async () => { 공용몫++; return null; },
+    call: async () => { throw Object.assign(new Error(`${증명.GPT한도생략문장} · 이번 호출에서 한도로 뺀 계정: 굽기 장부 bake2`), { invocationStarted: true, 몫: { 앞: null, 뒤: null } }); } });
+  const 저장 = api.결과들읽기(붙음.폴더, 붙음.목록, 'GPT')[0];
+  assert.equal(저장.상태, '막힘'); assert.deepEqual(저장.몫, { 앞: null, 뒤: null }); assert.equal(공용몫, 1);
+  assert.deepEqual(api.검수확인(붙음.폴더).사유, [], '허용 문장의 막힘은 생략이다');
+  const 답함 = await 준비('call-answer');
+  await api.GPT보내기(답함.폴더, 답함.목록, { 몫: async () => null, call: async a => ({ ...(await 답하기()(a)), 몫: { 앞: { 주간: 0.4 }, 뒤: { 주간: 0.39 } } }) });
+  assert.deepEqual(api.결과들읽기(답함.폴더, 답함.목록, 'GPT')[0].몫, { 앞: { 주간: 0.4 }, 뒤: { 주간: 0.39 } });
+  // 15: 몫을 주지 않는 call(카본 · 그록과 같은 꼴)은 전처럼 보내기 전과 뒤에 두 번 읽는다
+  const 옛 = await 준비('call-plain'); let 옛몫 = 0;
+  await api.GPT보내기(옛.폴더, 옛.목록, { 몫: () => { 옛몫++; return { 주간: 0.9 }; }, call: 답하기() });
+  assert.equal(옛몫, 2); assert.deepEqual(api.결과들읽기(옛.폴더, 옛.목록, 'GPT')[0].몫, { 앞: { 주간: 0.9 }, 뒤: { 주간: 0.9 } });
 });

@@ -62,7 +62,7 @@ import { createRequire } from 'node:module';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as 캡처도구 from './lib/검수캡처.mjs';
-import { 정규해시, 파일상태, 소스스냅샷, 후보읽기, 후보앞판읽기, 정책만들기, 정책판, 대체순서, 그록대체정책, GPT자리대체정책, 실제필수, 필수글, 응답검사, 막힘증거, 입력증명, 안전경로,
+import { 정규해시, 파일상태, 소스스냅샷, 후보읽기, 후보앞판읽기, 정책만들기, 정책판, 대체순서, 그록대체정책, GPT자리대체정책, GPT한도생략정책, GPT한도생략문장, 한도생략증거, 실제필수, 필수글, 응답검사, 막힘증거, 입력증명, 안전경로,
   맞춘내용, 다시증명, 바뀐경로들, 다시검수자들, 끝판정책, 대신할검수자, 사용자지정사슬검사, 사용자지정판, Atlas작업ID, AI마켓작업ID, AI마켓아르곤대체, 사이트점검작업ID, 직접승인화면정책,
   합침대조, 합침거절, 합침증명, 원격참조, Workspace검수대체, Workspace대체결속, Workspace대체사슬, Workspace원GPT지문, Workspace대체읽기 } from './lib/검수증명.mjs';
 
@@ -1040,29 +1040,104 @@ const GPT시간초과글 = /^codex exec 시간 초과/;
 /** 계정·보내기·완료 안내의 모델 글 — 기본, 환경변수 바꿈, 시간 초과 자동 대체를 헷갈리지 않게 늘 어느 쪽인지 적는다. */
 export const GPT설정글 = s => `${s.모델}-${s.추론} · ${s.자동대체 ? `자동 대체(${s.자동대체} — 11-15 규칙, 묻지 않음)` : s.환경바꿈 ? `환경변수 ${GPT모델환경} 적용(${s.모델 === GPT검수.모델 ? '기본 모델과 같음' : `기본 ${GPT검수.모델} 아님`} — 지울 때까지 GPT 검수마다)` : `기본 모델(${GPT모델환경} 없음)`}`;
 const GPT제한분 = 45;   // 10-20 아스트라 152KB 묶음이 10분 30초, 11-04~11 max 회차 가운데 가장 긴 것이 26분(astra 1,573초 · sol 1,097초) — 큰 묶음의 여유
-const GPT주간한계 = 90;  // 주간 이만큼(%) 넘게 쓴 계정은 검수에 쓰지 않는다
+// 2026-11-18 유호님 「만약에 한도 있으면 진행하고 없으면 그냥 검수 생략해. 그리고 10% 남았다고 멈추지 말라고 진짜 몇번말해야돼 ?」 — 90% 문턱을 없앴다.
+// 주간이나 5시간 몫이 100%에 닿은 계정만 빼고, 몫이 남은 Pro 계정은 끝까지 쓴다. 쓸 계정이 없으면 GPT 검수는 생략(한도 없음)으로 적힌다.
+const 다씀 = v => Number.isFinite(v) && v >= 100;
 // 정션(~/.codex-bake → D:)은 풀어서 넘긴다 — codex.exe가 정션을 거치다 11-14 PC가 멈췄다(tools/codex계정.js 뿌리 주석).
 const 굽기뿌리 = () => { const p = process.env.CODEX_BAKE_DIR || path.join(os.homedir(), '.codex-bake'); try { return fs.realpathSync.native(p); } catch { return p; } };
-/** 후보 계정마다 요금제·주간 사용(app-server, 토큰 0). 이름 null = 본 계정(~/.codex). 메일은 남기지 않는다. */
-export async function GPT계정들읽기() {
+/** 초기화 시각 값을 ISO 글로 — 없거나 날짜로 바뀌지 않는 값(지나치게 큰 수 등)은 null이다. 계정 읽기 전체가 터지지 않게(11-18 GPT 다시 검수 j GA2). */
+const 시각글 = v => { if (v == null || v === '') return null; const d = new Date(v); return Number.isFinite(d.getTime()) ? d.toISOString() : null; };
+/** 계정 하나의 요금제·주간·5시간 사용(app-server, 토큰 0). 이름 null = 본 계정(~/.codex). 메일은 남기지 않는다.
+ *  응답: account/read에 오류 없는 답을 받았는가 — 받지 못한 계정이 있으면 고를 계정이 없어도 한도나 로그인으로 치지 않는다(11-18 설계 검토 지침 5). */
+export async function GPT계정읽기(이름 = null) {
   const { 묻기 } = require코덱스();
   const { codexWindows } = require('../desktop/src/ai-subscriptions.cjs');
+  const [a, r] = await 묻기(이름, [{ method: 'account/read', params: {} }, { method: 'account/rateLimits/read', params: {} }]);
+  const { weekly, session } = codexWindows(r?.rateLimits || Object.values(r?.rateLimitsByLimitId || {})[0] || {});
+  return { 이름, home: 이름 ? path.join(굽기뿌리(), 이름) : null, 응답: Boolean(a) && !a.error, 요금제: a?.account?.planType || null, 계정: a?.account?.email ? sha(a.account.email).slice(0, 8) : null,
+    주간사용: Number.isFinite(weekly?.usedPercent) ? weekly.usedPercent : null, 주간초기화: 시각글(weekly?.resetsAt),
+    다섯시간사용: Number.isFinite(session?.usedPercent) ? session.usedPercent : null };
+}
+/** 후보 계정 모두(본 계정과 굽기 장부의 로그인필요 아닌 계정)를 한 번에 읽은 사진. */
+export async function GPT계정들읽기() {
   let 장부 = [];
   try { 장부 = JSON.parse(fs.readFileSync(path.join(굽기뿌리(), '계정.json'), 'utf8')).계정 || []; } catch { /* 장부 없음 */ }
   const 목록 = [];
-  for (const 이름 of [null, ...장부.filter(a => !a.로그인필요).map(a => a.이름)]) {
-    const [a, r] = await 묻기(이름, [{ method: 'account/read', params: {} }, { method: 'account/rateLimits/read', params: {} }]);
-    const { weekly } = codexWindows(r?.rateLimits || Object.values(r?.rateLimitsByLimitId || {})[0] || {});
-    목록.push({ 이름, home: 이름 ? path.join(굽기뿌리(), 이름) : null, 요금제: a?.account?.planType || null, 계정: a?.account?.email ? sha(a.account.email).slice(0, 8) : null,
-      주간사용: Number.isFinite(weekly?.usedPercent) ? weekly.usedPercent : null, 주간초기화: weekly?.resetsAt ? new Date(weekly.resetsAt).toISOString() : null });
-  }
+  for (const 이름 of [null, ...장부.filter(a => !a.로그인필요).map(a => a.이름)]) 목록.push(await GPT계정읽기(이름));
   return 목록;
 }
-/** Pro이고 주간 90% 아래인 계정 가운데 가장 덜 쓴 것. 없으면 null(검수는 막힘으로 적힌다). */
+/** Pro이고 주간 · 5시간 몫이 모두 100%에 닿지 않은 계정 가운데 주간을 가장 덜 쓴 것(11-18 — 90% 문턱 없음). 없으면 null(한도로 적히고 GPT 검수는 생략된다). */
 export function GPT계정가리기(목록) {
-  return 목록.filter(a => a.요금제 === 'pro' && a.주간사용 != null && a.주간사용 < GPT주간한계).sort((x, y) => x.주간사용 - y.주간사용)[0] || null;
+  return 목록.filter(a => a.요금제 === 'pro' && a.주간사용 != null && !다씀(a.주간사용) && !다씀(a.다섯시간사용))
+    .sort((x, y) => x.주간사용 - y.주간사용 || (x.다섯시간사용 ?? 0) - (y.다섯시간사용 ?? 0))[0] || null;
 }
 const 계정말 = 계정 => (계정?.이름 ? `굽기 장부 ${계정.이름}` : '본 계정(~/.codex)');
+/** 고를 계정이 없을 때의 까닭 글(11-18 GPT 검수 GA1). 한도로 치는 것은 모든 계정이 답했고, Pro 계정이 있고, 그 모두가 주간이나 5시간 100%로 읽혔을 때뿐이다.
+ *  답하지 않은 계정이 있으면 그 계정의 요금제와 몫을 모르니 한도도 로그인도 아닌 일반 실패다(설계 검토 장면 2).
+ *  Pro 로그인이 하나도 없으면 로그인 막힘(전처럼 대신 차례), 몫을 못 읽은 Pro 계정이 있으면 일반 실패다(생략하지 않는다). */
+export function GPT계정없음글(목록) {
+  const 무응답 = (목록 || []).filter(a => a.응답 === false);
+  if (무응답.length) return `GPT 계정 읽기 실패 — 답하지 않은 계정이 있어 한도나 로그인으로 치지 않는다(${무응답.map(계정말).join(', ')})`;
+  const 프로 = (목록 || []).filter(a => a.요금제 === 'pro');
+  if (!프로.length) return 'GPT login 필요 — Pro 계정이 로그인돼 있지 않다(not logged in)';
+  if (프로.every(a => 다씀(a.주간사용) || 다씀(a.다섯시간사용))) return GPT한도생략문장;
+  return `GPT 몫 읽기 실패 — 몫을 읽지 못한 계정이 있어 한도로 치지 않는다(${프로.filter(a => a.주간사용 == null).map(계정말).join(', ')})`;
+}
+const 남음비 = v => (Number.isFinite(v) ? Math.max(0, 1 - v / 100) : null);
+const 못읽음 = a => a.응답 === false || (a.요금제 === 'pro' && a.주간사용 == null);
+const GPT부르는중한도 = /^GPT 한도\(quota\) — /;
+/** 묶음 하나의 GPT 계정 일을 모두 맡는다(11-18 Fable 5.2 설계 검토 — .tmp/검수/설계검토_GPT계정차례_20261118.md).
+ *  부를 때마다 모든 계정을 한 번에 읽은 사진 한 장으로 고르고, 앞 몫과 「고를 계정 없음」의 까닭도 그 사진으로 낸다. 사진에서 못 읽은 계정은 한 번 더 읽는다.
+ *  부르는 중 한도 오류가 나면 그 계정은 빼고, 다시 찍은 사진에서 몫이 남은 다른 Pro 계정으로 다시 부른다.
+ *  남은 계정이 없으면, 한도였던 계정 가운데 다시 찍은 사진에 몫이 남아 보이는 계정을 다시 불러 본다. 덜 다시 부른 계정부터 돌아가며 부른다.
+ *  그사이 창이 풀렸는지는 사진 값으로 가르지 않는다 — 새 창도 앞과 같은 값으로 읽힐 수 있다(11-18 GPT 다시 검수 e~j).
+ *  끝없이 돌지 않게 한 호출에서 부르는 횟수는 「첫 사진의 계정 수 × 4 + 4」까지이고, 넘으면 한도로 치지 않는 실패다(생략하지 않는다).
+ *  한도가 아닌 오류(시간 초과 · 로그인 · 종료 코드)는 다시 부르지 않는다. 묶음 사이에 남는 상태는 없다.
+ *  돌려주는 기록과 던지는 오류에 몫을 붙인다(앞: 사진의 그 계정 값, 뒤: 마지막으로 부른 계정만 따로 읽은 값) — 공용 보내기는 이 값을 그대로 쓴다.
+ *  고를 계정이 없을 때 생략 증거(GPT한도생략문장)를 던지는 것은 마지막 사진 자체가 모든 Pro 계정을 다 찬 것으로 보일 때뿐이다. */
+export async function GPT골라부르기(인자, { 읽기 = GPT계정들읽기, 하나읽기 = GPT계정읽기, 부르기 = GPT부르기, 몫읽기 = GPT몫읽기, 알리기 = () => {} } = {}) {
+  const 뺀 = new Set(), 다시 = new Map();   // 이 호출에서 부르는 중 한도였던 계정(계정말), 그 뒤 다시 부른 횟수
+  let 앞계정 = null, 마지막 = null, 부른수 = 0, 최대 = null;
+  for (;;) {
+    const 때 = new Date().toISOString(), 사진 = [];
+    for (const a of await 읽기()) 사진.push(못읽음(a) ? await 하나읽기(a.이름).catch(() => a) : a);
+    최대 ??= 사진.length * 4 + 4;
+    let 계정 = GPT계정가리기(사진.filter(a => !뺀.has(계정말(a))));
+    if (!계정) {
+      const 후보 = 사진.filter(a => 뺀.has(계정말(a)) && GPT계정가리기([a]));
+      const 적게 = Math.min(...후보.map(a => 다시.get(계정말(a)) || 0));
+      계정 = GPT계정가리기(후보.filter(a => (다시.get(계정말(a)) || 0) === 적게));
+      if (계정) 다시.set(계정말(계정), (다시.get(계정말(계정)) || 0) + 1);
+    }
+    if (!계정 || 부른수 >= 최대) {
+      const 글 = 계정
+        ? `GPT 계정 바꾸기 횟수 초과 — 같은 묶음에서 ${부른수}번 불렀다. 부르는 중 한도였던 계정이 사진에는 몫이 남아 보여 다시 불렀지만 모두 한도였다. 한도로 치지 않고 실패로 둔다 — 다시 보내면 새 사진으로 고른다`
+        : GPT계정없음글(사진);
+      const e = new Error(`${글}${뺀.size ? ` · 이번 호출에서 한도로 뺀 계정: ${[...뺀].join(', ')}` : ''}`);
+      // 한도로 뺀 계정이 있으면 그 호출은 시작됐다 — 마지막으로 부른 모델 글을 남긴다. 몫은 없다(사전 몫 0 증거로 바뀌지 않게).
+      Object.assign(e, { invocationStarted: Boolean(마지막?.invocationStarted), 몫: { 앞: null, 뒤: null } });
+      if (마지막?.selectedModel) e.selectedModel = 마지막.selectedModel;
+      throw e;
+    }
+    // 다시 부른다는 알림은 횟수 상한을 지나 실제로 부를 때만 찍는다(11-18 GPT 다시 검수 k GA1)
+    if (뺀.has(계정말(계정))) 알리기(`GPT ${계정말(계정)}: 앞서 부르는 중 한도였는데 다시 읽은 사진에는 몫이 남아 보인다 — 다시 불러 본다`);
+    else if (앞계정 && 계정말(앞계정) !== 계정말(계정)) 알리기(`GPT 계정 바꿈: ${계정말(앞계정)} → ${계정말(계정)} — 앞 계정이 부르는 중 한도에 닿았다(11-18)`);
+    const 앞몫 = { 때, 주간: 남음비(계정.주간사용), 다섯시간: 남음비(계정.다섯시간사용), 주간초기화: 계정.주간초기화 ?? null };
+    try {
+      부른수++;
+      const 기록 = await 부르기({ ...인자, 계정 });
+      return { ...기록, 몫: { 앞: 앞몫, 뒤: await 몫읽기(계정) } };
+    } catch (e) {
+      if (e instanceof Error && GPT부르는중한도.test(e.message)) {
+        뺀.add(계정말(계정)); 앞계정 = 계정; 마지막 = e;
+        알리기(`GPT ${계정말(계정)}: 부르는 중 한도 — ${e.message.slice(0, 200)} · 이 묶음은 몫이 남은 다른 Pro 계정으로 다시 부른다`);
+        continue;
+      }
+      if (e instanceof Error) e.몫 = { 앞: 앞몫, 뒤: e.invocationStarted ? await 몫읽기(계정) : 앞몫 };
+      throw e;
+    }
+  }
+}
 function codex명령(args) {
   const 시험 = process.env.CODEX_BIN;
   const { candidatePaths, commandFor } = require('../desktop/src/ai-subscriptions.cjs');
@@ -1104,7 +1179,8 @@ export async function GPT부르기({ prompt, schema, thinking = null, timeoutMs 
   const { 코덱스오류, 한도문구, 로그인문구 } = require코덱스();
   let 임시 = null, selectedModel = null, invocationStarted = false;
   try {
-    if (!계정) throw new Error(`GPT quota — 주간 ${GPT주간한계}% 아래인 Pro 계정이 없다`);
+    // 계정은 GPT골라부르기가 고른다. 고를 계정이 없을 때의 까닭(한도 · 로그인 · 읽기 실패)도 그쪽이 던진다 — 여기서 한도 글을 지어내지 않는다(11-18 설계 검토)
+    if (!계정) throw new Error('GPT 계정 없음 — 부르는 쪽(GPT골라부르기)이 계정을 고르지 않았다. 부르지 않았다');
     const { 모델, 추론 } = 설정 || GPT검수설정(thinking);
     if (!/^gpt-[a-z0-9][a-z0-9.-]{0,40}$/.test(모델) || !추론들.includes(추론)) throw new Error(`GPT 검수 설정이 모델·추론 꼴이 아니다: ${JSON.stringify({ 모델, 추론 }).slice(0, 120)} — 어느 모델도 부르지 않았다`);
     selectedModel = `${모델}-${추론} · ${계정말(계정)}`;
@@ -1169,7 +1245,9 @@ export const 검수자들 = {
         : `아르곤이 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 운영 원칙대로 다른 경로를 찾지 않는다 — 백엔드(GPT가 막혀 대신한 검수)는 그록으로 대신하고(그록 ${목록.이름}, 그록도 막히면 ${페이블할것(목록)}), 끝 보고에 그렇게 적는다`) },
   GPT: { 출처: 'GPT', 번호앞: 'G', 모델: GPT검수.모델, 기본수준: () => GPT검수.추론, 제한분: () => GPT제한분, 몫: GPT몫읽기, 설정: GPT검수설정,
     수준검사: 수준 => { if (수준 != null && !추론들.includes(수준)) throw new Error(`--수준은 ${추론들.join('·')} 가운데 하나(받음 ${수준}) — 빼면 ${GPT검수.추론}`); },
-    막힘말: 목록 => (GPT자리대체정책(목록?.정책)
+    막힘말: (목록, r) => (한도생략증거(r?.차단증거) && GPT한도생략정책(목록?.정책)
+      ? `GPT가 한도로 막혔다(몫이 남은 Pro 계정 없음) — 남은 묶음은 보내지 않는다. 이 고리의 GPT 검수는 생략(한도 없음)으로 적었다 — 카본 · 그록 · Fable이 대신 보지 않고, 몫이 돌아와도 다시 돌리지 않는다(11-18 유호님 「없으면 그냥 검수 생략해」)${GPT자리대체정책(목록?.정책) ? '. Claude 자리는 그대로 받는다' : ''}`
+      : GPT자리대체정책(목록?.정책)
       ? `GPT가 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. GPT 작성 묶음(정책 판 7)이라 카본이 GPT 자리를 대신한다(카본 ${목록.이름} — 모든 묶음을 끝까지). 카본도 막히면 더 내려가지 않고, 몫이 돌아온 뒤 --다시로 보낸다. Claude 검수는 그대로 받는다. 끝 보고에 대신한 것을 적고, 올리기와 끝 보고 전에 GPT 몫을 다시 읽어 풀렸으면 GPT 확인까지 받는다`
       : 그록대체정책(목록?.정책)
       ? `GPT가 한도·로그인으로 막혔다 — 남은 묶음은 보내지 않는다. 아르곤으로 대신하고(아르곤 ${목록.이름}, 아르곤도 막히면 그록 ${목록.이름}, 그록도 막히면 ${페이블할것(목록)}), 끝 보고에 그렇게 적는다`
@@ -1254,14 +1332,15 @@ export async function 검수보내기(누구, 폴더, 목록, { 수준, 고른 =
     const 내표시 = { 묶음: 묶음.이름, pid: process.pid, 표: crypto.randomUUID(), 보낸때: new Date(시작).toISOString() };
     if (!표시잡기(폴더, 표시, 내표시)) { 알리기(`${자.출처} 묶음 ${묶음.이름}: 그새 다른 프로세스가 보내기 시작했다 — 건너뜀`); continue; }
     내표시들.push([표시, 내표시.표]);
-    const 앞몫 = await 몫();
-    let 기록 = null, 오류 = null, 답 = null, 부른모델 = null, 호출시작 = false;
+    let 앞몫 = await 몫();
+    let 기록 = null, 오류 = null, 답 = null, 부른모델 = null, 호출시작 = false, 부른몫 = null;
     if (앞몫?.주간 === 0) 오류 = `주간 몫이 다 찼다(초기화 ${앞몫.주간초기화 || '?'}) — limit remaining 0`;
     else {
       알리기(`${자.출처} 묶음 ${묶음.이름} 보냄 · ${이번설정 ? GPT설정글(이번설정) : 수준 || '설정 그대로'} · ${Math.round(입력.length / 1024)}KB · 항목 ${묶음.항목.length}개${앞몫 ? ` · 주간 몫 ${퍼(앞몫.주간)}` : ''}`);
-      try { 기록 = await call({ model: 이번모델, thinking: 수준, prompt: 입력.toString('utf8'), schema: 목록.갈래 === '델타' ? 다시답꼴 : 답꼴, timeoutMs: 자.제한분(수준) * 60_000, ...(이번설정 ? { 설정: 이번설정 } : {}) }); }
+      try { 기록 = await call({ model: 이번모델, thinking: 수준, prompt: 입력.toString('utf8'), schema: 목록.갈래 === '델타' ? 다시답꼴 : 답꼴, timeoutMs: 자.제한분(수준) * 60_000, ...(이번설정 ? { 설정: 이번설정 } : {}) }); 부른몫 = 기록?.몫 || null; }
       catch (e) {
         오류 = e.message;
+        부른몫 = e?.몫 || null;
         if (설정) {
           if (typeof e?.selectedModel === 'string') 부른모델 = e.selectedModel;
           호출시작 = typeof e?.invocationStarted === 'boolean' ? e.invocationStarted : 부른모델 ? true : null;
@@ -1270,11 +1349,14 @@ export async function 검수보내기(누구, 폴더, 목록, { 수준, 고른 =
       if (설정 && 기록) 호출시작 = typeof 기록.invocationStarted === 'boolean' ? 기록.invocationStarted : 기록.selectedModel ? true : null;
       if (기록) { try { 답 = JSON.parse(기록.text); } catch { 오류 = '답이 JSON이 아니다'; } }
     }
+    // call이 몫을 주면(GPT골라부르기 — 계정을 call 안에서 고른다) 앞 몫 · 뒤 몫 · 차단증거를 모두 그 값으로 쓴다.
+    // 판정기가 저장된 몫.앞으로 증거를 다시 계산해 대조하므로 증거에 넘기는 앞 몫과 저장하는 몫.앞은 같아야 한다(11-18 설계 검토 지침 3).
+    if (부른몫) 앞몫 = 부른몫.앞 ?? null;
     const 차단증거 = 막힘증거(누구, 오류, 앞몫);
     const 대조 = 답 ? 답대조(묶음, 답) : { 상태: 차단증거 ? '막힘' : '실패', 표식맞음: false, 빠진항목: [] };
     // GPT 호출 전 실패는 모델 null·호출시작 false로 남기고 예정값은 모델설정에만 둔다. 시작 정보를 주지 않는 가짜·옛 call은 null(미확인)이다.
     const r = { 묶음: 묶음.이름, 입력sha256: 입력sha, 표식: 묶음.표식, 수준, 모델: 설정 && 호출시작 === false ? null : 기록?.selectedModel || 부른모델 || (이번모델 ? `${이번모델}-${수준}` : 자.출처), ...(이번설정 ? { 모델설정: 이번설정, 호출시작 } : {}), 보낸때: new Date(시작).toISOString(),
-      초: Math.round((Date.now() - 시작) / 1000), ...대조, 오류, 실패원문: 오류, 원문: 기록?.text ?? null, 차단증거, usage: 기록?.usage ?? null, 몫: { 앞: 앞몫, 뒤: 기록 || 오류 ? await 몫() : 앞몫 }, 답 };
+      초: Math.round((Date.now() - 시작) / 1000), ...대조, 오류, 실패원문: 오류, 원문: 기록?.text ?? null, 차단증거, usage: 기록?.usage ?? null, 몫: 부른몫 ? { 앞: 앞몫, 뒤: 부른몫.뒤 ?? null } : { 앞: 앞몫, 뒤: 기록 || 오류 ? await 몫() : 앞몫 }, 답 };
     // 기본 모델(환경 바꿈 · 자동 대체가 아닌)로 부른 이번 시도가 시간 초과면 하나 더한다. 쓸 만한 답이 오면 0으로 돌아간다.
     if (설정) r.기본시간초과 = 쓸만한가(r) ? 0 : 앞초과 + (!이번설정.환경바꿈 && !이번설정.자동대체 && GPT시간초과글.test(오류 || '') ? 1 : 0);
     알리기(`${자.출처} 묶음 ${묶음.이름} · ${r.초}초 · ${r.상태}${r.빠진항목.length ? ` · 빠진 항목 ${r.빠진항목.join(',')}` : ''}${Array.isArray(답?.findings) ? ` · 지적 ${답.findings.length}건` : ''}${오류 ? ` · ${오류.slice(0, 240)}` : ''}${몫글(r.몫)}`);
@@ -1298,7 +1380,9 @@ export async function 검수보내기(누구, 폴더, 목록, { 수준, 고른 =
       writeJson(파일, r);
       결과들.push(r);
     }
-    if (r.상태 === '막힘') { 알리기(typeof 자.막힘말 === 'function' ? 자.막힘말(목록) : 자.막힘말); break; }
+    // GPT: 다시 보낸 시도가 막혀도 앞의 쓸 만한 답이 남으면 그 묶음의 검수는 그 답이다 — 생략이라고 알리지 않는다(11-18 GPT 검수 GA6)
+    if (r.상태 === '막힘') { 알리기(자.출처 === 'GPT' && 쓸만한가(앞결과) ? `GPT 묶음 ${묶음.이름}: 다시 보낸 시도가 막혔다 — 앞의 ${앞결과.상태} 답이 이 묶음의 검수로 남는다. 남은 묶음은 보내지 않는다`
+      : typeof 자.막힘말 === 'function' ? 자.막힘말(목록, r) : 자.막힘말); break; }
   }
   // 아르곤과 GPT를 따로 띄워 함께 돌려도 되게, 지적표는 잠근 채 다시 읽어 그 검수자 몫만 갈아 끼운다(GPT 검수 GA1)
   지적표고치기(폴더, 표 => { for (const r of 결과들) if (쓸만한가(r)) 검수자지적넣기(표, 자.출처, r.묶음, 답지적들(목록, r.답)); });
@@ -1673,9 +1757,9 @@ export function 답지적들(목록, 답) {
 }
 /** 검수자마다 묶음 답을 읽어 끝까지 읽혔는지(valid)·한도·로그인 막힘 증거(blocked)·문제·쓸 답·원문 지적을 모은다. 어느 검수가 필요한지는 부르는 쪽이 정한다. */
 function 검수자판정(폴더, 목록, 결과, 사유) {
-  const valid = {}, blocked = {}, 문제 = {}, 답들 = {}, rawFindings = [];
+  const valid = {}, blocked = {}, 한도 = {}, 문제 = {}, 답들 = {}, rawFindings = [];
   for (const 누구 of Object.keys(결과)) {
-    let complete = true, block = false, failed = false;
+    let complete = true, block = false, failed = false, 한도만 = true;
     문제[누구] = []; 답들[누구] = {};
     for (const b of 목록.묶음) {
       if (sha(fs.readFileSync(path.join(폴더, b.파일))) !== b.sha256) { 사유.push(`묶음 ${b.이름} 입력 SHA 불일치`); failed = true; }
@@ -1683,7 +1767,7 @@ function 검수자판정(폴더, 목록, 결과, 사유) {
       if (!r) { complete = false; continue; }
       if (r.상태 === '보내는 중') { 사유.push(`${누구} ${b.이름} 보내는 중`); complete = false; failed = true; continue; }
       if (r.입력sha256 !== b.sha256) { 문제[누구].push(`${누구} ${b.이름} 응답 입력 SHA 불일치`); failed = true; complete = false; continue; }
-      if (r.차단증거 && 정규해시(r.차단증거) === 정규해시(막힘증거(누구, r.실패원문, r.몫?.앞))) { block = true; complete = false; continue; }
+      if (r.차단증거 && 정규해시(r.차단증거) === 정규해시(막힘증거(누구, r.실패원문, r.몫?.앞))) { block = true; complete = false; if (!한도생략증거(r.차단증거)) 한도만 = false; continue; }
       let answer;
       try { answer = 페이블답읽기(r.원문); } catch { answer = null; }
       const errors = 응답검사(answer, b);
@@ -1692,8 +1776,9 @@ function 검수자판정(폴더, 목록, 결과, 사유) {
     }
     valid[누구] = complete && !failed;
     blocked[누구] = block && !failed;
+    한도[누구] = block && !failed && 한도만;   // 막힌 묶음이 모두 한도 증거 — GPT는 이때 생략으로 친다(11-18), 로그인이 섞였으면 전처럼 대신
   }
-  return { valid, blocked, 문제, 답들, rawFindings };
+  return { valid, blocked, 한도, 문제, 답들, rawFindings };
 }
 /** 처음 고리(준비한 묶음): 정책·필수 검수(Claude 백엔드는 GPT → 아르곤 → 그록 → Fable, 판 5까지 GPT → 아르곤 → Fable)·Fable 최종과 이 고리가 검수한 최종 후보. */
 /** 머리 커밋은 검수자가 읽은 묶음 글(입력 SHA로 답에 묶임)의 머리말 「머리 커밋: <커밋>」 줄로 묶는다(2026-11-12 — GPT 다시 검수 GA4: 증명 해시만으로는 고쳐 다시 셀 수 있다).
@@ -1717,7 +1802,9 @@ function 처음고리판정(폴더, 목록) {
   const 순서 = 대체순서(정책);
   const 볼검수자 = ['아르곤', 'GPT', 'Claude', ...(순서?.includes('그록') ? ['그록'] : [])];
   const { 표, 결과, 검수대체 } = 잠근채(폴더, () => ({ 표: 지적표읽기(폴더), 결과: Object.fromEntries(볼검수자.map(w => [w, 결과들읽기(폴더, 목록, w)])), 검수대체: Workspace대체읽기(폴더, 목록) }));
-  const { valid, blocked, 문제, rawFindings } = 검수자판정(폴더, 목록, 결과, 사유);
+  const { valid, blocked, 한도, 문제, rawFindings } = 검수자판정(폴더, 목록, 결과, 사유);
+  // GPT 한도 생략(11-18): GPT가 이 고리에서 한도로만 막혔으면 GPT 몫은 생략 — 대신 보는 검수자를 요구하지 않는다
+  const GPT생략 = GPT한도생략정책(정책) && !검수대체 && !valid.GPT && Boolean(한도.GPT);
   const 대체로 = Boolean(순서) && 순서.slice(0, -1).every(w => blocked[w]);
   let 그록대신 = false;   // 그록이 GPT·아르곤 대신 이 고리의 필수 검수를 채웠는가 — 그 사슬의 그록 P2는 처리를 적어야 닫힌다(사슬판정)
   if (정책.예외) for (const who of 정책.필수) 사유.push(...(문제[who] || []));
@@ -1753,6 +1840,7 @@ function 처음고리판정(폴더, 목록) {
       // Claude 자리와 판 6까지의 GPT 작성은 대신이 없다. 미전송·일반 실패는 막힘이 아니다.
       for (const who of 정책.필수) {
         if (valid[who]) continue;
+        if (who === 'GPT' && GPT생략) continue;
         const 대신들 = 대신할검수자(정책, who).slice(1);
         if (대신들.length && blocked[who]) {
           if (대신들.some(w => valid[w])) continue;
@@ -1768,6 +1856,7 @@ function 처음고리판정(폴더, 목록) {
         const 대신 = k ? ` — ${순서.slice(0, k).join('·')} 검수가 한도·로그인으로 막혀 대신하는 검수` : '';
         if (who === 'Fable') { if (!finalValid) 사유.push(`필수 검수(${순서.slice(0, k).join('·')})가 한도·로그인으로 막혀 Fable 대체 검수 필요`); break; }
         if (valid[who]) { 그록대신 = who === '그록'; break; }
+        if (who === 'GPT' && GPT생략) break;
         if (!blocked[who]) { 사유.push(...문제[who], `필수 ${who} 검수 미완료(미전송은 한도 예외가 아니다)${대신}`); break; }
       }
     }
@@ -1777,7 +1866,7 @@ function 처음고리판정(폴더, 목록) {
   const 머리판 = 묶인머리(묶음글들(폴더, 목록.묶음), 목록.증명.머리 ?? null);
   사유.push(...머리판.사유);
   const 페이블최종 = final !== 목록.증명;
-  return { 정책, 표, rawFindings, 사유, 최종: 페이블최종 ? final : { ...final, 머리: 머리판.머리 }, 페이블최종, 대상판정: new Map(), 그록대신, 검수대체 };
+  return { 정책, 표, rawFindings, 사유, 최종: 페이블최종 ? final : { ...final, 머리: 머리판.머리 }, 페이블최종, 대상판정: new Map(), 그록대신, 검수대체, GPT생략 };
 }
 /** 다시 검수 고리(고친 diff만): 증명·묶음·diff가 그대로인지, 그 지적을 낸 검수자(한도·로그인으로 막혔으면 다음 차례)가 끝까지 읽었는지, 다시 볼 지적마다 풀었는지. */
 function 다시고리판정(폴더, 목록) {
@@ -1803,7 +1892,8 @@ function 다시고리판정(폴더, 목록) {
   const 다시검수자목록 = Array.isArray(p.검수자들) ? p.검수자들 : [];
   const 볼검수자 = ['아르곤', 'GPT', 'Claude', 'Fable', ...(다시검수자목록.some(w => 대신할검수자(정책, w).includes('그록')) ? ['그록'] : [])];
   const { 표, 결과, 검수대체 } = 잠근채(폴더, () => ({ 표: 지적표읽기(폴더), 결과: Object.fromEntries(볼검수자.map(w => [w, 결과들읽기(폴더, 목록, w)])), 검수대체: Workspace대체읽기(폴더, 목록) }));
-  const { valid, blocked, 문제, 답들, rawFindings } = 검수자판정(폴더, 목록, 결과, 사유);
+  const { valid, blocked, 한도, 문제, 답들, rawFindings } = 검수자판정(폴더, 목록, 결과, 사유);
+  const GPT생략 = GPT한도생략정책(정책) && !검수대체 && !valid.GPT && Boolean(한도.GPT);   // 11-18 — GPT 다시 검수 자리는 생략
   // 그 지적을 낸 검수자가 다시 본다 — 한도·로그인으로 막힌 증거가 있을 때만 다음 차례(GPT → 아르곤 → 그록 → Fable, 판 5까지는 GPT → 아르곤 → Fable)
   const 효력 = {};
   for (const w of 다시검수자목록) {
@@ -1812,6 +1902,7 @@ function 다시고리판정(폴더, 목록) {
       if (valid[who]) 효력[w] = who;
       continue;
     }
+    if (w === 'GPT' && GPT생략) continue;   // 생략 — 효력 없음, 그 지적은 아래에서 Claude 반영으로 닫는다
     const 차례 = 대신할검수자(정책, w);
     for (const [k, who] of 차례.entries()) {
       if (valid[who]) { 효력[w] = who; break; }
@@ -1840,8 +1931,10 @@ function 다시고리판정(폴더, 목록) {
     }
     const who = 판정자(t), v = who && 답들[who]?.[b0.이름]?.targets?.find(x => 대상번호(x?.id) === t.아이디);
     if (v) 대상판정.set(대상열쇠(t.고리, t.번호), { 대상: t, 풀림: v.resolved === true, 메모: v.note, 누구: who });
+    // GPT 한도 생략(11-18): 다시 볼 GPT 자리가 생략이면 그 자리가 볼 지적(GPT가 낸 것, 판 6부터 그 자리가 판정하는 그록 지적)은 Claude의 반영으로 닫는다
+    else if (GPT생략 && !who && (t.출처 === 'GPT' || t.출처 === '그록' && 정책.판 >= 6 && 다시검수자목록[0] === 'GPT')) 대상판정.set(대상열쇠(t.고리, t.번호), { 대상: t, 풀림: true, 메모: 'GPT 한도로 다시 검수 생략(11-18) — Claude 반영으로 닫음', 누구: 'GPT(한도 생략)', 생략: true });
   }
-  return { 정책, 표, rawFindings, 사유, 최종: { 파일: p.파일, 배포후보: p.배포후보 ?? null, 검토입력해시: p.검토입력해시, 머리: 머리판.머리 }, 페이블최종: false, 대상판정, 그록대신, 검수대체 };
+  return { 정책, 표, rawFindings, 사유, 최종: { 파일: p.파일, 배포후보: p.배포후보 ?? null, 검토입력해시: p.검토입력해시, 머리: 머리판.머리 }, 페이블최종: false, 대상판정, 그록대신, 검수대체, GPT생략 };
 }
 function 앞폴더(목록) {
   const 저장 = 목록.앞?.폴더;
@@ -2494,7 +2587,7 @@ export async function 다시하기(o, { 알리기 = () => {} } = {}) {
 
 // ── 집계 ───────────────────────────────────────────────────────────
 const 닫힘 = new Set(['반영', '재현 안 됨']);
-export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들 = [], F결과들 = [], K결과들 = []) {
+export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들 = [], F결과들 = [], K결과들 = [], 덧 = {}) {
   const 델타 = 목록.갈래 === '델타';   // 다시 검수 묶음: 그 지적을 낸 검수자(Fable도 묶음 답)가 필수, 반영한 P0·P1은 다음 다시 검수까지 열려 있다
   const 셈 = 출처 => {
     const xs = 표.지적.filter(x => x.출처 === 출처), c = k => xs.filter(x => x.처리 === k).length;
@@ -2522,14 +2615,19 @@ export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들
     const 최종페 = w => w === 'Fable' && !델타;   // 처음 묶음의 Fable은 묶음 답이 아니라 최종 답 하나
     const 검수자별 = ['아르곤', 'GPT', '그록', 'Claude', 'Fable'].filter(w => 필수.includes(w) || (최종페(w) ? 페이블있음 || 페.건 : 결과별[w].length || 셈별[w].건)).map(이름 => {
       const 상태 = 최종페(이름) ? [] : 상태표(결과별[이름]);
-      return { 이름, 필수: 필수.includes(이름), 셈: 셈별[이름], 묶음상태: 상태, 보냄: 최종페(이름) ? 페이블있음 : 결과별[이름].length > 0, 막힘: 상태.some(b => b.상태 === '막힘'), 다읽음: 최종페(이름) ? 페이블있음 : 상태.length > 0 && !덜읽음(상태).length };
+      const 막힌들 = 최종페(이름) ? [] : 결과별[이름].filter(x => x.상태 === '막힘');
+      return { 이름, 필수: 필수.includes(이름), 셈: 셈별[이름], 묶음상태: 상태, 보냄: 최종페(이름) ? 페이블있음 : 결과별[이름].length > 0, 막힘: 상태.some(b => b.상태 === '막힘'), 다읽음: 최종페(이름) ? 페이블있음 : 상태.length > 0 && !덜읽음(상태).length,
+        // GPT 한도 생략(11-18): 막힌 묶음이 모두 한도 증거면 그 고리의 GPT 몫은 생략 — 대신 보는 검수자를 요구하지 않는다(판정은 검수확인이 원문으로 다시 본다)
+        // 검수확인과 같게: 실패 · 잘림 · 입력 SHA 다름이 섞였거나 Workspace 대체 승인 묶음이면 생략이 아니다(11-18 GPT 검수 GA5)
+        생략: 이름 === 'GPT' && GPT한도생략정책(목록.정책) && !덧.검수대체 && 막힌들.length > 0 && 막힌들.every(x => 한도생략증거(x.차단증거))
+          && 상태.every(b => ['읽음', '막힘', '안 보냄'].includes(b.상태) && b.입력같음 !== false) && !(상태.length > 0 && !덜읽음(상태).length) };
     });
     const 조건 = [];
     if (목록.정책.사용자지정) 조건.push(`최종 전체 ${목록.정책.사용자지정.finalReviewer} 판정과 현재 후보는 검수확인으로 원문 대조해야 한다`);
     for (const r of 검수자별) {
       const 보내는중 = r.묶음상태.filter(b => b.상태 === '보내는 중');
       if (보내는중.length) 조건.push(`${보내는중.map(b => `${r.이름} ${b.이름}`).join(', ')} 묶음을 보내는 중 — 답을 받은 뒤 집계한다`);
-      if (!목록.정책.예외 && r.필수 && !r.다읽음) {
+      if (!목록.정책.예외 && r.필수 && !r.다읽음 && !r.생략) {
         if (최종페(r.이름)) 조건.push('Fable 최종 검수 전');
         // GPT 작성은 대신이 없는 자리(Claude, 판 6까지의 GPT)만 여기서 막는다 — 판 7의 GPT 자리(GPT · 아르곤)는 아래 대신 차례가 본다
         else if (!r.막힘 || 목록.정책.작성자 === 'GPT' && !직접승인화면정책(목록.정책) && 대신할검수자(목록.정책, r.이름).length < 2 || 목록.정책.사용자지정) 조건.push(`${r.이름} 묶음 ${덜글(r.묶음상태)} — 끝까지 읽힌 묶음만 검수로 친다(0건이어도)`);
@@ -2543,10 +2641,11 @@ export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들
         for (const [k, who] of 차례.entries()) {
           const r = 검수자별.find(x => x.이름 === who);
           if (r?.다읽음) { if (who === '그록' && w !== '그록') 그록대신 = true; break; }
+          if (who === 'GPT' && w === 'GPT' && r?.생략) break;
           if (!r?.막힘) { if (k) 조건.push(`${차례.slice(0, k).join('·')} 검수가 막혀 ${who} 검수로 대신해야 한다${r?.보냄 ? ` — ${who} 묶음 ${덜글(r.묶음상태)}` : ''}`); break; }
         }
         // 판 7 GPT 작성의 GPT 자리(GPT · 아르곤)는 끝에 Fable이 없어 차례가 모두 막힐 수 있다 — 그때도 빈 자리로 막는다
-        if (GPT자리대체정책(목록.정책) && 차례.length > 1 && 차례.every(who => { const r = 검수자별.find(x => x.이름 === who); return r?.막힘 && !r.다읽음; })) 조건.push(`${차례.join('·')} 다시 검수가 모두 한도·로그인으로 막혔다 — 더 내려가지 않는다. 몫이 돌아온 뒤 다시 보낸다(--다시)`);
+        if (GPT자리대체정책(목록.정책) && 차례.length > 1 && !(w === 'GPT' && 검수자별.find(x => x.이름 === 'GPT')?.생략) && 차례.every(who => { const r = 검수자별.find(x => x.이름 === who); return r?.막힘 && !r.다읽음; })) 조건.push(`${차례.join('·')} 다시 검수가 모두 한도·로그인으로 막혔다 — 더 내려가지 않는다. 몫이 돌아온 뒤 다시 보낸다(--다시)`);
       }
     } else if (!목록.정책.예외 && 순서) {
       // 앞 검수자가 막혔으면 다음 차례가 끝까지 읽어야 한다(GPT → 아르곤 → 그록 → Fable, 판 5까지는 그록 없이)
@@ -2554,12 +2653,13 @@ export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들
         const r = 검수자별.find(x => x.이름 === who);
         if (who === 'Fable') { if (!페이블있음) 조건.push(`${순서.slice(0, k).join('·')} 검수가 막혀 Fable 검수로 대신해야 한다`); break; }
         if (r?.다읽음) { 그록대신 = who === '그록'; break; }
+        if (who === 'GPT' && r?.생략) break;
         if (!r?.막힘) { if (k) 조건.push(`${순서.slice(0, k).join('·')} 검수가 막혀 ${who} 검수로 대신해야 한다${r?.보냄 ? ` — ${who} 묶음 ${덜글(r.묶음상태)}` : ''}`); break; }
       }
     } else if (!목록.정책.예외 && GPT자리대체정책(목록.정책)) {
       // 판 7 GPT 작성(2026-11-14): GPT가 막혔으면 아르곤이 모든 묶음을 끝까지 읽어야 GPT 자리가 찬다 — 아르곤도 막히면 더 내려가지 않는다
       const g = 검수자별.find(x => x.이름 === 'GPT'), a = 검수자별.find(x => x.이름 === '아르곤');
-      if (g && !g.다읽음 && g.막힘 && !a?.다읽음) 조건.push(a?.막힘 ? 'GPT·아르곤이 모두 한도·로그인으로 막혀 GPT 자리가 비었다 — 더 내려가지 않는다. 몫이 돌아온 뒤 다시 보낸다(--다시)'
+      if (g && !g.다읽음 && g.막힘 && !g.생략 && !a?.다읽음) 조건.push(a?.막힘 ? 'GPT·아르곤이 모두 한도·로그인으로 막혀 GPT 자리가 비었다 — 더 내려가지 않는다. 몫이 돌아온 뒤 다시 보낸다(--다시)'
         : `GPT 검수가 막혀 아르곤 검수로 대신해야 한다${a?.보냄 ? ` — 아르곤 묶음 ${덜글(a.묶음상태)}` : ''}`);
     } else if (!목록.정책.예외 && (['Claude', '카본'].includes(목록.정책.작성자) || 직접승인화면정책(목록.정책))) {
       const 앞필수 = 검수자별.filter(r => r.필수 && r.이름 !== 'Fable');
@@ -2568,7 +2668,7 @@ export function 집계하기(목록, 결과들, 표, G결과들 = [], C결과들
     // 그록이 대신 본 검수는 그록 P2도 처리를 적는다 — 눈가림 시험에서 진짜 P1을 P2로 낮춰 매긴 적이 있다(2026-11-08). P3는 막지 않는다.
     if (그록대신) for (const x of 표.지적) if (x.출처 === '그록' && x.등급 === 'P2' && !처리값들.has(x.처리)) 조건.push(`${x.번호} P2 처리 미정 — 그록이 대신 본 검수라 그록 P2도 처리를 적는다`);
     for (const x of 열린) 조건.push(`${x.번호} ${x.등급} ${목록.정책.사용자지정 ? '미해결 — candidate-only 고침은 새 봉인·새 후보를 다시 --사용자지정으로 검수한다' : x.처리 ? (x.처리 === '반영' ? (델타 || 생략고침 ? `반영 — 고친 diff를 다시 검수받는다(다시 <새 이름> --앞 ${목록.이름}${생략고침 ? ' — Fable 생략 묶음이라 아르곤·Fable이 본다' : ''})` : '반영 — 같은 Fable 재확인 전') : x.처리) : '처리 미정'}`);
-    const 한줄 = 검수자별.map(r => `${r.이름} ${!r.보냄 && !r.셈.건 ? '미실행' : r.막힘 && !r.셈.건 ? '막힘(한도·로그인)' : `${r.셈.건}건(반영 ${r.셈.반영})`}`).join(' · ');
+    const 한줄 = 검수자별.map(r => `${r.이름} ${!r.보냄 && !r.셈.건 ? '미실행' : r.생략 ? (r.셈.건 ? `${r.셈.건}건(반영 ${r.셈.반영}) · 남은 묶음 생략(한도 없음)` : '생략(한도 없음)') : r.막힘 && !r.셈.건 ? '막힘(한도·로그인)' : `${r.셈.건}건(반영 ${r.셈.반영})`}`).join(' · ');
     return { 한줄, 검수자별, 아르곤: 아, GPT: 지, 그록: 케, Claude: 씨, 페이블: 페, 묶음상태, G묶음상태, C묶음상태: 상태표(C결과들), 막힘, G보냄, G막힘, 페이블있음, 그록대신, 열린, 조건, 배포조건충족: !조건.length,
       안함: 표.지적.filter(x => x.처리 && x.처리 !== '반영'), 미정: 표.지적.filter(x => !x.처리) };
   }
@@ -2690,7 +2790,8 @@ async function main(argv) {
     } else if (목록.정책.작성자 === 'GPT') {
       찍기(`다음: node tools/검수묶음.mjs GPT ${목록.이름} · Claude도 같은 묶음을 검수한 뒤 검수받기로 가져온다 (필수 GPT+Claude · 묶음 ${목록.묶음.length}개${GPT자리대체정책(목록.정책) ? ` · GPT가 한도·로그인(주간 문턱 포함)으로 막히면 카본 ${목록.이름}이 GPT 자리를 대신하고, Claude 자리는 대신 없음` : ''})`);
     } else if (대체순서(목록.정책)?.[0] === 'GPT') {
-      찍기(`다음: node tools/검수묶음.mjs GPT ${목록.이름}   (묶음 ${목록.묶음.length}개를 하나씩 · ${대체안내(대체순서(목록.정책), 목록.이름)}${그록대체정책(목록.정책) ? ' — 그록이 대신 보면 그록 P2도 처리를 적는다' : ''})`);
+      // 11-18: GPT가 한도면 생략(대신 없음)이고, 대신 차례는 로그인으로 막혔을 때만이다
+      찍기(`다음: node tools/검수묶음.mjs GPT ${목록.이름}   (묶음 ${목록.묶음.length}개를 하나씩 · ${GPT한도생략정책(목록.정책) ? `한도면 GPT 검수는 생략(대신 없음) · ${대체안내(대체순서(목록.정책), 목록.이름).replace(/^한도·로그인으로 막히면/, '로그인으로 막히면')}` : 대체안내(대체순서(목록.정책), 목록.이름)}${그록대체정책(목록.정책) ? ' — 그록이 대신 보면 그록 P2도 처리를 적는다' : ''})`);
     } else {
       const 순서 = 대체순서(목록.정책);
       찍기(`다음: node tools/검수묶음.mjs 카본 ${목록.이름}   (수준 ${기본수준[목록.종류]} · 묶음 ${목록.묶음.length}개를 하나씩${순서?.includes('그록') ? ` · ${대체안내(순서, 목록.이름)} — 그록이 대신 보면 그록 P2도 처리를 적는다` : ''})`);
@@ -2768,11 +2869,12 @@ async function main(argv) {
     // 모델·추론은 GPT검수설정 한 곳에서 — 계정·보내기·완료 안내와 결과가 같은 값을 적는다. --수준이나 환경 모델이 틀리면 계정도 읽지 않고 멈춘다.
     let 설정;
     try { 검수자들.GPT.수준검사(o.수준 || null); 설정 = GPT검수설정(o.수준 || null); } catch (e) { 틀림(e.message); return 2; }
+    // 이 사진은 안내에만 쓴다 — 묶음마다 GPT골라부르기가 다시 읽어 고르고, 부르는 중 한도면 다른 Pro 계정으로 다시 부른다(11-18 설계 검토)
     const 계정들 = await GPT계정들읽기();
     const 계정 = GPT계정가리기(계정들);
-    알리기(`GPT 계정: ${계정들.map(a => `${계정말(a)} ${a.요금제 || '?'} 주간 ${a.주간사용 ?? '?'}%`).join(' · ')} → ${계정 ? 계정말(계정) : `없음(주간 ${GPT주간한계}% 아래인 Pro 계정 없음 — 막힘으로 적는다)`} · 모델 ${GPT설정글(설정)}`);
+    알리기(`GPT 계정: ${계정들.map(a => `${계정말(a)} ${a.요금제 || '?'} 주간 ${a.주간사용 ?? '?'}%${a.다섯시간사용 != null ? ` · 5시간 ${a.다섯시간사용}%` : ''}`).join(' · ')} → ${계정 ? 계정말(계정) : `없음(${GPT계정없음글(계정들)})`} · 모델 ${GPT설정글(설정)} · 묶음마다 다시 읽어 고른다`);
     const 보낸때 = new Date().toISOString();
-    await GPT보내기(폴더, 목록, { 수준: o.수준 || null, 고른: o.묶음 || null, 다시: Boolean(o.다시), call: a => GPT부르기({ ...a, 계정 }), 몫: () => (계정 ? GPT몫읽기(계정) : null), 알리기 });
+    await GPT보내기(폴더, 목록, { 수준: o.수준 || null, 고른: o.묶음 || null, 다시: Boolean(o.다시), call: a => GPT골라부르기(a, { 알리기 }), 몫: async () => null, 알리기 });
     const 표 = 지적표읽기(폴더), 상태들 = 묶음상태들(폴더, 목록, 'GPT');
     // 시간 초과 자동 대체로 부른 묶음은 이번 모델 글과 따로 보인다 — 기본 모델 글만 보고 기본 모델로 읽었다고 적지 않게(11-15)
     const 자동대체 = 이번자동대체(결과들읽기(폴더, 목록, 'GPT'), 보낸때, o.묶음);
@@ -2818,9 +2920,10 @@ async function main(argv) {
   }
   if (o.명령 === '집계') {
     // 지적표·결과·표시를 한 잠금 안에서 읽는다 — 다른 프로세스가 결과와 지적표를 쓰는 사이에 읽으면 옛 지적표로 판정한다(3차 검수 GA1)
-    const { 표, 결과들, G결과들, C결과들, F결과들, K결과들 } = 잠근채(폴더, () => ({ 표: 지적표읽기(폴더), 결과들: 결과들읽기(폴더, 목록), G결과들: 결과들읽기(폴더, 목록, 'GPT'), C결과들: 결과들읽기(폴더, 목록, 'Claude'),
-      F결과들: 목록.갈래 === '델타' ? 결과들읽기(폴더, 목록, 'Fable') : [], K결과들: 결과들읽기(폴더, 목록, '그록') }));
-    const s = 집계하기(목록, 결과들, 표, G결과들, C결과들, F결과들, K결과들);
+    const { 표, 결과들, G결과들, C결과들, F결과들, K결과들, 검수대체 } = 잠근채(폴더, () => ({ 표: 지적표읽기(폴더), 결과들: 결과들읽기(폴더, 목록), G결과들: 결과들읽기(폴더, 목록, 'GPT'), C결과들: 결과들읽기(폴더, 목록, 'Claude'),
+      F결과들: 목록.갈래 === '델타' ? 결과들읽기(폴더, 목록, 'Fable') : [], K결과들: 결과들읽기(폴더, 목록, '그록'),
+      검수대체: (() => { try { return Boolean(Workspace대체읽기(폴더, 목록)); } catch { return false; } })() }));
+    const s = 집계하기(목록, 결과들, 표, G결과들, C결과들, F결과들, K결과들, { 검수대체 });
     const 확인 = 검수확인(폴더, { 저장소: o.저장소 });
     s.조건 = 확인.사유; s.배포조건충족 = 확인.통과; s.다시 = 확인.다시 || null; s.사슬 = 확인.증명?.사슬 || null; s.검수대체 = 확인.증명?.검수대체 || [];
     const 글 = 집계글(목록, 결과들, 표, s);
