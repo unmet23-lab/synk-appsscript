@@ -161,7 +161,7 @@ export const Film: React.FC = () => {
       {/* 배경음(보유곡 따뜻_118을 0초부터 — 곡 안 빈 마디 62.25초 앞에서 끝남). 볼륨 곡선은 timeline.ts BGM — 반전 뒤 잠깐 낮추되 절반보다 깊게 1초 넘게 두지 않고, 바탕에 방 소리 */}
       <Audio src={staticFile('bgm.mp3')} volume={(fr) => interpolate(fr, BGM.t.map(sec), BGM.v, clamp)} />
       {/* 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
-      <Audio src={staticFile('sfx/room.wav')} volume={0.05} />
+      <Audio src={staticFile('sfx/room.wav')} volume={0.05} loop />
       {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}
       {SOUNDS.map((s, i) => <Sequence key={i} from={sec(s.t)} durationInFrames={s.dur ?? 90}><Audio src={staticFile(s.src)} volume={s.vol} /></Sequence>)}
       </>}
