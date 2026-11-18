@@ -364,7 +364,17 @@ function run(inp, scName, opts = {}) {
       const A = L.acquisition;
       const ret = sc.labRetention - ([6, 7, 8].includes(mo) ? L.summerRetentionDrop : 0);
       const pre = m === L.openMonth ? sc.labPreReg : 0;
-      if (opts.labFill) { // [10-19 세 지표] 4실 정원의 labFill(80%)을 채운다고 본다. 새 등록 = 그 인원을 지키려고 나간 만큼 다시 받는 수
+      if (opts.labFill && opts.labRamp) { // [11-19 유호님 「차오르게 바꿔」] 개원 달부터 labFill을 채우지 않는다. 아래 시장 방식과 같은 식으로 등록이 들어와 차오르다가 정원의 labFill에서 멈춘다
+        const target = opts.labFill * cap;
+        marketNew = (mk.pool / 12) * step(inp.market.labCapture[scName], m) * season * (opts.demandMult ?? 1) * (L.priceDemandMult ?? 1);
+        const before = students * ret + pre;
+        const want = Math.max(0, marketNew - pre);
+        newStudents = Math.min(want, Math.max(0, target - before));
+        waitlist = want - newStudents;
+        paidNew = newStudents * inp.market.paidShare; organicNew = newStudents - paidNew;
+        adBudget = paidNew * A.cacMNT[scName];
+        students = Math.min(target, before + newStudents);
+      } else if (opts.labFill) { // [10-19 세 지표] 4실 정원의 labFill(80%)을 채운다고 본다. 새 등록 = 그 인원을 지키려고 나간 만큼 다시 받는 수
         const target = opts.labFill * cap;
         newStudents = Math.max(0, target - students * ret);
         paidNew = newStudents * inp.market.paidShare; organicNew = newStudents - paidNew;
@@ -429,7 +439,9 @@ function run(inp, scName, opts = {}) {
     const satSeats = classPlan?.saturday || 0;
     lab.satClasses = classPlan?.saturdayClasses || 0;
     lab.classes = classPlan?.classes || 0;
-    if (isOpen && opts.labFill && stageKey === 'v23') { // [10-19 세 지표] 시간표의 반을 모두 열고(평일 16 + 토요일 8) 좌석의 labFill만 찬다(반 평균 약 12.8명)
+    const rampBelow = isOpen && opts.labFill && opts.labRamp && students < 0.999 * opts.labFill * cap; // [11-19] 차오르는 동안은 학생 수만큼만 반을 연다(시간표의 반 수가 위 끝)
+    if (rampBelow && stageKey === 'v23') { const full = rooms * (S.weekdaySlotsPerRoom + S.satSlotsPerRoom); if (lab.classes > full) { lab.classes = full; lab.classSize = seatsNeeded / full; } }
+    if (isOpen && opts.labFill && stageKey === 'v23' && !rampBelow) { // [10-19 세 지표] 시간표의 반을 모두 열고(평일 16 + 토요일 8) 좌석의 labFill만 찬다(반 평균 약 12.8명)
       lab.satClasses = rooms * S.satSlotsPerRoom; lab.classes = rooms * (S.weekdaySlotsPerRoom + S.satSlotsPerRoom);
       lab.classSize = seatsNeeded / lab.classes;
     }
@@ -1224,14 +1236,14 @@ function countryInp(key) {
   deepMerge(inp, C0.overrides || {});
   return inp;
 }
-const FILL = { labMode: 'full4', stopRule: false, labFill: base.targets.labFill, pathShare: base.targets.pathShare };
+const FILL = { labMode: 'full4', stopRule: false, labFill: base.targets.labFill, labRamp: !!base.targets.labRamp, pathShare: base.targets.pathShare }; // labRamp [11-19 유호님 「차오르게 바꿔」]
 const planHz = base.planHorizon || { end: base.timeline.end, years: [2027, 2028, 2029] }; // [10-19] 세 지표만 2030-12까지
 const lastY = planHz.years[planHz.years.length - 1];
 const withHz = (inp) => { inp.timeline = { ...inp.timeline, end: planHz.end }; return inp; };
 function runPlan(name, extra = {}) {
   const plan = base.plans[name];
   const { newOnly, all, mnFull, ...rest } = extra; // 유학 몫 견주기: newOnly = 둘째 나라부터의 몫, all = 모든 나라의 몫
-  const MN = mnFull ? {} : (base.targets.mnStart || {}); // [11-18 밤 유호님] 몽골도 처음부터 직영 4실 80%(mnStart = {}). mnFull은 같은 판을 관문 비교에 쓴다
+  const MN = mnFull ? { labRamp: false } : (base.targets.mnStart || {}); // [11-18 밤 유호님] 몽골도 처음부터 직영 4실 80%(mnStart = {}). mnFull은 같은 판을 관문 비교에 쓴다
   const runs = plan.countries.map((c, k) => { const ps = all ?? (k > 0 && newOnly != null ? newOnly : FILL.pathShare); return { c, res: run(withHz(k === 0 ? clone(base) : countryInp(c)), '기본', { ...FILL, ...(k === 0 ? MN : {}), ...rest, pathShare: ps, countryOnly: k > 0, plan }) }; });
   const rows = runs[0].res.rows.map((r0, i) => {
     const parts = runs.map(({ c, res }) => ({ c, r: res.rows[i] }));

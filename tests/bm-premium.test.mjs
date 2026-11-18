@@ -163,7 +163,7 @@ test('break-even pays the one-times bonus tier and revenue-linked field bonus be
 // 운영 계획(보수적)의 몽골 판을 2030-12까지 돌린다. model.mjs의 runPlan이 몽골에 쓰는 것과 같은 선택이다
 const mnPlanRun = () => {
   const inp = structuredClone(base); inp.timeline = { ...inp.timeline, end: inp.planHorizon.end };
-  const opts = { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, pathShare: inp.targets.pathShare, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans['보수적'] };
+  const opts = { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, labRamp: !!inp.targets.labRamp, pathShare: inp.targets.pathShare, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans['보수적'] };
   return { inp, r: run(inp, '기본', opts) };
 };
 const near = (actual, expected, tol = 1, what = '') => assert.ok(Math.abs(actual - expected) <= tol, `${what} ${actual} != ${expected}`);
@@ -220,7 +220,7 @@ function addMonth(label, n) { let [y, m] = label.split('-').map(Number); m += n;
 test('11-18 founder lives in Vietnam and Uzbekistan in the plans that open them: Korean teacher from the first move, founder hours and moving costs', () => {
   const runFor = (planName, patch) => {
     const inp = structuredClone(base); inp.timeline = { ...inp.timeline, end: inp.planHorizon.end }; if (patch) patch(inp);
-    const opts = { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, pathShare: inp.targets.pathShare, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans[planName] };
+    const opts = { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, labRamp: !!inp.targets.labRamp, pathShare: inp.targets.pathShare, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans[planName] };
     return { inp, r: run(inp, '기본', opts) };
   };
   const { inp, r } = runFor('성공적');
@@ -352,3 +352,28 @@ test('11-09 direction base: automation stays out of the base run but its prices 
   // [11-14 유호님 「여기서 다 바꿔」] 온라인 반을 첫 기수부터 강사가 맡아(대표 월 30시간이 빠짐) 2027-03은 상한 아래로 내려왔다
   assert.deepEqual(R.recalc1110.heavyDrop.map((x) => x.m), ['2027-01']);
 });
+
+// [11-19 유호님 「차오르게 바꿔」] 개원 달부터 정원의 80%가 다닌다고 보지 않는다. 시장에서 오는 등록대로 차오르다가 80%에서 멈추고, 차오르는 동안은 학생 수만큼만 반을 연다
+test('11-19 classroom ramps up from opening to 80% of the 4-room capacity', () => {
+  const { inp, r } = mnPlanRun();
+  assert.equal(inp.targets.labRamp, true);
+  const open = r.rows.find((x) => x.m === inp.lab.openMonth);
+  const target = inp.targets.labFill * open.lab.cap;
+  assert.ok(open.lab.cap > 280 && open.lab.cap < 290, `정원 약 284명(${open.lab.cap})`);
+  assert.ok(open.lab.students < 0.5 * target, `개원 달 학생 ${open.lab.students}은 목표 ${target}의 절반 아래`);
+  const full = inp.lab.stages.v23.rooms * (inp.lab.stages.v23.weekdaySlotsPerRoom + inp.lab.stages.v23.satSlotsPerRoom);
+  let prev = 0; let reached = null;
+  for (const x of r.rows.filter((q) => q.lab.stage === 'v23')) {
+    assert.ok(x.lab.students <= inp.targets.labFill * x.lab.cap + 1e-6, `${x.m} 학생이 정원의 80%를 넘지 않는다`);
+    assert.ok(x.lab.classes <= full, `${x.m} 반 수 ${x.lab.classes} ≤ ${full}`);
+    if (!reached && x.lab.students >= 0.999 * inp.targets.labFill * x.lab.cap) reached = x.m;
+    prev = x.lab.students;
+  }
+  assert.ok(reached, '기간 안에 정원의 80%에 닿는다');
+  const early = r.rows.find((x) => x.m === '2027-10');
+  assert.ok(early.lab.classes < full, '차오르는 동안은 시간표의 반을 다 열지 않는다');
+  // 관문 비교(mnFull)는 전처럼 처음부터 80%다
+  const fullRun = run(structuredClone(inp), '기본', { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, pathShare: inp.targets.pathShare, countryOnly: false, plan: inp.plans['보수적'] });
+  near(fullRun.rows.find((x) => x.m === inp.lab.openMonth).lab.students, target, 1e-6, '차오름 없이 돌리면 개원 달부터 80%');
+});
+
