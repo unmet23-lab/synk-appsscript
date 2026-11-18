@@ -12,7 +12,13 @@
  *     ② 조회가 **지금** 그 계정 평소값의 1.5배 이상 — 평소값 = 최근 30일에 나간 그 계정의 다른 글들의 같은 나이 조회 가운데값(다섯 글 이상일 때).
  *        글이 모자라면 장부의 판정 때 배수(multiple.value)를 쓴다. 판정 때 배수만 보면 계정이 작던 때의 300회짜리 편이 「3배」로 걸린다(11-13 첫 실행).
  *     ③ 저장 + 공유가 1 이상 — 그 숫자를 적는 계정만(둘 다 안 적히는 계정은 이 칸을 보지 않는다).
- * 갈래: 올릴 만함 · 기다림(72시간 · 7일 판정이 아직 없다) · 못 미침 · 이미 원본.
+ * 갈래: 올릴 만함 · 보충 후보 · 기다림(72시간 · 7일 판정이 아직 없다) · 못 미침 · 이미 원본.
+ * 보충 후보(11-18 유호님 「39곳 다 채워」 · Claude 판단 · Fable 5.2 반대 검수를 받아 고친 선): 최근 14일에 나간 그 언어 이야기 편끼리 견준다.
+ *   씨앗 계정 하나(A)에서 가장 익은 판정(7일, 7일 무리가 모자라면 72시간)의 조회가 같은 나이 최근 이야기 편 가운데 위 1/3(순위 ÷ 무리 ≤ 1/3)이고
+ *   ③(저장 + 공유 1)도 넘으며, 다른 씨앗 계정 하나(B)에서 같은 식으로 가운데값 이상이다. 견줄 다른 편이 여섯 개 안 되면 그 계정은 재지 않는다.
+ *   「올릴 만함」이 모자랄 때만 쓴다 — 판본할일 · 돌림표에 「돌 원본이 없는 계정」이 있을 때, 모자란 편수만큼 위(순위가 높은 편)부터.
+ *   배수(평소값의 몇 배)로 재지 않는 까닭: 30일 창에 계정이 작던 10월 글이 남아 평소값이 낮아지면 배수가 부풀고(11-18 벗어요 인스타 7일
+ *   판정 때 1.32배 → 지금 1.88배), 그 글이 창에서 빠지면 저절로 꺼진다. 퀴즈 · 노래 · TOPIK 글도 견줄 무리에 넣지 않는다.
  * 판정 줄은 같은 글 · 같은 나이로 여러 번 적힌다 — 자리가 적힌 가장 늦은 줄을 쓴다(나중 줄이 견줄 글이 모자라 빈 값이면 앞 줄).
  * 올릴 만한 편을 실제로 올리는 차례는 docs/마케팅/기획장부/제작절차.md 「새 원본 올리기」.
  * 시험: node --test tests/원본후보.test.js
@@ -21,7 +27,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const REPO = path.resolve(__dirname, '..');
-const 선 = Object.freeze({ 나이: ['72h', '7d'], 자리: 'top25', 배수: 1.5, 저장공유: 1, 평소일수: 30, 평소글: 5 });
+const 선 = Object.freeze({ 나이: ['72h', '7d'], 자리: 'top25', 배수: 1.5, 저장공유: 1, 평소일수: 30, 평소글: 5, 보충일수: 14, 보충글: 6 });
 const 나이순 = { '24h': 0, '72h': 1, '7d': 2 };
 const 나이말 = { '24h': '24시간', '72h': '72시간', '7d': '7일' };
 const 자리말 = { top25: '상위', middle: '가운데', bottom25: '하위' };
@@ -141,32 +147,96 @@ function 계정칸(계정, rows, 표) {
   return { 계정, ...보일, 넘음: 잰.some((x) => x.넘음), 익음: 잰.some((x) => 선.나이.includes(x.나이)) };
 }
 
+// 그 언어 이야기 편 폴더인가(편들()이 고르는 것과 같은 꼴 — 퀴즈 · 노래 · TOPIK과 다른 언어는 뺀다)
+const 이야기편 = (folder, 언어) => typeof folder === 'string' && new RegExp(`^LAB_.+_${언어}_\\d{8}$`).test(folder) && !/^LAB_(퀴즈|노래)_|TOPIK/.test(folder);
+
+// 보충 선의 견줄 무리: 계정 · 나이마다 최근 보충일수 안에 나간 그 언어 이야기 편의 조회(편마다 가장 늦은 줄)
+// 글ID편: 게시물 ID → 편 폴더 이름(편들()의 게시결과 판) — 장부 줄에 폴더가 비어 있어도 그 편으로 센다(후보()와 같은 잇기)
+function 최근이야기표(장부, 언어, 지금, 글ID편 = new Map()) {
+  const 글 = new Map();
+  const 폴더 = (r) => r.folder || 글ID편.get(String(r.post || '').split(':').pop()) || null;
+  for (const r of 장부) {
+    if (!선.나이.includes(r.point) || !r.post || 조회(r) == null || !이야기편(폴더(r), 언어)) continue;
+    const k = `${r.account}|${r.point}|${r.post}`;
+    const had = 글.get(k);
+    if (!had || String(r.at) > String(had.at)) 글.set(k, r);
+  }
+  const 부터 = 지금 - 선.보충일수 * 86400e3;
+  const 표 = new Map();
+  for (const r of 글.values()) {
+    const 나간때 = Date.parse(r.publishedAt || r.at);
+    if (!(나간때 >= 부터 && 나간때 <= 지금)) continue;
+    const k = `${r.account}|${r.point}`;
+    if (!표.has(k)) 표.set(k, []);
+    표.get(k).push({ post: r.post, 조회: 조회(r) });
+  }
+  return 표;
+}
+
+// 한 계정의 보충 선 자리: 가장 익은 판정(7일 > 72시간)으로 최근 이야기 편 무리 안의 순위를 잰다.
+// 7일 무리는 7~14일 전에 나간 편뿐이라 여섯 언저리다 — 견줄 다른 편이 모자라면 72시간 판정으로 내려가 잰다(Fable 5.2 다시 검수 P2).
+function 최근자리(rows, 표) {
+  const 판정들 = ['7d', '72h'].map((p) => 쓸줄(rows.filter((x) => x.point === p))).filter((r) => r && 조회(r) != null);
+  if (!판정들.length) return null;
+  const 남의 = (r) => (표.get(`${r.account}|${r.point}`) || []).filter((x) => x.post !== r.post).map((x) => x.조회).sort((a, b) => a - b);
+  const 익은 = 판정들.find((r) => 남의(r).length >= 선.보충글) || 판정들[0];
+  const v = 조회(익은);
+  const 남 = 남의(익은);
+  if (남.length < 선.보충글) return { 나이: 익은.point, 조회: v, 순위: null, 무리: 남.length + 1, 위삼분: false, 가운데이상: false };
+  const 순위 = 1 + 남.filter((x) => x > v).length;
+  const 무리 = 남.length + 1;
+  const 가운데 = 남.length % 2 ? 남[(남.length - 1) / 2] : (남[남.length / 2 - 1] + 남[남.length / 2]) / 2;
+  const m = 익은.metrics || {};
+  const 적힘 = Number.isFinite(m.saves) || Number.isFinite(m.shares);
+  const 저장공유 = 적힘 ? (Number(m.saves) || 0) + (Number(m.shares) || 0) : null;
+  return { 나이: 익은.point, 조회: v, 순위, 무리, 위삼분: 순위 / 무리 <= 1 / 3 && (!적힘 || 저장공유 >= 선.저장공유), 가운데이상: v >= 가운데 };
+}
+
+// 보충 선: 위삼분인 계정 A와, A가 아닌 가운데이상 계정 B가 있다. A는 순위 몫(순위 ÷ 무리)이 가장 작은 계정부터 고른다
+function 보충판정(자리들) {
+  const A = 자리들.filter((c) => c.자리 && c.자리.위삼분).sort((x, y) => x.자리.순위 / x.자리.무리 - y.자리.순위 / y.자리.무리);
+  for (const a of A) {
+    const b = 자리들.find((c) => c.계정 !== a.계정 && c.자리 && c.자리.가운데이상);
+    if (b) return { A: a.계정, B: b.계정 };
+  }
+  return null;
+}
+
 function 후보({ 장부, 원장, 마케팅, 언어 = 'mn', 부터 = null, 지금 = Date.now() }) {
   const 씨앗 = 씨앗계정(원장, 언어);
   const 표 = 평소표(장부, 지금);
+  const 모든편 = 편들(마케팅, 언어, 부터);
+  const 글ID편 = new Map();
+  for (const e of 모든편) for (const id of e.글ID) 글ID편.set(id, e.편);
+  const 최근표 = 최근이야기표(장부, 언어, 지금, 글ID편);
   const 줄 = [];
-  for (const e of 편들(마케팅, 언어, 부터)) {
+  for (const e of 모든편) {
     if (e.돌림형식 && e.돌림형식 !== '이야기') continue; // 노래 · 퀴즈 원본은 이 표의 일이 아니다
     const rows = 장부.filter((r) => r.folder === e.편 || (!r.folder && [...e.글ID].some((id) => String(r.post || '').endsWith(`:${id}`))));
     const 계정 = 씨앗.map((a) => 계정칸(a, rows.filter((r) => r.account === a), 표)).filter(Boolean);
     const 씨앗판 = e.판.filter((p) => p && 씨앗.includes(p.계정) && p.시각).map((p) => p.시각).sort();
     const 넘은계정 = 계정.filter((c) => c.넘음).map((c) => c.계정);
+    for (const c of 계정) c.최근 = 최근자리(rows.filter((r) => r.account === c.계정), 최근표);
+    const 보충 = 보충판정(계정.map((c) => ({ 계정: c.계정, 자리: c.최근 })));
     let 갈래;
     if (e.돌림형식 === '이야기') 갈래 = '이미 원본';
     else if (넘은계정.length) 갈래 = '올릴 만함';
+    else if (보충) 갈래 = '보충 후보';
     else if (계정.some((c) => c.익음)) 갈래 = '못 미침';
     else 갈래 = '기다림';
     let 다음 = null;
-    if (갈래 === '올릴 만함') {
+    if (갈래 === '올릴 만함' || 갈래 === '보충 후보') {
+      const 때 = 갈래 === '보충 후보' ? '「올릴 만함」이 모자랄 때(돌 원본이 없는 계정이 있을 때) 모자란 편수만큼 위에서부터 — ' : '';
       if (!e.영상틀) 다음 = '영상 틀(remotion)이 없는 편 — 올릴 수 없다';
-      else if (!e.틀) 다음 = '판본 틀로 옮긴다 — 제작 절차 「새 원본 올리기」';
-      else 다음 = `node tools/판본글잇기.js 돌림 "docs/마케팅/${e.편}" 전부 --형식 이야기 --쓸날 <날짜>`;
+      else if (!e.틀) 다음 = `${때}판본 틀로 옮긴다 — 제작 절차 「새 원본 올리기」`;
+      else 다음 = `${때}node tools/판본글잇기.js 돌림 "docs/마케팅/${e.편}" 전부 --형식 이야기 --쓸날 <날짜>`;
     }
-    줄.push({ 편: e.편, 갈래, 틀: e.틀, 쓸날: e.쓸날, 맹검: e.맹검, 씨앗첫판: 씨앗판[0] || null, 계정, 넘은계정, 다음 });
+    줄.push({ 편: e.편, 갈래, 틀: e.틀, 쓸날: e.쓸날, 맹검: e.맹검, 씨앗첫판: 씨앗판[0] || null, 계정, 넘은계정, 보충, 다음 });
   }
-  const 차례 = { '올릴 만함': 0, '기다림': 1, '못 미침': 2, '이미 원본': 3 };
+  const 차례 = { '올릴 만함': 0, '보충 후보': 1, '기다림': 2, '못 미침': 3, '이미 원본': 4 };
   const 가장큰배수 = (r) => Math.max(0, ...r.계정.filter((c) => c.넘음).map((c) => c.배수 || 0));
-  줄.sort((a, b) => 차례[a.갈래] - 차례[b.갈래] || b.넘은계정.length - a.넘은계정.length || 가장큰배수(b) - 가장큰배수(a) || a.편.slice(-8).localeCompare(b.편.slice(-8)));
+  const 보충몫 = (r) => { const c = r.보충 && r.계정.find((x) => x.계정 === r.보충.A); return c ? c.최근.순위 / c.최근.무리 : 1; };
+  줄.sort((a, b) => 차례[a.갈래] - 차례[b.갈래] || b.넘은계정.length - a.넘은계정.length || 가장큰배수(b) - 가장큰배수(a) || 보충몫(a) - 보충몫(b) || a.편.slice(-8).localeCompare(b.편.slice(-8)));
   return { 선: { ...선 }, 언어, 씨앗, 줄 };
 }
 
@@ -176,22 +246,31 @@ function 계정글(c) {
   const 덧 = [c.배수 == null ? null : `${c.배수}배${c.배수근거 === '판정 때' ? '*' : ''}`, c.자리 ? 자리말[c.자리] || c.자리 : null].filter(Boolean).join(' · ');
   return `${이름} ${나이말[c.나이] || c.나이} ${c.조회 == null ? '?' : 천(c.조회)}회${덧 ? `(${덧})` : ''}${c.넘음 ? ' ✓' : ''}`;
 }
+// 보충 후보 줄 — 최근 이야기 편 무리 안의 순위(A = 위 1/3 △, B = 가운데 이상 ○)
+function 보충글(x) {
+  return x.계정.filter((c) => c.최근 && c.최근.순위 != null).map((c) => {
+    const 표시 = x.보충 && c.계정 === x.보충.A ? ' △' : x.보충 && c.계정 === x.보충.B ? ' ○' : '';
+    return `${c.계정.replace(/^lab-/, '')} ${나이말[c.최근.나이]} ${천(c.최근.조회)}회 ${c.최근.순위}/${c.최근.무리}위${표시}`;
+  }).join(' · ');
+}
 
 function 보이기(r) {
   const out = [];
   out.push(`돌림 원본 후보(${r.언어}) — 씨앗 계정 ${r.씨앗.length}곳의 ${r.선.나이.map((k) => 나이말[k]).join(' · ')} 판정에서 조회 상위 25% + 지금 그 계정 평소의 ${r.선.배수}배 이상(✓)인 계정이 하나라도 있는 편`);
-  for (const 갈래 of ['올릴 만함', '기다림', '못 미침', '이미 원본']) {
+  for (const 갈래 of ['올릴 만함', '보충 후보', '기다림', '못 미침', '이미 원본']) {
     const rows = r.줄.filter((x) => x.갈래 === 갈래);
     out.push('');
     out.push(`${갈래} ${rows.length}`);
     for (const x of rows) {
       const 숫자 = x.계정.length ? x.계정.map(계정글).join(' · ') : (x.씨앗첫판 ? `판정 전 · 씨앗 첫 판 ${String(x.씨앗첫판).slice(0, 16).replace('T', ' ')}` : '씨앗 계정에 나간 기록 없음');
       out.push(`  ${x.편} — ${숫자}${갈래 === '이미 원본' ? ` | 쓸 날 ${x.쓸날 || '-'}` : ''}`);
+      if (갈래 === '보충 후보') out.push(`      최근 ${r.선.보충일수}일 이야기 편 순위: ${보충글(x)}`);
       if (x.다음) out.push(`      다음: ${x.다음}`);
     }
   }
   out.push('');
   out.push(`배수 = 조회 ÷ 지금 그 계정 평소값(최근 ${r.선.평소일수}일에 나간 다른 글들의 같은 나이 가운데값). 글이 ${r.선.평소글}개가 안 되면 판정 때 배수를 쓰고 *를 붙인다. 자리는 판정 때 그 계정 안 자리다.`);
+  out.push(`보충 후보 = 최근 ${r.선.보충일수}일 이야기 편끼리 가장 익은 판정으로 견줘 한 씨앗 계정에서 위 1/3(△ · 저장 + 공유 ${r.선.저장공유} 이상)이고 다른 씨앗 계정에서 가운데 이상(○)인 편. 「올릴 만함」이 모자랄 때(돌 원본이 없는 계정이 있을 때) 모자란 편수만큼 위에서부터 올린다(11-18 「39곳 다 채워」).`);
   return out.join('\n');
 }
 
@@ -216,5 +295,5 @@ function main(argv) {
   return 0;
 }
 
-module.exports = { 후보, 재기, 쓸줄, 평소표, 평소값, 씨앗계정, 장부읽기, 보이기, 선 };
+module.exports = { 후보, 재기, 쓸줄, 평소표, 평소값, 최근이야기표, 최근자리, 보충판정, 씨앗계정, 장부읽기, 보이기, 선 };
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
