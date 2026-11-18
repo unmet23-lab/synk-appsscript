@@ -128,7 +128,7 @@ def 굽기전(판목록, 무시까닭=None, 컷표=None):
             읽은표[경로] = seq
         return 경로, 읽은표[경로]
 
-    본, 본id, 판의표 = set(), {}, {}
+    본, 본id, 판의표, 관문묶음 = set(), {}, {}, {}
     for pack, b in 판목록:
         pack = os.path.abspath(pack)
         판id, 폴더 = str(b["id"]), str(b["폴더"])
@@ -159,6 +159,15 @@ def 굽기전(판목록, 무시까닭=None, 컷표=None):
                 hits += [(등급, f"(빛) {말}") for 등급, 말 in 검사.빛대조(seq, 정보["컷들"], 글)]
         for 등급, 말 in hits:
             줄.append((등급, 판id, 말))
+        if seq and 검사.틀둘(seq) and not 정보["소리만"] and not 정보["프리비즈"]:
+            묶음 = 관문묶음.setdefault(pack, [0, []]); 묶음[0] += 1; 묶음[1] += list(정보["컷들"] or [])
+    # 11-18 7번 「사랑 한 칸」 — 광고 · 공모전 · 포트폴리오 편은 판 셋부터 굽기 전 검수가 「그대로」로 본 컷만 낸다(컷연속성검사.관문결과검사)
+    for pack, (판수, 컷들) in 관문묶음.items():
+        경로, seq = 판의표.get(pack, (None, None))
+        if not (경로 and seq and hasattr(검사, "관문결과검사")): continue
+        for 등급, 말 in 검사.관문결과검사(seq, 경로, 컷들, 판수):
+            줄.append((등급, "컷표 관문", 말))
+            if 등급 == "걸림": 걸린표.add(경로)
     표시 = {"걸림": "✗", "확인": "?", "주의": "~", "알림": "·"}
     for 등급, 어디, 말 in 줄:
         print(f"  {표시.get(등급, '·')} {어디}: {말}")
