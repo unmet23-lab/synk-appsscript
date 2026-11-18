@@ -211,6 +211,18 @@ export function clearingOf(storage, owner) {
     return null;
   }
 }
+function clearingOwners(storage) {
+  const out = [];
+  try {
+    for (let index = 0; index < storage.length; index += 1) {
+      const name = storage.key(index);
+      if (typeof name === 'string' && name.startsWith(CLEARING_MARK)) out.push(name.slice(CLEARING_MARK.length));
+    }
+  } catch {
+    return [];
+  }
+  return out;
+}
 function writeClearing(storage, owner, mark) {
   try {
     if (!mark) storage?.removeItem?.(CLEARING_MARK + owner);
@@ -1069,6 +1081,8 @@ export function createAtlasNext({
   // at: 판을 정한 세대(planNow) — 앞 세대의 판이면 열지 않는다(판을 다시 정한 뒤 늦게 온 판으로 연습을 열지 않게, GPT 끝 판 둘째 C).
   function coachFor(plan, banks, gameId = 'world-practice', at = generation) {
     if (disposed || at !== generation) return Promise.resolve(null);
+    // 손님 입구는 판을 정하지 않는다 — 손님 코치를 처음 열 때 비우기가 확인된 계정의 남은 걸음을 뒤에서 건다(세대마다 한 번, F7).
+    if (!account && plan.path === 'guest') void settleClearing(plan, at);
     const key = `${plan.path}:${plan.revision ?? 0}:${gameId}:${banks.join(',')}`;
     if (!coaches.has(key)) {
       const opening = open(banks, plan, at, gameId).then(made => {
@@ -1155,11 +1169,19 @@ export function createAtlasNext({
   // ── 연습 기록 비우기(4-5 — 단계4_계획 §22-4 · 22-1의 4) ──────────────────────────────────────────
   // 옛 엔진의 손님 로그 — 엔진 reset이 받는 꼴({ read, clear }). 비우는 문은 셸이 준 옛 엔진 문이다. 엔진이 넘기는 { check }(계정 비우기의
   // 4b — GA1)를 그대로 넘긴다.
-  const legacyPort = () => ({
+  // wait: 옛 쓰기 임대를 기다릴 한도(없으면 문의 기본). 손님 저장소의 남은 걸음은 0 — 다른 창이 쥐었으면 곧바로 busy로 둔다(F7).
+  const legacyPort = ({ wait = null } = {}) => ({
     read: store ? legacyReader(store) : () => null,
     // 옛 엔진의 비우는 문에 옛 로그 읽개를 함께 넘긴다 — check가 오면(4b) 문이 쓰기 임대를 쥔 채 이 읽개로 다시 읽어 판단한다(4-5 코드 검수 GPT GA1).
     ...(typeof oldEngine?.clear === 'function'
-      ? { clear: options => oldEngine.clear({ ...(options ?? {}), read: store ? legacyReader(store) : () => null }) }
+      ? {
+          clear: options =>
+            oldEngine.clear({
+              ...(options ?? {}),
+              read: store ? legacyReader(store) : () => null,
+              ...(wait == null ? {} : { wait }),
+            }),
+        }
       : {}),
   });
   // 같은 계정의 마지막 비우기(서버 — trail 길의 읽기). { revision, at } · null(비운 적 없음) · undefined(못 읽음 · 읽기가 없는 줄 · 꼴이 틀림).
@@ -1190,14 +1212,54 @@ export function createAtlasNext({
     clearMonthAnswer(store, owner);
   }
   // 「비우는 중」 표지 맞추기(22-4 「실패와 다시 누르기」) — 판을 다시 정할 때(planNow) 새 판의 코치를 열기 전에. 세대마다 한 번만 돈다(면
-  // 여럿이 함께 물어도). 못 맞추면 표지를 그대로 두고 다음 다시 정하기에 맡긴다.
+  // 여럿이 함께 물어도). 못 맞추면 표지를 그대로 두고 다음 다시 정하기에 맡긴다. 판 정하기가 기다리는 것은 본인 값 옮기기뿐이다 — 손님
+  // 저장소의 남은 걸음(넷째 걸음 · 4b)은 계정의 새 판 코치가 보는 값을 바꾸지 않아 뒤에서 하고(slot.guest), 옛 쓰기 임대도 기다리지 않는다
+  // (4-5 Opus 대체 설계 검토 F7 · 설계 주인 11-18). 로그아웃한 기기의 손님 입구는 비우기가 확인된 계정의 남은 걸음을 마저 한다.
   let settling = null;
   function settleClearing(plan, at) {
-    if (!account || !store || !NEXT_PATHS.has(plan.path)) return null;
-    if (settling?.at !== at) settling = { at, done: settleOnce(plan, at).catch(() => {}) };
+    if (!store || !(account ? NEXT_PATHS.has(plan.path) : plan.path === 'guest')) return null;
+    if (settling?.at !== at) {
+      // 자리를 먼저 적는다 — 손님 걸음이 여는 손님 코치(coachFor)가 같은 세대의 맞추기를 다시 부르면 이 자리를 본다.
+      const slot = { at, guest: null, done: null };
+      settling = slot;
+      slot.done = settleOnce(plan, at, slot).catch(() => {});
+    }
     return settling.done;
   }
-  async function settleOnce(plan, at) {
+  // 손님 저장소의 남은 걸음 하나(whose 계정의 표지 mark). 그사이 표지가 바뀌었으면(새 비우기 · 다른 탭이 마저 함) 덮지 않는다.
+  async function guestSteps(plan, at, whose, mark) {
+    const made = await coachFor(plan, MOVE_BANKS, 'world-practice', at);
+    if (!made || disposed || at !== generation) return;
+    // 넷째 걸음은 그 비우기가 올린 새 판(표지의 판)보다 앞선 판의 옮김 표지만 센다 — 비운 뒤 그 계정으로 새로 옮긴 사건은 둔다(4-5 Opus 대체
+    // 설계 검토 F5). 손님 코치는 어느 계정의 걸음인지 받는다.
+    const done = await made.reset({
+      legacy: legacyPort({ wait: 0 }),
+      settle: mark.left,
+      revision: mark.revision,
+      ...(account ? {} : { account: whose }),
+    });
+    if (!done?.ok) return;
+    const now = clearingOf(store, whose);
+    if (!now || now.revision !== mark.revision || now.left !== mark.left) return;
+    const left = leftOf(done.guest, mark.left);
+    writeClearing(store, whose, left ? { ...mark, left } : null);
+  }
+  async function settleOnce(plan, at, slot) {
+    if (!account) {
+      // 손님 입구 — 비우기가 확인된 뒤 남은 걸음(left)이 있는 계정마다 차례로 뒤에서 한다. 결과를 모르는 표지(left 없음)는 손님이 그 계정의
+      // 마지막 비우기를 읽을 수 없어 그 계정이 돌아올 때까지 둔다(§6).
+      const marks = clearingOwners(store)
+        .map(whose => [whose, clearingOf(store, whose)])
+        .filter(([, mark]) => mark?.left);
+      if (!marks.length) return;
+      slot.guest = (async () => {
+        for (const [whose, mark] of marks) {
+          if (disposed || at !== generation) return;
+          await guestSteps(plan, at, whose, mark).catch(() => {});
+        }
+      })();
+      return;
+    }
     let mark = clearingOf(store, owner);
     if (!mark) return;
     if (!mark.left) {
@@ -1214,16 +1276,9 @@ export function createAtlasNext({
       mark = { path: mark.path, revision: last.revision, at: Date.now(), left: 'cleared' };
       writeClearing(store, owner, mark);
     }
-    // 손님 저장소의 남은 걸음 — 비운 뒤의 판을 받은 판의 코치로 한다(아직 앞 판이면 그대로 둔다).
+    // 손님 저장소의 남은 걸음 — 비운 뒤의 판을 받은 판의 코치로 뒤에서 한다(아직 앞 판이면 그대로 둔다).
     if (disposed || at !== generation || plan.revision < mark.revision) return;
-    const made = await coachFor(plan, MOVE_BANKS, 'world-practice', at);
-    if (!made || disposed || at !== generation) return;
-    // 넷째 걸음은 그 비우기가 올린 새 판(표지의 판)보다 앞선 판의 옮김 표지만 센다 — 비운 뒤 그 계정으로 새로 옮긴 사건은 둔다(4-5 Opus 대체
-    // 설계 검토 F5).
-    const done = await made.reset({ legacy: legacyPort(), settle: mark.left, revision: mark.revision });
-    if (!done?.ok) return;
-    const left = leftOf(done.guest, mark.left);
-    writeClearing(store, owner, left ? { ...mark, left } : null);
+    slot.guest = guestSteps(plan, at, owner, mark).catch(() => {});
   }
   const stopped = path => ({ ok: false, path, code: 'DISPOSED', known: true });
   // 손님(22-4 손님 1 ~ 4). 손님 코치의 reset이 손님 저장소와 옛 엔진의 손님 기록을 비운다. 손님 판 기록 열쇠를 지우고 같은 문서의 손님 코치를
@@ -1252,7 +1307,7 @@ export function createAtlasNext({
     return { ok: true, path: 'guest', partial };
   }
   // 계정(22-4 올리는 계정 · 기기 길 계정 — 길 하나). 옛 엔진의 올리기 대기열을 먼저 올리고, 「비우는 중」 표지를 적은 뒤 판의 코치로 비운다.
-  async function clearAccount() {
+  async function clearAccount({ allowSkipped = 0 } = {}) {
     const now = await planNow();
     if (disposed) return stopped('account');
     if (!now) return { ok: false, path: 'account', code: 'PATH_CHANGING', known: true };
@@ -1285,6 +1340,9 @@ export function createAtlasNext({
     if (!made) return { ok: false, path, code: 'OPEN_FAILED', known: true };
     // 0 — 옛 엔진의 올리기 대기열을 다 올린다(올리는 계정 — 기기 길은 올리지 않는다). 못 올리면 아무것도 지우지 않는다. 코치를 연 뒤 표지를 적기
     // 바로 전에 올려 서버 비우기와의 틈을 줄인다(4-5 Opus 대체 설계 검토 F1). 새 길의 대기열은 엔진 reset이 서버 비우기 앞에서 올린다.
+    // 서버가 받지 않아 지금 보낼 수 없는 옛 사건은 막지도 버리지도 않는다 — 그 수를 엔진 reset에 넘겨 새 길의 몫과 더해 한 번에 알린다
+    // (UNSENT_SKIPPED — 4-5 Opus 대체 설계 검토 F4 · 설계 주인 11-18). 학생이 그 수를 보고 한 번 더 확인하면 셸이 allowSkipped로 다시 부른다.
+    let elsewhere = 0;
     if (path === 'upload' && typeof oldEngine?.flush === 'function') {
       let flushed;
       try {
@@ -1293,7 +1351,9 @@ export function createAtlasNext({
         flushed = false;
       }
       if (disposed) return stopped(path);
-      if (flushed === false || flushed?.ok === false)
+      if (flushed?.code === 'UNSENT_SKIPPED' && Number.isSafeInteger(flushed.skipped) && flushed.skipped > 0)
+        elsewhere = flushed.skipped;
+      else if (flushed === false || flushed?.ok === false)
         return { ok: false, path, step: 'upload', code: 'UNSENT', known: true };
     }
     // 1 — 「비우는 중」 표지를 먼저 적는다. 못 적으면 비우지 않는다(결과를 모를 때 맞출 자리가 없다).
@@ -1301,7 +1361,11 @@ export function createAtlasNext({
     if (!store || !writeClearing(store, owner, mark)) return { ok: false, path, code: 'MARK_FAILED', known: true };
     let done;
     try {
-      done = await made.reset({ legacy: legacyPort(), ...(clear ? { clear } : {}) });
+      done = await made.reset({
+        legacy: legacyPort(),
+        ...(clear ? { clear } : {}),
+        ...(path === 'upload' ? { allowSkipped, skippedElsewhere: elsewhere } : {}),
+      });
     } catch (error) {
       done = { ok: false, path, step: 'clear', code: failCode(error), known: false };
     }
@@ -1309,7 +1373,14 @@ export function createAtlasNext({
     // 올리기에서 멈췄거나 서버 비우기를 부를 수 없었다 — 서버에 닿지 않은 것이 분명하다. 표지를 지운다.
     if (done?.step === 'upload' || done?.code === 'NO_CLEAR') {
       writeClearing(store, owner, null);
-      return { ok: false, path, step: done.step, code: done.code, known: true };
+      return {
+        ok: false,
+        path,
+        step: done.step,
+        code: done.code,
+        known: true,
+        ...(Number.isSafeInteger(done.skipped) && done.skipped > 0 ? { skipped: done.skipped } : {}),
+      };
     }
     // 서버 비우기가 실패했다(409 · 닿지 못함 · 답 끊김) — 같은 계정의 마지막 비우기를 읽어 맞춘다.
     const last = await lastClearOf();
@@ -1329,7 +1400,11 @@ export function createAtlasNext({
     writeMark(store, owner, { went: true, path: mark.path, revision });
     writeClearing(store, owner, left ? { path: mark.path, revision, at: Date.now(), left } : null);
     retire('cleared');
-    if (left && !disposed) await planNow();
+    if (left && !disposed) {
+      await planNow();
+      // 판 정하기는 손님 저장소의 걸음을 기다리지 않지만, 누른 비우기는 「일부만 비움」인지 알리려고 그 걸음을 한 번 기다린다(F7).
+      await settling?.guest;
+    }
     return { ok: true, path: mark.path, revision, partial: clearingOf(store, owner) != null };
   }
   let clearing = null; // 지금 도는 비우기 — 겹쳐 누르면 같은 약속을 준다
@@ -1353,12 +1428,13 @@ export function createAtlasNext({
     //   { ok: true, path, revision?(계정 — 비운 뒤의 새 판), partial } — partial이면 「일부만 비움」(옛 손님 기록이나 손님 저장소의 걸음이
     //   남았다 — 다음 다시 정하기가 마저 한다).
     //   { ok: false, path, step?, code, known } — 아무것도 비웠다고 하지 않는다(「지금은 비우지 못했어요」). code UNSENT는 아직 올리지 못한
-    //   기록이 있어 멈춘 것이다. known이 거짓이면 서버의 결과를 모른다 — 「비우는 중」 표지를 남겨 다음 다시 정하기가 맞춘다.
+    //   기록이 있어 멈춘 것이다. code UNSENT_SKIPPED(skipped — 서버가 받지 않아 지금 보낼 수 없는 기록 수)면 셸이 그 수를 알려 한 번 더 묻고,
+    //   확인하면 clearPractice({ allowSkipped: skipped })로 다시 부른다(F4). known이 거짓이면 서버의 결과를 모른다 — 「비우는 중」 표지를 남겨 다음 다시 정하기가 맞춘다.
     // 성공하면 이 문서의 코치를 은퇴시킨다(새 판으로 다시 연다). 셸은 계정 설정 스냅샷을 새로 받아 「내 계정」 시트를 다시 그린다. 겹쳐 누르면
     // 도는 비우기의 약속을 그대로 준다.
-    clearPractice() {
+    clearPractice(options = {}) {
       if (disposed) return Promise.resolve(stopped(account ? 'account' : 'guest'));
-      clearing ??= (account ? clearAccount() : clearGuest())
+      clearing ??= (account ? clearAccount(options) : clearGuest())
         .catch(error => ({ ok: false, path: account ? 'account' : 'guest', code: failCode(error), known: false }))
         .finally(() => {
           clearing = null;

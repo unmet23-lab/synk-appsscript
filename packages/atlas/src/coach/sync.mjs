@@ -575,6 +575,14 @@ export function createSync({
     // 이 세션에 건너뛴 것을 뺀 대기열이 남았나 — 계정 비우기의 0 걸음(단계 4 계획 §22-4)이 다 올렸는지 본다. 서버가 받지 않아 이 세션에
     // 건너뛴 사건은 비우기와 상관없이 서버에 가지 않으므로 세지 않는다.
     left: () => trail()?.unsent(1, state.skipped).length ?? 0,
+    // 이 세션에 보낼 수 없는 사건의 수 — 서버가 받지 않아 건너뛴 사건과 그것에 기댄 자식이다. 쉬는 세션(가려낸 것이 SIFT_CAP을 넘음)이면 남은
+    // 사건 모두다. 계정 비우기의 0 걸음이 이 수를 알려 한 번 더 묻는다(4-5 Opus 대체 설계 검토 F4 · 설계 주인 11-18).
+    held: () => {
+      const log = trail();
+      if (!log) return 0;
+      const all = log.unsent(Number.POSITIVE_INFINITY).length;
+      return state.paused ? all : all - log.unsent(Number.POSITIVE_INFINITY, state.skipped).length;
+    },
     status: () => ({
       stopped: state.stopped,
       writesOff: state.writesOff,

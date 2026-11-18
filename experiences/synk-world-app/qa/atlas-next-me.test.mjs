@@ -269,8 +269,8 @@ test('학습 화면 — 「연습 기록 비우기」는 입구의 clearPractice
   const calls = [];
   const env = setup({
     atlasNext: {
-      clearPractice: async () => {
-        calls.push('clear');
+      clearPractice: async options => {
+        calls.push(options ?? null);
         return { ok: true, path: 'upload', revision: 2, partial: false };
       },
     },
@@ -282,7 +282,13 @@ test('학습 화면 — 「연습 기록 비우기」는 입구의 clearPractice
     revision: 2,
     partial: false,
   });
-  assert.deepEqual(calls, ['clear']);
+  assert.deepEqual(await env.education.clearPractice({ allowSkipped: 3 }), {
+    ok: true,
+    path: 'upload',
+    revision: 2,
+    partial: false,
+  });
+  assert.deepEqual(calls, [null, { allowSkipped: 3 }], '학생이 확인한 수를 그대로 넘긴다(F4)');
   const bare = setup({ atlasNext: {} });
   await bare.ready();
   assert.equal(await bare.education.clearPractice(), null);
@@ -430,6 +436,32 @@ test('옛 엔진의 올리는 문 — 대기열 0은 동기화가 막힘 · 쉼 
   assert.equal(await doors.flush(), true, '쉬는 상태의 빈 대기열이다');
 });
 
+test('옛 엔진의 올리는 문 — 서버가 사건을 받지 않아 옛 동기화가 막혔으면 그 수를 UNSENT_SKIPPED로 알린다. 계정 · 인증 까닭의 막힘이나 막히지 않은 오류는 거짓이다(4-5 Opus 대체 설계 검토 F4)', async () => {
+  let state = null;
+  const doors = oldEngineDoors({ openGame: () => assert.fail('열지 않는다'), host: () => ({ retry: async () => state }) });
+  state = { phase: 'blocked', code: 'INVALID_EVENTS', queued: 3 };
+  assert.deepEqual(await doors.flush(), { ok: false, code: 'UNSENT_SKIPPED', skipped: 3 });
+  state = { phase: 'blocked', code: 'EVENT_RUN_CONFLICT', queued: 2 };
+  assert.deepEqual(await doors.flush(), { ok: false, code: 'UNSENT_SKIPPED', skipped: 2 });
+  state = { phase: 'blocked', code: 'SESSION_REVOKED', queued: 2 };
+  assert.equal(await doors.flush(), false, '계정 까닭의 막힘은 사건 탓이 아니다');
+  state = { phase: 'offline', code: 'INVALID_EVENTS', queued: 2 };
+  assert.equal(await doors.flush(), false, '막히지 않았으면 다시 해 볼 일이다');
+  state = { phase: 'blocked', code: 'INVALID_EVENTS', queued: 0 };
+  assert.equal(await doors.flush(), false, '남은 것이 없는 막힘은 셀 것이 없다');
+});
+
+test('옛 엔진의 비우는 문 — wait 0이면 쓰기 임대를 기다리지 않고 곧바로 STORAGE_BUSY다(남은 걸음 — 4-5 Opus 대체 설계 검토 F7)', async () => {
+  const log = { events: [{ id: 'x' }] };
+  const game = fakeOldGame({ leased: false, log });
+  const doors = oldEngineDoors({ openGame: () => game, host: () => null, leaseWaitMs: 60_000 });
+  const started = Date.now();
+  await assert.rejects(doors.clear({ wait: 0 }), error => error.code === 'STORAGE_BUSY');
+  assert.ok(Date.now() - started < 1000, '기다리지 않았다');
+  assert.equal(game.resets, 0);
+  assert.equal(game.disposed, true);
+});
+
 // ── 앱의 배선(app-shell.mjs — 브라우저 셸이라 원문으로 본다, atlas-next-mock-shell.test.mjs와 같은 꼴). 변형 시험은 깬 앱 원문을 SYNK_APP_SHELL_SOURCE로 넘긴다 ──
 
 test('앱의 배선 — 입구에 옛 엔진의 두 문을 넘기고, 감싸기가 clearPractice를 잇고, 「내 계정」 시트가 응답 목록 뒤에 「나」 칸을 그린다. 비우기는 한 번 더 묻고 결과를 알린다', () => {
@@ -450,7 +482,13 @@ test('앱의 배선 — 입구에 옛 엔진의 두 문을 넘기고, 감싸기�
   );
   assert.match(
     source,
-    /async clearPractice\(\)\{if\(disposed\)return null;const entry=await load\(\);return disposed\?null:entry\.clearPractice\(\);\}/,
+    /async clearPractice\(options\)\{if\(disposed\)return null;const entry=await load\(\);return disposed\?null:entry\.clearPractice\(options\);\}/,
+    '감싸기가 학생이 확인한 수(allowSkipped)를 입구에 넘긴다(F4)',
+  );
+  assert.match(
+    source,
+    /if\(result\?\.code==='UNSENT_SKIPPED'&&Number\.isSafeInteger\(result\.skipped\)&&result\.skipped>0\)\{\r?\n  if\(!window\.confirm\(meText\('me\.clearSkippedAsk',\{n:result\.skipped\}\)\)\)return;\r?\n  try\{result=await life\.education\?\.clearPractice\?\.\(\{allowSkipped:result\.skipped\}\);\}/,
+    '지금 보낼 수 없는 기록이 있으면 그 수를 알리고 한 번 더 물어, 확인하면 그 수로 다시 부른다(4-5 Opus 대체 설계 검토 F4)',
   );
   assert.match(source, /\$\{responsesSection\(\)\}\$\{meSection\(true\)\}<div id="world-classroom-lessons">/);
   assert.match(source, /mountResponses\(\);refreshResponses\(\);mountMe\(\);/);

@@ -102,6 +102,34 @@ export function firstLedgerCells(events) {
   return { at: first.at, skills: [...skills].map(([id, cells]) => ({ id, cells })) };
 }
 
+// 처음 옮긴 장부의 칸(record.carried 가운데 after가 없고 거두지 않은 맨 앞 사건의 cells) — 4b가 옛 장부의 칸이 그 뒤로 자랐는지 견주는
+// 바탕이다(4-5 Opus 대체 설계 검토 F6). 그런 사건이 없으면 null.
+export function firstCarriedCells(events) {
+  const withdrawn = new Set(
+    events.filter(event => event.type === EVENT_TYPES.excluded).map(event => event.targetId),
+  );
+  const head = events.find(
+    event => event.type === EVENT_TYPES.carried && !withdrawn.has(event.id) && event.after === null,
+  );
+  return Array.isArray(head?.cells) ? head.cells : null;
+}
+
+// 옛 장부의 칸이 처음 옮긴 때(baseline — 「능력 · 난도」마다 수)보다 자랐나(4-5 Opus 대체 설계 검토 F6 · 설계 주인 11-18). 접힌 답 수(혼자 낸
+// 답 + 도움받은 답)가 늘었거나 가장 늦은 답의 때가 뒤로 갔으면 자란 것이다 — 혼자 낸 답은 최근 12개만 접혀, 새 답이 들어도 수가 그대로일 수
+// 있다. 처음 옮긴 칸이 없는데 칸이 있으면 자란 것으로 본다(모르는 답을 지우지 않는다).
+export function cellsGrew(ledgerCells, baseline) {
+  const now = cellsOf(ledgerCells);
+  if (!now.length) return false;
+  if (!Array.isArray(baseline)) return true;
+  const then = new Map(baseline.map(row => [`${row.skillId}|${row.difficulty}`, row]));
+  return now.some(row => {
+    const was = then.get(`${row.skillId}|${row.difficulty}`);
+    if (!was) return true;
+    if (row.independent + row.helped > (was.independent ?? 0) + (was.helped ?? 0)) return true;
+    return row.lastAt != null && (was.lastAt == null || row.lastAt > was.lastAt);
+  });
+}
+
 // 장부 하나 → record.carried의 칸(새로 든 것이 없으면 null).
 export function carriedFields(
   ledger,
@@ -126,8 +154,9 @@ const omit = (table, known) =>
   Object.fromEntries(Object.entries(table).filter(([key]) => !known.has(key)));
 
 // 옮긴 장부 칸(단계 4 계획 §22-4 올리는 계정 4 — Fable -c FA1). 계정 비우기의 넷째 걸음이 손님 저장소에서 지운 「옮겨 오기 전 기록」의 계열 ·
-// 문항과 마지막으로 옮긴 때를 비움 표지(cleared.carried)에 { families, items, last } 꼴로 남긴다. 지운 사건(events — 거둔 장부는 없던 것)의 장부와
-// 앞 표지의 칸(before)을 합친다. 둘 다 없으면 null이다.
+// 문항과 마지막으로 옮긴 때를 비움 표지(cleared.carried)에 { families, items, last, cells } 꼴로 남긴다. 지운 사건(events — 거둔 장부는 없던
+// 것)의 장부와 앞 표지의 칸(before)을 합친다. cells는 처음 옮긴 장부의 칸이다 — 앞 표지에 있으면 그것을(가장 이른 바탕), 없으면 지운 사건의
+// 것을 남겨, 넷째 걸음 뒤에 따로 도는 4b도 칸이 자랐는지 견준다(F6). 둘 다 없으면 null이다.
 export function carriedList(events, before = null) {
   const now = carriedSoFar(events);
   if (!now.last && !before) return null;
@@ -135,6 +164,7 @@ export function carriedList(events, before = null) {
     families: [...new Set([...(before?.families ?? []), ...now.families])].sort(),
     items: [...new Set([...(before?.items ?? []), ...now.items])].sort(),
     last: later(before?.last ?? null, now.last),
+    cells: before?.cells ?? firstCarriedCells(events),
   };
 }
 
@@ -152,11 +182,14 @@ export function carriedWith(soFar, extra) {
 // 계정 비우기의 4b(단계 4 계획 §22-4 — 설계 주인 둘째 답 가) — 옛 손님 로그를 통째로 비워도 되나. 옛 로그의 사건 번호가 모두 그 계정으로 옮긴
 // 번호(moved)에 들고, 손님 저장소의 「옮겨 오기 전 기록」(events의 장부 사건)이 모두 옮긴 번호에 들고, 접힌 장부에 아직 옮기지 않은 칸이 없을
 // 때만 참이다(carried — 비움 표지의 옮긴 장부 칸도 옮긴 것으로 센다). 로그아웃 뒤의 손님 사건이 섞였거나(번호가 옮긴 번호 밖) 옮기지 않은 장부
-// 칸이 있으면 거짓이다 — 옛 로그를 건드리지 않는다(알려진 한계 — §6).
+// 칸이 있으면 거짓이다 — 옛 로그를 건드리지 않는다(알려진 한계 — §6). 장부의 칸이 처음 옮긴 때보다 자랐어도 거짓이다 — 로그인 뒤 손님이 더
+// 푼 답이 접힌 것이라 그 계정의 것이 아닐 수 있다(F6 · 설계 주인 11-18).
 export function legacyAllMoved(old, { moved, events, carried = null }) {
   const log = Array.isArray(old?.log) ? old.log : [];
   if (!log.every(event => moved.has(event?.id))) return false;
   if (events.some(event => event.type === EVENT_TYPES.carried && !moved.has(event.id)))
+    return false;
+  if (cellsGrew(old?.ledger?.cells, firstCarriedCells(events) ?? carried?.cells ?? null))
     return false;
   return carriedFields(old?.ledger, carriedWith(carriedSoFar(events), carried)) === null;
 }

@@ -176,7 +176,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 되돌리기(설계 주인 I) — tell이 돌려준 사건을 뺀다(계정이면 그 빼기도 올라간다). 뺐으면 참.
  function undoMe(eventId){if(!eventId)return false;const coachNow=meCoach();if(!coachNow)return false;try{coachNow.exclude(eventId);return true;}catch{return false;}}
  // 연습 기록 비우기(§22-4) — 입구의 clearPractice(한 번 더 묻기는 셸이 했다). 결과를 그대로 준다. 입구가 없으면 null.
- async function clearPractice(){if(stopped||typeof atlasNext?.clearPractice!=='function')return null;return atlasNext.clearPractice();}
+ async function clearPractice(options){if(stopped||typeof atlasNext?.clearPractice!=='function')return null;return atlasNext.clearPractice(options);}
  // 「내 계정」의 「내가 남긴 응답」: 세 연습(짧은 연습·짧은 진단·시험 형식)의 판 응답(30일 안·뺀 것 제외)을 새것부터. 기능이 꺼졌거나 손님이면 null.
  // 각 줄 {id, kind, value}. 시각은 보이지 않는다(설계 §3). removeResponse(id): 그 응답을 뺀다(record.excluded — 목록과 쓰임에서 빠진다).
  const RESPONSE_COACHES=[()=>readPracticeCoach(),()=>readCoach(),()=>readMockCoach()];

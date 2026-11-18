@@ -200,9 +200,29 @@ const floorOf = value =>
   value && typeof value === 'object' && Number.isFinite(value.at)
     ? { epoch: value.epoch ?? null, at: value.at }
     : null;
+// 옮긴 장부 칸의 「처음 옮긴 칸」 한 줄(F6) — 꼴이 틀린 줄은 버린다.
+const cellRow = row =>
+  row &&
+  typeof row === 'object' &&
+  typeof row.skillId === 'string' &&
+  Number.isSafeInteger(row.difficulty)
+    ? {
+        skillId: row.skillId,
+        difficulty: row.difficulty,
+        independent: Number.isSafeInteger(row.independent) ? row.independent : 0,
+        correct: Number.isSafeInteger(row.correct) ? row.correct : 0,
+        helped: Number.isSafeInteger(row.helped) ? row.helped : 0,
+        lastAt: typeof row.lastAt === 'string' ? row.lastAt : null,
+      }
+    : null;
 const carriedOfValue = value =>
   value && typeof value === 'object' && Array.isArray(value.families) && Array.isArray(value.items)
-    ? { families: [...value.families], items: [...value.items], last: value.last ?? null }
+    ? {
+        families: [...value.families],
+        items: [...value.items],
+        last: value.last ?? null,
+        cells: Array.isArray(value.cells) ? value.cells.map(cellRow).filter(Boolean) : null,
+      }
     : null;
 
 // 비움 표지(단계 4 계획 §22-4). 세대가 지금 읽은 세대보다 크면 다른 탭이 비운 것이다 — 메모리 사본을 버리고 포트를 통째로 다시 읽는다(치운
@@ -1130,6 +1150,7 @@ export function createRecord({
                   ...state.cleared.carried,
                   families: [...state.cleared.carried.families],
                   items: [...state.cleared.carried.items],
+                  cells: state.cleared.carried.cells?.map(row => ({ ...row })) ?? null,
                 }
               : null,
           }

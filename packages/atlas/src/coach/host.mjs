@@ -393,6 +393,8 @@ function createHost({
     syncStatus: () => sync.status(),
     // 아직 못 올린 내 사건이 남았나(이 세션에 서버가 받지 않아 건너뛴 것은 빼고 — 계정 비우기의 0 걸음). 손님은 0.
     unsentLeft: () => (guest ? 0 : sync.left()),
+    // 이 세션에 보낼 수 없는 내 사건 수(건너뛴 것과 그 자식 — 쉬는 세션이면 남은 것 모두). 계정 비우기의 0 걸음이 알린다(F4). 손님은 0.
+    unsentHeld: () => (guest ? 0 : sync.held()),
     // 든 사건과 저장 중인 내 쓰기(판 응답 목록 — 단계 4 계획 §22-5). 고른 응답이 저장되기 전에도 목록 · 짧은 연습 길이에 바로 선다.
     ownEvents: () => [
       ...state.trail.heldEvents(),

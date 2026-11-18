@@ -9,6 +9,7 @@ import { bank, indexOf, rng, T0 } from '../support/trail-world.mjs';
 const { openRecord } = await subject('record/log.mjs');
 const { memoryPort, GEN_KEY } = await subject('record/port.mjs');
 const { EVENT_TYPES } = await subject('record/events.mjs');
+const { cellsGrew, cellsOf } = await subject('record/carry.mjs');
 
 const items = bank(rng(11));
 const index = indexOf(items, 'index-a');
@@ -475,9 +476,71 @@ test('옮긴 장부 칸 — 넷째 걸음이 지운 「옮겨 오기 전 기록�
   const cleared = record.cleared();
   assert.equal(cleared.gen, 2);
   assert.deepEqual(cleared.legacy, floor, '이 걸음은 바닥을 새로 두지 않고 앞 것을 잇는다');
-  assert.deepEqual(cleared.carried, {
-    families: ['f.a', 'f.b'],
-    items: ['i.a'],
-    last: ledger.event.at,
-  });
+  assert.deepEqual(
+    cleared.carried,
+    {
+      families: ['f.a', 'f.b'],
+      items: ['i.a'],
+      last: ledger.event.at,
+      cells: [],
+    },
+    '처음 옮긴 장부의 칸도 남긴다 — 넷째 걸음 뒤의 4b가 칸이 자랐는지 견준다(F6)',
+  );
+});
+
+test('옛 장부의 칸이 처음 옮긴 때보다 자랐나(cellsGrew) — 접힌 답 수가 늘었거나, 수는 그대로여도(최근 12개) 가장 늦은 답의 때가 뒤로 갔으면 자란 것이다. 처음 칸을 모르는데 칸이 있으면 자란 것으로 본다(4-5 Opus 대체 설계 검토 F6)', () => {
+  const cell = answers => ({ 'ko.reading.s0|1|single-choice': { ind: answers, helped: [] } });
+  const base = cellsOf(
+    cell([
+      ['x', 10, 'correct'],
+      ['y', 20, 'correct'],
+    ]),
+  );
+  assert.equal(
+    cellsGrew(
+      cell([
+        ['x', 10, 'correct'],
+        ['y', 20, 'correct'],
+      ]),
+      base,
+    ),
+    false,
+    '그대로',
+  );
+  assert.equal(
+    cellsGrew(
+      cell([
+        ['x', 10, 'correct'],
+        ['y', 20, 'correct'],
+        ['z', 30, 'correct'],
+      ]),
+      base,
+    ),
+    true,
+    '수가 늘었다',
+  );
+  assert.equal(
+    cellsGrew(
+      cell([
+        ['y', 20, 'correct'],
+        ['z', 30, 'correct'],
+      ]),
+      base,
+    ),
+    true,
+    '수는 그대로지만 새 답이 들었다(가장 늦은 때가 뒤로)',
+  );
+  assert.equal(
+    cellsGrew(
+      {
+        ...cell([['x', 10, 'correct']]),
+        'ko.reading.s1|2|single-choice': { ind: [['w', 5, 'correct']], helped: [] },
+      },
+      cellsOf(cell([['x', 10, 'correct']])),
+    ),
+    true,
+    '새 칸',
+  );
+  assert.equal(cellsGrew(cell([['x', 10, 'correct']]), null), true, '처음 칸을 모른다');
+  assert.equal(cellsGrew({}, null), false, '칸이 없다');
 });

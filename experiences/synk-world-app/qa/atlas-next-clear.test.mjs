@@ -393,6 +393,99 @@ test('옛 대기열은 코치를 연 뒤 「비우는 중」 표지를 적기 �
   next.dispose();
 });
 
+test('지금 보낼 수 없는 옛 사건 — 옛 대기열의 몫을 엔진 reset에 넘겨 새 길의 몫과 한 번에 알리고(UNSENT_SKIPPED) 표지를 지운다. 학생이 그 수를 확인하면 다시 불러 비운다(4-5 Opus 대체 설계 검토 F4)', async () => {
+  const storage = filledStorage();
+  const line = accountLine();
+  const { opened, load } = fakeLoader(given => {
+    const skipped = 1 + (given.skippedElsewhere ?? 0);
+    return (given.allowSkipped ?? 0) >= skipped
+      ? CLEARED()
+      : { ok: false, path: 'upload', step: 'upload', code: 'UNSENT_SKIPPED', skipped, known: true };
+  });
+  const next = createAtlasNext({
+    owner: A_ID,
+    storage,
+    trail: line.trail,
+    load,
+    health: recorder(),
+    oldEngine: { flush: async () => ({ ok: false, code: 'UNSENT_SKIPPED', skipped: 3 }) },
+  });
+  assert.deepEqual(await next.clearPractice(), { ok: false, path: 'upload', step: 'upload', code: 'UNSENT_SKIPPED', skipped: 4, known: true });
+  assert.equal(markOf(storage), null, '서버에 닿지 않았으니 표지를 지운다');
+  assert.equal((await next.clearPractice({ allowSkipped: 4 })).ok, true, '확인한 수까지 비운다');
+  assert.deepEqual(
+    opened.flatMap(made => made.resets.map(given => [given.allowSkipped, given.skippedElsewhere])),
+    [[0, 3], [4, 3]],
+  );
+  next.dispose();
+});
+
+test('남은 걸음은 뒤에서 한다 — 판 정하기는 손님 저장소의 걸음을 기다리지 않고, 옛 엔진 문에 임대를 기다리지 말라고(wait 0) 넘긴다. 그사이 새 비우기가 표지를 바꿨으면 덮지 않는다(4-5 Opus 대체 설계 검토 F7 · 설계 주인 11-18)', { timeout: 20_000 }, async () => {
+  const storage = filledStorage();
+  storage.setItem(CLEARING_MARK + A_ID, JSON.stringify({ account: A_ID, path: 'upload', revision: 2, at: Date.now(), left: 'legacy' }));
+  const line = accountLine({ revision: 2 });
+  let release;
+  const held = new Promise(resolve => {
+    release = resolve;
+  });
+  const seen = [];
+  let finished = false;
+  const { load } = fakeLoader(async given => {
+    if (!given.settle) return CLEARED();
+    seen.push(given);
+    await held;
+    finished = true;
+    return { ok: true, path: 'upload', settled: given.settle, guest: { ok: true, dropped: 0, legacy: 'cleared' } };
+  });
+  const waits = [];
+  const next = createAtlasNext({
+    owner: A_ID,
+    storage,
+    trail: line.trail,
+    load,
+    health: recorder(),
+    oldEngine: {
+      flush: async () => true,
+      clear: async options => {
+        waits.push(options?.wait ?? null);
+        return 'cleared';
+      },
+    },
+  });
+  assert.ok(await next.practiceCoach(POOL), '남은 걸음을 기다리지 않고 코치를 낸다');
+  await until(() => seen.length === 1);
+  assert.equal(markOf(storage)?.left, 'legacy', '남은 걸음이 아직 돈다');
+  await seen[0].legacy.clear({});
+  assert.deepEqual(waits, [0], '옛 쓰기 임대를 기다리지 않는다');
+  // 도는 사이 새 비우기가 표지를 적었다 — 앞 걸음의 결과로 지우지 않는다.
+  const fresh = { account: A_ID, path: 'upload', revision: 3, at: Date.now() };
+  storage.setItem(CLEARING_MARK + A_ID, JSON.stringify(fresh));
+  release();
+  await until(() => finished);
+  await new Promise(resolve => setTimeout(resolve, 50));
+  assert.deepEqual(markOf(storage), fresh);
+  next.dispose();
+});
+
+test('로그아웃한 기기의 손님 입구도 비우기가 확인된 계정의 남은 걸음을 뒤에서 마저 한다 — 결과를 모르는 표지는 그 계정이 돌아올 때까지 둔다(4-5 Opus 대체 설계 검토 F7 · 설계 주인 11-18)', { timeout: 20_000 }, async () => {
+  const storage = filledStorage();
+  const B_ID = '55555555-5555-4555-8555-555555555555';
+  // 결과를 모르는 표지(B)를 먼저 둔다 — 뒤에서 차례로 도는 손님 걸음이 A에 닿았으면 B는 이미 지나갔다.
+  storage.setItem(CLEARING_MARK + B_ID, JSON.stringify({ account: B_ID, path: 'upload', revision: 1, at: Date.now() }));
+  storage.setItem(CLEARING_MARK + A_ID, JSON.stringify({ account: A_ID, path: 'upload', revision: 2, at: Date.now(), left: 'cleared' }));
+  const seen = [];
+  const { load } = fakeLoader(given => {
+    seen.push([given.settle ?? null, given.account ?? null, given.revision ?? null]);
+    return { ok: true, path: 'device', settled: given.settle, guest: { ok: true, dropped: 1, legacy: 'none' } };
+  });
+  const guest = createAtlasNext({ owner: 'guest', storage, load, health: recorder() });
+  assert.ok(await guest.practiceCoach(POOL));
+  await until(() => storage.getItem(CLEARING_MARK + A_ID) === null);
+  assert.deepEqual(seen, [['cleared', A_ID, 2]], '확인된 계정의 걸음만 — 어느 계정인지 넘긴다');
+  assert.ok(storage.getItem(CLEARING_MARK + B_ID), '결과를 모르는 표지는 둔다');
+  guest.dispose();
+});
+
 test('결과를 모르는 비우기 — 표지를 남기고 「지금은 비우지 못했어요」, 다음 다시 정하기가 같은 계정의 새 lastClear를 받은 뒤에 남은 걸음을 마저 한다', async () => {
   const storage = filledStorage();
   const line = accountLine();
@@ -417,7 +510,7 @@ test('결과를 모르는 비우기 — 표지를 남기고 「지금은 비우�
   next.redecide();
   const after = await next.practiceCoach(POOL);
   assert.equal(after.options.host.revision, 2);
-  assert.equal(markOf(storage), null, '맞춘 뒤 표지를 지운다');
+  await until(() => markOf(storage) === null); // 손님 저장소의 걸음은 뒤에서 돈다(F7)
   assertSettled(storage, { presentation: '{"support":"independent"}' });
   assert.deepEqual(
     opened.flatMap(made => made.resets.map(given => [made.options.host.revision, given.settle ?? null, given.revision ?? null])),
@@ -530,7 +623,7 @@ test('옛 손님 로그 남음 — 4b를 다른 창이 쥐었으면 표지에 �
   second = 'cleared';
   n2.redecide();
   assert.ok(await n2.practiceCoach(POOL));
-  assert.equal(markOf(s2), null, '다음 다시 정하기가 마저 하고 표지를 지운다');
+  await until(() => markOf(s2) === null); // 다음 다시 정하기가 뒤에서 마저 하고 표지를 지운다(F7)
   n2.dispose();
   // 넷째 걸음이 안 됐으면(손님 저장소를 못 엶) 넷째 걸음과 4b를 다시 한다.
   const s3 = filledStorage();

@@ -10,6 +10,7 @@ import { bankOf, clock, createCoach, fakeMap, memoryPort, STEP } from './support
 
 const { installHostMaker } = await subject('coach/host.mjs');
 const { storeName } = await subject('record/port.mjs');
+const { resetAccount } = await subject('coach/reset.mjs');
 const { createServer } = await import('../support/trail-sync.mjs');
 
 const indexOfMap = map => ({ edition: 'index-t', lookup: key => map.item(key) });
@@ -973,5 +974,208 @@ test('FA1-다 — 손님 비우기(옛 엔진 바쁨 · 바닥)가 먼저고 계
     '비우기 전 옛 사건은 돌아오지 않는다',
   );
   assert.equal((await carriedRows(w.guestPort)).length, 0, '장부도 돌아오지 않는다');
+  g2.dispose();
+});
+
+// ── 설계 주인 11-18 밤 답(4-5 Opus 대체 설계 검토 F4 · F6 · F7) ──
+const fault = (status, code) =>
+  Object.assign(new Error(code), { status, code, retryable: status >= 500 });
+
+test('올리는 계정의 0 걸음 — 서버가 받지 않아 건너뛴 사건이 있으면 막지도 버리지도 않고 그 수를 알린다(UNSENT_SKIPPED). 학생이 그 수를 확인하면 비우고, 덜 확인했거나 옛 대기열의 몫이 더해져 늘었으면 다시 묻는다(4-5 Opus 대체 설계 검토 F4)', async () => {
+  const w = world(59);
+  const a = await accountCoach(w, 'A');
+  const shown = [];
+  for (const item of w.items.slice(0, 3)) {
+    const pid = a.present(item);
+    await a.answer(pid, { correct: true, assessable: true }).stored;
+    shown.push(pid);
+    w.time.advance(STEP);
+  }
+  const bad = shown[1];
+  const post = w.route.post;
+  w.route.post = async (events, since) => {
+    if (events.some(event => event.id === bad)) throw fault(400, 'INVALID_EVENTS');
+    return post(events, since);
+  };
+  const first = await a.reset({ guestPort: w.guestPort });
+  assert.deepEqual(
+    [first.ok, first.step, first.code, first.known],
+    [false, 'upload', 'UNSENT_SKIPPED', true],
+  );
+  assert.ok(first.skipped >= 2, '건너뛴 제시와 그 답');
+  assert.ok(!w.calls.includes('clear'), '서버를 부르지 않았다');
+  const less = await a.reset({ guestPort: w.guestPort, allowSkipped: first.skipped - 1 });
+  assert.deepEqual([less.code, less.skipped], ['UNSENT_SKIPPED', first.skipped]);
+  const odd = await a.reset({ guestPort: w.guestPort, allowSkipped: 'all' });
+  assert.equal(odd.code, 'UNSENT_SKIPPED', '꼴이 틀린 확인은 확인하지 않은 것');
+  const more = await a.reset({
+    guestPort: w.guestPort,
+    allowSkipped: first.skipped,
+    skippedElsewhere: 2,
+  });
+  assert.deepEqual(
+    [more.code, more.skipped],
+    ['UNSENT_SKIPPED', first.skipped + 2],
+    '옛 대기열의 몫을 더해 한 번에 알린다',
+  );
+  assert.ok(!w.calls.includes('clear'));
+  const done = await a.reset({ guestPort: w.guestPort, allowSkipped: first.skipped });
+  assert.equal(done.ok, true, '확인한 수까지는 지운다');
+  assert.ok(w.calls.includes('clear'));
+  a.dispose();
+});
+
+test('올리는 계정의 0 걸음 — 가려낸 것이 많아 쉬는 세션이면 남은 사건 모두가 지금 보낼 수 없는 것이다. 옛 대기열이 막힌 몫만 있어도 묻는다(F4)', async () => {
+  const host = (left, held, status = {}) => ({
+    guest: false,
+    revision: 1,
+    settled: async () => {},
+    trail: { record: { refresh: async () => {} } },
+    unsentLeft: () => left,
+    unsentHeld: () => held,
+    syncStatus: () => ({
+      stopped: null,
+      writesOff: false,
+      switchOff: false,
+      paused: false,
+      ...status,
+    }),
+    upload: async () => {},
+  });
+  const never = async () => assert.fail('서버를 부르지 않는다');
+  const paused = await resetAccount(host(3, 3, { paused: true }), { account: 'A', clear: never });
+  assert.deepEqual([paused.code, paused.skipped], ['UNSENT_SKIPPED', 3]);
+  const old = await resetAccount(host(0, 0), { account: 'A', clear: never, elsewhere: 4 });
+  assert.deepEqual([old.code, old.skipped], ['UNSENT_SKIPPED', 4]);
+  const stuck = await resetAccount(host(2, 0, { writesOff: true }), { account: 'A', clear: never });
+  assert.deepEqual(
+    [stuck.code, stuck.skipped],
+    ['UNSENT', undefined],
+    '쓰기가 막혀 남은 것은 다시 해 볼 일이다',
+  );
+});
+
+const cellLedger = (families, answers) => ({
+  keys: Object.fromEntries(families.map(family => [`family:${family}`, 1])),
+  cells: { 'ko.reading.s0|1|single-choice': { ind: answers, helped: [] } },
+});
+
+test('4b — 옛 장부의 칸이 처음 옮긴 때보다 자랐으면(열쇠는 같아도) 모두 옮긴 것이 아니다. 옛 로그를 두고 kept로 끝낸다 — 넷째 걸음 뒤 4b만 다시 도는 남은 걸음도 비움 표지에 남긴 처음 칸으로 견준다(4-5 Opus 대체 설계 검토 F6 · 설계 주인 11-18)', async () => {
+  const w = world(65);
+  const old = {
+    log: [legacyEvent(w, 'old-1')],
+    ledger: cellLedger(['t.f0'], [['x', 1, 'correct']]),
+    epoch: 'e1',
+  };
+  const g = await guestCoach(w, () => old);
+  g.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort, legacy: () => old });
+  assert.equal(
+    (await recs.move({ postLegacy: async () => ({ ok: true, ids: ['old-1'] }) })).ok,
+    true,
+  );
+  recs.close();
+  // 그 뒤 옛 엔진이 접은 칸이 자랐다(같은 계열 — 열쇠는 그대로) — 로그인 뒤 손님이 더 푼 답이다.
+  const grown = {
+    ...old,
+    ledger: cellLedger(
+      ['t.f0'],
+      [
+        ['x', 1, 'correct'],
+        ['y', 2, 'correct'],
+      ],
+    ),
+  };
+  let wiped = 0;
+  const legacy = {
+    read: () => grown,
+    clear: async () => {
+      wiped += 1;
+    },
+  };
+  const done = await a.reset({ guestPort: w.guestPort, legacy });
+  assert.deepEqual(
+    [done.guest.legacy, wiped],
+    ['kept', 0],
+    '자란 칸은 그 계정의 것이 아닐 수 있다',
+  );
+  assert.equal(
+    (await lastCleared(w.guestPort)).carried?.cells?.length,
+    1,
+    '비움 표지가 처음 옮긴 칸을 든다',
+  );
+  const again = await a.reset({ guestPort: w.guestPort, legacy, settle: 'legacy', revision: 2 });
+  assert.deepEqual([again.guest.legacy, wiped], ['kept', 0]);
+  a.dispose();
+});
+
+test('4b — 칸이 그대로면 넷째 걸음이 「옮겨 오기 전 기록」을 지운 뒤 4b만 다시 도는 남은 걸음도 비움 표지의 처음 칸으로 견주어 옛 로그를 비운다(F6)', async () => {
+  const w = world(66);
+  const old = {
+    log: [legacyEvent(w, 'old-1')],
+    ledger: cellLedger(['t.f0'], [['x', 1, 'correct']]),
+    epoch: 'e1',
+  };
+  const g = await guestCoach(w, () => old);
+  g.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort, legacy: () => old });
+  assert.equal(
+    (await recs.move({ postLegacy: async () => ({ ok: true, ids: ['old-1'] }) })).ok,
+    true,
+  );
+  recs.close();
+  let now = old;
+  let busy = true;
+  const legacy = {
+    read: () => now,
+    clear: async () => {
+      if (busy) throw Object.assign(new Error('busy'), { code: 'STORAGE_BUSY' });
+      now = { log: [], ledger: null, epoch: 'e2' };
+    },
+  };
+  const first = await a.reset({ guestPort: w.guestPort, legacy });
+  assert.equal(first.guest.legacy, 'busy', '다른 창이 쥐었다 — 4b가 남는다');
+  busy = false;
+  const settled = await a.reset({ guestPort: w.guestPort, legacy, settle: 'legacy', revision: 2 });
+  assert.equal(settled.guest.legacy, 'cleared', '처음 칸이 그대로라 모두 옮긴 것이다');
+  a.dispose();
+});
+
+test('손님 코치도 비우기가 확인된 계정의 남은 걸음을 한다 — 입구가 준 계정의 옮긴 사건만 지우고 로그아웃 뒤의 손님 사건은 둔다. 계정을 주지 않으면 하지 않는다(4-5 Opus 대체 설계 검토 F7 · 설계 주인 11-18)', async () => {
+  const w = world(67);
+  const g = await guestCoach(w);
+  await practise(w, g, w.items.slice(0, 2));
+  g.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort });
+  assert.equal((await recs.move()).ok, true);
+  recs.close();
+  a.dispose();
+  const moved = await heldIds(w.guestPort);
+  const g2 = await guestCoach(w);
+  await practise(w, g2, w.items.slice(3, 4));
+  const fresh = (await heldIds(w.guestPort)).filter(id => !moved.includes(id));
+  assert.ok(fresh.length >= 2);
+  const none = await g2.reset({ settle: 'cleared', revision: 2, guestPort: w.guestPort });
+  assert.deepEqual([none.ok, none.code], [false, 'NO_ACCOUNT']);
+  const done = await g2.reset({
+    settle: 'cleared',
+    account: 'A',
+    revision: 2,
+    guestPort: w.guestPort,
+    legacy: { read: () => null, clear: async () => {} },
+  });
+  assert.equal(done.ok, true);
+  const left = await heldIds(w.guestPort);
+  assert.ok(
+    moved.every(id => !left.includes(id)),
+    '옮긴 사건은 지웠다',
+  );
+  assert.ok(
+    fresh.every(id => left.includes(id)),
+    '로그아웃 뒤의 손님 사건은 둔다',
+  );
   g2.dispose();
 });

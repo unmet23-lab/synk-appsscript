@@ -64,23 +64,25 @@ export async function resetGuest(host, legacy) {
 
 // 계정 비우기의 0 걸음(22-4 올리는 계정 0 — 설계 주인 셋째 답 2의 조건). 저장 중인 쓰기를 기다리고 대기열을 다 올린다 — 아직 못 올린 숙제 답이
 // 있을 수 있고 서버는 교실 연결이 문 사건만 남기므로, 먼저 올려야 「선생님께 낸 숙제는 남아요」가 지켜진다. 올리기가 멈췄거나(멈춤 · 쓰기 막힘 ·
-// 스위치 꺼짐 · 쉼) 몇 바퀴 뒤에도 남으면 실패다 — 아무것도 지우지 않는다. 옛 엔진의 올리기 대기열은 입구가 먼저 올린다.
-async function flush(host) {
+// 스위치 꺼짐) 몇 바퀴 뒤에도 남으면 실패다 — 아무것도 지우지 않는다. 옛 엔진의 올리기 대기열은 입구가 먼저 올린다. 지금 보낼 수 없는 사건
+// (서버가 받지 않아 이 세션에 건너뛴 사건과 그 자식 — 쉬는 세션이면 남은 것 모두)은 막지도 조용히 버리지도 않는다. 그 수를 옛 대기열의 몫
+// (elsewhere — 입구가 센다)과 더해 UNSENT_SKIPPED로 알리고, 학생이 그 수를 보고 한 번 더 확인하면(allowed) 그 수까지만 지운다. 그사이 수가
+// 늘었으면 다시 묻는다(4-5 Opus 대체 설계 검토 F4 · 설계 주인 11-18).
+async function flush(host, { allowed = 0, elsewhere = 0 } = {}) {
+  // 확인한 수 · 옛 대기열의 몫은 0 이상의 정수만 믿는다 — 꼴이 틀리면 0(확인하지 않은 것)으로 본다.
+  const allow = Number.isSafeInteger(allowed) && allowed > 0 ? allowed : 0;
+  const aside = Number.isSafeInteger(elsewhere) && elsewhere > 0 ? elsewhere : 0;
   for (let round = 0; ; round += 1) {
     await host.settled();
     // 대기열을 세기 전에 기록부를 다시 읽어 다른 탭이 저장한 사건까지 센다(4-5 코드 검수 GPT GA2 · 설계 주인 11-18). 마지막 확인과 서버
-    // 비우기 사이에 다른 탭이 새로 쓰는 짧은 틈은 알려진 한계다(§6). 서버가 받지 않아 이번에 건너뛴 사건(skipped)은 세지 않는다 — 서버가
-    // 어차피 남길 수 없는 사건이라 비우기를 막지 않는다.
+    // 비우기 사이에 다른 탭이 새로 쓰는 짧은 틈은 알려진 한계다(§6).
     await host.trail.record.refresh();
-    if (host.unsentLeft() === 0) return { ok: true };
     const status = host.syncStatus();
-    if (
-      round >= FLUSH_ROUNDS ||
-      status.stopped ||
-      status.writesOff ||
-      status.switchOff ||
-      status.paused
-    )
+    if (host.unsentLeft() === 0 || status.paused) {
+      const skipped = host.unsentHeld() + aside;
+      return skipped > allow ? { ok: false, code: 'UNSENT_SKIPPED', skipped } : { ok: true };
+    }
+    if (round >= FLUSH_ROUNDS || status.stopped || status.writesOff || status.switchOff)
       return { ok: false, code: 'UNSENT' };
     await host.upload();
   }
@@ -135,18 +137,29 @@ async function forgetMoved(account, legacy, open, drop = true, before = null) {
 // 계정(22-4 올리는 계정 · 기기 길 계정). 올리는 계정은 대기열을 먼저 다 올린다. 서버 비우기(clear — 올리는 계정은 나르개의 clear, 기기 길 계정은
 // 입구가 준다)가 판을 올리면 손님 저장소의 넷째 걸음과 4b를 한다. 서버가 받지 않은 것이 분명하면(409 · 그 밖의 4xx · 인증) known이 참이고,
 // 닿지 못함 · 답 끊김 · 새 판 없는 답은 결과를 모른다(known 거짓 — 입구는 「비우는 중」 표지를 남기고 lastClear로 맞춘다).
-export async function resetAccount(host, { account, clear, legacy, open }) {
+export async function resetAccount(
+  host,
+  { account, clear, legacy, open, allowed = 0, elsewhere = 0 },
+) {
   const path = host.guest ? 'device' : 'upload';
   if (path === 'upload') {
     let flushed;
     try {
-      flushed = await flush(host);
+      flushed = await flush(host, { allowed, elsewhere });
     } catch (error) {
       // 0 걸음이 던졌다(기록부 다시 읽기 · 올리기의 저장소 실패) — 서버에 닿기 전이라 아무것도 지우지 않았다. 결과를 아는 실패로 돌려준다
       // (입구가 「비우는 중」 표지를 지운다 — 4-5 코드 다시 검수 GPT GA3).
       flushed = { ok: false, code: codeOf(error, 'UNSENT') };
     }
-    if (!flushed.ok) return { ok: false, path, step: 'upload', code: flushed.code, known: true };
+    if (!flushed.ok)
+      return {
+        ok: false,
+        path,
+        step: 'upload',
+        code: flushed.code,
+        known: true,
+        ...(flushed.skipped ? { skipped: flushed.skipped } : {}),
+      };
   }
   if (typeof clear !== 'function')
     return { ok: false, path, step: 'clear', code: 'NO_CLEAR', known: true };
@@ -169,6 +182,9 @@ export async function resetAccount(host, { account, clear, legacy, open }) {
 // 'legacy'는 4b만이다 — 옛 손님 로그가 남았고 넷째 걸음은 이미 했다(그 뒤 그 계정으로 새로 옮긴 사건을 지우지 않게). revision은 그 비우기가
 // 올린 새 판이다(입구의 표지가 든다) — 'cleared'의 넷째 걸음은 그보다 앞선 판의 옮김 표지만 센다. 없으면 이 코치의 판으로 잰다.
 export async function settleAccount(host, { account, legacy, open, settle, revision = null }) {
+  // 어느 계정의 걸음인지 모르면 하지 않는다 — 손님 코치는 입구가 준 계정의 것만 한다(4-5 Opus 대체 설계 검토 F7).
+  if (account == null)
+    return { ok: false, path: 'guest', step: 'settle', code: 'NO_ACCOUNT', known: true };
   const path = host.guest ? 'device' : 'upload';
   const before = Number.isSafeInteger(revision) ? revision : host.revision;
   const guest = await forgetMoved(account, legacy, open, settle === 'cleared', before);

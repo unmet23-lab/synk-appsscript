@@ -1090,3 +1090,32 @@ test('올린 답을 기록부에 못 쓰면(저장소 예외) 계기에 남기�
   w.port.heal();
   close(opened);
 });
+
+test('보낼 수 없는 사건 수(unsentHeld) — 서버가 받지 않아 건너뛴 제시와 그 답을 세고, 가려낸 것이 SIFT_CAP을 넘어 쉬면 남은 사건 모두다(계정 비우기의 0 걸음 — 4-5 Opus 대체 설계 검토 F4)', async () => {
+  const w = world(72);
+  const first = await open(w, keyOf('held'));
+  const shown = await answerAll(first.coach, w.items.slice(0, 3), w.time);
+  const bad = shown[1];
+  w.route.refuse = (method, events) =>
+    method === 'post' && events.some(event => event.id === bad)
+      ? fault(400, 'INVALID_EVENTS')
+      : null;
+  await first.handle.upload();
+  assert.equal(first.handle.unsentLeft(), 0, '보낼 수 있는 것은 다 보냈다');
+  assert.ok(first.handle.unsentHeld() >= 2, '건너뛴 제시와 그 답');
+  assert.equal(first.handle.unsentHeld(), first.handle.trail.unsent(256).length);
+  close(first);
+  const w2 = world(73, 12);
+  const second = await open(w2, keyOf('paused'));
+  await answerAll(second.coach, w2.items.slice(0, 12), w2.time);
+  w2.route.refuse = method => (method === 'post' ? fault(400, 'INVALID_EVENTS') : null);
+  await second.handle.upload();
+  assert.equal(second.handle.syncStatus().paused, true, '가려낸 것이 많아 쉰다');
+  assert.ok(second.handle.unsentLeft() > 0, '아직 보내 보지 못한 사건이 남았다');
+  assert.equal(
+    second.handle.unsentHeld(),
+    second.handle.trail.unsent(256).length,
+    '쉬면 남은 것 모두다',
+  );
+  close(second);
+});

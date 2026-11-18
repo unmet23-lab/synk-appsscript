@@ -718,9 +718,13 @@ export function createCoach(options = {}) {
     //   손님 { ok, path: 'guest', gen, legacy: 'cleared' | 'busy' | 'failed' | 'none' } — busy · failed는 「일부만 비움」.
     //   계정 { ok: true, path: 'upload' | 'device', revision(새 판), guest: { ok, dropped, legacy, code? } } 또는
     //        { ok: false, path, step: 'upload' | 'clear', code, known }(known 거짓 — 서버의 결과를 모른다).
-    //   settle('cleared' | 'legacy' — 계정만): 서버가 이미 비운 뒤 손님 저장소의 남은 걸음만 한다(입구가 「비우는 중」 표지를 맞출 때 —
+    //   allowSkipped · skippedElsewhere(올리는 계정): 지금 보낼 수 없는 사건이 있으면 { ok: false, step: 'upload', code: 'UNSENT_SKIPPED',
+    //   skipped }로 알린다 — skipped는 새 길의 몫과 입구가 센 옛 대기열의 몫(skippedElsewhere)을 더한 수다. 학생이 그 수를 보고 한 번 더 확인하면
+    //   입구가 allowSkipped에 그 수를 넣어 다시 부른다(4-5 Opus 대체 설계 검토 F4).
+    //   settle('cleared' | 'legacy'): 서버가 이미 비운 뒤 손님 저장소의 남은 걸음만 한다(입구가 「비우는 중」 표지를 맞출 때 —
     //   reset.mjs settleAccount). revision은 그 비우기가 올린 새 판이다 — 넷째 걸음은 그보다 앞선 판의 옮김 표지만 센다(없으면 이 코치의 판).
-    //   돌려주는 것은 { ok: true, path, settled, guest }.
+    //   돌려주는 것은 { ok: true, path, settled, guest }. 계정 코치는 제 계정의 것을, 손님 코치는 account로 준 계정의 것을 한다 — 비우기가
+    //   확인된 뒤의 남은 걸음은 그 계정의 서버 없이 옮김 표지와 옛 로그만으로 하므로, 로그아웃한 기기의 손님 입구도 마저 한다(F7).
     // 「비우는 중」 표지 · 본인 값 옮기기 · 앞 판 쓸기 · 다시 정하기는 입구의 몫이다(22-1의 4).
     async reset({
       legacy = null,
@@ -728,6 +732,9 @@ export function createCoach(options = {}) {
       guestPort = null,
       settle = null,
       revision = null,
+      account: settleFor = null,
+      allowSkipped = 0,
+      skippedElsewhere = 0,
     } = {}) {
       live();
       // 셸이 연 문서 호스트를 빌린 코치(틀의 게임 — host.document)는 비우지 않는다. 그 호스트의 계정 · 판을 몰라 손님으로 보고 기기 길 계정의
@@ -736,16 +743,24 @@ export function createCoach(options = {}) {
         return { ok: false, path: 'document', step: 'owner', code: 'NOT_OWNER', known: true };
       const host = state.host;
       const account = options.host?.account ?? null;
-      if (host.guest && account == null) return resetGuest(host, legacy);
       const open = () =>
         openGuestAside({ legacy: legacy?.read ?? null, create: false, port: guestPort });
+      const whose = account ?? settleFor;
       if (settle === 'cleared' || settle === 'legacy')
-        return settleAccount(host, { account, legacy, open, settle, revision });
+        return settleAccount(host, { account: whose, legacy, open, settle, revision });
+      if (host.guest && account == null) return resetGuest(host, legacy);
       const transport = options.host?.transport;
       const call =
         clear ??
         (!host.guest && typeof transport?.clear === 'function' ? () => transport.clear() : null);
-      return resetAccount(host, { account, clear: call, legacy, open });
+      return resetAccount(host, {
+        account,
+        clear: call,
+        legacy,
+        open,
+        allowed: allowSkipped,
+        elsewhere: skippedElsewhere,
+      });
     },
 
     plan(activities, opts = {}) {

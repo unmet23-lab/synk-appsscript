@@ -72,7 +72,7 @@ function lazyAtlasNext(owner){
   // 판 응답 읽기(4-5 — 단계4_계획 §22-5): 입구가 연 코치의 판이 올리는 길이면 서버를 읽어 코치에 넘기고 코치의 목록을 준다. 입구를 받기 전이거나 닫았으면 null.
   readResponses:async coach=>made&&!disposed?(await made.readResponses?.(coach))??null:null,
   // 연습 기록 비우기(4-5 — 단계4_계획 §22-4): 입구의 clearPractice(한 번 더 묻기는 「나」 칸이 한다). 닫았으면 null.
-  async clearPractice(){if(disposed)return null;const entry=await load();return disposed?null:entry.clearPractice();},
+  async clearPractice(options){if(disposed)return null;const entry=await load();return disposed?null:entry.clearPractice(options);},
   async guestMove(input){if(disposed)return null;const entry=await load();return disposed?null:entry.guestMove(input);},
   async noteLogout(){return made&&!disposed?made.noteLogout():false;},
   // 이 문서에서 학습 기록 설정(동의)을 바꾼 뒤 — 입구가 판을 다시 정한다(넘친 #18).
@@ -838,6 +838,11 @@ function mountMe(){
 async function clearPracticeNow(){
  if(!window.confirm(meText('me.clearAsk')))return;
  let result=null;try{result=await life.education?.clearPractice?.();}catch{result=null;}
+ // 서버가 받지 않아 지금 보낼 수 없는 기록이 있으면 그 수를 알리고 한 번 더 묻는다 — 비우면 그 기록도 지워진다(4-5 Opus 대체 설계 검토 F4).
+ if(result?.code==='UNSENT_SKIPPED'&&Number.isSafeInteger(result.skipped)&&result.skipped>0){
+  if(!window.confirm(meText('me.clearSkippedAsk',{n:result.skipped})))return;
+  try{result=await life.education?.clearPractice?.({allowSkipped:result.skipped});}catch{result=null;}
+ }
  home.toast(meText(result?.ok?(result.partial?'me.clearPartial':'me.clearDone'):result?.code==='UNSENT'?'me.clearUnsent':'me.clearFailed'));
  // 결과와 상관없이 계정 설정 스냅샷을 새로 받아 그린다 — 결과를 모르는 실패도 서버에서는 비워졌을 수 있다(동의 체크박스의 판 번호 — §22-4 · 4-5 Opus 대체 설계 검토 F8).
  if(operating)try{await account.restore();}catch{/* 앞 스냅샷으로 다시 그린다 */}

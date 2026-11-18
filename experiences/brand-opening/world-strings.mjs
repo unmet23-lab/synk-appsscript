@@ -1689,5 +1689,6 @@ export const ME_KO=Object.freeze({
  'me.clearDone':'연습 기록을 비웠어요.',
  'me.clearPartial':'연습 기록을 비웠어요. 이 기기의 옛 기록 일부는 다음에 마저 비워요.',
  'me.clearUnsent':'아직 보내지 못한 기록이 있어 지금은 비우지 못했어요.',
+ 'me.clearSkippedAsk':'서버가 아직 받지 못한 기록이 {n}개 있어요. 지금 비우면 이 기록도 지워지고, 숙제 답이라면 선생님께도 가지 않아요. 그래도 비울까요?',
  'me.clearFailed':'지금은 비우지 못했어요. 잠시 뒤 다시 해 주세요.',
 });

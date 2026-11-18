@@ -25973,9 +25973,9 @@ function createWorldEducation({
       return false;
     }
   }
-  async function clearPractice() {
+  async function clearPractice(options) {
     if (stopped || typeof atlasNext?.clearPractice !== "function") return null;
-    return atlasNext.clearPractice();
+    return atlasNext.clearPractice(options);
   }
   const RESPONSE_COACHES = [() => readPracticeCoach(), () => readCoach(), () => readMockCoach()];
   function nextCoach(prefer = null) {
