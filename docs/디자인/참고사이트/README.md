@@ -75,6 +75,16 @@
 | PC 앱 런처 `desktop/renderer/launcher.css` | 굵기 900 · 850 · 800 · 700 · 680 · 650 · 600 · 550 여덟 단계 | 모노 29곳 | 알약(999) 33곳 · 그림자 40곳 · 유리 9곳 |
 | 홈페이지 synk.im | SYNK Latin 30px · 760 · −0.035em(첫 화면 주인공은 「싱ㅋ」 큰 그림 글자) | — | 검정 바탕 |
 
+## 5-1. 회사 홈페이지 견줌(2026-11-19, synk.im 새로 짓기)
+
+회사 홈을 새로 지을 때 본 47곳이다. 첫 화면과 아래로 내려간 화면 다섯 장씩을 저장소 밖 `C:/Users/q1212/Documents/SYNK-보관함/조사/홈페이지_갈아엎기_20261119/`에 두었다(`ref/` · `ref2/` · 한눈 판 `s-*.jpg`, 다시 찍기는 `shoot.mjs`). 가져올 것과 방향 셋은 [새로 짓기 기록](../synk.im_새로짓기_20261119/README.md)에 있다.
+
+- 한 화면에 놓인 글: 지금 synk.im 홈 약 490자, figure.ai 약 150자, about.daangn.com 약 114자, toss.im 약 50자. 가장 큰 글은 차례로 40 · 52 · 64 · 80px다.
+- 화면을 덮는 영상과 문장 하나: toss.im 첫 화면, figure.ai, lumalabs.ai.
+- 큰 글과 실물 하나: rivian.com(이름이 화면 폭만큼), toss.im 아래쪽(서비스마다 물건 하나), play.date, shopify.com/editions(선반).
+- 한 세계로 들어가는 홈: igloo.inc, ghibli-park.jp.
+- 여러 사업을 한 화면에 가르는 법: runwayml.com(같은 모델 위의 세 플랫폼을 세 칸으로), about.daangn.com(한 문장, 영상, 사진 줄).
+
 ## 6. 다시 재는 법
 
 보관함 폴더의 스크립트를 그 폴더에서 돌린다(Playwright는 저장소 `node_modules`, 브라우저는 설치된 크롬).
