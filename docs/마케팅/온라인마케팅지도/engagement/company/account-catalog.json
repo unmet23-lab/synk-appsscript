@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-18T19:14:56.253Z",
+  "generatedAt": "2026-11-18T20:19:40.928Z",
   "sourceAt": "2026-11-10",
   "accounts": [
     {
@@ -175,7 +175,7 @@
       "externalId": null,
       "country": "공통·미분리",
       "countryCode": null,
-      "accountStatus": "operating"
+      "accountStatus": "excluded-existing"
     },
     {
       "id": "yuhobuilds-threads",
@@ -1313,12 +1313,12 @@
         "docs/마케팅/채널과_발행.md"
       ],
       "platform": "tiktok",
-      "handle": null,
-      "publicUrl": null,
+      "handle": "@synklab.kh",
+      "publicUrl": "https://www.tiktok.com/@synklab.kh",
       "externalId": null,
       "country": "캄보디아",
       "countryCode": "KH",
-      "accountStatus": "planned"
+      "accountStatus": "confirmed-expansion"
     },
     {
       "id": "lab-kh-facebook",

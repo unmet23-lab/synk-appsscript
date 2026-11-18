@@ -540,11 +540,11 @@ test('실제 sns-계정.json — 모든 계정이 매일 판 줄 · 매일 판 �
 });
 
 // 11-10 LAB 하루 두 편 · 39계정(설계 1): LAB 모든 계정에 줄 · 현지 칸 · IANA 시간대 · 언어 · 나라 · 예약 경로가 있다 — 예약큐 · 검사 ⑩ · ⑫ · ⑯ · 돌림표가 읽는다.
-test('실제 sns-계정.json — LAB 39곳 모두 줄 · 현지 칸(13:00 이야기 · 21:00 노래, 텔레그램은 21:00 노래 하나 — 11-10 밤 퀴즈에서 노래로) · 시간대 · 언어 · 경로', () => {
+test('실제 sns-계정.json — LAB 40곳(11-19 캄보디아 틱톡이 더해짐) 모두 줄 · 현지 칸(13:00 이야기 · 21:00 노래, 텔레그램은 21:00 노래 하나 — 11-10 밤 퀴즈에서 노래로) · 시간대 · 언어 · 경로', () => {
   const T = require('../tools/lib/계정시간.js');
   const real = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'docs', '마케팅', 'sns-계정.json'), 'utf8').replace(/^﻿/, '')).accounts;
   const lab = Object.entries(real).filter(([, a]) => a.brand === 'LAB');
-  assert.equal(lab.length, 39);
+  assert.equal(lab.length, 40); // 11-19 쉬던 yuhobuilds 틱톡을 LAB 캄보디아 틱톡(lab-kh-tiktok)으로 바꿨다
   for (const [key, a] of lab) {
     assert.ok(a.dailyLine, `${key}: 줄`);
     assert.ok(T.validZone(a.timeZone) && /\//.test(a.timeZone), `${key}: IANA 시간대 ${a.timeZone}`);

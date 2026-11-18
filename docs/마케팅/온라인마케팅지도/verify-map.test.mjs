@@ -88,8 +88,8 @@ test('login overview counts only managed channels and keeps partial and switch-o
   assert.deepEqual(summary,{confirmed:60,'switch-only':4,partial:7,missing:0});
   for(const [id,value] of Object.entries(summary))assert.equal(value,managed.filter(row=>row.loginMappingStatus===id).length,id);
   assert.equal(loginSummary(channels).reduce((sum,row)=>sum+row.value,0),71);
-  // 미생성 계획 15곳: 로그인 경로를 지어내지 않는다(연결 없음 · 상태 unknown · 관측 시각 없음).
-  assert.equal(planned.length,15);
+  // 미생성 계획 14곳(11-19 캄보디아 틱톡이 확보로 옮김): 로그인 경로를 지어내지 않는다(연결 없음 · 상태 unknown · 관측 시각 없음).
+  assert.equal(planned.length,14);
   assert.ok(loginSummary(planned).every(row=>row.value===0));
   for(const row of planned){
     assert.equal(row.loginMappingStatus,'not-created',row.id);
@@ -97,9 +97,9 @@ test('login overview counts only managed channels and keeps partial and switch-o
     assert.equal(row.operations.login.state,'unknown',row.id);
     assert.equal(row.operations.login.observedAt,null,row.id);
   }
-  // 제외 · 보류 3곳(제외 · 보류된 기존 · 개설 미룸)은 관리 대상 수와 로그인 요약에 들어가지 않고, 로그인도 unknown으로 둔다.
+  // 제외 · 보류 4곳(제외 · 보류된 기존 둘 — 11-19 LAB 캄보디아로 바꾼 yuhobuilds 틱톡 포함 · 개설 미룸)은 관리 대상 수와 로그인 요약에 들어가지 않고, 로그인도 unknown으로 둔다.
   const held=channels.filter(row=>['excluded','excluded-existing','creation-deferred'].includes(row.accountStatus));
-  assert.deepEqual(sorted(held.map(row=>row.id)),['synk-instagram','synkbrief-threads','yuhobuilds-linkedin']);
+  assert.deepEqual(sorted(held.map(row=>row.id)),['synk-instagram','synkbrief-threads','yuhobuilds-linkedin','yuhobuilds-tiktok']);
   assert.ok(held.every(row=>!managed.includes(row)&&row.operations.login.state==='unknown'));
 });
 
@@ -150,14 +150,14 @@ function uniqueIds(items, label, key = 'id') {
   assert.equal(new Set(items.map(row => row[key])).size, items.length, `${label}: duplicate ${key}`);
 }
 
-test('37 existing operating channels include the ten previously omitted records and the 11-12 PULSE TikTok without enabling publishing', () => {
-  assert.equal(operating.length, 37);
-  assert.equal(operating.filter(row => row.publishable === true).length, 23);
+test('36 existing operating channels include the ten previously omitted records and the 11-12 PULSE TikTok without enabling publishing (11-19 yuhobuilds TikTok became LAB Cambodia, so it is excluded here)', () => {
+  assert.equal(operating.length, 36);
+  assert.equal(operating.filter(row => row.publishable === true).length, 22);
   assert.equal(operating.filter(row => row.accountStatus === 'operating-contact').length, 1);
   assert.equal(inventory.accounts.length, 46);
   assert.equal(sourceChannels.length, 40);
   assert.equal(inventory.metadata.counts.operatingAccountsAndChannels, operating.length);
-  assert.equal(inventory.metadata.counts.publicPublishingTargets, 23);
+  assert.equal(inventory.metadata.counts.publicPublishingTargets, 22);
   assert.equal(inventory.metadata.counts.totalRows, inventory.accounts.length);
   assert.deepEqual(sorted(channels.filter(row => row.channelScope === '기존 운영').map(row => row.id)), sorted(operating.map(row => row.id)));
 });
@@ -189,16 +189,16 @@ test('25 countries and 51 LAB priority slots include Brazil TikTok', () => {
   }
 });
 
-test('49 expansion slots reconcile to 34 confirmed accounts and 15 unconfirmed places', () => {
+test('49 expansion slots reconcile to 35 confirmed accounts and 14 unconfirmed places', () => {
   const slots = production.countries.flatMap(country => country.channelSlots.map(slot => ({country, slot})));
   const newSlots = slots.filter(({slot}) => slot.accountId === null);
   assert.equal(newSlots.length, 49);
   assert.equal(proposal.channels.length, 49);
-  assert.equal(planned.length, 15);
-  assert.equal(channels.filter(row => row.accountStatus === 'confirmed-expansion').length, 34);
+  assert.equal(planned.length, 14);
+  assert.equal(channels.filter(row => row.accountStatus === 'confirmed-expansion').length, 35);
   assert.equal(production.planCounts.newChannelSlotsPlanned, 49);
   assert.equal(production.planCounts.newCountryCandidates, 24);
-  assert.equal(new Set(planned.map(row => row.countryCode)).size, 14);
+  assert.equal(new Set(planned.map(row => row.countryCode)).size, 13);
   for (const {country, slot} of newSlots) {
     assert.notEqual(country.code, 'MN');
     assert.equal(slot.status, 'planned-not-created-or-verified');
@@ -239,9 +239,9 @@ test('89 channel rows mean 40 existing/deferred entries plus 49 expansion slots'
   assert.equal(channels.length, 89);
   assert.equal(channels.length, sourceChannels.length + proposal.channels.length);
   assert.equal(channels.filter(row => row.brand === 'LAB').length, 54);
-  assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 34);
-  assert.equal(channels.filter(row => row.channelScope === '확장 미확인').length, 15);
-  assert.equal(channels.filter(row => row.accountStatus === 'excluded-existing').length, 1);
+  assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 35);
+  assert.equal(channels.filter(row => row.channelScope === '확장 미확인').length, 14);
+  assert.equal(channels.filter(row => row.accountStatus === 'excluded-existing').length, 2);
   assert.equal(channels.filter(row => ['excluded', 'creation-deferred'].includes(row.accountStatus)).length, 2);
   assert.equal(channels.filter(row => row.accountStatus === 'web-destination').length, 0);
 });
@@ -265,7 +265,7 @@ test('shared YouTube and Substack stay single accounts and do not inflate owned 
   for (const id of ['lab-youtube', 'synklab-substack']) assert.equal(channels.filter(row => row.id === id).length, 1);
   assert.deepEqual(channels.find(row => row.id === 'lab-youtube').sharedBrands, ['PULSE']);
   assert.deepEqual(channels.find(row => row.id === 'synklab-substack').sharedBrands, ['LAB', 'SHIFT']);
-  assert.equal(rows('brands').reduce((sum, row) => sum + row.ownedCount, 0), 37);
+  assert.equal(rows('brands').reduce((sum, row) => sum + row.ownedCount, 0), 36);
   const expectedShared = {SYNK: 0, LAB: 1, SHIFT: 1, YUHO: 0, PULSE: 1, PATH: 0, YUHOKOREAN: 0, POLITICS: 0};
   for (const brand of rows('brands')) {
     assert.equal(brand.ownedCount, channels.filter(row => row.brand === brand.id && row.channelScope === '기존 운영').length, brand.id);
@@ -321,7 +321,7 @@ test('every input collection and dashboard query has unique nonempty identifiers
 });
 
 test('summary cards reconcile to separate units, and web/product destinations are not SNS rows', () => {
-  const expected = {existing: [37, '채널'], 'lab-secured': [34, '곳'], 'lab-pending': [15, '곳'], 'lab-world': [25, '개국']};
+  const expected = {existing: [36, '채널'], 'lab-secured': [35, '곳'], 'lab-pending': [14, '곳'], 'lab-world': [25, '개국']};
   assert.deepEqual(sorted(rows('summary').map(row => row.id)), sorted(Object.keys(expected)));
   for (const row of rows('summary')) assert.deepEqual([row.value, row.unit], expected[row.id], row.id);
   const websites = inventory.accounts.filter(row => row.accountStatus === 'web-destination');
@@ -336,7 +336,7 @@ test('confirmed account details follow the latest ledgers without promoting an i
   assert.equal(social.counts.notCreated,20);
   const expansion=channels.filter(row=>row.accountStatus==='confirmed-expansion');
   assert.equal(expansion.filter(row=>row.platform==='YouTube').length,18);
-  assert.equal(expansion.filter(row=>row.platform!=='YouTube').length,16);
+  assert.equal(expansion.filter(row=>row.platform!=='YouTube').length,17);
   // 09-20 원장에서 생성 미확인이던 인도네시아 TikTok은 10-19 레지스트리 개설 확인으로 확보가 된다. 사진은 11-15 밤에 LAB 로고로 채워 「사진 확인」으로 보인다(원장 profileStatus).
   const idTiktok=channels.find(row=>row.id==='lab-id-tiktok');
   assert.equal(social.channels.find(row=>row.id==='lab-id-tiktok').created,false);
@@ -413,8 +413,8 @@ test('the snapshot does not claim live verification of the entire inventory', ()
 
 test('the built snapshot records hashes of the current source ledgers', () => {
   assert.equal(verification.generatedAt,dashboard.generatedAt);
-  assert.equal(verification.counts.expansionConfirmed,34);
-  assert.equal(verification.counts.expansionUnconfirmed,15);
+  assert.equal(verification.counts.expansionConfirmed,35);
+  assert.equal(verification.counts.expansionUnconfirmed,14);
   for(const item of verification.files) {
     const actual=sourceHash(fs.readFileSync(path.join(dir,item.file)));
     assert.equal(item.sha256,actual,`${item.file} changed after the map was built`);
@@ -422,7 +422,7 @@ test('the built snapshot records hashes of the current source ledgers', () => {
 });
 
 test('every registry account and supplemental channel has one explicit login audit row', () => {
-  assert.equal(Object.keys(registry.accounts).length,64);
+  assert.equal(Object.keys(registry.accounts).length,65);
   assert.equal(loginAudit.supplementalIds.length,10);
   for (const id of [...Object.keys(registry.accounts),...loginAudit.supplementalIds]) {
     assert.equal(channels.filter(row=>row.id===id).length,1,id);
@@ -498,7 +498,7 @@ test('parent administrators, account switching, and unknown identifiers remain d
 
 test('mail aliases and older long-term plans are not counted as created accounts', () => {
   const assigned=planned.filter(row=>row.plannedLoginIdentityRef);
-  assert.equal(assigned.length,6);
+  assert.equal(assigned.length,5);
   for (const row of assigned) {
     assert.equal(row.plannedLoginIdentityRef,'workspace-founder');
     assert.equal(row.loginIdentityRef,null);
@@ -507,7 +507,7 @@ test('mail aliases and older long-term plans are not counted as created accounts
   }
   assert.equal(channels.find(row=>row.id==='lab-br-tiktok').plannedLoginIdentityRef,undefined);
   assert.equal(loginAudit.otherPlanned.length,16);
-  assert.equal(planned.length+loginAudit.otherPlanned.length,31);
+  assert.equal(planned.length+loginAudit.otherPlanned.length,30);
   assert.ok(!loginAudit.otherPlanned.some(row=>row.brand==='PULSE' && row.platform==='TikTok'),'11-12 PULSE TikTok은 계획에서 기존 등록으로 옮겼다');
   for (const row of loginAudit.otherPlanned) {
     assert.equal(row.accountStatus,'planned-unconfirmed');
