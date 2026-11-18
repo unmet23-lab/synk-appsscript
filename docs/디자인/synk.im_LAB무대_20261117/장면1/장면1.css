@@ -104,6 +104,7 @@ button{font:inherit;color:inherit}
 .sc-num{flex:0 0 auto;display:grid;place-items:center;width:calc(var(--cw) * .11);height:calc(var(--cw) * .11);border-radius:50%;background:var(--ink);color:#fff;font-size:calc(var(--cw) * .058);font-weight:800;font-variant-numeric:tabular-nums}
 .sc-word{position:relative;font-size:calc(var(--cw) * .118);line-height:1.05;font-weight:750;letter-spacing:-.045em;color:var(--ink);transition:color .25s;white-space:nowrap}
 .sc-dot{position:absolute;right:12px;bottom:10px;width:7px;height:7px;border-radius:50%;background:var(--ink)}
+.sc-card.is-long .sc-word{font-size:calc(var(--cw) * .088)}
 /* 광택: 카드가 돌 때 빛줄기가 미끄러진다(--g는 줄 그리기가 매 장마다 넣는다) */
 .sc-gloss{position:absolute;inset:0;pointer-events:none;border-radius:inherit;mix-blend-mode:soft-light;background:linear-gradient(105deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.75) 46%,rgba(255,255,255,0) 60%);background-size:260% 100%;background-position:calc(50% + var(--g,0) * 120%) 0}
 
@@ -242,6 +243,7 @@ a.sc-btn{text-decoration:none}
   .sc-num{width:16px;height:16px;font-size:9px}
   .sc-word{font-size:calc(var(--cw) * .13);letter-spacing:-.05em}
   .sc-dot{right:7px;bottom:6px;width:5px;height:5px}
+  .sc-card.is-long .sc-word{font-size:calc(var(--cw) * .092)}
   .sc-back{padding:6px 8px}
   .sc-back-tag{font-size:9.5px}
   .sc-back-word{left:8px;top:22px}

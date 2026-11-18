@@ -86,6 +86,23 @@
 .sc[data-head="c"] .sc-shot{position:absolute;left:0;right:0;top:clamp(18px,3vh,40px)}
 .sc[data-head="c"].is-me .sc-dock{opacity:.0}
 
+/* ── 강조(11-19 유호님 「회색이라서 뭔가 뭍히는」): 묻는 말과 약속의 「30일」을 회색으로 두지 않는다 ──
+   ?em=ink  LAB 코랄 잉크로 색을 세운다
+   ?em=mark 카드의 연필 표시처럼 — 묻는 말에 코랄 형광펜, 「30일」에 손 밑줄 */
+.sc{--em:#E0452F;--em-ink:#B5382A;--em-wash:rgba(249,104,89,.5)}
+.sc-title em{font-style:normal}
+.sc[data-em] .sc-title span+span{color:var(--ink);font-weight:500}
+.sc[data-em="ink"] .sc-prompt{color:var(--em)}
+.sc[data-em="ink"] .sc-title em{color:var(--em-ink);font-weight:700}
+.sc[data-em="mark"] .sc-prompt{color:var(--ink);font-weight:700}
+.sc[data-em="mark"] .sc-mk{background-image:linear-gradient(100deg,rgba(249,104,89,.1),var(--em-wash) 4%,rgba(249,104,89,.42) 96%,rgba(249,104,89,.1));background-repeat:no-repeat;background-position:0 84%;background-size:100% 48%;-webkit-box-decoration-break:clone;box-decoration-break:clone;padding:0 .14em;margin:0 -.14em}
+.sc[data-em="mark"] .sc-title em{font-weight:700;padding-bottom:.2em;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 14' preserveAspectRatio='none'%3E%3Cpath d='M3 9 C 44 4, 92 12, 138 7 S 214 4, 237 8' fill='none' stroke='%23E0452F' stroke-width='6.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat 0 100%/100% .38em}
+/* 달력 꽂이(C): 작아져도 몇 월인지 읽히게 */
+.sc[data-head="c"] .sc-dock .sc-cal-m{height:54px;font-size:30px;letter-spacing:0}
+.sc[data-head="c"] .sc-dock .sc-cal-d{margin-top:6px;font-size:80px}
+.sc[data-head="c"] .sc-dock .sc-cal-w{display:none}
+.sc[data-head="c"] .sc-dock .sc-cal-n{font-size:20px}
+
 /* ── 휴대폰 ── */
 @media (max-width:900px){
   .sc[data-head="a"] .sc-head,.sc[data-head="c"] .sc-head{grid-template-columns:1fr auto;gap:8px 16px;padding-top:26px}
@@ -114,6 +131,8 @@
   .sc[data-head="b"] .sc-prompt{font-size:16px}
   .sc[data-head="c"] .sc-stage{justify-content:flex-start;gap:14px;padding-top:18px}
   .sc[data-head="c"] .sc-dock{--dk:.36;margin-top:4px}
+  .sc[data-head="c"] .sc-dock{transition:opacity .3s}
+  .sc[data-head="c"].has-shot .sc-dock{opacity:0}
   .sc[data-head="c"] .sc-q{max-width:none;min-height:120px}
   .sc[data-head="c"] .sc-ctx{font-size:23px;margin-top:6px}
   .sc[data-head="c"] .sc-prompt{font-size:15.5px;margin-top:6px}

@@ -180,6 +180,7 @@
   };
   function setFace(c, id, text, num) {
     c.id = id; c.text = text; c.wordEl.textContent = text; c.backWord.textContent = text; c.numEl.textContent = String(num); setPic(c);
+    c.el.classList.toggle('is-long', [...text].length > 7);   // 긴 보기(「저는 몽글이에요.」)는 카드 모서리 점과 부딪히지 않게 조금 작게
     c.el.setAttribute('aria-label', `${num}번 ${text}`); c.el.classList.remove('is-right', 'is-wrong');
   }
   const removeCard = (c) => { cards.delete(c); c.el.remove(); c.sh.remove(); };
@@ -520,17 +521,20 @@
   const evid = mkShot('sc-shot sc-evid'); line.append(evid);
   const showShot = async (f, name) => {
     const img = $('img', f); img.src = shotSrc(name); img.alt = ALT[name] || '';
-    // 문제 자리 조각은 장면 머리 아래에 놓는다(머리 시안 C는 달력 꽂이 옆 글 줄에 맞춘다)
+    // 그날 앱 화면 조각은 비어 있는 「지금」 칸(줄 아래 왼쪽)에 놓는다 — 줄 · 돌아온 카드와 겹치지 않게. 휴대폰은 문제 자리 그대로.
     if (f === shot && root.dataset.head) {
-      const r = stage.getBoundingClientRect(), qr = qhead.getBoundingClientRect();
-      if (qr.height) f.style.top = Math.round(qr.bottom - r.top + 12) + 'px';
-      if (root.dataset.head === 'c' && !narrow) { const qx = Math.round($('.sc-q').getBoundingClientRect().left - r.left); f.style.left = qx + 'px'; f.style.right = 'auto'; f.style.margin = '0'; }
+      const r = stage.getBoundingClientRect();
+      if (!narrow) {
+        const lr = layer.getBoundingClientRect(), x0 = slotX[0] - CW / 2, x1 = slotX[2] + CW / 2, w = Math.min(420, x1 - x0);
+        f.style.left = Math.round(x0 + (x1 - x0 - w) / 2) + 'px'; f.style.right = 'auto'; f.style.margin = '0'; f.style.width = Math.round(w) + 'px';
+        f.style.top = Math.round(lr.top - r.top + cordY(slotX[1]) + 48) + 'px';
+      } else { const qr = qhead.getBoundingClientRect(); if (qr.height) f.style.top = Math.round(qr.bottom - r.top + 12) + 'px'; }
     }
     try { await img.decode(); } catch { /* 그대로 띄운다 */ }
-    play('notify');
+    play('notify'); if (f === shot) root.classList.add('has-shot');
     gsap.fromTo(f, { opacity: 0, y: 14, rotationX: -16, scale: 0.94 }, { opacity: 1, y: 0, rotationX: 0, scale: 1, duration: reduce ? 0 : 0.55, ease: 'back.out(1.8)', transformPerspective: 800 });
   };
-  const hideShot = (f = shot) => gsap.to(f, { opacity: 0, y: -6, duration: reduce ? 0 : 0.25 });
+  const hideShot = (f = shot) => { if (f === shot) root.classList.remove('has-shot'); return gsap.to(f, { opacity: 0, y: -6, duration: reduce ? 0 : 0.25 }); };
 
   /* ── 내 위치: 카드가 줄에서 풀려 앞으로 나오고, 기록 면에 큰 도장 ── */
   const showScale = () => (narrow ? 1.6 : 1.42);
@@ -591,7 +595,12 @@
     const tx = document.createElement('span'); tx.className = 'sc-qtx'; tx.textContent = t;
     qhead.replaceChildren(no, tx); specQ.textContent = t;
   };
-  const showQuestion = (q) => { setQhead(q.head); kinetic(ctxEl, q.context, 0.05); kinetic(promptEl, q.prompt, 0.18); setAfter(q.say, q.sub); next.replaceChildren(); };
+  // 묻는 말은 한 덩어리로 감싼다: 강조 「형광펜」(data-em="mark")은 글이 다 들어온 뒤 왼쪽에서 오른쪽으로 칠해진다
+  const markPrompt = () => {
+    const mk = document.createElement('span'); mk.className = 'sc-mk'; mk.append(...promptEl.childNodes); promptEl.replaceChildren(mk);
+    if (root.dataset.em === 'mark' && !reduce) gsap.fromTo(mk, { backgroundSize: '0% 48%' }, { backgroundSize: '100% 48%', duration: 0.75, delay: 0.7, ease: 'power2.inOut' });
+  };
+  const showQuestion = (q) => { setQhead(q.head); kinetic(ctxEl, q.context, 0.05); kinetic(promptEl, q.prompt, 0.18); markPrompt(); setAfter(q.say, q.sub); next.replaceChildren(); };
   const takeAnswer = (cs, q) => new Promise((done) => {
     cs.forEach((c) => { c.answerable = true; c.el.removeAttribute('aria-disabled'); });
     answering = (picked) => {
