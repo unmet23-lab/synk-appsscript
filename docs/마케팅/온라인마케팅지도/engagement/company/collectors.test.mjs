@@ -608,9 +608,9 @@ test('Facebook counts a video whose post_id names the feed post it was matched t
   assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 2, withPostId: 1, matched: 2, agreed: 1, byPostId: 0, conflicts: 0 });
 });
 
-// 5회차 GA2 · 설계 검토 3 조건 2: 첨부 대상으로만 짝지은 게시물이 영상의 post_id와 다른 게시물이면 어느 쪽이 맞는지 모른다. 앞 판처럼 조회수만 그 게시물에 주고,
-// 영상 번호 · 별칭은 달지 않으며 충돌로 센다. 게시물 주소가 그 영상 주소인 짝은 그대로 믿어 한 줄이다.
-test('Facebook keeps only the views on an attachment match that the video post_id contradicts, and trusts a match by the post address', async () => {
+// 5회차 GA2 · 설계 검토 3 조건 2 · 6회차: 첨부 대상으로만 짝지은 게시물이 영상의 post_id와 다르면, post_id의 게시물이 이번 목록에 있을 때 그 게시물을 믿는다.
+// 없으면 어느 쪽이 맞는지 몰라 첨부 대상 게시물에 조회수와 영상 주소 별칭만 주고(영상 번호는 달지 않는다) 충돌로 센다. 게시물 주소가 그 영상 주소인 짝은 그대로 믿어 한 줄이다.
+test('Facebook follows the video post_id over a contradicting attachment when that post is listed, keeps only views and address otherwise, and trusts a match by the post address', async () => {
   const collect = (posts, videos) => collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
     const url = new URL(raw);
     if (url.pathname.endsWith('/me')) return ok({ id: '123' });
@@ -621,11 +621,63 @@ test('Facebook keeps only the views on an attachment match that the video post_i
   const video = { id: '555', post_id: '700', permalink_url: '/reel/555/', views: 9, published: true, created_time: '2026-10-29T12:10:00Z' };
   const byTarget = await collect([{ id: '123_700', created_time: '2026-10-29T12:00:00Z', permalink_url: 'https://www.facebook.com/synk/posts/700' }, { id: '123_701', created_time: '2026-10-29T11:00:00Z', permalink_url: 'https://www.facebook.com/synk/posts/701', attachments: { data: [{ target: { id: '555' } }] } }], [video]);
   assert.deepEqual(byTarget.posts.map(post => [post.externalId, post.videoId, post.metrics.views, (post.aliasUrls || []).map(a => a.url)]),
-    [['123_700', null, null, []], ['123_701', null, 9, []]]);
-  assert.deepEqual(byTarget.coverage.videoPostIds, { asked: true, videos: 1, withPostId: 1, matched: 1, agreed: 0, byPostId: 0, conflicts: 1 });
+    [['123_700', '555', 9, ['https://www.facebook.com/reel/555/']], ['123_701', null, null, []]], 'the post the post_id names is in the list, so it wins over the attachment');
+  assert.deepEqual(byTarget.coverage.videoPostIds, { asked: true, videos: 1, withPostId: 1, matched: 0, agreed: 0, byPostId: 1, conflicts: 0 });
+  const notListed = await collect([{ id: '123_701', created_time: '2026-10-29T11:00:00Z', permalink_url: 'https://www.facebook.com/synk/posts/701', attachments: { data: [{ target: { id: '555' } }] } }], [video]);
+  assert.deepEqual(notListed.posts.map(post => [post.externalId, post.videoId, post.metrics.views, (post.aliasUrls || []).map(a => a.url)]),
+    [['123_701', null, 9, ['https://www.facebook.com/reel/555/']]], 'the conflicting video keeps its address as an alias, without a video id');
+  assert.deepEqual(notListed.coverage.videoPostIds, { asked: true, videos: 1, withPostId: 1, matched: 1, agreed: 0, byPostId: 0, conflicts: 1 });
   const byAddress = await collect([{ id: '123_701', created_time: '2026-10-29T11:00:00Z', permalink_url: 'https://www.facebook.com/reel/555/', attachments: { data: [{ target: { id: '555' } }] } }], [video]);
   assert.deepEqual(byAddress.posts.map(post => [post.externalId, post.url, post.videoId, post.metrics.views]), [['123_701', 'https://www.facebook.com/reel/555/', '555', 9]], 'one row for one reel address');
   assert.deepEqual(byAddress.coverage.videoPostIds, { asked: true, videos: 1, withPostId: 1, matched: 1, agreed: 0, byPostId: 0, conflicts: 0 });
+  // 6회차 GA9: 충돌한 짝의 영상 주소를 못 읽으면 목록을 다 본 것으로 치지 않는다.
+  const brokenConflict = await collect([{ id: '123_701', created_time: '2026-10-29T11:00:00Z', permalink_url: 'https://www.facebook.com/synk/posts/701', attachments: { data: [{ target: { id: '555' } }] } }], [{ ...video, permalink_url: 'https://[' }]);
+  assert.equal(brokenConflict.coverage.inventoryComplete, false);
+  // 충돌한 짝도 그 줄을 차지한다 — 같은 게시물을 post_id로 가리키는 다른 영상은 따로 줄이다.
+  const second = await collect([{ id: '123_701', created_time: '2026-10-29T11:00:00Z', permalink_url: 'https://www.facebook.com/synk/posts/701', attachments: { data: [{ target: { id: '555' } }] } }],
+    [video, { id: '556', post_id: '701', permalink_url: '/reel/556/', views: 90, published: true, created_time: '2026-10-29T12:20:00Z' }]);
+  assert.deepEqual(second.posts.map(post => [post.externalId, post.videoId, post.metrics.views, (post.aliasUrls || []).map(a => a.url)]),
+    [['123_701', null, 9, ['https://www.facebook.com/reel/555/']], ['556', '556', 90, []]]);
+});
+
+// 게시물 줄을 차지하는 영상은 회차와 목록 순서로 바뀌지 않는다(6회차 자체 불변식 시험). 첨부 대상이 있는 게시물은 첨부 대상 영상만 차지하고, 그 영상이 목록에
+// 없으면 이번에는 아무도 차지하지 않는다. 게시물 목록에 없는 게시물은 같은 post_id의 영상 가운데 가장 먼저 올린 영상이 차지한다. 차지하지 못한 영상 줄에는
+// 그 게시물 번호를 sharedPostId로 붙인다. 게시물 주소가 릴스 주소면 그 게시물 줄의 영상 번호는 그 릴스다.
+test('Facebook decides which video holds a post the same way whatever the run and the list order', async () => {
+  const collect = (posts, videos) => collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: posts });
+    if (url.pathname.endsWith('/videos')) return ok({ data: videos });
+    throw new Error('unexpected');
+  } });
+  const v555 = { id: '555', post_id: '700', permalink_url: '/reel/555/', views: 4, published: true, created_time: '2026-10-29T12:00:00Z' };
+  const v556 = { id: '556', post_id: '700', permalink_url: '/reel/556/', views: 8, published: true, created_time: '2026-10-29T12:05:00Z' };
+  const feed = { id: '123_700', created_time: '2026-10-29T12:00:00Z', permalink_url: 'https://www.facebook.com/synk/posts/700', attachments: { data: [{ target: { id: '555' } }] } };
+  const absent = await collect([feed], [v556]);
+  assert.deepEqual(absent.posts.map(post => [post.externalId, post.videoId, post.metrics.views, post.sharedPostId]), [['123_700', null, null, undefined], ['556', '556', 8, '123_700']], 'the attached video is absent, so nobody holds the post');
+  for (const videos of [[v555, v556], [v556, v555]]) {
+    const alone = await collect([], videos);
+    assert.deepEqual(alone.posts.map(post => [post.externalId, post.pagePostId, post.videoId, post.sharedPostId ?? null]).sort(), [['123_700', '123_700', '555', null], ['556', null, '556', '123_700']], 'the earlier video holds the post in either order');
+  }
+  // 게시물 목록에 없는 게시물은 주소를 읽은 영상이 먼저 차지한다 — 주소 없는 줄은 서버가 빼서 그 게시물 줄이 앞 영상을 놓지 못한다.
+  const unreadable = await collect([], [{ ...v555, permalink_url: 'https://[' }, v556]);
+  assert.deepEqual(unreadable.posts.map(post => [post.externalId, post.pagePostId, post.videoId, post.sharedPostId ?? null]).sort(), [['123_700', '123_700', '556', null], ['555', null, '555', '123_700']]);
+  const reel = await collect([{ id: '123_700', created_time: '2026-10-29T12:00:00Z', permalink_url: 'https://www.facebook.com/reel/555/' }], [v556]);
+  assert.deepEqual(reel.posts.map(post => [post.externalId, post.videoId, post.sharedPostId ?? null]), [['123_700', '555', null], ['556', '556', '123_700']], 'a reel address names the video of its post');
+});
+
+// 6회차 GA1 · GA8: 게시물 주소가 영상 주소면 그 영상이 그 게시물 줄의 영상이다. 같은 게시물의 다른 영상이 /videos 순서로 먼저 와도 따로 줄이다.
+test('Facebook gives a post row to the video its own address names, whatever order the video list returns', async () => {
+  const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:00Z', permalink_url: 'https://www.facebook.com/reel/555/' }] });
+    if (url.pathname.endsWith('/videos')) return ok({ data: [{ id: '556', post_id: '700', permalink_url: '/reel/556/', views: 8, published: true, created_time: '2026-10-29T12:05:00Z' }, { id: '555', post_id: '700', permalink_url: '/reel/555/', views: 4, published: true, created_time: '2026-10-29T12:00:00Z' }] });
+    throw new Error('unexpected');
+  } });
+  assert.deepEqual(result.posts.map(post => [post.externalId, post.url, post.pagePostId, post.videoId, post.metrics.views]),
+    [['123_700', 'https://www.facebook.com/reel/555/', '123_700', '555', 4], ['556', 'https://www.facebook.com/reel/556/', null, '556', 8]]);
 });
 
 test('Facebook reads videos again without post_id only when Meta rejects that field, and says so only when a reel lost its number', async () => {

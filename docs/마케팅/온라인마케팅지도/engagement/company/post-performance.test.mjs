@@ -490,10 +490,13 @@ test('Facebook auto tracking reads stored aliases: a feed row registers its reel
   post('fb', 'https://www.facebook.com/synkworld/posts/710', 5, [{ url: 'https://www.facebook.com/reel/560/', publishedAt: ago(5) }], { pagePostId: '123_710' });
   service.register(admin, { channelId: 'fb', url: 'https://www.facebook.com/permalink.php?story_fbid=720&id=123', publishedAt: ago(6) });
   post('fb', 'https://www.facebook.com/reel/561/', 6, undefined, { pagePostId: '123_720' });
+  // 6회차 GA6: 피드 글이 찾는 기간 밖이어도 릴스 별칭이 기간 안이면 올린다. 주 주소가 영상인데 기간 밖이면 올리지 않는다.
+  post('fb', 'https://www.facebook.com/synkworld/posts/730', 24 + 5 / 60, [{ url: 'https://www.facebook.com/reel/562/', publishedAt: ago(23 + 55 / 60) }]);
+  post('fb', 'https://www.facebook.com/reel/563/', 25, [{ url: 'https://www.facebook.com/synkworld/posts/740', publishedAt: ago(2) }]);
   const entries = () => store.all('postPerformanceEntries');
-  assert.equal((await service.collectDue()).autoRegistered, 2);
+  assert.equal((await service.collectDue()).autoRegistered, 3);
   assert.deepEqual(entries().filter(row => row.origin === 'auto').map(row => [row.url, row.publishedAt]).sort(),
-    [['https://www.facebook.com/reel/555/', ago(1.8)], ['https://www.instagram.com/p/FEED9/', ago(2)]]);
-  assert.equal(entries().length, 6);
+    [['https://www.facebook.com/reel/555/', ago(1.8)], ['https://www.facebook.com/reel/562/', ago(23 + 55 / 60)], ['https://www.instagram.com/p/FEED9/', ago(2)]]);
+  assert.equal(entries().length, 7);
   assert.equal((await service.collectDue()).autoRegistered, 0, 'the next pass finds the reel record through the alias');
 });

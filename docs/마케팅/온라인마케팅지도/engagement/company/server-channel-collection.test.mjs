@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createCompanyApp} from './server.mjs';
 import {Store} from './store.mjs';
+import {collectChannel} from './collectors.mjs';
 
 async function fixture(t,{enabled=true,collector,oauthFetch,expired=false}={}){
   const keys=['SYNK_COMPANY_BACKGROUND_JOBS_ENABLED','SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED'],before=keys.map(k=>process.env[k]);
@@ -146,7 +147,8 @@ test('scene 10 and 11: a retired row comes back instead of a new one, and a vide
   round=3;await f.again();
   assert.deepEqual(f.rows().map(r=>[r.id,r.retired]),[['fb:123_700',false],['fb:123_800',false]],'the retired row is revived, no fb:555');
   round=4;await f.again();
-  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.retired]),[['fb:123_700','123_700','555',true],['fb:123_701','123_701','555',false],['fb:123_800','123_800',null,false]]);
+  // 555는 이번에 123_701이 차지했으므로 앞 줄은 그 영상 번호를 놓는다(6회차 자체 불변식 시험 — 같은 영상의 줄은 하나). 게시물 번호는 그대로다.
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.retired]),[['fb:123_700','123_700',null,true],['fb:123_701','123_701','555',false],['fb:123_800','123_800',null,false]]);
 });
 
 test('scene 12: production-form rows without keys keep their ids and only gain the page post id',async t=>{
@@ -207,9 +209,130 @@ test('when the video that holds a post changes, the post row follows the new vid
   round=2;await f.again();
   assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.url,r.retired]),[['fb:123_700','123_700','555',FEED,false],['fb:555',null,'555',REEL,true],['fb:556',null,'556',R556,false]]);
   assert.deepEqual(f.app.store.get('posts','fb:123_700').aliasUrls,[{url:REEL,publishedAt:AT_VIDEO}]);
-  assert.equal(f.app.store.get('posts','fb:555').mergedInto,undefined,'an unseen row is not a merged row');
+  assert.equal(f.app.store.get('posts','fb:555').mergedInto,'fb:123_700','the separate row of the new video joins the post row');
   const views=id=>f.app.store.all('snapshots').filter(s=>s.postId===id).map(s=>s.views);
   assert.deepEqual([views('fb:123_700'),views('fb:556')],[[9],[90]]);
+});
+
+// 6회차 GA3 · GA4: 합친 뒤 그 게시물의 영상이 바뀌면, 번호 없이 다시 온 앞 영상은 내린 자기 줄을 되살린다(합친 줄로 가지 않는다). 최근 수집에서도 같은 영상의
+// 활성 줄은 하나다. 게시물 줄이 앞 영상의 번호(fb:555)를 쓰면 앞 영상은 「fb:video:555」 줄이다.
+test('after a merge, a video that no longer holds the post gets its own row back, and one video keeps one active row',async t=>{
+  let round=1;const R556='https://www.facebook.com/reel/556/';
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('555',{videoId:'555',publishedAt:AT_VIDEO,metrics:{views:9}})]
+    :round===2?[fbPost('123_700',{pagePostId:'123_700',url:FEED})]
+    :round===3?[fbPost('123_700',{pagePostId:'123_700',videoId:'555',url:FEED,aliasUrls:[{url:REEL,publishedAt:AT_VIDEO}],metrics:{views:12}})]
+    :round===4?[fbPost('123_700',{pagePostId:'123_700',videoId:'556',url:FEED,aliasUrls:[{url:R556,publishedAt:AT_VIDEO}],metrics:{views:30}})]
+    :[fbPost('555',{videoId:'555',publishedAt:AT_VIDEO,metrics:{views:19}}),fbPost('123_700',{pagePostId:'123_700',videoId:'556',url:FEED,metrics:{views:31}})],PARTIAL));
+  for(round=2;round<=5;round++)await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.retired]),[['fb:123_700','123_700','556',false],['fb:555',null,'555',false]]);
+  assert.equal(f.app.store.get('posts','fb:555').mergedInto,undefined);
+  assert.deepEqual(f.app.store.get('posts','fb:123_700').aliasUrls,[{url:R556,publishedAt:AT_VIDEO}],'no address of the other video');
+  // 게시물 줄이 앞 영상의 번호를 쓰는 경우(번호 없는 영상 줄이 게시물 번호를 얻은 줄)
+  let r2=1;
+  const g=await fbFixture(t,async()=>fbResult(r2===1?[fbPost('555',{videoId:'555',publishedAt:AT_VIDEO,metrics:{views:9}})]
+    :r2===2?[fbPost('123_700',{pagePostId:'123_700',videoId:'555',metrics:{views:10}})]
+    :r2===3?[fbPost('123_700',{pagePostId:'123_700',videoId:'556',url:R556,metrics:{views:30}})]
+    :[fbPost('123_700',{pagePostId:'123_700',videoId:'556',url:R556,metrics:{views:31}}),fbPost('555',{videoId:'555',metrics:{views:11}})],PARTIAL));
+  for(r2=2;r2<=4;r2++)await g.again();
+  assert.deepEqual(g.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.url,r.retired]),[['fb:555','123_700','556',R556,false],['fb:video:555',null,'555',REEL,false]]);
+});
+
+// 6회차 GA4: 차지한 영상이 바뀐 회차에 새 영상의 따로 줄이 있으면(최근 수집) 그 줄을 게시물 줄에 합친다. 같은 영상의 활성 줄은 하나다.
+// 6회차 GA5: 그 회차에 새 영상의 조회수가 비었으면 같은 날 앞 영상의 조회수로 채우지 않는다.
+test('when the held video changes, its separate row joins the post row, and the views of the day are not the previous video ones',async t=>{
+  let round=1;const R556='https://www.facebook.com/reel/556/';
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('123_700',{pagePostId:'123_700',videoId:'555',url:FEED,metrics:{views:12,likes:2}}),fbPost('556',{videoId:'556',url:R556,metrics:{views:8}})]
+    :[fbPost('123_700',{pagePostId:'123_700',videoId:'556',url:FEED,aliasUrls:[{url:R556,publishedAt:AT}],metrics:{views:null,likes:3}})],PARTIAL));
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.videoId,r.retired]),[['fb:123_700','556',false],['fb:556','556',true]]);
+  const day=f.app.store.all('snapshots').filter(s=>s.postId==='fb:123_700');
+  assert.equal(day.length,1);assert.deepEqual([day[0].views,day[0].likes],[null,3]);
+});
+
+// 6회차 자체 불변식 시험: 게시물 줄이 쥔 영상이 이번 회차에 그 게시물의 따로 줄(sharedPostId)로 오면 게시물 줄은 그 영상 번호 · 주소를 놓는다.
+// 같은 영상의 활성 줄은 하나이고, 게시물 줄의 그날 조회수는 놓은 영상의 값으로 채우지 않는다.
+test('a post row lets go of a video that this collection returns as a separate row of the post',async t=>{
+  let round=1;const R556='https://www.facebook.com/reel/556/';
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('123_700',{pagePostId:'123_700',videoId:'556',url:R556,metrics:{views:46}})]
+    :[fbPost('123_700',{pagePostId:'123_700',url:FEED,metrics:{likes:2}}),fbPost('556',{videoId:'556',sharedPostId:'123_700',url:R556,metrics:{views:56}})],PARTIAL));
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.url,r.retired]),[['fb:123_700','123_700',null,FEED,false],['fb:556',null,'556',R556,false]]);
+  assert.equal(f.app.store.get('posts','fb:123_700').aliasUrls,undefined,'no address of the video it let go');
+  const views=id=>f.app.store.all('snapshots').filter(s=>s.postId===id).map(s=>s.views);
+  assert.deepEqual([views('fb:123_700'),views('fb:556')],[[null],[56]]);
+});
+
+// 6회차 자체 불변식 시험: 게시물 줄이 영상을 쥔 근거(videoHeldBy: 게시물 주소 > 첨부 대상 > post_id)보다 약한 근거의 차지는 쥔 영상을 바꾸지 않고, 그 영상은
+// 그 게시물의 따로 줄이다. 같은 근거면 바꾼다(차지한 영상이 지워진 게시물).
+test('a weaker claim does not take the video a post row holds, and the claiming video keeps its own row',async t=>{
+  let round=1;const R556='https://www.facebook.com/reel/556/';
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('123_700',{pagePostId:'123_700',videoId:'555',videoHeldBy:'attachment',url:FEED,aliasUrls:[{url:REEL,publishedAt:AT_VIDEO}],metrics:{views:12}})]
+    :round===2?[fbPost('123_700',{pagePostId:'123_700',videoId:'556',videoHeldBy:'postid',url:R556,metrics:{views:30}})]
+    :[fbPost('123_700',{pagePostId:'123_700',videoId:'556',videoHeldBy:'attachment',url:FEED,aliasUrls:[{url:R556,publishedAt:AT_VIDEO}],metrics:{views:31}})],PARTIAL));
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.url,r.retired]),[['fb:123_700','123_700','555',FEED,false],['fb:556',null,'556',R556,false]]);
+  assert.equal(f.app.store.get('posts','fb:123_700').videoHeldBy,'attachment');
+  round=3;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.videoId,r.retired]),[['fb:123_700','556',false],['fb:556','556',true]],'an equal claim changes the held video and the separate row joins');
+});
+
+// 자체 불변식 시험: 이번 회차에 쓰지 않은 줄도 다른 게시물이 이번에 차지한 영상은 놓는다. 되살린 줄의 게시물 번호를 다른 활성 줄이 이미 가졌으면 그 번호는 내려놓는다.
+test('rows this collection does not write let go of a video another post takes, and a revived row drops a page post id another active row holds',async t=>{
+  let round=1;const R557='https://www.facebook.com/reel/557/';
+  const f=await fbFixture(t,async()=>fbResult(round===1?[fbPost('123_700',{pagePostId:'123_700',videoId:'557',videoHeldBy:'attachment',url:FEED,aliasUrls:[{url:R557,publishedAt:AT_VIDEO}]})]
+    :[fbPost('123_701',{pagePostId:'123_701',videoId:'557',videoHeldBy:'attachment',url:'https://www.facebook.com/synk/posts/701',aliasUrls:[{url:R557,publishedAt:AT_VIDEO}],metrics:{views:57}})],PARTIAL));
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.retired]),[['fb:123_700','123_700',null,false],['fb:123_701','123_701','557',false]]);
+  assert.equal(f.app.store.get('posts','fb:123_700').aliasUrls,undefined);
+  let r2=1;
+  const g=await fbFixture(t,async()=>fbResult(r2===1?[fbPost('556',{videoId:'556',pagePostId:'123_700',url:'https://www.facebook.com/reel/556/'}),fbPost('555',{videoId:'555'})]
+    :r2===2?[fbPost('555',{videoId:'555'})]
+    :r2===3?[fbPost('123_700',{pagePostId:'123_700',videoId:'555',videoHeldBy:'attachment',url:FEED,aliasUrls:[{url:REEL,publishedAt:AT_VIDEO}]})]
+    :[fbPost('556',{videoId:'556',url:'https://www.facebook.com/reel/556/'})],r2===4?PARTIAL:undefined));
+  for(r2=2;r2<=4;r2++)await g.again();
+  assert.deepEqual(g.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.retired]),[['fb:555','123_700','555',false],['fb:556',null,'556',false]],'the revived row of 556 drops 123_700, which fb:555 holds');
+});
+
+// 설계 검토 4 조건 1 · 장면 1: 첨부 칸이 빠진 회차에 수집기가 post_id로 다른 영상을 고르면, 저장 줄이 첨부 대상으로 쥔 영상을 바꾸지 않는다. 그 회차의 그 영상
+// 조회수는 그 영상 자기 줄로 가고, 쥔 영상의 조회수는 게시물 줄로 돌아온다. 쥔 영상이 목록에서 빠진 회차에도 그대로다. 두 영상의 관측 값이 한 줄에 섞이지 않는다.
+test('collector to server: a missed attachment never swaps the video a post row holds, and the two videos keep their own views',async t=>{
+  let round=1;
+  const ok=value=>({ok:true,status:200,json:async()=>value});
+  const fetchImpl=async raw=>{const url=new URL(raw);
+    if(url.pathname.endsWith('/me'))return ok({id:'123'});
+    if(url.pathname.endsWith('/posts'))return ok({data:[{id:'123_700',created_time:AT,permalink_url:FEED,...(round===2?{}:{attachments:{data:[{target:{id:'556'}}]}})}]});
+    if(url.pathname.endsWith('/videos'))return ok({data:[...(round===4?[]:[{id:'556',post_id:'700',permalink_url:'/reel/556/',views:59+round,published:true,created_time:AT_VIDEO}]),{id:'555',post_id:'700',permalink_url:'/reel/555/',views:49+round,published:true,created_time:AT}]});
+    throw new Error('unexpected');};
+  const f=await fbFixture(t,async(live,credentials,options)=>collectChannel(live.canonicalUrl,credentials,{...(options||{}),fetchImpl}));
+  for(round=2;round<=5;round++){await f.again();assert.equal(f.app.store.get('posts','fb:123_700').videoId,'556',`round ${round}`);}
+  const views=id=>[...new Set(f.app.store.all('snapshots').filter(s=>s.postId===id).map(s=>s.views))];
+  assert.deepEqual(views('fb:123_700'),[64],'the post row has the views of 556');
+  assert.deepEqual(views('fb:555'),[54],'555 keeps its own row');
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.retired]),[['fb:123_700','123_700','556',false],['fb:555',null,'555',false]]);
+});
+
+// 설계 검토 4 장면 2: 운영 꼴 — 열쇠 없는 저장 줄(릴스 주소 하나, 피드 둘)에 영상 둘 게시물이 오는 첫 수집. 기존 줄 번호는 그대로이고, 새 줄은 둘째 영상 하나, 내려간 줄은 없다.
+test('production form: keyless stored rows keep their ids when a two-video post is collected, and only the second video gets a new row',async t=>{
+  let round=1;
+  const ok=value=>({ok:true,status:200,json:async()=>value});
+  const fetchImpl=async raw=>{const url=new URL(raw);
+    if(url.pathname.endsWith('/me'))return ok({id:'123'});
+    if(url.pathname.endsWith('/posts'))return ok({data:[{id:'123_700',created_time:AT,permalink_url:'https://www.facebook.com/reel/555/'},{id:'123_701',created_time:AT,permalink_url:'https://www.facebook.com/synk/posts/701',attachments:{data:[{target:{id:'557'}},{target:{id:'558'}}]}},{id:'123_702',created_time:AT,permalink_url:'https://www.facebook.com/synk/posts/702'}]});
+    if(url.pathname.endsWith('/videos'))return round===1?ok({data:[]}):ok({data:[{id:'555',post_id:'700',permalink_url:'/reel/555/',views:5,published:true,created_time:AT},{id:'557',post_id:'701',permalink_url:'/reel/557/',views:7,published:true,created_time:AT},{id:'558',post_id:'701',permalink_url:'/reel/558/',views:8,published:true,created_time:AT_VIDEO}]});
+    throw new Error('unexpected');};
+  const f=await fbFixture(t,async(live,credentials,options)=>collectChannel(live.canonicalUrl,credentials,{...(options||{}),fetchImpl}));
+  for(const row of f.app.store.all('posts'))if(row.channelId==='fb'){const {pagePostId:_p,videoId:_v,videoHeldBy:_h,...rest}=row;f.app.store.put('posts',row.id,rest);}
+  round=2;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.retired]),[['fb:123_700','123_700','555',false],['fb:123_701','123_701','557',false],['fb:123_702','123_702',null,false],['fb:558',null,'558',false]]);
+});
+
+// 6회차 GA7: 시각 없이 저장된 별칭은 뒤 회차에 받은 시각으로 채운다.
+test('an alias stored without a time takes the time a later collection gives',async t=>{
+  let round=1;
+  const f=await fbFixture(t,async()=>fbResult([fbPost('123_700',{pagePostId:'123_700',videoId:'555',url:FEED,aliasUrls:[{url:REEL,publishedAt:round===1?null:AT_VIDEO}]})],PARTIAL));
+  assert.deepEqual(f.app.store.get('posts','fb:123_700').aliasUrls,[{url:REEL,publishedAt:null}]);
+  round=2;await f.again();
+  assert.deepEqual(f.app.store.get('posts','fb:123_700').aliasUrls,[{url:REEL,publishedAt:AT_VIDEO}]);
 });
 
 test('complete inventory hides unavailable posts without erasing history; partial inventory never hides unseen posts',async t=>{
