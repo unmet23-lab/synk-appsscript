@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>옥상 장면 촬영</title>
+<style>
+:root { --바탕: #0e0f12; --면: #1a1c21; --글: #f3f1ec; --옅은글: #a9a6a0; --강조: #ffb35c; --빨강: #ff5a4f; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--바탕); color: var(--글); font-family: "SUIT Variable", "SUIT", system-ui, sans-serif; }
+main { max-width: 960px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 20px; font-weight: 700; margin: 4px 0 12px; }
+#무대 { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; overflow: hidden; }
+#무대 video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#자막 { position: absolute; left: 0; right: 0; bottom: 6%; text-align: center; font-size: clamp(16px, 2.6vw, 26px); font-weight: 600; text-shadow: 0 2px 6px #000, 0 0 2px #000; padding: 0 8%; }
+#녹화표 { position: absolute; top: 12px; left: 12px; display: none; align-items: center; gap: 8px; background: rgba(0,0,0,.55); padding: 6px 10px; border-radius: 999px; font-size: 14px; }
+#녹화표 i { width: 10px; height: 10px; border-radius: 50%; background: var(--빨강); animation: 깜빡 1s infinite; }
+@keyframes 깜빡 { 50% { opacity: .2; } }
+#판 { margin-top: 14px; background: var(--면); border-radius: 10px; padding: 16px; min-height: 140px; }
+#판 .누구 { color: var(--강조); font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+#판 .말 { font-size: 18px; line-height: 1.5; }
+#판 .보기 { color: var(--옅은글); font-size: 14px; margin-top: 6px; }
+.단추들 { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+button { font: inherit; font-size: 16px; font-weight: 700; border: 0; border-radius: 999px; padding: 12px 20px; cursor: pointer; background: #2b2e35; color: var(--글); }
+button.주 { background: var(--강조); color: #1b1206; }
+button.녹음 { background: var(--빨강); color: #fff; }
+button:disabled { opacity: .4; cursor: default; }
+.테이크 { display: flex; gap: 10px; flex-wrap: wrap; }
+.테이크 label { display: flex; align-items: center; gap: 8px; background: #2b2e35; border-radius: 10px; padding: 10px 14px; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+  <h1>학생 영화 「안녕, 서울」 · 옥상 장면 촬영</h1>
+  <div id="무대">
+    <video id="화면" playsinline></video>
+    <div id="자막"></div>
+    <div id="녹화표"><i></i>녹음 중</div>
+  </div>
+  <div id="판"></div>
+</main>
+<script>
+/* 장면 차례. 클립 이름은 시험판짓기.cjs가 만든 영상/ 폴더의 파일이다.
+   종류: 친구 · 감독은 영상을 그대로 틀고, 나는 듣는 컷을 되풀이로 틀며 학생이 마이크로 말한다. */
+const 차례 = [
+  { 종류: '친구', 클립: 'N1', 말: '여기 처음 와 봐요?' },
+  { 종류: '나', 클립: 'N9', 물음: '여기 처음 와 봐요?', 보기: '예: 네, 처음이에요. 와, 서울이 다 보이네요.', 이름: '답 1' },
+  { 종류: '친구', 클립: 'V1d', 말: '서울, 어때요?' },
+  { 종류: '나', 클립: 'V3', 물음: '서울, 어때요?', 보기: '5화에 내가 고친 대사로 답해 보세요. 예: 아직 잘 몰라요. 그래서 매일 재밌어요.', 이름: '답 2' },
+  { 종류: '친구', 클립: 'N2', 말: '뭐가 제일 어려웠어요?' },
+  { 종류: '나', 클립: 'N10', 물음: '뭐가 제일 어려웠어요?', 보기: '시즌에 실제로 어려웠던 것을 내 말로. 예: 높임말이 제일 어려웠어요.', 이름: '답 3' },
+  { 종류: '친구', 클립: 'N3', 말: '아, 맞아요. 서울 생활, 처음엔 다 어렵죠.' },
+  { 종류: '친구', 클립: 'N4', 말: '우리 동갑이죠? 말 놓을까요?' },
+  { 종류: '나', 클립: 'N9', 물음: '우리 동갑이죠? 말 놓을까요?', 보기: '반말로 받아 보세요. 예: 응, 좋아.', 이름: '답 4' },
+  { 종류: '친구', 클립: 'N5', 말: '그럼… 밥 먹었어?' },
+  { 종류: '나', 클립: 'N10', 물음: '그럼… 밥 먹었어?', 보기: '말을 놓기로 했으니 반말로. 예: 아니, 아직. 너는?', 이름: '답 5' },
+  { 종류: '친구', 클립: 'N6', 말: '나도 아직. 같이 먹을래?' },
+  { 종류: '나', 클립: 'N9', 물음: '나도 아직. 같이 먹을래?', 보기: '받거나, 내 나라 음식을 제안해 보세요. 예: 좋아! 떡볶이 먹으러 가자.', 이름: '답 6' },
+  { 종류: '친구', 클립: 'N7', 말: '…근데, 왜 서울에 왔어?' },
+  { 종류: '나', 클립: 'V3', 물음: '…근데, 왜 서울에 왔어?', 보기: '진짜 까닭을 내 말로. 엄마에게는 「공부하러 간다」고만 했던 꿈을 처음 소리 내 말해 보세요.', 이름: '답 7', 마지막: true },
+  { 종류: '친구', 클립: 'N8', 말: '' },
+  { 종류: '감독', 클립: 'N11', 말: '컷! 좋아요. 마지막 대사만 한 번 더, 더 설레는 목소리로요.' },
+  { 종류: '다시', 클립: 'V3', 물음: '…근데, 왜 서울에 왔어?', 보기: '같은 대답을 이번엔 더 설레는 목소리로.', 이름: '답 7 · 테이크 2' },
+  { 종류: '고르기' },
+  { 종류: '감독', 클립: 'N12', 말: '컷, 오케이!' },
+  { 종류: '끝' },
+];
+
+const 화면 = document.getElementById('화면'), 자막 = document.getElementById('자막'), 판 = document.getElementById('판'), 녹화표 = document.getElementById('녹화표');
+const 녹음들 = {};          // 이름 → Blob
+let 고른테이크 = 1, 마이크 = null, 번호 = 0;
+
+function 클립주소(이름) { return `영상/${이름}.mp4`; }
+function 판쓰기(html) { 판.innerHTML = html; }
+function 틀기(이름, { 되풀이 = false, 소리 = 1 } = {}) {
+  return new Promise((됨) => {
+    화면.loop = 되풀이; 화면.src = 클립주소(이름); 화면.volume = 소리; 화면.currentTime = 0;
+    화면.onended = () => { if (!되풀이) 됨(); };
+    화면.play().catch(() => 됨());
+    if (되풀이) 됨();
+  });
+}
+
+async function 마이크열기() {
+  if (마이크) return 마이크;
+  마이크 = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+  return 마이크;
+}
+
+function 녹음하기() {
+  const 기록 = new MediaRecorder(마이크);
+  const 조각 = [];
+  기록.ondataavailable = (e) => 조각.push(e.data);
+  const 끝남 = new Promise((됨) => { 기록.onstop = () => 됨(new Blob(조각, { type: 기록.mimeType })); });
+  기록.start();
+  녹화표.style.display = 'flex';
+  return { 멈추기: () => { 기록.stop(); 녹화표.style.display = 'none'; return 끝남; } };
+}
+
+function 내차례(칸) {
+  return new Promise(async (됨) => {
+    자막.textContent = '';
+    await 틀기(칸.클립, { 되풀이: true, 소리: 0.35 });
+    const 그리기 = (녹음됨) => {
+      판쓰기(`<div class="누구">내 차례 · ${칸.이름}</div><div class="말">친구: 「${칸.물음}」</div><div class="보기">${칸.보기}</div>
+        <div class="단추들">${녹음됨
+          ? `<button id="듣기">들어 보기</button><button id="다시">다시 말하기</button><button class="주" id="다음">다음</button>`
+          : `<button class="녹음" id="말하기">● 말하기</button>`}</div>`);
+      if (!녹음됨) {
+        document.getElementById('말하기').onclick = () => {
+          const 녹 = 녹음하기();
+          판쓰기(`<div class="누구">내 차례 · ${칸.이름}</div><div class="말">말하고 있어요…</div><div class="단추들"><button class="주" id="그만">■ 다 말했어요</button></div>`);
+          document.getElementById('그만').onclick = async () => { 녹음들[칸.이름] = await 녹.멈추기(); 그리기(true); };
+        };
+      } else {
+        document.getElementById('듣기').onclick = () => new Audio(URL.createObjectURL(녹음들[칸.이름])).play();
+        document.getElementById('다시').onclick = () => 그리기(false);
+        document.getElementById('다음').onclick = () => { 화면.pause(); 됨(); };
+      }
+    };
+    그리기(false);
+  });
+}
+
+function 고르기() {
+  return new Promise((됨) => {
+    판쓰기(`<div class="누구">감독</div><div class="말">두 테이크 가운데 영화에 넣을 것을 고르세요.</div>
+      <div class="단추들 테이크">
+        <label><input type="radio" name="t" value="1" checked> 테이크 1 <button data-t="답 7">듣기</button></label>
+        <label><input type="radio" name="t" value="2"> 테이크 2 <button data-t="답 7 · 테이크 2">듣기</button></label>
+      </div><div class="단추들"><button class="주" id="골랐다">이걸로 할게요</button></div>`);
+    판.querySelectorAll('button[data-t]').forEach((b) => b.onclick = (e) => { e.preventDefault(); new Audio(URL.createObjectURL(녹음들[b.dataset.t])).play(); });
+    document.getElementById('골랐다').onclick = () => { 고른테이크 = Number(판.querySelector('input[name=t]:checked').value); 됨(); };
+  });
+}
+
+async function 내장면틀기() {
+  판쓰기(`<div class="누구">내가 찍은 장면</div><div class="말">처음부터 흐릅니다.</div>`);
+  for (const 칸 of 차례) {
+    if (칸.종류 === '친구') { 자막.textContent = 칸.말; await 틀기(칸.클립); }
+    if (칸.종류 === '나') {
+      const 이름 = 칸.마지막 && 고른테이크 === 2 ? '답 7 · 테이크 2' : 칸.이름;
+      const 소리 = new Audio(URL.createObjectURL(녹음들[이름]));
+      자막.textContent = '';
+      await 틀기(칸.클립, { 되풀이: true, 소리: 0.35 });
+      await new Promise((됨) => { 소리.onended = 됨; 소리.play().catch(됨); });
+      await new Promise((됨) => setTimeout(됨, 300));
+    }
+  }
+  화면.pause(); 자막.textContent = '';
+  판쓰기(`<div class="누구">끝</div><div class="말">이 장면은 8화 영화제에서 상영됩니다.</div><div class="단추들"><button id="또">한 번 더 보기</button></div>`);
+  document.getElementById('또').onclick = 내장면틀기;
+}
+
+async function 진행() {
+  for (; 번호 < 차례.length; 번호++) {
+    const 칸 = 차례[번호];
+    if (칸.종류 === '친구' || 칸.종류 === '감독') {
+      판쓰기(`<div class="누구">${칸.종류 === '감독' ? '감독' : '친구'}</div><div class="말">${칸.말 || '…'}</div>`);
+      자막.textContent = 칸.말; await 틀기(칸.클립);
+    } else if (칸.종류 === '나' || 칸.종류 === '다시') { await 내차례(칸); }
+    else if (칸.종류 === '고르기') { await 고르기(); }
+    else if (칸.종류 === '끝') { await 내장면틀기(); }
+  }
+}
+
+판쓰기(`<div class="말">상대역 친구가 일곱 번 묻습니다. 내 차례가 오면 마이크로 대답하세요. 마지막에 감독이 한 번 더 찍자고 하면, 두 테이크 가운데 하나를 고릅니다.</div>
+  <div class="단추들"><button class="주" id="시작">촬영 시작</button></div>`);
+document.getElementById('시작').onclick = async () => {
+  try { await 마이크열기(); } catch (e) { 판쓰기(`<div class="말">마이크를 쓸 수 없어요. 브라우저의 마이크 허용을 켜 주세요.</div>`); return; }
+  진행();
+};
+</script>
+</body>
+</html>
