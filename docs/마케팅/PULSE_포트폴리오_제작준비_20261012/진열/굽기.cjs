@@ -12,6 +12,9 @@
  *   node 굽기.cjs reel <쇼릴 결과 폴더> → reel-wide.mp4(1920 × 1200) · reel-tall.mp4(1080 × 1920) · 포스터 · reel.json(시각표)
  *
  * poster.src: raw(자막 전 그림 판) · final(완성본) · keep(이 자리의 지금 그림을 그대로 — 굽지 않음).
+ * preview: raw면 소리 없는 미리 보기(synk)를 자막 없는 판에서 굽는다(서울로 — 본편 final은 자막 판, 11-17).
+ * pano(가로 ÷ 세로 2.4 넘음 — 서울로 2000 × 550): 어느 자리에서도 자르지 않는다. 미리 보기 · 포스터는 원본 비율 그대로(큰 줄 1600 × 440, 작은 칸 960 × 264),
+ *   고객 앱 본편은 원본 크기(2000 × 550) 그대로, 고객 앱 포스터는 1280 × 352, PC 4:3 그림은 #111 바탕 가운데에 띠로, 쇼릴은 screens.<화면>.band 자리에 띠로 놓는다.
  * 생성 영상의 도구 표시가 공개 파일에 남지 않게 모든 결과는 다시 인코딩하고 -map_metadata -1 · -map_chapters -1로 머리 정보를 비운다.
  */
 const { execFileSync } = require('child_process');
@@ -41,14 +44,16 @@ function probe(f) {
 }
 function need(f) { if (!f || !fs.existsSync(f)) throw new Error('없는 파일: ' + f); return f; }
 function posterSrc(w) { return w.poster.src === 'raw' ? vpath(w.raw) : vpath(w.final); }
+// 아주 넓은 작품(pano)은 원본 비율 그대로 폭 W로 줄인다(높이는 짝수로).
+function panoScale(w, W) { const p = probe(need(vpath(w.raw || w.final))); return `scale=${W}:${Math.round(W * p.h / p.w / 2) * 2}:flags=lanczos`; }
 
 // 소리 없는 미리 보기: 큰 줄(쇼릴의 네 편)은 1280 × 720 · 세로 720 × 1280, 작은 칸은 960 × 540 · 세로 540 × 960.
 // 파일 크기가 아니라 화질로 맞춘다(11-09 유호님 「둘 다 바꿔」 — 3MB에 맞추던 판은 폭 1265px 칸에 초당 0.24Mb였다). 칸에 닿기 전에는 받지 않는다.
 const BIG = new Set(DATA.reel.cuts.map((c) => c.work));
 function preview(w, out) {
-  const src = need(vpath(w.final));
+  const src = need(vpath(w.preview === 'raw' ? w.raw : w.final));
   const big = BIG.has(w.key);
-  const scale = big ? (w.tall ? 'scale=720:1280:flags=lanczos' : 'scale=1280:720:flags=lanczos') : (w.tall ? 'scale=540:960:flags=lanczos' : 'scale=960:540:flags=lanczos');
+  const scale = w.pano ? panoScale(w, big ? 1600 : 960) : big ? (w.tall ? 'scale=720:1280:flags=lanczos' : 'scale=1280:720:flags=lanczos') : (w.tall ? 'scale=540:960:flags=lanczos' : 'scale=960:540:flags=lanczos');
   run('ffmpeg', ['-v', 'error', '-y', '-i', src, '-an', '-vf', `${scale},fps=24,format=yuv420p`, '-c:v', 'libx264', '-preset', 'slow', '-crf', '24', '-maxrate', '3000k', '-bufsize', '6000k', '-profile:v', 'high', '-threads', '6', '-movflags', '+faststart', ...CLEAN, out]);
 }
 function stillTo(src, t, vf, out, q = 80) {
@@ -57,7 +62,8 @@ function stillTo(src, t, vf, out, q = 80) {
 // 고객 앱 완성 광고: 소리 있는 1080p(원본 크기), 한 번만 압축(11-09 유호님 「둘 다 바꿔」 — 720p · 초당 0.8~2.8Mb였다).
 function full(w, out) {
   const src = need(vpath(w.final));
-  const scale = w.tall ? 'scale=1080:1920:flags=lanczos' : 'scale=1920:1080:flags=lanczos';
+  // 아주 넓은 작품은 원본 크기 그대로(2000 × 550 — 16:9로 늘이거나 자르지 않는다)
+  const scale = w.pano ? 'null' : w.tall ? 'scale=1080:1920:flags=lanczos' : 'scale=1920:1080:flags=lanczos';
   run('ffmpeg', ['-v', 'error', '-y', '-i', src, '-vf', `${scale},format=yuv420p`, '-c:v', 'libx264', '-preset', 'slow', '-crf', '21', '-maxrate', '8000k', '-bufsize', '16000k', '-profile:v', 'high', '-threads', '6', '-c:a', 'aac', '-b:a', '160k', '-ac', '2', '-movflags', '+faststart', ...CLEAN, out]);
 }
 
@@ -68,7 +74,7 @@ function doSynk() {
     preview(w, base + '.mp4');
     if (w.poster.src !== 'keep') {
       const big = BIG.has(w.key);
-      const shape = big ? (w.tall ? 'scale=720:1280:flags=lanczos' : 'scale=1600:900:flags=lanczos') : (w.tall ? 'scale=540:960:flags=lanczos' : 'scale=960:540:flags=lanczos');
+      const shape = w.pano ? panoScale(w, big ? 1600 : 960) : big ? (w.tall ? 'scale=720:1280:flags=lanczos' : 'scale=1600:900:flags=lanczos') : (w.tall ? 'scale=540:960:flags=lanczos' : 'scale=960:540:flags=lanczos');
       stillTo(need(posterSrc(w)), w.poster.t, shape, base + '.webp', big ? 82 : 78);
       console.log(w.key, (fs.statSync(base + '.webp').size / 1e3).toFixed(0) + 'KB');
     }
@@ -81,7 +87,7 @@ function doApp() {
     if (!w.final || w.poster.src === 'keep') { console.log('그대로', w.key); continue; }
     const mp4 = path.join(films, `${w.appId}-v1.mp4`), webp = path.join(films, `${w.appId}-poster-v1.webp`);
     full(w, mp4);
-    stillTo(need(posterSrc(w)), w.poster.t, w.tall ? 'scale=720:1280:flags=lanczos' : 'scale=1280:720:flags=lanczos', webp, 80);
+    stillTo(need(posterSrc(w)), w.poster.t, w.pano ? panoScale(w, 1280) : w.tall ? 'scale=720:1280:flags=lanczos' : 'scale=1280:720:flags=lanczos', webp, 80);
     console.log(w.appId, (fs.statSync(mp4).size / 1e6).toFixed(2) + 'MB', (fs.statSync(webp).size / 1e3).toFixed(0) + 'KB');
   }
 }
@@ -92,7 +98,10 @@ function doPc() {
     // 4:3로 자른다(옛 霜の肌理 그림과 같은 꼴). 세로 작품은 작품.json pc.y(가로 전체 × 3/4 창의 위 자리), 가로 작품은 그림이 있는 자리(rawBox)의 가운데.
     const src = need(posterSrc(w)), p = probe(src);
     const [bx, by, bw, bh] = (w.poster.src === 'raw' && w.rawBox) || [0, 0, p.w, p.h];
-    const vf = w.tall
+    // 아주 넓은 작품은 자르지 않고 4:3 그림 가운데에 띠로 놓는다(바탕 #111 — 세로 작품이 아닌 꼴의 옛 그림과 같은 바탕색)
+    const vf = w.pano
+      ? `crop=${bw}:${bh}:${bx}:${by},scale=1360:${Math.round(1360 * bh / bw / 2) * 2}:flags=lanczos,pad=1360:1020:0:(oh-ih)/2:0x111111`
+      : w.tall
       ? `crop=${bw}:${Math.round(bw * 3 / 4)}:${bx}:${by + (w.pc?.y ?? Math.round((bh - bw * 3 / 4) / 2))},scale=1360:1020:flags=lanczos`
       : `crop=${Math.round(bh * 4 / 3)}:${bh}:${bx + Math.round((bw - bh * 4 / 3) / 2)}:${by},scale=1360:1020:flags=lanczos`;
     stillTo(src, w.poster.t, vf, out, 80);
@@ -112,6 +121,8 @@ function frameFor(src, kind, o, box) {
   const s = DATA.reel.screens[kind], p = probe(src), [bx, by, w, h] = box || [0, 0, p.w, p.h], srcTall = h > w;
   const tail = 'fps=24,setsar=1,format=yuv420p';
   if (kind === 'wide' && srcTall) { const tw = Math.round(w * s.h / h / 2) * 2; return `crop=${w}:${h}:${bx}:${by},scale=${tw}:${s.h}:flags=lanczos,pad=${s.w}:${s.h}:${s.panelX}:0:black,${tail}`; }
+  // 아주 넓은 작품(가로 ÷ 세로 2.4 넘음 — 서울로 2000×550)은 두 화면 모두 자르지 않고 띠로 놓는다(screens.<화면>.band = { w, y }, 11-17 시안).
+  if (w / h > 2.4 && s.band) { const bw = s.band.w, bh = Math.round(h * bw / w / 2) * 2; return `crop=${w}:${h}:${bx}:${by},scale=${bw}:${bh}:flags=lanczos,pad=${s.w}:${s.h}:${Math.round((s.w - bw) / 2)}:${s.band.y}:black,${tail}`; }
   if (kind === 'tall' && !srcTall) { const th = Math.round(h * s.w / w / 2) * 2; return `crop=${w}:${h}:${bx}:${by},scale=${s.w}:${th}:flags=lanczos,pad=${s.w}:${s.h}:0:${s.panelY}:black,${tail}`; }
   const ar = s.w / s.h;
   let cw, ch;
