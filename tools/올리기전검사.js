@@ -69,6 +69,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { pathToFileURL } = require('node:url');
 const 묶음 = require('./lib/게시묶음.js');
+const 같은묶음 = require('./lib/같은언어묶음.js');
 const 규칙 = require('./lib/게시글규칙.js');
 const 정지 = require('./정지구간.js');
 const 한구성 = require('./한구성.js');
@@ -893,8 +894,8 @@ function rotationFindings(bundle, plates, { ledger = null, results = undefined }
 // 같은 언어를 쓰는 나라 계정끼리 같은 영상이 겹치지 않게. 24시간을 띄우면 어느 시간대의 달력으로 봐도 같은 날이 아니다).
 const APART_HOURS = 20;
 const SAME_LANGUAGE_HOURS = 24;
-const VIDEO_PLATFORMS = new Set(['tiktok', 'youtube', 'instagram', 'facebook', 'telegram', 'xiaohongshu', 'douyin', 'vk', 'rutube']);
-const languageGroupOf = (p, accounts) => accounts?.[p.account]?.languageGroup || p.language || accounts?.[p.account]?.language || '';
+const { VIDEO_PLATFORMS } = 같은묶음;
+const languageGroupOf = (p, accounts) => 같은묶음.묶음말(accounts?.[p.account], p.language);
 function samePlatformFindings(plates, { apartHours = APART_HOURS, sameLanguageHours = SAME_LANGUAGE_HOURS, accounts = null } = {}) {
   const list = plates.filter((p) => VIDEO_PLATFORMS.has(p.platform) && Number.isFinite(Date.parse(p.time || '')));
   const groups = new Map(); // 플랫폼(유튜브는 + 언어 묶음) → 20시간(유튜브 같은 언어는 24시간) 안에 붙은 판 무리
@@ -964,22 +965,8 @@ function slotTimeFindings(bundle, plates, { posted = null } = {}) {
 // 같은 말 두 계정에 똑같은 영상 파일(지문)이 걸리면 고칠 것. 돌림 판이면 두 계정의 나라별판도 본다 — 표지 · 게시글(원고) 파일이 같거나,
 // 판본 글에서 첫 카드(칸 「머리」) · 그 나라 예문(「예문」 · 「상황」) · 끝 질문(「끝질문」) · 게시글(「게시글」)이 같으면 고칠 것. 판본 글에 그 칸이
 // 하나도 없어 견줄 수 없으면 확인할 것(눈으로 본다). 배속 · 색만 바꿔 지문을 다르게 하는 길은 쓰지 않는다 — 그래서 글 · 표지까지 본다.
-const COUNTRY_SLOTS = [['첫 카드', ['머리']], ['그 나라 예문', ['예문', '상황']], ['끝 질문', ['끝질문']], ['게시글', ['게시글']]];
-// 11-11 Fable 5.2 끝 판 검수 P3-3 — 글자 그대로 같을 때만 잡으면 대소문자 · 문장부호 · 이모지만 다른 꼴이 지나가고, 「바꿔 말한 꼴」(「He always told me…」 /
-// 「He only ever told me…」)은 아예 안 보인다. 같음은 표기(대소문자 · 띄어쓰기 · 문장부호 · 기호)를 뺀 글로 견주고, 짧은 칸(첫 카드 · 끝 질문)은
-// 낱말 겹침이 절반을 넘으면 확인할 것으로 보인다(막지는 않는다 — 나라마다 다르게 썼는지 사람이 본다). 예문 · 게시글은 가르치는 한국어 줄이 같아
-// 겹침이 늘 높으니 같음만 본다.
-const SIMILAR_SLOTS = new Set(['첫 카드', '끝 질문']);
-const SIMILAR_AT = 0.5;
-const plainOf = (s) => String(s || '').normalize('NFC').toLowerCase().replace(/[\s\p{P}\p{S}]/gu, '');
-const wordsOf = (s) => new Set(String(s || '').normalize('NFC').toLowerCase().split(/[^\p{L}\p{M}\p{N}]+/u).filter((w) => w.length > 1));
-function overlapOf(a, b) {
-  const [x, y] = [wordsOf(a), wordsOf(b)];
-  if (x.size < 2 || y.size < 2) return 0; // 띄어 쓰지 않는 글 · 한 낱말 칸은 겹침으로 가르지 않는다
-  let n = 0;
-  for (const w of x) if (y.has(w)) n += 1;
-  return n / (x.size + y.size - n);
-}
+// 칸 · 같음 · 닮음(낱말 겹침 절반 이상 — 11-11 Fable 5.2 끝 판 검수 P3-3)의 셈은 tools/lib/같은언어묶음.js 하나다. 렌더 전 글자 검사(tools/글자검사.js
+// 전 · 판본)도 같은 셈으로 짝 판본 글을 본다(11-19 — 「배」 11-17 MX · PY 첫 카드가 같은 채 렌더 · 글자 · 뜻 검사를 다 지나 여기서야 막혔다).
 function sameLanguageFindings(bundle, plates) {
   const out = [];
   if (bundle.prep?.브랜드 !== 'LAB') return out;
@@ -999,7 +986,6 @@ function sameLanguageFindings(bundle, plates) {
   const versions = bundle.prep.돌림?.판본 || {};
   const versionOf = (p) => { const a = bundle.accounts?.[p.account]; return p.raw?.돌림 && a ? versions[a.rotationVersion || a.countryCode] || null : null; };
   const linesOf1 = (v) => { const f = fileIn(v?.글); if (!f) return null; try { const j = JSON.parse(fs.readFileSync(f, 'utf8').replace(/^\uFEFF/, '')); return Array.isArray(j?.줄) ? j.줄 : null; } catch { return null; } };
-  const textOf = (lines, names) => lines.filter((l) => l && names.includes(l.칸)).map((l) => String(l.글 || '').trim()).join('\n');
   for (const [key, ps] of groups) {
     for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) {
       const [x, y] = [ps[i], ps[j]];
@@ -1018,17 +1004,10 @@ function sameLanguageFindings(bundle, plates) {
       if (cx && cx === cy) same.push('표지');
       const [mx, my] = [shaOf(vx.원고?.[x.platform]), shaOf(vy.원고?.[y.platform])];
       if (mx && mx === my) same.push('게시글(원고 파일)');
-      const [lx, ly] = [linesOf1(vx), linesOf1(vy)];
-      let compared = 0;
-      const similar = [];
-      if (lx && ly) for (const [label, names] of COUNTRY_SLOTS) {
-        const [tx, ty] = [textOf(lx, names), textOf(ly, names)];
-        if (!tx || !ty) continue;
-        compared += 1;
-        if (plainOf(tx) === plainOf(ty)) { if (!same.includes(label)) same.push(label); continue; }
-        const overlap = SIMILAR_SLOTS.has(label) ? overlapOf(tx, ty) : 0;
-        if (overlap >= SIMILAR_AT) similar.push(`${label}(낱말 겹침 ${Math.round(overlap * 100)}% — 「${tx.replace(/\s+/g, ' ').slice(0, 40)}」 / 「${ty.replace(/\s+/g, ' ').slice(0, 40)}」)`);
-      }
+      const r = 같은묶음.칸견주기(linesOf1(vx), linesOf1(vy));
+      for (const label of r.same) if (!same.includes(label)) same.push(label);
+      const { compared } = r;
+      const similar = r.similar.map(같은묶음.닮음글);
       if (same.length) out.push({ level: FIX, code: 'same-language-same-lines', where, message: `같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정의 나라별판에서 ${same.join(' · ')}이(가) 같다 — 나라마다 다르게 쓴다(첫 카드 · 그 나라 예문 · 끝 질문 · 표지 · 게시글)` });
       if (similar.length) out.push({ level: LOOK, code: 'same-language-similar', where, message: `같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정의 나라별판에서 ${similar.join(' · ')}이(가) 바꿔 말한 꼴로 닮았다 — 그 나라 말투 · 상황으로 다르게 썼는지 본다(다음에 고칠 때 더 벌린다)` });
       if (!same.length && !compared) out.push({ level: LOOK, code: 'same-language-unchecked', where, message: `같은 언어 묶음(${key.replace('|', ' · ')}) 두 계정의 나라별판 차이를 판본 글로 견주지 못했다(「글」 파일에 머리 · 예문 · 끝질문 칸이 없다) — 첫 카드 · 그 나라 예문 · 끝 질문이 나라마다 다른지 눈으로 본다` });

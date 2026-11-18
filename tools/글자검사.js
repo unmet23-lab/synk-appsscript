@@ -5,6 +5,8 @@
  *   node tools/글자검사.js 전 <판본 글.json> [--엔진없이] [--json]
  *       렌더 전 — 판본 글(tools/lib/판본글.js 꼴)의 규칙 · 글꼴(네모 글자 · 결합 깨짐) · 읽기 시간과, 「상자」가 있는 줄은 크롬 엔진 잼
  *       (상자 넘침 · 테두리 닿음 · 엔진 줄바꿈의 낱말 중간 · 줄머리 금칙 · 시스템 대체 글꼴 · x · y가 있으면 안전 영역).
+ *       글이 원본 편의 게시/판본/<키>/글.json이면 같은 언어 묶음 짝 판본의 글과도 견준다(11-19 — 아래 묶음검사): 첫 카드 · 그 나라 예문 ·
+ *       끝 질문 · 게시글이 같으면 「묶음같음」 고칠 것, 첫 카드 · 끝 질문이 바꿔 말한 꼴이면 「묶음닮음」 확인할 것. 「판본」 명령도 같다.
  *   node tools/글자검사.js 뒤 <영상.mp4> --언어 <코드> [--기준 <같은 정본의 다른 판 영상>]… [--플랫폼 <tiktok|instagram|youtube|…>] [--밖 <폴더>] [--json]
  *       렌더 뒤 — 0.5초마다 프레임의 글 자리(OCR이 믿을 만한 언어는 OCR 상자 + 기준 영상과의 픽셀 차이)로 안전 영역 · 플랫폼 단추 가림을 보고,
  *       여백이 가장 좁은 장면 셋을 원본 해상도로 잘라 <밖>/좁은여백_*.png로 남긴다(눈으로 본다).
@@ -39,6 +41,8 @@ const 검사 = require('./lib/글자검사.js');
 const 판본글 = require('./lib/판본글.js');
 const 프로필 = require('./lib/현지화프로필.js');
 const 잇기 = require('./lib/판본잇기.js');
+const 같은묶음 = require('./lib/같은언어묶음.js');
+const 게시묶음 = require('./lib/게시묶음.js');
 
 const REPO = path.resolve(__dirname, '..');
 const { 공용작업본 } = require('./lib/공용작업본.js');
@@ -71,9 +75,37 @@ function 인자들(argv) {
   return { 값, 여럿, 위치 };
 }
 
-async function 렌더전(글파일, L, { 엔진 = true } = {}) {
+/** 판본 글이 원본 편의 게시/판본/<키>/글.json 자리에 있으면 { 편, 키 } — 「전」 명령은 글 파일만 받아 짝 판본을 이 자리로 찾는다 */
+function 글자리(글파일) {
+  const f = path.resolve(글파일);
+  const 키자리 = path.dirname(f), 판본자리 = path.dirname(키자리), 게시자리 = path.dirname(판본자리);
+  if (path.basename(f) !== '글.json' || path.basename(판본자리) !== '판본' || path.basename(게시자리) !== '게시') return null;
+  return { 편: path.dirname(게시자리), 키: path.basename(키자리).toUpperCase() }; // Windows는 …/판본/py/글.json도 같은 파일로 연다 — 키는 원장 꼴(대문자)로
+}
+
+// 같은 언어 묶음 짝 판본(11-19) — 같은 편에서 같은 플랫폼 · 같은 말 계정에 나갈 다른 판본(유튜브 영어 EN · US · CA · AU · NZ · PH, 스페인어 MX · PY)의
+// 글과 첫 카드 · 그 나라 예문 · 끝 질문 · 게시글을 올리기 전 검사 ⑫-2와 같은 셈(tools/lib/같은언어묶음.js)으로 견준다. 같으면 고칠 것, 첫 카드 ·
+// 끝 질문의 낱말 겹침이 절반 이상이면 확인할 것(판단). 11-17 「배」 MX · PY는 셋째 겹이 두 첫 카드를 각각 줄이다 같은 글이 됐는데, 렌더 · 글자 ·
+// 뜻 검사를 다 지나 14시 게시 회차의 ⑫-2에서야 막혔다. 짝 판본 글이 아직 없으면 보지 않는다 — 나중에 쓰는 쪽이 렌더 전에 걸린다.
+function 묶음검사(자리, 판) {
+  if (!자리) return [];
+  let prep;
+  try { prep = 판본글.readJson(판본글.준비경로(자리.편)); } catch { return []; }
+  const accounts = 게시묶음.loadAccounts(게시묶음.repoOf(자리.편));
+  const 편기준 = (f) => path.relative(자리.편, f).split(path.sep).join('/');
+  const 찾음 = [];
+  for (const x of 같은묶음.짝견주기({ 편: 자리.편, 키: 자리.키, 줄: 판.줄, 언어: 판.자료.언어, prep, accounts })) {
+    const 짝 = `같은 언어 묶음(${x.묶음.join(', ')})의 짝 판본 ${x.짝}`;
+    if (x.same.length) 찾음.push(검사.찾음(검사.고칠, '묶음같음', `${짝}와 ${x.same.join(' · ')}이(가) 같다 — 나라마다 그 나라 말투 · 상황으로 다르게 쓴다. 이대로 두면 14시 올리기 전 검사 ⑫-2가 이 편의 판을 막는다(짝 판본 글: ${편기준(x.글)})`));
+    if (x.similar.length) 찾음.push(검사.찾음(검사.확인, '묶음닮음', `${짝}와 ${x.similar.map(같은묶음.닮음글).join(' · ')}이(가) 바꿔 말한 꼴로 닮았다 — 나라마다 다르게 썼는지 본다`));
+  }
+  return 찾음;
+}
+
+async function 렌더전(글파일, L, { 엔진 = true, 자리 = 글자리(글파일) } = {}) {
   const 판 = 판본글.읽기(글파일);
   const 찾음 = [...검사.규칙검사(판, L)];
+  찾음.push(...묶음검사(자리, 판));
   const 글꼴 = 검사.글꼴검사(판, L);
   찾음.push(...글꼴.찾음);
   let 잰것 = [];
@@ -295,7 +327,7 @@ async function main(argv) {
     if (이음?.렌더문제) 찾음.push(검사.찾음(검사.고칠, '영상낡음', `${이음.렌더문제} — 다시 구운 뒤 검사한다`));
     let 글지문 = null, 엔진잼 = '못함';
     if (찾은.글 && fs.existsSync(찾은.글)) {
-      const r = await 렌더전(찾은.글, L, { 엔진: !값.엔진없이 });
+      const r = await 렌더전(찾은.글, L, { 엔진: !값.엔진없이, 자리: { 편: path.resolve(편), 키 } });
       찾음.push(...r.찾음);
       글지문 = r.판.지문;
       엔진잼 = r.엔진잼;

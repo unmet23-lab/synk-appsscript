@@ -768,3 +768,163 @@ test('메모 칸 — --눈확인 · --직접봄에 절대 경로가 있으면 �
   const 보통 = run('판본', '없는편', 'XX', '--눈확인', '11.5초 오른쪽 여백 — 원본 박자, 비율 9:16');
   assert.doesNotMatch(보통.stderr, /절대 경로/);
 });
+
+// ── 같은 언어 묶음 짝 판본(11-19) ─────────────────────────────────────────
+// 11-17 「배」에서 셋째 겹이 멕시코 · 파라과이 판본의 첫 카드를 각각 줄이다 둘 다 「¿Que el coreano es fácil?」가 됐고, 14시 올리기 전 검사
+// ⑫-2에서야 막혔다. 렌더 전 글자 검사가 같은 셈(tools/lib/같은언어묶음.js)으로 같은 편의 짝 판본 글.json과 견준다.
+function 묶음마당(방, { 브랜드 = 'LAB' } = {}) {
+  // repoOf가 이 방을 저장소로 보게(docs/마케팅 + tools) — 원장은 이 방의 것을 쓴다
+  fs.mkdirSync(path.join(방, 'tools'), { recursive: true });
+  const 마케팅 = path.join(방, 'docs', '마케팅');
+  fs.mkdirSync(마케팅, { recursive: true });
+  const LAB = (platform, countryCode, language, 더 = {}) => ({ brand: 'LAB', platform, countryCode, language, ...더 });
+  fs.writeFileSync(path.join(마케팅, 'sns-계정.json'), JSON.stringify({ accounts: {
+    'lab-mx-youtube': LAB('youtube', 'MX', 'es'), 'lab-py-youtube': LAB('youtube', 'PY', 'es'), 'lab-mx-tiktok': LAB('tiktok', 'MX', 'es'),
+    'lab-us-youtube': LAB('youtube', 'US', 'en'), 'lab-ca-youtube': LAB('youtube', 'CA', 'en'), 'lab-br-youtube': LAB('youtube', 'BR', 'pt-BR'),
+    'lab-ph-youtube': LAB('youtube', 'PH', 'fil', { languageGroup: 'en' }),
+    'brief-co-youtube': { brand: 'synkbrief', platform: 'youtube', countryCode: 'CO', language: 'es' },
+  } }));
+  const 편 = path.join(마케팅, 'LAB_배_mn_20261105');
+  fs.mkdirSync(path.join(편, '게시', '판본'), { recursive: true });
+  // 렌더 전이라 PY는 아직 돌림에 없다 — 게시/판본/PY/글.json만 있다
+  fs.writeFileSync(path.join(편, '게시', '준비.json'), JSON.stringify({ 브랜드, 돌림: { 형식: '이야기', 판본: { MX: { 언어: 'es', 글: '게시/판본/MX/글.json' } } } }, null, 2));
+  const 글쓰기 = (키, 언어, 칸들) => {
+    const f = path.join(편, '게시', '판본', 키, '글.json');
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    const 줄 = Object.entries(칸들).map(([칸, 글], i) => ({ id: `${칸}${i}`, 칸, 글, 초: [i * 3, i * 3 + 3] }));
+    fs.writeFileSync(f, JSON.stringify({ 꼴: '판본글/1', 편: 'LAB_배_mn_20261105', 판본: 키, 언어, 나라: [키], 틀: '이야기', 줄 }));
+    return f;
+  };
+  return { 편, 글쓰기 };
+}
+const 배MX = { 머리: '¿Que el coreano es fácil?', 끝: 'En español, 3 palabras;\nen coreano, solo “배”', 게시글: 'Panza, pera y lancha: en coreano todo es “배” 😵 #aprendecoreano' };
+const 배PY = { 머리: '¿Que el coreano es fácil?', 끝: '3 palabras en castellano,\n1 en coreano: “배”', 게시글: '¿Panza, pera y bote? En coreano todo se dice “배” 😵 #aprendecoreano' };
+
+async function 전돌리기(글, 밖) {
+  const { main } = require('../tools/글자검사.js');
+  const 원 = { log: console.log, error: console.error };
+  console.log = () => {}; console.error = () => {};
+  let code;
+  try { code = await main(['전', 글, '--엔진없이', '--밖', 밖]); } finally { console.log = 원.log; console.error = 원.error; }
+  return { code, 결과: 판본글.readJson(path.join(밖, '결과.json')) };
+}
+const 묶음찾음 = (결과) => 결과.찾음.filter((f) => /^묶음/.test(f.코드));
+
+test('렌더 전 같은 언어 묶음 — 「배」 11-17 MX · PY처럼 짝 판본과 첫 카드가 같으면 고칠 것, 나라마다 다르면 지나간다', async () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '글자검사-묶음-'));
+  try {
+    const { 편, 글쓰기 } = 묶음마당(방);
+    글쓰기('MX', 'es', 배MX);
+    const PY = 글쓰기('PY', 'es', 배PY);
+    // ① 걸려야 할 경우: 짝(MX — 유튜브 스페인어 묶음)과 첫 카드가 같다
+    let r = await 전돌리기(PY, path.join(방, '밖1'));
+    assert.equal(r.code, 1, JSON.stringify(r.결과.찾음));
+    assert.deepEqual(묶음찾음(r.결과).map((f) => `${f.수준}:${f.코드}`), ['고칠 것:묶음같음']);
+    assert.match(묶음찾음(r.결과)[0].말, /youtube · es/);
+    assert.match(묶음찾음(r.결과)[0].말, /짝 판본 MX/);
+    assert.match(묶음찾음(r.결과)[0].말, /첫 카드/);
+    assert.match(묶음찾음(r.결과)[0].말, /⑫-2/);
+    // 표기(대소문자 · 문장부호 · 이모지)만 달라도 같다
+    글쓰기('PY', 'es', { ...배PY, 머리: 'que el COREANO es fácil 😏' });
+    r = await 전돌리기(PY, path.join(방, '밖2'));
+    assert.equal(r.code, 1);
+    assert.deepEqual(묶음찾음(r.결과).map((f) => f.코드), ['묶음같음']);
+    // 끝 질문이 같아도 고칠 것
+    글쓰기('MX', 'es', { ...배MX, 끝질문: '¿Qué palabra coreana te confunde?' });
+    글쓰기('PY', 'es', { ...배PY, 머리: '¿Coreano?\nFacilito, decís…', 끝질문: '¿Qué palabra coreana te confunde?' });
+    r = await 전돌리기(PY, path.join(방, '밖3'));
+    assert.equal(r.code, 1);
+    assert.match(묶음찾음(r.결과)[0].말, /끝 질문/);
+    assert.doesNotMatch(묶음찾음(r.결과)[0].말, /첫 카드/);
+    // ② 지나가야 할 경우: 11-18에 고친 PY 첫 카드(나라 말투) — 묶음 찾음이 없다(엔진없이의 못 봄만 남아 고칠 것이 아니다)
+    글쓰기('MX', 'es', 배MX);
+    글쓰기('PY', 'es', { ...배PY, 머리: '¿Coreano?\nFacilito, decís…' });
+    r = await 전돌리기(PY, path.join(방, '밖4'));
+    assert.deepEqual(묶음찾음(r.결과), []);
+    assert.notEqual(r.code, 1, JSON.stringify(r.결과.찾음));
+    // MX 쪽에서 돌려도 같은 셈이다(짝을 준비.json 「돌림」이 아니라 게시/판본/PY/글.json에서 찾는다)
+    r = await 전돌리기(path.join(편, '게시', '판본', 'MX', '글.json'), path.join(방, '밖5'));
+    assert.deepEqual(묶음찾음(r.결과), []);
+    글쓰기('PY', 'es', 배PY);
+    r = await 전돌리기(path.join(편, '게시', '판본', 'MX', '글.json'), path.join(방, '밖6'));
+    assert.deepEqual(묶음찾음(r.결과).map((f) => f.코드), ['묶음같음']);
+    assert.match(묶음찾음(r.결과)[0].말, /짝 판본 PY/);
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+});
+
+test('렌더 전 같은 언어 묶음 — 바꿔 말한 첫 카드는 확인할 것(판단), 다른 말 · 다른 브랜드 · 원장에 없는 짝은 보지 않는다', async () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '글자검사-묶음2-'));
+  try {
+    const { 편, 글쓰기 } = 묶음마당(방);
+    // 낱말 겹침 절반 이상 — 확인할 것(판단 — --눈확인으로 넘긴다)
+    글쓰기('US', 'en', { 머리: 'He always told me don’t eat it', 게시글: 'US caption' });
+    const CA = 글쓰기('CA', 'en', { 머리: 'He only ever told me don’t eat it', 게시글: 'CA caption' });
+    let r = await 전돌리기(CA, path.join(방, '밖1'));
+    assert.deepEqual(묶음찾음(r.결과).map((f) => `${f.수준}:${f.코드}:${f.갈래}`), ['확인할 것:묶음닮음:판단']);
+    assert.match(묶음찾음(r.결과)[0].말, /짝 판본 US/);
+    assert.match(묶음찾음(r.결과)[0].말, /낱말 겹침 \d+%/);
+    assert.notEqual(r.code, 1);
+    // 필리핀(판 fil · 원장 묶음 en)은 영어 묶음의 짝이다 — US와 같고 CA와 닮았다(짝마다 따로, 키 차례)
+    const PH = 글쓰기('PH', 'fil', { 머리: 'He always told me don’t eat it', 게시글: 'PH caption' });
+    r = await 전돌리기(PH, path.join(방, '밖2'));
+    assert.deepEqual(묶음찾음(r.결과).map((f) => f.코드), ['묶음닮음', '묶음같음']);
+    assert.match(묶음찾음(r.결과)[0].말, /짝 판본 CA/);
+    assert.match(묶음찾음(r.결과)[1].말, /짝 판본 US/);
+    assert.equal(r.code, 1);
+    // 다른 말(브라질 pt-BR)은 첫 카드가 같아도 같은 언어 묶음이 아니다. 다른 브랜드 계정(CO)도 짝이 아니다
+    fs.rmSync(path.join(편, '게시', '판본', 'PH'), { recursive: true });
+    const BR = 글쓰기('BR', 'pt-BR', { 머리: 'He always told me don’t eat it', 게시글: 'US caption' });
+    글쓰기('CO', 'es', { 머리: 'He always told me don’t eat it', 게시글: 'US caption' });
+    r = await 전돌리기(BR, path.join(방, '밖3'));
+    assert.deepEqual(묶음찾음(r.결과), []);
+    r = await 전돌리기(path.join(편, '게시', '판본', 'CO', '글.json'), path.join(방, '밖4'));
+    assert.deepEqual(묶음찾음(r.결과), []);
+    // 묶음은 원장 말로 정한다(돌림표가 판 「언어」에 원장 language를 적어 ⑫-2가 그렇게 본다) — 판본 언어를 es-PY로 적어도 MX의 짝이다
+    const 묶음lib = require('../tools/lib/같은언어묶음.js');
+    const 원장 = 판본글.readJson(path.join(방, 'docs', '마케팅', 'sns-계정.json')).accounts;
+    assert.deepEqual(묶음lib.짝판본('PY', { MX: 'es', PY: 'es-PY', BR: 'es' }, 원장), [{ 키: 'MX', 묶음: ['youtube · es'] }]);
+    // 준비.json의 다른 판본 「글」 칸이 깨져(문자열이 아님) 있어도 검사가 죽지 않고 그 판본만 빼고 본다
+    글쓰기('MX', 'es', 배MX);
+    글쓰기('PY', 'es', 배PY);
+    const 깨진 = { 브랜드: 'LAB', 돌림: { 판본: { MX: { 언어: 'es', 글: { a: 1 } } } } };
+    assert.deepEqual(묶음lib.짝견주기({ 편, 키: 'PY', prep: 깨진, accounts: 원장 }).map((x) => [x.짝, x.same]), [['MX', ['첫 카드']]], '깨진 칸 대신 게시/판본/MX/글.json을 본다');
+  } finally { fs.rmSync(방, { recursive: true, force: true }); }
+  // LAB 편이 아니면 보지 않는다
+  const 방2 = fs.mkdtempSync(path.join(os.tmpdir(), '글자검사-묶음3-'));
+  try {
+    const { 글쓰기 } = 묶음마당(방2, { 브랜드: 'PULSE' });
+    글쓰기('MX', 'es', 배MX);
+    const r = await 전돌리기(글쓰기('PY', 'es', 배PY), path.join(방2, '밖'));
+    assert.deepEqual(묶음찾음(r.결과), []);
+  } finally { fs.rmSync(방2, { recursive: true, force: true }); }
+});
+
+test('렌더 뒤 판본 명령도 같은 셈 — 짝 판본과 첫 카드가 같으면 글자 기록이 고칠 것이라 돌림에 못 든다', async () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), '글자검사-묶음4-'));
+  const 원 = { 프레임검사: G.프레임검사, 글꼴검사: G.글꼴검사, log: console.log, error: console.error };
+  try {
+    const { 편, 글쓰기 } = 묶음마당(방);
+    글쓰기('MX', 'es', 배MX);
+    글쓰기('PY', 'es', 배PY);
+    fs.writeFileSync(path.join(편, '게시', '판본', 'PY', 'video.mp4'), 'video PY');
+    const 준비파일 = path.join(편, '게시', '준비.json');
+    const prep = 판본글.readJson(준비파일);
+    prep.돌림.판본.PY = { 언어: 'es', 파일: '게시/판본/PY/video.mp4', 글: '게시/판본/PY/글.json' };
+    fs.writeFileSync(준비파일, JSON.stringify(prep, null, 2));
+    G.프레임검사 = () => ({ 찾음: [], 좁은: [], 프레임수: 4, OCR: { 판본: true, 기준: true } });
+    G.글꼴검사 = () => ({ 찾음: [], 줄: [] });
+    console.log = () => {}; console.error = () => {};
+    const { main } = require('../tools/글자검사.js');
+    const 돌려 = () => main(['판본', 편, 'PY', '--엔진없이', '--기록', '--밖', path.join(방, '밖'), '--눈확인', '좁은 여백 봄', '--직접봄', '0.5초 · 1.5초 — 글이 띠 안']);
+    assert.equal(await 돌려(), 1);
+    assert.equal(판본글.readJson(준비파일).돌림.판본.PY.검수.글자.결과, '고칠 것');
+    // 고친 뒤 다시 돌리면 통과를 적는다
+    글쓰기('PY', 'es', { ...배PY, 머리: '¿Coreano?\nFacilito, decís…' });
+    assert.equal(await 돌려(), 0);
+    assert.equal(판본글.readJson(준비파일).돌림.판본.PY.검수.글자.결과, '통과');
+  } finally {
+    Object.assign(G, { 프레임검사: 원.프레임검사, 글꼴검사: 원.글꼴검사 });
+    console.log = 원.log; console.error = 원.error;
+    fs.rmSync(방, { recursive: true, force: true });
+  }
+});

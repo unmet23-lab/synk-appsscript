@@ -291,4 +291,4 @@ function scriptText(bundle) {
   return { files: files.map((f) => rel(bundle, f)), text: texts.join('\n') };
 }
 
-module.exports = { load, plates, resolve, rel, repoOf, platformOf, handleOf, yesNo, parseBracketText, parseMarkdown, articleText, companionTexts, scriptText, readJson, readText, REDUCED, VIDEO };
+module.exports = { load, loadAccounts, plates, resolve, rel, repoOf, platformOf, handleOf, yesNo, parseBracketText, parseMarkdown, articleText, companionTexts, scriptText, readJson, readText, REDUCED, VIDEO };
