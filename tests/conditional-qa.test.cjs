@@ -90,7 +90,8 @@ test('S117–S119 and S128 run on the Linux host with the hash-pinned image libr
   assert.match(workflow, /uses: actions\/setup-python@v\d+\n\s+with:\n\s+python-version: '3\.\d+'/);
   for (const library of ['numpy', 'pillow', 'opencv-python-headless', 'scipy']) assert.match(workflow, new RegExp(`\\n\\s+${library}==[\\d.]+ --hash=sha256:[0-9a-f]{64}`));
   assert.match(workflow, /pip install [^\n]*--only-binary=:all: --require-hashes -r /);
-  assert.match(workflow, /sudo apt-get install -y ffmpeg/);
+  const linuxMediaStep = workflow.split(/^      - name:/m).find(step => /^ +(?:run: )?bash tools\/ci-install-ffmpeg\.sh\s*$/m.test(step));
+  assert.match(linuxMediaStep || '', /^ +if: runner\.os == 'Linux'$/m);
   const source = fs.readFileSync(path.join(root, 'tests/컷연속성검사.test.js'), 'utf8');
   for (const row of rows) {
     assert.deepEqual([row.route, row.file], ['linux', 'tests/컷연속성검사.test.js']);

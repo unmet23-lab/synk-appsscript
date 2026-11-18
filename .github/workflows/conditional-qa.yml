@@ -113,8 +113,7 @@ jobs:
       - name: build current Rust source and install media tools
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y ffmpeg
+          bash tools/ci-install-ffmpeg.sh
           rustup target add wasm32-unknown-unknown
           cargo build --locked --release --target wasm32-unknown-unknown --manifest-path tools/text-compare-bench/rust/Cargo.toml
       # S117–S119 · S128 · S153 — tools/컷연속성검사.py needs NumPy · Pillow · OpenCV · SciPy (and ffmpeg above). The versions are the ones

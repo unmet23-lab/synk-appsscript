@@ -12,6 +12,16 @@ assert.ok(step, 'dependency install step must exist');
 const script = step.match(/        run: \|\n([\s\S]*)/)[1].split('\n').map(line => line.slice(10)).join('\n');
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
 const posix = p => process.platform === 'win32' ? p.replaceAll('\\', '/').replace(/^([A-Za-z]):/, (_, drive) => '/' + drive.toLowerCase()) : p;
+const mediaInstaller = 'tools/ci-install-ffmpeg.sh';
+
+test('syntax-check runs the shared media installer before the full safety suite and checks skipped tests', () => {
+  const syntax = fs.readFileSync(path.join(__dirname, '../.github/workflows/syntax-check.yml'), 'utf8');
+  const install = syntax.search(/^ +(?:run: )?bash tools\/ci-install-ffmpeg\.sh\s*$/m);
+  const safety = syntax.search(/^ +node --test [^\n]* tests\/\*\.test\.js\b/m);
+  const skipGuard = syntax.indexOf('node tools/conditional-qa/guard.cjs --skips');
+  assert.ok(install >= 0 && install < safety && safety < skipGuard);
+  assert.doesNotMatch(syntax, /^ +sudo apt-get (?:update|install)\b/m);
+});
 
 test('experiences runs inside Xvfb and other bundles use node directly, preserving the baseline argument', t => {
   const section = workflow.match(/      - name: run tests[^\n]*\n([\s\S]*?)(?=      - name: verify sparse)/)?.[1];
@@ -36,14 +46,20 @@ test('experiences runs inside Xvfb and other bundles use node directly, preservi
   }
 });
 
-function run(t, { bundle = 'experiences', missing = [], updateExit = 0, updateFailures = 0, timeoutFailures = 0, probeExit = 0 } = {}) {
+function run(t, { bundle = 'experiences', missing = [], updateExit = 0, updateFailures = 0, timeoutFailures = 0, probeExit = 0,
+  distribution = 'Ubuntu', codename = 'noble', architecture = 'amd64' } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-wide-deps-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const bin = path.join(root, 'bin'), log = path.join(root, 'calls'), npmLog = path.join(root, 'npm-calls');
   fs.mkdirSync(bin); for (const folder of ['synk-account', 'solo-backup', 'solo-backup-rust/engine']) fs.mkdirSync(path.join(root, 'experiences', folder), { recursive: true });
   // experiences 묶음은 WORLD 새 길 시험이 부르는 엔진(packages/atlas)의 의존성도 그 폴더에서 깐다(11-13).
   fs.mkdirSync(path.join(root, 'packages', 'atlas'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'tools'));
+  const installer = fs.readFileSync(path.join(__dirname, '..', mediaInstaller), 'utf8').replace(/\r\n/g, '\n');
+  fs.writeFileSync(path.join(root, mediaInstaller), installer);
   const executable = (name, text) => fs.writeFileSync(path.join(bin, name), '#!/bin/sh\n' + text, { mode: 0o755 });
+  executable('lsb_release', `case "$1" in -is) echo '${distribution}' ;; -cs) echo '${codename}' ;; *) exit 1 ;; esac\n`);
+  executable('dpkg', `[ "$1" = --print-architecture ] || exit 1\nprintf '%s\\n' '${architecture}'\n`);
   executable('timeout', `printf '%s\\n' "timeout $*" >> "$CALLS"
 n=0; if [ -f "$TIMEOUT_COUNT" ]; then read -r n < "$TIMEOUT_COUNT"; fi
 n=$((n+1)); printf '%s\\n' "$n" > "$TIMEOUT_COUNT"
@@ -69,7 +85,7 @@ case "$*" in
 esac
 `);
   // npm only records the current directory and arguments. Keep the APT retry processes separate.
-  const setup = 'export PATH="$FIXTURE_BIN"\nnpm() { printf "%s|%s\\n" "$PWD" "$*" >> "$NPM_CALLS"; }\n';
+  const setup = 'export PATH="$FIXTURE_BIN"\nbash() { /bin/bash "$@"; }\nnpm() { printf "%s|%s\\n" "$PWD" "$*" >> "$NPM_CALLS"; }\n';
   const result = spawnSync(bash, ['-e', '-c', setup + script], {
     // This watchdog bounds the entire fixture, including Git Bash process startup on a busy Windows host.
     cwd: root, encoding: 'utf8', timeout: process.platform === 'win32' ? 60000 : 10000, windowsHide: true,
@@ -117,6 +133,22 @@ test('missing tools use only signed official Ubuntu pockets for every APT proces
     assert.match(call, /APT::Get::List-Cleanup=0\b/);
     assert.doesNotMatch(call, /allow-unauthenticated|AllowInsecure|trusted=yes/);
   }
+  assert.match(apt[2], /--no-install-recommends\b/);
+});
+
+test('other self-hosted distributions and architectures use their configured repositories', async t => {
+  for (const host of [{ distribution: 'Debian', codename: 'bookworm' }, { codename: 'jammy' }, { architecture: 'arm64' }]) {
+    await t.test(host.distribution ?? host.codename ?? host.architecture, t => {
+      const r = run(t, { ...host, missing: ['ffprobe'] });
+      assert.equal(r.status, 0, r.stderr);
+      assert.equal(r.sources, null);
+      const apt = r.calls.filter(call => call.startsWith('apt-get '));
+      assert.equal(apt.length, 2);
+      for (const call of apt) assert.doesNotMatch(call, /Dir::Etc::source/);
+      assert.match(apt[1], /--no-install-recommends\b/);
+      assert.deepEqual(r.calls.slice(-2), ['ffmpeg version', 'ffprobe version']);
+    });
+  }
 });
 
 test('either missing media executable triggers bounded installation and verifies both tools', async t => {
@@ -158,7 +190,7 @@ test('a timed-out process is retried without treating timeout as success', t => 
   const exhausted = run(t, { missing: ['ffprobe'], timeoutFailures: 2 });
   assert.equal(exhausted.status, 124, exhausted.stderr);
   assert.equal(exhausted.calls.length, 2);
-  assert.ok(exhausted.calls.every(call => call.startsWith('timeout ') && call.endsWith(' update')));
+  assert.ok(exhausted.calls.every(call => call.startsWith('timeout ') && /\bupdate\b/.test(call)));
 });
 
 test('an installed but unusable ffprobe still fails setup', t => {

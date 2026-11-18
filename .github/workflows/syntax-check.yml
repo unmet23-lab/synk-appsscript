@@ -115,8 +115,7 @@ jobs:
           python-version: '3.14'
       - name: install media test dependencies
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y ffmpeg
+          bash tools/ci-install-ffmpeg.sh
           requirements="$RUNNER_TEMP/syntax-media-requirements.txt"
           cat > "$requirements" <<'EOF'
           numpy==2.5.2 --hash=sha256:318b9a4c845dbea06708a29c84ee429cc3065048db34cdb799047643492050ee
@@ -125,7 +124,6 @@ jobs:
           EOF
           python -m pip install --disable-pip-version-check --no-input --only-binary=:all: --require-hashes -r "$requirements"
           python -I -X utf8 -c "import numpy, PIL, cv2; print(numpy.__version__, PIL.__version__, cv2.__version__)"
-          ffmpeg -version
       - name: check new Git storage payloads
         env:
           STORAGE_BEFORE: ${{ github.event.before }}
