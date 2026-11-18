@@ -7,6 +7,8 @@ import fs from 'node:fs';
 
 const W = 'C:/Users/q1212/Documents/SYNK-appsscript/.tmp/senior-f-face';
 const 태오 = 'C:/Users/q1212/Documents/SYNK-appsscript/.tmp/taeo-face-nb/out/taeo-snaggle_g1.png';
+const 유나 = `${W}/out/sf2-pony_g1.png`;
+const 예쁨 = 'She must look exactly as attractive as in her reference image: the same slim oval face, the same defined straight brows, subtle eyeliner and soft coral lip, the same luminous clear skin. Do not make her face rounder, older or plainer.';
 const 점퍼 = 'a navy university varsity jacket with cream sleeves and striped navy-and-cream cuffs, with a small embroidered shield crest on the left chest (no lettering)';
 const 끝 = 'Photorealistic film still from a Korean campus drama, 16:9, natural colour, true skin texture, no beauty-filter smoothing, shallow depth of field. No captions, no subtitles, no watermark, no logo, no on-screen text. Any signs or printed paper in the scene are too far or too soft to read. Hands have five natural fingers.';
 
@@ -38,6 +40,30 @@ ${끝}`,
 On the light wooden counter in the foreground: a worn wooden rubber stamp, a small acrylic stand holding a printed notice (too soft to read), and a short queue line post. A visitor on the other side of the counter is holding out a paper entry ticket with one hand and lifting a canvas tote bag onto the counter with the other; the visitor is framed from the chest down, face out of frame. Behind them, the library lobby with tall bookshelves, glass entrance gates and warm afternoon light; a few students walk by, soft and out of focus.
 
 The student worker is seen only as two hands at the bottom of the frame resting near the stamp, wearing the sleeves of ${점퍼}.
+
+${끝}`,
+  },
+  // 2판(11-18 유호님 「더 고쳐서」): 둘째 장면의 선배를 이름 없는 새 얼굴 대신 게시판의 다른 선배 한유나로(같은 과 다른 선배 = 고르지 않은 쪽).
+  // 드라마 배역 얼굴은 수수한 실사보다 예쁘고 약간 보정된 결로(메모 cast-attractive). 셋째 장면은 1판 소매에 「UNIVERSITY」 글자가 박혀 소매 글자를 막는다.
+  {
+    id: 'scene-ask2', ratio: '16:9', refs: [유나],
+    prompt: `Use the attached image only as the identity reference for the young woman: keep exactly her face and her black hair tied in a high ponytail. ${예쁨} Make a new film still.
+
+A wide campus walkway at a Korean university in early March, late morning. At the end of the walkway stands a modern library building with a tall glass front.
+
+Point of view of a freshman standing on the walkway: the freshman is seen only as a soft out-of-focus hand at the bottom-left holding a phone with a blurred map on its screen. The young woman, a third-year student who just stopped walking, has turned half toward the freshman and is pointing past the camera toward the library at the end of the walkway, explaining the way with a warm, friendly expression, mouth slightly open mid-sentence. She is in sharp focus at the right third of the frame, waist-up, soft front light on her face.
+
+She wears ${점퍼} over a white T-shirt, a canvas tote bag on one shoulder. Other students walk in the soft background, bare trees with the first yellow sansuyu blossoms.
+
+${끝}`,
+  },
+  {
+    id: 'scene-gate2', ratio: '16:9', refs: [],
+    prompt: `A film still. The entrance desk of a Korean university library, seen from behind the desk where a student works a part-time shift checking visitors.
+
+On the light wooden counter in the foreground: a worn wooden rubber stamp, a small acrylic stand holding a printed notice (too soft to read), and a short queue line post. A visitor on the other side of the counter is holding out a paper entry ticket with one hand and lifting a canvas tote bag onto the counter with the other; the visitor is framed from the chest down, face out of frame. Behind them, the library lobby with tall bookshelves, glass entrance gates and warm afternoon light; a few students walk by, soft and out of focus.
+
+The student worker is seen only as two hands at the bottom of the frame resting near the stamp, wearing plain cream knit sleeves with no lettering, no badge and no print anywhere on the sleeves.
 
 ${끝}`,
   },
