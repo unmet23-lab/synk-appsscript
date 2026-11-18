@@ -380,14 +380,17 @@ const movedIds = (marks, account, revision) =>
 // 묶음의 머리 — 제시 · 본인 말 · 판 결정 · 장부. 자식(전달 · 도움 · 답 · 마침 · 응답 · 제외)은 부모를 따라간다.
 const isHead = event => parentOf(event) == null;
 
-// 그 계정의 옮김 표지 모두(판과 상관없이)의 번호 — 넷째 걸음이 비우는 트랜잭션에서 읽은 줄로 센다(4-5 코드 검수 GPT GB1).
-const movedIn = (rows, account) =>
+// 그 계정의 옮김 표지의 번호 — 넷째 걸음이 비우는 트랜잭션에서 읽은 줄로 센다(4-5 코드 검수 GPT GB1). before(그 비우기가 올린 새 판)를 주면
+// 그보다 앞선 판의 표지와 판이 없는 옛 표지만 센다 — 서버는 그 판 앞의 기록만 지웠으니, 비운 뒤 그 계정으로 새로 옮긴 사건과 그 자식은 둔다(4-5 Opus
+// 대체 설계 검토 F5). 주지 않으면 판과 상관없이 모두다.
+const movedIn = (rows, account, before = null) =>
   new Set(
     rows.flatMap(({ value }) =>
       value.kind === 'mark' &&
       value.mark === 'moved' &&
       value.account === account &&
-      Array.isArray(value.ids)
+      Array.isArray(value.ids) &&
+      (before == null || !Number.isSafeInteger(value.revision) || value.revision < before)
         ? value.ids
         : [],
     ),
@@ -1157,8 +1160,9 @@ export function createRecord({
     // 사건(자식 · 제외 — 부모 사슬, 남기면 부모 없는 사건이 된다)을 지운다. 같은 트랜잭션에서 손님 요약 사본을 지우고, 세대를 올리고, 지운
     // 「옮겨 오기 전 기록」의 계열 · 문항과 마지막으로 옮긴 때를 비움 표지의 carried에 더한다(Fable -c FA1 — 옛 장부가 새 번호로 다시 들지
     // 않게). 옛 로그의 바닥(legacy)은 앞 표지의 것을 그대로 잇는다 — 이 걸음은 바닥을 새로 두지 않는다. 옮김 표지와 로그아웃 뒤의 손님 사건 ·
-    // 남의 계정으로 옮긴 사건은 둔다. 지울 것이 없으면 쓰지 않는다. { gen, dropped } — dropped는 지운 사건 수.
-    async dropMoved({ account }) {
+    // 남의 계정으로 옮긴 사건은 둔다. 지울 것이 없으면 쓰지 않는다. { gen, dropped } — dropped는 지운 사건 수. before(그 비우기가 올린 새 판)를
+    // 주면 그보다 앞선 판의 옮김 표지만 센다(F5 — 비운 뒤 새로 옮긴 사건은 둔다).
+    async dropMoved({ account, before = null }) {
       if (!guest) throw new TypeError('Atlas record: 옮긴 사건은 손님 저장소에서 지운다');
       if (account == null) throw new TypeError('Atlas record: 계정 없는 옮긴 사건 지우기');
       requireSwap();
@@ -1169,7 +1173,7 @@ export function createRecord({
         // 지울 것은 비우는 트랜잭션 안에서 고른다 — 따로 읽고 고르면 그 사이 다른 탭이 옮긴 제시에 이어 단 답이 고르기에서 빠져 부모 없는 답으로
         // 남았다(4-5 코드 검수 GPT GB1). 옮김 표지와 앞 비움 표지(바닥 · 옮긴 장부 칸)도 그 트랜잭션이 읽은 줄에서 읽는다.
         const decide = rows => {
-          const { drop, events } = movedRows(rows, movedIn(rows, account));
+          const { drop, events } = movedRows(rows, movedIn(rows, account, before));
           if (!events.length) return null;
           dropped = new Set(events.map(event => event.id)).size;
           const last = lastClearedIn(rows);

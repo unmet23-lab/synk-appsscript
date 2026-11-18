@@ -719,9 +719,16 @@ export function createCoach(options = {}) {
     //   계정 { ok: true, path: 'upload' | 'device', revision(새 판), guest: { ok, dropped, legacy, code? } } 또는
     //        { ok: false, path, step: 'upload' | 'clear', code, known }(known 거짓 — 서버의 결과를 모른다).
     //   settle('cleared' | 'legacy' — 계정만): 서버가 이미 비운 뒤 손님 저장소의 남은 걸음만 한다(입구가 「비우는 중」 표지를 맞출 때 —
-    //   reset.mjs settleAccount). 돌려주는 것은 { ok: true, path, settled, guest }.
+    //   reset.mjs settleAccount). revision은 그 비우기가 올린 새 판이다 — 넷째 걸음은 그보다 앞선 판의 옮김 표지만 센다(없으면 이 코치의 판).
+    //   돌려주는 것은 { ok: true, path, settled, guest }.
     // 「비우는 중」 표지 · 본인 값 옮기기 · 앞 판 쓸기 · 다시 정하기는 입구의 몫이다(22-1의 4).
-    async reset({ legacy = null, clear = null, guestPort = null, settle = null } = {}) {
+    async reset({
+      legacy = null,
+      clear = null,
+      guestPort = null,
+      settle = null,
+      revision = null,
+    } = {}) {
       live();
       // 셸이 연 문서 호스트를 빌린 코치(틀의 게임 — host.document)는 비우지 않는다. 그 호스트의 계정 · 판을 몰라 손님으로 보고 기기 길 계정의
       // 저장소를 비울 수 있었다(4-5 코드 검수 GPT). 비우기는 호스트를 소유한 셸 코치(입구)가 한다 — 아무것도 쓰기 전에 거절한다.
@@ -733,7 +740,7 @@ export function createCoach(options = {}) {
       const open = () =>
         openGuestAside({ legacy: legacy?.read ?? null, create: false, port: guestPort });
       if (settle === 'cleared' || settle === 'legacy')
-        return settleAccount(host, { account, legacy, open, settle });
+        return settleAccount(host, { account, legacy, open, settle, revision });
       const transport = options.host?.transport;
       const call =
         clear ??

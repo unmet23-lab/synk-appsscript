@@ -595,7 +595,13 @@ test('서버가 이미 비운 뒤의 남은 걸음(settle) — 올리기 · 서�
     },
   };
   const calls = w.calls.length;
-  const legacyOnly = await a.reset({ guestPort: w.guestPort, legacy: port, settle: 'legacy' });
+  // 입구처럼 그 비우기가 올린 판(2)을 넘긴다 — 판 1로 옮긴 사건은 넷째 걸음의 경계 안이지만, legacy는 넷째 걸음을 하지 않는다.
+  const legacyOnly = await a.reset({
+    guestPort: w.guestPort,
+    legacy: port,
+    settle: 'legacy',
+    revision: 2,
+  });
   assert.deepEqual(
     [
       legacyOnly.ok,
@@ -613,14 +619,41 @@ test('서버가 이미 비운 뒤의 남은 걸음(settle) — 올리기 · 서�
     '옮긴 사건은 지우지 않는다(그 뒤 새로 옮긴 것을 지우지 않게)',
   );
   assert.ok(!w.calls.slice(calls).includes('clear'), '서버 비우기를 부르지 않는다');
-  // cleared — 결과를 몰랐던 비우기가 서버에서 됐다: 서버를 다시 부르지 않고 옮긴 사건을 지운다.
-  const settled = await a.reset({ guestPort: w.guestPort, legacy: port, settle: 'cleared' });
+  // cleared — 결과를 몰랐던 비우기가 서버에서 됐다(판 2): 서버를 다시 부르지 않고 그 판보다 앞서 옮긴 사건을 지운다.
+  const settled = await a.reset({
+    guestPort: w.guestPort,
+    legacy: port,
+    settle: 'cleared',
+    revision: 2,
+  });
   assert.deepEqual(
     [settled.ok, settled.settled, settled.guest.dropped >= 3, settled.guest.legacy, wiped],
     [true, 'cleared', true, 'cleared', 2],
   );
   assert.deepEqual(await heldIds(w.guestPort), []);
   assert.ok(!w.calls.slice(calls).includes('clear'), '서버 비우기를 부르지 않는다');
+  a.dispose();
+});
+
+test('남은 걸음(settle cleared)의 넷째 걸음은 그 비우기가 올린 새 판보다 앞선 판의 옮김 표지만 센다 — 판 경계가 코치를 거쳐 기록부까지 간다(4-5 Opus 대체 설계 검토 F5)', async () => {
+  const w = world(58);
+  const guest = await guestCoach(w);
+  await practise(w, guest, w.items.slice(0, 1));
+  guest.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort });
+  assert.equal((await recs.move()).ok, true);
+  recs.close();
+  const moved = await heldIds(w.guestPort);
+  assert.ok(moved.length >= 2, '판 1로 옮긴 제시 · 답이 손님 저장소에 있다');
+  // 비우기가 판 1을 올린 것이 아니라면(경계 1) 판 1로 옮긴 사건은 그 비우기 뒤의 것이다 — 지우지 않는다.
+  const kept = await a.reset({ guestPort: w.guestPort, settle: 'cleared', revision: 1 });
+  assert.deepEqual([kept.ok, kept.guest.dropped], [true, 0]);
+  assert.deepEqual(await heldIds(w.guestPort), moved);
+  // 판 2로 올린 비우기 — 판 1로 옮긴 사건은 그 앞의 것이다.
+  const dropped = await a.reset({ guestPort: w.guestPort, settle: 'cleared', revision: 2 });
+  assert.equal(dropped.guest.dropped, moved.length);
+  assert.deepEqual(await heldIds(w.guestPort), []);
   a.dispose();
 });
 
@@ -812,4 +845,133 @@ test('올리는 계정의 0 걸음 — 다른 탭이 저장했지만 이 탭이 
   assert.ok(seenAtClear.has(answered.eventId), '다른 탭의 답을 들여 서버 비우기 전에 올렸다');
   other.dispose();
   mine.dispose();
+});
+
+// ── 옮긴 장부 칸(Fable -c FA1)의 끼움 장면 — 4-5 Opus 대체 설계 검토(물음 2)가 돌린 셋을 옮겼다. 넷째 걸음이 옮긴 「옮겨 오기 전 기록」을
+// 지운 뒤, 손님 비우기 · 다른 계정의 비우기 · 옛 엔진 비우기를 끼워도 같은 옛 장부가 새 번호로 다시 들지 않는다.
+const carriedRows = async port =>
+  (await port.read()).filter(row => row.value.event?.type === 'record.carried');
+const busyLegacy = old => ({
+  read: () => old,
+  clear: async () => {
+    throw Object.assign(new Error('busy'), { code: 'STORAGE_BUSY' });
+  },
+});
+const sent = { postLegacy: async () => ({ ok: true, ids: [] }) };
+
+test('FA1-가 — 넷째 걸음 뒤 손님 비우기(옛 엔진 바쁨)를 끼우면 같은 epoch의 바닥이 장부를 막고, 옛 엔진이 비워진 뒤에는 새로 접힌 장부만 든다(4-5 Opus 대체 설계 검토)', async () => {
+  const w = world(61);
+  const old = {
+    log: [legacyEvent(w, 'old-guest')],
+    ledger: ledgerOf(['t.f0', 't.f1']),
+    epoch: 'e1',
+  };
+  const g = await guestCoach(w, () => old);
+  g.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort, legacy: () => old });
+  assert.equal((await recs.move(sent)).ok, true);
+  recs.close();
+  const done = await a.reset({
+    guestPort: w.guestPort,
+    legacy: { read: () => old, clear: async () => {} },
+  });
+  assert.equal(done.guest.legacy, 'kept', '옮기지 않은 옛 사건이 있어 옛 로그는 둔다');
+  a.dispose();
+  // 로그아웃한 손님이 손님 비우기를 누른다 — 옛 엔진은 다른 창이 쥐었다.
+  const g2 = await guestCoach(w, () => old);
+  assert.equal((await g2.reset({ legacy: busyLegacy(old) })).legacy, 'busy');
+  g2.dispose();
+  const cleared = await lastCleared(w.guestPort);
+  assert.equal(cleared.carried, null, '손님 비우기 표지는 옮긴 장부 칸을 들지 않는다');
+  assert.equal(cleared.legacy?.epoch, 'e1', '대신 같은 epoch의 바닥이 막는다');
+  const g3 = await guestCoach(w, () => ({ ...old, ledger: ledgerOf(['t.f0', 't.f1', 't.f2']) }));
+  assert.equal(
+    (await carriedRows(w.guestPort)).length,
+    0,
+    '같은 epoch — 자란 장부도 옮기지 않는다',
+  );
+  g3.dispose();
+  // 옛 엔진이 나중에 비워졌다(새 epoch) — 그 뒤 새로 접힌 장부만 든다.
+  const g4 = await guestCoach(w, () => ({ log: [], ledger: ledgerOf(['t.f9']), epoch: 'e2' }));
+  assert.deepEqual(
+    (await carriedRows(w.guestPort)).map(row => Object.keys(row.value.event.families)),
+    [['t.f9']],
+  );
+  g4.dispose();
+});
+
+test('FA1-나 — 두 계정이 차례로 옮기고 비우면 옮긴 장부 칸이 앞 표지의 칸에 쌓여, 어느 계정으로 옮긴 칸도 다시 들지 않는다(4-5 Opus 대체 설계 검토)', async () => {
+  const w = world(62);
+  const old = { log: [legacyEvent(w, 'old-guest')], ledger: ledgerOf(['t.f0']), epoch: 'e1' };
+  const g = await guestCoach(w, () => old);
+  g.dispose();
+  const a = await accountCoach(w, 'A');
+  const ra = await a.guestRecords({ port: w.guestPort, legacy: () => old });
+  assert.equal((await ra.move(sent)).ok, true);
+  ra.close();
+  assert.equal(
+    (await a.reset({ guestPort: w.guestPort, legacy: { read: () => old, clear: async () => {} } }))
+      .ok,
+    true,
+  );
+  a.dispose();
+  // 장부가 자라 새 칸이 든 뒤 B로 옮기고 B가 비운다.
+  const grown = { ...old, ledger: ledgerOf(['t.f0', 't.f1']) };
+  const g2 = await guestCoach(w, () => grown);
+  g2.dispose();
+  const b = await accountCoach(w, 'B');
+  const rb = await b.guestRecords({ port: w.guestPort, legacy: () => grown });
+  assert.equal((await rb.move(sent)).ok, true);
+  rb.close();
+  assert.equal(
+    (
+      await b.reset({
+        guestPort: w.guestPort,
+        legacy: { read: () => grown, clear: async () => {} },
+      })
+    ).ok,
+    true,
+  );
+  b.dispose();
+  assert.deepEqual(
+    (await lastCleared(w.guestPort)).carried?.families,
+    ['t.f0', 't.f1'],
+    '앞 표지의 칸을 잇는다',
+  );
+  const g3 = await guestCoach(w, () => grown);
+  assert.equal(
+    (await carriedRows(w.guestPort)).length,
+    0,
+    '어느 계정으로 옮긴 장부 칸도 다시 들지 않는다',
+  );
+  g3.dispose();
+});
+
+test('FA1-다 — 손님 비우기(옛 엔진 바쁨 · 바닥)가 먼저고 계정의 넷째 걸음이 뒤면, 넷째 걸음 표지가 바닥을 이어 받아 비우기 전의 옛 사건 · 장부가 되살아나지 않는다(4-5 Opus 대체 설계 검토)', async () => {
+  const w = world(66);
+  const old = { log: [legacyEvent(w, 'old-pre')], ledger: ledgerOf(['t.f0']), epoch: 'e1' };
+  const g = await guestCoach(w, () => old);
+  assert.equal((await g.reset({ legacy: busyLegacy(old) })).legacy, 'busy');
+  w.time.advance(STEP);
+  await practise(w, g, w.items.slice(0, 1));
+  g.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort, legacy: () => old });
+  assert.equal((await recs.move(sent)).ok, true);
+  recs.close();
+  assert.equal(
+    (await a.reset({ guestPort: w.guestPort, legacy: { read: () => old, clear: async () => {} } }))
+      .ok,
+    true,
+  );
+  a.dispose();
+  assert.equal((await lastCleared(w.guestPort)).legacy?.epoch, 'e1', '앞 바닥을 잇는다');
+  const g2 = await guestCoach(w, () => old);
+  assert.ok(
+    !(await heldIds(w.guestPort)).includes('old-pre'),
+    '비우기 전 옛 사건은 돌아오지 않는다',
+  );
+  assert.equal((await carriedRows(w.guestPort)).length, 0, '장부도 돌아오지 않는다');
+  g2.dispose();
 });

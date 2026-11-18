@@ -259,6 +259,32 @@ test('계정 비우기의 넷째 걸음 — 그 계정의 옮김 표지 모두(�
   for (const id of [a2]) assert.equal(record.has(id), false);
 });
 
+test('넷째 걸음의 판 경계 — 그 비우기가 올린 새 판(before)보다 앞선 판의 옮김 표지와 판 없는 옛 표지만 센다. 비운 뒤 그 계정으로 새로 옮긴 사건과 그 자식은 둔다(4-5 Opus 대체 설계 검토 F5)', async () => {
+  const port = memoryPort();
+  const record = await guestOn(port);
+  const [p1, a1] = await practise(record, items[0]);
+  await record.mark({ mark: 'moved', account: 'Z', revision: 1, until: 99, ids: [p1, a1] }); // 비우기 전 판으로 옮긴 것
+  const [p0, a0] = await practise(record, items[3]);
+  await record.mark({ mark: 'moved', account: 'Z', until: 99, ids: [p0] }); // 판이 없는 옛 표지 — 센다(답 a0은 그 제시에 기대어 함께 간다)
+  const [p2, a2] = await practise(record, items[1]);
+  await record.mark({ mark: 'moved', account: 'Z', revision: 2, until: 99, ids: [p2, a2] }); // 비운 뒤 새 판으로 옮긴 것
+  // 비운 뒤 옮긴 제시에 손님이 뒤에 단 답(옮기지 않은 자식)
+  const late = record.add(EVENT_TYPES.attempted, {
+    presentationId: p2,
+    attemptNo: 2,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  await late.stored;
+  const done = await record.dropMoved({ account: 'Z', before: 2 });
+  assert.equal(done.dropped, 4, '판 1과 판 없는 표지의 사건(과 그 자식)만 지운다');
+  const left = await eventIds(port);
+  for (const id of [p2, a2, late.event.id])
+    assert.ok(left.includes(id), `비운 뒤 옮긴 사건과 그 자식은 둔다 — ${id}`);
+  for (const id of [p1, a1, p0, a0])
+    assert.equal(left.includes(id), false, `앞 판으로 옮긴 사건은 지운다 — ${id}`);
+});
+
 test('넷째 걸음은 지울 사건을 비우는 트랜잭션 안에서 고른다 — 고른 뒤 다른 탭이 옮긴 제시에 이어 단 답도 함께 지워 부모 없는 답이 남지 않는다(4-5 코드 검수 GPT GB1)', async () => {
   const port = memoryPort();
   const other = await guestOn(port, { exclusive: busy });

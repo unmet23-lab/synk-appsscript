@@ -1644,7 +1644,7 @@ export const POSITION_MUTANTS = [
   ["clear", "비우기 입구", "비운 뒤 이 문서의 코치를 은퇴시키지 않는다", "    retire('cleared');\n    if (left && !disposed) await planNow();\n", "    if (left && !disposed) await planNow();\n"],
   ["clear", "비우기 입구", "손님 저장소의 남은 걸음을 곧바로 마저 하지 않는다", "    if (left && !disposed) await planNow();\n", ""],
   ["clear", "비우기 입구", "옛 손님 로그를 쥔 다른 창(busy)을 남은 걸음으로 세지 않는다", "    : guest?.legacy === 'busy' || guest?.legacy === 'failed'\n", "    : guest?.legacy === 'failed'\n"],
-  ["clear", "비우기 입구", "남은 걸음이 4b뿐이어도 넷째 걸음부터 다시 한다 — 그 뒤 새로 옮긴 사건을 지운다", "    const done = await made.reset({ legacy: legacyPort(), settle: mark.left });\n", "    const done = await made.reset({ legacy: legacyPort(), settle: 'cleared' });\n"],
+  ["clear", "비우기 입구", "남은 걸음이 4b뿐이어도 넷째 걸음부터 다시 한다 — 그 뒤 새로 옮긴 사건을 지운다", "    const done = await made.reset({ legacy: legacyPort(), settle: mark.left, revision: mark.revision });\n", "    const done = await made.reset({ legacy: legacyPort(), settle: 'cleared', revision: mark.revision });\n"],
   ["clear", "비우기 입구", "기기 길에서 판이 바뀐 것을 보지 않고 비운다", "        line?.learning?.revision === plan.revision && typeof line.transport === 'function'\n", "        typeof line.transport === 'function'\n"],
   ["clear", "비우기 입구", "기기 길의 서버 비우기를 엔진에 넘기지 않는다", "      done = await made.reset({ legacy: legacyPort(), ...(clear ? { clear } : {}) });\n", "      done = await made.reset({ legacy: legacyPort() });\n"],
   ["clear", "비우기 입구", "새 길이 아닌 판(스위치 꺼짐)에서도 비운다", "    if (plan.path === 'old') return { ok: false, path: 'old', code: 'NOT_NEXT', known: true };\n", ""],
@@ -1681,11 +1681,17 @@ export const POSITION_MUTANTS = [
   ["doors","나 칸","4b의 다시 판단을 건너뛰고 비운다(GA1)","        if (typeof check === 'function' && !check(typeof read === 'function' ? read() : null))\n          return 'kept';\n",""],
   ["doors","나 칸","다시 읽지 않고 판단한다(GA1)","check(typeof read === 'function' ? read() : null)","check(null)"],
   ["doors","나 칸","쓰기 임대를 기다리지 않고 비운다","        await leased(game, leaseWaitMs);\n",""],
-  ["doors","나 칸","올리는 문이 대기열을 보지 않는다","        return state?.queued === 0;\n","        return true;\n"],
+  ["doors","나 칸","올리는 문이 대기열을 보지 않는다","        return drained(await host()?.retry?.());\n","        return true;\n"],
   ["doors","나 칸","연 옛 코치를 닫지 않는다","          game.dispose?.();\n",""],
   ["meAppShell","나 칸","비우기 전에 한 번 더 묻지 않는다"," if(!window.confirm(meText('me.clearAsk')))return;\n",""],
   ["meAppShell","나 칸","입구에 옛 엔진의 두 문을 넘기지 않는다","trail:trailOf(m),oldEngine:oldDoorsOf(m)});","trail:trailOf(m)});"],
   ["clear","나 칸","옛 엔진의 비우는 문에 옛 로그 읽개를 넘기지 않는다(GA1)","      ? { clear: options => oldEngine.clear({ ...(options ?? {}), read: store ? legacyReader(store) : () => null }) }\n","      ? { clear: options => oldEngine.clear(options) }\n"],
+  ["doors","나 칸","올리는 문이 대기열 0만 믿는다 — 다른 탭이 임대를 쥔 낡은 0으로 다 올렸다고 답한다(Opus 대체 설계 검토 F1)","  state?.queued === 0 && (state.phase === 'synced' || state.phase === 'idle') && !state.code;\n","  state?.queued === 0;\n"],
+  ["doors","나 칸","비우는 문이 손님이 고른 화면 값을 되살리지 않는다(Opus 대체 설계 검토 F2)","            game.setPresentation(kept);\n",""],
+  ["clear","나 칸","비운 뒤 「새 길 간 적 있음」 표지를 새 판으로 옮기지 않는다 — 오프라인으로 다시 열면 앞 판 저장소가 열린다(Opus 대체 설계 검토 F3)","    writeMark(store, owner, { went: true, path: mark.path, revision });\n",""],
+  ["clear","나 칸","남은 걸음에 그 비우기가 올린 판을 넘기지 않는다 — 넷째 걸음의 경계가 없다(Opus 대체 설계 검토 F5)","settle: mark.left, revision: mark.revision });","settle: mark.left });"],
+  ["meAppShell","나 칸","비우기가 실패하면 계정 설정 스냅샷을 새로 받지 않는다(Opus 대체 설계 검토 F8)"," if(operating)try{await account.restore();}"," if(result?.ok&&operating)try{await account.restore();}"],
+  ["clear","비우기 입구","옛 대기열을 코치를 열기 전에 올린다 — 서버 비우기와의 틈이 코치 열기 · 첫 받기만큼 넓다(Opus 대체 설계 검토 F1)","    const made = await coachFor(plan, MOVE_BANKS, 'world-practice', at);\n    if (disposed) return stopped(path);\n    if (!made) return { ok: false, path, code: 'OPEN_FAILED', known: true };\n    // 0 — 옛 엔진의 올리기 대기열을 다 올린다(올리는 계정 — 기기 길은 올리지 않는다). 못 올리면 아무것도 지우지 않는다. 코치를 연 뒤 표지를 적기\n    // 바로 전에 올려 서버 비우기와의 틈을 줄인다(4-5 Opus 대체 설계 검토 F1). 새 길의 대기열은 엔진 reset이 서버 비우기 앞에서 올린다.\n    if (path === 'upload' && typeof oldEngine?.flush === 'function') {\n      let flushed;\n      try {\n        flushed = await oldEngine.flush();\n      } catch {\n        flushed = false;\n      }\n      if (disposed) return stopped(path);\n      if (flushed === false || flushed?.ok === false)\n        return { ok: false, path, step: 'upload', code: 'UNSENT', known: true };\n    }\n","    // 0 — 옛 엔진의 올리기 대기열을 다 올린다(올리는 계정 — 기기 길은 올리지 않는다). 못 올리면 아무것도 지우지 않는다. 코치를 연 뒤 표지를 적기\n    // 바로 전에 올려 서버 비우기와의 틈을 줄인다(4-5 Opus 대체 설계 검토 F1). 새 길의 대기열은 엔진 reset이 서버 비우기 앞에서 올린다.\n    if (path === 'upload' && typeof oldEngine?.flush === 'function') {\n      let flushed;\n      try {\n        flushed = await oldEngine.flush();\n      } catch {\n        flushed = false;\n      }\n      if (disposed) return stopped(path);\n      if (flushed === false || flushed?.ok === false)\n        return { ok: false, path, step: 'upload', code: 'UNSENT', known: true };\n    }\n    const made = await coachFor(plan, MOVE_BANKS, 'world-practice', at);\n    if (disposed) return stopped(path);\n    if (!made) return { ok: false, path, code: 'OPEN_FAILED', known: true };\n"],
 ];
 
 // 시험 묶음 안에서 이 실행기를 불러도 장면 시험이 돌게 NODE_TEST_CONTEXT를 지운다 — 빈 글로 두면 node가 「겹쳐 부른 시험」으로 보고 파일을

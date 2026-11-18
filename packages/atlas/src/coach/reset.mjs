@@ -90,8 +90,9 @@ async function flush(host) {
 // 없으면 null — 만들지 않는다). 4b의 판단(옛 손님 로그가 모두 그 계정으로 옮긴 것인가)은 지우기 전에 한 번 읽어 정하고, 맞으면 지운 뒤 옛 엔진의
 // 손님 기록을 통째로 비운다 — 되면 바닥과 옮긴 장부 칸을 거둔다. 안 되면 legacy가 'busy' · 'failed'라 입구가 「비우는 중」 표지에 「옛 손님 로그
 // 남음」을 적고 다음 다시 정하기에서 마저 한다. 섞였으면 'kept'(알려진 한계 — §6), 옛 로그가 없으면 'none'. drop이 거짓이면 넷째 걸음(옮긴
-// 사건 지우기)을 건너뛰고 4b만 한다(settleAccount 'legacy').
-async function forgetMoved(account, legacy, open, drop = true) {
+// 사건 지우기)을 건너뛰고 4b만 한다(settleAccount 'legacy'). before는 그 비우기가 올린 새 판이다 — 넷째 걸음은 그보다 앞선 판의 옮김 표지만
+// 센다(서버는 그 판 앞의 기록만 지웠다 — 늦게 도는 남은 걸음이 비운 뒤 그 계정으로 새로 옮긴 사건까지 지우던 것, 4-5 Opus 대체 설계 검토 F5).
+async function forgetMoved(account, legacy, open, drop = true, before = null) {
   let aside;
   try {
     aside = await open();
@@ -115,7 +116,7 @@ async function forgetMoved(account, legacy, open, drop = true) {
       const all = allMoved(old.value);
       // gen: 넷째 걸음이 쓴 세대(지울 것이 없거나 건너뛰면 지금 세대) — 4b가 바닥을 거둘 때 그 세대일 때만 거둔다.
       const { dropped, gen } = drop
-        ? await record.dropMoved({ account })
+        ? await record.dropMoved({ account, before })
         : { dropped: 0, gen: record.generation() };
       if (dropped) aside.landed();
       if (old.missing) return { ok: true, dropped, legacy: 'none' };
@@ -159,15 +160,17 @@ export async function resetAccount(host, { account, clear, legacy, open }) {
   const revision = answer?.revision;
   if (!Number.isSafeInteger(revision) || revision <= host.revision)
     return { ok: false, path, step: 'clear', code: 'CLEAR_ANSWER', known: false };
-  const guest = await forgetMoved(account, legacy, open);
+  const guest = await forgetMoved(account, legacy, open, true, revision);
   return { ok: true, path, revision, guest };
 }
 
 // 서버가 이미 비운 뒤의 남은 걸음(22-4 「실패와 다시 누르기」 — 입구가 「비우는 중」 표지를 맞출 때). 올리기 · 서버 비우기 없이 손님 저장소의
 // 걸음만 한다. settle 'cleared'는 넷째 걸음과 4b다 — 결과를 몰랐던 비우기가 서버에서 된 것을 입구가 lastClear로 알았거나, 넷째 걸음이 안 됐다.
-// 'legacy'는 4b만이다 — 옛 손님 로그가 남았고 넷째 걸음은 이미 했다(그 뒤 그 계정으로 새로 옮긴 사건을 지우지 않게).
-export async function settleAccount(host, { account, legacy, open, settle }) {
+// 'legacy'는 4b만이다 — 옛 손님 로그가 남았고 넷째 걸음은 이미 했다(그 뒤 그 계정으로 새로 옮긴 사건을 지우지 않게). revision은 그 비우기가
+// 올린 새 판이다(입구의 표지가 든다) — 'cleared'의 넷째 걸음은 그보다 앞선 판의 옮김 표지만 센다. 없으면 이 코치의 판으로 잰다.
+export async function settleAccount(host, { account, legacy, open, settle, revision = null }) {
   const path = host.guest ? 'device' : 'upload';
-  const guest = await forgetMoved(account, legacy, open, settle === 'cleared');
+  const before = Number.isSafeInteger(revision) ? revision : host.revision;
+  const guest = await forgetMoved(account, legacy, open, settle === 'cleared', before);
   return { ok: true, path, settled: settle, guest };
 }

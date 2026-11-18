@@ -1218,7 +1218,9 @@ export function createAtlasNext({
     if (disposed || at !== generation || plan.revision < mark.revision) return;
     const made = await coachFor(plan, MOVE_BANKS, 'world-practice', at);
     if (!made || disposed || at !== generation) return;
-    const done = await made.reset({ legacy: legacyPort(), settle: mark.left });
+    // 넷째 걸음은 그 비우기가 올린 새 판(표지의 판)보다 앞선 판의 옮김 표지만 센다 — 비운 뒤 그 계정으로 새로 옮긴 사건은 둔다(4-5 Opus 대체
+    // 설계 검토 F5).
+    const done = await made.reset({ legacy: legacyPort(), settle: mark.left, revision: mark.revision });
     if (!done?.ok) return;
     const left = leftOf(done.guest, mark.left);
     writeClearing(store, owner, left ? { ...mark, left } : null);
@@ -1257,19 +1259,6 @@ export function createAtlasNext({
     const { plan, at } = now;
     if (plan.path === 'old') return { ok: false, path: 'old', code: 'NOT_NEXT', known: true };
     const path = plan.path;
-    // 0 — 옛 엔진의 올리기 대기열을 먼저 다 올린다(올리는 계정 — 기기 길은 올리지 않는다). 못 올리면 아무것도 지우지 않는다. 새 길의 대기열은
-    // 엔진 reset이 서버 비우기 앞에서 올린다.
-    if (path === 'upload' && typeof oldEngine?.flush === 'function') {
-      let flushed;
-      try {
-        flushed = await oldEngine.flush();
-      } catch {
-        flushed = false;
-      }
-      if (disposed) return stopped(path);
-      if (flushed === false || flushed?.ok === false)
-        return { ok: false, path, step: 'upload', code: 'UNSENT', known: true };
-    }
     // 기기 길의 서버 비우기는 입구가 준다 — 계정을 다시 읽어 그 판의 나르개로 비운다(판이 바뀌었으면 다시 정한다).
     let clear = null;
     if (path === 'device') {
@@ -1294,6 +1283,19 @@ export function createAtlasNext({
     const made = await coachFor(plan, MOVE_BANKS, 'world-practice', at);
     if (disposed) return stopped(path);
     if (!made) return { ok: false, path, code: 'OPEN_FAILED', known: true };
+    // 0 — 옛 엔진의 올리기 대기열을 다 올린다(올리는 계정 — 기기 길은 올리지 않는다). 못 올리면 아무것도 지우지 않는다. 코치를 연 뒤 표지를 적기
+    // 바로 전에 올려 서버 비우기와의 틈을 줄인다(4-5 Opus 대체 설계 검토 F1). 새 길의 대기열은 엔진 reset이 서버 비우기 앞에서 올린다.
+    if (path === 'upload' && typeof oldEngine?.flush === 'function') {
+      let flushed;
+      try {
+        flushed = await oldEngine.flush();
+      } catch {
+        flushed = false;
+      }
+      if (disposed) return stopped(path);
+      if (flushed === false || flushed?.ok === false)
+        return { ok: false, path, step: 'upload', code: 'UNSENT', known: true };
+    }
     // 1 — 「비우는 중」 표지를 먼저 적는다. 못 적으면 비우지 않는다(결과를 모를 때 맞출 자리가 없다).
     const mark = { path, revision: plan.revision, at: Date.now() };
     if (!store || !writeClearing(store, owner, mark)) return { ok: false, path, code: 'MARK_FAILED', known: true };
@@ -1322,6 +1324,9 @@ export function createAtlasNext({
   // 표지에 적고 곧바로 다시 정해 새 판의 코치로 마저 한다. 그래도 남으면 「일부만 비움」이다(다음 다시 정하기가 또 한다).
   async function cleared(mark, revision, left) {
     await settleDevice(mark, revision);
+    // 「새 길 간 적 있음」 표지를 비운 뒤의 새 판으로 옮긴다 — 계정을 못 읽은 채 다시 열면 이 표지의 판으로 새 길을 연다(keptPath). 앞 판을
+    // 가리키면 새 판 코치가 서기 전까지 남은 앞 판 저장소가 열려, 비운 기록이 다시 보이고 그 사이의 답은 버려졌다(4-5 Opus 대체 설계 검토 F3).
+    writeMark(store, owner, { went: true, path: mark.path, revision });
     writeClearing(store, owner, left ? { path: mark.path, revision, at: Date.now(), left } : null);
     retire('cleared');
     if (left && !disposed) await planNow();

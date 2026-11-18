@@ -290,11 +290,18 @@ test('학습 화면 — 「연습 기록 비우기」는 입구의 clearPractice
 
 // ── 옛 엔진의 두 문(셸 배선 — world-old-engine-doors.mjs, 4-5 §22-4 · 4-5 코드 검수 GPT GA1) ──
 
-function fakeOldGame({ leased = true, log }) {
+function fakeOldGame({ leased = true, log, chosen = null }) {
   const listeners = new Set();
   const game = {
     leased,
     resets: 0,
+    chosen,
+    // 손님이 고른 화면 값(.presentation) — 옛 reset이 .flow · .today와 함께 지운다(atlas/game-flow.js clear).
+    presentation: () => (game.chosen ? { ...game.chosen } : null),
+    setPresentation(value) {
+      game.chosen = value ? { ...value } : null;
+      return true;
+    },
     disposed: false,
     summary: () => ({ storage: { available: game.leased } }),
     // 옛 코치는 기록의 알림(storage-ready 등)을 syncPort로 낸다(atlas/game-learning.js).
@@ -309,6 +316,7 @@ function fakeOldGame({ leased = true, log }) {
         throw Object.assign(new Error('busy'), { code: 'STORAGE_BUSY' });
       game.resets += 1;
       log.events = [];
+      game.chosen = null;
     },
     dispose() {
       game.disposed = true;
@@ -349,6 +357,33 @@ test('옛 엔진의 비우는 문 — 쓰기 임대를 기다린 뒤 check가 �
   assert.deepEqual(log.events, []);
 });
 
+test('옛 엔진의 비우는 문 — 손님이 고른 화면 값은 남긴다(옛 reset이 지우는 .presentation을 임대 안에서 읽어 두었다 다시 쓴다 — 설계 주인 답 5 · 4-5 Opus 대체 설계 검토 F2)', async () => {
+  const log = { events: ['old-1'] };
+  const chosen = { support: 'hint', motion: 'reduced' };
+  let game = null;
+  const doors = oldEngineDoors({
+    openGame: () => {
+      game = fakeOldGame({ leased: true, log, chosen });
+      return game;
+    },
+    host: () => null,
+  });
+  assert.equal(await doors.clear({ check: () => true, read: () => [...log.events] }), 'cleared');
+  assert.deepEqual(log.events, [], '옛 로그는 비웠다');
+  assert.deepEqual(game.presentation(), chosen, '고른 화면 값은 그대로다');
+  // 고른 값이 없으면 다시 쓰지 않는다.
+  log.events = ['old-2'];
+  const bare = oldEngineDoors({
+    openGame: () => {
+      game = fakeOldGame({ leased: true, log });
+      return game;
+    },
+    host: () => null,
+  });
+  assert.equal(await bare.clear(), 'cleared');
+  assert.equal(game.presentation(), null);
+});
+
 test('옛 엔진의 비우는 문 — 한도 안에 임대를 못 받으면 STORAGE_BUSY로 던지고 비우지 않는다', async () => {
   const log = { events: ['old-1'] };
   let game = null;
@@ -374,6 +409,25 @@ test('옛 엔진의 올리는 문 — 옛 학습 호스트의 다시 보내기 �
   assert.equal(await doors.flush(), true);
   const none = oldEngineDoors({ openGame: () => null, host: () => null });
   assert.equal(await none.flush(), false, '옛 호스트가 없으면 올렸는지 모른다');
+});
+
+test('옛 엔진의 올리는 문 — 대기열 0은 동기화가 막힘 · 쉼 · 오류 없이 섰을 때만 믿는다. 다른 탭이 쓰기 임대를 쥐면 이 탭이 마지막으로 읽은 0은 낡은 값이다(4-5 Opus 대체 설계 검토 F1)', async () => {
+  let state = null;
+  const doors = oldEngineDoors({
+    openGame: () => assert.fail('열지 않는다'),
+    host: () => ({ retry: async () => state }),
+  });
+  // 다른 탭이 임대를 쥐었다 — 옛 동기화는 공유 대기열을 다시 읽지 않고 이 탭의 낡은 수를 offline · STORAGE_BUSY와 함께 준다.
+  state = { phase: 'offline', code: 'STORAGE_BUSY', queued: 0 };
+  assert.equal(await doors.flush(), false, '다른 탭이 쥔 대기열은 올렸는지 모른다');
+  state = { phase: 'blocked', code: 'EVENT_RUN_CONFLICT', queued: 0 };
+  assert.equal(await doors.flush(), false, '막힌 동기화의 0은 믿지 않는다');
+  state = { phase: 'syncing', code: null, queued: 0 };
+  assert.equal(await doors.flush(), false, '아직 도는 중이다');
+  state = { phase: 'synced', code: null, queued: 0 };
+  assert.equal(await doors.flush(), true, '다 올린 뒤다');
+  state = { phase: 'idle', code: null, queued: 0 };
+  assert.equal(await doors.flush(), true, '쉬는 상태의 빈 대기열이다');
 });
 
 // ── 앱의 배선(app-shell.mjs — 브라우저 셸이라 원문으로 본다, atlas-next-mock-shell.test.mjs와 같은 꼴). 변형 시험은 깬 앱 원문을 SYNK_APP_SHELL_SOURCE로 넘긴다 ──
@@ -405,6 +459,11 @@ test('앱의 배선 — 입구에 옛 엔진의 두 문을 넘기고, 감싸기�
     source,
     /result\?\.code==='UNSENT'\?'me\.clearUnsent'/,
     '못 올린 기록이 있어 멈춘 것을 따로 알린다',
+  );
+  assert.match(
+    source,
+    /\n if\(operating\)try\{await account\.restore\(\);\}catch\{[^}]*\}\r?\n if\(\$\('#panel-content \.ws-me'\)\)profile\(\);/,
+    '결과와 상관없이 계정 설정 스냅샷을 새로 받아 시트를 다시 그린다(§22-4 · 4-5 Opus 대체 설계 검토 F8)',
   );
 });
 

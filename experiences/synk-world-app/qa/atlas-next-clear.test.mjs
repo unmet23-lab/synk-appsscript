@@ -13,7 +13,7 @@ import { bankItems } from '../world-topik-items.mjs';
 import { allowedPlays, nextPlay } from '../world-exam-form.mjs';
 import { PLAN_LOG_PREFIX } from '../world-plan-next.mjs';
 
-const { createAtlasNext, rehearsalTrail, LEGACY_KEY, CLEARING_MARK, CLEARING_MS } = await import(
+const { createAtlasNext, rehearsalTrail, LEGACY_KEY, CLEARING_MARK, CLEARING_MS, NEXT_MARK } = await import(
   process.env.SYNK_ATLAS_NEXT_MODULE
     ? pathToFileURL(process.env.SYNK_ATLAS_NEXT_MODULE).href
     : '../world-atlas-next.mjs'
@@ -370,6 +370,29 @@ test('올리기를 못 하면 아무것도 지우지 않는다 — 옛 대기열
   newPath.dispose();
 });
 
+test('옛 대기열은 코치를 연 뒤 「비우는 중」 표지를 적기 바로 전에 올린다 — 서버 비우기와의 틈을 줄인다(4-5 Opus 대체 설계 검토 F1)', async () => {
+  const storage = filledStorage();
+  const line = accountLine();
+  const { opened, load } = fakeLoader();
+  const seen = [];
+  const next = createAtlasNext({
+    owner: A_ID,
+    storage,
+    trail: line.trail,
+    load,
+    health: recorder(),
+    oldEngine: {
+      flush: async () => {
+        seen.push([opened.length, markOf(storage), opened.flatMap(made => made.resets).length]);
+        return true;
+      },
+    },
+  });
+  assert.equal((await next.clearPractice()).ok, true);
+  assert.deepEqual(seen, [[1, null, 0]], '코치를 연 뒤, 표지를 적고 엔진 비우기를 부르기 전에 한 번 올렸다');
+  next.dispose();
+});
+
 test('결과를 모르는 비우기 — 표지를 남기고 「지금은 비우지 못했어요」, 다음 다시 정하기가 같은 계정의 새 lastClear를 받은 뒤에 남은 걸음을 마저 한다', async () => {
   const storage = filledStorage();
   const line = accountLine();
@@ -397,9 +420,9 @@ test('결과를 모르는 비우기 — 표지를 남기고 「지금은 비우�
   assert.equal(markOf(storage), null, '맞춘 뒤 표지를 지운다');
   assertSettled(storage, { presentation: '{"support":"independent"}' });
   assert.deepEqual(
-    opened.flatMap(made => made.resets.map(given => [made.options.host.revision, given.settle ?? null])),
-    [[1, null], [2, 'cleared']],
-    '손님 저장소의 걸음은 새 판의 코치로 — 서버를 다시 비우지 않는다',
+    opened.flatMap(made => made.resets.map(given => [made.options.host.revision, given.settle ?? null, given.revision ?? null])),
+    [[1, null, null], [2, 'cleared', 2]],
+    '손님 저장소의 걸음은 새 판의 코치로 — 서버를 다시 비우지 않고, 넷째 걸음의 경계로 그 비우기가 올린 판을 넘긴다(F5)',
   );
   next.dispose();
 });
@@ -586,6 +609,30 @@ test('기기 길 계정 — 같은 길 하나다: 서버 비우기는 입구가 
   assert.deepEqual(stale.opened.flatMap(made => made.resets), [], '비우지 않았다');
   assert.deepEqual(moved.clears, []);
   n2.dispose();
+});
+
+test('비운 뒤 「새 길 간 적 있음」 표지는 새 판을 가리킨다 — 새 판 코치가 서기 전에 계정을 못 읽고 다시 열어도 앞 판 저장소를 열지 않는다(올리는 계정 · 기기 길 계정, 4-5 Opus 대체 설계 검토 F3)', async () => {
+  const offline = async () => {
+    throw Object.assign(Error('NETWORK'), { code: 'NETWORK', retryable: true });
+  };
+  for (const path of ['upload', 'device']) {
+    const storage = filledStorage();
+    const line = accountLine({ enabled: path === 'upload' });
+    const { load } = fakeLoader(async given => {
+      const revision = given.clear ? (await given.clear()).revision : 2;
+      return { ok: true, path, revision, guest: { ok: true, dropped: 0, legacy: 'none' } };
+    });
+    const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder(), oldEngine: oldEngine(storage) });
+    await next.practiceCoach(POOL);
+    assert.equal((await next.clearPractice()).ok, true, path);
+    assert.deepEqual(JSON.parse(storage.getItem(NEXT_MARK + A_ID)), { went: true, path, revision: 2 }, `${path} — 표지가 새 판이다`);
+    next.dispose();
+    // 새 판 코치가 서기 전에 망이 끊겼다 — 다시 열어 계정을 못 읽으면 표지의 판으로 연다.
+    const reopened = createAtlasNext({ owner: A_ID, storage, trail: offline, load, health: recorder() });
+    const coach = await reopened.practiceCoach(POOL);
+    assert.equal(coach?.options.host.revision, 2, `${path} — 앞 판(1)이 아니라 새 판의 저장소를 연다`);
+    reopened.dispose();
+  }
 });
 
 test('새 길이 아니면(스위치 꺼짐) 엔진 비우기를 하지 않는다 · 겹쳐 누르면 도는 비우기를 그대로 준다', async () => {
