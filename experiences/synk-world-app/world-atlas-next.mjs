@@ -1442,9 +1442,12 @@ export function createAtlasNext({
     }
     // 1 — 「비우는 중」 표지를 먼저 적는다. 못 적으면 비우지 않는다(결과를 모를 때 맞출 자리가 없다).
     // 앞 비우기의 남은 걸음 표지(left)는 이 비우기가 서버에 닿지 않고 끝나면 되돌리고, 결과를 모르면 표지에 실어 둔다(4-5 코드 다시 검수 GPT
-    // -c GA3 — 첫 확인에서 멈춘 새 비우기가 이미 서버에서 끝난 비우기의 남은 걸음을 지웠다).
+    // -c GA3 — 첫 확인에서 멈춘 새 비우기가 이미 서버에서 끝난 비우기의 남은 걸음을 지웠다). 앞 표지가 결과를 모르는 비우기면 그 표지가 실은
+    // 남은 걸음(then)을 잇고, 이 비우기가 서버에 닿지 않고 끝나면 그 표지를 그대로 되살린다 — 그 비우기가 서버에서 끝났는지 아직 모른다
+    // (4-5 끝 판 Fable F3 — 지우면 그 비우기의 결과 맞추기와 첫 비우기의 남은 걸음을 함께 잃었다).
     const prior = clearingOf(store, owner);
-    const kept = prior?.left ? { path: prior.path, revision: prior.revision, at: prior.at, left: prior.left } : null;
+    const kept = prior?.left ? { path: prior.path, revision: prior.revision, at: prior.at, left: prior.left } : (prior?.then ?? null);
+    const unsettled = prior && !prior.left ? prior : null;
     const mark = { path, revision: plan.revision, at: Date.now(), ...(kept ? { then: { revision: kept.revision, left: kept.left } } : {}) };
     if (!store || !writeClearing(store, owner, mark)) return { ok: false, path, code: 'MARK_FAILED', known: true };
     let done;
@@ -1458,9 +1461,9 @@ export function createAtlasNext({
       done = { ok: false, path, step: 'clear', code: failCode(error), known: false };
     }
     if (done?.ok) return cleared(mark, done.revision, leftOf(done.guest));
-    // 올리기에서 멈췄거나 서버 비우기를 부를 수 없었다 — 서버에 닿지 않은 것이 분명하다. 표지를 지운다.
+    // 올리기에서 멈췄거나 서버 비우기를 부를 수 없었다 — 서버에 닿지 않은 것이 분명하다. 표지를 앞 표지로 되돌린다(없으면 지운다).
     if (done?.step === 'upload' || done?.code === 'NO_CLEAR') {
-      restoreOwn(mark);
+      restoreOwn(mark, unsettled);
       return {
         ok: false,
         path,
@@ -1482,16 +1485,18 @@ export function createAtlasNext({
         return { ok: false, path, step: 'clear', code: 'PLAN_CHANGED', known: true };
       return after;
     }
-    // 비워지지 않았다. 서버가 받지 않은 것이 분명하고 비워지지 않은 것을 읽었으면 표지를 지운다. 결과를 모르면(닿지 못함 · 답 끊김 · 마지막
+    // 비워지지 않았다. 서버가 받지 않은 것이 분명하고 비워지지 않은 것을 읽었으면 표지를 앞 표지로 되돌린다. 결과를 모르면(닿지 못함 · 답 끊김 · 마지막
     // 비우기를 못 읽음) 표지를 남긴다 — 늦게 끝나는 요청이 있을 수 있어 다음 다시 정하기가 맞춘다.
-    if (done?.known === true && last !== undefined) restoreOwn(mark);
+    if (done?.known === true && last !== undefined) restoreOwn(mark, unsettled);
     return { ok: false, path, step: 'clear', code: done?.code ?? 'CLEAR_FAILED', known: done?.known === true };
   }
   // 서버에 닿지 않은 것이 분명한 비우기 — 이 비우기의 표지일 때만 앞 비우기의 남은 걸음(then)으로 되돌리고, 없으면 지운다. 그사이 다른 탭이 적은
-  // 표지는 덮지 않는다(GC2).
-  function restoreOwn(mine) {
+  // 표지는 덮지 않는다(GC2). 결과를 모르는 앞 비우기의 표지(unsettled)는 그대로 되살린다(Fable F3). 다만 그사이 그 판 뒤로 끝난 비우기가 남은
+  // 걸음을 이 표지에 실었으면(then의 판이 그 표지의 판보다 크다) 앞 비우기도 그 비우기에 들었다 — 그 남은 걸음으로 되돌린다(GC2).
+  function restoreOwn(mine, unsettled = null) {
     const now = clearingOf(store, owner);
-    if (sameClearing(now, mine)) writeClearing(store, owner, priorOf(now));
+    const overtaken = Boolean(now?.then && unsettled && now.then.revision > unsettled.revision);
+    if (sameClearing(now, mine)) writeClearing(store, owner, unsettled && !overtaken ? { ...unsettled, then: now.then } : priorOf(now));
   }
   // 이 비우기(revision — 비운 뒤의 판)의 남은 걸음이 아직 있나 — 이 판 이상의 남은 걸음 표지, 또는 더 새 비우기의 표지에 실어 둔 것.
   function leftFor(revision) {

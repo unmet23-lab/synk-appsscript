@@ -549,6 +549,17 @@ test('다른 탭의 은퇴 알림 — 손님 저장소를 다른 탭이 비우�
 
 test('기기 길 계정 — 입구가 준 서버 비우기로 판을 올리고, 닿지 못하면 아무것도 지우지 않는다', async () => {
   const w = world(50);
+  // 그 계정으로 옮긴 손님 기록 — 비우기가 되면 넷째 걸음이 지우고, 닿지 못하면 그대로다(4-5 끝 판 Fable F5 — 이름의 뒷절을 단언한다).
+  const g = await guestCoach(w);
+  await practise(w, g, w.items.slice(0, 1));
+  g.dispose();
+  const up = await accountCoach(w, 'L');
+  const recs = await up.guestRecords({ port: w.guestPort });
+  assert.equal((await recs.move()).ok, true);
+  recs.close();
+  up.dispose();
+  const moved = await heldIds(w.guestPort);
+  assert.ok(moved.length >= 2, '옮긴 제시와 답이 손님 저장소에 있다');
   const local = open(w, {
     guest: true,
     account: 'L',
@@ -560,6 +571,18 @@ test('기기 길 계정 — 입구가 준 서버 비우기로 판을 올리고, 
   const missing = await local.reset({ guestPort: w.guestPort });
   assert.equal(missing.ok, false);
   assert.equal(missing.code, 'NO_CLEAR', '서버 비우기를 받지 않으면 비우지 않는다');
+  const offline = await local.reset({
+    clear: async () => {
+      throw Object.assign(new Error('NETWORK'), { code: 'NETWORK', retryable: true });
+    },
+    guestPort: w.guestPort,
+  });
+  assert.deepEqual(
+    [offline.ok, offline.path, offline.step, offline.known],
+    [false, 'device', 'clear', false],
+    '닿지 못하면 결과를 모른다',
+  );
+  assert.deepEqual(await heldIds(w.guestPort), moved, '닿지 못하면 옮긴 손님 기록을 지우지 않는다');
   const done = await local.reset({
     clear: async () => ({ ok: true, revision: 4 }),
     guestPort: w.guestPort,
@@ -567,6 +590,11 @@ test('기기 길 계정 — 입구가 준 서버 비우기로 판을 올리고, 
   assert.equal(done.ok, true);
   assert.equal(done.path, 'device');
   assert.equal(done.revision, 4);
+  const left = await heldIds(w.guestPort);
+  assert.ok(
+    moved.every(id => !left.includes(id)),
+    '비우기가 되면 그 계정으로 옮긴 손님 기록을 지운다',
+  );
   local.dispose();
 });
 
@@ -1262,4 +1290,54 @@ test('결과를 모르는 서버 비우기 실패(시간 초과) 뒤에는 그 �
   assert.deepEqual([timedOut.ok, timedOut.step, timedOut.known], [false, 'clear', false]);
   assert.deepEqual(await heldIds(w.guestPort), moved, '옮긴 손님 기록은 그대로다');
   a.dispose();
+});
+
+test('넷째 걸음 뒤에도 그 걸음이 지우지 않은 제시의 답은 저장된다 — 옮긴 사건만 지운 세대에서 남은 부모를 지운 것으로 보지 않는다(4-5 끝 판 Fable F1)', async () => {
+  const w = world(67);
+  const g = await guestCoach(w);
+  await practise(w, g, w.items.slice(0, 2));
+  g.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort });
+  assert.equal((await recs.move()).ok, true);
+  recs.close();
+  a.dispose();
+  const moved = await heldIds(w.guestPort);
+  // 로그아웃한 손님이 연습하는 사이 남은 걸음이 돈다 — 넷째 걸음 전에 보인 문항은 옮기지 않아 저장소에 남는다.
+  const g2 = await guestCoach(w);
+  const pid = g2.present(w.items[3]);
+  const done = await g2.reset({
+    settle: 'cleared',
+    account: 'A',
+    revision: 2,
+    guestPort: w.guestPort,
+    legacy: { read: () => null, clear: async () => {} },
+  });
+  assert.equal(done.ok, true);
+  const left = await heldIds(w.guestPort);
+  assert.ok(
+    moved.every(id => !left.includes(id)),
+    '옮긴 사건은 지웠다',
+  );
+  assert.ok(left.includes(pid), '넷째 걸음 전에 보인 제시는 남았다');
+  assert.equal(
+    await g2.answer(pid, { correct: true, assessable: true }).stored,
+    true,
+    '남은 제시의 답은 저장된다',
+  );
+  const events = (await w.guestPort.read())
+    .filter(row => row.value.kind === 'event')
+    .map(row => row.value.event);
+  assert.equal(
+    events.filter(event => event.presentationId === pid).length,
+    1,
+    '그 답이 저장소에 있다',
+  );
+  const next = g2.present(w.items[5]);
+  assert.equal(
+    await g2.answer(next, { correct: true, assessable: true }).stored,
+    true,
+    '새 문항도 그대로다',
+  );
+  g2.dispose();
 });

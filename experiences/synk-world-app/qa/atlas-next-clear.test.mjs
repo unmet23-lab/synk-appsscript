@@ -1127,3 +1127,42 @@ test('앞 판의 열쇠를 못 지웠으면 「일부만 비움」이고 표지�
   );
   next.dispose();
 });
+
+test('결과를 모르는 앞 비우기의 표지는 새 비우기가 서버에 닿지 않고 끝나면 그대로 되살리고, 결과를 모르면 그 표지가 실은 남은 걸음을 새 표지에 잇는다(4-5 끝 판 Fable F3)', async () => {
+  // 첫 비우기는 서버에서 끝나고 옛 손님 로그(4b)를 남겼다(then). 둘째 비우기는 결과를 모른다(left 없음) — 그 표지가 앞 남은 걸음을 싣는다.
+  const prior = { account: A_ID, path: 'upload', revision: 2, at: Date.now() - 1000, then: { revision: 2, left: 'legacy' } };
+  const offline = line => {
+    line.lastClear = async () => {
+      throw Object.assign(Error('NETWORK'), { code: 'NETWORK', retryable: true });
+    };
+  };
+  const run = async (answer, ready = () => {}) => {
+    const storage = filledStorage();
+    storage.setItem(CLEARING_MARK + A_ID, JSON.stringify(prior));
+    const line = accountLine({ revision: 2 });
+    ready(line);
+    const next = createAtlasNext({
+      owner: A_ID,
+      storage,
+      trail: line.trail,
+      load: fakeLoader(given => (given.settle ? settled : answer)).load,
+      health: recorder(),
+    });
+    const done = await next.clearPractice();
+    next.dispose();
+    return { done, mark: markOf(storage) };
+  };
+  // 셋째 비우기가 올리기에서 멈췄다(닿지 못함) — 서버에 닿지 않았으니 둘째 비우기의 표지와 그 남은 걸음을 그대로 되살린다.
+  const upload = await run({ ok: false, path: 'upload', step: 'upload', code: 'UNSENT', known: true }, offline);
+  assert.equal(upload.done.code, 'UNSENT');
+  assert.deepEqual(upload.mark, prior, '올리기에서 멈춘 비우기가 결과를 모르는 앞 표지를 되살렸다');
+  // 서버가 받지 않았고(409) 비워지지 않은 것을 읽었다 — 같다.
+  const refused = await run({ ok: false, path: 'upload', step: 'clear', code: 'REVISION_CONFLICT', known: true });
+  assert.equal(refused.done.code, 'REVISION_CONFLICT');
+  assert.deepEqual(refused.mark, prior, '서버가 받지 않은 비우기가 결과를 모르는 앞 표지를 되살렸다');
+  // 셋째 비우기도 결과를 모른다 — 새 표지가 앞 표지의 남은 걸음을 잇는다(하루가 지나도 비워지지 않았으면 그것으로 되살린다).
+  const unknown = await run({ ok: false, path: 'upload', step: 'clear', code: 'NETWORK', known: false }, offline);
+  assert.equal(unknown.done.known, false);
+  assert.equal(unknown.mark.left, undefined, '셋째 비우기의 결과를 모르는 표지다');
+  assert.deepEqual(unknown.mark.then, { revision: 2, left: 'legacy' }, '새 표지가 앞 표지의 남은 걸음을 잇는다');
+});

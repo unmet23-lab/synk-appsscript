@@ -754,9 +754,12 @@ export function createRecord({
   // 같은 제시의 답은 바로 앞 답에도 기댄다(단계 4 §18-4) — 앞 답이 저장되지 못했으면 뒤 답도 쓰지 않는다. 쓰면 1번이 없는
   // attemptNo 2가 남아 서버가 EVENT_LINK로 빼고, 손님 기기에서는 틀린 뒤 다시 맞힌 답이 혼자 낸 첫 답으로 접혔다(s4).
   // 딸린 거절은 계기에 코드만 센다(이어진 실패 수에 넣지 않는다 — G5 · H2).
-  // 부모 · 앞 답을 이 기록부가 이 사건보다 앞선 세대에 지었으면 그 사이에 저장소가 비워졌다 — 부모가 저장됐어도 지워진 것이라 자식을
-  // 새 세대에 쓰지 않는다. 저장된 부모는 unsaved에 없고 자식은 새 세대를 막이로 걸어 포트도 받았다(4-5 끝 판 카본 D1).
-  const clearedSince = (id, gen) => id != null && (state.made.get(id) ?? gen) < gen;
+  // 부모 · 앞 답을 이 기록부가 이 사건보다 앞선 세대에 지었고 다시 읽은 저장소에 없으면 그 사이의 비우기가 지운 것이다 — 부모가 저장됐어도
+  // 자식을 새 세대에 쓰지 않는다. 저장된 부모는 unsaved에 없고 자식은 새 세대를 막이로 걸어 포트도 받았다(4-5 끝 판 카본 D1). 넷째 걸음처럼
+  // 옮긴 사건만 지운 비우기 뒤에 남은 부모에는 잇는다 — 세대로만 가르면 남은 제시의 답까지 막혔다(4-5 끝 판 Fable F1). 다시 읽기가
+  // 밀렸으면(resync) 저장소를 모르니 지운 것으로 본다.
+  const clearedSince = (id, gen) =>
+    id != null && (state.made.get(id) ?? gen) < gen && (state.resync || !state.held.has(id));
   // 쓰지 않을 까닭(딸린 거절의 코드) — 없으면 null.
   function blockedBy(event, before, gen) {
     const parent = parentOf(event);

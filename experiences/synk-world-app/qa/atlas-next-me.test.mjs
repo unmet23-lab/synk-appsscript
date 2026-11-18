@@ -445,7 +445,11 @@ test('옛 엔진의 올리는 문 — 대기열 0은 동기화가 막힘 · 쉼 
 
 test('옛 엔진의 올리는 문 — 서버가 사건을 받지 않아 옛 동기화가 막혔으면 그 수를 UNSENT_SKIPPED로 알린다. 계정 · 인증 까닭의 막힘이나 막히지 않은 오류는 거짓이다(4-5 Opus 대체 설계 검토 F4)', async () => {
   let state = null;
-  const doors = oldEngineDoors({ openGame: () => assert.fail('열지 않는다'), host: () => ({ retry: async () => state }) });
+  // 막힌 뒤에 든 답이 없으면 기록부에서 다시 센 수가 대기열의 수다(GC1).
+  const doors = oldEngineDoors({
+    openGame: () => assert.fail('열지 않는다'),
+    host: () => ({ retry: async () => state, unsent: () => state.queued }),
+  });
   state = { phase: 'blocked', code: 'INVALID_EVENTS', queued: 3 };
   assert.deepEqual(await doors.flush(), { ok: false, code: 'UNSENT_SKIPPED', skipped: 3 });
   state = { phase: 'blocked', code: 'EVENT_RUN_CONFLICT', queued: 2 };
@@ -456,6 +460,22 @@ test('옛 엔진의 올리는 문 — 서버가 사건을 받지 않아 옛 동�
   assert.equal(await doors.flush(), false, '막히지 않았으면 다시 해 볼 일이다');
   state = { phase: 'blocked', code: 'INVALID_EVENTS', queued: 0 };
   assert.equal(await doors.flush(), false, '남은 것이 없는 막힘은 셀 것이 없다');
+});
+
+test('옛 엔진의 올리는 문 — 막힌 동기화의 대기열 수는 막힌 때의 수라, 그 뒤에 든 답까지 기록부에서 다시 센 수를 알린다. 셀 수 없으면(쓰기 임대 없음 · 다시 세지 못하는 호스트) 아무것도 지우지 않는다(4-5 끝 판 GPT GC1)', async () => {
+  const state = { phase: 'blocked', code: 'EVENT_CONFLICT', queued: 1 };
+  let counted = 2;
+  const doors = oldEngineDoors({
+    openGame: () => assert.fail('열지 않는다'),
+    host: () => ({ retry: async () => state, unsent: () => counted }),
+  });
+  assert.deepEqual(await doors.flush(), { ok: false, code: 'UNSENT_SKIPPED', skipped: 2 }, '막힌 뒤에 든 답까지 센다');
+  counted = null;
+  assert.equal(await doors.flush(), false, '다른 탭이 쓰기 임대를 쥐어 셀 수 없으면 거짓');
+  counted = 0;
+  assert.equal(await doors.flush(), false, '다시 센 수가 없으면 셀 것이 없다');
+  const old = oldEngineDoors({ openGame: () => assert.fail('열지 않는다'), host: () => ({ retry: async () => state }) });
+  assert.equal(await old.flush(), false, '다시 세지 못하는 호스트면 거짓');
 });
 
 test('옛 엔진의 비우는 문 — wait 0이면 쓰기 임대를 기다리지 않고 곧바로 STORAGE_BUSY다(남은 걸음 — 4-5 Opus 대체 설계 검토 F7)', async () => {
@@ -761,4 +781,38 @@ test('앱의 「나」 칸 되돌리기 — 저장이 끝난 뒤에 칸을 다�
   assert.deepEqual(failed.calls, ['undo:tell-9', 'toast:me.toldFailed'], '저장되지 않으면 알리고 다시 그리지 않는다');
   assert.equal(failed.undo.disabled, false, '되돌리기를 다시 누를 수 있다');
   assert.equal(failed.left?.eventId, 'tell-9', '되돌리기를 남긴다');
+});
+
+test('옛 동기화의 다시 세기(unsent)는 새 길의 올리는 문만 부른다 — 스위치가 꺼진 지금 판에서는 부르는 곳이 없다(4-5 끝 판 GPT GC1 · 설계 주인 11-19 새벽 조건)', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const { readFileSync } = await import('node:fs');
+  const root = new URL('../../../', import.meta.url);
+  // 배포되는 코드 — 시험 · 문서 · 임시 자리를 빼고, 새 엔진(packages/atlas)도 뺀다(그 unsent는 새 기록부의 다른 읽기다).
+  const shipped = execFileSync('git', ['ls-files', '-z', '--', '*.js', '*.mjs', '*.cjs'], { cwd: root, encoding: 'utf8', maxBuffer: 256 << 20 })
+    .split('\0')
+    .filter(name => name && !/^(docs|tests|packages\/atlas|\.tmp)\//.test(name) && !/\/(qa|tests?)\//.test(name));
+  const callers = [];
+  const doorImporters = [];
+  for (const name of shipped) {
+    let text;
+    try {
+      text = readFileSync(new URL(name, root), 'utf8');
+    } catch {
+      continue;
+    }
+    if (text.includes('world-old-engine-doors') && /(from|import\()\s*['"][^'"]*world-old-engine-doors\.mjs['"]/.test(text)) doorImporters.push(name);
+    if (!text.includes('unsent')) continue;
+    // 옛 학습 호스트의 넘겨주기(호스트의 unsent가 옛 동기화의 unsent를 부른다 — 생성 사본 · 묶음에도 든다)는 따로 센다.
+    // 묶음은 이름을 sync2처럼 바꾸고, 따옴표와 띄어쓰기도 바꾼다(드라마 시범 · 계정 dist · WORLD 계정 묶음 — GC1을 넣으며 다시 만든 판).
+    const passthrough = /typeof sync\d*\?\.unsent\s*={2,3}\s*["']function["']/.test(text);
+    // 받는 쪽이 이름 · 부름 · 꺾쇠로 끝나고 선택적 연결(?.)이어도 센다 — host?.unsent?.() · host().unsent() · list[0].unsent().
+    for (const call of text.match(/[\w$)\]]+\??\.unsent\??\.?\(/g) ?? [])
+      if (!(passthrough && /^sync\d*\.unsent\($/.test(call))) callers.push(`${name} · ${call}`);
+  }
+  assert.deepEqual(callers, ['experiences/synk-world-app/world-old-engine-doors.mjs · owner.unsent?.('], '옛 동기화의 셈을 부르는 곳은 올리는 문뿐이다');
+  assert.deepEqual(doorImporters, ['experiences/synk-world-app/world-atlas-next.mjs'], '올리는 문은 새 길 입구만 들인다');
+  const shell = readFileSync(new URL('experiences/synk-world-app/app-shell.mjs', root), 'utf8');
+  assert.ok(!/^\s*import[^(]*['"]\.\/world-atlas-next\.mjs['"]/m.test(shell), '셸은 새 길 입구를 정적으로 들이지 않는다');
+  assert.match(shell, /import\('\.\/world-atlas-next\.mjs'\)/, '셸은 새 길 입구를 처음 쓸 때 받는다');
+  assert.match(shell, /const atlasNext=atlasNextOn&&/, '새 길 입구는 스위치(atlasNext)가 켜졌을 때만 만든다');
 });

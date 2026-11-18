@@ -210,6 +210,8 @@ function createWorldLearningHost({ accountKey, revision, storage, transport, mem
     async ready() { check(); await memoryReady; check(); },
     // Back in front: retry the sync and read what other devices chose.
     retry: () => { check(); const remembered = memoryReady = memory?.retry(), learned = sync?.retry(); return remembered && learned ? Promise.all([remembered, learned]).then(([, state]) => state) : learned || remembered; },
+    // Entries the server has not acknowledged, counted again from the account log (learning-sync unsent — null without the write lease or a sync).
+    unsent: () => { check(); return typeof sync?.unsent === 'function' ? sync.unsent() : null; },
     // Going to the background or closing: send the changed memory now.
     flush: () => { check(); return memory?.flush(); },
     // One run at a time, on a connected account. Opening or closing one ends the games of the last.

@@ -9601,6 +9601,19 @@ var SynkLearning = (() => {
             return run();
           },
           status,
+          // What the server has not acknowledged, counted again from the log: entries queued or not yet collected (Atlas stage 4-5 — the count a
+          // practice-record clear asks the learner to confirm). A blocked sync collects nothing more, so status().queued stays what was queued when
+          // it blocked while later answers wait in the log only. Only the context holding the write lease writes the log, so only it counts; other
+          // contexts get null. Reading only: nothing is collected, saved or sent.
+          unsent() {
+            if (stopped || !canPersist()) return null;
+            const acknowledged = new Set(state.acknowledged);
+            try {
+              return port.events().filter((event) => !acknowledged.has(event.id)).length;
+            } catch {
+              return null;
+            }
+          },
           invalidate(code2 = "STORAGE_ERROR") {
             if (!stopped) block(failure(code2 === "HISTORY_CAPACITY" ? code2 : "STORAGE_ERROR", "Atlas sync: local learning could not be saved"));
             return status();

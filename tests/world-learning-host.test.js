@@ -497,3 +497,21 @@ test('a timed out personal memory read permits local practice instead of waiting
   assert.equal(host.status().memory.phase,'offline');
   const game=host.createGame({gameId:'racing'},createGame,manual);assert.deepEqual(game.presentation(),{support:'step'});assert.ok(game.live(FLOW).settings());host.stop();
 });
+
+test('a blocked account sync is recounted from the account log: answers recorded after the block count, and a host without a sync has no count (Atlas 4-5 clear)', async () => {
+  const { storage } = memory();
+  const transport = { get: async () => ({ ok: true, revision: 1, cursor: 0, hasMore: false, events: [] }),
+    post: async () => { throw Object.assign(new Error('conflict'), { code: 'EVENT_CONFLICT', revision: 1 }); } };
+  const host = createWorldLearningHost({ accountKey: 'unsent-count', revision: 1, guard() {}, storage, transport });
+  const game = host.createGame({ gameId: 'racing' }, createGame, manual);
+  await host.retry();
+  game.answer(game.present(item('first')), { correct: true, assessable: true });
+  await host.retry();
+  assert.equal(host.status().phase, 'blocked'); const queued = host.status().queued; assert.ok(queued > 0);
+  game.answer(game.present(item('second')), { correct: true, assessable: true });
+  assert.equal(host.status().queued, queued, 'a blocked sync collects nothing more');
+  assert.equal(host.unsent(), queued * 2, 'the answer recorded after the block is counted');
+  host.stop();
+  const local = createWorldLearningHost({ accountKey: 'local:unsent', revision: 1, connected: false, guard() {}, storage: memory().storage });
+  assert.equal(local.unsent(), null, 'no sync, no count');
+});

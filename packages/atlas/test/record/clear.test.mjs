@@ -736,3 +736,69 @@ test('늦게 쓰는 탭 — 비움 표지를 읽고 세대가 오른 뒤 열린 
   assert.equal(await given.stored, false, '지워진 마침을 가리키는 판 응답을 새 세대에 쓰지 않는다');
   assert.equal((await eventIds(port)).length, 0, '저장소에 부모 없는 판 응답이 없다');
 });
+
+test('늦게 쓰는 탭 — 막이 뒤 다시 읽기가 밀린 동안(resync)은 저장소를 모르니, 앞 세대에 지은 부모의 자식은 메모리 사본에 남아 있어도 쓰지 않는다(4-5 끝 판 Fable F1의 바닥)', async () => {
+  const port = memoryPort();
+  let failRead = false;
+  const flaky = {
+    ...port,
+    async read(...args) {
+      if (failRead) {
+        failRead = false;
+        throw Object.assign(new Error('읽기 실패'), { code: 'READ_FAILED' });
+      }
+      return port.read(...args);
+    },
+  };
+  const late = await guestOn(flaky, { exclusive: busy });
+  const [shown] = await practise(late, items[0]);
+  const other = await guestOn(port, { exclusive: busy });
+  await other.clear();
+  // 부모 없는 새 제시가 막이에 걸리고, 다시 읽기가 실패한다 — 이 탭의 메모리 사본은 지워진 제시와 그 답을 아직 든다.
+  failRead = true;
+  const probe = late.add(EVENT_TYPES.presented, presented(items[1]));
+  assert.equal(await probe.stored, false, '막이에 걸린 새 제시');
+  assert.ok(
+    late.heldEvents().some(event => event.id === shown),
+    '메모리 사본은 아직 지워진 제시를 든다',
+  );
+  const made = late.add(EVENT_TYPES.attempted, {
+    presentationId: shown,
+    attemptNo: 2,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  assert.equal(
+    await made.stored,
+    false,
+    '저장소를 모르는 동안 지워진 제시의 답을 새 세대에 쓰지 않는다',
+  );
+  assert.deepEqual(await eventIds(port), [], '저장소에 부모 없는 답이 없다');
+});
+
+test('넷째 걸음(옮긴 사건만 지우는 비우기) 뒤 — 그 걸음이 지우지 않은 제시와 앞 답에는 답을 잇고, 지운 제시에는 잇지 않는다(4-5 끝 판 Fable F1)', async () => {
+  const port = memoryPort();
+  const record = await guestOn(port);
+  const [p1, a1] = await practise(record, items[0]);
+  await record.mark({ mark: 'moved', account: 'Z', revision: 1, until: 99, ids: [p1, a1] });
+  await record.mark({ mark: 'logout' });
+  const [p2, a2] = await practise(record, items[1]); // 로그아웃 뒤 손님의 사건 — 넷째 걸음이 둔다
+  clockMs += 60_000;
+  const open = record.add(EVENT_TYPES.presented, presented(items[2])); // 아직 답하지 않은 제시
+  assert.equal(await open.stored, true);
+  assert.deepEqual(await record.dropMoved({ account: 'Z' }), { gen: 1, dropped: 2 });
+  const answer = (presentationId, attemptNo) =>
+    record.add(EVENT_TYPES.attempted, {
+      presentationId,
+      attemptNo,
+      verdict: 'correct',
+      errorTags: [],
+    });
+  const first = answer(open.event.id, 1);
+  assert.equal(await first.stored, true, '남은 제시의 답은 쓴다');
+  const again = answer(p2, 2);
+  assert.equal(await again.stored, true, '남은 앞 답에 이은 뒤 답도 쓴다');
+  const gone = answer(p1, 2);
+  assert.equal(await gone.stored, false, '넷째 걸음이 지운 제시에는 답을 잇지 않는다');
+  assert.deepEqual(await eventIds(port), [p2, a2, open.event.id, first.event.id, again.event.id]);
+});

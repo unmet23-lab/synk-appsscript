@@ -5,7 +5,7 @@
     "src/generated/account-client.cjs": "b8b5c72ca4167ac16c4a5662c8ac2635eaa792e61235fb1f047f4845356f7089",
     "src/generated/wardrobe-client.cjs": "469079cbd12824fcf966ab3917081023818548f7e156a5f5cb80b3839c4c908f",
     "src/generated/wardrobe-catalog.cjs": "256735435ccba1252e2943cfc0bc21fac3f4e27244ed9e11a6de540d71736136",
-    "src/generated/world-learning-host.cjs": "ad8af40c2efc5f7daaced97bb60374f6b8b0b8b0ba0e89098d11882280804960",
+    "src/generated/world-learning-host.cjs": "bb6ba191d5ba89a85f2952a26d6175c2a282c583d66b31d6351f2836a978a7f5",
     "assets/wardrobe/kkamong-base.webp": "38dfa064e70b80b8507ee78f10305221de003996932f9fbfd2fd457b1ee43720",
     "assets/wardrobe/kkamong-scarf.webp": "a69df98f2fa85d32a7254d1961d465cef504bcfa68e4c0281466b6d253cd82b6",
     "assets/wardrobe/kkamong-apron.webp": "68d7e4a6afc09379bcd17f31db0737c2a30641da0cc247187aabca5cae89da5a",
@@ -65,10 +65,10 @@
     "assets/DMMono-Medium.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
     "dist/wardrobe-three.js": "ca63e2e89a9a83c9c3ddb8641aeda6ab2aa2420e41210f1571887442ad60fe44",
     "dist/app.js": "a46afb6a6aa5d35a149ba0c8c266ed2fd99a518afce21f1153ec4385ceee3360",
-    "dist/client.js": "fd9b00378373a6de3bba1876f665d487ca725be10a192b031fc4df8498752f08",
-    "dist/preview.js": "554464ed628ab1063a0f0f260036babdae5e76937373d3bdfaf1c7a33374d074",
+    "dist/client.js": "9dce85894386d33b31700c6b9641cba39282508fa6737263be2ded9927a01937",
+    "dist/preview.js": "82630268d461c01b111320511f6d0ab18a44624915f546c8eaf6419d412c5192",
     "dist/platform.js": "886a378acc1f6d8a304402e727141c7d2062a19026ddc384b8c5e0d1868c4b30",
-    "dist/local-world.js": "e39af72ba5da66e4d9201269fbb060805a3441bc5dffdd8f8da721fbe5bb2085",
+    "dist/local-world.js": "ba176098aec3e570415410dfd34438912ec7baacc765dd609483befe16f6276b",
     "dist/teacher.js": "91254d7b3ea5fdc71776db7e9eb3642d768c7e01dfc6b96618e1b8521a7e7e0a",
     "preview.html": "74c3b9e03c44497a48c01b6ed41271389bac806eee30ff0d612eda77dbec567e"
   }
