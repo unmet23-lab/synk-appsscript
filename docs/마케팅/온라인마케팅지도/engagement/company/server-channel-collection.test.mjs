@@ -61,31 +61,37 @@ test('the shared public reader renews once with its original client and never su
 });
 
 // 11-19: 페이스북 수집기가 남기는 페이지 게시물 번호(pagePostId). 게시 성과 판정이 게시결과의 번호를 서버 게시물과 짝짓는 데 쓴다.
-test('a page post id is stored only in its exact form and a later collection without it keeps the stored one',async t=>{
+// 설계 검토 B: 이 번호가 있는 줄은 externalId도 같은 번호다. 서버는 둘이 같고 꼴이 맞을 때만 적는다.
+const again=async(f,set)=>{set();for(const c of f.app.store.all('channels'))if(c.id!=='excluded')f.app.store.put('channels',c.id,{...c,lastCollectedAt:null,lastAttemptAt:null,recentLastCollectedAt:null,recentLastAttemptAt:null});await f.app.scheduledTick();await f.app.waitForIdle();};
+const fbRow=(externalId,pagePostId,url)=>({...result({}).posts[0],externalId,pagePostId,url});
+test('a page post id is stored only in its exact form, only on the row whose externalId it is, and stays when a later collection lacks it',async t=>{
   let round=1;
-  const base=result({}).posts[0],video=id=>({...base,externalId:id,url:'https://www.youtube.com/watch?v='+id});
-  const posts=()=>[{...base,pagePostId:round===1?'123_456':undefined},{...video('lmnopqrstuv'),pagePostId:'123_456&x'},{...video('zyxwvutsrqp'),pagePostId:round===1?null:'123_789'}];
-  const f=await fixture(t,{collector:async c=>({...result(c),posts:posts()})});
+  const reel='https://www.facebook.com/reel/555/';
+  const f=await fixture(t,{collector:async c=>({...result(c),posts:round===1
+    ?[fbRow('123_456','123_456',reel),fbRow('123_457','123_457&x',reel),fbRow('555','123_789',reel),fbRow('123_458','123_999',reel)]
+    :[fbRow('123_456',undefined,reel)]})});
   const stored=()=>Object.fromEntries(f.app.store.all('posts').filter(p=>p.channelId==='lab').map(p=>[p.externalId,p.pagePostId]));
-  assert.deepEqual(stored(),{abcdefghijk:'123_456',lmnopqrstuv:undefined,zyxwvutsrqp:undefined});
-  round=2;for(const c of f.app.store.all('channels'))if(c.id!=='excluded')f.app.store.put('channels',c.id,{...c,lastCollectedAt:null,lastAttemptAt:null,recentLastCollectedAt:null,recentLastAttemptAt:null});
-  await f.app.scheduledTick();await f.app.waitForIdle();
-  assert.deepEqual(stored(),{abcdefghijk:'123_456',lmnopqrstuv:undefined,zyxwvutsrqp:'123_789'});
+  assert.deepEqual(stored(),{'123_456':'123_456','123_457':undefined,'555':undefined,'123_458':undefined});
+  await again(f,()=>{round=2;});
+  assert.deepEqual(stored(),{'123_456':'123_456','123_457':undefined,'555':undefined,'123_458':undefined});
 });
 
-// 11-19 다시 검수: pagePostId는 줄의 속성일 뿐이다. 같은 번호의 줄이 있어도 줄을 내리거나 합치지 않는다 — 줄의 수명은 앞 판과 같다
-// (부분 수집은 안 보인 줄을 두고, 완전한 전체 수집만 내린다). 일찍 내리면 그 줄의 수치 이력이 보고서에서 빠진다.
-test('a shared page post id never retires a row; only a complete full collection retires unseen rows as before',async t=>{
+// 설계 검토 B의 줄 수명: 영상 목록에서만 잡혔던 릴스(post_id를 받아 externalId가 게시물 번호)가 다음 회차에 게시물 목록으로 잡혀도 같은 줄이다.
+// post_id를 못 받은 영상 번호 줄은 번호가 없고, 앞 판처럼 완전한 전체 수집만 안 보인 줄을 내린다.
+test('a reel first seen only in the video list and later in the feed is one row; a numberless video row retires only on a complete full collection',async t=>{
   let round=1;
-  const row=(externalId,pagePostId,url)=>({...result({}).posts[0],externalId,pagePostId,url});
+  const complete={status:'complete',inventoryComplete:true,ownerAuthorized:false},partial={status:'partial',inventoryComplete:false,ownerAuthorized:false};
   const f=await fixture(t,{collector:async c=>round===1
-    ?{...result(c),posts:[row('555','123_700','https://www.facebook.com/reel/555/')]}
-    :{...result(c),posts:[row('123_700','123_700','https://www.facebook.com/synk/posts/700')],coverage:round===2?{status:'partial',inventoryComplete:false,ownerAuthorized:false}:{status:'complete',inventoryComplete:true,ownerAuthorized:false}}});
-  const again=async next=>{round=next;for(const c of f.app.store.all('channels'))if(c.id!=='excluded')f.app.store.put('channels',c.id,{...c,lastCollectedAt:null,lastAttemptAt:null,recentLastCollectedAt:null,recentLastAttemptAt:null});await f.app.scheduledTick();await f.app.waitForIdle();};
-  const active=()=>f.app.store.all('posts').filter(p=>p.channelId==='lab'&&!p.unavailableAt).map(p=>p.externalId).sort();
-  await again(2);assert.deepEqual(active(),['123_700','555'],'a partial collection keeps the unseen row');
-  await again(3);assert.deepEqual(active(),['123_700'],'the complete full collection retires it, as before this change');
-  assert.equal(f.app.store.get('posts','lab:555').pagePostId,'123_700');
+    ?{...result(c),posts:[fbRow('123_700','123_700','https://www.facebook.com/reel/555/'),fbRow('556',null,'https://www.facebook.com/reel/556/')],coverage:complete}
+    :{...result(c),posts:[fbRow('123_700','123_700','https://www.facebook.com/synk/posts/700'),fbRow('123_701','123_701','https://www.facebook.com/reel/556/')],coverage:round===2?partial:complete}});
+  const active=()=>f.app.store.all('posts').filter(p=>p.channelId==='lab'&&!p.unavailableAt).map(p=>[p.externalId,p.pagePostId??null]).sort();
+  assert.deepEqual(active(),[['123_700','123_700'],['556',null]]);
+  await again(f,()=>{round=2;});
+  assert.deepEqual(active(),[['123_700','123_700'],['123_701','123_701'],['556',null]],'a partial collection keeps the unseen row; the feed row is the same row');
+  assert.equal(f.app.store.get('posts','lab:123_700').url,'https://www.facebook.com/synk/posts/700');
+  assert.equal(f.app.store.all('snapshots').filter(s=>s.postId==='lab:123_700').length,1,'its history stays on one row');
+  await again(f,()=>{round=3;});
+  assert.deepEqual(active(),[['123_700','123_700'],['123_701','123_701']],'the complete full collection retires the numberless row, as before this change');
 });
 
 test('complete inventory hides unavailable posts without erasing history; partial inventory never hides unseen posts',async t=>{

@@ -384,8 +384,8 @@ test('Facebook reads videos once more without the published field only when Meta
     }
     throw new Error('unexpected');
   } });
-  // 페이지 게시물 번호 칸(post_id)을 먼저 빼고, 그래도 거절하면 공개 여부 칸까지 뺀다.
-  assert.deepEqual(videoFields, [[true, true], [true, false], [false, false]]);
+  // Meta가 「없는 칸」으로 가리킨 칸(published)만 빼고 다시 묻는다. 페이지 게시물 번호 칸(post_id)은 그대로 묻는다.
+  assert.deepEqual(videoFields, [[true, true], [false, true]]);
   assert.deepEqual(result.posts.map(post => [post.externalId, post.metrics.views]), [['900', 7]]);
   assert.ok(result.warnings.some(warning => /공개 여부를 알려 주지 않아/.test(warning)));
   assert.equal(result.coverage.status, 'complete');
@@ -401,7 +401,8 @@ test('Facebook reads videos once more without the published field only when Meta
   assert.equal(limited, 1); assert.equal(halted.coverage.inventoryComplete, false);
 });
 
-// 11-19: 게시결과에는 페이스북 페이지 게시물 번호가 적힌다. /videos에서만 찾은 릴스는 externalId가 영상 번호뿐이라 그 번호를 영상의 post_id로 남긴다.
+// 11-19: 게시결과에는 페이스북 페이지 게시물 번호가 적힌다. /videos에서만 찾은 릴스는 그 번호를 영상의 post_id로 남긴다.
+// 설계 검토 B: pagePostId가 있는 줄은 externalId도 같은 번호다. 이 페이지의 번호만 쓰고, 다른 페이지 번호 · 빈 값이면 영상 번호 줄이다.
 test('Facebook keeps the page post id of feed posts and of reels found only in the video list', async () => {
   const videoFields = [];
   const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
@@ -424,12 +425,14 @@ test('Facebook keeps the page post id of feed posts and of reels found only in t
     throw new Error('unexpected ' + url.pathname);
   } });
   assert.deepEqual(videoFields, [['published', 'post_id']]);
-  assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [
-    ['123_700', '123_700', 5], ['556', '123_801', 6], ['557', '123_802', null], ['558', null, null], ['559', '80_3', null], ['560', null, null], ['561', null, null],
+  assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views, post.url]), [
+    ['123_700', '123_700', 5, 'https://www.facebook.com/reel/555/'], ['123_801', '123_801', 6, 'https://www.facebook.com/reel/556/'], ['123_802', '123_802', null, 'https://www.facebook.com/reel/557/'],
+    ['558', null, null, 'https://www.facebook.com/reel/558/'], ['559', null, null, 'https://www.facebook.com/reel/559/'], ['560', null, null, 'https://www.facebook.com/reel/560/'], ['561', null, null, 'https://www.facebook.com/reel/561/'],
   ]);
-  assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 7, withPostId: 4, matched: 1, agreed: 1, byPostId: 0 }, 'a bare post_id 700 becomes the feed id 123_700 once the page id is added');
-  // 칸을 받았어도 번호가 빈 영상 목록만의 릴스는 알린다(검수 GA4).
-  assert.ok(result.warnings.some(warning => /영상 목록에서만 찾은 3개는 게시물 번호 없이/.test(warning)));
+  assert.ok(result.posts.every(post => post.pagePostId === null || post.pagePostId === post.externalId), 'a row with a page post id has it as its externalId');
+  assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 7, withPostId: 3, matched: 1, agreed: 1, byPostId: 0 }, 'a bare post_id 700 becomes the feed id 123_700 once the page id is added');
+  // 칸을 받았어도 번호가 빈(또는 다른 페이지 번호인) 영상 목록만의 릴스는 알린다(검수 GA4).
+  assert.ok(result.warnings.some(warning => /영상 목록에서만 찾은 4개는 게시물 번호 없이/.test(warning)));
 });
 
 // 검수 GA1: 게시물 목록이 영상 번호 없이(일반 게시물 주소, 대상 없음) 준 게시물도 영상의 post_id가 그 게시물이면 합친다. 같은 게시물의 영상 둘도 한 줄이다.
@@ -437,7 +440,7 @@ test('Facebook merges a video into the feed post its post_id names even without 
   const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
     const url = new URL(raw);
     if (url.pathname.endsWith('/me')) return ok({ id: '123' });
-    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:00Z', permalink_url: 'https://www.facebook.com/synk/posts/700' }] });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:00Z', permalink_url: 'https://www.facebook.com/synk/posts/700', reactions: { summary: { total_count: 3 } } }] });
     if (url.pathname.endsWith('/videos')) return ok({ data: [
       { id: '555', post_id: '700', views: 9, published: true, created_time: '2026-10-29T12:00:00Z' },
       { id: '556', post_id: '123_701', permalink_url: '/reel/556/', views: 4, published: true, created_time: '2026-10-29T13:00:00Z' },
@@ -445,19 +448,20 @@ test('Facebook merges a video into the feed post its post_id names even without 
     ] });
     throw new Error('unexpected');
   } });
-  assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [['123_700', '123_700', 9], ['556', '123_701', 4]]);
+  // 조회수는 영상 값, 좋아요는 게시물 값이다. 같은 게시물의 영상 둘(556 · 557)은 한 줄이다.
+  assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views, post.metrics.likes]), [['123_700', '123_700', 9, 3], ['123_701', '123_701', 4, null]]);
   assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 3, withPostId: 3, matched: 0, agreed: 0, byPostId: 2 });
-  assert.equal(new Set(result.posts.map(post => post.pagePostId)).size, result.posts.length, 'one row per page post');
-  // 다시 검수 GA2: 서버가 저장하지 못하는 게시물(주소 없음)에는 합치지 않고 영상 줄을 남긴다.
+  assert.equal(new Set(result.posts.map(post => post.externalId)).size, result.posts.length, 'one row per page post');
+  // 다시 검수 GA2 · 설계 검토 조건 3: 주소나 게시일이 빈 게시물에도 합치고, 빈 칸은 영상 값으로 채운다(서버가 저장할 수 있는 한 줄).
   const urlless = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
     const url = new URL(raw);
     if (url.pathname.endsWith('/me')) return ok({ id: '123' });
-    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:00Z' }] });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700' }] });
     if (url.pathname.endsWith('/videos')) return ok({ data: [{ id: '555', post_id: '700', permalink_url: '/reel/555/', views: 9, published: true, created_time: '2026-10-29T12:00:00Z' }] });
     throw new Error('unexpected');
   } });
-  assert.deepEqual(urlless.posts.map(post => [post.externalId, post.url, post.pagePostId, post.metrics.views]), [['123_700', null, '123_700', null], ['555', 'https://www.facebook.com/reel/555/', '123_700', 9]]);
-  assert.equal(urlless.coverage.videoPostIds.byPostId, 0);
+  assert.deepEqual(urlless.posts.map(post => [post.externalId, post.url, post.publishedAt, post.pagePostId, post.metrics.views]), [['123_700', 'https://www.facebook.com/reel/555/', '2026-10-29T12:00:00.000Z', '123_700', 9]]);
+  assert.equal(urlless.coverage.videoPostIds.byPostId, 1);
 });
 
 // 다시 검수 GA4: 칸 거절은 첫 요청에서 난다. 둘째 쪽에서 난 400 · 100(커서 따위)으로 처음부터 다시 받지 않는다.
@@ -477,6 +481,46 @@ test('Facebook does not refetch videos with fewer fields when a later page fails
   assert.equal(videoCalls, 2);
   assert.equal(result.coverage.inventoryComplete, false);
   assert.ok(!JSON.stringify(result).includes('FIXTURE_SECRET'));
+});
+
+// 셋째 검수 GA3: 첫 요청의 400 · 100이라도 Meta가 더 받으려던 칸을 「없는 칸」으로 가리키지 않으면 칸을 빼고 다시 묻지 않는다.
+// 셋째 검수 GA1: 빈 permalink_url은 주소 없음이다(첫 화면 주소로 풀지 않는다).
+test('Facebook refetches videos only for the optional field Meta names, and an empty permalink is no address', async () => {
+  for (const message of ['(#100) Unsupported get request.', '(#100) Tried accessing nonexisting field (thumbnails) on node type (Video)', 'FIXTURE_SECRET']) {
+    let videoCalls = 0;
+    const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+      const url = new URL(raw);
+      if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+      if (url.pathname.endsWith('/posts')) return ok({ data: [] });
+      if (url.pathname.endsWith('/videos')) { videoCalls++; return fail(400, { error: { code: 100, message } }); }
+      throw new Error('unexpected');
+    } });
+    assert.equal(videoCalls, 1, message);
+    assert.equal(result.coverage.inventoryComplete, false);
+    assert.ok(!JSON.stringify(result).includes('nonexisting') && !JSON.stringify(result).includes('FIXTURE_SECRET'));
+  }
+  // 문구가 달라도 더해 묻은 칸 이름이 낱말로 있으면 그 칸만 빼고 한 번 더 묻는다(설계 검토).
+  const asked = [];
+  const reworded = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [] });
+    if (url.pathname.endsWith('/videos')) {
+      const fields = url.searchParams.get('fields').split(','); asked.push(fields.filter(field => ['published', 'post_id'].includes(field)));
+      return fields.includes('post_id') ? fail(400, { error: { code: 100, message: '(#100) Unknown fields: post_id.' } }) : ok({ data: [] });
+    }
+    throw new Error('unexpected');
+  } });
+  assert.deepEqual(asked, [['published', 'post_id'], ['published']]);
+  assert.equal(reworded.coverage.videoPostIds.asked, false);
+  const empty = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:00Z' }] });
+    if (url.pathname.endsWith('/videos')) return ok({ data: [{ id: '555', post_id: '700', permalink_url: ' ', views: 9, published: true, created_time: '2026-10-29T12:00:00Z' }] });
+    throw new Error('unexpected');
+  } });
+  assert.deepEqual(empty.posts.map(post => [post.externalId, post.url]), [['123_700', null]], 'one row, and it never becomes the home page address');
 });
 
 // 검수 GA3: 칸을 빼고 다시 묻는 것은 Meta 100(없는 칸)일 때만이다. 권한(10) · 앱 한도(341)는 한 번만 묻고, 341은 한도로 읽는다.
