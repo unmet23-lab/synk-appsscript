@@ -766,7 +766,7 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 증상: 업무 백업 `engine/src/account.cjs`를 고친 `--실행`이 관련 시험 215개로 900초를 넘겨 「16개 깨짐 · 끝까지 못 봄」으로 멈췄다. 그 가운데 190개는 「글에 이름: account.cjs」로만 골린 desktop · synk-account · synk-world-app · tests/atlas-dating 따위의 시험이었다. 멈춘 뒤 작업본에는 `experiences/synk-world-app/qa/classroom-*/result.json` 둘이 시각과 합성 요청 번호만 바뀐 채 남았고, 다음 `--모두 --실행`이 그 둘을 함께 올렸다(ecbb3f91d).
 - 원인: `tools/관련시험.js`의 ③ 규칙은 시험 글에 바꾼 파일 이름이 적혀 있으면 고른다. `account.cjs`처럼 여러 제품에 있는 이름이면 남의 시험이 대거 걸린다. synk-world-app의 QA 시험은 돌 때마다 추적 중인 `result.json`을 다시 쓴다.
 - 고침: 이름만 겹친 줄을 빼고 실제로 읽는 시험(지도의 「읽음」과 그 제품 폴더 시험)만 `CI=1 node --test`로 따로 돌려 통과를 보고, 그 숫자를 `--시험건너뜀 "<까닭>"`에 적어 올렸다. 섞인 두 기록은 앞 커밋 바이트로 되돌리는 커밋(fba1a687f)을 따로 올렸다. 그 되돌림은 관련 시험이 같은 파일을 다시 쓰므로 `--시험건너뜀`으로 올렸다.
-- 다시 확인: 관련 시험이 멈춘 뒤 다시 올리기 전에 `git status --short`로 내가 고치지 않은 파일이 생겼는지 본다. 생겼으면 `--모두` 대신 내 경로만 적어 올린다. 흔한 이름의 파일을 고칠 때는 미리 보기의 관련 시험 수를 보고, 이름만 겹친 것이 대부분이면 처음부터 위처럼 따로 돌린다.
+- 다시 확인: `node tools/관련시험.js <바꾼 경로>`로 시험별 선택 이유를 본다. 11-18부터 다른 파일 이름의 일부와 다른 모듈로 확인된 정적 import를 제외한다. CI가 읽은 파일·목록과 도우미를 거쳐 참조한 모듈은 포함한다. 시험 후 `git status --short`로 새로 생긴 변경을 보고 내 경로만 올린다.
 
 ### 워크트리에서 바로올리기의 관련 시험이 `experiences/synk-world-app/qa/` 둘을 「Cannot find package 'ts-fsrs'」로 깨뜨린다 — `npm ci --prefix packages/atlas` (2026-11-15 Claude)
 - 증상: 업무 백업만 바꾼 `--실행`이 「관련 시험 깨짐」으로 멈췄고, 깨진 것은 `atlas-next-account.test.mjs` · `world-life-next.test.mjs`의 1번 줄(파일을 읽자마자)이었다. 혼자 돌리면 `ERR_MODULE_NOT_FOUND: Cannot find package 'ts-fsrs' imported from packages/atlas/src/memory/fsrs.mjs`.

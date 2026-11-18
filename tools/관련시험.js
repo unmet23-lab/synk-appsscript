@@ -14,7 +14,8 @@
  * 고르는 법(넓게 — 몇 초 더 도는 편이 CI에서 깨지는 것보다 싸다):
  *   ① 바꾼 경로가 CI가 도는 시험 파일이면 그 시험.
  *   ② 지도: 그 시험(과 그 시험이 띄운 자식)이 바꾼 파일을 읽거나 쟀거나, 그 파일이 든 폴더를 나열했거나, `git ls-files`의 무늬에 걸리면.
- *   ③ 글: 시험 글에 바꾼 경로나 파일 이름이 적혀 있으면(흔한 이름은 빼고) — 지도에 없는 새 시험과 지도를 못 받았을 때를 덮는다.
+ *   ③ 시험에 적힌 경로와 파일 이름을 대조한다. 다른 이름의 일부와 흔한 이름 단독 표기는 제외한다.
+ *      시험에서 시작하는 상대 모듈 참조도 따라가므로 도우미를 거치는 시험은 읽기 지도가 없어도 고른다.
  *      기록 전용 경로(트랙·결정·현장노트 …)는 글로 고르지 않는다(10-22). 내커밋·바로올리기·짝검사 시험은 트랙 경로를 가짜 저장소의
  *      파일 이름으로만 적는데도 트랙을 같이 올리는 push마다 이 규칙에 붙었고, PC가 바쁠 때 내커밋·바로올리기는 각 11분 남짓 걸렸다
  *      (현장노트 시험_화면확인).
@@ -34,9 +35,11 @@
  * 지도는 공용 git 폴더 안(<git-common-dir>/synk-관련시험/지도.json)에 두어 저장소에는 안 들어간다. 경로는 모두 저장소 기준이다.
  */
 const { spawnSync } = require('node:child_process');
+const { createHash } = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { fileURLToPath, pathToFileURL } = require('node:url');
 
 const { tap실패 } = require('./lib/tap실패.js');
 
@@ -86,9 +89,11 @@ function 시험파일있나(root, p) {
 }
 
 /** CI가 도는 시험 파일 — 추적되고 지금 디스크에 있는 것. */
-function CI시험목록(root, 맞음 = CI시험판정(root)) {
-  const 목록 = git(root, ['-c', 'core.quotepath=false', 'ls-files', '-z']);
-  return (목록 || '').split('\0').filter((p) => p && 맞음(p) && 시험파일있나(root, p));
+function 추적목록(root) {
+  return (git(root, ['-c', 'core.quotepath=false', 'ls-files', '-z']) || '').split('\0').filter(Boolean);
+}
+function CI시험목록(root, 맞음 = CI시험판정(root), 추적 = 추적목록(root)) {
+  return 추적.filter((p) => 맞음(p) && 시험파일있나(root, p));
 }
 
 /** 조건부 등록부에 적힌 시험 파일들 — 등록부를 못 읽으면 null(그 파일로는 고르지 않는다). */
@@ -256,6 +261,25 @@ function 읽나(칸, p) {
   return 걸린 ? `git 무늬 ${걸린}: ${p}` : null;
 }
 
+// 마침표·붙임표·밑줄도 파일 이름에 들어간다. 예를 들어 foo.test.mjs는 test.mjs의 참조가 아니다.
+const 이름문자 = '[\\p{L}\\p{M}\\p{N}_.-]';
+const 식문자 = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const 온이름 = (s) => new RegExp(`(?<!${이름문자})${식문자(s)}(?!${이름문자})`, 'u');
+function 글판정(p) {
+  const 이름 = path.posix.basename(p);
+  const 경로식 = p.includes('/') || !흔한이름.has(이름) ? 온이름(p) : null;
+  const 이름식 = !흔한이름.has(이름) && 온이름(이름);
+  const 줄기 = path.posix.parse(이름).name;
+  const 줄기식 = 이름식 && 줄기.length >= (/[가-힣]/.test(줄기) ? 3 : 6)
+    && new RegExp("['\"`/]" + 식문자(줄기) + "(?=['\"`/]|\\.[${'\"`])");
+  return (글, 모듈밖, 의존) => {
+    if (경로식 && 경로식.test(글) && (의존?.has(p) || 경로식.test(모듈밖()))) return `글에 경로: ${p}`;
+    const 이름있나 = (본문) => (이름식 && 이름식.test(본문)) || (줄기식 && 줄기식.test(본문));
+    if (이름있나(글) && 이름있나(모듈밖())) return `글에 이름: ${이름}`;
+    return null;
+  };
+}
+
 /** 바꾼 경로(저장소 기준) → { 시험: [파일…], 까닭: {파일: 까닭}, 기록전용, 지도: 'run 번호'|null }. 돌리지는 않는다. */
 function 고르기({ root, 바뀐, 지도 = undefined, 받기 = true }) {
   const 경로들 = [...new Set(바뀐.map((p) => String(p).replace(/\\/g, '/').replace(/^\.\//, '')))].filter(Boolean);
@@ -264,10 +288,11 @@ function 고르기({ root, 바뀐, 지도 = undefined, 받기 = true }) {
   // 같은 push로 처음 올리는 시험 파일은 아직 추적되지 않는다 — CI 무늬에 맞고 디스크에 있으면 시험으로 센다.
   const 맞음 = CI시험판정(root);
   const 새시험 = 경로들.filter((p) => 맞음(p) && 시험파일있나(root, p));
-  const 시험들 = [...new Set([...CI시험목록(root, 맞음), ...새시험])];
+  const 추적 = 추적목록(root);
+  const 시험들 = new Set([...CI시험목록(root, 맞음, 추적), ...새시험]);
   const 까닭 = {};
   const 고름 = (t, 왜) => { if (!까닭[t]) 까닭[t] = 왜; };
-  for (const p of 경로들) if (시험들.includes(p)) 고름(p, '바꾼 시험');
+  for (const p of 새시험) 고름(p, '바꾼 시험');
   // ④ 조건부 등록부가 보는 파일(머리 주석) — 직접 변경 외의 등록 연결도 고른다.
   if (fs.existsSync(path.join(root, 등록시험))) {
     const 등록 = 등록부파일들(root);
@@ -289,19 +314,45 @@ function 고르기({ root, 바뀐, 지도 = undefined, 받기 = true }) {
   const 기록경로들 = 경로들.filter(기록인가);
   if (기록경로들.length) {
     for (const t of 기록시험목록(root)) {
-      if (시험들.includes(t) && !(쓸지도 && 쓸지도.시험[t])) 고름(t, `기록 시험(records-check.yml)·지도에 없음: ${기록경로들[0]}`);
+      if (시험들.has(t) && !(쓸지도 && 쓸지도.시험[t])) 고름(t, `기록 시험(records-check.yml)·지도에 없음: ${기록경로들[0]}`);
     }
   }
-  const 이름들 = 경로들.filter((p) => !기록인가(p)).map((p) => [p, path.posix.basename(p)]).filter(([, b]) => !흔한이름.has(b));
-  for (const t of 시험들) {
-    if (까닭[t]) continue;
+  const 원천 = 경로들.filter((p) => !기록인가(p));
+  const 판정들 = 원천.map(글판정);
+  const 모듈 = 원천.filter((p) => 모듈끝.test(p));
+  const 캐시 = 모듈.length ? 구문캐시(root) : null;
+  const 파일들 = new Set([...추적, ...경로들]);
+  const 참조자 = new Map();
+  const 읽을파일 = new Set(시험들);
+  // 같은 도우미를 여러 시험이 부르더라도 소스는 한 번만 읽는다. Set 순회 중 추가한 모듈도 방문한다.
+  for (const rel of 읽을파일) {
+    const 시험인가 = 시험들.has(rel);
+    if (!모듈.length && (!시험인가 || 까닭[rel])) continue;
     let 글;
-    try { 글 = fs.readFileSync(path.join(root, t), 'utf8'); } catch { continue; }
-    for (const [p, b] of 이름들) {
-      if (글.includes(p)) { 고름(t, `글에 경로: ${p}`); break; }
-      const 줄기 = b.replace(/\.[^.]+$/, '');
-      if (글.includes(b) || (줄기.length >= (/[가-힣]/.test(줄기) ? 3 : 6) && new RegExp(`['"\`/]${줄기.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"\`./]`).test(글))) { 고름(t, `글에 이름: ${b}`); break; }
+    try { 글 = fs.readFileSync(path.join(root, rel), 'utf8'); } catch { continue; }
+    const 확정경로 = [];
+    const 의존 = 모듈.length ? 글속모듈(root, rel, 글, 시험인가, 파일들, 확정경로, 캐시) : null;
+    if (시험인가 && !까닭[rel]) {
+      const 경로글 = 글.replace(/\\+/g, '/');
+      let 나머지;
+      const 모듈밖 = () => 나머지 ??= (확정경로.length ? 참조밖(글, 확정경로).replace(/\\+/g, '/') : 경로글);
+      for (const 판정 of 판정들) {
+        const 왜 = 판정(경로글, 모듈밖, 의존);
+        if (왜) { 고름(rel, 왜); break; }
+      }
     }
+    if (!의존) continue;
+    for (const dep of 의존) {
+      if (!참조자.has(dep)) 참조자.set(dep, new Set());
+      참조자.get(dep).add(rel);
+      if (따라갈끝.test(dep)) 읽을파일.add(dep);
+    }
+  }
+  const 영향 = new Map(모듈.map((p) => [p, p]));
+  캐시?.저장();
+  for (const [rel, 원인] of 영향) {
+    if (시험들.has(rel)) 고름(rel, `모듈 참조: ${원인}`);
+    for (const 부모 of 참조자.get(rel) || []) if (!영향.has(부모)) 영향.set(부모, 원인);
   }
   const 시험 = Object.keys(까닭).sort();
   return { 시험, 까닭, 기록전용: false, 지도: 쓸지도 ? 쓸지도.run || '로컬' : null };
@@ -319,26 +370,150 @@ function 고르기({ root, 바뀐, 지도 = undefined, 받기 = true }) {
 // fs로 읽는 자료·문서는 못 본다. 저장소 밖·node_modules·.git은 뺀다.
 const 모듈끝 = /\.(?:[cm]?js|json)$/i;
 const 따라갈끝 = /\.[cm]?js$/i;
-const 붙일끝 = ['.js', '.cjs', '.mjs', '.json'];
 const 글자 = /(['"`])([^'"`\n$]*)\1/g;
-const 모듈꼴 = /(?:\brequire(?:\.resolve)?\s*\(\s*|\bimport\s*\(\s*|\bfrom\s+|\bimport\s+)(['"`])([^'"`\n$]+)\1/g;
+const 구문사이 = String.raw`(?:\s|/\*(?:[^*]|\*(?!/))*\*/|//[^\r\n]*(?=[\r\n]|$))*`;
+const 모듈꼴 = new RegExp(String.raw`(?:\b(?:require(?:\.resolve)?|import)${구문사이}\(${구문사이}|\b(?:from|import)${구문사이})(['"\`])(\.\.?(/[^'"\`\r\n]*)?)\1`, 'g');
 
 /** Node처럼 모듈 파일을 찾는다 — 그 파일 · 끝 붙이기 · 폴더의 index. 저장소 기준 경로, 못 찾았거나 뺄 곳이면 null. */
-function 모듈찾기(root, 전체) {
-  for (const f of [전체, ...붙일끝.map((끝) => 전체 + 끝), ...붙일끝.map((끝) => path.join(전체, `index${끝}`))]) {
-    const rel = 상대(f, root);
-    if (!rel || rel === '.' || 뺄경로(rel) || !모듈끝.test(rel)) continue;
-    try { if (fs.statSync(f).isFile()) return rel; } catch { /* 다음 후보 */ }
+function 모듈찾기(root, 전체, 파일들, 의존) {
+  const rel = 상대(전체, root);
+  if (!rel || 뺄경로(rel)) return null;
+  const 있음 = (p) => 파일들 ? 파일들.has(p) : 시험파일있나(root, p);
+  const 파일 = (p) => [p, p + '.js', p + '.json'].find(f => 모듈끝.test(f) && 있음(f));
+  const 바로 = 파일(rel);
+  if (바로) return 바로;
+  const 설명 = path.posix.join(rel, 'package.json');
+  if (있음(설명)) {
+    의존?.add(설명);
+    try {
+      const { main } = JSON.parse(fs.readFileSync(path.join(root, 설명), 'utf8'));
+      if (typeof main === 'string' && main) {
+        const 입구 = 상대(path.resolve(root, rel, main), root);
+        if (입구 && !뺄경로(입구)) {
+          const 대상 = 파일(입구) || 파일(path.posix.join(입구, 'index'));
+          if (대상) return 대상;
+        }
+      }
+    } catch { /* 지웠거나 읽을 수 없는 설명도 이 시험의 입력이다. */ }
   }
-  return null;
+  return 파일(path.posix.join(rel, 'index')) || [rel + '.cjs', rel + '.mjs',
+    ...['.cjs', '.mjs'].map(끝 => path.posix.join(rel, 'index' + 끝))].find(있음) || null;
+}
+
+// 실제로 해석한 정적 import/export의 경로만 이름 비교에서 제외한다.
+function 참조밖(글, 경로들) {
+  let 끝 = 0, 결과 = '';
+  for (const source of 경로들.sort((a, b) => a.start - b.start)) {
+    결과 += 글.slice(끝, source.start) + ' ';
+    끝 = source.end;
+  }
+  return 결과 + 글.slice(끝);
+}
+
+const 지문 = (s) => createHash('sha256').update(s).digest('hex');
+
+// 파서가 찾은 문자열과 위치만 재사용한다. 경로 해석·package.json·CI 지도는 매번 현재 판을 본다.
+function 구문캐시(root) {
+  const 자리 = 지도자리(root);
+  if (!자리) return null;
+  let 판;
+  try { 판 = 지문(구문참조.toString() + 모듈꼴.source + require('acorn').version); } catch { return null; }
+  const 파일 = path.join(자리, '구문참조.json');
+  let 이전 = {}, 새로읽음 = false;
+  try {
+    const raw = fs.readFileSync(파일, 'utf8');
+    if (raw.slice(0, 64) === 지문(raw.slice(65))) {
+      const 값 = JSON.parse(raw.slice(65));
+      if (값.판 === 판 && 값.항목) 이전 = 값.항목;
+    }
+  } catch { /* 없거나 손상된 캐시는 다시 만든다. */ }
+  const 항목 = {};
+  return {
+    읽기(모드, 글) {
+      const 키 = 모드 + 지문(글);
+      if (항목[키]) return 항목[키];
+      if (Array.isArray(이전[키])) return 항목[키] = 이전[키];
+      새로읽음 = true;
+      return 항목[키] = 구문참조(모드, 글);
+    },
+    저장() {
+      if (!새로읽음) return;
+      const 임시 = 파일 + '.' + process.pid + '.' + Date.now() + '.tmp';
+      try {
+        const raw = JSON.stringify({ 판, 항목 });
+        fs.mkdirSync(자리, {recursive:true});
+        fs.writeFileSync(임시, 지문(raw) + '\n' + raw);
+        fs.renameSync(임시, 파일);
+      } catch { /* 캐시를 쓸 수 없어도 이번 선택은 완성됐다. */ }
+      finally { try { fs.unlinkSync(임시); } catch { /* 이미 옮긴 파일 */ } }
+    },
+  };
+}
+
+// 문자열 안의 키워드와 실제 호출을 구분한다. 파서가 없거나 작성 중인 파일이면
+// 상대 경로의 글 단서를 보존하고 import 경로를 가리지 않는다.
+function 구문참조(모드, 글) {
+  const 참조 = [];
+  if (!/['"`][.\\]/.test(글)) return 참조;
+  const 후보 = new Set();
+  const 후보넣기 = s => { if (typeof s === 'string' && /^\.\.?(?:\/|$)/.test(s)) 후보.add(s); };
+  let 트리;
+  try {
+    트리 = require('acorn').parse(글, {ecmaVersion: 'latest', sourceType: 모드, allowReturnOutsideFunction: true});
+  } catch {
+    for (const [, , s] of 글.matchAll(모듈꼴)) 참조.push({s, esm:false});
+    for (const [, q, s] of 글.matchAll(/(['"`])(\.\.?(?:\/[^'"`\r\n]*)?)\1/g)) {
+      if (q !== '`' || !s.includes('${')) 후보넣기(s);
+    }
+  }
+  const 남은 = 트리 ? [트리] : [];
+  while (남은.length) {
+    const n = 남은.pop();
+    if (n.type === 'Literal') 후보넣기(n.value);
+    if (n.type === 'TemplateLiteral' && !n.expressions.length) 후보넣기(n.quasis[0].value.cooked);
+    const 정적 = n.type === 'ImportDeclaration' || n.type === 'ExportNamedDeclaration' || n.type === 'ExportAllDeclaration';
+    const esm = 정적 || n.type === 'ImportExpression';
+    let 값;
+    if (esm) 값 = n.source;
+    else if (n.type === 'CallExpression') {
+      const c = n.callee;
+      const 메서드 = c.computed ? c.property?.value : c.property?.name;
+      if (c.name === 'require' || (c.object?.name === 'require' && 메서드 === 'resolve') || (c.object?.name === 'module' && 메서드 === 'require')) 값 = n.arguments[0];
+    }
+    if (값) {
+      const s = 값.type === 'TemplateLiteral' && !값.expressions.length ? 값.quasis[0].value.cooked : 값.value;
+      if (typeof s === 'string' && /^\.\.?(?:\/|$)/.test(s)) {
+        참조.push(정적 ? {s, esm, start:값.start, end:값.end} : {s, esm});
+      }
+    }
+    for (const key of Object.keys(n)) {
+      const child = n[key];
+      if (Array.isArray(child)) { for (const item of child) if (item?.type) 남은.push(item); }
+      else if (child?.type) 남은.push(child);
+    }
+  }
+  // 어떤 함수나 별칭에 전달되는지 모르는 리터럴은 시험 선택에만 보수적으로 쓴다.
+  // 실패한 시험을 남의 미커밋 탓으로 판단할 때에는 확인된 참조만 사용한다.
+  for (const s of 후보) 참조.push({s, 후보:true});
+  return 참조;
 }
 
 /** 모듈 글 하나가 부르는 저장소 안 모듈 경로들 — 모듈 꼴, 시험 파일이면 위 다른 꼴까지. */
-function 글속모듈(root, rel, 글, 시험인가) {
+function 글속모듈(root, rel, 글, 시험인가, 파일들, 확정경로, 캐시) {
   const 폴더 = path.dirname(path.join(root, rel));
   const 찾음 = new Set();
-  const 넣기 = (전체) => { const r = 모듈찾기(root, 전체); if (r) 찾음.add(r); };
-  for (const [, , s] of 글.matchAll(모듈꼴)) if (/^\.\.?\//.test(s)) 넣기(path.resolve(폴더, s));
+  const 넣기 = (전체) => { const r = 모듈찾기(root, 전체, 파일들, 찾음); if (r) 찾음.add(r); return r; };
+  const 모드 = rel.endsWith('.cjs') ? 'script' : 'module';
+  const 참조들 = 캐시 ? 캐시.읽기(모드, 글) : 구문참조(모드, 글);
+  for (const 참조 of 참조들) {
+    if (참조.후보 && !파일들) continue;
+    const {s, esm} = 참조;
+    let 전체 = path.resolve(폴더, s);
+    if (esm && /[%?#]/.test(s)) {
+      try { 전체 = fileURLToPath(new URL(s, pathToFileURL(path.join(root, rel)))); } catch { /* 경로 단서도 확인한다. */ }
+    }
+    if (넣기(전체) && 참조.start !== undefined) 확정경로?.push(참조);
+  }
   if (!시험인가) return 찾음;
   for (const [, , s] of 글.matchAll(글자)) {
     if (/^\.\.?\//.test(s)) 넣기(path.resolve(폴더, s));

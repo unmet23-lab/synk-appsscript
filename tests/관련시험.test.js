@@ -73,6 +73,89 @@ test('고르기 — 바꾼 시험 · 시험 글의 경로·이름 · 기록 전�
   assert.equal(고름(['docs/_ops/트랙.md', 'tools/가나다라.js']).기록전용, false, '하나라도 기록 밖이면 고른다');
 });
 
+test('고르기 — 이름의 일부만 같은 시험을 빼고 직접·간접 참조와 지도에서 확인한 읽기는 남긴다', (t) => {
+  const 대상 = 'pkg/tools/run.mjs';
+  const root = 저장소(t, {
+    [대상]: '', 'other/run.mjs': '', 'pkg/tools/index.js': '',
+    'pkg/lib/helper.mjs': "export { x } from './cycle.mjs';",
+    'pkg/lib/cycle.mjs': "import './helper.mjs'; export { x } from '../tools/run.mjs';",
+    'tests/직접.test.js': "spawn('node', ['pkg/tools/run.mjs']);",
+    'tests/간접.test.js': "import '../pkg/lib/helper.mjs';",
+    'tests/조각.test.js': "read(join(root, 'pkg', 'tools', 'run.mjs'));",
+    'tests/윈도우.test.js': String.raw`run("pkg\\tools\\run.mjs");`,
+    'tests/다른모듈.test.js': "import '../other/run.mjs';",
+    'tests/두번.test.js': "import '../other/run.mjs'; read(join(base, 'run.mjs'));",
+    'tests/이름일부.test.js': "// a.run.mjs 회원-run.mjs 회원_run.mjs 한run.mjs pkg/tools/run.mjs.bak",
+    'tests/이름미정.test.js': "read(join(base, makeName()));",
+    'tests/흔한경로.test.js': "spawn('node', ['pkg/tools/index.js']);",
+    'tests/폴더진입.test.js': "require('../pkg/tools');",
+  });
+  const 필요 = ['간접', '두번', '윈도우', '조각', '직접'].map(n => `tests/${n}.test.js`);
+  const 지도 = { 시험: { 'tests/이름미정.test.js': { 읽음: [대상] }, 'tests/간접.test.js': { 읽음: [] } } };
+  const 선택 = (p, m) => 관련.고르기({ root, 바뀐: [p], 지도: m }).시험;
+  assert.deepEqual(선택(대상, null), 필요.sort());
+  assert.deepEqual(선택(대상, 지도), [...필요, 'tests/이름미정.test.js'].sort());
+  assert.deepEqual(선택('pkg/tools/index.js', null), ['tests/폴더진입.test.js', 'tests/흔한경로.test.js']);
+  fs.unlinkSync(path.join(root, 대상));
+  assert.deepEqual(선택(대상, null), 필요, '지운 모듈을 불러오는 시험도 실행한다');
+});
+
+test('고르기 — 패키지 main과 주석이 있는 재수출을 따르고 다른 import 경로의 끝은 제외한다', (t) => {
+  const root = 저장소(t, {
+    'pkg/package.json': JSON.stringify({main:'./lib/entry'}),
+    'pkg/lib/entry.js': '', 'pkg/index.js': '', 'lib/leaf.mjs': '', 'old/lib/leaf.mjs': '',
+    'lib/loader.cjs': "const loader = module; module.exports = ['import', require('./handler.cjs'), require.resolve(/* near */ './opt.cjs'), loader.require('./alias.cjs')];",
+    'lib/handler.cjs': '', 'lib/opt.cjs': '', 'lib/alias.cjs': '', 'tests/호출.test.js': "require('../lib/loader.cjs');",
+    'lib/bridge.mjs': "export * from /* source */ './leaf.mjs';",
+    'tests/선언.test.js': "require('../pkg');",
+    'tests/도우미.test.js': "import '../lib/bridge.mjs';",
+    'tests/동명이인.test.js': "import '../old/lib/leaf.mjs';",
+  });
+  const 선택 = p => 관련.고르기({root, 바뀐:[p], 지도:null}).시험;
+  assert.deepEqual([선택('pkg/lib/entry.js'), 선택('pkg/package.json'), 선택('lib/leaf.mjs')],
+    [['tests/선언.test.js'], ['tests/선언.test.js'], ['tests/도우미.test.js']]);
+  for (const p of ['lib/handler.cjs', 'lib/opt.cjs', 'lib/alias.cjs']) assert.deepEqual(선택(p), ['tests/호출.test.js'], p);
+  fs.unlinkSync(path.join(root,'pkg/lib/entry.js'));
+  assert.deepEqual(선택('pkg/lib/entry.js'), ['tests/선언.test.js']);
+});
+
+test('상대 경로 리터럴은 별칭·변수·미완성 소스의 시험을 고르되 실패 귀속 근거와 구분한다', (t) => {
+  const root = 저장소(t, {
+    'tests/별칭.test.js': "require('../lib/helpers.cjs'); require('../lib/partial.cjs');",
+    'lib/helpers.cjs': "module.exports = (load) => { let p = './first.cjs'; load(p); p = `./next.cjs`; load(p); return ['./fixture.json']; };",
+    'lib/partial.cjs': "run('./partial-input.cjs'); (",
+    'lib/first.cjs': '', 'lib/next.cjs': '', 'lib/partial-input.cjs': '', 'lib/fixture.json': '{}',
+  });
+  const 직접 = 'tests/별칭.test.js';
+  const 엄격 = 관련.불러오는파일(root, 직접);
+  for (const 이름 of ['first.cjs', 'next.cjs', 'partial-input.cjs', 'fixture.json']) {
+    const p = 'lib/' + 이름;
+    assert.deepEqual(관련.고르기({root, 바뀐:[p], 지도:null}).시험, [직접], p);
+    assert.ok(!엄격.has(p), '추정한 자료 경로를 근거로 시험 실패를 면제하지 않는다: ' + p);
+  }
+});
+
+test('구문 캐시는 같은 내용도 현재 폴더에서 해석하고 변경·손상 뒤에 다시 읽는다', (t) => {
+  const root = 저장소(t, {
+    'a/use.cjs': "require('./leaf.cjs');", 'b/use.cjs': "require('./leaf.cjs');",
+    'a/leaf.cjs': '', 'a/next.cjs': '', 'b/leaf.cjs': '',
+    'tests/a.test.js': "require('../a/use.cjs');", 'tests/b.test.js': "require('../b/use.cjs');",
+  });
+  const 선택 = p => 관련.고르기({root, 바뀐:[p], 지도:null}).시험;
+  const 캐시 = path.join(root, '.git', 'synk-관련시험', '구문참조.json');
+  assert.deepEqual(선택('a/leaf.cjs'), ['tests/a.test.js']);
+  const 처음 = fs.readFileSync(캐시);
+  assert.deepEqual(선택('b/leaf.cjs'), ['tests/b.test.js']);
+  assert.deepEqual(fs.readFileSync(캐시), 처음);
+  const 원천 = path.join(root,'a/use.cjs'), 시각 = fs.statSync(원천).mtime;
+  fs.writeFileSync(원천, "require('./next.cjs');");
+  fs.utimesSync(원천, 시각, 시각);
+  assert.deepEqual(선택('a/next.cjs'), ['tests/a.test.js']);
+  assert.deepEqual(선택('a/leaf.cjs'), []);
+  fs.writeFileSync(캐시, 처음.subarray(0, 처음.length - 1));
+  assert.deepEqual(선택('a/next.cjs'), ['tests/a.test.js']);
+});
+
 test('고르기 — 조건부 등록부에 적힌 시험 파일 · 등록부 폴더 · 그 워크플로를 바꾸면 등록 시험(.cjs)을 같이 고른다(11-12)', (t) => {
   const 등록시험 = 'tests/conditional-qa.test.cjs';
   const 파일 = {
