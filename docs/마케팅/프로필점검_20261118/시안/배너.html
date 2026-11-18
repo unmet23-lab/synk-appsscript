@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>유튜브 배너 시안 · 프로필 점검 2026-11-18</title>
+<!-- 계정 배너(커버·채널아트) 원고. node tools/SNS키트굽기.js 배너.html --sheet 로 굽는다.
+     바탕은 실제 펠트 결(docs/디자인/펠트부품), 글자는 SUIT, 펠트 물건·마스코트는 SNS 키트 자산.
+     각 판의 --safe-*는 그 플랫폼에서 글자를 둘 수 있는 자리다(유튜브는 모든 기기에서 보이는 가운데 1546×423). -->
+<link rel="stylesheet" href="../../../디자인/SNS키트/kit.css">
+<style>
+  body{margin:0;background:#d9dbe0;display:flex;flex-direction:column;gap:40px;padding:40px;align-items:flex-start}
+  .k-slide{font-family:var(--k-sans)}
+  /* 바탕 결은 반복 무늬가 없는 넓은 판(tools/펠트결_넓히기.py). 2×2 거울 타일(seam-*)은 큰 면에서 마름모 무늬가 보였다 */
+  .bg-black{background:url("../../../디자인/펠트부품/assets/배경/wide-black.webp") center/max(2560px,100%) auto no-repeat,#141210;color:#fff}
+  .bg-lapis{background:linear-gradient(rgba(61,107,201,.30),rgba(61,107,201,.30)),url("../../../디자인/펠트부품/assets/배경/wide-lapis.webp") center/max(2560px,100%) auto no-repeat,#3d6bc9;color:#fff}
+  .bg-cream{background:url("../../../디자인/펠트부품/assets/배경/wide-cream.webp") center/max(2560px,100%) auto no-repeat,#fbf7f0;color:#14110f}
+  .bg-coral{background:linear-gradient(rgba(249,104,89,.30),rgba(249,104,89,.30)),url("../../../디자인/펠트부품/assets/ui/wide-coral.webp") center/max(2560px,100%) auto no-repeat,#f96859;color:#2a120d}
+  .abs{position:absolute}
+  .label{margin:0;font:800 var(--ls,30px)/1.1 var(--k-sans);letter-spacing:-.01em;opacity:.9}
+  .label.mono{font-family:var(--k-mono);font-weight:600;letter-spacing:.08em}
+  .title{margin:0;font-weight:900;letter-spacing:-.045em;line-height:1.08}
+  .title .ln{display:block}
+  .sub{margin:0;font-weight:600;line-height:1.25;letter-spacing:-.02em;opacity:.88}
+  .hl-butter{color:#f5c445}
+  .hl-ink{background:linear-gradient(transparent 62%,rgba(255,224,122,.95) 62% 92%,transparent 92%)}
+  .obj{position:absolute;height:auto;filter:drop-shadow(0 18px 22px rgba(0,0,0,.32))}
+  .cut{filter:drop-shadow(5px 0 0 #fff) drop-shadow(-5px 0 0 #fff) drop-shadow(0 5px 0 #fff) drop-shadow(0 -5px 0 #fff) drop-shadow(0 18px 20px rgba(0,0,0,.28))}
+  .arch{position:absolute;overflow:hidden;border-radius:999px 999px 28px 28px;box-shadow:0 0 0 10px #fbf7f0,0 30px 40px -18px rgba(0,0,0,.7)}
+  .arch img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+  .chip{display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#2a120d;background:url("../../../디자인/펠트부품/assets/ui/chip-blush-long.webp") center/100% 100% no-repeat}
+  .chips{display:flex;gap:18px}
+</style>
+</head>
+<body>
+
+<!-- yuhobuilds 유튜브 — 10-02 판 그대로, 데스크톱 띠(y508~931) 아래 끝에 노트북 윗머리만 잘려 보이던 것을 띠 밖으로 내렸다. 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다 -->
+<section class="k-slide bg-black k-corners" data-fmt="yt-banner" data-name="yuhobuilds-youtube-노트북내림" data-acc="builds"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px;--corner:220px;--corner-inset:60px">
+  <div class="arch" style="left:560px;top:520px;width:300px;height:400px"><img src="../../프로필_클로드판_20261002/배너/yuho-b.webp" alt="유호"></div>
+  <div class="abs" style="left:930px;top:540px;width:1110px">
+    <p class="label" style="--ls:44px;color:#f5c445;letter-spacing:.04em">유호 · SYNK 대표</p>
+    <h1 class="title" style="margin-top:12px;font-size:90px"><span class="ln">개발 0에서,</span><span class="ln"><span class="hl-butter">AI로 회사를</span> 만드는 중</span></h1>
+    <p class="sub" style="margin-top:16px;font-size:46px">막힌 장면 · 바꾼 방법 · 실제로 쓴 도구</p>
+  </div>
+  <img class="obj" src="../../../디자인/SNS키트/assets/felt-laptop.webp" alt="" style="width:520px;right:120px;bottom:24px">
+</section>
+
+
+<!-- synkbrief 유튜브 — 10-02 판의 꼴(청금석 펠트 · 메모 카드 · 노트북)은 그대로, 글만 11-09 새 방향으로. 노트북은 데스크톱 띠 밖으로 2560×1440 -->
+<section class="k-slide bg-lapis k-corners" data-fmt="yt-banner" data-name="synkbrief-youtube-새방향" data-acc="brief"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px;--corner:220px;--corner-inset:60px">
+  <div class="abs" style="left:560px;top:530px;width:1080px">
+    <p class="label mono" style="--ls:44px">SYNK 브리핑 · SYNK SHIFT</p>
+    <h1 class="title" style="margin-top:12px;font-size:90px"><span class="ln">AI 때문에</span><span class="ln">실제로 벌어진 일</span></h1>
+    <p class="sub" style="margin-top:16px;font-size:46px">재연으로 보고, 지키는 법은 한 줄로</p>
+  </div>
+  <img class="obj" src="../../../디자인/펠트부품/assets/배경/note-brief.webp" alt="" style="width:420px;left:1620px;top:520px;transform:rotate(-6deg)">
+  <img class="obj" src="../../../디자인/SNS키트/assets/felt-laptop.webp" alt="" style="width:560px;right:90px;bottom:0px">
+</section>
+
+
+</body>
+</html>

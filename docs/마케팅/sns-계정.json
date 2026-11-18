@@ -1642,7 +1642,8 @@
       "dailyLine": "yuhobuilds",
       "loginIdentityRef": "unmet23",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
-      "loginAlias": "unmet23"
+      "loginAlias": "unmet23",
+      "profileAudit20261118": "설명 끝맺음을 해요체로 맞추고 첫 링크 이름을 「AI 때문에 벌어진 일 · SYNK 브리핑」으로, 배너는 PC 띠에 잘려 보이던 노트북만 내린 판으로 바꿨다(공개 확인) · docs/마케팅/프로필점검_20261118/README.md"
     },
     "yuhobuilds-instagram": {
       "brand": "SHIFT",
@@ -1657,7 +1658,8 @@
       "businessPortfolio": "synk.mn-1057004986835568-added-2026-10-31-after-user-approval; instagram-only-asset-has-no-business-suite-profile-edit-entry; no-ad-account-moved; temporary-link-to-SYNK-LAB-Sri-Lanka-page-tested-and-removed-2026-10-31-no-edit-entry-page-returned-to-other-assets",
       "dailyLine": "yuhobuilds",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "소개를 10-02 · 11-09 방향 원고로 바꾸려 했으나 ego에 이 계정 로그인이 없어 못 고침 — 원고 builds-ig-bio, 폰에서 유호님 · docs/마케팅/프로필점검_20261118/README.md"
     },
     "yuhobuilds-tiktok": {
       "brand": "SHIFT",
@@ -1675,7 +1677,8 @@
       "dailyLine": "yuhobuilds",
       "dailyBlocked": "11-01 쉼 — 계정 전체 조회 0(스튜디오 7일 0 · 올린 셋 모두 0, 같은 시각 @synkbrief 편은 15시간에 100). 휴대폰 틱톡 앱 「계정 상태」 · 「콘텐츠 검사」로 까닭을 볼 때까지 판을 달지 않는다(유호님 11-01 「쉬게 해」)",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "쉬는 계정이라 읽기만 했다. 다시 쓸 때 인스타 원고로 소개를 바꾼다 · docs/마케팅/프로필점검_20261118/README.md"
     },
     "synkbrief-youtube": {
       "brand": "SHIFT",
@@ -1691,7 +1694,8 @@
       "dailyLine": "synkbrief",
       "loginIdentityRef": "unmet23",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
-      "loginAlias": "unmet23"
+      "loginAlias": "unmet23",
+      "profileAudit20261118": "채널 설명을 11-09 새 방향(AI 때문에 실제로 벌어진 일)으로 바꿨다(공개 확인). 배너는 옛 글이라 새 판을 유호님이 고르신다 · docs/마케팅/프로필점검_20261118/README.md"
     },
     "synkbrief-instagram": {
       "brand": "SHIFT",
@@ -1704,7 +1708,8 @@
       "websiteStatus": "user-added-mobile-external-link-2026-09-14; public-link-synk-im-verified; stored-http-target-redirected-to-https-synk-im-on-actual-click; website-content-refresh-is-separate",
       "dailyLine": "synkbrief",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "소개를 새 방향 원고로 바꾸려 했으나 ego에 이 계정 로그인이 없어 못 고침 — 원고 brief-ig-bio, 폰에서 유호님 · docs/마케팅/프로필점검_20261118/README.md"
     },
     "synkbrief-tiktok": {
       "brand": "SHIFT",
@@ -1720,7 +1725,8 @@
       "dailyLine": "synkbrief",
       "loginIdentityRef": "unmet25",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
-      "egoProfileNote": "2026-11-12 ego 「TikTok synkbrief」(Profile 10)에 로그인 확인 — Google unmet25. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나."
+      "egoProfileNote": "2026-11-12 ego 「TikTok synkbrief」(Profile 10)에 로그인 확인 — Google unmet25. 틱톡 웹은 계정 전환이 없어 프로필 하나에 계정 하나.",
+      "profileAudit20261118": "소개를 새 방향 원고로 바꿨다(66/80, 공개 확인) · docs/마케팅/프로필점검_20261118/README.md"
     },
     "lab-facebook": {
       "brand": "LAB",
@@ -1766,7 +1772,8 @@
       "firstPostUrl": "https://www.threads.com/@yuhobuilds/post/DfFRqNakUGl",
       "loginIdentityRef": "instagram-yuhobuilds",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
-      "egoProfileNote": "2026-11-12 ego Profile 7에 로그인 확인 — threads.com 「yuhobuilds로 계속」(인스타 세션) — 비밀번호 없이 @yuhobuilds 확인. ~/ego/threads-daily/th-post.mjs가 이 칸을 읽는다."
+      "egoProfileNote": "2026-11-12 ego Profile 7에 로그인 확인 — threads.com 「yuhobuilds로 계속」(인스타 세션) — 비밀번호 없이 @yuhobuilds 확인. ~/ego/threads-daily/th-post.mjs가 이 칸을 읽는다.",
+      "profileAudit20261118": "소개를 바꿨다(공개 확인) · docs/마케팅/프로필점검_20261118/README.md"
     },
     "synkbrief-threads": {
       "brand": "SHIFT",
@@ -1847,7 +1854,8 @@
       "remainingAction": "company-profile-preparation-complete-including-canonical-website; operate-through-unmet25; new-content-publication-is-separate",
       "dailyOff": "회사 페이지 — 개인 프로필 글을 공유하는 쪽(개인 로그인 뒤 함께)",
       "loginIdentityRef": "unmet25",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "태그라인과 소개를 지금 네 사업(PULSE = AI 광고 제작)으로 바꿨다(회원 보기로 확인). 커버는 광고 제작을 빼고 있어 새로 지을지 여쭘 · docs/마케팅/프로필점검_20261118/README.md"
     },
     "lab-telegram": {
       "brand": "LAB",
@@ -1889,7 +1897,8 @@
       "profileStatus": "contact-bio-47-saved-and-full-public-profile-rechecked-2026-09-14; name-handle-phone-links-unchanged; no-messages-sent",
       "dailyOff": "개인 연락처 프로필 — 채널이 아님",
       "loginIdentityRef": "telegram-owner",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "소개를 「SYNK 대표 유호예요. AI 강의와 AI 광고 제작 문의를 받아요. synk.im」로 바꿨다(공개 확인) · docs/마케팅/프로필점검_20261118/README.md"
     },
     "synklab-substack": {
       "brand": "SHIFT",
@@ -1905,7 +1914,8 @@
       "aboutSource": "docs/마케팅/전사새출발_20260914/Substack_About.md",
       "dailyOff": "뉴스레터 — 올리면 구독자에게 메일이 나가 매일 판과 맞지 않음",
       "loginIdentityRef": "unmet23",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "그대로 — 말투 검수 통과 · docs/마케팅/프로필점검_20261118/README.md"
     },
     "synk-instagram": {
       "brand": "SYNK",
@@ -1968,7 +1978,8 @@
       "remainingAction": "mobile-public-view-390px-Chrome-emulation-verified-2026-09-14-title-portrait-bio-and-existing-post-readable-no-horizontal-overflow; mobile-background-remains-existing-grey-cover-distinct-from-PC-new-cover; current-browser-session-not-blog-owner-so-mobile-cover-not-edited; no separate profile-link fields were exposed in the basic-info screen",
       "dailyLine": "synkbrief",
       "loginIdentityRef": "naver-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "이름 · 소개 · 커버가 9월 yuhobuilds 쪽인데 글은 synkbrief 편이고 카테고리 넷이 비어 있다 — 이름을 바꿀지 유호님께 여쭘 · docs/마케팅/프로필점검_20261118/README.md"
     },
     "shift-kakao": {
       "brand": "SHIFT",
@@ -1983,7 +1994,8 @@
       "profileStatus": "bio-41-of-55-saved-confirmation-and-full-public-channel-home-rechecked-2026-09-14; photo-contact-service-links-posts-unchanged; existing-basic-info-card-title-unchanged; no-independent-cover-control-shown",
       "dailyOff": "카카오 채널 — 메시지 발송은 돈이 들어 매일 판과 맞지 않음",
       "loginIdentityRef": "kakao-shift",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "소개를 SHIFT 지금 일로 바꾸려 했으나 카카오 로그인이 없어 못 고침 — 원고 kakao-bio · docs/마케팅/프로필점검_20261118/README.md"
     },
     "shift-tistory": {
       "brand": "SHIFT",
@@ -2010,7 +2022,8 @@
       "profileStatus": "bio-128-and-cover-1600x900-saved-and-publicly-rechecked-2026-09-14; actual-crop-logo-vision-support-copy-not-clipped-and-public-reload-screenshot-full-copy-confirmed; cover-sha256-89658dfc4d5fed95e375702432cbe70b603c8ade95bbdcf8401a7d4cd2b27e95; file-access-block-resolved; no-pins-published",
       "dailyOff": "핀터레스트 — API 승인 전, 나중",
       "loginIdentityRef": "pinterest-owner",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "소개를 바꿨다(공개 확인) · docs/마케팅/프로필점검_20261118/README.md"
     },
     "yuhobuilds-x": {
       "brand": "PULSE",
@@ -2046,7 +2059,8 @@
       "firstProjectUrl": "https://www.behance.net/gallery/255583141/-AI-SYNK-",
       "dailyOff": "포트폴리오 — 매일 판이 아님",
       "loginIdentityRef": "adobe-owner",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "내 정보를 바꿨다(로그인 화면에서 확인) · docs/마케팅/프로필점검_20261118/README.md"
     },
     "yuhobuilds-naver-clip": {
       "brand": "SHIFT",
@@ -2071,7 +2085,8 @@
       "remainingAction": "new-bio-saved-and-publicly-rechecked-2026-09-14; new-first-post-preparation-only-no-publication; 2026-09-14-account-connect-UI-has-no-synkshift-blog-target-only-unrelated-MY-place-reviews; no-connection-made; official-linking-imports-content-and-cannot-be-unlinked-not-a-simple-external-URL; reconsider-only-if-correct-blog-and-intended-import-are-confirmed",
       "dailyOff": "네이버 클립 만들기는 네이버 모바일 앱 전용 — 10-26 ego에서 웹 「만들기」가 「네이버 앱에서 제공하는 기능이에요. 모바일앱에서 이용해 주세요」(파일 칸 없음), 자동 게시 길 없음",
       "loginIdentityRef": "naver-clip-owner",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "9-14 첫 소개가 남아 있던 것을 바꿨다(공개 확인) · docs/마케팅/프로필점검_20261118/README.md"
     },
     "lab-mx-tiktok": {
       "brand": "LAB",
@@ -2295,7 +2310,8 @@
       "profileEvidence": "프로필설정_20261108/README.md",
       "loginIdentityRef": "unmet23",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
-      "loginAlias": "unmet23"
+      "loginAlias": "unmet23",
+      "profileAudit20261118": "설명 영어 두 문장(starred in · every shot as a still image)과 한국어 띄어쓰기 · 긴 문장을 고쳤다(공개 확인). 배너는 시안 C를 유호님이 고르신다 · docs/마케팅/프로필점검_20261118/README.md"
     },
     "pulse-instagram": {
       "brand": "PULSE",
@@ -2310,7 +2326,8 @@
       "profileStatus": "owner-switch-edit-controls-verified; name-approved-logo-bio-saved; clickable-website-link-requires-mobile; english-first-bio-20261113; website-link-still-ko-mobile-only",
       "profileEvidence": "프로필설정_20261108/README.md",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "소개 「광고영상」 띄어쓰기를 고치려 했으나 ego에 이 계정 로그인이 없어 못 고침 · docs/마케팅/프로필점검_20261118/README.md"
     },
     "pulse-facebook": {
       "brand": "PULSE",
@@ -2328,7 +2345,8 @@
       "profileEvidence": "프로필설정_20261108/README.md",
       "expectedHandle": "@synkpulse",
       "loginIdentityRef": "meta-main",
-      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
+      "profileAudit20261118": "그대로 — 영어 통과, 「광고영상」 띄어쓰기 한 곳은 ego 페이스북 로그인이 풀려 두었다 · docs/마케팅/프로필점검_20261118/README.md"
     },
     "pulse-tiktok": {
       "brand": "PULSE",
@@ -2355,7 +2373,8 @@
       "loginIdentityRef": "tiktok-pulse-email",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
       "postRoute": "tiktok-studio",
-      "postRouteVerified": false
+      "postRouteVerified": false,
+      "profileAudit20261118": "소개 「AI ad films」를 「AI video ads」로 바꾸려 했으나 ego 「유호」의 틱톡 로그인이 풀려 못 고침 — 이름 변경(11-19 뒤)과 같이 로그인이 필요 · docs/마케팅/프로필점검_20261118/README.md"
     }
   },
   "loginRoutingAuditedAt": "2026-11-09",

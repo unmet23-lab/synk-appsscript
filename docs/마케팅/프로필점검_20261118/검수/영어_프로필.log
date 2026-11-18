@@ -1,0 +1,68 @@
+언어: 영어(en) · 나라 US · CA · AU · NZ · 문법 채점 gemini-4-carbon(high) · 직역 역번역 gemini-3.8-flash(high) · 구독 문(agy 로그인 계정)
+줄 11 · 묶음 1(12줄씩 섞음) · 다시 본 줄 11
+
+■ 줄마다 (원문 안 보여 주고 채점 · 섞어 보냄)
+[1] · 직역 — 거름망 통과
+  원문: AI 모델은 진짜처럼 보일 수 있습니다. 우리는 그 모델이 연기하게 만듭니다.
+  번역: AI models can look real. We make them act.
+  문법: 정상
+  직역: AI 모델은 진짜처럼 보일 수 있다. 우리는 그들이 연기하게 만든다.
+[2] · 직역 — 거름망 통과
+  원문: 싱크펄스는 AI 광고영상을 만듭니다.
+  번역: SYNK PULSE makes AI video ads.
+  문법: 정상
+  직역: SYNK PULSE는 AI 영상 광고를 만든다.
+[3] · 직역 — 검수 필요 · 문법 어색
+  원문: 넷플릭스와 tvN에 출연했고 페이스북 조회수 1,000만 회 웹드라마의 주연을 맡았던 대표가 시선, 제품을 쥔 손, 웃음이 나오는 타이밍까지 직접 연출합니다.
+  번역: A founder who has appeared on Netflix and tvN and led a web drama seen 10 million times on Facebook directs the glance, the hand holding the product and the timing of a smile.
+  문법: 어색 — 자사 프로필에서 "A founder"라고 하면 남의 회사 창업자처럼 들리므로 "Our founder"가 자연스럽다. "led a web drama"는 주연 연기인지 기획·제작인지 모호하며(배우 이력 맥락이면 "starred in"), 영상 조회수는 "seen 10 million times"보다 "with 10 million views"라고 쓴다. 또한 "glance"는 '흘끗 봄'을 뜻해 연기 디렉팅의 눈빛·시선("look" 또는 "gaze")과 맞지 않고, 정관사 단수 나열("the glance, the hand...")도 특정 한 장면에만 한정된 것처럼 들려 어색하다.
+  고침: Our founder, who has appeared on Netflix and tvN and starred in a web drama with 10 million views on Facebook, directs every look, the way a hand holds the product, and the timing of every smile.
+  직역: 넷플릭스와 tvN에 출연했고 페이스북에서 1000만 번 보여진 웹드라마를 이끈 창업자가 시선, 제품을 들고 있는 손, 그리고 미소의 타이밍을 연출한다.
+[4] · 직역 — 검수 필요 · 문법 어색
+  원문: 영상을 만들기 전에 모든 컷을 장면 이미지로 먼저 보여 드립니다.
+  번역: Before we make the video, we show you every cut as a scene image.
+  문법: 어색 — 영어 영상 제작에서 "cut"은 편집점이나 편집본(rough cut 등)을 뜻하므로 개별 샷을 가리킬 때는 "shot"을 써야 한다. "scene image"도 영어권에서 쓰지 않는 직역투이며 정지 시안 이미지는 "still image"(또는 "still")라고 한다. 또한 잠재 광고주에게 말할 때는 "the video"보다 "your video"가 자연스럽다.
+  고침: Before we make your video, we show you every shot as a still image.
+  직역: 우리가 영상을 만들기 전에, 우리는 당신에게 모든 컷을 장면 이미지로 보여준다.
+[5] · 직역 — 검수 필요 · 문법 어색
+  원문: 출연자는 우리 AI 모델 21명 가운데에서 고릅니다.
+  번역: The cast comes from our 21 AI models.
+  문법: 어색 — 일반 계정 소개글에서 맥락 없이 "The cast"라고 하면 특정 단일 작품의 출연진처럼 들리고, "The cast comes from..."은 주로 배우들의 출신지·배경을 말할 때 쓰는 표현이라 전속 모델 풀에서 캐스팅한다는 뜻으로는 어색하다.
+  고침: We cast every ad from our lineup of 21 AI models.
+  직역: 출연진은 우리의 21개 AI 모델에서 나온다.
+[6] · 직역 — 거름망 통과
+  원문: 배우가 연출하는 AI 광고영상.
+  번역: AI video ads, directed by an actor.
+  문법: 정상
+  직역: 배우에 의해 연출된 AI 영상 광고.
+[7] · 직역 — 검수 필요 · 문법 어색
+  원문: AI 광고 영상 · synk.im/en/pulse
+  번역: AI ad films · synk.im/en/pulse
+  문법: 어색 — "ad films"는 인도 영어권이나 한국식('광고 필름') 표현에 가깝다. 미국·캐나다·호주·뉴질랜드 광고주에게는 "video ads", "commercials", 또는 시네마틱한 어감을 살릴 때 "brand films"가 자연스럽다.
+  고침: AI video ads · synk.im/en/pulse
+  직역: AI 광고 영상 · synk.im/en/pulse
+[8] · 직역 — 거름망 통과
+  원문: 일상 상황, 자연스러운 표현, 한국 문화로 한국어를 배워요.
+  번역: Learn Korean through everyday situations, natural expressions and Korean culture.
+  문법: 정상
+  직역: 일상적인 상황들, 자연스러운 표현들, 그리고 한국 문화를 통해 한국어를 배워라.
+[9] · 직역 — 거름망 통과
+  원문: 한국어 음성에 한국어와 영어 자막이 붙어요.
+  번역: Korean audio with Korean and English subtitles.
+  문법: 정상
+  직역: 한국어와 영어 자막이 있는 한국어 오디오.
+[10] · 직역 — 거름망 통과
+  원문: 실제 상황에서 쓰는 진짜 한국어.
+  번역: Real Korean for real situations.
+  문법: 정상
+  직역: 진짜 상황을 위한 진짜 한국어.
+[11] · 직역 — 검수 필요 · 문법 어색
+  원문: 듣고, 이해하고, 직접 말해 보세요.
+  번역: Listen, understand, and try it.
+  문법: 어색 — 앞의 두 동사(Listen, understand)에는 목적어가 없다가 마지막에만 "it"이 붙어 가리키는 대상이 불분명하고 병렬 구조가 어긋난다. 또한 배운 표현을 직접 따라 해 보라는 뜻으로 단독 "try it"은 어색하며 관용구 "give it a try" 등을 쓰는 편이 자연스럽다.
+  고침: Listen, understand, and give it a try.
+  직역: 듣고, 이해하고, 그것을 시도하라.
+
+결과: 거름망 통과 6줄 · 검수 필요 5줄 (3, 4, 5, 7, 11) — 영어 · 역번역 뜻 대조(원문과 견줌)는 따로
+기록: D:\SYNK-worktrees\SYNK-appsscript\nervous-edison-2d7bcd\docs\마케팅\프로필점검_20261118\검수\영어_프로필.대조.json
+Opus 직역 역번역 질문: D:\SYNK-worktrees\SYNK-appsscript\nervous-edison-2d7bcd\docs\마케팅\프로필점검_20261118\검수\영어_프로필.대조.역번역_질문.md — 원문을 안 본 새 Agent(model: opus)에게 주고, 답을 파일로 받아 node tools/현지어대조.js --대조표 "D:\SYNK-worktrees\SYNK-appsscript\nervous-edison-2d7bcd\docs\마케팅\프로필점검_20261118\검수\영어_프로필.대조.json" --역번역답 <답 파일>
