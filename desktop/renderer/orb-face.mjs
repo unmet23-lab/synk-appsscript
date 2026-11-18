@@ -14,6 +14,7 @@ import {
 import { solioToday, solioTodayNeedsReread } from './solio-today.mjs';
 import { siteVisitsView, SITE_VISITS_NAME } from './site-visits-model.mjs';
 import { createOrbFaceView } from './orb-face-view.mjs';
+import { createOrbRooms, ASIDE_ROOMS } from './orb-rooms.mjs';
 
 /* 구 위의 자리(places)와 점 로고(signature)를 켜고 끄는 값. 하나를 false로 바꾸면 그 모양이 빠진다(설계 12절) */
 /* eyes: 구의 점 눈(유호님 11-17 「점눈으로 하자」, 결정 표 11-16 「구에 눈을 넣는다」). 끄면 셰이더가 눈을 그리지 않는다 */
@@ -197,6 +198,21 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   // 솔리오 「방문자 분석」의 자료. 계정마다 따로 읽고, 계정이 바뀌면 앞 계정이 받은 답을 버린다(사이트방문 설계 6절).
   // 요약은 하루 한 번 바뀌므로 바뀜 알림 없이 솔리오에 들어올 때와 방문자 분석을 열 때 읽는다
   const vis = { account: undefined, result: null, seq: 0, loading: false, done: false, retried: false, timer: null };
+  /* 펼침이나 구독 방에서 여는 방(2단계 둘째 조각 설계 1.3절). aside는 그 방의 이름이고, 방마다의 상태와 동작은 orb-rooms.mjs가 가진다.
+   * 방은 어느 공간에서든 열리고 닫으면 있던 방으로 돌아간다. 옛 화면이 열린 동안에도 aside를 지켜 옛 화면에서 돌아오면 그 방이다 */
+  let aside = null;
+  const rooms = createOrbRooms({
+    subs,
+    now,
+    setTimer,
+    clearTimer,
+    snapshot: () => sol.snapshot,
+    accept: snap => { if (disposed || !snap || snap.ok === false) return; acceptSnapshot(snap); sol.error = null; render(); },
+    reread: () => { void reread(); },
+    copyText: text => view.copyText?.(text),
+    changed: () => render(),
+    sentence: faceSentence,
+  });
 
   function prefersReducedMotion() {
     if (hostReducedMotion) return true;
@@ -324,7 +340,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       checking: sol.checking,
       rereadFailed: sol.rereadFailed,
     }, now());
-    return { ...today, rereading: sol.checking || Boolean(sol.snapshot?.checking) };
+    // 구독 줄 아래에 종류가 다른 줄을 붙인다(2단계 둘째 조각 설계 2절). 구독 줄이 하나라도 있을 때만 선다
+    const extra = signedIn && sol.snapshot && today.rows?.length ? [rooms.costRow()].filter(Boolean) : [];
+    return { ...today, extra, rereading: sol.checking || Boolean(sol.snapshot?.checking) };
   }
 
   /* 이 계정이 볼 수 있는 방문자 분석. 그 계정이 받은 답만 쓴다. 다른 계정의 답이나 회원이 아닐 때는 보이지 않는다 */
@@ -405,6 +423,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       switch: mode === 'portal' && state.phase === 'workspace' ? entrySwitchScene(state) : null,
       fan: mode === 'portal' ? null : { ...appSwitchScene(state), open: switchOpen, pin: fanPin },
       room: mode === 'portal' ? null : roomScene(state),
+      aside: mode === 'portal' ? null : aside,
+      rooms: mode === 'portal' || !aside ? null : rooms.scene({ aside, checking: sol.checking }),
       legacy: legacyKind,
       focus: focusKey,
       focusSeq,
@@ -566,6 +586,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     space = SPACE_LABEL[target] ? target : 'solio';
     switchOpen = false;
     legacyKind = null;
+    if (aside) { aside = null; rooms.close(); }
     feedback.switch = '';
     const kind = fromSwitch || !freshSignIn ? 'quick' : 'full';
     orbTarget = 'inside';
@@ -1193,7 +1214,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       if (DEST_OF_SPACE[target]) void runSelectWorkspace(DEST_OF_SPACE[target]);
       return;
     }
-    if (target === space) { closeSwitch(); return; }
+    // 펼침에서 공간을 고르면 열려 있던 방을 닫는다. 지금 공간을 고르면 그 공간의 첫 화면으로 돌아온다
+    if (aside) { aside = null; rooms.close(); if (target === space) focus('here'); }
+    if (target === space) { if (switchOpen) closeSwitch(); else render(); return; }
     if (target === 'solio') { enterSpace('solio', { fromSwitch: true }); return; }
     void runOpenSpace(target);
   }
@@ -1217,6 +1240,28 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     if (!silent) { focus('here'); render(); }
   }
 
+  /* 방을 연다(설계 9.3). 펼침이 열려 있으면 닫고, 옛 화면이 열려 있으면 조용히 닫는다. 초점은 방 맨 위 문장에 둔다 */
+  function openAside(name, { svc = null } = {}) {
+    if (disposed || clientMode() === 'portal' || busyAction !== null || !ASIDE_ROOMS.includes(name)) return;
+    switchOpen = false;
+    fanPin = false;
+    feedback.switch = '';
+    if (legacyKind) closeLegacy({ silent: true });
+    aside = name;
+    rooms.open(name, { svc });
+    focus('aside');
+    render();
+  }
+  /* 방을 닫으면 있던 방으로 돌아가고, 초점은 방을 연 자리로 간다. 그 자리가 보이지 않으면 구 단추다 */
+  function closeAside({ focusBack = true } = {}) {
+    if (!aside) return false;
+    aside = null;
+    rooms.close();
+    if (focusBack) focus('aside-return');
+    render();
+    return true;
+  }
+
   function foot(action) {
     if (disposed || busyAction !== null) return;
     if (action === 'account' || action === 'settings') { openLegacy(action); return; }
@@ -1237,6 +1282,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     switchOpen = false;
     fanPin = false;
     if (legacyKind) closeLegacy({ silent: true });
+    aside = null;
     enteredAs = null;
     assigned = [];
     assignedAccount = null;
@@ -1366,6 +1412,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     return arriving || !sol.error || sol.error === 'SIGN_IN_REQUIRED';
   }
   function stopSolio() {
+    // 계정이 바뀌거나 로그아웃하면 방의 상태(두 번 누르기, 열린 묶음, 남긴 글)도 모두 지운다
+    rooms.reset();
     sol.seq += 1;
     // 솔리오 회차. 읽기마다 오르는 seq와 달리 로그아웃 · 계정 바뀜으로 솔리오를 닫을 때만 오른다(0.4.95 원천 후보 검수 D3)
     sol.run += 1;
@@ -1429,7 +1477,10 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const state = machine.read();
     const programs = programsFor(state, visitsScene(state));
     if (!programs.some(p => p.key === name)) return false;
-    if (prog !== name) { prog = name; render(); }
+    // 오브제를 누르면 열려 있던 방을 닫는다(시안 1343~1345행)
+    const hadAside = aside !== null;
+    if (hadAside) { aside = null; rooms.close(); }
+    if (prog !== name || hadAside) { prog = name; render(); }
     if (name === 'visits') syncVisits({ again: true });
     return true;
   }
@@ -1437,6 +1488,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function acceptSnapshot(snap) {
     if (sol.snapshot && typeof snap.seq === 'number' && typeof sol.snapshot.seq === 'number' && snap.seq < sol.snapshot.seq) return;
     sol.snapshot = snap;
+    // 로그인 단계가 끝나면 계정 관리 방이 알린다(설계 4.5)
+    rooms.observe(snap);
   }
   async function loadSolio() {
     if (!subs) return;
@@ -1538,7 +1591,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
 
   /* 시각 글은 1분마다 다시 쓴다. 창이 가려진 동안은 쓰지 않는다 */
   function syncClock(scene) {
-    const want = !disposed && scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && !isHidden();
+    // 계정 관리 방의 「HH:MM에 읽음」도 고쳐 쓴다(설계 1.3절)
+    const want = !disposed && scene.mode === 'app' && scene.layer === 'app' && (space === 'solio' || aside !== null) && !isHidden();
     if (want && clockTimer === null && typeof setTick === 'function') clockTimer = setTick(() => { if (!isHidden()) render(); }, ORB_TIMING.clock);
     else if (!want && clockTimer !== null) { clearTick(clockTimer); clockTimer = null; }
   }
@@ -1578,9 +1632,17 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       case 'fan-leave': closeSwitch({ unpinnedOnly: true }); return true;
       case 'close-switch': closeSwitch(); return true;
       case 'foot': foot(payload); return true;
-      /* 줄을 누르면 안쪽이 고정된다(화면만의 일). 옛 판으로 가는 길은 줄 안쪽의 「계정 관리」와 방 맨 아래의 「구독 관리 열기」다(설계 2.4절) */
-      case 'subs-manage': openLegacy('subscriptions'); return true;
-      case 'connect': openLegacy('subscriptions', { view: 'manage' }); return true;
+      /* 줄을 누르면 안쪽이 고정된다(화면만의 일). 줄 안쪽의 「계정 관리」와 방 맨 아래의 「계정 관리」 · 「구독 연결하기」는 계정 관리 방을 연다.
+       * 이름은 그대로 두고 하는 일만 바꿨다(2단계 둘째 조각 설계 9.3, 설계 검토 D14). 인자는 그 구독 줄의 열쇠다 */
+      case 'subs-manage': openAside('manage'); return true;
+      case 'connect': openAside('manage', { svc: typeof payload === 'string' && payload ? payload : null }); return true;
+      case 'aside-back': closeAside(); return true;
+      /* 방 안쪽의 단추. 줄을 열고 접는 일은 화면 안에서 끝나고, 동작만 여기로 온다 */
+      case 'room':
+        if (clientMode() !== 'app' || !payload || typeof payload !== 'object') return false;
+        if (!aside && payload.room !== 'solio') return false;
+        void rooms.handle(payload);
+        return true;
       case 'reread': void reread(); return true;
       case 'prog': return showProgram(payload);
       case 'recheck-auth': void recheckAuth(); return true;
@@ -1606,6 +1668,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     }
     if (switchOpen) { closeSwitch({ focusHere: true }); return true; }
     if (legacyKind) { closeLegacy(); return true; }
+    if (aside) { closeAside(); return true; }
     return false;
   }
 
@@ -1706,6 +1769,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       cancelAutoZoom();
       stopSolio();
       stopVisits();
+      aside = null;
       if (clockTimer !== null) { clearTick(clockTimer); clockTimer = null; }
       if (hadBusyInvite) options.onCancelInvite?.();
       view.dispose?.();

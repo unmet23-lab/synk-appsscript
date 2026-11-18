@@ -61,9 +61,41 @@ test('reduced motion also shortens the fan, its foot and the room dimming', () =
 test('size rules follow the sketch values that the app can reach (설계 3.2절)', () => {
   // 아래 78px는 시안 막대 자리라 옮기지 않고, 좁은 창의 솔리오 방도 아래 끝을 흐린다(대체 검수 F2)
   assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?#portal-entry \.room\{top:clamp\(84px,13vh,128px\);transform:none;max-height:none;bottom:calc\(24px \+ env\(safe-area-inset-bottom,0px\)\)/, 'the base max-height must not cap the narrow room (다시 검수 FA1)');
-  assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?#portal-entry \.room\[data-room\^="solio"\]\{padding-bottom:34px;-webkit-mask-image:linear-gradient\(#000 calc\(100% - 30px\),transparent\)/);
+  assert.match(css, /@media \(max-width:640px\)\{[\s\S]*?#portal-entry \.room-top\{padding-bottom:34px;-webkit-mask-image:linear-gradient\(#000 calc\(100% - 30px\),transparent\)/);
   assert.doesNotMatch(css, /bottom:calc\(78px/, 'the sketch toolbar space is not carried into the app');
-  assert.match(css, /@media \(max-height:620px\) and \(min-width:641px\)\{[\s\S]*?#portal-entry \.room\[data-room\^="solio"\]\{top:16vh;max-height:calc\(100% - 16vh - 56px\)\}/);
+  assert.match(css, /@media \(max-height:620px\) and \(min-width:641px\)\{[\s\S]*?#portal-entry \.room-top\{top:16vh;max-height:calc\(100% - 16vh - 56px\)\}/);
   assert.match(css, /@media \(min-width:641px\) and \(max-width:900px\)\{#portal-entry \.rows\.vis\{grid-template-columns:minmax\(96px,128px\) minmax\(0,1fr\) 6\.2em minmax\(96px,auto\)\}\}/);
   assert.doesNotMatch(css, /max-height:340px/, 'the very small window rule waits for a smaller minimum window (설계 검토 1차 9)');
+});
+
+/* ── 2단계 둘째 조각 첫 묶음(2단계_둘째조각_구현설계.md 10.2절) ── */
+const block = head => { const at = css.indexOf(head + '{'); assert.ok(at >= 0, head); let depth = 0; for (let i = at + head.length; i < css.length; i++) { if (css[i] === '{') depth++; else if (css[i] === '}' && --depth === 0) return css.slice(at, i + 1); } return ''; };
+
+test('room rows: the far action stands alone at the right end, rows of another kind keep a gap, and the warning reads as white', () => {
+  assert.match(css, /#portal-entry \.more-acts \.far\{margin-left:auto\}/);
+  assert.match(css, /#portal-entry \.row\.gap\{margin-top:clamp\(14px,2\.6vh,26px\)\}/);
+  assert.match(css, /#portal-entry \.quiet\.warn\{color:var\(--paper\);border-bottom-color:var\(--paper\)\}/);
+  assert.match(css, /#portal-entry \.quiet\[aria-disabled="true"\]\{opacity:\.42;cursor:default\}/);
+  assert.match(css, /#portal-entry \.more-live:empty\{display:none\}/);
+});
+
+test('fact rows inside a row keep their date and value at least 4.5:1 on black', () => {
+  const a = Number(/#portal-entry \.row\.sub \.when,#portal-entry \.row\.sub \.val\{color:rgba\(243,241,236,([.\d]+)\)\}/.exec(css)?.[1]);
+  assert.ok(contrastOnBlack(a) >= 4.5, 'fact value ' + a + ' gives ' + contrastOnBlack(a).toFixed(2));
+});
+
+test('input fields sit in the row grid, and in a narrow window the field drops under its name with the hint on the left', () => {
+  assert.match(css, /#portal-entry \.fld\{display:grid;grid-column:1 \/ -1;grid-template-columns:subgrid/);
+  assert.match(css, /#portal-entry \.fld \.hint\{grid-column:3 \/ -1;justify-self:end;text-align:right/);
+  const narrow = block('@media (max-width:640px)');
+  assert.match(narrow, /#portal-entry \.fld\{grid-template-columns:minmax\(0,1fr\);row-gap:2px;padding:8px 0\}/);
+  assert.match(narrow, /#portal-entry \.fld \.hint\{grid-column:1;justify-self:start;text-align:left\}/);
+  assert.match(block('@media (max-height:620px) and (min-width:641px)'), /#portal-entry \.room \.up\{margin-bottom:10px\}/);
+});
+
+test('the account room is a top room like the two Solio rooms', () => {
+  const view = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  assert.match(view, /class="room room-top room-aside"/);
+  assert.doesNotMatch(css, /\.room\[data-room\^="solio"\]/, 'the top room rules follow the class, not the room name');
+  assert.match(block('@media (min-width:641px)'), /#portal-entry \.room-top\{top:clamp\(92px,21vh,196px\);transform:none/);
 });

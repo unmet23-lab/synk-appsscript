@@ -354,6 +354,17 @@ test('row inside: the price line keeps entered values first and marks official, 
   assert.equal(moreOf([weekly('gpt', 20, NOW + 3 * D)], { prices: PRICES })[0].more.cost, null, 'no price means no price line');
 });
 
+test('row inside: the price line also counts an account this PC cannot read now, and says so (2단계 둘째 조각 설계 검토 D13)', () => {
+  const here = weekly('gemini', 30, NOW + 3 * D, { email: 'work@example.com', price: 29000, currency: 'KRW', billDay: 2 });
+  const away = weekly('gemini', 10, NOW + 3 * D, { email: 'away@example.com', state: 'elsewhere', price: 29000, currency: 'KRW', billDay: 5 });
+  const m = moreOf([here, away])[0].more;
+  assert.deepEqual([m.cost.val, m.cost.note], ['월 58,000원', '이 PC에 없는 계정 포함']);
+  assert.equal(m.accounts, null, 'the away account is still not listed as an account here');
+  const unknownAway = weekly('gemini', 10, NOW + 3 * D, { email: 'away@example.com', state: 'elsewhere', plan: 'odd' });
+  assert.deepEqual([moreOf([here, unknownAway])[0].more.cost.val, moreOf([here, unknownAway])[0].more.cost.note], ['월 29,000원', '계정 2개 가운데 1개의 금액만 압니다 · 이 PC에 없는 계정 포함']);
+  assert.equal(moreOf([here])[0].more.cost.note, '', 'no away account, no note');
+});
+
 test('row inside: a credit service says whether it lasts until the next refill only when it knows all three', () => {
   const c = row({ service: 'typecast', label: 'Typecast', kind: 'credit', plan: 'plus', billDay: 1, live: { readAt: NOW, credits: 3000, planCredits: 10000 } });
   const lasts = moreOf([c], { usage: { accounts: { [c.id]: { perDay: 100 } } } })[0].more;

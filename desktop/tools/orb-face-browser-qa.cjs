@@ -207,19 +207,14 @@ if(!process.versions.electron){
           await w.js("(()=>{const r=document.getElementById('portal-entry');r.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerType:'mouse',clientX:20,clientY:innerHeight-20}));})()");
           const c3=await until(w,s=>!s.fan);check('9 a press outside closes a pinned fan',c3.ok,c3.state);
           await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.here-orb');const c4=await until(w,s=>!s.fan);check('9 pressing the orb again closes the fan',c4.ok,c4.state);
-          // 구독 줄 → 옛 AI 구독 관리(위 탭 줄 숨음) → 돌아가기
-          await click(w,'[data-orb-act="subs-manage"]');const lg=await until(w,s=>s.mode==='legacy'&&s.ui==='app');
-          const legacy=await w.js("(()=>{const r=document.getElementById('portal-entry').getBoundingClientRect(),t=document.getElementById('solio-tabs'),title=document.querySelector('.launcher > .titlebar');return {band:Math.round(r.height),tabsHidden:(!t||getComputedStyle(t).display==='none')&&[...document.querySelectorAll('#solio-subscriptions .ms-back[data-view=solio]')].every(b=>getComputedStyle(b).display==='none'),titleHidden:!title||getComputedStyle(title).display==='none',launcherInert:document.querySelector('.launcher').inert};})()");
-          check('9 a row opens the old subscriptions board under a 56px band',lg.ok&&legacy.band===56&&legacy.tabsHidden&&legacy.titleHidden&&!legacy.launcherInert,legacy);await captureWide(w,'legacy-subscriptions');
-          // 계정 관리 → 「한눈에 보기로」가 보이고 눌린다. 띠로 나갔다 다시 열면 한눈에 보기부터 뜬다(Fable 최종)
-          await click(w,'#solio-subscriptions [data-subs="manage"]');
-          const glanceBack=await w.js("(async()=>{for(let i=0;i<40;i++){const b=document.querySelector('#solio-subscriptions .ms-back[data-subs=glance]');if(b&&getComputedStyle(b).display!=='none'&&b.getBoundingClientRect().width>0)return true;await new Promise(r=>setTimeout(r,50));}return false;})()");
-          check('9 the account management view keeps its way back to the glance',glanceBack);
-          await click(w,'[data-orb-act="legacy-back"]');const lb=await until(w,s=>s.mode==='app'&&s.ui==='app');check('9 「돌아가기」 returns to Solio',lb.ok,lb.state);
-          await click(w,'[data-orb-act="subs-manage"]');await until(w,s=>s.mode==='legacy'&&s.ui==='app');
-          const reopened=await w.js("(async()=>{for(let i=0;i<40;i++){if(document.querySelector('#solio-subscriptions .ms-back[data-view=solio]')&&!document.querySelector('#solio-subscriptions .ms-back[data-subs=glance]'))return true;await new Promise(r=>setTimeout(r,50));}return false;})()");
-          check('9 reopening the board starts at the glance view',reopened);
-          await click(w,'[data-orb-act="legacy-back"]');await until(w,s=>s.mode==='app'&&s.ui==='app');
+          // 구독 방 맨 아래 「계정 관리」 → 새 얼굴의 계정 관리 방(2단계 둘째 조각 설계 9절). 옛 구독 판은 열리지 않는다
+          // 실제 누름처럼 단추에 초점을 먼저 둔다(js의 click()은 초점을 옮기지 않는다). 방은 연 단추를 기억해 닫을 때 초점을 돌려준다
+          await w.js("document.querySelector('#portal-entry [data-orb-act=subs-manage]').focus()");await click(w,'[data-orb-act="subs-manage"]');await wait(500);
+          const mg=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=manage]');return {shown:!!r&&!r.hidden,mode:document.documentElement.dataset.orbClient,solioHidden:document.querySelector('#portal-entry [data-room=solio]').hidden,onSay:document.activeElement===r?.querySelector('[data-aside-say]'),rows:r?r.querySelectorAll('button.row[data-key]').length:0,board:!!document.querySelector('#solio-subscriptions .ms-top')};})()");
+          check('9 「계정 관리」 opens the account management room in the face and the old board stays shut',mg.shown&&mg.mode==='app'&&mg.solioHidden&&mg.onSay&&mg.rows>=3&&!mg.board,mg);await captureWide(w,'manage-room');
+          await key(w,'Escape');await wait(300);
+          const back9=await w.js("(()=>({manage:document.querySelector('#portal-entry [data-room=manage]').hidden,solio:!document.querySelector('#portal-entry [data-room=solio]').hidden,focus:document.activeElement===document.querySelector('#portal-entry [data-orb-act=subs-manage]')}))()");
+          check('9 Esc closes the room and gives focus back to 「계정 관리」',back9.manage&&back9.solio&&back9.focus,back9);
           await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await click(w,'.fan [data-foot="settings"]');await until(w,s=>s.mode==='legacy'&&s.ui==='app');
           const hiddenRows=await w.js("['#personal-settings-open','#density','#view-settings [data-view=benefits]','#reset-preferences'].map(s=>{const e=document.querySelector(s);const r=e?.closest('.setting-row');return !r||getComputedStyle(r).display==='none';})");
           check('9 settings hides the four library and pleasure rows',hiddenRows.every(Boolean),{hiddenRows});await captureWide(w,'legacy-settings');
@@ -461,6 +456,168 @@ if(!process.versions.electron){
           await captureSizes(w2,'subs-none');
           w2.win.destroy();
         }
+        // 18. 2단계 둘째 조각 첫 묶음: 구독 방의 「요금」 줄과 계정 관리 방(2단계_둘째조각_구현설계.md 12.2절의 1 · 3 · 4 · 5 · 7 · 8 · 9 · 13 · 16).
+        //     숨은 창에는 실제 마우스가 오지 않아 요소에 포인터 사건을 직접 보낸다(17번 묶음의 __mv와 같다)
+        if(only('18')&&mode==='main'){
+          const subsManage={...subsRich,seq:2,platform:'win32',login:null,
+            rows:[...subsRich.rows.map(r=>({...r,folder:true,...(r.id==='r-gemini-away'?{price:20,currency:'USD',billDay:9}:{})})),{id:'m-suno',source:'manual',label:'Suno',kind:'credit',price:10,currency:'USD',billDay:5}],
+            tools:{claude:{installed:true,version:'2.1.3'},gpt:{installed:false},gemini:{installed:true,version:'1.3'},higgsfield:{installed:false,npm:false},typecast:{installed:true,api:true}}};
+          const w=await open();await boot(w,{subs:subsManage},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          await w.js(`(()=>{const chain=e=>{const a=[];for(let n=e;n;n=n.parentElement)a.push(n);return a;};
+            const opts=(x,y)=>({bubbles:true,cancelable:true,composed:true,pointerType:'mouse',pointerId:1,isPrimary:true,button:0,clientX:x,clientY:y});
+            window.__ptr=null;
+            window.__mv=(x,y)=>{const t=document.elementFromPoint(x,y)||document.body,prev=window.__ptr,o=opts(x,y);
+              if(prev!==t){const was=prev?chain(prev):[],now=chain(t);if(prev)prev.dispatchEvent(new PointerEvent('pointerout',{...o,relatedTarget:t}));for(const n of was)if(!now.includes(n))n.dispatchEvent(new PointerEvent('pointerleave',{...o,bubbles:false,relatedTarget:t}));t.dispatchEvent(new PointerEvent('pointerover',{...o,relatedTarget:prev}));for(const n of now.slice().reverse())if(!was.includes(n))n.dispatchEvent(new PointerEvent('pointerenter',{...o,bubbles:false,relatedTarget:prev}));window.__ptr=t;}
+              t.dispatchEvent(new PointerEvent('pointermove',o));return true;};
+            const M='#portal-entry [data-room=manage] ';
+            window.__q=(key,sel)=>{const b=[...document.querySelectorAll(M+'button.row[data-key]')].find(x=>x.dataset.key===key);return sel?(b?b.nextElementSibling.querySelector(sel):null):b;};
+            window.__act=(key,act,arg)=>{const b=window.__q(key);if(!b)return null;return [...b.nextElementSibling.querySelectorAll('[data-room-act]')].find(x=>x.dataset.roomAct===act&&(arg===undefined||x.dataset.roomArg===arg))||null;};
+            window.__row=key=>{const b=window.__q(key);if(!b)return null;const m=b.nextElementSibling;return {opened:b.classList.contains('opened'),pin:b.classList.contains('pin'),now:b.classList.contains('now'),gap:b.classList.contains('gap'),inert:m.inert,live:(m.querySelector('[role=status]')||{}).textContent||'',mid:(b.querySelector('.mid')||{}).textContent||''};};
+            window.__type=(key,field,value)=>{const i=[...window.__q(key).nextElementSibling.querySelectorAll('input[data-f]')].find(x=>x.dataset.f===field);if(!i)return false;i.focus();i.value=value;i.dispatchEvent(new Event('input',{bubbles:true}));return true;};
+            return true;})()`);
+          const mv=async(x,y)=>{await w.js('window.__mv('+x+','+y+')');await wait(16);};
+          const away=[1380,880];
+          const rect=sel=>w.js('(()=>{const r=document.querySelector('+JSON.stringify(sel)+').getBoundingClientRect();return {x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};})()');
+          const row=key=>w.js('window.__row('+JSON.stringify(key)+')');
+          // 사람처럼 단추에 초점을 먼저 둔 뒤 누른다(누르면 초점이 단추로 간다)
+          const act=(key,a,arg)=>w.js('(()=>{const b=window.__act('+JSON.stringify(key)+','+JSON.stringify(a)+(arg===undefined?'':','+JSON.stringify(arg))+');if(!b)return false;b.focus();b.click();return true;})()');
+          const actText=(key,a)=>w.js('(window.__act('+JSON.stringify(key)+','+JSON.stringify(a)+')||{}).textContent||""');
+          const saves=async()=>(await calls(w)).filter(c=>c.startsWith('subs-save:'));
+          // 1. 요금 줄: 구독 줄 아래에 틈을 두고 서고, 이 PC에 없는 계정의 넣은 요금도 합에 든다(설계 검토 D13)
+          const cost=await w.js("(()=>{const b=document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]');return b?{gap:b.classList.contains('gap'),mid:b.querySelector('.mid').textContent,when:b.querySelector('.when').textContent,last:!b.nextElementSibling.nextElementSibling,label:b.getAttribute('aria-label')}:null;})()");
+          check('18-1 the 「요금」 line stands under the subscription rows with a gap and counts the account not on this PC',!!cost&&cost.gap&&cost.last&&/^한 달 약 /.test(cost.mid)&&/이 PC에 없는 계정 포함/.test(cost.mid)&&/^다음 결제 /.test(cost.when),cost);
+          const c1=await rect('#portal-entry [data-rows] button.row[data-key=cost]');await mv(c1.x,c1.y);await wait(500);
+          const costOpen=await w.js("(()=>{const b=document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]'),m=b.nextElementSibling;return {opened:b.classList.contains('opened'),say:(m.querySelector('.more-say')||{}).textContent||'',bills:m.querySelectorAll('.row.sub').length,rate:!!m.querySelector('input[data-f=usdKrw]'),manage:!!m.querySelector('[data-orb-act=connect]')};})()");
+          check('18-1 resting on the 「요금」 line opens its bills, the dollar rate and 「계정 관리」',costOpen.opened&&/^한 달에 약 .+원을 냅니다\./.test(costOpen.say)&&costOpen.bills>=3&&costOpen.rate&&costOpen.manage,costOpen);
+          await w.js("(()=>{const m=document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]').nextElementSibling,i=m.querySelector('input[data-f=usdKrw]');i.focus();i.value='1500';i.dispatchEvent(new Event('input',{bubbles:true}));[...m.querySelectorAll('[data-room-act]')].find(x=>x.dataset.roomAct==='rate-save').click();return true;})()");await wait(400);
+          const rateSaved=(await saves()).some(c=>c.includes('"usdKrw":1500'));
+          const costLive=await w.js("(document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]').nextElementSibling.querySelector('[role=status]')||{}).textContent||''");
+          check('18-1 saving the dollar rate writes settings.usdKrw and says so in the line',rateSaved&&costLive==='저장했습니다.',{rateSaved,costLive});
+          // 칸에 초점이 남아 있어도 저장한 값이 돌아오면 안쪽 문장이 새 합계로 바뀌고, 초점은 그 칸에 남는다
+          const afterRate=await w.js("(()=>{const b=document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]'),m=b.nextElementSibling,n=s=>(/약 ([0-9,]+)원/.exec(s)||[])[1]||'';return {mid:n(b.querySelector('.mid').textContent),say:n((m.querySelector('.more-say')||{}).textContent||''),focus:document.activeElement?.dataset?.f||''};})()");
+          check('18-1 after the rate is saved the sentence inside shows the same total as the line, and focus stays in the field',!!afterRate.mid&&afterRate.mid===afterRate.say&&afterRate.focus==='usdKrw',afterRate);
+          await mv(...away);await wait(300);
+          // 요금 줄을 눌러 고정한 채로 다섯 크기를 찍는다. 크기를 바꾼 뒤에는 그 줄이 방 안에 보이게 둔다
+          const costSel='#portal-entry [data-rows] button.row[data-key=cost]';await click(w,costSel);await wait(300);
+          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js(`document.querySelector(${JSON.stringify(costSel)}).scrollIntoView({block:'start'})`);await wait(150);await capture(w,`cost-open-${W}`);}
+          w.win.setContentSize(1440,900);await wait(300);await click(w,costSel);await wait(300);
+          // 3. 구독 줄 안쪽 「계정 관리」 → 계정 관리 방. 손볼 계정(다시 로그인)이 있으면 그 줄을 연 채로 연다
+          await w.js("document.activeElement&&document.activeElement.blur&&document.activeElement.blur()");
+          await click(w,'#portal-entry button.row[data-svc="claude"]');await wait(400);
+          await w.js("document.querySelector('#portal-entry button.row[data-svc=\"claude\"]').nextElementSibling.querySelector('[data-orb-act=connect]').focus()");
+          await w.js("document.querySelector('#portal-entry button.row[data-svc=\"claude\"]').nextElementSibling.querySelector('[data-orb-act=connect]').click()");await wait(700);
+          const opened=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=manage]');return {shown:!r.hidden,say:r.querySelector('[data-aside-text]').textContent,then:r.querySelector('[data-aside-then]').textContent,onSay:document.activeElement===r.querySelector('[data-aside-say]'),solioHidden:document.querySelector('#portal-entry [data-room=solio]').hidden,heading:document.querySelector('#portal-entry [data-orb-heading]').textContent};})()");
+          const fix=await row('a:r-claude-2');
+          check('18-3 the inside 「계정 관리」 opens the room on the account to fix, with focus on the first sentence',opened.shown&&opened.solioHidden&&opened.onSay&&opened.say==='연결한 계정은 일곱이고, 직접 넣은 구독은 하나입니다.'&&/다시 로그인해야 합니다\.$/.test(opened.then)&&opened.heading==='계정 관리'&&fix?.opened&&fix.pin&&fix.now,{opened,fix});
+          await captureSizes(w,'manage-fix');
+          // 13. Esc 차례: 열린 줄을 먼저 접고, 그다음 방을 닫고, 초점은 방을 연 자리로 간다
+          await key(w,'Escape');await wait(200);
+          const e1=await w.js("(()=>({manage:!document.querySelector('#portal-entry [data-room=manage]').hidden,open:document.querySelectorAll('#portal-entry [data-room=manage] .more.open').length}))()");
+          await key(w,'Escape');await wait(300);
+          const e2=await w.js("(()=>{const c=document.querySelector('#portal-entry button.row[data-svc=\"claude\"]').nextElementSibling.querySelector('[data-orb-act=connect]');return {manage:!document.querySelector('#portal-entry [data-room=manage]').hidden,solio:!document.querySelector('#portal-entry [data-room=solio]').hidden,back:document.activeElement===c};})()");
+          check('18-13 Esc folds the open row first, then closes the room and gives focus back to the button that opened it',e1.manage&&e1.open===0&&!e2.manage&&e2.solio&&e2.back,{e1,e2});
+          await click(w,'[data-orb-act="subs-manage"]');await wait(600);
+          // 다가가서 머물면 열리고(0.12초), 줄 묶음을 벗어나 머물면 고정하지 않은 줄이 접힌다(0.4초)
+          await key(w,'Escape');await wait(150);
+          const g1=await rect('#portal-entry [data-room=manage] button.row[data-key="a:r-gpt"]');await mv(g1.x,g1.y);await wait(450);
+          const hover=await row('a:r-gpt');await mv(...away);await wait(900);const left=await row('a:r-gpt');
+          check('18 a row opens when the pointer rests on it and folds again after the pointer leaves the rows',hover.opened&&!hover.pin&&!left.opened,{hover,left});
+          // 8. 지우기 두 번: 더블클릭 한 번으로는 지워지지 않고, 0.6초 뒤의 두 번째 누름에 지운다
+          await click(w,'#portal-entry [data-room=manage] button.row[data-key="a:r-gpt"]');await wait(300);
+          await w.js("(()=>{const b=window.__act('a:r-gpt','remove');b.click();b.click();return true;})()");await wait(200);
+          const armed=await w.js("(()=>{const b=window.__act('a:r-gpt','remove'),live=document.getElementById(b?.getAttribute('aria-describedby')||'');return {text:b?.textContent||'',warn:!!b&&b.classList.contains('warn'),live:live?.textContent||'',role:live?.getAttribute('role')||''};})()");
+          const gone1=(await saves()).some(c=>c.includes('"remove":"r-gpt"'));
+          check('18-8 one double click asks only: the button now says 「한 번 더 누르면 지웁니다」 and its status line says what goes',armed.text==='한 번 더 누르면 지웁니다'&&armed.warn&&/되돌릴 수 없습니다|그대로 둡니다/.test(armed.live)&&armed.role==='status'&&!gone1,{armed,gone1});
+          await w.js("window.__act('a:r-gpt','remove')?.scrollIntoView({block:'center'})");await wait(150);await capture(w,'manage-remove-ask');
+          await wait(700);await act('a:r-gpt','remove');await wait(500);
+          const gone2=(await saves()).some(c=>c.includes('"remove":"r-gpt"'));
+          const foot=await text(w,'#portal-entry [data-room=manage] [data-aside-foot]');
+          check('18-8 a second press after 0.6 s removes the account line',gone2&&!(await row('a:r-gpt'))&&/줄을 지웠습니다\.$/.test(foot),{gone2,foot});
+          // 10초가 지나면 물음을 거둔다
+          await click(w,'#portal-entry [data-room=manage] button.row[data-key="a:r-gemini"]');await wait(300);
+          await act('a:r-gemini','remove');await wait(150);const ask1=await actText('a:r-gemini','remove');
+          await wait(10400);const ask2=await actText('a:r-gemini','remove');
+          check('18-8 the question goes away by itself after 10 s',ask1==='한 번 더 누르면 지웁니다'&&ask2==='지우기',{ask1,ask2});
+          // 손이 그 줄의 안쪽을 떠나면 거둔다
+          await act('a:r-gemini','remove');await wait(150);
+          const rb=await w.js("(()=>{const r=window.__act('a:r-gemini','remove').getBoundingClientRect();return {x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};})()");
+          await mv(rb.x,rb.y);await wait(80);await mv(...away);await wait(300);
+          const ask3=await actText('a:r-gemini','remove');
+          // 초점이 그 줄의 안쪽을 떠나도 거둔다
+          await act('a:r-gemini','remove');await wait(150);
+          // 숨은 창에는 초점 사건이 오지 않아(16번 묶음과 같다) 초점을 옮긴 뒤 focusout을 직접 보낸다
+          await w.js("(()=>{const b=window.__act('a:r-gemini','remove'),r=window.__q('a:r-gemini');b.focus();r.focus();b.dispatchEvent(new FocusEvent('focusout',{bubbles:true,relatedTarget:r}));return true;})()");await wait(300);
+          const ask4=await actText('a:r-gemini','remove');
+          check('18-8 the question also goes away when the pointer or the keyboard focus leaves the inside',ask3==='지우기'&&ask4==='지우기',{ask3,ask4});
+          // 1분 장면(새 구독 자료)이 와도 물음은 남는다
+          await act('a:r-gemini','remove');await wait(150);
+          await w.js('window.__orbFixture.setSubs('+JSON.stringify({...(await w.js('window.__orbFixture.subs()')),seq:900})+')');await wait(400);
+          const ask5=await actText('a:r-gemini','remove');
+          check('18-8 a fresh scene keeps the question',ask5==='한 번 더 누르면 지웁니다',{ask5});
+          await w.js("window.__q('a:r-gemini').click()");await wait(300);
+          // 요금과 결제일: 칸에 쓰던 글은 새 장면에 지워지지 않고, 틀린 결제일은 그 줄에서 알린다
+          await click(w,'#portal-entry [data-room=manage] button.row[data-key="a:r-claude"]');await wait(300);
+          await act('a:r-claude','grp','cost');await wait(300);
+          const grpFocus=await w.js("(()=>{const a=document.activeElement;return {field:a?.dataset?.f||null,grp:!!a?.closest?.('[data-grp=cost]')};})()");
+          await w.js("window.__type('a:r-claude','price','300000')");
+          const cur=await w.js('window.__orbFixture.subs()');
+          await w.js('window.__orbFixture.setSubs('+JSON.stringify({...cur,seq:901,rows:cur.rows.map(r=>r.id==='r-claude'?{...r,live:{...r.live,weekly:{...r.live.weekly,usedPercent:44}}}:r)})+')');await wait(400);
+          const typed=await w.js("(()=>{const i=window.__q('a:r-claude','input[data-f=price]');return {value:i?.value,focused:document.activeElement===i,say:(window.__q('a:r-claude','.more-say')||{}).textContent||''};})()");
+          check('18 a field being typed in keeps its text and focus when a new scene arrives',grpFocus.grp&&grpFocus.field==='price'&&typed.value==='300000'&&typed.focused,{grpFocus,typed});
+          await captureSizes(w,'manage-cost-edit');
+          await key(w,'Escape');await wait(300);
+          const afterEsc=await w.js("(()=>{const i=window.__q('a:r-claude','input[data-f=price]');return {value:i?.value,open:window.__q('a:r-claude').classList.contains('opened'),onRow:document.activeElement===window.__q('a:r-claude'),say:(window.__q('a:r-claude','.more-say')||{}).textContent||''};})()");
+          check('18-13 Esc in a field folds the row and keeps the written text, and the new scene is drawn once focus leaves',afterEsc.value==='300000'&&!afterEsc.open&&afterEsc.onRow&&/56% 남았습니다/.test(afterEsc.say)&&!/56%/.test(typed.say),{afterEsc,before:typed.say});
+          await w.js("window.__q('a:r-claude').click()");await wait(300);
+          await w.js("window.__type('a:r-claude','billDay','40')");await act('a:r-claude','save-cost');await wait(300);
+          const badDay=(await row('a:r-claude')).live;
+          await w.js("window.__type('a:r-claude','billDay','7')");await act('a:r-claude','save-cost');await wait(500);
+          const savedCost=(await saves()).find(c=>c.includes('"id":"r-claude"')&&c.includes('"billDay":7'))||'';
+          const afterSave=await w.js("(()=>{const g=window.__q('a:r-claude','[data-grp=cost]'),a=document.activeElement;return {grpHidden:!!g&&g.hidden,live:(window.__q('a:r-claude','[role=status]')||{}).textContent||'',focusOn:a?.dataset?.roomAct+':'+(a?.dataset?.roomArg||''),opened:window.__q('a:r-claude').classList.contains('opened')};})()");
+          check('18-7 a wrong billing day is refused in the line, and a right one saves, folds the group and leaves focus on 「요금과 결제일」',badDay==='결제일은 1부터 31 사이로 넣어 주세요.'&&savedCost.includes('"price":300000')&&afterSave.grpHidden&&afterSave.live==='저장했습니다.'&&afterSave.focusOn==='grp:cost'&&afterSave.opened,{badDay,savedCost,afterSave});
+          // 5. 계정 더하기: 설치 안 됨 → 설치 창 열기 → 다시 확인 단추. 640×453에서도 지금 누를 단추가 방 안에 보인다
+          await w.js("window.__q('add').click()");await wait(300);
+          await w.js("[...window.__q('add').nextElementSibling.querySelectorAll('[data-pv]')].find(b=>b.dataset.pv==='gpt').click()");await wait(300);
+          const inst=await actText('add','install');
+          await act('add','install','gpt');await wait(400);
+          const instCalled=(await calls(w)).includes('subs-install:gpt');
+          const recheck=await actText('add','recheck-tools');
+          check('18-5 adding Codex that is not installed offers 「설치 창 열기」, then 「설치가 끝났습니다 · 다시 확인」',inst==='설치 창 열기'&&instCalled&&recheck==='설치가 끝났습니다 · 다시 확인',{inst,instCalled,recheck});
+          await capture(w,'manage-add-install');
+          w.win.setContentSize(640,453);await wait(500);
+          await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=manage]');r.scrollTop=0;return true;})()");await wait(100);
+          await act('add','recheck-tools','gpt');await wait(900);
+          const vis640=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=manage]').getBoundingClientRect(),b=window.__act('add','recheck-tools')?.getBoundingClientRect();return b?{room:[Math.round(r.top),Math.round(r.bottom)],btn:[Math.round(b.top),Math.round(b.bottom)],inside:b.top>=r.top-1&&b.bottom<=r.bottom+1}:null;})()");
+          check('18-5 at 640×453 the button to press now sits inside the room after pressing it',!!vis640&&vis640.inside,vis640);
+          await capture(w,'manage-add-640');
+          w.win.setContentSize(1440,900);await wait(400);
+          // Claude: 설치됨 → 연결할 이메일과 새 계정 연결 → 코드 → 연결 → 끝나면 더하기 줄이 접힌다
+          await w.js("[...window.__q('add').nextElementSibling.querySelectorAll('[data-pv]')].find(b=>b.dataset.pv==='claude').click()");await wait(300);
+          await w.js("window.__type('add','email','qa@example.com')");await act('add','login','claude');await wait(300);
+          const loginCalled=(await calls(w)).includes('subs-login:claude:qa@example.com');
+          await w.js('window.__orbFixture.setLogin('+JSON.stringify({id:'l-qa',service:'claude',stage:'browser',url:'https://claude.ai/qa-login',needsCode:true,message:''})+')');await wait(400);
+          const codeStep=await w.js("({field:!!window.__q('add','input[data-f=code]'),console:!!window.__act('add','console-login')})");
+          await w.js("window.__type('add','code','short')");await act('add','code');await wait(250);
+          const shortCode=(await row('add')).live;
+          await w.js("window.__type('add','code','QACODE1234')");await act('add','code');await wait(300);
+          const codeSent=(await calls(w)).includes('subs-code:l-qa');
+          await capture(w,'manage-add-code');
+          await w.js('window.__orbFixture.setLogin('+JSON.stringify({id:'l-qa',service:'claude',stage:'done',url:null,needsCode:false,message:'qa@example.com 계정을 연결했어요.'})+')');await wait(500);
+          const done=await w.js("(()=>({opened:window.__q('add').classList.contains('opened'),foot:document.querySelector('#portal-entry [data-room=manage] [data-aside-foot]').textContent}))()");
+          check('18-5 Claude: e-mail, browser code, a short code refused, the code sent, and the add line folds when it is done',loginCalled&&codeStep.field&&codeStep.console&&shortCode==='코드를 끝까지 붙여 넣어 주세요.'&&codeSent&&!done.opened&&/Claude 새 계정 줄을 더했습니다\./.test(done.foot),{loginCalled,codeStep,shortCode,codeSent,done});
+          // 9. 막혔을 때: 물음 열둘, 누르면 답이 바로 아래에 나온다
+          await w.js("window.__q('help').click()");await wait(400);
+          const help=await w.js("(()=>{const m=window.__q('help').nextElementSibling,q=[...m.querySelectorAll('button[data-qa]')];q[3].click();const a=q[3].parentElement.nextElementSibling;return {count:q.length,shown:!a.hidden,expanded:q[3].getAttribute('aria-expanded'),answer:a.textContent};})()");
+          check('18-9 「막혔을 때」 has twelve questions and an answer opens right under the one pressed',help.count===12&&help.shown&&help.expanded==='true'&&/검은 창/.test(help.answer),help);
+          await capture(w,'manage-help');
+          // 펼침이 열린 동안 방은 흐리고 Tab에서 빠진다
+          await click(w,'#portal-entry .here-orb');await until(w,s=>s.fan);await wait(500);
+          const dim=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=manage]');return {inert:r.inert,opacity:getComputedStyle(r).opacity};})()");
+          check('18-14 while the fan is open the room is dimmed and out of the Tab order',dim.inert&&Number(dim.opacity)<0.2,dim);
+          await key(w,'Escape');await until(w,s=>!s.fan,{timeout:2000});
+          w.win.destroy();
+        }
         if(only('4'))for(const [dest,name,say] of [['/','workspace','Workspace를 열었습니다.'],['/pulse-app/','pulse','PULSE를 열었습니다.']]){
           const w=await open();await boot(w,{assignment:{status:'resolved',destinations:[dest],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
           const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});const c=await calls(w);
@@ -487,10 +644,10 @@ if(!process.versions.electron){
           await until(w,s=>s.phase==='workspace'&&s.ui==='switch',{timeout:12000});await key(w,'Escape');
           const s=await until(w,st=>st.mode==='app'&&st.ui==='app',{timeout:12000});check('5 Esc on the chooser goes to Solio',s.ok&&(await text(w,'[data-say]'))==='아직 연결한 AI 구독이 없습니다.',s.state);
           await capture(w,'solio-none');
-          // 「구독 연결하기」 → 옛 AI 구독 관리의 계정 관리 쪽(설계 9절)
-          await click(w,'[data-orb-act="connect"]');const cm=await until(w,st=>st.mode==='legacy',{timeout:6000});
-          const manage=await w.js("(async()=>{for(let i=0;i<40;i++){const b=document.querySelector('#solio-subscriptions .ms-back[data-subs=glance]');if(b&&b.getBoundingClientRect().width>0)return true;await new Promise(r=>setTimeout(r,60));}return false;})()");
-          check('9 「구독 연결하기」 opens the old board on account management',cm.ok&&manage,cm.state);
+          // 「구독 연결하기」 → 계정 관리 방, 「계정 더하기」 줄을 연 채로(2단계 둘째 조각 설계 9.1)
+          await click(w,'[data-orb-act="connect"]');await wait(600);
+          const add=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=manage]'),b=r?.querySelector('button.row[data-key=\"add\"]');return {shown:!!r&&!r.hidden,open:!!b&&b.classList.contains('opened')&&b.classList.contains('pin'),say:(r?.querySelector('[data-aside-text]')||{}).textContent||'',mode:document.documentElement.dataset.orbClient};})()");
+          check('9 「구독 연결하기」 opens the account management room with 「계정 더하기」 open',add.shown&&add.open&&add.say==='아직 연결한 계정이 없습니다.'&&add.mode==='app',add);await capture(w,'manage-none');
           w.win.destroy();
         }
         // 6. 배정 확인 실패 넷

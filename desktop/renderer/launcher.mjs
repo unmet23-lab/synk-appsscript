@@ -459,10 +459,9 @@ let windowMaximized=false,portalWindowChrome=null;
 // 검정 구 얼굴(PC 클라이언트 1단계)이 보이는 동안 트레이와 바로가기는 새 얼굴에서 바로 실행되는 앱만 연다. 가린 옛 라이브러리의 앱 소개로 가지 않는다
 function orbRunnable(id){const action=allowed(id)?getAppAction(id):null;return Boolean(bridge&&action&&!action.disabled&&action.action==='launch');}
 // 임시로 여는 옛 화면(설계 9절). 2단계에서 같은 손으로 다시 짓는다
-// 「구독 연결하기」(manage)는 옛 구독 판이 그려진 뒤 판 안의 「계정 관리」를 한 번 눌러 계정 관리 쪽으로 연다. 판 파일은 고치지 않는다
-// 단추 찾기는 앞 호출을 취소하고, 옛 화면에서 구독 판이 아직 보일 때만 누른다(0.4.95 원천 후보 검수)
-let orbManageTimer=null;
-function openOrbLegacy(kind,extra){clearTimeout(orbManageTimer);orbManageTimer=null;if(kind==='subscriptions'){pendingHashRoute=null;subscriptionsBoard.setVisible(false);showView('solio',{section:'subscriptions'});if(extra?.view==='manage'){let tries=0;const go=()=>{orbManageTimer=null;if(portalHost?.clientMode?.()!=='legacy'||document.documentElement.dataset.view!=='solio')return;const button=document.querySelector('#solio-subscriptions [data-subs="manage"]');if(button){button.click();return;}if(++tries<25)orbManageTimer=setTimeout(go,60);};go();}return;}if(kind==='account'){showView('account');return;}if(kind==='settings')showView('settings');}
+// 구독과 계정 관리는 새 얼굴의 방이 맡는다(2단계 둘째 조각 설계 9.2). 옛 구독 판을 열어 판 안의 단추를 누르던 길은 걷었다.
+// 내 계정(마을 기록이 남는다)과 설정은 그 방이 생길 때까지 옛 화면을 연다
+function openOrbLegacy(kind){if(kind==='account'){showView('account');return;}if(kind==='settings')showView('settings');}
 function syncMaximizeButton(button,maximized){if(!button)return;button.setAttribute('aria-label',maximized?'창 크기 복원':'최대화');button.dataset.maximized=String(Boolean(maximized));}
 function windowState(state){windowMaximized=Boolean(state?.maximized);syncMaximizeButton($('maximize'),windowMaximized);portalWindowChrome?.syncMaximize(windowMaximized);}
 function createPortalWindowChrome(portalRoot){

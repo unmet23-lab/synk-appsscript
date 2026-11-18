@@ -5,6 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createOrbFaceController, faceSentence, ORB_RETURNING_KEY, sanitizeInviteFeedback, unconfiguredReason, workspaceLead } from '../renderer/orb-face.mjs';
+import { ROOM_TIMING } from '../renderer/orb-rooms.mjs';
 
 const ACCOUNT = '20000000-0000-4000-8000-000000000002';
 const OTHER = '60000000-0000-4000-8000-000000000006';
@@ -436,20 +437,21 @@ test('values an hour old are read again once on entry', async t => {
   assert.equal(checks, 2, 'the person can still read again');
 });
 
-test('rows open the old subscriptions screen as a band, and Esc comes back', async t => {
+test('「계정 관리」 opens the account management room in the face, not the old board, and Esc comes back (2단계 둘째 조각 설계 9절)', async t => {
   const h = harness(t);
   await settle();
   h.face.setState(signedIn());
   await settle();
   assert.equal(h.face.handle('row', 'claude'), false, 'a row press only pins its inside now (2단계 첫 조각 설계 2.4절)'); h.face.handle('subs-manage');
   await settle();
-  assert.deepEqual(h.calls.find(c => c[0] === 'openLegacy').slice(0, 2), ['openLegacy', 'subscriptions']);
-  assert.equal(h.face.clientMode(), 'legacy');
-  assert.equal(h.face.isClientShown(), true);
-  assert.ok(h.face.handle('escape'));
+  assert.ok(!h.calls.some(c => c[0] === 'openLegacy'), 'the old subscriptions board is not opened any more');
   assert.equal(h.face.clientMode(), 'app');
+  assert.deepEqual([h.view.last().aside, h.view.last().focus], ['manage', 'aside']);
+  assert.ok(h.face.handle('escape'));
+  assert.deepEqual([h.view.last().aside, h.view.last().focus], [null, 'aside-return']);
   h.face.handle('connect');
-  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1), ['openLegacy', 'subscriptions', { view: 'manage' }]);
+  assert.equal(h.view.last().aside, 'manage');
+  assert.ok(!h.calls.some(c => c[0] === 'openLegacy'));
 });
 
 test('the space switch lists Solio and the account assignments and reopens a space through onOpenSpace', async t => {
@@ -1256,12 +1258,14 @@ test('the view writes summary words only as text and waits for the object names 
   assert.match(src, /Math\.max\(NEAR\.prog, railSince \+ settle - clock\(\)\)/);
   assert.match(src, /if \(!o \|\| event\.pointerType !== 'mouse'/, 'resting opens a program only for a mouse');
   const css = fs.readFileSync(new URL('../renderer/orb-face.css', import.meta.url), 'utf8');
-  assert.match(css, /#portal-entry \.room\[data-room\^="solio"\]\{[^}]*padding-bottom:34px;[^}]*mask-image:linear-gradient\(#000 calc\(100% - 30px\),transparent\)/, 'the last row stays above the bottom fade');
+  assert.match(css, /#portal-entry \.room-top\{[^}]*padding-bottom:34px;[^}]*mask-image:linear-gradient\(#000 calc\(100% - 30px\),transparent\)/, 'the last row stays above the bottom fade');
+  assert.match(src, /<div class="room room-top" data-room="solio">/);
+  assert.match(src, /<div class="room room-top" data-room="solio-visits" hidden>/);
   assert.match(css, /#portal-entry \.room\{position:absolute;[^}]*top:52%;transform:translateY\(-50%\)/, 'a Workspace or PULSE room keeps its centred place');
   // 2단계 첫 조각부터는 오브제 줄이 없는 계정의 솔리오 방도 위에서부터 놓는다. 줄을 펼쳐도 손 밑의 줄이 위로 밀리지 않는다(설계 검토 1차 ④)
   assert.doesNotMatch(css, /data-rail="1"\] \.room/, 'every account gets the Solio room placed from the top');
   assert.match(css, /#portal-entry \.more-in \.row,#portal-entry \.more-in \.row:last-child\{border:0;padding:8px 0;min-height:0\}/, 'opened inner lines drop the old launcher minimum height (.rows .row min-height:60px), so they sit 36 to 40 px apart as in the sketch');
-  assert.match(css, /\.room\[data-room\^="solio"\]\.scrolled\{-webkit-mask-image:linear-gradient\(transparent,#000 30px,#000 calc\(100% - 30px\),transparent\)/, 'a scrolled room fades its top edge too');
+  assert.match(css, /\.room-top\.scrolled\{-webkit-mask-image:linear-gradient\(transparent,#000 30px,#000 calc\(100% - 30px\),transparent\)/, 'a scrolled room fades its top edge too');
   assert.match(src, /r\.classList\.toggle\('scrolled', r\.scrollTop > 0\)/);
   assert.match(src, /if \(r\.classList\.contains\('scrolled'\) && !\(r\.scrollTop > 0\)\) r\.classList\.remove\('scrolled'\)/, 'a room shown again after being hidden drops a stale top fade (0.4.97 carbon A3)');
 });
@@ -1409,17 +1413,21 @@ test('with an old screen open, the orb closes it quietly and opens the fan pinne
   assert.deepEqual([h.view.last().fan.open, h.view.last().fan.pin], [true, true]);
 });
 
-test('the room bottom offers 「구독 관리 열기」 for the old overview, and 「계정 관리」 still opens account management', async t => {
+test('「계정」 and 「설정」 still open the old screens until their rooms are built, and the launcher no longer clicks the old board (설계 9.2)', async t => {
   const h = harness(t);
   await settle();
   h.face.setState(signedIn());
   await settle();
-  h.face.handle('subs-manage');
+  h.face.handle('foot', 'account');
   await settle();
-  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1).slice(0, 2), ['openLegacy', 'subscriptions']);
+  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1).slice(0, 2), ['openLegacy', 'account']);
   assert.ok(h.face.handle('escape'));
-  h.face.handle('connect');
-  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1), ['openLegacy', 'subscriptions', { view: 'manage' }]);
+  h.face.handle('foot', 'settings');
+  assert.deepEqual(h.calls.filter(c => c[0] === 'openLegacy').at(-1).slice(0, 2), ['openLegacy', 'settings']);
+  const launcher = fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(launcher, /data-subs="manage"|orbManageTimer/, 'the old 25-try click loop is gone');
+  assert.doesNotMatch(launcher, /kind==='subscriptions'/);
+  assert.match(launcher, /if\(kind==='account'\)\{showView\('account'\);return;\}/, 'the village record still uses the old account screen');
 });
 
 test('the view opens the fan only on Enter, Space or the down arrow, never on focus alone (설계 검토 1차 1)', () => {
@@ -1434,7 +1442,7 @@ test('the view opens the fan only on Enter, Space or the down arrow, never on fo
 
 test('while the fan is open the hidden name, the object row and the dimmed rooms leave the Tab order; hidden rooms do not take Esc (카본 A1 · A6)', () => {
   const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
-  assert.match(src, /const back = \[app\.nameBtn, app\.rail, app\.solio, app\.visits, app\.space\]\.filter\(Boolean\);/);
+  assert.match(src, /const back = \[app\.nameBtn, app\.rail, app\.solio, app\.visits, app\.space, \.\.\.Object\.values\(app\.asides\)\.map\(a => a\.room\)\]\.filter\(Boolean\);/, 'the rooms opened from the fan leave the Tab order too');
   assert.match(src, /if \(open\) \{ const a = doc\.activeElement; if \(a && back\.some\(x => x\.contains\(a\)\)\) \{ fanReturn = f\.pin \? null : a; app\.orbBtn\.focus/, 'focus inside them moves to the visible orb before they turn inert');
   assert.match(src, /for \(const x of back\) if \(x\.inert !== open\) x\.inert = open;/);
   assert.match(src, /\[\.\.\.root\.querySelectorAll\('\.more\.open'\)\]\.some\(m => !m\.closest\('\[hidden\]'\)\)/, 'a pinned row left in a hidden room does not swallow Esc');
@@ -1452,4 +1460,132 @@ test('a fan opened by resting returns focus when it closes, and a pause resets t
   assert.match(src, /fanReturn = f\.pin \? null : a; app\.orbBtn\.focus/, 'only an unpinned (resting) fan remembers where focus was');
   assert.match(src, /if \(back0 && back0\.isConnected && doc\.activeElement === app\.orbBtn && !back0\.closest\?\.\('\[inert\],\[hidden\]'\)\)/);
   assert.match(src, /ptrPx\.v = ptrPx\.t && dt > 0 && dt < 200 \? Math\.hypot\(event\.clientX - ptrPx\.x, event\.clientY - ptrPx\.y\) \/ dt : 0;/);
+});
+
+/* ── 2단계 둘째 조각 첫 묶음: 계정 관리 방과 요금 줄(2단계_둘째조각_구현설계.md 1.3절 · 9절 · 12.1절) ── */
+const roomRow = (id, service, extra = {}) => ({ id, service, source: 'auto', label: service, kind: 'weekly', state: 'ok', plan: 'pro', email: id + '@example.com', folder: true, live: { readAt: Date.now() - 60e3, weekly: { usedPercent: 20, resetsAt: Date.now() + 3 * 864e5 } }, ...extra });
+function roomHarness(t, rows = [roomRow('c', 'claude', { price: 290000, currency: 'KRW', billDay: 9 }), roomRow('g', 'gpt')]) {
+  let snap = { ok: true, seq: 1, rows, check: { at: Date.now() - 60e3 }, usage: { accounts: {} }, settings: {}, tools: {}, login: null };
+  const saved = [];
+  let push = null;
+  const subscriptions = {
+    snapshot: async () => snap,
+    check: async () => ({ ...snap, seq: snap.seq + 1 }),
+    onChanged: fn => { push = fn; return () => {}; },
+    save: async patch => {
+      saved.push(patch);
+      snap = { ...snap, seq: snap.seq + 1, rows: patch.remove ? snap.rows.filter(r => r.id !== patch.remove) : snap.rows, settings: { ...snap.settings, ...(patch.settings || {}) } };
+      return snap;
+    },
+  };
+  const h = harness(t, { options: { subscriptions } });
+  return { ...h, saved, push: value => { snap = value; push?.(value); }, snap: () => snap };
+}
+const removeLabel = (scene, key) => scene.rooms.manage.rows.find(r => r.key === key).more.filter(x => x[0] === 'acts').flatMap(x => x[1]).find(a => a[1] === 'remove')[0];
+
+test('the cost line stands under the subscription rows once a subscription row exists', async t => {
+  const h = roomHarness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle(30);
+  const solio = h.view.last().room.solio;
+  assert.deepEqual(solio.extra.map(r => r.key), ['cost']);
+  assert.match(solio.extra[0].mid, /^한 달 290,000원/);
+  const none = roomHarness(t, []);
+  await settle();
+  none.face.setState(signedIn());
+  await settle(30);
+  assert.deepEqual(none.view.last().room.solio.extra, []);
+});
+
+test('「계정 관리」 inside a subscription row opens the room on that subscription’s first account', async t => {
+  const h = roomHarness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle(30);
+  h.face.handle('connect', 'gpt');
+  const s = h.view.last();
+  assert.deepEqual([s.aside, s.focus, s.rooms.manage.opening?.key], ['manage', 'aside', 'a:g']);
+  assert.equal(s.rooms.manage.say, '연결한 계정은 둘입니다.');
+  assert.ok(!h.calls.some(c => c[0] === 'openLegacy'));
+  h.face.handle('aside-back');
+  assert.deepEqual([h.view.last().aside, h.view.last().rooms, h.view.last().focus], [null, null, 'aside-return']);
+});
+
+test('Esc closes the fan first, then the old screen, then the room (설계 9.1)', async t => {
+  const h = roomHarness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle(30);
+  h.face.handle('subs-manage');
+  h.face.handle('open-switch');
+  assert.deepEqual([h.view.last().fan.open, h.view.last().aside], [true, 'manage'], 'the fan opens over the room');
+  assert.ok(h.face.handle('escape'));
+  assert.deepEqual([h.view.last().fan.open, h.view.last().aside], [false, 'manage'], 'Esc closes the fan and keeps the room');
+  h.face.handle('foot', 'account');
+  assert.equal(h.face.clientMode(), 'legacy');
+  assert.equal(h.view.last().aside, 'manage', 'the room is kept under the old screen');
+  assert.ok(h.face.handle('escape'));
+  assert.deepEqual([h.face.clientMode(), h.view.last().aside], ['app', 'manage']);
+  assert.ok(h.face.handle('escape'));
+  assert.equal(h.view.last().aside, null);
+  assert.equal(h.face.handle('escape'), false, 'nothing left to close');
+});
+
+test('the twice press of 「지우기」 survives a fresh scene, ignores a second press within 0.6 s, and removes on a later one', async t => {
+  const h = roomHarness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle(30);
+  h.face.handle('subs-manage');
+  h.face.handle('room', { room: 'manage', key: 'a:g', act: 'remove' });
+  await settle();
+  assert.equal(removeLabel(h.view.last(), 'a:g'), '한 번 더 누르면 지웁니다');
+  h.push({ ...h.snap(), seq: h.snap().seq + 1 });
+  await settle();
+  assert.equal(removeLabel(h.view.last(), 'a:g'), '한 번 더 누르면 지웁니다', 'a fresh snapshot keeps the question');
+  h.face.handle('room', { room: 'manage', key: 'a:g', act: 'remove' });
+  await settle();
+  assert.deepEqual(h.saved, [], 'a press inside 0.6 s is not taken');
+  await new Promise(resolve => setTimeout(resolve, ROOM_TIMING.armGuard + 20));
+  h.face.handle('room', { room: 'manage', key: 'a:g', act: 'remove' });
+  await settle();
+  assert.deepEqual(h.saved, [{ remove: 'g' }]);
+  assert.ok(!h.view.last().rooms.manage.rows.some(r => r.key === 'a:g'));
+  assert.equal(h.view.last().rooms.manage.foot, 'Codex g 계정 줄을 지웠습니다.');
+});
+
+test('room actions are refused while no room is open, except the cost line of the subscriptions room', async t => {
+  const h = roomHarness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle(30);
+  assert.equal(h.face.handle('room', { room: 'manage', key: 'a:g', act: 'remove' }), false);
+  assert.equal(h.face.handle('room', { room: 'solio', key: 'cost', act: 'rate-save', fields: { usdKrw: '1500' } }), true);
+  await settle();
+  assert.deepEqual(h.saved, [{ settings: { usdKrw: 1500 } }]);
+});
+
+test('another space, a sign-out and another account close the room and clear its state', async t => {
+  const h = roomHarness(t);
+  await settle();
+  h.face.setState(signedIn());
+  await settle(30);
+  h.face.handle('subs-manage');
+  h.face.handle('go', 'solio');
+  assert.deepEqual([h.view.last().aside, h.view.last().focus], [null, 'here'], 'choosing the current space in the fan comes back to its first room');
+  h.face.handle('subs-manage');
+  h.face.handle('room', { room: 'manage', key: 'a:g', act: 'remove' });
+  await settle();
+  assert.equal(removeLabel(h.view.last(), 'a:g'), '한 번 더 누르면 지웁니다');
+  h.face.setState({ status: 'signed-out', generation: 2 });
+  await settle();
+  assert.equal(h.view.last().aside ?? null, null);
+  h.face.setState(signedIn(ACCOUNT, 3));
+  await settle(30);
+  h.face.handle('subs-manage');
+  assert.equal(removeLabel(h.view.last(), 'a:g'), '지우기', 'the question from before the sign-out is gone');
+  h.face.setState(signedIn(OTHER, 4));
+  await settle(30);
+  assert.equal(h.view.last().aside ?? null, null, 'another account closes the room');
 });

@@ -184,10 +184,12 @@ function accountLine(a, g, now) {
 }
 
 /* 요금 한 줄(설계 검토 1차 6). 넣은 값이 먼저이고, 공식 요금으로 채운 값에는 「공식 요금」, 달러를 원으로 바꾼 값에는 「약」을 붙인다.
-   가족 공유는 0원이 아니라 「가족 공유」다. 연간 결제는 「매월 n일」을 붙이지 않는다. 일부 계정만 금액을 알면 합을 전체처럼 쓰지 않는다 */
+   가족 공유는 0원이 아니라 「가족 공유」다. 연간 결제는 「매월 n일」을 붙이지 않는다. 일부 계정만 금액을 알면 합을 전체처럼 쓰지 않는다.
+   이 PC에 없는 계정(지금 로그인되지 않은 Gemini 계정)도 돈은 나가므로 요금 줄과 같이 센다. 그런 계정이 있으면 그렇게 밝힌다(2단계 둘째 조각 설계 검토 D13) */
 function costLine(snapshot, g, now) {
-  const rows = here(g).map(a => a.row);
+  const rows = g.accounts.map(a => a.row);
   if (!rows.length) return null;
+  const away = g.accounts.some(a => a.away) ? '이 PC에 없는 계정 포함' : '';
   let krw = 0, known = 0, family = 0, free = 0, missing = 0, official = 0, approx = false;
   for (const row of rows) {
     const p = monthPrice(snapshot, row, now);
@@ -202,9 +204,9 @@ function costLine(snapshot, g, now) {
   const bill = bills.length ? '다음 결제 ' + dateWords(dayAfter(now, Math.min(...bills))) : '';
   // 가족 공유와 무료도 금액을 아는 계정으로 센다. 금액을 모르는 계정이 섞이면 그 사실을 남긴다(검수 A3)
   const part = missing ? '계정 ' + rows.length + '개 가운데 ' + (rows.length - missing) + '개의 금액만 압니다' : '';
-  if (!known) return family || free ? { val: family && free ? '가족 공유 · 무료' : family ? '가족 공유' : '무료', note: part, bill } : null;
+  if (!known) return family || free ? { val: family && free ? '가족 공유 · 무료' : family ? '가족 공유' : '무료', note: [part, away].filter(Boolean).join(' · '), bill } : null;
   // 공식 요금으로 채운 계정이 일부뿐이면 그 수를 적는다. 넣은 금액까지 공식 요금처럼 읽히지 않게 한다(최종 검수 F3)
-  const notes = [official ? (official === known ? '공식 요금' : '공식 요금 ' + official + '개') : '', family ? '가족 공유 ' + family + '개' : '', free ? '무료 ' + free + '개' : '', part].filter(Boolean);
+  const notes = [official ? (official === known ? '공식 요금' : '공식 요금 ' + official + '개') : '', family ? '가족 공유 ' + family + '개' : '', free ? '무료 ' + free + '개' : '', part, away].filter(Boolean);
   return { val: '월 ' + (approx ? '약 ' : '') + fmt(krw) + '원', note: notes.join(' · '), bill };
 }
 
