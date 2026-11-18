@@ -378,6 +378,28 @@
         }
       },
       {
+        "계정": "lab-ca-youtube",
+        "채널": "유튜브 @synklabcanada",
+        "주소": "https://www.youtube.com/watch?v=XMhRLo3GgmY",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-18T18:00:13.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
+        "계정": "lab-lk-youtube",
+        "채널": "유튜브 @synklabsrilanka",
+        "주소": "https://www.youtube.com/watch?v=BFuebxsCyLA",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-18T07:30:15.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-vn-youtube",
         "채널": "유튜브 @synklabvietnam",
         "주소": "https://www.youtube.com/watch?v=JsX-YsrWj3M",
