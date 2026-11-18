@@ -448,6 +448,35 @@ test('Facebook merges a video into the feed post its post_id names even without 
   assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [['123_700', '123_700', 9], ['556', '123_701', 4]]);
   assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 3, withPostId: 3, matched: 0, agreed: 0, byPostId: 2 });
   assert.equal(new Set(result.posts.map(post => post.pagePostId)).size, result.posts.length, 'one row per page post');
+  // 다시 검수 GA2: 서버가 저장하지 못하는 게시물(주소 없음)에는 합치지 않고 영상 줄을 남긴다.
+  const urlless = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_700', created_time: '2026-10-29T12:00:00Z' }] });
+    if (url.pathname.endsWith('/videos')) return ok({ data: [{ id: '555', post_id: '700', permalink_url: '/reel/555/', views: 9, published: true, created_time: '2026-10-29T12:00:00Z' }] });
+    throw new Error('unexpected');
+  } });
+  assert.deepEqual(urlless.posts.map(post => [post.externalId, post.url, post.pagePostId, post.metrics.views]), [['123_700', null, '123_700', null], ['555', 'https://www.facebook.com/reel/555/', '123_700', 9]]);
+  assert.equal(urlless.coverage.videoPostIds.byPostId, 0);
+});
+
+// 다시 검수 GA4: 칸 거절은 첫 요청에서 난다. 둘째 쪽에서 난 400 · 100(커서 따위)으로 처음부터 다시 받지 않는다.
+test('Facebook does not refetch videos with fewer fields when a later page fails with code 100', async () => {
+  let videoCalls = 0;
+  const result = await collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [] });
+    if (url.pathname.endsWith('/videos')) {
+      videoCalls++;
+      return url.searchParams.has('after') ? fail(400, { error: { code: 100, message: 'FIXTURE_SECRET invalid cursor' } })
+        : ok({ data: [{ id: '555', post_id: '700', permalink_url: '/reel/555/', published: true, created_time: '2026-10-29T12:00:00Z' }], paging: { next: 'https://graph.facebook.com/next', cursors: { after: 'next' } } });
+    }
+    throw new Error('unexpected');
+  } });
+  assert.equal(videoCalls, 2);
+  assert.equal(result.coverage.inventoryComplete, false);
+  assert.ok(!JSON.stringify(result).includes('FIXTURE_SECRET'));
 });
 
 // 검수 GA3: 칸을 빼고 다시 묻는 것은 Meta 100(없는 칸)일 때만이다. 권한(10) · 앱 한도(341)는 한 번만 묻고, 341은 한도로 읽는다.

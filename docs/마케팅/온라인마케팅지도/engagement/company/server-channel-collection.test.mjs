@@ -73,20 +73,19 @@ test('a page post id is stored only in its exact form and a later collection wit
   assert.deepEqual(stored(),{abcdefghijk:'123_456',lmnopqrstuv:undefined,zyxwvutsrqp:'123_789'});
 });
 
-// 11-19 검수 GA2: 영상 목록에서만 찾았던 줄이 다음 최근 수집에서 게시물 목록의 그 게시물로 잡히면, 완전한 전체 수집을 기다리지 않고 옛 영상 줄을 내린다.
-test('a feed row of the same page post id retires the older video-only row even in a partial collection',async t=>{
+// 11-19 다시 검수: pagePostId는 줄의 속성일 뿐이다. 같은 번호의 줄이 있어도 줄을 내리거나 합치지 않는다 — 줄의 수명은 앞 판과 같다
+// (부분 수집은 안 보인 줄을 두고, 완전한 전체 수집만 내린다). 일찍 내리면 그 줄의 수치 이력이 보고서에서 빠진다.
+test('a shared page post id never retires a row; only a complete full collection retires unseen rows as before',async t=>{
   let round=1;
   const row=(externalId,pagePostId,url)=>({...result({}).posts[0],externalId,pagePostId,url});
   const f=await fixture(t,{collector:async c=>round===1
-    ?{...result(c),posts:[row('555','123_700','https://www.facebook.com/reel/555/'),row('556','123_900','https://www.facebook.com/reel/556/')]}
-    :{...result(c),posts:[row('123_700','123_700','https://www.facebook.com/synk/posts/700'),row('557','123_700','https://www.facebook.com/reel/557/')],coverage:{status:'partial',inventoryComplete:false,ownerAuthorized:false}}});
-  round=2;for(const c of f.app.store.all('channels'))if(c.id!=='excluded')f.app.store.put('channels',c.id,{...c,lastCollectedAt:null,lastAttemptAt:null,recentLastCollectedAt:null,recentLastAttemptAt:null});
-  await f.app.scheduledTick();await f.app.waitForIdle();
-  for(const channel of ['lab','brief']){
-    const active=f.app.store.all('posts').filter(p=>p.channelId===channel&&!p.unavailableAt).map(p=>p.externalId).sort();
-    assert.deepEqual(active,['123_700','556','557'],channel+': the old video row is retired; a row seen in this collection and another post stay');
-    assert.ok(f.app.store.get('posts',channel+':555').unavailableAt,'history stays as a retired row');
-  }
+    ?{...result(c),posts:[row('555','123_700','https://www.facebook.com/reel/555/')]}
+    :{...result(c),posts:[row('123_700','123_700','https://www.facebook.com/synk/posts/700')],coverage:round===2?{status:'partial',inventoryComplete:false,ownerAuthorized:false}:{status:'complete',inventoryComplete:true,ownerAuthorized:false}}});
+  const again=async next=>{round=next;for(const c of f.app.store.all('channels'))if(c.id!=='excluded')f.app.store.put('channels',c.id,{...c,lastCollectedAt:null,lastAttemptAt:null,recentLastCollectedAt:null,recentLastAttemptAt:null});await f.app.scheduledTick();await f.app.waitForIdle();};
+  const active=()=>f.app.store.all('posts').filter(p=>p.channelId==='lab'&&!p.unavailableAt).map(p=>p.externalId).sort();
+  await again(2);assert.deepEqual(active(),['123_700','555'],'a partial collection keeps the unseen row');
+  await again(3);assert.deepEqual(active(),['123_700'],'the complete full collection retires it, as before this change');
+  assert.equal(f.app.store.get('posts','lab:555').pagePostId,'123_700');
 });
 
 test('complete inventory hides unavailable posts without erasing history; partial inventory never hides unseen posts',async t=>{

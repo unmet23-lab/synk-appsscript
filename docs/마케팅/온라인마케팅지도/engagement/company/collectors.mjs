@@ -553,8 +553,10 @@ async function facebook(channel, credentials, request, recent) {
       const videoFields='id,title,description,created_time,permalink_url,views,likes.limit(0).summary(true),comments.limit(0).summary(true)',videoCap={...cap,maxPosts:cap.maxPosts-posts.length,maxPages:cap.maxPages-pages};
       let videos,asked='',unpublished=0,numberless=0;
       for(const extra of [',published,post_id',',published','']){
-        try{videos=await graphList(`${pageId}/videos`,{fields:videoFields+extra},api,videoCap,recent,v=>v.created_time);asked=extra;break;}
-        catch(error){if(!extra||error.code!=='API_ERROR'||error.status!==400||error.reason!=='invalidParameter')throw error;}
+        let calls=0;const counted=(path,params)=>{calls++;return api(path,params);};
+        try{videos=await graphList(`${pageId}/videos`,{fields:videoFields+extra},counted,videoCap,recent,v=>v.created_time);asked=extra;break;}
+        // 칸 거절은 첫 요청에서 난다. 둘째 쪽부터의 100(커서 따위)은 칸 탓이 아니라 다시 묻지 않는다(11-19 다시 검수 GA4).
+        catch(error){if(!extra||calls!==1||error.code!=='API_ERROR'||error.status!==400||error.reason!=='invalidParameter')throw error;}
       }
       const publishedKnown=asked.includes('published'),postIdKnown=asked.includes('post_id');
       hasMore=hasMore||videos.hasMore;pages+=videos.pages;warnings.push(...videos.warnings);
@@ -568,7 +570,8 @@ async function facebook(channel, credentials, request, recent) {
         if(byVideo){byVideo.metrics.views=number(video.views);videoPostIds.matched++;if(postId&&postId===byVideo.pagePostId)videoPostIds.agreed++;continue;}
         // 게시물 목록이 영상 번호 없이 준 게시물(일반 게시물 주소, 대상 없음)이라도 영상의 post_id가 그 게시물이면 같은 게시물이다.
         // 따로 한 줄을 만들면 같은 게시물 번호가 두 줄이 된다(11-19 검수 GA1). 조회수는 아직 비었을 때만 채운다.
-        if(byPost){if(byPost.metrics.views===null)byPost.metrics.views=number(video.views);videoPostIds.byPostId++;continue;}
+        // 서버가 저장하지 못하는 게시물(주소나 게시일이 없음)에는 합치지 않고 영상 줄을 남긴다(11-19 다시 검수 GA2).
+        if(byPost&&byPost.url&&byPost.publishedAt){if(byPost.metrics.views===null)byPost.metrics.views=number(video.views);videoPostIds.byPostId++;continue;}
         const url=typeof video.permalink_url==='string'?safeUrl(new URL(video.permalink_url,'https://www.facebook.com').href):null;
         posts.push({externalId:id,url,title:text(video.title)||text(video.description),publishedAt:isoDate(video.created_time),thumbnailUrl:null,pagePostId:postId,metrics:metrics({views:video.views,likes:video.likes?.summary?.total_count,comments:video.comments?.summary?.total_count})});
         known.set(id,posts.at(-1));if(postId)known.set(postId,posts.at(-1));else numberless++;
