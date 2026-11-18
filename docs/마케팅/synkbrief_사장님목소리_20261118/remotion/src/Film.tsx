@@ -28,7 +28,7 @@ const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; dr
   const cy = crop.path ? interpolate(f / FPS, crop.path.t, crop.path.cy, { ...clamp, easing: Easing.inOut(Easing.cubic) }) : crop.cy;
   const x = Math.min(0, Math.max(1080 - 1080 * s, 540 - crop.cx * s));
   const y = Math.min(0, Math.max(1920 - 1920 * s, ay - cy * s));
-  const style: React.CSSProperties = { position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `translate(${x}px, ${y}px) scale(${s})`, filter: blur ? `blur(${blur}px) brightness(0.62)` : look === 'past' ? 'grayscale(0.85) sepia(0.12) contrast(1.06) brightness(1.06)' : look === 'dim' ? 'brightness(0.42) saturate(0.7)' : undefined };
+  const style: React.CSSProperties = { position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `translate(${x}px, ${y}px) scale(${s})`, filter: blur ? `blur(${blur}px) brightness(0.62)` : look === 'past' ? 'grayscale(0.85) sepia(0.12) contrast(1.06) brightness(1.06)' : look === 'dim' ? 'blur(14px) brightness(0.3) saturate(0.6)' : undefined };
   return (
     <AbsoluteFill style={{ background: '#000', overflow: 'hidden' }}>
       {/\.(png|jpg)$/.test(src)
@@ -71,7 +71,7 @@ const Shade: React.FC = () => {
 const rich = (l: string) => l.split(/(\[[^\]]+\])/).map((p, k) => (p.startsWith('[') ? <span key={k} style={{ color: BUTTER }}>{p.slice(1, -1)}</span> : <React.Fragment key={k}>{p}</React.Fragment>));
 
 // 큰 글자가 곧 말 — at = 줄마다 뜨는 초(말하는 때). butter = 그 편에서 버터를 쓰는 한 줄(첫 줄만).
-const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; fade?: number; at?: number[]; butter?: boolean; bi?: number; metaBelow?: boolean }> = ({ lines, from, to, grey, size = 92, meta, metaSize = 40, deep, instant, fade = 3, at, butter, bi = 0, metaBelow }) => {
+const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; fade?: number; at?: number[]; butter?: boolean; bi?: number; metaBelow?: boolean; metaAt?: number }> = ({ lines, from, to, grey, size = 92, meta, metaSize = 40, deep, instant, fade = 3, at, butter, bi = 0, metaBelow, metaAt }) => {
   const f = useCurrentFrame();
   const a = sec(from), b = sec(to);
   if (f < a || f >= b) return null;
@@ -82,6 +82,11 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
     const p = instant && (!at || lineIdx === 0 || lineIdx == null) ? (f >= s0 ? 1 : 0) : interpolate(f, [s0 - 2, s0 + 3], [0, 1], { ...clamp, easing: EASE_OUT });
     return { opacity: p * out, transform: `translateY(${(1 - p) * 28 + lift}px)` };
   };
+  // 11-19: metaAt = 아래 작은 줄이 뜨는 초(셋째 줄 뒤 — 최종 확인 「미국 FBI 권고」가 셋째 줄보다 먼저 뜸)
+  const upAt = (t: number) => {
+    const p = interpolate(f, [sec(t) - 2, sec(t) + 3], [0, 1], { ...clamp, easing: EASE_OUT });
+    return { opacity: p * out, transform: `translateY(${(1 - p) * 28 + lift}px)` };
+  };
   return (
     <div style={{ position: 'absolute', left: X, width: 900, top: TOP, fontFamily: KO, textShadow: deep ? '0 0 3px rgba(0,0,0,0.55), 0 1px 12px rgba(0,0,0,0.55)' : '0 1px 10px rgba(0,0,0,0.45)' }}>
       {/* 11-13 이해 시험: 작은 글(meta)은 줄의 from에 먼저 뜬다 — 큰 글(at)보다 앞서 「누구 · 어디」를 깔기 위해(지금까지 쓴 줄은 from = at[0]이라 그대로) */}
@@ -90,7 +95,7 @@ const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; s
         <div key={i} style={{ ...up(i + (meta && !metaBelow ? 1 : 0), at ? i : undefined), fontWeight: 700, fontSize: size, lineHeight: 1.18, letterSpacing: -1.8, color: butter && i === bi ? BUTTER : grey ? GREY : '#fff', wordBreak: 'keep-all', fontFeatureSettings: '"zero" 0' }}>{rich(l)}</div>
       ))}
       {/* 끝 장면: 작은 안내 줄을 큰 글 아래에(큰 두 주소가 먼저 눈에 들게) */}
-      {meta && metaBelow ? <div style={{ ...up(lines.length), fontWeight: 600, fontSize: metaSize, letterSpacing: -0.6, color: '#E6E6E6', marginTop: 26, maxWidth: 900, wordBreak: 'keep-all', lineHeight: 1.32, whiteSpace: 'pre-line' }}>{meta}</div> : null}
+      {meta && metaBelow ? <div style={{ ...(metaAt != null ? upAt(metaAt) : up(lines.length)), fontWeight: 600, fontSize: metaSize, letterSpacing: -0.6, color: '#E6E6E6', marginTop: 26, maxWidth: 900, wordBreak: 'keep-all', lineHeight: 1.32, whiteSpace: 'pre-line' }}>{meta}</div> : null}
     </div>
   );
 };
@@ -151,8 +156,8 @@ export const Film: React.FC = () => {
 
       {LINES.map((l, i) => {
         const next = LINES[i + 1];
-        const fade = !next || next.from - l.to > 0.6 ? 8 : 3;
-        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} metaSize={l.metaSize} deep={l.deep} instant={l.instant} fade={fade} at={l.at} butter={l.butter} bi={l.bi} metaBelow={l.metaBelow} />;
+        const fade = l.fade ?? (!next || next.from - l.to > 0.6 ? 8 : 3);
+        return <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} metaSize={l.metaSize} deep={l.deep} instant={l.instant} fade={fade} at={l.at} butter={l.butter} bi={l.bi} metaBelow={l.metaBelow} metaAt={l.metaAt} />;
       })}
 
       <Label />
@@ -163,7 +168,8 @@ export const Film: React.FC = () => {
       {/* 방 소리 — 넓은 대역을 아주 작게(말 사이가 완전히 비지 않게 · 검사 ⑰, 음악이 끊긴 끝 칸의 바탕 소리) */}
       <Audio src={staticFile('sfx/room.wav')} volume={0.05} loop />
       {VO.map((v) => <Sequence key={v.id} from={sec(v.t)}><Audio src={staticFile(`vo/${v.id}.wav`)} /></Sequence>)}
-      {SOUNDS.map((s, i) => <Sequence key={i} from={sec(s.t)} durationInFrames={s.dur ?? 90}><Audio src={staticFile(s.src)} volume={s.vol} /></Sequence>)}
+      {/* duck(11-19) = 그 사이만 볼륨을 낮춤 — 볼륨 함수의 fr은 소리가 시작한 뒤 장 수 */}
+      {SOUNDS.map((s, i) => <Sequence key={i} from={sec(s.t)} durationInFrames={s.dur ?? 90}><Audio src={staticFile(s.src)} volume={s.duck ? (fr) => { const [a, b, v] = s.duck!; return interpolate(s.t + fr / FPS, [a - 0.12, a, b, b + 0.15], [s.vol, v, v, s.vol], clamp); } : s.vol} /></Sequence>)}
       </>}
     </AbsoluteFill>
   );

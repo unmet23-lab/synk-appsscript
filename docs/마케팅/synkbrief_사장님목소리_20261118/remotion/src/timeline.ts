@@ -8,9 +8,12 @@
 export type Crop = { s: number; cx: number; cy: number; ay?: number; push?: { t0: number; t1: number; to: number }; path?: { t: number[]; cy: number[] } };
 export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; shade?: number; low?: number; blur?: number; look?: 'past' | 'dim'; join?: boolean; a?: { src: string; start: number; vol?: number } };
 
+// 최종 확인 미흡(11-18 16:29) 고침(11-19 07시 회차): 진동이 대사보다 약 20 LU 크고 「받지 마」를 덮음 → 진동을 약 17dB 내리고 R3 동안은 더 낮춘다(SOUNDS duck) ·
+// 「받지 마」 글이 0.4초뿐 → 윤 대리 컷을 0.5초 늘려(V7n 1.5~3.6을 0.81배로 — 3.6초 뒤 굳은 구간은 쓰지 않음) 글을 컷에서 바로 끊음 · 그 뒤는 모두 0.5초 뒤로 ·
+// 끝 컷이 눈을 든 뒤 0.3초에 끝남 → V7n 6.4~8.0을 0.8배로 2초(눈을 든 뒤 0.56초) · 「미국 FBI 권고」를 셋째 줄 뒤에 · 사실 카드 밑 장면을 더 어둡고 흐리게(Film.tsx dim)
 // reveal = 반전(진짜 사장님 「…무슨 송금?」) · card = 사실 한 장(위 표시를 잠깐 뺌) · end = 끝 줄(사장님 R4)이 서는 때
-export const S = { hook: 0, reveal: 28.6, stop: 46.35, card: [32.0, 37.0] as [number, number], end: 42.6 };
-export const TOTAL_S = 46.35;
+export const S = { hook: 0, reveal: 28.6, stop: 47.35, card: [32.0, 37.0] as [number, number], end: 43.1 };
+export const TOTAL_S = 47.35;
 export const FPS = 24;
 
 const F: Crop = { s: 1.0, cx: 540, cy: 960 };
@@ -38,18 +41,19 @@ export const CUTS: CutT[] = [
   // 사실 한 장 — 어둡게 깐 이체 화면(V2 뒤쪽) · 5초. 이해 시험(GPT · 그록 「끝이 흐지부지」 · 셋 「지난 편과 말 순서 · 끝 카드가 같다」) → 반전 바로 뒤로 옮기고 「받지 마」 · 끊음 · 사장님 말로 끝낸다 · 36.6 휴대폰 진동
   { from: 32.0, to: 37.0, src: 'img/V2.mp4', start: 4.9, crop: F, drift: 0.008, look: 'dim', low: 330 },
   // 윤 대리에게 돌아옴 — 손이 가슴을 움켜쥠(V7n 1.5~3.6) · 진동 · 수화기 너머 R3 「그거 나 아니야. 받지 마」 37.1
-  { from: 37.0, to: 39.1, src: 'img/V7n.mp4', start: 1.5, crop: F, audio: 0.6, drift: 0.005 },
-  // 핵심 장면 — 「사장님」이 뜬 휴대폰 접사(V9 — Flow · 빨간 단추) · 손이 들어와 빨간 단추를 누름(40.35) · 화면 꺼짐(40.6)
+  // 11-19: 「받지 마」(38.7~39.3)가 0.4초만 보이던 것 → 2.6초로 늘림(V7n 1.5~3.6을 0.81배 — 3.6초 뒤 굳은 구간은 쓰지 않음)
+  { from: 37.0, to: 39.6, src: 'img/V7n.mp4', start: 1.5, rate: 0.81, crop: F, audio: 0.6, drift: 0.005 },
+  // 핵심 장면 — 「사장님」이 뜬 휴대폰 접사(V9 — Flow · 빨간 단추) · 손이 들어와 빨간 단추를 누름(40.85) · 화면 꺼짐(41.1)
   // 받은 V9는 시계 찬 손이 책상에 놓인 채 왼쪽에서 손이 하나 더 들어와, 휴대폰 쪽으로 잘라 놓인 손을 화면 밖에 둔다. V8b(손가락이 「사장님」 글자를 누름)는 쓰지 않는다
-  { from: 39.1, to: 42.05, src: 'img/V9.mp4', start: 0.0, crop: { s: 2.0, cx: 540, cy: 1500, ay: 1000 }, drift: 0.004, low: 0 },
-  // 회의실의 진짜 사장님(판 8565 1.9~4.7 — 손이 바뀌는 6.5초 앞) · R4 회의실 맨소리 「급한 송금 전화는 끊고, 아는 번호로 다시 걸어」 42.6
-  { from: 42.05, to: 44.85, src: 'img/V6a.mp4', start: 1.9, crop: F, drift: 0.005 },
-  // 끝 장치 — 수화기를 든 채 침을 삼키고 고개를 듦(V7n 6.4~7.9) · R4의 끝
-  { from: 44.85, to: 46.35, src: 'img/V7n.mp4', start: 6.4, crop: F, audio: 0.6, drift: 0.005, low: 330 },
+  { from: 39.6, to: 42.55, src: 'img/V9.mp4', start: 0.0, crop: { s: 2.0, cx: 540, cy: 1500, ay: 1000 }, drift: 0.004, low: 0 },
+  // 회의실의 진짜 사장님(판 8565 1.9~4.7 — 손이 바뀌는 6.5초 앞) · R4 회의실 맨소리 「급한 송금 전화는 끊고, 아는 번호로 다시 걸어」 43.1
+  { from: 42.55, to: 45.35, src: 'img/V6a.mp4', start: 1.9, crop: F, drift: 0.005 },
+  // 끝 장치 — 수화기를 든 채 침을 삼키고 고개를 듦(V7n 6.4~8.0을 0.8배 · 눈을 드는 46.8 뒤 0.55초 더) · R4의 끝
+  { from: 45.35, to: 47.35, src: 'img/V7n.mp4', start: 6.4, rate: 0.8, crop: F, audio: 0.6, drift: 0.005, low: 330 },
 ];
 
 // 큰 글자 = 말. 흰 = 윤 대리 · 회의실의 사장님, grey = 전화 너머 목소리. at = 줄마다 뜨는 초. [ ] = 버터 글자(이 편의 버터 한 곳 — 끝 줄의 「아는 번호」).
-export const LINES: { lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; at?: number[]; butter?: boolean; bi?: number; metaBelow?: boolean }[] = [
+export const LINES: { lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; metaSize?: number; deep?: boolean; instant?: boolean; at?: number[]; butter?: boolean; bi?: number; metaBelow?: boolean; metaAt?: number; fade?: number }[] = [
   // 훅 — 전화 너머 F1 「윤 대리, 나야. 지금 바로 송금 좀 해 줘」를 머리 글이 맡는다
   { lines: ['사장님 목소리로', '"지금 바로 송금해"'], from: 0.05, to: 2.7, size: 96, instant: true, deep: true },
   { lines: ['네? 지금요?'], from: 3.15, to: 5.25, size: 104 },
@@ -62,16 +66,17 @@ export const LINES: { lines: string[]; from: number; to: number; grey?: boolean;
   { lines: ['…무슨 송금?', '나 전화한 적 없는데'], from: 28.65, to: 31.0, size: 100, at: [28.65, 29.8] },
   // 이해 시험(sonnet · haiku · GPT) — 출처가 작고 빨라 근거가 흐릿함 · 「기소」 · 1억 2,900만 달러가 앞의 4,800만 원과 어떤 관계인지 헷갈림 → 「실제 사건」을 머리에, 출처를 크게, 「모두」로 합계임을 밝히고 5초로
   { lines: ['회사 대표 목소리를', 'AI로 흉내 내', '직원들에게 송금시킨 혐의', '모두 약 1억 2,900만 달러'], from: 32.1, to: 36.9, size: 78, meta: '실제 사건 · 미국 검찰 발표(2026년 11월)', metaSize: 42, deep: true, at: [32.45, 32.95, 33.65, 34.65] },
-  { lines: ['그거 나 아니야', '받지 마'], from: 37.1, to: 39.4, grey: true, size: 100, at: [37.1, 38.7] },
-  // 끝 줄 = 회의실의 진짜 사장님이 하는 말 R4(흰 · 회의실 맨소리) — 끝 카드 대신 이야기 속 말로 닫는다
-  { lines: ['급한 송금 전화는', '끊고, [아는 번호로]', '다시 걸어'], from: 42.6, to: 46.45, size: 104, meta: '미국 FBI 권고', metaSize: 50, metaBelow: true, deep: true, at: [42.6, 43.6, 44.45] },
+  // 11-19: 컷(39.6)에서 바로 끊는다(fade 3장) — 휴대폰 화면의 「사장님」 글자와 겹치지 않게
+  { lines: ['그거 나 아니야', '받지 마'], from: 37.1, to: 39.6, grey: true, size: 100, at: [37.1, 38.7], fade: 3 },
+  // 끝 줄 = 회의실의 진짜 사장님이 하는 말 R4(흰 · 회의실 맨소리) — 끝 카드 대신 이야기 속 말로 닫는다 · 11-19: 「미국 FBI 권고」는 셋째 줄 뒤(metaAt)
+  { lines: ['급한 송금 전화는', '끊고, [아는 번호로]', '다시 걸어'], from: 43.1, to: 47.45, size: 104, meta: '미국 FBI 권고', metaSize: 50, metaBelow: true, metaAt: 45.5, deep: true, at: [43.1, 44.1, 44.95] },
 ];
 
 export const SPOTS: { from: number; to: number; x: number; y: number; w: number; h: number; a: number }[] = [];
 
-// 배경음(일레븐 음악 · 52초 · 47.5초부터 사그라짐) 볼륨 곡선 — 반전(28.6) 뒤는 낮추되 절반보다 깊게 두지 않는다 · 끊는 순간(40.35) 뒤 0.7초만 절반 아래
+// 배경음(일레븐 음악 · 52초 · 47.5초부터 사그라짐) 볼륨 곡선 — 반전(28.6) 뒤는 낮추되 절반보다 깊게 두지 않는다 · 끊는 순간(40.85) 뒤 0.7초만 절반 아래
 export const BGM = {
-  t: [0, 0.6, 20.2, 23.0, 28.4, 28.8, 31.8, 32.2, 36.8, 37.2, 40.2, 40.35, 40.5, 41.2, 41.5, 45.8, 46.35],
+  t: [0, 0.6, 20.2, 23.0, 28.4, 28.8, 31.8, 32.2, 36.8, 37.2, 40.7, 40.85, 41.0, 41.7, 42.0, 46.8, 47.35],
   v: [0.08, 0.12, 0.13, 0.11, 0.11, 0.07, 0.07, 0.14, 0.14, 0.13, 0.13, 0.15, 0.06, 0.06, 0.15, 0.15, 0],
 };
 
@@ -83,15 +88,17 @@ export const VO: { id: string; t: number }[] = [
   { id: 'R1_방', t: 25.6 },
   { id: 'R2_방', t: 28.6 },
   { id: 'R3_전화', t: 37.1 },
-  { id: 'R4_방', t: 42.6 },
+  { id: 'R4_방', t: 43.1 },
 ];
 
-export const SOUNDS: { t: number; vol: number; src: string; dur?: number }[] = [
+// duck = [시작, 끝, 볼륨](편 초) — 그 사이만 볼륨을 낮춘다(11-19: R3 「그거 나 아니야 · 받지 마」 37.1~39.4 동안 진동을 거의 끔)
+// 진동(buzz.wav)은 RMS −4 dBFS로 커서 0.55 · 0.7이면 대사보다 약 20 LU 컸다 → 0.08(대사보다 약 6dB 아래)
+export const SOUNDS: { t: number; vol: number; src: string; dur?: number; duck?: [number, number, number] }[] = [
   // 연결음(책상 전화로 건 뒤) → 회의실 휴대폰 진동
   { t: 22.4, vol: 0.35, src: 'sfx/ringback.wav', dur: 31 },
-  { t: 23.0, vol: 0.55, src: 'sfx/buzz.wav', dur: 26 },
-  // 핵심 장면 — 책상 위 휴대폰이 다시 울림(사실 카드 끝에서 먼저 · 반응보다 먼저)
-  { t: 36.6, vol: 0.7, src: 'sfx/buzz.wav', dur: 90 },
-  // 빨간 단추를 누름(40.35 · 누르는 소리 · 진동 멎음)
-  { t: 40.35, vol: 0.45, src: 'sfx/click.wav', dur: 12 },
+  { t: 23.0, vol: 0.08, src: 'sfx/buzz.wav', dur: 26 },
+  // 핵심 장면 — 책상 위 휴대폰이 다시 울림(사실 카드 끝에서 먼저 · 반응보다 먼저) · 울림 36.65~37.55 · 38.4~39.3 · 40.2~ → 둘째 울림은 「받지 마」 밑이라 낮춤
+  { t: 36.6, vol: 0.08, src: 'sfx/buzz.wav', dur: 102, duck: [37.1, 39.45, 0.015] },
+  // 빨간 단추를 누름(40.85 · 누르는 소리 · 진동 멎음)
+  { t: 40.85, vol: 0.45, src: 'sfx/click.wav', dur: 12 },
 ];

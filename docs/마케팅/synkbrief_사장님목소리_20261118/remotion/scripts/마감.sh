@@ -8,13 +8,13 @@
 set -e
 N=$1; OUT=$2
 rm -f public/master.wav
-npx remotion render src/index.ts b53 out/${N}_raw.mp4 --concurrency 6 --audio-bitrate 384k 2>&1 | tail -1
+node node_modules/@remotion/cli/remotion-cli.js render src/index.ts b53 out/${N}_raw.mp4 --concurrency 6 --audio-bitrate 384k 2>&1 | tail -1
 meas(){ ffmpeg -hide_banner -nostats -i "$1" -vn -af ebur128=peak=true:framelog=quiet -f null - 2>&1 | grep -E "^ +I:" | tail -1 | awk '{print $2}'; }
 I=$(meas out/${N}_raw.mp4); G=$(python -c "print(round(-14.5-($I),2))")
 ffmpeg -v error -y -i out/${N}_raw.mp4 -vn -af "volume=${G}dB,alimiter=limit=0.75:level=false:attack=1:release=60" -ar 48000 -c:a pcm_s24le public/master.wav
 I2=$(meas public/master.wav); G2=$(python -c "print(round($G+(-14.5-($I2)),2))")
 ffmpeg -v error -y -i out/${N}_raw.mp4 -vn -af "volume=${G2}dB,alimiter=limit=0.75:level=false:attack=1:release=60" -ar 48000 -c:a pcm_s24le public/master.wav
-REMOTION_MASTER=1 npx remotion render src/index.ts b53 out/${N}_m.mp4 --concurrency 6 --audio-bitrate 384k 2>&1 | tail -1
+REMOTION_MASTER=1 node node_modules/@remotion/cli/remotion-cli.js render src/index.ts b53 out/${N}_m.mp4 --concurrency 6 --audio-bitrate 384k 2>&1 | tail -1
 ffmpeg -v error -y -i out/${N}_raw.mp4 -i out/${N}_m.mp4 -map 0:v -map 1:a -c copy -movflags +faststart "$OUT"
 rm -f public/master.wav
 ffprobe -v error -select_streams a:0 -show_entries stream=bit_rate -of csv=p=0 "$OUT"
