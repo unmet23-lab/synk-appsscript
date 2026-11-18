@@ -152,39 +152,41 @@ test('끝 — docs/마케팅 밖 결과물도 공용 작업본에 바이트가 �
   const t = 판();
   try {
     const 남은것 = () => 도구.끝({ 저장소: t.사본, 실행: true }).남은것;
+    // 공용 쪽 다른 판은 사본 쪽보다 먼저 쓴 것으로 둔다 — 공용 쪽이 나중에 쓴 판이면 「버림」이다(아래 「저절로 지워」 시험)
+    const 옛판으로 = (파일) => { const 옛날 = new Date(Date.now() - 60 * 60_000); fs.utimesSync(파일, 옛날, 옛날); };
     // ① 같은 자리에 같은 바이트
-    쓰기(t.사본, 'out/qa/push/browser/a.png', '화면 A 첫판');
-    쓰기(t.메인, 'out/qa/push/browser/a.png', '화면 A 첫판');
+    쓰기(t.사본, 'out/캡처/push/browser/a.png', '화면 A 첫판');
+    쓰기(t.메인, 'out/캡처/push/browser/a.png', '화면 A 첫판');
     assert.deepEqual(남은것(), []);
     assert.equal(도구.끝({ 저장소: t.사본, 실행: true }).보존안내, null);
     // ② 같은 자리에 다른 판(크기까지 같아도) — 남은 것
-    쓰기(t.메인, 'out/qa/push/browser/a.png', '화면 A 둘판');
-    assert.equal(fs.statSync(path.join(t.메인, 'out/qa/push/browser/a.png')).size, fs.statSync(path.join(t.사본, 'out/qa/push/browser/a.png')).size);
-    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/qa/push/browser/a.png']);
+    옛판으로(쓰기(t.메인, 'out/캡처/push/browser/a.png', '화면 A 둘판'));
+    assert.equal(fs.statSync(path.join(t.메인, 'out/캡처/push/browser/a.png')).size, fs.statSync(path.join(t.사본, 'out/캡처/push/browser/a.png')).size);
+    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/캡처/push/browser/a.png']);
     // ③ 위 폴더 안 「앞판_…」 보존 폴더에 같은 짜임으로 복사해 두면 세지 않는다 — 사본 쪽은 지우지 않는다
-    쓰기(t.메인, 'out/qa/push/앞판_사본_20261116/browser/a.png', '화면 A 첫판');
+    쓰기(t.메인, 'out/캡처/push/앞판_사본_20261116/browser/a.png', '화면 A 첫판');
     assert.deepEqual(남은것(), []);
-    assert.ok(fs.existsSync(path.join(t.사본, 'out/qa/push/browser/a.png')), '사본 쪽은 그대로');
+    assert.ok(fs.existsSync(path.join(t.사본, 'out/캡처/push/browser/a.png')), '사본 쪽은 그대로');
     // ④ 옆 「<폴더>_앞판_…」 꼴도 본다
-    쓰기(t.사본, 'out/qa/speak/browser/b.png', '화면 B 첫판');
-    쓰기(t.메인, 'out/qa/speak/browser/b.png', '화면 B 둘판');
-    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/qa/speak/browser/b.png']);
-    쓰기(t.메인, 'out/qa/speak/browser_앞판_20261117-0123/b.png', '화면 B 첫판');
+    쓰기(t.사본, 'out/캡처/speak/browser/b.png', '화면 B 첫판');
+    옛판으로(쓰기(t.메인, 'out/캡처/speak/browser/b.png', '화면 B 둘판'));
+    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/캡처/speak/browser/b.png']);
+    쓰기(t.메인, 'out/캡처/speak/browser_앞판_20261117-0123/b.png', '화면 B 첫판');
     assert.deepEqual(남은것(), []);
     // ⑤ 보존 폴더에 크기만 같은 다른 바이트면 세고, 이름 꼴이 아니면(「앞판」이 앞에 없음) 보존으로 안 본다
-    쓰기(t.사본, 'out/qa/speak/browser/c.png', '화면 C 첫판');
-    쓰기(t.메인, 'out/qa/speak/browser_앞판_20261117-0123/c.png', '화면 C 둘판');
-    assert.equal(fs.statSync(path.join(t.메인, 'out/qa/speak/browser_앞판_20261117-0123/c.png')).size, fs.statSync(path.join(t.사본, 'out/qa/speak/browser/c.png')).size);
-    쓰기(t.메인, 'out/qa/speak/옛판/browser/c.png', '화면 C 첫판');
-    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/qa/speak/browser/c.png']);
+    쓰기(t.사본, 'out/캡처/speak/browser/c.png', '화면 C 첫판');
+    쓰기(t.메인, 'out/캡처/speak/browser_앞판_20261117-0123/c.png', '화면 C 둘판');
+    assert.equal(fs.statSync(path.join(t.메인, 'out/캡처/speak/browser_앞판_20261117-0123/c.png')).size, fs.statSync(path.join(t.사본, 'out/캡처/speak/browser/c.png')).size);
+    쓰기(t.메인, 'out/캡처/speak/옛판/browser/c.png', '화면 C 첫판');
+    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/캡처/speak/browser/c.png']);
     // ⑥ 보존 폴더가 이 사본 안을 가리키는 링크면 사본 자신이라 보존으로 안 본다
-    fs.symlinkSync(path.join(t.사본, 'out/qa/speak'), path.join(t.메인, 'out/qa/speak/앞판_링크'), 'junction');
-    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/qa/speak/browser/c.png']);
+    fs.symlinkSync(path.join(t.사본, 'out/캡처/speak'), path.join(t.메인, 'out/캡처/speak/앞판_링크'), 'junction');
+    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 out/캡처/speak/browser/c.png']);
     // ⑦ 「..qa」처럼 점 둘로 시작하는 이름의 폴더도 사본 안이다 — 공용 쪽 같은 자리가 그 폴더를 가리키는 링크면 보존으로 안 본다(11-17 GPT GA1)
     //   사본 뿌리 바로 아래여야 사본에서 본 상대 경로가 「..qa\…」로 시작한다(*.mp4는 어디서나 git 밖)
     쓰기(t.사본, '..qa/d.mp4', '화면 D 첫판');
     fs.symlinkSync(path.join(t.사본, '..qa'), path.join(t.메인, '..qa'), 'junction');
-    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 ..qa/d.mp4', 'docs/마케팅 밖 git 밖 결과물 out/qa/speak/browser/c.png']);
+    assert.deepEqual(남은것(), ['docs/마케팅 밖 git 밖 결과물 ..qa/d.mp4', 'docs/마케팅 밖 git 밖 결과물 out/캡처/speak/browser/c.png']);
     // 같은 파일을 두 번 세지 않는다
     assert.equal(new Set(남은것()).size, 남은것().length);
   } finally { t.치우기(); }
@@ -204,6 +206,132 @@ test('끝 — 편 폴더의 파이썬 캐시(__pycache__)는 넘기지 않고, �
     assert.equal(r.결과, '지워도 됨');
     assert.deepEqual(r.남은것, []);
     assert.equal(fs.readFileSync(공용쪽, 'utf8'), '새 캐시', '공용 쪽 캐시는 건드리지 않는다');
+  } finally { t.치우기(); }
+});
+
+test('끝 — 공용 작업본 같은 자리에 나중에 쓴 판이 있거나 시험이 다시 만드는 qa 그림이면 「버림」으로 세고 「지워도 됨」이다(11-19 유호님 「저절로 지워」)', () => {
+  const t = 판();
+  try {
+    쓰기(t.메인, '.git/info/exclude', '**/qa/**/*.png\n**/qa2/**/*.png\n');
+    // 시험이 찍는 폴더를 적은 시험 파일 — 추적되어야 한다(올려 둔다)
+    쓰기(t.사본, 'experiences/앱/qa/캡처.test.mjs', "const out = path.join(root, 'experiences/앱/qa/push/browser');\nconst 짧은 = 'qa/짧게/browser';\n");
+    깃(t.사본)('add', '-A'); 깃(t.사본)('commit', '-q', '-m', '시험 파일'); 깃(t.사본)('push', '-q', 'origin', 'HEAD:master');
+    // 파일 시각은 몇 ms 단위로 묶이기도 한다(Linux) — 앞뒤 쓰기를 띄운다
+    const 잠깐 = () => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
+    // 공용 쪽 판은 30분 넘게 그대로여야 다 쓴 판으로 본다 — 「지금」을 31분 뒤로 준다
+    const 끝본 = (지금 = Date.now() + 31 * 60_000) => 도구.끝({ 저장소: t.사본, 실행: true, 지금 });
+    const 버림경로 = (r) => r.버림.map((x) => x.경로);
+    const 판본 = 'docs/마케팅/편A/게시/판본/video.mp4';
+
+    // ① docs/마케팅 — 공용 쪽 판을 사본 판보다 나중에 썼으면 덮지 않고 버림이다. 공용 쪽은 그대로
+    쓰기(t.사본, 판본, '사본의 옛 판');
+    잠깐();
+    const 공용판 = 쓰기(t.메인, 판본, '공용의 새 판');
+    let r = 끝본();
+    assert.equal(r.결과, '지워도 됨', JSON.stringify(r.남은것));
+    assert.deepEqual(r.버림, [{ 경로: 판본, 까닭: '공용 작업본 같은 자리에 더 새 판이 있음' }]);
+    assert.equal(fs.readFileSync(공용판, 'utf8'), '공용의 새 판');
+    assert.ok(r.넘김.공용이더새것.includes(판본), '넘기기는 그대로 「공용이 더 새것」으로 센다');
+    // 공용 쪽을 쓴 지 30분이 안 됐으면(굽는 중일 수 있다) 남은 것이다
+    r = 끝본(Date.now());
+    assert.deepEqual(r.남은것, [`공용 쪽이 더 새것이라 안 넘김 ${판본}`]);
+    // 공용 쪽이 0바이트면(굽다 죽은 판) 남은 것이다
+    fs.writeFileSync(공용판, '');
+    assert.deepEqual(끝본().남은것, [`공용 쪽이 더 새것이라 안 넘김 ${판본}`]);
+    fs.writeFileSync(공용판, '공용의 새 판');
+
+    // ② 사본 쪽에 새 내용을 쓰고 수정 시각만 옛날로 되돌렸으면(ctime이 그때로 바뀐다) 버리지 않고 남은 것이다
+    잠깐();
+    const 사본판 = 쓰기(t.사본, 판본, '사본에서 다시 고친 판');
+    const 옛날 = new Date(Date.now() - 60 * 60_000); fs.utimesSync(사본판, 옛날, 옛날);
+    r = 끝본();
+    assert.equal(r.결과, '남은 것 있음');
+    assert.deepEqual(r.남은것, [`공용 쪽이 더 새것이라 안 넘김 ${판본}`]);
+    assert.deepEqual(r.버림, []);
+    // 시각이 같으면 어느 쪽이 새것인지 몰라 남긴다 — 사본 쪽 수정 시각을 ctime보다 뒤로 두고 공용 쪽을 그 시각에 맞춘다
+    const 뒤 = new Date(Math.trunc(Date.now() / 1000) * 1000 + 60 * 60_000);
+    fs.utimesSync(사본판, 뒤, 뒤); fs.utimesSync(공용판, 뒤, 뒤);
+    const 그뒤 = 뒤.getTime() + 31 * 60_000;
+    assert.deepEqual(끝본(그뒤).남은것, [`공용 쪽이 더 새것이라 안 넘김 ${판본}`]);
+    const 뒤뒤 = new Date(뒤.getTime() + 1000); fs.utimesSync(공용판, 뒤뒤, 뒤뒤);
+    assert.deepEqual(버림경로(끝본(그뒤 + 1000)), [판본], '1초라도 늦으면 버림');
+    fs.rmSync(사본판);
+
+    // ③ docs/마케팅 밖 결과물 — 공용 쪽 같은 자리가 나중에 쓴 판이면 버림, 사본 쪽이 나중이면 남은 것
+    쓰기(t.사본, 'out/master.mp4', '사본의 옛 영상');
+    잠깐();
+    쓰기(t.메인, 'out/master.mp4', '공용의 새 영상');
+    잠깐();
+    쓰기(t.메인, 'out/later.mp4', '공용의 옛 영상');
+    잠깐();
+    쓰기(t.사본, 'out/later.mp4', '사본의 새 영상');
+    r = 끝본();
+    assert.deepEqual(r.남은것, ['docs/마케팅 밖 git 밖 결과물 out/later.mp4']);
+    assert.deepEqual(버림경로(r), ['out/master.mp4']);
+    fs.rmSync(path.join(t.사본, 'out/later.mp4'));
+
+    // ④ qa 시험이 적은 폴더의 그림은 버림 — 사본 쪽이 더 새것이어도, 공용 쪽에 없어도 시험이 다시 만든다
+    쓰기(t.메인, 'experiences/앱/qa/push/browser/a.png', '공용의 옛 화면');
+    잠깐();
+    쓰기(t.사본, 'experiences/앱/qa/push/browser/a.png', '사본의 새 화면');
+    쓰기(t.사본, 'experiences/앱/qa/push/browser/b.png', '공용에 없는 화면');
+    쓰기(t.사본, 'experiences/앱/qa/짧게/browser/c.png', '「qa/…」 꼴로 적힌 폴더의 화면');
+    // 적힌 폴더의 위 폴더 · 이름 앞부분만 같은 폴더는 그 시험이 찍는 자리가 아니다(11-19 Fable 재검수 P1)
+    쓰기(t.사본, 'experiences/앱/qa/push/설계도.png', '손으로 그린 설계도');
+    쓰기(t.사본, 'experiences/앱/qa/push/brow/y.png', '이름 앞부분만 같은 폴더의 손 캡처');
+    // 시험이 적지 않은 qa 폴더 · 날짜별 점검 증빙(docs/_ops/qa) · 폴더 이름이 정확히 qa가 아님 · 그림이 아님은 남은 것
+    쓰기(t.메인, 'experiences/앱/qa/다른/c.png', '공용의 옛 화면');
+    쓰기(t.메인, 'docs/_ops/qa/점검-20261101/home.png', '공용의 옛 증빙');
+    쓰기(t.메인, 'experiences/앱/qa2/push/browser/c.png', '공용의 옛 화면');
+    쓰기(t.메인, 'experiences/앱/qa/push/browser/d.mp4', '공용의 옛 녹화');
+    잠깐();
+    쓰기(t.사본, 'experiences/앱/qa/다른/c.png', '사본의 새 화면');
+    쓰기(t.사본, 'docs/_ops/qa/점검-20261101/home.png', '사본의 새 증빙');
+    쓰기(t.사본, 'experiences/앱/qa2/push/browser/c.png', '사본의 새 화면');
+    쓰기(t.사본, 'experiences/앱/qa/push/browser/d.mp4', '사본의 새 녹화');
+    r = 끝본();
+    assert.deepEqual(r.남은것, [
+      'docs/마케팅 밖 git 밖 결과물 docs/_ops/qa/점검-20261101/home.png',
+      'docs/마케팅 밖 git 밖 결과물 experiences/앱/qa/push/brow/y.png',
+      'docs/마케팅 밖 git 밖 결과물 experiences/앱/qa/push/browser/d.mp4',
+      'docs/마케팅 밖 git 밖 결과물 experiences/앱/qa/push/설계도.png',
+      'docs/마케팅 밖 git 밖 결과물 experiences/앱/qa/다른/c.png',
+      'docs/마케팅 밖 git 밖 결과물 experiences/앱/qa2/push/browser/c.png',
+    ]);
+    const 시험버림 = r.버림.filter((x) => x.까닭 === '시험이 다시 만드는 qa 화면 그림').map((x) => x.경로);
+    assert.deepEqual(시험버림, ['experiences/앱/qa/push/browser/a.png', 'experiences/앱/qa/push/browser/b.png', 'experiences/앱/qa/짧게/browser/c.png']);
+    for (const p of ['docs/_ops/qa/점검-20261101/home.png', 'experiences/앱/qa/다른/c.png', 'experiences/앱/qa/push/설계도.png', 'experiences/앱/qa/push/brow/y.png', 'experiences/앱/qa2/push/browser/c.png', 'experiences/앱/qa/push/browser/d.mp4']) fs.rmSync(path.join(t.사본, p));
+
+    // ⑤ 공용 쪽 같은 자리가 링크를 따라 공용 작업본 밖(이 사본 안 · 다른 사본)으로 가면 그 판을 더 새 판으로 치지 않는다
+    쓰기(t.사본, 'out/링크안/e.mp4', '사본의 옛 영상');
+    fs.utimesSync(path.join(t.사본, 'out/링크안/e.mp4'), 옛날, 옛날);
+    잠깐();
+    쓰기(t.사본, 'out/다른곳/e.mp4', '사본 안 다른 자리의 새 영상');
+    fs.symlinkSync(path.join(t.사본, 'out/다른곳'), path.join(t.메인, 'out/링크안'), 'junction');
+    쓰기(t.사본, 'out/남의사본/g.mp4', '사본의 옛 영상');
+    fs.utimesSync(path.join(t.사본, 'out/남의사본/g.mp4'), 옛날, 옛날);
+    잠깐();
+    쓰기(t.뿌리, 'wt-root/남의/폴더/g.mp4', '다른 사본의 새 영상');
+    fs.symlinkSync(path.join(t.뿌리, 'wt-root/남의/폴더'), path.join(t.메인, 'out/남의사본'), 'junction');
+    r = 끝본();
+    assert.deepEqual(r.남은것, [
+      'docs/마케팅 밖 git 밖 결과물 out/남의사본/g.mp4',
+      'docs/마케팅 밖 git 밖 결과물 out/다른곳/e.mp4',
+      'docs/마케팅 밖 git 밖 결과물 out/링크안/e.mp4',
+    ]);
+    fs.unlinkSync(path.join(t.메인, 'out/링크안')); fs.unlinkSync(path.join(t.메인, 'out/남의사본'));
+    for (const p of ['out/링크안', 'out/다른곳', 'out/남의사본']) fs.rmSync(path.join(t.사본, p), { recursive: true });
+
+    // ⑥ 출력에 버림 줄을 남은 것과 따로 보인다(명령줄은 지금 시각이라 공용 쪽을 막 쓴 out/master.mp4는 빼 둔다)
+    fs.rmSync(path.join(t.사본, 'out/master.mp4'));
+    const 찍음 = [];
+    const 원래 = console.log;
+    console.log = (글) => 찍음.push(String(글));
+    let 코드;
+    try { 코드 = 도구.main(['끝', '--저장소', t.사본, '--실행']); } finally { console.log = 원래; }
+    assert.equal(코드, 0, 찍음.join('\n'));
+    assert.match(찍음.join('\n'), /버림\(사본 쪽을 지워도 잃지 않음\): experiences\/앱\/qa\/push\/browser\/a\.png — 시험이 다시 만드는/);
+    assert.doesNotMatch(찍음.join('\n'), /남음:/);
   } finally { t.치우기(); }
 });
 
@@ -434,6 +562,28 @@ test('들기 — 앱 사본에 회차 표시를 남기고 그것은 올라가지
     깃(t.메인)('worktree', 'add', '-q', '-b', 'sched-b', path.join(자리, 'sched-synk-daily-lab-1110-0711'), 'origin/master');
     assert.ok(도구.남은사본({ 저장소: t.메인, 자리 }).사본.some((s) => s.이름 === 'sched-synk-daily-lab-1110-0711'));
     assert.ok(!도구.남은사본({ 저장소: t.메인, 자리: path.join(t.뿌리, 'wt-other') }).사본.some((s) => s.이름 === 'sched-synk-daily-lab-1110-0711'));
+  } finally { t.치우기(); }
+});
+
+test('남은사본 — 끝이 버림만 남기고 「지워도 됨」이었던 앱 사본은 그 뒤로 그대로면 건너뛴다', () => {
+  const t = 판();
+  try {
+    쓰기(t.메인, '.git/info/exclude', '**/qa/**/*.png\n');
+    쓰기(t.메인, 'experiences/앱/qa/캡처.test.mjs', "const out = 'experiences/앱/qa/push/browser';\n");
+    깃(t.메인)('add', '-A'); 깃(t.메인)('commit', '-q', '-m', '시험 파일'); 깃(t.메인)('push', '-q', 'origin', 'master');
+    const 자리 = 사본자리(t);
+    const 회차 = 앱사본(t);
+    const 잠깐 = () => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
+    도구.들기({ 저장소: 회차, 자리, 실행: true });
+    쓰기(회차, 'docs/마케팅/편A/게시/video.mp4', '사본의 옛 판');
+    잠깐();
+    쓰기(t.메인, 'docs/마케팅/편A/게시/video.mp4', '공용의 새 판');
+    쓰기(회차, 'experiences/앱/qa/push/browser/a.png', '사본의 화면');
+    const r = 도구.끝({ 저장소: 회차, 자리, 실행: true, 지금: Date.now() + 31 * 60_000 });
+    assert.equal(r.결과, '지워도 됨', JSON.stringify(r.남은것));
+    assert.deepEqual(r.버림.map((x) => x.경로), ['docs/마케팅/편A/게시/video.mp4', 'experiences/앱/qa/push/browser/a.png']);
+    잠깐();
+    assert.ok(!도구.남은사본({ 저장소: t.메인, 자리 }).사본.some((s) => s.이름 === path.basename(회차)), '끝난 뒤 그대로면 건너뛴다');
   } finally { t.치우기(); }
 });
 
