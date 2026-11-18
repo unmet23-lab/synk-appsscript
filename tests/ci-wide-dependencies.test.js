@@ -3,7 +3,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const { execFileSync, spawnSync } = require('node:child_process');
+const { 이번push새파일 } = require('./_git밖.js');
 
 const workflow = fs.readFileSync(path.join(__dirname, '../.github/workflows/wide-tests.yml'), 'utf8').replace(/\r\n/g, '\n');
 const step = workflow.match(/      - name: install dependencies\n([\s\S]*?)(?=      # 형제 저장소)/)?.[1];
@@ -43,7 +44,6 @@ function run(t, { bundle = 'experiences', missing = [], updateExit = 0, updateFa
   // experiences 묶음은 WORLD 새 길 시험이 부르는 엔진(packages/atlas)의 의존성도 그 폴더에서 깐다(11-13).
   fs.mkdirSync(path.join(root, 'packages', 'atlas'), { recursive: true });
   const executable = (name, text) => fs.writeFileSync(path.join(bin, name), '#!/bin/sh\n' + text, { mode: 0o755 });
-  executable('npm', `printf '%s|%s\\n' "$PWD" "$*" >> "$NPM_CALLS"\nexit 0\n`);
   executable('timeout', `printf '%s\\n' "timeout $*" >> "$CALLS"
 n=0; if [ -f "$TIMEOUT_COUNT" ]; then read -r n < "$TIMEOUT_COUNT"; fi
 n=$((n+1)); printf '%s\\n' "$n" > "$TIMEOUT_COUNT"
@@ -68,8 +68,11 @@ case "$*" in
   *) exit 99;;
 esac
 `);
-  const result = spawnSync(bash, ['-e', '-c', 'export PATH="$FIXTURE_BIN"\n'+script], {
-    cwd: root, encoding: 'utf8', timeout: 10000,
+  // npm only records the current directory and arguments. Keep the APT retry processes separate.
+  const setup = 'export PATH="$FIXTURE_BIN"\nnpm() { printf "%s|%s\\n" "$PWD" "$*" >> "$NPM_CALLS"; }\n';
+  const result = spawnSync(bash, ['-e', '-c', setup + script], {
+    // This watchdog bounds the entire fixture, including Git Bash process startup on a busy Windows host.
+    cwd: root, encoding: 'utf8', timeout: process.platform === 'win32' ? 60000 : 10000, windowsHide: true,
     env: { ...process.env, PATH: posix(bin), RUNNER_TEMP: posix(root), BUNDLE: bundle, CALLS: posix(log), NPM_CALLS: posix(npmLog), FIXTURE_BIN: posix(bin), UPDATE_EXIT: String(updateExit), UPDATE_FAILURES: String(updateFailures), UPDATE_COUNT: posix(path.join(root,'update-count')), TIMEOUT_FAILURES: String(timeoutFailures), TIMEOUT_COUNT: posix(path.join(root,'timeout-count')) },
   });
   assert.equal(result.error, undefined, result.error?.message);
@@ -152,6 +155,10 @@ test('a timed-out process is retried without treating timeout as success', t => 
   assert.equal(r.status,0,r.stderr);
   assert.equal(r.calls.filter(x=>x.startsWith('timeout ')).length,3);
   assert.deepEqual(r.calls.slice(-2),['ffmpeg version','ffprobe version']);
+  const exhausted = run(t, { missing: ['ffprobe'], timeoutFailures: 2 });
+  assert.equal(exhausted.status, 124, exhausted.stderr);
+  assert.equal(exhausted.calls.length, 2);
+  assert.ok(exhausted.calls.every(call => call.startsWith('timeout ') && call.endsWith(' update')));
 });
 
 test('an installed but unusable ffprobe still fails setup', t => {
@@ -179,15 +186,45 @@ test('wide preparation retains deterministic installs, minimal checkout credenti
 });
 
 // 11-08 experiences/solo-backup이 tar-stream을 더했는데 이 단계에 설치가 없어 그 폴더 시험이 파일째 죽어 wide (experiences)가 빨갰다.
-test('every experiences folder with dependencies is installed for the experiences bundle', () => {
-  const root = path.join(__dirname, '..', 'experiences');
-  for (const folder of fs.readdirSync(root)) {
-    const file = path.join(root, folder, 'package.json');
+function checkExperienceInstalls(root, newFiles) {
+  const tracked = execFileSync('git', ['ls-files', '-z', '--', 'experiences/*/package.json', 'experiences/*/package-lock.json'], {
+    cwd: root, encoding: 'utf8',
+  }).split('\0');
+  const files = new Set([...tracked, ...newFiles]);
+  for (const manifest of files) {
+    if (!/^experiences\/[^/]+\/package\.json$/.test(manifest)) continue;
+    const file = path.join(root, manifest);
     if (!fs.existsSync(file)) continue;
-    if (!Object.keys(JSON.parse(fs.readFileSync(file, 'utf8')).dependencies || {}).length) continue;
-    assert.ok(script.includes(`(cd experiences/${folder} && npm ci `), `wide-tests.yml install dependencies에 experiences/${folder}의 npm ci가 없다 — 없으면 그 폴더 시험이 CI에서 파일째 죽는다`);
-    assert.ok(fs.existsSync(path.join(root, folder, 'package-lock.json')), `experiences/${folder}에 package-lock.json이 없으면 npm ci가 멈춘다`);
+    const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!Object.keys(pkg.dependencies || {}).length) continue;
+    const folder = path.posix.dirname(manifest);
+    assert.ok(script.includes(`(cd ${folder} && npm ci `), `wide-tests.yml install dependencies에 ${folder}의 npm ci가 없다`);
+    const lock = folder + '/package-lock.json';
+    assert.ok(files.has(lock) && fs.existsSync(path.join(root, lock)), `CI 체크아웃에 ${lock}이 없으면 npm ci가 멈춘다`);
   }
+}
+
+test('every experiences folder with dependencies is installed for the experiences bundle', () => {
+  checkExperienceInstalls(path.join(__dirname, '..'), 이번push새파일());
+});
+
+test('local prototypes stay outside CI while tracked and incoming manifests require an install and a lock', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-wide-manifests-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  execFileSync('git', ['init', '-q'], { cwd: root });
+  const account = 'experiences/synk-account';
+  const prototype = 'experiences/local-prototype';
+  fs.writeFileSync(path.join(root, '.gitignore'), prototype + '/\n');
+  for (const folder of [account, prototype]) {
+    fs.mkdirSync(path.join(root, folder), { recursive: true });
+    fs.writeFileSync(path.join(root, folder, 'package.json'), JSON.stringify({ dependencies: { example: '1' } }));
+    fs.writeFileSync(path.join(root, folder, 'package-lock.json'), '{}');
+  }
+  execFileSync('git', ['add', '--', account + '/package.json'], { cwd: root });
+  assert.throws(() => checkExperienceInstalls(root, []), /synk-account\/package-lock\.json/);
+  const incomingLock = [account + '/package-lock.json'];
+  checkExperienceInstalls(root, incomingLock);
+  assert.throws(() => checkExperienceInstalls(root, [...incomingLock, prototype + '/package.json']), /local-prototype의 npm ci/);
 });
 
 test('wide sparse checkout excludes only intended production PNGs and keeps source, tests and common inputs in the Git index', t => {
