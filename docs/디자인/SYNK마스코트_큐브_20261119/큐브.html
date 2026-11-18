@@ -71,9 +71,9 @@ html[data-nogl] .nogl{display:block}
 <body>
 <main class="wrap">
   <header class="head">
-    <p class="tag">SYNK 마스코트 시안 · 셋째 판</p>
-    <h1>조금 더 귀엽게,<span>조금 더 미래에서.</span></h1>
-    <p class="lead">판을 여러 장으로 썰지 않고 한 번만 썰었습니다. 큐브에 손을 올리면 그쪽을 보고, 누르면 생각합니다.</p>
+    <p class="tag">SYNK 마스코트 시안 · 넷째 판</p>
+    <h1>깎은 큐브,<span>생각할 때는 꼭짓점으로 섭니다.</span></h1>
+    <p class="lead">얼굴과 몸은 깎은 큐브 그대로이고, 몸에는 아무것도 더하지 않았습니다. 큐브에 손을 올리면 그쪽을 보고, 누르면 생각합니다.</p>
   </header>
 
   <div class="moods" role="group" aria-label="표정 바꾸기">
@@ -85,7 +85,19 @@ html[data-nogl] .nogl{display:block}
   </div>
   <p class="nogl">이 브라우저에서는 움직이는 큐브를 그리지 못합니다. 크롬이나 엣지에서 열어 주세요.</p>
 
-  <section class="cand hero" data-v="6">
+  <section class="cand hero" data-v="7">
+    <button class="stage" type="button" aria-label="넷째 판, 깎은 큐브. 누르면 꼭짓점으로 서서 돕니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">넷째 판</p>
+      <h2>서서 도는 깎은 큐브</h2>
+      <p class="say">평소에는 깎은 큐브입니다. 생각할 때 눈을 끄고 꼭짓점 하나로 서서 돕니다. 도는 동안 면마다 빛줄기가 차례로 지나갑니다. 답이 나오면 제자리로 돌아와 눈을 켜고 웃습니다.</p>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <p class="tag sub">앞서 본 것</p>
+
+  <section class="cand" data-v="6">
     <button class="stage" type="button" aria-label="셋째 판, 뚜껑이 떠오르는 큐브. 누르면 생각합니다."><canvas></canvas></button>
     <div class="info">
       <p class="key">셋째 판</p>
@@ -98,8 +110,6 @@ html[data-nogl] .nogl{display:block}
       <div class="sizes" aria-label="작게 본 모습"></div>
     </div>
   </section>
-
-  <p class="tag sub">앞서 본 것</p>
 
   <section class="cand" data-v="5">
     <button class="stage" type="button" aria-label="둘째 판, 가에 다를 섞은 큐브. 누르면 생각합니다."><canvas></canvas></button>
@@ -582,6 +592,7 @@ const CUBES = [
   { kind: 4, yaw: -0.50, pitch: 0.30, scale: 1, eyeK: 1, sep: 5.5 },
   { kind: 5, yaw: -0.42, pitch: 0.27, scale: 1.02, eyeK: 1.3, sep: 6.5 },   /* 가 + 다 */
   { kind: 6, yaw: -0.36, pitch: 0.27, scale: 0.92, eyeK: 1.75, sep: 5.5, eyeY: -0.26, eyeStyle: 2 },   /* 셋째 판: 눈이 크고 낮다 */
+  { kind: 0, stand: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },   /* 넷째 판: 깎은 큐브 그대로, 생각할 때만 서서 돈다 */
 ].map((c, i) => ({
   ...c, i, think: 0, wasThink: false, thinkUntil: 0, bootUntil: 0, smileUntil: 0, flash: 0,
   px: 0, py: 0, tx: 0, ty: 0, moodShown: 0, open: 1, lid: null, nextBlink: 2000 + i * 700,
@@ -609,7 +620,7 @@ function step(c, now, dt) {
   c.py += (c.ty - c.py) * (1 - Math.exp(-dt * 6));
 
   /* 눈. 표정을 바꿀 때는 감았다 뜨는 사이에 바꾼다 */
-  const wantMood = mood === 'sleep' ? 2 : mood === 'smile' ? 1 : want ? (c.kind === 6 ? 0 : 4) : now < c.smileUntil ? 1 : 0;
+  const wantMood = mood === 'sleep' ? 2 : mood === 'smile' ? 1 : want ? (c.kind === 6 || c.stand ? 0 : 4) : now < c.smileUntil ? 1 : 0;
   if (!c.lid && c.moodShown !== wantMood) c.lid = { t0: now, swap: wantMood };
   if (!c.lid && c.moodShown === 0 && now > c.nextBlink && !reduced) { c.lid = { t0: now, swap: null }; c.nextBlink = now + 2600 + Math.random() * 3800; }
   if (c.lid) {
@@ -626,7 +637,7 @@ function step(c, now, dt) {
   const pitch = c.pitch + sway * 0.035 * Math.sin(t * 0.37 + c.i * 2) - c.py * 0.24;
   let azAdd = c.px * 0.5;
   c.eyeOn = 1; c.glow = 0; c.scan = -9;
-  if (c.kind === 0) {
+  if (c.kind === 0 && !c.stand) {
     /* 생각할 때 빛이 시곗바늘처럼 돈다 */
     if (want) c.az += dt * 2.6 * c.think;
     else { const home = Math.round(c.az / (2 * Math.PI)) * 2 * Math.PI; c.az += (home - c.az) * (1 - Math.exp(-dt * 2.5)); }
@@ -662,13 +673,13 @@ function step(c, now, dt) {
     q = qMul(qAxis(AZ, 0.12 * k + sway * 0.02 * Math.sin(t * 0.6) - c.px * 0.08), q);
     c.gaze = [c.gaze[0] * (1 - k) + 0.9 * Math.sin(t * 1.3) * k, c.gaze[1] * (1 - k) + 1.4 * k];
   }
-  if (c.kind === 1) {
-    /* 생각할 때 꼭짓점 하나로 서서 돈다 */
+  if (c.kind === 1 || c.stand) {
+    /* 생각할 때 꼭짓점 하나로 서서 돈다. 그동안 눈은 꺼진다 */
     c.spin += dt * 1.6 * c.think;
     const stand = qMul(qAxis(AX, 0.26), qMul(qAxis(AY, c.spin), qMul(qAxis(AZ, 0.9553166), qAxis(AY, Math.PI / 4))));
     q = qSlerp(q, stand, easeIO(clamp(c.think, 0, 1)));
     c.eyeOn = 1 - clamp(c.think * 1.6, 0, 1);
-    c.scan = ((t * 0.55) % 1) * 3.8 - 1.9;
+    if (c.kind === 1) c.scan = ((t * 0.55) % 1) * 3.8 - 1.9;
   }
   if (c.kind === 2 || c.kind === 5) {
     if (want && now > c.nextShuffle) {
