@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1ed59-8e39-7262-af59-15291b0a2fd2"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to keep the fixed scene and create the new poses and expressions.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Shocked Mongle leans toward its smiling friend as imo approaches with a tray of side dishes."}}
+{"type":"turn.completed","usage":{"input_tokens":114388,"cached_input_tokens":89472,"cache_write_input_tokens":0,"output_tokens":1232,"reasoning_output_tokens":148}}

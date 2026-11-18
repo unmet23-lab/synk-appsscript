@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "저기요…",
+ "dur": 0.859,
+ "words": [
+  {
+   "text": "저기요…",
+   "start": 0.02,
+   "end": 0.859
+  }
+ ],
+ "source": {
+  "key": "1e7d748e7705465847cee8e42c852b57",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1118,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "고깃집에서 반찬 접시가 다 비었다. 수줍은 몽글이 저 멀리 계산대에 있는 아주머니를 아주 작은 목소리로 부른다.",
+   "next": "이모~! 반찬 더 주세요!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 470
+ }
+}

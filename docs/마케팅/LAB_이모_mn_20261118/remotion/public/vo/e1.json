@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "e1",
+ "text": "네…?",
+ "dur": 0.602,
+ "words": [
+  {
+   "text": "네…?",
+   "start": 0.03,
+   "end": 0.602
+  }
+ ],
+ "source": {
+  "key": "92fa896bfa41d112487bc62e24ed1839",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1118,
+   "lufs": -16,
+   "voiceId": "tc_65a8c7e1915a6295614f775b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 192
+ }
+}

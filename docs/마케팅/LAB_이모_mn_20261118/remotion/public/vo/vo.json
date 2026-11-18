@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1118,
+  "lufs": -16
+ },
+ "made": "2026-11-18T08:07:27.834Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "저기요…",
+   "dur": 0.859,
+   "syllablesPerSec": 3.49,
+   "src": "m1.wav",
+   "key": "1e7d748e7705465847cee8e42c852b57",
+   "words": 1
+  },
+  {
+   "id": "e1",
+   "text": "네…?",
+   "dur": 0.602,
+   "syllablesPerSec": 1.66,
+   "src": "e1.wav",
+   "key": "92fa896bfa41d112487bc62e24ed1839",
+   "words": 1
+  },
+  {
+   "id": "f1",
+   "text": "이모~! 반찬 더 주세요!",
+   "dur": 1.405,
+   "syllablesPerSec": 5.69,
+   "src": "f1.wav",
+   "key": "3d6b5b89a9e5c920ec9396a99207cbb2",
+   "words": 4
+  },
+  {
+   "id": "e2",
+   "text": "네~!",
+   "dur": 0.836,
+   "syllablesPerSec": 1.2,
+   "src": "e2.wav",
+   "key": "c67a9f638cec3c8a5aa51040990c8bb3",
+   "words": 1
+  },
+  {
+   "id": "m2",
+   "text": "이모…? 친척이야?",
+   "dur": 1.418,
+   "syllablesPerSec": 4.23,
+   "src": "m2.wav",
+   "key": "28a1f3a57d51c27c1a528d912a844c32",
+   "words": 2
+  },
+  {
+   "id": "f2",
+   "text": "아니~",
+   "dur": 0.628,
+   "syllablesPerSec": 3.18,
+   "src": "f2.wav",
+   "key": "990f05805b22b958596694dab04b1cb6",
+   "words": 1
+  },
+  {
+   "id": "m3",
+   "text": "이모~!",
+   "dur": 0.559,
+   "syllablesPerSec": 3.58,
+   "src": "m3.wav",
+   "key": "6ee50b92bcad7a4f7714f39c022c6815",
+   "words": 1
+  },
+  {
+   "id": "e3",
+   "text": "어머~ 이모라고? 서비스~!",
+   "dur": 2.483,
+   "syllablesPerSec": 3.62,
+   "src": "e3.wav",
+   "key": "76dc47e313f82a1117f9da770052638d",
+   "words": 3
+  },
+  {
+   "id": "m4",
+   "text": "이모 최고!",
+   "dur": 0.988,
+   "syllablesPerSec": 4.05,
+   "src": "m4.wav",
+   "key": "7c8f458141874078b0af68d385a5875b",
+   "words": 2
+  }
+ ]
+}

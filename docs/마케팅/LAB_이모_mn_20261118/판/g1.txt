@@ -1,0 +1,23 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the poses and faces of the characters, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, table, dish, food and doll is made of felted wool and fabric, soft fuzzy fibres visible, warm cosy evening light, shallow depth of field like a macro photo of a stop-motion set. Match the felt material, lighting warmth and photographic look of the FIRST attached photo (use it ONLY for the felt look and light — not its room, furniture or people).
+
+FORMAT: portrait 2:3. The camera stands at the near end of our table, a little above head height of the seated characters, looking DOWN THE LENGTH of a small, busy, friendly Korean pork-belly barbecue restaurant, so the room has clear DEPTH: our table in the foreground, an open floor in the middle, the kitchen counter at the back. Keep every important thing between 12% and 88% of the image width (the left and right edges will be cropped).
+
+SET (top to bottom):
+- TOP 18% of the image: ONLY a plain warm-ochre felt wall with a soft texture above the kitchen — nothing there at all (a label will be added there later).
+- BACK (about 18% to 50% of the image height): a long wooden felt kitchen counter with a stainless-steel felt top along the back wall, a stack of small white side-dish bowls and a big round pot on it, a soft glow from the kitchen. Standing BEHIND/AT this counter, at about 50%–68% of the image width, is the restaurant IMO (see CHARACTERS) — she is the only staff member, clearly visible from the waist up, her body about 26% of the image height tall, with her BACK turned to the camera, busy at the counter.
+- MIDDLE (about 50% to 60%): an open, empty wooden felt floor between the counter and our table (nothing in the way — the path from our table to the counter is clear).
+- FOREGROUND (bottom 40%): our small round dark-steel felt table seen from slightly above. In its centre a round felt charcoal grill with four strips of pork belly (samgyeopsal — pink-and-white layered strips) sizzling, two garlic slices and one mushroom. Around the grill: FOUR small white felt side-dish plates that are all EMPTY (only a tiny red smear of kimchi on one), one empty lettuce basket, two steel cups of water, a pair of steel chopsticks and long tongs.
+
+CHARACTERS (exactly these two people plus Mongle, nobody else; no other customers):
+- MONGLE (the mascot from the SECOND attached image) sits on a round stool at the LEFT side of our table, between about 14% and 40% of the image width, its body about 24% of the image width wide, the lower part of its body hidden by the table edge, its top at about 62% of the image height. It is turned three-quarters toward the grill and looks a little sad at the EMPTY side-dish plates.
+- The FRIEND sits on a stool at the RIGHT side of our table, between about 62% and 88% of the image width: a felt doll of a cheerful Korean woman in her twenties, long black hair in a low ponytail, small black bead eyes, pink cheeks, a mustard-yellow knitted cardigan over a white tee. She holds the long tongs over the grill, turning a strip of pork belly.
+- The IMO at the back counter: a felt doll of a warm, sturdy Korean woman in her fifties, short curly permed black hair, rosy cheeks, a lilac blouse with rolled sleeves and a red-and-white checked apron. In this base photo she has her BACK to the camera, wiping the counter.
+
+Use the SECOND attached image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands — never.
+
+Exactly ONE Mongle and exactly two people, nobody else. Nothing floats in the air. The top wall must stay empty.
+Absolutely no text, letters, numbers, logos, symbols, signs, menu boards or watermarks anywhere — no writing on the walls, counter, dishes, cups, clothes or table.

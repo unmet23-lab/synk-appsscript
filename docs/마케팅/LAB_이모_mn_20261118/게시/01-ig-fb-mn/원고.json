@@ -1,0 +1,16 @@
+{
+ "id": "01-ig-fb-mn",
+ "brand": "LAB",
+ "platform": "instagram+facebook+tiktok",
+ "account": "@synk.mn · SYNK(synkworld)",
+ "format": "reels",
+ "language": "mn",
+ "audioLanguage": "ko",
+ "caption": "Солонгост хоолны газарт зөөгч эгчийг «이모~!» (имо) гэж дууддаг 😄\n«이모» гэдэг нь ээжийн эгч, эмэгтэй дүү гэсэн үг. Хамаатан биш байсан ч ингэж дууддаг — Монголд бид «Эгч ээ!» гэдэгтэй адил.\nХачир (банчан) нэмж авмаар байвал: 이모~! 반찬 더 주세요! (имо~! банчан до жусэё!) = Хачир нэмээд өгөөрэй!\nСолонгос хоолны газарт хачир нэмж авахад ихэвчлэн төлбөргүй байдаг.\n💡 Ихэвчлэн энгийн хоолны газарт ахимаг насны эгч нарыг ингэж дууддаг. Залуу ажилтныг «저기요» (жогиё) гэж дуудвал илүү тохиромжтой.\nМонголд хоолны газарт зөөгчийг юу гэж дууддаг вэ? Нэг үгээр бичээрэй 👇\nБид бол SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia",
+ "firstComment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+ "alt": [
+  "A needle-felted Korean pork-belly barbecue restaurant. The side-dish plates are empty. The coral felt mascot Mongle stretches tall and shouts the Mongolian call «Эгч ээ!» to the auntie at the back counter; the words bounce off her back and she turns, puzzled, hand to ear. Mongle tries a tiny «저기요…» that drops to the floor. Its Korean friend raises a hand and calls 이모~! 반찬 더 주세요! (Auntie! More side dishes, please!) and the auntie answers 네~! and brings a tray at once. Mongle asks 이모…? 친척이야? (Auntie…? Is she your relative?) — a card explains 이모 means mother's sister, and Korean restaurants use it like Mongolians use «Эгч ээ!». Mongle takes a deep breath and shouts 이모~!, hearts pop over the auntie, she says 어머~ 이모라고? 서비스~! (Oh, you called me auntie? It's on the house!) and brings a towering stack of side dishes and steamed egg. Mongle: 이모 최고~! (Auntie's the best!)"
+ ],
+ "version": "m61-mn-v5",
+ "_비고": "video.mp4 = m61 v5(이해 시험 v4 판에 시험 없이 고침: 첫 외침이 몽글 입가에서 꼬리를 달고 0.35초 머문 뒤 날아감 · 카드 키우고 2.9초 · 몽글의 「이모~!」에 이모 위 하트 · 읽기 줄 46px 진하게 · 끝 꼬리 0.9초 · 19.3초) → 음량마감 −14.7 LUFS. upload_10MB.mp4 = 인스타 · 페북 크롬 확장 10MB 올림판. 표지 cover.png = 15.9초(반찬 그릇 탑과 계란찜). 13시 칸이라 텔레그램 판은 없다(텔레그램은 하루 한 편 · 21:00 편만). 합성 표시: 켜지 않음 — 펠트 미니어처 그림은 GPT 이미지로 구운 꾸민 장면이고 실제 사람 · 사건을 흉내 내지 않으며, 목소리는 특정인이 아닌 TTS."
+}

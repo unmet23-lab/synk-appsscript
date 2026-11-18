@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f1",
+ "text": "이모~! 반찬 더 주세요!",
+ "dur": 1.405,
+ "words": [
+  {
+   "text": "이모~!",
+   "start": 0.02,
+   "end": 0.161
+  },
+  {
+   "text": "반찬",
+   "start": 0.402,
+   "end": 0.704
+  },
+  {
+   "text": "더",
+   "start": 0.764,
+   "end": 0.845
+  },
+  {
+   "text": "주세요!",
+   "start": 0.905,
+   "end": 1.405
+  }
+ ],
+ "source": {
+  "key": "3d6b5b89a9e5c920ec9396a99207cbb2",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2201,
+   "lufs": -16,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 449
+ }
+}

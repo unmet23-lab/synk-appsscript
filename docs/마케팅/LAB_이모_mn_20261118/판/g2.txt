@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo for the CLOSE shots of one character in a vertical comedy short. Later panels will reuse this exact photo and only change her pose and face, so keep it clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, counter, dish and the doll are made of felted wool and fabric, soft fuzzy fibres visible, warm cosy evening light, shallow depth of field like a macro photo of a stop-motion set. Match the felt material and photographic look of the FIRST attached photo, and match the restaurant, counter, colours and the woman EXACTLY to the SECOND attached photo (this is the same restaurant and the same woman, seen closer).
+
+FORMAT: portrait 2:3, a medium close-up taken from the dining floor, at her chest height, looking straight at her across the back counter of the small Korean pork-belly barbecue restaurant from the SECOND photo.
+- TOP 20% of the image: ONLY the same plain warm-ochre felt wall — nothing there.
+- The IMO fills the middle of the image, centred between about 22% and 78% of the image width, visible from the waist up, her face at about 34%–48% of the image height: a felt doll of a warm, sturdy Korean woman in her fifties, short curly permed black hair, small black bead eyes, rosy cheeks, a lilac blouse with rolled sleeves and a red-and-white checked apron — the same doll as in the SECOND photo. In this base photo she stands facing the camera with a calm, neutral face, both hands resting on the counter.
+- In front of her (bottom 30% of the image): the wooden felt counter with a stainless-steel felt top, a stack of small white side-dish bowls on the left and a big round pot on the right, soft out-of-focus kitchen glow behind her.
+
+Exactly ONE person (the imo), nobody else, no Mongle in this shot. Nothing floats in the air.
+Absolutely no text, letters, numbers, logos, symbols, signs, menu boards or watermarks anywhere.

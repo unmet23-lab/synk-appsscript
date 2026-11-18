@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1ed59-7743-7212-b847-c2f14208b413"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll keep the scene and framing fixed, with Mongle slightly squashed down, shyly looking downward with a tiny “o” mouth.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle shyly whispers while the friend grills pork and the imo wipes the counter, unaware."}}
+{"type":"turn.completed","usage":{"input_tokens":44709,"cached_input_tokens":37760,"cache_write_input_tokens":0,"output_tokens":716,"reasoning_output_tokens":0}}
