@@ -733,7 +733,9 @@ export function createWorkspaceService({store,clientProjects,features=null,local
       // 서버 시작의 지우기 재개가 칸 채우기보다 먼저 도는 경우)은 묘비가 updatedAt을 지운 때로 바꾸기 전에 지우는 중 문서에서 값을 먼저 잰다(GPT 서버 검수 workspaces GA1).
       const legacy=originActivityAligned(current)?null:legacyOriginActivity(current,store);
       const kept=originActivityAligned(current)?{...tomb,originActivityAt:current.originActivityAt,originActivityRev:tomb.revision}
-        :Number.isFinite(legacy)?{...tomb,originActivityAt:new Date(legacy).toISOString(),originActivityRev:tomb.revision}:tomb;
+        :Number.isFinite(legacy)?{...tomb,originActivityAt:new Date(legacy).toISOString(),originActivityRev:tomb.revision}
+        // 날짜를 못 읽으면 묘비에도 못 읽는 채로 남긴다 — 칸을 버리면 다음 채우기가 지운 때를 날짜로 확정한다(GPT 서버 다시 검수 workspaces-b GA1).
+        :{...tomb,originActivityAt:typeof current.originActivityAt==='string'?current.originActivityAt:'unknown',originActivityRev:tomb.revision};
       store.put(K.personas,kept.id,kept);
     });
   }

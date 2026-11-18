@@ -8,7 +8,7 @@ import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {createCompanyApp} from './server.mjs';
-import {createPersonaGuard,openPersonaProjectIds,kstDayEnd,reuseUntil,effectivePersonaStatus,personaUsability,PERSONA_SETTLED} from './pulse-personas.mjs';
+import {createPersonaGuard,openPersonaProjectIds,kstDayEnd,reuseUntil,effectivePersonaStatus,personaUsability,PERSONA_SETTLED,requestClock} from './pulse-personas.mjs';
 import {applyRequestAction} from './pulse-requests.mjs';
 import {workspaceMediaNames} from './workspace-media.mjs';
 
@@ -1059,4 +1059,16 @@ test('90일 시계 · 카본 서버 끝 판 A1: 정리된 의뢰에 남은 인�
   assert.equal(view.noticed,false,'예고가 풀린다');assert.equal(view.deleteAt,endOf(f.stamp+90*DAY),'그날부터 다시 90일');
   f.stamp=afterDay(now+15*DAY);assert.equal((await sweep(f)).retention,undefined,'옛 예고의 날에도 지우지 않는다');
   assert.equal(personaOf(f,x.personaId).status,'ready');
+});
+
+test('의뢰 기록 시계 · 날짜를 못 읽는 옛 「지우는 중」 인물은 서버 시작 때 이어 지워도 묘비에 못 읽는 채로 남는다 — 지운 때를 날짜로 삼지 않는다(GPT 서버 다시 검수 workspaces-b GA1)',async t=>{
+  const f=await fixture(t);await f.features({personaRequest:true});
+  const a=f.browser(),x=await f.readyPersona(a);
+  f.store().put('pulsePersonas',x.personaId,{...personaOf(f,x.personaId),status:'deleting',pendingUnlink:[],revision:4,originActivityAt:'invalid-date',originActivityRev:3,deletion:{confirmedAt:isoOf(f.stamp),confirmedBy:f.owner.id,note:''}});
+  await f.restart();
+  const tomb=personaOf(f,x.personaId);assert.equal(tomb.status,'deleted');
+  assert.equal(tomb.originActivityAt,'invalid-date');assert.equal(tomb.originActivityRev,tomb.revision);
+  await f.app.pulseRequests.retireUnconfirmed();
+  assert.equal(personaOf(f,x.personaId).originActivityAt,'invalid-date','다음 채우기도 지운 때로 바꾸지 않는다');
+  assert.deepEqual(requestClock(f.store(),projectOf(f,x.projectId),isoOf(f.stamp)),{unclear:'date'},'의뢰 기록은 지우지 않고 「날짜를 못 읽음」으로 센다');
 });
