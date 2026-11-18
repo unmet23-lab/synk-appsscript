@@ -14,7 +14,8 @@ const failures = [];
 const started = Date.now();
 for (const group of ['properties', 'learners'])
   if (runGroup(group).status !== 0) failures.push(`시험 ${group}`);
-if (!process.argv.includes('--no-mutants')) {
+const withMutants = !process.argv.includes('--no-mutants');
+if (withMutants) {
   const run = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'mutants.mjs')], {
     cwd: ROOT,
     stdio: 'inherit',
@@ -23,9 +24,10 @@ if (!process.argv.includes('--no-mutants')) {
   if (run.status !== 0) failures.push('변형 시험');
 }
 const minutes = ((Date.now() - started) / 60000).toFixed(1);
+const passed = withMutants ? '관문 1~7 통과' : '관문 1~6 통과 (7번 변형 시험 생략)';
 console.log(
   failures.length
     ? `atlas gate: 걸린 것 — ${failures.join(' · ')} (${minutes}분)`
-    : `atlas gate: 관문 1~7 통과 (${minutes}분)`,
+    : `atlas gate: ${passed} (${minutes}분)`,
 );
 if (failures.length) process.exitCode = 1;

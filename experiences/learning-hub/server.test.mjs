@@ -1,6 +1,109 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
 import { targetFor, createServer } from './server.mjs';
+import { APPLICATIONS } from '../synk-account/src/applications.mjs';
+
+test('the local account pages load their public styles, fonts, scripts and app artwork', async t => {
+  const server = createServer();
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const account = `http://127.0.0.1:${server.address().port}/synk-account/`;
+  const paths = new Set(['src/platform-library.css', 'assets/world-qr.svg', ...APPLICATIONS.map(app => 'assets/' + app.image)]);
+  for (const page of ['platform.html', 'index.html', 'preview.html']) {
+    const entry = await fetch(new URL(page, account));
+    assert.equal(entry.status, 200, page);
+    const html = await entry.text();
+    assert.match(html, /<script\b[^>]*\bsrc="\.\/dist\//, page);
+    for (const match of html.matchAll(/\b(?:src|href)="\.\/([^"#?]+)(?:\?[^"#]*)?"/g)) paths.add(match[1]);
+  }
+  for (const file of paths) {
+    const url = new URL(file, account);
+    const response = await fetch(url);
+    assert.equal(response.status, 200, file);
+    if (file.endsWith('.css')) {
+      const css = await response.text();
+      for (const match of css.matchAll(/url\(['"]?([^'")]+\.woff2)['"]?\)/g)) paths.add(new URL(match[1], url).href.slice(account.length));
+    } else await response.arrayBuffer();
+    const head = await fetch(url, { method: 'HEAD' });
+    assert.equal(head.status, 200, file);
+    assert.equal(head.headers.get('content-length'), response.headers.get('content-length'), file);
+  }
+});
+
+test('HEAD and invalid ranges read no file data, and a partial GET reads just the requested bytes', async t => {
+  const route = '/learning-hub/app.js', contents = await fs.readFile(targetFor(route));
+  const server = createServer();
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const url = `http://127.0.0.1:${server.address().port}${route}`;
+  const open = fs.open.bind(fs);
+  let bytesRead = 0;
+  t.mock.method(fs, 'readFile', () => { throw Error('Unexpected whole-file read'); });
+  t.mock.method(fs, 'open', async (...args) => {
+    const handle = await open(...args), read = handle.read.bind(handle);
+    handle.readFile = async () => { throw Error('Unexpected whole-file read'); };
+    handle.read = async (...readArgs) => {
+      const result = await read(...readArgs);
+      bytesRead += result.bytesRead;
+      return result;
+    };
+    return handle;
+  });
+  const head = await fetch(url, { method: 'HEAD' });
+  assert.equal(head.status, 200);
+  assert.equal(Number(head.headers.get('content-length')), contents.length);
+  const invalid = await fetch(url, { headers: { Range: `bytes=${contents.length}-` } });
+  assert.equal(invalid.status, 416);
+  assert.equal(invalid.headers.get('content-range'), `bytes */${contents.length}`);
+  assert.equal(bytesRead, 0);
+  for (const [range, start, end] of [['bytes=1-2', 1, 2], ['bytes=-3', contents.length - 3, contents.length - 1]]) {
+    const before = bytesRead;
+    const reply = await fetch(url, { headers: { Range: range } });
+    assert.equal(reply.status, 206);
+    assert.equal(reply.headers.get('content-range'), `bytes ${start}-${end}/${contents.length}`);
+    assert.deepEqual(Buffer.from(await reply.arrayBuffer()), contents.subarray(start, end + 1));
+    assert.equal(bytesRead - before, end - start + 1);
+  }
+});
+
+test('empty files and interrupted reads finish with a complete HTTP status and release the file', async t => {
+  const server = createServer();
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const url = `http://127.0.0.1:${server.address().port}/learning-hub/app.js`;
+  let content = Buffer.alloc(0), reportedSize = 0, failReads = false, opened = 0, closed = 0;
+  t.mock.method(fs, 'open', async () => {
+    opened++;
+    return {
+      stat: async () => ({ isFile: () => true, size: reportedSize }),
+      readFile: async () => content,
+      read: async (buffer, offset, length, position) => {
+        if (failReads) throw Error('fixture read failed');
+        const count = content.copy(buffer, offset, position, Math.min(position + 1, content.length));
+        return { bytesRead: count };
+      },
+      close: async () => { closed++; },
+    };
+  });
+  async function expectResponse(options, status, body) {
+    const response = await fetch(url, options);
+    assert.equal(response.status, status);
+    assert.equal(await response.text(), body);
+    assert.equal(closed, opened);
+  }
+  await expectResponse({}, 200, '');
+  await expectResponse({ method: 'HEAD' }, 200, '');
+  const partial = { headers: { Range: 'bytes=0-2' } };
+  await expectResponse(partial, 416, '');
+  reportedSize = 3;
+  content = Buffer.from('abc');
+  await expectResponse(partial, 206, 'abc');
+  content = Buffer.from('a');
+  await expectResponse(partial, 404, '');
+  failReads = true;
+  await expectResponse(partial, 404, '');
+});
 test('only named game assets are served, not repository files or QA artifacts', () => {
   assert.match(targetFor('/'), /learning-hub[\\/]index.html$/);
   assert.match(targetFor('/korean-racing/atlas-learning.js'), /atlas-learning.js$/);
@@ -44,6 +147,7 @@ test('shared origin serves executable common bundles with nosniff-safe MIME', as
     for (const route of ['/', '/learning-hub/app.js', '/learning-hub/atlas-learning.js', '/korean-rhythm/atlas-learning.js', '/order-rush/core.mjs', '/spaceship-coop/starbook.mjs', '/consult/core/domain.js', '/consult/core/interpretation.js', '/consult/core/engine.js', '/consult/core/personalization.js', '/atlas-lab/meeting.mjs', '/atlas-lab/meeting-ui.mjs', '/atlas-lab/discovery.mjs', '/atlas-lab/discovery-ui.mjs']) {
       const response = await fetch(origin + route); assert.equal(response.status, 200, route);
       assert.match(response.headers.get('content-type'), route === '/' ? /text\/html/ : /text\/javascript/);
+      await response.arrayBuffer();
     }
     assert.equal((await fetch(origin + '/', { method: 'POST' })).status, 405);
   } finally { await new Promise(resolve => server.close(resolve)); }

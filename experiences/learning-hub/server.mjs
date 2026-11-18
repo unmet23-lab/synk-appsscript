@@ -27,6 +27,10 @@ const classroomPublic={
   'synk-town':new Set(['linked.html','app.mjs','style.css','linked-client.mjs','understanding.mjs','understanding-ui.mjs'])
 };
 const accountPublic = new Set(['index.html', 'client.html', 'teacher.html', 'teacher.css', 'preview.html', 'platform.html', 'platform.css', 'config.json', 'style.css',
+  'id.css', 'portal-entry.css', 'src/platform-library.css', 'theme.js',
+  'assets/SYNKSans-rest.woff2', 'assets/SYNKSans-ui.woff2', 'assets/SYNKArrow.woff2', 'assets/DMMono-Medium.woff2',
+  'assets/InterTight-Regular.woff2', 'assets/InterTight-Medium.woff2', 'assets/InterTight-SemiBold.woff2',
+  'assets/world-annyeong.webp', 'assets/laptop.webp', 'assets/path-vr-felt.webp', 'assets/world-qr.svg',
   'wardrobe.css', 'dist/wardrobe-three.js',
   ...['mongle-basic.webp', 'marin-basic.webp', 'kkamong-base.webp', 'kkamong-scarf.webp', 'kkamong-headphones.webp', 'kkamong-apron.webp', 'kkamong-summer-deel.webp', 'kkamong-winter-deel.webp', 'felt-paper.webp', 'felt-night.webp', 'felt-lapis.webp', 'cushion-cream.webp', 'cushion-blush.webp'].map(name => `assets/wardrobe/${name}`),
   'benefits.css', 'member-insight.css', 'assets/member/world-book.avif', ...['gift', 'insight', 'subscriptions', 'care', 'fortune'].map(id => `assets/member/benefit-${id}.webp`), 'assets/member/solio-object.webp', 'assets/member/wide-lapis.webp', 'assets/member/wide-butter.webp',
@@ -97,30 +101,53 @@ export function createServer({ datingService, datingConfig, datingOnly = false, 
       if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405).end(); return; }
       if (pathname === '/') { res.writeHead(302, { Location: datingOnly ? '/atlas-lab/dating.html' : '/synk-account/platform.html', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' }).end(); return; }
       const target = datingOnly ? await resolveDatingPublicTarget(req.url) : targetFor(req.url); if (!target) { res.writeHead(404).end(); return; }
-      const stat = await fs.stat(target); if (!stat.isFile()) { res.writeHead(404).end(); return; }
       const real = await fs.realpath(target), listed = [...consult.values()].some(file => path.resolve(root, file) === real);
       if (path.relative(root, real).startsWith('..') && !listed) { res.writeHead(403).end(); return; }
       if ((datingOnly || path.relative(root, target).split(path.sep)[0] === 'atlas-lab') && path.relative(target, real) !== '') { res.writeHead(403).end(); return; }
-      const data = await fs.readFile(real);
-      const head = { 'Content-Type': types[path.extname(target)], 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
-        'Referrer-Policy': 'no-referrer', 'Accept-Ranges': 'bytes' };
-      // 영상·소리의 범위 요청(Safari·iOS는 영상에 206이 꼭 필요하다 — 입장 검사 근무지 영상)
-      const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
-      if (range && (range[1] || range[2])) {
-        const start = range[1] ? Number(range[1]) : Math.max(0, data.length - Number(range[2]));
-        const end = range[1] && range[2] ? Math.min(Number(range[2]), data.length - 1) : data.length - 1;
-        if (start >= data.length || start > end) { res.writeHead(416, { 'Content-Range': `bytes */${data.length}` }).end(); return; }
-        const part = data.subarray(start, end + 1);
-        res.writeHead(206, { ...head, 'Content-Range': `bytes ${start}-${end}/${data.length}`, 'Content-Length': part.length });
-        res.end(req.method === 'HEAD' ? undefined : part);
-        return;
-      }
-      res.writeHead(200, { ...head, 'Content-Length': data.length });
-      res.end(req.method === 'HEAD' ? undefined : data);
-    } catch { res.writeHead(404).end(); }
+      await sendFile(real, types[path.extname(target)], req, res);
+    } catch {
+      if (res.headersSent) res.destroy();
+      else if (!res.destroyed) res.writeHead(404).end();
+    }
   });
   server.on('close', () => { journey?.close(); spaceship?.close(); datingService?.close(); });
   return server;
+}
+
+async function sendFile(real, type, req, res) {
+  // O_NONBLOCK lets us inspect and reject a FIFO without waiting for its writer.
+  const file = await fs.open(real, fs.constants.O_RDONLY | (fs.constants.O_NONBLOCK ?? 0));
+  try {
+    const stat = await file.stat();
+    if (!stat.isFile()) { res.writeHead(404).end(); return; }
+    const size = stat.size;
+    const headers = { 'Content-Type': type, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'no-referrer', 'Accept-Ranges': 'bytes' };
+    let start = 0, end = size - 1, status = 200;
+    const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+    if (range && (range[1] || range[2])) {
+      start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+      end = range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+      if (start > end) { res.writeHead(416, { 'Content-Range': `bytes */${size}` }).end(); return; }
+      status = 206;
+      headers['Content-Range'] = `bytes ${start}-${end}/${size}`;
+    }
+    const length = end - start + 1;
+    let body;
+    if (req.method !== 'HEAD') {
+      if (status === 200) body = await file.readFile();
+      else {
+        body = Buffer.allocUnsafe(length);
+        for (let offset = 0; offset < length;) {
+          if (req.socket.destroyed) return;
+          const { bytesRead } = await file.read(body, offset, length - offset, start + offset);
+          if (!bytesRead) { res.writeHead(404).end(); return; }
+          offset += bytesRead;
+        }
+      }
+    }
+    res.writeHead(status, { ...headers, 'Content-Length': body?.length ?? length }).end(body);
+  } finally { await file.close(); }
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.SYNK_LEARNING_PORT || 4280);

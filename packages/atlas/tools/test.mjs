@@ -5,22 +5,13 @@
 //   learners    가상 학습자 관문 2~5(몇 분 — check에 들지 않고 npm run gate로)
 //   record      기록 · 저장(단계 3) — 사건 2판 · 측정 계약 · 서버 접기 · 기기 얹기 임의 시험 · 저장 관문 장면(몇 초, check에 든다)
 //   coach       코치 3판(단계 4) — 제시 칸 · 두뇌와 같은 결정 · 저장 실패 다시 세우기 · 호스트 나누기 · 제품 순서 문항(몇 초, check에 든다)
-// unit · build는 꼭 도는 묶음이라 시험 파일이 하나도 없으면 실패다(check가 시험 없이 「통과」하지 않게). properties · learners는
-// 아직 채우지 않은 묶음이라 시험이 없으면 「이 묶음은 단계 N이 채운다」를 찍고 끝낸다(CI의 check에는 들지 않는다).
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const GROUPS = {
-  unit: { stage: 0, leafOnly: true, required: true },
-  build: { stage: 0, leafOnly: false, required: true },
-  properties: { stage: 2, leafOnly: false, required: false },
-  learners: { stage: 2, leafOnly: false, required: false },
-  record: { stage: 3, leafOnly: false, required: false },
-  coach: { stage: 4, leafOnly: false, required: false },
-};
+const GROUPS = ['unit', 'build', 'properties', 'learners', 'record', 'coach'];
 
 function testFiles(dir) {
   if (!fs.existsSync(dir)) return [];
@@ -44,19 +35,14 @@ export function testEnv(extra = {}) {
 
 // root는 시험이 패키지 밖의 빈 자리를 줄 때만 바꾼다. env는 그 묶음에만 더할 환경 변수(줄인 씨앗 등).
 export function runGroup(name, { root = ROOT, env = {} } = {}) {
-  const group = GROUPS[name];
-  if (!group)
-    throw new Error(`Atlas test: 모르는 묶음 ${name} — ${Object.keys(GROUPS).join(' · ')}`);
+  if (!GROUPS.includes(name))
+    throw new Error(`Atlas test: 모르는 묶음 ${name} — ${GROUPS.join(' · ')}`);
   const files = testFiles(path.join(root, 'test', name));
-  if (!files.length && group.required) {
-    console.error(`atlas ${name}: 시험이 하나도 없다 — 꼭 도는 묶음이다`);
+  if (!files.length) {
+    console.error(`atlas ${name}: 시험 파일이 하나도 없습니다.`);
     return { name, status: 1, files: 0 };
   }
-  if (!files.length) {
-    console.log(`atlas ${name}: 아직 시험이 없다 — 이 묶음은 단계 ${group.stage}이 채운다`);
-    return { name, status: 0, files: 0 };
-  }
-  const hook = group.leafOnly ? ['--import', './test/support/leaf-only.mjs'] : [];
+  const hook = name === 'unit' ? ['--import', './test/support/leaf-only.mjs'] : [];
   const run = spawnSync(
     process.execPath,
     [...hook, '--test', ...files.map(f => path.relative(root, f))],
@@ -73,7 +59,7 @@ const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPa
 if (invoked) {
   const names = process.argv.slice(2);
   if (!names.length)
-    throw new Error('사용법: node packages/atlas/tools/test.mjs <unit|build|properties|learners>…');
+    throw new Error(`사용법: node packages/atlas/tools/test.mjs <${GROUPS.join('|')}>…`);
   const results = names.map(runGroup);
   if (results.some(result => result.status !== 0)) process.exitCode = 1;
 }
