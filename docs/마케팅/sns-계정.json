@@ -2016,11 +2016,12 @@
       "publisher": "manual-assisted",
       "editorUrl": "https://center-pf.kakao.com/",
       "connection": "official-admin-center",
-      "profileStatus": "bio-41-of-55-saved-confirmation-and-full-public-channel-home-rechecked-2026-09-14; photo-contact-service-links-posts-unchanged; existing-basic-info-card-title-unchanged; no-independent-cover-control-shown",
+      "profileStatus": "bio-kakao-bio-saved-and-public-channel-home-rechecked-2026-11-19-via-ego-profile-7; bio-41-of-55-saved-confirmation-and-full-public-channel-home-rechecked-2026-09-14; photo-contact-service-links-posts-unchanged; existing-basic-info-card-title-unchanged; no-independent-cover-control-shown",
       "dailyOff": "카카오 채널 — 메시지 발송은 돈이 들어 매일 판과 맞지 않음",
       "loginIdentityRef": "kakao-shift",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
-      "profileAudit20261118": "소개를 SHIFT 지금 일로 바꾸려 했으나 카카오 로그인이 없어 못 고침 — 원고 kakao-bio · docs/마케팅/프로필점검_20261118/README.md"
+      "profileAudit20261118": "11-19 03:02 소개를 원고 kakao-bio로 바꾸고 로그인하지 않은 공개 채널 홈에서 같음을 확인 — ego Profile 7 카카오 로그인, 파트너센터 채널홈 설정 → 프로필 카드. 기본 정보 카드 제목 「유호의 작업과 AI 사용법」은 그대로",
+      "egoProfile": "Profile 7"
     },
     "shift-tistory": {
       "brand": "SHIFT",
