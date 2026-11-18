@@ -15,6 +15,7 @@
   const root = $('#sc');
   const head = $('.sc-head'), stage = $('.sc-stage'), after = $('.sc-after');
   const qhead = $('.sc-qhead'), ctxEl = $('.sc-ctx'), promptEl = $('.sc-prompt');
+  const specQ = $('.sc-spec-q'), dayN = $('.sc-day-n'), dayU = $('.sc-day-u'), dock = $('.sc-dock'), dockStack = $('.sc-dock-stack');
   const say = $('.sc-say'), sub = $('.sc-sub'), next = $('.sc-next');
   const line = $('.sc-line'), layer = $('.sc-cards'), cordPath = $('.sc-cord-path'), cordShadow = $('.sc-cord-shadow'), stopsEl = $('.sc-stops'), hint = $('.sc-hint');
   const ff = $('.sc-ff'), ffNum = $('.sc-ff-num'), ffCap = $('.sc-ff-cap');
@@ -400,7 +401,19 @@
       .call(() => { play('clipsnap', { g: 0.6 }); kick(c.x, 60); act(c, true, voice); });
   });
   const markStop = (i, ok) => { const b = stopLis[i].querySelector('b'); b.textContent = ok ? '✓' : '✕'; b.style.color = ok ? 'var(--ink)' : 'var(--stamp)'; if (!reduce) gsap.fromTo(b, { scale: 1.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(2)' }); };
-  const setClock = (k) => stopLis.forEach((li, i) => { if (!i) return; li.classList.toggle('is-now', i === k); li.classList.toggle('is-past', i < k); });
+  // 머리: 지금 보는 날(숫자가 감긴다) · 장면 번호 · 탁상 달력 꽂이(머리 시안 C)
+  let sceneNo = 0;
+  const DAYS = [['첫날', ''], ['1', '분 뒤'], ['1', '일 뒤'], ['7', '일 뒤'], ['30', '일 뒤'], ['30', '일 뒤']];
+  const DOCK = [[0, null], [0, null], [1, 'sun'], [7, 'rain'], [30, 'snow'], [30, 'snow']];
+  const headDay = (k) => {
+    sceneNo = k; root.dataset.day = String(k);
+    const [n, u] = DAYS[k], num = Number(n), was = Number(dayN.textContent);
+    dayU.textContent = u;
+    if (!reduce && Number.isFinite(num) && Number.isFinite(was) && num !== was) { const o = { v: was }; gsap.to(o, { v: num, duration: 0.9, ease: 'power3.out', onUpdate: () => { dayN.textContent = String(Math.round(o.v)); } }); }
+    else dayN.textContent = n;
+    if (k <= 1 || k === 5) dockStack.replaceChildren(calPage(...DOCK[k]));
+  };
+  const setClock = (k) => { headDay(k); stopLis.forEach((li, i) => { if (!i) return; li.classList.toggle('is-now', i === k); li.classList.toggle('is-past', i < k); }); };
   const setFull = (on) => line.classList.toggle('is-full', on);
 
   /* ── 날이 바뀐다: 탁상 달력이 넘어가고, 바탕 · 날씨 · 소리가 바뀐다 ── */
@@ -470,7 +483,8 @@
     for (let n = to; n >= from; n--) { const p = calPage(n, n === to ? icon : null); calStack.append(p); pages.push(p); }
     calCap.textContent = cap;
     const N = to - from, T = Math.min(2.1, 0.25 + N * 0.075);
-    const tl = gsap.timeline({ onComplete: () => gsap.to(cal, { opacity: 0, scale: 1.04, y: -6, duration: 0.3, delay: reduce ? 0 : 0.7, ease: 'power2.in', onComplete: res }) });
+    const fade = () => gsap.to(cal, { opacity: 0, scale: 1.04, y: -6, duration: 0.3, delay: reduce ? 0 : 0.7, ease: 'power2.in', onComplete: res });
+    const tl = gsap.timeline({ onComplete: () => { if (root.dataset.head === 'c' && !reduce) landOnDock(to, icon).then(res); else { dockStack.replaceChildren(calPage(to, icon)); fade(); } } });
     tl.fromTo(cal, { opacity: 0, scale: 0.9, y: 12 }, { opacity: 1, scale: 1, y: 0, duration: reduce ? 0 : 0.32, ease: 'back.out(2)' });
     tl.call(() => { root.dataset.scene = scene; setSky(scene === 'rain' || scene === 'snow' ? scene : null); play('whoosh', { g: 0.8, rate: 0.9 }); }, null, 0.1);
     for (let i = 0; i < N; i++) {
@@ -480,6 +494,18 @@
         .call(() => play('flip', { g: 0.5, rate: 1.3 + u * 0.5 }), null, at);
     }
     tl.call(() => { play('tick'); const last = pages[0]; if (!reduce) gsap.fromTo(last, { y: 3 }, { y: 0, duration: 0.3, ease: 'back.out(3)' }); }, null, '>-0.1');
+  });
+
+  // 머리 시안 C: 넘긴 달력이 작아지며 문제 글 옆 꽂이에 앉는다
+  const landOnDock = (to, icon) => new Promise((res) => {
+    const body = $('.sc-cal-body', cal), a = body.getBoundingClientRect(), b = dock.getBoundingClientRect();
+    const sx = b.width / a.width, dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+    gsap.to(calCap, { opacity: 0, duration: 0.2, delay: 0.45 });
+    gsap.to(body, { x: dx, y: dy, scale: sx, rotation: -4, duration: 0.62, delay: 0.45, ease: 'power3.inOut', onComplete: () => {
+      dockStack.replaceChildren(calPage(to, icon)); play('clipsnap', { g: 0.5 });
+      gsap.set(cal, { opacity: 0 }); gsap.set(body, { clearProps: 'transform' }); gsap.set(calCap, { opacity: 1 });
+      gsap.fromTo(dock, { y: -4 }, { y: 0, duration: 0.4, ease: 'back.out(3)' }); res();
+    } });
   });
 
   /* ── SYNK WORLD 실제 화면 조각: 그날 앱이 보이는 화면을 문제 자리에 띄운다(지어낸 말풍선 대신) ── */
@@ -494,6 +520,12 @@
   const evid = mkShot('sc-shot sc-evid'); line.append(evid);
   const showShot = async (f, name) => {
     const img = $('img', f); img.src = shotSrc(name); img.alt = ALT[name] || '';
+    // 문제 자리 조각은 장면 머리 아래에 놓는다(머리 시안 C는 달력 꽂이 옆 글 줄에 맞춘다)
+    if (f === shot && root.dataset.head) {
+      const r = stage.getBoundingClientRect(), qr = qhead.getBoundingClientRect();
+      if (qr.height) f.style.top = Math.round(qr.bottom - r.top + 12) + 'px';
+      if (root.dataset.head === 'c' && !narrow) { const qx = Math.round($('.sc-q').getBoundingClientRect().left - r.left); f.style.left = qx + 'px'; f.style.right = 'auto'; f.style.margin = '0'; }
+    }
     try { await img.decode(); } catch { /* 그대로 띄운다 */ }
     play('notify');
     gsap.fromTo(f, { opacity: 0, y: 14, rotationX: -16, scale: 0.94 }, { opacity: 1, y: 0, rotationX: 0, scale: 1, duration: reduce ? 0 : 0.55, ease: 'back.out(1.8)', transformPerspective: 800 });
@@ -553,7 +585,12 @@
   const mmss = (v) => { const s = Math.round(v); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 
   /* ── 흐름 ── */
-  const showQuestion = (q) => { qhead.textContent = q.head; kinetic(ctxEl, q.context, 0.05); kinetic(promptEl, q.prompt, 0.18); setAfter(q.say, q.sub); next.replaceChildren(); };
+  const setQhead = (t) => {
+    const no = document.createElement('span'); no.className = 'sc-qno'; no.textContent = String(sceneNo + 1).padStart(2, '0');
+    const tx = document.createElement('span'); tx.className = 'sc-qtx'; tx.textContent = t;
+    qhead.replaceChildren(no, tx); specQ.textContent = t;
+  };
+  const showQuestion = (q) => { setQhead(q.head); kinetic(ctxEl, q.context, 0.05); kinetic(promptEl, q.prompt, 0.18); setAfter(q.say, q.sub); next.replaceChildren(); };
   const takeAnswer = (cs, q) => new Promise((done) => {
     cs.forEach((c) => { c.answerable = true; c.el.removeAttribute('aria-disabled'); });
     answering = (picked) => {
@@ -629,7 +666,7 @@
     await wait(260);
     if (r.right) button(Q.toDay1, () => toTomorrow(r.correct)); else button(Q.toMinute, () => toMinute(r.correct));
   }
-  const clearStage = (h) => { qhead.textContent = h; ctxEl.textContent = ''; promptEl.textContent = ''; setAfter('', ''); next.replaceChildren(); };
+  const clearStage = (h) => { setQhead(h); ctxEl.textContent = ''; promptEl.textContent = ''; setAfter('', ''); next.replaceChildren(); };
   // 내일: 앱을 열면 튜터 카드가 먼저 꺼낸다(실제 화면) → 카드가 돌아와 그 말을 한다 → 「내일」 칸 ✓
   async function toTomorrow(c) {
     hideHint(); hideShot(); await leaveStage(); setClock(2);
