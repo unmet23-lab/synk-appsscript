@@ -755,7 +755,7 @@
         "노래": "미정"
       },
       "postRoute": "meta-business-suite",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
@@ -2236,7 +2236,7 @@
         "노래": "미정"
       },
       "postRoute": "tiktok-studio",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "missing",

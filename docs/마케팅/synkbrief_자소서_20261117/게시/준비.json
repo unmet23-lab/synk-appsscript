@@ -122,7 +122,7 @@
   "작업실등록": true,
   "검사": {
     "도구": "tools/올리기전검사.js",
-    "시각": "2026-11-17T12:57:30+09:00",
+    "시각": "2026-11-18T14:38:17+09:00",
     "결과": "확인할 것",
     "고칠것": [],
     "확인할것": [
@@ -174,7 +174,7 @@
           "최장": 0,
           "자리": 0
         },
-        "사전검사": ".tmp/올리기전검사/synkbrief_자소서_20261117/영상사전검사_게시_b49_master/inspection-10a58d66-3153-4801-8dfd-840041ffafe9/검사.json"
+        "사전검사": ".tmp/올리기전검사/synkbrief_자소서_20261117/영상사전검사_게시_b49_master/inspection-43ee81f7-dcb3-456f-b275-0de4933d3a14/검사.json"
       }
     ],
     "목소리": {
@@ -188,8 +188,7 @@
         "편": "synkbrief_가짜쇼핑몰_20261116",
         "판": [
           "synkbrief-instagram",
-          "synkbrief-youtube",
-          "synkbrief-tiktok"
+          "synkbrief-youtube"
         ],
         "첫장면": 0.196,
         "끝장면": 0.278,
@@ -199,7 +198,8 @@
         "편": "synkbrief_원생명단_20261115",
         "판": [
           "synkbrief-instagram",
-          "synkbrief-youtube"
+          "synkbrief-youtube",
+          "synkbrief-tiktok"
         ],
         "첫장면": 0.333,
         "끝장면": 0.291,
