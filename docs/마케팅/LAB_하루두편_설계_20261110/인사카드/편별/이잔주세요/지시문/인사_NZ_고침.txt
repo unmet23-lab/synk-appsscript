@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep the camera, the sky-blue felt backdrop, the wooden tabletop, the light, and all the characters and objects looking exactly the same: the coral-red ghost-shaped mascot sitting on the tabletop with its shocked face (wide round black bead eyes, small round open mouth, light-blue sweat drop), the little brown kiwi bird perched on its head holding the giant green daisy mug by its handle in its long beak, and the two small white paper cups floating at the left. Change only these things:
+
+1. The felt lettering: keep every letter exactly as it is (Jan, / 뉴질랜드! / nyu-jil-laen-deu — same letters, same shapes, same colors, same three lines; the SECOND attached image is the lettering artwork and the letters must still match it) but make the whole lettering block a little smaller, about 90% of its current size, centered horizontally. Its top edge stays at the same height.
+
+2. Make the whole group (the mascot with the kiwi on its head, the mug hanging from the kiwi's beak and the two paper cups) about 15% smaller and move it toward the center of the image, so there is a clear margin of empty backdrop and tabletop — at least 10% of the image width — between the group and both the left and right edges of the image. Same poses, same expressions; the mascot still sits on the tabletop.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere. Nothing else is added.
+
+Style: real handmade needle-felt and felt-applique craft photographed with a macro lens, tidy short fuzz, soft natural daylight.
