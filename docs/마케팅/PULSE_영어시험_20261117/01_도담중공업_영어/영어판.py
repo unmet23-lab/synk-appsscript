@@ -4,7 +4,7 @@
 #     소리: 최종소리.build를 그대로 쓰고 내레이션만 영어 판(내레이션_영어.py)으로 바꾼다 — 놓는 자리 · 곡 내림 · 효과음은 한국어 판과 같다.
 #           마지막 줄만 56.08 → 55.58초로 0.5초 당긴다(영어 줄 2.28초가 57.97초 마지막 화음 앞에서 끝나야 곡 내림을 화음 전에 다 푼다).
 #     판: Remotion src/p10en(영어 자막 · SYNK PULSE 끝 화면 3.5초)으로 굽고 음량을 −14 LUFS로 맞춘다.
-#   python -X utf8 영어판.py [소리] [화면] [판] [--목소리 아이작|조지|브라이언] [--로고 A|B|C] [--평면로고]
+#   python -X utf8 영어판.py [소리] [화면] [판] [--목소리 아이작|조지|브라이언] [--로고 A|B|C] [--펠트로고]
 #     → git 밖 synk-vendor/pulse-portfolio12-20261024/최종/p10_en/도담_영어_<로고>_<목소리>.mp4 · _폰.mp4 · _반초.jpg
 #   python -X utf8 영어판.py 낱장 <파일> <초> [<초> …]   → p10_en/_낱장/<파일 이름>_t<초>.png
 import os
@@ -65,7 +65,7 @@ LIFT = {"When it's fully grown it'll weigh 300 tons": 1.5, "We fitted every blad
         "It's all grown up": 5.5, "Now for the first time we wake it": 4.5, "we send our baby out into the world": 2.5}
 
 
-FLAT = [False]   # --평면로고: 끝 화면 로고를 비교 시안(trim_logo 설명)으로 — 이름 끝에 「_평면로고시안」이 붙는다
+FLAT = [True]    # 끝 화면 로고는 평면 판이 기본이다(11-18 유호님 「평면으로 바꿔」, 결정 표 11-18). --펠트로고는 기록용 옛 판 — 이름 끝에 「_펠트로고」가 붙는다
 
 
 def args():
@@ -73,8 +73,8 @@ def args():
     voice, logo, what = "아이작", "C", []
     i = 0
     while i < len(a):
-        if a[i] == "--평면로고":
-            FLAT[0], i = True, i + 1
+        if a[i] == "--펠트로고":
+            FLAT[0], i = False, i + 1
         elif a[i] == "--목소리":
             voice, i = a[i + 1], i + 2
         elif a[i] == "--로고":
@@ -220,9 +220,10 @@ def picture(logo):
 
 
 def trim_logo(flat=False):
-    """승인 로고의 투명 여백만 잘라 TRIM에 둔다. flat=True는 유호님께 견줘 보일 비교 시안 — 외곽선(알파)은 승인 파일 그대로 두고
-    synk는 크림 한 색, PULSE는 베리 몸통 색 한 색으로 채워 펠트 음영 · 실땀을 뺀다. 로고 정본 규칙(「펠트를 한 색으로 덮거나 평평하게 만들지 않는다」)과
-    어긋나므로 유호님이 고르시기 전에는 올리는 판에 쓰지 않는다(11-18 맹검: 같은 장면 · 같은 짜임에서 펠트 4점 · 평면 7점, GPT)."""
+    """승인 로고의 투명 여백만 잘라 TRIM에 둔다. flat=True(기본)는 외곽선(알파)을 승인 파일 그대로 두고 synk는 크림 한 색,
+    PULSE는 베리 몸통 색 한 색으로 채워 펠트 음영 · 실땀을 뺀 평면 판이다. 로고 정본 규칙(「펠트를 한 색으로 덮거나 평평하게 만들지 않는다」)의 예외로,
+    11-18 유호님 「평면으로 바꿔」가 이 편 끝 화면에 허락하셨다(로고_중립색_정본_v1.md 용도별 원천 표 · 결정 표 11-18).
+    근거: 같은 장면 · 같은 짜임에서 로고만 바꾼 맹검 — GPT 펠트 4 · 평면 7, 카본 2 · 4, 둘 다 쌍 비교에서 평면."""
     import numpy as np
     from PIL import Image
     im = Image.open(KIT_LOGO).convert("RGBA")
@@ -244,14 +245,14 @@ def trim_logo(flat=False):
     im.save(TRIM)
 
 
-def render(logo, voice, jobs=2, flat=False):
+def render(logo, voice, jobs=2, flat=True):
     os.makedirs(PUB, exist_ok=True)
     trim_logo(flat)
     for src, to in ((os.path.join(OUT, f"화면_{logo}.mp4"), os.path.join(PUB, "picture.mp4")), (os.path.join(OUT, f"소리_{voice}.wav"), os.path.join(PUB, "sound.wav")),
                     (os.path.join(OUT, f"timing_{voice}.json"), os.path.join(CAP, "src", "p10en", "timing.json"))):
         if not os.path.exists(to) or C.md5(src) != C.md5(to):
             shutil.copyfile(src, to)
-    name = f"도담_영어_{logo}_{voice}" + ("_평면로고시안" if flat else "")
+    name = f"도담_영어_{logo}_{voice}" + ("" if flat else "_펠트로고")
     out, raw = os.path.join(OUT, name + ".mp4"), os.path.join(OUT, "_렌더.mp4")
     C.run(shutil.which("npx"), "remotion", "render", "src/p10en/entry.tsx", "p10en", raw, f"--concurrency={jobs}", "--timeout=120000", "--log=error", cwd=CAP)   # 다른 무거운 일과 겹치면 첫 프레임 가져오기가 28초를 넘겨 멈췄다(11-18)
     want = E.F[-1] + CARD
