@@ -3155,6 +3155,15 @@
             }
           }
         }
+      },
+      "UZ": {
+        "언어": "uz",
+        "파일": "게시/판본/UZ/video.mp4",
+        "표지": "게시/판본/UZ/cover.png",
+        "글": "게시/판본/UZ/글.json",
+        "원고": {
+          "instagram": "게시/판본/UZ/원고_instagram.json"
+        }
       }
     }
   }

@@ -63,7 +63,7 @@
     {
       "id": "hook",
       "칸": "머리",
-      "글": "Falar “수고하세요”\npro professor?",
+      "글": "Falar “수고하세요”\npro prof?",
       "원문": "「수고하세요」라고 말하기,\n교수님께?",
       "초": [
         0,
@@ -161,8 +161,8 @@
     {
       "id": "literalNote",
       "칸": "진행",
-      "글": "Com os mais velhos,\npode soar estranho",
-      "원문": "윗사람에게는\n어색하게 들릴 수 있어요",
+      "글": "Pra prof ou chefe,\npode soar como uma ordem",
+      "원문": "교수님이나 상사에게는\n명령처럼 들릴 수 있어요",
       "초": [
         5.5,
         8.7
@@ -311,8 +311,8 @@
     {
       "id": "ruleFriend",
       "칸": "진행",
-      "글": "Amigos e colegas",
-      "원문": "친구 · 동료",
+      "글": "Pra amigos e colegas",
+      "원문": "친구 · 동료에게",
       "초": [
         12.9,
         16.4
@@ -373,8 +373,8 @@
     {
       "id": "gag",
       "칸": "진행",
-      "글": "Aí pode",
-      "원문": "그럴 땐(윗사람이 하면) 돼요",
+      "글": "Já ele diz 수고해요",
+      "원문": "그분은 수고해요라고 말해(그건 괜찮아요)",
       "초": [
         16.5,
         17.3
@@ -418,29 +418,6 @@
         "최대줄": 1,
         "줄바꿈": "nowrap",
         "가운데": true,
-        "글꼴": "'Inter Tight', 'SUIT', sans-serif"
-      }
-    },
-    {
-      "id": "b2Mean",
-      "칸": "뜻",
-      "글": "Bom trabalho",
-      "원문": "일 잘해요(수고하세요와 같은 뜻의 편한 말)",
-      "초": [
-        16.52,
-        17.4
-      ],
-      "장면": "교수 말풍선 「수고해요」 맨 아래 붉은 뜻 줄(이 줄이 없는 판본도 있다 — 몽골판)",
-      "상자": {
-        "폭": 630,
-        "굵기": 800,
-        "줄높이": 1.18,
-        "최대줄": 1,
-        "줄바꿈": "nowrap",
-        "가운데": true,
-        "x": 360,
-        "y": 697,
-        "글자크기": 44,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -565,8 +542,8 @@
     {
       "id": "게시글.youtube.본문.1",
       "칸": "게시글",
-      "글": "수고하세요 (sugohaseyo), ao pé da letra, é “trabalhe bem”. Com amigos e colegas tudo bem, mas com professor, chefe ou alguém mais velho pode soar estranho.",
-      "원문": "수고하세요는 글자 그대로 「일 잘하세요」다. 친구 · 동료에게는 괜찮지만, 교수님 · 상사나 나이 많은 사람에게는 어색하게 들릴 수 있다."
+      "글": "수고하세요 (sugohaseyo), ao pé da letra, é “trabalhe bem”. Com amigos e colegas tudo bem, mas pra professor, chefe ou alguém mais velho pode soar como uma ordem.",
+      "원문": "수고하세요는 글자 그대로 「일 잘하세요」다. 친구 · 동료에게는 괜찮지만, 교수님 · 상사나 나이 많은 사람에게는 명령처럼 들릴 수 있다."
     },
     {
       "id": "게시글.youtube.본문.2",
@@ -583,8 +560,8 @@
     {
       "id": "게시글.youtube.본문.4",
       "칸": "게시글",
-      "글": "Mas quem é mais velho pode te dizer 수고해요 (sugohaeyo), que é mais informal.",
-      "원문": "반대로 윗사람은 너에게 「수고해요」라고 해도 되는데, 그게 더 편한 말투다."
+      "글": "Já o professor ou o chefe pode te dizer 수고해요 (sugohaeyo), que é mais informal.",
+      "원문": "반대로 교수님이나 상사는 너에게 「수고해요」라고 해도 되는데, 그게 더 편한 말투다."
     },
     {
       "id": "게시글.youtube.고정댓글.1",

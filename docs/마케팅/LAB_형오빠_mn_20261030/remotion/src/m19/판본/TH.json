@@ -140,39 +140,39 @@
   "lang": "th",
   "font": "'Inter Tight', 'Leelawadee UI', 'SUIT', sans-serif",
   "lineH": 1.45,
-  "hook": "",
+  "hook": "พี่\nภาษาเกาหลีว่าไง?",
   "hookSize": 56,
-  "reveal": "",
+  "reveal": "พี่ 1 คน\nเรียก 2 แบบ!",
   "revealSize": 72,
-  "colA": "",
-  "colB": "",
+  "colA": "พี่ชาย",
+  "colB": "พี่สาว",
   "headSize": 52,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "ผู้ชายเรียกพี่ชายแบบนี้",
+    "ผู้หญิงเรียกพี่ชายแบบนี้",
+    "ผู้ชายเรียกพี่สาวแบบนี้",
+    "ผู้หญิงเรียกพี่สาวแบบนี้"
   ],
   "meanSize": 50,
   "meanLineH": 1.45,
   "meanOneLine": false,
   "revealMeanSize": 50,
   "why": [
-    "",
-    ""
+    "ผู้หญิงไม่ใช้ 형!",
+    "ผู้ชายไม่ใช้ 언니!"
   ],
   "whySize": 50,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "ถ้าผู้ชายเรียก",
+  "rowF": "ถ้าผู้หญิงเรียก",
   "rowSize": 64,
-  "end": "",
+  "end": "แล้วแต่ใครเรียก!",
   "endSize": 62,
   "endLineNormal": false,
   "coverAt": 9.33,
@@ -180,5 +180,20 @@
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "hook": "손위 형제(피)는\n한국어로 뭐라고 해?",
+    "reveal": "손위 형제 한 명\n부르는 법 두 가지!",
+    "colA": "손위 남자 형제",
+    "colB": "손위 여자 형제",
+    "means.0": "남자는 손위 남자 형제를 이렇게 불러",
+    "means.1": "여자는 손위 남자 형제를 이렇게 불러",
+    "means.2": "남자는 손위 여자 형제를 이렇게 불러",
+    "means.3": "여자는 손위 여자 형제를 이렇게 불러",
+    "why.0": "여자는 형을 안 써!",
+    "why.1": "남자는 언니를 안 써!",
+    "rowM": "남자가 부르면",
+    "rowF": "여자가 부르면",
+    "end": "누가 부르느냐에 따라 달라!"
+  }
 }

@@ -2955,6 +2955,26 @@
             ]
           }
         }
+      },
+      "ID": {
+        "언어": "id",
+        "파일": "게시/판본/ID/video.mp4",
+        "표지": "게시/판본/ID/cover.png",
+        "글": "게시/판본/ID/글.json",
+        "원고": {
+          "tiktok": "게시/판본/ID/원고_tiktok.json",
+          "youtube": "게시/판본/ID/원고_youtube.json"
+        }
+      },
+      "TH": {
+        "언어": "th",
+        "파일": "게시/판본/TH/video.mp4",
+        "표지": "게시/판본/TH/cover.png",
+        "글": "게시/판본/TH/글.json",
+        "원고": {
+          "tiktok": "게시/판본/TH/원고_tiktok.json",
+          "youtube": "게시/판본/TH/원고_youtube.json"
+        }
       }
     }
   }
