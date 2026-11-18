@@ -2,7 +2,7 @@
 
 유호님 11-18 아침 「각 계정마다 소개글이나 커버사진이나 이런거 한번씩 체크해서 보완할곳있으면 보완한번해야할것같아. 오랜만에 이 작업을 하네, 말투 자연스러운지 각 국가마다 다 전수조사해서 보완할부분 부자연스러운부분 있으면 보완해」. 이 폴더는 LAB 39계정을 뺀 나머지 계정을 맡았다. X @synk_pulse, 링크드인 대표 프로필, 링크드인 yuhobuilds는 「PULSE 계정 바꾸기」 세션 몫이라 빼고, 틱톡 @yuhobuilds는 쉬는 계정이라 읽기만 했다.
 
-**보고 페이지(고르실 배너 · 전후 표 · 전수 표):** https://claude.ai/artifact/NaRrPF26vYHeL1BNGtBxoT
+**보고 페이지(고르실 배너 · 전후 표 · 전수 표):** https://claude.ai/artifact/1bQUrwZAfV6No8AW3Ct1ZN
 
 ## 무엇을 찾았나
 
@@ -31,7 +31,7 @@
 - **유호님이 고르실 것:** synkbrief 유튜브 배너를 글만 바꿔 걸지 아니면 재연 장면 컷으로 새로 지을지(같은 꼴인 yuhobuilds 배너도 함께). 보고 페이지 맨 위에 있다. 고르심 예측은 `docs/_ops/고르심기록.jsonl`의 `profile-pulse-yt-banner-20261118`, `profile-brief-yt-banner-20261118`.
 - **로그인이 필요했던 칸:** 인스타 @synkbrief · @yuhobuilds · @synkpulse, 틱톡 @synkpulse, 카카오 채널 다섯 칸이다. 11-18 「ego에 로그인할게」에 따라 계정마다 로그인 화면을 넘겼고, 유호님이 로그인하셨다.
   - 인스타 셋은 바꿨다. @synkbrief는 11-18 23:44(Profile 19), @yuhobuilds와 @synkpulse는 11-19 02:47(Profile 20 · 21)이다. 로그인하지 않은 공개 화면에서 모두 원고와 같았다. LAB 인스타 @synk.mn도 같은 때 Profile 23에서 바꿨다([LAB 점검](../LAB프로필점검_20261118/README.md)).
-  - 틱톡 @synkpulse는 못 바꿨다. Profile 7에서 저장하면 「프로필이 업데이트되었습니다」가 뜨고 저장 요청도 받아들여지지만, 다시 열면 옛 글(「AI ad films」)이다. 프로필 사진도 11-12에 건 PULSE 로고가 아니라 기본 그림이다. 휴대폰 앱에서 프로필에 검토 중이라는 안내가 있는지 봐야 한다.
+  - 틱톡 @synkpulse는 그대로 둔다. 웹에서 세 번 저장했지만 옛 소개(「AI ad films」)로 남았고, 11-19 유호님이 앱에서 보신 뒤 「이건 그냥 넘어가」라고 하셨다. 웹에서는 프로필 사진도 11-12에 건 PULSE 로고가 아니라 기본 그림으로 보인다.
   - 카카오 채널은 11-19 03:02에 Profile 7에서 바꿨다(파트너센터 채널홈 설정 → 프로필 카드). 공개 채널 홈에서 새 소개가 보였다. 채널홈 「기본 정보」 카드 제목은 「유호의 작업과 AI 사용법」(yuhobuilds 쪽 이름)으로 남아 있어 SHIFT 채널과 맞지 않는다.
 - **여쭐 것:** 네이버 블로그 synkshift는 이름 · 소개 · 커버가 9월 yuhobuilds 쪽(「유호 · AI와 회사 만들기」, 티스토리와 같은 이름)인데 글은 synkbrief 편이고 카테고리 다섯 가운데 넷이 비어 있다. 블로그 정체를 바꾸는 일이라 묻고 정한다. 링크드인 회사 페이지 커버도 광고 제작을 빼고 「교육과 콘텐츠」만 말한다. yuhokorean 다섯 계정과 몽글몽글 두 계정은 프로필 그림이 비어 있고 게시가 0이다 — 계속 쓸지와 함께 정한다.
 - **후속:** synk.im/en/pulse 첫 화면의 영어 두 문장(「led a web drama」, 「every cut as a scene image」)은 11-18에 PULSE 유튜브와 같은 문장으로 고쳐 공개했다. 정지 그림은 쪽 전체와 질문창 답에서 「still image」 · 「shot」으로 맞췄다(카본 검수 pulse-en-still-shot-20261118 0건, synk-policy fe29314). X · 링크드인 소개의 「AI ad films」도 영어 검사에서 「AI video ads」가 낫다고 나왔다(PULSE 계정 바꾸기 세션에 알림).
