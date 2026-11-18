@@ -7,22 +7,39 @@ import { createWorldEducation } from '../world-learning-ui.mjs';
 
 const EMPTY = Object.freeze({ skills: [], concepts: [], evidenceComplete: false });
 function setup({ chosen = null, values = { reasons: ['travel'], support: 'step', explanation: 'brief', textSize: 'large' }, status = 'active', ready = null } = {}) {
-  const writes = [], plans = [], lessons = [];
+  const writes = [], plans = [], lessons = [], panels = [];
   const state = { chosen };
   const preferences = { presentation: () => state.chosen ? { ...state.chosen } : null, setPresentation: value => { writes.push(value); return true; } };
   const host = { createGame: () => ({ summary: () => EMPTY, disconnect() {} }), preferences: () => preferences, ...(ready ? { ready: () => ready(state) } : {}) };
-  const progress = { owner: 'account-a', learningProfile: () => ({ profile: { status, revision: 1, consent: true } }),
+  const progress = { owner: 'account-a', learningProfile: () => ({ profile: { status, revision: 1, consent: status === 'active' } }),
     learningProfileValues: () => ({ ...values }), status: () => ({ phase: 'synced', rejected: false, scoped: true, message: '' }),
     exportSnapshot: () => ({}), flush: async () => {} };
   const education = createWorldEducation({
-    home: { updateStudy() {}, toast() {}, showPanel() {}, closePanel() {} },
+    home: { updateStudy() {}, toast() {}, showPanel(_title, html) { panels.push(html); }, closePanel() {} },
     getProgress: () => progress,
     engine: { engine: { createGame: () => ({ summary: () => EMPTY }) }, createLearningSync: null, recommendActivities: () => null },
     createPlan: args => { plans.push(args); return { selected: { route: 'lesson', lessonId: 'cafe-apply' }, reason: '' }; },
     launchGame() {}, startLesson: id => lessons.push(id), startReview() {},
-    target: { SYNKLearningHost: host, addEventListener() {}, removeEventListener() {} } });
-  return { education, writes, plans, lessons, state };
+    target: { SYNKLearningHost: host, document: { querySelector: () => null }, addEventListener() {}, removeEventListener() {} } });
+  return { education, writes, plans, lessons, panels, state };
 }
+
+test('a new goals form displays the account choices before consent and writes nothing', async () => {
+  const { education, panels, writes } = setup({ chosen: { support: 'independent', explanation: 'detailed' }, values: {}, status: 'new' });
+  try {
+    education.open();
+    const html = panels.at(-1);
+    assert.match(html, /<input type="radio" name="support" value="independent" checked>/);
+    assert.match(html, /<input type="radio" name="explanation" value="detailed" checked>/);
+    assert.match(html, /<input type="checkbox" name="consent"\s*>/);
+    education.refresh();
+    education.applyPreferences();
+    await education.next();
+    assert.deepEqual(writes, []);
+  } finally {
+    education.dispose();
+  }
+});
 
 test('opening and practising never write the presentation; the plan follows the account choice', async () => {
   const { education, writes, plans, lessons } = setup({ chosen: { support: 'independent', explanation: 'detailed' } });
