@@ -955,3 +955,32 @@ test('coming back to 내 계정 from the old screen reads the account again quie
   h.rooms.close(); h.rooms.reloadAccount(); await settle();
   assert.equal(h.ops().filter(o => o === 'accountView').length, reads + 1, 'nothing is read when the room is not open');
 });
+
+/* ── 다시 검수(FA1 · FA3)의 고침 ── */
+test('a Typecast key put in 「계정 더하기」 while another line’s browser login runs keeps that line’s login steps', async () => {
+  const h = harness();
+  await h.press('a:c', 'relogin');
+  h.setSnap(s => ({ ...s, login: { id: 'l1', service: 'claude', stage: 'browser', url: 'https://example.com/a' } }));
+  h.rooms.observe(h.snap);
+  await h.press('add', 'add-pick', 'typecast');
+  await h.press('add', 'key', 'typecast', { key: 'tc-new' });
+  assert.ok(h.line('a:c').more.some(x => x[0] === 'row' && x[1] === '로그인'), 'the Claude line still shows its login steps');
+  h.setSnap(s => ({ ...s, login: { ...s.login, stage: 'done' } }));
+  h.rooms.observe(h.snap);
+  assert.equal(h.live('a:c'), '다시 연결했습니다. 바로 한 번 읽습니다.', 'the finished login is told in the line that started it');
+});
+
+test('a late draft answer from the account before does not lift the new account’s draft request', async () => {
+  const pending = [];
+  const h = setHarness({ answers: { 'drafts.set': () => new Promise(r => { pending.push(r); }) } });
+  h.rooms.open('settings'); await settle();
+  h.rooms.scene({ aside: 'settings', member: true });
+  const first = h.press('draft', 'draft'); await tick();
+  h.rooms.accountChanged(); await settle();
+  h.rooms.scene({ aside: 'settings', member: true });
+  const second = h.press('draft', 'draft'); await tick();
+  pending[0]({ ok: true, available: true, enabled: true }); await first; await settle();
+  await h.press('notice', 'quiet-save', '', { start: '23:00', end: '07:00' });
+  assert.ok(h.rooms.scene({ aside: 'settings', member: true }).settings.rows.find(r => r.key === 'draft').more.some(x => x[0] === 'tog' && String(x[5] || '').includes('off')), 'the new request still holds its switch');
+  pending.at(-1)?.({ ok: true, available: true, enabled: true }); await second;
+});

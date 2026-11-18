@@ -421,7 +421,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         // 바꿔 끼울 계정은 키를 넣은 그 줄이다. 「계정 더하기」에서 넣은 키는 새 계정이고, 앞서 누른 「다시 로그인」(st.relogin)을 따라가지 않는다(검수 B)
         const own = key === 'add' ? null : idOf(key);
         const replace = own && rowOf(snap, own)?.service === arg ? own : null;
-        if (key === 'add') st.relogin = null;
+        // 다른 줄의 브라우저 로그인이 도는 중이면 그 줄을 알아보는 표시(st.relogin)를 남긴다(다시 검수 FA1)
+        if (key === 'add' && !loginNow()) st.relogin = null;
         const res = await run(key, act, () => subs.connectKey(arg, k.value, replace ? { replace } : {}));
         if (res === null) { changed(); return true; }
         if (res.ok === false) return failed(key, res), true;
@@ -586,7 +587,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         let res;
         try { res = await dev.drafts.set(d.enabled !== true); } catch { res = { ok: false }; }
         if (my !== gen) return true;
-        if (st.busy === 'draft:draft') st.busy = null;
+        // 이 요청이 건 막이만 푼다. 계정이 바뀐 뒤 새 계정에서 다시 누른 요청의 막이를 앞 요청의 늦은 답이 풀지 않는다(다시 검수 FA3)
+        if (st.busy === 'draft:draft' && a === accGen) st.busy = null;
         // 그사이 계정이 바뀌었거나 방을 닫았으면 앞 요청의 결과(실패 글 포함)를 새 화면에 쓰지 않는다(검수 B)
         if (a !== accGen || s !== sets) { changed(); return true; }
         if (res?.ok === true) s.drafts = res; else note(key, DRAFT_SAY);
