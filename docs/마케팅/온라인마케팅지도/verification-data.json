@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T20:19:40.928Z",
+  "generatedAt": "2026-11-18T22:11:24.512Z",
   "sourceAsOf": {
     "registry": "2026-11-10",
     "social": "2026-09-21",
@@ -7,7 +7,7 @@
     "accountObservations": "2026-11-13"
   },
   "counts": {
-    "operating": 36,
+    "operating": 37,
     "mongolia": 5,
     "plannedCountries": 25,
     "prioritySlots": 51,
@@ -17,16 +17,16 @@
     "channelRows": 89,
     "contents": 25,
     "identities": 28,
-    "activeManagedChannels": 71,
+    "activeManagedChannels": 72,
     "loginStatusCounts": {
-      "historical": 68,
+      "historical": 69,
       "verified": 3
     }
   },
   "files": [
     {
       "file": "inputs/login-audit.json",
-      "sha256": "70aadb69c5caf43e88703e0647459f9020d82f0403e81e4a176284062a0abea9"
+      "sha256": "6e421bdf352d5881e72fdf29dc059fea65186d4751f2c61ae432bac198b6a32c"
     },
     {
       "file": "inputs/account-observations.json",
@@ -38,7 +38,7 @@
     },
     {
       "file": "../계정_사업속성.json",
-      "sha256": "d37dd63f9cc7a98ec65c23c1c61461f41c47c848527c7a9753a4129fd6f9f1d9"
+      "sha256": "36cabfef853a997ab5b7118438dfa4cd72a8a25e9905e413f815955d80fe3af4"
     },
     {
       "file": "inputs/upload-plan.json",
@@ -54,7 +54,7 @@
     },
     {
       "file": "inputs/existing-accounts.json",
-      "sha256": "adfdd7b86a3f1c41b524e29854e2c8b9728bfe4a1aab8cf22a7c7e2677923089"
+      "sha256": "cd25127a4b80095f1672a679295bd487e71c0246b3a3cb52fa99f05750a78454"
     },
     {
       "file": "inputs/content-status.json",
@@ -74,7 +74,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "888dd2cdae875bb070187ade6bf5d9baa305a28561593906c78c4b8bea1eb94d"
+      "sha256": "e40390a1b49c31a7441b2b8a18056d9a703fb565b7f134b47352b54abc0f0ad2"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",

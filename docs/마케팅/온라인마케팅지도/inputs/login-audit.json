@@ -7,13 +7,13 @@
   "privateDetails": "전체 이메일·실제 Naver ID·Aside 프로필 식별자는 저장소 밖 비공개 로그인 표에서 관리. 비밀번호·인증코드는 포함하지 않음.",
   "counts": {
     "channelRows": 89,
-    "activeExisting": 70,
-    "excludedExisting": 2,
+    "activeExisting": 71,
+    "excludedExisting": 1,
     "uncreatedOrExcluded": 2,
     "labExpansionPending": 14,
     "otherPlanned": 16,
     "byStatus": {
-      "confirmed": 56,
+      "confirmed": 57,
       "switch-only": 6,
       "partial": 10,
       "missing": 0,
@@ -1357,15 +1357,15 @@
     "yuhobuilds-linkedin": {
       "loginIdentityRef": "unmet23",
       "loginAlias": "Google · unmet23",
-      "loginMethod": "운영 제외한 중복 LinkedIn 계정",
-      "loginBrowser": "사용하지 않음",
-      "loginMappingStatus": "excluded",
-      "loginStatusLabel": "운영 제외",
-      "loginEvidenceAt": "2026-11-07",
-      "loginCaveat": "unmet25 본 계정을 사용. 삭제 수행 아님",
+      "loginMethod": "LinkedIn 개인 계정 로그인(/in/me → /in/yuhobuilds)",
+      "loginBrowser": "Ego · Profile 18",
+      "loginMappingStatus": "confirmed",
+      "loginStatusLabel": "로그인 경로 확인",
+      "loginEvidenceAt": "2026-11-19",
+      "loginCaveat": "2026-11-18 unmet23 로그인 확인 뒤 yuhobuilds 매일 줄을 이 프로필에 올린다. 11-19 게시물 분석 화면을 읽었다",
       "loginSourcePaths": [
-        "docs/_ops/로그인복구_GPT인계_20261107.md",
-        "docs/마케팅/로그인경로_점검_20261109.md"
+        "docs/마케팅/sns-계정.json",
+        "docs/_ops/qa/게시성과빈계정_20261119/README.md"
       ],
       "loginSessionStatus": "현재 세션 전체 재검증 안 함"
     },

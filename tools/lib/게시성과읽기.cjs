@@ -8,7 +8,7 @@
  *
  * 돌려주는 것
  *   channels   SNS 채널(PLATFORMS): id·platform·이름·핸들·주소·수집 상태. youtube·instagram·facebook·tiktok은 서버 API가 숫자를 받고,
- *              telegram·xiaohongshu·threads·rutube·douyin은 사람이나 예약 수집이 확인한 게시물 숫자(외부 관측 post-lifetime)를 서버가 posts·snapshots에 넣는다
+ *              telegram·xiaohongshu·threads·rutube·douyin·linkedin은 사람이나 예약 수집이 확인한 게시물 숫자(외부 관측 post-lifetime)를 서버가 posts·snapshots에 넣는다
  *   entries    게시 성과 등록(postPerformanceEntries) 전부 — 24·72시간 체크포인트, 지표, 지표별 출처(metricProvenance), 창 지표
  *   posts      채널 수집기가 모은 채널별 최근 게시물(채널마다 최신 perChannel편) — 평소 대비 배수의 기준과 7일 값을 찾는 데 쓴다
  *   snapshots  그 게시물의 하루 한 벌 숫자(최근 days일) — [postId, checkedAt(ms), views, likes, comments, shares, saves, reach]
@@ -25,9 +25,9 @@ const PROJECT = 'synk-bake-unmet27';
 const TITLE_MAX = 160;
 // 읽는 플랫폼. 뒤 넷은 API 수집이 없다. 공개 화면이나 로그인 통계 화면에서 읽은 게시물 숫자를 서버 external-observations.mjs의 project()가
 // posts·snapshots(하루 한 벌)에 넣어 둔다(11-19: 텔레그램 · 샤오훙수 · 스레드 · RUTUBE 계정이 장부에 한 줄도 없었다).
-// 더우인은 같은 날 크리에이터 센터 작품 목록의 영상별 숫자를 넣기 시작했다(tools/계정통계예약/post-lifetime.cjs).
+// 더우인은 같은 날 크리에이터 센터 작품 목록의 영상별 숫자를, 링크드인은 개인 프로필 게시물 분석 화면의 숫자를 넣기 시작했다(tools/계정통계예약/post-lifetime.cjs).
 const API_PLATFORMS = Object.freeze(['youtube', 'instagram', 'facebook', 'tiktok']);
-const PLATFORMS = Object.freeze([...API_PLATFORMS, 'telegram', 'xiaohongshu', 'threads', 'rutube', 'douyin']);
+const PLATFORMS = Object.freeze([...API_PLATFORMS, 'telegram', 'xiaohongshu', 'threads', 'rutube', 'douyin', 'linkedin']);
 
 function 파이썬(매개) {
   // 매개는 숫자만 받아 문자열에 넣는다(주입 막기).

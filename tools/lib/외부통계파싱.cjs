@@ -28,6 +28,9 @@
  * parseThreadsInsights(evidence, identity) — https://www.threads.com/insights/ 「최신 게시물」 목록(11-19)
  *   evidence {observedAt, sourceUrl, handle, rows:[{path:'/insights/post/<번호>', lines:[…, '<조회수>', '조회수']}], times:{<번호>: 게시 시각}}
  *   identity {accountId, handle}. 조회수만 넣는다. 게시 시각은 같은 회차 프로필 화면의 time[datetime]이고, 목록의 모든 게시물에 있어야 한다.
+ * parseLinkedInPosts(evidence, identity) — https://www.linkedin.com/analytics/post-summary/urn:li:activity:<번호>/ 게시물 분석 화면들(11-19)
+ *   evidence {handle, posts:[{activityId, observedAt, sourceUrl, lines}]} → {batches:[{name, evidence, envelope}]}(게시물마다 출처 주소가 달라 봉투 하나씩).
+ *   노출수 → views, 회원 도달 → reach, 반응 → likes, 댓글, 저장수 → saves, LinkedIn에서 보내기 → shares(퍼감은 빼고). 게시 시각은 활동 번호의 앞 41비트다.
  * parseNaverDaily(input, identity, observedAt) — https://admin.blog.naver.com/<blogId>/stat/download 조회수·일간 xlsx를 디코딩한 값
  *   input은 {sheets:[{name?, rows}]}(첫 장만) 또는 행 배열. 행은 칸 배열, 칸 주소 열쇠 객체({A8,B8,C8} — 모두 같은 행 번호이고 그 번호가
  *   배열 순서+1), 또는 A·B… / 0·1… 열 열쇠 객체. 머리 행의 「요일」 열은 날짜의 실제 요일과 맞는지만 보고 수치로 읽지 않는다.
@@ -276,6 +279,46 @@ function parseThreadsInsights(evidence,identity){
     labels:{screenTitle:'Threads 인사이트 · 최신 게시물'},observations},summary:{rows:rows.length,posts:observations.length}};
 }
 
+// 링크드인 개인 프로필 게시물 분석 화면(/analytics/post-summary/urn:li:activity:<번호>/)의 게시물별 누적값이다(11-19).
+// 노출수를 조회 칸에, 회원 도달을 도달 칸에 넣고 화면 이름을 metricLabels로 남긴다. 퍼감(재게시)은 공유에 넣지 않고 「LinkedIn에서 보내기」만 공유로 센다.
+// 게시 시각은 활동 번호의 앞 41비트(밀리초)다. 화면은 「9시간」 같은 상대 시각만 보여 준다. 게시물마다 출처 주소가 달라 게시물 하나가 봉투 하나다.
+const LINKEDIN_LABELS=Object.freeze({views:'노출수',reach:'회원 도달',likes:'반응',comments:'댓글',saves:'저장수',shares:'LinkedIn에서 보내기'});
+function parseLinkedInPosts(evidence,identity){
+  const accountId=accountIdOf(identity),handle=handleOf(identity);
+  if(!accountId||!/^[A-Za-z0-9_-]{3,100}$/.test(handle))throw fail('IDENTITY','링크드인 설정에 accountId와 프로필 주소 이름(handle)이 있어야 해요.');
+  known(evidence,['handle','posts'],'링크드인 증거');
+  if(evidence.handle!==handle)throw fail('IDENTITY','화면의 프로필 이름이 설정과 정확히 같지 않아요. 다른 계정 화면일 수 있어요.');
+  const posts=rowsOf(evidence.posts),seen=new Set(),batches=[];
+  posts.forEach((post,i)=>{
+    const where=`${i+1}번째 게시물`;
+    known(post,['activityId','observedAt','sourceUrl','lines'],where);
+    if(typeof post.activityId!=='string'||!/^[0-9]{15,25}$/.test(post.activityId))throw fail('ROW',`${where}: 활동 번호(activityId)를 확인해 주세요.`);
+    if(seen.has(post.activityId))throw fail('DUPLICATE',`${where}: 같은 게시물이 두 번 있어요.`);
+    seen.add(post.activityId);
+    const sourceUrl=`https://www.linkedin.com/analytics/post-summary/urn:li:activity:${post.activityId}/`;
+    if(post.sourceUrl!==sourceUrl)throw fail('SOURCE',`${where}: 게시물 분석 화면 주소는 ${sourceUrl} 이어야 해요.`);
+    const observedAt=instant(post.observedAt,`${where} 관측 시각`);
+    const lines=Array.isArray(post.lines)?post.lines.map(cell):[];
+    // 회원 도달 칸은 게시물에 따라 화면에 없다(11-19 실측). 없으면 0이 아니라 칸을 뺀다.
+    const viewsAt=lines.indexOf(LINKEDIN_LABELS.views),reachAt=viewsAt<1?-1:lines.indexOf(LINKEDIN_LABELS.reach,viewsAt+1),likesAt=viewsAt<1?-1:lines.indexOf(LINKEDIN_LABELS.likes,viewsAt+1);
+    if(viewsAt<1||likesAt<0)throw fail('ROW',`${where}: 「노출수」와 「반응」 칸을 찾지 못했어요.`);
+    const after=label=>{const at=lines.indexOf(label,viewsAt+1);if(at<0||at+1>=lines.length)throw fail('ROW',`${where}: 「${label}」 칸을 찾지 못했어요.`);return lines[at+1];};
+    const metrics={views:count(lines[viewsAt-1],`${where} 노출수`)};
+    if(reachAt>viewsAt&&reachAt<likesAt)metrics.reach=count(lines[reachAt-1],`${where} 회원 도달`);
+    for(const key of ['likes','comments','saves','shares'])metrics[key]=count(after(LINKEDIN_LABELS[key]),`${where} ${LINKEDIN_LABELS[key]}`);
+    const ms=Number(BigInt(post.activityId)>>22n),publishedAt=new Date(ms).toISOString();
+    if(ms<Date.parse('2016-01-01T00:00:00Z')||ms>Date.parse(observedAt))throw fail('TIME',`${where}: 활동 번호에서 읽은 게시 시각(${publishedAt})이 관측 시각과 맞지 않아요.`);
+    const urn=`urn:li:activity:${post.activityId}`;
+    batches.push({name:'linkedin-post-'+post.activityId,evidence:{handle,...post},envelope:{sourceType:'creator-screen',sourceUrl,observedAt,evidenceSha256:null,identity:{accountId,handle},
+      labels:{screenTitle:'LinkedIn 게시물 분석'},
+      observations:[{kind:'post-lifetime',post:{externalId:urn,url:`https://www.linkedin.com/feed/update/${urn}/`,publishedAt},metrics,
+        labels:{metricLabels:Object.fromEntries(Object.entries(LINKEDIN_LABELS).filter(([key])=>key in metrics))}}]}});
+  });
+  if(!batches.length)throw fail('NO_ROWS','분석 화면을 읽은 게시물이 없어 보낼 관측이 없어요.');
+  if(batches.length>50)throw fail('ROWS','게시물은 한 회차에 50개까지예요.');
+  return {batches,summary:{posts:batches.length}};
+}
+
 function sheetOf(input){
   const sheet=Array.isArray(input)?{rows:input}:plain(input)&&Array.isArray(input.sheets)?input.sheets[0]:null;
   if(!plain(sheet)||!Array.isArray(sheet.rows)||!sheet.rows.length||sheet.rows.length>MAX_ROWS+40)throw fail('SHAPE',`디코딩한 첫 장(sheets[0].rows)이 1~${MAX_ROWS+40}행 배열이어야 해요.`);
@@ -396,4 +439,4 @@ function periodSummaries(dailyRows,endDay,durations=[7,30,60,90]){
   })};
 }
 
-module.exports={parseXhs,parseTelegram,parseDouyinWorks,parseThreadsInsights,parseNaverDaily,periodSummaries,MAX_ROWS,MAX_INPUT_ROWS};
+module.exports={parseXhs,parseTelegram,parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts,parseNaverDaily,periodSummaries,MAX_ROWS,MAX_INPUT_ROWS};

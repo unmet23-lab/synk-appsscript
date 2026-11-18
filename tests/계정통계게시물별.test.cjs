@@ -1,8 +1,8 @@
 'use strict';
 // 게시물별 누적값 보완 수집(2026-11-19): 더우인 작품 목록 · 스레드 인사이트 목록 → 외부 관측 post-lifetime, 계정 합계 수집 뒤에 돈다.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),crypto=require('node:crypto'),vm=require('node:vm');
-const {parseDouyinWorks,parseThreadsInsights}=require('../tools/lib/외부통계파싱.cjs');
-const {postLifetime,douyinWorksPage,threadsInsightsPage}=require('../tools/계정통계예약/post-lifetime.cjs');
+const {parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts}=require('../tools/lib/외부통계파싱.cjs');
+const {postLifetime,douyinWorksPage,threadsInsightsPage,linkedinPostsPage}=require('../tools/계정통계예약/post-lifetime.cjs');
 const {capture}=require('../tools/계정통계예약/capture-routes.cjs');
 const 수집=require('../tools/계정통계수집.cjs');
 const 판정=require('../tools/lib/게시성과판정.js');
@@ -74,7 +74,7 @@ test('두 봉투 모두 서버 기록 규칙(external-observations.mjs)을 메�
 function fakePage(realm){
   const run=(f,arg)=>vm.runInNewContext('('+f.toString()+')',realm)(arg);
   return {async waitForFunction(){},async waitForTimeout(){},async goto(url){realm.location=new URL(url);realm.document=realm.pages[url];},
-    async evaluate(f,arg){return JSON.parse(JSON.stringify(await run(f,arg)));}};
+    async evaluate(f,arg){const v=await run(f,arg);return v===undefined?undefined:JSON.parse(JSON.stringify(v));}};
 }
 test('더우인 페이지 함수: 화면이 부르는 작품 목록을 끝까지 넘기고 로그인 계정 번호를 함께 남긴다',async()=>{
   const page1={status_code:0,has_more:true,max_cursor:1795000000000,total:2,aweme_list:[{aweme_id:'7709014174097100041',aweme_type:4,create_time:sec('2026-11-18T06:00:00Z'),desc:'첫 작품',author:{uid:'3594780389672499',short_id:'39504393074',unique_id:'39504393074'},status:{is_delete:false},statistics:{play_count:161,digg_count:1,comment_count:0,share_count:0,collect_count:1}}]};
@@ -130,4 +130,54 @@ test('판정 도구가 더우인 영상 주소를 서버 postRoute와 같은 모
   assert.equal(판정.postIdOf('https://www.douyin.com/user/MS4wLjABAAAA'),null);
   assert.equal(판정.formatOf({platform:'douyin',url:'https://www.douyin.com/video/7709014174097100041'}),'douyin-video');
   assert.equal(require('../tools/lib/게시성과읽기.cjs').PLATFORMS.includes('douyin'),true);
+});
+
+// ── 링크드인 개인 프로필 게시물 분석(11-19, ego Profile 18) ──
+const LI={accountId:'yuhobuilds-linkedin',handle:'yuhobuilds'},ACT='7528790069269278720';
+const summaryLines=(n={views:'3',reach:'2',likes:'0',comments:'0',saves:'0',shares:'0'})=>['검색',n.views,'노출수','인맥 내(팔로워 및 1촌)','100퍼센트','인맥 외','0퍼센트',n.reach,'회원 도달','글 올리기','동영상 실적','3','동영상 조회','참여','0','소셜 참여','반응',n.likes,'댓글',n.comments,'퍼감','5','저장수',n.saves,'LinkedIn에서 보내기',n.shares];
+const liPost=(extra={})=>({activityId:ACT,observedAt:'2026-11-19T00:00:00.000Z',sourceUrl:`https://www.linkedin.com/analytics/post-summary/urn:li:activity:${ACT}/`,lines:summaryLines(),...extra});
+test('링크드인: 게시물마다 분석 화면 주소를 출처로 한 봉투를 만들고, 퍼감은 공유에 넣지 않는다',()=>{
+  const {batches}=parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({lines:summaryLines({views:'1,204',reach:'830',likes:'7',comments:'1',saves:'2',shares:'3'})})]},LI);
+  assert.equal(batches.length,1);
+  const {envelope}=batches[0];
+  assert.equal(envelope.sourceUrl,`https://www.linkedin.com/analytics/post-summary/urn:li:activity:${ACT}/`);
+  assert.deepEqual(envelope.observations[0].post,{externalId:`urn:li:activity:${ACT}`,url:`https://www.linkedin.com/feed/update/urn:li:activity:${ACT}/`,publishedAt:new Date(Number(BigInt(ACT)>>22n)).toISOString()});
+  assert.deepEqual(envelope.observations[0].metrics,{views:1204,reach:830,likes:7,comments:1,saves:2,shares:3});
+  assert.equal(envelope.observations[0].labels.metricLabels.views,'노출수');
+  // 회원 도달 칸이 없는 게시물(11-19 실측)은 도달을 빼고 나머지를 넣는다.
+  const noReach=summaryLines().filter((l,i,a)=>l!=='회원 도달'&&a[i+1]!=='회원 도달');
+  const one=parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({lines:noReach})]},LI).batches[0].envelope.observations[0];
+  assert.deepEqual(one.metrics,{views:3,likes:0,comments:0,saves:0,shares:0});assert.equal('reach' in one.labels.metricLabels,false);
+});
+test('링크드인: 다른 계정 · 다른 화면 · 빠진 칸 · 줄인 수 · 관측보다 뒤인 활동 번호는 거절한다',()=>{
+  const ok={handle:'yuhobuilds',posts:[liPost()]};
+  assert.throws(()=>parseLinkedInPosts({...ok,handle:'someone'},LI),code('IDENTITY'));
+  assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({sourceUrl:'https://www.linkedin.com/analytics/creator/content/'})]},LI),code('SOURCE'));
+  assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({lines:summaryLines().filter(l=>l!=='저장수')})]},LI),code('ROW'));
+  assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({lines:summaryLines({views:'1.2천',reach:'2',likes:'0',comments:'0',saves:'0',shares:'0'})})]},LI),code('COUNT'));
+  assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({observedAt:'2026-11-01T00:00:00.000Z'})]},LI),code('TIME'));
+  assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[]},LI),code('NO_ROWS'));
+});
+test('링크드인 페이지 함수: 소개 편집 링크로 주인을 확인하고 분석 보기 링크의 활동 번호마다 분석 화면 줄을 남긴다',async()=>{
+  const link=pathname=>({pathname,getAttribute:()=>'https://www.linkedin.com'+pathname});
+  const profile={links:[link('/in/yuhobuilds/edit/intro/')],querySelectorAll:()=>[]};
+  const activity={links:[],documentElement:{clientHeight:800},querySelector:()=>({}),querySelectorAll:()=>[link(`/analytics/post-summary/urn:li:activity:${ACT}/`)]};
+  const summary={links:[],querySelector:sel=>sel==='main'?{innerText:['작성자 이름','본문 글',...summaryLines()].join('\n')}:null,querySelectorAll:()=>[]};
+  const realm={location:new URL('https://www.linkedin.com/in/yuhobuilds/'),document:profile,decodeURI,String,Math,window:{scrollBy(){}},
+    pages:{'https://www.linkedin.com/in/yuhobuilds/recent-activity/all/':activity,[`https://www.linkedin.com/analytics/post-summary/urn:li:activity:${ACT}/`]:summary}};
+  const data=await linkedinPostsPage(fakePage(realm),{entry:'https://www.linkedin.com/in/yuhobuilds/',handle:'yuhobuilds',limit:10});
+  assert.equal(data.posts.length,1);assert.equal(data.posts[0].lines.includes('본문 글'),false);
+  assert.deepEqual(parseLinkedInPosts(data,LI).batches[0].envelope.observations[0].metrics,{views:3,reach:2,likes:0,comments:0,saves:0,shares:0});
+  realm.location=new URL('https://www.linkedin.com/in/yuhobuilds/');realm.document={links:[link('/in/someone/edit/intro/')]};
+  assert.deepEqual(await linkedinPostsPage(fakePage(realm),{entry:'https://www.linkedin.com/in/yuhobuilds/',handle:'yuhobuilds',limit:10}),{reason:'need_owner'});
+});
+test('postLifetime: 링크드인은 개인 프로필만 읽고 게시물마다 따로 올린다',async()=>{
+  const saved=[];
+  const helpers={pageJob:async()=>({handle:'yuhobuilds',posts:[liPost(),liPost({activityId:'7528711928051847168',sourceUrl:'https://www.linkedin.com/analytics/post-summary/urn:li:activity:7528711928051847168/'})]}),
+    storeBatch:async(c,name,raw,envelope)=>{saved.push(name);}};
+  const ctx=publicUrl=>({account:{id:LI.accountId,platform:'linkedin',handle:'yuhobuilds',publicUrl},profile:{browser:'ego',profileId:'Profile 18'},setStage:async()=>{}});
+  assert.equal(await postLifetime(ctx('https://www.linkedin.com/in/yuhobuilds/'),helpers),'limited');
+  assert.deepEqual(saved,['linkedin-post-'+ACT,'linkedin-post-7528711928051847168']);
+  assert.equal(await postLifetime(ctx('https://www.linkedin.com/company/synk-im/'),helpers),null);
+  assert.deepEqual(판정.postIdOf(`https://www.linkedin.com/feed/update/urn:li:activity:${ACT}/`),{platform:'linkedin',externalId:`urn:li:activity:${ACT}`,key:`linkedin:urn:li:activity:${ACT}`});
 });

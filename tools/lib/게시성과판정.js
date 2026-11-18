@@ -17,7 +17,7 @@
  * 화면에서만 볼 수 있는 칸(유튜브 본 비율, 인스타 팔로우, 권한이 없어 서버가 못 받은 칸)은 「화면 필요」로 남기고
  * 한 주에 한 번 모아 읽은 값(장부의 「화면」 줄)을 72시간·7일 판정에 더한다.
  * 「2주 시험」(시청자수요조사 6-5·6-9 — 평소의 2배 · 3초 유지 30% · 3편 단위)은 이 규칙을 바꾸지 않고 lib/게시성과시험.js가 장부로 따로 낸다.
- * API 수집이 없는 플랫폼(텔레그램 · 샤오훙수 · 스레드 · RUTUBE · 더우인, 11-19)은 게시 성과 등록(체크포인트)이 없다. 공개 화면이나 로그인 통계 화면에서 읽은
+ * API 수집이 없는 플랫폼(텔레그램 · 샤오훙수 · 스레드 · RUTUBE · 더우인 · 링크드인, 11-19)은 게시 성과 등록(체크포인트)이 없다. 공개 화면이나 로그인 통계 화면에서 읽은
  * 게시물 숫자를 서버가 하루 한 벌(snapshots)로 넣어 두므로, 24·72시간도 하루 숫자 가운데 그 나이에 가장 가까운 값(±6시간)으로 잰다.
  * 하루 숫자끼리라 7일과 같이 지연 규칙 없이 같은 채널·형식끼리 견준다.
  */
@@ -48,9 +48,9 @@ const METRICS = Object.freeze({
 });
 const NEXT_STEP_METRICS = new Set(['earlyRetention3sPct', 'stayedToWatchPct', 'averageWatchSeconds', 'averageViewPct', 'completionRatePct', 'shares', 'saves', 'toolVisits']);
 const POINTS = Object.freeze([{ key: '24h', hours: 24, label: '24시간' }, { key: '72h', hours: 72, label: '72시간' }, { key: '7d', hours: 168, label: '7일' }]);
-const PLATFORM_LABEL = Object.freeze({ youtube: '유튜브', instagram: '인스타', facebook: '페북', tiktok: '틱톡', telegram: '텔레그램', xiaohongshu: '샤오훙수', threads: '스레드', rutube: 'RUTUBE', douyin: '더우인' });
+const PLATFORM_LABEL = Object.freeze({ youtube: '유튜브', instagram: '인스타', facebook: '페북', tiktok: '틱톡', telegram: '텔레그램', xiaohongshu: '샤오훙수', threads: '스레드', rutube: 'RUTUBE', douyin: '더우인', linkedin: '링크드인' });
 /** API 수집이 없는 플랫폼의 형식(한 계정에 형식이 하나다) */
-const EXTERNAL_FORMAT = Object.freeze({ telegram: 'telegram-post', xiaohongshu: 'xiaohongshu-note', threads: 'threads-post', rutube: 'rutube-video', douyin: 'douyin-video' });
+const EXTERNAL_FORMAT = Object.freeze({ telegram: 'telegram-post', xiaohongshu: 'xiaohongshu-note', threads: 'threads-post', rutube: 'rutube-video', douyin: 'douyin-video', linkedin: 'linkedin-post' });
 /** 형식마다 v2 §6 네 숫자 가운데 화면에서 읽어야 할 수 있는 칸(서버가 이미 받은 칸은 뺀다). */
 const SCREEN_FIELDS = Object.freeze({
   'youtube-shorts': ['stayedToWatchPct', 'averageWatchSeconds', 'averageViewPct', 'shares', 'subscribersGained'],
@@ -98,7 +98,7 @@ function postIdOf(url) {
     const m = /\/video\/(\d{6,})/.exec(u.pathname);
     return m ? { platform: 'tiktok', externalId: m[1], key: 'tiktok:' + m[1] } : null;
   }
-  // 아래 다섯은 서버 external-observations.mjs postRoute와 같은 모양만 받는다(11-19). 텔레그램 글 번호는 채널마다 1부터라 열쇠에 채널을 넣는다.
+  // 아래 여섯은 서버 external-observations.mjs postRoute와 같은 모양만 받는다(11-19). 텔레그램 글 번호는 채널마다 1부터라 열쇠에 채널을 넣는다.
   if (host === 't.me') {
     const m = /^\/(?:s\/)?([A-Za-z][A-Za-z0-9_]{3,31})\/(\d{1,12})\/?$/.exec(u.pathname);
     return m ? { platform: 'telegram', externalId: m[2], key: `telegram:${m[1].toLowerCase()}/${m[2]}` } : null;
@@ -114,6 +114,10 @@ function postIdOf(url) {
   if (host === 'rutube.ru') {
     const m = /^\/(?:video|shorts)\/([0-9a-f]{32})\/?$/.exec(u.pathname);
     return m ? { platform: 'rutube', externalId: m[1], key: 'rutube:' + m[1] } : null;
+  }
+  if (host === 'linkedin.com') {
+    const m = /^\/feed\/update\/(urn:li:activity:\d{15,25})\/?$/.exec(u.pathname);
+    return m ? { platform: 'linkedin', externalId: m[1], key: 'linkedin:' + m[1] } : null;
   }
   if (host === 'douyin.com') {
     const m = /^\/(?:video|note)\/(\d{6,30})\/?$/.exec(u.pathname);

@@ -82,12 +82,12 @@ test('the selected detail always belongs to the searched and filtered rows', () 
 
 test('login overview counts only managed channels and keeps partial and switch-only distinct', () => {
   const managed=managedChannels(channels);
-  assert.equal(managed.length,71);
-  // 11-13 최신 조합값: 경로 확인 60 · 전환만 4 · 보완 필요 7. 요약은 행의 loginMappingStatus를 그대로 센 값과 같아야 한다.
+  assert.equal(managed.length,72); // 11-19 yuhobuilds-linkedin이 운영으로 돌아와 71 → 72
+  // 11-13 최신 조합값: 경로 확인 60 · 전환만 4 · 보완 필요 7. 11-19 yuhobuilds-linkedin(ego Profile 18)이 운영으로 돌아와 경로 확인 61. 요약은 행의 loginMappingStatus를 그대로 센 값과 같아야 한다.
   const summary=Object.fromEntries(loginSummary(channels).map(row=>[row.id,row.value]));
-  assert.deepEqual(summary,{confirmed:60,'switch-only':4,partial:7,missing:0});
+  assert.deepEqual(summary,{confirmed:61,'switch-only':4,partial:7,missing:0});
   for(const [id,value] of Object.entries(summary))assert.equal(value,managed.filter(row=>row.loginMappingStatus===id).length,id);
-  assert.equal(loginSummary(channels).reduce((sum,row)=>sum+row.value,0),71);
+  assert.equal(loginSummary(channels).reduce((sum,row)=>sum+row.value,0),72);
   // 미생성 계획 14곳(11-19 캄보디아 틱톡이 확보로 옮김): 로그인 경로를 지어내지 않는다(연결 없음 · 상태 unknown · 관측 시각 없음).
   assert.equal(planned.length,14);
   assert.ok(loginSummary(planned).every(row=>row.value===0));
@@ -97,9 +97,9 @@ test('login overview counts only managed channels and keeps partial and switch-o
     assert.equal(row.operations.login.state,'unknown',row.id);
     assert.equal(row.operations.login.observedAt,null,row.id);
   }
-  // 제외 · 보류 4곳(제외 · 보류된 기존 둘 — 11-19 LAB 캄보디아로 바꾼 yuhobuilds 틱톡 포함 · 개설 미룸)은 관리 대상 수와 로그인 요약에 들어가지 않고, 로그인도 unknown으로 둔다.
+  // 제외 · 보류 3곳(제외 · 보류된 기존 — 11-19 LAB 캄보디아로 바꾼 yuhobuilds 틱톡 포함 · 개설 미룸. 11-19 yuhobuilds 링크드인은 운영으로 돌아왔다)은 관리 대상 수와 로그인 요약에 들어가지 않고, 로그인도 unknown으로 둔다.
   const held=channels.filter(row=>['excluded','excluded-existing','creation-deferred'].includes(row.accountStatus));
-  assert.deepEqual(sorted(held.map(row=>row.id)),['synk-instagram','synkbrief-threads','yuhobuilds-linkedin','yuhobuilds-tiktok']);
+  assert.deepEqual(sorted(held.map(row=>row.id)),['synk-instagram','synkbrief-threads','yuhobuilds-tiktok']);
   assert.ok(held.every(row=>!managed.includes(row)&&row.operations.login.state==='unknown'));
 });
 
@@ -120,11 +120,11 @@ test('login filters and connection search use audited values without changing th
   const counts={};for(const row of channels)counts[row.loginStatusLabel]=(counts[row.loginStatusLabel]||0)+1;
   const expected={};for(const row of channels){const label=labelOf[expectedLoginState(row)];expected[label]=(expected[label]||0)+1;}
   assert.deepEqual(counts,expected);
-  // 시각과 상관없는 몫: 확인 기록이 있는 관리 계정 71곳(지금 확인 + 이전 기록 + 로그인 필요)과 미확인 18곳(계획 15 · 제외 · 보류 3).
+  // 시각과 상관없는 몫: 확인 기록이 있는 관리 계정 72곳(지금 확인 + 이전 기록 + 로그인 필요)과 미확인 17곳(계획 15 · 제외 · 보류 2). 11-19에 yuhobuilds-linkedin이 운영으로 돌아왔다.
   // 11-14 판은 지금 확인 18 · 이전 기록 52 · 로그인 필요 1, 11-15 판은 11-12 확인이 72시간을 넘겨 3 · 67 · 1이다.
   const n=label=>counts[label]||0;
-  assert.equal(n('로그인 확인')+n('이전 확인 기록 · 현재 미재검증')+n('확인한 프로필에서 로그인 필요'),71);
-  assert.equal(n('현재 로그인 미확인'),18);
+  assert.equal(n('로그인 확인')+n('이전 확인 기록 · 현재 미재검증')+n('확인한 프로필에서 로그인 필요'),72);
+  assert.equal(n('현재 로그인 미확인'),17);
   for(const row of channels){
     const login=row.operations?.login;
     assert.ok(login&&labelOf[login.state],row.id);
@@ -150,14 +150,14 @@ function uniqueIds(items, label, key = 'id') {
   assert.equal(new Set(items.map(row => row[key])).size, items.length, `${label}: duplicate ${key}`);
 }
 
-test('36 existing operating channels include the ten previously omitted records and the 11-12 PULSE TikTok without enabling publishing (11-19 yuhobuilds TikTok became LAB Cambodia, so it is excluded here)', () => {
-  assert.equal(operating.length, 36);
-  assert.equal(operating.filter(row => row.publishable === true).length, 22);
+test('37 existing operating channels include the ten previously omitted records and the 11-12 PULSE TikTok without enabling publishing (11-19 yuhobuilds TikTok became LAB Cambodia, so it is excluded here; 11-19 yuhobuilds LinkedIn returned to operating)', () => {
+  assert.equal(operating.length, 37);
+  assert.equal(operating.filter(row => row.publishable === true).length, 23);
   assert.equal(operating.filter(row => row.accountStatus === 'operating-contact').length, 1);
   assert.equal(inventory.accounts.length, 46);
   assert.equal(sourceChannels.length, 40);
   assert.equal(inventory.metadata.counts.operatingAccountsAndChannels, operating.length);
-  assert.equal(inventory.metadata.counts.publicPublishingTargets, 22);
+  assert.equal(inventory.metadata.counts.publicPublishingTargets, 23); // 11-19 yuhobuilds-linkedin(/in/yuhobuilds)이 운영으로 돌아왔다
   assert.equal(inventory.metadata.counts.totalRows, inventory.accounts.length);
   assert.deepEqual(sorted(channels.filter(row => row.channelScope === '기존 운영').map(row => row.id)), sorted(operating.map(row => row.id)));
 });
@@ -241,7 +241,7 @@ test('89 channel rows mean 40 existing/deferred entries plus 49 expansion slots'
   assert.equal(channels.filter(row => row.brand === 'LAB').length, 54);
   assert.equal(channels.filter(row => row.channelScope === '확장 확보').length, 35);
   assert.equal(channels.filter(row => row.channelScope === '확장 미확인').length, 14);
-  assert.equal(channels.filter(row => row.accountStatus === 'excluded-existing').length, 2);
+  assert.equal(channels.filter(row => row.accountStatus === 'excluded-existing').length, 1);
   assert.equal(channels.filter(row => ['excluded', 'creation-deferred'].includes(row.accountStatus)).length, 2);
   assert.equal(channels.filter(row => row.accountStatus === 'web-destination').length, 0);
 });
@@ -265,7 +265,7 @@ test('shared YouTube and Substack stay single accounts and do not inflate owned 
   for (const id of ['lab-youtube', 'synklab-substack']) assert.equal(channels.filter(row => row.id === id).length, 1);
   assert.deepEqual(channels.find(row => row.id === 'lab-youtube').sharedBrands, ['PULSE']);
   assert.deepEqual(channels.find(row => row.id === 'synklab-substack').sharedBrands, ['LAB', 'SHIFT']);
-  assert.equal(rows('brands').reduce((sum, row) => sum + row.ownedCount, 0), 36);
+  assert.equal(rows('brands').reduce((sum, row) => sum + row.ownedCount, 0), 37);
   const expectedShared = {SYNK: 0, LAB: 1, SHIFT: 1, YUHO: 0, PULSE: 1, PATH: 0, YUHOKOREAN: 0, POLITICS: 0};
   for (const brand of rows('brands')) {
     assert.equal(brand.ownedCount, channels.filter(row => row.brand === brand.id && row.channelScope === '기존 운영').length, brand.id);
@@ -321,7 +321,7 @@ test('every input collection and dashboard query has unique nonempty identifiers
 });
 
 test('summary cards reconcile to separate units, and web/product destinations are not SNS rows', () => {
-  const expected = {existing: [36, '채널'], 'lab-secured': [35, '곳'], 'lab-pending': [14, '곳'], 'lab-world': [25, '개국']};
+  const expected = {existing: [37, '채널'], 'lab-secured': [35, '곳'], 'lab-pending': [14, '곳'], 'lab-world': [25, '개국']};
   assert.deepEqual(sorted(rows('summary').map(row => row.id)), sorted(Object.keys(expected)));
   for (const row of rows('summary')) assert.deepEqual([row.value, row.unit], expected[row.id], row.id);
   const websites = inventory.accounts.filter(row => row.accountStatus === 'web-destination');
@@ -468,7 +468,7 @@ test('registry Graph page and company numbers generate the catalog numbers while
 
 test('login route confidence reconciles without claiming that every session is live', () => {
   const active=channels.filter(row=>['operating','operating-contact','confirmed-expansion'].includes(row.accountStatus));
-  assert.equal(active.length,71);
+  assert.equal(active.length,72);
   assert.equal(active.filter(row=>['confirmed','switch-only','partial','missing'].includes(row.loginMappingStatus)).length,active.length);
   assert.deepEqual(active.filter(row=>row.loginMappingStatus==='missing').map(row=>row.id),[]);
   assert.ok(active.some(row=>row.operations.login.state==='historical'),'old evidence does not claim a live session');

@@ -384,7 +384,7 @@ test('화면 필요 — 유튜브 창 지표는 주인 권한 채널이면 6일�
 });
 
 test('서버 응답 다듬기 — 모르는 채널의 기록·게시물은 버린다', () => {
-  const got = 읽기.다듬기({ checkedAt: iso(T0), channels: [{ id: 'c1', platform: 'youtube' }, { id: 'c2', platform: 'linkedin' }],
+  const got = 읽기.다듬기({ checkedAt: iso(T0), channels: [{ id: 'c1', platform: 'youtube' }, { id: 'c2', platform: 'x' }],
     entries: [{ id: 'e1', channelId: 'c1', url: 'https://youtu.be/AAAAAAAAAAA', publishedAt: iso(T0), checkpoints: [{ hours: 24 }, { hours: 'x' }] }, { id: 'e2', channelId: 'c2', url: 'u', publishedAt: iso(T0) }],
     posts: [{ id: 'p1', channelId: 'c1', publishedAt: iso(T0) }, { id: 'p2', channelId: 'zz', publishedAt: iso(T0) }],
     snapshots: [['p1', T0, 1], ['p2', T0, 2]] });

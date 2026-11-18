@@ -4,7 +4,7 @@
 // 읽기만 한다: 화면이 스스로 부르는 목록을 같은 로그인으로 다시 읽을 뿐 게시 · 설정 · 삭제는 하지 않는다. ego 프로필에서만 돈다(Aside 계정은 건너뛴다).
 const fs=require('node:fs');
 const path=require('node:path');
-const {parseDouyinWorks,parseThreadsInsights}=require('../lib/외부통계파싱.cjs');
+const {parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts}=require('../lib/외부통계파싱.cjs');
 
 // 아래 두 함수는 계정에 지정된 ego 프로필의 페이지 안에서 그대로 돈다(pageJob이 toString으로 넘긴다). 바깥 이름을 쓰지 않는다.
 async function douyinWorksPage(p,args){
@@ -65,19 +65,53 @@ async function threadsInsightsPage(p,args){
   return {observedAt,sourceUrl:info.sourceUrl,handle:args.handle,rows:info.rows,times:Object.fromEntries(ids.filter(id=>times[id]).map(id=>[id,times[id]]))};
 }
 
+// 링크드인 개인 프로필: 본인 프로필에만 있는 「소개 편집」 링크로 주인을 확인하고, 최근 활동의 「분석 보기」 링크(본인 글에만 있다)에서
+// 활동 번호를 모은 뒤 게시물 분석 화면을 하나씩 연다. 화면 글은 「회원 도달」 줄 앞뒤만 남긴다(게시물 본문은 남기지 않는다).
+async function linkedinPostsPage(p,args){
+  const profile='/in/'+args.handle;
+  await p.waitForFunction(q=>[...document.links].some(a=>decodeURI(a.pathname)===q+'/edit/intro/'),profile,{timeout:15000}).catch(()=>{});
+  const owner=await p.evaluate(q=>decodeURI(location.pathname).replace(/\/$/,'')===q&&[...document.links].some(a=>decodeURI(a.pathname)===q+'/edit/intro/'),profile);
+  if(!owner)return {reason:'need_owner'};
+  await p.goto('https://www.linkedin.com'+profile+'/recent-activity/all/',{waitUntil:'domcontentloaded',timeout:25000});
+  const ids=[];
+  for(let i=0;i<6&&ids.length<args.limit;i++){
+    await p.waitForFunction(()=>document.querySelector('a[href*="/analytics/post-summary/urn:li:activity:"]'),undefined,{timeout:10000}).catch(()=>{});
+    const found=await p.evaluate(()=>[...document.querySelectorAll('a[href*="/analytics/post-summary/urn:li:activity:"]')].map(a=>(/urn:li:activity:([0-9]{15,25})/.exec(a.getAttribute('href'))||[])[1]).filter(Boolean));
+    for(const id of found)if(!ids.includes(id))ids.push(id);
+    await p.evaluate(()=>window.scrollBy(0,Math.round(document.documentElement.clientHeight*1.5)));
+    await p.waitForTimeout(1500);
+  }
+  const posts=[];
+  for(const id of ids.slice(0,args.limit)){
+    await p.goto('https://www.linkedin.com/analytics/post-summary/urn:li:activity:'+id+'/',{waitUntil:'domcontentloaded',timeout:25000});
+    await p.waitForFunction(()=>(document.querySelector('main')?.innerText||'').includes('LinkedIn에서 보내기'),undefined,{timeout:15000}).catch(()=>{});
+    const seen=await p.evaluate(()=>{
+      const lines=(document.querySelector('main')?.innerText||'').split(String.fromCharCode(10)).map(s=>s.trim()).filter(Boolean);
+      // 노출수 수 칸부터 「LinkedIn에서 보내기」 수 칸까지만 남긴다. 그 앞은 게시물 본문이다. 회원 도달 칸은 게시물에 따라 없다(11-19 실측).
+      const end=lines.lastIndexOf('LinkedIn에서 보내기'),from=end<0?-1:lines.lastIndexOf('노출수',end);
+      return {sourceUrl:location.origin+location.pathname,lines:from<1?[]:lines.slice(from-1,end+2)};
+    });
+    posts.push({activityId:id,observedAt:new Date().toISOString(),...seen});
+  }
+  return {handle:args.handle,posts};
+}
+
 const ROUTES=Object.freeze({
   douyin:{name:'douyin-works',page:douyinWorksPage,parse:parseDouyinWorks,handle:/^[0-9]{6,20}$/,entry:()=>'https://creator.douyin.com/creator-micro/content/manage'},
   threads:{name:'threads-insights',page:threadsInsightsPage,parse:parseThreadsInsights,handle:/^[A-Za-z0-9_.]{1,40}$/,entry:()=>'https://www.threads.com/insights/'},
+  // 개인 프로필(/in/<이름>/)만 읽는다. 회사 페이지는 다른 화면이라 이 길로 읽지 않는다.
+  linkedin:{name:'linkedin-posts',page:linkedinPostsPage,parse:parseLinkedInPosts,handle:/^[A-Za-z0-9_-]{3,100}$/,limit:10,
+    entry:handle=>'https://www.linkedin.com/in/'+handle+'/',personal:account=>/^https:\/\/www\.linkedin\.com\/in\/[^/]+\/?$/.test(account.publicUrl||'')},
 });
 
 // 게시물별 값을 읽어 올린다 → null(이 계정은 대상 아님) · 'limited'(올림) · 'need_owner' · 'format' · 'retry' · 'no_posts'
 async function postLifetime(ctx,{pageJob,storeBatch}){
   const {account:a,profile}=ctx,route=ROUTES[a.platform];
-  if(!route||profile?.browser!=='ego'||!profile.profileId)return null;
+  if(!route||profile?.browser!=='ego'||!profile.profileId||route.personal&&!route.personal(a))return null;
   const handle=String(a.handle||'').replace(/^@/,'');
   if(!route.handle.test(handle))return 'need_owner';
   await ctx.setStage('creator-screen');
-  const data=await pageJob(ctx,route.name,route.page,{entry:route.entry(handle),handle});
+  const data=await pageJob(ctx,route.name,route.page,{entry:route.entry(handle),handle,limit:route.limit||0});
   if(!data||data.reason)return data?.reason||'retry';
   let parsed;
   try{parsed=route.parse(data,{accountId:a.id,handle});}
@@ -85,7 +119,8 @@ async function postLifetime(ctx,{pageJob,storeBatch}){
     if(error.code==='SYNK_METRICS_NO_ROWS')return 'no_posts';
     throw error;
   }
-  await storeBatch(ctx,route.name+'-posts',data,parsed.envelope);
+  // 출처 주소가 게시물마다 다른 화면(링크드인)은 게시물 하나가 봉투 하나다.
+  for(const batch of parsed.batches||[{name:route.name+'-posts',evidence:data,envelope:parsed.envelope}])await storeBatch(ctx,batch.name,batch.evidence,batch.envelope);
   return 'limited';
 }
 
@@ -94,4 +129,4 @@ function note(ctx,reason,error){
   if(!ctx.dir)return;
   try{fs.writeFileSync(path.join(ctx.dir,'post-lifetime-failed.json'),JSON.stringify({at:new Date().toISOString(),reason,code:String(error?.code||'').slice(0,60)}),{flag:'wx'});}catch{/* 이미 있으면 첫 실패를 둔다 */}
 }
-module.exports={postLifetime,douyinWorksPage,threadsInsightsPage,note,ROUTES};
+module.exports={postLifetime,douyinWorksPage,threadsInsightsPage,linkedinPostsPage,note,ROUTES};
