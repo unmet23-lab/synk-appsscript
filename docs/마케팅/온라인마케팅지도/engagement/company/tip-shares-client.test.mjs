@@ -156,7 +156,8 @@ test('a decision that lands during a background read still ends the loading stat
 });
 
 test('cards fold long text behind 자세히 of their own, and a conflict shows whatever the stage',async()=>{
-  const f=fixture({api:async()=>data([row(),row({row:60,status:'버림',stage:'버림',decidable:false,decision:{to:'적용 중',requestedAt:'2026-11-15T18:30:00.000Z',outcome:'conflict'}})])});
+  // 어긋남 안내는 사흘 동안만 보이므로(TIP_CONFLICT_SHOW_MS), 고정 날짜가 아니라 지금보다 한 시간 앞을 쓴다(11-19: 고정 날짜가 사흘을 넘겨 깨졌다).
+  const f=fixture({api:async()=>data([row(),row({row:60,status:'버림',stage:'버림',decidable:false,decision:{to:'적용 중',requestedAt:new Date(Date.now()-3600000).toISOString(),outcome:'conflict'}})])});
   await f.run('tipSharesLoad()');
   let body=f.run('tipSharesBody()');
   assert.match(body,/data-tip-action="toggle-card" data-tip-row="52" data-tip-key="card:52" aria-expanded="false" hidden>자세히/);
