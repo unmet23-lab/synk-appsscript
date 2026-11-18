@@ -127,4 +127,10 @@ test('컷순서만 있는 편에서 LAB을 지정해도 승인 사례를 편 경
   assert.match(기준글(후), /좋았던 범위.*음량/);
   assert.notEqual(후.기준판, 전.기준판);
   assert.equal(기준읽기(표, LAB).기준판, 후.기준판, '컷순서 파일을 직접 줄 때도 같다');
+  const 지정표 = path.join(편, '이번주문.json');
+  fs.writeFileSync(지정표, '{}');
+  fs.writeFileSync(표, 'broken legacy JSON');
+  assert.deepEqual(기준읽기(지정표, LAB).만족사례.선택, [], '명시한 표만 읽는다');
+  fs.writeFileSync(path.join(편, '컷표.json'), '{}');
+  assert.deepEqual(기준읽기(편, LAB).만족사례.선택, [], '현행 표가 있으면 옛 표로 물러나지 않는다');
 });

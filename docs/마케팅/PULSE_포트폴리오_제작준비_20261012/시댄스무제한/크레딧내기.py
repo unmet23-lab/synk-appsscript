@@ -257,7 +257,7 @@ def 첫판계획(pack, out, 예정, 표경로=None, 직접=False):
         m = re.fullmatch(re.escape(판id) + r"(?:__(\d+))?\.mp4", 파일.name)
         if m:
             파일들.append((int(m.group(1) or 1), 파일))
-    자료 = (pack, out, 표경로, 첫판, 정보, {p.name for _, p in 파일들})
+    자료 = (pack, out, 표경로, 첫판, 정보, {p.name for _, p in 파일들}, 표)
     재시도 = 직접 and 선택 and all(b["id"] == 판id for b in 예정)
     if not 파일들 or 재시도:
         if 선택 is None:
@@ -272,7 +272,15 @@ def 첫판계획(pack, out, 예정, 표경로=None, 직접=False):
 
 
 def 첫판확인(자료, 파일=None):
-    pack, out, 표경로, 판, 정보, 기존 = 자료
+    import 첫컷검사
+    try:
+        첫컷검사.변경재검(첫판검사, 자료, 파일)
+    except (ValueError, OSError) as e:
+        raise SystemExit(f"첫 시험 컷을 확인하는 동안 자료가 바뀌었거나 읽히지 않았다. 현재 주문으로 다시 검사한다. {e}") from e
+
+
+def 첫판검사(자료, 파일):
+    pack, out, 표경로, 판, 정보, 기존, 표 = 자료
     if 파일 is None:
         새것 = [p for p in Path(out).glob("*.mp4") if p.name not in 기존 and
               re.fullmatch(re.escape(판["id"]) + r"(?:__\d+)?\.mp4", p.name)]
@@ -284,7 +292,6 @@ def 첫판확인(자료, 파일=None):
     편 = Path(표경로).resolve().parent if 표경로 else Path(pack).resolve().parent
     구간 = []
     if 표경로:
-        표 = json.loads(Path(표경로).read_text(encoding="utf-8-sig"))
         if 표.get("틀") == 2:
             줄 = [r for r in 받은뒤검사.컷줄모음(표) if r["cut"] in 정보["컷들"]]
             구간, 탈 = 받은뒤검사.구간모으기(줄)
@@ -295,10 +302,26 @@ def 첫판확인(자료, 파일=None):
     elif 정보["사람판"] and not any(사람 for _, _, 사람 in 구간):
         구간 = [(a, b, True) for a, b, _ in 구간]
     폴더 = Path(pack) / 판["폴더"]
-    소스 = [(이름, 첫컷검사.파일지문(폴더 / 이름)) for 이름 in ["지시문.txt", *판["파일"]]]
+    표파일 = Path(표경로).resolve() if 표경로 else None
+    이름들 = ["지시문.txt", *판["파일"]]
+    순서 = Path(pack) / "_순서.json"
+    입력 = [*첫컷검사.편입력(편, 표파일), Path(파일), 순서, *(폴더 / 이름 for 이름 in 이름들)]
+    if not 순서.is_file():
+        입력.append(Path(pack) / "순서표.md")
+    if not 표파일:
+        입력.append(Path(pack) / "컷표.json")
+    창 = 첫컷검사.입력창(입력)
+    주문 = 첫컷검사.편지시(편, 표파일, 창)[0]
+    현재판 = next((b for b in boards(pack) if b["id"] == 판["id"]), None)
+    if 현재판 != 판 or (표파일 and json.loads(창.읽기(표파일).decode("utf-8-sig")) != 표) or (not 표파일 and 컷표찾기(pack)):
+        raise SystemExit("첫 시험 컷의 판이나 컷표가 바뀌었다. 현재 꾸러미로 다시 검사한다.")
+    소스 = [(이름, 창.지문(폴더 / 이름)) for 이름 in 이름들]
     묶음 = hashlib.sha256(json.dumps([Path(pack).name, 판, 소스], ensure_ascii=False, sort_keys=True).encode()).hexdigest()
     for a, b, 인물 in 구간:
-        명령 = [sys.executable, "-X", "utf8", str(Path(첫컷검사.__file__)), str(편), str(파일), "--시작", str(a), "--묶음", 묶음]
+        명령 = [sys.executable, "-X", "utf8", str(Path(첫컷검사.__file__)), str(편), str(파일),
+              "--시작", str(a), "--묶음", 묶음, "--예상편지시", 주문]
+        if 표파일:
+            명령 += ["--컷표", str(표파일)]
         if b is not None:
             명령 += ["--끝", str(b)]
         if 인물:
@@ -307,6 +330,7 @@ def 첫판확인(자료, 파일=None):
         if 코드:
             print(f"첫 시험 컷에서 멈췄다. 나머지 판은 제출하지 않았다. 확인 명령: {subprocess.list2cmdline(명령)}", flush=True)
             raise SystemExit(코드)
+    창.확인()
 
 
 def home(acct):

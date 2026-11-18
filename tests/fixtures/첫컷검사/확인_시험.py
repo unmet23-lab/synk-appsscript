@@ -2,6 +2,7 @@
 import io
 import json
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -17,6 +18,198 @@ import 크레딧내기
 
 
 class 확인시험(unittest.TestCase):
+    def test_입력창은_되돌린_시각과_교체_생성_삭제를_구별한다(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            편 = Path(tmp)
+            표, 옛표 = 편 / "컷표.json", 편 / "컷순서.json"
+            옛표.write_bytes(b'{"v":1}')
+            창 = 첫컷검사.입력창(첫컷검사.편입력(편, None))
+            이전 = 옛표.stat()
+            옛표.write_bytes(b'{"v":2}')
+            os.utime(옛표, ns=(이전.st_atime_ns, 이전.st_mtime_ns))
+            with self.assertRaises(첫컷검사.입력변경):
+                창.확인()
+            for 이름, 크기 in (("ref.png", 64), ("ref.jpg", 32), ("sample.mp4", 1024 * 1024 + 1)):
+                참고 = 편 / 이름
+                참고.write_bytes(b"a" * 크기)
+                창 = 첫컷검사.입력창([참고])
+                처음 = 참고.stat()
+                참고.write_bytes(b"b" * 크기)
+                os.utime(참고, ns=(처음.st_atime_ns, 처음.st_mtime_ns))
+                self.assertEqual((참고.stat().st_size, 참고.stat().st_mtime_ns), (처음.st_size, 처음.st_mtime_ns))
+                with self.assertRaises(첫컷검사.입력변경):
+                    창.확인()
+            for 변경 in (lambda: 표.write_bytes(b"{}"), lambda: 표.unlink(),
+                        lambda: 옛표.replace(표)):
+                창 = 첫컷검사.입력창(첫컷검사.편입력(편, None))
+                변경()
+                with self.assertRaises(첫컷검사.입력변경):
+                    창.확인()
+            창 = 첫컷검사.입력창(첫컷검사.편입력(편, None))
+            옛표.write_text("미선택", encoding="utf-8")
+            창.확인()
+            with patch.object(첫컷검사, "파일지문", side_effect=PermissionError), self.assertRaises(PermissionError):
+                창.확인()
+        시도 = []
+        def 변경한번():
+            시도.append(1)
+            if len(시도) == 1:
+                raise 첫컷검사.입력변경("수정 중")
+            return 0
+        self.assertEqual(첫컷검사.변경재검(변경한번), 0)
+        self.assertEqual(len(시도), 2)
+        with patch.object(첫컷검사, "검사", side_effect=첫컷검사.입력변경("계속 수정")) as 작업:
+            with self.assertRaises(첫컷검사.입력변경):
+                첫컷검사.변경재검(작업)
+            self.assertEqual(작업.call_count, 2)
+
+    def test_기획서는_마감_메모와_여러_표기의_주문까지_원문_전체를_대조한다(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            편 = Path(tmp)
+            기획 = 편 / "기획.md"
+            (편 / "컷표.json").write_text('{"행동":"인사"}', encoding="utf-8")
+            기획.write_bytes(b" \n")
+            공백지문 = 첫컷검사.편지시(편, None)[0]
+            기획.write_bytes(b"\n")
+            self.assertNotEqual(첫컷검사.편지시(편, None)[0], 공백지문)
+            for 제목 in ("## 새 연출", "  ## 최종 연출", "새 연출\n------", "```md\n## 예시\n```"):
+                앞 = "제작 기획\n## 마감 기록\n전달 완료\n" + 제목 + "\n"
+                기획.write_text(앞 + "서서 인사", encoding="utf-8")
+                첫지문 = 첫컷검사.편지시(편, None)[0]
+                기획.write_text(앞 + "앉아서 인사", encoding="utf-8")
+                self.assertNotEqual(첫컷검사.편지시(편, None)[0], 첫지문)
+
+    def test_같은_영상도_편과_현재_장면_주문에_승인을_묶는다(self):
+        with tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
+            A, B = (Path(tmp) / 이름 for 이름 in ("A", "B"))
+            A.mkdir()
+            B.mkdir()
+            영상 = A / "시험.mp4"
+            영상.write_bytes(b"same")
+            stack.enter_context(patch.object(첫컷검사, "기준읽기", return_value={
+                "기준판": "1" * 64, "최근지적": [], "만족사례": {"선택": []}}))
+            stack.enter_context(patch.object(첫컷검사.받은뒤검사, "살피기", return_value={"초": 2}))
+            프레임 = stack.enter_context(patch.object(첫컷검사, "프레임시트", return_value=b"frames"))
+            stack.enter_context(redirect_stdout(io.StringIO()))
+            확인 = A / "관찰.json"
+            def 확인받기():
+                self.assertEqual(첫컷검사.검사(A, 영상), 2)
+                양식 = next(p for p in A.rglob("확인용.json") if not p.with_name("확인.json").exists())
+                답 = 첫컷검사.json읽기(양식)
+                답["판정"]["컷"] = {"결과": "충족", "관찰": "0.5초에 서서 손을 흔든다"}
+                확인.write_text(json.dumps(답), encoding="utf-8")
+                self.assertEqual(첫컷검사.검사(A, 영상, 확인파일=확인), 0)
+                return 답
+            확인받기()
+            self.assertEqual(첫컷검사.검사(B, 영상), 2)
+            with self.assertRaisesRegex(ValueError, "지금과 다르다"):
+                첫컷검사.검사(B, 영상, 확인파일=확인)
+            기획 = A / "기획.md"
+            글 = "## 한 장면 먼저\n서서 손을 흔든다.\n\n## 마감\n"
+            기획.write_text(글, encoding="utf-8")
+            답 = 확인받기()
+            self.assertIn("기획.md", 답["질문"]["컷"])
+            기획.write_text(글 + "최종 파일을 확인했다.\n", encoding="utf-8")
+            답 = 확인받기()
+            def 수정중(*_):
+                기획.write_text(글.replace("서서", "앉아서"), encoding="utf-8")
+                return b"frames"
+            프레임.side_effect = 수정중
+            with self.assertRaisesRegex(ValueError, "검사하는 동안"):
+                첫컷검사.검사(A, 영상, 확인파일=확인)
+            프레임.side_effect = None
+            with self.assertRaisesRegex(ValueError, "지금과 다르다"):
+                첫컷검사.검사(A, 영상, 확인파일=확인)
+            self.assertEqual(첫컷검사.검사(A, 영상), 2)
+            with self.assertRaisesRegex(ValueError, "꾸러미가 시작한 뒤"):
+                첫컷검사.검사(A, 영상, 예상편지시=답["편지시지문"])
+            # 확인이 내보이는 것은 읽어 본 판이다. 그 뒤 저장한 새 주문은 다음 실행이 다시 대조한다.
+            기획.write_text(글, encoding="utf-8")
+            실제상태 = 첫컷검사.입력창.상태
+            def 대조직후저장(창):
+                상태 = 실제상태(창)
+                if hasattr(창, "원본"):
+                    기획.write_text(글.replace("서서", "걸으며"), encoding="utf-8")
+                return 상태
+            with patch.object(첫컷검사.입력창, "상태", 대조직후저장):
+                self.assertEqual(첫컷검사.검사(A, 영상), 0)
+            self.assertEqual(첫컷검사.검사(A, 영상), 2)
+
+    def test_공식표와_옛표와_직접_고른_표에서_주문만_바뀌어도_첫컷을_다시_본다(self):
+        for 이름 in ("컷표.json", "컷순서.json", "이편의표.json"):
+            with self.subTest(이름=이름), tempfile.TemporaryDirectory() as tmp:
+                편 = Path(tmp)
+                표 = 편 / 이름
+                선택 = 표 if 이름 == "이편의표.json" else None
+                if 선택:
+                    with self.assertRaisesRegex(ValueError, "지정한 컷표"):
+                        첫컷검사.편지시(편, 선택)
+                주문 = {"detail": [{"cut": "C01", "행동": "서서 손을 흔든다"}]}
+                표.write_text(json.dumps(주문), encoding="utf-8")
+                이전, 원문 = 첫컷검사.편지시(편, 선택)
+                self.assertIn(이름, 원문)
+                표.write_text(json.dumps(주문, indent=2, ensure_ascii=False), encoding="utf-8-sig")
+                self.assertEqual(첫컷검사.편지시(편, 선택)[0], 이전)
+                주문["detail"][0]["행동"] = "앉아서 손을 흔든다"
+                표.write_text(json.dumps(주문), encoding="utf-8")
+                self.assertNotEqual(첫컷검사.편지시(편, 선택)[0], 이전)
+                if 선택:
+                    (편 / "컷순서.json").write_text("broken old json", encoding="utf-8")
+                    (편 / "기획.md").write_text("## 한 장면의 주문\n서서 인사한다", encoding="utf-8")
+                    처음 = 첫컷검사.편지시(편, 선택)[0]
+                    (편 / "기획.md").write_text("## 한 장면의 주문\n앉아서 인사한다", encoding="utf-8")
+                    self.assertNotEqual(첫컷검사.편지시(편, 선택)[0], 처음)
+                    예시 = "\n```md\n## 한 장면의 주문\n예시만 있다.\n```\n"
+                    기획 = 편 / "기획.md"
+                    기획.write_text("## 연출 지시\n서서 인사한다." + 예시, encoding="utf-8")
+                    처음 = 첫컷검사.편지시(편, 선택)[0]
+                    기획.write_text("## 연출 지시\n앉아서 인사한다." + 예시, encoding="utf-8")
+                    self.assertNotEqual(첫컷검사.편지시(편, 선택)[0], 처음)
+
+    def test_같은_저장소의_두_작업본은_같은_편과_원문일_때만_확인을_이어받는다(self):
+        시험환경 = {k: v for k, v in os.environ.items() if not k.upper().startswith("GIT_")}
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, 시험환경, clear=True):
+            본, 사본 = Path(tmp).resolve() / "main", Path(tmp).resolve() / "work"
+            def git(*args):
+                subprocess.run(["git", *map(str, args)], check=True, capture_output=True)
+            git("init", 본)
+            git("-C", 본, "-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+                "-c", "commit.gpgsign=false", "commit", "--allow-empty", "-m", "fixture")
+            git("-C", 본, "worktree", "add", "--detach", 사본)
+            def 지문(자리, 지시=None):
+                편 = 자리 / "편"
+                편.mkdir(exist_ok=True)
+                if 지시 is not None:
+                    (편 / "컷표.json").write_text(json.dumps({"행동": 지시}), encoding="utf-8")
+                return 첫컷검사.편지시(편, None)[0]
+            self.assertNotEqual(지문(본), 지문(사본))
+            for 작업본 in (본, 사본):
+                (작업본 / "편" / "기획.md").write_bytes(b" \n")
+            self.assertNotEqual(지문(본), 지문(사본), "공백뿐인 편은 작업본별로 확인한다")
+            self.assertEqual(지문(본, "서서 인사"), 지문(사본, "서서 인사"))
+            하위표 = []
+            for 작업본 in (본, 사본):
+                하위 = 작업본 / "편" / "자료"
+                하위.mkdir()
+                표 = 하위 / "이번표.json"
+                표.write_text('{"cut":"C01"}', encoding="utf-8")
+                하위표.append(첫컷검사.편지시(작업본 / "편", 표)[0])
+            self.assertEqual(*하위표)
+            다른편 = 본 / "다른편"
+            다른편.mkdir()
+            (다른편 / "컷표.json").write_bytes((본 / "편" / "컷표.json").read_bytes())
+            with patch.dict(os.environ, {"GIT_DIR": str(본 / ".git")}):
+                self.assertNotEqual(지문(본), 첫컷검사.편지시(다른편, None)[0])
+            self.assertNotEqual(지문(본), 지문(사본, "앉아서 인사"))
+            with patch.object(첫컷검사.subprocess, "run", side_effect=FileNotFoundError):
+                self.assertNotEqual(지문(본), 지문(사본, "서서 인사"))
+            조회 = subprocess.run
+            def 조회중(*args, **kwargs):
+                (본 / "편" / "컷표.json").write_text('{"행동":"새로 바뀐 행동"}', encoding="utf-8")
+                return 조회(*args, **kwargs)
+            with patch.object(subprocess, "run", side_effect=조회중), self.assertRaisesRegex(ValueError, "바뀌었다"):
+                지문(본)
+
     def test_종류를_준_옛_컷순서의_승인_사례가_바뀌면_다시_검토한다(self):
         with tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
             편 = Path(tmp)
@@ -61,6 +254,30 @@ class 확인시험(unittest.TestCase):
             호출 = stack.enter_context(patch("subprocess.call", return_value=0))
             크레딧내기.첫판확인(자료, 받음 / "B.mp4")
             self.assertIn("--사람", 호출.call_args.args[0])
+            표 = 편 / "이번주문.json"
+            표.write_text('{"detail":[]}', encoding="utf-8")
+            _, 자료 = 크레딧내기.첫판계획(꾸러미, 받음, 판들, 표)
+            def 검사중(*_):
+                (꾸러미 / "B" / "지시문.txt").write_text("changed action", encoding="utf-8")
+                return 0
+            호출.side_effect = 검사중
+            with self.assertRaisesRegex(SystemExit, "확인하는 동안"):
+                크레딧내기.첫판확인(자료, 받음 / "B.mp4")
+            명령 = 호출.call_args.args[0]
+            self.assertEqual(명령[명령.index("--컷표") + 1], str(표.resolve()))
+            self.assertEqual(명령[명령.index("--예상편지시") + 1], 첫컷검사.편지시(편, 표)[0])
+            호출.side_effect = None
+            지시문 = 꾸러미 / "B" / "지시문.txt"
+            원래읽기 = 첫컷검사.파일지문
+            for 읽을때, 바꿀곳 in [(표, 지시문), (지시문, 표)]:
+                표.write_text('{"detail":[]}', encoding="utf-8")
+                호출.reset_mock()
+                def 다른파일수정(경로):
+                    if 호출.called and 경로 == 읽을때:
+                        바꿀곳.write_bytes(b"changed during final verification")
+                    return 원래읽기(경로)
+                with patch.object(첫컷검사, "파일지문", 다른파일수정), self.assertRaisesRegex(SystemExit, "바뀌"):
+                    크레딧내기.첫판확인(자료, 받음 / "B.mp4")
 
     def test_제출중에는_같은_받을곳의_다른_제출을_막는다(self):
         with tempfile.TemporaryDirectory() as tmp:

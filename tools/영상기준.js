@@ -109,11 +109,10 @@ function 사례읽기(글, 입력) {
     const p = path.resolve(입력);
     const 파일 = fs.existsSync(p) && fs.statSync(p).isFile();
     const 폴더 = 파일 ? path.dirname(p) : p;
-    const 후보 = [...(파일 ? [p] : []), path.join(폴더, '컷표.json'), path.join(폴더, '컷순서.json')];
-    for (const 표 of new Set(후보)) {
-      if (path.extname(표).toLowerCase() !== '.json' || !fs.existsSync(표)) continue;
+    const 후보 = 파일 ? [p] : [path.join(폴더, '컷표.json'), path.join(폴더, '컷순서.json')];
+    const 표 = 후보.find(x => path.extname(x).toLowerCase() === '.json' && fs.existsSync(x));
+    if (표) {
       지정 = String(JSON.parse(정규화(fs.readFileSync(표, 'utf8'))).가까운사례 || '');
-      if (지정) break;
     }
   }
   const 선택 = [];
