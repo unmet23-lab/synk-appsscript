@@ -304,9 +304,12 @@
 html[data-orb-client="app"] #portal-entry .portal-window-bar,
 html[data-orb-client="legacy"] #portal-entry .portal-window-bar{z-index:4}
 /* 들어온 뒤에는 끌기 띠의 왼쪽(구, 이름, 오브제 줄이 놓인 자리)을 끌기 구역에서 뺀다. 띠 자체는 끌지 않고 안의 끌기 칸만 그 자리 뒤에서 시작한다.
-   펼친 동안에는 띠 전체를 뺀다. 구 윗부분, 첫 이름 줄, 닫힘 구역이 이 띠 높이에 걸린다(2단계 첫 조각 설계 검토 1차 3나) */
-html[data-orb-client="app"] #portal-entry .portal-window-bar{-webkit-app-region:no-drag;app-region:no-drag}
-html[data-orb-client="app"] #portal-entry .portal-window-drag{margin-left:var(--orb-here-w,0px)}
+   펼친 동안에는 띠 전체를 뺀다. 구 윗부분, 첫 이름 줄, 닫힘 구역이 이 띠 높이에 걸린다(2단계 첫 조각 설계 검토 1차 3나)
+   옛 화면(legacy)의 56px 띠도 같다. 구, 이름, 「돌아가기」의 위쪽이 끌기 칸에 걸려 OS 마우스로 눌리지 않았다(2단계 OS 마우스 확인 11-19, 최종 검수 F4) */
+html[data-orb-client="app"] #portal-entry .portal-window-bar,
+html[data-orb-client="legacy"] #portal-entry .portal-window-bar{-webkit-app-region:no-drag;app-region:no-drag}
+html[data-orb-client="app"] #portal-entry .portal-window-drag,
+html[data-orb-client="legacy"] #portal-entry .portal-window-drag{margin-left:var(--orb-here-w,0px)}
 html[data-orb-client="app"] #portal-entry .orb-stage[data-fan] ~ .portal-window-bar .portal-window-drag{-webkit-app-region:no-drag;app-region:no-drag}
 
 @media (max-width:640px){

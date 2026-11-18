@@ -657,6 +657,6 @@ function createWindow(){
       }catch(error){process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:false,clientId:runtime.clientId,error:error.message})+'\n');clearTimeout(timer);app.exit(1);}
     });
   }
-  connectionRecovery=createConnectionRecovery({contents,entry});
+  connectionRecovery=createConnectionRecovery({contents,entry,isQuitting:()=>quittingRequested});
   void connectionRecovery.connect();
 }

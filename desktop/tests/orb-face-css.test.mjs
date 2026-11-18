@@ -46,9 +46,17 @@ test('the fan sits above the drag band, and while it is open the room, name and 
 });
 
 test('after entering, the top-left group and the open fan are taken out of the window drag area', () => {
-  assert.match(css, /html\[data-orb-client="app"\] #portal-entry \.portal-window-bar\{-webkit-app-region:no-drag;app-region:no-drag\}/);
-  assert.match(css, /html\[data-orb-client="app"\] #portal-entry \.portal-window-drag\{margin-left:var\(--orb-here-w,0px\)\}/);
+  assert.match(css, /html\[data-orb-client="app"\] #portal-entry \.portal-window-bar,\s*html\[data-orb-client="legacy"\] #portal-entry \.portal-window-bar\{-webkit-app-region:no-drag;app-region:no-drag\}/);
+  assert.match(css, /html\[data-orb-client="app"\] #portal-entry \.portal-window-drag,\s*html\[data-orb-client="legacy"\] #portal-entry \.portal-window-drag\{margin-left:var\(--orb-here-w,0px\)\}/);
   assert.match(css, /html\[data-orb-client="app"\] #portal-entry \.orb-stage\[data-fan\] ~ \.portal-window-bar \.portal-window-drag\{-webkit-app-region:no-drag;app-region:no-drag\}/);
+});
+
+test('the old screen band also keeps the orb, name and back button out of the window drag area (OS mouse check 11-19)', () => {
+  assert.match(css, /html\[data-orb-client="legacy"\] #portal-entry \.portal-window-bar\{-webkit-app-region:no-drag;app-region:no-drag\}/);
+  assert.match(css, /html\[data-orb-client="legacy"\] #portal-entry \.portal-window-drag\{margin-left:var\(--orb-here-w,0px\)\}/);
+  const view = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  assert.match(view, /if \(\(s\.mode === 'app' \|\| s\.mode === 'legacy'\) && layer === 'app'\) syncDragGap\(s\.mode === 'legacy'\)/);
+  assert.match(view, /\(legacy \|\| app\.rail\.hidden \? 0 : 260\)/, 'the old screen has no object rail, so the gap ends at the back button');
 });
 
 test('reduced motion also shortens the fan, its foot and the room dimming', () => {

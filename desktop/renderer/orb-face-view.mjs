@@ -747,11 +747,12 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     }
     fanWasOpen = open;
   }
-  /* 끌기 띠의 끌기 칸이 왼쪽 위 묶음 뒤에서 시작하게 그 폭을 뿌리에 적는다. 오브제 이름이 펼쳐질 자리(약 260px)까지 비운다(설계 검토 1차 3나) */
-  function syncDragGap() {
+  /* 끌기 띠의 끌기 칸이 왼쪽 위 묶음 뒤에서 시작하게 그 폭을 뿌리에 적는다. 오브제 이름이 펼쳐질 자리(약 260px)까지 비운다(설계 검토 1차 3나).
+     옛 화면에서는 오브제 줄이 없고 「돌아가기」까지가 그 묶음이다(OS 마우스 확인 11-19) */
+  function syncDragGap(legacy = false) {
     const r = root.getBoundingClientRect?.(), h = root.querySelector('.here')?.getBoundingClientRect?.();
     if (!r || !h || !r.width) return;
-    const gap = Math.max(0, Math.min(r.width - 220, Math.round(h.right - r.left + (app.rail.hidden ? 0 : 260) - 8)));
+    const gap = Math.max(0, Math.min(r.width - 220, Math.round(h.right - r.left + (legacy || app.rail.hidden ? 0 : 260) - 8)));
     const v = gap + 'px';
     if (root.style.getPropertyValue('--orb-here-w') !== v) root.style.setProperty('--orb-here-w', v);
   }
@@ -1228,7 +1229,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     renderSwitch(s);
     renderApp(s);
     renderFan(s);
-    if (s.mode === 'app' && layer === 'app') syncDragGap();
+    if ((s.mode === 'app' || s.mode === 'legacy') && layer === 'app') syncDragGap(s.mode === 'legacy');
     setText(heading, headingFor(s));
     applyFocus(s);
   }
@@ -1585,7 +1586,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const onPageShow = event => { onAction('pageshow', event?.persisted === true); };
   const onPageHide = () => { if (ask.input) ask.input.value = ''; stage.pause(); };
   const onQaGuest = () => { onAction('qa-guest'); };
-  const resizeObserver = typeof win.ResizeObserver === 'function' ? new win.ResizeObserver(() => { if (scene?.layer === 'switch') layoutSwitch(); if (fanShown()) layoutFan(); if (scene?.mode === 'app') syncDragGap(); }) : null;
+  const resizeObserver = typeof win.ResizeObserver === 'function' ? new win.ResizeObserver(() => { if (scene?.layer === 'switch') layoutSwitch(); if (fanShown()) layoutFan(); if (scene?.mode === 'app' || scene?.mode === 'legacy') syncDragGap(scene.mode === 'legacy'); }) : null;
 
   root.addEventListener('click', onClick);
   root.addEventListener('scroll', onRoomScroll, true);

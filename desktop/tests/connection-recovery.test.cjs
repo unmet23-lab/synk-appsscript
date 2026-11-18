@@ -142,3 +142,34 @@ test('main rejects cloud runtime without exact boolean, client, mode and fixed e
   const valid={clientId:'messenger',mode:'development',entry:CLOUD_ENTRY,messengerCloudPreview:true,auth:null};
   for(const change of [{messengerCloudPreview:undefined},{messengerCloudPreview:'true'},{messengerCloudPreview:1},{clientId:'world'},{clientId:'platform'},{mode:'release'},{entry:CLOUD_ENTRY+'&next=evil'},{entry:ENTRY}])await assert.rejects(()=>mainFixture({...valid,...change}),/Invalid desktop runtime configuration/);
 });
+
+/* 화면 프로세스가 사라진 창은 첫 화면을 다시 싣는다(11-19 트레이에 숨은 채 켜진 0.4.97 창이 검게 남음) */
+function goneFixture({quitting=false}={}){
+  const contents=new Contents();contents.crashed=false;contents.isCrashed=function(){return this.crashed;};
+  let clock=0;const timers=[];
+  const recovery=createConnectionRecovery({contents,entry:ENTRY,isQuitting:()=>quitting,now:()=>clock,setTimer:(fn,ms)=>{const t={fn,ms,done:false};timers.push(t);return t;},clearTimer:t=>{if(t)t.done=true;}});
+  const run=()=>{for(const t of timers.splice(0))if(!t.done)t.fn();};
+  const gone=(reason='crashed')=>{contents.crashed=true;contents.emit('render-process-gone',{},{reason,exitCode:1});};
+  return {contents,recovery,run,gone,tick:ms=>{clock+=ms;},timers};
+}
+test('a main window whose renderer is gone loads the entry again after a short pause',async()=>{
+  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
+  f.gone('killed');assert.equal(f.contents.loads.length,1,'the reload waits for the pause');
+  assert.equal(f.timers[0].ms,400);f.run();await settle();
+  assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.contents.crashed=false;f.contents.success(1);await settle();f.recovery.dispose();
+});
+test('renderer recovery stops after three losses in ten minutes and starts again after the window passes',async()=>{
+  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
+  for(let i=1;i<=3;i++){f.gone();f.run();await settle();f.contents.crashed=false;f.contents.success(i);await settle();f.tick(60000);}
+  f.gone();f.run();await settle();assert.equal(f.contents.loads.length,4,'a fourth loss within ten minutes is left alone');
+  f.tick(10*60000);f.gone();f.run();await settle();assert.equal(f.contents.loads.length,5);f.recovery.dispose();
+});
+test('renderer recovery does nothing while quitting, after dispose, or when a new renderer already took over',async()=>{
+  const quitting=goneFixture({quitting:true});quitting.gone();quitting.run();await settle();assert.equal(quitting.contents.loads.length,0);quitting.recovery.dispose();
+  const disposed=goneFixture();disposed.gone();disposed.recovery.dispose();disposed.run();await settle();assert.equal(disposed.contents.loads.length,0);
+  const swapped=goneFixture();swapped.gone();swapped.contents.crashed=false;swapped.run();await settle();assert.equal(swapped.contents.loads.length,0);swapped.recovery.dispose();
+});
+test('main passes the quit flag so a window closing for quit is not reloaded',()=>{
+  const main=fs.readFileSync(path.join(__dirname,'..','src','main.cjs'),'utf8');
+  assert.match(main,/createConnectionRecovery\(\{contents,entry,isQuitting:\(\)=>quittingRequested\}\)/);
+});
