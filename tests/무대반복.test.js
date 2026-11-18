@@ -7,6 +7,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const 반복 = require('../tools/무대반복.js');
+const 묶음 = require('../tools/lib/게시묶음.js');
 
 const codes = (list) => list.map((f) => `${f.level}:${f.code}`);
 const KST = (s) => Date.parse(`${s}+09:00`);
@@ -245,4 +246,194 @@ test('인사 판본의 「첫 장면」은 인사 뒤 원본의 첫 장면이다
   fs.writeFileSync(path.join(path.dirname(인사판), '렌더.json'), JSON.stringify({ 인사초: 9 }));
   assert.equal(반복.greetSec(인사판), 0);
   fs.rmSync(방, { recursive: true, force: true });
+});
+
+// 11-18 — 돌림 판(준비.json 판에 「돌림」: true)의 끝 줄은 글자 인식이 아니라 그 판본의 글.json으로 견준다. 윈도우 글자 인식은 키릴 글자를
+// 라틴 글자로 엉뚱하게 읽고(「TOJ1bKO npo ce6A!」) 데바나가리는 한 줄도 못 읽는다. 그래서 러시아 미안 · 화날때가 둘 다 「только про себя!」로
+// 끝나는데 0.09(다름), 네팔 · 인도는 0.00이었다(docs/현장노트/시험_화면확인.md 「올리기 전 검사 ⑯ 「끝 줄이 지난 편과 같다」…」).
+// 아래 판본 글은 공용 작업본 판본(LAB_미안죄송합니다_mn_20261029 · LAB_화날때_mn_20261031 · LAB_지마_mn_20261031 · LAB_물고기_mn_20261102의 RU)에서
+// 끝 무렵 줄만 옮겼다.
+const 판본줄 = {
+  미안: [
+    { id: 'level', 칸: '진행', 글: 'Уважение {n}', 초: [0, 14.8] },
+    { id: 'ko.7', 칸: '한국어', 글: '사장님이 부딪쳤잖아!', 초: [11.2, 12.5] },
+    { id: 'ko.8', 칸: '한국어', 글: '시급도 당연히 올려 줘야지.', 초: [12.5, 14.8] },
+    { id: 'means.8', 칸: '개그', 글: '(Вот бы ещё\nзарплату подняли…)', 초: [12.5, 14.8] },
+    { id: 'tags.8', 칸: '해설', 글: 'только про себя!', 초: [12.5, 14.8] },
+    { id: 'endCard', 칸: '끝', 글: 'Кофе на рубашке босса?\n→ 죄송합니다.', 초: [13, 14.8] },
+    { id: 'ask', 칸: '끝질문', 글: 'Кому скажешь 죄송합니다?', 초: [13, 14.8] },
+    { id: '게시글.rutube.본문.4', 칸: '게시글', 글: 'А последние две фразы? Их — только про себя 🤫' },
+  ],
+  화날때: [
+    { id: 'gauge', 칸: '진행', 글: 'ГНЕВ' },
+    { id: 'inner', 칸: '진행', 글: 'кричу внутри', 초: [23.75, 25.3] },
+    { id: 'end1', 칸: '끝', 글: 'При начальстве —', 초: [25.3, 28.6] },
+    { id: 'end2', 칸: '끝', 글: 'только про себя!', 초: [25.3, 28.6] },
+    { id: 'ask', 칸: '끝질문', 글: 'Что тебя сегодня бесит?', 초: [25.3, 28.6] },
+  ],
+  지마: [
+    { id: 'endCard', 칸: '끝', 글: '가지 마 = Не уходи', 초: [17.6, 20.6] },
+    { id: 'ask', 칸: '끝질문', 글: 'Кому ты скажешь «не уходи»?', 초: [17.6, 20.6] },
+  ],
+  물고기: [
+    { id: 'gasp', 칸: '개그', 글: '…?!', 초: [15.5, 17.5] },
+    { id: 'endCard', 칸: '끝', 글: 'Рыба (물고기) всё съела!', 초: [15.5, 17.5] },
+  ],
+};
+
+test('⑯ 돌림 판 끝 줄 — 판본 글.json에서 끝 장면에 뜬 줄을 고른다: 끝 0.3초 앞에 떠 있고 끝 7초 앞에는 없던 줄과 끝 · 끝질문 칸, 게시글 · 내내 떠 있는 줄은 뺀다', () => {
+  const 글 = (줄) => ({ 꼴: '판본글/1', 언어: 'ru', 틀: '이야기', 줄 });
+  const 미안 = 반복.versionEnding(글(판본줄.미안));
+  assert.ok(미안.includes('только про себя!'), '해설 칸이어도 끝 장면에 떠 있으면 끝 줄이다');
+  assert.ok(미안.includes('Кофе на рубашке босса? → 죄송합니다.'), '여러 줄 카드는 한 줄로 잇는다');
+  assert.ok(미안.includes('Кофе на рубашке босса?'), '카드의 줄 하나하나도 넣는다(글자 인식이 줄마다 읽던 것과 같은 단위)');
+  assert.ok(미안.includes('시급도 당연히 올려 줘야지.'));
+  assert.ok(!미안.some((x) => /Уважение/.test(x)), '처음부터 끝까지 떠 있는 줄(존중 눈금)은 끝 줄이 아니다');
+  assert.ok(!미안.some((x) => /последние/.test(x)), '게시글 칸은 화면에 안 나온다');
+  assert.ok(!미안.includes('사장님이 부딪쳤잖아!'), '끝 장면 전에 사라진 줄');
+  assert.deepEqual(반복.versionEnding(글(판본줄.화날때)), ['При начальстве —', 'только про себя!', 'Что тебя сегодня бесит?']);
+  assert.equal(반복.versionEnding(글([{ id: 'gauge', 칸: '진행', 글: 'ГНЕВ' }])), null, '초도 끝 칸도 없으면 판본 글로 못 고른다 — 글자 인식으로');
+  assert.equal(반복.versionEnding(글([{ id: '게시글.제목.1', 칸: '게시글', 글: 'Три корейских «прости»', 초: [3, 5] }])), null, '게시글 칸은 초가 붙어도 화면 밖');
+  assert.equal(반복.versionEnding(null), null);
+  // 끝 7초 앞 장면에 떠 있던 줄과 닮은 끝 줄은 뺀다 — 글자 인식 쪽 screenEnding과 같은 셈(GPT 검수 GA2, 배 브라질 판본에서 옮김)
+  const 배 = 반복.versionEnding(글([
+    { id: 'means.2', 칸: '뜻', 글: 'Dor de barriga…', 초: [10.2, 11.8] },
+    { id: 'endCard', 칸: '끝', 글: '3 palavras em português,\n1 só em coreano: “배”', 초: [14.3, 17.6] },
+    { id: 'end.barriga', 칸: '뜻', 글: 'barriga', 초: [14.35, 17.6] },
+    { id: 'end.pera', 칸: '뜻', 글: 'pera', 초: [14.8, 17.6] },
+  ]));
+  assert.ok(!배.includes('barriga'), '7초 앞 「Dor de barriga…」와 0.71');
+  assert.ok(배.includes('3 palavras em português, 1 só em coreano: “배”') && 배.includes('pera'));
+  assert.deepEqual(반복.versionEnding(글([{ id: 'a', 칸: '진행', 글: '처음부터 떠 있는 긴 줄 하나', 초: [0, 3] }, { id: 'b', 칸: '끝', 글: '처음부터 떠 있는 긴 줄 하나', 초: [0, 12] }])), [], '끝 칸도 7초 앞에 떠 있던 줄이면 뺀다 — 고를 줄이 없어도 판본 글이 있으면 빈 목록(글자 인식으로 안 떨어진다)');
+});
+
+test('⑯ 돌림 판 끝 줄 — 데바나가리처럼 모음 기호가 붙는 글자도 그대로 견준다(모음 기호를 떼면 「मनमै राख!」가 일곱 글자 아래로 줄어 0이 된다)', () => {
+  assert.equal(반복.similar('मनमै राख!', 'मनमै राख!'), 1);
+  assert.ok(반복.similar('यो पनि मनमनै', 'मनमै राख!') < 반복.LINE_NEAR, '뜻이 같아도 다른 말(네팔 미안 · 화날때)은 같은 줄이 아니다');
+  assert.ok(반복.similar('कसलाई “नजाऊ” भन्न मन छ?', 'कसलाई नजाऊ भन्न मन छ') >= 반복.LINE_SAME);
+  // 이모지 변형 선택자(U+FE0F — 이것도 붙는 기호)는 뗀다 — 남기면 손 판 끝줄 「우리의 한국어 ❤️」가 일곱 글자로 늘어 새로 걸린다(GPT 검수 GA3)
+  assert.equal(반복.similar('우리의 한국어 ❤️', '우리의 한국어 ❤️'), 0);
+  assert.equal(반복.core('1️⃣ 짜증 나 ❤️'), '1짜증나');
+});
+
+test('⑯ 돌림 판 끝 줄 — 러시아 「только про себя!」 짝은 글자 인식이 엉뚱하게 읽어도 같은 끝 줄로 잡고, 글이 다른 짝은 잡지 않는다. 판본 글이 없는 판 · 손으로 단 판은 전처럼 글자 인식', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), '무대반복-판본글-'));
+  fs.mkdirSync(path.join(root, 'tools'), { recursive: true });
+  const 편쓰기 = (name, 시각, 줄, { 손판 = null } = {}) => {
+    const dir = path.join(root, 'docs', '마케팅', name);
+    const 판본 = path.join(dir, '게시', '판본', 'RU');
+    fs.mkdirSync(판본, { recursive: true });
+    fs.writeFileSync(path.join(판본, 'video.mp4'), name);
+    fs.writeFileSync(path.join(판본, '글.json'), JSON.stringify({ 꼴: '판본글/1', 편: name, 판본: 'RU', 언어: 'ru', 틀: '이야기', 줄 }));
+    const 판 = [{ 계정: 'lab-ru-vk', 파일: '게시/판본/RU/video.mp4', 시각, 언어: 'ru', 돌림: true }];
+    // 손으로 단 판 — 판본 영상과 같은 파일이어도 「돌림」이 없으면 전처럼 글자 인식
+    if (손판) 판.push({ 계정: 'lab-ru-rutube', 파일: '게시/판본/RU/video.mp4', 시각: 손판 });
+    fs.writeFileSync(path.join(dir, '게시', '준비.json'), JSON.stringify({ 브랜드: 'LAB', 슬롯: 시각.slice(0, 10), 판,
+      돌림: { 형식: '이야기', 판본: { RU: { 언어: 'ru', 파일: '게시/판본/RU/video.mp4', 글: '게시/판본/RU/글.json' } } } }));
+    return dir;
+  };
+  const 편 = (name) => path.join(root, 'docs', '마케팅', name);
+  const 영상 = (name) => path.join(편(name), '게시', '판본', 'RU', 'video.mp4');
+  try {
+    편쓰기('LAB_물고기', '2026-11-17T13:00:00+03:00', 판본줄.물고기);
+    편쓰기('LAB_지마', '2026-11-18T13:00:00+03:00', 판본줄.지마);
+    편쓰기('LAB_미안', '2026-11-19T13:00:00+03:00', 판본줄.미안, { 손판: '2026-11-19T15:00:00+03:00' });
+    편쓰기('LAB_화날때', '2026-11-20T13:00:00+03:00', 판본줄.화날때, { 손판: '2026-11-20T15:00:00+03:00' });
+    // 11-18 실측처럼 윈도우 글자 인식은 키릴 끝 줄을 라틴 글자로 엉뚱하게 읽는다(두 편의 읽힘이 서로 닮지 않았다)
+    const 읽힘 = new Map([
+      [영상('LAB_화날때'), ['npu HauanbcTBe -', 'TOJ1bKO npo ce6A!']],
+      [영상('LAB_미안'), ['(BoT 6bl eLLe', 'Koфe Ha py6awke 6occa?']],
+      [영상('LAB_지마'), ['Komy Tbl ckaxellb']],
+      [영상('LAB_물고기'), ['Pbl6a BCe cbena!']],
+    ]);
+    const 읽은 = [];
+    const screen = (files) => { 읽은.push(...files); return new Map(files.map((f) => [f, 읽힘.get(f) || []])); };
+    let 무대 = 0;
+    const stage = () => { 무대 += 60; return { first: Buffer.alloc(9 * 16 * 3, 무대 % 256), last: Buffer.alloc(9 * 16 * 3, (무대 + 30) % 256) }; };
+    const 견주기 = (dir) => { const bundle = 묶음.load(dir); return 반복.repeatFindings(bundle, 묶음.plates(bundle), { list: 반복.episodes([root]), stage, screen, narration: () => [] }); };
+
+    const r = 견주기(편('LAB_화날때'));
+    const 끝 = (where) => r.findings.filter((f) => f.where === where && /^ending-/.test(f.code));
+    assert.deepEqual(codes(끝('lab-ru-vk')), ['고칠 것:ending-repeat'], '미안 러시아 판과 끝 한마디가 같다');
+    assert.match(끝('lab-ru-vk')[0].message, /LAB_미안\(11-19\)/);
+    assert.match(끝('lab-ru-vk')[0].message, /「только про себя!」 ~ 「только про себя!」/);
+    const 줄 = (name, 판) => r.summary.지난편.find((s) => s.편 === name && s.판.includes(판));
+    assert.equal(줄('LAB_미안', 'lab-ru-vk').끝줄, 1);
+    assert.equal(줄('LAB_미안', 'lab-ru-vk').끝줄읽기, '판본 글 · 판본 글');
+    assert.ok(줄('LAB_지마', 'lab-ru-vk').끝줄 < 반복.LINE_NEAR, '지마(「가지 마 = Не уходи」)와는 다르다');
+    // 손으로 단 판은 전처럼 글자 인식 — 같은 영상이어도 엉뚱한 읽힘끼리라 잡히지 않는다(이번 고침 밖)
+    assert.deepEqual(codes(끝('lab-ru-rutube')), []);
+    assert.equal(줄('LAB_미안', 'lab-ru-rutube').끝줄읽기, '글자 인식 · 글자 인식');
+    assert.ok(읽은.includes(영상('LAB_화날때')) && 읽은.includes(영상('LAB_미안')), '손 판이 쓰는 영상은 글자 인식에 넘긴다');
+
+    // 글이 다른 짝 — 지마의 지난 편(물고기)과는 끝 줄이 겹치지 않는다. 손 판이 없는 편의 돌림 판 영상은 글자 인식에 넘기지 않는다
+    읽은.length = 0;
+    const 지마 = 견주기(편('LAB_지마'));
+    assert.deepEqual(codes(지마.findings.filter((f) => /^ending-/.test(f.code))), []);
+    assert.deepEqual(지마.summary.지난편.map((s) => [s.편, s.끝줄읽기]), [['LAB_물고기', '판본 글 · 판본 글']]);
+    assert.deepEqual(읽은, [], '판본 글로 다 견줬으면 글자 인식을 부르지 않는다');
+
+    // 판본 글이 없는 돌림 판은 전처럼 글자 인식으로 떨어진다(그래서 러시아 짝을 놓친다 — 11-18 실측)
+    fs.rmSync(path.join(편('LAB_미안'), '게시', '판본', 'RU', '글.json'));
+    const 글없음 = 견주기(편('LAB_화날때'));
+    const 미안줄 = 글없음.summary.지난편.find((s) => s.편 === 'LAB_미안' && s.판.includes('lab-ru-vk'));
+    assert.equal(미안줄.끝줄읽기, '판본 글 · 글자 인식');
+    assert.deepEqual(codes(글없음.findings.filter((f) => f.where === 'lab-ru-vk' && /^ending-/.test(f.code))), []);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
+test('⑯ 돌림 판 끝 줄 「같음」 — 게시결과로 세 갈래(나간 판 막지 않음 · 걸린 판 확인할 것 · 안 건 판 고칠 것), 손 판은 늘 고칠 것, 「돌림」.끝줄되부름 짝은 확인할 것', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), '무대반복-갈래-'));
+  fs.mkdirSync(path.join(root, 'tools'), { recursive: true });
+  const 편 = (name) => path.join(root, 'docs', '마케팅', name);
+  const 편쓰기 = (name, 시각, 줄, { 결과 = null, 되부름 = null } = {}) => {
+    const 판본 = path.join(편(name), '게시', '판본', 'RU');
+    fs.mkdirSync(판본, { recursive: true });
+    fs.writeFileSync(path.join(판본, 'video.mp4'), name);
+    fs.writeFileSync(path.join(편(name), '게시', 'hand.mp4'), name);
+    fs.writeFileSync(path.join(판본, '글.json'), JSON.stringify({ 꼴: '판본글/1', 편: name, 판본: 'RU', 언어: 'ru', 틀: '이야기', 줄 }));
+    // 돌림 판 셋(VK · RUTUBE · 같은 판본을 쓰는 셋째 계정)과 손 판 하나(인스타 — 손 판끼리는 글자 인식 끝 줄로 견준다)
+    const 판 = ['lab-ru-vk', 'lab-ru-rutube', 'lab-kz-tiktok'].map((계정) => ({ 계정, 파일: '게시/판본/RU/video.mp4', 시각, 돌림: true }))
+      .concat([{ 계정: 'lab-instagram', 파일: 'hand.mp4', 시각 }]);
+    fs.writeFileSync(path.join(편(name), '게시', '준비.json'), JSON.stringify({ 브랜드: 'LAB', 슬롯: 시각.slice(0, 10), 판,
+      돌림: { 형식: '이야기', 판본: { RU: { 언어: 'ru', 파일: '게시/판본/RU/video.mp4', 글: '게시/판본/RU/글.json' } }, ...(되부름 ? { 끝줄되부름: 되부름 } : {}) } }));
+    if (결과) fs.writeFileSync(path.join(편(name), '게시', '게시결과.json'), JSON.stringify({ 판: 결과 }));
+  };
+  try {
+    편쓰기('LAB_미안', '2026-11-20T19:00:00+03:00', 판본줄.미안);
+    // 화날때: VK는 게시됨(이미 나감) · RUTUBE는 예약됨(걸림) · 카자흐는 줄 없음(안 건 판) · 인스타 손 판도 게시됨
+    편쓰기('LAB_화날때', '2026-11-21T19:00:00+03:00', 판본줄.화날때, { 결과: [
+      { 계정: 'lab-ru-vk', 상태: '게시됨' }, { 계정: 'lab-ru-rutube', 상태: '예약됨', 작업: 'a' }, { 계정: 'lab-instagram', 상태: '게시됨' }] });
+    const screen = (files) => new Map(files.map((f) => [f, /hand\.mp4$/.test(f) ? ['Секрет: только про себя!'] : []]));
+    const stage = (() => { let n = 0; return () => { n += 70; return { first: Buffer.alloc(9 * 16 * 3, n % 256), last: Buffer.alloc(9 * 16 * 3, (n + 35) % 256) }; }; })();
+    const 견주기 = () => { const bundle = 묶음.load(편('LAB_화날때')); return 반복.repeatFindings(bundle, 묶음.plates(bundle), { list: 반복.episodes([root]), stage, screen, narration: () => [] }); };
+
+    const r = 견주기();
+    const 끝 = r.findings.filter((f) => /^ending-/.test(f.code)).map((f) => `${f.level}:${f.code}@${f.where}`).sort();
+    assert.deepEqual(끝, [
+      '고칠 것:ending-repeat@lab-instagram', // 손 판은 게시됨이어도 전처럼 고칠 것
+      '고칠 것:ending-repeat@lab-kz-tiktok', // 안 건 돌림 판
+      '확인할 것:ending-repeat-booked@lab-ru-rutube', // 걸린 돌림 판
+    ], '나간 돌림 판(VK)은 막지 않는다');
+    assert.match(r.findings.find((f) => f.code === 'ending-repeat' && f.where === 'lab-kz-tiktok').message, /동결.*두 편 이상.*「돌림」\.이미받음.*「돌림」\.끝줄되부름/, '⑯은 지난 두 편을 보니 한 편만 끼워서는 안 풀린다(GA4)');
+    assert.match(r.findings.find((f) => f.code === 'ending-repeat' && f.where === 'lab-instagram').message, /준비\.json 「끝줄」에 새 줄/, '손 판은 전처럼 끝줄을 새로 적으라고');
+
+    // 되부르는 짝 — 미안 쪽에 적어도(지난 편) 화날때 쪽에서 보면 확인할 것으로 내린다. 나간 돌림 판은 여전히 안 보인다
+    편쓰기('LAB_미안', '2026-11-20T19:00:00+03:00', 판본줄.미안, { 되부름: [{ 편: 'LAB_화날때', 까닭: '해설 딱지 「속으로만!」이 화날때 끝 카드를 되부른다' }] });
+    const c = 견주기();
+    const 되 = c.findings.filter((f) => /^ending-/.test(f.code)).map((f) => `${f.level}:${f.code}@${f.where}`).sort();
+    assert.deepEqual(되, ['고칠 것:ending-repeat@lab-instagram', '확인할 것:ending-callback@lab-kz-tiktok · lab-ru-rutube'], '되부름은 돌림 판에만 — 손 판은 전처럼 고칠 것(GPT 검수 GA1)');
+    assert.match(c.findings.find((f) => f.code === 'ending-callback').message, /속으로만!」이 화날때 끝 카드를 되부른다/);
+    assert.equal(c.summary.지난편.find((s) => s.판.includes('lab-kz-tiktok')).끝줄되부름, true);
+    // 이름이 틀리면 내리지 않는다
+    편쓰기('LAB_미안', '2026-11-20T19:00:00+03:00', 판본줄.미안, { 되부름: ['LAB_화날떄'] });
+    assert.ok(codes(견주기().findings).includes('고칠 것:ending-repeat'));
+
+    // 「비슷함」(0.45~0.6)도 나간 돌림 판에는 안 낸다 — 러시아 미안 끝 질문 ~ 지마 끝 질문 0.53
+    편쓰기('LAB_지마', '2026-11-19T19:00:00+03:00', 판본줄.지마);
+    편쓰기('LAB_미안', '2026-11-20T19:00:00+03:00', 판본줄.미안, { 결과: [{ 계정: 'lab-ru-vk', 상태: '게시됨' }] });
+    const 미안 = 묶음.load(편('LAB_미안'));
+    const m = 반복.repeatFindings(미안, 묶음.plates(미안), { list: 반복.episodes([root]), stage, screen, narration: () => [] });
+    assert.deepEqual(m.findings.filter((f) => f.code === 'ending-similar').map((f) => f.where), ['lab-ru-rutube · lab-kz-tiktok']);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
