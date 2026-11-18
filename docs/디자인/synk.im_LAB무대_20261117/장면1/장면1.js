@@ -587,6 +587,7 @@
   /* ── 흐름 ── */
   const setQhead = (t) => {
     const no = document.createElement('span'); no.className = 'sc-qno'; no.textContent = String(sceneNo + 1).padStart(2, '0');
+    const all = document.createElement('i'); all.textContent = '/' + String(DAYS.length).padStart(2, '0'); no.append(all);
     const tx = document.createElement('span'); tx.className = 'sc-qtx'; tx.textContent = t;
     qhead.replaceChildren(no, tx); specQ.textContent = t;
   };

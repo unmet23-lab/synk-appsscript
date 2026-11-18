@@ -25,6 +25,7 @@
 .sc[data-head] .sc-sound span{order:-1}
 .sc[data-head] .sc-qno{display:inline-flex;align-items:center;gap:10px;font-family:'SYNK Latin',var(--sans);font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
 .sc[data-head] .sc-qno::after{content:"";width:22px;height:1px;background:currentColor;opacity:.35}
+.sc[data-head] .sc-qno i{font-style:normal;color:var(--ink3);margin-left:-8px}
 
 /* ── A · C: 정보 줄 ── */
 .sc[data-head="a"] .sc-head,.sc[data-head="c"] .sc-head{display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,2.6fr) auto;align-items:start;gap:0 32px;padding:clamp(22px,2.3vw,32px) var(--gut) 0}
@@ -38,14 +39,14 @@
 .sc[data-head="a"] .sc-head .sc-meta,.sc[data-head="c"] .sc-head .sc-meta{grid-column:3;justify-self:end}
 
 /* ── A: 두 톤의 큰 문제 문장 ── */
-.sc[data-head="a"] .sc-stage{padding-top:clamp(20px,3.4vh,44px)}
+.sc[data-head="a"] .sc-stage{padding-top:clamp(16px,2.6vh,36px)}
 .sc[data-head="a"] .sc-qhead{display:flex;align-items:center;justify-content:center;gap:10px;font-size:12.5px;font-weight:600;color:var(--ink2);letter-spacing:.01em}
-.sc[data-head="a"] .sc-ctx,.sc[data-head="a"] .sc-prompt{display:inline;margin:0;font-size:clamp(30px,3.15vw,46px);line-height:1.18;letter-spacing:-.042em;font-weight:700;min-height:0}
-.sc[data-head="a"] .sc-q{display:block;margin-top:14px;max-width:min(1060px,92%);text-wrap:balance;text-align:center}
+.sc[data-head="a"] .sc-ctx{display:block;margin:0;font-size:clamp(28px,2.9vw,42px);line-height:1.15;letter-spacing:-.042em;font-weight:700;min-height:0;text-wrap:balance}
+.sc[data-head="a"] .sc-prompt{display:block;margin:10px 0 0;font-size:clamp(18px,1.55vw,23px);line-height:1.3;letter-spacing:-.03em;font-weight:650;min-height:0;text-wrap:balance}
+.sc[data-head="a"] .sc-q{display:block;margin-top:10px;max-width:min(1060px,92%);text-align:center}
 .sc[data-head="a"] .sc-ctx{color:var(--ink)}
-.sc[data-head="a"] .sc-prompt{color:rgba(23,23,26,.36)}
-.sc[data-head="a"] .sc-ctx:not(:empty)::after{content:" "}
-.sc[data-head="a"] .sc-qhead{margin-bottom:14px}
+.sc[data-head="a"] .sc-prompt{color:rgba(23,23,26,.42)}
+.sc[data-head="a"] .sc-qhead{margin-bottom:10px}
 
 /* ── B: 사양서 띠 ── */
 .sc[data-head="b"] .sc-head{display:grid;grid-template-columns:1fr auto;align-items:end;gap:12px 24px;padding:clamp(22px,2.3vw,32px) var(--gut) 0}
@@ -88,14 +89,16 @@
 /* ── 휴대폰 ── */
 @media (max-width:900px){
   .sc[data-head="a"] .sc-head,.sc[data-head="c"] .sc-head{grid-template-columns:1fr auto;gap:8px 16px;padding-top:26px}
-  .sc[data-head="a"] .sc-kicker,.sc[data-head="c"] .sc-kicker{grid-column:1;grid-row:1;display:flex;gap:6px;align-items:baseline}
+  .sc[data-head="a"] .sc-kicker,.sc[data-head="c"] .sc-kicker{grid-column:1;grid-row:1;display:flex;gap:6px;align-items:baseline;white-space:nowrap;min-width:0}
+  .sc[data-head="a"] .sc-time,.sc[data-head="c"] .sc-time{display:none}
   .sc[data-head="a"] .sc-kicker b,.sc[data-head="c"] .sc-kicker b,.sc[data-head="a"] .sc-kicker span,.sc[data-head="c"] .sc-kicker span{display:inline}
   .sc[data-head="a"] .sc-head .sc-meta,.sc[data-head="c"] .sc-head .sc-meta{grid-column:2;grid-row:1;gap:12px}
-  .sc[data-head="a"] .sc-title,.sc[data-head="c"] .sc-title{grid-column:1/-1;grid-row:2;font-size:15px}
+  .sc[data-head="a"] .sc-title,.sc[data-head="c"] .sc-title{grid-column:1/-1;grid-row:2;font-size:15px;text-wrap:balance}
   .sc[data-head="a"] .sc-stage{align-items:flex-start;text-align:left;padding-top:20px}
   .sc[data-head="a"] .sc-qhead{justify-content:flex-start;margin-bottom:10px}
   .sc[data-head="a"] .sc-q{max-width:none;text-align:left;margin-top:0}
-  .sc[data-head="a"] .sc-ctx,.sc[data-head="a"] .sc-prompt{font-size:25px;line-height:1.22}
+  .sc[data-head="a"] .sc-ctx{font-size:25px;line-height:1.24}
+  .sc[data-head="a"] .sc-prompt{font-size:17px;margin-top:8px}
   .sc[data-head="b"] .sc-head{gap:10px 12px;padding-top:26px}
   .sc[data-head="b"] .sc-id{flex-direction:column;gap:4px}
   .sc[data-head="b"] .sc-title{font-size:15px}
