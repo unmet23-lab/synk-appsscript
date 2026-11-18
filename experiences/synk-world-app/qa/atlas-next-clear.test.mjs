@@ -393,6 +393,71 @@ test('옛 대기열은 코치를 연 뒤 「비우는 중」 표지를 적기 �
   next.dispose();
 });
 
+test('늦게 끝난 비우기는 그사이 다른 탭이 적은 더 새 판의 「새 길 간 적 있음」 표지를 내리지 않는다(4-5 코드 다시 검수 GPT -c GA2)', async () => {
+  const storage = filledStorage();
+  const line = accountLine();
+  let release;
+  const held = new Promise(resolve => {
+    release = resolve;
+  });
+  const { load } = fakeLoader(async given => {
+    if (given.settle) return settled;
+    await held;
+    return CLEARED(2);
+  });
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder(), oldEngine: { flush: async () => true } });
+  const done = next.clearPractice();
+  await until(() => markOf(storage));
+  storage.setItem(NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'upload', revision: 3 }));
+  release();
+  assert.equal((await done).ok, true);
+  assert.equal(JSON.parse(storage.getItem(NEXT_MARK + A_ID)).revision, 3, '더 새 판을 내리지 않는다');
+  next.dispose();
+});
+
+test('앞 비우기의 남은 걸음 표지는 새 비우기가 서버에 닿지 않고 끝나면 되돌리고, 결과를 모르면 표지에 실어 두었다가 하루가 지나면 되살린다(4-5 코드 다시 검수 GPT -c GA3)', async () => {
+  const prior = { account: A_ID, path: 'upload', revision: 2, at: Date.now() - 1000, left: 'cleared' };
+  const stuck = { ok: true, path: 'upload', settled: 'cleared', guest: { ok: false, code: 'STORAGE_FAILED', dropped: 0, legacy: 'kept' } };
+  // 첫 확인에서 멈췄다(UNSENT_SKIPPED) — 서버에 닿지 않았으니 앞 표지를 되돌린다.
+  const s1 = filledStorage();
+  s1.setItem(CLEARING_MARK + A_ID, JSON.stringify(prior));
+  const l1 = accountLine({ revision: 2 });
+  const n1 = createAtlasNext({
+    owner: A_ID,
+    storage: s1,
+    trail: l1.trail,
+    load: fakeLoader(given => (given.settle ? stuck : { ok: false, path: 'upload', step: 'upload', code: 'UNSENT_SKIPPED', skipped: 1, known: true })).load,
+    health: recorder(),
+  });
+  assert.equal((await n1.clearPractice()).code, 'UNSENT_SKIPPED');
+  await new Promise(resolve => setTimeout(resolve, 50));
+  assert.deepEqual([markOf(s1)?.revision, markOf(s1)?.left], [2, 'cleared'], '앞 비우기의 남은 걸음 표지를 되돌렸다');
+  n1.dispose();
+  // 결과를 모른다 — 새 표지가 앞 남은 걸음을 싣고, 하루가 지나도 비워지지 않았으면 그것으로 되살린다.
+  const s2 = filledStorage();
+  s2.setItem(CLEARING_MARK + A_ID, JSON.stringify(prior));
+  const l2 = accountLine({ revision: 2 });
+  l2.lastClear = async () => {
+    throw Object.assign(Error('NETWORK'), { code: 'NETWORK', retryable: true });
+  };
+  const n2 = createAtlasNext({
+    owner: A_ID,
+    storage: s2,
+    trail: l2.trail,
+    load: fakeLoader(given => (given.settle ? stuck : { ok: false, path: 'upload', step: 'clear', code: 'NETWORK', known: false })).load,
+    health: recorder(),
+  });
+  assert.equal((await n2.clearPractice()).known, false);
+  assert.deepEqual(markOf(s2)?.then, { revision: 2, left: 'cleared' }, '결과를 모르는 표지가 앞 남은 걸음을 싣는다');
+  s2.setItem(CLEARING_MARK + A_ID, JSON.stringify({ ...markOf(s2), at: Date.now() - CLEARING_MS - 1 }));
+  l2.lastClear = async () => ({ ok: true, revision: 2, lastClear: { revision: 2, at: 1 } });
+  n2.redecide();
+  assert.ok(await n2.practiceCoach(POOL));
+  await until(() => markOf(s2)?.left === 'cleared');
+  assert.equal(markOf(s2).revision, 2, '하루가 지나 앞 남은 걸음으로 되살렸다');
+  n2.dispose();
+});
+
 test('지금 보낼 수 없는 옛 사건 — 옛 대기열의 몫을 엔진 reset에 넘겨 새 길의 몫과 한 번에 알리고(UNSENT_SKIPPED) 표지를 지운다. 학생이 그 수를 확인하면 다시 불러 비운다(4-5 Opus 대체 설계 검토 F4)', async () => {
   const storage = filledStorage();
   const line = accountLine();

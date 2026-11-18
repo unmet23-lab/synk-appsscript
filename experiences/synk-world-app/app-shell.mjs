@@ -837,11 +837,14 @@ function mountMe(){
 // 시트 전체를 다시 그린다(22-4의 5 — 동의 체크박스의 판 번호와 응답 목록). 아무것도 비우지 못했으면 「지금은 비우지 못했어요」 쪽으로 알린다.
 async function clearPracticeNow(){
  if(!window.confirm(meText('me.clearAsk')))return;
- let result=null;try{result=await life.education?.clearPractice?.();}catch{result=null;}
- // 서버가 받지 않아 지금 보낼 수 없는 기록이 있으면 그 수를 알리고 한 번 더 묻는다 — 비우면 그 기록도 지워진다(4-5 Opus 대체 설계 검토 F4).
- if(result?.code==='UNSENT_SKIPPED'&&Number.isSafeInteger(result.skipped)&&result.skipped>0){
-  if(!window.confirm(meText('me.clearSkippedAsk',{n:result.skipped})))return;
-  try{result=await life.education?.clearPractice?.({allowSkipped:result.skipped});}catch{result=null;}
+ // 다시 묻고 다시 부르는 것은 처음 누른 로그인의 학습 화면에만 한다 — 기다리는 사이 계정이 바뀌었으면 묻지 않고 멈춘다(4-5 코드 다시 검수 GPT -c GA1).
+ const education=life.education,owner=client.snapshot?.accountId||'guest',same=()=>life.education===education&&(client.snapshot?.accountId||'guest')===owner;
+ let result=null;try{result=await education?.clearPractice?.();}catch{result=null;}
+ // 서버가 받지 않아 지금 보낼 수 없는 기록이 있으면 그 수를 알리고 한 번 더 묻는다 — 비우면 그 기록도 지워진다(4-5 Opus 대체 설계 검토 F4). 그사이 수가
+ // 늘었으면 새 수로 다시 묻는다(GA4).
+ for(let asks=0;asks<3&&result?.code==='UNSENT_SKIPPED'&&Number.isSafeInteger(result.skipped)&&result.skipped>0;asks+=1){
+  if(!same()||!window.confirm(meText('me.clearSkippedAsk',{n:result.skipped}))||!same())return;
+  try{result=await education.clearPractice({allowSkipped:result.skipped});}catch{result=null;}
  }
  home.toast(meText(result?.ok?(result.partial?'me.clearPartial':'me.clearDone'):result?.code==='UNSENT'?'me.clearUnsent':'me.clearFailed'));
  // 결과와 상관없이 계정 설정 스냅샷을 새로 받아 그린다 — 결과를 모르는 실패도 서버에서는 비워졌을 수 있다(동의 체크박스의 판 번호 — §22-4 · 4-5 Opus 대체 설계 검토 F8).

@@ -487,8 +487,13 @@ test('앱의 배선 — 입구에 옛 엔진의 두 문을 넘기고, 감싸기�
   );
   assert.match(
     source,
-    /if\(result\?\.code==='UNSENT_SKIPPED'&&Number\.isSafeInteger\(result\.skipped\)&&result\.skipped>0\)\{\r?\n  if\(!window\.confirm\(meText\('me\.clearSkippedAsk',\{n:result\.skipped\}\)\)\)return;\r?\n  try\{result=await life\.education\?\.clearPractice\?\.\(\{allowSkipped:result\.skipped\}\);\}/,
-    '지금 보낼 수 없는 기록이 있으면 그 수를 알리고 한 번 더 물어, 확인하면 그 수로 다시 부른다(4-5 Opus 대체 설계 검토 F4)',
+    /const education=life\.education,owner=client\.snapshot\?\.accountId\|\|'guest',same=\(\)=>life\.education===education&&\(client\.snapshot\?\.accountId\|\|'guest'\)===owner;/,
+    '다시 묻고 다시 부르는 것은 처음 누른 로그인의 학습 화면에만 한다(4-5 코드 다시 검수 GPT -c GA1)',
+  );
+  assert.match(
+    source,
+    /for\(let asks=0;asks<3&&result\?\.code==='UNSENT_SKIPPED'&&Number\.isSafeInteger\(result\.skipped\)&&result\.skipped>0;asks\+=1\)\{\r?\n  if\(!same\(\)\|\|!window\.confirm\(meText\('me\.clearSkippedAsk',\{n:result\.skipped\}\)\)\|\|!same\(\)\)return;\r?\n  try\{result=await education\.clearPractice\(\{allowSkipped:result\.skipped\}\);\}/,
+    '지금 보낼 수 없는 기록의 수를 알리고 한 번 더 묻는다. 그사이 수가 늘었으면 새 수로 다시 묻는다(F4 · GPT -c GA4)',
   );
   assert.match(source, /\$\{responsesSection\(\)\}\$\{meSection\(true\)\}<div id="world-classroom-lessons">/);
   assert.match(source, /mountResponses\(\);refreshResponses\(\);mountMe\(\);/);

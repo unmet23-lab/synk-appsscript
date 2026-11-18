@@ -206,11 +206,15 @@ export function clearingOf(storage, owner) {
       !Number.isFinite(value.at)
     )
       return null;
-    return { path: value.path, revision: value.revision, at: value.at, left: LEFT.has(value.left) ? value.left : null };
+    // then: 이 비우기를 시작할 때 남아 있던 앞 비우기의 남은 걸음 — 결과를 모른 채 하루가 지나면 되살린다(GPT -c GA3).
+    const then = LEFT.has(value.then?.left) && Number.isSafeInteger(value.then?.revision) ? { revision: value.then.revision, left: value.then.left } : null;
+    return { path: value.path, revision: value.revision, at: value.at, left: LEFT.has(value.left) ? value.left : null, then };
   } catch {
     return null;
   }
 }
+const priorOf = mark =>
+  mark?.then ? { path: mark.path, revision: mark.then.revision, at: Date.now(), left: mark.then.left } : null;
 function clearingOwners(storage) {
   const out = [];
   try {
@@ -235,6 +239,7 @@ function writeClearing(storage, owner, mark) {
           revision: mark.revision,
           at: mark.at,
           ...(mark.left ? { left: mark.left } : {}),
+          ...(mark.then ? { then: { revision: mark.then.revision, left: mark.then.left } } : {}),
         }),
       );
     return true;
@@ -1268,7 +1273,7 @@ export function createAtlasNext({
       const last = await lastClearOf();
       if (disposed || last === undefined) return;
       if (!(last && last.revision > mark.revision)) {
-        if (Date.now() - mark.at > CLEARING_MS) writeClearing(store, owner, null);
+        if (Date.now() - mark.at > CLEARING_MS) writeClearing(store, owner, priorOf(mark));
         return;
       }
       // 표지를 적은 뒤에 비워졌다(이 비우기가 늦게 끝났든, 다른 기기나 탭이 비웠든) — 이 기기의 몫을 하고 손님 저장소의 걸음을 남긴다.
@@ -1357,7 +1362,11 @@ export function createAtlasNext({
         return { ok: false, path, step: 'upload', code: 'UNSENT', known: true };
     }
     // 1 — 「비우는 중」 표지를 먼저 적는다. 못 적으면 비우지 않는다(결과를 모를 때 맞출 자리가 없다).
-    const mark = { path, revision: plan.revision, at: Date.now() };
+    // 앞 비우기의 남은 걸음 표지(left)는 이 비우기가 서버에 닿지 않고 끝나면 되돌리고, 결과를 모르면 표지에 실어 둔다(4-5 코드 다시 검수 GPT
+    // -c GA3 — 첫 확인에서 멈춘 새 비우기가 이미 서버에서 끝난 비우기의 남은 걸음을 지웠다).
+    const prior = clearingOf(store, owner);
+    const kept = prior?.left ? { path: prior.path, revision: prior.revision, at: prior.at, left: prior.left } : null;
+    const mark = { path, revision: plan.revision, at: Date.now(), ...(kept ? { then: { revision: kept.revision, left: kept.left } } : {}) };
     if (!store || !writeClearing(store, owner, mark)) return { ok: false, path, code: 'MARK_FAILED', known: true };
     let done;
     try {
@@ -1372,7 +1381,7 @@ export function createAtlasNext({
     if (done?.ok) return cleared(mark, done.revision, leftOf(done.guest));
     // 올리기에서 멈췄거나 서버 비우기를 부를 수 없었다 — 서버에 닿지 않은 것이 분명하다. 표지를 지운다.
     if (done?.step === 'upload' || done?.code === 'NO_CLEAR') {
-      writeClearing(store, owner, null);
+      writeClearing(store, owner, kept);
       return {
         ok: false,
         path,
@@ -1388,7 +1397,7 @@ export function createAtlasNext({
     if (last && last.revision > mark.revision) return cleared(mark, last.revision, 'cleared');
     // 비워지지 않았다. 서버가 받지 않은 것이 분명하고 비워지지 않은 것을 읽었으면 표지를 지운다. 결과를 모르면(닿지 못함 · 답 끊김 · 마지막
     // 비우기를 못 읽음) 표지를 남긴다 — 늦게 끝나는 요청이 있을 수 있어 다음 다시 정하기가 맞춘다.
-    if (done?.known === true && last !== undefined) writeClearing(store, owner, null);
+    if (done?.known === true && last !== undefined) writeClearing(store, owner, kept);
     return { ok: false, path, step: 'clear', code: done?.code ?? 'CLEAR_FAILED', known: done?.known === true };
   }
   // 비운 뒤(22-4 올리는 계정 2 · 3 · 5) — 이 기기의 몫을 하고 이 문서의 코치를 은퇴시킨다(새 판으로 다시 연다). 손님 저장소의 걸음이 남았으면
@@ -1397,7 +1406,9 @@ export function createAtlasNext({
     await settleDevice(mark, revision);
     // 「새 길 간 적 있음」 표지를 비운 뒤의 새 판으로 옮긴다 — 계정을 못 읽은 채 다시 열면 이 표지의 판으로 새 길을 연다(keptPath). 앞 판을
     // 가리키면 새 판 코치가 서기 전까지 남은 앞 판 저장소가 열려, 비운 기록이 다시 보이고 그 사이의 답은 버려졌다(4-5 Opus 대체 설계 검토 F3).
-    writeMark(store, owner, { went: true, path: mark.path, revision });
+    // 그사이 다른 탭이 더 새 판을 적었으면 내리지 않는다(4-5 코드 다시 검수 GPT -c GA2).
+    const went = markOf(store, owner).revision;
+    if (!(Number.isSafeInteger(went) && went > revision)) writeMark(store, owner, { went: true, path: mark.path, revision });
     writeClearing(store, owner, left ? { path: mark.path, revision, at: Date.now(), left } : null);
     retire('cleared');
     if (left && !disposed) {
