@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V7",
+ "text": "그 페이지 방문 1,039번 가운데, 사람은 17번.",
+ "dur": 3.08,
+ "words": [
+  {
+   "text": "그",
+   "start": 0.02,
+   "end": 0.083
+  },
+  {
+   "text": "페이지",
+   "start": 0.192,
+   "end": 0.442
+  },
+  {
+   "text": "방문",
+   "start": 0.505,
+   "end": 0.755
+  },
+  {
+   "text": "1,039번",
+   "start": 0.802,
+   "end": 1.427
+  },
+  {
+   "text": "가운데,",
+   "start": 1.474,
+   "end": 1.755
+  },
+  {
+   "text": "사람은",
+   "start": 2.13,
+   "end": 2.428
+  },
+  {
+   "text": "17번.",
+   "start": 2.474,
+   "end": 3.08
+  }
+ ],
+ "source": {
+  "key": "0d6c09bfa68b5e3868b24483a3ef3eaf",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 150
+ }
+}

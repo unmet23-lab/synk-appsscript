@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "사람은 17번. 그런데 그중 10번쯤은, 아마 저였어요.",
+ "dur": 3.111,
+ "words": [
+  {
+   "text": "사람은",
+   "start": 0.02,
+   "end": 0.309
+  },
+  {
+   "text": "17번.",
+   "start": 0.35,
+   "end": 0.846
+  },
+  {
+   "text": "그런데",
+   "start": 1.134,
+   "end": 1.395
+  },
+  {
+   "text": "그중",
+   "start": 1.465,
+   "end": 1.67
+  },
+  {
+   "text": "10번쯤은,",
+   "start": 1.712,
+   "end": 2.193
+  },
+  {
+   "text": "아마",
+   "start": 2.358,
+   "end": 2.469
+  },
+  {
+   "text": "저였어요.",
+   "start": 2.524,
+   "end": 3.111
+  }
+ ],
+ "source": {
+  "key": "c960f49b472065d1ca6d704a926d5313",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 139
+ }
+}

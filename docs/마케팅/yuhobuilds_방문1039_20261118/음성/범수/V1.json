@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "AI로 만든 내 홈페이지의 한 페이지, 11일 동안 방문이 1,039번이었어요.",
+ "dur": 3.878,
+ "words": [
+  {
+   "text": "AI로",
+   "start": 0.02,
+   "end": 0.337
+  },
+  {
+   "text": "만든",
+   "start": 0.378,
+   "end": 0.599
+  },
+  {
+   "text": "내",
+   "start": 0.641,
+   "end": 0.695
+  },
+  {
+   "text": "홈페이지의",
+   "start": 0.765,
+   "end": 1.15
+  },
+  {
+   "text": "한",
+   "start": 1.191,
+   "end": 1.261
+  },
+  {
+   "text": "페이지,",
+   "start": 1.302,
+   "end": 1.564
+  },
+  {
+   "text": "11일",
+   "start": 1.978,
+   "end": 2.212
+  },
+  {
+   "text": "동안",
+   "start": 2.253,
+   "end": 2.419
+  },
+  {
+   "text": "방문이",
+   "start": 2.46,
+   "end": 2.736
+  },
+  {
+   "text": "1,039번이었어요.",
+   "start": 2.791,
+   "end": 3.878
+  }
+ ],
+ "source": {
+  "key": "7d37b0d2a1e6c9e802e441c2ea424d76",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.12,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 155
+ }
+}

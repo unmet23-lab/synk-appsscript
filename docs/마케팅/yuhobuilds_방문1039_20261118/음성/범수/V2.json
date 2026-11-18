@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "처음으로 제대로 재 봤어요. 사람인지, 로봇인지.",
+ "dur": 2.582,
+ "words": [
+  {
+   "text": "처음으로",
+   "start": 0.02,
+   "end": 0.336
+  },
+  {
+   "text": "제대로",
+   "start": 0.383,
+   "end": 0.62
+  },
+  {
+   "text": "재",
+   "start": 0.667,
+   "end": 0.73
+  },
+  {
+   "text": "봤어요.",
+   "start": 0.778,
+   "end": 1.126
+  },
+  {
+   "text": "사람인지,",
+   "start": 1.457,
+   "end": 1.836
+  },
+  {
+   "text": "로봇인지.",
+   "start": 1.899,
+   "end": 2.582
+  }
+ ],
+ "source": {
+  "key": "5684e40727b87b7d58ff2e484376920f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 182
+ }
+}

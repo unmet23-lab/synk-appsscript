@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V10",
+ "text": "여러분 홈페이지는, 몇 번이 사람일까요?",
+ "dur": 1.85,
+ "words": [
+  {
+   "text": "여러분",
+   "start": 0.02,
+   "end": 0.266
+  },
+  {
+   "text": "홈페이지는,",
+   "start": 0.306,
+   "end": 0.772
+  },
+  {
+   "text": "몇",
+   "start": 0.836,
+   "end": 0.954
+  },
+  {
+   "text": "번이",
+   "start": 0.992,
+   "end": 1.148
+  },
+  {
+   "text": "사람일까요?",
+   "start": 1.186,
+   "end": 1.85
+  }
+ ],
+ "source": {
+  "key": "fcb0d41dd5d7cd3c3e62f88400e8ecd7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}

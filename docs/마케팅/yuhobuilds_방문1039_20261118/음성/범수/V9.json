@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V9",
+ "text": "이 세 줄, 저장해 두세요.",
+ "dur": 1.412,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.01,
+   "end": 0.029
+  },
+  {
+   "text": "세",
+   "start": 0.088,
+   "end": 0.166
+  },
+  {
+   "text": "줄,",
+   "start": 0.224,
+   "end": 0.361
+  },
+  {
+   "text": "저장해",
+   "start": 0.654,
+   "end": 0.947
+  },
+  {
+   "text": "두세요.",
+   "start": 1.024,
+   "end": 1.412
+  }
+ ],
+ "source": {
+  "key": "993f5cb1bc33c53e2f04788fb43bdb7d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 143
+ }
+}

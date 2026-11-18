@@ -1,0 +1,138 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1120,
+  "lufs": -17
+ },
+ "made": "2026-11-17T23:37:48.105Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "AI로 만든 내 홈페이지의 한 페이지, 11일 동안 방문이 1,039번이었어요.",
+   "dur": 3.878,
+   "syllablesPerSec": 6.19,
+   "src": "V1.wav",
+   "key": "7d37b0d2a1e6c9e802e441c2ea424d76",
+   "words": 10
+  },
+  {
+   "id": "V2",
+   "text": "처음으로 제대로 재 봤어요. 사람인지, 로봇인지.",
+   "dur": 2.582,
+   "syllablesPerSec": 7.36,
+   "src": "V2.wav",
+   "key": "5684e40727b87b7d58ff2e484376920f",
+   "words": 6
+  },
+  {
+   "id": "V3",
+   "text": "갈라 보니 1,022번이 로봇이었어요. 98%요.",
+   "dur": 3.202,
+   "syllablesPerSec": 4.06,
+   "src": "V3.wav",
+   "key": "33b14a79bf604eea223b71e27dc5d097",
+   "words": 5
+  },
+  {
+   "id": "V4",
+   "text": "사람은 17번. 그런데 그중 10번쯤은, 아마 저였어요.",
+   "dur": 3.111,
+   "syllablesPerSec": 5.79,
+   "src": "V4.wav",
+   "key": "c960f49b472065d1ca6d704a926d5313",
+   "words": 7
+  },
+  {
+   "id": "V5",
+   "text": "게다가 제 컴퓨터에서 연 시험 화면까지, 같은 곳에 따로 쌓이고 있었어요.",
+   "dur": 3.455,
+   "syllablesPerSec": 8.39,
+   "src": "V5.wav",
+   "key": "944b8cea9da4e9ee86cb0fd9d286356a",
+   "words": 11
+  },
+  {
+   "id": "V6",
+   "text": "그래서 세 가지를 바꿨어요. 로봇은 빼고 보기. 제 브라우저는 안 세기. 시험 주소에선 측정 끄기.",
+   "dur": 4.745,
+   "syllablesPerSec": 7.8,
+   "src": "V6.wav",
+   "key": "1cc283746688fafa649e0e2324098a73",
+   "words": 15
+  },
+  {
+   "id": "V7",
+   "text": "그 페이지 방문 1,039번 가운데, 사람은 17번.",
+   "dur": 3.08,
+   "syllablesPerSec": 4.55,
+   "src": "V7.wav",
+   "key": "0d6c09bfa68b5e3868b24483a3ef3eaf",
+   "words": 7
+  },
+  {
+   "id": "V8",
+   "text": "방문 숫자는, 로봇과 나를 빼고 봐야 진짜예요.",
+   "dur": 2.581,
+   "syllablesPerSec": 6.97,
+   "src": "V8.wav",
+   "key": "498bb52a518fb3d308c4fed3ee85cd21",
+   "words": 7
+  },
+  {
+   "id": "V9",
+   "text": "이 세 줄, 저장해 두세요.",
+   "dur": 1.412,
+   "syllablesPerSec": 6.37,
+   "src": "V9.wav",
+   "key": "993f5cb1bc33c53e2f04788fb43bdb7d",
+   "words": 5
+  },
+  {
+   "id": "V10",
+   "text": "여러분 홈페이지는, 몇 번이 사람일까요?",
+   "dur": 1.85,
+   "syllablesPerSec": 8.65,
+   "src": "V10.wav",
+   "key": "fcb0d41dd5d7cd3c3e62f88400e8ecd7",
+   "words": 5
+  },
+  {
+   "id": "V5b",
+   "text": "게다가 고치면서 제 컴퓨터에 띄워 본 화면도, 따로 다 세고 있었어요.",
+   "dur": 3.513,
+   "syllablesPerSec": 7.69,
+   "src": "V5b.wav",
+   "key": "888e4e4273cb8c311afd5b33a9df7322",
+   "words": 11
+  },
+  {
+   "id": "V6b",
+   "text": "그래서 사이트를 만든 AI한테, 세 가지를 고치게 했어요.",
+   "dur": 2.826,
+   "syllablesPerSec": 7.43,
+   "src": "V6b.wav",
+   "key": "29e0d1d08d8e11c5a203cd51102d6ea3",
+   "words": 8
+  },
+  {
+   "id": "V6c",
+   "text": "로봇 방문은 빼고 보여 줘. 내 브라우저 방문은 세지 마. 측정은 진짜 주소에서만.",
+   "dur": 4.028,
+   "syllablesPerSec": 7.7,
+   "src": "V6c.wav",
+   "key": "bf58addfbd50c280c726e5d9f441120a",
+   "words": 13
+  }
+ ]
+}

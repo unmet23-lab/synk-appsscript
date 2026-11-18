@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "게다가 제 컴퓨터에서 연 시험 화면까지, 같은 곳에 따로 쌓이고 있었어요.",
+ "dur": 3.455,
+ "words": [
+  {
+   "text": "게다가",
+   "start": 0.15,
+   "end": 0.38
+  },
+  {
+   "text": "제",
+   "start": 0.429,
+   "end": 0.489
+  },
+  {
+   "text": "컴퓨터에서",
+   "start": 0.563,
+   "end": 1.012
+  },
+  {
+   "text": "연",
+   "start": 1.133,
+   "end": 1.279
+  },
+  {
+   "text": "시험",
+   "start": 1.315,
+   "end": 1.461
+  },
+  {
+   "text": "화면까지,",
+   "start": 1.496,
+   "end": 1.861
+  },
+  {
+   "text": "같은",
+   "start": 2.116,
+   "end": 2.334
+  },
+  {
+   "text": "곳에",
+   "start": 2.371,
+   "end": 2.48
+  },
+  {
+   "text": "따로",
+   "start": 2.516,
+   "end": 2.674
+  },
+  {
+   "text": "쌓이고",
+   "start": 2.722,
+   "end": 2.941
+  },
+  {
+   "text": "있었어요.",
+   "start": 2.978,
+   "end": 3.455
+  }
+ ],
+ "source": {
+  "key": "944b8cea9da4e9ee86cb0fd9d286356a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.12,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

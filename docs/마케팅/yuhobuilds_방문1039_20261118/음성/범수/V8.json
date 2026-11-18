@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V8",
+ "text": "방문 숫자는, 로봇과 나를 빼고 봐야 진짜예요.",
+ "dur": 2.581,
+ "words": [
+  {
+   "text": "방문",
+   "start": 0.01,
+   "end": 0.245
+  },
+  {
+   "text": "숫자는,",
+   "start": 0.288,
+   "end": 0.624
+  },
+  {
+   "text": "로봇과",
+   "start": 0.961,
+   "end": 1.239
+  },
+  {
+   "text": "나를",
+   "start": 1.298,
+   "end": 1.473
+  },
+  {
+   "text": "빼고",
+   "start": 1.517,
+   "end": 1.692
+  },
+  {
+   "text": "봐야",
+   "start": 1.736,
+   "end": 1.882
+  },
+  {
+   "text": "진짜예요.",
+   "start": 1.925,
+   "end": 2.581
+  }
+ ],
+ "source": {
+  "key": "498bb52a518fb3d308c4fed3ee85cd21",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 142
+ }
+}

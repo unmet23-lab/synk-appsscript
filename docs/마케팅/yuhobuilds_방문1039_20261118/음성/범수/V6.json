@@ -1,0 +1,110 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6",
+ "text": "그래서 세 가지를 바꿨어요. 로봇은 빼고 보기. 제 브라우저는 안 세기. 시험 주소에선 측정 끄기.",
+ "dur": 4.745,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.06,
+   "end": 0.267
+  },
+  {
+   "text": "세",
+   "start": 0.319,
+   "end": 0.383
+  },
+  {
+   "text": "가지를",
+   "start": 0.435,
+   "end": 0.656
+  },
+  {
+   "text": "바꿨어요.",
+   "start": 0.694,
+   "end": 1.056
+  },
+  {
+   "text": "로봇은",
+   "start": 1.431,
+   "end": 1.729
+  },
+  {
+   "text": "빼고",
+   "start": 1.767,
+   "end": 1.961
+  },
+  {
+   "text": "보기.",
+   "start": 2,
+   "end": 2.168
+  },
+  {
+   "text": "제",
+   "start": 2.465,
+   "end": 2.556
+  },
+  {
+   "text": "브라우저는",
+   "start": 2.621,
+   "end": 3.034
+  },
+  {
+   "text": "안",
+   "start": 3.073,
+   "end": 3.138
+  },
+  {
+   "text": "세기.",
+   "start": 3.189,
+   "end": 3.357
+  },
+  {
+   "text": "시험",
+   "start": 3.59,
+   "end": 3.772
+  },
+  {
+   "text": "주소에선",
+   "start": 3.81,
+   "end": 4.185
+  },
+  {
+   "text": "측정",
+   "start": 4.224,
+   "end": 4.405
+  },
+  {
+   "text": "끄기.",
+   "start": 4.444,
+   "end": 4.745
+  }
+ ],
+ "source": {
+  "key": "1cc283746688fafa649e0e2324098a73",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.12,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 149
+ }
+}

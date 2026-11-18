@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5b",
+ "text": "게다가 고치면서 제 컴퓨터에 띄워 본 화면도, 따로 다 세고 있었어요.",
+ "dur": 3.513,
+ "words": [
+  {
+   "text": "게다가",
+   "start": 0.14,
+   "end": 0.389
+  },
+  {
+   "text": "고치면서",
+   "start": 0.455,
+   "end": 0.875
+  },
+  {
+   "text": "제",
+   "start": 1.098,
+   "end": 1.177
+  },
+  {
+   "text": "컴퓨터에",
+   "start": 1.243,
+   "end": 1.545
+  },
+  {
+   "text": "띄워",
+   "start": 1.585,
+   "end": 1.742
+  },
+  {
+   "text": "본",
+   "start": 1.781,
+   "end": 1.86
+  },
+  {
+   "text": "화면도,",
+   "start": 1.899,
+   "end": 2.175
+  },
+  {
+   "text": "따로",
+   "start": 2.504,
+   "end": 2.648
+  },
+  {
+   "text": "다",
+   "start": 2.687,
+   "end": 2.74
+  },
+  {
+   "text": "세고",
+   "start": 2.805,
+   "end": 2.963
+  },
+  {
+   "text": "있었어요.",
+   "start": 3.003,
+   "end": 3.513
+  }
+ ],
+ "source": {
+  "key": "888e4e4273cb8c311afd5b33a9df7322",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 135
+ }
+}

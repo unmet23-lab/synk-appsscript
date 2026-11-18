@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "갈라 보니 1,022번이 로봇이었어요. 98%요.",
+ "dur": 3.202,
+ "words": [
+  {
+   "text": "갈라",
+   "start": 0.01,
+   "end": 0.163
+  },
+  {
+   "text": "보니",
+   "start": 0.22,
+   "end": 0.374
+  },
+  {
+   "text": "1,022번이",
+   "start": 0.431,
+   "end": 1.331
+  },
+  {
+   "text": "로봇이었어요.",
+   "start": 1.388,
+   "end": 1.924
+  },
+  {
+   "text": "98%요.",
+   "start": 2.288,
+   "end": 3.202
+  }
+ ],
+ "source": {
+  "key": "33b14a79bf604eea223b71e27dc5d097",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6b",
+ "text": "그래서 사이트를 만든 AI한테, 세 가지를 고치게 했어요.",
+ "dur": 2.826,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.07,
+   "end": 0.281
+  },
+  {
+   "text": "사이트를",
+   "start": 0.334,
+   "end": 0.651
+  },
+  {
+   "text": "만든",
+   "start": 0.691,
+   "end": 0.915
+  },
+  {
+   "text": "AI한테,",
+   "start": 0.955,
+   "end": 1.418
+  },
+  {
+   "text": "세",
+   "start": 1.748,
+   "end": 1.827
+  },
+  {
+   "text": "가지를",
+   "start": 1.867,
+   "end": 2.118
+  },
+  {
+   "text": "고치게",
+   "start": 2.158,
+   "end": 2.395
+  },
+  {
+   "text": "했어요.",
+   "start": 2.435,
+   "end": 2.826
+  }
+ ],
+ "source": {
+  "key": "29e0d1d08d8e11c5a203cd51102d6ea3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}
