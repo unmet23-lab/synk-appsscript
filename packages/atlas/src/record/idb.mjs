@@ -56,11 +56,21 @@ const abortQuietly = transaction => {
 // 막이 트랜잭션(단계 4 계획 §22-4 「늦게 쓰는 탭의 막이」) — 같은 쓰기 트랜잭션에서 머리 기록(GEN_KEY)의 지우기 세대를 먼저 읽고, expect와
 // 다르면 아무것도 쓰지 않고 되돌린 뒤 CLEARED로 거절한다. 같으면 그 읽기의 onsuccess 안에서(트랜잭션이 아직 살아 있다) 나머지 요청을 낸다 —
 // 읽기와 쓰기 사이에 다른 탭의 비우기가 끼지 못한다. 요청을 내다 동기 예외가 나면 트랜잭션째 되돌리고 그 예외를 던진다(atomically와 같은 규칙).
-// issue(store, track, current) — current는 읽은 세대. 돌려주는 값은 track한 요청들의 결과(낸 차례).
+// issue(store, track, current, fail) — current는 읽은 세대. track(요청)은 그 요청의 약속을 돌려준다. 요청의 onsuccess 안에서 요청을 더 낼 때(같은
+// 트랜잭션) 그 안의 동기 예외는 fail(예외)로 넘긴다 — 트랜잭션째 되돌리고 그 예외를 던진다. 돌려주는 값은 track한 요청들의 결과(낸 차례).
 async function fenced(transaction, expect, issue) {
   const settled = finished(transaction);
   const store = transaction.objectStore(STORE);
   const outcome = { stale: null, error: null, requests: [] };
+  const fail = error => {
+    outcome.error = error;
+    abortQuietly(transaction);
+  };
+  const track = request => {
+    const result = done(request);
+    outcome.requests.push(result);
+    return result;
+  };
   const read = store.get(GEN_KEY);
   read.onsuccess = () => {
     const current = genOf(read.result);
@@ -70,10 +80,9 @@ async function fenced(transaction, expect, issue) {
       return;
     }
     try {
-      issue(store, request => outcome.requests.push(done(request)), current);
+      issue(store, track, current, fail);
     } catch (error) {
-      outcome.error = error;
-      abortQuietly(transaction);
+      fail(error);
     }
   };
   try {
@@ -84,6 +93,38 @@ async function fenced(transaction, expect, issue) {
     throw outcome.error ?? error;
   }
   return Promise.all(outcome.requests);
+}
+
+// 막이 트랜잭션 swap의 쓰기 — 지우기(removeAll이면 머리 기록까지 지우는 store.clear() 뒤 세대를 다시 쓴다) · 세대 · 덧붙이기. 덧붙인 요청의 약속을
+// added에 모은다. 고를 것이 없으면(plan이 null) 아무것도 쓰지 않는다.
+function issueSwap(store, track, { removeAll, gen, current, remove, append }, added) {
+  if (!remove && !append) return;
+  if (removeAll) {
+    track(store.clear());
+    track(store.put({ kind: 'gen', gen: gen ?? current }, GEN_KEY));
+  } else {
+    for (const key of remove ?? []) track(store.delete(key));
+    if (gen !== null) track(store.put({ kind: 'gen', gen }, GEN_KEY));
+  }
+  for (const value of append ?? []) added.push(track(store.add(value)));
+}
+
+// 같은 트랜잭션에서 머리 기록 말고 든 기록을 모두 읽어 decide(rows)에 넘긴다 — 값 읽기의 onsuccess 안이라 트랜잭션이 아직 살아 있어 decide가
+// 낸 쓰기도 같은 트랜잭션이다(열쇠 · 값 읽기는 낸 차례로 답한다). decide가 던지면 fail로 넘겨 트랜잭션째 되돌린다.
+function readAll(store, decide, fail) {
+  const keyRead = store.getAllKeys();
+  const valueRead = store.getAll();
+  valueRead.onsuccess = () => {
+    try {
+      decide(
+        keyRead.result
+          .map((key, i) => ({ key, value: valueRead.result[i] }))
+          .filter(row => row.key !== GEN_KEY),
+      );
+    } catch (error) {
+      fail(error);
+    }
+  };
 }
 
 // 열기가 다른 연결에 막혔을 때(뒤 판 엔진이 저장소 꼴을 올리는데 옛 판 탭이 연결을 쥔 채) 기다리는 한도 — 넘으면 STORAGE_FAILED로
@@ -184,22 +225,24 @@ export async function idbPort(
       });
     },
     // 막이 트랜잭션(위 fenced · port.mjs swap). removeAll은 머리 기록까지 지우는 store.clear()라 같은 트랜잭션에서 세대를 다시 쓴다.
-    async swap({ expect = null, gen = null, removeAll = false, remove = [], append = [] } = {}) {
-      const results = await fenced(
-        db.transaction(STORE, 'readwrite'),
-        expect,
-        (store, track, current) => {
-          if (removeAll) {
-            track(store.clear());
-            track(store.put({ kind: 'gen', gen: gen ?? current }, GEN_KEY));
-          } else {
-            for (const key of remove) track(store.delete(key));
-            if (gen !== null) track(store.put({ kind: 'gen', gen }, GEN_KEY));
-          }
-          for (const value of append) track(store.add(value));
-        },
-      );
-      const keys = append.length ? results.slice(-append.length) : [];
+    // plan을 주면 막이를 지난 뒤 같은 트랜잭션에서 기록을 모두 읽고(열쇠 · 값 — 같은 차례로 답한다), 값 읽기의 onsuccess 안에서 plan이 고른 것을
+    // 지우고 덧붙인다(port.mjs swap — 계정 비우기의 넷째 걸음, 4-5 코드 검수 GPT GB1).
+    async swap({
+      expect = null,
+      gen = null,
+      removeAll = false,
+      remove = [],
+      append = [],
+      plan = null,
+    } = {}) {
+      const added = [];
+      await fenced(db.transaction(STORE, 'readwrite'), expect, (store, track, current, fail) => {
+        const write = chosen =>
+          issueSwap(store, track, { removeAll, gen, current, ...chosen }, added);
+        if (!plan) write({ remove, append });
+        else readAll(store, rows => write(plan(rows)), fail);
+      });
+      const keys = await Promise.all(added);
       try {
         channel?.postMessage({ appended: keys.at(-1) ?? null });
       } catch {

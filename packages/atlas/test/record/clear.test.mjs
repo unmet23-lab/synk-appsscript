@@ -198,7 +198,13 @@ test('다른 탭의 은퇴 알림 — 꼬리에서 새 세대의 비움 표지�
   assert.ok(watcher.summary, '보기의 바탕(손님 요약)이 비지 않는다');
   assert.ok(seen.met.has(items[2].familyKey), '비운 뒤 다른 탭이 쓴 기록이 보기에 선다');
   assert.equal(watcher.cleared().legacy.epoch, 'e1');
-  assert.equal(await other.liftFloor(), true);
+  assert.equal(
+    await other.liftFloor(other.generation() - 1),
+    false,
+    '앞 세대의 비우기는 지금 세대의 바닥을 걷지 않는다(4-5 코드 검수 GPT)',
+  );
+  assert.equal(other.cleared().legacy.epoch, 'e1', '바닥이 그대로다');
+  assert.equal(await other.liftFloor(other.generation()), true);
   await watcher.refresh();
   assert.deepEqual(told, [1], '바닥을 거둔 표지는 같은 세대다 — 은퇴시키지 않는다');
   assert.equal(watcher.cleared().legacy, null);
@@ -210,6 +216,9 @@ test('계정 비우기의 넷째 걸음 — 그 계정의 옮김 표지 모두(�
   const [p1, a1] = await practise(record, items[0]);
   await record.mark({ mark: 'moved', account: 'Z', revision: 1, until: 99, ids: [p1, a1] });
   const [p2, a2] = await practise(record, items[1]);
+  // a2를 겨눈 제외 — 옮긴 제시 p2 → 답 a2 → 그 답을 뺀 제외로 두 단계 이어진 사건이다(4-5 코드 검수 GPT GC2 — 지운 자식의 번호를 다음 부모
+  // 검사에 넘기지 않으면 남는다).
+  await record.add('record.excluded', { targetId: a2 }).stored;
   await record.mark({ mark: 'moved', account: 'Z', revision: 2, until: 99, ids: [p2] });
   // a2는 옮김 표지에 없지만 옮긴 제시 p2에 기댄 답이다 — 남기면 부모 없는 답이 된다.
   await record.mark({ mark: 'logout' });
@@ -224,7 +233,7 @@ test('계정 비우기의 넷째 걸음 — 그 계정의 옮김 표지 모두(�
   const told = [];
   const watcher = await guestOn(port, { onCleared: gen => told.push(gen) });
   const done = await record.dropMoved({ account: 'Z' });
-  assert.deepEqual(done, { gen: 1, dropped: 4 });
+  assert.deepEqual(done, { gen: 1, dropped: 5 });
   const keysAfter = new Set((await port.read()).map(row => row.key));
   assert.ok(
     localBefore.length > 0 && localBefore.every(key => !keysAfter.has(key)),
@@ -248,6 +257,114 @@ test('계정 비우기의 넷째 걸음 — 그 계정의 옮김 표지 모두(�
     '지울 것이 없으면 쓰지 않는다',
   );
   for (const id of [a2]) assert.equal(record.has(id), false);
+});
+
+test('넷째 걸음은 지울 사건을 비우는 트랜잭션 안에서 고른다 — 고른 뒤 다른 탭이 옮긴 제시에 이어 단 답도 함께 지워 부모 없는 답이 남지 않는다(4-5 코드 검수 GPT GB1)', async () => {
+  const port = memoryPort();
+  const other = await guestOn(port, { exclusive: busy });
+  const [p1, a1] = await practise(other, items[0]);
+  // 비우는 탭 — 비우기 트랜잭션에 들어가기 바로 앞에서 다른 탭이 같은 제시에 둘째 답을 단다(앞 판은 읽기와 지우기 사이에 이 답이 끼었다).
+  let before = null;
+  const gated = {
+    ...port,
+    async swap(options) {
+      const hook = before;
+      before = null;
+      await hook?.();
+      return port.swap(options);
+    },
+  };
+  const record = await guestOn(gated, { exclusive: busy });
+  await record.mark({ mark: 'moved', account: 'Z', revision: 1, until: 99, ids: [p1, a1] });
+  let late = null;
+  before = async () => {
+    const made = other.add(EVENT_TYPES.attempted, {
+      presentationId: p1,
+      attemptNo: 2,
+      verdict: 'correct',
+      errorTags: [],
+    });
+    assert.equal(await made.stored, true, '다른 탭의 답은 비우기 전 세대로 저장된다');
+    late = made.event.id;
+  };
+  const done = await record.dropMoved({ account: 'Z' });
+  assert.ok(late, '비우기 트랜잭션 앞에서 다른 탭이 답을 달았다');
+  assert.deepEqual(done, { gen: 1, dropped: 3 }, '옮긴 제시와 그 답 둘을 지운다');
+  assert.deepEqual(await eventIds(port), [], '부모 없는 답이 남지 않는다');
+});
+
+test('늦게 쓰는 탭 — 부모 제시의 저장을 기다리던 답은 그 답을 만든 때의 세대로 쓴다. 기다리는 사이 다른 탭이 비우고 이 탭이 새 세대를 읽었어도 새 세대에 쓰지 않는다(4-5 코드 검수 GPT GB2)', async () => {
+  const port = memoryPort();
+  // 제시는 저장소에 쓰였지만 그 쓰기의 답이 이 탭에 늦게 닿는다.
+  let hold = null;
+  const gated = {
+    ...port,
+    async append(values, options) {
+      const keys = await port.append(values, options);
+      if (hold) await hold;
+      return keys;
+    },
+  };
+  const late = await guestOn(gated, { exclusive: busy });
+  let release = null;
+  hold = new Promise(resolve => {
+    release = resolve;
+  });
+  clockMs += 60_000;
+  const shown = late.add(EVENT_TYPES.presented, presented(items[0]));
+  const made = late.add(EVENT_TYPES.attempted, {
+    presentationId: shown.event.id,
+    attemptNo: 1,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  hold = null;
+  assert.deepEqual(await eventIds(port), [shown.event.id], '제시는 비우기 전 세대로 쓰였다');
+  const other = await guestOn(port, { exclusive: busy });
+  await other.clear();
+  await late.refresh(); // 이 탭이 새 세대를 읽었다 — 답은 아직 부모의 저장을 기다린다
+  assert.equal(late.generation(), 1);
+  release();
+  assert.equal(await made.stored, false, '지워진 제시의 답을 새 세대에 쓰지 않는다');
+  assert.deepEqual(await eventIds(port), [], '저장소에 부모 없는 답이 없다');
+});
+
+test('늦게 쓰는 탭 — 차례를 기다리던 손님 요약 저장은 그 요약을 접은 세대로 쓴다. 기다리는 사이 다른 탭이 비웠으면 지워진 기록의 요약을 새 세대에 쓰지 않는다(GB2와 같은 꼴)', async () => {
+  const port = memoryPort();
+  let open = null;
+  const gate = new Promise(resolve => {
+    open = resolve;
+  });
+  // 차례 — 처음에는 바로 준다. 막은 뒤에는 첫 청을 문이 열릴 때까지 세우고, 그 뒤 청은 못 얻는다(뒤 저장이 늦은 요약을 덮지 못하게).
+  let gated = false;
+  let asked = 0;
+  const exclusive = (_job, work) => {
+    if (!gated) return work();
+    asked += 1;
+    return asked === 1 ? gate.then(work) : busy();
+  };
+  const late = await guestOn(port, { exclusive });
+  await practise(late, items[0]);
+  await late.refold();
+  await late.localSaved();
+  gated = true;
+  await practise(late, items[2]);
+  const folding = late.refold(); // 두 계열을 접은 요약의 저장이 차례를 기다린다
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const other = await guestOn(port, { exclusive: busy });
+  await other.clear();
+  await late.refresh();
+  open();
+  await folding.catch(() => {});
+  await late.localSaved();
+  assert.equal(asked >= 1, true, '요약 저장이 차례를 기다렸다');
+  const fresh = await guestOn(port, { exclusive: busy });
+  assert.equal(
+    fresh.view().met.has(items[0].familyKey),
+    false,
+    '비우기 전 기록을 접은 요약이 새 세대에 들지 않았다',
+  );
 });
 
 test('옮긴 장부 칸 — 넷째 걸음이 지운 「옮겨 오기 전 기록」의 계열 · 문항과 옮긴 때를 비움 표지에 남기고, 앞 표지의 바닥은 잇는다', async () => {

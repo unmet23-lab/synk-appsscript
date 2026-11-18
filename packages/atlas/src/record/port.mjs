@@ -8,9 +8,13 @@
 //                        쓰지 않게). 기록부의 덧붙이기는 모두 expect를 준다. 막이를 모르는 포트는 둘째 인자를 버리고 막이 없이 쓴다.
 //   range(afterKey)      afterKey보다 뒤의 기록(다른 탭이 덧붙인 꼬리만 읽기)
 //   remove(keys)         치우기(오래되고 서버가 접은 기록, 지난 요약)
-//   swap({ expect, gen, removeAll, remove, append })
+//   swap({ expect, gen, removeAll, remove, append, plan })
 //                        [key…] — 막이 트랜잭션 하나로 지우고(removeAll — 머리 기록 말고 전부 · remove — 그 열쇠들), 세대를 gen으로 바꾸고
 //                        (null이면 그대로), append를 덧붙인다(비우기 — 단계 4 계획 §22-4). 이 문이 없는 포트는 안에서 비우지 못한다.
+//                        plan(rows)을 주면 막이를 지난 같은 트랜잭션에서 머리 기록 말고 지금 든 기록을 모두 읽어 넘기고, plan이 돌려준
+//                        { remove, append }로 지우고 덧붙인다(remove · append 인자 대신). plan이 null을 돌려주면 아무것도 쓰지 않고 세대도 그대로
+//                        둔다([]). plan은 동기 함수다 — 고른 뒤 다른 탭이 덧붙인 기록이 고르기에서 빠지지 않게 읽기와 쓰기 사이를 비우지 않는다
+//                        (계정 비우기의 넷째 걸음 — 4-5 코드 검수 GPT GB1).
 //   close()
 // 지우기 세대는 열쇠 0(GEN_KEY)의 머리 기록 { kind: 'gen', gen }에 둔다 — read()는 그것을 맨 앞에 내고, range()는 내지 않는다(다른 탭은 비울 때
 // 함께 덧붙이는 비움 표지로 안다). 머리 기록이 없으면 세대는 0이다. 비워도 열쇠 번호는 이어진다(IndexedDB의 열쇠 생성기처럼).
@@ -52,11 +56,22 @@ export function memoryPort({ failWith = null } = {}) {
       check(expect);
       return push(values.map(copy));
     },
-    async swap({ expect = null, gen = null, removeAll = false, remove = [], append = [] } = {}) {
+    async swap({
+      expect = null,
+      gen = null,
+      removeAll = false,
+      remove = [],
+      append = [],
+      plan = null,
+    } = {}) {
       check(expect);
-      const values = append.map(copy);
+      const decided = plan
+        ? plan(rows.map(row => ({ key: row.key, value: copy(row.value) })))
+        : { remove, append };
+      if (!decided) return [];
+      const values = (decided.append ?? []).map(copy);
       if (removeAll) rows.length = 0;
-      else drop(remove);
+      else drop(decided.remove ?? []);
       if (gen !== null) generation = gen;
       return push(values);
     },

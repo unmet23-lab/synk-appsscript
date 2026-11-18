@@ -2,7 +2,9 @@
 // 곳으로 가른다: 손님(이 기기의 손님 기록 전부), 올리는 계정(올리기를 먼저 다 하고 서버를 비운다), 기기 길 계정(입구가 준 서버 비우기). 서버
 // 비우기는 동의 판을 올리고 새 판을 돌려준다. 「비우는 중」 표지 · 본인 값 옮기기 · 앞 판 쓸기 · 다시 정하기는 입구(WORLD world-atlas-next.mjs)의
 // 몫이다(22-1의 4). 여기는 엔진 기록만 다룬다 — 새 길의 기록부(손님 저장소 · 서버)와 옛 엔진의 손님 로그(입구가 준 읽개 · 비우는 문).
-//   legacy: { read() → { log, ledger, epoch } | null, clear() → 옛 엔진 손님 비우기(던지면 그 code — STORAGE_BUSY 등) }
+//   legacy: { read() → { log, ledger, epoch } | null, clear({ check }?) → 옛 엔진 손님 비우기(던지면 그 code — STORAGE_BUSY 등) }
+//   check가 있으면 옛 엔진 문은 쓰기 임대를 쥔 채 옛 로그를 다시 읽어 check(그 값)가 참일 때만 비우고, 거짓이면 비우지 않고 'kept'를 돌려준다
+//   (계정 비우기의 4b — 4-5 코드 검수 GPT GA1 · 설계 주인 11-18).
 import { legacyAllMoved } from '../record/carry.mjs';
 import { failureOf } from './sync.mjs';
 
@@ -26,11 +28,12 @@ async function readLegacy(read) {
 // 옛 엔진의 손님 기록 비우기 — 'cleared' · 'busy'(다른 창이 쥠 — STORAGE_BUSY) · 'failed'(그 밖의 실패, 또는 비운 뒤 새 epoch을 확인하지
 // 못함) · 'none'(비우는 문이 없다). before: 비우기 전에 읽은 옛 로그(readLegacy). 옛 엔진 reset은 빈 로그와 새 epoch을 쓴다 — 비운 뒤 다시 읽어
 // epoch이 바뀐 것을 본 때만 'cleared'다. 그때만 바닥과 옮긴 장부 칸(cleared.carried)을 거둔다(설계 주인 11-18 승인 조건). 앞 로그를 못 읽었거나
-// 다시 읽지 못하면 확인할 수 없어 둘 다 남긴다.
-async function wipeLegacy(legacy, before) {
+// 다시 읽지 못하면 확인할 수 없어 둘 다 남긴다. check(계정 4b)가 있으면 옛 엔진 문이 임대를 쥔 채 비우기 직전에 다시 판단한다 — 거짓이면
+// 'kept'(비우지 않았다).
+async function wipeLegacy(legacy, before, check = null) {
   if (typeof legacy?.clear !== 'function') return 'none';
   try {
-    await legacy.clear();
+    if ((await legacy.clear(check ? { check } : undefined)) === 'kept') return 'kept';
   } catch (error) {
     return error?.code === 'STORAGE_BUSY' ? 'busy' : 'failed';
   }
@@ -55,7 +58,7 @@ export async function resetGuest(host, legacy) {
   }
   host.landed();
   const wiped = old.missing ? 'none' : await wipeLegacy(legacy, old);
-  if (wiped === 'cleared') await host.turn('reset', () => record.liftFloor()).catch(() => {});
+  if (wiped === 'cleared') await host.turn('reset', () => record.liftFloor(gen)).catch(() => {});
   return { ok: true, path: 'guest', gen, legacy: wiped };
 }
 
@@ -65,6 +68,10 @@ export async function resetGuest(host, legacy) {
 async function flush(host) {
   for (let round = 0; ; round += 1) {
     await host.settled();
+    // 대기열을 세기 전에 기록부를 다시 읽어 다른 탭이 저장한 사건까지 센다(4-5 코드 검수 GPT GA2 · 설계 주인 11-18). 마지막 확인과 서버
+    // 비우기 사이에 다른 탭이 새로 쓰는 짧은 틈은 알려진 한계다(§6). 서버가 받지 않아 이번에 건너뛴 사건(skipped)은 세지 않는다 — 서버가
+    // 어차피 남길 수 없는 사건이라 비우기를 막지 않는다.
+    await host.trail.record.refresh();
     if (host.unsentLeft() === 0) return { ok: true };
     const status = host.syncStatus();
     if (
@@ -82,8 +89,9 @@ async function flush(host) {
 // 계정 비우기의 넷째 걸음과 4b(22-4 올리는 계정 4 · 4b — 설계 주인 답 3 · 둘째 답 가). open()은 손님 저장소를 옆으로 연 호스트를 준다(저장소가
 // 없으면 null — 만들지 않는다). 4b의 판단(옛 손님 로그가 모두 그 계정으로 옮긴 것인가)은 지우기 전에 한 번 읽어 정하고, 맞으면 지운 뒤 옛 엔진의
 // 손님 기록을 통째로 비운다 — 되면 바닥과 옮긴 장부 칸을 거둔다. 안 되면 legacy가 'busy' · 'failed'라 입구가 「비우는 중」 표지에 「옛 손님 로그
-// 남음」을 적고 다음 다시 정하기에서 마저 한다. 섞였으면 'kept'(알려진 한계 — §6), 옛 로그가 없으면 'none'.
-async function forgetMoved(account, legacy, open) {
+// 남음」을 적고 다음 다시 정하기에서 마저 한다. 섞였으면 'kept'(알려진 한계 — §6), 옛 로그가 없으면 'none'. drop이 거짓이면 넷째 걸음(옮긴
+// 사건 지우기)을 건너뛰고 4b만 한다(settleAccount 'legacy').
+async function forgetMoved(account, legacy, open, drop = true) {
   let aside;
   try {
     aside = await open();
@@ -96,19 +104,24 @@ async function forgetMoved(account, legacy, open) {
       const record = aside.trail.record;
       await record.refresh();
       const old = await readLegacy(legacy?.read);
-      const all =
-        old.value != null &&
-        legacyAllMoved(old.value, {
-          moved: record.movedIds(account),
-          events: record.heldEvents(),
-          carried: record.cleared()?.carried ?? null,
-        });
-      const { dropped } = await record.dropMoved({ account });
+      // 판단의 재료(옮긴 번호 · 손님 저장소의 사건 · 옮긴 장부 칸)는 넷째 걸음 전에 한 번 읽는다. 판단 자체는 비우기 직전에 옛 엔진 문이 임대를
+      // 쥔 채 다시 읽은 옛 로그로 한 번 더 한다(아래 wipeLegacy의 check — GA1).
+      const facts = {
+        moved: record.movedIds(account),
+        events: record.heldEvents(),
+        carried: record.cleared()?.carried ?? null,
+      };
+      const allMoved = value => value != null && legacyAllMoved(value, facts);
+      const all = allMoved(old.value);
+      // gen: 넷째 걸음이 쓴 세대(지울 것이 없거나 건너뛰면 지금 세대) — 4b가 바닥을 거둘 때 그 세대일 때만 거둔다.
+      const { dropped, gen } = drop
+        ? await record.dropMoved({ account })
+        : { dropped: 0, gen: record.generation() };
       if (dropped) aside.landed();
       if (old.missing) return { ok: true, dropped, legacy: 'none' };
       if (!all) return { ok: true, dropped, legacy: 'kept' };
-      const wiped = await wipeLegacy(legacy, old);
-      if (wiped === 'cleared') await record.liftFloor();
+      const wiped = await wipeLegacy(legacy, old, allMoved);
+      if (wiped === 'cleared') await record.liftFloor(gen);
       return { ok: true, dropped, legacy: wiped };
     });
   } catch (error) {
@@ -141,4 +154,13 @@ export async function resetAccount(host, { account, clear, legacy, open }) {
     return { ok: false, path, step: 'clear', code: 'CLEAR_ANSWER', known: false };
   const guest = await forgetMoved(account, legacy, open);
   return { ok: true, path, revision, guest };
+}
+
+// 서버가 이미 비운 뒤의 남은 걸음(22-4 「실패와 다시 누르기」 — 입구가 「비우는 중」 표지를 맞출 때). 올리기 · 서버 비우기 없이 손님 저장소의
+// 걸음만 한다. settle 'cleared'는 넷째 걸음과 4b다 — 결과를 몰랐던 비우기가 서버에서 된 것을 입구가 lastClear로 알았거나, 넷째 걸음이 안 됐다.
+// 'legacy'는 4b만이다 — 옛 손님 로그가 남았고 넷째 걸음은 이미 했다(그 뒤 그 계정으로 새로 옮긴 사건을 지우지 않게).
+export async function settleAccount(host, { account, legacy, open, settle }) {
+  const path = host.guest ? 'device' : 'upload';
+  const guest = await forgetMoved(account, legacy, open, settle === 'cleared');
+  return { ok: true, path, settled: settle, guest };
 }

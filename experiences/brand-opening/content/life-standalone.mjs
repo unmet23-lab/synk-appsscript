@@ -25879,11 +25879,11 @@ function createWorldEducation({
     }
   }
   const PRACTICE_LENGTH = Object.freeze({ too_much: 3, want_more: 7 });
-  function practiceLength() {
+  function practiceLength(prefer = null) {
     const base = position?.practice?.PRACTICE_POLICY?.count || 5;
     if (!answering()) return base;
     try {
-      const rows2 = [...readPracticeCoach()?.setFeedback?.() || [], ...nextRows()].filter((row) => row.kind === "short");
+      const rows2 = [...readPracticeCoach()?.setFeedback?.() || [], ...nextRows(prefer)].filter((row) => row.kind === "short");
       const last = rows2.reduce((best, row) => !best || Date.parse(row.at) >= Date.parse(best.at) ? row : best, null);
       return PRACTICE_LENGTH[last?.value] || base;
     } catch {
@@ -25924,17 +25924,18 @@ function createWorldEducation({
   }
   const responseView = (set, kind) => set ? { kind, value: null } : null;
   const RESPONSE_COACHES = [() => readPracticeCoach(), () => readCoach(), () => readMockCoach()];
-  function nextCoach() {
+  function nextCoach(prefer = null) {
     let home2 = null;
     try {
       home2 = homePhase() === "engine" ? homeWatch?.coach?.() ?? null : null;
     } catch {
       home2 = null;
     }
-    return typeof home2?.responses === "function" ? home2 : responseCoach;
+    if (typeof home2?.responses === "function") return home2;
+    return typeof prefer?.responses === "function" ? prefer : responseCoach;
   }
-  function nextRows() {
-    const coach2 = nextCoach();
+  function nextRows(prefer = null) {
+    const coach2 = nextCoach(prefer);
     if (typeof coach2?.responses !== "function") return [];
     try {
       return coach2.responses().rows.filter((row) => NEXT_KINDS.has(row.kind)).map((row) => ({ ...row, from: coach2, next: true }));
@@ -25963,9 +25964,17 @@ function createWorldEducation({
     else row.from.exclude(id);
     return true;
   }
+  let responsesWaiting = null, responsesDone = null;
   async function readResponses() {
+    if (!answering() || typeof atlasNext?.readResponses !== "function") return false;
     const coach2 = nextCoach();
-    if (!answering() || !coach2 || typeof atlasNext?.readResponses !== "function") return false;
+    if (!coach2) {
+      if (homePhase() !== "checking") return false;
+      responsesWaiting ??= new Promise((resolve) => {
+        responsesDone = resolve;
+      });
+      return responsesWaiting;
+    }
     const before = JSON.stringify(responseList());
     try {
       await atlasNext.readResponses(coach2);
@@ -25973,6 +25982,20 @@ function createWorldEducation({
       return false;
     }
     return !stopped && JSON.stringify(responseList()) !== before;
+  }
+  function readWaitingResponses() {
+    if (!responsesWaiting) return;
+    const done = responsesDone;
+    if (stopped || homePhase() === "old") {
+      responsesWaiting = null;
+      responsesDone = null;
+      done(false);
+      return;
+    }
+    if (!nextCoach()) return;
+    responsesWaiting = null;
+    responsesDone = null;
+    void readResponses().then(done, () => done(false));
   }
   const bankUrl = topikBankUrl || audioUrl("world-topik-items.json");
   let bankWait = null, bankFailedAt = -Infinity;
@@ -28357,7 +28380,7 @@ function createWorldEducation({
       void openMyPosition();
       return;
     }
-    const count = practiceLength(), skill2 = { id: skillId, label: skillLabel(skillId) };
+    const count = practiceLength(next2), skill2 = { id: skillId, label: skillLabel(skillId) };
     const session = atlasNext.createPracticeNextSession({ coach: next2, pool, setPool: all, length: count, audioAvailable, more, lang: currentLang2(), plays: { allowedPlays: position.mock.allowedPlays, nextPlay: position.mock.nextPlay } });
     const counted = planOnce(next2, listening ? "listening" : "reading");
     let ended = false, notice = "", unwatch = () => {
@@ -29228,6 +29251,7 @@ function createWorldEducation({
       homeFailed = true;
       refresh();
       redrawNext();
+      readWaitingResponses();
       return;
     }
     homePlanner = planner;
@@ -29235,6 +29259,7 @@ function createWorldEducation({
       if (!stopped) {
         refresh();
         redrawNext();
+        readWaitingResponses();
       }
     } });
     refresh();
@@ -29244,6 +29269,7 @@ function createWorldEducation({
     homeFailed = true;
     refresh();
     redrawNext();
+    readWaitingResponses();
   });
   const onFocus = () => refresh();
   target.addEventListener?.("focus", onFocus);

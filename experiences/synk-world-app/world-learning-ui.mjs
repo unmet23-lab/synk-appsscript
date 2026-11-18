@@ -125,11 +125,13 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 새 판(Atlas 새 길)의 판 응답도 같은 셈으로 읽는다(4-5 — 단계4_계획 §22-5): 지금 판 짧은 연습 코치의 응답과 새 길 코치의 판 응답 가운데 가장 새
  // 「짧은 연습」 응답 하나로 정한다. 새 길 코치의 목록은 저장 중인 내 응답도 바로 들어, 끝 화면에서 고른 값이 「n문항 더 하기」에 곧바로 선다.
  // 올리는 계정의 다른 기기 응답 · 30일 규칙은 「내 계정」을 열 때 읽은 서버 값(readResponses)이 더한다.
- function practiceLength(){
+ // prefer: 판을 여는 새 길 코치 — 홈 코치가 아직 서지 않았어도 그 코치의 판 응답으로 센다(4-5 코드 검수 GPT — 홈 코치보다 먼저 연 짧은 연습이
+ // 「많았어요」를 두고도 5문항으로 열리던 것).
+ function practiceLength(prefer=null){
   const base=position?.practice?.PRACTICE_POLICY?.count||5;
   if(!answering())return base;
   try{
-   const rows=[...(readPracticeCoach()?.setFeedback?.()||[]),...nextRows()].filter(row=>row.kind==='short');
+   const rows=[...(readPracticeCoach()?.setFeedback?.()||[]),...nextRows(prefer)].filter(row=>row.kind==='short');
    const last=rows.reduce((best,row)=>!best||Date.parse(row.at)>=Date.parse(best.at)?row:best,null);
    return PRACTICE_LENGTH[last?.value]||base;
   }catch{return base;}
@@ -165,12 +167,14 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 새 길(4-5 — 단계4_계획 §22-5): 새 길 홈 코치(없으면 이 화면에서 마지막으로 응답을 남긴 새 길 코치 — 같은 판이면 같은 저장소라 목록이 같다)의
  // 판 응답(코치 responses() — 30일 · 뺀 것 제외 · 판마다 가장 새 것)을 옛 코치 셋의 응답과 합친다. 판 종류를 모르는 줄은 이름을 붙일 수 없어
  // 그리지 않는다. 줄마다 온 곳(from)을 들고, 빼기도 온 곳으로 보낸다(옛 줄은 그 옛 코치의 exclude, 새 줄은 판 응답을 빼는 문 excludeResponse).
- function nextCoach(){
+ // prefer: 지금 여는 판의 새 길 코치 — 홈 코치가 없으면 이 화면에서 마지막으로 응답을 남긴 코치보다 앞세운다(그 코치는 판을 다시 정해 닫혔을 수 있다).
+ function nextCoach(prefer=null){
   let home=null;try{home=homePhase()==='engine'?homeWatch?.coach?.()??null:null;}catch{home=null;}
-  return typeof home?.responses==='function'?home:responseCoach;
+  if(typeof home?.responses==='function')return home;
+  return typeof prefer?.responses==='function'?prefer:responseCoach;
  }
- function nextRows(){
-  const coach=nextCoach();if(typeof coach?.responses!=='function')return [];
+ function nextRows(prefer=null){
+  const coach=nextCoach(prefer);if(typeof coach?.responses!=='function')return [];
   try{return coach.responses().rows.filter(row=>NEXT_KINDS.has(row.kind)).map(row=>({...row,from:coach,next:true}));}catch{return [];}
  }
  function responseRows(){
@@ -191,12 +195,29 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  }
  // 「내 계정」을 열 때: 새 길 올리는 계정이면 서버의 판 응답(다른 기기에서 남긴 것 · 30일)을 다시 읽어 코치에 넘긴다(입구 readResponses). 목록이
  // 바뀌었으면 참 — 셸이 그 칸만 다시 그린다.
+ // 홈 코치가 아직 서지 않아 읽을 코치가 없으면 코치가 설 때(판 감시의 알림) 한 번 읽고 그 결과를 준다 — 준비 중에 연 시트가 서버 응답을 끝내
+ // 읽지 못하던 것(4-5 코드 검수 GPT). 기다리는 사이 다시 부르면 같은 약속이다. 그사이 시트를 닫았으면 셸이 그리지 않는다.
+ let responsesWaiting=null,responsesDone=null;
  async function readResponses(){
+  if(!answering()||typeof atlasNext?.readResponses!=='function')return false;
   const coach=nextCoach();
-  if(!answering()||!coach||typeof atlasNext?.readResponses!=='function')return false;
+  if(!coach){
+   // 홈 코치가 설 수 있을 때(확인 중)만 기다린다 — 지금 판이면 읽을 새 길 코치가 없다.
+   if(homePhase()!=='checking')return false;
+   responsesWaiting??=new Promise(resolve=>{responsesDone=resolve;});return responsesWaiting;
+  }
   const before=JSON.stringify(responseList());
   try{await atlasNext.readResponses(coach);}catch{return false;}
   return !stopped&&JSON.stringify(responseList())!==before;
+ }
+ // 판 감시가 알릴 때 · 홈 플래너를 못 받았을 때: 기다리던 읽기를 코치가 섰으면 하고, 지금 판으로 정해졌으면 읽지 않고 끝낸다.
+ function readWaitingResponses(){
+  if(!responsesWaiting)return;
+  const done=responsesDone;
+  if(stopped||homePhase()==='old'){responsesWaiting=null;responsesDone=null;done(false);return;}
+  if(!nextCoach())return;
+  responsesWaiting=null;responsesDone=null;
+  void readResponses().then(done,()=>done(false));
  }
  // 공개 TOPIK 은행: 처음 추천·판을 열 때 한 번 불러오고(실패하면 다음에 다시), 다 불러오면 추천과 열려 있는 판을 다시 그린다.
  const bankUrl=topikBankUrl||audioUrl('world-topik-items.json');
@@ -1441,7 +1462,7 @@ async function townSend(coachNow,{wait=true}={}){
   if(Array.isArray(only)&&pool.length)skillId=pool[0].skillId;
   const listening=String(skillId).split('.')[1]==='listening';
   if(!pool.length){home.toast(t(audioAvailable?'practice.shortage':'practice.audioOff'));void openMyPosition();return;}
-  const count=practiceLength(),skill={id:skillId,label:skillLabel(skillId)};
+  const count=practiceLength(next),skill={id:skillId,label:skillLabel(skillId)};
   const session=atlasNext.createPracticeNextSession({coach:next,pool,setPool:all,length:count,audioAvailable,more,lang:currentLang(),plays:{allowedPlays:position.mock.allowedPlays,nextPlay:position.mock.nextPlay}});
   const counted=planOnce(next,listening?'listening':'reading'); // 이번 주 계획의 영역(4-4b)
   // finishing: 판 끝이 답 저장을 기다리는 중 · changedWhileFinishing: 그 사이 판이 바뀌었다(아래 지켜보는 함수 — 넘친 #10).
@@ -1813,11 +1834,11 @@ async function townSend(coachNow,{wait=true}={}){
  // 판 감시가 알리면(코치가 섬 · 판이 다시 정해짐 · 요약이 자리를 잡음) 홈과 열린 새 길 「내 위치」 판을 다시 그린다(21-2). 플래너를 받거나 못 받아도 같다.
  if(homeNext)Promise.resolve().then(()=>homeNext.planner()).then(planner=>{
   if(stopped)return;
-  if(!planner){homeFailed=true;refresh();redrawNext();return;}
+  if(!planner){homeFailed=true;refresh();redrawNext();readWaitingResponses();return;}
   homePlanner=planner;
-  homeWatch=planner.watchHomePlan({open:openHome,retired:(made,fn)=>homeNext.retired(made,fn),lifeState:()=>homeNext.life(),onChange:()=>{if(!stopped){refresh();redrawNext();}}});
+  homeWatch=planner.watchHomePlan({open:openHome,retired:(made,fn)=>homeNext.retired(made,fn),lifeState:()=>homeNext.life(),onChange:()=>{if(!stopped){refresh();redrawNext();readWaitingResponses();}}});
   refresh();redrawNext();
- },()=>{if(stopped)return;homeFailed=true;refresh();redrawNext();});
+ },()=>{if(stopped)return;homeFailed=true;refresh();redrawNext();readWaitingResponses();});
  const onFocus=()=>refresh();target.addEventListener?.('focus',onFocus);
  // 배우기 판의 「이번 주 계획」 줄(life-ui.mjs moreRows): 시험을 고른 사람에게만. print는 그 판의 인화지 그림.
  function planRow(print=()=>''){

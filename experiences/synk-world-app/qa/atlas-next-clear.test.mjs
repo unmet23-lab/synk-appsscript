@@ -1,0 +1,611 @@
+// Atlas 재설계 단계 4 · 4-5 — 입구(world-atlas-next.mjs)의 연습 기록 비우기(단계4_계획 §22-4 · 22-1의 4). 손님 · 올리는 계정 · 기기 길 계정,
+// 「비우는 중」 표지와 lastClear 맞추기, 본인 값 옮기기, 앞 판 쓸기, 30일째 답 지우기, 손님 호스트의 은퇴 알림을 본다.
+// 앞의 두 바퀴는 진짜 엔진 코치 + 리허설 trail(rehearsal-trail.mjs)로 돌고, 갈래는 가짜 코치로 하나씩 돈다.
+// 변형 시험(qa/position-mutants.mjs의 clear)은 깬 입구 사본을 SYNK_ATLAS_NEXT_MODULE로 넘긴다. 그 밖에는 원본이다.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import * as atlas from '../../../packages/atlas/src/index.mjs';
+import { createRehearsalTrail } from '../rehearsal-trail.mjs';
+import { createPracticeNextSession } from '../world-practice-next.mjs';
+import { bankItems } from '../world-topik-items.mjs';
+import { allowedPlays, nextPlay } from '../world-exam-form.mjs';
+import { PLAN_LOG_PREFIX } from '../world-plan-next.mjs';
+
+const { createAtlasNext, rehearsalTrail, LEGACY_KEY, CLEARING_MARK, CLEARING_MS } = await import(
+  process.env.SYNK_ATLAS_NEXT_MODULE
+    ? pathToFileURL(process.env.SYNK_ATLAS_NEXT_MODULE).href
+    : '../world-atlas-next.mjs'
+);
+
+const readJson = url => JSON.parse(fs.readFileSync(new URL(url, import.meta.url), 'utf8'));
+const MAP_DATA = {
+  index: readJson('../../../packages/atlas/map/index.json'),
+  units: readJson('../../../packages/atlas/map/units.json'),
+};
+const BANK = bankItems(readJson('../world-topik-items.json'));
+const READING = (() => {
+  const by = new Map();
+  for (const item of BANK) {
+    if (!by.has(item.skillId)) by.set(item.skillId, []);
+    by.get(item.skillId).push(item);
+  }
+  return [...by]
+    .filter(([id, items]) => id.includes('.reading.') && items.length >= 8)
+    .sort((a, b) => b[1].length - a[1].length)[0][1];
+})();
+const A_ID = '44444444-4444-4444-8444-444444444444';
+const POOL = [{ itemKey: 'topik-items.x1' }];
+
+async function until(check, ms = 8000) {
+  const end = Date.now() + ms;
+  for (;;) {
+    const value = await check();
+    if (value) return value;
+    if (Date.now() > end) throw Error('기다린 일이 오지 않았다');
+    await new Promise(resolve => setTimeout(resolve, 20));
+  }
+}
+// 열쇠를 셀 수 있는 저장소(localStorage 꼴 — 앞 판 쓸기가 열쇠를 센다).
+function memoryStorage(entries = []) {
+  const map = new Map(entries);
+  return {
+    map,
+    get length() {
+      return map.size;
+    },
+    key: index => [...map.keys()][index] ?? null,
+    getItem: key => (map.has(key) ? map.get(key) : null),
+    setItem: (key, value) => {
+      map.set(key, String(value));
+    },
+    removeItem: key => {
+      map.delete(key);
+    },
+  };
+}
+function recorder() {
+  const notes = [];
+  return { notes, note: (kind, outcome) => notes.push([kind, outcome]), snapshot: () => ({ notes: notes.length }) };
+}
+const markOf = storage => JSON.parse(storage.getItem(CLEARING_MARK + A_ID) ?? 'null');
+
+// 옛 엔진 구역의 열쇠(synk-account scopedStorage — `synk.account.<계정 열쇠>.r<판>.`). 엔진 기록 열쇠는 쓸고, 본인 값 · 오늘 상태는 둔다.
+const zone = (accountKey, revision) => `synk.account.${accountKey}.r${revision}.`;
+const engineKeys = (accountKey, revision) =>
+  [
+    LEGACY_KEY,
+    `${LEGACY_KEY}.page.7.1-events`,
+    `${LEGACY_KEY}.writer.3`,
+    `${LEGACY_KEY}.flow`,
+    `synk.atlas.learning-sync.v1.${accountKey}`,
+    `synk.atlas.learning-sync.v1.${accountKey}.page.2.1-queue`,
+    `synk.atlas.learning-sync.v1.${accountKey}.writer.1`,
+  ].map(name => zone(accountKey, revision) + name);
+const ownKeys = (accountKey, revision) => ({
+  presentation: `${zone(accountKey, revision)}${LEGACY_KEY}.presentation`,
+  hangul: `${zone(accountKey, revision)}hangul-stage.v1`,
+  today: `${zone(accountKey, revision)}${LEGACY_KEY}.today`,
+});
+// 앞 판(r1)의 두 구역 · 교실 구역 · 판 기록 · 30일째 답을 채운 저장소.
+function filledStorage(extra = []) {
+  const entries = [];
+  for (const accountKey of [A_ID, `local:${A_ID}`]) {
+    for (const key of engineKeys(accountKey, 1)) entries.push([key, 'engine']);
+    const own = ownKeys(accountKey, 1);
+    entries.push([own.presentation, '{"support":"step"}'], [own.hangul, '{"v":1}'], [own.today, '"tired"']);
+  }
+  entries.push(
+    [`synk.account.${A_ID}:class:c1.r1.${LEGACY_KEY}`, 'class'],
+    [`${PLAN_LOG_PREFIX}synk-atlas:${A_ID}:1`, '[]'],
+    [`${PLAN_LOG_PREFIX}synk-atlas:local:${A_ID}:1`, '[]'],
+    [`synk:world:month-answer:${A_ID}`, '{}'],
+    [`synk:world:first-answers:${A_ID}`, '{}'],
+    [zone(A_ID, 2) + LEGACY_KEY, 'new'],
+    [zone(`local:${A_ID}`, 2) + LEGACY_KEY, 'new'],
+    [`${PLAN_LOG_PREFIX}synk-atlas:${A_ID}:2`, '[]'],
+    ...extra,
+  );
+  return memoryStorage(entries);
+}
+// 비운 뒤 이 기기의 몫 — 본인 값은 새 판 구역으로(앞 판의 것은 둔다), 앞 판의 엔진 기록 열쇠 · 판 기록은 두 구역 모두 쓸고, 교실 구역 ·
+// 오늘 상태는 건드리지 않고, 30일째 답은 지운다.
+function assertSettled(storage, { path = 'upload', to = 2, presentation = '{"support":"step"}' } = {}) {
+  const key = path === 'upload' ? A_ID : `local:${A_ID}`;
+  const own = ownKeys(key, to);
+  assert.equal(storage.getItem(own.presentation), presentation, '고른 화면 값을 새 판 구역으로 옮겼다(이미 있으면 덮지 않는다)');
+  assert.equal(storage.getItem(own.hangul), '{"v":1}', '한글 진도 사본을 새 판 구역으로 옮겼다');
+  assert.equal(storage.getItem(own.today), null, '오늘 상태는 옮기지 않는다');
+  for (const accountKey of [A_ID, `local:${A_ID}`])
+    for (const name of engineKeys(accountKey, 1)) assert.equal(storage.getItem(name), null, `앞 판을 쓸었다 — ${name}`);
+  assert.equal(storage.getItem(ownKeys(key, 1).presentation), '{"support":"step"}', '본인 값은 쓸지 않는다');
+  assert.equal(storage.getItem(ownKeys(key, 1).today), '"tired"', '오늘 상태는 쓸지도 옮기지도 않는다');
+  assert.equal(storage.getItem(`synk.account.${A_ID}:class:c1.r1.${LEGACY_KEY}`), 'class', '교실 구역은 건드리지 않는다');
+  assert.equal(storage.getItem(`${PLAN_LOG_PREFIX}synk-atlas:${A_ID}:1`), null);
+  assert.equal(storage.getItem(`${PLAN_LOG_PREFIX}synk-atlas:local:${A_ID}:1`), null);
+  assert.equal(storage.getItem(`synk:world:month-answer:${A_ID}`), null, '30일째 문장의 답을 지웠다');
+  assert.equal(storage.getItem(`synk:world:first-answers:${A_ID}`), null);
+  for (const accountKey of [A_ID, `local:${A_ID}`])
+    assert.equal(storage.getItem(zone(accountKey, 2) + LEGACY_KEY), 'new', '새 판의 기록은 쓸지 않는다');
+  assert.equal(storage.getItem(`${PLAN_LOG_PREFIX}synk-atlas:${A_ID}:2`), '[]', '새 판의 판 기록은 쓸지 않는다');
+}
+// 옛 엔진의 손님 기록(옛 엔진 reset은 빈 로그와 새 epoch을 쓴다). fail이면 그 code로 던진다.
+function oldEngine(storage, { fail = null, flush = async () => ({ ok: true }) } = {}) {
+  const old = {
+    cleared: 0,
+    flushed: 0,
+    flush: async () => {
+      old.flushed += 1;
+      return flush();
+    },
+    clear: async () => {
+      if (fail) throw Object.assign(Error(fail), { code: fail });
+      old.cleared += 1;
+      storage.setItem(LEGACY_KEY, JSON.stringify({ version: 1, epoch: `wiped-${old.cleared}`, events: [] }));
+    },
+  };
+  return old;
+}
+
+// 진짜 엔진 코치 + 리허설 trail. 기기마다 제 포트(저장소 이름마다 하나)를 두고, 계정 비우기의 손님 저장소 옆으로 열기에는 그 포트를 준다
+// (브라우저는 IndexedDB에서 찾는다).
+function harness() {
+  let now = Date.UTC(2026, 10, 18, 1, 0, 0);
+  const time = { now: () => now, advance: ms => { now += ms; } };
+  const index = atlas.openMap({ index: MAP_DATA.index }).foldIndex;
+  const server = createRehearsalTrail({ atlas, index, now: time.now, warn: () => {} });
+  const requests = [];
+  const fetcher = async (url, init = {}) => {
+    const u = new URL(url, 'http://local');
+    const path = u.pathname.replace('/api/world/rehearsal/', '');
+    const method = init.method ?? 'GET';
+    requests.push(`${method} ${path}`);
+    h.onRequest?.(path, method);
+    const reply = await server.handle({
+      account: { id: A_ID },
+      path,
+      method,
+      query: u.searchParams,
+      body: init.body ? Buffer.from(init.body) : undefined,
+      headers: new Headers(init.headers),
+    });
+    return { ok: reply.status < 400, status: reply.status, json: async () => reply.body };
+  };
+  const ports = new Map();
+  const portOf = key => {
+    if (!ports.has(key)) ports.set(key, atlas.memoryPort());
+    return ports.get(key);
+  };
+  const keyOf = host =>
+    host.key ?? (host.guest ? atlas.storeName({}) : atlas.storeName({ account: host.account, revision: host.revision }));
+  const scope = { location: { origin: 'https://clear.test' }, addEventListener() {}, removeEventListener() {} };
+  scope.parent = scope;
+  const load = async () => ({
+    SynkAtlas: { load: async () => atlas },
+    coach: options => {
+      const made = atlas.createCoach({
+        ...options,
+        scope,
+        mapData: MAP_DATA,
+        dayOffset: 540,
+        host: { ...options.host, port: portOf(keyOf(options.host)), now: time.now },
+      });
+      const wrapped = Object.fromEntries(
+        Object.entries(made).map(([name, value]) => [name, typeof value === 'function' ? value.bind(made) : value]),
+      );
+      const guestPort = () => (ports.has(atlas.storeName({})) ? { guestPort: ports.get(atlas.storeName({})) } : {});
+      wrapped.reset = opts => made.reset({ ...opts, ...guestPort() });
+      return wrapped;
+    },
+  });
+  const plays = { allowedPlays, nextPlay };
+  async function practise(coach, length = 2) {
+    const session = createPracticeNextSession({ plays, coach, pool: READING, length });
+    while (session.next()) {
+      if (!session.current.heard) session.delivery('completed');
+      session.answer(session.current.item.correctId);
+      time.advance(30_000);
+    }
+    return session.settled();
+  }
+  const h = { time, server, fetcher, requests, ports, load, practise, onRequest: null };
+  return h;
+}
+const events = async port => (await port.read()).filter(row => row.value.kind === 'event');
+
+test('손님 한 바퀴 — 손님 저장소와 옛 엔진의 손님 기록을 비우고, 손님 판 기록 열쇠를 지우고, 같은 문서의 손님 코치를 은퇴시킨다', { timeout: 60_000 }, async () => {
+  const h = harness();
+  const storage = memoryStorage([[LEGACY_KEY, JSON.stringify({ version: 1, epoch: 'old-1', events: [] })]]);
+  const old = oldEngine(storage);
+  const guest = createAtlasNext({ owner: 'guest', storage, load: h.load, health: recorder(), oldEngine: old });
+  const coach = await guest.practiceCoach(READING);
+  await h.practise(coach);
+  const port = h.ports.get(atlas.storeName({}));
+  assert.ok((await events(port)).length > 0, '손님 연습이 손님 저장소에 있다');
+  const planKey = `${PLAN_LOG_PREFIX}${atlas.storeName({})}`;
+  storage.setItem(planKey, '[]');
+  const reasons = [];
+  guest.retired(coach, detail => reasons.push(detail.reason));
+  assert.deepEqual(await guest.clearPractice(), { ok: true, path: 'guest', partial: false });
+  assert.deepEqual(await events(port), [], '손님 저장소를 비웠다');
+  assert.equal(old.cleared, 1, '옛 엔진의 손님 기록도 비웠다');
+  assert.equal(old.flushed, 0, '손님은 올리지 않는다');
+  assert.equal(storage.getItem(planKey), null, '손님 판 기록 열쇠를 지웠다');
+  await until(() => reasons.length);
+  assert.deepEqual(reasons, ['cleared'], '같은 문서의 손님 코치를 은퇴시킨다');
+  const again = await guest.practiceCoach(READING);
+  assert.ok(again && again !== coach, '다시 정해 새 코치로 연다');
+  guest.dispose();
+  // 옛 엔진의 손님 기록을 다른 창이 쥐었으면 「일부만 비움」 — 새 길은 비었다.
+  const busyStorage = memoryStorage([[LEGACY_KEY, JSON.stringify({ version: 1, epoch: 'old-2', events: [] })]]);
+  const busy = createAtlasNext({
+    owner: 'guest',
+    storage: busyStorage,
+    load: harness().load,
+    health: recorder(),
+    oldEngine: oldEngine(busyStorage, { fail: 'STORAGE_BUSY' }),
+  });
+  assert.ok(await busy.practiceCoach(READING));
+  assert.deepEqual(await busy.clearPractice(), { ok: true, path: 'guest', partial: true });
+  busy.dispose();
+  // 기기에 저장소가 없으면 「지금은 비우지 못했어요」.
+  const bare = createAtlasNext({ owner: 'guest', storage: null, load: harness().load, health: recorder() });
+  assert.deepEqual(await bare.clearPractice(), { ok: false, path: 'guest', code: 'NO_STORAGE', known: true });
+  bare.dispose();
+});
+
+test('올리는 계정 한 바퀴 — 옛 대기열을 먼저 올리고 「비우는 중」 표지를 적은 뒤 서버를 비우고, 본인 값을 새 판으로 옮기고 앞 판을 쓸고 새 판으로 다시 연다', { timeout: 60_000 }, async () => {
+  const h = harness();
+  const storage = filledStorage();
+  const order = [];
+  const old = oldEngine(storage, {
+    flush: async () => {
+      order.push('flush');
+      return { ok: true };
+    },
+  });
+  let markAtClear = null;
+  h.onRequest = (path, method) => {
+    if (path !== 'trail-clear' || method !== 'POST') return;
+    order.push('clear');
+    markAtClear = markOf(storage);
+  };
+  const next = createAtlasNext({ owner: A_ID, storage, trail: rehearsalTrail({ fetcher: h.fetcher }), load: h.load, health: recorder(), oldEngine: old });
+  const coach = await next.practiceCoach(READING);
+  assert.ok(coach, '새 길(올리는 길)');
+  await h.practise(coach);
+  const reasons = [];
+  next.retired(coach, detail => reasons.push(detail.reason));
+  const done = await next.clearPractice();
+  assert.deepEqual(done, { ok: true, path: 'upload', revision: 2, partial: false });
+  assert.deepEqual(order, ['flush', 'clear'], '옛 엔진의 올리기 대기열을 먼저 올린다');
+  assert.deepEqual(
+    markAtClear && [markAtClear.account, markAtClear.path, markAtClear.revision, Number.isFinite(markAtClear.at), markAtClear.left],
+    [A_ID, 'upload', 1, true, undefined],
+    '서버 비우기 앞에 「비우는 중」 표지(계정 · 판 · 적은 때)를 적었다',
+  );
+  assert.equal(markOf(storage), null, '끝나면 표지를 지운다');
+  assertSettled(storage);
+  await until(() => reasons.length);
+  assert.deepEqual(reasons, ['cleared']);
+  const last = await (await h.fetcher('/api/world/rehearsal/trail-clear', { headers: { 'x-synk-contract': '1', 'x-synk-product': 'world' } })).json();
+  assert.deepEqual(last.lastClear?.revision, 2, '서버가 판을 올리고 마지막 비우기를 적었다');
+  const after = await next.practiceCoach(READING);
+  assert.ok(after && after !== coach);
+  assert.ok(h.ports.has(atlas.storeName({ account: A_ID, revision: 2 })), '새 판의 저장소로 다시 열었다');
+  next.dispose();
+});
+
+// ── 갈래 — 가짜 코치(reset을 시험마다 정한다) · 가짜 계정 줄 ──────────────────────────────────────────
+// 계정 줄 — 부를 때마다 지금 값을 준다. lastClear()는 state.lastClear가 정한다(없으면 그 줄에 읽기가 없다).
+function accountLine({ enabled = true, revision = 1, learningSync = true } = {}) {
+  const state = { enabled, revision, learningSync, clears: [], lastClear: async () => ({ ok: true, revision: state.revision, lastClear: null }) };
+  state.trail = async () => ({
+    learning: { enabled: state.enabled, revision: state.revision },
+    learningSync: state.learningSync,
+    transport: at => ({
+      get: async () => ({ summary: null, serverTime: 0 }),
+      post: async () => ({ accepted: [], clamped: [], summary: null, serverTime: 0 }),
+      // 서버 비우기는 판을 올린다(talk · 리허설과 같다).
+      clear: async () => {
+        state.clears.push(at);
+        state.revision = at + 1;
+        return { ok: true, revision: at + 1 };
+      },
+    }),
+    ...(state.lastClear ? { lastClear: () => state.lastClear() } : {}),
+    postLegacy: async () => ({ ok: true }),
+  });
+  return state;
+}
+// 가짜 코치 — reset(options)는 script가 답한다(options.settle이면 남은 걸음).
+const CLEARED = (revision = 2, guest = { ok: true, dropped: 0, legacy: 'none' }) => ({ ok: true, path: 'upload', revision, guest });
+function fakeLoader(script = () => CLEARED()) {
+  const opened = [];
+  const engine = { storeName: atlas.storeName };
+  const coach = options => {
+    const made = {
+      options,
+      resets: [],
+      disposed: 0,
+      ready: Promise.resolve(),
+      summary: () => ({ storage: { base: true } }),
+      synced: async () => ({ ok: true, base: true }),
+      reset: async given => {
+        made.resets.push(given);
+        return script(given, made);
+      },
+      dispose() {
+        made.disposed += 1;
+      },
+    };
+    opened.push(made);
+    return made;
+  };
+  return { opened, load: async () => ({ SynkAtlas: { load: async () => engine }, coach }) };
+}
+const settled = { ok: true, path: 'upload', settled: 'cleared', guest: { ok: true, dropped: 0, legacy: 'none' } };
+
+test('올리기를 못 하면 아무것도 지우지 않는다 — 옛 대기열을 못 올리면 엔진 비우기를 부르지 않고, 새 길 올리기에서 멈추면 표지를 지운다', async () => {
+  const storage = filledStorage();
+  const line = accountLine();
+  const { opened, load } = fakeLoader();
+  const stuck = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder(), oldEngine: { flush: async () => false } });
+  assert.deepEqual(await stuck.clearPractice(), { ok: false, path: 'upload', step: 'upload', code: 'UNSENT', known: true });
+  assert.deepEqual(opened.flatMap(made => made.resets), [], '엔진 비우기를 부르지 않았다');
+  assert.equal(markOf(storage), null, '표지를 적지 않았다');
+  const thrown = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder(), oldEngine: { flush: async () => { throw Error('NETWORK'); } } });
+  assert.equal((await thrown.clearPractice()).code, 'UNSENT');
+  // 새 길의 대기열은 엔진 reset이 서버 비우기 앞에서 올린다 — 거기서 멈추면 서버에 닿지 않은 것이 분명하다.
+  const upload = fakeLoader(() => ({ ok: false, path: 'upload', step: 'upload', code: 'UNSENT', known: true }));
+  const newPath = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: upload.load, health: recorder(), oldEngine: oldEngine(storage) });
+  assert.deepEqual(await newPath.clearPractice(), { ok: false, path: 'upload', step: 'upload', code: 'UNSENT', known: true });
+  assert.equal(upload.opened[0].resets.length, 1);
+  assert.equal(markOf(storage), null, '서버에 닿지 않았으니 표지를 지운다');
+  assert.equal(storage.getItem(ownKeys(A_ID, 1).presentation), '{"support":"step"}', '아무것도 쓸지 않았다');
+  assert.equal(storage.getItem(engineKeys(A_ID, 1)[0]), 'engine');
+  stuck.dispose();
+  thrown.dispose();
+  newPath.dispose();
+});
+
+test('결과를 모르는 비우기 — 표지를 남기고 「지금은 비우지 못했어요」, 다음 다시 정하기가 같은 계정의 새 lastClear를 받은 뒤에 남은 걸음을 마저 한다', async () => {
+  const storage = filledStorage();
+  const line = accountLine();
+  line.lastClear = async () => {
+    throw Object.assign(Error('NETWORK'), { code: 'NETWORK', retryable: true });
+  };
+  const { opened, load } = fakeLoader(given =>
+    given.settle ? settled : { ok: false, path: 'upload', step: 'clear', code: 'NETWORK', known: false },
+  );
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder(), oldEngine: oldEngine(storage) });
+  assert.deepEqual(await next.clearPractice(), { ok: false, path: 'upload', step: 'clear', code: 'NETWORK', known: false });
+  assert.deepEqual([markOf(storage).revision, markOf(storage).left], [1, undefined], '결과를 모르니 표지를 남긴다');
+  assert.equal(storage.getItem(engineKeys(A_ID, 1)[0]), 'engine', '아무것도 쓸지 않았다');
+  // 아직 새 값을 못 받았다(마지막 비우기를 못 읽음) — 다시 정해도 표지를 그대로 둔다.
+  next.redecide();
+  assert.ok(await next.practiceCoach(POOL));
+  assert.equal(markOf(storage)?.revision, 1);
+  // 늦게 끝난 요청이 서버를 비웠다(판 2 · 마지막 비우기 2) — 다음 다시 정하기가 맞춘다.
+  line.revision = 2;
+  line.lastClear = async () => ({ ok: true, revision: 2, lastClear: { revision: 2, at: 5 } });
+  storage.setItem(ownKeys(A_ID, 2).presentation, '{"support":"independent"}'); // 새 판에서 이미 고른 값
+  next.redecide();
+  const after = await next.practiceCoach(POOL);
+  assert.equal(after.options.host.revision, 2);
+  assert.equal(markOf(storage), null, '맞춘 뒤 표지를 지운다');
+  assertSettled(storage, { presentation: '{"support":"independent"}' });
+  assert.deepEqual(
+    opened.flatMap(made => made.resets.map(given => [made.options.host.revision, given.settle ?? null])),
+    [[1, null], [2, 'cleared']],
+    '손님 저장소의 걸음은 새 판의 코치로 — 서버를 다시 비우지 않는다',
+  );
+  next.dispose();
+});
+
+test('서버가 받지 않은 비우기(409) — 비워지지 않은 것을 읽었으면 표지를 지우고, 못 읽었으면 남기고, 다른 기기가 먼저 비웠으면 남은 걸음을 하고 「비웠어요」', async () => {
+  const conflict = { ok: false, path: 'upload', step: 'clear', code: 'REVISION_CONFLICT', known: true };
+  // 비워지지 않았다(마지막 비우기 없음) — 표지를 지운다.
+  const s1 = filledStorage();
+  const l1 = accountLine();
+  const n1 = createAtlasNext({ owner: A_ID, storage: s1, trail: l1.trail, load: fakeLoader(() => conflict).load, health: recorder() });
+  assert.deepEqual(await n1.clearPractice(), { ok: false, path: 'upload', step: 'clear', code: 'REVISION_CONFLICT', known: true });
+  assert.equal(markOf(s1), null);
+  // 마지막 비우기를 못 읽었다 — 다른 기기가 비웠을 수 있어 표지를 남긴다.
+  const s2 = filledStorage();
+  const l2 = accountLine();
+  l2.lastClear = null;
+  const n2 = createAtlasNext({ owner: A_ID, storage: s2, trail: l2.trail, load: fakeLoader(() => conflict).load, health: recorder() });
+  assert.equal((await n2.clearPractice()).known, true);
+  assert.equal(markOf(s2)?.revision, 1, '읽기가 없는 줄 — 표지를 남긴다');
+  // 다른 기기가 먼저 비웠다(마지막 비우기의 판이 표지의 판보다 뒤) — 성공 길과 같이 남은 걸음을 하고 「비웠어요」.
+  const s3 = filledStorage();
+  const l3 = accountLine();
+  l3.lastClear = async () => ({ ok: true, revision: 2, lastClear: { revision: 2, at: 9 } });
+  const third = fakeLoader(given => (given.settle ? settled : conflict));
+  const n3 = createAtlasNext({ owner: A_ID, storage: s3, trail: l3.trail, load: third.load, health: recorder() });
+  const coach = await n3.practiceCoach(POOL);
+  const reasons = [];
+  n3.retired(coach, detail => reasons.push(detail.reason));
+  l3.revision = 2; // 다른 기기가 비워 서버는 이미 새 판이다 — 이 문서는 아직 판 1의 코치를 들고 있다
+  assert.deepEqual(await n3.clearPractice(), { ok: true, path: 'upload', revision: 2, partial: false });
+  assertSettled(s3);
+  assert.equal(markOf(s3), null);
+  await until(() => reasons.length);
+  assert.deepEqual(reasons, ['cleared']);
+  assert.deepEqual(
+    third.opened.flatMap(made => made.resets.map(given => [made.options.host.revision, given.settle ?? null])),
+    [[1, null], [2, 'cleared']],
+    '손님 저장소의 걸음(넷째 걸음과 4b)은 곧바로 새 판의 코치로 마저 한다',
+  );
+  n1.dispose();
+  n2.dispose();
+  n3.dispose();
+});
+
+test('결과를 모르는 표지는 하루가 지나도 비워지지 않았으면 지운다 — 하루 안이면 두고, 다른 계정의 표지는 건드리지 않는다', async () => {
+  const stale = { account: A_ID, path: 'upload', revision: 1, at: Date.now() - CLEARING_MS - 1000 };
+  const other = { account: 'acct-other', path: 'upload', revision: 1, at: 0 };
+  const storage = filledStorage([
+    [CLEARING_MARK + A_ID, JSON.stringify(stale)],
+    [`${CLEARING_MARK}acct-other`, JSON.stringify(other)],
+  ]);
+  const line = accountLine();
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: fakeLoader().load, health: recorder() });
+  assert.ok(await next.practiceCoach(POOL));
+  assert.equal(markOf(storage), null, '하루가 지났고 비워지지 않았다');
+  assert.equal(JSON.parse(storage.getItem(`${CLEARING_MARK}acct-other`)).account, 'acct-other');
+  next.dispose();
+  const fresh = filledStorage([[CLEARING_MARK + A_ID, JSON.stringify({ ...stale, at: Date.now() - 1000 })]]);
+  const kept = createAtlasNext({ owner: A_ID, storage: fresh, trail: accountLine().trail, load: fakeLoader().load, health: recorder() });
+  assert.ok(await kept.practiceCoach(POOL));
+  assert.equal(markOf(fresh)?.revision, 1, '하루 안 — 늦게 끝나는 요청이 있을 수 있어 둔다');
+  kept.dispose();
+  const earlier = filledStorage([[CLEARING_MARK + A_ID, JSON.stringify({ ...stale, at: Date.now() - 1000 })]]);
+  const past = accountLine();
+  past.lastClear = async () => ({ ok: true, revision: 1, lastClear: { revision: 1, at: 3 } });
+  const before = createAtlasNext({ owner: A_ID, storage: earlier, trail: past.trail, load: fakeLoader().load, health: recorder() });
+  assert.ok(await before.practiceCoach(POOL));
+  assert.equal(markOf(earlier)?.revision, 1, '표지의 판보다 뒤에 비운 것만 비워진 것이다 — 표지 앞의 비우기(판 0 → 1)는 아니다');
+  assert.equal(earlier.getItem(engineKeys(A_ID, 1)[0]), 'engine', '쓸지 않았다');
+  before.dispose();
+});
+
+test('옛 손님 로그 남음 — 4b를 다른 창이 쥐었으면 표지에 남은 걸음을 적고 곧바로 다시 정해 4b만 마저 한다. 그래도 안 되면 「일부만 비움」', async () => {
+  const storage = filledStorage();
+  const line = accountLine();
+  const busyGuest = { ok: true, dropped: 2, legacy: 'busy' };
+  let second = 'cleared';
+  const { opened, load } = fakeLoader(given =>
+    given.settle
+      ? { ok: true, path: 'upload', settled: given.settle, guest: { ok: true, dropped: 0, legacy: second } }
+      : CLEARED(2, busyGuest),
+  );
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder(), oldEngine: oldEngine(storage) });
+  await next.practiceCoach(POOL);
+  line.revision = 2;
+  assert.deepEqual(await next.clearPractice(), { ok: true, path: 'upload', revision: 2, partial: false });
+  assert.deepEqual(
+    opened.flatMap(made => made.resets.map(given => [made.options.host.revision, given.settle ?? null])),
+    [[1, null], [2, 'legacy']],
+    '넷째 걸음은 이미 했다 — 4b만(옮긴 사건을 다시 지우지 않는다)',
+  );
+  assert.equal(markOf(storage), null);
+  next.dispose();
+  // 또 바쁘면 표지(새 판 · 옛 손님 로그 남음)를 남기고 「일부만 비움」 — 다음 다시 정하기가 또 한다.
+  const s2 = filledStorage();
+  const l2 = accountLine();
+  second = 'busy';
+  const n2 = createAtlasNext({ owner: A_ID, storage: s2, trail: l2.trail, load: fakeLoader(given =>
+    given.settle ? { ok: true, path: 'upload', settled: given.settle, guest: { ok: true, dropped: 0, legacy: second } } : CLEARED(2, busyGuest),
+  ).load, health: recorder() });
+  await n2.practiceCoach(POOL);
+  l2.revision = 2;
+  assert.deepEqual(await n2.clearPractice(), { ok: true, path: 'upload', revision: 2, partial: true });
+  assert.deepEqual([markOf(s2).revision, markOf(s2).left], [2, 'legacy']);
+  second = 'cleared';
+  n2.redecide();
+  assert.ok(await n2.practiceCoach(POOL));
+  assert.equal(markOf(s2), null, '다음 다시 정하기가 마저 하고 표지를 지운다');
+  n2.dispose();
+  // 넷째 걸음이 안 됐으면(손님 저장소를 못 엶) 넷째 걸음과 4b를 다시 한다.
+  const s3 = filledStorage();
+  const l3 = accountLine();
+  const third = fakeLoader(given => (given.settle ? settled : CLEARED(2, { ok: false, code: 'STORAGE_FAILED', dropped: 0, legacy: 'kept' })));
+  const n3 = createAtlasNext({ owner: A_ID, storage: s3, trail: l3.trail, load: third.load, health: recorder() });
+  await n3.practiceCoach(POOL);
+  l3.revision = 2;
+  assert.equal((await n3.clearPractice()).partial, false);
+  assert.deepEqual(
+    third.opened.flatMap(made => made.resets.map(given => given.settle ?? null)),
+    [null, 'cleared'],
+  );
+  n3.dispose();
+});
+
+test('기기 길 계정 — 같은 길 하나다: 서버 비우기는 입구가 그 판의 나르개로 주고, 옛 대기열은 올리지 않으며, 본인 값은 local: 구역으로 옮긴다', async () => {
+  const storage = filledStorage();
+  const line = accountLine({ enabled: false });
+  const old = oldEngine(storage);
+  const { opened, load } = fakeLoader(async given => {
+    const answer = await given.clear();
+    return { ok: true, path: 'device', revision: answer.revision, guest: { ok: true, dropped: 0, legacy: 'none' } };
+  });
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder(), oldEngine: old });
+  const coach = await next.practiceCoach(POOL);
+  assert.equal(coach.options.host.guest, true, '기기 길');
+  const done = await next.clearPractice();
+  assert.deepEqual(done, { ok: true, path: 'device', revision: 2, partial: false });
+  assert.deepEqual(line.clears, [1], '그 판의 나르개로 비웠다');
+  assert.equal(old.flushed, 0, '기기 길은 올리지 않는다');
+  assert.equal(typeof opened[0].resets[0].clear, 'function');
+  assertSettled(storage, { path: 'device' });
+  next.dispose();
+  // 판을 다시 읽은 뒤(planNow의 다시 보기) 비우기 직전에 판이 바뀌었으면 비우지 않고 다시 정한다. 비우는 동안의 둘째 읽기부터 판 3이다.
+  const moved = accountLine({ enabled: false });
+  let reads = 0;
+  let flipAfter = Infinity;
+  const trail = async () => {
+    reads += 1;
+    const value = await moved.trail();
+    return reads > flipAfter ? { ...value, learning: { ...value.learning, revision: 3 } } : value;
+  };
+  const stale = fakeLoader();
+  const n2 = createAtlasNext({ owner: A_ID, storage: filledStorage(), trail, load: stale.load, health: recorder() });
+  await n2.practiceCoach(POOL);
+  flipAfter = reads + 1;
+  assert.deepEqual(await n2.clearPractice(), { ok: false, path: 'device', step: 'clear', code: 'PLAN_CHANGED', known: true });
+  assert.deepEqual(stale.opened.flatMap(made => made.resets), [], '비우지 않았다');
+  assert.deepEqual(moved.clears, []);
+  n2.dispose();
+});
+
+test('새 길이 아니면(스위치 꺼짐) 엔진 비우기를 하지 않는다 · 겹쳐 누르면 도는 비우기를 그대로 준다', async () => {
+  const off = createAtlasNext({
+    owner: A_ID,
+    storage: memoryStorage([[`synk.atlas.next.${A_ID}`, '{"off":true}']]),
+    trail: accountLine().trail,
+    load: fakeLoader().load,
+    health: recorder(),
+  });
+  assert.deepEqual(await off.clearPractice(), { ok: false, path: 'old', code: 'NOT_NEXT', known: true });
+  off.dispose();
+  const storage = filledStorage();
+  const line = accountLine();
+  let release;
+  const gate = new Promise(resolve => {
+    release = resolve;
+  });
+  const { opened, load } = fakeLoader(async () => {
+    await gate;
+    return CLEARED();
+  });
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder() });
+  const first = next.clearPractice();
+  const again = next.clearPractice();
+  assert.equal(first, again, '같은 약속');
+  await until(() => opened.some(made => made.resets.length));
+  release();
+  assert.equal((await first).ok, true);
+  assert.equal(opened.flatMap(made => made.resets).length, 1, '한 번만 비웠다');
+  next.dispose();
+});
+
+test('손님 호스트는 다른 탭이 손님 저장소를 비웠다는 알림(STORE_CLEARED)만 받아 다시 정하고, 저장소 닫힘(STORE_CLOSED)은 지금처럼 두고 계기에만 남긴다', async () => {
+  const { opened, load } = fakeLoader();
+  const guest = createAtlasNext({ owner: 'guest', storage: memoryStorage(), load, health: recorder() });
+  const coach = await guest.practiceCoach(POOL);
+  const reasons = [];
+  guest.retired(coach, detail => reasons.push(detail.reason));
+  assert.equal(typeof coach.options.host.onAccount, 'function');
+  coach.options.host.onAccount({ kind: 'store', code: 'STORE_CLOSED', status: null, revision: null });
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.deepEqual(reasons, [], '닫힘은 은퇴시키지 않는다');
+  coach.options.host.onAccount({ kind: 'store', code: 'STORE_CLEARED', status: null, revision: null });
+  await until(() => reasons.length);
+  assert.deepEqual(reasons, ['store']);
+  assert.notEqual(await guest.practiceCoach(POOL), coach);
+  assert.equal(opened.length, 2);
+  guest.dispose();
+});

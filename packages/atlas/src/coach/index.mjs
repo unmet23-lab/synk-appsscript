@@ -13,14 +13,14 @@ import { EVENT_TYPES, FEEDBACK_VALUES } from '../record/events.mjs';
 import { firstAnswersOf } from '../record/first.mjs';
 import { unitLookback } from '../record/lookback.mjs';
 import { storeName } from '../record/port.mjs';
-import { responseRows, storedRead } from '../record/responses.mjs';
+import { noteGone, responseRows, storedRead } from '../record/responses.mjs';
 import { elapsedDays, REASON_CODES } from '../reason/index.mjs';
 import { planActivities } from '../select/plan.mjs';
 import { dayKey } from '../select/session.mjs';
 import { render } from '../vellum/index.mjs';
 import { acquireHost, hostScope, releaseHost } from './host.mjs';
 import { keepGuest, moveGuest, noteGuest, planMove } from './move.mjs';
-import { resetAccount, resetGuest } from './reset.mjs';
+import { resetAccount, resetGuest, settleAccount } from './reset.mjs';
 import { createSession, learnerOf } from './session.mjs';
 import { isGameId } from './set-id.mjs';
 import { storeExists } from './stores.mjs';
@@ -387,13 +387,16 @@ export function createCoach(options = {}) {
         host.responsesRead = storedRead(host.responsesRead, server, host.revision);
       }
       const read = host.guest ? null : host.responsesRead;
+      const events = host.ownEvents();
+      noteGone(host.responsesGone, events);
       const rows = responseRows({
-        events: host.ownEvents(),
+        events,
         server: read?.rows ?? null,
         known: read?.known ?? null,
         seenFrom: read?.seenFrom ?? null,
         held: read?.held ?? null,
         acked: id => host.trail.acked(id),
+        gone: host.responsesGone,
         now: host.now(),
       });
       return Object.freeze({
@@ -706,23 +709,27 @@ export function createCoach(options = {}) {
     //   손님 { ok, path: 'guest', gen, legacy: 'cleared' | 'busy' | 'failed' | 'none' } — busy · failed는 「일부만 비움」.
     //   계정 { ok: true, path: 'upload' | 'device', revision(새 판), guest: { ok, dropped, legacy, code? } } 또는
     //        { ok: false, path, step: 'upload' | 'clear', code, known }(known 거짓 — 서버의 결과를 모른다).
+    //   settle('cleared' | 'legacy' — 계정만): 서버가 이미 비운 뒤 손님 저장소의 남은 걸음만 한다(입구가 「비우는 중」 표지를 맞출 때 —
+    //   reset.mjs settleAccount). 돌려주는 것은 { ok: true, path, settled, guest }.
     // 「비우는 중」 표지 · 본인 값 옮기기 · 앞 판 쓸기 · 다시 정하기는 입구의 몫이다(22-1의 4).
-    async reset({ legacy = null, clear = null, guestPort = null } = {}) {
+    async reset({ legacy = null, clear = null, guestPort = null, settle = null } = {}) {
       live();
+      // 셸이 연 문서 호스트를 빌린 코치(틀의 게임 — host.document)는 비우지 않는다. 그 호스트의 계정 · 판을 몰라 손님으로 보고 기기 길 계정의
+      // 저장소를 비울 수 있었다(4-5 코드 검수 GPT). 비우기는 호스트를 소유한 셸 코치(입구)가 한다 — 아무것도 쓰기 전에 거절한다.
+      if (options.host?.document === true)
+        return { ok: false, path: 'document', step: 'owner', code: 'NOT_OWNER', known: true };
       const host = state.host;
       const account = options.host?.account ?? null;
       if (host.guest && account == null) return resetGuest(host, legacy);
+      const open = () =>
+        openGuestAside({ legacy: legacy?.read ?? null, create: false, port: guestPort });
+      if (settle === 'cleared' || settle === 'legacy')
+        return settleAccount(host, { account, legacy, open, settle });
       const transport = options.host?.transport;
       const call =
         clear ??
         (!host.guest && typeof transport?.clear === 'function' ? () => transport.clear() : null);
-      return resetAccount(host, {
-        account,
-        clear: call,
-        legacy,
-        open: () =>
-          openGuestAside({ legacy: legacy?.read ?? null, create: false, port: guestPort }),
-      });
+      return resetAccount(host, { account, clear: call, legacy, open });
     },
 
     plan(activities, opts = {}) {

@@ -143,3 +143,60 @@ test('막이 — 덧붙일 값 하나를 복제할 수 없으면 지우기까지
 function sortedKeys(fake) {
   return [...fake.rows().keys()].sort((x, y) => x - y);
 }
+
+test('막이 — plan을 주면 막이를 지난 같은 트랜잭션에서 기록을 모두 읽어 고른 것을 지우고 덧붙인다. null이면 아무것도 쓰지 않고, 던지면 되돌린다(4-5 코드 검수 GPT GB1)', async () => {
+  const fake = fakeIndexedDB();
+  const port = await idbPort('t', { indexedDB: fake });
+  const [a, b] = await port.append([{ n: 1 }, { n: 2 }]);
+  let seen = null;
+  const [c] = await port.swap({
+    expect: 0,
+    gen: 1,
+    plan: rows => {
+      seen = rows;
+      return { remove: [a], append: [{ n: 3 }] };
+    },
+  });
+  assert.deepEqual(
+    seen,
+    [
+      { key: a, value: { n: 1 } },
+      { key: b, value: { n: 2 } },
+    ],
+    '든 기록을 모두 읽어 넘긴다',
+  );
+  assert.deepEqual(sortedKeys(fake), [GEN_KEY, b, c]);
+  assert.deepEqual(fake.rows().get(GEN_KEY), { kind: 'gen', gen: 1 });
+  const [d] = await port.swap({
+    expect: 1,
+    plan: rows => {
+      assert.ok(
+        rows.every(row => row.key !== GEN_KEY),
+        '머리 기록은 넘기지 않는다',
+      );
+      return { remove: [], append: [{ n: 4 }] };
+    },
+  });
+  assert.deepEqual(sortedKeys(fake), [GEN_KEY, b, c, d]);
+  assert.deepEqual(
+    await port.swap({ expect: 1, gen: 2, plan: () => null }),
+    [],
+    '고를 것이 없으면 쓰지 않는다',
+  );
+  assert.deepEqual(fake.rows().get(GEN_KEY), { kind: 'gen', gen: 1 }, '세대도 그대로다');
+  await assert.rejects(
+    port.swap({
+      expect: 1,
+      gen: 2,
+      plan: () => {
+        throw new Error('고르기 실패');
+      },
+    }),
+    /고르기 실패/,
+  );
+  assert.deepEqual(sortedKeys(fake), [GEN_KEY, b, c, d], '던지면 아무것도 바꾸지 않는다');
+  await assert.rejects(
+    port.swap({ expect: 0, gen: 2, plan: () => ({ remove: [b] }) }),
+    error => error.code === 'CLEARED' && error.gen === 1,
+  );
+});

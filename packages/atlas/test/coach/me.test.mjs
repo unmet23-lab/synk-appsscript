@@ -213,12 +213,13 @@ test('요약 단위 줄 — kind · label은 지도의 이름, last는 마지막
   const pid = coach.present({ itemKey: HELLO });
   await coach.answer(pid, { correct: false, assessable: true }).stored;
   const [line] = coach.summary().units;
-  const named = MAP_DATA.units.units?.find?.(unit => unit.id === line.unit) ?? null;
+  // 지도 원본의 단위는 fields 차례의 배열이다(4-5 코드 검수 GPT GB6 — 객체로 찾으면 늘 null이라 이름 대조를 건너뛰었다).
+  const { fields, units } = MAP_DATA.units;
+  const named = units.find(unit => unit[fields.indexOf('id')] === line.unit);
   assert.equal(line.unit, 'ko.life.greet-hello');
-  assert.equal(typeof line.label, 'string');
-  assert.ok(line.label.length > 0, '지도에 이름이 있는 단위');
-  if (named) assert.equal(line.label, named.label);
-  assert.equal(typeof line.kind, 'string');
+  assert.ok(named, '지도 원본에 그 단위의 줄이 있다');
+  assert.equal(line.label, named[fields.indexOf('label')], '이름은 지도의 이름이다');
+  assert.equal(line.kind, named[fields.indexOf('kind')], '종류는 지도의 종류다');
   assert.equal(line.last, 'again');
   assert.equal(line.state, 'shaky');
   time.advance(2 * DAY);

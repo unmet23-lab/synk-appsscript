@@ -136,6 +136,49 @@ test('손님 — 손님 저장소를 비우고 옛 엔진 기록도 비운다. �
   coach.dispose();
 });
 
+test('손님 — 비우기 트랜잭션이 커밋된 뒤 다시 읽기만 실패해도 비우기는 된 것이다. 옛 엔진 비우기까지 하고, 다음 읽기가 메모리 사본을 맞춘다(4-5 코드 검수 GPT GB5)', async () => {
+  const w = world(47);
+  const base = w.guestPort;
+  let failRead = false;
+  w.guestPort = {
+    ...base,
+    async read() {
+      if (failRead) {
+        failRead = false;
+        throw Object.assign(new Error('읽기 실패'), { code: 'STORAGE_FAILED' });
+      }
+      return base.read();
+    },
+    async swap(options) {
+      const keys = await base.swap(options);
+      failRead = true; // 커밋 바로 뒤의 다시 읽기만 실패한다
+      return keys;
+    },
+  };
+  const coach = await guestCoach(w);
+  await practise(w, coach, w.items.slice(0, 2));
+  let wiped = 0;
+  let epoch = 'e1';
+  const done = await coach.reset({
+    legacy: {
+      read: () => ({ log: wiped ? [] : [legacyEvent(w, 'old-1')], ledger: null, epoch }),
+      clear: async () => {
+        wiped += 1;
+        epoch = 'e2';
+      },
+    },
+  });
+  assert.deepEqual(
+    [done.ok, done.path, done.legacy],
+    [true, 'guest', 'cleared'],
+    '비우기는 됐다 — 저장소 실패로 알리지 않는다',
+  );
+  assert.equal(wiped, 1, '옛 엔진 비우기까지 한다');
+  assert.deepEqual(await heldIds(base), [], '새 길 저장소는 비었다');
+  assert.deepEqual(coach.summary().units, [], '다음 읽기가 메모리 사본을 맞췄다');
+  coach.dispose();
+});
+
 test('손님 — 옛 엔진이 바쁘면(STORAGE_BUSY) 일부만 비움으로 알리고 바닥을 둔다. 바닥은 옛 로그의 그때 기록이 다시 들어오지 못하게 막는다', async () => {
   const w = world(42);
   const old = { log: [legacyEvent(w, 'old-1')], ledger: ledgerOf(['t.f0']), epoch: 'e1' };
@@ -487,4 +530,249 @@ test('기기 길 계정 — 입구가 준 서버 비우기로 판을 올리고, 
   assert.equal(done.path, 'device');
   assert.equal(done.revision, 4);
   local.dispose();
+});
+
+test('서버가 이미 비운 뒤의 남은 걸음(settle) — 올리기 · 서버 비우기 없이 손님 저장소의 걸음만 한다. cleared는 옮긴 사건을 지우고 4b를, legacy는 4b만 한다', async () => {
+  const w = world(51);
+  const old = { log: [legacyEvent(w, 'old-1')], ledger: null, epoch: 'e1' };
+  const guest = await guestCoach(w, () => old);
+  await practise(w, guest, w.items.slice(0, 1));
+  guest.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort, legacy: () => old });
+  assert.equal(
+    (await recs.move({ postLegacy: async () => ({ ok: true, ids: ['old-1'] }) })).ok,
+    true,
+  );
+  recs.close();
+  const moved = await heldIds(w.guestPort);
+  assert.ok(moved.length >= 3, '옛 꼴 하나와 새 꼴 제시 · 답이 손님 저장소에 있다');
+  // legacy — 넷째 걸음은 이미 했다: 옮긴 사건은 그대로 두고, 옛 손님 로그가 모두 옮긴 것이면 옛 엔진만 비운다.
+  let now = old;
+  let wiped = 0;
+  const port = {
+    read: () => now,
+    clear: async () => {
+      wiped += 1;
+      now = { log: [], ledger: null, epoch: `e${wiped + 1}` }; // 옛 엔진 reset은 비울 때마다 새 epoch을 쓴다
+    },
+  };
+  const calls = w.calls.length;
+  const legacyOnly = await a.reset({ guestPort: w.guestPort, legacy: port, settle: 'legacy' });
+  assert.deepEqual(
+    [
+      legacyOnly.ok,
+      legacyOnly.path,
+      legacyOnly.settled,
+      legacyOnly.guest.dropped,
+      legacyOnly.guest.legacy,
+    ],
+    [true, 'upload', 'legacy', 0, 'cleared'],
+  );
+  assert.equal(wiped, 1);
+  assert.deepEqual(
+    await heldIds(w.guestPort),
+    moved,
+    '옮긴 사건은 지우지 않는다(그 뒤 새로 옮긴 것을 지우지 않게)',
+  );
+  assert.ok(!w.calls.slice(calls).includes('clear'), '서버 비우기를 부르지 않는다');
+  // cleared — 결과를 몰랐던 비우기가 서버에서 됐다: 서버를 다시 부르지 않고 옮긴 사건을 지운다.
+  const settled = await a.reset({ guestPort: w.guestPort, legacy: port, settle: 'cleared' });
+  assert.deepEqual(
+    [settled.ok, settled.settled, settled.guest.dropped >= 3, settled.guest.legacy, wiped],
+    [true, 'cleared', true, 'cleared', 2],
+  );
+  assert.deepEqual(await heldIds(w.guestPort), []);
+  assert.ok(!w.calls.slice(calls).includes('clear'), '서버 비우기를 부르지 않는다');
+  a.dispose();
+});
+
+test('먼저 시작한 비우기의 옛 로그 확인이 늦게 끝나도 그사이 다음 비우기가 둔 바닥을 걷지 않는다 — 자기 세대일 때만 걷는다(4-5 코드 검수 GPT)', async () => {
+  const w = world(53);
+  const first = await guestCoach(w);
+  const second = await guestCoach(w);
+  let release;
+  const gate = new Promise(resolve => {
+    release = resolve;
+  });
+  let log = { log: [], ledger: null, epoch: 'e1' };
+  let reads = 0;
+  const slow = {
+    // 둘째 읽기(비운 뒤의 확인)를 늦춘다.
+    read: async () => {
+      reads += 1;
+      if (reads === 2) await gate;
+      return log;
+    },
+    clear: async () => {
+      log = { log: [], ledger: null, epoch: 'e2' };
+    },
+  };
+  const firstDone = first.reset({ legacy: slow });
+  try {
+    // 한도를 둔다 — 첫 비우기가 옛 로그를 다시 읽으러 오지 않는 판(변형)에서 끝없이 기다리지 않고 실패한다.
+    for (const end = Date.now() + 3000; reads < 2; ) {
+      assert.ok(Date.now() < end, '첫 비우기가 옛 엔진을 비운 뒤 옛 로그를 다시 읽으러 왔다');
+      await new Promise(resolve => setTimeout(resolve, 1));
+    }
+    const busy = await second.reset({
+      legacy: {
+        read: () => log,
+        clear: async () => {
+          throw Object.assign(Error('busy'), { code: 'STORAGE_BUSY' });
+        },
+      },
+    });
+    assert.equal(busy.legacy, 'busy');
+    const floor = (await lastCleared(w.guestPort)).legacy;
+    assert.ok(floor, '둘째 비우기가 바닥을 두었다(옛 엔진을 못 비움)');
+    release();
+    assert.equal((await firstDone).legacy, 'cleared');
+    assert.deepEqual(
+      (await lastCleared(w.guestPort)).legacy,
+      floor,
+      '첫 비우기는 둘째 세대의 바닥을 걷지 않는다',
+    );
+  } finally {
+    release();
+    first.dispose();
+    second.dispose();
+  }
+});
+
+test('셸의 호스트를 빌린 코치(host.document — 틀의 게임)는 비우지 않는다 — 아무것도 쓰기 전에 거절한다(4-5 코드 검수 GPT)', async () => {
+  const w = world(54);
+  const port = memoryPort();
+  const shell = open(w, {
+    guest: true,
+    account: 'L',
+    revision: 1,
+    key: storeName({ account: 'L', revision: 1, local: true }),
+    port,
+  });
+  await shell.ready;
+  await practise(w, shell, w.items.slice(0, 1));
+  const held = await heldIds(port);
+  assert.ok(held.length > 0);
+  const game = open(w, { document: true, wait: 0 });
+  await game.ready;
+  let called = 0;
+  const answer = await game.reset({
+    clear: async () => {
+      called += 1;
+      return { ok: true, revision: 2 };
+    },
+  });
+  assert.deepEqual(answer, {
+    ok: false,
+    path: 'document',
+    step: 'owner',
+    code: 'NOT_OWNER',
+    known: true,
+  });
+  assert.equal(called, 0, '서버 비우기를 부르지 않았다');
+  assert.deepEqual(await heldIds(port), held, '기기 길 계정의 기록이 그대로다');
+  game.dispose();
+  shell.dispose();
+});
+
+test('계정 비우기의 4b — 판단과 비우기 사이에 다른 탭이 옮기지 않은 손님 기록을 쓰면, 옛 엔진 문이 임대를 쥔 채 다시 판단해 비우지 않는다(4-5 코드 검수 GPT GA1)', async () => {
+  const w = world(55);
+  let now = { log: [legacyEvent(w, 'old-1')], ledger: null, epoch: 'e1' };
+  const guest = await guestCoach(w, () => now);
+  guest.dispose();
+  const a = await accountCoach(w, 'A');
+  const recs = await a.guestRecords({ port: w.guestPort, legacy: () => now });
+  assert.equal(
+    (await recs.move({ postLegacy: async () => ({ ok: true, ids: ['old-1'] }) })).ok,
+    true,
+  );
+  recs.close();
+  let wiped = 0;
+  // 옛 엔진 문 — 셸의 옛 손님 코치 reset과 같은 약속: 임대를 쥔 채 옛 로그를 다시 읽어 check가 참일 때만 비우고, 거짓이면 'kept'.
+  const door = {
+    read: () => now,
+    clear: async ({ check } = {}) => {
+      // 판단(모두 옮긴 것)을 읽은 뒤, 이 문이 임대를 쥐기 전에 다른 탭이 옮기지 않은 손님 기록을 썼다(GPT 재현).
+      now = { ...now, log: [...now.log, legacyEvent(w, 'after-1')] };
+      if (check && !check(now)) return 'kept';
+      wiped += 1;
+      now = { log: [], ledger: null, epoch: 'e2' };
+    },
+  };
+  const done = await a.reset({ guestPort: w.guestPort, legacy: door });
+  assert.equal(done.ok, true);
+  assert.equal(done.guest.legacy, 'kept', '다시 판단해 섞인 것을 보았다');
+  assert.equal(wiped, 0, '비우지 않았다');
+  assert.deepEqual(
+    now.log.map(event => event.id),
+    ['old-1', 'after-1'],
+    '다른 탭이 쓴 손님 기록이 남는다',
+  );
+  a.dispose();
+});
+
+test('올리는 계정의 0 걸음 — 다른 탭이 저장했지만 이 탭이 아직 읽지 않은 답도 서버 비우기 전에 올린다(4-5 코드 검수 GPT GA2)', async () => {
+  const w = world(56);
+  const port = memoryPort();
+  const key = storeName({ account: 'A', revision: 1 });
+  const tab = (scope, transport) =>
+    createCoach({
+      gameId: 'reset',
+      map: w.map,
+      seed: 's',
+      dayOffset: 0,
+      scope,
+      host: { now: w.time.now, guest: false, account: 'A', revision: 1, key, port, transport },
+    });
+  const offlineError = () =>
+    Object.assign(new Error('NETWORK'), { code: 'NETWORK', retryable: true });
+  // 이 탭 — 비우기를 누르기 전까지는 닿지 못한다. 닿으면 제 받기 · 올리기가 차례에 들며 꼬리를 다시 읽어 틈이 가려진다.
+  let online = false;
+  let seenAtClear = null;
+  const gated = {
+    post: async (events, since) => {
+      if (!online) throw offlineError();
+      return w.server.post(events, since);
+    },
+    get: async since => {
+      if (!online) throw offlineError();
+      return { summary: await w.server.summary(since), serverTime: w.server.now };
+    },
+    clear: async () => {
+      seenAtClear = new Set(w.server.server.log().map(row => row.event.id));
+      return { ok: true, revision: 2 };
+    },
+  };
+  const mine = tab(w.top, gated);
+  await mine.ready;
+  // 다른 탭 — 같은 저장소에 답을 저장하지만 제 올리기는 닿지 못한다.
+  const offline = {
+    post: async () => {
+      throw offlineError();
+    },
+    get: async () => {
+      throw offlineError();
+    },
+  };
+  // 그 탭의 알림(BroadcastChannel)이 아직 이 탭에 닿지 않은 때다 — 알림 통로 없이 연다(닿으면 이 탭이 꼬리를 다시 읽어 틈이 가려진다).
+  const channel = Object.getOwnPropertyDescriptor(globalThis, 'BroadcastChannel');
+  delete globalThis.BroadcastChannel;
+  let other;
+  try {
+    other = tab(topWindow(), offline);
+    await other.ready;
+  } finally {
+    if (channel) Object.defineProperty(globalThis, 'BroadcastChannel', channel);
+  }
+  const pid = other.present(w.items[0]);
+  const answered = other.answer(pid, { correct: true, assessable: true });
+  assert.equal(await answered.stored, true);
+  assert.equal(mine.summary().storage.unsent, 0, '이 탭은 아직 그 답을 읽지 않았다');
+  online = true;
+  const done = await mine.reset({ guestPort: w.guestPort, legacy: { read: () => null } });
+  assert.equal(done.ok, true, JSON.stringify(done));
+  assert.ok(seenAtClear.has(answered.eventId), '다른 탭의 답을 들여 서버 비우기 전에 올렸다');
+  other.dispose();
+  mine.dispose();
 });

@@ -607,9 +607,11 @@ test('WORLD 입구 — 손님 코치에 옛 기록 읽개를 넘기고, 준비 �
   });
   const pending = next.practiceCoach(BANK.slice(0, 3));
   await new Promise(resolve => setTimeout(resolve, 0));
+  // epoch은 옛 로그의 세대다 — 저장된 로그에 없으면 null(4-5 §22-4: 엔진이 바닥과 견주고 옛 엔진 비우기를 확인한다).
   assert.deepEqual(captured.host.legacy(), {
     log: [{ schema: 1, id: 'old' }],
     ledger: { keys: {} },
+    epoch: null,
   });
   next.dispose();
   release();

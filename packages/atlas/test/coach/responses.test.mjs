@@ -6,12 +6,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { rng } from '../support/seeds.mjs';
 import { subject } from '../support/subject.mjs';
-import { bankOf, clock, createCoach, fakeMap, memoryPort } from './support.mjs';
+import { bankOf, clock, createCoach, fakeMap, memoryPort, PARAMS } from './support.mjs';
 
 const { responseRows, serverResponses, storedRead, RESPONSE_DAYS } =
   await subject('record/responses.mjs');
-const { installHostMaker } = await subject('coach/host.mjs');
+const { acquireHost, installHostMaker, releaseHost } = await subject('coach/host.mjs');
 const { storeName } = await subject('record/port.mjs');
+const { createServer } = await import('../support/trail-sync.mjs');
 
 const DAY = 86_400_000;
 const NOW = Date.UTC(2026, 10, 18, 3);
@@ -425,9 +426,28 @@ test('손님 코치 — 저장 중인 응답도 바로 서고, 다른 값을 고
   coach.excludeResponse(second.id);
   assert.deepEqual(coach.responses().rows, [], '가장 새 응답을 빼도 앞 응답이 되살아나지 않는다');
   assert.equal(coach.responses().complete, true, '손님 · 기기 길은 저장소의 사건으로 다 센다');
-  assert.equal(
-    coach.responses({ server: { ok: true, revision: 0, complete: true, responses: [] } }).complete,
-    true,
+  // 손님 · 기기 길은 서버 값을 받지 않는다 — 같은 판 번호의 서버 줄을 넘겨도 목록에 섞이지 않는다(4-5 코드 검수 GPT GC3).
+  const serverOnly = {
+    id: 'server-only',
+    at: new Date(w.time.now()).toISOString(),
+    value: 'helpful',
+    completionId: 'done.server',
+    decisionId: 'set.server',
+    experienceId: 'reset',
+    variant: 'short',
+  };
+  assert.deepEqual(
+    coach.responses({
+      server: {
+        ok: true,
+        revision: 0,
+        complete: true,
+        seen: [serverOnly.id],
+        seenFrom: null,
+        responses: [serverOnly],
+      },
+    }),
+    { complete: true, rows: [] },
   );
   coach.dispose();
 });
@@ -615,4 +635,83 @@ test('올리는 계정 코치 — 줄 상한에서 멈춘 답(seenFrom)이 닿�
   assert.deepEqual(idsOf(other.responses().rows), [unsent.id]);
   other.dispose();
   coach.dispose();
+});
+
+test('올리는 계정 코치 — 이 기기에서 뺀 서버 응답은 그 빼기가 올라가 이틀 뒤 기기에서 치워져도, 서버 값을 다시 읽기 전까지 되살아나지 않는다(4-5 코드 검수 GPT GB4)', async () => {
+  const items = bankOf(rng(65), { items: 4 });
+  const map = fakeMap(items);
+  const server = createServer({ random: rng(66), index: indexOfMap(map) });
+  const time = clock();
+  server.tick(time.now() - server.now); // 치우기는 서버 시각으로 이틀을 잰다 — 두 시계를 맞춘다
+  const top = topWindow();
+  const key = storeName({ account: 'acct-gone', revision: 1 });
+  const coach = createCoach({
+    gameId: 'resp',
+    map,
+    seed: 's',
+    dayOffset: 0,
+    scope: top,
+    host: {
+      guest: false,
+      account: 'acct-gone',
+      revision: 1,
+      key,
+      port: memoryPort(),
+      transport: {
+        post: (events, since) => server.post(events, since),
+        get: async since => ({ summary: await server.summary(since), serverTime: server.now }),
+      },
+      now: time.now,
+    },
+  });
+  await coach.ready;
+  await coach.synced();
+  const pid = coach.present(items[0]);
+  await coach.answer(pid, { correct: true, assessable: true }).stored;
+  const set = coach.finishSet({ kind: 'short' });
+  await set.folded;
+  time.advance(1000);
+  const given = coach.feedback(set, 'too_much');
+  const handle = await acquireHost({ key, params: PARAMS, now: time.now, guest: false }, top);
+  try {
+    await handle.settled();
+    await handle.upload();
+    assert.equal(typeof handle.trail.acked(given.id), 'number', '서버가 응답을 받았다');
+    const read = {
+      ok: true,
+      revision: 1,
+      complete: true,
+      seen: [given.id],
+      seenFrom: null,
+      serverTime: server.now,
+      responses: [
+        {
+          id: given.id,
+          at: given.at,
+          value: given.value,
+          completionId: set.completionId,
+          decisionId: set.decisionId,
+          variant: 'short',
+        },
+      ],
+    };
+    assert.deepEqual(idsOf(coach.responses({ server: read }).rows), [given.id]);
+    const gone = coach.excludeResponse(given.id);
+    assert.deepEqual(coach.responses().rows, [], '뺀 응답은 바로 빠진다');
+    await handle.settled();
+    await handle.upload();
+    assert.equal(typeof handle.trail.acked(gone.id), 'number', '서버가 빼기를 받았다');
+    time.advance(3 * 86_400_000);
+    server.tick(3 * 86_400_000);
+    assert.ok((await handle.trail.compact()) > 0, '이틀 지난 사건을 치웠다');
+    assert.equal(handle.trail.heldEvent(gone.id), null, '빼기 사건이 기기에서 치워졌다');
+    assert.deepEqual(
+      coach.responses().rows,
+      [],
+      '서버 값을 다시 읽기 전에도 뺀 응답이 되살아나지 않는다',
+    );
+  } finally {
+    releaseHost(handle);
+    coach.dispose();
+  }
 });

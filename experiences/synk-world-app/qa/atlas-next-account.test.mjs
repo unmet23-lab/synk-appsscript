@@ -472,7 +472,7 @@ test('옮기기 물음 — 올리는 길이면 손님 저장소를 옆으로(옛
  const watermarks={others:5,all:7};
  const found=await next.guestMove({watermarks,pick:events=>events.filter(e=>e.keep)});
  assert.equal(typeof asked.legacy,'function');assert.equal(asked.create,false);
- assert.deepEqual(asked.legacy(),{log:[],ledger:null});
+ assert.deepEqual(asked.legacy(),{log:[],ledger:null,epoch:null},'옛 로그의 세대(epoch)도 넘긴다 — 없으면 null(4-5 §22-4)');
  assert.deepEqual(calls[0],['plan',watermarks]);
  assert.equal(found.attempts,2,'고른 옛 꼴 첫 답 1 + 2판 첫 답 1');
  assert.equal(found.events,6);
@@ -835,6 +835,22 @@ test('판 응답 읽기(readResponses) — 올리는 길은 그 판 나르개로
  await n4.readResponses(c4);
  assert.ok(h4.notes.some(([kind,outcome])=>kind==='load'&&outcome.code==='RESPONSES_UNAVAILABLE'),JSON.stringify(h4.notes));
  n4.dispose();
+});
+
+test('판 응답 읽기가 판 울타리(409 REVISION_CONFLICT) · 동의 꺼짐(403 LEARNING_DISABLED)을 받으면 판을 다시 정하고 앞 판의 목록을 주지 않는다(4-5 코드 검수 GPT)',async()=>{
+ for(const error of [fail(409,'REVISION_CONFLICT',{revision:5}),fail(403,'LEARNING_DISABLED')]){
+  const calls=[];const line=accountLine({revision:4,responses:async()=>{throw error;}});const health=recorder();
+  const load=fakeLoader(()=>{const made=fakeCoach();made.responses=input=>{calls.push(input);return {complete:true,rows:[{id:'stale'}]};};return made;}).load;
+  const next=createAtlasNext({owner:'acct-rf',storage:memoryStorage(),trail:()=>line.trail(),load,health});
+  const coach=await next.practiceCoach(POOL);const reasons=[];next.retired(coach,detail=>reasons.push(detail.reason));
+  assert.equal(await next.readResponses(coach),null,`${error.code} — 앞 판의 목록을 주지 않는다`);
+  assert.deepEqual(calls,[],'코치의 목록을 읽지 않는다');
+  await until(()=>reasons.length);
+  assert.deepEqual(reasons,['account'],'판을 다시 정해 그 코치를 닫는다');
+  assert.ok(health.notes.some(([kind,outcome])=>kind==='load'&&outcome.code===`RESPONSES_${error.code}`.slice(0,40)),JSON.stringify(health.notes));
+  assert.notEqual(await next.practiceCoach(POOL),coach,'다음 연습은 다시 정한 판의 코치');
+  next.dispose();
+ }
 });
 
 // ── 진짜 엔진 코치 + 리허설 trail 한 바퀴 ─────────────────────────────────────────────────────

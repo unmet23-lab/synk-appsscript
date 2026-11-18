@@ -380,6 +380,31 @@ const movedIds = (marks, account, revision) =>
 // 묶음의 머리 — 제시 · 본인 말 · 판 결정 · 장부. 자식(전달 · 도움 · 답 · 마침 · 응답 · 제외)은 부모를 따라간다.
 const isHead = event => parentOf(event) == null;
 
+// 그 계정의 옮김 표지 모두(판과 상관없이)의 번호 — 넷째 걸음이 비우는 트랜잭션에서 읽은 줄로 센다(4-5 코드 검수 GPT GB1).
+const movedIn = (rows, account) =>
+  new Set(
+    rows.flatMap(({ value }) =>
+      value.kind === 'mark' &&
+      value.mark === 'moved' &&
+      value.account === account &&
+      Array.isArray(value.ids)
+        ? value.ids
+        : [],
+    ),
+  );
+
+// 읽은 줄의 마지막 비움 표지(takeCleared와 같은 차례 — 세대가 크고, 같은 세대면 뒤 열쇠)의 바닥과 옮긴 장부 칸. 없으면 null.
+function lastClearedIn(rows) {
+  let last = null;
+  for (const { key, value } of rows) {
+    if (value.kind !== 'cleared') continue;
+    const gen = genOf(value);
+    if (last && (gen < last.gen || (gen === last.gen && key < last.key))) continue;
+    last = { gen, key, legacy: floorOf(value.legacy), carried: carriedOfValue(value.carried) };
+  }
+  return last;
+}
+
 // 계정 비우기의 넷째 걸음이 지울 기록(단계 4 계획 §22-4) — 포트를 통째로 읽은 줄(rows)에서 옮김 표지의 번호(gone)와 그것에 기댄 사건(부모 사슬
 // — 부모는 늘 앞 열쇠라 한 번 훑기로 다 걸린다), 손님 요약 사본. 같은 번호가 두 열쇠에 선 옛 기록(R10)도 빠짐없이 걸린다. { drop: 열쇠들,
 // events: 지울 사건들 }.
@@ -487,10 +512,12 @@ export function createRecord({
 
   // 막이 쓰기(단계 4 계획 §22-4 「늦게 쓰는 탭의 막이」) — 이 기록부가 읽은 세대를 포트에 넘겨(append의 expect) 같은 트랜잭션에서 대조하며
   // 덧붙인다. 다른 탭이 비웠으면(CLEARED) 쓰지 않고 통째로 다시 읽어 셸에 알린 뒤 그 거절을 그대로 던진다 — 부르는 쪽은 저장 실패로 받는다.
-  // 막이를 모르는 포트(제품이 준 옛 꼴)는 둘째 인자를 버리고 막이 없이 덧붙인다.
-  async function put(values) {
+  // 막이를 모르는 포트(제품이 준 옛 꼴)는 둘째 인자를 버리고 막이 없이 덧붙인다. gen은 그 기록을 지은 때의 세대다 — 사건과 손님 요약은 만든(접은)
+  // 때의 세대를 넘긴다. 부모의 저장 · 차례를 기다리는 사이 이 탭이 새 세대를 읽었어도 지워진 세상의 기록을 새 세대에 쓰지 않게(4-5 코드 검수
+  // GPT GB2).
+  async function put(values, gen = state.gen) {
     try {
-      return await port.append(values, { expect: state.gen });
+      return await port.append(values, { expect: gen });
     } catch (error) {
       if (error?.code === 'CLEARED') await caughtUp();
       throw error;
@@ -509,11 +536,17 @@ export function createRecord({
       }
     }
   }
-  // 스스로 비운 뒤 — 그 세대는 알리지 않고, 다시 읽어 메모리 사본을 맞추고, 손님 요약을 그 자리에서 접는다.
+  // 스스로 비운 뒤 — 그 세대는 알리지 않고, 다시 읽어 메모리 사본을 맞추고, 손님 요약을 그 자리에서 접는다. 비우기는 이미 커밋됐다 — 다시 읽기가
+  // 실패해도 비우기를 실패로 돌리지 않고(그러면 옛 엔진 비우기를 건너뛰었다), 다음 꼬리 읽기가 통째로 다시 읽게 해 둔다(4-5 코드 검수 GPT GB5).
   async function settleCleared(gen) {
     state.noticed = Math.max(state.noticed, gen);
-    await reload();
-    foldLocal();
+    try {
+      await reload();
+      foldLocal();
+    } catch {
+      state.resync = true;
+      health?.note('save', { ok: false, code: 'CLEAR_RELOAD', dependent: true });
+    }
   }
   async function caughtUp() {
     try {
@@ -619,9 +652,11 @@ export function createRecord({
   async function saveOnce() {
     const local = state.local;
     if (!local || local.key != null) return false;
+    // 그 요약을 접은 세대로 쓴다 — 차례를 기다리는 사이 다른 탭이 비웠으면 지워진 세상의 요약을 새 세대에 쓰지 않는다(GB2와 같은 꼴).
+    const gen = state.gen;
     const value = { kind: 'local', summary: packSummary(local.summary), until: local.until };
     const write = async () => {
-      const [key] = await put([value]);
+      const [key] = await put([value], gen);
       accept({ key, value });
       // 덧붙이고 얹었으면 쓴 저장이다 — 앞 요약 지우기만 실패하면 계기에만 남기고 알린다. 남은 행은 다음 저장의 지우기가 함께 지운다
       // (지우기는 remove가 된 뒤에만 rows에서 뺀다 — 받기 알림 다시 검수 Fable F1 · 설계 주인 11-16 저녁).
@@ -671,7 +706,7 @@ export function createRecord({
   // 같은 제시의 답은 바로 앞 답에도 기댄다(단계 4 §18-4) — 앞 답이 저장되지 못했으면 뒤 답도 쓰지 않는다. 쓰면 1번이 없는
   // attemptNo 2가 남아 서버가 EVENT_LINK로 빼고, 손님 기기에서는 틀린 뒤 다시 맞힌 답이 혼자 낸 첫 답으로 접혔다(s4).
   // 딸린 거절은 계기에 코드만 센다(이어진 실패 수에 넣지 않는다 — G5 · H2).
-  async function append(type, event, value, before = null) {
+  async function append(type, event, value, before = null, gen = state.gen) {
     const parentLost = state.unsaved.has(parentOf(event));
     if (parentLost || (before != null && state.unsaved.has(before))) {
       state.unsaved.add(event.id);
@@ -684,7 +719,7 @@ export function createRecord({
       return false;
     }
     try {
-      const [key] = await put([value]);
+      const [key] = await put([value], gen);
       accept({ key, value });
     } catch (error) {
       state.unsaved.add(event.id);
@@ -721,7 +756,9 @@ export function createRecord({
     const attempt = type === EVENT_TYPES.attempted;
     const before = attempt ? (state.lastAttempt.get(event.presentationId) ?? null) : null;
     if (attempt) state.lastAttempt.set(event.presentationId, event.id);
-    const run = () => append(type, event, valueFor(), before);
+    // 이 사건을 만든 때의 지우기 세대 — 부모의 저장을 기다리는 사이 다른 탭이 비우고 이 탭이 새 세대를 읽었어도, 그 세대로 막이를 건다(GB2).
+    const gen = state.gen;
+    const run = () => append(type, event, valueFor(), before, gen);
     const waits =
       type === EVENT_TYPES.excluded
         ? [...state.inflight.values()]
@@ -1124,29 +1161,41 @@ export function createRecord({
       if (account == null) throw new TypeError('Atlas record: 계정 없는 옮긴 사건 지우기');
       requireSwap();
       return fencedTurn(async () => {
-        const { drop, events } = movedRows(await port.read(), movedIdsOf(account));
-        if (!events.length) return { gen: state.gen, dropped: 0 };
         const gen = state.gen + 1;
-        const value = {
-          kind: 'cleared',
-          gen,
-          at: stamp(),
-          legacy: state.cleared?.legacy ?? null,
-          carried: carriedList(events, state.cleared?.carried ?? null),
+        const at = stamp();
+        let dropped = 0;
+        // 지울 것은 비우는 트랜잭션 안에서 고른다 — 따로 읽고 고르면 그 사이 다른 탭이 옮긴 제시에 이어 단 답이 고르기에서 빠져 부모 없는 답으로
+        // 남았다(4-5 코드 검수 GPT GB1). 옮김 표지와 앞 비움 표지(바닥 · 옮긴 장부 칸)도 그 트랜잭션이 읽은 줄에서 읽는다.
+        const decide = rows => {
+          const { drop, events } = movedRows(rows, movedIn(rows, account));
+          if (!events.length) return null;
+          dropped = new Set(events.map(event => event.id)).size;
+          const last = lastClearedIn(rows);
+          const value = {
+            kind: 'cleared',
+            gen,
+            at,
+            legacy: last?.legacy ?? null,
+            carried: carriedList(events, last?.carried ?? null),
+          };
+          return { remove: drop, append: [value] };
         };
-        await port.swap({ expect: state.gen, gen, remove: drop, append: [value] });
+        await port.swap({ expect: state.gen, gen, plan: decide });
+        if (!dropped) return { gen: state.gen, dropped: 0 };
         await settleCleared(gen);
-        return { gen, dropped: new Set(events.map(event => event.id)).size };
+        return { gen, dropped };
       });
     },
 
     // 옛 엔진 비우기가 됐다(손님 2 · 계정 4b) — 바닥과 옮긴 장부 칸을 거둔다(단계 4 계획 §22-4 옛 로그의 바닥 — Fable -c FA3). 옛 로그와 그
     // 장부가 비었으니 그 뒤의 옛 사건과 장부는 모두 새것이다. 같은 세대의 비움 표지를 하나 더 쓴다 — 다른 탭은 같은 세대라 은퇴하지 않고 표지만
-    // 새로 든다. 거둘 것이 없으면 쓰지 않는다(false).
-    async liftFloor() {
+    // 새로 든다. 거둘 것이 없으면 쓰지 않는다(false). gen은 그 비우기가 쓴(또는 읽은) 세대다 — 지금 비움 표지가 그 세대일 때만 거둔다. 먼저
+    // 시작한 비우기의 옛 로그 확인이 늦게 끝나도 그사이 다음 비우기가 둔 바닥을 걷지 않게(4-5 코드 검수 GPT).
+    async liftFloor(gen) {
       await refresh();
       const cleared = state.cleared;
-      if (!cleared || (cleared.legacy == null && cleared.carried == null)) return false;
+      if (!cleared || cleared.gen !== gen || (cleared.legacy == null && cleared.carried == null))
+        return false;
       const value = {
         kind: 'cleared',
         gen: cleared.gen,

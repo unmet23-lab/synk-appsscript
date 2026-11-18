@@ -5,7 +5,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {createWorldEducation} from '../world-learning-ui.mjs';
+import {pathToFileURL} from 'node:url';
+// 변형 시험(qa/position-mutants.mjs의 responseShell)은 깬 셸 사본을 SYNK_LEARNING_UI_MODULE로 넘긴다. 그 밖에는 원본이다.
+const {createWorldEducation}=await import(process.env.SYNK_LEARNING_UI_MODULE?pathToFileURL(process.env.SYNK_LEARNING_UI_MODULE).href:'../world-learning-ui.mjs');
 import {worldPosition} from '../world-position-kit.mjs';
 import {worldLearning} from '../world-learning-map.mjs';
 import {t} from '../../brand-opening/world-lang.mjs';
@@ -50,7 +52,7 @@ function stage(){
  box.trigger=selector=>{const fn=once.get(selector);assert.ok(fn,`${selector} 단추가 이어져 있다`);once.delete(selector);fn();};
  return box;
 }
-function setup({owner='account-a',responses=true,audio='off',values={},atlasNext=null}={}){
+function setup({owner='account-a',responses=true,audio='off',values={},atlasNext=null,homeNext=null}={}){
  const panels=[],toasts=[],storage=memory();let now=Date.parse('2026-10-22T03:00:00Z'),box=null;
  const progress={owner,learningProfile:()=>({profile:{status:'active',revision:1,consent:true}}),learningProfileValues:()=>({audio,...values}),
   status:()=>({phase:'synced',rejected:false,scoped:owner!=='guest',message:''}),exportSnapshot:()=>({}),flush:async()=>{},hangulReading:()=>({answer:'reads'})};
@@ -60,7 +62,7 @@ function setup({owner='account-a',responses=true,audio='off',values={},atlasNext
  const target={localStorage:storage,addEventListener(){},removeEventListener(){},setTimeout,
   document:{querySelector:selector=>/data-(practice|position|mock)-stage/.test(selector)?box:null},...(owner==='guest'?{}:{SYNKLearningHost:host})};
  const education=createWorldEducation({home,getProgress:()=>progress,engine:worldLearning,createPlan:()=>({selected:null,reason:''}),launchGame(){},startLesson(){},startReview(){},
-  position:worldPosition,responses,target,...(atlasNext?{atlasNext}:{})});
+  position:worldPosition,responses,target,...(atlasNext?{atlasNext}:{}),...(homeNext?{homeNext}:{})});
  const events=()=>JSON.parse(storage.getItem(KEY)||'{"events":[]}').events;
  return {education,panels,toasts,storage,events,box:()=>box,tick:ms=>{now+=ms;},now:()=>now};
 }
@@ -284,4 +286,40 @@ test('「내가 남긴 응답」은 지금 판 코치 셋과 새 길 코치의 �
  assert.deepEqual(excluded,['r-want_more'],'옛 줄은 새 길 코치로 가지 않는다');
  assert.deepEqual(env.education.responses().map(row=>row.id),['r-other']);
  assert.equal(env.education.removeResponse('r-missing'),false);
+});
+
+test('짧은 연습 길이 — 홈 코치가 서기 전에 연 새 판도 그 판을 여는 새 길 코치의 판 응답(많았어요)으로 길이를 정한다(4-5 코드 검수 GPT)',async()=>{
+ let env=null;const lengths=[];
+ const nextCoach={finishSet:()=>null,feedback:()=>null,
+  responses:()=>({complete:true,rows:[{id:'r-before',at:new Date(env.now()-60_000).toISOString(),kind:'short',value:'too_much',completionId:'done.before'}]})};
+ const quiet={current:null,next:()=>null,preHelp(){},answer(){},unknown(){},skip(){},replay:()=>null,delivery(){},stop(){},results:()=>[],settled:async()=>[],freshLeft:()=>3,ending:{kind:'done'}};
+ env=setup({atlasNext:{practiceCoach:async()=>nextCoach,createPracticeNextSession:options=>{lengths.push(options.length);return quiet;}}});
+ env.tick(60000);
+ const [skillId]=freshestSkill(env);
+ await env.education.practice(skillId);
+ assert.deepEqual(lengths,[3],'이 문서에서 응답을 고르기 전 · 홈 코치 없이도 그 코치의 많았어요가 길이다');
+});
+
+test('「내 계정」을 홈 코치가 서기 전에 열면 코치가 선 뒤 한 번 읽어 그 결과를 준다 · 지금 판으로 정해지면 읽지 않고 끝낸다(4-5 코드 검수 GPT)',async()=>{
+ let ready=false,onChange=null;const asked=[];
+ const homeCoach={watch:()=>()=>{},responses:()=>({complete:true,rows:asked.length?[{id:'r-server',at:'2026-10-21T03:00:00Z',kind:'mock',value:'helpful',completionId:'done.server'}]:[]})};
+ const today={items:[],minutes:0,line:null,empty:{code:'done',text:null},capped:false,cappedText:null,firstDay:false,state:'engine',redrawAt:null};
+ const planner={todayKey:()=>'2026-10-22',say:()=>null,
+  createWorldTodayPlan:()=>({status:'empty',selected:null,selectedKind:null,reason:'',resume:null,candidates:[],examPlan:null,today}),
+  watchHomePlan:options=>{onChange=options.onChange;return {phase:()=>(ready?'engine':'checking'),coach:()=>(ready?homeCoach:null),redrawAt(){},dispose(){}};}};
+ const base={judge:()=>null,answers:()=>null,openGames:()=>null,coach:async()=>null,retired:()=>()=>{},painted(){}};
+ const env=setup({atlasNext:{readResponses:async coach=>{asked.push(coach);return coach.responses();}},homeNext:{...base,planner:async()=>planner,life:()=>'engine'}});
+ for(let tick=0;tick<20&&!onChange;tick+=1)await new Promise(resolve=>setTimeout(resolve,0));
+ let settled=null;
+ const pending=env.education.readResponses().then(value=>{settled=value;});
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(settled,null,'코치가 서기 전에는 기다린다');
+ assert.deepEqual(asked,[]);
+ ready=true;onChange();
+ await pending;
+ assert.deepEqual(asked,[homeCoach],'코치가 서면 한 번 읽는다');
+ assert.equal(settled,true,'목록이 바뀌었다');
+ // 지금 판(생활 판정이 지금 판)이면 기다리지 않는다.
+ const old=setup({atlasNext:{readResponses:async()=>assert.fail('읽지 않는다')},homeNext:{...base,planner:async()=>planner,life:()=>'old'}});
+ assert.equal(await old.education.readResponses(),false);
 });

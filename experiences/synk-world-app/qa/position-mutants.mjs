@@ -84,6 +84,20 @@ const MODULES = {
     scenes: path.join(here, 'atlas-next-account.test.mjs'),
     env: 'SYNK_ATLAS_NEXT_MODULE',
   },
+  // 연습 기록 비우기의 입구 몫(4-5 — 단계4_계획 §22-4 · 22-1의 4): 「비우는 중」 표지 · lastClear 맞추기 · 본인 값 옮기기 · 앞 판 쓸기 · 손님
+  // 비우기 · 손님 호스트의 은퇴 알림 — 입구 비우기 시험(qa/atlas-next-clear.test.mjs)이 깬 입구 사본을 받는다.
+  clear: {
+    source: path.join(here, '..', 'world-atlas-next.mjs'),
+    scenes: path.join(here, 'atlas-next-clear.test.mjs'),
+    env: 'SYNK_ATLAS_NEXT_MODULE',
+  },
+  // 「내가 남긴 응답」 · 짧은 연습 길이의 셸 배선(4-5 — §22-5, world-learning-ui.mjs): 응답 셸 시험(qa/world-set-response.test.mjs)이 깬 셸
+  // 사본을 받는다.
+  responseShell: {
+    source: path.join(here, '..', 'world-learning-ui.mjs'),
+    scenes: path.join(here, 'world-set-response.test.mjs'),
+    env: 'SYNK_LEARNING_UI_MODULE',
+  },
 };
 
 // 변형 하나 = [모듈, 갈래, 이름, 바꿀 글, 바꾼 글]. 바꿀 글은 그 모듈에 꼭 한 번 있어야 한다.
@@ -1581,6 +1595,51 @@ export const POSITION_MUTANTS = [
     "      firstAnswers: async query => {\n        const to = await ready();\n",
     "      firstAnswers_: async query => {\n        const to = await ready();\n",
   ],
+  // ── 4-5 연습 기록 비우기의 입구 몫(단계4_계획 §22-4 · 22-1의 4) ──
+  ["clear", "비우기 입구", "「비우는 중」 표지를 적지 않고 비운다", "    if (!store || !writeClearing(store, owner, mark)) return { ok: false, path, code: 'MARK_FAILED', known: true };\n", "    if (!store) return { ok: false, path, code: 'MARK_FAILED', known: true };\n"],
+  ["clear", "비우기 입구", "옛 엔진의 올리기 대기열을 올리지 않고 비운다", "    if (path === 'upload' && typeof oldEngine?.flush === 'function') {\n", "    if (false) {\n"],
+  ["clear", "비우기 입구", "옛 대기열을 못 올려도 비운다", "      if (flushed === false || flushed?.ok === false)\n", "      if (false)\n"],
+  ["clear", "비우기 입구", "새 길 올리기에서 멈춘 것을 서버 비우기 실패로 본다", "    if (done?.step === 'upload' || done?.code === 'NO_CLEAR') {\n", "    if (done?.code === 'NO_CLEAR') {\n"],
+  ["clear", "비우기 입구", "결과를 모르는 비우기의 표지를 지운다", "    if (done?.known === true && last !== undefined) writeClearing(store, owner, null);\n", "    writeClearing(store, owner, null);\n"],
+  ["clear", "비우기 입구", "마지막 비우기를 못 읽었는데도 표지를 지운다", "    if (done?.known === true && last !== undefined) writeClearing(store, owner, null);\n", "    if (done?.known === true) writeClearing(store, owner, null);\n"],
+  ["clear", "비우기 입구", "실패 뒤 다른 기기가 먼저 비운 것을 보지 않는다", "    if (last && last.revision > mark.revision) return cleared(mark, last.revision, 'cleared');\n", ""],
+  ["clear", "비우기 입구", "표지 앞의 비우기(표지와 같은 판)도 비워진 것으로 본다", "      if (!(last && last.revision > mark.revision)) {\n", "      if (!(last && last.revision >= mark.revision)) {\n"],
+  ["clear", "비우기 입구", "하루가 지난 표지를 지우지 않는다", "        if (Date.now() - mark.at > CLEARING_MS) writeClearing(store, owner, null);\n", ""],
+  ["clear", "비우기 입구", "하루 안의 표지도 지운다", "        if (Date.now() - mark.at > CLEARING_MS) writeClearing(store, owner, null);\n", "        writeClearing(store, owner, null);\n"],
+  ["clear", "비우기 입구", "판을 다시 정할 때 표지를 맞추지 않는다", "      await settleClearing(plan, at);\n", ""],
+  ["clear", "비우기 입구", "쓸기의 경계를 비운 뒤의 판까지 넓힌다 — 새 판의 기록을 지운다", "    sweepEarlier(store, owner, Number.isSafeInteger(current) ? Math.min(current, revision) : revision);\n", "    sweepEarlier(store, owner, revision + 1);\n"],
+  ["clear", "비우기 입구", "새 판 구역에 이미 있는 본인 값을 덮는다", "      if (value != null && storage.getItem(to + name) == null) storage.setItem(to + name, value);\n", "      if (value != null) storage.setItem(to + name, value);\n"],
+  ["clear", "비우기 입구", "오늘 상태도 새 판으로 옮긴다", "const OWN_KEYS = [`${LEGACY_KEY}.presentation`, 'hangul-stage.v1'];\n", "const OWN_KEYS = [`${LEGACY_KEY}.presentation`, 'hangul-stage.v1', `${LEGACY_KEY}.today`];\n"],
+  ["clear", "비우기 입구", "내용 기억(.flow)을 쓸지 않는다", "  if (name === `${LEGACY_KEY}.flow`) return true;\n", ""],
+  ["clear", "비우기 입구", "옛 엔진 올리기 대기열을 쓸지 않는다", "  return [LEGACY_KEY, `synk.atlas.learning-sync.v1.${accountKey}`].some(\n", "  return [LEGACY_KEY].some(\n"],
+  ["clear", "비우기 입구", "쪽 · 쓰는 중 표지를 쓸지 않는다", "    base => name === base || name.startsWith(`${base}.page.`) || name.startsWith(`${base}.writer.`),\n", "    base => name === base,\n"],
+  ["clear", "비우기 입구", "기기 길 구역(local:)을 쓸지 않는다", "  for (const accountKey of [owner, `local:${owner}`]) {\n", "  for (const accountKey of [owner]) {\n"],
+  ["clear", "비우기 입구", "앞 판의 판 기록 열쇠를 쓸지 않는다", "        if (/^\\d+$/.test(revision) && Number(revision) < below) drop.push(name);\n", ""],
+  ["clear", "비우기 입구", "구역 앞머리로 통째로 쓴다 — 본인 값 · 오늘 상태까지 지운다", "        if (found && Number(found[1]) < below && engineRecord(found[2], accountKey)) drop.push(name);\n", "        if (found && Number(found[1]) < below) drop.push(name);\n"],
+  ["clear", "비우기 입구", "30일째 문장의 답을 지우지 않는다", "    clearMonthAnswer(store, owner);\n", ""],
+  ["clear", "비우기 입구", "본인 값을 새 판으로 옮기지 않는다", "    moveOwn(store, zoneOf(owner, mark.path, mark.revision), zoneOf(owner, mark.path, revision));\n", ""],
+  ["clear", "비우기 입구", "비운 뒤 이 문서의 코치를 은퇴시키지 않는다", "    retire('cleared');\n    if (left && !disposed) await planNow();\n", "    if (left && !disposed) await planNow();\n"],
+  ["clear", "비우기 입구", "손님 저장소의 남은 걸음을 곧바로 마저 하지 않는다", "    if (left && !disposed) await planNow();\n", ""],
+  ["clear", "비우기 입구", "옛 손님 로그를 쥔 다른 창(busy)을 남은 걸음으로 세지 않는다", "    : guest?.legacy === 'busy' || guest?.legacy === 'failed'\n", "    : guest?.legacy === 'failed'\n"],
+  ["clear", "비우기 입구", "남은 걸음이 4b뿐이어도 넷째 걸음부터 다시 한다 — 그 뒤 새로 옮긴 사건을 지운다", "    const done = await made.reset({ legacy: legacyPort(), settle: mark.left });\n", "    const done = await made.reset({ legacy: legacyPort(), settle: 'cleared' });\n"],
+  ["clear", "비우기 입구", "기기 길에서 판이 바뀐 것을 보지 않고 비운다", "        line?.learning?.revision === plan.revision && typeof line.transport === 'function'\n", "        typeof line.transport === 'function'\n"],
+  ["clear", "비우기 입구", "기기 길의 서버 비우기를 엔진에 넘기지 않는다", "      done = await made.reset({ legacy: legacyPort(), ...(clear ? { clear } : {}) });\n", "      done = await made.reset({ legacy: legacyPort() });\n"],
+  ["clear", "비우기 입구", "새 길이 아닌 판(스위치 꺼짐)에서도 비운다", "    if (plan.path === 'old') return { ok: false, path: 'old', code: 'NOT_NEXT', known: true };\n", ""],
+  ["clear", "비우기 입구", "겹쳐 누르면 비우기를 두 번 한다", "      clearing ??= (account ? clearAccount() : clearGuest())\n", "      clearing = (account ? clearAccount() : clearGuest())\n"],
+  ["clear", "비우기 입구", "손님 판 기록 열쇠를 지우지 않는다", "      if (name) store.removeItem(planLogKey(name));\n", ""],
+  ["clear", "비우기 입구", "손님 비우기 뒤 같은 문서의 손님 코치를 은퇴시키지 않는다", "    retire('cleared');\n    return { ok: true, path: 'guest', partial };\n", "    return { ok: true, path: 'guest', partial };\n"],
+  ["clear", "비우기 입구", "옛 엔진이 바빠도(busy) 다 비웠다고 한다", "    let partial = done.legacy === 'busy' || done.legacy === 'failed';\n", "    let partial = done.legacy === 'failed';\n"],
+  ["clear", "비우기 입구", "저장소가 없는 손님도 비우려 한다", "    if (!store) return { ok: false, path: 'guest', code: 'NO_STORAGE', known: true };\n", ""],
+  ["clear", "비우기 입구", "손님 호스트가 저장소 닫힘(STORE_CLOSED)에도 판을 다시 정한다", "          if (detail?.code === 'STORE_CLEARED') changed(detail, at);\n", "          changed(detail, at);\n"],
+  ["clear", "비우기 입구", "손님 호스트가 다른 탭의 비우기 알림을 흘린다", "          if (detail?.code === 'STORE_CLEARED') changed(detail, at);\n", "          if (false) changed(detail, at);\n"],
+  ["clear", "비우기 입구", "옛 로그 읽개가 epoch을 넘기지 않는다 — 옛 엔진 비우기를 확인하지 못한다", "        epoch: typeof value?.epoch === 'string' && value.epoch ? value.epoch : null,\n", ""],
+  // ── 4-5 판 응답 읽기의 판 울타리(4-5 코드 검수 GPT GA7) ──
+  ["entry", "판 응답 입구", "판 응답 읽기의 판 울타리를 판 다시 정하기로 잇지 않는다 — 앞 판의 목록을 준다", "          if (planFenced(error)) {\n", "          if (false) {\n"],
+  ["entry", "판 응답 입구", "동의 꺼짐(403 LEARNING_DISABLED)을 판이 바뀐 것으로 보지 않는다", "    (error?.status === 403 && error?.code === 'LEARNING_DISABLED');\n", "    false;\n"],
+  // ── 4-5 「내가 남긴 응답」 · 짧은 연습 길이의 셸(4-5 코드 검수 GPT GA8 · GA9) ──
+  ["responseShell", "판 응답 셸", "짧은 연습 길이에 판을 여는 새 길 코치를 넘기지 않는다", "  const count=practiceLength(next),skill={id:skillId,label:skillLabel(skillId)};\n", "  const count=practiceLength(),skill={id:skillId,label:skillLabel(skillId)};\n"],
+  ["responseShell", "판 응답 셸", "홈 코치가 서기 전에 연 「내 계정」은 읽지 않고 끝낸다", "   if(homePhase()!=='checking')return false;\n", "   return false;\n"],
+  ["responseShell", "판 응답 셸", "코치가 선 뒤 기다린 읽기를 하지 않는다", "  void readResponses().then(done,()=>done(false));\n", "  done(false);\n"],
 ];
 
 // 시험 묶음 안에서 이 실행기를 불러도 장면 시험이 돌게 NODE_TEST_CONTEXT를 지운다 — 빈 글로 두면 node가 「겹쳐 부른 시험」으로 보고 파일을

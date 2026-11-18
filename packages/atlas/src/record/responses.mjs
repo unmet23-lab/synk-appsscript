@@ -94,6 +94,16 @@ function setsOf(own, server) {
   return { sets, excluded };
 }
 
+// 기기에서 본 빼기의 겨눈 번호를 호스트의 표(gone)에 모은다(코치 responses가 셀 때마다 — 셸은 빼기 바로 뒤에 목록을 다시 센다). 빼기는 거두지 않으므로 호스트가 사는 동안 들어도
+// 맞다 — 빼기 사건을 서버가 받고 이틀이 지나 기기에서 치워도, 서버 값을 다시 읽기 전의 앞 값에 그 응답이 되살아나지 않는다(4-5 코드 검수 GPT
+// GB4 — 짧은 연습 길이도 그 응답을 다시 읽었다).
+export function noteGone(gone, events) {
+  for (const event of events)
+    if (event?.schema === EVENT_FORM.current && event.type === EVENT_TYPES.excluded)
+      gone.add(event.targetId);
+  return gone;
+}
+
 const feedbackRow = event => ({
   id: event.id,
   at: event.at,
@@ -105,7 +115,7 @@ const feedbackRow = event => ({
 
 // events: 기기에 든 사건(저장 중인 내 쓰기 포함), server: serverResponses의 rows(없으면 null), known: 서버 줄을 따를 내 응답 번호(storedRead —
 // 없으면 null), seenFrom · held: storedRead의 값(없으면 null), acked: 사건 번호 → 받은 표지의 서버 순번(올리지 않았으면 undefined),
-// now: 코치 시계.
+// gone: 호스트가 든 빼기의 겨눈 번호(noteGone — 없으면 null), now: 코치 시계.
 export function responseRows({
   events = [],
   server = null,
@@ -113,11 +123,13 @@ export function responseRows({
   seenFrom = null,
   held = null,
   acked = null,
+  gone = null,
   now,
 }) {
   const since = now - RESPONSE_DAYS * DAY_MS;
   const own = events.filter(event => event?.schema === EVENT_FORM.current);
   const { sets, excluded } = setsOf(own, server);
+  for (const target of gone ?? []) excluded.add(target);
   const setOf = row => sets.get(row.completionId)?.decisionId ?? row.decisionId ?? row.completionId;
   const latest = new Map(); // 판(결정) → 그 판의 가장 새 응답
   const read = { known, seenFrom, held, acked };

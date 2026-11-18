@@ -401,6 +401,8 @@ function createHost({
     // 마지막으로 읽은 판 응답의 서버 값(단계 4 계획 §22-5 · Fable새6) — 코치 responses({ server })가 적는다. 이 호스트(같은 저장소의 코치들)가
     // 사는 동안만 들고 기기에 저장하지 않는다(은퇴 · 판 바뀜과 함께 버린다).
     responsesRead: null,
+    // 기기에서 본 판 응답 빼기의 겨눈 번호(4-5 코드 검수 GPT GB4 — record/responses.mjs noteGone). 호스트가 사는 동안만 든다.
+    responsesGone: new Set(),
     refresh,
     subscribe(listener) {
       listeners.add(listener);
