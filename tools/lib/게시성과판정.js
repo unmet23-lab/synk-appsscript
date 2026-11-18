@@ -17,6 +17,9 @@
  * 화면에서만 볼 수 있는 칸(유튜브 본 비율, 인스타 팔로우, 권한이 없어 서버가 못 받은 칸)은 「화면 필요」로 남기고
  * 한 주에 한 번 모아 읽은 값(장부의 「화면」 줄)을 72시간·7일 판정에 더한다.
  * 「2주 시험」(시청자수요조사 6-5·6-9 — 평소의 2배 · 3초 유지 30% · 3편 단위)은 이 규칙을 바꾸지 않고 lib/게시성과시험.js가 장부로 따로 낸다.
+ * API 수집이 없는 플랫폼(텔레그램 · 샤오훙수 · 스레드 · RUTUBE, 11-19)은 게시 성과 등록(체크포인트)이 없다. 공개 화면이나 로그인 통계 화면에서 읽은
+ * 게시물 숫자를 서버가 하루 한 벌(snapshots)로 넣어 두므로, 24·72시간도 하루 숫자 가운데 그 나이에 가장 가까운 값(±6시간)으로 잰다.
+ * 하루 숫자끼리라 7일과 같이 지연 규칙 없이 같은 채널·형식끼리 견준다.
  */
 const 배수 = require('./평소배수.js');
 
@@ -26,6 +29,10 @@ const MIN_SAMPLE = 3;
 const STANDING_MIN = 4;
 const MULTIPLE_MIN = 4;
 const DAILY_TOLERANCE = 13 * H;
+/** API 수집이 없는 플랫폼의 24·72시간 — 하루 숫자 가운데 그 나이 ±6시간(체크포인트 측정 창과 같은 길이) */
+const EXTERNAL_TOLERANCE = 6 * H;
+/** 서버 API가 게시물 숫자를 받고 게시 성과 등록(체크포인트)이 있는 플랫폼. 나머지는 하루 숫자로만 판정한다(머리 주석 끝). */
+const API_PLATFORMS = new Set(['youtube', 'instagram', 'facebook', 'tiktok']);
 /** 같은 나이 배수의 표식(장부 multiple.basis) — 표식 없는 배수는 10-31 전 정의(그 시각 최근 12편)다 */
 const SAME_AGE = 'same-age';
 
@@ -41,7 +48,9 @@ const METRICS = Object.freeze({
 });
 const NEXT_STEP_METRICS = new Set(['earlyRetention3sPct', 'stayedToWatchPct', 'averageWatchSeconds', 'averageViewPct', 'completionRatePct', 'shares', 'saves', 'toolVisits']);
 const POINTS = Object.freeze([{ key: '24h', hours: 24, label: '24시간' }, { key: '72h', hours: 72, label: '72시간' }, { key: '7d', hours: 168, label: '7일' }]);
-const PLATFORM_LABEL = Object.freeze({ youtube: '유튜브', instagram: '인스타', facebook: '페북', tiktok: '틱톡' });
+const PLATFORM_LABEL = Object.freeze({ youtube: '유튜브', instagram: '인스타', facebook: '페북', tiktok: '틱톡', telegram: '텔레그램', xiaohongshu: '샤오훙수', threads: '스레드', rutube: 'RUTUBE' });
+/** API 수집이 없는 플랫폼의 형식(한 계정에 형식이 하나다) */
+const EXTERNAL_FORMAT = Object.freeze({ telegram: 'telegram-post', xiaohongshu: 'xiaohongshu-note', threads: 'threads-post', rutube: 'rutube-video' });
 /** 형식마다 v2 §6 네 숫자 가운데 화면에서 읽어야 할 수 있는 칸(서버가 이미 받은 칸은 뺀다). */
 const SCREEN_FIELDS = Object.freeze({
   'youtube-shorts': ['stayedToWatchPct', 'averageWatchSeconds', 'averageViewPct', 'shares', 'subscribersGained'],
@@ -89,6 +98,23 @@ function postIdOf(url) {
     const m = /\/video\/(\d{6,})/.exec(u.pathname);
     return m ? { platform: 'tiktok', externalId: m[1], key: 'tiktok:' + m[1] } : null;
   }
+  // 아래 넷은 서버 external-observations.mjs postRoute와 같은 모양만 받는다(11-19). 텔레그램 글 번호는 채널마다 1부터라 열쇠에 채널을 넣는다.
+  if (host === 't.me') {
+    const m = /^\/(?:s\/)?([A-Za-z][A-Za-z0-9_]{3,31})\/(\d{1,12})\/?$/.exec(u.pathname);
+    return m ? { platform: 'telegram', externalId: m[2], key: `telegram:${m[1].toLowerCase()}/${m[2]}` } : null;
+  }
+  if (host === 'xiaohongshu.com' || host === 'rednote.com') {
+    const m = /^\/(?:explore|discovery\/item|user\/profile\/[0-9a-f]{24})\/([0-9a-f]{24})\/?$/.exec(u.pathname);
+    return m ? { platform: 'xiaohongshu', externalId: m[1], key: 'xiaohongshu:' + m[1] } : null;
+  }
+  if (host === 'threads.com' || host === 'threads.net') {
+    const m = /^\/@[\w.]+\/post\/([\w-]{5,})\/?$/.exec(u.pathname);
+    return m ? { platform: 'threads', externalId: m[1], key: 'threads:' + m[1] } : null;
+  }
+  if (host === 'rutube.ru') {
+    const m = /^\/(?:video|shorts)\/([0-9a-f]{32})\/?$/.exec(u.pathname);
+    return m ? { platform: 'rutube', externalId: m[1], key: 'rutube:' + m[1] } : null;
+  }
   return null;
 }
 
@@ -107,7 +133,7 @@ function formatOf({ platform, url, entryFormat, postFormat, externalId, publishe
   if (platform === 'instagram') return entryFormat || postFormat || (/\/(reel|reels)\//.test(String(url)) ? 'instagram-reels' : 'instagram-post');
   if (platform === 'facebook') return entryFormat || postFormat || (/\/reels?\//.test(String(url)) ? 'facebook-reels' : /\/videos?\//.test(String(url)) || /[?&]v=/.test(String(url)) ? 'facebook-video' : 'facebook-post');
   if (platform === 'tiktok') return entryFormat || postFormat || 'tiktok-video';
-  return platform + '-other';
+  return EXTERNAL_FORMAT[platform] || platform + '-other';
 }
 
 const WINDOW_TIME_ZONE = 'America/Los_Angeles', WINDOW_DAYS = 3;
@@ -149,16 +175,16 @@ function checkpointPoint(entry, point, now = Date.now()) {
     window: cp.window && typeof cp.window === 'object' ? { status: cp.window.status || null, dueAt: ms(cp.window.dueAt), lastErrorCode: cp.window.lastErrorCode || null } : null };
 }
 
-/** 하루 숫자(snapshots)에서 게시 hours시간에 가장 가까운 값(±13시간) */
-function dailyPoint({ publishedAt, snaps, platform }, point, now) {
+/** 하루 숫자(snapshots)에서 게시 hours시간에 가장 가까운 값(기본 ±13시간 · API 수집이 없는 플랫폼의 24·72시간은 ±6시간) */
+function dailyPoint({ publishedAt, snaps, platform }, point, now, tolerance = DAILY_TOLERANCE) {
   const target = ms(publishedAt) + point.hours * H;
-  if (now < target - DAILY_TOLERANCE) return { key: point.key, status: 'pending', dueAt: target };
+  if (now < target - tolerance) return { key: point.key, status: 'pending', dueAt: target };
   let best = null;
   for (const s of snaps || []) {
     const off = s.at - target;
-    if (Math.abs(off) <= DAILY_TOLERANCE && (!best || Math.abs(off) < Math.abs(best.at - target))) best = s;
+    if (Math.abs(off) <= tolerance && (!best || Math.abs(off) < Math.abs(best.at - target))) best = s;
   }
-  if (!best) return { key: point.key, status: now > target + DAILY_TOLERANCE + 3 * H ? 'missed' : 'pending', dueAt: target };
+  if (!best) return { key: point.key, status: now > target + tolerance + 3 * H ? 'missed' : 'pending', dueAt: target };
   const metrics = {}, meta = {};
   for (const key of ['views', 'likes', 'comments', 'shares', 'saves', 'reach']) {
     if (!validValue(best[key], key)) continue;
@@ -293,11 +319,13 @@ function buildRecords(data, { now = Date.now(), shortsByChannel = new Map(), scr
     for (const point of POINTS) {
       if (point.key === '7d') r.points[point.key] = dailyPoint({ publishedAt: r.publishedAt, snaps: r.snaps, platform: r.platform }, point, now);
       else if (r.entry) r.points[point.key] = checkpointPoint(r.entry, point, now);
+      else if (!API_PLATFORMS.has(r.platform)) r.points[point.key] = dailyPoint({ publishedAt: r.publishedAt, snaps: r.snaps, platform: r.platform }, point, now, EXTERNAL_TOLERANCE);
     }
     r.screen = screens.get(r.postKey) || null;
     records.push(r);
   }
-  return { records, registered: records.filter(r => r.entry), channels, snapsByPost };
+  // 판정하는 편: 게시 성과 등록이 있는 편, 그리고 등록이 없는 플랫폼에서 하루 숫자가 한 번이라도 들어온 편
+  return { records, registered: records.filter(r => r.entry || (!API_PLATFORMS.has(r.platform) && r.snaps.length)), channels, snapsByPost };
 }
 
 /** 기록 하나의 점 하나를 판정한다 → 판정 객체 또는 null(아직 값 없음) */
@@ -387,7 +415,7 @@ function judgmentLine(j) {
 }
 
 module.exports = {
-  METRICS, NEXT_STEP_METRICS, POINTS, PLATFORM_LABEL, SCREEN_FIELDS, NEXT, H, SAME_AGE, MULTIPLE_MIN,
+  METRICS, NEXT_STEP_METRICS, POINTS, PLATFORM_LABEL, SCREEN_FIELDS, NEXT, H, SAME_AGE, MULTIPLE_MIN, API_PLATFORMS, EXTERNAL_TOLERANCE,
   postIdOf, formatOf, checkpointPoint, dailyPoint, standingOf, priorValues, compare, multipleOf, verdictOf, buildRecords, judgePoint, judgeAll, screenNeeds,
   judgmentLine, valueText, validValue,
 };

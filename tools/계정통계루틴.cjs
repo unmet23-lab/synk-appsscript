@@ -3,10 +3,12 @@
 /**
  * 계정 통계 루틴 — AI 없이 하루 두 번(작업 스케줄러 09:20·21:20, tools/계정통계예약) 도는 수집 입구.
  *   node tools/계정통계루틴.cjs                 미리 보기: 설정·카탈로그 대조·수신함 상태만 본다(네트워크·파일 변경 없음)
- *   node tools/계정통계루틴.cjs --수집미리보기  공개 텔레그램 쪽을 읽고 세기만 한다(쓰기·제출 없음)
+ *   node tools/계정통계루틴.cjs --수집미리보기  공개 텔레그램 쪽과 RUTUBE 공개 목록을 읽고 세기만 한다(쓰기·제출 없음)
  *   node tools/계정통계루틴.cjs --실행          새로 읽어 증거·매니페스트를 새 파일로 쓰고 공식 수집기로 넣는다
  * 상태는 저장소 밖 ~/.synk/account-metrics(config.json · inbox/ · runs/ · logs/ · receipts/). 비밀번호·쿠키·토큰은 읽지 않는다.
  * 텔레그램은 https://t.me/s/<채널> HTML만 Node fetch로 받는다. 실제 브라우저는 쓰지 않는다(웹 스크립트가 우리 조회를 셀 수 있음).
+ * RUTUBE(11-19)는 계정통계예약/rutube-public.cjs가 공개 채널 화면과 공개 영상 목록 API(/api/video/person/<채널>/)를 받아 영상마다 정확한 조회수(hits)를 읽는다.
+ *   끝 쪽까지 읽은 목록만 게시물 누적값(post-lifetime · public-page)으로 넣는다. 서버가 그 값을 하루 숫자로 남기고 게시 성과 판정(tools/게시성과.js)이 24·72시간·7일을 잰다.
  * 공식 내보내기(official-export 묶음만)는 inbox 바로 아래 *.manifest.json과 그 증거를 회차 폴더에 새 파일로 떠서(목록 때 읽은 바이트와 같은지 확인)
  * 그 사본을 tools/계정통계수집.cjs --입력 <사본> --실행 으로 넘긴다. 원본은 지우거나 고치지 않고, 같은 일인지는 이름·시각이 아니라 내용 해시로 가린다.
  */
@@ -22,13 +24,19 @@ const STATE_DIR = path.join(os.homedir(), '.synk', 'account-metrics');
 const CATALOG_MODULE = path.join(ROOT, 'docs', '마케팅', '온라인마케팅지도', 'engagement', 'company', 'account-catalog.mjs');
 const INGESTER = path.join(ROOT, 'tools', '계정통계수집.cjs');
 const LIMITS = Object.freeze({ timeoutMs: 15000, maxPages: 15, pageBytes: 2 * 1024 * 1024, batch: 200, inboxFiles: 20,
-  rawBytes: 10 * 1024 * 1024 - 1, ingestMs: 120000, budgetMs: 15 * 60000, telegram: 2 });
+  rawBytes: 10 * 1024 * 1024 - 1, ingestMs: 120000, budgetMs: 15 * 60000, telegram: 2, rutube: 2 });
+const RUTUBE_ORIGIN = 'https://rutube.ru';
+// RUTUBE 공개 API의 publication_ts는 시간대 없는 모스크바 시각이다(11-17 13:00 MSK 예약 → 「2026-11-17T13:00:25」). 시간대가 붙어 오면 그대로 쓴다.
+const RUTUBE_LOCAL = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?$/;
+const rutubeInstant = value => (typeof value !== 'string' ? null : ISO.test(value) ? value : RUTUBE_LOCAL.test(value) ? `${value}+03:00` : null);
 const HANDLE = /^[A-Za-z][A-Za-z0-9_]{4,31}$/;
 const ISO = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})$/;
 const SKIP = new Set(['script', 'style', 'template', 'noscript']);
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const sha256 = data => crypto.createHash('sha256').update(data).digest('hex');
 const telegramUrl = (handle, before = null) => `https://t.me/s/${handle}${before === null ? '' : `?before=${before}`}`;
+// RUTUBE 공개 수집기는 카탈로그 JSON과 parse5를 읽으므로, RUTUBE 계정을 설정한 회차에서만 불러온다.
+const rutubePublic = () => require('./계정통계예약/rutube-public.cjs');
 const isInside = (base, p) => { const rel = path.relative(base, p); return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel)); };
 // 로그 가림. 기록 하나(오류 메시지 하나, 또는 수집기 출력의 한 갈래)를 통째로 보고 두 길 중 하나로 낸다.
 // 전체가 유효한 JSON이면 JSON.parse로 읽은 값을 새 나무로 옮겨 다시 직렬화한다. 원문을 잘라 붙이지 않으므로 이스케이프, 중복 키,
@@ -261,10 +269,20 @@ function buildManifest({ accountId, handle, observedAt, evidenceFile, evidenceSh
     identity: { accountId, handle: `@${handle}` }, observations } }] };
 }
 
+// RUTUBE 영상 목록 → 한 묶음. 조회수가 정확한 정수이고 게시 시각을 읽은 영상만 넣는다(축약 · 빈 조회수는 0이 아니라 모름).
+function buildRutubeManifest({ accountId, externalId, publicUrl, observedAt, evidenceFile, evidenceSha256 = null, rows, batch = LIMITS.batch }) {
+  const observations = rows.filter(r => Number.isSafeInteger(r.metrics?.views) && rutubeInstant(r.publishedAt)).map(r => ({ kind: 'post-lifetime',
+    post: { externalId: r.id, url: r.url, publishedAt: rutubeInstant(r.publishedAt) }, metrics: { views: r.metrics.views } }));
+  if (observations.length > batch) throw new Error(`조회수를 아는 영상 ${observations.length}개가 한 묶음 한도 ${batch}개를 넘어 제출하지 않음(증거는 남김)`);
+  if (!observations.length) return { version: 1, batches: [] };
+  return { version: 1, batches: [{ accountId, evidenceFile, envelope: { sourceType: 'public-page', sourceUrl: publicUrl, observedAt, evidenceSha256,
+    identity: { accountId, externalId }, observations } }] };
+}
+
 // 개인 설정: 카탈로그의 텔레그램 방송 채널(id·handle 정확히 일치)만 받는다. 명령·주소 같은 다른 키는 받지 않는다.
 function validateConfig(config, catalog, stateDir = STATE_DIR) {
   if (!config || typeof config !== 'object' || config.version !== 1) throw new Error('설정은 version 1이어야 함');
-  const extra = Object.keys(config).filter(k => !['version', 'telegram', 'inbox'].includes(k));
+  const extra = Object.keys(config).filter(k => !['version', 'telegram', 'rutube', 'inbox'].includes(k));
   if (extra.length) throw new Error(`설정에 모르는 키: ${extra.join(', ')}`);
   const list = config.telegram === undefined ? [] : config.telegram;
   if (!Array.isArray(list) || list.length > LIMITS.telegram) throw new Error(`telegram은 ${LIMITS.telegram}개 이하 배열이어야 함`);
@@ -282,10 +300,25 @@ function validateConfig(config, catalog, stateDir = STATE_DIR) {
     used.add(`id:${entry.id}`).add(`handle:${handle.toLowerCase()}`);
     return { accountId: entry.id, handle };
   });
+  // RUTUBE: 카탈로그의 RUTUBE 계정 ID만 받는다. 채널 번호와 공개 주소(https://rutube.ru/channel/<번호>/)는 카탈로그에서 꺼내고 설정으로 받지 않는다.
+  const rutubeList = config.rutube === undefined ? [] : config.rutube;
+  if (!Array.isArray(rutubeList) || rutubeList.length > LIMITS.rutube) throw new Error(`rutube는 ${LIMITS.rutube}개 이하 배열이어야 함`);
+  const rutube = rutubeList.map(item => {
+    if (!item || typeof item !== 'object' || Object.keys(item).some(k => k !== 'accountId')) throw new Error('rutube 항목은 accountId만 가짐');
+    const entry = accounts.find(a => a.id === item.accountId);
+    const id = String(entry?.externalId || '');
+    if (!entry || entry.platform !== 'rutube' || !/^[1-9][0-9]{0,15}$/.test(id) || entry.publicUrl !== `${RUTUBE_ORIGIN}/channel/${id}/`) {
+      throw new Error(`카탈로그의 RUTUBE 계정과 맞지 않음: ${item.accountId}`);
+    }
+    if (entry.accountStatus === 'operating-contact' || !statuses.includes(entry.accountStatus)) throw new Error(`관리 계정 상태가 아님: ${entry.id}`);
+    if (used.has(`id:${entry.id}`)) throw new Error(`겹친 항목: ${entry.id}`);
+    used.add(`id:${entry.id}`);
+    return { accountId: entry.id, externalId: id, publicUrl: entry.publicUrl };
+  });
   const base = path.join(stateDir, 'inbox');
   const inbox = config.inbox === undefined ? base : path.resolve(stateDir, String(config.inbox));
   if (!isInside(base, inbox)) throw new Error('inbox는 상태 폴더의 inbox 안이어야 함');
-  return { telegram, inbox };
+  return { telegram, rutube, inbox };
 }
 
 async function loadCatalog() {
@@ -497,6 +530,23 @@ async function execute(cfg, { stateDir, ingester, limits, scanOpts, out }) {
   const results = [];
   const submit = (manifest, label) => runIngester(manifest, { ingester, timeoutMs: Math.min(limits.ingestMs, scanOpts.deadline - Date.now()),
     logFile: path.join(logDir, `${runId}-${results.length + 1}-${label}.log`) });
+  // 공개 쪽 하나(텔레그램 채널 · RUTUBE 채널)의 묶음을 회차 폴더에 쓰고 공식 수집기로 넣는다. 성공하면 계정별 마지막 성공 영수증을 바꾼다.
+  // 읽은 글이 있는데 정확한 조회수가 하나도 없으면 실패, 글이 하나도 없으면 「empty」다.
+  const deliver = async (r, accountId, manifest, observedAt, listed) => {
+    if (!manifest.batches.length) {
+      if (listed) throw new Error('조회수를 하나도 정확히 읽지 못함');
+      r.status = 'empty';
+      return;
+    }
+    const file = path.join(runDir, `${accountId}.manifest.json`);
+    writeNew(file, JSON.stringify(manifest, null, 2), limits.rawBytes);
+    Object.assign(r, await submit(file, accountId));
+    if (r.status === 'submitted') {
+      const last = path.join(receipts, `${accountId}.last-success.json`), tmp = `${last}.${process.pid}.${crypto.randomUUID()}.tmp`;
+      fs.writeFileSync(tmp, JSON.stringify({ runId, observedAt, rows: r.rows, manifest: file }, null, 2), { flag: 'wx' });
+      fs.renameSync(tmp, last);
+    }
+  };
   for (const t of cfg.telegram) {
     const r = { kind: 'telegram', accountId: t.accountId };
     try {
@@ -511,19 +561,29 @@ async function execute(cfg, { stateDir, ingester, limits, scanOpts, out }) {
       // 봉투에는 방금 쓴 증거 바이트의 해시를 넣는다(수집기가 실제 파일과 정확히 대조한다).
       const manifest = buildManifest({ accountId: t.accountId, handle: t.handle, observedAt, evidenceFile, evidenceSha256: sha256(evidenceText), rows: scan.rows, batch: limits.batch });
       Object.assign(r, { rows: scan.rows.length, unknownViews: scan.rows.filter(x => x.views === null).length });
-      if (!manifest.batches.length) {
-        if (scan.rows.length) throw new Error('조회수를 하나도 정확히 읽지 못함');
-        r.status = 'empty';
-      } else {
-        const file = path.join(runDir, `${t.accountId}.manifest.json`);
-        writeNew(file, JSON.stringify(manifest, null, 2), limits.rawBytes);
-        Object.assign(r, await submit(file, t.accountId));
-        if (r.status === 'submitted') {
-          const last = path.join(receipts, `${t.accountId}.last-success.json`), tmp = `${last}.${process.pid}.${crypto.randomUUID()}.tmp`;
-          fs.writeFileSync(tmp, JSON.stringify({ runId, observedAt, rows: r.rows, manifest: file }, null, 2), { flag: 'wx' });
-          fs.renameSync(tmp, last);
-        }
-      }
+      await deliver(r, t.accountId, manifest, observedAt, scan.rows.length);
+    } catch (e) { Object.assign(r, { status: 'failed', error: sanitize(e.message).slice(0, 500) }); }
+    results.push(r);
+  }
+  for (const a of cfg.rutube || []) {
+    const r = { kind: 'rutube', accountId: a.accountId };
+    try {
+      if (Date.now() >= scanOpts.deadline) { r.status = 'deferred'; results.push(r); continue; }
+      // 받은 원본(채널 화면 · 목록 쪽)은 회차 폴더에 그대로 남기고, 증거 JSON에 그 파일 이름과 해시를 적는다.
+      const record = await rutubePublic().collect({ id: a.accountId, externalId: a.externalId, publicUrl: a.publicUrl },
+        { fetchImpl: scanOpts.fetchImpl, capture: (name, bytes) => writeNew(path.join(runDir, `${a.accountId}.${name}`), bytes, limits.rawBytes) });
+      // 끝 쪽을 못 본 목록은 넣지 않는다(빠진 영상을 0으로 오해하지 않게)
+      if (!record.inventoryComplete) throw new Error('RUTUBE 공개 목록을 끝 쪽까지 읽지 못함');
+      const evidenceFile = `${a.accountId}.evidence.json`;
+      const evidenceText = JSON.stringify({ version: 1, sourceType: 'public-page', accountId: a.accountId, sourceUrl: a.publicUrl,
+        observedAt: record.observedAt, collector: 'tools/계정통계루틴.cjs + tools/계정통계예약/rutube-public.cjs', identity: record.identity,
+        inventoryComplete: record.inventoryComplete, sources: record.sources.map(s => ({ ...s, evidenceFile: s.evidenceFile ? `${a.accountId}.${s.evidenceFile}` : null })),
+        rows: record.videos }, null, 2);
+      writeNew(path.join(runDir, evidenceFile), evidenceText, limits.rawBytes);
+      const manifest = buildRutubeManifest({ accountId: a.accountId, externalId: a.externalId, publicUrl: a.publicUrl, observedAt: record.observedAt,
+        evidenceFile, evidenceSha256: sha256(evidenceText), rows: record.videos, batch: limits.batch });
+      Object.assign(r, { rows: record.listedVideos, unknownViews: record.listedVideos - record.videosWithExactViews });
+      await deliver(r, a.accountId, manifest, record.observedAt, record.listedVideos);
     } catch (e) { Object.assign(r, { status: 'failed', error: sanitize(e.message).slice(0, 500) }); }
     results.push(r);
   }
@@ -573,6 +633,7 @@ async function main(argv = process.argv.slice(2), deps = {}) {
   if (!run && !probe) {
     const inbox = listInbox(cfg.inbox, stateDir, limits.inboxFiles);
     out(JSON.stringify({ 모드: '미리 보기(바꾸는 것 없음)', 텔레그램: cfg.telegram.map(t => ({ ...t, 주소: telegramUrl(t.handle) })),
+      RUTUBE: cfg.rutube.map(a => ({ accountId: a.accountId, 주소: a.publicUrl })),
       수신함: inbox.items.map(({ name, status, error }) => ({ name, status, error })), 수신함오류: inbox.error, 사라짐: inbox.vanished,
       다음회차로: inbox.more, 공식수집기: fs.existsSync(ingester) }, null, 2));
     return 0;
@@ -585,6 +646,13 @@ async function main(argv = process.argv.slice(2), deps = {}) {
         out(JSON.stringify({ accountId: t.accountId, 쪽: s.pages.length, 글: s.rows.length, 조회수모름: s.rows.filter(r => r.views === null).length, 서비스글: s.skipped.length }));
       } catch (e) { failed++; out(`${t.accountId} 실패: ${sanitize(e.message)}`); }
     }
+    for (const a of cfg.rutube) {
+      try {
+        const s = await rutubePublic().collect({ id: a.accountId, externalId: a.externalId, publicUrl: a.publicUrl }, { fetchImpl: scanOpts.fetchImpl });
+        out(JSON.stringify({ accountId: a.accountId, 끝까지: s.inventoryComplete, 영상: s.listedVideos, 조회수앎: s.videosWithExactViews,
+          게시시각모름: s.videos.filter(v => !rutubeInstant(v.publishedAt)).length }));
+      } catch (e) { failed++; out(`${a.accountId} 실패: ${sanitize(e.message)}`); }
+    }
     return failed ? 1 : 0;
   }
   fs.mkdirSync(stateDir, { recursive: true });
@@ -593,7 +661,7 @@ async function main(argv = process.argv.slice(2), deps = {}) {
   try { return await execute(cfg, { stateDir, ingester, limits, scanOpts, out }); } finally { releaseLock(lock); }
 }
 
-module.exports = { LIMITS, LOG_LIMITS, STATE_DIR, telegramUrl, parseViews, parseTelegramPage, scanTelegram, buildManifest, validateConfig, listInbox, sanitize, main };
+module.exports = { LIMITS, LOG_LIMITS, STATE_DIR, telegramUrl, parseViews, parseTelegramPage, scanTelegram, buildManifest, buildRutubeManifest, rutubeInstant, validateConfig, listInbox, sanitize, main };
 
 if (require.main === module) {
   main().then(code => { process.exitCode = code; }, e => { console.error(sanitize(e && e.stack ? e.stack : e)); process.exitCode = 1; });

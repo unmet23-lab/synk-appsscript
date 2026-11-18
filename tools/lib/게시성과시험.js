@@ -354,7 +354,7 @@ function 갈래묶기(판들, 편때, 편키확인) {
  *   index: 편 색인(lib/게시성과편.js buildIndex — folders의 prep이 준비.json, result가 게시결과.json)
  *   accounts: sns-계정.json 계정들 [{key, platform, handle}] 또는 Map(key → 그것) · now
  * → { 판들[], 갈래들[], 판정없는편[{folder, 시험}](셀 판이 하나도 없는 시험 편), 칸오류[{folder, 오류}],
- *     키확인[{folder, key, 까닭}](계정표에서 못 찾은 판 계정 키), 안셈{플랫폼: 판 수}(서버가 받지 않아 세지 않은 판) }
+ *     키확인[{folder, key, 까닭}](계정표에서 못 찾은 판 계정 키), 안셈{플랫폼: 판 수}(서버 체크포인트가 없는 플랫폼이라 세지 않은 판) }
  */
 function 시험판정({ ledger = [], screens = new Map(), index = null, now = Date.now(), accounts = [] } = {}) {
   const 계정표 = accounts instanceof Map ? accounts : new Map((Array.isArray(accounts) ? accounts : []).filter(a => a && a.key).map(a => [a.key, a]));

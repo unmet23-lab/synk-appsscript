@@ -150,3 +150,16 @@ test('별도 분류해 비교에서 뺀 게시도 서버에 있으면 미등록 
   const without = await 도구.run({ 저장소: f.repo, 쇼츠안읽음: true }, { now: f.now, data: { ...f.server, entries: [], posts: [] }, shorts: new Map() });
   assert.equal(without.미등록.length, 1);
 });
+
+test('원장 계정과 서버 채널 — 「t.me/<채널>」 핸들, 핸들 없는 계정은 공개 주소의 번호 칸으로 맞추고 이름이 비슷한 것은 보지 않는다(11-19)', () => {
+  assert.equal(연결.channelMatches({ platform: 'telegram', handle: 't.me/synkmn' }, { platform: 'telegram', handle: 'synkmn' }), true);
+  assert.equal(연결.channelMatches({ platform: 'threads', handle: '@yuhobuilds' }, { platform: 'threads', handle: 'yuhobuilds' }), true);
+  const xhs = { platform: 'xiaohongshu', handle: '', url: 'https://www.rednote.com/user/profile/6ab10807000000000301d12f' };
+  assert.equal(연결.channelMatches(xhs, { platform: 'xiaohongshu', handle: 'rednote ID 94512834104', externalId: '6ab10807000000000301d12f' }), true);
+  assert.equal(연결.channelMatches(xhs, { platform: 'xiaohongshu', externalId: '6ab10807000000000301d12' }), false);
+  assert.equal(연결.channelMatches({ platform: 'rutube', handle: '', url: 'https://rutube.ru/channel/81398864/' }, { platform: 'rutube', externalId: '81398864' }), true);
+  // 핸들이 있는데 다르면 주소로 다시 맞추지 않는다 · 페북 apiPageId 규칙은 그대로
+  assert.equal(연결.channelMatches({ platform: 'telegram', handle: 'synkmn', url: 'https://t.me/x/123' }, { platform: 'telegram', handle: 'other', externalId: '123' }), false);
+  assert.equal(연결.channelMatches({ platform: 'facebook', handle: '', apiPageId: '1311331138729740', url: 'https://www.facebook.com/profile.php?id=61594726675164' },
+    { platform: 'facebook', externalId: '1311331138729740' }), true);
+});

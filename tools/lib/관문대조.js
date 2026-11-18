@@ -19,6 +19,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const 브랜드장부 = { LAB: 'LAB.md', synkbrief: 'synkbrief.md', yuhobuilds: 'yuhobuilds.md' };
+// 반응을 세는 판의 플랫폼 — 서버 체크포인트로 재는 넷(게시성과판정 API_PLATFORMS와 같다)
+const 서버판 = new Set(['youtube', 'instagram', 'facebook', 'tiktok']);
 // 「튐」 = 평소의 3배 이상(게시성과 요약 「튄 편」과 같은 셈), 「위」 = 1.5배 이상(검증된 틀 문턱 — 제작 절차 「근거 · 틀 · 화면」)
 const 튐 = 3;
 const 위 = 1.5;
@@ -114,6 +116,8 @@ function 표({ judgments = [], index = null, now = Date.now(), 날 = 30 } = {}) 
     if (!l || !l.folder || !folders.has(l.folder) || (l.point !== '72h' && l.point !== '24h')) continue;
     const 줄 = 편줄(l.folder);
     if (!줄 || lineOf.get(l.account) !== 줄) continue; // 두 채널 판 · 다른 줄 계정은 뺀다
+    // 하루 숫자로만 재는 플랫폼(텔레그램 · 샤오훙수 · 스레드 · RUTUBE, 11-19)은 뺀다 — 조회 몇 회짜리 채널이 「가장 큰 배수」를 차지하지 않게
+    if (l.platform && !서버판.has(l.platform)) continue;
     if (!(Date.parse(l.publishedAt) >= cut)) continue;
     const had = byPost.get(l.post);
     if (!had || (had.point === '24h' && l.point === '72h')) byPost.set(l.post, l);

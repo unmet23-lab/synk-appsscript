@@ -7,7 +7,8 @@
  * 인증값(credentials 표)은 읽지 않는다.
  *
  * 돌려주는 것
- *   channels   연결된 SNS 채널(youtube·instagram·facebook·tiktok): id·platform·이름·핸들·주소·수집 상태
+ *   channels   SNS 채널(PLATFORMS): id·platform·이름·핸들·주소·수집 상태. youtube·instagram·facebook·tiktok은 서버 API가 숫자를 받고,
+ *              telegram·xiaohongshu·threads·rutube는 사람이나 예약 수집이 확인한 게시물 숫자(외부 관측 post-lifetime)를 서버가 posts·snapshots에 넣는다
  *   entries    게시 성과 등록(postPerformanceEntries) 전부 — 24·72시간 체크포인트, 지표, 지표별 출처(metricProvenance), 창 지표
  *   posts      채널 수집기가 모은 채널별 최근 게시물(채널마다 최신 perChannel편) — 평소 대비 배수의 기준과 7일 값을 찾는 데 쓴다
  *   snapshots  그 게시물의 하루 한 벌 숫자(최근 days일) — [postId, checkedAt(ms), views, likes, comments, shares, saves, reach]
@@ -22,13 +23,17 @@ const PROJECT = 'synk-bake-unmet27';
 // 등록 제목은 앞 TITLE_MAX자(파이썬 글자 = 코드 포인트)만 가져온다. 자동 등록의 제목은 플랫폼 캡션(유튜브는 영상 제목)이라,
 // 캡션으로 편을 잇는 lib/게시성과캡션.js가 「잘렸는가」를 이 값으로 가린다(11-18).
 const TITLE_MAX = 160;
+// 읽는 플랫폼. 뒤 넷은 API 수집이 없다. 공개 화면이나 로그인 통계 화면에서 읽은 게시물 숫자를 서버 external-observations.mjs의 project()가
+// posts·snapshots(하루 한 벌)에 넣어 둔다(11-19: 텔레그램 · 샤오훙수 · 스레드 · RUTUBE 계정이 장부에 한 줄도 없었다).
+const API_PLATFORMS = Object.freeze(['youtube', 'instagram', 'facebook', 'tiktok']);
+const PLATFORMS = Object.freeze([...API_PLATFORMS, 'telegram', 'xiaohongshu', 'threads', 'rutube']);
 
 function 파이썬(매개) {
   // 매개는 숫자만 받아 문자열에 넣는다(주입 막기).
   const days = Math.max(1, Math.min(120, Math.floor(Number(매개.days) || 21)));
   const perChannel = Math.max(1, Math.min(200, Math.floor(Number(매개.perChannel) || 40)));
   return String.raw`import json,sqlite3,subprocess,datetime,urllib.request
-DAYS=${days};PER=${perChannel}
+DAYS=${days};PER=${perChannel};PLATS=${JSON.stringify(PLATFORMS)}
 def meta(p):
  return urllib.request.urlopen(urllib.request.Request('http://metadata.google.internal/computeMetadata/v1/'+p,headers={'Metadata-Flavor':'Google'}),timeout=3).read(200).decode()
 def code(v,n=80):
@@ -59,7 +64,7 @@ if app and app.get('State',{}).get('Running') is True and mount:
  try:
   db.execute('PRAGMA query_only=ON');db.execute('BEGIN')
   def rows(kind):return [dict(json.loads(body),_id=key) for key,body in db.execute('SELECT id,body FROM documents WHERE kind=?',(kind,))]
-  chans=[c for c in rows('channels') if c.get('active') is not False and not c.get('hidden') and c.get('platform') in ('youtube','instagram','facebook','tiktok')]
+  chans=[c for c in rows('channels') if c.get('active') is not False and not c.get('hidden') and c.get('platform') in PLATS]
   ids={c['_id'] for c in chans}
   out['channels']=[{'id':c['_id'],'platform':c['platform'],'name':text(c.get('displayName'),80),'handle':text(c.get('handle'),80),'url':text(c.get('canonicalUrl'),200),'externalId':code(c.get('externalId'),80),'status':code(c.get('status')),'lastSuccessAt':when(c.get('lastSuccessAt')),'ownerAuthorized':(c.get('coverage') or {}).get('ownerAuthorized') is True,'warnings':[w[:200] for w in (c.get('warnings') or []) if isinstance(w,str)][:6]} for c in chans]
   entries=[]
@@ -143,7 +148,7 @@ function 다듬기(payload) {
   if (!payload || !Array.isArray(payload.channels) || !Array.isArray(payload.entries) || !Array.isArray(payload.posts) || !Array.isArray(payload.snapshots)) {
     throw new Error('PERFORMANCE_SHAPE');
   }
-  const channels = payload.channels.filter(c => c && typeof c.id === 'string' && ['youtube', 'instagram', 'facebook', 'tiktok'].includes(c.platform));
+  const channels = payload.channels.filter(c => c && typeof c.id === 'string' && PLATFORMS.includes(c.platform));
   const known = new Set(channels.map(c => c.id));
   const entries = payload.entries.filter(e => e && typeof e.id === 'string' && known.has(e.channelId) && iso(e.publishedAt) && typeof e.url === 'string')
     .map(e => ({ ...e, publishedAt: iso(e.publishedAt), checkpoints: Array.isArray(e.checkpoints) ? e.checkpoints.filter(p => p && Number.isInteger(p.hours)) : [] }));
@@ -154,4 +159,4 @@ function 다듬기(payload) {
   return { checkedAt: iso(payload.checkedAt) || new Date().toISOString(), channels, entries, posts, snapshots };
 }
 
-module.exports = { 읽기, 다듬기, 파이썬, TITLE_MAX };
+module.exports = { 읽기, 다듬기, 파이썬, TITLE_MAX, PLATFORMS, API_PLATFORMS };

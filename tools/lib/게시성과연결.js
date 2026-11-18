@@ -6,16 +6,20 @@ const { createHash } = require('node:crypto');
 const { postIdOf } = require('./게시성과판정.js');
 
 const GROUPS = new Set(['콘텐츠', '작품', '운영시험', '공개확인대기']);
-const handleOf = value => String(value || '').trim().replace(/^https?:\/\//i, '').replace(/^(?:www\.)?(?:facebook\.com|instagram\.com|youtube\.com|tiktok\.com)\//i, '').replace(/^@/, '').replace(/\/$/, '').toLowerCase();
+const handleOf = value => String(value || '').trim().replace(/^https?:\/\//i, '').replace(/^(?:www\.)?(?:facebook\.com|instagram\.com|youtube\.com|tiktok\.com|t\.me|threads\.com|threads\.net)\//i, '').replace(/^@/, '').replace(/\/$/, '').toLowerCase();
 const isObject = value => value && typeof value === 'object' && !Array.isArray(value);
+const pathParts = value => { try { return new URL(String(value)).pathname.split('/').filter(Boolean); } catch { return []; } };
 
-/** sns-계정.json 계정 하나가 서버 채널과 같은 계정인가 — 같은 플랫폼이고 핸들이 같거나(「@synk.mn」 · 「facebook.com/synkworld」 꼴을 맞춘다),
- * 핸들 없는 페북 페이지는 원장 apiPageId가 채널 externalId와 같을 때(11-18 — Sri Lanka · Cambodia 페북은 핸들이 없다). 이름이 비슷한 것은 보지 않는다. */
+/** sns-계정.json 계정 하나가 서버 채널과 같은 계정인가 — 같은 플랫폼이고 핸들이 같거나(「@synk.mn」 · 「facebook.com/synkworld」 · 「t.me/synkmn」 꼴을 맞춘다),
+ * 핸들 없는 페북 페이지는 원장 apiPageId가 채널 externalId와 같을 때(11-18 — Sri Lanka · Cambodia 페북은 핸들이 없다).
+ * 핸들도 apiPageId도 없는 계정은 원장 주소의 경로 한 칸이 채널 externalId와 글자 그대로 같을 때(11-19 — 샤오훙수 /user/profile/<번호>, RUTUBE /channel/<번호>).
+ * 이름이 비슷한 것은 보지 않는다. */
 function channelMatches(account, channel) {
   if (!account || !channel || account.platform !== channel.platform) return false;
   const handle = handleOf(account.handle);
   if (handle && handleOf(channel.handle) === handle) return true;
-  return Boolean(account.apiPageId && channel.externalId && String(account.apiPageId) === String(channel.externalId));
+  if (account.apiPageId) return Boolean(channel.externalId && String(account.apiPageId) === String(channel.externalId));
+  return Boolean(!handle && channel.externalId && pathParts(account.url).includes(String(channel.externalId)));
 }
 
 function latest(ledger) {

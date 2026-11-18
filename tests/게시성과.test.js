@@ -908,7 +908,7 @@ test('2주 시험 갈래 — 계정표에서 못 찾은 판 계정 키는 「계
   const text = 도구.summarize({ ledger, now: sday(20), index, accounts: 시험계정 });
   assert.match(text, /\| @synkbrief\(인스타\) \| 지금 막힌 것 \| 3 \| [^|]+ \| 한 곳 \| 아직\(계정 키 확인 — synkbrief-youtbe\) \|/);
   assert.match(text, /- 계정 키 확인\([^\n]*\): \[편1\]\([^)]+\) synkbrief-youtbe/);
-  assert.match(text, /- 서버가 받지 않아 세지 않는 판: 네이버 블로그 3/);
+  assert.match(text, /- 2주 시험에 세지 않는 판\(서버 체크포인트가 없는 플랫폼\): 네이버 블로그 3/);
 });
 
 test('서버가 재는 계정 판이 주소 없이 「게시됨」이면 「주소 없음」으로 미등록 절에 띄우고, 텔레그램 같은 판 · 14일 밖은 뺀다(11-08)', t => {
@@ -938,4 +938,63 @@ test('서버가 재는 계정 판이 주소 없이 「게시됨」이면 「주�
   assert.match(text, /LAB_와요_mn_20261030 · lab-instagram · 주소 없음\n/);
   assert.match(text, /lab-facebook · 주소 없음\(게시물 주소가 아님: https:\/\/www\.facebook\.com\/synkworld\)/);
   assert.doesNotMatch(text, /lab-telegram/);
+});
+
+// ── API 수집이 없는 플랫폼(11-19 — 텔레그램 · 샤오훙수 · 스레드 · RUTUBE 계정이 장부에 한 줄도 없었다) ──────────────
+test('텔레그램 · 샤오훙수 · 스레드 · RUTUBE 게시 주소를 서버 postRoute와 같은 모양으로 읽는다', () => {
+  assert.deepEqual(판정.postIdOf('https://t.me/synkmn/22'), { platform: 'telegram', externalId: '22', key: 'telegram:synkmn/22' });
+  assert.equal(판정.postIdOf('https://t.me/s/SynkMN/22').key, 'telegram:synkmn/22');
+  assert.equal(판정.postIdOf('https://t.me/synkmn'), null);
+  assert.equal(판정.postIdOf('https://www.xiaohongshu.com/explore/6af05e55000000000a03b2d3').key, 'xiaohongshu:6af05e55000000000a03b2d3');
+  assert.equal(판정.postIdOf('https://www.rednote.com/user/profile/6ab10807000000000301d12f/6af05e55000000000a03b2d3').key, 'xiaohongshu:6af05e55000000000a03b2d3');
+  assert.equal(판정.postIdOf('https://www.rednote.com/user/profile/6ab10807000000000301d12f'), null);
+  assert.equal(판정.postIdOf('https://www.threads.com/@yuhobuilds/post/DfzTsA5EXiJ').key, 'threads:DfzTsA5EXiJ');
+  assert.equal(판정.postIdOf('https://rutube.ru/video/a8ea98cb3466a8dc813e221072f1514a/').key, 'rutube:a8ea98cb3466a8dc813e221072f1514a');
+  assert.equal(판정.postIdOf('https://rutube.ru/channel/81398864/'), null);
+  assert.equal(판정.postIdOf('https://vk.ru/clip-243082040_456239018'), null);
+});
+
+test('API 수집이 없는 플랫폼은 하루 숫자로 24·72시간(±6시간)·7일을 재고, 같은 채널 앞선 편과 같은 나이로 견준다', () => {
+  const posts = [], snapshots = [];
+  for (let n = 0; n < 6; n += 1) {
+    const pub = T0 + n * 24 * H;
+    posts.push({ id: 'tg:' + n, channelId: 'c-tg', externalId: String(n + 10), url: `https://t.me/synktest/${n + 10}`, publishedAt: iso(pub) });
+    snapshots.push(['tg:' + n, pub + 24.7 * H, 10 + n], ['tg:' + n, pub + 72.6 * H, 20 + n], ['tg:' + n, pub + 168.5 * H, 30 + n]);
+  }
+  // 하루를 건너뛴 편: 31시간 값은 24시간(±6시간)에 들지 않는다
+  posts.push({ id: 'tg:late', channelId: 'c-tg', externalId: '99', url: 'https://t.me/synktest/99', publishedAt: iso(T0 + 6 * 24 * H) });
+  snapshots.push(['tg:late', T0 + 6 * 24 * H + 31 * H, 50]);
+  // 숫자가 한 번도 안 들어온 편은 판정하지 않는다
+  posts.push({ id: 'tg:none', channelId: 'c-tg', externalId: '100', url: 'https://t.me/synktest/100', publishedAt: iso(T0 + 7 * 24 * H) });
+  const server = { checkedAt: iso(T0 + 20 * 24 * H), channels: [{ id: 'c-tg', platform: 'telegram', handle: 'synktest', name: 'TG' }], entries: [], posts, snapshots };
+  const judged = 판정.judgeAll(읽기.다듬기(server), { now: T0 + 20 * 24 * H });
+  assert.equal(judged.length, 7);
+  const last = judged.find(x => x.record.postKey === 'telegram:synktest/15');
+  assert.equal(last.record.format, 'telegram-post');
+  assert.deepEqual(Object.keys(last.judgments), ['24h', '72h', '7d']);
+  assert.equal(last.judgments['24h'].daily, true);
+  assert.equal(last.judgments['24h'].facts.find(f => f.metric === 'views').value, 15);
+  assert.deepEqual(last.judgments['72h'].multiple, { value: 1.14, median: 22, n: 5, basis: 'same-age' }); // 앞선 다섯 편 20~24의 중앙값
+  const late = judged.find(x => x.record.postKey === 'telegram:synktest/99');
+  assert.deepEqual(Object.keys(late.judgments), []);
+  assert.equal(judged.some(x => x.record.postKey === 'telegram:synktest/100'), false);
+  assert.equal(판정.PLATFORM_LABEL.telegram, '텔레그램');
+});
+
+test('API 수집이 없는 플랫폼의 게시됨 주소는 「게시 주소로 추가」 미등록 절에 띄우지 않는다', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-post-perf-ext-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const root = path.join(dir, 'docs', '마케팅');
+  const now = T0 + 20 * 24 * H;
+  const folder = path.join(root, 'LAB_물개_mn_20261111', '게시');
+  fs.mkdirSync(folder, { recursive: true });
+  fs.writeFileSync(path.join(folder, '게시결과.json'), JSON.stringify({ 판: [
+    { 계정: 'lab-telegram', 상태: '게시됨', 시각: iso(now - 2 * 24 * H), 주소: 'https://t.me/synkmn/22' },
+    { 계정: 'lab-ru-rutube', 상태: '게시됨', 시각: iso(now - 2 * 24 * H), 주소: 'https://rutube.ru/video/a8ea98cb3466a8dc813e221072f1514a/' },
+    { 계정: 'lab-tiktok', 상태: '게시됨', 시각: iso(now - 2 * 24 * H), 주소: 'https://www.tiktok.com/@synk.mn/video/7700000000000000002' },
+  ] }));
+  const index = 편.buildIndex(root);
+  assert.equal(index.resolve('telegram:synkmn/22').info.folder, 'LAB_물개_mn_20261111');
+  assert.equal(index.resolve('telegram:synkmn/22').account, 'lab-telegram');
+  assert.deepEqual(도구.unregisteredOf(index, new Set(), now).map(u => u.account), ['lab-tiktok']);
 });

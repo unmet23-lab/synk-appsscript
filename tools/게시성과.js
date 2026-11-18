@@ -21,6 +21,7 @@
  * 장부 = docs/_ops/게시성과.jsonl (한 줄 = 판정 하나 또는 화면 읽기 하나 · 바뀐 판정만 덧붙인다 · 고치지 않는다)
  * 요약 = docs/마케팅/게시성과.md (07시 제작·월요일 스캔·금요일 판정이 읽는다 · 이 도구가 다시 만든다)
  * 정기 실행: Windows 작업 스케줄러 「SYNK 게시 성과 판정」이 3시간마다 --실행(tools/게시성과예약/install-task.ps1).
+ * 텔레그램 · 샤오훙수 · 스레드 · RUTUBE(11-19)는 서버 게시 성과 등록이 없어, 계정 통계 수집이 서버에 넣은 하루 숫자로 24·72시간·7일을 잰다(lib/게시성과판정.js 머리 주석).
  * 읽기만 한다: 회사 서버는 읽기 전용 조회, 플랫폼은 유튜브 공개 목록(쇼츠 탭)만. 게시·댓글·설정 변경 없음.
  */
 const fs = require('node:fs');
@@ -169,7 +170,8 @@ function loadLedgerAccounts(repo) {
 function loadAccounts(repo) {
   try {
     const { accounts } = JSON.parse(fs.readFileSync(path.join(repo, 'docs', '마케팅', 'sns-계정.json'), 'utf8'));
-    return Object.entries(accounts || {}).map(([key, a]) => ({ key, platform: a.platform, handle: a.handle || '', ...(a.apiPageId ? { apiPageId: String(a.apiPageId) } : {}) }));
+    return Object.entries(accounts || {}).map(([key, a]) => ({ key, platform: a.platform, handle: a.handle || '', ...(a.apiPageId ? { apiPageId: String(a.apiPageId) } : {}),
+      ...(a.publicUrl ? { url: String(a.publicUrl) } : {}) }));
   } catch { return []; }
 }
 
@@ -349,7 +351,7 @@ function 시험절(t) {
     ...(t.판정없는편.length ? [`- 셀 판을 못 찾은 시험 편(준비.json 「판」이 서버가 받는 계정으로 이어지지 않고 판정 줄도 없다 — 판 계정 키와 sns-계정.json을 본다): ${t.판정없는편.map(x => `${폴더글(x.folder)}(${x.시험.갈래})`).join(' · ')}`, ''] : []),
     ...(t.칸오류.length ? [`- 「시험」 칸을 읽지 못한 편: ${t.칸오류.map(x => `${폴더글(x.folder)} — ${x.오류}`).join(' · ')}`, ''] : []),
     ...(t.키확인.length ? [`- 계정 키 확인(준비.json 「판」의 계정 키를 sns-계정.json에서 못 찾아 어느 판인지 모른다 — 그 편이 든 갈래는 정하지 않는다): ${t.키확인.map(x => `${폴더글(x.folder)} ${x.key}(${x.까닭})`).join(' · ')}`, ''] : []),
-    ...(Object.keys(t.안셈).length ? [`- 서버가 받지 않아 세지 않는 판: ${Object.entries(t.안셈).map(([pl, n]) => `${안셈이름[pl] || pl} ${n}`).join(' · ')}`, ''] : []),
+    ...(Object.keys(t.안셈).length ? [`- 2주 시험에 세지 않는 판(서버 체크포인트가 없는 플랫폼): ${Object.entries(t.안셈).map(([pl, n]) => `${안셈이름[pl] || pl} ${n}`).join(' · ')}`, ''] : []),
   ];
 }
 
@@ -519,7 +521,8 @@ function unregisteredOf(index, registeredKeys, now, connections = new Map()) {
         if (typeof p.계정 === 'string' && TRACKED_ACCOUNT.test(p.계정) && !linked.has(`${info.folder}|${p.계정}`)) out.push({ folder: info.folder, account: p.계정, url: p.주소 || null, at, 주소없음: true });
         continue;
       }
-      if (registeredKeys.has(id.key)) continue;
+      // 텔레그램 · 샤오훙수 · 스레드 · RUTUBE는 「게시 주소로 추가」로 등록하는 플랫폼이 아니다 — 서버 하루 숫자가 들어오면 판정한다(11-19)
+      if (registeredKeys.has(id.key) || !판정.API_PLATFORMS.has(id.platform)) continue;
       out.push({ folder: info.folder, account: p.계정 || null, url: p.주소, at });
     }
   }

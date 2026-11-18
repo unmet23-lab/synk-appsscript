@@ -72,7 +72,7 @@ const scan = (fetchImpl, limits = FAST) => R.scanTelegram('demo_chan', { fetchIm
 test('설정은 카탈로그의 텔레그램 방송 채널만 받고 개인 연락 계정은 거부한다', () => {
   const dir = path.join(os.tmpdir(), 'acct-routine-config');
   const ok = R.validateConfig({ version: 1, telegram: [{ accountId: 'demo-telegram', handle: '@demo_chan' }] }, CATALOG, dir);
-  assert.deepEqual(ok, { telegram: [{ accountId: 'demo-telegram', handle: 'demo_chan' }], inbox: path.join(dir, 'inbox') });
+  assert.deepEqual(ok, { telegram: [{ accountId: 'demo-telegram', handle: 'demo_chan' }], rutube: [], inbox: path.join(dir, 'inbox') });
   for (const [config, pattern] of [
     [{ version: 1, telegram: [{ accountId: 'demo-telegram', handle: 'other_chan' }] }, /카탈로그/],
     [{ version: 1, telegram: [{ accountId: 'person-telegram', handle: 'person_contact' }] }, /개인 연락/],
@@ -681,4 +681,64 @@ test('예약 입구: node를 띄우지 못한 OSError도 이번 회차 시각과
   assert.match(ok, /^--- 회차 [0-9]{4}-/);
   assert.match(ok, /routine ok/);
   assert.match(ok, /--- 종료 0 · [0-9]{4}-/);
+});
+
+// ── RUTUBE 공개 목록(11-19) ──────────────────────────────────────────────────
+const RU = { id: 'demo-rutube', platform: 'rutube', externalId: '81398864', publicUrl: 'https://rutube.ru/channel/81398864/', accountStatus: 'operating' };
+const RU_CATALOG = { ...CATALOG, accounts: [...CATALOG.accounts, RU, { ...RU, id: 'bad-rutube', publicUrl: 'https://rutube.ru/channel/1/' }] };
+const RU_LIST = 'https://rutube.ru/api/video/person/81398864/?format=json&page=1';
+const ruVideo = (hex, hits, ts = '2026-11-17T13:00:25') => ({ id: hex.repeat(32), author: { id: 81398864 }, publication_ts: ts, hits, video_url: `https://rutube.ru/video/${hex.repeat(32)}/` });
+const ruFetch = (results, { hasNext = false } = {}) => async url => {
+  if (url === RU.publicUrl) return new Response('<head><meta property="og:title" content="SYNK LAB Russia"><meta property="og:url" content="/channel/81398864/"><meta name="description" content="channel (81398864)"></head>',
+    { headers: { 'content-type': 'text/html; charset=utf-8' } });
+  if (url === RU_LIST) return new Response(JSON.stringify({ page: 1, per_page: 20, has_next: hasNext, next: hasNext ? 'https://rutube.ru/api/video/person/81398864/?format=json&page=2' : null, results }),
+    { headers: { 'content-type': 'application/json' } });
+  throw new Error(`예상 밖 주소 ${url}`);
+};
+
+test('RUTUBE 설정은 카탈로그의 RUTUBE 계정 ID만 받고, 채널 번호와 공개 주소는 카탈로그에서 꺼낸다', () => {
+  const dir = path.join(os.tmpdir(), 'acct-routine-config');
+  assert.deepEqual(R.validateConfig({ version: 1, rutube: [{ accountId: 'demo-rutube' }] }, RU_CATALOG, dir).rutube,
+    [{ accountId: 'demo-rutube', externalId: '81398864', publicUrl: 'https://rutube.ru/channel/81398864/' }]);
+  for (const [config, pattern] of [
+    [{ version: 1, rutube: [{ accountId: 'demo-telegram' }] }, /RUTUBE 계정/],
+    [{ version: 1, rutube: [{ accountId: 'bad-rutube' }] }, /RUTUBE 계정/],
+    [{ version: 1, rutube: [{ accountId: 'demo-rutube', publicUrl: 'https://rutube.ru/channel/2/' }] }, /accountId만/],
+    [{ version: 1, rutube: [{ accountId: 'demo-rutube' }, { accountId: 'demo-rutube' }] }, /겹친/],
+  ]) assert.throws(() => R.validateConfig(config, RU_CATALOG, dir), pattern);
+  // 시간대 없는 publication_ts는 모스크바 시각, 시간대가 붙으면 그대로
+  assert.equal(R.rutubeInstant('2026-11-17T13:00:25'), '2026-11-17T13:00:25+03:00');
+  assert.equal(R.rutubeInstant('2026-11-17T10:00:25Z'), '2026-11-17T10:00:25Z');
+  assert.equal(R.rutubeInstant('17.11.2026'), null);
+});
+
+test('--실행: RUTUBE 공개 목록의 정확한 조회수만 게시물 누적값으로 넣고, 축약 조회수는 빼며, 원본과 증거 해시를 남긴다', async t => {
+  const s = setup(t, { version: 1, rutube: [{ accountId: 'demo-rutube' }] });
+  const deps = { ...s.deps, loadCatalog: async () => RU_CATALOG, fetchImpl: ruFetch([ruVideo('a', 169), ruVideo('b', '1.3K')]) };
+  assert.equal(await R.main(['--실행'], deps), 0);
+  const summary = lastSummary(s);
+  assert.deepEqual(summary.results.map(r => [r.kind, r.status, r.rows, r.unknownViews]), [['rutube', 'submitted', 2, 1]]);
+  const runDir = path.join(s.state, 'runs', summary.runId);
+  const manifest = JSON.parse(fs.readFileSync(path.join(runDir, 'demo-rutube.manifest.json'), 'utf8'));
+  const { envelope } = manifest.batches[0];
+  assert.equal(envelope.sourceType, 'public-page');
+  assert.equal(envelope.sourceUrl, 'https://rutube.ru/channel/81398864/');
+  assert.deepEqual(envelope.identity, { accountId: 'demo-rutube', externalId: '81398864' });
+  assert.deepEqual(envelope.observations, [{ kind: 'post-lifetime', post: { externalId: 'a'.repeat(32), url: `https://rutube.ru/video/${'a'.repeat(32)}/`, publishedAt: '2026-11-17T13:00:25+03:00' }, metrics: { views: 169 } }]);
+  const evidence = fs.readFileSync(path.join(runDir, 'demo-rutube.evidence.json'), 'utf8');
+  assert.equal(envelope.evidenceSha256, sha(evidence));
+  for (const src of JSON.parse(evidence).sources) assert.equal(sha(fs.readFileSync(path.join(runDir, src.evidenceFile))), src.sha256);
+  assert.ok(fs.existsSync(path.join(s.state, 'receipts', 'demo-rutube.last-success.json')));
+});
+
+test('--실행: RUTUBE 빈 목록은 실패가 아니고, 끝 쪽을 못 본 목록은 넣지 않고 실패로 닫는다', async t => {
+  const empty = setup(t, { version: 1, rutube: [{ accountId: 'demo-rutube' }] });
+  assert.equal(await R.main(['--실행'], { ...empty.deps, loadCatalog: async () => RU_CATALOG, fetchImpl: ruFetch([]) }), 0);
+  assert.equal(lastSummary(empty).results[0].status, 'empty');
+  assert.deepEqual(seen(empty.state), []);
+  const partial = setup(t, { version: 1, rutube: [{ accountId: 'demo-rutube' }] });
+  const code = await R.main(['--실행'], { ...partial.deps, loadCatalog: async () => RU_CATALOG, fetchImpl: ruFetch([ruVideo('a', 5)], { hasNext: true }) });
+  assert.equal(code, 1);
+  assert.equal(lastSummary(partial).results[0].status, 'failed');
+  assert.deepEqual(seen(partial.state), []);
 });
