@@ -1432,6 +1432,13 @@
 - 고침: 메모리가 풀린 뒤 다시 시작한다. 브리프가 거둬들여졌으므로 같은 브리프로 새 세션을 띄운다. 실패한 창에서 다시 시도할 때 브리프가 다시 가는지는 확인 안 함. 끝난 세션을 보관하면 Claude 프로세스가 줄어든다. 20:30쯤 잰 값은 실제 메모리 63.4GB 중 23.4GB 남음, 약속 한도(메모리와 페이지 파일) 113.4GB 중 44.9GB 남음이었다. 이때 claude.exe 43개가 약속 21.3GB를, python 10개가 8.2GB를 쓰고 있었다.
 - 다시 확인: `main.log`에서 `full checkout`, `Out of memory`, `memory pressure`를 찾아 그 세션 id 근처의 오류 줄을 본다. 다시 띄운 세션은 같은 기록에 「Full checkout done」 줄을 남기고 첫 차례를 시작해야 한다.
 
+### 앱 세션에서 띄운 `claude -p`는 앱 계정이 아니라 CLI 로그인(`~/.claude`) 계정으로 돈다 — 그 계정의 주간 몫이 차면 앱이 멀쩡해도 막힌다 (2026-11-18 Claude · 첫 컷 다른 눈)
+
+- 증상: 첫 컷 검사의 Claude 눈(`node tools/크레딧실행.js 중계 -- -p --model claude-opus-5-5 …`)이 「경로=구독」으로 떠서 「Credit balance is too low」로 끝났다. 같은 자리에서 키 없이 `claude -p`를 바로 부르니 opus · fable · sonnet 모두 「You've hit your weekly limit · resets Nov 23」였다. 그때 이 앱 세션은 다른 계정으로 멀쩡히 돌고 있었다.
+- 원인: 크레딧 키 목록에 쓸 키가 없으면 중계는 CLI 구독 로그인으로 띄운다. CLI 로그인은 `~/.claude`의 계정(`claude auth status`의 email)이고 앱 세션의 계정과 다르다. 그 계정의 주간 몫이 다 찼다. 중계 쪽 문구가 왜 한도가 아니라 크레딧 문구였는지는 확인하지 않았다.
+- 고침: 첫 컷 검사의 다른 눈은 GPT(구독 Codex, `tools/lib/첫컷눈_gpt.js`) 하나로 둔다. 처음에는 Claude를 막혔을 때의 대체로 뒀다. 그런데 같은 날 GPT 코드 검수(GA9 · GA11)가 두 가지를 짚었다. 키 없이 구독으로 띄우면 중계가 `--bare`를 빼서 사용자 CLAUDE.md와 훅이 붙는다. 20분 시간 초과 때 중계만 끝나고 그 아래 Claude는 남는다. 그래서 대체를 뺐다. GPT 계정 몫이 모두 막히면 판정을 직접 적거나 기록을 고치지 않는다. 몫이 돌아온 뒤 같은 명령을 다시 돌린다.
+- 다시 확인: `claude auth status`로 CLI 계정을 보고, 빈 폴더에서 `echo 1+1 | claude -p --model sonnet --output-format json`이 is_error 없이 답하는지 본다.
+
 ## Claude 서브에이전트
 
 ### 병렬 서브에이전트가 같은 scratchpad에 같은 이름의 보조 파일을 써서 남의 묶음 글을 읽는다 (2026-10-19 Claude)

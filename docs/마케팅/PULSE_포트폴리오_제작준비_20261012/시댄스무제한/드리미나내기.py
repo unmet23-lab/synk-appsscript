@@ -23,7 +23,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from 크레딧내기 import boards, PIC, 굽기전, 받은뒤, 인자값, 무시쓰는법, 첫판계획, 첫판잠금, 첫판확인
+from 크레딧내기 import boards, PIC, 굽기전, 받은뒤, 인자값, 무시쓰는법, 첫판계획, 첫판잠금, 첫판확인, 판소스
 
 IGNORED = {}   # 판 id → 까닭 — --걸림무시로 지시문 걸림을 넘겨 낸 판(장부의 「걸림무시」 칸)
 HOME = os.path.join(os.path.expanduser("~"), ".ai-tools", "dreamina-canvas")
@@ -180,6 +180,7 @@ def result_of(data):   # 정상 답은 data.node · data.submission, 끊긴 답�
 
 def run_one(pack, out, b):
     t0 = time.time()
+    소스 = 판소스(pack, b)   # 내기 직전 지시문 · 참고 지문 — 첫 컷 검사가 받은 영상을 이 지시문으로 판정한다(11-18)
     start, end, refs, audio = split_media(pack, b)
     mode = mode_of(start, end, refs, audio)
     ceiling = PER_SEC * b["길이"]
@@ -189,6 +190,8 @@ def run_one(pack, out, b):
         image_ids = [upload(pack, b, f) for f in start + end + refs]
         audio_ids = [upload(pack, b, f) for f in audio]
         prompt = build_prompt(pack, b, image_ids, audio_ids)
+        if 판소스(pack, b) != 소스:   # 지문을 잰 뒤 올리고 읽는 사이에 바뀌었으면 기록과 실제 요청이 어긋난다 — 내지 않는다
+            raise RuntimeError("내는 동안 지시문이나 참고 파일이 바뀌었다. 이 판은 내지 않았다 — 다시 돌린다")
         ref_args = [x for i in image_ids + audio_ids for x in ("--ref", f"res:{i}")]
         made = cli("node", "create", "video", "--model", "seedance_2.5", "--mode", mode, *ref_args, "--prompt", prompt, "--ratio", b["비율"],
                    "--resolution", RES, "--duration", str(b["길이"]), "--title", b["id"], "--project-id", PROJECT,
@@ -240,7 +243,7 @@ def run_one(pack, out, b):
     save(out, key, row)
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     save(out, key, {"판": b["id"], "순서": b.get("순서", 0), "파일": name, "만든때": now, "받은때": now, "길이": b["길이"], "비율": b["비율"], "화질": "720p",
-                    "소리": True, "모델": "dreamina seedance_2.5", "길": f"드리미나 CLI({PROFILE or '기본'})", "지시문": prompt}, "_받음.json")
+                    "소리": True, "모델": "dreamina seedance_2.5", "길": f"드리미나 CLI({PROFILE or '기본'})", "지시문": prompt, "소스": 소스}, "_받음.json")
     mark = row["표시"]
     warn = f"  ⚠ 표시가 남음({mark}) — 계정 설정 「워터마크 삭제」를 보고 같은 resourceId로 다시 받는다" if not isinstance(mark, float) or mark >= MARK_AT else ""
     with lock:

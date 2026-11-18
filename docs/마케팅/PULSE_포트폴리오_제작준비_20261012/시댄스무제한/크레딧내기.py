@@ -21,6 +21,7 @@
 # 받은 뒤(11-14): 컷표(틀 2)가 있는 편은 낸 판을 받자마자 tools/받은뒤검사.py로 잰다(길이 · 비율 · 소리 줄기 · 사람 굳음 + 컷표의 받음 검사) —
 #   결과는 받을곳/_받은뒤검사.json과 화면의 「다시 낼 판」. 내기 결과는 바꾸지 않는다.
 # 첫 컷(11-18): 새 꾸러미는 대표 영상 판 하나만 먼저 낸다. 받은 파일, 지시문/참고, 현재 제작 기준으로 첫컷검사를 통과한 뒤 같은 묶음을 재개한다.
+# 판정은 첫컷검사가 부른 맥락 없는 다른 눈이 한다(11-18 저녁). 제작 세션은 판정을 적지 않고, 틀렸다고 보면 --반박으로 새 눈에게 다시 묻는다.
 # nsfw · 실패는 다시 내지 않고 알린다(현장노트 higgsfield 「같은 장면이 nsfw로 두 번 막힌다」).
 import hashlib, json, os, re, shutil, subprocess, sys, threading
 from concurrent.futures import ThreadPoolExecutor
@@ -325,19 +326,39 @@ def 첫판검사(자료, 파일):
     if 현재판 != 판 or (표파일 and json.loads(창.읽기(표파일).decode("utf-8-sig")) != 표) or (not 표파일 and 컷표찾기(pack)):
         raise SystemExit("첫 시험 컷의 판이나 컷표가 바뀌었다. 현재 꾸러미로 다시 검사한다.")
     소스 = [(이름, 창.지문(폴더 / 이름)) for 이름 in 이름들]
+    # 받은 영상은 낼 때의 지시문 · 참고로 구워졌다. 그 뒤 지시문을 고쳤으면 고친 글로 판정하지 않는다(11-18 GPT 검수 GA1).
+    try:
+        받음 = json.loads((Path(out) / "_받음.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        받음 = {}
+    낸때 = [r.get("소스") for r in 받음.values() if isinstance(r, dict) and r.get("파일") == Path(파일).name]
+    if 낸때 and 낸때[-1] is not None and 낸때[-1] != [list(x) for x in 소스]:
+        raise SystemExit(f"첫 시험 컷 {판['id']}을 낸 뒤 지시문이나 참고 파일이 바뀌었다. 받은 영상은 바뀐 지시문으로 판정하지 않는다. "
+                         "바뀐 지시문으로 이 판만 다시 낸다(<꾸러미> " + 판["id"] + " --실행). 나머지 판은 제출하지 않았다.")
+    if not 낸때 or 낸때[-1] is None:
+        # 낼 때의 지시문을 모르면 지금 지시문으로 판정하지 않는다 — 기다리는 동안 요구 동작을 지운 판이 그대로 지나간다(11-18 GPT 재검수 GA4).
+        raise SystemExit(f"첫 시험 컷 {Path(파일).name}의 받기 기록에 낼 때의 지시문 지문이 없다(웹에서 받았거나 11-18 앞에 낸 판). "
+                         "지금 지시문으로는 판정하지 않는다. 이 판만 이 도구로 다시 내면 지문이 남는다(<꾸러미> " + 판["id"] + " --실행). "
+                         "웹에서 낸 판은 tools/첫컷검사.py를 직접 돌려 낼 때 쓴 지시문을 --주문파일로 준다. 나머지 판은 제출하지 않았다.")
     묶음 = hashlib.sha256(json.dumps([Path(pack).name, 판, 소스], ensure_ascii=False, sort_keys=True).encode()).hexdigest()
     for a, b, 인물 in 구간:
+        # 판정은 첫컷검사가 부른 다른 눈이 한다. 눈이 견줄 주문으로 이 판의 컷표 줄(앞뒤 컷 포함)과 영상 지시문을 넘긴다.
         명령 = [sys.executable, "-X", "utf8", str(Path(첫컷검사.__file__)), str(편), str(파일),
-              "--시작", str(a), "--묶음", 묶음, "--예상편지시", 주문]
+              "--시작", str(a), "--묶음", 묶음, "--예상편지시", 주문, "--주문파일", str(폴더 / "지시문.txt")]
         if 표파일:
             명령 += ["--컷표", str(표파일)]
+            if 표.get("틀") == 2 and 정보.get("컷들"):
+                명령 += ["--컷들", ",".join(정보["컷들"])]
         if b is not None:
             명령 += ["--끝", str(b)]
         if 인물:
             명령.append("--사람")
-        코드 = subprocess.call(명령)
+        # 시험용 눈 바꿔치기 변수는 실제 내기의 자식에게 넘기지 않는다(그 판정으로 크레딧을 쓰지 않게).
+        코드 = subprocess.call(명령, env=첫컷검사.눈변수뺀환경())
         if 코드:
-            print(f"첫 시험 컷에서 멈췄다. 나머지 판은 제출하지 않았다. 확인 명령: {subprocess.list2cmdline(명령)}", flush=True)
+            까닭 = ("다른 눈이 '다시'로 봤다. 고쳐서 이 판만 다시 받거나, 판정이 틀렸으면 아래 명령에 --반박 \"<열쇠>=<근거>\"를 붙여 돌린 뒤 이 내기를 다시 돌린다"
+                  if 코드 == 1 else "첫 컷 판정을 받지 못했다. 아래 명령을 다시 돌린다")
+            print(f"첫 시험 컷에서 멈췄다. 나머지 판은 제출하지 않았다. {까닭}. 명령: {subprocess.list2cmdline(명령)}", flush=True)
             raise SystemExit(코드)
     창.확인()
 
@@ -382,6 +403,11 @@ def media(pack, b):   # 웹과 같은 차례 — 시작 · 끝 · 그 밖의 그
     return args, ["start_image"] * len(start) + ["end_image"] * len(end) + ["image"] * len(refs) + ["audio"] * len(audio)
 
 
+def 판소스(pack, b):
+    """낼 때의 지시문 · 참고 파일 지문. 받기 기록에 남겨 첫 컷 검사가 받은 영상을 낼 때의 지시문으로 판정하게 한다."""
+    return [[이름, hashlib.sha256(Path(pack, b["폴더"], 이름).read_bytes()).hexdigest()] for 이름 in ["지시문.txt", *b["파일"]]]
+
+
 def prompt(pack, b):
     t = open(os.path.join(pack, b["폴더"], "지시문.txt"), encoding="utf-8").read().strip()
     return re.sub(r"@\s*(이미지|오디오|영상)\s*(\d+)", lambda m: f"<<<{TAG[m.group(1)]}_{m.group(2)}>>>", t)
@@ -398,7 +424,7 @@ def save(path, key, row):
     json.dump(led, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
-def record(out, jid, b, name, job, roles, acct, cost):
+def record(out, jid, b, name, job, roles, acct, cost, 소스=None):
     p = job.get("params") or {}
     with lock:
         row = {"판": b["id"], "계정": acct, "받을곳": out, "파일": name, "상태": job.get("status"),
@@ -410,12 +436,16 @@ def record(out, jid, b, name, job, roles, acct, cost):
             save(os.path.join(out, "_받음.json"), jid, {
                 "판": b["id"], "순서": b["순서"], "파일": name, "비슷함": 1.0, "다음": None, "만든때": job.get("created_at"),
                 "길이": p.get("duration"), "비율": p.get("aspect_ratio"), "화질": p.get("resolution"), "소리": p.get("generate_audio"),
-                "모델": job.get("job_type"), "어긋남": [], "지시문": p.get("prompt"), "참고": roles, "길": "크레딧"})
+                "모델": job.get("job_type"), "어긋남": [], "지시문": p.get("prompt"), "참고": roles, "길": "크레딧", "소스": 소스})
 
 
 def run_one(acct, pack, out, b, cost, check=False):
+    소스 = 판소스(pack, b)   # 내기 직전 — 기다리는 동안 지시문을 고쳐도 받은 영상은 이 지시문으로 판정한다
     margs, roles = media(pack, b)
-    made = hf(acct, "generate", "create", "seedance_2_5", "--mode", "omni_reference" if margs else "t2v", "--prompt", prompt(pack, b),
+    글 = prompt(pack, b)
+    if 판소스(pack, b) != 소스:   # 지문을 잰 뒤 읽는 사이에 바뀌었으면 기록과 실제 요청이 어긋난다 — 내지 않는다
+        raise RuntimeError("내는 동안 지시문이나 참고 파일이 바뀌었다. 이 판은 내지 않았다 — 다시 돌린다")
+    made = hf(acct, "generate", "create", "seedance_2_5", "--mode", "omni_reference" if margs else "t2v", "--prompt", 글,
               "--resolution", "720p", "--bitrate_mode", "high", "--aspect_ratio", b["비율"], "--duration", str(b["길이"]),
               "--generate_audio", "false" if b["소리"] == "끔" else "true", *margs)
     first = made[0] if isinstance(made, list) else made
@@ -431,7 +461,7 @@ def run_one(acct, pack, out, b, cost, check=False):
     job = job[0] if isinstance(job, list) else job
     if job.get("status") != "completed":
         print(f"  ⚠ {b['id']} {jid[:8]} {job.get('status')} — 다시 내지 않음", flush=True)
-        record(out, jid, b, None, job, sent, acct, cost)
+        record(out, jid, b, None, job, sent, acct, cost, 소스)
         return
     with lock:   # 같은 판을 함께 받는 일꾼끼리 이름이 겹치지 않게 자리를 먼저 잡는다
         n = have(out, b["id"])
@@ -443,7 +473,7 @@ def run_one(acct, pack, out, b, cost, check=False):
     except subprocess.CalledProcessError:
         os.remove(os.path.join(out, name))
         raise
-    record(out, jid, b, name, job, sent, acct, cost)
+    record(out, jid, b, name, job, sent, acct, cost, 소스)
     print(f"받음 {b['id']:<16} → {name}", flush=True)
 
 

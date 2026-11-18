@@ -312,22 +312,43 @@ function previousVideo(arg, account = null) {
   return { name: path.basename(p), video: plate.video.path };
 }
 
-// 장면 심사에는 기존 맹검 재료를 그대로 만들고, 제작자가 볼 첫 컷 확인은 별도로 진행한다.
+// 장면 심사에는 기존 맹검 재료를 그대로 만들고, 첫 컷 확인은 tools/첫컷검사.py가 따로 진행한다.
 // 편의 장면/ 폴더를 쓰는 기존 명령도 같은 검사를 거친다. 다른 위치에서 만든 시험 컷은 --첫컷으로 편을 지정한다.
+// 11-18 저녁부터 첫 컷 판정은 첫컷검사가 부른 맥락 없는 다른 눈이 한다. 제작 세션은 판정 파일(--첫컷확인)을 쓰지 않고,
+// 굽기 전에 정한 장면 주문을 --첫컷주문으로 넘긴다(컷표 틀 2 편은 --첫컷컷들로 컷 이름을 넘기고, 컷표 줄이 주문이다).
+// 다른 눈의 '다시'가 틀렸다고 보면 --첫컷반박 "<열쇠>=<근거>"(한 번에 하나).
 function 첫컷인자(video, options, duration) {
+  if (Object.hasOwn(options, '첫컷확인')) {
+    throw new Error('첫 컷 판정은 다른 눈이 한다(11-18). --첫컷확인은 받지 않는다 — 장면 주문은 --첫컷주문, 틀린 판정은 --첫컷반박 "<열쇠>=<근거>".');
+  }
   const dir = path.dirname(path.resolve(video));
   const episode = options['첫컷'] || (path.basename(dir) === '장면' && path.basename(path.dirname(path.dirname(dir))) === '마케팅'
     ? path.dirname(dir) : null);
   if (!episode) {
-    if (['첫컷확인', '첫컷시작', '첫컷끝'].some(k => Object.hasOwn(options, k))) throw new Error('--첫컷확인에는 --첫컷 <편 폴더>나 편의 장면/ 영상이 필요하다.');
+    if (['첫컷주문', '첫컷컷들', '첫컷반박', '첫컷시작', '첫컷끝'].some(k => Object.hasOwn(options, k))) throw new Error('--첫컷주문 · --첫컷컷들 · --첫컷반박 · --첫컷시작에는 --첫컷 <편 폴더>나 편의 장면/ 영상이 필요하다.');
     return null;
   }
   const 구간요청 = Object.hasOwn(options, '첫컷시작') || Object.hasOwn(options, '첫컷끝');
   if (duration > 30 && !구간요청) {
-    if (Object.hasOwn(options, '첫컷') || Object.hasOwn(options, '첫컷확인')) {
+    if (['첫컷', '첫컷주문', '첫컷컷들', '첫컷반박'].some(k => Object.hasOwn(options, k))) {
       throw new Error('긴 영상은 --첫컷시작과 --첫컷끝으로 대표 구간을 지정한다.');
     }
     return null;
+  }
+  const 주문 = String(options['첫컷주문'] || '').trim();
+  const 컷들 = String(options['첫컷컷들'] || '').trim();
+  let 틀2 = false;
+  try {
+    틀2 = JSON.parse(fs.readFileSync(path.join(path.resolve(episode), '컷표.json'), 'utf8').replace(/^﻿/, '')).틀 === 2;
+  } catch { /* 컷표가 없거나 읽히지 않으면 장면 주문으로 본다 */ }
+  if (틀2 && !컷들) {
+    throw new Error('이 편은 컷표 틀 2다. 컷표 줄이 다른 눈의 주문이니 이 영상에 든 컷을 --첫컷컷들 "1-1,1-2"로 준다.');
+  }
+  if (!틀2 && 컷들) {
+    throw new Error('--첫컷컷들은 컷표 틀 2 편에서만 쓴다. 이 편은 장면 주문을 --첫컷주문으로 준다.');
+  }
+  if (!주문 && !컷들) {
+    throw new Error('편의 첫 컷은 다른 눈이 프레임과 주문을 견줘 본다. 굽기 전에 정한 장면 주문을 --첫컷주문 "<보여야 하는 인물 · 동작 · 소품 · 화면 글>"로 준다.');
   }
   const args = [path.resolve(episode), path.resolve(video)];
   if (구간요청) {
@@ -338,7 +359,9 @@ function 첫컷인자(video, options, duration) {
     args.push('--시작', String(start), '--끝', String(end));
   }
   if (options['브랜드'].startsWith('lab-')) args.push('--종류', 'LAB');
-  if (options['첫컷확인']) args.push('--확인파일', path.resolve(options['첫컷확인']));
+  if (컷들) args.push('--컷들', 컷들);
+  if (주문) args.push('--주문', 주문);
+  if (options['첫컷반박']) args.push('--반박', String(options['첫컷반박']));
   return args;
 }
 
@@ -350,7 +373,7 @@ function main(argv) {
   }
   const video = args._[0];
   if (!video || !args['말'] || !args['브랜드']) {
-    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse|공모전> [--밖 <폴더>] [--컷 <초,초,…>|끔] [--지난 자동|없음|<편 폴더|영상>,…] [--틀 퀴즈] [--첫컷 <편 폴더>] [--첫컷시작 <초> --첫컷끝 <초>] [--첫컷확인 <확인 JSON>]');
+    console.error('쓰는 법: node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse|공모전> [--밖 <폴더>] [--컷 <초,초,…>|끔] [--지난 자동|없음|<편 폴더|영상>,…] [--틀 퀴즈] [--첫컷 <편 폴더>] [--첫컷시작 <초> --첫컷끝 <초>] [--첫컷컷들 "<컷,컷>"] [--첫컷주문 "<장면 주문>"] [--첫컷반박 "<열쇠>=<근거>"]');
     return 2;
   }
   const who = 시청자[args['브랜드']];
@@ -426,8 +449,11 @@ function main(argv) {
   if (want === '자동' && who.계정 && previous.length < 2) console.log(`  지난 편을 ${previous.length}편만 찾았다(${who.계정} 판에 영상이 있는 편) — 9번은 그만큼만 본다`);
   for (const 줄 of 다음글(args['브랜드'])) console.log(줄);
   if (firstCut) {
+    // 시험용 눈 바꿔치기 변수는 실제 첫 컷 검사에 넘기지 않는다(첫컷검사.py 눈변수와 같다).
+    // Windows는 환경 변수 이름의 대소문자를 가리지 않으므로 대문자로 견준다.
+    const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !['SYNK_FIRSTCUT_EYE', 'SYNK_FIRSTCUT_EYE_NAME', 'SYNK_CODEX_ROTATE', 'CODEX_BIN'].includes(k.toUpperCase())));
     const result = spawnSync(process.env.SYNK_PYTHON || 'python', ['-X', 'utf8', path.join(__dirname, '첫컷검사.py'), ...firstCut],
-      { stdio: 'inherit', windowsHide: true });
+      { stdio: 'inherit', windowsHide: true, env });
     if (result.error) throw result.error;
     return result.status ?? 1;
   }

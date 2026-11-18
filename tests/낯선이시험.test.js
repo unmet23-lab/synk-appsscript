@@ -11,20 +11,47 @@ test('편의 첫 장면과 따로 만든 번역 시안이 같은 검사를 거�
   const ep = path.resolve('docs/마케팅/LAB_시험');
   const shot = path.join(ep, '장면', '시안.mp4');
   const external = path.resolve('preview.mp4');
-  assert.deepEqual(첫컷인자(shot, { 브랜드: 'lab-mn' }), [ep, shot, '--종류', 'LAB']);
-  assert.deepEqual(첫컷인자(shot, { 브랜드: 'lab-mn' }, 30), [ep, shot, '--종류', 'LAB']);
+  const 주문 = '연필이 「먹지」를 쓰는 사이 케이크를 두 입에 먹는다';
+  const 끝 = ['--주문', 주문];
+  assert.deepEqual(첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷주문: 주문 }), [ep, shot, '--종류', 'LAB', ...끝]);
+  assert.deepEqual(첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷주문: 주문 }, 30), [ep, shot, '--종류', 'LAB', ...끝]);
   assert.equal(첫컷인자(shot, { 브랜드: 'lab-mn' }, 31), null, '긴 장면 영상의 일반 맹검은 전체 영상을 본다');
   assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷: ep }, 31), /대표 구간/);
-  assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷확인: '검수.json' }, 31), /대표 구간/);
-  assert.deepEqual(첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷시작: '18', 첫컷끝: '22' }, 31),
-    [ep, shot, '--시작', '18', '--끝', '22', '--종류', 'LAB']);
-  assert.deepEqual(첫컷인자(external, { 브랜드: 'lab-en', 첫컷: ep, 첫컷확인: 'review.json' }),
-    [ep, external, '--종류', 'LAB', '--확인파일', path.resolve('review.json')]);
-  assert.deepEqual(첫컷인자(external, { 브랜드: 'lab-mn', 첫컷: ep, 첫컷시작: '18', 첫컷끝: '22' }),
-    [ep, external, '--시작', '18', '--끝', '22', '--종류', 'LAB']);
-  assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷끝: '35' }), /30초/);
+  assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷주문: 주문 }, 31), /대표 구간/);
+  assert.deepEqual(첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷시작: '18', 첫컷끝: '22', 첫컷주문: 주문 }, 31),
+    [ep, shot, '--시작', '18', '--끝', '22', '--종류', 'LAB', ...끝]);
+  assert.deepEqual(첫컷인자(external, { 브랜드: 'lab-en', 첫컷: ep, 첫컷주문: 주문, 첫컷반박: '컷=0.5초 칸에 포크가 케이크를 찍는다' }),
+    [ep, external, '--종류', 'LAB', ...끝, '--반박', '컷=0.5초 칸에 포크가 케이크를 찍는다']);
+  assert.deepEqual(첫컷인자(external, { 브랜드: 'lab-mn', 첫컷: ep, 첫컷시작: '18', 첫컷끝: '22', 첫컷주문: 주문 }),
+    [ep, external, '--시작', '18', '--끝', '22', '--종류', 'LAB', ...끝]);
+  assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷끝: '35', 첫컷주문: 주문 }), /30초/);
   assert.equal(첫컷인자(path.join(ep, '게시', 'v1.mp4'), { 브랜드: 'lab-mn' }), null);
-  assert.throws(() => 첫컷인자(external, { 브랜드: 'lab-mn', 첫컷확인: 'review.json' }), /첫컷확인/);
+  // 11-18 저녁: 판정은 다른 눈이 한다 — 제작 세션의 판정 파일은 받지 않고, 편의 장면에는 주문이 있어야 한다
+  assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷확인: 'review.json' }), /다른 눈/);
+  assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn' }), /첫컷주문/);
+  assert.throws(() => 첫컷인자(shot, { 브랜드: 'lab-mn', 첫컷주문: '   ' }), /첫컷주문/);
+  assert.throws(() => 첫컷인자(external, { 브랜드: 'lab-mn', 첫컷주문: 주문 }), /--첫컷 <편 폴더>/);
+  assert.throws(() => 첫컷인자(external, { 브랜드: 'lab-mn', 첫컷컷들: '1-1' }), /--첫컷 <편 폴더>/);
+});
+
+test('컷표 틀 2 편은 --첫컷컷들을 첫컷검사의 --컷들로 넘기고, 없으면 미리 멈춘다(11-18 GA2)', () => {
+  const { 첫컷인자 } = require('../tools/낯선이시험.js');
+  const 자리 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-firstcut-'));
+  try {
+    const ep = path.join(자리, '편');
+    fs.mkdirSync(ep);
+    fs.writeFileSync(path.join(ep, '컷표.json'), '﻿' + JSON.stringify({ 틀: 2, detail: [{ cut: 'C2', in: 0, out: 4.8 }] }));
+    const video = path.join(자리, 'C2.mp4');
+    assert.deepEqual(첫컷인자(video, { 브랜드: 'pulse', 첫컷: ep, 첫컷컷들: 'C2' }, 6), [ep, video, '--컷들', 'C2']);
+    assert.deepEqual(첫컷인자(video, { 브랜드: 'pulse', 첫컷: ep, 첫컷컷들: 'C2', 첫컷주문: '전화를 받는다' }, 6),
+      [ep, video, '--컷들', 'C2', '--주문', '전화를 받는다']);
+    assert.throws(() => 첫컷인자(video, { 브랜드: 'pulse', 첫컷: ep, 첫컷주문: '전화를 받는다' }, 6), /--첫컷컷들/);
+    fs.writeFileSync(path.join(ep, '컷표.json'), JSON.stringify({ detail: [] }));
+    assert.throws(() => 첫컷인자(video, { 브랜드: 'pulse', 첫컷: ep, 첫컷컷들: 'C2', 첫컷주문: '전화를 받는다' }, 6), /틀 2 편에서만/,
+      '틀 2가 아닌 편의 --첫컷컷들은 첫컷검사를 부르기 전에 멈춘다(GA3)');
+  } finally {
+    fs.rmSync(자리, { recursive: true, force: true });
+  }
 });
 
 test('볼 이유 질문 — 무엇으로 이기나 · 볼 이유 점수 · 슬롭 · 약한 자리를 묻고, 광고(pulse)만 맡기겠나를 묻는다(10-29)', () => {
