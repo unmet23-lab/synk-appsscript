@@ -21,6 +21,8 @@
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { randomUUID } = require('node:crypto');
+const 그록 = require('./lib/grok-contests.cjs');
 
 const 단계들 = ['준비 중', '결과 기다림', '선정', '안 됨', '접음'];
 const 기본보관함 = path.join(os.homedir(), 'Documents', 'SYNK-보관함', '지원사업');
@@ -47,19 +49,19 @@ function 정규(t) { return String(t || '').replace(/[^가-힣A-Za-z0-9]/g, '').
 /** 통합목록 항목의 마감(YYYY-MM-DD). 모르면 빈 글. */
 function 공고마감(o) {
   const r = (o.historical_assessment || {}).record || {};
-  return (o.calendar_20261110 || {}).end || r.end || (o.grok_20261117 || {}).end || '';
+  return o.grok_contest?.deadline.date || (o.calendar_20261110 || {}).end || r.end || (o.grok_contest ? '' : o.grok_20261117?.end) || '';
 }
 
 /** 통합목록 항목의 원문 주소 하나. */
 function 공고주소(o) {
   const r = (o.historical_assessment || {}).record || {};
-  const 후보 = [];
+  const 후보 = [o.grok_contest?.officialUrl];
   for (const l of r.links || []) if (l && l.url) 후보.push(l.url);
   for (const k of Object.keys(o)) {
     const v = o[k];
     if (v && typeof v === 'object' && typeof v.url === 'string') 후보.push(v.url);
   }
-  return 후보.find((u) => /^https?:\/\//.test(u)) || '';
+  return 후보.find((u) => /^https?:\/\//.test(u)) || o.grok_contest?.discoveryUrl || '';
 }
 
 /** 신청현황 항목 하나를 지도 카드로 바꾼다. */
@@ -93,7 +95,7 @@ function 검사(현황) {
 }
 
 /** 접수 중인 영상 공모 — 통합목록에서 ai_video가 「AI 영상」이나 「영상」이고, 마감이 안 지났고, 신청현황에 없는 것. */
-function 열린영상(통합, 현황, 기준일) {
+function 열린영상(통합, 현황, 기준일, 지금) {
   const 현황id = new Set((현황.items || []).map((o) => o.id));
   const 현황이름 = (현황.items || []).map((o) => 정규(짧은이름(o.name)));
   const 겹침 = (제목) => {
@@ -103,20 +105,40 @@ function 열린영상(통합, 현황, 기준일) {
   };
   const 나옴 = [];
   for (const o of 통합.items || []) {
-    const 값 = (o.ai_video || {}).value;
-    if (값 !== 'AI 영상' && 값 !== '영상') continue;
+    const 그록공고 = o.grok_contest;
+    if (그록공고?.ai.status === 'prohibited' || /^(포기|자격 미달|제외)$/.test(o.application_status?.state || o.application_status || '')) continue;
+    const 기존값 = o.ai_video?.value;
+    const 영상 = 그록공고?.video ?? ['AI 영상', '영상'].includes(기존값);
+    const 허용 = { allowed: '허용', conditional: '조건부 허용', unconfirmed: '확인 필요' }[그록공고?.ai.status];
+    const 값 = 그록공고
+      ? (영상 ? (허용 === '허용' || 허용 === '조건부 허용' ? 'AI 영상' : '영상') : '기타 공모')
+      : 기존값;
+    if (값 !== 'AI 영상' && 값 !== '영상' && !그록공고) continue;
     const 마감 = 공고마감(o);
     if (마감 && 마감 < 기준일) continue;
+    const 시각 = 그록공고?.deadline.kst;
+    if (시각 && 지금 && Date.parse(시각) <= +지금) continue;
     if (현황id.has(o.id) || 겹침(o.title)) continue;
     나옴.push({
       id: o.id,
       이름: 짧은이름(o.title),
       값,
       마감,
-      마감글: (o.grok_20261117 || {}).deadline_text || '',
-      근거: (o.ai_video || {}).basis || '',
+      마감글: 시각 ? 시각.slice(0, 16).replace('T', ' ') + ' KST'
+        : 그록공고 ? (그록공고.deadline.date || '') : (o.grok_20261117?.deadline_text || ''),
+      근거: 그록공고 ? [
+        'AI 사용 ' + 허용,
+        그록공고.ai.quote,
+        그록공고.deliverables.items.length
+          ? '제출물은 ' + 그록공고.deliverables.items.join(', ') + '입니다.'
+          : '제출물은 공식 원문에서 확인이 필요합니다.',
+      ].filter(Boolean).join('. ').replace(/\.\./g, '.') : (o.ai_video?.basis || ''),
       주소: 공고주소(o),
-      원문확인안함: !!o.grok_20261117,
+      원문확인안함: 그록공고 ? !그록공고.officialUrl : !!o.grok_20261117,
+      ...(그록공고 && {
+        그록: true, AI허용: 허용, AI주소: 그록공고.ai.url, 마감주소: 그록공고.deadline.url,
+        제출물: 그록공고.deliverables.items, 제출물주소: 그록공고.deliverables.url,
+      }),
     });
   }
   나옴.sort((a, b) => (a.마감 || '9999') .localeCompare(b.마감 || '9999') || a.이름.localeCompare(b.이름, 'ko'));
@@ -129,7 +151,7 @@ function 자료만들기(현황, 통합, 지금 = new Date()) {
     기준: new Date(지금.getTime() + 9 * 3600e3).toISOString().slice(0, 16).replace('T', ' '),
     기준일,
     진행: (현황.items || []).map(카드),
-    열린: 열린영상(통합, 현황, 기준일),
+    열린: 열린영상(통합, 현황, 기준일, 지금),
   };
 }
 
@@ -440,11 +462,23 @@ function 읽기(폴더) {
   const 통합 = JSON.parse(fs.readFileSync(path.join(폴더, '통합목록.json'), 'utf8'));
   let 설정 = {};
   try { 설정 = JSON.parse(fs.readFileSync(path.join(폴더, '공모지도.json'), 'utf8')); } catch {}
-  return { 현황, 통합, 설정 };
+  return { 현황, 통합: 그록.합치기(통합, 그록.보고서읽기(폴더)), 설정 };
 }
 
-function main(argv) {
-  const 보관함 = argv.includes('--보관함') ? argv[argv.indexOf('--보관함') + 1] : 기본보관함;
+async function main(argv) {
+  function 값(옵션) {
+    if (!argv.includes(옵션)) return '';
+    const value = argv[argv.indexOf(옵션) + 1];
+    if (!value || value.startsWith('--')) throw Error(옵션 + ' 다음에 파일이나 폴더 경로를 적어 주세요.');
+    return value;
+  }
+  const 보관함 = 값('--보관함') || 기본보관함;
+  const 그록보고서 = 값('--그록보고서');
+  if (그록보고서 && argv.includes('--검사')) throw Error('--검사는 장부만 읽습니다.');
+  if (그록보고서) {
+    const 읽음 = await 그록.가져오기(보관함, JSON.parse(fs.readFileSync(그록보고서, 'utf8').replace(/^\uFEFF/, '')));
+    console.log(읽음.already ? '이미 읽은 그록 보고서' : '그록 보고서 공고 ' + 읽음.items.length + '건 읽음');
+  }
   const { 현황, 통합, 설정 } = 읽기(보관함);
   const 문제 = 검사(현황);
   if (argv.includes('--검사')) {
@@ -454,9 +488,15 @@ function main(argv) {
   const 자료 = 자료만들기(현황, 통합);
   let 폰트 = '';
   try { 폰트 = require('./lib/브랜드폰트.js').블록(); } catch (e) { console.log('브랜드 폰트를 못 심었다(대체 서체로 보인다): ' + e.message); }
-  fs.mkdirSync(출력폴더, { recursive: true });
-  const 파일 = path.join(출력폴더, '공모지도.html');
-  fs.writeFileSync(파일, 페이지(자료, 폰트));
+  const 파일 = path.resolve(값('--출력') || path.join(출력폴더, '공모지도.html'));
+  fs.mkdirSync(path.dirname(파일), { recursive: true });
+  const 준비파일 = 파일 + '.' + randomUUID() + '.tmp';
+  try {
+    fs.writeFileSync(준비파일, 페이지(자료, 폰트), { encoding: 'utf8', flag: 'wx' });
+    fs.renameSync(준비파일, 파일);
+  } finally {
+    fs.rmSync(준비파일, { force: true });
+  }
   const 셈 = (s) => 자료.진행.filter((o) => o.단계 === s).length;
   console.log(`만들었다: ${파일}`);
   console.log(`  준비 중 ${셈('준비 중')} · 결과 기다림 ${셈('결과 기다림')} · 선정 ${셈('선정')} · 안 됨 ${셈('안 됨')} · 접음 ${셈('접음')} · 열린 영상 공모 ${자료.열린.length}(AI 영상 ${자료.열린.filter((o) => o.값 === 'AI 영상').length})`);
@@ -466,6 +506,7 @@ function main(argv) {
   return 0;
 }
 
-if (require.main === module) process.exitCode = main(process.argv.slice(2));
+if (require.main === module) main(process.argv.slice(2)).then((code) => { process.exitCode = code; })
+  .catch((error) => { console.error(error.message); process.exitCode = 1; });
 
 module.exports = { 단계들, 오늘, 짧은이름, 공고마감, 공고주소, 카드, 검사, 열린영상, 자료만들기, 페이지 };

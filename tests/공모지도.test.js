@@ -108,3 +108,92 @@ test('명령줄: --검사는 빠진 칸이 있으면 1로 끝나고, 만들기�
   assert.strictEqual(검.status, 1, 검.stdout + 검.stderr);
   assert.match(검.stdout, /마감 없는 준비/);
 });
+
+
+test('그록 보고서 두 회차를 공고와 대조하고 확인된 원문의 세 칸만 지도에 싣는다', async (t) => {
+  const 그록 = require('../tools/lib/grok-contests.cjs');
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'grok-contests-'));
+  t.after(() => fs.rmSync(폴더, { recursive: true, force: true }));
+  const 주소 = 'https://example.org/notice?no=42';
+  const 원문 = '생성형 AI 활용을 허용합니다. 마감은 2026-11-30 18:00입니다. 작품 영상과 참가신청서를 제출하세요.';
+  const 한건 = {
+    title: '우리 지역 AI 공모',
+    organizer: '지역문화원',
+    noticeId: '2026-42',
+    video: true,
+    discoveryUrl: 'https://example.net/open/42',
+    officialUrl: 주소 + '&utm_source=round1',
+    ai: { status: 'allowed', url: 주소, quote: '생성형 AI 활용을 허용합니다.' },
+    deadline: { date: '2026-11-30', kst: '2026-11-30T18:00+09:00', url: 주소, quote: '마감은 2026-11-30 18:00입니다.' },
+    deliverables: { items: ['작품 영상', '참가신청서'], url: 주소, quote: '작품 영상과 참가신청서를 제출하세요.' },
+  };
+  const 보고서 = (reportId, items) => ({ schema: 'synk-grok-contests-v1', reportId, reports: ['fixture.md'], items });
+  let 받은주소 = [];
+  const 읽기 = async (url) => {
+    받은주소.push(url);
+    return { 됨: true, 끝주소: url, 글: 원문 };
+  };
+  const 앞 = 보고서('morning', [한건]);
+  assert.equal((await 그록.가져오기(폴더, 앞, 읽기)).already, false);
+  assert.equal((await 그록.가져오기(폴더, 앞, 읽기)).already, true);
+  assert.deepEqual(받은주소, [주소]);
+  const 뒤 = 보고서('evening', [{
+    ...한건, title: '우리 지역 AI 공모전', officialUrl: 주소,
+    ai: { status: 'allowed', url: 주소, quote: '다른 대회의 원문 문장입니다.' },
+  }]);
+  await 그록.가져오기(폴더, 뒤, 읽기);
+
+  const base = { items: [{ id: 'already', title: 한건.title, latest_review: { url: 주소 }, ai_video: { value: '영상' } }] };
+  const combined = 그록.합치기(base, 그록.보고서읽기(폴더));
+  assert.equal(combined.items.length, 1);
+  assert.equal(combined.items[0].id, 'already');
+  assert.equal(base.items[0].grok_contest, undefined);
+  const row = 지도.자료만들기({ items: [] }, combined, 지금).열린[0];
+  assert.equal(row.AI허용, '허용');
+  assert.equal(row.마감글, '2026-11-30 18:00 KST');
+  assert.deepEqual(row.제출물, ['작품 영상', '참가신청서']);
+  assert.equal(row.제출물주소, 주소);
+  assert.equal(지도.자료만들기({ items: [] }, combined, new Date('2026-11-30T09:00:00Z')).열린.length, 0);
+  assert.equal(그록.동일공고(한건, { ...한건, edition: '2027', organizer: '다른 주최자' }), false);
+  assert.equal(그록.동일공고({ ...한건, edition: '2026' }, { ...한건, edition: '2027' }), false);
+});
+
+test('공식 문구가 모음 사이트에만 있거나 원문을 못 읽으면 세 칸을 확인 필요로 둔다', async (t) => {
+  const 그록 = require('../tools/lib/grok-contests.cjs');
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'grok-contests-'));
+  t.after(() => fs.rmSync(폴더, { recursive: true, force: true }));
+  const discoveryUrl = 'https://www.contestkorea.com/list/42';
+  const 보고서 = {
+    schema: 'synk-grok-contests-v1', reportId: 'afternoon', reports: ['fixture.md'], items: [{
+      title: '소재 창작 대회', video: false, officialUrl: discoveryUrl,
+      ai: { status: 'allowed', url: discoveryUrl, quote: 'AI 활용을 허용한다' },
+      deadline: { date: '2026-11-30', url: discoveryUrl, quote: '11월 30일 마감' },
+      deliverables: { items: ['영상'], url: discoveryUrl, quote: '제출물은 공모 영상 한 편이다' },
+    }],
+  };
+  const result = await 그록.가져오기(폴더, 보고서, async () => assert.fail('모음 사이트는 공식 원문으로 읽지 않는다'));
+  assert.equal(result.items[0].ai.status, 'unconfirmed');
+  const combined = 그록.합치기({ items: [] }, 그록.보고서읽기(폴더));
+  const row = 지도.자료만들기({ items: [] }, combined, 지금).열린[0];
+  assert.equal(row.값, '기타 공모');
+  assert.equal(row.AI허용, '확인 필요');
+  assert.equal(row.마감, '');
+  assert.deepEqual(row.제출물, []);
+  assert.equal(row.주소, discoveryUrl);
+});
+
+test('공식 원문에서 AI 금지가 확인된 공모는 열린 목록에 나타나지 않는다', async (t) => {
+  const 그록 = require('../tools/lib/grok-contests.cjs');
+  const 폴더 = fs.mkdtempSync(path.join(os.tmpdir(), 'grok-contests-'));
+  t.after(() => fs.rmSync(폴더, { recursive: true, force: true }));
+  const url = 'https://example.org/notice/ai-ban';
+  await 그록.가져오기(폴더, {
+    schema: 'synk-grok-contests-v1', reportId: 'one', reports: ['fixture.md'], items: [{
+      title: '창작 영상 공모전', video: true, officialUrl: url, organizer: '시민문화원',
+      ai: { status: 'prohibited', url, quote: '생성형 AI를 이용한 창작물은 제출할 수 없습니다.' },
+    }],
+  }, async (address) => ({ 됨: true, 끝주소: address, 글: '<strong>생성형 AI를 이용한 창작물은 제출할 수 없습니다.</strong>' }));
+  const base = { items: [{ id: 'existing', title: '창작 영상 공모전', ai_video: { value: 'AI 영상' } }] };
+  const combined = 그록.합치기(base, 그록.보고서읽기(폴더));
+  assert.deepEqual(지도.자료만들기({ items: [] }, combined, 지금).열린, []);
+});
