@@ -26,7 +26,7 @@ const MARK='로고·슬로건 화성특례시 「화성의 상징」(공공누�
 // [id, kind, title, 파일 이름, 길이, 세로 · 넓은 판, featured, 출연, 구분, 포스터 sha256, 본편 sha256, 출품]
 const OWN=[
   ['dodam-heavy','film','이 아이를 보냅니다','dodam-heavy','1분 1초',undefined,true,'준호','가상 브랜드로 만든 자체 작품','6dc8a4c252880328743db47891922aabf6707650903fef7a9d9aa2df005d86c7','e8eb024b412f695548aa29ec016523608c0d95769653337a506fd38c9ddefe7a'],
-  ['seoullo-bridge','animation','다리가 기억하는 것','seoullo-bridge','2분 58초','pano',true,undefined,'공모전 당선작','9df19497755b40e1486572c21b6148c2b9cfa5abcc785837e3814039db2027f3','227563435cc6c33e7fa437e6fc3f7950bb4f61d3134b34ef391fe9ce5f5b8682','2026 서울로미디어캔버스 단편 애니메이션 공모'],
+  ['seoullo-bridge','animation','다리가 기억하는 것','seoullo-bridge','2분 58초','pano',true,undefined,'공모전 당선작','9df19497755b40e1486572c21b6148c2b9cfa5abcc785837e3814039db2027f3','706b6c9256f13973b158bc657a99402bc92e24b7cde37bbc421bdc4f00fd8104','2026 서울로미디어캔버스 단편 애니메이션 공모'],
   ['cheombeong-dang','ad','첨벙댕','cheombeong-dang','26초','portrait',true,undefined,'가상 브랜드로 만든 자체 작품','619678febaeec97d24dd60e70ba1cd267832559d635152f60382f73e0c69862d','159cc3956c79f9d0c3d007381b09cc779a8d2476fa122fc7fcaf27a28956147f'],
   ['maejin-imbak','ad','매진 임박','maejin-imbak','1분 15초',undefined,true,undefined,'가상 브랜드로 만든 자체 작품','aec527e98d8c198fa731b588aa1ec080b8ce742493a4e35daaac09cc105c8702','40d1c703852cafa996d5ddcb968e40b82f18137a04e096823a365e78586e7f84'],
   ['omitok-court','ad','치익이 톡이 될 때까지','omitok-court','15초','portrait',undefined,'한결','가상 브랜드로 만든 자체 작품','30dc4fdc14b9c8feac86d6678d66741cad51ad046af86b25b64c688ffc044e49','d6fe9f7e612f9e347fac2cb81b061b146d346a6acbc3d78a1b6e66a1b05b95a1'],
