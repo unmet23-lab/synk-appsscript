@@ -659,7 +659,9 @@ main.addEventListener('change',event=>{
 });
 main.addEventListener('click',event=>{
   const jump=event.target?.closest?.('[data-mk-jump]');
-  if(jump){event.preventDefault();main.querySelector(`#mk-${CSS.escape(jump.dataset.mkJump)}`)?.scrollIntoView({block:'start',behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth'});return;}
+  // 「맨 위로」(칸 끝, 11-18)는 칸 머리가 아니라 문서 맨 위로 — 휴대폰은 앱 머리가 흐름 안에 있어 단계 줄까지 보여야 한다.
+  // 뛴 뒤에는 간 곳의 제목(맨 위로면 칸 머리)으로 초점을 옮긴다 — 다음 Tab이 그 리포트 안에서 이어진다(최종 검수 11-18).
+  if(jump){event.preventDefault();const behavior=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth';const kind=jump.dataset.mkJump;const target=main.querySelector(kind==='top'?'#mk-top':`#mk-${CSS.escape(kind)}`);if(kind==='top')window.scrollTo({top:0,behavior});else target?.scrollIntoView({block:'start',behavior});const focus=kind==='top'?target:target?.querySelector('h1,h2');if(focus){if(!focus.hasAttribute('tabindex'))focus.setAttribute('tabindex','-1');focus.focus({preventScroll:true});}return;}
   const retry=event.target?.closest?.('[data-mk-do="retry"]'),m=marketingNow();if(!retry||!m)return;
   event.preventDefault();
   if(s.marketingViewFailed&&!s.marketingView){s.marketingViewFailed=false;render();return;}

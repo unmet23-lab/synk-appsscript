@@ -154,9 +154,13 @@ function cellStatus(cell){
 // 칸의 펼침(details)은 문서 안 순번이 아니라 열쇠(data-mk-key: 종류|회차|무엇)로 기억한다 — 위 칸이 줄거나 늦게 와도 연 목록이 그대로다(최종 검수 11-16).
 // 열림은 app.mjs가 s.marketing.open(Set)에 적고, 그릴 때 여기서 open으로 넣는다. render의 순번 복원은 이 열쇠가 있는 details를 건너뛴다.
 const details=(cls,key,ctx)=>`<details class="${cls}" data-mk-key="${esc(key)}"${ctx?.open?.has(key)?' open':''}>`;
+// 그 질문에서 이름이 나온 서비스 수(칸 표시의 「출처 링크까지」와 「이름이 나옴」).
+const namedIn=(a,q)=>a.services.map(s=>cellKind(a.cellOf(q.id,s.id))).filter(kind=>kind==='cited'||kind==='mentioned').length;
+// 이름 없이 출처 링크만 단 서비스 수 — 위 큰 수 칸의 「출처로 {site} 링크를 단 답」에 들어가므로 접힌 쪽에 숨기지 않는다(최종 검수 11-18).
+const linkOnlyIn=(a,q)=>a.services.filter(s=>{const cell=a.cellOf(q.id,s.id);return cell&&cell.answered&&cell.cited&&!cell.mentioned;}).length;
 function questionRow(a,q,ctx){
-  const kinds=a.services.map(s=>cellKind(a.cellOf(q.id,s.id))),named=kinds.filter(kind=>kind==='cited'||kind==='mentioned').length,none=kinds.filter(kind=>kind==='none').length,asked=kinds.filter(Boolean).length;
-  const tally=`${t('{count}곳 가운데 이름이 나온 곳 {named}',{count:asked,named})}${none?` · ${t('답 없음 {count}',{count:none})}`:''}`;
+  const kinds=a.services.map(s=>cellKind(a.cellOf(q.id,s.id))),named=namedIn(a,q),linked=linkOnlyIn(a,q),none=kinds.filter(kind=>kind==='none').length,asked=kinds.filter(Boolean).length;
+  const tally=`${t('{count}곳 가운데 이름이 나온 곳 {named}',{count:asked,named})}${linked?` · ${t('이름 없이 출처 링크만 {count}',{count:linked})}`:''}${none?` · ${t('답 없음 {count}',{count:none})}`:''}`;
   const answers=a.services.map(s=>{const cell=a.cellOf(q.id,s.id);if(!cell)return '';return `<li class="sx-mk-ans"><p class="sx-mk-ans-head">${mark(cellKind(cell))}<b>${esc(s.name)}</b><span class="sx-small">${esc(cellStatus(cell))}${cell.briefing===null?'':` · ${esc(cell.briefing?t('AI 브리핑이 떴어요'):t('AI 브리핑이 뜨지 않았어요'))}`}</span></p>${cell.excerpt?`<blockquote class="sx-mk-quote"><p class="sx-small sx-mk-quote-label">${esc(t('답의 앞부분'))}</p><p>${esc(cell.excerpt)}</p></blockquote>`:''}${cell.sources.length?`<p class="sx-small sx-mk-hosts"><span>${esc(t('출처로 단 곳'))}</span> ${cell.sources.map(host=>`<span class="sx-mk-host">${esc(host)}</span>`).join(' ')}</p>`:''}</li>`;}).join('');
   return `${details('sx-mk-q',`ai-search|${ctx?.run||''}|q|${q.id}`,ctx)}<summary class="sx-mk-q-row"><span class="sx-no">${esc(q.id)}</span><span class="sx-mk-q-text">${esc(q.text)}${q.lang&&q.lang!=='ko'?` <span class="sx-mk-tag sx-small">${esc(q.lang==='en'?t('영어로 물음'):q.lang)}</span>`:''}<span class="sx-small sx-mk-q-tally" aria-hidden="true">${esc(tally)}</span></span><span class="sx-mk-q-marks">${kinds.map(kind=>`<span>${mark(kind)}</span>`).join('')}</span><span class="sx-mk-plus" aria-hidden="true"></span><span class="sr">${esc(tally)}</span></summary><ul class="sx-mk-answers">${answers}</ul></details>`;
 }
@@ -170,7 +174,20 @@ function aiSearchBody(a,ctx){
   const table=`<div class="sx-mk-block"><h3 class="sx-mk-h3">${esc(t('서비스마다'))}</h3><table class="sx-mk-table sx-mk-services"><thead><tr><th scope="col">${esc(t('서비스'))}</th><th scope="col">${esc(t('이름 없이 물은 질문'))}</th><th scope="col">${esc(t('출처 링크'))}</th><th scope="col">${esc(t('이름을 넣은 질문'))}</th><th scope="col">${esc(t('답 없음'))}</th></tr></thead><tbody>${rows}</tbody></table><p class="sx-small sx-mk-foot">${esc(t('나온 답 / 받은 답이에요. 답을 받지 못한 칸은 「답 없음」으로 따로 셌어요.'))}</p></div>`;
   const legend=`<ul class="sx-mk-legend sx-small" aria-label="${esc(t('표시 읽는 법'))}">${Object.entries(CELL_LABEL).map(([kind,label])=>`<li>${mark(kind)}${esc(t(label))}</li>`).join('')}</ul>`;
   const head=`<div class="sx-mk-q-head" aria-hidden="true"><span></span><span></span><span class="sx-mk-q-marks">${a.services.map(s=>`<span class="sx-mk-q-name">${esc(s.name)}</span>`).join('')}</span><span></span></div>`;
-  const groups=a.groups.map(group=>`<div class="sx-mk-qgroup"><h4 class="sx-mk-qgroup-title sx-small">${esc(group.branded?t('브랜드 이름을 넣은 질문 {count}개',{count:group.count}):t('브랜드 이름 없이 물은 질문 {count}개',{count:group.count}))}</h4>${group.parts.map(part=>`${part.name&&group.parts.length>1?`<p class="sx-mk-qpart sx-no sx-ko">${esc(part.name)}</p>`:''}${part.questions.map(q=>questionRow(a,q,ctx)).join('')}`).join('')}</div>`).join('');
+  // 이름 없이 물은 질문은 이름이 나온 질문만 펼쳐 두고, 나머지는 한 줄로 접는다(11-18 — 휴대폰에서 「이름이 나온 곳 0」 줄이 스무 줄 넘게 이어져
+  // 나온 질문이 묻혔다). 접은 줄도 묶음(PULSE · LAB …) 이름은 그대로 둔다. 이름을 넣은 질문은 몇 개 안 되어 모두 펼친다.
+  const partsOf=(group,pick)=>group.parts.map(part=>({name:part.name,questions:part.questions.filter(pick)})).filter(part=>part.questions.length);
+  const rowsOf=(group,parts)=>parts.map(part=>`${part.name&&group.parts.length>1?`<p class="sx-mk-qpart sx-no sx-ko">${esc(part.name)}</p>`:''}${part.questions.map(q=>questionRow(a,q,ctx)).join('')}`).join('');
+  const groups=a.groups.map(group=>{
+    const title=`<h4 class="sx-mk-qgroup-title sx-small">${esc(group.branded?t('브랜드 이름을 넣은 질문 {count}개',{count:group.count}):t('브랜드 이름 없이 물은 질문 {count}개',{count:group.count}))}</h4>`;
+    if(group.branded)return `<div class="sx-mk-qgroup">${title}${rowsOf(group,group.parts)}</div>`;
+    const hit=q=>namedIn(a,q)>0||linkOnlyIn(a,q)>0,hits=partsOf(group,hit),rest=partsOf(group,q=>!hit(q)),restCount=rest.reduce((sum,part)=>sum+part.questions.length,0),named=group.parts.some(part=>part.questions.some(q=>namedIn(a,q)>0));
+    // 펼친 쪽에 이름 없이 링크만 단 질문이 있으면 접힌 줄은 「이름이 나오지 않은 질문」이 아니라 「나머지 질문」이다 — 그 질문도 이름은 나오지 않았다(다시 검수 11-18).
+    const allNamed=hits.every(part=>part.questions.every(q=>namedIn(a,q)>0));
+    const lead=named?'':`<p class="sx-small sx-mk-qnone">${esc(group.count===1?t('이 질문에서 {brand} 이름이 나오지 않았어요.',{brand}):t('{count}개 질문 모두 {brand} 이름이 나오지 않았어요.',{count:group.count,brand}))}</p>`;
+    const folded=restCount?`${details('sx-mk-qrest',`ai-search|${ctx?.run||''}|rest`,ctx)}<summary class="sx-mk-qrest-row"><span class="sx-mk-plus" aria-hidden="true"></span><span>${esc(named&&allNamed?t('이름이 나오지 않은 질문 {count}개 보기',{count:restCount}):hits.length?t('나머지 질문 {count}개 보기',{count:restCount}):restCount===1?t('질문 보기'):t('질문 {count}개 모두 보기',{count:restCount}))}</span></summary>${rowsOf(group,rest)}</details>`:'';
+    return `<div class="sx-mk-qgroup">${title}${lead}${rowsOf(group,hits)}${folded}</div>`;
+  }).join('');
   const questions=`<div class="sx-mk-block"><div class="sx-mk-block-head"><h3 class="sx-mk-h3">${esc(t('질문마다 받은 답'))}</h3>${legend}</div><div class="sx-mk-qs" data-n="${a.services.length}">${head}${groups}</div></div>`;
   const top=a.topSources.length?a.topSources[0].count:0;
   const sources=a.topSources.length?`<div class="sx-mk-block"><h3 class="sx-mk-h3">${esc(t('답에 자주 걸린 출처'))}</h3><ol class="sx-mk-bars">${a.topSources.map(item=>`<li class="${item.host===a.subject.site?'is-on':''}"><span class="sx-mk-bars-name">${esc(item.host)}</span>${bar(item.count,top,{on:item.host===a.subject.site})}<span class="sx-mk-bars-no">${esc(fmt(item.count))}</span></li>`).join('')}</ol><p class="sx-small sx-mk-foot">${esc(t('브랜드 이름 없이 물은 질문의 답에 출처로 걸린 횟수예요. 한 답에 같은 곳이 여러 번 걸려도 한 번으로 셌어요.'))}</p></div>`:'';
@@ -226,5 +243,14 @@ export function marketingScreen(m){
   if(m.status==='error')return page(`${kicker}<h1 class="sx-display sx-mk-headline" data-room-title>${esc(t('리포트를 불러오지 못했어요'))}</h1><p class="sx-body sx-mk-lead">${esc(t('인터넷 연결을 확인한 뒤 다시 불러와 주세요.'))}</p><div class="sx-mk-act"><button type="button" class="sx-go is-solid" data-mk-do="retry"><span>${esc(t('다시 불러오기'))}</span>${arrow}</button></div>`);
   if(!m.heads.length)return page(`${kicker}<h1 class="sx-display sx-mk-headline" data-room-title>${esc(t('아직 잰 것이 없어요'))}</h1><p class="sx-body sx-mk-lead">${esc(t('첫 회차를 재면 이번 달 한 장과 함께 AI 검색 노출, 경쟁사 광고, 표기와 규제 검수 리포트가 여기에 올라와요.'))}</p><div class="sx-mk-act"><button type="button" class="sx-go" data-room-go="room"><span>${esc(t('고객 방으로'))}</span>${arrow}</button></div>`);
   const sections=MARKETING_ORDER.slice(1).map(kind=>({head:m.heads.find(item=>item.kind===kind&&item.runId===m.picks[kind])})).filter(item=>item.head);
-  return `${HATCH}${page(`<header class="sx-mk-top">${kicker}${runPicker(m,'memo')}</header>${memoPart(m,sections)}${sections.map((item,i)=>sectionOf(m,item,i)).join('')}`)}`;
+  return `${HATCH}${page(`<header class="sx-mk-top" id="mk-top">${kicker}${runPicker(m,'memo')}</header>${jumpBar(m,sections)}${memoPart(m,sections)}${sections.map((item,i)=>sectionOf(m,item,i)).join('')}${pageEnd()}`)}`;
 }
+// 휴대폰 · 세로 화면의 바로 가기 줄(11-18): 넓은 화면은 오른쪽 「이번 회차에 잰 것」이 붙어 따라오지만, 휴대폰은 그 목록이 결론 아래로 내려가 긴 리포트에서
+// 다른 칸으로 가기 어렵다. 그래서 화면 위에 붙는 가로 한 줄을 둔다(넓은 화면에서는 숨긴다). 이동은 「이번 회차에 잰 것」과 같은 data-mk-jump다.
+function jumpBar(m,sections){
+  const items=[...(m.heads.some(item=>item.kind==='memo')?[['memo',t('이번 달 한 장')]]:[]),...sections.map(({head})=>[head.kind,t(SECTION_TITLE[head.kind])])];
+  if(items.length<2)return '';
+  return `<nav class="sx-mk-jump" aria-label="${esc(t('리포트로 바로 가기'))}"><ol>${items.map(([kind,label])=>`<li><button type="button" data-mk-jump="${esc(kind)}">${esc(label)}</button></li>`).join('')}</ol></nav>`;
+}
+// 칸 끝(11-18): 긴 리포트를 다 읽은 뒤 돌아갈 곳. 고객 방은 머리의 프로젝트 이름으로도 가지만 휴대폰에서는 잘 보이지 않는다.
+const pageEnd=()=>`<footer class="sx-mk-end"><button type="button" class="sx-link" data-mk-jump="top">${esc(t('맨 위로'))}</button><button type="button" class="sx-go" data-room-go="room"><span>${esc(t('고객 방으로'))}</span>${arrow}</button></footer>`;

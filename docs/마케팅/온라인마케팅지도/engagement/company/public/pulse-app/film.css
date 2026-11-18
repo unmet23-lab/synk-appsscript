@@ -1204,8 +1204,14 @@ html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-hea
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-break{display:block;order:3;flex-basis:100%;height:0}
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps{order:4;flex:1 1 0;min-width:0;margin:0;padding:4px 0 10px;border:0}
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-run{flex:1 1 auto;min-width:0;gap:0 10px;font-size:12.5px}
-  /* 둘째 줄은 단계 다섯과 「담당자에게 묻기」만 — 완성 광고는 고객 방 맨 아래 한 줄로(390에서 잘리거나 꺾이지 않게). */
-  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-foot{display:none}
+  /* 둘째 줄은 단계 다섯과 「담당자에게 묻기」, 셋째 줄은 완성 광고 · 마케팅 성과다(11-18 — 휴대폰에서도 머리에서 바로 연다).
+     단계 줄에 이어 붙이면 390에서 잘리거나 꺾여서 가는 선 아래 한 줄로 따로 둔다. 고객 방 맨 아래의 완성 광고 줄은 그대로 둔다. */
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps{flex-wrap:wrap}
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-foot{flex:1 0 100%;flex-wrap:wrap;gap:0 18px;margin-top:6px;font-size:12.5px}
+  /* 좁은 영어 화면에서는 낱말이 꺾이지 않고 단추째 다음 줄로 간다(최종 검수 11-18, 320 영어). */
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .sx-head-steps .sx-steps-foot button{white-space:nowrap}
+  /* 단계 줄이 두 줄이 되어도 「담당자에게 묻기」와 언어 단추는 단계 줄의 글자선에 선다(가운데로 내려오지 않게 — 최종 검수 11-18). */
+  :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) :is(.sx-head-steps,.header-actions>.sx-head-ask,.header-actions>.locale-menu){align-self:baseline}
   .sx-room>.sx-room-films{display:block}
   :is(html.sx.has-room-head:not(.is-staff) .app-header,.sx-room-bar.is-head) .header-actions>.sx-head-ask{order:5;padding:4px 0 10px}
   html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no{display:none}

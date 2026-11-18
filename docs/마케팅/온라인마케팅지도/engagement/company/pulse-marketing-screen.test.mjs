@@ -170,10 +170,79 @@ test('this month\'s page leads, with at most three next steps and a jump list to
   assert.ok(html.indexOf('id="mk-memo"')<html.indexOf('id="mk-ai-search"')&&html.indexOf('id="mk-ai-search"')<html.indexOf('id="mk-competitor-ads"')&&html.indexOf('id="mk-competitor-ads"')<html.indexOf('id="mk-label-review"'),'memo, then ai-search, competitor-ads, label-review');
   assert.match(html,/<h1 class="sx-display sx-mk-headline" data-room-title>합성 브랜드는 이름 없는 질문에서 한 번 나왔습니다\.<\/h1>/);
   assert.doesNotMatch(html,/넷은 보이지 않는다/);
-  assert.deepEqual([...html.matchAll(/data-mk-jump="([a-z-]+)"/g)].map(m=>m[1]),['ai-search','competitor-ads','label-review']);
+  // 넓은 화면의 「이번 회차에 잰 것」(세 리포트), 휴대폰의 바로 가기 줄(한 장과 세 리포트), 칸 끝의 「맨 위로」 차례다(11-18).
+  const toc=html.slice(html.indexOf('class="sx-mk-toc"'),html.indexOf('</aside>')),bar=html.slice(html.indexOf('class="sx-mk-jump"'),html.indexOf('</nav>',html.indexOf('class="sx-mk-jump"')));
+  assert.deepEqual([...toc.matchAll(/data-mk-jump="([a-z-]+)"/g)].map(m=>m[1]),['ai-search','competitor-ads','label-review']);
+  assert.deepEqual([...bar.matchAll(/data-mk-jump="([a-z-]+)"/g)].map(m=>m[1]),['memo','ai-search','competitor-ads','label-review']);
+  assert.ok(html.indexOf('class="sx-mk-jump"')<html.indexOf('id="mk-memo"'),'the jump bar sits above the memo');
+  assert.ok(html.includes('<footer class="sx-mk-end"><button type="button" class="sx-link" data-mk-jump="top">맨 위로</button><button type="button" class="sx-go" data-room-go="room"><span>고객 방으로</span>'));
+  assert.ok(html.lastIndexOf('id="mk-label-review"')<html.indexOf('class="sx-mk-end"'),'the end comes after the last report');
+  assert.match(html,/<header class="sx-mk-top" id="mk-top">/);
   assert.doesNotMatch(html,/<select/,'one run per kind: no run picker');
   const two=ready([...heads,{kind:'ai-search',runId:'20261109-1',title:'AI 검색 노출 0회차',measuredAt:at,summaryLine:''}]);
   assert.match(marketingScreen(two),/<select data-mk-run="ai-search"><option value="20261116-1" selected>/);
+});
+
+test('questions where the brand never came up fold into one row; the ones where it did stay open, and branded questions never fold (11-18)',()=>{
+  const html=marketingScreen(ready()),sec=html.slice(html.indexOf('id="mk-ai-search"'),html.indexOf('id="mk-competitor-ads"'));
+  // 합성 견본: 이름 없이 물은 질문 셋 가운데 Q1만 이름이 나왔다(서비스 가). Q2는 답 없음 · 나오지 않음, Q3은 둘 다 나오지 않음.
+  const at=sec.indexOf('class="sx-mk-qrest"'),open=sec.slice(0,at),rest=sec.slice(at,sec.indexOf('</details></div>',at));
+  assert.ok(open.includes('data-mk-key="ai-search|20261116-1|q|Q1"'));
+  assert.ok(!open.includes('|q|Q2"')&&!open.includes('|q|Q3"'));
+  assert.ok(rest.startsWith('class="sx-mk-qrest" data-mk-key="ai-search|20261116-1|rest"><summary class="sx-mk-qrest-row">'));
+  assert.match(rest,/이름이 나오지 않은 질문 2개 보기/);
+  assert.ok(rest.indexOf('|q|Q2"')>0&&rest.indexOf('|q|Q3"')>rest.indexOf('|q|Q2"'));
+  const branded=sec.slice(sec.indexOf('브랜드 이름을 넣은 질문 1개'));
+  assert.ok(branded.includes('|q|B1"'));
+  assert.ok(!branded.includes('sx-mk-qrest'),'branded questions stay open');
+  // 연 줄은 다시 그려도 그대로 연다(열쇠로 기억).
+  const m=ready();m.open=new Set(['ai-search|20261116-1|rest']);
+  assert.ok(marketingScreen(m).includes('<details class="sx-mk-qrest" data-mk-key="ai-search|20261116-1|rest" open>'));
+  // 이름이 한 번도 나오지 않으면 그렇다고 한 줄로 말하고, 접은 줄은 「모두 보기」다.
+  const none={...ai,cells:ai.cells.map(cell=>({...cell,mentioned:false,cited:false}))},m2=ready();m2.reports['ai-search\u000120261116-1']={status:'ready',report:none};
+  const html2=marketingScreen(m2);
+  assert.ok(html2.includes('<p class="sx-small sx-mk-qnone">3개 질문 모두 합성상회 이름이 나오지 않았어요.</p>'));
+  assert.match(html2,/질문 3개 모두 보기/);
+  // 이름 없이 물은 질문이 하나뿐이면 「모두」를 쓰지 않는다(카본 A2 11-18).
+  const single={...none,questions:none.questions.filter(q=>q.id==='Q1'||q.branded),cells:none.cells.filter(cell=>cell.q==='Q1'||cell.q==='B1')},m3=ready();m3.reports['ai-search\u000120261116-1']={status:'ready',report:single};
+  const html3=marketingScreen(m3);
+  assert.ok(html3.includes('<p class="sx-small sx-mk-qnone">이 질문에서 합성상회 이름이 나오지 않았어요.</p>'));
+  assert.match(html3,/<span>질문 보기<\/span><\/summary>/);
+  assert.doesNotMatch(html3,/1개 질문 모두|질문 1개 모두/);
+});
+
+test('a question where a service linked the site without the name stays open, says so, and the fold then reads 「나머지」 (final review 11-18)',()=>{
+  // Q3 서비스 가: 이름은 나오지 않았고 출처로 링크만 달았다. 위 큰 수 칸의 「출처로 … 링크를 단 답」에 들어가므로 접힌 쪽에 숨기지 않는다.
+  const linkOnly={...ai,cells:ai.cells.map(cell=>cell.q==='Q3'&&cell.s==='svc-a'?{...cell,cited:true,sources:['example-brand.test']}:cell)},m=ready();m.reports['ai-search\u000120261116-1']={status:'ready',report:linkOnly};
+  const html=marketingScreen(m),sec=html.slice(html.indexOf('id="mk-ai-search"'),html.indexOf('id="mk-competitor-ads"'));
+  const at=sec.indexOf('class="sx-mk-qrest"'),open=sec.slice(0,at),rest=sec.slice(at);
+  assert.ok(open.includes('|q|Q1"')&&open.includes('|q|Q3"'),'named Q1 and link-only Q3 stay open');
+  assert.ok(rest.includes('|q|Q2"')&&!rest.slice(0,rest.indexOf('브랜드 이름을 넣은 질문')).includes('|q|Q3"'));
+  const q3=open.slice(open.indexOf('<span class="sx-no">Q3</span>'));
+  assert.match(q3.slice(0,q3.indexOf('</summary>')),/이름이 나온 곳 0 · 이름 없이 출처 링크만 1/);
+  // 펼친 Q3도 이름은 나오지 않았으므로 접힌 줄은 「이름이 나오지 않은 질문 1개」가 아니라 「나머지 질문 1개」다(다시 검수 11-18).
+  assert.match(rest,/<span>나머지 질문 1개 보기<\/span><\/summary>/);
+  assert.doesNotMatch(rest,/이름이 나오지 않은 질문 1개 보기/);
+  // 이름은 한 번도 나오지 않고 링크만 있었다면: 「모두 나오지 않았어요」는 그대로 말하고, 접은 줄은 「나머지」다.
+  const noName={...linkOnly,cells:linkOnly.cells.map(cell=>cell.q==='Q1'?{...cell,mentioned:false,cited:false}:cell)},m2=ready();m2.reports['ai-search\u000120261116-1']={status:'ready',report:noName};
+  const html2=marketingScreen(m2);
+  assert.ok(html2.includes('<p class="sx-small sx-mk-qnone">3개 질문 모두 합성상회 이름이 나오지 않았어요.</p>'));
+  assert.match(html2,/<span>나머지 질문 2개 보기<\/span><\/summary>/);
+  assert.doesNotMatch(html2,/이름이 나오지 않은 질문 2개 보기/);
+});
+
+test('the jump bar needs two places to go: one report alone draws none (11-18)',()=>{
+  const one=ready([heads[0]]);
+  assert.doesNotMatch(marketingScreen(one),/sx-mk-jump/);
+  assert.match(marketingScreen(one),/sx-mk-end/,'the end is still there');
+  // 붙은 줄 안의 단추는 여백에 가린 것으로 치지 않고(Tab마다 화면이 끌려가지 않게), 휴대폰 질문 줄의 화면 읽기 사본은 숨기지 않는다(최종 검수 11-18).
+  const legacy=read('film-legacy.css');
+  assert.match(legacy,/\.sx-mk-jump button\{scroll-margin-top:-52px\}/);
+  assert.doesNotMatch(legacy,/\.sx-mk-q-row>\.sr\{display:none\}|\.sx-mk-q-row>\.sr\s*[,{][^}]*display:none/);
+  assert.match(read('app.mjs'),/jump\.dataset\.mkJump[^\n]*\.focus\(\{preventScroll:true\}\)/,'a jump moves focus to where it went');
+  // 스크립트로만 초점을 받는 제목 · 칸 머리에는 초점 상자를 그리지 않고, 줄 단추의 테두리는 글자에 겹치지 않게 좌우 여백을 둔다(다시 검수 11-18).
+  assert.match(legacy,/:is\(\.sx-mk-top,\.sx-mk-headline,\.sx-mk-sec h2\)\[tabindex="-1"\]:focus-visible\{outline:none\}/);
+  assert.match(legacy,/\.sx-mk-jump button\{display:block;min-height:44px;padding:12px 6px 11px;/);
 });
 
 test('waiting, failing, empty and half-loaded states each say what is happening',()=>{
@@ -217,7 +286,7 @@ test('the tab stays inside the screen rules: no style attributes, no service nam
   assert.doesNotMatch(body,/매출|순위|노출을 (?:늘|올)|보장|1위|최고|최초/,'no sales, rank or exposure promises');
   assert.deepEqual([...new Set(body.match(/https?:\/\/[^'"`\s]+/g))],['https://www.facebook.com/ads/library/?id='],'the only outside link is the ad library');
   const sw=read('sw.js');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v70-request-clock-20261118';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v71-marketing-polish-20261118';/);
   assert.match(sw,/RUNTIME\.push\(BASE\+'marketing-view\.mjs'\);/);
   assert.doesNotMatch(sw.slice(sw.indexOf('const BASE'),sw.indexOf('const RUNTIME')),/marketing-view/,'not precached for every customer');
   // 서버의 /pulse-app/ 정적 허용 목록에는 있다(없으면 칸을 열 때 모듈이 404라 「불러오지 못했어요」만 선다).
