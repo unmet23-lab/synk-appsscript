@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep the camera, the sky-blue felt backdrop, the wooden tabletop, the light, and all the characters and objects looking exactly the same: the coral-red ghost-shaped mascot sitting on the tabletop with its startled face (wide round black bead eyes, small round open mouth, light-blue sweat drop) and the short cream "surprise" strokes beside its head, the small brown kiwi bird on top of its head holding the red handset in its long beak beside the mascot's face, and the red rotary telephone body standing on the tabletop next to the mascot with the cream ringing arcs on both sides. Change only these things:
+
+1. The felt lettering: keep every letter exactly as it is (Wa-yo, / 뉴질랜드! / nyu-jil-laen-deu — same letters, same shapes, same colors, same three lines; the SECOND attached image is the lettering artwork and the letters must still match it) but make the whole lettering block a little smaller, about 88% of its current size, centered horizontally. Its top edge stays at the same height.
+
+2. Make the whole group (the mascot with the kiwi bird on its head, the handset, the telephone body and the ringing arcs) about 15% smaller and move it toward the center of the image, so there is a clear margin of empty backdrop and tabletop — at least 12% of the image width — between the group (including the ringing arcs and the surprise strokes) and both the left and right edges of the image. Same poses, same expressions; the mascot and the telephone still stand on the tabletop.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere — the telephone dial has dots only. Nothing else is added.
+
+Style: real handmade needle-felt and felt-applique craft photographed with a macro lens, tidy short fuzz, soft natural daylight.

@@ -1,0 +1,13 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Edit the FIRST attached image. Keep the camera, the sky-blue felt backdrop, the wooden tabletop, the light, and all the characters and objects looking exactly the same: the coral-red ghost-shaped mascot sitting on the moose's head between the antlers with its startled face (wide round black bead eyes, small round open mouth, light-blue sweat drop) and the short cream "surprise" strokes beside its head, the brown moose lying on the tabletop with its big happy face and eyes rolled up toward the mascot, holding up the ringing red rotary telephone on its raised front hoof with the handset jumping off and the cream ringing arcs on both sides, and the small red maple leaf on one antler tip. Change only these things:
+
+1. The felt lettering: keep every letter exactly as it is (Wa-yo, / 캐나다! / kae-na-da — same letters, same shapes, same colors, same three lines; the SECOND attached image is the lettering artwork and the letters must still match it). Keep its size, but move the whole lettering block up so its top edge is at about 16% of the image height, centered horizontally, with only plain sky-blue felt above it.
+
+2. Make the whole group (the moose with the mascot on its head, the telephone on its hoof and the ringing arcs) about 15% smaller and move it toward the center of the image, so there is a clear margin of empty backdrop and tabletop — at least 12% of the image width — between the group (including the ringing arcs and the surprise strokes) and both the left and right edges of the image. Same poses, same expressions; the moose still lies on the tabletop.
+
+No other text, letters, numbers, logos, flags or speech bubbles anywhere — the telephone dial has dots only. Nothing else is added.
+
+Style: real handmade needle-felt and felt-applique craft photographed with a macro lens, tidy short fuzz, soft natural daylight.
