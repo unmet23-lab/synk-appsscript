@@ -298,6 +298,37 @@ test('올리는 계정 한 바퀴 — 옛 대기열을 먼저 올리고 서버�
   next.dispose();
 });
 
+// talk 비우기 문의 공유 막이(단계4_계획 §6 「1단계 켜기」 3 — 설계 주인 11-19 밤): #25가 들어갈 때까지 교실 · 타운 공유가 켜진 계정의 비우기를
+// 거절한다. 상태와 코드는 4-8 세션이 정한다 — 바꾸면 이 값을 그 값으로 맞춘다. 기기는 408 · 429 · 5xx가 아닌 4xx를 「서버가 받지 않음」으로 본다.
+const SHARING_REFUSAL = { status: 409, error: 'CLASSROOM_SHARING_ON' };
+test('비우기 문이 공유가 켜진 계정을 거절하면(#25 전 talk 막이) 결과를 아는 실패다 — 아무것도 바꾸지 않고, 셸은 「지금은 비우지 못했어요」로 알린다(입구 다시 검수 -c GPT GA1 · 설계 주인 11-19 밤)', { timeout: 60_000 }, async () => {
+  const h = harness();
+  const storage = filledStorage();
+  const fetcher = async (url, init = {}) => {
+    if (String(url).endsWith('/rehearsal/trail-clear') && (init.method ?? 'GET') === 'POST')
+      return { ok: false, status: SHARING_REFUSAL.status, json: async () => ({ ok: false, error: SHARING_REFUSAL.error }) };
+    return h.fetcher(url, init);
+  };
+  const next = createAtlasNext({ owner: A_ID, storage, trail: rehearsalTrail({ fetcher }), load: h.load, health: recorder(), oldEngine: oldEngine(storage) });
+  const coach = await next.practiceCoach(READING);
+  assert.ok(coach, '새 길(올리는 길)');
+  await h.practise(coach);
+  assert.deepEqual(await next.clearPractice(), { ok: false, path: 'upload', step: 'clear', code: SHARING_REFUSAL.error, known: true });
+  assert.equal(markOf(storage), null, '남은 걸음 표지를 적지 않았다');
+  assert.equal(clearedOf(storage)?.settled ?? 0, 0, '몫을 마친 판을 올리지 않았다');
+  for (const accountKey of [A_ID, `local:${A_ID}`]) {
+    for (const name of engineKeys(accountKey, 1)) assert.equal(storage.getItem(name), 'engine', `앞 판을 쓸지 않았다 — ${name}`);
+    assert.equal(storage.getItem(ownKeys(accountKey, 2).hangul), null, '본인 값을 옮기지 않았다');
+  }
+  assert.equal(storage.getItem(`synk:world:month-answer:${A_ID}`), '{}', '30일째 답을 지우지 않았다');
+  const last = await (await h.fetcher('/api/world/rehearsal/trail-clear', { headers: { 'x-synk-contract': '1', 'x-synk-product': 'world' } })).json();
+  assert.equal(last.lastClear, null, '서버는 비우지 않았다');
+  // 셸은 비우기 실패 가운데 UNSENT만 따로 알리고, 그 밖은 모두 「지금은 비우지 못했어요」(me.clearFailed)다 — 새 글을 두지 않는다.
+  const shell = fs.readFileSync(new URL('../app-shell.mjs', import.meta.url), 'utf8');
+  assert.match(shell, /result\?\.code==='UNSENT'\?'me\.clearUnsent':'me\.clearFailed'/);
+  next.dispose();
+});
+
 // ── 갈래 — 가짜 코치(reset을 시험마다 정한다) · 가짜 계정 줄 ──────────────────────────────────────────
 // 계정 줄 — 부를 때마다 지금 값을 준다. lastClear()는 state.lastClear가 정한다(없으면 그 줄에 읽기가 없다).
 function accountLine({ enabled = true, revision = 1, learningSync = true } = {}) {
