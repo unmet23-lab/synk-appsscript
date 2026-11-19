@@ -109,6 +109,14 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .reread{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);padding:0 0 4px;font:var(--small);color:var(--paper);cursor:pointer;border-radius:0;white-space:nowrap}
 .reread:hover{border-bottom-color:var(--paper)}
 
+/* 알림: 새 소식이 있는 부서와 직원의 이름 옆, 그리고 위쪽 「사무실」 오브제에 느낌표가 붙는다.
+   색은 쓰지 않는다(유호님 11-19 「느낌표만」) */
+.flag{display:inline-block;margin-left:7px;font:700 13px/1 var(--sans);color:var(--paper)}
+.flag.pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.obj{position:relative}
+.obj.news::after{content:'!';position:absolute;left:26px;top:4px;font:700 11px/1 var(--sans);color:var(--paper)}
+
 /* 창이 좁으면 사무실이 위, 줄이 아래로 쌓인다 */
 @container stage (max-width:860px){
   .office{grid-template-columns:minmax(0,1fr);row-gap:22px}
@@ -126,6 +134,7 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #meta button:hover,#meta button:focus-visible{color:var(--paper);background:rgba(243,241,236,.08);outline:none}
 @media (prefers-reduced-motion:reduce){
   .more,.more-in > *,.obj-n{transition:none !important}
+  .flag.pop{animation:none}
 }
 </style>
 </head>
@@ -155,6 +164,7 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 <div id="meta" role="toolbar" aria-label="시안 조작">
   <button type="button" id="m-view">보기 · 비스듬히</button>
   <button type="button" id="m-case">상황 · 승인 대기</button>
+  <button type="button" id="m-ping">알림 받기</button>
   <button type="button" id="m-pc">PC</button>
   <button type="button" id="m-sub">구독</button>
   <button type="button" id="m-size">창 크기 · 꽉 참</button>
@@ -167,6 +177,7 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 const $ = s => document.querySelector(s);
 const stage = $('#stage'), cv = $('#floor'), ctx = cv.getContext('2d');
 const slot = $('#slot'), room = $('#room'), rowsEl = $('#rows'), sayEl = $('#say'), orbBtn = $('#orb-btn');
+const officeObj = $('.obj[aria-current="true"]');
 const INK = '243,241,236';
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -211,15 +222,15 @@ function cast0(scene) {
   ];
   const ask = scene === 'ask';
   return [
-    S('mkt', 0, 'Claude Code', 'Sonnet', 'work', '11월 블로그 글 초안을 쓰고 있습니다', '쓰기 · 블로그_11월.md', '14분째'),
-    S('mkt', 1, 'Claude Code', 'Sonnet', 'work', '지난주 인스타그램 반응을 표로 정리하고 있습니다', '읽기 · 반응_46주.csv', '6분째'),
+    S('mkt', 0, 'Claude Code', 'Sonnet', 'work', '11월 블로그 글 초안을 쓰고 있습니다', '쓰기 · 블로그_11월.md', '14분째', {fin:'11월 블로그 글 초안을 다 썼습니다'}),
+    S('mkt', 1, 'Claude Code', 'Sonnet', 'work', '지난주 인스타그램 반응을 표로 정리하고 있습니다', '읽기 · 반응_46주.csv', '6분째', {fin:'지난주 인스타그램 반응을 표로 정리했습니다'}),
     ask ? S('law', 0, 'Claude Code', 'Opus', 'ask', '폴더 「계약_옛판」을 지워도 되는지 묻고 있습니다', '명령을 실행하기 전', '3분째 기다림')
-        : S('law', 0, 'Claude Code', 'Opus', 'work', '용역 계약서 7조의 손해배상 조항을 읽고 있습니다', '읽기 · 용역계약_v3.docx', '9분째'),
-    S('dev', 0, 'Codex', 'GPT', 'work', '결제 화면의 시험을 돌리고 있습니다', '명령 · npm test · 도우미 둘과 함께', '21분째', {subs:2}),
+        : S('law', 0, 'Claude Code', 'Opus', 'work', '용역 계약서 7조의 손해배상 조항을 읽고 있습니다', '읽기 · 용역계약_v3.docx', '9분째', {fin:'용역 계약서 검토를 끝냈습니다'}),
+    S('dev', 0, 'Codex', 'GPT', 'work', '결제 화면의 시험을 돌리고 있습니다', '명령 · npm test · 도우미 둘과 함께', '21분째', {subs:2, fin:'결제 화면의 시험을 모두 통과했습니다'}),
     ask ? S('dev', 1, 'Claude Code', 'Opus', 'stall', '로그인 오류의 원인을 찾고 있습니다', '12분째 진전이 없습니다', '31분째')
-        : S('dev', 1, 'Claude Code', 'Opus', 'work', '로그인 오류의 원인을 찾고 있습니다', '읽기 · auth.ts', '4분째'),
+        : S('dev', 1, 'Claude Code', 'Opus', 'work', '로그인 오류의 원인을 찾고 있습니다', '읽기 · auth.ts', '4분째', {fin:'로그인 오류의 원인을 찾았습니다'}),
     S('des', 0, 'Claude Code', 'Sonnet', 'idle', '상세 페이지 시안 셋을 끝냈습니다', '쉬는 중', '어제'),
-    S('acc', 0, 'Claude Code', 'Sonnet', 'done', '10월 영수증 42장을 정리했습니다', '끝냄 · 영수증_10월.xlsx', '방금'),
+    S('acc', 0, 'Claude Code', 'Sonnet', 'done', '10월 영수증 42장을 정리했습니다', '끝냄 · 영수증_10월.xlsx', '방금', {news:true}),
     S('lobby', 0, 'Claude Code', 'Sonnet', 'work', '회의록을 요약하고 있습니다', '읽기 · 회의록_1118.txt', '2분째'),
   ];
 }
@@ -252,7 +263,13 @@ const SCOUTS = [
   {head:'한 곳이 바뀌었습니다', when:'방금', who:'두루상점', what:'무료 배송 기준을 5만 원에서 3만 원으로 낮췄습니다', src:'배송 안내 · duru.example', rest:'온결상점과 한뼘상점은 지난번과 같습니다', say:['두루상점이 무료 배송 기준을 낮췄습니다.', '마케팅부가 경쟁사 세 곳을 방금 다 읽었습니다.']},
   {head:'세 곳 모두 지난번과 같습니다', when:'방금', rest:'온결상점, 한뼘상점, 두루상점', say:['경쟁사 세 곳은 지난번과 같습니다.', '마케팅부가 방금 다 읽었습니다.']},
 ];
-let scoutI = 0, scouting = null, scoutT = [], scoutSay = null;
+let scoutI = 0, scouting = null, scoutT = [], lastHold = null;
+/* 알림: 승인을 기다리는 직원, 진전이 없는 직원, 끝냈는데 아직 보지 않은 일에 붙는다.
+   끝낸 일의 알림은 그 부서의 줄을 열었다 닫으면 본 것으로 치고 지운다 */
+const alerting = s => s.state === 'ask' || s.state === 'stall' || (s.state === 'done' && !!s.news);
+const flag = t0 => `<i class="flag${performance.now() - t0 < 700 ? ' pop' : ''}" aria-hidden="true">!</i><span class="sr"> 새 소식</span>`;
+/* 맨 위 문장이 잠깐 새 소식을 말하고 제자리로 돌아간다 */
+function hold(lines, ms) { sayHold = lastHold = lines; render(true); setTimeout(() => { if (sayHold === lines) { sayHold = null; render(true); } }, ms); }
 
 /* ── 말 ─────────────────────────────────────────────────────── */
 const 받침 = w => { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; };
@@ -288,7 +305,7 @@ const open = new Set(); let pinned = null, hotDept = null, hotStaff = null;
 function moreHTML(d, st) {
   let j = 0, h = '';
   for (const s of st) {
-    h += `<div class="row sub${s.state === 'ask' ? ' now' : ''}" data-s="${s.id}" style="--j:${j++}"><span class="nm">${esc(s.tool)}<small>${esc(s.model)}</small></span><span class="mid"><b>${esc(s.say)}</b><small>${esc(s.act)}</small></span><span class="when">${esc(s.when)}</span></div>`;
+    h += `<div class="row sub${s.state === 'ask' ? ' now' : ''}${alerting(s) ? ' news' : ''}" data-s="${s.id}" style="--j:${j++}"><span class="nm">${esc(s.tool)}${alerting(s) ? flag(s.newsT0 || -1e9) : ''}<small>${esc(s.model)}</small></span><span class="mid"><b>${esc(s.say)}</b><small>${esc(s.act)}</small></span><span class="when">${esc(s.when)}</span></div>`;
     if (s.state === 'ask') h += `<p class="more-acts" style="--j:${j++}"><button class="quiet warn" type="button" data-term="${s.id}">터미널 열기</button><span class="lab">승인은 그 도구의 창에서 합니다.</span></p>`;
   }
   if (d.lobby) {
@@ -341,20 +358,27 @@ function render(snap) {
   for (const d of DEPTS) {
     const m = summary(d);
     if (d.lobby && !m.st.length) { open.delete(d.id); continue; }
-    const on = open.has(d.id);
-    h += `<button class="row${m.now ? ' now' : ''}${on ? ' opened' : ''}" type="button" data-d="${d.id}" aria-expanded="${on}" aria-controls="more-${d.id}"><span class="nm">${esc(d.name)}</span><span class="mid">${esc(m.mid)}</span><span class="val">${esc(m.val)}</span></button>`;
+    const on = open.has(d.id), al = m.st.filter(alerting);
+    h += `<button class="row${m.now ? ' now' : ''}${on ? ' opened' : ''}${al.length ? ' news' : ''}" type="button" data-d="${d.id}" aria-expanded="${on}" aria-controls="more-${d.id}"><span class="nm">${esc(d.name)}${al.length ? flag(Math.max(...al.map(s => s.newsT0 || -1e9))) : ''}</span><span class="mid">${esc(m.mid)}</span><span class="val">${esc(m.val)}</span></button>`;
     h += `<div class="more${on ? ' open' : ''}${snap ? ' snap' : ''}" id="more-${d.id}" data-d="${d.id}"${on ? '' : ' inert'}><div class="more-in">${moreHTML(d, m.st)}</div></div>`;
   }
   h += pcHTML(snap);
   h += `<p class="read"><span>방금 읽었습니다. 이름과 일은 모두 예시입니다.</span><button class="reread" type="button" data-noop>부서 더하기</button></p>`;
   rowsEl.innerHTML = h;
+  officeObj.classList.toggle('news', staff.some(alerting));
   if (keep) { const el = document.getElementById(keep.id); if (el) { el.value = keep.v || ''; el.focus(); try { el.setSelectionRange(keep.a, keep.a); } catch (e) {} } }
   if (snap) requestAnimationFrame(() => rowsEl.querySelectorAll('.more.snap').forEach(m => m.classList.remove('snap')));
   mark();
 }
+let wasOpen = new Set();
 function sync() {
   rowsEl.querySelectorAll('button.row').forEach(r => { const on = open.has(r.dataset.d); r.classList.toggle('opened', on); r.setAttribute('aria-expanded', on); });
   rowsEl.querySelectorAll('.more').forEach(m => { const on = open.has(m.dataset.d); m.classList.toggle('open', on); m.inert = !on; });
+  // 열었다 닫은 부서의 끝낸 일은 본 것으로 친다. 줄이 다 접힌 뒤에 알림을 지운다
+  let read = false;
+  for (const id of wasOpen) if (!open.has(id)) for (const s of staff) if (s.dept === id && s.news) { s.news = false; read = true; }
+  wasOpen = new Set(open);
+  if (read) setTimeout(() => render(true), 520);
 }
 function mark() {
   rowsEl.querySelectorAll('button.row').forEach(r => r.classList.toggle('hot', r.dataset.d === hotDept));
@@ -452,9 +476,9 @@ function scout() {
   scoutT.push(setTimeout(() => {
     scoutI = Math.min(scoutI + 1, SCOUTS.length - 1); scouting = null;
     const r = SCOUTS[scoutI];
-    Object.assign(who, {state:'done', say:'경쟁사 세 곳을 다 읽었습니다. ' + (r.who ? '한 곳이 바뀌었습니다' : '바뀐 곳이 없습니다'), act:'끝냄 · 경쟁사_47주.md', when:'방금'});
-    sayHold = scoutSay = r.say; render(true);
-    scoutT.push(setTimeout(() => { if (sayHold === scoutSay) { sayHold = null; render(true); } }, 4600));
+    // 바뀐 곳이 있을 때만 알림이 붙는다
+    Object.assign(who, {state:'done', say:'경쟁사 세 곳을 다 읽었습니다. ' + (r.who ? '한 곳이 바뀌었습니다' : '바뀐 곳이 없습니다'), act:'끝냄 · 경쟁사_47주.md', when:'방금', news:!!r.who, newsT0:performance.now()});
+    hold(r.say, 4600);
   }, 1700 * steps.length + 300));
   render(true);
 }
@@ -528,6 +552,15 @@ const LOOK = {
   idle:  {rim:.24, glow:.06, lift:0,   eye:.42},
   done:  {rim:.62, glow:.15, lift:.05, eye:.9},
 };
+/* 직원 위의 느낌표. 알림이 온 순간 튀어나오고, 승인을 기다리는 동안은 위아래로 조금 뛴다 */
+function bang(x, y, R, s, now, color) {
+  const k = still ? 1 : Math.min(1, (now - (s.newsT0 || 0)) / 420), e = 1 + 2.70158 * Math.pow(k - 1, 3) + 1.70158 * Math.pow(k - 1, 2);
+  const h = Math.max(8, R * .95) * e, lw = Math.max(1.5, R * .16);
+  const by = y - R - 6 - (s.state === 'ask' && !still ? Math.abs(Math.sin(now / 520)) * 2.5 : 0);
+  ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x, by - h); ctx.lineTo(x, by - h * .38); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, by - lw * .2, lw * .62 * Math.min(1, e), 0, Math.PI * 2); ctx.fill();
+}
 function orb(x, y, R, s, now, t3) {
   const L = LOOK[s.state], hot = hotStaff === s.id;
   ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill();
@@ -549,6 +582,7 @@ function orb(x, y, R, s, now, t3) {
   else if (s.state === 'ask') { const dx = px - x, dy = py - y, m = Math.hypot(dx, dy) || 1, k = px < -9000 ? 0 : Math.min(1, m / 120) * R * .2; gx = dx / m * k; gy = dy / m * k; }
   else { gy = R * .16; gx = still ? 0 : Math.sin(now / 1400 + s.seat) * R * .08; }
   eyes(x, y, R, mode, gx, gy, s.blink, L.eye);
+  if (alerting(s)) bang(x, y, R, s, now, ink(.95));
 }
 function orbXY() { const a = orbBtn.getBoundingClientRect(), b = stage.getBoundingClientRect(); return {x:a.left - b.left + a.width / 2, y:a.top - b.top + a.height / 2}; }
 const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -668,8 +702,16 @@ function wake() { meta.classList.remove('away'); clearTimeout(awayT); awayT = se
 addEventListener('pointermove', wake); addEventListener('keydown', wake); wake();
 $('#m-view').onclick = e => { viewTo = viewTo ? 0 : 1; e.currentTarget.textContent = '보기 · ' + (viewTo ? '비스듬히' : '위에서'); };
 const CASES = [['ask', '승인 대기'], ['calm', '평소'], ['rest', '모두 쉼']];
-function setCase(i) { scoutT.forEach(clearTimeout); scoutT = []; scoutI = 0; scouting = null; if (sayHold === scoutSay) sayHold = null; scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
+function setCase(i) { scoutT.forEach(clearTimeout); scoutT = []; scoutI = 0; scouting = null; if (sayHold === lastHold) sayHold = null; wasOpen = new Set(); scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
 let ci = 0; $('#m-case').onclick = () => setCase(ci = (ci + 1) % CASES.length);
+/* 「알림 받기」: 일하던 직원 하나가 일을 끝내 알림이 오는 순간을 본다 */
+$('#m-ping').onclick = () => {
+  const c = staff.filter(s => s.state === 'work' && s.fin && s !== scouting);
+  const s = c.find(x => !staff.some(y => y.dept === x.dept && alerting(y))) || c[0];
+  if (!s) return;
+  Object.assign(s, {state:'done', say:s.fin, act:'끝냄', when:'방금', subs:0, news:true, newsT0:performance.now()});
+  hold([이가(deptOf(s.dept).name) + ' 일을 하나 끝냈습니다.', s.fin + '.'], 4200);
+};
 const SIZES = [['꽉 참'], ['1080×700', 1080, 700], ['720×760', 720, 760], ['420×760', 420, 760], ['380×250', 380, 250]];
 let si = 0; $('#m-size').onclick = e => { si = (si + 1) % SIZES.length; const z = SIZES[si]; document.body.classList.toggle('sized', !!z[1]); stage.style.setProperty('--sw', z[1] ? z[1] + 'px' : '100%'); stage.style.setProperty('--sh', z[1] ? z[2] + 'px' : '100%'); e.currentTarget.textContent = '창 크기 · ' + z[0]; };
 $('#m-again').onclick = () => { setCase(ci); diagnose(); };
