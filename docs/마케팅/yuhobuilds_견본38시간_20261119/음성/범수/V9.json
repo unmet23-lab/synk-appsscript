@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V9",
+ "text": "세 번째 다시 하기 전에, 왜 하는지부터요.",
+ "dur": 2.043,
+ "words": [
+  {
+   "text": "세",
+   "start": 0.02,
+   "end": 0.077
+  },
+  {
+   "text": "번째",
+   "start": 0.133,
+   "end": 0.288
+  },
+  {
+   "text": "다시",
+   "start": 0.33,
+   "end": 0.5
+  },
+  {
+   "text": "하기",
+   "start": 0.542,
+   "end": 0.627
+  },
+  {
+   "text": "전에,",
+   "start": 0.669,
+   "end": 0.839
+  },
+  {
+   "text": "왜",
+   "start": 1.248,
+   "end": 1.304
+  },
+  {
+   "text": "하는지부터요.",
+   "start": 1.347,
+   "end": 2.043
+  }
+ ],
+ "source": {
+  "key": "ccf671e0ed5d8db6ad383e248210f92d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.16,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 150
+ }
+}

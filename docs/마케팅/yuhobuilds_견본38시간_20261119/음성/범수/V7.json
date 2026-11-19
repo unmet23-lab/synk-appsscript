@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V7",
+ "text": "고치는 건 잘하는데, 언제 멈출지는 아무도 안 정했던 거죠.",
+ "dur": 2.91,
+ "words": [
+  {
+   "text": "고치는",
+   "start": 0.02,
+   "end": 0.309
+  },
+  {
+   "text": "건",
+   "start": 0.347,
+   "end": 0.422
+  },
+  {
+   "text": "잘하는데,",
+   "start": 0.46,
+   "end": 0.862
+  },
+  {
+   "text": "언제",
+   "start": 1.201,
+   "end": 1.364
+  },
+  {
+   "text": "멈출지는",
+   "start": 1.414,
+   "end": 1.828
+  },
+  {
+   "text": "아무도",
+   "start": 1.891,
+   "end": 2.105
+  },
+  {
+   "text": "안",
+   "start": 2.155,
+   "end": 2.205
+  },
+  {
+   "text": "정했던",
+   "start": 2.243,
+   "end": 2.544
+  },
+  {
+   "text": "거죠.",
+   "start": 2.582,
+   "end": 2.91
+  }
+ ],
+ "source": {
+  "key": "9f6cd222532d6c60349b1c1ed51b4578",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}

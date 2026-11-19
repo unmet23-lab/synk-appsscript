@@ -1,0 +1,110 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V8",
+ "text": "그래서 이제 AI한테 이렇게 정해 뒀어요. 다시 하기 전에, 무엇을 위해, 시간이 얼마나 들었는지부터 말하라고요.",
+ "dur": 4.534,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.197
+  },
+  {
+   "text": "이제",
+   "start": 0.264,
+   "end": 0.386
+  },
+  {
+   "text": "AI한테",
+   "start": 0.463,
+   "end": 0.841
+  },
+  {
+   "text": "이렇게",
+   "start": 0.874,
+   "end": 1.03
+  },
+  {
+   "text": "정해",
+   "start": 1.063,
+   "end": 1.23
+  },
+  {
+   "text": "뒀어요.",
+   "start": 1.263,
+   "end": 1.496
+  },
+  {
+   "text": "다시",
+   "start": 1.773,
+   "end": 1.94
+  },
+  {
+   "text": "하기",
+   "start": 1.973,
+   "end": 2.062
+  },
+  {
+   "text": "전에,",
+   "start": 2.095,
+   "end": 2.272
+  },
+  {
+   "text": "무엇을",
+   "start": 2.484,
+   "end": 2.739
+  },
+  {
+   "text": "위해,",
+   "start": 2.783,
+   "end": 2.927
+  },
+  {
+   "text": "시간이",
+   "start": 3.072,
+   "end": 3.294
+  },
+  {
+   "text": "얼마나",
+   "start": 3.338,
+   "end": 3.527
+  },
+  {
+   "text": "들었는지부터",
+   "start": 3.56,
+   "end": 4.004
+  },
+  {
+   "text": "말하라고요.",
+   "start": 4.049,
+   "end": 4.534
+  }
+ ],
+ "source": {
+  "key": "526f5ef4104733f4c01ec9024f4019ec",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.22,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 162
+ }
+}

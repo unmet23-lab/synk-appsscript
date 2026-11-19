@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "제가 고르기만 하면 되는 견본 그림 여섯 장.",
+ "dur": 2.246,
+ "words": [
+  {
+   "text": "제가",
+   "start": 0.06,
+   "end": 0.249
+  },
+  {
+   "text": "고르기만",
+   "start": 0.324,
+   "end": 0.677
+  },
+  {
+   "text": "하면",
+   "start": 0.714,
+   "end": 0.853
+  },
+  {
+   "text": "되는",
+   "start": 0.891,
+   "end": 1.116
+  },
+  {
+   "text": "견본",
+   "start": 1.255,
+   "end": 1.519
+  },
+  {
+   "text": "그림",
+   "start": 1.569,
+   "end": 1.708
+  },
+  {
+   "text": "여섯",
+   "start": 1.745,
+   "end": 1.909
+  },
+  {
+   "text": "장.",
+   "start": 1.947,
+   "end": 2.246
+  }
+ ],
+ "source": {
+  "key": "5deafa08db237ac95cbeb59c23855672",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}

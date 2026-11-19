@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "AI가 그림을 만들고, 다른 AI가 심사하고, 떨어지면 또 만들었어요. 그림만 80장이요.",
+ "dur": 4.899,
+ "words": [
+  {
+   "text": "AI가",
+   "start": 0.02,
+   "end": 0.355
+  },
+  {
+   "text": "그림을",
+   "start": 0.424,
+   "end": 0.661
+  },
+  {
+   "text": "만들고,",
+   "start": 0.703,
+   "end": 1.024
+  },
+  {
+   "text": "다른",
+   "start": 1.358,
+   "end": 1.567
+  },
+  {
+   "text": "AI가",
+   "start": 1.623,
+   "end": 1.915
+  },
+  {
+   "text": "심사하고,",
+   "start": 1.972,
+   "end": 2.375
+  },
+  {
+   "text": "떨어지면",
+   "start": 2.696,
+   "end": 3.073
+  },
+  {
+   "text": "또",
+   "start": 3.115,
+   "end": 3.17
+  },
+  {
+   "text": "만들었어요.",
+   "start": 3.212,
+   "end": 3.658
+  },
+  {
+   "text": "그림만",
+   "start": 3.937,
+   "end": 4.188
+  },
+  {
+   "text": "80장이요.",
+   "start": 4.23,
+   "end": 4.899
+  }
+ ],
+ "source": {
+  "key": "e51cb0c7e62e0810bb77f9a6cfc32309",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 161
+ }
+}

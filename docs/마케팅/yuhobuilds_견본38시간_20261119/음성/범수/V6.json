@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6",
+ "text": "마지막 심사가 고른 건, 맨 처음 그림이었어요.",
+ "dur": 2.412,
+ "words": [
+  {
+   "text": "마지막",
+   "start": 0.02,
+   "end": 0.293
+  },
+  {
+   "text": "심사가",
+   "start": 0.351,
+   "end": 0.638
+  },
+  {
+   "text": "고른",
+   "start": 0.682,
+   "end": 0.855
+  },
+  {
+   "text": "건,",
+   "start": 0.898,
+   "end": 1.07
+  },
+  {
+   "text": "맨",
+   "start": 1.315,
+   "end": 1.444
+  },
+  {
+   "text": "처음",
+   "start": 1.487,
+   "end": 1.66
+  },
+  {
+   "text": "그림이었어요.",
+   "start": 1.718,
+   "end": 2.412
+  }
+ ],
+ "source": {
+  "key": "22ef12dc373ae974a4bf9fc1d84cd379",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 187
+ }
+}

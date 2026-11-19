@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "더 허탈한 건, 해 질 녘 견본이에요. 밤새 고쳐 만들었는데,",
+ "dur": 3.496,
+ "words": [
+  {
+   "text": "더",
+   "start": 0.06,
+   "end": 0.165
+  },
+  {
+   "text": "허탈한",
+   "start": 0.21,
+   "end": 0.493
+  },
+  {
+   "text": "건,",
+   "start": 0.537,
+   "end": 0.717
+  },
+  {
+   "text": "해",
+   "start": 1.075,
+   "end": 1.119
+  },
+  {
+   "text": "질",
+   "start": 1.164,
+   "end": 1.253
+  },
+  {
+   "text": "녘",
+   "start": 1.299,
+   "end": 1.373
+  },
+  {
+   "text": "견본이에요.",
+   "start": 1.418,
+   "end": 1.954
+  },
+  {
+   "text": "밤새",
+   "start": 2.283,
+   "end": 2.521
+  },
+  {
+   "text": "고쳐",
+   "start": 2.567,
+   "end": 2.76
+  },
+  {
+   "text": "만들었는데,",
+   "start": 2.805,
+   "end": 3.496
+  }
+ ],
+ "source": {
+  "key": "65003ba1c889f21e1cde4907904f3664",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 169
+ }
+}

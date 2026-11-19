@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1123,
+  "lufs": -17
+ },
+ "made": "2026-11-18T23:36:35.593Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "제가 고르기만 하면 되는 견본 그림 여섯 장.",
+   "dur": 2.246,
+   "syllablesPerSec": 7.57,
+   "src": "V1.wav",
+   "key": "5deafa08db237ac95cbeb59c23855672",
+   "words": 8
+  },
+  {
+   "id": "V2",
+   "text": "AI한테 맡겼더니, 끝나기까지 38시간 걸렸어요.",
+   "dur": 2.871,
+   "syllablesPerSec": 5.92,
+   "src": "V2.wav",
+   "key": "5eefd21a32be6b9634a8bf69cbf0d727",
+   "words": 5
+  },
+  {
+   "id": "V3",
+   "text": "AI가 그림을 만들고, 다른 AI가 심사하고, 떨어지면 또 만들었어요. 그림만 80장이요.",
+   "dur": 4.899,
+   "syllablesPerSec": 6.12,
+   "src": "V3.wav",
+   "key": "e51cb0c7e62e0810bb77f9a6cfc32309",
+   "words": 11
+  },
+  {
+   "id": "V4",
+   "text": "그러다 제가 물었어요. 이걸 지금 왜 하고 있는 거야? 의미가 있어?",
+   "dur": 3.429,
+   "syllablesPerSec": 7.29,
+   "src": "V4.wav",
+   "key": "9556d3d848d0a061a0451f264685754f",
+   "words": 11
+  },
+  {
+   "id": "V5",
+   "text": "더 허탈한 건, 해 질 녘 견본이에요. 밤새 고쳐 만들었는데,",
+   "dur": 3.496,
+   "syllablesPerSec": 6.29,
+   "src": "V5.wav",
+   "key": "65003ba1c889f21e1cde4907904f3664",
+   "words": 10
+  },
+  {
+   "id": "V6",
+   "text": "마지막 심사가 고른 건, 맨 처음 그림이었어요.",
+   "dur": 2.412,
+   "syllablesPerSec": 7.46,
+   "src": "V6.wav",
+   "key": "22ef12dc373ae974a4bf9fc1d84cd379",
+   "words": 7
+  },
+  {
+   "id": "V7",
+   "text": "고치는 건 잘하는데, 언제 멈출지는 아무도 안 정했던 거죠.",
+   "dur": 2.91,
+   "syllablesPerSec": 7.9,
+   "src": "V7.wav",
+   "key": "9f6cd222532d6c60349b1c1ed51b4578",
+   "words": 9
+  },
+  {
+   "id": "V8",
+   "text": "그래서 이제 AI한테 이렇게 정해 뒀어요. 다시 하기 전에, 무엇을 위해, 시간이 얼마나 들었는지부터 말하라고요.",
+   "dur": 4.534,
+   "syllablesPerSec": 9.48,
+   "src": "V8.wav",
+   "key": "526f5ef4104733f4c01ec9024f4019ec",
+   "words": 15
+  },
+  {
+   "id": "V9",
+   "text": "세 번째 다시 하기 전에, 왜 하는지부터요.",
+   "dur": 2.043,
+   "syllablesPerSec": 7.83,
+   "src": "V9.wav",
+   "key": "ccf671e0ed5d8db6ad383e248210f92d",
+   "words": 7
+  }
+ ]
+}

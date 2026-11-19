@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "그러다 제가 물었어요. 이걸 지금 왜 하고 있는 거야? 의미가 있어?",
+ "dur": 3.429,
+ "words": [
+  {
+   "text": "그러다",
+   "start": 0.02,
+   "end": 0.219
+  },
+  {
+   "text": "제가",
+   "start": 0.262,
+   "end": 0.418
+  },
+  {
+   "text": "물었어요.",
+   "start": 0.461,
+   "end": 0.859
+  },
+  {
+   "text": "이걸",
+   "start": 1.313,
+   "end": 1.441
+  },
+  {
+   "text": "지금",
+   "start": 1.484,
+   "end": 1.668
+  },
+  {
+   "text": "왜",
+   "start": 1.712,
+   "end": 1.768
+  },
+  {
+   "text": "하고",
+   "start": 1.811,
+   "end": 1.925
+  },
+  {
+   "text": "있는",
+   "start": 1.967,
+   "end": 2.123
+  },
+  {
+   "text": "거야?",
+   "start": 2.166,
+   "end": 2.294
+  },
+  {
+   "text": "의미가",
+   "start": 2.819,
+   "end": 3.032
+  },
+  {
+   "text": "있어?",
+   "start": 3.076,
+   "end": 3.429
+  }
+ ],
+ "source": {
+  "key": "9556d3d848d0a061a0451f264685754f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}
