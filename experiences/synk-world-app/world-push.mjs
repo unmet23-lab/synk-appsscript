@@ -199,10 +199,13 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   sync({settings,digest,handover}={}){
    if(!owner||!state.account.active)return;
    const time=now();
-   // 보낸 차례(seq)를 붙인다. 늦게 온 앞 응답은 뒤 응답이 그린 계획을 덮지 않는다(11-20 GPT GA2).
-   const send=(body,options)=>{
+   // 요약 · 설정 요청은 모두 keepalive로 보낸다. 보낸 뒤 응답 전에 앱을 닫아도 계정 정리(stop)가 끊지 않는다 — keepalive 요청에는 끊는 신호를
+   // 달지 않는다(world-account pushRequest). 보통 요청이면 바뀐 설정 · 오늘 공부함 · 처음 아는 복습 때가 다음에 앱을 열 때까지 서버에 닿지 않는다
+   // (11-20 GPT 끝 판 GA1 · 다시 검수 GA1 · GA2 · GA3). 몸은 작다(복습 때 60개 · 보낸 줄 · 설정 — keepalive 몫 64KB 안). 다시 보내지는 않는다.
+   // 보낸 차례(seq)를 붙여 늦게 온 앞 응답은 뒤 응답이 그린 계획을 덮지 않는다(GPT GA2).
+   const send=body=>{
     const expected=epoch,seq=++syncSeq;
-    return request('sync',body,options).then(data=>{if(current(expected)&&seq>appliedSeq){appliedSeq=seq;applyStatus(data,expected);}},
+    return request('sync',body,{keepalive:true}).then(data=>{if(current(expected)&&seq>appliedSeq){appliedSeq=seq;applyStatus(data,expected);}},
      error=>{if(current(expected)&&seq>appliedSeq)emit({error:error.code||'PUSH_UNAVAILABLE'});});
    };
    const drop=()=>{clearTimeout(syncTimer);syncTimer=null;pendingSync=null;};
@@ -212,9 +215,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    if(!item)return;
    const next=syncMark(item,time),changed=next.key!==lastSync?.key,urgent=next.day!==lastSync?.day||next.rows!==lastSync?.rows||next.known&&lastSync?.known===false;
    if(!changed&&time-lastSync.at<SYNC_REFRESH_MS){drop();return;}
-   // 복습 때를 모르던 요약 뒤 처음 아는 요약은 keepalive로 보낸다 — 그 사이 앱을 닫아도 계정 정리(stop)가 끊지 않는다(keepalive 요청은
-   // 끊는 신호를 달지 않는다, world-account pushRequest). 이것을 놓치면 서버는 다음에 앱을 열 때까지 복습 때를 모른다(11-20 GPT GA1).
-   if(!lastSync||urgent||!changed||time-lastSync.at>=SYNC_GAP_MS){const firstKnown=next.known&&lastSync?.known===false;drop();lastSync=next;return send(item,firstKnown?{keepalive:true}:undefined);}
+   if(!lastSync||urgent||!changed||time-lastSync.at>=SYNC_GAP_MS){drop();lastSync=next;return send(item);}
    pendingSync=item;
    if(!syncTimer)syncTimer=setTimeout(()=>{syncTimer=null;const value=pendingSync;pendingSync=null;if(value&&owner&&state.account.active){lastSync=syncMark(value,now());send(value);}},Math.max(0,lastSync.at+SYNC_GAP_MS-time));
   },
