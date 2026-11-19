@@ -129,6 +129,20 @@ test('검수자 하나가 여는 그림은 30장을 넘지 않고, 컷 관점이
   for (const 라벨 of ['컷 사이', '얼굴', '이야기']) assert.ok(훑기.some(b => b.opts.label.startsWith(라벨)), `${라벨} 관점이 없다`);
 });
 
+// 11-20 GPT 검수(영상감정앵글검사-20261120 GA8) — 컷 사이 관점이 판을 묶음으로 나눌 때 경계의 두 판이 서로 다른 검수자에게 갈라져,
+//   그 자리의 이웃 컷(크기 · 높이 · 방향이 같은가)을 함께 보는 요청이 없었다. 뒤 묶음은 앞 묶음의 마지막 판부터 연다.
+test('컷 사이 관점 — 묶음이 갈라지는 자리의 이웃 두 판은 한 검수자가 함께 연다(30장 한도는 그대로)', async () => {
+  const 판 = 가짜판(12);
+  판.판.장면 = Array.from({ length: 29 }, (_, i) => `C:/편/검수/마감_1/판/장면_${i + 1}.jpg`);
+  const { 부름 } = await 돌리기({ 판 });
+  const 사이 = 부름.filter(b => b.opts.phase === '훑기' && b.opts.label.startsWith('컷 사이'));
+  assert.ok(사이.length >= 2, '29판인데 컷 사이 관점이 하나다');
+  const 든판 = 사이.map(b => new Set([...b.prompt.matchAll(/장면_(\d+)\.jpg/g)].map(x => Number(x[1]))));
+  for (let i = 1; i < 29; i++) assert.ok(든판.some(s => s.has(i) && s.has(i + 1)), `장면 판 ${i}과 ${i + 1}을 함께 여는 컷 사이 관점이 없다`);
+  for (const b of 사이) assert.ok(그림수(b.prompt) <= 30, `${b.opts.label}가 그림 ${그림수(b.prompt)}장을 연다`);
+  assert.equal(new Set(든판.flatMap(s => [...s])).size, 29, '모든 판이 든다');
+});
+
 test('준비 · 기록만 Sonnet이고, 검수자는 모델을 정하지 않아 세션 모델(Fable 5.2)을 물려받는다', async () => {
   const { 부름 } = await 돌리기({ 훑기답: l => (l.startsWith('컷 전수') ? [지적('C1', 'P1', '영상만')] : []), 반박답: () => ({ 답: '맞음' }) });
   for (const b of 부름) {

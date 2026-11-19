@@ -2516,3 +2516,92 @@ print(json.dumps({"판정": [m.감정자리판정(*x)[0] for x in json.loads(sys
   assert.equal(옛.줄.length, 1); assert.equal(옛.줄[0].등급, '알림'); assert.equal(옛.코드, 0);
   assert.ok(['C2', '표'].includes(새.줄[0].컷), JSON.stringify(새.줄));
 });
+
+// ───────── T28 · T29 GPT 검수(영상감정앵글검사-20261120) 지적 GA1~GA7 · GA9 — 지적마다 고치기 전에 깨지는 판 ─────────
+test('T28 · T29 검수 지적(표) — GA2 같은판은 바로 앞 컷과 판을 나눌 때만 예외, GA5 감정부위는 정한 낱말로만, GA6 빈 배열 · 빈 객체는 빈칸', { skip: !파이썬 && '파이썬 없음' }, async () => {
+  const 새편 = (s) => { s.편.만든날 = '2026-11-20'; };
+  const 판 = {
+    // GA2 — C1과 C3만 같은 판(C3에 같은판 까닭), C2와 C3은 다른 판인데 앵글 세 칸이 같다
+    떨어진같은판: (s) => { 새편(s); 컷(s, 'C3').판 = 'C1'; 컷(s, 'C3').같은판 = '한 방을 둘로 자른 컷 — C1의 뒤'; Object.assign(컷(s, 'C3').앵글, { 크기: '클로즈', 높이: '눈높이', 방향: '정면' }); },
+    // 바로 앞 컷과 판을 나누면 예외 그대로
+    바로앞같은판: (s) => { 새편(s); 컷(s, 'C3').판 = 'C2'; 컷(s, 'C3').같은판 = '한 방을 둘로 자른 컷 — C2의 뒤'; Object.assign(컷(s, 'C3').앵글, { 크기: '클로즈', 높이: '눈높이', 방향: '정면' }); },
+    // GA5
+    부위_풀이: (s) => { 새편(s); 컷(s, 'C3').감정부위 = '손 — 입가를 가린다'; },
+    부위_낱말밖: (s) => { 새편(s); 컷(s, 'C3').감정부위 = '입가를 가린 손'; },
+    // GA6
+    자리_빈배열: (s) => { 새편(s); for (const d of s.detail) { delete d.감정자리; delete d.감정부위; } s.사건[0].압축 = true; 컷(s, 'C2').감정자리 = []; },
+    자리_빈객체: (s) => { 새편(s); for (const d of s.detail) { delete d.감정자리; delete d.감정부위; } s.사건[0].압축 = true; 컷(s, 'C2').감정자리 = {}; },
+    까닭_빈배열: (s) => { 새편(s); 컷(s, 'C4').앵글.까닭 = []; },
+    까닭_빈객체: (s) => { 새편(s); 컷(s, 'C1').앵글.까닭 = { 까닭: ' ' }; },
+  };
+  const 이름들 = Object.keys(판);
+  const 결과들 = await 틀돌리기_여럿(이름들.map((k) => 판[k]));
+  const r = Object.fromEntries(이름들.map((k, i) => [k, 결과들[i]]));
+  const 걸 = (x) => x.항목들.filter((y) => y.항목 === '틀' && y.등급 === '걸림').map((y) => `${y.컷}: ${y.글}`);
+  assert.equal(r.떨어진같은판.코드, 1, 'GA2');
+  assert.ok(걸(r.떨어진같은판).some((g) => /^C3: 앵글이 앞 컷 C2과 크기 · 높이 · 방향 모두 같다/.test(g)), JSON.stringify(걸(r.떨어진같은판)));
+  assert.deepEqual(걸(r.바로앞같은판).filter((g) => /앵글이 앞 컷/.test(g)), [], 'GA2 — 바로 앞 컷과 한 판이면 그대로 예외');
+  assert.deepEqual(걸(r.부위_풀이), [], 'GA5 — 낱말 뒤 풀이');
+  assert.equal(r.부위_낱말밖.코드, 1, 'GA5');
+  assert.match(걸(r.부위_낱말밖)[0], /^C3: 「감정부위」의 「입가를 가린 손」은 정한 낱말이 아니다 — 얼굴 · 눈 · 입\(얼굴 폭을 잰다\) \/ 손 · 숨 · 몸 · 어깨 · 발 · 등\(재지 않는다\)/);
+  for (const k of ['자리_빈배열', '자리_빈객체']) { assert.equal(r[k].코드, 1, `GA6 ${k}`); assert.ok(걸(r[k]).some((g) => /^표: 사람이 나오는 편인데 감정 자리가 하나도 없다/.test(g)), `GA6 ${k}: ${JSON.stringify(걸(r[k]))}`); }
+  assert.match(걸(r.까닭_빈배열)[0] || '', /^C4: 「앵글\.까닭」 칸이 비었다/, 'GA6');
+  assert.match(걸(r.까닭_빈객체)[0] || '', /^C1: 「앵글\.까닭」 칸이 비었다/, 'GA6');
+});
+
+test('T28 검수 지적(그림) — GA1 시작그림을 먼저 잰다, GA3 얼굴이 여럿이고 작은 얼굴이 있으면 확인, GA4 빈 창은 창이 아니다, GA5 손 풀이는 재지 않는다, GA7 --항목 얼굴을 밝히면 --받음과 함께도 잰다, GA9 잰 값은 소수 한 자리', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const dir = 임시(); const 편 = path.join(dir, '라면_20261120'); fs.mkdirSync(path.join(편, '정지'), { recursive: true }); fs.mkdirSync(path.join(편, '받음'));
+  for (const n of ['C2.png', 'C2_승인.png', 'C3.png']) fs.writeFileSync(path.join(편, '정지', n), 'x');   // 고르기만 본다(재지 않는다)
+  const 읽기 = String.raw`
+import sys, json, copy, importlib.util
+from pathlib import Path
+sys.dont_write_bytecode = True
+spec = importlib.util.spec_from_file_location("m", sys.argv[1]); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+틀 = json.load(open(sys.argv[2], encoding="utf-8")); 편 = Path(sys.argv[3])
+def 고른(고침, 그림=True):
+    s = copy.deepcopy(틀); c = {d["cut"]: d for d in s["detail"]}; 고침(c)
+    return {cut: p.name for cut, p in m.감정자리대상(s, 편 / "정지" if 그림 else None, 편)[0]}
+def 승인(c): c["C2"]["시작그림"] = "정지/C2_승인.png"
+def 창(v):
+    def f(c): c["C2"]["창"] = v
+    return f
+def 부위(v):
+    def f(c): c["C3"]["감정부위"] = v
+    return f
+print(json.dumps({
+    "GA1": [고른(승인), 고른(승인, 그림=False), 고른(lambda c: None)],
+    "GA4": [고른(창(None)), 고른(창({})), 고른(창("")), 고른(창({"세로": 0.62}))],
+    "GA5": [고른(부위("손")), 고른(부위("손 — 입가를 가린다")), 고른(부위("입가를 가린 손")), 고른(부위("눈"))],
+    "GA3": [m.감정자리판정(x, True, True) for x in ([40.0, 10.0], [40.0, 38.0], [10.0, 8.0], 40.0, None, [])],
+    "GA3옛": m.감정자리판정([40.0, 10.0], True, False)[0],
+    "GA9": [m.감정자리판정(179 / 720 * 100, False, True), m.감정자리판정(24.96, False, True)],
+}, ensure_ascii=False))
+`;
+  const 답 = spawnSync('python', ['-I', '-X', 'utf8', '-c', 읽기, 도구, 틀경로, 편], { encoding: 'utf8' });
+  assert.equal(답.status, 0, 답.stderr);
+  const 값 = JSON.parse(답.stdout);
+  // GA1 — 컷표의 시작그림(관문이 여는 그림)이 --그림 폴더의 <컷>.png보다 먼저다
+  assert.deepEqual(값.GA1, [{ C2: 'C2_승인.png' }, { C2: 'C2_승인.png' }, { C2: 'C2.png' }]);
+  // GA4 — "창": null · {} · ""는 창이 없는 것, 값이 있는 창만 잘라 쓰는 컷이다
+  assert.deepEqual(값.GA4, [{ C2: 'C2.png' }, { C2: 'C2.png' }, { C2: 'C2.png' }, {}]);
+  // GA5 — 손(풀이를 붙여도)은 재지 않고, 정한 낱말이 아니면 잰다(표 검사가 건다), 눈은 얼굴이라 잰다
+  assert.deepEqual(값.GA5, [{ C2: 'C2.png' }, { C2: 'C2.png' }, { C2: 'C2.png', C3: 'C3.png' }, { C2: 'C2.png', C3: 'C3.png' }]);
+  // GA3 — 얼굴이 둘이고 하나가 아래선에 못 미치면 통과가 아니라 확인, 잰 폭을 모두 적는다
+  assert.deepEqual(값.GA3.map((x) => x[0]), ['확인', '통과', '걸림', '통과', '확인', '확인']);
+  assert.match(값.GA3[0][1], /얼굴이 2개 잡혔다\(40\.0% · 10\.0%\).*아래선 35%에 못 미치는 얼굴이 있다/);
+  assert.match(값.GA3[2][1], /10\.0% · 8\.0%/);
+  assert.equal(값.GA3옛, '알림');
+  // GA9 — 24.86%는 「24.9%」로 적고 걸림, 24.96%는 「25.0%」로 적고 통과(적은 값과 판정이 어긋나지 않는다)
+  assert.equal(값.GA9[0][0], '걸림'); assert.match(값.GA9[0][1], /얼굴 폭이 그림 폭의 24\.9%다/);
+  assert.equal(값.GA9[1][0], '통과'); assert.match(값.GA9[1][1], /25\.0%/);
+  // GA7 — --항목 얼굴을 밝히면 --받음이 있어도 잰다(밝히지 않은 기본 실행은 --받음 · --영상에서 재지 않는다)
+  const zlib = require('node:zlib');
+  const 덩이 = (이름, 몸) => { const 앞 = Buffer.concat([Buffer.from(이름, 'ascii'), 몸]); const 길이 = Buffer.alloc(4); 길이.writeUInt32BE(몸.length); const 끝 = Buffer.alloc(4); 끝.writeUInt32BE(zlib.crc32(앞)); return Buffer.concat([길이, 앞, 끝]); };
+  const 머리 = Buffer.alloc(13); 머리.writeUInt32BE(90, 0); 머리.writeUInt32BE(160, 4); 머리[8] = 8; 머리[9] = 2;
+  const 한줄 = Buffer.concat([Buffer.from([0]), Buffer.alloc(270, 60)]);
+  fs.writeFileSync(path.join(편, '정지', 'C2.png'), Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), 덩이('IHDR', 머리), 덩이('IDAT', zlib.deflateSync(Buffer.concat(Array(160).fill(한줄)))), 덩이('IEND', Buffer.alloc(0))]));
+  const 표 = 쓰기(편, '컷표.json', JSON.stringify(틀읽기()));
+  const r = 돌리기([표, '--그림', path.join(편, '정지'), '--받음', path.join(편, '받음'), '--항목', '얼굴', '--출력', path.join(dir, '검사')]);
+  const 줄 = r.항목들.filter((x) => x.항목 === '얼굴');
+  assert.equal(줄.length, 1, `GA7: ${JSON.stringify(r.항목들)}`); assert.equal(줄[0].등급, '확인'); assert.equal(r.코드, 2);
+});
