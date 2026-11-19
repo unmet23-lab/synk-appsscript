@@ -84,10 +84,13 @@ test('2단이 켜진 계정: 새 길 판정이 「확인 중」이면 복습 때
   assert.equal(sync().length,1);
   assert.equal('reviews' in sync()[0].digest,false,'확인 중에는 복습 때 칸이 없다(서버가 아는 때를 그대로 둔다)');
   assert.equal(sync()[0].digest.lastStudyDay,'2026-10-19','오늘 공부함은 간다');
-  const engine=[at(1,10),at(3,10)];
+  // 엔진 판정의 때는 분 단위 아무 값이다(10:07). 요약은 그것을 15분 단위로 올려 보낸다 — talk validateDigest는 15분 단위만 받는다(11-20 GPT GA3).
+  const engine=[at(1,10,7),at(3,10)];
   input={reviews:engine,reviewsPending:false,studyTimes:[at(0,9)],hasReturn:true};
   c.reminders.refresh();
-  assert.deepEqual(sync().at(-1).digest.reviews,engine,'엔진 판정의 때(15분 단위)가 그대로 간다');
+  const sent=sync().at(-1).digest.reviews;
+  assert.deepEqual(sent,[at(1,10,15),at(3,10)],'엔진 판정의 때를 15분 단위로 올려 보낸다');
+  assert.ok(sent.every(time=>time%(15*MINUTE)===0)&&sent[0]>=engine[0],'서버가 받는 꼴 · 복습 때보다 이르지 않다');
   // 지금 판(판정 없음)은 표지가 없어 빈 복습도 「없다」로 보낸다.
   input={reviews:[],studyTimes:[at(0,9)],hasReturn:false};
   c.reminders.refresh();

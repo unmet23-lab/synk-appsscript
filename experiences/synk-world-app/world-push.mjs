@@ -45,7 +45,7 @@ const bounded=(promise,ms=REQUEST_MS)=>{let timer;return Promise.race([promise,n
 // anonymous(action, body, {keepalive}): 로그인 없이(공개 키만) — 누름(opened)과 주소 + 기기 식별자 끄기에만 쓴다.
 export function createWorldPush({request,anonymous=()=>Promise.reject(Object.assign(Error('PUSH_UNAVAILABLE'),{code:'PUSH_UNAVAILABLE'})),env=globalThis,
  storage=env.localStorage,workerUrl,scopeUrl,now=()=>Date.now(),onChange=()=>{}}={}){
- let owner=null,epoch=0,registration=null,subscription=null,publicKey=null,attempt=null,mutation=null,disposed=false,syncTimer=null,pendingSync=null,lastSync=null;
+ let owner=null,epoch=0,registration=null,subscription=null,publicKey=null,attempt=null,mutation=null,disposed=false,syncTimer=null,pendingSync=null,lastSync=null,syncSeq=0,appliedSeq=0,unconfirmed=null;
  const listeners=new Set([onChange]);
  let state={phase:'signed-out',enabled:false,device:{subscribed:false},account:{active:false,devices:0},plan:null,checkedAt:0,error:null,busy:false};
  const emit=patch=>{state={...state,...patch};const value=snapshot();for(const listener of listeners){try{listener(value);}catch{}}return value;};
@@ -115,7 +115,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   // 이 탭의 계정. 바뀌면 상태를 새로 읽는다(이 브라우저 구독은 지우지 않는다 — 지우는 것은 끄기·로그아웃·다른 계정이 켤 때뿐).
   setAccount(accountId){
    const next=typeof accountId==='string'&&accountId?accountId:null;if(next===owner)return Promise.resolve(snapshot());
-   epoch++;owner=next;publicKey=null;lastSync=null;clearTimeout(syncTimer);syncTimer=null;pendingSync=null;
+   epoch++;owner=next;publicKey=null;lastSync=null;clearTimeout(syncTimer);syncTimer=null;pendingSync=null;unconfirmed=null;
    // 앞 계정이 띄운 권한 창 기다리기는 끝낸다(늦게 허용돼도 지운다) — 새 계정이 바로 켤 수 있게.
    if(attempt){attempt.stop();attempt=null;}mutation=null;
    emit({phase:next?'loading':'signed-out',enabled:false,device:{subscribed:false},account:{active:false,devices:0},plan:null,checkedAt:0,error:null,busy:false});
@@ -199,9 +199,12 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   sync({settings,digest,handover}={}){
    if(!owner||!state.account.active)return;
    const time=now();
+   // 보낸 차례(seq)를 붙인다. 늦게 온 앞 응답은 뒤 응답이 그린 계획을 덮지 않는다(11-20 GPT GA2). 응답을 받기 전의 마지막 요청은
+   // unconfirmed로 쥐어, 그 사이 페이지를 떠나면 flush가 keepalive로 다시 보낸다(계정 정리가 진행 중인 요청을 끊어도 — GPT GA1).
    const send=(body,options)=>{
-    const expected=epoch;
-    return request('sync',body,options).then(data=>{if(current(expected))applyStatus(data,expected);},error=>{if(current(expected))emit({error:error.code||'PUSH_UNAVAILABLE'});});
+    const expected=epoch,seq=++syncSeq;unconfirmed={seq,body};
+    return request('sync',body,options).then(data=>{if(unconfirmed?.seq===seq)unconfirmed=null;if(current(expected)&&seq>appliedSeq){appliedSeq=seq;applyStatus(data,expected);}},
+     error=>{if(current(expected)&&seq>appliedSeq)emit({error:error.code||'PUSH_UNAVAILABLE'});});
    };
    const drop=()=>{clearTimeout(syncTimer);syncTimer=null;pendingSync=null;};
    const mark=item=>{lastSync=syncMark(item,time);};
@@ -214,11 +217,14 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    pendingSync=item;
    if(!syncTimer)syncTimer=setTimeout(()=>{syncTimer=null;const value=pendingSync;pendingSync=null;if(value&&owner&&state.account.active){lastSync=syncMark(value,now());send(value);}},Math.max(0,lastSync.at+SYNC_GAP_MS-time));
   },
-  // 페이지를 떠날 때: 아직 못 보낸 요약을 keepalive로 보낸다.
+  // 페이지를 떠날 때: 아직 못 보낸 요약을 keepalive로 보낸다. 보냈지만 응답을 받지 못한 마지막 요청(unconfirmed)도 다시 보낸다 —
+  // 같은 요약 · 설정을 두 번 받아도 서버는 같은 계획을 다시 짓는다. 모아 둔 요약이 더 새것이면 그것에 응답을 못 받은 설정만 함께 싣는다.
   flush(){
-   if(!pendingSync||!owner||!state.account.active)return;
-   const item=pendingSync;pendingSync=null;clearTimeout(syncTimer);syncTimer=null;
-   lastSync=syncMark(item,now());
+   if(!owner||!state.account.active)return;
+   const settings=unconfirmed?.body.settings,item=pendingSync?{...(settings?{settings}:{}),...pendingSync}:unconfirmed?.body;
+   if(!item)return;
+   pendingSync=null;unconfirmed=null;clearTimeout(syncTimer);syncTimer=null;syncSeq++;
+   if(item.digest)lastSync=syncMark({digest:item.digest,...(item.handover?{handover:item.handover}:{})},now());
    try{void request('sync',item,{keepalive:true}).catch(()=>{});}catch{}
   },
   // 알림을 눌러 들어왔을 때 누름을 한 번 더 알린다(워커가 오프라인이라 못 알렸을 때 — 서버는 토큰을 한 번만 쓴다).
@@ -235,6 +241,6 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    if(removed)writeRecord(null);
    return {ok:server||removed};
   },
-  dispose(){disposed=true;epoch++;clearTimeout(syncTimer);syncTimer=null;if(attempt){attempt.stop();attempt=null;}mutation=null;},
+  dispose(){disposed=true;epoch++;clearTimeout(syncTimer);syncTimer=null;unconfirmed=null;if(attempt){attempt.stop();attempt=null;}mutation=null;},
  };
 }
