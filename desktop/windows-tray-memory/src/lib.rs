@@ -1,18 +1,16 @@
-#![windows_subsystem = "windows"]
-
+mod node_api;
+use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::mem::{size_of, zeroed};
 use std::os::windows::ffi::OsStringExt;
 use std::path::PathBuf;
-use std::process::ExitCode;
 use windows_sys::Win32::Foundation::{
     CloseHandle, FILETIME, HANDLE, HWND, INVALID_HANDLE_VALUE, LPARAM,
 };
 use windows_sys::Win32::System::Diagnostics::ToolHelp::{
     CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W, TH32CS_SNAPPROCESS,
 };
-use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows_sys::Win32::System::ProcessStatus::K32EmptyWorkingSet;
 use windows_sys::Win32::System::Threading::{
     GetCurrentProcess, GetCurrentProcessId, GetProcessTimes, OpenProcess,
@@ -148,77 +146,114 @@ fn registered_at(registered: &BTreeMap<u32, u64>, pid: u32, filetime: u64) -> bo
     registered.get(&pid) == Some(&(ticks / 10_000))
 }
 
-fn trim_parent(registered: &BTreeMap<u32, u64>) -> Option<usize> {
-    let own_time = creation_time(unsafe { GetCurrentProcess() })?;
-    let me = unsafe { GetCurrentProcessId() };
-    let rows = process_tree()?;
-    let root = rows.iter().find(|(pid, _)| *pid == me)?.1;
-    let parent = Handle::open(root)?;
-    let born = creation_time(parent.0)?;
-    let application = image(parent.0)?;
-    let name = application.file_name()?.to_str()?;
-    if !(name.eq_ignore_ascii_case("SYNKPlatformPreview.exe")
-        || name.eq_ignore_ascii_case("SYNKPlatform.exe"))
-        || born >= own_time
-        || !registered_at(registered, root, born)
-    {
-        return None;
-    }
-    if !all_hidden(root, true) {
-        return Some(0);
-    }
-    let mut trimmed = 0;
-    for (pid, owner) in rows {
-        if owner != root || pid == me || !registered.contains_key(&pid) {
-            continue;
-        }
-        let Some(process) = Handle::open(pid) else {
-            continue;
-        };
-        let Some(child_born) = creation_time(process.0) else {
-            continue;
-        };
-        // Only existing direct Electron children using this exact Platform image.
-        // A recycled PID will have been born after this one-shot helper.
-        if child_born < born
-            || child_born > own_time
-            || !registered_at(registered, pid, child_born)
-            || image(process.0).as_ref() != Some(&application)
-            || !all_hidden(pid, false)
-        {
-            continue;
-        }
-        if !all_hidden(root, true) {
-            return Some(0);
-        }
-        trimmed += usize::from(unsafe { K32EmptyWorkingSet(process.0) } != 0);
-    }
-    if !all_hidden(root, true) {
-        return Some(0);
-    }
-    trimmed += usize::from(unsafe { K32EmptyWorkingSet(parent.0) } != 0);
-    (trimmed > 0).then_some(trimmed)
+// Holding the verified process handles until the next JS turn also pins their
+// identities. Dropping a cancelled batch releases every remaining handle.
+struct Batch {
+    root: u32,
+    targets: Vec<(u32, Handle)>,
+    trimmed: usize,
 }
 
-fn main() -> ExitCode {
-    let args: Vec<_> = std::env::args().skip(1).collect();
-    if args == ["--verify-runtime"] {
-        for name in ["vcruntime140.dll", "vcruntime140_1.dll", "msvcp140.dll"] {
-            let wide: Vec<_> = name.encode_utf16().chain([0]).collect();
-            if !unsafe { GetModuleHandleW(wide.as_ptr()) }.is_null() {
-                return ExitCode::from(4);
+const DONE: u32 = 0;
+const MORE: u32 = 1;
+const SKIPPED: u32 = 2;
+const FAILED: u32 = 3;
+
+impl Batch {
+    fn prepare(registered: &BTreeMap<u32, u64>) -> Result<Self, u32> {
+        let root = unsafe { GetCurrentProcessId() };
+        let current = unsafe { GetCurrentProcess() };
+        let born = creation_time(current).ok_or(FAILED)?;
+        let application = image(current).ok_or(FAILED)?;
+        let name = application
+            .file_name()
+            .and_then(|value| value.to_str())
+            .ok_or(FAILED)?;
+        if !(name.eq_ignore_ascii_case("SYNKPlatformPreview.exe")
+            || name.eq_ignore_ascii_case("SYNKPlatform.exe"))
+            || !registered_at(registered, root, born)
+        {
+            return Err(FAILED);
+        }
+        if !all_hidden(root, true) {
+            return Err(SKIPPED);
+        }
+        // pop() processes the browser last so its main loop can finish the children first.
+        let mut targets = vec![(root, Handle::open(root).ok_or(FAILED)?)];
+        for (pid, owner) in process_tree().ok_or(FAILED)? {
+            if owner != root || !registered.contains_key(&pid) {
+                continue;
+            }
+            let Some(handle) = Handle::open(pid) else {
+                continue;
+            };
+            let Some(child_born) = creation_time(handle.0) else {
+                continue;
+            };
+            if child_born >= born
+                && registered_at(registered, pid, child_born)
+                && image(handle.0).as_ref() == Some(&application)
+            {
+                targets.push((pid, handle));
             }
         }
-        return ExitCode::SUCCESS;
+        Ok(Self {
+            root,
+            targets,
+            trimmed: 0,
+        })
     }
-    let Some(registered) = registered_processes(args.into_iter()) else {
-        return ExitCode::from(3);
-    };
-    match trim_parent(&registered) {
-        Some(n) if n > 0 => ExitCode::SUCCESS,
-        Some(_) => ExitCode::from(2),
-        None => ExitCode::from(3),
+
+    fn step(&mut self) -> u32 {
+        let Some((pid, handle)) = self.targets.pop() else {
+            return SKIPPED;
+        };
+        if !all_hidden(self.root, true) {
+            return SKIPPED;
+        }
+        if pid == self.root || all_hidden(pid, false) {
+            self.trimmed += usize::from(unsafe { K32EmptyWorkingSet(handle.0) } != 0);
+        }
+        if !self.targets.is_empty() {
+            MORE
+        } else if self.trimmed > 0 {
+            DONE
+        } else {
+            FAILED
+        }
     }
+}
+
+thread_local! {static BATCH: RefCell<Option<Batch>> = const { RefCell::new(None) };}
+
+fn command(input: &str) -> u32 {
+    BATCH.with(|current| {
+        let Ok(mut batch) = current.try_borrow_mut() else {
+            return FAILED;
+        };
+        if input == "cancel" {
+            *batch = None;
+            return DONE;
+        }
+        if input == "next" {
+            let status = batch.as_mut().map_or(SKIPPED, Batch::step);
+            if status != MORE {
+                *batch = None;
+            }
+            return status;
+        }
+        *batch = None;
+        let Some(registered) = registered_processes(input.split(',').map(str::to_owned)) else {
+            return FAILED;
+        };
+        match Batch::prepare(&registered) {
+            Ok(prepared) => {
+                *batch = Some(prepared);
+                MORE
+            }
+            Err(status) => status,
+        }
+    })
 }
 
 #[cfg(test)]

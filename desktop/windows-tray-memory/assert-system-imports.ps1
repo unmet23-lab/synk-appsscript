@@ -2,7 +2,7 @@ param([Parameter(Mandatory)][AllowEmptyString()][string[]]$Report)
 
 # Read every import row, including the optional delay-load section.
 $lines = @($Report | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-$type = [Array]::IndexOf($lines, 'File Type: EXECUTABLE IMAGE')
+$type = [Array]::IndexOf($lines, 'File Type: DLL')
 $summary = [Array]::LastIndexOf($lines, 'Summary')
 if ($type -lt 0 -or $summary -le $type + 2 -or $lines[$type + 1] -ne 'Image has the following dependencies:') {
     throw 'Unrecognized dumpbin dependency report.'
