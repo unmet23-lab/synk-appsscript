@@ -90,6 +90,7 @@ let curtain=null,handoffCover=null,arrivalShow=null,arrivalBoot=null,handoffGen=
 let handoffVisibility=null,autostartHidden=process.argv.includes('--synk-autostart'),placementControl=null;
 // 시작 창이 그리는 업데이트 뒤의 첫 장면 길이(renderer/startup-update.mjs의 ARRIVE_SCENE_MS). 이 시간이 지난 뒤 앱 창으로 넘긴다
 const ARRIVE_SCENE_MS=4130;
+let waitingForFirstWindow=false,openBeforeStartupGate=false;
 let startupGate,startupWindow,updateRecovery,suiteStore,suitePublisher,suiteDeviceId=null,pendingDesktopAction,mainInitialized=false,mainWindowReady=false,quittingRequested=false;
 let companyEntry,companyPartitions,companyDestinations;
 let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
@@ -203,7 +204,11 @@ app.on('will-quit',event=>{
       else{quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();
         // 조용히 바꾸던 앱(쪽지에 숨음이나 최소화로 적음)은 넘김이 실패해도 그 상태 그대로 둔다. 숨은 창이 다른 프로그램 창 위로 나서지 않는다(0.4.96 검수 F2)
         const was=handoffVisibility;
-        if(was==='hidden'||was==='minimized'){if(!startupGate?.isBlocking()&&(!window||window.isDestroyed())){arrivalShow=was;createWindow();}endHandoff();}
+        if(was==='hidden'||was==='minimized'){
+          const stayInTray=was==='hidden'&&waitingForFirstWindow&&platformTray?.isActive();
+          if(!stayInTray&&!startupGate?.isBlocking()&&(!window||window.isDestroyed())){arrivalShow=was;createWindow();}
+          endHandoff();
+        }
         else{if(startupGate?.isBlocking())showStartupWindow();else if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}
         // 다시 만든 창이 보인 뒤에 가림막을 거둔다(2절 가림막 7번). 그 사이 화면이 비지 않는다
         endHandoffWhenShown();}}
@@ -245,6 +250,7 @@ else {
         catch{recovery={code:'UPDATE_RECOVERY_INVALID'};}
         // 로그인 때 숨은 채 시작이면 시작 창을 띄우지 않는다. 확인은 뒤에서 하고, 실패해도 지금 판을 숨은 채 연다
         // 도착 쪽지가 숨음이나 최소화면 시작 창을 띄우지 않고 숨은 채 시작한 길로 간다(2절)
+        if(openBeforeStartupGate){arrivalShow=null;arrivalBoot=null;openBeforeStartupGate=false;}
         const hidden=process.platform==='win32'&&!smoke&&(autostartHidden&&readStartHidden(app.getPath('userData'))||arrivalShow==='hidden'||arrivalShow==='minimized');
         // 조용한 업데이트가 실패해 되돌려 켠 앱(도착 쪽지가 숨음이나 최소화)도 숨은 채 연다. 그 실패는 다음에 창을 열 때 보인다(0.4.96 검수 F2, 2절 151행 · 5절 311~312행)
         await beginPlatformStartup(recovery?.code,recovery?.releaseId,{hidden});return;
@@ -266,8 +272,10 @@ function showPlatformMain(){
    최소화한 채 넘기는 길도 창을 보이지 않고 이 요청만 전달한다(0.4.97 엔진 다시 검수 -e GA1) */
 function deliverPendingAction(){
   if(!pendingDesktopAction||!window||window.isDestroyed())return;
+  const contents=window.webContents;
+  if(contents.isLoading()||!trustedEntry(contents.getURL(),entry,runtime.clientId))return;
   const action=pendingDesktopAction;pendingDesktopAction=null;
-  if(window.webContents.isLoading())window.webContents.once('did-finish-load',()=>sendDesktop('synk:desktop-action',action));else sendDesktop('synk:desktop-action',action);
+  sendDesktop('synk:desktop-action',action);
 }
 // 숨은 길(Windows의 숨은 시작)에서 미룬 실패는 사람이 앱을 처음 보는 자리에서 한 번 보인다. 그 자리는 셋이다:
 // 열기 요청(트레이, 두 번째 실행, 단축키), 작업 표시줄에서 되살림, 준비된 앱 창을 처음 보일 때. 셋 모두 이 함수를 지난다(0.4.97 엔진 다시 검수 설계 정리)
@@ -280,6 +288,7 @@ function showKeptFailure(){
 function requestPlatformWindow(action){
   // 사람이 부른 열기는 늘 앞으로 띄운다. 도착 쪽지의 「뒤」는 업데이트 뒤 저절로 보일 때만 쓴다. 로그인 때의 숨은 시작도 여기서 끝난다(0.4.96 검수 D5)
   arrivalShow=null;autostartHidden=false;
+  if(!startupAllowed&&!startupGate)openBeforeStartupGate=true;
   if(action)pendingDesktopAction=action;
   if(!startupAllowed||startupGate?.isBlocking()){showStartupWindow();return;}
   // 최소화한 창도 isVisible()이 참이다. 숨은 길에서 미룬 실패가 있으면 최소화한 창은 아직 보지 않은 창으로 보고 실패부터 보인다(0.4.97 엔진 검수 GA2)
@@ -452,15 +461,20 @@ function initializeMain(){
     draftRecovery=createDraftRecovery({directory:path.join(app.getPath('userData'),'DraftRecovery'),safeStorage,getAccount:accountStatus,configFingerprint:authConfig?.fingerprint||'unconfigured',enabled:!smoke,onChange:status=>sendDesktop('synk:draft-recovery-changed',status)});
     draftRecoveryRequests=createDraftRecoveryRequests({getAccount:accountStatus,recovery:draftRecovery});
   }
-  platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,onShow:()=>requestPlatformWindow(),revealForQuit:()=>!quietQuit,enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>{if(!startupAllowed)pendingDesktopAction=action;else sendDesktop('synk:desktop-action',action);}});
+  platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,onShow:()=>requestPlatformWindow(),revealForQuit:()=>!quietQuit,enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>requestPlatformWindow(action)});
+  if(runtime.clientId==='platform'&&platformTray.isActive()&&arrivalShow!=='minimized'){
+    const preferences=desktopPreferences.snapshot().preferences;
+    const hidden=arrivalShow==='hidden'?preferences.closeToTray!==false:!arrivalShow&&autostartHidden&&preferences.startHidden;
+    if(hidden){
+      waitingForFirstWindow=true;autostartHidden=false;arrivalShow=null;
+      initializeAccountServices();
+      return;
+    }
+  }
   createWindow();
 }
-function createWindow(){
-  if(!startupAllowed){showStartupWindow();return;}
-  if(!appLocationReady)return;
-  mainWindowReady=false;
-  let smokeDownload=null;const smokeNetworkRequests=[],smokeConsoleErrors=[];
-  const partition='persist:'+current.sessionScope,ownSession=session.fromPartition(partition);
+// 로그인 상태와 데스크톱 알림은 창을 한 번도 열지 않은 동안에도 동작한다.
+function initializeAccountServices(){
   if(!auth){const store=createTokenStore({directory:app.getPath('userData'),safeStorage,scope:current.sessionScope,configFingerprint:authConfig?.fingerprint||'unconfigured'});
     const signInReturn=createSignInReturn();
     auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),device:suiteDeviceId,onChange:state=>{suitePublisher?.publish(state);publishAuthState(projectAuth(state));if(signInReturn(state))bringToFront(window,{app});}});
@@ -470,6 +484,15 @@ function createWindow(){
     careNotifications=createCareNotifications({directory:path.join(app.getPath('userData'),'CareNotifications'),safeStorage,getAccount:accountStatus,loadCare:()=>auth.accountRequest('careLoad',{}),shouldNotify:careReminderDue,Notification,icon:path.join(app.getAppPath(),'assets','platform.ico'),openCare:()=>shell.openExternal('https://synk.im/care/#synk-platform-account='+encodeURIComponent(accountStatus().account.synk_user_id)),enabled:!smoke,configFingerprint:authConfig?.fingerprint||'unconfigured',onChange:value=>sendDesktop('synk:care-notifications-changed',value)});
     careNotifications.start();
   }
+}
+function createWindow(){
+  if(!startupAllowed){showStartupWindow();return;}
+  if(!appLocationReady)return;
+  waitingForFirstWindow=false;
+  mainWindowReady=false;
+  let smokeDownload=null;const smokeNetworkRequests=[],smokeConsoleErrors=[];
+  const partition='persist:'+current.sessionScope,ownSession=session.fromPartition(partition);
+  initializeAccountServices();
   // Keeping an unsaved PULSE draft while quitting cancels the quit and a pending
   // update install, as the platform window's own will-prevent-unload handler
   // below does. The PULSE window is not attached to the tray, so its quit state
@@ -521,6 +544,7 @@ function createWindow(){
   Menu.setApplicationMenu(process.platform==='darwin'?Menu.buildFromTemplate([{label:current.productName,submenu:[{role:'about'},{role:'quit'}]},{label:'Edit',submenu:[{role:'undo'},{role:'redo'},{type:'separator'},{role:'cut'},{role:'copy'},{role:'paste'},{role:'selectAll'}]}]):null);
   const contents=window.webContents;
   contents.on('did-finish-load',sendTeachingView);
+  if(isPlatform)contents.on('did-stop-loading',deliverPendingAction);
   if(isPlatform){placementControl=windowPlacement.attach(window,{maximized:placement.maximized});contents.on('did-finish-load',()=>desktopPreferences.applyWindow(window));}
   // A new document committed in the platform window drops the company assignment its former document confirmed and
   // ends that document's lookup in flight (company-entry-destinations.cjs invalidate). Electron sends did-navigate only
@@ -636,7 +660,7 @@ function createWindow(){
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});
-  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;if(isPlatform&&startupHandoff&&!startupHandoff.done){startupHandoff.timer=setTimeout(finishHandoff,3000);return;}/* 얼굴의 첫 장 알림이 이 이벤트보다 먼저 와서 넘기기가 이미 창을 보였으면 다시 보이지 않는다(「뒤」로 보인 창이 앞으로 나서지 않게, 0.4.96 검수 C4) */if(isPlatform&&window.isVisible())return;const tray=isPlatform&&platformTray.isActive(),hidden=isPlatform&&(autostartHidden&&desktopPreferences.snapshot().preferences.startHidden&&tray||arrivalShow==='hidden'&&tray&&desktopPreferences.snapshot().preferences.closeToTray!==false);/* 로그인 때의 숨은 시작은 첫 창에만 쓴다. 넘김 실패로 다시 만든 창이나 사람이 연 창은 숨기지 않는다(0.4.96 검수 D5) */if(isPlatform)autostartHidden=false;/* 도착 쪽지가 최소화였으면(또는 숨음인데 트레이가 없으면) 최소화한 채 켠다(2절 「조용한 업데이트」의 새 앱) */if(isPlatform&&!hidden&&(arrivalShow==='minimized'||arrivalShow==='hidden')){arrivalShow=null;window.minimize();return;}if(isPlatform&&hidden)arrivalShow=null;if(!hidden){/* 숨은 길에서 미룬 실패가 있으면 창을 보이기 전에 실패부터 보인다(로그인 때 숨은 시작인데 트레이가 없어 창이 그냥 보이는 경우 따위) */if(isPlatform&&showKeptFailure())return;if(isPlatform&&arrivalShow==='behind'){arrivalShow=null;showBehind();}else window.show();}});
+  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;if(isPlatform&&startupHandoff&&!startupHandoff.done){startupHandoff.timer=setTimeout(finishHandoff,3000);return;}/* 얼굴의 첫 장 알림이 이 이벤트보다 먼저 와서 넘기기가 이미 창을 보였으면 다시 보이지 않는다(「뒤」로 보인 창이 앞으로 나서지 않게, 0.4.96 검수 C4) */if(isPlatform&&window.isVisible())return;const tray=isPlatform&&platformTray.isActive(),hidden=isPlatform&&(!arrivalShow&&autostartHidden&&desktopPreferences.snapshot().preferences.startHidden&&tray||arrivalShow==='hidden'&&tray&&desktopPreferences.snapshot().preferences.closeToTray!==false);/* 로그인 때의 숨은 시작은 첫 창에만 쓴다. 넘김 실패로 다시 만든 창이나 사람이 연 창은 숨기지 않는다(0.4.96 검수 D5) */if(isPlatform)autostartHidden=false;/* 도착 쪽지가 최소화였으면(또는 숨음인데 트레이가 없으면) 최소화한 채 켠다(2절 「조용한 업데이트」의 새 앱) */if(isPlatform&&!hidden&&(arrivalShow==='minimized'||arrivalShow==='hidden')){arrivalShow=null;window.minimize();return;}if(isPlatform&&hidden)arrivalShow=null;if(!hidden){/* 숨은 길에서 미룬 실패가 있으면 창을 보이기 전에 실패부터 보인다(로그인 때 숨은 시작인데 트레이가 없어 창이 그냥 보이는 경우 따위) */if(isPlatform&&showKeptFailure())return;if(isPlatform&&arrivalShow==='behind'){arrivalShow=null;showBehind();}else window.show();}});
   if(smoke) {
     const timer=setTimeout(()=>{process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:false,clientId:runtime.clientId,error:'TIMEOUT'})+'\n');app.exit(1);},20000);
     contents.once('did-finish-load',async()=>{

@@ -3,6 +3,7 @@
 // 시작 창을 먼저 없애면 「모든 창이 닫힘」이 app.quit()를 불러 앱이 켜지자마자 멈췄다. 확인이 시작 창이 보이기 전에 끝나는 실행
 // (빠른 인터넷, 공개 CI의 Windows 검사기)이 이 길을 탄다(0.4.96 대역 빌드 검사에서 찾음).
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const {EventEmitter}=require('node:events');
 function handoffSource(){
   const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8').replace(/\r\n/g,'\n');
   const found=main.match(/function handoffToMain\(\{waitedForStart=false\}=\{\}\)\{[\s\S]*?\n\}\n/);
@@ -85,11 +86,15 @@ test('handing over behind other windows never maximizes the app window into the 
 test('a failed quiet handoff restores the app to the state written in the handoff note',async()=>{
   const source=extract(/app\.on\('will-quit',event=>\{[\s\S]*?\n\}\);\n/,'will-quit');
   const {EventEmitter}=require('node:events');
-  for(const [was,hasWindow,expected] of [['hidden',false,['create:hidden','end']],['minimized',true,['end']],['front',true,['show','focus','end-when-shown']],['behind',false,['create:null','end-when-shown']]]){
+  for(const [was,hasWindow,expected,waitingForFirstWindow=false,trayActive=true] of [
+    ['hidden',false,['create:hidden','end']],['hidden',false,['end'],true],
+    ['hidden',false,['create:hidden','end'],true,false],['minimized',true,['end']],['minimized',false,['create:minimized','end'],true],
+    ['front',true,['show','focus','end-when-shown']],['behind',false,['create:null','end-when-shown']],
+  ]){
     const events=[];const app=new EventEmitter();
-    const context={app,handoffVisibility:was,arrivalShow:null,quittingRequested:true,curtain:null,startupGate:null,startupWindow:null,
+    const context={app,handoffVisibility:was,waitingForFirstWindow,arrivalShow:null,quittingRequested:true,curtain:null,startupGate:null,startupWindow:null,
       window:hasWindow?{isDestroyed:()=>false,show:()=>events.push('show'),focus:()=>events.push('focus')}:null,
-      platformTray:{cancelQuit(){}},platformUpdate:{needsInstallHandoff:()=>true,isBusy:()=>false,completeInstall:async()=>({ok:false})},
+      platformTray:{cancelQuit(){},isActive:()=>trayActive},platformUpdate:{needsInstallHandoff:()=>true,isBusy:()=>false,completeInstall:async()=>({ok:false})},
       createWindow:()=>events.push('create:'+context.arrivalShow),endHandoff:()=>events.push('end'),endHandoffWhenShown:()=>events.push('end-when-shown'),showStartupWindow:()=>events.push('startup'),Promise};
     vm.createContext(context);vm.runInContext(source,context);app.emit('will-quit',{preventDefault(){}});
     await new Promise(resolve=>setImmediate(resolve));await new Promise(resolve=>setImmediate(resolve));
@@ -162,15 +167,53 @@ test('a failure kept back while the app was restored minimized is shown when a p
 // 0.4.97 엔진 다시 검수 -e GPT GA1: 단축키로 미뤄 둔 요청은 창을 보이는 일과 따로 한 번 전달한다. 창이 불러오는 중이면 다 불러온 뒤에 보낸다
 test('a request kept back by a shortcut reaches the app screen once, whether or not the window is shown',()=>{
   const source=extract(/function deliverPendingAction\(\)\{[\s\S]*?\n\}\n/,'deliverPendingAction');
-  for(const loading of [false,true]){
-    const sent=[],waits=[];
-    const context={pendingDesktopAction:{action:'command-menu'},window:{isDestroyed:()=>false,webContents:{isLoading:()=>loading,once:(event,fn)=>waits.push([event,fn])}},sendDesktop:(channel,value)=>sent.push([channel,value.action])};
-    vm.createContext(context);vm.runInContext(source,context);
-    context.deliverPendingAction();context.deliverPendingAction();
-    if(loading){assert.deepEqual(sent,[]);assert.equal(waits.length,1);assert.equal(waits[0][0],'did-finish-load');waits[0][1]();}
-    assert.deepEqual(sent,[['synk:desktop-action','command-menu']],'loading '+loading);
+  const listeners=extract(/const contents=window\.webContents;\n  contents\.on\('did-finish-load',sendTeachingView\);[\s\S]*?(?=\n  if\(isPlatform\)\{placementControl)/,'platform load listeners');
+  for(const initial of ['blank','loading','ready']){
+    let url=initial==='blank'?'about:blank':'synk-desktop://platform/index.html',loading=initial==='loading';
+    const sent=[];
+    const webContents=Object.assign(new EventEmitter(),{isLoading:()=>loading,getURL:()=>url});
+    const context={pendingDesktopAction:{type:'command-menu'},entry:'synk-desktop://platform/index.html',runtime:{clientId:'platform'},
+      isPlatform:true,sendTeachingView(){},trustedEntry:(page,entry)=>page===entry,window:{isDestroyed:()=>false,isVisible:()=>false,webContents},
+      sendDesktop:(channel,value)=>sent.push([channel,value.type])};
+    vm.createContext(context);vm.runInContext(source+listeners,context);
+    context.deliverPendingAction();
+    if(initial!=='ready'){
+      assert.deepEqual(sent,[]);
+      url=context.entry;loading=false;webContents.emit('did-stop-loading');
+    }
+    webContents.emit('did-stop-loading');
+    assert.deepEqual(sent,[['synk:desktop-action','command-menu']],initial);
     assert.equal(context.pendingDesktopAction,null);
   }
-  // 창을 보이는 길(showPlatformMain)도 같은 함수로 전달한다
   assert.ok(extract(/function showPlatformMain\(\)\{[\s\S]*?\n\}\n/,'showPlatformMain').includes('deliverPendingAction();'));
+});
+
+
+test('only an accessible hidden platform cold start initializes the tray without a window',()=>{
+  const source=extract(/function initializeMain\(\)\{[\s\S]*?\n\}\n/,'initializeMain');
+  for(const [startupAllowed,appLocationReady] of [[false,true],[true,false],[false,false]]){
+    const context=vm.createContext({mainInitialized:false,startupAllowed,appLocationReady});
+    vm.runInContext(source,context);context.initializeMain();
+    assert.equal(context.mainInitialized,false,'startup waits for both gates');
+  }
+  for(const [arrival,autostart,startHidden,closeToTray,tray,expected] of [
+    [null,true,true,true,true,'background'],['hidden',false,false,true,true,'background'],
+    ['minimized',true,true,true,true,'window'],['behind',false,false,true,true,'window'],
+    [null,false,true,true,true,'window'],[null,true,false,true,true,'window'],
+    [null,true,true,true,false,'window'],['hidden',false,true,false,true,'window'],
+  ]){
+    const calls=[];
+    const context={mainInitialized:false,startupAllowed:true,appLocationReady:true,waitingForFirstWindow:false,
+      runtime:{clientId:'platform'},app:{getPath:()=>'/profile',getAppPath:()=>'/app'},current:{appId:'platform',productName:'SYNK'},
+      process:{platform:'win32'},path,smoke:false,authConfig:null,windowPlacement:{},packaged:true,
+      screen:{},safeStorage:{},globalShortcut:{},Tray:{},Menu:{},accountStatus:()=>null,createWindow:()=>calls.push('window'),
+      initializeAccountServices:()=>calls.push('background'),createDesktopPreferences:()=>({initialize(){calls.push('settings');},snapshot:()=>({preferences:{startHidden,closeToTray}})}),
+      createDraftRecovery:()=>({}),createDraftRecoveryRequests:()=>({}),createPlatformTray:()=>({isActive:()=>tray}),
+      autostartHidden:autostart,arrivalShow:arrival,sendDesktop(){},requestPlatformWindow(){}};
+    vm.createContext(context);vm.runInContext(source,context);
+    context.initializeMain();context.initializeMain();
+    assert.deepEqual(calls,['settings',expected],JSON.stringify([arrival,autostart,startHidden,closeToTray,tray]));
+    assert.equal(context.waitingForFirstWindow,expected==='background');
+    if(expected==='background'){assert.equal(context.arrivalShow,null);assert.equal(context.autostartHidden,false);}
+  }
 });
