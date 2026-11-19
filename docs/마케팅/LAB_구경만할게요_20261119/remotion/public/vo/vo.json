@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_62e8f21e979b3860fe2f6a24",
+  "name": "혜리"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1119,
+  "lufs": -16
+ },
+ "made": "2026-11-19T09:44:45.865Z",
+ "lines": [
+  {
+   "id": "c1",
+   "text": "어서 오세요~!",
+   "dur": 0.66,
+   "syllablesPerSec": 7.58,
+   "src": "c1.wav",
+   "key": "3af9901fe5893e343670671978304ba3",
+   "words": 2
+  },
+  {
+   "id": "c2",
+   "text": "이거 써 보세요!",
+   "dur": 1.016,
+   "syllablesPerSec": 5.91,
+   "src": "c2.wav",
+   "key": "b6180cee69983f8fa4b002ffb1f1412e",
+   "words": 3
+  },
+  {
+   "id": "c3",
+   "text": "이것도요!",
+   "dur": 0.853,
+   "syllablesPerSec": 4.69,
+   "src": "c3.wav",
+   "key": "f751e0fd0994f17f37300e653a7c6b90",
+   "words": 1
+  },
+  {
+   "id": "m1",
+   "text": "구경만 할게요…",
+   "dur": 1.116,
+   "syllablesPerSec": 5.38,
+   "src": "m1.wav",
+   "key": "617835e6a76f8da78e40e2f3ed3e2e9e",
+   "words": 2
+  },
+  {
+   "id": "c4",
+   "text": "네~ 천천히 보세요~",
+   "dur": 1.375,
+   "syllablesPerSec": 5.09,
+   "src": "c4.wav",
+   "key": "f8c6945e6f8510e6d67b15d996d66d4e",
+   "words": 3
+  },
+  {
+   "id": "c5",
+   "text": "네~ 천천히 보세요~",
+   "dur": 1.54,
+   "syllablesPerSec": 4.55,
+   "src": "c5.wav",
+   "key": "1c02dc6afa698c5a06da4532c9b1c037",
+   "words": 3
+  },
+  {
+   "id": "m2",
+   "text": "와… 예쁘다…",
+   "dur": 1.213,
+   "syllablesPerSec": 3.3,
+   "src": "m2.wav",
+   "key": "a5a28b0c4c0d13952c1c6f334d8e616b",
+   "words": 2
+  },
+  {
+   "id": "c6",
+   "text": "이거요?!",
+   "dur": 0.479,
+   "syllablesPerSec": 6.26,
+   "src": "c6.wav",
+   "key": "594076921f57a24221ff6afeabb0d7e8",
+   "words": 1
+  },
+  {
+   "id": "c7",
+   "text": "이거요?!",
+   "dur": 0.561,
+   "syllablesPerSec": 5.35,
+   "src": "c7.wav",
+   "key": "d3b7d77ec3a2ad6a9260bbeca4d60eb7",
+   "words": 1
+  },
+  {
+   "id": "c8",
+   "text": "이거요?!",
+   "dur": 0.568,
+   "syllablesPerSec": 5.28,
+   "src": "c8.wav",
+   "key": "670ac26fd410e74afdcb5bcaaea5172b",
+   "words": 1
+  }
+ ]
+}

@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c4",
+ "text": "네~ 천천히 보세요~",
+ "dur": 1.375,
+ "words": [
+  {
+   "text": "네~",
+   "start": 0.02,
+   "end": 0.405
+  },
+  {
+   "text": "천천히",
+   "start": 0.466,
+   "end": 0.851
+  },
+  {
+   "text": "보세요~",
+   "start": 0.912,
+   "end": 1.375
+  }
+ ],
+ "source": {
+  "key": "f8c6945e6f8510e6d67b15d996d66d4e",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1119,
+   "lufs": -16,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 498
+ }
+}

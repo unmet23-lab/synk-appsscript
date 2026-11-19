@@ -1,0 +1,40 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c3",
+ "text": "이것도요!",
+ "dur": 0.853,
+ "words": [
+  {
+   "text": "이것도요!",
+   "start": 0.02,
+   "end": 0.853
+  }
+ ],
+ "source": {
+  "key": "f751e0fd0994f17f37300e653a7c6b90",
+  "voice": {
+   "id": "tc_69f2e455ea79fd197aa0476f",
+   "name": "서현"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1119,
+   "lufs": -16,
+   "voiceId": "tc_69f2e455ea79fd197aa0476f"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 309
+ }
+}

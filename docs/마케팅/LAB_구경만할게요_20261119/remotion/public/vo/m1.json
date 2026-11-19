@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "구경만 할게요…",
+ "dur": 1.116,
+ "words": [
+  {
+   "text": "구경만",
+   "start": 0.02,
+   "end": 0.483
+  },
+  {
+   "text": "할게요…",
+   "start": 0.544,
+   "end": 1.116
+  }
+ ],
+ "source": {
+  "key": "617835e6a76f8da78e40e2f3ed3e2e9e",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1119,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "점원 다섯에게 둘러싸여 진땀을 흘리던 손님이, 고개를 들고 수줍지만 또박또박 공손하게 말한다.",
+   "next": "네~ 천천히 보세요~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 495
+ }
+}
