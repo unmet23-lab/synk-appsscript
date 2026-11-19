@@ -46,6 +46,13 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+function formatAccountHelp(value) {
+  return escapeHtml(value).replace(
+    /가입하기|Google로 로그인|이메일로 로그인/g,
+    (label) => '<span class="invite-auth-label" lang="ko">' + label + '</span>'
+  );
+}
+
 function readLocaleCopy(copy, locale) {
   const source = copy?.[locale] ?? {};
   const result = {};
@@ -118,6 +125,10 @@ function renderNeutralPage(en, mn) {
   const bodyHtml = `  <div class="invite-shell">
     <header class="invite-header">
       <h1 class="invite-wordmark" lang="en">SYNK WORLD</h1>
+      <nav class="invite-choice-nav" aria-label="${escapeHtml(en.language)} / ${escapeHtml(mn.language)}">
+        <a class="invite-cta invite-choice-cta" href="${LOCALES.en.pathname}" lang="en" hreflang="en">${LOCALES.en.label}</a>
+        <a class="invite-cta invite-choice-cta" href="${LOCALES.mn.pathname}" lang="mn" hreflang="mn">${LOCALES.mn.label}</a>
+      </nav>
     </header>
     <main class="invite-stage invite-stage-neutral">
       <figure class="invite-media">
@@ -125,18 +136,14 @@ function renderNeutralPage(en, mn) {
       </figure>
       <div class="invite-bilingual">
         <section class="invite-locale-card" lang="en">
-          <p class="invite-kicker">${escapeHtml(en.language)}</p>
           <h2 class="invite-card-title">${escapeHtml(en.title)}</h2>
           <p class="invite-intro">${escapeHtml(en.intro)}</p>
           <p class="invite-soon">${escapeHtml(en.soon)}</p>
-          <a class="invite-cta invite-choice-cta" href="${LOCALES.en.pathname}" hreflang="en">${LOCALES.en.label}</a>
         </section>
         <section class="invite-locale-card" lang="mn">
-          <p class="invite-kicker">${escapeHtml(mn.language)}</p>
           <h2 class="invite-card-title">${escapeHtml(mn.title)}</h2>
           <p class="invite-intro">${escapeHtml(mn.intro)}</p>
           <p class="invite-soon">${escapeHtml(mn.soon)}</p>
-          <a class="invite-cta invite-choice-cta" href="${LOCALES.mn.pathname}" hreflang="mn">${LOCALES.mn.label}</a>
         </section>
       </div>
     </main>
@@ -183,7 +190,7 @@ function renderLocalizedPage(localeMeta, t) {
           <p class="invite-browser">${escapeHtml(t.browser)}</p>
           <details class="invite-guide">
             <summary class="invite-guide-summary">${escapeHtml(t.guide)}</summary>
-            <p class="invite-authhelp">${escapeHtml(t.authhelp)}</p>
+            <p class="invite-authhelp">${formatAccountHelp(t.authhelp)}</p>
           </details>${studyHtml}
         </div>
       </div>

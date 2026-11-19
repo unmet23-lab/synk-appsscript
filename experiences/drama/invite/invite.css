@@ -13,6 +13,7 @@
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF;
 }
 
 :root {
@@ -33,8 +34,8 @@
   --soon-accent: #c95162;
   --soon-text: #f7e6e8;
   --focus-ring: #eab0b8;
-  --font-sans: "SUIT Variable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Inter Tight", "SUIT Variable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Inter Tight", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 *,
@@ -110,7 +111,8 @@ body.invite-page {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
   padding: 0.25rem 0.625rem;
   border-radius: 4px;
   border: 1px solid transparent;
@@ -218,14 +220,6 @@ body.invite-page {
   background-color: var(--surface);
 }
 
-.invite-kicker {
-  margin: 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--text-soft);
-}
-
 .invite-locale-card .invite-intro {
   font-size: 0.875rem;
   line-height: 1.45;
@@ -284,11 +278,27 @@ body.invite-page {
   transform: translateY(1px);
 }
 
+.invite-choice-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 36rem) {
+  .invite-choice-nav {
+    width: auto;
+    min-width: 15rem;
+  }
+}
+
 .invite-choice-cta {
-  margin-top: auto;
+  width: 100%;
+  min-width: 2.75rem;
   min-height: 2.75rem;
-  padding-block: 0.625rem;
+  padding: 0.625rem 0.75rem;
   font-size: 0.9375rem;
+  text-align: center;
 }
 
 .invite-meta {
@@ -350,11 +360,15 @@ body.invite-page {
   margin: 0;
   padding: 0.75rem 0.875rem 0.875rem;
   border-top: 1px solid var(--border);
-  font-family: "SUIT Variable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'SUIT Variable', sans-serif;
   color: var(--text-muted);
   font-size: 0.84375rem;
   line-height: 1.55;
   white-space: pre-line;
+}
+
+.invite-auth-label {
+  white-space: nowrap;
 }
 
 .invite-study {

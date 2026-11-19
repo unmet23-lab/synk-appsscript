@@ -37,7 +37,40 @@ test('the shared invitation opens either published language without an account',
   }
 });
 
+test('both languages share a named navigation landmark with one link per language', () => {
+  const doc = parse(pages['invite/index.html']);
+  const nav = findAll(doc, 'nav').find(node => findAll(node, 'a').length === locales.length);
+  assert.ok(nav, 'the two language choices must be reachable together');
+  assert.ok(attr(nav, 'aria-label') || attr(nav, 'aria-labelledby'));
+  const navigationLinks = findAll(nav, 'a');
+  for (const locale of locales) {
+    const pathname = `/world/invite/${locale}/`;
+    const matching = findAll(doc, 'a').filter(anchor => attr(anchor, 'href') === pathname);
+    assert.equal(matching.length, 1);
+    assert.ok(navigationLinks.includes(matching[0]));
+    assert.equal(attr(matching[0], 'hreflang'), locale);
+    assert.equal(attr(matching[0], 'lang'), locale);
+  }
+});
+
+test('account help keeps punctuation and markup-like examples as plain text', () => {
+  const help = 'Read <example>가입하기</example> & continue.';
+  const sample = renderDramaInvites({ ...copy, en: { ...copy.en, authhelp: help } });
+  const doc = parse(sample['invite/en/index.html']);
+  const paragraph = findAll(findAll(doc, 'details')[0], 'p')[0];
+  assert.equal(textOf(paragraph), help);
+  assert.equal(findAll(paragraph, 'example').length, 0);
+});
+
 for (const lang of locales) {
+  test(`the ${lang} signup guide preserves each Korean button name as one label`, () => {
+    const doc = parse(pages[`invite/${lang}/index.html`]);
+    const help = findAll(findAll(doc, 'details')[0], 'p')[0];
+    assert.equal(textOf(help), copy[lang].authhelp);
+    const names = findAll(help, 'span').filter(span => attr(span, 'lang') === 'ko');
+    assert.deepEqual(names.map(textOf), ['가입하기', 'Google로 로그인', '이메일로 로그인']);
+  });
+
   test(`the ${lang} invitation is localized before scripts run and opens episode one`, () => {
     const path = `/world/invite/${lang}/`;
     const doc = parse(pages[`invite/${lang}/index.html`]);
