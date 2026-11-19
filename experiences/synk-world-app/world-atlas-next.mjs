@@ -237,6 +237,15 @@ function writeMark(storage, owner, patch) {
   }
 }
 
+// 「새 길 간 적 있음」을 더 새 판으로만 옮긴다 — 표지가 이미 이 판이나 더 새 판이면 그대로 둔다. 같은 판의 길은 확인된 쪽만 바꾼다: 기기 길은
+// 판 정하기가 스위치를 물은 뒤, 올리는 길은 첫 받기(markWent)가. 판을 올리지 않고 길만 바꾸는 서버 쓰기 깃발(capabilities.learningSync)이나
+// 늦게 온 읽기가 확인 전에 같은 판의 길을 덮지 않게(입구 다시 검수 -d 카본 A1). 판 정하기 끝 · 판 견줌이 쓴다.
+function advanceMark(storage, owner, path, revision) {
+  const was = markOf(storage, owner);
+  if (was.revision != null && was.revision >= revision) return true;
+  return writeMark(storage, owner, { went: true, path, revision });
+}
+
 // ── 연습 기록 비우기의 입구 몫(4-5 — 단계4_계획 §22-4 · 22-1의 4) ──────────────────────────────────────────
 // 「비웠는가」는 판 견줌으로 정한다(설계 주인 11-19 아침 — Fable 5.2 설계 검토 atlas-redesign-stage4-me-clearing-design-20261119). 결과를 모르는
 // 비우기를 따로 적는 표지는 없다 — 한 칸을 여러 탭이 「누구 것인가」를 따지며 고쳐 쓰던 짜임에서 P1이 거듭 나왔다(-c GA3 · GC2 · 끝 판 F3).
@@ -1301,9 +1310,8 @@ export function createAtlasNext({
       }
       // 새 길에 간 적 있는 계정의 올리는 길은 방금 읽은 이 판으로 「새 길 간 적 있음」을 옮긴다 — 다시 정한 판의 첫 받기 전에 문서를 닫아도
       // 다음 오프라인 시작이 비운 판을 열지 않게(GC3). 판 견줌이 앞선 판의 길로 적던 자리를 걷고 여기로 옮겼다(입구 다시 검수 -c GPT GA4).
-      // 기기 길은 판 정하기가 이미 적었다. 판은 내려가지 않는다(writeMark).
-      if (account && plan.path === 'upload' && plan.went && !plan.unread)
-        writeMark(store, owner, { went: true, path: 'upload', revision: plan.revision });
+      // 기기 길은 판 정하기가 이미 적었다. 더 새 판으로만 옮긴다 — 같은 판의 길은 첫 받기가 확인한 뒤에 바꾼다(advanceMark — -d 카본 A1).
+      if (account && plan.path === 'upload' && plan.went && !plan.unread) advanceMark(store, owner, 'upload', plan.revision);
       return { plan, at };
     }
     return null;
@@ -1488,11 +1496,12 @@ export function createAtlasNext({
       return false;
     }
     // 비운 뒤의 판에 고른 판의 길을 적지 않는다 — 고른 판이 앞선 판(늦게 온 계정 읽기)이면 그 길은 비운 뒤의 판의 길이 아닐 수 있어, 동의를
-    // 바꿔 오른 판의 길을 덮었다(입구 다시 검수 -c GPT GA4). 판은 내려가지 않아 앞선 판의 쓰기는 표지를 바꾸지 않고, 부르는 쪽이 다시 정한다.
-    writeMark(store, owner, { went: true, path, revision });
+    // 바꿔 오른 판의 길을 덮었다(입구 다시 검수 -c GPT GA4). 더 새 판으로만 옮겨(advanceMark) 앞선 판이나 같은 판의 쓰기는 표지를 바꾸지 않고,
+    // 부르는 쪽이 다시 정한다.
+    advanceMark(store, owner, path, revision);
     const done = await settleDevice(path, last.revision);
     // 앞 판 쓸기가 자리를 낸 뒤 한 번 더 적는다 — 저장소가 차서 처음 쓰기가 실패했으면 표지가 비운 판에 남았다(-c GPT GA2).
-    writeMark(store, owner, { went: true, path, revision });
+    advanceMark(store, owner, path, revision);
     // 기다리는 사이 다른 탭이 같은 비우기를 마쳤으면 남은 걸음 표지를 다시 적지 않는다 — 마친 걸음을 다시 하게 했다(입구 다시 검수 GPT GB6).
     if (clearedOf(store, owner).settled >= last.revision) return true;
     const marked = settleLeft(path, last.revision, 'cleared');

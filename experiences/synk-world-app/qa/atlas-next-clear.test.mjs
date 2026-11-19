@@ -298,6 +298,20 @@ test('올리는 계정 한 바퀴 — 옛 대기열을 먼저 올리고 서버�
   next.dispose();
 });
 
+test('같은 판의 「새 길 간 적 있음」 길은 확인된 쪽만 바꾼다 — 판 견줌 · 판 정하기 끝은 판을 올리지 않고 길만 바뀐 읽기(서버 쓰기 깃발)로 기기 길 판 2를 올리는 길로 덮지 않는다(입구 다시 검수 -d 카본 A1)', async () => {
+  const storage = filledStorage([[NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'device', revision: 2 })]]);
+  const line = accountLine({ revision: 2 }); // 같은 판 2인데 쓰기 깃발이 켜져 올리는 길로 읽힌다
+  line.lastClear = async () => ({ ok: true, revision: 2, lastClear: { revision: 2, at: 5 } });
+  // 엔진을 받는 데 오래 걸린다 — 새 판의 코치가 서지 않아 첫 받기(markWent)도 없다.
+  const never = new Promise(() => {});
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: () => never, health: recorder() });
+  void next.practiceCoach(POOL);
+  await until(() => clearedOf(storage)?.settled === 2);
+  await new Promise(resolve => setTimeout(resolve, 30));
+  assert.deepEqual(wentOf(storage), { went: true, path: 'device', revision: 2 }, '첫 받기가 확인하기 전에는 같은 판의 길을 바꾸지 않는다');
+  next.dispose();
+});
+
 // talk 비우기 문의 공유 막이(단계4_계획 §6 「1단계 켜기」 3 — 설계 주인 11-19 밤): #25가 들어갈 때까지 교실 · 타운 공유가 켜진 계정의 비우기를
 // 거절한다. 상태와 코드는 4-8 세션이 정한다 — 바꾸면 이 값을 그 값으로 맞춘다. 기기는 408 · 429 · 5xx가 아닌 4xx를 「서버가 받지 않음」으로 본다.
 const SHARING_REFUSAL = { status: 409, error: 'CLASSROOM_SHARING_ON' };
