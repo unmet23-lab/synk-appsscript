@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f0f8-afe8-7a21-b448-a20082b8b3a8"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll keep the camera and diorama fixed, moving the five assistants halfway back toward the shelves.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Five assistants step back toward the shelves as Mongle smiles with relief on the table."}}
+{"type":"turn.completed","usage":{"input_tokens":125594,"cached_input_tokens":110336,"cache_write_input_tokens":0,"output_tokens":1535,"reasoning_output_tokens":342}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f0f8-aa61-7171-b2d5-63604c4f9eb0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to create one next-frame image, preserving the set and camera while shifting only the characters’ poses and samples.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Five eager felt assistants crowd closer with their samples as Mongle squashes and tilts on the tester table."}}
+{"type":"turn.completed","usage":{"input_tokens":95653,"cached_input_tokens":81792,"cache_write_input_tokens":0,"output_tokens":1848,"reasoning_output_tokens":456}}

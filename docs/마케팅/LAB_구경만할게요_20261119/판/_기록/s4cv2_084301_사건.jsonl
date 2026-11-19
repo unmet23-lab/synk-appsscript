@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f10a-d8b5-7ff1-b76a-ca239f02a110"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one closer shot, keeping the assistants at the edges and the space above Mongle clear.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A cozy felt close-up of shy Mongle surrounded by eager assistants, with the pink mask pack centered overhead."}}
+{"type":"turn.completed","usage":{"input_tokens":127964,"cached_input_tokens":116352,"cache_write_input_tokens":0,"output_tokens":1524,"reasoning_output_tokens":415}}
