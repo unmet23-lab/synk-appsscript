@@ -73,7 +73,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 새 길 「내 위치」(4-4a — 단계4_계획 §21-2): 입구가 준 최소 그림, 서버 길 계정의 「기록이 다 왔는가」가 읽는 이 문서의 첫 받기 답(홈 코치마다 한 번),
  // 확인 중 판을 다시 보는 중인가(refresh ↔ 다시 그리기가 서로를 부르지 않게).
  let nextView=null,nextSync={coach:null,value:null,asking:null},redrawingNext=false;
- // 첫 받기가 한도(4초)를 넘겨 시간 초과로 답했을 때 받기가 끝나기를 한 번 더 기다리는 한도(GPT 끝 판 GB1).
+ // 첫 받기가 한도(4초)를 넘겨 시간 초과로 답했을 때 받기가 끝나기를 한 번 더 기다리는 한도(끝 판 GB1).
  const SYNC_LATE_MS=60000;
  // 새 길 진단 끝 화면이 기기 기록부(손님 · 동의를 끈 계정)의 다시 접기(finishSet의 folded)를 기다리는 한도 — 접기는 기기 안이라 짧다(끝 판 F3).
  const FOLD_WAIT_MS=4000;
@@ -132,7 +132,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 새 판(Atlas 새 길)의 판 응답도 같은 셈으로 읽는다(4-5 — 단계4_계획 §22-5): 지금 판 짧은 연습 코치의 응답과 새 길 코치의 판 응답 가운데 가장 새
  // 「짧은 연습」 응답 하나로 정한다. 새 길 코치의 목록은 저장 중인 내 응답도 바로 들어, 끝 화면에서 고른 값이 「n문항 더 하기」에 곧바로 선다.
  // 올리는 계정의 다른 기기 응답 · 30일 규칙은 「내 계정」을 열 때 읽은 서버 값(readResponses)이 더한다.
- // prefer: 판을 여는 새 길 코치 — 홈 코치가 아직 서지 않았어도 그 코치의 판 응답으로 센다(4-5 코드 검수 GPT — 홈 코치보다 먼저 연 짧은 연습이
+ // prefer: 판을 여는 새 길 코치 — 홈 코치가 아직 서지 않았어도 그 코치의 판 응답으로 센다(4-5 코드 검수 — 홈 코치보다 먼저 연 짧은 연습이
  // 「많았어요」를 두고도 5문항으로 열리던 것).
  function practiceLength(prefer=null){
   const base=position?.practice?.PRACTICE_POLICY?.count||5;
@@ -181,7 +181,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 본인 말(「이미 알아요」 · 「다시 배울래요」 — 코치의 tell). 그 사건 번호를 준다(되돌리기가 그 사건을 뺀다). 못 적으면 null.
  function tellMe(unit,kind){if(kind!=='known'&&kind!=='relearn')return null;const coachNow=meCoach();if(!coachNow)return null;try{return coachNow.tell(unit,kind)?.id??null;}catch{return null;}}
  // 되돌리기(설계 주인 I) — tell이 돌려준 사건을 코치의 untell로 뺀다(계정이면 그 빼기도 올라간다). 뺀 효과는 저장된 뒤에 요약에 서므로 저장이
- // 끝나면 참으로 풀린다. 못 빼면(던짐 · 저장 실패) 거짓이다(4-5 끝 판 GPT GB4 · 설계 주인 11-19 새벽).
+ // 끝나면 참으로 풀린다. 못 빼면(던짐 · 저장 실패) 거짓이다(4-5 끝 판 GB4 · 설계 주인 11-19 새벽).
  async function undoMe(eventId){if(!eventId)return false;const coachNow=meCoach();if(typeof coachNow?.untell!=='function')return false;try{return (await coachNow.untell(eventId).stored)===true;}catch{return false;}}
  // 연습 기록 비우기(§22-4) — 입구의 clearPractice(한 번 더 묻기는 셸이 했다). 결과를 그대로 준다. 입구가 없으면 null.
  async function clearPractice(options){if(stopped||typeof atlasNext?.clearPractice!=='function')return null;return atlasNext.clearPractice(options);}
@@ -220,9 +220,9 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 「내 계정」을 열 때: 새 길 올리는 계정이면 서버의 판 응답(다른 기기에서 남긴 것 · 30일)을 다시 읽어 코치에 넘긴다(입구 readResponses). 목록이
  // 바뀌었으면 참 — 셸이 그 칸만 다시 그린다.
  // 홈 코치가 아직 서지 않아 읽을 코치가 없으면 코치가 설 때(판 감시의 알림) 한 번 읽고 그 결과를 준다 — 준비 중에 연 시트가 서버 응답을 끝내
- // 읽지 못하던 것(4-5 코드 검수 GPT). 기다리는 사이 다시 부르면 같은 약속이다. 그사이 시트를 닫았으면 셸이 그리지 않는다. 기다린 읽기는 시트가
+ // 읽지 못하던 것(4-5 코드 검수). 기다리는 사이 다시 부르면 같은 약속이다. 그사이 시트를 닫았으면 셸이 그리지 않는다. 기다린 읽기는 시트가
  // 그린 목록(기다리기 시작한 때의 목록)과 견준다 — 코치가 선 때의 목록과 견주면, 코치가 낸 기기 응답이 서버 값과 같을 때 빈 채로 그린 시트를
- // 다시 그리지 않았다(4-5 코드 다시 검수 GPT GA7).
+ // 다시 그리지 않았다(4-5 코드 다시 검수 GA7).
  let responsesWaiting=null,responsesDone=null,responsesShown=null;
  async function readResponses(shown=null,again=0){
   if(!answering()||typeof atlasNext?.readResponses!=='function')return false;
@@ -237,15 +237,15 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   let read=null;
   try{read=await atlasNext.readResponses(coach);}catch{if(shown==null)return false;}
   // 읽는 사이 판을 다시 정해 그 코치가 닫혔으면(입구가 null을 준다 — 409 · 403 · 비우기 · 계정) 새 코치로 다시 읽는다. 새 홈 코치가 아직 서지
-  // 않았으면 설 때 읽는다(4-5 끝 판 GPT GC5 — 시트를 다시 열기 전까지 다른 기기의 응답을 읽지 않았다). 견주는 목록은 처음 그린 목록이다.
+  // 않았으면 설 때 읽는다(4-5 끝 판 GC5 — 시트를 다시 열기 전까지 다른 기기의 응답을 읽지 않았다). 견주는 목록은 처음 그린 목록이다.
   if(read==null&&!stopped&&again<2&&nextCoach()!==coach)return readResponses(before,again+1);
   return !stopped&&JSON.stringify(responseList())!==before;
  }
  // 판 감시가 알릴 때 · 홈 플래너를 못 받았을 때 · 화면을 다시 맞출 때(refresh) · 닫을 때: 기다리던 읽기를 코치가 섰으면 하고, 지금 판으로
  // 정해졌거나 닫았으면 읽지 않고 끝낸다. 생활 판정이 지금 판으로 서면 홈 코치를 열지 않아 판 감시는 알리지 않는다 — 셸이 다시 그리며 부르는
- // refresh와 dispose가 끝낸다(4-5 코드 다시 검수 GPT GA2).
+ // refresh와 dispose가 끝낸다(4-5 코드 다시 검수 GA2).
  // 「내 계정」을 확인 중에 열었을 때 — 홈 코치가 서면(판 감시의 알림) 「나」 칸을 그릴 수 있는지 한 번 알린다. 셸이 그때 칸을 넣는다(4-5 끝 판
- // GPT GB5). 지금 판으로 정해졌거나 닫았으면 거짓이다. 기다리는 사이 다시 부르면 같은 약속이다. 깨우는 때는 아래 판 응답 읽기의 기다림과 같다.
+ // GB5). 지금 판으로 정해졌거나 닫았으면 거짓이다. 기다리는 사이 다시 부르면 같은 약속이다. 깨우는 때는 아래 판 응답 읽기의 기다림과 같다.
  let meWaiting=null,meDone=null;
  function meReady(){
   if(stopped)return Promise.resolve(false);
@@ -821,7 +821,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  }
  // 서버 길 계정의 「기록이 다 왔는가」(21-3 A3)가 읽는 첫 받기 답 — 홈 코치마다 묻는다(코치 synced — 한도 4초, 손님 · 기기 길은 곧 답한다).
  // 된 답(ok)만 그 코치 동안 든다. 시간 초과면 받기가 끝날 때까지 한 번 더 길게(SYNC_LATE_MS) 기다린다 — 받기가 4초를 넘겨 끝나도 판이 「기록 일부」와
- // 닫힌 진단에 굳지 않게(GPT 끝 판 GB1). 실패면 다음에 판을 그릴 때 다시 묻고, 뒤의 받기는 받기 알림(receive — hearHome, §21-20)으로 본다(끝 판 F1).
+ // 닫힌 진단에 굳지 않게(끝 판 GB1). 실패면 다음에 판을 그릴 때 다시 묻고, 뒤의 받기는 받기 알림(receive — hearHome, §21-20)으로 본다(끝 판 F1).
  // 판은 답이 된 답으로 바뀔 때만 다시 그린다(되풀이해 묻지 않는다).
  function syncedNext(coachNow,wait=null){
   if(!coachNow||typeof coachNow.synced!=='function')return Promise.resolve(null);
@@ -1060,7 +1060,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 있던 초점은 그 능력 줄(details[data-skill])의 summary로 되돌린다.
  const NEXT_FOCUS=['data-position-diagnostic','data-position-exam','data-position-practice','data-position-recheck','data-position-writing'];
  // 이번 주 계획 판의 단추 — 알림으로 열린 계획 판을 다시 그릴 때(D3)도 판 안의 초점을 같은 단추로 되돌린다. 홈의 판 보이기는 부를 때마다 닫기 단추에
- // 초점을 두므로, 되돌리지 않으면 초점을 잃는다(4-4b 다시 검수 -d GPT GA1).
+ // 초점을 두므로, 되돌리지 않으면 초점을 잃는다(4-4b 다시 검수 -d GA1).
  const PLAN_FOCUS=['data-plan-next','data-plan-practice','data-plan-game','data-plan-recheck','data-plan-writing','data-plan-speaking','data-plan-mock','data-view'];
  function nextFocusOf(root,names=NEXT_FOCUS){
   try{
@@ -1098,7 +1098,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   home.showPanel(t('position.title'),draw.board({board:data.board,plan:data.plan,cards:data.cards,exams,practice:id=>data.fresh.has(id),scope:data.scope,diagnosed,writing:data.exam==='topik2'&&writingList().length>0,month:data.month,estimate:data.estimate,mock:data.mock}),PANEL);heard.panel=false;
   const root=panelNode('[data-position-next]');
   if(keepScroll){reopenRows(root,openRows);const node=root?.closest?.('#panel-content');if(node)node.scrollTop=scrollTop;refocusNext(root,focusKey);}else root?.focus?.({preventScroll:true});
-  // 첫 받기의 된 답이 아직 없으면(새로 연 코치 · 시간 초과 · 실패) 다시 묻는다 — 된 답이 오면 syncedNext가 다시 그린다(GPT 끝 판 GB1).
+  // 첫 받기의 된 답이 아직 없으면(새로 연 코치 · 시간 초과 · 실패) 다시 묻는다 — 된 답이 오면 syncedNext가 다시 그린다(끝 판 GB1).
   void syncedNext(coachNow);
   root?.querySelector?.('[data-position-diagnostic]')?.addEventListener('click',()=>{try{startDiagnosticNext(coachNow,data);}catch(error){failed(error);}},{once:true});
   root?.querySelectorAll?.('[data-position-exam]').forEach(button=>button.addEventListener('click',()=>{try{check();boardExam=button.dataset.positionExam==='topik2'?'topik2':'topik1';showNext({keepScroll:true});}catch(error){failed(error);}}));

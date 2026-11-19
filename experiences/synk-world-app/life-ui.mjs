@@ -95,7 +95,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 새 길(atlasNext — 4-2, 단계 4 §19-1 ①): 셸이 learning.next를 넘긴 문서는 새 판 겉(world-life-next.mjs)이 새 코치(은행 world-life)로 적는다.
  // 판이 바뀌어 코치가 닫히면 이 화면도 안내 한 줄과 함께 닫는다. 입구가 있어도 판은 문서 동안 바뀐다(엔진 · 확인 중 · 지금 판 — 서버 스위치가
  // 꺼진 계정 · 엔진을 못 받은 연습은 지금 판) — 레슨 · 복습 · 안내 연습을 열 때마다 그때의 판으로 이번 시도의 기록부를 고른다: 새 길 · 확인 중이면
- // 새 판 겉(확인 중에는 쌓아 두었다가 코치가 서면 흘려보낸다), 지금 판이면 옛 거울과 옛 코치 준비(GPT · 카본 합친 끝 판 GB2 · B1). 한 시도의
+ // 새 판 겉(확인 중에는 쌓아 두었다가 코치가 서면 흘려보낸다), 지금 판이면 옛 거울과 옛 코치 준비(카본 합친 끝 판 GB2 · B1). 한 시도의
  // 보임 · 답은 한 기록부에만 간다(한 답을 두 기록부에 쓰지 않는다).
  const nextPath=learning?.next&&typeof life?.createLifeNext==='function'?learning.next:null;
  const pathNow=()=>{if(!nextPath)return 'old';let value=null;try{value=nextPath.state?.()??null;}catch{value=null;}return value==='engine'?'engine':value==='old'||value==='disposed'?'old':'checking';};
@@ -108,10 +108,10 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   metrics:()=>({...via().metrics(),path:pathNow(),record:via()===newTrail?'next':'old'}),dispose(){newTrail.dispose();oldTrail.dispose();}}):oldTrail;
  const lessonSlot=(attempt,id)=>life?life.lessonSlot(attempt,id):null,reviewSlot=(run,id)=>life?life.reviewSlot(run,id):null;
  // 진도가 앞선 때의 도움 표시를 걷었으면 그 문항의 칸을 두 기록부(옛 거울 · 새 판 겉) 모두에서 놓는다 — 표시는 두 판이 함께 쓰는 진도에 있어, 지금 쓰는
- // 기록부만 놓으면 판을 오간 뒤 다른 기록부가 어제 도움이 붙은 칸을 다시 썼다(지금 판 23:22 해설 → 새 길 → 다음 날 새 길에서 걷음 → 지금 판 답, GPT 2판 다시 검수 GA1).
+ // 기록부만 놓으면 판을 오간 뒤 다른 기록부가 어제 도움이 붙은 칸을 다시 썼다(지금 판 23:22 해설 → 새 길 → 다음 날 새 길에서 걷음 → 지금 판 답 2판 다시 검수 GA1).
  const releaseReview=key=>{for(const each of new Set([oldTrail,newTrail]))if(each)try{each.release(key);}catch{/* 다음 보임이 새 칸을 연다 */}};
  // 시도를 연다 — 그때의 판으로 기록부를 정한다(위). keep: 시도 가운데(레슨 · 카페 · 복습 문항이 열린 동안)의 안내 연습은 그 시도의 기록부를
- // 그대로 쓴다 — 레슨 도중 판이 바뀌어 다시 고르면 본문항 보임은 앞 기록부에, 답은 뒤 기록부에 가 슬롯을 못 찾고 버려졌다(GPT 처리 판 GA1).
+ // 그대로 쓴다 — 레슨 도중 판이 바뀌어 다시 고르면 본문항 보임은 앞 기록부에, 답은 뒤 기록부에 가 슬롯을 못 찾고 버려졌다(처리 판 GA1).
  // 그 시도가 옛 거울이면 옛 코치를 준비하고(새 판 겉이면 하지 않는다 — 생활 코치는 셸이 문서 시작 때 연다, §19-1 ⑤ M7) 입구에 판을 다시
  // 묻는다(§19-3 7 — 열 때마다 묻는다, 새 길이 되면 다음 시도부터). 입구가 없는 지금 판(라이브)은 늘 옛 거울 · 옛 코치 준비 — 4-2 앞과 같다.
  // 새 판 겉이면 그 자리에서 코치를 청해 판 바뀜을 듣게 한다 — 첫 문항 전(소개 · 이야기 · 카페 인사)에 판이 내려가도 화면이 닫힌다(합친 끝 판 F7).
@@ -158,7 +158,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  const photo=(speaker,size='')=>friends[speaker]?`<img class="life-friend ${size}" src="${asset('home/'+friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">`:'';
  const cut=speaker=>friends[speaker]?`<img class="life-friend" src="${asset('tutors/'+friends[speaker].cut+'-기본.webp')}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">`:'';
  // 복습 첫 화면이 열려 있으면 그린 때의 판정 표지(확인 중 · 엔진 · 수 · 목록 · 다음 때) — 판정이 바뀌면 그 화면을 다시 그린다. 진도가 바뀌면
- // 셸이 홈만 새로 그려, 확인 중에 연 복습 화면이 엔진이 서도 「확인 중」으로 남던 것(GPT 합친 끝 판 GB1). 새 길 입구가 있는 문서에서만 —
+ // 셸이 홈만 새로 그려, 확인 중에 연 복습 화면이 엔진이 서도 「확인 중」으로 남던 것(합친 끝 판 GB1). 새 길 입구가 있는 문서에서만 —
  // 지금 판(입구 없음 · 라이브)은 12/10까지 그대로라, 15초마다 홈을 새로 해도 열린 복습 화면은 다시 그리지 않는다.
  const reviewSign=s=>[s.dueState??'',s.dueCount,(s.dueIds||[]).join(','),s.nextReviewAt??''].join('|');
  // 다시 그리기는 튜터의 「표현 도움」 · 「연습하기」 창이 열려 있으면 미룬다(다시 그리면 튜터를 새로 세워 그 창이 닫혔다 — 다음 새로 하기에 다시 본다).
@@ -176,7 +176,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    exposedTransfers.set(record.id,Date.now());guideTransfer(record.questionId);
    // 새 길(엔진 판정)은 그 표현 하나만 연다(간격 · 판정을 건너뜀 — 제품 간격표로 고른 복습 판을 만들지 않는다, §19-1 ⑤ M5). 확인 중 · 지금 판이면
    // 지금 판 규칙 그대로(돌아올 때가 안 된 표현의 복습을 만들지 않는다 — 카본 합친 끝 판 B2). 가르는 것은 진도의 판정(요약의 dueState)이다 —
-   // 입구(감시)가 엔진이어도 저장소가 아직 얹지 못한 동안 판정은 확인 중이다(GPT 처리 판 GA2).
+   // 입구(감시)가 엔진이어도 저장소가 아직 얹지 못한 동안 판정은 확인 중이다(처리 판 GA2).
    const run=summary().dueState==='engine'?p.startReview(1,record.id,null,{ids:[record.id]}):record.dueAt<=Date.now()?p.startReview(6,record.id):snapshot.activeReview;
    // Seeing this same transfer before finishing an active review is assistance.
    if(run?.ids.includes(record.id)&&!run.answers[record.id])p.markReviewHelp(record.id);
@@ -586,7 +586,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   }
   const id=run.ids[index],record=getProgress().exportSnapshot().reviews[id],l=lessonById(record.lessonId),original=l.questions.find(q=>q.id===record.questionId),q=original.review;if(!lastFeedback){
    // 새 길: 앞선 때의 도움 표시는 지금 도움이 아니다 — 보이기 전에 그 표시를 걷고, 표시가 있었는데 지금 도움이 아니면 두 기록부의 앞 칸(그 도움이 붙은
-   // 제시)을 놓아 새로 보인다(문서를 연 채 날을 넘겨 이은 판은 같은 run.id라 칸을 다시 써 Atlas에 어제 해설이 붙은 답으로 남았다 — GPT 다시 검수 GA3).
+   // 제시)을 놓아 새로 보인다(문서를 연 채 날을 넘겨 이은 판은 같은 run.id라 칸을 다시 써 Atlas에 어제 해설이 붙은 답으로 남았다 — 다시 검수 GA3).
    // 놓기는 걷기 쓰기의 성공이 아니라 「표시 있음 · 지금 도움 아님」으로 가른다 — 걷기가 저장 충돌로 던져도 놓는다(설계 확인 고2). 같은 날이면
    // 그대로이고, 판정이 없으면(지금 판 · 라이브) 표시가 곧 도움이라 놓지 않는다. 지키는 것은 「답이 붙는 제시의 도움 = 제품 helped」다(옛 Trail의
    // assisted는 문항 · 계열의 이력이라 이 잣대가 아니다 — 설계 확인 고1).

@@ -3,11 +3,11 @@
 //   flush() — 계정의 옛 올리기 대기열을 다 올린다. 옛 학습 호스트(window.SYNKLearningHost — account/world-learning-host.js)의 retry로 다시 보내고, 그
 //     답의 대기열이 비었고 동기화가 막힘 · 쉼 · 오류 없이 섰을 때만 참이다. 서버가 사건을 받지 않아 옛 동기화가 막혔으면 { ok: false, code:
 //     'UNSENT_SKIPPED', skipped }다 — 그 사건은 지금 보낼 수 없어, 입구가 수를 알려 한 번 더 묻는다(4-5 Opus 대체 설계 검토 F4). 수는 호스트가
-//     기록부에서 다시 센 것이다(막힌 뒤에 든 답까지 — GPT GC1), 다시 세지 못하면 거짓이다. 호스트가
+//     기록부에서 다시 센 것이다(막힌 뒤에 든 답까지 — GC1), 다시 세지 못하면 거짓이다. 호스트가
 //     없거나, 남았거나, 다른 탭이 임대를 쥐었거나, 던지면 거짓이다 — 입구가 아무것도 지우지 않는다(「아직 보내지 못한 기록」).
 //   clear({ check, read, wait }?) — 옛 엔진의 손님 기록을 비운다. 옛 손님 코치를 열어 그 기록의 쓰기 임대를 기다린다(다른 창이 쥐고 있으면
 //     한도 뒤 STORAGE_BUSY — wait로 한도를 준다. 남은 걸음은 0이라 기다리지 않는다, F7). check가 오면(계정 비우기의 4b) 임대를 쥔 채 read()로 옛 로그를 다시 읽어, check가 참일 때만 비우고 거짓이면 'kept'를 돌려준다
-//     (4-5 코드 검수 GPT GA1 — 판단과 비우기 사이에 다른 탭이 옮기지 않은 손님 기록을 쓰면 그 기록까지 지워졌다). 다시 읽기 · 판단 · 비우기는 기다림
+//     (4-5 코드 검수 GA1 — 판단과 비우기 사이에 다른 탭이 옮기지 않은 손님 기록을 쓰면 그 기록까지 지워졌다). 다시 읽기 · 판단 · 비우기는 기다림
 //     없이 한 번에 한다 — 임대를 쥔 동안 다른 창은 옛 로그를 쓰지 못한다. 손님이 고른 화면 값은 남긴다. 비우면 'cleared'. 연 코치는 늘 닫는다.
 // openGame(): 옛 손님 코치(셸 — worldLearning.engine.createGame, 기기 저장소). host(): 옛 학습 호스트(없으면 null).
 export const LEASE_WAIT_MS = 3000;
@@ -66,7 +66,7 @@ export function oldEngineDoors({ openGame, host, leaseWaitMs = LEASE_WAIT_MS }) 
         if (drained(state)) return true;
         if (!refused(state)) return false;
         // 막힌 동기화는 막힌 뒤의 답을 대기열에 모으지 않아 그 수(queued)가 낡는다 — 쓰기 임대를 쥔 탭이 기록부에서 서버가 받지 않은 사건을 다시
-        // 센다(옛 학습 호스트의 unsent). 셀 수 없으면(임대 없음 · 다시 세지 못하는 호스트) 아무것도 지우지 않는다(4-5 끝 판 GPT GC1 — 막힌 뒤에
+        // 센다(옛 학습 호스트의 unsent). 셀 수 없으면(임대 없음 · 다시 세지 못하는 호스트) 아무것도 지우지 않는다(4-5 끝 판 GC1 — 막힌 뒤에
         // 낸 답까지 학생이 확인한 수보다 많이 지워졌다).
         const left = owner.unsent?.();
         return Number.isSafeInteger(left) && left > 0 ? { ok: false, code: 'UNSENT_SKIPPED', skipped: left } : false;

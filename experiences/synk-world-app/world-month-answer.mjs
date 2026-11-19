@@ -71,7 +71,7 @@ export function verdictOf(device, stored) {
 
 // 이 문서가 든 답(kept)과 저장소의 답 가운데 견줄 답 — 저장소 것이 이 문서 것보다 앞설 때만(다른 탭이 더 새 답을 적었다) 저장소 것이다. 쓰기만
 // 막혀(용량 초과 따위) 저장소에 앞 답이 남았으면 이 문서의 새 답으로 견준다. 앞 답으로 견주면 같은 자리에서 묻기와 다시 그리기가 끝없이 돈다
-// (4-4c 끝 판 GPT GB1).
+// (4-4c 끝 판 GB1).
 function fresherOf(kept, stored) {
   if (!kept || !stored) return kept ?? stored;
   return aheadOf(stored.at, kept.at) ? stored : kept;
@@ -126,7 +126,7 @@ const keyOf = (kind, account) => `${kind.prefix}${account}`;
 
 // 지우는 길(로그아웃 · 동의 끔 · 계정 바꿈 · 연습 기록 비우기) — 그 계정의 두 열쇠(학습일 답 · 근거)를 지우고 세대 수를 올린다(물은 뒤의 늦은
 // 답을 적지 않게). 한 열쇠를 지우다 저장소가 던져도 다른 열쇠는 지운다. before(연습 기록 비우기가 올린 새 판)를 주면 그보다 앞선 판의 답만
-// 지운다 — 늦게 끝난 앞 비우기가 새 판에서 적은 답을 지웠다(4-5 입구 다시 검수 GPT GA1 · GB6). 판을 읽을 수 없는 값은 지운다.
+// 지운다 — 늦게 끝난 앞 비우기가 새 판에서 적은 답을 지웠다(4-5 입구 다시 검수 GA1 · GB6). 판을 읽을 수 없는 값은 지운다.
 export function clearMonthAnswer(storage, account, { before = null } = {}) {
   generation += 1;
   if (Number.isSafeInteger(before)) storage = keepNewer(storage, before);
@@ -398,7 +398,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     const reply = got => {
       // 밀려난 물음이거나, 그 계정 · 문서가 아니거나, 물은 사이 지우는 길(로그아웃 · 동의 바꿈 · 비우기)이 돌았거나 학습일이 넘어갔으면, 늦은 답은
       // 완결이든 아니든 들지도 적지도 다시 그리지도 않고 상한 · 받은 자리도 건드리지 않는다 — 앞 세대 답이 새 세대의 tried · pulled를 채우면 지금
-      // 코치가 꼭 해야 할 받기를 건너뛴다(카본 다시 보기 A1 · 4-4c 끝 판 GPT GB2 · 카본 B2).
+      // 코치가 꼭 해야 할 받기를 건너뛴다(카본 다시 보기 A1 · 4-4c 끝 판 GB2 · 카본 B2).
       if (!settle() || !still()) return;
       const at = positionOf(got?.summaryAt);
       if (state.ahead?.key === key) state.ahead = null;
@@ -451,7 +451,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       .then(() => kind.query(line, offsetOf))
       .then(reply, () => {
         // 로그아웃 · 계정 바꿈으로 끊긴 물음(감싸개의 ACCOUNT_CHANGED), 물은 사이 지우는 길이 돈 물음, 밀려난 물음 · 학습일이 넘어간 물음은 실패로
-        // 적지 않는다 — 다른 계정 · 새 세대 · 새 열쇠의 계기와 상한을 덮지 않게(카본 다시 보기 A1 · 4-4c 끝 판 GPT GB2 · 카본 B2).
+        // 적지 않는다 — 다른 계정 · 새 세대 · 새 열쇠의 계기와 상한을 덮지 않게(카본 다시 보기 A1 · 4-4c 끝 판 GB2 · 카본 B2).
         if (settle() && still()) {
           missed(kind.failed);
           drawMissed();

@@ -49,7 +49,7 @@ function lazyAtlasNext(owner){
  // 늦은 401이 로그인 화면으로 돌리지 않게(합친 끝 판 넘친 #26 — 계정 번호만 견주면 같은 계정의 새 세션을 못 가렸다).
  const trailOf=m=>{if(owner==='guest')return null;if(operating)return()=>account.prepareAtlasTrail();const generation=client.generation;return m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId}),owner:()=>client.snapshot?.accountId||'guest',onAuth:()=>{if(client.generation===generation&&(client.snapshot?.accountId||'guest')===owner)client.expire?.();}});};
  // 옛 엔진의 두 문(4-5 연습 기록 비우기 — 단계4_계획 §22-4 · world-old-engine-doors.mjs를 입구 모듈이 다시 내보낸다): 계정의 옛 올리기 대기열(옛 학습
- // 호스트)과 옛 손님 기록(옛 손님 코치를 열어 쓰기 임대 안에서 다시 판단해 비운다 — 4-5 코드 검수 GPT GA1). 입구가 비우기에서만 부른다. 새 길이 꺼진
+ // 호스트)과 옛 손님 기록(옛 손님 코치를 열어 쓰기 임대 안에서 다시 판단해 비운다 — 4-5 코드 검수 GA1). 입구가 비우기에서만 부른다. 새 길이 꺼진
  // 셸은 입구 모듈을 받지 않으므로 이 문도 받지 않는다.
  const oldDoorsOf=m=>m.oldEngineDoors?.({openGame:()=>worldLearning.engine.createGame({gameId:'world-home',storage:window.localStorage}),host:()=>window.SYNKLearningHost||null});
  const load=()=>loading??=import('./world-atlas-next.mjs').then(m=>{made=m.createAtlasNext({owner,lang:currentLang,label:id=>{if(String(id).startsWith('sit-'))return situationName(id);const key=`position.skill.${id}`;return hasString(key)?t(key):null;},presentation:()=>life.education?.presentation?.()??null,trail:trailOf(m),oldEngine:oldDoorsOf(m)});made.reopened?.(detail=>{for(const fn of [...reopeners])try{fn(detail);}catch{}});if(disposed){made.dispose();return made;}for(const [kind,outcome] of early.splice(0))try{made.note(kind,outcome);}catch{}if(gaveOld){gaveOld=false;for(const fn of [...reopeners])try{fn({reason:'loaded'});}catch{}}return made;},error=>{loading=null;gaveOld=true;throw error;});
@@ -748,7 +748,7 @@ function responsesSection(){
  return `<section class="ws-responses" data-world-responses data-label="RESPONSES" aria-labelledby="ws-responses-title"><h3 id="ws-responses-title" tabindex="-1">${escape(t('response.mine'))}</h3><p class="ws-responses-note">${escape(t('response.note30'))}</p><ul>${rows.map(item).join('')}</ul>${rows.length>RESPONSE_PAGE?`<button class="quiet-button ws-responses-more" type="button" data-responses-more>${escape(t('life.more'))}</button>`:''}<p class="ws-responses-note">${escape(t(local?'response.removeNoteDevice':'response.removeNote'))}</p></section>`;
 }
 // 「더 보기」를 펼쳤는가 — 학생이 누른 때만 참이다. 단추가 처음부터 없던 짧은 목록을 펼친 것으로 보면, 서버 읽기 뒤 길어진 목록이 처음부터
-// 다 펼쳐지고 「더 보기」가 사라졌다(4-5 끝 판 GPT GB6 · 카본 B1). 칸을 다시 그리면 새 칸에 이어 둔다.
+// 다 펼쳐지고 「더 보기」가 사라졌다(4-5 끝 판 GB6 · 카본 B1). 칸을 다시 그리면 새 칸에 이어 둔다.
 const responsesOpened=box=>box?.dataset.responsesOpen==='1';
 function openResponses(box){for(const row of box.querySelectorAll('[data-response-later]'))row.hidden=false;box.querySelector('[data-responses-more]')?.remove();box.dataset.responsesOpen='1';}
 function mountResponses(){
@@ -779,7 +779,7 @@ function refreshResponses(){
   if(!changed||!sheet||!sheet.isConnected)return;
   const box=$('#panel-content [data-world-responses]'),html=responsesSection();
   if(box){
-   // 초점이 칸 안에 있었으면 다시 그린 뒤 같은 응답의 단추로, 그 응답이 사라졌거나 접힌 줄이면 칸 제목으로 돌려준다(4-5 끝 판 GPT GB7).
+   // 초점이 칸 안에 있었으면 다시 그린 뒤 같은 응답의 단추로, 그 응답이 사라졌거나 접힌 줄이면 칸 제목으로 돌려준다(4-5 끝 판 GB7).
    const open=responsesOpened(box),focused=box.contains(document.activeElement)?document.activeElement:null,keep=focused?.dataset?.responseRemove??null;
    if(!html){box.remove();if(focused)($('#panel-content [data-world-learning]')||$('#panel-content .world-actions button'))?.focus?.({preventScroll:true});return;}
    box.outerHTML=html;mountResponses();
@@ -827,7 +827,7 @@ function redrawMe(focus=null){
  ((focus&&next?.querySelector(focus))||next?.querySelector('h3'))?.focus?.({preventScroll:true});
 }
 // 「나」 칸은 새 길 홈 코치가 엔진 판일 때만 선다 — 확인 중에 시트를 열었으면 코치가 선 뒤 제자리(응답 칸 뒤 · 반 수업 앞)에 넣는다. 초점은
-// 옮기지 않는다. 그사이 시트를 닫았거나 바꿨으면 넣지 않는다(4-5 끝 판 GPT GB5).
+// 옮기지 않는다. 그사이 시트를 닫았거나 바꿨으면 넣지 않는다(4-5 끝 판 GB5).
 function waitMe(){
  const education=life.education,view=$('#panel-content .ws-me');
  if(typeof education?.meReady!=='function'||!view||$('#panel-content [data-world-me]'))return;
@@ -852,7 +852,7 @@ function mountMe(){
    redrawMe(kind==='relearn'?'[data-me-undo]':null);return;
   }
   const undo=event.target.closest?.('[data-me-undo]');
-  // 되돌리기는 저장이 끝난 뒤에 칸을 다시 그린다 — 뺀 효과가 요약에 서는 때다. 저장되지 않으면 되돌리기를 남긴 채 알린다(4-5 끝 판 GPT GB4).
+  // 되돌리기는 저장이 끝난 뒤에 칸을 다시 그린다 — 뺀 효과가 요약에 서는 때다. 저장되지 않으면 되돌리기를 남긴 채 알린다(4-5 끝 판 GB4).
   if(undo){
    if(undo.disabled)return;undo.disabled=true;const id=undo.dataset.meUndo;
    void Promise.resolve().then(()=>life.education?.undoMe?.(id)).then(done=>done===true,()=>false).then(done=>{
@@ -875,7 +875,7 @@ async function clearPracticeNow(){
  if(!window.confirm(meText('me.clearAsk')))return;
  clearingPractice=true;const button=view?.querySelector('[data-me-clear]');if(button)button.disabled=true;
  try{
- // 다시 묻고 다시 부르는 것은 처음 누른 로그인의 학습 화면에만 한다 — 기다리는 사이 계정이 바뀌었으면 묻지 않고 멈춘다(4-5 코드 다시 검수 GPT -c GA1).
+ // 다시 묻고 다시 부르는 것은 처음 누른 로그인의 학습 화면에만 한다 — 기다리는 사이 계정이 바뀌었으면 묻지 않고 멈춘다(4-5 코드 다시 검수 -c GA1).
  const education=life.education,owner=client.snapshot?.accountId||'guest',same=()=>life.education===education&&(client.snapshot?.accountId||'guest')===owner;
  let result=null;try{result=await education?.clearPractice?.();}catch{result=null;}
  // 서버가 받지 않아 지금 보낼 수 없는 기록이 있으면 그 수를 알리고 한 번 더 묻는다 — 비우면 그 기록도 지워진다(4-5 Opus 대체 설계 검토 F4). 그사이 수가
@@ -888,7 +888,7 @@ async function clearPracticeNow(){
  // 결과와 상관없이 계정 설정 스냅샷을 새로 받아 그린다 — 결과를 모르는 실패도 서버에서는 비워졌을 수 있다(동의 체크박스의 판 번호 — §22-4 · 4-5 Opus 대체 설계 검토 F8).
  if(operating)try{await account.restore();}catch{/* 앞 스냅샷으로 다시 그린다 */}
  // 누른 시트가 아직 열려 있을 때만 그린다 — 닫는 중(닫기 전환)이거나 다른 시트로 바꿨으면 다시 열지 않는다. 쓰던 반 과제 원고가 있으면 시트
- // 전체를 다시 그리지 않고 동의 판 번호 · 응답 · 「나」 칸만 고친다 — 다시 그리면 원고를 버렸다(4-5 끝 판 GPT GB1).
+ // 전체를 다시 그리지 않고 동의 판 번호 · 응답 · 「나」 칸만 고친다 — 다시 그리면 원고를 버렸다(4-5 끝 판 GB1).
  if(!sheetOpen(view))return;
  if(sheet?.hasDraft?.()){redrawMeParts();return;}
  profile();

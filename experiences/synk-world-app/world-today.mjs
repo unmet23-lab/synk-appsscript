@@ -238,7 +238,7 @@ const areaLeft = (week, area) => {
   const row = Array.isArray(week?.examPlan?.areas) ? week.examPlan.areas.find(item => item?.area === area) : null;
   return Boolean(row) && row.remaining > 0;
 };
-// 보탬을 막는 몫(끝 판 검수 GPT GE1 — 설계 주인 11-17 오후 답). 보탬은 넘길 점검 칸 활동(잠긴 것 포함)이 하나도 없고, 계획이 낸 넷(다시 확인 ·
+// 보탬을 막는 몫(끝 판 검수 GE1 — 설계 주인 11-17 오후 답). 보탬은 넘길 점검 칸 활동(잠긴 것 포함)이 하나도 없고, 계획이 낸 넷(다시 확인 ·
 // 시험 형식 · 쓰기 · 말하기)의 이번 주 남은 몫이 모두 0일 때만 선다. 넷을 고르게 본다. 몫이 남았는데 줄을 지을 수 없는 주(진단이 낼 문항이 없음 ·
 // 시험 형식 판의 분을 읽지 못함 · 말하기 항목의 유형을 읽지 못함)에도 보탬은 서지 않는다. 시험 형식은 계획의 영역이 아니라서, 셸이 넘긴 판(week.mock
 // — 고르기가 ready일 때만)이 있고 이번 주에 판을 하지 않았으면 몫이 남은 것으로 본다. 쓰기 항은 지금은 결과를 바꾸지 않는다(보탬도 쓰기 값이 있어야
@@ -456,7 +456,7 @@ export function todayActivities({
       speakingActivity(week, normalized),
     ].filter(Boolean);
     // 보탬 — 넘길 점검 칸 활동이 하나도 없고 계획이 낸 넷의 몫도 모두 찬 날에만(설계 주인 11-17 다시 여쭘의 답 2 · 위 writingFixActivity · checkLeft).
-    // 다른 줄이 하나라도 넘어가는 날(잠긴 줄 포함), 몫이 남았는데 넘길 줄이 없는 날에는 서지 않는다(끝 판 검수 GPT GE1).
+    // 다른 줄이 하나라도 넘어가는 날(잠긴 줄 포함), 몫이 남았는데 넘길 줄이 없는 날에는 서지 않는다(끝 판 검수 GE1).
     if (checks.length === 0 && !checkLeft(week)) checks.push(writingFixActivity(week, normalized));
     for (const check of checks) if (check) out.push(check);
   }
@@ -592,7 +592,7 @@ export function todayRows({ entries = [], activities = [], opened = new Set(), s
   entries = checkOrdered(Array.isArray(entries) ? entries : [], byId, shift);
   // 하루 복습 상한(§20-3): plan 쪽 칸(dayCapped — plan 머리에서 한 번 센 엔진 전체의 값)을 먼저 읽는다(설계 주인 11-15, §20-14). 그 칸이 없는
   // 옛 엔진이면 어느 항목의 capped로든 읽는다. 생활 복습 항목만 보면 생활 복습 없이 짧은 연습이나 다음 레슨만 있는 상한 날을 「다 만났어요」로
-  // 잘못 말한다(GPT 끝 판 GB1).
+  // 잘못 말한다(끝 판 GB1).
   const capped = typeof dayCapped === 'boolean' ? dayCapped : entries.some(entry => Boolean(entry?.capped));
   const rows = [];
   const taken = new Set();
