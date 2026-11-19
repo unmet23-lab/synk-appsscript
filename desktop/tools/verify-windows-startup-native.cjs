@@ -145,7 +145,8 @@ function observe(config){
       await clickVisible('#portal-entry .here-orb','orb small orb visible and unobscured');
       await waitFor(contents,"(()=>{const s=document.querySelector('#portal-entry .orb-stage'),f=document.querySelector('#portal-entry .fan-foot');return s?.dataset.fan==='1'&&!!f&&getComputedStyle(f).opacity==='1';})()",'orb-fan');
       await clickVisible('#portal-entry .fan [data-foot="settings"]','orb fan settings visible and unobscured');
-      await waitFor(contents,"(()=>{const r=document.querySelector('#portal-entry [data-room=settings]'),say=r?.querySelector('[data-aside-text]');return document.documentElement.dataset.orbClient==='app'&&!!r&&!r.hidden&&!!say&&getComputedStyle(say.closest('.rise')||say).opacity==='1';})()",'orb-settings-room');
+      // 업데이트 상태를 받기 전에는 업데이트 줄 없이 「설정을 불러오고 있습니다.」라고 쓴다. 줄이 선 뒤에 본다
+      await waitFor(contents,"(()=>{const r=document.querySelector('#portal-entry [data-room=settings]'),say=r?.querySelector('[data-aside-text]');return document.documentElement.dataset.orbClient==='app'&&!!r&&!r.hidden&&!!say&&!!r.querySelector('button.row[data-key=update]')&&getComputedStyle(say.closest('.rise')||say).opacity==='1';})()",'orb-settings-room');
       // 설정 방은 새 얼굴 안의 방이다. 옛 런처는 잠긴 채이고 옛 설정 보기는 열리지 않는다
       const room=await run("(()=>{const l=document.querySelector('.launcher'),r=document.querySelector('#portal-entry [data-room=settings]');return {launcherInert:Boolean(l?.inert),orbClient:document.documentElement.dataset.orbClient,say:(r.querySelector('[data-aside-text]')?.textContent||'').trim(),foot:(r.querySelector('[data-aside-foot]')?.textContent||'').trim(),rows:[...r.querySelectorAll('button.row[data-key]')].map(b=>b.dataset.key)};})()");
       check('orb settings room opens in the face with the launcher still inert',room.launcherInert&&room.orbClient==='app'&&room.rows[0]==='update'&&room.foot.includes(config.version)&&room.foot.includes('시험판'),room);
