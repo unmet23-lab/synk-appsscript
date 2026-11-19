@@ -1,6 +1,6 @@
 {
   "name": "@synk/atlas",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "SYNK Atlas 학습 엔진(재설계) — 판 하나로 내보내는 ESM 패키지. 설계: docs/아틀라스_재설계_20261110.md",
   "type": "module",

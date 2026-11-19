@@ -10,7 +10,8 @@ import { build, EDITION_FORM, editionFor, PACKAGE_ROOT } from '../../tools/build
 import { tempDir } from '../support/temp.mjs';
 
 const STATE = { commit: 'a'.repeat(40), dirty: false };
-const EDITION = '0.0.0-dev.aaaaaaa';
+// 개발 판 이름은 package.json의 판 + 커밋 앞 7자다 — 판을 올려도(WORLD 첫 공개 0.1.0, 11-20) 이 값이 따라간다.
+const EDITION = `${JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version}-dev.aaaaaaa`;
 // 지도 나무(atlas/<판>/map/)는 test/build/map-build.test.mjs가 따로 본다(단계 1) — 여기서는 엔진 묶음 · 입구만.
 const listFiles = dir =>
   fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
