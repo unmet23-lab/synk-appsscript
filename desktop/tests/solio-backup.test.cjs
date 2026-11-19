@@ -610,3 +610,28 @@ test('GPT third round GA1: a slow earlier engine check never overwrites a newer 
   assert.deepEqual(await service.open(ME, 'status'), { ok: true });
   assert.equal((await service.snapshot(ME)).engine.installed, true);
 });
+
+test('GPT fourth round GA1: 보호 시작 decides on its own fresh check, whatever order the cache was written in', async () => {
+  const dir = engineDir(), opened = [], env = appdata(temp());
+  let calls = 0;
+  // 첫 확인(누를 때)은 늦게 「있음」을, 그사이 시작한 주기 확인은 빨리 「없음」을 낸다
+  const run = async () => { const n = ++calls; if (n === 1) { await new Promise(r => setTimeout(r, 120)); return JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }); } return '{}'; };
+  const service = B.createSolioBackup({ platform: 'win32', env, run, request: async () => { throw Error('must not download'); }, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  const pressed = service.start(ME, 'protect');
+  await new Promise(r => setTimeout(r, 10));
+  await service.snapshot(ME);
+  assert.deepEqual(await pressed, { ok: true });
+  await service.whenIdle();
+  assert.deepEqual(opened, ['synk-workbackup:open?topic=status'], 'the installed engine is opened, not downloaded again');
+});
+
+test('GPT fourth round GA2: while held, nothing can be renamed, moved or copied over the installer', { skip: process.platform !== 'win32' }, async () => {
+  const dir = temp(), file = path.join(dir, 'a.exe'), other = path.join(dir, 'b.exe');
+  fs.writeFileSync(file, 'orig'); fs.writeFileSync(other, 'evil');
+  const holder = await B.holdSetup(file);
+  try {
+    assert.throws(() => fs.renameSync(other, file), /EPERM|EBUSY|EACCES/);
+    assert.throws(() => fs.copyFileSync(other, file), /EPERM|EBUSY|EACCES/);
+    assert.equal(fs.readFileSync(file, 'utf8'), 'orig');
+  } finally { await holder.release(); }
+});

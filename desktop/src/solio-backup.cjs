@@ -448,8 +448,8 @@ function createSolioBackup({
     return feedLoading;
   }
 
-  async function state() {
-    const [eng, read] = await Promise.all([engineNow(), platform === 'win32' ? readStatus(paths?.status, fsImpl.promises) : Promise.resolve({ format: 'missing' })]);
+  async function state(given = null) {
+    const [eng, read] = await Promise.all([given ? Promise.resolve(given) : engineNow(), platform === 'win32' ? readStatus(paths?.status, fsImpl.promises) : Promise.resolve({ format: 'missing' })]);
     return { engine: eng, read, view: decideView({ platform, engine: eng, read, now: now() }) };
   }
 
@@ -533,6 +533,8 @@ function createSolioBackup({
       // 받는 동안 로그인이 바뀌었으면(다른 계정이나 같은 계정의 새 로그인) 요청을 쓰지 않고 멈춘다(GPT 다시 검수 GA3 · 셋째 검수 GA4)
       if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       requestName = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises });
+      // 쓰는 사이에 로그인이 바뀌었으면 쓴 요청을 거두고 멈춘다(GPT 넷째 검수 GA3). keepRequest가 거짓이라 finally가 지운다
+      if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       // 받는 동안 다른 길로 엔진이 깔렸으면 설치기를 다시 띄우지 않고 엔진 창을 연다(GPT 검수 GA4).
       // 지금 확인이 실패하면 깔렸는지 모르므로 띄우지 않는다(GPT 다시 검수 GA5)
       const fresh = await engineFresh();
@@ -540,6 +542,7 @@ function createSolioBackup({
       if (fresh.installed) {
         keepRequest = true;
         await holder.release(); holder = null;
+        if (!stillCurrent()) { keepRequest = false; throw fault('ACCOUNT_CHANGED'); }
         try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); } catch { keepRequest = false; throw fault('OPEN_FAILED'); }
         setInstall('opened');
         return;
@@ -581,7 +584,8 @@ function createSolioBackup({
     let view = null, fresh = null;
     // 누를 때는 엔진 확인을 새로 한다. 15초 전의 「없음」으로 깔린 엔진 위에 다시 받지 않게 한다(GPT 검수 GA4).
     // 지금 확인이 실패하면 아무것도 하지 않는다(GPT 다시 검수 GA5)
-    try { fresh = await engineFresh(); if (!fresh.error) ({ view } = await state()); } catch { view = null; }
+    // 갈래는 캐시가 아니라 이 순간의 확인 값으로 정한다. 다른 확인이 캐시를 어떤 차례로 바꿔도 이 판단은 흔들리지 않는다(GPT 넷째 검수 GA1)
+    try { fresh = await engineFresh(); if (!fresh.error) ({ view } = await state(fresh)); } catch { view = null; }
     if (fresh?.error) { busy = null; release(); return { ok: false, code: 'ENGINE_UNKNOWN' }; }
     if (!['no-engine', 'engine-removed', 'needs-setup'].includes(view)) { busy = null; release(); return { ok: false, code: 'NOT_NEEDED' }; }
     mode = asked;
@@ -595,6 +599,7 @@ function createSolioBackup({
         let name;
         if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
         try { name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises }); } catch { throw fault('REQUEST_FAILED'); }
+        if (!stillCurrent()) { await fsImpl.promises.unlink(path.join(paths.requests, name)).catch(() => {}); throw fault('ACCOUNT_CHANGED'); }
         try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); }
         catch {
           // 열지 못했으면 요청을 남기지 않는다. 나중에 따로 연 엔진이 실패한 시도의 요청을 읽지 않게 한다(GPT 검수 GA7)
