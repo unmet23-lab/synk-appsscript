@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import vm from 'node:vm';
 import { createRequire } from 'node:module';
 import { snsHealthView, rowSpeech, SNS_HEALTH_NAME, LIMITS } from '../renderer/sns-health-model.mjs';
 
@@ -316,4 +317,40 @@ test('the fixed sample of summary version 1 is read whole', () => {
   }
   const kinds = new Set(v.rows.flatMap(r => r.more.map(m => m[0])));
   assert.deepEqual([...kinds].sort(), ['do', 'flow', 'goal', 'good', 'head', 'note', 'row', 'say', 'text']);
+});
+
+// 계정건강 PC앱_구현설계 8절 · 10절: IPC 채널이 보낸 쪽 검사 뒤에 서고, 플랫폼 창에서 로그인한 계정만 묻고, 화면은 값을 넘기지 못한다.
+// 방문자 분석의 같은 시험(site-visits.test.mjs)처럼 main.cjs의 한 줄 함수를 떼어 돌린다
+test('the IPC channel is registered behind the sender check and asks only for the signed-in platform account', () => {
+  const main = fs.readFileSync(new URL('../src/main.cjs', import.meta.url), 'utf8');
+  assert.match(main, /const \{createSnsHealth\}=require\('\.\/sns-health\.cjs'\);/);
+  assert.match(main, /'synk:sns-health-snapshot':\(\)=>snsHealthCall\(\),/);
+  const handlers = main.slice(main.indexOf('const handlers={'), main.indexOf('for(const [channel,handler]of Object.entries(handlers))'));
+  assert.ok(handlers.includes("'synk:sns-health-snapshot'"), 'the channel sits in the handler table that the sender check guards');
+  assert.match(main, /for\(const \[channel,handler\]of Object\.entries\(handlers\)\)\{ipcMain\.removeHandler\(channel\);ipcMain\.handle\(channel,async\(event,\.\.\.args\)=>\{assertSender\(event,window,entry,runtime\.clientId\);/);
+  const line = main.split(/\r?\n/).find(l => l.startsWith('function snsHealthCall(){'));
+  assert.ok(line, 'snsHealthCall stays on one line');
+  const asked = [];
+  let made = 0;
+  const run = (runtime, smoke, status) => vm.runInNewContext(`${line}\nsnsHealthCall()`, {
+    runtime, smoke, accountStatus: () => status,
+    createSnsHealth: () => { made += 1; return { snapshot: who => { asked.push(who); return { ok: true, available: false }; } }; },
+    snsHealth: null,
+  });
+  const yuho = { signedIn: true, account: { synk_user_id: 'owner-1234567890', display_name: '유호' } };
+  assert.equal(run({ clientId: 'world' }, false, yuho).code, 'LAUNCHER_ONLY');
+  assert.equal(run({ clientId: 'platform' }, true, yuho).code, 'LAUNCHER_ONLY', 'the smoke run never reads');
+  assert.equal(run({ clientId: 'platform' }, false, { signedIn: false, account: null }).code, 'SIGN_IN_REQUIRED');
+  assert.deepEqual({ ...run({ clientId: 'platform' }, false, yuho) }, { ok: true, available: false });
+  assert.deepEqual(asked.map(a => ({ ...a })), [yuho.account], 'the signed-in account is passed to the reader');
+  assert.equal(made, 1, 'the reader is made only once a signed-in platform window asks');
+  let bridge;
+  const calls = [];
+  vm.runInNewContext(fs.readFileSync(new URL('../src/preload.cjs', import.meta.url), 'utf8'), { require: () => ({ contextBridge: { exposeInMainWorld: (_n, v) => { bridge = v; } }, ipcRenderer: { invoke: async (...a) => { calls.push(a); return { ok: true }; }, on() {}, removeListener() {}, send() {} } }), process: { argv: [] } });
+  bridge.snsHealth.snapshot({ synk_user_id: 'someone-else-000001' });
+  assert.deepEqual([...calls.at(-1)], ['synk:sns-health-snapshot'], 'the screen cannot pass an account through');
+  assert.ok(Object.isFrozen(bridge.snsHealth));
+  // 런처가 얼굴에 다리를 넘기고, 흐름 시험의 합성 다리도 같은 이름이다
+  assert.match(fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8'), /snsHealth:bridge\?\.snsHealth\|\|null/);
+  assert.match(fs.readFileSync(new URL('../tools/orb-face-fixture.cjs', import.meta.url), 'utf8'), /snsHealth:Object\.freeze\(\{snapshot:async\(\)=>\{calls\.push\('health-snapshot'\);if\(auth\.signedIn!==true\)return \{ok:false,code:'SIGN_IN_REQUIRED'\};/);
 });

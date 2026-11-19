@@ -130,6 +130,8 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   }),
   // synk.im 방문자 분석(11-17): 요약 파일을 읽은 결과만 받는다. 넘기는 값은 없다.
   siteVisits:Object.freeze({snapshot:()=>ipcRenderer.invoke('synk:site-visits-snapshot')}),
+  // 솔리오 계정 건강(11-19): 진단 요약을 읽은 결과만 받는다. 넘기는 값은 없다(계정은 본체가 로그인 상태에서 읽는다).
+  snsHealth:Object.freeze({snapshot:()=>ipcRenderer.invoke('synk:sns-health-snapshot')}),
   onAuthChanged:callback=>{if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,status)=>callback(status);ipcRenderer.on('synk:auth-changed',listener);return ()=>ipcRenderer.removeListener('synk:auth-changed',listener);},
   onClientsChanged:callback=>subscribe('synk:clients-changed',callback),
   onClientProgress:callback=>subscribe('synk:client-progress',callback),

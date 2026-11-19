@@ -4,7 +4,7 @@
 // 바깥 요청은 모두 막고, 콘솔 오류와 막힌 요청이 0인지 본다. 결과 JSON과 캡처는 git 밖 폴더에 쓴다.
 // 돌지 않는 것: 11번의 「창이 숨은 채 켬」(숨은 시험 창도 document.hidden이 거짓이라 흉내 낼 수 없다), 8번의 진입 오류 화면
 // (실제 호스트는 배정 조회 실패와 예외를 공간 고르기의 까닭으로 바꾸고, 진입 오류는 계정이 바뀌는 경합에서만 생긴다). 둘 다 컨트롤러 시험(orb-face.test.mjs)이 본다.
-//   node desktop/tools/orb-face-browser-qa.cjs <결과 폴더>
+//   node desktop/tools/orb-face-browser-qa.cjs <결과 폴더>   (ORB_QA_ONLY=19 처럼 차례 하나만)
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const root=path.resolve(__dirname,'..');
 const PREFIX='synk-orb-face-qa-';
@@ -13,10 +13,11 @@ if(!process.versions.electron){
   const out=path.resolve(process.argv[2]||path.join(root,'..','.tmp','pc-client-orb-step1-20261116','qa'));
   fs.mkdirSync(out,{recursive:true});
   const runs=[];
+  // 한 판(mode)의 한도는 20분이다. main은 차례가 늘어 10분을 넘겼다(계정 건강 19번을 더한 11-20)
   for(const mode of ['main','nowebgl','nocanvas']){
     const profile=fs.mkdtempSync(path.join(os.tmpdir(),PREFIX));
     try{
-      const run=spawnSync(require('electron'),[__filename,'--profile='+profile,'--out='+out,'--mode='+mode],{cwd:root,encoding:'utf8',windowsHide:true,timeout:600000});
+      const run=spawnSync(require('electron'),[__filename,'--profile='+profile,'--out='+out,'--mode='+mode],{cwd:root,encoding:'utf8',windowsHide:true,timeout:1200000});
       const line=run.stdout?.split(/\r?\n/).find(value=>value.startsWith('SYNK_ORB_QA '));
       runs.push(line?JSON.parse(line.slice('SYNK_ORB_QA '.length)):{ok:false,mode,error:run.error?.message||'NO_RESULT',stderr:run.stderr?.slice(-3000),stdout:run.stdout?.slice(-2000)});
     }finally{
@@ -98,6 +99,8 @@ if(!process.versions.electron){
     }
     const state=w=>w.js(`(()=>{const r=document.getElementById('portal-entry'),s=r?.querySelector('.orb-stage');return {phase:r?.dataset.portalState,ui:s?.dataset.ui,mode:document.documentElement.dataset.orbClient,wait:s?.dataset.wait||null,active:r?.dataset.portalActive,hidden:document.hidden,ready:document.documentElement.dataset.ready,eyes:s?.dataset.eyes||null,fan:s?.dataset.fan==='1'};})()`);
     async function until(w,fn,{timeout=9000,every=40}={}){const t=Date.now();let last;while(Date.now()-t<timeout){last=await state(w);if(fn(last))return {ok:true,ms:Date.now()-t,state:last};await wait(every);}return {ok:false,ms:Date.now()-t,state:last};}
+    // 창 밖으로 나간 글을 찾을 때, 스크롤하는 조상(방)이 위아래로 잘라 보이지 않는 부분은 빼고 본다. 방의 아래 끝에 걸친 줄을 창 밖으로 세지 않는다(계정 건강 390 캡처).
+    // 가로는 자르지 않는다. 방 안의 가로 넘침은 숨은 가로 스크롤이라 창 밖으로 나간 것처럼 센다(계정 건강 카본 B)
     // 끝 모습으로 찍는다: 첫 화면(구가 드러나는 중) 말고는 글의 나타남 효과를 끄고, 숨은 창이 새 장면을 그리도록 다시 그리기를 요청한 뒤 두 번 찍는다
     async function capture(w,name,{moving=false}={}){
       await w.js('document.fonts.ready');
@@ -106,7 +109,7 @@ if(!process.versions.electron){
       w.win.webContents.invalidate();await w.win.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});await wait(200);w.win.webContents.invalidate();
       const image=await w.win.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});
       const file=path.join(out,`${String(++shot).padStart(2,'0')}-${mode}-${name}.png`);fs.writeFileSync(file,image.toPNG());
-      const metrics=await w.js(`(()=>{const W=innerWidth,Hh=innerHeight,outside=[];for(const el of document.querySelectorAll('#portal-entry *')){const st=getComputedStyle(el);if(st.visibility==='hidden'||st.display==='none'||el.closest('[inert]')||!el.textContent.trim()||el.children.length)continue;const b=el.getBoundingClientRect();if(!b.width||!b.height)continue;if(Number(st.opacity)===0)continue;let hiddenBy=null,pos=st.position;for(let a=el.parentElement;a&&a!==document.body;a=a.parentElement){const as=getComputedStyle(a);if(Number(as.opacity)===0){hiddenBy=a;break;}if(pos==='fixed')continue;if(pos!=='absolute'||as.position!=='static'){const r=a.getBoundingClientRect();if(as.overflowY!=='visible'&&(b.bottom<=r.top+1||b.top>=r.bottom-1)){hiddenBy=a;break;}if(as.overflowX!=='visible'&&(b.right<=r.left+1||b.left>=r.right-1)){hiddenBy=a;break;}}if(!(pos==='absolute'&&as.position==='static'))pos=as.position;}if(hiddenBy)continue;if(b.right>W+1||b.left<-1||b.bottom>Hh+1||b.top<-1)outside.push((el.className||el.tagName)+':'+el.textContent.trim().slice(0,30));}return {pageOverflow:Math.max(0,document.documentElement.scrollWidth-W),outside};})()`);
+      const metrics=await w.js(`(()=>{const W=innerWidth,Hh=innerHeight,outside=[];for(const el of document.querySelectorAll('#portal-entry *')){const st=getComputedStyle(el);if(st.visibility==='hidden'||st.display==='none'||el.closest('[inert]')||!el.textContent.trim()||el.children.length)continue;const b=el.getBoundingClientRect();if(!b.width||!b.height)continue;if(Number(st.opacity)===0)continue;let hiddenBy=null,pos=st.position;const c={l:b.left,t:b.top,r:b.right,b:b.bottom};for(let a=el.parentElement;a&&a!==document.body;a=a.parentElement){const as=getComputedStyle(a);if(Number(as.opacity)===0){hiddenBy=a;break;}if(pos==='fixed')continue;if(pos!=='absolute'||as.position!=='static'){const r=a.getBoundingClientRect();if(as.overflowY!=='visible'){c.t=Math.max(c.t,r.top);c.b=Math.min(c.b,r.bottom);}if(as.overflowX!=='visible'&&(b.right<=r.left+1||b.left>=r.right-1)){hiddenBy=a;break;}if(c.b<=c.t+1){hiddenBy=a;break;}}if(!(pos==='absolute'&&as.position==='static'))pos=as.position;}if(hiddenBy)continue;if(c.r>W+1||c.l<-1||c.b>Hh+1||c.t<-1)outside.push((el.className||el.tagName)+':'+el.textContent.trim().slice(0,30));}return {pageOverflow:Math.max(0,document.documentElement.scrollWidth-W),outside};})()`);
       check('capture '+name,metrics.pageOverflow===0&&metrics.outside.length===0,{file:path.basename(file),...metrics});
       return file;
     }
@@ -314,7 +317,7 @@ if(!process.versions.electron){
           const kept=await w.js("(()=>{const rows="+rowsNow+";return {reads:window.__orbFixture.calls().filter(c=>c==='visits-snapshot').length,vals:rows.map(b=>b.querySelector('.val').textContent),pinned:rows.filter(b=>b.classList.contains('pin')&&b.classList.contains('opened')&&b.getAttribute('aria-expanded')==='true'&&!b.nextElementSibling.hasAttribute('aria-hidden')).length,open:document.querySelectorAll('#portal-entry [data-room=solio-visits] .more.open').length,focus:document.activeElement?.dataset?.vis||null,prog:document.querySelector('#portal-entry .orb-stage').dataset.prog};})()");
           check('16 a fresh scene for the same account keeps the pinned lines open and the keyboard focus on its line',kept.reads===reads+1&&JSON.stringify(kept.vals)!==JSON.stringify(before.vals)&&kept.pinned===5&&kept.open===5&&before.focus!==null&&kept.focus===before.focus&&kept.prog==='visits',{before,...kept});
           // 키보드: 오브제 줄은 Tab 한 자리다. 연 오브제만 Tab 차례에 있고, 화살표로 옮긴 초점이 그 프로그램을 연다. Tab은 연 방 안으로 내려간다(0.4.97 최종 검수 F1)
-          const kbState="({obj:document.activeElement?.dataset?.orbProg||null,room:document.activeElement?.closest?.('[data-room]')?.dataset?.room||null,prog:document.querySelector('#portal-entry .orb-stage').dataset.prog,tab:[...document.querySelectorAll('#portal-entry [data-orb-prog]')].map(o=>o.dataset.orbProg+':'+o.getAttribute('tabindex'))})";
+          const kbState="({obj:document.activeElement?.dataset?.orbProg||null,room:document.activeElement?.closest?.('[data-room]')?.dataset?.room||null,prog:document.querySelector('#portal-entry .orb-stage').dataset.prog,tab:[...document.querySelectorAll('#portal-entry [data-orb-prog]')].filter(o=>!o.hidden).map(o=>o.dataset.orbProg+':'+o.getAttribute('tabindex'))})";
           await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(400);
           await w.js("document.querySelector('#portal-entry [data-orb-prog=subs]').focus()");await key(w,'Tab');await wait(250);
           const kbSubs=await w.js(kbState);
@@ -358,6 +361,130 @@ if(!process.versions.electron){
           const railGone=await w.js("({rail:document.querySelector('#portal-entry [data-orb-rail]').hidden,mark:document.querySelector('#portal-entry .orb-stage').dataset.rail||null,subs:!document.querySelector('#portal-entry [data-room=solio]').hidden})");
           check('16 another account (not a viewer) gets no objects, Solio as before, and never the previous answer',back.ok&&railGone.rail&&!railGone.mark&&railGone.subs&&gone.hidden&&gone.rows===0&&!gone.say&&!gone.anyText,{objs:o2,...railGone,...gone});
           w.win.destroy();
+        }
+        // 19. 솔리오 「계정 건강」(계정건강 PC앱_구현설계 10절 · 11절). 오브제 셋(구독, 방문자 분석, 계정 건강)과 계정 건강만 보이는 둘의 경우를 본다.
+        //     요약은 판 1의 견본(tests/fixtures)을 지금 시각으로 옮겨 쓴다. 안쪽 글 하나에 태그를 넣어 글자로만 들어가는지 본다
+        if(only('19')&&mode==='main'){
+          const sample=JSON.parse(fs.readFileSync(path.join(root,'tests','fixtures','sns-health-summary-v1.json'),'utf8'));
+          const healthSummary=(patch={})=>{const s=JSON.parse(JSON.stringify(sample));s.만든때=new Date(now-H).toISOString();s.숫자={게시:new Date(now-2*H).toISOString(),팔로워:day(1)};
+            const say=s.방.rows[0].more.findIndex(m=>m[0]==='text');if(say>=0)s.방.rows[0].more[say]=['text','<img src=x onerror=window.__heaXss=1> 잘된 편과 안 된 편은 첫 장면에서 갈립니다.'];return Object.assign(s,patch);};
+          const healthAnswer=summary=>({ok:true,available:true,summary});
+          const objs=w=>w.js("[...document.querySelectorAll('#portal-entry [data-orb-prog]')].filter(o=>!o.hidden).map(o=>o.dataset.orbProg+':'+o.getAttribute('aria-current')+':'+o.style.getPropertyValue('--k'))");
+          const pointer=async w=>{await w.js("(()=>{window.__ptr=null;window.__move=(x,y)=>{const t=document.elementFromPoint(x,y)||document.body,prev=window.__ptr,o={bubbles:true,cancelable:true,composed:true,pointerType:'mouse',pointerId:1,isPrimary:true,clientX:x,clientY:y};if(prev!==t){if(prev)prev.dispatchEvent(new PointerEvent('pointerout',{...o,relatedTarget:t}));t.dispatchEvent(new PointerEvent('pointerover',{...o,relatedTarget:prev}));window.__ptr=t;}t.dispatchEvent(new PointerEvent('pointermove',o));return true;};const st=document.querySelector('#portal-entry .orb-stage');window.__progLog=[];new MutationObserver(()=>window.__progLog.push([st.dataset.prog,performance.now()])).observe(st,{attributes:true,attributeFilter:['data-prog']});window.__overLog=[];document.querySelector('#portal-entry [data-orb-rail]').addEventListener('pointerover',e=>{const o=e.target.closest('.obj');if(o)window.__overLog.push([o.dataset.orbProg,performance.now()]);});return true;})()");};
+          const move=async(w,x,y)=>{await w.js('window.__move('+x+','+y+')');await wait(20);};
+          const rect=(w,sel)=>w.js('(()=>{const r=document.querySelector('+JSON.stringify(sel)+').getBoundingClientRect();return {x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};})()');
+          const opened=(w,name)=>w.js('(()=>{const n='+JSON.stringify(name)+',o=window.__overLog.find(e=>e[0]===n);if(!o)return null;const p=window.__progLog.find(e=>e[0]===n&&e[1]>=o[1]);return p?Math.round(p[1]-o[1]):null;})()');
+          const ROOM="document.querySelector('#portal-entry [data-room=solio-health]')";
+          const rowsNow="[..."+ROOM+".querySelectorAll('button.row[data-vis]')]";
+
+          // 가. 방문자 분석과 계정 건강을 모두 볼 계정: 오브제 셋
+          const w=await open();await boot(w,{subs:subsReady,visits:{ok:true,available:true,summary:visitSummary()},health:healthAnswer(healthSummary())},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          const o1=await objs(w);
+          check('19 a viewer of both sees 구독, 방문자 분석 and 계정 건강 in that order, with the name delays in shown order',JSON.stringify(o1)===JSON.stringify(['subs:true:0','visits:false:1','health:false:2']),{objs:o1});
+          const asked=(await calls(w)).filter(c=>c==='health-snapshot').length,askedVisits=(await calls(w)).filter(c=>c==='visits-snapshot').length;
+          check('19 each summary is read once on arriving at Solio',asked===1&&askedVisits===1,{asked,askedVisits});
+          await pointer(w);
+          const here=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-orb-rail]').getBoundingClientRect();return {x:Math.round(r.right+30),y:Math.round(r.top+r.height/2)};})()");await move(w,here.x,here.y);await wait(900);
+          const near=await w.js("document.querySelector('#portal-entry [data-orb-rail]').classList.contains('near')");
+          await capture(w,'health-rail-near');
+          await w.js('window.__overLog.length=0;window.__progLog.length=0');
+          const hp=await rect(w,'#portal-entry [data-orb-prog="health"]');await move(w,hp.x,hp.y);await wait(700);
+          const quick=await opened(w,'health');
+          check('19 after the names are out, resting on 계정 건강 opens it in about 0.18 s',near&&quick!==null&&quick>=150&&quick<450,{near,ms:quick});
+          check('19 opening 계정 건강 reads its summary again and not the 방문자 분석 one',(await calls(w)).filter(c=>c==='health-snapshot').length===2&&(await calls(w)).filter(c=>c==='visits-snapshot').length===1);
+          await move(w,12,660);await wait(500);
+          await captureSizes(w,'health');
+          // 줄의 칸끼리 글이 겹치지 않는다(오른쪽 맞춤 칸이 넘치면 왼쪽 칸 위로 번진다). 창 크기마다 글 상자로 잰다
+          const gaps=[];
+          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);for(let i=0;i<40&&(await w.js('innerWidth'))!==W;i++)await wait(50);await wait(120);
+            gaps.push(await w.js("(()=>{const box=(e)=>{const r=document.createRange();r.selectNodeContents(e);const b=r.getBoundingClientRect();return b.width?b:null;};const rows=[..."+ROOM+".querySelectorAll('button.row[data-vis], .more-in > .row')];let min=1e9;for(const b of rows){const cells=[...b.children].map(box).filter(Boolean).filter(c=>c.height);for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++){const a=cells[i],c=cells[j];if(a.bottom<=c.top+1||c.bottom<=a.top+1)continue;min=Math.min(min,Math.max(c.left-a.right,a.left-c.right));}}return {W:innerWidth,min:Math.round(min),gap:getComputedStyle(rows[0]).columnGap,cols:getComputedStyle("+ROOM+".querySelector('[data-hea-rows]')).gridTemplateColumns};})()"));}
+          w.win.setContentSize(1440,900);await wait(300);
+          check('19 the cells of an account line never run into each other at any app size (at least 12 px apart)',gaps.every(g=>g.min>=12),{gaps});
+          // 멀리 갔다가 셋째 오브제(계정 건강) 위로 곧장 온다: 이름 셋이 펼쳐지는 0.62초 동안은 열리지 않는다
+          await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(400);
+          await move(w,720,640);await wait(800);await w.js('window.__overLog.length=0;window.__progLog.length=0');
+          const hp2=await rect(w,'#portal-entry [data-orb-prog="health"]');await move(w,hp2.x,hp2.y);await wait(1400);
+          const settle3=await opened(w,'health');
+          check('19 coming straight onto the third object waits until the three names are out (0.62 s)',settle3!==null&&settle3>=590&&settle3<1100,{ms:settle3});
+          // 요약의 글은 글자로만 들어가고, 줄 꼴 여섯이 그려진다
+          await move(w,720,860);
+          const room=await w.js("(()=>{const room="+ROOM+";return {hidden:room.hidden,imgs:room.querySelectorAll('img').length,asText:[...room.querySelectorAll('.more-text')].some(m=>m.textContent.startsWith('<img src=x')),ran:window.__heaXss===1,rows:room.querySelectorAll('button.row[data-vis]').length,say:room.querySelector('[data-hea-say]').textContent,then:room.querySelector('[data-hea-then]').textContent,when:room.querySelector('[data-hea-when]').textContent,scope:room.querySelector('[data-hea-scope]').textContent,label:room.querySelector('[data-hea-rows]').getAttribute('aria-label'),bright:[...room.querySelectorAll('button.row[data-vis]')].map(b=>b.classList.contains('now')),speech:room.querySelector('button.row[data-vis]').getAttribute('aria-label')};})()");
+          check('19 the 계정 건강 room shows the conclusion, one line per account, when it was measured, and summary words only as text',!room.hidden&&room.imgs===0&&room.asText&&!room.ran&&room.rows===sample.방.rows.length&&room.say===sample.방.say&&room.then===sample.방.then&&room.scope===sample.방.scope&&/^게시 숫자는 .+, 팔로워는 .+에 잰 값입니다\./.test(room.when)&&room.label==='SNS 계정 건강'&&JSON.stringify(room.bright)===JSON.stringify(sample.방.rows.map(r=>!!r.now)),room);
+          for(let i=0;i<sample.방.rows.length;i++)await w.js(rowsNow+"["+i+"].click()");
+          await wait(900);
+          const kinds=await w.js("(()=>{const m="+ROOM+".querySelector('.more.open .more-in');const flow=m.querySelector('.flow');const steps=[...flow.querySelectorAll('.step')];const sub=[...m.querySelectorAll(':scope > .row.sub:not(.do):not(.good):not(.goal)')];const firstDo=m.querySelector('.row.do');return {say:!!m.querySelector('.more-say'),good:!!m.querySelector('.row.good'),heads:m.querySelectorAll('.more-head').length,texts:m.querySelectorAll('.more-text').length,dos:m.querySelectorAll('.row.do').length,firstDoLine:firstDo.classList.contains('first')&&getComputedStyle(firstDo).borderTopStyle==='solid',goal:!!m.querySelector('.row.goal'),steps:steps.map(s=>s.querySelector('b').textContent),leak:steps.map(s=>s.classList.contains('leak')),stepsInRow:new Set(steps.map(s=>Math.round(s.getBoundingClientRect().top))).size,marked:sub.map(r=>r.classList.contains('now')),list:flow.getAttribute('role')+'/'+steps.map(s=>s.getAttribute('role')).join(',')};})()");
+          const want=sample.방.rows[0].more;
+          check('19 an opened account shows the six new line kinds in the sketch order, the path left to right with only the leaking step bright',kinds.say&&kinds.good&&kinds.heads===want.filter(m=>m[0]==='head').length&&kinds.dos===want.filter(m=>m[0]==='do').length&&kinds.firstDoLine&&kinds.goal===want.some(m=>m[0]==='goal')&&kinds.steps[0]==='1,000'&&kinds.steps.length===want.find(m=>m[0]==='flow')[1].length+1&&kinds.leak.filter(Boolean).length===1&&kinds.stepsInRow===1&&JSON.stringify(kinds.marked)===JSON.stringify(want.filter(m=>m[0]==='row').map(m=>!!m[5]))&&kinds.list.startsWith('list/listitem'),kinds);
+          await capture(w,'health-open');
+          await w.js(ROOM+".scrollTop=0");await w.js(rowsNow+"[0].scrollIntoView({block:'start'})");await wait(200);
+          await capture(w,'health-open-first');
+          const bottom=await w.js("(()=>{const room="+ROOM+";room.scrollTop=room.scrollHeight;room.dispatchEvent(new Event('scroll'));const r=room.getBoundingClientRect(),read=room.querySelector('.read').getBoundingClientRect(),cs=getComputedStyle(room),m=cs.maskImage||cs.webkitMaskImage||'';return {scrolls:room.scrollHeight>room.clientHeight+4,gap:Math.round(r.bottom-read.bottom),mask:m.includes('linear-gradient'),topFade:room.classList.contains('scrolled'),open:room.querySelectorAll('.more.open').length};})()");
+          check('19 the last line stays above the bottom fade, and a scrolled room fades its top edge too',bottom.scrolls&&bottom.mask&&bottom.topFade&&bottom.open===sample.방.rows.length&&bottom.gap>=30,bottom);
+          await capture(w,'health-bottom');
+          // 새 장면(계정 건강을 다시 눌러 읽은 요약)이 와도 눌러 고정한 줄, 펼침, 자판 초점이 그대로다
+          const before=await w.js("(()=>{const rows="+rowsNow+";rows[1].focus({preventScroll:true});return {when:rows.map(b=>b.querySelector('.when').textContent),focus:document.activeElement?.dataset?.vis||null};})()");
+          const next=healthSummary();next.방.rows[0].when='팔로워 20,011 · 한 편 336번';
+          await w.js('window.__orbFixture.setHealth('+JSON.stringify(healthAnswer(next))+')');
+          await w.js("document.querySelector('#portal-entry [data-orb-prog=health]').click()");await wait(700);
+          const kept=await w.js("(()=>{const rows="+rowsNow+";return {when:rows.map(b=>b.querySelector('.when').textContent),pinned:rows.filter(b=>b.classList.contains('pin')&&b.classList.contains('opened')&&b.getAttribute('aria-expanded')==='true').length,focus:document.activeElement?.dataset?.vis||null,prog:document.querySelector('#portal-entry .orb-stage').dataset.prog};})()");
+          check('19 a fresh summary for the same account keeps the pinned lines open and the keyboard focus on its line',kept.when[0]==='팔로워 20,011 · 한 편 336번'&&kept.pinned===sample.방.rows.length&&before.focus!==null&&kept.focus===before.focus&&kept.prog==='health',{before,...kept});
+          // Esc는 보이는 방의 펼친 줄을 접는다
+          await key(w,'Escape');await wait(500);
+          check('19 Esc folds the open lines of the 계정 건강 room',(await w.js(ROOM+".querySelectorAll('.more.open').length"))===0);
+          // 자판: 화살표로 계정 건강 오브제에 오면 열리고, Tab은 그 방 안으로 내려간다
+          const kbState="({obj:document.activeElement?.dataset?.orbProg||null,room:document.activeElement?.closest?.('[data-room]')?.dataset?.room||null,prog:document.querySelector('#portal-entry .orb-stage').dataset.prog,tab:[...document.querySelectorAll('#portal-entry [data-orb-prog]')].filter(o=>!o.hidden).map(o=>o.dataset.orbProg+':'+o.getAttribute('tabindex'))})";
+          await click(w,'#portal-entry [data-orb-prog="visits"]');await wait(400);
+          await w.js("document.querySelector('#portal-entry [data-orb-prog=visits]').focus()");await key(w,'Right');await w.js("document.activeElement.dispatchEvent(new FocusEvent('focusin',{bubbles:true}))");await wait(300);
+          const kb=await w.js(kbState);
+          check('19 an arrow key from 방문자 분석 moves onto 계정 건강 and opens it',kb.obj==='health'&&kb.prog==='health'&&JSON.stringify(kb.tab)===JSON.stringify(['subs:-1','visits:-1','health:0']),kb);
+          await key(w,'Tab');await wait(250);
+          const kbIn=await w.js(kbState);
+          check('19 Tab from the open object 계정 건강 goes into its room',kbIn.obj===null&&kbIn.room==='solio-health',kbIn);
+          // 가운데 폭(768 · 641)에서도 길의 단계는 둘씩 놓이고, 줄을 바꾼 단계 왼쪽에 빈 세로 선이 남지 않는다(카본 A)
+          const mids=[];
+          await move(w,12,500);await w.js(rowsNow+"[0].click()");await wait(800);
+          for(const W of [960,873,768,641]){w.win.setContentSize(W,560);for(let i=0;i<40&&(await w.js('innerWidth'))!==W;i++)await wait(50);await wait(300);
+            await w.js(ROOM+".scrollTop=0");await w.js(rowsNow+"[0].scrollIntoView({block:'start'})");await w.js("(()=>{const h=[..."+ROOM+".querySelectorAll('.more.open .more-head')].at(-1);if(h)h.scrollIntoView({block:'start'});return true;})()");await wait(150);
+            await capture(w,'health-open-'+W);
+            mids.push(await w.js("(()=>{const m="+ROOM+".querySelector('.more.open .more-in');const sig=m.querySelector(':scope > .row.sub:not(.good):not(.goal):not(.do)'),nb=sig.querySelector('.nm').getBoundingClientRect(),mb=sig.querySelector('.mid').getBoundingClientRect(),rw="+ROOM+".clientWidth;const textUnder=mb.top>=nb.bottom-1&&mb.width>=Math.min(rw*0.6,520);const steps=[...m.querySelectorAll('.step')];const left=Math.min(...steps.map(s=>Math.round(s.getBoundingClientRect().left)));const room="+ROOM+";return {W:innerWidth,textUnder,midWidth:Math.round(mb.width),overflow:Math.max(document.documentElement.scrollWidth-innerWidth,room.scrollWidth-room.clientWidth),steps:steps.length,rows:new Set(steps.map(s=>Math.round(s.getBoundingClientRect().top))).size,rowStartsWithLine:steps.filter(s=>Math.round(s.getBoundingClientRect().left)===left&&getComputedStyle(s).borderLeftStyle!=='none'&&parseFloat(getComputedStyle(s).borderLeftWidth)>0).length};})()"));}
+          w.win.setContentSize(1440,900);await wait(400);await w.js(rowsNow+"[0].click()");await wait(500);
+          check('19 at 641 to 1000 px an open account puts its explanations under the names at full width, the path steps go two by two below 900 px, no step that starts a line carries a left rule, and the room does not overflow sideways',mids.every(m=>m.textUnder&&(m.W>900||m.rows===Math.ceil(m.steps/2))&&m.rowStartsWithLine===0&&m.overflow<=0),{mids});
+          // 좁은 창(390): 이름 아래에 글, 단계는 둘씩
+          await move(w,12,600);
+          w.win.setContentSize(390,844);await wait(500);
+          await w.js(ROOM+".scrollTop=0");await wait(100);
+          await capture(w,'health-390');
+          await w.js(rowsNow+"[0].click()");await wait(800);
+          const narrow=await w.js("(()=>{const m="+ROOM+".querySelector('.more.open .more-in');const steps=[...m.querySelectorAll('.step')];const d=m.querySelector('.row.do');const nm=d.querySelector('.nm').getBoundingClientRect(),mid=d.querySelector('.mid').getBoundingClientRect();const room="+ROOM+";return {perRow:steps.length?steps.filter(s=>Math.round(s.getBoundingClientRect().top)===Math.round(steps[0].getBoundingClientRect().top)).length:0,midBelow:mid.top>=nm.bottom-1,overflow:Math.max(document.documentElement.scrollWidth-innerWidth,room.scrollWidth-room.clientWidth)};})()");
+          check('19 at 390 px the words sit under the names and the steps go two by two',narrow.perRow===2&&narrow.midBelow&&narrow.overflow<=0,narrow);
+          await capture(w,'health-open-390');
+          await w.js(rowsNow+"[0].scrollIntoView({block:'start'})");await w.js(ROOM+".querySelector('.flow').scrollIntoView({block:'center'})");await wait(200);
+          await capture(w,'health-flow-390');
+          w.win.setContentSize(1440,900);await wait(400);
+          // 다른 계정(볼 계정이 아님)이 들어오면 앞 계정의 답이 남지 않는다
+          await w.js('window.__orbFixture.setVisits('+JSON.stringify({ok:true,available:false})+')');
+          await w.js('window.__orbFixture.setHealth('+JSON.stringify({ok:true,available:false})+')');
+          await w.js('window.__orbFixture.setAuth('+JSON.stringify({...signedIn('none',8),account:{synk_user_id:'60000000-0000-4000-8000-000000000006',display_name:'다른 회원'}})+')');
+          await wait(600);const back=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1200);
+          const gone=await w.js("(()=>{const room="+ROOM+";return {hidden:room.hidden,rows:room.querySelectorAll('button.row').length,say:room.querySelector('[data-hea-say]').textContent,rail:document.querySelector('#portal-entry [data-orb-rail]').hidden,subs:!document.querySelector('#portal-entry [data-room=solio]').hidden};})()");
+          check('19 another account (not a viewer) gets no objects and never the previous 계정 건강 answer',back.ok&&gone.hidden&&gone.rows===0&&!gone.say&&gone.rail&&gone.subs,gone);
+          w.win.destroy();
+
+          // 나. 계정 건강만 볼 계정(방문자 분석 요약이 없는 PC는 아니지만, 방문자 분석 답이 「볼 수 없음」인 경우): 오브제 둘, 늦춤은 보이는 차례
+          const v=await open();await boot(v,{subs:subsReady,health:healthAnswer(healthSummary())},{restore:signedIn('none')});
+          await until(v,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          const o2=await objs(v);
+          check('19 with only 계정 건강 shown, the row is 구독 and 계정 건강, and 계정 건강 takes the second delay',JSON.stringify(o2)===JSON.stringify(['subs:true:0','health:false:1']),{objs:o2});
+          check('19 the 방문자 분석 read still happens on the way into Solio (the viewer waiting list depends on it)',(await calls(v)).filter(c=>c==='visits-snapshot').length===1);
+          await pointer(v);
+          await move(v,720,640);await wait(800);await v.js('window.__overLog.length=0;window.__progLog.length=0');
+          const hq=await rect(v,'#portal-entry [data-orb-prog="health"]');await move(v,hq.x,hq.y);await wait(1300);
+          const settle2=await opened(v,'health');
+          check('19 with two objects, coming straight onto 계정 건강 waits until the two names are out (0.55 s)',settle2!==null&&settle2>=520&&settle2<1000,{ms:settle2});
+          await move(v,12,660);await wait(400);
+          await capture(v,'health-only-1440');
+          v.win.destroy();
         }
         // 4. 배정 하나(Workspace, PULSE 각각)
         // 17. 2단계 첫 조각: 구 곁의 펼침과 구독 줄 안쪽(2단계_첫조각_구현설계.md 5절). 숨은 창에는 실제 마우스가 오지 않아 그 자리의 요소에 포인터 사건을 직접 보낸다(현장 노트 시험_화면확인)
