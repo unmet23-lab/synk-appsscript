@@ -232,7 +232,8 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     const same = bills.filter(b => b.days === bills[0].days), day = bills[0].days === 0 ? '오늘' : '내일';
     const names = [...new Set(same.map(b => SOLIO_TODAY_NAMES[b.row.service] || String(b.row.label || '').trim()))];
     const krw = same.reduce((n, b) => { const p = monthPrice(snapshot, b.row, now); return p && n !== null ? n + p.krw : null; }, 0);
-    return { say: day + ' ' + joinNames(names) + ' 결제가 있습니다.', then: krw ? '모두 약 ' + fmt(krw) + '원입니다.' : '', covers: same.map(b => 'bill:' + b.row.id) };
+    const svcs = [...new Set(same.map(b => b.row.service).filter(Boolean))];
+    return { say: day + ' ' + joinNames(names) + ' 결제가 있습니다.', then: krw ? '모두 약 ' + fmt(krw) + '원입니다.' : '', covers: same.map(b => 'bill:' + b.row.id), service: svcs.length === 1 ? svcs[0] : undefined };
   }
   // 8. 다 쓴 계정이 있지만 급하지 않음. 「넉넉」은 쓰지 않는다(설계 4절 1). 둘째 줄은 다가오는 일의 첫 줄이 맡는다
   if (weekly.some(g => g.out.length)) return { say: '지금은 급한 일이 없습니다.', then: '', covers: [], pull: true };
@@ -476,14 +477,15 @@ export function briefLive(tokens, samples, now) {
    구를 가운데 둔 사흘짜리 시계판의 자료. DOM이 없다. 때는 모두 지금부터의 거리(ms)다.
    rings: 이 PC 계정이 읽히는 구독마다 계정 칸(left 0~100, 읽지 못한 계정은 null).
    hero: 가운데 구독(맨 위가 말한 구독, 없으면 계정이 가장 많은 한도형 구독)의 큰 숫자.
-   safe: 지금 속도로 막히지 않는 때까지(until)와 다시 열리는 때(gapEnd). 속도를 모르면 null.
+   arcs: 바깥 궤도의 구간들(from · to, k: safe 막히지 않음 · gap 모두 막힘 · after 그 뒤나 모름). 지금 모두 막혀 있으면 첫 다시 열림까지 gap부터다.
    ticks · days · events: 바깥 눈금(한 시간마다, 여섯 시간마다, 자정), 날 이름, 다가오는 일 표식 */
 const leftOf = a => (a.state === 'out' ? 0 : ['ok', 'low'].includes(a.state) ? Math.max(0, Math.min(100, Math.round(a.g?.weekly && !a.g.weekly.guess ? a.g.weekly.left : a.left ?? 0))) : null);
 const KIND = Object.freeze({ unblock: 'open', reset: 'reset', bill: 'bill', runout: 'runout' });
 export function briefDial(snapshot, groups, now, focusService = null) {
   const auto = groups.filter(g => g.service && here(g).some(a => a.row.source === 'auto'));
   const weekly = auto.filter(g => g.kind === 'weekly');
-  const focus = weekly.find(g => g.service === focusService) || [...weekly].sort((a, b) => here(b).length - here(a).length || (b.service === 'claude') - (a.service === 'claude'))[0] || auto[0];
+  // 맨 위가 말한 구독(한도형이든 크레딧형이든)을 먼저 찾는다(화면 검수 dial A6)
+  const focus = auto.find(g => g.service === focusService) || [...weekly].sort((a, b) => here(b).length - here(a).length || (b.service === 'claude') - (a.service === 'claude'))[0] || auto[0];
   if (!focus) return null;
   const rings = auto.map(g => ({ key: g.service, name: svcName(g), focus: g === focus, accounts: here(g).filter(a => a.row.source === 'auto').map(a => ({ id: a.row.id, name: a.name || '', state: a.state, left: leftOf(a) })) }));
   // 큰 숫자: 계정 여럿은 합친 몫(무게를 아는 Claude나 요금제가 같을 때), 섞인 요금제는 열린 계정 수, 하나는 그 계정의 남은 양
@@ -496,15 +498,33 @@ export function briefDial(snapshot, groups, now, focusService = null) {
   else hero = { value: String(read.filter(a => a.state !== 'out').length), unit: '/' + list.length, label: name + ' 열린 계정' };
   const end = now + DIAL_MS, ticks = [];
   for (let t = Math.ceil(now / HOUR) * HOUR; t < end; t += HOUR) { const h = new Date(t).getHours(); ticks.push({ off: t - now, k: h === 0 ? 'day' : h % 6 === 0 ? 'six' : 'hour' }); }
-  const days = [{ off: 0, label: '지금' }, ...ticks.filter(k => k.k === 'day').map(k => ({ off: k.off, label: soonWhen(now + k.off, now, true) }))];
-  const events = briefSoon(snapshot, groups, now, [], DIAL_MS).all.filter(i => i.at > now && i.at <= end)
-    .map(i => ({ off: i.at - now, kind: KIND[i.key.split(':')[0]] || 'other', text: i.when + ' ' + i.text }));
+  // 자정이 「지금」이나 사흘 끝에서 한 시간 반 안이면 날 이름이 「지금」과 겹친다. 그 자정은 눈금만 남긴다(화면 검수 dial A4)
+  const NEAR = 1.5 * HOUR;
+  const days = [{ off: 0, label: '지금' }, ...ticks.filter(k => k.k === 'day' && k.off > NEAR && k.off < DIAL_MS - NEAR).map(k => ({ off: k.off, label: soonWhen(now + k.off, now, true) }))];
   const r = focus.kind === 'weekly' ? poolRunout(snapshot, focus, now) : null;
-  const safe = !r ? null : r.beyond || r.at >= end ? { until: DIAL_MS, gapEnd: null } : { until: Math.max(0, r.at - now), gapEnd: r.next ? Math.min(DIAL_MS, r.next.t - now) : DIAL_MS };
+  // 맨 위 구독의 막힘 표식은 궤도와 같은 때(반올림 전)에 찍는다. 글(title)은 반올림한 때 그대로다(화면 검수 dial A5)
+  const events = briefSoon(snapshot, groups, now, [], DIAL_MS).all.filter(i => i.at > now && i.at <= end)
+    .map(i => ({ off: i.key === 'runout:' + focus.service && r && r.at > now ? r.at - now : i.at - now, kind: KIND[i.key.split(':')[0]] || 'other', text: i.when + ' ' + i.text }));
   const open = read.filter(a => a.state !== 'out').length;
-  const label = [name + ' 계정 ' + list.length + '개 가운데 ' + open + '개가 열려 있습니다.', hero.unit === '%' ? hero.label + ' ' + hero.value + '%.' : '',
-    r && !r.beyond && r.at < end ? '지금 속도면 ' + whenWords(roundHalf(r.at, now), now, { withTime: true }) + '쯤 모두 막힙니다.' : r ? '지금 속도면 사흘 안에는 막히지 않습니다.' : ''].filter(Boolean).join(' ');
-  return { span: DIAL_MS, focus: focus.service, hero, rings, safe, ticks, days, events, label };
+  // 바깥 궤도. 지금 모두 막혀 있으면 첫 다시 열림까지가 붉다. 30분 안에 열리는 막힘도 지금 막힌 것이라 그린다(화면 검수 dial A2)
+  const firstOpen = open || !read.length ? null : Math.min(...read.map(a => (a.unblock && a.unblock > now ? a.unblock : Infinity)));
+  const arcs = [], add = (from, to, k) => { const a = Math.max(0, from), b = Math.min(DIAL_MS, to); if (b > a) arcs.push({ from: a, to: b, k }); };
+  let start = 0;
+  if (read.length && !open) { const t = Number.isFinite(firstOpen) ? firstOpen - now : DIAL_MS; add(0, t, 'gap'); start = t; }
+  if (r) {
+    const at = r.beyond ? Infinity : r.at - now, back = r.next ? r.next.t - now : DIAL_MS;
+    add(start, at, 'safe');
+    if (at < DIAL_MS) { add(Math.max(start, at), back, 'gap'); add(back, DIAL_MS, 'after'); }
+  } else add(start, DIAL_MS, 'after');
+  // 낭독 이름. 읽는 중에는 열린 계정 수를 단정하지 않고, 지금 모두 막혔으면 예측 대신 첫 다시 열림을 말한다(화면 검수 dial A2)
+  const reopenWords = Number.isFinite(firstOpen) ? ' ' + spoken(firstOpen, now) + '에 처음 다시 열립니다.' : '';
+  // 계정이 하나면 「1개 가운데 1개」가 아니라 「Codex는 열려 있습니다」, 「바닥납니다」로 말한다
+  const one = list.length === 1;
+  const label = !read.length ? name + ' 계정을 읽는 중입니다.'
+    : !open ? (one ? neun(name) + ' 막혀 있습니다.' : name + ' 계정 ' + list.length + '개가 모두 막혀 있습니다.') + reopenWords
+    : [one ? neun(name) + ' 열려 있습니다.' : name + ' 계정 ' + list.length + '개 가운데 ' + open + '개가 열려 있습니다.', hero.unit === '%' ? hero.label + ' ' + hero.value + '%.' : '',
+      r && !r.beyond && r.at > now && r.at < end ? '지금 속도면 ' + whenWords(roundHalf(r.at, now), now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.') : r ? '지금 속도면 사흘 안에는 막히지 않습니다.' : ''].filter(Boolean).join(' ');
+  return { span: DIAL_MS, focus: focus.service, hero, rings, arcs, ticks, days, events, label };
 }
 
 /* 스냅숏에서 나오는 판(맨 위, 다가오는 일, 진단, 줄 안쪽 결론). 지금 출력은 따로 붙인다(briefLive).

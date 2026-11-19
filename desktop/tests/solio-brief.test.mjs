@@ -499,9 +499,13 @@ test('the dial: the service on top in the middle, its pooled share, every accoun
   assert.equal(d.ticks.length, 72);
   assert.deepEqual(d.days.map(x => x.label), ['지금', '내일', '모레', '월요일']);
   assert.equal(d.days[1].off, 21 * H);
-  // 지금 속도로 막히지 않는 때와 다시 열리는 때
-  assert.ok(d.safe.until > 31 * H && d.safe.until < 33 * H);
-  assert.equal(d.safe.gapEnd, 40 * H);
+  // 바깥 궤도: 지금 속도로 막히지 않는 때까지(금색), 모두 막히는 동안(붉게), 그 뒤(점선)
+  assert.deepEqual(d.arcs.map(a => a.k), ['safe', 'gap', 'after']);
+  const safe = d.arcs[0], gap = d.arcs[1];
+  assert.ok(safe.from === 0 && safe.to > 31 * H && safe.to < 33 * H);
+  assert.deepEqual([gap.from, gap.to], [safe.to, 40 * H]);
+  // 막힘 표식은 궤도와 같은 때(반올림 전)에 찍는다(화면 검수 dial A5)
+  assert.equal(d.events.find(e => e.kind === 'runout').off, safe.to);
   assert.ok(d.events.some(e => e.kind === 'open' && e.off === 6 * H && e.text.includes('out0')));
   assert.ok(d.events.some(e => e.kind === 'runout'));
   assert.ok(d.events.every(e => e.off > 0 && e.off <= DIAL_MS));
@@ -517,6 +521,34 @@ test('the dial: mixed plans count open accounts, a single account shows its own 
   const d = briefDial(s, g, NOW, 'gpt');
   assert.deepEqual(d.hero, { value: '1', unit: '/2', label: 'Codex 열린 계정' });
   assert.deepEqual(d.rings.map(r => [r.key, r.accounts.length, r.focus]), [['gpt', 2, true], ['gemini', 1, false]]);
-  assert.equal(d.safe, null, 'no common unit, no forecast arc');
+  assert.deepEqual(d.arcs, [{ from: 0, to: DIAL_MS, k: 'after' }], 'no common unit, no forecast arc');
   assert.deepEqual(briefDial(s, g, NOW, 'gemini').hero, { value: '80', unit: '%', label: 'Gemini 남은 양' });
+});
+
+test('the dial when every account is shut: red until the first reopens, and the label says so instead of a forecast (화면 검수 dial A2)', () => {
+  const a = weekly('gpt', 100, NOW + 2 * H, { plan: 'pro', email: 'alpha@example.com' }), b = weekly('gpt', 100, NOW + 30 * H, { plan: 'pro', email: 'beta@example.com' });
+  const s = snap([a, b], { [a.id]: 10, [b.id]: 10 }), d = briefDial(s, briefGroups(s, NOW), NOW, 'gpt');
+  assert.deepEqual(d.arcs[0], { from: 0, to: 2 * H, k: 'gap' });
+  assert.match(d.label, /^Codex 계정 2개가 모두 막혀 있습니다\. .+에 처음 다시 열립니다\.$/);
+  assert.doesNotMatch(d.label, /지금 속도면/);
+  // 30분 안에 열려도 지금 막힌 것은 붉게 그린다
+  const c = weekly('gpt', 100, NOW + 10 * 60e3, { plan: 'pro', email: 'gamma@example.com' });
+  const s2 = snap([c, b], { [c.id]: 10, [b.id]: 10 }), d2 = briefDial(s2, briefGroups(s2, NOW), NOW, 'gpt');
+  assert.deepEqual(d2.arcs[0], { from: 0, to: 10 * 60e3, k: 'gap' });
+});
+
+test('the dial leaves out a day name within an hour and a half of 「지금」 (화면 검수 dial A4)', () => {
+  const { rows, stats } = sevenOfTen(), late = NOW + 20 * H; // 금요일 23:00
+  const s = snap(rows, stats), d = briefDial(s, briefGroups(s, late), late, 'claude');
+  assert.equal(d.days[0].label, '지금');
+  assert.ok(d.ticks.some(t => t.k === 'day' && t.off === H), 'the midnight tick stays');
+  assert.ok(!d.days.some(x => x.off === H), 'but its name does not sit on 「지금」');
+});
+
+test('the dial centres the service whose bill or credits the top speaks of (화면 검수 dial A6)', () => {
+  const c1 = weekly('claude', 5, NOW + 5 * D), c2 = weekly('claude', 5, NOW + 5 * D);
+  const g = weekly('gpt', 10, NOW + 5 * D, { plan: 'plus', billDay: 21 });
+  const s = snap([c1, c2, g], { [c1.id]: 1, [c2.id]: 1, [g.id]: 1 }), b = brief(s);
+  assert.equal(b.head.say, '내일 Codex 결제가 있습니다.');
+  assert.equal(b.dial.focus, 'gpt');
 });

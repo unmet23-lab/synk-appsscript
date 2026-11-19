@@ -490,15 +490,12 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     // 바깥 눈금: 한 시간마다 짧게, 여섯 시간마다 길게, 자정은 가장 길게
     for (const t of d.ticks) { const [x0, y0] = pt(t.off, 314), [x1, y1] = pt(t.off, t.k === 'day' ? 290 : t.k === 'six' ? 298 : 306); parts.push(sv('line', { x1: x0.toFixed(1), y1: y0.toFixed(1), x2: x1.toFixed(1), y2: y1.toFixed(1), class: 'd-t d-t-' + t.k })); }
     for (const x of d.days) { const [tx, ty] = pt(x.off, 342); parts.push(sv('text', { x: tx.toFixed(1), y: ty.toFixed(1), class: 'd-day' + (x.off === 0 ? ' d-now' : '') }, x.label)); }
-    // 지금 속도로 막히지 않는 때까지 금색, 모두 막히는 동안은 붉게, 그 뒤는 점선
-    if (d.safe) {
-      if (d.safe.until > 0) parts.push(sv('path', { d: arc(0, Math.min(d.safe.until, d.span - 1), 280), class: 'd-safe' }));
-      if (d.safe.until < d.span) {
-        const g = d.safe.gapEnd ?? d.span;
-        if (g > d.safe.until) parts.push(sv('path', { d: arc(d.safe.until, Math.min(g, d.span - 1), 280), class: 'd-gap' }));
-        if (g < d.span - 1) parts.push(sv('path', { d: arc(g, d.span - 1, 280), class: 'd-after' }));
-      }
-    } else parts.push(sv('circle', { r: 280, class: 'd-after' }));
+    // 지금 속도로 막히지 않는 때까지 금색, 모두 막히는 동안은 붉게, 그 뒤는 점선. 사흘 전체는 원으로 그린다.
+    // 양 끝점이 같은 호는 SVG가 그리지 않는다(화면 검수 dial A1). 한 바퀴의 0.2%보다 짧은 구간은 점이 되어 빼다
+    for (const a of d.arcs || []) {
+      if (a.to - a.from <= d.span * 0.002) continue;
+      parts.push(a.to - a.from >= d.span * 0.998 ? sv('circle', { r: 280, class: 'd-' + a.k }) : sv('path', { d: arc(a.from, a.to, 280), class: 'd-' + a.k }));
+    }
     const [nx, ny] = pt(0, 280); parts.push(sv('circle', { cx: nx.toFixed(1), cy: ny.toFixed(1), r: 4.5, class: 'd-nowdot' }));
     // 다가오는 일 표식. 다가가면 글이 뜬다(title)
     for (const e of d.events) {
@@ -527,12 +524,13 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     }
     return parts;
   }
-  function renderDial(d) {
+  function renderDial(d, live = null) {
     app.dial.hidden = !d;
     app.solio.classList.toggle('dialed', Boolean(d));
-    // 지금 출력은 문자판이 있는 동안 그 안(구 위)에 둔다. 문자판이 없으면 비서 판의 제자리(진단 앞)로 돌린다
-    if (d && app.live.parentElement !== app.dial) app.dial.append(app.live);
-    else if (!d && app.live.parentElement !== app.brief) app.brief.insertBefore(app.live, app.diag);
+    // 지금 출력은 숫자가 있을 때(켜짐) 문자판 안 구 위에 둔다. 꺼짐 · 처음 세는 중 · 멈춤의 안내와 「켜기」는 구를 덮지 않게 비서 판의 제자리(진단 앞)에 둔다(화면 검수 dial A3)
+    const inDial = Boolean(d) && live?.state === 'on';
+    if (inDial && app.live.parentElement !== app.dial) app.dial.append(app.live);
+    else if (!inDial && app.live.parentElement !== app.brief) app.brief.insertBefore(app.live, app.diag);
     if (!d) return;
     const key = JSON.stringify(d);
     if (app.dial.dataset.key === key) return;
@@ -543,7 +541,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   }
   function renderBrief(b, fold) {
     app.brief.hidden = !b;
-    renderDial(b && fold ? b.dial || null : null);
+    renderDial(b && fold ? b.dial || null : null, b?.live || null);
     if (!b) { app.detailsTop.hidden = true; return; }
     const soon = b.soon?.shown || [], key = JSON.stringify(soon);
     if (app.soon.dataset.key !== key) { app.soon.dataset.key = key; app.soon.replaceChildren(...soon.map(soonItem)); }
