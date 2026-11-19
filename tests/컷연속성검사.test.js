@@ -2618,9 +2618,9 @@ print(json.dumps({
   assert.match(값.GA3[0][1], /얼굴이 2개 잡혔다\(40\.0% · 10\.0%\).*아래선 35%에 못 미치는 얼굴이 있다/);
   assert.match(값.GA3[2][1], /10\.0% · 8\.0%/);
   assert.equal(값.GA3옛, '알림');
-  // GA9 — 24.86%는 「24.9%」로 적고 걸림, 24.96%는 「25.0%」로 적고 통과(적은 값과 판정이 어긋나지 않는다)
+  // GA9 — 24.86%는 「24.9%」로 적고 걸림. 24.96%도 걸림이고 「25.0%」로 올려 적지 않는다(다시1 GA3 — 잰 값 그대로 견주고, 적은 값이 판정과 어긋나지 않게 자릿수를 늘린다)
   assert.equal(값.GA9[0][0], '걸림'); assert.match(값.GA9[0][1], /얼굴 폭이 그림 폭의 24\.9%다/);
-  assert.equal(값.GA9[1][0], '통과'); assert.match(값.GA9[1][1], /25\.0%/);
+  assert.equal(값.GA9[1][0], '걸림'); assert.match(값.GA9[1][1], /얼굴 폭이 그림 폭의 24\.96%다/);
   // GA7 — --항목 얼굴을 밝히면 --받음이 있어도 잰다(밝히지 않은 기본 실행은 --받음 · --영상에서 재지 않는다)
   const zlib = require('node:zlib');
   const 덩이 = (이름, 몸) => { const 앞 = Buffer.concat([Buffer.from(이름, 'ascii'), 몸]); const 길이 = Buffer.alloc(4); 길이.writeUInt32BE(몸.length); const 끝 = Buffer.alloc(4); 끝.writeUInt32BE(zlib.crc32(앞)); return Buffer.concat([길이, 앞, 끝]); };
@@ -2631,4 +2631,142 @@ print(json.dumps({
   const r = 돌리기([표, '--그림', path.join(편, '정지'), '--받음', path.join(편, '받음'), '--항목', '얼굴', '--출력', path.join(dir, '검사')]);
   const 줄 = r.항목들.filter((x) => x.항목 === '얼굴');
   assert.equal(줄.length, 1, `GA7: ${JSON.stringify(r.항목들)}`); assert.equal(줄[0].등급, '확인'); assert.equal(r.코드, 2);
+});
+
+// ───────── T28 · T29 다시 검수(영상감정앵글검사-20261120-다시1) 지적 GA1~GA8 — 지적마다 고치기 전에 깨지는 판 ─────────
+test('T28 · T29 다시 검수 지적 — 시작그림 경로는 관문 판 도구와 같게 푼다(절대 경로 · ~), 한 판은 첫 시작그림으로만, 토막마다 창을 본다, 못 읽는 창은 창이 아니다, 반올림해 넘기지 않는다, 사람 수보다 얼굴이 적으면 확인, 칸은 글로만', { skip: !파이썬 && '파이썬 없음' }, async () => {
+  const dir = 임시(); const 편 = path.join(dir, '라면_20261120'); fs.mkdirSync(path.join(편, '정지'), { recursive: true });
+  for (const n of ['C1.png', 'C2.png', 'C2_승인.png', 'C3.png', 'C3_끝.png']) fs.writeFileSync(path.join(편, '정지', n), n);
+  const 읽기 = String.raw`
+import sys, json, copy, os, importlib.util
+from pathlib import Path
+sys.dont_write_bytecode = True
+spec = importlib.util.spec_from_file_location("m", sys.argv[1]); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+틀 = json.load(open(sys.argv[2], encoding="utf-8")); 편 = Path(sys.argv[3]); 틀["편"]["만든날"] = "2026-11-20"
+def 표(고침):
+    s = copy.deepcopy(틀); c = {d["cut"]: d for d in s["detail"]}; 고침(c, s); return s
+def 앵글걸림(고침): return [w for g, w, t in m.앵글검사(표(고침), 편) if g == "걸림" and "앵글이 앞 컷" in t]
+def 고른(고침): return {cut: p.name for cut, p in m.감정자리대상(표(고침), 편 / "정지", 편)[0]}
+같은 = {"크기": "클로즈", "높이": "눈높이", "방향": "정면"}
+def ga1(c, s):   # C1과 C2가 같은 파일을 상대 · 절대 경로로 적고 C2에 같은판 까닭
+    c["C2"]["시작그림"] = str(편 / "정지" / "C1.png"); c["C2"]["같은판"] = "한 방을 둘로 자른 컷"; c["C1"]["앵글"].update(같은); c["C2"]["앵글"].update(같은)
+def ga5(c, s):   # C2와 C3의 첫 그림은 다르고 끝 그림만 같다
+    c["C2"]["시작그림"] = ["정지/C2.png", "정지/C3_끝.png"]; c["C3"]["시작그림"] = ["정지/C3.png", "정지/C3_끝.png"]; c["C3"]["같은판"] = "끝 그림을 함께 쓴다"; c["C2"]["앵글"].update(같은); c["C3"]["앵글"].update(같은)
+def ga2(c, s):   # 같은 C2의 첫 토막에만 창
+    i = s["detail"].index(c["C2"]); 둘째 = copy.deepcopy(c["C2"]); c["C2"]["창"] = {"세로": 0.62}; s["detail"].insert(i + 1, 둘째)
+def ga4(c, s):   # ~ 로 적은 시작그림은 홈 폴더에서 찾는다(편 폴더 아래가 아니다) — 없으면 --그림 폴더의 그림으로 넘어가지 않는다
+    c["C2"]["시작그림"] = "~/synk-없는-폴더/C2_승인.png"
+def ga7(v):
+    def f(c, s): c["C2"]["창"] = v
+    return f
+def ga8a(c, s): c["C2"]["감정자리"] = ["수아 — 놀람"]; s["사건"][0]["압축"] = True; c["C3"].pop("감정자리"); c["C3"].pop("감정부위")
+def ga8b(c, s): c["C1"]["앵글"]["까닭"] = {"사유": "수아의 눈높이"}
+print(json.dumps({
+    "GA1": 앵글걸림(ga1), "GA5": 앵글걸림(ga5),
+    "GA2": 고른(ga2), "GA4": [고른(ga4), m.감정자리대상(표(ga4), 편 / "정지", 편)[1]],
+    "GA7": [고른(ga7({"세로": None})), 고른(ga7({"모름": 1})), 고른(ga7({"세로": [0.4, 0.6], "배율": 1.2}))],
+    "GA3": [m.감정자리판정(151 / 432 * 100, True, True), m.감정자리판정(35.0, True, True)],
+    "GA6": [m.감정자리판정([40.0], True, True, 사람수=2), m.감정자리판정([40.0, 38.0], True, True, 사람수=2), m.감정자리판정([40.0], True, True, 사람수=1), m.감정자리판정([40.0], True, False, 사람수=2)],
+    "GA8": [[t[:40] for g, w, t in m.감정자리검사(표(ga8a), 편) if g == "걸림"], [w for g, w, t in m.앵글검사(표(ga8b), 편) if g == "걸림" and "까닭" in t]],
+}, ensure_ascii=False))
+`;
+  const 답 = spawnSync('python', ['-I', '-X', 'utf8', '-c', 읽기, 도구, 틀경로, 편], { encoding: 'utf8' });
+  assert.equal(답.status, 0, 답.stderr);
+  const 값 = JSON.parse(답.stdout);
+  // GA1 — 같은 파일을 상대 · 절대 경로로 달리 적어도 한 판이다(같은판 까닭이 있으면 이웃 비교를 뺀다)
+  assert.deepEqual(값.GA1, [], 'GA1');
+  // GA5 — 끝 그림만 같은 것은 한 판이 아니다(관문 판 도구는 목록의 첫 그림을 연다)
+  assert.deepEqual(값.GA5, ['C3'], 'GA5');
+  // GA2 — 첫 토막에 창이 있어도 창 없는 둘째 토막이 감정 자리면 잰다
+  assert.deepEqual(값.GA2, { C2: 'C2.png' }, 'GA2');
+  // GA4 — 시작그림 칸에 적힌 파일이 없으면 「그림 없음」이다(--그림 폴더의 다른 그림을 대신 재지 않는다 — 관문 판 도구와 같다)
+  assert.deepEqual(값.GA4, [{}, ['C2']], 'GA4');
+  // GA7 — 받은 뒤 검사가 못 읽는 창({"세로": null} · 모르는 칸)은 창이 아니라 잰다, 읽을 수 있는 창만 뺀다
+  assert.deepEqual(값.GA7, [{ C2: 'C2.png' }, { C2: 'C2.png' }, {}], 'GA7');
+  // GA3 — 34.954%는 35%에 못 미친다(35.0%로 올려 통과시키지 않는다), 적는 값도 35 아래로 보인다
+  assert.equal(값.GA3[0][0], '걸림'); assert.match(값.GA3[0][1], /얼굴 폭이 그림 폭의 34\.95%다/); assert.equal(값.GA3[1][0], '통과');
+  // GA6 — 컷표의 사람 수보다 잡힌 얼굴이 적으면 통과가 아니라 확인(감정을 맡은 얼굴이 안 잡혔을 수 있다), 앞선 편은 알림
+  assert.deepEqual(값.GA6.map((x) => x[0]), ['확인', '통과', '통과', '알림']);
+  assert.match(값.GA6[0][1], /사람은 2명인데 얼굴은 1개만 잡혔다\(40\.0%\)/);
+  // GA8 — 감정자리와 앵글.까닭은 글이다(글이 든 배열 · 객체도 칸을 채운 것이 아니다)
+  assert.match(값.GA8[0][0] || '', /^사람이 나오는 편인데 감정 자리가 하나도 없다/); assert.deepEqual(값.GA8[1], ['C1']);
+});
+
+// ───────── T28 — 다른 도구와 같은 풀이인지 그 도구의 원문과 견주고(시작그림 고르기 · 창 읽기), 감정 자리를 토막 단위로 본다 ─────────
+test('T28 — 관문 판 도구 · 받은 뒤 검사의 원문과 견준다(시작그림 고르기 · 창 읽기), 감정 자리는 토막 단위, 글이 아닌 감정자리는 걸림, 얼굴 수가 사람 수와 다르면 확인', { skip: !파이썬 && '파이썬 없음' }, async () => {
+  const dir = 임시(); const 편 = path.join(dir, '라면_20261120');
+  for (const [폴더, 이름들] of [['정지', ['C1.png', 'C2.png', 'C2_승인.png', 'C3.png', 'C3_끝.png']], ['그림', ['C5_v1.png', 'C5_v2.png', 'C_6.png', 'C7.jpg', 'C7.png']]]) {
+    fs.mkdirSync(path.join(편, 폴더), { recursive: true });
+    for (const n of 이름들) fs.writeFileSync(path.join(편, 폴더, n), n);
+  }
+  const 읽기 = String.raw`
+import sys, json, copy, os, re, ast, math, importlib.util
+from pathlib import Path
+sys.dont_write_bytecode = True
+spec = importlib.util.spec_from_file_location("m", sys.argv[1]); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+틀 = json.load(open(sys.argv[2], encoding="utf-8")); 편 = Path(sys.argv[3]); 틀["편"]["만든날"] = "2026-11-20"
+def 떼기(파일, 이름들):   # 그 도구를 불러오지 않고(그림 라이브러리 없이도 돌게) 원문에서 함수만 떼어 돌린다
+    마당 = {"Path": Path, "os": os, "re": re, "math": math}
+    for 마디 in ast.parse(Path(파일).read_text(encoding="utf-8")).body:
+        if (isinstance(마디, ast.FunctionDef) and 마디.name in 이름들) or (isinstance(마디, ast.Assign) and any(isinstance(x, ast.Name) and x.id in 이름들 for x in 마디.targets)):
+            exec(compile(ast.Module([마디], []), str(파일), "exec"), 마당)
+    return 마당
+관문 = 떼기(sys.argv[4], {"시작그림찾기", "파일이름", "그림확장자"}); 받은뒤 = 떼기(sys.argv[5], {"창읽기"})
+정지 = 편 / "정지"; 그림 = 편 / "그림"
+os.utime(그림 / "C5_v1.png", (1e9, 1e9)); os.utime(그림 / "C5_v2.png", (1.5e9, 1.5e9))
+경우 = [("C2", {"시작그림": "정지/C2_승인.png"}, 정지), ("C2", {"시작그림": str(정지 / "C1.png")}, 정지), ("C2", {"시작그림": "~/synk-없는-폴더/C2.png"}, 정지),
+        ("C2", {"시작그림": ["정지/C3.png", "정지/C3_끝.png"]}, 정지), ("C2", {"시작그림": ["", " 정지/C3.png "]}, 정지), ("C2", {"시작그림": "정지/없는.png"}, 정지),
+        ("C2", {}, 정지), ("C2", {"시작그림": 7}, 정지), ("C2", {"시작그림": ""}, 정지), ("C5", {}, 그림), ("C 6", {}, 그림), ("C7", {}, 그림), ("C9", {}, 그림),
+        ("C2", {}, None), ("C2", {}, 편 / "없는폴더")]
+열쇠 = lambda q: None if q is None else os.path.normcase(str(Path(q).resolve()))
+둘 = [(관문["시작그림찾기"](폴더, 컷, 줄, 편)[0], m.감정자리그림(dict(줄, cut=컷), 폴더, 편)[0]) for 컷, 줄, 폴더 in 경우]
+창들 = [None, {}, "", {"세로": 0.62}, {"세로": None}, {"모름": 1}, {"세로": [0.4, 0.6], "배율": 1.2}, {"배율": 0.5}, {"가로": True}, {"세로": "0.6"}, {"세로": [0.4]}, {"세로": 1.5},
+       {"배율": [1, 2]}, {"배율": float("inf")}, [0.5], 0.62, {"가로": 0.1, "세로": 0.9, "배율": 3}, {"가로": [0, 1]}, {"배율": 1}, {"세로": [0.4, None]}, {"배율": [1, 0.5]}]
+def 표(고침):
+    s = copy.deepcopy(틀); c = {d["cut"]: d for d in s["detail"]}; 고침(c, s); return s
+def 고른(고침): return {cut: q.name for cut, q in m.감정자리대상(표(고침), 정지, 편)[0]}
+def 둘로(c, s, 첫, 둘째고침):   # C2를 두 토막으로 쓴다 — 토막마다 따로 고친다
+    i = s["detail"].index(c["C2"]); 둘째 = copy.deepcopy(c["C2"]); 첫(c["C2"]); 둘째고침(둘째); s["detail"].insert(i + 1, 둘째)
+창 = {"세로": 0.62}
+def 자리뺌(d): d.pop("감정자리")
+def 창줌(d): d["창"] = 창
+def 자리빼고창(d): d.pop("감정자리"); d["창"] = 창
+def h3a(c, s): s["사건"][0]["압축"] = True; 둘로(c, s, 자리뺌, 창줌)          # 감정 자리를 적은 둘째 토막만 창으로 잘라 쓴다(첫 토막은 감정 자리가 아니다)
+def h3b(c, s): s["사건"][0]["감정"] = "C2#2"; 둘로(c, s, 자리뺌, 자리빼고창)    # 사건 표가 둘째 토막을 가리키고 그 토막만 창
+def h3c(c, s): s["사건"][0]["감정"] = "C2#2"; 둘로(c, s, 자리빼고창, 자리뺌)    # 사건 표가 둘째 토막을 가리키고 첫 토막만 창
+def h3d(c, s): 둘로(c, s, 창줌, lambda d: d.update(인물=d["인물"] + ["엄마"]))   # 첫 토막은 창, 재는 둘째 토막에 사람이 둘
+def h3e(c, s): 둘로(c, s, lambda d: None, lambda d: d.update(감정부위="입가를 가린 손"))
+def h3f(c, s): 둘로(c, s, lambda d: (d.pop("감정자리"), d.update(인물=[])), 자리뺌)   # 사건 표가 가리키는 첫 토막에 사람이 없다 — 그 컷의 사람 토막을 잰다
+def h4(c, s): c["C2"]["감정자리"] = ["수아 — 놀람"]                             # 사건 표가 C2를 가리켜 감정 자리는 있다 — 그래도 칸은 글이어야 한다
+print(json.dumps({
+    "H1": [i for i, (a, b) in enumerate(둘) if 열쇠(a) != 열쇠(b)], "H1관문": [a.name if a else None for a, b in 둘],
+    "H2": [i for i, v in enumerate(창들) if isinstance(받은뒤["창읽기"](v), dict) != m._창있음(v)], "H2수": sum(isinstance(받은뒤["창읽기"](v), dict) for v in 창들),
+    "H3": [고른(h3a), 고른(h3b), 고른(h3c), m._감정잴토막(표(h3d))["C2"]["인물"], [w for g, w, t in m.감정자리검사(표(h3e), 편) if g == "걸림" and "정한 낱말이 아니다" in t], 고른(h3f)],
+    "H4": [[w, t[:14]] for g, w, t in m.감정자리검사(표(h4), 편) if g == "걸림"],
+    "H5": [m.감정자리판정(24.99996, False, True), m.감정자리판정(34.9999, True, True), m.감정자리판정(25.0, False, True)],
+    "H6": [m.감정자리판정([40.0, 38.0], True, True, 사람수=1), m.감정자리판정([40.0, 38.0], True, True, 사람수=2), m.감정자리판정([40.0, 38.0], True, True)],
+}, ensure_ascii=False))
+`;
+  const 도구폴더 = path.dirname(도구);
+  const 답 = spawnSync('python', ['-I', '-X', 'utf8', '-c', 읽기, 도구, 틀경로, 편, path.join(도구폴더, '영상관문판.py'), path.join(도구폴더, '받은뒤검사.py')], { encoding: 'utf8' });
+  assert.equal(답.status, 0, 답.stderr);
+  const 값 = JSON.parse(답.stdout);
+  // 시작그림 고르기 — 굽기 전 관문의 판 도구(tools/영상관문판.py 시작그림찾기)가 여는 그림과 열다섯 경우 모두 같다(칸의 첫 장 · 절대 경로 · ~ · 없는 파일 · 칸이 빈 컷의 <컷>.png · 파일 이름으로 바꾼 컷 · 가장 새 판)
+  assert.deepEqual(값.H1, [], `관문 판 도구와 다른 경우: ${값.H1}`);
+  assert.deepEqual(값.H1관문, ['C2_승인.png', 'C1.png', null, 'C3.png', 'C3.png', null, 'C2.png', 'C2.png', 'C2.png', 'C5_v2.png', 'C_6.png', 'C7.png', null, null, null]);
+  // 창 읽기 — 받은 뒤 검사(tools/받은뒤검사.py 창읽기)가 창으로 읽는 값만 T28도 창으로 본다
+  assert.deepEqual(값.H2, [], `받은 뒤 검사와 다른 창: ${값.H2}`); assert.equal(값.H2수, 6);
+  // 감정 자리는 토막 단위 — 감정 토막이 창으로 잘라 쓰면 재지 않고(다른 토막이 안 잘라도), 감정 토막이 안 자르면 잰다. 사건 표의 「C2#2」는 둘째 토막이다
+  assert.deepEqual(값.H3.slice(0, 3), [{}, {}, { C2: 'C2.png' }]);
+  assert.deepEqual(값.H3[3], ['수아', '엄마'], '사람 수는 재는 토막에서 센다');
+  assert.deepEqual(값.H3[4], ['C2'], '둘째 감정 토막의 감정부위도 본다');
+  assert.deepEqual(값.H3[5], { C2: 'C2.png' }, '가리킨 토막에 사람이 없으면 그 컷의 사람 토막을 잰다(조용히 빠지지 않는다)');
+  // 글이 아닌 감정자리는 다른 감정 자리가 있어도 걸림
+  assert.deepEqual(값.H4, [['C2', '「감정자리」는 글로 적는다']]);
+  // 아래선에 아주 조금 못 미치는 값 — 걸림이고, 적은 값이 아래선으로 올라가 보이지 않는다
+  assert.equal(값.H5[0][0], '걸림'); assert.match(값.H5[0][1], /얼굴 폭이 그림 폭의 24\.9%다/);
+  assert.equal(값.H5[1][0], '걸림'); assert.match(값.H5[1][1], /얼굴 폭이 그림 폭의 34\.9999%다/); assert.equal(값.H5[2][0], '통과');
+  // 잡힌 얼굴이 사람 수보다 많아도 확인(적을 때와 같다 — 어느 얼굴이 감정을 맡았는지 눈이 본다), 사람 수를 모르면 통과
+  assert.deepEqual(값.H6.map((x) => x[0]), ['확인', '통과', '통과']);
+  assert.match(값.H6[0][1], /사람은 1명인데 얼굴은 2개가 잡혔다\(40\.0% · 38\.0%\)/);
 });
