@@ -223,13 +223,44 @@ export function costRow(snapshot, st = {}, now = Date.now()) {
   const more = [];
   if (!cost.count) more.push(['say', '요금을 넣은 계정이 아직 없습니다.']);
   else more.push(['say', '한 달에 ' + total + '을 냅니다.' + (soonNames.length ? ' 7일 안에 ' + ga(joinNames(soonNames)) + ' 결제됩니다.' : '')]);
-  for (const { row, official, days } of billList(prices, rows, now)) {
-    const family = official && row.source === 'auto' && row.service === 'gemini' && planKey(row.plan) === 'family';
-    const date = row.cycle === 'annual' ? '연간 결제' : days !== null ? md(dayAfter(now, days)) : '결제일 없음';
-    const price = num(row.price) !== null ? money(row.price, row.currency) : family ? '가족 공유' : official ? money(official.price, official.currency) : '';
-    const soon = row.cycle !== 'annual' && days !== null && days <= 6;
-    const right = [soon ? (days === 0 ? '오늘' : days + '일 뒤') : '', num(row.price) === null && official && !family ? '공식 요금' : ''].filter(Boolean).join(' · ');
-    more.push(['row', date, [svcName(row), row.source === 'auto' ? nameOf(row) : ''].filter(Boolean).join(' · '), price, right, soon]);
+  // 결제 줄은 계정마다가 아니라 구독과 요금제마다 한 줄로 묶는다. 계정 열 개가 결제 줄 열 개가 되어 난잡했다(11-20 유호님 「가격 정리해준거 좋은데 조금 뭔가 지금 난잡해」,
+  // 솔리오 구독 비서 설계 3.6). 7일 안에 결제되는 계정만 그 아래에 이름과 함께 따로 둔다
+  const bills = billList(prices, rows, now), groups = new Map();
+  for (const b of bills) {
+    const { row } = b, family = row.source === 'auto' && row.service === 'gemini' && planKey(row.plan) === 'family';
+    const key = svcName(row) + '|' + (row.source === 'auto' ? planName(row.plan, row.service) : '');
+    if (!groups.has(key)) groups.set(key, { svc: svcName(row), plan: row.source === 'auto' ? planName(row.plan, row.service) : '', list: [], family: true });
+    const g = groups.get(key);
+    g.list.push({ ...b, family });
+    if (!family) g.family = false;
+  }
+  for (const g of groups.values()) {
+    let krw = 0, priced = 0, unknown = 0, official = 0, annual = 0, usdIn = false;
+    for (const { row, official: o, family } of g.list) {
+      if (row.cycle === 'annual') annual++;
+      if (family) continue;
+      const own = num(row.price) !== null;
+      if (!own && !o) { unknown++; continue; }
+      if (!own) official++;
+      if ((own ? row.currency : o.currency) === 'USD') usdIn = true;
+      krw += (own ? Number(row.price) : o.price) * ((own ? row.currency : o.currency) === 'USD' ? rate : 1);
+      priced++;
+    }
+    const n = g.list.length, one = n === 1 ? g.list[0].row : null;
+    const name = g.family ? g.svc : [g.svc, g.plan].filter(Boolean).join(' ');
+    const mid = [one ? (one.source === 'auto' ? nameOf(one) : '') : '계정 ' + n + '개', official ? (official === n ? '공식 요금' : '공식 요금 ' + official + '개') : '', annual ? (annual === n ? '연간 결제' : '연간 결제 ' + annual + '개') : '', unknown && priced ? '요금을 모르는 ' + unknown + '개' : ''].filter(Boolean).join(' · ');
+    const val = g.family ? '가족 공유' : priced ? (usdIn ? '약 ' : '') + won(krw) : '';
+    const next = g.list.map(x => x.days).filter(d => d !== null && d !== undefined).sort((a, b) => a - b)[0];
+    more.push(['row', name, mid, val, next === undefined ? '' : '다음 결제 ' + md(dayAfter(now, next)), false]);
+  }
+  const due = bills.filter(b => b.row.cycle !== 'annual' && b.days !== null && b.days <= 6);
+  if (due.length) {
+    more.push(['note', '7일 안에 결제되는 계정입니다.']);
+    for (const { row, official, days } of due) {
+      const family = row.source === 'auto' && row.service === 'gemini' && planKey(row.plan) === 'family';
+      const price = num(row.price) !== null ? money(row.price, row.currency) : family ? '가족 공유' : official ? money(official.price, official.currency) : '';
+      more.push(['row', md(dayAfter(now, days)), [svcName(row), row.source === 'auto' ? nameOf(row) : ''].filter(Boolean).join(' · '), price, days === 0 ? '오늘' : days + '일 뒤', true]);
+    }
   }
   const credit = creditLine(prices, rows, now);
   if (credit) more.push(['row', '구독에 든 크레딧', credit.mid, '', credit.when]);
@@ -704,7 +735,7 @@ export function tokRow(tokens, st = {}, now = Date.now()) {
   const last = Math.max(Number(tokens.scannedAt) || 0, Number(tokens.liveAt) || 0), facts = [];
   if (tokens.scanning) facts.push('지금 다시 세고 있습니다' + (progress ? '(기록 파일 ' + progress + ')' : '') + '.');
   else if (last) facts.push((dayStart(last) === dayStart(now) ? '' : md(last) + ' ') + hm(last) + '에 마지막으로 셌습니다.');
-  if (tokens.live) facts.push('이 줄을 열어 두면 답이 끝날 때마다 숫자를 더합니다.');
+  if (tokens.live) facts.push('구독 방을 열어 두면 답이 끝날 때마다 숫자를 더합니다.');
   if (tokens.failed > 0 && !tokens.scanning) facts.push('읽지 못한 파일이 ' + fmt(tokens.failed) + '개 있습니다.');
   if (tokens.error) facts.push('지난번에는 끝까지 세지 못했습니다.');
   if (facts.length) more.push(['note', facts.join(' ')]);

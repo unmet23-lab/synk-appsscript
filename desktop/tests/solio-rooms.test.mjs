@@ -37,8 +37,18 @@ test('cost line: the total, bills due in 7 days, unknown prices and the next bil
   assert.equal(row.mid, '한 달 435,000원 · 7일 안 결제 1건 · 요금을 모르는 1개 빼고');
   assert.equal(row.when, '다음 결제 11월 20일 Claude');
   assert.equal(row.more[0][1], '한 달에 435,000원을 냅니다. 7일 안에 Claude가 결제됩니다.');
-  const bills = kinds(row.more, 'row').filter(r => /월 \d+일$/.test(r[1]));
-  assert.deepEqual(bills.map(b => [b[1], b[2], b[3], b[4], b[5]]), [['11월 20일', 'Claude · w', '290,000원', '2일 뒤', true], ['11월 30일', 'Codex · g', '145,000원', '', false]]);
+  // 구독과 요금제마다 한 줄, 그 아래 7일 안에 결제되는 계정만 이름과 함께(11-20 유호님 「난잡해」, 솔리오 구독 비서 설계 3.6)
+  const lines = kinds(row.more, 'row');
+  assert.deepEqual(lines.filter(r => !/월 \d+일$/.test(r[1])).map(b => [b[1], b[2], b[3], b[4]]), [['Claude Pro', 'w', '290,000원', '다음 결제 11월 20일'], ['Codex Pro 200', 'g', '145,000원', '다음 결제 11월 30일']], 'an account with no price and no bill day stays only in 「요금을 모르는 1개 빼고」');
+  assert.ok(kinds(row.more, 'note').some(n => n[1] === '7일 안에 결제되는 계정입니다.'));
+  assert.deepEqual(lines.filter(r => /월 \d+일$/.test(r[1])).map(b => [b[1], b[2], b[3], b[4], b[5]]), [['11월 20일', 'Claude · w', '290,000원', '2일 뒤', true]]);
+});
+
+test('cost line: ten accounts of one plan are one line with their sum, not ten lines (솔리오 구독 비서 3.6)', () => {
+  const rows = Array.from({ length: 10 }, (_, i) => weekly('m' + i, 'claude', 20, NOW + 3 * D, { plan: 'max_20x', billDay: 21 + (i % 3) }));
+  const row = costRow(snap(rows, { prices: PRICES }), st(), NOW);
+  const lines = kinds(row.more, 'row').filter(r => !/월 \d+일$/.test(r[1]));
+  assert.deepEqual(lines.map(b => [b[1], b[2], b[3], b[4]]), [['Claude Ultra', '계정 10개 · 공식 요금', '약 3,080,000원', '다음 결제 11월 21일']]);
 });
 
 test('cost line: dollars, official prices, family sharing, free and annual billing', () => {
@@ -50,10 +60,11 @@ test('cost line: dollars, official prices, family sharing, free and annual billi
   const row = costRow(snap(rows, { prices: PRICES }), st(), NOW);
   assert.match(row.mid, /^한 달 약 /, 'dollars make it approximate');
   const bills = kinds(row.more, 'row');
-  const official = bills.find(b => b[2] === 'Claude · o'), family = bills.find(b => b[2] === 'Gemini · f'), annual = bills.find(b => b[2] === 'Claude · y');
-  assert.equal(official[4], '공식 요금');
-  assert.equal(family[3], '가족 공유');
-  assert.deepEqual([annual[1], annual[3], annual[4]], ['연간 결제', '$20', ''], 'annual billing is not called due this month');
+  // 같은 요금제(Claude Pro)의 공식 요금 계정과 연간 결제 계정은 한 줄에 묶이고, 무엇이 섞였는지 가운데 칸이 말한다
+  const pro = bills.find(b => b[1] === 'Claude Pro'), family = bills.find(b => b[1] === 'Gemini');
+  assert.deepEqual([pro[2], pro[3], pro[4]], ['계정 2개 · 공식 요금 1개 · 연간 결제 1개', '약 58,800원', ''], 'annual billing is not called due this month');
+  assert.deepEqual([family[2], family[3]], ['f', '가족 공유']);
+  assert.ok(!bills.some(b => /월 \d+일$/.test(b[1])), 'an annual bill day is not listed as due within 7 days');
   assert.ok(kinds(row.more, 'fld').some(f => f[4] === 'usdKrw' && f[2] === '1400'), 'a dollar amount brings the rate field');
   assert.match(kinds(row.more, 'note').at(-1)[1], /달러는 1달러에 1,400원으로 칩니다\./);
   const won = costRow(snap([weekly('k', 'claude', 20, NOW + 3 * D, { price: 30000, currency: 'KRW' })]), st(), NOW);
@@ -488,7 +499,7 @@ test('token line: tools that start late, unreadable files, a stopped count, no r
   const facts = tokRow(tokOn({ failed: 3, error: 'SCAN_FAILED', live: true, liveAt: NOW - 60e3, tools: { claude: 3, agy: 2 } }), tokSt(), NOW);
   const notes = kinds(facts.more, 'note').map(n => n[1]).join(' ');
   assert.match(notes, /09:59에 마지막으로 셌습니다\./, 'the later of the scan and the live count');
-  assert.match(notes, /이 줄을 열어 두면 답이 끝날 때마다 숫자를 더합니다\./);
+  assert.match(notes, /구독 방을 열어 두면 답이 끝날 때마다 숫자를 더합니다\./);
   assert.match(notes, /읽지 못한 파일이 3개 있습니다\./);
   assert.match(notes, /지난번에는 끝까지 세지 못했습니다\./);
   assert.match(notes, /Antigravity CLI는 토큰 수를 남기지 않아 세지 못합니다\./);

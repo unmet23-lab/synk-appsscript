@@ -8,6 +8,7 @@ import { manageRoom, costRow, tokRow, accountRoom, accountSay, checkName, dateTi
 import { isUsedUp, num, nameOf } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, josa } from './solio-today.mjs';
 import { profileChange, pendingDeletion } from './account-page.mjs';
+import { briefLive, tokSample } from './solio-brief.mjs';
 
 /* 두 번 누르기의 막이(설계 8.2, 설계 검토 D1). 묻고 0.6초 안의 두 번째 누름은 받지 않고(더블클릭 · Enter 되풀이), 10초가 지나면 물음을 거둔다.
    account는 계정 요청 하나를 기다리는 한도(옛 내 계정과 같다), tokLive는 모델별 토큰 줄이 열린 동안 실시간을 다시 부탁하는 사이다(옛 구독 판과 같다) */
@@ -46,7 +47,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
   let gen = 0, armTimer = null, lastLogin, loginEmail;
   let focusReq = null, openReq = null, closeReq = null, seq = 0, current = null;
   /* 모델별 토큰(설계 3.4, 설계 검토 D8). 솔리오에 들어오면 한 번 읽고 알림을 듣는다. 실시간은 줄이 열려 보이는 동안만 부탁한다 */
-  const freshTok = () => ({ state: null, loaded: false, loading: false, open: false, live: false, unsub: null, paint: null, timer: null });
+  // samples · since: 구독 방의 「지금 출력」이 최근 10분을 세는 기억(솔리오 구독 비서 설계 검토 D8). 계정이 바뀌면 tok째 지워진다
+  const freshTok = () => ({ state: null, loaded: false, loading: false, open: false, live: false, unsub: null, paint: null, painted: 0, timer: null, samples: [], since: null });
   let tok = freshTok();
   /* 내 계정(설계 5.4). 계정 세대(accGen)가 바뀌면 늦게 온 답을 버린다. 삭제 요청 id는 한 번 만들어 다시 보내도 같은 요청이 되게 한다(옛 251~262행) */
   const freshAcc = () => ({ data: null, identity: null, loading: false, error: '', identityError: false, allSessions: false, askDelete: false, askAt: 0 });
@@ -116,10 +118,13 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
   /* ── 모델별 토큰 ── */
   function takeTokens(value) {
     if (!value || value.ok !== true || !newerTokens(value, tok.state)) return;
+    const prev = tok.state;
     tok.state = value;
-    if (!value.scanning) { if (tok.paint !== null) { clearTimer(tok.paint); tok.paint = null; } changed(); return; }
+    if (tok.live) tok.samples = tokSample(tok.samples, value, prev, now());
+    // 실시간 알림은 에이전트가 여럿 돌면 1초에 몇 번씩 온다. 첫 알림은 바로 그리고, 1초 안에 잇따르는 알림은 모아 한 번만 그린다(솔리오 구독 비서 설계 검토 D7)
+    if (!value.scanning && !(tok.live && now() - tok.painted < ROOM_TIMING.tokPaint)) { if (tok.paint !== null) { clearTimer(tok.paint); tok.paint = null; } tok.painted = now(); changed(); return; }
     // 세는 동안 알림이 0.5초마다 와도 줄은 1초에 한 번까지만 다시 그린다(옛 구독 판 규칙)
-    if (tok.paint === null) tok.paint = setTimer(() => { tok.paint = null; changed(); }, ROOM_TIMING.tokPaint);
+    if (tok.paint === null) tok.paint = setTimer(() => { tok.paint = null; tok.painted = now(); changed(); }, ROOM_TIMING.tokPaint);
   }
   const tokCall = task => { const my = gen; return Promise.resolve().then(task).then(v => { if (my === gen) takeTokens(v); }, () => {}); };
   /* 솔리오에 들어올 때: 알림을 한 번만 듣는다. 계정이 바뀌면(reset) 듣기를 끊는다 */
@@ -148,13 +153,18 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     else if (typeof subs?.tokensScan === 'function') void tokCall(() => subs.tokensScan({ force: false }));
     void tokLiveCall(true);
   }
-  /* 그릴 때마다 컨트롤러가 부른다. 구독 방이 보이고, 그 줄이 열려 있고, 켜져 있을 때만 실시간을 부탁한다(설계 검토 D8) */
-  function syncLive(visible) {
-    const want = !!visible && tok.open && tok.state?.enabled === true && !!subs;
+  /* 그릴 때마다 컨트롤러가 부른다. 구독 방이 보이고 켜져 있을 때 실시간을 부탁한다. 처음에는 모델별 토큰 줄이 열린 동안만이었고,
+     11-20부터 구독 방 맨 위의 「지금 출력」이 늘 보이므로 방이 보이는 동안으로 넓혔다(솔리오 구독 비서 설계 3.3) */
+  function syncLive(visible, shown = false) {
+    // 맨 위 「지금 출력」이 보이거나(shown) 모델별 토큰 줄이 열렸을 때만이다. 구독이 없거나 자료를 읽기 전에는 그 줄이 보이지 않는다(화면 검수 A10)
+    const want = !!visible && (shown || tok.open) && tok.state?.enabled === true && !!subs;
     if (want === tok.live) return;
     tok.live = want;
-    if (want) { tokTick(); if (typeof setTick === 'function') tok.timer = setTick(tokTick, ROOM_TIMING.tokLive); }
-    else { if (tok.timer !== null) { clearTick?.(tok.timer); tok.timer = null; } void tokLiveCall(false); }
+    if (want) {
+      // 켤 때마다 최근 10분 기억을 새로 시작한다. 꺼져 있던 동안 쌓인 몫이 「최근 10분」에 들어가지 않게(설계 검토 D8)
+      tok.since = now(); tok.samples = tokSample([], tok.state, null, now());
+      tokTick(); if (typeof setTick === 'function') tok.timer = setTick(tokTick, ROOM_TIMING.tokLive);
+    } else { tok.since = null; tok.samples = []; if (tok.timer !== null) { clearTick?.(tok.timer); tok.timer = null; } void tokLiveCall(false); }
   }
   function tokReset() {
     try { tok.unsub?.(); } catch { /* 무시 */ }
@@ -811,6 +821,9 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     hasAccount: () => !!account,
     costRow: () => costRow(snapshot(), view(), now()),
     tokRow: () => tokRow(tok.state, view(), now()),
+    /* 구독 방 맨 위의 「지금 출력」 한 줄(솔리오 구독 비서 설계 3.3) */
+    // 맨 위 「켜기」의 결과 글(실패, 다른 일이 도는 중, 켰습니다)은 접힌 토큰 줄에만 있으면 보이지 않는다. 지금 출력 줄에도 쓴다(Fable 최종 F6)
+    tokLive: () => { const l = briefLive(tok.state, tok.samples, now()), n = st.notes.get('tok'); return l && n ? { ...l, small: [n, l.state === 'on' ? l.small : ''].filter(Boolean).join(' · ') } : l; },
     /* 구독 줄 안쪽의 팁(설계 검토 D7). 서비스 → 팁 한 줄 */
     subTips: () => subTips(snapshot(), view(), now()),
     tokStart,

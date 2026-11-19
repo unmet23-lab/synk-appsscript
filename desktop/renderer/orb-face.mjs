@@ -12,6 +12,7 @@ import {
   validatePortalInviteInput,
 } from './portal-entry-state.mjs';
 import { solioToday, solioTodayNeedsReread } from './solio-today.mjs';
+import { solioBrief } from './solio-brief.mjs';
 import { siteVisitsView, SITE_VISITS_NAME } from './site-visits-model.mjs';
 import { snsHealthView, SNS_HEALTH_NAME } from './sns-health-model.mjs';
 import { createOrbFaceView } from './orb-face-view.mjs';
@@ -200,7 +201,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   let lastAnnounced = null;
 
   // 솔리오 첫 화면의 자료
-  const sol = { account: undefined, snapshot: null, error: null, checking: false, rereadFailed: false, autoDone: false, busyRetried: false, authRetried: false, loading: false, rereadAfterAuth: false, authChecking: false, authChecks: 0, authTimer: null, seq: 0, run: 0, timer: null, unsubscribe: null };
+  const sol = { account: undefined, snapshot: null, error: null, checking: false, rereadFailed: false, autoDone: false, busyRetried: false, authRetried: false, loading: false, rereadAfterAuth: false, authChecking: false, authChecks: 0, authTimer: null, seq: 0, run: 0, timer: null, unsubscribe: null, diagMemo: null, briefCache: null };
   let clockTimer = null;
   // 솔리오 「방문자 분석」과 「계정 건강」의 자료. 프로그램마다 따로 두고, 계정마다 따로 읽고, 계정이 바뀌면 앞 계정이 받은 답을 버린다
   // (사이트방문 설계 6절, 계정건강 PC앱_구현설계 10절). 요약은 바뀜 알림이 없어 솔리오에 들어올 때와 그 프로그램을 열 때 읽는다
@@ -373,8 +374,28 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const extra = signedIn && sol.snapshot ? [today.rows?.length ? rooms.costRow() : null, rooms.tokRow()].filter(Boolean) : [];
     // 팁은 그 구독 줄 안쪽에 작은 글 한 줄과 반응 단추 둘로 선다(설계 검토 D7). 고르는 일은 모델(pickUsageTips)이 한다
     const tips = signedIn && sol.snapshot && today.rows?.length ? rooms.subTips() : null;
-    const rows = tips?.size ? today.rows.map(r => (tips.has(r.key) ? { ...r, more: { ...r.more, tip: tips.get(r.key) } } : r)) : today.rows;
-    return { ...today, rows, extra, rereading: sol.checking || Boolean(sol.snapshot?.checking) };
+    // 비서 판(11-20 솔리오 구독 비서 설계 3절): 맨 위 한 가지, 다가오는 일, 지금 출력, 오늘 진단. 줄은 상세내역 안으로 접는다.
+    // 스냅숏에서 나오는 판은 스냅숏이나 분이 바뀔 때만 다시 센다(설계 검토 D7). 진단은 하루 한 번 기억한다(D10)
+    const brief = signedIn && sol.snapshot ? briefOf(today) : null;
+    const says = brief?.says || {};
+    const rows = today.rows.map(r => {
+      const tip = tips?.get?.(r.key), say = says[r.key];
+      return tip || say ? { ...r, more: { ...r.more, ...(say ? { say } : {}), ...(tip ? { tip } : {}) } } : r;
+    });
+    const head = brief?.head ? { say: brief.head.say, then: brief.head.then } : {};
+    // 확인할 구독(check)은 줄이 곧 할 일이라 접지 않고, 지금 출력만 위에 둔다(설계 검토 D9)
+    const showLive = Boolean(brief) || (signedIn && sol.snapshot && today.state === 'check' && today.rows?.length > 0);
+    const live = showLive ? rooms.tokLive() : null;
+    const box = brief ? { fold: true, soon: brief.soon, diag: brief.diag, live } : showLive ? { fold: false, soon: null, diag: null, live } : null;
+    return { ...today, ...head, rows, extra, rereading: sol.checking || Boolean(sol.snapshot?.checking), brief: box };
+  }
+  function briefOf(today) {
+    const t = now(), minute = Math.floor(t / 60e3), c = sol.briefCache;
+    if (c && c.snapshot === sol.snapshot && c.minute === minute && c.state === today.state) return c.brief;
+    const brief = solioBrief({ today, snapshot: sol.snapshot, memo: sol.diagMemo }, t);
+    if (brief?.memo) sol.diagMemo = brief.memo;
+    sol.briefCache = { snapshot: sol.snapshot, minute, state: today.state, brief };
+    return brief;
   }
 
   /* 이 계정이 볼 수 있는 읽기 프로그램(방문자 분석, 계정 건강). 그 계정이 받은 답만 쓴다. 다른 계정의 답이나 회원이 아닐 때는 보이지 않는다 */
@@ -491,8 +512,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     }
     syncClock(scene);
     syncAuthRecheck(scene);
-    // 모델별 토큰의 실시간은 구독 방이 보이고 그 줄이 열려 있는 동안만 부탁한다(설계 검토 D8)
-    rooms.syncLive(scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && scene.room?.prog === 'subs' && !aside && !isHidden());
+    // 모델별 토큰의 실시간은 구독 방이 보이는 동안 부탁한다(11-20부터 맨 위 「지금 출력」이 늘 보인다, 솔리오 구독 비서 설계 3.3)
+    rooms.syncLive(scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && scene.room?.prog === 'subs' && !aside && !isHidden(), Boolean(scene.room?.solio?.brief?.live));
   }
 
   function onPhaseChange(state, prev) {
@@ -1474,7 +1495,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     if (sol.timer !== null) { clearTimer(sol.timer); sol.timer = null; }
     if (sol.authTimer !== null) { clearTimer(sol.authTimer); sol.authTimer = null; }
     try { sol.unsubscribe?.(); } catch { /* 무시 */ }
-    Object.assign(sol, { account: undefined, snapshot: null, error: null, checking: false, rereadFailed: false, autoDone: false, busyRetried: false, authRetried: false, loading: false, rereadAfterAuth: false, authChecking: false, authChecks: 0, unsubscribe: null });
+    Object.assign(sol, { account: undefined, snapshot: null, error: null, checking: false, rereadFailed: false, autoDone: false, busyRetried: false, authRetried: false, loading: false, rereadAfterAuth: false, authChecking: false, authChecks: 0, unsubscribe: null, diagMemo: null, briefCache: null });
   }
   /* ── 솔리오 「방문자 분석」과 「계정 건강」의 자료(사이트방문 설계 6절, 계정건강 PC앱_구현설계 10절) ── */
   function stopRead(key) {
@@ -1697,6 +1718,11 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         void rooms.handle(payload);
         return true;
       case 'reread': void reread(); return true;
+      // 구독 방 맨 위 「지금 출력」의 「켜기」. 모델별 토큰 줄의 켜기와 같은 일이다(솔리오 구독 비서 설계 3.3)
+      case 'tok-on':
+        if (clientMode() !== 'app') return false;
+        void rooms.handle({ room: 'solio', key: 'tok', act: 'tok-on', arg: '', fields: {} });
+        return true;
       case 'prog': return showProgram(payload);
       case 'recheck-auth': void recheckAuth(); return true;
       case 'reopen-space': void runOpenSpace(space, { reopen: true }); return true;

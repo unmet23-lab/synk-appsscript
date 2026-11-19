@@ -89,7 +89,19 @@ function markup() {
     <div class="room room-top" data-room="solio">
       <p class="sr" role="status" aria-live="polite" data-solio-status></p>
       <p class="say rise" style="--i:1"><span data-say></span><span class="then" data-then></span></p>
-      <div class="rows rise" style="--i:3" role="group" aria-label="구독별 남은 양" data-rows></div>
+      <div class="brief rise" style="--i:2" data-brief hidden>
+        <ol class="soon" aria-label="다가오는 일" data-soon></ol>
+        <p class="soon-more" data-soon-more hidden></p>
+        <p class="live" role="group" data-live><span class="live-big" data-live-big></span><span class="live-unit" data-live-unit></span><span class="live-small" data-live-small></span><button class="reread" type="button" data-orb-act="tok-on" hidden>켜기</button></p>
+        <div class="diag" data-diag hidden>
+          <p class="diag-h"><span>오늘 진단</span><small data-diag-when></small></p>
+          <p class="diag-line"><b data-diag-name></b><em data-diag-word></em><span data-diag-say></span></p>
+          <p class="diag-cost" data-diag-cost></p>
+        </div>
+        <button class="details" type="button" aria-expanded="false" aria-controls="orb-details-top orb-sub-rows" data-details>상세내역</button>
+      </div>
+      <div class="details-top" id="orb-details-top" data-details-top hidden></div>
+      <div class="rows rise" id="orb-sub-rows" style="--i:3" role="group" aria-label="구독별 남은 양" data-rows></div>
       <p class="read rise" style="--i:5"><span data-read></span><button class="reread" type="button" data-orb-act="subs-manage" hidden>계정 관리</button><button class="reread" type="button" data-orb-act="reread">다시 읽기</button><button class="reread" type="button" data-orb-act="connect" hidden>구독 연결하기</button><button class="reread" type="button" data-orb-act="recheck-auth" hidden>다시 확인</button></p>
     </div>
     <div class="room room-top" data-room="solio-visits" hidden>
@@ -139,6 +151,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const app = {
     orbBtn: $('.here-orb'), nameBtn: $('.here-name'), name: $('[data-here-text]'), legacyBack: $('.legacy-back'),
     solio: $('[data-room="solio"]'), say: $('[data-say]'), then: $('[data-then]'), rows: $('[data-rows]'), read: $('[data-read]'),
+    brief: $('[data-brief]'), soon: $('[data-soon]'), soonMore: $('[data-soon-more]'), live: $('[data-live]'), liveBig: $('[data-live-big]'), liveUnit: $('[data-live-unit]'), liveSmall: $('[data-live-small]'), tokOn: $('[data-orb-act="tok-on"]'),
+    diag: $('[data-diag]'), diagWhen: $('[data-diag-when]'), diagName: $('[data-diag-name]'), diagWord: $('[data-diag-word]'), diagSay: $('[data-diag-say]'), diagCost: $('[data-diag-cost]'), details: $('[data-details]'), detailsTop: $('[data-details-top]'),
     reread: $('[data-orb-act="reread"]'), subsManage: $('[data-orb-act="subs-manage"]'), fan: $('[data-orb-fan]'), fanError: $('[data-fan-error]'), connect: $('[data-orb-act="connect"]'), recheck: $('[data-orb-act="recheck-auth"]'), solioStatus: $('[data-solio-status]'),
     space: $('[data-room="space"]'), spaceSay: $('[data-space-say]'), spaceThen: $('[data-space-then]'), spaceError: $('[data-space-error]'), reopen: $('[data-orb-act="reopen-space"]'),
     rail: $('[data-orb-rail]'), objs: [...root.querySelectorAll('[data-orb-prog]')],
@@ -433,6 +447,90 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     try { (t || b).focus?.({ preventScroll: true }); } catch {} finally { restoringVis = false; }
   }
 
+  /* ── 비서 판(솔리오 구독 비서 설계 3절) ── 상세내역을 펼쳤는지는 화면이 앱을 켜 둔 동안 기억한다(설계 3.5) */
+  let detailsOpen = false, liveOut = null, liveFlash = null;
+  const soonItem = i => { const li = el('li'); li.append(el('span', 'w', i.when), el('span', 't', i.text)); return li; };
+  function setDetails(open) {
+    detailsOpen = open;
+    app.details.setAttribute('aria-expanded', String(open));
+    setText(app.details, open ? '상세내역 접기' : '상세내역');
+    const fa = doc.activeElement;
+    app.rows.hidden = !open || !app.rows.children.length;
+    app.detailsTop.hidden = !open || !app.detailsTop.children.length;
+    // 접을 때 초점이 안에 있었으면 상세내역 단추로 옮긴다. body로 빠지지 않게 한다(설계 검토 D9)
+    if (!open && fa && (app.rows.contains(fa) || app.detailsTop.contains(fa))) { closeMores(true); try { app.details.focus({ preventScroll: true }); } catch {} }
+    // 펼친 내역이 방 아래쪽에서 시작하면 그 머리가 보이게 방을 내린다(넓은 창에서도 맨 위 판이 길어 줄이 창 밖에서 시작한다)
+    if (open) {
+      const r = app.solio, first = !app.detailsTop.hidden ? app.detailsTop : app.rows;
+      if (r && first && !first.hidden && first.offsetTop > r.scrollTop + r.clientHeight * 0.55) r.scrollTo?.({ top: Math.max(0, first.offsetTop - 24), behavior: reduced() ? 'auto' : 'smooth' });
+    }
+  }
+  function renderBrief(b, fold) {
+    app.brief.hidden = !b;
+    if (!b) { app.detailsTop.hidden = true; return; }
+    const soon = b.soon?.shown || [], key = JSON.stringify(soon);
+    if (app.soon.dataset.key !== key) { app.soon.dataset.key = key; app.soon.replaceChildren(...soon.map(soonItem)); }
+    app.soon.hidden = !soon.length;
+    setText(app.soonMore, b.soon?.more ? '48시간 안에 ' + b.soon.more + '개가 더 있습니다. 상세내역에 있습니다.' : '');
+    app.soonMore.hidden = !b.soon?.more;
+    // 지금 출력. 숫자가 오르면 숫자만 잠깐 밝아진다(움직임 줄이기에서는 그대로)
+    const l = b.live;
+    app.live.hidden = !l;
+    if (l) {
+      setText(app.liveBig, l.big); setText(app.liveUnit, l.unit); setText(app.liveSmall, l.small);
+      // 「켜기」를 누르면 단추가 사라진다. 초점이 그 단추에 있었으면 상세내역 단추(없으면 다시 읽기)로 옮긴다(화면 검수 A8)
+      const hideOn = l.state !== 'off', hadFocus = hideOn && !app.tokOn.hidden && doc.activeElement === app.tokOn;
+      app.tokOn.hidden = hideOn;
+      if (hadFocus) { const to = !app.details.hidden ? app.details : app.reread; try { to.focus({ preventScroll: true }); } catch {} }
+      const label = l.state === 'on' ? ['지금 출력', l.unit, l.big + ' 토큰', l.small].filter(Boolean).join(', ') : l.small;
+      if (app.live.getAttribute('aria-label') !== label) app.live.setAttribute('aria-label', label);
+      if (l.state === 'on' && liveOut !== null && l.out > liveOut && !reduced()) {
+        app.liveBig.classList.add('bump'); clearTimeout(liveFlash);
+        liveFlash = setTimeout(() => app.liveBig.classList.remove('bump'), 600);
+      }
+      liveOut = l.state === 'on' ? l.out : null;
+    }
+    // 오늘 진단: 첫 화면에는 가장 무거운 판정 한 줄과 구독료 한 줄(설계 검토 D11)
+    const d = b.diag, top = d?.items?.[0];
+    app.diag.hidden = !d || (!top && !d.cost && !d.manual);
+    if (d) {
+      setText(app.diagWhen, d.when || '');
+      // 판정의 할 일과 근거의 범위(「Codex 한도 기준」)까지 함께 쓴다(화면 검수 A5)
+      setText(app.diagName, top ? top.name : ''); setText(app.diagWord, top ? top.word : ''); setText(app.diagSay, top ? [top.line || top.say, top.scope ? '(' + top.scope + ')' : ''].filter(Boolean).join(' ') : '');
+      app.diagName.parentElement.hidden = !top;
+      // 자동으로 읽는 구독이 없고 직접 넣은 구독만 있으면 그 한 줄을 요금 줄 위에 둔다(화면 검수 A6)
+      setText(app.diagCost, [!top && d.manual ? d.manual : '', d.cost || ''].filter(Boolean).join(' '));
+    }
+    renderDetailsTop(b);
+    app.details.hidden = !fold;
+    if (!fold) { app.detailsTop.hidden = true; return; }
+    app.details.setAttribute('aria-expanded', String(detailsOpen));
+    setText(app.details, detailsOpen ? '상세내역 접기' : '상세내역');
+    app.detailsTop.hidden = !detailsOpen || !app.detailsTop.children.length;
+  }
+  /* 상세내역 맨 위: 다가오는 일 모두(첫 화면에 다 못 보였을 때), 진단 모두 */
+  function renderDetailsTop(b) {
+    const all = b.soon && b.soon.more ? b.soon.all : [], d = b.diag;
+    const key = JSON.stringify([all, d && d.items, d && d.manual]);
+    if (app.detailsTop.dataset.key === key) return;
+    app.detailsTop.dataset.key = key;
+    const parts = [];
+    if (all.length) {
+      parts.push(el('p', 'details-h', '다가오는 일 · 48시간'));
+      const ol = el('ol', 'soon'); ol.setAttribute('aria-label', '48시간 안에 다가오는 일 모두'); ol.append(...all.map(soonItem)); parts.push(ol);
+    }
+    if (d && d.items && d.items.length) {
+      parts.push(el('p', 'details-h', '오늘 진단 · 구독마다'));
+      for (const i of d.items) {
+        const p = el('p', 'diag-line');
+        p.append(el('b', '', i.name), el('em', '', i.word), el('span', '', [i.say, i.more, i.scope ? '(' + i.scope + ')' : ''].filter(Boolean).join(' ')));
+        parts.push(p);
+      }
+    }
+    if (d && d.manual) parts.push(el('p', 'diag-cost', d.manual));
+    app.detailsTop.replaceChildren(...parts);
+  }
+
   function renderApp(s) {
     const room = s.room;
     setText(app.name, s.spaceLabel);
@@ -466,7 +564,13 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       setText(app.then, t.then);
       renderRows(t);
       app.rows.classList.toggle('dim', Boolean(t.dim));
-      app.rows.hidden = !((t.rows && t.rows.length) || (t.extra && t.extra.length));
+      // 비서 판(솔리오 구독 비서 설계 3절). 줄은 상세내역 안에 접혀 있다가 단추를 누르면 펼쳐진다(설계 3.5, 설계 검토 D9)
+      const hasRows = Boolean((t.rows && t.rows.length) || (t.extra && t.extra.length)), fold = Boolean(t.brief?.fold) && hasRows;
+      const fa = doc.activeElement, wasIn = fa && (app.rows.contains(fa) || app.detailsTop.contains(fa));
+      renderBrief(t.brief || null, fold);
+      app.rows.hidden = !hasRows || (fold && !detailsOpen);
+      // 상태가 바뀌어(check → ready) 줄이 접히면 줄 안의 초점은 상세내역 단추로 옮긴다(화면 검수 A8)
+      if (wasIn && app.rows.hidden && !app.details.hidden) { closeMores(true); try { app.details.focus({ preventScroll: true }); } catch {} }
       setText(app.read, t.read);
       app.reread.hidden = t.action !== 'reread';
       // 「구독 관리 열기」는 구독 줄이 있어 「다시 읽기」가 보일 때만 그 옆에 둔다(설계 검토 2차 4)
@@ -1464,6 +1568,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (visRowEl.classList.contains('pin')) setMore(visRowEl, false); else openVis(visRowEl, true);
       return;
     }
+    const det = target.closest?.('[data-details]');
+    if (det && root.contains(det)) { event.preventDefault(); setDetails(!detailsOpen); return; }
     const obj = target.closest?.('.obj[data-orb-prog]');
     if (obj && root.contains(obj)) { event.preventDefault(); clearTimeout(progTimer); onAction('prog', obj.dataset.orbProg); return; }
     // 구독 줄을 누르면 안쪽을 고정하거나 푼다(설계 검토 1차 ③). 옛 판은 줄 안쪽의 「계정 관리」와 방 맨 아래의 「구독 관리 열기」로 연다

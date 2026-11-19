@@ -416,7 +416,7 @@ export function usageDays(usage, group) {
   return { u, kind, days, bars, avg, base, has, diff: has ? Math.round(avg) - Math.round(base) : 0 };
 }
 // 그 전 평균의 무게: Claude는 요금제 배수, 나머지는 같은 무게.
-const weightOf = row => (row.service === 'claude' ? CLAUDE_WEIGHT[planKey(row.plan)] || 1 : 1);
+export const weightOf = row => (row.service === 'claude' ? CLAUDE_WEIGHT[planKey(row.plan)] || 1 : 1);
 // 다음 충전: 기록의 지난 충전에서 Higgsfield는 30일씩(연간 결제는 30일마다), Typecast는 한 달씩. 기록이 없으면 Typecast만 결제일.
 export function nextRefill(service, row, refillAt, now) {
   if (refillAt) { const d = new Date(refillAt); while (d.getTime() <= now) { if (service === 'typecast') d.setMonth(d.getMonth() + 1); else d.setDate(d.getDate() + 30); } return d.getTime(); }

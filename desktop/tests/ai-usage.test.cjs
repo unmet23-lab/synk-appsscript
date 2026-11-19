@@ -168,6 +168,45 @@ test('keeps four weeks per account for plan fitting and idle subscriptions',()=>
   assert.equal(u.accounts['r-tc'].weeks4.cover,true);assert.equal(u.accounts['r-tc'].weeks4.known,false);
 });
 
+test('weekly windows are counted once each with how early they ran out',()=>{
+  // 창 끝이 7일 구간과 어긋난 계정: 창마다 이틀째에 100%를 읽고, 창 끝 한 시간 전에도 읽었다.
+  const ends=[NOW-3*WEEK-2*DAY,NOW-2*WEEK-2*DAY,NOW-WEEK-2*DAY,NOW-2*DAY+WEEK];
+  const h=[];
+  for(const end of ends){
+    const from=end-WEEK;
+    h.push({t:from+HOUR,id:'r-w',s:'claude',p:'max_20x',w:10,wr:end,c:null});
+    if(from+2*DAY<=NOW)h.push({t:from+2*DAY,id:'r-w',s:'claude',p:'max_20x',w:100,wr:end,c:null});
+    if(end-HOUR<=NOW)h.push({t:end-HOUR,id:'r-w',s:'claude',p:'max_20x',w:100,wr:end,c:null});
+  }
+  // 둘째 창(4주 앞)은 4주 구간 밖이 아니라 안에서 끝난다. 한 창은 한 번만 센다.
+  const wins=usageSummary({rows:[auto('r-w','claude','max_20x')],history:h.sort((a,b)=>a.t-b.t),now:NOW}).accounts['r-w'].weeks4.windows;
+  assert.deepEqual(wins.map(w=>w.end),ends);
+  assert.deepEqual(wins.map(w=>w.hit),[true,true,true,true]);
+  assert.deepEqual(wins.map(w=>w.closed),[true,true,true,false]);
+  assert.deepEqual(wins.map(w=>Math.round(w.early/DAY)),[5,5,5,5]);
+  // 다 쓰기 바로 앞 읽기는 창 시작 한 시간 뒤라, 그 사이 어느 때 다 썼는지의 가장 긴 값은 7일 가깝다
+  assert.deepEqual(wins.map(w=>Math.round(w.earlyMax/DAY)),[7,7,7,7]);
+  // 다 쓰지 않았고 창 끝 하루 안에 읽지 않은 창은 모른다(known 거짓). 창 끝 한 시간 전에 읽었으면 안다.
+  const quiet=[{t:NOW-2*WEEK,id:'r-q',s:'claude',p:'pro',w:30,wr:NOW-WEEK-3*DAY,c:null},{t:NOW-WEEK-3*DAY-HOUR,id:'r-q',s:'claude',p:'pro',w:40,wr:NOW-WEEK-3*DAY,c:null},{t:NOW-WEEK,id:'r-q',s:'claude',p:'pro',w:20,wr:NOW-2*DAY,c:null}];
+  const q=usageSummary({rows:[auto('r-q','claude','pro')],history:quiet,now:NOW}).accounts['r-q'].weeks4.windows;
+  assert.deepEqual(q.map(w=>[w.hit,w.known,w.closed]),[[false,true,true],[false,false,true]]);
+  // 사흘 전에 50%, 한 시간 전에야 100%를 읽은 창: 일찍 바닥났는지 모른다(early는 짧고 earlyMax는 사흘, GPT 검수 GA6)
+  const sparse=[{t:NOW-2*WEEK+HOUR,id:'r-s',s:'claude',p:'pro',w:50,wr:NOW-WEEK-2*DAY+3*DAY,c:null},{t:NOW-WEEK+DAY-HOUR,id:'r-s',s:'claude',p:'pro',w:100,wr:NOW-WEEK+DAY,c:null}];
+  const sw=usageSummary({rows:[auto('r-s','claude','pro')],history:sparse,now:NOW}).accounts['r-s'].weeks4.windows[0];
+  assert.ok(sw.hit&&sw.early<DAY&&sw.earlyMax>=DAY,JSON.stringify(sw));
+  // 크레딧형은 창이 없다.
+  const tc=[0,1].map(k=>({t:NOW-(2-k)*WEEK,id:'r-c',s:'typecast',p:'lite',w:null,wr:null,c:1000}));
+  assert.deepEqual(usageSummary({rows:[auto('r-c','typecast','lite')],history:tc,now:NOW}).accounts['r-c'].weeks4.windows,[]);
+});
+
+test('the pace of the last three days is also kept in the plan weight of the time (GPT 검수 GA3)',()=>{
+  // Pro에서 사흘 안에 100%를 쓰고 Max 20x로 바꿔 다시 20%를 쓴 계정: rate3w는 (100×1 + 20×20) ÷ 3
+  const h=[{t:NOW-4*DAY,id:'r-p',s:'claude',p:'pro',w:0,wr:NOW+3*DAY,c:null},{t:NOW-2*DAY,id:'r-p',s:'claude',p:'pro',w:100,wr:NOW+3*DAY,c:null},
+    {t:NOW-DAY,id:'r-p',s:'claude',p:'max_20x',w:0,wr:NOW+6*DAY,c:null},{t:NOW-HOUR,id:'r-p',s:'claude',p:'max_20x',w:20,wr:NOW+6*DAY,c:null}];
+  const a=usageSummary({rows:[auto('r-p','claude','max_20x')],history:h,now:NOW}).accounts['r-p'];
+  assert.equal(a.rate3w,Math.round(((100*1+20*20)/3)*100)/100);
+});
+
 test('four weeks with unread stretches are not taken as unused',()=>{
   const four=(id,service,plan,history)=>usageSummary({rows:[auto(id,service,plan)],history,now:NOW}).accounts[id].weeks4;
   // 매주 15% 쓰던 20x 계정이 3주 전부터 읽기가 없다(다시 로그인·PC 꺼짐) → 그 주들은 읽은 횟수 0이고 「앎」이 아니다(Fable 2차 P1-2).

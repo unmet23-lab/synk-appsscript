@@ -90,10 +90,14 @@ if(!process.versions.electron){
       try{await w.win.loadURL('synk-desktop://platform/index.html');}
       catch(error){for(let i=0;i<100;i++){if(await w.js('typeof window.__orbFixture==="object"&&!!document.getElementById("portal-entry")').catch(()=>false)){timings.loadStoppedEarly=(timings.loadStoppedEarly||0)+1;return;}await wait(50);}throw error;}
     }
-    async function boot(w,config,{restore=null,restoreAfter=0}={}){
+    async function boot(w,config,{restore=null,restoreAfter=0,fold=false}={}){
       const t0=Date.now();
       await load(w);
       await w.js('window.__orbFixture.configure('+JSON.stringify(config||{})+')');
+      // 11-20부터 구독 줄은 「상세내역」 안에 접혀 있다(솔리오 구독 비서 설계 3.5). 줄을 누르는 앞 흐름은 상세내역을 한 번 펼친 채로 본다.
+      // 자바스크립트 click이라 초점은 옮기지 않는다. 접힌 판 자체는 20번이 fold:true로 본다
+      // 앞 흐름은 줄의 자리(포인터 사건을 보내는 좌표)를 옛 판 그대로 재므로, 비서 판은 그 흐름에서만 감춘다
+      if(!fold)await w.js("(()=>{if(window.__detailsAuto)return true;window.__detailsAuto=1;const st=document.createElement('style');st.textContent='#portal-entry [data-brief],#portal-entry [data-details-top]{display:none!important}';document.head.appendChild(st);const t=setInterval(()=>{const b=document.querySelector('#portal-entry [data-details]');if(b&&!b.hidden&&b.getAttribute('aria-expanded')!=='true'){b.click();clearInterval(t);}},25);setTimeout(()=>clearInterval(t),30000);return true;})()");
       if(restore){if(restoreAfter)setTimeout(()=>{w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')').catch(()=>{});},restoreAfter);else await w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')');}
       return t0;
     }
@@ -192,7 +196,8 @@ if(!process.versions.electron){
           const calm=await until(w,s=>s.eyes==='calm',{timeout:4000});check('2 the smile returns to calm',calm.ok,calm.state);
           const c2=await calls(w);check('2 sign-in lands on Solio and writes not-asked once',sol.ok&&c2.filter(c=>c==='completePurposeOnboarding:not-asked').length===1,{...sol.state,calls:c2});
           // 때 말(「내일 오후」 따위)은 시험을 돌리는 시각에 따라 달라지므로 꼴만 본다(카본 C3)
-          check('2 Solio sentence from the synthetic subscriptions',/^Codex가 (?:\d+분 뒤|오늘|내일|모레|[일월화수목금토]요일) ?(?:새벽|오전|오후|저녁|밤)?에 바닥납니다.$/.test(await text(w,'[data-say]')),{say:await text(w,'[data-say]'),then:await text(w,'[data-then]')});
+          // 11-20부터 맨 위는 비서 판의 문장이다(솔리오 구독 비서 설계 3.1): 「지금 속도면 Codex는 내일 오전 8시 30분쯤 바닥납니다.」와 막히는 길이
+          check('2 Solio sentence from the synthetic subscriptions',/^지금 속도면 Codex는 (?:\d+분 뒤|오늘|내일|모레|[일월화수목금토]요일) (?:새벽|오전|오후|저녁|밤) \d+시(?: \d+분)?쯤 바닥납니다\.$/.test(await text(w,'[data-say]'))&&/때까지 \d+(?:분|시간|일)쯤 막힙니다\.$/.test(await text(w,'[data-then]')),{say:await text(w,'[data-say]'),then:await text(w,'[data-then]')});
           check('9-tray only runnable apps are sent to the tray',JSON.stringify(await w.js('window.__orbFixture.tray()'))==='[]',{tray:await w.js('window.__orbFixture.tray()')});
           check('9-toast no signed-in toast over the face',await w.js("document.getElementById('toast').hidden||!document.getElementById('toast').textContent.includes('로그인했어요')"));
           await captureSizes(w,'solio-ready');
@@ -486,6 +491,39 @@ if(!process.versions.electron){
           await capture(v,'health-only-1440');
           v.win.destroy();
         }
+        // 20. 솔리오 구독 비서(11-20, docs/디자인/솔리오_구독비서_20261120/설계.md 3절): 맨 위 한 가지, 다가오는 일, 지금 출력, 오늘 진단이 보이고
+        //     줄은 상세내역 안에 접혀 있다. 펼치고 접을 때 초점이 body로 빠지지 않는다(설계 검토 D9). 앱에서 닿는 크기에서 찍는다
+        if(only('20')&&mode==='main'){
+          const w=await open();await boot(w,{subs:subsRich},{restore:signedIn('none'),fold:true});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          const look=()=>w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s);const det=q('[data-details]');return {brief:!q('[data-brief]').hidden,say:q('[data-say]').textContent,then:q('[data-then]').textContent,soon:[...q('[data-soon]').children].map(li=>li.textContent),live:q('[data-live]').hidden?null:q('[data-live]').textContent,diag:q('[data-diag]').hidden?null:q('[data-diag]').textContent,det:det&&!det.hidden?det.getAttribute('aria-expanded'):null,rows:!q('[data-rows]').hidden,top:!q('[data-details-top]').hidden,active:document.activeElement?.dataset?.details!==undefined?'details':document.activeElement===document.body?'body':(document.activeElement?.className||'')};})()");
+          const f0=await look();
+          check('20 the subscriptions room opens folded: one thing on top, coming up, live output and today’s diagnosis, rows under 상세내역',f0.brief&&f0.say.length>0&&f0.det==='false'&&!f0.rows&&!f0.top&&f0.live!==null&&f0.diag!==null&&/오늘 진단/.test(f0.diag)&&f0.soon.length>=1&&f0.soon.length<=3,f0);
+          check('20 the top never says plenty while an account is used up',!/넉넉/.test(f0.say+f0.then),f0);
+          await captureSizes(w,'brief-folded');
+          await click(w,'#portal-entry [data-details]');await wait(200);
+          const f1=await look();
+          check('20 상세내역 opens the rows and says so',f1.det==='true'&&f1.rows,f1);
+          await captureWide(w,'brief-open');
+          await w.js("document.querySelector('#portal-entry button.row[data-svc]').focus()");await wait(120);
+          await key(w,'Tab');await wait(60);
+          await click(w,'#portal-entry [data-details]');await wait(200);
+          const f2=await look();
+          check('20 folding with the focus inside moves it to 상세내역, not to the page',f2.det==='false'&&!f2.rows&&f2.active==='details',f2);
+          w.win.destroy();
+          // ORB_QA_REAL=<스냅숏 JSON>: 이 PC의 실제 구독 자료({subs, tokens})로 같은 화면을 찍는다. 자료와 캡처는 git 밖에 둔다(공개 저장소)
+          const real=process.env.ORB_QA_REAL?JSON.parse(fs.readFileSync(process.env.ORB_QA_REAL,'utf8')):null;
+          if(real){
+            const r=await open();await boot(r,{subs:real.subs,tokens:real.tokens},{restore:signedIn('none'),fold:true});
+            await until(r,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(2200);
+            const lk=await r.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s);return {say:q('[data-say]').textContent,then:q('[data-then]').textContent,soon:[...q('[data-soon]').children].map(li=>li.textContent),live:q('[data-live]').textContent,diag:q('[data-diag]').textContent};})()");
+            check('20 real data renders the folded room',lk.say.length>0,lk);
+            await captureSizes(r,'real-folded');
+            await click(r,'#portal-entry [data-details]');await wait(300);
+            await captureWide(r,'real-open');
+            r.win.destroy();
+          }
+        }
         // 4. 배정 하나(Workspace, PULSE 각각)
         // 17. 2단계 첫 조각: 구 곁의 펼침과 구독 줄 안쪽(2단계_첫조각_구현설계.md 5절). 숨은 창에는 실제 마우스가 오지 않아 그 자리의 요소에 포인터 사건을 직접 보낸다(현장 노트 시험_화면확인)
         if(only('17')&&mode==='main'){
@@ -632,6 +670,8 @@ if(!process.versions.electron){
           // 1. 요금 줄: 구독 줄 아래에 틈을 두고 서고, 이 PC에 없는 계정의 넣은 요금도 합에 든다(설계 검토 D13)
           const cost=await w.js("(()=>{const b=document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]');return b?{gap:b.classList.contains('gap'),mid:b.querySelector('.mid').textContent,when:b.querySelector('.when').textContent,next:b.nextElementSibling.nextElementSibling?.dataset?.key||null,label:b.getAttribute('aria-label')}:null;})()");
           check('18-1 the 「요금」 line stands under the subscription rows with a gap, above the token line, and counts the account not on this PC',!!cost&&cost.gap&&cost.next==='tok'&&/^한 달 약 /.test(cost.mid)&&/이 PC에 없는 계정 포함/.test(cost.mid)&&/^다음 결제 /.test(cost.when),cost);
+          // 맨 위 문장이 세 줄이 되면 요금 줄이 900px 창 아래에 걸린다. 사람처럼 방을 내려 그 줄이 보이게 한 뒤 손을 올린다
+          await w.js("document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]').scrollIntoView({block:'center'})");await wait(200);
           const c1=await rect('#portal-entry [data-rows] button.row[data-key=cost]');await mv(c1.x,c1.y);await wait(500);
           const costOpen=await w.js("(()=>{const b=document.querySelector('#portal-entry [data-rows] button.row[data-key=cost]'),m=b.nextElementSibling;return {opened:b.classList.contains('opened'),say:(m.querySelector('.more-say')||{}).textContent||'',bills:m.querySelectorAll('.row.sub').length,rate:!!m.querySelector('input[data-f=usdKrw]'),manage:!!m.querySelector('[data-orb-act=connect]')};})()");
           check('18-1 resting on the 「요금」 line opens its bills, the dollar rate and 「계정 관리」',costOpen.opened&&/^한 달에 약 .+원을 냅니다\./.test(costOpen.say)&&costOpen.bills>=3&&costOpen.rate&&costOpen.manage,costOpen);
@@ -805,10 +845,10 @@ if(!process.versions.electron){
           await tokAct('tok-range','week');await wait(300);
           for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js(`document.querySelector(${JSON.stringify(TOK)}).scrollIntoView({block:'start'})`);await wait(150);await capture(w,`tok-open-${W}`);}
           w.win.setContentSize(1440,900);await wait(300);
-          // 줄을 접으면 실시간 부탁을 거둔다(설계 검토 D8)
+          // 11-20부터 구독 방 맨 위의 「지금 출력」이 늘 보이므로, 줄을 접어도 방이 보이는 동안은 실시간 부탁을 거두지 않는다(솔리오 구독 비서 설계 3.3)
           n0=(await calls(w)).length;await click(w,TOK);await wait(500);
           const c2=await since(n0);
-          check('18-2 folding the line drops the live counting',c2.includes('subs-tokens-live:false'),{c2});
+          check('18-2 folding the line keeps the live counting while the room is shown (솔리오 구독 비서 3.3)',!c2.includes('subs-tokens-live:false'),{c2});
           // 끄기 두 번: 더블클릭 한 번은 묻기만 하고, 0.6초 뒤의 두 번째 누름에 끄고 지운다
           await click(w,TOK);await wait(400);
           await w.js(`(()=>{const x=${tokBtn('tok-off')};x.click();x.click();return true;})()`);await wait(300);
