@@ -94,6 +94,7 @@ function createState(guest, now) {
     localRows: new Set(), // 손님의 로컬 요약 기록 — 새 것이 서면 앞 것은 지운다
     lastKey: 0,
     readKey: 0, // 포트에서 읽은 데까지(내 덧붙이기로는 오르지 않는다 — 다른 탭이 먼저 쓴 기록을 건너뛰지 않게, Fable 끝 판 P2)
+    readRound: 0, // 통째로 다시 읽은 차례 — 그 전에 시작한 꼬리 읽기의 답은 버린다(GC1 묶음 GPT GA2)
     unsaved: new Set(), // 이 기록부에서 저장에 실패한(또는 부모가 없어 쓰지 않은) 사건 번호
     inflight: new Map(), // 저장 중인 사건 번호 → 그 저장 약속(자식은 부모의 저장이 끝난 뒤 결과를 보고 쓴다)
     lastAttempt: new Map(), // 제시 번호 → 이 기록부가 만든 그 제시의 마지막 답 번호(뒤 답은 앞 답에 기대어 쓴다 — §18-4)
@@ -121,6 +122,7 @@ function createState(guest, now) {
 // 포트에서 읽어 세운 값만 비운다(치운 뒤 다시 읽기 — A6). 이 기록부가 만든 쓰기의 상태(저장 실패 · 저장 중 · 앞 답 · 계열 · 번호)와
 // 시계 · 차례 · 서버 시각을 받았는지는 그대로 둔다.
 function resetRead(state) {
+  state.readRound += 1; // 이 차례 전에 시작한 꼬리 읽기는 낡았다(readTail)
   state.held = new Map();
   state.acks = new Map();
   state.clamped = new Set();
@@ -833,8 +835,13 @@ export function createRecord({
     return result;
   }
 
+  // 꼬리를 읽는 사이 통째로 다시 읽었으면(비우기 · 막이 · 치운 표시) 그 꼬리는 낡았다 — 버린다(다시 읽기가 그 뒤의 꼬리까지 읽었다). 받으면
+  // 지운 제시가 메모리 사본에 되살아나, 앞 세대에 지은 부모를 남은 것으로 보는 막이(clearedSince)가 그 자식을 새 세대에 썼다(GC1 묶음 GPT GA2).
   async function readTail() {
-    for (const row of await port.range(state.readKey)) {
+    const round = state.readRound;
+    const rows = await port.range(state.readKey);
+    if (round !== state.readRound) return;
+    for (const row of rows) {
       accept(row);
       state.readKey = Math.max(state.readKey, row.key);
     }

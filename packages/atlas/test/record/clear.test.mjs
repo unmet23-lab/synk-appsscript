@@ -802,3 +802,47 @@ test('넷째 걸음(옮긴 사건만 지우는 비우기) 뒤 — 그 걸음이 
   assert.equal(await gone.stored, false, '넷째 걸음이 지운 제시에는 답을 잇지 않는다');
   assert.deepEqual(await eventIds(port), [p2, a2, open.event.id, first.event.id, again.event.id]);
 });
+
+test('늦게 끝난 꼬리 읽기는 그사이 통째로 다시 읽은 메모리 사본을 되돌리지 않는다 — 비우기 전에 읽기 시작한 꼬리의 지운 제시에 새 세대의 답을 잇지 않는다(GC1 묶음 GPT GA2)', async () => {
+  const port = memoryPort();
+  let gate = null;
+  const slow = {
+    ...port,
+    async range(...args) {
+      const rows = await port.range(...args);
+      if (gate) {
+        const wait = gate;
+        gate = null;
+        await wait;
+      }
+      return rows;
+    },
+  };
+  const late = await guestOn(slow, { exclusive: busy });
+  const [shown] = await practise(late, items[0]);
+  // 비우기 전에 꼬리 읽기를 시작했고, 그 답은 늦게 온다.
+  let release;
+  gate = new Promise(resolve => {
+    release = resolve;
+  });
+  const stale = late.refresh();
+  const other = await guestOn(port, { exclusive: busy });
+  await other.clear();
+  // 이 탭이 다시 읽어 새 세대를 알았다 — 메모리 사본은 비었다.
+  await late.refresh();
+  assert.ok(!late.heldEvents().some(event => event.id === shown), '다시 읽어 지운 제시를 버렸다');
+  release();
+  await stale;
+  assert.ok(
+    !late.heldEvents().some(event => event.id === shown),
+    '늦게 온 꼬리가 지운 제시를 되살리지 않는다',
+  );
+  const made = late.add(EVENT_TYPES.attempted, {
+    presentationId: shown,
+    attemptNo: 2,
+    verdict: 'correct',
+    errorTags: [],
+  });
+  assert.equal(await made.stored, false, '지운 제시의 답을 새 세대에 쓰지 않는다');
+  assert.deepEqual(await eventIds(port), [], '저장소에 부모 없는 답이 없다');
+});

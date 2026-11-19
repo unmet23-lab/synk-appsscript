@@ -601,6 +601,22 @@ const CLEAR_MUTANTS = [
   [
     R,
     '비우기(4-5)',
+    '꼬리를 읽는 사이 통째로 다시 읽어도 낡은 꼬리를 받는다 — 지운 제시가 메모리 사본에 되살아나 새 세대에 답을 잇는다(GC1 묶음 GPT GA2)',
+    LOG,
+    '    if (round !== state.readRound) return;\n',
+    '',
+  ],
+  [
+    R,
+    '비우기(4-5)',
+    '통째로 다시 읽어도 읽기 차례를 올리지 않는다 — 그 전에 시작한 꼬리 읽기의 답을 받는다(GC1 묶음 GPT GA2)',
+    LOG,
+    '  state.readRound += 1; // 이 차례 전에 시작한 꼬리 읽기는 낡았다(readTail)\n',
+    '',
+  ],
+  [
+    R,
+    '비우기(4-5)',
     '막이에 걸린 쓰기가 막이의 세대를 넘기지 않는다 — 다시 읽기가 실패하면 셸에 알리지 못한다(4-5 끝 판 카본 D4)',
     LOG,
     "      if (error?.code === 'CLEARED') await caughtUp(error.gen);\n",
