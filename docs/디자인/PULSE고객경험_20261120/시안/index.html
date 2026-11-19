@@ -546,7 +546,7 @@ html.bare .top{top:0}
         <dd>남길 말 「물가에서도 마음 놓고」 · 피할 말 「세계 최초」 「업계 1위」</dd>
       </dl>
       <ul class="lines" id="lines" hidden></ul>
-      <div class="sum"><span>어림 값</span><strong id="total">0원</strong></div>
+      <div class="sum"><span>합계</span><strong id="total">0원</strong></div>
       <button class="pill" id="send" disabled>의뢰 보내기 <span aria-hidden="true">→</span></button>
       <ol class="track" id="track" hidden><li class="at">보냄</li><li>담당자 확인</li><li>수락</li><li>게시</li><li>결과</li></ol>
       <p class="fine" id="sheet-note">값은 담당자가 확인한 뒤 확정해요. 결제는 게시물을 확인하신 뒤에 하고, 게시되지 않으면 받지 않아요. 게시물에는 「광고」 표시가 들어가요.</p>
@@ -574,7 +574,7 @@ html.bare .top{top:0}
       <li><button><span class="st">손님 차례 · 장면 확인 기다림 2일째</span><b>유리결 홀리데이 세트</b><p>메일로 한 번 알렸어요. 내일 한 번 더 알려요.</p><time>납품 12일 뒤</time></button></li>
     </ul>
     <div class="panel tight compose rv" style="--i:4;margin:0">
-      <div class="seg mode" data-seg><button aria-pressed="true">보고 쓰기</button><button aria-pressed="false">문의 답하기 <b>1</b></button><button aria-pressed="false">영상 보내기</button></div>
+      <div class="seg mode" data-seg><button aria-pressed="true">보고 쓰기</button><button aria-pressed="false">문의 답하기</button><button aria-pressed="false">영상 보내기</button></div>
       <h3>첨벙댕 반려견 구명조끼</h3>
       <label>오늘 만든 컷에서 고르기</label>
       <div class="shots" id="shots">
@@ -657,7 +657,7 @@ html.bare .top{top:0}
   ];
   const picked=new Set(),list=$('#people-list');
   list.innerHTML=PEOPLE.map(p=>`<li data-k="${p.k}" data-f="${p.f}"${p.fit?' data-fit="1"':''}><span class="face" aria-hidden="true">${p.k}</span><div><b>예시 ${p.k}</b> <span class="what">${p.what}</span><p class="nums">${p.nums}</p><p class="inc">${p.inc}</p></div><span class="reel" aria-hidden="true"><i></i><i></i><i></i></span><div class="pay"><strong>${p.won}만원</strong><button class="pick" aria-pressed="false">고르기</button></div></li>`).join('');
-  // 값은 사람마다의 값에 맡길 일과 2차 활용을 더해 줄마다 보인다(시안의 어림 값이다)
+  // 값은 사람마다의 값에 맡길 일과 2차 활용을 더해 줄마다 보인다(시안의 예시 값이다)
   function sheet(){
     const rows=PEOPLE.filter(p=>picked.has(p.k)),base=rows.reduce((a,p)=>a+p.won,0);
     const job=+$('[data-seg="job"] [aria-pressed="true"]').dataset.v,use=$('[data-seg="reuse"] [aria-pressed="true"]'),rate=+use.dataset.v;
@@ -668,7 +668,7 @@ html.bare .top{top:0}
     $('#lines').hidden=!rows.length;
     $('#lines').innerHTML=lines.map(([a,b])=>`<li><span>${a}</span><span>${b}</span></li>`).join('');
     $('#picked').textContent=rows.length?rows.map(p=>'예시 '+p.k).join(', '):'아직 없어요. 명단에서 골라 주세요.';
-    $('#total').textContent=sum?sum+'만원부터':'0원';
+    $('#total').textContent=sum?sum+'만원':'0원';
     $('#send').disabled=!rows.length;
   }
   list.addEventListener('click',e=>{
