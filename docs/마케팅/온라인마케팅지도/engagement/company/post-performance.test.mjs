@@ -449,7 +449,22 @@ test('a Facebook feed-address checkpoint uses the video row of the same page pos
   const entry = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE }).entry;
   f.now(24.5); await f.service.collectDue();
   const point = f.service.list(f.owner).entries.find(item => item.id === entry.id).checkpoints[0];
-  assert.equal(point.metrics.views, 9); assert.equal(point.providerPublishedAt ?? null, null);
+  assert.equal(point.metrics.views, 9); assert.equal(point.providerPublishedAt, BASE, 'the feed row matched by address gave the platform time');
+});
+
+// 10회차 perf GA1: 주소로 찾은 피드 줄의 게시 시각이 기록의 시각과 다르면, 같은 번호의 영상 줄 수치를 쓰더라도 시각 어긋남으로 남긴다.
+test('a Facebook feed-address checkpoint still compares the feed time when it takes the views of the video row', async t => {
+  const feedAt = new Date(Date.parse(BASE) + 2 * 3600000).toISOString();
+  const f = fixture(t, { collector: async () => ({ posts: [
+    { url: 'https://www.facebook.com/synk/posts/700', publishedAt: feedAt, pagePostId: '123_700', videoId: null, metrics: { views: null, likes: null, comments: null, shares: null } },
+    { url: 'https://www.facebook.com/reel/555/', publishedAt: feedAt, pagePostId: '123_700', videoId: '555', metrics: { views: 9 } }],
+    coverage: { source: 'facebook-pages-api', inventoryComplete: true, status: 'complete' } }) });
+  f.store.put('channels', 'fb', { ...f.channel, id: 'fb', platform: 'facebook', canonicalUrl: 'https://www.facebook.com/synk' }); f.store.setSecret('channel:fb', { accessToken: 'synthetic' });
+  f.now(1);
+  const entry = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE }).entry;
+  f.now(24.5); await f.service.collectDue();
+  const point = f.service.list(f.owner).entries.find(item => item.id === entry.id).checkpoints[0];
+  assert.notEqual(point.status, 'recorded'); assert.equal(point.metrics?.views ?? null, null);
 });
 
 // 설계 검토 3 장면 4: 게시물 주소가 그 릴스 주소인 짝은 post_id가 달라도 한 줄이고, 그 릴스 주소로 등록한 기록이 영상 조회수를 받는다(수집기부터 체크포인트까지).

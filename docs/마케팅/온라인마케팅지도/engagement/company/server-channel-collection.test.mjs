@@ -152,17 +152,24 @@ test('a same-day facebook snapshot does not carry the views of a video the row n
   assert.deepEqual([snap.views,snap.videoId,snap.likes,f.app.store.get('posts','fb:123_700').videoId],[null,null,2,'556']);
 });
 
-// 9회차 GA3 · GA6: 같은 날 앞 값은 담당이 같을 때만 채운다. 영상 번호가 적히기 전에 쓴 스냅샷(배포 전)은 같은 영상으로 본다.
-test('a same-day facebook snapshot keeps earlier values only for the same owner, and treats a snapshot written before video ids as the same video',async t=>{
+// 9회차 GA3 · 10회차 GA1 · GA2: 같은 날 앞 값은 담당이 같을 때만 채운다(담당자 순서는 보지 않는다). 영상 번호가 없는 스냅샷(배포 전)의 조회수는 어느 영상
+// 것인지 몰라 채우지 않는다.
+test('a same-day facebook snapshot keeps earlier values only for the same owners in any order, and never views without a video id',async t=>{
   let views=12;
   const f=await fbFixture(t,async()=>fbResult([fbPost('123_700',{url:FEED,pagePostId:'123_700',videoId:'555',metrics:{views,likes:4}})]));
   const snap=()=>f.app.store.all('snapshots').find(s=>s.postId==='fb:123_700');
   const {videoId:_v,...older}=snap();f.app.store.put('snapshots',older.id,older);
   views=null;await f.again();
-  assert.deepEqual([snap().views,snap().videoId],[12,'555'],'a snapshot without a video id keeps its views for the video the row names');
-  const owner=snap().ownership;f.app.store.put('snapshots',snap().id,{...snap(),ownership:{ownerIds:['earlier-owner'],teamId:'beta',known:true}});
-  await f.again();
-  assert.deepEqual([snap().views,snap().likes,snap().ownership],[null,4,owner],'the views an earlier owner got that day are not carried to the current owner');
+  assert.deepEqual([snap().views,snap().videoId,snap().likes],[null,null,4],'views without a video id may be another video ones');
+  views=12;await f.again();
+  const owner=snap().ownership;
+  f.app.store.put('snapshots',snap().id,{...snap(),ownership:{...owner,ownerIds:[...owner.ownerIds,'second-owner']}});
+  views=null;await f.again();
+  assert.deepEqual([snap().views,snap().likes,snap().ownership],[null,4,owner],'the views an earlier owner group got that day are not carried to the current owner');
+  views=12;await f.again();
+  f.app.store.put('snapshots',snap().id,{...snap(),ownership:{...snap().ownership,ownerIds:[...snap().ownership.ownerIds,...snap().ownership.ownerIds]}});
+  views=null;await f.again();
+  assert.equal(snap().views,12,'the same owners listed again keep the views');
 });
 
 // 8회차 GA3 · 9회차 GA1 · GA7: 게시물 번호는 수집기가 null(번호 없음)로 밝힌 줄에서만 지우고, 칸이 없으면 앞 값을 둔다. 영상 번호는 이번 회차가 다 알 수

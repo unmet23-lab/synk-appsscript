@@ -789,14 +789,16 @@ export function createCompanyApp(options={}) {
         const snapshot={id:`${id}:${date}`,postId:id,date,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership},raw={};
         for(const key of metricKeys)snapshot[key]=raw[key]=count(p.metrics?.[key]);
         // 페이스북 당일 스냅샷: 이번 회차에 못 받은(null) 수치는 같은 날 앞서 받은 값을 지우지 않는다 — 조회수는 따로 받는 영상 목록에서 오고 그 목록만 실패한 회차가
-        // 있다(8회차 GA1). 담당이 같을 때만 채운다(9회차 GA3 — 앞 담당의 실적이 새 담당 스냅샷에 들지 않게). 조회수는 그 값의 영상 번호(videoId)를 스냅샷에 함께
-        // 두고, 이번에 적은 줄의 영상 번호(최근 수집이 바꾼 값 포함)가 그 영상이 아니면 앞 값으로 채우지 않는다(9회차 perf GA1). 영상 번호가 적히기 전 스냅샷(칸 없음)은
-        // 같은 영상으로 본다(9회차 GA6). 시각별 관측은 이번 값 그대로다.
+        // 있다(8회차 GA1). 담당(담당자 묶음 · 팀)이 같을 때만 채운다(9회차 GA3 · 10회차 GA2 — 담당자 순서는 보지 않는다). 조회수는 그 값의 영상 번호(videoId)를
+        // 스냅샷에 함께 두고, 이번에 적은 줄의 영상 번호(최근 수집이 바꾼 값 포함)와 같을 때만 채운다(9회차 perf GA1). 영상 번호가 없는 스냅샷(배포 전에 쓴 것 포함)의
+        // 조회수는 어느 영상 것인지 몰라 채우지 않는다(10회차 GA1). 시각별 관측은 이번 값 그대로다.
         if(facebook&&mode==='full'){
-          const found=store.get('snapshots',snapshot.id),before=found&&JSON.stringify(found.ownership??null)===JSON.stringify(ownership??null)?found:null;
-          const rowVideo=keys.videoId??null,keepViews=!!before&&raw.views===null&&(before.videoId===undefined||before.videoId===rowVideo);
+          const owners=value=>Array.isArray(value?.ownerIds)?[...new Set(value.ownerIds)].sort():[];
+          const sameOwner=(a,b)=>(a?.teamId??null)===(b?.teamId??null)&&!!a?.known===!!b?.known&&JSON.stringify(owners(a))===JSON.stringify(owners(b));
+          const found=store.get('snapshots',snapshot.id),before=found&&sameOwner(found.ownership,ownership)?found:null;
+          const rowVideo=keys.videoId??null,keepViews=!!before&&raw.views===null&&typeof before.videoId==='string'&&before.videoId===rowVideo;
           if(before)for(const key of metricKeys)if(snapshot[key]===null&&(key!=='views'||keepViews))snapshot[key]=before[key]??null;
-          snapshot.videoId=raw.views!==null?videoId:keepViews?before.videoId??rowVideo:null;
+          snapshot.videoId=raw.views!==null?videoId:keepViews?before.videoId:null;
         }
         if(mode==='full')store.put('snapshots',snapshot.id,snapshot);
         if(Date.parse(p.publishedAt)>=Date.parse(stamp)-HYPE_RECENT_MS&&Date.parse(p.publishedAt)<=Date.parse(stamp)){

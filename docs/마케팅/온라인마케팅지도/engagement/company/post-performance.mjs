@@ -552,7 +552,8 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             if (row.platform === 'facebook' && !metricOf(post)) {
               const numbered = (result?.posts || []).filter(item => samePagePost(row.postIdentity, item?.pagePostId));
               const byNum = numbered.find(metricOf) || (!post ? numbered[0] : null);
-              if (byNum) { post = byNum; matchedAt = row.publishedAt; byNumber = true; }
+              // 주소로 찾은 줄이 있었으면 그 줄의 게시 시각(플랫폼이 준 시각)으로 견준다(10회차 perf GA1). 번호로만 찾았을 때만 기록의 시각을 쓴다.
+              if (byNum) { const urlAt = post ? matchedAt : null; post = byNum; matchedAt = urlAt ?? row.publishedAt; byNumber = !urlAt; }
             }
             const published = matchedAt && Date.parse(matchedAt), mismatch = !!post && (!Number.isFinite(published) || Math.abs(published - Date.parse(row.publishedAt)) > 5 * 60000);
             const hasMetric = metricOf(post);
