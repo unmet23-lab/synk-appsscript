@@ -477,6 +477,7 @@ test('admin member directory pages local members, merges only verified identitie
   assert.equal((await post(c,local,{q:f.staff.id.slice(0,8)})).data.rows[0].staffId,f.staff.id);
   const unlinked=(await post(c,local,{q:f.staff.id})).data.rows[0];
   assert.equal(unlinked.id,f.staff.id);
+  assert.deepEqual(unlinked.brands,[]);
   for(const q of [unlinked.id,'staff:'+f.staff.id])assert.equal((await post(c,local,{q})).data.rows[0].staffId,f.staff.id);
   await c.link(f.admin);
   const store=f.app.store;
@@ -504,8 +505,14 @@ test('admin member directory pages local members, merges only verified identitie
   const both=clients.rows.find(row=>row.staffId===f.admin.id);
   assert.equal(both.brands[0].name,'합성 브랜드');assert.equal(both.id,ids.one);
   assert.equal(JSON.stringify(clients).includes('passwordHash'),false);
+  store.put('customerWorkspaces','brand-2',{name:'가람 브랜드',status:'archived',members:[
+    {synkUserId:ids.one,displayName:'다른 표시명',role:'member'}]});
   const staffOnly=(await post(c,local,{type:'staff',q:'다른 표시명'})).data;
   assert.equal(staffOnly.total,1);assert.equal(staffOnly.rows[0].id,ids.one);
+  assert.deepEqual(staffOnly.rows[0].brands,[
+    {name:'가람 브랜드',role:'member',status:'archived'},
+    {name:'합성 브랜드',role:'admin',status:'active'},
+  ]);
   const found=(await post(c,global,query)).data;
   assert.equal(found.rows[0].name,name);assert.equal(found.rows[0].privateField,undefined);
   for(let i=0;i<29;i++)store.put('users','directory-test-'+i,{id:'directory-test-'+i,name:'동명',active:true,email:'member'+i+'@example.test',role:'member'});
