@@ -1553,6 +1553,9 @@ test('the 계정 건강 room is drawn as text only, with its own row box, the si
   for (const sel of ['.more-head', '.more-text', '.flow', '.step', '.step.leak', '.more-in .row.do.first']) assert.ok(css.includes('#portal-entry ' + sel + '{') || css.includes('#portal-entry ' + sel + ','), sel);
   const narrow = css.slice(css.indexOf('@media (max-width:640px){'));
   assert.match(narrow, /#portal-entry \.row\.good \.mid,#portal-entry \.row\.goal \.mid,#portal-entry \.row\.do \.mid\{grid-column:1 \/ -1;grid-row:2\}/, 'a narrow window puts the words under the name');
+  // 641~1000px에서는 펼친 줄의 풀어 쓴 글이 이름 아래 온 폭으로 내려온다(Fable F1)
+  assert.match(css, /@media \(min-width:641px\) and \(max-width:1000px\)\{\s+#portal-entry \.rows\.hea \.more-in \.row\.sub\{row-gap:4px\}/);
+  assert.match(css, /#portal-entry \.rows\.hea \.more-in \.row\.sub > \.mid\{grid-column:1 \/ -1;grid-row:2;max-width:52em\}/);
   // 길의 단계를 둘씩 놓는 규칙은 900px 아래 전체이고, 무게가 같은 단계 규칙 뒤에 있어야 이긴다(카본 A1)
   const twoByTwo = css.search(/@media \(max-width:900px\)\{\s+#portal-entry \.step\{flex-basis:50%;/);
   assert.ok(twoByTwo > css.indexOf('#portal-entry .step + .step{') && twoByTwo > css.indexOf('#portal-entry .step{flex:1 1 0;'), 'the two-by-two step rule comes after the base step rules');
