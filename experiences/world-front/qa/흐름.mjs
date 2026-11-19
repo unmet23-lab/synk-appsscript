@@ -4,6 +4,7 @@
 // 첫날 끝 → 「지금 더 연습하기」 → 오늘 할 일을 열면 레슨 시트가 앞면 위에 뜨고, 닫으면 앞면으로 돌아오는지까지 간다.
 // --로그인: 손님으로 서울행을 끝낸 뒤 리허설 계정(player-a)으로 로그인한다 — 서울행이 묻는 「계정으로 옮기기」를 지나 계정 기록으로 앞면이 뜨고,
 //   첫날 끝 → 「지금 더 연습하기」 → 레슨을 열고 닫은 뒤 「나」에서 로그아웃하면 앞면이 내려가 타이틀로 가는지까지 본다.
+// --며칠 N: 첫날이 N일 전인 학생(셋째 날부터는 「어제 · 둘째 날」 글 없이 질문부터). --1화안봄: 내 길에서 「오늘은 여기까지」로 나와 1화를 안 본 학생(--로그인과 함께).
 // --꺼짐: 주소에 frontAuto를 붙이지 않는다(스위치 FRONT_AUTO=false 그대로) — 같은 기록이어도 앞면이 안 뜨고 지금 길로 가는지 본다.
 // 기록: .tmp/world-front-qa/<폭>-<언어>/ (찍기와 결과.json)
 import fs from 'node:fs';
@@ -18,8 +19,8 @@ const MAIN = path.join(os.homedir(), 'Documents', 'SYNK-appsscript');
 const require = createRequire(path.join(fs.existsSync(path.join(ROOT, 'node_modules')) ? ROOT : MAIN, 'x.js'));
 const {chromium} = require('playwright');
 const args = process.argv.slice(2), opt = (n, d = null) => { const i = args.indexOf(n); return i < 0 ? d : args[i + 1]; }, has = n => args.includes(n);
-const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), OFF = has('--꺼짐'), LOGIN = has('--로그인');
-const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${W}-${LANG}${OFF ? '-off' : ''}${LOGIN ? '-login' : ''}`); fs.mkdirSync(OUT, {recursive: true});
+const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), OFF = has('--꺼짐'), LOGIN = has('--로그인'), DAYS = Number(opt('--며칠', '0')), NO_EP = has('--1화안봄');
+const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${W}-${LANG}${OFF ? '-off' : ''}${LOGIN ? '-login' : ''}${DAYS ? `-d${DAYS}` : ''}${NO_EP ? '-noep' : ''}`); fs.mkdirSync(OUT, {recursive: true});
 const PORT = Number(opt('--포트', String(4800 + Math.floor(Math.random() * 300))));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = [], fail = [];
@@ -52,9 +53,11 @@ async function finish() {
 }
 
 // ── 서울행을 끝낸 손님 기록 ──
-const night = Date.now() - 90e3;
-const arrival = {version: 1, stage: 'left', dream: 'idol', name: '볼로르', nameEn: 'Bolor', call: '언니', from: '몽골', look: 'mn_f',
-  best: {s1e01: {n: 3, t2: true, tr: false}}, scenes: [{id: 's1e01.wrap', at: night, lines: 4}], momAnswer: 'fix', momAt: night, updatedAt: night};
+const night = Date.now() - 90e3 - DAYS * 864e5;
+const arrival = NO_EP
+  ? {version: 1, stage: 'left', dream: 'idol', name: '볼로르', nameEn: 'Bolor', call: '언니', from: '몽골', look: 'mn_f', scenes: [], updatedAt: night}
+  : {version: 1, stage: 'left', dream: 'idol', name: '볼로르', nameEn: 'Bolor', call: '언니', from: '몽골', look: 'mn_f',
+    best: {s1e01: {n: 3, t2: true, tr: false}}, scenes: [{id: 's1e01.wrap', at: night, lines: 4}], momAnswer: 'fix', momAt: night, updatedAt: night};
 await page.goto(`${base}/mobile.html${OFF ? '' : '?frontAuto=1'}`, {waitUntil: 'domcontentloaded'});
 await page.evaluate(({lang, arrival}) => {
   if (lang !== 'ko') localStorage.setItem('synk.world.lang', lang);
@@ -89,6 +92,17 @@ if (OFF) {
   await finish();
 }
 
+// ── 셋째 날부터: 「어제 · 둘째 날」 글 없이 질문부터 ──
+if (DAYS >= 2) {
+  await until('앞면 틀', async () => (await page.evaluate(() => !!document.querySelector('#front-layer')?.open)) && F(), 20000);
+  await until('질문 화면', () => inF(() => !!document.querySelector('.view') && !document.querySelector('.view.night')), 20000);
+  await sleep(2000); await shot('d-첫화면');
+  const t = await inF(() => document.querySelector('.view')?.innerText || '');
+  check(!/어제|둘째 날/.test(t), `첫날이 ${DAYS}일 전인 학생에게 「어제 · 둘째 날」 글이 없음`, t.slice(0, 90).replace(/\s+/g, ' '));
+  check(!!await inF(() => document.querySelector('[data-hangul2],[data-hangul3],.rail.goals')), '새벽 창가 없이 질문부터');
+  await finish();
+}
+
 // ── 첫날 끝 ──
 await until('앞면 틀', async () => (await page.evaluate(() => !!document.querySelector('#front-layer')?.open)) && F(), 20000);
 await until('첫날 끝 화면', () => inF(() => !!document.querySelector('.view.night:not(.off)')), 20000);
@@ -107,7 +121,8 @@ if (reads) {
   await sleep(1500); await shot('1b-한글답');
   const tomorrow = await inF(() => document.querySelector('.view')?.innerText || '');
   check(!/몽글|까몽|마린/.test(tomorrow), '내일 할 일 줄에 마스코트 이름이 안 보임');
-  if (LOGIN && LANG === 'ko') check(/1화에서/.test(tomorrow) && /엄마/.test(tomorrow), '로그인 학생은 1화에서 말한 줄과 엄마 답이 보임', tomorrow.slice(0, 80).replace(/\s+/g, ' '));
+  if (LOGIN && LANG === 'ko' && !NO_EP) check(/1화에서/.test(tomorrow) && /엄마/.test(tomorrow), '로그인 학생은 1화에서 말한 줄과 엄마 답이 보임', tomorrow.slice(0, 80).replace(/\s+/g, ' '));
+  if (NO_EP && LANG === 'ko') check(!/1화를 끝까지|개강 첫날/.test(tomorrow) && /학생증/.test(tomorrow), '1화를 안 본 학생에게 「1화를 끝까지 · 개강 첫날」이 없고 학생증이 보임', tomorrow.slice(0, 80).replace(/\s+/g, ' '));
 }
 
 // ── 로그인: 「지금 더 연습하기」 → 첫날 맞춤 / 손님: 「오늘은 여기까지」 → 불 끔 → 다시 열기 ──
@@ -162,6 +177,12 @@ if (LOGIN) {
   check(!!me, '「나」 단추가 있음');
   if (me) {
     await me.click();
+    // 「나」는 설정(화면 언어 · 소리 · 움직임)을 열고 맨 아래에 「내 계정」 단추를 둔다
+    await until('설정 시트', () => page.$('#world-panel[open] input[name="world-lang"]'), 10000);
+    check(!!await page.$('#world-panel[open] input[name="world-lang"]'), '「나」에서 화면 언어를 바꿀 수 있음');
+    await sleep(600); await shot('6a-설정');
+    const acct = await page.$('#world-panel[open] .panel-actions .quiet-button:last-child');
+    if (acct) await acct.click();
     const out = await until('내 계정 시트의 로그아웃', () => page.$('#world-panel[open] [data-world="logout"]'), 10000);
     await sleep(800); await shot('6-나');
     if (out) {

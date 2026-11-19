@@ -28,6 +28,9 @@ function syncP() {
   P.goal = 'goal' in L ? L.goal : (GOALKEYS.includes(s.goal) || s.goal === 'later_' ? s.goal : '');
   P.step = 'step' in L ? L.step : (['hangul', 'goal'].includes(s.step) ? s.step : '');
   P.prev = L.prev || '';
+  P.day = Math.max(1, Number(s.day) || (view === 'day2' || view === 'front' ? 2 : 1));   // 첫날부터 며칠째(첫날 = 1)
+  // 셋째 날부터는 「어제 · 둘째 날 아침」 판(새벽 창가)이 사실과 달라 건너뛰고 질문부터
+  if (P.v === 'day2' && !P.front && P.day > 2 && !P.step && !P.pc && !P.goal) P.step = ['ask', 'skip'].includes(P.hangul) ? 'hangul' : 'goal';
   P.after = !!s.after && P.v !== 'day2';   // 「첫날 연습 → 둘째 날」은 시안이 재지 않은 조합(측정 K)
   P.still = !!s.reduced;
   const st = s.student || {}, name = String(st.name || '');
@@ -179,7 +182,7 @@ function nightView({off = false} = {}) {
   const r = R(), plan = state.plan;
   const w = (txt, open, label) => `<button class="w" type="button" data-open="${open}" aria-haspopup="dialog" aria-label="${esc(label.includes(txt) ? label : `${txt} · ${label}`)}">${esc(txt)}</button>`;
   const rows = [];   // [보이는 줄(html), 번역 열쇠, 줄 꼴, 번역 값]
-  if (r.guest) {
+  if (r.guest || (!r.wrap && r.spoke === 0)) {   // 1화를 아직 안 본 로그인 학생도 그날 한 일은 학생증과 한글 이름이다
     rows.push([esc('서울에서 첫날'), '서울에서 첫날', 'lead']);
     rows.push([esc('학생증 받고'), '학생증 받고']);
     rows.push([esc('이름은 한글로'), '이름은 한글로']);
@@ -189,10 +192,11 @@ function nightView({off = false} = {}) {
     else rows.push([esc('1화를 끝까지 듣고'), '1화를 끝까지 듣고']);
     if (r.mom) rows.push([`엄마한테 ${w('한 줄', 'mom', ui('엄마 쪽지와 내 답'))}`, '엄마한테 한 줄']);
   }
+  if (!r.guest && !r.wrap && r.spoke === 0 && r.mom) rows.push([`엄마한테 ${w('한 줄', 'mom', ui('엄마 쪽지와 내 답'))}`, '엄마한테 한 줄']);
   const rec = P.hangul === 'ask' && !r.guest && rows.length > 1, plain = h => h.replace(/<[^>]+>/g, '');   // 10z: 질문 동안은 두 줄 기록
   const recT = rec && P.lang !== 'ko' ? `${tr(rows[0][1])} ${rows.slice(1).map(x => tr(x[1], x[3] || {})).join(' · ')}` : '';
   const poem = rec ? `<span class="ln rc"><span class="rl">${esc(ui('오늘 한 일'))}</span><span class="ko">${plain(rows[0][0])} ${rows.slice(1).map(x => plain(x[0])).join(' · ')}</span>${recT ? `<small>${esc(recT)}</small>` : ''}</span>` : rows.map(([html, key, cls, v]) => `<span class="ln ${cls || ''}"><span class="ko">${html}</span>${sub(key, v)}</span>`).join('');
-  const tag = r.guest ? '기숙사 들어가는 날 · 밤' : '개강 첫날 · 밤';
+  const tag = r.guest || !r.wrap ? '기숙사 들어가는 날 · 밤' : '개강 첫날 · 밤';   // 개강 첫날 = 1화 장면
   const spot = r.wrap && P.hangul !== 'ask' ? spotTag() : '';   // 사진 속 자리 이름표: 1화를 본 학생에게만, 한글 질문 동안은 뺀다
   const bye = '오늘은 여기까지';
   const acts = P.hangul === 'ask' ? '' : r.guest
@@ -324,16 +328,16 @@ function doneLine() {
   const day2 = P.v === 'day2', {items, practice: done} = doneItems();
   const practice = done.length && !day2 ? `<span class="dl2"><b>${esc(ui(items.length ? '맞춤' : '오늘 한 것'))}</b><span>${esc(done[0])}</span></span>` : '';
   if (!items.length && !practice) return '';
-  const dl1 = items.length ? `<span class="dl1"><b>${esc(ui(day2 ? '어제 한 것' : '오늘 한 것'))}</b>${items.map(t => `<span>${esc(t)}</span>`).join('<i aria-hidden="true"></i>')}</span>` : '';
+  const dl1 = items.length ? `<span class="dl1"><b>${esc(ui(day2 ? (P.day > 2 ? '첫날' : '어제 한 것') : '오늘 한 것'))}</b>${items.map(t => `<span>${esc(t)}</span>`).join('<i aria-hidden="true"></i>')}</span>` : '';
   return `<p class="doneln">${dl1}${practice}</p>`;
 }
 function sidePanel(r) {
   const day2 = P.v === 'day2', {items} = doneItems();
-  const done = items.length ? `<div class="sd"><p class="lab">${esc(ui(day2 ? '어제 한 것' : '오늘 한 것'))}</p><p class="done">${items.map(t => `<span>${esc(t)}</span>`).join('<i aria-hidden="true"></i>')}</p></div>` : '';
+  const done = items.length ? `<div class="sd"><p class="lab">${esc(ui(day2 ? (P.day > 2 ? '첫날' : '어제 한 것') : '오늘 한 것'))}</p><p class="done">${items.map(t => `<span>${esc(t)}</span>`).join('<i aria-hidden="true"></i>')}</p></div>` : '';
   const expr = r.wrap ? `<div class="sd"><p class="lab">${esc(ui('1화 장면 속 표현'))}</p><p class="expr-q">${esc(EXPR)}</p></div>` : '';
   return `<aside class="side">${posBlock()}${done}${expr}</aside>`;
 }
-function tagFor(r, day2) { return P.pc ? (day2 ? '둘째 날' : '첫날') : r.guest ? (day2 ? '둘째 날 · 아침' : '기숙사 들어가는 날 · 밤') : day2 ? '개강 둘째 날 · 아침' : '개강 첫날 · 밤'; }
+function tagFor(r, day2) { if (day2 && P.day > 2) return '오늘'; return P.pc ? (day2 ? '둘째 날' : '첫날') : r.guest ? (day2 ? '둘째 날 · 아침' : '기숙사 들어가는 날 · 밤') : day2 ? '개강 둘째 날 · 아침' : '개강 첫날 · 밤'; }   // 셋째 날부터는 「오늘」
 
 function homeView() {
   const r = R(), plan = state.plan, day2 = P.v === 'day2', time = day2 ? 'morning' : 'lamp';
@@ -644,6 +648,7 @@ async function swap(patch = {}, p = null) {
   let res = null;
   if (p) { TRANS = true; PENDING = null; try { res = await p; } catch (e) { console.warn('[world-front]', e); } }
   await faded;
+  if (res && res.error && res.error !== 'needConsent') toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.'));   // 한글 답 저장 실패 등(앱 알림은 모달 아래에 가린다)
   const next = res && typeof res === 'object' && res.view ? res : PENDING; if (next === PENDING) PENDING = null; TRANS = false;
   if (next) take(next);
   for (const [k, val] of Object.entries(patch)) { if (val === undefined) delete L[k]; else L[k] = val; }
@@ -737,6 +742,7 @@ app.addEventListener('click', e => {
     busy = true; TRANS = true; PENDING = null;
     Promise.all([call('answerHangul', k), wait(460)]).then(([res]) => {
       const next = PENDING || (res && res.view ? res : null); PENDING = null; TRANS = false; busy = false;   // 기다리는 동안 host가 보낸 더 새 state가 있으면 그것을
+      if (res && res.error) { toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.')); app.querySelectorAll('[data-hangul]').forEach(x => x.setAttribute('aria-pressed', 'false')); return; }   // 저장 실패: 답하지 않은 채로
       if (next) take(next); else state = {...state, hangul: k};
       syncP(); refreshFoot();
     });
@@ -755,7 +761,7 @@ app.addEventListener('click', e => {
   }
   if (act === 'more') { sfx('paper'); swap({}, call('more')); return; }
   if (act === 'login') { call('signIn'); return; }
-  if (act === 'story') { call('openStory'); return; }
+  if (act === 'story') { call('openStory').then(res => { if (res && res.view) show(res); }); return; }   // 이야기에서 돌아오면 새 기록으로
   if (act === 'tab') { call('openTab', b.dataset.tab === 'play' ? 'play' : 'learn'); return; }
   if (act === 'all') { call('openAll'); return; }
   if (act === 'me') { call('openMe'); return; }
@@ -776,6 +782,7 @@ app.addEventListener('click', e => {
       TRANS = true; PENDING = null;
       const res = await call('chooseGoal', k, {consent});
       if (res && res.error === 'needConsent') { TRANS = false; busy = false; needConsent(); flush(); return; }
+      if (res && res.error) { TRANS = false; busy = false; toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.')); flush(); return; }
       const next = res && res.view ? res : PENDING; if (next === PENDING) PENDING = null;
       if (!next) { TRANS = false; busy = false; return; }   // 고르지 못함(host가 알림을 띄운다) — 화면은 그대로
       await doors(ph, () => { take(next); syncP(); render(); focusLead(); });

@@ -26,6 +26,13 @@ export function frontEligible({auto=false,search='',arrival=null,blocked=false,n
 }
 // 하루는 새벽 4시에 바뀐다(밤늦게 1화를 끝낸 학생의 「오늘」이 자정에 끊기지 않게).
 export const dayKey=at=>{const d=new Date(at-4*3600e3);return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;};
+// 첫날부터 며칠째인가(첫날 = 1). 셋째 날부터는 「어제 · 둘째 날」 글을 쓰지 않는다.
+export function dayIndex(arrival,now=Date.now()){
+ const first=firstDayAt(arrival);if(!first)return 1;
+ const a=new Date(first-4*3600e3),b=new Date(now-4*3600e3);
+ const days=Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/864e5);
+ return Math.max(1,days+1);
+}
 export function firstDayAt(arrival){
  const scenes=Array.isArray(arrival?.scenes)?arrival.scenes:[];
  const wrap=scenes.find(s=>s.id==='s1e01.wrap')||scenes.find(s=>s.id==='day1.end');
@@ -90,7 +97,7 @@ export const GOAL_REASONS=Object.freeze({travel:'travel',people:'people',life:'l
 
 /* ── 다리 ── */
 export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,signIn,openStory,profile,storage=globalThis.localStorage,
- native=()=>false,guestArrival=()=>null,blocked=()=>false,newEngine=()=>false,hangulReading,setHangulReading,goalConsent=()=>({needed:true,label:'',note:''})}){
+ native=()=>false,guestArrival=()=>null,blocked=()=>false,newEngine=()=>false,bypass=()=>false,openSettings=null,hangulReading,setHangulReading,goalConsent=()=>({needed:true,label:'',note:''})}){
  const owner=()=>client().snapshot?.accountId||'guest';
  let session=null;
  const accountArrival=()=>{try{return life.progress?.arrival?.()??null;}catch{return null;}};
@@ -104,14 +111,15 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   try{return frontEligible({auto:on(),search:location.search,arrival:{stage:'left'},blocked:!!blocked(),newEngine:!!newEngine(owner())});}catch{return false;}
  }
  function free(){
-  try{return frontEligible({auto:on(),search:location.search,arrival:arrivalOf(owner()),blocked:!!blocked(),newEngine:!!newEngine(owner())});}catch{return false;}
+  // 로그인을 다녀온 바로가기(드라마 · 제2의 나 · 옷장 · 시험)는 주소에 없고 앱의 표에만 남는다 — 그것도 지금 길로 보낸다.
+  try{if(bypass())return false;return frontEligible({auto:on(),search:location.search,arrival:arrivalOf(owner()),blocked:!!blocked(),newEngine:!!newEngine(owner())});}catch{return false;}
  }
  const education=()=>life.education||null;
  function profileOf(){try{return life.progress?.learningProfile?.()?.profile||null;}catch{return null;}}
  // 계정에 저장된 목표(다른 기기나 학습 목표 창에서 고른 것) → 앞면 목표 열쇠. 기기 표에 목표가 없을 때 쓴다.
  function accountGoal(){
   const p=profileOf();if(!p?.consent)return '';
-  const r=p.primaryReason||(Array.isArray(p.reasons)&&p.reasons.length===1?p.reasons[0]:null);
+  const v=p.values||{},r=v.primaryReason||(Array.isArray(v.reasons)&&v.reasons.length===1?v.reasons[0]:null);
   return Object.keys(GOAL_REASONS).find(k=>GOAL_REASONS[k]===r)||'';
  }
  function currentPlan(){try{education()?.refresh?.();return education()?.metrics?.().plan||null;}catch{return null;}}
@@ -124,7 +132,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   // 이미 학습 목표 저장에 동의한 학생에게는 체크 상자를 다시 그리지 않는다(학습 목표 창과 같다).
   if(profileOf()?.consent)consent={...consent,needed:false};
   return {view,lang:currentLang(),who:pc?'pc':guest?'guest':'login',dream:arrival?.dream||'idol',student:studentOf(arrival),record:recordOf(arrival,{guest}),
-   hangul,after:!!mark.after,goal:view==='front'?(mark.goal||accountGoal()):'',step:'',plan,alts,today:todayOf(arrival,mark,{guest,pc,view}),position:null,consent,reduced:!!home.state?.reduced};
+   day:dayIndex(arrival),hangul,after:!!mark.after,goal:view==='front'?(mark.goal||accountGoal()):'',step:'',plan,alts,today:todayOf(arrival,mark,{guest,pc,view}),position:null,consent,reduced:!!home.state?.reduced};
  }
  // 「오늘 한 것」: 있는 사실만. card · lines · heard · mom은 틀이 세 언어 글로 쓰고, practice는 그 활동의 화면 언어 이름을 그대로 쓴다.
  function todayOf(arrival,mark,{guest,pc,view}){
@@ -205,7 +213,8 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    // 관문의 한글 질문과 같은 질문이라 출처 값도 'question'이다(학습 기록이 받는 값만 쓴다).
    if(!same()||!['reads','new'].includes(value))return null;
    const s=session,who=owner();
-   try{await setHangulReading(value,who,{via:'question'});}catch(error){home.toast?.(error?.message||'');return null;}
+   // 실패 알림은 틀이 띄운다(앱 알림은 앞면 모달 아래에 가린다).
+   try{await setHangulReading(value,who,{via:'question'});}catch(error){return {error:error?.message||'save'};}
    if(session!==s||!same()||owner()!==who)return null;
    return stateOf(s.view);
   },
@@ -217,8 +226,9 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    const progress=life.progress;
    let profile=null;try{profile=progress?.learningProfile?.()?.profile||null;}catch{profile=null;}
    if(!consent&&!profile?.consent)return {error:'needConsent'};
-   try{progress.updateLearningProfile({consent:true,expectedRevision:profile?.revision,values:{reasons:[reason],primaryReason:reason,goal:null}});}
-   catch(error){home.toast?.(error?.message||'');return null;}
+   // 이유만 바꾸고 나머지(도움 방식 · 설명 길이 · 시험 정보)는 그대로 둔다 — 시험 정보는 이유가 시험일 때만 계획이 읽는다(world-exam-plan examInfo).
+   try{progress.updateLearningProfile({consent:true,expectedRevision:profile?.revision,values:{...(profile?.values||{}),reasons:[reason],primaryReason:reason,goal:null}});}
+   catch(error){return {error:error?.message||'save'};}
    writeMark(who,{day2:true,goal});session.view='front';
    return stateOf('front');
   },
@@ -245,7 +255,8 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   },
   async openTab(tab){if(!same())return null;session.pending=null;if(tab==='learn')return openLife('packs');if(tab==='play')return home.showPlay?.();return null;},
   async openAll(){if(!same())return null;session.pending=null;try{return education()?.position?.();}catch{return null;}},
-  async openMe(){if(!same())return null;session.pending=null;return profile?.();},
+  // 「나」: 설정(화면 언어 · 소리 · 움직임)을 열고 그 아래에 내 계정(로그인했으면) 또는 로그인 단추를 둔다. 설정을 못 열면 내 계정.
+  async openMe(){if(!same())return null;session.pending=null;if(typeof openSettings==='function'){try{if(openSettings())return null;}catch{}}return profile?.();},
   async signIn(){if(session)session.pending=null;return signIn?.();}
  });
  // 고른 활동 열기 — 학습 화면 launch(world-learning-ui.mjs)와 같은 갈래. 첫날에는 목표 창을 거치지 않는다(네 갈래 검토 12절 ③).

@@ -1,5 +1,5 @@
 // 첫날 끝 · 맞춤 앞면 몽골어 문안 검문: 글 표를 12줄씩 묶어 tools/몽골어대조.js에 넘긴다(서울행 qa/몽골어검문.mjs와 같은 꼴).
-//   node experiences/world-front/qa/몽골어검문.mjs [--부터 0] [--구독]   → .tmp/world-front-mn/결과.jsonl
+//   node experiences/world-front/qa/몽골어검문.mjs [--부터 0] [--크기 6] [--구독]   (무료 문은 한 호출 60초라 6줄 묶음, 현장 노트 AI_CLI)   → .tmp/world-front-mn/결과.jsonl
 // 대상: 틀 글 표(strings.mjs의 T.mn)와, 앞면 때문에 서울행에 더한 글 둘(seoul-arrival/strings.mjs의 「오늘 마무리하기」 · 「오늘은 여기까지」).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,7 +15,7 @@ const rows = Object.entries(T.mn).map(([k, v]) => [clean(k), clean(v)]);
 for (const k of ['오늘 마무리하기', '오늘은 여기까지']) if (TEXT_TABLES.UI.mn[k]) rows.push([k, clean(TEXT_TABLES.UI.mn[k])]);
 const seen = new Set(), uniq = rows.filter(([, mn]) => { if (!/[А-Яа-яӨөҮү]/.test(mn) || seen.has(mn)) return false; seen.add(mn); return true; });
 const OUT = path.join(ROOT, '.tmp', 'world-front-mn'); fs.mkdirSync(OUT, {recursive: true});
-const SIZE = 12, from = Number(opt('--부터', '0'));
+const SIZE = Number(opt('--크기', '6')), from = Number(opt('--부터', '0'));
 const results = path.join(OUT, '결과.jsonl');
 console.log('줄', uniq.length, '묶음', Math.ceil(uniq.length / SIZE));
 for (let i = from; i * SIZE < uniq.length; i++) {
