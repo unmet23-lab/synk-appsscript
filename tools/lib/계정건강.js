@@ -22,6 +22,7 @@ const 상태이름 = Object.freeze({ 건강: '건강함', 주의: '지켜볼 것
 /** 기준 숫자. 「좋음」 이상이면 좋음, 「나쁨」 아래면 나쁨, 그 사이는 보통이다. */
 const 기준 = Object.freeze({
   창일수: 28,          // 최근으로 보는 기간
+  팔로워묵음: 10,      // 팔로워를 마지막으로 잰 지 이 날수가 넘으면 그 값으로 판정하지 않는다(11-19 설계 검토 P1)
   표본편수: 5,          // 이보다 적으면 판단하지 않는다
   표본조회: 300,        // 본 편들의 조회 합이 이보다 적으면 비율을 내지 않는다
   // 한 편의 조회(가운데 값) ÷ 팔로워. 계정이 클수록 이 비율은 낮아지므로 크기별로 본다.
@@ -128,10 +129,17 @@ function 팔로워기록(followers) {
 
 /* ── 신호 일곱. 각각 { 키, 이름, 판정:'좋음'|'보통'|'나쁨'|'모름', 값, 글 }을 돌려준다 ── */
 
-function 닿음(seen, fol) {
+/** 한국 날짜의 「M월 D일」 */
+const 월일 = t => { const d = new Date(t + 9 * 3600e3); return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`; };
+/** 마지막으로 잰 팔로워 값이 오래됐는가. 오래된 값으로 판정하면 숫자가 바뀌지 않았는데 판정만 남는다 */
+const 묵은팔로워 = (fol, now) => { const last = fol.at(-1); return !!last && now - last.t > 기준.팔로워묵음 * DAY; };
+const 묵음글 = fol => `팔로워 수를 ${월일(fol.at(-1).t)}에 마지막으로 쟀습니다. 다시 재면 판정합니다.`;
+
+function 닿음(seen, fol, now = Date.now()) {
   const base = { 키: '닿음', 이름: '팔로워에게 닿는가' };
   const last = fol.at(-1);
   if (!last) return { ...base, 판정: '모름', 값: '', 글: '팔로워 수를 잰 적이 없습니다.' };
+  if (묵은팔로워(fol, now)) return { ...base, 판정: '모름', 값: '', 글: 묵음글(fol) };
   if (last.n < 기준.닿음.팔로워최소) return { ...base, 판정: '모름', 값: `팔로워 ${fmt(last.n)}명`, 글: `팔로워가 ${기준.닿음.팔로워최소}명 아래라 팔로워 대비로는 보지 않습니다. 이 크기에서는 조회 대부분이 팔로워 밖에서 옵니다.` };
   const mid = median(seen.map(p => p.v.views)), r = mid / last.n;
   const rule = 기준.닿음.구간.find(g => last.n < g.까지), 판정 = grade(r, rule);
@@ -196,6 +204,7 @@ function 남김(all, seen, fol, now) {
   const withFollows = seen.filter(p => num(p.v.follows)), fv = sum(withFollows.map(p => p.v.views));
   let gain, views, span;
   if (withFollows.length >= 3 && fv >= 기준.남김.조회최소) { gain = sum(withFollows.map(p => p.v.follows)); views = fv; span = `${withFollows.length}편에서`; }
+  else if (묵은팔로워(fol, now)) return { ...base, 판정: '모름', 값: '', 글: 묵음글(fol) };
   else if (first) {
     gain = last.n - first.n;
     views = num(last.views) && num(first.views) && last.views >= first.views ? last.views - first.views
@@ -358,16 +367,17 @@ function 길(S, seen) {
   if (end != null) steps.push({ 키: '끝까지', 이름: '끝까지', 명: end * 10, 글: `${fmt(end * 10)}명이 끝까지 봅니다`, 판정: grade(end, B.completionRatePct), 신호: '붙잡음' });
   else if (avp != null) steps.push({ 키: '끝까지', 이름: '보는 길이', 명: null, 큰: `${Math.round(avp)}%`, 글: `본 사람은 평균해서 편의 ${Math.round(avp)}%를 봅니다`, 판정: grade(avp, B.averageViewPct), 신호: '붙잡음' });
   if (S.깊이.비율) {
-    const ACT = { shares: ['보내', '보냅니다'], saves: ['저장하', '저장합니다'], comments: ['댓글을 달', '댓글을 답니다'] };
+    // 셋째 말은 아무도 하지 않았을 때 쓴다(「아직 아무도 … 댓글을 달지 않습니다」)
+    const ACT = { shares: ['보내', '보냅니다', '보내지 않습니다'], saves: ['저장하', '저장합니다', '저장하지 않습니다'], comments: ['댓글을 달', '댓글을 답니다', '댓글을 달지 않습니다'] };
     const keys = Object.keys(ACT).filter(k => S.깊이.비율[k] != null);
     if (keys.length) {
       const n = sum(keys.map(k => S.깊이.비율[k]));
-      steps.push({ 키: '반응', 이름: '반응', 명: n, 글: `${몇명(n)} ${keys.map((k, i) => (i < keys.length - 1 ? ACT[k][0] + '거나' : ACT[k][1])).join(' ')}`, 판정: S.깊이.판정, 신호: '깊이' });
+      steps.push({ 키: '반응', 이름: '반응', 명: n, 글: `${몇명(n)} ${keys.map((k, i) => (i < keys.length - 1 ? ACT[k][0] + '거나' : ACT[k][n > 0 ? 1 : 2])).join(' ')}`, 판정: S.깊이.판정, 신호: '깊이' });
     }
   }
   if (num(S.남김.비율) && !S.남김.수상함) {
     const n = Math.max(S.남김.비율, 0);
-    steps.push({ 키: '팔로우', 이름: '팔로우', 명: n, 글: `${몇명(n)} 팔로우합니다`, 판정: S.남김.판정, 신호: '남김' });
+    steps.push({ 키: '팔로우', 이름: '팔로우', 명: n, 글: `${몇명(n)} ${n > 0 ? '팔로우합니다' : '팔로우하지 않습니다'}`, 판정: S.남김.판정, 신호: '남김' });
   }
   return steps;
 }
@@ -493,7 +503,7 @@ function 목표(S, lead) {
  */
 function 진단(account, now = Date.now()) {
   const { all, seen } = 본편들(account.posts, now, account.ownComments), fol = 팔로워기록(account.followers);
-  const head = { key: account.key, name: account.name || account.key, platform: account.platform || '', 편수: seen.length, 팔로워: fol.at(-1)?.n ?? null, 조회가운데: median(seen.map(p => p.v.views)) };
+  const head = { key: account.key, name: account.name || account.key, platform: account.platform || '', 편수: seen.length, 팔로워: fol.at(-1)?.n ?? null, 팔로워잰때: fol.at(-1)?.t ?? null, 조회가운데: median(seen.map(p => p.v.views)) };
   const steady = 꾸준함(all, now);
   if (seen.length < 기준.표본편수) {
     const stopped = steady.쉰날 > 기준.꾸준함.멈춤;
@@ -501,7 +511,7 @@ function 진단(account, now = Date.now()) {
       결론: stopped ? `마지막으로 올린 지 ${steady.쉰날}일이 지났고, 볼 편이 ${seen.length}편뿐입니다.` : `숫자를 잰 편이 ${seen.length}편입니다. ${기준.표본편수}편이 쌓이면 진단합니다.`,
       처방: [stopped ? 처방글.꾸준함(steady) : `올린 지 하루가 지난 편이 ${기준.표본편수}편 쌓일 때까지는 조회수로 판단하지 않습니다. 같은 틀로 계속 올립니다.`] };
   }
-  const S = { 닿음: 닿음(seen, fol), 깊이: 깊이(seen, head.platform, all.own), 남김: 남김(all, seen, fol, now), 흐름: 흐름(all), 쏠림: 쏠림(seen), 꾸준함: steady, 붙잡음: 붙잡음(seen) };
+  const S = { 닿음: 닿음(seen, fol, now), 깊이: 깊이(seen, head.platform, all.own), 남김: 남김(all, seen, fol, now), 흐름: 흐름(all), 쏠림: 쏠림(seen), 꾸준함: steady, 붙잡음: 붙잡음(seen) };
   const W = 무게(head.platform);
   const blocked = 막힘(all), views = sum(seen.map(p => p.v.views));
   if (views < 기준.표본조회) {
@@ -602,6 +612,14 @@ function 진단(account, now = Date.now()) {
 const 순서 = [상태이름.나쁨, 상태이름.주의, 상태이름.건강, 상태이름.이름];
 const 낱수 = n => (['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉', '열'][n] || `${n}개`);
 
+/** 이름이 많으면 앞의 열둘만 적고 나머지는 수로 말한다. 앱은 긴 글을 중간에서 자른다 */
+const 이름묶음 = (names, max = 12) => (names.length > max ? `${names.slice(0, max).join(' · ')} 외 ${names.length - max}개` : names.join(' · '));
+
+/**
+ * 솔리오 방의 꼴. PC 앱에 설치된 판이 이 꼴을 읽는다(desktop/renderer/sns-health-model.mjs) — 줄 꼴의 이름, 칸의 차례,
+ * 길의 단계 열쇠(이름 · 명 · 큰 · 글 · 판정 · 샘)를 바꾸면 옛 앱에서 그 줄이 말없이 빠진다. 바꾸기 전에
+ * desktop/tests/fixtures/sns-health-summary-v1.json과 tests/계정건강.test.js의 계약 시험을 본다.
+ */
 function 방(list, { now = Date.now(), 모은때 = '' } = {}) {
   const sorted = [...list].sort((a, b) => 순서.indexOf(a.상태) - 순서.indexOf(b.상태) || (b.조회가운데 || 0) - (a.조회가운데 || 0));
   const count = s => sorted.filter(d => d.상태 === s).length;
@@ -628,7 +646,7 @@ function 방(list, { now = Date.now(), 모은때 = '' } = {}) {
       ...(d.세부?.길.length ? [['head', '조회 1,000번이 가는 길'], ['flow', d.세부.길.map(s => ({ 이름: s.이름, 명: s.명, 큰: s.큰 || null, 글: s.글, 판정: s.판정, 샘: s.키 === d.세부.새는곳.단계 })), [d.세부.새는곳.글, d.세부.고름].filter(Boolean).join(' ')]] : []),
       ...(d.세부?.대조 ? [['head', '잘된 편과 안 된 편'], ['text', [d.세부.대조.글, d.세부.갈래].filter(Boolean).join(' ')]] : []),
       ['head', '숫자로 본 일곱 가지'],
-      ...d.신호.filter(s => s.판정 !== '모름').map(s => ['row', s.이름, s.글, s.판정, s.값]),
+      ...d.신호.filter(s => s.판정 !== '모름').map(s => ['row', s.이름, s.글, s.판정, s.값, s.판정 === '나쁨' ? 1 : 0]),
       ...d.처방.map((p, i) => ['do', d.처방.length > 1 ? `할 일 ${i + 1}` : '할 일', p]),
       ...(d.세부?.목표 ? [['goal', '다음 목표', d.세부.목표]] : []),
       ...(d.신호.some(s => s.판정 === '모름') ? [['note', '재지 못한 것: ' + d.신호.filter(s => s.판정 === '모름').map(s => `${s.이름}(${s.글})`).join(' ')]] : []),
@@ -639,10 +657,10 @@ function 방(list, { now = Date.now(), 모은때 = '' } = {}) {
     const kinds = [...new Set(early.map(d => d.유형))];
     rows.push({ key: 'early', nm: '아직 이른 계정', mid: '숫자가 더 쌓이면 진단합니다.', val: `${early.length}개`, when: '', now: 0, unread: 1,
       more: [['say', '조회수만으로는 판단하지 않습니다. 올린 지 하루가 지난 편이 다섯 넘게 쌓이고, 그 조회 합이 300번을 넘으면 진단합니다.'],
-        ...kinds.map(k => { const of = early.filter(d => d.유형 === k); return ['row', k, of.map(d => d.name).join(' · '), `${of.length}개`, '']; }),
+        ...kinds.map(k => { const of = early.filter(d => d.유형 === k); return ['row', k, 이름묶음(of.map(d => d.name)), `${of.length}개`, '', 0]; }),
         ...kinds.map(k => ['do', k, early.find(d => d.유형 === k).처방[0]])] });
   }
-  return { say, then, when: 모은때, scope: `진단 ${judged.length} · 아직 이름 ${early.length}`, rows };
+  return { say, then, when: 모은때, scope: `진단 ${judged.length} · 아직 이른 계정 ${early.length}`, rows };
 }
 
 module.exports = { 진단, 방, 기준, 상태이름, 게시물값, median };

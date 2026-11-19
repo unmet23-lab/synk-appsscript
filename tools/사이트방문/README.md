@@ -44,7 +44,7 @@ node --test tests/사이트방문.test.js
 - 요약(솔리오가 읽음): `%LOCALAPPDATA%\synk\site-visits\summary.json`(바꾸려면 `SYNK_SITE_VISITS_SUMMARY`). 꼴은 `요약.js` 머리 주석에 있다.
 - 장부(git 밖): `<공용 작업본>/.tmp/사이트방문/` — `하루.jsonl`(날마다 숫자 한 줄), `AI재기.jsonl`(회차마다 센 값), `마지막.json`, `돌는중.json`(잠금).
 - AI 답 원문: 비공개 보관함 `PULSE_마케팅_내부검증/AI검색_기준선/정기/<날짜>/<서비스>/<질문>.txt`.
-- 볼 계정: 요약과 같은 폴더의 `viewers.json`, PC 앱이 남기는 `viewer-pending.json`(저장소 밖).
+- 볼 계정: 요약과 같은 폴더의 `viewers.json`, PC 앱이 남기는 `viewer-pending.json`(저장소 밖). 솔리오 「계정 건강」도 같은 `viewers.json`을 읽는다(11-19). 여기에 계정을 넣으면 두 프로그램이 함께 보인다.
 - 구글 열쇠: `~/SYNK_보안/구글_사이트방문_읽기.json`(서비스 계정, 읽기 전용, 값은 출력하지 않는다. 바꾸려면 `SYNK_SITE_VISITS_GOOGLE_KEY`).
 
 ## 안전

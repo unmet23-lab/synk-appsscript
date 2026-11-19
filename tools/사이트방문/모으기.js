@@ -211,7 +211,7 @@ function 보는계정({ 받기 = null, 버리기 = false } = {}, 폴더 = path.d
   }
   console.log('물은 계정(오래된 차례):');
   for (const x of 물음) console.log(`  ${x.asked_at} · 이름 「${x.display_name || '이름 없음'}」 · 번호 ${x.synk_user_id}`);
-  if (받기 == null) { console.log('유호님께 이름과 시각을 보여 유호님 계정이 맞다고 하시면, 그 줄의 번호를 붙여 「보는계정 --받기 <번호>」로 다시 부른다.'); return 0; }
+  if (받기 == null) { console.log('유호님께 이름과 시각을 보여 유호님 계정이 맞다고 하시면, 그 줄의 번호를 붙여 「보는계정 --받기 <번호>」로 다시 부른다. 받은 계정에게는 솔리오의 「방문자 분석」과 「계정 건강」이 함께 보인다.'); return 0; }
   const 고른 = 물음.find((x) => x.synk_user_id === 받기);
   if (!고른) { console.error(`위 목록에 번호 「${String(받기).slice(0, 80)}」인 줄이 없다. 옮기지 않았다. 목록의 번호를 글자 그대로 붙인다.`); return 1; }
   const ids = [...new Set([...목록.synk_user_ids, 고른.synk_user_id])];

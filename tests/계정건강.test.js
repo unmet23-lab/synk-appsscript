@@ -3,7 +3,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { 진단, 방, 상태이름 } = require('../tools/lib/계정건강.js');
-const { 제목 } = require('../tools/계정건강.js');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { 제목, main, 요약자리, 요약판 } = require('../tools/계정건강.js');
 
 const NOW = Date.parse('2026-11-19T00:00:00Z'), DAY = 864e5;
 const day = n => new Date(NOW - n * DAY).toISOString();
@@ -222,4 +225,145 @@ test('편 폴더 이름에서 제목만 남긴다', () => {
   assert.equal(제목('LAB_생신_mn_20261114'), '생신');
   assert.equal(제목('synkbrief_메뉴판정리_20261030'), '메뉴판정리');
   assert.equal(제목(null), null);
+});
+
+/* ── PC 앱 솔리오가 읽는 요약 한 장(--요약쓰기). 꼴은 docs/디자인/솔리오_계정건강_20261119/PC앱_구현설계.md 5절 ── */
+
+/** 장부 두 장이 든 임시 저장소. 판정 줄은 계정 하나의 편 여덟 개다 */
+function 임시저장소(판정줄 = 8) {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-계정건강-'));
+  fs.mkdirSync(path.join(repo, 'docs', '_ops'), { recursive: true });
+  const rows = Array.from({ length: 판정줄 }, (_, i) => ({ kind: '판정', account: 'a-instagram', platform: 'instagram', post: 'p' + i, folder: `synkbrief_편${i}_20261101`, publishedAt: day(3 + i * 2), point: '72h',
+    metrics: { views: 900 + i * 10, likes: 20, comments: 2, shares: 4, saves: 3 } }));
+  fs.writeFileSync(path.join(repo, 'docs', '_ops', '게시성과.jsonl'), rows.map(r => JSON.stringify(r)).join('\n') + (rows.length ? '\n' : ''));
+  fs.mkdirSync(path.join(repo, 'docs', '마케팅'), { recursive: true });
+  fs.writeFileSync(path.join(repo, 'docs', '마케팅', 'sns-계정.json'), JSON.stringify({ accounts: { 'a-instagram': { platform: 'instagram', handle: '@a' } } }));
+  fs.writeFileSync(path.join(repo, 'docs', '_ops', '채널성과.jsonl'), [{ kind: 'account', account: 'a-instagram', date: date(14), followers: 300 }, { kind: 'account', account: 'a-instagram', date: date(0), followers: 320 }].map(r => JSON.stringify(r)).join('\n') + '\n');
+  return repo;
+}
+/** main을 부르는 동안 화면에 찍힌 글을 모은다 */
+function 부르기(argv) {
+  const out = [], log = console.log, err = console.error;
+  console.log = (...a) => out.push(a.join(' ')); console.error = (...a) => out.push(a.join(' '));
+  try { return { code: main(argv), out: out.join('\n') }; } finally { console.log = log; console.error = err; }
+}
+
+test('요약쓰기는 판, 만든 때, 방을 한 장에 쓰고 임시 파일을 남기지 않는다', () => {
+  const repo = 임시저장소(), 자리 = path.join(repo, 'out', 'sns-health', 'summary.json');
+  const r = 부르기(['--요약쓰기', '--저장소', repo, '--자리', 자리, '--지금', new Date(NOW).toISOString()]);
+  assert.equal(r.code, 0, r.out);
+  assert.match(r.out, /요약을 썼습니다/);
+  assert.deepEqual(fs.readdirSync(path.dirname(자리)), ['summary.json']);
+  const s = JSON.parse(fs.readFileSync(자리, 'utf8'));
+  assert.deepEqual(Object.keys(s), ['판', '만든때', '숫자', '방']);
+  assert.equal(s.판, 요약판);
+  assert.equal(s.만든때, new Date(NOW).toISOString());
+  assert.deepEqual(Object.keys(s.방), ['say', 'then', 'scope', 'rows']); // 「모은 때」 글은 앱이 만든다
+  assert.equal(s.방.rows[0].key, 'a-instagram');
+  assert.ok(Array.isArray(s.방.rows[0].more) && s.방.rows[0].more.length > 0);
+  // 저장소 안에는 아무것도 쓰지 않는다
+  assert.deepEqual(fs.readdirSync(path.join(repo, 'docs', '_ops')).sort(), ['게시성과.jsonl', '채널성과.jsonl']);
+});
+
+test('요약쓰기는 장부를 읽지 못하면 앞 요약을 그대로 둔다', () => {
+  const repo = 임시저장소(0), 자리 = path.join(repo, 'out', 'summary.json');
+  fs.mkdirSync(path.dirname(자리)); fs.writeFileSync(자리, '앞 요약');
+  const r = 부르기(['--요약쓰기', '--저장소', repo, '--자리', 자리]);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /판정 줄이 없습니다\. 요약은 그대로 둡니다/);
+  assert.equal(fs.readFileSync(자리, 'utf8'), '앞 요약');
+  // 한 계정만 든 요약도 쓰지 않는다
+  const one = 부르기(['--요약쓰기', '--계정', 'a-instagram', '--저장소', 임시저장소(), '--자리', 자리]);
+  assert.equal(one.code, 2);
+  assert.equal(fs.readFileSync(자리, 'utf8'), '앞 요약');
+});
+
+test('요약의 자리는 PC 앱이 읽는 자리다', () => {
+  assert.equal(요약자리({ LOCALAPPDATA: 'C:\L' }), path.join('C:\L', 'synk', 'sns-health', 'summary.json'));
+  assert.equal(요약자리({ SYNK_SNS_HEALTH_SUMMARY: 'X:\s.json', LOCALAPPDATA: 'C:\L' }), 'X:\s.json');
+});
+
+test('길에서 아무도 하지 않은 단계는 하지 않는다고 말한다', () => {
+  const d = 진단(계정([{ date: date(14), n: 300 }, { date: date(0), n: 300 }], Array.from({ length: 8 }, () => 편(900, 0, 0, 0, 5)), { ownComments: 0 }), NOW);
+  const 글들 = d.세부.길.map(s => s.글).join(' / ');
+  assert.doesNotMatch(글들, /아무도 [^/]*(팔로우합니다|답니다|저장합니다|보냅니다)/, 글들);
+  assert.match(글들, /아직 아무도 [^/]*않습니다/, 글들);
+});
+
+/* ── 11-19 설계 검토 반영: 오래된 팔로워 값, 덜 읽은 장부, 설치된 앱이 읽는 꼴 ── */
+
+test('팔로워를 잰 지 오래됐으면 그 값으로 판정하지 않고 잰 날을 말한다', () => {
+  const posts = Array.from({ length: 8 }, () => 편(900, 4, 2, 3, 20));
+  const fresh = 진단(계정([{ date: date(20), n: 5000 }, { date: date(2), n: 5100 }], posts, { ownComments: 0 }), NOW);
+  assert.notEqual(신호(fresh, '닿음').판정, '모름');
+  assert.notEqual(신호(fresh, '남김').판정, '모름');
+  const old = 진단(계정([{ date: date(30), n: 5000 }, { date: date(12), n: 5100 }], posts, { ownComments: 0 }), NOW);
+  for (const 키 of ['닿음', '남김']) {
+    assert.equal(신호(old, 키).판정, '모름', 키);
+    assert.match(신호(old, 키).글, /^팔로워 수를 \d+월 \d+일에 마지막으로 쟀습니다\. 다시 재면 판정합니다\.$/);
+  }
+  assert.equal(old.팔로워잰때, Date.parse(date(12)));
+});
+
+test('요약쓰기는 덜 읽은 장부로 앞 요약을 덮지 않는다', () => {
+  const 자리 = repo => path.join(repo, 'out', 'summary.json');
+  const 쓰기 = (repo, ...more) => 부르기(['--요약쓰기', '--저장소', repo, '--자리', 자리(repo), '--지금', new Date(NOW).toISOString(), ...more]);
+  // 깨진 줄(합치다 만 자국)
+  const a = 임시저장소();
+  fs.appendFileSync(path.join(a, 'docs', '_ops', '게시성과.jsonl'), '<<<<<<< HEAD\n');
+  const broken = 쓰기(a);
+  assert.equal(broken.code, 1); assert.match(broken.out, /읽지 못한 줄이 있습니다/); assert.equal(fs.existsSync(자리(a)), false);
+  // 팔로워 장부 없음
+  const b = 임시저장소();
+  fs.rmSync(path.join(b, 'docs', '_ops', '채널성과.jsonl'));
+  assert.match(쓰기(b).out, /채널 성과 장부/); assert.equal(fs.existsSync(자리(b)), false);
+  // 계정 목록 없음
+  const d = 임시저장소();
+  fs.rmSync(path.join(d, 'docs', '마케팅', 'sns-계정.json'));
+  assert.match(쓰기(d).out, /계정 목록/);
+  // 계정 줄이 절반 아래로 줄어듦
+  const c = 임시저장소();
+  fs.mkdirSync(path.dirname(자리(c)));
+  const before = JSON.stringify({ 판: 1, 방: { rows: [{}, {}, {}] } });
+  fs.writeFileSync(자리(c), before);
+  const shrunk = 쓰기(c);
+  assert.equal(shrunk.code, 1); assert.match(shrunk.out, /3개에서 1개로 줄었습니다/); assert.equal(fs.readFileSync(자리(c), 'utf8'), before);
+  const forced = 쓰기(c, '--줄어도');
+  assert.equal(forced.code, 0, forced.out);
+  const s = JSON.parse(fs.readFileSync(자리(c), 'utf8'));
+  assert.equal(s.방.rows[0].nm, '인스타그램 @a');
+  // 숫자를 마지막으로 잰 때를 싣는다
+  assert.deepEqual(Object.keys(s), ['판', '만든때', '숫자', '방']);
+  assert.equal(s.숫자.팔로워, date(0));
+  assert.equal(s.숫자.게시, null, '판정 시각이 없는 장부는 모른다고 둔다');
+});
+
+/** 방의 꼴을 이름만 남긴다: 줄 꼴마다 칸 수, 길의 단계 열쇠, 줄과 방의 열쇠 */
+function 꼴(room) {
+  const sig = { 방: Object.keys(room).filter(k => k !== 'when').sort().join(','), 줄: new Set(), 안쪽: new Set(), 단계: new Set() };
+  for (const r of room.rows) {
+    sig.줄.add(Object.keys(r).sort().join(','));
+    for (const m of r.more) { sig.안쪽.add(`${m[0]}/${m.length}`); if (m[0] === 'flow') for (const s of m[1]) sig.단계.add(Object.keys(s).sort().join(',')); }
+  }
+  return sig;
+}
+
+test('방의 꼴은 설치된 앱이 읽는 견본(판 1)에 있는 꼴만 쓴다', () => {
+  // 견본: desktop/tests/fixtures/sns-health-summary-v1.json. 여기에 없는 줄 꼴이나 칸을 엔진이 내면 옛 앱은 그 줄을 말없이 버린다.
+  // 꼴을 더할 때는 옛 앱에서 빠져도 되는 줄인지 보고 견본에 더한다. 있는 꼴의 칸이나 단계 열쇠를 바꿀 때는 요약의 판을 올린다.
+  const 견본 = 꼴(JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'desktop', 'tests', 'fixtures', 'sns-health-summary-v1.json'), 'utf8')).방);
+  const bad = 진단({ ...계정(20000, Array.from({ length: 8 }, () => ({ ...편(300, 0, 0, 0, 6), earlyRetention3sPct: 30, completionRatePct: 4 }))), key: 'bad', name: '큰 계정' }, NOW);
+  const good = 진단({ ...계정([{ date: date(14), n: 150 }, { date: date(0), n: 190 }], Array.from({ length: 8 }, (_, i) => ({ ...편(2000 + i * 400, 30, 20, 20, 100), averageViewPct: 70 }))), key: 'good', name: '작은 계정', ownComments: 0 }, NOW);
+  const early = 진단({ ...계정(10, [편(5)]), key: 'early-1', name: '새 계정' }, NOW);
+  const 지금 = 꼴(방([good, bad, early], { now: NOW }));
+  assert.equal(지금.방, 견본.방);
+  for (const k of ['줄', '안쪽', '단계']) for (const x of 지금[k]) assert.ok(견본[k].has(x), `견본에 없는 ${k} 꼴: ${x}`);
+  for (const x of ['say/2', 'good/3', 'head/2', 'flow/3', 'text/2', 'row/6', 'do/3', 'goal/3', 'note/2']) assert.ok(견본.안쪽.has(x), `견본에 ${x}이 있어야 한다`);
+  assert.ok(지금.안쪽.has('flow/3') && 지금.안쪽.has('row/6') && 지금.안쪽.has('do/3'), [...지금.안쪽].join(' '));
+});
+
+test('아직 이른 계정의 이름이 많으면 열둘만 적고 나머지는 수로 말한다', () => {
+  const many = Array.from({ length: 30 }, (_, i) => 진단({ ...계정(10, [편(5)]), key: 'e' + i, name: '계정' + i }, NOW));
+  const row = 방(many, { now: NOW }).rows.at(-1).more.find(m => m[0] === 'row');
+  assert.match(row[2], /^계정0 · .* · 계정11 외 18개$/);
 });
