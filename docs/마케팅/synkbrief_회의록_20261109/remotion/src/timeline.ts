@@ -5,14 +5,17 @@
 // v10(11-19 07시 회차 · 11-23 칸에 이어서): 최종본 검사가 v9의 같은 판 잘라 키운 컷 경계 아홉(1.42 · 1.92 · 3.46 · 4.42 · 12.58 · 17.04 · 24.71 · 26.08 · 26.83)을
 //   「같은판」으로 잡았다(synkbrief는 고칠 것). 한 영상을 잘라 이어 붙이던 자리를 한 컷으로 잇고, 컷 안에서 카메라가 천천히 옮겨 가게 한다(path — B49와 같은 길).
 //   path = 컷 안 초(t)마다 s · cx · cy, dPath = 컷 안 초마다 내림(d). 옮김은 빠른 당김이 컷으로 잡히지 않게 1초 넘게 걸친다(B53 현장 노트).
+// v11(11-20 07시 회차 · 최종 확인 미흡 11-20 04:10): 28.28~34.08초 폰 화면 컷이 구운 정지 판에 다가가기만 하는 5.8초였고 해설(n4b · 31.16초 끝) 뒤 3초가 비었다.
+//   컷을 해설 끝 + 0.5초(31.66초)에서 끊고 뒤를 모두 2.42초 당긴다(54.48 → 52.06초). 결정 사항에 맞추던 32.08초 「톡」은 정지 판 위라 거둔다.
+//   작은 흠 「3분 전이 작은 회색 글이라 안 읽힘」 — 6.9~7.7초를 큰 글자 「3분 전」으로, 「갔어요?」 위 작은 「3분 전 · 회의 끝」은 그대로.
 export type Crop = { s: number; cx: number; cy: number; ay?: number; path?: { t: number[]; s?: number[]; cx?: number[]; cy?: number[] } };
 export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; d?: number; dPath?: { t: number[]; d: number[] } };
 
 export const S = {
-  ago: 6.84, lid: 22.56, minutes: 28.28, scroll: 29.2, scrollEnd: 31.0, focus: 32.08, minutesEnd: 34.08,
-  reveal: 36.58, v5: 42.98, v6: 49.48,
+  ago: 6.84, lid: 22.56, minutes: 28.28, minutesEnd: 31.66,
+  reveal: 34.16, v5: 40.56, v6: 47.06,
 };
-export const TOTAL_S = 54.48;
+export const TOTAL_S = 52.06;
 
 const FULL: Crop = { s: 1.0, cx: 540, cy: 960 };
 export const CUTS: CutT[] = [
@@ -38,19 +41,20 @@ export const CUTS: CutT[] = [
   // v10: V1 네 토막(22.56 · 24.7 · 26.1 · 26.82)을 한 컷으로 — 「자, 진짜 끝」 뒤 24.6~25.4에 내림을 풀며 넓게(두 폰), 25.6~27.6에 폰을 드는 대리 쪽으로 다가감
   { from: 22.56, to: 28.28, src: 'img/V1.mp4', start: 0.5, crop: { s: 1.1, cx: 540, cy: 1000, path: { t: [0, 2.04, 2.84, 3.04, 5.04, 5.72], s: [1.1, 1.1, 1.0, 1.0, 1.55, 1.6], cx: [540, 540, 540, 540, 350, 330], cy: [1000, 1000, 960, 960, 1045, 1050] } }, audio: 1.15, drift: 0, d: 260, dPath: { t: [2.04, 2.84], d: [260, 0] } },
   // v9(11-10 미학 맹검 v8 04 기각 「코드로 급조한 다크모드 템플릿 · 베젤 · 반사 · 심도 없는 평면 그래픽」): 회의록은 탁자 위 폰 화면까지 장면과 한 장으로 구운 판(GPT 이미지 2.5)에 천천히 다가간다
-  { from: 28.28, to: 34.08, src: 'img/minutes_phone.png', start: 0, crop: { s: 1.12, cx: 520, cy: 760, ay: 900 }, drift: 0.022, d: 0 },
-  { from: 34.08, to: 36.58, src: 'img/V1.mp4', start: 7.4, crop: { s: 1.1, cx: 540, cy: 1000 }, audio: 1.15 },
+  // v11: 해설 끝 + 0.5초에서 끊는다(5.8 → 3.38초)
+  { from: 28.28, to: 31.66, src: 'img/minutes_phone.png', start: 0, crop: { s: 1.12, cx: 520, cy: 760, ay: 900 }, drift: 0.022, d: 0 },
+  { from: 31.66, to: 34.16, src: 'img/V1.mp4', start: 7.4, crop: { s: 1.1, cx: 540, cy: 1000 }, audio: 1.15 },
   // 반전 — 유리 너머 부장이 돌아본다 · 돋보기를 벗고 웃는다 · 일어선다(V7)
-  { from: 36.58, to: 38.98, src: 'img/V7.mp4', start: 1.2, crop: { s: 1.05, cx: 540, cy: 960 }, audio: 0.8 },
+  { from: 34.16, to: 36.56, src: 'img/V7.mp4', start: 1.2, crop: { s: 1.05, cx: 540, cy: 960 }, audio: 0.8 },
   // v8(11-10 미학 맹검 05 기각 「돋보기를 벗는 순간 안경알과 테가 뭉개짐」 V7 4.8~5.2): 벗는 순간을 건너뛴다 — 안경에 손 → (끊고) 벗어 든 채 웃음 → 접고 일어섬
   // v9(11-10 미학 맹검 v8 05 기각 「얼굴 크기 · 각도가 같은 근접 두 컷 점프컷 · 안경이 사라짐」): 근접(안경에 손) → 넓게(손에 든 안경을 접고 일어섬) 한 컷으로
-  { from: 38.98, to: 39.88, src: 'img/V7.mp4', start: 3.6, crop: { s: 1.6, cx: 400, cy: 820 }, audio: 0.8 },
-  { from: 39.88, to: 42.98, src: 'img/V7.mp4', start: 5.9, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.8 },
+  { from: 36.56, to: 37.46, src: 'img/V7.mp4', start: 3.6, crop: { s: 1.6, cx: 400, cy: 820 }, audio: 0.8 },
+  { from: 37.46, to: 40.56, src: 'img/V7.mp4', start: 5.9, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 0.8 },
   // 결 — 부장이 들어와 앉는다 · 끝 줄(뒤로 부장과 빨간 점)
-  { from: 42.98, to: 49.48, src: 'img/V5.mp4', start: 1.4, crop: { s: 1.1, cx: 540, cy: 1000 }, audio: 0.85 },
-  { from: 49.48, to: 52.42, src: 'img/V6.mp4', start: 1.0, crop: { s: 1.05, cx: 480, cy: 1000 }, audio: 0.62 },
+  { from: 40.56, to: 47.06, src: 'img/V5.mp4', start: 1.4, crop: { s: 1.1, cx: 540, cy: 1000 }, audio: 0.85 },
+  { from: 47.06, to: 50.0, src: 'img/V6.mp4', start: 1.0, crop: { s: 1.05, cx: 480, cy: 1000 }, audio: 0.62 },
   // v9: v8의 끝 노트북 근접은 맹검에서 「빈 회색 칸 가짜 화면 · 앞뒤 컷 자리 어긋남」 기각 3이라 거두고 과장 근접으로 되돌림(v7 고쳐서 5)
-  { from: 52.42, to: 54.48, src: 'img/V6.mp4', start: 3.94, crop: { s: 1.22, cx: 470, cy: 960 }, audio: 0.62, drift: 0.008 },
+  { from: 50.0, to: 52.06, src: 'img/V6.mp4', start: 3.94, crop: { s: 1.22, cx: 470, cy: 960 }, audio: 0.62, drift: 0.008 },
 ];
 
 // 큰 글자 = 말. grey = 대리(두 사람 말은 흰 · 회색으로만 가른다). 회의록 화면 위 해설(n4b)은 화면 글과 겹치지 않게 글자를 띄우지 않는다.
@@ -58,7 +62,7 @@ export const LINES: { lines: string[]; from: number; to: number; grey?: boolean;
   // v10: 둘째 줄은 범수가 「전원의」를 말하는 1.35초에(첫 2초 박자 — 컷을 잇고 나서 원본 1.4초 자리의 바뀜이 없어짐)
   { lines: ['회의 끝나고 3분 뒤,', '전원의 폰이 울렸어요'], from: 0, to: 3.4, size: 88, instant: true, at: [0, 1.35] },
   { lines: ['저 둘만', '아직 몰라요'], from: 3.5, to: 6.75, size: 112 },
-  { lines: [], from: 6.9, to: 7.7, meta: '3분 전 · 회의 끝' },
+  { lines: ['3분 전'], from: 6.9, to: 7.7, size: 112, instant: true },
   { lines: ['갔어요?'], from: 7.7, to: 9.1, grey: true, size: 112, meta: '3분 전 · 회의 끝' },
   { lines: ['갔어'], from: 9.15, to: 9.75, size: 112 },
   { lines: ['부장님 오늘 같은 말', '세 번 하신 거 알죠?'], from: 9.78, to: 12.55, grey: true, size: 84 },
@@ -68,15 +72,15 @@ export const LINES: { lines: string[]; from: number; to: number; grey?: boolean;
   { lines: ['이거 부장님한텐', '비밀이에요'], from: 19.42, to: 21.36, grey: true, size: 88 },
   { lines: ['당연하지'], from: 21.52, to: 22.5, size: 112 },
   { lines: ['자, 진짜 끝'], from: 23.22, to: 24.6, size: 112 },
-  { lines: ['왜?'], from: 35.32, to: 36.5, size: 112 },
-  { lines: ['미국에선 실제로, 남아서 한 말이', '이렇게 가서 거래가 깨졌어요'], from: 36.65, to: 39.85, size: 70 },
-  { lines: ['아까 그 얘기,', '다섯 번째로 하지'], from: 43.62, to: 47.82, size: 88 },
-  { lines: ['기록은 켜 두고'], from: 47.87, to: 49.47, size: 96 },
-  { lines: ['회의 끝나면,', 'AI 기록부터 끄세요'], from: 49.92, to: 54.48, size: 92, meta: 'SYNK 브리핑' },
+  { lines: ['왜?'], from: 32.9, to: 34.08, size: 112 },
+  { lines: ['미국에선 실제로, 남아서 한 말이', '이렇게 가서 거래가 깨졌어요'], from: 34.23, to: 37.43, size: 70 },
+  { lines: ['아까 그 얘기,', '다섯 번째로 하지'], from: 41.2, to: 45.4, size: 88 },
+  { lines: ['기록은 켜 두고'], from: 45.45, to: 47.05, size: 96 },
+  { lines: ['회의 끝나면,', 'AI 기록부터 끄세요'], from: 47.5, to: 52.06, size: 92, meta: 'SYNK 브리핑' },
 ];
 
 export const VO: { id: string; t: number }[] = [
-  { id: 'n1', t: 0.05 }, { id: 'n2', t: 3.55 }, { id: 'n3', t: 14.25 }, { id: 'n4b', t: 28.4 }, { id: 'n6', t: 36.65 },
+  { id: 'n1', t: 0.05 }, { id: 'n2', t: 3.55 }, { id: 'n3', t: 14.25 }, { id: 'n4b', t: 28.4 }, { id: 'n6', t: 34.23 },
 ];
 
 export const SOUNDS: { t: number; vol: number; src: string; dur?: number }[] = [
@@ -84,6 +88,5 @@ export const SOUNDS: { t: number; vol: number; src: string; dur?: number }[] = [
   { t: 3.48, src: 'sfx/thud.wav', vol: 0.26 },
   { t: 14.04, src: 'sfx/tok.wav', vol: 0.3 },
   { t: 28.28, src: 'sfx/thud.wav', vol: 0.3 },
-  { t: 32.08, src: 'sfx/tok.wav', vol: 0.4 },
-  { t: 36.58, src: 'sfx/thud.wav', vol: 0.3 },
+  { t: 34.16, src: 'sfx/thud.wav', vol: 0.3 },
 ];
