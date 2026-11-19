@@ -63,6 +63,38 @@ test('invite form parses raw codes and links and enters join only after server i
   assert.equal(moved.state.authMode,'reset');assert.equal(moved.state.authToken,undefined,'a late response cannot enter join after the auth view changes');
 });
 
+test('a PULSE customer invite pasted into the staff entry goes to the customer room; other refusals keep their message',async()=>{
+  const token='synthetic-customer-invite-token-123456',home='https://workspace.example.test/';
+  const refused=()=>Object.assign(new Error('초대가 만료됐거나 이미 사용·취소됐어요.'),{status:403});
+  const staffRefuses=reply=>path=>{if(path==='/api/workspace-invite/inspect')throw refused();if(reply instanceof Error)throw reply;return reply;};
+  for(const code of [token,home+'pulse-app/#invite='+token]){
+    const f=accessFormFixture();f.handle(staffRefuses({version:1,kind:'customer',destination:'/pulse-app/'}));
+    const sent=await f.submit('wa-code',{code});
+    assert.deepEqual(f.calls.map(call=>call.path),['/api/workspace-invite/inspect','/api/invite/inspect']);
+    assert.deepEqual({...f.calls[1].input},{token},'the common lookup receives the token and nothing else');
+    assert.equal(f.context.location.href,home+'pulse-app/#invite='+token,'the invite travels only in the fragment');
+    assert.equal(sent.error.textContent,'');assert.equal(f.state.authMode,'login');assert.equal(f.state.authToken,undefined);
+  }
+  // Neither kind, a forged destination, another kind or a newer contract: stay here and show the staff refusal.
+  for(const reply of [Object.assign(new Error('초대를 확인하지 못했어요.'),{status:403}),{version:1,kind:'customer',destination:'https://elsewhere.example.test/'},{version:1,kind:'customer',destination:'/'},{version:1,kind:'employee',destination:'/'},{version:2,kind:'customer',destination:'/pulse-app/'},null]){
+    const f=accessFormFixture();f.handle(staffRefuses(reply));
+    const kept=await f.submit('wa-code',{code:token});
+    assert.equal(f.calls.length,2);assert.equal(f.context.location.href,home);assert.equal(kept.error.textContent,'초대가 만료됐거나 이미 사용·취소됐어요.');assert.equal(f.state.authMode,'login');
+  }
+  // Only a refusal asks the common lookup. An outage or a rate limit is reported as it is.
+  for(const status of [undefined,429,500,503]){
+    const f=accessFormFixture();f.handle(()=>{throw Object.assign(new Error('잠시 후 다시 시도해 주세요.'),{status});});
+    const down=await f.submit('wa-code',{code:token});
+    assert.equal(f.calls.length,1);assert.equal(f.context.location.href,home);assert.equal(down.error.textContent,'잠시 후 다시 시도해 주세요.');
+  }
+  // The auth view changed while the lookup was pending: do not navigate.
+  const moved=accessFormFixture();let finish;
+  moved.handle(path=>{if(path==='/api/workspace-invite/inspect')throw refused();return new Promise(resolve=>{finish=resolve;});});
+  const pending=moved.submit('wa-code',{code:token});await new Promise(resolve=>setImmediate(resolve));
+  moved.state.authMode='reset';finish({version:1,kind:'customer',destination:'/pulse-app/'});await pending;await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(moved.context.location.href,home);
+});
+
 test('member form submits concurrent roles with a revision and displays assignment warnings',async()=>{
   const f=accessFormFixture({user:{id:'synthetic-admin',role:'admin'}});f.respond({warnings:['기존 고객 업무의 담당자를 다시 지정해 주세요.']});
   const fields=[['waCompany','SHIFT'],['waRole_SHIFT','instructor'],['waCompany','PULSE'],['waRole_PULSE','producer'],['waDuty','social']];

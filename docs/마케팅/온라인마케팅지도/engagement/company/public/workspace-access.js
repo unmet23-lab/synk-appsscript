@@ -188,6 +188,17 @@ function waPaintInvite(){
   host.innerHTML=`<strong>확인된 초대</strong><p>${escape(wa.invite.name)} 님 · ${escape(companySummary)}</p>`;
   const name=form?.querySelector?.('[name="name"]');if(name&&!name.value)name.value=wa.invite.name;
 }
+// 직원 입구에 PULSE 고객 초대를 넣은 손님을 고객 방으로 보낸다.
+// 직원 초대 확인이 거절(403)한 뒤에만 부른다. 공통 초대 조회가 「고객」과 고정 목적지 하나를 답할 때만 옮기고, 그 밖에는 원래 오류를 그대로 보인다.
+// 초대 값은 주소의 # 뒤에만 싣는다(서버 기록과 리퍼러에 남지 않는다). 수락과 세션 생성은 고객 방의 기존 API가 다시 검증한다.
+async function waRouteCustomerInvite(token,still=()=>true){
+  let result;
+  try{result=await api('/api/invite/inspect',{token});}catch{return false;}
+  if(!result||result.version!==1||result.kind!=='customer'||result.destination!=='/pulse-app/'||!still())return false;
+  const target=new URL('/pulse-app/#invite='+encodeURIComponent(token),location.href).href;
+  if(typeof location.assign==='function')location.assign(target);else location.href=target;
+  return true;
+}
 async function waInspectInvite(){
   const token=state.authToken,form=document.getElementById('auth-form');
   if(!token||state.authMode!=='join')return;
@@ -196,7 +207,12 @@ async function waInspectInvite(){
   waPaintInvite();
   const current=()=>request===wa.inviteRequest&&(typeof companyAuthCurrent==='function'?companyAuthCurrent(auth):(state.user?.id||null)===auth.userId)&&state.authMode==='join'&&state.authToken===token&&form?.isConnected!==false;
   try{const result=await api('/api/workspace-invite/inspect',{token});if(!current())return;wa.invite=result;}
-  catch(error){if(error?.code==='SESSION_CHANGED'||!current())return;wa.inviteError=error.message||'초대를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.';}
+  catch(error){
+    if(error?.code==='SESSION_CHANGED'||!current())return;
+    if(error?.status===403&&await waRouteCustomerInvite(token,current))return;
+    if(!current())return;
+    wa.inviteError=error.message||'초대를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.';
+  }
   finally{if(current()){wa.inviteLoading=false;waPaintInvite();}}
 }
 function waWorkCompany(){return state.tab==='path'?'PATH':'SHIFT';}
@@ -313,7 +329,12 @@ document.addEventListener('submit',event=>{
     if(form.dataset.form==='wa-code'){
       let token=values.code.trim();if(token.includes('#')){try{token=new URL(token,location.origin).hash.slice(1);token=new URLSearchParams(token).get('invite')||'';}catch{token='';}}
       if(!/^[A-Za-z0-9_-]{32,200}$/.test(token))throw new Error('받은 초대 코드나 링크를 다시 확인해 주세요.');
-      const request=++wa.inviteRequest,details=await api('/api/workspace-invite/inspect',{token});
+      const request=++wa.inviteRequest;let details;
+      try{details=await api('/api/workspace-invite/inspect',{token});}
+      catch(inspectError){
+        if(inspectError?.status===403&&await waRouteCustomerInvite(token,()=>request===wa.inviteRequest&&ownsModal()&&!state.user&&state.authMode==='login'))return;
+        throw inspectError;
+      }
       if(request!==wa.inviteRequest||!ownsModal()||state.user||state.authMode!=='login')return;
       wa.inviteHandoff={token,details};state.authMode='join';state.authToken=token;renderAuth();
     }else if(form.dataset.form==='wa-member'){

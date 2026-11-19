@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>PULSE 고객 경험 시안</title>
+<style>
+@font-face{font-family:'SUIT Variable';src:url(assets/SUIT.woff2) format('woff2');font-weight:100 900;font-display:swap}
+/* 값은 synk.im 새로 짓기 시안(상세 쪽 4판)에서 잰 그대로다. */
+:root{
+  --ink:#1d1d1f;--paper:#fff;--mist:#F6F4F1;--hair:#E2DED9;--cap:#4a4744;--acc:#F2573F;
+  --sans:'SUIT Variable','SUIT','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --gut:clamp(20px,5vw,72px);--wide:max(var(--gut),calc((100vw - 1240px)/2));
+  --g4:clamp(40px,5vw,72px);--g3:clamp(22px,2.2vw,32px);--g2:clamp(14px,1.4vw,20px);
+  --r-lg:clamp(22px,2.2vw,32px);--r-md:clamp(14px,1.4vw,20px);--r-sm:12px;
+  --pad:clamp(24px,4.4vw,64px);--pad-s:clamp(22px,2.8vw,40px);
+  --shadow:0 26px 52px -34px rgba(40,30,20,.36);
+  --t-claim:400 clamp(36px,5.8vw,84px)/1.12 var(--sans);
+  --t-h2:700 clamp(32px,4.45vw,64px)/1.12 var(--sans);
+  --t-h3:700 clamp(24px,2.5vw,36px)/1.2 var(--sans);
+  --t-h4:700 clamp(18px,1.53vw,22px)/1.35 var(--sans);
+  --t-lead:500 clamp(18px,1.46vw,21px)/1.55 var(--sans);
+  --t-body:500 clamp(16px,1.25vw,18px)/1.6 var(--sans);
+  --t-tag:700 clamp(16px,1.46vw,21px)/1.2 var(--sans);
+  --t-cap:500 clamp(14px,1.11vw,16px)/1.5 var(--sans);
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:120px}
+body{font:var(--t-body);letter-spacing:-.012em;color:var(--ink);background:var(--paper);word-break:keep-all;overflow-wrap:anywhere;overflow-x:hidden}
+button,input,textarea,select{font:inherit;letter-spacing:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+img{display:block;max-width:100%}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:6px}
+
+/* 시안 장면 막대 */
+.bar{position:fixed;inset:0 0 auto 0;height:40px;background:#111;color:#fff;display:flex;align-items:center;gap:20px;padding:0 var(--wide);font:500 13px/1 var(--sans);z-index:60}
+.bar span{white-space:nowrap;color:rgba(255,255,255,.72)}
+.bar div{margin-left:auto;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.bar button{font:600 13px/1 var(--sans);color:rgba(255,255,255,.72);padding:8px 12px;border-radius:999px;white-space:nowrap}
+.bar button[aria-current="true"]{background:#fff;color:#111}
+
+/* 앱 머리 */
+.top{position:sticky;top:40px;min-height:64px;display:flex;align-items:center;gap:var(--g3);padding:0 var(--wide);background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(18px);-webkit-backdrop-filter:saturate(1.4) blur(18px);border-bottom:1px solid var(--hair);z-index:40}
+.logo{font:800 23px/1 var(--sans);letter-spacing:-.03em;white-space:nowrap}
+.logo i{font:700 13px/1 var(--sans);font-style:normal;letter-spacing:.06em;color:var(--acc);margin-left:7px}
+.proj{font:600 16px/1.3 var(--sans);white-space:nowrap}
+.steps{display:flex;gap:18px;list-style:none;margin-left:auto;font:500 15px/1 var(--sans);color:var(--cap)}
+.steps li{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.steps .ok::before{content:"✓";font-weight:700;color:var(--ink)}
+.steps .ok{color:var(--ink)}
+.steps .now{color:var(--ink);font-weight:800}
+.steps .now::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--acc)}
+.talk{font:600 15px/1 var(--sans);padding:10px 16px;border:1px solid var(--hair);border-radius:999px;white-space:nowrap}
+.talk b{color:var(--acc)}
+.stat{font:600 15px/1.3 var(--sans);color:var(--cap)}
+.stat b{color:var(--ink)}
+
+.scene{display:none;padding:40px 0 clamp(72px,9vw,128px)}
+.scene.on{display:block}
+
+/* 큰 말 */
+.say{padding:clamp(40px,4.6vw,68px) var(--wide) clamp(28px,2.8vw,40px)}
+.say.mid{text-align:center}
+.say.duo{display:grid;grid-template-columns:1fr auto;align-items:end;gap:var(--g4)}
+.say.flat{padding-inline:0}
+.split{display:grid;grid-template-columns:1fr auto;gap:var(--g4);align-items:start;padding:0 var(--wide)}
+.split .panel{margin:clamp(40px,4.6vw,68px) 0 0}
+.tag{font:var(--t-tag)}
+.claim{font:var(--t-claim);letter-spacing:-.045em;margin-top:var(--g2);text-wrap:balance}
+.claim b{font-weight:400;transition:font-weight .7s var(--ease) .3s,color .7s var(--ease) .3s}
+.on.in .claim b{font-weight:700}
+.on.in .claim b.acc{color:var(--acc)}
+.lead{font:var(--t-lead);margin-top:var(--g3);max-width:36em}
+.say.mid .lead{margin-inline:auto}
+
+/* 들어올 때 한 번 */
+.rv{opacity:0;transform:translateY(14px)}
+.on.in .rv{opacity:1;transform:none;transition:opacity .5s var(--ease),transform .6s var(--ease);transition-delay:calc(var(--i,0)*80ms)}
+
+.panel{margin:0 var(--wide);background:var(--mist);border-radius:var(--r-lg);padding:var(--pad)}
+.panel.tight{padding:var(--pad-s)}
+.pill{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 24px;border-radius:999px;background:var(--ink);color:#fff;font:700 16px/1 var(--sans);white-space:nowrap;transition:transform .14s var(--ease)}
+.pill:active{transform:scale(.97)}
+.pill.line{background:none;color:var(--ink);border:1px solid var(--ink)}
+.quiet{font:600 16px/1 var(--sans);padding:14px 4px;border-bottom:1px solid var(--ink)}
+.fine{font:var(--t-cap);color:var(--cap)}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:var(--g3)}
+
+/* 1 입장 */
+.gate{max-width:680px;margin:var(--g4) auto 0;display:flex;gap:12px;padding:0 var(--gut)}
+.gate input{flex:1;min-width:0;height:64px;border:1px solid var(--ink);border-radius:999px;padding:0 28px;font:600 18px/1 var(--sans);background:#fff}
+.gate input::placeholder{color:#8b8783;font-weight:500}
+.gate .pill{height:64px;padding:0 30px;font-size:17px}
+.gate-msg{min-height:26px;margin-top:14px;text-align:center;font:600 16px/1.5 var(--sans);color:var(--acc)}
+.three{display:grid;grid-template-columns:repeat(3,1fr);margin:var(--g4) var(--wide) 0;border-top:1px solid var(--hair)}
+.three div{padding:var(--g3) var(--g3) 0 0}
+.three b{display:block;font:var(--t-h3);letter-spacing:-.03em}
+.three span{display:block;margin-top:8px;font:var(--t-cap)}
+.door{position:fixed;inset:0;background:var(--ink);z-index:80;transform:translateY(100%);pointer-events:none;visibility:hidden}
+.door.go{visibility:visible;animation:door 1s var(--ease) both}
+@keyframes door{0%{transform:translateY(100%)}45%,55%{transform:none}100%{transform:translateY(-100%)}}
+
+/* 2 방 · 저희 차례 */
+.today{display:grid;grid-template-columns:1fr auto;gap:var(--g4);align-items:center}
+.mini{font:700 15px/1.3 var(--sans);color:var(--cap)}
+.word{font:600 clamp(20px,1.8vw,26px)/1.45 var(--sans);letter-spacing:-.02em;margin-top:12px;max-width:24em}
+.who{margin-top:12px;font:var(--t-cap);color:var(--cap)}
+.ruler{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;max-width:520px;margin-top:var(--g3)}
+.ruler i{height:6px;border-radius:3px;background:#d9d4cd}
+.ruler i.d{background:var(--ink)}
+.ruler i.n{background:var(--acc)}
+.ruler-t{margin-top:10px;font:var(--t-cap)}
+.cuts{display:flex;gap:clamp(8px,1vw,14px)}
+.cut{width:clamp(112px,14.4vw,208px)}
+.cut .fr{display:block;position:relative;width:100%;aspect-ratio:9/16;border-radius:var(--r-sm);overflow:hidden;background:#fff}
+.cut img{width:100%;height:100%;object-fit:cover}
+.cut .wip{display:grid;place-items:center}
+.wip b{font:300 clamp(40px,4.8vw,70px)/1 var(--sans);letter-spacing:-.04em;color:#c9c4bd}
+.wip::after{content:"";position:absolute;left:14px;right:14px;bottom:14px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--acc) 40%,#e9e4dd 40%)}
+.today .note{grid-column:1/-1;padding-top:var(--g2);border-top:1px solid #e3ded7}
+.cut figcaption{margin-top:10px;font:600 14px/1.3 var(--sans)}
+.cut.now figcaption{font-weight:800}
+.zoom{position:absolute;right:8px;bottom:8px;font:700 12px/1 var(--sans);background:rgba(255,255,255,.94);border-radius:999px;padding:6px 10px}
+.chip{position:absolute;left:8px;top:8px;font:700 12px/1 var(--sans);background:var(--acc);color:#fff;border-radius:999px;padding:6px 10px}
+.on.in .cut{animation:drop .55s var(--ease) both;animation-delay:calc(var(--n)*90ms + .35s)}
+@keyframes drop{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
+.zoomer{position:fixed;inset:0;z-index:90;background:rgba(17,17,17,.86);display:grid;place-items:center;cursor:zoom-out}
+.zoomer img{max-height:88vh;max-width:92vw;border-radius:var(--r-md)}
+.due{text-align:right;white-space:nowrap}
+.vnum{font:600 clamp(64px,8.2vw,118px)/.9 var(--sans);letter-spacing:-.05em}
+.vnum small{font:500 .34em/1 var(--sans);letter-spacing:-.02em;margin-left:.12em}
+.due{padding-bottom:6px}
+.due p{margin-top:12px;font:var(--t-h4)}
+.due span{display:block;margin-top:4px;font:var(--t-cap);color:var(--cap)}
+
+.sec{padding:var(--g4) var(--wide) 0}
+.sec h2{font:var(--t-h3);letter-spacing:-.03em}
+.log{list-style:none;margin-top:var(--g3);border-top:1px solid var(--hair)}
+.log li{display:grid;grid-template-columns:8.5em 1fr auto;gap:var(--g3);align-items:center;padding:20px 0;border-bottom:1px solid var(--hair)}
+.log time{font:600 16px/1.4 var(--sans);color:var(--cap)}
+.log b{font:var(--t-h4)}
+.log p{font:var(--t-cap);margin-top:2px}
+.log .th{display:flex;gap:6px}
+.log .th button{width:48px;height:85px;border-radius:8px;overflow:hidden}
+.log .th img{width:100%;height:100%;object-fit:cover}
+.hear{font:700 15px/1 var(--sans);height:40px;padding:0 16px;border:1px solid var(--hair);border-radius:999px;white-space:nowrap}
+.chat{list-style:none;margin-top:var(--g3);border-top:1px solid var(--hair)}
+.chat li{display:grid;grid-template-columns:8.5em 1fr;gap:var(--g3);align-items:start;padding:18px 0;border-bottom:1px solid var(--hair)}
+.chat span{font:500 15px/1.5 var(--sans);color:var(--cap)}
+.chat span b{display:block;font-weight:700;color:var(--ink)}
+.chat .me p{font-weight:700}
+.ask{display:flex;gap:12px;margin-top:var(--g3)}
+.ask input{flex:1;min-width:0;height:56px;border:1px solid var(--hair);border-radius:999px;padding:0 24px;background:#fff}
+.ask input::placeholder{color:#8b8783}
+
+/* 3 방 · 내 차례 */
+.player .fr,.player .rail,.player .rail-t,.player .ctl{width:clamp(240px,22.5vw,320px)}
+.player .fr{position:relative;aspect-ratio:9/16;border-radius:var(--r-md);overflow:hidden;background:#000;box-shadow:var(--shadow)}
+.player img{width:100%;height:100%;object-fit:cover}
+.player .play{position:absolute;left:50%;top:50%;translate:-50% -50%;width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;font-size:20px;padding-left:4px}
+.rail{position:relative;height:4px;border-radius:2px;background:#d9d4cd;margin-top:16px}
+.rail i{position:absolute;left:0;top:0;height:100%;width:54%;border-radius:2px;background:var(--ink)}
+.rail u{position:absolute;top:-4px;width:12px;height:12px;border-radius:50%;background:var(--ink);border:2px solid var(--mist);translate:-50% 0}
+.rail-t{display:flex;justify-content:space-between;margin-top:8px;font:600 14px/1 var(--sans);color:var(--cap)}
+.ctl{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.ctl button{font:600 13px/1 var(--sans);padding:9px 11px;border-radius:999px;background:#fff}
+.notes ol{list-style:none}
+.notes li{display:grid;grid-template-columns:4em 1fr auto;gap:12px;padding:18px 22px;background:var(--mist);border-radius:var(--r-md);margin-bottom:10px}
+.notes li b{font:700 16px/1.6 var(--sans)}
+.notes .ed{display:flex;gap:14px}
+.notes li button{font:600 14px/1.6 var(--sans);color:var(--cap);text-decoration:underline;text-underline-offset:3px}
+.add{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-top:4px;border:1px solid var(--ink);border-radius:var(--r-md);padding:10px 10px 10px 18px}
+.add .at{font:700 15px/1 var(--sans);background:var(--ink);color:#fff;border-radius:999px;padding:8px 12px}
+.add .pill{height:44px;padding:0 18px;font-size:15px}
+.notes textarea{width:100%;height:56px;border:0;padding:6px 4px;background:none;resize:none;outline:none}
+.notes textarea::placeholder{color:#8b8783}
+.notes .acts{margin-top:var(--g3)}
+
+/* 4 납품과 이어가기 */
+.deliver{display:grid;grid-template-columns:auto 1fr;gap:var(--pad);align-items:center}
+.deliver .fr{width:clamp(180px,17vw,236px);aspect-ratio:9/16;border-radius:var(--r-md);overflow:hidden;box-shadow:var(--shadow)}
+.deliver .fr img{width:100%;height:100%;object-fit:cover}
+.files{list-style:none}
+.files li{display:grid;grid-template-columns:1fr auto;gap:var(--g3);align-items:center;padding:18px 24px;background:#fff;border-radius:var(--r-md);margin-bottom:10px}
+.files b{font:var(--t-h4)}
+.files span{display:block;font:var(--t-cap);color:var(--cap)}
+.files button{font:700 16px/1 var(--sans);border-bottom:1px solid var(--ink);padding:6px 0}
+.deliver .acts{margin-top:var(--g3)}
+.next{padding:clamp(72px,9vw,128px) var(--wide) 0;text-align:center}
+.next h2{font:var(--t-h2);letter-spacing:-.04em;margin-top:var(--g2);text-wrap:balance}
+.next h2 span{font-weight:400}
+.ways{list-style:none;text-align:left;margin:var(--g4) var(--wide) 0;border-top:1px solid var(--ink)}
+.ways li{border-bottom:1px solid var(--hair)}
+.ways button{display:grid;grid-template-columns:3em 1fr auto;gap:var(--g3);align-items:center;width:100%;text-align:left;padding:clamp(22px,2.6vw,34px) 0}
+.ways em{font:600 16px/1 var(--sans);font-style:normal;color:var(--cap)}
+.ways b{font:var(--t-h3);letter-spacing:-.03em;font-weight:500;transition:font-weight .3s var(--ease)}
+.ways p{font:var(--t-body);margin-top:4px}
+.ways i{font-style:normal;width:48px;height:48px;border-radius:50%;border:1px solid var(--hair);display:grid;place-items:center;transition:transform .3s var(--ease),background .3s,color .3s}
+@media (hover:hover){.ways button:hover b{font-weight:800}.ways button:hover i{transform:translateX(6px);background:var(--ink);color:#fff}}
+.foot{margin:var(--g3) var(--wide) 0}
+
+/* 5 인플루언서 */
+.market{display:grid;grid-template-columns:7fr 5fr;gap:var(--g4);padding:0 var(--wide);align-items:start}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{height:40px;padding:0 16px;border:1px solid var(--hair);border-radius:999px;font:600 15px/1 var(--sans)}
+.chips button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chips{align-items:center}
+.eg{flex-basis:100%;font:600 14px/1.4 var(--sans);color:var(--cap)}
+.people{list-style:none;margin-top:var(--g3);border-top:1px solid var(--ink)}
+.people li{display:grid;grid-template-columns:56px 1fr auto auto;gap:var(--g2) var(--g3);align-items:center;padding:22px 0;border-bottom:1px solid var(--hair)}
+.reel{display:flex;gap:6px}
+.reel i{width:42px;aspect-ratio:9/16;border-radius:8px;background:var(--mist);display:grid;place-items:center;font:normal 10px/1 var(--sans);color:#b3aea7}
+.reel i::before{content:"▶"}
+.people li[hidden]{display:none}
+.face{width:56px;height:56px;border-radius:50%;background:var(--mist);display:grid;place-items:center;font:800 20px/1 var(--sans)}
+.people b{font:var(--t-h4)}
+.people .what{font:var(--t-cap);color:var(--cap)}
+.people .nums{font:600 16px/1.5 var(--sans);margin-top:6px}
+.people .inc{font:var(--t-cap);margin-top:2px}
+.people .pay{text-align:right;min-width:96px}
+.people .pay strong{display:block;font:700 22px/1.2 var(--sans);letter-spacing:-.02em}
+.people .pick{margin-top:10px;height:40px;padding:0 18px;border-radius:999px;border:1px solid var(--ink);font:700 15px/1 var(--sans)}
+.people li.on .pick{background:var(--ink);color:#fff}
+.people li.on .face{background:var(--ink);color:#fff}
+.sheet{position:sticky;top:128px;background:var(--mist);border-radius:var(--r-lg);padding:var(--pad-s)}
+.sheet h3{font:var(--t-h3);letter-spacing:-.03em}
+.sheet dl{margin-top:var(--g3)}
+.sheet dt{font:700 15px/1.3 var(--sans);color:var(--cap);margin-top:18px}
+.sheet dd{margin-top:8px;font:600 17px/1.5 var(--sans)}
+.sheet .film{display:flex;gap:14px;align-items:center}
+.sheet .film img{width:40px;height:71px;object-fit:cover;border-radius:8px}
+.sheet .seg{display:flex;flex-wrap:wrap;gap:6px}
+.sheet .seg button{height:38px;padding:0 14px;border-radius:999px;background:#fff;font:600 15px/1 var(--sans)}
+.sheet .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.lines{list-style:none;margin-top:var(--g3);padding-top:var(--g2);border-top:1px solid #d9d4cd;font:600 16px/1.5 var(--sans)}
+.lines li{display:flex;justify-content:space-between;gap:12px;padding:4px 0}
+.lines li span:last-child{white-space:nowrap}
+.lines:not([hidden])+.sum{margin-top:var(--g2);padding-top:var(--g2);border-top-color:var(--ink)}
+.sum{display:flex;justify-content:space-between;align-items:baseline;margin-top:var(--g3);padding-top:var(--g3);border-top:1px solid #d9d4cd}
+.sum strong{font:700 clamp(26px,2.6vw,36px)/1 var(--sans);letter-spacing:-.03em}
+.sheet .pill{width:100%;justify-content:center;margin-top:var(--g2)}
+.sheet .pill[disabled]{opacity:.35;cursor:default}
+.sheet .fine{margin-top:14px}
+.track{list-style:none;display:flex;gap:6px;margin-top:var(--g3);font:600 14px/1.3 var(--sans);color:var(--cap)}
+.track li{flex:1;padding-top:10px;border-top:3px solid #d9d4cd}
+.track li.at{color:var(--ink);border-color:var(--acc)}
+
+/* 6 담당자 */
+.desk{display:grid;grid-template-columns:5fr 7fr;gap:var(--g4);padding:0 var(--wide);align-items:start}
+.queue{list-style:none;border-top:1px solid var(--ink)}
+.queue li{border-bottom:1px solid var(--hair)}
+.queue button{display:grid;grid-template-columns:1fr auto;gap:6px var(--g3);width:100%;text-align:left;padding:20px 0}
+.queue .st{font:700 14px/1 var(--sans);display:flex;align-items:center;gap:8px}
+.queue .st::before{content:"";width:8px;height:8px;border-radius:50%;background:#c9c4bd}
+.queue .hot .st::before{background:var(--acc)}
+.queue b{font:var(--t-h4);grid-column:1}
+.queue p{font:var(--t-cap);grid-column:1}
+.queue time{grid-row:1/4;grid-column:2;align-self:center;font:600 15px/1 var(--sans);color:var(--cap);white-space:nowrap}
+.queue li[aria-current="true"] b{font-weight:800}
+.queue li[aria-current="true"]{box-shadow:inset 3px 0 0 var(--ink)}
+.queue li[aria-current="true"] button{padding-left:18px}
+.say.tool{padding-bottom:var(--g3)}
+.say.tool h1{font:500 clamp(30px,3.4vw,48px)/1.2 var(--sans);letter-spacing:-.04em;margin-top:10px}
+.say.tool h1 b{font-weight:800}
+.say.tool .lead{margin-top:10px}
+.seg.mode{display:inline-flex;gap:4px;padding:4px;background:#fff;border-radius:999px}
+.seg.mode button{height:38px;padding:0 16px;border-radius:999px;font:700 15px/1 var(--sans)}
+.seg.mode button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg.mode b{color:var(--acc);margin-left:3px}
+.compose h3{font:var(--t-h3);letter-spacing:-.03em;margin-top:var(--g3)}
+.compose label{display:block;font:700 15px/1.3 var(--sans);color:var(--cap);margin-top:var(--g3)}
+.shots{display:flex;gap:14px;margin-top:10px}
+.shots .sel{position:relative;display:block;width:clamp(84px,7.2vw,104px);aspect-ratio:9/16;border-radius:var(--r-sm);overflow:hidden}
+.shots img{width:100%;height:100%;object-fit:cover}
+.shots .sel[aria-pressed="true"]{box-shadow:0 0 0 2px var(--mist),0 0 0 4px var(--ink)}
+.shots figcaption{display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:10px;font:600 13px/1.4 var(--sans)}
+.shots figcaption button{font:inherit;color:var(--cap);text-decoration:underline;text-underline-offset:3px}
+.shots .sel[aria-pressed="true"]::after{content:"✓";position:absolute;right:6px;top:6px;width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font:700 13px/22px var(--sans);text-align:center}
+.compose textarea,.compose select{width:100%;margin-top:10px;border:0;border-radius:var(--r-md);padding:16px 20px;background:#fff}
+.compose textarea{height:92px;resize:none}
+.compose select{height:56px;appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%231d1d1f' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 20px center}
+.compose .acts{margin-top:var(--g3)}
+.compose .fine{margin-top:var(--g2)}
+
+.sent{font:700 16px/1.5 var(--sans);color:var(--ink)}
+.sent::before{content:"✓ "}
+
+@media (max-width:1100px){
+  .steps li:not(.now){display:none}
+  .market,.desk{grid-template-columns:1fr}
+  .sheet{position:static}
+}
+@media (max-width:820px){
+  .bar span{display:none}
+  .top .talk,.top .stat{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .seg.mode{display:flex;flex-wrap:wrap;border-radius:var(--r-md)}
+  .queue button{grid-template-columns:1fr}
+  .queue time{grid-row:auto;grid-column:1}
+  .bar div{margin-left:0}
+  .proj{display:none}
+  .top{gap:14px}
+  .today{grid-template-columns:1fr}
+  .cuts .cut{flex:1;width:auto}
+  .add{grid-template-columns:auto 1fr}
+  .add .pill{grid-column:1/-1}
+  .notes li{grid-template-columns:4em 1fr}
+  .notes .ed{grid-column:2}
+  .chat li{grid-template-columns:1fr;gap:6px}
+  .chat span b{display:inline;margin-right:8px}
+  .say.duo,.split,.deliver{grid-template-columns:1fr}
+  .due{text-align:left}
+  .split .panel{margin-top:0}
+  .player .fr,.player .rail,.player .rail-t,.player .ctl,.deliver .fr{margin-inline:auto}
+  .three{grid-template-columns:1fr}
+  .gate{flex-direction:column}
+  .log li{grid-template-columns:1fr auto}
+  .log time{grid-column:1/-1}
+  .people li{grid-template-columns:48px 1fr}
+  .reel{grid-column:2}
+  .face{width:48px;height:48px}
+  .people .pay{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;text-align:left}
+  .people .pick{margin-top:0}
+  .ways button{grid-template-columns:1fr auto}
+  .ways em{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .rv{opacity:1;transform:none}
+  .claim b{font-weight:700;transition:none}.claim b.acc{color:var(--acc)}
+  .on.in .cut,.door.go{animation:none}
+}
+html.still .rv{opacity:1;transform:none;transition:none!important}
+html.still .claim b{font-weight:700;transition:none}html.still .claim b.acc{color:var(--acc)}
+html.still .on.in .cut{animation:none}
+html.bare .bar{display:none}
+html.bare .scene{padding-top:0}
+html.bare .top{top:0}
+</style>
+</head>
+<body>
+
+<div class="bar" role="navigation" aria-label="시안 장면">
+  <span><b>PULSE 고객 경험 시안</b> · 11월 20일 · 공개본 아님 · 가상 브랜드 예시</span>
+  <div id="tabs">
+    <button data-go="enter">입장</button>
+    <button data-go="wait">방 · 저희 차례</button>
+    <button data-go="turn">방 · 내 차례</button>
+    <button data-go="deliver">납품과 이어가기</button>
+    <button data-go="people">인플루언서 의뢰</button>
+    <button data-go="desk">담당자 화면</button>
+  </div>
+</div>
+
+<!-- 1 입장 -->
+<section class="scene" id="enter">
+  <header class="top"><span class="logo">synk<i>PULSE</i></span></header>
+  <div class="say mid">
+    <p class="tag rv">초대받으셨나요</p>
+    <h1 class="claim rv" style="--i:1">코드 한 줄이면<br><b class="acc">방이 열려요.</b></h1>
+    <p class="lead rv" style="--i:2">가입도 비밀번호도 없어요. 내 광고의 자료와 대화만 보여요.</p>
+  </div>
+  <form class="gate rv" style="--i:3" id="gate" novalidate>
+    <input id="code" autocomplete="off" spellcheck="false" aria-label="초대 코드나 링크" placeholder="받은 초대 코드나 링크를 붙여 넣으세요">
+    <button class="pill" type="submit">방 열기 <span aria-hidden="true">→</span></button>
+  </form>
+  <p class="gate-msg" id="gate-msg" role="alert"></p>
+  <div class="three">
+    <div class="rv" style="--i:4"><b>한 방</b><span>작업 보고와 대화, 완성 파일이 한곳에 모여요.</span></div>
+    <div class="rv" style="--i:5"><b>세 번</b><span>영상을 만들기 전에 방향, 글 콘티, 장면을 확인해요.</span></div>
+    <div class="rv" style="--i:6"><b>날짜 하나</b><span>받으실 날을 먼저 정하고, 바뀌면 바로 알려 드려요.</span></div>
+  </div>
+</section>
+
+<!-- 2 방 · 저희 차례 -->
+<section class="scene" id="wait">
+  <header class="top">
+    <span class="logo">synk<i>PULSE</i></span>
+    <span class="proj">첨벙댕 반려견 구명조끼 · 30초</span>
+    <ol class="steps"><li class="ok">의뢰</li><li class="ok">방향</li><li class="ok">장면</li><li class="now">제작</li><li>영상</li><li>납품</li></ol>
+    <button class="talk" data-scroll="talk">나눈 말 <b>2</b></button>
+  </header>
+  <div class="say duo">
+    <div>
+      <p class="tag rv">저희 차례 · 제작</p>
+      <h1 class="claim rv" style="--i:1"><b class="acc">컷 06</b>을 만들고 있어요.</h1>
+      <p class="lead rv" style="--i:2">확인하신 열 컷 가운데 다섯이 끝났어요. 오늘 나온 컷을 아래에 걸어 두었어요.</p>
+    </div>
+    <div class="due rv" style="--i:2">
+      <div class="vnum">3<small>일 뒤</small></div>
+      <p>11월 23일 월요일에 받으세요</p>
+      <span>수정 2회 가운데 2회 남음</span>
+    </div>
+  </div>
+  <div class="panel tight today rv" style="--i:3">
+    <div>
+      <p class="mini">오늘 나온 컷 · 김하늘 PD · 오후 2시 10분</p>
+      <p class="word">조끼를 입히는 컷은 버클을 채우는 손이 또렷이 보이게 한 번 더 만들었어요. 내일은 고글을 쓰는 컷으로 넘어가요.</p>
+      <div class="ruler" role="img" aria-label="열 컷 가운데 다섯 컷 완성, 여섯째 컷을 만드는 중"><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="n"></i><i></i><i></i><i></i><i></i></div>
+      <p class="ruler-t"><b>열 컷 가운데 다섯 컷 완성</b> · 여섯째 컷을 만드는 중</p>
+    </div>
+    <div class="cuts">
+      <figure class="cut" style="--n:0"><button class="fr" data-zoom="assets/c04.webp" aria-label="컷 04 크게 보기"><img src="assets/c04.webp" alt="컷 04 상자를 여는 장면"><span class="zoom">크게</span></button><figcaption>04 · 오늘 완성</figcaption></figure>
+      <figure class="cut" style="--n:1"><button class="fr" data-zoom="assets/c05.webp" aria-label="컷 05 크게 보기"><img src="assets/c05.webp" alt="컷 05 조끼를 입히는 장면"><span class="zoom">크게</span></button><figcaption>05 · 오늘 완성</figcaption></figure>
+      <figure class="cut now" style="--n:2"><div class="fr wip" role="img" aria-label="컷 06은 만드는 중"><b aria-hidden="true">06</b></div><figcaption>06 · 만드는 중</figcaption></figure>
+    </div>
+    <p class="fine note">작업 중인 화면이라 완성본과 다를 수 있어요. 고칠 곳은 영상이 오면 컷마다 남기실 수 있어요.</p>
+  </div>
+  <div class="sec">
+    <h2 class="rv">지난 보고</h2>
+    <ul class="log">
+      <li class="rv" style="--i:1"><time>11월 19일</time><div><b>컷 01 ~ 03이 나왔어요</b><p>발자국 컷은 처음 계획보다 조금 길게 잡았어요.</p></div><div class="th"><button data-zoom="assets/c01.webp" aria-label="컷 01 크게 보기"><img src="assets/c01.webp" alt=""></button><button data-zoom="assets/c02.webp" aria-label="컷 02 크게 보기"><img src="assets/c02.webp" alt=""></button><button data-zoom="assets/c03.webp" aria-label="컷 03 크게 보기"><img src="assets/c03.webp" alt=""></button></div></li>
+      <li class="rv" style="--i:2"><time>11월 18일</time><div><b>목소리와 음악을 먼저 만들었어요</b><p>컷은 이 박자에 맞춰요. 파도 소리로 시작해요.</p></div><button class="hear">▶ 들어 보기</button></li>
+      <li class="rv" style="--i:3"><time>11월 17일</time><div><b>결제를 확인했어요</b><p>받으실 날을 11월 23일로 정했어요.</p></div><span></span></li>
+    </ul>
+  </div>
+  <div class="sec" id="talk">
+    <h2 class="rv">나눈 말</h2>
+    <ul class="chat">
+      <li class="me rv" style="--i:1"><span><b>나</b>어제 오후 4시 2분</span><p>자막 없는 판도 같이 받을 수 있나요?</p></li>
+      <li class="rv" style="--i:2"><span><b>김하늘 PD</b>어제 오후 4시 40분</span><p>네. 자막 있는 판과 없는 판을 함께 드려요.</p></li>
+    </ul>
+    <form class="ask rv" style="--i:3" onsubmit="return false"><input aria-label="담당자에게 묻기" placeholder="담당자에게 물어보세요"><button class="pill line" type="submit">보내기</button></form>
+    <p class="fine rv" style="--i:4;margin-top:12px">평일 10시부터 19시 사이에는 2시간 안에 답해요.</p>
+  </div>
+</section>
+
+<!-- 3 방 · 내 차례 -->
+<section class="scene" id="turn">
+  <header class="top">
+    <span class="logo">synk<i>PULSE</i></span>
+    <span class="proj">첨벙댕 반려견 구명조끼 · 30초</span>
+    <ol class="steps"><li class="ok">의뢰</li><li class="ok">방향</li><li class="ok">장면</li><li class="ok">제작</li><li class="now">영상</li><li>납품</li></ol>
+    <button class="talk">나눈 말 <b>1</b></button>
+  </header>
+  <div class="split">
+    <div>
+      <div class="say flat">
+        <p class="tag rv">내 차례 · 영상 확인</p>
+        <h1 class="claim rv" style="--i:1">첫 영상이 왔어요.<br><b class="acc">고칠 곳만</b> 짚어 주세요.</h1>
+      </div>
+      <div class="notes rv" style="--i:2">
+        <ol>
+          <li><b>0:06</b><span>조끼 색이 실제 제품보다 조금 연해 보여요.</span><span class="ed"><button>바꾸기</button><button>지우기</button></span></li>
+          <li><b>0:11</b><span>제품 이름이 반 박자 일찍 떠도 좋겠어요.</span><span class="ed"><button>바꾸기</button><button>지우기</button></span></li>
+        </ol>
+        <div class="add">
+          <span class="at">0:16</span>
+          <textarea aria-label="0:16에 남길 의견" placeholder="지금 멈춘 0:16에 남길 의견을 적어 주세요"></textarea>
+          <button class="pill line">의견 더하기</button>
+        </div>
+        <div class="acts">
+          <button class="pill">의견 2개 한 번에 보내기 <span aria-hidden="true">→</span></button>
+          <button class="pill line">고칠 곳 없이 승인하기</button>
+        </div>
+        <p class="fine" style="margin-top:14px">보내시면 수정 2회 가운데 첫 번째로 세요. 여러 분이 보신다면 모아서 한 번에 보내 주세요.</p>
+      </div>
+    </div>
+    <div class="panel tight player rv" style="--i:2">
+      <div class="fr"><img src="assets/c10.webp" alt="첫 영상의 0:16 장면"><button class="play" aria-label="재생">▶</button></div>
+      <div class="rail"><i></i><u style="left:20%"></u><u style="left:37%"></u></div>
+      <div class="rail-t"><span>0:16</span><span>0:30</span></div>
+      <div class="ctl"><button>◀ 5초</button><button>5초 ▶</button><button>소리 켬</button><button>전체 화면</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 납품과 이어가기 -->
+<section class="scene" id="deliver">
+  <header class="top">
+    <span class="logo">synk<i>PULSE</i></span>
+    <span class="proj">첨벙댕 반려견 구명조끼 · 30초</span>
+    <ol class="steps"><li class="ok">의뢰</li><li class="ok">방향</li><li class="ok">장면</li><li class="ok">제작</li><li class="ok">영상</li><li class="ok">납품</li></ol>
+    <button class="talk">나눈 말</button>
+  </header>
+  <div class="say">
+    <p class="tag rv">완성 · 11월 23일</p>
+    <h1 class="claim rv" style="--i:1">완성본이 <b class="acc">도착했어요.</b></h1>
+  </div>
+  <div class="panel rv" style="--i:2">
+    <div class="deliver">
+      <div class="fr"><img src="assets/c09.webp" alt="완성본의 한 장면"></div>
+      <div>
+        <ul class="files">
+          <li><div><b>30초 본편</b><span>자막 있는 판과 없는 판 · 릴스 · 쇼츠 · 틱톡에 그대로 올려요</span></div><button>받기</button></li>
+          <li><div><b>15초 · 6초 편집본</b><span>같은 영상을 채널마다 나눠 써요</span></div><button>받기</button></li>
+          <li><div><b>확정한 글 콘티와 장면 이미지</b><span>다음 편을 같은 모습으로 잇는 기준이에요 · PDF</span></div><button>받기</button></li>
+        </ul>
+        <div class="acts">
+          <button class="pill">모두 받기 <span aria-hidden="true">↓</span></button>
+          <button class="quiet">채널마다 올리는 법 보기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="next">
+    <p class="tag rv">다음 단계</p>
+    <h2 class="rv" style="--i:1"><span>올린 주소만 알려 주세요.</span><br>1주 뒤, 숫자로 돌아올게요.</h2>
+    <form class="gate rv" style="--i:2" id="posted" novalidate>
+      <input type="url" aria-label="올린 게시물 주소" placeholder="올린 게시물 주소를 붙여 넣으세요">
+      <button class="pill" type="submit">주소 남기기</button>
+    </form>
+    <p class="gate-msg" id="posted-msg" role="status"></p>
+  </div>
+  <ul class="ways">
+    <li class="rv"><button data-go="people"><em>01</em><div><b>인플루언서 광고 맡기기</b><p>이 영상을 실어 줄 채널을 골라 의뢰해요. 제품 정보는 다시 적지 않아요.</p></div><i aria-hidden="true">→</i></button></li>
+    <li class="rv" style="--i:1"><button><em>02</em><div><b>반응 읽기</b><p>조회, 끝까지 본 비율, 댓글을 1주와 4주에 읽고 다음에 바꿀 한 가지를 짚어요.</p></div><i aria-hidden="true">→</i></button></li>
+    <li class="rv" style="--i:2"><button><em>03</em><div><b>다음 편 잇기</b><p>같은 모델, 같은 자막 규격으로 이어요. 의뢰서는 바뀐 칸만 고쳐요.</p></div><i aria-hidden="true">→</i></button></li>
+  </ul>
+  <p class="fine foot">반응 읽기와 인플루언서 광고는 준비 중이에요. 열리면 이 방에서 먼저 알려 드려요.</p>
+</section>
+
+<!-- 5 인플루언서 의뢰 -->
+<section class="scene" id="people">
+  <header class="top">
+    <span class="logo">synk<i>PULSE</i></span>
+    <span class="proj">첨벙댕 반려견 구명조끼 · 인플루언서 광고</span>
+    <button class="talk" style="margin-left:auto" data-go="deliver">← 완성본으로</button>
+  </header>
+  <div class="say">
+    <p class="tag rv">다음 단계 · 인플루언서 광고</p>
+    <h1 class="claim rv" style="--i:1">이 영상, <b class="acc">누구 채널</b>에 실을까요?</h1>
+    <p class="lead rv" style="--i:2">제품 소개와 피할 말, 꼭 붙일 표시는 의뢰서에서 그대로 가져와요. 값과 포함된 것을 먼저 보고 고르세요.</p>
+  </div>
+  <div class="market">
+    <div class="rv" style="--i:3">
+      <div class="chips" id="field" role="group" aria-label="분야">
+        <button aria-pressed="true" data-f="fit">이 제품에 맞는 채널</button><button aria-pressed="false" data-f="all">모두</button><button aria-pressed="false" data-f="반려동물">반려동물</button><button aria-pressed="false" data-f="아웃도어">아웃도어</button><button aria-pressed="false" data-f="리빙">리빙</button><button aria-pressed="false" data-f="뷰티">뷰티</button><button aria-pressed="false" data-f="푸드">푸드</button><span class="eg">예시 명단 · 대표 영상 자리는 비워 두었어요</span>
+      </div>
+      <ul class="people" id="people-list"></ul>
+    </div>
+    <aside class="sheet rv" style="--i:4" aria-label="의뢰서">
+      <h3>의뢰서</h3>
+      <dl>
+        <dt>보낼 영상</dt>
+        <dd class="film"><img src="assets/c09.webp" alt=""><span>첨벙댕 30초 · 자막 없는 판</span></dd>
+        <dt>고른 사람</dt>
+        <dd id="picked">아직 없어요. 명단에서 골라 주세요.</dd>
+        <dt>맡길 일</dt>
+        <dd class="seg" data-seg="job"><button aria-pressed="true" data-v="0">우리 영상을 채널에 올리기</button><button aria-pressed="false" data-v="20">직접 찍은 후기도 함께 · 한 명에 20만원 더</button></dd>
+        <dt>올라간 게시물을 우리 광고에도 쓸까요</dt>
+        <dd class="seg" data-seg="reuse"><button aria-pressed="true" data-v="0">안 써요</button><button aria-pressed="false" data-v="20" data-d="30일">30일 · 20% 더</button><button aria-pressed="false" data-v="40" data-d="90일">90일 · 40% 더</button></dd>
+        <dt>의뢰서에서 가져온 것</dt>
+        <dd>남길 말 「물가에서도 마음 놓고」 · 피할 말 「세계 최초」 「업계 1위」</dd>
+      </dl>
+      <ul class="lines" id="lines" hidden></ul>
+      <div class="sum"><span>어림 값</span><strong id="total">0원</strong></div>
+      <button class="pill" id="send" disabled>의뢰 보내기 <span aria-hidden="true">→</span></button>
+      <ol class="track" id="track" hidden><li class="at">보냄</li><li>담당자 확인</li><li>수락</li><li>게시</li><li>결과</li></ol>
+      <p class="fine" id="sheet-note">값은 담당자가 확인한 뒤 확정해요. 결제는 게시물을 확인하신 뒤에 하고, 게시되지 않으면 받지 않아요. 게시물에는 「광고」 표시가 들어가요.</p>
+    </aside>
+  </div>
+</section>
+
+<!-- 6 담당자 화면 -->
+<section class="scene" id="desk">
+  <header class="top">
+    <span class="logo">synk<i style="color:var(--cap)">Workspace</i></span>
+    <span class="proj">PULSE 고객</span>
+    <span class="stat" style="margin-left:auto">제작 자리 4곳 가운데 <b>3곳</b> 사용 중 · 새 의뢰 받는 중</span>
+  </header>
+  <div class="say tool">
+    <p class="tag rv">오늘 · 11월 20일 금요일</p>
+    <h1 class="rv" style="--i:1">답할 것 하나, <b>보고할 것 둘.</b></h1>
+    <p class="lead rv" style="--i:2">답할 문의가 맨 위에 오고, 그다음은 소식이 오래 빈 순서예요.</p>
+  </div>
+  <div class="desk">
+    <ul class="queue rv" style="--i:3" id="queue">
+      <li class="hot"><button><span class="st">내 차례 · 문의에 답하기 · 2시간째</span><b>오미톡 오미자 스파클링</b><p>「연말 선물 시즌 전에 받을 수 있을까요?」</p><time>납품 9일 뒤</time></button></li>
+      <li class="hot" aria-current="true"><button><span class="st">보고 밀림 · 소식 없이 4일째</span><b>첨벙댕 반려견 구명조끼</b><p>제작 · 열 컷 가운데 다섯 컷 완성</p><time>납품 3일 뒤</time></button></li>
+      <li class="hot"><button><span class="st">보고 밀림 · 소식 없이 3일째</span><b>모두의코스 앱</b><p>제작 · 열두 컷 가운데 세 컷 완성</p><time>납품 8일 뒤</time></button></li>
+      <li><button><span class="st">손님 차례 · 장면 확인 기다림 2일째</span><b>유리결 홀리데이 세트</b><p>메일로 한 번 알렸어요. 내일 한 번 더 알려요.</p><time>납품 12일 뒤</time></button></li>
+    </ul>
+    <div class="panel tight compose rv" style="--i:4;margin:0">
+      <div class="seg mode" data-seg><button aria-pressed="true">보고 쓰기</button><button aria-pressed="false">문의 답하기 <b>1</b></button><button aria-pressed="false">영상 보내기</button></div>
+      <h3>첨벙댕 반려견 구명조끼</h3>
+      <label>오늘 만든 컷에서 고르기</label>
+      <div class="shots" id="shots">
+        <figure><button class="sel" aria-pressed="true" aria-label="컷 04를 보고에 넣기"><img src="assets/c04.webp" alt="컷 04"></button><figcaption>04 <button data-zoom="assets/c04.webp">크게</button></figcaption></figure>
+        <figure><button class="sel" aria-pressed="true" aria-label="컷 05를 보고에 넣기"><img src="assets/c05.webp" alt="컷 05"></button><figcaption>05 <button data-zoom="assets/c05.webp">크게</button></figcaption></figure>
+        <figure><button class="sel" aria-pressed="false" aria-label="컷 06을 보고에 넣기"><img src="assets/c06.webp" alt="컷 06"></button><figcaption>06 · 만드는 중 <button data-zoom="assets/c06.webp">크게</button></figcaption></figure>
+      </div>
+      <label for="word">한마디</label>
+      <textarea id="word">조끼를 입히는 컷은 버클을 채우는 손이 또렷이 보이게 한 번 더 만들었어요. 내일은 고글을 쓰는 컷으로 넘어가요.</textarea>
+      <label for="then">다음에 손님이 받을 것</label>
+      <select id="then"><option>첫 영상 · 11월 22일</option><option>남은 컷 넷 · 11월 21일</option></select>
+      <div class="acts">
+        <button class="pill" id="post">보고 올리기 <span aria-hidden="true">→</span></button>
+        <button class="quiet">초안으로 두기</button>
+        <span class="sent" id="posted-ok" hidden>손님 방에 걸었어요</span>
+      </div>
+      <p class="fine">제작 중에 소식 없이 사흘째가 되면 「보고 밀림」으로 표시하고, 손님 차례인 프로젝트보다 위에 올려요.</p>
+    </div>
+  </div>
+</section>
+
+<div class="door" id="door" aria-hidden="true"></div>
+
+<script>
+(()=>{
+  const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+  const q=new URLSearchParams(location.search);
+  if(q.has('still'))document.documentElement.classList.add('still');
+  if(q.has('bare'))document.documentElement.classList.add('bare');
+  const scenes=$$('.scene'),ids=scenes.map(s=>s.id);
+  function show(id,scroll=true){
+    if(!ids.includes(id))id='enter';
+    scenes.forEach(s=>{s.classList.remove('on','in');});
+    const s=$('#'+id);s.classList.add('on');
+    $$('#tabs button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.go===id)));
+    if(scroll)scrollTo(0,0);
+    if(location.hash.slice(1)!==id)history.replaceState(null,'','#'+id);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('in')));
+  }
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){e.preventDefault();show(b.dataset.go);}});
+  addEventListener('hashchange',()=>show(location.hash.slice(1)));
+  show(location.hash.slice(1)||'enter',false);
+
+  // 그림을 누르면 크게 본다
+  document.addEventListener('click',e=>{
+    const z=e.target.closest('.zoomer');if(z){z.remove();return;}
+    const b=e.target.closest('[data-zoom]');if(!b)return;
+    const d=document.createElement('div');d.className='zoomer';d.innerHTML='<img alt="">';d.firstChild.src=b.dataset.zoom;document.body.append(d);
+  });
+  addEventListener('keydown',e=>{if(e.key==='Escape')$('.zoomer')?.remove();});
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-scroll]');if(b)document.getElementById(b.dataset.scroll)?.scrollIntoView({behavior:document.documentElement.classList.contains('still')?'auto':'smooth',block:'start'});});
+
+  // 1 입장: 코드가 꼴에 맞으면 문이 열린다. 시안이라 서버에 묻지 않는다.
+  $('#gate').addEventListener('submit',e=>{
+    e.preventDefault();
+    let v=$('#code').value.trim();const m=v.match(/#invite=([^&\s]+)/);if(m)v=decodeURIComponent(m[1]);
+    if(!/^[A-Za-z0-9_-]{8,200}$/.test(v)){$('#gate-msg').textContent=v?'코드를 읽지 못했어요. 받은 코드나 링크를 그대로 붙여 넣어 주세요.':'받은 코드나 링크를 붙여 넣어 주세요.';$('#code').focus();return;}
+    $('#gate-msg').textContent='';
+    const still=document.documentElement.classList.contains('still')||matchMedia('(prefers-reduced-motion:reduce)').matches;
+    if(still){show('wait');return;}
+    const d=$('#door');d.classList.remove('go');void d.offsetWidth;d.classList.add('go');
+    setTimeout(()=>show('wait'),480);
+  });
+
+  // 4 올린 주소 남기기
+  $('#posted').addEventListener('submit',e=>{
+    e.preventDefault();const i=$('input',e.currentTarget),ok=/^https?:\/\/\S+\.\S+/.test(i.value.trim());
+    $('#posted-msg').textContent=ok?'받았어요. 11월 30일에 첫 숫자를 이 방에 걸어 둘게요.':'올린 게시물의 주소를 그대로 붙여 넣어 주세요.';
+    $('#posted-msg').style.color=ok?'var(--ink)':'';
+  });
+
+  // 5 인플루언서: 예시 명단(실제 사람이 아니다)
+  const PEOPLE=[
+    {k:'A',f:'반려동물',fit:1,unit:'릴스 1편',what:'반려동물 · 인스타그램 릴스',nums:'팔로워 4.2만 · 평균 조회 1.8만 · 참여 4.1%',inc:'릴스 1편 · 7일 안 게시 · 수정 1회 · 90일 유지',won:35},
+    {k:'B',f:'반려동물',fit:1,unit:'쇼츠 1편',what:'반려동물 · 유튜브 쇼츠',nums:'구독 12만 · 평균 조회 6.3만 · 참여 3.2%',inc:'쇼츠 1편 · 10일 안 게시 · 수정 1회 · 180일 유지',won:90},
+    {k:'C',f:'아웃도어',fit:1,unit:'릴스 1편',what:'아웃도어 · 인스타그램 릴스',nums:'팔로워 3.4만 · 평균 조회 1.5만 · 참여 4.6%',inc:'릴스 1편 · 7일 안 게시 · 수정 1회 · 90일 유지',won:32},
+    {k:'D',f:'리빙',unit:'릴스 1편과 스토리 2회',what:'리빙 · 인스타그램 릴스',nums:'팔로워 2.6만 · 평균 조회 1.1만 · 참여 5.4%',inc:'릴스 1편과 스토리 2회 · 7일 안 게시 · 수정 1회',won:28},
+    {k:'E',f:'뷰티',unit:'영상 1편',what:'뷰티 · 틱톡',nums:'팔로워 8.9만 · 평균 조회 4.0만 · 참여 6.0%',inc:'영상 1편 · 7일 안 게시 · 수정 1회 · 90일 유지',won:55},
+    {k:'F',f:'푸드',unit:'릴스 1편',what:'푸드 · 인스타그램 릴스',nums:'팔로워 6.1만 · 평균 조회 2.4만 · 참여 3.8%',inc:'릴스 1편 · 10일 안 게시 · 수정 1회 · 90일 유지',won:48},
+  ];
+  const picked=new Set(),list=$('#people-list');
+  list.innerHTML=PEOPLE.map(p=>`<li data-k="${p.k}" data-f="${p.f}"${p.fit?' data-fit="1"':''}><span class="face" aria-hidden="true">${p.k}</span><div><b>예시 ${p.k}</b> <span class="what">${p.what}</span><p class="nums">${p.nums}</p><p class="inc">${p.inc}</p></div><span class="reel" aria-hidden="true"><i></i><i></i><i></i></span><div class="pay"><strong>${p.won}만원</strong><button class="pick" aria-pressed="false">고르기</button></div></li>`).join('');
+  // 값은 사람마다의 값에 맡길 일과 2차 활용을 더해 줄마다 보인다(시안의 어림 값이다)
+  function sheet(){
+    const rows=PEOPLE.filter(p=>picked.has(p.k)),base=rows.reduce((a,p)=>a+p.won,0);
+    const job=+$('[data-seg="job"] [aria-pressed="true"]').dataset.v,use=$('[data-seg="reuse"] [aria-pressed="true"]'),rate=+use.dataset.v;
+    const lines=rows.map(p=>[`예시 ${p.k} · ${p.unit}`,p.won+'만원']),extra=Math.round(base*rate/100);
+    if(rows.length&&job)lines.push([`직접 찍은 후기 ${rows.length}명`,'+'+job*rows.length+'만원']);
+    if(rows.length&&rate)lines.push([`우리 광고에 쓰기 ${use.dataset.d}`,'+'+extra+'만원']);
+    const sum=base+(rows.length?job*rows.length:0)+extra;
+    $('#lines').hidden=!rows.length;
+    $('#lines').innerHTML=lines.map(([a,b])=>`<li><span>${a}</span><span>${b}</span></li>`).join('');
+    $('#picked').textContent=rows.length?rows.map(p=>'예시 '+p.k).join(', '):'아직 없어요. 명단에서 골라 주세요.';
+    $('#total').textContent=sum?sum+'만원부터':'0원';
+    $('#send').disabled=!rows.length;
+  }
+  list.addEventListener('click',e=>{
+    const b=e.target.closest('.pick');if(!b)return;const li=b.closest('li'),k=li.dataset.k,on=!picked.has(k);
+    on?picked.add(k):picked.delete(k);li.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));b.textContent=on?'골랐어요':'고르기';sheet();
+  });
+  function field(f){$$('li',list).forEach(li=>{li.hidden=f==='fit'?li.dataset.fit!=='1':f!=='all'&&li.dataset.f!==f;});}
+  $('#field').addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;$$('#field button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));field(b.dataset.f);
+  });
+  field('fit');
+  $$('[data-seg]').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$$('button',g).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));sheet();}));
+  $('#send').addEventListener('click',()=>{
+    $('#send').hidden=true;$('#track').hidden=false;
+    $('#sheet-note').textContent='보냈어요. 담당자가 평일 하루 안에 값과 일정을 확인해 이 방으로 알려 드려요.';
+  });
+
+  // 6 담당자: 컷 고르기와 보고 올리기
+  $('#shots').addEventListener('click',e=>{const b=e.target.closest('.sel');if(b)b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true'));});
+  $('#post').addEventListener('click',()=>{$('#posted-ok').hidden=false;const li=$('#queue [aria-current]');li.classList.remove('hot');$('.st',li).textContent='방금 보고함 · 다음은 첫 영상';});
+})();
+</script>
+</body>
+</html>
