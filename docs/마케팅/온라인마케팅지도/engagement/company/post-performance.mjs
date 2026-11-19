@@ -536,7 +536,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             // 페이스북 수집기는 같은 게시물의 줄을 합치며 주 주소와 정체성이 다른 주소를 별칭(aliasUrls: 주소와 그 주소의 게시 시각)으로 단다. 기록이
             // 별칭 주소로 등록됐으면 그 별칭의 게시 시각으로 견준다(11-19 페북 수집기 pagePostId 설계 검토 2).
             const identityOf = value => { try { return normalizePerformancePostUrl(value).identity; } catch { return null; } };
-            let matchedAt = null;
+            let matchedAt = null, byNumber = false;
             let post = result?.posts?.find(item => {
               if (identityOf(item?.url) === row.postIdentity) { matchedAt = item.publishedAt; return true; }
               const alias = Array.isArray(item?.aliasUrls) ? item.aliasUrls.find(entry => typeof entry?.url === 'string' && identityOf(entry.url) === row.postIdentity) : null;
@@ -548,7 +548,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             // (영상 목록만의 줄은 영상의 시각만 알고 게시물 시각을 모른다). 주소의 앞 칸이 숫자(페이지 번호)면 그 번호까지 같아야 한다.
             if (!post && row.platform === 'facebook') {
               post = result?.posts?.find(item => samePagePost(row.postIdentity, item?.pagePostId));
-              if (post) matchedAt = row.publishedAt;
+              if (post) { matchedAt = row.publishedAt; byNumber = true; }
             }
             const published = matchedAt && Date.parse(matchedAt), mismatch = !!post && (!Number.isFinite(published) || Math.abs(published - Date.parse(row.publishedAt)) > 5 * 60000);
             const hasMetric = post && Object.values(valuesAndReasons(post.metrics, row.platform).metrics).some(value => value !== null);
@@ -562,7 +562,8 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             const absent = !error && !post && platformAnchored(row) && inventoryCovers(result, row.publishedAt);
             if (!error && post && !mismatch && hasMetric && (!gap || lastChance)) {
               next = observation(checkpoint, post.metrics, { observedAt: at, recordedAt: at, source: `api:${cleanText(result.coverage?.source || row.platform, 80)}`, unavailable: gap ? [] : result.coverage?.unavailableMetrics || [], platform: row.platform, details: post.metricDetails, transient: gap });
-              next.providerPublishedAt = matchedAt; summary.recorded++;
+              // 번호로 찾았으면 견준 시각은 기록 자신의 시각이라 플랫폼이 준 시각으로 남기지 않는다 — 「사라짐」 판정의 근거가 되지 않게(설계 검토 5 P3).
+              next.providerPublishedAt = byNumber ? null : matchedAt; summary.recorded++;
             } else if (gap) {
               const delay = (checkpoint.attempts === 1 ? 5 : checkpoint.attempts === 2 ? 15 : 30) * 60000;
               next = { ...checkpoint, status: 'retry', nextAttemptAt: new Date(Math.min(Date.parse(at) + delay, Date.parse(checkpoint.closesAt) - 10 * 60000)).toISOString(), lastErrorCode: String(result.coverage.collectionError.code || 'METRICS_PARTIAL').slice(0, 40),

@@ -432,7 +432,7 @@ test('a Facebook post-address checkpoint finds its post by the page post id when
   const otherPage = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/999/posts/700', publishedAt: BASE }).entry;
   f.now(24.5); await f.service.collectDue();
   const point = id => f.service.list(f.owner).entries.find(entry => entry.id === id).checkpoints[0];
-  assert.equal(point(byName.id).metrics.views, 12); assert.equal(point(byName.id).providerPublishedAt, BASE);
+  assert.equal(point(byName.id).metrics.views, 12); assert.equal(point(byName.id).providerPublishedAt ?? null, null, 'a match by number does not anchor the record to a platform time');
   assert.equal(point(byPage.id).metrics.views, 12);
   assert.notEqual(point(otherPage.id).status, 'recorded', 'a different page number does not match');
 });
