@@ -265,9 +265,9 @@ button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
 .val{font:var(--body);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
 .when{font:var(--small);font-variant-numeric:tabular-nums;text-align:right;color:var(--dim);white-space:nowrap}
 
-/* 구를 누르면 구가 가운데로 와서 지금 있는 자리를 앞에 보인다. 고리 하나가 공간 하나다.
-   이름은 구 아래에 가만히 있고, 이름을 가리키면 구가 지구본처럼 돌아 그 자리가 앞에 온다 */
-/* 이름 셋은 밝기가 같다. 지금 있는 곳은 이름 앞의 점(구 위 고리 가운데의 점과 같은 것)과 「지금 여기」로 알린다 */
+/* 구를 누르면 구가 가운데로 와서 지도가 된다. 별 하나가 공간 하나다.
+   이름은 구 아래에 가만히 있고, 이름을 가리키면 그 공간의 별이 밝아진다 */
+/* 이름 셋은 밝기가 같다. 지금 있는 곳은 이름 앞의 점(구 위의 별과 같은 것)과 「지금 여기」로 알린다 */
 .sw-names{position:absolute;left:16px;right:16px;top:66%;display:flex;flex-wrap:wrap;justify-content:center;gap:6px clamp(8px,2.4cqw,36px)}
 .sw{appearance:none;background:none;border:0;margin:0;padding:10px 12px;width:min(248px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;color:var(--paper);cursor:pointer;border-radius:2px}
 .sw-n{position:relative;font:400 clamp(17px,1.5cqw,22px)/1.2 var(--sans);letter-spacing:.2em;margin-right:-.2em;padding-bottom:8px}
@@ -514,23 +514,17 @@ const ptr = { x: .5, y: .5 }, ptrS = { x: .5, y: .5 };
 let diveTo = 'solio', hotWant = -1, faceWant = null, sigOn = true;
 const hot = [0, 0, 0], markXY = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
 
-/* ── 구 위의 자리. 공간 하나가 구에 새긴 고리 하나다. 지도의 도시처럼 경도와 위도가 저마다 달라, 구가 돌고 기울어야 그 자리가 앞에 온다 ── */
+/* ── 구 위의 자리. 공간 하나가 별 하나다(11-20 유호님이 고르신 「눈이 별이 된다」). 별은 구에서 정해진 자리에 있고 구는 돌지 않는다.
+      지도가 켜지면 눈의 점이 흩어져 별이 되고, 꺼지면 점이 돌아와 다시 눈이 된다 ── */
 const ORDER = ['solio', 'workspace', 'pulse'];
-const LON = { solio: 0, workspace: rad(-48), pulse: rad(44) };
-const CL = { solio: rad(75), workspace: rad(58), pulse: rad(92) };   // 축에서 자리까지의 각(작을수록 위쪽)
-const RHO = .092;   // 고리의 크기(구 반지름을 1로 본 값). 셰이더의 RHO와 같아야 한다
-/* 그 자리가 보는 쪽을 똑바로 향하는 축. 지구본처럼 거의 선 축을 자리의 높이만큼 기울인다 */
-const faceAx = name => [0, Math.sin(CL[name]), Math.cos(CL[name])];
-/* 축이 a이고 spin만큼 돌린 구에서, 그 자리가 보는 쪽 좌표로 어디에 오는지 낸다.
-   경도 0은 축에서 보는 쪽 아래로 내려오는 줄이다 */
-function placeDir(a, spin, name) {
-  const n = Math.hypot(a[0], a[1], a[2]) || 1, A = [a[0] / n, a[1] / n, a[2] / n], d = A[2] - A[1];
-  let z = [-d * A[0], -1 - d * A[1], 1 - d * A[2]];
-  const zn = Math.hypot(z[0], z[1], z[2]) || 1; z = [z[0] / zn, z[1] / zn, z[2] / zn];
-  const x = [A[1] * z[2] - A[2] * z[1], A[2] * z[0] - A[0] * z[2], A[0] * z[1] - A[1] * z[0]];
-  const l = LON[name] + spin, c = Math.cos(CL[name]), s = Math.sin(CL[name]), cl = Math.cos(l), sl = Math.sin(l);
-  return [c * A[0] + s * (cl * z[0] + sl * x[0]), c * A[1] + s * (cl * z[1] + sl * x[1]), c * A[2] + s * (cl * z[2] + sl * x[2])];
-}
+const LON = { solio: 0, workspace: 0, pulse: 0 };   // 구를 돌려 자리를 앞에 두던 때의 값이다. 별은 돌지 않아 모두 0이다
+/* 별의 자리(구의 반지름을 1로 본 화면 좌표, 위가 +). 셋을 워크스페이스 · 솔리오 · PULSE 순서로 선 둘이 잇는다 */
+const STAR = { solio: [.14, -.44], workspace: [-.50, .26], pulse: [.55, .12] };
+const RHO = .11;   // 별을 손으로 가리킬 때 닿는 너비이고, 들어갈 때 구가 커지는 끝을 정한다
+/* 지도를 내보일 때도 구의 축은 쉴 때 그대로다 */
+const faceAx = () => AX.rest;
+/* 그 공간의 별이 보는 쪽 좌표로 어디에 있는지 낸다(축과 도는 각에 매이지 않는다) */
+function placeDir(a, spin, name) { const q = STAR[name]; return [q[0], q[1], Math.sqrt(1 - q[0] * q[0] - q[1] * q[1])]; }
 /* 어떤 자세 s에서 그 자리가 화면의 어디에 찍히는지 */
 function placeXY(s, name) { const m = placeDir(s.ax, s.spin, name); return [s.cx + s.r * m[0], s.top + s.r - s.r * m[1]]; }
 
@@ -699,7 +693,7 @@ async function boot() {
   await tween('ask', 1750, easeIOQ); if (my !== run) return;
   setUI('ask');
 }
-/* 구가 그 공간의 자리를 보는 쪽으로 돌리면서, 그 고리 안으로 들어간다. 들어온 순간 점이 맞춰져 synk 표가 된다 */
+/* 그 공간의 별이 화면 한가운데로 오도록 구가 커지면서, 그 별로 들어간다. 들어온 순간 점이 맞춰져 synk 표가 된다 */
 async function enter(next, my = ++run, ms = 1250) {
   const quick = ui === 'switch' || fanOn || mode === 'update' || (mode === 'back' && ui === 'rest');
   fanOn = false; fanPin = false; delete stage.dataset.fan; sweep.fill(1); dropFanFocus();
@@ -717,21 +711,21 @@ async function enter(next, my = ++run, ms = 1250) {
   if (!quick) setMood('smile', 1100);
 }
 async function openSwitch() {
-  const my = ++run; setUI('none'); snd.tick();
+  const my = ++run; setUI('none'); snd.map(false);
   pointAt(null); S.spin = -LON[space]; layoutSwitch();
   await tween('sw', 760, easeIO); if (my !== run) return;
   setUI('switch');
 }
-/* 가리킨 공간의 고리와 이름을 밝힌다. 이름을 가리킨 것이면(turn) 구가 돌아 그 자리가 앞에 온다.
-   구 위의 고리를 가리킨 것이면 밝히기만 한다(돌리면 고리가 손 밑에서 달아난다) */
+/* 가리킨 공간의 별과 이름을 밝힌다. 구는 돌지 않는다 */
 function pointAt(name, turn = true) {
   if (name && ui !== 'switch' && !fanOn) return;
+  if (name && ORDER.indexOf(name) !== hotWant) snd.key();
   hotWant = name ? ORDER.indexOf(name) : -1;
   if (turn) faceWant = name;
   $$('.sw, .fan-go').forEach(b => b.classList.toggle('hot', b.dataset.go === name));
 }
 async function closeSwitch() {
-  const my = ++run; setUI('none'); pointAt(null);
+  const my = ++run; setUI('none'); pointAt(null); snd.unmap();
   await tween('home', 620, easeIO); if (my !== run) return;
   setUI('app');
 }
@@ -741,7 +735,7 @@ function layoutSwitch() {
   const g = swGeom();
   $('.sw-names').style.top = Math.round(g.cy + g.r + (g.wide ? Math.max(40, H * .075) : 22)) + 'px';
 }
-/* 구에 새긴 고리를 바로 눌러도 그 공간으로 간다 */
+/* 구 위의 별을 바로 눌러도 그 공간으로 간다 */
 function placeUnder(e) {
   const s = stage.getBoundingClientRect(), x = e.clientX - s.left, y = e.clientY - s.top, reach = RHO * S.r + 12;
   for (let i = 0; i < 3; i++) if (markXY[i][2] > .15 && Math.hypot(x - markXY[i][0], y - markXY[i][1]) < reach) return ORDER[i];
@@ -1351,8 +1345,8 @@ $$('.obj').forEach(o => {
   o.addEventListener('focus', () => { if (o.matches(':focus-visible')) showProg(o.dataset.prog); });
 });
 
-/* ── 구 곁의 펼침. 구에 다가가면 구가 자라 지도가 켜지고(고리가 하나씩 그어진다), 갈 수 있는 공간이 옆으로 펼쳐진다.
-      이름을 가리키면 구가 돌아 그 자리가 앞에 온다. 보는 데는 누를 것이 없고, 공간을 옮길 때만 한 번 누른다 ── */
+/* ── 구 곁의 펼침. 구에 다가가면 구가 자라 지도가 켜지고(눈의 점이 흩어져 별이 된다), 갈 수 있는 공간이 옆으로 펼쳐진다.
+      이름을 가리키면 그 공간의 별이 밝아진다. 보는 데는 누를 것이 없고, 공간을 옮길 때만 한 번 누른다 ── */
 let fanOn = false, fanPin = false, fanTimer = 0, fanLeave = 0, nearK = 0;
 const sweep = [1, 1, 1], ptrPx = { x: -9999, y: -9999, t: 0, v: 0 };
 function layoutFan() {
@@ -1366,7 +1360,7 @@ function layoutFan() {
 function openFan(pin = false) {
   if (pin) fanPin = true;
   if (fanOn || ui !== 'app' || tw) return;
-  const my = ++run; fanOn = true; stage.dataset.fan = '1'; orbBtn.setAttribute('aria-expanded', 'true'); snd.tick();
+  const my = ++run; fanOn = true; stage.dataset.fan = '1'; orbBtn.setAttribute('aria-expanded', 'true'); snd.map(true);
   clearTimeout(fanTimer); fanTimer = 0; clearTimeout(fanLeave); fanLeave = 0;
   pointAt(null); S.spin = -LON[space]; S.ax = faceAx(space); sweep.fill(0); layoutFan();
   tween('fan', 440, easeOut);
@@ -1374,7 +1368,7 @@ function openFan(pin = false) {
 }
 async function closeFan() {
   if (!fanOn) return;
-  const my = ++run; fanOn = false; fanPin = false; delete stage.dataset.fan; orbBtn.setAttribute('aria-expanded', 'false'); pointAt(null); dropFanFocus();
+  const my = ++run; fanOn = false; fanPin = false; delete stage.dataset.fan; orbBtn.setAttribute('aria-expanded', 'false'); pointAt(null); dropFanFocus(); snd.unmap();
   clearTimeout(fanTimer); fanTimer = 0; clearTimeout(fanLeave); fanLeave = 0;
   await tween('home', 380, easeIO); if (my !== run) return;
   sweep.fill(1);
@@ -1560,12 +1554,12 @@ const snd = (() => {
     if (ac.state === 'suspended') ac.resume();
     return ac;
   }
-  function tone(f, delay, a, h, r, g, f2) {
+  function tone(f, delay, a, h, r, g, f2, to) {
     const c = on && ctx(); if (!c) return;
     const at = c.currentTime + delay, o = c.createOscillator(), v = c.createGain();
     o.type = 'sine'; o.frequency.setValueAtTime(f, at); if (f2) o.frequency.exponentialRampToValueAtTime(f2, at + a + h + r);
     v.gain.setValueAtTime(.0001, at); v.gain.exponentialRampToValueAtTime(g, at + a); v.gain.setValueAtTime(g, at + a + h); v.gain.exponentialRampToValueAtTime(.0001, at + a + h + r);
-    o.connect(v); v.connect(out); o.start(at); o.stop(at + a + h + r + .05);
+    o.connect(v); v.connect(to || out); o.start(at); o.stop(at + a + h + r + .05);
   }
   function air(delay, dur, g, f0, f1) {
     const c = on && ctx(); if (!c) return;
@@ -1576,8 +1570,33 @@ const snd = (() => {
     v.gain.setValueAtTime(.0001, at); v.gain.exponentialRampToValueAtTime(g, at + dur * .5); v.gain.exponentialRampToValueAtTime(.0001, at + dur);
     src.connect(lp); lp.connect(v); v.connect(out); src.start(at); src.stop(at + dur + .05);
   }
+  /* 자판을 치는 듯한 짧은 톡 소리. 아주 짧은 바람 소리를 좁은 대역으로 거르고, 낮게 떨어지는 음 하나를 몸통으로 받친다 */
+  /* 지도의 소리는 한 묶음(bus)으로 낸다. 지도가 접히거나 다시 켜지면 앞 묶음에 남은 소리를 바로 거둔다(잠깐 스친 구의 소리가 접힌 뒤까지 울리지 않게) */
+  let bus = null;
+  function hush() { const old = bus; bus = null; if (old && ac) old.gain.setTargetAtTime(0, ac.currentTime, .012); }
+  function tock(delay, g, f, to) {
+    const c = on && ctx(); if (!c) return;
+    const at = c.currentTime + delay, n = Math.floor(c.sampleRate * .034), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+    const src = c.createBufferSource(), bp = c.createBiquadFilter(), v = c.createGain();
+    src.buffer = buf; bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 1.4; v.gain.value = g;
+    src.connect(bp); bp.connect(v); v.connect(to || out); src.start(at);
+    tone(f * .09, delay, .001, 0, .03, g * .45, f * .05, to);
+  }
   return {
     get on() { return on; }, set(v) { on = v; if (v) ctx(); },
+    /* 지도가 켜질 때: 눈의 점이 흩어지는 동안 톡 소리가 몇 번 나고, 별 셋이 자리를 잡을 때 맑은 음 셋(라 · 도# · 미)이 차례로 난다. small은 구 곁의 작은 지도다 */
+    map(small) {
+      hush(); const c = on && ctx(); if (!c) return;
+      const to = bus = c.createGain(); to.connect(out);
+      const n = small ? 4 : 7, span = small ? .2 : .36, gt = small ? .045 : .065, t0 = small ? .24 : .44, step = small ? .07 : .1;
+      for (let i = 0; i < n; i++) tock(.03 + span * i / n + Math.random() * .02, gt * (.6 + .4 * Math.random()), 1700 + Math.random() * 900, to);
+      [880, 1108.73, 1318.51].forEach((f, i) => { tone(f, t0 + i * step, .005, 0, small ? .5 : .8, small ? .011 : .019, 0, to); tone(f * 2, t0 + i * step, .004, 0, .3, small ? .003 : .005, 0, to); });
+    },
+    /* 지도가 꺼질 때: 점이 눈으로 돌아오는 톡 소리 셋 */
+    unmap() { hush(); for (let i = 0; i < 3; i++) tock(.02 + i * .055, .05 - i * .008, 2300 - i * 350); },
+    /* 이름이나 별을 가리킬 때: 톡 한 번 */
+    key() { tock(0, .055, 2100); },
     boot() { tone(55, 0, 1.5, .5, 3, .22); tone(82.41, .3, 1.7, .2, 2.8, .09); tone(164.81, 1, 1.1, .1, 2.4, .02); },
     rise() { tone(61.74, 0, .9, .2, 1.8, .14); air(0, 1.8, .012, 180, 700); },
     dive() { tone(73.42, 0, .25, .2, 1.3, .2, 36.71); air(0, 1.4, .02, 160, 1100); },
@@ -1676,34 +1695,26 @@ uniform vec2 uRes, uC;
 uniform float uR, uLit, uAz, uLz, uFocus, uGb, uDpr, uSeed, uMark, uCalm, uCut, uCutOn;
 uniform vec3 uAxis, uM0, uM1, uM2, uHot, uHere, uOpen;
 uniform vec4 uEye;
-uniform vec3 uFace, uGaze, uSweep;
+uniform vec3 uFace, uGaze;
+uniform vec3 uDot[22];
+uniform vec3 uDotA[22];
+uniform float uLine;
 uniform float uTiny;
-const float RHO = 0.092;
 float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
-/* 구에 새긴 자리 하나: 가는 고리와, 지금 있는 곳을 알리는 가운데 점. x는 더할 빛, y는 고리 안을 비우는 정도다.
-   가리킨 자리는 고리가 밝아지고, 들어갈 자리는 고리 안이 열린다. sw는 고리가 그어진 만큼이다(맨 위에서 시계 방향으로 한 바퀴) */
-vec2 place(vec3 n, vec3 M, float hot, float here, float open, float z, vec2 l2, float sw){
-  vec3 dv = n - M;
-  float dd = length(dv);
-  /* 화면에서 고리까지 몇 점 떨어졌는지 잰다(밖이 +). 옆으로 돌아가 납작해진 고리도 선 굵기가 같고 또렷하다 */
-  float zz = max(z, 0.06);
-  vec2 gr = vec2(dv.x - dv.z * n.x / zz, dv.y - dv.z * n.y / zz) / max(dd, 0.0001);
-  float sd = (dd - RHO) / max(length(gr), 0.05) * uR / uDpr;
-  float show = smoothstep(0.02, 0.2, M.z);   /* 뒤로 넘어간 자리는 보이지 않는다 */
-  float lift = max(hot, open);
-  /* 가리킨 고리는 선이 굵어진다. 고리 둘레에 옅은 빛 번짐을 둬, 덧그린 선이 아니라 켜진 표시로 보이게 한다 */
-  float lw = mix(0.5, 1.0, hot);
-  float a01 = fract(atan(dv.x, dv.y) / 6.2831853 + 1.0);
-  float drawn = step(a01, sw * 1.002);
-  float tip = exp(-abs(a01 - sw) * 34.0) * step(0.004, sw) * step(sw, 0.985);
-  float ring = (1.0 - smoothstep(lw, lw + 0.75, abs(sd))) * show * (drawn + tip * 1.4);
-  float bloom = exp(-abs(sd) / 2.6) * mix(0.09, 0.24, lift) * (1.0 - open) * show * drawn;
-  float facing = 0.5 + 0.5 * dot(dv.xy / max(length(dv.xy), 0.0001), l2);
-  /* 가운데 점은 구가 커지거나 돌아가도 화면에서 같은 크기의 동그란 점으로 남는다 */
-  float pd = length(n.xy - M.xy) * uR / uDpr;
-  float pin = (1.0 - smoothstep(2.2, 3.1, pd)) * here * (1.0 - open) * show * smoothstep(0.86, 1.0, sw);
-  float glow = hot * 0.07 * (1.0 - smoothstep(0.0, RHO, dd)) * (1.0 - open) * show;
-  return vec2(ring * mix(0.44 + 0.30 * facing, 1.0, lift) + bloom + pin * 0.92 + glow, (1.0 - smoothstep(-1.2, 0.3, sd)) * open * show);
+/* 구 속에 비치는 흐린 빛을 그리는 물결. 칸의 모서리 값이 이웃 칸과 어긋나지 않는 섞기를 쓴다(사인을 쓰면 그래픽 카드에서 칸마다 끊긴다) */
+float h3(vec3 p){ p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float vnoise(vec3 p){
+  vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(h3(i), h3(i + vec3(1,0,0)), f.x), mix(h3(i + vec3(0,1,0)), h3(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(h3(i + vec3(0,0,1)), h3(i + vec3(1,0,1)), f.x), mix(h3(i + vec3(0,1,1)), h3(i + vec3(1,1,1)), f.x), f.y), f.z);
+}
+float fbm(vec3 p){ return 0.6 * vnoise(p) + 0.3 * vnoise(p * 2.1 + 7.3) + 0.1 * vnoise(p * 4.3 + 1.7); }
+/* 별 둘을 잇는 선. 별에 닿기 전에 멈추고, 그어진 만큼만 보인다 */
+float seg(vec2 p, vec2 a, vec2 b, float prog, float ppx){
+  vec2 pa = p - a, ba = b - a; float len = length(ba);
+  float g0 = min(0.4, 13.0 / (len * ppx));
+  float h = clamp(dot(pa, ba) / (len * len), g0, g0 + (1.0 - 2.0 * g0) * prog);
+  return (1.0 - smoothstep(0.3, 1.05, length(pa - ba * h) * ppx)) * step(0.002, prog);
 }
 float sdBox(vec2 p, vec2 b, float r){ vec2 q = abs(p) - b + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }
 /* 눈 하나의 모양(안이 −). p는 눈 가운데에서 잰 자리이고 구의 반지름이 1이다. w는 굵기다(0이면 가는 틈, 1이면 통통한 알약). cz는 평소 모양의 반 폭과 반 높이다.
@@ -1785,7 +1796,15 @@ void main(){
     float calm = mix(1.0, mix(0.16, 1.0, smoothstep(0.47, 0.69, f.y / uRes.y)), uCalm);
     /* 작게 줄었을 때는 속의 빛을 줄이고 둘레를 가늘게 다 둘러, 얼룩이 아니라 구로 읽히게 한다 */
     float tiny = smoothstep(60.0, 14.0, uR / uDpr);
-    vec3 inC = vec3(0.005) + warm * uLit * mix(1.0, 0.1, tiny) * (an * side * groove * mix(0.78, 0.46, uFocus) * pulse + (an2 * groove * 0.09 + rings) * calm + spec * 0.20 * side + 0.010 * max(dot(n, L), 0.0));
+    /* 지도가 켜지면 결이 가라앉고, 구 속에 흐린 빛이 한 줄 비친다. 색은 구의 흰빛 그대로다 */
+    float gk = mix(1.0, 0.2, uMark);
+    vec3 inC = vec3(0.005) + warm * uLit * mix(1.0, 0.1, tiny) * (gk * (an * side * groove * mix(0.78, 0.46, uFocus) * pulse + (an2 * groove * 0.09 + rings) * calm + spec * 0.20 * side) + 0.010 * max(dot(n, L), 0.0));
+    if (uMark > 0.001) {
+      float lon = atan(n.x, n.z), lat = asin(clamp(n.y, -1.0, 1.0));
+      float po = lat - 0.22 * sin(lon * 1.2 + 0.4) + 0.08;
+      float stay = 1.0 - max(uOpen.x, max(uOpen.y, uOpen.z));
+      inC += mix(warm, vec3(0.74, 0.82, 1.0), 0.55) * uLit * uMark * stay * (1.0 - tiny) * (exp(-po * po * 4.0) * (0.035 + 0.19 * smoothstep(0.3, 0.75, fbm(n * 2.1 + 11.0))) + pow(1.0 - z, 3.0) * 0.06);
+    }
     /* 작을 때의 둘레선은 번지지 않게 또렷이 긋고, 빛 오는 쪽을 더 밝게 한다 */
     float edge = (1.0 - smoothstep(0.35, 1.0, abs(px))) * tiny * (0.26 + 0.5 * cres);
     float soft = 1.0 - 0.75 * tiny;
@@ -1852,15 +1871,21 @@ void main(){
     col *= 1.0 - dim * ev * front;
     col += warm * e * ev * front * 0.96;
   }
-  /* 새긴 자리. 구가 작게 줄면 보이지 않는다 */
-  float mv = uMark * smoothstep(30.0, 84.0, uR / uDpr) * inside;
+  /* 지도. 공간은 별이고 별 사이를 가는 선으로 잇는다. 별은 눈의 점이 날아와 모인 것이라, 점마다 자리(uDot)와 크기 · 밝기 · 번짐(uDotA)을 받는다.
+     점은 구가 커지거나 작아져도 화면에서 동그란 점으로 남는다 */
+  float mv = uMark * inside;
   if (mv > 0.001) {
-    vec2 l2 = vec2(cos(uAz), sin(uAz));
-    vec2 a0 = place(n, uM0, uHot.x, uHere.x, uOpen.x, z, l2, uSweep.x);
-    vec2 a1 = place(n, uM1, uHot.y, uHere.y, uOpen.y, z, l2, uSweep.y);
-    vec2 a2 = place(n, uM2, uHot.z, uHere.z, uOpen.z, z, l2, uSweep.z);
-    col *= 1.0 - max(a0.y, max(a1.y, a2.y)) * mv;
-    col += warm * uLit * mv * (a0.x + a1.x + a2.x);
+    float mpx = uR / uDpr;
+    float ln = max(seg(n.xy, uM1.xy, uM0.xy, clamp(uLine * 2.0, 0.0, 1.0), mpx), seg(n.xy, uM0.xy, uM2.xy, clamp(uLine * 2.0 - 1.0, 0.0, 1.0), mpx));
+    float dl = 0.0;
+    for (int i = 0; i < 22; i++) {
+      vec3 a = uDotA[i];
+      if (a.y > 0.003) {
+        float dp = length(n.xy - uDot[i].xy) * mpx;
+        dl += a.y * ((1.0 - smoothstep(a.x - 0.6, a.x + 0.6, dp)) + 0.20 * exp(-max(dp - a.x, 0.0) / (0.4 * a.x + 0.5)) + a.z * 0.2 * exp(-dp / (a.x * 2.4 + 3.0)));
+      }
+    }
+    col += warm * uLit * inside * (ln * 0.30 * smoothstep(34.0, 60.0, mpx) + min(dl, 1.25) * 0.96);
   }
   /* 어두운 번짐이 계단으로 끊기지 않게 낟알을 얹는다 */
   float g = ign(f + uSeed * 7.31) + ign(f.yx + 17.0 + uSeed * 3.17) - 1.0;
@@ -1878,7 +1903,8 @@ function initGL() {
     gl.useProgram(pr);
     const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uCut', 'uCutOn', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen', 'uEye', 'uFace', 'uGaze', 'uSweep', 'uTiny']) U[k] = gl.getUniformLocation(pr, k);
+    U = {}; for (const k of ['uRes', 'uC', 'uR', 'uLit', 'uAz', 'uLz', 'uFocus', 'uGb', 'uDpr', 'uSeed', 'uAxis', 'uMark', 'uCalm', 'uCut', 'uCutOn', 'uM0', 'uM1', 'uM2', 'uHot', 'uHere', 'uOpen', 'uEye', 'uFace', 'uGaze', 'uTiny', 'uLine']) U[k] = gl.getUniformLocation(pr, k);
+    U.uDot = gl.getUniformLocation(pr, 'uDot[0]'); U.uDotA = gl.getUniformLocation(pr, 'uDotA[0]');
     return true;
   } catch (e) { console.warn('구 셰이더를 만들지 못했습니다.', e); gl = null; return false; }
 }
@@ -1889,6 +1915,43 @@ function resize() {
   if (gl) gl.viewport(0, 0, cw, ch);
   if (!tw) { const lit = S.lit; snap(poseName); if (poseName === 'inside') S.lit = lit; }
   layoutSwitch(); if (fanOn) layoutFan();
+}
+/* ── 지도의 점. 눈의 점 스물둘이 흩어져 공간의 별 셋으로 모이고, 남은 여섯은 먼 별이 된다.
+      S.mark가 0이면 눈의 자리에, 1이면 별의 자리에 있다. 구는 돌지 않고 점만 움직인다 ── */
+const EYE_DOTS = [];
+for (const sx of [-1, 1]) for (let r = -2; r <= 2; r++) for (let c = -1; c <= 1; c++) { if (Math.abs(c) === 1 && Math.abs(r) === 2) continue; EYE_DOTS.push([sx, c, r]); }
+const FAR = [[-.16, .64, 1.1], [.34, .58, .8], [-.72, -.20, 1.0], [-.24, -.14, .8], [.74, -.36, 1.1], [-.30, -.72, .9]];
+/* 점마다 갈 곳: 왼쪽 눈의 점은 워크스페이스로, 가운데 쪽의 점은 솔리오로, 오른쪽 눈의 점은 PULSE로 간다. lead는 별로 남는 점이고 far는 먼 별이 되는 점이다 */
+const DOT_TO = EYE_DOTS.map((e, i) => i < 5 ? { s: 1, lead: i === 2 } : i < 8 ? { far: i - 5 } : i < 14 ? { s: 0, lead: i === 10 } : i < 17 ? { far: i - 11 } : { s: 2, lead: i === 19 });
+const DPOS = new Float32Array(66), DATT = new Float32Array(66);
+/* 지도가 꺼진 쪽 자세에서 눈이 보이는 정도. 눈이 없는 자세(로그인을 묻는 큰 구)에서 지도로 갈 때는 눈도 점도 눈 자리에 그리지 않는다 */
+let eyeEnd = 0;
+function mapDots(R) {
+  DATT.fill(0);
+  const m = S.mark; if (m < .0005) return;
+  // 눈이 있던 자리. 작은 구에서는 눈이 몸에 견줘 크고, 눈은 얼굴과 함께 돈다(셰이더의 눈과 같은 셈이다)
+  const small = smooth(60, 14, R), k = lerp(1, 1.85, small), g = .04 * k, sep = .22 * lerp(1, 1.12, small);
+  const fl = Math.hypot(eye.face[0], eye.face[1], 1), F = [eye.face[0] / fl, eye.face[1] / fl, 1 / fl], rl = Math.hypot(F[2], F[0]) || 1, Rr = [F[2] / rl, 0, -F[0] / rl];
+  const Uu = [F[1] * Rr[2] - F[2] * Rr[1], F[2] * Rr[0] - F[0] * Rr[2], F[0] * Rr[1] - F[1] * Rr[0]];
+  const rd = clamp(.27 * g * R, .9, 6), sk = clamp(R / 190, .62, 1.15), fade = smooth(0, .1, m), seen = eye.kind !== 'none' && eye.gateS > .5 && eyeEnd > .5;
+  // 들어갈 때는 그 공간의 별만 남고 나머지는 물러난다
+  const target = ORDER.indexOf(diveTo), starR = i => (ORDER[i] === space ? 3.7 : 2.7) * sk + .8 * hot[i] + (i === target ? 1.6 * S.open : 0);
+  EYE_DOTS.forEach((e, i) => {
+    const u = e[0] * sep + e[1] * g + eye.gaze[0] * g, v = .06 + e[2] * g + eye.gaze[1] * g, w = Math.sqrt(Math.max(0, 1 - u * u - v * v));
+    const x0 = Rr[0] * u + Uu[0] * v + F[0] * w, y0 = Rr[1] * u + Uu[1] * v + F[1] * w;
+    const t = DOT_TO[i], q = easeIO(clamp((m - .03 - ((i * 5) % 22) / 22 * .14) / .7, 0, 1));
+    let x, y, r, a, glow = 0;
+    if (t.far !== undefined) { const b = FAR[t.far]; x = lerp(x0, b[0], q); y = lerp(y0, b[1], q); r = lerp(rd, Math.max(.8, b[2] * sk), q); a = lerp(1, .4, q) * (1 - S.open); }
+    else {
+      const c = STAR[ORDER[t.s]]; x = lerp(x0, c[0], q); y = lerp(y0, c[1], q);
+      r = lerp(rd, t.lead ? starR(t.s) : rd * .7, q); a = t.lead ? 1 : 1 - smooth(.8, 1, q);
+      if (t.lead) glow = q * (1 + .6 * hot[t.s] + (ORDER[t.s] === space ? .3 : 0));
+      if (t.s !== target) a *= 1 - S.open;
+    }
+    // 눈이 보이지 않던 자세에서는 점이 눈 자리에서 날아오지 않고 갈 자리에서 서서히 켜진다
+    if (!seen) { const b = t.far !== undefined ? FAR[t.far] : STAR[ORDER[t.s]]; x = b[0]; y = b[1]; a *= q; }
+    DPOS[i * 3] = x; DPOS[i * 3 + 1] = y; DPOS[i * 3 + 2] = 0; DATT[i * 3] = r; DATT[i * 3 + 1] = a * fade; DATT[i * 3 + 2] = glow;
+  });
 }
 let frameNo = 0;
 function draw(now) {
@@ -1919,6 +1982,7 @@ function draw(now) {
   const ax = [S.ax[0] + (ptrS.x - .5) * .24 * free, S.ax[1] - (ptrS.y - .5) * .2 * free, S.ax[2]];
   const mk = ORDER.map(name => placeDir(ax, S.spin, name));
   mk.forEach((m, i) => { markXY[i] = [cx + S.r * m[0], cy - S.r * m[1], m[2]]; });
+  if (tw) { const to = poses()[tw.name]; eyeEnd = (tw.from.mark || 0) <= (to.mark || 0) ? (tw.from.eye || 0) : (to.eye || 0); } else if (S.mark <= .0005) eyeEnd = S.eye;
   const lit = S.lit * (1 + .03 * Math.sin(t * .9) * still);
   const gb = glintBoost * (1.2 + .8 * Math.sin(t * 3.1));
   if (still) frameNo = (frameNo + 1) % 64;
@@ -1933,10 +1997,11 @@ function draw(now) {
     gl.uniform3f(U.uHot, hot[0], hot[1], hot[2]);
     gl.uniform3f(U.uHere, space === ORDER[0] ? 1 : 0, space === ORDER[1] ? 1 : 0, space === ORDER[2] ? 1 : 0);
     gl.uniform3f(U.uOpen, diveTo === ORDER[0] ? S.open : 0, diveTo === ORDER[1] ? S.open : 0, diveTo === ORDER[2] ? S.open : 0);
-    gl.uniform4f(U.uEye, { dot: 1, light: 2, slit: 3, none: 0 }[eye.kind], S.eye * eye.gateS, eye.open, MOOD_NO[eye.mood]);
+    /* 지도가 켜지는 첫머리에 눈이 물러나고 그 자리에서 점이 떠난다. 꺼질 때는 점이 돌아온 자리에서 눈이 다시 뜬다 */
+    gl.uniform4f(U.uEye, { dot: 1, light: 2, slit: 3, none: 0 }[eye.kind], (S.mark > .0005 ? (1 - smooth(0, .1, S.mark)) * eyeEnd : S.eye) * eye.gateS, eye.open, MOOD_NO[eye.mood]);
     gl.uniform3f(U.uFace, eye.face[0], eye.face[1], 1);
     gl.uniform3f(U.uGaze, eye.gaze[0], eye.gaze[1], eye.fixed ? eye.fixed.t : t % 600);
-    gl.uniform3f(U.uSweep, sweep[0], sweep[1], sweep[2]);
+    mapDots(rr); gl.uniform3fv(U.uDot, DPOS); gl.uniform3fv(U.uDotA, DATT); gl.uniform1f(U.uLine, clamp((S.mark - .72) / .28, 0, 1) * (1 - S.open));
     gl.uniform1f(U.uTiny, eye.fixed && eye.fixed.tiny ? eye.fixed.tiny : 0);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   } else if (ctx2d) {

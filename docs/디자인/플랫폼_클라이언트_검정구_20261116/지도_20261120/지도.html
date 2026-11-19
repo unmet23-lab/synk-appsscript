@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SYNK 공간 지도</title>
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(../../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+/* 짜임: 검정 무대에 지구 하나. 공간은 지구 위의 도시이고, 이름은 지구 옆에 지도의 설명 줄처럼 놓인다. 색과 글자는 검정 구 시안과 같다. */
+:root{
+  color-scheme:dark;
+  --void:#000000;
+  --paper:#F3F1EC;
+  --soft:rgba(243,241,236,.78);
+  --dim:rgba(243,241,236,.5);
+  --hair:rgba(243,241,236,.10);
+  --ring:rgba(243,241,236,.55);
+  --sans:'SUIT Variable','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --display:300 clamp(28px,4.4vw,54px)/1.25 var(--sans);
+  --title:300 clamp(22px,2.5vw,32px)/1.3 var(--sans);
+  --body:400 16px/1.6 var(--sans);
+  --small:400 13px/1.4 var(--sans);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--void);color:var(--paper);font-family:var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;word-break:keep-all;overflow-wrap:break-word}
+.wrap{max-width:1180px;margin:0 auto;padding-block:clamp(28px,7vh,80px) 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.head{display:flex;flex-direction:column;gap:18px;padding-bottom:clamp(10px,2vh,24px)}
+.tag{margin:0;font:var(--small);letter-spacing:.2em;color:var(--dim)}
+h1{margin:0;font:var(--display);letter-spacing:-.018em;text-wrap:balance}
+h1 span{display:block;color:var(--dim)}
+.lead{margin:0;font:var(--body);color:var(--soft);max-width:36em}
+h2{margin:0;font:var(--title);letter-spacing:-.012em}
+.say{margin:0;font:var(--body);color:var(--soft);max-width:38em}
+
+/* 무대. 지구는 가운데에 있고, 공간의 이름은 지구 밖 좌우에 놓인다 */
+.stage{position:relative;width:100%;aspect-ratio:980/620;max-height:76vh;margin:0 auto}
+.stage canvas{display:block;width:100%;height:100%}
+.places{position:absolute;inset:0;pointer-events:none;transition:opacity .3s ease}
+.place{appearance:none;position:absolute;pointer-events:auto;display:flex;flex-direction:column;gap:3px;margin:0;padding:8px 2px;border:0;background:none;color:var(--paper);font-family:var(--sans);text-align:left;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.place[data-side="l"]{text-align:right;align-items:flex-end}
+.place .nm{font:300 clamp(17px,1.9vw,22px)/1.2 var(--sans);letter-spacing:.2em;margin-right:-.2em;color:var(--soft);transition:color .2s ease}
+.place .ds{font:var(--small);color:var(--dim)}
+.place:hover .nm,.place:focus-visible .nm,.place[aria-current="true"] .nm{color:var(--paper)}
+.place:focus-visible{outline:1px solid var(--ring);outline-offset:4px}
+.stage.gone .places{opacity:0;pointer-events:none}
+.stage.gone .place{pointer-events:none}
+/* 들어간 뒤 */
+.room{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;pointer-events:none;transition:opacity .35s ease;text-align:center}
+.room.on{opacity:1;pointer-events:auto}
+.room .nm{margin:0;font:300 clamp(26px,4vw,44px)/1.2 var(--sans);letter-spacing:.24em;margin-right:-.24em}
+.room .ds{margin:0;font:var(--body);color:var(--soft)}
+.quiet{appearance:none;margin:10px 0 0;padding:8px 2px;border:0;border-bottom:1px solid var(--dim);background:none;color:var(--paper);font:400 14px/1.3 var(--sans);cursor:pointer}
+.quiet:focus-visible{outline:1px solid var(--ring);outline-offset:4px}
+
+/* 시안을 조작하는 막대. 디자인의 일부가 아니다 */
+.opts{display:flex;flex-wrap:wrap;align-items:center;gap:6px 22px;padding-block:18px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.opts .lbl{font:var(--small);color:var(--dim);min-width:5.4em}
+.mode{appearance:none;background:none;border:0;border-bottom:1px solid transparent;border-radius:0;margin:0;padding:8px 0 7px;font:400 14px/1.3 var(--sans);color:var(--dim);cursor:pointer;transition:color .25s ease,border-color .25s ease}
+.mode:hover{color:var(--soft)}
+.mode[aria-pressed="true"]{color:var(--paper);border-bottom-color:var(--paper)}
+.mode:focus-visible{outline:1px solid var(--ring);outline-offset:4px}
+
+.sec{display:flex;flex-direction:column;gap:clamp(16px,3vh,26px);padding-block:clamp(28px,5vh,56px);border-bottom:1px solid var(--hair)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,3vw,40px);align-items:start}
+figure{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+figure img{display:block;width:100%;height:auto}
+figcaption{font:var(--small);color:var(--dim)}
+figcaption b{font-weight:500;color:var(--paper)}
+.minis{display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap}
+.minis canvas{display:block}
+.notes{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;max-width:40em}
+.notes li{font:var(--body);color:var(--soft);padding-left:14px;position:relative}
+.notes li::before{content:"";position:absolute;left:0;top:.72em;width:5px;height:1px;background:var(--dim)}
+.nogl{display:none;margin:18px 0 0;font:var(--small);color:var(--soft)}
+html[data-nogl] .nogl{display:block}
+
+@media (max-width:680px){
+  .stage{aspect-ratio:1/1;max-height:none}
+  .places{position:static;display:flex;flex-direction:column;gap:2px;padding-top:6px;pointer-events:auto}
+  .place,.place[data-side="l"]{position:static;text-align:left;align-items:flex-start;padding:10px 2px}
+  .two{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.places,.room,.mode,.place .nm{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="head">
+    <p class="tag">SYNK PC 클라이언트 · 공간 지도 다시 그린 판</p>
+    <h1>공간 지도,<span>세계 지도로.</span></h1>
+    <p class="lead">구 위의 고리를 없앴습니다. 구는 지구가 되고, 공간은 지구 위의 도시 하나씩입니다. 이름에 손을 올리면 그 도시가 밝아지고, 누르면 그곳으로 들어갑니다.</p>
+  </header>
+
+  <div class="stage" id="stage">
+    <canvas id="globe" role="img" aria-label="세계 지도를 그린 검정 구. 공간 셋이 도시 자리에 점으로 찍혀 있다."></canvas>
+    <div class="places" id="places">
+      <button class="place" type="button" data-id="workspace" data-side="l"><span class="nm">WORKSPACE</span><span class="ds">팀이 함께 일하는 곳 · 울란바토르</span></button>
+      <button class="place" type="button" data-id="solio" data-side="r" aria-current="true"><span class="nm">SOLIO</span><span class="ds">지금 여기 · 서울</span></button>
+      <button class="place" type="button" data-id="pulse" data-side="l"><span class="nm">PULSE</span><span class="ds">고객과 함께 만드는 곳 · 방콕</span></button>
+    </div>
+    <div class="room" id="room" aria-live="polite">
+      <p class="nm" id="room-nm">SOLIO</p>
+      <p class="ds" id="room-ds">이 공간에 들어왔습니다.</p>
+      <button class="quiet" type="button" id="back">지도로 돌아가기</button>
+    </div>
+  </div>
+  <p class="nogl">이 브라우저에서는 지구를 그리지 못합니다. 크롬이나 엣지에서 열어 주세요.</p>
+
+  <div class="opts" role="group" aria-label="지도를 그리는 법">
+    <span class="lbl">그리는 법</span>
+    <button class="mode" type="button" data-mode="0" aria-pressed="true">결로 그린 땅</button>
+    <button class="mode" type="button" data-mode="1" aria-pressed="false">해안선만</button>
+  </div>
+
+  <section class="sec">
+    <h2>지금의 지도와 나란히</h2>
+    <div class="two">
+      <figure><img src="now.webp" width="864" height="720" alt="지금의 공간 지도. 가로줄을 깎은 검정 구에 고리 셋이 뚫려 있다."><figcaption><b>지금</b> · 구에 새긴 고리 셋</figcaption></figure>
+      <figure><canvas id="after" role="img" aria-label="다시 그린 지도. 세계 지도 위에 점 셋이 찍혀 있다."></canvas><figcaption><b>다시 그린 판</b> · 세계 지도 위의 도시 셋</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>작게 볼 때</h2>
+    <p class="say">구에 다가가 지도가 켜질 때의 크기(200)와 그보다 작은 크기(120)입니다. 왼쪽 위에 쉬고 있는 작은 구(32)에는 지도를 그리지 않고 지금처럼 눈만 둡니다.</p>
+    <div class="minis" id="minis"></div>
+  </section>
+
+  <section class="sec">
+    <h2>바꾼 것</h2>
+    <ul class="notes">
+      <li>고리와 구멍이 없습니다. 공간은 꽉 찬 작은 점 하나이고, 지금 있는 곳만 조금 크고 밝습니다.</li>
+      <li>이름은 구 아래가 아니라 지구 옆에 놓고, 도시에서 가는 선 하나로 잇습니다. 지도의 설명 줄과 같습니다.</li>
+      <li>지구는 거의 움직이지 않습니다. 이름에 손을 올리면 그 도시 쪽으로 조금만 돌아옵니다.</li>
+      <li>공간을 어느 도시에 둘지는 예시입니다. 세 곳을 아시아 한쪽에 모아, 고를 때 지구가 크게 돌지 않게 했습니다.</li>
+      <li>세계 지도는 누구나 쓸 수 있는 공개 자료(Natural Earth)로 그렸습니다.</li>
+    </ul>
+  </section>
+  <img id="land-src" src="land.webp" alt="" hidden>
+</main>
+
+<script>
+(() => {
+'use strict';
+/* 지구는 셰이더 하나(WebGL)로 그린다. 육지와 해안선은 그림 한 장(land.webp, 가로가 경도 · 세로가 위도)에서 읽는다.
+   WebGL 문맥은 하나만 만들고, 그린 것을 캔버스마다 옮겨 찍는다. 도시의 점과 잇는 선은 그 위에 2D로 그린다. */
+const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+const FS = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 uC;        /* 지구의 가운데(화소) */
+uniform float uR;       /* 지구의 반지름(화소) */
+uniform float uDpr, uMode, uN, uLit;
+uniform vec4 uView;     /* 보는 곳의 경도와 위도: sin 경도, cos 경도, sin 위도, cos 위도 */
+uniform sampler2D uMap;
+const vec3 WARM = vec3(1.0, 0.982, 0.955);
+const float PI = 3.14159265;
+void main(){
+  vec2 q = (gl_FragCoord.xy - uC) / uR;
+  float rr = length(q);
+  float px = 1.0 / uR;
+  vec3 col = vec3(0.0);
+  vec3 L = normalize(vec3(-0.55, 0.62, 0.56));
+  if (rr < 1.0) {
+    float z = sqrt(1.0 - rr * rr);
+    vec3 n = vec3(q, z);
+    /* 화면의 방향을 지구의 방향으로 돌린다 */
+    vec3 a = vec3(n.x, n.y * uView.w + n.z * uView.z, -n.y * uView.z + n.z * uView.w);
+    vec3 e = vec3(a.x * uView.y + a.z * uView.x, a.y, -a.x * uView.x + a.z * uView.y);
+    float lat = asin(clamp(e.y, -1.0, 1.0)), lon = atan(e.x, e.z);
+    vec4 m = texture2D(uMap, vec2(lon / (2.0 * PI) + 0.5, 0.5 - lat / PI));
+    float land = smoothstep(0.30, 0.70, m.r), coast = m.g;
+    float lit = 0.34 + 0.66 * smoothstep(-0.25, 0.9, dot(n, L));
+    float limb = smoothstep(0.0, 0.22, z);
+    if (uMode < 0.5) {
+      /* 결로 그린 땅: 화면에 가로로 누운 가는 줄이 땅에서만 밝다. 바다에는 같은 줄이 아주 흐리게 남는다.
+         줄은 지구와 같이 돌지 않는다. 위도를 따라 깎으면 극점 둘레에 동심원이 생겨 과녁처럼 보인다.
+         줄의 축을 뒤로 조금 눕혀(0.2라디안) 줄이 아주 조금 휜다. 축의 끝은 구의 뒤쪽에 있어 보이지 않는다 */
+      const float ST = 0.1987, CT = 0.9801;
+      float zz = max(z, 0.16);
+      float f = (n.y * CT - z * ST) * uN * 0.5;
+      float df = uN * 0.5 * px * length(vec2(ST * q.x / zz, CT + ST * q.y / zz));
+      float hw = 0.62 * uDpr * df;
+      float d = abs(fract(f) - 0.5);
+      float line = 1.0 - smoothstep(hw - 0.5 * df, hw + 0.5 * df, d);
+      line = mix(line, clamp(2.0 * hw, 0.0, 1.0), smoothstep(0.22, 0.48, df));
+      col = WARM * lit * limb * (line * (land * 0.92 + (1.0 - land) * 0.05) + coast * 0.22);
+    } else {
+      /* 해안선만: 땅의 테두리와 30도마다의 경위선 */
+      float gz = max(z, 0.16);
+      float gy = abs(fract(lat * 6.0 / PI + 0.5) - 0.5) / ((6.0 / PI) * px / gz);
+      float gx = abs(fract(lon * 6.0 / PI + 0.5) - 0.5) / ((6.0 / PI) * px / (gz * max(cos(lat), 0.12)));
+      float grat = (1.0 - smoothstep(0.4 * uDpr, 1.1 * uDpr, min(gx, gy))) * 0.085;
+      col = WARM * lit * limb * (coast * 0.88 + land * 0.045 + grat);
+    }
+    /* 검정 구의 겉: 빛 쪽의 흐린 윤과 가는 테두리 */
+    vec3 H = normalize(L + vec3(0.0, 0.0, 1.0));
+    col += WARM * (pow(max(dot(n, H), 0.0), 26.0) * 0.050 + pow(1.0 - z, 4.0) * 0.10 * (0.25 + 0.75 * lit));
+    col *= smoothstep(1.0, 1.0 - 1.5 * px, rr);
+  } else {
+    /* 테두리 밖으로 번지는 아주 흐린 빛 */
+    float out1 = (rr - 1.0) * uR / uDpr;
+    col = WARM * exp(-out1 / 9.0) * 0.045 * (0.35 + 0.65 * smoothstep(-0.4, 0.8, dot(normalize(q), normalize(L.xy))));
+  }
+  gl_FragColor = vec4(col * uLit, 1.0);
+}`;
+
+const reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
+const narrow = (() => { try { return matchMedia('(max-width: 680px)'); } catch { return { matches: false }; } })();
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const rad = d => d * Math.PI / 180;
+
+/* 공간과 그 자리(경도, 위도). 어느 도시에 둘지는 예시다 */
+const PLACES = [
+  { id: 'workspace', name: 'WORKSPACE', say: '팀이 함께 일하는 곳', city: '울란바토르', lon: 106.92, lat: 47.92 },
+  { id: 'solio', name: 'SOLIO', say: '혼자 하는 사업의 도구', city: '서울', lon: 126.98, lat: 37.57 },
+  { id: 'pulse', name: 'PULSE', say: '고객과 함께 만드는 곳', city: '방콕', lon: 100.50, lat: 13.75 },
+];
+const HOME = { lon: 112, lat: 30 };   /* 평소에 보는 곳 */
+const S = { mode: 0, lon: HOME.lon, lat: HOME.lat, here: 'solio', hot: null, enter: null, inside: null };
+
+/* ── WebGL ── */
+const glc = document.createElement('canvas');
+const gl = glc.getContext('webgl', { antialias: false, alpha: false, preserveDrawingBuffer: true });
+let U = null, texBig = null, texSmall = null;
+function initGL(img) {
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+  gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  U = {}; for (const n of ['uC', 'uR', 'uDpr', 'uMode', 'uN', 'uLit', 'uView', 'uMap']) U[n] = gl.getUniformLocation(prog, n);
+  const tex = src => {
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return t;
+  };
+  texBig = tex(img);
+  /* 작은 지구는 줄인 그림에서 읽는다. 큰 그림을 그대로 읽으면 해안선이 깨져 보인다 */
+  const sm = document.createElement('canvas'); sm.width = 512; sm.height = 256;
+  sm.getContext('2d').drawImage(img, 0, 0, 512, 256);
+  texSmall = tex(sm);
+}
+
+/* 지구 하나를 그려 2D 캔버스에 옮긴다. v는 { cx, cy, r }(화소)이다 */
+function drawGlobe(ctx, w, h, dpr, v, lit) {
+  if (glc.width < w || glc.height < h) { glc.width = Math.max(glc.width, w); glc.height = Math.max(glc.height, h); }
+  gl.viewport(0, 0, w, h);
+  gl.bindTexture(gl.TEXTURE_2D, v.r * 2 * Math.PI < 1500 ? texSmall : texBig);
+  gl.uniform2f(U.uC, v.cx, h - v.cy);
+  gl.uniform1f(U.uR, v.r);
+  gl.uniform1f(U.uDpr, dpr);
+  gl.uniform1f(U.uMode, S.mode);
+  gl.uniform1f(U.uN, Math.max(16, Math.round(2 * v.r / dpr / 5.2)));   /* 줄 사이가 5.2px쯤 */
+  gl.uniform1f(U.uLit, lit);
+  gl.uniform4f(U.uView, Math.sin(rad(S.lon)), Math.cos(rad(S.lon)), Math.sin(rad(S.lat)), Math.cos(rad(S.lat)));
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  ctx.drawImage(glc, 0, glc.height - h, w, h, 0, 0, w, h);
+}
+/* 도시가 화면의 어디에 오는지. 뒤쪽이면 z가 음수다 */
+function project(pl, v) {
+  const lo = rad(pl.lon), la = rad(pl.lat), b = rad(S.lon), a = rad(S.lat);
+  const x = Math.cos(la) * Math.sin(lo), y = Math.sin(la), z = Math.cos(la) * Math.cos(lo);
+  const x1 = x * Math.cos(b) - z * Math.sin(b), z1 = x * Math.sin(b) + z * Math.cos(b);
+  const y2 = y * Math.cos(a) - z1 * Math.sin(a), z2 = y * Math.sin(a) + z1 * Math.cos(a);
+  return { x: v.cx + v.r * x1, y: v.cy - v.r * y2, z: z2 };
+}
+function dot(ctx, x, y, dpr, k, alpha) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, 15 * dpr * k);
+  g.addColorStop(0, 'rgba(255,250,243,' + 0.42 * alpha + ')'); g.addColorStop(1, 'rgba(255,250,243,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 15 * dpr * k, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(255,250,243,' + alpha + ')'; ctx.beginPath(); ctx.arc(x, y, 2.6 * dpr * k, 0, 7); ctx.fill();
+}
+
+/* ── 큰 무대 ── */
+const stage = document.querySelector('#stage'), cv = document.querySelector('#globe'), ctx = cv.getContext('2d', { alpha: false });
+const btn = {}; for (const b of document.querySelectorAll('.place')) btn[b.dataset.id] = b;
+const dprNow = () => Math.min(window.devicePixelRatio || 1, 2);
+function frameMain(now) {
+  const dpr = dprNow(), cw = cv.clientWidth, ch = cv.clientHeight;
+  const w = Math.max(1, Math.round(cw * dpr)), h = Math.max(1, Math.round(ch * dpr));
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  const wide = !narrow.matches;
+  const r0 = (wide ? Math.min(ch * 0.44, cw * 0.27, cw / 2 - 215) : cw * 0.44) * dpr;
+  let v = { cx: w / 2, cy: h / 2, r: r0 }, lit = 1, fade = 1;
+  /* 들어가는 길: 그 도시 쪽으로 다가가며 어두워진다 */
+  if (S.enter) {
+    const e = S.enter, u = clamp((now - e.t0) / e.dur, 0, 1), k = ease(e.back ? 1 - u : u);
+    const p = project(PLACES.find(q => q.id === e.id), v);
+    const zoom = reduced ? 1 : 1 + 1.25 * k;
+    v = { cx: p.x + (v.cx - p.x) * zoom, cy: p.y + (v.cy - p.y) * zoom, r: r0 * zoom };
+    lit = 1 - k; fade = 1 - clamp(k * 2.2, 0, 1);
+    if (u >= 1) { if (e.back) { S.inside = null; stage.classList.remove('gone'); } else showRoom(e.id); S.enter = null; }
+  } else if (S.inside) { lit = 0; fade = 0; }
+  drawGlobe(ctx, w, h, dpr, v, lit);
+  for (const pl of PLACES) {
+    const p = project(pl, v), b = btn[pl.id], hot = S.hot === pl.id, here = S.here === pl.id;
+    const vis = p.z > 0.08 ? clamp((p.z - 0.08) / 0.2, 0, 1) : 0;
+    if (wide) {
+      const right = b.dataset.side === 'r', lx = v.cx + (right ? 1 : -1) * (r0 + 30 * dpr);
+      b.style.left = (lx / dpr) + 'px'; b.style.top = (p.y / dpr) + 'px';
+      b.style.transform = 'translate(' + (right ? '0' : '-100%') + ',-50%)';
+      if (vis > 0 && fade > 0) {
+        /* 도시에서 이름까지 가는 선 하나 */
+        ctx.strokeStyle = 'rgba(243,241,236,' + (hot ? 0.72 : 0.26) * vis * fade + ')'; ctx.lineWidth = dpr;
+        ctx.beginPath(); ctx.moveTo(p.x + (right ? 7 : -7) * dpr, Math.round(p.y) + 0.5); ctx.lineTo(lx - (right ? 10 : -10) * dpr, Math.round(p.y) + 0.5); ctx.stroke();
+      }
+    } else { b.style.left = ''; b.style.top = ''; b.style.transform = ''; }
+    if (vis > 0 && fade > 0) dot(ctx, p.x, p.y, dpr, here ? 1.25 : hot ? 1.1 : 0.82, (here || hot ? 1 : 0.72) * vis * fade);
+  }
+}
+
+/* ── 작은 지구들: 나란히 보는 것과 작게 볼 때 ── */
+const smalls = [];
+function addSmall(c, css) { if (css) { c.style.width = css + 'px'; c.style.height = css + 'px'; } smalls.push({ c, ctx: c.getContext('2d', { alpha: false }), css }); }
+const after = document.querySelector('#after'); after.style.width = '100%'; after.style.aspectRatio = '1 / 1'; addSmall(after, 0);
+for (const px of [200, 120]) { const c = document.createElement('canvas'); c.setAttribute('role', 'img'); c.setAttribute('aria-label', px + '픽셀 크기의 지도'); document.querySelector('#minis').append(c); addSmall(c, px); }
+function frameSmalls() {
+  const dpr = Math.max(dprNow(), 2);
+  for (const s of smalls) {
+    const css = s.css || s.c.clientWidth || 1, w = Math.round(css * dpr);
+    if (s.c.width !== w) { s.c.width = w; s.c.height = w; }
+    const v = { cx: w / 2, cy: w / 2, r: w * (s.css ? 0.46 : 0.26) };
+    drawGlobe(s.ctx, w, w, dpr, v, 1);
+    for (const pl of PLACES) { const p = project(pl, v); if (p.z > 0.1) dot(s.ctx, p.x, p.y, dpr, (S.here === pl.id ? 1.1 : 0.75) * (s.css && s.css < 150 ? 0.8 : 1), S.here === pl.id ? 1 : 0.72); }
+  }
+}
+
+/* ── 돌리기. 지구는 거의 가만히 있고, 가리킨 도시 쪽으로 조금만 돌아온다 ── */
+let last = 0, frameId = 0, settle = 0;
+function frame(now) {
+  frameId = 0;
+  const dt = last ? clamp((now - last) / 1000, 0, 0.05) : 0.016; last = now;
+  const hot = S.hot && PLACES.find(p => p.id === S.hot);
+  const tl = HOME.lon + (hot ? (hot.lon - HOME.lon) * 0.35 : 0), ta = HOME.lat + (hot ? (hot.lat - HOME.lat) * 0.35 : 0);
+  const k = reduced ? 1 : 1 - Math.exp(-dt * 5);
+  S.lon += (tl - S.lon) * k; S.lat += (ta - S.lat) * k;
+  frameMain(now); frameSmalls();
+  const moving = S.enter || Math.abs(tl - S.lon) > 0.02 || Math.abs(ta - S.lat) > 0.02;
+  if (moving || ++settle < 4) frameId = requestAnimationFrame(frame);   /* 움직일 것이 없으면 멈춘다 */
+}
+function kick() { settle = 0; if (!frameId && !document.hidden) { last = 0; frameId = requestAnimationFrame(frame); } }
+
+/* 지금 있는 공간의 이름 아래에는 설명 대신 「지금 여기」를 적는다 */
+function mark() {
+  for (const pl of PLACES) {
+    const b = btn[pl.id], here = S.here === pl.id;
+    b.setAttribute('aria-current', String(here));
+    b.querySelector('.ds').textContent = (here ? '지금 여기' : pl.say) + ' · ' + pl.city;
+  }
+}
+function showRoom(id) {
+  const pl = PLACES.find(p => p.id === id);
+  S.inside = id; S.here = id;
+  mark();
+  document.querySelector('#room-nm').textContent = pl.name;
+  document.querySelector('#room').classList.add('on');
+  document.querySelector('#back').focus({ preventScroll: true });
+}
+function go(id) {
+  if (S.enter || S.inside) return;
+  stage.classList.add('gone'); S.hot = null;
+  S.enter = { id, t0: performance.now(), dur: reduced ? 1 : 560, back: false }; kick();
+}
+function back() {
+  if (!S.inside || S.enter) return;
+  const id = S.inside;
+  document.querySelector('#room').classList.remove('on');
+  S.enter = { id, t0: performance.now(), dur: reduced ? 1 : 460, back: true }; kick();
+  btn[id].focus({ preventScroll: true });
+}
+for (const b of Object.values(btn)) {
+  const on = () => { if (!S.enter && !S.inside) { S.hot = b.dataset.id; kick(); } }, off = () => { if (S.hot === b.dataset.id) { S.hot = null; kick(); } };
+  b.addEventListener('pointerenter', on); b.addEventListener('pointerleave', off);
+  b.addEventListener('focus', on); b.addEventListener('blur', off);
+  b.addEventListener('click', () => go(b.dataset.id));
+}
+document.querySelector('#back').addEventListener('click', back);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') back(); });
+for (const b of document.querySelectorAll('.mode')) b.addEventListener('click', () => {
+  S.mode = +b.dataset.mode;
+  for (const o of document.querySelectorAll('.mode')) o.setAttribute('aria-pressed', String(o === b));
+  kick();
+});
+window.addEventListener('resize', kick);
+if (typeof ResizeObserver === 'function') new ResizeObserver(kick).observe(cv);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
+
+/* 지도 그림이 다 읽히면 시작한다 */
+mark();
+const img = document.querySelector('#land-src');
+const start = () => { try { if (!gl) throw new Error('webgl 없음'); initGL(img); kick(); } catch (err) { document.documentElement.dataset.nogl = ''; } };
+if (img.complete && img.naturalWidth) start(); else { img.addEventListener('load', start); img.addEventListener('error', () => { document.documentElement.dataset.nogl = ''; }); }
+})();
+</script>
+</body>
+</html>
