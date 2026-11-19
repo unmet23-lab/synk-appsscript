@@ -172,7 +172,8 @@ function 오래됨(v, 지금) {
  * 후보: [{ 제목, 주소, 주소들? }] — 공모 지도의 열린 공모 목록에서 넘긴다. 공식 원문을 먼저 읽고,
  *   거기서 자격 문장을 못 찾으면(그림 · 첨부 공고) 공모 모음 사이트의 같은 공고 글을 읽는다.
  */
-async function 자격확인(folder, 후보, { fetchPage, carbon, budgetMs = 600000, 지금 = new Date(), batchSize = 6, 확인필요다시 = false } = {}) {
+async function 자격확인(folder, 후보, { fetchPage, carbon, budgetMs = 600000, 지금 = new Date(), batchSize = 2, 확인필요다시 = false } = {}) {
+  // 여섯 건씩 묶으면 구독 통로가 빈 답을 자주 냈다(11-20 첫 확인 23건 실패). 두 건씩이면 대부분 답한다.
   const 조건 = 조건읽기(folder);
   if (!조건) return { checked: 0, skipped: '신청자조건.json이 없습니다.' };
   if (!fetchPage) fetchPage = require('./공개쪽읽기.js').읽기;
