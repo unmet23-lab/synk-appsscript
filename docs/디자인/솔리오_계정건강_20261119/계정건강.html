@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>솔리오 계정 건강 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+
+/* 짜임: 검정 구 클라이언트의 솔리오 방 하나다. 맨 위 문장이 결론을 말하고, 그 아래에 계정마다 한 줄이 선다.
+   줄에 다가가면 그 계정의 결론, 잰 신호, 할 일이 차례로 펼쳐진다. 색은 하나이고, 손봐야 하는 줄만 밝다. */
+:root{
+  color-scheme:dark;
+  --void:#000000;
+  --paper:#F3F1EC;
+  --soft:rgba(243,241,236,.84);
+  --dim:rgba(243,241,236,.46);
+  --hair:rgba(243,241,236,.10);
+  --ring:rgba(243,241,236,.55);
+  --meta-bg:rgba(10,10,10,.84);
+  --sans:'SUIT Variable','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --display:300 clamp(25px,min(3.5cqw,5.6cqh),54px)/1.3 var(--sans);
+  --body:400 16px/1.25 var(--sans);
+  --small:400 13px/1.45 var(--sans);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--void);color:var(--paper);font-family:var(--sans);overflow:hidden;display:grid;place-items:center;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;word-break:keep-all;overflow-wrap:break-word}
+button{font:inherit;color:inherit}
+
+/* 무대가 곧 창이다 */
+#stage{position:relative;width:var(--sw,100%);height:var(--sh,100%);max-width:100%;max-height:100%;min-height:240px;overflow:hidden;background:var(--void);container-type:size;container-name:stage}
+body.sized #stage{outline:1px solid var(--hair)}
+.layer{position:absolute;inset:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* 왼쪽 위의 구와 솔리오의 프로그램 */
+.here{position:absolute;z-index:2;left:calc(clamp(20px,9.5cqw,168px) - 9px);top:clamp(12px,3.4cqh,38px);display:flex;align-items:center;gap:6px}
+#orb{position:relative;width:44px;height:44px;flex:none;border-radius:50%;background:radial-gradient(circle at 36% 30%,#2b2b29 0,#0b0b0a 46%,#000 72%);box-shadow:inset 0 0 0 1px rgba(243,241,236,.13)}
+#orb::before,#orb::after{content:"";position:absolute;top:19px;width:3px;height:5px;border-radius:2px;background:var(--paper);animation:blink 6.4s infinite}
+#orb::before{left:15px}#orb::after{left:25px}
+@keyframes blink{0%,95%,100%{transform:scaleY(1)}97.5%{transform:scaleY(.1)}}
+#here-name{padding:10px 8px 10px 0;font:400 12px/1 var(--sans);letter-spacing:.2em;color:rgba(243,241,236,.7)}
+.rail{display:flex;align-items:center;gap:2px;margin-left:12px}
+.obj{display:inline-flex;align-items:center;padding:10px 8px;color:var(--dim)}
+.obj svg{width:18px;height:18px;flex:none}
+.obj-n{max-width:0;margin-left:0;opacity:0;overflow:hidden;white-space:nowrap;font:400 13px/1.3 var(--sans);letter-spacing:.03em;transition:max-width .46s cubic-bezier(.2,.8,.2,1),margin-left .46s cubic-bezier(.2,.8,.2,1),opacity .3s ease}
+.rail:hover .obj-n,.obj[aria-current="true"] .obj-n{max-width:9em;margin-left:9px;opacity:1}
+.obj[aria-current="true"]{color:var(--paper)}
+
+/* 방: 한 문장, 그 아래에 계정 줄 */
+.room{position:absolute;left:clamp(20px,9.5cqw,168px);right:clamp(20px,9.5cqw,168px);top:clamp(86px,19cqh,180px);max-height:calc(100% - clamp(86px,19cqh,180px) - 30px);overflow-y:auto;scrollbar-width:none;padding-bottom:64px;-webkit-mask-image:linear-gradient(#000 calc(100% - 44px),transparent);mask-image:linear-gradient(#000 calc(100% - 44px),transparent)}
+.say{margin:0;font:var(--display);letter-spacing:-.018em;max-width:22em;text-wrap:balance}
+.say .then{display:block;color:var(--dim)}
+.rows{margin-top:clamp(22px,4.6cqh,52px);display:grid;grid-template-columns:minmax(120px,auto) minmax(0,1fr) auto auto;column-gap:22px;min-width:0}
+.row{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-items:center;padding:15px 0;border-top:1px solid var(--hair);color:var(--dim);transition:color .25s ease}
+button.row{appearance:none;background:none;border:0;border-top:1px solid var(--hair);border-radius:0;margin:0;width:100%;text-align:left;font:inherit;cursor:pointer}
+button.row:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
+.row.now,button.row:hover,button.row.opened{color:var(--paper)}
+.nm{font:var(--body);white-space:nowrap}
+.mid{min-width:0;font:var(--small);color:var(--dim);transition:color .25s ease}
+button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.now .mid,button.row:hover .mid,button.row.opened .mid{color:var(--soft)}
+.val{font:var(--small);text-align:right;white-space:nowrap}
+.row.now .val{font-weight:600}
+.when{font:var(--small);font-variant-numeric:tabular-nums;text-align:right;color:var(--dim);white-space:nowrap}
+/* 줄의 안쪽: 다가가면 그 줄 아래로 차례로 펼쳐진다 */
+.more{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;grid-template-rows:0fr;transition:grid-template-rows .46s cubic-bezier(.2,.8,.2,1)}
+.more.open{grid-template-rows:1fr}
+.more-in{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-content:start;min-height:0;overflow:hidden}
+.more-in > *{grid-column:1 / -1;opacity:0;transform:translateY(-7px);transition:opacity .14s ease,transform .14s ease}
+.more.open .more-in > *{opacity:1;transform:none;transition:opacity .34s ease calc(70ms + var(--j,0) * 45ms),transform .46s cubic-bezier(.2,.8,.2,1) calc(70ms + var(--j,0) * 45ms)}
+.more-say{margin:0;padding:2px 0 14px;max-width:44em;font:400 17px/1.5 var(--sans);color:var(--paper);text-wrap:pretty}
+.more-in .row{border:0;padding:7px 0;align-items:start}
+.row.sub .nm{font:var(--small);color:rgba(243,241,236,.7)}
+.row.sub .mid{white-space:normal;max-width:46em}
+.row.sub.now .nm,.row.sub.now .mid{color:var(--paper)}
+.row.sub .val{color:var(--dim)}
+.row.sub.now .val{color:var(--paper)}
+/* 할 일: 신호 줄과 틈을 두고, 글이 밝다 */
+.row.do{grid-template-columns:subgrid}
+.row.do .mid{grid-column:2 / -1;color:var(--paper);font:400 14px/1.55 var(--sans);max-width:44em}
+.row.do .nm{color:var(--paper)}
+.row.do.first{margin-top:10px;padding-top:16px;border-top:1px solid var(--hair)}
+.more-note{margin:0;padding:10px 0 0;max-width:52em;font:var(--small);color:var(--dim)}
+.more-in > :last-child{padding-bottom:20px}
+.read{margin:0;padding-top:16px;border-top:1px solid var(--hair);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 14px;font:var(--small);color:var(--dim)}
+
+/* 창이 좁으면 이름과 상태가 한 줄, 유형과 숫자가 그 아래다 */
+@container stage (max-width:860px){
+  .rows{grid-template-columns:minmax(0,1fr) auto;column-gap:14px}
+  button.row{row-gap:5px}
+  button.row .nm{grid-column:1;white-space:normal}
+  button.row .val{grid-column:2;grid-row:1}
+  button.row .mid{grid-column:1 / -1;grid-row:2;white-space:normal}
+  button.row .when{grid-column:1 / -1;grid-row:3;text-align:left;white-space:normal}
+  .row.sub{row-gap:3px}
+  .row.sub .nm{grid-column:1}
+  .row.sub .val{grid-column:2;grid-row:1}
+  .row.sub .mid,.row.do .mid{grid-column:1 / -1;grid-row:2}
+  .row.sub .when{display:none}
+  .rail .obj:not([aria-current="true"]){display:none}
+}
+@container stage (max-height:330px){.rows,.read{display:none}}
+
+/* 시안 조작 막대. 디자인의 일부가 아니다 */
+#meta{position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:9;display:flex;gap:2px;padding:5px;border-radius:999px;background:var(--meta-bg);border:1px solid var(--hair);max-width:calc(100% - 32px);overflow-x:auto;scrollbar-width:none}
+#meta button{appearance:none;border:0;background:none;color:rgba(243,241,236,.7);font:400 12px/1 var(--sans);padding:9px 13px;border-radius:999px;white-space:nowrap;cursor:pointer}
+#meta button:hover,#meta button:focus-visible{color:var(--paper);background:rgba(243,241,236,.08);outline:none}
+@media (prefers-reduced-motion:reduce){
+  .more,.more-in > *,.obj-n{transition:none !important}
+  #orb::before,#orb::after{animation:none}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer">
+    <div class="here">
+      <span id="orb" role="img" aria-label="SYNK 구"></span>
+      <span id="here-name">SOLIO</span>
+      <nav class="rail" aria-label="솔리오의 프로그램">
+        <span class="obj"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><path d="M9 9V2.5A6.5 6.5 0 0 1 15.5 9z" fill="currentColor" stroke="none"/></svg><span class="obj-n">구독</span></span>
+        <span class="obj"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><circle cx="9" cy="9" r="2.6"/></svg><span class="obj-n">백업</span></span>
+        <span class="obj"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M14.6 12.3A6.5 6.5 0 1 1 15.5 9"/></svg><span class="obj-n">방문자 분석</span></span>
+        <span class="obj"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="2.5" y="4" width="13" height="10" rx="1"/><circle cx="6.6" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="11.4" cy="9" r="1.2" fill="currentColor" stroke="none"/></svg><span class="obj-n">사무실</span></span>
+        <span class="obj" aria-current="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M1.5 9.5h3.2l1.8-4.5 3 8 2-5.5 1.2 2h3.8"/></svg><span class="obj-n">계정 건강</span></span>
+      </nav>
+    </div>
+    <main class="room" id="room">
+      <p class="say" id="say" aria-live="polite"></p>
+      <div class="rows" id="rows"></div>
+      <p class="read"><span id="when"></span><span id="scope"></span></p>
+    </main>
+  </div>
+</div>
+<div id="meta" role="toolbar" aria-label="시안 조작">
+  <button type="button" id="m-data">자료 · 우리 계정</button>
+  <button type="button" id="m-size">창 크기 · 꽉 참</button>
+</div>
+<script src="자료.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+const ROOMS = window.ROOMS || { real: { say: '자료를 읽지 못했습니다.', then: '자료만들기.cjs를 먼저 돌립니다.', when: '', scope: '', rows: [] }, sample: null };
+const NEAR = { row: 120, close: 400 }; // 검정 구 시안과 같은 머무는 시간
+const box = $('#rows');
+let which = 'real', timer = 0, leave = 0;
+
+function setMore(b, on) {
+  b.classList.toggle('opened', on); if (!on) b.classList.remove('pin');
+  b.setAttribute('aria-expanded', on ? 'true' : 'false');
+  b.nextElementSibling.classList.toggle('open', on);
+}
+const rowsOf = () => [...box.querySelectorAll('button.row')];
+function open(b, pin = false) {
+  for (const r of rowsOf()) if (r !== b && !r.classList.contains('pin')) setMore(r, false);
+  if (pin) b.classList.add('pin');
+  setMore(b, true);
+}
+
+function build(name) {
+  which = name; const d = ROOMS[name]; box.textContent = '';
+  const say = $('#say'); say.textContent = d.say + ' '; if (d.then) say.appendChild(el('span', 'then', d.then));
+  $('#when').textContent = d.when; $('#scope').textContent = d.scope;
+  $('#m-data').textContent = '자료 · ' + (name === 'real' ? '우리 계정' : '예시 계정');
+  for (const r of d.rows) {
+    const b = el('button', 'row' + (r.now ? ' now' : '')); b.type = 'button'; b.dataset.key = r.key; b.setAttribute('aria-expanded', 'false');
+    b.append(el('span', 'nm', r.nm), el('span', 'mid', r.mid), el('span', 'val', r.val), el('span', 'when', r.when));
+    const m = el('div', 'more'), inn = el('div', 'more-in'); let j = 0, firstDo = true;
+    const put = n => { n.style.setProperty('--j', j++); inn.appendChild(n); };
+    for (const [kind, a, c, v, w] of r.more) {
+      if (kind === 'say') put(el('p', 'more-say', a));
+      else if (kind === 'note') put(el('p', 'more-note', a));
+      else if (kind === 'do') { const row = el('div', 'row sub do' + (firstDo ? ' first' : '')); firstDo = false; row.append(el('span', 'nm', a), el('span', 'mid', c)); put(row); }
+      else { const row = el('div', 'row sub' + (v === '나쁨' ? ' now' : '')); row.append(el('span', 'nm', a), el('span', 'mid', c), el('span', 'val', v), el('span', 'when', w)); put(row); }
+    }
+    m.appendChild(inn); box.append(b, m);
+    b.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(timer); timer = setTimeout(() => open(b), NEAR.row); });
+    b.addEventListener('pointerleave', () => clearTimeout(timer));
+    b.addEventListener('focus', () => { if (b.matches(':focus-visible')) open(b); });
+    b.addEventListener('click', () => { if (b.classList.contains('pin')) setMore(b, false); else open(b, true); });
+  }
+}
+box.addEventListener('pointerenter', () => clearTimeout(leave));
+box.addEventListener('pointerleave', () => { clearTimeout(timer); clearTimeout(leave); leave = setTimeout(() => { for (const r of rowsOf()) if (!r.classList.contains('pin')) setMore(r, false); }, NEAR.close); });
+
+$('#m-data').addEventListener('click', () => { if (ROOMS.sample) build(which === 'real' ? 'sample' : 'real'); $('#room').scrollTop = 0; });
+const SIZES = [['꽉 참', '', ''], ['1100 × 700', '1100px', '700px'], ['680 × 760', '680px', '760px'], ['390 × 700', '390px', '700px']]; let si = 0;
+$('#m-size').addEventListener('click', () => {
+  si = (si + 1) % SIZES.length; const [nm, w, h] = SIZES[si], st = $('#stage').style;
+  if (w) { st.setProperty('--sw', w); st.setProperty('--sh', h); } else { st.removeProperty('--sw'); st.removeProperty('--sh'); }
+  document.body.classList.toggle('sized', !!w); $('#m-size').textContent = '창 크기 · ' + nm;
+});
+
+// 주소 끝: #sample은 예시 계정, #open은 첫 줄을 연 채로
+const hash = location.hash.slice(1).split('-');
+build(hash.includes('sample') && ROOMS.sample ? 'sample' : 'real');
+if (hash.includes('open')) { const first = rowsOf()[0]; if (first) open(first, true); }
+})();
+</script>
+</body>
+</html>
