@@ -134,8 +134,36 @@ test('설치별 담당 계정만 요청하며 작업자가 누구인지 드러�
   fs.writeFileSync(path.join(root,'worker-config.json'),JSON.stringify({accountIds:['one','two','three'],excludedAccountIds:['two']}));
   const options={stateDir:root,catalog:{accounts:[{id:'one',accountStatus:'operating'},{id:'two',accountStatus:'operating'},{id:'three',accountStatus:'historical'}]}};
   const result=workerIdentity(options);
-  assert.match(result.workerId,/^pc_[a-f0-9]{28}$/);assert.deepEqual(result,workerIdentity(options));assert.deepEqual(result.accountIds,['one']);
+  assert.match(result.workerId,/^pc_[a-f0-9]{28}$/);assert.deepEqual(result,workerIdentity(options));
+  // 운영이 아닌 계정(three)도 요청을 받되 읽지 않고 닫는다. 제외 목록(two)은 그대로 받지 않는다.
+  assert.deepEqual(result.accountIds,['one','three']);assert.deepEqual(result.unmanaged,['three']);
  }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+test('원장에서 운영이 아닌 계정의 요청은 브라우저를 열지 않고 「원장과 연결 필요」로 닫는다(11-19 대기 한 건이 회차를 막음)',async t=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'synk-worker-unmapped-'));
+  t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+  const job={accountId:'closed-tiktok',channelId:'channel',requestId:'request',token:'lease',workerId:'w',requestedAt:new Date().toISOString(),missing:['views']};
+  const events=[];
+  await processJob({post:async(url,body)=>{events.push([url,body]);return {}; }},job,{requestDir:root,profiles:{'closed-tiktok':{browser:'ego',profileId:'Profile 9'}},policies:{},
+    catalog:{accounts:[{id:'closed-tiktok',platform:'tiktok',accountStatus:'excluded-existing'}]},capture:async()=>{throw new Error('읽으면 안 된다');}});
+  assert.deepEqual(events,[['/api/collection-progress/update',{channelId:'channel',requestId:'request',token:'lease',workerId:'w',reason:'unmapped'}]]);
+  assert.deepEqual(fs.readdirSync(root),[]);
+});
+test('일꾼은 운영이 아닌 계정을 브라우저가 바빠도 받아 닫고, 운영 계정은 그대로 읽는다',async t=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'synk-worker-unmapped-drain-'));
+  t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+  const accounts=[{id:'live',platform:'x',accountStatus:'operating'},{id:'closed',platform:'tiktok',accountStatus:'excluded-existing'}];
+  const profiles={live:{browser:'ego',profileId:'Profile 1'},closed:{browser:'ego',profileId:'Profile 1'}};
+  const jobs=['live','closed'].map(id=>({channelId:id,accountId:id,requestId:id,token:'lease',requestedAt:new Date().toISOString(),missing:['views']}));
+  const reasons={},read=[];let release;const holding=new Promise(resolve=>{release=resolve;});
+  const api={post:async(url,body)=>{
+    if(url.endsWith('/claim')){const i=jobs.findIndex(j=>body.accountIds.includes(j.accountId));return {job:i===-1?null:jobs.splice(i,1)[0]};}
+    if(body.reason){reasons[body.channelId]=body.reason;if(body.channelId==='closed')release();}
+    return {};
+  }};
+  const count=await drain(api,{requestDir:root,idleMs:0,profiles,policies:{},catalog:{accounts},workerId:'test_unmapped_worker',
+    capture:async({account})=>{read.push(account.id);await holding;return 'limited';}});
+  assert.equal(count,2);assert.deepEqual(read,['live']);assert.deepEqual(reasons,{live:'limited',closed:'unmapped'});
 });
 test('공식 파일은 현재 요청 폴더의 실제 신규 다운로드일 때만 요청 증빙을 붙인다',()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-worker-download-'));

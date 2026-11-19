@@ -64,8 +64,11 @@ function workerIdentity(options){
   const workerId=options.workerId||'pc_'+crypto.createHash('sha256').update(os.hostname()+'\0'+os.homedir()).digest('hex').slice(0,28);
   const config=options.workerConfig||readWorkerConfig(options.stateDir);
   const allow=config.accountIds?new Set(config.accountIds):null,excluded=new Set(config.excludedAccountIds||[]);
-  const accountIds=(options.catalog||catalog).accounts.filter(a=>MANAGED.has(a.accountStatus)&&(!allow||allow.has(a.id))&&!excluded.has(a.id)).map(a=>a.id);
-  return {workerId,accountIds};
+  const mine=(options.catalog||catalog).accounts.filter(a=>(!allow||allow.has(a.id))&&!excluded.has(a.id));
+  // 원장에서 운영이 아닌 계정(11-19 yuhobuilds-tiktok 「제외」처럼)도 요청을 받아 읽지 않고 닫는다(processJob).
+  // 운영 서버 판이 아직 그 채널을 갖고 있으면 「모두 수집」마다 요청이 생기고, 아무도 안 가져가면 대기로 남아 다음 회차가 열리지 않는다.
+  const unmanaged=mine.filter(a=>!MANAGED.has(a.accountStatus)).map(a=>a.id);
+  return {workerId,accountIds:[...mine.filter(a=>MANAGED.has(a.accountStatus)).map(a=>a.id),...unmanaged],unmanaged};
 }
 function downloadCapture(batch,manifest,job,envelope){
   if(envelope.sourceType!=='official-export')return undefined;
@@ -95,7 +98,10 @@ async function submit(file, dir, job, api) {
 }
 
 async function processJob(api, job, options = {}) {
-  const account = (options.catalog || catalog).accounts.find(a=>a.id===job.accountId && MANAGED.has(a.accountStatus));
+  const listed = (options.catalog || catalog).accounts.find(a=>a.id===job.accountId);
+  // 원장에서 운영이 아닌 계정은 브라우저를 열지 않고 「원장과 연결 필요」로 바로 닫는다(회차 폴더도 만들지 않는다).
+  if (listed && !MANAGED.has(listed.accountStatus)) return api.post(ROUTE+'/update', {...lease(job),reason:'unmapped'});
+  const account = listed && MANAGED.has(listed.accountStatus) ? listed : undefined;
   const stateDir = options.stateDir || HOME_DIR;
   const root = options.requestDir || REQUEST_DIR;
   let dir = freshDir(root);
@@ -165,6 +171,7 @@ async function processJob(api, job, options = {}) {
 async function drain(api,{wait=sleep, idleMs=15_000, until=()=>false, ...options}={}) {
   let processed=0;
   const claim=workerIdentity(options);
+  const unmanaged=new Set(claim.unmanaged||[]);
   const profiles=new Map(),running=new Set();
   const telegramIds=new Set((options.catalog||catalog).accounts.filter(account=>account.platform==='telegram').map(account=>account.id));
   function onProfile(key,run){
@@ -184,7 +191,7 @@ async function drain(api,{wait=sleep, idleMs=15_000, until=()=>false, ...options
     if(running.size>=3){await Promise.race(running);continue;}
     const assignments=options.profiles||settings('browser-profiles',options.stateDir);
     // Keep busy browser accounts in the server queue. Telegram reads need no browser profile.
-    const accountIds=claim.accountIds.filter(id=>telegramIds.has(id)||!profiles.has(profileKey(assignments[id])));
+    const accountIds=claim.accountIds.filter(id=>telegramIds.has(id)||unmanaged.has(id)||!profiles.has(profileKey(assignments[id])));
     const {job}=await api.post(ROUTE+'/claim',{workerId:claim.workerId,accountIds});
     if (job) {
       const next=run(job,assignments).finally(()=>running.delete(next));
