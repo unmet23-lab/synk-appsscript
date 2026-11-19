@@ -71,6 +71,7 @@ function fakeHold(log, { outcome = 'exited', engineState, afterInstall } = {}) {
   return async file => {
     log.push(['hold', path.basename(file)]);
     return {
+      finalPath: file,
       release() { log.push(['release']); },
       async run(onStarted) {
         log.push(['run']);
@@ -313,6 +314,7 @@ test('a real hold on Windows: while held nobody can write, rename or delete the 
   fs.writeFileSync(file, 'original bytes');
   const holder = await B.holdSetup(file);
   try {
+    assert.equal(holder.finalPath.replace(/^\\\\\?\\/, '').toLowerCase(), fs.realpathSync.native(file).toLowerCase(), 'the holder names the file its handle really holds');
     assert.equal(fs.readFileSync(file, 'utf8'), 'original bytes');
     assert.throws(() => fs.writeFileSync(file, 'swapped'), /EBUSY|EPERM|EACCES/);
     assert.throws(() => fs.renameSync(file, file + '.x'), /EBUSY|EPERM|EACCES/);
@@ -348,7 +350,7 @@ test('P1: a folder swapped for a junction after the hold is caught before anythi
     fs.renameSync(dir, dir + '-gone');
     fs.symlinkSync(other, dir, 'junction');
     log.push(['hold']);
-    return { release() { log.push(['release']); }, async run() { log.push(['run']); return { outcome: 'exited', code: 0 }; } };
+    return { finalPath: file, release() { log.push(['release']); }, async run() { log.push(['run']); return { outcome: 'exited', code: 0 }; } };
   };
   const env = appdata(temp());
   const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
@@ -397,7 +399,7 @@ test('P2: an unreadable status file with the engine installed opens the engine i
 
 test('P2: if the holder dies after the installer started, the request stays and the engine is looked for again', async () => {
   const key = minisignKey(), data = crypto.randomBytes(1000), env = appdata(temp()), engineState = {};
-  const hold = async () => ({ release() {}, async run(onStarted) { onStarted(); setTimeout(() => { engineState.dir = engineDir(); }, 5); return { outcome: 'gone' }; } });
+  const hold = async file => ({ finalPath: file, release() {}, async run(onStarted) { onStarted(); setTimeout(() => { engineState.dir = engineDir(); }, 5); return { outcome: 'gone' }; } });
   const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, wait: () => new Promise(r => setTimeout(r, 20)) });
   await service.start(ME, 'protect');
   await service.whenIdle();
@@ -431,4 +433,79 @@ test('P2: safe with attention words leads with them; the engine-present failures
   const failed = solioBackupView({ ...base, view: 'needs-setup', status: null, install: { phase: 'error', code: 'OPEN_FAILED', mode: 'protect' } });
   assert.match(failed.say, /엔진 창을 열지 못했습니다/);
   assert.equal(failed.acts[0].label, '다시 하기');
+});
+
+/* ── GPT 검수(GA) · 카본 검수(A) 지적의 시험(11-20) ── */
+test('GA1: a holder whose handle points elsewhere is never run', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(500), log = [], env = appdata(temp());
+  const hold = async () => ({ finalPath: path.join(temp(), 'elsewhere.exe'), release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } });
+  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  await service.start(ME, 'protect'); await service.whenIdle();
+  assert.equal((await service.snapshot(ME)).install.code, 'VERIFY_FAILED');
+  assert.deepEqual(log, ['release']);
+});
+
+test('GA2: the hint is asked for the account that pressed the button', async () => {
+  const asked = [], env = appdata(temp());
+  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), openExternal: async () => {}, previewAccounts: MINE });
+  await service.start(ME, 'protect', { getHint: async account => { asked.push(account); return null; } });
+  await service.whenIdle();
+  assert.deepEqual(asked, [ME]);
+  const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
+  assert.ok(main.includes('result.accountId!==account.synk_user_id)return null'), 'main gives no hint once another account is signed in');
+});
+
+test('GA3: an installer that exits with an error is not 「done」 even if an engine is there', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(500), engineState = { dir: null }, env = appdata(temp());
+  const hold = async file => ({ finalPath: file, release() {}, async run(onStarted) { onStarted(); engineState.dir = engineDir(); return { outcome: 'exited', code: 2 }; } });
+  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  await service.start(ME, 'protect'); await service.whenIdle();
+  assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_STOPPED');
+  assert.deepEqual(requestsIn(env), [], 'the request of a failed install is removed');
+});
+
+test('GA4: an engine that appeared while downloading is opened, not installed again', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(500), engineState = { dir: null }, env = appdata(temp()), log = [], opened = [];
+  const hold = async file => { engineState.dir = engineDir(); return { finalPath: file, release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } }; };
+  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, openExternal: async url => opened.push(url), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  await service.start(ME, 'move'); await service.whenIdle();
+  assert.equal((await service.snapshot(ME)).install.phase, 'opened');
+  assert.deepEqual(log, ['release']);
+  assert.deepEqual(opened, ['synk-workbackup:open?topic=move']);
+  assert.equal(requestsIn(env).length, 1);
+});
+
+test('GA7: a failed engine-window open leaves no setup request behind', async () => {
+  const env = appdata(temp());
+  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), openExternal: async () => { throw Error('no handler'); }, previewAccounts: MINE });
+  await service.start(ME, 'protect'); await service.whenIdle();
+  assert.equal((await service.snapshot(ME)).install.code, 'OPEN_FAILED');
+  assert.deepEqual(requestsIn(env), []);
+});
+
+test('GA5: a status file reached through a junction is not read', { skip: process.platform !== 'win32' }, async () => {
+  const real = temp(); fs.writeFileSync(path.join(real, 'status.json'), JSON.stringify(sample()));
+  const link = path.join(temp(), 'solio'); fs.symlinkSync(real, link, 'junction');
+  assert.equal((await B.readStatus(path.join(link, 'status.json'))).format, 'invalid');
+  assert.equal((await B.readStatus(path.join(real, 'status.json'))).format, 'ok');
+});
+
+test('A2 · A3 · A4 · A5: move opens the move screen, 「매시간」 only while running, proof words read right, unknown topics never sent', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const base = { ok: true, available: true, engine: { installed: true }, feed: {}, install: { phase: 'idle' } };
+  const opened = solioBackupView({ ...base, view: 'needs-setup', status: null, install: { phase: 'opened', mode: 'move' } });
+  assert.equal(opened.acts[0].arg, 'move');
+  const done = solioBackupView({ ...base, view: 'no-engine', install: { phase: 'done', mode: 'move' } });
+  assert.match(done.then, /옮겨 오기/);
+  const st = B.normalizeStatus(sample()).status;
+  const notes = v => JSON.stringify(v.rows);
+  assert.doesNotMatch(notes(solioBackupView({ ...base, view: 'status', status: { ...st, state: 'off' } })), /매시간/);
+  assert.doesNotMatch(notes(solioBackupView({ ...base, view: 'status', status: { ...st, state: 'paused' } })), /매시간/);
+  assert.doesNotMatch(notes(solioBackupView({ ...base, view: 'needs-setup', status: null })), /매시간/);
+  assert.match(notes(solioBackupView({ ...base, view: 'status', status: st })), /매시간/);
+  const failed = solioBackupView({ ...base, view: 'status', status: { ...st, proof: { at: st.proof.at, result: 'failed' } } });
+  assert.match(failed.then, /증명 결과는 「실패」입니다/);
+  assert.doesNotMatch(failed.then, /실패이라|undefined/);
+  const unknown = solioBackupView({ ...base, view: 'status', status: { ...st, state: 'attention', attention: ['new-topic', 'signin'] } });
+  assert.equal(unknown.acts[0].arg, 'signin');
 });

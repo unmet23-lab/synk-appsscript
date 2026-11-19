@@ -27,6 +27,7 @@ const FEED_URL = 'https://synk.im/desktop/releases/workbackup.json';
 const FEED_AGE = 10 * 60 * 1000;
 const ENGINE_AGE = 15 * 1000;
 const CHECKING_AFTER = 2 * 60 * 60 * 1000;
+const DOWNLOAD_FOR = 30 * 60 * 1000;
 const STATES = Object.freeze(['safe', 'starting', 'attention', 'paused', 'off', 'not-set-up', 'moved', 'restore-only']);
 const ATTENTION = Object.freeze(['status', 'folders', 'changes', 'devices', 'restore', 'space', 'signin', 'update']);
 const OPEN_TOPICS = Object.freeze([...ATTENTION, 'move']);
@@ -98,11 +99,21 @@ async function readStatus(file, fsImpl = fsp) {
   let stat;
   try { stat = await fsImpl.lstat(file); } catch (error) { return { format: error?.code === 'ENOENT' || error?.code === 'ENOTDIR' ? 'missing' : 'invalid' }; }
   if (!stat.isFile() || stat.isSymbolicLink() || stat.size > STATUS_MAX) return { format: 'invalid' };
+  let handle = null;
   try {
-    const text = await fsImpl.readFile(file, { encoding: 'utf8', flag: 'r' });
-    if (Buffer.byteLength(text) > STATUS_MAX) return { format: 'invalid' };
-    return normalizeStatus(JSON.parse(text.replace(/^﻿/, '')));
+    // 담은 폴더(solio, SynkWorkBackup)가 연결점이면 읽지 않는다. 실제 경로가 같은지로 한 번에 본다(GPT 검수 GA5)
+    const real = await fsImpl.realpath(file);
+    if (path.resolve(real).toLowerCase() !== path.resolve(file).toLowerCase()) return { format: 'invalid' };
+    // 확인한 뒤 바뀐 파일을 읽지 않게 연 핸들로 크기를 다시 보고, 상한 하나를 넘겨 읽지 않는다
+    handle = await fsImpl.open(file, 'r');
+    const opened = await handle.stat();
+    if (!opened.isFile() || opened.size > STATUS_MAX) return { format: 'invalid' };
+    const buffer = Buffer.alloc(STATUS_MAX + 1);
+    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+    if (bytesRead > STATUS_MAX) return { format: 'invalid' };
+    return normalizeStatus(JSON.parse(buffer.subarray(0, bytesRead).toString('utf8').replace(/^﻿/, '')));
   } catch { return { format: 'invalid' }; }
+  finally { await handle?.close().catch(() => {}); }
 }
 
 /* 화면이 그릴 갈래 하나. 순서는 4.13 「엔진이 있는지」 → 「꼴 번호」 → 「솔리오의 판단」이다 */
@@ -273,7 +284,11 @@ async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), r
 const HOLDER_SCRIPT = [
   "$ErrorActionPreference='Stop'",
   "try{$h=[IO.File]::Open($env:SWB_SETUP,'Open','Read','Read')}catch{[Console]::Out.WriteLine('LOCKFAIL');exit 3}",
-  "[Console]::Out.WriteLine('LOCKED')",
+  // 쥔 핸들이 실제로 가리키는 파일의 경로(GetFinalPathNameByHandleW)를 알린다. 본체가 받은 경로와 같을 때만 확인을 잇는다(GPT 검수 GA1).
+  // C# 선언은 따옴표가 들어 있어 명령 줄 대신 환경 변수로 넘긴다
+  "try{$t=Add-Type -MemberDefinition $env:SWB_FINAL_SIG -Name SwbFinal -Namespace SynkSolio -PassThru;$b=New-Object System.Text.StringBuilder 1024;$n=$t::GetFinalPathNameByHandleW($h.SafeFileHandle,$b,1024,0)}catch{$n=0}",
+  "if($n -eq 0 -or $n -ge 1024){[Console]::Out.WriteLine('LOCKFAIL');$h.Dispose();exit 3}",
+  "[Console]::Out.WriteLine('LOCKED '+$b.ToString())",
   '$c=[Console]::In.ReadLine()',
   "if($c -ne 'RUN'){$h.Dispose();exit 0}",
   "try{$p=Start-Process -FilePath $env:SWB_SETUP -ArgumentList '/P','/R' -Verb RunAs -PassThru}catch{[Console]::Out.WriteLine('DECLINED');$h.Dispose();exit 4}",
@@ -283,14 +298,21 @@ const HOLDER_SCRIPT = [
   '$h.Dispose()',
 ].join(';');
 
-function holdSetup(file, { spawnImpl = spawn, timeout = 20000 } = {}) {
+const FINAL_SIG = '[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern uint GetFinalPathNameByHandleW(Microsoft.Win32.SafeHandles.SafeFileHandle h, System.Text.StringBuilder b, uint n, uint f);';
+/* \\?\C:\a\b 꼴과 대소문자를 걷어 견준다 */
+const samePath = (a, b) => {
+  const norm = value => path.resolve(String(value || '').replace(/^\\\\\?\\UNC\\/i, '\\\\').replace(/^\\\\\?\\/, '')).toLowerCase();
+  return !!a && !!b && norm(a) === norm(b);
+};
+
+function holdSetup(file, { spawnImpl = spawn, timeout = 30000 } = {}) {
   return new Promise((resolve, reject) => {
     let child, buffer = '', locked = false, settled = false;
     const waiters = [], lines = [];
     const deliver = () => { while (waiters.length && lines.length) waiters.shift()(lines.shift()); };
     const fail = code => { if (!settled) { settled = true; clearTimeout(timer); reject(fault(code)); } };
     try {
-      child = spawnImpl('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', HOLDER_SCRIPT], { env: { ...process.env, SWB_SETUP: file }, shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'ignore'] });
+      child = spawnImpl('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', HOLDER_SCRIPT], { env: { ...process.env, SWB_SETUP: file, SWB_FINAL_SIG: FINAL_SIG }, shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'ignore'] });
     } catch { reject(fault('LOCK_FAILED')); return; }
     const timer = setTimeout(() => { try { child.kill(); } catch {} fail('LOCK_FAILED'); }, timeout);
     child.stdout.on('data', chunk => {
@@ -299,7 +321,7 @@ function holdSetup(file, { spawnImpl = spawn, timeout = 20000 } = {}) {
       while ((at = buffer.indexOf('\n')) >= 0) {
         const line = buffer.slice(0, at).trim(); buffer = buffer.slice(at + 1);
         if (!locked) {
-          if (line === 'LOCKED') { locked = true; settled = true; clearTimeout(timer); resolve(holder); }
+          if (line.startsWith('LOCKED ')) { holder.finalPath = line.slice(7); locked = true; settled = true; clearTimeout(timer); resolve(holder); }
           else if (line === 'LOCKFAIL') fail('LOCK_FAILED');
           continue;
         }
@@ -363,10 +385,14 @@ async function download({ feed, file, request, signal, onProgress }) {
       });
       response.body.once('end', resolve);
     });
-  } finally {
+  } catch (error) {
     discard(response);
-    await new Promise(resolve => out.end(resolve));
+    out.destroy();
+    throw error;
   }
+  discard(response);
+  // 마지막 쓰기의 오류(디스크 가득 참 따위)를 놓치지 않는다(GPT 검수 GA6)
+  await new Promise((resolve, reject) => out.end(error => (error ? reject(error) : resolve())));
   if (size !== feed.size) throw fault('VERIFY_FAILED');
 }
 
@@ -469,23 +495,38 @@ function createSolioBackup({
     let holder = null, requestName = null, keepRequest = false;
     try {
       setInstall('download');
-      await download({ feed, file, request, onProgress: progress => { install = { ...install, progress }; } });
+      // 받기 전체에 30분 기한을 둔다. 조금씩 이어지는 느린 응답이 누름을 끝없이 붙잡지 않게 한다(GPT 검수 GA8)
+      const signal = AbortSignal.timeout(DOWNLOAD_FOR);
+      try { await download({ feed, file, request, signal, onProgress: progress => { install = { ...install, progress }; } }); }
+      catch (error) { throw signal.aborted ? fault('NETWORK') : error; }
       setInstall('verify');
       holder = await holdWithRetry(file);
-      if (!(await sameRealPath(file))) throw fault('VERIFY_FAILED');
+      // 쥔 핸들이 가리키는 실제 파일이 받은 경로의 그 파일이어야 한다. 연결점을 거쳐 다른 파일을 쥐었거나, 쥔 뒤 경로가 다른 곳을
+      // 가리키게 바뀌었으면 여기서 멈춘다(설계 검토 P1, GPT 검수 GA1)
+      if (!samePath(holder.finalPath, file) || !(await sameRealPath(file))) throw fault('VERIFY_FAILED');
       const digest = await digestFile(file, feed.size, fsImpl);
       if (digest.size !== feed.size || digest.sha256 !== feed.sha256) throw fault('VERIFY_FAILED');
       const parsed = parseSignature(feed.signature);
       if (!verifySignature(digest.blake, parsed, keys)) throw fault('VERIFY_FAILED');
       requestName = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises });
+      // 받는 동안 다른 길로 엔진이 깔렸으면 설치기를 다시 띄우지 않고 엔진 창을 연다(GPT 검수 GA4)
+      if ((await engineNow(true)).installed) {
+        keepRequest = true;
+        await holder.release(); holder = null;
+        try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); } catch { keepRequest = false; throw fault('OPEN_FAILED'); }
+        setInstall('opened');
+        return;
+      }
       setInstall('admin');
       let started = false;
       const ran = await holder.run(() => { started = true; setInstall('install'); });
       holder = null;
       if (ran.outcome === 'declined') throw fault('DECLINED');
-      // 쥔 PowerShell이 설치 도중 끝나도 설치기는 돌 수 있다. 띄운 뒤라면 요청을 남기고 엔진이 생기는지 몇 번 더 본다
-      if (started) keepRequest = true;
       if (!started) throw fault('INSTALL_STOPPED');
+      // 설치기가 실패를 알렸으면(종료 코드 0이 아님) 엔진이 남아 있어도 끝난 것으로 보지 않는다(GPT 검수 GA3)
+      if (ran.outcome === 'exited' && ran.code !== 0 && ran.code !== null) throw fault('INSTALL_STOPPED');
+      // 쥔 PowerShell이 설치 도중 끝나도 설치기는 돌 수 있다. 띄운 뒤라면 요청을 남기고 엔진이 생기는지 몇 번 더 본다
+      keepRequest = true;
       if (!(await engineAppeared())) throw fault('INSTALL_STOPPED');
       setInstall('done');
     } finally {
@@ -505,16 +546,24 @@ function createSolioBackup({
     const gate = new Promise(resolve => { release = resolve; });
     busy = gate;
     let view = null;
-    try { ({ view } = await state()); } catch { view = null; }
+    // 누를 때는 엔진 확인을 새로 한다. 15초 전의 「없음」으로 깔린 엔진 위에 다시 받지 않게 한다(GPT 검수 GA4)
+    try { await engineNow(true); ({ view } = await state()); } catch { view = null; }
     if (!['no-engine', 'engine-removed', 'needs-setup'].includes(view)) { busy = null; release(); return { ok: false, code: 'NOT_NEEDED' }; }
     mode = asked;
     busy = (async () => {
       let hint = null;
-      try { hint = await getHint(); } catch { hint = null; }
+      // 힌트는 누른 계정의 것만 받는다. 그사이 다른 계정으로 바뀌었으면 getHint가 null을 준다(GPT 검수 GA2, main.cjs)
+      try { hint = await getHint(account); } catch { hint = null; }
       if (view === 'needs-setup') {
         setInstall('opening');
-        try { await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises }); } catch { throw fault('REQUEST_FAILED'); }
-        try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); } catch { throw fault('OPEN_FAILED'); }
+        let name;
+        try { name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises }); } catch { throw fault('REQUEST_FAILED'); }
+        try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); }
+        catch {
+          // 열지 못했으면 요청을 남기지 않는다. 나중에 따로 연 엔진이 실패한 시도의 요청을 읽지 않게 한다(GPT 검수 GA7)
+          await fsImpl.promises.unlink(path.join(paths.requests, name)).catch(() => {});
+          throw fault('OPEN_FAILED');
+        }
         setInstall('opened');
         return;
       }

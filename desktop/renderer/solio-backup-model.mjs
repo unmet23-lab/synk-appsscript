@@ -37,7 +37,8 @@ export function backupBytes(bytes) {
   for (const [unit, size] of units) if (bytes >= size) return `${(bytes / size).toFixed(bytes / size >= 100 ? 0 : 1)}${unit}`;
   return '1MB 미만';
 }
-const topicList = words => words.map(w => TOPIC_NAMES[w]).filter(Boolean).join(', ');
+const knownTopics = words => (Array.isArray(words) ? words : []).filter(w => Object.hasOwn(TOPIC_NAMES, w));
+const topicList = words => knownTopics(words).map(w => TOPIC_NAMES[w]).join(', ');
 
 const act = (label, action, arg = '', extra = {}) => ({ label, act: action, arg, ...extra });
 const ENGINE_ACTS = Object.freeze([act('파일 되살리기', 'backup-open', 'restore'), act('새 PC로 옮겨 오기', 'backup-open', 'move'), act('엔진 창 열기', 'backup-open', 'status')]);
@@ -79,9 +80,12 @@ function installScene(install) {
   }
   const [say0, then] = INSTALL_SAY[phase] || INSTALL_SAY.feed;
   const say = phase === 'download' && Number.isFinite(install.progress) ? `백업 엔진을 받는 중입니다(${install.progress}%).` : say0;
-  const acts = phase === 'opened' ? [act('엔진 창 열기', 'backup-open', 'status', { primary: true }), act('닫기', 'backup-dismiss')]
+  // 옮겨 오기로 시작했으면 엔진 창도 옮겨 오기 화면(move)으로 열고, 끝난 뒤의 할 일도 옮겨 오기로 말한다(카본 A2)
+  const move = install.mode === 'move';
+  const acts = phase === 'opened' ? [act('엔진 창 열기', 'backup-open', move ? 'move' : 'status', { primary: true }), act('닫기', 'backup-dismiss')]
     : phase === 'done' ? [act('확인', 'backup-dismiss', '', { primary: true })] : [];
-  return { say, then, acts, busy: !['opened', 'done'].includes(phase) };
+  const doneThen = move ? '엔진 창에서 Google 로그인을 마치면 옛 PC의 백업을 고르고 옮겨 오기를 시작합니다.' : then;
+  return { say, then: phase === 'done' ? doneThen : then, acts, busy: !['opened', 'done'].includes(phase) };
 }
 
 function statusRows(snap, now) {
@@ -89,7 +93,13 @@ function statusRows(snap, now) {
   if (s.lastBackupAt) rows.push({ key: 'last', nm: '마지막 확인', val: backupWhen(s.lastBackupAt, now), more: [['note', '엔진이 백업을 마지막으로 확인한 때입니다.']] });
   if (s.proof) rows.push({ key: 'proof', nm: '되살리기 증명', mid: PROOF_WORDS[s.proof.result] || '', val: backupDay(s.proof.at), more: [['note', '백업에서 파일을 실제로 되살려 보고 원본과 같은지 견준 결과입니다.']] });
   if (Number.isSafeInteger(s.folders)) rows.push({ key: 'folders', nm: '지키는 폴더', mid: `${s.folders}개`, val: backupBytes(s.bytes), more: [['note', '폴더 이름은 엔진 창의 「백업 폴더」에서 봅니다. 솔리오는 이름을 읽지 않습니다.']] });
-  rows.push({ key: 'next', nm: '다음 백업', val: s.writer === false ? '없음' : backupWhen(s.nextRunAt, now) || '정해지지 않음', more: [['note', s.writer === false ? '이 PC는 백업을 쓰는 기기가 아닙니다.' : '로그인해 있는 동안 매시간 저절로 백업합니다.']] });
+  // 「매시간 저절로」는 자동 백업이 도는 상태에서만 쓴다. 꺼짐 · 멈춤 · 보호 전 · 읽지 못함에서는 쓰지 않는다(카본 A3)
+  const running = snap.view === 'status' && ['safe', 'starting', 'attention'].includes(s.state) && s.writer !== false;
+  if (snap.status) {
+    const nextNote = s.writer === false ? '이 PC는 백업을 쓰는 기기가 아닙니다.' : running ? '로그인해 있는 동안 매시간 저절로 백업합니다.'
+      : s.state === 'off' ? '자동 백업을 꺼 두어 다음 백업이 없습니다.' : s.state === 'paused' ? '멈춘 동안에는 백업하지 않습니다.' : '';
+    rows.push({ key: 'next', nm: '다음 백업', val: s.writer === false || s.state === 'off' ? '없음' : backupWhen(s.nextRunAt, now) || '정해지지 않음', more: nextNote ? [['note', nextNote]] : [] });
+  }
   rows.push({ key: 'engine', nm: '백업 엔진', val: snap.engine?.version || s.engine || '', more: [['say', '엔진 지우기'], ['note', UNINSTALL]] });
   return rows;
 }
@@ -160,9 +170,9 @@ export function solioBackupView(snap, now = Date.now()) {
       // 지키는 중이어도 엔진이 주의 낱말을 함께 쓸 수 있다(되살리기 · 업데이트 · 공간 따위). 있으면 그 일이 할 일의 맨 앞이다
       const topics = topicList(s.attention || []);
       say = Number.isSafeInteger(s.folders) && s.folders > 0 ? `업무 폴더 ${s.folders}개를 지키고 있습니다.` : '이 PC의 업무 파일을 지키고 있습니다.';
-      then = job + (topics ? `다만 엔진 창에서 확인할 일이 있습니다: ${topics}. ` : proofFailed ? `마지막 되살리기 증명이 ${PROOF_WORDS[s.proof.result]}이라 엔진 창에서 확인해 주세요. ` : '') + last;
-      note = topics ? '확인 필요' : '지키는 중';
-      if (topics) first = act('엔진 창에서 확인', 'backup-open', s.attention[0], { primary: true });
+      then = job + (topics ? `다만 엔진 창에서 확인할 일이 있습니다: ${topics}. ` : proofFailed ? `마지막 되살리기 증명 결과는 「${PROOF_WORDS[s.proof.result] || '알 수 없음'}」입니다. 엔진 창에서 확인해 주세요. ` : '') + last;
+      note = topics || proofFailed ? '확인 필요' : '지키는 중';
+      if (topics) first = act('엔진 창에서 확인', 'backup-open', knownTopics(s.attention)[0], { primary: true });
       else if (proofFailed) first = act('증명 확인', 'backup-open', 'restore', { primary: true });
       break;
     }
@@ -172,7 +182,7 @@ export function solioBackupView(snap, now = Date.now()) {
       say = topics ? `확인할 일이 있습니다: ${topics}.` : '확인할 일이 있습니다.';
       then = job + '엔진 창에서 확인해 주세요. ' + last;
       note = '확인 필요';
-      first = act('엔진 창에서 확인', 'backup-open', (s.attention || [])[0] || 'status', { primary: true });
+      first = act('엔진 창에서 확인', 'backup-open', knownTopics(s.attention)[0] || 'status', { primary: true });
       break;
     }
     case 'paused': say = '백업을 잠시 멈춰 두었습니다.'; then = '멈춘 동안 바뀐 파일은 백업되지 않습니다. 엔진 창에서 다시 켤 수 있습니다. ' + last; note = '멈춤'; first = act('엔진 창에서 다시 켜기', 'backup-open', 'status', { primary: true }); break;
