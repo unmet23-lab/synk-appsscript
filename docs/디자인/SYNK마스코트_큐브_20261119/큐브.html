@@ -63,6 +63,23 @@ h2{margin:0;font:var(--title);letter-spacing:-.012em}
 .felts figure{margin:0;display:flex;flex-direction:column;gap:12px}
 .felts img{display:block;width:100%;height:auto;background:var(--void)}
 .felts figcaption{font:var(--small);color:var(--dim)}
+/* 블렌더 판: 기준 사진과 두 렌더를 나란히 놓고, 그 아래에 좌우로 도는 모습을 둔다 */
+.bl{display:flex;flex-direction:column;gap:clamp(18px,3vh,30px);padding-block:clamp(8px,2vh,20px) clamp(28px,5vh,56px);border-bottom:1px solid var(--hair)}
+.bl .say{max-width:38em}
+.bl3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2vw,28px)}
+.bl2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(16px,3vw,40px)}
+.bl figure{margin:0;display:flex;flex-direction:column;gap:12px;min-width:0}
+.bl figure>img{display:block;width:100%;height:auto;background:var(--void)}
+.bl figcaption{font:var(--small);line-height:1.5;color:var(--dim)}
+.bl figcaption b{font-weight:500;color:var(--paper)}
+.turn{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--void);touch-action:pan-y;cursor:ew-resize}
+.turn img{position:absolute;inset:0 auto 0 0;height:100%;width:900%;max-width:none;animation:bl-turn 2.6s steps(9,jump-none) infinite alternate}
+.turn.held img{animation:none}
+@keyframes bl-turn{from{transform:translateX(0)}to{transform:translateX(-88.8889%)}}
+.blmini{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.blmini img{display:block;width:100%;height:auto;background:var(--void)}
+@media (max-width:720px){.bl3{grid-template-columns:1fr;max-width:440px}.bl2{grid-template-columns:1fr;max-width:440px}}
+@media (prefers-reduced-motion:reduce){.turn img{animation:none;transform:translateX(-44.4444%)}}
 /* 펠트 큐브: 큰 무대는 종이 바탕의 둥근 판이고, 그 아래에 색 조합 여덟 벌이 나란히 선다 */
 .cand[data-v="11"] .stage{border-radius:22px;overflow:hidden}
 .cand[data-v="11"] .sizes canvas{border-radius:5px}
@@ -92,10 +109,29 @@ html[data-nogl] .nogl{display:block}
 <body>
 <main class="wrap">
   <header class="head">
-    <p class="tag">SYNK 마스코트 시안 · 열째 판</p>
-    <h1>펠트 큐브,<span>구운 사진의 느낌으로.</span></h1>
-    <p class="lead">말씀하신 구운 사진에 맞춰 다시 지었습니다. 양모를 뭉친 것처럼 털이 보이고, 귀퉁이에는 세모 조각을 댔고, 눈은 사진의 알약 눈입니다. 색 여덟 벌과 로딩 시안 셋은 그대로 있습니다. 검정 큐브와 앞선 판들은 아래에 있습니다.</p>
+    <p class="tag">SYNK 마스코트 시안 · 열한째 판</p>
+    <h1>펠트 큐브,<span>블렌더에서 진짜 털로.</span></h1>
+    <p class="lead">앞선 판은 브라우저가 털을 흉내 낸 그림이라 구운 사진만 못했습니다. 이번에는 GPT 6.2와 카본이 각각 블렌더 모델을 짓고, 털을 한 올씩 심어 렌더했습니다. 눈은 고르신 도트 눈입니다. 두 판을 구운 사진 옆에 놓았습니다.</p>
   </header>
+
+  <section class="bl">
+    <div class="bl3">
+      <figure><img src="assets/felt-coral.webp" width="900" height="900" alt="기준으로 삼은 구운 사진. 짙은 갈색 양모 펠트 큐브에 크림색 알약 눈 둘과 코랄색 세모가 있다."><figcaption><b>기준</b> · 붙여 주신 구운 사진</figcaption></figure>
+      <figure><img src="assets/bl-gpt-still.webp" width="880" height="880" alt="GPT 6.2가 지은 블렌더 렌더. 얽힌 섬유가 보이는 갈색 양모 큐브에 크림색 도트 눈 둘과 코랄색 세모가 있다."><figcaption><b>GPT 6.2 판</b> · 얽힌 섬유가 보이고 가장자리 솜털이 번집니다. 몸이 사진보다 밝습니다.</figcaption></figure>
+      <figure><img src="assets/bl-carbon-still.webp" width="880" height="880" alt="카본이 지은 블렌더 렌더. 짧고 고른 털이 촘촘한 짙은 갈색 큐브에 크림색 도트 눈 둘과 코랄색 세모가 있다."><figcaption><b>카본 판</b> · 짙고 포근합니다. 털이 짧고 고르며 눈의 매듭이 매끈합니다.</figcaption></figure>
+    </div>
+    <div class="info">
+      <p class="key">입체로 돌려 보기</p>
+      <h2>돌려도 세모는 세모입니다</h2>
+      <p class="say">두 판을 좌우로 돌려 렌더했습니다. 그림 위에서 손이나 마우스를 좌우로 움직이면 그만큼 돕니다. 아래 작은 그림은 로딩 때의 구와 크림 색입니다. 아직 표정과 동작은 없습니다. 판을 고르시면 그 판으로 짓습니다.</p>
+    </div>
+    <div class="bl2">
+      <figure><div class="turn" role="img" aria-label="GPT 6.2 판이 좌우로 도는 모습"><img src="assets/bl-gpt-turn.webp" width="3960" height="440" alt=""></div><div class="blmini"><img src="assets/bl-gpt-sphere.webp" width="440" height="440" alt="GPT 6.2 판이 구가 된 모습"><img src="assets/bl-gpt-cream.webp" width="440" height="440" alt="GPT 6.2 판의 크림 색"></div><figcaption><b>GPT 6.2 판</b></figcaption></figure>
+      <figure><div class="turn" role="img" aria-label="카본 판이 좌우로 도는 모습"><img src="assets/bl-carbon-turn.webp" width="3960" height="440" alt=""></div><div class="blmini"><img src="assets/bl-carbon-sphere.webp" width="440" height="440" alt="카본 판이 구가 된 모습"><img src="assets/bl-carbon-cream.webp" width="440" height="440" alt="카본 판의 크림 색"></div><figcaption><b>카본 판</b></figcaption></figure>
+    </div>
+  </section>
+
+  <p class="tag sub">앞선 판 · 브라우저가 그리는 큐브</p>
 
   <div class="moods" role="group" aria-label="표정 바꾸기">
     <span>표정</span>
@@ -114,8 +150,8 @@ html[data-nogl] .nogl{display:block}
       <p class="say">지금 색은 <b id="combo-name">잉크 몸 · 크림 눈 · 코랄 세모</b>입니다. 아래 여덟 벌에서 바꿉니다. 앞면 귀퉁이에 다른 색 양모로 세모 조각을 댔고, 답이 나온 순간에는 눈이 그 색으로 켜집니다. 누르면 눈을 감고 꼭짓점으로 서서 돕니다.</p>
       <div class="opts" role="group" aria-label="눈의 모양">
         <span class="lbl">눈</span>
-        <button class="mood" type="button" id="feye-pill" data-feye="3" aria-pressed="true">알약 눈</button>
-        <button class="mood" type="button" id="feye-dot" data-feye="0" aria-pressed="false">도트 눈</button>
+        <button class="mood" type="button" id="feye-dot" data-feye="0" aria-pressed="true">도트 눈</button>
+        <button class="mood" type="button" id="feye-pill" data-feye="3" aria-pressed="false">알약 눈</button>
         <button class="mood" type="button" id="feye-stitch" data-feye="4" aria-pressed="false">실땀 눈</button>
       </div>
       <div class="opts" role="group" aria-label="세모 조각">
@@ -944,7 +980,7 @@ const CUBES = [
   { kind: 1, cut: [-1, 1, 1, 0.36], ident: true, yaw: 0.44, pitch: 0.34, scale: 0.94, eyeK: 1.55, sep: 5.5, eyeStyle: 0 },
   /* 열째 판: 펠트 큐브 아홉. combo는 색 조합(COMBOS의 차례)이다. 첫째가 큰 무대의 큐브이고, 나머지 여덟은 색 조합을 나란히 보이는 작은 큐브다.
      자세와 눈의 자리는 구운 사진에 맞췄다. cut의 넷째 값이 0보다 크면 귀퉁이에 세모 조각을 댄다 */
-  ...[0, 0, 1, 2, 3, 4, 5, 6, 7].map(n => ({ kind: 7, combo: n, stand: true, standTurn: Math.PI / 2, cut: [1, 1, 1, 0.5], yaw: -0.32, pitch: 0.24, scale: 1.1, eyeK: 1.35, sep: 7.6, eyeY: -0.17, eyeStyle: 3 })),
+  ...[0, 0, 1, 2, 3, 4, 5, 6, 7].map(n => ({ kind: 7, combo: n, stand: true, standTurn: Math.PI / 2, cut: [1, 1, 1, 0.5], yaw: -0.32, pitch: 0.24, scale: 1.1, eyeK: 2.2, sep: 4.5, eyeY: -0.27, eyeStyle: 0 })),
 ].map((c, i) => ({
   ...c, i, think: 0, wasThink: false, thinkUntil: 0, bootUntil: 0, smileUntil: 0, flash: 0,
   px: 0, py: 0, tx: 0, ty: 0, moodShown: 0, open: 1, lid: null, nextBlink: 2000 + i * 700,
@@ -1387,6 +1423,13 @@ for (const b of document.querySelectorAll('[data-feye]')) b.addEventListener('cl
   for (const c of FELTS) { c.eyeStyle = +b.dataset.feye; c.eyeK = dot ? 2.2 : 1.35; c.sep = dot ? 4.5 : 7.6; c.eyeY = dot ? -0.27 : -0.17; }
   press('[data-feye]', b); kick();
 });
+/* 블렌더 판 돌려 보기: 그림 위에서 좌우로 움직이면 아홉 장 가운데 그 자리의 장을 보인다. 떠나면 다시 스스로 돈다 */
+for (const t of document.querySelectorAll('.turn')) {
+  const img = t.querySelector('img');
+  const show = e => { const r = t.getBoundingClientRect(); const f = Math.max(0, Math.min(8, Math.floor((e.clientX - r.left) / r.width * 9))); t.classList.add('held'); img.style.transform = 'translateX(' + (-f * 100 / 9) + '%)'; };
+  t.addEventListener('pointermove', show); t.addEventListener('pointerdown', show);
+  t.addEventListener('pointerleave', () => { t.classList.remove('held'); img.style.transform = ''; });
+}
 /* 귀퉁이에 세모 조각을 댈지 */
 for (const b of document.querySelectorAll('[data-fcut]')) b.addEventListener('click', () => {
   const on = b.dataset.fcut === '1';
