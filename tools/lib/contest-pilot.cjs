@@ -223,6 +223,7 @@ function cardsFrom(html) {
   const map = JSON.parse(line[1]);
   return [...map.열린, ...map.진행].map(c => ({ title: c.전체이름 || c.이름, officialUrl: c.원문확인안함 ? '' : c.주소,
     ...(c.원문확인안함 && { discoveryUrl: c.주소 }),
+    ...(c.단계 && c.이름 && c.이름 !== c.전체이름 && { applicationTitle: c.이름 }),
     ai: c.AI허용, deadline: c.마감글 || c.마감, deliverables: c.제출물, evidence: [c.AI주소, c.마감주소, c.제출물주소] }));
 }
 
@@ -232,7 +233,8 @@ function checkMaps(summary, groups, remote) {
   const web = summary.artifact?.status || 'unchecked';
   const live = remote ? cardsFrom(remote.html) : ['current', 'updated'].includes(web) ? pc : null;
   for (const group of groups) {
-    const matches = c => [...group.grok, ...group.gemini].some(row => 동일공고(row, c) || normal(row.title) === normal(c.title));
+    const matches = c => [...group.grok, ...group.gemini].some(row =>
+      동일공고(row, c) || normal(row.title) === normal(c.title) || c.applicationTitle && normal(row.title) === normal(c.applicationTitle));
     const localCards = pc?.filter(matches), webCards = live?.filter(matches);
     group.map = { pcMatches: localCards?.length ?? null, webMatches: webCards?.length ?? null };
     if (localCards?.length && webCards?.length) {
@@ -312,7 +314,7 @@ async function runTrial(trial, options = {}) {
   } finally { release(); }
 }
 
-async function runLocked(trial, { rawGrok = [], now = new Date(), receive = receiveGemini, settle = settleDisputes, map, remoteMap, syncMaps, grokReadOk = true } = {}) {
+async function runLocked(trial, { rawGrok = [], now = new Date(), receive = receiveGemini, settle = settleDisputes, map, remoteMap, syncMaps, grokReadOk = true, settleDeadline } = {}) {
   const due = trial.slots.filter(s => scheduled(s) <= +now);
   const errors = [];
   function ingest(provider, records) {
@@ -358,7 +360,7 @@ async function runLocked(trial, { rawGrok = [], now = new Date(), receive = rece
     allGroups.push(...round.notices);
   }
   const disputed = allGroups.filter(group => group.fields.length);
-  try { if (todo.length) await settle(trial.dir, todo); } catch (e) { errors.push(e.message); }
+  try { if (todo.length) await settle(trial.dir, todo, { deadlineMs: settleDeadline }); } catch (e) { errors.push(e.message); }
   for (const round of rounds) {
     try { storeRound(trial.dir, round); }
     catch { errors.push(round.slot + ' 검증값을 지도에 반영하지 못했습니다. 다음 실행에서 다시 확인합니다.'); }

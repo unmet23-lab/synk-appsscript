@@ -150,8 +150,9 @@ test('카본은 원문이 있는 불일치만 받고 근거 없는 판정은 보
   let visits = 0;
   const page = async url => ({ 됨: true, 끝주소: url + ';jsessionid=' + (++visits), 글: '<p>' + text + '</p>' });
   let calls = 0;
-  const carbon = async ({ model, thinking, prompt }) => {
+  const carbon = async ({ model, thinking, prompt, timeoutMs }) => {
     assert.equal(model, 'gemini-4-carbon'); assert.equal(thinking, 'high'); calls++;
+    assert.ok(timeoutMs > 300000 && timeoutMs <= 420000);
     const batch = JSON.parse(prompt.slice(prompt.indexOf('\n') + 1));
     assert.equal(batch.length, 1);
     return { selectedModel: 'gemini-4-carbon-high', text: JSON.stringify({ cases: batch.map(row => ({
@@ -172,6 +173,33 @@ test('카본은 원문이 있는 불일치만 받고 근거 없는 판정은 보
   assert.deepEqual(group.carbon.findings[1], { field: 'deadline', value: '확인 필요' });
   assert.equal(group.carbon.findings[0].quote, notice.ai.quote);
   assert.equal(group.carbon.findings[0].url, notice.officialUrl);
+});
+
+test('열린 공고의 원제목과 실제 신청 카드의 짧은 제목을 모두 같은 공고로 대조한다', async t => {
+  const { folder, trial, report } = fixture(t);
+  const { 자료만들기 } = require('../tools/공모지도.js');
+  const first = { ...notice, title: '오래된 사진 공모전 (지역 기록 영상 부문)', noticeId: '', officialUrl: '',
+    discoveryUrl: 'https://example.com/news/competitions', video: true };
+  const second = { ...first, title: '다른 지역 영화 공모전', discoveryUrl: 'https://example.com/other' };
+  const data = 자료만들기({ items: [{ id: 'applied', name: second.title + ' (AI 영상)', stage: '준비 중' }] },
+    { items: [{ id: 'open', title: first.title, grok_contest: first }] }, new Date(at));
+  assert.equal(data.열린[0].전체이름, first.title);
+  assert.notEqual(data.열린[0].이름, first.title);
+  assert.equal(data.진행[0].이름, second.title);
+  const map = path.join(folder, '지도.html');
+  fs.writeFileSync(map, 'const 자료 = ' + JSON.stringify(data) + ';');
+  const rows = [first, second];
+  await runTrial(trial, { now: new Date(at), rawGrok: [grok(rows)], receive: () => [gemini(rows)],
+    map: { pc: 'rendered', map, artifact: { status: 'current' } } });
+  assert.deepEqual(report().rounds[0].notices.map(n => n.map.pcMatches), [1, 1]);
+});
+
+test('앞선 수신이 길어져 카본 시한이 임박하면 원문·모델을 호출하지 않고 다음 회차로 넘긴다', async t => {
+  const { trial } = fixture(t);
+  const groups = compareSlot(grok([notice]), gemini([]));
+  await settleDisputes(trial.dir, groups, { deadlineMs: Date.now() + 40000,
+    fetchPage: () => assert.fail('남은 시간이 부족한 원문 조회'), carbon: () => assert.fail('마감 직전 모델 호출') });
+  assert.equal(groups[0].carbon.status, 'queued');
 });
 
 test('아홉 쌍 모두 일치하면 카본을 부르지 않고 같은 공고가 다른 날 나와도 회차 중복으로 세지 않는다', async t => {

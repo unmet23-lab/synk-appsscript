@@ -123,6 +123,7 @@ function 열린영상(통합, 현황, 기준일, 지금) {
     나옴.push({
       id: o.id,
       이름: 짧은이름(o.title),
+      전체이름: o.title,
       값,
       마감,
       마감글: 시각 ? 시각.slice(0, 16).replace('T', ' ') + ' KST'

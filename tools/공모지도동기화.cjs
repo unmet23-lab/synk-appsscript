@@ -62,6 +62,8 @@ async function 지도동기화(folder, config, options = {}) {
 }
 
 async function 동기화실행(folder, config, { 수신 = 브라우저수신, 웹갱신 = 클로드지도갱신, 비교옵션 = {} }) {
+  // 18분 20초인 예약 한도 안에서 지도 생성과 웹 확인에 쓸 시간을 남긴다.
+  const settleDeadline = Date.now() + 14 * 60000;
   const map = path.join(folder, '공모지도.html');
   const summary = { map, reports: null, imported: 0, candidates: 0, failedReports: [] };
   let trial = null;
@@ -122,7 +124,7 @@ async function 동기화실행(folder, config, { 수신 = 브라우저수신, �
   }
   if (trial && !trial.closed) {
     const grokReadOk = !summary.grokError && !summary.failedReports.some(id => trial.slots.includes(id));
-    try { summary.pilot = await runTrial(trial, { ...비교옵션, rawGrok, grokReadOk, syncMaps: 지도반영 }); }
+    try { summary.pilot = await runTrial(trial, { ...비교옵션, rawGrok, grokReadOk, settleDeadline, syncMaps: 지도반영 }); }
     catch (error) { summary.pilotError = 오류문구(error, '같은 회차의 조사 결과를 비교하지 못했습니다.'); }
   }
   if (!summary.pc) await 지도반영();
