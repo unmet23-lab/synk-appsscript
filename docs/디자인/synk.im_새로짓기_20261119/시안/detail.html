@@ -240,6 +240,155 @@ body[data-tone="dark"] .nav{color:var(--paper)}
   .wall-bg{position:relative;inset:auto;margin-top:72px;width:100%;aspect-ratio:7/3;z-index:0}
   .lines .state{display:flex;margin:10px 0 0}
 }
+
+/* ── 무기: 한 화면에 큰 말 하나. 강조할 낱말만 색이 차오른다 ──
+   참고: Apple 제품 쪽(큰 문장 하나와 색 낱말), Stripe · 당근(큰 숫자), 당근 · Linear(내려가면 켜지는 문장), Wise(굵은 큰 글자) */
+.edge{background:#000;color:var(--paper);padding:0 var(--gut) clamp(24px,5svh,60px)}
+/* 한눈 줄: 이 쪽의 무기 셋 */
+.arms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 clamp(16px,3vw,48px);padding:clamp(40px,8svh,96px) 0 clamp(28px,5svh,56px)}
+.arms li{padding-top:clamp(18px,3svh,30px);border-top:2px solid var(--paper)}
+.arms b{display:block;font:700 clamp(36px,5.6vw,96px)/1 var(--sans);letter-spacing:-.045em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.arms li>span{display:block;margin-top:clamp(10px,1.6svh,16px);font:600 clamp(16px,1.45vw,22px)/1.4 var(--sans)}
+/* 무기 한 장 */
+.e{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:clamp(24px,5vw,88px);align-items:center;min-height:min(92svh,920px);padding:clamp(48px,9svh,110px) 0;border-top:1px solid var(--line-d)}
+.e-no{display:block;font:700 clamp(15px,1.25vw,19px)/1 var(--sans);margin-bottom:clamp(20px,4svh,44px)}
+.e-no i{font-style:normal;margin-right:14px;font-variant-numeric:tabular-nums}
+.e-claim{font:700 clamp(44px,7.2vw,124px)/1.07 var(--sans);letter-spacing:-.045em}
+.e-claim .ln{display:block;overflow:hidden;padding-bottom:.12em;margin-bottom:-.12em}
+.e-claim .ln>span{display:block}
+.e-proof{margin-top:clamp(20px,3.8svh,40px);font:500 clamp(19px,1.75vw,27px)/1.55 var(--sans);max-width:24em}
+.e-state{margin-top:clamp(16px,2.6svh,26px)}
+/* 색이 차오르는 글자 */
+mark,.fill{color:var(--butter);background:none}
+.e-fig{margin:0;display:grid;gap:16px;justify-items:start}
+.e-fig figcaption{font:600 clamp(14px,1.1vw,16px)/1.5 var(--sans)}
+.e-fig>img{width:100%;height:auto;outline:1px solid rgba(255,255,255,.22)}
+.e-fig.phone>img{width:min(100%,300px);border-radius:30px;outline:7px solid #1c1c1c;justify-self:center}
+.e-fig.phone{justify-items:center}
+/* 큰 숫자 한 장: 숫자가 위에서 화면을 채우고, 말은 그 아래 */
+.e.n{grid-template-columns:1fr;gap:clamp(8px,2svh,24px);align-content:center}
+.e.n .e-no{margin-bottom:0}
+.e-big{display:block;font:700 clamp(110px,24vw,400px)/.84 var(--sans);letter-spacing:-.065em;font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:-.03em}
+.e-big{padding-bottom:.05em}
+.e-big small{font:inherit;font-size:.42em;letter-spacing:-.04em;margin-left:.06em}
+.e.n .e-say{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:clamp(20px,5vw,88px);align-items:end}
+.e.n .e-claim{font-size:clamp(36px,5.2vw,88px)}
+.e.n .e-proof{margin-top:0}
+/* 넓은 화면 한 장: 말이 위, 앱 화면이 아래에서 폭을 다 쓴다 */
+.e.w{grid-template-columns:1fr;gap:clamp(28px,5svh,60px);min-height:0}
+.e.w .e-say{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:clamp(20px,5vw,88px);align-items:end}
+.e.w .e-proof{margin-top:0}
+.e-fig.wide{width:100%}
+.e-fig.wide.crop>img{aspect-ratio:16/8.6;object-fit:cover;object-position:top}
+.trio{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,1.6vw,24px);align-items:start}
+.trio div{display:grid;gap:12px}
+.trio img{width:100%;height:auto;outline:1px solid rgba(255,255,255,.22)}
+.trio span{font:700 clamp(17px,1.5vw,24px)/1.3 var(--sans)}
+.trio span i{font-style:normal;color:var(--butter);margin-right:10px;font-variant-numeric:tabular-nums}
+/* 한 곳만 고치는 문장 */
+.fix{gap:clamp(14px,2.6svh,26px)}
+.fix p{font:700 clamp(34px,4.4vw,72px)/1.25 var(--sans);letter-spacing:-.035em}
+.fix s{text-decoration:none;position:relative;white-space:nowrap}
+.fix s::after{content:"";position:absolute;left:-.04em;right:-.04em;top:52%;height:.09em;background:var(--coral);transform-origin:0 50%}
+.fix b{display:block;color:var(--butter);font:inherit}
+/* 차례로 켜지는 줄 */
+.seq ol{display:grid;gap:clamp(6px,1.2svh,12px);width:100%}
+.seq li{display:flex;align-items:baseline;gap:16px;font:700 clamp(26px,3.3vw,54px)/1.12 var(--sans);letter-spacing:-.03em;padding-bottom:clamp(6px,1.2svh,12px);border-bottom:1px solid var(--line-d)}
+.seq li b{font:700 .5em/1 var(--sans);letter-spacing:0;min-width:3.6em;font-variant-numeric:tabular-nums}
+.seq li.new{color:var(--butter)}
+/* 상황극 한 컷 */
+.talk{position:relative;aspect-ratio:4/5;overflow:hidden;width:100%}
+.talk>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;outline:0}
+.talk figcaption{position:absolute;left:0;right:0;bottom:0;padding:18px;display:grid;gap:10px;background:linear-gradient(0deg,rgba(0,0,0,.86),rgba(0,0,0,0))}
+.talk p{justify-self:start;max-width:90%;padding:12px 16px;background:var(--paper);color:var(--ink);font:600 clamp(15px,1.25vw,19px)/1.45 var(--sans);border-radius:4px 18px 18px 18px}
+.talk p b{display:block;font:800 12px/1 var(--sans);margin-bottom:6px}
+.talk p.me{justify-self:end;background:var(--butter);border-radius:18px 4px 18px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:0 10px}
+.talk p.me b{flex-basis:100%}
+.mic{width:11px;height:11px;border-radius:50%;background:var(--ink);animation:mic 1.1s ease-in-out infinite}
+@keyframes mic{0%,100%{transform:scale(.7);opacity:.5}50%{transform:scale(1.25);opacity:1}}
+/* 몸으로 배우는 낱말 */
+.verbs{gap:clamp(18px,4svh,40px)}
+.verbs b{display:inline-block;font:700 clamp(54px,8vw,132px)/1 var(--sans);letter-spacing:-.05em}
+.verbs .spin{color:var(--butter);animation:spin 5s var(--ease) infinite}
+.verbs .stop{animation:halt 3.6s var(--ease) infinite}
+@keyframes spin{0%{transform:none}34%,100%{transform:rotate(360deg)}}
+@keyframes halt{0%{transform:translateX(-22%)}38%,100%{transform:none}}
+/* 도장 */
+.stamp b{display:grid;place-items:center;width:clamp(190px,22vw,340px);aspect-ratio:1;border-radius:50%;border:7px solid var(--coral);color:var(--coral);font:800 clamp(38px,4.8vw,76px)/1.1 var(--sans);letter-spacing:-.03em;text-align:center;transform:rotate(-9deg)}
+/* 지금 도는 예약표 */
+.live{width:100%;padding:clamp(20px,2.6vw,36px);border:2px solid var(--paper);gap:6px}
+.live>p{font:700 clamp(14px,1.1vw,16px)/1 var(--sans)}
+.live>b{font:300 clamp(72px,10vw,168px)/.95 var(--sans);letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--butter)}
+.live dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 18px;width:100%;margin-top:14px;border-top:1px solid var(--line-d)}
+.live dt,.live dd{padding:13px 0;border-bottom:1px solid var(--line-d);font:600 clamp(15px,1.25vw,19px)/1.45 var(--sans);margin:0}
+.live dt{font-weight:800;white-space:nowrap}
+/* 겹쳐 놓은 화면 셋 */
+.stack{position:relative;width:100%;aspect-ratio:1/1.06}
+.stack img{position:absolute;width:86%;height:auto;outline:1px solid rgba(255,255,255,.28);box-shadow:0 30px 60px -30px #000}
+.stack img:nth-child(1){left:0;top:0}
+.stack img:nth-child(2){left:7%;top:27%}
+.stack img:nth-child(3){left:14%;top:54%}
+/* 큰 낱말 다섯 */
+.five li{grid-template-columns:clamp(44px,5vw,84px) minmax(0,1.2fr) minmax(0,.8fr);padding:clamp(14px,2.4svh,26px) 0}
+.five h3{font-size:clamp(56px,9.6vw,164px);line-height:1.04;letter-spacing:-.055em}
+.five p{font-weight:600;font-size:clamp(18px,1.6vw,25px);max-width:16em}
+/* 밝은 구역의 강조 글: 형광 줄이 왼쪽에서 그어진다 */
+.quote em,em.hl{font-style:normal;background:linear-gradient(transparent 62%,var(--butter) 62%,var(--butter) 92%,transparent 92%) 0 0/100% 100% no-repeat}
+.sec.dark .quote em{background:none;color:var(--butter)}
+.num-h{font-variant-numeric:tabular-nums}
+
+/* 움직임: 화면에 들어올 때 한 번. 스크립트가 없거나 움직임을 줄였으면 처음부터 다 보인다 */
+.js mark,.js .fill{color:transparent;-webkit-text-stroke:0;background:linear-gradient(90deg,var(--butter) 50%,var(--paper) 50%) 100% 0/200% 100% no-repeat;-webkit-background-clip:text;background-clip:text;transition:background-position 1s var(--ease) 1s}
+.js .in mark,.js .in .fill{background-position:0 0}
+.js .e-big.fill,.js .arms .fill{background-image:linear-gradient(90deg,var(--butter) 50%,rgba(255,255,255,0) 50%);-webkit-text-stroke:1.5px var(--butter);transition:background-position 1.3s var(--ease) .3s}
+.js .arms li:nth-child(2) .fill{transition-delay:.5s}.js .arms li:nth-child(3) .fill{transition-delay:.7s}
+.js .arms:not(.in) li>span{opacity:0;transform:translateY(12px)}
+.js .arms li>span{transition:opacity .6s .9s,transform .7s var(--ease) .9s}
+.js .e:not(.in) .e-claim .ln>span{transform:translateY(108%)}
+.js .e .e-claim .ln>span{transition:transform .9s var(--ease);transition-delay:calc(.3s + var(--i,0) * .13s)}
+.js .e:not(.in) .e-no,.js .e:not(.in) .e-proof,.js .e:not(.in) .e-state{opacity:0;transform:translateY(14px)}
+.js .e .e-no{transition:opacity .6s,transform .7s var(--ease)}
+.js .e .e-proof,.js .e .e-state{transition:opacity .7s 1.1s,transform .7s var(--ease) 1.1s}
+.js .e:not(.in) .e-fig{opacity:0;transform:translateY(24px)}
+.js .e .e-fig{transition:opacity .8s .6s,transform .9s var(--ease) .6s}
+.js .e:not(.in) .seq li{opacity:.16}
+.js .e .seq li{transition:opacity .5s;transition-delay:calc(.9s + var(--i,0) * .22s)}
+.js .e:not(.in) .stamp b{transform:rotate(-9deg) scale(1.9);opacity:0}
+.js .e .stamp b{transition:transform .45s cubic-bezier(.3,1.5,.5,1) 1.1s,opacity .2s 1.1s}
+.js .e:not(.in) .stack img{opacity:0;transform:translateY(30px)}
+.js .e .stack img{transition:opacity .6s,transform .8s var(--ease)}
+.js .e .stack img:nth-child(1){transition-delay:.6s}.js .e .stack img:nth-child(2){transition-delay:.85s}.js .e .stack img:nth-child(3){transition-delay:1.1s}
+.js .e:not(.in) .trio div{opacity:0;transform:translateY(26px)}
+.js .e .trio div{transition:opacity .6s,transform .8s var(--ease)}
+.js .e .trio div:nth-child(1){transition-delay:.7s}.js .e .trio div:nth-child(2){transition-delay:.95s}.js .e .trio div:nth-child(3){transition-delay:1.2s}
+.js .e .fix s::after{transition:transform .5s var(--ease) 1.3s}
+.js .e:not(.in) .fix s::after{transform:scaleX(0)}
+.js .e .fix b{transition:opacity .5s 1.8s,transform .6s var(--ease) 1.8s}
+.js .e:not(.in) .fix b{opacity:0;transform:translateY(14px)}
+.js .rv:not(.in){opacity:0;transform:translateY(18px)}
+.js .rv{transition:opacity .7s,transform .8s var(--ease)}
+.js .rv .quote em,.js .rv em.hl{transition:background-size .9s var(--ease) .5s}
+.js .rv:not(.in) .quote em,.js .rv:not(.in) em.hl{background-size:0 100%}
+.js .five h3{color:transparent;background:linear-gradient(90deg,var(--ink) 50%,rgba(20,20,20,.13) 50%) 100% 0/200% 100% no-repeat;-webkit-background-clip:text;background-clip:text;transition:background-position 1s var(--ease) .15s}
+.js .five li.in h3{background-position:0 0}
+.js .five li:not(.in) p{opacity:0;transform:translateY(12px)}
+.js .five li p{transition:opacity .6s .6s,transform .7s var(--ease) .6s}
+/* 내려가면 낱말이 차례로 켜지는 문장 */
+.js .lit .w{opacity:.18;transition:opacity .35s}
+.js .lit .w.on{opacity:1}
+
+@media (max-width:900px){
+  .arms{grid-template-columns:1fr;gap:18px 0}
+  .five li{grid-template-columns:34px minmax(0,1fr)}
+  .five h3{font-size:clamp(52px,17vw,96px)}
+  .arms b{font-size:clamp(44px,13vw,72px)}
+  .e,.e.n .e-say,.e.w .e-say,.trio{grid-template-columns:1fr}
+  .e{min-height:0;padding:52px 0}
+  .e-big{font-size:clamp(96px,31vw,200px)}
+  .talk{aspect-ratio:1}
+}
+@media (prefers-reduced-motion:reduce){.verbs .spin,.verbs .stop,.mic{animation:none}}
+.still .verbs .spin,.still .verbs .stop,.still .mic{animation:none}
 </style>
 </head>
 <body data-tone="light">
@@ -256,24 +405,37 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     <div class="hero-say">
       <span class="hero-n">첫째 · 집에서</span>
       <h1>한국어</h1>
-      <p class="hero-lead">말해야 장면이 넘어갑니다. 외운 한국어가 아니라, 내 생각을 말하는 한국어를 가르칩니다.</p>
+      <p class="hero-lead">말해야 장면이 넘어갑니다. 처음 보는 상황에서 혼자 말해낸 것만 실력으로 셉니다.</p>
       <div class="hero-go"><span class="state">지금 됩니다 · 가입 없이 둘러보기</span><a class="pill" href="https://synk.im/world/">SYNK WORLD 열기 <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </header>
+
+  <section class="edge" data-tone="dark">
+    <ul class="arms" aria-label="이 쪽의 무기 셋">
+      <li><b class="fill">말해야</b><span>장면이 넘어갑니다</span></li>
+      <li><b class="fill"><span data-count="1">1</span> · <span data-count="7">7</span> · <span data-count="30">30</span>일</b><span>뒤에 처음 보는 문제로 다시</span></li>
+      <li><b class="fill">하나만</b><span>고칠 곳을 짚습니다</span></li>
+    </ul>
+    <ol>
+      <li class="e"><div class="e-say"><span class="e-no"><i>01</i>K드라마 상황극</span><h2 class="e-claim">말해야<br><mark>장면이 넘어갑니다</mark></h2><p class="e-proof">상대가 먼저 말을 걸고, 소리 내어 대답해야 다음 장면이 열립니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig talk"><img src="assets/d/drama-hello.webp" alt="학생 식당에서 손을 흔드는 권태오 선배. 상황극 1화의 한 장면이다." loading="lazy"><figcaption><p><b>권태오 선배</b>저기, 혹시 신입생이에요?</p><p class="me"><b>나</b><span class="mic" aria-hidden="true"></span>말할 차례입니다</p></figcaption></figure></li>
+      <li class="e n"><span class="e-no"><i>02</i>아틀라스 엔진</span><b class="e-big fill" aria-hidden="true"><span data-count="1">1</span><small> · </small><span data-count="7">7</span><small> · </small><span data-count="30">30</span></b><div class="e-say"><h2 class="e-claim">외운 것은<br><mark>실력으로 치지 않습니다</mark></h2><div><p class="e-proof">틀린 말은 1일, 7일, 30일 뒤에 처음 보는 문제로 다시 묻습니다. 그때 혼자 해내야 실력입니다.</p><span class="state e-state">지금 됩니다</span></div></div></li>
+      <li class="e"><div class="e-say"><span class="e-no"><i>03</i>코치 노트</span><h2 class="e-claim">고칠 곳은<br><mark>하나만</mark> 짚습니다</h2><p class="e-proof">말하기 앱 리뷰 3,519건을 분류해 얻은 답입니다. 확신할 때만, 하나만.</p></div><figure class="e-fig fix"><p>어제 친구를 <s>만나요</s><b>만났어요</b></p><figcaption>예시입니다</figcaption></figure></li>
+    </ol>
+  </section>
 
   <section class="sec">
     <div class="sec-head">
       <p class="tag">교육 철학</p>
       <p class="quote">AI에게 “이건 맞고 이건 틀렸어, 다시 해 봐”라고 말하려면 <em>내 생각이 먼저 있어야 합니다.</em></p>
-      <p>누구나 AI로 많은 것을 빠르게 만드는 시대입니다. AI와 함께 일해 보면 그 결과에 끌려가기 쉽습니다. 그래서 답을 아는 사람보다 답을 고르고 고치는 사람이 필요합니다. 앉아서 듣기만 하는 교육으로는 그 힘이 자라지 않습니다. SYNK는 한국어를 배우는 과정에 그 힘을 기르는 자리를 넣습니다.</p>
+      <p>누구나 AI로 많은 것을 빠르게 만드는 시대입니다. 그래서 답을 고르고 고치는 힘이 필요합니다.</p>
     </div>
     <div class="sec-head" style="margin-bottom:clamp(20px,4svh,40px)"><h2>AI 시대에 필요한 다섯 가지</h2></div>
-    <ol class="lines">
-      <li><span class="no">01</span><h3>판단</h3><p>AI가 낸 답을 자료와 견주고, <b>무엇을 그대로 두고 무엇을 바꿀지 스스로 정합니다.</b> 그 기준은 내가 무엇을 좋아하고 어떤 삶을 바라는지에서 나옵니다.</p></li>
-      <li><span class="no">02</span><h3>주도성</h3><p>시키는 것을 해내는 일은 AI가 더 잘합니다. 그래서 8주마다 <b>이번에 도전할 목표를 스스로 정합니다.</b></p></li>
-      <li><span class="no">03</span><h3>적응력</h3><p>도구도 상황도 계속 바뀝니다. 그래서 외운 문장은 실력으로 치지 않습니다. <b>처음 보는 상황에서 혼자 말해냈을 때만</b> 실력으로 셉니다.</p></li>
-      <li><span class="no">04</span><h3>협응력</h3><p>동료와 의논하고, 생각이 부딪히는 것도 겪고, <b>여러 사람과 호흡을 맞춰 끝까지 완성합니다.</b> 혼자 잘하는 것과 함께 해내는 것은 다른 힘입니다.</p></li>
-      <li><span class="no">05</span><h3>경험</h3><p>이런 힘은 직접 해 보면서 자랍니다. 자기 생각으로 무언가를 만들어 내놓고, <b>비판도 받고, 예상과 다른 평가도 받아 봅니다.</b></p></li>
+    <ol class="lines five">
+      <li><span class="no">01</span><h3>판단</h3><p>무엇을 그대로 두고 무엇을 바꿀지 스스로 정합니다.</p></li>
+      <li><span class="no">02</span><h3>주도성</h3><p>이번에 도전할 목표를 스스로 정합니다.</p></li>
+      <li><span class="no">03</span><h3>적응력</h3><p>처음 보는 상황에서 혼자 말해냅니다.</p></li>
+      <li><span class="no">04</span><h3>협응력</h3><p>여러 사람과 호흡을 맞춰 끝까지 완성합니다.</p></li>
+      <li><span class="no">05</span><h3>경험</h3><p>직접 만들어 내놓고, 비판도 받아 봅니다.</p></li>
     </ol>
     <div class="credo"><p class="quote">기술로 아낀 시간은, 사람이 직접 <em>느끼고 경험하고 배우는 데</em> 씁니다. 그렇게 공부한 학생이 리더가 되도록 돕는 것이 최종 목표입니다.</p><span>양유호 · SYNK 창업자</span></div>
   </section>
@@ -282,15 +444,15 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     <div class="arm">
       <div class="arm-say">
         <p class="tag">준비한 것 · SYNK WORLD 앱</p>
-        <h2>보는 드라마가 아니라<br>내가 나오는 드라마</h2>
-        <p>K드라마 속 유학생이 되어 한국어로 대답합니다. 상대가 먼저 말을 걸고, 소리 내어 대답해야 다음 장면이 열립니다.</p>
+        <h2>매일의 연습은<br>앱이 고릅니다</h2>
+        <p>짧은 진단으로 내 위치부터 봅니다. 듣기, 읽기, 쓰기 첨삭, 말하기 가운데 오늘 무엇을 할지는 내 기록을 보고 정합니다.</p>
         <ul class="feats">
-          <li><b>내 대사가 없으면 멈춥니다</b><span>듣기만 해서는 넘어가지 않습니다.</span></li>
-          <li><b>점수 대신 반응</b><span>말이 어긋나면 상대가 되묻습니다. 그래도 막히면 한 번 들려줍니다.</span></li>
-          <li><b>고칠 곳은 하나만</b><span>장면이 끝나면 확신할 때만, 하나만 짚습니다.</span></li>
-          <li><b>오늘 할 연습은 앱이 고릅니다</b><span>듣기, 읽기, 쓰기 첨삭, 말하기 가운데 무엇을 할지 내 기록을 보고 정합니다.</span></li>
+          <li><b>오늘 할 것</b><span>들어오면 튜터가 오늘 무엇부터 할지 먼저 말해 줍니다.</span></li>
+          <li><b>틀린 까닭</b><span>틀리면 왜 틀렸는지 그 자리에서 알려 줍니다.</span></li>
+          <li><b>TOPIK까지</b><span>듣기와 읽기, 쓰기 51~54번 첨삭, 말하기 시험 형식을 연습합니다.</span></li>
+          <li><b>세 언어</b><span>화면은 한국어, 영어, 몽골어로 봅니다.</span></li>
         </ul>
-        <div class="hero-go"><span class="state">지금 됩니다 · 가입 없이 둘러보기</span><a class="pill light" href="https://synk.im/world/">SYNK WORLD 열기 <span class="arr" aria-hidden="true">→</span></a></div>
+        <div class="hero-go"><span class="state">지금 됩니다</span><a class="pill light" href="https://synk.im/world/">SYNK WORLD 열기 <span class="arr" aria-hidden="true">→</span></a></div>
       </div>
       <div class="pieces">
         <figure class="shot"><img src="assets/d/world-tutor.webp" alt="SYNK WORLD의 AI 튜터 카드. 오늘 무엇부터 같이 할지 말을 건다." loading="lazy"><figcaption>들어오면 오늘 할 것을 먼저 말해 줍니다</figcaption></figure>
@@ -300,30 +462,11 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     </div>
   </section>
 
-  <section class="sec">
-    <div class="sec-head">
-      <p class="tag">교육 시스템</p>
-      <h2>재미로 끝나지 않게,<br>실력으로 남게</h2>
-      <p>재미있기만 하고 실력으로 남지 않는 공부는 만들지 않습니다. 진단에서 급수까지 한 줄로 잇습니다.</p>
-    </div>
-    <ol class="steps" style="--n:4">
-      <li><b>짧은 진단</b><span>내 위치부터 봅니다. 이번 주 연습 계획이 함께 나옵니다.</span></li>
-      <li><b>매일의 연습</b><span>오늘 무엇을 할지는 아틀라스가 내 기록을 보고 고릅니다.</span></li>
-      <li><b>다시 꺼내기</b><span>틀린 말은 기억했다가 잊을 때쯤 다시 꺼냅니다.</span></li>
-      <li><b>TOPIK 4급까지</b><span>듣기와 읽기, 쓰기 51~54번 첨삭, 말하기 시험 형식을 연습합니다.</span></li>
-    </ol>
-    <div class="nums" style="--n:3;margin-top:clamp(40px,8svh,90px)">
-      <div><b>3,519건</b><span>말하기 앱 리뷰를 분류해, 가장 큰 불만부터 풀었습니다</span></div>
-      <div><b>3개 언어</b><span>화면은 한국어, 영어, 몽골어로 봅니다</span></div>
-      <div><b>8권</b><span>교재 「시냅스」 원고를 마쳤습니다</span></div>
-    </div>
-  </section>
-
   <section class="sec warm">
     <div class="sec-head"><p class="tag">어디까지 왔나</p><h2>지금 되는 것과 준비 중인 것</h2></div>
     <div class="status">
-      <div><h3>지금 됩니다</h3><ul><li>K드라마 상황극 1화의 한 장면 듣고 말해 보기</li><li>TOPIK I 짧은 진단과 이번 주 연습 계획</li><li>TOPIK 듣기 · 읽기, 쓰기 51~54번 첨삭</li><li>한국어 게임과 카페 역할극</li></ul></div>
-      <div><h3>준비 중</h3><ul><li>내 말을 듣고 고칠 곳을 짚는 상황극 시범판</li><li>TOPIK 4급 8주 온라인 반 · 관심 등록 중</li><li>일터 편과 아이돌 연습생 편</li></ul></div>
+      <div><h3>지금 됩니다</h3><ul><li>K드라마 상황극 1화 「개강 첫날」 말하기</li><li>틀린 대사를 며칠 뒤 다시 만나기</li><li>TOPIK I 짧은 진단과 이번 주 연습 계획</li><li>TOPIK 듣기 · 읽기, 쓰기 51~54번 첨삭</li></ul></div>
+      <div><h3>준비 중</h3><ul><li>TOPIK 4급 8주 온라인 반 · 관심 등록 중</li><li>상황극 일터 편과 아이돌 연습생 편</li><li>교재 「시냅스」 여덟 권 출간 · 원고 완성</li></ul></div>
     </div>
     <p class="note">상황극의 인물과 학교는 지어낸 것입니다. 쓰기 첨삭은 로그인하면 하루 세 번 됩니다. 합격을 보장하지 않습니다.</p>
   </section>
@@ -338,44 +481,34 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     <div class="hero-say">
       <span class="hero-n">둘째 · 우리 동네에서</span>
       <h1>교실</h1>
-      <p class="hero-lead">90분 수업 가운데 30분은 함께 말합니다. 앉아서 듣기만 하는 교실이 아닙니다.</p>
+      <p class="hero-lead">대사는 장면 안에서, 동사는 몸으로 배웁니다. 90분 가운데 30분은 함께 말합니다.</p>
       <div class="hero-go"><span class="state soon">준비 중 · 울란바토르 교실</span><a class="text-link" href="https://synk.im/ub/">관심 등록하기 <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </header>
 
+  <section class="edge" data-tone="dark">
+    <ul class="arms" aria-label="이 쪽의 무기 셋">
+      <li><b class="fill"><span data-count="30">30</span>분</b><span>함께 말합니다</span></li>
+      <li><b class="fill">몸으로</b><span>K-POP과 K드라마로 배웁니다</span></li>
+      <li><b class="fill"><span data-count="6">6</span>개월</b><span>4급에 못 미치면 앱 연장</span></li>
+    </ul>
+    <ol>
+      <li class="e n"><span class="e-no"><i>01</i>말하기</span><b class="e-big fill" aria-hidden="true"><span data-count="30">30</span><small>분</small></b><div class="e-say"><h2 class="e-claim">90분 가운데<br><mark>30분은 함께 말합니다</mark></h2><div><p class="e-proof">내 생각을 정하고, 친구의 이유를 듣고, 마지막 선택을 스스로 설명합니다.</p></div></div></li>
+      <li class="e"><div class="e-say"><span class="e-no"><i>02</i>K-POP · K드라마</span><h2 class="e-claim">동사는 <mark>몸으로</mark>,<br>대사는 <mark>장면 안에서</mark></h2><p class="e-proof">댄스 전공 강사와 몸을 풀고, 주말 워크숍에서 한 학기에 작품 한 편을 만듭니다.</p></div><figure class="e-fig verbs"><b class="spin">돌다</b><b class="stop">멈추다</b></figure></li>
+      <li class="e n"><span class="e-no"><i>03</i>교실과 앱</span><b class="e-big fill" aria-hidden="true"><span data-count="6">6</span><small>개월</small></b><div class="e-say"><h2 class="e-claim">교실에서 고친 말을<br><mark>앱이 다시 꺼냅니다</mark></h2><div><p class="e-proof">과정을 마친 뒤 첫 TOPIK에서 4급에 못 미치면 앱 계정을 6개월 연장합니다.</p></div></div></li>
+    </ol>
+  </section>
+
   <section class="sec">
-    <div class="sec-head">
-      <p class="tag">수업 방식</p>
-      <h2>말하지 않고는<br>끝나지 않는 수업</h2>
-      <p>재미있어야 입을 엽니다. 그래서 수업 안에 몸을 쓰고, 연기하고, 함께 정하는 시간을 넣었습니다.</p>
-    </div>
+    <div class="sec-head"><p class="tag">과정</p><h2>목표는 TOPIK 4급입니다</h2><p>졸업, 장학금, 아르바이트에서 4급을 요구하는 곳이 있습니다. 그래서 처음부터 4급을 가운데 둡니다.</p></div>
     <ol class="lines">
-      <li><span class="no">01</span><h3>함께 말하는 30분</h3><p>60분은 수업과 연습, 30분은 그룹별 말하기입니다. 먼저 내 생각을 정하고, 친구의 이유를 들은 뒤, <b>마지막 선택을 스스로 설명합니다.</b></p></li>
-      <li><span class="no">02</span><h3>K-POP으로 몸풀기</h3><p>댄스 전공 강사와 리듬을 익히고, 「돌다」 「멈추다」처럼 <b>동작에 쓰는 말을 몸으로 배웁니다.</b></p></li>
-      <li><span class="no">03</span><h3>K드라마 워크숍</h3><p>주말에 모여 한 학기에 <b>짧은 작품 한 편을 함께 만듭니다.</b> 대사는 장면 안에서 익힙니다.</p></li>
-      <li><span class="no">04</span><h3>한국인 원어민 회화</h3><p>발음과 높임말을 고치고, 예상하지 못한 질문에도 <b>내 말로 답합니다.</b></p></li>
-      <li><span class="no">05</span><h3>교실 밖에서도</h3><p>선생님이 교실에서 고쳐 준 말을 <b>SYNK WORLD 앱이 평일에 다시 꺼냅니다.</b> 교실과 앱이 한 기록을 씁니다.</p></li>
-      <li><span class="no">06</span><h3>목표는 TOPIK 4급</h3><p>졸업, 장학금, 아르바이트에서 4급을 요구하는 곳이 있습니다. 그래서 <b>처음부터 4급을 가운데 둡니다.</b></p></li>
+      <li><span class="no">01</span><h3>한국인 원어민 회화</h3><p>발음과 높임말을 고치고, 예상하지 못한 질문에도 <b>내 말로 답합니다.</b></p></li>
+      <li><span class="no">02</span><h3>교재 「시냅스」</h3><p>문법 여섯 권과 회화 두 권. <b>여덟 권의 원고를 마쳤습니다.</b></p></li>
+      <li><span class="no">03</span><h3>면접과 생활</h3><p>비자 면접과 낯선 생활 상황은 <b>VR로 미리 연습합니다.</b> 유학 준비와 이어집니다.</p></li>
     </ol>
   </section>
 
   <section class="sec warm">
-    <div class="sec-head">
-      <p class="tag">한 번의 수업</p>
-      <h2>90분은 이렇게 씁니다</h2>
-    </div>
-    <div class="bar" role="img" aria-label="90분 가운데 60분은 수업과 연습, 30분은 그룹별 말하기">
-      <span style="--w:60"><b>60분</b>수업과 연습</span>
-      <span class="on" style="--w:30"><b>30분</b>그룹별 말하기</span>
-    </div>
-    <div class="nums" style="--n:3;margin-top:clamp(40px,8svh,90px)">
-      <div><b>30분</b><span>수업마다 그룹이 함께 말하는 시간</span></div>
-      <div><b>8권</b><span>교재 「시냅스」. 문법 여섯 권과 회화 두 권의 원고를 마쳤습니다</span></div>
-      <div><b>4급</b><span>정규 과정이 가운데 두는 TOPIK 급수</span></div>
-    </div>
-  </section>
-
-  <section class="sec">
     <div class="sec-head"><p class="tag">강사</p><h2>누가 가르치나</h2></div>
     <div class="teacher">
       <div class="teacher-pic"><img src="assets/d/yuho.webp" alt="검정 배경 앞의 SYNK 창업자 양유호" loading="lazy"></div>
@@ -394,13 +527,13 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     <p class="more-teachers">강사진은 개원이 정해지면 뽑아 이 자리에 더합니다.</p>
   </section>
 
-  <section class="sec warm">
+  <section class="sec">
     <div class="sec-head"><p class="tag">어디까지 왔나</p><h2>지금 되는 것과 준비 중인 것</h2></div>
     <div class="status">
       <div><h3>지금 됩니다</h3><ul><li>울란바토르 교실 관심 등록</li><li>교재 「시냅스」 여덟 권 원고 완성</li><li>교실과 함께 쓸 SYNK WORLD 앱</li></ul></div>
       <div><h3>준비 중</h3><ul><li>울란바토르 교실 개원</li><li>K-POP 몸풀기와 K드라마 워크숍</li><li>교실에서 고친 말을 앱으로 잇는 강사 화면</li></ul></div>
     </div>
-    <p class="note">개원 준비 중인 과정의 운영 기준입니다. 일정과 참여 조건은 모집 안내에서 알려 드립니다. 과정을 마친 뒤 첫 TOPIK에서 4급에 못 미치면 SYNK WORLD 앱 계정을 6개월 무료로 연장합니다. 합격을 보장하지 않습니다.</p>
+    <p class="note">개원 준비 중인 과정의 운영 기준입니다. 일정과 참여 조건은 모집 안내에서 알려 드립니다. 합격을 보장하지 않습니다.</p>
   </section>
 
   <a class="next" href="?p=study"><img src="assets/in-3.webp" alt="" loading="lazy"><span class="next-say"><span><small>다음 · 셋째</small><b>유학</b></span><span class="arr" aria-hidden="true">→</span></span></a>
@@ -413,41 +546,38 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     <div class="hero-say">
       <span class="hero-n">셋째 · 한국으로</span>
       <h1>유학</h1>
-      <p class="hero-lead">한국에 오기 전에, 먼저 해 봅니다. 처음 마주할 면접도, 서울에서 보낼 하루도.</p>
-      <div class="hero-go"><span class="state">면접 연습은 지금 됩니다</span><a class="text-link" href="https://synk.im/path/">면접 연습 해 보기 <span class="arr" aria-hidden="true">→</span></a></div>
+      <p class="hero-lead">면접관 셋 앞에, 집에서 먼저 앉아 봅니다. 한국에 오기 전에 먼저 해 봅니다.</p>
+      <div class="hero-go"><span class="state">면접 연습은 지금 됩니다</span><a class="pill" href="https://synk.im/path/">면접 연습 해 보기 <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </header>
 
-  <section class="sec">
-    <div class="sec-head">
-      <p class="tag">먼저 해 보는 것</p>
-      <h2>낯선 일을<br>익숙한 일로 바꿉니다</h2>
-      <p>유학에서 겁나는 것은 처음 겪는 일들입니다. 그 일들을 집에서 먼저 겪어 봅니다.</p>
-    </div>
-    <ol class="lines">
-      <li><span class="no">01</span><h3>면접</h3><p>면접관 셋이 묻고 내가 한국어로 답하는 60~90초입니다. PC에서는 글이나 마이크로, Quest에서는 <b>면접실에 앉아 답합니다.</b> <span class="state">지금 됩니다</span></p></li>
-      <li><span class="no">02</span><h3>서울 하루</h3><p>하고 싶은 것과 시간만 고르면 <b>서울에서 보낼 하루가 나옵니다.</b> 가입 없이 무료입니다. <span class="state">지금 됩니다</span></p></li>
-      <li><span class="no">03</span><h3>학교와 서류</h3><p>희망 전공과 진로에 맞춰 학교별 조건을 견주고, 한국어 수준과 남은 시간에 맞는 일정을 세웁니다. <span class="state soon">준비 중</span></p></li>
-      <li><span class="no">04</span><h3>살 집</h3><p>한국에서 지낼 집을 함께 알아봅니다. <span class="state soon">준비 중</span></p></li>
+  <section class="edge" data-tone="dark">
+    <ul class="arms" aria-label="이 쪽의 무기 셋">
+      <li><b class="fill">면접관 셋</b><span>집에서 먼저 만납니다</span></li>
+      <li><b class="fill">도장 세 칸</b><span>차면 준비가 끝납니다</span></li>
+      <li><b class="fill">서울 하루</b><span>떠나기 전에 짜 봅니다</span></li>
+    </ul>
+    <ol>
+      <li class="e"><div class="e-say"><span class="e-no"><i>01</i>면접 연습</span><h2 class="e-claim">면접관 셋 앞에<br><mark>집에서 먼저</mark><br>앉습니다</h2><p class="e-proof">60~90초 동안 한국어로 답합니다. Quest를 쓰면 면접실 안에 앉습니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig "><img src="assets/d/path-home.webp" alt="자기 방에서 노트북으로 면접관 셋과 면접을 연습하는 뒷모습. 옆에 반쯤 싼 여행 가방이 있다." loading="lazy"><figcaption>첫 질문을 먼저 듣고 시작합니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no"><i>02</i>PATH 앱</span><h2 class="e-claim">도장 세 칸이 차면<br><mark>준비가 끝납니다</mark></h2><p class="e-proof">기회 찾기, 자료 준비, 직접 확인.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig phone"><img src="assets/d/path-app-2.webp" alt="PATH 앱의 홈. 도장 세 칸이 모두 찍혀 있다." loading="lazy"><figcaption>PATH 앱의 실제 화면입니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no"><i>03</i>서울 하루</span><h2 class="e-claim">서울의 하루를<br><mark>떠나기 전에</mark><br>짜 봅니다</h2><p class="e-proof">하고 싶은 것과 시간만 고르면 됩니다. 가입 없이.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig seq"><ol><li><b>10:00</b>안국역</li><li><b>10:08</b>운현궁</li><li><b>11:02</b>차 한 잔</li><li class="new"><b>12:00</b>북촌 한옥마을</li></ol><figcaption>세 시간짜리 예시입니다</figcaption></figure></li>
     </ol>
   </section>
 
-  <section class="sec dark" data-tone="dark">
+  <section class="sec">
     <div class="arm">
       <div class="arm-say">
         <p class="tag">준비한 것 · PATH 앱</p>
         <h2>내 준비가<br>카드 한 장에 모입니다</h2>
-        <p>지금 무엇을 준비하는지 카드로 고르면, 홈에 도장 세 칸이 생깁니다. 기회 찾기, 자료 준비, 직접 확인. 한 칸씩 채우면 준비가 끝납니다.</p>
         <ul class="feats">
           <li><b>해외 준비 카드</b><span>학교와 과정 고르기, 장학, 한국어, 서류 정리를 한 줄로 잇습니다.</span></li>
           <li><b>쓰고 확인하기</b><span>지원 동기를 앱에서 써 두고, 내가 직접 확인한 것에 「준비 완료」를 찍습니다.</span></li>
           <li><b>SYNK ID 하나로</b><span>휴대폰과 PC에서 같은 기록을 이어 씁니다. 한국어와 영어로 볼 수 있습니다.</span></li>
         </ul>
-        <div class="hero-go"><span class="state">지금 됩니다 · 웹에서 바로</span><a class="pill light" href="https://synk.im/path/app/">PATH 앱 열기 <span class="arr" aria-hidden="true">→</span></a></div>
+        <div class="hero-go"><span class="state">지금 됩니다 · 웹에서 바로</span><a class="pill" href="https://synk.im/path/app/">PATH 앱 열기 <span class="arr" aria-hidden="true">→</span></a></div>
       </div>
-      <div class="shots" style="--n:3">
+      <div class="shots" style="--n:2">
         <figure class="shot phone"><img src="assets/d/path-app-1.webp" alt="PATH 앱의 첫 화면. 한국에서 쓸 첫 카드를 고른다." loading="lazy"><figcaption>카드를 고릅니다</figcaption></figure>
-        <figure class="shot phone"><img src="assets/d/path-app-2.webp" alt="PATH 앱의 홈. 도장 세 칸이 모두 찍혀 있다." loading="lazy"><figcaption>도장 세 칸을 채웁니다</figcaption></figure>
         <figure class="shot phone"><img src="assets/d/path-app-3.webp" alt="PATH 앱의 찾기 화면. 기회를 종류별로 둘러본다." loading="lazy"><figcaption>기회를 둘러봅니다</figcaption></figure>
       </div>
     </div>
@@ -456,7 +586,7 @@ body[data-tone="dark"] .nav{color:var(--paper)}
   <section class="sec warm">
     <div class="sec-head"><p class="tag">어디까지 왔나</p><h2>지금 되는 것과 준비 중인 것</h2></div>
     <div class="status">
-      <div><h3>지금 됩니다</h3><ul><li>면접 연습 · PC와 Quest</li><li>서울 하루 · 가입 없이 무료</li><li>PATH 앱의 해외 준비 카드</li></ul></div>
+      <div><h3>지금 됩니다</h3><ul><li>면접 연습 · PC와 Quest</li><li>서울 하루 · 가입 없이</li><li>PATH 앱의 해외 준비 카드</li></ul></div>
       <div><h3>준비 중</h3><ul><li>학교 고르기와 입학 서류 돕기</li><li>비자 면접과 대학 면접 연습</li><li>포트폴리오와 살 집 알아보기</li></ul></div>
     </div>
     <p class="note">첫 면접 연습은 요양보호사 면접 한 상황입니다. PATH는 조건을 알아보는 일을 돕고, 입학과 비자 결과를 보장하지 않습니다.</p>
@@ -472,43 +602,25 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     <div class="hero-say">
       <span class="hero-n">넷째 · 한국에서</span>
       <h1>취업</h1>
-      <p class="hero-lead">일하고 싶은 자리에 필요한 조건부터, 순서대로 짚습니다.</p>
-      <div class="hero-go"><span class="state">PATH 앱의 취업 준비는 지금 됩니다</span><a class="text-link" href="https://synk.im/path/app/">PATH 앱 열기 <span class="arr" aria-hidden="true">→</span></a></div>
+      <p class="hero-lead">오늘 할 일이 한 줄로 보이고, 내가 직접 확인한 것만 「준비 완료」가 됩니다.</p>
+      <div class="hero-go"><span class="state">PATH 앱의 취업 준비는 지금 됩니다</span><a class="pill" href="https://synk.im/path/app/">PATH 앱 열기 <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </header>
 
-  <section class="sec">
-    <div class="sec-head">
-      <p class="tag">준비하는 순서</p>
-      <h2>막연한 취업을<br>네 가지 준비로</h2>
-      <p>한국에서 일하려면 한국어만으로는 모자랍니다. 무엇이 필요한지부터 알고, 하나씩 갖춥니다.</p>
-    </div>
-    <ol class="lines">
-      <li><span class="no">01</span><h3>조건 알기</h3><p>분야마다 다른 비자, 자격증, 한국어 조건을 <b>순서대로 짚습니다.</b> 자격증은 공인 기관으로 잇습니다. <span class="state soon">준비 중</span></p></li>
-      <li><span class="no">02</span><h3>서류</h3><p>이 직무와 관련된 경험과 지원 동기를 <b>PATH 앱에서 써 두고 다듬습니다.</b> <span class="state">지금 됩니다</span></p></li>
-      <li><span class="no">03</span><h3>면접</h3><p>면접관 셋 앞에서 한국어로 답해 봅니다. 첫 질문을 먼저 듣고 시작합니다. <span class="state">지금 됩니다</span></p></li>
-      <li><span class="no">04</span><h3>일터의 한국어</h3><p>공장과 현장, 사장님과 동료. <b>한국에서 일하는 사람의 말</b>을 상황극으로 준비하고 있습니다. <span class="state soon">준비 중</span></p></li>
+  <section class="edge" data-tone="dark">
+    <ul class="arms" aria-label="이 쪽의 무기 셋">
+      <li><b class="fill">한 줄</b><span>오늘 할 일이 보입니다</span></li>
+      <li><b class="fill">준비 완료</b><span>직접 확인한 것만</span></li>
+      <li><b class="fill"><span data-count="90">90</span>초</b><span>면접관 셋 앞에서</span></li>
+    </ul>
+    <ol>
+      <li class="e w"><div class="e-say"><div><span class="e-no"><i>01</i>PATH 앱</span><h2 class="e-claim">오늘 할 일이<br><mark>한 줄로</mark> 보입니다</h2></div><div><p class="e-proof">기회를 둘러보고, 자료를 쓰고, 직접 확인합니다.</p><span class="state e-state">지금 됩니다</span></div></div><figure class="e-fig wide crop"><img src="assets/d/path-app-wide.webp" alt="PATH 앱의 PC 화면. 「오늘은 여기부터예요」 아래에 기회 찾기, 자료 준비, 직접 확인 세 단계가 보인다." loading="lazy"><figcaption>PATH 앱의 실제 화면입니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no"><i>02</i>본인 확인</span><h2 class="e-claim">직접 확인한 것만<br><mark>「준비 완료」</mark></h2><p class="e-proof">공식 창구에서 내가 확인한 것에만 도장이 찍힙니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig stamp"><b>준비<br>완료</b></figure></li>
+      <li class="e n"><span class="e-no"><i>03</i>면접 연습</span><b class="e-big fill" aria-hidden="true"><span data-count="90">90</span><small>초</small></b><div class="e-say"><h2 class="e-claim">면접관 셋 앞에서<br><mark>소리 내어</mark> 답합니다</h2><div><p class="e-proof">첫 질문을 먼저 듣고, 한국어로 답해 봅니다.</p><span class="state e-state">지금 됩니다</span></div></div></li>
     </ol>
   </section>
 
-  <section class="sec dark" data-tone="dark">
-    <div class="arm flip">
-      <div class="arm-say">
-        <p class="tag">준비한 것 · PATH 앱</p>
-        <h2>오늘 할 일이<br>한 줄로 보입니다</h2>
-        <p>취업 준비 카드를 고르면 앱이 오늘 할 일부터 보여 줍니다. 기회를 둘러보고, 자료를 쓰고, 내가 직접 확인합니다.</p>
-        <ul class="feats">
-          <li><b>취업 준비 카드</b><span>이력서, 면접 연습, 공고 견주기, 업무 한국어를 한 줄로 잇습니다.</span></li>
-          <li><b>쓰기와 본인 확인</b><span>자료를 써 두면 저장되고, 공식 창구에서 직접 확인한 것만 「준비 완료」가 됩니다.</span></li>
-          <li><b>휴대폰과 PC</b><span>같은 SYNK ID로 어디서든 이어 씁니다.</span></li>
-        </ul>
-        <div class="hero-go"><span class="state">지금 됩니다 · 웹에서 바로</span><a class="pill light" href="https://synk.im/path/app/">PATH 앱 열기 <span class="arr" aria-hidden="true">→</span></a></div>
-      </div>
-      <figure class="shot"><img src="assets/d/path-app-wide.webp" alt="PATH 앱의 PC 화면. 「오늘은 여기부터예요」 아래에 기회 찾기, 자료 준비, 직접 확인 세 단계가 보인다." loading="lazy"><figcaption>PATH 앱의 실제 화면입니다</figcaption></figure>
-    </div>
-  </section>
-
-  <section class="sec warm">
+  <section class="sec">
     <div class="sec-head"><p class="tag">어디까지 왔나</p><h2>지금 되는 것과 준비 중인 것</h2></div>
     <div class="status">
       <div><h3>지금 됩니다</h3><ul><li>PATH 앱의 취업 준비 카드</li><li>자료 쓰기와 본인 확인</li><li>면접 연습 · PC와 Quest</li></ul></div>
@@ -527,51 +639,44 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     <div class="hero-say">
       <span class="hero-n">다섯째 · 함께</span>
       <h1>모임</h1>
-      <p class="hero-lead">혼자 두지 않습니다. 첫 30일 할 일을 끝까지 함께 챙기고, 한국인과 한 팀이 됩니다.</p>
+      <p class="hero-lead">도착한 뒤 첫 30일을 끝까지 함께하고, 한국인과 한 팀이 됩니다.</p>
       <div class="hero-go"><span class="state soon">준비 중</span><a class="text-link" href="https://synk.im/path/">PATH 자세히 <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </header>
 
-  <section class="sec">
-    <div class="sec-head">
-      <p class="tag">함께하는 것</p>
-      <h2>한국에 온 다음이<br>진짜 시작입니다</h2>
-      <p>말이 통해도 외로우면 버티기 어렵습니다. 그래서 도착한 뒤를 챙기는 사람과 자리를 준비합니다.</p>
-    </div>
-    <ol class="lines">
-      <li><span class="no">01</span><h3>첫 30일</h3><p>외국인등록, 계좌, 건강보험. <b>첫 30일 할 일을 끝까지 함께 챙깁니다.</b></p></li>
-      <li><span class="no">02</span><h3>먼저 온 선배</h3><p>전담 매니저와 선배 유학생이 곁에서 챙깁니다. <b>같은 길을 먼저 걸은 사람</b>이 묻기 전에 알려 줍니다.</p></li>
-      <li><span class="no">03</span><h3>한국인과 한 팀으로</h3><p>격주 시즌 리그, 요리와 언어 교환, 술 없는 저녁. <b>같이 뛰고 같이 먹으며</b> 친구가 됩니다.</p></li>
-      <li><span class="no">04</span><h3>다음 한 사람</h3><p>자리를 잡은 사람은 선배가 되어 <b>다음 한 사람을 맞습니다.</b> 길이 한 바퀴로 이어지는 까닭입니다.</p></li>
+  <section class="edge" data-tone="dark">
+    <ul class="arms" aria-label="이 쪽의 무기 셋">
+      <li><b class="fill"><span data-count="30">30</span>일</b><span>도착한 뒤 끝까지 챙깁니다</span></li>
+      <li><b class="fill">한 팀</b><span>한국인과 함께 뜁니다</span></li>
+      <li><b class="fill">한 바퀴</b><span>선배가 되어 다음 사람을 맞습니다</span></li>
+    </ul>
+    <ol>
+      <li class="e n"><span class="e-no"><i>01</i>정착 동행</span><b class="e-big fill" aria-hidden="true"><span data-count="30">30</span><small>일</small></b><div class="e-say"><h2 class="e-claim">도착한 뒤<br><mark>첫 30일</mark>을 챙깁니다</h2><div><p class="e-proof">외국인등록, 계좌, 건강보험. 전담 매니저와 선배 유학생이 함께합니다.</p><span class="state soon e-state">준비 중</span></div></div></li>
+      <li class="e"><div class="e-say"><span class="e-no"><i>02</i>시즌 리그</span><h2 class="e-claim">한국인과<br><mark>한 팀으로</mark> 뜁니다</h2><p class="e-proof">격주 시즌 리그, 요리와 언어 교환, 술 없는 저녁.</p><span class="state soon e-state">준비 중</span></div><figure class="e-fig phone"><img src="assets/d/settle-meet.webp" alt="정착 동행 앱의 모임 화면 시안. 풋살 팀과 시즌 순위가 보인다." loading="lazy"><figcaption>준비 중인 화면입니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no"><i>03</i>한 바퀴</span><h2 class="e-claim"><mark>다시 온 사람</mark>의<br>비율로 잽니다</h2><p class="e-proof">자리를 잡은 사람은 선배가 되어 다음 한 사람을 맞습니다.</p></div><figure class="e-fig phone"><img src="assets/d/settle-todo.webp" alt="정착 동행 앱의 할 일 화면 시안. 첫 30일 가운데 7일째이고 외국인등록 신청과 계좌 개설이 보인다." loading="lazy"><figcaption>준비 중인 화면입니다</figcaption></figure></li>
     </ol>
   </section>
 
-  <section class="sec dark" data-tone="dark">
+  <section class="sec">
     <div class="arm">
       <div class="arm-say">
         <p class="tag">준비 중인 것 · 정착 동행 앱</p>
         <h2>할 일, 상담, 모임이<br>앱 하나에</h2>
-        <p>도착한 사람의 화면과 챙기는 매니저의 화면을 함께 짓고 있습니다. 오른쪽은 준비 중인 화면입니다.</p>
         <ul class="feats">
           <li><b>할 일</b><span>첫 30일 동안 할 일을 날짜순으로 보여 주고, 끝낸 일을 표시합니다.</span></li>
           <li><b>상담</b><span>AI가 먼저 답하고, 확인이 필요한 일은 매니저가 이어받습니다.</span></li>
-          <li><b>모임</b><span>한국인과 유학생이 섞인 팀, 이번 주 경기와 시즌 순위가 보입니다.</span></li>
           <li><b>매니저 화면</b><span>답이 없는 사람, 기한이 다가온 사람처럼 먼저 챙길 사람부터 보입니다.</span></li>
         </ul>
         <div class="hero-go"><span class="state soon">준비 중</span></div>
       </div>
-      <div class="shots" style="--n:3">
-        <figure class="shot phone"><img src="assets/d/settle-todo.webp" alt="정착 동행 앱의 할 일 화면 시안. 첫 30일 가운데 7일째이고 외국인등록 신청과 계좌 개설이 보인다." loading="lazy"><figcaption>할 일</figcaption></figure>
-        <figure class="shot phone"><img src="assets/d/settle-talk.webp" alt="정착 동행 앱의 상담 화면 시안. AI가 먼저 답하고 매니저가 이어받는다." loading="lazy"><figcaption>상담</figcaption></figure>
-        <figure class="shot phone"><img src="assets/d/settle-meet.webp" alt="정착 동행 앱의 모임 화면 시안. 풋살 팀과 시즌 순위가 보인다." loading="lazy"><figcaption>모임</figcaption></figure>
-      </div>
+      <figure class="shot phone"><img src="assets/d/settle-talk.webp" alt="정착 동행 앱의 상담 화면 시안. AI가 먼저 답하고 매니저가 이어받는다." loading="lazy"><figcaption>상담 · 준비 중인 화면입니다</figcaption></figure>
     </div>
   </section>
 
   <section class="sec warm">
-    <div class="sec-head"><p class="tag">어디까지 왔나</p><h2>약속하는 것과 준비 중인 것</h2></div>
+    <div class="sec-head"><p class="tag">어디까지 왔나</p><h2>지키는 것과 준비 중인 것</h2></div>
     <div class="status">
-      <div><h3>지키는 것</h3><ul><li>참여는 본인 동의로만 합니다</li><li>외국인등록번호와 여권번호는 받지 않습니다</li><li>상담 내용은 단속 자료로 쓰지 않습니다</li><li>보여 주기 행사는 하지 않습니다. 다시 온 사람의 비율로 잽니다</li></ul></div>
+      <div><h3>지키는 것</h3><ul><li>참여는 본인 동의로만 합니다</li><li>외국인등록번호와 여권번호는 받지 않습니다</li><li>상담 내용은 단속 자료로 쓰지 않습니다</li></ul></div>
       <div><h3>준비 중</h3><ul><li>정착 동행 앱</li><li>전담 매니저와 선배 유학생이 곁에서 챙기는 시범</li><li>한국인과 유학생이 섞인 시즌 리그</li></ul></div>
     </div>
     <p class="note">정착 동행은 준비 중이고 지금은 참여 신청을 받지 않습니다. 비자 서류는 대신 처리하지 않습니다. 화면은 시안이며 바뀔 수 있습니다.</p>
@@ -586,16 +691,29 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     <div class="hero-say">
       <span class="hero-n">AI 강의</span>
       <h1>AI 인플루언서들이<br>직접 강의하러 갑니다</h1>
-      <p class="hero-lead">AI로 일하는 과정을 채널에 공개해 온 사람들입니다. 화면 속에서 보던 그 방식을, 듣는 사람의 일에 맞춰 가르칩니다.</p>
+      <p class="hero-lead">가르치는 사람의 회사가, 지금 이 시각에도 AI로 돌고 있습니다.</p>
       <div class="hero-go"><a class="pill light" href="https://synk.im/shift/">강의 의뢰하기 <span class="arr" aria-hidden="true">→</span></a><span>AI 특강 · 학교 AI 진로 강의 · 강사 찾아 드리기</span></div>
     </div>
   </header>
 
+  <section class="edge" data-tone="dark">
+    <ul class="arms" aria-label="이 쪽의 무기 셋">
+      <li><b class="fill"><span data-count="30">30</span>+</b><span>사람 없이 제시간에 도는 일</span></li>
+      <li><b class="fill">결과물 하나</b><span>강의가 끝나면 남습니다</span></li>
+      <li><b class="fill">솔리오</b><span>배운 것을 잇는 앱</span></li>
+    </ul>
+    <ol>
+      <li class="e"><div class="e-say"><span class="e-no"><i>01</i>증거</span><h2 class="e-claim">강사의 회사가<br><mark>지금도 AI로 돕니다</mark></h2><p class="e-proof">30개 넘는 일이 사람 없이 제시간에 돌고, 20가지 넘는 검사가 실수를 막습니다.</p></div><figure class="e-fig live"><p>서울 지금</p><b id="live-now">00:00</b><dl><dt>지난 차례</dt><dd id="live-prev"></dd><dt>다음 차례</dt><dd id="live-next"></dd></dl><figcaption>SYNK의 실제 예약표 가운데 일부입니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no"><i>02</i>강의 방식</span><h2 class="e-claim">끝나면<br><mark>결과물 하나</mark>가<br>손에 남습니다</h2><p class="e-proof">듣는 사람이 자기 일에서 직접 만들어 갑니다.</p></div><figure class="e-fig seq"><ol><li><b>10분</b>같은 질문 두 번</li><li><b>15분</b>빈칸 채우기 실험</li><li><b>15분</b>한 줄씩 맞춰 보기</li><li class="new"><b>10분</b>내 요청문 한 줄</li></ol><figcaption>50분 수업 예시입니다</figcaption></figure></li>
+      <li class="e w"><div class="e-say"><div><span class="e-no"><i>03</i>솔리오 앱</span><h2 class="e-claim">배운 것을<br><mark>앱이 이어 줍니다</mark></h2></div><div><p class="e-proof">여러 AI 구독의 남은 양과 결제일을 한 화면에서 봅니다.</p><div class="hero-go e-state"><span class="state">지금 됩니다 · 회원은 무료</span><a class="pill light" href="https://synk.im/account/platform.html">PC 앱 받기 <span class="arr" aria-hidden="true">→</span></a></div></div></div><figure class="e-fig wide"><img src="assets/solio-subs.webp" alt="솔리오의 AI 구독 관리 화면. 구독마다 남은 양이 한 줄씩 보인다." loading="lazy"><figcaption>솔리오의 실제 화면입니다. 숫자는 예시 값입니다.</figcaption></figure></li>
+    </ol>
+  </section>
+
   <section class="sec">
     <div class="sec-head">
       <p class="tag">강사진</p>
-      <h2>써 본 사람이<br>가르칩니다</h2>
-      <p>도구 이름을 훑는 강의가 아닙니다. 자기 일을 AI로 돌리고, 그 과정을 채널에 공개해 온 사람이 섭니다.</p>
+      <h2>써 본 사람이 가르칩니다</h2>
+      <p>자기 일을 AI로 돌리고, 그 과정을 채널에 공개해 온 사람이 섭니다.</p>
     </div>
     <ul class="cast">
       <li><img src="assets/d/t-yuho.webp" alt="양유호. 3D로 그린 인물이다." loading="lazy"><b>양유호</b><span>AI로 회사 하나를 돌리는 창업자</span><small>AI 특강 · 업무 자동화 입문 · 바이브코딩 · AI 영상</small><i>유튜브 · 인스타그램 yuhobuilds</i></li>
@@ -608,83 +726,13 @@ body[data-tone="dark"] .nav{color:var(--paper)}
   </section>
 
   <section class="sec warm">
-    <div class="sec-head">
-      <p class="tag">강의 방식</p>
-      <h2>강의가 끝나면,<br>결과물 하나가 남습니다</h2>
-    </div>
-    <ol class="lines">
-      <li><span class="no">01</span><h3>듣는 사람의 일에서</h3><p>학생은 관심 분야에서, 직원은 실제 업무에서 <b>실습 과제를 고릅니다.</b></p></li>
-      <li><span class="no">02</span><h3>각자 하나를</h3><p>처음 쓰는 사람은 자기 결과물 하나를, 이미 쓰는 사람은 <b>다시 쓸 요청 · 확인 · 수정 순서</b>를 가져갑니다.</p></li>
-      <li><span class="no">03</span><h3>고치는 법까지</h3><p>AI가 낸 답을 그대로 믿지 않고, <b>어디를 확인하고 어떻게 고칠지</b> 연습합니다.</p></li>
-    </ol>
-    <div class="sec-head" style="margin-top:clamp(56px,10svh,110px);margin-bottom:clamp(24px,4svh,44px)"><p class="tag">50분 수업 예시</p></div>
-    <ol class="steps" style="--n:4">
-      <li><b>같은 질문 두 번</b><span>10분. 답이 사람마다, 대화마다 달라지는 것을 직접 봅니다.</span></li>
-      <li><b>빈칸 채우기 실험</b><span>15분. 한 줄 요청과 메모를 붙인 요청의 결과를 견줍니다.</span></li>
-      <li><b>한 줄씩 맞춰 보기</b><span>15분. 숫자, 이름, 날짜를 원자료와 대조합니다.</span></li>
-      <li><b>내 요청문 한 줄</b><span>10분. 자기 문서에 다시 쓸 요청문을 만듭니다.</span></li>
-    </ol>
-  </section>
-
-  <section class="sec dark" data-tone="dark">
-    <div class="sec-head">
-      <p class="tag">증거</p>
-      <h2>SYNK는 지금도<br>이렇게 돌아갑니다</h2>
-      <p>가르치는 방식 그대로 회사를 돌립니다. 아래는 실제 예약표의 일부입니다.</p>
-    </div>
-    <ul class="sched">
-      <li><b>05:00</b><span>잘된 공개 콘텐츠 조사</span></li>
-      <li><b>05:30</b><span>회사 서버 · DB 암호화 백업</span></li>
-      <li><b>07:00</b><span>오늘 올릴 영상 제작</span></li>
-      <li><b>14:00</b><span>오늘 SNS 게시물 자체 검수 → 모든 계정에 게시</span></li>
-      <li><b>19:30</b><span>내일 만들 주제 찾기</span></li>
-      <li><b>5분마다</b><span>바뀐 코드 시험</span></li>
-      <li><b>10분마다</b><span>새 광고 의뢰서 받기</span></li>
-      <li><b>15분마다</b><span>백업 · 디스크 상태 확인</span></li>
-    </ul>
-    <div class="nums" style="--n:2;margin-top:clamp(36px,7svh,80px)">
-      <div><b>30+</b><span>사람 없이 제시간에 도는 일</span></div>
-      <div><b>20+</b><span>공개 전에 실수를 막는 검사</span></div>
-    </div>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head">
-      <p class="tag">하는 일</p>
-      <h2>먼저 가르치고,<br>맞는 강사를 찾아 드립니다</h2>
-    </div>
+    <div class="sec-head"><p class="tag">하는 일</p><h2>먼저 가르치고,<br>맞는 강사를 찾아 드립니다</h2></div>
     <ol class="lines">
       <li><span class="no">01</span><h3>AI 특강</h3><p>직원이 자기 업무로 <b>결과물 하나를 만들어 가는</b> 실습 특강입니다. <span class="state">의뢰를 받습니다</span></p></li>
       <li><span class="no">02</span><h3>학교 AI 진로 강의</h3><p>학생이 관심 분야에서 과제를 골라 <b>AI와 함께 해 보는</b> 진로 강의입니다. <span class="state">의뢰를 받습니다</span></p></li>
       <li><span class="no">03</span><h3>강사 찾아 드리기</h3><p>주제와 듣는 사람에 맞는 AI 강사를 찾아 보내 드립니다. <span class="state soon">문의만 받습니다</span></p></li>
     </ol>
-  </section>
-
-  <section class="sec dark solio" data-tone="dark">
-    <img class="solio-bg" src="assets/desk.webp" alt="" loading="lazy">
-    <div class="arm">
-      <div class="arm-say">
-        <p class="tag">준비한 것 · 솔리오 앱</p>
-        <h2>배운 것을 내 사업에서<br>계속 쓰도록</h2>
-        <p>강의는 하루지만 일은 계속됩니다. 솔리오는 혼자 일하는 사람이 여러 AI 구독을 한 화면에서 챙기는 PC 앱입니다.</p>
-        <ul class="feats">
-          <li><b>남은 양</b><span>구독마다 얼마나 남았는지, 언제 다시 차는지 한 줄씩 보입니다.</span></li>
-          <li><b>결제일과 요금</b><span>다음 결제일과 이번 달 요금을 한자리에서 봅니다.</span></li>
-          <li><b>모델별 토큰</b><span>어느 모델을 얼마나 썼는지 실시간으로 봅니다.</span></li>
-        </ul>
-        <div class="hero-go"><span class="state">지금 됩니다 · 회원은 무료</span><a class="pill light" href="https://synk.im/account/platform.html">PC 앱 받기 <span class="arr" aria-hidden="true">→</span></a></div>
-      </div>
-      <figure class="shot"><img src="assets/solio-subs.webp" alt="솔리오의 AI 구독 관리 화면. 구독마다 남은 양이 한 줄씩 보인다." loading="lazy"><figcaption>솔리오의 실제 화면입니다. 숫자는 예시 값입니다.</figcaption></figure>
-    </div>
-  </section>
-
-  <section class="sec warm">
-    <div class="sec-head"><p class="tag">어디까지 왔나</p><h2>지금 되는 것과 준비 중인 것</h2></div>
-    <div class="status">
-      <div><h3>지금 됩니다</h3><ul><li>AI 특강과 학교 AI 진로 강의 의뢰</li><li>솔리오의 AI 구독 관리 · PC 앱</li><li>50분 수업 예시 글 공개</li></ul></div>
-      <div><h3>준비 중</h3><ul><li>강사 찾아 드리기의 강사 배정</li><li>분야별 대표 강의</li><li>솔리오의 백업과 복구</li></ul></div>
-    </div>
-    <p class="note">값은 듣는 사람과 시간에 따라 의뢰마다 견적을 드립니다.</p>
+    <p class="note">값은 듣는 사람과 시간에 따라 의뢰마다 견적을 드립니다. 솔리오의 백업과 복구는 준비 중입니다.</p>
   </section>
 
   <a class="next" href="?p=ad"><img src="assets/door-pulse.webp" style="object-position:50% 48%" alt="" loading="lazy"><span class="next-say"><span><small>다음</small><b>광고</b></span><span class="arr" aria-hidden="true">→</span></span></a>
@@ -696,16 +744,29 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     <div class="hero-say">
       <span class="hero-n">광고</span>
       <h1>카메라 앞에서 10년,<br>배우가 AI 모델을 연출합니다</h1>
-      <p class="hero-lead">모델을 고르고, 옷을 고르고, 컷마다 확인합니다. 의뢰부터 납품까지 앱 하나에서 합니다.</p>
+      <p class="hero-lead">AI 광고가 어색해지는 곳은 표정과 호흡, 말이 끝나는 타이밍입니다. 그것을 아는 사람이 컷을 고릅니다.</p>
       <div class="hero-go"><a class="pill light" href="https://workspace.synk.im/pulse-app/?demo=film">예시 프로젝트 눌러 보기 <span class="arr" aria-hidden="true">→</span></a><a class="text-link" href="https://synk.im/pulse/">광고 의뢰하기 <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </header>
 
+  <section class="edge" data-tone="dark">
+    <ul class="arms" aria-label="이 쪽의 무기 셋">
+      <li><b class="fill"><span data-count="10">10</span>년</b><span>카메라 앞에 선 배우가 연출</span></li>
+      <li><b class="fill">세 번</b><span>영상을 만들기 전에 확인</span></li>
+      <li><b class="fill"><span data-count="21">21</span>명</b><span>옷과 머리까지 미리 고릅니다</span></li>
+    </ul>
+    <ol>
+      <li class="e n"><span class="e-no"><i>01</i>연출</span><b class="e-big fill" aria-hidden="true"><span data-count="10">10</span><small>년</small></b><div class="e-say"><h2 class="e-claim"><mark>배우</mark>가<br>AI 모델을 연출합니다</h2><div><p class="e-proof">넷플릭스 공개 「보라! 데보라」, tvN 「코미디빅리그」 출연. 2026 서울로미디어캔버스 공모 당선.</p></div></div></li>
+      <li class="e w"><div class="e-say"><div><span class="e-no"><i>02</i>PULSE 앱</span><h2 class="e-claim">만들기 전에<br><mark>세 번</mark> 확인합니다</h2></div><div><p class="e-proof">영상을 굽기 전에 고칩니다. 아래는 PULSE 앱의 실제 화면입니다.</p><span class="state e-state">지금 됩니다</span></div></div><figure class="e-fig wide trio"><div><img src="assets/d/pulse-2-direction.webp" alt="PULSE 앱의 방향 고르기 화면." loading="lazy"><span><i>1</i>방향과 모델</span></div><div><img src="assets/d/pulse-3-script.webp" alt="PULSE 앱의 글 콘티 화면." loading="lazy"><span><i>2</i>글 콘티</span></div><div><img src="assets/d/pulse-4-frames.webp" alt="PULSE 앱의 장면 이미지 화면." loading="lazy"><span><i>3</i>컷마다 장면 이미지</span></div></figure></li>
+      <li class="e w"><div class="e-say"><div><span class="e-no"><i>03</i>PULSE 앱</span><h2 class="e-claim">멈춘 <mark>그 시점</mark>에<br>의견을 남깁니다</h2></div><div><p class="e-proof">1차와 2차를 나란히 놓고 달라진 곳을 봅니다.</p><span class="state e-state">지금 됩니다</span></div></div><figure class="e-fig wide crop"><img src="assets/d/pulse-5-review.webp" alt="PULSE 앱의 영상 확인 화면. 영상 아래 프레임 띠와 시점별 의견이 보인다." loading="lazy"><figcaption>PULSE 앱의 실제 화면입니다</figcaption></figure></li>
+    </ol>
+  </section>
+
   <section class="sec">
     <div class="sec-head">
-      <p class="tag">준비한 것 · 모델 스물한 명</p>
-      <h2>누가 나올까요?</h2>
-      <p>모델마다 옷 세 벌과 머리 세 가지가 사진으로 준비돼 있습니다. 아래에서 직접 골라 보세요.</p>
+      <p class="tag">준비한 것 · 캐스팅</p>
+      <h2><em class="hl">스물한 명</em>, 옷과 머리까지<br>미리 고릅니다</h2>
+      <p>모델마다 옷 세 벌과 머리 세 가지가 사진으로 준비돼 있습니다. 직접 골라 보세요.</p>
     </div>
     <div class="pick" id="pick">
       <div class="pick-stage"><img id="pick-big" src="" alt=""><span class="pick-tag" id="pick-tag"></span></div>
@@ -726,40 +787,19 @@ body[data-tone="dark"] .nav{color:var(--paper)}
     <div class="sec-head">
       <p class="tag">준비한 것 · PULSE 앱</p>
       <h2>의뢰부터 납품까지,<br>앱 하나에서</h2>
-      <p>전화와 메일을 오가지 않습니다. 지금 누구 차례인지, 무엇을 확인하면 되는지 한 화면에 있습니다. 아래는 앱의 실제 화면입니다.</p>
+      <p>아래는 앱의 실제 화면입니다.</p>
     </div>
     <ol class="flow">
       <li><figure class="shot"><img src="assets/d/pulse-1-request.webp" alt="PULSE 앱의 의뢰서 첫 화면. 「무엇을 광고할까요?」 아래에 일곱 가지 종류가 있다." loading="lazy"></figure><div><b>의뢰서</b><span>아홉 화면이면 끝납니다. 모르는 칸은 「저희가 제안」으로 넘기고, 쓰다 말아도 이어 씁니다. 값과 받으실 날이 그 자리에서 보입니다.</span></div></li>
       <li><figure class="shot"><img src="assets/d/pulse-2-direction.webp" alt="PULSE 앱의 방향 고르기 화면. 「서리꽃」이라는 방향 안과 값, 받으실 날이 보인다." loading="lazy"></figure><div><b>방향과 모델 고르기</b><span>방향 두 안과 모델을 함께 받아 고릅니다. 옷과 머리도 이때 사진으로 고릅니다.</span></div></li>
-      <li><figure class="shot"><img src="assets/d/pulse-3-script.webp" alt="PULSE 앱의 글 콘티 화면. 컷마다 한 줄씩 장면이 적혀 있다." loading="lazy"></figure><div><b>글 콘티</b><span>컷마다 「고칠 곳이 있어요」를 누를 수 있습니다. 이 단계의 의견은 수정 횟수에 세지 않습니다.</span></div></li>
-      <li><figure class="shot"><img src="assets/d/pulse-4-frames.webp" alt="PULSE 앱의 장면 이미지 화면. 컷마다 그림이 띠로 놓여 있다." loading="lazy"></figure><div><b>컷마다 장면 이미지</b><span>영상을 만들기 전에 컷마다 그림으로 먼저 봅니다. 마음에 안 드는 컷만 짚으면 됩니다.</span></div></li>
-      <li><figure class="shot"><img src="assets/d/pulse-5-review.webp" alt="PULSE 앱의 영상 확인 화면. 영상 아래 프레임 띠와 시점별 의견이 보인다." loading="lazy"></figure><div><b>영상 확인</b><span>재생하다 멈춘 그 시점에 의견을 남깁니다. 1차와 2차를 나란히 놓고 달라진 곳을 봅니다.</span></div></li>
-      <li><figure class="shot"><img src="assets/d/pulse-6-deliver.webp" alt="PULSE 앱의 납품 화면. 「완성본을 받으세요」와 파일 받기 단추가 보인다." loading="lazy"></figure><div><b>납품</b><span>올릴 곳에 맞는 비율의 파일을 받고, 받았다고 확인하면 끝납니다.</span></div></li>
+      <li><figure class="shot"><img src="assets/d/pulse-4-frames.webp" alt="PULSE 앱의 장면 이미지 화면. 컷마다 그림이 띠로 놓여 있다." loading="lazy"></figure><div><b>글 콘티와 장면 이미지</b><span>컷마다 글로, 그다음 그림으로 먼저 봅니다. 더 필요한 것이 있으면 빠진 칸만 되묻습니다.</span></div></li>
+      <li><figure class="shot"><img src="assets/d/pulse-6-deliver.webp" alt="PULSE 앱의 납품 화면. 「완성본을 받으세요」와 파일 받기 단추가 보인다." loading="lazy"></figure><div><b>영상 확인과 납품</b><span>올릴 곳에 맞는 비율의 파일을 받습니다. 제품과 로고는 AI로 그리지 않고 보내 주신 실제 사진으로 넣습니다.</span></div></li>
     </ol>
     <div class="hero-go" style="margin-top:clamp(28px,5svh,56px)"><a class="pill light" href="https://workspace.synk.im/pulse-app/?demo=film">예시 프로젝트 눌러 보기 <span class="arr" aria-hidden="true">→</span></a><span>로그인 없이, 한 편을 의뢰서부터 납품까지 눌러 볼 수 있습니다.</span></div>
   </section>
 
-  <section class="sec">
-    <div class="sec-head">
-      <p class="tag">맡기는 사람에게 편하게</p>
-      <h2>기다리게 하지 않고,<br>헷갈리게 하지 않습니다</h2>
-    </div>
-    <ol class="lines">
-      <li><span class="no">01</span><h3>지금 누구 차례인지</h3><p>방에 들어오면 <b>「저희 차례」인지 「내 차례」인지</b> 한 문장으로 보입니다.</p></li>
-      <li><span class="no">02</span><h3>빠진 것만 묻습니다</h3><p>더 필요한 것이 있으면 <b>빠진 칸만</b> 되묻습니다. 처음부터 다시 쓰지 않습니다.</p></li>
-      <li><span class="no">03</span><h3>의견이 버려지지 않게</h3><p>고칠 곳을 적어 두면 주 단추가 <b>「의견 보내기」로 바뀝니다.</b> 적은 말이 사라지지 않습니다.</p></li>
-      <li><span class="no">04</span><h3>작업 소식</h3><p>일지와 작업 이미지가 방에 올라오고, <b>메일과 알림</b>으로 차례를 알려 드립니다.</p></li>
-      <li><span class="no">05</span><h3>제품은 그리지 않습니다</h3><p>제품과 로고는 AI로 그리지 않고 <b>보내 주신 실제 사진으로</b> 넣습니다.</p></li>
-    </ol>
-  </section>
-
   <section class="sec warm">
     <div class="sec-head"><p class="tag">어디까지 왔나</p><h2>지금 되는 것과 준비 중인 것</h2></div>
-    <div class="nums" style="--n:3;margin-bottom:clamp(40px,8svh,90px)">
-      <div><b>21명</b><span>옷과 머리까지 준비된 AI 모델</span></div>
-      <div><b>16편</b><span>앱의 「완성 광고」에서 볼 수 있는 작품</span></div>
-      <div><b>1편</b><span>2026 서울로미디어캔버스 단편 애니메이션 공모 당선</span></div>
-    </div>
     <div class="status">
       <div><h3>지금 됩니다</h3><ul><li>의뢰서와 고객 방 · 웹에서</li><li>로그인 없이 눌러 보는 예시 프로젝트</li><li>모델 스물한 명의 캐스팅북</li><li>영상 전 세 번 확인과 시점별 의견</li></ul></div>
       <div><h3>준비 중</h3><ul><li>앱 안의 결제 연결</li><li>외국어 손님을 위한 번역 대화</li><li>PC 앱 한 창에서 PULSE 열기</li></ul></div>
@@ -787,6 +827,42 @@ body[data-tone="dark"] .nav{color:var(--paper)}
   const tones = $$('[data-tone]', art);
   function tone() { let t = 'light'; for (const el of tones) { const b = el.getBoundingClientRect(); if (b.top <= 36 && b.bottom > 36) t = el.dataset.tone; } document.body.dataset.tone = t; }
   addEventListener('scroll', tone, { passive: true }); tone();
+
+  /* 무기 자리의 움직임: 화면에 들어올 때 한 번. ?still 이거나 움직임을 줄였으면 처음부터 다 보인다 */
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, still = reduce || q.has('still');
+  if (still) document.documentElement.classList.add('still');
+  const fmt = n => n.toLocaleString('ko-KR');
+  $$('.e-claim', art).forEach(h => { h.innerHTML = h.innerHTML.split(/<br\s*\/?>/).map((l, i) => `<span class="ln"><span style="--i:${i}">${l}</span></span>`).join(''); });
+  $$('.seq li', art).forEach(li => li.style.setProperty('--i', [...li.parentNode.children].indexOf(li)));
+  $$('.sec-head, .nums, .teacher, .pick, .flow li, .cast, .credo, .status', art).forEach(el => el.classList.add('rv'));
+  function count(root) {
+    $$('[data-count]', root).forEach(n => {
+      const to = +n.dataset.count; if (still) { n.textContent = fmt(to); return; }
+      const t0 = performance.now() + 350; n.textContent = '0';
+      (function f(t) { const p = Math.max(0, Math.min(1, (t - t0) / 1300)); n.textContent = fmt(Math.round(to * (1 - Math.pow(1 - p, 3)))); if (p < 1) requestAnimationFrame(f); })(performance.now());
+    });
+  }
+  if (!still) {
+    document.documentElement.classList.add('js');
+    const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; e.target.classList.add('in'); count(e.target); io.unobserve(e.target); }), { threshold: .3 });
+    $$('.e, .rv, .arms, .five li', art).forEach(el => io.observe(el));
+    /* 내려가면 낱말이 차례로 켜지는 문장 */
+    const lits = $$('.quote', art);
+    lits.forEach(p => { p.classList.add('lit'); p.innerHTML = p.innerHTML.replace(/(<[^>]+>)|([^\s<]+)/g, (m, tag, w) => tag || `<span class="w">${w}</span>`); });
+    const light = () => lits.forEach(p => { const ws = $$('.w', p), b = p.getBoundingClientRect(), k = Math.max(0, Math.min(1, (innerHeight * .88 - b.top) / (innerHeight * .5 + b.height))) * ws.length * 1.2; ws.forEach((w, i) => w.classList.toggle('on', i < k)); });
+    addEventListener('scroll', light, { passive: true }); light();
+  }
+  /* AI 강의: 예약표에서 지금 시각의 앞뒤 차례를 보인다(서울 시각) */
+  const liveNow = $('#live-now', art);
+  if (liveNow) {
+    const S = [['05:00', '잘된 공개 콘텐츠 조사'], ['05:30', '회사 서버 · DB 암호화 백업'], ['07:00', '오늘 올릴 영상 제작'], ['12:30', '미디어 원본 백업'], ['14:00', '오늘 SNS 게시물 자체 검수 → 모든 계정에 게시'], ['15:00', '오늘 올릴 영상 제작'], ['19:30', '내일 만들 주제 찾기'], ['20:52', '스레드 게시']];
+    const tick = () => {
+      const now = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+      const prev = [...S].reverse().find(s => s[0] <= now) || S[S.length - 1], next = S.find(s => s[0] > now) || S[0];
+      liveNow.textContent = now; $('#live-prev', art).textContent = `${prev[0]} · ${prev[1]}`; $('#live-next', art).textContent = `${next[0]} · ${next[1]}`;
+    };
+    tick(); setInterval(tick, 20000);
+  }
 
   /* 광고: 모델과 옷, 머리를 직접 골라 본다 */
   if (art.id === 'ad') {
