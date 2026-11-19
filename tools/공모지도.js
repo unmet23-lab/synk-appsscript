@@ -162,9 +162,13 @@ function 추천점수(o, 기준일) {
 function 열린영상(통합, 현황, 기준일, 지금, 자격판정 = null, 선택 = {}) {
   const 현황id = new Set((현황.items || []).map((o) => o.id));
   const 현황이름 = (현황.items || []).map((o) => 정규(짧은이름(o.name)));
+  // 신청현황 이름과 앞 12자가 겹치거나, 같은 공고 합치기의 제목 열쇠(8자 이상)가 한쪽이 다른 쪽을 품으면 이미 맡은 공모다(11-20 「2026 경산시 AI 미디어 …」와 「AI 미디어 … 2026 …」).
+  const 현황열쇠 = (현황.items || []).map((o) => 제목열쇠(o.name)).filter((k) => k.length >= 8);
   const 겹침 = (제목) => {
     const n = 정규(제목);
     if (n.length < 6) return false;
+    const k = 제목열쇠(제목);
+    if (k.length >= 8 && 현황열쇠.some((x) => x.includes(k) || k.includes(x))) return true;
     return 현황이름.some((x) => x.length >= 6 && (x.includes(n.slice(0, 12)) || n.includes(x.slice(0, 12))));
   };
   const 나옴 = [];

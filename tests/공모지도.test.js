@@ -350,3 +350,12 @@ test('추천 점수는 현장 참석 · 서류 · 확인 전화 · 1인 1작품�
   assert.match(r.까닭.join(' · '), /현장 참석 -20/);
   assert.strictEqual(지도.추천점수({ ...기본, 마감: '2026-11-22' }, '2026-11-20').추천, false);
 });
+
+test('신청현황에 있는 공모는 제목 어순이 달라도 열린 공모에서 뺀다', () => {
+  const 현황 = { items: [{ id: 'lk-1', name: '2026 경산시 AI 미디어 콘텐츠 공모전 「AI·스마트도시·YOUR STORY」', stage: '준비 중', deadline: '2026-11-23T23:59' }] };
+  const 통합 = { items: [
+    { id: 'g', title: 'AI 미디어 콘텐츠 공모전 2026 「AI·스마트도시·YOUR STORY」', ai_video: { value: 'AI 영상' }, calendar_20261110: { end: '2026-11-23' } },
+    { id: 'h', title: '2026 시민 AI 영상 공모전', ai_video: { value: 'AI 영상' }, calendar_20261110: { end: '2026-11-30' } },
+  ] };
+  assert.deepStrictEqual(지도.열린영상(통합, 현황, '2026-11-20', new Date('2026-11-20T03:00:00Z')).map(x => x.id), ['h']);
+});

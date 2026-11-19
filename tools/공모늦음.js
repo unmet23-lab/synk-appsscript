@@ -38,15 +38,27 @@ function 사이트(주소) {
   try { return new URL(주소).hostname.replace(/^www\./, ''); } catch { return ''; }
 }
 
-/** 늦게 찾은 공고 목록. */
 const 영상인가 = (o) => (o.grok_contest ? o.grok_contest.video === true : ['AI 영상', '영상'].includes(o.ai_video?.value));
 
+/** 늦게 찾은 공고 목록. 같은 공고가 다른 id로 여러 번 들어왔으면(지도가 한 장으로 합치는 것) 가장 이른 찾은 날로 잰다. */
 function 늦음재기(통합, 판정) {
   const 결과 = [];
   const 날들 = (통합.items || []).map(찾은날).filter(Boolean).sort();
   const 첫수집 = 날들[0] || '';
+  const 가장이른 = new Map();
   for (const o of 통합.items || []) {
-    const 찾음 = 찾은날(o);
+    const k = 지도.제목열쇠(o.title), d = 찾은날(o);
+    if (k.length >= 5 && d && (!가장이른.has(k) || d < 가장이른.get(k))) 가장이른.set(k, d);
+  }
+  const 이른날 = (o) => {
+    const k = 지도.제목열쇠(o.title);
+    if (k.length < 5) return 찾은날(o);
+    let d = 찾은날(o);
+    for (const [j, x] of 가장이른) if ((j.includes(k) || k.includes(j)) && (!d || x < d)) d = x;
+    return d;
+  };
+  for (const o of 통합.items || []) {
+    const 찾음 = 이른날(o);
     if (!찾음 || 찾음 === 첫수집 || !영상인가(o)) continue;
     const v = 자격.판정찾기(판정, o.title);
     const 마감 = (v?.공고?.마감 || 지도.공고마감(o) || '').slice(0, 10);

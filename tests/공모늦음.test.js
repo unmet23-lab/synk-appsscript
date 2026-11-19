@@ -18,6 +18,8 @@ test('마감 7일 안쪽에 찾았거나 접수 시작 21일 뒤에 찾은 공�
     { id: 'grok-contest:a', title: '응답하라 제천 AI영상 공모전', grok_first_seen: '2026-11-19', grok_contest: { video: true, officialUrl: 'https://www.jccf.or.kr/bbs/board.php?wr_id=669' } },
     { id: 'claude-20261027:d07', title: '매경 AI 광고 공모전', ai_video: { value: 'AI 영상' }, calendar_20261110: { end: '2026-11-30' } },
     { id: 'codex-20261104:x1', title: '창업 해커톤', ai_video: { value: '기타' }, calendar_20261110: { end: '2026-11-05' } },
+    { id: 'claude-20261019:c0097', title: '제2회 메디컬코리아 국제의료광고제', ai_video: { value: 'AI 영상' } },
+    { id: 'grok-contest:g', title: '2nd GHAA / 제2회 메디컬코리아 국제의료광고제', grok_first_seen: '2026-11-18', grok_contest: { video: true, deadline: { date: '2026-11-20' } } },
   ] };
   const 판정 = { schema: 'synk-contest-eligibility-v1', items: {
     [열쇠('응답하라 제천 AI영상 공모전')]: { title: '응답하라 제천 AI영상 공모전', status: '안 됨', 공고: { 마감: '2026-11-20', 접수시작: '2026-09-28' } },
