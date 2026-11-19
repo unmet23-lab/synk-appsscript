@@ -749,9 +749,9 @@ export function createCompanyApp(options={}) {
     if(duplicate)throw httpError('같은 계정이 다른 주소로 이미 등록돼 있어요. 그 채널에 담당자를 더해 주세요.');
     const stamp=clock(),date=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(stamp));
     // 페이스북: 이번에 주소를 못 읽은 콘텐츠도 같은 줄(채널:externalId)에 https 주소가 저장돼 있으면 그 주소로 적는다 — 그 줄의 이번 수치가 빠지지 않게(8회차 perf GA2).
-    // 다른 줄은 보지 않는다. 목록 완전 여부는 수집기가 정한 그대로다.
+    // 다른 줄은 보지 않는다. 목록 완전 여부는 수집기가 정한 그대로다. 저장된 주소를 쓰면 그 주소의 표시(urlFromAttachment)도 저장된 그대로 둔다 — 주소가 바뀌지 않았다.
     const httpsUrl=value=>{try{return new URL(value).protocol==='https:';}catch{return false;}};
-    if(channel.platform==='facebook')result={...result,posts:result.posts.map(p=>{if(!p?.externalId||httpsUrl(p.url))return p;const stored=store.get('posts',`${channel.id}:${p.externalId}`);return stored?.channelId===channel.id&&httpsUrl(stored.url)?{...p,url:stored.url}:p;})};
+    if(channel.platform==='facebook')result={...result,posts:result.posts.map(p=>{if(!p?.externalId||httpsUrl(p.url))return p;const stored=store.get('posts',`${channel.id}:${p.externalId}`);return stored?.channelId===channel.id&&httpsUrl(stored.url)?{...p,url:stored.url,urlFromAttachment:stored.urlFromAttachment===true}:p;})};
     const validPosts=result.posts.filter(p=>{try{return !!p.externalId&&!!p.publishedAt&&!Number.isNaN(Date.parse(p.publishedAt))&&new URL(p.url).protocol==='https:';}catch{return false;}});
     if(validPosts.length!==result.posts.length){
       const omitted=result.posts.length-validPosts.length;
@@ -781,10 +781,12 @@ export function createCompanyApp(options={}) {
         // 칸으로만 저장하고 같은 게시물의 줄을 잇거나 합치지 않는다(11-19 유호님 결정). 게시물 번호는 수집기가 「이 줄에는 번호가 없다」고 밝힌 줄(null — post_id를
         // 받았는데 그 게시물의 번호 줄이 아닌 영상)에서만 지우고, 밝히지 않은 줄(칸 없음 — post_id를 못 받은 영상)은 앞 값을 둔다(8회차 GA3 · 9회차 GA1 · GA7).
         // 영상 번호는 이번 회차가 다 알 수 있었을 때(전체 수집 · 목록 완전 · 영상 목록을 읽음)만 빈 값으로 지우고, 아니면 앞 값을 둔다.
+        // 표시 칸 urlFromAttachment(11-20)는 이번 주소가 게시물 주소가 아니라 첨부 영상의 주소일 때만 true다. 그 밖의 줄은 저장된 값까지 지운다 — 앞 회차 값을
+        // 이어 받지 않는다(...previous로 남지 않게 빈 값으로 덮는다).
         const facebook=channel.platform==='facebook',knows=facebook&&mode==='full'&&result.coverage?.inventoryComplete===true&&!!result.coverage?.videoPostIds;
         const pagePostId=facebook&&typeof p.pagePostId==='string'&&/^\d{1,50}_\d{1,50}$/.test(p.pagePostId)?p.pagePostId:null;
         const videoId=facebook&&typeof p.videoId==='string'&&/^\d{1,40}$/.test(p.videoId)?p.videoId:null;
-        const keys=!facebook?{}:{pagePostId:pagePostId||(p.pagePostId===null?undefined:previous?.pagePostId)||undefined,videoId:videoId||(knows?undefined:previous?.videoId)||undefined};
+        const keys=!facebook?{}:{pagePostId:pagePostId||(p.pagePostId===null?undefined:previous?.pagePostId)||undefined,videoId:videoId||(knows?undefined:previous?.videoId)||undefined,urlFromAttachment:p.urlFromAttachment===true||undefined};
         store.put('posts',id,{...previous,id,channelId:channel.id,externalId:p.externalId,title:text(p.title,1000)||'제목 없음',url:link.href,publishedDate,publishedAt:p.publishedAt,thumbnailUrl:p.thumbnailUrl||null,publicationFormat,...keys,source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
         const snapshot={id:`${id}:${date}`,postId:id,date,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership},raw={};
         for(const key of metricKeys)snapshot[key]=raw[key]=count(p.metrics?.[key]);

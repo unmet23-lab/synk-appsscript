@@ -199,6 +199,27 @@ test('a facebook item whose address this collection could not read updates its o
   assert.equal(f.app.store.all('snapshots').find(s=>s.postId==='fb:555').views,29);
 });
 
+// 11-20 게시 성과 P1: 표시 칸 urlFromAttachment는 수집기가 첨부 영상 주소로 채운 줄에만 true로 남는다. 그 밖의 회차는 저장된 값까지 지운다.
+// 이번에 주소를 못 읽어 저장된 주소를 다시 쓰는 회차는 주소가 그대로이므로 표시도 그대로다.
+test('a facebook row is marked as using its attached reel address only while the collector says so',async t=>{
+  let item={url:REEL,urlFromAttachment:true};
+  const f=await fbFixture(t,async()=>fbResult([fbPost('123_700',{pagePostId:'123_700',...item})]));
+  const mark=()=>{const row=f.app.store.get('posts','fb:123_700');return [row.url,row.urlFromAttachment,JSON.parse(JSON.stringify(row)).hasOwnProperty('urlFromAttachment')];};
+  assert.deepEqual(mark(),[REEL,true,true]);
+  item={url:null};await f.again();
+  assert.deepEqual(mark(),[REEL,true,true],'reusing the stored address keeps its mark');
+  item={url:FEED};await f.again();
+  assert.deepEqual(mark(),[FEED,undefined,false],'the row\'s own address clears the stored mark');
+  item={url:null};await f.again();
+  assert.deepEqual(mark(),[FEED,undefined,false],'reusing an own address stays unmarked');
+  item={url:REEL,urlFromAttachment:true};await f.again();
+  item={url:REEL,urlFromAttachment:'true'};await f.again();
+  assert.deepEqual(mark(),[REEL,undefined,false],'only the value true marks a row');
+  const other=await fixture(t,{collector:async c=>({...result(c),posts:result(c).posts.map(p=>({...p,urlFromAttachment:true}))})});
+  assert.ok(other.app.store.all('posts').length>0);
+  for(const row of other.app.store.all('posts'))assert.equal(row.urlFromAttachment,undefined,'other platforms never store the mark');
+});
+
 test('complete inventory hides unavailable posts without erasing history; partial inventory never hides unseen posts',async t=>{
   let complete=true,items=true;
   const f=await fixture(t,{collector:async c=>({...result(c),posts:items?result(c).posts:[],coverage:{status:complete?'complete':'partial',inventoryComplete:complete,ownerAuthorized:false}})});

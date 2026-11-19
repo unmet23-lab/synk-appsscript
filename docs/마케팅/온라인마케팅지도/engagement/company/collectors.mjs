@@ -542,6 +542,8 @@ async function facebook(channel, credentials, request, recent) {
   //   이 페이지의 번호만 쓴다 — 숫자만 오면 이 페이지 번호를 붙이고, 다른 페이지 번호가 붙은 값은 버린다.
   // - videoId: 영상 번호. 영상 목록만의 줄, 영상과 짝지은 게시물 줄, 주소가 릴스 · 영상 주소인 게시물 줄에 단다(첨부 대상 번호만으로는 달지 않는다).
   // 영상 목록에서만 찾은 릴스의 externalId는 예전처럼 영상 번호다.
+  // 표시 칸 urlFromAttachment(11-20): 게시물 줄에 자기 주소(permalink_url)가 없어 짝지은 영상의 주소로 채운 줄에만 true를 단다. 그 주소는 게시물 주소가 아니라
+  // 첨부한 영상(릴스)의 주소라는 표시다. 서버는 true가 아닌 줄에서 저장된 값을 지운다.
   const fullPostId = value => typeof value === 'string' && /^\d{1,50}_\d{1,50}$/.test(value) ? value : null;
   const videoPostId = value => typeof value !== 'string' ? null : /^\d{1,50}$/.test(value) ? `${pageId}_${value}` : value.startsWith(`${pageId}_`) ? fullPostId(value) : null;
   // 주소 정체성은 게시 성과(normalizePerformancePostUrl)의 페이스북 규칙과 같다 — 영상(/reel/번호 · /이름/videos/번호 · /watch?v=번호)과 게시물(/이름/posts/번호).
@@ -631,7 +633,7 @@ async function facebook(channel, credentials, request, recent) {
         if(row&&mine){
           row.metrics.views=number(video.views);videoPostIds.matched++;if(!conflict&&postId&&postId===row.pagePostId)videoPostIds.agreed++;
           if(!conflict)row.videoId=id;
-          if(!row.url&&url){row.url=url;row.publishedAt=createdAt||row.publishedAt;}
+          if(!row.url&&url){row.url=url;row.urlFromAttachment=true;row.publishedAt=createdAt||row.publishedAt;}
           else{if(!row.publishedAt)row.publishedAt=createdAt;alias(row,url,createdAt);}
           // 별칭이 있어야 찾을 영상인데 주소를 못 읽었으면 이번 목록은 다 본 것이 아니다 — 그 주소로 등록한 기록을 「없음」으로 끄지 않게(5회차 GA4).
           if(!url&&addressKey(row.url)!==`video:${id}`)unreadable++;

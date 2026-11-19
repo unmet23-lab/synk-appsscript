@@ -519,6 +519,28 @@ test('Facebook merged rows keep the other address as an alias with its own time 
   assert.ok(brokenAlone.warnings.some(warning => /영상 1개의 주소를 읽지 못해/.test(warning)));
 });
 
+// 11-20 게시 성과 P1: 자기 주소가 없는 게시물 줄을 첨부 영상(릴스)의 주소로 채우면 그 줄에만 urlFromAttachment: true를 단다.
+test('Facebook marks only a feed row whose address was filled from its attached reel', async () => {
+  const collect = (posts, videos) => collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new URL(raw);
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: posts });
+    if (url.pathname.endsWith('/videos')) return ok({ data: videos });
+    throw new Error('unexpected');
+  } });
+  const at = '2026-10-29T12:00:00Z', video = { id: '555', post_id: '700', permalink_url: '/reel/555/', views: 9, published: true, created_time: '2026-10-29T12:10:00Z' };
+  const filled = await collect([{ id: '123_700', created_time: at, attachments: { data: [{ target: { id: '555' } }] } }, { id: '123_701', created_time: at, permalink_url: 'https://www.facebook.com/synk/posts/701' }],
+    [video, { id: '556', post_id: '702', permalink_url: '/reel/556/', views: 4, published: true, created_time: at }]);
+  assert.deepEqual(filled.posts.map(post => [post.externalId, post.url, post.urlFromAttachment]),
+    [['123_700', 'https://www.facebook.com/reel/555/', true], ['123_701', 'https://www.facebook.com/synk/posts/701', undefined], ['556', 'https://www.facebook.com/reel/556/', undefined]]);
+  const own = await collect([{ id: '123_700', created_time: at, permalink_url: 'https://www.facebook.com/synk/posts/700', attachments: { data: [{ target: { id: '555' } }] } }], [video]);
+  assert.deepEqual(own.posts.map(post => [post.externalId, post.url, post.urlFromAttachment]), [['123_700', 'https://www.facebook.com/synk/posts/700', undefined]], 'a row with its own address keeps it and is not marked');
+  const contradicting = await collect([{ id: '123_701', created_time: at, attachments: { data: [{ target: { id: '555' } }] } }], [video]);
+  assert.deepEqual(contradicting.posts.map(post => [post.externalId, post.url, post.urlFromAttachment, post.videoId]), [['123_701', 'https://www.facebook.com/reel/555/', true, null]], 'a contradicting attachment still fills and marks the address');
+  const unreadable = await collect([{ id: '123_700', created_time: at, attachments: { data: [{ target: { id: '555' } }] } }], [{ ...video, permalink_url: 'https://[' }]);
+  assert.deepEqual(unreadable.posts.map(post => [post.externalId, post.url, post.urlFromAttachment]), [['123_700', null, undefined]], 'no address, no mark');
+});
+
 // 다시 검수 GA4: 칸 거절은 첫 요청에서 난다. 둘째 쪽에서 난 400 · 100(커서 따위)으로 처음부터 다시 받지 않는다.
 test('Facebook does not refetch videos with fewer fields when a later page fails with code 100', async () => {
   let videoCalls = 0;
