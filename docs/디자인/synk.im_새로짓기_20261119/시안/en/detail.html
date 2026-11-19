@@ -46,7 +46,7 @@ html{background:var(--paper);scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font:var(--t-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;letter-spacing:-.012em;word-break:keep-all;overflow-wrap:break-word;overflow-x:clip}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
-h1,h2,h3,p,ul,ol,figure,dl,dd{margin:0;padding:0}
+h1,h2,h3,h4,p,ul,ol,figure,dl,dd{margin:0;padding:0}
 h1,h2,h3{text-wrap:balance}
 p,dd,li{text-wrap:pretty}
 ul,ol{list-style:none}
@@ -228,6 +228,13 @@ mark{background:none;color:inherit;font-weight:700}
 .talk p.me b{flex-basis:100%}
 .mic{width:11px;height:11px;border-radius:50%;background:var(--acc);animation:mic 1.1s ease-in-out infinite}
 @keyframes mic{0%,100%{transform:scale(.7);opacity:.6}50%{transform:scale(1.3);opacity:1}}
+/* 특별 스토리 촬영 장면: 상대역이 묻고, 내가 답하고, 감독이 한마디 한다 */
+.shoot>img{object-position:50% 30%}
+.slate{position:absolute;left:var(--pad-s);top:var(--pad-s);padding:10px 16px;border-radius:999px;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#fff;font:600 clamp(13px,1.05vw,15px)/1 var(--sans)}
+.cut{position:absolute;right:var(--pad-s);top:var(--pad-s);display:flex;align-items:center;gap:16px;max-width:min(58%,460px);padding:10px 22px 10px 10px;border-radius:22px;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:#fff}
+.cut img{flex:none;width:clamp(56px,5.6vw,80px);aspect-ratio:1;object-fit:cover;object-position:20% 50%;border-radius:14px}
+.talk .cut p{max-width:none;padding:0;background:none;color:inherit;border-radius:0;font:600 clamp(15px,1.32vw,19px)/1.45 var(--sans)}
+.e-note{margin-top:calc(var(--g2) - var(--g4));font:var(--t-cap);color:var(--cap);max-width:44em}
 /* 차례 */
 .seq ol{display:grid;gap:10px;width:min(100%,760px)}
 .seq li{display:flex;align-items:baseline;gap:clamp(14px,2vw,28px);padding:clamp(14px,1.8vw,24px) clamp(18px,2.4vw,32px);background:#fff;border-radius:var(--r-md);font:600 clamp(22px,2.5vw,36px)/1.15 var(--sans);letter-spacing:-.03em}
@@ -295,7 +302,6 @@ mark{background:none;color:inherit;font-weight:700}
 .lines p{font:var(--t-lead);max-width:31em}
 .lines p b{font-weight:800}
 @media (min-width:901px){.lines p b{white-space:nowrap}}
-.lines .state{display:flex;margin-top:12px;font-size:15px;white-space:nowrap}
 /* 큰 낱말 셋 */
 .five-t{margin-bottom:var(--g3)}
 .five li{align-items:center;padding:clamp(26px,3vw,44px) 0}
@@ -332,6 +338,80 @@ mark{background:none;color:inherit;font-weight:700}
 .shot.phone{justify-self:center;width:min(100%,340px);padding:8px}
 .shot.phone img,.shot.phone video{border-radius:36px;outline:8px solid #111}
 .shots{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:clamp(12px,1.6vw,24px);align-items:start}
+/* 튜터 선배: 선배 둘의 사진 카드와 선배가 보낸 오늘의 메시지 */
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,1.6vw,24px)}
+.duo li{position:relative;aspect-ratio:16/10;border-radius:var(--r-lg);overflow:hidden;isolation:isolate;display:flex;align-items:end;color:#fff;background:#000}
+.duo img{position:absolute;z-index:-2;inset:0;width:100%;height:100%;object-fit:cover;object-position:var(--x,50%) var(--y,40%);transform:scale(1.45);transform-origin:var(--x,50%) var(--y,40%);transition:transform 1.2s var(--ease)}
+.duo li:hover img{transform:scale(1.52)}
+.duo li::after{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.78),rgba(0,0,0,.12) 52%,rgba(0,0,0,0))}
+.duo div{padding:var(--pad-s);display:grid;gap:8px}
+.duo small{font:var(--t-tag);font-size:clamp(14px,1.11vw,16px)}
+.duo b{font:700 clamp(30px,3.6vw,52px)/1.05 var(--sans);letter-spacing:-.04em}
+.duo p{font:600 clamp(16px,1.46vw,21px)/1.45 var(--sans);margin-top:4px}
+.shot.msg{margin-top:clamp(12px,1.6vw,24px)}
+.shot.msg img{border-radius:var(--r-lg);box-shadow:none}
+.arms.pts{padding-top:var(--g4)}
+.tutor-go{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--g3) var(--split-gap);align-items:center;margin-top:var(--g4)}
+.tutor-go>p{font:var(--t-lead);max-width:30em}
+.tutor-go .hero-go{margin-top:0;align-items:center}
+/* 줄에 거는 목록(교실 과정): 줄에 커서를 올리면 그 줄의 카드가 줄에 걸린다 */
+.hang{display:grid;grid-template-columns:minmax(0,1fr) var(--col-r);gap:var(--g4) var(--split-gap);align-items:start}
+.hang .lines li{position:relative;grid-template-columns:clamp(40px,4.4vw,64px) minmax(0,1fr);cursor:pointer;outline-offset:6px}
+.hang .lines h3{padding-right:1.2em;font-size:clamp(26px,2.8vw,40px)}
+.hang .lines p{grid-column:2}
+.hang .lines li::before{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:var(--ink);transform:scaleX(0);transform-origin:0 50%;transition:transform .5s var(--ease)}
+.hang .lines li.on::before{transform:scaleX(1)}
+.hang .lines li::after{content:"→";position:absolute;right:0;top:clamp(26px,2.9vw,42px);font:600 clamp(18px,1.6vw,22px)/1 var(--sans);opacity:0;transform:translateX(-8px);transition:opacity .3s,transform .4s var(--ease)}
+.hang .lines li.on::after{opacity:1;transform:none}
+.hang-stage{--cy:clamp(40px,3.9vw,56px);position:relative;display:grid;min-width:0;padding:calc(var(--cy) + 12px) clamp(18px,2vw,28px) var(--pad-s);background:var(--mist);border-radius:var(--r-lg);overflow:hidden}
+.cord{position:absolute;left:-12px;right:-12px;top:var(--cy);height:2px;border-radius:2px;background:#ADA7A0;box-shadow:0 6px 5px rgba(40,30,20,.1)}
+.cord.tw{animation:hang-twang .9s ease-out .5s}
+.hang-pane{grid-area:1 / 1;min-width:0;display:flex;justify-content:center;align-items:flex-start;align-content:flex-start;gap:clamp(14px,1.6vw,22px);visibility:hidden;opacity:0}
+.hang-pane.on{visibility:visible;opacity:1}
+.hang-pane.col{flex-direction:column;align-items:stretch;gap:var(--g3)}
+.hung{position:relative;transform-origin:50% -12px}
+.hang-pane.on .hung{animation:hang-drop .55s cubic-bezier(.45,0,.9,.55) backwards,hang-sway 2.4s cubic-bezier(.3,.1,.3,1) backwards;animation-delay:var(--d,0s),calc(var(--d,0s) + .55s)}
+@keyframes hang-drop{from{translate:0 -150%;opacity:0}35%{opacity:1}to{translate:0 0}}
+@keyframes hang-sway{0%{rotate:0deg}16%{rotate:var(--a,4deg)}36%{rotate:calc(var(--a,4deg) * -.62)}56%{rotate:calc(var(--a,4deg) * .36)}74%{rotate:calc(var(--a,4deg) * -.17)}90%{rotate:calc(var(--a,4deg) * .06)}100%{rotate:0deg}}
+@keyframes hang-twang{0%{translate:0 0}22%{translate:0 5px}48%{translate:0 -2px}72%{translate:0 1.5px}100%{translate:0 0}}
+/* 은색 집게 */
+.clip{position:absolute;z-index:2;left:50%;top:-18px;width:26px;height:24px;margin-left:-13px;pointer-events:none}
+.clip::before{content:"";position:absolute;left:5px;right:5px;top:0;height:11px;border:2px solid #8E8E9A;border-bottom:0;border-radius:6px 6px 0 0}
+.clip::after{content:"";position:absolute;left:0;right:0;bottom:0;height:15px;border-radius:3px 3px 4px 4px;background:linear-gradient(180deg,#F6F6F8,#CDCDD5 55%,#9C9CA8);box-shadow:0 2px 3px rgba(20,20,40,.22),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(0,0,0,.14)}
+/* 걸리는 카드와 종이 */
+.card,.sheet{background:#fff;border-radius:16px;box-shadow:0 1px 0 #ECE8E3,0 24px 36px -24px rgba(40,30,20,.42)}
+.card{flex:none;width:clamp(168px,15.6vw,224px);padding:12px 12px 18px}
+.card.q{width:clamp(190px,18.6vw,268px)}
+.card-top{display:flex;justify-content:space-between;padding:3px 3px 10px;font:700 11px/1 var(--sans);letter-spacing:.04em}
+.card>img,.q-win{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:#0b0b0c}
+.card h4{margin:14px 4px 0;font:700 clamp(21px,1.95vw,28px)/1.1 var(--sans);letter-spacing:-.035em}
+.card h4+p{margin:7px 4px 0;font:500 13px/1.45 var(--sans)}
+.sheet{flex:1 1 0;min-width:0;padding:clamp(18px,1.8vw,26px);display:grid;gap:16px;justify-items:start}
+.cvl{display:grid;width:100%}
+.cvl>b{padding:16px 0 9px;font:700 12px/1 var(--sans);letter-spacing:.02em}
+.cvl>b:first-child{padding-top:0}
+.cvl li{display:grid;grid-template-columns:46px minmax(0,1fr);align-items:baseline;padding:8px 0;border-top:1px solid var(--hair);font:600 clamp(14px,1.1vw,15.5px)/1.35 var(--sans);letter-spacing:-.02em}
+.cvl li.one{grid-template-columns:1fr}
+.cvl small{font:600 12px/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--cap)}
+.sheet .text-link{font-size:15px}
+.js .hang-pane.on .cvl li{animation:hang-row .5s var(--ease) backwards;animation-delay:calc(.75s + var(--i,0) * .06s)}
+@keyframes hang-row{from{opacity:0;transform:translateY(8px)}}
+/* 준비 중: 물음표가 까딱이다가 한 바퀴 돈다 */
+.q-win{display:grid;place-items:center;color:#fff;perspective:600px}
+.q-win b{font:700 clamp(84px,8.4vw,124px)/1 var(--sans);animation:q-ask 3.2s cubic-bezier(.4,0,.2,1) infinite}
+.q-dot{display:inline-block;font:700 1.05em/1 var(--sans);font-style:normal;animation:q-ask 3.2s cubic-bezier(.4,0,.2,1) infinite}
+.cvl li:last-child .q-dot{animation-delay:.4s}
+@keyframes q-ask{0%{transform:translateY(0) rotate(-9deg) rotateY(0)}28%{transform:translateY(-9%) rotate(8deg) rotateY(0)}54%{transform:translateY(0) rotate(-5deg) rotateY(0)}80%{transform:translateY(-5%) rotate(0deg) rotateY(360deg)}100%{transform:translateY(0) rotate(-9deg) rotateY(360deg)}}
+/* PATH 앱 화면 셋 */
+.phones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(14px,2.1vw,30px);width:100%}
+.phones li{display:grid;gap:16px;align-content:start}
+.phones img{width:100%;height:auto;border-radius:clamp(14px,1.5vw,20px);outline:5px solid #111;box-shadow:0 24px 36px -24px rgba(40,30,20,.48)}
+.phones div{display:grid;gap:5px;text-align:center}
+.phones b{font:var(--t-h4)}
+.phones span{font:500 14px/1.45 var(--sans)}
+.hang-cap{font:var(--t-cap);color:var(--cap);text-align:center}
+.hang-cap a{color:var(--ink);font-weight:700;border-bottom:1.5px solid currentColor;white-space:nowrap}
+.hang+.credo{margin-top:var(--S)}
 /* 강사 */
 .teacher{display:grid;grid-template-columns:minmax(0,1fr) var(--col-r);gap:var(--g4) var(--split-gap);align-items:start}
 .teacher-pic{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--mist);border-radius:var(--r-lg)}
@@ -375,17 +455,10 @@ mark{background:none;color:inherit;font-weight:700}
 .flow img{border-radius:var(--r-md)}
 .flow b{font:var(--t-h4);font-size:clamp(19px,1.8vw,26px);letter-spacing:-.01em}
 .flow span{grid-column:2;font:var(--t-body)}
-/* 지금 되는 것과 준비 중: 둥근 판 둘 */
-.status{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,1.4vw,20px)}
-.status>div{background:var(--mist);border-radius:var(--r-lg);padding:var(--pad-s)}
-.sec.warm .status>div{background:#fff}
-.status h3{font:700 clamp(21px,1.95vw,28px)/1.2 var(--sans);letter-spacing:-.02em;padding-bottom:18px;border-bottom:1px solid var(--hair);display:flex;align-items:center;gap:12px}
-.status h3::before{content:"";flex:none;width:11px;height:11px;border-radius:50%;background:var(--meadow-ink)}
-.status div:nth-child(2) h3::before{background:none;border:2px solid currentColor}
-.status li{padding:16px 0;border-bottom:1px solid var(--hair);font:500 clamp(16px,1.32vw,19px)/1.5 var(--sans)}
-.status li:last-child{border-bottom:0;padding-bottom:0}
 .note{margin-top:var(--g3);font:var(--t-cap);color:var(--cap);max-width:60em}
 .sec.dark .note{color:var(--cap-d)}
+/* 쪽 끝의 고지 한 줄 */
+.fine{margin:var(--g4) var(--wide) 0;padding-top:var(--g2);border-top:1px solid var(--hair);font:var(--t-cap);color:var(--cap)}
 
 /* 4 다음 곳과 바닥 */
 .next{position:relative;display:flex;align-items:end;min-height:clamp(380px,56svh,560px);margin:var(--S) var(--wide) clamp(40px,6vw,88px);border-radius:var(--r-lg);overflow:hidden;isolation:isolate;color:#fff;background:#000}
@@ -444,6 +517,12 @@ mark{background:none;color:inherit;font-weight:700}
 .js .fix:not(.in) s::after{transform:scaleX(0)}
 .js .fix b{transition:opacity .5s 1.3s,transform .6s var(--ease) 1.3s}
 .js .fix:not(.in) b{opacity:0;transform:translateY(14px)}
+.js .shoot figcaption p,.js .shoot .cut{transition:opacity .5s,transform .6s var(--ease)}
+.js .shoot figcaption p{transition-delay:.7s}
+.js .shoot figcaption p.me{transition-delay:1.5s}
+.js .shoot .cut{transition-delay:2.5s}
+.js .shoot:not(.in) figcaption p{opacity:0;transform:translateY(14px)}
+.js .shoot:not(.in) .cut{opacity:0;transform:translateY(-14px)}
 .js .rv:not(.in){opacity:0;transform:translateY(18px)}
 .js .rv{transition:opacity .7s,transform .8s var(--ease)}
 .js .five h3{color:transparent;background:linear-gradient(90deg,var(--ink) 50%,rgba(29,29,31,.13) 50%) 100% 0/200% 100% no-repeat;-webkit-background-clip:text;background-clip:text;transition:background-position 1s var(--ease) .15s}
@@ -483,7 +562,7 @@ mark{background:none;color:inherit;font-weight:700}
   .lines p{grid-column:2}
   .five li{grid-template-columns:34px minmax(0,1fr);align-items:baseline}
   .five h3{font-size:clamp(38px,12vw,76px)}
-  .arm,.teacher,.status,.pick,.flow{grid-template-columns:1fr}
+  .arm,.teacher,.pick,.flow,.hang,.duo,.tutor-go{grid-template-columns:1fr}
   .arm:has(.pieces) .arm-say{position:static}
   .feats li{grid-template-columns:1fr}
   .cast{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -492,9 +571,24 @@ mark{background:none;color:inherit;font-weight:700}
   .shots>*{flex:0 0 76%;scroll-snap-align:center}
   .next-say{grid-template-columns:minmax(0,1fr) auto}
   .pick-stage{position:relative;top:auto}
+  .duo li{aspect-ratio:4/3}
+  .shoot>img{object-position:40% 30%}
+  .shot.msg img{aspect-ratio:3/5;object-fit:cover;object-position:90% 50%}
+  .slate{display:none}
+  .cut{left:14px;right:14px;top:14px;max-width:none;gap:12px;padding:8px 14px 8px 8px;border-radius:18px}
+  .cut img{width:48px;border-radius:11px}
+  .talk .cut p{font-size:14px;line-height:1.4}
+  .hang-pane{display:none;flex-wrap:wrap;row-gap:22px}
+  .hang-pane.on{display:flex}
+  .card.q{width:min(100%,224px)}
+  .sheet{flex-basis:100%}
+  .sheet>.clip,.phones li+li .clip{display:none}
+  .phones{grid-template-columns:1fr;gap:22px}
+  .phones li{grid-template-columns:116px minmax(0,1fr);gap:0 18px;align-items:center}
+  .phones div{text-align:left}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
-.still .verbs .spin,.still .verbs .stop,.still .mic,.still .live>p i{animation:none}
+.still .verbs .spin,.still .verbs .stop,.still .mic,.still .live>p i,.still .hung,.still .q-win b,.still .q-dot,.still .cord{animation:none!important}
 </style>
 <style>
 /* 영어판: 영어 글자에 맞춘 손질. 한글은 낱말 단위로 끊고 자간을 좁히지만, 영어는 긴 낱말이 넘치지 않게 풀어 둔다. */
@@ -532,19 +626,19 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
       <span class="hero-n">First · At home</span>
       <h1>Korean</h1>
       <p class="hero-lead">The scene moves on only when you speak. We count as skill only what you manage to say on your own in a situation you have never seen.</p>
-      <div class="hero-go"><span class="state">Available now · Look around without signing up</span><a class="pill" href="https://synk.im/world/">Open SYNK WORLD <span class="arr" aria-hidden="true">→</span></a></div>
+      <div class="hero-go"><a class="pill" href="https://synk.im/world/">Open SYNK WORLD <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </header>
 
   <section class="edge" data-tone="light">
     <ul class="arms" aria-label="This page’s three strengths">
-      <li><b>Speak</b><span>and the scene moves on</span></li>
+      <li><b>You act</b><span>in a special story with a director</span></li>
       <li><b>1 · 7 · 30 days</b><span>later, back as a new question</span></li>
       <li><b>Just one</b><span>thing to fix, pointed out</span></li>
     </ul>
     <ol>
-      <li class="e first"><div class="e-say"><span class="e-no">K-drama role-play</span><h2 class="e-claim">Speak, and<br><mark>the scene moves on.</mark></h2><p class="e-proof">The other person speaks to you first, and the next scene opens only when you answer out loud.</p><span class="state e-state">Available now</span></div><figure class="e-fig talk"><img src="../assets/d/drama-hello.webp" alt="Kwon Tae-o, an older student, waving in the student cafeteria. A scene from Episode 1 of the role-play." loading="lazy"><figcaption><p><b>Kwon Tae-o, an older student</b>저기, 혹시 신입생이에요? (Excuse me, are you a new student?)</p><p class="me"><b>You</b><span class="mic" aria-hidden="true"></span>Your turn to speak</p></figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no">Atlas engine</span><h2 class="e-claim">What you memorized<br><mark>doesn’t count as skill.</mark></h2><p class="e-proof">What you get wrong is asked again 1, 7 and 30 days later. It is skill only if you can do it on your own then.</p><span class="state e-state">Available now</span></div><figure class="e-fig viz days" aria-label="Asked again 1, 7 and 30 days later"><ol><li><b><span data-count="1">1</span></b><span>day<i class="pl">s</i> later</span></li><li><b><span data-count="7">7</span></b><span>day<i class="pl">s</i> later</span></li><li class="hot"><b><span data-count="30">30</span></b><span>day<i class="pl">s</i> later</span></li></ol><figcaption>Asked again as a question you have not seen</figcaption></figure></li>
+      <li class="e first"><div class="e-say"><span class="e-no">Special stories · actor and idol</span><h2 class="e-claim">You act the scene,<br><mark>and a director directs you.</mark></h2><p class="e-proof">Your scene partner asks, and you answer out loud. After “Cut, OK!”, the scene plays from the start with your own voice in it.</p></div><figure class="e-fig talk shoot"><img src="../assets/d/dream-rooftop.webp" alt="On a rooftop at dusk, your scene partner looks at you and speaks. Your shoulder is in the foreground. A shooting scene from a special story." loading="lazy"><div class="slate">Student film “Hello, Seoul” · rooftop scene</div><div class="cut"><img src="../assets/d/dream-director.webp" alt="" loading="lazy"><p><b>Director</b>Cut! Good. Just the last line once more, with more excitement in your voice.</p></div><figcaption><p><b>Scene partner · a friend</b>여기 처음 와 봐요? (Is this your first time here?)</p><p class="me"><b>You</b><span class="mic" aria-hidden="true"></span>Your turn to speak</p></figcaption></figure><p class="e-note">In the idol story you pick the rap or the vocal part of one song and sing it in your own voice. Both stories are in preparation.</p></li>
+      <li class="e"><div class="e-say"><span class="e-no">Atlas engine</span><h2 class="e-claim">What you memorized<br><mark>doesn’t count as skill.</mark></h2><p class="e-proof">What you get wrong is asked again 1, 7 and 30 days later. It is skill only if you can do it on your own then.</p></div><figure class="e-fig viz days" aria-label="Asked again 1, 7 and 30 days later"><ol><li><b><span data-count="1">1</span></b><span>day<i class="pl">s</i> later</span></li><li><b><span data-count="7">7</span></b><span>day<i class="pl">s</i> later</span></li><li class="hot"><b><span data-count="30">30</span></b><span>day<i class="pl">s</i> later</span></li></ol><figcaption>Asked again as a question you have not seen</figcaption></figure></li>
       <li class="e"><div class="e-say"><span class="e-no">Coach note</span><h2 class="e-claim">The coach points out<br><mark>just one</mark> thing to fix.</h2><p class="e-proof">This is the answer we reached by sorting 3,519 reviews of speaking apps. Only when sure, and only one.</p></div><figure class="e-fig fix"><p>어제 친구를 <s>만나요</s><b>만났어요</b></p><figcaption>Example: “met”, not “meet”</figcaption></figure></li>
     </ol>
   </section>
@@ -567,37 +661,29 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
     <div class="credo"><p class="quote"><span class="sn">The time technology saves is spent on what people do for themselves: <em>feeling, experiencing and learning.</em></span> <span class="sn">Our final goal is to help students who learn this way become leaders.</span></p><span>Yuho Yang · Founder of SYNK</span></div>
   </section>
 
-  <section class="sec dark" data-tone="dark">
-    <div class="arm">
-      <div class="arm-say">
-        <p class="tag">What’s ready · SYNK WORLD app</p>
-        <h2>The app picks<br>your daily practice</h2>
-        <p>A short diagnostic shows where you stand first. Listening, reading, writing feedback or speaking: what you do today is decided from your record.</p>
-        <ul class="feats">
-          <li><b>Today’s practice</b><span>When you come in, the tutor first tells you what to start with today.</span></li>
-          <li><b>Why it was wrong</b><span>When you get something wrong, it tells you why on the spot.</span></li>
-          <li><b>Up to TOPIK</b><span>You practise listening and reading, get feedback on writing questions 51–54, and practise the speaking test format.</span></li>
-          <li><b>Three languages</b><span>The screens come in Korean, English and Mongolian.</span></li>
-        </ul>
-        <div class="hero-go"><span class="state">Available now</span><a class="pill light" href="https://synk.im/world/">Open SYNK WORLD <span class="arr" aria-hidden="true">→</span></a></div>
-      </div>
-      <div class="pieces">
-        <figure class="shot"><img src="../assets/d/world-tutor.webp" alt="The AI tutor card in SYNK WORLD. It suggests what to start with together today." loading="lazy"><figcaption>When you come in, it first tells you what to do today</figcaption></figure>
-        <figure class="shot"><img src="../assets/d/world-game-wrong.webp" alt="A game screen in SYNK WORLD. Next to the wrong answer is a note on why it was wrong." loading="lazy"><figcaption>When you get it wrong, it tells you why on the spot</figcaption></figure>
-        <figure class="shot"><img src="../assets/d/world-check-d7.webp" alt="The re-check row in SYNK WORLD. It shows “got it right alone” after 1 day, “check now” after 7 days, and a date after 30 days." loading="lazy"><figcaption>It brings it back to check 1, 7 and 30 days later</figcaption></figure>
-      </div>
+  <section class="sec">
+    <div class="sec-head">
+      <p class="tag">SYNK WORLD · Your senior, your tutor</p>
+      <h2>A senior student<br>leads your daily practice</h2>
+      <p>You choose one of two seniors. You can switch even after you have met.</p>
+    </div>
+    <ul class="duo">
+      <li><img src="../assets/d/senior-taeo.webp" alt="Kwon Tae-o, a senior, laughing as he carries a folding chair past the tents of a new-term event." loading="lazy" style="--x:60%;--y:36%"><div><small>Third year, International Studies</small><b>Kwon Tae-o</b><p>“I couldn’t find the cafeteria, so I ate at a convenience store.”</p></div></li>
+      <li><img src="../assets/d/senior-yuna.webp" alt="Han Yu-na, a senior, walking past the map at the main gate with a box of flyers." loading="lazy" style="--x:52%;--y:38%"><div><small>Third year, International Studies</small><b>Han Yu-na</b><p>“I went round three times in front of the map at the main gate.”</p></div></li>
+    </ul>
+    <figure class="shot msg"><img src="../assets/d/today-msg.webp" alt="Today’s message from Tae-o. Beside a round video message are speech bubbles about yesterday’s line “한참 헤맸어요”, today’s three scenes and a “좋아요, 시작할게요” button." loading="lazy"><figcaption>A screen in preparation. Yesterday’s line is an example.</figcaption></figure>
+    <ul class="arms pts">
+      <li><b>Speaks to you first</b><span>When you open the app, a video message from your senior is waiting. It tells you today’s scenes and how long they take.</span></li>
+      <li><b>Remembers what you said yesterday</b><span>If the end of “한참 헤맸어요” came out too quietly, today starts with that line again.</span></li>
+      <li><b>Plays opposite you in the scene</b><span>In the story and in speaking practice, your first partner is the senior you chose.</span></li>
+    </ul>
+    <div class="tutor-go">
+      <p>You practise TOPIK listening and reading, get feedback on writing questions 51 to 54, and try the speaking test format. The screens come in Korean, English and Mongolian.</p>
+      <div class="hero-go"><a class="pill" href="https://synk.im/world/">Open SYNK WORLD <span class="arr" aria-hidden="true">→</span></a><a class="text-link" href="?p=atlas">See Atlas, the engine that picks your practice <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </section>
 
-  <section class="sec warm">
-    <div class="sec-head"><p class="tag">Where we are</p><h2>Available now and in preparation</h2></div>
-    <div class="status">
-      <div><h3>Available now</h3><ul><li>Speaking in K-drama role-play Episode 1, “First Day of Term”</li><li>Meeting the lines you got wrong again a few days later</li><li>A short TOPIK I diagnostic and this week’s practice plan</li><li>TOPIK listening · reading, and feedback on writing questions 51–54</li></ul></div>
-      <div><h3>In preparation</h3><ul><li>Eight-week online class for TOPIK Level 4 · registering interest</li><li>Role-play seasons set in the workplace and around an idol trainee</li><li>Publishing the eight “Synapse” textbooks · manuscripts complete</li></ul></div>
-    </div>
-    <p class="more-teachers"><a class="text-link" href="?p=atlas">See Atlas, the engine that picks your practice <span class="arr" aria-hidden="true">→</span></a></p>
-    <p class="note">The characters and the school in the role-play are fictional. Writing feedback is available three times a day when you log in. We do not guarantee that you will pass.</p>
-  </section>
+  <p class="fine">Choosing a senior and the senior’s message screen are in preparation. You first meet Tae-o in K-drama role-play Episode 1, “First Day of Term”. The characters and the school in the story are fictional. Writing feedback is available three times a day when you log in. We do not guarantee that you will pass.</p>
 
   <a class="next" href="?p=classroom"><img src="../assets/in-2.webp" alt="" loading="lazy"><span class="next-say"><span><small>Next · Second</small><b>Classroom</b></span><span class="arr" aria-hidden="true">→</span></span></a>
 </article>
@@ -629,40 +715,65 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
 
   <section class="sec">
     <div class="sec-head"><p class="tag">Course</p><h2>The target is TOPIK Level 4</h2><p>Some graduation, scholarship and part-time work requirements ask for Level 4. So we put Level 4 at the centre from the start.</p></div>
-    <ol class="lines">
-      <li><span class="no">01</span><h3>Conversation with a native Korean speaker</h3><p>You fix pronunciation and honorifics, and <b>answer in your own words</b> even when the question is one you did not expect.</p></li>
-      <li><span class="no">02</span><h3>The “Synapse” textbooks</h3><p>Six grammar volumes and two conversation volumes. <b>The manuscripts for all eight are finished.</b></p></li>
-      <li><span class="no">03</span><h3>Interviews and daily life</h3><p>Visa interviews and unfamiliar everyday situations are <b>practised in VR beforehand.</b> This links to preparing to study in Korea.</p></li>
-    </ol>
-  </section>
-
-  <section class="sec warm">
-    <div class="sec-head"><p class="tag">Teacher</p><h2>Who teaches</h2></div>
-    <div class="teacher">
-      <div class="teacher-pic"><img src="../assets/d/yuho.webp" alt="SYNK founder Yuho Yang against a black background" loading="lazy"></div>
-      <div class="teacher-say">
-        <h3><small>Lead teacher · Founder of SYNK</small>Yuho Yang</h3>
-        <p class="quote">What I came to see as most important was knowing <em>the character of each and every student</em>.</p>
-        <p>As vice-director of Skyline Edu, an academy in Ulaanbaatar, Mongolia, he was in charge of student counselling and running classes. He studied architecture and psychology, and worked as a performer on stage and on screen. In the classroom he is due to teach conversation as a native Korean speaker.</p>
-        <dl class="cv">
-          <dt>Career</dt><dd>2026 Skyline Edu, Mongolia · former vice-director · student growth · education operations · marketing<br>2023 RCA (Royal College of Art, UK) graduation project · main performer<br>2023 Drama “True to Love (Bora! Deborah)” · Netflix · opening sequence<br>2014 LOEN Entertainment · performer</dd>
-          <dt>Awards</dt><dd>2026 Seoullo Media Canvas short animation open call · “What the Bridge Remembers” selected<br>2019 Fine Art Photography Awards · Open Theme category · Winner<br>2017 MK Challenge · hosted by Maeil Business Newspaper · project leader · runner-up</dd>
-          <dt>Education</dt><dd>Chung-Ang University, Psychology</dd>
-        </dl>
-        <a class="text-link" href="https://synk.im/founder/">See the full founder profile <span class="arr" aria-hidden="true">→</span></a>
+    <div class="hang" data-hang="">
+      <ol class="lines">
+        <li class="on" tabindex="0"><span class="no">01</span><h3>Conversation with a native Korean speaker</h3><p>You fix pronunciation and honorifics, and <b>answer in your own words</b> even when the question is one you did not expect.</p></li>
+        <li tabindex="0"><span class="no">02</span><h3>The “Synapse” textbooks</h3><p>Six grammar volumes and two conversation volumes. <b>The manuscripts for all eight are finished.</b></p></li>
+        <li tabindex="0"><span class="no">03</span><h3>Interviews and daily life</h3><p>Visa interviews and unfamiliar everyday situations are <b>practised in VR beforehand.</b> The preparation continues in the PATH&nbsp;app.</p></li>
+      </ol>
+      <div class="hang-stage">
+        <div class="hang-pane on">
+          <div class="hung card" style="--a:5deg">
+            <i class="clip" aria-hidden="true"></i>
+            <p class="card-top"><span>Lead teacher</span><span>01</span></p>
+            <img src="../assets/d/yuho.webp" alt="SYNK founder Yuho Yang against a black background" loading="lazy">
+            <h4>Yuho Yang</h4>
+            <p>Founder of SYNK. He will teach native-speaker conversation in the classroom.</p>
+          </div>
+          <div class="hung sheet" style="--a:-3.2deg;--d:.16s">
+            <i class="clip" aria-hidden="true"></i>
+            <div class="cvl">
+              <b>Career</b>
+              <ul><li><small>2026</small>Former vice-director, Skyline Edu</li><li><small>2023</small>RCA graduation project · main performer</li><li><small>2023</small>“True to Love” on Netflix · opening</li><li><small>2014</small>LOEN Entertainment · performer</li></ul>
+              <b>Awards</b>
+              <ul><li><small>2026</small>Seoullo Media Canvas open call · selected</li><li><small>2019</small>Fine Art Photography Awards Winner</li><li><small>2017</small>MK Challenge · runner-up</li></ul>
+              <b>Education</b>
+              <ul><li class="one">Chung-Ang University, Psychology</li></ul>
+            </div>
+            <a class="text-link" href="https://synk.im/founder/">See the full founder profile <span class="arr" aria-hidden="true">→</span></a>
+          </div>
+        </div>
+        <div class="hang-pane">
+          <div class="hung card q" style="--a:-5deg">
+            <i class="clip" aria-hidden="true"></i>
+            <p class="card-top"><span>Textbooks</span><span>02</span></p>
+            <div class="q-win" aria-hidden="true"><b>?</b></div>
+            <h4>“Synapse”</h4>
+            <p>The covers and the publication date are still being decided.</p>
+          </div>
+          <div class="hung sheet" style="--a:3.2deg;--d:.16s">
+            <i class="clip" aria-hidden="true"></i>
+            <div class="cvl">
+              <b>In preparation</b>
+              <ul><li><small>Set</small>Six grammar books · two conversation books</li><li><small>Text</small>All eight manuscripts are finished</li><li><small>Cover</small><i class="q-dot" aria-hidden="true">?</i></li><li><small>Out</small><i class="q-dot" aria-hidden="true">?</i></li></ul>
+            </div>
+          </div>
+        </div>
+        <div class="hang-pane col">
+          <ul class="phones">
+            <li><figure class="hung" style="--a:4deg"><i class="clip" aria-hidden="true"></i><img src="../assets/d/path-app-1.webp" alt="The first screen of the PATH app. You pick the card that fits your situation from three cards hanging on a rail." loading="lazy"></figure><div><b>Pick a card</b><span>Choose your situation: preparing to study, studying now, or preparing for work.</span></div></li>
+            <li><figure class="hung" style="--a:-3.2deg;--d:.12s"><i class="clip" aria-hidden="true"></i><img src="../assets/d/path-app-2.webp" alt="The Today screen of the PATH app. The three steps, find, prepare and check, are all stamped." loading="lazy"></figure><div><b>Today</b><span>Find, prepare, check. Each step you finish gets a stamp.</span></div></li>
+            <li><figure class="hung" style="--a:3.6deg;--d:.24s"><i class="clip" aria-hidden="true"></i><img src="../assets/d/path-app-3.webp" alt="The Find screen of the PATH app. Job postings in Korea and practice examples are shown apart." loading="lazy"></figure><div><b>Find</b><span>Official postings and practice examples are shown apart.</span></div></li>
+          </ul>
+          <p class="hang-cap">Actual screens from the PATH app. It has five tabs: Today, Find, Prepare, Help and Me. <a href="https://synk.im/path/app/">Open the PATH app →</a></p>
+        </div>
+        <i class="cord" aria-hidden="true"></i>
       </div>
     </div>
-    <p class="more-teachers">Teachers will be hired once the opening is set, and added here.</p>
+    <div class="credo"><p class="quote">What I came to see as most important was knowing <em>the character of each and every student</em>.</p><span>Yuho Yang · Lead teacher</span></div>
   </section>
 
-  <section class="sec">
-    <div class="sec-head"><p class="tag">Where we are</p><h2>Available now and in preparation</h2></div>
-    <div class="status">
-      <div><h3>Available now</h3><ul><li>Interest registration for the Ulaanbaatar classroom</li><li>Manuscripts complete for the eight “Synapse” textbooks</li><li>The SYNK WORLD app, to be used alongside the classroom</li></ul></div>
-      <div><h3>In preparation</h3><ul><li>Opening of the Ulaanbaatar classroom</li><li>K-pop warm-ups and K-drama workshops</li><li>A teacher screen that carries what was fixed in class over to the app</li></ul></div>
-    </div>
-    <p class="note">These are the operating standards for a course that is preparing to open. Dates and conditions for taking part will be given in the enrolment notice. We do not guarantee that you will pass.</p>
-  </section>
+  <p class="fine">These are the operating standards for a course that is preparing to open. Dates and conditions for taking part will be given in the enrolment notice. Teachers will be added once the opening is set. We do not guarantee that you will pass.</p>
 
   <a class="next" href="?p=study"><img src="../assets/in-3.webp" alt="" loading="lazy"><span class="next-say"><span><small>Next · Third</small><b>Study in Korea</b></span><span class="arr" aria-hidden="true">→</span></span></a>
 </article>
@@ -675,7 +786,7 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
       <span class="hero-n">Third · To Korea</span>
       <h1>Study in Korea</h1>
       <p class="hero-lead">Sit down in front of three interviewers at home first. Try it before you come to Korea.</p>
-      <div class="hero-go"><span class="state">Interview practice is available now</span><a class="pill" href="https://synk.im/path/">Try interview practice <span class="arr" aria-hidden="true">→</span></a></div>
+      <div class="hero-go"><a class="pill" href="https://synk.im/path/">Try interview practice <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </header>
 
@@ -686,9 +797,9 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
       <li><b>A day in Seoul</b><span>planned before you leave</span></li>
     </ul>
     <ol>
-      <li class="e first"><div class="e-say"><span class="e-no">Interview practice</span><h2 class="e-claim">Sit down with<br>three interviewers,<br><mark>at home first.</mark></h2><p class="e-proof">You answer in Korean for 60–90 seconds. With a Quest, you sit inside the interview room.</p><span class="state e-state">Available now</span></div><figure class="e-fig photo"><img src="../assets/d/path-home.webp" alt="A person seen from behind in their room, practising an interview with three interviewers on a laptop. A half-packed suitcase sits beside them." loading="lazy"><figcaption>You hear the first question, then begin</figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no">PATH app</span><h2 class="e-claim">Fill three stamps,<br><mark>and you are ready.</mark></h2><p class="e-proof">Find opportunities, prepare materials, check for yourself.</p><span class="state e-state">Available now</span></div><figure class="e-fig phone"><img src="../assets/d/path-app-2.webp" alt="The home screen of the PATH app. All three stamps are filled." loading="lazy"><figcaption>An actual screen from the PATH app</figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no">A day in Seoul</span><h2 class="e-claim">Plan your day<br>in Seoul<br><mark>before you leave.</mark></h2><p class="e-proof">Just pick what you want to do and how much time you have. No sign-up.</p><span class="state e-state">Available now</span></div><figure class="e-fig seq"><ol><li><b>10:00</b>Anguk Station</li><li><b>10:08</b>Unhyeongung Palace</li><li><b>11:02</b>A cup of tea</li><li class="new"><b>12:00</b>Bukchon Hanok Village</li></ol><figcaption>A three-hour example</figcaption></figure></li>
+      <li class="e first"><div class="e-say"><span class="e-no">Interview practice</span><h2 class="e-claim">Sit down with<br>three interviewers,<br><mark>at home first.</mark></h2><p class="e-proof">You answer in Korean for 60–90 seconds. With a Quest, you sit inside the interview room.</p></div><figure class="e-fig photo"><img src="../assets/d/path-home.webp" alt="A person seen from behind in their room, practising an interview with three interviewers on a laptop. A half-packed suitcase sits beside them." loading="lazy"><figcaption>You hear the first question, then begin</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">PATH app</span><h2 class="e-claim">Fill three stamps,<br><mark>and you are ready.</mark></h2><p class="e-proof">Find opportunities, prepare materials, check for yourself.</p></div><figure class="e-fig phone"><img src="../assets/d/path-app-2.webp" alt="The home screen of the PATH app. All three stamps are filled." loading="lazy"><figcaption>An actual screen from the PATH app</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">A day in Seoul</span><h2 class="e-claim">Plan your day<br>in Seoul<br><mark>before you leave.</mark></h2><p class="e-proof">Just pick what you want to do and how much time you have. No sign-up.</p></div><figure class="e-fig seq"><ol><li><b>10:00</b>Anguk Station</li><li><b>10:08</b>Unhyeongung Palace</li><li><b>11:02</b>A cup of tea</li><li class="new"><b>12:00</b>Bukchon Hanok Village</li></ol><figcaption>A three-hour example</figcaption></figure></li>
     </ol>
   </section>
 
@@ -702,7 +813,7 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
           <li><b>Write and check</b><span>Write your reasons for applying in the app, and stamp “Ready” on what you have checked yourself.</span></li>
           <li><b>With one SYNK ID</b><span>Carry on with the same record on your phone and PC. Available in Korean and English.</span></li>
         </ul>
-        <div class="hero-go"><span class="state">Available now · Right on the web</span><a class="pill" href="https://synk.im/path/app/">Open the PATH app <span class="arr" aria-hidden="true">→</span></a></div>
+        <div class="hero-go"><a class="pill" href="https://synk.im/path/app/">Open the PATH app <span class="arr" aria-hidden="true">→</span></a></div>
       </div>
       <div class="shots" style="--n:2">
         <figure class="shot phone"><img src="../assets/d/path-app-1.webp" alt="The first screen of the PATH app. You pick your first card to use in Korea." loading="lazy"><figcaption>Pick a card</figcaption></figure>
@@ -711,14 +822,7 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
     </div>
   </section>
 
-  <section class="sec warm">
-    <div class="sec-head"><p class="tag">Where we are</p><h2>Available now and in preparation</h2></div>
-    <div class="status">
-      <div><h3>Available now</h3><ul><li>Interview practice · PC and Quest</li><li>A day in Seoul · No sign-up</li><li>The overseas preparation card in the PATH app</li></ul></div>
-      <div><h3>In preparation</h3><ul><li>Help with choosing a school and with admission documents</li><li>Practice for visa interviews and university interviews</li><li>Portfolios and looking for a place to live</li></ul></div>
-    </div>
-    <p class="note">The first interview practice is one scenario: a care worker interview. PATH helps you look into requirements and does not guarantee admission or visa outcomes.</p>
-  </section>
+  <p class="fine">The first interview practice is one scenario: a care worker interview. PATH helps you look into requirements and does not guarantee admission or visa outcomes.</p>
 
   <a class="next" href="?p=job"><img src="../assets/in-4.webp" alt="" loading="lazy"><span class="next-say"><span><small>Next · Fourth</small><b>Work in Korea</b></span><span class="arr" aria-hidden="true">→</span></span></a>
 </article>
@@ -731,7 +835,7 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
       <span class="hero-n">Fourth · In Korea</span>
       <h1>Work in Korea</h1>
       <p class="hero-lead">Today’s task shows in one line, and only what you have checked yourself becomes “Ready”.</p>
-      <div class="hero-go"><span class="state">Job preparation in the PATH app is available now</span><a class="pill" href="https://synk.im/path/app/">Open the PATH app <span class="arr" aria-hidden="true">→</span></a></div>
+      <div class="hero-go"><a class="pill" href="https://synk.im/path/app/">Open the PATH app <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </header>
 
@@ -742,20 +846,13 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
       <li><b>90 seconds</b><span>in front of three interviewers</span></li>
     </ul>
     <ol>
-      <li class="e first"><div class="e-say"><span class="e-no">PATH app</span><h2 class="e-claim">Today’s task,<br>shown <mark>in one line.</mark></h2><p class="e-proof">Browse opportunities, write your materials, and check for yourself.</p><span class="state e-state">Available now</span></div><figure class="e-fig crop"><img src="../assets/d/path-app-wide.webp" alt="The PC screen of the PATH app. Under “Start here today” are three steps: find opportunities, prepare materials, check for yourself." loading="lazy"><figcaption>An actual screen from the PATH app</figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no">Checked by you</span><h2 class="e-claim">Only what you checked<br>is <mark>“Ready”</mark></h2><p class="e-proof">The stamp goes only on what you have confirmed yourself through official channels.</p><span class="state e-state">Available now</span></div><figure class="e-fig stamp"><b>Ready<br>✓</b></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no">Interview practice</span><h2 class="e-claim">Answer <mark>out loud</mark><br>to three interviewers.</h2><p class="e-proof">You hear the first question, then try answering in Korean.</p><span class="state e-state">Available now</span></div><figure class="e-fig viz ring" aria-label="Answering for 90 seconds"><div><svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="92"></circle><circle class="arc" cx="100" cy="100" r="92" pathLength="100"></circle></svg><b class="vnum"><span data-count="90">90</span><small>sec</small></b></div></figure></li>
+      <li class="e first"><div class="e-say"><span class="e-no">PATH app</span><h2 class="e-claim">Today’s task,<br>shown <mark>in one line.</mark></h2><p class="e-proof">Browse opportunities, write your materials, and check for yourself.</p></div><figure class="e-fig crop"><img src="../assets/d/path-app-wide.webp" alt="The PC screen of the PATH app. Under “Start here today” are three steps: find opportunities, prepare materials, check for yourself." loading="lazy"><figcaption>An actual screen from the PATH app</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">Checked by you</span><h2 class="e-claim">Only what you checked<br>is <mark>“Ready”</mark></h2><p class="e-proof">The stamp goes only on what you have confirmed yourself through official channels.</p></div><figure class="e-fig stamp"><b>Ready<br>✓</b></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">Interview practice</span><h2 class="e-claim">Answer <mark>out loud</mark><br>to three interviewers.</h2><p class="e-proof">You hear the first question, then try answering in Korean.</p></div><figure class="e-fig viz ring" aria-label="Answering for 90 seconds"><div><svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="92"></circle><circle class="arc" cx="100" cy="100" r="92" pathLength="100"></circle></svg><b class="vnum"><span data-count="90">90</span><small>sec</small></b></div></figure></li>
     </ol>
   </section>
 
-  <section class="sec">
-    <div class="sec-head"><p class="tag">Where we are</p><h2>Available now and in preparation</h2></div>
-    <div class="status">
-      <div><h3>Available now</h3><ul><li>The job preparation card in the PATH app</li><li>Writing materials and checking them yourself</li><li>Interview practice · PC and Quest</li></ul></div>
-      <div><h3>In preparation</h3><ul><li>Guidance on visa, certificate and Korean-language requirements by field</li><li>Korean role-play set in the workplace</li><li>Deadline reminders</li></ul></div>
-    </div>
-    <p class="note">The job postings in the app are examples for practice. SYNK does not currently introduce or broker jobs. PATH helps you look into requirements and does not guarantee visa or employment outcomes.</p>
-  </section>
+  <p class="fine">The job postings in the app are examples for practice. SYNK does not currently introduce or broker jobs. PATH helps you look into requirements and does not guarantee visa or employment outcomes.</p>
 
   <a class="next" href="?p=community"><img src="../assets/in-5.webp" alt="" loading="lazy"><span class="next-say"><span><small>Next · Fifth</small><b>Community</b></span><span class="arr" aria-hidden="true">→</span></span></a>
 </article>
@@ -780,7 +877,7 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
     </ul>
     <ol>
       <li class="e first"><div class="e-say"><span class="e-no">Settle Together</span><h2 class="e-claim">We look after your<br><mark>first 30 days</mark> in Korea.</h2><p class="e-proof">Alien registration, a bank account, health insurance. A dedicated manager and a student who came before you are with you.</p><span class="state soon e-state">In preparation</span></div><figure class="e-fig viz cal" aria-label="The first 30 days after arrival"><b class="vnum"><span data-count="30">30</span><small>day<i class="pl">s</i></small></b><ol><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ol></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no">Season league</span><h2 class="e-claim">Play <mark>on one team</mark><br>with Koreans.</h2><p class="e-proof">A fortnightly season league, cooking and language exchange, evenings without alcohol.</p><span class="state soon e-state">In preparation</span></div><figure class="e-fig phone"><img src="../assets/d/settle-meet.webp" alt="Draft of the community screen in the Settle Together app. It shows a futsal team and the season standings." loading="lazy"><figcaption>This screen is in preparation</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">Season league</span><h2 class="e-claim">Play <mark>on one team</mark><br>with Koreans.</h2><p class="e-proof">A fortnightly season league, cooking and language exchange, evenings without alcohol.</p></div><figure class="e-fig phone"><img src="../assets/d/settle-meet.webp" alt="Draft of the community screen in the Settle Together app. It shows a futsal team and the season standings." loading="lazy"><figcaption>This screen is in preparation</figcaption></figure></li>
       <li class="e"><div class="e-say"><span class="e-no">Full circle</span><h2 class="e-claim">Measured by the share<br>of <mark>people who return.</mark></h2><p class="e-proof">Someone who has settled goes on to welcome the next person.</p></div><figure class="e-fig phone"><img src="../assets/d/settle-todo.webp" alt="Draft of the tasks screen in the Settle Together app. It is day 7 of the first 30, and it shows applying for alien registration and opening a bank account." loading="lazy"><figcaption>This screen is in preparation</figcaption></figure></li>
     </ol>
   </section>
@@ -795,20 +892,12 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
           <li><b>Advice</b><span>AI answers first, and a manager takes over anything that needs checking.</span></li>
           <li><b>Manager screen</b><span>People to look after first appear first, such as those who have not replied or whose deadline is near.</span></li>
         </ul>
-        <div class="hero-go"><span class="state soon">In preparation</span></div>
       </div>
       <figure class="shot phone"><img src="../assets/d/settle-talk.webp" alt="Draft of the advice screen in the Settle Together app. AI answers first and a manager takes over." loading="lazy"><figcaption>Advice · This screen is in preparation</figcaption></figure>
     </div>
   </section>
 
-  <section class="sec warm">
-    <div class="sec-head"><p class="tag">Where we are</p><h2>What we keep to and what is in preparation</h2></div>
-    <div class="status">
-      <div><h3>What we keep to</h3><ul><li>You take part only with your own consent</li><li>We do not collect alien registration numbers or passport numbers</li><li>What you tell us is not used as material for immigration enforcement</li></ul></div>
-      <div><h3>In preparation</h3><ul><li>Settle Together app</li><li>A pilot in which a dedicated manager and a student who came before you look after you close at hand</li><li>A season league mixing Koreans and international students</li></ul></div>
-    </div>
-    <p class="note">Settle Together is in preparation and is not taking applications now. We do not handle visa paperwork on your behalf. The screens are drafts and may change.</p>
-  </section>
+  <p class="fine">You take part only with your own consent. We do not collect alien registration numbers or passport numbers, and what you tell us is not used as material for immigration enforcement. Settle Together is in preparation and is not taking applications now. We do not handle visa paperwork on your behalf. The screens are drafts and may change.</p>
 
   <a class="next" href="index.html#road"><img src="../assets/town.webp" style="object-position:70% 55%" alt="" loading="lazy"><span class="next-say"><span><small>The road comes full circle</small><b>Back to the town</b></span><span class="arr" aria-hidden="true">→</span></span></a>
 </article>
@@ -833,7 +922,7 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
     <ol>
       <li class="e first"><div class="e-say"><span class="e-no">Proof</span><h2 class="e-claim">The instructor’s company<br><mark>runs on AI right now.</mark></h2><p class="e-proof">More than 30 jobs run on time without people, and more than 20 kinds of checks catch mistakes.</p></div><figure class="e-fig live"><p><i aria-hidden="true"></i>Seoul, now</p><b id="live-now">00:00</b><dl><dt>Last run</dt><dd id="live-prev"></dd><dt>Next run</dt><dd id="live-next"></dd></dl><figcaption>Part of SYNK’s actual schedule</figcaption></figure></li>
       <li class="e"><div class="e-say"><span class="e-no">How the lecture works</span><h2 class="e-claim">You leave with<br><mark>one finished piece</mark><br>in your hands.</h2><p class="e-proof">Each person makes it from their own work and takes it away.</p></div><figure class="e-fig seq"><ol><li><b>10 min</b>The same question, twice</li><li><b>15 min</b>A fill-in-the-blank experiment</li><li><b>15 min</b>Adjusting one line at a time</li><li class="new"><b>10 min</b>One line of your own prompt</li></ol><figcaption>An example of a 50-minute class</figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no">SOLIO app</span><h2 class="e-claim">What you learned,<br><mark>the app carries on.</mark></h2><p class="e-proof">See what is left and the billing dates of several AI subscriptions on one screen.</p><div class="hero-go e-state" style="justify-content:center"><span class="state">Available now · Free for members</span><a class="pill" href="https://synk.im/account/platform.html">Get the PC app <span class="arr" aria-hidden="true">→</span></a></div></div><figure class="e-fig"><img src="../assets/solio-subs.webp" alt="SOLIO’s AI subscription manager screen. Each subscription shows what is left on a line of its own." loading="lazy"><figcaption>An actual SOLIO screen. The numbers are example values.</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">SOLIO app</span><h2 class="e-claim">What you learned,<br><mark>the app carries on.</mark></h2><p class="e-proof">See what is left and the billing dates of several AI subscriptions on one screen. Free for members.</p><div class="hero-go e-state" style="justify-content:center"><a class="pill" href="https://synk.im/account/platform.html">Get the PC app <span class="arr" aria-hidden="true">→</span></a></div></div><figure class="e-fig"><img src="../assets/solio-subs.webp" alt="SOLIO’s AI subscription manager screen. Each subscription shows what is left on a line of its own." loading="lazy"><figcaption>An actual SOLIO screen. The numbers are example values.</figcaption></figure></li>
     </ol>
   </section>
 
@@ -860,9 +949,9 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
   <section class="sec warm">
     <div class="sec-head"><p class="tag">What we do</p><h2>We teach first,<br>then find the right instructor</h2></div>
     <ol class="lines">
-      <li><span class="no">01</span><h3>Hands-on AI lecture</h3><p>A hands-on lecture where staff <b>make one finished piece to take away</b>, using their own work. <span class="state">Taking requests</span></p></li>
-      <li><span class="no">02</span><h3>AI career lectures for schools</h3><p>A career lecture where students pick a task in a field they care about and <b>try it together with AI.</b> <span class="state">Taking requests</span></p></li>
-      <li><span class="no">03</span><h3>Finding an instructor</h3><p>We find and send an AI instructor who fits your topic and audience. <span class="state soon">Enquiries only</span></p></li>
+      <li><span class="no">01</span><h3>Hands-on AI lecture</h3><p>A hands-on lecture where staff <b>make one finished piece to take away</b>, using their own work.</p></li>
+      <li><span class="no">02</span><h3>AI career lectures for schools</h3><p>A career lecture where students pick a task in a field they care about and <b>try it together with AI.</b></p></li>
+      <li><span class="no">03</span><h3>Finding an instructor</h3><p>We find and send an AI instructor who fits your topic and audience. For now this is by enquiry.</p></li>
     </ol>
     <p class="note">Prices are quoted per request, depending on the audience and the length. SOLIO’s backup and restore is in preparation.</p>
   </section>
@@ -889,8 +978,8 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
     </ul>
     <ol>
       <li class="e first"><div class="e-say"><span class="e-no">Direction</span><h2 class="e-claim"><mark>An actor</mark><br>directs the AI models.</h2><p class="e-proof">The years spent in front of the camera set the standard for directing.</p></div><figure class="e-fig viz years"><b class="vnum"><span data-count="10">10</span><small>years</small></b><ul><li>“True to Love (Bora! Deborah)”, released on Netflix</li><li>tvN “Comedy Big League”</li><li>Selected in the 2026 Seoullo Media Canvas open call</li></ul></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no">PULSE app</span><h2 class="e-claim">We check <mark>three times</mark><br>before making it.</h2><p class="e-proof">We fix things before the video is rendered. Below are actual screens from the PULSE app.</p><span class="state e-state">Available now</span></div><figure class="e-fig gal" data-gal=""><div class="gal-view"><img class="on" src="../assets/d/pulse-2-direction.webp" alt="The direction choice screen in the PULSE app." loading="lazy"><img src="../assets/d/pulse-3-script.webp" alt="The written storyboard screen in the PULSE app." loading="lazy"><img src="../assets/d/pulse-4-frames.webp" alt="The scene image screen in the PULSE app." loading="lazy"></div><div class="gal-tabs" role="group" aria-label="The three checks"><button type="button" aria-pressed="true"><i>1</i>Direction and model</button><button type="button" aria-pressed="false"><i>2</i>Written storyboard</button><button type="button" aria-pressed="false"><i>3</i>A scene image for every shot</button></div></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no">PULSE app</span><h2 class="e-claim">Pause, and comment<br>on <mark>that exact moment.</mark></h2><p class="e-proof">Put the first and second versions side by side and see what changed.</p><span class="state e-state">Available now</span></div><figure class="e-fig crop"><img src="../assets/d/pulse-5-review.webp" alt="The video review screen in the PULSE app. Below the video are a strip of frames and comments pinned to moments." loading="lazy"><figcaption>An actual screen from the PULSE app</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">PULSE app</span><h2 class="e-claim">We check <mark>three times</mark><br>before making it.</h2><p class="e-proof">We fix things before the video is rendered. Below are actual screens from the PULSE app.</p></div><figure class="e-fig gal" data-gal=""><div class="gal-view"><img class="on" src="../assets/d/pulse-2-direction.webp" alt="The direction choice screen in the PULSE app." loading="lazy"><img src="../assets/d/pulse-3-script.webp" alt="The written storyboard screen in the PULSE app." loading="lazy"><img src="../assets/d/pulse-4-frames.webp" alt="The scene image screen in the PULSE app." loading="lazy"></div><div class="gal-tabs" role="group" aria-label="The three checks"><button type="button" aria-pressed="true"><i>1</i>Direction and model</button><button type="button" aria-pressed="false"><i>2</i>Written storyboard</button><button type="button" aria-pressed="false"><i>3</i>A scene image for every shot</button></div></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">PULSE app</span><h2 class="e-claim">Pause, and comment<br>on <mark>that exact moment.</mark></h2><p class="e-proof">Put the first and second versions side by side and see what changed.</p></div><figure class="e-fig crop"><img src="../assets/d/pulse-5-review.webp" alt="The video review screen in the PULSE app. Below the video are a strip of frames and comments pinned to moments." loading="lazy"><figcaption>An actual screen from the PULSE app</figcaption></figure></li>
     </ol>
   </section>
 
@@ -930,14 +1019,7 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
     <div class="hero-go" style="margin-top:var(--g4)"><a class="pill light" href="https://workspace.synk.im/pulse-app/?demo=film">Click through a sample project <span class="arr" aria-hidden="true">→</span></a><span>Without logging in, you can click through one video from brief to delivery.</span></div>
   </section>
 
-  <section class="sec warm">
-    <div class="sec-head"><p class="tag">Where we are</p><h2>Available now and in preparation</h2></div>
-    <div class="status">
-      <div><h3>Available now</h3><ul><li>Brief and client room · on the web</li><li>A sample project you can click through without logging in</li><li>A casting book of twenty-one models</li><li>Three checks before the video, and comments pinned to the moment</li></ul></div>
-      <div><h3>In preparation</h3><ul><li>Payment connected inside the app</li><li>Translated chat for clients who speak other languages</li><li>Opening PULSE in a single window of the PC app</li></ul></div>
-    </div>
-    <p class="note">All the people and voices in the videos are made with AI. The sample project is our own work, made with a fictional brand.</p>
-  </section>
+  <p class="fine">All the people and voices in the videos are made with AI. The sample project is our own work, made with a fictional brand.</p>
 
   <a class="next" href="index.html#pulse"><img src="../assets/pulse-film-dodam.webp" alt="" loading="lazy"><span class="next-say"><span><small>Finished work is on the home page</small><b>See the work</b></span><span class="arr" aria-hidden="true">→</span></span></a>
 </article>
@@ -949,7 +1031,7 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
       <span class="hero-n">Personalization engine</span>
       <h1>Atlas, the engine<br>that reads one person</h1>
       <p class="hero-lead">It reads what you have actually done, picks what to do next, and checks whether it helped.</p>
-      <div class="hero-go"><a class="pill light" href="https://synk.im/world/">Open SYNK WORLD <span class="arr" aria-hidden="true">→</span></a><span class="state">Running in SYNK WORLD now</span></div>
+      <div class="hero-go"><a class="pill light" href="https://synk.im/world/">Open SYNK WORLD <span class="arr" aria-hidden="true">→</span></a></div>
     </div>
   </header>
 
@@ -960,8 +1042,8 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
       <li><b>Eight engines</b><span>each with its own job</span></li>
     </ul>
     <ol>
-      <li class="e first"><div class="e-say"><span class="e-no">Judgement</span><h2 class="e-claim">A missed answer changes<br><mark>the next recommendation.</mark></h2><p class="e-proof">It reads the items you missed and the goal you chose, and the practice the tutor brings out changes.</p><span class="state e-state">Available now</span></div><figure class="e-fig pair"><div><span>Day one</span><img src="../assets/d/world-tutor-first.webp" alt="Tutor card. “Shall we start today with three first greetings together? There is not much practice on record yet.”" loading="lazy"></div><div class="hot"><span>After a miss in a game</span><img src="../assets/d/world-tutor.webp" alt="Tutor card. “Shall we start today with Wind Path · listening to short instructions? Let’s practise a little more of what you missed recently: listening for specific details.”" loading="lazy"></div><figcaption>Tutor cards in SYNK WORLD. The record is from an example learner.</figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no">The way back</span><h2 class="e-claim">Wrong ones <mark>in a minute</mark>,<br>right ones <mark>as you forget.</mark></h2><p class="e-proof">The gap widens each time you get it right. SYNK WORLD remembers the review dates for you.</p><span class="state e-state">Available now</span></div><figure class="e-fig viz days d5" aria-label="Each time you get it right, the gap widens to 1, 3, 7, 14 and 30 days"><ol><li><b><span data-count="1">1</span></b><span>day<i class="pl">s</i></span></li><li><b><span data-count="3">3</span></b><span>day<i class="pl">s</i></span></li><li><b><span data-count="7">7</span></b><span>day<i class="pl">s</i></span></li><li><b><span data-count="14">14</span></b><span>day<i class="pl">s</i></span></li><li class="hot"><b><span data-count="30">30</span></b><span>day<i class="pl">s</i></span></li></ol><figcaption>Get it wrong and it returns in a minute; get it right and it returns from tomorrow</figcaption></figure></li>
+      <li class="e first"><div class="e-say"><span class="e-no">Judgement</span><h2 class="e-claim">A missed answer changes<br><mark>the next recommendation.</mark></h2><p class="e-proof">It reads the items you missed and the goal you chose, and the practice the tutor brings out changes.</p></div><figure class="e-fig pair"><div><span>Day one</span><img src="../assets/d/world-tutor-first.webp" alt="Tutor card. “Shall we start today with three first greetings together? There is not much practice on record yet.”" loading="lazy"></div><div class="hot"><span>After a miss in a game</span><img src="../assets/d/world-tutor.webp" alt="Tutor card. “Shall we start today with Wind Path · listening to short instructions? Let’s practise a little more of what you missed recently: listening for specific details.”" loading="lazy"></div><figcaption>Tutor cards in SYNK WORLD. The record is from an example learner.</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">The way back</span><h2 class="e-claim">Wrong ones <mark>in a minute</mark>,<br>right ones <mark>as you forget.</mark></h2><p class="e-proof">The gap widens each time you get it right. SYNK WORLD remembers the review dates for you.</p></div><figure class="e-fig viz days d5" aria-label="Each time you get it right, the gap widens to 1, 3, 7, 14 and 30 days"><ol><li><b><span data-count="1">1</span></b><span>day<i class="pl">s</i></span></li><li><b><span data-count="3">3</span></b><span>day<i class="pl">s</i></span></li><li><b><span data-count="7">7</span></b><span>day<i class="pl">s</i></span></li><li><b><span data-count="14">14</span></b><span>day<i class="pl">s</i></span></li><li class="hot"><b><span data-count="30">30</span></b><span>day<i class="pl">s</i></span></li></ol><figcaption>Get it wrong and it returns in a minute; get it right and it returns from tomorrow</figcaption></figure></li>
       <li class="e"><div class="e-say"><span class="e-no">Eight engines</span><h2 class="e-claim">No single engine<br><mark>judges everything.</mark></h2><p class="e-proof">There are separate engines for understanding, for fitting and for checking.</p></div><figure class="e-fig eight"><div><b>Understand</b><ul><li><i>Core</i>Decides what is needed now</li><li><i>Strata</i>A map of what to learn and in what order</li><li><i>Trail</i>A record of the process and the change</li></ul></div><div><b>Fit</b><ul><li><i>Loom</i>Screens that respond to touch</li><li><i>Vellum</i>Explanations people can understand</li><li><i>Reed</i>Music and sound that fit the scene</li></ul></div><div><b>Check</b><ul><li><i>Prism</i>Finds difficulties that keep coming back</li><li><i>Temper</i>Checks whether it helped</li></ul></div></figure></li>
     </ol>
   </section>
@@ -981,14 +1063,7 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
     <p class="note">A design example.</p>
   </section>
 
-  <section class="sec warm">
-    <div class="sec-head"><p class="tag">Where we are</p><h2>Where it is used now and what opens next</h2></div>
-    <div class="status">
-      <div><h3>Available now</h3><ul><li>SYNK WORLD TOPIK practice · a short diagnostic and this week’s practice plan</li><li>Eight Korean games · the next question and difficulty from one learning record</li><li>Ads and model videos · the standard for scene and sound</li></ul></div>
-      <div><h3>In preparation</h3><ul><li>Strata · a map that decides which basics to start from when you practise again what you got wrong</li></ul></div>
-    </div>
-    <p class="note">That things last longer when you bring them back at spaced intervals is a finding of learning research (Cepeda et al., 2006 · Roediger &amp; Karpicke, 2006); it is not an effect measured in SYNK WORLD. Some of the features described here are in development.</p>
-  </section>
+  <p class="fine">That things last longer when you bring them back at spaced intervals is a finding of learning research (Cepeda et al., 2006 · Roediger &amp; Karpicke, 2006); it is not an effect measured in SYNK WORLD. Some of the features described here are in development.</p>
 
   <a class="next" href="?p=korean"><img src="../assets/in-1.webp" alt="" loading="lazy"><span class="next-say"><span><small>Where Atlas runs</small><b>Korean</b></span><span class="arr" aria-hidden="true">→</span></span></a>
 </article>
@@ -1021,7 +1096,7 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
   $$('.e-proof, .hero-lead, .sec-head p:not(.tag):not(.quote)', art).forEach(p => { if (p.children.length) return; const s = p.textContent.trim().split(/(?<=[.?!])\s+/); if (s.length > 1) { p.textContent = ''; s.forEach((x, i) => { const n = document.createElement('span'); n.className = 'sn'; n.textContent = x; if (i) p.append(' '); p.append(n); }); } });
   $$('.e-claim', art).forEach(h => { h.innerHTML = h.innerHTML.split(/<br\s*\/?>/).map((l, i) => `<span class="ln"><span style="--i:${i}">${l}</span></span>`).join(''); });
   $$('.seq li, .months li, .cal li, .years li', art).forEach(li => li.style.setProperty('--i', [...li.parentNode.children].indexOf(li)));
-  $$('.sec-head, .nums, .teacher, .pick, .flow li, .cast, .credo, .status', art).forEach(el => el.classList.add('rv'));
+  $$('.sec-head, .nums, .teacher, .pick, .flow li, .cast, .credo, .duo li, .msg, .tutor-go, .hang', art).forEach(el => el.classList.add('rv'));
   function count(root) {
     $$('[data-count]', root).forEach(n => {
       const to = +n.dataset.count; if (still) { n.textContent = fmt(to); return; }
@@ -1045,6 +1120,28 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
     const show = n => { i = n; ims.forEach((m, k) => m.classList.toggle('on', k === n)); bs.forEach((x, k) => x.setAttribute('aria-pressed', String(k === n))); };
     bs.forEach((x, k) => x.addEventListener('click', () => { clearInterval(timer); show(k); }));
     if (!still) timer = setInterval(() => { const r = g.getBoundingClientRect(); if (r.top < innerHeight * .75 && r.bottom > innerHeight * .25) show((i + 1) % ims.length); }, 3400);
+  });
+  /* 줄에 거는 목록(교실 과정): 줄에 커서를 올리거나 누르면 그 줄의 카드가 위에서 떨어져 줄에 걸린다. ?hang=1 처럼 주소로도 고른다 */
+  $$('[data-hang]', art).forEach(h => {
+    const rows = $$('.lines li', h), panes = $$('.hang-pane', h), cord = $('.cord', h), stage = $('.hang-stage', h); let cur = -1;
+    $$('.cvl', h).forEach(c => $$('li', c).forEach((li, i) => li.style.setProperty('--i', i)));
+    const show = (k, byHand) => {
+      if (k === cur) return; cur = k;
+      rows.forEach((r, i) => { r.classList.toggle('on', i === k); r.setAttribute('aria-current', String(i === k)); });
+      panes.forEach((p, i) => { p.classList.remove('on'); p.setAttribute('aria-hidden', String(i !== k)); });
+      void stage.offsetWidth; panes[k].classList.add('on');
+      cord.classList.remove('tw'); void cord.offsetWidth; cord.classList.add('tw');
+      if (byHand && innerWidth <= 900) stage.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    };
+    rows.forEach((r, i) => {
+      r.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') show(i); });
+      r.addEventListener('focus', () => show(i)); r.addEventListener('click', () => show(i, true));
+      r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(i, true); } });
+    });
+    /* 걸린 것에 커서가 스치면 한 번 흔들린다 */
+    if (!still) $$('.hung', h).forEach(el => el.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; const a = parseFloat(el.style.getPropertyValue('--a')) || 4, s = Math.sign(e.movementX || 1) * a * .6; el.animate([0, s, -s * .55, s * .28, -s * .1, 0].map(d => ({ rotate: d + 'deg' })), { duration: 1500, easing: 'cubic-bezier(.3,.1,.3,1)' }); }));
+    const first = Math.min(panes.length - 1, +q.get('hang') || 0);
+    if (still) show(first); else { panes.forEach(p => p.classList.remove('on')); new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { show(first); o.disconnect(); } }), { threshold: .3 }).observe(h); }
   });
   /* AI 강의: 예약표에서 지금 시각의 앞뒤 차례를 보인다(서울 시각) */
   const liveNow = $('#live-now', art);
