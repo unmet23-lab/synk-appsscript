@@ -144,11 +144,33 @@ test('잘된 편과 안 된 편의 차이가 첫 장면에서 나면 그렇게 �
   const d = 진단(계정(50, [bad(1), good(1), bad(2), good(2), bad(3), good(3), bad(4), good(4), bad(5)], { ownComments: 0 }), NOW);
   assert.equal(d.세부.대조.차이.지표, 'earlyRetention3sPct');
   assert.match(d.세부.대조.글, /잘된 편은 3초 넘게 본 비율이 58%이고 안 된 편은 22%입니다\. 조회의 차이가 첫 장면에서 납니다/);
+  // 할 일이 이 계정의 편을 본보기로 짚는다
+  assert.ok(d.처방.some(p => /가장 잘 붙잡은 편은 「편\d」\(58%\)/.test(p)));
+});
+
+test('첫 장면이 나쁨이 아니어도 잘된 편과의 차이가 거기서 나면 할 일로 준다', () => {
+  const good = i => ({ views: 5000 + i, shares: 12, comments: 2, saves: 8, likes: 90, screen: { earlyRetention3sPct: 58 } });
+  const bad = i => ({ views: 300 + i, shares: 1, comments: 0, saves: 0, likes: 5, screen: { earlyRetention3sPct: 30 } });
+  const d = 진단(계정([{ date: date(14), n: 300 }, { date: date(0), n: 380 }], [bad(1), good(1), bad(2), good(2), bad(3), good(3), bad(4), good(4), good(5)], { ownComments: 0 }), NOW);
+  assert.notEqual(신호(d, '붙잡음').판정, '나쁨');
+  assert.ok(d.처방.some(p => /^이 계정에서는 첫 장면이 붙잡은 편이 멀리 갔습니다/.test(p)));
+});
+
+test('건강한 계정에도 다음으로 올릴 것과 목표를 준다', () => {
+  const posts = Array.from({ length: 8 }, () => ({ ...편(2000, 12, 2, 8, 60), screen: { earlyRetention3sPct: 45 } }));
+  const d = 진단(계정([{ date: date(14), n: 300 }, { date: date(0), n: 320 }], posts, { ownComments: 0 }), NOW); // 팔로워 전환만 보통
+  assert.equal(d.상태, 상태이름.건강);
+  assert.equal(d.세부.새는곳.단계, null);
+  assert.match(d.세부.새는곳.글, /다음으로 올릴 것은 팔로우입니다/);
+  assert.ok(d.처방.some(p => /^더 올릴 수 있는 곳은 팔로우입니다/.test(p)));
+  assert.match(d.세부.목표, /팔로워 3명입니다/);
 });
 
 test('잘하고 있는 것을 먼저 말하고, 방의 안쪽도 그 순서다', () => {
   const d = 진단(계정(150, Array.from({ length: 8 }, () => 편(200, 3, 2, 2, 10))), NOW);
-  assert.match(d.세부.강점, /본 사람이 /);
+  assert.match(d.결론, /본 사람이 /);
+  assert.doesNotMatch(d.세부.강점, /본 사람이 보내/); // 결론이 말한 것은 되풀이하지 않는다
+  assert.match(d.세부.강점, /팔로워 밖의 사람에게 퍼집니다/);
   const more = 방([d], { now: NOW }).rows[0].more.map(m => m[0]);
   assert.deepEqual(more.slice(0, 2), ['say', 'good']);
   assert.ok(more.indexOf('flow') < more.indexOf('row') && more.indexOf('row') < more.indexOf('do'));

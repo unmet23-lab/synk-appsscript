@@ -182,10 +182,11 @@ function 깊이(seen, platform, own = 0) {
   const strong = deep.filter(k => rate[k] >= line[k]).map(k => VERB[k]);
   const did = strong.length ? strong.map((w, i) => (i < strong.length - 1 ? w[0] + '고' : w[1])).join(' ') : '반응합니다';
   const 요약 = `조회 1,000번마다 ${shown}번입니다.` + (좋아요만 ? ' 좋아요는 누르는데 보내거나 말을 걸지 않습니다.' : 판정 === '좋음' ? ` 본 사람이 ${did}.` : 판정 === '나쁨' ? ' 보고 지나갑니다.' : '');
-  const where = 플랫폼이름[platform] ? `${플랫폼이름[platform]} 계정의 평균쯤인 선은` : '평균쯤으로 보는 선은';
-  const 글 = 요약 + ` ${where} ${Object.keys(rate).map(k => `${NAME[k]} ${line[k]}`).join(' · ')}번입니다.` + (한편뺌 ? ` 가장 잘된 한 편을 빼면 선의 ${Math.floor(all * 100)}%로 내려가 그 값으로 판정했습니다.` : '') + (missing.length ? ` 재지 못해 뺀 반응: ${missing.join(', ')}.` : '')
+  // 화면에서는 선을 「평균」이라고 부른다(조사된 가운데 값이다). 처음 읽는 사람이 아는 말이어야 한다
+  const where = 플랫폼이름[platform] ? `${플랫폼이름[platform]}의 평균은` : '다른 계정들의 평균은';
+  const 글 = 요약 + ` ${where} ${Object.keys(rate).map(k => `${NAME[k]} ${line[k]}`).join(' · ')}번입니다.` + (한편뺌 ? ` 가장 잘된 한 편을 빼면 평균의 ${Math.floor(all * 100)}%로 내려가 그 값으로 판정했습니다.` : '') + (missing.length ? ` 재지 못해 뺀 반응: ${missing.join(', ')}.` : '')
     + (own ? ` 편마다 ${own}개씩 달린 댓글은 내가 단 고정 댓글로 보고 뺐습니다.` : '');
-  return { ...base, 판정, 값: `선의 ${Math.floor(all * 100)}%`, 글, 요약, 한일: did, 지수: all, 전체지수: whole, 한편뺌, 깊은지수: deepIndex, 비율: rate, 선: line, 좋아요: rate.likes ?? null, 좋아요만, 못잰것: missing };
+  return { ...base, 판정, 값: `평균의 ${Math.floor(all * 100)}%`, 글, 요약, 한일: did, 지수: all, 전체지수: whole, 한편뺌, 깊은지수: deepIndex, 비율: rate, 선: line, 좋아요: rate.likes ?? null, 좋아요만, 못잰것: missing };
 }
 
 function 남김(all, seen, fol, now) {
@@ -266,8 +267,8 @@ function 붙잡음(seen) {
     const vals = rows.map(p => p.v[key]).sort((a, b) => a - b), mid = median(vals), 판정 = grade(mid, rule);
     // 이 계정의 편 절반이 드는 띠. 고정된 선만 보이면 거의 모든 계정이 나쁨으로 보이므로, 내 편끼리의 자리도 함께 말한다
     const band = vals.length >= 6 ? [vals[Math.floor(vals.length * 0.25)], vals[Math.min(vals.length - 1, Math.floor(vals.length * 0.75))]] : null;
-    const 글 = `${rule.이름}이 ${rows.length}편의 가운데 값으로 ${Math.round(mid)}%입니다.`
-      + (band && Math.round(band[1]) > Math.round(band[0]) ? ` 이 계정의 편 절반은 ${Math.round(band[0])}~${Math.round(band[1])}% 사이입니다.` : '')
+    const 글 = `${rule.이름}이 ${rows.length}편에서 보통 ${Math.round(mid)}%입니다.`
+      + (band && Math.round(band[1]) > Math.round(band[0]) ? ` 편에 따라 ${Math.round(band[0])}%에서 ${Math.round(band[1])}% 사이를 오갑니다.` : '')
       + (판정 === '나쁨' ? (rule.첫장면 ? ' 첫 장면에서 놓칩니다.' : ' 보다가 나갑니다.') : 판정 === '좋음' ? (rule.첫장면 ? ' 첫 장면이 붙잡습니다.' : ' 끝까지 붙잡습니다.') : '');
     return { ...base, 이름: rule.첫장면 ? base.이름 : '끝까지 붙잡는가', 판정, 값: `${Math.round(mid)}%`, 글, 지표: key, 가운데: mid, 띠: band, 첫장면: !!rule.첫장면 };
   }
@@ -287,8 +288,8 @@ function 막힘(all) {
 
 const 처방글 = {
   닿음: s => `팔로워 수를 늘리는 일(이벤트, 맞팔, 구매)은 멈춥니다. 지금 팔로워가 처음 따라온 주제로 세 편을 올리고, 한 편의 조회가 팔로워의 ${pct(s.좋음선)}를 넘는지 봅니다. 플랫폼은 팔로워 수가 아니라 본 사람의 반응으로 다음 노출을 정합니다.`,
-  // 선에서 가장 먼 반응 하나를 짚어, 그 반응을 부르는 장치를 처방한다
-  깊이: s => {
+  // 평균에서 가장 먼 반응 하나를 짚어, 그 반응을 부르는 장치를 처방한다
+  깊이: (s, ctx) => {
     const HOW = {
       shares: ['공유', '다음 세 편에는 친구에게 보낼 까닭을 한 가지씩 넣습니다. 「이거 너 얘기야」 하고 보낼 만한 한 장면이나, 보는 사람이 바로 써먹을 한 줄입니다.'],
       saves: ['저장', '다음 세 편에는 저장할 까닭을 한 가지씩 넣습니다. 다시 볼 목록, 순서, 표처럼 한 번 보고 외울 수 없는 것입니다.'],
@@ -296,15 +297,29 @@ const 처방글 = {
     };
     const weak = 약한반응(s);
     if (!weak) return '다음 세 편에는 보낼 까닭이나 저장할 까닭을 한 가지씩 넣습니다.';
-    return `${s.좋아요만 ? '좋아요는 받는데 보내거나 말을 걸지 않습니다. ' : ''}${HOW[weak][0]}${weak === 'shares' ? '가' : '이'} 선의 ${pct(s.비율[weak] / s.선[weak])}입니다. ${HOW[weak][1]}`;
+    // 그 반응이 가장 많이 나온 이 계정의 편을 본보기로 짚는다
+    const model = 본보기(ctx?.seen, weak, 1)[0], WHY = { shares: '보내게', saves: '저장하게', comments: '말을 걸게' };
+    if (model && model.value >= 2) HOW[weak][1] += ` 이 계정에서 ${HOW[weak][0]}${weak === 'shares' ? '가' : '이'} 가장 많이 나온 편은 「${model.title}」(${fmt(model.value)}번)입니다. 그 편의 무엇이 ${WHY[weak]} 했는지 보고 다음 편에 넣습니다.`;
+    return `${s.좋아요만 ? '좋아요는 받는데 보내거나 말을 걸지 않습니다. ' : ''}${HOW[weak][0]}${weak === 'shares' ? '가' : '이'} 평균의 ${pct(s.비율[weak] / s.선[weak])}입니다. ${HOW[weak][1]}`;
   },
   남김: s => (s.수상함 ? '팔로워를 늘리는 이벤트나 맞팔을 멈추고, 늘어난 팔로워가 다음 편을 보는지 2주 동안 봅니다.' : '끝 장면에서 다음 편을 예고하고, 프로필 첫 줄에 이 계정을 따라오면 무엇을 받는지 한 문장으로 적습니다. 같은 틀의 편을 이어 올려 따라올 까닭을 만듭니다.'),
   흐름: (s, ctx) => `최근 편이 그 앞보다 덜 나옵니다. ${ctx.best ? `가장 잘된 「${ctx.best}」의 주제와 첫 장면으로 돌아가 두 편을 만들고` : '가장 잘된 편의 주제와 첫 장면으로 돌아가 두 편을 만들고'}, 최근에 바꾼 것(주제, 길이, 올리는 시각)을 하나씩 되돌려 봅니다.`,
   쏠림: s => `${s.잘된편 ? `「${s.잘된편}」` : '잘된 한 편'}의 주제와 첫 2초를 그대로 두고 두 편을 더 만듭니다. 다시 되면 그것이 이 계정의 틀입니다.`,
   꾸준함: s => (s.쉰날 > 기준.꾸준함.나쁨 ? `${s.쉰날}일을 쉬었습니다. 일주일에 두 편부터 다시 올립니다. 쉬는 동안의 숫자로는 계정을 판단하지 않습니다.` : '일주일에 두 편 넘게 올려 견줄 편을 쌓습니다.'),
-  붙잡음: s => (s.첫장면 ? '첫 장면에서 넘깁니다. 첫 2초에 결과나 가장 센 장면을 먼저 보이고, 인사와 로고는 뒤로 보냅니다. 다음 세 편에서 이 비율이 오르는지 봅니다.'
-    : '보다가 나갑니다. 편을 지금의 3분의 2 길이로 줄이고, 가운데에 다음 장면을 볼 까닭(물음, 반전 예고)을 하나 넣습니다. 다음 세 편에서 이 비율이 오르는지 봅니다.'),
+  // 이 계정에서 그 비율이 가장 높았던 편 둘을 본보기로 짚는다. 「뻔한 조언」이 되지 않게, 따라 할 것이 그 사람의 편 안에 있어야 한다
+  붙잡음: (s, ctx) => {
+    const top = 본보기(ctx?.seen, s.지표, 2).filter(m => m.value > s.가운데 + 5);
+    const model = top.length ? ` 이 계정에서 가장 잘 붙잡은 편은 ${top.map(m => `「${m.title}」(${Math.round(m.value)}%)`).join(', ')}입니다. ${top.length > 1 ? '그 편들' : '그 편'}의 ${s.첫장면 ? '첫 2초를' : '길이와 흐름을'} 다음 편의 틀로 씁니다.` : '';
+    return s.첫장면
+      ? `${ctx?.soft ? '' : '첫 장면에서 넘깁니다. '}첫 2초에 결과나 가장 센 장면을 먼저 보이고, 인사와 로고는 뒤로 보냅니다.${model}`
+      : `${ctx?.soft ? '' : '보다가 나갑니다. '}편을 지금의 3분의 2 길이로 줄이고, 가운데에 다음 장면을 볼 까닭(물음, 반전 예고)을 하나 넣습니다.${model}`;
+  },
 };
+/** 이 계정에서 그 숫자가 가장 높았던 편들. 조회가 아주 적은 편은 우연이 커서 뺀다 */
+function 본보기(seen, key, n) {
+  const floor = Math.max(50, (median((seen || []).map(p => p.v.views)) || 0) * 0.3);
+  return (seen || []).filter(p => p.title && num(p.v[key]) && p.v.views >= floor).sort((a, b) => b.v[key] - a.v[key]).slice(0, n).map(p => ({ title: p.title, value: p.v[key] }));
+}
 const 유지글 = {
   깊이: '본 사람의 반응이 이 계정의 힘입니다. 주제와 말투를 바꾸지 않습니다.',
   닿음: '팔로워 밖으로 퍼지고 있습니다. 지금 올리는 틀을 유지합니다.',
@@ -328,6 +343,9 @@ function 약한반응(s) {
   return Object.keys(반응이름).filter(k => s.비율[k] != null).sort((a, b) => lack(b) - lack(a))[0] || null;
 }
 
+/** 1,000번에 한 명이 안 되면 「0.1명」 대신 몇 번 보여야 한 명인지로 말한다 */
+const 몇명 = n => (n >= 1 ? `${one(n)}명이` : n > 0 ? `${fmt(Math.round(1000 / n / 100) * 100)}번 보여야 한 명이` : '아직 아무도');
+
 /** 조회 1,000번이 가는 길. 단계마다 { 키, 이름, 명, 글, 판정, 신호 }이고 재지 못한 단계는 없다 */
 function 길(S, seen) {
   const steps = [], B = 기준.붙잡음;
@@ -344,12 +362,12 @@ function 길(S, seen) {
     const keys = Object.keys(ACT).filter(k => S.깊이.비율[k] != null);
     if (keys.length) {
       const n = sum(keys.map(k => S.깊이.비율[k]));
-      steps.push({ 키: '반응', 이름: '반응', 명: n, 글: `${one(n)}명이 ${keys.map((k, i) => (i < keys.length - 1 ? ACT[k][0] + '거나' : ACT[k][1])).join(' ')}`, 판정: S.깊이.판정, 신호: '깊이' });
+      steps.push({ 키: '반응', 이름: '반응', 명: n, 글: `${몇명(n)} ${keys.map((k, i) => (i < keys.length - 1 ? ACT[k][0] + '거나' : ACT[k][1])).join(' ')}`, 판정: S.깊이.판정, 신호: '깊이' });
     }
   }
   if (num(S.남김.비율) && !S.남김.수상함) {
     const n = Math.max(S.남김.비율, 0);
-    steps.push({ 키: '팔로우', 이름: '팔로우', 명: n, 글: `${one(n)}명이 팔로우합니다`, 판정: S.남김.판정, 신호: '남김' });
+    steps.push({ 키: '팔로우', 이름: '팔로우', 명: n, 글: `${몇명(n)} 팔로우합니다`, 판정: S.남김.판정, 신호: '남김' });
   }
   return steps;
 }
@@ -358,7 +376,13 @@ function 길(S, seen) {
 function 새는곳(steps) {
   if (!steps.length) return { 단계: null, 신호: null, 글: '' };
   const leak = steps.find(s => s.판정 === '나쁨');
-  if (!leak) return { 단계: null, 신호: null, 글: steps.every(s => s.판정 === '좋음') ? '잰 단계마다 선을 넘습니다. 새는 곳이 없습니다.' : '크게 새는 곳은 없습니다.' };
+  if (!leak) {
+    // 새는 곳이 없으면 더 올릴 수 있는 곳(가장 앞의 보통 단계)을 짚는다
+    const next = steps.find(s => s.판정 === '보통');
+    const WHAT = { 첫장면: '첫 장면에서 남는 사람', 끝까지: '끝까지 보는 사람', 반응: '반응', 팔로우: '팔로우' };
+    return { 단계: null, 신호: null, 올릴곳: next ? WHAT[next.키] : null, 올릴신호: next ? next.신호 : null,
+      글: next ? `크게 새는 곳은 없습니다. 다음으로 올릴 것은 ${WHAT[next.키]}입니다.` : '잰 단계마다 평균을 넘습니다. 새는 곳이 없습니다.' };
+  }
   const later = steps.indexOf(leak) < steps.length - 1;
   const 글 = leak.키 === '첫장면' ? `가장 먼저 새는 곳은 첫 장면입니다. 조회 1,000번 가운데 ${fmt(1000 - leak.명)}번은 첫 장면에서 넘어갑니다.${later ? ` 그 뒤의 숫자는 남은 ${fmt(leak.명)}명에게서만 나옵니다.` : ''}`
     : leak.키 === '끝까지' ? `가장 먼저 새는 곳은 끝까지 보기입니다. ${leak.명 != null ? `1,000명 가운데 ${fmt(leak.명)}명만 끝까지 봅니다.` : '보기 시작한 사람이 일찍 나갑니다.'}`
@@ -375,7 +399,7 @@ function 대조(all, seen) {
   const n = rows.length >= 9 ? 3 : 2, sorted = [...rows].sort((a, b) => b.views - a.views);
   const top = sorted.slice(0, n).map(r => r.p), low = sorted.slice(-n).map(r => r.p);
   const tv = median(sorted.slice(0, n).map(r => r.views)), lv = median(sorted.slice(-n).map(r => r.views));
-  const names = ps => { const t = ps.map(p => p.title).filter(Boolean); return t.length === ps.length ? `(${t.map(x => `「${x}」`).join(', ')})` : ''; };
+  const names = ps => { const t = ps.map(p => p.title).filter(Boolean); return t.length ? `(${t.map(x => `「${x}」`).join(', ')}${t.length < ps.length ? ' 등' : ''})` : ''; };
   const age = same.point === '72h' ? '올린 지 사흘째에' : '올린 지 하루째에';
   const head = `잘된 ${n}편${names(top)}은 ${age} ${fmt(tv)}번, 안 된 ${n}편${names(low)}은 ${fmt(lv)}번입니다.`;
   const out = { 잘된: top.map(p => p.title || null), 안된: low.map(p => p.title || null), 잘된조회: tv, 안된조회: lv, 차이: null };
@@ -404,9 +428,9 @@ function 고름(seen) {
   const parts = [];
   for (const [k, nm] of Object.entries(반응이름)) {
     const w = seen.filter(p => num(p.v[k])); if (w.length < 5) continue;
-    parts.push(`${nm}${k === 'shares' ? '가' : '이'} ${w.length}편 가운데 ${w.filter(p => p.v[k] > 0).length}편`);
+    parts.push(`${nm}${k === 'shares' ? '가' : '이'} 나온 편은 ${w.length}편 가운데 ${w.filter(p => p.v[k] > 0).length}편`);
   }
-  return parts.length ? `한 번이라도 나온 편을 세면 ${parts.join(', ')}입니다.` : '';
+  return parts.length ? `${parts.join(', ')}입니다.` : '';
 }
 
 /** 편에 갈래(group)가 붙어 있으면 갈래마다의 조회를 견준다. 갈래는 쓰는 사람이 붙인 이름이다(시리즈, 주제) */
@@ -419,8 +443,8 @@ function 갈래(all, seen) {
 }
 
 /** 잘하고 있는 것. 좋은 신호를 무게 순으로 셋까지, 없으면 선에 가장 가까운 반응을 말한다 */
-function 강점(S, order, all) {
-  return [강점신호(S, order), 최근잘된편(all)].filter(Boolean).join(' ');
+function 강점(S, order, all, said = null) {
+  return [강점신호(S, order.filter(k => k !== said), !!said), 최근잘된편(all)].filter(Boolean).join(' ');
 }
 /** 최근 다섯 편 가운데 이 계정의 보통 편보다 눈에 띄게 잘된 편. 인스타그램의 「최근 평균보다 잘되고 있어요」 알림처럼 칭찬과 숫자와 다음 행동을 함께 말한다 */
 function 최근잘된편(all) {
@@ -430,13 +454,14 @@ function 최근잘된편(all) {
   const r = top.views / typical;
   return `최근 편 가운데 「${top.p.title}」${r >= 2 ? `은(는) 이 계정의 보통 편의 ${times(r)}` : `은(는) 이 계정의 보통 편보다 ${pct(r - 1)} 더`} 나왔습니다. 이런 편을 더 만듭니다.`.replace('은(는)', ' 편이');
 }
-function 강점신호(S, order) {
+function 강점신호(S, order, saidOne = false) {
+  if (saidOne && !order.some(k => S[k].판정 === '좋음')) return ''; // 좋은 숫자는 결론이 이미 말했다
   const WORD = { 깊이: `본 사람이 ${S.깊이.한일 || '반응합니다'}`, 닿음: S.닿음.비율 >= 1 ? '팔로워 밖의 사람에게 퍼집니다' : '팔로워가 편을 챙겨 봅니다', 남김: '본 사람이 팔로워로 남습니다',
     흐름: '조회가 오르고 있습니다', 붙잡음: S.붙잡음.첫장면 ? '첫 장면이 붙잡습니다' : '끝까지 붙잡습니다', 쏠림: '한 편에 기대지 않고 편마다 고르게 나옵니다', 꾸준함: '꾸준히 올립니다' };
   const good = order.filter(k => S[k].판정 === '좋음');
   if (good.length) return good.slice(0, 3).map(k => WORD[k]).join('. ') + '.';
   const r = S.깊이.비율, near = r && Object.keys(반응이름).filter(k => r[k] != null).sort((a, b) => r[b] / S.깊이.선[b] - r[a] / S.깊이.선[a])[0];
-  return near && r[near] > 0 ? `아직 선을 넘은 신호는 없습니다. 선에 가장 가까운 것은 ${반응이름[near]}입니다(선의 ${pct(r[near] / S.깊이.선[near])}).` : '아직 선을 넘은 신호는 없습니다.';
+  return near && r[near] > 0 ? `아직 평균을 넘은 숫자는 없습니다. 평균에 가장 가까운 것은 ${반응이름[near]}입니다(평균의 ${pct(r[near] / S.깊이.선[near])}).` : '';
 }
 
 /** 다음 목표. 맨 앞 할 일의 신호에서, 나쁨이면 나쁨을 벗어나는 숫자를, 보통이면 선을 목표로 준다 */
@@ -490,7 +515,7 @@ function 진단(account, now = Date.now()) {
   let 상태 = 점수 == null ? 상태이름.이름 : 점수 >= 기준.점수.건강 ? 상태이름.건강 : 점수 <= 기준.점수.나쁨 ? 상태이름.나쁨 : 상태이름.주의;
   const is = (k, v) => S[k].판정 === v, worse = to => { if (상태 === 상태이름.건강 || to === 상태이름.나쁨) 상태 = to; };
   const best = S.쏠림.잘된편 || seen.reduce((a, b) => (b.v.views > a.v.views ? b : a)).title || null;
-  let 유형, 결론;
+  let 유형, 결론, 말한 = null; // 말한: 결론이 이미 말한 좋은 신호. 「잘하고 있는 것」에서 되풀이하지 않는다
   if (blocked) {
     유형 = '갑자기 닿지 않게 된 계정'; 상태 = 상태이름.나쁨;
     결론 = `평소 ${fmt(blocked.앞)}번 나오던 조회가 마지막 ${blocked.연속}편에서 ${fmt(blocked.뒤)}번으로 떨어졌습니다. 편의 문제보다 계정이 막혔을 수 있습니다.`;
@@ -508,7 +533,7 @@ function 진단(account, now = Date.now()) {
     결론 = S.쏠림.글;
   } else if (is('깊이', '좋음') && !is('흐름', '나쁨')) {
     const growing = is('흐름', '좋음') || is('남김', '좋음');
-    유형 = growing ? '반응이 진하고 자라는 계정' : '반응이 진한 계정';
+    유형 = growing ? '반응이 진하고 자라는 계정' : '반응이 진한 계정'; 말한 = '깊이';
     if (상태 === 상태이름.나쁨) 상태 = 상태이름.주의;
     // 반응은 좋은데 다른 신호가 걸려 「건강함」이 아니면, 걸리는 것을 결론에서 말한다
     const BUT = { 붙잡음: S.붙잡음.첫장면 ? '첫 장면에서 넘기는 사람이 많습니다' : '끝까지 보는 사람이 적습니다', 남김: '본 사람이 팔로워로 남지 않습니다', 닿음: '팔로워에게는 잘 닿지 않습니다', 꾸준함: '올리는 간격이 뜹니다' };
@@ -533,11 +558,14 @@ function 진단(account, now = Date.now()) {
     유형 = '식어 가는 계정'; worse(상태이름.주의);
     결론 = S.흐름.글;
   } else if (is('흐름', '좋음')) {
-    유형 = '자라는 계정';
+    유형 = '자라는 계정'; 말한 = '흐름';
     결론 = S.흐름.글;
   } else {
     유형 = '고른 계정';
-    결론 = 상태 === 상태이름.건강 ? '눈에 띄게 나쁜 신호가 없고 편마다 고르게 나옵니다.' : '크게 나쁜 신호는 없지만 뚜렷하게 좋은 신호도 아직 없습니다.';
+    // 가장 무거운 좋은 숫자를 결론으로 말한다. 「나쁜 것이 없다」만으로는 무엇이 좋은지 알 수 없다
+    const g = Object.keys(S).sort((a, b) => W[b] - W[a]).find(k => is(k, '좋음') && k !== '꾸준함' && k !== '쏠림');
+    if (g) 말한 = g;
+    결론 = g ? `${S[g].글} 눈에 띄게 나쁜 숫자는 없습니다.` : 상태 === 상태이름.건강 ? '눈에 띄게 나쁜 숫자가 없고 편마다 고르게 나옵니다.' : '크게 나쁜 숫자는 없지만 평균을 뚜렷하게 넘는 숫자도 아직 없습니다.';
   }
   // 처방: 나쁜 신호를 무게 순으로 셋까지. 좋은 신호가 있으면 지킬 것 하나를 끝에 붙인다
   const order = Object.keys(S).sort((a, b) => W[b] - W[a]);
@@ -547,13 +575,25 @@ function 진단(account, now = Date.now()) {
   const lead = { '팔로워만 큰 계정': '닿음', '팔로워가 조회보다 빨리 느는 계정': '남김', '멈춘 계정': '꾸준함', '한 편에 기대는 계정': '쏠림', '식어 가는 계정': '흐름',
     '좋아요만 받는 계정': '깊이', '보고 지나가는 계정': '깊이', '팔로우로 이어지지 않는 계정': '남김', '첫 장면에서 놓치는 계정': '붙잡음', '끝까지 붙잡지 못하는 계정': '붙잡음' }[유형];
   const act = k => S[k].판정 === '나쁨' || (k === '깊이' && S.깊이.좋아요만);
-  for (const k of [lead, ...order.filter(k => k !== lead)]) if (k && act(k) && 처방.length < 3) 처방.push(처방글[k](S[k], { best }));
+  for (const k of [lead, ...order.filter(k => k !== lead)]) if (k && act(k) && 처방.length < 3) 처방.push(처방글[k](S[k], { best, seen }));
+  // 잘된 편과 안 된 편의 차이가 숫자로 드러났으면, 그 신호가 나쁨이 아니어도 그것을 할 일로 준다. 이 계정의 편이 알려 준 것이다
+  const cmp = 대조(all, seen), gap = cmp?.차이 && cmp.차이.잘된 > cmp.차이.안된 ? cmp.차이 : null;
+  if (gap && 처방.length < 3) {
+    const sig = gap.지표 === '반응' ? '깊이' : '붙잡음';
+    if (!act(sig) && S[sig].판정 !== '모름' && (sig === '깊이' || S.붙잡음.지표 === gap.지표)) {
+      const what = sig === '깊이' ? '반응이 나온' : S.붙잡음.첫장면 ? '첫 장면이 붙잡은' : '끝까지 붙잡은';
+      처방.push(`이 계정에서는 ${what} 편이 멀리 갔습니다. ${처방글[sig](S[sig], { best, seen, soft: true })}`);
+    }
+  }
   const keep = order.find(k => S[k].판정 === '좋음' && 유지글[k]);
   if (keep && 처방.length < 3) 처방.push(유지글[keep]);
-  if (!처방.length) 처방.push('지금 틀로 계속 올리고 2주 뒤에 다시 봅니다.');
   const steps = 길(S, seen), leak = 새는곳(steps);
-  const 세부 = { 강점: 강점(S, order, all), 뺀편: all.뺀편 || 0, 길: steps, 새는곳: leak, 고름: 고름(seen), 대조: 대조(all, seen), 갈래: 갈래(all, seen),
-    목표: blocked ? '' : 목표(S, lead && act(lead) ? lead : order.find(k => act(k)) || null) };
+  // 고칠 것이 없는 계정에는 더 올릴 수 있는 곳의 할 일을 하나 준다. 건강한 계정도 다음에 무엇을 할지 알아야 한다
+  const grow = !blocked && !order.some(k => act(k)) && leak.올릴신호 && S[leak.올릴신호].판정 === '보통' ? leak.올릴신호 : null;
+  if (grow && 처방.length < 3) 처방.push(`더 올릴 수 있는 곳은 ${leak.올릴곳}입니다. ${처방글[grow](S[grow], { best, seen, soft: true })}`);
+  if (!처방.length) 처방.push('지금 틀로 계속 올리고 2주 뒤에 다시 봅니다.');
+  const 세부 = { 강점: 강점(S, order, all, 말한), 뺀편: all.뺀편 || 0, 길: steps, 새는곳: leak, 고름: 고름(seen), 대조: cmp, 갈래: 갈래(all, seen),
+    목표: blocked ? '' : 목표(S, lead && act(lead) ? lead : order.find(k => act(k)) || grow) };
   return { ...head, 상태, 유형, 결론, 점수, 막힘: blocked, 신호: order.map(k => S[k]), 처방, 세부 };
 }
 
@@ -587,7 +627,7 @@ function 방(list, { now = Date.now(), 모은때 = '' } = {}) {
       ...(d.세부?.강점 ? [['good', '잘하고 있는 것', d.세부.강점]] : []),
       ...(d.세부?.길.length ? [['head', '조회 1,000번이 가는 길'], ['flow', d.세부.길.map(s => ({ 이름: s.이름, 명: s.명, 큰: s.큰 || null, 글: s.글, 판정: s.판정, 샘: s.키 === d.세부.새는곳.단계 })), [d.세부.새는곳.글, d.세부.고름].filter(Boolean).join(' ')]] : []),
       ...(d.세부?.대조 ? [['head', '잘된 편과 안 된 편'], ['text', [d.세부.대조.글, d.세부.갈래].filter(Boolean).join(' ')]] : []),
-      ['head', '신호마다'],
+      ['head', '숫자로 본 일곱 가지'],
       ...d.신호.filter(s => s.판정 !== '모름').map(s => ['row', s.이름, s.글, s.판정, s.값]),
       ...d.처방.map((p, i) => ['do', d.처방.length > 1 ? `할 일 ${i + 1}` : '할 일', p]),
       ...(d.세부?.목표 ? [['goal', '다음 목표', d.세부.목표]] : []),
