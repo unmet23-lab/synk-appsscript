@@ -40,7 +40,9 @@ export function createRaceState(initial = {}) {
  *  sound    { narrator, speak(ids,text,kind,{interrupt,presentationId}), quiet(), ensureAudio(), ding(success), contact(), engineCoast(velocity), engineRace(velocity,boost,kind) }
  *  scene    { car(), wheels(), rivals(), placeCar(mesh,s,offset,yaw), buildGate({q,types,s}), removeGate(gate), applyEquipment(), hideRoundEffects(),
  *             resetCamera(playerS), wrapCamera(playerS,offset), mascotMood(mood,seconds), contactSparks(hit) }
- *  learning { learn(action,fallback), presentGate(q), answerGate(pid,response,flow), endLive(), nextPersonalized(), learningScope() }
+ *  learning { learn(action,fallback), presentGate(q), answerGate(pid,response,flow), endLive(), nextPersonalized(), learningScope(),
+ *             gateQuestion(index)?, followUps()?, endPlan()? } — 끝의 셋은 새 길(atlas-next-play.mjs)의 자리다: 맞춤 판은 관문을 세울 때
+ *             그 자리의 문제를 고르고(questionBank[index]를 채운다), 판 안 후속 바꿔 넣기 · recheck를 쓰지 않으며(followUps() 거짓), 완주에 판을 닫는다.
  *  rewards  { account(), storage, loadGarage(), storeGarage(state), wishText(), awardRace, recordRound, loadProgress }
  *  tutorial { active(), chooseLane(), tapLane(id), render(), repeat(), delivered(), clearVoice() }
  *  coastRadio · clock{getDelta} · reducedMotion · coastDrive · questionPace (기본은 새로 만든다)
@@ -135,6 +137,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
   function makeGate(index, at) {
     if (index === s.questionBank.length - 1 && s.soundEnabled && !tutorial.active()) coastRadio.prepare();
     if (s.gate) disposeGate();
+    learning.gateQuestion?.(index);   // 새 길의 맞춤 판: 앞 관문의 답을 본 뒤 이 관문의 문제를 그때 고른다
     const q = s.questionBank[index % s.questionBank.length], types = [...q.options];
     const { group, fruitObjects } = scene.buildGate({ q, types, s: at });
     s.gate = { group, s: at, q, types, fruitObjects, announced: false, judged: false }; s.questionChosen = false; setQuestionExpanded(false);
@@ -199,6 +202,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     if (tutorial.active() || !coastDrive.complete(s.answers.length, s.questionBank.length)) return;
     // 마지막 해설은 드라이브 위에서 끝까지 듣는다(라디오는 그 아래로 낮춘다). 여기서 긴 말을 기다리면 차가 길 끝을 넘을 수 있다.
     s.finished = true; s.inputs.left = s.inputs.right = false; view.screenEl.classList.remove('boosting'); const flowEnd = learning.endLive();
+    learning.endPlan?.();   // 새 길: 답이 모두 든 뒤 판을 기록 없이 닫는다(판 기록은 셸 몫)
     const rank = 1 + scene.rivals().filter(r => r.s > s.playerS).length, total = s.questionBank.length, passed = s.correct >= Math.ceil(total * .8);
     // Adaptive follow-ups can replace an item after the course was selected.
     // Reward the questions actually played; authored courses keep their canonical list.
@@ -315,7 +319,9 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
       gate.learning = learning.answerGate(gate.presentationId, { correct: success, assessable, reason: assessable ? undefined : 'motor', choice: { selectedId: chosen, correctId: gate.q.answer } },
         assessable ? { pressure: racePressure({ readyAt: gate.readyAt, choseAt: gate.choseAt, cruise: s.cruise, campaign: !!s.selectedStage.campaign, roadLeft: gate.readyRoad }) } : { outcome: 'void' });
     }
-    gate.recheck = s.roundWasDemo ? null : learn(c => racingRecheck(c, gate.q, gate.learning));
+    // 새 길은 판 안 후속 바꿔 넣기 · recheck를 쓰지 않는다(단계4 계획 §23-6 「옛 것 대신」) — 다음 관문은 그 관문을 세울 때 고른다.
+    const followUps = learning.followUps?.() !== false;
+    gate.recheck = s.roundWasDemo || !followUps ? null : learn(c => racingRecheck(c, gate.q, gate.learning));
     gate.judged = true; s.answers.push({ id: gate.q.id, prompt: gate.q.prompt, answer: gate.q.answer, chosen, correct: success, learning: gate.learning, recheck: gate.recheck });
     $('repeat-question').hidden = true; $('go').hidden = true; setQuestionExpanded(false); s.laneAim = null;
     hud.markLanes(chosen, gate.q.answer);
@@ -330,7 +336,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     setText($('combo'), [s.combo >= 2 ? `${s.combo}콤보` : '', s.shield ? '보호막' : ''].filter(Boolean).join(' · '));
     const needsPractice = !s.roundWasDemo && (!success || gate.learning?.assisted);
     const reviewing = needsPractice || !!gate.recheck?.line;
-    const follow = needsPractice && gate.learning?.verdict !== 'unassessed' ? linkRacingRecheck(learn(c => racingFollowUp(c, { current: gate.q, remaining: s.questionBank.slice(s.gateIndex + 1), stage: s.selectedStage, audioAvailable: s.soundEnabled && !s.narrationUnavailable })), gate.learning) : null;
+    const follow = followUps && needsPractice && gate.learning?.verdict !== 'unassessed' ? linkRacingRecheck(learn(c => racingFollowUp(c, { current: gate.q, remaining: s.questionBank.slice(s.gateIndex + 1), stage: s.selectedStage, audioAvailable: s.soundEnabled && !s.narrationUnavailable })), gate.learning) : null;
     if (follow) s.questionBank.splice(s.gateIndex + 1, s.questionBank.length - s.gateIndex - 1, ...follow.remaining);
     const nextNote = follow?.status === 'new' ? ' 비슷한 새 문제로 한 번 더 확인해 봐요.' : follow?.status === 'unavailable' ? ' 비슷한 새 문제가 없어서 원래 코스대로 이어 달려요.' : '';
     // WORLD(track.stopForReview 거짓)는 틀려도 멈추지 않는다: 해설을 달리면서 보여 주고 다음 문제가 나오면 걷는다. 판정 · 기록은 같다.

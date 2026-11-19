@@ -13,6 +13,7 @@ import { fitText, preloadImages } from './kit/lab.mjs';
 import { DAILY_KEY, seoulDate, dailyRound, dailyOptions, emptyRecords, normalizeRecords, recordDaily, dailyStatus, recentDays } from './daily.mjs';
 import { NARRATION, NARRATION_LINES, resultLine } from './narration.mjs';
 import { createGearPanel, DEFAULT_GEAR } from './gear.mjs';
+import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 
 // ── WORLD 안(2026-11-04 캠퍼스 판): world-host.js가 붙인 data-host=world일 때만 동아리 탁구장 · 상대 태오(world-play.mjs — 문항 음성 · 안내 음성 파일 자리도 거기서 바꾼다).
 // LAB 화면(몽글 · 펠트)은 그대로다 — WORLD 모듈 · 그림 · 소리는 LAB에서 불러오지 않는다.
@@ -60,16 +61,37 @@ const num = (n) => Number(n).toLocaleString('ko-KR');
 const monthDay = (d) => `${Number(d.slice(5, 7))}월 ${Number(d.slice(8, 10))}일`;
 
 /* ── 아틀라스 ── */
-let coach = null;
-try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { coach = null; }
+// 새 길(Atlas 재설계 4-6d — 단계4_계획 §23-7): WORLD 셸이 게임 문을 두었거나 로컬 개발 깃발이 있으면 새 길 모듈(atlas-next-play.mjs)을
+// 불러 셸 창의 게임 코치를 받는다. 셸이 지금 판이라고 하면(null) 옛 길로 연다. 문이 없으면 옛 코치를 지금처럼 이 자리에서 동기로 만든다.
+// rally: 새 길(판 · 고르기 · 순간 맞춤의 제시 번호). quiet: 문이 닫히는 중(RUN_ENDED) — 옛 길을 열지 않고 안내 없이 놀기만 한다.
+let coach = null, rally = null, quiet = false;
+function openOldCoach() {
+  try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { coach = null; }
+}
+async function openNextCoach() {
+  let opened = null;
+  try { opened = await (await import('./atlas-next-play.mjs')).openRally({ win: window, audio: () => sound.isOn() }); }
+  catch (error) { rally = null; coach = null; quiet = ended(error); showReasons(); return; }   // 새 길이 맡은 판이라 실패해도 옛 길을 열지 않는다
+  rally = opened;
+  if (rally) coach = rally.coach; else { openOldCoach(); showReasons(); }
+}
+// 새 길이 숨긴 이유 줄을 옛 길로 돌아올 때 다시 보인다(판을 다시 정한 뒤 셸이 지금 판이라고 한 때).
+function showReasons() { for (const id of ['#l-reason', '#r-next-reason']) { const n = document.querySelector(id); if (n) n.hidden = false; } }
+const atlasNext = !!(nextDoor(window) || devFlag(window));
+if (atlasNext) await openNextCoach(); else openOldCoach();
 const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { return fn(coach); } catch { return fallback; } };
-// SYNK WORLD 안에서는 계정의 기록이다. 이 브라우저가 아니라 WORLD 계정 설정에서 공유·삭제를 관리한다.
-const hosted = atlas((c) => typeof c.assignment === 'function', false);
+// SYNK WORLD 안에서는 계정의 기록이다. 이 브라우저가 아니라 WORLD 계정 설정에서 공유·삭제를 관리한다. 새 길은 기록 지우기를 쓰지 않는다.
+const hosted = atlasNext || atlas((c) => typeof c.assignment === 'function', false);
 
 /* ── 상태 ── */
 const state = { run: 0, queue: [], index: 0, results: [], rally: 0, score: 0, cur: null, practice: false, paused: false, ranked: null,
-  flow: null, tired: false, pausedMs: 0, pausedAt: 0, coinRound: null, mode: 'normal', dailyDate: null };
+  flow: null, tired: false, pausedMs: 0, pausedAt: 0, coinRound: null, mode: 'normal', dailyDate: null, plan: null };
 const live = (run) => run === state.run;
+// 새 길의 판(atlas-next-play.mjs): 보통 판은 공마다 고르고(plan.at), 하루 도전은 정해진 차례다. 옛 길은 plan 없이 queue 그대로.
+const roundSize = () => state.plan?.size ?? state.queue.length;
+const itemAt = (index) => (state.plan ? state.plan.at(index) : state.queue[index]);
+/** 새 길의 판을 기록 없이 닫는다(판 끝 · 그만두기 · 입구). 판 끝 한 줄(엔진이 그 까닭으로 멈춘 문장)이 있으면 돌려준다. */
+function endPlan() { const plan = state.plan; state.plan = null; return plan ? plan.end() : null; }
 // 순간 맞춤: 공이 오는 시간(= ‘빠르게!’를 받을 시간)만 이 사람에 맞춘다(연습 공 제외). 피곤한 날은 랠리가 이어져도 빨라지지 않는다.
 function startFlow() {
   try { state.flow?.end(); } catch { /* 이어 하기 기억은 편의 */ }
@@ -83,7 +105,9 @@ const flightScale = () => atlas(() => state.flow?.settings().values.flight, 1) |
 function followFlow(cur, lane) {
   if (!state.flow || !cur?.serveAt || state.practice) return;
   const used = cur.choseAt <= cur.serveAt ? 0 : (cur.choseAt - cur.serveAt - (cur.chosePausedMs - cur.pausedBase)) / cur.flightMs;
-  const out = atlas(() => state.flow.observe(rallyObservation({ choice: cur.options[lane], answer: cur.item.answer, used, assisted: !!(cur.replayed || cur.texted) })));
+  // 새 길은 그 공의 제시 번호와 함께 넘긴다 — 한 제시가 순간 맞춤을 한 번만 움직인다(같은 공을 다시 쳐도).
+  const out = atlas(() => { const seen = rallyObservation({ choice: cur.options[lane], answer: cur.item.answer, used, assisted: !!(cur.replayed || cur.texted) });
+    return rally ? rally.observe(state.flow, cur.ex?.pid, seen) : state.flow.observe(seen); });
   cur.serveAt = 0;
   if (out?.line) { tip(out.line.text); const run = state.run; setTimeout(() => { if (live(run) && $('#tip').textContent === out.line.text) tip(null); }, 2200); }
 }
@@ -120,11 +144,13 @@ let stageNote = null;   // 3D를 만들지 못했다는 안내. 저장 상태가
 function paintStorageNote() {
   const storage = atlas((c) => c.summary().storage);
   const warn = stageNote || (/다른 탭/.test(storage?.warning || '') ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.' : storage?.warning)
-    || (storage?.available === false ? '학습 기록을 저장할 수 없어 기본 순서로 진행해요.' : null) || (!coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!saved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
+    || (storage?.available === false ? '학습 기록을 저장할 수 없어 기본 순서로 진행해요.' : null) || (!coach && !quiet ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!saved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
 }
 /** 입구의 추천·저장 안내만 그린다. 판·소리·3D 무대·화면 전환·포커스는 건드리지 않아 저장 상태가 바뀔 때 다시 불러도 된다. */
 function paintLobbyPlan() {
+  // 새 길: 판을 미리 짜지 않는다(공마다 고른다). 처음 판은 쉬운 말만 후보라 그 한 줄만 쓰고, 그 밖에는 이유를 지어내지 않는다.
+  if (rally) { const first = progress.plays === 0; $('#l-reason').hidden = !first; $('#l-reason').textContent = first ? '처음이니까 쉬운 말부터 해요. 첫 공은 연습이에요.' : ''; paintStorageNote(); return; }
   state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() }));
   const plan = atlas((c) => missedPractice(c, { audioAvailable: sound.isOn() }));
   $('#l-reason').textContent = plan ? `${plan.why} ${plan.next}` + (progress.practiced ? '' : ' 연습 공을 마치면 바로 나와요.') : progress.plays === 0 ? '처음이니까 쉬운 말부터 해요. 첫 공은 연습이에요.'
@@ -133,6 +159,7 @@ function paintLobbyPlan() {
 }
 function renderLobby() {
   state.run += 1; stopVoices(state.cur); sound.stopNarration(); state.cur = null; stage?.clear(); hideWait(); hideExplain(); renderCards(null); stageNote = null;
+  endPlan();
   paintLobbyPlan();
   const best = progress.best;
   $('#best-line').hidden = !best; if (best) $('#best-line').textContent = `최고 ${best.score}점 · 랠리 ${best.rally}번`;
@@ -186,17 +213,22 @@ async function startRound(mode = 'normal') {
   state.run += 1;
   sound.stopNarration();
   const run = state.run;
+  // 새 길: 판을 다시 정해 겉이 닫혔으면(onRetired) 이 판을 열 때 문을 다시 연다 — 새 길이면 새 겉, 지금 판이면 옛 길. 소리 열기는 누른 자리에서 먼저.
+  if (rally?.retired) { await Promise.all([sound.unlock(), openNextCoach()]); if (!live(run)) return; }
   const opening = startFlow();
   const daily = mode === 'daily', date = daily ? seoulDate() : null;
+  endPlan();
+  // 새 길의 판: 보통 판은 공마다 엔진이 고르고(처음 판은 쉬운 말만), 하루 도전은 그날 정해진 차례 그대로 present만 한다.
+  state.plan = !rally ? null : daily ? rally.fixed(dailyRound(date)) : rally.round({ firstTime: progress.plays === 0, seed: progress.plays + 1 });
   Object.assign(state, { index: 0, results: [], rally: 0, score: 0, cur: null, practice: false, paused: false, mode: daily ? 'daily' : 'normal', dailyDate: date,
-    queue: daily ? dailyRound(date) : composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1, lead: atlas((c) => missedPractice(c, { audioAvailable: sound.isOn() }))?.target.id ?? null }) });
+    queue: state.plan ? state.plan.queue : daily ? dailyRound(date) : composeRound(ITEMS, { ranked: state.ranked?.order, firstTime: progress.plays === 0, seed: progress.plays + 1, lead: atlas((c) => missedPractice(c, { audioAvailable: sound.isOn() }))?.target.id ?? null }) });
   $('.game-title').textContent = daily ? '하루 도전' : '말 랠리';
   // 공통 코인(play-common): 이 판의 번호. 끝까지 마친 판만 받는다(그만두면 받지 않는다). 코인은 학습 기록에 쓰지 않는다.
   state.coinRound = globalThis.SynkPlayCollection?.roundId('talk-rally') || null;
   updateHud(); renderCards(null); tip('공을 준비하고 있어요…', { silent: true });
   await sound.unlock();
   world?.start();   // WORLD: 공 두 번 튀기는 소리 · 음악 · 뒤쪽 탁구대의 먼 소리
-  try { await Promise.all([ensureStage(), sound.preloadVoices([PRACTICE, ...state.queue]), sound.preloadNarration(NARRATION_LINES)]); }
+  try { await Promise.all([ensureStage(), sound.preloadVoices([PRACTICE, ...(state.plan ? state.plan.pool : state.queue)]), sound.preloadNarration(NARRATION_LINES)]); }
   catch {
     renderLobby();
     stageNote = '이 브라우저에서는 3D 화면을 만들 수 없어요. 다른 브라우저(크롬·사파리 최신판)로 열어 주세요.';
@@ -223,7 +255,7 @@ async function startRound(mode = 'normal') {
 }
 
 function updateHud() {
-  const n = state.queue.length;
+  const n = roundSize();
   $('#g-count').textContent = state.practice ? '연습' : `${Math.min(state.index + 1, n)} / ${n}`;
   $('#g-score').textContent = String(state.score);
   $('#g-rally').textContent = String(state.rally);
@@ -270,8 +302,10 @@ document.fonts?.ready.then(fitCards);
 
 /** rallied(WORLD): 앞 공을 태오가 받아친 순간이다 — 말을 시작하면서 공도 바로 날아온다(이어지는 랠리). LAB은 말이 끝나는 순간 친다. */
 function nextItem({ rallied = false } = {}) {
-  if (!state.practice && state.index >= state.queue.length) return finish();
-  const item = state.practice ? PRACTICE : state.queue[state.index];
+  if (!state.practice && state.index >= roundSize()) return finish();
+  // 새 길은 이 공을 지금 고른다(앞 공의 답을 본 뒤). 고를 말이 없으면 판을 끝낸다
+  const item = state.practice ? PRACTICE : itemAt(state.index);
+  if (!item) return finish();
   if (state.cur?.texted) tip(null);   // 앞의 말을 글로 보여 줬으면 지운다(다음 말이 소리로 나올 때 앞 글이 남지 않게)
   // 하루 도전의 대답 카드 순서는 그날 모두에게 같다(연습 공은 따로 섞는다)
   const options = state.mode === 'daily' && !state.practice ? dailyOptions(item, state.dailyDate) : shuffled(item.options);
@@ -282,7 +316,10 @@ function nextItem({ rallied = false } = {}) {
   hideExplain(); hideWait(); renderCards(cur); updateHud();
   world?.next({ rallied });
   stage.setLane(null); stage.setFace('talk');
-  announce(`${state.practice ? '연습. ' : `${state.index + 1}번째 공. `}${WORLD ? `${WHO_FULL}가` : '몽글이'} 말해요. 대답: ${cur.options.map((w, i) => `${i + 1} ${w}`).join(', ')}`);
+  // 새 길: 다시 만나는 말이면 엔진의 이유 한 줄(「방금 놓친 「…」, 다른 문제로 한 번 더 만나요.」)을 공 앞에 잠깐 보인다
+  const why = state.practice ? null : state.plan?.line(state.index);
+  if (why) { tip(why, { silent: true }); const run = state.run; setTimeout(() => { if (live(run) && $('#tip').textContent === why) tip(null); }, 2600); }
+  announce(`${why ? `${why} ` : ''}${state.practice ? '연습. ' : `${state.index + 1}번째 공. `}${WORLD ? `${WHO_FULL}가` : '몽글이'} 말해요. 대답: ${cur.options.map((w, i) => `${i + 1} ${w}`).join(', ')}`);
   speakCur(cur);
 }
 
@@ -433,7 +470,7 @@ function onCaught() {
     return;
   }
   // WORLD: 스매시가 아니면 태오가 칸 쪽으로 움직여 받아친 순간 바로 다음 말이 시작된다. 스매시는 태오가 놓치고 웃는 동안 기다렸다가 새 공으로
-  if (world && !cur.smash && state.index + 1 < state.queue.length) { state.lastLane = cur.choice; state.index += 1; nextItem({ rallied: true }); return; }
+  if (world && !cur.smash && state.index + 1 < roundSize()) { state.lastLane = cur.choice; state.index += 1; nextItem({ rallied: true }); return; }
   after(world && cur.smash ? world.reactMs() : 380, () => { state.index += 1; nextItem(); });
 }
 
@@ -479,7 +516,7 @@ function showExplain(cur, { chose = null } = {}) {
   $('#x-why').textContent = item.why;
   state.explained = item; $('#x-tools').hidden = !sound.isOn();
   $('#explain').hidden = false;
-  $('#btn-next').querySelector('span').textContent = state.index + 1 >= state.queue.length ? '결과 보기' : '다음 공';
+  $('#btn-next').querySelector('span').textContent = state.index + 1 >= roundSize() ? '결과 보기' : '다음 공';
   $('#btn-next').focus({ preventScroll: true });
   announce(`${$('#x-kicker').textContent}. ${WHO}: ${item.line} 알맞은 대답: ${item.answer}. 왜? ${item.why}`);
 }
@@ -505,6 +542,7 @@ function tip(text, { silent = false } = {}) { $('#tip').hidden = !text; if (text
 /* ── 결과 ── */
 function finish() {
   endFlow();
+  const ending = endPlan();   // 새 길: 판을 기록 없이 닫는다(판 기록은 셸 몫). 엔진이 하루 상한 등으로 멈췄으면 그 문장
   state.cur = null; stage.clear(); renderCards(null); tip(null); hideWait();
   stopLine();
   const s = scoreRound(state.results), prevBest = progress.best, daily = state.mode === 'daily';
@@ -554,10 +592,16 @@ function finish() {
     li.querySelector('.say-again')?.addEventListener('click', () => playLine(item));
     log.append(li);
   }
-  const next = atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() }));
-  state.ranked = next;
-  renderSkills(next);
-  $('#r-next-reason').textContent = nextLineWithReturn(next);
+  if (rally) {
+    // 새 길의 판 끝: 이번 판의 답과, 엔진이 그 까닭으로 멈췄을 때만 그 한 줄(옛 여섯 상태 · 놓친 말 안내는 쓰지 않는다 — §23-6)
+    renderRoundSkills();
+    $('#r-next-reason').textContent = ending || ''; $('#r-next-reason').hidden = !ending;
+  } else {
+    const next = atlas((c) => rankItems(c, ITEMS, { audioAvailable: sound.isOn() }));
+    state.ranked = next;
+    renderSkills(next);
+    $('#r-next-reason').textContent = nextLineWithReturn(next);
+  }
   $('#r-hub').hidden = !location.pathname.includes('/talk-rally/');
   show('results');
   world?.finish(state.results);   // WORLD: 음악이 물러나고 주고받기 점 · 큰 숫자가 오른다
@@ -607,6 +651,14 @@ function renderSkills(next) {
   }
   if (atlas(hasEarlierRecord, false)) ul.append(el('li', 'earlier-record', '<span>연습 기록 표가 바뀌기 전에 혼자 답한 기록도 그대로 남아 있어요. 위 숫자는 바뀐 뒤의 기록이에요.</span>'));
 }
+/** 새 길: 학습 항목마다 이번 판에 맞힌 수만 쓴다(칸 줄은 리디자인에서). */
+function renderRoundSkills() {
+  const ul = $('#r-skills'); ul.textContent = '';
+  for (const id of Object.keys(SKILL_LABEL)) {
+    const mine = state.results.filter((x) => x.skill === id), ok = mine.filter((x) => x.correct === true).length;
+    ul.append(el('li', '', `<b>${esc(SKILL_LABEL[id])}</b><em>이번 ${ok}/${mine.length}</em>`));
+  }
+}
 
 /* ── 멈춤 ── */
 function pause(open = true) {
@@ -630,6 +682,7 @@ $('#quit').onclick = () => {
   // 대답하지 않은 말은 응답 없음으로 닫는다(평가하지 않음)
   const cur = state.cur;
   if (cur && !['hit', 'done'].includes(cur.phase)) cur.ex?.cancel();
+  endPlan();   // 새 길: 그 답 뒤에 판을 기록 없이 닫는다
   if (cur) cur.speechCut = false;   // 아래 pause(false)가 끊긴 말을 다시 시작하지 않게(입구에 말소리가 남는다)
   stopVoices(cur);
   world?.quit();

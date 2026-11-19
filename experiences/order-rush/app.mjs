@@ -11,6 +11,7 @@ import { CafeStage, FlatStage } from './stage.mjs';
 import { CafeAudio } from './audio.mjs';
 import { customerOf, customerName, cupLabel } from './cafe.mjs';
 import { $, $$, el, esc, preloadImages, bindSoundToggles } from './kit/lab.mjs';
+import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
@@ -32,7 +33,16 @@ if (!globalThis.SynkPlayCollection) for (const n of $$('.synk-collection-line'))
 
 /* ── 아틀라스: 공통 학습 기록과 다음 주문 고르기 ── */
 let coach = null, learningFailed = false, nextPlan = null, audioTicket = null;
-try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage, followups:true }) || null; } catch { learningFailed = true; }
+// 새 길(단계 4 §23-7): WORLD 셸의 게임 문이 있거나 개발 깃발이 있을 때만 새 코치를 연다. 새 길 모듈(atlas-next-play.mjs)은 그때만 싣는다.
+// open이 null이면(지금 판) 아래 옛 코치로 시작하고, RUN_ENDED면 옛 길을 열지 않고 시작 화면에 멈춘다. 새 길의 다른 실패는 기록 없이 논다.
+// 문이 없으면 옛 코치를 지금과 같은 때 · 같은 인수로 만든다.
+let atlasNext = null, nextWhy = null;
+if (nextDoor(window) || devFlag(window)) {
+  try { atlasNext = await (await import('./atlas-next-play.mjs')).openCafe({ win: window }); }
+  catch (error) { if (ended(error)) await new Promise(() => {}); learningFailed = true; }
+  coach = atlasNext;
+}
+if (!atlasNext && !learningFailed) try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage, followups:true }) || null; } catch { learningFailed = true; }
 // 저장 차례를 기다리는 STORAGE_BUSY(WORLD 과제 실행 중 호스트가 던진다)는 영구 실패가 아니다.
 let hostStorageBusy = false;
 function noteLearningError(error) { if (error?.code === 'STORAGE_BUSY') hostStorageBusy = true; else learningFailed = true; }
@@ -40,7 +50,7 @@ function noteLearningError(error) { if (error?.code === 'STORAGE_BUSY') hostStor
 function learn(method, ...args) { try { const value = coach?.[method](...args); if (method !== 'summary') hostStorageBusy = false; return value; } catch (error) { noteLearningError(error); return null; } }
 const assignment = () => { try { return coach?.assignment?.() || null; } catch { return null; } };
 // SYNK WORLD 안에서는 기록이 계정의 것이다: 이 브라우저가 아니라 계정에서 보관하고 지운다.
-const hosted = (() => { try { return typeof coach?.assignment === 'function'; } catch { return false; } })();
+const hosted = atlasNext ? atlasNext.hosted : (() => { try { return typeof coach?.assignment === 'function'; } catch { return false; } })();
 
 /* ── 아틀라스 순간 맞춤: 손님 속도·주문 종류를 이 사람에 맞춘다(입구에서 끌 수 있다) ── */
 const FLOW_KEY = 'synk.order-rush.flow-mode';
@@ -65,6 +75,8 @@ function flowLine(line) {
 function startLive(isReview) {
   live = null; flowStart = null; flowSpec = null;
   if (!coach || learningFailed || isReview || typeof coach.live !== 'function') return;
+  // 새 길: 한가한 오픈(FLOW_PRACTICE — 손잡이가 문항 난도뿐)은 순간 맞춤이 없다. 문항 난도는 두뇌가 고른다.
+  if (atlasNext && state.mode !== 'rush') return;
   try {
     flowSpec = state.mode === 'rush' ? FLOW_RUSH : FLOW_PRACTICE;
     live = coach.live(flowSpec, { skillIds: FLOW_SKILLS, responseFormat: 'cup-compose', declared: flowMode() === 'fixed' ? { mode: 'fixed' } : {}, words: FLOW_WORDS });
@@ -77,10 +89,12 @@ function applyFlow(out) {
   if (out.line) flowLine(out.line);
 }
 function presentOrder(order) {
+  if (atlasNext) return learn('present', orderMetadata(order));   // 새 길: 순간 맞춤이 열렸으면 겉이 live.present로 낸다
   if (live) { try { return live.present(orderMetadata(order)); } catch { live = null; } }
   return learn('present', orderMetadata(order));
 }
 function answerWithFlow(t, result, flow = {}) {
+  if (atlasNext) { const out = learn('answer', t.presentationId, result, flow); applyFlow(out); return out?.recorded ?? null; }
   if (live) { try { const out = live.answer(t.presentationId, result, flow); applyFlow(out); return out.recorded; } catch { live = null; } }
   return learn('answer', t.presentationId, result);
 }
@@ -98,6 +112,8 @@ function storageStatus(s) {
   return waiting && globalThis.navigator?.locks ? 'waiting' : 'failed';
 }
 function learningCopy() {
+  // 새 길: 다음 이유는 엔진이 고른 문항의 이유 줄(Vellum)뿐이다. 게임 차례로 낸 주문에는 이유 줄을 짓지 않는다.
+  if (atlasNext) return learningFailed ? '학습 기록을 저장할 수 없어서 이번에는 기본 주문으로 연습해요.' : nextWhy || '';
   const target = assignment();
   if (target) return orderTargetLabel(target);
   const s = learn('summary');
@@ -130,7 +146,7 @@ function missedChangeSource(s) {
 }
 // 입구에서만 보이는 듣기 안내: 주문을 푸는 중에는 힌트가 되지 않게 멈춤·결과 화면에는 넣지 않는다. 정답이나 말의 위치는 말하지 않는다.
 function lobbyTip() {
-  if (assignment() || storageView !== 'ready') return '';
+  if (atlasNext || assignment() || storageView !== 'ready') return '';
   const s = learn('summary');
   if (missedChangeSource(s)) return '이번엔 손님이 무엇을 빼거나 바꿔 달라고 하는지 들어 보세요.';
   return isFirstPractice(s) && nextPlan.focusSkillId === 'ko.listening.detail' && nextPlan.selected?.difficulty === 1
@@ -142,6 +158,8 @@ function updateLearning() {
   $('#learning-reason').textContent = tip ? `${text} ${tip}` : text;
 }
 function selectOrder(orders) {
+  // 새 길: 이 판의 recommend(키트 setPlay). none이면 게임 차례(덱의 첫 주문)로 낸다.
+  if (atlasNext) { const pick = learningFailed ? null : learn('pick', orders); nextWhy = pick?.why?.line ?? null; updateLearning(); return pick?.selected ?? orders[0]; }
   if (!coach || learningFailed) return orders[0];
   try {
     const plan = live ? chooseOrderLive(live, orders) : chooseOrder(coach, orders);
@@ -149,7 +167,7 @@ function selectOrder(orders) {
   } catch (error) { noteLearningError(error); }
   return orders[0];
 }
-function refreshRecommendation() { if (coach) selectOrder(ORDERS); updateLearning(); refreshDelayed(); }
+function refreshRecommendation() { if (atlasNext) nextWhy = learningFailed ? null : learn('reason', ORDERS) ?? null; else if (coach) selectOrder(ORDERS); updateLearning(); refreshDelayed(); }
 // 영업 중에는 글만 고친다: live.pick은 순간 맞춤 상태를 건드리고, 다음 손님은 어차피 새로 고른다.
 function applyStorageChange() { paintResetNotice(); if (state.screen === 'game') updateLearning(); else refreshRecommendation(); }
 // 엔진의 호출 도중에 알림이 올 수 있어 호출이 끝난 뒤 한 번만 읽고, 쓰기마다 다시 그리지 않게 상태가 바뀔 때만 그린다.
@@ -172,11 +190,24 @@ function watchHostStorage(checks = 40) {
   if (storagePort || storageView !== 'waiting' || !checks) return;
   setTimeout(() => { applyStorageChange(); watchHostStorage(checks - 1); }, 250);
 }
+// 며칠 뒤 주문 후보 — 새 길은 돌아온 단위(due())가 든 처음 듣는 주문이다(옛 followups 대신).
+function delayedList(){return atlasNext?learn('delayed',DELAYED_ORDERS)||[]:delayedOrders(coach,DELAYED_ORDERS);}
 function refreshDelayed(){
- const available=!assignment()&&!learningFailed&&delayedOrders(coach,DELAYED_ORDERS).length>0;
+ const available=!assignment()&&!learningFailed&&delayedList().length>0;
  for(const id of ['#followup-start','#followup-result']){const button=$(id);if(button)button.hidden=!available;}
 }
-function startDelayed(){const next=!assignment()&&!learningFailed?delayedOrders(coach,DELAYED_ORDERS)[0]:null;if(next)start(false,next);else refreshDelayed();}
+function startDelayed(){const next=!assignment()&&!learningFailed?delayedList()[0]:null;if(next)start(false,next);else refreshDelayed();}
+// 판을 다시 정한 뒤의 다음 판(§23-2): openNext를 다시 부른다. 새 겉이면 그 겉으로, 지금 판(null)이면 옛 코치로, 닫혔으면 기록 없이 잇는다.
+let reopening = false;
+function reopenNext(then) {
+  if (reopening) return;
+  reopening = true;
+  atlasNext.reopen().then((how) => {
+    reopening = false;
+    if (how === 'old') { atlasNext = null; coach = null; try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage, followups:true }) || null; } catch { learningFailed = true; } }
+    then();
+  });
+}
 
 /* ── 상태 ── */
 const state = {
@@ -258,7 +289,8 @@ function recordUnanswered() {
     const close = closingObservation(t);
     if (!close) continue;
     if (close.answer) { answerWithFlow(t, { correct: null, assessable: false, reason: 'unanswered' }, { outcome: close.outcome }); t.learningClosed = true; }
-    else { if (live) { try { applyFlow(live.observe({ outcome: close.outcome })); } catch { live = null; } } t.flowClosed = true; }
+    // 새 길: 오답 뒤 떠난 손님의 시간 초과는 그 제시의 한 번 몫을 쓴다(첫 판정 답이 이미 썼으면 움직이지 않는다).
+    else { if (atlasNext) applyFlow(learn('observe', { outcome: close.outcome }, t.presentationId ?? null)); else if (live) { try { applyFlow(live.observe({ outcome: close.outcome })); } catch { live = null; } } t.flowClosed = true; }
   }
 }
 // 결과 목록은 들은 주문의 글을 모두 보여 준다: 글 도움으로 남긴다. 듣기 전에 떠난 손님의 주문은 글도 기록도 없이 둔다(다음에 처음 듣게).
@@ -319,7 +351,8 @@ function initStage() {
 }
 
 function start(isReview = false, delayed = null) {
-  if(delayed&&!delayedOrders(coach,DELAYED_ORDERS).some(order=>order.id===delayed.id)){refreshDelayed();return;}
+  if (atlasNext?.retired) { reopenNext(() => start(isReview, delayed)); return; }
+  if(delayed&&!delayedList().some(order=>order.id===delayed.id)){refreshDelayed();return;}
   const target = assignment(), targetDeck = target ? assignmentOrders([...ORDERS, ...REVIEW, ...DELAYED_ORDERS], target) : null;
   if(delayed&&target)return;
   if (target && !targetDeck.length) { $('#learning-reason').textContent = '과제 주문을 불러오지 못했어요. WORLD에서 다시 열어 주세요.'; return; }
@@ -330,6 +363,8 @@ function start(isReview = false, delayed = null) {
   clearTimeout(celebrationTimer); clearTimeout(leaveTimer);
   Object.assign(state, { celebrating: false, pendingServe: false, review: isReview, paused: false, ticket: null, served: null, cups: [makeCup()], active: 0 });
   audioTicket = null;
+  // 새 길: 판을 연다 — 한가한 오픈 8 · 점심 러시(시간) · 새 주문 연습 3 · 며칠 뒤 주문 1.
+  if (atlasNext) learn('begin', delayed ? 'delayed' : isReview ? 'review' : state.mode === 'rush' ? 'rush' : 'open');
   startLive(isReview);
   const seed = Date.now() >>> 0;
   guests = cast ? cast.createGuestPicker(seed) : null;
@@ -696,6 +731,7 @@ function quit() {
   state.session.finish();
   recordUnanswered();
   if (live) { try { live.end(); } catch { /* 이어 하기 기억은 편의 */ } }
+  if (atlasNext) learn('end');   // 새 길: 그만두기 — 판을 기록 없이 닫는다
   live = null;
   flowLine(null);
   showLobby();
@@ -720,6 +756,7 @@ function finish() {
   live = null;
   flowLine(null);
   refreshRecommendation();
+  if (atlasNext) learn('end');   // 새 길: 판 끝 — 다음 이유는 바로 위에서 이 판의 상태로 받았다
   if (!state.review) state.original = { stats, score: s.score, records: s.records.map((r) => ({ ...r })) };
   awardCoins(s);
   renderResults(s, stats);
@@ -896,7 +933,7 @@ let fitTimer = 0;
 window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(fitBubble, 120); });
 
 // 학습 기록 지우기: WORLD 계정이면 계정 설정에서 하므로 숨긴다
-$('#learning-reset').hidden = hosted;
+$('#learning-reset').hidden = hosted || !!atlasNext;   // 새 길에는 이 화면의 기록 지우기가 없다(「나」의 연습 기록 비우기)
 if (hosted) {
   $('#learning-scope').textContent = '연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
   $('#result-scope').textContent = '주문 음성은 합성 음성이에요. 학습 효과는 아직 학생들과 확인하지 않았어요. 연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';

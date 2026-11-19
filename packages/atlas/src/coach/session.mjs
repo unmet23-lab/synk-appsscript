@@ -409,6 +409,13 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
     openSet,
     ensure,
     rebuild,
+    // 판을 연다(startSet — 단계 4 계획 §23-6 · 설계 주인 11-19 밤). 열린 판이 있으면 제시가 있든 없든 열지 않고 false다 — 먼저 낸 제시가
+    // PRESENTATION_GONE이 되지 않게(GPT GA3). 낡은 기본 판(날이 바뀜 · 오래 쉼)은 다음 제시가 어차피 새로 여니 이 판으로 연다.
+    start(set) {
+      if (s.open && s.learner?.session && !stale(host.now())) return false;
+      openSet(set);
+      return true;
+    },
     choose(candidates, options = {}) {
       if (options.set && !repeated(options.set)) openSet(options.set);
       else ensure();

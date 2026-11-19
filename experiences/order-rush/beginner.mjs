@@ -4,6 +4,7 @@ import { CafeAudio } from './audio.mjs';
 import { createBeginnerShop, beginnerRewardLink } from './beginner-shop.mjs';
 import { PICNIC_ID, picnicRound, picnicScene, createPicnicVisits } from './beginner-picnic.mjs';
 import { nextFestivalRound, memoryCandidates, nextMemoryRound, memoryShelf } from './beginner-return.mjs';
+import { devFlag, nextDoor } from './kit/atlas-next.mjs';
 
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
@@ -15,7 +16,22 @@ const image = (item, cls = '') => `<img class="${cls}" src="${ITEMS[item].image}
 const images = (item, count) => `<div class="b-display-items">${Array.from({ length: count }, () => image(item)).join('')}</div>`;
 const otherGames = () => '<button class="chip-btn b-bilingual" data-action="decorate">소풍·가게 상점<small class="b-en" lang="en">Picnic and shop</small></button><a class="chip-btn b-bilingual b-other-games" href="/learning-hub/#beginner-title">다른 입문 놀이 보기<small class="b-en" lang="en">Try another beginner game</small></a>';
 const voice = new BeginnerVoice(), effects = new CafeAudio(() => {}); let storageOK = true, coach = null;
-try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage }) || null; } catch { /* Local play can continue. */ }
+// 새 길(단계 4 §23-7): WORLD 셸의 게임 문이나 개발 깃발이 있을 때만 새 코치를 연다(atlas-next-play.mjs — 그때만 싣는다). 초급 가게는 정해진
+// 차례라 present만 한다(게임 이름은 같은 order-rush). open이 null이면 옛 코치로 시작한다. RUN_ENDED나 다른 실패면 옛 길을 열지 않고 안내 없이
+// 놀이만 한다. 문이 없으면 옛 코치를 지금과 같은 때 · 같은 인수로 만든다.
+let atlasNext = null, nextFailed = false;
+if (nextDoor(window) || devFlag(window)) {
+  try { atlasNext = await (await import('./atlas-next-play.mjs')).openShop({ win: window }); } catch { nextFailed = true; }
+  coach = atlasNext;
+}
+if (!atlasNext && !nextFailed) try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage }) || null; } catch { /* Local play can continue. */ }
+// 판을 다시 정한 뒤의 다음 판(§23-2): openNext를 다시 부른다. 새 겉이면 그 겉으로, 지금 판(null)이면 옛 코치로, 닫혔으면 기록 없이 논다.
+async function reopenShop() {
+  const shop = atlasNext, how = await shop.reopen();
+  if (how !== 'old' || atlasNext !== shop) return;
+  atlasNext = null; coach = null;
+  try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage }) || null; } catch { /* Local play can continue. */ }
+}
 const learn = (method, ...args) => { if (['answer', 'help', 'delivery'].includes(method) && !args[0]) return null; try { return coach?.[method]?.(...args); } catch { return null; } };
 let progress; try { progress = readProgress(JSON.parse(progressStorage.getItem(SAVE_KEY))); } catch { progress = newProgress(); }
 const picnicStorage = progressStorage;
@@ -51,7 +67,8 @@ function translateUI() {
   }
 }
 function closeObservation() { if (presentation && attempt && !attempt.attempts) learn('answer', presentation, { correct: null, assessable: false, reason: 'unanswered' }); presentation = null; }
-function moveScreen(next) { viewToken++; voice.stop(); closeObservation(); screen = next; busy = false; error = ''; menuButton.hidden = !['play'].includes(next); }
+// 새 길: 놀이 화면을 떠나면(장 · 복습이 끝나거나 입구로) 판을 기록 없이 닫는다.
+function moveScreen(next) { viewToken++; voice.stop(); closeObservation(); if (atlasNext && next !== 'play') learn('end'); screen = next; busy = false; error = ''; menuButton.hidden = !['play'].includes(next); }
 function home() { if (screen === 'play') writeCheckpoint(true); cancelAnimationFrame(raf); moveScreen('home'); picnic = null; memoryRound = null; practiceShelfSeed = null; paused = false; if (pauseDialog.open) pauseDialog.close(); renderHome(); focusHeading(); }
 const picnicSaveNote = stored => stored === false ? '<p class="b-picnic-save-note" role="status">소풍 순서를 저장하지 못했어요. 지금은 계속 놀 수 있지만 새로고침하면 같은 소풍이 다시 나올 수 있어요.<small class="b-en" lang="en">You can keep playing. The next order could repeat after a reload because this visit could not be saved.</small></p>' : '';
 function renderPicnicEntrance(wallet, loading = false) {
@@ -99,6 +116,7 @@ async function prepareAndStart(kind = 'story') {
     announce(e.message); return;
   }
   if (launchToken !== viewToken || document.hidden) { busy = false; return; }
+  if (atlasNext?.retired) { await reopenShop(); if (launchToken !== viewToken || document.hidden) { busy = false; return; } }
   if (kind === 'memory') {
     const round = nextMemoryRound(progress); busy = false;
     if (!round) { for (const b of root.querySelectorAll('button')) b.disabled = false; return; }
@@ -110,6 +128,8 @@ async function prepareAndStart(kind = 'story') {
     let wallet; try { wallet = await globalThis.SynkPlayCollection?.load(); } catch { /* Check ownership again at the actual entrance. */ }
     if (launchToken !== viewToken || document.hidden) { busy = false; return; }
     if (!wallet?.owned?.includes(PICNIC_ID)) { busy = false; for (const b of root.querySelectorAll('button')) b.disabled = false; if (status) status.textContent = '초대 세트 보유를 확인하지 못했어요. 상점에서 다시 확인해 주세요. / Please check your picnic set in the shop.'; return; }
+    // 새 길: 쉬던 놀이에서 상점을 거쳐 소풍을 열면 화면이 놀이에 머문다 — 앞 판을 닫고 소풍 판을 새로 연다.
+    if (atlasNext && screen === 'play') { closeObservation(); learn('end'); }
     busy = false; rush = false; memoryRound = null; practiceShelfSeed = null; cancelAnimationFrame(raf); if (pauseDialog.open) pauseDialog.close(); paused = false;
     const visit = picnicVisits.next(progress); picnic = { ...visit.round, stored: visit.stored }; stageIndex = picnic.stage; orders = picnic.orders; index = 0; phase = 'order'; rushRecords = []; startPlay(true); return;
   }
@@ -142,7 +162,8 @@ function startPlay(visit = visiting, resumed = false) {
   attempt = { stage: stageIndex, demo: phase === 'demo' || !!picnic?.guided, heard: false, help: resumed || phase === 'demo' || !!picnic?.guided, replay: false, resumed, attempts: 0, firstCorrect: null };
   if (resumed) { attempt.attempts = checkpoint?.attempts || 0; attempt.firstCorrect = checkpoint?.firstCorrect ?? null; attempt.help ||= checkpoint?.helped; attempt.replay = !!checkpoint?.replayed; }
   // A first submission already stored before reload is not a new Atlas item.
-  if (phase === 'order' && !picnic?.guided && !memoryRound && !attempt.attempts) { presentation = learn('present', metadata(current)); if (resumed) learn('help', presentation, 'text'); }
+  // 새 길: 제시마다 그 직전에 이 판에서 남은 주문 수를 넘긴다 — 판의 첫 제시일 때만 겉이 판 길이로 판을 연다. 60초 러시는 시간으로 끝나 넘기지 않는다.
+  if (phase === 'order' && !picnic?.guided && !memoryRound && !attempt.attempts) { if (atlasNext && !rush) learn('begin', orders.length - index); presentation = learn('present', metadata(current)); if (resumed) learn('help', presentation, 'text'); }
   writeCheckpoint(resumed); renderPlay(); focusHeading(); playCurrent();
 }
 function guest() { const g = GUESTS.find(g => g.id === current?.guest) || { name: '몽글', arrival: '먼저 같이 해 봐요.', thanks: '맞아요. 이렇게 건네면 돼요!', reaction: '같이 해 봤어요' }; return picnic ? { ...g, arrival: '소풍 자리를 함께 준비해요.', thanks: '여기 두고 함께 먹어요!', reaction: '소풍에 한 자리 더' } : g; }
@@ -293,7 +314,7 @@ root.addEventListener('click', e => {
   if (b.dataset.rehear) { const token = ++viewToken; voice.stop(); (async () => { try { await voice.prepare(); if (token === viewToken && screen === 'results' && !document.hidden) await voice.play(b.dataset.rehear); } catch (err) { if (token === viewToken) { const status = document.querySelector('#b-load-status'); if (status) status.textContent = err.message; } } })(); return; }
   const actions = { start: () => prepareAndStart(), memory: () => prepareAndStart('memory'), visit: () => prepareAndStart('visit'), rush: () => prepareAndStart('rush'), picnic: () => prepareAndStart('picnic'), listen: playCurrent, hint: showHint, serve, next, home, results: renderResults,
     undo: () => { if (!solved && !busy) { tray.pop(); message = ''; messageEnglish = ''; writeCheckpoint(true); renderPlay(); focusTrayAction(); } },
-    continue: () => { stageIndex = progress.stage; orders = stageOrders(stageIndex, progress.seed + stageIndex); phase = STAGES[stageIndex].demos.length ? 'demo' : 'order'; index = 0; startPlay(false); } };
+    continue: () => { if (atlasNext?.retired) { reopenShop().then(() => { if (screen === 'stage-end') actions.continue(); }); return; } stageIndex = progress.stage; orders = stageOrders(stageIndex, progress.seed + stageIndex); phase = STAGES[stageIndex].demos.length ? 'demo' : 'order'; index = 0; startPlay(false); } };
   actions[b.dataset.action]?.();
 });
 document.addEventListener('keydown', e => {

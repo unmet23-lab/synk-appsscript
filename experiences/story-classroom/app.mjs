@@ -10,13 +10,22 @@ import { StoryVoice } from './voice.mjs';
 import { VOICE_LINE_BY_ID, voiceForMission } from './voice-lines.mjs';
 import { createStoryLearning, skillReport, assignmentMissions, storyTargetLabel, missionMetadata, SKILL_LABELS, returnLine } from './learning.mjs';
 import { $, $$, esc, fitText } from './kit/lab.mjs';
+import { devFlag, nextDoor } from './kit/atlas-next.mjs';
 
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
 
 const QA = new URLSearchParams(location.search).has('qa');
 const game = new StoryGame(), audio = new StoryAudio();
-const learning = createStoryLearning({ storage: localStorage });
+// 새 길(Atlas 재설계 4-6d — 단계4_계획 §23-7 · §23-8): 게임 문이 있거나 로컬 개발 깃발(?atlas=next)이 있으면 새 길 모듈(atlas-next-play.mjs)을
+// 불러 새 코치를 learning.mjs와 같은 겉으로 받는다. 셸이 지금 판이라고 하면(null) 옛 길로 연다. 문도 깃발도 없으면 옛 코치를 지금처럼 이
+// 자리에서 동기로 만든다. 판을 다시 정해 새 길의 겉이 닫히면 다음 판을 열 때(start) 문을 다시 연다 — 그래서 learning은 바뀔 수 있다.
+const openOldLearning = () => createStoryLearning({ storage: localStorage });
+async function openNextLearning() {
+  try { return await (await import('./atlas-next-play.mjs')).openStoryLearning({ win: window, old: openOldLearning }); }
+  catch { return createStoryLearning({ runtime: {} }); }   // 새 길 모듈을 싣지 못했다 — 새 길이 맡은 판이라 옛 길을 열지 않고 기록 없이 논다
+}
+let learning = nextDoor(window) || devFlag(window) ? await openNextLearning() : openOldLearning();
 const initialScope = learning.progressScope();
 const STORAGE = initialScope.persistent ? initialScope.key : null;
 const STORY_MISSIONS = EPISODE.acts.flatMap((a) => a.missions), ALL_MISSIONS = [...STORY_MISSIONS, ...EPISODE.review];
@@ -111,6 +120,7 @@ function recommended() {
 /* ── 입구 ── */
 function renderLobby() {
   started = false; resultsShown = false; voice.stop();
+  learning.endRun?.();   // 새 길: 그만두면 판을 기록 없이 닫는다(옛 겉에는 없다)
   loadSaved();
   const target = learning.assignment();
   $('#resume').hidden = !(saved && !target);
@@ -179,13 +189,16 @@ function lobbyReason() {
   const line = missed ? returnLine(missed) : offer?.strength === 'repeated' ? offer.line : null;
   if (line) return `${line}${saved ? ' 하던 이야기는 이어 하기로 계속할 수 있어요.' : ''}`;
   if (saved) return '지난번에 하던 이야기가 남아 있어요. 이어서 하거나 처음부터 시작해요.';
-  const focus = skillReport(learning.summary()).find((s) => ['practice', 'review'].includes(s.status));
+  // 새 길은 옛 요약의 여섯 상태를 읽지 않는다(§23-6).
+  const focus = learning.atlasNext ? null : skillReport(learning.summary()).find((s) => ['practice', 'review'].includes(s.status));
   if (focus) return `지난번에는 ‘${focus.label}’가 조금 어려웠어요. 이번 이야기에서 한 번 더 해 봐요.`;
   return '부탁 6개를 풀면 이야기가 끝나요. 마지막에는 조금 바뀐 부탁 3개가 더 있어요.';
 }
 
 /* ── 시작·이어 하기 ── */
 async function start(resume = false, practiceId = null) {
+  // 새 길: 판을 다시 정해 겉이 닫혔으면 이 판을 열 때 문을 다시 연다 — 새 길이면 새 겉, 지금 판이면 옛 길(옛 겉에는 retired가 없다).
+  if (learning.retired) learning = await learning.renew();
   const target = learning.assignment(), targetMissions = target ? assignmentMissions(ALL_MISSIONS, target) : null;
   if (target && !targetMissions.length) { $('#lobby-note').hidden = false; $('#lobby-note').textContent = '과제 부탁을 불러오지 못했어요. WORLD에서 다시 열어 주세요.'; return; }
   if (target) resume = false;
@@ -208,7 +221,8 @@ async function start(resume = false, practiceId = null) {
     coinState = 'idle';
   }
   $('#r-coins').textContent = coinState === 'done' ? '이번 판 보상은 벌써 차고에 들어갔어요.' : '';
-  learning.beginRun({ restored: resume });
+  // 새 길은 이 판에서 낼 제시 수를 판 길이로 코치에 넘긴다(첫 제시 앞 startSet — 옛 겉은 읽지 않는다).
+  learning.beginRun({ restored: resume, length: game.missionsAhead().length });
   if (game.phase !== 'complete') show('game');
   render();
   void audio.start().then(syncToggles);
@@ -533,6 +547,8 @@ function accountStatus() {
     local: '이 계정은 기록을 이 기기에만 저장해요. 이야기는 이 창에서만 이어져요.',
   }[status.phase] || (scope.scope === 'device' ? '학습 기록은 이 브라우저에 저장돼요.' : '학습 기록은 이 기기에 저장돼요.'));
   if (scope.scope === 'device' && location.port === '5213') $('#account-status').textContent += ' 다른 게임과 함께 보려면 WORLD 입구에서 열어 주세요.';
+  // 새 길: 문이 닫히는 중이었거나(RUN_ENDED) 판을 다시 정했다 — 이번 판은 안내 없이 기록 없이 논다.
+  if (status.phase === 'quiet') $('#account-status').textContent = '';
   const accountUrl = location.pathname.startsWith('/story-classroom/')
     ? new URL('../synk-account/client.html?product=world', location.href)
     : new URL('http://127.0.0.1:4280/synk-account/client.html?product=world');
@@ -550,6 +566,7 @@ function payCoins(correct, total) {
 
 function showResults() {
   resultsShown = true; feedback = null;
+  learning.endRun?.();   // 새 길: 판 끝 — 판을 기록 없이 닫는다(옛 겉에는 없다)
   const recs = game.records, total = recs.length;
   const firstTry = recs.filter((r) => r.firstCorrect).length;
   const independent = recs.filter((r) => r.firstCorrect && !r.firstHelpUsed && !r.firstAudioHelpUsed).length;
@@ -595,10 +612,11 @@ const skillName = (m) => SKILL_SHORT[missionMetadata(m).skillId] || '';
 
 function renderSkills() {
   const ul = $('#r-skills'); ul.replaceChildren();
-  const report = skillReport(learning.summary());
+  // 새 길: 옛 요약의 여섯 상태 줄은 쓰지 않는다(§23-6) — 학습 항목마다 이번 판에 맞힌 수만 쓴다(칸 줄은 리디자인에서).
+  const report = learning.atlasNext ? [] : skillReport(learning.summary());
   // 학습 기록을 쓸 수 없으면(저장이 막힌 브라우저 등) 세 영역 이름만 둔다
   const rows = report.length ? report
-    : Object.entries(SKILL_LABELS).map(([id, label]) => ({ id, label, status: 'unseen', text: '기록을 쓸 수 없어요' }));
+    : Object.entries(SKILL_LABELS).map(([id, label]) => ({ id, label, status: 'unseen', text: learning.atlasNext ? '' : '기록을 쓸 수 없어요' }));
   let focus = null;
   for (const s of rows) {
     const mine = game.records.filter((r) => missionMetadata(ALL_MISSIONS.find((m) => m.id === r.id)).skillId === s.id);
@@ -607,7 +625,7 @@ function renderSkills() {
     if (isFocus) focus = s;
     const li = document.createElement('li');
     li.className = isFocus ? 'focus' : s.status === 'recent-independent' ? 'good' : '';
-    li.innerHTML = `<b>${esc(s.label)}${isFocus ? ' <i class="next-tag">다음 연습</i>' : ''}</b><em>이번 ${ok}/${mine.length}</em><span>${esc(s.text)}</span>`;
+    li.innerHTML = `<b>${esc(s.label)}${isFocus ? ' <i class="next-tag">다음 연습</i>' : ''}</b><em>이번 ${ok}/${mine.length}</em>${s.text ? `<span>${esc(s.text)}</span>` : ''}`;
     ul.append(li);
   }
   paintNext(focus);

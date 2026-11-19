@@ -3,6 +3,7 @@ import {clone,SAVE_KEY,initialProgress,restoreProgress,restoreResume,tutorialObj
 import {VoiceBank} from './audio.mjs';
 import {MagicStage} from './stage.mjs';
 import {MagicLearning} from './learning.mjs';
+import {devFlag,nextDoor} from './kit/atlas-next.mjs';
 import {MagicShop} from './shop.mjs';
 import {collectPractice,practiceStatus} from './practice.mjs';
 import {recallRound,recallView} from './recall.mjs';
@@ -15,7 +16,15 @@ const progressStorage = globalThis.SynkPlayAccount.storage();
 const $=q=>document.querySelector(q),el=(tag,cls,text)=>{const n=document.createElement(tag);n.className=cls||'';if(text)n.textContent=text;return n;};
 let storage;try{storage=localStorage;}catch{}
 let saved,lastProgressRaw=null;try{lastProgressRaw=progressStorage.getItem(SAVE_KEY);saved=restoreProgress(lastProgressRaw);}catch{saved=initialProgress();}
-const voice=new VoiceBank(),learning=new MagicLearning(globalThis.SynkLearning,storage);
+// 새 길(Atlas 재설계 4-6d — 단계4_계획 §23-7): 위 창의 게임 문(window.SYNKAtlasGame)이나 로컬 개발 깃발(?atlas=next)이 있으면 새 길 모듈
+// (atlas-next-play.mjs)을 동적으로 불러 새 코치로 기록한다. 셸이 지금 판이라고 하면(null) 옛 코치를 만든다. 문이 없으면 옛 코치를 지금처럼
+// 이 자리에서 동기로 만든다. 새 길을 여는 동안과 열지 못했을 때(RUN_ENDED 등)는 기록하지 않는 겉(new MagicLearning(null))이다 — 옛 길을
+// 열지 않고 놀기만 한다. 맨 위에서 기다리지 않고, 소리 확인을 내기 전(begin · startCheck)에만 기다린다.
+const atlasNext=!!(nextDoor(window)||devFlag(window));
+const voice=new VoiceBank();let learning=atlasNext?new MagicLearning(null):new MagicLearning(globalThis.SynkLearning,storage),learningOpening=atlasNext?openLearning():null;
+function openLearning(){return import('./atlas-next-play.mjs').then(m=>m.openMagic({win:window,old:()=>new MagicLearning(globalThis.SynkLearning,storage)})).catch(error=>{console.error(error);return null;}).then(next=>{learning=next||new MagicLearning(null);learningOpening=null;});}
+// 새 길만: 코치가 열릴 때까지 기다린다. 판을 다시 정했고 앞 판이 끝났으면(stale) 다음 판 앞에서 문을 다시 연다.
+function learningReady(){if(!learningOpening&&learning.stale)learningOpening=openLearning();return learningOpening;}
 const state={screen:'lobby',progress:saved,preview:false,sceneIndex:0,objects:[],selected:null,spell:null,busy:false,solved:false,tutorSeen:[],check:null,checkRound:[],heard:false,help:false,attempt:0,checkIndex:0,token:0,photoURL:null,assetReady:false,focusTarget:null,interrupted:null};
 const stage=new MagicStage($('#stage'),$('#objects'),selectObject);
 const heroStage=new MagicStage($('#hero-stage'),document.createElement('div'),()=>{});
@@ -101,6 +110,7 @@ async function begin(index,preview,resume=false,playground=false,continueChecks=
  if(state.busy)return;state.busy=true;$('#start').disabled=true;$('#audio-status').textContent=say('Preparing your adventure…','모험을 준비하고 있어요…');
  try{await Promise.all([assets,preview?Promise.resolve():voice.prepare()]);}
  catch(error){$('#audio-status').textContent=state.assetReady?say('Korean voice is not ready yet. Try again, or explore with pictures.','한국어 소리를 아직 준비하지 못했어요. 다시 시도하거나 그림으로 체험할 수 있어요.'):say('Could not load the scene. Check your connection and try again.','장면을 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.');$('#start').disabled=false;state.busy=false;return;}
+ if(atlasNext&&!preview)await learningReady();
  $('#audio-status').textContent='';$('#start').disabled=false;state.busy=false;state.preview=preview;state.pendingLab=playground;state.progress=preview?initialProgress():clone(saved);if(preview)state.progress.language=saved.language;state.sceneIndex=index;toggleScreens(true);const returning=state.progress.resume?.screen==='lab'&&state.progress.adventureResume,snapshot=returning||state.progress.resume;if(!preview&&resume&&snapshot){if(returning)state.progress.adventureResume=null;restoreScene(snapshot);remember();}else if(showChapterEnd){state.sceneIndex=Math.floor(index/6)*6+5;showEnding();}else if(continueChecks){state.progress.adventureResume=null;state.sceneIndex=Math.floor(index/6)*6+5;const status=chapterProgress(state.progress,Math.floor(index/6));state.checkRound=checkpointRound(Math.floor(index/6)).sort((a,b)=>Number(status.missing.includes(a.spell))-Number(status.missing.includes(b.spell)));await startCheck(2-status.missing.length,true);}else enterScene(index);
 }
 function restoreScene(snapshot){
@@ -200,7 +210,9 @@ function goNext(){
  if(state.screen==='ending'){if(PUZZLES[state.sceneIndex].chapter===2)openLab();else enterScene(state.sceneIndex+1);}
 }
 async function startCheck(index,preserveRound=false){
- stop();learning.abandon();state.focusTarget=null;state.screen='checkpoint';state.checkIndex=index;if(index===0&&!preserveRound)state.checkRound=checkpointRound(PUZZLES[state.sceneIndex].chapter);state.check=clone(state.checkRound[index]);state.objects=[clone(state.check.object)];state.selected=state.check.object.id;state.solved=false;state.spell=null;state.heard=false;state.help=false;state.attempt=0;learning.present(state.check);remember();render();sceneEntrance();await replay();
+ // 새 길: 코치를 기다리는 사이 다른 화면으로 갔으면(stop) 이 확인을 내지 않는다. abandon의 인수는 새 길만 읽는다 — 같은 장의 둘째 확인이면 판을 잇는다.
+ if(atlasNext){const token=state.token;await learningReady();if(token!==state.token)return;}
+ stop();learning.abandon(index>0);state.focusTarget=null;state.screen='checkpoint';state.checkIndex=index;if(index===0&&!preserveRound)state.checkRound=checkpointRound(PUZZLES[state.sceneIndex].chapter);state.check=clone(state.checkRound[index]);state.objects=[clone(state.check.object)];state.selected=state.check.object.id;state.solved=false;state.spell=null;state.heard=false;state.help=false;state.attempt=0;learning.present(state.check);remember();render();sceneEntrance();await replay();
 }
 async function replay(){
  if(state.preview||state.busy||state.screen==='recall'&&state.recallFinished)return;const id=['checkpoint','recall'].includes(state.screen)?state.check.spell:state.spell;if(!id)return;

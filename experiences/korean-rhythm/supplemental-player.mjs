@@ -54,8 +54,11 @@ export function missedSupplementalPool(coach,row){
  return [row,...supplementalItems({skillId:row.skillId,difficulty:row.difficulty}).filter(fresh)];
 }
 
-export function createSupplementalPanel({host,getCoach,getReturn=()=>null,onReturn=()=>{},audioFactory=()=>new Audio(),seed=()=>Date.now(),document:doc=globalThis.document}){
+// getDue: 며칠 뒤 다시 확인할 대화를 주는 길(Atlas 새 길 — 코치의 돌아온 단위 due()가 든 대화). null을 주면 옛 길(followups)이다.
+// beginSet: 연습 하나(보충 연습 · 며칠 뒤 다시 확인)의 첫 대화를 내기 바로 앞에서 낼 대화 목록으로 부른다(Atlas 새 길 — 정해진 판의 판 길이).
+export function createSupplementalPanel({host,getCoach,getReturn=()=>null,getDue=()=>null,beginSet=()=>{},onReturn=()=>{},audioFactory=()=>new Audio(),seed=()=>Date.now(),document:doc=globalThis.document}){
  let session=null,queue=[],index=0;
+ const delayed=coach=>getDue()??delayedSupplemental(coach);
  function close(){session?.close();session=null;queue=[];host?.replaceChildren();}
  // 연습을 끝내거나 닫아 패널 첫 화면으로 돌아올 때: 답·미응답 기록이 끝난 뒤 위쪽 안내를 다시 맞추게 알리고, 누른 단추가 사라졌으니 포커스를 패널 첫 단추로 옮긴다.
  function back(){show();onReturn();host?.querySelector?.('button')?.focus?.({preventScroll:true});}
@@ -68,14 +71,15 @@ export function createSupplementalPanel({host,getCoach,getReturn=()=>null,onRetu
   const missed=getReturn();
   if(missed?.target.item.kind==='supplemental')host.append(button('놓친 표현 바로 연습',()=>{const now=getReturn();if(now?.target.item.kind==='supplemental')start(missedSupplementalPool(getCoach(),now.target.item.row),3,{inOrder:true});else back();}));
   host.append(button('보충 연습',()=>start(supplementalItems())));
-  let due=[];try{due=delayedSupplemental(coach);}catch{/* unreadable history is not unseen */}
+  let due=[];try{due=delayed(coach);}catch{/* unreadable history is not unseen */}
   // Recheck at click time and consume only one reserve; the first answer may satisfy the due cell.
-  if(due.length)host.append(button('며칠 뒤 다시 확인',()=>{let fresh=[];try{fresh=delayedSupplemental(getCoach());}catch{}start(fresh,1);}));
+  if(due.length)host.append(button('며칠 뒤 다시 확인',()=>{let fresh=[];try{fresh=delayed(getCoach());}catch{}start(fresh,1);}));
   if(!coach)host.append(element('p','학습 기록을 연결하지 못했어요. 이번 답은 기록되지 않을 수 있어요.'));
  }
  function start(pool,limit=3,{inOrder=false}={}){
   queue=(inOrder?[...pool]:shuffled(pool,seed())).slice(0,limit);index=0;
   if(!queue.length){host.append(element('p','지금 확인할 수 있는 문항이 없어요.'));return;}
+  try{beginSet(queue);}catch{/* 판을 열지 못해도 연습은 잇는다 */}
   session=createSupplementalSession({coach:getCoach(),audio:audioFactory(),onChange:render});session.open(queue[index]);
  }
  function render(row){

@@ -186,6 +186,46 @@ test('the complete story leads to three new reading items and a separate review 
   assert.equal(game.phase, 'review');
 });
 
+test('missionsAhead counts the requests this round can still ask — the set length the Atlas new path passes', () => {
+  const ids = game => game.missionsAhead().map(m => m.id);
+  const story = [...EPISODE.acts.flatMap(act => act.missions), ...EPISODE.review].map(m => m.id);
+  const game = new StoryGame();
+  assert.deepEqual(ids(game), story, 'a fresh story asks 9 in scene order');
+  reachPlay(game);
+  assert.equal(game.missionsAhead().length, 9);
+  for (const mission of EPISODE.acts[0].missions) place(game, mission);
+  assert.equal(game.phase, 'outro');
+  assert.deepEqual(ids(game), story, 'the outro still counts its scene — undo reopens it');
+  while (game.phase === 'outro') game.advance();
+  assert.deepEqual(ids(game), story.slice(2));
+  const ending = finishStory(new StoryGame());
+  assert.deepEqual(ids(ending), EPISODE.review.map(m => m.id));
+  ending.startReview();
+  assert.equal(ending.missionsAhead().length, 3);
+  for (const mission of EPISODE.review) place(ending, mission);
+  assert.equal(ending.phase, 'complete');
+  assert.deepEqual(ids(ending), []);
+  // Assigned rounds are shorter: only the scenes holding the reading, and the review only when assigned.
+  const one = new StoryGame(); one.startPractice([EPISODE.acts[1].missions[1].id]);
+  assert.deepEqual(ids(one), EPISODE.acts[1].missions.map(m => m.id));
+  const apart = new StoryGame(); apart.startPractice([EPISODE.acts[0].missions[0].id, EPISODE.acts[2].missions[0].id]);
+  assert.deepEqual(ids(apart), [...EPISODE.acts[0].missions, ...EPISODE.acts[2].missions].map(m => m.id));
+  const withReview = new StoryGame(); withReview.startPractice([EPISODE.acts[1].missions[0].id, EPISODE.review[0].id]);
+  assert.deepEqual(ids(withReview), [...EPISODE.acts[1].missions, ...EPISODE.review].map(m => m.id));
+  const reviewOnly = new StoryGame(); reviewOnly.startPractice([EPISODE.review[2].id]);
+  assert.deepEqual(ids(reviewOnly), EPISODE.review.map(m => m.id));
+  // The count matches what the round really asks: walk the assigned round and collect each scene's requests.
+  const walk = new StoryGame(); walk.startPractice([EPISODE.acts[0].missions[1].id, EPISODE.acts[2].missions[1].id, EPISODE.review[1].id]);
+  const expected = ids(walk), asked = [];
+  while (walk.phase !== 'complete') {
+    if (['play', 'review'].includes(walk.phase)) {
+      asked.push(...walk.missions.map(m => m.id));
+      for (const mission of walk.missions) place(walk, mission);
+    } else walk.advance();
+  }
+  assert.deepEqual(asked, expected);
+});
+
 test('new review text rejects the memorized actor or location from the first scene', () => {
   const game = finishStory(new StoryGame());
   game.startReview();

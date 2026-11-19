@@ -9,6 +9,7 @@ import { rhythmItem, RHYTHM_CANDIDATES, assignmentTracks, assignmentTrack, rhyth
 import { rhythmSupport } from '../brand-opening/game-tutor-support.mjs';
 import { createSupplementalPanel } from './supplemental-player.mjs';
 import { josa } from './kit/josa.mjs';
+import { nextDoor, devFlag, ended } from './kit/atlas-next.mjs';
 
 const require = createRequire(import.meta.url), { createGame } = require('../../atlas/game-learning.js'), { createMap } = require('../../strata');
 const map = createMap(require('../../strata/maps/topik-i.json'));
@@ -21,7 +22,7 @@ async function mount(coach, storage) {
     addEventListener(name, fn) { this.listeners.set(name, fn); }, append(child) { this.children.push(child); }, replaceChildren(...children) { this.children = children; }, focus() {}, click() { return this.listeners.get('click')?.(); } });
   const get = id => { if (!elements.has(id)) elements.set(id, element()); return elements.get(id); };
   const document = { getElementById: get, createElement: element, querySelectorAll: () => [], addEventListener() {}, body: element() };
-  const context = { TRACKS, LEVELS, RoundState, rhythmItem, RHYTHM_CANDIDATES, missedRhythm, returnLine, assignmentTracks, assignmentTrack, rhythmTargetLabel, FLOW_RHYTHM, timingObservation, timingSummary, nextTrackLine, rhythmSupport, josa,
+  const context = { TRACKS, LEVELS, RoundState, rhythmItem, RHYTHM_CANDIDATES, missedRhythm, returnLine, assignmentTracks, assignmentTrack, rhythmTargetLabel, FLOW_RHYTHM, timingObservation, timingSummary, nextTrackLine, rhythmSupport, josa, nextDoor, devFlag, ended,
     createSupplementalPanel: options => createSupplementalPanel({ ...options, document }), recordTrialStarted() {}, document, localStorage: storage,
     MusicPlayer: class { stop() {} }, Stage: class { resize() {} }, SynkLearning: { createGame: () => coach }, SynkPlayAccount: { ready: async () => {} },
     matchMedia: () => ({ matches: false }), setTimeout: () => 1, clearTimeout() {}, addEventListener() {}, scrollTo() {}, cancelAnimationFrame() {}, confirm: () => true };

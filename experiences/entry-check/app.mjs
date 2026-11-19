@@ -7,9 +7,14 @@ import * as sound from './audio.mjs';
 import { fitText, preloadImages } from './kit/lab.mjs';
 import { josa } from './kit/josa.mjs';
 import { choiceId, choiceCorrection, immediateCheck, followUpResult } from './correction.mjs';
+import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 // WORLD 안(2026-11-04 캠퍼스 판): world-host.js가 붙인 data-host=world일 때만 원고 겉(world-content.mjs — 손님 · 근무지 · 날짜 글)과
 // 연출(world-play.mjs — 입장 부스 사진 · 소리 · 음악 · 움직임)을 불러온다. 판정 · 학습 기록 · 코인은 같은 객체를 id로 쓰므로 그대로다. LAB 화면은 그대로다.
 const WORLD = globalThis.document?.documentElement?.dataset?.host === 'world';
+// 새 길(Atlas 재설계 4-6d): WORLD 셸의 게임 문이나 로컬 개발 깃발이 있으면 셸이 코치를 준비하는 동안 WORLD 모듈 · 계정 준비를 함께 기다린다
+// (받는 곳은 아래 「아틀라스」). 문이 없으면 아무것도 하지 않는다.
+const atlasNext = !!(nextDoor(window) || devFlag(window));
+const nextOpening = atlasNext ? openNextPath() : null;
 if (WORLD) (await import('./world-content.mjs')).applyWorld({ VENUES, CAST, TUTORIAL });
 const worldPlay = WORLD ? (await import('./world-play.mjs')).createWorldPlay({ sound, CAST, view: () => structuredClone({ venue: state.venue, item: state.cur?.item || null, done: !!state.cur?.done, index: state.index, queue: state.queue.map((c) => c.who),
   results: state.results.map(({ caseId, who, choice, expected, correct }) => ({ caseId, who, choice, expected, correct })), combo: state.combo, memoShown: state.memoShown, itemRule: ITEM_RULE, docRule: DOC_RULE }) }) : null;
@@ -37,12 +42,27 @@ function saveProgress() { try { progressStorage.setItem(PROGRESS_KEY, JSON.strin
 const progress = loadProgress();
 
 /* ── 아틀라스: 같은 주소의 다른 SYNK 게임과 기록을 함께 쓴다 ── */
-let coach = null;
-try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { coach = null; }
+// 새 길(Atlas 재설계 4-6d — 단계4_계획 §23-7): 문 · 개발 깃발이 있으면 새 길 모듈(atlas-next-play.mjs)을 동적으로 불러 셸 창의 게임 코치를
+// 받는다. 셸이 지금 판이라고 하면(null) 옛 길로 연다. 문이 없으면 옛 코치를 지금처럼 이 자리에서 동기로 만든다.
+// shiftCoach: 새 길(근무 · 손님 고르기 · 한 손님 연습 · 추천 근무지). quiet: 문이 닫히는 중(RUN_ENDED) — 옛 길을 열지 않고 안내 없이 놀기만 한다.
+let coach = null, shiftCoach = null, quiet = false, reopening = null;
+function openOldCoach() {
+  try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { coach = null; }
+}
+function openNextPath() {
+  return import('./atlas-next-play.mjs').then((m) => m.openShiftCoach({ win: window })).then((opened) => ({ opened }), (error) => ({ error }));
+}
+/** 새 길을 연 결과를 받는다. 겉이면 새 길, null이면 옛 길, 거절이면 옛 길을 열지 않는다(새 길이 맡은 판 — 새 길 계정에 옛 동기가 켜지지 않게). */
+function takeNext({ opened = null, error = null }) {
+  shiftCoach = opened; coach = opened?.coach ?? null; quiet = !!error && ended(error);
+  if (error && !quiet) console.error(error);
+  if (!opened && !error) openOldCoach();
+}
+if (nextOpening) takeNext(await nextOpening); else openOldCoach();
 const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { return fn(coach); } catch { return fallback; } };
 const assignment=()=>atlas(c=>c.assignment?.());
-// SYNK WORLD 안에서는 계정의 기록이다. 이 브라우저가 아니라 WORLD 계정 설정에서 공유·삭제를 관리한다.
-const hosted = atlas((c) => typeof c.assignment === 'function', false);
+// SYNK WORLD 안에서는 계정의 기록이다. 이 브라우저가 아니라 WORLD 계정 설정에서 공유·삭제를 관리한다. 새 길은 기록 지우기를 쓰지 않는다.
+const hosted = atlasNext || atlas((c) => typeof c.assignment === 'function', false);
 const assignmentSeen=new Set();
 // The WORLD run this page was opened for has closed (the student opened another task, or it was finished):
 // nothing more is recorded, so the results screen says so instead of offering the next shift.
@@ -50,7 +70,10 @@ const runClosed=()=>{if(!coach||!hosted)return false;try{coach.assignment?.();re
 
 /* ── 상태 ── */
 const state = { venue: null, queue: [], index: 0, results: [], combo: 0, cur: null, memoShown: false, ranked: null, busy: false, shift: 0, guardUntil: 0,
-  flow: null, magnifierTimer: 0, flowLine: null, checkNotice: null };
+  flow: null, magnifierTimer: 0, flowLine: null, checkNotice: null, plan: null, ending: null };
+// 새 길의 근무(atlas-next-play.mjs): 정규 근무는 손님이 올 때마다 고르고(plan.at), 연수 · 한 손님 연습은 정해진 손님이다. 옛 길은 plan 없이 queue 그대로.
+/** 새 길의 근무를 기록 없이 닫는다(근무 끝 · 그만두기). 엔진이 하루 상한 등으로 고르지 않은 근무면 그 한 줄을 돌려준다. */
+function endPlan() { const plan = state.plan; state.plan = null; return plan ? plan.end() : null; }
 // 근무마다 번호를 올린다. 기다림(움직임·알림) 뒤에 번호가 바뀌었으면 그 근무는 끝난 것이라 이어 가지 않는다(나간 뒤 이전 근무가 뒤에서 진행되던 문제).
 const live = (token) => token === state.shift;
 // 덮개(안내·알림)를 닫은 직후의 두 번째 탭이 아래 도장 줄을 누르지 않게 잠깐 막는다.
@@ -98,23 +121,24 @@ const show = (id) => {
 function paintLobbyPlan() {
   const target=assignment(),targetVenues=assignmentVenues(target,[...assignmentSeen]);
   const ids = unlockedIds();
-  const rec = progress.plays === 0 ? null : atlas((c) => recommendVenue(c, ids));
-  const plan = target ? null : atlas((c) => shiftPlan(c, ids, progress));
+  // 새 길: 추천 근무지는 열린 근무지의 손님 가운데 엔진이 고른 손님이 있는 곳이고, 이유는 엔진의 한 줄이다(옛 맞춤 연습 안내는 쓰지 않는다).
+  const rec = progress.plays === 0 ? null : atlas((c) => (shiftCoach ? shiftCoach.venue(ids) : recommendVenue(c, ids)));
+  const plan = target || shiftCoach ? null : atlas((c) => shiftPlan(c, ids, progress));
   const venue = targetVenues[0] || venueById(plan?.target.venueId) || venueById(rec?.venueId) || VENUES.find((v) => ids.includes(v.id) && (progress.stars[v.id] || 0) < 3) || VENUES[0];
   $('#rec-day').textContent = `${venue.day}일차`;
   $('#rec-name').textContent = venue.name;
   $('#rec-reason').textContent = target ? (targetVenues.length?entryTargetLabel(target):'과제 손님을 불러오지 못했어요. WORLD에서 다시 열어 주세요.') : plan ? `${plan.why} ${plan.next}` : progress.plays === 0
     ? '처음이니까 제일 쉬운 하늘 수영장부터 해요. 안내문이 세 줄뿐이에요.'
-    : rec?.reason ? `${rec.reason} 이 연습에 맞는 손님이 제일 많은 곳이에요.` : '앞 근무지에서 별을 모아 다음 근무지를 열어요.';
+    : rec?.reason ? `${rec.reason} 이 연습에 맞는 손님이 제일 많은 곳이에요.` : rec?.line || '앞 근무지에서 별을 모아 다음 근무지를 열어요.';
   $('#rec-start').onclick = () => startShift(venue.id);
   $('#rec-start').disabled=!!target&&!targetVenues.length;
   // 근무 밖 한 손님 연습: 정규 근무 단추와 따로 둔다. 근무의 시간 순·규칙·코인·별은 그대로다.
-  const solo = target ? null : atlas((c) => soloGuestPlan(c, ids, progress));
+  const solo = target ? null : atlas((c) => (shiftCoach ? shiftCoach.canDrill(ids, progress) : soloGuestPlan(c, ids, progress)));
   $('#rec-practice').hidden = $('#rec-practice-note').hidden = !solo;
   $('#how-tutorial').hidden=!!target;
   const storage = atlas((c) => c.summary().storage);
   const warn = (/다른 탭/.test(storage?.warning || '') ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.' : storage?.warning)
-    || (storage?.available === false ? '학습 기록을 저장할 수 없어 기본 순서로 진행해요.' : null) || (!coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!progressSaved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
+    || (storage?.available === false ? '학습 기록을 저장할 수 없어 기본 순서로 진행해요.' : null) || (!coach && !quiet ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null) || (!progressSaved ? '이 브라우저에 진행을 저장할 수 없어요.' : null);
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
   return { target, targetVenues, venue };
 }
@@ -143,6 +167,12 @@ function renderLobby() {
 // 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다(모듈은 본문 끝 스크립트 뒤에 돈다).
 if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
 function startShift(venueId, { tutorial = !progress.tutorial, drill = null } = {}) {
+  // 새 길: 판을 다시 정해 겉이 닫혔으면(onRetired) 이 근무를 열 때 문을 다시 연다 — 새 겉이면 새 길, 지금 판이면 옛 길. 소리 열기는 누른 자리에서 먼저.
+  // 한 손님 연습은 손님만 넘긴다 — 앞 겉에서 고른 판(drill.plan)은 닫힌 겉에 묶여 있어 새 겉에서 다시 연다.
+  if (shiftCoach?.retired) {
+    if (!reopening) { sound.unlock(); reopening = openNextPath().then((result) => { reopening = null; takeNext(result); startShift(venueId, { tutorial, drill: shiftCoach && drill ? { ...drill, plan: null } : null }); }); }
+    return;
+  }
   sound.unlock(); sound.stopVoice();
   const v = venueById(venueId);
   const target=assignment(),targetCases=v&&target?assignmentCases(v.cases,target):null;
@@ -152,12 +182,16 @@ function startShift(venueId, { tutorial = !progress.tutorial, drill = null } = {
   if(drill)tutorial=false;
   $('#rec-drill-done').hidden=true;
   tut.on = tutorial && v.id === 'pool'; tut.i = 0; hideCoach();
-  state.ranked = progress.plays === 0 || tut.on || drill ? null : atlas((c) => rankCases(c, v.cases));
+  state.ranked = progress.plays === 0 || tut.on || drill || shiftCoach ? null : atlas((c) => rankCases(c, v.cases));
   // 재방문 맞춤 연습: 이 근무지의 새 손님이면 필요 순서 맨 앞에 두어 근무에 반드시 들어가게 한다(규칙·시각·알림 약속은 composeShift가 그대로 지킨다).
-  state.returnPlan = target || tut.on || drill ? null : atlas((c) => missedPractice(c, [v.id]));
+  state.returnPlan = target || tut.on || drill || shiftCoach ? null : atlas((c) => missedPractice(c, [v.id]));
   const shiftOrder = state.returnPlan ? [state.returnPlan.target.id, ...(state.ranked?.order || [])] : state.ranked?.order;
-  Object.assign(state, { venue: v, queue: targetCases || (drill ? [drill.item] : tut.on ? tutorialQueue(v) : composeShift(v, { ranked: shiftOrder, firstTime: !progress.tutorial })),
-    index: 0, results: [], combo: 0, cur: null, memoShown: false, busy: false, shift: state.shift + 1, targeted: !!target, drill: !!drill });
+  // 새 길의 근무: 정규 근무는 손님이 올 때마다 엔진이 고르고(보이는 줄은 그때마다 고친다), 연수는 정해진 손님 그대로 present만,
+  // 한 손님 연습은 누른 때 고른 그 손님이다.
+  endPlan();
+  state.plan = !shiftCoach ? null : drill ? (drill.plan ?? shiftCoach.fixed([drill.item])) : tut.on ? shiftCoach.fixed(tutorialQueue(v)) : shiftCoach.shift(v, { firstTime: !progress.tutorial });
+  Object.assign(state, { venue: v, queue: state.plan ? state.plan.queue : targetCases || (drill ? [drill.item] : tut.on ? tutorialQueue(v) : composeShift(v, { ranked: shiftOrder, firstTime: !progress.tutorial })),
+    index: 0, results: [], combo: 0, cur: null, memoShown: false, busy: false, shift: state.shift + 1, targeted: !!target, drill: !!drill, ending: null });
   // 공통 코인(play-common): 이 근무의 번호. 연수 근무는 안내를 따라 찍은 도장이라 받지 않는다. 코인은 학습 기록에 쓰지 않는다.
   state.coinRound = tut.on || drill ? null : (globalThis.SynkPlayCollection?.roundId('entry-check') || null);
   // 순간 맞춤: 돋보기가 스스로 나오는 때만 맞춘다(연수 근무는 정해진 대로).
@@ -166,11 +200,11 @@ function startShift(venueId, { tutorial = !progress.tutorial, drill = null } = {
   // 피곤한 날·오랜만인 날의 약속은 첫 손님 앞에서 한 줄로 알린다(지난번에 이어 가는 날은 말하지 않는다).
   state.flowLine = state.flow ? atlas(() => state.flow.intro().line?.text) || null : null;
   sound.preloadVoices([VOICE_ID.brief(v.id), VOICE_ID.memo(), ...(tut.on ? TUTORIAL.map((t) => VOICE_ID.tutorial(t.id)) : []),
-    ...state.queue.filter(c => !c.textOnly).flatMap((c) => [VOICE_ID.line(c.id), VOICE_ID.reply(c.id), VOICE_ID.oops(c.id), VOICE_ID.thanks(c.who), VOICE_ID.why(c.who)]),
+    ...(state.plan ? state.plan.pool : state.queue).filter(c => !c.textOnly).flatMap((c) => [VOICE_ID.line(c.id), VOICE_ID.reply(c.id), VOICE_ID.oops(c.id), VOICE_ID.thanks(c.who), VOICE_ID.why(c.who)]),
     ...[0, 1, 2, 3].map(VOICE_ID.result)]);
   // 앞 근무의 흔적 지우기(알림 창·판 높이 여백·동그라미·힌트·반응 스티커)
   $('#memo-alert').hidden = true; document.documentElement.style.removeProperty('--fb-room'); clearMarks(); $('#react').hidden = true;
-  for (const c of state.queue) { const im = new Image(); im.src = CAST[c.who].img; }
+  for (const c of state.plan ? state.plan.pool : state.queue) { const im = new Image(); im.src = CAST[c.who].img; }
   setScene(v);
   $('#g-day').textContent = `${v.day}일차`; $('#g-venue').textContent = v.name; $('#g-date').textContent = v.date;
   $('#notice-kind').textContent = v.notice.kind; $('#notice-title').textContent = v.notice.title;
@@ -190,7 +224,7 @@ function startShift(venueId, { tutorial = !progress.tutorial, drill = null } = {
   $('#brief-day').textContent = `${v.day}일차`;
   $('#brief-title').lastChild.textContent = ` ${v.name}`;
   $('#brief-text').textContent = v.briefing;
-  const why = target ? entryTargetLabel(target) : drill ? `${drill.why} 이 손님 한 명만 보고 근무지 고르는 화면으로 돌아와요.` : tut.on ? '첫 근무라서 연수부터 해요. 하는 방법을 하나씩 알려 줄게요.'
+  const why = target ? entryTargetLabel(target) : drill && drill.why == null ? '이 손님 한 명만 보고 근무지 고르는 화면으로 돌아와요.' : drill ? `${drill.why} 이 손님 한 명만 보고 근무지 고르는 화면으로 돌아와요.` : tut.on ? '첫 근무라서 연수부터 해요. 하는 방법을 하나씩 알려 줄게요.'
     : state.returnPlan ? `${state.returnPlan.why} ${state.returnPlan.next}`
     : state.ranked?.reason && progress.plays > 0 ? `오늘의 손님은 기록에 맞춰 골랐어요. ${state.ranked.reason}` : '';
   $('#brief-reason').hidden = !why; $('#brief-reason').textContent = why;
@@ -285,7 +319,10 @@ function renderShiftLog() {
 /* ── 손님 ── */
 async function nextGuest() {
   if (state.index >= state.queue.length) return finishShift();
-  const v = state.venue, item = state.queue[state.index], who = CAST[item.who], token = state.shift;
+  // 새 길은 이 손님을 지금 고른다(앞 손님의 도장을 본 뒤 — 보이는 줄도 그때 고친다). 고를 손님이 없으면 근무를 끝낸다.
+  const item = state.plan ? state.plan.at(state.index) : state.queue[state.index];
+  if (!item) return finishShift();
+  const v = state.venue, who = CAST[item.who], token = state.shift;
   state.cur = { item, pid: null, hint: 0, choosing: false, done: false, shownAt: 0, pausedMs: 0,
     checkLink: state.checkNotice?.id === item.id ? state.checkNotice : null };
   clearMarks();
@@ -325,6 +362,9 @@ async function nextGuest() {
     const line = [state.checkNotice?.id === item.id ? state.checkNotice.line : '', item.textOnly ? '이 손님은 목소리 없이 글로만 나와요.' : ''].filter(Boolean).join(' ');
     $('#dock-hint').hidden = false; $('#dock-hint').textContent += ` ${line}`; announce(line); state.checkNotice = null;
   }
+  // 새 길: 다시 만나는 단위면 엔진의 이유 한 줄(「방금 놓친 「…」, 다른 문제로 한 번 더 만나요.」)을 이 손님 앞에 보인다.
+  const why = state.plan?.line(state.index);
+  if (why) { $('#dock-hint').hidden = false; $('#dock-hint').textContent += ` ${why}`; announce(why); }
   scheduleMagnifier(token);
   $('#bubble').focus({ preventScroll: true });
   // 손님이 창문 앞에 선 뒤 말한다. 연수 단계가 있는 손님이면 대사 뒤에 안내 목소리가 이어진다.
@@ -473,10 +513,11 @@ async function decide(choice, e) {
   const out = state.flow ? atlas(() => state.flow.answer(cur.pid, payload, { latencyMs })) : null;
   const rec = out ? out.recorded : atlas((c) => c.answer(cur.pid, payload));
   if (out?.line) state.flowLine = out.line.text;
-  cur.recheck = followUpResult(coach, cur.checkLink, item, rec);
+  cur.recheck = shiftCoach ? null : followUpResult(coach, cur.checkLink, item, rec);
   state.results.push({ caseId: item.id, who: item.who, choice, expected: item.answer, correct: result.correct, skill: item.skill,
     hinted: cur.hint > 0, guided: !!cur.guided, independent: !!rec?.independent, recheck: cur.recheck });
-  if (!state.drill && !tut.on && !runClosed() && (!result.correct || cur.hint > 0 || cur.guided || rec?.assisted === true)) {
+  // 새 길은 즉시 확인 바꿔 넣기를 쓰지 않는다 — 놓친 단위는 엔진이 다음 손님을 고를 때 「다시」로 데려온다(§23-6).
+  if (!state.drill && !tut.on && !runClosed() && !shiftCoach && (!result.correct || cur.hint > 0 || cur.guided || rec?.assisted === true)) {
     // 안내가 약속한 재방문 맞춤 손님은 확인 손님 자리로 내주지 않는다(내줄 다른 자리가 없으면 확인 손님을 끼우지 않는다).
     cur.followup = immediateCheck({ venue: v, queue: state.queue, index: state.index, item, coach, assignment: assignment(), seenIds: [...assignmentSeen],
       keepIds: [state.returnPlan?.target?.id] });
@@ -614,6 +655,8 @@ function finishShift() {
   const flow = state.flow; state.flow = null;
   const offer = flow ? atlas(() => flow.offerLessHelp(), { offer: false }) : { offer: false };
   if (flow) atlas(() => flow.end());
+  // 새 길: 근무(판)를 기록 없이 닫는다(판 기록은 셸 몫). 엔진이 하루 상한 등으로 고르지 않았으면 그 한 줄이 다음 근무의 이유가 된다.
+  state.ending = endPlan();
   const before = unlockedIds();
   if(!state.targeted){
     progress.stars[v.id] = Math.max(progress.stars[v.id] || 0, score.stars);
@@ -676,6 +719,15 @@ function ruleText(v, c, id) {
 
 function renderSkills(score, focusId) {
   const ul = $('#r-skills'); ul.textContent = '';
+  // 새 길: 학습 항목마다 이번 근무에 맞힌 수만 쓴다(옛 요약 여섯 상태는 쓰지 않는다 — §23-6, 칸 줄은 리디자인에서).
+  if (shiftCoach) {
+    $('#skills-scope').textContent = '이번 근무의';
+    for (const id of Object.keys(SKILL_LABEL)) {
+      const shift = score.bySkill[id];
+      ul.append(el('li', '', `<b>${esc(SKILL_LABEL[id])}</b><em>${shift ? `이번 ${shift.correct}/${shift.total}` : '이번 0'}</em>`));
+    }
+    return;
+  }
   const report = atlas((c) => skillReport(c.summary()), []);
   const rows = report.length ? report : Object.keys(SKILL_LABEL).map((id) => ({ id, label: SKILL_LABEL[id], text: '기록을 쓸 수 없어요', tone: 'quiet' }));
   for (const s of rows) {
@@ -689,12 +741,13 @@ function renderSkills(score, focusId) {
 
 function renderNext(v) {
   const ids = unlockedIds();
-  const rec = atlas((c) => recommendVenue(c, ids));
+  const rec = atlas((c) => (shiftCoach ? shiftCoach.venue(ids) : recommendVenue(c, ids)));
   const goal=assignment();
-  const plan = goal ? null : atlas((c) => shiftPlan(c, ids, progress));
+  const plan = goal || shiftCoach ? null : atlas((c) => shiftPlan(c, ids, progress));
   const target = assignmentVenues(goal,[...assignmentSeen])[0] || venueById(plan?.target.venueId) || venueById(rec?.venueId) || VENUES.find((x) => ids.includes(x.id) && (progress.stars[x.id] || 0) < 3) || v;
   $('#r-next-name').textContent = `${target.day}일차 · ${target.name}`;
-  $('#r-next-reason').textContent = goal ? entryTargetLabel(goal) : plan ? `${plan.why} ‘추천 근무 시작’에 그런 손님이 와요.` : rec?.reason ? `${rec.reason}` : target.id === v.id ? '같은 근무지에서 새 손님을 만나요.' : '다음 근무지에서 새 안내문을 읽어요.';
+  // 새 길: 엔진이 이번 근무에서 그 까닭(하루 상한 · 끈질긴 단위의 몫)으로 고르지 않았으면 그 한 줄, 아니면 추천 근무지의 이유 한 줄(엔진이 고를 때만).
+  $('#r-next-reason').textContent = goal ? entryTargetLabel(goal) : plan ? `${plan.why} ‘추천 근무 시작’에 그런 손님이 와요.` : state.ending ? state.ending : rec?.reason ? `${rec.reason}` : rec?.line || (target.id === v.id ? '같은 근무지에서 새 손님을 만나요.' : '다음 근무지에서 새 안내문을 읽어요.');
   $('#r-next').onclick = () => startShift(target.id);
   $('#r-again').onclick = () => startShift(v.id);
   const closed = runClosed();
@@ -720,6 +773,7 @@ function leaveShift() {
   if (state.cur && !state.cur.done) atlas((c) => c.answer(state.cur.pid, { correct: null, assessable: false, reason: 'unanswered' }));
   // 이 근무를 끝낸다: 기다리던 움직임·알림이 돌아와도 이어 가지 않는다
   clearTimeout(state.magnifierTimer); if (state.flow) { atlas(() => state.flow.end()); state.flow = null; }
+  endPlan();   // 새 길: 그 답 뒤에 근무(판)를 기록 없이 닫는다
   state.shift += 1; state.busy = false; state.cur = null; state.drill = false; setOverlay(false);
   $('#briefing').hidden = true; $('#memo-alert').hidden = true; $('#feedback').hidden = true;
   document.documentElement.style.removeProperty('--fb-room');
@@ -730,6 +784,8 @@ $('#replay-tutorial').onclick = () => { $('#pause-dialog').close(); leaveShift()
 $('#how-tutorial').onclick = () => startShift('pool', { tutorial: true });
 // 입구를 그린 뒤 다른 탭에서 기록이 바뀌었을 수 있어 누른 때에 다시 판단한다.
 $('#rec-practice').onclick = () => {
+  // 새 길: 누른 때 그 손님을 고른다(엔진이 고르면 그 이유 한 줄이 근무 전 안내에 실린다).
+  if (shiftCoach) { const drill = atlas(() => shiftCoach.drill(unlockedIds(), progress)); if (drill) startShift(drill.venueId, { drill }); else renderLobby(); return; }
   const plan = assignment() ? null : atlas((c) => soloGuestPlan(c, unlockedIds(), progress));
   if (plan) startShift(plan.target.venueId, { drill: { item: plan.target.item, why: plan.why } }); else renderLobby();
 };

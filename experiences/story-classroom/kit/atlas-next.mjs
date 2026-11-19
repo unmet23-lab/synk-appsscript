@@ -80,6 +80,8 @@ async function soloCoach(win, { gameId, banks, label }) {
   const coach = SynkAtlas.coach({
     gameId,
     banks,
+    // 이유 줄이 낱말 이름을 말하려면 낱말 표가 든다 — 조각이 낱말 줄을 싣지 않는 큰 은행(레이싱)도(셸과 같다).
+    words: true,
     host: { guest: true, prefs: devicePrefs(win) },
     ...(label ? { label } : {}),
   });
@@ -139,18 +141,38 @@ export async function openNext({ win = globalThis.window, gameId, banks, label =
 }
 
 // 판 하나(§23-6 「판」). length가 정해진 판은 새것 한도를 4-1과 같은 3n으로 넘기고, 시간으로 끝나는 판은 set: {}(길이 모름)이다.
-// next(후보, 게임 차례): 엔진이 고르면 { item, why, engine: true }, none이면 게임 차례로 고른 것을 { item, why: null, engine: false }로 준다 —
-// 엔진의 none이 놀이를 멈추게 하지 않는다(설계 주인 11-19 밤). 게임 차례 문항에는 이유 줄이 없다. 게임 차례가 고를 것이 없으면 null.
+// options: 판 내내 recommend에 더할 옵션(예: pool).
+// next(후보, 게임 차례, more): 엔진이 고르면(ready, 또는 idle — 「다시」를 기다리는 사이의 채우기) { item, why, engine: true, idle },
+// none이면 게임 차례로 고른 것을 { item, why: null, engine: false }로 준다 — 엔진의 none이 놀이를 멈추게 하지 않는다(설계 주인 11-19 밤).
+// 게임 차례 문항에는 이유 줄이 없다. 게임 차례가 고를 것이 없으면 null. more는 이번 고르기에만 더하는 옵션(예: audio: false — 소리를 끈 사람).
+// open(): recommend 없이 present만 하는 판(정해진 차례)이 첫 제시 전에 부른다 — 코치 startSet({ length })으로 판 길이와 새것 한도(3n)를
+// 넘긴다(설계 주인 11-19 밤). 길이가 없는 판(시간으로 끝남)은 부르지 않는다. 열린 판이 있으면 코치가 새 판을 열지 않는다. 겉이 닫혔거나
+// 코치에 startSet이 없으면(혼자 뜨는 길이 실은 앞 판 입구) null — 판은 첫 제시가 기본 판으로 연다.
 // end(): 판 끝 · 그만두기 — 기록 없이 판을 닫는다(겉이 닫혔으면 조용히 지나간다).
-export function setPlay(coach, { length = null } = {}) {
+const PICKED = new Set(['ready', 'idle']);
+export function setPlay(coach, { length = null, options = {} } = {}) {
   const set = Number.isInteger(length) && length > 0 ? { length, newLimit: 3 * length } : {};
   return Object.freeze({
-    next(candidates, gameTurn) {
-      const result = coach.recommend(candidates, { set });
-      if (result?.status === 'ready' && result.selected)
-        return { item: result.selected, why: result.why ?? null, engine: true };
+    next(candidates, gameTurn, more = {}) {
+      const result = coach.recommend(candidates, { ...options, ...more, set });
+      if (PICKED.has(result?.status) && result.selected)
+        return {
+          item: result.selected,
+          why: result.why ?? null,
+          engine: true,
+          idle: result.status === 'idle',
+        };
       const item = typeof gameTurn === 'function' ? gameTurn(candidates) : null;
       return item ? { item, why: null, engine: false } : null;
+    },
+    open() {
+      if (!set.length || typeof coach.startSet !== 'function') return null;
+      try {
+        return coach.startSet({ length: set.length });
+      } catch (error) {
+        if (ended(error)) return null;
+        throw error;
+      }
     },
     end() {
       try {

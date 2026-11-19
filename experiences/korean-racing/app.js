@@ -39,6 +39,7 @@ import { wireGameLinks } from './links.js';
 import { bindSoundToggles } from './kit/lab.mjs';
 import { installQaHook } from './qa-hook.js';
 import { createRaceController, LANES } from './race-controller.js';
+import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 
 // Restore the verified account before reading progress or enabling play.
 await globalThis.SynkPlayAccount.ready();
@@ -48,12 +49,50 @@ const $ = (id) => document.getElementById(id);
 const QA = new URLSearchParams(location.search).has('qa');
 
 /* ── 아틀라스(공통 학습 기록)와 순간 맞춤 ── */
-let coach = null, learningAvailable = true;
+// 새 길(Atlas 재설계 4-6d — 단계4_계획 §23-7): WORLD 셸이 게임 문을 두었거나 로컬 개발 깃발이 있으면 새 길 모듈(atlas-next-play.mjs)을 불러
+// 셸 창의 게임 코치를 받는다. 받는 동안에도 입구 · 3D 준비는 그대로 가고 출발만 기다린다(learningOpening). 셸이 지금 판이라고 하면(null)
+// 옛 코치로 열고, 문이 닫히는 중이면(RUN_ENDED) 옛 길을 열지 않고 안내 없이 기록 없이 달린다. 문도 깃발도 없으면 옛 코치를 지금처럼 이
+// 자리에서 동기로 만든다.
+// nextRace: 새 길(코치 겉 · 맞춤 판 · 다시 열기). racePlan: 달리는 판(새 길만). learningQuiet: 문이 닫히는 중이라 기록 · 안내 없이 달린다.
+// nextFailed: 새 길을 열지 못했다 — 옛 길도 열지 않고 기록을 쓸 수 없다고만 알린다.
+let coach = null, learningAvailable = true, nextRace = null, racePlan = null, learningQuiet = false, nextFailed = false, learningOpening = null;
 let requestedModality = new URLSearchParams(location.search).get('learning');
 if (!['listening', 'reading'].includes(requestedModality)) requestedModality = null;
-try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-racing', storage: localStorage }) || null; } catch { learningAvailable = false; }
+function openOldCoach() {
+  try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-racing', storage: localStorage }) || null; } catch { learningAvailable = false; }
+}
+if (nextDoor(window) || devFlag(window)) learningOpening = openNextRace(); else openOldCoach();
+// 새 길을 연다(위 — 문 · 개발 깃발이 있을 때만). 새 길이 맡은 판이라 실패해도 옛 길을 열지 않는다(기록을 쓸 수 없다고만 알린다).
+async function openNextRace() {
+  try { nextRace = await (await import('./atlas-next-play.mjs')).openRace({ win: window }); }
+  catch (error) { nextRace = null; learningQuiet = ended(error); nextFailed = !learningQuiet; if (nextFailed) console.error(error); }
+  learningOpening = null;
+  if (nextRace) { coach = nextRace.coach; hosted = nextRace.hosted; }
+  else if (!learningQuiet && !nextFailed) { openOldCoach(); hosted = learn((c) => typeof c.assignment === 'function', false); watchStorage(); }
+  learningPathChanged(true);
+}
+// 판을 다시 정한 뒤의 다음 판(§23-2): 문을 다시 연다. 새 겉이면 그 겉으로, 지금 판(null)이면 옛 코치로, 닫혔으면 기록 없이 달린다.
+let reopening = null;
+function reopenRace() {
+  reopening ??= nextRace.reopen().then((how) => {
+    if (how === 'old') { nextRace = null; coach = null; openOldCoach(); hosted = learn((c) => typeof c.assignment === 'function', false); watchStorage(); }
+    else if (how === 'ended') { nextRace = null; coach = null; learningQuiet = true; }
+    learningPathChanged();
+  }).finally(() => { reopening = null; });
+  return reopening;
+}
+// 기록의 길이 정해졌거나 바뀌었다 — 기록 지우기 단추와 입구를 그 길로 다시 그린다. 처음 정해질 때(first) 3D가 먼저 준비됐으면 학습 허브가
+// 고른 맞춤 코스를 이제 준비한다(init이 기다리지 않고 지나갔다).
+function learningPathChanged(first = false) {
+  $('reset-learning').hidden = noReset();
+  if (first && ready && !starting && !round.running && currentScreen() === 'lobby') prepareRequestedCourse();
+  renderLobby();
+}
+// 이 화면의 기록 지우기 단추를 숨기나 — WORLD 계정 기록이거나, 새 길(지우기는 「나」의 연습 기록 비우기)이 이 화면을 맡았을 때(받는 중 · 기록 없이 · 열지 못함 포함).
+const noReset = () => hosted || !!nextRace || learningQuiet || nextFailed || !!learningOpening;
 function learn(action, fallback = null) { try { return coach ? action(coach) : fallback; } catch { learningAvailable = false; return fallback; } }
 function learningScope() {
+  if (learningQuiet || learningOpening) return '';   // 새 길: 문이 닫히는 중(기록 없이 달림) · 셸의 코치를 받는 중 — 안내하지 않는다
   const summary = learn((c) => c.summary());
   if (!coach || !learningAvailable) return '맞춤 기록을 연결하지 못했어요. 기본 코스는 계속 플레이할 수 있어요.';
   if (/다른 탭/.test(summary?.storage.warning || '')) return '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.';
@@ -71,7 +110,8 @@ function startLive() {
   try { return live?.intro().line?.text || null; } catch { return null; }
 }
 function endLive() { let end = null; try { end = live?.end() || null; } catch { /* 속도 기억은 편의 */ } live = null; return end; }
-function presentGate(q) { const item = racingItem(q); if (live) { try { return live.present(item); } catch { live = null; } } return learn((c) => c.present(item)); }
+// 새 길의 맞춤 판: 엔진이 다시 만나는 까닭(방금 놓침 · 흔들림 · 돌아옴)으로 고른 관문이면 그 이유 한 줄을 잠깐 보인다. 게임 차례 관문에는 없다.
+function presentGate(q) { const item = racingItem(q), why = racePlan?.line(q.id); if (why) round.laterToast = why; if (live) { try { return live.present(item); } catch { live = null; } } return learn((c) => c.present(item)); }
 // 답은 늘 Trail에 남고, 순간 맞춤 레이스면 같은 답이 속도와 단계도 움직인다.
 function answerGate(pid, response, flow) {
   if (live) {
@@ -85,16 +125,34 @@ function answerGate(pid, response, flow) {
   return learn((c) => c.answer(pid, response));
 }
 const racingAudio = () => !round.soundTouched || round.soundEnabled;
-function returnPlanNow() { return learn((c) => missedRacing(c, { audioAvailable: racingAudio(), modality: requestedModality })); }
-function nextPersonalized(lead = null) { return learn((c) => personalizedStage(c, { audioAvailable: racingAudio(), modality: requestedModality, live: flowOf(), lead: lead ?? missedRacing(c, { audioAvailable: racingAudio(), modality: requestedModality })?.target.item ?? null })); }
+// 새 길은 놓친 문제 바로 연습(로컬 복습)을 쓰지 않는다 — 다시 만날 문항은 맞춤 판의 엔진이 고른다.
+function returnPlanNow() { if (nextRace) return null; return learn((c) => missedRacing(c, { audioAvailable: racingAudio(), modality: requestedModality })); }
+// 새 길의 맞춤 판은 관문마다 그때 고른다 — 입구에서는 코스의 꼴만 짓고(문항 자리는 게임 순서) 엔진에 묻지 않는다.
+function nextPersonalized(lead = null) {
+  if (nextRace) return nextRace.personal({ progress: round.progress, modality: requestedModality });
+  return learn((c) => personalizedStage(c, { audioAvailable: racingAudio(), modality: requestedModality, live: flowOf(), lead: lead ?? missedRacing(c, { audioAvailable: racingAudio(), modality: requestedModality })?.target.item ?? null }));
+}
+// 새 길의 판. takePlan: 지금 판을 떼어 낸다 — 부른 쪽이 들은 문제를 응답 없음으로 닫은(reset) 뒤 end()로 기록 없이 닫는다.
+function takePlan() { const plan = racePlan; racePlan = null; return plan; }
+function beginPlan(stage, options = {}) {
+  takePlan()?.end();
+  racePlan = nextRace ? nextRace.begin(stage, { progress: round.progress, audio: () => racingAudio() && !round.narrationUnavailable, ...options }) : null;
+}
+// 관문을 세울 때(race-controller.js makeGate): 맞춤 판이면 그 자리의 문제를 그때 고르고 그 소리를 미리 받는다.
+function gateQuestion(index) {
+  const q = racePlan?.at(index);
+  if (!q || round.questionBank[index] === q) return;
+  round.questionBank[index] = q;
+  if (round.soundEnabled) void narrator.prepare(stageClips({ campaign: true, items: [q] }));
+}
 const assignment = () => learn((c) => c.assignment?.());
 // 듣기 목표인데 소리가 꺼져 있으면 문항이 없는 게 아니라 소리를 켜면 된다고 말한다.
 function targetUnavailable() {
   const target = assignment();
   return target?.modality === 'listening' && round.soundTouched && !round.soundEnabled ? '이번 목표는 듣기 문항이에요. 소리를 켜면 바로 시작할 수 있어요.' : '과제 문제를 불러오지 못했어요. WORLD에서 다시 열어 주세요.';
 }
-// SYNK WORLD 안에서는 기록이 계정의 것이다(이 브라우저가 아니라 WORLD에서 보관·삭제).
-const hosted = learn((c) => typeof c.assignment === 'function', false);
+// SYNK WORLD 안에서는 기록이 계정의 것이다(이 브라우저가 아니라 WORLD에서 보관·삭제). 새 길은 문을 거친 계정 코치일 때다(openNextRace).
+let hosted = learn((c) => typeof c.assignment === 'function', false);
 
 /* ── 상태 ── */
 let stage = $('world');          // 3D 캔버스가 들어 있는 상자(레이스 판 또는 차고 액자). 캔버스 크기는 이 상자를 따른다
@@ -202,7 +260,7 @@ const race = createRaceController({
     resetCamera(s) { if (rig) { rig.snapCamera(round); return; } camera.position.copy(roadPoint(s - (mobile ? 12.5 : 7.4), mobile ? -1.8 : 5.4, mobile ? 4.5 : 3.6)); camera.lookAt(roadPoint(s + (mobile ? 14 : 12), mobile ? 3.8 : 1.8, 1.2)); },
     wrapCamera(s, offset) { if (rig) { rig.snapCamera(round); return; } camera.position.copy(roadPoint(s - (mobile ? 8.8 : 9), offset * (mobile ? .92 : .62), mobile ? 3.35 : 3.6)); },
   },
-  learning: { learn, presentGate, answerGate, endLive, nextPersonalized, learningScope },
+  learning: { learn, presentGate, answerGate, endLive, nextPersonalized, learningScope, gateQuestion, followUps: () => !nextRace, endPlan: () => takePlan()?.end() },
   rewards: { account: () => globalThis.SynkPlayAccount, storage: progressStorage, loadGarage: loadGarageSafe, storeGarage, wishText },
   tutorial: { active: () => !!tutorial, chooseLane: chooseTutorialLane, tapLane: tutorialTapLane, render: renderTutorial, repeat: repeatTutorial, delivered: tutorialDelivered,
     clearVoice: () => { tutorialVoicePending = false; } },
@@ -326,7 +384,7 @@ function lobbyView() {
   return { ready, starting, pendingStart: !!pendingStart, load: loadState, stage: round.selectedStage, unlocked: assignment() ? true : isUnlocked(round.selectedStage),
     firstRun: !tutorialCompleted && !tutorialDismissed, target: assignment(), personal: nextPersonalized(), recommended: recommendedStage(round.progress),
     targetUnavailable: targetUnavailable(), progress: round.progress, garage: round.garage, garageSaved, mission: dailyMission(round.progress, Date.now(), round.garage),
-    driver: driverName, scope: learningScope(), hosted, isUnlocked, returnPlan: assignment() ? null : returnPlanNow() };
+    driver: driverName, scope: learningScope(), hosted: noReset(), isUnlocked, returnPlan: assignment() ? null : returnPlanNow() };
 }
 function renderLobby() { lobby.render(lobbyView()); paintResetNotice(); rideLobby?.afterLobby(); }
 // 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다. 입구가 이 칸의 바탕 글을 다시 써도 안내는 다음 판을 시작할 때까지 남고, 화면 읽기는 #sr-live로 듣는다.
@@ -368,12 +426,15 @@ function selectStage(s) {
   if (assignment()) { const plan = nextPersonalized(); if (!plan) { lobbyNote(targetUnavailable()); return; } s = plan.stage; }
   if (starting) return;
   if (garageOpen) garageUI.close();
+  const plan = takePlan();   // 새 길: 판을 떼어 두고, 아래 reset이 들은 문제를 응답 없음으로 닫은 뒤 기록 없이 닫는다
   returnLead = null; clearTutorial(); round.selectedStage = s; round.questionBank = makeQuestions(s); round.running = false; round.auto = false; silence(); endLive();
   if (ready) { setScenery(s.scene || 'coast'); reset(false); }
+  plan?.end();
   renderLobby();
 }
 function startJourney(lead = null) {
   if (starting) return;
+  if (learningOpening) { void learningOpening.then(() => startJourney(lead)); return; }   // 새 길: 셸의 게임 코치를 받은 뒤에 고른다
   const personal = nextPersonalized(lead);
   if (requestedModality && !personal) { lobbyNote('맞춤 문항을 준비하지 못했어요. 소리 설정과 연결 상태를 확인해 주세요.'); return; }
   requestedModality = null; lobby.useCollection('campaign');
@@ -525,8 +586,7 @@ async function init() {
     });
     mark('readyMs'); startup.phase = 'ready';
     ready = true; loadState = 'ready';
-    // 학습 허브의 ‘읽기부터’(또는 ‘듣기’)로 열면 첫 듣기 코스가 아니라 그 맞춤 코스를 준비한다.
-    if (requestedModality && !assignment()) { const plan = nextPersonalized(); if (plan?.stage) selectStage(plan.stage); }
+    prepareRequestedCourse();
     window.addEventListener('resize', onResize);
     resizeObserver = new ResizeObserver(onResize); resizeObserver.observe(stage);
     renderer.setAnimationLoop(frame);
@@ -538,6 +598,11 @@ async function init() {
     ready = false; loadState = 'failed'; pendingStart = null; startup.phase = 'failed'; console.error(error); window.__racingError = String(error);
     renderLobby(); garageUI.setReady(false);
   } finally { draco?.dispose(); terrainBuild?.cancel(); }
+}
+// 학습 허브의 ‘읽기부터’(또는 ‘듣기’)로 열면 첫 듣기 코스가 아니라 그 맞춤 코스를 준비한다. 새 길을 받는 중이면 받은 뒤에(learningPathChanged).
+function prepareRequestedCourse() {
+  if (learningOpening) return;
+  if (requestedModality && !assignment()) { const plan = nextPersonalized(); if (plan?.stage) selectStage(plan.stage); }
 }
 function runPendingStart() {
   const queued = pendingStart; pendingStart = null;
@@ -663,13 +728,14 @@ function repeatTutorial() {
   else if (step === 'boost-ready') tutorialSpeak([track.words.tutorialBoost], worldHost ? '정답을 맞히면 자전거가 저절로 빨라져. 질주해 보자!' : '정답을 맞히면 차가 저절로 빨라져. 부스터로 달려 보자!');
 }
 async function startTutorial() {
+  if (learningOpening) await learningOpening;   // 새 길: 셸의 게임 코치를 받는 중이면 기다린다
   if (!ready || starting) return;
   if (garageOpen) garageUI.close();
   clearResetNotice(); clearTutorial(); starting = true; round.running = false; silence(); round.narrationUnavailable = false; renderLobby();
   if (!round.soundTouched) { round.soundEnabled = true; updateSoundButton(); }
   if (round.soundEnabled) { try { await ensureAudio(); await narrator.prepare(TUTORIAL_CLIPS); } catch { round.narrationUnavailable = true; } }
   showRace();
-  round.auto = false; round.roundWasDemo = true; reset(true); disposeGate(); tutorialBank = round.questionBank;
+  round.auto = false; round.roundWasDemo = true; beginPlan(null, { tutorial: true }); reset(true); disposeGate(); tutorialBank = round.questionBank;
   const [apple, grape, banana] = tutorialFruits;
   round.questionBank = [{ answer: apple.id, word: apple.word, mode: 'picture', prompt: '사과의 그림을 찾아요', spoken: '사과', options: [apple.id, grape.id, banana.id] }];
   tutorial = createTutorial({ answerId: apple.id }); tutorialIdle = 0; tutorialGoHint = false; tutorialSaved = true;
@@ -753,6 +819,9 @@ function updateTutorial(dt) {
 
 /* ── 한 판 시작 ── */
 async function start(demo = false, bypassTutorial = false) {
+  // 새 길: 셸의 게임 코치를 받는 중이면 받을 때까지 기다리고(입구 · 3D 준비는 막지 않았다), 판을 다시 정해 겉이 닫혔으면 이 판에서 문을 다시 연다.
+  if (learningOpening) await learningOpening;
+  if (nextRace?.retired) await reopenRace();
   if (assignment()) {
     if (demo) { lobbyNote('이번 목표는 직접 응답하며 연습해요.'); return; }
     const plan = nextPersonalized();
@@ -776,6 +845,8 @@ async function start(demo = false, bypassTutorial = false) {
   if (!round.soundTouched) { round.soundEnabled = true; updateSoundButton(); }
   if (round.soundEnabled) { try { await ensureAudio(); await narrator.prepare([...commonClips, ...stageClips(round.selectedStage)]); } catch { round.narrationUnavailable = true; } }
   round.auto = demo; round.roundWasDemo = demo; round.questionBank = makeQuestions(round.selectedStage); starting = false;
+  // 새 길의 판: 맞춤 판은 관문마다 고르고(첫 관문은 아래 reset에서), 그 밖의 코스 · 시연은 정해진 차례 그대로 present만 한다.
+  beginPlan(round.selectedStage, { demo });
   // 재방문 맞춤 연습: 고른 코스에 그 문항이 있으면 첫 문제로 당긴다. 코스·판 크기·기록은 그대로다.
   const missedId = demo || assignment() ? null : returnLead ?? returnPlanNow()?.target.id, missedAt = missedId ? round.questionBank.findIndex((q) => q.id === missedId) : -1;
   returnLead = null;
@@ -821,8 +892,10 @@ function ding(success) {
 /* ── 처음으로 ── */
 // 레이스를 접는다(입구·차고로 갈 때). 들은 문제는 응답 없음으로 닫힌다(disposeGate).
 function leaveRace() {
+  const plan = takePlan();   // 새 길: 판을 떼어 두고, 아래 reset이 들은 문제를 응답 없음으로 닫은 뒤 기록 없이 닫는다
   round.running = false; round.auto = false; pendingStart = null; silence(); endLive(); clearTutorial();
   if (ready) reset(false);
+  plan?.end();
   closeDialog($('pause-dialog'));
 }
 function home() { leaveRace(); showLobby(); }
@@ -986,8 +1059,9 @@ $('tutorial-skip').addEventListener('click', () => { if (!tutorial) return; tuto
 $('tutorial-race').addEventListener('click', continueAfterTutorial);
 $('tutorial-home').addEventListener('click', home);
 $('next-stage').addEventListener('click', () => { const next = nextStage(); if (next) { const demo = round.roundWasDemo; selectStage(next); start(demo); } });
-$('reset-learning').hidden = hosted;
+$('reset-learning').hidden = noReset();
 $('reset-learning').addEventListener('click', () => {
+  if (nextRace || learningQuiet || nextFailed || learningOpening) return;   // 새 길에는 이 화면의 기록 지우기가 없다(「나」의 연습 기록 비우기)
   if (!coach) { showResetNotice('unavailable'); return; }
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 코스 진행과 차고는 그대로 남아요.')) return;
   // 엔진이 저장 가능한 상태로 돌아왔고 공유 원장이 실제로 비었을 때만 지웠다고 말한다. 계정 기록 거절과 다른 탭 대기는 학습 실패가 아니다.
@@ -1096,13 +1170,17 @@ function refreshStorageText() {
   else lobby.renderReturn(lobbyView());
 }
 let storagePaint = false;
-try {
-  coach?.syncPort?.subscribe?.((event) => {
-    if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
-    storagePaint = true;
-    Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
-  });
-} catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
+// 옛 코치의 저장 알림(새 길에는 없다). 문이 있어 기다린 뒤 셸이 지금 판이라고 해 옛 코치를 늦게 만들면 그때 건다.
+function watchStorage() {
+  try {
+    coach?.syncPort?.subscribe?.((event) => {
+      if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
+      storagePaint = true;
+      Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
+    });
+  } catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
+}
+watchStorage();
 renderLobby();
 if (new URLSearchParams(location.search).get('garage') === '1') openGarage();
 init();

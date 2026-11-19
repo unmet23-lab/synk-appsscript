@@ -32,6 +32,8 @@ export { COACH_METHODS } from './methods.mjs';
 
 const DAY_MS = 86_400_000;
 const SET_KINDS = ['short', 'diagnostic', 'mock'];
+// 판 길이 하나에 새것 셋 — startSet의 새것 한도(4-1 world-practice-next.mjs의 newPerItem · 키트 setPlay와 같은 규칙).
+const NEW_PER_ITEM = 3;
 const HELD_CODES = new Set([REASON_CODES.capped, REASON_CODES.stubborn]);
 const fail = (code, message) =>
   Object.assign(new Error(`Atlas coach: ${message} (${EDITION})`), { code });
@@ -690,6 +692,17 @@ export function createCoach(options = {}) {
       const { families, setOf } = state.host.trail.meetRows();
       const bySkill = Object.freeze(firstAnswersOf(families.values(), setOf, { game, since }));
       return Object.freeze({ game, days, since, bySkill });
+    },
+
+    // 판을 연다(단계 4 계획 §23-6 · 설계 주인 11-19 밤). recommend 없이 present만 하는 판(정해진 차례 — 이야기 교실 · 낱말 마법 · 찰칵 ·
+    // 하루 도전 등)이 판 길이를 코치에 넘긴다. 새것 한도는 recommend 길(키트 setPlay · 4-1 world-practice-next.mjs)과 같은 3n이다. 이
+    // 코치의 판이 이미 열려 있으면 새 판을 열지 않는다(opened: false) — 앞서 낸 제시가 지워지지 않게. 내는 것은 { opened, setId }(얼림).
+    startSet({ length } = {}) {
+      const session = live();
+      if (!Number.isInteger(length) || length < 1)
+        throw new TypeError('Atlas coach: startSet의 length는 1 이상의 정수다');
+      const opened = session.start({ length, newLimit: NEW_PER_ITEM * length });
+      return Object.freeze({ opened, setId: session.setId });
     },
 
     // 판을 닫는다. record: false면 판 단위 결정 · 마침 사건 없이 닫기만 한다(판 기록을 두지 않는 제품 길 — WORLD 손님).

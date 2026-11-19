@@ -10,6 +10,7 @@ import { josa } from './kit/josa.mjs';
 import { rhythmItem, FLOW_RHYTHM, timingObservation, timingSummary, assignmentTracks, assignmentTrack, rhythmTargetLabel, nextTrackLine, RHYTHM_CANDIDATES, missedRhythm, returnLine } from './personalization.mjs';
 import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
 import {createSupplementalPanel} from './supplemental-player.mjs';
+import { nextDoor, devFlag, ended } from './kit/atlas-next.mjs';
 
 let gameTutor=null;
 const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
@@ -40,15 +41,28 @@ if (WORLD) import('../brand-opening/world-sound.mjs').then((m) => { worldSound =
 const worldPlayModule = WORLD ? await import('./world-play.mjs').catch(() => null) : null;
 
 /* ── 공통 학습 기록(Atlas) ── */
-let coach = null, learningAvailable = true;
-try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-rhythm', storage: localStorage, followups:true }) || null; } catch { learningAvailable = false; }
-const returnPlan=()=>learningAvailable?missedRhythm(coach,{songsOnly:TRIAL}):null;
-const supplementalPanel=createSupplementalPanel({host:$('supplemental-practice'),getCoach:()=>learningAvailable?coach:null,getReturn:returnPlan,onReturn:()=>paintNextReason()});
-const supplementalLobby=createSupplementalPanel({host:$('supplemental-ready'),getCoach:()=>learningAvailable?coach:null,getReturn:returnPlan,onReturn:()=>renderRecommendation(!trackChosen)});
+// 새 길(Atlas 재설계 4-6d — 단계4_계획 §23-7): WORLD 셸이 게임 문을 두었거나 로컬 개발 깃발이 있으면 새 길 모듈(atlas-next-play.mjs)을 불러
+// 셸 창의 게임 코치를 받는다. 셸이 지금 판이라고 하면(null) 옛 길로 연다. 문이 없으면 옛 코치를 지금처럼 이 자리에서 동기로 만든다.
+// 받는 동안 곡 고르기와 단추는 먼저 서고, 추천과 기록 안내는 받은 뒤 그린다(맨 아래). 곡은 받은 뒤에 첫 문장을 낸다(start가 소리와 함께 기다린다).
+// nextPlay: 새 길(곡 고르기 · 문장 변형 · 판 · 며칠 뒤 다시 확인). quiet: 문이 닫히는 중(RUN_ENDED) — 옛 길을 열지 않고 안내 없이 논다.
+let coach = null, learningAvailable = true, nextPlay = null, nextOpening = null, quiet = false;
+function openOldCoach() { try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-rhythm', storage: localStorage, followups:true }) || null; } catch { learningAvailable = false; } }
+function openNextCoach() {
+  return import('./atlas-next-play.mjs').then((m) => m.openRhythm({ win: window }))
+    // 새 길이 맡은 판이라 RUN_ENDED가 아닌 실패에도 옛 길을 열지 않는다 — 기록을 연결하지 못했다고만 안내한다.
+    .then((opened) => { nextPlay = opened; if (opened) coach = opened.coach; else openOldCoach(); }, (error) => { nextPlay = null; coach = null; quiet = ended(error); })
+    .finally(() => { nextOpening = null; });
+}
+const atlasNext = !!(nextDoor(window) || devFlag(window));
+if (atlasNext) nextOpening = openNextCoach(); else openOldCoach();
+// 새 길은 옛 재방문 맞춤(놓친 표현 바로 연습 · 맞춤 첫 관문)을 쓰지 않는다. 며칠 뒤 다시 확인은 코치의 돌아온 단위(due)가 든 대화다.
+const returnPlan=()=>learningAvailable&&!nextPlay?missedRhythm(coach,{songsOnly:TRIAL}):null;
+const supplementalPanel=createSupplementalPanel({host:$('supplemental-practice'),getCoach:()=>learningAvailable?coach:null,getReturn:returnPlan,getDue:()=>nextPlay?.dueItems()??null,beginSet:(queue)=>nextPlay?.fixed(queue),onReturn:()=>paintNextReason()});
+const supplementalLobby=createSupplementalPanel({host:$('supplemental-ready'),getCoach:()=>learningAvailable?coach:null,getReturn:returnPlan,getDue:()=>nextPlay?.dueItems()??null,beginSet:(queue)=>nextPlay?.fixed(queue),onReturn:()=>renderRecommendation(!trackChosen)});
 function learn(action, fallback = null) { try { return coach ? action(coach) : fallback; } catch { learningAvailable = false; return fallback; } }
 const assignment = () => learn((c) => c.assignment?.());
-// SYNK WORLD 안에서는 기록이 계정의 것이다: 지우기도 거기서 한다.
-const hosted = learn((c) => typeof c.assignment === 'function', false);
+// SYNK WORLD 안에서는 기록이 계정의 것이다: 지우기도 거기서 한다. 새 길도 기록 지우기를 쓰지 않는다(셸 · 「나」의 일).
+const hosted = atlasNext || learn((c) => typeof c.assignment === 'function', false);
 
 /* ── 판정 폭 맞춤(Atlas 순간 맞춤): 고른 난이도 안에서 판정 폭만 이 사람에게 맞춘다 ── */
 const TIMING_KEY = 'synk.korean-rhythm.timing-mode';
@@ -149,6 +163,7 @@ function paintResetNotice(clicked = false) {
 function showResetNotice(kind) { resetNotice = kind; paintResetNotice(true); }
 function clearResetNotice() { resetNotice = null; paintResetNotice(); }
 function learningScopeText() {
+  if (quiet || nextOpening) return '';   // 새 길: 문이 닫히는 중이거나 셸 창의 코치를 받는 중 — 안내하지 않는다
   const summary = learn((c) => c.summary());
   return !coach || !learningAvailable ? '학습 기록을 연결하지 못했어요.'
     : /다른 탭/.test(summary?.storage?.warning || '') ? '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.'
@@ -157,6 +172,7 @@ function learningScopeText() {
 }
 /** 내 기록에 맞는 다음 곡(Atlas). 지정 과제가 있으면 그 곡만 고를 수 있다. */
 function renderRecommendation(select = false) {
+  if (nextPlay || nextOpening || quiet) return renderNextRecommendation(select);
   const target = assignment(), candidates = assignmentTracks(target);
   const recommendation = learn((c) => c.recommend(candidates, { audioAvailable: true }));
   const plan = target ? null : returnPlan();
@@ -171,6 +187,19 @@ function renderRecommendation(select = false) {
   $('learning-scope').textContent = learningScopeText(); paintResetNotice();
   $('reset-learning').hidden = hosted;
   return { candidate, reason: plan ? returnLine(plan) : recommendation?.reason || null };
+}
+/** 새 길(§23-7): 추천 곡은 곡 문항 전체 가운데 코치가 고른 문항이 든 곡이고, 이유는 코치의 한 줄(why.line)이다. 코치가 고르지 않으면(none) 곡을
+ *  그대로 두고 이유를 지어내지 않는다 — 엔진이 그 까닭으로 멈췄을 때(하루 상한 · 끈질긴 말의 몫)만 그 한 줄(held)을 쓴다. 받는 중에는 비워 둔다. */
+function renderNextRecommendation(select) {
+  const picked = nextPlay?.song() ?? null, candidate = picked?.trackId == null ? null : RHYTHM_CANDIDATES[picked.trackId];
+  for (const x of $('track-grid').children) x.classList.toggle('rec', !!candidate && Number(x.dataset.track) === candidate.trackId);
+  if (candidate && select) selectTrack(candidate.trackId);
+  const mine = trackChosen && candidate && state.track !== candidate.trackId ? TRACKS[state.track].title : null;
+  $('recommendation-reason').textContent = !candidate ? picked?.held || ''
+    : `${mine === null ? '' : `직접 고른 ‘${mine}’${josa(mine, '으로', '로')} 시작해요. 추천 곡은 ‘${candidate.label}’${josa(candidate.label, '이에요', '예요')}. `}${picked.line || ''}`.trim();
+  $('learning-scope').textContent = learningScopeText(); paintResetNotice();
+  $('reset-learning').hidden = hosted;
+  return { candidate, reason: candidate ? picked.line || null : null, held: picked?.held || null };
 }
 function selectLevel(level) {
   if (!LEVELS[level]) return;
@@ -223,20 +252,25 @@ async function start() {
   const generation = ++startGeneration;
   $('start-button').disabled = true; $('replay-button').disabled = true;
   worldPlay?.starting();
+  // 새 길: 판을 다시 정해 겉이 닫혔으면(onRetired) 이 곡을 열 때 문을 다시 연다 — 새 겉이면 새 길, 지금 판이면 옛 길. 소리 길은 누른 그 순간에
+  // 먼저 열고, 코치는 곡을 받는 동안 함께 기다린다(그사이 지은 보면의 문장 변형은 게임 차례다).
+  if (nextPlay?.retired && !nextOpening) { nextPlay = null; coach = null; nextOpening = openNextCoach(); }
+  const opening = nextOpening;
   try {
     if (!window.AudioContext) throw new Error('이 브라우저는 음악 재생을 지원하지 않아요. 최신 Chrome 또는 Edge에서 열어 주세요.');
     const target = assignment(), track = assignmentTrack(TRACKS[state.track], target);
     if (!track) throw new Error('과제 문항이 있는 곡을 준비하지 못했어요. WORLD에서 다시 열어 주세요.');
     // 재방문 맞춤 연습의 곡이면 그 문항이 첫 관문이다. 다른 곡을 직접 골랐으면 그 곡 그대로다(과제에서는 맞춤이 없다).
     const missed = target ? null : returnPlan(), lead = missed?.target.item.kind === 'song' && missed.target.item.trackId === track.id ? missed.target.item.sourceIndex : null;
-    const round = new RoundState(track, state.level, crypto.getRandomValues(new Uint32Array(1))[0], { lead });
+    // 새 길: 문장마다 주장 변형 둘 가운데 코치가 고른 변형으로 보면을 짓는다(문장 소리 길이가 관문 자리를 정해 곡을 열 때 한 번에 고른다).
+    const round = new RoundState(nextPlay ? nextPlay.variants(track) : track, state.level, crypto.getRandomValues(new Uint32Array(1))[0], { lead });
     const loading = music.prepare(track, round.questions);   // 소리 길은 누른 그 순간에 연다(휴대폰 자동 재생 규칙)
     state.round = round; state.pressed.clear(); state.paused = false;
     resetQuestion(); resetHud(round);
     show('game');
     tip(wt('노래와 문장을 준비하고 있어요…', '노래와 문장을 준비하고 있어요'));
     stage.ready.then(() => { if (state.loading && state.round === round) stage.draw(round, -99, state.pressed, 0); });
-    const [buffer] = await Promise.all([loading, stage.ready]);
+    const [buffer] = await Promise.all(opening ? [loading, stage.ready, opening] : [loading, stage.ready]);
     if (generation !== startGeneration) return;
     collectionRoundId = globalThis.SynkPlayCollection?.roundId('rhythm') || null;
     stage.reset(); startTiming(); tip(null); setMongle('smile');
@@ -492,6 +526,7 @@ async function resume() {
 function leave() {
   startGeneration += 1;
   music.stop(); cancelAnimationFrame(raf);
+  nextPlay?.end();   // 새 길: 그만두면 이 곡의 판을 기록 없이 닫는다
   state.pressed.clear(); state.paused = false; state.round = null;
   if ($('pause-dialog').open) $('pause-dialog').close();
   tip(null); resetQuestion(); worldPlay?.leave();
@@ -503,6 +538,7 @@ function leave() {
 function finish() {
   const r = state.round;
   for (const event of r.update(r.duration + 3, new Set())) eventEffect(event);
+  nextPlay?.end();   // 새 길: 곡 하나가 판 하나 — 마지막 답 뒤에 기록 없이 닫는다(판 기록은 셸 몫)
   music.stop(); cancelAnimationFrame(raf);
   state.pressed.clear(); state.paused = false;
   resetQuestion(); tip(null);
@@ -541,7 +577,7 @@ function paintNextReason() {
   const next = renderRecommendation();
   $('r-next-reason').textContent = next.candidate
     ? nextTrackLine(next.candidate.label, next.reason)
-    : '다음에는 다른 곡이나 박자 난이도로 들어 봐요.';
+    : next.held || '다음에는 다른 곡이나 박자 난이도로 들어 봐요.';
 }
 
 function renderLog(r) {
@@ -573,8 +609,13 @@ function renderSkills(r) {
   live = null;
   $('result-timing').textContent = timingEnd === null ? '' : timingAuto() ? timingSummary(timingStart, timingEnd) : '정해진 판정 폭으로 연주했어요.';
   $('result-timing').hidden = !$('result-timing').textContent;
-  const independent = r.questions.filter((q) => q.learning?.independent).length;
-  $('result-learning-note').textContent = `도움을 받거나 다시 들은 답을 빼고, 새로 답한 ${independent}개를 맞춤 추천에 참고해요. 이 곡으로 읽기 실력을 판단하지는 않아요.`;
+  const note = () => {
+    const independent = r.questions.filter((q) => q.learning?.independent).length;
+    $('result-learning-note').textContent = `도움을 받거나 다시 들은 답을 빼고, 새로 답한 ${independent}개를 맞춤 추천에 참고해요. 이 곡으로 읽기 실력을 판단하지는 않아요.`;
+  };
+  note();
+  // 새 길: 혼자 처음 맞혔나는 답이 저장된 뒤에 선다 — 판 끝에서 기다렸다가 다시 쓴다(§23-6).
+  nextPlay?.settled(r.questions.map((q) => q.learning)).then(() => { if (state.round === r) note(); });
 }
 /** 결과에서 문장 소리를 튼다. 다른 소리로 끊기면 끝까지 들은 것으로 치지 않는다. */
 async function playReview(voice) {
@@ -588,7 +629,12 @@ async function recall() {
   if (state.recallIndex >= questions.length) { $('recall-feedback').textContent = '준비한 문장을 다 들었어요. 다음 곡에서 또 만나요.'; $('recall-button').hidden = true; return; }
   const source = questions[state.recallIndex], q = source.recall;
   if (source.recallPresentationId) learn((c) => c.help(source.recallPresentationId, 'replay'));
-  else source.recallPresentationId = learn((c) => c.present(rhythmItem(state.round.track.id, source, { recall: true })));
+  else {
+    // 새 길: 새 문장 확인은 게임 차례로 제시만 하는 판 하나다 — 첫 제시 앞에서 앞 판을 닫고 판 길이(남은 확인 문장 수)를 코치에 넘긴다.
+    // 이 판이 돌고 있으면 그대로 잇고, 보충 연습이 끼어 닫혔으면 남은 문장으로 다시 연다.
+    nextPlay?.fixed(questions.slice(state.recallIndex).map((x) => rhythmItem(state.round.track.id, x, { recall: true })), questions);
+    source.recallPresentationId = learn((c) => c.present(rhythmItem(state.round.track.id, source, { recall: true })));
+  }
   const presentationId = source.recallPresentationId;
   $('recall-content').hidden = false; $('recall-intro').hidden = true;
   $('recall-sentence').textContent = ''; $('recall-question').textContent = '먼저 들어요';
@@ -835,6 +881,9 @@ function refreshStorageText() {
   if (state.screen === 'lobby') { renderRecommendation(!trackChosen); if (!TRIAL) supplementalLobby.refresh(); }
   else if (state.screen === 'results') { paintNextReason(); if (!TRIAL) supplementalPanel.refresh(); }
 }
+// 새 길: 셸 창의 코치를 받는 동안 곡 고르기는 먼저 그리고(추천 · 기록 안내 없이 — 코치를 부르지 않는다), 받은 뒤 아래에서 추천과 기록 안내를
+// 그린다. 받는 사이 곡을 시작했으면 입구는 돌아올 때 그린다. 꺼진 판은 지금 차례 그대로다.
+if (nextOpening) { renderTracks(); renderRecommendation(true); syncSettings(); await nextOpening; }
 let storagePaint = false;
 try {
   coach?.syncPort?.subscribe?.((event) => {
@@ -843,8 +892,10 @@ try {
     Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
   });
 } catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
-renderTracks(); renderRecommendation(true); syncSettings();
-if(!TRIAL)supplementalLobby.show();
+if (state.screen === 'lobby') {
+  renderTracks(); renderRecommendation(true); syncSettings();
+  if(!TRIAL)supplementalLobby.show();
+}
 
 // 확인용 읽기 창(예전 확인 도구와 같은 모양). 입력은 실제 키·단추로만 한다.
 window.synkRhythm = {

@@ -25,6 +25,10 @@ function fakeCoach() {
       calls.push(['answer', pid, result]);
       return { verdict: result.correct ? 'correct' : 'incorrect' };
     },
+    startSet(options) {
+      calls.push(['startSet', options]);
+      return { opened: true, setId: 's-1' };
+    },
     finishSet(options) {
       calls.push(['finishSet', options]);
     },
@@ -161,6 +165,26 @@ test('인수는 셸 창의 사본으로 옮기고, 옮기지 못하는 인수는
   assert.throws(() => facade.present({ itemKey: 'a', onPick() {} }), { code: 'DOOR_ARGUMENT' });
 });
 
+test('판 열기 startSet도 겉으로 넘기고(인수는 사본), 키트 setPlay.open()은 판 길이가 있을 때만 부른다 — 닫힌 겉이면 null', async () => {
+  const entry = fakeEntry();
+  const door = createGameDoor({ entry, gameId: 'story-classroom' });
+  const facade = await door.api.open({ gameId: 'story-classroom', banks: ['story-classroom'] });
+  assert.equal(typeof facade.startSet, 'function');
+  const set = setPlay(facade, { length: 9 });
+  assert.deepEqual(set.open(), { opened: true, setId: 's-1' });
+  assert.deepEqual(
+    entry.coach.calls.filter(([name]) => name === 'startSet'),
+    [['startSet', { length: 9 }]],
+  );
+  assert.equal(setPlay(facade).open(), null, '길이를 모르는 판은 startSet을 부르지 않는다');
+  assert.equal(entry.coach.calls.filter(([name]) => name === 'startSet').length, 1);
+  door.dispose();
+  assert.throws(() => facade.startSet({ length: 9 }), { code: 'RUN_ENDED' });
+  assert.equal(set.open(), null);
+  const { startSet, ...older } = fakeCoach();
+  assert.equal(setPlay(older, { length: 3 }).open(), null, 'startSet이 없는 앞 판 입구의 코치');
+});
+
 test('떠나는 틀의 마지막 답이 겉 닫기보다 먼저 들어간다 — 닫기는 셸 창의 다음 차례(Fable 5.2 다시 검토 F1)', async () => {
   const entry = fakeEntry();
   const clock = tasks();
@@ -194,6 +218,18 @@ test('키트 — 문의 겉으로 열고, 고른 후보를 게임이 넘긴 원�
   assert.equal(listeners[0][0], 'pagehide', '틀이 떠날 때 셸에 알린다');
   const set = setPlay(next, { length: 8 });
   assert.equal(set.next(plain).item, plain[0]);
+  // idle(「다시」를 기다리는 사이의 채우기)도 엔진이 고른 문항이다 — 게임 차례로 넘기지 않는다(4-6d 환승 · 랠리 보고).
+  const idleCoach = { recommend: candidates => ({ status: 'idle', selected: candidates[1], why: { code: 'idle' } }) };
+  assert.deepEqual(setPlay(idleCoach).next(plain, () => assert.fail('게임 차례가 아니다')), {
+    item: plain[1],
+    why: { code: 'idle' },
+    engine: true,
+    idle: true,
+  });
+  // 이번 고르기에만 더하는 옵션(소리를 끈 사람)과 판 옵션이 함께 간다.
+  const seen = [];
+  setPlay({ recommend: (_c, o) => (seen.push(o), { status: 'none' }) }, { options: { pool: 'unseen' } }).next(plain, () => null, { audio: false });
+  assert.deepEqual(seen[0], { pool: 'unseen', audio: false, set: {} });
   const none = set.next([], () => ({ itemKey: 'game-turn' }));
   assert.deepEqual(none, { item: { itemKey: 'game-turn' }, why: null, engine: false }, 'none이어도 게임 차례로 이어 간다');
   assert.deepEqual(entry.coach.calls.find(([name]) => name === 'recommend')[2], { set: { length: 8 } });
@@ -221,8 +257,9 @@ test('키트 — 문이 없고 개발 깃발도 없으면 null(옛 길), 옛 답
 
 test('셸의 내용 기억 열쇠 앞마디는 엔진의 것과 같고, 읽개는 옛 기기 열쇠를 그 하루 안에서만 읽는다', async () => {
   const { FLOW_MEMORY_PREFIX, gamePrefs } = await import('../world-atlas-game.mjs');
-  // 엔진 packages/atlas/src/coach/flow-memory.mjs의 FLOW_MEMORY_PREFIX와 같은 값(4-6b가 들어오면 그 모듈과 직접 견준다).
-  assert.equal(FLOW_MEMORY_PREFIX, 'synk.atlas.next.flow.');
+  // 입구의 앞 판 쓸기가 지우는 열쇠는 엔진 내용 기억의 열쇠와 같아야 한다.
+  const engine = await import('../../../packages/atlas/src/coach/flow-memory.mjs');
+  assert.equal(FLOW_MEMORY_PREFIX, engine.FLOW_MEMORY_PREFIX);
   const map = new Map([
     ['synk.atlas.learning.v1.device.today', JSON.stringify({ day: '2026-11-19', condition: 'tired' })],
     ['synk.atlas.learning.v1.device.flow', JSON.stringify({ v: 1, contents: { a: {} }, declined: {} })],

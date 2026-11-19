@@ -10,10 +10,11 @@ import { KeyboardInput, KEY_ACTIONS } from './controls.mjs';
 import { InstructionAudio } from './audio.mjs';
 import { instructionMetadata, chooseInstruction, actionEvidence, FLOW_RUN, TIRED_RUN, FLOW_WORDS, paceOf, runObservation } from './learning.mjs';
 import { mountListeningCheck } from './listening-check-ui.mjs';
-import { missedCheck } from './listening-check.mjs';
+import { missedCheck, createListeningCheckRound } from './listening-check.mjs';
 import { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD, runReason } from './report.mjs?v=runner-next-way-20261104';
 import { drawHeroRoad } from './hero.mjs';
 import { preloadImages } from './kit/lab.mjs';
+import { devFlag, ended, nextDoor } from './kit/atlas-next.mjs';
 import {runnerSupport,obstacleSupport,runnerCheckSupport} from '../brand-opening/game-tutor-support.mjs';
 
 let gameTutor=null;
@@ -51,10 +52,32 @@ let best = Number(stored('best', '0')) || 0;
 
 /* ── 아틀라스: 다음 부탁 고르기 · 기록 · 순간 맞춤(달리기 속도만) ── */
 let coach = null, learningFailed = false, nextPlan = null;
-try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-runner', storage: localStorage }) || null; } catch { learningFailed = true; }
+// 새 길(Atlas 재설계 4-6d — 단계4_계획 §23-7): WORLD 셸이 게임 문을 두었거나 로컬 개발 깃발이 있으면 새 길 모듈(atlas-next-play.mjs)을
+// 불러 셸 창의 게임 코치를 받는다(아래 setupWorld 뒤 — 그리기 고리와 WORLD 문구를 막지 않는다). 셸이 지금 판이라고 하면(null) 옛 길로 연다.
+// 문이 없으면 옛 코치를 지금처럼 이 자리에서 동기로 만든다.
+// runner: 새 길(달리기 판 · 게임 차례 · 듣기 확인 판 · 순간 맞춤의 제시 번호). quiet: 문이 닫히는 중(RUN_ENDED) — 옛 길을 열지 않고 안내 없이 놀기만 한다.
+let runner = null, quiet = false, reopening = null;
+const atlasNext = !!(nextDoor(window) || devFlag(window));
+function openOldCoach() {
+  try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-runner', storage: localStorage }) || null; } catch { learningFailed = true; }
+}
+async function openNextCoach() {
+  let opened = null;
+  try { opened = await (await import('./atlas-next-play.mjs')).openRunner({ win: window }); }
+  catch (error) { runner = null; coach = null; quiet = ended(error); return; }   // 새 길이 맡은 판이라 실패해도 옛 길을 열지 않는다
+  quiet = false; runner = opened;
+  if (runner) coach = runner.coach; else { openOldCoach(); showReasons(); }
+}
+// 판을 다시 정해 겉이 닫혔으면(onRetired · RUN_ENDED) 다음 판(달리기 · 듣기 확인)을 열 때 문을 다시 연다 — 새 길이면 새 겉, 지금 판이면 옛 길.
+// 여는 동안 다시 눌러도 한 번만 연다.
+function reopenNext() {
+  if (!runner?.stale) return null;
+  return (reopening ??= openNextCoach().finally(() => { reopening = null; }));
+}
+// 새 길이 숨긴 이유 줄을 옛 길로 돌아올 때 다시 보인다(판을 다시 정한 뒤 셸이 지금 판이라고 한 때).
+function showReasons() { for (const id of ['l-reason', 'r-next-reason']) byId(id).hidden = false; }
+if (!atlasNext) openOldCoach();
 function learn(method, ...args) { try { return coach?.[method](...args); } catch { learningFailed = true; return null; } }
-// WORLD 안에서는 기록이 계정의 것이다: 지우기·보관은 WORLD에서 한다.
-const hosted = (() => { try { return typeof coach?.assignment === 'function'; } catch { return false; } })();
 // 재방문 맞춤 연습: 듣기 확인에서 놓친 능력을 이번 달리기 첫 부탁으로 한 번 먼저 듣는다. 달리기는 근거가 아니라 입구에서 약속하지 않는다.
 let runLeadSkill = null;
 function selectInstruction(items) {
@@ -64,7 +87,8 @@ function selectInstruction(items) {
   try { const plan = chooseInstruction(coach, same.length ? same : items); if (plan?.selected) { nextPlan = plan; return plan.selected; } } catch { learningFailed = true; }
   return items[0];
 }
-function refreshRecommendation() { if (coach) selectInstruction(INSTRUCTIONS); }
+// 새 길은 달리기 부탁을 엔진에 묻지 않는다(게임 차례 — atlas-next-play.mjs run).
+function refreshRecommendation() { if (coach && !runner) selectInstruction(INSTRUCTIONS); }
 const learningBroken = () => { const s = learn('summary'); return !coach || learningFailed || s?.storage?.available === false; };
 // 다른 탭이 기록을 쓰는 동안은 고장이 아니라 대기다. 그 탭이 닫히면 storage-ready로 넘겨받는다.
 const learningWaiting = () => !learningFailed && /다른 탭/.test(learn('summary')?.storage?.warning || '');
@@ -83,9 +107,13 @@ function startLive() {
 }
 function followPace(notice) {
   const observation = live && runObservation(notice); if (!observation) return;
-  try { const out = live.observe(observation); if (out.change) { model.tune(paceOf(out.settings.values)); if (out.line) tip(out.line.text, 2400); } } catch { live = null; }
+  // 새 길은 부탁의 결과를 그 부탁의 제시 번호와 함께 넘긴다 — 한 제시가 순간 맞춤을 한 번만 움직인다(부탁 밖의 장애물은 제시 없이).
+  try { const out = runner ? runner.observe(live, observation, notice.mission?.presentationId) : live.observe(observation); if (out.change) { model.tune(paceOf(out.settings.values)); if (out.line) tip(out.line.text, 2400); } } catch { live = null; }
 }
 function endLive() { try { live?.end(); } catch { /* 이어 달리기 기억은 편의 */ } live = null; }
+// 새 길의 달리기 판(atlas-next-play.mjs run): 판 끝 · 그만두기에 기록 없이 닫는다. 옛 길은 판이 없다.
+let runPlay = null;
+function endRun() { const play = runPlay; runPlay = null; play?.end(); }
 
 /* ── 소리: 미리 만든 MP3 목소리(InstructionAudio) + 작은 효과음·배경 가락(사운드킷 규칙: 사인·트라이앵글, 400ms 이하, C 펜타토닉, 실패음 없음) ── */
 let audio = null, master = null, voiceGain = null, voiceBank = null, sound = true, previewRevision = 0;
@@ -147,6 +175,8 @@ function closeDialogs() { for (const d of dialogs) if (byId(d).open) byId(d).clo
 
 /* ── 입구 ── */
 function paintLobbyReason() {
+  // 새 길: 달리기 부탁은 게임 차례라 엔진의 이유가 없다 — 이유를 지어내지 않고 줄을 숨긴다(듣기 확인의 이유는 그 판 안에서 문항마다).
+  if (runner || quiet) { byId('l-reason').hidden = true; byId('l-reason').textContent = ''; byId('listening-check').textContent = '듣기 확인 3문제'; return; }
   const assignment = (() => { try { return coach?.assignment?.() || null; } catch { return null; } })();   // WORLD 안의 선생님 과제
   byId('l-reason').textContent = `${reasonText()}${assignment ? ' 선생님이 정한 ‘듣기 확인’이 있어요.' : ''}`;
   const need = assignment?.requiredAttempts;
@@ -197,16 +227,19 @@ async function start() {
   keyboard.reset(); cancelVoice(); setSound(true); closeDialogs(); document.activeElement?.blur?.();   // 초점이 단추에 남으면 Space(점프)가 그 단추를 누른다
   show('game'); resetRunUI(); world?.clear(); tip(wt('바람을 부르고 있어요…', '길을 준비하고 있어요'), 0, { silent: true });
   try {
-    const [, voices] = await Promise.all([ensureWorld(), ensureVoices()]);
+    // 새 길: 겉이 닫혔으면(판을 다시 정함) 이 판에서 문을 다시 연다 — 소리 준비는 누른 자리에서 먼저 시작한다.
+    const [, voices] = await Promise.all([ensureWorld(), ensureVoices(), reopenNext()]);
     if (!voices) { starting = false; tip(null); audioFault(() => start()); return; }
   } catch {
     starting = false; renderLobby();
     byId('storage-note').hidden = false; byId('storage-note').textContent = '이 브라우저에서는 3D 화면을 띄울 수 없어요. 크롬·엣지·사파리 최신판으로 열어 주세요.';
     return;
   }
-  endLive();
-  runLeadSkill = missedCheck(coach)?.target.meta.skillId ?? null;
-  model = new RunnerModel({ mode: 'tour', learning: 'listen', chooseInstruction: coach ? selectInstruction : null, pace: startLive() || undefined });
+  endLive(); endRun();
+  // 새 길의 달리기 판: 부탁은 엔진에 묻지 않고 게임 차례로 낸다(놓친 듣기 확인을 첫 부탁으로 당기는 옛 재방문 연습도 쓰지 않는다).
+  runPlay = runner ? runner.run() : null;
+  runLeadSkill = runner ? null : missedCheck(coach)?.target.meta.skillId ?? null;
+  model = new RunnerModel({ mode: 'tour', learning: 'listen', chooseInstruction: runPlay ? runPlay.instruction : coach ? selectInstruction : null, pace: startLive() || undefined });
   // 공통 코인(play-common): 이 판의 번호. 90초를 끝까지 달린 판만 받는다(그만두거나 부딪혀 멈추면 받지 않는다). 코인은 학습 기록에 쓰지 않는다.
   collectionRoundId = globalThis.SynkPlayCollection?.roundId('runner') || null;
   resolvedSeen = 0; shields = 0; pendingInstruction = null; ending = false; paused = false; running = true; musicClock = 0; musicStep = 0;
@@ -431,7 +464,7 @@ async function resume() {
   } catch { audioFault(resume); } finally { resuming = false; }
 }
 function home() {
-  closeUnanswered(); endLive();
+  closeUnanswered(); endRun(); endLive();
   running = false; paused = false; ending = false; model = null; pendingInstruction = null;
   keyboard.reset(); cancelVoice(); closeDialogs(); tip(null); sayHide(); world?.clear();
   renderLobby();
@@ -446,7 +479,7 @@ byId('audio-dialog').addEventListener('cancel', (e) => e.preventDefault());
 
 /* ── 끝: 90초를 다 달렸거나(도착) 보호를 다 써서 멈췄다 ── */
 function finish() {
-  updateHud(); closeUnanswered(); endLive(); keyboard.reset(); cancelVoice(); clearTimeout(sayTimer); sayHide(); tip(null);
+  updateHud(); closeUnanswered(); endRun(); endLive(); keyboard.reset(); cancelVoice(); clearTimeout(sayTimer); sayHide(); tip(null);
   ending = true; refreshRecommendation();
   const completed = model.reason === 'tour', distance = Math.floor(model.distance), newBest = distance > best;
   if (newBest) { best = distance; store('best', best); }
@@ -502,6 +535,8 @@ function renderResults({ completed, distance, newBest, quiet = false }) {
 // Listening checks can add evidence after this run ended. Refresh only the
 // learning report and next plan; the run's score, replay list and award stay put.
 function renderResultLearning(s) {
+  // 새 길의 판 끝: 이번 달리기의 숫자만 그린다(옛 요약 여섯 상태 · 다음 달리기 이유는 쓰지 않는다 — 달리기는 게임 차례다).
+  if (runner || quiet) { renderRunSkills(s); byId('r-next-reason').textContent = ''; byId('r-next-reason').hidden = true; return; }
   renderSkills(s);
   byId('r-next-reason').textContent = learningWaiting() ? '학습 기록을 기다리는 중이에요. 연결되면 이번 기록도 다음 달리기에 반영해요.'
     : learningBroken() ? '학습 기록을 저장할 수 없어서 다음에도 기본 부탁으로 달려요.'
@@ -515,6 +550,16 @@ function renderSkills(s) {
     const mine = s.bySkill[r.id] || { heard: 0, done: 0 };
     const li = document.createElement('li'); li.className = r.tone === 'focus' ? 'focus' : r.tone === 'good' ? 'good' : '';
     li.innerHTML = `<b>${esc(r.label)}</b><em>${mine.heard ? `이번 ${mine.done}/${mine.heard}` : "이번 없음"}</em><span>${esc(r.text)}${r.n ? ` · 듣기 확인 ${r.n}개 중 ${r.correct}개 맞힘` : ''}</span>`;
+    ul.append(li);
+  }
+}
+/** 새 길: 듣기 항목마다 이번 달리기에서 해낸 수만 쓴다(칸 줄은 리디자인에서). */
+function renderRunSkills(s) {
+  const ul = byId('r-skills'); ul.textContent = '';
+  for (const [id, label] of Object.entries(SKILL_LABEL)) {
+    const mine = s.bySkill[id] || { heard: 0, done: 0 };
+    const li = document.createElement('li');
+    li.innerHTML = `<b>${esc(label)}</b><em>${mine.heard ? `이번 ${mine.done}/${mine.heard}` : '이번 없음'}</em>`;
     ul.append(li);
   }
 }
@@ -639,6 +684,11 @@ function worldArrive(completed) {
   ws.play(first ? 'reward' : 'done'); ws.haptic?.('done');
 }
 if (WORLD) setupWorld();
+// 새 길: 문(또는 개발 깃발)이 있으면 셸이 게임 코치를 여는 동안 여기서 기다린다 — 그리기 고리와 WORLD 문구는 이미 섰고, 단추 · 듣기 확인 ·
+// 입구 글은 연 뒤에 잇는다.
+if (atlasNext) await openNextCoach();
+// WORLD 안에서는 기록이 계정의 것이다: 지우기·보관은 WORLD에서 한다. 새 길은 기록 지우기를 쓰지 않는다.
+const hosted = atlasNext || (() => { try { return typeof coach?.assignment === 'function'; } catch { return false; } })();
 
 byId('restart').addEventListener('click', () => { cancelVoice(); start(); });
 byId('result-home').addEventListener('click', () => { cancelVoice(); home(); });
@@ -736,7 +786,8 @@ function closeListeningCheck() {
   } else if (screen === 'lobby') { refreshRecommendation(); paintLobbyReason(); }   // 답·취소·소리 실패가 기록에 닫힌 뒤(listening-check-ui close)의 실제 다음 판으로 다시 쓴다
   tutorEvent('lobby');
 }
-const listeningCheck = mountListeningCheck({ coach, chooseLead: () => missedCheck(coach)?.target.item ?? null, beforeOpen: () => { if (running && !model?.finished) return false; cancelVoice(); return true; },onListen:()=>tutorEvent('listening'),onFeedback:(correct,detail)=>tutorEvent(correct?'success':'retry',{answer:true,support:!correct&&detail?runnerCheckSupport(detail.item,detail.choice,detail.feedback):[]}),onClose:closeListeningCheck });
+// 새 길: 코치는 그때그때의 것(판을 다시 정해 옛 길로 돌아가도), 판은 문항마다 recommend하는 3문항 판(runner.checks), 겉이 닫혔으면 열기 전에 문을 다시 연다.
+const listeningCheck = mountListeningCheck({ coach: () => coach, chooseLead: () => (runner ? null : missedCheck(coach)?.target.item ?? null), createRound: (current, options) => (runner ? runner.checks() : createListeningCheckRound(current, options)), prepare: reopenNext, beforeOpen: () => { if (running && !model?.finished) return false; cancelVoice(); return true; },onListen:()=>tutorEvent('listening'),onFeedback:(correct,detail)=>tutorEvent(correct?'success':'retry',{answer:true,support:!correct&&detail?runnerCheckSupport(detail.item,detail.choice,detail.feedback):[]}),onClose:closeListeningCheck });
 
 let resizeT = 0;
 window.addEventListener('resize', () => { cancelGesture(); clearTimeout(resizeT); resizeT = setTimeout(() => { if (screen === 'lobby') drawHeroRoad(byId('hero-road')); placeTip(); }, 140); });

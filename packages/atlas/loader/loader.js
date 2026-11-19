@@ -34,6 +34,7 @@
     'excludeResponse',
     'responses',
     'untell',
+    'startSet',
   ];
   const TIMEOUT_MS = 20000;
   const scope = globalThis;

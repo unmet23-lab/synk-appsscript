@@ -62,13 +62,28 @@ export class StoryGame {
 
   /** In an assigned round, the next scene that holds an assigned request (2026-10-03): scenes and
    * the closing review without one are passed by, so the round is only the assigned reading. */
-  _nextPracticeAct() {
+  _nextPracticeAct(from = this.actIndex) {
     const ids = new Set(this.practice);
-    return EPISODE.acts.findIndex((act, index) => index > this.actIndex && act.missions.some(m => ids.has(m.id)));
+    return EPISODE.acts.findIndex((act, index) => index > from && act.missions.some(m => ids.has(m.id)));
   }
   _practiceReview() { return EPISODE.review.some(m => this.practice.includes(m.id)); }
   /** Whether the closing review comes after the ending (not in an assigned round without review requests). */
   get reviewAhead() { return !this.practice || this._practiceReview(); }
+
+  /** The requests this round can still ask from here, in scene order: the current scene's (also from its outro, where undo
+   * reopens it), each later scene the round visits, then the closing review when it comes. A fresh story is 9; an assigned
+   * round is only its scenes. The Atlas new path passes the count as the set length (2026-11-20). */
+  missionsAhead() {
+    if (this.phase === 'complete') return [];
+    if (this.phase === 'review') return [...EPISODE.review];
+    const missions = [];
+    if (this.phase !== 'ending') {
+      for (let index = this.actIndex; index >= 0 && index < EPISODE.acts.length; index = this.practice ? this._nextPracticeAct(index) : index + 1)
+        missions.push(...EPISODE.acts[index].missions);
+    }
+    if (this.reviewAhead) missions.push(...EPISODE.review);
+    return missions;
+  }
 
   advance() {
     if (['play', 'review', 'complete'].includes(this.phase)) return false;

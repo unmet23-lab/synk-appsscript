@@ -34,4 +34,5 @@ export const COACH_METHODS = Object.freeze([
   'excludeResponse', // 판 응답을 빼는 문 — 판 응답(feedback.given)만 받는다(단계 4 계획 §22-5)
   'responses', // 판 응답 목록 — 「내가 남긴 응답」 · 짧은 연습 길이(단계 4 계획 §22-5)
   'untell', // 본인 말 되돌리기 — { event, stored }, 본인 말 사건만 받는다(단계 4 계획 §22-6 · 4-5 끝 판 GPT GB4)
+  'startSet', // 판 열기 — recommend 없이 present만 하는 판의 길이(단계 4 계획 §23-6 · 설계 주인 11-19 밤)
 ]);

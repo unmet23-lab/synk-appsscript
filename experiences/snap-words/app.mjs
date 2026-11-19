@@ -10,6 +10,7 @@ import { M, motionOn, spatial, effect, wait, finished, flyTo, rollTo, mmss } fro
 import { STR } from './strings.mjs';
 import { GAME_ID, createLearning } from './learning.mjs';
 import { josa } from './kit/josa.mjs';
+import { devFlag, nextDoor } from './kit/atlas-next.mjs';
 
 const query = new URLSearchParams(location.search);
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -38,7 +39,13 @@ if (!albumStore.existed && grade >= 3) album.notices = true;
 const rng = query.has('seed') ? makeRng(Number(query.get('seed'))) : Math.random;
 
 // ── 학습 기록 ─ 같은 주소의 다른 SYNK 게임과 함께 쓴다(WORLD 안에서는 계정의 기록) ───────────────
-const learn = createLearning(() => window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }));
+// 새 길(Atlas 재설계 4-6d — 단계4_계획 §23-7): WORLD 셸의 게임 문(또는 로컬 개발 깃발)이 있을 때만 새 길 모듈을 동적으로 싣는다. 셸이 코치를
+// 준비하는 동안에도 입구는 그린다 — 판을 시작할 때(startPlace) 기다린다. 문의 open이 null이면(지금 판) 옛 길, 거절하면(RUN_ENDED) 옛 길을
+// 열지 않고 기록 없이 논다(atlas-next-play.mjs openLearning). 문이 없으면 옛 코치를 지금처럼 이 자리에서 동기로 만든다.
+const oldLearning = () => createLearning(() => window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }));
+const atlasNext = Boolean(nextDoor(window) || devFlag(window));
+let learn = atlasNext ? createLearning(() => null) : oldLearning();
+let learnReady = atlasNext ? import('./atlas-next-play.mjs').then((m) => m.openLearning({ win: window, old: oldLearning })).catch((error) => { console.error(error); return createLearning(() => null); }).then((made) => { learn = made; }) : null;
 
 // ── 소리 ─────────────────────────────────────────────────────────
 const prefs = (() => { try { return { sfx: 1, amb: 1, voice: 1, ...JSON.parse(localStorage.getItem('synk.snap-words.sound') || '{}') }; } catch { return { sfx: 1, amb: 1, voice: 1 }; } })();
@@ -311,6 +318,9 @@ async function irisClose(node) {
 async function startPlace(placeId, { daily = false } = {}) {
   if (S.busy) return; S.busy = true;
   audioReady(); play('tap');
+  // 새 길: 셸이 코치를 준비하는 중이면 입구에서 기다린다. 판을 다시 정해 겉이 닫혔으면(onRetired) 이 판에서 문을 다시 연다 — 새 겉이면 새 길, 지금 판이면 옛 길.
+  if (learnReady) { await learnReady; learnReady = null; }
+  if (learn.retired) learn = await learn.renew();
   S.placeId = placeId; S.place = PLACES[placeId];
   const lobbyNode = app.querySelector('[data-screen=lobby]');
   if (S.screen === 'lobby') await irisClose(lobbyNode);
@@ -554,6 +564,7 @@ function beginMissions() {
   if (S.phase !== 'explore') return;
   play('tap'); dismissSheet(); stepBack();
   S.phase = 'mission'; S.missionAt = Date.now(); S.mi = -1;
+  learn.begin?.(S.missions);   // 새 길: 첫 부탁 전에 판 길이(부탁 수 + 인화 상한)를 코치에 넘긴다(옛 길에는 없다)
   nextMission();
 }
 function missionLine(m) {
@@ -726,6 +737,7 @@ function askRecall(item, i, { slot, q, opts }) {
 
 // ── 끝: 앨범 한 면 ───────────────────────────────────────────────
 function finishRound() {
+  learn.end?.();   // 새 길: 장소 한 판이 판 하나 — 기록 없이 닫는다(옛 길에는 없다)
   const place = S.place, before = openPlaces().length;
   const rec = recordRound(album, S.placeId, { ms: S.missionMs || 0, first: S.firstRight, of: S.missions.length });
   const prog = placeProgress(album, place), stampNew = prog.done && !album.stamps[S.placeId];

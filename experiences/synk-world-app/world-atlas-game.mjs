@@ -41,6 +41,7 @@ const COACH_METHODS = Object.freeze([
   'summary',
   'due',
   'itemUnits',
+  'startSet',
   'finishSet',
   'today',
   'presentation',

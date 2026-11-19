@@ -2,13 +2,20 @@
 // 기록 규칙은 listening-check.mjs가 맡는다. 이 파일은 화면만: 끝까지 듣기 전에는 카드를 잠그고, 들은 뒤의 다시 듣기만 도움으로 남기고,
 // 답한 뒤 다시 듣기는 재채점 없이 복습한다. 소리가 끊기면 다시 들은 뒤 답하게 한다.
 // 요소 이름(#listening-check·#check-choices button 등)은 WORLD 확인 도구가 그대로 쓴다.
+// 새 길(atlas-next-play.mjs — Atlas 단계 4 §23-7)도 이 화면을 쓴다: coach는 그때그때의 코치를 돌려주는 함수일 수 있고(판을 다시 정해 옛 길로
+// 돌아가도 새 코치를 읽는다), createRound가 판을 짓고(새 길은 문항마다 recommend하는 3문항 판), prepare는 판을 열기 전에 기다릴 일(문 다시 열기),
+// 닫을 때 판의 end()로 판을 닫는다. 답의 근거(evidence)가 약속으로 오면(새 코치) 기록 한 줄은 그 값이 온 뒤에 쓴다. 옛 길은 지금 그대로다.
 import { createListeningCheck, createListeningCheckRound, listeningCheckFeedback } from './listening-check.mjs';
 import { InstructionAudio } from './audio.mjs';
 import { fitText } from './kit/lab.mjs';
 
-export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onFeedback = () => {}, onListen = () => {}, chooseLead = () => null }) {
+const RECORD_TEXT = (result) => result.verdict === 'unassessed' ? '기록이 제대로 남았는지 확인하지 못해서 듣기 기록에는 넣지 않았어요.' : result.independent ? '처음 듣고 혼자 답한 기록이에요.' : result.assisted ? '다시 듣기 도움을 받은 기록이에요.' : result.exposure === 'repeat' ? '이미 만난 표현의 복습 기록이에요.' : '전에 도움을 받았는지, 이미 들은 문장인지 확인하지 못해서 혼자 해낸 기록으로 세지 않았어요.';
+
+export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onFeedback = () => {}, onListen = () => {}, chooseLead = () => null,
+  createRound = (current, options) => createListeningCheckRound(current, options), prepare = () => null }) {
   const $ = (id) => document.getElementById(id), dialog = $('listening-check-dialog');
-  let check = null, context, bank, gain, round = null, index = 0, epoch = 0, pending = false, rightCount = 0, stopped = false, recheckSource = null;
+  const coachNow = () => (typeof coach === 'function' ? coach() : coach);
+  let check = null, checkCoach = null, context, bank, gain, round = null, index = 0, epoch = 0, pending = false, rightCount = 0, stopped = false, recheckSource = null;
   const status = (text) => { $('check-status').textContent = text; };
   const phase = (p) => { $('check-q').dataset.phase = p; };
   const choicesDisabled = (value) => {
@@ -31,6 +38,7 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onF
   function close() {
     recheckSource = null;
     interrupt(); try { check?.cancel(); } catch { /* 이미 끝난 과제: 더 남길 것이 없다 */ }
+    try { round?.end?.(); } catch { /* 새 길의 판 닫기: 겉이 닫혔으면 더 닫을 것이 없다 */ }
     if (dialog.open) dialog.close();
     $('check-choices').replaceChildren(); $('check-feedback').textContent = ''; onClose();
   }
@@ -99,7 +107,10 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onF
         const selection = document.createElement('span'); selection.className = 'selection'; selection.textContent = `고른 행동: ${feedback.selectedLabel} · 맞는 행동: ${feedback.correctLabel}`; fb.append(selection);
         const explanation = document.createElement('span'); explanation.className = 'explanation'; explanation.textContent = feedback.explanation; fb.append(explanation);
         if (feedback.correction) { const correction = document.createElement('span'); correction.className = 'correction'; correction.textContent = feedback.correction; fb.append(correction); }
-        const record = document.createElement('span'); record.className = 'record'; record.textContent = result.verdict === 'unassessed' ? '기록이 제대로 남았는지 확인하지 못해서 듣기 기록에는 넣지 않았어요.' : result.independent ? '처음 듣고 혼자 답한 기록이에요.' : result.assisted ? '다시 듣기 도움을 받은 기록이에요.' : result.exposure === 'repeat' ? '이미 만난 표현의 복습 기록이에요.' : '전에 도움을 받았는지, 이미 들은 문장인지 확인하지 못해서 혼자 해낸 기록으로 세지 않았어요.'; fb.append(record);
+        const record = document.createElement('span'); record.className = 'record'; fb.append(record);
+        // 새 코치는 근거를 저장 뒤 약속(evidence)으로 준다 — 온 뒤에 쓰고, 저장되지 않았으면 듣기 기록에 넣지 않았다고 쓴다.
+        if (typeof result.evidence?.then === 'function') result.evidence.then((proof) => { record.textContent = RECORD_TEXT(proof?.stored ? { ...proof, verdict: result.verdict } : { verdict: 'unassessed' }); }, () => { record.textContent = RECORD_TEXT({ verdict: 'unassessed' }); });
+        else record.textContent = RECORD_TEXT(result);
         if (recheckLine) { const recheck = document.createElement('span'); recheck.className = 'record'; recheck.textContent = recheckLine; fb.append(recheck); }
         const last = index === round.total - 1;
         if (last) { const sum = document.createElement('span'); sum.className = 'sum'; sum.textContent = `이번 확인: ${round.total}문제 중 ${rightCount}문제를 맞혔어요.`; fb.append(sum); }
@@ -114,11 +125,14 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onF
   }
   async function open() {
     if (!beforeOpen() || dialog.open) return;
+    const waiting = prepare();
+    if (waiting) { await waiting; if (dialog.open || !beforeOpen()) return; }
+    const current = coachNow();
     rightCount = 0; stopped = false; recheckSource = null;
-    if (!coach) { status('학습 기록을 준비하지 못했어요. 앱을 다시 열어 주세요.'); $('check-choices').replaceChildren(); $('check-next').hidden = true; dialog.showModal(); return; }
+    if (!current) { status('학습 기록을 준비하지 못했어요. 앱을 다시 열어 주세요.'); $('check-choices').replaceChildren(); $('check-next').hidden = true; dialog.showModal(); return; }
     try {
-      check ||= createListeningCheck(coach);
-      round = createListeningCheckRound(coach, { lead: chooseLead() }); index = 0;
+      if (!check || checkCoach !== current) { check = createListeningCheck(current); checkCoach = current; }
+      round = createRound(current, { lead: chooseLead() }); index = 0;
       const plan = round.next();
       if (plan.status !== 'ready') { $('check-choices').replaceChildren(); $('check-feedback').textContent = ''; $('check-plan').textContent = ''; $('check-count').textContent = ''; $('check-next').hidden = true; $('check-replay').hidden = true; status('이 목표에 맞는 듣기 문항을 준비하지 못했어요. WORLD 홈의 「학습 목표 · 도움 방식」에서 목표를 바꿔 볼 수 있어요.'); dialog.showModal(); return; }
       $('check-replay').hidden = false;

@@ -12,6 +12,7 @@ import { createPickPanel } from './pickpanel.mjs?v=sign20261111';
 import { createSound, haptic } from './audio.mjs?v=map20261110';
 import { createMusic } from './music.mjs';
 import { GAME_ID, decisionMeta, meetingMeta, answerPayload, createExchange, preferJourney, missedPractice, entryNote } from './learning.mjs?v=return-20261105';
+import { nextDoor, devFlag } from './kit/atlas-next.mjs';
 
 const $ = (id) => document.getElementById(id);
 const query = new URLSearchParams(location.search);
@@ -65,7 +66,12 @@ const pickRoot = $('pick') || (() => {
 })();
 const panel = createPickPanel({ root: pickRoot });
 const scene = await readyOrAsk(() => createScene($('gl'), { base: WORLD_BASE, tween, ease, files, calm: reduced, look: query.get('look') === 'b' ? 'b' : 'a' }), '화면을 그리지 못했어요', '이 브라우저에서 그래픽 가속(WebGL)을 쓸 수 없어요. 설정에서 켠 뒤 다시 해 주세요.');
-const coach = (() => { try { return window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { return null; } })();
+// 기록의 길(Atlas 단계 4 §23-7): WORLD 셸의 게임 문(또는 로컬 개발 깃발)이 있을 때만 새 길 모듈을 동적으로 싣는다. 없으면 지금 그대로 옛 코치를 동기로 만든다.
+// 문의 open이 null이면(지금 판) 옛 길, 거절하면(RUN_ENDED) 옛 길을 열지 않고 기록 없이 논다(atlas-next-play.mjs openLearning).
+const oldCoach = () => { try { return window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { return null; } };
+let { coach, nextPlay } = nextDoor(window) || devFlag(window) ? await import('./atlas-next-play.mjs?v=next20261119').then((m) => m.openLearning({ win: window, old: oldCoach })).catch((error) => { console.error(error); return { coach: null, nextPlay: null }; }) : { coach: oldCoach(), nextPlay: null };
+// 결정 · 만남 하나의 기록: 새 길이면 새 코치, 아니면 지금 그대로 옛 코치.
+const exchangeOf = (meta) => nextPlay ? nextPlay.exchange(meta) : createExchange(coach, meta);
 
 const availableCars = () => Object.keys(CARS).filter((id) => has(CARS[id].closed));
 const availablePeople = () => Object.keys(PEOPLE).filter((id) => has(PEOPLE[id].photo));
@@ -331,7 +337,7 @@ function streakFlash(result) { if (result.streakHit) { sound.sfx.streak(); hud.f
 async function playStop(run, d, index, carId, plan) {
   // 달리다 안내 → 서서히 섬 → 문 열림
   setKeys(false);
-  const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex; setLine(d.line);
+  const ex = exchangeOf(decisionMeta(d)); currentExchange = ex; setLine(d.line);
   scene.trainSpeed(1); sound.railStart(); sound.railSpeed(1);
   await wait(1.1);
   setStatus('announcer'); sound.chime(); await wait(1.2);
@@ -371,7 +377,7 @@ async function meeting(m, afterCarId) {
   // 말하는 동안 아주 조금 다가감(한 번 — 늘 도는 흔들림 아님)
   tween(3.2, (k) => { if (!reduced()) scene.state.push = 0.03 * k; }, ease.out);
   hud.setStatus('');
-  const ex = s.item ? createExchange(coach, meetingMeta(s.item)) : null; currentExchange = ex;
+  const ex = s.item ? exchangeOf(meetingMeta(s.item)) : null; currentExchange = ex;
   setKeys(false);
   const heard = await say(s.ask, { status: false });
   ex?.heard(heard); setKeys(true);
@@ -403,7 +409,7 @@ let met = [], manifest = {}, curtained = false;
 
 async function playSignDecision(run, d, { img, dep, keyLine, auto, note = null }) {
   // 달려서 갈림 입구까지 → 멈춤 → 세 칸. 안내가 끝나기 전에는 고를 수 없다.
-  const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex;
+  const ex = exchangeOf(decisionMeta(d)); currentExchange = ex;
   // 사진 속 빈 표지판에는 글을 얹지 않는다(점검표 46 — 얹은 글은 합성으로 읽힌다). 고를 것의 글은 아래 역 지도 이름 자리 하나에만 있다.
   await scene.show({ img, dep, c: [0.5, 0.515] });
   if (curtained) { curtained = false; await curtain(false); }
@@ -527,7 +533,7 @@ async function playJourney(journey, plan) {
 const platformFor = () => (has('platform-1') ? 'platform-1' : 'platform');
 /** 승강장 결정(3~4급 급행): 들어오는 열차 앞에서 안내를 듣고 세 칸. */
 async function playBoard(run, d, plan) {
-  const ex = createExchange(coach, decisionMeta(d)); currentExchange = ex;
+  const ex = exchangeOf(decisionMeta(d)); currentExchange = ex;
   setLine(lineOf(run.journey, d));   // 환승 뒤 승강장이면 탈 노선의 색 · 번호로
   sound.hallStart(); setKeys(false);
   setStatus('announcer'); sound.chime(); await wait(1.2);
@@ -660,12 +666,22 @@ async function historySettled() {
 async function start() {
   const seed = Number(query.get('seed')) || (Date.now() % 2147483647);
   const level = chosenLevel();
+  // 새 길: 판을 다시 정해 겉이 닫혔으면(onRetired) 이 여정에서 문을 다시 연다 — 새 겉이면 새 길, 지금 판이면 옛 길로 간다.
+  if (nextPlay?.retired) ({ coach, nextPlay } = await nextPlay.renew());
   if (!query.get('seed')) await historySettled();
-  const learner = personalCoach();
-  // 씨앗을 정해 주면(시험 · 다시 보기) 그 판 그대로. 놓친 유형이 있으면 그 유형의 새 문항이 첫 평가인 여정, 아니면 후보 몇 판 중 아틀라스가 고른 문항이 든 판.
-  const returning = query.get('seed') ? null : missedPractice(learner, level);
-  const journey = query.get('seed') ? buildJourney({ seed, level }) : returning?.journey || preferJourney(learner, Array.from({ length: 12 }, (_, i) => buildJourney({ seed: seed + i * 7919, level })));
-  journey.note = query.get('seed') ? null : entryNote(learner, returning);
+  let journey;
+  if (nextPlay) {
+    // 새 길(§23-7): 여정은 후보 여정들의 결정 문항 가운데 코치가 고른 문항이 든 여정이고, 입구 한 줄은 코치의 이유(why.line)다.
+    // 코치가 고르지 않으면 게임 차례(첫 후보)이고 이유 줄이 없다. 씨앗을 정해 주면 그 판 그대로.
+    const picked = nextPlay.pick(query.get('seed') ? [buildJourney({ seed, level })] : Array.from({ length: 12 }, (_, i) => buildJourney({ seed: seed + i * 7919, level })));
+    journey = picked.journey; journey.note = query.get('seed') ? null : picked.note;
+  } else {
+    const learner = personalCoach();
+    // 씨앗을 정해 주면(시험 · 다시 보기) 그 판 그대로. 놓친 유형이 있으면 그 유형의 새 문항이 첫 평가인 여정, 아니면 후보 몇 판 중 아틀라스가 고른 문항이 든 판.
+    const returning = query.get('seed') ? null : missedPractice(learner, level);
+    journey = query.get('seed') ? buildJourney({ seed, level }) : returning?.journey || preferJourney(learner, Array.from({ length: 12 }, (_, i) => buildJourney({ seed: seed + i * 7919, level })));
+    journey.note = query.get('seed') ? null : entryNote(learner, returning);
+  }
   const album = readAlbum();
   const plan = planDay(journey, { available: { cars: availableCars(), people: availablePeople() }, seen: Object.keys(album.met || {}) });
   try { await prepare(journey, plan); } catch (error) {
@@ -673,6 +689,7 @@ async function start() {
   }
   await showLobby(journey);
   const run = await playJourney(journey, plan);
+  nextPlay?.end();   // 새 길: 여정 하나가 판 하나 — 기록 없이 닫는다
   await showResult(run, plan);
 }
 if (query.has('qa')) window.__subway = { scene, hud, panel, sound, music, assets, tween };
