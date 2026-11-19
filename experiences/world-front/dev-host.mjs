@@ -2,7 +2,7 @@
  *   v=end|off|more|day2   dream=idol|actor   who=login|guest   lines=0~5   hangul=reads|new|ask|skip   lang=ko|en|mn
  *   mom=fix|ok|later   after=1   goal=travel|people|life|work|culture|exam|later_   step=hangul|goal   pc=1
  *   더한 값: consent=1(목표 저장 동의 줄)   pos=none(위치 지도 없음)   still=1(움직임 줄이기)
- * 할 일 표는 시안이 실제 계획 코드로 잰 값이다(.tmp/first-day-end-20261110/측정/결과.json, 측정 A~O). 화면 비교와 손 시험에만 쓴다. */
+ * 할 일 표는 시안이 실제 계획 코드로 잰 값이다(측정 A~O). 화면 비교와 손 시험에만 쓴다. */
 import {LOOK_FACES} from '../seoul-arrival/data.mjs';
 
 const STUDENTS = {

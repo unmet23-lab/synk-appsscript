@@ -10,7 +10,7 @@ export const T = {
     '한글, 읽을 수 있어요?': 'Can you read Hangul?',
     '1화에서 {n}줄': '{n} lines in Ep. 1',
     '장면에서 {n}줄': '{n} lines in the scene',
-    '1화에서 한 줄': '1 line in Ep. 1',   // 10g(Fable 5.2 P3-B): 영어 단수 — 몽골어는 수에 따라 꼴이 안 바뀐다
+    '1화에서 한 줄': '1 line in Ep. 1',   // 10g(검수 P3-B): 영어 단수 — 몽골어는 수에 따라 꼴이 안 바뀐다
     '장면에서 한 줄': '1 line in the scene',
     '한 번 더 · 한 줄': 'One more try · 1 line',
     '새 상황 · 한 줄': 'New situation · 1 line',

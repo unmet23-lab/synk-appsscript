@@ -1,4 +1,4 @@
-/* 첫날 끝 · 맞춤 앞면 틀(2026-11-19). 시안 10z6(.tmp/first-day-end-20261110/시안10z6/app.css)의 뼈대 판(J) · 사진 결만 남겼다.
+/* 첫날 끝 · 맞춤 앞면 틀(2026-11-19). 시안 10z6의 뼈대 판(J) · 사진 결만 남겼다.
    몸에 붙는 look-photo · base-j는 index.html이 늘 달아 둔다. 우표 결 · 바탕 결 ed · 옛 머리 · 옛 답 칸 · PC 이야기 문 규칙은 걷었다.
    글꼴은 ../brand-opening/assets의 같은 파일을 쓴다. 맨 아래 「틀에서 더한 것」만 새로 썼다.
    (시안 머리말) 이야기(밤 · 새벽 창가)는 서울행 결의 사진, 맞춤(공부)은 종이. 바닥은 참고 사이트 장부 4절: 제목 400~600 · 자간 거의 0 · 9~20px 둥근 상자 없음 · 단추는 각지게 · 넓은 여백 위에 실물 하나. */
@@ -61,7 +61,7 @@ html:lang(en) body,html:lang(mn) body,html:lang(en) small,html:lang(mn) small{le
 .tag .me-tag{display:inline-flex;align-items:center;gap:7px;min-height:44px;margin:-12px 0;padding:0 2px;font-size:13px;font-weight:650;color:var(--ink2)}
 .tag .me-tag .me{width:22px;height:22px;box-shadow:0 0 0 1.2px rgba(255,255,255,.6)}
 
-/* 시 세 줄: 굵은 기본 고딕(680) → 가늘게(520), 첫 줄은 옅은 둘째 결. 누르면 열리는 낱말은 전등 빛 글 + 점 밑줄(아르곤 6차 「굵은 기본 고딕과 직선 밑줄」) */
+/* 시 세 줄: 굵은 기본 고딕(680) → 가늘게(520), 첫 줄은 옅은 둘째 결. 누르면 열리는 낱말은 전등 빛 글 + 점 밑줄(맹검 6차 「굵은 기본 고딕과 직선 밑줄」) */
 .poem{position:absolute;z-index:5;left:24px;right:20px;top:max(108px,calc(var(--sat) + 96px))}
 .ln{display:block}
 .ln + .ln{margin-top:5px}
@@ -115,7 +115,7 @@ html:lang(en) body,html:lang(mn) body,html:lang(en) small,html:lang(mn) small{le
 .ask-q small{display:block;font-size:13px;font-weight:450;color:var(--ink3);margin-top:2px}
 .askq .later{min-height:44px;margin-top:2px;padding:0 2px;font-size:14px;font-weight:560;color:var(--ink3);text-shadow:0 1px 8px rgba(0,0,0,.75)}
 
-/* 불 끈 뒤: 사진만 남고 왼쪽 아래 자막 + 전등 빛 글 단추. 화면 끝에서 넉넉히 띄운다(아르곤 6차 「바닥에 붙어 있음 · 안전 여백」) */
+/* 불 끈 뒤: 사진만 남고 왼쪽 아래 자막 + 전등 빛 글 단추. 화면 끝에서 넉넉히 띄운다(맹검 6차 「바닥에 붙어 있음 · 안전 여백」) */
 .night .rest{position:absolute;z-index:6;left:24px;right:16px;bottom:max(72px,calc(var(--sab) + 58px));display:flex;align-items:center;justify-content:space-between;gap:14px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 1.2s ease}
 .rest p{max-width:220px;font-size:14px;font-weight:480;line-height:1.5;color:var(--ink2);letter-spacing:-.01em;text-shadow:0 1px 10px rgba(0,0,0,.85)}
 .rest .next{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 8px;font-size:15px;font-weight:600;color:var(--tap);text-shadow:0 1px 10px rgba(0,0,0,.8)}
@@ -283,7 +283,7 @@ html:lang(en) body,html:lang(mn) body,html:lang(en) small,html:lang(mn) small{le
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
 /* 화면 언어 줄이 붙는 판(영어 · 몽골어)은 우표를 조금 작게 — 첫 연습 뒤 내 위치 눈금까지 첫 화면에.
-   10e: 휴대폰 폭에만(넓은 화면 규칙을 덮던 것, Fable 10 P2-5) · 키 작은 휴대폰 값(아래)이 뒤에서 이기게 앞으로 옮김 */
+   10e: 휴대폰 폭에만(넓은 화면 규칙을 덮던 것, 검수 10 P2-5) · 키 작은 휴대폰 값(아래)이 뒤에서 이기게 앞으로 옮김 */
 @media (max-width:1023px){ html:lang(en) .rail.task,html:lang(mn) .rail.task{--rh:224px;--sw:140px} }
 /* 키가 작은 휴대폰(360×740 등) */
 @media (max-height:780px) and (max-width:1023px){
@@ -375,7 +375,7 @@ html:lang(en) body,html:lang(mn) body,html:lang(en) small,html:lang(mn) small{le
   .look-photo .rail.goals{--rh:280px;--sw:170px}
   .doneln{margin-top:14px}
 }
-@media (max-width:1023px){ html:lang(en) .look-photo .rail.task,html:lang(mn) .look-photo .rail.task{--rh:280px;--sw:184px} }   /* 10e: 휴대폰 폭에만(Fable 10 P2-5) */
+@media (max-width:1023px){ html:lang(en) .look-photo .rail.task,html:lang(mn) .look-photo .rail.task{--rh:280px;--sw:184px} }   /* 10e: 휴대폰 폭에만(검수 10 P2-5) */
 @media (max-height:780px) and (max-width:1023px){ html:lang(en) .look-photo .rail.task,html:lang(mn) .look-photo .rail.task{--rh:236px;--sw:156px} }
 @media (min-width:1024px){
   .look-photo .home .cols{display:block;max-width:1180px;padding-top:0}
@@ -471,15 +471,15 @@ html:lang(en) body,html:lang(mn) body,html:lang(en) small,html:lang(mn) small{le
   .look-photo .rail.goals{--rh:450px;--sw:240px}
 }
 
-/* ══ 10e(11-10 밤) — Fable 최종 P1 · P2 + 아르곤 맹검 9차 ══ */
-/* 시 속 누르는 낱말: 전등 빛 글 — 자리 이름표 · 「지금 더 하기」와 같은 색 = 누를 수 있음(Fable 10 P2-4) */
+/* ══ 10e(11-10 밤) — 검수 최종 P1 · P2 + 맹검 9차 ══ */
+/* 시 속 누르는 낱말: 전등 빛 글 — 자리 이름표 · 「지금 더 하기」와 같은 색 = 누를 수 있음(검수 10 P2-4) */
 .ln .w{color:var(--tap)}
-/* 닫힌 기록 판은 화면 읽기에서도 닫힘(늘 떠 있던 aria-modal, Fable 10 P2-2) */
+/* 닫힌 기록 판은 화면 읽기에서도 닫힘(늘 떠 있던 aria-modal, 검수 10 P2-2) */
 .sheet{visibility:hidden;transition:background .35s,visibility 0s .5s}
 .sheet.on{visibility:visible;transition:background .35s,visibility 0s}
-/* 넘긴 뒤 초점을 받는 첫 말 — 누르는 것이 아니라 테두리 없음(Fable 10 P2-3) */
+/* 넘긴 뒤 초점을 받는 첫 말 — 누르는 것이 아니라 테두리 없음(검수 10 P2-3) */
 .lede:focus,.big:focus,.poem:focus,.say:focus{outline:none}
-/* 밤 · 새벽 화면 토스트는 흰 판(토스트는 .view 밖이라 #app에서 고른다, Fable 10 P2-10) */
+/* 밤 · 새벽 화면 토스트는 흰 판(토스트는 .view 밖이라 #app에서 고른다, 검수 10 P2-10) */
 #app:has(> .view.night) .toast,#app:has(> .view.dawn) .toast{background:#FAFAF9;color:#0b0c10}
 /* 읽기만 하는 기록은 옅게, 누르는 줄(내 위치)은 남색 — 같은 색 · 굵기라 갈리지 않던 것(맹검 9차 K56) */
 .doneln{color:var(--k3)}
@@ -538,7 +538,7 @@ html:lang(en) body,html:lang(mn) body,html:lang(en) small,html:lang(mn) small{le
   .look-photo .rail.goals{--rh:470px;--sw:262px}
 }
 
-/* ══ 10f(11-11 저녁) — 아르곤 맹검 10차(카본) ══ */
+/* ══ 10f(11-11 저녁) — 맹검 10차(카본) ══ */
 /* ② · ③ 사진 줄: 옆 칸은 가운데 뒤로 겹쳐 화면 안에(스크립트 g1), 휴대폰은 옆 칸 이름을 숨긴다(화면 끝에서 잘린 「험·자격 준비」) */
 .look-photo .rlab{display:none}
 .rlab small{display:block;margin-bottom:2px;font-size:.78em;font-weight:520;color:var(--k3)}
@@ -562,7 +562,7 @@ html:lang(en) body,html:lang(mn) body,html:lang(en) small,html:lang(mn) small{le
   .look-photo .rlab{display:block;margin-top:22px;font-size:27px;font-weight:600;line-height:1.25;white-space:normal;color:var(--k2)}
 }
 
-/* ══ 10g(11-11 밤) — Fable 5.2 다시 확인(작업/fable10e/review.md) ══ */
+/* ══ 10g(11-11 밤) — 검수 다시 확인 ══ */
 /* P2-B 첫 연습 뒤 한 줄 링크: 「연습 중」 · 화면 읽기에만 칸 이름 */
 .pos-row em{font-style:normal;font-size:13px;font-weight:620;color:var(--navy)}
 .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
@@ -577,7 +577,7 @@ html:lang(en) body,html:lang(mn) body,html:lang(en) small,html:lang(mn) small{le
 /* P2-D 바로잡기: 가로 넘침은 사진 줄에서 자른다(휴대폰 — 옆 칸은 이미 화면 안, 화면 밖 칸만 잘림) */
 @media (max-width:1023px){ .rail{overflow-x:clip} }
 
-/* ══ 10g — Fable 5.2 다시 확인 2(작업/fable10g/review.md) ══ */
+/* ══ 10g — 검수 다시 확인 2 ══ */
 /* P2-A · B 넓은 화면 옆 칸 이름표는 바깥쪽으로(가운데 칸에 가리지 않게) */
 @media (min-width:1024px){
   .look-photo .ri[data-side="r"] .rlab{text-align:right}
@@ -887,7 +887,7 @@ html:lang(mn) body.base-j .ja .chs .ch .lb{font-size:14.5px}
   body.base-j .jnav{box-shadow:0 0 0 1px rgba(22,21,19,.12)}
 }
 
-/* ══ 10n(11-12 오후) — Fable 5.2 확인(10m): P2 열한 건 · P3 넷 ══ */
+/* ══ 10n(11-12 오후) — 검수 확인(10m): P2 열한 건 · P3 넷 ══ */
 /* P2-1 둘째 날 한글 질문(뼈대 판) 두 답 = 맞춤 한글 질문과 같은 테 캡슐 */
 body.base-j .d2h .chs{grid-template-columns:1fr 1fr;gap:10px}
 body.base-j .d2h .chs .ch{flex-direction:row;justify-content:center;gap:0;min-height:56px;padding:6px 14px;border-radius:28px;background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1.5px var(--k)}
@@ -1152,7 +1152,7 @@ body.base-j .hud button:hover::before,body.base-j .hud button:focus-visible::bef
 body.base-j .hud svg{position:relative;width:16px;height:16px}
 body.base-j .night .foot .acts{align-items:flex-start}
 
-/* ══ 10s(11-13 새벽) — Fable 5.2 확인(10q): P2 여덟 · P3 열 ══ */
+/* ══ 10s(11-13 새벽) — 검수 확인(10q): P2 여덟 · P3 열 ══ */
 /* P2-1 폭 461~1023: 아래 판 · 시작 단추 · 탐색을 앱 틀(가운데 460) 안으로 */
 @media (min-width:461px) and (max-width:1023px){
   body.base-j .jm .start{left:calc(50% - 214px);right:calc(50% - 214px)}
@@ -1223,13 +1223,13 @@ body.base-j .chs.st2 .ch .nx{color:#6B655C}
   html:lang(ko) body.base-j .jm .rail.task,html:lang(mn) body.base-j .jm .rail.task,html:lang(en) body.base-j .jm .rail.task{--rh:clamp(118px,33vh,168px)}
 }
 
-/* ══ 10t(11-13) — Fable 10q P3-10: 넓은 화면 첫 연습 뒤 「내 위치」 표 위 가는 선도 기록 줄 위 선과 같은 길이(글 단 폭) · 같은 색 ══ */
+/* ══ 10t(11-13) — 검수 10q P3-10: 넓은 화면 첫 연습 뒤 「내 위치」 표 위 가는 선도 기록 줄 위 선과 같은 길이(글 단 폭) · 같은 색 ══ */
 @media (min-width:1024px){
   body.base-j .jm .today .tb > .pos-ph.full{max-width:none;border-top:1px solid rgba(22,21,19,.1);padding-top:16px}
   body.base-j .jm .today .tb > .pos-ph > .pos{border-top:0;padding-top:0}
 }
 
-/* ══ 10t(11-13) 덧붙임 — Fable 5.2 다시 확인(10s): S3-4 · S3-6 · S3-2 사진 ══ */
+/* ══ 10t(11-13) 덧붙임 — 검수 다시 확인(10s): S3-4 · S3-6 · S3-2 사진 ══ */
 /* S3-4 넓은 화면 여백: 1200에서 30 → 52.8로 뛰던 값을 잇는다(1200까지 30, 1440에서 약 64, 84에서 멈춤) · 1024~1239 시작 단추는 안 여백 · 글 한 단계 */
 @media (min-width:1024px){
   body.base-j .jm,body.base-j .ja{--gx:clamp(30px,calc(30px + (100vw - 1200px) * .14),84px)}
@@ -1260,7 +1260,7 @@ body.base-j .chs.st2 .ch .nx{color:#6B655C}
 @media (max-width:1023px) and (max-height:500px){ html:lang(mn) body.base-j .jm .rail.task,html:lang(en) body.base-j .jm .rail.task{--rh:clamp(96px,27vh,150px)} }
 @media (max-width:1023px) and (max-height:340px){ html:lang(mn) body.base-j .jm .rail.task,html:lang(en) body.base-j .jm .rail.task{--rh:clamp(64px,21vh,96px)} }
 
-/* 10t 키 640 아래 넓은 창: 한글 질문 두 화면의 위아래 여백만 줄여 한 화면에(1024×600 — Fable 재현 m_new g) */
+/* 10t 키 640 아래 넓은 창: 한글 질문 두 화면의 위아래 여백만 줄여 한 화면에(1024×600 — 검수 재현 m_new g) */
 @media (min-width:1024px) and (max-height:640px){
   body.base-j .ja .cols{padding-top:96px;padding-bottom:24px}
   body.base-j .d2q.d2h .today.solo{padding-top:32px}
@@ -1285,7 +1285,7 @@ body.base-j .night:not(.asking) .ln .w{padding:5px 0;margin:-5px 0}
   body.base-j .d2q .rail.goals{--rh:148px;--sw:90px}
 }
 
-/* ══ 10u(11-13 아침) — 24차(GPT 눈) 7 미만 여섯 화면의 공통 지적 ══ */
+/* ══ 10u(11-13 아침) — 24차(맹검) 7 미만 여섯 화면의 공통 지적 ══ */
 /* ① 이름 자리 = 글자 굵기만(얼굴 · 머리글자 배지 = 「문장 위 스티커」 C018) */
 body.base-j .nmslot{font-weight:800}
 /* ② 밤 이름표 = 흰 글(보라 글 = 「방문한 링크」) */
@@ -1340,7 +1340,7 @@ body.base-j .d2q .rail.goals .ri.on .pcard{box-shadow:0 6px 16px rgba(40,25,10,.
 body.base-j .jnav button.on .ni{--ni-acc:var(--act)}
 @media (forced-colors:active){ body.base-j .jnav .ni{--ni-acc:currentColor} }
 
-/* ══ 10v(11-13 아침) — 25차(GPT 눈 · 카본) 공통 지적 ══ */
+/* ══ 10v(11-13 아침) — 25차(맹검 · 카본) 공통 지적 ══ */
 /* ① 세 마디 = 상자 없는 큰 글줄(말풍선 꼴은 판 색과 상관없이 「챗봇 부품 · 익숙한 조합」) — 밤 시와 같은 결, 읽는 동안은 글 아래 흙빛 줄 */
 body.base-j .jm .cap .says.sl{gap:0;margin-top:8px}
 body.base-j .say-play.bub,body.base-j .say-play.bub:hover,body.base-j .say-play.bub.nob:hover,body.base-j .say-play.bub.on{background:none;box-shadow:none}
@@ -1373,7 +1373,7 @@ body.base-j .ja .skip,body.base-j .d2h .skip,body.base-j .d2q .skip{color:var(--
 }
 @media (min-width:1024px) and (max-height:820px){ body.base-j .jm .today{grid-template-rows:var(--tt,minmax(124px,1fr)) auto auto auto var(--tg,32px) auto auto minmax(0,1fr)} }
 
-/* ══ 10x(11-13 아침) — 26차 GPT · 카본: 템플릿 부품(둥근 사진 아래 · 사진 위 알약 표시 · 큰 검정 알약 · 회색 카드 · 크림 알약) · 흩어진 물결 · 빽빽한 아래 정보 · 밤 질문의 빈 하늘 · 커버플로 ══ */
+/* ══ 10x(11-13 아침) — 26차 맹검 · 카본: 템플릿 부품(둥근 사진 아래 · 사진 위 알약 표시 · 큰 검정 알약 · 회색 카드 · 크림 알약) · 흩어진 물결 · 빽빽한 아래 정보 · 밤 질문의 빈 하늘 · 커버플로 ══ */
 /* ① 휴대폰 위 사진은 네모 그대로(둥근 아래 모서리 = 기성 온보딩 카드 — 26차 02 · 10) */
 @media (max-width:1023px){
   body.base-j .jm .rail.task,body.base-j .ja .jhero{border-radius:0}
@@ -1427,7 +1427,7 @@ body.base-j :is(.ja,.d2h) .chs.st2 .ch .nx{grid-column:2;align-self:start}
 body.base-j :is(.ja,.d2h) .chs.st2 .ch::after{content:"→";content:"→" / "";position:static;inset:auto;transform:none;grid-column:3;grid-row:1 / span 2;color:var(--act);font-size:19px;font-weight:600}
 body.base-j :is(.ja,.d2h) .chs.st2 .ch:hover .gl,body.base-j :is(.ja,.d2h) .chs.st2 .ch[aria-pressed="true"] .gl{background:var(--k);color:#FBF8F2}
 body.base-j :is(.ja,.d2h) .chs.st2 .ch:not(:has(.nx)) .lb{grid-row:1 / span 2;align-self:center}
-@media (min-width:1024px){ html:lang(ko) body.base-j .ja .chs.st2,html body.base-j .d2h .chs.st2{grid-template-columns:1fr;max-width:460px} }   /* 둘째 날 한글 질문은 세 언어 모두 한 칸(Fable F9) */
+@media (min-width:1024px){ html:lang(ko) body.base-j .ja .chs.st2,html body.base-j .d2h .chs.st2{grid-template-columns:1fr;max-width:460px} }   /* 둘째 날 한글 질문은 세 언어 모두 한 칸(검수 F9) */
 /* 밤: 같은 글자 칸을 창틀 전등 빛으로, 답은 글 폭만큼(창가 종이컵 · 창틀과 겹치지 않게) */
 body.base-j .night .chs.dark.st2{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 body.base-j .night .chs.dark.st2 .ch{display:inline-flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;width:auto;min-height:56px;padding:4px 18px 4px 4px;border-radius:14px;background:transparent;box-shadow:none;color:#FBF8F2}
@@ -1490,7 +1490,7 @@ html body.base-j .night .chs.dark.st2 .ch{padding:4px 18px 4px 0}
   body.base-j :is(.ja,.d2h) .chs.st2 .ch .gl{width:40px;height:40px;font-size:20px;border-radius:10px}
 }
 
-/* ══ 10y(11-13 오전) — Fable 5.2 10t 확인 P2 넷 + 27차 GPT 눈 7 미만 넷(02 맞춤 첫 화면 · 09 밤 한글 질문 · 12 PC · 13 맞춤 한글 질문)과 7점 화면의 지적 ══ */
+/* ══ 10y(11-13 오전) — 검수 10t 확인 P2 넷 + 27차 맹검 7 미만 넷(02 맞춤 첫 화면 · 09 밤 한글 질문 · 12 PC · 13 맞춤 한글 질문)과 7점 화면의 지적 ══ */
 /* T2-4 세운 작은 폰(키 501 ~ 600) 밤 화면 en · mn(한글 질문 · 나중에 판) = 눕힌 폰과 같은 흐름 — 시 셋째 줄 · 번역 줄이 질문 글 · 서하 얼굴과 겹치던 것(한국어는 겹침 0이라 그대로) */
 @media (max-width:1023px) and (min-height:501px) and (max-height:600px){
   html:is(:lang(en),:lang(mn)) body.base-j .view.night:not(.dawn){overflow-y:auto;overscroll-behavior:contain}
@@ -1584,7 +1584,7 @@ body.base-j .d2q .ticks.gn i.on small{display:block;margin:2px 0 0;font-size:12p
 @media (max-width:1023px){ body.base-j .d2q:not(.d2h) .today.solo{padding-bottom:20px} }
 /* 가장 낮은 넓은 창의 긴 번역 판(tight2): 내 위치 판 위 여백을 6px 덜어 헛 스크롤 0(1280×720 mn 첫 연습 뒤 5px) */
 @media (min-width:1024px){ body.base-j .jm .today.tight2 .tb > .pos-ph.full{padding-top:10px} }
-/* ⑨ 눕힌 폰(키 500 이하) · 세운 작은 폰 en · mn(키 501 ~ 600) 밤 화면 — Fable 10t P3
+/* ⑨ 눕힌 폰(키 500 이하) · 세운 작은 폰 en · mn(키 501 ~ 600) 밤 화면 — 검수 10t P3
       T3-1 Tab 초점 · 누를 곳이 붙는 아래 덩어리 밑에 깔림 → 스크롤 여백(초점이 아래 덩어리 위로 오게) + 아래 덩어리 위 비치는 띠는 누름을 가로채지 않게
       T3-2 시트가 열린 동안 뒤 화면이 스크롤되어 시트가 따라 올라감 → 열린 동안 잠금(.lock — app.js 시트 열기 · 닫기) */
 @media (max-width:1023px) and (max-height:500px){
@@ -1598,7 +1598,7 @@ body.base-j .d2q .ticks.gn i.on small{display:block;margin:2px 0 0;font-size:12p
   html:is(:lang(en),:lang(mn)) body.base-j .night:not(.dawn) .foot > *{pointer-events:auto}
 }
 html:root body.base-j .view.night.lock{overflow-y:hidden}   /* 영어 · 몽골어 낮은 폰의 스크롤 켬(0,5,2)보다 무겁게 — 시트가 열린 동안 뒤 화면을 잠근다 */
-/* ⑩ 눕힌 폰 둘째 날 목표 — Fable 10t T3-3 「첫 화면에서 고른 목표 이름이 바닥 판 밑」: 사진과 목표 이름을 옆으로(사진 왼쪽 · 이름 두 칸 오른쪽) */
+/* ⑩ 눕힌 폰 둘째 날 목표 — 검수 10t T3-3 「첫 화면에서 고른 목표 이름이 바닥 판 밑」: 사진과 목표 이름을 옆으로(사진 왼쪽 · 이름 두 칸 오른쪽) */
 @media (max-width:1023px) and (max-height:500px){
   body.base-j .d2q:not(.d2h) .trail{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);column-gap:18px;align-items:start}
   body.base-j .d2q:not(.d2h) .trail > .rail.goals{grid-column:1;grid-row:1;height:clamp(96px,calc(100vh - 256px),170px)}   /* 사진 아래 끝이 바닥 판 위(844×390 en · mn 사진 위 182 → 아래 316 · 판 324) */
@@ -1606,7 +1606,7 @@ html:root body.base-j .view.night.lock{overflow-y:hidden}   /* 영어 · 몽골�
   body.base-j .d2q:not(.d2h) .ticks.gn i{padding:13px 2px 12px;white-space:normal}
 }
 
-/* ══ 10z(11-13 낮) — 28차 GPT 눈(10y) 7 미만 넷(02 맞춤 첫 화면 6 · 09 밤 한글 질문 5 · 10 첫 연습 뒤 6 · 13 맞춤 한글 질문 6)과 카본 28차(둘째 날 목표 4 · 둘째 날 맞춤 4) ══ */
+/* ══ 10z(11-13 낮) — 28차 맹검(10y) 7 미만 넷(02 맞춤 첫 화면 6 · 09 밤 한글 질문 5 · 10 첫 연습 뒤 6 · 13 맞춤 한글 질문 6)과 카본 28차(둘째 날 목표 4 · 둘째 날 맞춤 4) ══ */
 /* ① 「내 위치」: 휴대폰도 영역별 칸 판(듣기 · 읽기 이름 + 오늘 칸 · 연습 중 칸의 이름 줄) — R10 「휴대폰은 영역별 칸 상태가 보이는 요약」,
       28차 02 · 07 · 10 · 11 · 카본 07 「채움과 테두리의 뜻을 모름 · 왜 두 칸만 주황 테두리인지」 */
 body.base-j .jm .pos-h > span.tk{display:none}   /* 넓은 화면은 「TOPIK I 16칸」 그대로 */
@@ -1690,7 +1690,7 @@ body.base-j .jm .fdone path{stroke:var(--act)}
 body.base-j .jm .fdone{font-weight:560;color:var(--k3)}
 body.base-j .jm .lede q,body.base-j .d2q .lede q{quotes:none}
 body.base-j .jm .lede q::before,body.base-j .jm .lede q::after{content:none}
-/* ⑦ 둘째 날 목표: 이름 판 = 사진 폭 그대로, 이름은 먹(누를 곳으로 읽히게), 시작 단추도 같은 폭(카본 28차 06 「회색 글 · 얇은 윗선만이라 누르는 자리로 안 읽힘 · 단추 폭이 사진 · 격자와 안 맞음」 · GPT 06 「폭이 차례로 좁아짐」) */
+/* ⑦ 둘째 날 목표: 이름 판 = 사진 폭 그대로, 이름은 먹(누를 곳으로 읽히게), 시작 단추도 같은 폭(카본 28차 06 「회색 글 · 얇은 윗선만이라 누르는 자리로 안 읽힘 · 단추 폭이 사진 · 격자와 안 맞음」 · 맹검 06 「폭이 차례로 좁아짐」) */
 @media (max-width:1023px) and (min-height:501px){
   body.base-j .d2q:not(.d2h) .ticks.gn{margin-left:0;margin-right:0}
   body.base-j .d2q:not(.d2h) .acts2{align-items:stretch}
@@ -1711,15 +1711,15 @@ body.base-j .night .foot .acts .tx:hover{color:#FBF8F2;text-decoration-color:rgb
 body.base-j .night .seoha .meta{margin-top:4px;font-size:12.5px;font-weight:450;letter-spacing:.01em;color:rgba(250,250,249,.52)}
 @media (forced-colors:active){ body.base-j .night .foot .acts .tx{color:LinkText} }
 /* ⑨ 밤 한글 질문: 위 기록에 「오늘 한 것」 꼬리표(아래 「내일 할 일을 고르려고 해요」와 짝 — 오늘 ↔ 내일), 기록 · 질문 · 두 답은 같은 폭 한 단(280 — 창가 종이컵 왼쪽), 이름 줄과 기록 사이를 띄움
-      (밤대안 짝 맹검 · GPT 11-13: 「이름 · 상황 · 오늘의 성취가 긴 자막 묶음」 · 「질문은 창 오른쪽까지인데 답 줄은 안쪽에서 끝남」 · 「회고가 독립된 공지처럼 떠 있음」) */
+      (밤대안 짝 맹검 · 맹검 11-13: 「이름 · 상황 · 오늘의 성취가 긴 자막 묶음」 · 「질문은 창 오른쪽까지인데 답 줄은 안쪽에서 끝남」 · 「회고가 독립된 공지처럼 떠 있음」) */
 body.base-j .night.asking .poem.rec{right:auto;max-width:280px}
 body.base-j .night.asking .poem.rec .ln.rc{padding-top:14px}
 body.base-j .night.asking .poem.rec .ln.rc .rl{display:block;margin:0 0 6px;font-size:12.5px;font-weight:600;letter-spacing:.02em;color:rgba(250,250,249,.56)}
 body.base-j .night.asking .askq{max-width:280px}
 body.base-j .night .chs.dark.st2{width:280px;min-width:0;max-width:100%}
 
-/* ══ 10z2(11-13 오후) — 29차 GPT 눈(10z) 7 미만 다섯 · 카본 29차: 「내 위치」 두 줄 · 먹 한 빛 칸 문법 · 「모두 듣기」 세 문장 아래 · 맞춤 한글 질문 비례 ══ */
-/* ① 「내 위치」: 머리 줄 = 이름 · 짧은 꼬리표(오늘 연습 / 연습 중) · 전체 보기, 둘째 줄 = 듣기 · 읽기 칸(GPT 02 · 07 · 10 「복잡한 학습 현황판」, 카본 02 · 07 「자잘한 게이지 · 교재 용어」).
+/* ══ 10z2(11-13 오후) — 29차 맹검(10z) 7 미만 다섯 · 카본 29차: 「내 위치」 두 줄 · 먹 한 빛 칸 문법 · 「모두 듣기」 세 문장 아래 · 맞춤 한글 질문 비례 ══ */
+/* ① 「내 위치」: 머리 줄 = 이름 · 짧은 꼬리표(오늘 연습 / 연습 중) · 전체 보기, 둘째 줄 = 듣기 · 읽기 칸(맹검 02 · 07 · 10 「복잡한 학습 현황판」, 카본 02 · 07 「자잘한 게이지 · 교재 용어」).
       긴 칸 이름(낱말 뜻 읽기 · 조사·문형 읽기)과 TOPIK은 화면 읽기로(R10 ① 급수를 말하지 않음과도 맞음) */
 body.base-j .jm .pos-ph .pos{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:10px;row-gap:10px;align-items:center}
 body.base-j .jm .pos-ph .pos .pos-h{display:contents}
@@ -1735,7 +1735,7 @@ body.base-j .jm .pos-ph .pos .named em{margin:0;font-size:12.5px;font-weight:600
 body.base-j .jm .pos-ph .pos .strip{grid-column:1 / -1;grid-row:2;margin:0}
 body.base-j .jm .pos-h > span.tkf{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 body.base-j .jm .pos-h > span.tk{display:none}
-/* 칸 문법 = 먹 한 빛: 옅은 테두리 = 아직 · 진한 테두리 = 오늘 · 채움 = 한 것. 흙빛은 누르는 글(바꾸기 · 전체 보기 · 모두 듣기)에만(카본 07 K56 「누르는 링크와 상태 표시가 같은 주황」, GPT 11 「붉은 빈칸과 회색 채운 칸」) */
+/* 칸 문법 = 먹 한 빛: 옅은 테두리 = 아직 · 진한 테두리 = 오늘 · 채움 = 한 것. 흙빛은 누르는 글(바꾸기 · 전체 보기 · 모두 듣기)에만(카본 07 K56 「누르는 링크와 상태 표시가 같은 주황」, 맹검 11 「붉은 빈칸과 회색 채운 칸」) */
 body.base-j .jm .rule i{background:transparent;box-shadow:inset 0 0 0 1px rgba(22,21,19,.24)}
 body.base-j .jm .rule i.t{background:transparent;box-shadow:inset 0 0 0 1.6px var(--k)}
 body.base-j .jm .rule i.p{background:var(--k);box-shadow:none}
@@ -1746,7 +1746,7 @@ body.base-j .jm .named .sw.t{background:transparent;box-shadow:inset 0 0 0 1.6px
   body.base-j .jm .rule i.t{border:1.5px solid CanvasText}
   body.base-j .jm .rule i.p{background:CanvasText;border-color:CanvasText}
 }
-/* ② 「모두 듣기」: 첫 줄 옆 테두리 단추 → 세 문장 아래 테두리 없는 글 단추 + 「줄마다 따로 들을 수 있어요」(GPT 02 · 10 「첫 문장에 붙은 조작 · 읽기 리듬을 끊음」, 카본 02 · 07 「개별 재생 단서 없음」) */
+/* ② 「모두 듣기」: 첫 줄 옆 테두리 단추 → 세 문장 아래 테두리 없는 글 단추 + 「줄마다 따로 들을 수 있어요」(맹검 02 · 10 「첫 문장에 붙은 조작 · 읽기 리듬을 끊음」, 카본 02 · 07 「개별 재생 단서 없음」) */
 body.base-j .jm .sayw .say-all{position:static}
 body.base-j .jm .sayw .says.sl li:first-child .say-play,html:lang(en) body.base-j .jm .sayw .says.sl li:first-child .say-play,html:lang(mn) body.base-j .jm .sayw .says.sl li:first-child .say-play{padding-right:0}
 body.base-j .jm .sa-row{display:flex;flex-wrap:wrap;align-items:center;column-gap:10px;margin:2px 0 0}
@@ -1755,32 +1755,32 @@ body.base-j .say-all{min-height:44px;margin:0;padding:0 10px;border-radius:10px;
 body.base-j .say-all:hover{background:rgba(22,21,19,.05)}
 body.base-j .say-all.on{background:var(--k);color:#FBF8F2}
 @media (forced-colors:active){ body.base-j .say-all{border:0;text-decoration:underline;text-underline-offset:4px} }
-/* ③ 맞춤 한글 질문(종이 · 세운 폰 키 781 이상): 위 사진 40 → 32vh, 한국어 둘째 줄 20 → 19 · 굵기 600 → 560(GPT 13 「사진 40% · 두 언어 질문이 커서 선택지가 아래로 밀림」).
+/* ③ 맞춤 한글 질문(종이 · 세운 폰 키 781 이상): 위 사진 40 → 32vh, 한국어 둘째 줄 20 → 19 · 굵기 600 → 560(맹검 13 「사진 40% · 두 언어 질문이 커서 선택지가 아래로 밀림」).
       한국어 줄은 읽을 수 있는지 묻는 시험 문장 그대로라 19 아래로는 내리지 않음(10m · 10u) */
 @media (max-width:1023px) and (min-height:781px){ body.base-j .ja .jhero{height:clamp(200px,32vh,300px)} }
 @media (max-width:1023px){ body.base-j .ja .lede small.kq{margin-top:10px;font-size:19px;font-weight:560} }
-/* ④ 손님 밤 끝: 소리 단추 원은 옅게(GPT 03 「회색 원판과 테두리가 무겁다」), 「만남 · 감사 · 소개 · 2분」은 10z보다 조금 또렷하게(「흐릿해 마감이 고르지 않다」) */
+/* ④ 손님 밤 끝: 소리 단추 원은 옅게(맹검 03 「회색 원판과 테두리가 무겁다」), 「만남 · 감사 · 소개 · 2분」은 10z보다 조금 또렷하게(「흐릿해 마감이 고르지 않다」) */
 body.base-j .hud button::before{background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 body.base-j .night .seoha .meta{color:rgba(250,250,249,.66)}
-/* 넓은 화면 사진 위 ‹ › 화살표: 밝은 바닥에서도 보이게 그늘을 한 겹 더(GPT 12 「밝은 바닥 무늬에 묻힘」) */
+/* 넓은 화면 사진 위 ‹ › 화살표: 밝은 바닥에서도 보이게 그늘을 한 겹 더(맹검 12 「밝은 바닥 무늬에 묻힘」) */
 @media (min-width:1024px){ body.base-j .jm .rnav button{text-shadow:0 1px 3px rgba(0,0,0,.6),0 0 14px rgba(0,0,0,.42)} }
 /* ⑤ 밤 한글 질문: 질문 동안 위 기록은 숨김(짝 맹검 밤대안2 — 기록 없는 판이 지금 판을 이김 「밤 풍경과 내일을 위한 질문에 시선이 모임」), 답하면 시가 돌아옴.
       질문 아래 한국어 줄은 18 → 15.5 · 옅게(「보조 언어의 시각적 비중이 높다」) */
 body.base-j .night.asking .poem.rec{display:none}
 body.base-j .night .ask-q small.kq{margin-top:6px;font-size:15.5px;font-weight:500;color:rgba(250,250,249,.7)}
 
-/* ══ 10z3(11-13 오후) — 29차 카본 · GPT의 나머지 + 짝 맹검 셋(밤대안3 · 밤목표대안 · 맞춤대안): 밤 질문 위 이름 줄 · 「나중에」 밑줄 · 둘째 날 목표 머리 · 손님 밤 단추 · 넓은 화면 사진 아래 그늘 ══ */
+/* ══ 10z3(11-13 오후) — 29차 카본 · 맹검의 나머지 + 짝 맹검 셋(밤대안3 · 밤목표대안 · 맞춤대안): 밤 질문 위 이름 줄 · 「나중에」 밑줄 · 둘째 날 목표 머리 · 손님 밤 단추 · 넓은 화면 사진 아래 그늘 ══ */
 /* ① 밤 한글 질문: 질문 동안 위 이름 줄(이름 · 날짜)도 숨김 — 짝 맹검 밤목표대안 「이름 · 시간 띠가 없어 창밖 장면과 질문 사이에서 시선이 덜 분산」(I > A). 답하면 돌아옴(asking이 풀림) */
 body.base-j .night.asking > .tag{display:none}
-/* 「나중에」 밑줄은 글자에서 띄우고 옅게(밤대안3 GPT 「글자에 바짝 붙은 밑줄이 브라우저 기본 링크처럼」) */
+/* 「나중에」 밑줄은 글자에서 띄우고 옅게(밤대안3 맹검 「글자에 바짝 붙은 밑줄이 브라우저 기본 링크처럼」) */
 body.base-j .night .askq .later{text-decoration-color:rgba(250,250,249,.26);text-decoration-thickness:1px;text-underline-offset:7px}
-/* ② 둘째 날 목표: 날짜 꼬리표는 질문 바로 위(머리 왼쪽 위에 홀로 떨어져 있던 것 — 카본 29차 06 「좌상단에 홀로 떨어진 개강 둘째 날 · 아침」, 밤목표대안 GPT 「날짜와 질문 사이의 긴 공백」) */
+/* ② 둘째 날 목표: 날짜 꼬리표는 질문 바로 위(머리 왼쪽 위에 홀로 떨어져 있던 것 — 카본 29차 06 「좌상단에 홀로 떨어진 개강 둘째 날 · 아침」, 밤목표대안 맹검 「날짜와 질문 사이의 긴 공백」) */
 body.base-j .d2q:not(.d2h) .hd{display:none}
 body.base-j .d2q .ta .tag.ey{margin:0 0 12px;font-size:12.5px;font-weight:520;letter-spacing:.01em;line-height:1.4;color:var(--k3)}
 /* ③ 손님 · 밤 끝 큰 단추: 폭 절반쯤에서 264로 · 아래 글 단추와 사이 10(카본 29차 03 「어중간한 길이 · 아래 밑줄과 답답하게 붙음」) */
 body.base-j .night .foot .acts{gap:10px}
 body.base-j .night .foot .acts .go{min-width:min(100%,264px)}
-/* ④ 넓은 화면 사진: 아래 끝에 옅은 그늘 — 밝은 바닥에서도 ‹ › 화살표와 넘김 표시가 보이게(GPT 29차 12 · 카본 29차 11 · 12 「밝은 바닥 무늬에 묻힘」) */
+/* ④ 넓은 화면 사진: 아래 끝에 옅은 그늘 — 밝은 바닥에서도 ‹ › 화살표와 넘김 표시가 보이게(맹검 29차 12 · 카본 29차 11 · 12 「밝은 바닥 무늬에 묻힘」) */
 @media (min-width:1024px){
   body.base-j .jm .rail.task .ri .pcard{position:relative}
   body.base-j .jm .rail.task .ri .pcard::after{content:"";position:absolute;left:0;right:0;bottom:0;height:200px;background:linear-gradient(180deg,rgba(12,10,8,0) 0%,rgba(12,10,8,.3) 100%);pointer-events:none;z-index:2}
@@ -1794,7 +1794,7 @@ body.base-j :is(.ja,.d2h) .chs.st2 .ch .lb,body.base-j :is(.ja,.d2h) .chs.st2 .c
   body.base-j :is(.jm,.ja):not(.pc) .jhd .jnav{flex:1 1 auto;box-sizing:border-box;width:100%;justify-content:space-between}
 }
 
-/* ══ 10z4(11-13 오후) — 30차 GPT 7 미만 셋(둘째 날 맞춤 6 · 밤 한글 질문 6 · 첫 연습 뒤 6) · 짝 맹검 넷(칸줄대안 · z4대안 · z4대안2 · z4대안3, GPT 눈) ══ */
+/* ══ 10z4(11-13 오후) — 30차 맹검 7 미만 셋(둘째 날 맞춤 6 · 밤 한글 질문 6 · 첫 연습 뒤 6) · 짝 맹검 넷(칸줄대안 · z4대안 · z4대안2 · z4대안3, 맹검) ══ */
 /* ① 「내 위치」 칸 = 캡슐 세 단계 먹(아직 12% · 오늘 50% · 한 것 100%), 빗금 없음 — 칸줄대안 B3 > B1(휴대폰 · 넓은 화면 모두 7 : 6 「속 빈 사각형 = 체크박스 · 입력 양식」), 빗금 판(칸대안 B2)은 「공사 표시 · 로딩」으로 짐 */
 body.base-j .jm .rule{height:6px;gap:4px}
 body.base-j .jm .rule i{border:0;border-radius:3px;background:rgba(22,21,19,.12);box-shadow:none}
@@ -1877,14 +1877,14 @@ body.base-j .night .tag .me-tag .me{box-shadow:0 0 0 1px rgba(255,255,255,.45)}
   body.base-j .jm .rail.task .ri .pcard::after{content:"";position:absolute;left:0;right:0;bottom:0;height:72px;background:linear-gradient(180deg,rgba(12,10,8,0) 0%,rgba(12,10,8,.34) 100%);pointer-events:none;z-index:2}
 }
 /* ④ 누를 글 = 흙빛(종이) · 전등 빛(밤): 두 답의 이름 글을 질문과 다른 색으로(카본 30차 K56 「질문과 누를 선택지가 같은 검정 · 흰 굵은 글」 — 상자 판은 두 눈 모두 짐,
-      짝 맹검 z5대안2 GPT: 맞춤 한글 질문 A1 8 > A0 7 「주황이 두 선택지의 행동 역할을 분명하게」 · 밤 N1 > N0 「금색이 응답 선택지의 역할 · 사진 속 따뜻한 조명과 연결」).
+      짝 맹검 z5대안2 맹검: 맞춤 한글 질문 A1 8 > A0 7 「주황이 두 선택지의 행동 역할을 분명하게」 · 밤 N1 > N0 「금색이 응답 선택지의 역할 · 사진 속 따뜻한 조명과 연결」).
       예문 아래 점선(T1 · W1)은 「맞춤법 검사 같은 점선」으로 짐 → 예문은 줄 끝 소리 막대만. 흙빛 #A9441F는 종이 위 5.1 : 1, 전등 빛 #FFD48A는 밤 사진 위 12 : 1 */
 body.base-j :is(.ja,.d2h) .chs.st2 .ch .lb{color:var(--act)}
 body.base-j .night .chs.dark.st2 .ch .lb,body.base-j .night .chs.dark.st2 .ch::after{color:var(--tap)}
 /* ④-2 「모두 듣기」 글도 누를 글 한 색(흙빛) — 카본 z5대안2 T1 > R0 「실행 요소를 포인트 색으로 구분해 설명 문구 없이 누를 곳의 위계가 읽힘」(같은 판의 예문 점선은 두 눈 모두 「뜻풀이 · 맞춤법 표시처럼 모호」라 안 씀) */
 body.base-j .jm .say-all:not(.on){color:var(--act)}
 
-/* ══ 10z6(11-13 저녁) — Fable 5.2 10z5 확인(P0 0 · P1 0 · P2 1 · P3 10, 노트 폴더 fable-5.2-실측-10z5/review.md)과 31차 카본 · GPT ══ */
+/* ══ 10z6(11-13 저녁) — 검수 10z5 확인(P0 0 · P1 0 · P2 1 · P3 10)과 31차 카본 · 맹검 ══ */
 /* Z2-1(P2) 밤 한글 질문 · 스크롤 흐름 판(눕힌 폰 · 키 501 ~ 600 세운 작은 폰 en · mn): 질문 동안 시 · 이름 줄을 숨기면 아래 덩어리가 흐름의 첫 줄이 되어
       화면 맨 위로 붙고 소리 단추가 꼬리 글을 덮었다 → 질문 판은 세로 줄 세우기로 아래 덩어리를 바닥에, 넘칠 때도 위는 소리 단추 아래(64)부터 */
 @media (max-width:1023px) and (max-height:500px){
@@ -1913,7 +1913,7 @@ body.base-j :is(.ja,.d2q) .lede.q.two-l .pre{color:#6B655C}
 @media (min-width:1024px) and (max-height:700px){ body.base-j .jm .today{grid-template-rows:var(--tt,minmax(124px,1fr)) auto auto auto var(--tg,32px) auto auto minmax(0,1fr)} }
 /* 세운 폰 쪽 아래 여백 = fitPhone이 잰 값(Z3-3 — 182 고정이면 다 보이는데도 24 ~ 28px 스크롤됐다) */
 @media (max-width:1023px) and (min-height:501px){ body.base-j .jm .pg{padding-bottom:var(--pb,182px)} }
-/* 카본 31차 · GPT 31차 */
+/* 카본 31차 · 맹검 31차 */
 /* ⓐ 「내 위치」 이름표의 작은 알약 표지를 걷음(두 눈 「정체불명의 회색 알약 기호 · 범례를 해독해야」) — 이름표 글(오늘 연습 · 연습 중)과 칸 색으로 말함 */
 body.base-j .jm .named .sw{display:none}
 /* ⓑ 손님 · 밤 끝 둘째 글 단추(「오늘은 여기까지」 · 「지금 더 연습하기 →」): 휴대폰은 전체 폭 큰 단추 아래 가운데, 밑줄 없이(두 눈 「기본 밑줄 링크」) */
