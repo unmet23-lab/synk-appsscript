@@ -367,3 +367,15 @@ test('아직 이른 계정의 이름이 많으면 열둘만 적고 나머지는 
   const row = 방(many, { now: NOW }).rows.at(-1).more.find(m => m[0] === 'row');
   assert.match(row[2], /^계정0 · .* · 계정11 외 18개$/);
 });
+
+test('예약 입구는 요약을 먼저 쓰고 팔로워 재기는 따로 띄운다', () => {
+  // 11-20 첫 회차: 판정이 24분 걸린 뒤 재기가 입구 안에서 돌다 예약의 30분 한도에 끊겨 요약이 쓰이지 않았다
+  const src = fs.readFileSync(path.join(__dirname, '..', 'tools', '게시성과예약', 'run-hidden.py'), 'utf8');
+  const main = src.slice(src.indexOf('def main():'));
+  const 판정뒤 = main.slice(main.indexOf('log.write_bytes(r.stdout'));
+  assert.ok(판정뒤.indexOf('write_health_summary(env)') > 0 && 판정뒤.indexOf('write_health_summary(env)') < 판정뒤.indexOf('start_followers(env)'));
+  const 따로 = main.slice(0, main.indexOf('log = ROOT'));
+  assert.match(따로, /"--팔로워" in sys\.argv/);
+  assert.equal(main.slice(main.indexOf('log = ROOT')).includes('measure_followers('), false, '입구 안에서는 재지 않는다');
+  assert.match(src, /CREATE_BREAKAWAY_FROM_JOB/);
+});
