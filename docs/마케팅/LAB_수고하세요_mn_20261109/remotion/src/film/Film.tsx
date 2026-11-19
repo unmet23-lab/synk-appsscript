@@ -16,6 +16,9 @@ const WARM = '#C8551B';
 const CORAL = '#B83C28';
 const MEAN = '#A52A4A';
 const FELT = '#F6E0BC';
+// 맞는 말 · 틀린 말 색(11-19 유호님 「맞았을때 표현이랑 틀렸을때 표현이랑 글씨 색이 똑같아서 … 헷갈리거든」) — 맞는 말은 초록 + ✓, 틀린 말은 빨강 + ✗. 색만으로 가르지 않는다(제작 절차 「맞는 말 · 틀린 말」)
+const OK = '#0A9A66';
+const NG = '#D92D20';
 const MASTER = 0.8;
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 const EASE_OUT = Easing.bezier(0.16, 1, 0.3, 1);
@@ -313,7 +316,7 @@ const Sign: React.FC<{ p: LocPack; t: number; at: number; until: number; top?: n
 };
 
 // 말풍선 — 크림 펠트 + 바늘땀. 한글 크게 · 읽는 법(몽골판 키릴) · 그 나라 말 뜻 줄(판본 꾸러미 meanSize · meanLineH). shout면 기울어 튀어나온다
-const Bubble: React.FC<{ p: LocPack; t: number; from: number; until: number; left: number; top: number; w: number; h: number; tip: [number, number]; color?: string; size?: number; ko: React.ReactNode; read?: string; mn?: string; shout?: number }> = ({ p, t, from, until, left, top, w, h, tip, color = INK, size = 76, ko, read, mn, shout = 0 }) => {
+const Bubble: React.FC<{ p: LocPack; t: number; from: number; until: number; left: number; top: number; w: number; h: number; tip: [number, number]; color?: string; size?: number; ko: React.ReactNode; read?: string; mn?: string; shout?: number; mark?: 'ok' | 'ng' }> = ({ p, t, from, until, left, top, w, h, tip, color = INK, size = 76, ko, read, mn, shout = 0, mark }) => {
   if (t < from || t >= until) return null;
   const a = shout ? interpolate(t, [from, from + 0.07, from + 0.2, from + 0.4], [0.3, 1.18, 0.97, 1], clamp) : interpolate(t, [from, from + 0.16], [0.82, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
   const rx = Math.min(50, h / 2);
@@ -334,6 +337,14 @@ const Bubble: React.FC<{ p: LocPack; t: number; from: number; until: number; lef
         {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 42, lineHeight: 1.18, color: '#5F4E42', whiteSpace: 'nowrap' }}>{read}</div> : null}
         {mn ? <div style={{ fontFamily: p.font, fontWeight: 800, fontSize: p.meanSize, lineHeight: p.meanLineH, color: MEAN, whiteSpace: 'nowrap' }}>{mn}</div> : null}
       </div>
+      {/* 귀퉁이 도장 — 맞는 말 ✓ · 틀린 말 ✗. 말풍선이 뜬 0.5초 뒤에 찍힌다 */}
+      {mark ? (
+        <div style={{ position: 'absolute', left: left + w - 62, top: top - 40, width: 100, height: 100, borderRadius: 999, background: mark === 'ng' ? NG : OK, border: '7px solid #FFF6E4', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: interpolate(t, [from + 0.5, from + 0.62], [0, 1], clamp), transform: `scale(${interpolate(t, [from + 0.5, from + 0.58, from + 0.7], [0.6, 1.12, 1], clamp)}) rotate(${mark === 'ng' ? 8 : -8}deg)` }}>
+          <svg width={54} height={54} viewBox="0 0 58 58">
+            {mark === 'ng' ? <path d="M12 12 L46 46 M46 12 L12 46" stroke="#fff" strokeWidth={10} strokeLinecap="round" fill="none" /> : <path d="M9 31 L23 45 L49 14" stroke="#fff" strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" fill="none" />}
+          </svg>
+        </div>
+      ) : null}
     </div>
   );
 };
@@ -426,7 +437,7 @@ export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
       {t >= T.frozen - 0.05 && t < T.frozen + 0.3 ? <AbsoluteFill style={{ background: '#EAF6FF', opacity: interpolate(t, [T.frozen - 0.05, T.frozen, T.frozen + 0.3], [0, 0.45, 0], clamp) }} /> : null}
       {t >= T.sun && t < T.sun + 0.3 ? <AbsoluteFill style={{ background: '#FFF2CC', opacity: interpolate(t, [T.sun, T.sun + 0.03, T.sun + 0.3], [0.6, 0.7, 0], clamp) }} /> : null}
       <Sign p={p} t={t} at={-1} until={T.freeze} size={p.hookSize}>{p.hook}</Sign>
-      <Bubble p={p} t={t} from={T.a1} until={T.frozen} left={50} top={700} w={740} h={272} tip={[300, 1112]} color={CORAL} size={72} ko={SAY.a1} read={r[READ_AT.a1]} mn={p.a1Mean} />
+      <Bubble p={p} t={t} from={T.a1} until={T.frozen} left={50} top={700} w={740} h={272} tip={[300, 1112]} color={NG} mark="ng" size={72} ko={SAY.a1} read={r[READ_AT.a1]} mn={p.a1Mean} />
       <>
         <Sign p={p} t={t} at={T.why} until={T.rewind} size={p.literalSize}>
           {p.literal}
@@ -435,7 +446,7 @@ export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
         </Sign>
         <Sign p={p} t={t} at={T.rewind} until={T.sun} size={p.againSize}>{p.again}</Sign>
         {t >= T.rewind && t < T.rewind + 0.62 ? <Rewind t={t} /> : null}
-        <Bubble p={p} t={t} from={T.a2} until={T.b1} left={70} top={700} w={640} h={272} tip={[330, 1112]} color={INK} size={84} ko={SAY.a2} read={r[READ_AT.a2]} mn={p.a2Mean} />
+        <Bubble p={p} t={t} from={T.a2} until={T.b1} left={70} top={700} w={640} h={272} tip={[330, 1112]} color={OK} mark="ok" size={84} ko={SAY.a2} read={r[READ_AT.a2]} mn={p.a2Mean} />
         <Bubble p={p} t={t} from={T.b1} until={T.rule} left={330} top={520} w={690} h={250} tip={[800, 860]} color={WARM} size={72} ko={SAY.b1} read={r[READ_AT.b1]} mn={p.b1Mean} />
         {t >= T.rule && t < T.gag ? (
           <>
@@ -449,15 +460,15 @@ export const Film: React.FC<{ p: LocPack }> = ({ p }) => {
               {': '}
               <span style={{ fontFamily: KO, fontWeight: 900 }}>안녕히 계세요</span>
             </Sign>
-            <Tick t={t} at={T.rule + 0.15} left={880} top={70} color={COLD} mark="✕" />
-            <Tick t={t} at={T.rule + 1.0} left={880} top={1090} color={WARM} mark="✓" />
+            <Tick t={t} at={T.rule + 0.15} left={880} top={70} color={NG} mark="✕" />
+            <Tick t={t} at={T.rule + 1.0} left={880} top={1090} color={OK} mark="✓" />
           </>
         ) : null}
         <Sign p={p} t={t} at={T.gag + 0.1} until={T.a3} size={p.gagSize}>{p.gag}</Sign>
         {/* 「수고해요」 뜻 줄(b2Mean)은 선택 — 찬 판본(간체 · 버마어 두 채널 판)은 말풍선이 커지고 뜻 줄이 붙는다. 빈 판본(몽골판)은 작은 말풍선 */}
         <Bubble p={p} t={t} from={T.gag + 0.12} until={T.a3 + 0.1} left={p.b2Mean ? 330 : 430} top={p.b2Mean ? 520 : 560} w={p.b2Mean ? 690 : 560} h={p.b2Mean ? 260 : 210} tip={[810, 860]} color={WARM} size={84} ko={SAY.b2} read={r[READ_AT.b2]} mn={p.b2Mean || undefined} />
-        <Bubble p={p} t={t} from={T.a3} until={T.a4} left={70} top={760} w={560} h={210} tip={[320, 1112]} color={CORAL} size={84} ko={SAY.a3} read={r[READ_AT.a3]} />
-        <Bubble p={p} t={t} from={T.a4} until={T.end} left={50} top={700} w={700} h={272} tip={[330, 1112]} color={INK} size={84} ko={SAY.a4} read={r[READ_AT.a4]} mn={p.a2Mean} shout={-3} />
+        <Bubble p={p} t={t} from={T.a3} until={T.a4} left={70} top={760} w={560} h={210} tip={[320, 1112]} color={NG} mark="ng" size={84} ko={SAY.a3} read={r[READ_AT.a3]} />
+        <Bubble p={p} t={t} from={T.a4} until={T.end} left={50} top={700} w={700} h={272} tip={[330, 1112]} color={OK} mark="ok" size={84} ko={SAY.a4} read={r[READ_AT.a4]} mn={p.a2Mean} shout={-3} />
         <Sign p={p} t={t} at={T.end} until={T.total + 1} size={p.endSize}>
           {p.end}{' '}
           <span style={{ fontFamily: KO, fontWeight: 900 }}>{END_KO}</span>

@@ -17,6 +17,9 @@ export { FPS };
 
 const INK = '#2B2522';
 const CORAL = '#E8503D';
+// 맞는 말 · 틀린 말 색(11-19 유호님 「맞았을때 표현이랑 틀렸을때 표현이랑 글씨 색이 똑같아서 … 헷갈리거든」) — 맞는 말은 초록 + ✓, 틀린 말은 빨강 + ✗. 색만으로 가르지 않는다(제작 절차 「맞는 말 · 틀린 말」)
+const OK = '#0A9A66';
+const NG = '#D92D20';
 const MEAN = '#B23A26'; // 뜻 줄 — 흰 말풍선 위 진한 산호
 const MUSTARD = '#C98A12'; // 지우 말풍선 테두리 — 지우 겨자색 패딩(이해 시험 v2 셋 「성함 편과 말풍선 꼴이 같아 보임」 — 말하는 인형의 색으로 테두리를 가른다)
 const BUBBLE_BOTTOM = 640; // 말풍선 아래 끝(px) — 지우 머리 위 끝(약 670px) 바로 위. 말풍선은 여기서 위로 자란다
@@ -40,13 +43,13 @@ const Plate: React.FC<{ src: string; push: number; origin?: [number, number] }> 
   </AbsoluteFill>
 );
 
-const HotLine: React.FC<{ text: string; hot?: string; size: number }> = ({ text, hot, size }) => (
+const HotLine: React.FC<{ text: string; hot?: string; size: number; mark?: 'ok' | 'ng' }> = ({ text, hot, size, mark }) => (
   <div style={{ fontFamily: KO, fontWeight: 800, fontSize: size, color: INK, lineHeight: 1.16, whiteSpace: 'pre-line' }}>
     {/* 짚는 낱말은 마지막 한 번만 — 「사진을 사?」에서 「사진」의 「사」까지 칠하던 첫 렌더 */}
     {hot && text.includes(hot) ? (
       <>
         {text.slice(0, text.lastIndexOf(hot))}
-        <span style={{ color: CORAL }}>{hot}</span>
+        <span style={mark === 'ok' ? { color: OK } : mark === 'ng' ? { color: NG, textDecoration: 'line-through', textDecorationThickness: 5 } : { color: CORAL }}>{hot}</span>
         {text.slice(text.lastIndexOf(hot) + hot.length)}
       </>
     ) : (
@@ -80,6 +83,7 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
         <div
           style={{
             display: 'inline-block',
+            position: 'relative',
             minWidth: 600,
             maxWidth: 880,
             textAlign: 'center',
@@ -92,14 +96,22 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
             transformOrigin: `${((root - 90) / 900) * 100}% 100%`,
           }}
         >
+          {/* 귀퉁이 도장 — 그 말풍선의 한국어가 맞는 말(✓)이거나 틀린 말(✗)일 때만. 반응 말풍선(짚는 낱말 없음)에는 찍지 않는다 */}
+          {c.mark && c.hot ? (
+            <div style={{ position: 'absolute', right: -58, top: -58, width: 104, height: 104, borderRadius: 999, background: c.mark === 'ng' ? NG : OK, border: '7px solid #FFFDF7', boxShadow: '0 6px 14px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: q, transform: `scale(${0.6 + 0.4 * q}) rotate(${c.mark === 'ng' ? 8 : -8}deg)` }}>
+              <svg width={58} height={58} viewBox="0 0 58 58">
+                {c.mark === 'ng' ? <path d="M12 12 L46 46 M46 12 L12 46" stroke="#fff" strokeWidth={10} strokeLinecap="round" fill="none" /> : <path d="M9 31 L23 45 L49 14" stroke="#fff" strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" fill="none" />}
+              </svg>
+            </div>
+          ) : null}
           <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: meanSize, color: MEAN, lineHeight: Math.max(1.16, L.lineH), marginBottom: 8, whiteSpace: 'pre-line' }}>{mean}</div>
-          <HotLine text={c.ko} hot={c.hot} size={c.koSize} />
+          <HotLine text={c.ko} hot={c.hot} size={c.koSize} mark={c.mark} />
           {/* 이해 시험 v1(GPT · 그록 · sonnet 「작은 글 못 읽음」): 알약 42 → 48px · 읽기 54 → 58px */}
           {read ? <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 58, whiteSpace: 'nowrap', color: '#3A2D24', lineHeight: 1.15, marginTop: 2 }}>{read}</div> : null}
           {pill ? (
             <div style={{ marginTop: 10, opacity: q, transform: `scale(${0.8 + 0.2 * q})` }}>
-              <span style={{ display: 'inline-block', background: c.mark === 'ng' ? INK : CORAL, color: '#fff', fontFamily: L.font, fontWeight: 800, fontSize: 48, lineHeight: 1.1, padding: '10px 26px 12px', borderRadius: 999, whiteSpace: 'nowrap' }}>
-                {pill}
+              <span style={{ display: 'inline-block', background: c.mark === 'ng' ? NG : OK, color: '#fff', fontFamily: L.font, fontWeight: 800, fontSize: 48, lineHeight: 1.1, padding: '10px 26px 12px', borderRadius: 999, whiteSpace: 'nowrap' }}>
+                {c.mark === 'ng' ? pill.replace(/^(❌|✗|✕) */u, '✕ ') : pill}
               </span>
             </div>
           ) : null}
@@ -156,7 +168,7 @@ const Table: React.FC<{ L: LocPack }> = ({ L }) => {
                 <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.tableSize, color: MEAN, lineHeight: Math.max(1.2, L.lineH), textAlign: 'left', flex: '1 1 auto' }}>{L.tableRows[k]}</div>
                 <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 44, color: '#8C7A6A', margin: '0 18px' }}>→</div>
                 <div style={{ textAlign: 'center', minWidth: 300 }}>
-                  <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 96, color: CORAL, lineHeight: 1.05 }}>{ko}</div>
+                  <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 96, color: OK, lineHeight: 1.05 }}>{ko}</div>
                   {/* 이해 시험 v2(haiku · GPT · 그록 「사자 · 사 · 사다 말끝이 왜 바뀌는지 모름」): 대사에 나온 꼴을 기본꼴 밑에 작게 */}
                   <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 46, color: '#7A6858', lineHeight: 1.2 }}>{TABLE_FORMS[k]}</div>
                   <div style={{ fontFamily: EN, fontWeight: 800, fontSize: 46, color: '#3A2D24', lineHeight: 1.15 }}>{L.tableReads[k]}</div>

@@ -14,8 +14,8 @@ export type Cell = {
   voAt: number;
   ko: string;
   koSize: number;
-  hot?: string; // 한국어 줄에서 산호색으로 짚을 낱말(바뀌는 낱말)
-  mark?: 'ok' | 'ng'; // 알약 색 — ok 산호(맞는 말), ng 먹색(틀린 말)
+  hot?: string; // 한국어 줄에서 짚을 낱말(바뀌는 낱말) — 색은 mark를 따른다(맞는 말 초록 · 틀린 말 빨강에 줄 · 표시 없으면 산호)
+  mark?: 'ok' | 'ng'; // 맞는 말 · 틀린 말(11-19 유호님) — ok 초록 ✓, ng 빨강 ✗. 짚는 낱말 · 알약 · 귀퉁이 도장이 이 값을 따른다
   cont?: boolean; // 앞 칸 말풍선을 그대로 잇는 칸(그림만 바뀜)
   who?: 'j'; // 친구 지우가 하는 말 — 꼬리가 지우를 가리킨다(없으면 몽글)
   tip?: [number, number]; // 이 칸에서 꼬리 끝 자리(없으면 말하는 인형의 기본 자리)
@@ -30,7 +30,7 @@ export const CELLS: Cell[] = [
   // 2.6초에 산 붕어빵 봉투가 벤치에 놓이고 몽글이 신나 통통 튀는 판(같은 말풍선)
   { at: 2.6, img: 'c1b.jpg', b: 0, vo: '', voAt: 2.6, ko: '붕어빵 사자!', koSize: 88, hot: '사자', mark: 'ok', cont: true, tip: [765, 810], zoom: 1.16 }, // 올리기 전 검사 「0~5초 한 구성」 — 봉투 판에서 몽글 쪽으로 다가감
   // 따라 한 말 — 사진도 «авах»라서 「사자」
-  { at: 5.1, img: 'c2.jpg', b: 1, vo: 's2', voAt: 5.15, ko: '사진도 사자!', koSize: 88, hot: '사자' },
+  { at: 5.1, img: 'c2.jpg', b: 1, vo: 's2', voAt: 5.15, ko: '사진도 사자!', koSize: 88, hot: '사자', mark: 'ng' },
   // 반전: 지우가 웃음을 터뜨린다
   { at: 6.6, img: 'c3.jpg', b: 2, vo: 'j3', voAt: 6.65, ko: '사진을 사?', koSize: 84, hot: '사', mark: 'ng', who: 'j' },
   // 고침 — 사진은 찍는다
@@ -43,7 +43,7 @@ export const CELLS: Cell[] = [
   { at: 14.8, img: 'c6m.jpg', b: 5, vo: '', voAt: 14.8, ko: '이거, 선물이야!', koSize: 84, cont: true, tip: [612, 826] },
   // 핵심 장면: 건네면서 «Ав!»를 그대로 「사!」
   // 장면 심사 v1 「아무것도 건네지 않음 · 3초 정지」 — 붕어빵을 머리에 인 채 지우 코앞까지 몸을 내미는 판으로 바꿈
-  { at: 15.9, img: 'c6c.jpg', b: 6, vo: 's7', voAt: 15.95, ko: '자, 사!', koSize: 96, hot: '사', tip: [510, 850] },
+  { at: 15.9, img: 'c6c.jpg', b: 6, vo: 's7', voAt: 15.95, ko: '자, 사!', koSize: 96, hot: '사', mark: 'ng', tip: [510, 850] },
   // 지우가 지갑을 꺼낸다
   { at: 17.1, img: 'c7.jpg', b: 7, vo: 'j8', voAt: 17.15, ko: '…돈 내라고?', koSize: 84, mark: 'ng', who: 'j', zoom: 1.16 }, // 장면 심사 v1 「지갑을 여는 순간을 가까이」
   // 고침 — 주는 것은 「받아」
