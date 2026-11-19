@@ -17,11 +17,14 @@ const 새컷이름 = { N1: '친구', N2: '친구', N3: '친구', N4: '친구', N
 fs.mkdirSync(path.join(밖, '영상'), { recursive: true });
 const 쓴것 = [];
 for (const [이름, 원본] of Object.entries(다시씀)) { fs.copyFileSync(원본, path.join(밖, '영상', `${이름}.mp4`)); 쓴것.push(`${이름} 다시씀`); }
+// 11-19: 다시 구운 판을 고르면 받음 폴더의 _고름.json({"N2": "N2__2.mp4"})에 적는다. 없으면 <컷>.mp4다
+const 고름경로 = path.join(새컷, '_고름.json');
+const 고름 = fs.existsSync(고름경로) ? JSON.parse(fs.readFileSync(고름경로, 'utf8')) : {};
 for (const [이름, 갈래] of Object.entries(새컷이름)) {
-  const 새 = path.join(새컷, `${이름}.mp4`);
+  const 새 = path.join(새컷, 고름[이름] || `${이름}.mp4`);
   const 있음 = fs.existsSync(새);
   fs.copyFileSync(있음 ? 새 : 자리표시[갈래], path.join(밖, '영상', `${이름}.mp4`));
-  쓴것.push(`${이름} ${있음 ? '새 컷' : '자리 표시'}`);
+  쓴것.push(`${이름} ${있음 ? path.basename(새) : '자리 표시'}`);
 }
 const 원고 = fs.readFileSync(path.join(__dirname, '원고.htm'), 'utf8');
 const { html } = 폰트.심기(원고);
