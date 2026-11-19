@@ -402,6 +402,88 @@ test('Instagram estimated retention keeps its raw source in provenance and Faceb
   assert.equal(fb.metrics.views, 120, 'Facebook video views are no longer dropped'); assert.equal(fb.metrics.likes, 3);
 });
 
+// 11-19 페북 수집기 pagePostId 설계 검토 2 장면 5 · 6: 수집기가 같은 게시물의 영상 줄과 게시물 줄을 합치면 주 주소와 정체성이 다른 주소를
+// 별칭(aliasUrls: 주소와 그 주소의 게시 시각)으로 단다. 기록이 어느 주소로 등록됐어도 그 줄을 찾고, 그 주소의 시각으로 견준다.
+test('a Facebook checkpoint finds a merged post by its alias address and compares that address\'s own time', async t => {
+  const videoAt = new Date(Date.parse(BASE) + 10 * 60000).toISOString();
+  const f = fixture(t, { collector: async () => ({ posts: [{ url: 'https://www.facebook.com/reel/555/', publishedAt: videoAt, metrics: { views: 9, likes: 3 },
+    aliasUrls: [{ url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE }, { url: 42 }, null] }], coverage: { source: 'facebook-pages-api' } }) });
+  f.store.put('channels', 'fb', { ...f.channel, id: 'fb', platform: 'facebook', canonicalUrl: 'https://www.facebook.com/synk' }); f.store.setSecret('channel:fb', { accessToken: 'synthetic' });
+  f.now(1);
+  const byVideo = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/reel/555/', publishedAt: videoAt }).entry;
+  const byFeed = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE }).entry;
+  assert.notEqual(byVideo.id, byFeed.id);
+  f.now(24.5); await f.service.collectDue();
+  const point = id => f.service.list(f.owner).entries.find(entry => entry.id === id).checkpoints[0];
+  assert.equal(point(byVideo.id).metrics.views, 9); assert.equal(point(byVideo.id).providerPublishedAt, videoAt);
+  assert.equal(point(byFeed.id).metrics.views, 9, 'found through the alias address, compared with the alias time'); assert.equal(point(byFeed.id).providerPublishedAt, BASE);
+});
+
+// post-performance 검수 GA2: 일반 게시물 주소로 등록한 기록은, 그 게시물이 이번 회차에 영상 목록에서만 와서 게시물 주소가 결과에 없어도
+// 결과 줄의 페이지 게시물 번호(pagePostId)로 찾는다. 주소의 앞 칸이 숫자(페이지 번호)면 그 번호까지 같아야 한다.
+test('a Facebook post-address checkpoint finds its post by the page post id when only the video list returned it', async t => {
+  const videoAt = new Date(Date.parse(BASE) + 10 * 60000).toISOString();
+  const f = fixture(t, { collector: async () => ({ posts: [{ url: 'https://www.facebook.com/reel/555/', publishedAt: videoAt, pagePostId: '123_700', videoId: '555', metrics: { views: 12 } }],
+    coverage: { source: 'facebook-pages-api', inventoryComplete: true, status: 'complete' } }) });
+  f.store.put('channels', 'fb', { ...f.channel, id: 'fb', platform: 'facebook', canonicalUrl: 'https://www.facebook.com/synk' }); f.store.setSecret('channel:fb', { accessToken: 'synthetic' });
+  f.now(1);
+  const byName = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE }).entry;
+  const byPage = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/123/posts/700', publishedAt: BASE }).entry;
+  const otherPage = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/999/posts/700', publishedAt: BASE }).entry;
+  f.now(24.5); await f.service.collectDue();
+  const point = id => f.service.list(f.owner).entries.find(entry => entry.id === id).checkpoints[0];
+  assert.equal(point(byName.id).metrics.views, 12); assert.equal(point(byName.id).providerPublishedAt ?? null, null, 'a match by number does not anchor the record to a platform time');
+  assert.equal(point(byPage.id).metrics.views, 12);
+  assert.notEqual(point(otherPage.id).status, 'recorded', 'a different page number does not match');
+});
+
+// 9회차 GA2: 수집기는 post_id만으로 영상을 게시물 줄에 붙이지 않는다. 피드 주소로 찾은 줄에 지원 지표가 하나도 없으면 같은 페이지 게시물 번호의 영상 줄 수치를 쓴다.
+test('a Facebook feed-address checkpoint uses the video row of the same page post id when the feed row has no metric', async t => {
+  const videoAt = new Date(Date.parse(BASE) + 10 * 60000).toISOString();
+  const f = fixture(t, { collector: async () => ({ posts: [
+    { url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE, pagePostId: '123_700', videoId: null, metrics: { views: null, likes: null, comments: null, shares: null } },
+    { url: 'https://www.facebook.com/reel/555/', publishedAt: videoAt, pagePostId: '123_700', videoId: '555', metrics: { views: 9 } }],
+    coverage: { source: 'facebook-pages-api', inventoryComplete: true, status: 'complete' } }) });
+  f.store.put('channels', 'fb', { ...f.channel, id: 'fb', platform: 'facebook', canonicalUrl: 'https://www.facebook.com/synk' }); f.store.setSecret('channel:fb', { accessToken: 'synthetic' });
+  f.now(1);
+  const entry = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE }).entry;
+  f.now(24.5); await f.service.collectDue();
+  const point = f.service.list(f.owner).entries.find(item => item.id === entry.id).checkpoints[0];
+  assert.equal(point.metrics.views, 9); assert.equal(point.providerPublishedAt, BASE, 'the feed row matched by address gave the platform time');
+});
+
+// 10회차 perf GA1: 주소로 찾은 피드 줄의 게시 시각이 기록의 시각과 다르면, 같은 번호의 영상 줄 수치를 쓰더라도 시각 어긋남으로 남긴다.
+test('a Facebook feed-address checkpoint still compares the feed time when it takes the views of the video row', async t => {
+  const feedAt = new Date(Date.parse(BASE) + 2 * 3600000).toISOString();
+  const f = fixture(t, { collector: async () => ({ posts: [
+    { url: 'https://www.facebook.com/synk/posts/700', publishedAt: feedAt, pagePostId: '123_700', videoId: null, metrics: { views: null, likes: null, comments: null, shares: null } },
+    { url: 'https://www.facebook.com/reel/555/', publishedAt: feedAt, pagePostId: '123_700', videoId: '555', metrics: { views: 9 } }],
+    coverage: { source: 'facebook-pages-api', inventoryComplete: true, status: 'complete' } }) });
+  f.store.put('channels', 'fb', { ...f.channel, id: 'fb', platform: 'facebook', canonicalUrl: 'https://www.facebook.com/synk' }); f.store.setSecret('channel:fb', { accessToken: 'synthetic' });
+  f.now(1);
+  const entry = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE }).entry;
+  f.now(24.5); await f.service.collectDue();
+  const point = f.service.list(f.owner).entries.find(item => item.id === entry.id).checkpoints[0];
+  assert.notEqual(point.status, 'recorded'); assert.equal(point.metrics?.views ?? null, null);
+});
+
+// 설계 검토 3 장면 4: 게시물 주소가 그 릴스 주소인 짝은 post_id가 달라도 한 줄이고, 그 릴스 주소로 등록한 기록이 영상 조회수를 받는다(수집기부터 체크포인트까지).
+test('a reel whose feed post carries its own address stays one row from the collector to the checkpoint even when post_id disagrees', async t => {
+  const f = fixture(t, { collector: async () => collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {
+    const url = new globalThis.URL(raw), ok = value => ({ ok: true, status: 200, json: async () => value });
+    if (url.pathname.endsWith('/me')) return ok({ id: '123' });
+    if (url.pathname.endsWith('/posts')) return ok({ data: [{ id: '123_701', created_time: BASE, permalink_url: 'https://www.facebook.com/reel/555/', attachments: { data: [{ target: { id: '555' } }] } }] });
+    if (url.pathname.endsWith('/videos')) return ok({ data: [{ id: '555', post_id: '700', permalink_url: '/reel/555/', views: 9, published: true, created_time: BASE }] });
+    throw new Error('unexpected');
+  } }) });
+  f.store.put('channels', 'fb', { ...f.channel, id: 'fb', platform: 'facebook', canonicalUrl: 'https://www.facebook.com/synk' }); f.store.setSecret('channel:fb', { accessToken: 'synthetic' });
+  f.now(1);
+  const entry = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/reel/555/', publishedAt: BASE }).entry;
+  f.now(24.5); await f.service.collectDue();
+  const point = f.service.list(f.owner).entries.find(row => row.id === entry.id).checkpoints[0];
+  assert.equal(point.status, 'recorded'); assert.equal(point.metrics.views, 9);
+});
+
 test('an unconnected channel keeps its window waiting instead of closing it, and connecting it later still fills the point', async t => {
   const f = fixture(t, { windowCollector: readyWindow({ shares: 3 }) }); f.register(); f.store.deleteSecret('channel:channel');
   f.now(121); assert.equal((await f.service.collectDue()).windowRetried, 1); assert.equal(f.windowCalls(), 0);
@@ -409,4 +491,36 @@ test('an unconnected channel keeps its window waiting instead of closing it, and
   assert.equal(point.window.lastErrorCode, 'CONNECTION_REQUIRED'); assert.equal(point.window.closesAt, null); assert.equal(point.window.nextAttemptAt, atHours(127));
   f.store.setSecret('channel:channel', { apiKey: 'synthetic-key' }); f.now(500); await f.service.collectDue();
   point = f.service.list(f.owner).entries[0].checkpoints[1]; assert.equal(point.window.status, 'recorded'); assert.equal(point.metrics.shares, 3); assert.equal(f.windowCalls(), 1);
+});
+// 11-19 페북 수집기 pagePostId: 자동 등록은 예전처럼 영상 · 릴스 줄만 올린다. 그 줄의 페이지 게시물 번호(pagePostId)가 피드 글 주소로 이미 기록한 게시물이면
+// 올리지 않는다(설계 검토 3 조건 3). 주소 모양이 달라도(숫자 앞칸 · 이름 앞칸 · permalink.php) 같은 번호면 같은 게시물이다. 저장 줄의 별칭은 보지 않는다.
+test('Facebook auto tracking registers reels only and skips a reel whose page post id is already recorded by a feed address', async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'synk-post-performance-'));
+  const store = new Store(directory), at = atHours(30), ago = hours => new Date(Date.parse(at) - hours * 3600000).toISOString();
+  t.after(() => { store.close(); assert.ok(directory.startsWith(join(tmpdir(), 'synk-post-performance-'))); rmSync(directory, { recursive: true, force: true }); });
+  const admin = { id: 'admin', name: 'Admin', active: true, role: 'admin', teamId: 'a' };
+  store.put('users', admin.id, admin);
+  for (const [id, platform, handle] of [['fb', 'facebook', 'synkworld'], ['ig', 'instagram', 'synk.mn']]) {
+    store.put('channels', id, { id, platform, handle, displayName: id, canonicalUrl: `https://example.invalid/${id}`, ownerIds: [admin.id], teamId: 'a', active: true, connectionVersion: 1 });
+    store.setSecret(`channel:${id}`, { accessToken: 'synthetic-token' });
+  }
+  let n = 0;
+  const post = (channelId, url, hoursAgo, extra = {}) => { const id = `${channelId}:${++n}`; store.put('posts', id, { id, channelId, externalId: String(n), title: `post ${n}`, url, publishedAt: ago(hoursAgo), source: `api:${store.get('channels', channelId).platform}`, unavailableAt: null, ...extra }); };
+  const service = createPostPerformanceService({ store, clock: () => at, collector: async () => ({ posts: [], coverage: {} }), autoTrack: true });
+  service.register(admin, { channelId: 'fb', url: 'https://www.facebook.com/123/posts/710', publishedAt: ago(5) });
+  post('fb', 'https://www.facebook.com/reel/560/', 5, { pagePostId: '123_710' });
+  service.register(admin, { channelId: 'fb', url: 'https://www.facebook.com/permalink.php?story_fbid=720&id=123', publishedAt: ago(6) });
+  post('fb', 'https://www.facebook.com/reel/561/', 6, { pagePostId: '123_720' });
+  service.register(admin, { channelId: 'fb', url: 'https://www.facebook.com/synkworld/posts/730', publishedAt: ago(7) });
+  post('fb', 'https://www.facebook.com/reel/562/', 7, { pagePostId: '123_730' });
+  post('fb', 'https://www.facebook.com/reel/563/', 2, { pagePostId: '123_740' });
+  post('fb', 'https://www.facebook.com/reel/564/', 3);
+  post('fb', 'https://www.facebook.com/synkworld/posts/750', 2, { pagePostId: '123_750', videoId: '565', aliasUrls: [{ url: 'https://www.facebook.com/reel/565/', publishedAt: ago(2) }] });
+  post('ig', 'https://www.instagram.com/p/FEED9/', 2, { pagePostId: '123_710' });
+  const entries = () => store.all('postPerformanceEntries');
+  assert.equal((await service.collectDue()).autoRegistered, 3);
+  assert.deepEqual(entries().filter(row => row.origin === 'auto').map(row => [row.url, row.publishedAt]).sort(),
+    [['https://www.facebook.com/reel/563/', ago(2)], ['https://www.facebook.com/reel/564/', ago(3)], ['https://www.instagram.com/p/FEED9/', ago(2)]]);
+  assert.equal(entries().length, 6);
+  assert.equal((await service.collectDue()).autoRegistered, 0);
 });

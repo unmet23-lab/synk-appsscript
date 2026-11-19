@@ -748,6 +748,10 @@ export function createCompanyApp(options={}) {
     const duplicate=store.all('channels').find(c=>c.id!==channel.id&&c.platform===channel.platform&&externalId&&c.externalId===externalId);
     if(duplicate)throw httpError('같은 계정이 다른 주소로 이미 등록돼 있어요. 그 채널에 담당자를 더해 주세요.');
     const stamp=clock(),date=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(stamp));
+    // 페이스북: 이번에 주소를 못 읽은 콘텐츠도 같은 줄(채널:externalId)에 https 주소가 저장돼 있으면 그 주소로 적는다 — 그 줄의 이번 수치가 빠지지 않게(8회차 perf GA2).
+    // 다른 줄은 보지 않는다. 목록 완전 여부는 수집기가 정한 그대로다.
+    const httpsUrl=value=>{try{return new URL(value).protocol==='https:';}catch{return false;}};
+    if(channel.platform==='facebook')result={...result,posts:result.posts.map(p=>{if(!p?.externalId||httpsUrl(p.url))return p;const stored=store.get('posts',`${channel.id}:${p.externalId}`);return stored?.channelId===channel.id&&httpsUrl(stored.url)?{...p,url:stored.url}:p;})};
     const validPosts=result.posts.filter(p=>{try{return !!p.externalId&&!!p.publishedAt&&!Number.isNaN(Date.parse(p.publishedAt))&&new URL(p.url).protocol==='https:';}catch{return false;}});
     if(validPosts.length!==result.posts.length){
       const omitted=result.posts.length-validPosts.length;
@@ -773,12 +777,32 @@ export function createCompanyApp(options={}) {
         const publishedDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(p.publishedAt));
         const link=new URL(p.url);if(link.protocol!=='https:')continue;
         const publicationFormat=['youtube-shorts','youtube-video','instagram-reels'].includes(p.publicationFormat)?p.publicationFormat:previous?.publicationFormat||null;
-        store.put('posts',id,{...previous,id,channelId:channel.id,externalId:p.externalId,title:text(p.title,1000)||'제목 없음',url:link.href,publishedDate,publishedAt:p.publishedAt,thumbnailUrl:p.thumbnailUrl||null,publicationFormat,source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
-        const snapshot={id:`${id}:${date}`,postId:id,date,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership};
-        for(const key of metricKeys)snapshot[key]=count(p.metrics?.[key]);
+        // 페이스북 줄에는 게시 성과가 같은 게시물을 찾을 칸 둘을 적는다 — 페이지 게시물 번호(pagePostId, 「페이지번호_게시물번호」)와 영상 번호(videoId).
+        // 칸으로만 저장하고 같은 게시물의 줄을 잇거나 합치지 않는다(11-19 유호님 결정). 게시물 번호는 수집기가 「이 줄에는 번호가 없다」고 밝힌 줄(null — post_id를
+        // 받았는데 그 게시물의 번호 줄이 아닌 영상)에서만 지우고, 밝히지 않은 줄(칸 없음 — post_id를 못 받은 영상)은 앞 값을 둔다(8회차 GA3 · 9회차 GA1 · GA7).
+        // 영상 번호는 이번 회차가 다 알 수 있었을 때(전체 수집 · 목록 완전 · 영상 목록을 읽음)만 빈 값으로 지우고, 아니면 앞 값을 둔다.
+        const facebook=channel.platform==='facebook',knows=facebook&&mode==='full'&&result.coverage?.inventoryComplete===true&&!!result.coverage?.videoPostIds;
+        const pagePostId=facebook&&typeof p.pagePostId==='string'&&/^\d{1,50}_\d{1,50}$/.test(p.pagePostId)?p.pagePostId:null;
+        const videoId=facebook&&typeof p.videoId==='string'&&/^\d{1,40}$/.test(p.videoId)?p.videoId:null;
+        const keys=!facebook?{}:{pagePostId:pagePostId||(p.pagePostId===null?undefined:previous?.pagePostId)||undefined,videoId:videoId||(knows?undefined:previous?.videoId)||undefined};
+        store.put('posts',id,{...previous,id,channelId:channel.id,externalId:p.externalId,title:text(p.title,1000)||'제목 없음',url:link.href,publishedDate,publishedAt:p.publishedAt,thumbnailUrl:p.thumbnailUrl||null,publicationFormat,...keys,source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
+        const snapshot={id:`${id}:${date}`,postId:id,date,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership},raw={};
+        for(const key of metricKeys)snapshot[key]=raw[key]=count(p.metrics?.[key]);
+        // 페이스북 당일 스냅샷: 이번 회차에 못 받은(null) 수치는 같은 날 앞서 받은 값을 지우지 않는다 — 조회수는 따로 받는 영상 목록에서 오고 그 목록만 실패한 회차가
+        // 있다(8회차 GA1). 담당(담당자 묶음 · 팀)이 같을 때만 채운다(9회차 GA3 · 10회차 GA2 — 담당자 순서는 보지 않는다). 조회수는 그 값의 영상 번호(videoId)를
+        // 스냅샷에 함께 두고, 이번에 적은 줄의 영상 번호(최근 수집이 바꾼 값 포함)와 같을 때만 채운다(9회차 perf GA1). 영상 번호가 없는 스냅샷(배포 전에 쓴 것 포함)의
+        // 조회수는 어느 영상 것인지 몰라 채우지 않는다(10회차 GA1). 시각별 관측은 이번 값 그대로다.
+        if(facebook&&mode==='full'){
+          const owners=value=>Array.isArray(value?.ownerIds)?[...new Set(value.ownerIds)].sort():[];
+          const sameOwner=(a,b)=>(a?.teamId??null)===(b?.teamId??null)&&!!a?.known===!!b?.known&&JSON.stringify(owners(a))===JSON.stringify(owners(b));
+          const found=store.get('snapshots',snapshot.id),before=found&&sameOwner(found.ownership,ownership)?found:null;
+          const rowVideo=keys.videoId??null,keepViews=!!before&&raw.views===null&&typeof before.videoId==='string'&&before.videoId===rowVideo;
+          if(before)for(const key of metricKeys)if(snapshot[key]===null&&(key!=='views'||keepViews))snapshot[key]=before[key]??null;
+          snapshot.videoId=raw.views!==null?videoId:keepViews?before.videoId:null;
+        }
         if(mode==='full')store.put('snapshots',snapshot.id,snapshot);
         if(Date.parse(p.publishedAt)>=Date.parse(stamp)-HYPE_RECENT_MS&&Date.parse(p.publishedAt)<=Date.parse(stamp)){
-          const observation={...snapshot,id:`${id}:${stamp}`,channelId:channel.id,metricPeriods:result.coverage?.metricPeriods||{},expiresAt:new Date(Math.min(Date.parse(stamp)+HYPE_RETENTION_MS,expiresAt?Date.parse(expiresAt):Infinity)).toISOString()};
+          const observation={...snapshot,...raw,...(facebook?{videoId}:{}),id:`${id}:${stamp}`,channelId:channel.id,metricPeriods:result.coverage?.metricPeriods||{},expiresAt:new Date(Math.min(Date.parse(stamp)+HYPE_RETENTION_MS,expiresAt?Date.parse(expiresAt):Infinity)).toISOString()};
           store.put('hypeObservations',observation.id,observation);
         }
         renewedPosts.add(id);
