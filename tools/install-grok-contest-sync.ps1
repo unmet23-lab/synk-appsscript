@@ -21,7 +21,7 @@ if ($existing) {
     if (!$owned) { throw '같은 이름의 다른 작업이 등록되어 있습니다.' }
 }
 $action = New-ScheduledTaskAction -Execute $pythonw -Argument $arguments -WorkingDirectory $PSScriptRoot
-$triggers = @('09:20', '15:20', '21:00') | ForEach-Object { New-ScheduledTaskTrigger -Daily -At $_ }
+$triggers = @('09:30', '15:30', '21:00') | ForEach-Object { New-ScheduledTaskTrigger -Daily -At $_ }
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
 $principal = New-ScheduledTaskPrincipal -UserId $identity -LogonType Interactive -RunLevel Limited
 $settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 20)
