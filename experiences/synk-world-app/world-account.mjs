@@ -28,7 +28,7 @@ const changed=()=>Object.assign(Error('로그인한 계정이 바뀌었어요.')
 const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);
 // Atlas 새 기록 길의 나르개(trail GET · POST · 옛 POST)는 진짜 인증 실패(401)에서만 세션을 닫는다 — 계정 클라이언트는 코드 없는 4xx를
 // ACCOUNT_UNAVAILABLE로 이름 붙여, 413 · 404 · 426 · PRODUCT_FORBIDDEN에도 로그아웃했다. 그 밖의 4xx는 그대로 던져 엔진 갈래(413은 반으로 ·
-// 그 밖은 멈추고 셸이 계정을 다시 읽음 — 계획 §18-5-2 표)에 맡긴다(Fable 5.2 끝 판 넘친 #6).
+// 그 밖은 멈추고 셸이 계정을 다시 읽음 — 계획 §18-5-2 표)에 맡긴다(끝 판 넘친 #6).
 const trailAuthErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED']);
 const trailAuthFailed=error=>trailAuthErrors.has(error?.code)||error?.status===401;
 // 반 연결(classId)이 붙지 않는 타운 경로: 입장 조회·입장 확인·첫 장면 배치는 계정 하나의 일이다.
@@ -96,7 +96,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  }
  // 겹친 확인 — 뒤에 시작한 확인(같은 로그인)이 있으면 앞의 확인은 던지지 않고 그 답을 기다린다(뒤 확인이 더 늦게 읽어 새 값이다). 뒤에서
  // 도는 계정 줄 읽기(Atlas 입구)가 설정의 학습 기록 토글 · 게임 열기의 확인을 ACCOUNT_CHANGED로 떨어뜨려 서버는 바뀌었는데 화면이 되돌아가던
- // 것(Fable 5.2 끝 판 둘째 F3). 앞의 일이 뒤의 일을 덮지 않는 것은 그대로다 — 값은 뒤 확인이 적고, 늦은 게임 열기 등은 제 차례 수로 진다.
+ // 것(끝 판 둘째 F3). 앞의 일이 뒤의 일을 덮지 않는 것은 그대로다 — 값은 뒤 확인이 적고, 늦은 게임 열기 등은 제 차례 수로 진다.
  let latestVerify=null;
  async function verify(expected){
   guard(expected);if(!session)return false;const read=++verification;
@@ -405,7 +405,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const client=clientFor(expected);
    try{await client.setLearning(enabled,expectedRevision);guard(expected);await verify(expected);guard(expected);return this.preferences();}
    catch(error){if(authErrors.has(error.code)){clear();forgetSession();}throw error;}},
-  // 학습 기록 설정을 바꾸려다 실패한 뒤 — 계정을 한 번 다시 읽어 지금 값을 돌려준다(셸이 시트의 체크 · 판 번호를 서버와 맞춘다, Fable 5.2 합친 끝 판 넘친 #12).
+  // 학습 기록 설정을 바꾸려다 실패한 뒤 — 계정을 한 번 다시 읽어 지금 값을 돌려준다(셸이 시트의 체크 · 판 번호를 서버와 맞춘다, 합친 끝 판 넘친 #12).
   async refreshLearning(){const expected=epoch;guard(expected);if(!owner)throw changed();try{await verify(expected);guard(expected);return this.preferences();}catch(error){if(authErrors.has(error.code)){clear();forgetSession();}throw error;}},
   async enrollmentRequest(operation,body){if(!['preview','claim'].includes(operation))throw new TypeError('Unknown enrollment operation');const response=await request(`enrollment/${operation}`,{method:'POST',body:JSON.stringify(body)});const data=await response.json();if(!response.ok||data.ok===false)throw Object.assign(Error(data.error?.message||'반 정보를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.'),{code:data.error?.code||'ENROLLMENT_UNAVAILABLE',status:response.status});return data;},
   stop(){clear();closed=true;unsubscribe?.();unsubscribe=null;}});

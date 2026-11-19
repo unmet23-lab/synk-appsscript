@@ -75,13 +75,13 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  let nextView=null,nextSync={coach:null,value:null,asking:null},redrawingNext=false;
  // 첫 받기가 한도(4초)를 넘겨 시간 초과로 답했을 때 받기가 끝나기를 한 번 더 기다리는 한도(GPT 끝 판 GB1).
  const SYNC_LATE_MS=60000;
- // 새 길 진단 끝 화면이 기기 기록부(손님 · 동의를 끈 계정)의 다시 접기(finishSet의 folded)를 기다리는 한도 — 접기는 기기 안이라 짧다(Fable 끝 판 F3).
+ // 새 길 진단 끝 화면이 기기 기록부(손님 · 동의를 끈 계정)의 다시 접기(finishSet의 folded)를 기다리는 한도 — 접기는 기기 안이라 짧다(끝 판 F3).
  const FOLD_WAIT_MS=4000;
  // 받기 알림(§21-20 — hearHome): 듣는 코치 · 되돌림 · 미룬 알림 둘(홈 몫 · 열린 판 몫 — 설계 검토 D4) · 다음 틱 타이머.
  let heard={coach:null,off:null,home:false,panel:false,timer:null};
  // 타이머 — target의 시계(창의 setTimeout · clearTimeout, 시험은 가짜 시계)를 쓴다. 없으면 전역 시계.
  const watchClock={set:(fn,ms)=>typeof target.setTimeout==='function'?target.setTimeout(fn,ms):setTimeout(fn,ms),clear:id=>{if(id==null)return;if(typeof target.clearTimeout==='function')target.clearTimeout(id);else clearTimeout(id);}};
- // 새 길 홈이 확인 중일 때 연 이번 주 계획이 판이 서기를 기다리는 한도와 기다리는 쪽(4-4b 끝 판 Fable F1 — openPlan · settledHome).
+ // 새 길 홈이 확인 중일 때 연 이번 주 계획이 판이 서기를 기다리는 한도와 기다리는 쪽(4-4b 끝 판 F1 — openPlan · settledHome).
  const PLAN_WAIT_MS=8000;const planWaits=new Set();
  const owner=getProgress().owner;
  const empty=engine.engine.createGame({gameId:'world-home-empty',storage:null,historyComplete:false}).summary();
@@ -435,7 +435,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   return createPlan({summary,progress:progress.exportSnapshot(),settings:values,now,recommendActivities,extra,examPlan});
  }
  // 홈 계획 한 번(drawHome) 뒤 열린 배우기 허브를 맞춘다(painted → 허브 syncToday). 맞춤은 잠금을 푼 뒤에 부른다 — 허브가 다시 그리며 부르는
- // refresh(onSummary)가 잠금에 걸려 버려지면 홈에 마지막으로 닿는 것이 허브의 updateLearning(지금 판 규칙의 단추 제목 · 튜터)이 된다(Fable 엔진급
+ // refresh(onSummary)가 잠금에 걸려 버려지면 홈에 마지막으로 닿는 것이 허브의 updateLearning(지금 판 규칙의 단추 제목 · 튜터)이 된다(엔진급
  // 끝 판 F1). 다시 그린 허브가 부른 refresh가 current를 새로 짓고, 세 줄이 그대로면 허브는 다시 그리지 않아 되풀이가 멈춘다. 홈 입구가 없는
  // 판(스위치 꺼짐)은 맞춤을 부르지 않는다.
  function refresh(){
@@ -789,7 +789,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   bindPractice(root,routes);
   return {coachNow,plan,map};
  }
- // 내 위치 · 새 길 시험 형식을 여는 중이면 열린 판을 뒤에서 다시 그리지 않는다(Fable 끝 판 F6 — 다시 그리기도 판 자원을 정리해 그 열기를 끊는다).
+ // 내 위치 · 새 길 시험 형식을 여는 중이면 열린 판을 뒤에서 다시 그리지 않는다(끝 판 F6 — 다시 그리기도 판 자원을 정리해 그 열기를 끊는다).
  // 시험 형식 열기 중에 건너뛴 다시 그리기는 적어 두었다가, 그 열기가 판을 그리지 않고 끝나면(확인 중 · 코치를 못 받음 · 오류) 열린 판이 그대로
  // 남으므로 끝에 한 번 다시 그린다(끝 판 카본 B1). 내 위치 열기는 오류가 아니면 끝에 판을 새로 그리므로 적지 않는다 — 그래서 막이마다 내 위치
  // 열기(openPosition.pending)를 먼저 보고, 시험 형식 열기는 그 뒤에 이것으로 본다(루트 시험 world-position-lifecycle이 세 함수만 떼어 돌린다).
@@ -821,7 +821,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  }
  // 서버 길 계정의 「기록이 다 왔는가」(21-3 A3)가 읽는 첫 받기 답 — 홈 코치마다 묻는다(코치 synced — 한도 4초, 손님 · 기기 길은 곧 답한다).
  // 된 답(ok)만 그 코치 동안 든다. 시간 초과면 받기가 끝날 때까지 한 번 더 길게(SYNC_LATE_MS) 기다린다 — 받기가 4초를 넘겨 끝나도 판이 「기록 일부」와
- // 닫힌 진단에 굳지 않게(GPT 끝 판 GB1). 실패면 다음에 판을 그릴 때 다시 묻고, 뒤의 받기는 받기 알림(receive — hearHome, §21-20)으로 본다(Fable 끝 판 F1).
+ // 닫힌 진단에 굳지 않게(GPT 끝 판 GB1). 실패면 다음에 판을 그릴 때 다시 묻고, 뒤의 받기는 받기 알림(receive — hearHome, §21-20)으로 본다(끝 판 F1).
  // 판은 답이 된 답으로 바뀔 때만 다시 그린다(되풀이해 묻지 않는다).
  function syncedNext(coachNow,wait=null){
   if(!coachNow||typeof coachNow.synced!=='function')return Promise.resolve(null);
@@ -842,7 +842,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 두 번 그리지 않게 화면에 듣는 곳은 하나다. 11-16 새벽의 다시 보기 셋(내 위치 판의 pulled 다시 보기 · 홈의 받기 기다림 · 깨어난 뒤 30초
  // 지켜보기)을 이것으로 바꿨다 — 다시 보기는 같은 자리에서 P1이 두 회차 이어졌고 빈틈 셋이 남았다(§21-18). 엔진의 받기 사다리와 다시 받기는
  // 그대로다(알림은 받기가 실제로 돌아야 난다).
- // 알림을 받은 자리에서는 이번 주 계획의 묶음 만남만 버린다(건너뛰기만 한 판의 만남은 요약 모양에 비치지 않는다 — Fable FA1). 그리기는 다음 틱으로
+ // 알림을 받은 자리에서는 이번 주 계획의 묶음 만남만 버린다(건너뛰기만 한 판의 만남은 요약 모양에 비치지 않는다 — FA1). 그리기는 다음 틱으로
  // 미뤄 잇달아 온 알림을 한 번으로 묶는다. 미룬 것은 둘로 든다 — 홈 몫(refresh가 그리면 비운다)과 열린 판 몫(내 위치 엔진 판 · 이번 주 계획 판을
  // 그리면 비운다). 그 사이 다른 까닭의 refresh가 홈만 그렸어도 열린 판은 타이머가 그린다(설계 검토 D4). 진단 · 짧은 연습 · 시험 형식 · 마을 확인
  // 판과 생활 레슨 · 복습 · 카페 판이 열려 있으면 그리지 않고 미뤄 둔다 — 그 판들은 닫힐 때 홈을 새로 그리고(판의 stop이 부르는 refresh, 홈의
@@ -864,7 +864,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   heard={...heard,coach:null,off:null};
   if(!coachNow)return;
   // 겉에 watch가 아예 없는 코치(받기 알림 앞의 입구 판이 실린 때)도 아래 TypeError와 같이 지금 판으로 내린다. 조용히 듣지 않으면 새 길 홈이
-  // 다른 기기의 답을 놓친다(4-4b 다시 검수 -d Fable P3).
+  // 다른 기기의 답을 놓친다(4-4b 다시 검수 -d P3).
   if(typeof coachNow.watch!=='function'){unheard();return;}
   try{heard={...heard,coach:coachNow,off:coachNow.watch(()=>heardHome(coachNow))};}
   catch(error){
@@ -935,7 +935,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(typeof P?.estimateNext!=='function'||!position.ESTIMATE_POLICY)return null;
   let counts=null;
   try{counts=typeof coachNow.firstAnswers==='function'?coachNow.firstAnswers({game:FIRST_GAME,days:FIRST_DAYS}):null;}catch{counts=null;}
-  // 근거 상자도 try 안에서 묻는다 — 상자가 던져도(깨진 저장 값 · 닫힌 코치) 판은 수를 모르는 채로 그린다(Fable 끝 판 F12). 상자가 이 자리에서
+  // 근거 상자도 try 안에서 묻는다 — 상자가 던져도(깨진 저장 값 · 닫힌 코치) 판은 수를 모르는 채로 그린다(끝 판 F12). 상자가 이 자리에서
   // 묻기를 그만두었으면 읽지 못함이다(설계 주인 11-17 저녁 답 4 나 — 실패 뒤 「기록 확인 중」을 남기지 않는다).
   let unread=false;
   if(!counts){try{counts=evidenceAsker.answer(coachNow);unread=!counts&&evidenceAsker.missed(coachNow);}catch{counts=null;}}
@@ -1020,7 +1020,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   // 한 가지 고치기(열려 있고 계획 시각 앞일 때만), 말하기는 「말하기 평가도 준비해요」를 켠 학생의 이번 주에 아직 안 해 본 유형(이 기기 기록) 가운데
   // 첫 유형이다. 유형 열쇠는 그 말하기 항목의 능력 이름 끝 마디다(ko.speaking.answer → answer).
   // 시험 형식은 학생의 시험으로 고른다 — 홈 줄 · 이번 주 계획 단추가 여는 판(openMock)과 알림 시트(mockReady)가 고르는 시험이다. 내 위치 판에서
-  // 누른 시험 단추(boardExam)로 고르면 그 시험 판의 분이 홈에 서고, 두 시험의 풀이 다르게 남은 날에는 줄이 섰는데 누르면 열 수 없었다(Fable 끝
+  // 누른 시험 단추(boardExam)로 고르면 그 시험 판의 분이 홈에 서고, 두 시험의 풀이 다르게 남은 날에는 줄이 섰는데 누르면 열 수 없었다(끝
   // 판 F5 · F9). 짧은 진단은 여는 길도 판의 시험을 따르므로 그대로 둔다(위 exam).
   const mockNow=position.topik?.ready===false?null:mockNextPlan(coachNow,values,studentExam(values),metMock),examWeek=position.exam.examWeek(now);
   // 이번 주에 한 판의 수(이 기기의 판 기록) — 점검 칸의 시험 형식 줄과 차례 돌리기의 한 수(world-today.mjs checkShift)가 함께 읽는다. 판 기록을
@@ -1028,7 +1028,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   let mockDone=null;try{const times=homeNext?.planLog?.(coachNow)?.times?.('mock');if(Array.isArray(times))mockDone=times.filter(at=>at>=examWeek.start&&at<examWeek.end).length;}catch{mockDone=null;}
   const mock=mockNow?.status==='ready'?{minutes:mockNow.minutes,audioRequired:(mockNow.sections||[]).some(row=>row.section==='listening'&&row.status==='ready'),
    done:mockDone>0}:null;
-  // 이번 주 계획 판의 시험 형식 칸(Fable 끝 판 F8 · 설계 주인 11-17 저녁 답 3): 지금 판(planWith)과 같은 꼴 · 같은 조건으로 고르기 결과를 싣는다 —
+  // 이번 주 계획 판의 시험 형식 칸(끝 판 F8 · 설계 주인 11-17 저녁 답 3): 지금 판(planWith)과 같은 꼴 · 같은 조건으로 고르기 결과를 싣는다 —
   // 계획 판(renderExamPlan)은 ready일 때만 그 칸을 그린다. 고르기가 홈 줄 · 알림 시트와 같아 칸과 여는 판이 어긋나지 않는다.
   if(mockNow)examPlan.mock={status:mockNow.status,minutes:mockNow.minutes,total:mockNow.total,sections:mockNow.sections.map(row=>({section:row.section,status:row.status,count:row.items.length,minutes:row.minutes}))};
   const row53=info.type==='topik2'?writingList().find(row=>row.route==='writing:53')||null:null;
@@ -1051,7 +1051,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    try{homeNext?.planLog?.(coachNow)?.record(area,Date.now());}catch{/* 이 기기에서 세지 못할 뿐이다 */}
   };
  }
- // 다시 그릴 때 펴 둔 능력 줄(details[data-skill])을 다시 편다(Fable 다시 검수). 다시 그린 판의 줄은 모두 접힌 채로 서는데, 닫힌 줄 안의 단추에는
+ // 다시 그릴 때 펴 둔 능력 줄(details[data-skill])을 다시 편다(다시 검수). 다시 그린 판의 줄은 모두 접힌 채로 서는데, 닫힌 줄 안의 단추에는
  // 초점이 가지 않고 접힌 만큼 스크롤 자리도 어긋난다. 그래서 스크롤과 초점을 되돌리기 전에 줄부터 다시 편다.
  function openRowsOf(root){try{return[...(root?.querySelectorAll?.('details[data-skill]')||[])].filter(el=>el.open===true).map(el=>el.getAttribute('data-skill'));}catch{return[];}}
  function reopenRows(root,skills){if(!root||!skills?.length)return;try{for(const el of root.querySelectorAll?.('details[data-skill]')||[])if(skills.includes(el.getAttribute('data-skill')))el.open=true;}catch{/* 펴 둔 줄은 덤이다 */}}
@@ -1060,7 +1060,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
  // 있던 초점은 그 능력 줄(details[data-skill])의 summary로 되돌린다.
  const NEXT_FOCUS=['data-position-diagnostic','data-position-exam','data-position-practice','data-position-recheck','data-position-writing'];
  // 이번 주 계획 판의 단추 — 알림으로 열린 계획 판을 다시 그릴 때(D3)도 판 안의 초점을 같은 단추로 되돌린다. 홈의 판 보이기는 부를 때마다 닫기 단추에
- // 초점을 두므로, 되돌리지 않으면 초점을 잃는다(4-4b 다시 검수 -d GPT GA1 · Fable).
+ // 초점을 두므로, 되돌리지 않으면 초점을 잃는다(4-4b 다시 검수 -d GPT GA1).
  const PLAN_FOCUS=['data-plan-next','data-plan-practice','data-plan-game','data-plan-recheck','data-plan-writing','data-plan-speaking','data-plan-mock','data-view'];
  function nextFocusOf(root,names=NEXT_FOCUS){
   try{
@@ -1110,7 +1110,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   if(start&&data.plan.status==='ready'&&data.plan.items.length)startDiagnosticNext(coachNow,data);
  }
  // 열린 새 길 판을 다시 그린다 — 판이 다시 정해짐(retired → 확인 중) · 홈 코치가 섬 · 첫 받기 답이 옴 · 플래너가 옴(21-2). 진단 중(판 대신 문항 판)이거나
- // 내 위치 · 새 길 시험 형식을 여는 중이면 두고(Fable 끝 판 F6), 다시 그리는 동안 refresh가 이것을 또 부르지 않게 막는다. 닫으며 흐려지는 판(판
+ // 내 위치 · 새 길 시험 형식을 여는 중이면 두고(끝 판 F6), 다시 그리는 동안 refresh가 이것을 또 부르지 않게 막는다. 닫으며 흐려지는 판(판
  // 종류가 빈 값)은 다시 그리지 않는다 —
  // 닫은 판이 다시 열린다(설계 검토 D1).
  function redrawNext(){
@@ -1141,7 +1141,7 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
   const counted=planOnce(coachNow,'recheck'); // 이번 주 계획의 다시 확인(4-4b)
   let clip=null,playing=false,notice='',ended=false,finishing=false,unwatch=()=>{};
   const silence=()=>{const sound=clip;clip=null;playing=false;try{sound?.pause();}catch{}};
-  // 그만두면 세션이 판을 기록 없이 닫는다(Fable 끝 판 F2). 손님 요약이 그 답으로 다 접히면 열린 내 위치 판을 한 번 다시 그린다 — 판은 접히기 전 칸(따라오는 중)으로 먼저 선다.
+  // 그만두면 세션이 판을 기록 없이 닫는다(끝 판 F2). 손님 요약이 그 답으로 다 접히면 열린 내 위치 판을 한 번 다시 그린다 — 판은 접히기 전 칸(따라오는 중)으로 먼저 선다.
   const stop=()=>{unwatch();if(ended)return;ended=true;silence();let set=null;try{set=session.stop();}catch{set=null;}if(session.results().length)diagnosed=true;counted(session.results());queueMicrotask(()=>refresh());if(set?.folded)Promise.resolve(set.folded).then(()=>redrawNext(),()=>{});};
   // 코치가 닫혔다(판을 다시 정함 — DISPOSED · retired) — 안내 한 줄과 함께 진단을 닫고 내 위치를 다시 연다(그 판으로).
   const closed=()=>{if(ended&&!finishing)return;finishing=false;stop();home.toast(t('practice.next.changed'));void openMyPosition();};
@@ -1167,14 +1167,14 @@ export function createWorldEducation({home,getProgress,engine,createPlan,launchG
    try{await session.settled();}catch{/* 저장에 실패한 답은 혼자 맞힘이 아니다 */}
    counted(session.results());
    // 저장을 기다리는 사이 판이 닫혔거나(패널을 닫음) 코치가 닫혔다 — 판 기록 없이 닫는다(닫힌 코치면 session.finish가 null). 닫지 않으면 손님
-   // 칸이 그 답으로 다시 접히지 않고 다음 진단이 같은 기본 판으로 묶였다(Fable 끝 판 F2). 끝내기가 판을 끝난 것으로 두어 판을 닫을 때의 정리(stop)가
+   // 칸이 그 답으로 다시 접히지 않고 다음 진단이 같은 기본 판으로 묶였다(끝 판 F2). 끝내기가 판을 끝난 것으로 두어 판을 닫을 때의 정리(stop)가
    // 아무것도 하지 않으므로, 판만 닫혔으면 여기서 stop처럼 홈을 다시 그리고 요약이 접히면 열린 내 위치 판을 다시 그린다. 코치가 닫혔으면 closed가
    // 내 위치를 이미 열었다(시험 형식 판의 끝 판 검수 카본 E1과 같은 막이).
    if(!finishing||!box.isConnected){const left=finishing;finishing=false;unwatch();let set=null;try{set=session.finish({record:false});}catch{set=null;}if(left){if(session.results().length)diagnosed=true;queueMicrotask(()=>refresh());if(set?.folded)Promise.resolve(set.folded).then(()=>redrawNext(),()=>{});}return;}
    finishing=false;unwatch();
    const results=session.results();if(results.length)diagnosed=true;
    // 기기 기록부(손님 · 동의를 끈 계정 — storage.guest)는 판을 닫으면 요약이 그 판의 답으로 다시 접힌다. 접힌 뒤의 칸으로 끝 화면을 그린다(21-3 판 끝
-   // 칸 견주기 · Fable 끝 판 F3). 계정은 서버가 접어 칸이 아직 모를 수 있으니 기다리지 않는다(문항 줄은 답의 evidence로 그린다). 기록부는 판을
+   // 칸 견주기 · 끝 판 F3). 계정은 서버가 접어 칸이 아직 모를 수 있으니 기다리지 않는다(문항 줄은 답의 evidence로 그린다). 기록부는 판을
    // 닫기 전에 읽는다 — 닫은 뒤 첫 요약 읽기가 접힌 칸이게.
    let local=false;try{local=coachNow.summary()?.storage?.guest===true;}catch{local=false;}
    // 판 기록은 학습자 응답이 켜진 계정만(지금 판 finishSet과 같은 규칙) — 그 밖에는 닫기만 한다(손님 요약이 그 판의 답으로 다시 접힌다).
@@ -1531,7 +1531,7 @@ async function townSend(coachNow,{wait=true}={}){
   const top=()=>{for(const node of [box.closest?.('#panel-content'),box.closest?.('dialog')])if(node)node.scrollTop=0;};
   function paint(focus='.wpos-run-skill'){
    const now=session.current;if(!now){void finish();return;}
-   // 듣기 문항은 듣기 전 화면에 찾아볼 글이 없다 — 「들으면서 먼저 찾아보세요」 꼴(4-1 화면 Fable 5.2 최종 F2).
+   // 듣기 문항은 듣기 전 화면에 찾아볼 글이 없다 — 「들으면서 먼저 찾아보세요」 꼴(4-1 화면 최종 F2).
    const heard=now.item.audioRequired??now.item.modality==='listening';
    const cue=now.stubborn&&now.targetLabel?t(heard?'practice.next.cue.listen':'practice.next.cue',{name:now.targetLabel}):null;
    box.innerHTML=view.renderPracticeItem({view:{...now,cue},skill,feedback:now.feedback,playing:player.playing,notice});
@@ -1566,7 +1566,7 @@ async function townSend(coachNow,{wait=true}={}){
     else if(button.hasAttribute('data-practice-skip')){player.silence();session.skip();advance();}
     else if(button.hasAttribute('data-practice-stop')){stop();void openMyPosition();}
     // 「새 말 더 배우기」로 연 판 뒤의 「N문항 더 하기」는 같은 방문 안에서 more를 이어 넘긴다 — 오늘 더 배우겠다고 고른 사람이 판마다
-    // 0문항 「여기까지」를 거쳐 두 번 누르지 않게(4-1 화면 Fable 5.2 최종 P1). 내 위치로 나갔다 다시 들어오면 처음부터.
+    // 0문항 「여기까지」를 거쳐 두 번 누르지 않게(4-1 화면 최종 P1). 내 위치로 나갔다 다시 들어오면 처음부터.
     else if(button.hasAttribute('data-practice-again'))void Promise.resolve(startPractice(skillId,{more})).catch(failed);
     else if(button.hasAttribute('data-practice-more'))void Promise.resolve(startPractice(skillId,{more:true})).catch(failed);
     else if(button.hasAttribute('data-practice-position'))void openMyPosition();
@@ -1580,7 +1580,7 @@ async function townSend(coachNow,{wait=true}={}){
  // 안내 → 영역(듣기 → 읽기, 실제 시험 순서) → 영역 사이 → 끝 한 장(영역별 맞힘·틀림·답하지 않음, 틀린 문항 해설, 다음 연습).
  // 고른 답은 바로 첫 답으로 기록되고 바꾸지 않는다. 정답·해설은 끝난 뒤에만. 급수·점수로 바꾸지 않는다.
  let mockOpen=0;
- // 판 셋(4-4d — 단계4_계획 §21-23의 1 · 설계 검토 Fable F7): 여는 곳 넷(알림 시트 · 홈 줄 · 내 위치 단추 · 이번 주 계획 단추)이 모두 이 검사를 지난다.
+ // 판 셋(4-4d — 단계4_계획 §21-23의 1 · 설계 검토 F7): 여는 곳 넷(알림 시트 · 홈 줄 · 내 위치 단추 · 이번 주 계획 단추)이 모두 이 검사를 지난다.
  // 지금 판이면 지금 판 연습(openMockOld — 손대지 않는다), 아니면 새 길 연습(openMockNext — 새 길 문서에서는 옛 코치 'world-mock'을 열지 않는다).
  function openMock(options){
   if(!position?.mock)return;
@@ -1697,14 +1697,14 @@ async function townSend(coachNow,{wait=true}={}){
  // 내려오면 지금 판 열기로 넘긴다(내 위치와 같다). 엔진 판이면 홈 코치의 첫 받기 답을 한도 안에서 기다린 뒤 고르고, 열 수 없으면(처음 보는 문항이
  // 모자람 · 기록이 다 오지 않음) 지금처럼 알리고 내 위치로 간다. 연습은 입구가 연 'world-mock' 코치로 한다(판 번호 set.world-mock.…이 예상 급수
  // 근거의 판을 가린다 — §21-23의 2). 그 코치를 못 받으면(입구가 지금 판으로 정함 · 엔진을 못 받음) 지금 판의 안내 한 줄이다. 기다림(판이 서기 ·
- // 첫 받기 · 코치 받기)이 길 수 있어, 그 사이 학생이 다른 판을 열거나 닫았으면 덮지 않는다(이번 주 계획과 같은 막이 — 4-4b 다시 검수 Fable FA2).
+ // 첫 받기 · 코치 받기)이 길 수 있어, 그 사이 학생이 다른 판을 열거나 닫았으면 덮지 않는다(이번 주 계획과 같은 막이 — 4-4b 다시 검수 FA2).
  // 열 수 없는 날에는 시험 형식 코치를 열지 않는다(고르기는 홈 코치로 한다).
  async function openMockNext({exam=null}={}){
   check();const ticket=++mockOpen,panel=home.openPanel?.()??'';
   openMockNext.pending=ticket;
   let settled=false;
   try{
-  // 기다리는 동안 판 종류가 바뀌었거나, 판을 닫거나 다른 판을 열어 판 자원이 정리되면 이 표만 무효로 한다(내 위치 열기와 같은 판 자원 — Fable 끝
+  // 기다리는 동안 판 종류가 바뀌었거나, 판을 닫거나 다른 판을 열어 판 자원이 정리되면 이 표만 무효로 한다(내 위치 열기와 같은 판 자원 — 끝
   // 판 F6). 판 종류로만 가리면 내 위치 · 짧은 진단 · 이번 주 계획처럼 종류가 같은 판을 그 사이 열어도 늦게 온 안내가 그 판을 덮고 연습을 닫았다.
   // 기다리는 동안은 열린 판을 뒤에서 다시 그리지 않는다(pending — 다시 그리기도 판 자원을 정리하므로, 첫 받기 답이 내 위치 판을 다시 그리면 이
   // 열기가 끊긴다). 판을 보이기 직전에 settled가 되어 그 판의 정리는 무시된다. 판이 바뀌면 건너뛴 다시 그리기도 지운다(새 판은 새로 그려졌다).
@@ -1741,8 +1741,8 @@ async function townSend(coachNow,{wait=true}={}){
  // 새 길 시험 형식 연습 한 번(§21-23의 1): 겉(영역 · 이동 · 재생 · 답 · 영역 사이 · 끝 한 장)은 지금 판 runMock과 같고, 새 코치를 다룬다
  // (world-mock-next.mjs createMockNextSession). 판을 다시 정해 코치가 닫히면(DISPOSED · retired) 안내 한 줄과 함께 닫고 내 위치를 연다(진단 새 길과
  // 같다). 끝 한 장은 답이 다 저장된 뒤의 evidence로 그린다. 판은 끝까지 하면 판 기록(학습자 응답이 켜진 계정만 — 지금 판 finishSet과 같은 규칙)과
- // 함께, 그만두거나 판이 닫히면 기록 없이 닫는다 — 닫지 않으면 손님 요약이 그 판의 답으로 다시 접히지 않는다(진단 Fable 끝 판 F2). 기기 기록부(손님 ·
- // 동의를 끈 계정)는 접힌 뒤의 칸으로 끝 한 장을 그린다(진단 Fable 끝 판 F3).
+ // 함께, 그만두거나 판이 닫히면 기록 없이 닫는다 — 닫지 않으면 손님 요약이 그 판의 답으로 다시 접히지 않는다(진단 끝 판 F2). 기기 기록부(손님 ·
+ // 동의를 끈 계정)는 접힌 뒤의 칸으로 끝 한 장을 그린다(진단 끝 판 F3).
  function runMockNext({next,plan,sections,exam,mode=null,audioAvailable=true,box,top}){
   const session=homePlanner.position.createMockNextSession({coach:next,sections,exam,plays:{allowedPlays:position.mock.allowedPlays,nextPlay:position.mock.nextPlay}});
   // finishing: 끝 한 장이 답 저장을 기다리는 중 · drawn: 끝 한 장을 그렸다(한 번만).
@@ -1813,7 +1813,7 @@ async function townSend(coachNow,{wait=true}={}){
    const button=event.target.closest?.('button');if(!button||button.disabled)return;
    try{
     // 끝 한 장이 답 저장을 기다리는 동안(finishing)의 누름은 받지 않는다 — 그 사이 「그만두기」가 판을 기록 없이 먼저 닫아 끝까지 마친 판의 판
-    // 기록과 응답 줄이 사라졌다(Fable 끝 판 F7 · 짧은 진단의 ended 막이와 같다). 끝 한 장의 단추(내 위치 · 홈)는 그린 뒤라 그대로 받는다.
+    // 기록과 응답 줄이 사라졌다(끝 판 F7 · 짧은 진단의 ended 막이와 같다). 끝 한 장의 단추(내 위치 · 홈)는 그린 뒤라 그대로 받는다.
     if(finishing)return;
     check();
     // 영역 안에서 답하거나 다른 번호로 옮겨도 듣던 소리는 끊지 않는다(지금 판과 같다). 소리는 영역이 끝날 때 · 그만둘 때만 멈춘다.
@@ -1842,7 +1842,7 @@ async function townSend(coachNow,{wait=true}={}){
  let planOpen=0;
  // 새 길 홈이 확인 중이면(홈 코치 · 플래너가 서기 전) 홈 계획에 이번 주 계획이 실리지 않는다(world-today — 엔진 판일 때만). 그대로 읽으면 시험을 저장한
  // 학생을 「계획 없는 학생」으로 보고 목표 창을 열었다 — 주소의 ?exam= 바로가기, 알림의 「이번 주 연습」, 확인 중으로 돌아간 사이의 계획 단추(4-4b 끝 판
- // Fable F1). 그래서 시험을 고른 학생이면 판이 설 때까지(엔진 · 지금 판) 한도 안에서 기다리고, 넘기면 목표 창 대신 「확인 중」이다.
+ // F1). 그래서 시험을 고른 학생이면 판이 설 때까지(엔진 · 지금 판) 한도 안에서 기다리고, 넘기면 목표 창 대신 「확인 중」이다.
  const examChosen=()=>{try{return Boolean(position?.exam?.examInfo?.(settingsFor(getProgress().learningProfileValues())));}catch{return false;}};
  // 판이 서거나(엔진 · 지금 판) 문서가 닫히면 기다림을 모두 깨운다 — 닫히면 판 상태가 지금 판이 되지만, 그 규칙에 기대지 않고 닫힘을 먼저 본다(4-4b 다시 검수 카본 A1).
  function wakePlanWaits(){if(!stopped&&homePhase()==='checking')return;for(const done of [...planWaits])done();}
@@ -1854,7 +1854,7 @@ async function townSend(coachNow,{wait=true}={}){
   if(keepScroll&&(openPosition.pending||heldMock()))return 'skipped';
   check();const ticket=++planOpen;
   if(!keepScroll){try{await prepare();}catch{/* the plan shows what this device has */}check();try{await target.SYNKLearningHost?.ready?.();}catch{/* device-local evidence still counts */}check();
-   // 기다린 사이 학생이 다른 판을 열었으면 덮지 않는다 — 기다림이 8초까지 길어서 학생이 누른 열기도 본다(4-4b 다시 검수 Fable FA2).
+   // 기다린 사이 학생이 다른 판을 열었으면 덮지 않는다 — 기다림이 8초까지 길어서 학생이 누른 열기도 본다(4-4b 다시 검수 FA2).
    if(homePhase()==='checking'&&examChosen()){const panel=home.openPanel?.()??'';await settledHome();check();if(!quiet&&(home.openPanel?.()??'')!==panel)return 'skipped';}}
   if(ticket!==planOpen||quiet&&home.openPanel?.())return 'skipped';
   const plan=refresh(),examPlan=plan?.examPlan;
@@ -1876,7 +1876,7 @@ async function townSend(coachNow,{wait=true}={}){
  }
  // 새 길 홈의 플래너 · 감시(§20-4) — 입구가 엔진을 받아야 선다. 홈 코치는 짧은 연습 문항 풀 전체의 은행으로 연다(학생의 수준으로 거르기 전 — 설계 검토 H24).
  // 공개 TOPIK 은행은 짧은 연습을 열 때처럼 잠깐 기다린다(bankReady). 그래도 은행 없이 열었으면 은행이 온 뒤 한 번 다시 연다(loadBank → reopen) —
- // 은행 없이 연 코치는 그 은행 문항의 단위를 몰라 짧은 연습 줄이 그 문서에서 끝까지 서지 않는다(Fable 엔진급 끝 판 F2).
+ // 은행 없이 연 코치는 그 은행 문항의 단위를 몰라 짧은 연습 줄이 그 문서에서 끝까지 서지 않는다(엔진급 끝 판 F2).
  async function openHome(){
   try{await bankReady();}catch{/* 은행 없이 열고, 오면 다시 연다 */}
   homeBare=Boolean(position?.topik)&&!position.topik.ready;

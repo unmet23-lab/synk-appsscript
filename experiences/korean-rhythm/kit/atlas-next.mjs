@@ -87,7 +87,7 @@ async function soloCoach(win, { gameId, banks, label }) {
   return coach;
 }
 
-// 고른 후보를 게임이 넘긴 원래 후보로 되맞춘다 — 문을 거친 값은 셸 창의 사본이다(Fable 5.2 다시 검토 F2).
+// 고른 후보를 게임이 넘긴 원래 후보로 되맞춘다 — 문을 거친 값은 셸 창의 사본이다(다시 검토 F2).
 function originals(result, candidates) {
   if (!result?.selected) return result;
   const byKey = new Map((candidates ?? []).map(candidate => [candidate?.itemKey, candidate]));

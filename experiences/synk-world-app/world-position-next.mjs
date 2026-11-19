@@ -161,7 +161,7 @@ function catchUp(cell, line, answered) {
 // 기록이 다 왔는가(§21-3 A3 · 카본 A12) — 기기에만 두는 기록부(storage.guest — 손님 · 동의를 끈 계정)는 바탕 요약이 있고 보기가 기다리지
 // 않으면 다 왔다. 서버 길 계정은 그에 더해 이 문서에서 받기가 됐고 올리기가 멈추지 않았을 때만(stopped · writesOff · switchOff). 받기가 됐는가는
 // 첫 받기의 된 답(synced().ok)이나 storage.sync.pulled로 본다 — 첫 받기가 실패로 끝나면 엔진은 synced()에 그 실패를 그 문서 동안 돌려주고, 뒤의
-// 받기가 되면 pulled만 참이 된다(Fable 끝 판 F1 · 설계 주인 11-16).
+// 받기가 되면 pulled만 참이 된다(끝 판 F1 · 설계 주인 11-16).
 export function recordsComplete(storage, synced = null) {
   if (!storage || storage.base !== true || storage.waiting === true) return false;
   if (storage.guest === true) return true;

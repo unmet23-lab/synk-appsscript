@@ -114,7 +114,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 그대로 쓴다 — 레슨 도중 판이 바뀌어 다시 고르면 본문항 보임은 앞 기록부에, 답은 뒤 기록부에 가 슬롯을 못 찾고 버려졌다(GPT 처리 판 GA1).
  // 그 시도가 옛 거울이면 옛 코치를 준비하고(새 판 겉이면 하지 않는다 — 생활 코치는 셸이 문서 시작 때 연다, §19-1 ⑤ M7) 입구에 판을 다시
  // 묻는다(§19-3 7 — 열 때마다 묻는다, 새 길이 되면 다음 시도부터). 입구가 없는 지금 판(라이브)은 늘 옛 거울 · 옛 코치 준비 — 4-2 앞과 같다.
- // 새 판 겉이면 그 자리에서 코치를 청해 판 바뀜을 듣게 한다 — 첫 문항 전(소개 · 이야기 · 카페 인사)에 판이 내려가도 화면이 닫힌다(Fable 5.2 합친 끝 판 F7).
+ // 새 판 겉이면 그 자리에서 코치를 청해 판 바뀜을 듣게 한다 — 첫 문항 전(소개 · 이야기 · 카페 인사)에 판이 내려가도 화면이 닫힌다(합친 끝 판 F7).
  const prepareLearning=({keep=false}={})=>{if(!(keep&&attemptTrail))attemptTrail=newTrail&&pathNow()!=='old'?newTrail:oldTrail;if(attemptTrail!==oldTrail){try{attemptTrail.prepare?.();}catch{/* 판 겉이 첫 일에 다시 청한다 */}return;}try{void learning?.prepare?.();}catch{/* the mirror retries when the coach appears */}if(nextPath)try{void Promise.resolve(nextPath.coach()).catch(()=>{});}catch{/* 다음 시도에 다시 묻는다 */}};
  // 판이 바뀌어 생활 코치가 닫혔다(새 길) — 열린 레슨 · 복습 화면이면 안내 한 줄과 함께 닫는다(진도는 남아 다시 열면 이어진다, §19-1 ①).
  function retiredClose(){if(ended||!shown)return;try{void getProgress().flush().catch(()=>{});}catch{}home.closePanel();updateHome();home.toast(t('life.next.changed'));}
@@ -162,7 +162,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 지금 판(입구 없음 · 라이브)은 12/10까지 그대로라, 15초마다 홈을 새로 해도 열린 복습 화면은 다시 그리지 않는다.
  const reviewSign=s=>[s.dueState??'',s.dueCount,(s.dueIds||[]).join(','),s.nextReviewAt??''].join('|');
  // 다시 그리기는 튜터의 「표현 도움」 · 「연습하기」 창이 열려 있으면 미룬다(다시 그리면 튜터를 새로 세워 그 창이 닫혔다 — 다음 새로 하기에 다시 본다).
- // 허브 · 팩 화면은 확인 중으로 그린 뒤 판정이 엔진으로 서는 때 한 번만 다시 그린다(복습 줄 · 「복습 보기」 단추 — Fable 5.2 합친 끝 판 넘친 #6).
+ // 허브 · 팩 화면은 확인 중으로 그린 뒤 판정이 엔진으로 서는 때 한 번만 다시 그린다(복습 줄 · 「복습 보기」 단추 — 합친 끝 판 넘친 #6).
  const tutorBusy=()=>{try{const m=companion?.metrics?.();return !!(m?.guideOpen||m?.practice);}catch{return false;}};
  function updateHome(){if(ended)return;try{const value=summary();if(nextPath&&shown&&!rendering&&reviewMark!==reviewSign(value)&&!tutorBusy()){if(screenView==='review'){review({again:true});return;}if(String(reviewMark).startsWith('checking|')&&value.dueState==='engine'){if(screenView==='packs'){packs({again:true});return;}if(String(screenView).startsWith('pack:')){pack(screenView.slice(5),{again:true});return;}}}home.updateLearning?.(value,{snapshot:getProgress().exportSnapshot(),lessons:LESSONS,preparePractice:prepareHomePractice,completePractice:completeTutorPractice,finishDay:finishTutorDay});onSummary(value);}catch{}}
  function completeTutorPractice(questionId,tutorId){if(ended)throw Error('로그인한 계정이 바뀌어 저장하지 못했어요. 다시 시도해 주세요.');return getProgress().recordGuidedPractice({questionId,tutorId});}
@@ -216,7 +216,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  }
  const retryButton=q=>home.mountLifeTutor&&home.tutor?.().tutor?`<button class="life-tutor-retry" data-life-tutor-retry="${escape(q.id)}">${t('life.tutorRetry')}</button>`:'';
  // 다시 그리기(again) 전 초점이 있던 생활 단추 — 판을 다시 열면 닫기 단추로 초점이 옮겨 가 엔터가 화면을 닫았다(넘친 #6). 같은 data-life-* 단추로 되돌린다:
- // 속성 이름 · 값을 들고, 다시 그린 판에서 그 이름의 단추 가운데 값이 같은 것 먼저(레슨 · 팩 목록처럼 이름이 같은 단추가 여럿 — 카본 Fable 처리 다시
+ // 속성 이름 · 값을 들고, 다시 그린 판에서 그 이름의 단추 가운데 값이 같은 것 먼저(레슨 · 팩 목록처럼 이름이 같은 단추가 여럿 — 카본 처리 다시
  // 검수 A2), 없으면 그 이름의 첫 단추. 값은 선택자에 넣지 않고 견준다(따옴표 · 역슬래시를 거르지 않아도 된다).
  const focusedKey=()=>{try{const el=document.activeElement;if(!el||el===document.body||!content.contains?.(el))return null;const attr=[...(el.attributes||[])].find(a=>a.name.startsWith('data-life-'));return attr?{name:attr.name,value:attr.value??''}:null;}catch{return null;}};
  const refocus=key=>{try{const list=[...(content.querySelectorAll?.(`[${key.name}]`)||[])];const target=(key.value?list.find(el=>el.getAttribute?.(key.name)===key.value):null)||list[0];target?.focus({preventScroll:true});}catch{/* 초점은 덤이다 */}};
@@ -587,13 +587,13 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const id=run.ids[index],record=getProgress().exportSnapshot().reviews[id],l=lessonById(record.lessonId),original=l.questions.find(q=>q.id===record.questionId),q=original.review;if(!lastFeedback){
    // 새 길: 앞선 때의 도움 표시는 지금 도움이 아니다 — 보이기 전에 그 표시를 걷고, 표시가 있었는데 지금 도움이 아니면 두 기록부의 앞 칸(그 도움이 붙은
    // 제시)을 놓아 새로 보인다(문서를 연 채 날을 넘겨 이은 판은 같은 run.id라 칸을 다시 써 Atlas에 어제 해설이 붙은 답으로 남았다 — GPT 다시 검수 GA3).
-   // 놓기는 걷기 쓰기의 성공이 아니라 「표시 있음 · 지금 도움 아님」으로 가른다 — 걷기가 저장 충돌로 던져도 놓는다(Fable 5.2 설계 확인 고2). 같은 날이면
+   // 놓기는 걷기 쓰기의 성공이 아니라 「표시 있음 · 지금 도움 아님」으로 가른다 — 걷기가 저장 충돌로 던져도 놓는다(설계 확인 고2). 같은 날이면
    // 그대로이고, 판정이 없으면(지금 판 · 라이브) 표시가 곧 도움이라 놓지 않는다. 지키는 것은 「답이 붙는 제시의 도움 = 제품 helped」다(옛 Trail의
    // assisted는 문항 · 계열의 이력이라 이 잣대가 아니다 — 설계 확인 고1).
    const marked=run.pendingHelp?.[id]===true;try{getProgress().dropStaleHelp(id);}catch{/* 걷기가 던져도 아래가 칸을 놓는다 */}
    helped=getProgress().reviewHelped(id);helpBy=helped?'user':null;if(marked&&!helped)releaseReview(reviewSlot(run.id,id));
    // 지금 도움인 표시면 해설이 펼쳐 보인다 — 그 본 때를 진도에 알린다(표시의 때 = 마지막으로 본 때: 단추를 다시 누르지 않고 다시 열어 본 해설도 —
-   // 10:00 해설을 23:55에 다시 열어 보고 00:03에 답하면 도움 받은 답, Fable 5.2 설계 검토 D1). 지금 판 · 라이브의 때 없는 표시면 쓰지 않는다.
+   // 10:00 해설을 23:55에 다시 열어 보고 00:03에 답하면 도움 받은 답, 설계 검토 D1). 지금 판 · 라이브의 때 없는 표시면 쓰지 않는다.
    if(helped)try{getProgress().markReviewHelp(id);}catch{/* 표시는 그대로 — 답이 그 도움을 싣는다 */}}
   context={lessonId:l.id,phase:'review',questionIndex:index,reviewId:id,reviewQuestion:q};
   // 거울: 답하지 않은 새 상황 복습이 보였다(미리 본 도움이 있으면 그 도움도).

@@ -15,7 +15,7 @@
 //   다시 그리기 — 적은 답의 자리가 기기 자리와 같을 때만 한 번. 쓸 수 없는 답(완결되지 않음 · 뒤처짐)으로는 다시 그리지 않는다.
 // 규칙마다 qa/position-mutants.mjs에 깬 변형이 있고, qa/atlas-next-month-answer.test.mjs의 셈 시험이 잡는다.
 // 예상 급수의 근거 상자(4-4d — 단계4_계획 §21-23의 2)도 이 상자를 쓴다. 열쇠 머리 · 값의 꼴 · 받은 답 읽기 · 묻는 함수 · 까닭 코드 · 내는 꼴만
-// 종류(kind — MONTH_KIND · FIRST_KIND)로 받고, 묻기 · 받기 · 다시 그리기의 상한과 자리 견주기는 같다(설계 검토 Fable F5). 지우는 길은 두 종류의
+// 종류(kind — MONTH_KIND · FIRST_KIND)로 받고, 묻기 · 받기 · 다시 그리기의 상한과 자리 견주기는 같다(설계 검토 F5). 지우는 길은 두 종류의
 // 열쇠를 함께 지운다.
 const VERSION = 1;
 const GEN = /^(\d{13})\.[0-9a-z]{1,16}$/;
@@ -23,7 +23,7 @@ const finite = value => Number.isFinite(value);
 const plain = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 
 // 학습일 답을 막는 내 사건이 있나 — 서버 접기가 단위 줄을 바꾸는 내 사건(답 · 도움 · 본인 말 · 제외) 가운데 아직 접혀 돌아오지 않은 것
-// (코치 summary().storage.unfoldedRows — 설계 주인 11-17, 4-4c 끝 판 Fable F4). 응답을 지우거나 「이미 알아요」를 말한 뒤 그 사건이 접혀
+// (코치 summary().storage.unfoldedRows — 설계 주인 11-17, 4-4c 끝 판 F4). 응답을 지우거나 「이미 알아요」를 말한 뒤 그 사건이 접혀
 // 돌아오기 전에는 30일째 문장의 수와 조건이 그 사건을 모른다. 그 칸이 정수가 아니면(칸이 없는 엔진) 칸 밖의 내 답 · 도움 수(unfolded)로 본다.
 const heldBack = storage => (Number.isInteger(storage.unfoldedRows) ? storage.unfoldedRows : (storage.unfolded ?? 0)) > 0;
 
@@ -79,7 +79,7 @@ function fresherOf(kept, stored) {
 
 // 학습일 답의 줄 — 서버(엔진 lookbackOfStore)는 조건을 넘은 단위를 자르지 않고 모두 낸다(지도 단위는 293개다). 문장은 점수(misses + reviews)가 큰
 // 단위에서 고르므로(world-lookback-next.mjs pickMonth), 받은 답이 64줄을 넘으면 점수 차례로 앞의 64줄만 둔다. 예전에는 64줄을 넘는 답을 통째로
-// 버려, 가장 열심히 한 학습자에게 문장이 서지 않았다(4-4c 끝 판 Fable F5). 받는 꼴 검사는 그보다 넉넉한 MONTH_LIMIT까지 본다.
+// 버려, 가장 열심히 한 학습자에게 문장이 서지 않았다(4-4c 끝 판 F5). 받는 꼴 검사는 그보다 넉넉한 MONTH_LIMIT까지 본다.
 const MONTH_ROWS = 64;
 const MONTH_LIMIT = 4096;
 const byScore = (a, b) =>
@@ -233,7 +233,7 @@ export const MONTH_KIND = Object.freeze({
 // 묻고, 그 답(능력 id마다의 근거 수)을 계정마다 열쇠 하나에 둔다. 근거 답은 능력마다의 수라 자르지 않는다. 학습일 열쇠는 학습일 답처럼 하루에 한 번
 // 다시 묻는 경계일 뿐이다 — 창은 서버가 답할 때의 시각에서 days × 24시간을 뺀 때이고 답에 since로 싣는다(학습일 경계로 맞추지 않는다).
 // 근거를 세는 판의 게임 이름 — 새 길의 시험 형식 연습 코치가 이 이름으로 열린다(입구 world-atlas-next.mjs mockCoach가 가져다 쓴다 — 한 곳에만
-// 적는다. 두 곳에 따로 적으면 한쪽만 바뀔 때 근거 수가 말없이 0이 된다 — Fable 끝 판 F15).
+// 적는다. 두 곳에 따로 적으면 한쪽만 바뀔 때 근거 수가 말없이 0이 된다 — 끝 판 F15).
 export const FIRST_GAME = 'world-mock';
 export const FIRST_DAYS = 90; // 창의 날 수 — 제품 상수(설계 주인 11-17 답 2 · world-position.mjs ESTIMATE_POLICY.recentDays와 같다)
 const FIRST_SKILL = /^[A-Za-z0-9_.:-]{1,120}$/;
@@ -310,7 +310,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     state.generation = now;
   };
   // 이 문서가 들고 있는 답 — 저장소가 막혀(없음 · 읽기가 던짐 · 쓰기가 말없이 버림 · 쓰기가 던짐) 적은 답이 다시 읽히지 않아도, 같은 계정 · 동의 판
-  // · 학습일 · 세대 안에서는 이 답으로 견준다. 그래야 완결된 답 뒤의 상한이 저장소에 기대지 않는다(Fable 다시 보기 FA1).
+  // · 학습일 · 세대 안에서는 이 답으로 견준다. 그래야 완결된 답 뒤의 상한이 저장소에 기대지 않는다(다시 보기 FA1).
   const keptFor = key => (state.kept?.key === key ? state.kept.answer : null);
   const storageOf = coach => {
     try {
@@ -443,7 +443,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       else if (current) {
         const verdict = verdictOf(current, answer);
         if (verdict === 'behind') pullOnce(holder.coach, at);
-        // 묻는 사이 기기가 답의 자리를 지나 앞섰다 — 그 자리에서 한 번 다시 묻는다. 물은 뒤 기기 자리가 바뀐 수로 묶인다(Fable 다시 보기 FA2).
+        // 묻는 사이 기기가 답의 자리를 지나 앞섰다 — 그 자리에서 한 번 다시 묻는다. 물은 뒤 기기 자리가 바뀐 수로 묶인다(다시 보기 FA2).
         else if (verdict === 'ask') ask(holder.coach, holder.line, { owner, revision, day, device: current });
       }
     };

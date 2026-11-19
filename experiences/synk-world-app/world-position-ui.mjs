@@ -290,8 +290,8 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
  // 다음 한 걸음. 칸 견주기(지금 판 요약의 여섯 상태)는 새 판에 없어 4-4에서 칸으로 되살린다.
  // ending.kind: done(판 길이를 다 냄) · idle · capped · stubborn · limited(새 말이 이 판 한도에 걸림 — 「새 말 더 배우기」) · exhausted · none.
  // 답 칸은 넷이다 — 새 문항 혼자 맞힘(처음 본 문항의 혼자 낸 첫 답) · 그 밖의 맞힘(「다시」로 돌아온 문항 · 힌트 · 다시 듣기 · 같은 지문 둘째 문항을 맞힘 — 맞혔지만
- // 내 위치의 근거는 아니다, Fable 설계 P2-5 ⑤) · 틀림(「모르겠어요」 포함) · 건너뜀. 이 기기에 저장하지 못한 답은 근거가 아니어서 맞힘 칸에
- // 넣지 않고 따로 한 줄로 말한다(Fable 5.2 최종 F7 — 판 끝 화면이 stored: false를 읽지 않았다).
+ // 내 위치의 근거는 아니다, 설계 P2-5 ⑤) · 틀림(「모르겠어요」 포함) · 건너뜀. 이 기기에 저장하지 못한 답은 근거가 아니어서 맞힘 칸에
+ // 넣지 않고 따로 한 줄로 말한다(최종 F7 — 판 끝 화면이 stored: false를 읽지 않았다).
  // more: 이 항목에 남은 처음 보는 문항 수(세션 freshLeft) — 「N문항 더 하기」는 이것이 있을 때만이고, 없으면 지금 판처럼 「새 문항은 여기까지」
  // (카본 A1 — idle 끝 판의 단추가 0문항 판으로 이어졌다). 모르면(null) 판 길이를 다 낸 판(done)에만 단추를 둔다.
  function renderPracticeNextDone({skill,results=[],items=null,listening=false,count=5,more=null,ending=null,response=null}={}){
@@ -301,15 +301,15 @@ export function createPositionView({t,has=()=>true,formatDate=null,lang=()=>'ko'
   const wrong=answered.filter(row=>['incorrect','unknown'].includes(row.verdict)).length,skipped=results.length-answered.length;
   const kind=ending?.kind||'done';
   // 끝 줄은 끝 까닭이 먼저다 — 엔진 문장(why)은 까닭이 엔진의 것(capped · stubborn)일 때만, 처음 보는 문항이 바닥났거나(exhausted)
-  // 새 말이 이 판 한도에 걸린 것(limited)은 제품 문장(Fable 설계 P1-1 — 돌아온 것을 안 낸 판에 「다 만났어요」를 쓰지 않는다).
+  // 새 말이 이 판 한도에 걸린 것(limited)은 제품 문장(설계 P1-1 — 돌아온 것을 안 낸 판에 「다 만났어요」를 쓰지 않는다).
   // idle로 끝난 판(돌아온 것을 냈고 처음 보는 문항도 다 씀)도 제품 문장이다 — 엔진의 idle 문장은 「가볍게 이어가요」라 끝 화면과 맞지 않는다(카본 A1).
   // 문항 0으로 끝난 판도 빈 화면으로 두지 않는다 — none(사실 없음)이나 엔진 문장이 없는 capped · stubborn은 「지금은 낼 문항이 없다」
-  // 한 줄과 내 위치로(4-1 화면 Fable 5.2 최종 P1 ③).
+  // 한 줄과 내 위치로(4-1 화면 최종 P1 ③).
   const canMore=more==null?kind==='done':more>0;
   const engineLine=['capped','stubborn'].includes(kind)?ending?.why:null;
   const line=engineLine||(kind==='exhausted'||(kind==='done'&&!canMore)?t('practice.shortage'):kind==='limited'?t('practice.next.limited'):kind==='idle'?t('practice.next.idle'):['none','capped','stubborn'].includes(kind)?t('practice.next.none'):'');
   // 「최대 N문항 더 하기」의 N은 다음 판의 길이 — 문항 화면의 진행 글(「최대 {total}문항」)과 같은 수다. 다음 판은 처음 보는 문항 말고도
-  // 놓친 단위의 「다시」와 그 사이 채우기를 내므로 남은 처음 보는 문항 수로 약속하지 않는다(4-1 화면 Fable 5.2 다시 FA3 — 앞 F4의 「남은 수」는
+  // 놓친 단위의 「다시」와 그 사이 채우기를 내므로 남은 처음 보는 문항 수로 약속하지 않는다(4-1 화면 다시 FA3 — 앞 F4의 「남은 수」는
   // 다 맞히는 길에서만 맞았다). 끈질긴 단위 몫으로 끝난 판(stubborn)은 문장이 「다음 판에」를 말하므로 다음 판 단추를 둔다(F5 — 다음 판은
   // 몫이 새로 선다). 하루 상한(capped)은 「내일」이라 단추가 없다.
   const againN=Number.isInteger(count)&&count>0?count:5;

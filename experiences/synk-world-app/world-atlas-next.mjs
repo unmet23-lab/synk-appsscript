@@ -61,7 +61,7 @@ export const planPlanner = Object.freeze({ planBoard, planReader, planStart, bui
 // 지금 판 코치(atlas/game-learning.js)가 손님 기록을 두는 자리 — { version, epoch, events, ledger, … }.
 export const LEGACY_KEY = 'synk.atlas.learning.v1.device';
 // 「새 길 간 적 있음」 · 「스위치 꺼짐」 표지 — 계정마다 하나, 판과 무관한 자리(§18-5-5 B4 · R15). 값 { went?: true, off?: true, path?, revision? }
-// — path · revision은 마지막으로 정한 새 길('upload' | 'device')과 그 판이다. 계정을 네트워크로 못 읽을 때 그 값으로 새 길을 연다(Fable 5.2 끝 판 F1).
+// — path · revision은 마지막으로 정한 새 길('upload' | 'device')과 그 판이다. 계정을 네트워크로 못 읽을 때 그 값으로 새 길을 연다(끝 판 F1).
 export const NEXT_MARK = 'synk.atlas.next.';
 // 계정마다 이 기기가 마지막으로 받은 서버 스위치 답과 오늘 물은 횟수 { on, day, asks }(단계4_계획 §6 「1단계 켜기」 4 — 설계 주인 11-19
 // 저녁). on은 마지막 답(켜짐 참 · 꺼짐 거짓 · 모름은 없음)이다. 새 길에 간 적 없는 계정은 이 답이 켜짐일 때만 판을 정하러 간다 — 목록 밖
@@ -126,7 +126,7 @@ async function storeMaybe(name) {
   }
 }
 // 연습 문항의 열쇠 앞마디 → 지도의 은행 이름. 대개 같은 이름이고(TOPIK 은행 topik-items, 진단이 빌려 쓰는 게임 문항은 그 게임 이름),
-// 다른 것만 따로 적는다 — 마을 읽기 문항(synk-town.…)의 은행은 synk-town-reading이다(Fable 5.2 최종 F4: 빠지면 그 30문항이 색인 밖
+// 다른 것만 따로 적는다 — 마을 읽기 문항(synk-town.…)의 은행은 synk-town-reading이다(최종 F4: 빠지면 그 30문항이 색인 밖
 // 문항으로 떨어져 단위 · 진도 차례 · 이유 줄을 잃는다). 연습 풀에 새 은행이 들면 시험(world-practice.test.mjs 「은행 조각」)이 먼저 잡는다.
 const SAME = [
   'topik-items',
@@ -247,7 +247,7 @@ function advanceMark(storage, owner, path, revision) {
 }
 
 // ── 연습 기록 비우기의 입구 몫(4-5 — 단계4_계획 §22-4 · 22-1의 4) ──────────────────────────────────────────
-// 「비웠는가」는 판 견줌으로 정한다(설계 주인 11-19 아침 — Fable 5.2 설계 검토 atlas-redesign-stage4-me-clearing-design-20261119). 결과를 모르는
+// 「비웠는가」는 판 견줌으로 정한다(설계 주인 11-19 아침 — 설계 검토 atlas-redesign-stage4-me-clearing-design-20261119). 결과를 모르는
 // 비우기를 따로 적는 표지는 없다 — 한 칸을 여러 탭이 「누구 것인가」를 따지며 고쳐 쓰던 짜임에서 P1이 거듭 나왔다(-c GA3 · GC2 · 끝 판 F3).
 //   CLEARED_MARK — 계정마다 오르기만 하는 수 둘 { account, settled, asked }. settled는 이 기기가 몫(본인 값 옮기기 · 앞 판 쓸기 · 30일째 답)을
 //   마친 마지막 비우기의 판, asked는 마지막 비우기(lastClear)를 읽는 데 성공했을 때의 계정 판이다. 판을 다시 정할 때 계정 판이 asked보다
@@ -345,7 +345,7 @@ const zoneOf = (owner, path, revision) =>
 // 엔진에서 나온 값이라 옮기지 않는다.
 const OWN_KEYS = [`${LEGACY_KEY}.presentation`, 'hangul-stage.v1'];
 // 본인 값을 새 판 구역으로 옮긴다 — 값이 남아 있는 가장 가까운 앞 판 구역에서(판이 둘 넘게 올라도, 이 기기가 그사이의 비우기를 몰랐어도
-// 잇는다 — Fable 5.2 설계 검토 F1). 새 판 구역에 이미 값이 있으면 덮지 않는다. 열쇠를 셀 수 없는 저장소면 바로 앞 판 구역만 본다. 못 읽거나
+// 잇는다 — 설계 검토 F1). 새 판 구역에 이미 값이 있으면 덮지 않는다. 열쇠를 셀 수 없는 저장소면 바로 앞 판 구역만 본다. 못 읽거나
 // 못 쓰면 그 열쇠만 건너뛴다.
 function moveOwn(storage, owner, path, revision) {
   const zone = `synk.account.${path === 'upload' ? owner : `local:${owner}`}.r`;
@@ -474,9 +474,9 @@ export async function askSwitch(transport, wait = SWITCH_ASK_MS) {
 // 받은 번호. 옛 POST의 409 EVENT_CONFLICT는 「그 옛 꼴 묶음은 다른 판으로 이미 서버에 있다 — 되살리지 않는다」로 받는다: 번호가 없으면
 // 옛 꼴 묶음(머리 + 자식을 쪼개지 않고)을 반씩 가려 걸리는 묶음만 건너뛰고, 번호가 있으면 그 번호의 묶음만 건너뛴다. 건너뛴 묶음이
 // cap(8)을 넘으면 옛 꼴 몫의 남은 것을 건너뛴다(gaveUp — 부르는 쪽이 계기에). 다만 이미 머리(일부)를 보낸 묶음은 나머지까지 마저 보낸다 —
-// 차례가 종류 먼저라 앞 묶음은 머리뿐이고, 표지의 until이 그 묶음들을 덮어 다시 고르지 않으므로 남기면 계정에 답 없는 제시가 남았다(Fable 5.2
+// 차례가 종류 먼저라 앞 묶음은 머리뿐이고, 표지의 until이 그 묶음들을 덮어 다시 고르지 않으므로 남기면 계정에 답 없는 제시가 남았다(
 // 끝 판 둘째 넘친 #20). 마저 보낼 때의 409도 걸린 묶음만 건너뛴다(몫은 더 세지 않는다 — 합친 끝 판 넘친 #23). 그 밖의 실패는 ok: false(표지
-// 없이 다음에 다시). 옮기기가 끊긴 뒤 동의를 껐다 켜 판이 오르면 같은 번호 · 다른 판이라 다시 옮기기가 영영 실패하던 것(Fable 5.2 끝 판 F3 ·
+// 없이 다음에 다시). 옮기기가 끊긴 뒤 동의를 껐다 켜 판이 오르면 같은 번호 · 다른 판이라 다시 옮기기가 영영 실패하던 것(끝 판 F3 ·
 // 설계 주인 11-13).
 export const LEGACY_SKIP_CAP = 8;
 const legacyParent = event =>
@@ -547,8 +547,8 @@ export async function postLegacyBatches(events, post, { limit = 256, bytes = 200
     return first === 'ok' ? send(live.filter(event => !half.has(root.get(event.id)))) : first;
   }
   // 포기한 뒤 — 이미 보낸 묶음(건너뛴 것 말고)의 남은 사건을 같은 자르기로 마저 보낸다. 409 EVENT_CONFLICT는 보낼 때처럼 걸린 묶음만
-  // 건너뛰고(이미 포기했으니 몫은 더 세지 않는다) 나머지를 보낸다 — 실패로 돌리면 다시 옮겨도 같은 차례라 그 옮기기가 영영 실패했다(Fable
-  // 5.2 합친 끝 판 넘친 #23 — 머리는 받았는데 자식이 걸리는 묶음). 그 밖의 실패는 실패(표지 없이 다음에 다시).
+  // 건너뛰고(이미 포기했으니 몫은 더 세지 않는다) 나머지를 보낸다 — 실패로 돌리면 다시 옮겨도 같은 차례라 그 옮기기가 영영 실패했다(
+  // 합친 끝 판 넘친 #23 — 머리는 받았는데 자식이 걸리는 묶음). 그 밖의 실패는 실패(표지 없이 다음에 다시).
   async function finish() {
     finishing = true;
     const sent = new Set(ids);
@@ -599,7 +599,7 @@ export async function postLegacyBatches(events, post, { limit = 256, bytes = 200
 // 꼴 — 연습을 여는 사이 다른 합성 계정으로 들어오면 앞 계정의 코치가 새 토큰으로 받은 요약을 앞 계정 저장소에 받던 것, 넘친 #19).
 // 손님 세션(로그아웃한 뒤)이면 계정 줄을 묻지 않고, 받은 줄에는 그때의 주인(account)을 싣는다 — 입구가 제 주인과 견준다(카본 끝 판 둘째 C).
 // onAuth(): 401을 받으면 부른다 — 셸이 WorldClient의 401과 같은 일(로그인으로)을 한다. 운영 나르개는 401에서 세션을 닫는데 리허설 나르개는
-// 클라이언트를 지나지 않아 아무도 받지 않았다 — 세션이 끝난 뒤 안내 없이 기기에만 쌓였다(Fable 5.2 끝 판 둘째 넘친 #9).
+// 클라이언트를 지나지 않아 아무도 받지 않았다 — 세션이 끝난 뒤 안내 없이 기기에만 쌓였다(끝 판 둘째 넘친 #9).
 export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args), headers = () => ({}), owner = () => null, onAuth = null } = {}) {
   const changed = () => Object.assign(new Error('ACCOUNT_CHANGED'), { code: 'ACCOUNT_CHANGED' });
   // 401은 주인이 그대로일 때만 셸에 알린다(로그인으로) — 앞 계정의 늦은 요청이 새 세션까지 로그인 화면으로 돌리지 않게(GPT · 카본 합친 끝 판
@@ -704,7 +704,7 @@ export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args
 const firstAnswers = events =>
   events.filter(event => event?.type === 'practice.attempted' && event.attemptNo === 1).length;
 // 생활 경험(world-life — life-items.mjs LIFE_GAME_ID)의 몫 { attempts, events } — 물음은 생활 레슨의 답을 생활 줄에 센다(짧은 진단 · 연습
-// 줄에 넣으면 생활 레슨만 한 손님에게 같은 답이 다른 이름으로 두 줄에 섰다 — Fable 5.2 합친 끝 판 넘친 #8). 2판은 판 번호(set.<경험>.… — §19
+// 줄에 넣으면 생활 레슨만 한 손님에게 같은 답이 다른 이름으로 두 줄에 섰다 — 합친 끝 판 넘친 #8). 2판은 판 번호(set.<경험>.… — §19
 // M9)와 판 결정 · 마침의 경험 이름(<경험>.set), 옛 꼴은 결정의 경험 이름으로 가리고, 딸린 사건은 부모(제시 · 결정 · 마침 · 제외 대상)를 따른다.
 const LIFE_GAME = 'world-life';
 const lifeOwn = event =>
@@ -766,7 +766,7 @@ export function createAtlasNext({
       ? prefs
       : { today: prefs.today, presentation: prefs.presentation };
   const account = owner !== 'guest';
-  // 은행 조합 · 판마다 코치 하나(준비 중인 약속째) — 후보에 다른 은행이 섞이면 그 은행을 받는 코치를 따로 연다(아르곤 끝 판 B5 · 다시 A4).
+  // 은행 조합 · 판마다 코치 하나(준비 중인 약속째) — 후보에 다른 은행이 섞이면 그 은행을 받는 코치를 따로 연다(검수 끝 판 B5 · 다시 A4).
   // 같은 저장소의 호스트를 나눠 쓰므로 기록은 하나다.
   const coaches = new Map();
   const watchers = new Map(); // 코치 → 판을 다시 정해 닫을 때 부를 함수들(연습 화면이 안내 한 줄과 함께 닫힌다)
@@ -779,11 +779,11 @@ export function createAtlasNext({
   let generation = 0; // 판을 다시 정할 때마다 오른다 — 앞 판에서 열기 시작한 코치는 돌려주지 않는다
   let decided = null; // 계정의 판(약속) — 다시 정하면 비운다
   // 지금 판으로 정했던 판이 풀렸을 때 부를 함수들(§19-3 7 — 생활 · 홈은 문서를 열 때 정한 지금 판을 붙들지 않는다). 규칙은 갈래를 세지
-  // 않는다(설계 주인 11-13 · Fable 5.2 끝 판 둘째 F2): 면(practiceCoach · lifeCoach)에 지금 판(null)을 준 뒤 새 길 코치를 주게 되면 까닭이
+  // 않는다(설계 주인 11-13 · 끝 판 둘째 F2): 면(practiceCoach · lifeCoach)에 지금 판(null)을 준 뒤 새 길 코치를 주게 되면 까닭이
   // 무엇이든 알린다 — 계정을 못 읽은 일시 실패 뒤 다시 읽음 · 낮춘 판 되돌림 · 꺼짐 표지 뒤 켜짐 · 엔진 · 지도 · 저장소를 못 받은 뒤 됨,
   // 계정 · 손님 모두(answered). 판이 풀린 것을 먼저 안 자리(정하기 · 다시 묻기 · 낮춤 되돌림)는 그때 바로 알리고, 그 알림 뒤 면이 다시 물어 새
   // 길을 받으면 또 알리지 않는다(told). lastPath는 마지막으로 정한 판의 길이다(연습이 다시 정한 것을 생활 화면이 모르고 지금 판으로 남지
-  // 않게 — 아르곤 A4).
+  // 않게 — 검수 A4).
   const reopeners = new Set();
   let lastPath = null;
   let gave = null; // 면에 마지막으로 준 판 — 'old'(지금 판) · 'next'(새 길 코치)
@@ -921,7 +921,7 @@ export function createAtlasNext({
       throw error;
     }
     const revision = line?.learning?.revision;
-    // 꼴에 안 맞는 계정 줄도 일시 실패로 — 입구 수명 내내 지금 판으로 붙들지 않고 다음 연습에서 다시 읽는다(Fable 5.2 끝 판 F1).
+    // 꼴에 안 맞는 계정 줄도 일시 실패로 — 입구 수명 내내 지금 판으로 붙들지 않고 다음 연습에서 다시 읽는다(끝 판 F1).
     if (!Number.isSafeInteger(revision) || revision < 1 || typeof line.transport !== 'function')
       throw Object.assign(new Error('ACCOUNT_UNREAD'), { code: 'ACCOUNT_UNREAD' });
     if (line.learning.enabled === true && line.learningSync === true)
@@ -950,7 +950,7 @@ export function createAtlasNext({
   // 새 길에 다녀간 계정이 계정 읽기에 네트워크 · 일시 실패로 못 닿으면(휴대폰을 오프라인으로 다시 엶) 표지의 마지막 길 · 판으로 새 길을
   // 연다 — 보기는 그 판의 기기 요약에서, 올리기는 나르개가 계정을 다시 읽을 때까지 오프라인 갈래다. 돌아와 판이 달랐으면 서버의 409 →
   // onAccount가 다시 정한다(이미 있는 길). 인증 실패 · 주인 바뀜 · 그 밖은 그 값으로 열지 않는다 — 표지는 계정마다라 남의 저장소를 열지
-  // 않게(Fable 5.2 끝 판 F1 — 계획 §6 「켠 계정이 오프라인으로 다시 열어도 새 길이고 어제 놓친 것이 맨 앞」, 설계 주인 11-13).
+  // 않게(끝 판 F1 — 계획 §6 「켠 계정이 오프라인으로 다시 열어도 새 길이고 어제 놓친 것이 맨 앞」, 설계 주인 11-13).
   // 두 길 모두 「미확인」(unread)이다 — 계정 판을 확인하지 못했으니 옮기기 물음은 세지 않고(「못 셈」), 다음 연습 · 물음이 계정을 다시 읽어
   // 그대로면 푼다(planNow · 올리는 길은 나르개도 — GPT · 카본 끝 판 둘째 C).
   async function keptPath(mark, error, at) {
@@ -1125,7 +1125,7 @@ export function createAtlasNext({
 
   function hostOf(plan, at) {
     // 손님 호스트는 다른 탭이 손님 저장소를 비웠다는 알림(STORE_CLEARED — 4-5 §22-4 다른 탭의 은퇴 알림)만 받아 판을 다시 정한다. 저장소
-    // 닫힘(STORE_CLOSED)은 지금처럼 계기에만 남긴다(손님 저장소는 지우기 대상이 아니다 — Fable 5.2 끝 판 F5 · 설계 주인 11-13).
+    // 닫힘(STORE_CLOSED)은 지금처럼 계기에만 남긴다(손님 저장소는 지우기 대상이 아니다 — 끝 판 F5 · 설계 주인 11-13).
     if (plan.path === 'guest')
       return {
         guest: true,
@@ -1222,7 +1222,7 @@ export function createAtlasNext({
         code: error?.reason ? `LOAD_${error.reason}` : (error?.code ?? 'LOAD_FAILED'),
       });
       // 계정이 새 길로 정해졌는데 엔진 · 지도 · 저장소를 못 받아 이번 연습이 지금 판으로 가는 것 — 따로 세어 4-8에서 얼마나 밟는지 본다
-      // (Fable 5.2 끝 판 F1 · 설계 주인 11-13). 판은 붙들지 않는다 — 다음 연습에서 다시 연다(카본 끝 판 B · 다시 A2).
+      // (끝 판 F1 · 설계 주인 11-13). 판은 붙들지 않는다 — 다음 연습에서 다시 연다(카본 끝 판 B · 다시 A2).
       if (plan.path !== 'guest') note('load', { ok: false, code: 'PATH_ENGINE' });
       made?.dispose();
       return null;
@@ -1256,7 +1256,7 @@ export function createAtlasNext({
   // 면(짧은 연습 · 생활)의 계정 코치 — 판을 정해 그 판의 코치를 연다. 여는 사이에 판을 다시 정했으면(그 판의 코치는 닫혔다 — 여는 길 자신이
   // 첫 받기에서 다시 정한 것 포함) 한 번만 다시 정한다(되풀이하면 세대가 이어 바뀌는 동안 끝나지 않는다). 견줄 세대는 planNow가 마지막으로
   // 판을 정하기 직전의 것이다(자기가 다시 정한 판까지 버리지 않게). 판이 거듭 바뀌어 못 정한 물음(planNow가 null · 두 번 다 세대가 바뀜)이
-  // 지금 판으로 가는 것도 계기에 센다(PATH_CHANGING — 4-8에서 얼마나 밟는지 본다, Fable 5.2 합친 끝 판 넘친 #24).
+  // 지금 판으로 가는 것도 계기에 센다(PATH_CHANGING — 4-8에서 얼마나 밟는지 본다, 합친 끝 판 넘친 #24).
   async function faceCoach(banks, gameId, since) {
     for (let tries = 0; tries < 2; tries += 1) {
       const now = await planNow();
@@ -1599,7 +1599,7 @@ export function createAtlasNext({
     }
     // 1 — 서버를 비운다. 결과를 모르는 비우기를 따로 적지 않는다 — 다음 다시 정하기의 판 견줌이 맞춘다(계정 판이 오르면 마지막 비우기를
     // 읽는다). 앞 비우기의 남은 걸음 표지는 건드리지 않는다: 이 비우기가 서버에 닿지 않고 끝나도, 결과를 몰라도 그대로 남는다(4-5 코드 다시
-    // 검수 GPT -c GA3 · 끝 판 Fable F3). 누른 때(began)는 이 문서만 안다 — 다른 기기의 비우기와 가를 때 쓴다(GC4). 이 기기의 몫을 적을
+    // 검수 GPT -c GA3 · 끝 판 F3). 누른 때(began)는 이 문서만 안다 — 다른 기기의 비우기와 가를 때 쓴다(GC4). 이 기기의 몫을 적을
     // 저장소가 없으면 비우지 않는다. 스위치 먼저 묻기(§6 「1단계 켜기」 4) 뒤로는 저장소가 없는 기기의 계정이 스위치 답을 적지 못해 지금 판으로
     // 열리므로 여기 닿지 않는다 — 판 정하기가 바뀌어도 서버를 비우지 않게 두는 막이다.
     if (!store) return { ok: false, path, code: 'MARK_FAILED', known: true };
@@ -1627,7 +1627,7 @@ export function createAtlasNext({
       };
     }
     // 서버 비우기가 실패했다(409 · 닿지 못함 · 답 끊김) — 같은 계정의 마지막 비우기를 읽어 판 견줌으로 맞춘다. 이 기기가 아직 몫을 하지 않은
-    // 비우기면 누가 비웠든 몫을 한다(followClear — 결과를 모르던 앞 비우기도 여기서 맞는다, Fable 5.2 설계 검토 F1).
+    // 비우기면 누가 비웠든 몫을 한다(followClear — 결과를 모르던 앞 비우기도 여기서 맞는다, 설계 검토 F1).
     const last = await lastClearOf(line);
     if (disposed) return stopped(path);
     if (last !== undefined) {
@@ -1644,7 +1644,7 @@ export function createAtlasNext({
     }
     // 비워지지 않았다(또는 마지막 비우기를 못 읽었다). 결과를 모르면 늦게 끝나는 요청이 있을 수 있다 — 계정 판이 오르면 다음 다시 정하기가
     // 맞춘다. 서버가 받지 않은 것이 분명하면 판을 다시 정한다 — 다른 기기에서 동의를 껐다 켜 판만 올랐으면, 다시 눌러도 같은 앞 판으로 가서
-    // 거절당했다(Fable 5.2 설계 검토 F2).
+    // 거절당했다(설계 검토 F2).
     if (done?.known === true && at === generation) retire('account');
     return { ok: false, path, step: 'clear', code: done?.code ?? 'CLEAR_FAILED', known: done?.known === true };
   }
@@ -1739,7 +1739,7 @@ export function createAtlasNext({
     },
     // 시험 형식 연습의 코치(4-4d — §21-23의 1). 짧은 연습 · 생활 · 홈과 같은 판 정하기 · 같은 호스트이고 gameId는 근거를 세는 판의 게임 이름
     // (world-month-answer.mjs FIRST_GAME — 'world-mock')이다. 판 번호(set.world-mock.…)가 예상 급수 근거의 판을 가리므로 근거 상자와 같은
-    // 상수를 쓴다(Fable 끝 판 F15). 지금 판이면 null. pool: 시험 형식 풀(은행 + 빈칸 베기).
+    // 상수를 쓴다(끝 판 F15). 지금 판이면 null. pool: 시험 형식 풀(은행 + 빈칸 베기).
     async mockCoach(pool) {
       if (disposed) return null;
       const since = loosened;

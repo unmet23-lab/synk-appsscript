@@ -43,10 +43,10 @@ const atlasNextGuestOn=atlasNextOn&&connection.features?.atlasNextGuest===true;
 // (rehearsal-trail.mjs — WorldClient와 같은 세션 머리말). 판 정하기 · 옮기기 물음 · 로그아웃 표지는 입구(world-atlas-next.mjs)가 한다.
 function lazyAtlasNext(owner){
  // gaveOld: 입구 모듈을 못 받아 면(생활 판정 · 짧은 연습)에 지금 판을 줬다 — 다음에 받으면 판이 풀렸다고 알린다(입구는 제가 서기 전의 일을 몰라
- // 알리지 않아, 짧은 연습은 새 길인데 생활 판정 · 홈 칩 · 알림은 지금 판에 남았다 — Fable 5.2 합친 끝 판 F9). early: 받기 전의 계기(50개까지 — 입구가 서면 흘려보낸다).
+ // 알리지 않아, 짧은 연습은 새 길인데 생활 판정 · 홈 칩 · 알림은 지금 판에 남았다 — 합친 끝 판 F9). early: 받기 전의 계기(50개까지 — 입구가 서면 흘려보낸다).
  let made=null,loading=null,disposed=false,gaveOld=false;const reopeners=new Set(),early=[];
  // 리허설 나르개의 401은 그 나르개를 만든 로그인의 세대에서만 로그인으로 보낸다 — 로그아웃 뒤 같은 합성 계정으로 다시 들어온 새 로그인을 앞 로그인의
- // 늦은 401이 로그인 화면으로 돌리지 않게(Fable 5.2 합친 끝 판 넘친 #26 — 계정 번호만 견주면 같은 계정의 새 세션을 못 가렸다).
+ // 늦은 401이 로그인 화면으로 돌리지 않게(합친 끝 판 넘친 #26 — 계정 번호만 견주면 같은 계정의 새 세션을 못 가렸다).
  const trailOf=m=>{if(owner==='guest')return null;if(operating)return()=>account.prepareAtlasTrail();const generation=client.generation;return m.rehearsalTrail({headers:()=>({...(client.accessToken?{Authorization:`Bearer ${client.accessToken}`}:{}),'X-Synk-Rehearsal-Tab':client.tabId}),owner:()=>client.snapshot?.accountId||'guest',onAuth:()=>{if(client.generation===generation&&(client.snapshot?.accountId||'guest')===owner)client.expire?.();}});};
  // 옛 엔진의 두 문(4-5 연습 기록 비우기 — 단계4_계획 §22-4 · world-old-engine-doors.mjs를 입구 모듈이 다시 내보낸다): 계정의 옛 올리기 대기열(옛 학습
  // 호스트)과 옛 손님 기록(옛 손님 코치를 열어 쓰기 임대 안에서 다시 판단해 비운다 — 4-5 코드 검수 GPT GA1). 입구가 비우기에서만 부른다. 새 길이 꺼진
@@ -1119,10 +1119,10 @@ document.addEventListener('click',event=>{
  }
 },true);
 document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{clearMonthAnswer(localStorage,client.snapshot?.accountId);if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;clearMonthAnswer(localStorage,client.snapshot?.accountId);home.toast(errorText(error));if(life.owner===(client.snapshot?.accountId||'guest'))life.atlasNext?.redecide?.('account');
- // 학습일 답은 실패한 갈래에서도 지운다 — 서버의 동의 판은 바뀌었을 수 있다(세대 수만 오르고 해가 없다 — 4-4c 끝 판 Fable F3).
+ // 학습일 답은 실패한 갈래에서도 지운다 — 서버의 동의 판은 바뀌었을 수 있다(세대 수만 오르고 해가 없다 — 4-4c 끝 판 F3).
  // 서버는 바뀌었는데 뒤 확인만 실패했거나 · 다른 기기가 먼저 바꿨으면(REVISION_CONFLICT) 체크 · 판 번호가 서버와 어긋난 채 남아 다시 눌러도 계속 실패했다 —
- // 계정을 한 번 다시 읽어 시트를 서버 값으로 다시 그린다(Fable 5.2 합친 끝 판 넘친 #12). 다시 읽기도 못 하면 되돌린 값 그대로. 다시 읽기가 끝날 때까지
- // 토글은 잠근다 — 먼저 풀면 옛 체크 · 판 번호로 다시 눌러 또 실패했다(카본 Fable 처리 다시 검수 A1).
+ // 계정을 한 번 다시 읽어 시트를 서버 값으로 다시 그린다(합친 끝 판 넘친 #12). 다시 읽기도 못 하면 되돌린 값 그대로. 다시 읽기가 끝날 때까지
+ // 토글은 잠근다 — 먼저 풀면 옛 체크 · 판 번호로 다시 눌러 또 실패했다(카본 처리 다시 검수 A1).
  return account.refreshLearning?.().then(()=>{if(screen==='world-profile')profile();},()=>{});}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
 // pagehide: 생활 세션을 닫고(그 뒤 계정 정리·늦은 준비가 생활 화면을 다시 세우지 않는다) 지금 시트의 자원을 버린 다음 계정을 멈춘다.
 window.addEventListener('pagehide',()=>{authBoundary++;worldPush?.flush();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});

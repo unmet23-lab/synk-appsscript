@@ -434,7 +434,7 @@ export function createMockNextSession({ coach, sections = [], exam, plays, clock
       return view();
     },
     // 그만두기: 지금 영역을 닫고(열어 본 문항은 답하지 않음) 남은 영역은 시작하지 않는다. 문항을 냈으면 판을 기록 없이 한 번 닫고 그 결과
-    // (folded 포함)를 돌려준다 — 닫지 않으면 손님 요약이 그 답으로 다시 접히지 않는다(진단 Fable 끝 판 F2와 같다). 닫힌 코치의 예외는 삼킨다.
+    // (folded 포함)를 돌려준다 — 닫지 않으면 손님 요약이 그 답으로 다시 접히지 않는다(진단 끝 판 F2와 같다). 닫힌 코치의 예외는 삼킨다.
     stop() {
       if (!finished) {
         const row = part();

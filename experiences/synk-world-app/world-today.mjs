@@ -470,7 +470,7 @@ const CHECKING_CODES = Object.freeze({
   next: 'host.next',
 });
 // 계획이 넘긴 활동(act.role — 숙제 연습 · 점검 칸)은 엔진 판의 두뇌만 줄로 세운다. 확인 중 판에 내려오면 그 활동의 설명(describe)을 「다음
-// 레슨」 문장으로 잘못 읽으니 뺀다(Fable 끝 판 F10 — plan()이 던지는 가정한 장애에서 점검 칸 활동이 host.next 줄로 섰다).
+// 레슨」 문장으로 잘못 읽으니 뺀다(끝 판 F10 — plan()이 던지는 가정한 장애에서 점검 칸 활동이 host.next 줄로 섰다).
 function checkingEntries(activities, say) {
   const rank = act =>
     act.plan.facts.resume ? 0 : act.plan.facts.prerequisite ? 1 : act.plan.facts.describe ? 2 : 3;
@@ -542,7 +542,7 @@ const checkRank = entry => {
   const at = CHECK_ORDER.indexOf(entry.id);
   return at < 0 ? CHECK_ORDER.length : at;
 };
-// 점검 칸의 차례 돌리기(설계 주인 11-17 저녁 — Fable 끝 판 F16의 답 1). 늘어놓은 줄 가운데 잠기지 않은 줄 n개에서 오늘의 줄은 shift mod n번째다
+// 점검 칸의 차례 돌리기(설계 주인 11-17 저녁 — 끝 판 F16의 답 1). 늘어놓은 줄 가운데 잠기지 않은 줄 n개에서 오늘의 줄은 shift mod n번째다
 // (shift는 아래 checkShift). 잠긴 줄은 돌리지 않고 뒤에 둔다 — 조건에 걸린 날의 규칙은 그대로다.
 function checkOrdered(entries, byId, shift = 0) {
   const isCheck = entry => byId.get(entry?.id)?.role === 'check';
@@ -664,7 +664,7 @@ export function createWorldTodayPlan({
     week: engine ? week : null,
   });
   // 엔진 판에서 plan()이 실패하면(가정한 장애) 확인 중 판으로 내려 제품 사실 줄만 그린다 — 빈 목록으로 읽으면 다음 레슨이 남았는데 다 한 날이
-  // 된다(Fable 엔진급 끝 판 F3).
+  // 된다(엔진급 끝 판 F3).
   const planned = engine ? quiet(() => coach.plan(activities.map(act => act.plan), { lang })) : null;
   const live = engine && Array.isArray(planned);
   const entries = live ? planned : checkingEntries(activities, say);
@@ -674,8 +674,8 @@ export function createWorldTodayPlan({
   const checking = !live;
   const cappedText = capped ? quiet(() => say({ code: 'day.capped', slots: {} })) : null;
   // 조건에 걸린 날(blocked)은 걸린 활동이 풀리면 줄이 되는 때다. 상한 날의 복습 칸 활동(하던 것 밖)은 풀려도 줄이 아니라 그날의 까닭은 상한이다.
-  // 판(status) · 이유 · 빈 날 코드는 한 차례(확인 중 → 조건 → 상한 → 다 한 날)로 정한다(Fable 엔진급 끝 판 F5).
-  // 조건에 걸린 숙제 연습(카본 설계 검토 A10 · 4-4b 끝 판 Fable F2): 두뇌는 잠근 활동에 층을 셈하지 않으므로, 조건에 걸린 날로 세기 전에 그
+  // 판(status) · 이유 · 빈 날 코드는 한 차례(확인 중 → 조건 → 상한 → 다 한 날)로 정한다(엔진급 끝 판 F5).
+  // 조건에 걸린 숙제 연습(카본 설계 검토 A10 · 4-4b 끝 판 F2): 두뇌는 잠근 활동에 층을 셈하지 않으므로, 조건에 걸린 날로 세기 전에 그
   // 활동만 풀어 한 번 더 셈한다(plan은 보기만 읽는다). 조건을 풀어도 낼 것이 없으면(처음 보는 문항이 없음 · 새 단위 한도에 막힘) 조건에 걸린 날이
   // 아니라 낼 것이 없는 날이다. 소리만이 아니라 시간 · 도움 방식 조건도 같다 — 소리만 보던 판은 3 · 5분 설정에서 낼 문항이 없는 숙제를 「시간이나
   // 소리 설정을 바꿔 볼 수 있어요」로 셌는데, 시간을 바꿔도 줄은 서지 않았다.
@@ -716,7 +716,7 @@ export function createWorldTodayPlan({
         ? null
         : {
             // 조건에 걸린 날(blocked)은 다 한 날이 아니다 — 홈 단추는 지금 판처럼 학습 조건으로 간다(§20-8). 조건이 상한보다 앞이다 — 걸린 활동은
-            // 조건을 바꾸면 줄이 되고, 상한은 복습만 미룬다(위 blocked · Fable 엔진급 끝 판 F5).
+            // 조건을 바꾸면 줄이 되고, 상한은 복습만 미룬다(위 blocked · 엔진급 끝 판 F5).
             code: checking ? 'checking' : blocked ? 'blocked' : capped ? 'day.capped' : 'done',
             text: !checking && !blocked && capped ? cappedText : null,
           },
@@ -814,7 +814,7 @@ export function watchHomePlan({
     // 받기 알림 — 요약이 자리를 잡기를 받기 알림으로 기다린다. 첫 받기 · 받기 사다리의 늦은 칸에서 자리를 잡으면 곧 다시 그린다(받기 알림 설계 검토
     // D7 — 단계 4 계획 §21-20). 알림을 걸면 타이머를 두지 않는다 — 타이머를 남기면 길이 다시 둘이 된다(설계 주인 11-16 저녁 조건 4). 자리를 잡으면
     // 듣기를 그치고, 그 뒤의 알림은 셸이 듣는다(hearHome). 받기 알림이 없는 코치만 타이머로 기다린다(3초부터 두 배씩, 60초까지).
-    // 다시 그리기는 알림을 받은 자리가 아니라 다음 차례(마이크로태스크)로 미룬다 — 셸의 받기 알림과 같은 규칙이다(§21-20 조건 3 · 4-4b 다시 검수 -d Fable P3).
+    // 다시 그리기는 알림을 받은 자리가 아니라 다음 차례(마이크로태스크)로 미룬다 — 셸의 받기 알림과 같은 규칙이다(§21-20 조건 3 · 4-4b 다시 검수 -d P3).
     const made = coach;
     const at = generation;
     offSettle = quiet(() =>
@@ -873,7 +873,7 @@ export function watchHomePlan({
         changed();
       }, delay);
     },
-    // 코치를 내려놓고 다음 물음에서 다시 연다 — 은행이 늦게 와 은행 없이 연 코치를 바꿀 때(Fable 엔진급 끝 판 F2). 기다리던 다시 열기도 지운다.
+    // 코치를 내려놓고 다음 물음에서 다시 연다 — 은행이 늦게 와 은행 없이 연 코치를 바꿀 때(엔진급 끝 판 F2). 기다리던 다시 열기도 지운다.
     reopen() {
       if (disposed) return;
       retryTimer = clear(retryTimer);

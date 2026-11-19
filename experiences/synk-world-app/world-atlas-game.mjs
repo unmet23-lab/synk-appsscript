@@ -8,7 +8,7 @@
 //   - 겉은 틀 문서의 실행 번호에 묶인다. 같은 패널에서 open이 다시 오면(틀 다시 싣기) 앞 겉을 닫고 그 판을 finishSet({ record: false })로
 //     닫은 뒤 새 겉을 준다. 앞 문서의 늦은 호출 · 늦게 끝난 open은 새 판을 건드리지 않는다(GPT GA6).
 //   - 틀의 pagehide(키트가 겉의 leave를 부른다)는 셸 창의 다음 차례에 겉과 판을 닫는다 — 같은 pagehide에서 게임이 떠나며 내는 마지막 답이
-//     먼저 들어간다(Fable 5.2 다시 검토 F1).
+// 먼저 들어간다(다시 검토 F1).
 //   - 판을 다시 정하면(입구의 retired) 틀에 onRetired로 알리고 겉을 닫는다. 게임은 다음 판을 열 때 open을 다시 부른다.
 //   - 인수는 셸 창의 structuredClone으로 옮긴 뒤 부른다 — 옮기지 못하는 인수(함수 · DOM)는 DOOR_ARGUMENT 오류다. 닫힌 겉 · 손잡이는
 //     RUN_ENDED로 던진다. 오류는 셸 창의 것이라 틀에서 instanceof Error가 거짓이다 — 게임은 code로만 가른다.

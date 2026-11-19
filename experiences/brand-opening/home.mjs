@@ -354,7 +354,7 @@ function renderToday(today){
  const kindLabel=kind=>t(kind==='again'?'home.short.review':`home.today.kind.${kind}`);
  const list=el('ol','home-today-list');
  // 상한 날(§20-3): 복습 칸 자리에 상한 문장 한 줄 — 줄이 아니라 단추가 열지 않는다. 복습 칸에 줄(하던 복습)이 서면 그 칸에 두지 않는다 —
- // 하던 것은 건너뛰지 않고(§20-8), 학생이 연 일은 상한이 막지 않는다(§20-3 · Fable 엔진급 끝 판 F4).
+ // 하던 것은 건너뛰지 않고(§20-8), 학생이 연 일은 상한이 막지 않는다(§20-3 · 엔진급 끝 판 F4).
  if(today.capped&&today.cappedText&&today.items.length&&!today.items.some(row=>row.kind==='again')){const quiet=el('li','home-today-row home-today-quiet');quiet.dataset.kind='again';quiet.append(el('span','home-today-kind',kindLabel('again')),el('span','home-today-copy',today.cappedText));list.append(quiet);}
  for(const row of today.items){
   const item=el('li','home-today-row');item.dataset.kind=row.kind;if(row.opened)item.dataset.opened='true';

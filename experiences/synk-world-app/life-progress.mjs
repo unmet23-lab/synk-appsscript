@@ -220,7 +220,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
  function dueReviews(limit=100,horizon=now(),given=undefined){check();const engine=given===undefined?judged():given;if(engine)return engine.ids.slice(0,Math.max(0,Math.min(100,limit))).map(id=>clone(state.reviews[id]));return Object.values(state.reviews).filter(v=>v.dueAt<=horizon).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
  // 복습 판의 도움 표시(pendingHelp)가 지금 답의 도움인가. 판정이 없거나 null이면 표시가 있으면 도움이다(4-2 앞). 새 길은 표시마다 든 때(pendingHelpAt)가
  // 같은 학습일이거나 30분 안일 때만 도움이고, 때가 없는 표시(판정 없이 단 것)는 도움으로 친다 — 판의 날 하나로 가르면 하던 판을 버리거나 오늘 본
- // 도움을 지웠다(Fable 5.2 합친 끝 판 F3 → GPT GA1 → Fable 확인 검수, 같은 자리 세 회차 뒤 설계를 다시).
+ // 도움을 지웠다(합친 끝 판 F3 → GPT GA1 → 확인 검수, 같은 자리 세 회차 뒤 설계를 다시).
  const freshHelp=(marked,at)=>dailyTime(marked)&&dailyTime(at)&&(lifeDayKey(marked)===lifeDayKey(at)||Math.abs(at-marked)<=HELP_FRESH);
  const helpTimes=run=>{const value=run?.pendingHelpAt;return value&&typeof value==='object'&&!Array.isArray(value)?value:null;};
  function helpNow(run,id,at=now(),engine=judged()){if(run?.pendingHelp?.[id]!==true)return false;if(!engine)return true;const marked=helpTimes(run)?.[id];return !dailyTime(marked)||freshHelp(marked,at);}
@@ -243,11 +243,11 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
  }
  // seenAt: 화면이 그 표현을 보여 준 때(life-ui exposedTransfers). 도움 표시는 판정이 있을 때(새 길)만 표시마다 때를 든다(pendingHelpAt — 판의 startedAt은 그대로).
  // · 판정이 없거나 null(지금 판): 표시가 있으면 도움이다(4-2 앞). 새 길을 거쳐 때가 든 표시를 다시 보면 그 때를 걷어 「때 없는 표시 = 도움」으로 되돌린다 —
- //   새 길 → 지금 판 → 새 길로 오가면 오늘 본 도움이 앞선 때로 읽혔다(Fable 5.2 다시 지음 다시 검수 F1 · GPT GA1). 때 칸은 새 길을 거친 기록에만 있어
+ // 새 길 → 지금 판 → 새 길로 오가면 오늘 본 도움이 앞선 때로 읽혔다(다시 지음 다시 검수 F1 · GPT GA1). 때 칸은 새 길을 거친 기록에만 있어
  //   라이브의 쓰기는 4-2 앞 그대로다.
  // · 새 길: 표시의 때는 그 도움을 마지막으로 본 때다 — 본 표현은 그 본 때(seenAt)로, 그 밖에는 지금으로 든다. 같은 날 다시 봐도 때를 새로 들어야 자정 30분
  //   보호가 선다(10:00 표시 → 23:55 다시 봄 → 다음 날 00:03 답, GPT GA2). 이미 든 때가 지금 도움이고 새 때의 30분 너머까지 같은 학습일로 덮으면 쓰지 않는다.
- //   같은 학습일이거나 30분 안이 아닌 본 표현은 달지 않는다(문서를 연 채 날을 넘긴 차례, Fable 5.2 합친 끝 판 F3).
+ // 같은 학습일이거나 30분 안이 아닌 본 표현은 달지 않는다(문서를 연 채 날을 넘긴 차례, 합친 끝 판 F3).
  function markReviewHelp(id,{seenAt}={}){
   check();const run=state.activeReview;if(!run||!run.ids.includes(id))throw TypeError('Invalid review help');
   if(run.answers[id])return clone(run);
@@ -417,7 +417,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const resume=!!active&&Object.keys(state.lessons[active.id]?.answers||{}).length>0;
   return {owner,completed,total,allCompleted:total>0&&completed===total,nextLesson:next?{...next,progress:lessonState(next.id)}:null,resume,
    cafe:{completed:visits.filter(l=>state.lessons[l.id]?.completedAt!=null).length,total:visits.length,nextNumber:next&&isCafeLesson(next.id)?CAFE_LESSON_IDS.indexOf(next.id)+1:null},
-   // 화면이 말하는 「돌아온 표현 N개」는 새 길에서도 표현 글로 묶은 수다 — 같은 표현을 두 레슨에서 놓치면 장면(문항)은 둘이어도 목록 줄 · 표현은 하나(Fable 5.2 합친 끝 판 F5).
+   // 화면이 말하는 「돌아온 표현 N개」는 새 길에서도 표현 글로 묶은 수다 — 같은 표현을 두 레슨에서 놓치면 장면(문항)은 둘이어도 목록 줄 · 표현은 하나(합친 끝 판 F5).
    dueCount:due.length,dueExpressions:dueExpressionCount(due),dueReviews:due.slice(0,6),nextReviewAt:engine?engine.nextAt??null:Object.values(state.reviews).length?Math.min(...Object.values(state.reviews).map(v=>v.dueAt)):null,
    ...(engine?{dueState:engine.state,dueIds:[...engine.ids],dueTimes:[...(engine.times??[])],dueUpcoming:(engine.upcoming??[]).map(row=>({...row})),helpExpired:helpExpired(state.activeReview,engine)}:{}),
    packs:packs.map(pack=>{const ids=(pack.lessons||[]).map(value=>typeof value==='string'?value:value.id);return {id:pack.id,completed:ids.filter(id=>state.lessons[id]?.completedAt!=null).length,total:ids.length};}),status:status()};

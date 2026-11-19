@@ -16730,7 +16730,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
       nextLesson: next ? { ...next, progress: lessonState(next.id) } : null,
       resume,
       cafe: { completed: visits.filter((l) => state.lessons[l.id]?.completedAt != null).length, total: visits.length, nextNumber: next && isCafeLesson(next.id) ? CAFE_LESSON_IDS.indexOf(next.id) + 1 : null },
-      // 화면이 말하는 「돌아온 표현 N개」는 새 길에서도 표현 글로 묶은 수다 — 같은 표현을 두 레슨에서 놓치면 장면(문항)은 둘이어도 목록 줄 · 표현은 하나(Fable 5.2 합친 끝 판 F5).
+      // 화면이 말하는 「돌아온 표현 N개」는 새 길에서도 표현 글로 묶은 수다 — 같은 표현을 두 레슨에서 놓치면 장면(문항)은 둘이어도 목록 줄 · 표현은 하나(합친 끝 판 F5).
       dueCount: due.length,
       dueExpressions: dueExpressionCount(due),
       dueReviews: due.slice(0, 6),
@@ -19073,7 +19073,7 @@ function createLifeNext({
       slots.delete(key);
     },
     // 화면이 이 겉으로 시도를 열었다 — 코치를 미리 청해 판 바뀜(retired)을 듣는다. 첫 문항 전(소개 · 이야기 장면 · 카페 인사)에 판이 지금
-    // 판으로 내려가도 화면이 닫히고 다음 시도는 그때의 판으로 기록부를 고른다(Fable 5.2 합친 끝 판 F7 — 첫 보임 때에야 청하면 그 전의
+    // 판으로 내려가도 화면이 닫히고 다음 시도는 그때의 판으로 기록부를 고른다(합친 끝 판 F7 — 첫 보임 때에야 청하면 그 전의
     // 판 바뀜을 못 들어, 그 레슨의 보임 · 답이 어느 기록부에도 안 갔다).
     prepare() {
       if (!disposed) attach();

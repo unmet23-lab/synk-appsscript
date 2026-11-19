@@ -3,10 +3,10 @@
 // results)을 여기 따로 둔다. 달라진 것:
 //   ① 다음 문항은 엔진(코치 3판 recommend)이 고른다 — 그 항목의 연습 문항 전부가 후보이고, 놓친 단위는 다른 문항으로 다시, 돌아온 단위는
 //      돌아온 것으로 나온다. 측정(처음 본 문항의 혼자 낸 첫 답)은 지금 계약 그대로라 「내 위치」 근거는 같은 답에서만 선다.
-//   ② 판은 길이 n(3 · 5 · 7)으로 열고 새것 한도는 단위로 3n이다(TOPIK 문항은 단위가 둘 · 셋인 것이 많다 — 계획 §7 · 아르곤 A1).
+// ② 판은 길이 n(3 · 5 · 7)으로 열고 새것 한도는 단위로 3n이다(TOPIK 문항은 단위가 둘 · 셋인 것이 많다 — 계획 §7 · 검수 A1).
 //   ③ 엔진이 낼 것이 없다(none)고 하면 판을 끝낸다. 할 것이 없다(idle)고 하면 처음 보는 문항으로 잇는다 — 처음 보는 문항은 측정
 //      기회다(그 항목의 새 문항으로 확인하는 연습의 약속). 엔진의 채우기 차례는 「한 번도 안 본 문항」을 앞세우지 않으므로, 맨 앞 채우기가
-//      이미 본 문항이면 후보를 처음 보는 문항으로 좁혀 한 번 더 묻고(엔진이 그 안에서 고른다), 그것도 없을 때만 끝낸다(Fable 설계 P1-1).
+// 이미 본 문항이면 후보를 처음 보는 문항으로 좁혀 한 번 더 묻고(엔진이 그 안에서 고른다), 그것도 없을 때만 끝낸다(설계 P1-1).
 //      끝난 까닭(ending)은 그 판의 사실에서 고르고, 끝 문장에 엔진 문장을 쓰는 것은 그 까닭이 엔진의 것(capped · stubborn)일 때뿐이다
 //      — 돌아온 것을 안 낸 판에 「오늘 돌아온 것은 다 만났어요」를 쓰지 않고, idle로 끝난 판도 제품 문장을 쓴다(카본 A1).
 //   ⑥ 판이 끝나거나 그만두면 코치의 판을 닫는다(finishSet record: false — 판 기록은 셸이 응답과 함께 남긴다). 닫지 않으면 다음 판의
@@ -38,7 +38,7 @@ export const endingLine = (kind, why) =>
 
 // 판이 끝난 까닭 — 그 판에서 실제로 일어난 일에서 고른다(돌아온 것을 만나지 않은 판에 「다 만났어요」를 쓰지 않는다).
 // 엔진이 낼 것이 없다(none)고 해도 그 판의 사실이 먼저다 — 하루 새 단위 한도를 다 쓴 날 새 항목의 판은 한 문항도 못 내고 none이지만
-// 끝 까닭은 limited(「이번 판의 새 말은 여기까지예요」 + 「새 말 더 배우기」)다(계획 §7, Fable 5.2 최종 F2). none은 사실이 없을 때만.
+// 끝 까닭은 limited(「이번 판의 새 말은 여기까지예요」 + 「새 말 더 배우기」)다(계획 §7, 최종 F2). none은 사실이 없을 때만.
 export function endingOf(picked, served) {
   if (!picked) return { kind: 'done' };
   const facts = picked.facts ?? {};
@@ -79,7 +79,7 @@ export function createPracticeNextSession({
   if (!Array.isArray(pool) || !pool.length || !Number.isInteger(length) || length < 1)
     throw TypeError('WORLD practice next needs its pool and a length');
   // 측정용 「앞서 만났나」 — 처음 보는 문항 고르기와 같은 지문 세트 판정은 측정 자격의 일이라 화면용 seen이 아니라 met을 쓴다
-  // (띄우기만 하고 닫힌 문항은 아직 측정 기회다 — 아르곤 끝 판). 모르면(null) 만난 것으로 친다(측정을 부풀리지 않게).
+  // (띄우기만 하고 닫힌 문항은 아직 측정 기회다 — 검수 끝 판). 모르면(null) 만난 것으로 친다(측정을 부풀리지 않게).
   const met = item => {
     const exposure = coach.exposure(item);
     return exposure.met ?? exposure.seen ?? true;
@@ -96,7 +96,7 @@ export function createPracticeNextSession({
     current && {
       index,
       total: length,
-      // 판 길이는 「최대」다 — 엔진이 낼 것이 없으면 그 전에 끝난다(화면은 끝을 약속하지 않는 진행 글을 쓴다, 4-1 화면 Fable 5.2 최종 F4).
+      // 판 길이는 「최대」다 — 엔진이 낼 것이 없으면 그 전에 끝난다(화면은 끝을 약속하지 않는 진행 글을 쓴다, 4-1 화면 최종 F4).
       upTo: true,
       item: current.item,
       answered: current.answered,
@@ -163,7 +163,7 @@ export function createPracticeNextSession({
     return coach.recommend(pool, options);
   }
   // 할 것이 없을 때(idle) 처음 보는 문항으로 좁혀 한 번 더 묻는다. 없으면 null.
-  // 처음 보는 문항 — 만난 적 없고 같은 지문 세트의 다른 문항도 만나지 않은 것(그래야 그 답이 측정 근거가 된다 — 아르곤 끝 판).
+  // 처음 보는 문항 — 만난 적 없고 같은 지문 세트의 다른 문항도 만나지 않은 것(그래야 그 답이 측정 근거가 된다 — 검수 끝 판).
   function pickFresh() {
     const candidates = pool.filter(fresh);
     if (!candidates.length) return null;
@@ -220,7 +220,7 @@ export function createPracticeNextSession({
         return null;
       }
       // idle이면 늘 처음 보는 문항으로 좁혀 다시 묻는다 — 맨 앞 채우기가 우연히 처음 보는 문항이어도 같은 길로(그 제시의 근거 칸에
-      // pool: 'unseen'이 늘 붙게 — Fable 다시 확인 N5).
+      // pool: 'unseen'이 늘 붙게 — 다시 확인 N5).
       let picked = pick();
       let freshFill = false;
       if (picked.status === 'idle') {
@@ -242,8 +242,8 @@ export function createPracticeNextSession({
         heard: !listening,
         audio: listening ? 'pending' : 'none',
         plays: { allowed: allowedPlays(item), completed: 0, extra: 0 },
-        // 처음 보는 채우기 문항에는 엔진의 「다 만났어요」를 쓰지 않는다 — 돌아온 것을 만나지 않은 판일 수 있다(아르곤 A1).
-        // 놓친 단위의 「다시」가 차례를 기다리는 사이의 채우기(status ready · 이유 idle)에도 달지 않는다(Fable 5.2 최종 F3).
+        // 처음 보는 채우기 문항에는 엔진의 「다 만났어요」를 쓰지 않는다 — 돌아온 것을 만나지 않은 판일 수 있다(검수 A1).
+        // 놓친 단위의 「다시」가 차례를 기다리는 사이의 채우기(status ready · 이유 idle)에도 달지 않는다(최종 F3).
         why: freshFill || picked.why?.code === IDLE ? null : (picked.why?.line ?? null),
         fresh: freshFill,
         stubborn: picked.stubborn === true,
