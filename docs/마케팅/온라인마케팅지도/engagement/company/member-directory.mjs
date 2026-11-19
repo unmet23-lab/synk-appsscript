@@ -55,7 +55,7 @@ export function createWorkspaceDirectory(store) {
     ), page AS (SELECT * FROM matched ORDER BY nullif(name,'') IS NULL, name COLLATE NOCASE,person LIMIT $limit OFFSET $offset)
     SELECT (SELECT count(*) FROM matched) AS total,
       (SELECT json_group_array(json_object('id',p.person,'staffId',p.staffId,'name',p.name,'loginId',p.loginId,'role',p.role,'profile',p.profile,'staffActive',p.staffActive,'active',p.active,
-        'brands',(SELECT json_group_array(json_object('name',b.brand,'role',b.role,'status',b.status) ORDER BY b.brand,b.id) FROM brands b WHERE b.person=p.person)))
+        'brands',json((SELECT json_group_array(json_object('name',b.brand,'role',b.role,'status',b.status) ORDER BY b.brand,b.id) FROM brands b WHERE b.person=p.person))))
        FROM page p) AS items`);
   return input => {
     const {q,page,status,type,company} = directoryQuery(input);
