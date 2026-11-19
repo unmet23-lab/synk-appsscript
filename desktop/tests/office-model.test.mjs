@@ -318,6 +318,9 @@ test('headline: sessions without hook news, Codex included, are counted as unkno
 test('capacity: one per two cores, one per 4 GB, the smaller, at least one', () => {
   const pc = (cores, totalMemGb) => officeCapacity({ cores, totalMemGb }).pcCap;
   assert.deepEqual([pc(4, 8), pc(8, 16), pc(16, 32), pc(24, 64)], [2, 4, 8, 12]);
+  // Windows가 알려 주는 값(GiB)은 이름값보다 조금 작다. 반올림해 셈한다
+  assert.deepEqual([pc(24, 7.9), pc(24, 15.7), pc(24, 31.8), pc(24, 63.9)], [2, 4, 8, 12]);
+  assert.equal(pc(24, 11.4), 2);
   assert.equal(pc(1, 64), 1);
   assert.equal(pc(24, 3), 1);
   assert.equal(pc(0, 0), 1);

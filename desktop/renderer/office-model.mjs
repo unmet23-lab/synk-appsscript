@@ -295,7 +295,8 @@ export function officeHeadline(list, { cap = null, hooksOn = true } = {}) {
    합친 인원은 PC 한도와 도구별 인원의 합 가운데 적은 쪽이고 가장 적어도 하나다. 직접 정한 값(1~논리 코어 수)이 이긴다 */
 export function officeCapacity({ cores, totalMemGb, subscriptions = {}, manual = null } = {}) {
   const c = Math.max(1, Math.floor(Number(cores) || 0));
-  const pcCap = Math.max(1, Math.min(Math.floor(c / 2), Math.floor(Math.max(0, Number(totalMemGb) || 0) / 4)));
+  // Windows는 16GB PC의 메모리를 15.7쯤으로 알려 준다. GB로 반올림해 셈해야 「8코어 16GB는 넷」이 맞는다
+  const pcCap = Math.max(1, Math.min(Math.floor(c / 2), Math.floor(Math.round(Math.max(0, Number(totalMemGb) || 0)) / 4)));
   const toolCaps = {}, missing = [];
   for (const tool of TOOLS) {
     const left = subscriptions?.[tool]?.leftPercent;
