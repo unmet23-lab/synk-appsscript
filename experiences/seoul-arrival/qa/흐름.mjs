@@ -5,6 +5,8 @@
 // --언어판: 언어를 고른 적 없는 한국어 밖 기기 — 타이틀을 누르면 지금의 언어 판이 먼저 뜨고, 고르면 이야기가 이어진다.
 // --완주: 프롤로그를 건너뛰지 않는다. 「가」는 실제 획으로 쓰고, 입국심사는 일부러 한 번 틀리고, 첫 아침의 누를 자리는 개찰구만 누른다.
 // · 로컬 WORLD 서버(리허설)를 직접 띄운다. /drama/는 공개 빌드처럼 data-drama="world"를 단 실제 시범판 파일을 내주고, 드라마 통로는 talk와 같은 판정기로 흉내 낸다(틀시험.mjs와 같다).
+// · 첫날 끝 · 맞춤 앞면(world-front-entry.mjs)은 스위치를 끈 판으로 내준다 — 이 시험은 서울행과 그 뒤 지금 길(관문 · 튜터 · 동네)을 본다. 앞면은 experiences/world-front/qa/흐름.mjs가 본다.
+// --앞면: 앞면을 켠 채(로컬은 ?frontAuto=1) 1화를 마치고 「오늘 마무리하기」를 누르면 튜터 고르기 · 동네 대신 첫날 끝 앞면이 뜨는지까지 본다(로컬만).
 // · 드라마 재생 사본은 git 밖이라 공용 작업본의 것을 읽는다.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -24,7 +26,7 @@ const {chromium}=require('playwright');
 const args=process.argv.slice(2),opt=(n,d=null)=>{const i=args.indexOf(n);return i<0?d:args[i+1];},has=n=>args.includes(n);
 const [W,H]=(opt('--폭','390x844')).split('x').map(Number),LANG=opt('--언어','ko'),DREAM=opt('--꿈','idol'),SHOTS=has('--찍기'),END=opt('--끝','home'),FROM=opt('--자리','title');
 const OUT=path.join(ROOT,'.tmp','seoul-qa',`${W}-${LANG}-${DREAM}`);fs.mkdirSync(OUT,{recursive:true});
-const PORT=Number(opt('--포트',String(4400+Math.floor(Math.random()*400)))),CAND=opt('--후보'),OFF=has('--꺼짐'),PICKER=has('--언어판');
+const PORT=Number(opt('--포트',String(4400+Math.floor(Math.random()*400)))),CAND=opt('--후보'),OFF=has('--꺼짐'),FRONT=has('--앞면'),PICKER=has('--언어판');
 const PILOT=path.join(ROOT,'experiences/drama/pilot');
 const lesson=JSON.parse(fs.readFileSync(path.join(PILOT,'world-lesson.json'),'utf8'));
 const lines=dramaLines(await readEpisodes()),byId=new Map(lines.map(l=>[l.id,l]));
@@ -69,13 +71,15 @@ await page.addInitScript(({linesVersion})=>{if(window!==window.top)return;
 // /drama/: 실제 시범판 파일(공개 빌드처럼 표시를 단다), 재생 사본은 공용 작업본에서
 const frameAsked=[];page.on('request',q=>{if(/\/seoul-arrival\//.test(q.url()))frameAsked.push(q.url());});
 const switchOff=text=>{if(!/export const SEOUL_AUTO=(true|false);/.test(text)){console.log('실패 seoul-entry.mjs에서 스위치 줄을 못 찾았다(--꺼짐은 끈 판을 만들 수 없다)');process.exit(1);}return text.replace(/export const SEOUL_AUTO=true;/,'export const SEOUL_AUTO=false;');};
+const frontOff=text=>FRONT?text:text.replace(/export const FRONT_AUTO=(true|false);/,'export const FRONT_AUTO=false;');
+if(!CAND)await page.route(/\/world-front-entry\.mjs(\?|$)/,async route=>{const r=await route.fetch();return route.fulfill({response:r,body:frontOff(await r.text())});});
 if(OFF&&!CAND)await page.route(/\/seoul-entry\.mjs(\?|$)/,async route=>{const r=await route.fetch();return route.fulfill({response:r,body:switchOff(await r.text())});});
 if(CAND){let served=0;
  await page.route('https://synk.im/world/**',async route=>{
   const u=new URL(route.request().url());let rel=decodeURIComponent(u.pathname.replace(/^\/world\//,''));if(!rel||rel.endsWith('/'))rel+='index.html';
   const file=path.join(path.resolve(CAND),'world',rel);
-  if(!fs.existsSync(file)||!fs.statSync(file).isFile()){if(OFF&&rel==='seoul-entry.mjs'){const r=await route.fetch();return route.fulfill({response:r,body:switchOff(await r.text())});}return route.continue();}
-  let body=fs.readFileSync(file);if(OFF&&rel==='seoul-entry.mjs')body=switchOff(body.toString('utf8'));
+  if(!fs.existsSync(file)||!fs.statSync(file).isFile()){if(rel==='world-front-entry.mjs'){const r=await route.fetch();return route.fulfill({response:r,body:frontOff(await r.text())});}if(OFF&&rel==='seoul-entry.mjs'){const r=await route.fetch();return route.fulfill({response:r,body:switchOff(await r.text())});}return route.continue();}
+  let body=fs.readFileSync(file);if(rel==='world-front-entry.mjs')body=frontOff(body.toString('utf8'));if(OFF&&rel==='seoul-entry.mjs')body=switchOff(body.toString('utf8'));
   served++;return route.fulfill({status:200,headers:{'content-type':TYPES[path.extname(file)]||'application/octet-stream','cache-control':'no-store','accept-ranges':'bytes'},body});
  });
  process.on('exit',()=>console.log('후보에서 내준 파일',served));
@@ -117,7 +121,7 @@ if(FROM==='road'){
  await until('내 길',async()=>!!F()&&await inF(()=>document.querySelector('#s-path')?.classList.contains('on')),30000);
  await sleep(800);
 }else{
-await page.goto(`${base}/mobile.html?${CAND?'seoul=1':'seoulAuto=1'}${LANG!=='ko'&&!PICKER?`&lang=${LANG}`:''}`,{waitUntil:'domcontentloaded'});
+await page.goto(`${base}/mobile.html?${CAND?'seoul=1':'seoulAuto=1'}${FRONT&&!CAND?'&frontAuto=1':''}${LANG!=='ko'&&!PICKER?`&lang=${LANG}`:''}`,{waitUntil:'domcontentloaded'});
 if(!PICKER)await page.evaluate(lang=>{if(lang!=='ko'){localStorage.setItem('synk.world.lang',lang);}},LANG);
 await until('타이틀',()=>page.evaluate(()=>window.__synkOpening?.stage?.()==='title'));
 await until('틀이 타이틀 아래에 미리 뜸',()=>page.evaluate(()=>!!document.querySelector('.seoul-frame')?.contentWindow?.__seoulFrame));
@@ -305,6 +309,20 @@ await sleep(800);await shot('23-내길끝');
 const rec=await page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.arrival.v1:guest')||'null'));
 check(rec?.momAnswer==='fix'&&!!rec?.momAt,'쪽지 답 저장');
 check(await inF(()=>!!document.querySelector('#goHome')&&document.querySelector('#goHome').classList.contains('go-btn')),'1화 끝난 뒤 첫 단추는 우리 동네로');
+if(FRONT){
+ // 앞면을 켠 판: 첫 단추가 「오늘 마무리하기」이고, 누르면 서울행이 닫히고 튜터 고르기 · 동네 대신 첫날 끝 앞면이 뜬다
+ if(LANG==='ko')check(await inF(()=>document.querySelector('#goHome')?.textContent.trim()==='오늘 마무리하기'),'앞면 학생의 첫 단추는 「오늘 마무리하기」');
+ await F().click('#goHome');
+ await until('서울행 층이 닫힘',()=>page.evaluate(()=>!document.querySelector('#seoul-layer')),6000);
+ await until('앞면 틀',async()=>(await page.evaluate(()=>!!document.querySelector('#front-layer')?.open))&&!!page.frames().find(x=>x.url().includes('/world-front/')),20000);
+ const FF=()=>page.frames().find(x=>x.url().includes('/world-front/'));
+ await until('첫날 끝 화면',()=>FF().evaluate(()=>!!document.querySelector('.view.night:not(.off)')),20000);
+ await sleep(2000);await shot('24-앞면');
+ check(!await page.evaluate(()=>!!document.querySelector('[data-tutor-action]')),'튜터 고르기가 안 뜸');
+ const said=await FF().evaluate(()=>document.querySelector('.view')?.innerText||'');
+ check(/개강 첫날|Ep|анги|첫날/.test(said)||said.length>20,'앞면 첫날 끝 글이 있음',said.slice(0,60).replace(/\s+/g,' '));
+ await finish();
+}
 
 // ── 우리 동네로 ──
 await F().click('#goHome');

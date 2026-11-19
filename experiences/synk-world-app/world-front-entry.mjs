@@ -118,7 +118,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  const on=()=>autoOn();
  // 서울행 도중(아직 stage가 left가 아님)에 「끝나면 앞면으로 가나」 — 서울행 끝 단추 글을 고를 때 쓴다(자격에서 서울행 단계만 뺀 것).
  function soon(){
-  try{return frontEligible({auto:on(),search:location.search,arrival:{stage:'left'},blocked:!!blocked(),newEngine:!!newEngine(owner())});}catch{return false;}
+  try{if(bypass())return false;return frontEligible({auto:on(),search:location.search,arrival:{stage:'left'},blocked:!!blocked(),newEngine:!!newEngine(owner())});}catch{return false;}
  }
  function free(){
   // 로그인을 다녀온 바로가기(드라마 · 제2의 나 · 옷장 · 시험)는 주소에 없고 앱의 표에만 남는다 — 그것도 지금 길로 보낸다.
@@ -188,11 +188,14 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    if(session!==s||panel?.open)return;
    s.settings=false;
    const pending=s.pending;s.pending=null;
-   if(pending&&pending.view==='more'&&s.owner===owner()&&!readMark(s.owner).after&&finished(pending))
+   const mine=!!pending&&s.owner===owner();
+   if(mine&&['end','more','off'].includes(pending.view)&&!readMark(s.owner).after&&finished(pending))
     writeMark(s.owner,{after:true,afterEntry:{id:pending.entry.id,label:pending.entry.label||'',route:pending.entry.route,lessonId:pending.entry.lessonId||null,gameId:pending.entry.gameId||null,skillId:pending.entry.skillId||null}});
    // 앞면에서 연 활동을 닫고 왔을 때만 첫날 끝 → 첫날 맞춤, 둘째 날 아침 → 맞춤으로 넘긴다. 다른 시트(기록 옮기기 · 로그인 · 알림)가 닫히면 같은 화면을 다시 그린다.
    // 학습 목표 창(시험 정보가 있는 학생이 목표를 바꿀 때 연다)에서 목표를 저장하고 닫았으면 둘째 날 질문을 끝낸 것으로 본다.
    if(!pending&&s.view==='day2'&&accountGoal()){writeMark(s.owner,{day2:true});s.view='front';}
+   if(mine&&(s.view==='end'||s.view==='off'))writeMark(s.owner,{ended:true});
+   if(mine&&s.view==='day2')writeMark(s.owner,{day2:true});
    void show(pending?(s.view==='end'||s.view==='off'?'more':s.view==='day2'?'front':s.view):s.view);
   },0);
   panel?.addEventListener('close',s.onPanelClose);
@@ -206,6 +209,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  }
  // 관문을 지난 뒤(onEnter) 부른다. 앞면 학생이면 틀을 올리고 참을 돌려준다.
  async function enter(){
+  onIdentity();
   if(!free())return false;
   const who=owner(),mark=readMark(who),arrival=arrivalOf(who);
   if(!mark.firstAt){const at=firstDayAt(arrival)||Date.now();writeMark(who,{firstAt:at});mark.firstAt=at;}

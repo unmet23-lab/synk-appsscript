@@ -1,9 +1,9 @@
 // 첫날 끝 · 맞춤 앞면 1차의 synk.im/world 선택 공개 재료(2026-11-20, Claude).
 //   node experiences/world-front/qa/공개묶음.mjs [--끝 <커밋=origin/master>]
 // master 전체 공개는 몽골 시범 뒤라(결정 11-20 Atlas 선택 공개), 지금 공개본 위에 이 일의 변경만 얹는다.
-// · 고친 파일(app-shell · seoul-entry · home · 서울행 app · strings): 바탕 판(이 일 전 a9d50abdd)에 이 일의 커밋(제목이 「WORLD 첫날 끝」)만 얹은
-//   「내 판」을 공개 빌드와 같은 경로 고쳐 쓰기를 거쳐 지금 공개본 위에 3방향으로 합친다. 공개본에 없는 Atlas 줄과 겹치는 곳은 아래 풀기 표대로 —
-//   공개본 쪽 줄에 앞면 갈고리만 더한다.
+// · app-shell.mjs: 공개본과 master의 머리(import 묶음 · Atlas 줄)가 많이 달라, 앞면 갈고리를 「공개본의 이 글 → 이렇게」 표(shellRecipe)로 얹는다.
+// · 고친 파일 넷(seoul-entry · home · 서울행 app · strings): 바탕 판(이 일 전 a9d50abdd)에 이 일의 커밋(제목이 「WORLD 첫날 끝」)만 얹은
+//   「내 판」을 공개 빌드와 같은 경로 고쳐 쓰기를 거쳐 지금 공개본 위에 3방향으로 합친다. 겹치면 멈춘다.
 // · 새 파일(world-front-entry.mjs · world-front/): 끝 판 그대로(빌드의 경로 고쳐 쓰기), 스위치 FRONT_AUTO만 참으로.
 // 출력: .tmp/world-front-pub/base(지금 공개본) · new(후보 원천) · 항목.txt, 그리고 tools/공개.js 미리 보기 명령.
 import fs from 'node:fs';
@@ -50,33 +50,9 @@ function merge3(liveText, baseText, mineText, tag) {
   fs.writeFileSync(path.join(OUT, `합침-${tag.replaceAll('/', '_')}.txt`), out);   // 풀기 전 합침(겹침 표식 포함) — 풀기 표를 고칠 때 본다
   return resolve(out, tag);
 }
-// 풀기 표: 공개본에 없는 Atlas 줄(master에만 있음)과 겹친 곳 — 공개본 쪽을 두고 앞면 갈고리만 더한다.
-const FIX = {
-  'app-shell.mjs': [
-    side => side.replace("let seoul=null,entryGate=null,", "let seoul=null,front=null,entryGate=null,"),
-    side => side.replace("sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch", "sessionConfirmed=false;close();if(front?.active()){front.drop();void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch"),
-    side => side.replace("tutor:home.tutor?.().tutor||null}),", "tutor:home.tutor?.().tutor||(front?.free()?'front':null)}),")
-  ]
-};
-// 겹친 곳마다 공개본 쪽에 맞는 풀기를 찾아 쓴다(공개본이 그사이 바뀌어 겹침 수가 달라도 된다). 맞는 풀기가 없으면 멈춘다.
+// 고친 파일 넷(서울행 · 홈)은 공개본과 겹치지 않는다. 겹치면 손으로 풀어야 하니 멈춘다(app-shell은 아래 shellRecipe가 맡는다).
 function resolve(text, tag) {
-  const fixes = FIX[tag] || []; let n = 0;
-  text = text.replace(/<<<<<<< [^\n]*\n([\s\S]*?)=======\n[\s\S]*?>>>>>>> [^\n]*\n/g, (_, liveSide) => {
-    n++; let out = liveSide;
-    for (const f of fixes) out = f(out);
-    if (out === liveSide) throw Error(`${tag}: 겹침 ${n}에 맞는 풀기가 없다(공개본 줄이 바뀌었다)`);
-    return out;
-  });
-  // 겹치지 않은 곳은 3방향 합침이 이미 갈고리를 넣었다 — 갈고리가 모두 들었는지 본다.
-  const MUST = {'app-shell.mjs': ['front=null', 'front?.active()){front.drop();void startOpening();}', "(front?.free()?'front':null)", 'front=createFrontEntry(', '!front?.free()&&home.ensureTutor', 'front?.onIdentity();', "import {createFrontEntry} from './world-front-entry.mjs';"]};
-  for (const m of MUST[tag] || []) if (!text.includes(m)) throw Error(`${tag}: 갈고리가 빠졌다 — ${m}`);
-  // 공개본에는 아직 Atlas 새 엔진(atlasNext)이 없다 — 그 이름을 부르지 않는다.
-  if (tag === 'app-shell.mjs') {
-    const a = "newEngine:owner=>atlasNextOn&&(owner!=='guest'||atlasNextGuestOn),";
-    if (!text.includes(a)) throw Error('app-shell.mjs: newEngine 줄을 못 찾음');
-    text = text.replace(a, "newEngine:()=>false,");
-    if (/atlasNext(Guest)?On/.test(text)) throw Error('app-shell.mjs: 공개본에 없는 atlasNextOn이 남았다');
-  }
+  if (/^<<<<<<< /m.test(text)) throw Error(`${tag}: 공개본과 겹친다 — 합침-${tag.replaceAll('/', '_')}.txt를 보고 갈고리 표로 옮긴다`);
   return text;
 }
 
@@ -100,7 +76,9 @@ function shellRecipe(pub) {
   const block = endText.slice(s0, s1 + "note:t('goal.consent.note')};}});".length)
     .replace("newEngine:owner=>atlasNextOn&&(owner!=='guest'||atlasNextGuestOn),", 'newEngine:()=>false,');   // 공개본에는 아직 Atlas 새 엔진(atlasNext)이 없다
   const onEnter = "   if(entryGate.state().phase!=='ready'||identity.owner!==(client.snapshot?.accountId||'guest')||identity.generation!==client.generation)return;\n";
-  const enterHook = endText.slice(endText.indexOf('   // 앞면 학생은 앞면이 홈이다'), endText.indexOf("openReminderLink();});return;}\n") + "openReminderLink();});return;}\n".length);
+  const h0 = endText.indexOf('   // 앞면 학생은 앞면이 홈이다'), h1 = endText.indexOf("openReminderLink();});return;}\n", h0);
+  if (h0 < 0 || h1 < 0) throw Error('app-shell.mjs: 끝 판에서 관문 뒤 앞면 갈고리를 못 찾음');
+  const enterHook = endText.slice(h0, h1 + "openReminderLink();});return;}\n".length);
   const seoulEnd = 'native:()=>operating&&account?.supportsSpeaking===false});';
   const steps = [
     [/^import \{createSeoulEntry[^}]*\} from '\.\/seoul-entry\.mjs';\n/m, m => m + "import {createFrontEntry} from './world-front-entry.mjs';\n"],
@@ -130,8 +108,8 @@ for (const [src, rel] of MOD) {
 }
 // 새 파일: 다리 + 틀 폴더(시험 · 설계 문서 · 견줌 자료는 빼고 — 빌드의 거름과 같다)
 const entry = rw(lf(git('show', `${END}:experiences/synk-world-app/world-front-entry.mjs`).toString()), 'world-front-entry.mjs');
-if (!entry.includes('export const FRONT_AUTO=false;')) throw Error('스위치 줄을 못 찾음');
-write('new', 'world-front-entry.mjs', entry.replace('export const FRONT_AUTO=false;', 'export const FRONT_AUTO=true;'));
+if (!/export const FRONT_AUTO=(true|false);/.test(entry)) throw Error('스위치 줄을 못 찾음');   // 공개 뒤 master가 켜져 있어도 같은 재료
+write('new', 'world-front-entry.mjs', entry.replace(/export const FRONT_AUTO=(true|false);/, 'export const FRONT_AUTO=true;'));
 items.push('world/world-front-entry.mjs');
 for (const f of git('ls-tree', '-r', '--name-only', END, 'experiences/world-front/').toString().trim().split('\n')) {
   const rel = f.slice('experiences/'.length);

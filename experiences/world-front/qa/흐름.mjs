@@ -6,6 +6,7 @@
 //   첫날 끝 → 「지금 더 연습하기」 → 레슨을 열고 닫은 뒤 「나」에서 로그아웃하면 앞면이 내려가 타이틀로 가는지까지 본다.
 // --며칠 N: 첫날이 N일 전인 학생(셋째 날부터는 「어제 · 둘째 날」 글 없이 질문부터). --1화안봄: 내 길에서 「오늘은 여기까지」로 나와 1화를 안 본 학생(--로그인과 함께).
 // --꺼짐: 주소에 frontAuto를 붙이지 않는다(스위치 FRONT_AUTO=false 그대로) — 같은 기록이어도 앞면이 안 뜨고 지금 길로 가는지 본다.
+// --후보 <폴더>: synk.im/world를 열되 공개.js --후보폴더의 파일만 그 폴더에서 내준다(공개본은 안 바꾼다, 서울행 qa/흐름.mjs와 같은 꼴). 손님 길만 — 후보는 스위치가 켜진 판이라 frontAuto를 붙이지 않는다.
 // 기록: .tmp/world-front-qa/<폭>-<언어>/ (찍기와 결과.json)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -19,18 +20,19 @@ const MAIN = path.join(os.homedir(), 'Documents', 'SYNK-appsscript');
 const require = createRequire(path.join(fs.existsSync(path.join(ROOT, 'node_modules')) ? ROOT : MAIN, 'x.js'));
 const {chromium} = require('playwright');
 const args = process.argv.slice(2), opt = (n, d = null) => { const i = args.indexOf(n); return i < 0 ? d : args[i + 1]; }, has = n => args.includes(n);
-const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), OFF = has('--꺼짐'), LOGIN = has('--로그인'), DAYS = Number(opt('--며칠', '0')), NO_EP = has('--1화안봄');
-const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${W}-${LANG}${OFF ? '-off' : ''}${LOGIN ? '-login' : ''}${DAYS ? `-d${DAYS}` : ''}${NO_EP ? '-noep' : ''}`); fs.mkdirSync(OUT, {recursive: true});
+const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), OFF = has('--꺼짐'), LOGIN = has('--로그인'), DAYS = Number(opt('--며칠', '0')), NO_EP = has('--1화안봄'), CAND = opt('--후보');
+if (CAND && (LOGIN || OFF)) { console.log('--후보는 손님 길만 본다(--로그인 · --꺼짐과 함께 못 쓴다)'); process.exit(2); }
+const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${W}-${LANG}${OFF ? '-off' : ''}${LOGIN ? '-login' : ''}${DAYS ? `-d${DAYS}` : ''}${NO_EP ? '-noep' : ''}${CAND ? '-cand' : ''}`); fs.mkdirSync(OUT, {recursive: true});
 const PORT = Number(opt('--포트', String(4800 + Math.floor(Math.random() * 300))));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = [], fail = [];
 const check = (ok, what, detail = '') => { log.push(`${ok ? '통과' : '실패'} ${what}${detail ? ` — ${detail}` : ''}`); if (!ok) fail.push(what); console.log(log.at(-1)); };
 
 const data = path.join(ROOT, '.tmp', 'world-front-qa', `db-${PORT}`);
-const server = spawn(process.execPath, [path.join(ROOT, 'experiences/seoul-arrival/qa/서버.mjs'), String(PORT)], {env: {...process.env, SYNK_WORLD_DATA_DIR: data}, stdio: 'ignore'});
-process.on('exit', () => { try { server.kill(); } catch {} });
-const base = `http://127.0.0.1:${PORT}`;
-for (let i = 0; i < 120; i++) { try { const r = await fetch(base + '/health'); if (r.ok) break; } catch {} await sleep(500); }
+const server = CAND ? null : spawn(process.execPath, [path.join(ROOT, 'experiences/seoul-arrival/qa/서버.mjs'), String(PORT)], {env: {...process.env, SYNK_WORLD_DATA_DIR: data}, stdio: 'ignore'});
+process.on('exit', () => { try { server?.kill(); } catch {} });
+const base = CAND ? 'https://synk.im/world' : `http://127.0.0.1:${PORT}`;
+if (!CAND) for (let i = 0; i < 120; i++) { try { const r = await fetch(base + '/health'); if (r.ok) break; } catch {} await sleep(500); }
 
 const browser = await chromium.launch({channel: 'msedge'});
 const context = await browser.newContext({viewport: {width: W, height: H}, deviceScaleFactor: SHOTS ? 2 : 1, hasTouch: W < 700, locale: LANG === 'ko' ? 'ko-KR' : LANG === 'mn' ? 'mn-MN' : 'en-US'});
@@ -39,6 +41,17 @@ const errors = [], bad = [];
 page.on('pageerror', e => errors.push('페이지 ' + String(e).slice(0, 300)));
 page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('콘솔 ' + m.text().slice(0, 300)); });
 page.on('response', r => { const u = r.url(); if (r.status() >= 400 && !/\/api\//.test(u)) bad.push(`${r.status()} ${u.replace(base, '')}`); });
+if (CAND) {
+  const TYPES = {'.html': 'text/html; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2'};
+  let served = 0;
+  await page.route('https://synk.im/world/**', async route => {
+    const u = new URL(route.request().url()); let rel = decodeURIComponent(u.pathname.replace(/^\/world\//, '')); if (!rel || rel.endsWith('/')) rel += 'index.html';
+    const file = path.join(path.resolve(CAND), 'world', rel);
+    if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return route.continue();
+    served++; return route.fulfill({status: 200, headers: {'content-type': TYPES[path.extname(file)] || 'application/octet-stream', 'cache-control': 'no-store'}, body: fs.readFileSync(file)});
+  });
+  process.on('exit', () => console.log('후보에서 내준 파일', served));
+}
 const frontAsked = []; page.on('request', q => { if (/\/world-front\//.test(q.url())) frontAsked.push(q.url()); });
 const shot = async name => { if (SHOTS) await page.screenshot({path: path.join(OUT, name + '.png')}); };
 const F = () => page.frames().find(f => f.url().includes('/world-front/'));
@@ -49,7 +62,7 @@ async function finish() {
   check(!bad.length, '404 · 400대 응답 0', bad.slice(0, 4).join(' | '));
   fs.writeFileSync(path.join(OUT, '결과.json'), JSON.stringify({폭: `${W}x${H}`, 언어: LANG, 꺼짐: OFF, 로그인: LOGIN, 통과: log.filter(l => l.startsWith('통과')).length, 실패: fail, 기록: log}, null, 1));
   console.log(fail.length ? `실패 ${fail.length}건` : '모두 통과');
-  await browser.close(); server.kill(); process.exit(fail.length ? 1 : 0);
+  await browser.close(); server?.kill(); process.exit(fail.length ? 1 : 0);
 }
 
 // ── 서울행을 끝낸 손님 기록 ──
@@ -58,7 +71,7 @@ const arrival = NO_EP
   ? {version: 1, stage: 'left', dream: 'idol', name: '볼로르', nameEn: 'Bolor', call: '언니', from: '몽골', look: 'mn_f', scenes: [], updatedAt: night}
   : {version: 1, stage: 'left', dream: 'idol', name: '볼로르', nameEn: 'Bolor', call: '언니', from: '몽골', look: 'mn_f',
     best: {s1e01: {n: 3, t2: true, tr: false}}, scenes: [{id: 's1e01.wrap', at: night, lines: 4}], momAnswer: 'fix', momAt: night, updatedAt: night};
-await page.goto(`${base}/mobile.html${OFF ? '' : '?frontAuto=1'}`, {waitUntil: 'domcontentloaded'});
+await page.goto(`${base}/mobile.html${OFF || CAND ? '' : '?frontAuto=1'}`, {waitUntil: 'domcontentloaded'});
 await page.evaluate(({lang, arrival}) => {
   if (lang !== 'ko') localStorage.setItem('synk.world.lang', lang);
   localStorage.setItem('synk.world.arrival.v1:guest', JSON.stringify(arrival));

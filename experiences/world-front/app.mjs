@@ -207,7 +207,7 @@ function nightView({off = false} = {}) {
     <div class="ph"><img class="on" src="assets/night.webp" alt=""><img class="off" src="assets/night-off.webp" alt=""><i class="lamp" aria-hidden="true"></i>${spot}</div>
     ${soundBtn()}
     <p class="tag"><button type="button" class="me-tag" data-open="card" aria-haspopup="dialog" aria-label="${esc(`${STUDENT.name} · ${ui('내 학생증')}`)}"><span class="me" style="${esc(faceCss())}"></span>${esc(STUDENT.name)}${P.lang !== 'ko' && nm !== STUDENT.name ? `<small>${esc(nm)}</small>` : ''}</button><span>${esc(ui(tag))}</span></p>
-    <h1 class="poem${rec ? ' rec' : ''}" aria-label="${esc(ui('오늘 한 것'))}">${poem}</h1>
+    <h1 class="poem${rec ? ' rec' : ''}">${poem}</h1>
     <div class="foot">
       ${rec ? tomorrowBlock(plan).replace('<p class="ask-q">', '<p class="ask-q" role="heading" aria-level="1">') : tomorrowBlock(plan)}
       ${acts}
@@ -401,7 +401,7 @@ function askView({r, tag, time}) {
 // 1. 새벽 창가(사진): 어제 일을 받는 서하 한 줄은 1화를 마치고 한 줄이라도 말한 학생에게만. PC는 이 판 없이 종이 질문부터.
 function dawnView() {
   const r = R(), yesterday = r.wrap && r.spoke > 0;
-  const tag = r.guest ? '둘째 날 · 아침' : '개강 둘째 날 · 아침';
+  const tag = r.guest || !r.wrap ? '둘째 날 · 아침' : '개강 둘째 날 · 아침';   // 밤 꼬리표 · tagFor와 같게: 1화를 안 본 학생은 「개강」을 뺀다
   const top = yesterday
     ? `<p class="who"><span class="face" style="background-image:url(assets/seoha.webp)" aria-hidden="true"></span><b>${esc(SEOHA)}</b></p><p class="big">${esc('어제 식당에서 선배한테 길 물어봤죠')}${sub('어제 식당에서 선배한테 길 물어봤죠')}</p>`
     : `<p class="big plain">${esc(ui('둘째 날 아침이에요'))}</p>`;
@@ -653,11 +653,11 @@ async function swap(patch = {}, p = null) {
   if (p) { TRANS = true; PENDING = null; try { res = await p; } catch (e) { console.warn('[world-front]', e); } }
   await faded;
   const failed = !!(res && res.error && res.error !== 'needConsent');
-  if (failed && res.error !== 'goalWindow') toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.'));   // 한글 답 저장 실패 등(앱 알림은 모달 아래에 가린다)
   const next = res && typeof res === 'object' && res.view ? res : PENDING; if (next === PENDING) PENDING = null; TRANS = false;
   if (next) take(next);
   if (!failed) for (const [k, val] of Object.entries(patch)) { if (val === undefined) delete L[k]; else L[k] = val; }   // 저장이 실패하면 같은 질문에 머문다
   syncP(); render(); focusLead();
+  if (failed && res.error !== 'goalWindow') toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.'));   // 한글 답 저장 실패 등(앱 알림은 모달 아래에 가린다). render가 #app을 비우므로 그린 뒤에 띄운다
   if (!calm()) app.querySelector('.view').animate([{opacity: 0, transform: 'translateY(4%)'}, {opacity: 1, transform: 'none'}], {duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)'});
   busy = false; flush();   // 넘기는 동안 더 온 state
 }
@@ -746,10 +746,16 @@ app.addEventListener('click', e => {
     if (k === 'skip') { L.hangul = 'skip'; syncP(); busy = true; setTimeout(() => { busy = false; refreshFoot(); }, 460); return; }
     busy = true; TRANS = true; PENDING = null;
     Promise.all([call('answerHangul', k), wait(460)]).then(([res]) => {
-      const next = PENDING || (res && res.view ? res : null); PENDING = null; TRANS = false; busy = false;   // 기다리는 동안 host가 보낸 더 새 state가 있으면 그것을
-      if (res && res.error) { toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.')); app.querySelectorAll('[data-hangul]').forEach(x => x.setAttribute('aria-pressed', 'false')); return; }   // 저장 실패: 답하지 않은 채로
+      const pend = PENDING, next = pend || (res && res.view ? res : null); PENDING = null; TRANS = false; busy = false;   // 기다리는 동안 host가 보낸 더 새 state가 있으면 그것을
+      // 기다리는 동안 다른 화면이나 다른 학생의 state가 왔으면 아래 덩어리만이 아니라 화면을 통째로 다시 그린다
+      const moved = !!next && (next.view !== state.view || next.who !== state.who || JSON.stringify(next.student) !== JSON.stringify(state.student));
+      if (res && res.error) {   // 저장 실패: 답하지 않은 채로(기다리는 동안 온 state는 받는다)
+        if (pend) take(pend);
+        syncP(); if (moved) { render(); focusLead(); } else { app.querySelectorAll('[data-hangul]').forEach(x => x.setAttribute('aria-pressed', 'false')); if (pend) refreshFoot(); }
+        toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.')); return;
+      }
       if (next) take(next); else state = {...state, hangul: k};
-      syncP(); refreshFoot();
+      syncP(); if (moved) { render(); focusLead(); } else refreshFoot();
     });
     return;
   }
