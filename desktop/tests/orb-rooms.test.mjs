@@ -359,17 +359,19 @@ test('a refused first read is not counted, so the next chance reads again', asyn
   assert.equal(h.row().mid, '꺼져 있습니다');
 });
 
-test('live counting is asked only while the line is open and the room is seen, renewed each minute, and dropped when folded (설계 검토 D8)', async () => {
+// 11-20부터 구독 방 맨 위 「지금 출력」이 늘 보이므로 줄이 열렸는지와 상관없이 방이 보이는 동안 부탁한다(솔리오 구독 비서 설계 3.3)
+test('live counting is asked while the room is seen, renewed each minute, and dropped when the room goes; the last ten minutes start over each time (솔리오 구독 비서 3.3 · D8)', async () => {
   const h = tokHarness({ state: { ok: true, enabled: true, epoch: 1, seq: 1, scannedAt: NOW - 60e3, cells: [] } });
   h.rooms.tokLoad(); await settle();
-  h.rooms.syncLive(true);
-  assert.ok(!h.names().includes('tokensLive'), 'a closed line does not ask');
-  await h.press('row-open');
-  h.rooms.syncLive(true);
+  // 「지금 출력」이 보이지 않으면(구독이 없거나 자료를 읽기 전) 토큰 줄이 닫힌 동안 부탁하지 않는다(화면 검수 A10)
+  h.rooms.syncLive(true, false);
+  assert.ok(!h.names().includes('tokensLive'), 'nothing shows the count, nothing is asked');
+  h.rooms.syncLive(true, true);
   await settle();
-  assert.deepEqual(h.calls.filter(c => c[0] !== 'tokens').map(c => [c[0], c[1]]), [['tokensScan', { force: false }], ['tokensLive', true]]);
+  assert.deepEqual(h.calls.filter(c => c[0] !== 'tokens').map(c => [c[0], c[1]]), [['tokensScan', { force: false }], ['tokensLive', true]], 'a room showing 「지금 출력」 asks at once, the token line closed or not');
   assert.deepEqual(h.ticks, [ROOM_TIMING.tokLive]);
-  h.rooms.syncLive(true);
+  assert.equal(h.rooms.tokLive().state, 'on');
+  h.rooms.syncLive(true, true);
   assert.equal(h.names().filter(n => n === 'tokensLive').length, 1, 'the same state asks nothing more');
   // 1분 틱을 실제로 돌리면 오래된 셈을 다시 세 달라고 하고 실시간 부탁을 잇는다(화면 검수 E2)
   let n0 = h.calls.length;
@@ -382,15 +384,14 @@ test('live counting is asked only while the line is open and the room is seen, r
   n0 = h.calls.length;
   h.beat(); await settle();
   assert.equal(h.calls.length, n0, 'a cleared tick does not run');
-  h.rooms.syncLive(true); await settle();
-  await h.press('row-fold');
-  h.rooms.syncLive(true); await settle();
-  assert.deepEqual(h.calls.at(-1).slice(0, 2), ['tokensLive', false], 'folding the line stops it');
   const off = tokHarness();
   off.rooms.tokLoad(); await settle();
-  await off.press('row-open');
-  off.rooms.syncLive(true);
+  off.rooms.syncLive(true, true);
   assert.ok(!off.names().includes('tokensLive'), 'a switched-off count asks nothing');
+  assert.equal(off.rooms.tokLive()?.state, 'off');
+  // 맨 위 「켜기」의 결과 글은 접힌 토큰 줄만이 아니라 지금 출력 줄에도 나온다(Fable 최종 F6)
+  await off.press('tok-on');
+  assert.match(off.rooms.tokLive().small, /켰습니다/);
 });
 
 test('switching tokens on says it may take minutes; the range and 「모두 보기」 stay in memory', async () => {

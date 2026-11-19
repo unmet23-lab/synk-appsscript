@@ -1,7 +1,7 @@
 'use strict';
 
 const TRAY_APPS=Object.freeze({world:'SYNK WORLD',messenger:'SYNK Workspace',teacher:'SYNK Workspace · 내 수업',path:'SYNK PATH',pulse:'SYNK PULSE',partners:'SYNK Partners',care:'SYNK 플레저',fortune:'SYNK 무료 운세'});
-function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onAction=()=>{},onShow=null,revealForQuit=()=>true}){
+function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onAction=()=>{},onShow=null,onCloseToTray=null,revealForQuit=()=>true}){
   let tray=null,quitting=false,shortcuts=[];
   const bindings=new Map();
   function isActive(){return !!tray&&!tray.isDestroyed();}
@@ -20,6 +20,7 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
     const close=event=>{
       if(quitting||!isActive()||!shouldHide())return;
       event.preventDefault();window.hide();
+      onCloseToTray?.(window);
     };
     // The draft guard runs first: preventing this event means the user chose
     // to discard. Keeping a draft cancels quitting and restores the same page.

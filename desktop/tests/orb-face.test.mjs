@@ -1868,28 +1868,28 @@ test('the token line stands under the cost line, and also alone when there is no
   assert.equal(none.view.last().room.solio.rows.length, 0);
 });
 
-test('live counting is asked only while the token line is open in the subscriptions room (설계 검토 D8)', async t => {
+// 11-20부터 구독 방 맨 위의 「지금 출력」이 늘 보이므로, 실시간은 줄이 열렸는지와 상관없이 구독 방이 보이는 동안 부탁한다(솔리오 구독 비서 설계 3.3)
+test('live counting is asked while the subscriptions room is shown, and stops under another room or a hidden window (솔리오 구독 비서 3.3)', async t => {
   const h = accountFaceHarness(t);
   await enterAs(h);
-  assert.ok(!h.ops().includes('tokensLive'), 'nothing is asked while the line is closed');
-  h.face.handle('room', { room: 'solio', key: 'tok', act: 'row-open' });
   await settle();
-  assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensScan' || c[0] === 'tokensLive').map(c => [c[0], c[1]]), [['tokensScan', { force: false }], ['tokensLive', true]]);
+  assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensScan' || c[0] === 'tokensLive').map(c => [c[0], c[1]]), [['tokensScan', { force: false }], ['tokensLive', true]], 'the room shown asks at once');
+  const live = h.view.last().room.solio.brief?.live;
+  assert.equal(live?.state, 'on', 'the 「지금 출력」 line is in the scene');
   h.face.handle('subs-manage');
   await settle();
   assert.deepEqual(h.acalls.at(-1).slice(0, 2), ['tokensLive', false], 'another room over it stops the live count');
   h.face.handle('aside-back');
   await settle();
-  assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensLive').at(-1).slice(0, 2), ['tokensLive', true], 'coming back with the line still open asks again');
+  assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensLive').at(-1).slice(0, 2), ['tokensLive', true], 'coming back asks again');
   h.view.isHidden = () => true;
   h.face.handle('hidden');
   await settle();
   assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensLive').at(-1).slice(0, 2), ['tokensLive', false], 'a hidden window stops it');
-  h.face.handle('room', { room: 'solio', key: 'tok', act: 'row-fold' });
   h.view.isHidden = () => false;
   h.face.handle('visible');
   await settle();
-  assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensLive').at(-1).slice(0, 2), ['tokensLive', false], 'a folded line stays quiet');
+  assert.deepEqual(h.acalls.filter(c => c[0] === 'tokensLive').at(-1).slice(0, 2), ['tokensLive', true], 'a shown window asks again');
 });
 
 test('「계정」 opens 내 계정 in the face: focus on its first sentence, the account read through the bridge, the old screen untouched (설계 9.3)', async t => {

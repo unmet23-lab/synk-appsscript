@@ -328,16 +328,20 @@ function doneLine() {
   const day2 = P.v === 'day2', {items, practice: done} = doneItems();
   const practice = done.length && !day2 ? `<span class="dl2"><b>${esc(ui(items.length ? '맞춤' : '오늘 한 것'))}</b><span>${esc(done[0])}</span></span>` : '';
   if (!items.length && !practice) return '';
-  const dl1 = items.length ? `<span class="dl1"><b>${esc(ui(day2 ? (P.day > 2 ? '첫날' : '어제 한 것') : '오늘 한 것'))}</b>${items.map(t => `<span>${esc(t)}</span>`).join('<i aria-hidden="true"></i>')}</span>` : '';
+  const dl1 = items.length ? `<span class="dl1"><b>${esc(ui(day2 && !(state && state.recordToday) ? (P.day > 2 ? '첫날' : '어제 한 것') : '오늘 한 것'))}</b>${items.map(t => `<span>${esc(t)}</span>`).join('<i aria-hidden="true"></i>')}</span>` : '';
   return `<p class="doneln">${dl1}${practice}</p>`;
 }
 function sidePanel(r) {
   const day2 = P.v === 'day2', {items} = doneItems();
-  const done = items.length ? `<div class="sd"><p class="lab">${esc(ui(day2 ? (P.day > 2 ? '첫날' : '어제 한 것') : '오늘 한 것'))}</p><p class="done">${items.map(t => `<span>${esc(t)}</span>`).join('<i aria-hidden="true"></i>')}</p></div>` : '';
+  const done = items.length ? `<div class="sd"><p class="lab">${esc(ui(day2 && !(state && state.recordToday) ? (P.day > 2 ? '첫날' : '어제 한 것') : '오늘 한 것'))}</p><p class="done">${items.map(t => `<span>${esc(t)}</span>`).join('<i aria-hidden="true"></i>')}</p></div>` : '';
   const expr = r.wrap ? `<div class="sd"><p class="lab">${esc(ui('1화 장면 속 표현'))}</p><p class="expr-q">${esc(EXPR)}</p></div>` : '';
   return `<aside class="side">${posBlock()}${done}${expr}</aside>`;
 }
-function tagFor(r, day2) { if (day2 && P.day > 2) return '오늘'; return P.pc ? (day2 ? '둘째 날' : '첫날') : r.guest ? (day2 ? '둘째 날 · 아침' : '기숙사 들어가는 날 · 밤') : day2 ? '개강 둘째 날 · 아침' : '개강 첫날 · 밤'; }   // 셋째 날부터는 「오늘」
+function tagFor(r, day2) {
+  if (day2 && P.day > 2) return '오늘';   // 셋째 날부터
+  const noEp = r.guest || !r.wrap;   // 1화(개강 첫날 장면)를 안 본 학생은 「개강」 꼬리표를 쓰지 않는다 — 밤 화면과 같은 이름
+  return P.pc ? (day2 ? '둘째 날' : '첫날') : noEp ? (day2 ? '둘째 날 · 아침' : '기숙사 들어가는 날 · 밤') : day2 ? '개강 둘째 날 · 아침' : '개강 첫날 · 밤';
+}   // 셋째 날부터는 「오늘」
 
 function homeView() {
   const r = R(), plan = state.plan, day2 = P.v === 'day2', time = day2 ? 'morning' : 'lamp';
@@ -648,10 +652,11 @@ async function swap(patch = {}, p = null) {
   let res = null;
   if (p) { TRANS = true; PENDING = null; try { res = await p; } catch (e) { console.warn('[world-front]', e); } }
   await faded;
-  if (res && res.error && res.error !== 'needConsent') toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.'));   // 한글 답 저장 실패 등(앱 알림은 모달 아래에 가린다)
+  const failed = !!(res && res.error && res.error !== 'needConsent');
+  if (failed && res.error !== 'goalWindow') toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.'));   // 한글 답 저장 실패 등(앱 알림은 모달 아래에 가린다)
   const next = res && typeof res === 'object' && res.view ? res : PENDING; if (next === PENDING) PENDING = null; TRANS = false;
   if (next) take(next);
-  for (const [k, val] of Object.entries(patch)) { if (val === undefined) delete L[k]; else L[k] = val; }
+  if (!failed) for (const [k, val] of Object.entries(patch)) { if (val === undefined) delete L[k]; else L[k] = val; }   // 저장이 실패하면 같은 질문에 머문다
   syncP(); render(); focusLead();
   if (!calm()) app.querySelector('.view').animate([{opacity: 0, transform: 'translateY(4%)'}, {opacity: 1, transform: 'none'}], {duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)'});
   busy = false; flush();   // 넘기는 동안 더 온 state
@@ -782,6 +787,7 @@ app.addEventListener('click', e => {
       TRANS = true; PENDING = null;
       const res = await call('chooseGoal', k, {consent});
       if (res && res.error === 'needConsent') { TRANS = false; busy = false; needConsent(); flush(); return; }
+      if (res && res.error === 'goalWindow') { TRANS = false; busy = false; flush(); return; }   // 시험 정보가 있는 학생: 학습 목표 창이 열렸다(닫히면 host가 새 state를 보낸다)
       if (res && res.error) { TRANS = false; busy = false; toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.')); flush(); return; }
       const next = res && res.view ? res : PENDING; if (next === PENDING) PENDING = null;
       if (!next) { TRANS = false; busy = false; return; }   // 고르지 못함(host가 알림을 띄운다) — 화면은 그대로

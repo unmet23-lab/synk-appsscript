@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {publicWorldConfig} from '../experiences/synk-world-app/operating-mode.mjs';
 import {renderWorldDocument} from '../experiences/synk-world-app/document.mjs';
+import {renderDramaInvites} from '../experiences/drama/invite/pages.mjs';
 import {DIAG_RACING_WORDS,racingWordAudio} from '../experiences/synk-world-app/world-diagnostic-racing.mjs';
 import {publicBank} from './build-world-writing-items.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
@@ -134,7 +135,7 @@ for(const name of ['world-learning-followups.mjs','world-followup-items.json','w
 // 칸 셋 · 진단 · 최소 그림)와 이번 주 계획 새 판(4-4b — 능력 읽개 · 시작점 · 기기 판 기록, world-plan-next.mjs)과 시험 형식 새 판(4-4d — world-mock-next.mjs)도 입구가 정적으로 받는다.
 for(const name of ['world-atlas-next.mjs','world-practice-next.mjs','world-today.mjs','world-position-next.mjs','world-diagnostic-next.mjs','world-mock-next.mjs','world-position-next-view.mjs','world-plan-next.mjs','world-lookback-next.mjs','world-me-next.mjs','world-old-engine-doors.mjs','world-atlas-game.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 // 앱 셸 목록 — 30일째 문장의 학습일 답(world-month-answer.mjs, Atlas 4-4c 둘째 묶음)은 app-shell.mjs와 world-learning-ui.mjs가 정적으로 부른다.
-for(const name of ['world-bootstrap.js','world-month-answer.mjs','world-front-entry.mjs','app-shell.mjs','world-session.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','world-learning-ui.mjs','world-learning-profile.mjs','world-learning-profile-core.mjs','tutor-selection-sync.mjs','display-language-sync.mjs','life-ui.mjs','life-followups.mjs','life-story.mjs','life-content-lang.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs','classroom-lessons.mjs','classroom-homework.mjs','topik4-homework.json','world-writing-practice.mjs','world-writing-check.mjs','world-writing-focus.mjs','world-writing-items.json','world-writing.css','world-reminders.mjs','world-reminder-device.mjs','world-push.mjs','world-push-sw.js','world-icon-192.png','world-speaking-practice.mjs','world-speaking.css','world-speaking-items.json','seoul-entry.mjs','seoul-watch.mjs','seoul-record.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
+for(const name of ['world-bootstrap.js','drama-invite-route.mjs','world-month-answer.mjs','world-front-entry.mjs','app-shell.mjs','world-session.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','world-learning-ui.mjs','world-learning-profile.mjs','world-learning-profile-core.mjs','tutor-selection-sync.mjs','display-language-sync.mjs','life-ui.mjs','life-followups.mjs','life-story.mjs','life-content-lang.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs','classroom-lessons.mjs','classroom-homework.mjs','topik4-homework.json','world-writing-practice.mjs','world-writing-check.mjs','world-writing-focus.mjs','world-writing-items.json','world-writing.css','world-reminders.mjs','world-reminder-device.mjs','world-push.mjs','world-push-sw.js','world-icon-192.png','world-speaking-practice.mjs','world-speaking.css','world-speaking-items.json','seoul-entry.mjs','seoul-watch.mjs','seoul-record.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 // 말하기 연습(10-21 공개 판부터 app-shell이 기본으로 부른다): 3번 문항 그림 네 칸. 출처 기록(sources.json)은 내보내지 않는다.
 for(const name of fs.readdirSync(path.join(root,'experiences/synk-world-app/speaking-assets')).filter(name=>/^[a-z0-9-]+\.webp$/.test(name)).sort())copyFile(path.join(root,'experiences/synk-world-app/speaking-assets',name),'speaking-assets/'+name);
 // 「제2의 나」 내 사진으로 만들기(11-04 시범): app-shell이 초대한 계정에서만 동적으로 부른다. 얼굴 찾기 도구는 그때 이 기기에서만 돈다.
@@ -219,6 +220,13 @@ copyTree(path.join(root,'experiences','subway-rush'),'subway-rush',(source,relat
 copyTree(path.join(root,'experiences','seoul-arrival'),'seoul-arrival',(source,relative)=>!/^seoul-arrival\/(?:qa\/|.*\.test\.mjs$|.*\.md$)/.test(relative));
 // 첫날 끝 · 맞춤 앞면 틀(11-19 1차): 화면 원고 · 그림만 싣는다(약속 문서와 시험 · 견줌 자료는 뺀다).
 copyTree(path.join(root,'experiences','world-front'),'world-front',(source,relative)=>!/^world-front\/(?:qa\/|.*\.test\.mjs$|.*\.md$|assets\/.*\.(?:txt|json)$)/.test(relative));
+const inviteRoot = path.join(root, 'experiences/drama/invite');
+const inviteCopy = JSON.parse(fs.readFileSync(path.join(inviteRoot, 'copy.json'), 'utf8'));
+for (const [target, html] of Object.entries(renderDramaInvites(inviteCopy))) {
+ write(target, Buffer.from(html));
+}
+copyFile(path.join(inviteRoot, 'invite.css'), 'invite/invite.css');
+
 // 드라마 말하기 1화(11-02, 설계 experiences/drama/qa/WORLD올리기-20261102/설계.md): 화면 · 강의(world-lesson.json) · 기록 묶음 · 재생 사본만 싣는다.
 // content.mjs(시범 서버 전용 · 판정 명세)와 README · qa는 싣지 않는다. 재생 사본(media/)은 git 밖(tools/build-drama-pilot-assets.mjs가 승인 원천에서
 // 만든다)이라 그 manifest.json의 sha256과 하나씩 대조해 없거나 다르면 멈춘다 — manifest 자체(원천 파일 이름)는 싣지 않는다.

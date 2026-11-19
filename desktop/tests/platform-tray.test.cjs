@@ -5,7 +5,7 @@ const {createPlatformTray}=require('../src/platform-tray.cjs');
 const {installDraftExitGuard}=require('../src/draft-exit.cjs');
 
 function cancellable(){return {defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};}
-function fixture({enabled=true,failure=null,draft='작성 중인 메모',onShow=null,preventQuit=false,revealForQuit}={}){
+function fixture({enabled=true,failure=null,draft='작성 중인 메모',onShow=null,onCloseToTray,shouldHide,preventQuit=false,revealForQuit}={}){
   const app=new EventEmitter(),trays=[],dialogs=[];
   if(preventQuit)app.on('will-quit',event=>event.preventDefault());
   let window,created=0,choice=0,quitCalls=0;
@@ -36,7 +36,7 @@ function fixture({enabled=true,failure=null,draft='작성 중인 메모',onShow=
     return window;
   };
   makeWindow();
-  const controller=createPlatformTray({app,Tray,Menu:{buildFromTemplate:template=>template},icon:'platform.ico',productName:'SYNK 플랫폼',getWindow:()=>window,createWindow:()=>{makeWindow();controller.attachWindow(window);},enabled,onShow,...(revealForQuit?{revealForQuit}:{})});
+  const controller=createPlatformTray({app,Tray,Menu:{buildFromTemplate:template=>template},icon:'platform.ico',productName:'SYNK 플랫폼',getWindow:()=>window,createWindow:()=>{makeWindow();controller.attachWindow(window);},enabled,onShow,onCloseToTray,shouldHide,...(revealForQuit?{revealForQuit}:{})});
   controller.attachWindow(window);
   return {app,controller,trays,dialogs,get window(){return window;},get created(){return created;},get quitCalls(){return quitCalls;},choose:value=>{choice=value;},forgetWindow:()=>{window=null;}};
 }
@@ -49,6 +49,17 @@ test('X hides the same page without unloading or asking to discard its draft',()
   f.controller.show();assert.equal(f.window,window);assert.equal(window.draft,'작성 중인 메모');assert.equal(window.visible,true);assert.equal(window.calls.focus,1);
   f.controller.dispose();
 });
+test('only a completed close to the tray schedules memory reclamation',()=>{
+  for(const mode of ['tray','exit','preference-off','unavailable']){
+    const hidden=[];
+    const f=fixture({draft:null,enabled:mode!=='unavailable',shouldHide:()=>mode!=='preference-off',
+      onCloseToTray:win=>{assert.equal(win.isVisible(),false);hidden.push(win);}});
+    if(mode==='exit')f.app.quit();else f.window.close();
+    assert.deepEqual(hidden,mode==='tray'?[f.window]:[]);
+    f.controller.dispose();
+  }
+});
+
 test('tray reveal delegates to the startup gate while draft cancellation still restores the same page directly',()=>{
   let requests=0;const f=fixture({onShow:()=>requests++});f.window.close();f.controller.show();assert.equal(requests,1);assert.equal(f.window.visible,false);f.app.quit();assert.equal(f.window.visible,true);assert.equal(f.window.destroyed,false);assert.equal(f.dialogs.length,1);assert.equal(requests,1);f.controller.dispose();
 });

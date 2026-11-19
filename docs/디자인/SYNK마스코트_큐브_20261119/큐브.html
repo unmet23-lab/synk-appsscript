@@ -139,9 +139,9 @@ html[data-nogl] .nogl{display:block}
 <body>
 <main class="wrap">
   <header class="head">
-    <p class="tag">SYNK 마스코트 시안 · 열넷째 판</p>
-    <h1>큐브,<span>그리고 구.</span></h1>
-    <p class="lead">꼭짓점을 깎지 않은 큐브입니다. 평소에는 큐브이고, 생각할 때마다 구가 되어 구르다가 답이 나오면 큐브로 돌아옵니다. 지금 PC 앱 시안의 검정 구와 같은 자리에 나란히 놓았습니다.</p>
+    <p class="tag">SYNK 마스코트 시안 · 열다섯째 판</p>
+    <h1>큐브,<span>하나로.</span></h1>
+    <p class="lead">꼭짓점을 깎지 않은 검정 큐브 하나입니다. 구로 변신하지 않고, 몸은 가만히 있습니다. 눈과 빛만 움직입니다. 지금 PC 앱 시안의 검정 구와 같은 자리에 나란히 놓았습니다.</p>
   </header>
 
   <div class="moods" role="group" aria-label="표정 바꾸기">
@@ -154,11 +154,11 @@ html[data-nogl] .nogl{display:block}
   <p class="nogl">이 브라우저에서는 움직이는 큐브를 그리지 못합니다. 크롬이나 엣지에서 열어 주세요.</p>
 
   <section class="cand hero" data-v="9">
-    <button class="stage" type="button" aria-label="열넷째 판, 깎지 않은 큐브. 누르면 구가 되어 생각합니다."><canvas></canvas></button>
+    <button class="stage" type="button" aria-label="열다섯째 판, 깎지 않은 큐브. 누르면 생각합니다."><canvas></canvas></button>
     <div class="info">
-      <p class="key">열넷째 판</p>
+      <p class="key">열다섯째 판</p>
       <h2>큐브</h2>
-      <p class="say">모서리만 둥근 검정 큐브입니다. 깎지 않았습니다. 손을 따라 보고, 생각할 때는 구가 되어 구르다가 답이 나오면 큐브로 돌아와 눈이 한 번 켜집니다. 가만히 두면 6초쯤마다 한 번 변신하고, 누르면 바로 변신합니다.</p>
+      <p class="say">모서리만 둥근 검정 큐브입니다. 손을 따라 눈이 움직입니다. 생각할 때는 몸이 돌지 않고, 면 위의 빛줄기만 시곗바늘처럼 돌며 눈이 도는 점으로 바뀝니다. 답이 나오면 눈이 한 번 켜집니다.</p>
       <div class="chips" role="group" aria-label="꼭짓점">
         <button class="chip" type="button" data-kc="flat" style="--c:#141414" aria-pressed="true"><i></i>깎지 않음</button>
         <button class="chip" type="button" data-kc="none" style="--c:#141414" aria-pressed="false"><i></i>깎고 검정</button>
@@ -172,7 +172,6 @@ html[data-nogl] .nogl{display:block}
       <div class="opts" role="group" aria-label="로딩">
         <span class="lbl">로딩</span>
         <button class="mood" type="button" id="load-9" data-load="9">면이 깎임</button>
-        <button class="mood" type="button" data-kfx="ball">구로 변신</button>
         <button class="mood" type="button" data-kfx="synk">눈이 synk로</button>
         <button class="mood" type="button" data-kfx="pair">s y → n k</button>
       </div>
@@ -184,13 +183,13 @@ html[data-nogl] .nogl{display:block}
     <div class="info">
       <p class="key">지금의 구와 나란히</p>
       <h2>같은 자리에 놓았습니다</h2>
-      <p class="say">왼쪽은 지금 PC 앱 시안의 검정 구이고, 오른쪽은 같은 자리에 놓은 큐브입니다. 구는 캡처한 그림이고 큐브는 살아 있어서 여기서도 구로 변신합니다. 아이콘 크기의 큐브만 변신하지 않습니다.</p>
+      <p class="say">왼쪽은 지금 PC 앱 시안의 검정 구이고, 오른쪽은 같은 자리에 놓은 큐브입니다. 구는 캡처한 그림이고 큐브는 살아 있습니다.</p>
     </div>
     <div class="vsrow">
       <p class="vslbl">켤 때 · 화면 가운데에 하나만</p>
       <div class="vs2">
         <figure><img src="assets/orb-rest.webp" width="880" height="880" alt="지금 PC 앱 시안의 검정 구. 결을 깎은 검정 구에 점 눈 둘이 있다."><figcaption><b>지금</b> · 검정 구</figcaption></figure>
-        <figure><button class="stage" id="vs-big" type="button" aria-label="같은 자리의 큐브. 누르면 구가 되어 생각합니다."><canvas></canvas></button><figcaption><b>큐브</b></figcaption></figure>
+        <figure><button class="stage" id="vs-big" type="button" aria-label="같은 자리의 큐브. 누르면 생각합니다."><canvas></canvas></button><figcaption><b>큐브</b></figcaption></figure>
       </div>
     </div>
     <div class="vsrow">
@@ -1106,16 +1105,16 @@ const CUBES = [
   { kind: 0, stand: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },   /* 넷째 판: 깎은 큐브 그대로, 생각할 때만 서서 돈다 */
   { kind: 1, yaw: 0.44, pitch: 0.34, scale: 0.94, eyeK: 1.55, sep: 5.5, eyeStyle: 0 },   /* 다섯째 판: 모놀리스 몸에 깎은 큐브의 점 눈 */
   /* 여섯째 판: 꼭짓점 하나를 깎고(cut은 꼭짓점의 부호와 깊이), 답이 나온 순간 눈이 코랄로 켜진다. standTurn은 깎은 꼭짓점이 옆에 오게 서는 각이다 */
-  { kind: 0, orb: true, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },
+  { kind: 0, still: true, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },
   { kind: 1, cut: [-1, 1, 1, 0.36], ident: true, yaw: 0.44, pitch: 0.34, scale: 0.94, eyeK: 1.55, sep: 5.5, eyeStyle: 0 },
   /* 열째 판: 펠트 큐브 아홉. combo는 색 조합(COMBOS의 차례)이다. 첫째가 큰 무대의 큐브이고, 나머지 여덟은 색 조합을 나란히 보이는 작은 큐브다.
      자세와 눈의 자리는 구운 사진에 맞췄다. cut의 넷째 값이 0보다 크면 귀퉁이에 세모 조각을 댄다 */
   ...[0, 0, 1, 2, 3, 4, 5, 6, 7].map(n => ({ kind: 7, combo: n, stand: true, standTurn: Math.PI / 2, cut: [1, 1, 1, 0.5], yaw: -0.32, pitch: 0.24, scale: 1.1, eyeK: 2.2, sep: 4.5, eyeY: -0.27, eyeStyle: 0 })),
   /* 열셋째 판: 검정 구와 나란히 놓는 깎은 큐브 둘(큰 것과 앱 머리의 작은 것). 큰 무대의 깎은 큐브(9번)와 같은 몸이다 */
-  { kind: 0, orb: true, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },
-  { kind: 0, gain: 1.7, orb: true, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.12, eyeK: 1.3, sep: 6.5 },
+  { kind: 0, still: true, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },
+  { kind: 0, still: true, gain: 1.7, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.12, eyeK: 1.3, sep: 6.5 },
   /* 앱 아이콘 크기로 보는 큐브. 작아서 몸의 빛을 올리고(gain), 스스로 생각하지 않는다(calm) */
-  { kind: 0, calm: true, gain: 2.4, orb: true, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.16, eyeK: 1.3, sep: 6.5 },
+  { kind: 0, still: true, calm: true, gain: 2.4, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.16, eyeK: 1.3, sep: 6.5 },
 ].map((c, i) => ({
   ...c, i, think: 0, wasThink: false, thinkUntil: 0, bootUntil: 0, smileUntil: 0, flash: 0,
   px: 0, py: 0, tx: 0, ty: 0, moodShown: 0, open: 1, lid: null, nextBlink: 2000 + i * 700,
@@ -1214,7 +1213,7 @@ function step(c, now, dt) {
 
   /* 자세 */
   const sway = reduced ? 0 : 1;
-  let yaw = c.yaw + sway * 0.13 * Math.sin(t * 0.5 + c.i) + c.px * 0.36;
+  let yaw = c.yaw + sway * (c.still ? 0.04 : 0.13) * Math.sin(t * 0.5 + c.i) + c.px * (c.still ? 0.22 : 0.36);
   const pitch = c.pitch + sway * 0.035 * Math.sin(t * 0.37 + c.i * 2) - c.py * 0.24;
   let azAdd = c.px * 0.5;
   c.eyeOn = 1; c.glow = 0; c.scan = -9;
@@ -1227,7 +1226,7 @@ function step(c, now, dt) {
   if (c.kind === 3) { c.spin += dt * (0.22 + 0.9 * c.think) * sway; yaw += c.spin; }
   if (c.kind === 7 || c.fx) yaw += feltFx(c, now, dt);
   if (c.orb) {
-    /* 열넷째 판: 생각할 때 구가 되어 구르고, 답이 나오면 큐브로 돌아온다. 평소에는 12초에 두 번 스스로 변신한다 */
+    /* 열넷째 판의 구 변신. 열다섯째 판에서 유호님이 멀미가 난다고 하셔서 어느 큐브에도 켜지 않는다(orb가 없다) */
     if (want) c.roll += dt * 5.2 * c.think;
     else { const home = Math.round(c.roll / (2 * Math.PI)) * 2 * Math.PI; c.roll += (home - c.roll) * (1 - Math.exp(-dt * 6)); }
     yaw += c.roll;

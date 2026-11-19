@@ -181,6 +181,14 @@ if (LOGIN) {
     await until('설정 시트', () => page.$('#world-panel[open] input[name="world-lang"]'), 10000);
     check(!!await page.$('#world-panel[open] input[name="world-lang"]'), '「나」에서 화면 언어를 바꿀 수 있음');
     await sleep(600); await shot('6a-설정');
+    // 설정에서 화면 언어를 바꿔도(홈이 설정을 다시 그린다) 앞면의 설정 꼴 — 「내 계정」 단추가 남고 튜터 단추는 없다
+    const other = LANG === 'en' ? 'ko' : 'en';
+    await page.click(`#world-panel[open] input[name="world-lang"][value="${other}"]`).catch(() => {});
+    await sleep(700);
+    const after = await page.evaluate(() => ({last: document.querySelector('#world-panel[open] .panel-actions .quiet-button:last-child')?.textContent || '', tutor: /튜터|tutor|Багш/i.test(document.querySelector('#world-panel[open]')?.innerText || '')}));
+    check(/내 계정|My account|Миний бүртгэл/.test(after.last) && !after.tutor, '설정에서 언어를 바꿔도 「내 계정」 단추가 남고 튜터 단추가 없음', JSON.stringify(after));
+    await page.click(`#world-panel[open] input[name="world-lang"][value="${LANG}"]`).catch(() => {});
+    await sleep(700);
     const acct = await page.$('#world-panel[open] .panel-actions .quiet-button:last-child');
     if (acct) await acct.click();
     const out = await until('내 계정 시트의 로그아웃', () => page.$('#world-panel[open] [data-world="logout"]'), 10000);

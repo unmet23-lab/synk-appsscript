@@ -173,6 +173,42 @@
 #portal-entry .rows[hidden] + .read span:empty{display:none}
 /* 솔리오의 방 둘(구독, 방문자 분석)과 펼침에서 여는 방(계정 관리)은 위에서부터 놓는다(room-top). 줄이 펼쳐져 길어져도 손 밑의 줄이 움직이지 않는다.
    맨 아랫줄이 아래 흐림에 들지 않게 흐림보다 넓은 아래 여백을 둔다(시안 .room, 사이트방문 설계 6절, 2단계 둘째 조각 설계 10.2절) */
+/* 비서 판(11-20 솔리오 구독 비서 설계 3절): 맨 위 한 가지 아래에 다가오는 일, 지금 출력, 오늘 진단, 상세내역 단추. 줄은 상세내역 안에 접힌다 */
+#portal-entry .brief{margin-top:clamp(18px,3.5vh,44px);max-width:min(100%,62em);display:grid;grid-template-columns:minmax(0,1fr);column-gap:clamp(24px,4vw,64px)}
+/* 넓은 창에서는 「지금 출력」을 다가오는 일 옆에 세워, 맨 위부터 상세내역 단추까지 한 화면에 들게 한다 */
+@media (min-width:900px){
+  #portal-entry .brief{grid-template-columns:minmax(0,1fr) auto}
+  #portal-entry .brief > .soon,#portal-entry .brief > .soon-more{grid-column:1}
+  #portal-entry .brief > .live{grid-column:2;grid-row:1 / span 2;margin:0;padding:0 0 0 clamp(18px,2.4vw,32px);border-top:0;border-left:1px solid var(--hair);flex-direction:column;align-items:flex-start;justify-content:center;gap:6px}
+  #portal-entry .brief > .diag,#portal-entry .brief > .details{grid-column:1 / -1}
+}
+#portal-entry .brief > .details{justify-self:start}
+#portal-entry .soon{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:clamp(16px,2.4vw,32px);row-gap:10px}
+#portal-entry .soon li{display:contents}
+#portal-entry .soon .w{font:var(--small);font-variant-numeric:tabular-nums;color:var(--dim);white-space:nowrap;padding-top:2px}
+#portal-entry .soon .t{font:var(--body);color:var(--paper)}
+#portal-entry .soon-more{margin:10px 0 0;font:var(--small);color:var(--dim)}
+#portal-entry .live{margin:clamp(22px,4vh,36px) 0 0;padding-top:16px;border-top:1px solid var(--hair);display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px}
+#portal-entry .live-big{font:300 clamp(28px,3.4vw,40px)/1 var(--orb-sans);letter-spacing:-.02em;font-variant-numeric:tabular-nums;transition:color .6s ease,text-shadow .6s ease}
+#portal-entry .live-big.bump{color:#FFFFFF;text-shadow:0 0 18px rgba(243,241,236,.35);transition-duration:.05s}
+#portal-entry .live-big:empty,#portal-entry .live-unit:empty,#portal-entry .live-small:empty{display:none}
+#portal-entry .live-unit{font:var(--small);color:var(--paper)}
+#portal-entry .live-small{font:var(--small);color:var(--dim)}
+#portal-entry .diag{margin-top:clamp(14px,2.4vh,20px);padding-top:clamp(12px,2vh,16px);border-top:1px solid var(--hair)}
+#portal-entry .diag-h{margin:0 0 10px;display:flex;gap:12px;align-items:baseline;font:var(--small);color:var(--paper)}
+#portal-entry .diag-h small{font:var(--small);color:var(--dim)}
+#portal-entry .diag-line{margin:0;display:grid;grid-template-columns:minmax(64px,auto) 4.8em minmax(0,1fr);column-gap:14px;align-items:baseline;font:var(--small);color:var(--dim)}
+#portal-entry .diag-line b{font:var(--body);color:var(--paper)}
+#portal-entry .diag-line em{font-style:normal;color:var(--paper)}
+#portal-entry .diag-cost{margin:10px 0 0;font:var(--small);color:var(--dim)}
+#portal-entry .diag-cost:empty{display:none}
+#portal-entry .details{appearance:none;display:inline-block;margin-top:clamp(12px,2.4vh,24px);background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);border-radius:0;padding:0 0 4px;font:var(--small);color:var(--paper);cursor:pointer}
+#portal-entry .details:hover{border-bottom-color:var(--paper)}
+#portal-entry .details:focus-visible{outline:1px solid var(--ring);outline-offset:3px}
+#portal-entry .details-top{margin-top:clamp(22px,4vh,40px);max-width:52em}
+#portal-entry .details-h{margin:18px 0 10px;font:var(--small);color:var(--paper)}
+#portal-entry .details-h:first-child{margin-top:0}
+#portal-entry .details-top .diag-line{margin-bottom:10px}
 @media (min-width:641px){
   /* 2단계 첫 조각부터는 오브제 줄이 없는 계정의 방도 위에서부터 놓는다. 줄을 펼쳐도 손 밑의 줄이 위로 밀리지 않게 한다(설계 검토 1차 ④) */
   #portal-entry .room-top{top:clamp(92px,21vh,196px);transform:none;max-height:calc(100% - clamp(92px,21vh,196px) - 70px);padding-bottom:34px;scrollbar-width:none;
@@ -385,6 +421,9 @@ html[data-orb-client="app"] #portal-entry .orb-stage[data-fan] ~ .portal-window-
   #portal-entry .room-top.scrolled{-webkit-mask-image:linear-gradient(transparent,#000 30px,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(transparent,#000 30px,#000 calc(100% - 30px),transparent)}
   #portal-entry .rows{margin-top:28px}
   #portal-entry .orb-stage[data-fan] .room{opacity:.05}
+  /* 좁은 창의 진단 줄은 이름과 판정 아래로 문장이 내려온다 */
+  #portal-entry .diag-line{grid-template-columns:auto minmax(0,1fr);row-gap:4px}
+  #portal-entry .diag-line > :last-child{grid-column:1 / -1}
 }
 @media (max-height:620px) and (min-width:641px){
   #portal-entry .room{top:47%}

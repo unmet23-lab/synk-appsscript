@@ -1,7 +1,7 @@
 // 솔리오 첫 화면(PC 클라이언트 1단계, 2026-11-16)의 맨 위 문장과 구독별 줄을 구독 스냅숏에서 만든다. DOM이 없다.
 // 규칙의 원문은 docs/디자인/플랫폼_클라이언트_검정구_20261116/1단계_구현설계.md 8절이다. 셈은 subscriptions-model.mjs를 그대로 쓰고,
 // 새로 세는 것은 「쓰는 속도를 셀 기록이 사흘 안 됐는지」(rate3가 없는 계정이 있는지) 하나뿐이다.
-import { serviceGroups, paceTip, balance, monthCredits, nextBill, freshness, DAY_MS, usageDays, monthPrice, monthlyBill, nextRefill, planKey } from './subscriptions-model.mjs';
+import { serviceGroups, paceTip, balance, monthCredits, nextBill, freshness, DAY_MS, usageDays, monthPrice, monthlyBill, nextRefill, planKey, weightOf } from './subscriptions-model.mjs';
 
 /* 서비스의 짧은 이름은 이 표 한 곳에서만 읽는다(문장 · 줄 · 화면 읽기 프로그램의 글). gpt 줄의 남은 양은 Codex가 알려 주는 한도다 */
 export const SOLIO_TODAY_NAMES = Object.freeze({ claude: 'Claude', gpt: 'Codex', gemini: 'Gemini', higgsfield: 'Higgsfield', typecast: 'Typecast' });
@@ -17,10 +17,16 @@ const dayAfter = (now, n) => { const d = new Date(now); return new Date(d.getFul
 const partOf = h => (h < 6 ? '새벽' : h < 12 ? '오전' : h < 18 ? '오후' : h < 21 ? '저녁' : '밤');
 const fmt = n => Math.round(Number(n) || 0).toLocaleString('ko-KR');
 
-/* 받침이 있으면 true(한글 끝 글자만 본다. 영문 이름은 모음으로 끝난다고 본다) */
+/* 받침이 있으면 true. 한글은 끝 글자로, 숫자는 읽는 소리로(1 일, 3 삼, 7 칠), 영문은 흔한 끝소리로 본다.
+   계정 이름(unmet23, 77unmet)이 문장에 들어가며 「unmet23가」로 읽혔다(11-20 솔리오 구독 비서) */
+const DIGIT_BATCHIM = { 0: true, 1: true, 2: false, 3: true, 4: false, 5: false, 6: true, 7: true, 8: true, 9: false };
 function hasBatchim(word) {
-  const ch = String(word || '').trim().slice(-1), code = ch.charCodeAt(0);
-  return code >= 0xac00 && code <= 0xd7a3 ? (code - 0xac00) % 28 !== 0 : false;
+  const w = String(word || '').trim(), ch = w.slice(-1), code = ch.charCodeAt(0);
+  if (code >= 0xac00 && code <= 0xd7a3) return (code - 0xac00) % 28 !== 0;
+  if (/[0-9]/.test(ch)) return DIGIT_BATCHIM[ch];
+  // 영문: l · m · n · ng로 끝나거나(Gmail → 지메일), 모음 뒤 t · k · p로 끝나면(unmet → 언멧) 받침으로 읽는다. 그 밖(Claude, Codex, founder)은 모음으로 읽는다
+  const lower = w.toLowerCase();
+  return /(?:[lmn]|ng)$/.test(lower) || /[aeiou][tkp]$/.test(lower);
 }
 export const josa = (word, pair) => word + (hasBatchim(word) ? pair[0] : pair[1]);
 const ga = w => josa(w, ['이', '가']), neun = w => josa(w, ['은', '는']), wa = w => josa(w, ['과', '와']), do_ = w => w + '도';
@@ -93,6 +99,18 @@ function weeklyFact(snapshot, g, now) {
   return young ? { kind: 'young' } : { kind: 'fine', reset: Math.min(...usable.map(a => a.g.weekly.resetsAt).filter(Boolean)) };
 }
 
+/* 이 PC 계정을 합친 주간 몫(요금제 무게). 다 쓴 계정은 0이고, 다시 로그인하거나 못 읽은 계정은 뺀다.
+   무게를 아는 Claude나 요금제가 모두 같은 서비스에서만 부른다. Codex Pro와 Plus를 같은 크기로 더하면 남은 몫을 부풀린다(GPT 검수 GA5) */
+function pooledLeft(g) {
+  let left = 0, weight = 0;
+  for (const a of here(g)) {
+    if (!['ok', 'low', 'out'].includes(a.state)) continue;
+    const w = weightOf(a.row), v = a.state === 'out' ? 0 : a.g?.weekly && !a.g.weekly.guess ? a.g.weekly.left : a.left ?? 0;
+    left += v * w; weight += w;
+  }
+  return weight ? Math.floor(left / weight) : 0;
+}
+
 function rowOf(snapshot, g, fact, now, checking) {
   const name = groupName(g), count = here(g).length, best = g.best, row = { key: g.key, name, sub: count > 1 ? '계정 ' + count + '개' : '', gauge: null, val: '', when: '', spoken: '', urgent: false };
   const prices = snapshot?.prices || null;
@@ -100,6 +118,12 @@ function rowOf(snapshot, g, fact, now, checking) {
     if (fact?.kind === 'out') {
       Object.assign(row, { val: '다 씀', gauge: 0, when: fact.at ? shortWhen(fact.at, now) + '에 다시 열림' : '', urgent: true });
       row.spoken = fact.at ? spokenWhen(fact.at, now) + '에 다시 열림' : '';
+    } else if (count >= 2 && g.out.length && g.usable.length && !g.projected.length && (g.service === 'claude' || new Set(here(g).map(a => planKey(a.row.plan))).size === 1)) {
+      // 계정 여럿 가운데 다 쓴 계정이 있으면 가장 좋은 계정 하나가 아니라 합친 몫을 쓴다. 「100% 남음」이 10개 가운데 7개를 다 쓴 것을 가렸다
+      // (11-20 유호님 「너무 엉망이야」, 솔리오 구독 비서 설계 검토 D5). 끝 칸은 가장 먼저 다시 열리는 계정이다
+      const pool = pooledLeft(g), first = g.out[0], stuck = g.out.some(a => a.focus === 'session') ? '개 막힘' : '개 다 씀';
+      Object.assign(row, { sub: '계정 ' + count + '개 · ' + g.out.length + stuck, val: '합쳐서 ' + pool + '% 남음', gauge: pool, when: first.unblock ? shortWhen(first.unblock, now) + '에 ' + first.name + ' 열림' : '', urgent: true });
+      row.spoken = first.unblock ? spokenWhen(first.unblock, now) + '에 ' + first.name + ' 다시 열림' : '';
     } else if (best && best.g && !best.projected && (best.state === 'ok' || best.state === 'low')) {
       const at = best.g.resetsAt;
       Object.assign(row, { val: best.left + '% 남음', gauge: best.left, when: at ? shortWhen(at, now) + ' 초기화' : '', urgent: fact?.kind === 'pace' || best.state === 'low' });

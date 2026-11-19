@@ -106,10 +106,13 @@ function usageSummary({ rows = [], history = [], now = Date.now() } = {}) {
     const used7 = sum(now - WEEK, now);
     // 최근 3일 속도: 기록이 3일 넘게 쌓였을 때만(처음 읽은 창 전체를 3일 소비로 오해하지 않게).
     const rate3 = firstAt <= now - 3 * DAY ? sum(now - 3 * DAY, now, true) / 3 : null;
+    // rate3w: 같은 3일을 그때의 요금제 무게로 센 속도(Claude Pro 1 · Max 5 · Max 20x 20). 3일 안에 요금제를 바꾼 계정의 옛 요금제 몫을
+    // 지금 무게로 부풀리지 않는다(11-20 솔리오 구독 비서 GPT 검수 GA3). 화면은 서비스 전체 속도를 셀 때 이 값을 먼저 쓴다
+    const rate3w = rate3 === null ? null : events.reduce((n, e) => (e.t >= now - 3 * DAY && e.t <= now && !e.first ? n + e.v * (e.wt || 1) : n), 0) / 3;
     // 크레딧 하루 속도: 지난 7일(기록이 짧으면 있는 날만큼).
     const days = Math.max(1, Math.min(7, (now - firstAt) / DAY));
     const cur = weightOf(row.service, row.plan || samples[samples.length - 1].p);
-    accounts[id] = { since: firstAt, used7: Math.round(used7 * 100) / 100, rate3: rate3 === null ? null : Math.round(rate3 * 100) / 100, perDay: Math.round((sum(now - WEEK, now, true) / days) * 100) / 100, refillAt: refills.length ? refills[refills.length - 1] : null, weeks4: lastFourWeeks(samples, events, coverFrom, buckets, cur), weeks12: lastTwelveWeeks(samples, events, firstAt, now, cur, row.plan || samples[samples.length - 1].p) };
+    accounts[id] = { since: firstAt, used7: Math.round(used7 * 100) / 100, rate3: rate3 === null ? null : Math.round(rate3 * 100) / 100, rate3w: rate3w === null ? null : Math.round(rate3w * 100) / 100, perDay: Math.round((sum(now - WEEK, now, true) / days) * 100) / 100, refillAt: refills.length ? refills[refills.length - 1] : null, weeks4: lastFourWeeks(samples, events, coverFrom, buckets, cur), weeks12: lastTwelveWeeks(samples, events, firstAt, now, cur, row.plan || samples[samples.length - 1].p) };
     if (!perService.has(row.service)) perService.set(row.service, []);
     // weightAt: 그 구간 끝까지 마지막으로 읽은 요금제의 무게(그 전 읽기가 없으면 첫 읽기). 평균의 분모를 그때의 한도 크기로 센다.
     const weightAt = end => { let w = weightOf(samples[0].s, samples[0].p); for (const s of samples) { if (s.t >= end) break; w = weightOf(s.s, s.p); } return w; };
@@ -199,7 +202,27 @@ function lastFourWeeks(samples, events, coverFrom, buckets, cur) {
     hCover: withH.length > 0 && withH[0].t <= start + DAY,
     hPeak: recentH.length ? round(Math.max(...recentH)) : null,
     weeks,
+    windows: weekly ? weeklyWindows(samples, start, now) : [],
   };
+}
+
+// 주간 창마다 한 번씩(11-20 솔리오 「오늘 진단」, Fable 설계 검토 D2): 7일 구간의 peak는 구간과 창이 어긋나 한 창의 100%를 두 구간에 센다.
+//  그래서 지난 4주 안에 끝났거나 아직 열린 창을 창 끝(wr)으로 묶고, 창마다 처음 99% 이상을 읽은 때를 본다.
+//  end: 창 끝 · hit: 그 창에서 다 썼는지 · early: 다 쓴 걸 처음 읽은 때부터 창 끝까지(읽기 사이를 몰라 실제보다 짧게 잡힌다) ·
+//  earlyMax: 다 쓰기 바로 앞 읽기부터 창 끝까지(그 사이 어느 때 다 썼는지 모른다 — 가장 길게 잡은 값. early와 earlyMax 사이면 일찍 바닥났는지 모른다, GPT 검수 GA6) ·
+//  known: 다 썼거나 창 끝 하루 안에 읽어 「다 쓰지 않았다」고 말할 수 있는지 · closed: 창이 이미 끝났는지.
+function weeklyWindows(samples, start, now) {
+  const list = [];
+  for (const s of samples) {
+    if (s.w === null || !s.wr || s.wr <= start || s.t > now) continue;
+    let win = list.find(x => Math.abs(x.end - s.wr) < SAME_WINDOW);
+    if (!win) { win = { end: s.wr, hitAt: null, before: null, last: s.t }; list.push(win); }
+    win.last = Math.max(win.last, s.t);
+    if (s.w >= 99) { if (win.hitAt === null || s.t < win.hitAt) win.hitAt = s.t; }
+    else if (win.hitAt === null || s.t < win.hitAt) win.before = win.before === null ? s.t : Math.max(win.before, s.t);
+  }
+  return list.sort((a, b) => a.end - b.end).map(x => ({ end: x.end, hit: x.hitAt !== null, early: x.hitAt !== null ? Math.max(0, x.end - x.hitAt) : 0,
+    earlyMax: x.hitAt === null ? 0 : x.before !== null ? Math.max(0, x.end - x.before) : WEEK, known: x.hitAt !== null || x.end - x.last <= DAY, closed: x.end <= now }));
 }
 
 // 계정 하나의 지난 12주(7일씩, 오래된 → 최근): 연간 결제 팁(10-19 3차, 1차 검수 아이디어 7)이 「12주 내내 꾸준히」를 본다.

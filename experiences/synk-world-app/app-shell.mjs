@@ -20,7 +20,7 @@ import {createWorkbenchStorage,thumbnailKey,wardrobeThumbnailCache} from '../syn
 import {play as playSound,getPref} from '../brand-opening/world-sound.mjs'
 import {profilePhoto,welcomePhoto} from '../brand-opening/tutor-photos.mjs';
 // 화면 언어(10-19 1판): 계정 연결·로그인 안내·저장 확인·오류는 고른 언어로. 첫 문장 놀이·타운·노래 화면은 2판까지 한국어다.
-import {t,tMessage,currentLang,hasString,situationName,meText} from '../brand-opening/world-lang.mjs';
+import {t,tMessage,currentLang,setLang,hasString,situationName,meText} from '../brand-opening/world-lang.mjs';
 import {restoreDisplayLanguage,commitDisplayLanguage} from './display-language-sync.mjs';
 import {createSeoulEntry,seoulText} from './seoul-entry.mjs';
 import {createFrontEntry} from './world-front-entry.mjs';
@@ -93,6 +93,9 @@ const worldUrl=path=>new URL(connection.basePath+path,location.origin).href;
 // 시트 수명 — sheet: 지금 시트 하나에 딸린 자원(내 계정의 우리 반 수업·과제·반 연결, 싱크타운 호스트). 시트를 바꾸거나 닫으면 버린다(attachSheet·releaseSheet).
 let client,sheet=null,writing=null,writingOwner=null;
 let seoul=null,front=null,entryGate=null,worldRequested=false,sessionTask=null,sessionConfirmed=false,accountActionPending=false,entryIdentity='',entryDestinationHandled=false;
+import {createDramaInvite} from './drama-invite-route.mjs';
+const dramaInvite=createDramaInvite(location.search,()=>sessionStorage);
+let inviteLoginShown=false;
 let finishInitialRestore;const initialRestoreReady=new Promise(resolve=>{finishInitialRestore=resolve;});
 // 초기 세션 복원은 로그인과 무관한 home.mjs를 기다리지 않고 여기서 시작한다(11-04). game-tutor-support.mjs는 결과 화면에서만 부른다(loadFirstSupport).
 // 화면이 서기 전(shellOpen=false)의 WorldClient 변경은 화면에 잇지 않고 표시만 해 두었다가, 원래 준비 시점에 client.emit()으로 한 번 다시 알린다.
@@ -109,9 +112,16 @@ const home=window.__synkHome||(await import(worldUrl('brand-opening/home.mjs')))
 // 계정 기록이 서기 전에 고른 화면 언어 — 고른 때의 주인과 함께 두고, 그 주인의 계정 복원이 한 번만 존중하고 비운다
 // (손님 때 고른 것은 처음 서는 계정 기록이 쓴다, display-language-sync.mjs restoreDisplayLanguage choice).
 const languageChoice={language:null,owner:null};
+if(dramaInvite.language){languageChoice.language=dramaInvite.language;setLang(dramaInvite.language);}
 // Loading and session restoration run behind the company splash. A failed
 // optional opening must never disable the existing account or guest entrance.
 function startOpening(replay=false){
+ if(!replay&&dramaInvite.language){
+  document.querySelector('#synk-opening-cover')?.remove();
+  clearTimeout(window.__synkOpeningSafetyTimer);
+  worldRequested=true;
+  return initialRestoreReady.then(()=>entryGate?.start()).catch(showEntryRecovery);
+ }
  worldRequested=false;entryGate?.invalidate();home.setSceneActive?.(false);home.setEntryState?.({phase:'restoring'});
  return import(worldUrl('brand-opening/opening.mjs')).then(async({mountBrandOpening})=>{
   // 서울행(새 학생 첫 실행, experiences/seoul-arrival/설계.md 3절): 살펴볼 까닭이 없으면 아래 길은 지금과 똑같다.
@@ -135,7 +145,7 @@ const examRequested=(value=>['topik1','topik2'].includes(value)?value:null)(new 
 // 로그인한 상태로 들어왔을 때 한 번 연다(로그인 전에는 launchGame이 로그인 창을 열고 표시는 남는다).
 const DRAMA_PENDING='synk.world.drama.pending';
 // 로그인을 거쳐 돌아온 드라마 바로가기는 30분 남기되, 주소가 다른 바로가기(옷장 · 카페 · 시험)를 부르면 그쪽이 이기고 남은 드라마 표시는 지운다(FA2).
-const dramaRequested=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('drama')==='1')sessionStorage.setItem(DRAMA_PENDING,String(Date.now()));else if(q.get('wardrobe')==='1'||q.get('cafe')==='1'||q.has('exam')||q.get('me2')==='1'){sessionStorage.removeItem(DRAMA_PENDING);return false;}const at=Number(sessionStorage.getItem(DRAMA_PENDING));if(at&&Date.now()-at<30*60000)return true;sessionStorage.removeItem(DRAMA_PENDING);}catch{}return false;})();
+let dramaRequested=Boolean(dramaInvite.language)||(()=>{try{const q=new URLSearchParams(location.search);if(q.get('drama')==='1')sessionStorage.setItem(DRAMA_PENDING,String(Date.now()));else if(q.get('wardrobe')==='1'||q.get('cafe')==='1'||q.has('exam')||q.get('me2')==='1'){sessionStorage.removeItem(DRAMA_PENDING);return false;}const at=Number(sessionStorage.getItem(DRAMA_PENDING));if(at&&Date.now()-at<30*60000)return true;sessionStorage.removeItem(DRAMA_PENDING);}catch{}return false;})();
 async function restoreConnectedHome(){
  // native 계정 연결은 새 인증 경계다. 진행 중인 복원(초기 복원 포함)에 합류하되 연결 완료·오류 화면은 이 경계가 맡고, 앞 시도의 화면 처리는 물러난다.
  authBoundary++;
@@ -335,6 +345,24 @@ async function prepareWorldTutor(){
  // onError(showEntryRecovery)로 그 창을 띄운다. false는 이어 갈 기록을 고르는 창을 띄운 갈래(prepareTutor)에만 쓴다.
  if(!life.mounted||client.snapshot&&!life.progress?.status().scoped)throw Object.assign(Error('WORLD를 열지 못했어요. 「다시 불러오기」를 눌러 주세요.'),{code:'ENTRY_NOT_READY'});
  return true;
+}
+function finishDramaInvite(){
+ dramaInvite.clear();inviteLoginShown=false;dramaRequested=false;
+ try{sessionStorage.removeItem(DRAMA_PENDING);}catch{}
+ const url=new URL(location.href);
+ if(url.searchParams.get('invite')==='1'){
+  for(const key of ['invite','drama','lang'])url.searchParams.delete(key);
+  history.replaceState(history.state,'',url.href);
+ }
+}
+function leaveDramaInvite(){
+ const language=dramaInvite.language;
+ if(!language)return;
+ finishDramaInvite();
+ location.assign(worldUrl('invite/'+language+'/'));
+}
+function signInForDramaInvite(){
+ inviteLoginShown=true;entryDestinationHandled=false;signIn();
 }
 async function beginAccountLogin(){
  accountActionPending=true;authBoundary++;entryGate?.invalidate();
@@ -1036,6 +1064,7 @@ function showGameConflict(id,session){
 }
 // seoul: 서울행 내 길에서 여는 1화 — 튜터 고르기는 우리 동네에 들어갈 때 한다. 제목은 화면 언어로.
 async function launchGame(id,{seoul:fromSeoul=false}={}){
+ if(id==='drama'&&dramaInvite.language&&operating&&!client.snapshot)return signInForDramaInvite();
  // 게임 문을 치운다 — 패널이 닫히면 겉과 그 판을 닫는다(4-6c).
  const closeDoor=door=>{if(!door)return;door.dispose();if(window.SYNKAtlasGame===door.api)delete window.SYNKAtlasGame;};
  const listed=games[id];if(!listed)return;const game=fromSeoul?{...listed,title:seoulText('dramaTitle')}:listed;
@@ -1082,7 +1111,7 @@ const commands={
  'life-resolve':resolveLife,'life-recovery':showLifeRecovery,
  'entry-retry':()=>{sessionConfirmed=false;close();return entryGate.start();},'entry-title':()=>{close();return startOpening(true);},
  'resolve-play':async button=>{const recovery=gameRecovery;if(!recovery||recovery.busy)return;recovery.busy=true;document.querySelectorAll('[data-world="resolve-play"]').forEach(b=>b.disabled=true);try{await recovery.session.resolve(button.dataset.choice);if(gameRecovery===recovery&&screen==='world-game-conflict'&&worldPanel.open&&(!home.isMaru||home.openPanel()==='world-game-conflict'))await launchGame(recovery.id);}catch(error){if(gameRecovery===recovery&&worldPanel.open&&(!home.isMaru||home.openPanel()==='world-game-conflict')){home.toast(error?.code==='REVISION_CONFLICT'?t('account.conflictNotice'):errorText(error));recovery.busy=false;document.querySelectorAll('[data-world="resolve-play"]').forEach(b=>b.disabled=false);}}},
- writing:openWriting,'sign-in':signIn,'account-login':beginAccountLogin,'guest':()=>{try{localStorage.setItem('synk-world-v1-welcomed','1');}catch{}close();if(worldRequested)return entryGate.start();},'login-a':()=>login('player-a'),'login-b':()=>login('player-b'),profile,wardrobe,pending,play,finish,home:()=>{close();home.goTown?.();},town,songs,'town-preview':townPreview,'town-check':()=>life.education?.townCheck?.(),
+ writing:openWriting,'sign-in':signIn,'account-login':beginAccountLogin,'guest':()=>{if(inviteLoginShown&&dramaInvite.language)finishDramaInvite();try{localStorage.setItem('synk-world-v1-welcomed','1');}catch{}close();if(worldRequested)return entryGate.start();},'login-a':()=>login('player-a'),'login-b':()=>login('player-b'),profile,wardrobe,pending,play,finish,home:()=>{close();home.goTown?.();},town,songs,'town-preview':townPreview,'town-check':()=>life.education?.townCheck?.(),
  pause:()=>{saveDraft();close();home.toast('고른 답은 그대로 두었어요. 나중에 이어서 해요.');},
  answer:button=>{const q=draftRun.questions[questionIndex];answers=answers.filter(a=>a.questionId!==q.questionId);answers.push({questionId:q.questionId,optionId:button.dataset.option});saveDraft();playSound('select');showQuestion();},
  next:()=>{if(questionIndex<draftRun.questions.length-1){questionIndex++;showQuestion();}else finish();},
@@ -1095,7 +1124,7 @@ const commands={
  // 2단(앱을 닫아도 받기): 휴대폰 묻는 카드 · 동의 상자의 「동의하고 켜기」(누른 그 동작 안에서 world-push가 권한을 청한다) · 「괜찮아요」.
  ...Object.fromEntries(['reminder-yes','reminder-no','reminder-keep','reminder-stop','reminder-exam-start','reminder-exam-mock','reminder-exam-plan','reminder-push-ask','reminder-push-yes','reminder-push-no'].map(name=>[name,()=>life.reminders?.command(name)])),
  // 로그아웃: 이 뒤에 생긴 손님 기록만 다음 로그인에 옮길지 묻는다(device-records.mjs — 앞 사람의 손님 기록이 다음 사람에게 가지 않게).
- logout:async()=>{accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}
+ logout:async()=>{if(dramaInvite.language)finishDramaInvite();accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}
    // Atlas 새 길의 로그아웃 표지(손님 저장소 — 되는 만큼만, 단계4_계획 §18-5-3): 이미 연 계정 코치가 있을 때만, 잠깐만 기다린다.
    try{const leavingAtlas=life.owner===leaving?life.atlasNext:null;if(leavingAtlas){let timer;await Promise.race([leavingAtlas.noteLogout(),new Promise(resolve=>{timer=setTimeout(resolve,1500);})]).finally(()=>clearTimeout(timer));}}catch{/* 로그아웃을 막지 않는다 */}
    await client.logout();const signedOutAt=Date.now();if(leaving){noteDeviceAccount(localStorage,leaving,signedOutAt);clearMonthAnswer(localStorage,leaving);}noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(front?.active()){front.drop();void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
@@ -1187,8 +1216,8 @@ entryGate=createWorldEntryGate({
   const next=atlasNextOn&&identity.owner!=='guest'&&life.owner===identity.owner?life.atlasNext:null;
   return deviceRecords.offer(identity,{atlas:next?input=>next.guestMove(input):null});
  },
- read:()=>({owner:client.snapshot?.accountId||'guest',generation:client.generation,tutor:home.tutor?.().tutor||(front?.free()?'front':null)}),
- choose:then=>home.ensureTutor?.(then),
+ read:()=>({owner:client.snapshot?.accountId||'guest',generation:client.generation,tutor:home.tutor?.().tutor||(front?.free()&&!dramaInvite.language?'front':null)}),
+ choose:then=>dramaInvite.language&&operating&&!client.snapshot?signInForDramaInvite():home.ensureTutor?.(then),
  onState:state=>{home.setEntryState?.(state);home.setSceneActive?.(state.phase==='ready');},
  onEnter:identity=>{
   seoul.syncDoor();
@@ -1197,11 +1226,17 @@ entryGate=createWorldEntryGate({
    if(entryGate.state().phase!=='ready'||identity.owner!==(client.snapshot?.accountId||'guest')||identity.generation!==client.generation)return;
    // 앞면 학생은 앞면이 홈이다(바로가기 주소는 frontMode가 걸러 지금 길로 간다). 틀을 못 올리면(15초 · 주인 바뀜) 지금 길 그대로.
    const same=()=>entryGate.state().phase==='ready'&&identity.owner===(client.snapshot?.accountId||'guest')&&identity.generation===client.generation;
-   if(front?.free()){void front.enter().then(ok=>{if(!ok&&same())openReminderLink();},()=>{if(same())openReminderLink();});return;}
+   if(front?.free()&&!dramaInvite.language){void front.enter().then(ok=>{if(!ok&&same())openReminderLink();},()=>{if(same())openReminderLink();});return;}
    if(wardrobeRequested){if(client.snapshot)void wardrobe();else signIn();}
    else if(new URLSearchParams(location.search).get('cafe')==='1')void openLife('cafe').catch(()=>home.toast('카페를 열지 못했어요. 우리 동네에서 카페를 다시 눌러 주세요.'));
    // ?drama=1(11-02): 드라마 말하기 1화 코호트 링크 — 다른 게임과 같은 launchGame(로그인 전이면 로그인부터).
-   else if(dramaRequested){if(client.snapshot)try{sessionStorage.removeItem(DRAMA_PENDING);}catch{}void launchGame('drama');}
+   else if(dramaRequested){
+    if(client.snapshot){
+     if(dramaInvite.language)finishDramaInvite();
+     else try{sessionStorage.removeItem(DRAMA_PENDING);}catch{}
+    }
+    void launchGame('drama');
+   }
    // 한 번만 도는 바로가기라 계정이 바뀌어 멈춘 것(코드 없는 오류)은 알리지 않는다 — 「다시 시도」할 일이 아니다.
    else if(me2Requested){if(client.snapshot)try{sessionStorage.removeItem(ME2_PENDING);}catch{}void openMe2().catch(error=>{if(error?.code)home.toast(errorText(error));});}
    else if(examRequested)void openExamLink().catch(error=>{if(error?.code)home.toast(errorText(error));});
@@ -1213,6 +1248,7 @@ entryGate=createWorldEntryGate({
 window.__synkWorld.entry=()=>entryGate.state();
 worldPanel.addEventListener('close',()=>queueMicrotask(()=>{
  if(!worldRequested||worldPanel.open)return;
+ if(inviteLoginShown&&dramaInvite.language&&!client.snapshot&&!accountActionPending){leaveDramaInvite();return;}
  const phase=entryGate.state().phase;
  if(phase==='restoring'){resumeEntryAfterClosedLogin();return;}
  if(phase!=='error'&&(phase!=='choosing'||home.tutor?.().tutor||home.tutor?.().active))return;
