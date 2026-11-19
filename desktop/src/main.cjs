@@ -44,6 +44,7 @@ const {createUpdateRecovery}=require('./platform-update-recovery.cjs');
 const {yieldToUpdatingInstaller}=require('./platform-update-marker.cjs');
 const {createSiteVisits}=require('./site-visits.cjs');
 const {createSnsHealth}=require('./sns-health.cjs');
+const {createSolioBackup}=require('./solio-backup.cjs');
 const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');
 const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
 const {createLocalServerGate}=require('./local-server-owner.cjs');
@@ -244,6 +245,11 @@ function siteVisitsCall(){if(runtime.clientId!=='platform'||smoke)return {ok:fal
 // 확인은 방문자 분석과 같다. 플랫폼 창에서 로그인한 회원만 묻고, 그 계정이 방문자 분석의 viewers.json에 있어야 보인다(sns-health.cjs).
 let snsHealth=null;
 function snsHealthCall(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};if(!snsHealth)snsHealth=createSnsHealth();return snsHealth.snapshot(accountStatus()?.account);}
+// 솔리오 「백업·복구」(11-20): 업무 백업 엔진의 입구. 플랫폼 창에서 로그인한 계정만 묻고, 실제 입구는 유호님 계정에만 보인다(solio-backup.cjs).
+// 힌트는 SYNK ID에 Google 로그인이 이어져 있고 그 주소를 알 때만 엔진의 setup 요청에 넘긴다(STAGE1_DESIGN 4.13 「로그인」).
+let solioBackupService=null;
+function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};if(!solioBackupService)solioBackupService=createSolioBackup({cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url)});return work(solioBackupService,status.account);}
+async function solioBackupHint(){const result=await auth.identity();const google=result?.ok?(result.identities||[]).find(row=>row?.provider==='google'&&typeof row.email==='string'):null;return google?.email||null;}
 function subscriptionCall(operation){const service=subscriptions();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return operation(service);}
 // 계정판 자동 읽기(지난 7일 사용량 기록용): 로그인한 회원이 계정판을 써 본 PC에서만, 앱이 켜 있는 동안 2분마다 읽을 때인지 본다.
 // 읽을 때는 ai-subscriptions.cjs의 autoDue가 정한다(마지막 확인 6시간 뒤 · 계정마다 주간 초기화 10분 전 · 결제일 아침). 끄는 중에는 새로 읽지 않는다.
@@ -737,6 +743,10 @@ function createWindow(){
     'synk:subscriptions-tokens-live':on=>subscriptionCall(s=>s.tokensLive(on===true)),
     'synk:site-visits-snapshot':()=>siteVisitsCall(),
     'synk:sns-health-snapshot':()=>snsHealthCall(),
+    'synk:solio-backup-snapshot':()=>solioBackupCall((service,account)=>service.snapshot(account)),
+    'synk:solio-backup-start':mode=>solioBackupCall((service,account)=>service.start(account,mode,{getHint:solioBackupHint})),
+    'synk:solio-backup-open':topic=>solioBackupCall((service,account)=>service.open(account,topic)),
+    'synk:solio-backup-dismiss':()=>solioBackupCall((service,account)=>service.dismiss(account)),
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});

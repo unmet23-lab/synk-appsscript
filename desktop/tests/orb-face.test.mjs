@@ -1251,7 +1251,10 @@ test('the view writes summary words only as text and waits for the object names 
   assert.doesNotMatch(room, /innerHTML|outerHTML|insertAdjacentHTML|createContextualFragment|DOMParser/, 'summary words never become markup');
   assert.match(room, /n\.textContent = String\(text\)/);
   assert.equal(src.split('innerHTML').length - 1, 2, 'only the fixed markup and dispose touch innerHTML');
-  assert.doesNotMatch(src, /data-orb-prog="backup"|solio-backup/, 'no backup object until its room exists');
+  // 백업 오브제는 그 방과 함께 선다(11-20 백업·복구 탭 세션). 방의 할 일 단추도 글자로만 만든다
+  assert.match(src, /data-orb-prog="backup"/, 'the backup object stands after subscriptions');
+  assert.match(src, /data-room="solio-backup"/, 'with its room');
+  assert.match(src, /const b = button\(a\.primary \? 'reread primary' : 'reread', a\.label,/, 'backup buttons are built with textContent');
   const { railSettleMs } = await import('../renderer/orb-face-view.mjs');
   assert.equal(railSettleMs(3), 620, 'three names: the sketch value');
   assert.equal(railSettleMs(2), 550, 'two names: 0.46 s plus one 70 ms step, with the same margin');
@@ -1667,7 +1670,7 @@ test('the view opens the fan only on Enter, Space or the down arrow, never on fo
 
 test('while the fan is open the hidden name, the object row and the dimmed rooms leave the Tab order; hidden rooms do not take Esc (카본 A1 · A6)', () => {
   const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
-  assert.match(src, /const back = \[app\.nameBtn, app\.rail, app\.solio, app\.visits, app\.health, app\.space, \.\.\.Object\.values\(app\.asides\)\.map\(a => a\.room\)\]\.filter\(Boolean\);/, 'the rooms opened from the fan leave the Tab order too');
+  assert.match(src, /const back = \[app\.nameBtn, app\.rail, app\.solio, app\.backup, app\.visits, app\.health, app\.space, \.\.\.Object\.values\(app\.asides\)\.map\(a => a\.room\)\]\.filter\(Boolean\);/, 'the rooms opened from the fan leave the Tab order too');
   assert.match(src, /if \(open\) \{ const a = doc\.activeElement; if \(a && back\.some\(x => x\.contains\(a\)\)\) \{ fanReturn = f\.pin \? null : a; app\.orbBtn\.focus/, 'focus inside them moves to the visible orb before they turn inert');
   assert.match(src, /for \(const x of back\) if \(x\.inert !== open\) x\.inert = open;/);
   assert.match(src, /\[\.\.\.root\.querySelectorAll\('\.more\.open'\)\]\.some\(m => !m\.closest\('\[hidden\]'\)\)/, 'a pinned row left in a hidden room does not swallow Esc');

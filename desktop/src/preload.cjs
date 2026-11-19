@@ -131,6 +131,13 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   siteVisits:Object.freeze({snapshot:()=>ipcRenderer.invoke('synk:site-visits-snapshot')}),
   // 솔리오 계정 건강(11-19): 진단 요약을 읽은 결과만 받는다. 넘기는 값은 없다(계정은 본체가 로그인 상태에서 읽는다).
   snsHealth:Object.freeze({snapshot:()=>ipcRenderer.invoke('synk:sns-health-snapshot')}),
+  // 솔리오 백업·복구(11-20): 엔진 상태를 읽은 결과만 받고, 넘기는 값은 정해진 낱말 하나뿐이다(경로 · 자유 글 없음).
+  solioBackup:Object.freeze({
+    snapshot:()=>ipcRenderer.invoke('synk:solio-backup-snapshot'),
+    start:mode=>['protect','move'].includes(mode)?ipcRenderer.invoke('synk:solio-backup-start',mode):Promise.resolve({ok:false,code:'INVALID'}),
+    open:topic=>typeof topic==='string'&&/^[a-z]{1,16}$/.test(topic)?ipcRenderer.invoke('synk:solio-backup-open',topic):Promise.resolve({ok:false,code:'INVALID'}),
+    dismiss:()=>ipcRenderer.invoke('synk:solio-backup-dismiss'),
+  }),
   onAuthChanged:callback=>{if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,status)=>callback(status);ipcRenderer.on('synk:auth-changed',listener);return ()=>ipcRenderer.removeListener('synk:auth-changed',listener);},
   onClientsChanged:callback=>subscribe('synk:clients-changed',callback),
   onClientProgress:callback=>subscribe('synk:client-progress',callback),

@@ -166,6 +166,10 @@
 #portal-entry .reread{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.4);padding:0 0 4px;font:var(--small);color:var(--paper);cursor:pointer;border-radius:0;white-space:nowrap}
 #portal-entry .reread:hover:not(:disabled):not([aria-disabled="true"]){border-bottom-color:var(--paper)}
 #portal-entry .reread:disabled,#portal-entry .reread[aria-disabled="true"]{opacity:.45;cursor:default}
+/* 백업 방의 할 일 단추 줄(11-20). 결론 바로 아래에 왼쪽부터 놓고, 맨 앞 단추만 밝게 둔다 */
+#portal-entry .read.acts{justify-content:flex-start;flex-wrap:wrap;gap:12px 28px;margin:18px 0 6px}
+#portal-entry .read.acts[hidden]{display:none}
+#portal-entry .reread.primary{border-bottom-color:var(--paper)}
 #portal-entry .room[data-room="space"] .read{justify-content:flex-start;gap:28px;margin-top:clamp(28px,5vh,48px)}
 /* 오류가 없을 때 빈 알림 칸이 남은 폭을 차지해 「다시 열기」를 오른쪽 끝으로 밀지 않게 한다(검수 A3) */
 #portal-entry .room[data-room="space"] .read span:empty{display:none}

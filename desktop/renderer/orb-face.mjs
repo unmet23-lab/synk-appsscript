@@ -15,6 +15,7 @@ import { solioToday, solioTodayNeedsReread } from './solio-today.mjs';
 import { solioBrief } from './solio-brief.mjs';
 import { siteVisitsView, SITE_VISITS_NAME } from './site-visits-model.mjs';
 import { snsHealthView, SNS_HEALTH_NAME } from './sns-health-model.mjs';
+import { solioBackupView, SOLIO_BACKUP_NAME } from './solio-backup-model.mjs';
 import { createOrbFaceView } from './orb-face-view.mjs';
 import { createOrbRooms, ASIDE_ROOMS } from './orb-rooms.mjs';
 
@@ -23,16 +24,20 @@ import { createOrbRooms, ASIDE_ROOMS } from './orb-rooms.mjs';
 export const ORB_LOOK = Object.freeze({ places: true, signature: true, eyes: true });
 
 /* 솔리오 안의 프로그램. 구 옆에 작은 오브제로 놓인다(시안 .rail, 결정 표 11-16). 오브제 줄은 방문자 분석이나 계정 건강을 볼 계정에게만 있다.
- * 그 밖의 계정에게는 줄이 없고 솔리오 화면이 그대로다. 백업은 방이 생길 때 구독 다음 자리에 넣는다(맡긴 세션 11-18, 결정 표 11-16 「첫 화면에는 백업 줄을 두지 않는다」).
+ * 그 밖의 계정에게는 줄이 없고 솔리오 화면이 그대로다. 백업은 구독 다음 자리다(11-20 백업·복구 탭 세션). 실제 입구는 유호님 계정에만 있고,
+ * 본체가 다른 계정에는 available:false로 답해 오브제도 서지 않는다(src/solio-backup.cjs). 첫 화면(구독 방)에는 백업 줄을 두지 않는다(결정 표 11-16).
  * 계정 건강은 방문자 분석 다음이다(계정건강 PC앱_구현설계 10절). 두 프로그램은 요약 파일이 따로라 한쪽만 보일 수 있다 */
 export const SOLIO_PROGRAMS = Object.freeze([
   Object.freeze({ key: 'subs', label: '구독' }),
+  Object.freeze({ key: 'backup', label: SOLIO_BACKUP_NAME }),
   Object.freeze({ key: 'visits', label: SITE_VISITS_NAME }),
   Object.freeze({ key: 'health', label: SNS_HEALTH_NAME }),
 ]);
 /* 이 PC의 요약 한 장을 읽어 보이는 프로그램(읽기 프로그램). 오브제 줄은 이 가운데 하나라도 보이면 선다 */
-const READ_PROGRAMS = Object.freeze(['visits', 'health']);
-const READ_VIEW = Object.freeze({ visits: siteVisitsView, health: snsHealthView });
+const READ_PROGRAMS = Object.freeze(['visits', 'health', 'backup']);
+const READ_VIEW = Object.freeze({ visits: siteVisitsView, health: snsHealthView, backup: solioBackupView });
+/* 백업 방이 보이는 동안 다시 읽는 간격(ms). 설치가 도는 동안은 짧게, 아니면 엔진이 상태를 쓰는 주기에 맞춘다 */
+const BACKUP_POLL = Object.freeze({ busy: 2000, idle: 15000 });
 
 /* 움직임의 길이(ms). 시안 검정구.html의 값이다 */
 export const ORB_TIMING = Object.freeze({
@@ -148,7 +153,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   const look = { ...ORB_LOOK, ...(options.look && typeof options.look === 'object' ? options.look : {}) };
   const subs = options.subscriptions && typeof options.subscriptions.snapshot === 'function' ? options.subscriptions : null;
   const bridgeOf = v => (v && typeof v.snapshot === 'function' ? v : null);
-  const readApi = { visits: bridgeOf(options.siteVisits), health: bridgeOf(options.snsHealth) };
+  const readApi = { visits: bridgeOf(options.siteVisits), health: bridgeOf(options.snsHealth), backup: bridgeOf(options.solioBackup) };
+  let backupPoll = null, backupPollMs = 0;
 
   const machine = createPortalStateMachine({
     status: options.initialState?.status ?? 'restoring',
@@ -409,7 +415,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
    * 볼 계정인지는 솔리오가 열릴 때 한 번 읽어 정하고, 답이 오기 전에는 줄을 두지 않는다 */
   function programsFor(state, scenes) {
     if (!memberShown(state) || !READ_PROGRAMS.some(key => scenes[key]?.visible)) return [];
-    return SOLIO_PROGRAMS.filter(p => p.key === 'subs' || scenes[p.key]?.visible).map(p => ({ ...p }));
+    return SOLIO_PROGRAMS.filter(p => p.key === 'subs' || scenes[p.key]?.visible).map(p => (p.key === 'backup' && scenes.backup?.note ? { ...p, note: scenes.backup.note } : { ...p }));
   }
 
   function roomScene(state) {
@@ -514,6 +520,23 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     syncAuthRecheck(scene);
     // 모델별 토큰의 실시간은 구독 방이 보이는 동안 부탁한다(11-20부터 맨 위 「지금 출력」이 늘 보인다, 솔리오 구독 비서 설계 3.3)
     rooms.syncLive(scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && scene.room?.prog === 'subs' && !aside && !isHidden(), Boolean(scene.room?.solio?.brief?.live));
+    syncBackupPoll(scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && scene.room?.prog === 'backup' && !aside && !isHidden(), Boolean(scene.room?.backup?.busy));
+  }
+  /* 백업 방이 보이는 동안만 본체에 다시 묻는다. 설치 단계와 엔진의 상태 파일이 바뀌는 것을 보여 주려는 것이다 */
+  function syncBackupPoll(on, busy) {
+    const ms = on && !disposed ? (busy ? BACKUP_POLL.busy : BACKUP_POLL.idle) : 0;
+    if (ms === backupPollMs) return;
+    if (backupPoll !== null) { clearTick(backupPoll); backupPoll = null; }
+    backupPollMs = ms;
+    if (ms) backupPoll = setTick(() => syncRead('backup', { again: true }), ms);
+  }
+  /* 백업 방의 단추. 본체가 계정과 낱말을 다시 확인한다. 누른 뒤 곧바로 다시 읽어 단계를 보인다 */
+  function backupAction(name, arg) {
+    const api = readApi.backup;
+    if (!api || space !== 'solio' || prog !== 'backup' || clientMode() !== 'app') return false;
+    const call = name === 'backup-start' ? api.start?.(arg) : name === 'backup-open' ? api.open?.(arg) : api.dismiss?.();
+    Promise.resolve(call).catch(() => null).then(() => { if (!disposed) syncRead('backup', { again: true }); });
+    return true;
   }
 
   function onPhaseChange(state, prev) {
@@ -1724,6 +1747,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         void rooms.handle({ room: 'solio', key: 'tok', act: 'tok-on', arg: '', fields: {} });
         return true;
       case 'prog': return showProgram(payload);
+      case 'backup-start': case 'backup-open': case 'backup-dismiss': return backupAction(action, typeof payload === 'string' ? payload : '');
       case 'recheck-auth': void recheckAuth(); return true;
       case 'reopen-space': void runOpenSpace(space, { reopen: true }); return true;
       case 'legacy-back': closeLegacy(); return true;
@@ -1852,6 +1876,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       stopReads();
       aside = null;
       if (clockTimer !== null) { clearTick(clockTimer); clockTimer = null; }
+      if (backupPoll !== null) { clearTick(backupPoll); backupPoll = null; backupPollMs = 0; }
       if (hadBusyInvite) options.onCancelInvite?.();
       view.dispose?.();
     },

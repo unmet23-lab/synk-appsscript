@@ -19,6 +19,8 @@ const MARK_SVG = '<svg class="mark rise" style="--i:0" viewBox="0 0 560 328" rol
 const PROGRAM_ICON = Object.freeze({
   subs: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M10 10V3.4A6.6 6.6 0 0 1 16.6 10Z" fill="currentColor"/></svg>',
   visits: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="14.7" cy="5.3" r="1.9" fill="currentColor"/></svg>',
+  /* 백업: 둘레 안에서 되돌아오는 화살 하나(11-20 백업·복구 탭 세션) */
+  backup: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M7 11.2A3.2 3.2 0 1 0 7.9 7.6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M6.6 6.2l1.5 1.6-2 .6Z" fill="currentColor"/></svg>',
   /* 계정 건강: 맥박 한 줄(솔리오 계정건강 시안의 오브제) */
   health: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 10.5h3.2l1.8-4.5 3 8 2-5.5 1.2 2h3.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 });
@@ -81,8 +83,9 @@ function markup() {
       <button class="here-name" type="button" data-orb-act="open-switch" aria-expanded="false" aria-label="다른 공간으로 가기"><span data-here-text>SOLIO</span>${CHEVRON}</button>
       <nav class="rail" aria-label="이 공간의 프로그램" data-orb-rail hidden>
         <button class="obj" type="button" data-orb-prog="subs" aria-current="false" style="--k:0">${PROGRAM_ICON.subs}<span class="obj-n"></span></button>
-        <button class="obj" type="button" data-orb-prog="visits" aria-current="false" style="--k:1">${PROGRAM_ICON.visits}<span class="obj-n"></span></button>
-        <button class="obj" type="button" data-orb-prog="health" aria-current="false" style="--k:2">${PROGRAM_ICON.health}<span class="obj-n"></span></button>
+        <button class="obj" type="button" data-orb-prog="backup" aria-current="false" style="--k:1">${PROGRAM_ICON.backup}<span class="obj-n"></span></button>
+        <button class="obj" type="button" data-orb-prog="visits" aria-current="false" style="--k:2">${PROGRAM_ICON.visits}<span class="obj-n"></span></button>
+        <button class="obj" type="button" data-orb-prog="health" aria-current="false" style="--k:3">${PROGRAM_ICON.health}<span class="obj-n"></span></button>
       </nav>
       <button class="quiet legacy-back" type="button" data-orb-act="legacy-back">돌아가기</button>
     </div>
@@ -110,6 +113,12 @@ function markup() {
       <p class="say rise" style="--i:1"><span data-vis-say></span><span class="then" data-vis-then></span></p>
       <div class="rows vis rise" style="--i:3" role="group" aria-label="synk.im 방문자 분석" data-vis-rows></div>
       <p class="read rise" style="--i:5"><span data-vis-when></span><span data-vis-scope></span></p>
+    </div>
+    <div class="room room-top" data-room="solio-backup" hidden>
+      <p class="say rise" style="--i:1"><span data-bak-say></span><span class="then" data-bak-then></span></p>
+      <p class="read acts rise" style="--i:2" role="group" aria-label="백업 할 일" data-bak-acts></p>
+      <div class="rows vis rise" style="--i:3" role="group" aria-label="업무 백업 상태" data-bak-rows></div>
+      <p class="read rise" style="--i:5"><span data-bak-when></span><span data-bak-scope></span></p>
     </div>
     <div class="room room-top" data-room="solio-health" hidden>
       <p class="say rise" style="--i:1"><span data-hea-say></span><span class="then" data-hea-then></span></p>
@@ -160,6 +169,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     space: $('[data-room="space"]'), spaceSay: $('[data-space-say]'), spaceThen: $('[data-space-then]'), spaceError: $('[data-space-error]'), reopen: $('[data-orb-act="reopen-space"]'),
     rail: $('[data-orb-rail]'), objs: [...root.querySelectorAll('[data-orb-prog]')],
     visits: $('[data-room="solio-visits"]'), visSay: $('[data-vis-say]'), visThen: $('[data-vis-then]'), visRows: $('[data-vis-rows]'), visWhen: $('[data-vis-when]'), visScope: $('[data-vis-scope]'),
+    backup: $('[data-room="solio-backup"]'), bakSay: $('[data-bak-say]'), bakThen: $('[data-bak-then]'), bakActs: $('[data-bak-acts]'), bakRows: $('[data-bak-rows]'), bakWhen: $('[data-bak-when]'), bakScope: $('[data-bak-scope]'),
     health: $('[data-room="solio-health"]'), heaSay: $('[data-hea-say]'), heaThen: $('[data-hea-then]'), heaRows: $('[data-hea-rows]'), heaWhen: $('[data-hea-when]'), heaScope: $('[data-hea-scope]'),
     asides: Object.fromEntries(ASIDE_NAMES.map(name => {
       const r = $(`[data-room="${name}"]`);
@@ -171,6 +181,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const readRooms = {
     visits: { room: app.visits, say: app.visSay, then: app.visThen, rows: app.visRows, when: app.visWhen, scope: app.visScope, key: '' },
     health: { room: app.health, say: app.heaSay, then: app.heaThen, rows: app.heaRows, when: app.heaWhen, scope: app.heaScope, key: '' },
+    // 백업 방은 할 일 단추 줄(acts)이 더 있다. 단추는 정해진 동작과 낱말만 넘긴다(src/solio-backup.cjs가 다시 확인한다)
+    backup: { room: app.backup, say: app.bakSay, then: app.bakThen, rows: app.bakRows, when: app.bakWhen, scope: app.bakScope, acts: app.bakActs, key: '' },
   };
   const readBoxes = Object.values(readRooms).map(r => r.rows);
 
@@ -632,7 +644,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     }
     renderAsides(asideName, s.rooms);
     // 방이 가려진 동안(옛 화면, 다른 공간) 스크롤은 사건 없이 0으로 돌아온다. 그릴 때마다 위쪽 흐림 표시를 지금 스크롤에 맞춘다(0.4.97 검수 A3)
-    for (const r of [app.solio, app.visits, app.health, ...Object.values(app.asides).map(a => a.room)]) if (r.classList.contains('scrolled') && !(r.scrollTop > 0)) r.classList.remove('scrolled');
+    for (const r of [app.solio, app.backup, app.visits, app.health, ...Object.values(app.asides).map(a => a.room)]) if (r.classList.contains('scrolled') && !(r.scrollTop > 0)) r.classList.remove('scrolled');
     layers.app.setAttribute('aria-label', solio ? '솔리오' : room.space === 'workspace' ? 'Workspace' : 'PULSE');
     if (solio) {
       const t = room.solio;
@@ -752,9 +764,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   /* 장면은 1분마다 새로 온다(상대 시각, 다시 읽은 요약). 줄의 차례가 같으면 그 자리의 줄을 고쳐 쓰고,
      차례가 달라 새로 지을 때도 펼친 줄, 눌러 고정한 줄, 자판 초점을 줄 이름(key)으로 되살린다(0.4.97 공개 후보 검수 A2) */
   function renderRead(box, v) {
-    const key = v && v.visible ? JSON.stringify([v.say, v.then, v.when, v.scope, v.rows]) : '';
+    const key = v && v.visible ? JSON.stringify([v.say, v.then, v.when, v.scope, v.rows, v.acts || null]) : '';
     if (key === box.key) return;
     box.key = key;
+    if (box.acts) renderActs(box.acts, key && Array.isArray(v.acts) ? v.acts : []);
     clearTimeout(visTimer);
     if (!key) clearTimeout(visLeave);
     setText(box.say, key ? v.say : '');
@@ -775,6 +788,17 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (again) { restoringVis = true; try { again.focus({ preventScroll: true }); } catch {} finally { restoringVis = false; } }
     }
     box.rows.hidden = !rows.length;
+  }
+  /* 백업 방의 할 일 단추. 다시 그려도 누르던 단추(같은 동작과 낱말)에 초점을 되돌린다 */
+  function renderActs(box, acts) {
+    const fa = doc.activeElement, had = fa && box.contains(fa) ? `${fa.dataset.orbAct}|${fa.dataset.orbArg || ''}` : null;
+    box.replaceChildren(...acts.slice(0, 4).map(a => {
+      const b = button(a.primary ? 'reread primary' : 'reread', a.label, { 'data-orb-act': a.act, 'data-orb-arg': a.arg || '' });
+      if (a.disabled) b.setAttribute('aria-disabled', 'true');
+      return b;
+    }));
+    box.hidden = !acts.length;
+    if (had) { const again = [...box.children].find(b => `${b.dataset.orbAct}|${b.dataset.orbArg || ''}` === had); try { (again || box.children[0])?.focus({ preventScroll: true }); } catch {} }
   }
   function visRow(r) {
     const b = el('button', 'row');
@@ -947,7 +971,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     for (const b of [app.orbBtn, app.nameBtn]) if (b.getAttribute('aria-expanded') !== String(open)) b.setAttribute('aria-expanded', String(open));
     app.fan.inert = !open;
     // 펼친 동안 물러난 이름 단추와 오브제 줄, 흐린 방은 Tab 차례에서도 빠진다. 그 안에 있던 초점은 보이는 구 단추로 먼저 옮긴다(검수 A1)
-    const back = [app.nameBtn, app.rail, app.solio, app.visits, app.health, app.space, ...Object.values(app.asides).map(a => a.room)].filter(Boolean);
+    const back = [app.nameBtn, app.rail, app.solio, app.backup, app.visits, app.health, app.space, ...Object.values(app.asides).map(a => a.room)].filter(Boolean);
     // 다가가 머물러 연(고정하지 않은) 펼침이면 옮기기 전 자리를 기억해 두고, 닫을 때 초점이 구에 그대로 있으면 그 자리로 돌려놓는다(최종 검수 F5)
     if (open) { const a = doc.activeElement; if (a && back.some(x => x.contains(a))) { fanReturn = f.pin ? null : a; app.orbBtn.focus?.({ preventScroll: true }); } }
     if (open && f.pin) fanReturn = null;
