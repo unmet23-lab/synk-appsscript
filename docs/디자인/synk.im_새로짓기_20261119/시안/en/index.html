@@ -414,6 +414,67 @@ body[data-tone="dark"] .nav.solid{background:rgba(0,0,0,.4);box-shadow:0 1px 0 r
 p{text-wrap:pretty}
 /* 길을 도는 표시: 짧은 검은 획 대신 둥근 점 */
 .w-loop .run{stroke-width:11;stroke-dasharray:.01 99.99}
+
+/* ── 2b 세 가지와 문턱(11-20 유호님: 사업계획서 발표 장표의 구성과 몽글 그림을 그대로) ── */
+.why{padding:var(--S) var(--gut) 0;display:grid;gap:clamp(40px,5vw,72px)}
+.why-head{display:grid;gap:clamp(14px,1.4vw,20px)}
+.why-head h2{font:700 clamp(30px,3.9vw,56px)/1.18 var(--sans);letter-spacing:-.035em}
+.why-head h2 em{font-style:normal;color:var(--coral-ink)}
+/* 숫자 카드 셋: 위는 몽글 그림, 아래는 따뜻한 면 위의 말과 큰 숫자 */
+.why-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(14px,1.6vw,24px);margin:0;padding:0;list-style:none}
+.why-cards li{display:flex;flex-direction:column;border-radius:clamp(18px,1.8vw,26px);overflow:hidden;background:var(--warm)}
+.why-cards img{display:block;width:100%;aspect-ratio:4 / 3;object-fit:cover}
+.why-cards li:nth-child(1) img{object-position:50% 30%}
+.why-cards li:nth-child(2) img{object-position:50% 62%}
+.why-cards li:nth-child(3) img{object-position:50% 56%}
+.why-b{flex:1;display:flex;flex-direction:column;padding:clamp(20px,2vw,28px) clamp(20px,2vw,28px) clamp(22px,2.2vw,30px)}
+.why-k{font:700 14px/1.3 var(--sans);letter-spacing:-.01em;color:var(--coral-ink)}
+.why-b h3{margin-top:8px;font:700 clamp(19px,1.62vw,23px)/1.32 var(--sans);letter-spacing:-.03em;text-wrap:balance}
+.why-v{margin-top:auto;padding-top:clamp(18px,2vw,28px);font:800 clamp(52px,5.4vw,78px)/1 var(--sans);letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.why-v span,.why-v small{font:700 .36em/1 var(--sans);letter-spacing:-.02em}
+.why-v span{margin-left:.12em}
+.why-d{margin-top:12px;font:500 15px/1.55 var(--sans);letter-spacing:-.015em}
+/* 한 바퀴: 몽글 셋이 화살표로 이어진다 */
+.why-loop{display:grid;grid-template-columns:minmax(0,1fr) calc((100% - clamp(28px,5.6vw,80px)) * 7 / 12);gap:clamp(28px,4vw,56px) clamp(28px,5.6vw,80px);align-items:center;padding-top:clamp(8px,1vw,16px)}
+.why-say h3{font:700 clamp(28px,3.4vw,48px)/1.16 var(--sans);letter-spacing:-.035em}
+.why-say p{margin-top:clamp(14px,1.4vw,20px);font:500 clamp(18px,1.46vw,21px)/1.55 var(--sans);max-width:24em}
+.cyc{position:relative;justify-self:center;width:min(100%,640px);aspect-ratio:640 / 570;margin:0}
+.cyc svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.cyc svg path{fill:none;stroke:var(--coral);stroke-width:3;stroke-linecap:round}
+.cyc svg marker path{fill:var(--coral);stroke:none}
+.cyc-n{position:absolute;width:29.7%;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:clamp(6px,.8vw,10px);text-align:center}
+.cyc-n img{display:block;width:100%;aspect-ratio:1;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--coral),0 14px 30px -18px rgba(60,20,10,.5)}
+.cyc-n p{display:grid;gap:2px;white-space:nowrap}
+.cyc-n b{font:700 clamp(15px,1.5vw,20px)/1.2 var(--sans);letter-spacing:-.03em}
+.cyc-n span{font:700 clamp(10.5px,.86vw,12px)/1.2 var(--sans);letter-spacing:.06em}
+.cyc-n.n1{left:50%;top:24.6%}
+.cyc-n.n2{left:76.25%;top:76.3%}
+.cyc-n.n3{left:23.75%;top:76.3%}
+.cyc-l{position:absolute;font:800 clamp(12.5px,1.16vw,15.5px)/1.3 var(--sans);letter-spacing:-.025em;color:var(--coral-ink)}
+.cyc-l.l1{left:77.5%;top:36.5%}
+.cyc-l.l2{left:50%;top:89.5%;transform:translateX(-50%);white-space:nowrap}
+.cyc-l.l3{right:77.5%;top:33%;width:8.2em;text-align:right;text-wrap:balance}
+.cyc-c{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);font:700 clamp(13px,1.24vw,16.5px)/1.4 var(--sans);letter-spacing:-.025em;text-align:center;white-space:nowrap}
+#road{margin-top:var(--S)}
+/* 사업의 대표 SNS */
+.sns{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px 18px;font:600 15px/1.3 var(--sans);letter-spacing:-.01em}
+.sns>span{font-weight:500}
+.sns a{display:inline-flex;align-items:center;gap:5px;padding-bottom:3px;border-bottom:1.5px solid currentColor}
+.sns a::after{content:"↗";font-weight:500}
+.why-say .sns{margin-top:clamp(18px,1.8vw,26px)}
+.p-go .sns{margin-right:auto}
+@media (max-width:900px){
+  .why-cards{grid-template-columns:1fr}
+  .why-cards li{flex-direction:row;align-items:stretch}
+  .why-cards img{width:38%;aspect-ratio:auto;min-height:100%}
+  .why-cards li:nth-child(1) img{object-position:52% 50%}
+  .why-cards li:nth-child(2) img{object-position:16% 50%}
+  .why-cards li:nth-child(3) img{object-position:24% 50%}
+  .why-b{padding:18px 18px 20px}
+  .why-v{padding-top:14px;font-size:44px}
+  .why-loop{grid-template-columns:1fr}
+  .cyc-l.l3{width:6.2em}
+}
 .proto{position:fixed;z-index:60;left:50%;bottom:14px;transform:translateX(-50%);padding:8px 14px;border-radius:999px;background:rgba(20,20,20,.86);color:#fff;font:500 12px/1 var(--sans);pointer-events:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
@@ -475,7 +536,7 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
 <!-- 2 한눈에 -->
 <section class="doors" id="glance" data-tone="dark" aria-labelledby="glance-t">
   <p class="tag doors-t" id="glance-t">SYNK does three things</p>
-  <a class="door" href="#road">
+  <a class="door" href="#why">
     <img src="../assets/in-3.webp" style="object-position:57% 50%" alt="" loading="lazy">
     <span class="door-say"><span class="door-w">Korean &amp; study</span><span class="door-d">From a first Korean word to a first job in Korea, we go all the way with one person.</span><span class="door-go">Go in <span class="arr" aria-hidden="true">→</span></span></span>
   </a>
@@ -488,6 +549,36 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
     <span class="door-say"><span class="door-w">Ads</span><span class="door-d">An actor with ten years in front of the camera directs AI models to make ads.</span><span class="door-go">Go in <span class="arr" aria-hidden="true">→</span></span></span>
   </a>
   <p class="doors-why">All three come from AI that fits itself to one person.</p>
+</section>
+
+<!-- 2b 세 가지와 문턱: 사업계획서 발표 장표(판5 시안)의 두 장을 옮겼다. 세 문턱의 숫자 카드, 그리고 세 가지가 한 바퀴로 이어지는 그림. 그림은 그 장표의 몽글이다(유호님 11-20) -->
+<section class="why" id="why" data-tone="light" aria-labelledby="why-t">
+  <div class="why-head">
+    <p class="tag">Korean &amp; study</p>
+    <h2 id="why-t">Foreigners who want to live in Korea<br>pass through these three.<br><em>The threshold is TOPIK Level 4.</em></h2>
+  </div>
+  <ol class="why-cards">
+    <li><img src="../assets/mg-study.webp" alt="Monggeul, a felt character, writing Korean in a notebook under a desk lamp. Several answers are marked wrong." loading="lazy"><div class="why-b"><p class="why-k">Korean language</p><h3>And Level 4 is not easy</h3><p class="why-v">36<span>%</span></p><p class="why-d">Share of TOPIK II test-takers in Mongolia who reached Level 3 or above (2025). Level 4 is a higher bar.</p></div></li>
+    <li><img src="../assets/mg-campus.webp" alt="In front of a Korean university gate lined with ginkgo trees, a student holding books waves at Monggeul." loading="lazy"><div class="why-b"><p class="why-k">Study in Korea</p><h3>Without Level 4, working hours are capped</h3><p class="why-v"><small>max</small> 10<span>hrs a week</span></p><p class="why-d">Hours a third- or fourth-year undergraduate may work without Level 4. With Level 4 it is 25 hours a week.</p></div></li>
+    <li><img src="../assets/mg-work.webp" alt="In a Korean café, a barista in an apron hands Monggeul a drink." loading="lazy"><div class="why-b"><p class="why-k">Settling and work</p><h3>Few places keep helping after you arrive in Korea</h3><p class="why-v">43.3<span>%</span></p><p class="why-d">Language: the top difficulty named by foreigners living in Korea (2022 survey). Loneliness came second.</p></div></li>
+  </ol>
+  <div class="why-loop">
+    <div class="why-say">
+      <h3>So one company<br>connects all three</h3>
+      <p>SYNK LAB handles Korean language. SYNK PATH handles study in Korea, settling and work. Students who have settled bring in the next ones.</p>
+      <p class="sns" data-sns-home=""><span>SNS</span><a href="https://www.instagram.com/synk.mn/" target="_blank" rel="noopener" aria-label="SYNK LAB Instagram">Instagram</a><a href="https://www.facebook.com/synkworld" target="_blank" rel="noopener" aria-label="SYNK LAB Facebook">Facebook</a></p>
+    </div>
+    <figure class="cyc" role="img" aria-label="A loop: from Korean language through TOPIK Level 4 to study in Korea, then settling and work in Korea, and settled seniors bringing the next student">
+      <svg viewBox="0 0 640 570" aria-hidden="true"><defs><marker id="cyc-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"></path></marker></defs><path d="M408,208 Q480,230 488,304" marker-end="url(#cyc-a)"></path><path d="M400,462 Q320,502 244,464" marker-end="url(#cyc-a)"></path><path d="M152,308 Q160,230 228,209" marker-end="url(#cyc-a)"></path></svg>
+      <div class="cyc-n n1"><p><b>Korean language</b><span>SYNK LAB</span></p><img src="../assets/mg-study.webp" alt="" loading="lazy"></div>
+      <div class="cyc-n n2"><img src="../assets/mg-campus.webp" alt="" loading="lazy"><p><b>Study in Korea</b><span>SYNK PATH</span></p></div>
+      <div class="cyc-n n3"><img src="../assets/mg-work.webp" alt="" loading="lazy"><p><b>Settling and work</b><span>SYNK PATH</span></p></div>
+      <p class="cyc-l l1">With TOPIK Level 4</p>
+      <p class="cyc-l l2">Once in Korea</p>
+      <p class="cyc-l l3">Settled seniors bring the next student</p>
+      <p class="cyc-c">One student,<br>all the way</p>
+    </figure>
+  </div>
 </section>
 
 <!-- 3 한국어와 유학 -->
@@ -569,7 +660,7 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
         <h2 id="shift-t">The person who runs a company on AI<br>comes to teach in person</h2>
         <p>This is not a lecture you only listen to. Each person leaves with one piece of work made from their own job.</p>
       </div>
-      <div class="film-go"><a class="pill light" href="https://synk.im/shift/">Request a lecture <span class="arr" aria-hidden="true">→</span></a><a class="text-link" href="detail.html?p=ai">See the teacher and how we teach <span class="arr" aria-hidden="true">→</span></a></div>
+      <div class="film-go"><a class="pill light" href="https://synk.im/shift/">Request a lecture <span class="arr" aria-hidden="true">→</span></a><a class="text-link" href="detail.html?p=ai">See the teacher and how we teach <span class="arr" aria-hidden="true">→</span></a><span class="sns"><span>SNS</span><a href="https://www.instagram.com/synkbrief/" target="_blank" rel="noopener" aria-label="SYNK SHIFT Instagram">Instagram</a></span></div>
     </div>
   </section>
   <section class="film solio" aria-labelledby="solio-t">
@@ -602,7 +693,7 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
   <div class="p-bar">
     <h2 id="pulse-t">Ten years on camera,<br>an actor directs AI models</h2>
     <ol class="p-shelf" id="p-shelf" aria-label="Choose a film"></ol>
-    <div class="p-go"><a class="text-link" href="detail.html?p=ad">Choose a model and see the PULSE app <span class="arr" aria-hidden="true">→</span></a><a class="pill" href="https://synk.im/pulse/">Commission an ad <span class="arr" aria-hidden="true">→</span></a></div>
+    <div class="p-go"><span class="sns"><span>SNS</span><a href="https://www.instagram.com/synkpulse/" target="_blank" rel="noopener" aria-label="SYNK PULSE Instagram">Instagram</a><a href="https://www.facebook.com/synkpulse" target="_blank" rel="noopener" aria-label="SYNK PULSE Facebook">Facebook</a></span><a class="text-link" href="detail.html?p=ad">Choose a model and see the PULSE app <span class="arr" aria-hidden="true">→</span></a><a class="pill" href="https://synk.im/pulse/">Commission an ad <span class="arr" aria-hidden="true">→</span></a></div>
   </div>
 </section>
 <dialog class="player" id="player" aria-label="Play film"><header><span id="player-t"></span><button type="button" id="player-x">Close</button></header><video id="player-v" controls="" playsinline=""></video></dialog>
