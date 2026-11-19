@@ -13,10 +13,11 @@ if(!process.versions.electron){
   const out=path.resolve(process.argv[2]||path.join(root,'..','.tmp','pc-client-orb-step1-20261116','qa'));
   fs.mkdirSync(out,{recursive:true});
   const runs=[];
+  // 한 판(mode)의 한도는 20분이다. main은 차례가 늘어 10분을 넘겼다(계정 건강 19번을 더한 11-20)
   for(const mode of ['main','nowebgl','nocanvas']){
     const profile=fs.mkdtempSync(path.join(os.tmpdir(),PREFIX));
     try{
-      const run=spawnSync(require('electron'),[__filename,'--profile='+profile,'--out='+out,'--mode='+mode],{cwd:root,encoding:'utf8',windowsHide:true,timeout:600000});
+      const run=spawnSync(require('electron'),[__filename,'--profile='+profile,'--out='+out,'--mode='+mode],{cwd:root,encoding:'utf8',windowsHide:true,timeout:1200000});
       const line=run.stdout?.split(/\r?\n/).find(value=>value.startsWith('SYNK_ORB_QA '));
       runs.push(line?JSON.parse(line.slice('SYNK_ORB_QA '.length)):{ok:false,mode,error:run.error?.message||'NO_RESULT',stderr:run.stderr?.slice(-3000),stdout:run.stdout?.slice(-2000)});
     }finally{
