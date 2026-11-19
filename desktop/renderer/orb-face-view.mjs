@@ -4,6 +4,7 @@
 // [data-portal-auth-feedback], [data-portal-action="close-invite"], [data-portal-action="continue-personal"])를 같은 뜻으로 둔다(설계 6절).
 // 모듈 맨 위에서는 DOM을 건드리지 않는다.
 import { fanR, HOME_R, createOrbStage, easeIO, easeIOQ, easeOut, lerp, smooth, switchGeom, PLACE_LON } from './orb-stage.mjs';
+import { createOrbSound } from './orb-sound.mjs';
 import { createOrbSignature } from './orb-signature.mjs';
 import { rowSpeech } from './site-visits-model.mjs';
 
@@ -88,6 +89,7 @@ function markup() {
     <div class="fan" role="group" aria-label="갈 수 있는 공간과 계정" data-orb-fan><p class="fan-error" role="alert" data-fan-error></p></div>
     <div class="room room-top" data-room="solio">
       <p class="sr" role="status" aria-live="polite" data-solio-status></p>
+      <div class="dial rise" style="--i:1" data-dial hidden><svg viewBox="-360 -360 720 720" role="img" data-dial-svg></svg><span class="dial-orb" aria-hidden="true"></span><p class="dial-hero" aria-hidden="true"><b data-dial-value></b><small data-dial-unit></small><span data-dial-label></span></p></div>
       <p class="say rise" style="--i:1"><span data-say></span><span class="then" data-then></span></p>
       <div class="brief rise" style="--i:2" data-brief hidden>
         <ol class="soon" aria-label="다가오는 일" data-soon></ol>
@@ -152,6 +154,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     orbBtn: $('.here-orb'), nameBtn: $('.here-name'), name: $('[data-here-text]'), legacyBack: $('.legacy-back'),
     solio: $('[data-room="solio"]'), say: $('[data-say]'), then: $('[data-then]'), rows: $('[data-rows]'), read: $('[data-read]'),
     brief: $('[data-brief]'), soon: $('[data-soon]'), soonMore: $('[data-soon-more]'), live: $('[data-live]'), liveBig: $('[data-live-big]'), liveUnit: $('[data-live-unit]'), liveSmall: $('[data-live-small]'), tokOn: $('[data-orb-act="tok-on"]'),
+    dial: $('[data-dial]'), dialSvg: $('[data-dial-svg]'), dialValue: $('[data-dial-value]'), dialUnit: $('[data-dial-unit]'), dialLabel: $('[data-dial-label]'),
     diag: $('[data-diag]'), diagWhen: $('[data-diag-when]'), diagName: $('[data-diag-name]'), diagWord: $('[data-diag-word]'), diagSay: $('[data-diag-say]'), diagCost: $('[data-diag-cost]'), details: $('[data-details]'), detailsTop: $('[data-details-top]'),
     reread: $('[data-orb-act="reread"]'), subsManage: $('[data-orb-act="subs-manage"]'), fan: $('[data-orb-fan]'), fanError: $('[data-fan-error]'), connect: $('[data-orb-act="connect"]'), recheck: $('[data-orb-act="recheck-auth"]'), solioStatus: $('[data-solio-status]'),
     space: $('[data-room="space"]'), spaceSay: $('[data-space-say]'), spaceThen: $('[data-space-then]'), spaceError: $('[data-space-error]'), reopen: $('[data-orb-act="reopen-space"]'),
@@ -222,6 +225,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   let introPainted = false, firstFrameSent = false;
   const onRender = () => { if (!introPainted || firstFrameSent) return; firstFrameSent = true; try { void Promise.resolve(options.onFirstFrame?.()).catch(() => {}); } catch { /* 무시 */ } };
   const stage = createOrbStage($('.orb-canvas'), { getReducedMotion: reduced, getHome: homePoint, places: look.places !== false, eyes: look.eyes !== false, noWebGL, noCanvas, onRender, onEyes: m => { stageEl.dataset.eyes = m; } });
+  /* 지도의 효과음(2026-11-20 유호님). look.sound가 false면 내지 않는다 */
+  const sound = createOrbSound({ win, enabled: () => look.sound !== false && doc?.hasFocus?.() !== false });   // 앱 창이 뒤에 있을 때는 내지 않는다(Fable 최종 검수 F3)
   const sig = createOrbSignature($('.orb-sig'), { getReducedMotion: reduced, getWidth: () => stageEl.getBoundingClientRect().width || win.innerWidth || 1440 });
 
   /* ── 옛 런처 가리기(지금 얼굴의 lockHostElements와 같다) ── */
@@ -467,8 +472,78 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (r && first && !first.hidden && first.offsetTop > r.scrollTop + r.clientHeight * 0.55) r.scrollTo?.({ top: Math.max(0, first.offsetTop - 24), behavior: reduced() ? 'auto' : 'smooth' });
     }
   }
+  /* ── 문자판(11-20 유호님이 고르신 A, 솔리오 구독 비서 설계 10절) ──
+     구를 가운데 둔 사흘짜리 시계판. 바깥 눈금이 지금부터 72시간, 그 위 금색 호가 지금 속도로 막히지 않는 때까지, 안쪽 고리 칸이 계정 하나씩이다.
+     자료(solio-brief.mjs briefDial)의 때는 지금부터의 거리라 여기서는 각도로만 바꾼다. 계정 이름과 일정 글은 textContent로만 넣는다 */
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const sv = (tag, attrs, text) => { const e = doc.createElementNS(SVG_NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; };
+  function dialParts(d) {
+    const ang = off => (off / d.span) * 2 * Math.PI - Math.PI / 2, pt = (off, r) => [Math.cos(ang(off)) * r, Math.sin(ang(off)) * r];
+    const arc = (a, b, r) => { const [x0, y0] = pt(a, r), [x1, y1] = pt(b, r); return 'M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' A' + r + ' ' + r + ' 0 ' + (b - a > d.span / 2 ? 1 : 0) + ' 1 ' + x1.toFixed(1) + ' ' + y1.toFixed(1); };
+    const parts = [];
+    const defs = sv('defs', {});
+    const lg = sv('linearGradient', { id: 'orb-dial-sweep', x1: '0', y1: '0', x2: '1', y2: '1' });
+    lg.append(sv('stop', { offset: '0', 'stop-color': '#F3F1EC', 'stop-opacity': '0' }), sv('stop', { offset: '.5', 'stop-color': '#F3F1EC', 'stop-opacity': '.5' }), sv('stop', { offset: '1', 'stop-color': '#F3F1EC', 'stop-opacity': '0' }));
+    defs.append(lg); parts.push(defs);
+    parts.push(sv('circle', { r: 318, class: 'd-rim' }), sv('circle', { r: 262, class: 'd-inner' }));
+    const sweep = sv('g', { class: 'd-sweep' }); sweep.append(sv('circle', { r: 318, class: 'd-sweep-c', stroke: 'url(#orb-dial-sweep)' })); parts.push(sweep);
+    // 바깥 눈금: 한 시간마다 짧게, 여섯 시간마다 길게, 자정은 가장 길게
+    for (const t of d.ticks) { const [x0, y0] = pt(t.off, 314), [x1, y1] = pt(t.off, t.k === 'day' ? 290 : t.k === 'six' ? 298 : 306); parts.push(sv('line', { x1: x0.toFixed(1), y1: y0.toFixed(1), x2: x1.toFixed(1), y2: y1.toFixed(1), class: 'd-t d-t-' + t.k })); }
+    for (const x of d.days) { const [tx, ty] = pt(x.off, 342); parts.push(sv('text', { x: tx.toFixed(1), y: ty.toFixed(1), class: 'd-day' + (x.off === 0 ? ' d-now' : '') }, x.label)); }
+    // 지금 속도로 막히지 않는 때까지 금색, 모두 막히는 동안은 붉게, 그 뒤는 점선
+    if (d.safe) {
+      if (d.safe.until > 0) parts.push(sv('path', { d: arc(0, Math.min(d.safe.until, d.span - 1), 280), class: 'd-safe' }));
+      if (d.safe.until < d.span) {
+        const g = d.safe.gapEnd ?? d.span;
+        if (g > d.safe.until) parts.push(sv('path', { d: arc(d.safe.until, Math.min(g, d.span - 1), 280), class: 'd-gap' }));
+        if (g < d.span - 1) parts.push(sv('path', { d: arc(g, d.span - 1, 280), class: 'd-after' }));
+      }
+    } else parts.push(sv('circle', { r: 280, class: 'd-after' }));
+    const [nx, ny] = pt(0, 280); parts.push(sv('circle', { cx: nx.toFixed(1), cy: ny.toFixed(1), r: 4.5, class: 'd-nowdot' }));
+    // 다가오는 일 표식. 다가가면 글이 뜬다(title)
+    for (const e of d.events) {
+      const [x, y] = pt(e.off, 280), cx = x.toFixed(1), cy = y.toFixed(1);
+      const m = e.kind === 'bill' ? sv('rect', { x: (x - 4.5).toFixed(1), y: (y - 4.5).toFixed(1), width: 9, height: 9, transform: 'rotate(45 ' + cx + ' ' + cy + ')', class: 'd-ev d-bill' })
+        : sv('circle', { cx, cy, r: e.kind === 'other' ? 3 : 5.5, class: 'd-ev d-' + e.kind });
+      m.append(sv('title', {}, e.text));
+      parts.push(m);
+    }
+    // 안쪽 고리: 구독마다 계정 칸. 여럿이면 구독 사이를 띄우고 이름을 단다
+    const total = d.rings.reduce((n, r) => n + r.accounts.length, 0), groups = d.rings.length, gg = groups > 1 ? 9 : 0, cg = total > 40 ? 1.2 : 3.2;
+    const per = (360 - groups * gg) / Math.max(1, total), R = 214, P = deg => [Math.cos(deg * Math.PI / 180) * R, Math.sin(deg * Math.PI / 180) * R];
+    let cur = -90 + gg / 2;
+    for (const ring of d.rings) {
+      const start = cur;
+      for (const a of ring.accounts) {
+        const a0 = cur + cg / 2, a1 = cur + per - cg / 2, [x0, y0] = P(a0), [x1, y1] = P(a1);
+        const cell = sv('path', { d: 'M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' A' + R + ' ' + R + ' 0 ' + (a1 - a0 > 180 ? 1 : 0) + ' 1 ' + x1.toFixed(1) + ' ' + y1.toFixed(1), class: 'd-cell' + (a.left === null ? ' d-cell-unknown' : a.left === 0 ? ' d-cell-out' : '') + (ring.focus ? '' : ' d-cell-side') });
+        if (a.left > 0) cell.style.setProperty('--l', String(a.left / 100));
+        cell.append(sv('title', {}, [ring.name, a.name, a.left === null ? '읽지 못함' : a.left + '% 남음'].filter(Boolean).join(' · ')));
+        parts.push(cell);
+        cur += per;
+      }
+      if (groups > 1 && ring.accounts.length) { const mid = (start + cur) / 2, r2 = 246; parts.push(sv('text', { x: (Math.cos(mid * Math.PI / 180) * r2).toFixed(1), y: (Math.sin(mid * Math.PI / 180) * r2).toFixed(1), class: 'd-svc' + (ring.focus ? ' d-svc-focus' : '') }, ring.name)); }
+      cur += gg;
+    }
+    return parts;
+  }
+  function renderDial(d) {
+    app.dial.hidden = !d;
+    app.solio.classList.toggle('dialed', Boolean(d));
+    // 지금 출력은 문자판이 있는 동안 그 안(구 위)에 둔다. 문자판이 없으면 비서 판의 제자리(진단 앞)로 돌린다
+    if (d && app.live.parentElement !== app.dial) app.dial.append(app.live);
+    else if (!d && app.live.parentElement !== app.brief) app.brief.insertBefore(app.live, app.diag);
+    if (!d) return;
+    const key = JSON.stringify(d);
+    if (app.dial.dataset.key === key) return;
+    app.dial.dataset.key = key;
+    setText(app.dialValue, d.hero.value); setText(app.dialUnit, d.hero.unit); setText(app.dialLabel, d.hero.label);
+    if (app.dialSvg.getAttribute('aria-label') !== d.label) app.dialSvg.setAttribute('aria-label', d.label);
+    app.dialSvg.replaceChildren(...dialParts(d));
+  }
   function renderBrief(b, fold) {
     app.brief.hidden = !b;
+    renderDial(b && fold ? b.dial || null : null);
     if (!b) { app.detailsTop.hidden = true; return; }
     const soon = b.soon?.shown || [], key = JSON.stringify(soon);
     if (app.soon.dataset.key !== key) { app.soon.dataset.key = key; app.soon.replaceChildren(...soon.map(soonItem)); }
@@ -480,6 +555,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     app.live.hidden = !l;
     if (l) {
       setText(app.liveBig, l.big); setText(app.liveUnit, l.unit); setText(app.liveSmall, l.small);
+      if (app.live.dataset.state !== l.state) app.live.dataset.state = l.state;
       // 「켜기」를 누르면 단추가 사라진다. 초점이 그 단추에 있었으면 상세내역 단추(없으면 다시 읽기)로 옮긴다(화면 검수 A8)
       const hideOn = l.state !== 'off', hadFocus = hideOn && !app.tokOn.hidden && doc.activeElement === app.tokOn;
       app.tokOn.hidden = hideOn;
@@ -964,11 +1040,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (event.target?.closest?.('.here-orb,.here-name')) return;
     if (!fanZone(event.clientX, event.clientY)) onAction('close-switch');
   };
-  /* 이름을 가리키면 그 고리가 밝아지고 구가 돌아 그 자리가 앞에 온다(시안 pointAt) */
+  /* 이름을 가리키면 그 공간의 별이 밝아지고 톡 소리가 한 번 난다(시안 pointAt) */
   const onFanPoint = event => {
     const b = event.target?.closest?.('.fan-go[data-go]');
     const on = event.type === 'pointerover' || event.type === 'focusin';
-    if (b && on) { stage.setHot(b.dataset.go); stage.setFace(b.dataset.go); for (const x of app.fan.querySelectorAll('.fan-go')) x.classList.toggle('hot', x === b); }
+    if (b && on) { if (!b.classList.contains('hot')) sound.key(); stage.setHot(b.dataset.go); stage.setFace(b.dataset.go); for (const x of app.fan.querySelectorAll('.fan-go')) x.classList.toggle('hot', x === b); }
     else if (!on && (!b || !b.contains(event.relatedTarget))) { stage.setHot(null); stage.setFace(null); for (const x of app.fan.querySelectorAll('.fan-go')) x.classList.remove('hot'); }
   };
 
@@ -1526,22 +1602,24 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (disposed) return;
     motionGen++;
     sig.stop();
+    const from = stage.pose;
     if (pose === 'sw') {
+      if (from !== 'sw') sound.map(false);
       const to = face || scene?.space || 'solio';
       stage.setFace(null);
       stage.setSpace(scene?.mode === 'portal' ? to : (scene?.space || 'solio'));
       stage.setSpin(-PLACE_LON[to]);
       if (scene?.mode === 'portal') stage.setFace(to);
     } else if (pose === 'fan') {
-      // 구는 지금 공간의 자리를 앞에 두고 자라고, 고리 셋이 차례로 그어진다(시안 openFan)
+      // 구가 제자리에서 자라며 눈의 점이 흩어져 별이 된다(시안 openFan)
       stage.setFace(null);
       stage.setSpin(-PLACE_LON[scene?.space || 'solio']);
-      stage.sweepIn();
+      if (from !== 'fan') sound.map(true);
     } else {
       stage.setFace(null);
+      if (pose === 'home' && (from === 'fan' || from === 'sw')) sound.unmap();
     }
     await stage.tween(pose, ms, EASE[ease] || easeIO);
-    if (pose === 'home') stage.sweepDone();
   }
   async function dive(space, ms = 1250) {
     if (disposed) return;
@@ -1621,7 +1699,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       onAction(act.dataset.orbAct, act.dataset.foot ?? act.dataset.orbArg);
       return;
     }
-    // 공간 고르기에서 빈 곳을 누르면 닫히고, 구에 새긴 고리를 누르면 그 공간으로 간다
+    // 공간 고르기에서 빈 곳을 누르면 닫히고, 구 위의 별을 누르면 그 공간으로 간다
     if (scene?.layer === 'switch' && layers.switch.contains(target) && !target.closest('.sw,.back,.sw-foot,.sw-top')) {
       const r = stageEl.getBoundingClientRect();
       const place = stage.placeUnder(event.clientX - r.left, event.clientY - r.top);
@@ -1656,8 +1734,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (scene?.layer !== 'switch') return;
     const name = event.target?.closest?.('.sw[data-go]');
     const on = event.type === 'pointerover' || event.type === 'focusin';
-    if (name && on) { stage.setHot(name.dataset.go); stage.setFace(name.dataset.go); for (const b of sw.names.children) b.classList.toggle('hot', b === name); }
-    else if (!on) { stage.setHot(null); stage.setFace(null); for (const b of sw.names.children) b.classList.remove('hot'); }
+    if (name && on) { if (!name.classList.contains('hot')) sound.key(); stage.setHot(name.dataset.go); stage.setFace(name.dataset.go); for (const b of sw.names.children) b.classList.toggle('hot', b === name); }
+    // 이름 단추 안의 글 사이를 지날 때도 pointerout이 올라온다. 단추를 벗어난 때만 끈다(끄면 다시 들어올 때 톡 소리가 또 난다, Fable 최종 검수 F1)
+    else if (!on && (!name || !name.contains(event.relatedTarget))) { stage.setHot(null); stage.setFace(null); for (const b of sw.names.children) b.classList.remove('hot'); }
   };
   const onKeyDown = event => {
     if (disposed || event.defaultPrevented || event.isComposing) return;
@@ -1896,6 +1975,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       resizeObserver?.disconnect();
       sig.stop();
       stage.dispose();
+      sound.dispose();
       setHostLocked(false);
       root.hidden = true;
       root.dataset.portalActive = 'false';

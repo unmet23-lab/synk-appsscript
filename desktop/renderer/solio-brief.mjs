@@ -1,11 +1,15 @@
 // 솔리오 구독 방의 비서 판(2026-11-20, docs/디자인/솔리오_구독비서_20261120/설계.md 3절과 7절 설계 검토 반영). DOM이 없다.
 // 유호님 11-20 「딱 하나만 봤으면 좋겠어」, 「급한것 중요한것 위주로 맨 위로」, 「토큰 출력량이 실시간으로」, 「하루에 한번씩 총 사용량 진단」.
 // 맨 위 한 가지(briefHead), 다가오는 일(briefSoon), 지금 출력(briefLive), 오늘 진단(briefDiag), 줄 안쪽 결론(poolSay)을 만든다.
-import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, nextBill, DAY_MS } from './subscriptions-model.mjs';
+import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, nextRefill, DAY_MS } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, whenWords, josa, joinNames } from './solio-today.mjs';
 import { tokenDay, tokenText } from './subscriptions-tokens.mjs';
 
-const HOUR = 3600e3, SOON_MS = 48 * HOUR, LOOK_MS = 7 * DAY_MS, W_MS = 7 * DAY_MS;
+const HOUR = 3600e3, TEN_MIN = 600e3, SOON_MS = 48 * HOUR, LOOK_MS = 7 * DAY_MS, W_MS = 7 * DAY_MS;
+/* 30분 안에 다시 열리는 막힘은 막힘으로 치지 않는다(GPT 검수 GA2, 화면 검수 r2 A1) */
+const SHORT_MS = 30 * 60e3;
+/* 문자판 바깥 눈금이 보이는 길이: 지금부터 사흘(11-20 유호님이 고르신 A 문자판) */
+export const DIAL_MS = 72 * HOUR;
 export const SOON_SHOWN = 3;      // 첫 화면의 다가오는 일(설계 검토 D11). 나머지는 상세내역 맨 위
 export const RECENT_MS = 10 * 60e3;
 const KEEP_MS = 15 * 60e3;
@@ -23,12 +27,13 @@ const ga = w => josa(w, ['이', '가']), neun = w => josa(w, ['은', '는']);
 const here = g => g.accounts.filter(a => !a.away);
 const svcName = g => (g.service && SOLIO_TODAY_NAMES[g.service]) || String(g.label || '').trim() || '직접 넣은 구독';
 const dayStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
-/* now가 속한 날의 n일 뒤 0시. 24시간을 곱하지 않는다(서머타임이 끝나는 날이 끼면 하루 앞선 날이 나온다, solio-today.mjs와 같은 규칙, 화면 검수 A11) */
-const dayAfter = (now, n) => { const d = new Date(now); return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n).getTime(); };
 const daysBetween = (t, now) => Math.round((dayStart(t) - dayStart(now)) / DAY_MS);
 /* 예측한 때는 한 시간 단위로 반올림해 「…쯤」으로 말한다. 읽은 때(초기화, 다시 열림)는 그대로 쓴다.
-   30분 단위는 맨 위 문장을 두 줄로 밀어 첫 화면이 한 화면을 넘었다(11-20 실제 자료 캡처) */
-const roundHalf = t => Math.round(t / HOUR) * HOUR;
+   30분 단위는 맨 위 문장을 두 줄로 밀어 첫 화면이 한 화면을 넘었다(11-20 실제 자료 캡처).
+   반올림이 지금보다 앞이 되면(14:20에 14:28을 14:00으로) 10분 단위로 올린다(화면 검수 r2 A8) */
+const roundHalf = (t, now) => { const r = Math.round(t / HOUR) * HOUR; return r > now ? r : Math.ceil(t / TEN_MIN) * TEN_MIN; };
+/* 「…까지는 막히지 않습니다」는 늦게 말하지 않게 내린다(화면 검수 r2 A8) */
+const floorAt = (t, now) => { const f = Math.floor(t / HOUR) * HOUR; return f > now ? f : Math.floor(t / TEN_MIN) * TEN_MIN; };
 const spoken = (t, now) => whenWords(t, now, { withTime: true });
 /* 다가오는 일 왼쪽 칸: 「오늘 22:15」, 「내일 10:59」, 「모레 07:00」, 그 뒤 「일 03:00」 */
 export function soonWhen(t, now, dateOnly = false) {
@@ -45,9 +50,10 @@ function spanWords(ms) {
 }
 /* 5시간 한도로 막힌 계정이 섞이면 「다 썼습니다」가 아니라 「막혀 있습니다」다(설계 검토 D5) */
 const blocked = list => list.some(a => a.focus === 'session');
-const blockedVerb = list => (blocked(list) ? '막혀 있습니다' : '다 썼습니다');
 /* 「10개 가운데 7개를 다 썼습니다」, 「7개가 막혀 있습니다」 */
 const outCount = (n, list) => n + '개 가운데 ' + list.length + (blocked(list) ? '개가 막혀 있습니다.' : '개를 다 썼습니다.');
+/* 「Claude는 지금 모든 계정이 막혀 있습니다.」, 「…모든 계정을 다 썼습니다.」 조사를 동사에 맞춘다(화면 검수 r2 A6) */
+const allOutSay = (name, list) => neun(name) + ' 지금 모든 계정' + (blocked(list) ? '이 막혀 있습니다.' : '을 다 썼습니다.');
 
 /* 지금 볼 묶음: 이 PC 계정이 하나라도 있는 구독 */
 export function briefGroups(snapshot, now) {
@@ -77,19 +83,25 @@ export function poolRunout(snapshot, g, now) {
   if (g.service !== 'claude' && !same) return null;
   const end = now + LOOK_MS, weekOf = a => (a.g?.weekly && !a.g.weekly.guess ? a.g.weekly : null);
   // 계정마다: 지금 남은 몫(무게 곱)과 앞으로 차는 때들
-  const accts = known.map(a => {
+  const accts = [];
+  for (const a of known) {
     const w = weightOf(a.row), wk = weekOf(a), fills = [];
     const every = t0 => { for (let t = t0; t && t <= end; t += W_MS) fills.push({ t, to: 100 * w, type: 'reset' }); };
     if (a.state === 'out') {
-      if (a.focus === 'session' && wk) {
-        if (a.unblock) fills.push({ t: a.unblock, to: wk.left * w, type: 'reopen' });
-        every(wk.resetsAt);
+      if (a.focus === 'session') {
+        // 5시간 한도로 막힌 계정: 주간 몫이나 풀리는 때를 모르면 셀 수 없다. 5시간 풀림을 주간 100%로 부풀리지 않는다(화면 검수 r2 A2)
+        if (!wk || !a.unblock) return null;
+        // 주간 초기화가 5시간 한도가 풀리기 전에 오면, 풀릴 때 100%로 열린다
+        if (wk.resetsAt && wk.resetsAt <= a.unblock) { fills.push({ t: a.unblock, to: 100 * w, type: 'reopen' }); every(wk.resetsAt + W_MS); }
+        else { fills.push({ t: a.unblock, to: wk.left * w, type: 'reopen' }); every(wk.resetsAt); }
       } else if (a.unblock) { fills.push({ t: a.unblock, to: 100 * w, type: 'reopen' }); every(a.unblock + W_MS); }
-      return { a, level: 0, fills };
+      fills.sort((p, q) => p.t - q.t);
+      accts.push({ a, level: 0, fills });
+      continue;
     }
     every(wk?.resetsAt || null);
-    return { a, level: (wk ? wk.left : a.left ?? 0) * w, fills };
-  });
+    accts.push({ a, level: (wk ? wk.left : a.left ?? 0) * w, fills });
+  }
   const events = accts.flatMap(x => x.fills.filter(f => f.t > now).map(f => ({ ...f, x }))).sort((p, q) => p.t - q.t);
   const nextFill = x => x.fills.find(f => f.t > tNow)?.t ?? Infinity;
   const unit = Math.max(...list.map(a => weightOf(a.row))), perWeek = (rateW * 7) / (100 * unit);
@@ -108,12 +120,21 @@ export function poolRunout(snapshot, g, now) {
     }
     return null;
   };
+  // 모두 바닥난 때. 30분 안에 다시 열리면 막힘으로 치지 않고 이어 세어 그 뒤의 진짜 막힘을 찾는다(화면 검수 r2 A1)
+  let gapAt = null;
   for (const e of events) {
     const out = drain(e.t);
-    if (out !== null) return { ...base, at: out, next: { t: e.t, a: e.x.a, type: e.type }, beyond: false };
-    e.x.level = Math.max(e.x.level, e.to);
+    if (out !== null) { if (gapAt === null) gapAt = out; for (const x of accts) x.level = 0; }
     tNow = e.t;
+    // 몫이 늘지 않는 사건(주간 몫이 0인 채 풀리는 5시간 한도 같은)은 다시 열림이 아니다(화면 검수 r2 A1)
+    if (!(e.to > e.x.level)) continue;
+    if (gapAt !== null) {
+      if (e.t - gapAt >= SHORT_MS) return { ...base, at: gapAt, next: { t: e.t, a: e.x.a, type: e.type }, beyond: false };
+      gapAt = null;
+    }
+    e.x.level = e.to;
   }
+  if (gapAt !== null) return { ...base, at: gapAt, next: null, beyond: false };
   const total = accts.reduce((n, x) => n + x.level, 0), at = tNow + total / perMs;
   return { ...base, at, next: null, beyond: at > end };
 }
@@ -126,10 +147,10 @@ export function poolSay(snapshot, g, now) {
   if (!g.usable.length && !g.projected.length && g.out.length && (g.login.length || g.error.length)) return fixSay(g);
   if (!g.usable.length && !g.projected.length && g.out.length) {
     const first = g.out[0];
-    return (one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : neun(name) + ' 지금 모든 계정이 ' + blockedVerb(g.out) + '.')
+    return (one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : allOutSay(name, g.out))
       + (first.unblock ? ' ' + spoken(first.unblock, now) + '에 ' + (one ? '' : ga(first.name) + ' 먼저 ') + '다시 열립니다.' : '');
   }
-  const runWords = r && !r.beyond ? '지금 속도면 ' + whenWords(roundHalf(r.at), now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.') : '';
+  const runWords = r && !r.beyond ? '지금 속도면 ' + whenWords(roundHalf(r.at, now), now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.') : '';
   if (g.out.length && !one) {
     const first = g.out[0];
     return name + ' ' + outCount(list.length, g.out) + ' '
@@ -146,30 +167,31 @@ function fixSay(g) {
 }
 
 /* 맨 위 한 가지(설계 3.1, 설계 검토 D5). 자료를 다 읽은 상태에서만 부른다.
-   돌려주는 값: { say, then, covers 다가오는 일에서 뺄 열쇠 }. 고를 것이 없으면 지금 solioToday 문장(fallback)을 쓴다 */
+   돌려주는 값: { say, then, covers 다가오는 일에서 뺄 열쇠, service 말한 구독(문자판이 이 구독을 가운데 둔다), pull 둘째 줄을 다가오는 일의 첫 줄로 채울지 }.
+   고를 것이 없으면 지금 solioToday 문장(fallback)을 쓴다 */
 export function briefHead(snapshot, groups, now, fallback = null) {
   const weekly = groups.filter(g => g.kind === 'weekly' && g.service);
   const runs = new Map(weekly.map(g => [g, poolRunout(snapshot, g, now)]));
   // 0. 쓸 계정은 없고 다시 로그인하거나 읽지 못한 계정이 남은 서비스: 로그인하면 바로 쓸 수 있으니 그 할 일이 맨 위다(Fable 최종 F1)
   const fixable = weekly.find(g => !g.usable.length && !g.projected.length && g.out.length && (g.login.length || g.error.length));
-  if (fixable) return { say: fixSay(fixable), then: '계정 관리에서 ' + (fixable.login.length ? '다시 로그인합니다.' : '연결을 확인합니다.'), covers: [] };
+  if (fixable) return { say: fixSay(fixable), then: '계정 관리에서 ' + (fixable.login.length ? '다시 로그인합니다.' : '연결을 확인합니다.'), covers: [], service: fixable.service };
   // 1. 한 서비스의 이 PC 계정이 모두 막힘. 다시 열리는 때가 가장 늦은 것부터
   const allOut = weekly.filter(g => !g.usable.length && !g.projected.length && g.out.length && !g.login.length && !g.error.length).sort((a, b) => (b.out[0].unblock ?? Infinity) - (a.out[0].unblock ?? Infinity));
   if (allOut.length) {
     const g = allOut[0], first = g.out[0], name = svcName(g), one = here(g).length === 1;
-    const say = one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : neun(name) + ' 지금 모든 계정이 ' + blockedVerb(g.out) + '.';
+    const say = one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : allOutSay(name, g.out);
     const then = first.unblock ? spoken(first.unblock, now) + '에 ' + (one ? '' : ga(first.name) + ' 먼저 ') + '다시 열립니다.' : '';
-    return { say, then, covers: first.unblock ? ['unblock:' + first.row.id] : [] };
+    return { say, then, covers: first.unblock ? ['unblock:' + first.row.id] : [], service: g.service };
   }
   // 2. 지금 속도면 48시간 안에 모두 막힘. 막히는 때가 가장 이른 것부터. 30분 안에 다시 열리면 말하지 않는다
   const soonRun = weekly.map(g => ({ g, r: runs.get(g) })).filter(({ r }) => r && !r.beyond && r.at <= now + SOON_MS && (!r.next || r.next.t - r.at >= 30 * 60e3)).sort((a, b) => a.r.at - b.r.at)[0];
   if (soonRun) {
     const { g, r } = soonRun, name = svcName(g), one = here(g).length === 1;
-    const say = '지금 속도면 ' + neun(name) + ' ' + whenWords(roundHalf(r.at), now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.');
+    const say = '지금 속도면 ' + neun(name) + ' ' + whenWords(roundHalf(r.at, now), now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.');
     const then = r.next
       ? spoken(r.next.t, now) + '에 ' + (one ? '' : ga(r.next.a.name) + ' ') + (r.next.type === 'reopen' ? '다시 열릴' : '초기화될') + ' 때까지 ' + spanWords(r.next.t - r.at) + '쯤 막힙니다.'
       : '일주일 안에는 다시 열리는 계정이 없습니다.';
-    return { say, then, covers: ['runout:' + g.service, ...(r.next ? [(r.next.type === 'reopen' ? 'unblock:' : 'reset:') + r.next.a.row.id] : [])] };
+    return { say, then, covers: ['runout:' + g.service, ...(r.next ? [(r.next.type === 'reopen' ? 'unblock:' : 'reset:') + r.next.a.row.id] : [])], service: g.service };
   }
   // 3. 계정 둘 이상인 서비스에서 절반 이상이 막힘. 막힌 몫이 큰 것부터
   const many = weekly.filter(g => here(g).length >= 2 && g.out.length * 2 >= here(g).length).sort((a, b) => b.out.length / here(b).length - a.out.length / here(a).length)[0];
@@ -177,9 +199,9 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     const name = svcName(many), r = runs.get(many), first = many.out[0];
     const say = name + ' ' + outCount(here(many).length, many.out);
     let then = '', covers = [];
-    if (r) then = r.beyond ? '지금 속도면 이번 주는 모두 막히지는 않습니다.' : '지금 속도면 ' + whenWords(roundHalf(r.at), now, { withTime: true }) + '까지는 막히지 않습니다.';
+    if (r) then = r.beyond ? '지금 속도면 이번 주는 모두 막히지는 않습니다.' : '지금 속도면 ' + whenWords(floorAt(r.at, now), now, { withTime: true }) + '까지는 막히지 않습니다.';
     else if (first.unblock) { then = spoken(first.unblock, now) + '에 ' + ga(first.name) + ' 먼저 다시 열립니다.'; covers = ['unblock:' + first.row.id]; }
-    return { say, then, covers };
+    return { say, then, covers, service: many.service };
   }
   // 4. 다시 로그인하거나 읽지 못한 계정. 할 일을 그대로 말한다
   const trouble = groups.filter(g => g.service && (g.login.length || g.error.length));
@@ -187,21 +209,22 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     const g = trouble[0], a = g.login[0] || g.error[0], name = svcName(g);
     const what = g.login.length ? '다시 로그인해야 합니다' : '읽지 못했습니다';
     const others = trouble.length > 1 || g.login.length + g.error.length > 1 ? ' 손볼 계정이 더 있으면 상세내역에서 보입니다.' : '';
-    return { say: name + ' ' + (a.name ? a.name + ' 계정은 ' : '계정 하나는 ') + what + '.', then: '계정 관리에서 ' + (g.login.length ? '다시 로그인합니다.' : '연결을 확인합니다.') + others, covers: [] };
+    return { say: name + ' ' + (a.name ? a.name + ' 계정은 ' : '계정 하나는 ') + what + '.', then: '계정 관리에서 ' + (g.login.length ? '다시 로그인합니다.' : '연결을 확인합니다.') + others, covers: [], service: g.service };
   }
   // 5. 오늘은 이 계정부터: 24시간 안에 초기화되는데 20% 넘게 남은 계정(serviceGroups의 g.today)
   const today = weekly.filter(g => g.today).sort((a, b) => a.today.g.weekly.resetsAt - b.today.g.weekly.resetsAt)[0];
   if (today) {
     const a = today.today;
-    return { say: '오늘은 ' + svcName(today) + ' ' + a.name + '부터 쓰세요.', then: spoken(a.g.weekly.resetsAt, now) + '에 초기화되는데 ' + a.g.weekly.left + '%가 남았습니다.', covers: ['reset:' + a.row.id] };
+    return { say: '오늘은 ' + svcName(today) + ' ' + a.name + '부터 쓰세요.', then: spoken(a.g.weekly.resetsAt, now) + '에 초기화되는데 ' + a.g.weekly.left + '%가 남았습니다.', covers: ['reset:' + a.row.id], service: today.service };
   }
   // 6. 거의 다 씀(주간 한도 10% 이하만 남은 서비스, 크레딧 부족)
   const low = groups.find(g => g.best && g.best.state === 'low' && !g.usable.some(a => a.state === 'ok'));
   if (low) {
     const name = svcName(low), b = low.best;
-    if (low.kind === 'weekly') return { say: neun(name) + ' ' + b.left + '%만 남았습니다.', then: b.g?.resetsAt ? spoken(b.g.resetsAt, now) + '에 초기화됩니다.' : '', covers: [] };
-    const bill = b.row?.billDay ? nextBill(b.row.billDay, now) : null;
-    return { say: name + ' 크레딧이 얼마 남지 않았습니다.', then: bill === null ? '' : (d => (d.getMonth() + 1) + '월 ' + d.getDate() + '일에 다시 찹니다.')(new Date(dayAfter(now, bill))), covers: [] };
+    if (low.kind === 'weekly') return { say: neun(name) + ' ' + b.left + '%만 남았습니다.', then: b.g?.resetsAt ? spoken(b.g.resetsAt, now) + '에 초기화됩니다.' : '', covers: [], service: low.service };
+    // 충전일은 결제일이 아니라 지난 충전에서 센다(Higgsfield 30일, Typecast 한 달). 상세내역 줄과 같은 규칙(화면 검수 r2 A4)
+    const refill = nextRefill(low.service, b.row, snapshot?.usage?.accounts?.[b.row.id]?.refillAt || null, now);
+    return { say: name + ' 크레딧이 얼마 남지 않았습니다.', then: refill === null ? '' : (d => (d.getMonth() + 1) + '월 ' + d.getDate() + '일에 다시 찹니다.')(new Date(refill)), covers: [], service: low.service };
   }
   // 7. 48시간 안 결제
   const bills = upcoming(snapshot?.rows || [], now, snapshot?.check?.at || null, snapshot?.prices || null).filter(i => i.type === 'bill' && i.days <= 1);
@@ -212,9 +235,9 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     return { say: day + ' ' + joinNames(names) + ' 결제가 있습니다.', then: krw ? '모두 약 ' + fmt(krw) + '원입니다.' : '', covers: same.map(b => 'bill:' + b.row.id) };
   }
   // 8. 다 쓴 계정이 있지만 급하지 않음. 「넉넉」은 쓰지 않는다(설계 4절 1). 둘째 줄은 다가오는 일의 첫 줄이 맡는다
-  if (weekly.some(g => g.out.length)) return { say: '지금은 급한 일이 없습니다.', then: '', covers: [] };
+  if (weekly.some(g => g.out.length)) return { say: '지금은 급한 일이 없습니다.', then: '', covers: [], pull: true };
   // 9. 그 밖(모두 넉넉, 기록 부족, 직접 넣은 구독만)은 지금 문장이 근거를 갖추고 있다(solio-today allSure · young)
-  return fallback ? { say: fallback.say, then: fallback.then, covers: [] } : { say: '지금은 급한 일이 없습니다.', then: '', covers: [] };
+  return fallback ? { say: fallback.say, then: fallback.then, covers: [] } : { say: '지금은 급한 일이 없습니다.', then: '', covers: [], pull: true };
 }
 
 /* 다가오는 일 한 줄의 글(설계 3.2, 설계 검토 D6) */
@@ -238,8 +261,9 @@ function soonText(item, snapshot, now, todayIds) {
   return '';
 }
 
-/* 다가오는 일(설계 3.2): 48시간 안의 것을 시간 차례로. 첫 화면은 세 줄(shown), 상세내역은 모두(all). 48시간 안에 없으면 가장 가까운 하나. 맨 위가 말한 것은 뺀다 */
-export function briefSoon(snapshot, groups, now, covers = []) {
+/* 다가오는 일(설계 3.2): 48시간 안의 것을 시간 차례로. 첫 화면은 세 줄(shown), 상세내역은 모두(all). 48시간 안에 없으면 가장 가까운 하나. 맨 위가 말한 것은 뺀다.
+   문자판은 같은 셈을 사흘(horizon)로 쓴다 */
+export function briefSoon(snapshot, groups, now, covers = [], horizon = SOON_MS) {
   const skip = new Set(covers), rows = (snapshot?.rows || []).filter(r => r.state !== 'elsewhere');
   const acct = new Map(groups.flatMap(g => g.accounts.map(a => [a.row.id, a])));
   const todayIds = new Set(groups.map(g => g.today?.row?.id).filter(Boolean));
@@ -261,7 +285,9 @@ export function briefSoon(snapshot, groups, now, covers = []) {
     const svc = SOLIO_TODAY_NAMES[first.row.service] || String(first.row.label || '').trim(), day = soonWhen(first.t, now, true);
     const prices = list.map(b => monthPrice(snapshot, b.row, now)?.krw || 0), krw = prices.every(v => v > 0) ? prices.reduce((s, v) => s + v, 0) : 0;
     if (list.length === 1) { items.push({ at: first.t, when: day, text: soonText(first, snapshot, now, todayIds), key: 'bill:' + first.row.id, say: day + ' ' + svc + ' 결제가 있습니다' + (krw ? '(약 ' + fmt(krw) + '원).' : '.') }); continue; }
-    items.push({ at: first.t, when: day, text: svc + ' 결제 ' + list.length + '건' + (krw ? ' · 약 ' + fmt(krw) + '원' : ''), key: list.map(b => 'bill:' + b.row.id).join(','), say: day + ' ' + svc + ' 결제가 ' + list.length + '건 있습니다' + (krw ? '(약 ' + fmt(krw) + '원).' : '.') });
+    // 묶은 결제도 그날 사라지는 API 크레딧을 함께 쓴다(화면 검수 r2 A12)
+    const api = list.reduce((n, b) => n + (Number(b.api) || 0), 0);
+    items.push({ at: first.t, when: day, text: svc + ' 결제 ' + list.length + '건' + (krw ? ' · 약 ' + fmt(krw) + '원' : '') + (api > 0 ? ' · API 크레딧 $' + api.toLocaleString('en-US', { maximumFractionDigits: 2 }) + '가 사라집니다' : ''), key: list.map(b => 'bill:' + b.row.id).join(','), say: day + ' ' + svc + ' 결제가 ' + list.length + '건 있습니다' + (krw ? '(약 ' + fmt(krw) + '원).' : '.') });
   }
   for (const g of groups) {
     if (g.kind !== 'weekly' || !g.service || skip.has('runout:' + g.service)) continue;
@@ -269,11 +295,13 @@ export function briefSoon(snapshot, groups, now, covers = []) {
     // 30분 안에 다시 열리는 막힘은 맨 위처럼 다가오는 일에도 쓰지 않는다(GPT 검수 GA2)
     if (r && !r.beyond && r.at > now && (!r.next || r.next.t - r.at >= 30 * 60e3)) {
       const what = here(g).length === 1 ? ga(svcName(g)) + ' 바닥납니다' : svcName(g) + ' 계정이 모두 막힙니다';
-      items.push({ at: r.at, when: soonWhen(roundHalf(r.at), now), text: what + ' · 지금 속도면', key: 'runout:' + g.service, say: '지금 속도면 ' + whenWords(roundHalf(r.at), now, { withTime: true }) + '쯤 ' + what + '.' });
+      // 줄 세우는 때와 보이는 때를 같게 한다(반올림한 15:00이 14:45 일정 위에 오지 않게, 화면 검수 r2 A8)
+      const at = roundHalf(r.at, now);
+      items.push({ at, when: soonWhen(at, now), text: what + ' · 지금 속도면', key: 'runout:' + g.service, say: '지금 속도면 ' + whenWords(at, now, { withTime: true }) + '쯤 ' + what + '.' });
     }
   }
   items.sort((a, b) => a.at - b.at);
-  const near = items.filter(i => i.at <= now + SOON_MS);
+  const near = items.filter(i => i.at <= now + horizon);
   const all = near.length ? near : items.slice(0, 1);
   return { all, shown: all.slice(0, SOON_SHOWN), more: Math.max(0, all.length - SOON_SHOWN) };
 }
@@ -299,7 +327,9 @@ function weeklyVerdict(snapshot, g, now) {
     // 하나 더 살 때의 값은 그 요금제의 공식 요금이다. 한 계정에 넣은 할인 요금을 쓰지 않는다(GPT 검수 GA11)
     const price = monthPrice(snapshot, { ...mostPlanRow(list), price: null }, now);
     // 「계정 약 n개 몫」은 모든 계정의 요금제가 같을 때만 머릿수와 견줄 수 있다(Max 20x와 Pro가 섞이면 큰 요금제 몫과 머릿수가 다르다, 화면 검수 A3)
-    const pace = r && r.same && r.perWeek > n ? '지금 속도는 한 주에 계정 약 ' + Math.round(r.perWeek) + '개 몫입니다(지금 ' + n + '개).' : '';
+    // 보이는 어림값이 지금 계정 수보다 클 때만 쓴다. 「약 1개 몫입니다(지금 1개)」가 되지 않게(화면 검수 r2 A3)
+    const perW = r ? Math.round(r.perWeek) : 0;
+    const pace = r && r.same && perW > n ? '지금 속도는 한 주에 계정 약 ' + perW + '개 몫입니다(지금 ' + n + '개).' : '';
     return { verdict: 'short', say: '지난 4주 동안 주간 한도 ' + wins.length + '번 가운데 ' + early + '번이 초기화 하루 넘게 전에 바닥났습니다.',
       more: [pace, price && price.krw > 0 ? '계정을 하나 더하면 월 약 ' + fmt(price.krw) + '원입니다.' : ''].filter(Boolean).join(' '), scope: cli ? cli.tool + ' 한도 기준' : '' };
   }
@@ -409,15 +439,17 @@ export function tokSample(samples, tokens, prev, now) {
   if (tokens.scanning) return list;
   // 다 훑은 셈(5분마다)이 바뀐 알림은 그 사이 밀린 몫을 담는다. 기억을 비우지 않고 앞 값들을 그만큼 올려 잇는다.
   // 비우면 10분 넘게 켜 둔 방이 셈마다 「쉬는 중」으로 떨어졌다(화면 검수 A4). 밀린 몫은 최근 10분에 넣지 않는다(적게 잡는 쪽)
-  if (prev && prev.scannedAt !== tokens.scannedAt) { const shift = t.out - last.out; return list.filter(s => s.t >= now - KEEP_MS).concat(list.filter(s => s.t >= now - KEEP_MS).length ? [] : [last]).map(s => ({ ...s, out: s.out + shift })); }
   // 마지막 하나는 오래돼도 남긴다(10분 넘게 조용했어도 바닥이 있어야 「쉬는 중」을 말한다)
   // 15분보다 오래된 기억은 지우되 그 가운데 가장 늦은 하나는 바닥으로 남긴다. 오래 쉬다 다시 쓰면 10분 전 값이 그것이다(GPT 검수 GA14)
   const old = list.filter(s => s.t < now - KEEP_MS), kept = list.filter(s => s.t >= now - KEEP_MS), base = old.length ? [old[old.length - 1], ...kept] : kept.length ? kept : [last];
+  // 셈이 바뀐 알림도 같은 바닥을 남긴 채 올려 잇는다(화면 검수 r2 A10)
+  if (prev && prev.scannedAt !== tokens.scannedAt) { const shift = t.out - last.out; return base.map(s => ({ ...s, out: s.out + shift })); }
   return last.out === t.out ? base : [...base, { t: now, day: t.day, out: t.out }];
 }
 /* 최근 10분의 출력: 10분 전 값과의 차이. 기억한 지 10분이 안 됐으면 처음 기억한 값과의 차이(partial) */
 export function recentOut(samples, now) {
-  const list = samples || [];
+  // 자정을 넘긴 기억(어제 밤 값)은 오늘 차이에 섞지 않는다(화면 검수 r2 A11)
+  const day = tokenDay(now), list = (samples || []).filter(s => s.day === day);
   if (!list.length) return null;
   const last = list[list.length - 1], before = list.filter(s => s.t <= now - RECENT_MS);
   const base = before.length ? before[before.length - 1] : list[0];
@@ -440,6 +472,41 @@ export function briefLive(tokens, samples, now) {
   return { state: 'on', big: tokenText(t.out), unit: '오늘 출력 토큰', small: [recent, share].filter(Boolean).join(' · '), out: t.out };
 }
 
+/* ── 문자판(11-20 유호님이 고르신 A, 설계 10절) ──
+   구를 가운데 둔 사흘짜리 시계판의 자료. DOM이 없다. 때는 모두 지금부터의 거리(ms)다.
+   rings: 이 PC 계정이 읽히는 구독마다 계정 칸(left 0~100, 읽지 못한 계정은 null).
+   hero: 가운데 구독(맨 위가 말한 구독, 없으면 계정이 가장 많은 한도형 구독)의 큰 숫자.
+   safe: 지금 속도로 막히지 않는 때까지(until)와 다시 열리는 때(gapEnd). 속도를 모르면 null.
+   ticks · days · events: 바깥 눈금(한 시간마다, 여섯 시간마다, 자정), 날 이름, 다가오는 일 표식 */
+const leftOf = a => (a.state === 'out' ? 0 : ['ok', 'low'].includes(a.state) ? Math.max(0, Math.min(100, Math.round(a.g?.weekly && !a.g.weekly.guess ? a.g.weekly.left : a.left ?? 0))) : null);
+const KIND = Object.freeze({ unblock: 'open', reset: 'reset', bill: 'bill', runout: 'runout' });
+export function briefDial(snapshot, groups, now, focusService = null) {
+  const auto = groups.filter(g => g.service && here(g).some(a => a.row.source === 'auto'));
+  const weekly = auto.filter(g => g.kind === 'weekly');
+  const focus = weekly.find(g => g.service === focusService) || [...weekly].sort((a, b) => here(b).length - here(a).length || (b.service === 'claude') - (a.service === 'claude'))[0] || auto[0];
+  if (!focus) return null;
+  const rings = auto.map(g => ({ key: g.service, name: svcName(g), focus: g === focus, accounts: here(g).filter(a => a.row.source === 'auto').map(a => ({ id: a.row.id, name: a.name || '', state: a.state, left: leftOf(a) })) }));
+  // 큰 숫자: 계정 여럿은 합친 몫(무게를 아는 Claude나 요금제가 같을 때), 섞인 요금제는 열린 계정 수, 하나는 그 계정의 남은 양
+  const list = here(focus).filter(a => a.row.source === 'auto'), name = svcName(focus), read = list.filter(a => ['ok', 'low', 'out'].includes(a.state));
+  const pooled = focus.service === 'claude' || new Set(list.map(a => planKey(a.row.plan))).size === 1;
+  let hero;
+  if (!read.length) hero = { value: '–', unit: '', label: name + ' 읽는 중' };
+  else if (list.length === 1) hero = { value: String(leftOf(read[0])), unit: '%', label: name + ' 남은 양' };
+  else if (pooled) { const w = read.reduce((n, a) => n + weightOf(a.row), 0); hero = { value: String(Math.floor(read.reduce((n, a) => n + leftOf(a) * weightOf(a.row), 0) / w)), unit: '%', label: name + ' 남은 몫' }; }
+  else hero = { value: String(read.filter(a => a.state !== 'out').length), unit: '/' + list.length, label: name + ' 열린 계정' };
+  const end = now + DIAL_MS, ticks = [];
+  for (let t = Math.ceil(now / HOUR) * HOUR; t < end; t += HOUR) { const h = new Date(t).getHours(); ticks.push({ off: t - now, k: h === 0 ? 'day' : h % 6 === 0 ? 'six' : 'hour' }); }
+  const days = [{ off: 0, label: '지금' }, ...ticks.filter(k => k.k === 'day').map(k => ({ off: k.off, label: soonWhen(now + k.off, now, true) }))];
+  const events = briefSoon(snapshot, groups, now, [], DIAL_MS).all.filter(i => i.at > now && i.at <= end)
+    .map(i => ({ off: i.at - now, kind: KIND[i.key.split(':')[0]] || 'other', text: i.when + ' ' + i.text }));
+  const r = focus.kind === 'weekly' ? poolRunout(snapshot, focus, now) : null;
+  const safe = !r ? null : r.beyond || r.at >= end ? { until: DIAL_MS, gapEnd: null } : { until: Math.max(0, r.at - now), gapEnd: r.next ? Math.min(DIAL_MS, r.next.t - now) : DIAL_MS };
+  const open = read.filter(a => a.state !== 'out').length;
+  const label = [name + ' 계정 ' + list.length + '개 가운데 ' + open + '개가 열려 있습니다.', hero.unit === '%' ? hero.label + ' ' + hero.value + '%.' : '',
+    r && !r.beyond && r.at < end ? '지금 속도면 ' + whenWords(roundHalf(r.at, now), now, { withTime: true }) + '쯤 모두 막힙니다.' : r ? '지금 속도면 사흘 안에는 막히지 않습니다.' : ''].filter(Boolean).join(' ');
+  return { span: DIAL_MS, focus: focus.service, hero, rings, safe, ticks, days, events, label };
+}
+
 /* 스냅숏에서 나오는 판(맨 위, 다가오는 일, 진단, 줄 안쪽 결론). 지금 출력은 따로 붙인다(briefLive).
    today는 solioToday의 결과다. ready일 때만 맨 위를 바꾼다. 줄을 접을지(fold)는 상태로 정한다(설계 검토 D9) */
 const FOLD = new Set(['ready', 'stale', 'rereading', 'projected', 'first']);
@@ -452,14 +519,16 @@ export function solioBrief({ today, snapshot, memo = null } = {}, now = Date.now
   const head = briefHead(snapshot, groups, now, today);
   const soon = briefSoon(snapshot, groups, now, head.covers);
   const next = dailyDiag(memo, snapshot, groups, now);
-  // 맨 위가 둘째 줄을 비우면 다가오는 일의 첫 줄이 맡는다. 그 줄은 다가오는 일에서 뺀다
+  // 할 일이 없는 맨 위(「지금은 급한 일이 없습니다」)만 둘째 줄을 다가오는 일의 첫 줄로 채운다. 그 줄은 다가오는 일에서 뺀다.
+  // 다른 갈래의 빈 둘째 줄에 다른 구독의 일정을 섞지 않는다(화면 검수 r2 A7)
   let then = head.then, list = soon;
-  if (!then && soon.all.length) {
-    // 표 조각이 아니라 문장으로 쓴다(화면 검수 A7)
-    then = '가장 먼저 ' + soon.all[0].say;
+  if (!then && head.pull && soon.all.length) {
+    // 표 조각이 아니라 문장으로 쓴다(화면 검수 A7). 「지금 속도면」으로 시작하는 줄에는 「가장 먼저」를 붙이지 않는다
+    const first = soon.all[0];
+    then = first.key.startsWith('runout:') ? first.say : '가장 먼저 ' + first.say;
     const rest = soon.all.slice(1);
     list = { all: rest, shown: rest.slice(0, SOON_SHOWN), more: Math.max(0, rest.length - SOON_SHOWN) };
   }
   const says = Object.fromEntries(groups.filter(g => g.service).map(g => [g.key, poolSay(snapshot, g, now)]).filter(([, s]) => s));
-  return { fold: true, head: { say: head.say, then }, soon: list, diag: { ...next.diag, cost: costLine(snapshot, now), when: diagWhen(next.at, now) }, says, memo: next };
+  return { fold: true, head: { say: head.say, then }, soon: list, diag: { ...next.diag, cost: costLine(snapshot, now), when: diagWhen(next.at, now) }, dial: briefDial(snapshot, groups, now, head.service || null), says, memo: next };
 }

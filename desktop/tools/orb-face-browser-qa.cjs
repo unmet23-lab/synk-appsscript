@@ -97,7 +97,7 @@ if(!process.versions.electron){
       // 11-20부터 구독 줄은 「상세내역」 안에 접혀 있다(솔리오 구독 비서 설계 3.5). 줄을 누르는 앞 흐름은 상세내역을 한 번 펼친 채로 본다.
       // 자바스크립트 click이라 초점은 옮기지 않는다. 접힌 판 자체는 20번이 fold:true로 본다
       // 앞 흐름은 줄의 자리(포인터 사건을 보내는 좌표)를 옛 판 그대로 재므로, 비서 판은 그 흐름에서만 감춘다
-      if(!fold)await w.js("(()=>{if(window.__detailsAuto)return true;window.__detailsAuto=1;const st=document.createElement('style');st.textContent='#portal-entry [data-brief],#portal-entry [data-details-top]{display:none!important}';document.head.appendChild(st);const t=setInterval(()=>{const b=document.querySelector('#portal-entry [data-details]');if(b&&!b.hidden&&b.getAttribute('aria-expanded')!=='true'){b.click();clearInterval(t);}},25);setTimeout(()=>clearInterval(t),30000);return true;})()");
+      if(!fold)await w.js("(()=>{if(window.__detailsAuto)return true;window.__detailsAuto=1;const st=document.createElement('style');st.textContent='#portal-entry [data-brief],#portal-entry [data-details-top],#portal-entry [data-dial]{display:none!important}#portal-entry .room.dialed:not([hidden]){display:block!important}#portal-entry .room.dialed .say{font:var(--display)!important;letter-spacing:-.018em!important;max-width:21em!important}#portal-entry .room.dialed .say .then{margin-top:0!important;font:inherit!important}';document.head.appendChild(st);const t=setInterval(()=>{const b=document.querySelector('#portal-entry [data-details]');if(b&&!b.hidden&&b.getAttribute('aria-expanded')!=='true'){b.click();clearInterval(t);}},25);setTimeout(()=>clearInterval(t),30000);return true;})()");
       if(restore){if(restoreAfter)setTimeout(()=>{w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')').catch(()=>{});},restoreAfter);else await w.js('window.__orbFixture.restore('+JSON.stringify(restore)+')');}
       return t0;
     }
@@ -500,6 +500,15 @@ if(!process.versions.electron){
           const f0=await look();
           check('20 the subscriptions room opens folded: one thing on top, coming up, live output and today’s diagnosis, rows under 상세내역',f0.brief&&f0.say.length>0&&f0.det==='false'&&!f0.rows&&!f0.top&&f0.live!==null&&f0.diag!==null&&/오늘 진단/.test(f0.diag)&&f0.soon.length>=1&&f0.soon.length<=3,f0);
           check('20 the top never says plenty while an account is used up',!/넉넉/.test(f0.say+f0.then),f0);
+          // 문자판(11-20 유호님이 고르신 A): 계정마다 칸 하나, 낭독 이름, 가운데 큰 숫자, 지금 출력은 구 위
+          const dl=await w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s);const d=q('[data-dial]'),svg=q('[data-dial-svg]'),live=q('[data-live]').getBoundingClientRect(),orb=q('.dial-orb').getBoundingClientRect();return {shown:!d.hidden,dialed:q('[data-room=\"solio\"]').classList.contains('dialed'),cells:svg.querySelectorAll('.d-cell').length,ticks:svg.querySelectorAll('.d-t').length,label:svg.getAttribute('aria-label')||'',hero:q('[data-dial-value]').textContent+q('[data-dial-unit]').textContent,liveAbove:live.bottom<=orb.top+1&&live.left>=d.getBoundingClientRect().left};})()");
+          check('20 the dial: a cell per account, three days of hourly ticks, a spoken label and the share in the middle',dl.shown&&dl.dialed&&dl.cells===(subsRich.rows||[]).filter(r=>r.source==='auto'&&r.state!=='elsewhere').length&&dl.ticks===72&&/계정 \d+개 가운데/.test(dl.label)&&/^\d+%$|^\d+\/\d+$/.test(dl.hero),dl);
+          check('20 live output sits inside the dial above the orb on a wide window',dl.liveAbove,dl);
+          // 앱 최소 창(960×680)에서도 맨 위부터 「다시 읽기」까지 한 화면에 든다(Fable 최종 F2와 같은 기준)
+          w.win.setContentSize(960,680);await wait(450);
+          const fit=await w.js("(()=>{const b=s=>document.querySelector('#portal-entry '+s).getBoundingClientRect().bottom;return {details:Math.round(b('[data-details]')),reread:Math.round(b('[data-orb-act=\"reread\"]')),h:innerHeight};})()");
+          check('20 at 960×680 the folded room fits down to 다시 읽기',fit.details<=fit.h&&fit.reread<=fit.h,fit);
+          w.win.setContentSize(1440,900);await wait(300);
           await captureSizes(w,'brief-folded');
           await click(w,'#portal-entry [data-details]');await wait(200);
           const f1=await look();
@@ -507,7 +516,8 @@ if(!process.versions.electron){
           await captureWide(w,'brief-open');
           await w.js("document.querySelector('#portal-entry button.row[data-svc]').focus()");await wait(120);
           await key(w,'Tab');await wait(60);
-          await click(w,'#portal-entry [data-details]');await wait(200);
+          // 포인터로 누르면 누르는 순간 단추가 초점을 가져가 이 검사가 늘 통과한다. 초점을 줄 안에 둔 채 스크립트로 누른다(화면 검수 r2 B1)
+          await w.js("document.querySelector('#portal-entry [data-details]').click()");await wait(200);
           const f2=await look();
           check('20 folding with the focus inside moves it to 상세내역, not to the page',f2.det==='false'&&!f2.rows&&f2.active==='details',f2);
           w.win.destroy();

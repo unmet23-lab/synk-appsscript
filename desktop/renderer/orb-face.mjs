@@ -386,7 +386,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 확인할 구독(check)은 줄이 곧 할 일이라 접지 않고, 지금 출력만 위에 둔다(설계 검토 D9)
     const showLive = Boolean(brief) || (signedIn && sol.snapshot && today.state === 'check' && today.rows?.length > 0);
     const live = showLive ? rooms.tokLive() : null;
-    const box = brief ? { fold: true, soon: brief.soon, diag: brief.diag, live } : showLive ? { fold: false, soon: null, diag: null, live } : null;
+    const box = brief ? { fold: true, soon: brief.soon, diag: brief.diag, dial: brief.dial || null, live } : showLive ? { fold: false, soon: null, diag: null, dial: null, live } : null;
     return { ...today, ...head, rows, extra, rereading: sol.checking || Boolean(sol.snapshot?.checking), brief: box };
   }
   function briefOf(today) {

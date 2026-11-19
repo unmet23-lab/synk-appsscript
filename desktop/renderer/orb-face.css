@@ -175,12 +175,12 @@
    맨 아랫줄이 아래 흐림에 들지 않게 흐림보다 넓은 아래 여백을 둔다(시안 .room, 사이트방문 설계 6절, 2단계 둘째 조각 설계 10.2절) */
 /* 비서 판(11-20 솔리오 구독 비서 설계 3절): 맨 위 한 가지 아래에 다가오는 일, 지금 출력, 오늘 진단, 상세내역 단추. 줄은 상세내역 안에 접힌다 */
 #portal-entry .brief{margin-top:clamp(18px,3.5vh,44px);max-width:min(100%,62em);display:grid;grid-template-columns:minmax(0,1fr);column-gap:clamp(24px,4vw,64px)}
-/* 넓은 창에서는 「지금 출력」을 다가오는 일 옆에 세워, 맨 위부터 상세내역 단추까지 한 화면에 들게 한다 */
+/* 넓은 창에서 문자판이 없을 때는 「지금 출력」을 다가오는 일 옆에 세운다. 다가오는 일이 숨으면 세우지 않는다(화면 검수 r2 A9) */
 @media (min-width:900px){
-  #portal-entry .brief{grid-template-columns:minmax(0,1fr) auto}
-  #portal-entry .brief > .soon,#portal-entry .brief > .soon-more{grid-column:1}
-  #portal-entry .brief > .live{grid-column:2;grid-row:1 / span 2;margin:0;padding:0 0 0 clamp(18px,2.4vw,32px);border-top:0;border-left:1px solid var(--hair);flex-direction:column;align-items:flex-start;justify-content:center;gap:6px}
-  #portal-entry .brief > .diag,#portal-entry .brief > .details{grid-column:1 / -1}
+  #portal-entry .room:not(.dialed) .brief:has(> .soon:not([hidden])){grid-template-columns:minmax(0,1fr) auto}
+  #portal-entry .room:not(.dialed) .brief:has(> .soon:not([hidden])) > .soon,#portal-entry .room:not(.dialed) .brief:has(> .soon:not([hidden])) > .soon-more{grid-column:1}
+  #portal-entry .room:not(.dialed) .brief:has(> .soon:not([hidden])) > .live{grid-column:2;grid-row:1 / span 2;margin:0;padding:0 0 0 clamp(18px,2.4vw,32px);border-top:0;border-left:1px solid var(--hair);flex-direction:column;align-items:flex-start;justify-content:center;gap:6px}
+  #portal-entry .room:not(.dialed) .brief > .diag,#portal-entry .room:not(.dialed) .brief > .details{grid-column:1 / -1}
 }
 #portal-entry .brief > .details{justify-self:start}
 #portal-entry .soon{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:clamp(16px,2.4vw,32px);row-gap:10px}
@@ -209,6 +209,86 @@
 #portal-entry .details-h{margin:18px 0 10px;font:var(--small);color:var(--paper)}
 #portal-entry .details-h:first-child{margin-top:0}
 #portal-entry .details-top .diag-line{margin-bottom:10px}
+/* ── 문자판(11-20 유호님이 고르신 A, 솔리오 구독 비서 설계 10절) ──
+   왼쪽에 구를 가운데 둔 사흘짜리 시계판, 오른쪽에 맨 위 한 가지와 다가오는 일, 지금 출력, 오늘 진단. 줄은 그 아래 상세내역에 접힌다.
+   금색은 「막히지 않는 때까지」와 다가오는 일의 때에만 쓴다. 모두 막히는 동안만 붉다 */
+#portal-entry .room[data-room="solio"]{--dial:max(260px,min(560px,calc(100vh - 330px),44vw));--gold:#D9C29A;--block:#E0705A}
+#portal-entry .dial{position:relative;width:var(--dial);aspect-ratio:1;margin:0}
+#portal-entry .dial[hidden]{display:none}
+#portal-entry .dial svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;font-family:var(--orb-sans)}
+#portal-entry .dial .d-rim{fill:none;stroke:rgba(243,241,236,.12);stroke-width:1}
+#portal-entry .dial .d-inner{fill:none;stroke:rgba(243,241,236,.05);stroke-width:1}
+#portal-entry .dial .d-sweep{transform-box:view-box;transform-origin:50% 50%;animation:orb-dial-spin 72s linear infinite}
+#portal-entry .dial .d-sweep-c{fill:none;stroke-width:2}
+@keyframes orb-dial-spin{to{transform:rotate(360deg)}}
+#portal-entry .dial .d-t{stroke:rgba(243,241,236,.16);stroke-width:1}
+#portal-entry .dial .d-t-six{stroke:rgba(243,241,236,.38)}
+#portal-entry .dial .d-t-day{stroke:rgba(243,241,236,.72);stroke-width:1.4}
+#portal-entry .dial .d-day{fill:rgba(243,241,236,.6);font-size:17px;letter-spacing:.06em;text-anchor:middle;dominant-baseline:middle}
+#portal-entry .dial .d-now{fill:var(--paper)}
+#portal-entry .dial .d-safe{fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round}
+#portal-entry .dial .d-gap{fill:none;stroke:var(--block);stroke-width:1.8;stroke-linecap:round}
+#portal-entry .dial .d-after{fill:none;stroke:rgba(243,241,236,.2);stroke-width:1;stroke-dasharray:2 5}
+#portal-entry .dial .d-nowdot{fill:var(--paper)}
+#portal-entry .dial .d-ev{fill:#000;stroke:var(--gold);stroke-width:1.4}
+#portal-entry .dial .d-reset{stroke:rgba(243,241,236,.6)}
+#portal-entry .dial .d-runout{fill:var(--block);stroke:none}
+#portal-entry .dial .d-other{fill:rgba(243,241,236,.6);stroke:none}
+#portal-entry .dial .d-cell{fill:none;stroke:rgba(243,241,236,calc(.35 + var(--l,0) * .6));stroke-width:12}
+#portal-entry .dial .d-cell-out{stroke:rgba(243,241,236,.09)}
+#portal-entry .dial .d-cell-unknown{stroke:rgba(243,241,236,.3);stroke-width:1.2;stroke-dasharray:3 4}
+#portal-entry .dial .d-cell-side{opacity:.62}
+#portal-entry .dial .d-svc{fill:rgba(243,241,236,.5);font-size:15px;letter-spacing:.04em;text-anchor:middle;dominant-baseline:middle}
+#portal-entry .dial .d-svc-focus{fill:rgba(243,241,236,.8)}
+#portal-entry .dial-orb{position:absolute;left:50%;top:50%;width:25.5%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle at 50% 30%,#232321 0%,#0c0c0b 46%,#020202 72%);box-shadow:inset 0 0 0 1px rgba(243,241,236,.16),inset 0 -18px 40px rgba(243,241,236,.05),0 0 120px rgba(217,194,154,.06)}
+#portal-entry .dial-orb::before,#portal-entry .dial-orb::after{content:"";position:absolute;top:37%;width:3.8%;aspect-ratio:1;border-radius:50%;background:var(--paper);box-shadow:0 0 10px rgba(243,241,236,.5);animation:orb-dial-blink 6s infinite}
+#portal-entry .dial-orb::before{left:35%}
+#portal-entry .dial-orb::after{right:35%}
+@keyframes orb-dial-blink{0%,96%,100%{transform:scaleY(1)}98%{transform:scaleY(.1)}}
+#portal-entry .dial-hero{position:absolute;left:0;right:0;top:calc(50% + 14%);margin:0;text-align:center;pointer-events:none}
+#portal-entry .dial-hero b{font:200 clamp(26px,calc(var(--dial) * .085),50px)/1 var(--orb-sans);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+#portal-entry .dial-hero small{font:300 clamp(13px,calc(var(--dial) * .036),22px)/1 var(--orb-sans);color:var(--dim);margin-left:2px}
+#portal-entry .dial-hero span{display:block;margin-top:8px;font:var(--small);color:var(--dim)}
+/* 문자판이 있는 방: 넓은 창은 두 칸, 좁은 창은 문자판 아래에 글 */
+#portal-entry .room.dialed .say{font:200 clamp(24px,min(2.7vw,4.6vh),40px)/1.3 var(--orb-sans);letter-spacing:-.022em;max-width:15em}
+#portal-entry .room.dialed .say .then{margin-top:12px;font:300 clamp(14px,1.15vw,17px)/1.6 var(--orb-sans);letter-spacing:0}
+#portal-entry .room.dialed .brief:not([hidden]){display:block;margin-top:clamp(18px,3vh,32px);max-width:34em}
+#portal-entry .room.dialed .soon{padding-top:clamp(10px,1.6vh,14px);border-top:1px solid var(--hair)}
+#portal-entry .room.dialed .soon .w{color:var(--gold)}
+#portal-entry .room.dialed .live{margin-top:clamp(16px,2.6vh,26px)}
+#portal-entry .room.dialed .live-big{font:200 clamp(30px,3.2vw,46px)/1 var(--orb-sans)}
+/* 진단 한 줄: 구독 이름과 판정을 한 줄에, 할 일은 그 아래 넓게 */
+#portal-entry .room.dialed .diag-line{grid-template-columns:auto minmax(0,1fr);row-gap:4px}
+#portal-entry .room.dialed .diag-line > :last-child{grid-column:1 / -1}
+#portal-entry .room.dialed .diag-line em{color:var(--gold)}
+#portal-entry .room.dialed .dial{margin:0 auto clamp(18px,3vh,28px)}
+/* 지금 출력은 문자판 안 구 위에 크로노그래프의 작은 판처럼 놓는다. 문자판이 있는 동안 화면(orb-face-view renderDial)이 이 줄을 문자판 안으로 옮긴다 */
+#portal-entry .dial > .live{position:absolute;left:50%;top:25%;transform:translateX(-50%);z-index:1;margin:0;padding:0;border:0;max-width:40%;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+#portal-entry .dial > .live .live-big{font:200 clamp(20px,calc(var(--dial) * .058),34px)/1 var(--orb-sans)}
+#portal-entry .dial > .live .live-unit,#portal-entry .dial > .live .live-small{font:400 12px/1.35 var(--orb-sans)}
+/* 구 위 자리에는 숫자와 이름만 둔다. 최근 10분과 도구 몫은 낭독 이름(aria-label)에 있다 */
+#portal-entry .dial > .live[data-state="on"] .live-small{display:none}
+/* 넓은 창: 왼쪽 문자판, 오른쪽 글. 960×680에서도 맨 위부터 「다시 읽기」까지 한 화면에 든다(Fable 최종 F2와 같은 기준) */
+@media (min-width:900px){
+  #portal-entry .room.dialed:not([hidden]){display:grid;grid-template-columns:var(--dial) minmax(0,1fr);grid-template-rows:auto auto;column-gap:clamp(40px,5.2vw,96px);align-content:start}
+  #portal-entry .room.dialed > .dial{grid-column:1;grid-row:1 / span 2;margin:0;align-self:start}
+  #portal-entry .room.dialed > .say{grid-column:2;grid-row:1;align-self:end}
+  #portal-entry .room.dialed > .brief{grid-column:2;grid-row:2;align-self:start}
+  #portal-entry .room.dialed > .details-top,#portal-entry .room.dialed > .rows,#portal-entry .room.dialed > .read{grid-column:1 / -1}
+}
+/* 낮은 창: 첫 화면을 줄인다. 한 달 구독료는 상세내역 요금 줄에 있다 */
+@media (min-width:900px) and (max-height:760px){
+  #portal-entry .room.dialed .say{font-size:clamp(22px,2.4vw,30px)}
+  #portal-entry .room.dialed .say .then{margin-top:8px;font-size:14px}
+  #portal-entry .room.dialed .soon{row-gap:6px}
+  #portal-entry .room.dialed .soon .t{font-size:14px}
+  #portal-entry .room.dialed .diag{margin-top:12px;padding-top:10px}
+  #portal-entry .room.dialed .diag-h{margin-bottom:6px}
+  #portal-entry .room.dialed .diag-cost{display:none}
+}
+@media (prefers-reduced-motion:reduce){#portal-entry .dial .d-sweep,#portal-entry .dial-orb::before,#portal-entry .dial-orb::after{animation:none}}
+html[data-motion="reduced"] #portal-entry .dial .d-sweep,html[data-motion="reduced"] #portal-entry .dial-orb::before,html[data-motion="reduced"] #portal-entry .dial-orb::after{animation:none}
 @media (min-width:641px){
   /* 2단계 첫 조각부터는 오브제 줄이 없는 계정의 방도 위에서부터 놓는다. 줄을 펼쳐도 손 밑의 줄이 위로 밀리지 않게 한다(설계 검토 1차 ④) */
   #portal-entry .room-top{top:clamp(92px,21vh,196px);transform:none;max-height:calc(100% - clamp(92px,21vh,196px) - 70px);padding-bottom:34px;scrollbar-width:none;
