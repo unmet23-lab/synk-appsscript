@@ -72,6 +72,35 @@ test('2단이 켜진 계정(다른 기기에서 켬): 1단은 잡아 둔 예약�
  }finally{c.reminders.dispose();}
 });
 
+// 4-8 켜기 전(계획 §24-2): 새 길 판정이 「확인 중」이면 복습 때가 빈 배열인데, 그것은 「복습이 없다」가 아니라 「아직 모른다」다.
+// 그 요약을 2단으로 보내면 서버가 아는 복습 때(review_due)가 지워져, 앱을 닫은 사이 서버가 복습 알림을 못 잡는다.
+test('2단이 켜진 계정: 새 길 판정이 「확인 중」이면 복습 때 칸만 빼고 보내고(오늘 공부함은 간다), 판정이 서면 엔진 판정의 때로 보낸다',async()=>{
+ const push=fakePush({active:true,device:true,plan:{next:null,log:[]}});
+ let input={reviews:[],reviewsPending:true,studyTimes:[at(0,9)],hasReturn:true};
+ const c=controller({push,read:()=>input});
+ try{
+  c.reminders.refresh();
+  const sync=()=>push.calls.filter(call=>call[0]==='sync').map(call=>call[1]);
+  assert.equal(sync().length,1);
+  assert.equal('reviews' in sync()[0].digest,false,'확인 중에는 복습 때 칸이 없다(서버가 아는 때를 그대로 둔다)');
+  assert.equal(sync()[0].digest.lastStudyDay,'2026-10-19','오늘 공부함은 간다');
+  const engine=[at(1,10),at(3,10)];
+  input={reviews:engine,reviewsPending:false,studyTimes:[at(0,9)],hasReturn:true};
+  c.reminders.refresh();
+  assert.deepEqual(sync().at(-1).digest.reviews,engine,'엔진 판정의 때(15분 단위)가 그대로 간다');
+  // 지금 판(판정 없음)은 표지가 없어 빈 복습도 「없다」로 보낸다.
+  input={reviews:[],studyTimes:[at(0,9)],hasReturn:false};
+  c.reminders.refresh();
+  assert.deepEqual(sync().at(-1).digest.reviews,[]);
+  // 구독 켜기도 같은 꼴이다 — 확인 중에 켜면 복습 때 칸 없이 켠다.
+  input={reviews:[],reviewsPending:true,studyTimes:[at(0,9)],hasReturn:true};
+  push.set({account:{active:false,devices:0},device:{subscribed:false}});
+  await c.reminders.command('reminder-push-yes');
+  const enable=push.calls.filter(call=>call[0]==='enable').at(-1);
+  assert.ok(enable,'구독 켜기를 불렀다');assert.equal('reviews' in enable[1].digest,false);
+ }finally{c.reminders.dispose();}
+});
+
 test('띄우기 직전: 마지막으로 안 상태가 10분보다 오래됐으면 다시 묻고, 그사이 2단이 켜졌으면 띄우지 않는다 — 꺼져 있으면 띄운다',async()=>{
  for(const meanwhile of [true,false]){
   const push=fakePush(),c=controller({push});

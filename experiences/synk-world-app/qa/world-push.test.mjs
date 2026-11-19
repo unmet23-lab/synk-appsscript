@@ -157,6 +157,21 @@ test('끄기·로그아웃: 서버와 브라우저에서 지우고 주인 기록
  assert.equal(b2.current,null);assert.equal(storage2.getItem(PUSH_RECORD_KEY),null);
 });
 
+// 4-8 §24-2: 새 길 판정이 「확인 중」인 동안 기기는 복습 때 칸을 뺀 요약을 보낸다(서버가 아는 때를 그대로 둔다). 판정이 서서 처음으로
+// 때를 실은 요약은 5분 모으기를 기다리지 않는다 — 그 사이 앱을 닫아도 서버가 새 때를 안다.
+test('요약 모으기: 복습 때를 모르던 요약 뒤 처음 아는 요약은 바로 간다',async t=>{
+ t.mock.timers.enable({apis:['setTimeout']});
+ let clock=Date.UTC(2026,9,22,3);
+ const b=browser({registered:true,subscribed:'https://fcm.googleapis.com/fcm/send/x'}),s=server({device:true,active:true});
+ const push=make(b,s,{now:()=>clock});
+ await push.setAccount('acc-1');
+ const base={examDate:null,planWeek:null,lastStudyDay:'2026-10-21',studyHour:null,lang:'ko',timeZone:'Asia/Seoul'};
+ const syncs=()=>s.calls.filter(call=>call.action==='sync');
+ push.sync({digest:{...base}});assert.equal(syncs().length,1);assert.equal('reviews' in syncs()[0].body.digest,false);
+ clock+=60000;push.sync({digest:{...base,reviews:[1]}});assert.equal(syncs().length,2,'모르던 뒤 처음 아는 요약은 바로');
+ clock+=60000;push.sync({digest:{...base,reviews:[2]}});assert.equal(syncs().length,2,'그 뒤 바뀐 때는 지금처럼 5분 모으기');
+});
+
 test('요약 모으기: 2단이 켜진 계정만 — 같은 요약은 6시간에 한 번, 바뀌면 5분에 한 번(마지막 것), 「오늘 공부함」·설정은 바로, 떠날 때는 keepalive',async t=>{
  t.mock.timers.enable({apis:['setTimeout']});
  let clock=Date.UTC(2026,9,22,3);

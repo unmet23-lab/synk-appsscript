@@ -30,6 +30,10 @@ test('셸 알림 입력(원문)의 세 갈래 — 판정 없음은 진도의 due
  // (나) 확인 중 — 복습 알림을 잡지 않는다(엔진이 되면 진도가 다시 부른다). 돌아올 것은 복습 기록이 있는가.
  const checking=reminderInputs(life(lifeDue({state:'checking',ids:[],times:[NOW+5]})));
  assert.deepEqual([checking.reviews,checking.hasReturn],[[],true],'확인 중에는 복습 때가 없다');
+ // 4-8 §24-2: 확인 중의 빈 복습 때는 「아직 모른다」 — 2단 서버 요약으로 보내지 않게 표지를 단다. 엔진 · 지금 판은 표지가 거짓이다.
+ assert.equal(checking.reviewsPending,true);
+ for(const due of [null,lifeDue(null)])assert.equal(reminderInputs(life(due)).reviewsPending,false,'지금 판은 보낸다');
+ assert.equal(reminderInputs(life(lifeDue({state:'engine',ids:[],times:[]}))).reviewsPending,false,'엔진 판정은 보낸다');
  assert.equal(reminderInputs(life(lifeDue({state:'checking'}),{reviews:{}})).hasReturn,false);
  assert.equal(reminderInputs(life(lifeDue({state:'checking'}),{reviews:{'r-3':reviews['r-3']}})).hasReturn,true,'판정이 있으면 복습 기록이 있는 것만으로 돌아올 것이 있다');
  // (다) 엔진 — 판정의 때(돌아온 것 · 앞으로 열릴 것) 그대로 · 진도의 dueAt은 읽지 않는다.

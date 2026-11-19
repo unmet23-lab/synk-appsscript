@@ -95,7 +95,10 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
  const pushDevice=()=>remote()?.device?.subscribed===true;
  // 2단을 켤 수 있다: 서버 기능이 켜져 있고(상태로 확인) 이 브라우저가 받을 수 있다.
  const pushOffered=()=>{const value=remote();return !!value&&value.enabled===true&&value.support?.supported===true;};
- const digestOf=(input,time)=>reminderDigest({reviews:input.reviews,exam:input.exam,examPlan:input.examPlan,studyTimes:input.studyTimes,lang:pushLang(input),timeZone:deviceTimeZone(target)},{now:time,offset});
+ // 새 길 판정이 「확인 중」이면(reviewsPending) 복습 때 칸을 뺀다 — 빈 배열은 「복습 없음」이라 서버가 아는 복습 때를 지운다. 칸이 없으면
+ // 서버(talk world-push validateDigest)가 아는 때를 그대로 두고 오늘 공부함 · 보낸 줄 · 시각 같은 나머지 칸만 받는다(4-8 §24-2).
+ const digestOf=(input,time)=>{const digest=reminderDigest({reviews:input.reviews,exam:input.exam,examPlan:input.examPlan,studyTimes:input.studyTimes,lang:pushLang(input),timeZone:deviceTimeZone(target)},{now:time,offset});
+  if(input.reviewsPending===true)delete digest.reviews;return digest;};
 
  // 다시 잡기: 앱이 열려 있는 동안 기록이 바뀌거나 창으로 돌아올 때마다. 보내지 않은 옛 계획은 지우고 새로 잡는다.
  // 그 전에 때가 된 알림부터 띄운다 — 잠들었던 기기가 깨어난 순간 다시 잡기가 먼저 돌면 막 때가 된 알림을 띄우지 않고 내일로 옮겨 버린다.
