@@ -333,3 +333,30 @@ a.sc-btn{text-decoration:none}
   .sc-hintfig figcaption{font-size:12px;padding:2px 36px 7px 4px}
 }
 @media (prefers-reduced-motion:reduce){.sc *{transition:none!important;animation:none!important}}
+
+/* ── 힌트 언어(11-19): 머리 오른쪽, 소리 스위치 앞의 작은 고르기 ── */
+.sc-hl{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.sc-hl-box{position:relative;display:inline-flex;align-items:center}
+.sc-hl select{appearance:none;-webkit-appearance:none;margin:0;height:28px;padding:0 24px 0 11px;border:1px solid var(--hair);border-radius:999px;background:#fff;font:inherit;font-weight:600;color:var(--ink);cursor:pointer}
+.sc-hl select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sc-hl-box i{position:absolute;right:10px;top:50%;width:5px;height:5px;margin-top:-4px;border-right:1.5px solid var(--ink2);border-bottom:1.5px solid var(--ink2);transform:rotate(45deg);pointer-events:none}
+/* 힌트 1의 번역 질문 말풍선: 안내가 아니라서 점과 「안내 끄기」를 뺀다 */
+.sc-guide.is-qtr .sc-guide-t{font-size:16px;font-weight:650;line-height:1.45}
+.sc-guide.is-qtr .sc-guide-t::before,.sc-guide.is-qtr .sc-guide-x{display:none}
+.sc-qtr[hidden]{display:none}
+.sc-qtr{margin:10px 0 0;padding:10px 13px 11px;border-radius:12px;background:rgba(23,23,26,.06);font-size:15px;line-height:1.45;font-weight:600;color:var(--ink);text-align:left}
+/* 힌트 도장은 두 줄이라 기록 면 제목 밑으로 조금 내린다(영어 판은 제목도 두 줄) */
+.sc-seal.is-help,:lang(en) .sc-seal{top:38%}
+/* 끝 단추 설명: 넓은 화면은 단추 오른쪽, 좁은 화면은 단추 밑 */
+.sc-endnote{flex:0 1 380px;margin:0 0 0 6px;display:flex;flex-direction:column;gap:2px;font-size:13.5px;line-height:1.5;color:var(--ink2);text-align:left}
+@media (max-width:900px){
+  .sc-next:has(.sc-endnote){flex-wrap:wrap;row-gap:12px}
+  .sc-endnote{flex:1 0 100%;margin:0;font-size:14px}
+  /* 긴 뜻(몽골어 「Сайн байна уу?」)은 좁은 카드 폭 안에 들게 조금 작게 */
+  .sc-card.is-longmean .sc-mean{font-size:calc(var(--cw) * .095);letter-spacing:-.025em}
+  /* 좁은 화면: 힌트 언어는 힌트 단추 옆에 이름 글 없이 서고, 힌트 단추가 보일 때만 보인다 */
+  .sc-pline .sc-hl .sc-hl-l{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .sc-pline .sc-hl:not(.is-on){visibility:hidden}
+  .sc-pline .sc-hl{margin-top:8px}
+  .sc-pline .sc-hl select{height:30px;font-size:12.5px}
+}

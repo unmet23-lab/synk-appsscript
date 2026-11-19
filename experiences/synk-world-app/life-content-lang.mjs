@@ -11,9 +11,9 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
   {prompt:'How do you greet a teacher you’re meeting for the first time?',context:'You walk into the classroom and meet the teacher for the first time.',explanation:'To someone you’ve just met, say ‘안녕하세요’.'},
   {prompt:'Анх уулзаж буй багштайгаа хэрхэн мэндлэх вэ?',context:'Та анги руу орж, багштайгаа анх удаа уулзлаа.',explanation:'Шинээр уулзсан хүнтэй «안녕하세요» гэж мэндэлнэ.'}),
  'greetings-expressions-hello-transfer':q(
-  {prompt:'학교에서 처음 만난 직원에게 인사해요.',context:'아직 도움을 받거나 헤어지는 상황은 아니에요.',explanation:'처음 만난 직원에게 정중하게 ‘안녕하세요’라고 해요.'},
-  {prompt:'Greet a school staff member you’re meeting for the first time.',context:'You haven’t received any help yet, and you’re not saying goodbye.',explanation:'Say ‘안녕하세요’ politely to a staff member you’ve just met.'},
-  {prompt:'Сургуульд анх уулзаж буй ажилтантай мэндэлнэ үү.',context:'Та одоохондоо тусламж аваагүй, салах гэж байгаа ч биш.',explanation:'Анх уулзсан ажилтанд эелдгээр «안녕하세요» гэнэ.'}),
+  {prompt:'처음 만난 직원에게 어떤 인사를 할까요?',context:'학교 사무실에 처음 가서 직원을 만났어요.',explanation:'처음 만난 사람에게는 ‘안녕하세요’라고 인사해요. ‘다녀왔어요’는 밖에 나갔다가 집이나 회사에 돌아왔을 때 하는 말이에요. ‘감사합니다’는 고마운 일이 있을 때 하는 말이에요.'},
+  {prompt:'How do you greet a staff member you’re meeting for the first time?',context:'You go to the school office for the first time and meet a staff member.',explanation:'Say ‘안녕하세요’ to someone you’re meeting for the first time. ‘다녀왔어요’ is what you say when you get back home or to work. ‘감사합니다’ is what you say when you’re thankful for something.'},
+  {prompt:'Анх уулзаж буй ажилтантай хэрхэн мэндлэх вэ?',context:'Та сургуулийн захиргаанд анх удаа очиж, тэндхийн нэг ажилтантай уулзлаа.',explanation:'Анх уулзаж буй хүнтэйгээ «안녕하세요» гэж мэндэлнэ. «다녀왔어요» гэдэг нь гадуур явж байгаад гэртээ эсвэл ажилдаа буцаж ирэхдээ хэлдэг үг. «감사합니다» гэдэг нь талархах сэтгэл төрсөн үед хэлдэг үг.'}),
  'greetings-expressions-thanks':q(
   {prompt:'도움을 받았어요. 어떤 말을 할까요?',context:'친구가 떨어진 책을 주워 줬어요.',explanation:'도움을 받은 뒤에는 ‘감사합니다’로 고마움을 전해요.'},
   {prompt:'Someone helped you. What do you say?',context:'A friend picked up the book you dropped.',explanation:'After getting help, say ‘감사합니다’ to show your thanks.'},

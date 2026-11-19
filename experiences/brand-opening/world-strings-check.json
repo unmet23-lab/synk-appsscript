@@ -6956,29 +6956,29 @@
   {
    "source": "life-content-lang",
    "key": "greetings-expressions-hello-transfer.prompt",
-   "mnHash": "fe6f7a986d",
-   "batch": "final-14.txt",
+   "mnHash": "9b85789072",
+   "batch": "mn-check-20261119-hello-transfer/question-01.결과.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "두 겹 깨끗(카본 스키마 없이 · 맞춤법 spellcheck.mn) · 뜻 대조는 한국어 원문 ↔ 직역으로 Claude"
   },
   {
    "source": "life-content-lang",
    "key": "greetings-expressions-hello-transfer.context",
-   "mnHash": "e47df31bd3",
-   "batch": "final-14.txt",
+   "mnHash": "8a7a1c4aa6",
+   "batch": "mn-check-20261119-hello-transfer/question-01.결과.txt",
    "grammar": "정상",
    "spelling": [],
-   "status": "두 겹 깨끗"
+   "status": "두 겹 깨끗(카본 스키마 없이 · 맞춤법 spellcheck.mn) · 뜻 대조는 한국어 원문 ↔ 직역으로 Claude"
   },
   {
    "source": "life-content-lang",
    "key": "greetings-expressions-hello-transfer.explanation",
-   "mnHash": "9d9b2c5baa",
-   "batch": "recheck-10.txt",
-   "grammar": "어색",
+   "mnHash": "528913753f",
+   "batch": "mn-check-20261119-hello-transfer/explanation-01-r2.결과.txt",
+   "grammar": "정상",
    "spelling": [],
-   "status": "묶음 판정 어색"
+   "status": "두 겹 깨끗(카본 스키마 없이 · 맞춤법 spellcheck.mn) · 뜻 대조는 한국어 원문 ↔ 직역으로 Claude"
   },
   {
    "source": "life-content-lang",

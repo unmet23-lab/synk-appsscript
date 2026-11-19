@@ -1,7 +1,7 @@
 {
   "version": "topik-existing-verdicts-1",
   "rubric": "topik-review-r1",
-  "updatedAt": "2026-11-15T14:33:49.785Z",
+  "updatedAt": "2026-11-18T21:18:59.915Z",
   "note": "기존 게임·진단 문항의 AI 2중 검수 판정(허용 목록). verdict \"pass\"만 연습에 낸다. 첫 판은 비어 있다 — 판정이 나오는 대로 채운다.",
   "items": [
     {
@@ -4374,11 +4374,11 @@
       "difficulty": 1,
       "responseFormat": "single-choice",
       "officialType": null,
-      "reason": "처음 만난 직원에게 하는 인사로 '안녕하세요'가 유일한 정답이다. 오답은 장면과 상황 글로 분명히 지워지고, 급·난도·해설 모두 게임 꼴 안에서 문제가 없어 통과다. | 학교에서 처음 만난 직원에게 인사하는 새 상황 복습 문항으로 정답이 유일하고 초급 연습용으로 적절함.",
-      "hash": "c2e7af691694b5b6",
-      "reviewedAt": "2026-11-08T07:30:40.406Z",
+      "reason": "정답 「안녕하세요」가 유일하고, 오답 둘도 초급 학습자가 함께 배우는 인사 표현이라 그럴듯하다. 급, 난도, 자연스러움 모두 맞아 통과다. 해설의 「처음 만난 사람에게는」은 「사람을 만났을 때는」으로 넓히면 더 정확하지만 고치지 않아도 학습자에게 해가 없다. | 학교 사무실에서 처음 만난 직원에게 할 인사를 고르는 기존 생활 한국어 복습 문항으로, 정답 유일성·오답 매력도·수준 적합성·한국어 자연스러움·해설이 모두 기준을 충족하여 통과(pass)로 판정함.",
+      "hash": "23e58b0bb4b8fa88",
+      "reviewedAt": "2026-11-18T21:18:59.915Z",
       "rubric": "topik-review-r1",
-      "packet": "life-d-20261108",
+      "packet": "life-hello-transfer-r2-20261119",
       "by": [
         {
           "stage": "claude",
@@ -4387,7 +4387,7 @@
         },
         {
           "stage": "argon",
-          "model": "gemini-4-argon-high",
+          "model": "gemini-4-carbon-high",
           "verdict": "pass"
         }
       ]
