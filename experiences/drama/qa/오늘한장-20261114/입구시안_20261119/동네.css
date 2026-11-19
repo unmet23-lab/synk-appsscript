@@ -1,0 +1,75 @@
+/* 우리 동네 바탕 — 지금 앱의 겉(experiences/brand-opening/home-town.css · world-ui.css 값)을 시안용으로 옮긴 것 */
+@font-face{font-family:SUIT;src:url("f/SUIT-Variable.woff2") format("woff2");font-weight:100 900}
+@font-face{font-family:"DM Mono";src:url("t/DMMono.woff2") format("woff2")}
+:root{--ink:#FAFAF9;--ink2:rgba(250,250,249,.76);--ink3:rgba(250,250,249,.58);--inkq:rgba(250,250,249,.42);--on-ink:#08090C;--panel:#0C0D10;--s1:#121317;--s2:#191A1F;--line:rgba(255,255,255,.075);--line2:rgba(255,255,255,.14);--glass-strong:rgba(14,15,19,.82);--blur:blur(22px) saturate(1.7);--edge:inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.085);--face:#F96859;--on-face:#1E0E0A;--mark:#ffcf5c;--ok:#7db45a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#0f2654;color:var(--ink);font-family:SUIT,system-ui,sans-serif;-webkit-font-smoothing:antialiased;word-break:keep-all}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:inherit}
+svg{display:block}
+.town{position:fixed;inset:0;overflow:hidden;background:linear-gradient(#18366c,#0e2350 70%,#0c1f47)}
+.scene{position:absolute;left:0;top:0;width:100%;transform-origin:50% 40%}
+.scene img{display:block;width:100%;height:auto}
+.town[data-l=land] .scene{left:auto;right:0;top:auto;bottom:0;width:min(100vw,calc(100vh*1672/941));transform-origin:70% 60%}
+.dim{position:absolute;inset:0;z-index:7;background:rgba(5,10,24,.64);opacity:0;pointer-events:none}
+/* 이름표 */
+.pin{position:absolute;z-index:2;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 11px 0 9px;border-radius:999px;transform:translate(-50%,-50%);background:rgba(14,15,19,.8);color:var(--ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.085),0 8px 22px rgba(20,40,70,.28);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);font-size:13px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.pin i{width:7px;height:7px;border-radius:50%;background:rgba(250,250,249,.42)}
+.pin[data-s=doing] i{background:#f5c445;box-shadow:0 0 8px rgba(245,196,69,.55)}
+.pin[data-s=done] i{background:var(--ok);box-shadow:0 0 8px rgba(125,180,90,.55)}
+.pin .ic{display:grid;place-items:center;width:24px;height:24px;margin-left:-5px;border-radius:50%;background:#FAFAF9;color:#08090C}
+.town[data-l=land] .pin{min-height:34px;padding:0 13px 0 10px;font-size:13.5px;gap:7px}
+/* 위 막대 */
+.bar{position:absolute;z-index:6;left:0;right:0;top:0;display:flex;align-items:center;gap:10px;padding:14px 16px}
+.acct{display:flex;align-items:center;gap:10px;height:52px;padding:0 20px 0 5px;border-radius:999px;background:var(--glass-strong);box-shadow:var(--edge);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.acct img{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#e9ddd2}
+.acct small{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:550;color:var(--ink3)}
+.acct small i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.acct b{display:block;font-size:16px;font-weight:650;line-height:1.25}
+.sp{flex:1}
+.road{position:relative;display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 18px;border-radius:999px;background:var(--glass-strong);box-shadow:var(--edge);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);font-size:15.5px;font-weight:600;white-space:nowrap}
+.gear{display:grid;place-items:center;width:48px;height:48px;flex:none;border-radius:50%;background:var(--glass-strong);box-shadow:var(--edge);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.town[data-l=land] .bar{padding:28px 44px}
+/* 넓은 화면의 제목 */
+.ttl{display:none}
+.town[data-l=land] .ttl{display:block;position:absolute;z-index:4;left:48px;top:118px}
+.ttl small{display:flex;align-items:center;gap:10px;font:400 11px/1 "DM Mono",monospace;letter-spacing:.08em;color:var(--ink3)}
+.ttl small::after{content:"";width:28px;height:1px;background:var(--line2)}
+.ttl h1{margin-top:10px;font-size:30px;font-weight:680;letter-spacing:-.02em}
+/* 아래 카드 — 몽글 */
+.lobby{position:absolute;z-index:4;left:12px;right:12px;bottom:92px;padding:18px 18px 14px;border-radius:26px;background:rgba(12,13,16,.94);box-shadow:inset 0 0 0 1px var(--line),0 18px 50px rgba(0,0,0,.35)}
+.tutor{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start}
+.tutor .pt{width:44px;height:44px;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 35%,#2a2c33,#15161a);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.tutor .pt img{width:100%;height:100%;object-fit:cover;transform:scale(1.4);transform-origin:50% 40%}
+.tutor small{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:550;color:var(--ink3)}
+.tutor small b{padding:3px 9px;border-radius:999px;background:var(--face);color:var(--on-face);font-weight:650}
+.tutor p{margin-top:7px;font-size:17px;line-height:1.45;font-weight:600;min-height:25px}
+.ctx{margin:8px 0 0 56px;font-size:14px;line-height:1.5;color:var(--ink3)}
+.go{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:56px;margin-top:14px;border-radius:999px;background:var(--ink);color:var(--on-ink);font-size:17px;font-weight:600}
+.alt{display:block;margin:10px auto 0;font-size:13.5px;font-weight:600;color:var(--ink2);text-decoration:underline;text-decoration-color:rgba(250,250,249,.24);text-underline-offset:4px;text-align:center}
+.town[data-l=land] .lobby{left:48px;right:auto;width:372px;bottom:auto;top:112px}
+/* 아래 탭 */
+.tabs{position:absolute;z-index:5;left:12px;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;height:68px;padding:6px;border-radius:999px;background:var(--glass-strong);box-shadow:var(--edge);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.tabs span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:999px;font-size:13px;font-weight:550;color:var(--ink3)}
+.tabs span.on{background:var(--ink);color:var(--on-ink);font-weight:650}
+.town[data-l=land] .tabs{left:48px;right:auto;width:372px;bottom:28px}
+/* 태오 얼굴 — 소리 없이 말하는 동그란 영상 + 노랑 고리(「오늘」 메신저의 겉) */
+.tf{position:relative;display:block;width:var(--s,56px);height:var(--s,56px);flex:none;border-radius:50%}
+.tf .in{position:absolute;inset:3px;border-radius:50%;overflow:hidden;background:#1b1c20}
+.tf video{width:100%;height:100%;object-fit:cover;object-position:50% 24%;transform:scale(1.55);transform-origin:50% 28%}
+.tf svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.tf circle{fill:none;stroke-width:3.4}
+.tf .tr{stroke:rgba(255,255,255,.16)}
+.tf .pg{stroke:var(--mark);stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1}
+.badge{position:absolute;display:grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--face);color:#fff;font-size:12.5px;font-weight:750;box-shadow:0 0 0 2.5px rgba(12,13,16,.96)}
+/* 누른 뒤 — 「오늘」 화면으로 */
+.door{position:fixed;inset:0;z-index:30;background:#efece5;pointer-events:none}
+.fly{position:fixed;z-index:31;border-radius:50%;overflow:hidden;pointer-events:none;box-shadow:0 0 0 4px var(--mark)}
+.fly video{width:100%;height:100%;object-fit:cover;object-position:50% 26%}
+iframe.today{position:fixed;z-index:32;inset:0;width:100%;height:100%;border:0;opacity:0;visibility:hidden;pointer-events:none;background:#efece5}
+iframe.today.on{visibility:visible;pointer-events:auto}
+/* 오늘 고칠 한 글자 — 「오늘」 메신저와 같은 노랑 밑줄 */
+.yo{font-weight:800;background:linear-gradient(transparent 60%,rgba(255,207,92,.7) 60%);padding:0 1px}
+/* 누를 자리 — 1px 선 알약(WORLD 보조 단추) */
+.act{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px 0 13px;border-radius:999px;box-shadow:inset 0 0 0 1.5px rgba(250,250,249,.42);font-size:15px;font-weight:650;color:var(--ink);white-space:nowrap}
+.act svg{width:14px;height:14px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
