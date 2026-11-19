@@ -355,62 +355,105 @@ mark{background:none;color:inherit;font-weight:700}
 .tutor-go>p{font:var(--t-lead);max-width:30em}
 .tutor-go .hero-go{margin-top:0;align-items:center}
 /* 줄에 거는 목록(교실 과정): 줄에 커서를 올리면 그 줄의 카드가 줄에 걸린다 */
-.hang{display:grid;grid-template-columns:minmax(0,1fr) var(--col-r);gap:var(--g4) var(--split-gap);align-items:start}
+.hang{display:grid;grid-template-columns:minmax(0,1fr) var(--col-r);gap:var(--g4) var(--split-gap);align-items:stretch}
+@media (max-width:1180px){.hang{grid-template-columns:1fr}}
+@media (min-width:1181px){.hang-stage{max-height:660px;position:sticky!important;top:clamp(76px,10svh,104px)}}
+.hang .lines{align-self:start}
 .hang .lines li{position:relative;grid-template-columns:clamp(40px,4.4vw,64px) minmax(0,1fr);cursor:pointer;outline-offset:6px}
-.hang .lines h3{padding-right:1.2em;font-size:clamp(26px,2.8vw,40px)}
+.hang .lines h3{padding-right:1.2em;font-size:clamp(26px,2.8vw,40px);font-weight:500;transition:font-weight .5s var(--ease)}
+.hang .lines li.on h3{font-weight:800}
 .hang .lines p{grid-column:2}
 .hang .lines li::before{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:var(--ink);transform:scaleX(0);transform-origin:0 50%;transition:transform .5s var(--ease)}
 .hang .lines li.on::before{transform:scaleX(1)}
-.hang .lines li::after{content:"→";position:absolute;right:0;top:clamp(26px,2.9vw,42px);font:600 clamp(18px,1.6vw,22px)/1 var(--sans);opacity:0;transform:translateX(-8px);transition:opacity .3s,transform .4s var(--ease)}
+.hang .lines li::after{content:"→";position:absolute;right:0;top:clamp(26px,2.9vw,42px);font:600 clamp(18px,1.6vw,22px)/1 var(--sans);opacity:.28;transform:translateX(-8px);transition:opacity .3s,transform .4s var(--ease)}
+.hang .lines li:hover::after{opacity:.6}
 .hang .lines li.on::after{opacity:1;transform:none}
-.hang-stage{--cy:clamp(40px,3.9vw,56px);position:relative;display:grid;min-width:0;padding:calc(var(--cy) + 12px) clamp(18px,2vw,28px) var(--pad-s);background:var(--mist);border-radius:var(--r-lg);overflow:hidden}
-.cord{position:absolute;left:-12px;right:-12px;top:var(--cy);height:2px;border-radius:2px;background:#ADA7A0;box-shadow:0 6px 5px rgba(40,30,20,.1)}
-.cord.tw{animation:hang-twang .9s ease-out .5s}
-.hang-pane{grid-area:1 / 1;min-width:0;display:flex;justify-content:center;align-items:flex-start;align-content:flex-start;gap:clamp(14px,1.6vw,22px);visibility:hidden;opacity:0}
-.hang-pane.on{visibility:visible;opacity:1}
-.hang-pane.col{flex-direction:column;align-items:stretch;gap:var(--g3)}
-.hung{position:relative;transform-origin:50% -12px}
-.hang-pane.on .hung{animation:hang-drop .55s cubic-bezier(.45,0,.9,.55) backwards,hang-sway 2.4s cubic-bezier(.3,.1,.3,1) backwards;animation-delay:var(--d,0s),calc(var(--d,0s) + .55s)}
-@keyframes hang-drop{from{translate:0 -150%;opacity:0}35%{opacity:1}to{translate:0 0}}
-@keyframes hang-sway{0%{rotate:0deg}16%{rotate:var(--a,4deg)}36%{rotate:calc(var(--a,4deg) * -.62)}56%{rotate:calc(var(--a,4deg) * .36)}74%{rotate:calc(var(--a,4deg) * -.17)}90%{rotate:calc(var(--a,4deg) * .06)}100%{rotate:0deg}}
-@keyframes hang-twang{0%{translate:0 0}22%{translate:0 5px}48%{translate:0 -2px}72%{translate:0 1.5px}100%{translate:0 0}}
-/* 은색 집게 */
-.clip{position:absolute;z-index:2;left:50%;top:-18px;width:26px;height:24px;margin-left:-13px;pointer-events:none}
-.clip::before{content:"";position:absolute;left:5px;right:5px;top:0;height:11px;border:2px solid #8E8E9A;border-bottom:0;border-radius:6px 6px 0 0}
-.clip::after{content:"";position:absolute;left:0;right:0;bottom:0;height:15px;border-radius:3px 3px 4px 4px;background:linear-gradient(180deg,#F6F6F8,#CDCDD5 55%,#9C9CA8);box-shadow:0 2px 3px rgba(20,20,40,.22),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(0,0,0,.14)}
-/* 걸리는 카드와 종이 */
-.card,.sheet{background:#fff;border-radius:16px;box-shadow:0 1px 0 #ECE8E3,0 24px 36px -24px rgba(40,30,20,.42)}
-.card{flex:none;width:clamp(168px,15.6vw,224px);padding:12px 12px 18px}
-.card.q{width:clamp(190px,18.6vw,268px)}
-.card-top{display:flex;justify-content:space-between;padding:3px 3px 10px;font:700 11px/1 var(--sans);letter-spacing:.04em}
-.card>img,.q-win{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:#0b0b0c}
-.card h4{margin:14px 4px 0;font:700 clamp(21px,1.95vw,28px)/1.1 var(--sans);letter-spacing:-.035em}
-.card h4+p{margin:7px 4px 0;font:500 13px/1.45 var(--sans)}
-.sheet{flex:1 1 0;min-width:0;padding:clamp(18px,1.8vw,26px);display:grid;gap:16px;justify-items:start}
-.cvl{display:grid;width:100%}
-.cvl>b{padding:16px 0 9px;font:700 12px/1 var(--sans);letter-spacing:.02em}
-.cvl>b:first-child{padding-top:0}
-.cvl li{display:grid;grid-template-columns:46px minmax(0,1fr);align-items:baseline;padding:8px 0;border-top:1px solid var(--hair);font:600 clamp(14px,1.1vw,15.5px)/1.35 var(--sans);letter-spacing:-.02em}
-.cvl li.one{grid-template-columns:1fr}
-.cvl small{font:600 12px/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--cap)}
-.sheet .text-link{font-size:15px}
-.js .hang-pane.on .cvl li{animation:hang-row .5s var(--ease) backwards;animation-delay:calc(.75s + var(--i,0) * .06s)}
-@keyframes hang-row{from{opacity:0;transform:translateY(8px)}}
+/* 줄 무대: SHIFT 강사 빨랫줄 시안의 결(흰 벽, 처지는 줄, 은색 집게, 두께 있는 카드, 무지갯빛 기록 면) */
+.hang-stage{--gap:clamp(12px,2.6cqw,22px);--side:clamp(16px,3.2cqw,26px);--cw:clamp(150px,calc((100cqw - var(--side) * 2 - var(--gap) * 2) / 3),226px);--ch:calc(var(--cw) * 1.74);--cy:clamp(46px,8.4cqw,62px);container-type:inline-size;position:relative;display:grid;min-width:0;border-radius:var(--r-lg);overflow:hidden;isolation:isolate;background:radial-gradient(120% 70% at 50% 0%,#fff 0%,rgba(255,255,255,0) 60%),linear-gradient(180deg,#F7F7F5 55%,#EEEEEB 100%);box-shadow:inset 0 0 0 1px rgba(23,23,26,.05)}
+.hang-pane{grid-area:1 / 1;min-width:0;display:grid;grid-template-rows:1fr auto;visibility:hidden}
+.hang-pane.on{visibility:visible}
+.hang-scroll{min-width:0}
+.hang-line{position:relative;display:flex;justify-content:center;align-items:flex-start;gap:var(--gap);width:max-content;min-width:100%;padding:var(--cy) var(--side) 76px}
+.cord{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.cord-ln{fill:none;stroke:#9A9AA2;stroke-width:1.6;stroke-linecap:round}
+.cord-sh{fill:none;stroke:rgba(40,40,60,.08);stroke-width:2.5;filter:blur(2px)}
+.hang-foot{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:baseline;gap:6px 18px;padding:0 calc(var(--side) + 4px) clamp(18px,2vw,26px);font:500 clamp(13px,1.02vw,14.5px)/1.5 var(--sans);color:var(--cap)}
+.hang-foot a{color:var(--ink);font-weight:700;border-bottom:1.5px solid currentColor;white-space:nowrap}
+.hang-foot .w{display:inline-block;font-style:normal}
+.js .hang-pane.on .hang-foot .w{animation:foot-up .6s var(--ease) backwards;animation-delay:calc(.55s + var(--i,0) * .045s)}
+@keyframes foot-up{from{opacity:0;transform:translateY(9px)}}
+/* 무대 구석의 큰 숫자: 줄을 바꾸면 굴러서 바뀐다 */
+.hang-no{position:absolute;z-index:-1;right:calc(var(--side) - .03em);bottom:-.19em;display:flex;height:1em;overflow:hidden;font:800 clamp(104px,23cqw,164px)/1 var(--sans);letter-spacing:-.07em;color:rgba(23,23,26,.045);font-variant-numeric:tabular-nums;pointer-events:none;user-select:none}
+.hang-no b{font:inherit}
+.hang-no span{display:flex;flex-direction:column;transform:translateY(calc(var(--k,0) * -1em));transition:transform .9s cubic-bezier(.65,0,.1,1)}
+.hang-no i{flex:none;height:1em;font-style:normal}
+/* 카드: 두께가 있는 세로 명찰. 줄에 걸린 채 흔들리고 커서 쪽으로 돌아본다 */
+.hc{position:relative;flex:none;width:var(--cw);height:var(--ch);transform-origin:50% 0;perspective:1100px;will-change:transform}
+.hc::before{content:"";position:absolute;z-index:-1;inset:0;border-radius:16px;background:rgba(40,40,70,.1);filter:blur(18px);transform:translate(calc(-12px + var(--sx,0px)),calc(26px + var(--sy,0px)))}
+.hc-box{position:absolute;inset:0;transform-style:preserve-3d;transform-origin:50% 0}
+.hc-face{position:absolute;inset:0;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;background:#fff;box-shadow:inset 0 0 0 1px #E4E4E8;transform:translateZ(2.5px);color:#17171A}
+.hc-side{position:absolute;background:linear-gradient(90deg,#D9D9DE,#F2F2F5 50%,#D9D9DE)}
+.hc-side.l,.hc-side.r{top:10px;bottom:10px;width:5px}
+.hc-side.l{left:-2.5px;transform:rotateY(-90deg)}
+.hc-side.r{right:-2.5px;transform:rotateY(90deg)}
+.hc-side.t,.hc-side.b{left:10px;right:10px;height:5px;background:linear-gradient(180deg,#D9D9DE,#F2F2F5 50%,#D9D9DE)}
+.hc-side.t{top:-2.5px;transform:rotateX(90deg)}
+.hc-side.b{bottom:-2.5px;transform:rotateX(-90deg)}
+.hc-gloss{position:absolute!important;inset:0;pointer-events:none;border-radius:inherit;mix-blend-mode:soft-light;background:linear-gradient(105deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.75) 46%,rgba(255,255,255,0) 60%);background-size:260% 100%;background-position:calc(50% + var(--g,0) * 120%) 0}
+.hc-top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(var(--cw) * .056) calc(var(--cw) * .062) 0;font:700 max(10.5px,calc(var(--cw) * .052))/1 var(--sans);letter-spacing:.02em;white-space:nowrap}
+.hc-top span:last-child{font-variant-numeric:tabular-nums;font-weight:600}
+.hc-pic{position:relative;flex:none;margin:calc(var(--cw) * .044) calc(var(--cw) * .06) 0;aspect-ratio:1 / 1.06;border-radius:calc(var(--cw) * .05);overflow:hidden;background:var(--tone,#DDE6EE)}
+.hc-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none}
+.hc-pic::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.hc-nm{padding:calc(var(--cw) * .062) calc(var(--cw) * .062) 0;font:700 calc(var(--cw) * .108)/1.16 var(--sans);letter-spacing:-.04em;overflow:hidden}
+.hc-nm>span{display:block}
+/* 카드가 줄을 물면 이름이 아래에서 올라오고 나머지 글이 따라 나온다 */
+.js .hc .hc-nm>span{transition:transform .75s var(--ease) .06s}
+.js .hc:not(.is-hung) .hc-nm>span{transform:translateY(115%);transition:none}
+.js .hc .hc-top,.js .hc .hc-rl,.js .hc .hc-bot,.js .hc .hc-list li{transition:opacity .5s var(--d,.2s),transform .6s var(--ease) var(--d,.2s)}
+.js .hc:not(.is-hung) .hc-top,.js .hc:not(.is-hung) .hc-rl,.js .hc:not(.is-hung) .hc-bot,.js .hc:not(.is-hung) .hc-list li{opacity:0;transform:translateY(8px);transition:none}
+.hc .hc-top{--d:.05s}.hc .hc-bot{--d:.34s}
+.hc-list li:nth-child(1){--d:.12s}.hc-list li:nth-child(2){--d:.2s}.hc-list li:nth-child(3){--d:.28s}.hc-list li:nth-child(4){--d:.36s}
+.hc-rl{padding:calc(var(--cw) * .024) calc(var(--cw) * .062) 0;font:500 max(12px,calc(var(--cw) * .062))/1.4 var(--sans);letter-spacing:-.015em}
+.hc-bot{margin:auto calc(var(--cw) * .045) calc(var(--cw) * .045);display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(var(--cw) * .024) calc(var(--cw) * .024) calc(var(--cw) * .024) calc(var(--cw) * .06);border-radius:999px;background:#F2F2F4;font:700 max(12px,calc(var(--cw) * .06))/1 var(--sans);letter-spacing:-.01em;transition:background .25s}
+a.hc-bot:hover{background:#E9E9EC}
+.hc-go{flex:none;display:grid;place-items:center;width:calc(var(--cw) * .125);height:calc(var(--cw) * .125);border-radius:50%;background:#17171A;color:#fff;font:600 calc(var(--cw) * .062)/1 var(--sans);font-style:normal;transition:transform .3s var(--ease)}
+a.hc-bot:hover .hc-go{transform:translateX(2px)}
+/* 무지갯빛 기록 면 */
+.hc-face.iri{background:#FBFBFC}
+.hc-face.iri::before{content:"";position:absolute;inset:0;background:linear-gradient(calc(120deg + var(--g,0) * 80deg),#FCD5E9 0%,#D8E2FF 22%,#CFF6EE 42%,#FFF4C9 60%,#E7D3FF 80%,#FCD5E9 100%);background-size:180% 180%;background-position:calc(50% + var(--g,0) * 60%) 50%;opacity:.4}
+.hc-face.iri>*{position:relative}
+.hc-list{flex:1;display:flex;flex-direction:column;margin:calc(var(--cw) * .056) calc(var(--cw) * .062) calc(var(--cw) * .05);border-top:1px solid rgba(23,23,26,.16)}
+.hc-list li{flex:1;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(var(--cw) * .02) 0;border-bottom:1px solid rgba(23,23,26,.1);letter-spacing:-.025em}
+.hc-list li:last-child{border-bottom:0}
+.hc-list b{display:block;font:700 max(13px,calc(var(--cw) * .07))/1.22 var(--sans);text-wrap:balance}
+.hc-list small{display:block;margin-top:3px;font:500 max(11.5px,calc(var(--cw) * .058))/1.3 var(--sans);letter-spacing:-.015em}
+.hc-list li>span{flex:none;font:600 max(11px,calc(var(--cw) * .056))/1 var(--sans);font-variant-numeric:tabular-nums}
+/* 넓은 카드(교재): 집게 둘, 창에는 블렌더로 구운 책 여덟 권과 도는 물음표 */
+.hc.wide{width:calc(var(--cw) * 2 + var(--gap))}
+.pin.l{left:22%}.pin.r{left:78%}
+.hc-pic.vid{flex:1 1 0;min-height:0;aspect-ratio:auto;background:#F6F2EC}
+.hc.wide .hc-rl{padding-bottom:calc(var(--cw) * .06)}
+.hc.wide .hc-bot{margin-top:0}
+.hc.wide .hc-nm{font-size:calc(var(--cw) * .118)}
 /* 준비 중: 물음표가 까딱이다가 한 바퀴 돈다 */
-.q-win{display:grid;place-items:center;color:#fff;perspective:600px}
-.q-win b{font:700 clamp(84px,8.4vw,124px)/1 var(--sans);animation:q-ask 3.2s cubic-bezier(.4,0,.2,1) infinite}
-.q-dot{display:inline-block;font:700 1.05em/1 var(--sans);font-style:normal;animation:q-ask 3.2s cubic-bezier(.4,0,.2,1) infinite}
-.cvl li:last-child .q-dot{animation-delay:.4s}
+.q-dot,.hc-go.q{animation:q-ask 3.2s cubic-bezier(.4,0,.2,1) -.6s infinite}
+.hc-list li:nth-child(4) .q-dot{animation-delay:-1.5s}
+.q-dot{display:inline-block;font:700 1.3em/1 var(--sans);font-style:normal}
 @keyframes q-ask{0%{transform:translateY(0) rotate(-9deg) rotateY(0)}28%{transform:translateY(-9%) rotate(8deg) rotateY(0)}54%{transform:translateY(0) rotate(-5deg) rotateY(0)}80%{transform:translateY(-5%) rotate(0deg) rotateY(360deg)}100%{transform:translateY(0) rotate(-9deg) rotateY(360deg)}}
-/* PATH 앱 화면 셋 */
-.phones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(14px,2.1vw,30px);width:100%}
-.phones li{display:grid;gap:16px;align-content:start}
-.phones img{width:100%;height:auto;border-radius:clamp(14px,1.5vw,20px);outline:5px solid #111;box-shadow:0 24px 36px -24px rgba(40,30,20,.48)}
-.phones div{display:grid;gap:5px;text-align:center}
-.phones b{font:var(--t-h4)}
-.phones span{font:500 14px/1.45 var(--sans)}
-.hang-cap{font:var(--t-cap);color:var(--cap);text-align:center}
-.hang-cap a{color:var(--ink);font-weight:700;border-bottom:1.5px solid currentColor;white-space:nowrap}
+/* PATH 앱 화면 카드: 창이 남는 높이를 다 쓴다 */
+.hc-pic.shot{flex:1 1 0;min-height:0;aspect-ratio:auto;background:#fff}
+.hc-pic.shot img{object-position:50% 0;animation:shot-pan 12s cubic-bezier(.45,0,.55,1) infinite alternate}
+.hc:nth-of-type(2) .hc-pic.shot img{animation-delay:-4s}
+.hc:nth-of-type(3) .hc-pic.shot img{animation-delay:-8s}
+@keyframes shot-pan{0%,10%{object-position:50% 0}90%,100%{object-position:50% 100%}}
+.hc.ph .hc-rl{padding-bottom:calc(var(--cw) * .07);min-height:calc(4.2em + var(--cw) * .094)}
+/* 은색 집게: 카드가 떨어지는 동안 열려 있다가 줄을 물며 닫힌다 */
+.pin{position:absolute;z-index:3;left:50%;top:-15px;width:30px;height:24px;margin-left:-15px;pointer-events:none}
+.pin i:last-child{position:absolute;left:0;right:0;bottom:0;height:17px;border-radius:3px 3px 4px 4px;background:linear-gradient(180deg,#FBFBFD,#C9CBD2 55%,#8E9099);box-shadow:0 2px 3px rgba(20,20,40,.22),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(0,0,0,.15)}
+.pin i:last-child::after{content:"";position:absolute;left:3px;right:3px;top:5px;height:1px;background:rgba(0,0,0,.12)}
+.pin i:first-child{position:absolute;left:5px;right:5px;top:0;height:10px;border:2px solid #8E9099;border-bottom:0;border-radius:6px 6px 0 0;transform-origin:50% 100%;transition:transform .14s cubic-bezier(.3,1.6,.5,1)}
+.hc.is-open .pin i:first-child{transform:rotateX(-38deg) translateY(-2px)}
 .hang+.credo{margin-top:var(--S)}
 /* 강사 */
 .teacher{display:grid;grid-template-columns:minmax(0,1fr) var(--col-r);gap:var(--g4) var(--split-gap);align-items:start}
@@ -578,17 +621,23 @@ mark{background:none;color:inherit;font-weight:700}
   .cut{left:14px;right:14px;top:14px;max-width:none;gap:12px;padding:8px 14px 8px 8px;border-radius:18px}
   .cut img{width:48px;border-radius:11px}
   .talk .cut p{font-size:14px;line-height:1.4}
-  .hang-pane{display:none;flex-wrap:wrap;row-gap:22px}
-  .hang-pane.on{display:flex}
-  .card.q{width:min(100%,224px)}
-  .sheet{flex-basis:100%}
-  .sheet>.clip,.phones li+li .clip{display:none}
-  .phones{grid-template-columns:1fr;gap:22px}
-  .phones li{grid-template-columns:116px minmax(0,1fr);gap:0 18px;align-items:center}
-  .phones div{text-align:left}
+  .hang-stage{--cw:min(58cqw,212px);--gap:14px;--side:20px;--cy:46px}
+  .hang-pane{display:none}
+  .hang-pane.on{display:grid}
+  .hang-scroll{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;scroll-snap-type:x proximity;scroll-padding-inline:20px}
+  .hang-scroll::-webkit-scrollbar{display:none}
+  .hang-line{justify-content:flex-start}
+  .hc{scroll-snap-align:start}
+  .hc.wide{width:calc(100cqw - var(--side) * 2 - 36px)}
+  .hc-pic.vid{flex:none;aspect-ratio:16 / 10}
+  .hc.wide .hc-bot{margin-top:auto}
+  .hang-no{font-size:clamp(96px,34cqw,140px)}
+  .pin{top:-12px;width:22px;height:18px;margin-left:-11px}
+  .pin i:last-child{height:13px}
+  .pin i:first-child{left:4px;right:4px;height:8px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
-.still .verbs .spin,.still .verbs .stop,.still .mic,.still .live>p i,.still .hung,.still .q-win b,.still .q-dot,.still .cord{animation:none!important}
+.still .verbs .spin,.still .verbs .stop,.still .mic,.still .live>p i,.still .q-dot,.still .hc-go.q,.still .hc-pic.shot img{animation:none!important}
 </style>
 <style>
 /* 영어판: 영어 글자에 맞춘 손질. 한글은 낱말 단위로 끊고 자간을 좁히지만, 영어는 긴 낱말이 넘치지 않게 풀어 둔다. */
@@ -609,6 +658,9 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
 /* 숫자 1 아래의 day에는 복수 s를 붙이지 않는다 */
 .pl{font-style:normal}
 .days li:first-child .pl{display:none}
+/* 줄 무대의 목록 */
+html[lang="en"] .hang .lines h3{font-size:clamp(24px,2.3vw,33px);font-weight:600;letter-spacing:-.03em;transition:-webkit-text-stroke-width .4s}
+html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em currentColor}
 </style>
 </head>
 <body data-tone="light">
@@ -723,51 +775,29 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
       </ol>
       <div class="hang-stage">
         <div class="hang-pane on">
-          <div class="hung card" style="--a:5deg">
-            <i class="clip" aria-hidden="true"></i>
-            <p class="card-top"><span>Lead teacher</span><span>01</span></p>
-            <img src="../assets/d/yuho.webp" alt="SYNK founder Yuho Yang against a black background" loading="lazy">
-            <h4>Yuho Yang</h4>
-            <p>Founder of SYNK. He will teach native-speaker conversation in the classroom.</p>
-          </div>
-          <div class="hung sheet" style="--a:-3.2deg;--d:.16s">
-            <i class="clip" aria-hidden="true"></i>
-            <div class="cvl">
-              <b>Career</b>
-              <ul><li><small>2026</small>Former vice-director, Skyline Edu</li><li><small>2023</small>RCA graduation project · main performer</li><li><small>2023</small>“True to Love” on Netflix · opening</li><li><small>2014</small>LOEN Entertainment · performer</li></ul>
-              <b>Awards</b>
-              <ul><li><small>2026</small>Seoullo Media Canvas open call · selected</li><li><small>2019</small>Fine Art Photography Awards Winner</li><li><small>2017</small>MK Challenge · runner-up</li></ul>
-              <b>Education</b>
-              <ul><li class="one">Chung-Ang University, Psychology</li></ul>
-            </div>
-            <a class="text-link" href="https://synk.im/founder/">See the full founder profile <span class="arr" aria-hidden="true">→</span></a>
-          </div>
+          <div class="hang-scroll"><div class="hang-line"><svg class="cord" aria-hidden="true"><path class="cord-sh"></path><path class="cord-ln"></path></svg>
+            <div class="hc"><span class="pin" aria-hidden="true"><i></i><i></i></span><div class="hc-box"><div class="hc-face"><p class="hc-top"><span>Lead teacher</span><span>01</span></p><div class="hc-pic"><img src="../assets/d/yuho.webp" alt="SYNK founder Yuho Yang against a black background" loading="lazy"></div><p class="hc-nm">Yuho Yang</p><p class="hc-rl">Founder of SYNK · conversation</p><a class="hc-bot" href="https://synk.im/founder/"><span>Founder profile</span><i class="hc-go" aria-hidden="true">→</i></a></div></div></div>
+            <div class="hc"><span class="pin" aria-hidden="true"><i></i><i></i></span><div class="hc-box"><div class="hc-face iri"><p class="hc-top"><span>Yuho Yang · Career</span><span>02</span></p><ol class="hc-list"><li><div><b>Skyline Edu, Mongolia</b><small>Former vice-director</small></div><span>2026</span></li><li><div><b>RCA graduation project</b><small>Main performer</small></div><span>2023</span></li><li><div><b>“True to Love”</b><small>Netflix · opening</small></div><span>2023</span></li><li><div><b>LOEN Entertainment</b><small>Performer</small></div><span>2014</span></li></ol></div></div></div>
+            <div class="hc"><span class="pin" aria-hidden="true"><i></i><i></i></span><div class="hc-box"><div class="hc-face iri"><p class="hc-top"><span>Awards · Education</span><span>03</span></p><ol class="hc-list"><li><div><b>Seoullo Media Canvas</b><small>Short animation · selected</small></div><span>2026</span></li><li><div><b>Fine Art Photography Awards</b><small>Open Theme · Winner</small></div><span>2019</span></li><li><div><b>MK Challenge</b><small>Runner-up · project leader</small></div><span>2017</span></li><li><div><b>Chung-Ang University</b><small>Psychology</small></div><span>Education</span></li></ol></div></div></div>
+          </div></div>
+          <p class="hang-foot"><span>He will teach native-speaker conversation in the classroom.</span></p>
         </div>
         <div class="hang-pane">
-          <div class="hung card q" style="--a:-5deg">
-            <i class="clip" aria-hidden="true"></i>
-            <p class="card-top"><span>Textbooks</span><span>02</span></p>
-            <div class="q-win" aria-hidden="true"><b>?</b></div>
-            <h4>“Synapse”</h4>
-            <p>The covers and the publication date are still being decided.</p>
-          </div>
-          <div class="hung sheet" style="--a:3.2deg;--d:.16s">
-            <i class="clip" aria-hidden="true"></i>
-            <div class="cvl">
-              <b>In preparation</b>
-              <ul><li><small>Set</small>Six grammar books · two conversation books</li><li><small>Text</small>All eight manuscripts are finished</li><li><small>Cover</small><i class="q-dot" aria-hidden="true">?</i></li><li><small>Out</small><i class="q-dot" aria-hidden="true">?</i></li></ul>
-            </div>
-          </div>
+          <div class="hang-scroll"><div class="hang-line"><svg class="cord" aria-hidden="true"><path class="cord-sh"></path><path class="cord-ln"></path></svg>
+            <div class="hc wide"><span class="pin l" aria-hidden="true"><i></i><i></i></span><span class="pin r" aria-hidden="true"><i></i><i></i></span><div class="hc-box"><div class="hc-face"><p class="hc-top"><span>The “Synapse” textbooks</span><span>Eight books</span></p><div class="hc-pic vid"><img src="../assets/d/synapse-8.webp" data-anim="../assets/d/synapse-8-anim.webp" alt="Eight books stand in a row. The cover labels are blank, and a question mark floats and spins beside them. A 3D rendering." loading="lazy"></div><p class="hc-nm">Six grammar · two conversation</p><p class="hc-rl">All the manuscripts are finished. The covers and the date are still being decided.</p><p class="hc-bot"><span>Preparing to publish</span><i class="hc-go q" aria-hidden="true">?</i></p></div></div></div>
+            <div class="hc"><span class="pin" aria-hidden="true"><i></i><i></i></span><div class="hc-box"><div class="hc-face iri"><p class="hc-top"><span>“Synapse” · so far</span><span>03</span></p><ol class="hc-list"><li><div><b>Set</b><small>Six grammar · two conversation</small></div><span>8 books</span></li><li><div><b>Manuscripts</b><small>All eight are finished</small></div><span>Done</span></li><li><div><b>Covers</b><small>Being decided</small></div><span><i class="q-dot" aria-hidden="true">?</i></span></li><li><div><b>Publication</b><small>In preparation</small></div><span><i class="q-dot" aria-hidden="true">?</i></span></li></ol></div></div></div>
+          </div></div>
+          <p class="hang-foot"><span>Once the covers are decided, the question mark here becomes the book covers.</span></p>
         </div>
-        <div class="hang-pane col">
-          <ul class="phones">
-            <li><figure class="hung" style="--a:4deg"><i class="clip" aria-hidden="true"></i><img src="../assets/d/path-app-1.webp" alt="The first screen of the PATH app. You pick the card that fits your situation from three cards hanging on a rail." loading="lazy"></figure><div><b>Pick a card</b><span>Choose your situation: preparing to study, studying now, or preparing for work.</span></div></li>
-            <li><figure class="hung" style="--a:-3.2deg;--d:.12s"><i class="clip" aria-hidden="true"></i><img src="../assets/d/path-app-2.webp" alt="The Today screen of the PATH app. The three steps, find, prepare and check, are all stamped." loading="lazy"></figure><div><b>Today</b><span>Find, prepare, check. Each step you finish gets a stamp.</span></div></li>
-            <li><figure class="hung" style="--a:3.6deg;--d:.24s"><i class="clip" aria-hidden="true"></i><img src="../assets/d/path-app-3.webp" alt="The Find screen of the PATH app. Job postings in Korea and practice examples are shown apart." loading="lazy"></figure><div><b>Find</b><span>Official postings and practice examples are shown apart.</span></div></li>
-          </ul>
-          <p class="hang-cap">Actual screens from the PATH app. It has five tabs: Today, Find, Prepare, Help and Me. <a href="https://synk.im/path/app/">Open the PATH app →</a></p>
+        <div class="hang-pane">
+          <div class="hang-scroll"><div class="hang-line"><svg class="cord" aria-hidden="true"><path class="cord-sh"></path><path class="cord-ln"></path></svg>
+            <div class="hc ph"><span class="pin" aria-hidden="true"><i></i><i></i></span><div class="hc-box"><div class="hc-face"><p class="hc-top"><span>PATH app</span><span>01</span></p><div class="hc-pic shot"><img src="../assets/d/path-app-1.webp" alt="The first screen of the PATH app. You pick the card that fits your situation from three cards hanging on a rail." loading="lazy" style="object-position:50% 70%"></div><p class="hc-nm">Pick a card</p><p class="hc-rl">Choose your situation: preparing to study, studying now, or preparing for work.</p></div></div></div>
+            <div class="hc ph"><span class="pin" aria-hidden="true"><i></i><i></i></span><div class="hc-box"><div class="hc-face"><p class="hc-top"><span>PATH app</span><span>02</span></p><div class="hc-pic shot"><img src="../assets/d/path-app-2.webp" alt="The Today screen of the PATH app. The three steps, find, prepare and check, are all stamped." loading="lazy" style="object-position:50% 100%"></div><p class="hc-nm">Today</p><p class="hc-rl">Find, prepare, check. Each step you finish gets a stamp.</p></div></div></div>
+            <div class="hc ph"><span class="pin" aria-hidden="true"><i></i><i></i></span><div class="hc-box"><div class="hc-face"><p class="hc-top"><span>PATH app</span><span>03</span></p><div class="hc-pic shot"><img src="../assets/d/path-app-3.webp" alt="The Find screen of the PATH app. Job postings in Korea and practice examples are shown apart." loading="lazy" style="object-position:50% 22%"></div><p class="hc-nm">Find</p><p class="hc-rl">Official postings and practice examples are shown apart.</p></div></div></div>
+          </div></div>
+          <p class="hang-foot"><span>Actual screens from the PATH app. It has five tabs: Today, Find, Prepare, Help and Me.</span><a href="https://synk.im/path/app/">Open the PATH app →</a></p>
         </div>
-        <i class="cord" aria-hidden="true"></i>
+        <div class="hang-no" aria-hidden="true"><b>0</b><span><i>1</i><i>2</i><i>3</i></span></div>
       </div>
     </div>
     <div class="credo"><p class="quote">What I came to see as most important was knowing <em>the character of each and every student</em>.</p><span>Yuho Yang · Lead teacher</span></div>
@@ -1121,27 +1151,112 @@ html[lang="en"] .end h2{font-size:clamp(36px,4.6vw,66px);line-height:1.08;white-
     bs.forEach((x, k) => x.addEventListener('click', () => { clearInterval(timer); show(k); }));
     if (!still) timer = setInterval(() => { const r = g.getBoundingClientRect(); if (r.top < innerHeight * .75 && r.bottom > innerHeight * .25) show((i + 1) % ims.length); }, 3400);
   });
-  /* 줄에 거는 목록(교실 과정): 줄에 커서를 올리거나 누르면 그 줄의 카드가 위에서 떨어져 줄에 걸린다. ?hang=1 처럼 주소로도 고른다 */
+  /* 줄 무대(교실 과정): 줄에 커서를 올리거나 누르면 그 줄의 카드가 위에서 떨어져 집게로 줄을 문다.
+     카드는 진자로 흔들리고, 줄은 카드 무게만큼 처지고 걸릴 때 떨린다. SHIFT 강사 빨랫줄 시안의 움직임을 옮겼다. ?hang=1 처럼 주소로도 고른다 */
   $$('[data-hang]', art).forEach(h => {
-    const rows = $$('.lines li', h), panes = $$('.hang-pane', h), cord = $('.cord', h), stage = $('.hang-stage', h); let cur = -1;
-    $$('.cvl', h).forEach(c => $$('li', c).forEach((li, i) => li.style.setProperty('--i', i)));
+    const rows = $$('.lines li', h), stage = $('.hang-stage', h), clamp = (v, a, b) => Math.max(a, Math.min(b, v)), sign = () => (Math.random() < .5 ? -1 : 1);
+    const P = $$('.hang-pane', h).map(pane => {
+      const line = $('.hang-line', pane);
+      const cards = $$('.hc', pane).map(el => {
+        const box = $('.hc-box', el);
+        ['l', 'r', 't', 'b'].forEach(s => { const n = document.createElement('i'); n.className = 'hc-side ' + s; box.append(n); });
+        const g = document.createElement('i'); g.className = 'hc-gloss'; $('.hc-face', el).append(g);
+        const nm = $('.hc-nm', el); if (nm) nm.innerHTML = '<span>' + nm.innerHTML + '</span>';
+        const wide = el.classList.contains('wide');
+        /* k: 흔들리는 정도(집게 둘로 문 넓은 카드는 덜 흔들린다) · pins: 집게 자리(카드 가운데에서 잰 거리) */
+        return { el, box, wide, pinEls: $$('.pin', el), k: wide ? .22 : 1, pins: [0], x: 0, h: 0, th: 0, w: 0, dip: 0, dipV: 0, ps: 0, pv: 0, pt: 0, fx: 0, fv: 0, ft: 0, off: 0, op: 1, hung: true, t0: 0 };
+      });
+      $$('.hang-foot span', pane).forEach(s => { s.innerHTML = s.textContent.split(' ').map((w, i) => `<i class="w" style="--i:${i}">${w}</i>`).join(' '); });
+      return { pane, line, anims: $$('img[data-anim]', pane), svg: $('.cord', pane), ln: $('.cord-ln', pane), sh: $('.cord-sh', pane), cards, W: 0, H: 0, CY: 56, SAG: 14, wave: { a: 0, v: 0, x: 0 } };
+    });
+    let cur = -1, on = false, last = 0, gust = 0, intent = 0;
+    const SIG2 = 2 * 95 * 95;
+    /* 줄: 양 끝에서 처지고, 카드마다 그 무게만큼 더 처지고, 부딪히면 떨린다 */
+    const cordY = (p, x) => {
+      const u = clamp((x + 20) / (p.W + 40), 0, 1); let y = p.CY + p.SAG * 4 * u * (1 - u);
+      for (const c of p.cards) if (c.dip) for (const px of c.pins) { const d = x - c.x - px; y += c.dip * Math.exp(-(d * d) / SIG2); }
+      return y + p.wave.a * Math.sin(x / 38) * Math.exp(-Math.abs(x - p.wave.x) / 420);
+    };
+    const layout = p => {
+      p.W = p.line.scrollWidth; p.H = p.line.clientHeight; p.CY = parseFloat(getComputedStyle(p.line).paddingTop) || 56; p.SAG = p.W < 560 ? 9 : 15;
+      p.svg.setAttribute('viewBox', `0 0 ${p.W} ${p.H}`);
+      p.cards.forEach(c => { const w = c.el.offsetWidth; c.x = c.el.offsetLeft + w / 2; c.h = c.el.offsetHeight; c.pins = c.wide ? [-w * .28, w * .28] : [0]; });
+    };
+    const paint = p => {
+      for (const c of p.cards) {
+        const ys = c.pins.map(px => cordY(p, c.x + px)), y = ys.reduce((a, b) => a + b, 0) / ys.length, lean = c.wide ? Math.atan2(ys[1] - ys[0], c.pins[1] - c.pins[0]) * .35 : 0;
+        if (c.wide) c.pinEls.forEach((n, i) => { n.style.transform = 'translateY(' + (ys[i] - y - Math.tan(lean) * c.pins[i]).toFixed(1) + 'px)'; });
+        c.el.style.transform = `translateY(${(y - p.CY + 2 + c.off).toFixed(2)}px) rotate(${(c.th + lean).toFixed(4)}rad)`;
+        c.box.style.transform = `rotateY(${c.ps.toFixed(4)}rad) rotateX(${c.fx.toFixed(4)}rad)`;
+        c.el.style.setProperty('--g', (Math.sin(c.ps) * .9 + c.th * .6).toFixed(3));
+        c.el.style.setProperty('--sx', (-c.th * 30).toFixed(1) + 'px'); c.el.style.setProperty('--sy', (Math.abs(c.th) * 6).toFixed(1) + 'px');
+        c.el.style.opacity = c.op;
+      }
+      let d = '', ds = '';
+      for (let x = -20; x <= p.W + 20; x += 8) { const y = cordY(p, x), m = x === -20 ? 'M' : 'L'; d += `${m}${x} ${y.toFixed(1)}`; ds += `${m}${x} ${(y + 6).toFixed(1)}`; }
+      p.ln.setAttribute('d', d); p.sh.setAttribute('d', ds);
+    };
+    const tick = now => {
+      if (!on) return;
+      const p = P[cur], dt = clamp((now - last) / 1000, .001, .033); last = now;
+      if (p) {
+        const wv = p.wave; wv.v += (-wv.a * 260 - wv.v * 7) * dt; wv.a += wv.v * dt;
+        const narrow = p.W < 560, om = 2 * Math.PI * (narrow ? 1 : .78), dipW = narrow ? 6 : 9;
+        for (const c of p.cards) {
+          if (!c.hung) {
+            /* 위에서 떨어진다(점점 빨라진다). 닿는 순간 집게가 닫히고, 카드는 흔들리고, 줄은 처지며 떨린다 */
+            const k = clamp((now - c.t0) / 580, 0, 1); c.off = -(c.h + p.CY + 80) * (1 - k * k); c.op = clamp(k * 5, 0, 1);
+            if (k >= 1) { c.hung = true; c.off = 0; c.el.classList.remove('is-open'); c.el.classList.add('is-hung'); c.w += sign() * .85 * c.k; c.pv += sign() * 2.2 * c.k; c.dipV += 160; wv.x = c.x; wv.v += 110; }
+          }
+          const t = c.hung ? dipW : 0; c.dipV += ((t - c.dip) * 90 - c.dipV * 9) * dt; c.dip += c.dipV * dt;
+          c.pv += ((c.pt - c.ps) * 38 - c.pv * 3.2) * dt; c.ps += c.pv * dt;
+          c.fv += ((c.ft - c.fx) * 60 - c.fv * 7) * dt; c.fx += c.fv * dt;
+          c.w += (-om * om * Math.sin(c.th) - 1.5 * c.w) * dt; c.th = clamp(c.th + c.w * dt, -.7, .7);
+        }
+        /* 가끔 바람이 지나가 걸린 것들이 살짝 흔들린다 */
+        if (now > gust) { const first = !gust; gust = now + 5200 + Math.random() * 3200; if (!first) { const dir = sign(); p.cards.forEach(c => { if (c.hung) c.w += dir * (.28 + Math.random() * .3) * c.k; }); wv.x = dir > 0 ? 0 : p.W; wv.v += 24; } }
+        paint(p);
+      }
+      requestAnimationFrame(tick);
+    };
     const show = (k, byHand) => {
-      if (k === cur) return; cur = k;
+      if (k === cur) return; cur = k; const p = P[k];
       rows.forEach((r, i) => { r.classList.toggle('on', i === k); r.setAttribute('aria-current', String(i === k)); });
-      panes.forEach((p, i) => { p.classList.remove('on'); p.setAttribute('aria-hidden', String(i !== k)); });
-      void stage.offsetWidth; panes[k].classList.add('on');
-      cord.classList.remove('tw'); void cord.offsetWidth; cord.classList.add('tw');
+      P.forEach((q2, i) => { q2.pane.classList.toggle('on', i === k); q2.pane.setAttribute('aria-hidden', String(i !== k)); if (i === k && !still) q2.anims.forEach(a => { if (!a.dataset.on) { a.dataset.on = '1'; a.src = a.dataset.anim; } }); });
+      stage.style.setProperty('--k', k); gust = performance.now() + 4200;
+      layout(p);
+      if (still) { p.cards.forEach(c => { c.dip = p.W < 560 ? 6 : 9; c.hung = true; c.off = 0; c.op = 1; c.th = c.ps = c.fx = 0; c.el.classList.add('is-hung'); }); paint(p); }
+      else {
+        const now = performance.now(); p.wave.a = p.wave.v = 0;
+        p.cards.forEach((c, i) => { c.hung = false; c.t0 = now + 40 + i * 120; c.off = -(c.h + p.CY + 80); c.op = 0; c.dip = c.dipV = c.w = c.pv = c.fx = c.fv = 0; c.pt = c.ft = 0; c.th = sign() * (.05 + Math.random() * .08) * c.k; c.ps = sign() * (.55 + Math.random() * .35) * c.k; c.el.classList.add('is-open'); c.el.classList.remove('is-hung'); });
+        paint(p);
+      }
       if (byHand && innerWidth <= 900) stage.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     };
     rows.forEach((r, i) => {
-      r.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') show(i); });
-      r.addEventListener('focus', () => show(i)); r.addEventListener('click', () => show(i, true));
+      /* 다른 줄로 가는 길에 스친 줄은 켜지 않는다(잠깐 머물러야 바뀐다) */
+      r.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { clearTimeout(intent); intent = setTimeout(() => show(i), 90); } });
+      r.addEventListener('pointerleave', () => clearTimeout(intent));
+      r.addEventListener('focus', () => show(i)); r.addEventListener('click', () => { clearTimeout(intent); show(i, true); });
       r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(i, true); } });
     });
-    /* 걸린 것에 커서가 스치면 한 번 흔들린다 */
-    if (!still) $$('.hung', h).forEach(el => el.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; const a = parseFloat(el.style.getPropertyValue('--a')) || 4, s = Math.sign(e.movementX || 1) * a * .6; el.animate([0, s, -s * .55, s * .28, -s * .1, 0].map(d => ({ rotate: d + 'deg' })), { duration: 1500, easing: 'cubic-bezier(.3,.1,.3,1)' }); }));
-    const first = Math.min(panes.length - 1, +q.get('hang') || 0);
-    if (still) show(first); else { panes.forEach(p => p.classList.remove('on')); new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { show(first); o.disconnect(); } }), { threshold: .3 }).observe(h); }
+    /* 커서가 지나가면 카드가 그쪽으로 돌아보고 밀린 만큼 흔들린다 */
+    P.forEach(p => p.cards.forEach(c => {
+      c.el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse' && c.hung) c.w -= (clamp(e.movementX * .02, -.5, .5) || .25) * c.k; });
+      c.el.addEventListener('pointermove', e => {
+        if (e.pointerType !== 'mouse' || !c.hung) return; c.w -= clamp(e.movementX * .006, -.6, .6) * c.k;
+        const r = c.el.getBoundingClientRect(); c.pt = -clamp((e.clientX - r.left) / r.width - .5, -.5, .5) * .5; c.ft = clamp((e.clientY - r.top) / r.height - .5, -.5, .5) * .28;
+      });
+      c.el.addEventListener('pointerleave', () => { c.pt = 0; c.ft = 0; });
+    }));
+    addEventListener('resize', () => { if (cur < 0) return; layout(P[cur]); if (still) paint(P[cur]); });
+    const first = Math.min(P.length - 1, +q.get('hang') || 0);
+    if (still) { show(first); addEventListener('load', () => { layout(P[cur]); paint(P[cur]); }); }
+    else {
+      P.forEach(p => p.pane.classList.remove('on'));
+      new IntersectionObserver(es => { const v = es[0].isIntersecting; if (v && !on) { on = true; last = performance.now(); requestAnimationFrame(tick); } else if (!v) on = false; }, { rootMargin: '120px 0px' }).observe(h);
+      new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { show(first); o.disconnect(); } }), { threshold: .3 }).observe(stage);
+    }
   });
   /* AI 강의: 예약표에서 지금 시각의 앞뒤 차례를 보인다(서울 시각) */
   const liveNow = $('#live-now', art);
