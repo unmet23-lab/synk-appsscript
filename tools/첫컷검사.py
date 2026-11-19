@@ -1,7 +1,7 @@
 """실제 첫 시험 컷과 현재 제작 기준을 연결한다. 모델에 관계없이 제작자가 같은 명령을 쓴다.
 
 python -X utf8 tools/첫컷검사.py <편폴더> <영상> [--시작 초 --끝 초] [--종류 LAB|그래픽|컷표영상] [--컷표 파일]
-    [--컷들 1-1,1-2] [--주문 "<이 장면에서 보여야 하는 것>"] [--주문파일 <영상 지시문>] [--반박 "<열쇠>=<근거>"]…
+    [--컷들 1-1,1-2] [--앞편집본 <편집 영상>] [--공간연결 "<두 시점에서 유지할 관계>"] [--주문 "<이 장면에서 보여야 하는 것>"] [--주문파일 <영상 지시문>] [--반박 "<열쇠>=<근거>"]…
 0 = 지금 영상과 기준으로 확인함, 1 = 다시 만들어야 함, 2 = 판정을 받지 못함 또는 검사 실패.
 
 판정은 만든 세션이 아니라 이 도구가 부른 맥락 없는 다른 눈이 내린다(2026-11-18 유호님 「응, 고쳐」). 눈은 빈 임시 폴더의
@@ -24,6 +24,7 @@ import sys
 import tempfile
 import time
 from contextlib import contextmanager
+from decimal import Decimal
 from pathlib import Path
 
 import 받은뒤검사
@@ -53,7 +54,9 @@ def 실제눈환경():
     "- 주문이 「컷 사이에 했다고 본다」, 「화면 밖에서 한다」처럼 화면에 나오지 않는 변화로 이어짐을 설명해도, 그 변화가 칸에서 안 보이는데 "
     "소품 자리 · 손 · 자세가 바뀌면 '다시'다.",
     "- 앞 컷 · 뒤 컷 주문이 있고 그 컷이 같은 장면의 이어지는 순간이면, 첫 칸이 앞 컷의 끝 상태와 이어지는지, 끝 칸이 뒤 컷의 시작으로 이어질 수 있는지도 본다. "
-    "앞뒤 컷 영상은 없으니 주문 글과 견준다. 장면 · 때가 바뀌거나 새 테이크 · 새 판으로 넘어가는 컷이면 이어짐은 보지 않는다.",
+    "컷연결.jpg가 있으면 맨 왼쪽이 바로 앞 컷의 실제 마지막 장이고 오른쪽 세 장이 이번 컷의 처음·중간·끝이다. "
+    "앞 컷의 상태는 이 그림에서 직접 읽고, 뒤 컷 주문은 계획으로만 본다. 비교판이 없으면 앞 컷은 실제로 보지 못했다고 구분한다. "
+    "장면이나 때가 달라지는 전환은 주문에서 유지하라고 한 관계만 본다.",
     "- '충족': 질문이 묻는 것을 칸에서 확인했다.",
     "- '다시': 이야기나 이어짐이 깨지는 어긋남이다. 주문의 핵심 동작이 칸에 없거나 다른 동작을 하거나, 소품이 이유 없이 생기거나 사라지거나 자리가 바뀌거나, "
     "인물이 굳거나, 카메라가 한순간 크게 튀어 다른 장면처럼 보이거나, 질문에 적힌 지적이 그 줄의 「확인할 것」 뜻 그대로 되풀이될 때다. "
@@ -237,10 +240,10 @@ def 기준읽기(대상, 종류=None):
     return 자료
 
 
-def 프레임시트(영상, 시작, 끝):
+def 프레임시트(영상, 시작, 끝, 좌우=False):
     # 1초가 한 줄이다. 옆으로 읽으면 각 칸이 0.125초씩 뒤로 간다.
     줄수 = max(1, math.ceil(끝 - 시작))
-    필터 = (f"trim=start={시작:.6f}:end={끝:.6f},setpts=PTS-STARTPTS,fps=8:round=up,"
+    필터 = (("hflip," if 좌우 else "") + f"trim=start={시작:.6f}:end={끝:.6f},setpts=PTS-STARTPTS,fps=8:round=up,"
            f"scale=224:224:force_original_aspect_ratio=decrease,pad=224:224:(ow-iw)/2:(oh-ih)/2,"
            f"tile=8x{줄수}")
     r = subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-i", str(영상), "-an", "-vf", 필터,
@@ -251,12 +254,12 @@ def 프레임시트(영상, 시작, 끝):
     return r.stdout
 
 
-def 눈시트들(영상, 시작, 끝, 폴더):
+def 눈시트들(영상, 시작, 끝, 폴더, 좌우=False):
     """다른 눈에게 줄 큰 칸 그림. 1초에 한 장이고, 칸 높이는 480px다(세로 영상의 칸도 270×480).
     4초 이하 구간은 0.125초 간격 여덟 칸(4×2), 그보다 길면 0.25초 간격 네 칸(2×2)이다."""
     짧음 = 끝 - 시작 <= 4
     간격, 열, 행 = (0.125, 4, 2) if 짧음 else (0.25, 2, 2)
-    필터 = (f"trim=start={시작:.6f}:end={끝:.6f},setpts=PTS-STARTPTS,fps={round(1 / 간격)}:round=up,"
+    필터 = (("hflip," if 좌우 else "") + f"trim=start={시작:.6f}:end={끝:.6f},setpts=PTS-STARTPTS,fps={round(1 / 간격)}:round=up,"
            f"scale=480:480:force_original_aspect_ratio=decrease,tile={열}x{행}")
     subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-i", str(영상), "-an", "-vf", 필터, "-q:v", "3",
                     "-start_number", "0", str(Path(폴더) / "초_%02d.jpg")], capture_output=True, timeout=180, check=True)
@@ -266,7 +269,7 @@ def 눈시트들(영상, 시작, 끝, 폴더):
     return 그림들, 간격, 열
 
 
-파일칸 = {"시작그림", "끝그림", "참고그림", "목소리견본", "시안", "기준그림"}
+파일칸 = {"시작그림", "끝그림", "참고그림", "목소리견본", "시안", "기준그림", "바꾼까닭", "시작그림메모"}
 
 
 def _경로닮음(값):
@@ -287,13 +290,20 @@ def _경로뺌(값):
     return 값
 
 
-def 컷주문(표, 컷들, 시작, 끝):
-    """컷표 틀 2에서 이 영상의 컷 줄과 바로 앞 · 뒤 컷 줄. 앞뒤 줄은 컷 사이 이어짐을 글로 견주게 한다."""
+def 검사할줄(표, 컷들, 시작, 끝):
     줄 = 받은뒤검사.컷줄모음(표)
     고른 = [i for i, d in enumerate(줄) if d["cut"] in 컷들]
     같은초 = lambda a, b: isinstance(a, (int, float)) and not isinstance(a, bool) and abs(a - b) < 0.01
     맞음 = [i for i in 고른 if 같은초(줄[i].get("in"), 시작) and (끝 is None or 같은초(줄[i].get("out"), 끝))]
-    고른 = 맞음 or 고른
+    return 줄, 맞음 or 고른, bool(맞음)
+
+
+def 컷주문(표, 컷들, 시작, 끝, 선택줄=None, 실제사용=False):
+    """컷표 틀 2에서 이 영상과 바로 앞 · 뒤 컷의 주문을 뽑는다."""
+    줄, 고른, 맞음 = 검사할줄(표, 컷들, 시작, 끝)
+    if 선택줄 is not None:
+        고른 = [선택줄]
+        맞음 = 맞음 or 실제사용
     if 맞음:
         안내 = ("in · out은 편집에서 쓰는 구간(받은 영상 안의 초)이고, 그림 칸이 바로 이 구간이다. 연기의 t와 소품행동의 초는 영상 모델에 지시한 시각인데, "
               "모델이 0.7~1.5초 늦게 하므로 in · out을 그만큼 뒤로 잡았다. 소품 자리 · 자세처럼 상태가 바뀌는 변화(소품행동, 뒤 컷이 이어받는 시작 상태)가 "
@@ -319,7 +329,147 @@ def 컷주문(표, 컷들, 시작, 끝):
     return "\n\n".join(글)
 
 
-def 주문만들기(편, 컷표, 창, 시작, 끝, 컷들, 주문, 주문파일):
+def 앞받은판(편, 판, 지정):
+    if not isinstance(판, str) or not 판 or Path(판).name != 판 or 판 in (".", ".."):
+        raise ValueError("앞 컷의 판 이름이 올바르지 않다")
+    후보 = []
+    for 폴더 in (편 / "영상" / "받음", 편 / "받음"):
+        if 폴더.is_dir():
+            후보.extend(p for p in 폴더.iterdir() if p.is_file() and p.suffix.lower() == ".mp4"
+                      and (p.stem == 판 or (not 지정 and 받은뒤검사.판기준이름(p.stem) == 판)))
+    return 후보[0] if len(후보) == 1 else None
+
+
+def 컷경계(줄, 선택, fps, 편집됨=False):
+    """컷표에 적힌 시각과, 첫 장·장 수를 각각 반올림한 실제 사용 구간을 함께 돌려준다."""
+    a = 줄.get("t") if 편집됨 else 선택.get("in", 줄.get("in"))
+    b = None if 편집됨 else 선택.get("out", 줄.get("out"))
+    길이 = 줄.get("dur")
+    끝사용 = not 편집됨 and (길이 is None or "out" in 선택)
+    if not all(isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) for v in (a, b if 끝사용 else 길이, fps)):
+        return None
+    첫초 = Decimal(str(a))
+    길이초 = Decimal(str(b)) - 첫초 if 끝사용 else Decimal(str(길이))
+    # in/out 차는 컷표의 소수 그대로 구한다. 편집기의 round(초 * FPS)로 시작 장과 장 수를 정한다.
+    장수 = round(float(길이초) * fps)
+    if 첫초 < 0 or fps <= 0 or 장수 < 1:
+        return None
+    첫장 = round(a * fps)
+    return (float(첫초), float(첫초 + 길이초)), (첫장 / fps, (첫장 + 장수) / fps)
+
+
+def 편집구간(줄, 선택, fps, 편집됨=False):
+    경계 = 컷경계(줄, 선택, fps, 편집됨)
+    return 경계[1] if 경계 else None
+
+
+def 공간구간들(표, 컷들, 시작, 끝, 편집됨, fps, 고름, 반박=False):
+    """한 영상에 든 여러 컷은 각 컷의 실제 구간과 직전 구간을 따로 검사한다."""
+    줄 = 받은뒤검사.컷줄모음(표)
+    고른 = [n for n, d in enumerate(줄) if d["cut"] in 컷들]
+    if len(고른) < 2 or not any(줄[n].get("공간연결") for n in 고른):
+        return []
+    if len({줄[n]["cut"] for n in 고른}) != len(고른):
+        raise ValueError("반복된 컷 이름을 한 구간으로 식별할 수 없다. 각 사용 구간을 지정한다")
+    경계들 = {i: 컷경계(줄[i], 고름.get(줄[i]["cut"], {}), fps, 편집됨) for i in 고른}
+    if any(v is None for v in 경계들.values()):
+        raise ValueError("묶음에 편집 구간을 확인할 수 없는 컷이 있다")
+    요청범위 = (Decimal(str(시작)), Decimal(str(끝)))
+    시각오차 = Decimal("0.0001")
+    if 반박:
+        def 같은구간(구간):
+            return all(abs(t - Decimal(str(u))) <= 시각오차 for t, u in zip(요청범위, 구간))
+        # 두 끝을 같은 행에서 찾는다. 겹쳐 쓰는 원본은 다른 컷도 같은 끝 시각을 가질 수 있다.
+        일치 = [i for i, (적힌, 실제) in 경계들.items() if 같은구간(적힌)]
+        if not 일치:
+            일치 = [i for i, (적힌, 실제) in 경계들.items() if 같은구간(실제)]
+        if len(일치) != 1:
+            raise ValueError("반박할 컷 하나의 정확한 사용 구간을 지정한다. 같은 구간이 여럿이면 컷 하나와 --앞받은영상을 지정한다")
+        i = 일치[0]
+        return [(줄[i]["cut"], *경계들[i][1], 줄[i-1]["cut"] if i-1 in 고른 else None)]
+
+    def 창끝(경계, 쪽):
+        # 컷표와 편집 장 사이의 거리로 고른다. 한 장짜리 컷에서는 양 끝이 모두 허용 오차 안일 수 있다.
+        요청초 = 요청범위[쪽]
+        후보 = []
+        for i, (적힌, 실제) in enumerate(zip(*경계)):
+            적힌초, 장시각 = Decimal(str(적힌)), Decimal(str(실제))
+            거리 = max(0, min(적힌초, 장시각) - 요청초, 요청초 - max(적힌초, 장시각))
+            if 거리 <= 시각오차:
+                후보.append((거리, min(abs(요청초 - 적힌초), abs(요청초 - 장시각)), i != 쪽, 실제))
+        return min(후보)[-1] if 후보 else round(float(요청초) * fps) / fps
+
+    구간 = {}
+    for i, 경계 in 경계들.items():
+        a, b = 경계[1]
+        처음, 다음 = max(a, 창끝(경계, 0)), min(b, 창끝(경계, 1))
+        if 다음 <= 처음:
+            continue
+        if 줄[i].get("공간연결") and (처음, 다음) != (a, b):
+            raise ValueError(f"{줄[i]['cut']}의 공간연결은 처음부터 끝까지 포함하는 구간에서 확인한다")
+        구간[i] = (처음, 다음)
+    if not 구간:
+        raise ValueError("지정한 구간에 검사할 컷이 없다")
+    return [(줄[i]["cut"], a, b, 줄[i-1]["cut"] if i-1 in 고른 else None)
+            for i, (a, b) in 구간.items()]
+
+
+def 앞컷찾기(편, 표, 컷들, 시작, 끝, 앞편집본, 요청, 고름, 같은영상앞=None, 선택줄=None):
+    줄, 고른, _ = 검사할줄(표, 컷들, 시작, 끝)
+    if 선택줄 is not None:
+        고른 = [선택줄]
+    if any(줄[n].get("공간연결") for n in 고른[1:]):
+        raise ValueError("여러 컷에 걸친 구간이다. 공간연결을 확인할 컷 하나와 그 편집 구간을 지정한다")
+    if not 고른 or min(고른) == 0:
+        if 요청 or 앞편집본 or (고른 and 줄[min(고른)].get("공간연결")):
+            raise ValueError("직전 컷을 찾을 수 없다. 컷표의 편집 순서와 --컷들을 확인한다")
+        return "", None
+    i = min(고른)
+    앞, 현재 = 줄[i - 1], 줄[i]
+    조건 = 현재.get("공간연결") or ""
+    if not isinstance(조건, str):
+        raise ValueError("컷표의 공간연결은 두 시점에서 유지할 관계를 쓴 문장이어야 한다")
+    조건 = "\n".join(dict.fromkeys(x.strip() for x in (조건, 요청) if x.strip()))
+    if 고른 != list(range(i, max(고른) + 1)):
+        if 조건 or 앞편집본 or any(줄[n].get("공간연결") for n in 고른):
+            raise ValueError("서로 떨어진 컷 줄이 함께 선택됐다. 검사할 한 구간을 --컷들, --시작, --끝으로 지정한다")
+        return 조건, None
+    if not 조건 and not 앞편집본 and (현재.get("시간건너뜀") or
+            (앞.get("장면") and 현재.get("장면") and 앞["장면"] != 현재["장면"])):
+        return 조건, None
+    if 앞편집본:
+        a, b = 앞.get("t"), 현재.get("t")
+        길이 = 앞.get("dur")
+        if not all(isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x) for x in (a, b, 길이)) or not 0 <= a < b or abs(a + 길이 - b) > 0.001:
+            raise ValueError("앞편집본에서 겹침 없는 직전 컷의 경계를 컷표 t · dur로 확인할 수 없다")
+        본 = 받은뒤검사.살피기(앞편집본)
+        if isinstance(본, str):
+            raise ValueError(본)
+        fps = 본["fps"]
+        구간 = 편집구간(앞, {}, fps, True)
+        if 구간 is None or 구간[1] != round(b * fps) / fps:
+            raise ValueError("앞편집본에서 앞 컷의 마지막 장 다음이 현재 컷의 첫 장인지 확인할 수 없다")
+        return 조건, (앞["cut"], 앞편집본, *구간, False)
+    선택 = 고름.get(앞["cut"], {})
+    if not isinstance(선택, dict):
+        raise ValueError("고른판.json에서 직전 컷의 판을 읽을 수 없다")
+    판 = 선택.get("판", 받은뒤검사.줄의판(앞))
+    지정 = bool(선택.get("판") or 앞.get("판"))
+    파일 = 앞받은판(편, 판, 지정)
+    if 같은영상앞 and 같은영상앞[0] == 앞["cut"] and (not 지정 or 같은영상앞[1].stem == 판):
+        파일 = 파일 if 지정 and 파일 else 같은영상앞[1]
+    if 파일:
+        본 = 받은뒤검사.살피기(파일)
+        if not isinstance(본, str):
+            경계 = 편집구간(앞, 선택, 본["fps"])
+            if 경계:
+                return 조건, (앞["cut"], 파일, *경계, bool(선택.get("좌우")))
+    if 조건:
+        raise ValueError("공간연결에 필요한 직전 컷의 판과 편집 구간을 확인할 수 없다. 고른판.json을 채우거나 --앞편집본을 지정한다")
+    return 조건, None
+
+
+def 주문만들기(편, 컷표, 창, 시작, 끝, 컷들, 주문, 주문파일, 선택줄=None, 실제사용=False):
     """다른 눈이 프레임과 견줄 주문. 제작 세션의 결과 기록(기획.md의 심사 답 · 자체 판정)은 넣지 않는다."""
     머리, 본문 = [], []
     try:
@@ -344,7 +494,7 @@ def 주문만들기(편, 컷표, 창, 시작, 끝, 컷들, 주문, 주문파일)
             raise ValueError(f"--컷들을 줬는데 컷표가 없다: {표경로}")
         if not isinstance(표, dict) or 표.get("틀") != 2:
             raise ValueError("--컷들은 컷표 틀 2에서 쓴다. 다른 컷표는 --주문이나 --주문파일로 이 장면의 주문을 준다")
-        글 = 컷주문(표, 컷들, 시작, 끝)
+        글 = 컷주문(표, 컷들, 시작, 끝, 선택줄, 실제사용)
         if not 글:
             raise ValueError(f"컷표에서 {', '.join(컷들)} 줄을 찾지 못했다")
         본문.append(글)
@@ -433,7 +583,7 @@ def 답풀기(출력):
     return 출력, []
 
 
-def 판정뽑기(글, 열쇠들):
+def 판정뽑기(글, 열쇠들, 장=None):
     m = re.search(r"```(?:json)?\s*(\{.*\})\s*```", 글, re.S)
     본문 = m.group(1) if m else 글[글.find("{"): 글.rfind("}") + 1]
     j = json.loads(본문)
@@ -447,6 +597,19 @@ def 판정뽑기(글, 열쇠들):
             raise ValueError(f"{k} 결과는 충족, 흠, 무관, 다시 중 하나여야 한다")
         if not isinstance(v.get("관찰"), str) or not v["관찰"].strip():
             raise ValueError(f"{k}에 관찰이 없다")
+        if k == "공간연결":
+            상태 = v["관찰"].strip().partition("—")[0].strip()
+            짝 = {"일치": "충족", "불일치": "다시", "확인 불가": "다시"}
+            if 짝.get(상태) != v["결과"] or not v["관찰"].partition("—")[2].strip():
+                raise ValueError("공간연결은 '일치 — 근거'(충족), '불일치 — 근거' 또는 '확인 불가 — 가려진 근거'(다시)로 쓴다")
+            if 장:
+                쓴초 = [float(t) for t in re.findall(r"(\d+(?:\.\d+)?)\s*(?:초|s\b|[~·～])", v["관찰"])]
+                필요한초 = [장["앞"][1], *dict.fromkeys(t for _, t in 장["현재"])]
+                for 초 in 필요한초:
+                    가까운 = next((t for t in 쓴초 if abs(t - 초) <= .001), None)
+                    if 가까운 is None:
+                        raise ValueError("공간연결 관찰에 비교판에 적힌 네 시각을 각각 초 단위로 인용하고 그때 보이는 근거를 적는다")
+                    쓴초.remove(가까운)
         if k in 보는것만 and v["결과"] == "무관":
             raise ValueError(f"{k}에 무관을 썼다")
         if k in 흠없음 and v["결과"] == "흠":
@@ -463,14 +626,18 @@ def 시험눈인가():
 시험표시 = "#시험 눈 — 실제 첫 컷 검사에 쓰지 않는다\n"
 
 
-def 눈부르기(영상, 시작, 끝, 주문, 질문, 자리, 이름, 다툼=None, 앞다시=None):
+def 눈부르기(영상, 시작, 끝, 주문, 질문, 자리, 이름, 다툼=None, 앞다시=None, 연결판=None, 좌우=False, 장=None):
     """빈 임시 폴더에 프레임 그림만 두고 다른 눈을 띄운다. 꼴이 틀린 답은 같은 눈에게 한 번 더 묻는다."""
     열쇠들 = list(다툼) if 다툼 else list(질문)
     재료 = Path(tempfile.mkdtemp(prefix="synk-firstcut-eye-"))
     # 실제 눈에게는 시험용 바꿔치기 변수를 넘기지 않는다(GPT 실행기의 SYNK_CODEX_ROTATE · CODEX_BIN 포함).
     환경 = os.environ.copy() if 시험눈인가() else 실제눈환경()
     try:
-        그림들, 간격, 열 = 눈시트들(영상, 시작, 끝, 재료)
+        그림들, 간격, 열 = 눈시트들(영상, 시작, 끝, 재료, 좌우)
+        if 연결판 is not None:
+            비교 = 재료 / "컷연결.jpg"
+            비교.write_bytes(연결판)
+            그림들 = [비교, *그림들]
         글 = 눈글(그림들, 시작, 간격, 열, 주문, 질문, 다툼, 앞다시)
         원자쓰기(자리 / f"{이름}_질문.md", 글.encode("utf-8"))
         막힘 = []
@@ -497,7 +664,7 @@ def 눈부르기(영상, 시작, 끝, 주문, 질문, 자리, 이름, 다툼=Non
                     break
                 try:
                     답글, 모델 = 답풀기(r.stdout)
-                    판정 = 판정뽑기(답글, 열쇠들)
+                    판정 = 판정뽑기(답글, 열쇠들, 장)
                 except (ValueError, KeyError, TypeError) as e:
                     오류 = str(e)
                     continue
@@ -533,7 +700,7 @@ def 답대조(답, 자리):
         if 내용.startswith(시험표시) and not 시험눈인가():
             raise ValueError("시험 눈이 내린 판정은 실제 검사에 쓰지 않는다")
         답글, _ = 답풀기(내용)
-        다시뽑음.update(판정뽑기(답글, x.get("열쇠") or []))
+        다시뽑음.update(판정뽑기(답글, x.get("열쇠") or [], (답.get("컷연결") or {}).get("장")))
     if 다시뽑음 != 답.get("판정"):
         raise ValueError("기록의 판정이 눈의 답과 다르다")
 
@@ -581,6 +748,8 @@ def 앞기록들(편, 동일성, 뺄것=None):
         except (OSError, ValueError, KeyError, TypeError):
             continue
         for k, v in x["판정"].items():
+            if k == "공간연결" and (x.get("컷연결") or {}).get("비교판지문") != (동일성.get("컷연결") or {}).get("비교판지문"):
+                continue
             if v["결과"] == "다시":
                 앞다시[k] = v["관찰"]
         앞반박 |= set(x.get("반박") or {})
@@ -653,11 +822,15 @@ def 알리기(기록, 영상, 시작, 끝, 기준판):
 
 
 def 검사(편, 영상, 시작=0, 끝=None, 종류=None, 묶음="", 사람=False, 컷표=None, 예상편지시=None,
-        컷들=None, 주문="", 주문파일=None, 반박=None):
+        컷들=None, 주문="", 주문파일=None, 반박=None, 앞편집본=None, 공간연결="", 같은영상앞=None, 앞받은영상=None, 이미편집됨=False):
     편, 영상 = Path(편).resolve(), Path(영상).resolve()
     if not 편.is_dir() or not 영상.is_file():
         raise ValueError("편 폴더와 실제 받은 영상 파일이 있어야 한다")
     컷표 = Path(컷표).resolve() if 컷표 is not None else None
+    앞편집본 = Path(앞편집본).resolve(strict=True) if 앞편집본 is not None else None
+    앞받은영상 = Path(앞받은영상).resolve(strict=True) if 앞받은영상 is not None else None
+    if 앞받은영상 and (앞편집본 or len(컷들 or []) != 1):
+        raise ValueError("--앞받은영상은 --컷들 한 컷에 지정한다. 앞편집본과 함께 쓸 수 없다")
     주문파일 = Path(주문파일).resolve() if 주문파일 is not None else None
     if 주문파일 is not None and not 주문파일.is_file():
         raise ValueError(f"주문파일이 없다: {주문파일}")
@@ -669,15 +842,114 @@ def 검사(편, 영상, 시작=0, 끝=None, 종류=None, 묶음="", 사람=False
     본 = 받은뒤검사.살피기(영상)
     if isinstance(본, str):
         raise ValueError(본)
+    자동구간 = 시작 == 0 and 끝 is None
     끝 = 본["초"] if 끝 is None else 끝
-    if (not all(math.isfinite(x) for x in (시작, 끝)) or not 0 <= 시작 < 끝 <= 본["초"] + 0.005
-            or 끝 - 시작 > 30):
+    if not all(math.isfinite(x) for x in (시작, 끝)) or not 0 <= 시작 < 끝 <= 본["초"] + 0.005:
+        raise ValueError("영상 안의 실제 시험 컷을 --시작, --끝으로 지정한다")
+    표 = json.loads(창.읽기(컷표 or 편 / "컷표.json").decode("utf-8-sig")) if 컷들 else {}
+    고름경로 = 편 / "편집" / "고른판.json"
+    고름창 = 입력창([고름경로]) if 컷들 else None
+    고름 = json.loads(고름창.읽기(고름경로).decode("utf-8-sig")) if 고름창 and 고름경로 in 고름창.원본 else {}
+    if not isinstance(고름, dict):
+        raise ValueError("고른판.json은 컷 이름마다 고른 판을 담은 표여야 한다")
+    줄 = 받은뒤검사.컷줄모음(표)
+    후보 = [i for i, d in enumerate(줄) if d["cut"] in (컷들 or [])]
+    if any(not isinstance(고름.get(줄[i]["cut"], {}), dict) for i in 후보):
+        raise ValueError("고른판.json에서 현재 컷의 편집 방향을 읽을 수 없다")
+    편집됨 = 이미편집됨 or bool(앞편집본 and (영상.samefile(앞편집본) or (앞편집본.stat().st_size == 처음상태.st_size
+                    and 파일지문(앞편집본) == 창.지문(영상))))
+    if len(컷들 or []) > 1:
+        if 공간연결:
+            raise ValueError("--공간연결은 한 컷에 지정한다. 묶음은 컷표의 각 줄에 관계를 적는다")
+        구간들 = 공간구간들(표, 컷들, 시작, 끝, 편집됨, 본.get("fps"), 고름, bool(반박))
+        if 구간들:
+            결과들 = []
+            첫이름 = 받은뒤검사.컷줄모음(표)[0]["cut"]
+            for 이름, a, b, 이전 in 구간들:
+                앞자료 = (이전, 영상) if 이전 and not 앞편집본 else None
+                결과들.append(검사(편, 영상, a, b, 종류, 묶음, 사람, 컷표, 편지문, [이름], 주문, 주문파일,
+                               반박=반박, 앞편집본=앞편집본 if 이름 != 첫이름 else None, 같은영상앞=앞자료, 이미편집됨=편집됨))
+            창.확인()
+            고름창.확인()
+            return max(결과들)
+    선택줄 = None
+    실제사용 = False
+    if 후보 and (공간연결 or any(줄[n].get("공간연결") for n in 후보)):
+        fps = 본["fps"]
+        구간들 = {n: 편집구간(줄[n], 고름.get(줄[n]["cut"], {}), fps, 편집됨) for n in 후보}
+        비교구간 = 편집구간({"in": 시작, "out": 끝}, {}, fps)
+        if 비교구간 is None:
+            raise ValueError("공간연결을 확인할 실제 프레임이 없다")
+        맞음 = [n for n, ab in 구간들.items() if ab == 비교구간]
+        if not 맞음 and 자동구간 and len(후보) == 1 and 구간들[후보[0]] is not None:
+            맞음 = 후보
+        if not 맞음 and 공간연결 and not 편집됨 and len(후보) == 1:
+            # 다른 받은 판을 비교하는 시험은 제작자가 같은 길이로 고른 구간을 쓸 수 있다.
+            n = 후보[0]
+            원판 = 고름.get(줄[n]["cut"], {}).get("판")
+            ab = 구간들[n]
+            if ab and 원판 and 영상.stem != 원판 and round((비교구간[1] - 비교구간[0]) * fps) == round((ab[1] - ab[0]) * fps):
+                구간들[n] = 비교구간
+                맞음 = [n]
+        if not 맞음 and len(후보) == 1 and 구간들[후보[0]] is None and not 편집됨:
+            맞음 = 후보
+        if len(맞음) != 1:
+            raise ValueError(f"공간연결을 확인할 컷 하나의 실제 사용 구간을 지정한다: {구간들}")
+        선택줄 = 맞음[0]
+        if 구간들[선택줄]:
+            시작, 끝 = 구간들[선택줄]
+            실제사용 = not 편집됨 and 구간들[선택줄] == 편집구간(줄[선택줄], 고름.get(줄[선택줄]["cut"], {}), fps)
+        이전 = 선택줄 - 1
+        if 이전 in 후보 and 구간들.get(이전):
+            같은영상앞 = (줄[이전]["cut"], 영상)
+    if not 0 <= 시작 < 끝 <= 본["초"] + .005 or 끝 - 시작 > 30:
         raise ValueError("영상 안에서 30초 이내의 실제 시험 컷을 --시작, --끝으로 지정한다")
     기준 = 기준읽기(컷표 or 편, 종류)
     기준판 = 기준["기준판"]
-    주문글 = 주문만들기(편, 컷표, 창, 시작, 끝, list(컷들 or []), 주문, 주문파일)
+    주문글 = 주문만들기(편, 컷표, 창, 시작, 끝, list(컷들 or []), 주문, 주문파일, 선택줄, 실제사용)
+    연결판, 연결정보, 앞창 = None, None, None
+    현재좌우 = False
+    if (앞편집본 or 공간연결) and not 컷들:
+        raise ValueError("직전 컷을 찾으려면 컷표의 --컷들을 지정한다")
+    if 컷들:
+        _, 고른, _ = 검사할줄(표, 컷들, 시작, 끝)
+        방향들 = {bool(고름.get(줄[i]["cut"], {}).get("좌우")) for i in ([선택줄] if 선택줄 is not None else 고른)}
+        if not 편집됨 and len(방향들) == 1:
+            현재좌우 = 방향들.pop()
+        def 앞선택():
+            후보앞 = 같은영상앞
+            if 앞받은영상:
+                i = 선택줄 if 선택줄 is not None else min(고른)
+                if i == 0:
+                    raise ValueError("첫 컷에는 직전 컷이 없다")
+                후보앞 = (줄[i - 1]["cut"], 앞받은영상)
+            결과 = 앞컷찾기(편, 표, 컷들, 시작, 끝, 앞편집본, 공간연결, 고름, 후보앞, 선택줄)
+            if 앞받은영상 and (not 결과[1] or not 결과[1][1].samefile(앞받은영상)):
+                raise ValueError("지정한 앞받은영상이 편집에서 고른 직전 판과 다르다")
+            return 결과
+        조건, 앞 = 앞선택()
+        if 앞:
+            from 컷연결프레임 import 비교판
+            컷, 앞파일, a, b, 좌우 = 앞
+            앞창 = 창 if 앞파일 == 영상 else 입력창([앞파일])
+            if not 편집됨 and len(방향들) > 1:
+                raise ValueError("편집 방향이 다른 컷들이 함께 선택됐다. 검사할 컷과 구간을 하나씩 지정한다")
+            try:
+                연결판, 번호 = 비교판(앞파일, a, b, 좌우, 영상, 시작, 끝, 현재좌우)
+            except (OSError, ValueError, subprocess.SubprocessError) as e:
+                if 조건 or 앞편집본 or 앞받은영상:
+                    raise
+                print(f"직전 영상의 마지막 장을 읽지 못해 앞 컷은 주문 글로만 본다: {e}", flush=True)
+            else:
+                연결정보 = {"앞컷": 컷, "출처": "편집본" if 앞편집본 else "받은 판", "앞영상지문": 앞창.지문(앞파일),
+                        "앞구간": [a, b], "장": 번호, "비교판지문": hashlib.sha256(연결판).hexdigest()}
     질문 = {"컷": "주문에 적힌 이 구간의 장면(인물 · 동작 · 소품 상태 · 화면 글)이 칸에 실제로 보이는지 초와 함께 대조한다. "
                   "주문에만 있고 칸에 없는 동작은 없는 것이다."}
+    if 연결판 is not None and 조건:
+        질문["공간연결"] = (f"두 시점에서 확인할 관계: {조건}\n"
+            "컷연결.jpg의 네 칸과 초 단위 그림에서 고정된 경계와 각 물체가 바닥에 닿는 자리를 따라가라. 원근, 화면 좌우나 겉보기 크기만으로 추정하지 마라. "
+            "관찰은 '일치 —', '불일치 —', '확인 불가 —' 중 하나로 시작하고 앞 컷과 현재 처음·중간·끝에서 보인 근거와 시각을 적는다. "
+            "어느 시점에 관계가 깨진 근거가 보이면 불일치, 반대 증거는 없지만 필수 관계를 가려 읽을 수 없는 시점이 있으면 확인 불가다. 일치만 충족이며 나머지는 다시다.")
     for x in 기준["최근지적"]:
         질문[str(x["번호"])] = f'{x["이름"]} — {x["확인"]}'
     # 이름만 주면 눈이 뜻을 짐작한다(11-18 실측: 「#8 화면 틀」을 구도 거리로 읽어 만족 사례 S55를 막았다). 확인할 것을 함께 준다.
@@ -714,6 +986,10 @@ def 검사(편, 영상, 시작=0, 끝=None, 종류=None, 묶음="", 사람=False
            "영상지문": 영상지문, "기준판": 기준판, "쓰는구간": [float(시작), float(끝)],
            "범위": 종류 or "편", "질문지문": 질문지문,
            "주문지문": hashlib.sha256(주문글.encode()).hexdigest(), "판정자": 판정자}
+    if 연결정보:
+        동일성["컷연결"] = 연결정보
+    if 현재좌우:
+        동일성["현재좌우"] = True
     # 기록은 눈이 실제로 받은 것에만 묶는다. 편 주문 지문(기획.md 전체)과 꾸러미 묶음은 부를 때마다 --예상편지시와
     # 입력 창으로 대조하는 관문 값이다 — 기획.md에 결과 한 줄을 적었다고 판정을 처음부터 다시 받지 않는다.
     열쇠 = hashlib.sha256(json.dumps(동일성, sort_keys=True).encode()).hexdigest()
@@ -721,13 +997,21 @@ def 검사(편, 영상, 시작=0, 끝=None, 종류=None, 묶음="", 사람=False
     자리.mkdir(parents=True, exist_ok=True)
     잠금이름 = hashlib.sha256(json.dumps([동일성["편자리"], 영상지문, 동일성["쓰는구간"]]).encode()).hexdigest()[:16]
     시트, 기록 = 자리 / "프레임.jpg", 자리 / "확인.json"
-    프레임 = 프레임시트(영상, 시작, 끝)   # 사람이 볼 224px 시트 — 눈은 이 시트가 아니라 큰 칸 그림을 본다
+    프레임 = 프레임시트(영상, 시작, 끝, 현재좌우)   # 사람이 볼 작은 시트 — 눈은 큰 칸 그림을 본다
     if not 시트.is_file() or 파일지문(시트) != hashlib.sha256(프레임).hexdigest():
         원자쓰기(시트, 프레임)
+    if 연결판 is not None:
+        원자쓰기(자리 / "컷연결.jpg", 연결판)
 
     def 그대로인가():
         지금상태 = 영상.stat()
         창.확인()
+        if 고름창 is not None:
+            고름창.확인()
+            if 앞선택() != (조건, 앞):
+                raise 입력변경("검사 중 직전 컷의 받은 판이 바뀌었다")
+        if 앞창 is not None and 앞창 is not 창:
+            앞창.확인()
         if (처음상태.st_size, 처음상태.st_mtime_ns) != (지금상태.st_size, 지금상태.st_mtime_ns):
             raise ValueError("검사하는 동안 영상이 바뀌었다. 받은 뒤 다시 검사한다")
 
@@ -749,7 +1033,7 @@ def 검사(편, 영상, 시작=0, 끝=None, 종류=None, 묶음="", 사람=False
                 raise ValueError("반박할 판정이 없다. 먼저 --반박 없이 돌려 다른 눈의 판정을 받는다")
             다툼 = 반박풀기(반박, 옛, set(앞기록들(편, 동일성, 뺄것=기록)[1]) | 장부반박(공용, 잠금이름))
             print(f"반박 {len(다툼)}건의 시각을 새 눈에게 다시 보인다: {', '.join(다툼)}", flush=True)
-            새판정, 눈 = 눈부르기(영상, 시작, 끝, 주문글, 질문, 자리, f"반박{len(옛['눈'])}", 다툼)
+            새판정, 눈 = 눈부르기(영상, 시작, 끝, 주문글, 질문, 자리, f"반박{len(옛['눈'])}", 다툼, 연결판=연결판, 좌우=현재좌우, 장=(연결정보 or {}).get("장"))
             그대로인가()
             옛["판정"] = {**옛["판정"], **새판정}
             옛["반박"] = {**(옛.get("반박") or {}), **{k: {**v, "새눈": 새판정[k]} for k, v in 다툼.items()}}
@@ -759,13 +1043,18 @@ def 검사(편, 영상, 시작=0, 끝=None, 종류=None, 묶음="", 사람=False
         elif 옛 is None:
             앞다시, _ = 앞기록들(편, 동일성, 뺄것=기록)
             print(f"맥락 없는 다른 눈(GPT)에게 {시작:g}~{끝:g}초와 주문을 보인다. 5~10분 걸린다.", flush=True)
-            판정, 눈 = 눈부르기(영상, 시작, 끝, 주문글, 질문, 자리, "눈", 앞다시=앞다시)
+            판정, 눈 = 눈부르기(영상, 시작, 끝, 주문글, 질문, 자리, "눈", 앞다시=앞다시, 연결판=연결판, 좌우=현재좌우, 장=(연결정보 or {}).get("장"))
             그대로인가()
             옛 = {**동일성, "영상": 영상.name, "편지시지문": 편지문, "묶음": 묶음, "주문": 주문글, "질문": 질문,
                  "판정": 판정, "눈": [눈]}
             쓰기(옛)
         else:
             그대로인가()
+    if 연결판 is not None:
+        print(f"직전 컷과 비교한 화면: {자리 / '컷연결.jpg'}", flush=True)
+        공간 = 옛["판정"].get("공간연결")
+        if 공간 and 공간["결과"] == "충족":
+            print(f"  공간연결 · {공간['관찰']}", flush=True)
     return 알리기(옛, 영상, 시작, 끝, 기준판)
 
 
@@ -779,6 +1068,9 @@ def main():
     p.add_argument("--확인파일", type=Path, help=argparse.SUPPRESS)
     p.add_argument("--컷표", type=Path, help="정식 꾸러미 등에서 선택한 실제 컷표 파일")
     p.add_argument("--컷들", default="", help="컷표 틀 2에서 이 영상에 든 컷(쉼표로 잇는다)")
+    p.add_argument("--앞편집본", type=Path, help="직전 컷이 들어 있는 편집본. 컷표의 전환 시각 바로 전 프레임을 쓴다")
+    p.add_argument("--앞받은영상", type=Path, help="직전 컷이 들어 있는 받은 원본. 묶음에서 한 컷만 다시 볼 때 같은 원본과 편집 구간을 지정할 수 있다")
+    p.add_argument("--공간연결", default="", help="이 컷에 유지할 공간 관계. 컷표의 공간연결 항목과 함께 검사한다")
     p.add_argument("--주문", default="", help="컷표 줄이 없을 때 이 장면에서 보여야 하는 인물 · 동작 · 소품 · 화면 글")
     p.add_argument("--주문파일", type=Path, help="이 판을 구울 때 영상 생성기에 준 지시문")
     p.add_argument("--반박", action="append", default=[], help="'다시' 판정 하나를 새 눈에게 다시 묻는다: <열쇠>=<근거>")
@@ -793,7 +1085,7 @@ def main():
     컷들 = [c.strip() for c in o.컷들.split(",") if c.strip()]
     try:
         return 변경재검(검사, o.편, o.영상, o.시작, o.끝, o.종류, o.묶음, o.사람, o.컷표, o.예상편지시,
-                    컷들, o.주문, o.주문파일, o.반박)
+                    컷들, o.주문, o.주문파일, o.반박, o.앞편집본, o.공간연결, None, o.앞받은영상)
     except (OSError, ValueError, TypeError, KeyError, subprocess.SubprocessError) as e:
         print(f"첫 컷 확인을 마치지 못했다: {e}", file=sys.stderr)
         return 2

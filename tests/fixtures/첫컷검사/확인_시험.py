@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from contextlib import ExitStack, redirect_stdout
+from decimal import Decimal
 from pathlib import Path
 from unittest.mock import patch
 
@@ -26,7 +27,7 @@ def 눈붙이기(stack, 답=None, 꼴=""):
         "SYNK_FIRSTCUT_EYE": json.dumps([sys.executable, "-I", "-X", "utf8", str(가짜눈)]),
         "SYNK_FAKE_EYE_LOG": str(로그), "SYNK_FAKE_EYE_ANSWER": json.dumps(답 or {}, ensure_ascii=False),
         "SYNK_FAKE_EYE_MODE": 꼴}))
-    def 시트(영상, 시작, 끝, 폴더):
+    def 시트(영상, 시작, 끝, 폴더, 좌우=False):
         p = Path(폴더) / "초_00.jpg"
         p.write_bytes(b"jpg")
         return [p], 0.125, 4
@@ -45,6 +46,209 @@ def 눈답(답=None, 꼴=None):
 
 
 class 확인시험(unittest.TestCase):
+    def test_컷연결은_실제로_쓴_앞_마지막과_현재_세_장을_보낸다(self):
+        from PIL import Image
+        from 컷연결프레임 import 비교판
+        with tempfile.TemporaryDirectory() as tmp:
+            영상 = Path(tmp) / "색.mp4"
+            subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-f", "lavfi", "-i", "color=red:s=96x64:r=24:d=1",
+                            "-vf", "drawbox=w=iw:h=ih:color=blue:t=fill:enable='gte(n,4)',"
+                            "drawbox=w=iw:h=ih:color=lime:t=fill:enable='gte(n,8)',"
+                            "drawbox=w=iw:h=ih:color=yellow:t=fill:enable='gte(n,11)',drawbox=w=iw/4:h=ih:color=white:t=fill",
+                            "-c:v", "libx264", "-pix_fmt", "yuv420p", str(영상)], check=True)
+            판, 장 = 비교판(영상, 0, 0.1667, False, 영상, 0.1667, 0.5)
+            self.assertEqual(장["앞"], [3, 0.125])
+            self.assertEqual([n for n, _ in 장["현재"]], [4, 8, 11])
+            with Image.open(io.BytesIO(판)) as im:
+                색 = [im.getpixel((int(im.width * (i + .5) / 4), im.height // 2)) for i in range(4)]
+            self.assertGreater(색[0][0], 220)
+            self.assertEqual([[v > 180 for v in c] for c in 색],
+                             [[True, False, False], [False, False, True], [False, True, False], [True, True, False]])
+            반전, _ = 비교판(영상, 0, 0.1667, False, 영상, 0.1667, 0.5, True)
+            with Image.open(io.BytesIO(반전)) as im:
+                폭, y = (im.width + 4) // 4, im.height // 2
+                self.assertGreater(min(im.getpixel((폭 // 8, y))), 220)
+                self.assertLess(im.getpixel((폭 + 폭 // 8, y))[0], 30)
+                self.assertGreater(min(im.getpixel((2 * 폭 - 폭 // 8, y))), 220)
+            눈장, _, _ = 첫컷검사.눈시트들(영상, .1667, .5, Path(tmp), True)
+            with Image.open(눈장[0]) as im:
+                self.assertLess(im.getpixel((60, 150))[0], 30)
+                self.assertGreater(min(im.getpixel((420, 150))), 220)
+
+    def test_공간연결_판정은_앞컷_선택과_증거에_묶인다(self):
+        with tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
+            편 = Path(tmp)
+            stack.enter_context(patch.object(첫컷검사, "편위치", return_value=[tmp]))
+            stack.enter_context(patch.object(첫컷검사, "공용자리", return_value=편))
+            받음, 편집 = 편 / "받음", 편 / "편집"
+            받음.mkdir()
+            편집.mkdir()
+            표 = {"틀": 2, "detail": [{"cut": "A", "t": 0, "dur": 1, "in": 0, "out": 1},
+                                    {"cut": "B", "t": 1, "dur": 1, "in": 0, "out": 1, "공간연결": "두 차가 같은 연석에 서 있다"}]}
+            (편 / "컷표.json").write_text(json.dumps(표), encoding="utf-8")
+            영상 = 받음 / "B.mp4"
+            영상.write_bytes(b"current")
+            근거 = "0.958초에 두 차가 한 줄이다. 0.000초와 0.500초, 0.958초에도 바퀴 밑에 같은 선이 보인다."
+            로그 = 눈붙이기(stack, {"공간연결": {"결과": "충족", "관찰": "일치 — " + 근거}})
+            stack.enter_context(patch.object(첫컷검사, "기준읽기", return_value={
+                "기준판": "1" * 64, "최근지적": [], "만족사례": {"선택": []}}))
+            stack.enter_context(patch.object(첫컷검사.받은뒤검사, "살피기", return_value={"초": 1, "fps": 24}))
+            stack.enter_context(patch.object(첫컷검사, "프레임시트", return_value=b"current"))
+            장 = {"앞": [23, .9583], "현재": [[0, 0], [12, .5], [23, .9583]]}
+            비교 = stack.enter_context(patch("컷연결프레임.비교판", return_value=(b"four frames", 장)))
+            stack.enter_context(redirect_stdout(io.StringIO()))
+            def 검사():
+                return 첫컷검사.검사(편, 영상, 컷들=["B"])
+            with self.assertRaisesRegex(ValueError, "직전 컷"):
+                검사()
+            for 이름 in ("A", "A__2"):
+                (받음 / f"{이름}.mp4").write_bytes(이름.encode())
+            with self.assertRaisesRegex(ValueError, "직전 컷"):
+                검사()
+            (편집 / "고른판.json").write_text('{"A":{"판":"A__2","in":0.125},"B":{"좌우":true}}', encoding="utf-8")
+            self.assertEqual(검사(), 0)
+            self.assertEqual(비교.call_args.args[:4], (받음 / "A__2.mp4", .125, 1.125, False))
+            self.assertTrue(비교.call_args.args[-1])
+            self.assertIn("컷연결.jpg", 부른것(로그)[0]["파일"])
+            self.assertEqual(검사(), 0)
+            self.assertEqual(len(부른것(로그)), 1)
+            for i, 상태 in enumerate(("불일치", "확인 불가"), 1):
+                (받음 / "A__2.mp4").write_bytes(bytes([i]))
+                눈답({"공간연결": {"결과": "다시", "관찰": f"{상태} — {근거}"}})
+                self.assertEqual(검사(), 1)
+                self.assertEqual(len(부른것(로그)), i + 1)
+            for 결과, 관찰 in (("충족", "확인 불가 — 차 바닥이 잘렸다"), ("다시", "불일치")):
+                with self.assertRaisesRegex(ValueError, "공간연결"):
+                    첫컷검사.판정뽑기(json.dumps({"판정": {"공간연결": {"결과": 결과, "관찰": 관찰}}}), ["공간연결"])
+            with self.assertRaisesRegex(ValueError, "네 시각"):
+                첫컷검사.판정뽑기(json.dumps({"판정": {"공간연결": {"결과": "충족", "관찰": "일치 — 0초에 보인다"}}}), ["공간연결"], 장)
+            비교.side_effect = ValueError("앞 장이 잘렸다")
+            with self.assertRaisesRegex(ValueError, "앞 장"):
+                검사()
+            del 표["detail"][1]["공간연결"]
+            (편 / "컷표.json").write_text(json.dumps(표), encoding="utf-8")
+            self.assertEqual(검사(), 0)
+            self.assertNotIn("컷연결.jpg", 부른것(로그)[-1]["파일"])
+
+    def test_묶음_두번째_컷의_공간연결과_편집_장_경계(self):
+        with tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
+            편 = Path(tmp)
+            stack.enter_context(patch.object(첫컷검사, "편위치", return_value=[tmp]))
+            stack.enter_context(patch.object(첫컷검사, "공용자리", return_value=편))
+            영상 = 편 / "묶음.mp4"
+            영상.write_bytes(b"AB")
+            with self.assertRaisesRegex(ValueError, "한 컷"):
+                첫컷검사.검사(편, 영상, 1.2, 2, 컷들=["A", "B"], 앞받은영상=영상)
+            표 = {"틀": 2, "detail": [{"cut": "A", "in": 0, "out": 1, "dur": 1},
+                                    {"cut": "B", "in": 1, "out": 2, "dur": 1, "공간연결": "같은 연석"}]}
+            (편 / "컷표.json").write_text(json.dumps(표), encoding="utf-8")
+            stack.enter_context(patch.object(첫컷검사, "기준읽기", return_value={
+                "기준판": "1" * 64, "최근지적": [], "만족사례": {"선택": []}}))
+            stack.enter_context(patch.object(첫컷검사.받은뒤검사, "살피기", return_value={"초": 2, "fps": 30}))
+            stack.enter_context(patch.object(첫컷검사, "프레임시트", return_value=b"AB"))
+            장 = {"앞": [29, .9667], "현재": [[30, 1], [45, 1.5], [59, 1.9667]]}
+            비교 = stack.enter_context(patch("컷연결프레임.비교판", return_value=(b"AB frames", 장)))
+            로그 = 눈붙이기(stack, {"공간연결": {"결과": "다시", "관찰": "불일치 — 0.967초엔 한 줄이다. 1초와 1.5초, 1.967초에는 갈라진다."}})
+            stack.enter_context(redirect_stdout(io.StringIO()))
+            self.assertEqual(첫컷검사.검사(편, 영상, 0, 2, 컷들=["A", "B"]), 1)
+            self.assertEqual(len(부른것(로그)), 2)
+            self.assertEqual(비교.call_args.args[:7], (영상, 0, 1, False, 영상, 1, 2))
+            self.assertEqual(첫컷검사.검사(편, 영상, 1, 2, 컷들=["B"], 앞받은영상=영상), 1)
+            self.assertEqual(len(부른것(로그)), 2, "묶음과 단일 호출이 같은 실제 판정을 사용한다")
+            with self.assertRaisesRegex(ValueError, "사용 구간"):
+                첫컷검사.검사(편, 영상, 0, .75, 컷들=["B"], 앞받은영상=영상)
+            눈답({"공간연결": {"결과": "충족", "관찰": "일치 — 0.967초와 1초, 1.5초, 1.967초에 한 줄로 서 있다."}})
+            self.assertEqual(첫컷검사.검사(편, 영상, 1, 2, 컷들=["A", "B"], 반박=["공간연결=1초 바퀴를 본다"]), 0)
+            self.assertEqual(len(부른것(로그)), 3)
+            # 편집 시간과 원본 시간이 다르거나 한 원본을 겹쳐 쓰더라도 선택한 B의 관계를 검사한다.
+            for 끝A, 시작B in ((.8, 1.2), (2, 1)):
+                표["detail"][0].update(out=끝A, dur=끝A)
+                표["detail"][1].update({"in": 시작B, "dur": 2-시작B})
+                (편 / "컷표.json").write_text(json.dumps(표), encoding="utf-8")
+                self.assertEqual(첫컷검사.검사(편, 영상, 0, 2, 컷들=["A", "B"]), 0)
+                self.assertEqual(비교.call_args.args[:7], (영상, 0, 끝A, False, 영상, 시작B, 2))
+            표["detail"][0].update(out=1, dur=1, t=0)
+            표["detail"][1].update({"in": 1, "dur": 1, "t": 1})
+            (편 / "컷표.json").write_text(json.dumps(표), encoding="utf-8")
+            (편 / "편집").mkdir()
+            (편 / "편집/고른판.json").write_text('{"A":{"좌우":true}}', encoding="utf-8")
+            완성 = 편 / "완성.mp4"
+            완성.write_bytes(b"edited AB")
+            with patch.object(첫컷검사, "프레임시트", return_value=b"frames") as 작은판:
+                self.assertEqual(첫컷검사.검사(편, 완성, 0, 2, 컷들=["A", "B"], 앞편집본=완성), 0)
+                self.assertFalse(작은판.call_args_list[0].args[-1], "편집을 마친 첫 컷은 중복 반전하지 않는다")
+            self.assertEqual(첫컷검사.검사(편, 영상, 0, 2, 컷들=["A","B"], 앞편집본=완성), 0)
+            self.assertEqual(비교.call_args.args[:7], (완성, 0, 1, False, 영상, 1, 2))
+            표["detail"][1].update({"in": .02, "out": 1.03, "dur": 1.01})
+            (편 / "컷표.json").write_text(json.dumps(표), encoding="utf-8")
+            self.assertEqual(첫컷검사.검사(편, 영상, .02, 1.03, 컷들=["B"], 앞받은영상=영상), 0)
+            self.assertIn("구간 밖일 수 있음", 부른것(로그)[-1]["글"])
+            표["detail"][1].update({"in": .02, "out": 1.04, "dur": 1.02})
+            (편 / "컷표.json").write_text(json.dumps(표), encoding="utf-8")
+            self.assertEqual(첫컷검사.검사(편, 영상, .02, 1.04, 컷들=["B"], 앞받은영상=영상), 0)
+            self.assertEqual(비교.call_args.args[5:7], (1/30, 32/30))
+            받은판 = 편 / "받음"
+            받은판.mkdir()
+            (받은판 / "A.mp4").write_bytes(b"A")
+            표["detail"][0].update(out=.2083, dur=.2083)
+            for 고름 in ({}, {"A": {"in": 0}}):
+                _, 앞 = 첫컷검사.앞컷찾기(편, 표, ["B"], 1, 2, None, "", 고름)
+                self.assertEqual(앞[2:4], (0, 6 / 30))
+                _, 묶음앞 = 첫컷검사.앞컷찾기(편, 표, ["B"], 1, 2, None, "", 고름, ("A", 영상))
+                self.assertEqual(묶음앞[2:4], 앞[2:4])
+
+    def test_컷_선택은_반_장과_묶음의_양끝을_구별한다(self):
+        for n in (0, 1, 149, 150, 333, 800, 1000, 1020, 2050):
+            for m in (50, 150, 250, 350, 450, 550, 650, 1020, 1950):
+                a, 길이 = Decimal(n) / 1000, Decimal(m) / 1000
+                명시 = {"in": float(a), "out": float(a + 길이)}
+                실제 = 첫컷검사.편집구간({"t": float(a), "dur": float(길이)}, {}, 30, True)
+                self.assertEqual(첫컷검사.편집구간(명시, {}, 30), 실제)
+                첫장 = round(float(a) * 30)
+                self.assertEqual(실제, (첫장 / 30, (첫장 + round(float(길이) * 30)) / 30))
+        표 = {"detail": [{"cut": "A", "in": .1498, "out": .8},
+                       {"cut": "B", "in": .8, "out": 1.4996, "공간연결": "같은 연석"}]}
+        구간 = 첫컷검사.공간구간들(표, ["A", "B"], .1498, 1.4996, False, 30, {})
+        self.assertEqual(구간[-1], ("B", 24/30, 45/30, "A"))
+        표["detail"][0].update({"in": 0, "out": 2})
+        표["detail"][1].update({"in": 1, "out": 2})
+        self.assertEqual(첫컷검사.공간구간들(표, ["A","B"], 1, 2, False, 30, {}, True), [("B", 1, 2, "A")])
+        표["detail"][0].update({"in": .05, "out": .45})
+        표["detail"][1].update({"in": .45, "out": 1.90})
+        for 끝 in (1.90, 1.9002, 1.91, 1.92, 1.94, 2):
+            self.assertEqual(첫컷검사.공간구간들(표, ["A","B"], .05, 끝, False, 30, {})[-1],
+                             ("B", 14/30, 58/30, "A"))
+        표["detail"][0]["out"] = 1.90
+        for 적힌, 첫장 in ((.0667, 2), (.90, 27)):
+            표["detail"][1]["in"] = 적힌
+            self.assertEqual(첫컷검사.공간구간들(표, ["A","B"], 적힌, 1.90, False, 30, {}, True),
+                             [("B", 첫장/30, 57/30, "A")])
+        with self.assertRaisesRegex(ValueError, "반박할 컷 하나"):
+            첫컷검사.공간구간들(표, ["A","B"], 0, 2, False, 30, {}, True)
+        표["detail"][0].update({"in": 0, "out": 1.0167})
+        표["detail"][1].update({"in": 1.0167, "out": 1.0334})
+        for 끝 in (1.0334, 1.034, 32/30):
+            self.assertEqual(첫컷검사.공간구간들(표, ["A","B"], 0, 끝, False, 30, {})[-1],
+                             ("B", 31/30, 32/30, "A"))
+        for 끝 in (1.0167, 31/30):
+            self.assertEqual([r[0] for r in 첫컷검사.공간구간들(표, ["A","B"], 0, 끝, False, 30, {})], ["A"])
+        표["detail"][0]["out"] = 1.98
+        표["detail"][1].update({"in": 1.98, "out": 2.0101})
+        self.assertEqual(첫컷검사.공간구간들(표, ["A","B"], 0, 2.01, False, 24, {})[-1],
+                         ("B", 48/24, 49/24, "A"))
+        self.assertEqual(첫컷검사.공간구간들(표, ["A","B"], 1.98, 2.01, False, 24, {}, True),
+                         [("B", 48/24, 49/24, "A")])
+        완성 = Path("완성.mp4")
+        with patch.object(첫컷검사.받은뒤검사, "살피기", return_value={"fps": 30}):
+            표["detail"][0].update(t=.10, dur=1.95)
+            표["detail"][1]["t"] = 2.05
+            _, 앞 = 첫컷검사.앞컷찾기(Path("."), 표, ["B"], 0, 2, 완성, "", {})
+            self.assertEqual(앞[2:4], (3/30, 61/30))
+            표["detail"][0].update(t=.15, dur=.15)
+            표["detail"][1]["t"] = .30
+            with self.assertRaisesRegex(ValueError, "현재 컷의 첫 장"):
+                첫컷검사.앞컷찾기(Path("."), 표, ["B"], 0, 2, 완성, "", {})
+
     def test_입력창은_되돌린_시각과_교체_생성_삭제를_구별한다(self):
         with tempfile.TemporaryDirectory() as tmp:
             편 = Path(tmp)

@@ -19,6 +19,8 @@ const { GPT검수 } = require('./GPT검수모델.js');
     process.stderr.write('[첫컷눈] 작업 폴더에 초_*.jpg가 없다\n');
     process.exit(1);
   }
+  const 연결판 = path.resolve('컷연결.jpg');
+  if (fs.existsSync(연결판)) 그림들.unshift(연결판);
   const 답파일 = path.join(os.tmpdir(), `synk-firstcut-gpt-${process.pid}-${Date.now()}.md`);
   const r = await GPT묻기({ 그림들, 글, 답파일, 시간: 15 * 60 * 1000 });
   fs.rmSync(답파일, { force: true });
