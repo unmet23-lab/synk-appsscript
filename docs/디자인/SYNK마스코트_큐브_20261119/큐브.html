@@ -63,24 +63,38 @@ h2{margin:0;font:var(--title);letter-spacing:-.012em}
 .felts figure{margin:0;display:flex;flex-direction:column;gap:12px}
 .felts img{display:block;width:100%;height:auto;background:var(--void)}
 .felts figcaption{font:var(--small);color:var(--dim)}
+/* 펠트 큐브: 큰 무대는 종이 바탕의 둥근 판이고, 그 아래에 색 조합 여덟 벌이 나란히 선다 */
+.cand[data-v="11"] .stage{border-radius:22px;overflow:hidden}
+.cand[data-v="11"] .sizes canvas{border-radius:5px}
+.opts .lbl{align-self:center;min-width:3.4em;font:var(--small);color:var(--dim)}
+.say b{font-weight:500;color:var(--paper)}
+.combos{display:flex;flex-direction:column;gap:clamp(18px,3vh,30px);padding-block:clamp(28px,5vh,56px);border-bottom:1px solid var(--hair)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.8vw,24px)}
+.combo{appearance:none;display:flex;flex-direction:column;gap:10px;margin:0;padding:0;border:0;background:none;font:var(--small);color:var(--dim);text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .25s ease}
+.combo canvas{display:block;width:100%;aspect-ratio:1/1;border-radius:14px;outline:1px solid transparent;outline-offset:3px;transition:outline-color .25s ease}
+.combo:hover,.combo[aria-pressed="true"]{color:var(--paper)}
+.combo[aria-pressed="true"] canvas{outline-color:var(--paper)}
+.combo:focus-visible{outline:none}
+.combo:focus-visible canvas{outline-color:var(--ring)}
 .nogl{display:none;margin:18px 0 0;font:var(--small);color:var(--soft)}
 html[data-nogl] .nogl{display:block}
 .foot{margin:28px 0 0;font:var(--small);color:var(--dim)}
 
 @media (max-width:760px){
   .felts{grid-template-columns:1fr;max-width:440px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cand{grid-template-columns:1fr;gap:6px;padding-block:18px 34px}
   .stage{max-width:440px}
 }
-@media (prefers-reduced-motion:reduce){.mood{transition:none}}
+@media (prefers-reduced-motion:reduce){.mood,.combo,.combo canvas{transition:none}}
 </style>
 </head>
 <body>
 <main class="wrap">
   <header class="head">
-    <p class="tag">SYNK 마스코트 시안 · 여섯째 판</p>
-    <h1>깎은 꼭짓점 하나,<span>코랄 한 번, 로딩은 몸으로.</span></h1>
-    <p class="lead">만족하신 두 큐브에 세 가지를 넣었습니다. 꼭짓점 하나를 깎았고, 답이 나온 순간 눈이 코랄로 한 번 켜지고, 「로딩 보기」를 누르면 몸으로 진행을 보입니다. 큐브를 누르면 생각합니다.</p>
+    <p class="tag">SYNK 마스코트 시안 · 열째 판</p>
+    <h1>펠트 큐브,<span>구운 사진의 느낌으로.</span></h1>
+    <p class="lead">말씀하신 구운 사진에 맞춰 다시 지었습니다. 양모를 뭉친 것처럼 털이 보이고, 귀퉁이에는 세모 조각을 댔고, 눈은 사진의 알약 눈입니다. 색 여덟 벌과 로딩 시안 셋은 그대로 있습니다. 검정 큐브와 앞선 판들은 아래에 있습니다.</p>
   </header>
 
   <div class="moods" role="group" aria-label="표정 바꾸기">
@@ -91,6 +105,57 @@ html[data-nogl] .nogl{display:block}
     <button class="mood" type="button" id="mood-sleep" data-mood="sleep" aria-pressed="false">잠</button>
   </div>
   <p class="nogl">이 브라우저에서는 움직이는 큐브를 그리지 못합니다. 크롬이나 엣지에서 열어 주세요.</p>
+
+  <section class="cand hero" data-v="11">
+    <button class="stage" type="button" aria-label="열째 판, 펠트 큐브. 누르면 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">열째 판</p>
+      <h2>펠트 큐브</h2>
+      <p class="say">지금 색은 <b id="combo-name">잉크 몸 · 크림 눈 · 코랄 세모</b>입니다. 아래 여덟 벌에서 바꿉니다. 앞면 귀퉁이에 다른 색 양모로 세모 조각을 댔고, 답이 나온 순간에는 눈이 그 색으로 켜집니다. 누르면 눈을 감고 꼭짓점으로 서서 돕니다.</p>
+      <div class="opts" role="group" aria-label="눈의 모양">
+        <span class="lbl">눈</span>
+        <button class="mood" type="button" id="feye-pill" data-feye="3" aria-pressed="true">알약 눈</button>
+        <button class="mood" type="button" id="feye-dot" data-feye="0" aria-pressed="false">도트 눈</button>
+        <button class="mood" type="button" id="feye-stitch" data-feye="4" aria-pressed="false">실땀 눈</button>
+      </div>
+      <div class="opts" role="group" aria-label="세모 조각">
+        <span class="lbl">세모</span>
+        <button class="mood" type="button" id="fcut-on" data-fcut="1" aria-pressed="true">있음</button>
+        <button class="mood" type="button" id="fcut-off" data-fcut="0" aria-pressed="false">없음</button>
+      </div>
+      <div class="opts" role="group" aria-label="로딩 시안 보기">
+        <span class="lbl">로딩</span>
+        <button class="mood" type="button" id="ffx-ball" data-ffx="ball">구로 변신</button>
+        <button class="mood" type="button" id="ffx-synk" data-ffx="synk">눈이 synk로</button>
+        <button class="mood" type="button" id="ffx-pair" data-ffx="pair">눈이 s y, n k로</button>
+      </div>
+      <div class="opts" role="group" aria-label="바탕">
+        <span class="lbl">바탕</span>
+        <button class="mood" type="button" id="fbg-dark" data-fbg="dark" aria-pressed="true">어둡게</button>
+        <button class="mood" type="button" id="fbg-paper" data-fbg="paper" aria-pressed="false">밝게</button>
+      </div>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+      <img id="tex-cream" src="assets/felt-tex-cream.webp" alt="" hidden>
+    </div>
+  </section>
+
+  <section class="combos">
+    <div class="info">
+      <p class="key">색 조합</p>
+      <h2>여덟 벌</h2>
+      <p class="say">몸, 눈, 세모 조각의 색을 달리했습니다. 하나를 누르면 위의 큰 큐브가 그 색으로 바뀝니다. 앞의 셋은 SYNK의 세 색인 잉크, 종이색, 코랄만 썼습니다.</p>
+    </div>
+    <div class="grid">
+      <button class="combo" type="button" id="combo-0" aria-pressed="true"><canvas></canvas><span>잉크 몸 · 크림 눈 · 코랄 세모</span></button>
+      <button class="combo" type="button" id="combo-1" aria-pressed="false"><canvas></canvas><span>크림 몸 · 잉크 눈 · 코랄 세모</span></button>
+      <button class="combo" type="button" id="combo-2" aria-pressed="false"><canvas></canvas><span>코랄 몸 · 크림 눈 · 잉크 세모</span></button>
+      <button class="combo" type="button" id="combo-3" aria-pressed="false"><canvas></canvas><span>회색 몸 · 잉크 눈 · 코랄 세모</span></button>
+      <button class="combo" type="button" id="combo-4" aria-pressed="false"><canvas></canvas><span>네이비 몸 · 크림 눈 · 코랄 세모</span></button>
+      <button class="combo" type="button" id="combo-5" aria-pressed="false"><canvas></canvas><span>세이지 몸 · 잉크 눈 · 크림 세모</span></button>
+      <button class="combo" type="button" id="combo-6" aria-pressed="false"><canvas></canvas><span>머스터드 몸 · 잉크 눈 · 크림 세모</span></button>
+      <button class="combo" type="button" id="combo-7" aria-pressed="false"><canvas></canvas><span>하늘 몸 · 잉크 눈 · 코랄 세모</span></button>
+    </div>
+  </section>
 
   <section class="cand hero" data-v="9">
     <button class="stage" type="button" aria-label="여섯째 판, 꼭짓점 하나를 깎은 깎은 큐브. 누르면 생각합니다."><canvas></canvas></button>
@@ -253,6 +318,11 @@ uniform vec2 uGaze;
 uniform vec4 uSlab;
 uniform vec4 uCutV;
 uniform float uLoad, uTint;
+uniform sampler2D uFeltA, uFeltB;
+uniform vec3 uAccent, uThread;
+uniform float uFeltAvg;
+uniform vec3 uBody, uBg;   /* 펠트 몸의 색과 바탕의 색 */
+uniform vec4 uFx;           /* 펠트의 로딩: 구가 된 정도, 눈 자리에 뜰 글자(0 눈, 1 synk, 2 s y, 3 n k), 지지직하는 정도 */
 float gCover;
 const vec3 WARM = vec3(1.0, 0.982, 0.955);
 const vec3 CORAL = vec3(0.976, 0.408, 0.349);
@@ -260,6 +330,48 @@ const float CAM = 6.0;
 const float FOV = 0.36;
 const float RO = 0.56;
 
+float hash2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float vnoise(vec2 p){
+  vec2 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash2(i), hash2(i + vec2(1.0, 0.0)), f.x), mix(hash2(i + vec2(0.0, 1.0)), hash2(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+float hash1(float n){ return fract(sin(n) * 43758.5453); }
+float n3(vec3 p){
+  vec3 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float n = dot(i, vec3(1.0, 57.0, 113.0));
+  float a = mix(mix(hash1(n), hash1(n + 1.0), f.x), mix(hash1(n + 57.0), hash1(n + 58.0), f.x), f.y);
+  float b = mix(mix(hash1(n + 113.0), hash1(n + 114.0), f.x), mix(hash1(n + 170.0), hash1(n + 171.0), f.x), f.y);
+  return mix(a, b, f.z);
+}
+/* 구운 펠트 그림을 세 방향에서 입힌다. 면이 향한 쪽의 그림을 쓴다 */
+vec3 feltTex(sampler2D tx, vec3 p, vec3 n){
+  vec3 w = pow(abs(n), vec3(4.0));
+  w /= (w.x + w.y + w.z);
+  return texture2D(tx, p.zy * 0.33 + 0.13).rgb * w.x + texture2D(tx, p.xz * 0.33 + 0.37).rgb * w.y + texture2D(tx, p.xy * 0.33 + 0.71).rgb * w.z;   /* 한 면에 그림의 3분의 2쯤. 더 잘게 깔면 털 한 올이 뭉개져 모래알처럼 보인다 */
+}
+/* 펠트 그림에서 가는 털만 걸러 낸다(선명한 그림 − 흐린 그림). 털이 밝은 자리가 + 다 */
+float feltFib(vec3 p, vec3 n, float sc){
+  vec3 w = pow(abs(n), vec3(4.0));
+  w /= (w.x + w.y + w.z);
+  vec3 L = vec3(0.3, 0.5, 0.2);
+  vec2 a = p.zy * sc + 0.13, b = p.xz * sc + 0.37, c = p.xy * sc + 0.71;
+  return (dot(texture2D(uFeltA, a, 0.8).rgb - texture2D(uFeltA, a, 3.2).rgb, L) * w.x
+    + dot(texture2D(uFeltA, b, 0.8).rgb - texture2D(uFeltA, b, 3.2).rgb, L) * w.y
+    + dot(texture2D(uFeltA, c, 0.8).rgb - texture2D(uFeltA, c, 3.2).rgb, L) * w.z) / 0.86;
+}
+/* 세모(안이 −) */
+float sdTri(vec2 p, vec2 p0, vec2 p1, vec2 p2){
+  vec2 e0 = p1 - p0, e1 = p2 - p1, e2 = p0 - p2;
+  vec2 v0 = p - p0, v1 = p - p1, v2 = p - p2;
+  vec2 q0 = v0 - e0 * clamp(dot(v0, e0) / dot(e0, e0), 0.0, 1.0);
+  vec2 q1 = v1 - e1 * clamp(dot(v1, e1) / dot(e1, e1), 0.0, 1.0);
+  vec2 q2 = v2 - e2 * clamp(dot(v2, e2) / dot(e2, e2), 0.0, 1.0);
+  float sg = sign(e0.x * e2.y - e0.y * e2.x);
+  vec2 d = min(min(vec2(dot(q0, q0), sg * (v0.x * e0.y - v0.y * e0.x)), vec2(dot(q1, q1), sg * (v1.x * e1.y - v1.y * e1.x))), vec2(dot(q2, q2), sg * (v2.x * e2.y - v2.y * e2.x)));
+  return -sqrt(d.x) * sign(d.y);
+}
 float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
 float sdBox2(vec2 p, vec2 b, float r){ vec2 q = abs(p) - b + r; return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; }
 float sdRB(vec3 p, vec3 b, float r){ vec3 q = abs(p) - b + r; return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r; }
@@ -288,6 +400,7 @@ vec2 eyes(vec2 fp, float ppx, float k0, float sepCells, float slit){
   vec2 cz = mix(vec2(0.050, 0.094), vec2(0.046, 0.064), small);
   if (slit > 0.5 && slit < 1.5 && uEye.z < 0.5) cz = mix(vec2(0.017, 0.125), vec2(0.030, 0.090), small);
   if (slit > 1.5 && uEye.z < 0.5) cz = mix(vec2(0.056, 0.094), vec2(0.050, 0.066), small);
+  if (slit > 2.5 && uEye.z < 0.5) cz = mix(vec2(0.056, 0.150), vec2(0.050, 0.100), small);   /* 펠트 눈은 구운 사진처럼 길다 */
   float sd = min(eyeSd((fp - eL) / k, uEye.y, uEye.z, uT, cz), eyeSd((fp - eR) / k, uEye.y, uEye.z, uT, cz)) * k;
   float solid = 1.0 - smoothstep(-0.6, 0.6, sd * ppx);
   float e = solid;
@@ -297,14 +410,45 @@ vec2 eyes(vec2 fp, float ppx, float k0, float sepCells, float slit){
     float tol = uEye.z < 0.5 ? 0.0 : 0.008;
     float on = 1.0 - smoothstep(tol - 0.003, tol + 0.003, cs);
     float edpx = length(fp - cc) * ppx;
-    float rd = 0.27 * g * ppx;
+    float rd = (uKind == 7 ? 0.36 : 0.27) * g * ppx;   /* 펠트의 점은 실 매듭이라 더 통통하다 */
     float led = (1.0 - smoothstep(rd - 0.6, rd + 0.6, edpx)) + 0.20 * exp(-max(edpx - rd, 0.0) / (0.4 * rd + 0.5));
     e = mix(solid, on * led, smoothstep(3.0, 5.0, g * ppx));
   } else {
-    e += 0.20 * exp(-max(sd, 0.0) * ppx / 2.5);
+    if (slit < 2.5) e += 0.20 * exp(-max(sd, 0.0) * ppx / 2.5);
   }
   float dim = 0.34 * (1.0 - smoothstep(-0.2 * g, 1.0 * g, sd));
   return vec2(e, dim);
+}
+
+/* 로딩 때 눈 자리에 뜨는 글자. 가로 3점, 세로 5점이다. g는 0 s, 1 y, 2 n, 3 k이고 r은 위에서부터의 줄이다. 값은 그 줄의 세 점(4, 2, 1)이다 */
+float glyphRow(float g, float r){
+  if (g < 0.5) return r < 0.5 ? 3.0 : r < 1.5 ? 4.0 : r < 2.5 ? 2.0 : r < 3.5 ? 1.0 : 6.0;
+  if (g < 1.5) return r < 1.5 ? 5.0 : r < 2.5 ? 3.0 : r < 3.5 ? 1.0 : 6.0;
+  if (g < 2.5) return r < 0.5 ? 0.0 : r < 1.5 ? 6.0 : 5.0;
+  return r < 0.5 ? 4.0 : r < 1.5 ? 5.0 : r < 2.5 ? 6.0 : 5.0;
+}
+/* u는 글자의 왼쪽 아래에서 잰 점 칸 자리(가로 0~3, 세로 0~5), gpx는 한 칸의 화소 수다 */
+float glyphDot(vec2 u, float gi, float gpx){
+  if (u.x < 0.0 || u.x >= 3.0 || u.y < 0.0 || u.y >= 5.0) return 0.0;
+  float col = floor(u.x);
+  float w = col < 0.5 ? 4.0 : col < 1.5 ? 2.0 : 1.0;
+  float on = mod(floor(glyphRow(gi, 4.0 - floor(u.y)) / w), 2.0);
+  float edpx = length(fract(u) - 0.5) * gpx;
+  float rd = 0.36 * gpx;
+  return on * (1.0 - smoothstep(rd - 0.6, rd + 0.6, edpx));
+}
+/* mode 1: synk 네 글자를 한 줄로. 2: 두 눈 자리에 s와 y. 3: n과 k. g는 점 한 칸의 크기다 */
+vec2 glyphs(vec2 fp, float ppx, float g, float mode, float sepCells){
+  float gpx = g * ppx;
+  vec2 u = (fp - uGaze * g) / g;
+  float e = 0.0;
+  if (mode < 1.5) {
+    for (int i = 0; i < 4; i++) e = max(e, glyphDot(u - vec2(-7.5 + 4.0 * float(i), -1.0), float(i), gpx));
+  } else {
+    float g0 = mode < 2.5 ? 0.0 : 2.0;
+    e = max(glyphDot(u - vec2(-sepCells - 1.5, -1.0), g0, gpx), glyphDot(u - vec2(sepCells - 1.5, -1.0), g0 + 1.0, gpx));
+  }
+  return vec2(e, 0.0);
 }
 
 /* 다: 판 다섯 장. 가운데 판은 돌지 않고 위아래 두 장씩이 저마다 돈다 */
@@ -364,6 +508,15 @@ vec2 map(vec3 p){
     if (uCutV.w > 0.0) d1 = ri(d1, cutD(p), 0.012);
     return vec2(d1, 0.0);
   }
+  if (uKind == 7) {
+    /* 펠트 큐브: 양모를 손으로 뭉친 인형이라 모서리가 크게 둥글고 겉이 조금 울퉁불퉁하다. 그만큼 걸음을 줄인다(0.88).
+       uSlab.z와 uSlab.w는 몸이 눌리고 늘어나는 정도다. uFx.x가 1이면 구가 된다 */
+    vec3 q7 = p / vec3(uSlab.z, uSlab.w, uSlab.z);
+    float b7 = mix(0.97, 1.16, uFx.x);
+    float d7 = sdRB(q7, vec3(b7), mix(0.34, 1.16, uFx.x));
+    d7 -= 0.034 * (n3(q7 * 1.5 + 4.0) - 0.5);
+    return vec2(d7 * 0.88 * min(uSlab.z, uSlab.w), 0.0);
+  }
   if (uKind == 6) {
     float d6 = lidBody(p);
     /* 뚜껑이 뜨면 그 사이에 빛 구슬이 생긴다. 닫혀 있을 때는 없다 */
@@ -397,8 +550,25 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
   }
   float cover = 1.0;
   if (!hit) {
-    if (dmin > pxo * 1.2) return vec3(0.0);
-    t = tmin; cover = 1.0 - dmin / (pxo * 1.2);
+    if (uKind == 7) {
+      /* 펠트의 보풀: 몸 가까이를 스친 자리에 성긴 털이 선다. 털은 몸에 붙어 같이 움직인다 */
+      float dd = dmin / 0.88;
+      if (dd > 0.13) return vec3(0.0);
+      vec3 pc = ro + rd * tmin;
+      vec3 sp = pc - nrm(pc) * dd;   /* 털이 난 자리. 털 한 올은 그 자리에서 바깥으로 선다 */
+      vec2 sc = sp.xy + sp.z * vec2(0.37, 0.61);
+      /* 촘촘한 솜털: 몸에 가까울수록 짙다 */
+      float pile = exp(-dd / 0.022) * (0.45 + 0.55 * vnoise(sc * 70.0 + dd * 30.0));
+      /* 삐져나온 긴 털: 가늘고, 굽고, 길이가 저마다 다르다 */
+      vec2 sw = sc + vec2(sin(dd * 38.0 + sc.y * 9.0), cos(dd * 31.0 + sc.x * 9.0)) * 0.010;
+      float hair = smoothstep(0.52, 0.68, vnoise(sw * 150.0)) * clamp(1.0 - dd / (0.13 * (0.2 + 0.8 * vnoise(sw * 6.0 + 3.0))), 0.0, 1.0);
+      cover = clamp(max(pile, hair * 0.7), 0.0, 0.92);
+      if (cover <= 0.004) return vec3(0.0);
+      t = tmin;
+    } else {
+      if (dmin > pxo * 1.2) return vec3(0.0);
+      t = tmin; cover = 1.0 - dmin / (pxo * 1.2);
+    }
   }
   gCover = cover;
   if (id > 0.5) return WARM * min(uGlow, 1.0) * cover;
@@ -412,7 +582,72 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
   float side = smoothstep(-0.28, 0.32, ndl);
   float ppx = ppu / uDpr;
   vec3 c;
-  if (uKind == 0 || uKind == 5 || uKind == 6) {
+  if (uKind == 7) {
+    /* 펠트(양모를 바늘로 뭉친 인형): 몸, 세모 조각, 눈이 모두 같은 양모이고 색만 다르다. 그래서 먼저 그 자리의 색을 정하고, 털과 빛은 한 번에 입힌다 */
+    vec3 qf = p / vec3(uSlab.z, uSlab.w, uSlab.z);
+    vec3 LUM = vec3(0.3, 0.5, 0.2);
+    vec3 base = uBody;
+    float press = 0.0;   /* 다른 색 양모를 박은 둘레는 눌려서 조금 어둡다 */
+    /* 세모 조각: 앞면 오른쪽 위 귀퉁이에 댄 다른 색 양모. 손으로 오린 것처럼 가장자리가 조금 흔들린다 */
+    if (uCutV.w > 0.0 && n.z > 0.1) {
+      float pd = sdTri(qf.xy + (vec2(vnoise(qf.xy * 9.0), vnoise(qf.yx * 9.0 + 5.0)) - 0.5) * 0.03, vec2(0.34, 0.74), vec2(0.80, 0.93), vec2(0.66, 0.44)) - 0.03;
+      base = mix(base, uAccent, 1.0 - smoothstep(-0.012, 0.012, pd));
+      press = max(press, 0.5 * exp(-abs(pd) / 0.016));
+    }
+    /* 눈. 실땀 눈만 양모가 아니라 실이라 따로 칠한다 */
+    float thrM = 0.0, eyeM = 0.0;
+    vec3 thr = vec3(0.0);
+    if (uEye.x > 0.001 && n.z > 0.5) {
+      float smallF = 1.0 - smoothstep(14.0, 60.0, ppx);
+      float gE = 0.040 * uEyeK * mix(1.0, 1.7, smallF);
+      float gq = uFx.y > 0.5 ? 0.075 * mix(1.0, 1.7, smallF) : gE;
+      float tq = floor(uT * 24.0);
+      vec2 fpE = qf.xy - vec2(0.0, uEyeY);
+      /* 지지직: 눈의 가로줄이 잠깐씩 옆으로 밀리고 조각이 빠진다 */
+      if (uFx.z > 0.001) {
+        float rowi = floor(fpE.y / gq);
+        fpE.x += (hash2(vec2(rowi, tq)) - 0.5) * 3.0 * gq * uFx.z * step(0.45, hash2(vec2(tq, rowi + 3.0)));
+      }
+      vec2 e;
+      if (uFx.y > 0.5) e = glyphs(fpE + vec2(0.0, 1.5 * (gq - gE)), ppx, gq, uFx.y, uEye.w * gE / gq);
+      else {
+        /* 박아 넣은 눈은 가장자리가 고르지 않다 */
+        if (uEyeStyle > 0.5) fpE += (vec2(vnoise(qf.xy * 40.0), vnoise(qf.yx * 40.0 + 9.0)) - 0.5) * 0.012;
+        e = eyes(fpE, ppx, uEyeK, uEye.w, uEyeStyle);
+      }
+      if (uFx.z > 0.001) e.x *= step(uFx.z * 0.35, hash2(floor(fpE / gq) + tq));
+      float em = clamp(e.x, 0.0, 1.0) * uEye.x;
+      /* 눈의 색. 답이 나온 순간과 지지직하는 동안에는 세모 조각의 색으로 켜진다 */
+      vec3 ec = mix(uThread, uAccent, max(uTint, uFx.z * step(0.5, hash2(vec2(tq, 9.0)))));
+      if (uEyeStyle > 3.5 && uFx.y < 0.5) {
+        /* 실땀 눈: 실을 가로로 촘촘히 메운 자수. 실 한 올마다 둥근 윤이 있다 */
+        float row = qf.y * 26.0;
+        float v = fract(row);
+        float cyl = sqrt(max(1.0 - (2.0 * v - 1.0) * (2.0 * v - 1.0), 0.0));
+        float tw = 0.5 + 0.5 * sin(qf.x * 210.0 + floor(row) * 2.1);
+        thr = ec * (0.50 + 0.50 * cyl + 0.08 * tw) + vec3(0.06) * pow(cyl, 8.0);
+        thrM = em;
+      } else { base = mix(base, ec, em); eyeM = em; }
+      press = max(press, e.y * 1.2 * uEye.x * (1.0 - em));
+    }
+    /* 양모의 결: 옅은 얼룩과, 그림에서 걸러 낸 가는 털 두 겹(작은 털, 긴 털) */
+    float d1 = dot(feltTex(uFeltA, qf, n), LUM) / 0.86;
+    float mott = clamp(1.0 + 0.5 * (d1 - 1.0) + 0.08 * (n3(qf * 2.4 + 7.0) - 0.5), 0.8, 1.2);
+    float fib = clamp(feltFib(qf, n, 0.19) * 52.0 + feltFib(qf + 3.7, n, 0.40) * 26.0, -0.8, 1.3) * (1.0 - 0.6 * eyeM);
+    float dw = clamp((ndl + 0.75) / 1.75, 0.0, 1.0);
+    dw = dw * dw * (3.0 - 2.0 * dw);
+    float rim = pow(1.0 - ndv, 1.8);
+    float lowK = mix(0.72, 1.0, smoothstep(-1.1, 0.6, (qf * uInv).y));
+    float lit = (0.36 + 0.62 * dw) * lowK;
+    vec3 tip = mix(base, vec3(1.0, 0.97, 0.93), 0.22);   /* 털끝은 몸보다 조금 밝다 */
+    c = base * mott * lit;
+    c *= 1.0 + min(fib, 0.0) * 0.15;                                               /* 털 사이의 그늘 */
+    c = mix(c, tip * (lit + 0.10), clamp(fib, 0.0, 1.0) * (0.62 + 0.3 * rim));    /* 빛을 받은 털 한 올 */
+    c = mix(c, tip * (0.42 + 0.60 * dw), rim * 0.62);                              /* 가장자리의 솜털이 빛을 머금는다 */
+    c *= (1.0 - 0.38 * press) * (1.0 + 0.30 * eyeM);
+    if (!hit) c = min(tip * (0.60 + 0.80 * dw), vec3(1.0));   /* 삐져나온 털은 빛이 비쳐 몸보다 밝다 */
+    c = mix(c, thr * (0.50 + 0.58 * dw), thrM);
+  } else if (uKind == 0 || uKind == 5 || uKind == 6) {
     /* 면마다 둥근 네모 모양으로 결을 깎았다. 결이 빛을 한 줄로 모아, 면의 가운데를 지나는 빛줄기가 생긴다.
        판으로 썬 큐브(가 + 다)는 판마다 제 각만큼 돌린 자리에서 결을 읽는다. 판이 어긋나면 빛줄기도 조각난다 */
     float ang = 0.0;
@@ -545,7 +780,8 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
   if (uKind == 2 || uKind == 5) face = face && abs(p.y) < 0.365 + 0.3 * small;
   vec3 pe = p;
   if (uKind == 6) { pe = p / vec3(uSlab.z, uSlab.w, uSlab.z); face = face && pe.y < 0.29; }
-  if (uEye.x > 0.001 && face) {
+  if (uKind == 7) pe = p / vec3(uSlab.z, uSlab.w, uSlab.z);
+  if (uKind != 7 && uEye.x > 0.001 && face) {
     vec2 e = eyes(pe.xy - vec2(0.0, uEyeY), ppx, uEyeK, uEye.w, uEyeStyle);
     c *= 1.0 - e.y * uEye.x;
     c += mix(WARM, CORAL, uTint) * e.x * uEye.x * 0.96;
@@ -644,6 +880,11 @@ void main(){
     if (uKind == 3) col = glass(ro, rd, rdW, ppu);
     else col = solid(ro, rd, rdW, -bq - sq, -bq + sq, ppu);
   }
+  if (uKind == 7) {
+    /* 펠트 큐브의 바탕: 사진관의 종이 바닥처럼 한 색이고, 큐브 아래에 흐린 그림자가 진다 */
+    float shd = exp(-(uv.x * uv.x / 0.26 + (uv.y + 0.60) * (uv.y + 0.60) / 0.012));
+    col += uBg * (1.0 - 0.30 * shd) * (1.0 - gCover);
+  }
   if (uRing > 0.001 && rdW.y < -0.0001) {
     /* 큐브 아래 바닥의 가는 빛 고리. 큐브가 떠 있다는 것을 알린다. 큐브에 가린 곳은 그리지 않는다 */
     vec3 cam = vec3(0.0, 0.0, CAM);
@@ -658,7 +899,7 @@ void main(){
   col += g * 2.8 / 255.0;
   gl_FragColor = vec4(max(col, 0.0), 1.0);
 }`;
-const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uCuts', 'uEyeY', 'uEyeStyle', 'uRing', 'uCutV', 'uLoad', 'uTint', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
+const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uCuts', 'uEyeY', 'uEyeStyle', 'uRing', 'uCutV', 'uLoad', 'uTint', 'uFeltA', 'uFeltB', 'uAccent', 'uThread', 'uFeltAvg', 'uBody', 'uBg', 'uFx', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
 
 const reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -701,6 +942,9 @@ const CUBES = [
   /* 여섯째 판: 꼭짓점 하나를 깎고(cut은 꼭짓점의 부호와 깊이), 답이 나온 순간 눈이 코랄로 켜진다. standTurn은 깎은 꼭짓점이 옆에 오게 서는 각이다 */
   { kind: 0, stand: true, standTurn: Math.PI / 2, cut: [1, 1, 1, 0.55], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },
   { kind: 1, cut: [-1, 1, 1, 0.36], ident: true, yaw: 0.44, pitch: 0.34, scale: 0.94, eyeK: 1.55, sep: 5.5, eyeStyle: 0 },
+  /* 열째 판: 펠트 큐브 아홉. combo는 색 조합(COMBOS의 차례)이다. 첫째가 큰 무대의 큐브이고, 나머지 여덟은 색 조합을 나란히 보이는 작은 큐브다.
+     자세와 눈의 자리는 구운 사진에 맞췄다. cut의 넷째 값이 0보다 크면 귀퉁이에 세모 조각을 댄다 */
+  ...[0, 0, 1, 2, 3, 4, 5, 6, 7].map(n => ({ kind: 7, combo: n, stand: true, standTurn: Math.PI / 2, cut: [1, 1, 1, 0.5], yaw: -0.32, pitch: 0.24, scale: 1.1, eyeK: 1.35, sep: 7.6, eyeY: -0.17, eyeStyle: 3 })),
 ].map((c, i) => ({
   ...c, i, think: 0, wasThink: false, thinkUntil: 0, bootUntil: 0, smileUntil: 0, flash: 0,
   px: 0, py: 0, tx: 0, ty: 0, moodShown: 0, open: 1, lid: null, nextBlink: 2000 + i * 700,
@@ -708,14 +952,66 @@ const CUBES = [
   R: qMat([0, 0, 0, 1]), L: [0, 0, 1], core: [0, 0, 0], glow: 0, scan: 0, lit: 1, eyeOn: 1, big: null, cuts: 1, eyeY: c.eyeY || 0, eyeStyle: c.eyeStyle !== undefined ? c.eyeStyle : (c.kind === 1 ? 1 : 0),
   lidA: 0, lidW: 0, lidHome: 0, lift: 0, pendingLand: false, bounce0: 0, hop: 0, gaze: [0, 0],
   cutV: c.cut || [0, 0, 0, 0], load: -1, loadT0: 0, loadUntil: 0, coralUntil: 0, tint: 0,
+  fx: null, fxT0: 0, fxUntil: 0, fxOn: false, fxv: [0, 0, 0], ball: 0, ballHome: null,
 }));
+/* 펠트 큐브의 색 조합 여덟 벌. 몸, 눈, 세모 조각의 색이다. 앞의 셋은 SYNK의 세 색(잉크, 종이색, 코랄 #F96859)만 썼다. 첫째의 잉크 몸은 구운 사진의 빛 받은 색에 맞춰 로고의 잉크(#2B2320)보다 조금 밝다 */
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
+const COMBOS = [
+  { name: '잉크 몸 · 크림 눈 · 코랄 세모', body: '#3A2F2A', eye: '#F1E6CF', cut: '#F96859' },
+  { name: '크림 몸 · 잉크 눈 · 코랄 세모', body: '#EDE4D3', eye: '#2B2320', cut: '#F96859' },
+  { name: '코랄 몸 · 크림 눈 · 잉크 세모', body: '#F0705F', eye: '#FBF3E4', cut: '#2B2320' },
+  { name: '회색 몸 · 잉크 눈 · 코랄 세모', body: '#A9A49D', eye: '#2B2320', cut: '#F96859' },
+  { name: '네이비 몸 · 크림 눈 · 코랄 세모', body: '#34446A', eye: '#F4ECDD', cut: '#F96859' },
+  { name: '세이지 몸 · 잉크 눈 · 크림 세모', body: '#A3B59C', eye: '#2B2320', cut: '#F4ECDD' },
+  { name: '머스터드 몸 · 잉크 눈 · 크림 세모', body: '#E3B34C', eye: '#2B2320', cut: '#F4ECDD' },
+  { name: '하늘 몸 · 잉크 눈 · 코랄 세모', body: '#A9C7DD', eye: '#2B2320', cut: '#F96859' },
+].map(k => ({ name: k.name, body: hex(k.body), eye: hex(k.eye), cut: hex(k.cut) }));
+const BG = { paper: hex('#DDD6CB'), dark: [0, 0, 0] };
+let feltBg = 'dark';
+
+/* 펠트 큐브의 로딩 시안 셋. ball: 구가 되어 돈다. synk: 눈이 지지직하며 synk 네 글자로 바뀐다. pair: 두 눈이 s y, n k로 차례로 바뀐다.
+   c.fxv는 [구가 된 정도, 눈 자리에 뜰 글자(0 눈, 1 synk, 2 s y, 3 n k), 지지직하는 정도]다. 돌려주는 값은 구가 돈 각이다 */
+const rnd1 = n => { const x = Math.sin(n * 12.9898) * 43758.5453; return x - Math.floor(x); };
+function feltFx(c, now, dt) {
+  let morph = 0, glyph = 0, glitch = 0, rolling = false;
+  if (c.fxOn && now >= c.fxUntil) {
+    /* 끝나면 한 번 통 튀며 웃고, 눈이 꼭짓점 색으로 켜진다 */
+    c.fxOn = false; c.ballHome = null;
+    c.bounce0 = now; c.smileUntil = now + 1500; c.coralUntil = now + 1500;
+  }
+  if (c.fxOn) {
+    const u = (now - c.fxT0) / 1000, D = (c.fxUntil - c.fxT0) / 1000, tick = Math.floor(now / 70);
+    if (c.fx === 'ball') {
+      morph = easeIO(clamp(u / 0.6, 0, 1)) * easeIO(clamp((D - u) / 0.6, 0, 1));
+      if (D - u > 0.75) { c.ball += dt * 6.0 * morph; rolling = true; }
+      else if (c.ballHome === null) c.ballHome = Math.ceil(c.ball / (2 * Math.PI)) * 2 * Math.PI;
+    } else {
+      /* 구간마다 [시작, 끝, 글자]. 구간의 앞뒤 0.22초는 지지직하며 눈과 글자가 번갈아 보인다 */
+      const seq = c.fx === 'synk' ? [[0.5, 2.4, 1]] : [[0.5, 1.5, 2], [1.72, 2.72, 3]];
+      for (const [a, b, g] of seq) {
+        if (u >= a && u < b) glyph = g;
+        for (const edge of [a, b]) {
+          const d = Math.abs(u - edge);
+          if (d < 0.22) { glitch = Math.max(glitch, 1 - d / 0.22); if (rnd1(tick + edge * 31) > 0.5) glyph = glyph ? 0 : g; }
+        }
+      }
+      if (glyph && glitch === 0 && rnd1(tick + 7) > 0.93) glitch = 0.5;   /* 글자가 떠 있는 동안에도 가끔 튄다 */
+    }
+  }
+  if (!rolling) {
+    const home = c.ballHome !== null ? c.ballHome : Math.round(c.ball / (2 * Math.PI)) * 2 * Math.PI;
+    c.ball += (home - c.ball) * (1 - Math.exp(-dt * 7));
+  }
+  c.fxv = [morph, glyph, glitch];
+  return c.ball;
+}
 let mood = 'auto';
 
 /* 한 큐브의 한순간을 셈한다(자세, 눈, 생각하는 정도). 그리기는 따로 한다 */
 function step(c, now, dt) {
   const t = now / 1000;
   const ph = (t + c.i * 2.3) % 12;
-  const want = !reduced && (mood === 'think' || now < c.thinkUntil || now < c.loadUntil || now < c.bootUntil || (mood === 'auto' && ph > 8.2 && ph < 10.6));
+  const want = !reduced && !c.fxOn && (mood === 'think' || now < c.thinkUntil || now < c.loadUntil || now < c.bootUntil || (mood === 'auto' && ph > 8.2 && ph < 10.6));
   /* 로딩: 4.4초 동안 0에서 1로 간다. 로딩이 아니면 −1이다 */
   c.load = now < c.loadUntil ? clamp((now - c.loadT0) / 4400, 0, 1) : -1;
   c.tint = clamp((c.coralUntil - now) / 500, 0, 1);
@@ -724,6 +1020,7 @@ function step(c, now, dt) {
     /* 셋째 판은 뚜껑이 내려앉은 때에 웃는다 */
     if (c.kind === 6) c.pendingLand = true; else { c.smileUntil = now + 1300; c.flash = 1; }
     if (c.ident) { c.coralUntil = now + 1500; c.smileUntil = now + 1700; }
+    if (c.kind === 7) { c.bounce0 = now + 450; c.coralUntil = now + 1500; }
     c.slabT = c.slabT.map(a => Math.round(a / (Math.PI / 2)) * (Math.PI / 2));
   }
   c.wasThink = want;
@@ -757,6 +1054,7 @@ function step(c, now, dt) {
     azAdd += c.az;
   }
   if (c.kind === 3) { c.spin += dt * (0.22 + 0.9 * c.think) * sway; yaw += c.spin; }
+  if (c.kind === 7) yaw += feltFx(c, now, dt);
   let q = qMul(qAxis(AX, pitch), qAxis(AY, yaw));
   c.gaze = [clamp(c.px * 1.6, -1.5, 1.5), clamp(-c.py * 1.6, -1.5, 1.5)];
   c.hop = 0;
@@ -786,12 +1084,29 @@ function step(c, now, dt) {
     q = qMul(qAxis(AZ, 0.12 * k + sway * 0.02 * Math.sin(t * 0.6) - c.px * 0.08), q);
     c.gaze = [c.gaze[0] * (1 - k) + 0.9 * Math.sin(t * 1.3) * k, c.gaze[1] * (1 - k) + 1.4 * k];
   }
+  c.openK = 1;
+  if (c.kind === 7) {
+    /* 펠트 큐브: 숨 쉬듯 조금 부풀고, 손 쪽으로 고개를 아주 조금 갸웃한다. 생각할 때는 눈을 감고 돌고, 돌아와 한 번 눌렸다가 통 튄다.
+       구가 되어 도는 동안에는 통통 튄다 */
+    let sy = 1 + sway * 0.012 * Math.sin(t * 1.6 + c.i);
+    if (c.bounce0) {
+      const u = (now - c.bounce0) / 1000;
+      if (u >= 0 && u < 0.9) { sy *= 1 - 0.09 * Math.exp(-5 * u) * Math.cos(17 * u); c.hop = u < 0.32 ? 0.12 * Math.sin(Math.PI * u / 0.32) : 0; }
+      else if (u >= 0.9) c.bounce0 = 0;
+    }
+    const m = c.fxv[0];
+    if (m > 0) { sy *= 1 + 0.035 * Math.sin(t * 11) * m; c.hop += 0.07 * Math.abs(Math.sin(t * 5.5)) * m; }
+    c.slab = [0, 0, 1 / Math.sqrt(sy), sy];
+    c.openK = 1 - 0.92 * clamp(c.think * 1.6, 0, 1);
+    c.glow = 1;
+    q = qMul(qAxis(AZ, sway * 0.012 * Math.sin(t * 0.7) - c.px * 0.05), q);
+  }
   if (c.kind === 1 || c.stand) {
     /* 생각할 때 꼭짓점 하나로 서서 돈다. 그동안 눈은 꺼진다 */
     c.spin += dt * 1.6 * c.think;
     const stand = qMul(qAxis(AX, 0.26), qMul(qAxis(AY, c.spin), qMul(qAxis(AZ, 0.9553166), qAxis(AY, Math.PI / 4 + (c.standTurn || 0)))));
     q = qSlerp(q, stand, easeIO(clamp(c.think, 0, 1)));
-    c.eyeOn = 1 - clamp(c.think * 1.6, 0, 1);
+    c.eyeOn = c.kind === 7 ? 1 : 1 - clamp(c.think * 1.6, 0, 1);
     if (c.kind === 1) { c.scan = c.load >= 0 ? -9 : ((t * 0.55) % 1) * 3.8 - 1.9; c.glow = c.ident ? c.flash : 0; }
   }
   if (c.kind === 2 || c.kind === 5) {
@@ -834,13 +1149,39 @@ try {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     const loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     U = {}; for (const n of UNIFORMS) U[n] = gl.getUniformLocation(pr, n);
+    gl.uniform1i(U.uFeltA, 0); gl.uniform1i(U.uFeltB, 1);
   }
 } catch (err) { console.error('큐브 셰이더를 준비하지 못했다:', err); gl = null; }
 if (!gl) document.documentElement.dataset.nogl = '1';
 
+/* 펠트의 결을 주는 그림 한 장. 다 읽은 뒤에야 펠트 큐브를 그린다 */
+const FELT = { cream: null };
+function feltTexture(name) {
+  const img = document.getElementById('tex-' + name);
+  if (!gl || !img) return;
+  const make = () => {
+    if (!img.naturalWidth) return;
+    const tx = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tx);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+    const pot = n => (n & (n - 1)) === 0;
+    const mip = pot(img.naturalWidth) && pot(img.naturalHeight);
+    if (mip) gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mip ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+    FELT[name] = tx;
+    setTimeout(() => kick(), 0);
+  };
+  if (img.complete) make(); else img.addEventListener('load', make, { once: true });
+}
+feltTexture('cream');
+
 const seed = Math.random();
 function drawGL(tg, now) {
   const c = tg.cube, w = tg.w, h = tg.h;
+  if (c.kind === 7 && !FELT.cream) return;
   if (glc.width < w || glc.height < h) { glc.width = Math.max(glc.width, w); glc.height = Math.max(glc.height, h); }
   gl.viewport(0, 0, w, h);
   gl.uniform2f(U.uRes, w, h);
@@ -865,9 +1206,19 @@ function drawGL(tg, now) {
   gl.uniform3f(U.uL, c.L[0], c.L[1], c.L[2]);
   gl.uniform3f(U.uOff, 0, c.bob || 0, 0);
   gl.uniform3f(U.uCore, c.core[0], c.core[1], c.core[2]);
-  gl.uniform4f(U.uEye, c.eyeOn, c.open, c.moodShown, c.sep);
+  gl.uniform4f(U.uEye, c.eyeOn, c.open * c.openK, c.moodShown, c.sep);
   gl.uniform2f(U.uGaze, c.gaze[0], c.gaze[1]);
   gl.uniform4f(U.uSlab, c.slab[0], c.slab[1], c.slab[2], c.slab[3]);
+  if (c.kind === 7) {
+    /* 펠트의 결은 그림 한 장이고, 몸 · 눈 · 깎은 꼭짓점의 색은 조합에서 온다 */
+    const k = COMBOS[c.combo], bg = BG[feltBg];
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, FELT.cream);
+    gl.uniform3f(U.uBody, k.body[0], k.body[1], k.body[2]);
+    gl.uniform3f(U.uThread, k.eye[0], k.eye[1], k.eye[2]);
+    gl.uniform3f(U.uAccent, k.cut[0], k.cut[1], k.cut[2]);
+    gl.uniform3f(U.uBg, bg[0], bg[1], bg[2]);
+    gl.uniform4f(U.uFx, c.fxv[0], c.fxv[1], c.fxv[2], 0);
+  }
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   tg.ctx.drawImage(glc, 0, glc.height - h, w, h, 0, 0, w, h);
 }
@@ -931,7 +1282,7 @@ let quality = 1;
 const dprNow = () => Math.min(window.devicePixelRatio || 1, 2);
 function fit(tg) {
   const css = tg.fixed || tg.cv.clientWidth || 1;
-  tg.dpr = tg.fixed ? Math.max(dprNow(), 2) : Math.max(1, dprNow() * quality);
+  tg.dpr = tg.fixed ? Math.max(dprNow(), 2) : Math.max(1, Math.min(dprNow(), tg.soft ? 1.5 : 2) * quality);
   const px = Math.max(1, Math.round(css * tg.dpr));
   if (tg.cv.width !== px || tg.cv.height !== px) { tg.cv.width = px; tg.cv.height = px; }
   tg.w = px; tg.h = px;
@@ -960,6 +1311,19 @@ for (const sec of document.querySelectorAll('.cand')) {
   }
   stage.addEventListener('click', () => { cube.thinkUntil = performance.now() + 2600; kick(); });
 }
+/* 색 조합 여덟 벌. 누르면 큰 무대의 펠트 큐브가 그 색으로 바뀌고 한 번 통 튄다 */
+const HERO = CUBES[11];
+document.querySelectorAll('.combo').forEach((b, n) => {
+  const cube = CUBES[12 + n];
+  cube.big = addTarget(b.querySelector('canvas'), cube, 0);
+  if (cube.big) { cube.big.soft = true; fit(cube.big); }
+  b.addEventListener('click', () => {
+    HERO.combo = n; HERO.bounce0 = performance.now();
+    for (const o of document.querySelectorAll('.combo')) o.setAttribute('aria-pressed', String(o === b));
+    document.getElementById('combo-name').textContent = COMBOS[n].name;
+    kick();
+  });
+});
 if (typeof ResizeObserver === 'function') {
   const ro = new ResizeObserver(() => { for (const tg of targets) if (!tg.fixed) fit(tg); kick(); });
   for (const tg of targets) if (!tg.fixed) ro.observe(tg.cv);
@@ -1015,6 +1379,28 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) { can
 
 const t0 = performance.now();
 for (const c of CUBES) c.bootUntil = t0 + 1100 + c.i * 260;
+/* 펠트 큐브의 눈: 알약 눈(3), 도트 눈(0), 실땀 눈(4). 도트 눈은 점 칸이 커서 크기와 자리를 따로 둔다. 아홉 큐브가 함께 바뀐다 */
+const FELTS = CUBES.filter(c => c.kind === 7);
+const press = (sel, b) => { for (const o of document.querySelectorAll(sel)) o.setAttribute('aria-pressed', String(o === b)); };
+for (const b of document.querySelectorAll('[data-feye]')) b.addEventListener('click', () => {
+  const dot = b.dataset.feye === '0';
+  for (const c of FELTS) { c.eyeStyle = +b.dataset.feye; c.eyeK = dot ? 2.2 : 1.35; c.sep = dot ? 4.5 : 7.6; c.eyeY = dot ? -0.27 : -0.17; }
+  press('[data-feye]', b); kick();
+});
+/* 귀퉁이에 세모 조각을 댈지 */
+for (const b of document.querySelectorAll('[data-fcut]')) b.addEventListener('click', () => {
+  const on = b.dataset.fcut === '1';
+  for (const c of FELTS) { c.cutV = on ? [1, 1, 1, 0.5] : [0, 0, 0, 0]; c.standTurn = on ? Math.PI / 2 : 0; }
+  press('[data-fcut]', b); kick();
+});
+for (const b of document.querySelectorAll('[data-fbg]')) b.addEventListener('click', () => { feltBg = b.dataset.fbg; press('[data-fbg]', b); kick(); });
+/* 로딩 시안: 큰 무대의 큐브만 보인다 */
+for (const b of document.querySelectorAll('[data-ffx]')) b.addEventListener('click', () => {
+  if (reduced) return;
+  const now = performance.now(), dur = { ball: 3600, synk: 2900, pair: 3250 }[b.dataset.ffx];
+  HERO.fx = b.dataset.ffx; HERO.fxT0 = now; HERO.fxUntil = now + dur; HERO.fxOn = true; HERO.ballHome = null; HERO.thinkUntil = 0;
+  kick();
+});
 /* 여섯째 판: 「로딩 보기」를 누르면 그 큐브가 서서 돌며 몸으로 진행을 보인다 */
 for (const b of document.querySelectorAll('[data-load]')) b.addEventListener('click', () => {
   if (reduced) return;
