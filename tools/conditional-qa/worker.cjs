@@ -6,6 +6,7 @@ const github = require('./github.cjs');
 const { childRun } = require('./run.cjs');
 const { runnerFor } = require('./legacy-profile.cjs');
 const { LIST_DIGEST, testedChanges, traceEnvironment, touchedOutside } = require('./tested-tree.cjs');
+const { s122TraceOnly } = require('./trace-diagnosis.cjs');
 const defaultState = () => path.join(os.homedir(), 'security-audit-skill/SYNK-conditional-qa');
 // A tick opens new verifications only within this budget: one verification may take 50 minutes,
 // and both the scheduled task and its hidden launcher stop a tick after two hours.
@@ -96,11 +97,15 @@ function failureDisposition(error, startedAt, { slept = sleptDuring, now = new D
     publicationState: interrupted ? 'pending' : 'failure',
     description: interrupted ? 'System sleep interrupted verification; awaiting a fresh complete run' : INCOMPLETE };
 }
-// Names the failed cases only when the receipt says the tests themselves failed on unchanged source and inputs.
-// Any other end keeps the plain line, which the diagnosed ledger can never explain.
-function failureText(output) {
+// A trace receipt stays failed even when every case passed. Only verify() can attest that the trace was the sole failure.
+function failureText(output, item = {}) {
   try {
-    const receipt = read(path.join(output, 'result.json')), ids = receipt.rows.filter(row => row.status !== 'pass').map(row => row.id);
+    const bytes = fs.readFileSync(path.join(output, 'result.json')), receipt = JSON.parse(bytes);
+    if (item.traceReceiptSha256 || receipt.touchedOutside?.length) {
+      if (receipt.commit !== item.commit || sha256(bytes) !== item.traceReceiptSha256) return INCOMPLETE;
+      return github.traceDescription(receipt.expected, receipt.manifestDigest, 'S122');
+    }
+    const ids = receipt.rows.filter(row => row.status !== 'pass').map(row => row.id);
     if (receipt.sourceUnchanged !== true || receipt.inputsUnchanged !== true || !ids.length || receipt.rows.length !== receipt.expected || !ids.every(id => /^S\d{3,}$/.test(id))) return INCOMPLETE;
     return github.failureDescription(receipt.passed, receipt.expected, ids);
   } catch { return INCOMPLETE; }
@@ -156,12 +161,24 @@ async function verify(config, commit, output, serialRetry = false) {
   const receipt = read(path.join(output, 'result.json'));
   receipt.inputsUnchanged = postcheck(context);
   receipt.testedTree = LIST_DIGEST; receipt.touchedOutside = touchedOutside(trace);
-  receipt.ok = receipt.ok && !receipt.touchedOutside.length && execution.exitCode === 0 && !execution.timedOut && receipt.inputDigest === context.inputDigest && !git(config.root, ['status', '--porcelain', '--untracked-files=no'], { timeout: CHECKOUT_MS });
-  write(path.join(output, 'result.json'), receipt);
-  if (!coverage(receipt, { commit, digest: manifest.digest, cases })) {
+  const completeBeforeTrace = receipt.ok === true && execution.exitCode === 0 && execution.timedOut === false &&
+    receipt.inputDigest === context.inputDigest && !git(config.root, ['status', '--porcelain', '--untracked-files=no'], { timeout: CHECKOUT_MS });
+  const expected = { commit, digest: manifest.digest, cases };
+  receipt.ok = completeBeforeTrace && !receipt.touchedOutside.length;
+  const file = path.join(output, 'result.json');
+  write(file, receipt);
+  if (!coverage(receipt, expected)) {
     const error = Error(receipt.touchedOutside.length ? `Tests touched docs left out of the checkout: ${receipt.touchedOutside.slice(0, 5).join(', ')}` : `Local tests incomplete: ${receipt.passed}/${cases.length}`);
     const ownInput = receipt.commit === commit && receipt.manifestDigest === manifest.digest && receipt.inputDigest === context.inputDigest;
     error.code = ownInput && browserProfileDiskFull(receipt, output) ? 'ENOSPC' : 'TEST_FAILURE';
+    if (completeBeforeTrace && receipt.touchedOutside.length) {
+      try {
+        if (s122TraceOnly({ ...receipt, ok: true }, expected, trace)) {
+          // inputs.write serializes these precise bytes. Bind diagnosis to them across failed publication and retries.
+          error.traceReceiptSha256 = sha256(JSON.stringify(receipt, null, 2) + '\n');
+        }
+      } catch { /* An incomplete or unreadable proof leaves the original failure generic. */ }
+    }
     throw error;
   }
   return { receipt, count: cases.length, digest: manifest.digest };
@@ -187,7 +204,7 @@ function markCancelledRuns(queue, cancelled) {
 // A failure that could not be published still reads as running. It is published again, and only then is its run woken.
 function republishFailures(queue, publish = github.publish) {
   for (const item of queue.items.filter(row => row.status === 'failed' && row.publicationError).slice(0, 10)) {
-    try { publish(item.commit, 'failure', failureText(item.output)); delete item.publicationError; item.resumePending = true; }
+    try { publish(item.commit, 'failure', failureText(item.output, item)); delete item.publicationError; item.resumePending = true; }
     catch { /* Tried again between verifications. */ }
   }
 }
@@ -329,7 +346,7 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
           if (requestedCommit === null) advanceTurn(queue);
           calmFirst.reset(); calmAnother.reset();
           item.status = 'running'; item.startedAt = new Date().toISOString(); item.slot = checkout === config ? 1 : Number(path.basename(checkout.state)); item.cpuAtStart = busy;
-          delete item.resumePending; save();
+          delete item.resumePending; delete item.traceReceiptSha256; save();
           hub.publish(item.commit, 'pending', 'Running the registered local conditional tests');
           item.output = path.join(stateDir, 'runs', `${item.commit}-${Date.now()}`);
           const result = await verifyCommit(checkout, item.commit, item.output, Boolean(item.retryRequest));
@@ -349,7 +366,10 @@ async function tick(stateDir, { budgetMs = BUDGET_MS, slept = sleptDuring, reque
           if (disposition.interrupted) item.error = `Interrupted by system sleep; verifying again. ${item.error}`.slice(0, 1000);
           item.status = disposition.status; item.retryAt = Date.now() + 15 * 60_000;
           ({ publicationState, description } = disposition);
-          if (publicationState === 'failure' && error.code === 'TEST_FAILURE') description = failureText(item.output);
+          if (publicationState === 'failure' && error.code === 'TEST_FAILURE') {
+            if (error.traceReceiptSha256) item.traceReceiptSha256 = error.traceReceiptSha256;
+            description = failureText(item.output, item);
+          }
           // Not a test result: this checkout or the network is the suspect, so it stops for this tick instead of failing every commit it is handed.
           retireSlot = !['TEST_FAILURE', 'ENOSPC'].includes(error.code);
         }

@@ -653,9 +653,13 @@ test('the status read walks first parents down to the activation commit and bind
   const [head, side, parent, first, below] = ['1', '2', '3', '4', '5'].map(x => x.repeat(40));
   const node = (oid, parents) => ({ oid, committedDate: '2026-11-04T00:00:00Z', parents: { nodes: parents.map(row => ({ oid: row })) }, file: { oid: 'blob' }, status: null });
   const pages = [{ pageInfo: { hasNextPage: true, endCursor: 'next' }, nodes: [node(head, [parent, side]), node(side, [first])] }, { pageInfo: { hasNextPage: true, endCursor: 'more' }, nodes: [node(parent, [first]), node(first, [below]), node(below, [])] }];
-  const asked = [], query = (text, variables) => { asked.push(variables.after); return { data: { repository: { object: { history: pages.shift() } } } }; };
+  const asked = [], query = (text, { ref, after }) => {
+    assert.match(text, /object\(expression:\$ref\)/);
+    asked.push([ref, after]); return { data: { repository: { object: { history: pages.shift() } } } };
+  };
   const { line, reachedFirst } = localStatus.fetchHistory({ query, first });
-  assert.deepEqual(line.map(row => row.oid), [head, parent, first]); assert.equal(reachedFirst, true); assert.deepEqual(asked, [undefined, 'next'], 'stops at the activation commit');
+  assert.deepEqual(line.map(row => row.oid), [head, parent, first]); assert.equal(reachedFirst, true);
+  assert.deepEqual(asked, [['master', undefined], [head, 'next']], 'the next page stays on the first head if master moves');
   const bytes = fs.readFileSync(path.join(root, 'tools/conditional-qa/cases.json')), cache = new Map(); let reads = 0;
   const api = () => { reads++; return { content: bytes.toString('base64') }; };
   for (let n = 0; n < 2; n++) assert.deepEqual(localStatus.manifestAt('blob', { api, cache }), { count: selected.length, digest: manifest.digest });
@@ -664,15 +668,16 @@ test('the status read walks first parents down to the activation commit and bind
 // 11-06 00:28 the line since activation passed the old 1000-commit window and every run turned red with nothing broken.
 test('the status read ends at a settled run past the alert horizon, and an old commit that still waits or failed afresh keeps it going', () => {
   const now = Date.parse('2026-11-08T00:00:00Z'), hour = 3600_000, ok = (at) => ({ contexts: [{ context: 'conditional-qa/local', state: 'SUCCESS', description: 'PASS', createdAt: at }] });
-  // 300 commits an hour apart, newest first; each page holds 50. The activation commit is never reached.
+  // 300 commits an hour apart, newest first. The activation commit is never reached.
   const build = (status) => Array.from({ length: 300 }, (_, n) => ({ oid: String(n).padStart(40, 'a'), committedDate: new Date(now - n * hour).toISOString(),
     parents: { nodes: [{ oid: String(n + 1).padStart(40, 'a') }] }, file: { oid: 'blob' }, status: status(n) }));
-  const reader = nodes => { let pages = 0; return { query: (text, { after }) => { const from = after ? Number(after) : 0; pages++;
-    return { data: { repository: { object: { history: { pageInfo: { hasNextPage: from + 50 < nodes.length, endCursor: String(from + 50) }, nodes: nodes.slice(from, from + 50) } } } } }; }, pages: () => pages }; };
+  const reader = nodes => { let pages = 0; return { query: (text, { after }) => {
+    const from = Number(after || 0), end = from + Number(text.match(/history\(first:(\d+)/)[1]); pages++;
+    return { data: { repository: { object: { history: { pageInfo: { hasNextPage: end < nodes.length, endCursor: String(end) }, nodes: nodes.slice(from, end) } } } } }; }, pages: () => pages }; };
   const settled = reader(build(n => ok(new Date(now - n * hour).toISOString())));
   const read = localStatus.fetchHistory({ query: settled.query, first: 'f'.repeat(40), now });
-  // 96 h horizon: after the third page the oldest 50 read (100..149 h old) are all past it and settled.
-  assert.deepEqual([read.complete, read.reachedFirst, read.line.length, settled.pages()], [true, false, 150, 3]);
+  // The 50 settled commits (100..149 h old) hit the original horizon halfway through the second page.
+  assert.deepEqual([read.complete, read.reachedFirst, read.line.length, settled.pages()], [true, false, 150, 2]);
   const waiting = reader(build(n => (n === 120 ? null : ok(new Date(now - n * hour).toISOString()))));
   const kept = localStatus.fetchHistory({ query: waiting.query, first: 'f'.repeat(40), now });
   assert.deepEqual([kept.complete, kept.line.length], [true, 200], 'the waiting commit 120 stays in the rows and the run starts after it');
@@ -681,13 +686,25 @@ test('the status read ends at a settled run past the alert horizon, and an old c
   assert.equal(localStatus.fetchHistory({ query: fresh.query, first: 'f'.repeat(40), now }).line.length, 200, 'a retry that failed an hour ago is read and alerts');
   const capped = localStatus.fetchHistory({ query: reader(build(() => null)).query, first: 'f'.repeat(40), now, limit: 1000 });
   assert.deepEqual([capped.complete, capped.line.length], [false, 300], 'nothing settled: the read runs out without completing');
+  const pending = build(() => null);
+  pending[148].parents.nodes = [{ oid: pending[150].oid }];
+  const cappedAtMerge = localStatus.fetchHistory({ query: reader(pending).query, first: pending[150].oid, now, limit: 150 });
+  assert.deepEqual([cappedAtMerge.complete, cappedAtMerge.line.length], [false, 149], 'the prefetched parent is outside the scan limit');
 });
-test('a passing GitHub read error is retried, and a lasting one is an error rather than a green check', () => {
-  const node = { oid: localStatus.FIRST_COMMIT, committedDate: '2026-11-04T00:00:00Z', parents: { nodes: [] }, file: null, status: null };
-  const page = { data: { repository: { object: { history: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [node] } } } } };
-  let calls = 0; const waits = [];
-  const once = () => { if (++calls === 1) throw Error('HTTP 502'); return page; };
-  assert.equal(localStatus.fetchHistory({ query: once, pause: ms => waits.push(ms) }).reachedFirst, true); assert.equal(waits.length, 1);
+test('a failed full page retries its cursor in smaller pages and a lasting error fails the status read', () => {
+  const head = '1'.repeat(40), middle = '2'.repeat(40), calls = [], waits = [];
+  const query = (text, { ref, after }) => {
+    calls.push([ref, after, Number(text.match(/history\(first:(\d+)/)[1])]);
+    if (calls.length === 2) throw Error('HTTP 502');
+    const oid = after === 'next' ? middle : after === 'last' ? localStatus.FIRST_COMMIT : head;
+    const parent = oid === head ? middle : localStatus.FIRST_COMMIT;
+    const node = { oid, parents: { nodes: [{ oid: parent }] }, file: null, status: null };
+    const pageInfo = { hasNextPage: oid !== localStatus.FIRST_COMMIT, endCursor: oid === head ? 'next' : 'last' };
+    return { data: { repository: { object: { history: { pageInfo, nodes: [node] } } } } };
+  };
+  assert.equal(localStatus.fetchHistory({ query, pause: ms => waits.push(ms) }).reachedFirst, true);
+  assert.deepEqual(calls, [['master', undefined, 100], [head, 'next', 100], [head, 'next', 50], [head, 'last', 50]]);
+  assert.equal(waits.length, 1);
   assert.throws(() => localStatus.fetchHistory({ query: () => { throw Error('HTTP 502'); }, pause: () => {} }), /502/);
 });
 test('no conditional job polls the PC; the status check is read-only', () => {

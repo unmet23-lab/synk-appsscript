@@ -28,6 +28,7 @@ function status(commit, api = request) {
 }
 const description = (count, digest) => `PASS ${count}/${count} manifest=${digest.slice(0, 16)}`;
 function accepted(value, count, digest) { return value?.state === 'success' && value.description === description(count, digest); }
+const traceDescription = (count, digest, caseId) => `TRACE ${count}/${count} manifest=${digest.slice(0, 16)} ${caseId}`;
 // The public line names only case ids from the public manifest; the evidence stays in the private receipt. It never reads as a pass.
 const FAILURE_LINE = /^FAIL (\d+)\/(\d+): (S\d+(?: S\d+)*)( \+\d+)?$/;
 function failureDescription(passed, expected, ids) {
@@ -76,4 +77,4 @@ function cancelledRuns(api = request, pages = 3) {
   }
   return found;
 }
-module.exports = { REPO, validCommit, request, graphql, status, description, accepted, failureDescription, failedCases, publish, cancelRun, resumeWaitingWorkflow, cancelledRuns };
+module.exports = { REPO, validCommit, request, graphql, status, description, accepted, traceDescription, failureDescription, failedCases, publish, cancelRun, resumeWaitingWorkflow, cancelledRuns };

@@ -5,7 +5,8 @@ const fs = require('node:fs'), path = require('node:path'), os = require('node:o
 const root = path.resolve(__dirname, '..'), c = require('../tools/conditional-qa/contract.cjs');
 const { KEPT_DOCS, SPARSE_PATTERNS, outsideTestedTree, onTheWay, testedChanges, traceEnvironment, touchedOutside } = require('../tools/conditional-qa/tested-tree.cjs');
 const { write, git, ensureTestedTree } = require('../tools/conditional-qa/inputs.cjs');
-const { carryUnchanged, nextItem, tick } = require('../tools/conditional-qa/worker.cjs');
+const { carryUnchanged, nextItem, tick, failureText, republishFailures } = require('../tools/conditional-qa/worker.cjs');
+const { accountLedger, s122TraceOnly } = require('../tools/conditional-qa/trace-diagnosis.cjs');
 const github = require('../tools/conditional-qa/github.cjs');
 const manifest = c.readManifest(root), local = manifest.cases.filter(row => row.route === 'local');
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cqa-tested-tree-')); t.after(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 3 })); return dir; }
@@ -31,6 +32,70 @@ test('only docs off the list count as outside; everything else in the repository
     assert.equal(outsideTestedTree(entry.endsWith('/') ? `${entry}a.js` : entry), false, entry);
     assert.equal(onTheWay(entry.replace(/\/[^/]*\/?$/, '')), true, entry);
   }
+});
+
+test('only the frozen S122 call sites identify a ledger read, even with multiple readers in one process', t => {
+  const dir = scratch(t), checkout = path.join(dir, 'checkout'), file = path.join(checkout, 'tests/글자검사.test.js');
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const call = "require('node:fs').existsSync(require('node:path').join(process.cwd(), 'docs/마케팅/sns-계정.json'));";
+  const lines = Array(632).fill('');
+  lines[605] = call; lines[625] = call; lines[630] = call;
+  lines[631] = 'if (process.env.EXTRA_READER) ' + call;
+  fs.writeFileSync(file, lines.join('\n'));
+  function observe(label, extra, entry = file) {
+    const folder = path.join(dir, label);
+    const result = cp.spawnSync(process.execPath, [entry], { cwd: checkout, windowsHide: true,
+      env: { ...process.env, ...traceEnvironment(checkout, folder), EXTRA_READER: extra }, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(touchedOutside(folder), [accountLedger]);
+    return fs.readdirSync(folder).map(name => name.replace(/^\d+/, '')).sort();
+  }
+  assert.deepEqual(observe('known', ''), ['.s122.txt']);
+  assert.deepEqual(observe('mixed', '1'), ['.s122.txt', '.txt']);
+  lines[0] = "Error.prepareStackTrace = () => { throw Error('unavailable'); };";
+  fs.writeFileSync(file, lines.join('\n'));
+  assert.deepEqual(observe('no-stack', ''), ['.txt']);
+  const other = path.join(path.dirname(file), 'other.test.js');
+  fs.writeFileSync(other, lines.slice(1).join('\n'));
+  assert.deepEqual(observe('other-file', '', other), ['.txt']);
+});
+
+test('a single S122 trace qualifies only after every unchanged case and execution phase passed', t => {
+  const folder = scratch(t), file = 'tests/글자검사.test.js', commit = 'a'.repeat(40);
+  const cases = [{ id: 'S122', file, name: 'sample', profile: 'default' }, { id: 'S120', file, name: 'other', profile: 'default' }];
+  const rows = cases.map(row => ({ ...row, status: 'pass' }));
+  const expected = { commit, digest: manifest.digest, cases };
+  const receipt = { version: 1, route: 'local', candidate: false, commit, manifestDigest: manifest.digest, expected: 2, passed: 2, ok: true,
+    sourceBefore: { commit, trackedDiff: c.sha256(''), files: { [file]: '36d662883aaa0297937db099110ac2835a551f7e1f486ec133ae217e90329aad' } },
+    sourceUnchanged: true, inputsUnchanged: true, rows, touchedOutside: [accountLedger],
+    phases: [{ profile: 'default', expected: 2, passed: 2, ok: true, exitCode: 0, timedOut: false, unexpectedFailures: [], rows }] };
+  assert.equal(s122TraceOnly(receipt, expected, path.join(folder, 'missing')), false);
+  fs.writeFileSync(path.join(folder, '123.s122.txt'), accountLedger + '\n');
+  assert.equal(s122TraceOnly(receipt, expected, folder), true);
+  for (const change of [{ ok: false }, { sourceUnchanged: false }, { inputsUnchanged: false }, { candidate: true }, { route: 'all' },
+    { commit: 'b'.repeat(40) }, { manifestDigest: 'x' }, { passed: 1 }, { rows: [rows[0], rows[0]] }, { rows: [rows[0], { ...rows[1], id: 'S999' }] },
+    { sourceBefore: { ...receipt.sourceBefore, files: {} } }, { touchedOutside: [accountLedger, 'docs/other'] }, { phases: [] },
+    ...[{ ok: false }, { exitCode: 1 }, { timedOut: true }, { unexpectedFailures: [{}] }, { profile: 'other' }, { rows: [] }]
+      .map(phase => ({ phases: [{ ...receipt.phases[0], ...phase }] }))]) {
+    assert.equal(s122TraceOnly({ ...receipt, ...change }, expected, folder), false, JSON.stringify(change));
+  }
+  fs.writeFileSync(path.join(folder, '456.txt'), accountLedger + '\n');
+  assert.equal(s122TraceOnly(receipt, expected, folder), false);
+});
+
+test('a trace publication stays failed and is bound to the exact saved bytes and commit on retry', t => {
+  const output = scratch(t), file = path.join(output, 'result.json'), commit = 'a'.repeat(40), label = github.traceDescription(85, manifest.digest, 'S122');
+  const incomplete = 'Local verification incomplete; inspect the private worker receipt';
+  const receipt = { commit, ok: false, expected: 85, manifestDigest: manifest.digest, touchedOutside: [accountLedger] };
+  write(file, receipt);
+  const item = { commit, status: 'failed', publicationError: true, output, traceReceiptSha256: c.sha256(fs.readFileSync(file)) };
+  const calls = [];
+  republishFailures({ items: [item] }, (...args) => calls.push(args));
+  assert.deepEqual(calls, [[commit, 'failure', label]]);
+  assert.equal(failureText(output), incomplete);
+  assert.equal(failureText(output, { ...item, commit: 'b'.repeat(40) }), incomplete);
+  fs.appendFileSync(file, '\n');
+  assert.equal(failureText(output, item), incomplete);
 });
 
 function repository(t) {

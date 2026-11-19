@@ -2,6 +2,60 @@
   "version": 1,
   "ranges": [
     {
+      "kind": "trace",
+      "cases": [
+        "S122"
+      ],
+      "from": "e87cb59df0c4b8c0fabe3d5a074632d3ef6900de",
+      "fixedBy": "9ce91dffe40e86d5c4a9966289ecc42bd16dc526",
+      "cause": "글자 검사 S122의 임시 영상이 실제 계정 원장을 찾았다. 시험용 원장을 분리한 뒤 같은 검사가 읽기 대조를 통과했다",
+      "evidence": "tools/conditional-qa/README.md#s122-trace",
+      "reviewedStatuses": [
+        {
+          "commit": "991455c491320d5461c629bc03d234da387c31f3",
+          "statusId": "SC_kwDOTR28LM8AAAANz0TbCg",
+          "manifest": "cef1f5d7b255f268591154a41f870e5aef7392825e97b2df828c3b0dda8fb5da",
+          "receiptSha256": "56d8dc438e29ee23e86697606209c103c10c99a3b334a3ce94db668971d624db"
+        },
+        {
+          "commit": "9af367c29b08a3b71dafdaceddaaa2f7c23263d5",
+          "statusId": "SC_kwDOTR28LM8AAAANzx4lgQ",
+          "manifest": "cef1f5d7b255f268591154a41f870e5aef7392825e97b2df828c3b0dda8fb5da",
+          "receiptSha256": "25973939f51840c131e31c6c7beecb0169428a1fc9da67c715a4b57cc4c41c7d"
+        },
+        {
+          "commit": "db81fbc34a81151ef2febb63069c76133beb91a2",
+          "statusId": "SC_kwDOTR28LM8AAAANzvwd5w",
+          "manifest": "cef1f5d7b255f268591154a41f870e5aef7392825e97b2df828c3b0dda8fb5da",
+          "receiptSha256": "d95be23321cb8368c2e2fc48eb5eb3c3a0530ed5ca4e9bc0437e45f04e4e6f3c"
+        },
+        {
+          "commit": "8c0d65821fc9a06a6b02151ceb38c302d6ff61eb",
+          "statusId": "SC_kwDOTR28LM8AAAANzm_Iiw",
+          "manifest": "f8aac87e2fc70a1d47be81865c018f5eb9479dcd6eeff1faf62f55f0b165096d",
+          "receiptSha256": "bcfcc10c1787ad7d32c8e21d968a6e3647d73c20f6796816edfb5098187c1557"
+        },
+        {
+          "commit": "397124982b6d43ac40e6b38600db5408d7f17742",
+          "statusId": "SC_kwDOTR28LM8AAAANzhb3Og",
+          "manifest": "f8aac87e2fc70a1d47be81865c018f5eb9479dcd6eeff1faf62f55f0b165096d",
+          "receiptSha256": "c4f34f771a75f3e64ecb8f40aaa3397da4013f97db265a7850f94d18f068b2e0"
+        },
+        {
+          "commit": "de8ce3a7c79771106b6cfe21ebe9a8fbaf11c9e2",
+          "statusId": "SC_kwDOTR28LM8AAAANzeI5iw",
+          "manifest": "f8aac87e2fc70a1d47be81865c018f5eb9479dcd6eeff1faf62f55f0b165096d",
+          "receiptSha256": "e2bbffde9c9cf187fec120858b8429b883b94a9cd6ebe1c0d5080daa316e14c2"
+        },
+        {
+          "commit": "2ab0a3b6a55908d111b7f9be7bd43c36c448c07d",
+          "statusId": "SC_kwDOTR28LM8AAAANzbbW0Q",
+          "manifest": "f8aac87e2fc70a1d47be81865c018f5eb9479dcd6eeff1faf62f55f0b165096d",
+          "receiptSha256": "530ea1375a1f0004767a72fe4001f73b37e9104b7c50c17c324895311a1d41e3"
+        }
+      ]
+    },
+    {
       "cases": [
         "S095"
       ],

@@ -12,6 +12,8 @@ if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
       'deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse' \
       'deb [signed-by=/usr/share/keyrings/ubuntu-archive-keyring.gpg] https://security.ubuntu.com/ubuntu noble-security main restricted universe multiverse' > "$sources"
     apt_options+=(-o "Dir::Etc::sourcelist=$sources" -o Dir::Etc::sourceparts=- -o APT::Get::List-Cleanup=0 -o Acquire::ForceIPv4=true)
+    # FFmpeg installation needs package indexes only; translated descriptions accounted for 8.7 MB.
+    apt_options+=(-o Acquire::Languages=none)
   fi
 
   apt_bounded() {

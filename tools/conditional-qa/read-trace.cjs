@@ -7,6 +7,8 @@ if (OUT && ROOT) {
   const fs = require('node:fs'), path = require('node:path'), Module = require('node:module');
   const { fileURLToPath } = require('node:url');
   const { outsideTestedTree, onTheWay } = require('./tested-tree.cjs');
+  const { accountLedger, s122Reader } = require('./trace-diagnosis.cjs');
+  const inS122 = s122Reader(ROOT, process.argv[1]);
   const { appendFileSync, mkdirSync } = fs;
   const docs = path.join(path.resolve(ROOT), 'docs').toLowerCase(), skip = path.resolve(ROOT).length + 1, seen = new Set();
   const note = (value, listing) => {
@@ -21,10 +23,13 @@ if (OUT && ROOT) {
       const file = `docs${full.slice(skip + 'docs'.length).split(path.sep).join('/')}`;
       // Stat-ing a folder on the way to a kept path is the way there. Listing it would quietly show fewer files than the commit has, so that counts.
       const inside = lower === docs ? false : outsideTestedTree(file) && !onTheWay(file);
-      if (seen.has(file) || !(inside || (listing && (lower === docs || onTheWay(file))))) return;
-      seen.add(file);
+      if (!(inside || (listing && (lower === docs || onTheWay(file))))) return;
+      const source = file === accountLedger && inS122() ? '.s122' : '';
+      const key = source + '\0' + file;
+      if (seen.has(key)) return;
       mkdirSync(OUT, { recursive: true });
-      appendFileSync(path.join(OUT, `${process.pid}.txt`), `${file}\n`);
+      appendFileSync(path.join(OUT, `${process.pid}${source}.txt`), `${file}\n`);
+      seen.add(key);
     } catch { /* Recording never gets in a test's way. */ }
   };
   const traced = (original, listing) => {

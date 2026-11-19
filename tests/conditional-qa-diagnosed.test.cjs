@@ -60,6 +60,37 @@ test('a plain line still alerts in the old form', () => {
   assert.deepEqual(result.problems, [`local verification failed at ${sha('a')}`]);
 });
 
+test('a reviewed trace leaves the failure on its commit and requires the original status or an exact worker diagnosis', () => {
+  const manifest = { count: 85, digest: 'f'.repeat(64) }, statusId = 'SC_reviewed';
+  const trace = { ...range, kind: 'trace', cases: ['S122'], reviewedStatuses: [
+    { commit: sha('b'), statusId, manifest: manifest.digest, receiptSha256: 'd'.repeat(64) },
+  ] };
+  const stamped = github.traceDescription(manifest.count, manifest.digest, 'S122');
+  function judge(description, { id = statusId, commit = 'b', state = 'failure', inventory = manifest } = {}) {
+    const item = row(commit, state, description);
+    item.status.id = id; item.manifest = inventory;
+    const rows = [row('a', null), row('b', null), row('c', null), row('d', null)];
+    rows[rows.findIndex(r => r.commit === item.commit)] = item;
+    return localStatus.judge(rows, { now: NOW, diagnosed: [trace] });
+  }
+  for (const result of [judge(INCOMPLETE), judge(stamped, { id: 'SC_new' })]) {
+    assert.deepEqual(result.failed, [sha('b')]);
+    assert.equal(result.passed, 0);
+    assert.deepEqual(result.explained.map(r => r.commit), [sha('b')]);
+  }
+  for (const [description, options] of [
+    [INCOMPLETE, { id: 'SC_new' }], [INCOMPLETE, { commit: 'c' }], [INCOMPLETE, { state: 'error' }],
+    [INCOMPLETE, { inventory: { ...manifest, digest: 'a'.repeat(64) } }],
+    [stamped, { commit: 'a' }], [stamped, { commit: 'd' }], [stamped, { state: 'error' }],
+    [stamped, { inventory: { ...manifest, count: 84 } }], [stamped + ' S123', {}],
+    ['FAIL 84/85: S122', {}], [stamped.replace('S122', 'S120'), {}],
+  ]) {
+    const result = judge(description, options);
+    assert.equal(result.explained.length, 0);
+    assert.ok(result.problems.some(p => p.includes('local verification failed')));
+  }
+});
+
 test('the ledger stops the alert only for its cases inside its range, and the failure stays listed', () => {
   const line = [row('a', 'success', 'x'), row('b', 'failure', 'FAIL 78/79: S070'), row('c', 'failure', 'FAIL 78/79: S070'), row('d', 'failure', 'FAIL 78/79: S070')];
   // Newest first: a is the fix, b and c hold the bad test, d is older than the range.
@@ -143,6 +174,12 @@ test('the ledger on master is well formed and every entry names a local case', t
   t.after(() => fs.rmSync(folder, { recursive: true, force: true }));
   const bad = change => { fs.writeFileSync(file, JSON.stringify({ version: 1, ranges: [{ ...range, ...change }] })); return () => localStatus.readDiagnosed(file, manifest); };
   assert.doesNotThrow(bad({}));
+  const reviewed = { commit: sha('b'), statusId: 'SC_x', manifest: 'a'.repeat(64), receiptSha256: 'c'.repeat(64) };
+  assert.throws(bad({ reviewedStatuses: [reviewed] }), /trace range/);
+  for (const entry of [{ ...reviewed, receiptSha256: '' }, { ...reviewed, statusId: '' }, { ...reviewed, manifest: 'unknown' }]) {
+    assert.throws(bad({ kind: 'trace', reviewedStatuses: [entry] }), /reviewed trace receipt/);
+  }
+  assert.throws(bad({ kind: 'trace', reviewedStatuses: [reviewed, reviewed] }), /reviewed trace receipt/);
   assert.throws(bad({ exactCases: 'yes' }), /Invalid diagnosed range/);
   assert.throws(bad({ exactCases: true, cases: ['S070', 'S070'] }), /Invalid diagnosed range/);
   for (const change of [{ cases: [] }, { cases: ['S999'] }, { cases: [manifest.cases.find(item => item.route !== 'local').id] }, { from: 'abc' }, { fixedBy: range.from }, { cause: ' ' }]) assert.throws(bad(change), /Invalid diagnosed range/, JSON.stringify(change));

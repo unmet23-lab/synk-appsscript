@@ -1,11 +1,11 @@
 'use strict';
 const fs = require('node:fs'), path = require('node:path');
 const { CONTEXT, sha256, readManifest } = require('./contract.cjs');
-const { REPO, request, accepted, failedCases, failureDescription, graphql } = require('./github.cjs');
+const { REPO, request, accepted, failedCases, failureDescription, traceDescription, graphql } = require('./github.cjs');
 // local-coverage cancels its own run while the PC verifies, and a cancelled run is never counted as red. So a stopped PC or
 // a failure on an older commit would make no signal at all. This reads every queued commit's status; it never runs a test or writes a pass.
 const FIRST_COMMIT = 'df9ec0dff34be52fc0fabff03381a0a2e59e639f'; // The worker's activation point; older commits were never queued.
-const MAX_COMMITS = 3000, PAGE = 50, READ_ATTEMPTS = 3; // A page of 100 with statuses drew an HTTP 502 (2026-11-04).
+const MAX_COMMITS = 3000, PAGE = 100, READ_ATTEMPTS = 3;
 const STALL_MS = 155 * 60_000; // Current verification, one backlog turn, one newest turn (each <=50 min), and a scheduler interval.
 const OVERDUE_MS = 72 * 3600_000; // The backlog may not outlast this: half the worker's turns go to the oldest commit.
 const FAILURE_RED_MS = 24 * 3600_000; // A failure stays listed until retried; red only while new, so a later failure is not buried.
@@ -15,41 +15,54 @@ const WAITING_PREFIX = 'WAIT '; // Written by local-coverage, not by the worker.
 // red for 24 h. So the read may end once a page's worth of the oldest commits read are older than both together and settled
 // (a pass, or a failure no longer red). The worker takes the oldest ready commit every other turn, so nothing older still waits behind such a run;
 // an old commit that is waiting or failed afresh keeps the read going. Reading the activation commit also ends it.
-const HORIZON_MS = OVERDUE_MS + FAILURE_RED_MS, SETTLED_RUN = PAGE;
+const HORIZON_MS = OVERDUE_MS + FAILURE_RED_MS, SETTLED_RUN = 50;
 function settledLongAgo(node, now) {
   const found = (node.status?.contexts || []).find(row => row.context === CONTEXT);
   if (!found || (found.description || '').startsWith(WAITING_PREFIX)) return false;
   return found.state === 'SUCCESS' || (['FAILURE', 'ERROR'].includes(found.state) && now - Date.parse(found.createdAt) >= FAILURE_RED_MS);
 }
-const HISTORY = `query($owner:String!,$name:String!,$after:String){repository(owner:$owner,name:$name){object(expression:"master"){... on Commit{history(first:${PAGE},after:$after){pageInfo{hasNextPage endCursor}
-  nodes{oid committedDate parents(first:1){nodes{oid}} file(path:"tools/conditional-qa/cases.json"){oid} status{contexts{context state description createdAt}}}}}}}}`;
+const historyQuery = size => `query($owner:String!,$name:String!,$ref:String!,$after:String){repository(owner:$owner,name:$name){object(expression:$ref){... on Commit{history(first:${size},after:$after){pageInfo{hasNextPage endCursor}
+  nodes{oid committedDate parents(first:1){nodes{oid}} file(path:"tools/conditional-qa/cases.json"){oid} status{contexts{id context state description createdAt}}}}}}}}`;
 
 const waitBriefly = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
-function readPage(query, variables, pause) {
+function readPage(query, variables, size, pause) {
   for (let attempt = 1; ; attempt++) {
-    try { return query(HISTORY, variables); }
-    catch (error) { if (attempt >= READ_ATTEMPTS) throw error; pause(attempt * 10_000); }
+    try {
+      const history = query(historyQuery(size), variables).data?.repository?.object?.history;
+      if (!history) throw Error('The master history could not be read');
+      return { history, size };
+    } catch (error) {
+      if (attempt >= READ_ATTEMPTS) throw error;
+      size = SETTLED_RUN; // GitHub has returned HTTP 502 for a full 100-node page.
+      pause(attempt * 10_000);
+    }
   }
 }
 // complete: the read reached the activation commit, or a settled run past the horizon (see HORIZON_MS). Anything else stays red.
 function fetchHistory({ query = graphql, first = FIRST_COMMIT, limit = MAX_COMMITS, pause = waitBriefly, now = Date.now(), horizonMs = HORIZON_MS } = {}) {
-  const [owner, name] = REPO.split('/'), byOid = new Map(); let head, line = [], reachedFirst = false, pastHorizon = false;
+  const [owner, name] = REPO.split('/'), byOid = new Map(), line = []; let head, reachedFirst = false, pastHorizon = false;
   // Follow first parents, the same line the worker queues; a merged side branch is verified through its merge.
   const walk = () => {
-    line = [];
-    for (let node = byOid.get(head); node && line.length < limit; node = byOid.get(node.parents.nodes[0]?.oid)) {
+    const next = line.length ? line.at(-1).parents.nodes[0]?.oid : head;
+    for (let node = byOid.get(next); node && line.length < limit; node = byOid.get(node.parents.nodes[0]?.oid)) {
       line.push(node);
       if (node.oid === first) { reachedFirst = true; break; }
     }
     const oldest = line.slice(-SETTLED_RUN);
     pastHorizon = !reachedFirst && oldest.length === SETTLED_RUN && oldest.every(node => now - Date.parse(node.committedDate) >= horizonMs && settledLongAgo(node, now));
   };
-  for (let after = null, more = true; more && byOid.size < limit && !reachedFirst && !pastHorizon;) {
-    const history = readPage(query, { owner, name, ...(after ? { after } : {}) }, pause).data?.repository?.object?.history;
-    if (!history) throw Error('The master history could not be read');
-    for (const node of history.nodes) { head ||= node.oid; byOid.set(node.oid, node); }
+  for (let after = null, more = true, size = PAGE; more && byOid.size < limit && !reachedFirst && !pastHorizon;) {
+    const page = readPage(query, { owner, name, ref: head || 'master', ...(after ? { after } : {}) }, size, pause);
+    const { history } = page;
+    size = page.size;
+    head ||= history.nodes[0]?.oid;
     more = history.pageInfo.hasNextPage; after = history.pageInfo.endCursor;
-    walk();
+    // Keep the same first-parent and alert boundaries as a sequence of 50-node reads.
+    for (let offset = 0; offset < history.nodes.length; offset += SETTLED_RUN) {
+      for (const node of history.nodes.slice(offset, offset + SETTLED_RUN)) byOid.set(node.oid, node);
+      walk();
+      if (reachedFirst || pastHorizon || byOid.size >= limit) break;
+    }
   }
   return { line, reachedFirst, complete: reachedFirst || pastHorizon };
 }
@@ -62,7 +75,7 @@ function manifestAt(oid, { api = request, cache = new Map() } = {}) {
 }
 function toRow(node, manifest) {
   const found = (node.status?.contexts || []).find(row => row.context === CONTEXT);
-  return { commit: node.oid, committedAt: node.committedDate, manifest, status: found ? { state: found.state.toLowerCase(), description: found.description || '', createdAt: found.createdAt } : null };
+  return { commit: node.oid, committedAt: node.committedDate, manifest, status: found ? { id: found.id, state: found.state.toLowerCase(), description: found.description || '', createdAt: found.createdAt } : null };
 }
 // A commit's own tests are frozen with it, so a test that was wrong for a stretch of commits fails on every one of them and a retry cannot pass.
 // diagnosed.json lists those stretches once someone has found the cause. It only stops the alert: the commit keeps its failure and is never counted as passed.
@@ -71,6 +84,15 @@ function readDiagnosed(file = path.join(__dirname, 'diagnosed.json'), manifest =
   if (ledger.version !== 1 || !Array.isArray(ledger.ranges)) throw Error('Invalid diagnosed ledger');
   for (const range of ledger.ranges) {
     const commits = [range.from, range.fixedBy];
+    if (range.kind !== undefined || range.reviewedStatuses !== undefined) {
+      if (range.kind !== 'trace' || range.cases?.length !== 1 || !Array.isArray(range.reviewedStatuses)) throw Error('Invalid diagnosed trace range');
+      const seen = new Set();
+      for (const row of range.reviewedStatuses) {
+        if (!/^[a-f0-9]{40}$/.test(row.commit) || !/^SC_[\w-]+$/.test(row.statusId) || seen.has(row.statusId)
+          || !/^[a-f0-9]{64}$/.test(row.manifest) || !/^[a-f0-9]{64}$/.test(row.receiptSha256)) throw Error('Invalid reviewed trace receipt');
+        seen.add(row.statusId);
+      }
+    }
     if (range.exactCases !== undefined && typeof range.exactCases !== 'boolean') throw Error('Invalid diagnosed range case matching mode');
     if (range.exactCases && Array.isArray(range.cases) && new Set(range.cases).size !== range.cases.length) throw Error('Invalid diagnosed range with duplicate cases');
     if (!commits.every(commit => /^[0-9a-f]{40}$/.test(commit)) || range.from === range.fixedBy || !Array.isArray(range.cases) || !range.cases.length || !range.cases.every(id => local.has(id)) || typeof range.cause !== 'string' || !range.cause.trim()) throw Error(`Invalid diagnosed range: ${JSON.stringify(range).slice(0, 200)}`);
@@ -93,11 +115,22 @@ function placeRanges(rows, diagnosed, { truncated = false } = {}) {
 }
 // A failed case outside its range, a plain line or a partial list stays an alert.
 function explain(row, { position, spans }) {
-  const named = failedCases(row.status.description), at = position.get(row.commit);
+  const at = position.get(row.commit), active = spans.filter(span => at > span.newest && at <= span.oldest);
+  const { status, manifest } = row;
+  for (const span of active) {
+    if (span.kind !== 'trace' || status.state !== 'failure') continue;
+    const exactTrace = manifest.count > 0 && /^[0-9a-f]{64}$/.test(manifest.digest)
+      && status.description === traceDescription(manifest.count, manifest.digest, span.cases[0]);
+    // Old workers had no trace-specific message. A later status on the same commit needs its own diagnosis.
+    const reviewed = status.description === 'Local verification incomplete; inspect the private worker receipt'
+      && span.reviewedStatuses.some(proof => proof.commit === row.commit && proof.statusId === status.id && proof.manifest === manifest.digest);
+    if (exactTrace || reviewed) return { cases: span.cases, ranges: [span] };
+  }
+  const named = failedCases(status.description);
   if (!named?.complete) return null;
   const count = row.manifest.count;
   const exactCount = row.status.description === failureDescription(count - named.ids.length, count, named.ids);
-  const eligible = spans.filter(span => at > span.newest && at <= span.oldest && (!span.exactCases ||
+  const eligible = active.filter(span => span.kind !== 'trace' && (!span.exactCases ||
     (exactCount && span.cases.length === named.ids.length && span.cases.every(id => named.ids.includes(id)))));
   const covering = named.ids.map(id => eligible.find(span => span.cases.includes(id)));
   return covering.every(Boolean) ? { cases: named.ids, ranges: [...new Set(covering)] } : null;

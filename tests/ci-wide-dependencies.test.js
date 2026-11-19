@@ -131,6 +131,7 @@ test('missing tools use only signed official Ubuntu pockets for every APT proces
     assert.match(call, /Dir::Etc::sourcelist=\S+\/synk-media-ubuntu\.list/);
     assert.match(call, /Dir::Etc::sourceparts=-(?:\s|$)/);
     assert.match(call, /APT::Get::List-Cleanup=0\b/);
+    assert.match(call, /Acquire::Languages=none(?:\s|$)/);
     assert.doesNotMatch(call, /allow-unauthenticated|AllowInsecure|trusted=yes/);
   }
   assert.match(apt[2], /--no-install-recommends\b/);
@@ -144,7 +145,7 @@ test('other self-hosted distributions and architectures use their configured rep
       assert.equal(r.sources, null);
       const apt = r.calls.filter(call => call.startsWith('apt-get '));
       assert.equal(apt.length, 2);
-      for (const call of apt) assert.doesNotMatch(call, /Dir::Etc::source/);
+      for (const call of apt) assert.doesNotMatch(call, /Dir::Etc::source|Acquire::Languages/);
       assert.match(apt[1], /--no-install-recommends\b/);
       assert.deepEqual(r.calls.slice(-2), ['ffmpeg version', 'ffprobe version']);
     });
