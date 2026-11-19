@@ -2,8 +2,11 @@
 // 컷마다 그 영상에 든 소리(대사 · 진동 · 방 소리)를 그대로 깐다(audio). 동영상은 public/img/V*.mp4(git 밖 — 제미나이 앱 동영상 77yuhbs 구독 몫 7편).
 // v3(11-10): 이해 시험 넷이 같이 짚은 자리 — 14~28초 늘어짐(정적 · 웃음 사이 · 노트북 화면을 줄임) · 40초 해설(무슨 일이었는지로 바꿈) · 회의록 작은 글.
 //   사람 움직임 재기에서 V4 7~9.5초(부장이 고개 든 채 웃음)가 0.03~0.08로 굳어 반전 컷을 V7(돌아봄 · 돋보기 벗고 웃음 · 일어섬)로 다시 뽑았다.
-export type Crop = { s: number; cx: number; cy: number; ay?: number };
-export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; d?: number };
+// v10(11-19 07시 회차 · 11-23 칸에 이어서): 최종본 검사가 v9의 같은 판 잘라 키운 컷 경계 아홉(1.42 · 1.92 · 3.46 · 4.42 · 12.58 · 17.04 · 24.71 · 26.08 · 26.83)을
+//   「같은판」으로 잡았다(synkbrief는 고칠 것). 한 영상을 잘라 이어 붙이던 자리를 한 컷으로 잇고, 컷 안에서 카메라가 천천히 옮겨 가게 한다(path — B49와 같은 길).
+//   path = 컷 안 초(t)마다 s · cx · cy, dPath = 컷 안 초마다 내림(d). 옮김은 빠른 당김이 컷으로 잡히지 않게 1초 넘게 걸친다(B53 현장 노트).
+export type Crop = { s: number; cx: number; cy: number; ay?: number; path?: { t: number[]; s?: number[]; cx?: number[]; cy?: number[] } };
+export type CutT = { from: number; to: number; src: string; start: number; crop: Crop; rate?: number; drift?: number; audio?: number; d?: number; dPath?: { t: number[]; d: number[] } };
 
 export const S = {
   ago: 6.84, lid: 22.56, minutes: 28.28, scroll: 29.2, scrollEnd: 31.0, focus: 32.08, minutesEnd: 34.08,
@@ -17,30 +20,23 @@ export const CUTS: CutT[] = [
   // v5(11-10 미학 맹검 「손 접사가 붓고 폰 화면이 뭉개짐」): 여는 컷을 넓은 그림으로 — 부장 책상 · 켜지는 폰 · 뒤 유리 회의실
   // v9(11-10 미학 맹검 v8 01 기각 「폰이 아래로 잘려 켜지는 순간이 안 읽힘 · 1.4초 같은 각도 확대 점프컷」): 첫 컷은 조금 당기고 덜 내려 켜지는 폰이 보이게,
   //   1.4초는 같은 각도 확대 대신 자기 폰을 내려다보는 다른 직원(「전원의 폰」)
-  { from: 0, to: 1.4, src: 'img/V4.mp4', start: 0.0, crop: { s: 1.25, cx: 600, cy: 1300 }, audio: 0.9, drift: 0.02, d: 200 },
-  { from: 1.4, to: 1.9, src: 'img/V4.mp4', start: 1.45, crop: { s: 2.2, cx: 790, cy: 1040 }, audio: 0.9 },
-  { from: 1.9, to: 3.48, src: 'img/V4.mp4', start: 2.0, crop: { s: 1.45, cx: 470, cy: 1150 }, audio: 0.9 },
-  { from: 3.48, to: 4.44, src: 'img/V4.mp4', start: 3.58, crop: { s: 1.55, cx: 860, cy: 900 }, audio: 0.9 },
-  { from: 4.44, to: 6.84, src: 'img/V4.mp4', start: 4.54, crop: { s: 2.1, cx: 930, cy: 900 }, audio: 0.9 },
-  // 3분 전 — 문이 닫히자 험담
-  { from: 6.84, to: 8.64, src: 'img/V2.mp4', start: 0.0, crop: { s: 1.1, cx: 540, cy: 1000 }, audio: 1.15 },
-  { from: 8.64, to: 12.6, src: 'img/V2.mp4', start: 1.8, crop: { s: 1.35, cx: 560, cy: 1000 }, audio: 1.15 },
-  { from: 12.6, to: 14.04, src: 'img/V2.mp4', start: 5.76, crop: { s: 1.8, cx: 760, cy: 950 }, audio: 1.15 },
+  // v10: V4 다섯 토막(0 · 1.4 · 1.9 · 3.48 · 4.44)을 한 컷으로 — 켜지는 폰과 부장(0~2.6) → 폰을 집어 드는 부장(2.6) → 어깨 너머 유리 회의실의 웃는 둘(3.2~4.6에 옮겨 감)
+  { from: 0, to: 6.84, src: 'img/V4.mp4', start: 0.0, crop: { s: 1.25, cx: 600, cy: 1300, path: { t: [0, 1.6, 2.8, 3.2, 4.6, 6.84], s: [1.25, 1.3, 1.45, 1.5, 2.0, 2.1], cx: [600, 560, 480, 520, 920, 930], cy: [1300, 1220, 1150, 1120, 910, 900] } }, audio: 0.9, drift: 0, d: 200 },
+  // 3분 전 — 문이 닫히자 험담 · v10: V2 세 토막(6.84 · 8.64 · 12.6 — 이어진 초)을 한 컷으로, 「네 번」(12.95) 앞 11.6~12.7에 과장 손가락 쪽으로 다가감
+  { from: 6.84, to: 14.04, src: 'img/V2.mp4', start: 0.0, crop: { s: 1.1, cx: 540, cy: 1000, path: { t: [0, 1.2, 2.6, 4.8, 5.9, 7.2], s: [1.1, 1.1, 1.35, 1.35, 1.72, 1.78], cx: [540, 540, 560, 560, 740, 760], cy: [1000, 1000, 1000, 1000, 955, 950] } }, audio: 1.15, drift: 0 },
+  // v10: 노트북 정지 그림 뒤 두 사람이 굳어 보여(최종본 검사 굳음 0.019) 노트북 위쪽 뒤 배경을 얕은 초점으로 더 흐린다(Film.tsx LaptopStill)
   { from: 14.04, to: 15.84, src: 'laptop', start: 0, crop: FULL },
-  // 승 — 더 심한 말 · 비밀 약속
-  { from: 15.84, to: 17.04, src: 'img/V3.mp4', start: 0.7, crop: { s: 1.05, cx: 540, cy: 960 }, audio: 1.15 },
-  { from: 17.04, to: 18.36, src: 'img/V3.mp4', start: 1.9, crop: { s: 1.6, cx: 760, cy: 900 }, audio: 1.15 },
+  // 승 — 더 심한 말 · 비밀 약속 · v10: V3 앞 두 토막(15.84 · 17.04 — 이어진 초)을 한 컷으로, 과장 쪽으로 다가감
+  { from: 15.84, to: 18.36, src: 'img/V3.mp4', start: 0.7, crop: { s: 1.05, cx: 540, cy: 960, path: { t: [0, 0.7, 1.9, 2.52], s: [1.05, 1.05, 1.55, 1.6], cx: [540, 540, 745, 760], cy: [960, 960, 905, 900] } }, audio: 1.15, drift: 0 },
   { from: 18.36, to: 19.26, src: 'img/V3.mp4', start: 3.22, crop: { s: 1.6, cx: 330, cy: 950 }, audio: 1.15 },
   { from: 19.26, to: 21.38, src: 'img/V3.mp4', start: 5.5, crop: { s: 1.25, cx: 520, cy: 950 }, audio: 1.15 },
   { from: 21.38, to: 22.56, src: 'img/V3.mp4', start: 7.9, crop: { s: 1.6, cx: 760, cy: 900 }, audio: 1.15 },
   // 전 — 덮는 순간부터: 탁 → 정적 → 진동 박자에 폰 두 대 접사 → 뒤 동료들 → 대리 얼굴 → 회의록(장면 심사 11-10 반영)
-  { from: 22.56, to: 24.7, src: 'img/V1.mp4', start: 0.5, crop: { s: 1.1, cx: 540, cy: 1000 }, audio: 1.15 },
   // v5(11-10 미학 맹검 「진동 접사 — 사원증 줄이 옷에 녹아듦 · 초점 없는 구도」): 접사를 빼고 두 사람과 켜지는 폰 두 대가 함께 보이는 중간 크기로
   // v9(11-10 미학 맹검 v8 03 기각 「두 번째 폰이 잘려 없음 · 26.1초 같은 각도 20% 확대 점프컷 · 글 없는 구간인데 위가 빈 검은 띠」):
-  //   글자가 없는 24.7~34.08초는 내리지 않고 전체 화면으로(탁자 위 두 폰이 다 보임) · 26.1초는 과장 근접 → 대리 근접으로 맞받기
-  { from: 24.7, to: 26.1, src: 'img/V1.mp4', start: 2.92, crop: { s: 1.0, cx: 540, cy: 960 }, audio: 1.15, d: 0 },
-  { from: 26.1, to: 26.82, src: 'img/V1.mp4', start: 4.32, crop: { s: 1.7, cx: 800, cy: 1000 }, audio: 1.15, d: 0 },
-  { from: 26.82, to: 28.28, src: 'img/V1.mp4', start: 5.04, crop: { s: 1.7, cx: 330, cy: 1050 }, audio: 1.15, d: 0 },
+  //   글자가 없는 24.7~34.08초는 내리지 않고 전체 화면으로(탁자 위 두 폰이 다 보임)
+  // v10: V1 네 토막(22.56 · 24.7 · 26.1 · 26.82)을 한 컷으로 — 「자, 진짜 끝」 뒤 24.6~25.4에 내림을 풀며 넓게(두 폰), 25.6~27.6에 폰을 드는 대리 쪽으로 다가감
+  { from: 22.56, to: 28.28, src: 'img/V1.mp4', start: 0.5, crop: { s: 1.1, cx: 540, cy: 1000, path: { t: [0, 2.04, 2.84, 3.04, 5.04, 5.72], s: [1.1, 1.1, 1.0, 1.0, 1.55, 1.6], cx: [540, 540, 540, 540, 350, 330], cy: [1000, 1000, 960, 960, 1045, 1050] } }, audio: 1.15, drift: 0, d: 260, dPath: { t: [2.04, 2.84], d: [260, 0] } },
   // v9(11-10 미학 맹검 v8 04 기각 「코드로 급조한 다크모드 템플릿 · 베젤 · 반사 · 심도 없는 평면 그래픽」): 회의록은 탁자 위 폰 화면까지 장면과 한 장으로 구운 판(GPT 이미지 2.5)에 천천히 다가간다
   { from: 28.28, to: 34.08, src: 'img/minutes_phone.png', start: 0, crop: { s: 1.12, cx: 520, cy: 760, ay: 900 }, drift: 0.022, d: 0 },
   { from: 34.08, to: 36.58, src: 'img/V1.mp4', start: 7.4, crop: { s: 1.1, cx: 540, cy: 1000 }, audio: 1.15 },
@@ -58,8 +54,9 @@ export const CUTS: CutT[] = [
 ];
 
 // 큰 글자 = 말. grey = 대리(두 사람 말은 흰 · 회색으로만 가른다). 회의록 화면 위 해설(n4b)은 화면 글과 겹치지 않게 글자를 띄우지 않는다.
-export const LINES: { lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean }[] = [
-  { lines: ['회의 끝나고 3분 뒤,', '전원의 폰이 울렸어요'], from: 0, to: 3.4, size: 88, instant: true },
+export const LINES: { lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; at?: number[] }[] = [
+  // v10: 둘째 줄은 범수가 「전원의」를 말하는 1.35초에(첫 2초 박자 — 컷을 잇고 나서 원본 1.4초 자리의 바뀜이 없어짐)
+  { lines: ['회의 끝나고 3분 뒤,', '전원의 폰이 울렸어요'], from: 0, to: 3.4, size: 88, instant: true, at: [0, 1.35] },
   { lines: ['저 둘만', '아직 몰라요'], from: 3.5, to: 6.75, size: 112 },
   { lines: [], from: 6.9, to: 7.7, meta: '3분 전 · 회의 끝' },
   { lines: ['갔어요?'], from: 7.7, to: 9.1, grey: true, size: 112, meta: '3분 전 · 회의 끝' },

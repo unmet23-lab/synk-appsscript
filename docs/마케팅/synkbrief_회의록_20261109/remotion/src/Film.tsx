@@ -18,10 +18,14 @@ const TOP = 334;
 // 한 컷: 1080×1920 영상의 (cx, cy)를 화면 (540, ay)에 두고 s배 — 넘치는 쪽은 가장자리에 맞춘다
 const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; drift?: number }> = ({ src, start, crop, rate = 1, drift = 0.012 }) => {
   const f = useCurrentFrame();
-  const s = crop.s * (1 + (f / 30) * drift);
+  // v10(11-19): path = 컷 안 초마다 s · cx · cy(같은 판을 잘라 이어 붙이지 않고 한 컷 안에서 카메라가 옮겨 감 — 최종본 검사 「같은판」)
+  const pt = crop.path;
+  const along = (k: number[] | undefined, base: number) => (pt && k ? interpolate(f / 30, pt.t, k, { ...clamp, easing: Easing.inOut(Easing.cubic) }) : base);
+  const s = along(pt?.s, crop.s) * (1 + (f / 30) * drift);
+  const cx = along(pt?.cx, crop.cx), cy = along(pt?.cy, crop.cy);
   const ay = crop.ay ?? 880;
-  const x = Math.min(0, Math.max(1080 - 1080 * s, 540 - crop.cx * s));
-  const y = Math.min(0, Math.max(1920 - 1920 * s, ay - crop.cy * s));
+  const x = Math.min(0, Math.max(1080 - 1080 * s, 540 - cx * s));
+  const y = Math.min(0, Math.max(1920 - 1920 * s, ay - cy * s));
   const style: React.CSSProperties = { position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `translate(${x}px, ${y}px) scale(${s})` };
   return (
     <AbsoluteFill style={{ background: '#000', overflow: 'hidden' }}>
@@ -33,12 +37,14 @@ const Shot: React.FC<{ src: string; start: number; crop: Crop; rate?: number; dr
 };
 
 // v9: 글자가 없는 구간은 d=0(내리지 않고 전체 화면) — 맹검 v8 03 「글 없는 구간인데 위가 빈 검은 띠」
-const Lowered: React.FC<{ d?: number; children: React.ReactNode }> = ({ d = 260, children }) => {
+// v10(11-19): dPath = 컷 안 초마다 내림(한 컷 안에서 내린 판 → 전체 화면으로 풀림)
+const Lowered: React.FC<{ d?: number; dPath?: { t: number[]; d: number[] }; children: React.ReactNode }> = ({ d: d0 = 260, dPath, children }) => {
   const f = useCurrentFrame();
+  const d = dPath ? interpolate(f / 30, dPath.t, dPath.d, { ...clamp, easing: Easing.inOut(Easing.cubic) }) : d0;
   const z = interpolate(f, [0, 8], [1.035, 1], { ...clamp, easing: EASE_OUT });
   return (
     <AbsoluteFill style={{ overflow: 'hidden', background: '#0b0b0b' }}>
-      {d > 0 ? <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scaleY(-1)`, transformOrigin: '50% 0%', filter: 'blur(26px) brightness(0.55)' }}>{children}</div> : null}
+      {d > 0.5 ? <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scaleY(-1)`, transformOrigin: '50% 0%', filter: 'blur(26px) brightness(0.55)' }}>{children}</div> : null}
       <div style={{ position: 'absolute', inset: 0, transform: `translateY(${d}px) scale(${z})`, transformOrigin: '50% 30%' }}>{children}</div>
     </AbsoluteFill>
   );
@@ -56,20 +62,22 @@ const _ShadeOld: React.FC = () => (
 );
 
 // 큰 글자가 곧 말
-const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean }> = ({ lines, from, to, grey, size = 92, meta, instant }) => {
+// v10(11-19): at = 줄마다 뜨는 초(말하는 때) — 훅 둘째 줄을 「전원의」(1.35초)에 띄워 첫 2초 박자를 컷 없이 둔다(나란히 「첫 2초」)
+const T: React.FC<{ lines: string[]; from: number; to: number; grey?: boolean; size?: number; meta?: string; instant?: boolean; at?: number[] }> = ({ lines, from, to, grey, size = 92, meta, instant, at }) => {
   const f = useCurrentFrame();
   const a = sec(from), b = sec(to);
   if (f < a || f >= b) return null;
   const out = interpolate(f, [b - 3, b], [1, 0], clamp);
-  const up = (k: number) => {
-    const p = instant ? 1 : interpolate(f, [a + k * 3, a + k * 3 + 9], [0, 1], { ...clamp, easing: EASE_OUT });
+  const up = (k: number, i?: number) => {
+    const s0 = at && i != null && at[i] != null ? sec(at[i]) : a + k * 3;
+    const p = instant && (!at || i === 0 || i == null) ? (f >= s0 ? 1 : 0) : interpolate(f, [s0, s0 + 6], [0, 1], { ...clamp, easing: EASE_OUT });
     return { opacity: p * out, transform: `translateY(${(1 - p) * 28}px)` };
   };
   return (
     <div style={{ position: 'absolute', left: X, width: 846, top: TOP, fontFamily: KO, textShadow: '0 2px 14px rgba(0,0,0,0.55)' }}>
       {meta ? <div style={{ ...up(0), fontWeight: 600, fontSize: 34, letterSpacing: -0.5, color: '#BDBDBD', marginBottom: 18 }}>{meta}</div> : null}
       {lines.map((l, i) => (
-        <div key={i} style={{ ...up(i + (meta ? 1 : 0)), fontWeight: 800, fontSize: size, lineHeight: 1.16, letterSpacing: -2.6, color: grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
+        <div key={i} style={{ ...up(i + (meta ? 1 : 0), at ? i : undefined), fontWeight: 800, fontSize: size, lineHeight: 1.16, letterSpacing: -2.6, color: grey ? GREY : '#fff', wordBreak: 'keep-all' }}>{l}</div>
       ))}
     </div>
   );
@@ -89,7 +97,9 @@ const LaptopStill: React.FC = () => {
   const blink = 0.55 + 0.45 * Math.abs(Math.sin(f * 0.11));
   return (
     <div style={{ position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: '30% 44%' }}>
-      <Img src={staticFile('img/laptop.png')} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1920 }} />
+      {/* v10(11-19 최종본 검사 굳음 0.019 — 정지 그림 뒤 두 사람이 굳어 보임): 노트북 위쪽 뒤 배경을 얕은 초점처럼 더 흐린 판 위에, 노트북부터 아래만 또렷한 판을 얹는다 */}
+      <Img src={staticFile('img/laptop.png')} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, filter: 'blur(22px) brightness(0.8)' }} />
+      <Img src={staticFile('img/laptop.png')} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, WebkitMaskImage: 'linear-gradient(to bottom, transparent 0px, transparent 640px, black 760px)', maskImage: 'linear-gradient(to bottom, transparent 0px, transparent 640px, black 760px)' }} />
       <div style={{ position: 'absolute', left: 289, top: 820, width: 62, height: 62, borderRadius: 31, background: '#ff1e1e', opacity: blink, filter: 'blur(1px)' }} />
       <div style={{ position: 'absolute', left: 259, top: 790, width: 122, height: 122, borderRadius: 61, background: 'rgba(255,40,40,0.28)', opacity: blink, filter: 'blur(16px)' }} />
     </div>
@@ -106,13 +116,13 @@ export const Film: React.FC = () => {
     <AbsoluteFill style={{ background: '#000' }}>
       {CUTS.map((c, i) => (
         <Sequence key={i} from={sec(c.from)} durationInFrames={sec(c.to) - sec(c.from)}>
-          {c.src === 'laptop' ? <Lowered d={c.d}><LaptopStill /></Lowered> : <Lowered d={c.d}><Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift} /></Lowered>}
+          {c.src === 'laptop' ? <Lowered d={c.d}><LaptopStill /></Lowered> : <Lowered d={c.d} dPath={c.dPath}><Shot src={c.src} start={c.start} crop={c.crop} rate={c.rate} drift={c.drift} /></Lowered>}
           {c.audio && /\.mp4$/.test(c.src) ? <Audio src={staticFile(c.src)} trimBefore={sec(c.start)} volume={c.audio} /> : null}
         </Sequence>
       ))}
       <Shade />
 
-      {LINES.map((l, i) => <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} instant={l.instant} />)}
+      {LINES.map((l, i) => <T key={i} lines={l.lines} from={l.from} to={l.to} grey={l.grey} size={l.size} meta={l.meta} instant={l.instant} at={l.at} />)}
 
       {/* 회의록 화면 동안은 쉰다 — 그 화면의 글을 표시 그늘이 덮었다(이해 시험 h 11-10) */}
       <Small text="재연 · 상황은 각색" from={0} to={S.minutes} />
