@@ -1,5 +1,5 @@
 # 드리미나 시댄스 2.5 — 꾸러미 판을 공식 CLI(dreamina-canvas)로 내고 받는다(2026-11-04, 유호님 「필요하면 cli 설치하고 진행해도돼」).
-#   python -X utf8 드리미나내기.py <꾸러미 폴더> [<판 id>…] [--받을곳 <폴더>] [--상한 크레딧] [--동시 3] [--계정 ultra] [--해상도 720p] [--컷표 <컷순서.json>] [--걸림무시 "<판 id>,…: <까닭>"] [--실행]
+#   python -X utf8 드리미나내기.py <꾸러미 폴더> [<판 id>…] [--받을곳 <폴더>] [--상한 크레딧] [--동시 3] [--계정 ultra] [--해상도 720p] [--모델 seedance_2.5_flash] [--컷표 <컷순서.json>] [--걸림무시 "<판 id>,…: <까닭>"] [--실행]
 #   내기 전에 낼 판의 지시문을 스스로 검사한다(11-10, 크레딧내기.py의 굽기전) — 사람을 굳히는 낱말 · 손 없이 움직이는 물건 · 실내의 눈이 걸리면 --실행이어도 내지 않는다.
 #   컷표(--컷표, 안 주면 꾸러미 폴더나 그 한 층 위의 컷표.json)가 있으면 표 검사 · 빛 문장 대조도 돈다. 그래도 내야 하면 --걸림무시 "<판 id>,<판 id>: <까닭>"(그 판만) · "모두: <까닭>"
 #   — _드리미나.json 그 판 줄의 「걸림무시」 칸에 남는다. _순서.json 판의 "컷" · "소리만" · "인물" 칸은 크레딧내기.py 머리 설명과 같다.
@@ -33,6 +33,8 @@ PROFILE = None   # CLI 로그인 칸 — main()의 --계정이 정한다
 PROJECT = open(os.path.join(HOME, "캔버스.txt"), encoding="utf-8").read().strip()   # 내는 캔버스 id — 공개 저장소라 git 밖에 둔다(칸이 있으면 캔버스_<칸>.txt)
 PER_SEC_OF = {None: 37, "ultra": 19, "unmet23": 22}   # unmet23 = Advanced 분기(11-17 CLI 720p 초당 22)
 PER_SEC_RES = {("unmet23", "480p"): 17}   # 11-18 CLI 상한 1로 물은 최소 상한: 480p 6초 102 · 7초 119
+PER_SEC_MODEL = {("ultra", "480p", "seedance_2.5_flash"): 8, ("unmet23", "480p", "seedance_2.5_flash"): 8}   # --모델 seedance_2.5_flash(빠른 판) — 480p 초당 8(울트라 S54 실측 · unmet23 11-19 상한 1로 물은 최소 상한 5초 40 · 6초 48). 없는 칸은 표준 값으로 넉넉히 잡는다
+MODEL = "seedance_2.5"   # --모델(11-19 꿈 무대 촬영 시험판 · 빠른 판 480p) — seedance_2.5 · seedance_2.5_flash
 RES = "720p"   # --해상도(11-17 PULSE 영어 둘째 편 480p 시험) — 시댄스 2.5는 480p · 720p · 1080p · 4k
 PER_SEC = 37   # main()이 칸에 맞춰 PER_SEC_OF에서 고른다
 lock = threading.Lock()
@@ -193,7 +195,7 @@ def run_one(pack, out, b):
         if 판소스(pack, b) != 소스:   # 지문을 잰 뒤 올리고 읽는 사이에 바뀌었으면 기록과 실제 요청이 어긋난다 — 내지 않는다
             raise RuntimeError("내는 동안 지시문이나 참고 파일이 바뀌었다. 이 판은 내지 않았다 — 다시 돌린다")
         ref_args = [x for i in image_ids + audio_ids for x in ("--ref", f"res:{i}")]
-        made = cli("node", "create", "video", "--model", "seedance_2.5", "--mode", mode, *ref_args, "--prompt", prompt, "--ratio", b["비율"],
+        made = cli("node", "create", "video", "--model", MODEL, "--mode", mode, *ref_args, "--prompt", prompt, "--ratio", b["비율"],
                    "--resolution", RES, "--duration", str(b["길이"]), "--title", b["id"], "--project-id", PROJECT,
                    "--run", "--credit-ceiling", str(ceiling), "--wait", "--timeout", "45m", check=False)
         data = made.get("data") or made.get("partialData") or {}
@@ -243,7 +245,7 @@ def run_one(pack, out, b):
     save(out, key, row)
     now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     save(out, key, {"판": b["id"], "순서": b.get("순서", 0), "파일": name, "만든때": now, "받은때": now, "길이": b["길이"], "비율": b["비율"], "화질": "720p",
-                    "소리": True, "모델": "dreamina seedance_2.5", "길": f"드리미나 CLI({PROFILE or '기본'})", "지시문": prompt, "소스": 소스}, "_받음.json")
+                    "소리": True, "모델": f"dreamina {MODEL}", "길": f"드리미나 CLI({PROFILE or '기본'})", "지시문": prompt, "소스": 소스}, "_받음.json")
     mark = row["표시"]
     warn = f"  ⚠ 표시가 남음({mark}) — 계정 설정 「워터마크 삭제」를 보고 같은 resourceId로 다시 받는다" if not isinstance(mark, float) or mark >= MARK_AT else ""
     with lock:
@@ -266,11 +268,12 @@ def main():
 def 실행(정리):
     a = sys.argv[1:]
     opt = lambda k, d: a[a.index(k) + 1] if k in a else d
-    global PROFILE, PROJECT, PER_SEC, RES
+    global PROFILE, PROJECT, PER_SEC, RES, MODEL
     cap, conc, go, out = opt("--상한", None), int(opt("--동시", "3")), "--실행" in a, opt("--받을곳", None)
     PROFILE = opt("--계정", None)
     RES = opt("--해상도", "720p")
-    PER_SEC = PER_SEC_RES.get((PROFILE, RES)) or PER_SEC_OF.get(PROFILE, PER_SEC_OF[None])
+    MODEL = opt("--모델", "seedance_2.5")
+    PER_SEC = PER_SEC_MODEL.get((PROFILE, RES, MODEL)) or PER_SEC_RES.get((PROFILE, RES)) or PER_SEC_OF.get(PROFILE, PER_SEC_OF[None])
     if PROFILE:
         PROJECT = open(os.path.join(HOME, f"캔버스_{PROFILE}.txt"), encoding="utf-8").read().strip()
     ignore, table = 인자값(a, "--걸림무시"), 인자값(a, "--컷표")
@@ -278,7 +281,7 @@ def 실행(정리):
         raise SystemExit(f"--걸림무시에는 까닭을 적는다: {무시쓰는법}")
     if table is not None and not (table and os.path.exists(table)):
         raise SystemExit(f"--컷표 파일이 없다: {table or '(경로 없음)'}")
-    vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳", "--계정", "--걸림무시", "--컷표", "--해상도") if k in a}
+    vals = {a.index(k) + 1 for k in ("--상한", "--동시", "--받을곳", "--계정", "--걸림무시", "--컷표", "--해상도", "--모델") if k in a}
     pos = [x for i, x in enumerate(a) if not x.startswith("--") and i not in vals]
     if not pos:
         raise SystemExit('쓰는 법: python -X utf8 드리미나내기.py <꾸러미> [<꾸러미>…] [<판>…] [--받을곳 폴더] [--상한 크레딧] [--동시 3] [--계정 ultra] [--컷표 컷순서.json] [--걸림무시 "판 id,…: 까닭"] [--실행]')

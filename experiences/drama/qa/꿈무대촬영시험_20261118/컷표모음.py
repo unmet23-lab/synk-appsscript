@@ -16,5 +16,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 지시문 = sorted(glob.glob(os.path.join(HERE, '이미지지시문', '*')))
 for f in 지시문:
     덧 += f'\n## 이미지지시문/{os.path.basename(f)}\n\n```\n' + open(f, encoding='utf-8').read().strip() + '\n```\n'
+영상 = sorted(glob.glob(os.path.join(HERE, '영상지시문', '*')))   # 11-19: 영상 지시문과 판 설정(_판.json)도 git이 무시해 같이 모은다
+for f in 영상:
+    덧 += f'\n## 영상지시문/{os.path.basename(f)}\n\n```\n' + open(f, encoding='utf-8').read().strip() + '\n```\n'
 open(os.path.join(HERE, '컷표_원문.md'), 'w', encoding='utf-8').write(머리 + '```json\n' + 글 + '\n```\n' + 덧)
-print('컷표_원문.md', len(글), '자 · 이미지 지시문', len(지시문), '개')
+print('컷표_원문.md', len(글), '자 · 이미지 지시문', len(지시문), '개 · 영상 지시문', len(영상), '개')
