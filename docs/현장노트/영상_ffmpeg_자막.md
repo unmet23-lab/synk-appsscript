@@ -1099,7 +1099,8 @@ emotion.cmd`가 남아 있다.
 ### faster-whisper를 `device='cuda'`로 부르면 cublas64_12.dll이 없다며 멈춘다 (2026-10-20)
 - 증상: 10-20 이 노트북(RTX 5090)에서 `WhisperModel('medium', device='cuda', compute_type='float16')`이 모델은 읽고, 첫 받아쓰기에서 `Library cublas64_12.dll is not found or cannot be loaded`로 멈췄다.
 - 원인: pip로 깐 faster-whisper(ctranslate2)는 CUDA 12 cuBLAS·cuDNN을 따로 찾는데 이 PC에는 그 DLL이 없다.
-- 고침: 지금은 `device='cpu', compute_type='int8'`로 돌린다. medium으로 짧은 줄 15개는 2분 남짓, 36초 믹스 한 편도 2분 안팎이다. GPU로 돌리려면 NVIDIA cuBLAS·cuDNN 12 휠을 깔아 경로를 잡아야 한다(아직 안 함).
+- 고침: 지금은 `device='cpu', compute_type='int8'`로 돌린다. medium으로 짧은 줄 15개는 2분 남짓, 36초 믹스 한 편도 2분 안팎이다. GPU로 돌리려면 NVIDIA cuBLAS·cuDNN 12 휠을 깔아 경로를 잡아야 한다 — 11-19에 깔았다(아래 「11-19 GPU로 돈다」).
+- 11-19 GPU로 돈다(Claude, 유호님 「깔아 줘」): `pip install --no-deps --target C:/SYNK-LoRA/tools/cuda12/libs nvidia-cublas-cu12==12.9.2.10 nvidia-cudnn-cu12==9.28.1.4`(받기 약 1.25GB, 풀면 1.8GB). 스크립트가 faster-whisper를 부르기 전에 `os.environ['PATH'] = r'C:\SYNK-LoRA\tools\cuda12\libs\nvidia\cublas\bin;C:\SYNK-LoRA\tools\cuda12\libs\nvidia\cudnn\bin;' + os.environ['PATH']`를 넣고 `WhisperModel('large-v3-turbo', device='cuda', compute_type='float16')`로 부른다. 5090에서 10~16초 소리 하나에 1.0~1.4초였다(CPU `int8`은 같은 소리에 수십 초~수 분). 프로세스마다 첫 받아쓰기는 20~70초 걸리고(5090용 계산 준비), 모델 불러오기는 CPU가 100%일 때 1~2분 걸렸다. 그래서 짧은 줄 몇 개는 CPU가 한가할 때 CPU가 더 빠를 수 있다. 파이썬이 시작할 때마다 경로를 더하는 `.pth`는 자동 판정에서 막혀 두지 않았다. 저장소 도구들(`허깅페이스.py` · `자막맞추기.py` · `최종확인묶음.py` 등)은 아직 `device='cpu'`로 박혀 있다. 같은 프로세스에서 torch(cu130)를 먼저 불러 두면 이름이 같은 `cudnn64_9.dll`이 torch 것으로 잡힐 수 있으니 받아쓰기는 따로 돌린다(겪지는 않았다).
 - 다시 확인: CPU 판으로 같은 줄을 받아써 글이 나오는지 본다.
 - 10-21 또(Claude): 이 PC 파이썬의 torch 2.14+cu130에 든 `cublas64_13.dll`·`cudnn64_9.dll`로는 대신하지 못한다(ctranslate2가 찾는 것은 12판). CPU(`int8`)에서 다른 작업이 CPU를 80% 넘게 쓰면 짧은 줄 한 번에 medium 4초·large-v3-turbo 6초쯤이고, `cpu_threads`를 8에서 16으로 올려도 빨라지지 않았다. 낱말 시각이 필요 없으면 `word_timestamps=False`로 부른다(글은 같다).
 
@@ -1252,8 +1253,8 @@ emotion.cmd`가 남아 있다.
 ### faster-whisper가 GPU에서 「cublas64_12.dll is not found」로 멈춘다 — CPU int8로 돌린다 (2026-10-29 Claude)
 - 증상: `WhisperModel("medium", device="cuda")`의 `transcribe` 첫 조각에서 `RuntimeError: Library cublas64_12.dll is not found or cannot be loaded`.
 - 원인: 이 PC에 CUDA 12 런타임 dll이 PATH에 없다(faster-whisper 1.2.1 · ctranslate2가 찾는 판).
-- 고침: `device="cpu", compute_type="int8"` — 30초 소리 한 개에 1분 안팎이라 내레이션 확인에는 충분하다.
-- 다시 확인: `python -c "import ctypes; ctypes.WinDLL('cublas64_12.dll')"`가 실패하면 아직 그대로다.
+- 고침: `device="cpu", compute_type="int8"` — 30초 소리 한 개에 1분 안팎이라 내레이션 확인에는 충분하다. 11-19부터 GPU 길이 있다 — 위 「faster-whisper를 `device='cuda'`로 부르면」 절의 11-19 줄.
+- 다시 확인: `python -c "import ctypes; ctypes.WinDLL('cublas64_12.dll')"`가 실패하면 아직 그대로다(11-19 뒤로는 PATH에 `C:\SYNK-LoRA\tools\cuda12\libs\nvidia\cublas\bin`을 먼저 넣고 본다).
 
 ### OpenAI `gpt-transcribe`에 `languages=['ko']`를 주면 다른 말을 한글 소리로 옮겨 ko로 돌려준다 — 한국어 아님을 가르려면 힌트를 주지 않는다 (2026-10-30 Claude)
 - 증상: WORLD 말하기 받아 적기 측정에서 버마어로 대답한 합성 소리가 힌트 ko로는 「변, 세넷는행근외마, 에마 나바레…」(언어 ko)로 와 「한국어 아님」 관문을 지나갔다. 힌트 없이는 로마자(언어는 th로 잘못)로 와 걸렸다. 몽골어(키릴)는 두 쪽 모두 키릴 그대로, 한국어에 몽골어를 섞은 말은 두 쪽 모두 몽골어 부분을 한글 소리로 옮겼다. 잡음뿐인 소리는 두 쪽 모두 빈 글.
