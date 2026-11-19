@@ -1,8 +1,9 @@
 'use strict';
 
 const TRAY_APPS=Object.freeze({world:'SYNK WORLD',messenger:'SYNK Workspace',teacher:'SYNK Workspace · 내 수업',path:'SYNK PATH',pulse:'SYNK PULSE',partners:'SYNK Partners',care:'SYNK 플레저',fortune:'SYNK 무료 운세'});
-function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onAction=()=>{},onShow=null,onCloseToTray=null,revealForQuit=()=>true}){
-  let tray=null,quitting=false,shortcuts=[];
+// 메뉴의 앱 줄은 본체가 지금 아는 로그인 · 권한 · 설치로 정해 setApps로 건다. 화면이 보내던 목록과 그 기억은 쓰지 않는다(PC 0.5.0 설계 1절)
+function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onLaunchApp=()=>{},onShow=null,onCloseToTray=null,revealForQuit=()=>true}){
+  let tray=null,quitting=false,apps=[];
   const bindings=new Map();
   function isActive(){return !!tray&&!tray.isDestroyed();}
   function show({forQuit=false}={}){
@@ -46,7 +47,7 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
   }
   function updateMenu(){
     if(!isActive())return;
-    const entries=shortcuts.map(item=>({label:TRAY_APPS[item.id],click:()=>{show();onAction({type:'open-app',id:item.id});}}));
+    const entries=apps.map(id=>({label:TRAY_APPS[id],click:()=>onLaunchApp(id)}));
     tray.setContextMenu(Menu.buildFromTemplate([
       {label:'SYNK Platform 열기',click:show},
       ...(entries.length?[{type:'separator'},...entries]:[]),
@@ -55,10 +56,13 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
     ]));
   }
   function onWillQuit(event){if(!event.defaultPrevented)dispose();}
-  function setShortcuts(items){
-    if(!Array.isArray(items)||items.length>5||items.some(item=>!item||typeof item.id!=='string'||!Object.hasOwn(TRAY_APPS,item.id)||item.kind!==undefined&&!['favorite','recent'].includes(item.kind)))return {ok:false,code:'INVALID_TRAY_SHORTCUTS'};
-    shortcuts=items.filter((item,index)=>items.findIndex(row=>row.id===item.id)===index).map(item=>({id:item.id}));
-    try{updateMenu();return {ok:true};}catch{return {ok:false,code:'TRAY_UNAVAILABLE'};}
+  // 같은 줄이면 메뉴를 다시 걸지 않는다
+  function setApps(ids){
+    if(!Array.isArray(ids)||ids.length>5||ids.some(id=>typeof id!=='string'||!Object.hasOwn(TRAY_APPS,id)))return {ok:false,code:'INVALID_TRAY_APPS'};
+    const next=ids.filter((id,index)=>ids.indexOf(id)===index);
+    if(next.length===apps.length&&next.every((id,index)=>apps[index]===id))return {ok:true,changed:false};
+    apps=next;
+    try{updateMenu();return {ok:true,changed:true};}catch{return {ok:false,code:'TRAY_UNAVAILABLE'};}
   }
   if(enabled){
     try{
@@ -72,6 +76,6 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
       dispose();
     }
   }
-  return {attachWindow,show,isActive,isQuitting:()=>quitting,cancelQuit,dispose,setShortcuts};
+  return {attachWindow,show,isActive,isQuitting:()=>quitting,cancelQuit,dispose,setApps,apps:()=>[...apps]};
 }
 module.exports={createPlatformTray,TRAY_APPS};

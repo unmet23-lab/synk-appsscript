@@ -7,12 +7,12 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;
 const svg=name=>`<svg class="i" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 const VIEW_NAMES={home:'내 홈',library:'라이브러리',solio:'솔리오',benefits:'회원 혜택',downloads:'설치·업데이트',settings:'설정',account:'내 계정',insight:'맞춤 정보'};
 
-export function mountConvenience({bridge,storage,apps,getSnapshot,readRoute,applyRoute,launchApp,onToast,getNotes,openNote,onFavorite,onMoveFavorite,onLibrarySearch,onDesktopPreferences=()=>{},takeLanding=()=>null,isPortalBlocked=()=>false,isMenuBlocked=()=>false,trayFilter=list=>list}){
+export function mountConvenience({bridge,storage,apps,getSnapshot,readRoute,applyRoute,launchApp,onToast,getNotes,openNote,onFavorite,onMoveFavorite,onLibrarySearch,onDesktopPreferences=()=>{},takeLanding=()=>null,isPortalBlocked=()=>false,isMenuBlocked=()=>false}){
   const $=id=>document.getElementById(id),main=$('main');
   const portalBlocked=()=>Boolean(isPortalBlocked?.())||isPortalActive(document);
   // 검정 구 얼굴이 보이는 동안(PC 클라이언트 1단계)에는 명령 메뉴 · 앱 메뉴 · Alt 화살표만 막는다. 화면 확대는 막지 않는다
   const menuBlocked=()=>portalBlocked()||Boolean(isMenuBlocked?.());
-  let desktop=null,draftStatus=null,owner=null,events=[],unread=0,active=-1,results=[],returnFocus=null,composing=false,preferencePending=false,trayKey='',refreshRevision=0,scrollTimer,settingsQuery='';
+  let desktop=null,draftStatus=null,owner=null,events=[],unread=0,active=-1,results=[],returnFocus=null,composing=false,preferencePending=false,refreshRevision=0,scrollTimer,settingsQuery='';
   // 알림 설정은 이 통로 하나로 읽고 바꾼다. 새 얼굴의 설정 방도 같은 통로를 쓰므로(notifications) 바꾼 값이 배너 판단에 바로 쓰인다
   const notices=notificationStore({storage,onChange:()=>renderNotify()});
   const controls=document.createElement('div');controls.className='convenience-actions';controls.innerHTML=`<div class="route-arrows" aria-label="화면 이동"><button class="icon-button" id="nav-back" aria-label="뒤로 (Alt+왼쪽 화살표)" disabled>${svg('arrow-left')}</button><button class="icon-button" id="nav-forward" aria-label="앞으로 (Alt+오른쪽 화살표)" disabled>${svg('arrow-right')}</button></div><button class="icon-button" id="command-open" aria-label="빠른 검색과 이동 (Ctrl+K)" aria-haspopup="dialog">${svg('search')}</button><button class="icon-button notification-open" id="notification-open" aria-label="플랫폼 알림" aria-haspopup="dialog"><svg class="i" aria-hidden="true" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M9 21h6"/></svg><span id="notification-badge" hidden></span></button>`;
@@ -93,7 +93,7 @@ export function mountConvenience({bridge,storage,apps,getSnapshot,readRoute,appl
   return {
     navigate:route=>nav.navigate(route),open,closeOverlays,
     notifications:{get:()=>notices.get(),set:patch=>notices.set(patch)},
-    refresh(){const snapshot=getSnapshot();if(owner!==snapshot.owner){owner=snapshot.owner;events=[];unread=0;renderInbox();if(dialog.open)close({restore:false});if(appMenu.open)appMenu.close();nav.owner(owner,owner?takeLanding(owner):null);renderRecovery(draftStatus);void loadNative();}const shortcuts=trayFilter(trayShortcuts(snapshot.prefs,snapshot.appIds)),key=JSON.stringify(shortcuts);if(key!==trayKey){trayKey=key;void bridge?.setTrayShortcuts?.(shortcuts)?.catch?.(()=>{});}if(dialog.open)renderResults();},
+    refresh(){const snapshot=getSnapshot();if(owner!==snapshot.owner){owner=snapshot.owner;events=[];unread=0;renderInbox();if(dialog.open)close({restore:false});if(appMenu.open)appMenu.close();nav.owner(owner,owner?takeLanding(owner):null);renderRecovery(draftStatus);void loadNative();}if(dialog.open)renderResults();},
     clientsChanged(previous,next){for(const event of installationEvents(previous,next,getSnapshot().appIds)){const title=`${apps[event.appId].name} ${event.type==='ready'?'설치 파일이 준비됐어요':'설치 파일을 준비하지 못했어요'}`;events.unshift({...event,title,id:String(Date.now())+'-'+event.appId,at:Date.now()});events=events.slice(0,30);if(!inbox.open)unread=Math.min(30,unread+1);const notifyPrefs=notices.get();if(notifyPrefs.banners&&!isQuiet(notifyPrefs)&&!document.hidden)onToast(title);}renderInbox();},
     capture:()=>nav.capture()
   };

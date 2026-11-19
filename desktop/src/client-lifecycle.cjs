@@ -69,7 +69,8 @@ function createClientLifecycle(options) {
   }
   return {
     getClients,
-    async launch(id){if(disposed)return {ok:false,code:'DISPOSED'};const result=await installations.launch(id);installCacheAt=0;notify();return result;},
+    async launch(id,options){if(disposed)return {ok:false,code:'DISPOSED'};const result=await installations.launch(id,options);installCacheAt=0;notify();return result;},
+    async probe(id){if(disposed)return {id,installed:false,reason:'DISPOSED'};return installations.probe(id);},
     prepareClient:prepare,
     async cancelPreparation(id){const forbidden=denied(id);if(forbidden)return {ok:false,code:forbidden};const job=jobs.get(id);if(!job||job.status!=='preparing')return {ok:false,code:'NOT_PREPARING'};job.controller.abort();await job.work;return {ok:true,job:state(id)};},
     async openInstaller(id){

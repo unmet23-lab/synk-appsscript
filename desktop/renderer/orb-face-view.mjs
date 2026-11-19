@@ -191,6 +191,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   /* 방(2단계 둘째 조각). asideReturn은 방을 연 자리(닫을 때 초점을 돌려줄 곳)다. applied는 컨트롤러가 보낸 요청(열 줄, 접을 줄, 초점)을 한 번씩만 따르려고 적어 둔다.
      stale은 입력 중이거나 누르는 중이라 다시 짓기를 미룬 안쪽이다. 손을 떼거나 초점이 그 안쪽을 떠나면 마저 짓는다 */
   let lastAside = null, asideReturn = null, pressing = false, liveSeq = 0, fldSeq = 0;
+  // 칸에서 Enter로 누른 단추. 일이 끝났는데 칸이 남아 있으면(실패나 칸이 남는 저장) 초점을 그 칸으로 돌린다(PC 0.5.0 설계 2절)
+  let enterBack = null;
   /* 방 안에서 옛 화면(마을 기록)을 열 때 누른 단추. 옛 화면을 닫으면 그리로 초점을 돌린다 */
   let legacyReturn = null, lastModeSeen = null;
   const applied = { open: {}, close: {}, focus: {} };
@@ -1072,7 +1074,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const inner = b.nextElementSibling?.firstElementChild;
     if (!inner) return;
     const items = Array.isArray(r.more) ? r.more : [];
-    if (moreKeys.get(inner) === JSON.stringify(items)) { stale.delete(inner); return; }
+    // 같은 글로 실패해 안쪽이 그대로여도 Enter로 누른 일의 끝을 본다
+    if (moreKeys.get(inner) === JSON.stringify(items)) { stale.delete(inner); settleEnter(b, inner); return; }
     // 쓰던 칸에 초점이 있거나 그 안쪽을 누르는 중이면 지금은 다시 짓지 않는다. 1분 장면이 쓰던 글과 누르던 단추를 지우지 않게 한다(설계 1.3절).
     // 다만 칸의 글이 방금 저장되어 새 처음 값으로 돌아왔으면 쓰던 중이 아니다. 바로 다시 지어 저장 뒤의 문장을 보인다(초점은 같은 칸으로 돌아간다)
     const a = doc.activeElement;
@@ -1102,6 +1105,20 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     p.dataset.v = String(v);
     for (const q of p.querySelectorAll('[data-pv]')) q.setAttribute('aria-pressed', String(q.dataset.pv === String(v)));
   }
+  /* Enter로 누른 단추의 일이 끝났는지 다시 지은 뒤에 본다. 초점이 아직 그 단추에 있고 단추가 바쁘지 않으면 끝난 것이다.
+   * 같은 이름의 칸이 보이면 그 칸의 글 끝으로 돌아간다. 묶음이 접혀 칸이 없거나 초점이 다른 곳으로 갔으면 그대로 둔다 */
+  function settleEnter(b, inner) {
+    const e = enterBack;
+    if (!e || b.dataset.key !== e.key) return;
+    const go = actEl(inner, e.act, e.arg);
+    if (!go || doc.activeElement !== go) { enterBack = null; return; }
+    if (go.getAttribute('aria-disabled') === 'true') return;
+    enterBack = null;
+    const field = [...inner.querySelectorAll('input[data-f]')].find(x => x.dataset.f === e.field && !x.closest('.grp[hidden]') && !x.disabled);
+    if (!field) return;
+    restoringVis = true;
+    try { field.focus({ preventScroll: true }); const n = field.value.length; field.setSelectionRange?.(n, n); } catch {} finally { restoringVis = false; }
+  }
   function buildInner(b, inner, items) {
     // 고쳐 쓰던 칸의 값은 그 칸의 처음 값이 그대로일 때만 새 칸에 옮긴다. 저장한 뒤 새 값이 왔으면 새 값을 쓴다
     const before = new Map([...inner.querySelectorAll('[data-f]')].map(n => [n.dataset.f, { v: fieldValue(n), d: n.dataset.d ?? '' }]));
@@ -1119,6 +1136,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     stale.delete(inner);
     const box = b.parentElement;
     if (had && box) restoreFocus(box, had);
+    settleEnter(b, inner);
     // 방금 안쪽을 누른 줄이 길어졌으면 지금 할 차례가 보이게 올린다. 그 줄이 화면에 걸쳐 있을 때만 한다(시안 putRows의 끝)
     const room = b.closest('.room');
     // 걸쳐 있는지는 줄 머리와 그 아래 열린 안쪽(형제 칸)을 합쳐 본다. 긴 줄을 내려 머리가 위로 지나가도 안쪽을 누른 것은 따라간다(검수 A)
@@ -1681,7 +1699,13 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (event.key === 'Enter' && typing && mode === 'app' && t && root.contains(t) && t.closest?.('.more-in')) {
       const scope = t.closest('.grp') || t.closest('.more-in');
       const go = [...scope.querySelectorAll('[data-enter]')].find(x => !x.closest('.grp[hidden]'));
-      if (go) { event.preventDefault(); go.focus?.({ preventScroll: true }); go.click(); }
+      if (go) {
+        event.preventDefault();
+        const key = t.closest('.more')?.previousElementSibling?.dataset?.key;
+        enterBack = key !== undefined && t.dataset?.f && go.dataset.roomAct ? { key, field: t.dataset.f, act: go.dataset.roomAct, arg: go.dataset.roomArg ?? '' } : null;
+        go.focus?.({ preventScroll: true });
+        go.click();
+      }
       return;
     }
     if (mode === 'legacy' || typing || event.ctrlKey || event.metaKey || event.altKey) return;

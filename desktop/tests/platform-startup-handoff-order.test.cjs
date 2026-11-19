@@ -232,10 +232,14 @@ test('only an accessible hidden platform cold start initializes the tray without
       createDraftRecovery:()=>({}),createDraftRecoveryRequests:()=>({}),
       createTrayMemoryReclaimer(settings){services=settings;return memory;},
       createPlatformTray(settings){options=settings;return {isActive:()=>tray};},
-      autostartHidden:autostart,arrivalShow:arrival,sendDesktop(){},requestPlatformWindow(){}};
+      autostartHidden:autostart,arrivalShow:arrival,sendDesktop(){},requestPlatformWindow(){},
+      trayAppsTick:null,ticks:[],setInterval(fn,ms){const timer={fn,ms,unref(){}};context.ticks.push(timer);return timer;},syncTrayApps(){},launchFromTray(id){calls.push('launch '+id);}};
     vm.createContext(context);vm.runInContext(source,context);
     context.initializeMain();context.initializeMain();
     assert.equal(options.onCloseToTray,memory.schedule);
+    // 트레이의 앱 줄은 본체가 실행한다. 창을 열지 않고, 트레이가 있으면 10분마다 설치를 다시 본다(PC 0.5.0 설계 1.3)
+    assert.equal(typeof options.onLaunchApp,'function');assert.equal(options.onAction,undefined);
+    assert.deepEqual(context.ticks.map(timer=>timer.ms),tray?[600000]:[]);
     assert.deepEqual(app.listeners('before-quit'),[memory.cancel]);
     assert.equal(services.busy(),!tray);
     for(const state of ['downloading','opening']){

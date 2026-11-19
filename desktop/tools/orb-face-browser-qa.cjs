@@ -198,7 +198,7 @@ if(!process.versions.electron){
           // 때 말(「내일 오후」 따위)은 시험을 돌리는 시각에 따라 달라지므로 꼴만 본다(카본 C3)
           // 11-20부터 맨 위는 비서 판의 문장이다(솔리오 구독 비서 설계 3.1): 「지금 속도면 Codex는 내일 오전 8시 30분쯤 바닥납니다.」와 막히는 길이
           check('2 Solio sentence from the synthetic subscriptions',/^지금 속도면 Codex는 (?:\d+분 뒤|오늘|내일|모레|[일월화수목금토]요일) (?:새벽|오전|오후|저녁|밤) \d+시(?: \d+분)?쯤 바닥납니다\.$/.test(await text(w,'[data-say]'))&&/때까지 \d+(?:분|시간|일)쯤 막힙니다\.$/.test(await text(w,'[data-then]')),{say:await text(w,'[data-say]'),then:await text(w,'[data-then]')});
-          check('9-tray only runnable apps are sent to the tray',JSON.stringify(await w.js('window.__orbFixture.tray()'))==='[]',{tray:await w.js('window.__orbFixture.tray()')});
+          check('9-tray the face sends no tray list (the main process builds the tray menu, PC 0.5.0 design 1)',JSON.stringify(await w.js('window.__orbFixture.tray()'))==='[]',{tray:await w.js('window.__orbFixture.tray()')});
           check('9-toast no signed-in toast over the face',await w.js("document.getElementById('toast').hidden||!document.getElementById('toast').textContent.includes('로그인했어요')"));
           await captureSizes(w,'solio-ready');
           // 15. 화면 확대
@@ -796,10 +796,12 @@ if(!process.versions.electron){
           await w.js("[...window.__q('add').nextElementSibling.querySelectorAll('[data-pv]')].find(b=>b.dataset.pv==='typecast').click()");await wait(300);
           await w.js("window.__type('add','key','orb-qa-rejected-key')");await key(w,'Return');await wait(400);
           const retryKey=await w.js("(()=>{const i=window.__q('add','input[data-f=key]');return !!i&&i.offsetWidth>0&&i.value==='orb-qa-rejected-key';})()");
+          // 실패하면 초점이 저장 단추에 남지 않고 칸으로 돌아온다(PC 0.5.0 설계 2절, 화면 -k P2)
+          const retryFocus=await w.js("(()=>{const i=window.__q('add','input[data-f=key]');return !!i&&document.activeElement===i;})()");
           await w.js("window.__type('add','key','orb-qa-accepted-key')");await key(w,'Return');await wait(500);
           const finishedKey=await w.js("(()=>{const b=window.__q('add');return {closed:!b.classList.contains('opened'),retained:[...document.querySelectorAll('input[type=password]')].some(i=>i.value==='orb-qa-accepted-key')};})()");
           const keyCalls=(await calls(w)).filter(call=>call==='subs-key:typecast').length;
-          check('18-5 Enter preserves a rejected key for retry and clears a successfully connected key from the closed row',retryKey&&keyCalls===2&&finishedKey.closed&&!finishedKey.retained,{retryKey,keyCalls,finishedKey});
+          check('18-5 Enter preserves a rejected key for retry with the focus back in its field, and clears a successfully connected key from the closed row',retryKey&&retryFocus&&keyCalls===2&&finishedKey.closed&&!finishedKey.retained,{retryKey,retryFocus,keyCalls,finishedKey});
           // 9. 막혔을 때: 물음 열둘, 누르면 답이 바로 아래에 나온다
           await w.js("window.__q('help').click()");await wait(400);
           const help=await w.js("(()=>{const m=window.__q('help').nextElementSibling,q=[...m.querySelectorAll('button[data-qa]')];q[3].click();const a=q[3].parentElement.nextElementSibling;return {count:q.length,shown:!a.hidden,expanded:q[3].getAttribute('aria-expanded'),answer:a.textContent};})()");
@@ -994,6 +996,11 @@ if(!process.versions.electron){
           await stype('key','shortcut','Ctrl+Alt+S');await sact('key','shortcut-apply');await wait(600);
           const k3={live:await slive('key'),val:await sval('key','val'),mid:await sval('key','mid'),prefs:await w.js('window.__orbFixture.prefs()')};
           check('18-12 a malformed shortcut and one another app holds are refused in the line, and a good one is applied',k1==='단축키 모양을 알아보지 못했습니다. 예: Ctrl+Alt+S'&&k2==='다른 앱이 쓰는 단축키입니다. 다른 조합을 골라 주세요.'&&k3.live==='단축키를 바꿨습니다.'&&k3.val==='Ctrl+Alt+S'&&k3.mid==='어느 화면에서든 이 단축키로 SYNK 창을 앞으로 띄웁니다'&&k3.prefs.globalShortcut==='Ctrl+Alt+S',{k1,k2,...k3});
+          // 칸에서 Enter로 저장하다 거절되면 초점이 저장 단추에 남지 않고 칸으로 돌아온다(PC 0.5.0 설계 2절, 화면 -k P2). 칸은 저장한 값으로 되돌려 둔다
+          await stype('key','shortcut','Ctrl+Alt+K');await key(w,'Return');await wait(600);
+          const kEnter=await w.js("(()=>{const i=[...window.__sin('key').querySelectorAll('input[data-f]')].find(x=>x.dataset.f==='shortcut');return {live:window.__slive('key'),focus:!!i&&document.activeElement===i,caret:i?i.selectionStart===i.value.length:false,prefs:window.__orbFixture.prefs().globalShortcut};})()");
+          check('18-12 Enter on a refused shortcut leaves the focus in the field with the caret at the end, and keeps the applied one',kEnter.live==='다른 앱이 쓰는 단축키입니다. 다른 조합을 골라 주세요.'&&kEnter.focus&&kEnter.caret&&kEnter.prefs==='Ctrl+Alt+S',kEnter);
+          await stype('key','shortcut','Ctrl+Alt+S');await w.js('document.activeElement?.blur?.()');await wait(200);
           // 화면 크기
           await sopen('view');await wait(300);await sact('view','zoom','1.25');await wait(600);
           const z1={mid:await sval('view','mid'),pressed:await w.js("window.__sact('view','zoom','1.25')?.getAttribute('aria-pressed')"),prefs:await w.js('window.__orbFixture.prefs()')};

@@ -87,6 +87,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   installUpdate:async()=>{calls.push('update-install');return setUpdate({state:'opening'});},
   onUpdateChanged:fn=>{updateListeners.add(fn);return ()=>updateListeners.delete(fn);},
   copyPlatformDiagnostics:async summary=>{calls.push('diag-copy');diag=summary;return {ok:true};},
+  // 트레이 목록은 본체가 짓는다(PC 0.5.0 설계 1절). 화면이 부르면 흐름 시험 9번이 잡도록 남긴 덫이다
   setTrayShortcuts:async items=>{tray=items;return {ok:true};},
   // 본체(main.cjs subscriptionCall)처럼 계정이 signed-in이 아니면 구독 호출을 거절한다(Fable 다시 검수 -c)
   subscriptions:Object.freeze({

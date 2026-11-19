@@ -68,7 +68,6 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   }),
   updateDesktopPreferences:patch=>ipcRenderer.invoke('synk:desktop-preferences-update',patch),
   copyPlatformDiagnostics:summary=>ipcRenderer.invoke('synk:copy-platform-diagnostics',summary),
-  setTrayShortcuts:items=>ipcRenderer.invoke('synk:tray-shortcuts',items),
   onDesktopPreferences:callback=>subscribe('synk:desktop-preferences',callback),
   onDesktopAction:callback=>subscribe('synk:desktop-action',callback),
   draftRecoveryStatus:owner=>ipcRenderer.invoke('synk:draft-recovery-status',owner),

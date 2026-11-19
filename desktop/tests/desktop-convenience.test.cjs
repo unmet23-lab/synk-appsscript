@@ -69,8 +69,11 @@ test('a source run offers no startup setting and never writes Windows startup, w
 test('dynamic tray entries use fixed catalog names and ordinary close responds immediately to its setting',()=>{
   const app=new EventEmitter(),window=new EventEmitter();window.webContents=new EventEmitter();window.isDestroyed=()=>false;window.isMinimized=()=>false;window.show=()=>{};window.focus=()=>{};let hides=0,hide=true,menu,actions=[];window.hide=()=>hides++;
   class Tray extends EventEmitter{isDestroyed(){return false;}setToolTip(){}setContextMenu(value){menu=value;}destroy(){}}
-  const tray=createPlatformTray({app,Tray,Menu:{buildFromTemplate:value=>value},getWindow:()=>window,createWindow:()=>{},shouldHide:()=>hide,onAction:value=>actions.push(value)});tray.attachWindow(window);
-  assert.equal(tray.setShortcuts([{id:'world',label:'UNTRUSTED'},{id:'world'}]).ok,true);assert.equal(menu.filter(item=>item.label==='SYNK WORLD').length,1);menu.find(item=>item.label==='SYNK WORLD').click();assert.deepEqual(actions,[{type:'open-app',id:'world'}]);
-  assert.equal(tray.setShortcuts([{id:'../cmd'}]).code,'INVALID_TRAY_SHORTCUTS');assert.equal(tray.setShortcuts(Array(6).fill({id:'world'})).code,'INVALID_TRAY_SHORTCUTS');
+  let built=0;const tray=createPlatformTray({app,Tray,Menu:{buildFromTemplate:value=>{built++;return value;}},getWindow:()=>window,createWindow:()=>{},shouldHide:()=>hide,onLaunchApp:id=>actions.push(id)});tray.attachWindow(window);
+  // 본체가 거는 앱 줄은 목록의 이름만 받고, 누르면 그 앱의 실행을 본체에 넘긴다. Platform 창을 열지 않는다(PC 0.5.0 설계 1.3)
+  assert.deepEqual(tray.setApps(['messenger','messenger']),{ok:true,changed:true});assert.equal(menu.filter(item=>item.label==='SYNK Workspace').length,1);menu.find(item=>item.label==='SYNK Workspace').click();assert.deepEqual(actions,['messenger']);
+  const before=built;assert.deepEqual(tray.setApps(['messenger']),{ok:true,changed:false});assert.equal(built,before,'the same apps do not rebuild the menu');
+  assert.equal(tray.setApps(['../cmd']).code,'INVALID_TRAY_APPS');assert.equal(tray.setApps(Array(6).fill('world')).code,'INVALID_TRAY_APPS');assert.equal(tray.setApps([{id:'world'}]).code,'INVALID_TRAY_APPS');
+  assert.deepEqual(tray.setApps([]),{ok:true,changed:true});assert.equal(menu.some(item=>item.label==='SYNK Workspace'),false);assert.deepEqual(menu.map(item=>item.label||item.type),['SYNK Platform 열기','separator','완전히 종료']);
   const event={preventDefault:()=>{}};window.emit('close',event);assert.equal(hides,1);hide=false;window.emit('close',event);assert.equal(hides,1);tray.dispose();
 });
