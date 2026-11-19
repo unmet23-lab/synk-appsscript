@@ -27,8 +27,8 @@ export function frontEligible({auto=false,search='',arrival=null,blocked=false,n
 // 하루는 새벽 4시에 바뀐다(밤늦게 1화를 끝낸 학생의 「오늘」이 자정에 끊기지 않게).
 export const dayKey=at=>{const d=new Date(at-4*3600e3);return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;};
 // 첫날부터 며칠째인가(첫날 = 1). 셋째 날부터는 「어제 · 둘째 날」 글을 쓰지 않는다.
-export function dayIndex(arrival,now=Date.now()){
- const first=firstDayAt(arrival);if(!first)return 1;
+export function dayIndex(arrival,now=Date.now(),first=firstDayAt(arrival)){
+ if(!first)return 1;
  const a=new Date(first-4*3600e3),b=new Date(now-4*3600e3);
  const days=Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/864e5);
  return Math.max(1,days+1);
@@ -40,8 +40,10 @@ export function firstDayAt(arrival){
 }
 // 어느 화면으로 여나: 첫날은 끝 화면(끝을 본 뒤 다시 오면 첫날 맞춤), 둘째 날부터는 아침 한 번(목표) 뒤 맞춤.
 // PC 창은 이야기가 없어 끝 화면 · 아침을 건너뛴다(첫날은 첫날 맞춤, 다음 날부터 맞춤).
+// first: 첫날 시각. 기기 표에 처음 적은 값(mark.firstAt)이 있으면 그것과 기록 가운데 이른 쪽 — 서울행 기록이 나중에 바뀌어도(1화를 뒤늦게 봄 · 엄마 답) 날 수가 흔들리지 않게.
+export function firstOf(arrival,mark={}){const a=firstDayAt(arrival),m=Number(mark?.firstAt)||null;return a&&m?Math.min(a,m):a||m;}
 export function frontView({arrival=null,mark={},now=Date.now(),native=false}={}){
- const first=firstDayAt(arrival),sameDay=!first||dayKey(first)===dayKey(now);
+ const first=firstOf(arrival,mark),sameDay=!first||dayKey(first)===dayKey(now);
  if(native)return sameDay?'more':'front';
  if(sameDay)return mark.ended?'more':'end';
  return mark.day2?'front':'day2';
@@ -132,9 +134,11 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   // 이미 학습 목표 저장에 동의한 학생에게는 체크 상자를 다시 그리지 않는다(학습 목표 창과 같다).
   if(profileOf()?.consent)consent={...consent,needed:false};
   return {view,lang:currentLang(),who:pc?'pc':guest?'guest':'login',dream:arrival?.dream||'idol',student:studentOf(arrival),record:recordOf(arrival,{guest}),
-   day:dayIndex(arrival),hangul,after:!!mark.after,goal:view==='front'?(mark.goal||accountGoal()):'',step:'',plan,alts,today:todayOf(arrival,mark,{guest,pc,view}),position:null,consent,reduced:!!home.state?.reduced};
+   day:dayIndex(arrival,Date.now(),firstOf(arrival,mark)),recordToday:wrapToday(arrival),hangul,after:!!mark.after,goal:view==='front'?(accountGoal()||mark.goal||''):'',step:'',plan,alts,today:todayOf(arrival,mark,{guest,pc,view}),position:null,consent,reduced:!!home.state?.reduced};
  }
  // 「오늘 한 것」: 있는 사실만. card · lines · heard · mom은 틀이 세 언어 글로 쓰고, practice는 그 활동의 화면 언어 이름을 그대로 쓴다.
+ // 1화를 오늘 봤나(둘째 날 이후 「이야기」로 1화를 보고 돌아온 학생은 그 기록을 「오늘 한 것」으로)
+ function wrapToday(arrival){const w=(Array.isArray(arrival?.scenes)?arrival.scenes:[]).find(x=>x.id==='s1e01.wrap');return !!w?.at&&dayKey(w.at)===dayKey(Date.now());}
  function todayOf(arrival,mark,{guest,pc,view}){
   const rows=[];
   if(arrival?.name&&!pc)rows.push({key:'card',label:'학생증'});
@@ -174,10 +178,13 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   const panel=document.querySelector('#world-panel');
   s.onPanelClose=()=>setTimeout(()=>{
    if(session!==s||panel?.open)return;
+   s.settings=false;
    const pending=s.pending;s.pending=null;
    if(pending&&pending.view==='more'&&s.owner===owner()&&!readMark(s.owner).after&&finished(pending))
     writeMark(s.owner,{after:true,afterEntry:{id:pending.entry.id,label:pending.entry.label||'',route:pending.entry.route,lessonId:pending.entry.lessonId||null,gameId:pending.entry.gameId||null,skillId:pending.entry.skillId||null}});
    // 앞면에서 연 활동을 닫고 왔을 때만 첫날 끝 → 첫날 맞춤, 둘째 날 아침 → 맞춤으로 넘긴다. 다른 시트(기록 옮기기 · 로그인 · 알림)가 닫히면 같은 화면을 다시 그린다.
+   // 학습 목표 창(시험 정보가 있는 학생이 목표를 바꿀 때 연다)에서 목표를 저장하고 닫았으면 둘째 날 질문을 끝낸 것으로 본다.
+   if(!pending&&s.view==='day2'&&accountGoal()){writeMark(s.owner,{day2:true});s.view='front';}
    void show(pending?(s.view==='end'||s.view==='off'?'more':s.view==='day2'?'front':s.view):s.view);
   },0);
   panel?.addEventListener('close',s.onPanelClose);
@@ -192,8 +199,9 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  // 관문을 지난 뒤(onEnter) 부른다. 앞면 학생이면 틀을 올리고 참을 돌려준다.
  async function enter(){
   if(!free())return false;
-  const who=owner(),mark=readMark(who);
-  let view=frontView({arrival:arrivalOf(who),mark,native:!!native()});
+  const who=owner(),mark=readMark(who),arrival=arrivalOf(who);
+  if(!mark.firstAt){const at=firstDayAt(arrival)||Date.now();writeMark(who,{firstAt:at});mark.firstAt=at;}
+  let view=frontView({arrival,mark,native:!!native()});
   // 다른 기기에서 이미 목표를 골랐으면 둘째 날 아침의 목표 질문을 다시 하지 않는다.
   if(view==='day2'&&!mark.goal&&accountGoal())view='front';
   const s=mount();
@@ -203,7 +211,11 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   return true;
  }
  function onIdentity(){if(session&&session.owner!==owner())drop();}
- onLang(code=>{try{session?.api?.setLang(code);}catch{}});
+ onLang(code=>{
+  try{session?.api?.setLang(code);}catch{}
+  // 「나」로 연 설정에서 언어를 바꾸면 홈이 설정을 튜터 판으로 다시 그린다 — 앞면의 설정(내 계정 단추 · 튜터 단추 없음)으로 다시 연다.
+  const s=session;if(s?.settings&&typeof openSettings==='function')setTimeout(()=>{if(session===s&&s.settings&&document.querySelector('#world-panel')?.open){try{openSettings();}catch{}}},0);
+ });
 
  /* ── 부모 통로 ── 틀(같은 출처)이 부른다. 요청한 때의 주인이 지금 주인일 때만 쓴다 */
  const same=()=>!!session&&session.owner===owner();
@@ -226,8 +238,12 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    const progress=life.progress;
    let profile=null;try{profile=progress?.learningProfile?.()?.profile||null;}catch{profile=null;}
    if(!consent&&!profile?.consent)return {error:'needConsent'};
-   // 이유만 바꾸고 나머지(도움 방식 · 설명 길이 · 시험 정보)는 그대로 둔다 — 시험 정보는 이유가 시험일 때만 계획이 읽는다(world-exam-plan examInfo).
-   try{progress.updateLearningProfile({consent:true,expectedRevision:profile?.revision,values:{...(profile?.values||{}),reasons:[reason],primaryReason:reason,goal:null}});}
+   const saved=profile?.values||{},EXAM=['examType','targetGrade','examDate','examMode','weeklyMinutes'];
+   // 시험 정보(종류 · 급 · 날짜)를 저장한 학생이 시험 밖 목표를 고르면 그 정보를 지워야 저장된다(코어 규칙). 앞면에는 시험 칸이 안 보이므로
+   // 몰래 지우지 않고, 시험 칸이 보이는 학습 목표 창을 연다 — 거기서 학생이 직접 바꾼다.
+   if(reason!=='exam'&&EXAM.some(k=>saved[k]!=null)){try{education()?.open?.();}catch{}return {error:'goalWindow'};}
+   // 이유만 바꾸고 나머지(도움 방식 · 설명 길이 · 화면 설정)는 그대로 둔다.
+   try{progress.updateLearningProfile({consent:true,expectedRevision:profile?.revision,values:{...saved,reasons:[reason],primaryReason:reason,goal:null}});}
    catch(error){return {error:error?.message||'save'};}
    writeMark(who,{day2:true,goal});session.view='front';
    return stateOf('front');
@@ -256,7 +272,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   async openTab(tab){if(!same())return null;session.pending=null;if(tab==='learn')return openLife('packs');if(tab==='play')return home.showPlay?.();return null;},
   async openAll(){if(!same())return null;session.pending=null;try{return education()?.position?.();}catch{return null;}},
   // 「나」: 설정(화면 언어 · 소리 · 움직임)을 열고 그 아래에 내 계정(로그인했으면) 또는 로그인 단추를 둔다. 설정을 못 열면 내 계정.
-  async openMe(){if(!same())return null;session.pending=null;if(typeof openSettings==='function'){try{if(openSettings())return null;}catch{}}return profile?.();},
+  async openMe(){if(!same())return null;const s=session;s.pending=null;if(typeof openSettings==='function'){try{if(openSettings()){s.settings=true;return null;}}catch{}}return profile?.();},
   async signIn(){if(session)session.pending=null;return signIn?.();}
  });
  // 고른 활동 열기 — 학습 화면 launch(world-learning-ui.mjs)와 같은 갈래. 첫날에는 목표 창을 거치지 않는다(네 갈래 검토 12절 ③).

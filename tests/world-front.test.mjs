@@ -1,7 +1,7 @@
 // 첫날 끝 · 맞춤 앞면(1차) 다리의 순수 함수 — 판별 · 날 · 기록 · 할 일 바꾸기(구현 계획 docs/WORLD_첫날끝_1차_구현계획_20261119.md 5절).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {FRONT_AUTO,frontMode,frontEligible,dayKey,dayIndex,frontView,recordOf,studentOf,itemOf,reasonOf,planState,GOAL_REASONS} from '../experiences/synk-world-app/world-front-entry.mjs';
+import {FRONT_AUTO,frontMode,frontEligible,dayKey,dayIndex,firstOf,frontView,recordOf,studentOf,itemOf,reasonOf,planState,GOAL_REASONS} from '../experiences/synk-world-app/world-front-entry.mjs';
 
 const left={version:1,stage:'left',dream:'idol',name:'볼로르',nameEn:'Bolor',call:'언니',from:'몽골',look:'mn_f',best:{s1e01:{n:3,t2:true,tr:false}},
  scenes:[{id:'s1e01.wrap',at:Date.parse('2026-11-19T13:00:00Z'),lines:4}],momAnswer:'fix',updatedAt:Date.parse('2026-11-19T13:05:00Z')};
@@ -35,6 +35,15 @@ test('며칠째: 첫날 1, 새벽 4시 경계, 기록 없으면 1', () => {
   assert.equal(dayIndex(arr, new Date(2026, 10, 20, 9, 0).getTime()), 2);
   assert.equal(dayIndex(arr, new Date(2026, 10, 22, 9, 0).getTime()), 4);
   assert.equal(dayIndex(null), 1);
+});
+
+test('첫날 기준: 기기 표에 처음 적은 때와 기록 가운데 이른 쪽(1화를 뒤늦게 봐도 날 수가 줄지 않음)', () => {
+  const d1 = new Date(2026, 10, 19, 22, 0).getTime(), d2 = new Date(2026, 10, 20, 20, 0).getTime();
+  const late = {scenes: [{id: 's1e01.wrap', at: d2}]};
+  assert.equal(firstOf(late, {firstAt: d1}), d1);
+  assert.equal(dayIndex(late, d2, firstOf(late, {firstAt: d1})), 2);
+  assert.equal(frontView({arrival: late, mark: {firstAt: d1, ended: true}, now: d2}), 'day2');
+  assert.equal(firstOf(late, {}), d2);
 });
 
 test('화면: 첫날 끝 → 다시 오면 첫날 맞춤 → 둘째 날 아침 한 번 → 맞춤', () => {
