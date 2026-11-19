@@ -21,6 +21,7 @@
   const ff = $('.sc-ff'), ffNum = $('.sc-ff-num'), ffCap = $('.sc-ff-cap');
   const soundBtn = $('.sc-sound');
   const wait = (ms) => new Promise((r) => setTimeout(r, reduce ? Math.min(ms, 60) : ms));
+  const frames = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));   // 두 장 뒤 — 자리가 바뀐 카드가 그려진 다음
 
   /* ── 원고(공개본 그대로) ── */
   const Q = {
@@ -40,7 +41,7 @@
     d7: { head: '7일 뒤 · 다시 확인할 때', shot: 'piece-check-d7', say: '맞혔다고 끝이 아닙니다', sub: '일주일 뒤, 다시 확인할 때입니다. 레슨이나 복습을 이어 가면 처음 보는 문제로 확인합니다.', next: '30일 뒤로' },
     d30: { head: '30일 뒤 · 처음 보는 문제', shot: 'piece-check-d30', say: '한 달 뒤, 처음 보는 문제', sub: '레슨을 이어 가면 같은 항목의 다른 문제가 나옵니다. 외웠는지가 아니라 아는지를 봅니다.', context: '친구가 떨어진 책을 주워 줬어요.', prompt: '도움을 받았어요. 어떤 말을 할까요?', answer: 'c', choices: [['a', '저는 수진이에요.'], ['b', '안녕하세요.'], ['c', '감사합니다.']],
       right: { say: '한 달 뒤에도 혼자 맞혔습니다', sub: '이 답이 30일 칸을 채웁니다. 하루 · 일주일 · 한 달 뒤 확인이 모두 끝났습니다.' }, wrong: { say: '이 칸은 「다시 연습」으로 남습니다', sub: '틀린 답도 그대로 남고, 이 말은 1분 뒤 다른 장면으로 돌아옵니다.' }, next: '내 위치 보기' },
-    me: { head: '내 위치', shot: 'piece-evidence', say: '점수 말고 근거로 봅니다', sub: '게임 · 생활 레슨 · 짧은 진단의 답이 한 기록에 모입니다. 내 위치는 처음 보는 문제를 도움 없이 푼 답으로만 정합니다.', go: 'SYNK WORLD 열기', note: ['한글을 아직 못 읽어도 한글부터 시작해요.', '가입 없이 둘러볼 수 있고, 화면은 한국어 · 영어 · 몽골어로 볼 수 있어요.'] },
+    me: { head: '내 위치', shot: 'piece-evidence', say: '점수 말고 근거로 봅니다', sub: '게임 · 생활 레슨 · 짧은 진단의 답이 한 기록에 모입니다. 내 위치는 처음 보는 문제를 도움 없이 푼 답으로만 정합니다.', go: 'SYNK WORLD 열기', note: ['한글을 아직 못 읽으면 한글 자모부터 배웁니다.', '가입 없이 둘러볼 수 있고, 화면은 한국어 · 영어 · 몽골어로 볼 수 있습니다.'] },
     real: 'SYNK WORLD 실제 화면',
   };
   const WORLD = /(^|\.)synk\.im$/.test(location.hostname) ? '/world/' : 'https://synk.im/world/';
@@ -99,7 +100,7 @@
   const fetchSnd = (k) => { if (!ac || bufs[k] || asked[k] || !SND[k]) return; asked[k] = true; fetch(SND[k].f).then((r) => r.arrayBuffer()).then((b) => ac.decodeAudioData(b)).then((d) => { bufs[k] = d; }).catch(() => { delete asked[k]; }); };
   const loadAudio = () => {
     if (ac || !AC) return;
-    ac = new AC(); master = ac.createGain(); const comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; master.connect(comp).connect(ac.destination);
+    ac = new AC(); master = ac.createGain(); master.gain.value = soundOn ? 1 : 0; const comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; master.connect(comp).connect(ac.destination);
     for (const k of Object.keys(SND)) fetchSnd(k);
   };
   const play = (k, { g = 1, rate = 1, delay = 0 } = {}) => {
@@ -110,11 +111,13 @@
     const src = ac.createBufferSource(); src.buffer = bufs[k]; src.playbackRate.value = r;
     const gn = ac.createGain(); gn.gain.value = s.g * g; src.connect(gn).connect(master); src.start(ac.currentTime + delay);
   };
-  const paintSound = () => { soundBtn.setAttribute('aria-pressed', String(soundOn)); soundBtn.querySelector('span').textContent = soundOn ? '소리 켬' : '소리 꺼짐'; };
+  const paintSound = () => { if (master) master.gain.value = soundOn ? 1 : 0; soundBtn.setAttribute('aria-pressed', String(soundOn)); soundBtn.querySelector('span').textContent = soundOn ? '소리 켬' : '소리 꺼짐'; };
   root.addEventListener('pointerdown', () => { loadAudio(); ac?.resume(); }, { capture: true });
+  const keyWake = (e) => { if (e.key === 'Enter' || e.key === ' ' || /^[1-3]$/.test(e.key)) { loadAudio(); ac?.resume(); } };   // 키보드만 쓰는 사람도 소리가 나게
+  root.addEventListener('keydown', keyWake, { capture: true });
   soundBtn.addEventListener('click', () => {
     soundOn = !soundOn; try { localStorage.setItem('synk-lab-sound', soundOn ? 'on' : 'off'); } catch { /* 이번만 */ }
-    paintSound(); if (soundOn) { loadAudio(); ac?.resume(); play('pop'); }
+    paintSound(); if (soundOn) { loadAudio(); ac?.resume(); play('pop'); } else stopReading();
   });
   paintSound();
 
@@ -212,17 +215,19 @@
     if (!v || reduce) return;
     try { v.currentTime = 0; } catch { /* 아직 못 감음 */ } v.play().catch(() => {});
   };
-  const paintMean = (c) => { const m = meanOf(c.text); c.meanEl.textContent = m; c.meanEl.lang = hl; c.el.classList.toggle('has-mean', !!m); c.el.classList.toggle('is-longmean', [...m].length > 10); };
+  const paintMean = (c) => { const m = meanOf(c.text); c.meanEl.textContent = m; c.meanEl.lang = hl; c.el.classList.toggle('has-mean', !!m); c.el.classList.toggle('is-longmean', [...m].length > 10); if (c.num && c.home !== 'show') c.el.setAttribute('aria-label', cardLabel(c)); };
+  const cardLabel = (c) => { const m = meanOf(c.text); return `${c.num}번 ${c.text}${m ? ` (${m})` : ''}`; };   // 화면에 보이는 뜻을 스크린 리더에도
   function setFace(c, id, text, num) {
-    c.id = id; c.text = text; c.wordEl.textContent = text; c.backWord.textContent = text; c.numEl.textContent = String(num); setPic(c);
+    c.id = id; c.text = text; c.num = num; c.wordEl.textContent = text; c.backWord.textContent = text; c.numEl.textContent = String(num); setPic(c);
     paintMean(c);   // 힌트 언어가 쪽 언어가 아니거나 영어 판이면 한글 보기 밑에 뜻
     c.el.classList.toggle('is-long', [...text].length > 7);   // 긴 보기(「저는 몽글이에요.」)는 카드 모서리 점과 부딪히지 않게 조금 작게
-    c.el.setAttribute('aria-label', `${num}번 ${text}`); c.el.classList.remove('is-right', 'is-wrong');
+    c.el.setAttribute('aria-label', cardLabel(c)); c.el.classList.remove('is-right', 'is-wrong');
   }
   const removeCard = (c) => { cards.delete(c); c.el.remove(); c.sh.remove(); };
 
   /* ── 움직임: 카드마다 진자, 줄은 용수철 ── */
-  let last = performance.now(), visible = true;
+  let last = performance.now(), visible = true, ticking = false;
+  const startTick = () => { if (ticking) return; ticking = true; last = performance.now(); requestAnimationFrame(tick); };   // 고리는 하나만
   const tick = (now) => {
     const dt = Math.min(0.033, (now - last) / 1000); last = now;
     wave.v += (-wave.a * 260 - wave.v * 7) * dt; wave.a += wave.v * dt;
@@ -233,6 +238,7 @@
       if (c.home !== 'fall') c.dx = c.x;
     }
     for (const c of cards) {
+      if (c.home === 'fall' && reduce) { removeCard(c); continue; }   // 움직임 줄이기면 떨어뜨리지 않고 바로 뺀다
       if (c.home === 'fall') {
         // 집게에서 풀린 카드: 중력으로 떨어지며 공기에 팔랑인다
         const f = c.fall; f.t += dt;
@@ -249,7 +255,7 @@
           c.fv += ((c.ft - c.fx) * 60 - c.fv * 7) * dt; c.fx += c.fv * dt;
         } else { c.ps = c.pv = c.fx = c.fv = 0; }   // 움직임 줄이기면 걸 때 준 비틀림이 풀리지 않아 카드가 옆면으로 남았다(11-19 공개 전 검수)
         // 집게가 옮겨 가는 속도가 바뀌면(가속 · 감속) 카드 아래쪽이 뒤로 처졌다가 흔들린다. 시계 방향이 + 이므로 Δω = +Δv / L · cosθ
-        const vNew = (c.x - c.px) / dt, dv = vNew - c.vx; c.vx = vNew; c.px = c.x;
+        const vNew = dt > 0 ? (c.x - c.px) / dt : c.vx, dv = vNew - c.vx; c.vx = vNew; c.px = c.x;
         if (!c.grab && !reduce) {
           if (Math.abs(dv) < 3000) { c.w += (dv / L) * Math.cos(c.th) * 0.22; c.pv += (dv / L) * 0.05; }
           c.w += (-om * om * Math.sin(c.th) - 1.5 * c.w) * dt;
@@ -280,15 +286,16 @@
     let d = '', ds = '';
     for (let x = -20; x <= W + 20; x += 8) { const y = cordY(x), m = x === -20 ? 'M' : 'L'; d += `${m}${x} ${y.toFixed(1)}`; ds += `${m}${x} ${(y + 6).toFixed(1)}`; }
     cordPath.setAttribute('d', d); cordShadow.setAttribute('d', ds);
-    if (visible) requestAnimationFrame(tick);
+    if (visible) requestAnimationFrame(tick); else ticking = false;
   };
-  new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !visible) { visible = true; last = performance.now(); requestAnimationFrame(tick); if (skyKind && !skyRaf) { skyLast = 0; skyRaf = requestAnimationFrame(skyTick); } } visible = v; }, { rootMargin: '200px 0px' }).observe(root);
+  new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !visible) { visible = true; startTick(); if (skyKind && !skyRaf) { skyLast = 0; skyRaf = requestAnimationFrame(skyTick); } } visible = v; }, { rootMargin: '200px 0px' }).observe(root);
 
   /* ── 손: 지나가면 살짝 밀리고, 짧게 누르면 답, 잡아 끌면 따라 흔들린다 ── */
   let answering = null, hinted = false;
+  const backSide = (c) => Math.abs(gsap.getProperty(c.flip, 'rotationY')) > 90;   // 기록 면이 보이는 카드
   function bindCard(c) {
     const el = c.el; let down = null, dragged = false, suppress = 0;
-    el.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' && c.home === 'line' && !c.moving && !down) { c.hover = true; play('hover'); c.w -= clamp(e.movementX * 0.02, -0.5, 0.5) || 0.25; act(c, false, true); } });
+    el.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' && c.home === 'line' && !c.moving && !down) { c.hover = true; play('hover'); c.w -= clamp(e.movementX * 0.02, -0.5, 0.5) || 0.25; if (!backSide(c)) act(c, false, true); } });
     el.addEventListener('pointerleave', () => { c.hover = false; c.pt = 0; c.ft = 0; });
     el.addEventListener('pointermove', (e) => {
       if (!down) {
@@ -300,7 +307,8 @@
         }
         return;
       }
-      if (!dragged && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 7) { dragged = true; c.grab = true; el.classList.add('is-grab'); el.classList.remove('is-down'); hideHint(); }
+      const ddx = e.clientX - down.x, ddy = e.clientY - down.y;
+      if (!dragged && Math.hypot(ddx, ddy) > 7 && (!down.touch || Math.abs(ddx) > Math.abs(ddy))) { dragged = true; c.grab = true; el.classList.add('is-grab'); el.classList.remove('is-down'); hideHint(); }   // 터치는 가로로 끌 때만 흔든다
       if (!dragged) return;
       const R = layer.getBoundingClientRect(), px = e.clientX - R.left, py = e.clientY - R.top;
       const target = clamp(Math.atan2(c.x - px, Math.max(30, py - c.y)), -0.7, 0.7);
@@ -308,21 +316,22 @@
     });
     el.addEventListener('pointerdown', (e) => {
       stopHand();
-      if (c.home === 'show' && !c.moving) { el.classList.add('is-down'); play('press'); setTimeout(() => el.classList.remove('is-down'), 120); return; }
+      if (c.home === 'show' && !c.moving) { if (e.pointerType !== 'touch') { el.classList.add('is-down'); play('press'); setTimeout(() => el.classList.remove('is-down'), 120); } return; }
       if (c.moving || c.home !== 'line') return;
-      down = { x: e.clientX, y: e.clientY }; dragged = false;
-      el.classList.add('is-down'); play('press');
+      down = { x: e.clientX, y: e.clientY, touch: e.pointerType === 'touch' }; dragged = false;
+      if (!down.touch) { el.classList.add('is-down'); play('press'); }   // 터치는 쪽을 쓸어 내리는 중일 수 있어 뗄 때 정한다
       try { el.setPointerCapture(e.pointerId); } catch { /* 이미 놓음 */ }
     });
     const up = () => {
       if (!down) return; down = null; el.classList.remove('is-down');
       if (dragged) { c.grab = false; el.classList.remove('is-grab'); if (Math.abs(c.w) > 3) play('whoosh', { g: 0.5, rate: 1.3 }); suppress = performance.now(); }
     };
-    el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+    el.addEventListener('pointerup', () => { const tap = down?.touch && !dragged; up(); if (tap) { el.classList.add('is-down'); play('press'); setTimeout(() => el.classList.remove('is-down'), 120); } });
+    el.addEventListener('pointercancel', up);
     el.addEventListener('click', () => {
       if (performance.now() - suppress < 400) return;
       if (c.answerable && answering) answering(c);
-      else if (c.home === 'line' && !c.moving) { c.w += sign() * 1.4; c.pv += sign() * 4; play('hover', { g: 1.6 }); act(c, true, true); }
+      else if (c.home === 'line' && !c.moving) { c.w += sign() * 1.4; c.pv += sign() * 4; play('hover', { g: 1.6 }); if (!backSide(c)) act(c, true, true); }
       else if (c.home === 'show' && !c.moving) turnShow(c);
     });
     el.addEventListener('keydown', (e) => {
@@ -336,6 +345,7 @@
   addEventListener('keydown', (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey || !visible || !answering) return;
     const n = Number(e.key); if (!(n >= 1 && n <= 3)) return;
+    keyWake(e);
     const c = [...cards].find((k) => k.answerable && k.at?.kind === 'slot' && k.at.i === n - 1); if (!c) return;
     c.el.classList.add('is-down'); play('press'); setTimeout(() => { c.el.classList.remove('is-down'); answering?.(c); }, 110);
   });
@@ -346,7 +356,7 @@
     gsap.fromTo(hint, { opacity: 0, x: -6 }, { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' });
     setTimeout(hideHint, 4200);
   };
-  function hideHint() { gsap.to(hint, { opacity: 0, duration: 0.3 }); untip(); stopHand(); }
+  function hideHint() { gsap.to(hint, { opacity: 0, duration: 0.3 }); if (!qtrOn) untip(); stopHand(); }
 
   /* ── 글이 낱말마다 들어온다 ── */
   const kinetic = (el, text, delay = 0) => {
@@ -494,7 +504,7 @@
   const setSky = (kind) => {
     clearInterval(ambT); ambT = 0;
     skyKind = reduce ? null : kind;
-    if (kind) { const k = kind === 'rain' ? 'rain' : 'wind', go = () => play(k); go(); ambT = setInterval(go, 3600); }
+    if (kind) { const k = kind === 'rain' ? 'rain' : 'wind', go = () => { if (visible && !document.hidden) play(k); }; go(); ambT = setInterval(go, 3600); }
     if (!skyKind) { gsap.to(sky, { opacity: 0, duration: 0.8 }); return; }
     sizeSky(); const n = Math.round(skyW / (kind === 'rain' ? 9 : 13)); flakes = Array.from({ length: n }, () => flake(kind, true));
     gsap.fromTo(sky, { opacity: 0 }, { opacity: 1, duration: 1.2 });
@@ -526,14 +536,14 @@
     const fade = () => gsap.to(cal, { opacity: 0, scale: 1.04, y: -6, duration: 0.3, delay: reduce ? 0 : 0.7, ease: 'power2.in', onComplete: res });
     const tl = gsap.timeline({ onComplete: () => { if (root.dataset.head === 'c' && !reduce) landOnDock(to, icon).then(res); else { dockStack.replaceChildren(calPage(to, icon)); fade(); } } });
     tl.fromTo(cal, { opacity: 0, scale: 0.9, y: 12 }, { opacity: 1, scale: 1, y: 0, duration: reduce ? 0 : 0.32, ease: 'back.out(2)' });
-    tl.call(() => { root.dataset.scene = scene; setSky(scene === 'rain' || scene === 'snow' ? scene : null); play('whoosh', { g: 0.8, rate: 0.9 }); }, null, 0.1);
+    tl.call(() => { root.dataset.stageScene = scene; setSky(scene === 'rain' || scene === 'snow' ? scene : null); play('whoosh', { g: 0.8, rate: 0.9 }); }, null, 0.1);
     for (let i = 0; i < N; i++) {
       const p = pages[pages.length - 1 - i], u = N === 1 ? 0 : i / (N - 1);
       const at = reduce ? 0 : 0.42 + T * (u < 0.5 ? 2 * u * u : 1 - ((-2 * u + 2) ** 2) / 2);
       tl.to(p, { rotationX: -172, opacity: 0, duration: reduce ? 0 : 0.42, ease: 'power2.in', transformOrigin: '50% 0%', transformPerspective: 700 }, at)
-        .call(() => play('flip', { g: 0.5, rate: 1.3 + u * 0.5 }), null, at);
+        .call(() => { if (!reduce || i === 0) play('flip', { g: 0.5, rate: 1.3 + u * 0.5 }); }, null, at);   // 움직임 줄이기면 모든 장이 0초에 넘어가 소리가 한꺼번에 겹친다 — 한 번만
     }
-    tl.call(() => { play('tick'); const last = pages[0]; if (!reduce) gsap.fromTo(last, { y: 3 }, { y: 0, duration: 0.3, ease: 'back.out(3)' }); }, null, '>-0.1');
+    tl.call(() => { play('tick'); const last = pages[0]; if (!reduce) gsap.fromTo(last, { y: 3 }, { y: 0, duration: 0.3, ease: 'back.out(3)' }); }, null, reduce ? '>' : '>-0.1');
   });
 
   // 머리 시안 C: 넘긴 달력이 작아지며 문제 글 옆 꽂이에 앉는다
@@ -567,7 +577,7 @@
         const lr = layer.getBoundingClientRect(), x0 = slotX[0] - CW / 2, x1 = slotX[2] + CW / 2, w = Math.min(420, x1 - x0);
         f.style.left = Math.round(x0 + (x1 - x0 - w) / 2) + 'px'; f.style.right = 'auto'; f.style.margin = '0'; f.style.width = Math.round(w) + 'px';
         f.style.top = Math.round(lr.top - r.top + cordY(slotX[1]) + 48) + 'px';
-      } else { const qr = qhead.getBoundingClientRect(); if (qr.height) f.style.top = Math.round(qr.bottom - r.top + 12) + 'px'; }
+      } else { f.style.left = f.style.right = f.style.margin = f.style.width = ''; const qr = qhead.getBoundingClientRect(); if (qr.height) f.style.top = Math.round(qr.bottom - r.top + 12) + 'px'; }
     }
     try { await img.decode(); } catch { /* 그대로 띄운다 */ }
     play('notify'); if (f === shot) root.classList.add('has-shot');
@@ -626,7 +636,7 @@
   const fastForward = (cap, from, to, fmt, scene) => new Promise((res) => {
     ffCap.textContent = cap; play('tick');
     const o = { v: from };
-    if (scene) root.dataset.scene = scene;
+    if (scene) root.dataset.stageScene = scene;
     gsap.timeline({ onComplete: res })
       .fromTo(ff, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.25, ease: 'back.out(2)' })
       .to(o, { v: to, duration: reduce ? 0 : 1.15, ease: 'power3.out', onUpdate: () => { ffNum.textContent = fmt(o.v); } }, 0)
@@ -638,16 +648,17 @@
   const G = {
     pick: '알맞은 말을 골라 카드를 눌러 보세요', pickSub: '답하면 그 말이 언제 다시 나오는지 보여 드려요. 모르겠으면 「힌트」를 눌러 보세요.',
     record: '답한 말은 기록 카드가 돼요', recordSub: '이 카드에 「낱말 뜻 읽기」 실력이 기록돼요. 오늘 결과 도장이 찍혔어요.',
-    line: '이 줄이 앞으로의 30일이에요', lineSub: '잊을 만할 때마다 1분 · 내일 · 7일 · 30일 뒤에 다시 물어봐요.',
+    line: '이 줄이 앞으로의 30일이에요', lineSub: '잊을 만할 때마다 1분 뒤, 내일, 7일 뒤, 30일 뒤에 다시 물어봐요.',
     right: '맞았어요!', wrong: '아쉬워요. 정답은 {n}번이에요', rightSub1: '맞힌 말은 조금 더 있다가, 내일 다시 나와요.', wrongSub1: '처음 만난 분께는 「안녕하세요」라고 인사해요. 틀린 말은 더 빨리, 1분 뒤에 다시 나와요.',
     next: '눌러서 그날로 가 보세요', back: '그 말이 돌아왔어요', backSub: '이번에는 장면이 달라요. 다시 골라 보세요.',
-    shot: '그날 앱을 열면 보이는 화면이에요', check: '처음 보는 문제예요', checkSub: '도움 없이 혼자 골라 보세요. 힌트를 쓰면 「힌트 보고 맞힘」으로 남아요.',
+    shot: '그날 앱을 열면 보이는 화면이에요', check: '같은 실력을 처음 보는 문제로 확인해요', checkSub: '도움 없이 혼자 골라 보세요. 힌트를 쓰면 「힌트 보고 맞힘」으로 남아요.',
     me: '30일 동안 쌓인 기록이에요', meSub: '카드를 누르면 앞면과 기록 면이 바뀌어요.', off: '안내 끄기',
   };
   let guideOn = true, handTL = null, handBob = null, qtrOn = false;
   const fillT = (t, o) => String(t).replace(/\{(\w+)\}/g, (_, k) => (o[k] ?? ''));
   const guide = document.createElement('div'); guide.className = 'sc-guide'; guide.setAttribute('role', 'status'); guide.setAttribute('aria-live', 'polite');
   guide.innerHTML = '<p class="sc-guide-t"></p><p class="sc-guide-s"></p><button type="button" class="sc-guide-x"></button><i class="sc-guide-tail" aria-hidden="true"></i>';
+  guide.inert = true;   // 숨은 말풍선의 「안내 끄기」가 초점을 받지 않게
   $('.sc-guide-x', guide).textContent = G.off;
   root.append(guide);
   const hand = document.createElement('div'); hand.className = 'sc-hand'; hand.setAttribute('aria-hidden', 'true');
@@ -659,7 +670,7 @@
   const tip = (t, s, box, side, always = false) => {   // always: 안내를 닫은 방문자에게도 보인다(힌트의 번역 질문)
     if (!guideOn && !always) return;
     $('.sc-guide-t', guide).textContent = t; $('.sc-guide-s', guide).textContent = s || '';
-    guide.dataset.side = side; guide.classList.add('is-on');
+    guide.dataset.side = side; guide.classList.add('is-on'); guide.inert = false;
     const RW = root.clientWidth, m = 16;
     // 옆에 설 때는 남은 폭에 맞춰 줄을 바꾼다(대상을 덮지 않게)
     const cap = narrow ? 270 : 340, room = side === 'right' ? RW - (box.x + box.w + m) - 12 : side === 'left' ? box.x - m - 12 : cap;
@@ -681,7 +692,7 @@
     gsap.killTweensOf(guide);
     gsap.fromTo(guide, { x: cx, y: y + (side === 'top' ? 8 : side === 'bottom' ? -8 : 0), opacity: 0, scale: 0.92 }, { x: cx, y, opacity: 1, scale: 1, duration: 0.42, ease: 'back.out(2.2)' });
   };
-  const untip = () => { qtrOn = false; guide.removeAttribute('lang'); guide.classList.remove('is-qtr'); guide.classList.remove('is-on'); after.classList.remove('is-tipped'); gsap.to(guide, { opacity: 0, duration: reduce ? 0 : 0.2 }); };
+  const untip = () => { qtrOn = false; guide.removeAttribute('lang'); guide.classList.remove('is-qtr'); guide.classList.remove('is-on'); guide.inert = true; after.classList.remove('is-tipped'); gsap.to(guide, { opacity: 0, duration: reduce ? 0 : 0.2 }); };
   const stopHand = () => { handTL?.kill(); handTL = null; handBob?.kill(); handBob = null; gsap.killTweensOf(hand); gsap.to(hand, { opacity: 0, duration: reduce ? 0 : 0.2 }); };
   const ring = () => { const r = $('.sc-hand-ring', hand); gsap.fromTo(r, { scale: 0.2, opacity: 0.9 }, { scale: 1.7, opacity: 0, duration: 0.6, ease: 'power2.out' }); play('press', { g: 0.35 }); };
   // 처음 한 번: 손가락이 보기 카드를 하나씩 짚어 보고, 누르는 시늉을 한다(정답을 고르지는 않는다). 방문자가 손을 대면 멈춘다
@@ -715,12 +726,12 @@
 
   /* ── 힌트(11-19): 모르면 두 단계로 돕는다 — ① 튜터가 방문자 말로 묻는 말을 읽어 준다 ② 그 상황을 짧은 장면 영상으로 보인다.
        30일 확인 문제에서 힌트를 쓰면 「혼자 맞힘」으로 세지 않는다(앱의 기록 원칙) ── */
-  const H = { btn: '힌트', step1: '질문 듣기', step2: '장면 보기', again: '장면 다시 보기', cap: '힌트 · 이런 상황이에요', close: '힌트 닫기', d30Say: '힌트를 보고 맞혔습니다', d30Sub: '힌트를 쓴 답은 「혼자 맞힘」으로 세지 않습니다. 30일 칸에는 힌트를 본 기록이 남습니다.' };
+  const H = { btn: '힌트', step1: '질문 듣기', step2: '장면 보기', again: '장면 다시 보기', cap: '힌트 · 이런 상황이에요', close: '힌트 닫기', d30Say: '힌트를 보고 맞혔습니다', d30Sub: '힌트를 쓴 답은 「혼자 맞힘」으로 세지 않습니다. 30일 기록에는 「힌트 보고 맞힘」으로 남습니다.' };
   const HINTS = { first: { v: 'class' }, second: { v: 'staff' }, d30: { v: 'book' } };
   const hintSrc = (k, ext) => (window.__CARDDATA && window.__CARDDATA[`hint/${k}.${ext}`]) || `hint/${k}.${ext}`;
   let hintKey = null, hintStep = 0, hintUsed = false, hintCards = [], qSrc = null, readTw = null, hearT = [];
   const qBox = promptEl.closest('.sc-q') || promptEl.parentElement;
-  const hintBtn = document.createElement('button'); hintBtn.type = 'button'; hintBtn.className = 'sc-hintbtn'; hintBtn.tabIndex = -1;
+  const hintBtn = document.createElement('button'); hintBtn.type = 'button'; hintBtn.className = 'sc-hintbtn'; hintBtn.tabIndex = -1; hintBtn.setAttribute('aria-hidden', 'true');
   hintBtn.innerHTML = '<svg class="sc-hint-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg><b></b><span class="sc-hint-step"></span>';
   // 묻는 말과 힌트 단추를 한 줄로 묶는다: 넓은 화면은 묻는 말 옆, 좁으면 밑으로 접힌다(줄 무대를 아래로 밀지 않게)
   const pline = document.createElement('div'); pline.className = 'sc-pline'; promptEl.before(pline); pline.append(promptEl, hintBtn);
@@ -737,14 +748,16 @@
     hintBtn.setAttribute('aria-label', `${$('b', hintBtn).textContent}: ${$('.sc-hint-step', hintBtn).textContent}`);
   };
   const stopReading = () => { hearT.forEach(clearTimeout); hearT = []; try { qSrc?.stop(); } catch { /* 이미 끝남 */ } qSrc = null; readTw?.kill(); readTw = null; qBox.classList.remove('is-read'); hintBtn.classList.remove('is-reading'); };
-  const hideHintFig = () => { hintFig.classList.remove('is-on'); hintFig.setAttribute('aria-hidden', 'true'); hintFig.inert = true; gsap.to(hintFig, { opacity: 0, duration: reduce ? 0 : 0.2, onComplete: () => hintVid.pause() }); };
+  const hideHintFig = () => { if (hintFig.contains(document.activeElement)) hintBtn.focus({ preventScroll: true }); hintFig.classList.remove('is-on'); hintFig.setAttribute('aria-hidden', 'true'); hintFig.inert = true; gsap.to(hintFig, { opacity: 0, duration: reduce ? 0 : 0.2, onComplete: () => hintVid.pause() }); };
   // 장면마다 부른다: 그 문제의 힌트를 처음 단계로
   const setHint = (key, cs) => {
     hintKey = key; hintStep = 0; hintUsed = false; hintCards = cs; stopReading(); hideHintFig(); hideQtr(); paintHint();
-    hintBtn.classList.add('is-on'); hintBtn.tabIndex = 0; hlWrap.classList.add('is-on');
+    hintBtn.classList.add('is-on'); hintBtn.tabIndex = 0; hintBtn.removeAttribute('aria-hidden'); hlWrap.classList.add('is-on');
+    gsap.killTweensOf(hintBtn);
     if (!reduce) gsap.fromTo(hintBtn, { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(2)', delay: 0.2 });
+    else gsap.set(hintBtn, { y: 0, opacity: 1 });   // 움직임 줄이기면 앞 문제 끝에 남긴 투명을 바로 걷는다
   };
-  const endHint = () => { const used = hintUsed; hintKey = null; stopReading(); hideHintFig(); hideQtr(); hintBtn.classList.remove('is-on'); hintBtn.tabIndex = -1; hlWrap.classList.remove('is-on'); gsap.to(hintBtn, { opacity: 0, duration: reduce ? 0 : 0.2 }); return used; };
+  const endHint = () => { const used = hintUsed; hintKey = null; stopReading(); hideHintFig(); hideQtr(); hintBtn.classList.remove('is-on'); hintBtn.tabIndex = -1; hintBtn.setAttribute('aria-hidden', 'true'); hlWrap.classList.remove('is-on'); gsap.to(hintBtn, { opacity: 0, duration: reduce ? 0 : 0.2 }); return used; };
   // ① 묻는 말 읽기: 소리가 꺼져 있어도 이 단추는 듣겠다는 뜻이라 켠다. 읽는 동안 묻는 말 밑에 진행 줄이 그어진다
   // 묻는 말을 읽은 뒤 보기 카드가 하나씩 제 말을 소리 내어 한다 — 휴대폰은 손을 올려 들어 볼 수 없어서다
   const hearChoices = (key) => { hearT.forEach(clearTimeout); hearT = hintCards.map((k, i) => setTimeout(() => { if (hintKey !== key || !k.answerable) return; act(k, true, true); k.pv += sign() * 1.6; k.w += sign() * 0.5; }, 300 + i * 1300)); };
@@ -786,7 +799,7 @@
   hintBtn.addEventListener('pointerdown', () => play('press'));
   hintBtn.addEventListener('click', () => {
     if (!hintKey) return;
-    const h = HINTS[hintKey]; hintUsed = true; untip(); stopHand();
+    const h = HINTS[hintKey]; hintUsed = true; if (!qtrOn) untip(); stopHand();   // 번역 질문은 힌트 2를 봐도 남긴다
     if (hintStep === 0) { hintStep = 1; paintHint(); showQtr(); sayQuestion(QV(hintKey, hl)); }
     else { hintStep = 2; paintHint(); showHintFig(h.v); }
   });
@@ -868,12 +881,13 @@
     stamp(r.correct, r.right, label);
   };
   async function first(again = false) {
-    root.dataset.scene = 'now'; setClock(0);
+    root.dataset.stageScene = 'now'; setClock(0);
     stopLis.forEach((li) => { li.querySelector('b').textContent = ''; });
     showQuestion(Q.first); enterStage(); setFull(true);
     const cs = Q.first.choices.map(([id, text], i) => makeCard(id, text, i + 1));
     await Promise.all(cs.map((c, i) => dropIn(c, { kind: 'slot', i }, 0.3 + i * 0.2)));
-    guidePick(cs, !again); setHint('first', cs);
+    setHint('first', cs); await frames();   // 힌트 단추에 글이 들어가면 묻는 말 줄이 늘어 카드가 내려간다 — 그 뒤 카드가 제자리에 그려지고 나서 말풍선 자리를 잰다
+    guidePick(cs, !again);
     if (again) cs[0].el.focus({ preventScroll: true });   // 다시 할 때는 첫 카드로(처음 열릴 때는 쪽의 포커스를 뺏지 않는다)
     const r = await takeAnswer(cs, Q.first, { right: G.rightSub1, wrong: G.wrongSub1 });
     await settle(cs, r, '오늘 처음 만난 말', '지금');
@@ -904,7 +918,8 @@
       const k = makeCard(id, text, i + 1); drops.push(dropIn(k, { kind: 'slot', i }, 0.15 + drops.length * 0.2)); return k;
     });
     await Promise.all(drops);
-    guidePick(cs, false, G.back, G.backSub); setHint('second', cs);
+    setHint('second', cs); await frames();
+    guidePick(cs, false, G.back, G.backSub);
     c.el.classList.remove('is-called');
     if (!root.contains(document.activeElement)) cs[0].el.focus({ preventScroll: true });
     const r = await takeAnswer(cs, q);
@@ -980,13 +995,14 @@
     showQuestion(q); setFull(true);
     const cs = q.choices.map(([id, text], i) => makeCard(id, text, i + 1));
     await Promise.all(cs.map((k, i) => dropIn(k, { kind: 'slot', i }, 0.15 + i * 0.2)));
-    guidePick(cs, false, G.check, G.checkSub); setHint('d30', cs);
+    setHint('d30', cs); await frames();
+    guidePick(cs, false, G.check, G.checkSub);
     if (!root.contains(document.activeElement)) cs[0].el.focus({ preventScroll: true });
     const r = await takeAnswer(cs, q);
     await wait(r.right ? 1500 : 2300);
     cs.forEach((k, i) => unclip(k, i * 180));
     await wait(420); setFull(false); untip();
-    if (narrow) gsap.to(c, { op: 1, duration: reduce ? 0 : 0.4 });
+    gsap.to(c, { op: 1, duration: reduce ? 0 : 0.4 });   // 푸는 사이 화면 폭이 바뀌어도 기록 카드를 되살린다
     await wait(700);
     c.el.classList.remove('is-called');
     stamp(c, r.right, '30일 뒤'); markStop(4, r.right);
@@ -1034,6 +1050,6 @@
   loadAudio();
   layout(); new ResizeObserver(layout).observe(root);
   narrowMQ.addEventListener('change', layout);
-  requestAnimationFrame(tick);
+  startTick();
   first();
 })();

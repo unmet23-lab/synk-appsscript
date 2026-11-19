@@ -97,7 +97,7 @@
 .sc{--em:#E0452F;--em-ink:#B5382A;--em-wash:rgba(249,104,89,.5)}
 .sc-title em{font-style:normal}
 .sc[data-em] .sc-title span+span{color:var(--ink);font-weight:500}
-.sc[data-em="ink"] .sc-prompt{color:var(--em)}
+.sc[data-em="ink"] .sc-prompt{color:var(--em-ink)}   /* 보통 크기 글이라 진한 코랄(대비 4.5 이상) */
 .sc[data-em="ink"] .sc-title em{color:var(--em-ink);font-weight:700}
 .sc[data-em="mark"] .sc-prompt{color:var(--ink);font-weight:700}
 .sc[data-em="mark"] .sc-mk{background-image:linear-gradient(100deg,rgba(249,104,89,.1),var(--em-wash) 4%,rgba(249,104,89,.42) 96%,rgba(249,104,89,.1));background-repeat:no-repeat;background-position:0 84%;background-size:100% 48%;-webkit-box-decoration-break:clone;box-decoration-break:clone;padding:0 .14em;margin:0 -.14em}

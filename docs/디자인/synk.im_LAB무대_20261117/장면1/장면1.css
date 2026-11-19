@@ -26,7 +26,7 @@ button{font:inherit;color:inherit}
 /* 바탕: 흰 스튜디오 — 위에서 내려오는 넓은 빛 하나, 바닥 쪽으로 아주 옅게 어두워진다. 아침이면 빛이 따뜻해진다. */
 .sc-wall{position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(120% 70% at 50% 0%,#FFFFFF 0%,rgba(255,255,255,0) 60%),linear-gradient(180deg,var(--bg) 55%,var(--bg-lo) 100%)}
 .sc-wall::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity 1.4s;background:radial-gradient(90% 60% at 18% 8%,rgba(255,214,150,.42),rgba(255,214,150,0) 70%)}
-.sc[data-scene="morning"] .sc-wall::before{opacity:1}
+.sc[data-stage-scene="morning"] .sc-wall::before{opacity:1}
 .sc-wall::after{content:"";position:absolute;inset:0;opacity:.35;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .52 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
 /* 머리 */
@@ -58,7 +58,7 @@ button{font:inherit;color:inherit}
 .sc-cord-path{fill:none;stroke:var(--cord);stroke-width:1.6;stroke-linecap:round}
 .sc-cord-shadow{fill:none;stroke:rgba(40,40,60,.08);stroke-width:2.5;filter:blur(2px)}
 .sc-stops{list-style:none;margin:0;padding:0;position:absolute;inset:0;pointer-events:none}
-.sc-stop{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:30px;font-size:13px;font-weight:600;color:var(--ink3);white-space:nowrap;transition:color .4s,opacity .4s}
+.sc-stop{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:30px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap;transition:color .4s,opacity .4s}
 .sc-stop i{width:8px;height:8px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1.6px var(--cord);transition:background-color .3s,transform .3s cubic-bezier(.3,1.6,.5,1)}
 .sc-stop.is-past{color:var(--ink2)}
 .sc-stop.is-past i{background:var(--ink);box-shadow:inset 0 0 0 1.6px var(--ink)}
@@ -72,12 +72,12 @@ button{font:inherit;color:inherit}
 .sc-stop.is-today .sc-bracket{display:block;height:8px;margin-top:6px;border:1.5px solid var(--ink3);border-bottom:0;border-radius:3px 3px 0 0}
 .sc-line.is-short .sc-stop .sc-l{display:none}
 .sc-line.is-short .sc-stop .sc-s{display:inline}
-.sc-end{position:absolute;white-space:nowrap;font-size:12px;font-weight:600;color:var(--ink3);padding-right:2px;pointer-events:none;transition:opacity .4s}
+.sc-end{position:absolute;white-space:nowrap;font-size:12px;font-weight:600;color:var(--ink2);padding-right:2px;pointer-events:none;transition:opacity .4s}
 .sc-hint{position:absolute;left:0;top:0;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap;opacity:0;pointer-events:none}
 
 /* 3D 배지 */
 .sc-cards{position:absolute;inset:0;pointer-events:none}
-.sc-card{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);transform-origin:50% 0;will-change:transform;cursor:pointer;touch-action:none;pointer-events:auto;outline:none;-webkit-tap-highlight-color:transparent}
+.sc-card{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);transform-origin:50% 0;will-change:transform;cursor:pointer;touch-action:pan-y;pointer-events:auto;outline:none;-webkit-tap-highlight-color:transparent}
 .sc-card.is-grab{cursor:grabbing}
 .sc-card[aria-disabled="true"]{cursor:grab}
 .sc-card-in{position:absolute;inset:0;perspective:1100px;transition:transform .12s cubic-bezier(.3,1.6,.5,1)}
@@ -174,7 +174,7 @@ button{font:inherit;color:inherit}
 .sc-tint{position:absolute;inset:0;opacity:0;transition:opacity 1.6s}
 .sc-tint.is-rain{background:radial-gradient(120% 70% at 50% 0%,rgba(236,240,246,.9),rgba(236,240,246,0) 65%),linear-gradient(180deg,#E9EDF2 40%,#DEE3EA 100%)}
 .sc-tint.is-snow{background:radial-gradient(110% 70% at 50% 0%,rgba(244,248,253,.95),rgba(244,248,253,0) 65%),linear-gradient(180deg,#E3ECF6 35%,#D6E2EF 100%)}
-.sc[data-scene="rain"] .sc-tint.is-rain,.sc[data-scene="snow"] .sc-tint.is-snow{opacity:1}
+.sc[data-stage-scene="rain"] .sc-tint.is-rain,.sc[data-stage-scene="snow"] .sc-tint.is-snow{opacity:1}
 .sc-sky{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0}
 
 /* 탁상 달력: 고리 두 개에 매단 종이가 위로 넘어간다 */
@@ -196,7 +196,7 @@ button{font:inherit;color:inherit}
 /* SYNK WORLD 실제 화면 조각: 그날 앱이 보이는 화면을 문제 자리에 띄운다 */
 .sc-shot{position:absolute;left:0;right:0;top:calc(clamp(14px,2.4vh,28px) + 20px);margin:0 auto;width:min(400px,calc(100% - 2 * var(--gut)));display:flex;flex-direction:column;gap:6px;opacity:0;pointer-events:none;transform-origin:50% 0}
 .sc-shot img{display:block;width:100%;height:auto;border-radius:14px;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 22px 40px -22px rgba(20,20,40,.55),0 2px 6px rgba(20,20,40,.12)}
-.sc-shot figcaption{order:-1;font-size:11.5px;font-weight:700;letter-spacing:.02em;color:var(--ink3);text-align:left}
+.sc-shot figcaption{order:-1;font-size:11.5px;font-weight:700;letter-spacing:.02em;color:var(--ink2);text-align:left}
 .sc-evid{top:18px;left:0;right:auto;margin:0;z-index:4}
 .sc-card.is-show .sc-num{display:none}
 
@@ -237,7 +237,7 @@ a.sc-btn{text-decoration:none}
   .sc{min-height:0}
   .sc-head{grid-template-columns:1fr;padding-top:30px}
   .sc-title{font-size:20px}
-  .sc-meta{margin-top:6px}
+  .sc:not([data-head]) .sc-head .sc-meta{margin-top:6px}   /* 옛 한 줄 머리만 — 머리 C의 소리 단추 · 카드 아래 칸까지 밀던 것(11-19) */
   .sc-stage{align-items:flex-start;text-align:left;padding-top:18px}
   .sc-ctx{font-size:24px}
   .sc-prompt{font-size:16px}
