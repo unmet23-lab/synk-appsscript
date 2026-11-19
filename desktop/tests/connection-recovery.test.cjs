@@ -5,15 +5,28 @@ const {createConnectionRecovery}=require('../src/connection-recovery.cjs');
 const ENTRY='http://127.0.0.1:4280/synk-account/client.html?product=world',STATUS='synk-desktop://status/';
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 const failure=(code=-102)=>Object.assign(Error(code===-3?'ERR_ABORTED':'ERR_CONNECTION_REFUSED'),{errno:code,code:code===-3?'ERR_ABORTED':'ERR_CONNECTION_REFUSED'});
+// 살아 있는 프로세스 번호(이 시험 프로세스). 0이면 주 프레임에 화면 프로세스가 없다
+const ALIVE=process.pid;
+/* 창의 webContents를 흉내 낸다. 화면 프로세스의 값은 설계 검토의 실측(Electron 44.5.1)을 따른다.
+   주 프레임 이동이 시작되면 싣는 중이다. 사라진 프레임에서 시작하면 곧바로 새 프로세스로 바뀌고 주 프레임 주소는 빈다.
+   실리면 주소가 찬다. 실리거나 실패하거나 취소되면 did-stop-loading과 함께 끝난다. 사라진 채로 mainFrame을 읽으면 예외가 난다 */
 class Contents extends EventEmitter{
-  constructor(){super();this.url='';this.loads=[];this.destroyed=false;this.loading=false;}
-  // 주 프레임 이동이 시작되면 싣는 중이다. 실리거나 실패하거나 취소되면 did-stop-loading과 함께 끝난다
-  emit(name,...args){if(name==='did-start-navigation'&&args[3]&&!args[2])this.loading=true;return super.emit(name,...args);}
+  constructor(){super();this.url='';this.loads=[];this.destroyed=false;this.loading=false;this.pid=ALIVE;this.frameUrl='';this.crashed=false;}
+  emit(name,...args){
+    if(name==='did-start-navigation'&&args[3]&&!args[2]){this.loading=true;if(!this.pid){this.pid=ALIVE;this.frameUrl='';this.crashed=false;}}
+    return super.emit(name,...args);
+  }
   getURL(){return this.url;}
   isDestroyed(){return this.destroyed;}
   isLoadingMainFrame(){return this.loading;}
+  isCrashed(){return this.crashed;}
+  getOSProcessId(){return this.pid;}
+  get mainFrame(){if(!this.pid)throw Error('Render frame was disposed before WebFrameMain could be accessed');return {url:this.frameUrl};}
   stopLoading(){this.loading=false;this.emit('did-stop-loading');}
   cancel(url){this.emit('did-fail-load',{},-3,'ERR_ABORTED',url,true);this.stopLoading();}
+  commit(url){this.url=url;this.frameUrl=url;this.pid=this.pid||ALIVE;this.crashed=false;this.emit('did-navigate',{},url,200,'OK');this.stopLoading();}
+  // 화면 프로세스가 사라진다. 종료 코드 0이면 isCrashed()는 거짓이다. notify가 거짓이면 종료 알림이 오지 않는다
+  die(reason='crashed',{notify=true}={}){this.pid=0;this.crashed=reason!=='clean-exit';if(notify)this.emit('render-process-gone',{},{reason,exitCode:reason==='clean-exit'?0:1});}
   send(){}
   setWindowOpenHandler(){}
   loadURL(url){
@@ -21,7 +34,7 @@ class Contents extends EventEmitter{
     let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});
     this.loads.push({url,resolve,reject});return promise;
   }
-  success(index){const item=this.loads[index];this.url=item.url;this.emit('did-navigate',{},item.url,200,'OK');this.stopLoading();item.resolve();}
+  success(index){const item=this.loads[index];this.commit(item.url);item.resolve();}
   fail(index,error=failure()){const item=this.loads[index];this.emit('did-fail-load',{},error.errno,error.code,item.url,true);this.stopLoading();item.reject(error);}
   click(url){const event={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};this.emit('will-navigate',event,url);return event;}
 }
@@ -148,85 +161,91 @@ test('main rejects cloud runtime without exact boolean, client, mode and fixed e
   for(const change of [{messengerCloudPreview:undefined},{messengerCloudPreview:'true'},{messengerCloudPreview:1},{clientId:'world'},{clientId:'platform'},{mode:'release'},{entry:CLOUD_ENTRY+'&next=evil'},{entry:ENTRY}])await assert.rejects(()=>mainFixture({...valid,...change}),/Invalid desktop runtime configuration/);
 });
 
-/* 화면 프로세스가 사라진 창은 첫 화면을 다시 싣는다(11-19 트레이에 숨은 채 켜진 0.4.97 창이 검게 남음) */
-// 지금 주 프레임의 화면 프로세스: pid가 ALIVE면 살아 있다. 0이면 화면 프로세스가 없다
-const ALIVE=4242;
+/* 화면 프로세스가 사라진 창은 첫 화면을 다시 싣는다(11-19 트레이에 숨은 채 켜진 0.4.97 창이 검게 남음).
+   판정은 사건의 순서가 아니라 지금 상태로 한다(2026-11-19 설계 검토) */
+const NEXT='http://127.0.0.1:4280/learning-hub/';
 function goneFixture({quitting=false}={}){
-  const contents=new Contents();contents.crashed=false;contents.isCrashed=function(){return this.crashed;};
-  contents.pid=0;contents.getOSProcessId=function(){return this.pid;};
+  const contents=new Contents();
   let clock=0;const timers=[];
-  const recovery=createConnectionRecovery({contents,entry:ENTRY,isQuitting:()=>quitting,now:()=>clock,setTimer:(fn,ms)=>{const t={fn,ms,done:false};timers.push(t);return t;},clearTimer:t=>{if(t)t.done=true;},isProcessAlive:pid=>pid===ALIVE});
+  const recovery=createConnectionRecovery({contents,entry:ENTRY,isQuitting:()=>quitting,now:()=>clock,setTimer:(fn,ms)=>{const t={fn,ms,done:false};timers.push(t);return t;},clearTimer:t=>{if(t)t.done=true;}});
   const run=()=>{for(const t of timers.splice(0))if(!t.done)t.fn();};
-  const gone=(reason='crashed')=>{contents.crashed=true;contents.emit('render-process-gone',{},{reason,exitCode:1});};
-  return {contents,recovery,run,gone,tick:ms=>{clock+=ms;},timers};
+  return {contents,recovery,run,gone:(reason,options)=>contents.die(reason,options),tick:ms=>{clock+=ms;},timers};
 }
+async function loaded(options){const f=goneFixture(options),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;return f;}
 test('a main window whose renderer is gone loads the entry again after a short pause',async()=>{
-  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
+  const f=await loaded();
   f.gone('killed');assert.equal(f.contents.loads.length,1,'the reload waits for the pause');
   assert.equal(f.timers[0].ms,400);f.run();await settle();
-  assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.contents.crashed=false;f.contents.success(1);await settle();f.recovery.dispose();
+  assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.contents.success(1);await settle();f.recovery.dispose();
 });
-test('renderer recovery stops after three losses in ten minutes and starts again after the window passes',async()=>{
-  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
-  for(let i=1;i<=3;i++){f.gone();f.run();await settle();f.contents.crashed=false;f.contents.success(i);await settle();f.tick(60000);}
-  f.gone();f.run();await settle();assert.equal(f.contents.loads.length,4,'a fourth loss within ten minutes is left alone');
-  f.tick(10*60000);f.gone();f.run();await settle();assert.equal(f.contents.loads.length,5);f.recovery.dispose();
+test('after three losses in ten minutes the next loss loads the guide instead, and the entry again once the window passes (설계 검토 P2-2)',async()=>{
+  const f=await loaded();
+  for(let i=1;i<=3;i++){f.gone();f.run();await settle();assert.equal(f.contents.loads[i].url,ENTRY);f.contents.success(i);await settle();f.tick(60000);}
+  // 보이고 초점 있는 창이 네 번째로 사라져도 검게 남지 않는다. 스크립트 없는 안내 화면을 싣고, 「다시 연결」이 첫 화면으로 잇는다
+  f.gone();f.run();await settle();assert.equal(f.contents.loads[4].url,STATUS);f.contents.success(4);await settle();
+  assert.equal(f.recovery.recoverIfGone(),false,'the guide is a screen');
+  f.tick(10*60000);f.gone();f.run();await settle();assert.equal(f.contents.loads[5].url,ENTRY);f.recovery.dispose();
 });
-test('renderer recovery does nothing while quitting, after dispose, or when a new renderer already took over',async()=>{
-  const quitting=goneFixture({quitting:true});quitting.gone();quitting.run();await settle();assert.equal(quitting.contents.loads.length,0);quitting.recovery.dispose();
-  const disposed=goneFixture();disposed.gone();disposed.recovery.dispose();disposed.run();await settle();assert.equal(disposed.contents.loads.length,0);
-  // 새 문서가 시작됐으면(다른 이동이 새 화면 프로세스를 맡았다) 싣지 않는다
-  const swapped=goneFixture();swapped.gone();swapped.contents.emit('did-start-navigation',{},'http://127.0.0.1:4280/learning-hub/',false,true);swapped.run();await settle();assert.equal(swapped.contents.loads.length,0);swapped.recovery.dispose();
+test('renderer recovery does nothing while quitting, after dispose, or before the window ever connected',async()=>{
+  const quitting=await loaded({quitting:true});quitting.gone();quitting.run();await settle();assert.equal(quitting.recovery.recoverIfGone(),false);assert.equal(quitting.contents.loads.length,1);quitting.recovery.dispose();
+  const disposed=await loaded();disposed.gone();disposed.recovery.dispose();disposed.run();await settle();assert.equal(disposed.contents.loads.length,1);
+  const fresh=goneFixture();fresh.gone();fresh.run();await settle();assert.equal(fresh.recovery.recoverIfGone(),false);assert.equal(fresh.contents.loads.length,0,'the first load is the caller’s');fresh.recovery.dispose();
 });
 test('a renderer that exits cleanly with no replacement is reloaded even though isCrashed() says false (엔진 검수 GA3)',async()=>{
-  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
-  f.gone('clean-exit');f.contents.crashed=false;f.run();await settle();
+  const f=await loaded();
+  f.gone('clean-exit');assert.equal(f.contents.isCrashed(),false);f.run();await settle();
   assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.recovery.dispose();
+});
+test('a loss with no notice at all is recovered when the window is shown, focused or opened (설계 검토 P2-1)',async()=>{
+  const f=await loaded();
+  assert.equal(f.recovery.recoverIfGone(),false,'a live page is left alone');
+  f.gone('crashed',{notify:false});assert.equal(f.timers.length,0);
+  assert.equal(f.recovery.recoverIfGone(),true);await settle();assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);
+  f.contents.success(1);await settle();assert.equal(f.recovery.recoverIfGone(),false,'once the entry is back nothing more is loaded');f.recovery.dispose();
 });
 test('a navigation that started before the old renderer went away and then commits in the new one is not reloaded (화면 다시 검수 -d)',async()=>{
-  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
-  const next='http://127.0.0.1:4280/learning-hub/';
-  f.contents.emit('did-start-navigation',{},next,false,true);f.gone();f.contents.crashed=false;f.contents.url=next;f.contents.emit('did-navigate',{},next,200,'OK');
-  f.run();await settle();assert.equal(f.contents.loads.length,1,'the committed page is kept');
-  assert.equal(f.recovery.recoverIfGone(),false,'nothing is left to recover');f.recovery.dispose();
+  for(const early of [false,true]){
+    const f=await loaded();
+    f.contents.emit('did-start-navigation',{},NEXT,false,true);f.gone();
+    // 400ms가 실리기 전에 지나면 이동이 끝나기를 기다린다
+    if(early){f.run();await settle();assert.equal(f.contents.loads.length,1,'waits while the navigation is loading');}
+    f.contents.commit(NEXT);f.run();await settle();
+    assert.equal(f.contents.loads.length,1,'the committed page is kept');assert.equal(f.recovery.recoverIfGone(),false);f.recovery.dispose();
+  }
 });
-test('a navigation that starts after the renderer went away but is cancelled before it commits still gets the entry back (엔진 다시 검수 -b GA1)',async()=>{
-  const next='http://127.0.0.1:4280/learning-hub/';
-  // 이동이 도는 동안 400ms가 지나면 기다렸다가, 취소되면 싣는다
-  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
-  f.gone();f.contents.crashed=false;f.contents.emit('did-start-navigation',{},next,false,true);f.run();await settle();
-  assert.equal(f.contents.loads.length,1,'waits while the other navigation is still loading');
-  f.contents.cancel(next);await settle();assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.recovery.dispose();
-  // 400ms 전에 취소되면 타이머가 싣는다
-  const g=goneFixture(),gl=g.recovery.connect();await settle();g.contents.success(0);await gl;
-  g.gone();g.contents.emit('did-start-navigation',{},next,false,true);g.contents.cancel(next);g.run();await settle();
+test('a navigation that starts after the renderer went away but ends with no document still gets the entry back (엔진 다시 검수 -b GA1 · 설계 검토 P2-3)',async()=>{
+  // 사라진 프레임에서 이동이 시작되면 새 프로세스가 살아나도 주 프레임 주소는 비어 있다. 그 이동이 취소되면 화면이 없다
+  const f=await loaded();
+  f.gone();f.contents.emit('did-start-navigation',{},NEXT,false,true);assert.equal(f.contents.getOSProcessId(),ALIVE);
+  f.run();await settle();assert.equal(f.contents.loads.length,1,'waits while the other navigation is still loading');
+  f.contents.cancel(NEXT);await settle();assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.recovery.dispose();
+  // 400ms 전에 취소돼도 같다
+  const g=await loaded();
+  g.gone();g.contents.emit('did-start-navigation',{},NEXT,false,true);g.contents.cancel(NEXT);g.run();await settle();
   assert.deepEqual(g.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);g.recovery.dispose();
-  // 자동 한도 뒤에는 사람이 창을 연 때 싣는다
-  const h=goneFixture(),hl=h.recovery.connect();await settle();h.contents.success(0);await hl;
-  for(let i=1;i<=3;i++){h.gone();h.run();await settle();h.contents.success(i);await settle();h.tick(60000);}
-  h.gone();h.contents.emit('did-start-navigation',{},next,false,true);h.contents.cancel(next);h.run();await settle();
-  assert.equal(h.contents.loads.length,4);assert.equal(h.recovery.recoverIfGone(),true);await settle();assert.equal(h.contents.loads.length,5);
+  // 알림 없이 같은 일이 나도 사람이 창을 연 때 싣는다
+  const h=await loaded();
+  h.gone('crashed',{notify:false});h.contents.emit('did-start-navigation',{},NEXT,false,true);h.contents.cancel(NEXT);
+  assert.equal(h.recovery.recoverIfGone(),true);await settle();assert.deepEqual(h.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);h.recovery.dispose();
   // 기다리던 중에 창을 버리면 아무것도 싣지 않고 듣던 것을 거둔다
-  const d=goneFixture(),dl=d.recovery.connect();await settle();d.contents.success(0);await dl;
-  d.gone();d.contents.emit('did-start-navigation',{},next,false,true);d.run();d.recovery.dispose();assert.equal(d.contents.listenerCount('did-stop-loading'),0);
-  d.contents.cancel(next);await settle();assert.equal(d.contents.loads.length,1);h.recovery.dispose();
+  const d=await loaded();
+  d.gone();d.contents.emit('did-start-navigation',{},NEXT,false,true);d.run();d.recovery.dispose();assert.equal(d.contents.listenerCount('did-stop-loading'),0);
+  d.contents.cancel(NEXT);await settle();assert.equal(d.contents.loads.length,1);
 });
 test('a late loss notice from the old renderer arriving after the new document committed leaves the live page alone (엔진 다시 검수 -c Q1)',async()=>{
-  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
-  const next='http://127.0.0.1:4280/learning-hub/';
+  const f=await loaded();
   // 새 문서가 새 화면 프로세스에 먼저 실리고, 옛 프로세스의 종료 알림은 작업 큐를 거쳐 뒤에 온다
-  f.contents.emit('did-start-navigation',{},next,false,true);f.contents.pid=ALIVE;f.contents.url=next;f.contents.emit('did-navigate',{},next,200,'OK');f.contents.stopLoading();
+  f.contents.emit('did-start-navigation',{},NEXT,false,true);f.contents.commit(NEXT);
   f.contents.emit('render-process-gone',{},{reason:'clean-exit',exitCode:0});f.run();await settle();
   assert.equal(f.contents.loads.length,1,'the live page is not replaced');assert.equal(f.recovery.recoverIfGone(),false);
-  // 지금 화면 프로세스가 정말 사라졌으면(pid가 없음) 싣는다
-  f.contents.pid=0;f.contents.emit('render-process-gone',{},{reason:'crashed',exitCode:1});f.run();await settle();
-  assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.recovery.dispose();
+  // 지금 화면 프로세스가 정말 사라졌으면 싣는다
+  f.gone();f.run();await settle();assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.recovery.dispose();
 });
 test('a relaunch retry that is in flight when the guide renderer went away finishes into the guide before any reload (엔진 다시 검수 -c GA1)',async()=>{
   const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.fail(0);await settle();
   assert.equal(f.contents.loads[1].url,STATUS);f.contents.success(1);await loading;
   // 안내 화면의 화면 프로세스가 사라진 뒤 400ms 안에 다시 실행해 다시 잇기가 걸린다
-  f.contents.url=STATUS;f.gone();const retry=f.recovery.retryIfDisconnected();await settle();assert.equal(f.contents.loads[2].url,ENTRY);
+  f.gone();const retry=f.recovery.retryIfDisconnected();await settle();assert.equal(f.contents.loads[2].url,ENTRY);
   f.run();await settle();assert.equal(f.contents.loads.length,3,'the reload waits for the retry');
   // 다시 잇기가 문서 없이 끝나면(204 따위) 그 시도가 안내 화면을 띄운다. 되살리기는 한 번 더 싣지 않는다
   f.contents.fail(2,failure(-2));await settle();assert.equal(f.contents.loads[3].url,STATUS);f.contents.success(3);await retry;await settle();
@@ -240,22 +259,10 @@ test('Workspace reloads a lost renderer after a quit is cancelled to keep unsave
     f.app.emit('before-quit');
     const unload={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};f.contents.emit('will-prevent-unload',unload);
     assert.equal(unload.defaultPrevented,choice===1,'the draft prompt decides');
-    f.contents.emit('render-process-gone',{},{reason:'crashed',exitCode:1});await new Promise(resolve=>setTimeout(resolve,460));
+    f.contents.die('crashed');await new Promise(resolve=>setTimeout(resolve,460));
     assert.equal(f.contents.loads.length-1,reloads,choice===0?'「돌아가서 저장」 keeps the window, so it is reloaded':'leaving without saving is quitting');
     f.contents.emit('destroyed');
   }
-});
-test('after the automatic limit, showing or focusing the window loads the entry again; nothing happens when the page is fine (엔진 검수 GA2)',async()=>{
-  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
-  assert.equal(f.recovery.recoverIfGone(),false,'a live page is left alone');
-  for(let i=1;i<=3;i++){f.gone();f.run();await settle();f.contents.success(i);await settle();f.tick(60000);}
-  f.gone();f.run();await settle();assert.equal(f.contents.loads.length,4,'the fourth loss in ten minutes is not reloaded by itself');
-  assert.equal(f.recovery.recoverIfGone(),true);await settle();
-  assert.equal(f.contents.loads.length,5,'a person bringing the window up reloads it');
-  f.contents.success(4);await settle();
-  assert.equal(f.recovery.recoverIfGone(),false,'once a document started, it is not loaded again');
-  const q=goneFixture({quitting:true});q.gone();assert.equal(q.recovery.recoverIfGone(),false,'not while quitting');q.recovery.dispose();
-  f.recovery.dispose();
 });
 test('main resets the quit flag for every client when unsaved writing cancels the quit, and asks for recovery on show and focus (엔진 검수 GA1 · GA2)',()=>{
   const main=fs.readFileSync(path.join(__dirname,'..','src','main.cjs'),'utf8');
