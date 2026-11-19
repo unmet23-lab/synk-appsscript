@@ -1,7 +1,9 @@
 // 첫날 끝 · 맞춤 앞면 실제 앱 흐름 시험(로컬 WORLD 리허설 서버 · 운영 계정 · talk를 건드리지 않는다).
-//   node experiences/world-front/qa/흐름.mjs [--폭 390x844] [--언어 ko|en|mn] [--찍기] [--꺼짐]
+//   node experiences/world-front/qa/흐름.mjs [--폭 390x844] [--언어 ko|en|mn] [--찍기] [--꺼짐] [--로그인]
 // 서울행을 끝낸 손님 기록(stage left)을 심고 타이틀을 지나면 튜터 고르기 · 펠트 동네 대신 앞면 틀이 뜨는지 본다.
 // 첫날 끝 → 「지금 더 연습하기」 → 오늘 할 일을 열면 레슨 시트가 앞면 위에 뜨고, 닫으면 앞면으로 돌아오는지까지 간다.
+// --로그인: 손님으로 서울행을 끝낸 뒤 리허설 계정(player-a)으로 로그인한다 — 서울행이 묻는 「계정으로 옮기기」를 지나 계정 기록으로 앞면이 뜨고,
+//   첫날 끝 → 「지금 더 연습하기」 → 레슨을 열고 닫은 뒤 「나」에서 로그아웃하면 앞면이 내려가 타이틀로 가는지까지 본다.
 // --꺼짐: 주소에 frontAuto를 붙이지 않는다(스위치 FRONT_AUTO=false 그대로) — 같은 기록이어도 앞면이 안 뜨고 지금 길로 가는지 본다.
 // 기록: .tmp/world-front-qa/<폭>-<언어>/ (찍기와 결과.json)
 import fs from 'node:fs';
@@ -16,8 +18,8 @@ const MAIN = path.join(os.homedir(), 'Documents', 'SYNK-appsscript');
 const require = createRequire(path.join(fs.existsSync(path.join(ROOT, 'node_modules')) ? ROOT : MAIN, 'x.js'));
 const {chromium} = require('playwright');
 const args = process.argv.slice(2), opt = (n, d = null) => { const i = args.indexOf(n); return i < 0 ? d : args[i + 1]; }, has = n => args.includes(n);
-const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), OFF = has('--꺼짐');
-const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${W}-${LANG}${OFF ? '-off' : ''}`); fs.mkdirSync(OUT, {recursive: true});
+const [W, H] = opt('--폭', '390x844').split('x').map(Number), LANG = opt('--언어', 'ko'), SHOTS = has('--찍기'), OFF = has('--꺼짐'), LOGIN = has('--로그인');
+const OUT = path.join(ROOT, '.tmp', 'world-front-qa', `${W}-${LANG}${OFF ? '-off' : ''}${LOGIN ? '-login' : ''}`); fs.mkdirSync(OUT, {recursive: true});
 const PORT = Number(opt('--포트', String(4800 + Math.floor(Math.random() * 300))));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = [], fail = [];
@@ -44,7 +46,7 @@ const until = async (what, fn, ms = 30000) => { const t0 = Date.now(); for (;;) 
 async function finish() {
   check(!errors.length, '콘솔 · 페이지 오류 0', errors.slice(0, 4).join(' | '));
   check(!bad.length, '404 · 400대 응답 0', bad.slice(0, 4).join(' | '));
-  fs.writeFileSync(path.join(OUT, '결과.json'), JSON.stringify({폭: `${W}x${H}`, 언어: LANG, 꺼짐: OFF, 통과: log.filter(l => l.startsWith('통과')).length, 실패: fail, 기록: log}, null, 1));
+  fs.writeFileSync(path.join(OUT, '결과.json'), JSON.stringify({폭: `${W}x${H}`, 언어: LANG, 꺼짐: OFF, 로그인: LOGIN, 통과: log.filter(l => l.startsWith('통과')).length, 실패: fail, 기록: log}, null, 1));
   console.log(fail.length ? `실패 ${fail.length}건` : '모두 통과');
   await browser.close(); server.kill(); process.exit(fail.length ? 1 : 0);
 }
@@ -59,10 +61,25 @@ await page.evaluate(({lang, arrival}) => {
   localStorage.setItem('synk.world.arrival.v1:guest', JSON.stringify(arrival));
 }, {lang: LANG, arrival});
 await page.reload({waitUntil: 'domcontentloaded'});
+const ownerNow = () => page.evaluate(() => window.__synkWorld?.client?.snapshot?.accountId || 'guest');
+const markNow = async () => { const o = await ownerNow(); return page.evaluate(k => JSON.parse(localStorage.getItem(k) || '{}'), 'synk.world.front.v1:' + o); };
+if (LOGIN) {
+  await until('앱 준비', () => page.evaluate(() => !!window.__synkWorld?.client));
+  await page.evaluate(() => window.__synkWorld.client.signIn('player-a'));
+  check(await ownerNow() !== 'guest', '리허설 계정으로 로그인');
+  await page.reload({waitUntil: 'domcontentloaded'});
+}
 await until('타이틀', () => page.evaluate(() => window.__synkOpening?.stage?.() === 'title'));
 await sleep(800);
 check(!await page.evaluate(() => !!document.querySelector('#front-layer')), '타이틀 아래에 앞면 틀이 없음');
 await page.mouse.click(W / 2, H * .55);
+if (LOGIN) {
+  // 서울행이 손님 기록을 계정으로 옮길지 묻는다 → 옮기면 계정 기록으로 앞면이 뜬다
+  const move = await until('「계정으로 옮기기」 질문', () => page.$('#world-panel[open] [data-world="seoul-move"][data-choice="yes"]'), 20000);
+  if (move) { await sleep(600); await shot('0-옮기기'); await move.click(); }
+  await until('손님 기록을 지움', () => page.evaluate(() => !localStorage.getItem('synk.world.arrival.v1:guest')), 10000);
+  check(await page.evaluate(() => !localStorage.getItem('synk.world.arrival.v1:guest')), '옮긴 뒤 기기의 손님 기록을 지움');
+}
 
 if (OFF) {
   await until('지금 길(입장 관문 또는 동네)', () => page.evaluate(() => document.querySelector('#world-panel')?.open || document.querySelector('#seoul-layer') || window.__synkOpening?.stage?.() !== 'title'), 20000);
@@ -86,15 +103,22 @@ const reads = await F().$('[data-hangul="reads"]');
 check(!!reads, '한글 질문이 있음');
 if (reads) {
   await reads.click();
-  await until('한글 답 뒤 할 일 줄', () => inF(() => !document.querySelector('[data-hangul]') && !!document.querySelector('[data-act="bye"]')), 8000);
+  await until('한글 답 뒤 할 일 줄', () => inF(() => !document.querySelector('[data-hangul]') && !!document.querySelector('[data-act="bye"],[data-act="more"]')), 8000);
   await sleep(1500); await shot('1b-한글답');
   const tomorrow = await inF(() => document.querySelector('.view')?.innerText || '');
   check(!/몽글|까몽|마린/.test(tomorrow), '내일 할 일 줄에 마스코트 이름이 안 보임');
+  if (LOGIN && LANG === 'ko') check(/1화에서/.test(tomorrow) && /엄마/.test(tomorrow), '로그인 학생은 1화에서 말한 줄과 엄마 답이 보임', tomorrow.slice(0, 80).replace(/\s+/g, ' '));
 }
 
-// ── 「오늘은 여기까지」 → 불 끔 ──
-const bye = await F().$('[data-act="bye"]');
-check(!!bye, '「오늘은 여기까지」 단추가 있음');
+// ── 로그인: 「지금 더 연습하기」 → 첫날 맞춤 / 손님: 「오늘은 여기까지」 → 불 끔 → 다시 열기 ──
+const more = LOGIN ? await F().$('[data-act="more"]') : null;
+if (LOGIN) {
+  check(!!more, '「지금 더 연습하기」 단추가 있음');
+  if (more) { await more.click(); await until('첫날 맞춤으로 넘어감', () => inF(() => !!document.querySelector('.view') && !document.querySelector('.view.night')), 15000); }
+  check((await markNow()).ended === true, '첫날 끝을 계정 주인의 기기 표에 적음');
+}
+const bye = LOGIN ? null : await F().$('[data-act="bye"]');
+if (!LOGIN) check(!!bye, '「오늘은 여기까지」 단추가 있음');
 if (bye) {
   await bye.click();
   await until('불 끈 화면', () => inF(() => !!document.querySelector('.view.night.off')), 8000);
@@ -104,9 +128,9 @@ if (bye) {
 }
 
 // ── 같은 날 다시 열면 첫날 맞춤 ──
-await page.reload({waitUntil: 'domcontentloaded'});
+if (!LOGIN) await page.reload({waitUntil: 'domcontentloaded'});
 // 같은 탭에서는 오프닝을 본 뒤라 타이틀 없이 바로 들어갈 수 있다
-if (await until('다시 연 타이틀 또는 앞면', () => page.evaluate(() => window.__synkOpening?.stage?.() === 'title' || !!document.querySelector('#front-layer')?.open)) && await page.evaluate(() => window.__synkOpening?.stage?.() === 'title')) { await sleep(800); await page.mouse.click(W / 2, H * .55); }
+if (!LOGIN && await until('다시 연 타이틀 또는 앞면', () => page.evaluate(() => window.__synkOpening?.stage?.() === 'title' || !!document.querySelector('#front-layer')?.open)) && await page.evaluate(() => window.__synkOpening?.stage?.() === 'title')) { await sleep(800); await page.mouse.click(W / 2, H * .55); }
 await until('다시 연 앞면', () => page.evaluate(() => document.querySelector('#front-layer')?.open) && F(), 20000);
 const home = await until('첫날 맞춤 화면', () => inF(() => !!document.querySelector('.view') && !document.querySelector('.view.night')), 15000);
 await sleep(1800); await shot('3-첫날맞춤');
@@ -128,8 +152,27 @@ if (home) {
       await until('시트 닫힘', () => page.evaluate(() => !document.querySelector('#world-panel')?.open), 8000);
       await sleep(1200); await shot('5-돌아옴');
       check(await page.evaluate(() => !!document.querySelector('#front-layer')?.open), '시트를 닫으면 앞면으로 돌아옴');
-      const after = await page.evaluate(() => JSON.parse(localStorage.getItem('synk.world.front.v1:guest') || '{}').after);
-      check(!after, '열기만 하고 닫으면 「첫 연습」을 적지 않음');
+      check(!(await markNow()).after, '열기만 하고 닫으면 「첫 연습」을 적지 않음');
+    }
+  }
+}
+// ── 로그인: 「나」 → 로그아웃 → 앞면이 내려가고 타이틀로 ──
+if (LOGIN) {
+  const me = await F().$('[data-act="me"]');
+  check(!!me, '「나」 단추가 있음');
+  if (me) {
+    await me.click();
+    const out = await until('내 계정 시트의 로그아웃', () => page.$('#world-panel[open] [data-world="logout"]'), 10000);
+    await sleep(800); await shot('6-나');
+    if (out) {
+      await out.click();
+      await until('로그아웃 뒤 앞면이 내려감', () => page.evaluate(() => !document.querySelector('#front-layer')), 15000);
+      // 기기의 손님 기록은 계정으로 옮겼으니 이 기기는 새 손님이다 — 처음 온 손님처럼 오프닝(서울행 시작)으로 간다
+      await until('로그아웃 뒤 오프닝', () => page.evaluate(() => !!window.__synkOpening && !document.querySelector('#front-layer')), 15000);
+      await sleep(1500); await shot('7-로그아웃');
+      const after = await page.evaluate(() => ({front: !!document.querySelector('#front-layer'), stage: window.__synkOpening?.stage?.() || null, seoul: !!document.querySelector('#seoul-layer'), lang: localStorage.getItem('synk.world.lang'), nav: navigator.language}));
+      check(!after.front, '로그아웃하면 앞면이 내려감', JSON.stringify(after));
+      check(await ownerNow() === 'guest', '로그아웃 뒤 손님');
     }
   }
 }

@@ -154,7 +154,8 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    const pending=s.pending;s.pending=null;
    if(pending&&pending.view==='more'&&s.owner===owner()&&!readMark(s.owner).after&&finished(pending))
     writeMark(s.owner,{after:true,afterEntry:{id:pending.entry.id,label:pending.entry.label||'',route:pending.entry.route,lessonId:pending.entry.lessonId||null,gameId:pending.entry.gameId||null,skillId:pending.entry.skillId||null}});
-   void show(s.view==='end'||s.view==='off'?'more':s.view==='day2'?'front':s.view);
+   // 앞면에서 연 활동을 닫고 왔을 때만 첫날 끝 → 첫날 맞춤, 둘째 날 아침 → 맞춤으로 넘긴다. 다른 시트(기록 옮기기 · 로그인 · 알림)가 닫히면 같은 화면을 다시 그린다.
+   void show(pending?(s.view==='end'||s.view==='off'?'more':s.view==='day2'?'front':s.view):s.view);
   },0);
   panel?.addEventListener('close',s.onPanelClose);
   return s;
