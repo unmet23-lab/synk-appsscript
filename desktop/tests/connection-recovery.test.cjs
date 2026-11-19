@@ -149,10 +149,13 @@ test('main rejects cloud runtime without exact boolean, client, mode and fixed e
 });
 
 /* 화면 프로세스가 사라진 창은 첫 화면을 다시 싣는다(11-19 트레이에 숨은 채 켜진 0.4.97 창이 검게 남음) */
+// 지금 주 프레임의 화면 프로세스: pid가 ALIVE면 살아 있다. 0이면 화면 프로세스가 없다
+const ALIVE=4242;
 function goneFixture({quitting=false}={}){
   const contents=new Contents();contents.crashed=false;contents.isCrashed=function(){return this.crashed;};
+  contents.pid=0;contents.getOSProcessId=function(){return this.pid;};
   let clock=0;const timers=[];
-  const recovery=createConnectionRecovery({contents,entry:ENTRY,isQuitting:()=>quitting,now:()=>clock,setTimer:(fn,ms)=>{const t={fn,ms,done:false};timers.push(t);return t;},clearTimer:t=>{if(t)t.done=true;}});
+  const recovery=createConnectionRecovery({contents,entry:ENTRY,isQuitting:()=>quitting,now:()=>clock,setTimer:(fn,ms)=>{const t={fn,ms,done:false};timers.push(t);return t;},clearTimer:t=>{if(t)t.done=true;},isProcessAlive:pid=>pid===ALIVE});
   const run=()=>{for(const t of timers.splice(0))if(!t.done)t.fn();};
   const gone=(reason='crashed')=>{contents.crashed=true;contents.emit('render-process-gone',{},{reason,exitCode:1});};
   return {contents,recovery,run,gone,tick:ms=>{clock+=ms;},timers};
@@ -207,6 +210,27 @@ test('a navigation that starts after the renderer went away but is cancelled bef
   const d=goneFixture(),dl=d.recovery.connect();await settle();d.contents.success(0);await dl;
   d.gone();d.contents.emit('did-start-navigation',{},next,false,true);d.run();d.recovery.dispose();assert.equal(d.contents.listenerCount('did-stop-loading'),0);
   d.contents.cancel(next);await settle();assert.equal(d.contents.loads.length,1);h.recovery.dispose();
+});
+test('a late loss notice from the old renderer arriving after the new document committed leaves the live page alone (엔진 다시 검수 -c Q1)',async()=>{
+  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
+  const next='http://127.0.0.1:4280/learning-hub/';
+  // 새 문서가 새 화면 프로세스에 먼저 실리고, 옛 프로세스의 종료 알림은 작업 큐를 거쳐 뒤에 온다
+  f.contents.emit('did-start-navigation',{},next,false,true);f.contents.pid=ALIVE;f.contents.url=next;f.contents.emit('did-navigate',{},next,200,'OK');f.contents.stopLoading();
+  f.contents.emit('render-process-gone',{},{reason:'clean-exit',exitCode:0});f.run();await settle();
+  assert.equal(f.contents.loads.length,1,'the live page is not replaced');assert.equal(f.recovery.recoverIfGone(),false);
+  // 지금 화면 프로세스가 정말 사라졌으면(pid가 없음) 싣는다
+  f.contents.pid=0;f.contents.emit('render-process-gone',{},{reason:'crashed',exitCode:1});f.run();await settle();
+  assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.recovery.dispose();
+});
+test('a relaunch retry that is in flight when the guide renderer went away finishes into the guide before any reload (엔진 다시 검수 -c GA1)',async()=>{
+  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.fail(0);await settle();
+  assert.equal(f.contents.loads[1].url,STATUS);f.contents.success(1);await loading;
+  // 안내 화면의 화면 프로세스가 사라진 뒤 400ms 안에 다시 실행해 다시 잇기가 걸린다
+  f.contents.url=STATUS;f.gone();const retry=f.recovery.retryIfDisconnected();await settle();assert.equal(f.contents.loads[2].url,ENTRY);
+  f.run();await settle();assert.equal(f.contents.loads.length,3,'the reload waits for the retry');
+  // 다시 잇기가 문서 없이 끝나면(204 따위) 그 시도가 안내 화면을 띄운다. 되살리기는 한 번 더 싣지 않는다
+  f.contents.fail(2,failure(-2));await settle();assert.equal(f.contents.loads[3].url,STATUS);f.contents.success(3);await retry;await settle();
+  assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,STATUS,ENTRY,STATUS]);f.recovery.dispose();
 });
 test('Workspace reloads a lost renderer after a quit is cancelled to keep unsaved work, but not after leaving without saving (엔진 다시 검수 -b GA2)',async()=>{
   for(const [choice,reloads] of [[0,1],[1,0]]){
