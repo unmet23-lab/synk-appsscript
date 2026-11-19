@@ -103,10 +103,13 @@ test('진짜 입구 + 진짜 묶음: 지도 없는 코치는 ready가 MAP_FAILED
   await coach.ready;
   assert.equal(coach.edition, EDITION);
   assert.equal(coach.recommend([]).status, 'none', '후보가 없으면 낼 것이 없다');
-  assert.throws(
-    () => coach.live(),
-    error => error.code === 'NOT_IMPLEMENTED',
-  );
+  // 순간 맞춤은 묶음에서도 돈다(4-6b) — 내용 정의를 받아 열고, 한 응답에 Flow가 한 번 움직인다.
+  const live = coach.live({
+    id: 'build.check',
+    knobs: [{ id: 'pace', kind: 'pace', values: [1, 2, 3] }],
+  });
+  assert.equal(live.observe({ outcome: 'success' }).settings.content, 'build.check');
+  assert.equal(live.trace().length, 1);
   coach.dispose();
 });
 

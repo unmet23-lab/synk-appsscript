@@ -11,7 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const GROUPS = ['unit', 'build', 'properties', 'learners', 'record', 'coach'];
+const GROUPS = ['unit', 'build', 'properties', 'learners', 'record', 'coach', 'flow'];
 
 function testFiles(dir) {
   if (!fs.existsSync(dir)) return [];

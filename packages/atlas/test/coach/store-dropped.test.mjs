@@ -90,21 +90,75 @@ test('틀이 먼저 연 저장소가 서기 전에 닫히면, 같은 자리를 �
   });
   const reg = () => top.__synkAtlasHosts ?? new Map();
   const key = keyOf('f');
-  const framed = deviceCoach(frameOf(top), key, {
-    onAccount: () => assert.fail('틀이 넘긴 통로는 들지 않는다'),
-  });
+  // 호스트는 알림의 예외를 삼키므로 틀 통로의 부름은 수로 센다(GPT 다시 검토 GA6).
+  const framedTold = [];
+  const framed = deviceCoach(frameOf(top), key, { onAccount: detail => framedTold.push(detail) });
   for (let i = 0; i < 50 && !closers.length; i += 1) await sleep(5);
   const told = [];
-  const shell = deviceCoach(top, key, { onAccount: detail => told.push(detail.code) });
-  for (let i = 0; i < 50 && reg().get(key)?.claims.users !== 2; i += 1) await sleep(5);
-  assert.equal(reg().get(key)?.claims.users, 2, '틀과 셸이 여는 중인 같은 자리를 받았다');
+  const onAccount = detail => told.push(detail.code);
+  const shell = deviceCoach(top, key, { onAccount });
+  // 같은 셸이 같은 통로로 그 자리를 또 받는다(게임 코치 둘) — 알림은 통로마다 한 번이다(§23-3의 3 · Fable 5.2 다시 검토 F4).
+  const again = deviceCoach(top, key, { onAccount });
+  for (let i = 0; i < 50 && reg().get(key)?.claims.users !== 3; i += 1) await sleep(5);
+  assert.equal(reg().get(key)?.claims.users, 3, '틀과 셸 둘이 여는 중인 같은 자리를 받았다');
   assert.equal(closers.length, 1, '저장소를 한 번 연다');
   closers[0]();
   open();
-  await Promise.all([framed.ready, shell.ready]);
-  assert.deepEqual(told, ['STORE_CLOSED'], '셸의 통로에 한 번 알린다');
+  await Promise.all([framed.ready, shell.ready, again.ready]);
+  assert.deepEqual(told, ['STORE_CLOSED'], '같은 통로로 두 번 받아도 한 번 알린다');
+  assert.equal(framedTold.length, 0, '틀이 넘긴 통로는 들지 않는다');
   assert.equal(reg().has(key), false, '닫힌 자리는 등록부에 없다');
   assert.notEqual(reg().document, key, '내려간 자리는 문서 호스트가 되지 않는다');
   framed.dispose();
   shell.dispose();
+  again.dispose();
+});
+
+test('여는 중에 연결이 닫혀 기록부 준비가 실패해도 기다리던 셸의 통로에 한 번 알린다 — 틀에는 알리지 않는다(GPT 다시 검토 GA1)', async () => {
+  let open;
+  const gate = new Promise(resolve => {
+    open = resolve;
+  });
+  const top = topWindow(async (_key, options) => {
+    await gate;
+    const base = memoryPort();
+    let dead = false;
+    // 첫 읽기에서 다른 탭이 저장소를 지운다 — 연결이 닫히고 그 뒤 읽기는 진짜 IndexedDB처럼 InvalidStateError다.
+    return new Proxy(base, {
+      get(target, name) {
+        const value = target[name];
+        if (typeof value !== 'function') return value;
+        return async (...args) => {
+          if (!dead && (name === 'read' || name === 'range')) {
+            dead = true;
+            options?.onClosed?.();
+          }
+          if (dead && name !== 'close')
+            throw Object.assign(new Error('closed'), { name: 'InvalidStateError' });
+          return value.apply(target, args);
+        };
+      },
+    });
+  });
+  const reg = () => top.__synkAtlasHosts ?? new Map();
+  const key = keyOf('o');
+  const framedTold = [];
+  const framed = deviceCoach(frameOf(top), key, { onAccount: detail => framedTold.push(detail) });
+  const told = [];
+  const onAccount = detail => told.push(detail.code);
+  const shell = deviceCoach(top, key, { onAccount });
+  const again = deviceCoach(top, key, { onAccount });
+  for (let i = 0; i < 50 && reg().get(key)?.claims.users !== 3; i += 1) await sleep(5);
+  open();
+  const settled = await Promise.allSettled([framed.ready, shell.ready, again.ready]);
+  assert.ok(
+    settled.every(one => one.status === 'rejected'),
+    '닫힌 연결로는 준비하지 못한다',
+  );
+  assert.deepEqual(told, ['STORE_CLOSED'], '셸의 통로에 한 번');
+  assert.equal(framedTold.length, 0, '틀이 넘긴 통로에는 알리지 않는다');
+  assert.equal(reg().has(key), false);
+  framed.dispose();
+  shell.dispose();
+  again.dispose();
 });

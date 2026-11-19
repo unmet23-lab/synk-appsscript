@@ -14,6 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BRAIN_MUTANTS } from './mutants/brain.mjs';
 import { COACH_MUTANTS } from './mutants/coach.mjs';
+import { FLOW_MUTANTS } from './mutants/flow.mjs';
 import { MAP_MUTANTS } from './mutants/map.mjs';
 import { ME_MUTANTS } from './mutants/me.mjs';
 import { RECORD_MUTANTS } from './mutants/record.mjs';
@@ -31,6 +32,7 @@ export const MUTANTS = [
   ...RECORD_MUTANTS,
   ...COACH_MUTANTS,
   ...ME_MUTANTS,
+  ...FLOW_MUTANTS,
 ];
 
 export const SELF_TEST = [

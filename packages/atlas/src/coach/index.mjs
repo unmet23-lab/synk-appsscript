@@ -2,8 +2,9 @@
 // 남기고, Vellum(src/vellum)이 이유를 말한다. 메서드 이름은 아래 목록 하나이고 입구(loader/loader.js)의 METHODS와 같아야 한다(시험).
 //   const coach = SynkAtlas.coach({ gameId, banks, host: { account, revision, guest, port, transport, health }, lang, label });
 //   await coach.ready;   // 엔진 묶음 + 지도 조각 + 기록부 읽기
-// 아직 짓지 않은 것(코드 NOT_IMPLEMENTED로 분명히 던진다 — 조용히 빈 값을 주면 제품이 엔진이 돈다고 믿는다):
-//   live · today · presentation(순간 맞춤 · 오늘 컨디션 · 표시 설정 — 게임을 잇는 4-6).
+// 순간 맞춤 · 오늘 컨디션 · 표시 설정(live · today · presentation — 게임을 잇는 4-6b, flow.mjs): 오늘 · 표시 설정은 셸이 넘기는 읽개
+// (host.prefs = { today, presentation }), 내용 기억은 저장소마다 이 기기에(flow-memory.mjs — host.prefs.seed는 옛 내용 기억 읽개,
+// host.prefs.storage는 시험만).
 import { openMap } from '../map/index.mjs';
 import { lookbackWindows } from '../memory/lookback.mjs';
 import { EDITION } from '../edition.mjs';
@@ -18,6 +19,8 @@ import { elapsedDays, REASON_CODES } from '../reason/index.mjs';
 import { planActivities } from '../select/plan.mjs';
 import { dayKey } from '../select/session.mjs';
 import { render } from '../vellum/index.mjs';
+import { createLive, presentationFrom, todayOf } from './flow.mjs';
+import { createFlowMemory } from './flow-memory.mjs';
 import { acquireHost, hostScope, releaseHost } from './host.mjs';
 import { keepGuest, moveGuest, noteGuest, planMove } from './move.mjs';
 import { resetAccount, resetGuest, settleAccount } from './reset.mjs';
@@ -91,6 +94,16 @@ function hostOptions(options) {
   return { host, guest, key };
 }
 
+// 순간 맞춤 내용 기억을 둘 곳 — 시험이 준 것, 없으면 이 창의 localStorage(창이 아니거나 브라우저가 막아 읽기만 해도 던지면 없음 — 기억 없이 돈다).
+function flowStorage(prefs) {
+  if (prefs?.storage) return prefs.storage;
+  try {
+    return globalThis.window?.localStorage ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // 차례의 자물쇠 · 일마다 한도 — 시험만 바꾼다(가짜 · null · 짧은 한도). 주지 않으면 브라우저의 navigator.locks와 표 그대로.
 const testHost = (host = {}) => ({
   ...(host.locks !== undefined ? { locks: host.locks } : {}),
@@ -130,6 +143,7 @@ export function createCoach(options = {}) {
     host: null,
     claim: null,
     session: null,
+    flow: null, // 순간 맞춤 내용 기억(flow-memory.mjs)
     disposed: false,
     watchers: new Set(),
   };
@@ -194,6 +208,12 @@ export function createCoach(options = {}) {
       dayOffset,
       mapItem,
     });
+    state.flow = createFlowMemory({
+      storage: flowStorage(host.prefs),
+      store: opened.key,
+      generation: () => opened.trail?.generation() ?? 0,
+      seed: host.prefs?.seed ?? null,
+    });
   })();
   // 아무도 기다리지 않는 코치의 거절이 처리되지 않은 거절로 새지 않게(기다리는 쪽은 그대로 거절을 받는다).
   ready.catch(() => {});
@@ -202,9 +222,6 @@ export function createCoach(options = {}) {
     if (state.disposed) throw fail('DISPOSED', '이미 닫은 코치다');
     if (!state.session) throw fail('NOT_READY', 'await coach.ready 뒤에 부른다');
     return state.session;
-  };
-  const notYet = name => () => {
-    throw fail('NOT_IMPLEMENTED', `${name}은 단계 4의 다음 묶음에서 짓는다`);
   };
 
   // 측정용 「앞서 만났나」 — 만남(답 · 답 보기 · 도움)의 표와 요약의 문항 줄만 본다. 띄우기만 하고 답도 도움도 없이 닫은 제시는 만남이
@@ -306,6 +323,43 @@ export function createCoach(options = {}) {
     };
   }
 
+  // 답 하나 — 코치 answer와 순간 맞춤 겉(live)이 함께 쓴다. 겉은 그 답의 접기 값(도움 여부)도 받는다(§23-4 — 저장 뒤 약속이 아니다).
+  function answered(pid, result) {
+    const out = live().answer(pid, result);
+    const evidence = out.stored.then(ok =>
+      ok ? measured(out) : { stored: false, independent: false, assisted: null, exposure: null },
+    );
+    return {
+      recorded: {
+        eventId: out.event.id,
+        verdict: out.verdict,
+        correct: out.verdict === 'correct',
+        grade: out.grade,
+        stored: out.stored,
+        evidence,
+      },
+      assisted: out.fold?.answer?.assisted === true,
+    };
+  }
+
+  // 순간 맞춤 겉을 만드는 함수 — 코치가 준비된 뒤 한 번 짓는다.
+  let liveOf = null;
+  const flowLive = () => {
+    live();
+    liveOf ??= createLive({
+      coach: {
+        recommend: (candidates, opts) => coach.recommend(candidates, opts),
+        present: (item, context) => coach.present(item, context),
+        answer: answered,
+        metBefore,
+      },
+      memory: state.flow,
+      prefs: options.host?.prefs ?? null,
+      clock: () => new Date(state.host.now()).toISOString(),
+    });
+    return liveOf;
+  };
+
   const coach = {
     edition: EDITION,
     ready,
@@ -342,19 +396,7 @@ export function createCoach(options = {}) {
     },
 
     answer(pid, result) {
-      const session = live();
-      const out = session.answer(pid, result);
-      const evidence = out.stored.then(ok =>
-        ok ? measured(out) : { stored: false, independent: false, assisted: null, exposure: null },
-      );
-      return {
-        eventId: out.event.id,
-        verdict: out.verdict,
-        correct: out.verdict === 'correct',
-        grade: out.grade,
-        stored: out.stored,
-        evidence,
-      };
+      return answered(pid, result).recorded;
     },
 
     exclude(eventId) {
@@ -711,9 +753,19 @@ export function createCoach(options = {}) {
       return event;
     },
 
-    live: notYet('live'),
-    today: notYet('today'),
-    presentation: notYet('presentation'),
+    // 순간 맞춤(§23-4) — 옛 겉(game-flow.js live)과 같은 메서드 · 결과 꼴. 한 제시는 Flow를 한 번만 움직인다.
+    live(input, liveOptions) {
+      return flowLive()(input, liveOptions);
+    },
+    // 오늘 컨디션 · 표시 설정 — 셸이 넘긴 읽개의 값(낱말 밖이면 null). 바꾸기는 WORLD 화면이 한다.
+    today() {
+      live();
+      return todayOf(options.host?.prefs);
+    },
+    presentation() {
+      live();
+      return presentationFrom(options.host?.prefs);
+    },
     // 연습 기록 비우기(단계 4 계획 §22-4 — 길 셋은 reset.mjs). 손님 코치는 이 기기의 손님 기록 전부를, 계정 코치는 서버 비우기로 판을 올린 뒤
     // 손님 저장소에서 그 계정으로 옮긴 사건을 지운다. 받는 것: legacy { read, clear }(옛 엔진의 손님 로그 — 입구가 준다), clear()(서버 비우기 —
     // 기기 길 계정은 입구가 준다, 올리는 계정은 나르개의 clear), guestPort(시험만 — 손님 저장소 포트). 돌려주는 것:

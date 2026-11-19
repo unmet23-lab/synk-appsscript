@@ -1206,4 +1206,29 @@ export const BRAIN_MUTANTS = [
     "const TEXT_SLOTS = ['kind', 'topic', 'skill', 'id'];\n",
     "const TEXT_SLOTS = ['kind', 'topic', 'skill'];\n",
   ],
+  // ── 같은 제시의 뒤 답(4-6b · 단계 4 계획 §23-5) — 코치 시험(later-answers)이 잡는다 ──
+  [
+    'coach',
+    '뒤 답(4-6b)',
+    '같은 제시의 뒤 답도 판 상태를 움직인다',
+    SESSION,
+    '  const later = pid != null && session.judged.has(pid);\n',
+    '  const later = false;\n',
+  ],
+  [
+    'coach',
+    '뒤 답(4-6b)',
+    '앞 답이 있으면 뒤 답으로 가른다 — 판정 못 한 첫 답 뒤의 맞음이 판을 못 움직인다',
+    SESSION,
+    '  const later = pid != null && session.judged.has(pid);\n',
+    '  const later = pid != null && session.answered.has(pid);\n',
+  ],
+  [
+    'coach',
+    '뒤 답(4-6b)',
+    '낸 문항을 답마다 한 줄씩 쌓는다',
+    SESSION,
+    '  if (pid == null || !session.answered.has(pid))\n',
+    '  if (true)\n',
+  ],
 ];

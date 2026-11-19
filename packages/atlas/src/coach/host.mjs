@@ -610,6 +610,11 @@ function newEntry(registry, key, options, openPort) {
     leaveDocument(registry, key);
   };
   const onClose = drop;
+  // 저장소 연결이 닫혀 내려간 자리다 — 여는 중이면 기록부 준비가 실패해도 기다리던 셸의 통로에 알린다(acquireHere, GPT 다시 검토 GA1).
+  const closed = () => {
+    entry.storeClosed = true;
+    drop();
+  };
   const shellGone = () => {
     entry.shellUsers = Math.max(0, entry.shellUsers - 1);
     if (entry.shellUsers > 0) return;
@@ -619,7 +624,7 @@ function newEntry(registry, key, options, openPort) {
   entry.opening = (async () => {
     // 저장소 연결이 닫히면(다른 탭이 판이 오른 저장소를 열어 이 판을 지움) 이 자리를 등록부에서 내린다 — 같은 열쇠로 새로 여는 코치는 새 자리 ·
     // 새 연결을 받고, 쥔 코치는 그대로 쥔다(저장이 실패해 판에서 빠진다). Fable 5.2 끝 판 둘째 넘친 #6 · 계획 §23-3.
-    const { port, watch } = await openWatched(openPort, key, options.port, drop);
+    const { port, watch } = await openWatched(openPort, key, options.port, closed);
     // 판이 오른 계정 저장소를 열었으면 같은 계정의 앞 판 사본을 버린다(설계 §5-3 · 단계 4 §18-5-5 E3 — 기다리지 않는다).
     if (!options.port) void dropEarlier(key).catch(() => {});
     try {
@@ -728,8 +733,29 @@ async function acquireHere(scope, options, openPort) {
     return host;
   } catch (error) {
     if (host) host.release(options.claim);
-    else entry.claims.users -= 1;
+    else openFailed(entry, options);
     throw error;
+  }
+}
+
+// 받기 전에 열기가 실패했다 — 센 것을 되돌린다. 여는 중에 연결이 닫혀 기록부 준비가 실패했으면 셸이 판을 다시 정하도록 그 셸의 통로에 한 번
+// 알린다(받은 호스트가 없어 storeClosed의 길을 타지 않는다, GPT 다시 검토 GA1). 틀 · 옆으로 연 코치 · 문서 호스트를 받는 코치는 셸이 아니다.
+function openFailed(entry, options) {
+  entry.claims.users -= 1;
+  const shell = options.fromFrame !== true && options.aside !== true && options.document !== true;
+  if (entry.storeClosed && shell) tellClosedOnce(entry, options.onAccount);
+}
+
+// 여는 중에 닫힌 자리의 알림 — 통로(onAccount 함수)마다 한 번.
+function tellClosedOnce(entry, onAccount) {
+  if (typeof onAccount !== 'function') return;
+  entry.told ??= new WeakSet();
+  if (entry.told.has(onAccount)) return;
+  entry.told.add(onAccount);
+  try {
+    onAccount({ kind: 'store', code: 'STORE_CLOSED', status: null, revision: null });
+  } catch {
+    // 셸의 알림이 던져도 열기 실패는 그대로 알린다
   }
 }
 
