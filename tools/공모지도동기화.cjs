@@ -8,6 +8,15 @@ const { 가져오기, 보고서읽기 } = require('./lib/grok-contests.cjs');
 const { 클로드지도갱신 } = require('./lib/공모지도-클로드.cjs');
 const { openTrial, runTrial, needsReceipt, scheduled } = require('./lib/contest-pilot.cjs');
 const { acquireLock } = require('./lib/backup-primitives.cjs');
+const 자격 = require('./lib/contest-eligibility.cjs');
+
+// 지도를 만들기 전에 새로 들어온 열린 공고의 응모 자격을 확인한다(11-20 유호님 「그런것들은 아예 리스트업에서 뺴줘」).
+// 신청자조건.json이 없는 폴더(시험 폴더 등)에서는 건너뛴다.
+async function 기본자격확인(folder, budgetMs) {
+  if (!fs.existsSync(path.join(folder, '신청자조건.json'))) return { skipped: true };
+  const { 후보 } = require('./공모자격.js');
+  return 자격.자격확인(folder, 후보(folder), { budgetMs });
+}
 
 const 기본보관함 = path.join(os.homedir(), 'Documents', 'SYNK-보관함', '지원사업');
 
@@ -61,7 +70,9 @@ async function 지도동기화(folder, config, options = {}) {
   finally { release(); }
 }
 
-async function 동기화실행(folder, config, { 수신 = 브라우저수신, 웹갱신 = 클로드지도갱신, 비교옵션 = {} }) {
+async function 동기화실행(folder, config, { 수신 = 브라우저수신, 웹갱신 = 클로드지도갱신, 비교옵션 = {}, 자격확인실행 = 기본자격확인 }) {
+  // 예약 한도(18분 20초) 안에서 자격 확인이 지도 생성 몫을 먹지 않게 끝 시각을 따로 잡는다.
+  const runDeadline = Date.now() + 17 * 60000;
   // 18분 20초인 예약 한도 안에서 지도 생성과 웹 확인에 쓸 시간을 남긴다.
   const settleDeadline = Date.now() + 14 * 60000;
   const map = path.join(folder, '공모지도.html');
@@ -102,6 +113,12 @@ async function 동기화실행(folder, config, { 수신 = 브라우저수신, �
   }
   async function 지도반영() {
     let remoteMap;
+    try {
+      const left = Math.min(240000, runDeadline - Date.now() - 120000);
+      if (left > 60000) summary.eligibility = await 자격확인실행(folder, left);
+    } catch (error) {
+      summary.eligibilityError = 오류문구(error, '응모 자격을 확인하지 못했습니다.');
+    }
     try {
       PC지도생성(folder, map);
       summary.pc = 'rendered';

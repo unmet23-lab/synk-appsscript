@@ -11,6 +11,7 @@
  *   SYNK-보관함/지원사업/신청현황.json — 항목마다 stage(준비 중 · 결과 기다림 · 선정 · 안 됨 · 접음), kind, ai_video,
  *     deadline(준비 중), owner, result({date|text}), next_event({date,text}).
  *   SYNK-보관함/지원사업/통합목록.json — 마감이 안 지난 공고의 ai_video.value(「AI 영상」 · 「영상」 · 「아님」).
+ *   SYNK-보관함/지원사업/자격판정.json — 응모 자격 판정(tools/공모자격.js). 「안 됨」은 열린 공모에서 빼고, 판정이 「됨」이 아니면 「자격 확인 필요」를 단다(11-20).
  * 만드는 것: 저장소의 .tmp/공모지도/공모지도.html(git 밖). 그 파일을 Artifact 도구로 공모지도.json의 주소에 다시 올린다.
  *
  * 쓰기:
@@ -24,6 +25,7 @@ const path = require('node:path');
 const { randomUUID } = require('node:crypto');
 const 그록 = require('./lib/grok-contests.cjs');
 const { includeReviews } = require('./lib/contest-map-review.cjs');
+const 자격 = require('./lib/contest-eligibility.cjs');
 
 const 단계들 = ['준비 중', '결과 기다림', '선정', '안 됨', '접음'];
 const 기본보관함 = path.join(os.homedir(), 'Documents', 'SYNK-보관함', '지원사업');
@@ -95,8 +97,8 @@ function 검사(현황) {
   return 문제;
 }
 
-/** 접수 중인 영상 공모 — 통합목록에서 ai_video가 「AI 영상」이나 「영상」이고, 마감이 안 지났고, 신청현황에 없는 것. */
-function 열린영상(통합, 현황, 기준일, 지금) {
+/** 접수 중인 영상 공모 — 통합목록에서 ai_video가 「AI 영상」이나 「영상」이고, 마감이 안 지났고, 신청현황에 없고, 자격 판정이 「안 됨」이 아닌 것. */
+function 열린영상(통합, 현황, 기준일, 지금, 자격판정 = null) {
   const 현황id = new Set((현황.items || []).map((o) => o.id));
   const 현황이름 = (현황.items || []).map((o) => 정규(짧은이름(o.name)));
   const 겹침 = (제목) => {
@@ -120,6 +122,8 @@ function 열린영상(통합, 현황, 기준일, 지금) {
     const 시각 = 그록공고?.deadline.kst;
     if (시각 && 지금 && Date.parse(시각) <= +지금) continue;
     if (현황id.has(o.id) || 겹침(o.title)) continue;
+    const 판정 = 자격판정 ? 자격.판정찾기(자격판정, o.title) : null;
+    if (판정?.status === '안 됨') continue;
     나옴.push({
       id: o.id,
       이름: 짧은이름(o.title),
@@ -137,6 +141,8 @@ function 열린영상(통합, 현황, 기준일, 지금) {
       ].filter(Boolean).join('. ').replace(/\.\./g, '.') : (o.ai_video?.basis || ''),
       주소: 공고주소(o),
       원문확인안함: 그록공고 ? !그록공고.officialUrl : !!o.grok_20261117,
+      자격: 판정?.status || '확인 전',
+      ...(판정?.quote && { 자격근거: 판정.quote }),
       ...(그록공고 && {
         그록: !그록공고.geminiOnly, ...(그록공고.reviewed && { 카본확인: true }), AI허용: 허용, AI주소: 그록공고.ai.url, 마감주소: 그록공고.deadline.url,
         제출물: 그록공고.deliverables.items, 제출물주소: 그록공고.deliverables.url,
@@ -147,13 +153,13 @@ function 열린영상(통합, 현황, 기준일, 지금) {
   return 나옴;
 }
 
-function 자료만들기(현황, 통합, 지금 = new Date()) {
+function 자료만들기(현황, 통합, 지금 = new Date(), 자격판정 = null) {
   const 기준일 = 오늘(지금);
   return {
     기준: new Date(지금.getTime() + 9 * 3600e3).toISOString().slice(0, 16).replace('T', ' '),
     기준일,
     진행: (현황.items || []).map(카드),
-    열린: 열린영상(통합, 현황, 기준일, 지금),
+    열린: 열린영상(통합, 현황, 기준일, 지금, 자격판정),
   };
 }
 
@@ -440,6 +446,7 @@ function 열린판() {
     const t = el('div', 'tags');
     t.append(el('span', o.값 === 'AI 영상' ? 'tag ai' : 'tag', o.값 === 'AI 영상' ? 'AI 영상' : 'AI 확인 필요'));
     if (o.원문확인안함) t.append(el('span', 'tag warn', '그록 보고 · 원문 확인 전'));
+    if (o.자격 && o.자격 !== '됨') t.append(el('span', 'tag warn', '자격 확인 필요'));
     r.append(t);
     if (o.근거) r.append(el('div', 'note', o.근거));
     box.append(r);
@@ -464,7 +471,7 @@ function 읽기(폴더) {
   const 통합 = JSON.parse(fs.readFileSync(path.join(폴더, '통합목록.json'), 'utf8'));
   let 설정 = {};
   try { 설정 = JSON.parse(fs.readFileSync(path.join(폴더, '공모지도.json'), 'utf8')); } catch {}
-  return { 현황, 통합: 그록.합치기(통합, includeReviews(폴더, 그록.보고서읽기(폴더))), 설정 };
+  return { 현황, 통합: 그록.합치기(통합, includeReviews(폴더, 그록.보고서읽기(폴더))), 설정, 자격판정: 자격.판정읽기(폴더) };
 }
 
 async function main(argv) {
@@ -481,13 +488,13 @@ async function main(argv) {
     const 읽음 = await 그록.가져오기(보관함, JSON.parse(fs.readFileSync(그록보고서, 'utf8').replace(/^\uFEFF/, '')));
     console.log(읽음.already ? '이미 읽은 그록 보고서' : '그록 보고서 공고 ' + 읽음.items.length + '건 읽음');
   }
-  const { 현황, 통합, 설정 } = 읽기(보관함);
+  const { 현황, 통합, 설정, 자격판정 } = 읽기(보관함);
   const 문제 = 검사(현황);
   if (argv.includes('--검사')) {
     if (문제.length) { console.log(`빠진 칸 ${문제.length}곳:`); for (const p of 문제) console.log('  - ' + p); return 1; }
     console.log('빠진 칸 없음'); return 0;
   }
-  const 자료 = 자료만들기(현황, 통합);
+  const 자료 = 자료만들기(현황, 통합, new Date(), 자격판정);
   let 폰트 = '';
   try { 폰트 = require('./lib/브랜드폰트.js').블록(); } catch (e) { console.log('브랜드 폰트를 못 심었다(대체 서체로 보인다): ' + e.message); }
   const 파일 = path.resolve(값('--출력') || path.join(출력폴더, '공모지도.html'));
@@ -511,4 +518,4 @@ async function main(argv) {
 if (require.main === module) main(process.argv.slice(2)).then((code) => { process.exitCode = code; })
   .catch((error) => { console.error(error.message); process.exitCode = 1; });
 
-module.exports = { 단계들, 오늘, 짧은이름, 공고마감, 공고주소, 카드, 검사, 열린영상, 자료만들기, 페이지 };
+module.exports = { 단계들, 오늘, 짧은이름, 공고마감, 공고주소, 카드, 검사, 열린영상, 자료만들기, 페이지, 읽기, 기본보관함 };
