@@ -5,12 +5,16 @@ const fs = require('node:fs'), path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const 뿌리 = path.resolve(__dirname, '../../../..');
 const { codex모델인자 } = require(path.join(뿌리, 'tools/lib/GPT검수모델.js'));
-const [promptFile, round, ...images] = process.argv.slice(2);
+/* --모델 <이름>을 주면 그 모델을 추론 max로 부른다(3회차부터 유호님 말씀대로 gpt-6.2-astra). 없으면 검수 모델 값이다. */
+const 인자 = process.argv.slice(2);
+const 모델자리 = 인자.indexOf('--모델');
+const 모델인자 = 모델자리 >= 0 ? ['-m', 인자.splice(모델자리, 2)[1], '-c', 'model_reasoning_effort="max"'] : codex모델인자();
+const [promptFile, round, ...images] = 인자;
 const dir = path.join(뿌리, '.tmp/synk-cube-blender-20261119');
 const answer = path.join(dir, `answer-gpt-${round}.md`);
 const started = Date.now();
 const r = spawnSync(process.execPath, [path.join(뿌리, 'tools/codex계정.js'), 'exec', '--skip-git-repo-check', '-C', dir, '-s', 'read-only',
-  ...codex모델인자(), '-o', answer, ...images.flatMap(f => ['-i', path.resolve(f)])],
+  ...모델인자, '-o', answer, ...images.flatMap(f => ['-i', path.resolve(f)])],
   { input: fs.readFileSync(path.resolve(promptFile), 'utf8'), encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, cwd: 뿌리 });
 fs.writeFileSync(path.join(dir, `gpt-${round}.log`), (r.stdout || '') + (r.stderr || ''));
 if (r.status !== 0) { console.error('GPT 묻기 실패: 종료 ' + r.status); process.exit(r.status || 2); }

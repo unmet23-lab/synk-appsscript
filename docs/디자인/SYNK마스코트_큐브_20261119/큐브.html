@@ -63,6 +63,36 @@ h2{margin:0;font:var(--title);letter-spacing:-.012em}
 .felts figure{margin:0;display:flex;flex-direction:column;gap:12px}
 .felts img{display:block;width:100%;height:auto;background:var(--void)}
 .felts figcaption{font:var(--small);color:var(--dim)}
+/* 열셋째 판: 지금의 검정 구와 깎은 큐브를 같은 자리에 나란히 */
+.vs{display:flex;flex-direction:column;gap:clamp(22px,4vh,40px);padding-block:clamp(28px,5vh,56px);border-bottom:1px solid var(--hair)}
+.vs .say{max-width:38em}
+.vsrow{display:flex;flex-direction:column;gap:12px}
+.vslbl{margin:0;font:var(--small);letter-spacing:.08em;color:var(--dim)}
+.vs2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,2vw,28px);align-items:end}
+.vs figure{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+.vs figure>img,.vshead img{display:block;width:100%;height:auto}
+.vs figcaption{font:var(--small);color:var(--dim)}
+.vs figcaption b{font-weight:500;color:var(--paper)}
+.vs .stage{max-width:none}
+.vshead{position:relative}
+.vshead canvas{position:absolute;left:12.93%;top:50.6%;width:9.3%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%}
+.vsicons{display:flex;align-items:flex-end;gap:22px;min-height:64px}
+.vsicons canvas{border-radius:22%}
+.chip i{box-shadow:inset 0 0 0 1px var(--hair)}
+@media (max-width:720px){.vs2{grid-template-columns:1fr}}
+/* 트렌드 컬러 판: 왼쪽에 도는 영상, 오른쪽에 색 다섯과 움직임 둘 */
+.tr{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(20px,5vw,72px);align-items:center;padding-block:clamp(8px,2vh,20px) clamp(28px,5vh,56px);border-bottom:1px solid var(--hair)}
+.trstage{position:relative;aspect-ratio:1/1;width:100%;max-width:640px;justify-self:center;background:var(--void);touch-action:pan-y;cursor:grab;-webkit-user-select:none;user-select:none}
+.trstage.drag{cursor:grabbing}
+.trstage video{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;display:inline-flex;align-items:center;gap:8px;min-height:40px;margin:0;padding:0 14px 0 10px;border:1px solid var(--hair);border-radius:999px;background:transparent;color:var(--soft);font:var(--small);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .2s,color .2s}
+.chip i{width:16px;height:16px;border-radius:50%;background:var(--c)}
+.chip[aria-pressed="true"]{border-color:var(--ring);color:var(--paper)}
+.chip:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.tr .note{margin:0;font:var(--small);line-height:1.6;color:var(--dim);max-width:34em}
+@media (max-width:720px){.tr{grid-template-columns:1fr;gap:6px}.trstage{max-width:440px}}
+@media (prefers-reduced-motion:reduce){.chip{transition:none}}
 /* 블렌더 판: 기준 사진과 두 렌더를 나란히 놓고, 그 아래에 좌우로 도는 모습을 둔다 */
 .bl{display:flex;flex-direction:column;gap:clamp(18px,3vh,30px);padding-block:clamp(8px,2vh,20px) clamp(28px,5vh,56px);border-bottom:1px solid var(--hair)}
 .bl .say{max-width:38em}
@@ -109,10 +139,101 @@ html[data-nogl] .nogl{display:block}
 <body>
 <main class="wrap">
   <header class="head">
-    <p class="tag">SYNK 마스코트 시안 · 열한째 판</p>
-    <h1>펠트 큐브,<span>블렌더에서 진짜 털로.</span></h1>
-    <p class="lead">앞선 판은 브라우저가 털을 흉내 낸 그림이라 구운 사진만 못했습니다. 이번에는 GPT 6.2와 카본이 각각 블렌더 모델을 짓고, 털을 한 올씩 심어 렌더했습니다. 눈은 고르신 도트 눈입니다. 두 판을 구운 사진 옆에 놓았습니다.</p>
+    <p class="tag">SYNK 마스코트 시안 · 열넷째 판</p>
+    <h1>큐브,<span>그리고 구.</span></h1>
+    <p class="lead">꼭짓점을 깎지 않은 큐브입니다. 평소에는 큐브이고, 생각할 때마다 구가 되어 구르다가 답이 나오면 큐브로 돌아옵니다. 지금 PC 앱 시안의 검정 구와 같은 자리에 나란히 놓았습니다.</p>
   </header>
+
+  <div class="moods" role="group" aria-label="표정 바꾸기">
+    <span>표정</span>
+    <button class="mood" type="button" id="mood-auto" data-mood="auto" aria-pressed="true">평소</button>
+    <button class="mood" type="button" id="mood-smile" data-mood="smile" aria-pressed="false">웃음</button>
+    <button class="mood" type="button" id="mood-think" data-mood="think" aria-pressed="false">생각 중</button>
+    <button class="mood" type="button" id="mood-sleep" data-mood="sleep" aria-pressed="false">잠</button>
+  </div>
+  <p class="nogl">이 브라우저에서는 움직이는 큐브를 그리지 못합니다. 크롬이나 엣지에서 열어 주세요.</p>
+
+  <section class="cand hero" data-v="9">
+    <button class="stage" type="button" aria-label="열넷째 판, 깎지 않은 큐브. 누르면 구가 되어 생각합니다."><canvas></canvas></button>
+    <div class="info">
+      <p class="key">열넷째 판</p>
+      <h2>큐브</h2>
+      <p class="say">모서리만 둥근 검정 큐브입니다. 깎지 않았습니다. 손을 따라 보고, 생각할 때는 구가 되어 구르다가 답이 나오면 큐브로 돌아와 눈이 한 번 켜집니다. 가만히 두면 6초쯤마다 한 번 변신하고, 누르면 바로 변신합니다.</p>
+      <div class="chips" role="group" aria-label="꼭짓점">
+        <button class="chip" type="button" data-kc="flat" style="--c:#141414" aria-pressed="true"><i></i>깎지 않음</button>
+        <button class="chip" type="button" data-kc="none" style="--c:#141414" aria-pressed="false"><i></i>깎고 검정</button>
+        <button class="chip" type="button" data-kc="coral" style="--c:#F96859" aria-pressed="false"><i></i>코랄</button>
+        <button class="chip" type="button" data-kc="blue" style="--c:#26409B" aria-pressed="false"><i></i>루미너스 블루</button>
+        <button class="chip" type="button" data-kc="orange" style="--c:#F2683C" aria-pressed="false"><i></i>에너지 오렌지</button>
+        <button class="chip" type="button" data-kc="pink" style="--c:#EE9CC0" aria-pressed="false"><i></i>팝 핑크</button>
+        <button class="chip" type="button" data-kc="green" style="--c:#9DA85C" aria-pressed="false"><i></i>메도랜드 그린</button>
+        <button class="chip" type="button" data-kc="clay" style="--c:#B98C7E" aria-pressed="false"><i></i>클레이</button>
+      </div>
+      <div class="opts" role="group" aria-label="로딩">
+        <span class="lbl">로딩</span>
+        <button class="mood" type="button" id="load-9" data-load="9">면이 깎임</button>
+        <button class="mood" type="button" data-kfx="ball">구로 변신</button>
+        <button class="mood" type="button" data-kfx="synk">눈이 synk로</button>
+        <button class="mood" type="button" data-kfx="pair">s y → n k</button>
+      </div>
+      <div class="sizes" aria-label="작게 본 모습"></div>
+    </div>
+  </section>
+
+  <section class="vs">
+    <div class="info">
+      <p class="key">지금의 구와 나란히</p>
+      <h2>같은 자리에 놓았습니다</h2>
+      <p class="say">왼쪽은 지금 PC 앱 시안의 검정 구이고, 오른쪽은 같은 자리에 놓은 큐브입니다. 구는 캡처한 그림이고 큐브는 살아 있어서 여기서도 구로 변신합니다. 아이콘 크기의 큐브만 변신하지 않습니다.</p>
+    </div>
+    <div class="vsrow">
+      <p class="vslbl">켤 때 · 화면 가운데에 하나만</p>
+      <div class="vs2">
+        <figure><img src="assets/orb-rest.webp" width="880" height="880" alt="지금 PC 앱 시안의 검정 구. 결을 깎은 검정 구에 점 눈 둘이 있다."><figcaption><b>지금</b> · 검정 구</figcaption></figure>
+        <figure><button class="stage" id="vs-big" type="button" aria-label="같은 자리의 큐브. 누르면 구가 되어 생각합니다."><canvas></canvas></button><figcaption><b>큐브</b></figcaption></figure>
+      </div>
+    </div>
+    <div class="vsrow">
+      <p class="vslbl">앱 안 · 왼쪽 위에 작게</p>
+      <div class="vs2">
+        <figure><img src="assets/orb-head.webp" width="810" height="156" alt="솔리오 화면의 왼쪽 위. 작은 검정 구 옆에 SOLIO와 프로그램 오브제가 있다."><figcaption><b>지금</b> · 검정 구</figcaption></figure>
+        <figure><div class="vshead"><img src="assets/orb-head.webp" width="810" height="156" alt=""><canvas id="vs-mini" role="img" aria-label="같은 자리에 놓은 작은 큐브"></canvas></div><figcaption><b>큐브</b></figcaption></figure>
+      </div>
+    </div>
+    <div class="vsrow">
+      <p class="vslbl">앱 아이콘 · 64, 32, 16</p>
+      <div class="vs2">
+        <figure><div class="vsicons"><img src="assets/orb-icon-l.webp" width="64" height="64" alt="검정 구 앱 아이콘 64픽셀" style="width:64px"><img src="assets/orb-icon-m.webp" width="32" height="32" alt="32픽셀" style="width:32px"><img src="assets/orb-icon-s.webp" width="16" height="16" alt="16픽셀" style="width:16px"></div><figcaption><b>지금</b> · 검정 구</figcaption></figure>
+        <figure><div class="vsicons" id="vs-icons" role="img" aria-label="큐브를 64, 32, 16픽셀로 본 모습"></div><figcaption><b>큐브</b></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <p class="tag sub">앞선 판 · 2027년 색의 펠트 큐브(블렌더)</p>
+
+  <section class="tr">
+    <div class="trstage" id="tr-stage" role="img" aria-label="펠트 큐브가 도는 영상. 좌우로 끌면 돌릴 수 있습니다."><video id="tr-video" muted loop playsinline preload="auto" poster="assets/tr-blue.webp"></video></div>
+    <div class="info">
+      <p class="key">열두째 판 · 블렌더 렌더</p>
+      <h2 id="tr-name">루미너스 블루</h2>
+      <p class="say" id="tr-say">2027 올해의 색입니다. 몸은 루미너스 블루, 눈은 크림, 세모는 에너지 오렌지입니다.</p>
+      <div class="chips" role="group" aria-label="몸의 색">
+        <button class="chip" type="button" data-trc="blue" style="--c:#26409B" aria-pressed="true"><i></i>루미너스 블루</button>
+        <button class="chip" type="button" data-trc="orange" style="--c:#F2683C" aria-pressed="false"><i></i>에너지 오렌지</button>
+        <button class="chip" type="button" data-trc="pink" style="--c:#EE9CC0" aria-pressed="false"><i></i>팝 핑크</button>
+        <button class="chip" type="button" data-trc="green" style="--c:#9DA85C" aria-pressed="false"><i></i>메도랜드 그린</button>
+        <button class="chip" type="button" data-trc="clay" style="--c:#B98C7E" aria-pressed="false"><i></i>클레이</button>
+      </div>
+      <div class="opts" role="group" aria-label="움직임">
+        <span class="lbl">움직임</span>
+        <button class="mood" type="button" data-trk="turn" aria-pressed="true">한 바퀴</button>
+        <button class="mood" type="button" data-trk="sway" aria-pressed="false">고개 젓기</button>
+      </div>
+      <p class="note">색은 WGSN과 Coloro가 발표한 2027 봄여름 핵심 색 다섯입니다. 공식 발표에는 Coloro 코드만 있어 화면의 색은 근삿값입니다. 팬톤의 2027 올해의 색은 아직 발표 전입니다.</p>
+    </div>
+  </section>
+
+  <p class="tag sub">앞선 판 · 블렌더 두 판 견주기</p>
 
   <section class="bl">
     <div class="bl3">
@@ -133,14 +254,6 @@ html[data-nogl] .nogl{display:block}
 
   <p class="tag sub">앞선 판 · 브라우저가 그리는 큐브</p>
 
-  <div class="moods" role="group" aria-label="표정 바꾸기">
-    <span>표정</span>
-    <button class="mood" type="button" id="mood-auto" data-mood="auto" aria-pressed="true">평소</button>
-    <button class="mood" type="button" id="mood-smile" data-mood="smile" aria-pressed="false">웃음</button>
-    <button class="mood" type="button" id="mood-think" data-mood="think" aria-pressed="false">생각 중</button>
-    <button class="mood" type="button" id="mood-sleep" data-mood="sleep" aria-pressed="false">잠</button>
-  </div>
-  <p class="nogl">이 브라우저에서는 움직이는 큐브를 그리지 못합니다. 크롬이나 엣지에서 열어 주세요.</p>
 
   <section class="cand hero" data-v="11">
     <button class="stage" type="button" aria-label="열째 판, 펠트 큐브. 누르면 생각합니다."><canvas></canvas></button>
@@ -193,16 +306,6 @@ html[data-nogl] .nogl{display:block}
     </div>
   </section>
 
-  <section class="cand hero" data-v="9">
-    <button class="stage" type="button" aria-label="여섯째 판, 꼭짓점 하나를 깎은 깎은 큐브. 누르면 생각합니다."><canvas></canvas></button>
-    <div class="info">
-      <p class="key">여섯째 판</p>
-      <h2>깎은 큐브</h2>
-      <p class="say">앞 위 오른쪽 꼭짓점 하나를 깎았습니다. 서서 돌 때 그 면이 한 바퀴에 한 번 반짝입니다. 로딩은 면이 하나씩 깎여 나가는 것으로 보입니다. 답이 나오면 눈이 코랄로 한 번 켜졌다 돌아옵니다.</p>
-      <div class="opts"><button class="mood" type="button" id="load-9" data-load="9">로딩 보기</button></div>
-      <div class="sizes" aria-label="작게 본 모습"></div>
-    </div>
-  </section>
 
   <section class="cand hero" data-v="10">
     <button class="stage" type="button" aria-label="여섯째 판, 꼭짓점 하나를 깎은 점 눈 모놀리스. 누르면 생각합니다."><canvas></canvas></button>
@@ -353,6 +456,7 @@ uniform vec4 uEye;
 uniform vec2 uGaze;
 uniform vec4 uSlab;
 uniform vec4 uCutV;
+uniform vec4 uCutC;   /* 깎은 꼭짓점의 면에 입힐 색과 그 세기(0이면 검정 그대로) */
 uniform float uLoad, uTint;
 uniform sampler2D uFeltA, uFeltB;
 uniform vec3 uAccent, uThread;
@@ -535,9 +639,13 @@ float lidBody(vec3 p){
 float cutD(vec3 p){ return (dot(p, uCutV.xyz) - (3.0 - uCutV.w)) * 0.57735; }
 vec2 map(vec3 p){
   if (uKind == 0) {
-    float d0 = sdRB(p, vec3(1.0), 0.17);
-    if (uCutV.w > 0.0) d0 = ri(d0, cutD(p), 0.03);
-    return vec2(d0, 0.0);
+    /* uFx.x가 1이면 구가 된다. 구가 되는 동안 깎은 꼭짓점은 메워진다 */
+    /* 깎은 꼭짓점 가까이에서는 모서리의 둥글기를 줄인다. 그래야 깎은 면이 둥근 얼룩이 아니라 세모로 보인다 */
+    float r0 = uCutV.w > 0.0 ? mix(0.17, 0.045, smoothstep(1.45, 2.25, dot(p, uCutV.xyz))) : 0.17;
+    float d0 = sdRB(p, vec3(mix(1.0, 1.16, uFx.x)), mix(r0, 1.16, uFx.x));
+    float cw = uCutV.w * (1.0 - uFx.x);
+    if (cw > 0.001) d0 = ri(d0, (dot(p, uCutV.xyz) - (3.0 - cw)) * 0.57735, 0.012);
+    return vec2(d0 * (uCutV.w > 0.0 ? 0.82 : 1.0), 0.0);
   }
   if (uKind == 1) {
     float d1 = sdRB(p, vec3(1.0), 0.02);
@@ -709,6 +817,19 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
     vec3 Bw = ry(U3 * g2.x + V3 * g2.y, -ang) * uInv;
     vec3 Tw = ry(U3 * (-g2.y) + V3 * g2.x, -ang) * uInv;
     float pole = smoothstep(0.05, 0.30, r4);
+    /* 구로 바뀌는 동안: 면의 결이 사라졌다가, 구에서는 지금의 검정 구처럼 한 축을 도는 결로 다시 깎인다 */
+    if (uKind == 0 && uFx.x > 0.001) {
+      float gk = smoothstep(0.0, 1.0, abs(2.0 * uFx.x - 1.0));
+      if (uFx.x > 0.5) {
+        vec3 A3 = normalize(vec3(0.28, 0.52, 0.81));
+        vec3 pn = normalize(p);
+        r4 = acos(clamp(dot(pn, A3), -1.0, 1.0)) * 0.9;
+        vec3 T3 = cross(A3, pn); T3 /= max(length(T3), 0.0001);
+        Bw = -cross(pn, T3) * uInv; Tw = T3 * uInv;
+        pole = smoothstep(0.05, 0.30, r4);
+        flatK = gk;
+      } else flatK *= gk;
+    }
     float sp = 0.03 * ppu * max(ndv, 0.05);
     float v1 = smoothstep(2.4, 6.0, sp) * flatK;
     float v2 = smoothstep(2.4, 6.0, sp / 5.0) * flatK;
@@ -745,8 +866,10 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
     /* 아직 깎지 않은 면은 넓고 흐린 빛 하나만 받는다. 깎는 자리에는 가는 선이 선다 */
     c += WARM * ((1.0 - cutM) * pow(max(dot(nW, H), 0.0), 9.0) * 0.085 * side * flatK + seamL * (0.10 + 0.30 * side));
     /* 깎은 꼭짓점의 면: 결이 없는 매끈한 면이라 빛과 마주칠 때만 한 번 반짝인다 */
-    if (uKind == 0 && uCutV.w > 0.0 && dot(n, uCutV.xyz) * 0.57735 > 0.93) {
+    if (uKind == 0 && uCutV.w > 0.0 && dot(n, uCutV.xyz) * 0.57735 > mix(0.985, 0.93, uFx.x) && (uFx.x < 0.3 || uCutC.w > 0.5)) {
       c = vec3(0.005) + WARM * (0.055 + pow(max(dot(nW, H), 0.0), 120.0) * 1.2 + 0.10 * pow(1.0 - ndv, 3.0));
+      /* 색을 입힌 꼭짓점: 그 면만 색이 있고, 구가 되어도 색 점으로 남는다 */
+      c = mix(c, uCutC.rgb * (0.66 + 0.30 * max(ndl, 0.0)) + WARM * pow(max(dot(nW, H), 0.0), 60.0) * 0.45, uCutC.w);
     }
     if (uKind == 5) {
       /* 틈 가까이의 옆면은 안쪽 빛을 조금 받는다 */
@@ -818,9 +941,16 @@ vec3 solid(vec3 ro, vec3 rd, vec3 rdW, float t0, float t1, float ppu){
   if (uKind == 6) { pe = p / vec3(uSlab.z, uSlab.w, uSlab.z); face = face && pe.y < 0.29; }
   if (uKind == 7) pe = p / vec3(uSlab.z, uSlab.w, uSlab.z);
   if (uKind != 7 && uEye.x > 0.001 && face) {
-    vec2 e = eyes(pe.xy - vec2(0.0, uEyeY), ppx, uEyeK, uEye.w, uEyeStyle);
+    /* 로딩 때는 눈 자리에 글자가 뜨고(uFx.y), 바뀌는 순간에는 가로줄이 밀리고 점이 빠진다(uFx.z) */
+    vec2 fpE = pe.xy - vec2(0.0, uEyeY);
+    float gE = 0.040 * uEyeK * mix(1.0, 1.7, small);
+    float gq = uFx.y > 0.5 ? 0.075 * mix(1.0, 1.7, small) : gE;
+    float tq = floor(uT * 24.0);
+    if (uFx.z > 0.001) fpE.x += (hash2(vec2(floor(fpE.y / gq), tq)) - 0.5) * 3.0 * gq * uFx.z * step(0.45, hash2(vec2(tq, floor(fpE.y / gq) + 3.0)));
+    vec2 e = uFx.y > 0.5 ? glyphs(fpE + vec2(0.0, 1.5 * (gq - gE)), ppx, gq, uFx.y, uEye.w * gE / gq) : eyes(fpE, ppx, uEyeK, uEye.w, uEyeStyle);
+    if (uFx.z > 0.001) e.x *= step(uFx.z * 0.35, hash2(floor(fpE / gq) + tq));
     c *= 1.0 - e.y * uEye.x;
-    c += mix(WARM, CORAL, uTint) * e.x * uEye.x * 0.96;
+    c += mix(WARM, uAccent, max(uTint, uFx.z * step(0.5, hash2(vec2(tq, 9.0))))) * e.x * uEye.x * 0.96;
   }
   return c * cover;
 }
@@ -935,7 +1065,7 @@ void main(){
   col += g * 2.8 / 255.0;
   gl_FragColor = vec4(max(col, 0.0), 1.0);
 }`;
-const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uCuts', 'uEyeY', 'uEyeStyle', 'uRing', 'uCutV', 'uLoad', 'uTint', 'uFeltA', 'uFeltB', 'uAccent', 'uThread', 'uFeltAvg', 'uBody', 'uBg', 'uFx', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
+const UNIFORMS = ['uRes', 'uT', 'uDpr', 'uScale', 'uSeed', 'uThink', 'uGlow', 'uScan', 'uLit', 'uEyeK', 'uCuts', 'uEyeY', 'uEyeStyle', 'uRing', 'uCutV', 'uCutC', 'uLoad', 'uTint', 'uFeltA', 'uFeltB', 'uAccent', 'uThread', 'uFeltAvg', 'uBody', 'uBg', 'uFx', 'uKind', 'uInv', 'uL', 'uOff', 'uCore', 'uEye', 'uGaze', 'uSlab'];
 
 const reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -976,11 +1106,16 @@ const CUBES = [
   { kind: 0, stand: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },   /* 넷째 판: 깎은 큐브 그대로, 생각할 때만 서서 돈다 */
   { kind: 1, yaw: 0.44, pitch: 0.34, scale: 0.94, eyeK: 1.55, sep: 5.5, eyeStyle: 0 },   /* 다섯째 판: 모놀리스 몸에 깎은 큐브의 점 눈 */
   /* 여섯째 판: 꼭짓점 하나를 깎고(cut은 꼭짓점의 부호와 깊이), 답이 나온 순간 눈이 코랄로 켜진다. standTurn은 깎은 꼭짓점이 옆에 오게 서는 각이다 */
-  { kind: 0, stand: true, standTurn: Math.PI / 2, cut: [1, 1, 1, 0.55], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },
+  { kind: 0, orb: true, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },
   { kind: 1, cut: [-1, 1, 1, 0.36], ident: true, yaw: 0.44, pitch: 0.34, scale: 0.94, eyeK: 1.55, sep: 5.5, eyeStyle: 0 },
   /* 열째 판: 펠트 큐브 아홉. combo는 색 조합(COMBOS의 차례)이다. 첫째가 큰 무대의 큐브이고, 나머지 여덟은 색 조합을 나란히 보이는 작은 큐브다.
      자세와 눈의 자리는 구운 사진에 맞췄다. cut의 넷째 값이 0보다 크면 귀퉁이에 세모 조각을 댄다 */
   ...[0, 0, 1, 2, 3, 4, 5, 6, 7].map(n => ({ kind: 7, combo: n, stand: true, standTurn: Math.PI / 2, cut: [1, 1, 1, 0.5], yaw: -0.32, pitch: 0.24, scale: 1.1, eyeK: 2.2, sep: 4.5, eyeY: -0.27, eyeStyle: 0 })),
+  /* 열셋째 판: 검정 구와 나란히 놓는 깎은 큐브 둘(큰 것과 앱 머리의 작은 것). 큰 무대의 깎은 큐브(9번)와 같은 몸이다 */
+  { kind: 0, orb: true, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.0, eyeK: 1.3, sep: 6.5 },
+  { kind: 0, gain: 1.7, orb: true, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.12, eyeK: 1.3, sep: 6.5 },
+  /* 앱 아이콘 크기로 보는 큐브. 작아서 몸의 빛을 올리고(gain), 스스로 생각하지 않는다(calm) */
+  { kind: 0, calm: true, gain: 2.4, orb: true, cut: [1, 1, 1, 0], ident: true, yaw: -0.42, pitch: 0.27, scale: 1.16, eyeK: 1.3, sep: 6.5 },
 ].map((c, i) => ({
   ...c, i, think: 0, wasThink: false, thinkUntil: 0, bootUntil: 0, smileUntil: 0, flash: 0,
   px: 0, py: 0, tx: 0, ty: 0, moodShown: 0, open: 1, lid: null, nextBlink: 2000 + i * 700,
@@ -988,7 +1123,7 @@ const CUBES = [
   R: qMat([0, 0, 0, 1]), L: [0, 0, 1], core: [0, 0, 0], glow: 0, scan: 0, lit: 1, eyeOn: 1, big: null, cuts: 1, eyeY: c.eyeY || 0, eyeStyle: c.eyeStyle !== undefined ? c.eyeStyle : (c.kind === 1 ? 1 : 0),
   lidA: 0, lidW: 0, lidHome: 0, lift: 0, pendingLand: false, bounce0: 0, hop: 0, gaze: [0, 0],
   cutV: c.cut || [0, 0, 0, 0], load: -1, loadT0: 0, loadUntil: 0, coralUntil: 0, tint: 0,
-  fx: null, fxT0: 0, fxUntil: 0, fxOn: false, fxv: [0, 0, 0], ball: 0, ballHome: null,
+  roll: 0, fx: null, fxT0: 0, fxUntil: 0, fxOn: false, fxv: [0, 0, 0], ball: 0, ballHome: null,
 }));
 /* 펠트 큐브의 색 조합 여덟 벌. 몸, 눈, 세모 조각의 색이다. 앞의 셋은 SYNK의 세 색(잉크, 종이색, 코랄 #F96859)만 썼다. 첫째의 잉크 몸은 구운 사진의 빛 받은 색에 맞춰 로고의 잉크(#2B2320)보다 조금 밝다 */
 const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
@@ -1047,7 +1182,7 @@ let mood = 'auto';
 function step(c, now, dt) {
   const t = now / 1000;
   const ph = (t + c.i * 2.3) % 12;
-  const want = !reduced && !c.fxOn && (mood === 'think' || now < c.thinkUntil || now < c.loadUntil || now < c.bootUntil || (mood === 'auto' && ph > 8.2 && ph < 10.6));
+  const want = !reduced && !c.fxOn && (mood === 'think' || now < c.thinkUntil || now < c.loadUntil || now < c.bootUntil || (mood === 'auto' && !c.calm && ((ph > 8.2 && ph < 10.6) || (c.orb && ph > 2.2 && ph < 4.4))));
   /* 로딩: 4.4초 동안 0에서 1로 간다. 로딩이 아니면 −1이다 */
   c.load = now < c.loadUntil ? clamp((now - c.loadT0) / 4400, 0, 1) : -1;
   c.tint = clamp((c.coralUntil - now) / 500, 0, 1);
@@ -1090,7 +1225,15 @@ function step(c, now, dt) {
     azAdd += c.az;
   }
   if (c.kind === 3) { c.spin += dt * (0.22 + 0.9 * c.think) * sway; yaw += c.spin; }
-  if (c.kind === 7) yaw += feltFx(c, now, dt);
+  if (c.kind === 7 || c.fx) yaw += feltFx(c, now, dt);
+  if (c.orb) {
+    /* 열넷째 판: 생각할 때 구가 되어 구르고, 답이 나오면 큐브로 돌아온다. 평소에는 12초에 두 번 스스로 변신한다 */
+    if (want) c.roll += dt * 5.2 * c.think;
+    else { const home = Math.round(c.roll / (2 * Math.PI)) * 2 * Math.PI; c.roll += (home - c.roll) * (1 - Math.exp(-dt * 6)); }
+    yaw += c.roll;
+    const m = easeIO(clamp(c.think, 0, 1));
+    c.fxv = c.fx ? [Math.max(c.fxv[0], m), c.fxv[1], c.fxv[2]] : [m, 0, 0];
+  }
   let q = qMul(qAxis(AX, pitch), qAxis(AY, yaw));
   c.gaze = [clamp(c.px * 1.6, -1.5, 1.5), clamp(-c.py * 1.6, -1.5, 1.5)];
   c.hop = 0;
@@ -1228,7 +1371,7 @@ function drawGL(tg, now) {
   gl.uniform1f(U.uThink, c.think);
   gl.uniform1f(U.uGlow, c.glow);
   gl.uniform1f(U.uScan, c.scan);
-  gl.uniform1f(U.uLit, c.lit);
+  gl.uniform1f(U.uLit, c.lit * (c.gain || 1));
   gl.uniform1f(U.uEyeK, c.eyeK);
   gl.uniform1f(U.uCuts, c.cuts);
   gl.uniform4f(U.uCutV, c.cutV[0], c.cutV[1], c.cutV[2], c.cutV[3]);
@@ -1253,8 +1396,13 @@ function drawGL(tg, now) {
     gl.uniform3f(U.uThread, k.eye[0], k.eye[1], k.eye[2]);
     gl.uniform3f(U.uAccent, k.cut[0], k.cut[1], k.cut[2]);
     gl.uniform3f(U.uBg, bg[0], bg[1], bg[2]);
-    gl.uniform4f(U.uFx, c.fxv[0], c.fxv[1], c.fxv[2], 0);
+  } else {
+    /* 검정 큐브: 눈이 켜질 때의 색과 깎은 꼭짓점의 색 */
+    const a = c.accent || [0.976, 0.408, 0.349], k = c.cutC || [0, 0, 0, 0];
+    gl.uniform3f(U.uAccent, a[0], a[1], a[2]);
+    gl.uniform4f(U.uCutC, k[0], k[1], k[2], k[3]);
   }
+  gl.uniform4f(U.uFx, c.fxv[0], c.fxv[1], c.fxv[2], 0);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   tg.ctx.drawImage(glc, 0, glc.height - h, w, h, 0, 0, w, h);
 }
@@ -1360,6 +1508,15 @@ document.querySelectorAll('.combo').forEach((b, n) => {
     kick();
   });
 });
+/* 검정 구와 나란히: 큰 무대, 앱 머리의 작은 자리, 앱 아이콘 크기 셋 */
+const VSBIG = CUBES[20], VSMINI = CUBES[21], VSICON = CUBES[22];
+{
+  const big = document.querySelector('#vs-big');
+  VSBIG.big = addTarget(big.querySelector('canvas'), VSBIG, 0);
+  big.addEventListener('click', () => { VSBIG.thinkUntil = performance.now() + 2600; kick(); });
+  VSMINI.big = addTarget(document.querySelector('#vs-mini'), VSMINI, 0);
+  for (const px of [64, 32, 16]) { const cv = document.createElement('canvas'); document.querySelector('#vs-icons').append(cv); addTarget(cv, VSICON, px); }
+}
 if (typeof ResizeObserver === 'function') {
   const ro = new ResizeObserver(() => { for (const tg of targets) if (!tg.fixed) fit(tg); kick(); });
   for (const tg of targets) if (!tg.fixed) ro.observe(tg.cv);
@@ -1423,6 +1580,35 @@ for (const b of document.querySelectorAll('[data-feye]')) b.addEventListener('cl
   for (const c of FELTS) { c.eyeStyle = +b.dataset.feye; c.eyeK = dot ? 2.2 : 1.35; c.sep = dot ? 4.5 : 7.6; c.eyeY = dot ? -0.27 : -0.17; }
   press('[data-feye]', b); kick();
 });
+/* 트렌드 컬러 판: 색과 움직임을 고르면 그 영상으로 바꾼다. 도는 중에 색을 바꿔도 같은 각도에서 이어진다. 좌우로 끌면 손으로 돌린다 */
+const TRSAY = {
+  blue: ['루미너스 블루', '2027 올해의 색입니다. 몸은 루미너스 블루, 눈은 크림, 세모는 에너지 오렌지입니다.'],
+  orange: ['에너지 오렌지', '몸은 에너지 오렌지, 눈은 크림, 세모는 루미너스 블루입니다. SYNK 로고의 코랄과 가장 가까운 색입니다.'],
+  pink: ['팝 핑크', '몸은 팝 핑크, 눈은 잉크, 세모는 루미너스 블루입니다.'],
+  green: ['메도랜드 그린', '몸은 메도랜드 그린, 눈은 잉크, 세모는 팝 핑크입니다.'],
+  clay: ['클레이', '몸은 클레이, 눈은 크림, 세모는 루미너스 블루입니다.'],
+};
+const trV = document.querySelector('#tr-video'), trS = document.querySelector('#tr-stage');
+const TR = { color: 'blue', kind: 'turn', keep: 0 };
+const trStill = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function trLoad() {
+  TR.keep = trV.duration ? trV.currentTime / trV.duration : 0;
+  trV.poster = 'assets/tr-' + TR.color + '.webp';
+  trV.src = 'assets/tr-' + TR.color + '-' + TR.kind + '.mp4';
+  document.querySelector('#tr-name').textContent = TRSAY[TR.color][0];
+  document.querySelector('#tr-say').textContent = TRSAY[TR.color][1];
+}
+trV.addEventListener('loadedmetadata', () => { trV.currentTime = TR.keep * trV.duration; if (!trStill) trV.play().catch(() => {}); });
+for (const b of document.querySelectorAll('[data-trc]')) b.addEventListener('click', () => { TR.color = b.dataset.trc; press('[data-trc]', b); trLoad(); });
+for (const b of document.querySelectorAll('[data-trk]')) b.addEventListener('click', () => { TR.kind = b.dataset.trk; press('[data-trk]', b); trLoad(); TR.keep = 0; });
+{
+  let from = null;
+  trS.addEventListener('pointerdown', e => { if (!trV.duration) return; from = { x: e.clientX, t: trV.currentTime }; trV.pause(); trS.classList.add('drag'); trS.setPointerCapture(e.pointerId); });
+  trS.addEventListener('pointermove', e => { if (!from) return; const d = trV.duration, w = trS.getBoundingClientRect().width; trV.currentTime = (((from.t + (e.clientX - from.x) / w * d * 0.6) % d) + d) % d; });
+  const drop = () => { if (!from) return; from = null; trS.classList.remove('drag'); if (!trStill) trV.play().catch(() => {}); };
+  trS.addEventListener('pointerup', drop); trS.addEventListener('pointercancel', drop);
+}
+trLoad();
 /* 블렌더 판 돌려 보기: 그림 위에서 좌우로 움직이면 아홉 장 가운데 그 자리의 장을 보인다. 떠나면 다시 스스로 돈다 */
 for (const t of document.querySelectorAll('.turn')) {
   const img = t.querySelector('img');
@@ -1442,6 +1628,20 @@ for (const b of document.querySelectorAll('[data-ffx]')) b.addEventListener('cli
   if (reduced) return;
   const now = performance.now(), dur = { ball: 3600, synk: 2900, pair: 3250 }[b.dataset.ffx];
   HERO.fx = b.dataset.ffx; HERO.fxT0 = now; HERO.fxUntil = now + dur; HERO.fxOn = true; HERO.ballHome = null; HERO.thinkUntil = 0;
+  kick();
+});
+/* 열셋째 판: 깎은 큐브의 꼭짓점 색. 큰 무대와 나란히 놓은 큐브가 함께 바뀌고, 눈이 그 색으로 한 번 켜진다 */
+const KC = { none: null, coral: '#F96859', blue: '#26409B', orange: '#F2683C', pink: '#EE9CC0', green: '#9DA85C', clay: '#B98C7E' };
+for (const b of document.querySelectorAll('[data-kc]')) b.addEventListener('click', () => {
+  const h = KC[b.dataset.kc] ? hex(KC[b.dataset.kc]) : null;
+  for (const c of [CUBES[9], VSBIG, VSMINI, VSICON]) { c.cutV = b.dataset.kc === 'flat' ? [1, 1, 1, 0] : [1, 1, 1, 0.62]; c.cutC = h ? [h[0], h[1], h[2], 1] : [0, 0, 0, 0]; c.accent = h ? h.map(v => v * 0.72 + 0.28) : null; c.coralUntil = performance.now() + 1500; }
+  press('[data-kc]', b); kick();
+});
+/* 열셋째 판: 깎은 큐브의 로딩 셋(구로 변신, 눈이 synk로, s y와 n k). 큰 무대와 나란히 놓은 큰 큐브가 함께 보인다 */
+for (const b of document.querySelectorAll('[data-kfx]')) b.addEventListener('click', () => {
+  if (reduced) return;
+  const now = performance.now(), dur = { ball: 3600, synk: 2900, pair: 3250 }[b.dataset.kfx];
+  for (const c of [CUBES[9], VSBIG]) Object.assign(c, { fx: b.dataset.kfx, fxT0: now, fxUntil: now + dur, fxOn: true, ballHome: null, thinkUntil: 0 });
   kick();
 });
 /* 여섯째 판: 「로딩 보기」를 누르면 그 큐브가 서서 돌며 몸으로 진행을 보인다 */
