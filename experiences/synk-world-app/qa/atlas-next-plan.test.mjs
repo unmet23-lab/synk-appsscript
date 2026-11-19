@@ -12,7 +12,7 @@ import * as atlas from '../../../packages/atlas/src/index.mjs';
 import worldLife from '../../../strata/world-life.js';
 import { worldPosition } from '../world-position-kit.mjs';
 import { worldLearning } from '../world-learning-map.mjs';
-import { createAtlasNext, positionPlanner } from '../world-atlas-next.mjs';
+import { createAtlasNext, positionPlanner, SWITCH_MARK } from '../world-atlas-next.mjs';
 import { PACKS, LESSONS } from '../life-content.mjs';
 import { lifeTargets } from '../life-plan.mjs';
 import { lifeDue, lifeUnitsOf } from '../world-life-next.mjs';
@@ -322,7 +322,10 @@ async function until(check, ms = 8000) {
 
 test('판 기록의 열쇠는 그 코치의 저장소 이름이다 — 손님 · 올리는 길 · 기기 길, 동의 판이 오른 뒤에는 앞 판의 기록을 읽지 않는다(검토 D5)', async () => {
   const POOL = [{ itemKey: 'topik-items.x1' }];
-  const storage = memoryStorage();
+  const storage = memoryStorage([
+    [SWITCH_MARK + 'acct-plan', '{"on":true}'],
+    [SWITCH_MARK + 'acct-device', '{"on":true}'],
+  ]); // 스위치 목록에 든 계정(단계4_계획 §6 「1단계 켜기」 4)
   const guest = createAtlasNext({ owner: 'guest', storage, load: fakeLoader().load, health: recorder() });
   const guestCoach = await guest.practiceCoach(POOL);
   assert.equal(guest.planLog(guestCoach).key, PLAN_LOG_PREFIX + atlas.storeName({}));

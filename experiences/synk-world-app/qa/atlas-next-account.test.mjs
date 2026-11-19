@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import * as atlas from '../../../packages/atlas/src/index.mjs';
 import {pathToFileURL} from 'node:url';
 // 변형 시험(qa/position-mutants.mjs의 entry)은 깬 입구 사본을 SYNK_ATLAS_NEXT_MODULE로 넘긴다. 그 밖에는 원본이다.
-const {createAtlasNext,rehearsalTrail,postLegacyBatches,askSwitch,NEXT_MARK,LEGACY_KEY}=await import(process.env.SYNK_ATLAS_NEXT_MODULE?pathToFileURL(process.env.SYNK_ATLAS_NEXT_MODULE).href:'../world-atlas-next.mjs');
+const {createAtlasNext,rehearsalTrail,postLegacyBatches,askSwitch,NEXT_MARK,LEGACY_KEY,SWITCH_MARK,SWITCH_ASKS_PER_DAY}=await import(process.env.SYNK_ATLAS_NEXT_MODULE?pathToFileURL(process.env.SYNK_ATLAS_NEXT_MODULE).href:'../world-atlas-next.mjs');
 import {createRehearsalTrail} from '../rehearsal-trail.mjs';
 import {createPracticeNextSession} from '../world-practice-next.mjs';
 import {watchLifeDue,createLifeNext} from '../world-life-next.mjs';
@@ -21,9 +21,12 @@ const POOL=[{itemKey:'topik-items.x1'}];
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 async function until(check,ms=8000){const end=Date.now()+ms;for(;;){const value=await check();if(value)return value;if(Date.now()>end)throw Error('기다린 일이 오지 않았다');await new Promise(resolve=>setTimeout(resolve,20));}}
 
-function memoryStorage(entries=[]){
+// 이 시험들의 계정은 서버 스위치 목록에 든 계정이다 — 기기가 켜짐 답을 이미 받아 둔 것으로 둔다(따로 적은 답이 없을 때). 스위치 먼저 묻기는
+// switchOn:false로 따로 본다(§6 「1단계 켜기」 4).
+function memoryStorage(entries=[],{switchOn=true}={}){
  const map=new Map(entries);
- return {map,getItem:key=>map.has(key)?map.get(key):null,setItem:(key,value)=>{map.set(key,String(value));},removeItem:key=>{map.delete(key);}};
+ const known=key=>switchOn&&key.startsWith(SWITCH_MARK)?'{"on":true}':null;
+ return {map,getItem:key=>map.has(key)?map.get(key):known(key),setItem:(key,value)=>{map.set(key,String(value));},removeItem:key=>{map.delete(key);}};
 }
 const markOf=(storage,owner)=>JSON.parse(storage.getItem(NEXT_MARK+owner)??'{}');
 
@@ -1832,4 +1835,103 @@ test('예상 급수의 근거 읽기(firstAnswersOf — 4-4d §21-23의 2) — �
  const n5=createAtlasNext({owner:'guest',storage:memoryStorage(),trail:()=>l3.trail(),load:fakeLoader().load,health:recorder()});
  assert.equal(n5.firstAnswersOf(await n5.practiceCoach(POOL)),null,'손님은 null');
  n5.dispose();
+});
+
+// ── 스위치 먼저 묻기(단계4_계획 §6 「1단계 켜기」 4 — 설계 주인 11-19 저녁) ─────────────────────────────────────
+// 엔진을 받는지(load 부름 수)와 IndexedDB 열기를 센다. 판 정하기가 계정 읽기를 기다리면 practiceCoach가 붙든 읽기에서 끝나지 않는다.
+function counted(loader){const state={loads:0};state.load=async()=>{state.loads+=1;return loader.load();};return state;}
+async function withIndexedDB(work){
+ const was=Object.getOwnPropertyDescriptor(globalThis,'indexedDB');let opens=0;
+ Object.defineProperty(globalThis,'indexedDB',{configurable:true,value:{open(){opens+=1;return {};}}});
+ try{await work();}finally{if(was)Object.defineProperty(globalThis,'indexedDB',was);else delete globalThis.indexedDB;}
+ return opens;
+}
+const switchOf=(storage,owner)=>JSON.parse(storage.getItem(SWITCH_MARK+owner)??'{}');
+
+test('스위치 먼저 묻기 — 새 길에 간 적 없고 켜짐 답이 없는 계정은 계정 읽기 · 엔진 · IndexedDB를 기다리지 않고 지금 판, 뒤에서 물어 꺼짐을 적고 다음 문서도 그대로다(§6 1단계 켜기 4)',async()=>{
+ const storage=memoryStorage([],{switchOn:false}),line=accountLine({get:async()=>{throw fail(403,'FEATURE_DISABLED');}});
+ let release;const gate=new Promise(resolve=>{release=resolve;});
+ const slow=async()=>{await gate;return line.trail();}; // 계정 읽기가 늦다
+ const loader=counted(fakeLoader());
+ const opens=await withIndexedDB(async()=>{
+  const a=createAtlasNext({owner:'acct-9',storage,trail:slow,load:loader.load,health:recorder()});
+  assert.equal(await a.practiceCoach(POOL),null,'기다리지 않고 지금 판');
+  release();
+  await until(()=>switchOf(storage,'acct-9').on===false);
+  a.dispose();
+  const b=createAtlasNext({owner:'acct-9',storage,trail:line.trail,load:loader.load,health:recorder()});
+  assert.equal(await b.practiceCoach(POOL),null,'다음 문서도 지금 판');
+  b.dispose();
+ });
+ assert.equal(loader.loads,0,'엔진을 받지 않는다');
+ assert.equal(opens,0,'IndexedDB를 열지 않는다');
+ assert.equal(storage.getItem(NEXT_MARK+'acct-9'),null,'새 길 표지를 만들지 않는다');
+});
+
+test('스위치 먼저 묻기 — 물음이 실패하거나 늦어도 기다리지 않고 지금 판이고 엔진을 받지 않는다, 답을 모르면 적지 않는다(§6 1단계 켜기 4)',async()=>{
+ for(const get of [async()=>{throw fail(0,'NETWORK');},()=>new Promise(()=>{})]){
+  const storage=memoryStorage([],{switchOn:false}),line=accountLine({get});
+  const loader=counted(fakeLoader());
+  const next=createAtlasNext({owner:'acct-8',storage,trail:line.trail,load:loader.load,health:recorder(),switchAskMs:30});
+  assert.equal(await next.practiceCoach(POOL),null);
+  await until(()=>line.gets.length>=1);await new Promise(resolve=>setTimeout(resolve,60));
+  assert.equal(await next.practiceCoach(POOL),null,'답을 모르면 지금 판 그대로');
+  assert.equal(switchOf(storage,'acct-8').on,undefined,'모르는 답은 적지 않는다');
+  assert.equal(loader.loads,0);
+  next.dispose();
+ }
+});
+
+test('스위치 먼저 묻기 — 목록에 든 계정은 첫 연습을 지금 판으로 지나고, 뒤에서 켜짐을 받으면 같은 문서의 다음 연습부터 새 길이다(§6 1단계 켜기 4)',async()=>{
+ const storage=memoryStorage([],{switchOn:false}),line=accountLine();
+ const {opened,load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-7',storage,trail:line.trail,load,health:recorder()});
+ const heard=[];next.reopened(detail=>heard.push(detail.reason));
+ assert.equal(await next.practiceCoach(POOL),null,'첫 연습은 지금 판');
+ await until(()=>heard.includes('switch'));
+ assert.equal(switchOf(storage,'acct-7').on,true,'켜짐 답을 기기에 적었다');
+ const coach=await next.practiceCoach(POOL);
+ assert.equal(coach,opened[0],'다음 연습부터 새 길');
+ assert.deepEqual(markOf(storage,'acct-7'),{went:true,path:'upload',revision:1});
+ next.dispose();
+ const again=createAtlasNext({owner:'acct-7',storage,trail:line.trail,load,health:recorder()});
+ assert.ok(await again.practiceCoach(POOL),'다음 문서는 곧장 새 길');
+ again.dispose();
+});
+
+test('스위치 먼저 묻기 — 계정마다 하루에 네 번까지만 묻고, 날이 바뀌면 다시 묻는다(§6 1단계 켜기 4)',async()=>{
+ const storage=memoryStorage([],{switchOn:false}),line=accountLine({get:async()=>{throw fail(403,'FEATURE_DISABLED');}});
+ let clock=new Date(2026,10,20,9).getTime();
+ const open=async()=>{
+  const next=createAtlasNext({owner:'acct-6',storage,trail:line.trail,load:fakeLoader().load,health:recorder(),now:()=>clock});
+  assert.equal(await next.practiceCoach(POOL),null);
+  await tick();await tick();
+  next.dispose();
+ };
+ for(let i=0;i<SWITCH_ASKS_PER_DAY+2;i+=1)await open();
+ await until(()=>line.gets.length>=SWITCH_ASKS_PER_DAY);await new Promise(resolve=>setTimeout(resolve,30));
+ assert.equal(line.gets.length,SWITCH_ASKS_PER_DAY,'같은 날에는 상한까지만 묻는다');
+ clock+=24*60*60*1000;
+ await open();
+ await until(()=>line.gets.length===SWITCH_ASKS_PER_DAY+1);
+ assert.equal(switchOf(storage,'acct-6').asks,1,'새 날의 셈');
+});
+
+test('스위치 먼저 묻기 — 새 길에 간 적 있는 계정은 켜짐 답이 없어도 곧장 판을 정하고, 스위치를 따로 묻지 않는다(§6 1단계 켜기 4)',async()=>{
+ const storage=memoryStorage([[NEXT_MARK+'acct-5',JSON.stringify({went:true,path:'upload',revision:1})]],{switchOn:false}),line=accountLine();
+ const {opened,load}=fakeLoader();
+ const next=createAtlasNext({owner:'acct-5',storage,trail:line.trail,load,health:recorder()});
+ assert.equal(await next.practiceCoach(POOL),opened[0]);
+ await tick();
+ assert.equal(line.gets.length,0,'스위치를 따로 묻지 않는다');
+ next.dispose();
+});
+
+test('스위치 먼저 묻기 — 기기 저장소가 없으면 하루 상한을 셀 수 없어 묻지 않고 지금 판이다(§6 1단계 켜기 4)',async()=>{
+ const line=accountLine(),loader=counted(fakeLoader());
+ const next=createAtlasNext({owner:'acct-3',storage:null,trail:line.trail,load:loader.load,health:recorder()});
+ assert.equal(await next.practiceCoach(POOL),null);
+ await tick();await tick();
+ assert.deepEqual([line.reads,line.gets.length,loader.loads],[0,0,0],'계정 읽기 · 물음 · 엔진 모두 0');
+ next.dispose();
 });

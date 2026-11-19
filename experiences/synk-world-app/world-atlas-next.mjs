@@ -63,6 +63,11 @@ export const LEGACY_KEY = 'synk.atlas.learning.v1.device';
 // 「새 길 간 적 있음」 · 「스위치 꺼짐」 표지 — 계정마다 하나, 판과 무관한 자리(§18-5-5 B4 · R15). 값 { went?: true, off?: true, path?, revision? }
 // — path · revision은 마지막으로 정한 새 길('upload' | 'device')과 그 판이다. 계정을 네트워크로 못 읽을 때 그 값으로 새 길을 연다(Fable 5.2 끝 판 F1).
 export const NEXT_MARK = 'synk.atlas.next.';
+// 계정마다 이 기기가 마지막으로 받은 서버 스위치 답과 오늘 물은 횟수 { on, day, asks }(단계4_계획 §6 「1단계 켜기」 4 — 설계 주인 11-19
+// 저녁). on은 마지막 답(켜짐 참 · 꺼짐 거짓 · 모름은 없음)이다. 새 길에 간 적 없는 계정은 이 답이 켜짐일 때만 판을 정하러 간다 — 목록 밖
+// 계정은 계정 읽기 · 엔진 · 저장소를 기다리지 않고 곧바로 지금 판이다. 답은 뒤에서 묻고, 로그인한 학생 모두가 묻기 때문에 하루 상한을 둔다.
+export const SWITCH_MARK = 'synk.atlas.switch.';
+export const SWITCH_ASKS_PER_DAY = 4;
 // 처음인 기기의 첫 받기를 기다리는 한도(§18-5-5 G4) · 스위치를 묻는 받기 한도 · 옮기기 물음을 세는 한도(셸이 쓴다).
 export const FIRST_SYNC_MS = 4000;
 export const SWITCH_ASK_MS = 4000;
@@ -158,6 +163,44 @@ function deviceStorage(note) {
 }
 
 const NEXT_PATHS = new Set(['upload', 'device']);
+// 기기 시계의 날짜(그 기기의 하루 — 상한은 서버 부하를 막는 것이라 기기 날짜로 센다).
+const dayOf = ms => {
+  const at = new Date(ms);
+  return `${at.getFullYear()}-${at.getMonth() + 1}-${at.getDate()}`;
+};
+function switchOf(storage, owner) {
+  try {
+    const value = JSON.parse(storage?.getItem?.(SWITCH_MARK + owner) ?? 'null');
+    return {
+      on: typeof value?.on === 'boolean' ? value.on : null,
+      day: typeof value?.day === 'string' ? value.day : null,
+      asks: Number.isSafeInteger(value?.asks) && value.asks > 0 ? value.asks : 0,
+    };
+  } catch {
+    return { on: null, day: null, asks: 0 };
+  }
+}
+function writeSwitch(storage, owner, patch) {
+  try {
+    const next = { ...switchOf(storage, owner), ...patch };
+    storage?.setItem?.(
+      SWITCH_MARK + owner,
+      JSON.stringify({ ...(next.on === null ? {} : { on: next.on }), day: next.day, asks: next.asks }),
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+// 오늘 물을 몫이 남았으면 한 번 쓰고 참이다. 저장소가 없거나 셈을 적지 못하면 묻지 않는다 — 상한을 지킬 수 없으면 묻지 않는 쪽이다.
+function spendAsk(storage, owner, now) {
+  if (!storage) return false;
+  const day = dayOf(now);
+  const was = switchOf(storage, owner);
+  const asks = was.day === day ? was.asks : 0;
+  if (asks >= SWITCH_ASKS_PER_DAY) return false;
+  return writeSwitch(storage, owner, { day, asks: asks + 1 });
+}
 function markOf(storage, owner) {
   try {
     const value = JSON.parse(storage?.getItem?.(NEXT_MARK + owner) ?? 'null');
@@ -698,6 +741,7 @@ export function createAtlasNext({
   oldEngine = null,
   // 게임 코치가 읽는 표시 설정(4-6c — 셸의 학습 설정, world-atlas-game.mjs gamePrefs).
   presentation = () => null,
+  now = Date.now,
 } = {}) {
   let health = given;
   const early = [];
@@ -850,6 +894,14 @@ export function createAtlasNext({
       void recheck(at); // 뒤에서 다시 물어 열리면 다음 연습부터 새 길
       return settled(OLD('SWITCH_OFF'));
     }
+    // 스위치 먼저 묻기(§6 「1단계 켜기」 4 — 설계 주인 11-19 저녁). 새 길에 간 적 없는 계정은 이 기기가 받은 마지막 스위치 답이 켜짐일 때만
+    // 판을 정하러 간다. 아니면(목록 밖 · 아직 모름) 계정 읽기 · 엔진 · 저장소를 기다리지 않고 지금 판이다 — 목록 밖 계정이 첫 연습에서 엔진을
+    // 받고 첫 받기(최대 4초)를 기다렸다. 답은 뒤에서 묻고(하루 상한), 켜짐이면 다음 연습부터 새 길이다.
+    const known = switchOf(store, owner).on;
+    if (!mark.went && known !== true) {
+      void recheck(at);
+      return settled(OLD(known === false ? 'SWITCH_OFF' : 'SWITCH_UNKNOWN'));
+    }
     if (typeof trail !== 'function') return settled(OLD('NO_TRAIL'));
     let line;
     try {
@@ -894,6 +946,10 @@ export function createAtlasNext({
   // 그대로면 푼다(planNow · 올리는 길은 나르개도 — GPT · 카본 끝 판 둘째 C).
   async function keptPath(mark, error, at) {
     if (!mark.went || !mark.path || !transientError(error) || error?.status === 401 || error?.code === 'ACCOUNT_CHANGED') return null;
+    // 표지의 판이 이 기기가 아는 비우기(몫을 마친 판 · 남은 걸음 표지의 판)보다 앞서면 그 판으로 열지 않는다 — 비운 판의 저장소다. 그 뒤 판의
+    // 길은 모르니(동의를 바꿔 오른 판일 수 있다) 이번은 지금 판이고, 다음 연습이 계정을 다시 읽어 정한다(입구 다시 검수 -c GPT GA2 — 표지가
+    // 앞 판에 남으면 세 번 모두 그 판을 골라 PATH_CHANGING으로 끝났다).
+    if (mark.revision < Math.max(clearedOf(store, owner).settled, clearingOf(store, owner)?.revision ?? 0)) return null;
     if (mark.path === 'upload') {
       const plan = { path: 'upload', revision: mark.revision, line: null, went: true, unread: true };
       plan.transport = unreadTransport(plan, at);
@@ -976,15 +1032,19 @@ export function createAtlasNext({
   // 청할 때)이 다시 정해 새 길로 간다(새로고침을 기다리지 않는다 — GPT 끝 판 GB2, 첫 받기를 다른 코치가 확인한 markWent와 같은 갈래).
   async function recheck(at) {
     if (typeof trail !== 'function') return;
+    if (!spendAsk(store, owner, now())) return; // 계정마다 하루 상한(§6 「1단계 켜기」 4)
     try {
       const line = await readLine();
       const revision = line?.learning?.revision;
       if (!Number.isSafeInteger(revision) || typeof line.transport !== 'function') return;
-      if ((await askSwitch(line.transport(revision), switchAskMs)) === 'on') {
-        writeMark(store, owner, { off: false });
+      const asked = await askSwitch(line.transport(revision), switchAskMs);
+      if (asked === 'off') writeSwitch(store, owner, { on: false });
+      if (asked === 'on') {
+        writeSwitch(store, owner, { on: true });
+        if (markOf(store, owner).off) writeMark(store, owner, { off: false });
         if (!disposed && at === generation) {
           decided = null;
-          reopen('switch'); // 꺼짐 표지 뒤 켜짐 — 지금 판으로 남은 면이 다시 묻는다(§19-3 7)
+          reopen('switch'); // 꺼짐 · 모르는 답 뒤 켜짐 — 지금 판으로 남은 면이 다시 묻는다(§19-3 7)
         }
       }
     } catch {
@@ -1239,6 +1299,11 @@ export function createAtlasNext({
         retire('cleared');
         continue;
       }
+      // 새 길에 간 적 있는 계정의 올리는 길은 방금 읽은 이 판으로 「새 길 간 적 있음」을 옮긴다 — 다시 정한 판의 첫 받기 전에 문서를 닫아도
+      // 다음 오프라인 시작이 비운 판을 열지 않게(GC3). 판 견줌이 앞선 판의 길로 적던 자리를 걷고 여기로 옮겼다(입구 다시 검수 -c GPT GA4).
+      // 기기 길은 판 정하기가 이미 적었다. 판은 내려가지 않는다(writeMark).
+      if (account && plan.path === 'upload' && plan.went && !plan.unread)
+        writeMark(store, owner, { went: true, path: 'upload', revision: plan.revision });
       return { plan, at };
     }
     return null;
@@ -1393,35 +1458,41 @@ export function createAtlasNext({
         await followClear(plan.path, last, plan.revision);
         if (disposed || at !== generation) return;
         // 고른 판이 비운 뒤의 판보다 앞서면 그 판의 코치를 열지 않고 판을 다시 정한다 — 판을 정한 뒤에 끝난 비우기를 여기서 알았다(GC3).
+        // 「새 길 간 적 있음」은 적지 않는다 — 앞선 판의 길은 비운 뒤의 판의 길이 아닐 수 있다(동의를 바꿔 오른 판). 다시 정한 판이 적는다
+        // (입구 다시 검수 -c GPT GA4).
         if (plan.revision < last.revision) {
-          writeMark(store, owner, { went: true, path: plan.path, revision: last.revision });
           retire('cleared');
           return;
         }
       }
     }
-    // 손님 저장소의 남은 걸음 — 비운 뒤의 판을 받은 판의 코치로 뒤에서 한다. 고른 판이 그 판보다 앞서면 다시 정한다(GC3).
+    // 손님 저장소의 남은 걸음 — 비운 뒤의 판을 받은 판의 코치로 뒤에서 한다. 고른 판이 그 판보다 앞서면 다시 정한다(GC3). 「새 길 간 적
+    // 있음」은 적지 않는다 — 다른 탭이 기기 길로 비운 판 3의 표지를 늦게 온 판 1의 올리는 길로 덮었다(입구 다시 검수 -c GPT GA4).
     const mark = clearingOf(store, owner);
     if (!mark) return;
     if (plan.revision < mark.revision) {
-      writeMark(store, owner, { went: true, path: plan.path, revision: mark.revision });
       retire('cleared');
       return;
     }
     slot.guest = guestSteps(plan, at, owner, mark).catch(() => {});
   }
   // 판 견줌의 한 걸음 — 마지막 비우기(last)가 이 기기가 몫을 마친 판(settled)보다 뒤면, 누가 비웠든 이 기기의 몫을 하고 손님 저장소의 걸음
-  // (넷째 걸음과 4b — 표지가 없던 기기도 한다, 설계 주인 11-19 아침)을 남은 걸음 표지로 남긴다. 「새 길 간 적 있음」은 기다리기 전에 비운 뒤의
-  // 판으로 옮긴다(GC3). 두 수는 몫을 마친 뒤에 올린다 — 그 사이 문서를 닫으면 다음 다시 정하기가 또 묻고 다시 한다(몫은 다시 해도 같다).
-  // asked는 물은 때의 계정 판이다(답이 준 지금 판과 고른 판 가운데 큰 쪽). 몫을 했으면 참.
+  // (넷째 걸음과 4b — 표지가 없던 기기도 한다, 설계 주인 11-19 아침)을 남은 걸음 표지로 남긴다. 「새 길 간 적 있음」은 기다리기 전에 고른
+  // 판의 길 · 판으로 적는다 — 고른 판이 비운 뒤의 판이면 그 판이다(GC3 · 입구 다시 검수 -c GPT GA4). 두 수는 몫을 마친 뒤에 올린다 — 그
+  // 사이 문서를 닫으면 다음 다시 정하기가 또 묻고 다시 한다(몫은 다시 해도 같다). asked는 물은 때의 계정 판이다(답이 준 지금 판과 고른 판
+  // 가운데 큰 쪽). 몫을 했으면 참.
   async function followClear(path, last, revision) {
     const asked = Math.max(revision ?? 0, last.current ?? 0);
     if (!(last.revision > clearedOf(store, owner).settled)) {
       raiseCleared(store, owner, { asked });
       return false;
     }
-    writeMark(store, owner, { went: true, path, revision: last.revision });
+    // 비운 뒤의 판에 고른 판의 길을 적지 않는다 — 고른 판이 앞선 판(늦게 온 계정 읽기)이면 그 길은 비운 뒤의 판의 길이 아닐 수 있어, 동의를
+    // 바꿔 오른 판의 길을 덮었다(입구 다시 검수 -c GPT GA4). 판은 내려가지 않아 앞선 판의 쓰기는 표지를 바꾸지 않고, 부르는 쪽이 다시 정한다.
+    writeMark(store, owner, { went: true, path, revision });
     const done = await settleDevice(path, last.revision);
+    // 앞 판 쓸기가 자리를 낸 뒤 한 번 더 적는다 — 저장소가 차서 처음 쓰기가 실패했으면 표지가 비운 판에 남았다(-c GPT GA2).
+    writeMark(store, owner, { went: true, path, revision });
     // 기다리는 사이 다른 탭이 같은 비우기를 마쳤으면 남은 걸음 표지를 다시 적지 않는다 — 마친 걸음을 다시 하게 했다(입구 다시 검수 GPT GB6).
     if (clearedOf(store, owner).settled >= last.revision) return true;
     const marked = settleLeft(path, last.revision, 'cleared');
@@ -1520,7 +1591,8 @@ export function createAtlasNext({
     // 1 — 서버를 비운다. 결과를 모르는 비우기를 따로 적지 않는다 — 다음 다시 정하기의 판 견줌이 맞춘다(계정 판이 오르면 마지막 비우기를
     // 읽는다). 앞 비우기의 남은 걸음 표지는 건드리지 않는다: 이 비우기가 서버에 닿지 않고 끝나도, 결과를 몰라도 그대로 남는다(4-5 코드 다시
     // 검수 GPT -c GA3 · 끝 판 Fable F3). 누른 때(began)는 이 문서만 안다 — 다른 기기의 비우기와 가를 때 쓴다(GC4). 이 기기의 몫을 적을
-    // 저장소가 없으면 비우지 않는다.
+    // 저장소가 없으면 비우지 않는다. 스위치 먼저 묻기(§6 「1단계 켜기」 4) 뒤로는 저장소가 없는 기기의 계정이 스위치 답을 적지 못해 지금 판으로
+    // 열리므로 여기 닿지 않는다 — 판 정하기가 바뀌어도 서버를 비우지 않게 두는 막이다.
     if (!store) return { ok: false, path, code: 'MARK_FAILED', known: true };
     const began = Date.now();
     let done;
@@ -1580,6 +1652,9 @@ export function createAtlasNext({
     // 문서를 닫아도 앞 판에 머물지 않게(4-5 끝 판 GPT GC3).
     writeMark(store, owner, { went: true, path, revision });
     const done = await settleDevice(path, revision);
+    // 앞 판 쓸기가 자리를 낸 뒤 한 번 더 적는다 — 저장소가 차서 처음 쓰기가 실패했으면 표지가 비운 판에 남아, 오프라인으로 다시 열 때 새 판을
+    // 열지 못했다(입구 다시 검수 -c GPT GA2).
+    writeMark(store, owner, { went: true, path, revision });
     // 앞 판에서 못 지운 열쇠가 있으면 쓸기를 남겨 「일부만 비움」으로 알린다(GC6).
     const rest = left ?? (done.swept ? null : 'sweep');
     const marked = settleLeft(path, revision, rest);

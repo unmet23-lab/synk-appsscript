@@ -4,6 +4,7 @@
 // qa/position-mutants.mjs의 「나 칸」 갈래에 있다.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
@@ -863,4 +864,63 @@ test('옛 동기화의 다시 세기(unsent)는 새 길의 올리는 문만 부�
   assert.ok(!/^\s*import[^(]*['"]\.\/world-atlas-next\.mjs['"]/m.test(shell), '셸은 새 길 입구를 정적으로 들이지 않는다');
   assert.match(shell, /import\('\.\/world-atlas-next\.mjs'\)/, '셸은 새 길 입구를 처음 쓸 때 받는다');
   assert.match(shell, /const atlasNext=atlasNextOn&&/, '새 길 입구는 스위치(atlasNext)가 켜졌을 때만 만든다');
+});
+
+// 글 검사는 넘겨주기를 파일과 개수로 뺀다 — 같은 파일 안에서 넘겨주기를 다른 이름으로 빼 두고 다른 문이 그 이름을 부르면 세지 못한다(입구
+// 다시 검수 -c GPT GA5). 그래서 원천(옛 학습 호스트)은 실제로 열어 unsent 말고 다른 공개 문을 모두 불러 본다. 생성 사본 · 묶음은 이 원천에서
+// 짓는다(계정 묶음 · sync-atlas 검사).
+test('옛 학습 호스트에서 옛 동기화의 셈을 부르는 공개 문은 unsent 하나다 — 다른 문과 게임 코치의 문을 모두 불러도 셈은 0번이다(입구 다시 검수 -c GPT GA5)', async () => {
+  const require = createRequire(import.meta.url);
+  const { createWorldLearningHost } = require('../../../account/world-learning-host.js');
+  const { createGame, createLearningSync } = require('../../../atlas/game-browser.js');
+  let counts = 0;
+  const counting = options => {
+    const real = createLearningSync(options);
+    return Object.freeze({
+      ...real,
+      unsent: () => {
+        counts += 1;
+        return real.unsent();
+      },
+    });
+  };
+  const saved = new Map();
+  const storage = { getItem: key => saved.get(key) ?? null, setItem: (key, value) => saved.set(key, String(value)), removeItem: key => saved.delete(key) };
+  const transport = {
+    get: async () => ({ ok: true, revision: 1, cursor: 0, hasMore: false, events: [] }),
+    post: async ({ events }) => ({ ok: true, revision: 1, accepted: events.map(event => event.id) }),
+  };
+  const host = createWorldLearningHost({ accountKey: 'unsent-doors', revision: 1, guard() {}, storage, transport });
+  const game = host.createGame({ gameId: 'racing' }, createGame, counting);
+  await host.retry();
+  // 부른 뒤 잠깐 기다린다 — 문이 뒤에서 셈을 불러도 센다. 던지거나 끝나지 않아도 된다(셈을 불렀는지만 본다).
+  const settle = async call => {
+    try {
+      await Promise.race([Promise.resolve().then(call), new Promise(resolve => setTimeout(resolve, 50))]);
+    } catch {
+      // 인자 없이 부른 문이 던져도 된다
+    }
+  };
+  const calls = {
+    createGame: () => host.createGame({ gameId: 'rhythm' }, createGame, counting).disconnect(),
+    preferences: () => host.preferences(),
+    status: () => host.status(),
+    ready: () => host.ready(),
+    retry: () => host.retry(),
+    flush: () => host.flush(),
+    beginRun: () => host.beginRun({ id: 'run-1', gameId: 'racing' }),
+    closeRun: () => host.closeRun(),
+  };
+  assert.deepEqual(
+    Object.keys(host).filter(name => name !== 'unsent' && name !== 'stop').sort(),
+    Object.keys(calls).sort(),
+    '호스트의 공개 문을 모두 부른다',
+  );
+  for (const call of Object.values(calls)) await settle(call);
+  for (const [name, member] of Object.entries(game))
+    if (typeof member === 'function' && name !== 'disconnect' && name !== 'dispose') await settle(() => member());
+  assert.equal(counts, 0, '다른 문은 옛 동기화의 셈을 부르지 않는다');
+  host.unsent();
+  assert.equal(counts, 1, 'unsent 문이 셈을 부른다');
+  host.stop();
 });

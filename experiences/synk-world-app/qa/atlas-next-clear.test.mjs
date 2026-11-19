@@ -13,7 +13,7 @@ import { bankItems } from '../world-topik-items.mjs';
 import { allowedPlays, nextPlay } from '../world-exam-form.mjs';
 import { PLAN_LOG_PREFIX } from '../world-plan-next.mjs';
 
-const { createAtlasNext, rehearsalTrail, LEGACY_KEY, CLEARING_MARK, CLEARED_MARK, NEXT_MARK } = await import(
+const { createAtlasNext, rehearsalTrail, LEGACY_KEY, CLEARING_MARK, CLEARED_MARK, NEXT_MARK, SWITCH_MARK } = await import(
   process.env.SYNK_ATLAS_NEXT_MODULE
     ? pathToFileURL(process.env.SYNK_ATLAS_NEXT_MODULE).href
     : '../world-atlas-next.mjs'
@@ -47,16 +47,18 @@ async function until(check, ms = 8000) {
     await new Promise(resolve => setTimeout(resolve, 20));
   }
 }
-// 열쇠를 셀 수 있는 저장소(localStorage 꼴 — 앞 판 쓸기가 열쇠를 센다).
+// 열쇠를 셀 수 있는 저장소(localStorage 꼴 — 앞 판 쓸기가 열쇠를 센다). 이 시험들의 계정은 서버 스위치 목록에 든 계정이라, 따로 적은 답이
+// 없으면 기기가 켜짐 답을 받아 둔 것으로 읽는다(스위치 먼저 묻기 — §6 「1단계 켜기」 4).
 function memoryStorage(entries = []) {
   const map = new Map(entries);
+  const known = key => (key.startsWith(SWITCH_MARK) ? '{"on":true}' : null);
   return {
     map,
     get length() {
       return map.size;
     },
     key: index => [...map.keys()][index] ?? null,
-    getItem: key => (map.has(key) ? map.get(key) : null),
+    getItem: key => (map.has(key) ? map.get(key) : known(key)),
     setItem: (key, value) => {
       map.set(key, String(value));
     },
@@ -364,10 +366,10 @@ test('올리기를 못 하면 아무것도 지우지 않는다 — 옛 대기열
   assert.equal(markOf(storage), null, '서버에 닿지 않았으니 표지를 적지 않는다');
   assert.equal(storage.getItem(ownKeys(A_ID, 1).presentation), '{"support":"step"}', '아무것도 쓸지 않았다');
   assert.equal(storage.getItem(engineKeys(A_ID, 1)[0]), 'engine');
-  // 이 기기의 몫을 적을 저장소가 없으면 서버를 비우지 않는다.
+  // 이 기기의 몫을 적을 저장소가 없으면 서버를 비우지 않는다. 스위치 답도 적지 못해 지금 판으로 열린다(스위치 먼저 묻기 — §6 「1단계 켜기」 4).
   const bare = fakeLoader();
   const noStore = createAtlasNext({ owner: A_ID, storage: null, trail: line.trail, load: bare.load, health: recorder() });
-  assert.deepEqual(await noStore.clearPractice(), { ok: false, path: 'upload', code: 'MARK_FAILED', known: true });
+  assert.deepEqual(await noStore.clearPractice(), { ok: false, path: 'old', code: 'NOT_NEXT', known: true });
   assert.deepEqual(bare.opened.flatMap(made => made.resets), [], '엔진 비우기를 부르지 않았다');
   stuck.dispose();
   thrown.dispose();
@@ -1142,6 +1144,40 @@ test('비운 뒤 「새 길 간 적 있음」은 이 기기의 몫(계정 다시
   next.dispose();
 });
 
+test('다른 기기의 비우기를 따라 할 때도 「새 길 간 적 있음」은 이 기기의 몫(계정 다시 읽기)을 기다리기 전에 고른 판으로 옮긴다 — 그사이 문서를 닫아도 비운 판에 머물지 않는다(4-5 끝 판 GPT GC3)', async () => {
+  const storage = filledStorage([[NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'upload', revision: 1 })]]);
+  const line = accountLine({ revision: 2 });
+  const slow = heldTrail(line);
+  line.lastClear = async () => {
+    slow.hold(); // 이 기기의 몫이 계정을 다시 읽는 자리를 붙든다
+    return { ok: true, revision: 2, lastClear: { revision: 2, at: 5 } };
+  };
+  const next = createAtlasNext({ owner: A_ID, storage, trail: slow.trail, load: fakeLoader(() => settled).load, health: recorder() });
+  const opening = next.practiceCoach(POOL);
+  await until(() => slow.held());
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.deepEqual(wentOf(storage), { went: true, path: 'upload', revision: 2 }, '기다리기 전에 고른 판(비운 뒤의 판 2)이다');
+  slow.release();
+  assert.equal((await opening)?.options.host.revision, 2);
+  next.dispose();
+});
+
+test('앞선 판을 알아 다시 정한 올리는 길은 첫 받기 전에도 「새 길 간 적 있음」을 방금 읽은 판으로 옮긴다 — 새 판 코치가 서기 전에 문서를 닫아도 다음 오프라인 시작이 비운 판을 열지 않는다(4-5 끝 판 GPT GC3 · 입구 다시 검수 -c GPT GA4)', async () => {
+  const storage = filledStorage([[NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'upload', revision: 1 })]]);
+  const line = accountLine();
+  line.lastClear = async () => {
+    line.revision = 2; // 판 1을 정한 직후 늦게 끝난 요청이 서버를 비웠다
+    return { ok: true, revision: 2, lastClear: { revision: 2, at: 5 } };
+  };
+  // 엔진을 받는 데 오래 걸린다 — 새 판의 코치가 서지 않아 첫 받기(markWent)도 없다.
+  const never = new Promise(() => {});
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: () => never, health: recorder() });
+  void next.practiceCoach(POOL);
+  await until(() => wentOf(storage)?.revision === 2);
+  assert.deepEqual(wentOf(storage), { went: true, path: 'upload', revision: 2 }, '다시 정한 판 2의 올리는 길');
+  next.dispose();
+});
+
 test('결과를 모르는 비우기 뒤의 마지막 비우기가 누르기 전에 끝났으면(서버 시각) 이 비우기가 아니다 — 이 기기의 몫은 하고 판이 바뀌었다고 알린다. 누른 뒤면 「비웠어요」(4-5 끝 판 GPT GC4)', async () => {
   const lost = { ok: false, path: 'upload', step: 'clear', code: 'NETWORK', known: false };
   const skew = 3_600_000; // 서버 시계가 기기보다 한 시간 앞선다 — 견주기는 serverTime으로 잰 어긋남을 쓴다
@@ -1699,4 +1735,116 @@ test('누른 비우기의 몫이 처음에 막혀도 같은 요청 안의 다시
   assert.equal(clearedOf(storage)?.settled, 2);
   assert.equal(markOf(storage), null);
   next.dispose();
+});
+
+// ── 입구 다시 검수 -c(atlas-redesign-stage4-me-clearing-20261119-c — GPT)의 장면 ─────────────────────────────────────
+test('늦게 온 앞 판 계정 읽기는 다른 탭이 기기 길로 비우고 남긴 걸음 표지가 있어도 「새 길 간 적 있음」의 길을 덮지 않는다 — 다시 읽기가 끊겨도 기기 길 판 3을 연다(입구 다시 검수 -c GPT GA4)', async () => {
+  const storage = filledStorage([
+    [CLEARED_MARK + A_ID, JSON.stringify({ account: A_ID, settled: 3, asked: 3 })],
+    [NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'device', revision: 3 })],
+    [CLEARING_MARK + A_ID, JSON.stringify({ account: A_ID, path: 'device', revision: 3, at: 5, left: 'cleared' })],
+  ]);
+  const line = accountLine({ revision: 1 }); // 다른 탭이 동의를 끄고 판 3을 비우기 전에 떠난 올리는 길 판 1의 읽기
+  let reads = 0;
+  const trail = async () => {
+    reads += 1;
+    if (reads === 1) return line.trail();
+    throw Object.assign(Error('NETWORK'), { code: 'NETWORK' }); // 다시 정할 때의 계정 읽기는 끊긴다
+  };
+  const next = createAtlasNext({ owner: A_ID, storage, trail, load: fakeLoader(() => settled).load, health: recorder() });
+  const coach = await next.practiceCoach(POOL);
+  assert.deepEqual(wentOf(storage), { went: true, path: 'device', revision: 3 }, '표지의 길이 기기 길 판 3 그대로다');
+  assert.equal(coach?.options.host.revision, 3);
+  assert.equal(coach?.options.host.guest, true, '기기 길 판 3을 연다');
+  next.dispose();
+});
+
+test('판 견줌은 앞선 판의 길로 「새 길 간 적 있음」을 비운 뒤의 판에 적지 않는다 — 늦게 온 판 1의 올리는 길이 기기 길 판 3의 표지를 덮지 않는다(입구 다시 검수 -c GPT GA4)', async () => {
+  const storage = filledStorage([[NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'device', revision: 3 })]]);
+  const line = accountLine({ revision: 1 });
+  line.lastClear = async () => ({ ok: true, revision: 3, lastClear: { revision: 3, at: 5 } });
+  let reads = 0;
+  const trail = async () => {
+    reads += 1;
+    if (reads === 1) return line.trail();
+    throw Object.assign(Error('NETWORK'), { code: 'NETWORK' });
+  };
+  const next = createAtlasNext({ owner: A_ID, storage, trail, load: fakeLoader(() => settled).load, health: recorder() });
+  const coach = await next.practiceCoach(POOL);
+  assert.deepEqual(wentOf(storage), { went: true, path: 'device', revision: 3 }, '표지의 길이 기기 길 판 3 그대로다');
+  assert.equal(coach?.options.host.guest, true, '기기 길 판 3을 연다');
+  next.dispose();
+});
+
+test('비우며 「새 길 간 적 있음」을 처음에 못 적어도(저장소가 참) 앞 판을 쓸어 자리가 나면 다시 적는다 — 오프라인으로 다시 열면 비운 뒤의 기기 길 판을 연다(입구 다시 검수 -c GPT GA2)', async () => {
+  const storage = filledStorage();
+  const put = storage.setItem;
+  const drop = storage.removeItem;
+  let full = false;
+  storage.setItem = (key, value) => {
+    if (full && key === NEXT_MARK + A_ID) throw Error('QuotaExceededError');
+    put(key, value);
+  };
+  storage.removeItem = key => {
+    drop(key);
+    if (key.includes('.r1.')) full = false; // 앞 판을 쓸면 자리가 난다
+  };
+  const line = accountLine({ enabled: false });
+  const { load } = fakeLoader(async given => {
+    const answer = await given.clear();
+    return { ok: true, path: 'device', revision: answer.revision, guest: { ok: true, dropped: 0, legacy: 'none' } };
+  });
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder(), oldEngine: oldEngine(storage) });
+  assert.ok(await next.practiceCoach(POOL));
+  full = true;
+  assert.deepEqual(await next.clearPractice(), { ok: true, path: 'device', revision: 2, partial: false });
+  assert.deepEqual(wentOf(storage), { went: true, path: 'device', revision: 2 }, '쓸기 뒤에 다시 적었다');
+  next.dispose();
+  const reopened = createAtlasNext({ owner: A_ID, storage, trail: offlineTrail, load, health: recorder() });
+  const coach = await reopened.practiceCoach(POOL);
+  assert.equal(coach?.options.host.revision, 2, '오프라인으로 다시 열면 비운 뒤의 판 2를 연다');
+  reopened.dispose();
+});
+
+test('다른 기기의 비우기를 따라 할 때 「새 길 간 적 있음」을 처음에 못 적어도(저장소가 참) 앞 판을 쓸어 자리가 나면 다시 적는다 — 오프라인으로 다시 열면 비운 뒤의 기기 길 판을 연다(입구 다시 검수 -c GPT GA2)', async () => {
+  const storage = filledStorage([[NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'device', revision: 1 })]]);
+  const put = storage.setItem;
+  const drop = storage.removeItem;
+  let full = true; // 처음부터 참 — 판 정하기의 표지 쓰기도 실패한다
+  storage.setItem = (key, value) => {
+    if (full && key === NEXT_MARK + A_ID) throw Error('QuotaExceededError');
+    put(key, value);
+  };
+  storage.removeItem = key => {
+    drop(key);
+    if (key.includes('.r1.')) full = false; // 앞 판을 쓸면 자리가 난다
+  };
+  const line = accountLine({ enabled: false, revision: 2 }); // 다른 기기가 판 1을 비워 판 2다
+  line.lastClear = async () => ({ ok: true, revision: 2, lastClear: { revision: 2, at: 5 } });
+  const { load } = fakeLoader(() => settled);
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder() });
+  assert.equal((await next.practiceCoach(POOL))?.options.host.revision, 2);
+  assert.deepEqual(wentOf(storage), { went: true, path: 'device', revision: 2 }, '쓸기 뒤에 다시 적었다');
+  next.dispose();
+  const reopened = createAtlasNext({ owner: A_ID, storage, trail: offlineTrail, load, health: recorder() });
+  assert.equal((await reopened.practiceCoach(POOL))?.options.host.revision, 2, '오프라인으로 다시 열면 비운 뒤의 판 2를 연다');
+  reopened.dispose();
+});
+
+test('「새 길 간 적 있음」이 비운 판에 남았으면 오프라인 시작은 그 판을 열지 않고 곧바로 지금 판이다 — 세 번 다시 정하다 PATH_CHANGING으로 끝나지 않는다(입구 다시 검수 -c GPT GA2)', async () => {
+  for (const extra of [
+    [[CLEARED_MARK + A_ID, JSON.stringify({ account: A_ID, settled: 2, asked: 2 })]],
+    [[CLEARING_MARK + A_ID, JSON.stringify({ account: A_ID, path: 'device', revision: 2, at: 5, left: 'cleared' })]],
+  ]) {
+    const storage = filledStorage([[NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'device', revision: 1 })], ...extra]);
+    const health = recorder();
+    const { opened, load } = fakeLoader(() => settled);
+    const next = createAtlasNext({ owner: A_ID, storage, trail: offlineTrail, load, health });
+    assert.equal(await next.practiceCoach(POOL), null, '비운 판 1을 열지 않는다');
+    assert.deepEqual(opened, [], '코치를 열지 않았다');
+    const codes = health.notes.map(([, outcome]) => outcome?.code);
+    assert.ok(codes.includes('PATH_NETWORK'), '계정을 못 읽은 일시 실패로 지금 판');
+    assert.ok(!codes.includes('PATH_CHANGING'), '판을 거듭 다시 정하지 않는다');
+    next.dispose();
+  }
 });
