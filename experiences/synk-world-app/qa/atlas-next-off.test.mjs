@@ -3,6 +3,7 @@
 // 지금 판 연습 모듈(world-reading-practice.mjs)은 전환 뒤 지우기(4-9)까지 바이트 그대로다 — 새 길은 옆 모듈(world-practice-next.mjs)에 짓는다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
@@ -309,4 +310,33 @@ test('꺼진 판의 이번 주 계획: 지금 판 계획(기기 표지 없음)�
   if(idb)Object.defineProperty(globalThis,'indexedDB',idb);else delete globalThis.indexedDB;
   globalThis.fetch=fetch;
  }
+});
+
+// 꺼진 판에서도 첫 화면이 받는 새 모듈은 학습일 답(world-month-answer.mjs) 하나다 — app-shell · world-learning-ui가 정적으로 부른다(4-4c).
+// 꺼진 판에서 이 모듈이 하는 일은 로그아웃 · 동의 바꿈 때 clearMonthAnswer로 제 열쇠를 지우는 것뿐이다. synk.im 쪽은 모두 한 출처라
+// localStorage를 함께 쓰므로, 그 열쇠가 다른 공개 원천의 저장 열쇠와 겹치면 남의 기록을 지운다(설계 주인 11-20 선택 공개 1단계 조건).
+// 11-20 라이브(synk-policy main ad9723d)에는 synk:world: 로 시작하는 열쇠가 하나도 없다 — 콜론 꼴 머리는 synk:tutor: 뿐이다.
+test('꺼진 판에서도 받는 학습일 답 모듈은 제 열쇠만 지우고, 그 열쇠 머리(synk:world:)를 짓는 다른 공개 원천이 없다(선택 공개 1단계)',async()=>{
+ const {clearMonthAnswer,MONTH_KIND,FIRST_KIND}=await import('../world-month-answer.mjs');
+ const prefixes=[MONTH_KIND.prefix,FIRST_KIND.prefix];
+ assert.deepEqual(prefixes,['synk:world:month-answer:','synk:world:first-answers:']);
+ // 공개 원천(experiences/ 아래, 시험 qa/ 빼고)의 synk:world: 조각은 두 머리의 정의(prefix: '…')뿐이어야 한다 — 이 모듈과 이 모듈을 품은 생성 묶음.
+ const root=new URL('../../../',import.meta.url);
+ const files=execFileSync('git',['ls-files','-z','--','experiences/*.mjs','experiences/*.js','experiences/*.html'],{cwd:root,maxBuffer:1<<28})
+  .toString('utf8').split('\0').filter(file=>file&&!/\/qa\//.test(file));
+ const stray=[];
+ for(const file of files){
+  const text=fs.readFileSync(new URL(file,root),'utf8');
+  for(const m of text.matchAll(/['"`](synk:world:[^'"`$]*)/g)){
+   const definition=prefixes.includes(m[1])&&/prefix\s*:\s*$/.test(text.slice(Math.max(0,m.index-24),m.index));
+   if(!definition)stray.push(`${file}: ${m[1]}`);
+  }
+ }
+ assert.deepEqual(stray,[],'synk:world: 열쇠를 짓는 다른 공개 원천이 없다 — 학습일 답의 지우는 길이 남의 열쇠를 지울 수 없다');
+ // 지우는 길은 그 계정의 두 열쇠만 지운다 — 다른 계정 · 다른 머리(synk.world.* · synk:tutor:*)는 그대로다.
+ const values=new Map([[`${MONTH_KIND.prefix}acct-a`,'1'],[`${FIRST_KIND.prefix}acct-a`,'1'],[`${MONTH_KIND.prefix}acct-b`,'1'],
+  ['synk.world.lang','ko'],['synk:tutor:acct-a','x'],['synk.world.month-answer.acct-a','keep']]);
+ const storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};
+ clearMonthAnswer(storage,'acct-a');
+ assert.deepEqual([...values.keys()].sort(),[`${MONTH_KIND.prefix}acct-b`,'synk.world.lang','synk.world.month-answer.acct-a','synk:tutor:acct-a'].sort());
 });
