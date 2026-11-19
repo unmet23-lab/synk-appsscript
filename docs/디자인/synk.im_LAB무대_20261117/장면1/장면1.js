@@ -247,7 +247,7 @@
         if (!reduce) {
           c.pv += ((c.pt - c.ps) * 38 - c.pv * 3.2) * dt; c.ps += c.pv * dt;
           c.fv += ((c.ft - c.fx) * 60 - c.fv * 7) * dt; c.fx += c.fv * dt;
-        }
+        } else { c.ps = c.pv = c.fx = c.fv = 0; }   // 움직임 줄이기면 걸 때 준 비틀림이 풀리지 않아 카드가 옆면으로 남았다(11-19 공개 전 검수)
         // 집게가 옮겨 가는 속도가 바뀌면(가속 · 감속) 카드 아래쪽이 뒤로 처졌다가 흔들린다. 시계 방향이 + 이므로 Δω = +Δv / L · cosθ
         const vNew = (c.x - c.px) / dt, dv = vNew - c.vx; c.vx = vNew; c.px = c.x;
         if (!c.grab && !reduce) {
@@ -425,7 +425,7 @@
       .to(c, { lift: 8, duration: reduce ? 0 : 0.16, ease: 'power2.out' })
       .call(() => play('slide', { rate: clamp(900 / Math.max(200, dist), 0.8, 1.3) }))
       .to(c, { x: x1, duration: dur, ease: 'power2.inOut' })
-      .to(c, { lift: 0, duration: reduce ? 0 : 0.14, ease: 'power2.in' }, '>-0.06');
+      .to(c, { lift: 0, duration: reduce ? 0 : 0.14, ease: 'power2.in' }, reduce ? '>' : '>-0.06');   // 움직임 줄이기면 길이 0 타임라인에 음수 자리가 생겨 끝 신호가 오지 않았다(11-19 공개 전 점검)
   });
   // 그 말이 돌아왔다: 줄 위에서 깡충 뛰며 앞면(낱말)으로 뒤집히고, 붉은 테로 「돌아온 말」임을 알린다
   // voice가 거짓이면 몸짓만 한다(답을 소리로 미리 알려 주지 않을 때).
@@ -724,7 +724,7 @@
   hintBtn.innerHTML = '<svg class="sc-hint-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg><b></b><span class="sc-hint-step"></span>';
   // 묻는 말과 힌트 단추를 한 줄로 묶는다: 넓은 화면은 묻는 말 옆, 좁으면 밑으로 접힌다(줄 무대를 아래로 밀지 않게)
   const pline = document.createElement('div'); pline.className = 'sc-pline'; promptEl.before(pline); pline.append(promptEl, hintBtn);
-  const hintFig = document.createElement('figure'); hintFig.className = 'sc-hintfig'; hintFig.setAttribute('aria-hidden', 'true');
+  const hintFig = document.createElement('figure'); hintFig.className = 'sc-hintfig'; hintFig.setAttribute('aria-hidden', 'true'); hintFig.inert = true;   // 숨긴 동안 닫기 단추가 초점을 받지 않게
   hintFig.innerHTML = '<figcaption></figcaption><div class="sc-hintfig-in"><video muted playsinline preload="none"></video></div><button type="button" class="sc-hintfig-x"></button>';
   $('.sc-hintfig-x', hintFig).setAttribute('aria-label', H.close);
   root.append(hintFig);
@@ -737,7 +737,7 @@
     hintBtn.setAttribute('aria-label', `${$('b', hintBtn).textContent}: ${$('.sc-hint-step', hintBtn).textContent}`);
   };
   const stopReading = () => { hearT.forEach(clearTimeout); hearT = []; try { qSrc?.stop(); } catch { /* 이미 끝남 */ } qSrc = null; readTw?.kill(); readTw = null; qBox.classList.remove('is-read'); hintBtn.classList.remove('is-reading'); };
-  const hideHintFig = () => { hintFig.classList.remove('is-on'); hintFig.setAttribute('aria-hidden', 'true'); gsap.to(hintFig, { opacity: 0, duration: reduce ? 0 : 0.2, onComplete: () => hintVid.pause() }); };
+  const hideHintFig = () => { hintFig.classList.remove('is-on'); hintFig.setAttribute('aria-hidden', 'true'); hintFig.inert = true; gsap.to(hintFig, { opacity: 0, duration: reduce ? 0 : 0.2, onComplete: () => hintVid.pause() }); };
   // 장면마다 부른다: 그 문제의 힌트를 처음 단계로
   const setHint = (key, cs) => {
     hintKey = key; hintStep = 0; hintUsed = false; hintCards = cs; stopReading(); hideHintFig(); hideQtr(); paintHint();
@@ -773,7 +773,7 @@
     if (narrow || stop - (b.x + b.w + 44) < 300) { w = Math.min(520, RW - 24); x = (RW - w) / 2; y = b.y + b.h + 12; }
     else { x = b.x + b.w + 44; w = Math.min(480, stop - x); y = b.y - 4; }
     hintFig.style.width = w + 'px';
-    hintFig.classList.add('is-on'); hintFig.removeAttribute('aria-hidden');
+    hintFig.classList.add('is-on'); hintFig.removeAttribute('aria-hidden'); hintFig.inert = false;
     gsap.killTweensOf(hintFig);
     if (reduce) gsap.set(hintFig, { x, y, opacity: 1, scale: 1 });
     else gsap.fromTo(hintFig, { x, y: y + 14, opacity: 0, scale: 0.96 }, { x, y, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.8)' });

@@ -25,7 +25,7 @@
 .sc[data-head] .sc-sound span{order:-1}
 .sc[data-head] .sc-qno{display:inline-flex;align-items:center;gap:10px;font-family:'SYNK Latin',var(--sans);font-variant-numeric:tabular-nums;color:var(--ink);font-weight:600}
 .sc[data-head] .sc-qno::after{content:"";width:22px;height:1px;background:currentColor;opacity:.35}
-.sc[data-head] .sc-qno i{font-style:normal;color:var(--ink3);margin-left:-8px}
+.sc[data-head] .sc-qno i{font-style:normal;color:var(--ink2);margin-left:-8px}
 
 /* ── A · C: 정보 줄 ── */
 .sc[data-head="a"] .sc-head,.sc[data-head="c"] .sc-head{display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,2.6fr) auto;align-items:start;gap:0 32px;padding:clamp(22px,2.3vw,32px) var(--gut) 0}
