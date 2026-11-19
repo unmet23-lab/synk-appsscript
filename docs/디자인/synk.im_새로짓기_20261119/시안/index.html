@@ -304,6 +304,60 @@ html[data-sky="day"] .end{--img:url(assets/eaves-day.webp)}
   html[data-sky="day"] .end{--img:url(assets/eaves-day-port.webp)}
   .end-sky{background-position:0 0,70% top}
 }
+
+/* ── 6b 소식과 묻기: 흰 바탕, 가는 선, 미색 둥근 판. 코랄은 가장 새 소식의 점 하나다 ── */
+.more{background:var(--paper);color:#1d1d1f;padding:clamp(96px,16svh,190px) max(var(--gut),calc((100vw - 1240px)/2)) 0}
+.more.ask{padding-bottom:clamp(96px,16svh,190px)}
+.more-in{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,6vw,96px);align-items:start}
+.more-head{display:grid;gap:clamp(14px,2.4svh,24px);justify-items:start;align-content:start}
+.more-head h2{font:700 clamp(38px,5.4vw,84px)/1.1 var(--sans);letter-spacing:-.045em}
+.more-head>p:not(.tag){font:500 clamp(18px,1.5vw,22px)/1.55 var(--sans);max-width:20em}
+.more .tag{font:700 clamp(17px,1.4vw,21px)/1.2 var(--sans);letter-spacing:0}
+.more .tag::before{display:none}
+.news ol{border-top:1px solid #E2DED9}
+.news li a{display:grid;grid-template-columns:clamp(104px,8.4vw,124px) clamp(60px,5.4vw,84px) minmax(0,1fr) auto;gap:6px clamp(12px,1.6vw,24px);align-items:baseline;padding:clamp(18px,2.6svh,26px) 0;border-bottom:1px solid #E2DED9}
+.news time{position:relative;font:500 16px/1.3 var(--sans);font-variant-numeric:tabular-nums}
+.news>ol>li:first-child time{padding-left:18px}
+.news>ol>li:first-child time::before{content:"";position:absolute;left:0;top:.36em;width:9px;height:9px;border-radius:50%;background:#F2573F}
+.news .who{font:700 15px/1.3 var(--sans)}
+.news b{font:600 clamp(19px,1.8vw,27px)/1.3 var(--sans);letter-spacing:-.02em}
+.news .arr{transition:transform .2s var(--ease)}
+.news a:hover .arr{transform:translateX(4px)}
+.news summary{cursor:pointer;list-style:none;display:inline-flex;gap:10px;align-items:center;padding:20px 0;font:600 17px/1 var(--sans)}
+.news summary::-webkit-details-marker{display:none}
+.news summary::after{content:"+";font-weight:500}
+.news details[open] summary::after{content:"−"}
+.news details b{font-size:clamp(17px,1.45vw,21px)}
+.ask-box{background:#F6F4F1;border-radius:clamp(24px,2.8vw,40px);padding:clamp(28px,5vw,80px);display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,5vw,80px);align-items:start}
+.ask-links{display:grid;gap:14px;justify-items:start;margin-top:10px}
+.ask-links a,.ask-links button{display:inline-flex;gap:8px;align-items:center;font:600 16px/1.3 var(--sans);padding-bottom:3px;border-bottom:1px solid currentColor}
+.ask-k{font:700 15px/1 var(--sans);margin-bottom:14px}
+.faq{display:grid;gap:8px}
+.faq li{background:#fff;border-radius:18px}
+.faq button{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:baseline;text-align:left;padding:clamp(16px,1.8vw,22px) clamp(18px,2vw,26px);font:600 clamp(18px,1.6vw,23px)/1.35 var(--sans);letter-spacing:-.02em}
+.faq .no{font:600 14px/1 var(--sans);font-variant-numeric:tabular-nums}
+.faq button i{font-style:normal;font-weight:500;transition:transform .25s var(--ease)}
+.faq button[aria-expanded="true"] i{transform:rotate(45deg)}
+.faq-a{display:grid;gap:16px;justify-items:start;padding:2px clamp(18px,2vw,26px) clamp(20px,2.2vw,28px) calc(clamp(18px,2vw,26px) + 34px)}
+.faq-a p{font:500 clamp(16px,1.3vw,19px)/1.65 var(--sans);max-width:34em}
+.faq-a .text-link{font-size:16px}
+.ask-form{margin-top:14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;background:#fff;border-radius:999px;padding:8px 8px 8px 26px;border:1.5px solid #1d1d1f}
+.ask-form textarea{border:0;outline:0;resize:none;min-width:0;height:44px;padding:10px 0;background:none;color:inherit;font:500 18px/1.35 var(--sans)}
+.ask-form textarea::placeholder{color:#4a4744}
+.ask-form button{height:46px;padding:0 22px;border-radius:999px;background:#1d1d1f;color:#fff;font:600 16px/1 var(--sans);display:inline-flex;gap:8px;align-items:center}
+.ask-out{margin-top:16px;font:600 16px/1.5 var(--sans)}
+.ask-note{margin-top:14px;font:500 14px/1.5 var(--sans);color:#4a4744}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media (max-width:900px){
+  .more-in,.ask-box{grid-template-columns:1fr}
+  .news li a{grid-template-columns:auto minmax(0,1fr)}
+  .news li a b{grid-column:1 / -1}
+  .news .arr{display:none}
+  .more.ask{padding-inline:12px}
+  .faq-a{padding-left:clamp(18px,2vw,26px)}
+}
+.faq-a[hidden],.ask-out[hidden]{display:none}
+.nav.solid{background:rgba(255,255,255,.78);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px)}
 .proto{position:fixed;z-index:60;left:50%;bottom:14px;transform:translateX(-50%);padding:8px 14px;border-radius:999px;background:rgba(20,20,20,.86);color:#fff;font:500 12px/1 var(--sans);pointer-events:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
@@ -477,6 +531,78 @@ html[data-sky="day"] .end{--img:url(assets/eaves-day.webp)}
 
 <!-- 6 엔진 -->
 <!-- 11-19 유호님 답: 홈에서 아틀라스 화면을 뺐다. 아틀라스는 한국어 상세 쪽의 무기로 보인다. -->
+
+<!-- 6b 소식과 묻기: 공개본의 소식 목록(11-18 기준)과 질문창을 옮겼다. 답은 공개본의 안내 자료에서 온다. -->
+<section class="more" id="news" data-tone="light" aria-labelledby="news-t">
+  <div class="more-in">
+    <div class="more-head">
+      <p class="tag">소식</p>
+      <h2 id="news-t">최근에<br>새로 연 것</h2>
+    </div>
+    <div class="news">
+      <ol>
+        <li><a href="https://synk.im/account/platform.html"><time datetime="2026-11-18">2026.11.18</time><span class="who">플랫폼</span><b>PC 앱 Preview 0.4.97</b><span class="arr" aria-hidden="true">→</span></a></li>
+        <li><a href="detail.html?p=korean"><time datetime="2026-11-05">2026.11.05</time><span class="who">한국어</span><b>SYNK WORLD에 새 놀이 셋을 열었습니다</b><span class="arr" aria-hidden="true">→</span></a></li>
+        <li><a href="detail.html?p=ad"><time datetime="2026-11-03">2026.11.03</time><span class="who">광고</span><b>아이돌 두 팀 여덟 명이 합류했습니다</b><span class="arr" aria-hidden="true">→</span></a></li>
+      </ol>
+      <details>
+        <summary>지난 소식 <span>6</span></summary>
+        <ol>
+          <li><a href="detail.html?p=korean"><time datetime="2026-10-30">2026.10.30</time><span class="who">한국어</span><b>K드라마 상황극 1화 장면을 미리 공개했습니다</b><span class="arr" aria-hidden="true">→</span></a></li>
+          <li><a href="detail.html?p=ad"><time datetime="2026-10-24">2026.10.24</time><span class="who">광고</span><b>새 AI 모델 한결이 합류했습니다</b><span class="arr" aria-hidden="true">→</span></a></li>
+          <li><a href="detail.html?p=ad"><time datetime="2026-10-22">2026.10.22</time><span class="who">광고</span><b>화성 CF 「1억 년의 빛」을 공모전에 냈습니다</b><span class="arr" aria-hidden="true">→</span></a></li>
+          <li><a href="https://synk.im/mn/" hreflang="mn"><time datetime="2026-10-22">2026.10.22</time><span class="who">SYNK</span><b>몽골어 회사 소개를 열었습니다</b><span class="arr" aria-hidden="true">→</span></a></li>
+          <li><a href="detail.html?p=korean"><time datetime="2026-10-21">2026.10.21</time><span class="who">한국어</span><b>SYNK WORLD에서 TOPIK II 쓰기 첨삭을 받을 수 있습니다</b><span class="arr" aria-hidden="true">→</span></a></li>
+          <li><a href="detail.html?p=korean"><time datetime="2026-10-21">2026.10.21</time><span class="who">한국어</span><b>SYNK WORLD에 말하기 시험 형식 연습을 더했습니다</b><span class="arr" aria-hidden="true">→</span></a></li>
+        </ol>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="more ask" id="ask" data-tone="light" aria-labelledby="ask-t">
+  <div class="ask-box">
+    <div class="more-head">
+      <p class="tag">묻기</p>
+      <h2 id="ask-t">무엇이든<br>물어보세요</h2>
+      <p>공개된 내용은 여기서 바로 답합니다. 상담과 제안은 메일로 받습니다.</p>
+      <div class="ask-links">
+        <a href="mailto:hello@synk.im">hello@synk.im <span class="arr" aria-hidden="true">→</span></a>
+        <button type="button" id="ask-copy">주소 복사</button>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4Z1BdhPxMi0bWP7enSganI4xCIsTcCxRJ8EpxiWRxyVfsIg/viewform" target="_blank" rel="noopener">웹 문의 양식 <span class="arr" aria-hidden="true">↗</span></a>
+        <a href="https://synk.im/privacy/#website-questions">문의할 때의 개인정보 처리 <span class="arr" aria-hidden="true">→</span></a>
+      </div>
+    </div>
+    <div class="ask-main">
+      <p class="ask-k">자주 묻는 질문</p>
+      <ul class="faq">
+        <li><button type="button" aria-expanded="false" aria-controls="faq-a-1"><span class="no" aria-hidden="true">01</span><span>SYNK는 어떤 회사인가요?</span><i aria-hidden="true">+</i></button><div class="faq-a" id="faq-a-1" hidden><p>SYNK는 한 사람의 목표와 실제로 해 본 결과를 읽고 다음 연습을 그 사람에게 맞추는 개인화 엔진, 아틀라스를 만듭니다. 이 엔진으로 한국어 교육, AI 강의와 업무 자동화, 광고 영상, 한국 유학 준비까지 네 가지 일을 합니다.</p><a class="text-link" href="#glance">하는 일 보기 <span class="arr" aria-hidden="true">→</span></a></div></li>
+        <li><button type="button" aria-expanded="false" aria-controls="faq-a-2"><span class="no" aria-hidden="true">02</span><span>K드라마 상황극은 무엇인가요?</span><i aria-hidden="true">+</i></button><div class="faq-a" id="faq-a-2" hidden><p>K드라마 상황극은 K드라마 속 외국인 유학생이 되어 한국어로 말하는 SYNK LAB의 말하기 연습입니다. 상대 인물이 먼저 말을 걸면 내가 소리 내어 대답해야 이야기가 이어집니다. 지금은 시범판을 준비하고 있고, 1화 장면은 LAB 페이지에서 바로 해 볼 수 있습니다.</p><a class="text-link" href="https://synk.im/lab/#drama">1화 장면 해 보기 <span class="arr" aria-hidden="true">→</span></a></div></li>
+        <li><button type="button" aria-expanded="false" aria-controls="faq-a-3"><span class="no" aria-hidden="true">03</span><span>아틀라스는 어떻게 작동하나요?</span><i aria-hidden="true">+</i></button><div class="faq-a" id="faq-a-3" hidden><p>아틀라스는 SYNK가 직접 만드는 개인화 엔진으로, 여덟 엔진이 일을 나눠 맡습니다. 목표와 지금 상황을 이해하고(Core·Strata·Trail), 배울 내용과 화면·말·소리를 그 사람에게 맞추고(Loom·Vellum·Reed), 도움이 됐는지 확인합니다(Prism·Temper).</p><a class="text-link" href="detail.html?p=atlas">아틀라스 보기 <span class="arr" aria-hidden="true">→</span></a></div></li>
+        <li><button type="button" aria-expanded="false" aria-controls="faq-a-4"><span class="no" aria-hidden="true">04</span><span>SYNK 플랫폼은 무엇인가요?</span><i aria-hidden="true">+</i></button><div class="faq-a" id="faq-a-4" hidden><p>SYNK ID 하나로 SYNK의 앱과 솔리오를 한곳에서 쓰는 입구입니다. 홈페이지의 플랫폼 소개에서 Windows 64비트와 Mac용 Preview 0.4.97 설치 파일을 다운로드하거나 웹 미리보기를 열 수 있습니다.</p><a class="text-link" href="https://synk.im/account/platform.html">플랫폼 다운로드·웹 미리보기 <span class="arr" aria-hidden="true">→</span></a></div></li>
+        <li><button type="button" aria-expanded="false" aria-controls="faq-a-5"><span class="no" aria-hidden="true">05</span><span>SHIFT에 강의나 자동화를 맡기고 싶어요</span><i aria-hidden="true">+</i></button><div class="faq-a" id="faq-a-5" hidden><p>SHIFT는 학교·기업·기관 AI 강의, 강사 찾아 드리기, 업무 자동화를 합니다. 강의가 먼저이고, 강의를 들은 회사가 원하면 업무 자동화로 이어 갑니다.</p><a class="text-link" href="detail.html?p=ai">하는 일 보기 <span class="arr" aria-hidden="true">→</span></a></div></li>
+        <li><button type="button" aria-expanded="false" aria-controls="faq-a-6"><span class="no" aria-hidden="true">06</span><span>PULSE에 영상 제작을 맡길 수 있나요?</span><i aria-hidden="true">+</i></button><div class="faq-a" id="faq-a-6" hidden><p>네, 만듭니다. 제품 광고, 브랜드필름·CF, AI 모델·룩북, 서비스·사용법 영상을 기획부터 완성본까지 AI로 만들고, 홈페이지·상세페이지·SNS에 바로 올릴 규격으로 드립니다. 영상 전에 방향과 모델, 광고가 남길 한 문장과 글 콘티, 컷마다 장면 이미지를 차례로 확인하시고, 확인하신 컷으로만 만듭니다.</p><a class="text-link" href="detail.html?p=ad">영상 제작 보기 <span class="arr" aria-hidden="true">→</span></a></div></li>
+      </ul>
+      <form class="ask-form" id="ask-form" autocomplete="off"><label class="sr" for="ask-q">질문 입력</label><textarea id="ask-q" name="question" rows="1" maxlength="500" placeholder="다른 질문을 입력해 보세요"></textarea><button type="submit">묻기 <span class="arr" aria-hidden="true">→</span></button></form>
+      <p class="ask-out" id="ask-out" role="status" hidden></p>
+      <p class="ask-note">대화는 저장하지 않습니다. 개인정보는 적지 말아 주세요.</p>
+    </div>
+  </div>
+</section>
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s), out = $('#ask-out');
+  const say = t => { out.textContent = t; out.hidden = false; };
+  const qs = [...document.querySelectorAll('.faq button')];
+  qs.forEach(b => b.addEventListener('click', () => { const open = b.getAttribute('aria-expanded') === 'true'; qs.forEach(x => { x.setAttribute('aria-expanded', 'false'); x.nextElementSibling.hidden = true; }); if (!open) { b.setAttribute('aria-expanded', 'true'); b.nextElementSibling.hidden = false; } }));
+  $('#ask-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText('hello@synk.im'); say('이메일 주소를 복사했어요.'); } catch (e) { say('복사를 쓸 수 없어요. 주소는 hello@synk.im입니다.'); } });
+  /* 흰 구역 위에서는 메뉴에 흐린 유리 띠를 깔아 글과 겹치지 않게 한다 */
+  const nav = $('.nav'), n1 = $('#news'), n2 = $('#ask');
+  const solid = () => nav.classList.toggle('solid', n1.getBoundingClientRect().top <= 64 && n2.getBoundingClientRect().bottom > 64);
+  addEventListener('scroll', solid, { passive: true }); solid();
+  $('#ask-form').addEventListener('submit', e => { e.preventDefault(); if ($('#ask-q').value.trim()) say('시안에서는 직접 쓴 질문에 답하지 않습니다. 공개본에서는 지금의 질문창이 그대로 답합니다.'); });
+})();
+</script>
 
 <!-- 7 시작하기 -->
 <section class="end" id="start" data-tone="dark" aria-labelledby="start-t">
