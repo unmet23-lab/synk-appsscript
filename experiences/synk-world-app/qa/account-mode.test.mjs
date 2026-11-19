@@ -376,13 +376,14 @@ test('Atlas 나르개(trail GET · POST · 옛 POST)는 진짜 인증 실패(401
 // 2단 알림(11-20 Fable 설계 검토 P2-1): world-push는 요약 · 설정을 keepalive로 보낸다 — keepalive 요청에는 끊는 신호를 달지 않으므로 페이지를 떠날 때의
 // 계정 정리(stop)가 그 요청을 끊지 않는다. 보통 요청은 지금처럼 끊는다.
 test('2단 알림 요청: keepalive 요청은 계정 정리가 끊지 않고, 보통 요청은 끊는다',async()=>{
- const inits=[];
- const f=fixture({fetcher:async(url,init)=>{if(String(url).includes('/world-push/')){inits.push(init);return new Promise(()=>{});}return reply(snapshot());}});
+ const inits=[],held=[];
+ const f=fixture({fetcher:async(url,init)=>{if(String(url).includes('/world-push/')){inits.push(init);const d=deferred();held.push(d);return d.promise;}return reply(snapshot());}});
  await f.client.restore();
- f.account.pushRequest('sync',{digest:{}},{keepalive:true}).catch(()=>{});
- f.account.pushRequest('status',{}).catch(()=>{});
+ const sent=[f.account.pushRequest('sync',{digest:{}},{keepalive:true}),f.account.pushRequest('status',{})].map(p=>p.catch(()=>{}));
  await flush();assert.equal(inits.length,2);
  f.account.stop();
  assert.equal(inits[0].keepalive,true);assert.equal(inits[0].signal,undefined,'keepalive 요청에는 끊는 신호가 없다');
  assert.equal(inits[1].keepalive,false);assert.equal(inits[1].signal.aborted,true,'보통 요청은 계정 정리가 끊는다');
+ // 붙잡아 둔 응답을 풀어 요청과 12초 타이머를 끝낸다(시험 러너가 기다리지 않게 — 다시 검수 GA2).
+ for(const d of held)d.resolve(reply({ok:true,accountId:A}));await Promise.all(sent);
 });
