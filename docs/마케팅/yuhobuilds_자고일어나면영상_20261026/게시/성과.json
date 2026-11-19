@@ -130,6 +130,19 @@
         ]
       },
       {
+        "계정": "shift-tistory",
+        "채널": "티스토리 @yuhobuilds.tistory.com",
+        "주소": "https://yuhobuilds.tistory.com/16",
+        "형식": "tistory-post",
+        "게시": "2026-11-05T12:30:00.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": [
+          "조회"
+        ]
+      },
+      {
         "계정": "yuhobuilds-youtube",
         "채널": "유튜브 @yuhobuilds",
         "주소": "https://www.youtube.com/watch?v=rANcfQPgZ2Y",

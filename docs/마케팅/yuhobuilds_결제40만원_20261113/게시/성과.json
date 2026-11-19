@@ -58,6 +58,17 @@
         "화면필요": []
       },
       {
+        "계정": "shift-tistory",
+        "채널": "티스토리 @yuhobuilds.tistory.com",
+        "주소": "https://yuhobuilds.tistory.com/26",
+        "형식": "tistory-post",
+        "게시": "2026-11-17T12:30:00.000Z",
+        "훅": null,
+        "역할": "전환",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "yuhobuilds-youtube",
         "채널": "유튜브 @yuhobuilds",
         "주소": "https://www.youtube.com/watch?v=AD3KmlChjNs",
