@@ -324,3 +324,111 @@ test('a real hold on Windows: while held nobody can write, rename or delete the 
   for (let i = 0; i < 50; i++) { try { fs.unlinkSync(file); break; } catch { await new Promise(r => setTimeout(r, 100)); } }
   assert.equal(fs.existsSync(file), false, 'released after QUIT');
 });
+
+/* ── 설계 검토(Fable 5.2, 11-20) 지적의 시험 ── */
+const quiet = { wait: async () => {} };
+
+test('P1: two quick presses start one install only', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(1000), log = [], engineState = {};
+  const run = async () => { await new Promise(r => setTimeout(r, 200)); return engineState.dir ? JSON.stringify({ loc: `"${engineState.dir}"`, ver: '0.7.0' }) : '{}'; };
+  const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold: fakeHold(log, { engineState }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const answers = await Promise.all([service.start(ME, 'protect'), service.start(ME, 'protect')]);
+  await service.whenIdle();
+  assert.deepEqual(answers.map(a => a.ok), [true, false]);
+  assert.equal(answers[1].code, 'BUSY');
+  assert.equal(log.filter(x => x[0] === 'run').length, 1);
+});
+
+test('P1: a folder swapped for a junction after the hold is caught before anything runs', { skip: process.platform !== 'win32' }, async () => {
+  const key = minisignKey(), data = crypto.randomBytes(1000), log = [], other = temp();
+  fs.writeFileSync(path.join(other, 'SynkWorkBackup-0.7.0-setup.exe'), data);
+  const hold = async file => {
+    // 쥔 척하는 가짜라 실제로 막지 않는다. 쥔 뒤 담은 폴더를 다른 폴더로 가는 연결점으로 바꾼다
+    const dir = path.dirname(file);
+    fs.renameSync(dir, dir + '-gone');
+    fs.symlinkSync(other, dir, 'junction');
+    log.push(['hold']);
+    return { release() { log.push(['release']); }, async run() { log.push(['run']); return { outcome: 'exited', code: 0 }; } };
+  };
+  const env = appdata(temp());
+  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  await service.start(ME, 'protect');
+  await service.whenIdle();
+  assert.equal((await service.snapshot(ME)).install.code, 'VERIFY_FAILED');
+  assert.deepEqual(log.map(x => x[0]), ['hold', 'release']);
+  assert.deepEqual(requestsIn(env), []);
+});
+
+test('a cache folder that is itself a junction is resolved before the download folder is made', { skip: process.platform !== 'win32' }, async () => {
+  const key = minisignKey(), data = crypto.randomBytes(1000), engineState = {}, real = temp(), link = path.join(temp(), 'cache');
+  fs.symlinkSync(real, link, 'junction');
+  let heldAt = null;
+  const inner = fakeHold([], { engineState });
+  const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: link, run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold: async file => { heldAt = file; return inner(file); }, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  await service.start(ME, 'protect');
+  await service.whenIdle();
+  assert.equal((await service.snapshot(ME)).install.phase, 'done');
+  assert.ok(heldAt.toLowerCase().startsWith(fs.realpathSync.native(real).toLowerCase()), heldAt);
+});
+
+test('P2: a failed engine check is not 「no engine」 and does not reinstall', async () => {
+  const env = appdata(temp(), { status: sample() });
+  const service = B.createSolioBackup({ platform: 'win32', env, run: async () => null, previewAccounts: MINE, ...quiet });
+  assert.equal((await service.snapshot(ME)).view, 'engine-unknown');
+  assert.deepEqual(await service.start(ME, 'protect'), { ok: false, code: 'NOT_NEEDED' });
+  let calls = 0, t = 0;
+  const dir = engineDir();
+  const kept = B.createSolioBackup({ platform: 'win32', env, run: async () => (++calls === 1 ? JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }) : null), previewAccounts: MINE, now: () => (t += 120000) });
+  assert.equal((await kept.snapshot(ME)).engine.installed, true);
+  assert.equal((await kept.snapshot(ME)).engine.installed, true, 'a later failed check keeps the earlier answer');
+  assert.equal(calls, 2);
+});
+
+test('P2: an unreadable status file with the engine installed opens the engine instead of offering 보호 시작', async () => {
+  const env = appdata(temp(), { status: '{' });
+  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  assert.equal((await service.snapshot(ME)).view, 'status-unreadable');
+  assert.deepEqual(await service.start(ME, 'protect'), { ok: false, code: 'NOT_NEEDED' });
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const v = solioBackupView(await service.snapshot(ME));
+  assert.match(v.say, /읽지 못했습니다/);
+  assert.equal(v.acts[0].arg, 'status');
+});
+
+test('P2: if the holder dies after the installer started, the request stays and the engine is looked for again', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(1000), env = appdata(temp()), engineState = {};
+  const hold = async () => ({ release() {}, async run(onStarted) { onStarted(); setTimeout(() => { engineState.dir = engineDir(); }, 5); return { outcome: 'gone' }; } });
+  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, wait: () => new Promise(r => setTimeout(r, 20)) });
+  await service.start(ME, 'protect');
+  await service.whenIdle();
+  assert.equal((await service.snapshot(ME)).install.phase, 'done');
+  assert.equal(requestsIn(env).length, 1);
+});
+
+test('the installer download refuses an unknown redirect and a wrong length', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(1000);
+  const net = patch => async url => {
+    if (url === B.FEED_URL) return { status: 200, headers: {}, body: Readable.from([Buffer.from(JSON.stringify(release(key, data)))]) };
+    if (url.startsWith('https://github.com/')) return { status: 302, headers: { location: patch.location }, body: Readable.from([]) };
+    return { status: 200, headers: { 'content-length': String(patch.length ?? data.length) }, body: Readable.from([data]) };
+  };
+  const cases = [[{ location: 'https://evil.example/github-production-release-asset/1' }, 'UNTRUSTED_REDIRECT'], [{ location: 'https://release-assets.githubusercontent.com/github-production-release-asset/1', length: 5 }, 'VERIFY_FAILED']];
+  for (const [patch, code] of cases) {
+    const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run: fakeEngine({}), request: net(patch), hold: fakeHold([]), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+    await service.start(ME, 'protect');
+    await service.whenIdle();
+    assert.equal((await service.snapshot(ME)).install.code, code);
+  }
+});
+
+test('P2: safe with attention words leads with them; the engine-present failures have their own words', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const status = { ...B.normalizeStatus(sample()).status, attention: ['update'] };
+  const base = { ok: true, available: true, engine: { installed: true }, feed: {}, install: { phase: 'idle' } };
+  const v = solioBackupView({ ...base, view: 'status', status });
+  assert.match(v.then, /엔진 업데이트/);
+  assert.deepEqual([v.acts[0].arg, v.note], ['update', '확인 필요']);
+  const failed = solioBackupView({ ...base, view: 'needs-setup', status: null, install: { phase: 'error', code: 'OPEN_FAILED', mode: 'protect' } });
+  assert.match(failed.say, /엔진 창을 열지 못했습니다/);
+  assert.equal(failed.acts[0].label, '다시 하기');
+});

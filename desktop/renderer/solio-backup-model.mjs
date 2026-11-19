@@ -63,14 +63,18 @@ const ERROR_SAY = Object.freeze({
   DECLINED: ['관리자 확인을 받지 못해 깔지 않았습니다.', '관리자 계정으로 「예」를 눌러야 깔립니다. 다시 하려면 「다시 받기」를 눌러 주세요.'],
   INSTALL_STOPPED: ['설치가 끝나지 않았습니다.', '설치 창이 닫혔거나 다른 프로그램이 막았을 수 있습니다. 「다시 받기」를 눌러 주세요.'],
   STORAGE: ['이 PC에 설치 파일을 저장하지 못했습니다.', '디스크 공간을 확인한 뒤 「다시 받기」를 눌러 주세요.'],
+  REQUEST_FAILED: ['엔진에 보호 시작을 알리지 못했습니다.', '이 Windows 계정의 앱 데이터 폴더에 쓰지 못했습니다. 「다시 하기」를 눌러 주세요.'],
+  OPEN_FAILED: ['엔진 창을 열지 못했습니다.', '시작 메뉴에서 「SYNK 업무 백업」을 직접 열어도 이어집니다. 다시 하려면 「다시 하기」를 눌러 주세요.'],
 });
+/* 엔진이 이미 있는 길(요청만 쓰고 창 열기)의 실패는 받기가 아니므로 다시 하기 단추 이름이 다르다 */
+const RETRY_LABEL = Object.freeze({ REQUEST_FAILED: '다시 하기', OPEN_FAILED: '다시 하기' });
 
 function installScene(install) {
   const phase = install?.phase;
   if (!phase || phase === 'idle') return null;
   if (phase === 'error') {
     const [say, then] = ERROR_SAY[install.code] || ['설치를 마치지 못했습니다.', '「다시 받기」를 눌러 주세요.'];
-    const retry = install.code === 'FEED_MISSING' ? [] : [act('다시 받기', 'backup-start', install.mode || 'protect', { primary: true })];
+    const retry = install.code === 'FEED_MISSING' ? [] : [act(RETRY_LABEL[install.code] || '다시 받기', 'backup-start', install.mode || 'protect', { primary: true })];
     return { say, then, acts: [...retry, act('닫기', 'backup-dismiss')] };
   }
   const [say0, then] = INSTALL_SAY[phase] || INSTALL_SAY.feed;
@@ -132,6 +136,15 @@ export function solioBackupView(snap, now = Date.now()) {
     return { ...base, rows: engineRows, note: '업데이트 필요', say: '백업 엔진이 솔리오보다 새 판이라 상태를 읽지 못했습니다.', then: '솔리오(SYNK PC 앱)를 업데이트해 주세요. 그동안 백업 상태는 엔진 창에서 봅니다.',
       acts: [act('엔진 창 열기', 'backup-open', 'status', { primary: true }), ...ENGINE_ACTS.slice(0, 2)] };
   }
+  if (view === 'engine-unknown') {
+    return { ...base, rows: [...SETUP_ROWS], note: '확인 중', say: '백업 엔진이 이 PC에 깔려 있는지 확인하지 못했습니다.',
+      then: '잠시 뒤 이 방을 다시 열면 한 번 더 확인합니다. 그동안 엔진을 새로 받지 않습니다.', acts: [] };
+  }
+  if (view === 'status-unreadable') {
+    return { ...base, rows: engineRows, note: '확인 필요', say: '백업 엔진이 남긴 상태를 읽지 못했습니다.',
+      then: '엔진 창을 열면 지금 상태를 볼 수 있습니다. 엔진이 다음에 상태를 새로 쓰면 여기서도 보입니다.',
+      acts: [act('엔진 창 열기', 'backup-open', 'status', { primary: true }), ...ENGINE_ACTS.slice(0, 2)] };
+  }
   const s = snap.status || {};
   if (view === 'checking') {
     return { ...base, rows: engineRows, note: '확인 중', say: '백업 상태를 확인하는 중입니다.',
@@ -143,12 +156,16 @@ export function solioBackupView(snap, now = Date.now()) {
   const proofFailed = s.proof && s.proof.result !== 'passed' && s.proof.result !== 'skipped';
   let say, then, note, first = null;
   switch (s.state) {
-    case 'safe':
+    case 'safe': {
+      // 지키는 중이어도 엔진이 주의 낱말을 함께 쓸 수 있다(되살리기 · 업데이트 · 공간 따위). 있으면 그 일이 할 일의 맨 앞이다
+      const topics = topicList(s.attention || []);
       say = Number.isSafeInteger(s.folders) && s.folders > 0 ? `업무 폴더 ${s.folders}개를 지키고 있습니다.` : '이 PC의 업무 파일을 지키고 있습니다.';
-      then = job + (proofFailed ? `마지막 되살리기 증명이 ${PROOF_WORDS[s.proof.result]}이라 엔진 창에서 확인해 주세요. ` : '') + last;
-      note = '지키는 중';
-      if (proofFailed) first = act('증명 확인', 'backup-open', 'restore', { primary: true });
+      then = job + (topics ? `다만 엔진 창에서 확인할 일이 있습니다: ${topics}. ` : proofFailed ? `마지막 되살리기 증명이 ${PROOF_WORDS[s.proof.result]}이라 엔진 창에서 확인해 주세요. ` : '') + last;
+      note = topics ? '확인 필요' : '지키는 중';
+      if (topics) first = act('엔진 창에서 확인', 'backup-open', s.attention[0], { primary: true });
+      else if (proofFailed) first = act('증명 확인', 'backup-open', 'restore', { primary: true });
       break;
+    }
     case 'starting': say = '첫 백업을 준비하고 있습니다.'; then = job + '첫 백업이 끝나면 로그인해 있는 동안 매시간 저절로 지킵니다.'; note = '첫 백업 전'; break;
     case 'attention': {
       const topics = topicList(s.attention || []);

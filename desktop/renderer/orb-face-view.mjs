@@ -793,7 +793,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   function renderActs(box, acts) {
     const fa = doc.activeElement, had = fa && box.contains(fa) ? `${fa.dataset.orbAct}|${fa.dataset.orbArg || ''}` : null;
     box.replaceChildren(...acts.slice(0, 4).map(a => {
-      const b = button(a.primary ? 'reread primary' : 'reread', a.label, { 'data-orb-act': a.act, 'data-orb-arg': a.arg || '' });
+      const b = button(a.primary ? 'reread lead' : 'reread', a.label, { 'data-orb-act': a.act, 'data-orb-arg': a.arg || '' });
       if (a.disabled) b.setAttribute('aria-disabled', 'true');
       return b;
     }));

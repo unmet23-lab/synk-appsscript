@@ -109,8 +109,12 @@ async function readStatus(file, fsImpl = fsp) {
 function decideView({ platform = process.platform, engine, read, now = Date.now() }) {
   if (platform !== 'win32') return 'windows-only';
   const has = read?.format === 'ok' || read?.format === 'newer' || read?.format === 'invalid';
+  // 엔진 확인 자체가 실패했으면(PowerShell 오류) 「없음」으로 치지 않는다. 깔린 엔진 위에 다시 받지 않게 한다
+  if (engine?.error && !engine?.installed) return 'engine-unknown';
   if (!engine?.installed) return has ? 'engine-removed' : 'no-engine';
   if (read?.format === 'newer') return 'engine-newer';
+  // 상태 파일이 있는데 읽지 못하면(깨짐 · 연결점 · 잠깐 잠김) 보호 시작이 아니다. 엔진 창에서 본다
+  if (read?.format === 'invalid') return 'status-unreadable';
   if (read?.format !== 'ok') return 'needs-setup';
   const status = read.status;
   if (status.state === 'not-set-up' || status.state === 'restore-only') return 'needs-setup';
@@ -306,7 +310,15 @@ function holdSetup(file, { spawnImpl = spawn, timeout = 20000 } = {}) {
     child.once('close', () => { fail('LOCK_FAILED'); lines.push('GONE'); deliver(); });
     const next = () => new Promise(ok => { waiters.push(ok); deliver(); });
     const holder = {
-      release() { try { child.stdin.end('QUIT\n'); } catch {} },
+      /* 놓으라고 알리고, PowerShell이 끝나 핸들이 닫힐 때까지 기다린다(5초까지) */
+      release() {
+        try { child.stdin.end('QUIT\n'); } catch {}
+        return new Promise(ok => {
+          if (child.exitCode !== null || child.signalCode !== null) { ok(); return; }
+          const t = setTimeout(ok, 5000);
+          child.once('close', () => { clearTimeout(t); ok(); });
+        });
+      },
       /* 띄우고 끝날 때까지 기다린다. declined · started 뒤 exit, 또는 gone */
       async run(onStarted = () => {}) {
         try { child.stdin.write('RUN\n'); } catch { return { outcome: 'gone' }; }
@@ -361,19 +373,25 @@ async function download({ feed, file, request, signal, onProgress }) {
 function createSolioBackup({
   platform = process.platform, env = process.env, cacheRoot, now = Date.now,
   run = runPowerShell, request = requestHttps, hold = holdSetup, openExternal = async () => {},
-  fsImpl = fs, keys = ENGINE_KEYS, previewAccounts = PREVIEW_ACCOUNTS,
+  fsImpl = fs, keys = ENGINE_KEYS, previewAccounts = PREVIEW_ACCOUNTS, wait = ms => new Promise(resolve => setTimeout(resolve, ms)),
 } = {}) {
   const paths = statusPaths(env);
   let engine = null, engineAt = 0, engineLoading = null;
   let feedState = { state: 'unknown', version: null, at: 0 }, feedLoading = null;
   let install = { phase: 'idle', progress: 0, code: null, mode: null };
-  let busy = null, mode = null;
+  let busy = null, mode = null, swept = false;
 
   const allowed = account => previewAllowed(account, previewAccounts);
+  /* 엔진 확인이 실패하면(PowerShell 오류 · 시간 초과) 앞의 답을 그대로 쓴다. 앞의 답이 없으면 error로 둬서 「깔려 있지 않음」과 가른다.
+     있다고 확인된 답은 1분 쓴다(방이 보이는 동안 PowerShell을 덜 띄운다) */
   async function engineNow(force = false) {
     if (platform !== 'win32') return { installed: false, version: null };
-    if (!force && engine && now() - engineAt < ENGINE_AGE) return engine;
-    if (!engineLoading) engineLoading = readEngine({ run, fsImpl: fsImpl.promises }).then(value => { engine = value; engineAt = now(); return value; }).finally(() => { engineLoading = null; });
+    if (!force && engine && now() - engineAt < (engine.installed ? ENGINE_AGE * 4 : ENGINE_AGE)) return engine;
+    if (!engineLoading) {
+      engineLoading = readEngine({ run, fsImpl: fsImpl.promises })
+        .then(value => { if (value.error && engine && !engine.error) return engine; engine = value; engineAt = now(); return value; })
+        .finally(() => { engineLoading = null; });
+    }
     return engineLoading;
   }
   function refreshFeed(force = false) {
@@ -405,62 +423,104 @@ function createSolioBackup({
 
   function setInstall(phase, extra = {}) { install = { phase, progress: extra.progress ?? 0, code: extra.code ?? null, mode }; }
 
+  /* 받은 폴더를 지운다. 쥔 PowerShell이 핸들을 놓을 때까지 잠깐 걸릴 수 있어 몇 번 다시 해 본다 */
+  const removeDir = dir => fsImpl.promises.rm(dir, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 }).catch(() => {});
+  /* 앞에서 끊긴 설치(앱이 꺼짐 따위)가 남긴 setup-* 폴더를 처음 받을 때 한 번 치운다 */
+  async function sweep() {
+    if (swept) return;
+    swept = true;
+    let names = [];
+    try { names = await fsImpl.promises.readdir(cacheRoot); } catch { return; }
+    for (const name of names) if (/^setup-[A-Za-z0-9]{6}$/.test(name)) await removeDir(path.join(cacheRoot, name));
+  }
+  /* 쥔 파일의 실제 경로가 받은 경로와 같아야 한다. 조상에 연결점(정션 · 링크)이 있으면 쥔 뒤에도 그 연결점을 바꿔
+     다른 파일을 같은 경로로 보이게 할 수 있다. 쥔 동안 실제 조상 폴더는 바꿀 수 없으므로 이 확인 한 번이면 닫힌다(설계 검토 P1, 11-20) */
+  async function sameRealPath(file) {
+    let real;
+    try { real = await fsImpl.promises.realpath(file); } catch { return false; }
+    const norm = value => path.resolve(String(value).replace(/^\\\\\?\\/, '')).toLowerCase();
+    return norm(real) === norm(file);
+  }
+  /* 막 받은 파일을 백신이 잠깐 쥐면 읽기 공유 핸들이 열리지 않는다. 세 번까지 다시 쥐어 본다 */
+  async function holdWithRetry(file) {
+    for (let i = 0; ; i++) {
+      try { return await hold(file); } catch (error) { if (i >= 2 || error?.backupCode !== 'LOCK_FAILED') throw error; await wait(1000); }
+    }
+  }
+  async function engineAppeared() {
+    for (let i = 0; i < 6; i++) {
+      if ((await engineNow(true)).installed) return true;
+      await wait(2000);
+    }
+    return false;
+  }
+
   async function installEngine(mode, hint) {
     setInstall('feed');
     const feed = await refreshFeed(true);
     if (!feed) throw fault(feedState.state === 'missing' ? 'FEED_MISSING' : feedState.state === 'invalid' ? 'FEED_INVALID' : 'NETWORK');
     if (typeof cacheRoot !== 'string' || !path.isAbsolute(cacheRoot)) throw fault('STORAGE');
     await fsImpl.promises.mkdir(cacheRoot, { recursive: true });
-    const dir = await fsImpl.promises.mkdtemp(path.join(cacheRoot, 'setup-'));
+    await sweep();
+    // 실제 경로(짧은 이름 · 연결점을 푼 것) 아래에 만든다. 쥔 뒤의 실제 경로 확인이 이 이름과 견준다
+    const base = await fsImpl.promises.realpath(cacheRoot);
+    const dir = await fsImpl.promises.mkdtemp(path.join(base, 'setup-'));
     const file = path.join(dir, setupName(feed.version));
-    let holder = null, requestName = null;
+    let holder = null, requestName = null, keepRequest = false;
     try {
       setInstall('download');
       await download({ feed, file, request, onProgress: progress => { install = { ...install, progress }; } });
       setInstall('verify');
-      holder = await hold(file);
+      holder = await holdWithRetry(file);
+      if (!(await sameRealPath(file))) throw fault('VERIFY_FAILED');
       const digest = await digestFile(file, feed.size, fsImpl);
       if (digest.size !== feed.size || digest.sha256 !== feed.sha256) throw fault('VERIFY_FAILED');
       const parsed = parseSignature(feed.signature);
       if (!verifySignature(digest.blake, parsed, keys)) throw fault('VERIFY_FAILED');
       requestName = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises });
       setInstall('admin');
-      const ran = await holder.run(() => setInstall('install'));
+      let started = false;
+      const ran = await holder.run(() => { started = true; setInstall('install'); });
       holder = null;
       if (ran.outcome === 'declined') throw fault('DECLINED');
-      if (ran.outcome !== 'exited') throw fault('INSTALL_STOPPED');
-      const after = await engineNow(true);
-      if (!after.installed) throw fault('INSTALL_STOPPED');
-      requestName = null;
+      // 쥔 PowerShell이 설치 도중 끝나도 설치기는 돌 수 있다. 띄운 뒤라면 요청을 남기고 엔진이 생기는지 몇 번 더 본다
+      if (started) keepRequest = true;
+      if (!started) throw fault('INSTALL_STOPPED');
+      if (!(await engineAppeared())) throw fault('INSTALL_STOPPED');
       setInstall('done');
     } finally {
-      holder?.release();
-      if (requestName && paths) await fsImpl.promises.unlink(path.join(paths.requests, requestName)).catch(() => {});
-      await fsImpl.promises.rm(dir, { recursive: true, force: true }).catch(() => {});
+      if (holder) await holder.release();
+      if (requestName && paths && !keepRequest) await fsImpl.promises.unlink(path.join(paths.requests, requestName)).catch(() => {});
+      await removeDir(dir);
     }
   }
 
-  /* 「보호 시작」 · 「이 PC로 옮겨 오기」 · 「다시 깔기」. 엔진이 있으면 setup만 쓰고 엔진 창을 연다 */
+  /* 「보호 시작」 · 「이 PC로 옮겨 오기」 · 「다시 깔기」. 엔진이 있으면 setup만 쓰고 엔진 창을 연다.
+     누름이 겹치지 않게 첫 await 전에 busy를 세운다(설계 검토 P1, 11-20) */
   async function start(account, asked, { getHint = async () => null } = {}) {
     if (!allowed(account)) return { ok: false, code: 'NOT_AVAILABLE' };
     if (!MODES.includes(asked)) return { ok: false, code: 'INVALID' };
     if (busy) return { ok: false, code: 'BUSY' };
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    busy = gate;
+    let view = null;
+    try { ({ view } = await state()); } catch { view = null; }
+    if (!['no-engine', 'engine-removed', 'needs-setup'].includes(view)) { busy = null; release(); return { ok: false, code: 'NOT_NEEDED' }; }
     mode = asked;
-    const { view } = await state();
-    if (!['no-engine', 'engine-removed', 'needs-setup'].includes(view)) return { ok: false, code: 'NOT_NEEDED' };
     busy = (async () => {
       let hint = null;
       try { hint = await getHint(); } catch { hint = null; }
       if (view === 'needs-setup') {
         setInstall('opening');
-        await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises });
-        await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`);
+        try { await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises }); } catch { throw fault('REQUEST_FAILED'); }
+        try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); } catch { throw fault('OPEN_FAILED'); }
         setInstall('opened');
         return;
       }
       await installEngine(mode, hint);
     })().catch(error => { setInstall('error', { code: error?.backupCode || (['ENOSPC', 'EACCES', 'EPERM', 'EROFS', 'EIO'].includes(error?.code) ? 'STORAGE' : 'NETWORK') }); })
-      .finally(() => { busy = null; });
+      .finally(() => { busy = null; release(); });
     return { ok: true };
   }
 

@@ -1254,7 +1254,7 @@ test('the view writes summary words only as text and waits for the object names 
   // 백업 오브제는 그 방과 함께 선다(11-20 백업·복구 탭 세션). 방의 할 일 단추도 글자로만 만든다
   assert.match(src, /data-orb-prog="backup"/, 'the backup object stands after subscriptions');
   assert.match(src, /data-room="solio-backup"/, 'with its room');
-  assert.match(src, /const b = button\(a\.primary \? 'reread primary' : 'reread', a\.label,/, 'backup buttons are built with textContent');
+  assert.match(src, /const b = button\(a\.primary \? 'reread lead' : 'reread', a\.label,/, 'backup buttons are built with textContent');
   const { railSettleMs } = await import('../renderer/orb-face-view.mjs');
   assert.equal(railSettleMs(3), 620, 'three names: the sketch value');
   assert.equal(railSettleMs(2), 550, 'two names: 0.46 s plus one 70 ms step, with the same margin');

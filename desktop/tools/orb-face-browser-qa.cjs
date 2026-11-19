@@ -536,6 +536,50 @@ if(!process.versions.electron){
             r.win.destroy();
           }
         }
+        // 21. 솔리오 「백업」(11-20, 1단계 설계 4.13 「화면 쪽 구현」). 실제 입구가 있는 계정은 구독 다음 자리에 백업 오브제가 서고, 방에 결론 · 할 일 단추 · 줄이 있다.
+        //     단추는 정해진 동작과 낱말만 넘기고, 엔진이 없을 때 · 관리자 확인 중 · 지키는 중 · 확인할 일을 찍는다. 입구가 없는 계정에는 오브제가 없다
+        if(only('21')&&mode==='main'){
+          const T=new Date(now).toISOString(),later=new Date(now+50*60000).toISOString(),before=new Date(now-10*60000).toISOString();
+          const status={engine:'0.7.0',state:'safe',lastBackupAt:before,proof:{at:new Date(now-3*D).toISOString(),result:'passed'},attention:[],job:null,folders:4,bytes:53687091200,writer:true,nextRunAt:later,writtenAt:before};
+          const snap=patch=>({ok:true,available:true,view:'status',now:T,engine:{installed:true,version:'0.7.0'},status,feed:{state:'unknown',version:null},install:{phase:'idle',progress:0,code:null,mode:null},...patch});
+          const none=snap({view:'no-engine',engine:{installed:false,version:null},status:null,feed:{state:'available',version:'0.7.0'}});
+          const objs=w=>w.js("[...document.querySelectorAll('#portal-entry [data-orb-prog]')].filter(o=>!o.hidden).map(o=>o.dataset.orbProg)");
+          const room=w=>w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio-backup]');return {hidden:r.hidden,say:r.querySelector('[data-bak-say]').textContent,then:r.querySelector('[data-bak-then]').textContent,acts:[...r.querySelectorAll('[data-bak-acts] button')].map(b=>b.textContent+'|'+b.dataset.orbAct+'|'+b.dataset.orbArg+'|'+(b.getAttribute('aria-disabled')||'')),rows:r.querySelectorAll('button.row[data-vis]').length,subs:!document.querySelector('#portal-entry [data-room=solio]').hidden};})()");
+          const w=await open();await boot(w,{subs:subsReady,backup:none},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          const o1=await objs(w);
+          check('21 an account with the real entry sees 구독 then 백업',JSON.stringify(o1)===JSON.stringify(['subs','backup']),{objs:o1});
+          const first=await room(w);
+          check('21 the first screen stays the subscriptions room (no backup line there)',first.hidden&&first.subs,first);
+          await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(700);
+          const r1=await room(w);
+          check('21 with no engine the room says so in one line and offers 보호 시작 and 이 PC로 옮겨 오기',!r1.hidden&&/아직 백업하지 않고/.test(r1.say)&&JSON.stringify(r1.acts)===JSON.stringify(['보호 시작|backup-start|protect|','이 PC로 옮겨 오기|backup-start|move|'])&&r1.rows===3,r1);
+          await captureSizes(w,'backup-no-engine');
+          await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-start"]');await wait(400);
+          check('21 보호 시작 asks the main process with the one word protect',(await calls(w)).includes('backup-start:protect'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({view:'no-engine',engine:{installed:false,version:null},status:null,install:{phase:'admin',progress:100,code:null,mode:'protect'}}))+')');
+          await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(2600);
+          const r2=await room(w);
+          check('21 while the administrator prompt is up the room says what to press and offers no button',/관리자 확인/.test(r2.say)&&r2.acts.length===0,r2);
+          await capture(w,'backup-admin');
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({}))+')');await wait(2600);
+          const r3=await room(w);
+          check('21 a safe status names the folders, the last check and the engine buttons',/업무 폴더 4개를 지키고 있습니다/.test(r3.say)&&/마지막 확인/.test(r3.then)&&r3.acts.map(a=>a.split('|')[2]).join()==='restore,move,status'&&r3.rows===5,r3);
+          await captureSizes(w,'backup-safe');
+          await w.js('window.__orbFixture.setBackup('+JSON.stringify(snap({status:{...status,state:'attention',attention:['signin']}}))+')');
+          await click(w,'#portal-entry [data-orb-prog="backup"]');await wait(900);
+          const r4=await room(w);
+          check('21 an attention topic leads with its own engine screen',/Google 로그인/.test(r4.say)&&r4.acts[0]==='엔진 창에서 확인|backup-open|signin|',r4);
+          await click(w,'#portal-entry [data-room=solio-backup] [data-orb-act="backup-open"]');await wait(300);
+          check('21 the button opens the engine with the topic word only',(await calls(w)).includes('backup-open:signin'),{calls:(await calls(w)).filter(c=>c.startsWith('backup'))});
+          await capture(w,'backup-attention');
+          w.win.destroy();
+          const v=await open();await boot(v,{subs:subsReady,visits:{ok:true,available:true,summary:visitSummary()}},{restore:signedIn('none')});
+          await until(v,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
+          const o2=await objs(v);
+          check('21 an account without the real entry has no backup object',!o2.includes('backup')&&o2.includes('visits'),{objs:o2});
+          v.win.destroy();
+        }
         // 4. 배정 하나(Workspace, PULSE 각각)
         // 17. 2단계 첫 조각: 구 곁의 펼침과 구독 줄 안쪽(2단계_첫조각_구현설계.md 5절). 숨은 창에는 실제 마우스가 오지 않아 그 자리의 요소에 포인터 사건을 직접 보낸다(현장 노트 시험_화면확인)
         if(only('17')&&mode==='main'){
