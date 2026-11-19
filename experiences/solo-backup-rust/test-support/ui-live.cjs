@@ -45,12 +45,18 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
    *  그 사이에 늦은 답이 화면에 올라오지 않는지 본다) · 'limit'(계정에 잇지 않은 PC, Google로 시작이 LIMIT_DEVICES로 막힘 — 화면 요청 9 · 15) ·
    *  'stop'(전체 되살리기가 도는 PC — cancelRestore가 그만두는 중으로 바꾸고, 다음 상태 읽기에서 그만둔 뒤가 된다, 요청 16) ·
    *  'stopdone'(같은 PC, 누르는 사이 되살리기가 끝나 cancelRestore가 stopping: false로 답한다) ·
-   *  'denied'(계정에 잇지 않은 PC, Google 화면의 Drive 칸을 켜지 않아 「Google로 시작」이 DENIED로 끝남) */
+   *  'denied'(계정에 잇지 않은 PC, Google 화면의 Drive 칸을 켜지 않아 「Google로 시작」이 DENIED로 끝남) ·
+   *  'solio'(솔리오의 「보호 시작」으로 온 창 — state.solio.setup, 로그인은 __finishSignIn까지 기다리다 REAUTH) ·
+   *  'solio-move'(솔리오의 「이 PC로 옮겨 오기」로 온 창 — 로그인하면 다른 PC가 백업하는 계정) · 'settings'(넘긴 PC, 설정 서랍의 쉬는 Wi-Fi · AI 도구) */
   async function scenario(start) {
     const ctx = await browser.newContext({ viewport: { width: 1080, height: 820 }, locale: 'ko-KR', timezoneId: 'Asia/Seoul', reducedMotion: 'reduce' });
-    await ctx.addInitScript(({ handedHome, readState, signinState, restoring, stopping, stopped, handed, ended, result, bigResult, list, checklist, start }) => {
+    await ctx.addInitScript(({ solioStart, solioMoveStart, readConn, handedHome, readState, signinState, restoring, stopping, stopped, handed, ended, result, bigResult, list, checklist, start }) => {
       const calls = []; window.__calls = calls; window.__args = [];
-      let cur = start === 'stop' || start === 'stopdone' ? restoring : start === 'limit' || start === 'denied' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
+      let cur = start === 'solio-restore' ? { ...readState, solio: { ...readState.solio, setup: { mode: 'protect', hint: null, at: '2026-11-17T04:00:00.000Z' } } } : start === 'solio' ? solioStart : start === 'solio-move' ? solioMoveStart : start === 'stop' || start === 'stopdone' ? restoring : start === 'limit' || start === 'denied' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
+      // 솔리오 잇기 — 같은(또는 새) 요청이 다시 실린 상태를 보낸다
+      window.__handover = () => { cur = { ...handedHome, solio: cur.solio }; window.__push?.(); };
+      window.__setRest = (names) => { cur = { ...cur, solio: { ...cur.solio, restNetworks: names } }; window.__push?.(); };
+      window.__resetup = (at) => { cur = { ...cur, solio: { ...cur.solio, setup: { mode: 'protect', hint: 'studio@example.com', at: at || '2026-11-17T04:00:00.000Z' } } }; window.__push?.(); };
       window.__TAURI__ = { core: { invoke: async (_n, { method, args }) => {
         calls.push(method); window.__args.push({ method, input: args?.[0] ?? null });
         // 옛 PC 판 — 한 층 읽기와 범위 목록
@@ -67,6 +73,14 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'restoreScope') return { ok: true, value: cur };
         if (method === 'openRestoreFolder' || method === 'openSelectedRestoreFolder') return { ok: true, value: null };
         // 기기가 다 참 — 다시 깐 PC의 옛 연결(백업하는 기기, sameInstall)과 되살리기 기기 둘
+        // 솔리오 잇기 — signInGoogle을 부르면 엔진이 setup을 지운다(handlers.cjs)
+        if (method === 'signInGoogle' && start === 'solio') { cur = { ...cur, solio: { ...cur.solio, setup: null } }; return new Promise((r) => { window.__finishSignIn = () => r({ ok: false, error: 'x', code: 'REAUTH' }); }); }
+        if (method === 'signInGoogle' && start === 'solio-move') { cur = { ...readConn, solio: { ...cur.solio, setup: null } }; return { ok: true, value: cur }; }
+        if (method === 'openAccountBackup') { cur = { ...readState, solio: cur.solio }; return { ok: true, value: cur }; }
+        if (method === 'setRestNetworks') { cur = { ...cur, solio: { ...cur.solio, restNetworks: args[0] } }; return { ok: true, value: cur }; }
+        if (method === 'setAiTools') { const i = args?.[0] || {}, t = cur.solio.aiTools; cur = { ...cur, solio: { ...cur.solio, aiTools: { ...t, tools: { ...t.tools, ...(i.tools || {}) }, masks: i.masks ?? t.masks } } }; return { ok: true, value: cur }; }
+        if (method === 'wifiName') return { ok: true, value: '집 Wi-Fi' };
+        if (method === 'aiToolsState') return { ok: true, value: { ...cur.solio.aiTools, clients: [{ name: 'claude-code', version: '2.1.0', exe: 'C:\\Tools\\claude.exe', firstSeen: '2026-11-15T01:00:00Z', lastSeen: '2026-11-17T04:40:00Z' }] } };
         if (method === 'signInGoogle' && start === 'denied') {
           if (calls.filter((c) => c === 'signInGoogle').length < 2) return { ok: false, error: 'x', code: 'DENIED' };
           return new Promise((r) => { window.__finishSignIn = () => r({ ok: false, error: 'x', code: 'REAUTH' }); });
@@ -98,7 +112,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'continueBackup') { cur = handedHome; return { ok: true, value: cur }; }
         return { ok: false, error: 'x', code: 'FIXTURE' };
       } }, event: { listen: async (n, fn) => { if (n === 'backup:state') window.__push = () => fn({ payload: { ...cur } }); return () => {}; } } };
-    }, { handedHome, readState, signinState: STATES['start-signin'], restoring: STATES['home-restoring'], stopping: STATES['home-restore-stopping'], stopped: STATES['home-restore-stopped'], handed: MOVE_MV.handed.state, ended: MOVE_MV.result.state, result: MOVE_MV.result.result, bigResult: MOVE_MV.toobigResult.result, list: MOVE_APPS.list, checklist: MOVE_APPS.checklist, start });
+    }, { solioStart: STATES['start-solio'], solioMoveStart: STATES['start-solio-move'], readConn: STATES['start-read'], handedHome, readState, signinState: STATES['start-signin'], restoring: STATES['home-restoring'], stopping: STATES['home-restore-stopping'], stopped: STATES['home-restore-stopped'], handed: MOVE_MV.handed.state, ended: MOVE_MV.result.state, result: MOVE_MV.result.result, bigResult: MOVE_MV.toobigResult.result, list: MOVE_APPS.list, checklist: MOVE_APPS.checklist, start });
     const pg = await ctx.newPage(), errors = [];
     pg.on('pageerror', (e) => errors.push(e.message));
     await pg.goto(base);
@@ -258,6 +272,96 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
     x = await pg.evaluate(() => ({ box: document.querySelector('#room .box')?.innerText || '', note: document.getElementById('note')?.textContent || '' }));
     check('두 번째가 DENIED가 아니면(REAUTH) 거절 상자가 다시 나오지 않는다(카본 A4)', !/허락을 받지 못했습니다/.test(x.box) && /Google 로그인을 마치지 않았습니다/.test(x.note), JSON.stringify(x));
     check('쪽 오류 없음(Drive 칸)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  // 10. 솔리오 잇기 — 설정 서랍의 쉬는 Wi-Fi · AI 도구
+  {
+    const { pg, ctx, errors } = await scenario('settings');
+    await click(pg, '[data-act="drawer"]');
+    let x = await pg.evaluate(() => ({ rest: !!document.querySelector('#drawer-panel [data-act="rest-net"]'), ai: !!document.querySelector('#drawer-panel [data-act="ai-tools"]') }));
+    check('설정 서랍에 「쉬는 Wi-Fi」와 「AI 도구」 줄이 있다', x.rest && x.ai, JSON.stringify(x));
+    await click(pg, '#drawer-panel [data-act="rest-net"]');
+    x = await pg.evaluate(() => ({ screen: document.getElementById('stage').dataset.screen, text: document.getElementById('room').innerText, calls: window.__calls.slice() }));
+    check('「고르기」로 쉬는 Wi-Fi 화면이 열리면 wifiName(E30)을 한 번 불러 지금 Wi-Fi를 보인다', x.screen === 'rest-net' && x.calls.filter((c) => c === 'wifiName').length === 1 && /지금 이어진 Wi-Fi는 「집 Wi-Fi」입니다/.test(x.text) && /아직 고른 Wi-Fi가 없습니다/.test(x.text), JSON.stringify(x).slice(0, 300));
+    await pg.fill('#rest-in', '  휴대폰 핫스팟 '); await pg.press('#rest-in', 'Enter'); await pg.waitForTimeout(600);
+    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setRestNetworks').map((a) => a.input), val: document.getElementById('rest-in')?.value, text: document.getElementById('room').innerText, note: document.getElementById('note').textContent, focus: document.activeElement?.id }));
+    check('Enter로 더하면 앞뒤 빈칸을 뗀 이름으로 setRestNetworks를 부르고, 칸을 비우고 포커스를 칸에 둔다', JSON.stringify(x.args) === JSON.stringify([['휴대폰 핫스팟']]) && x.val === '' && /휴대폰 핫스팟/.test(x.text) && /에 이어져 있는 동안 매시간 백업을 쉽니다/.test(x.note) && x.focus === 'rest-in', JSON.stringify(x));
+    await pg.fill('#rest-in', '가'.repeat(11)); await click(pg, '#room [data-act="rest-add"]');
+    x = await pg.evaluate(() => ({ n: window.__args.filter((a) => a.method === 'setRestNetworks').length, note: document.getElementById('note').textContent, val: document.getElementById('rest-in')?.value }));
+    check('UTF-8로 32바이트가 넘는 이름은 보내지 않고 까닭을 쓰며, 적은 글은 남긴다', x.n === 1 && /너무 깁니다/.test(x.note) && x.val === '가'.repeat(11), JSON.stringify(x));
+    // Opus 대체 검수 F4 — 지금 Wi-Fi와 대소문자만 다른 이름은 읽은 이름으로 더한다
+    await pg.fill('#rest-in', '집 wi-fi'); await pg.press('#rest-in', 'Enter'); await pg.waitForTimeout(600);
+    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setRestNetworks').map((a) => a.input), note: document.getElementById('note').textContent }));
+    check('지금 Wi-Fi와 대소문자만 다르게 적은 이름은 읽은 이름 그대로 더하고 그렇다고 알린다', JSON.stringify(x.args[1]) === JSON.stringify(['휴대폰 핫스팟', '집 Wi-Fi']) && /대소문자를 지금 이어진 Wi-Fi 이름에 맞춰 「집 Wi-Fi」 그대로 더했습니다/.test(x.note), JSON.stringify(x));
+    // Opus 대체 검수 F5 — 키보드로 누른 「빼기」가 사라지면 포커스를 남은 줄의 「빼기」로 옮긴다
+    await pg.focus('#room [data-act="rest-drop"][data-name="집 Wi-Fi"]'); await pg.keyboard.press('Enter'); await pg.waitForTimeout(700);
+    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setRestNetworks').map((a) => a.input), focus: document.activeElement?.dataset?.name || document.activeElement?.id || document.activeElement?.tagName }));
+    check('「빼기」는 그 이름을 뺀 목록으로 부르고, 포커스를 남은 줄의 「빼기」로 옮긴다', JSON.stringify(x.args[2]) === JSON.stringify(['휴대폰 핫스팟']) && x.focus === '휴대폰 핫스팟', JSON.stringify(x));
+    await pg.focus('#room [data-act="rest-here"]'); await pg.keyboard.press('Enter'); await pg.waitForTimeout(700);
+    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setRestNetworks').map((a) => a.input), text: document.getElementById('room').innerText, focus: document.activeElement?.id || '' }));
+    check('「이 Wi-Fi에서 쉬기」는 지금 Wi-Fi 이름을 그대로 더하고 「이미 고른 Wi-Fi」로 바뀌며, 포커스를 이름 칸으로 옮긴다', JSON.stringify(x.args[3]) === JSON.stringify(['휴대폰 핫스팟', '집 Wi-Fi']) && /「집 Wi-Fi」에서는 매시간 백업을 쉽니다\. 이미 고른 Wi-Fi입니다/.test(x.text) && x.focus === 'rest-in', JSON.stringify(x).slice(0, 300));
+    // Opus 대체 검수 F3 — 한글을 조합하는 동안 상태가 바뀌어도 칸을 갈아 끼우지 않고, 조합이 끝나면 다시 그리며 적던 글과 포커스를 지킨다
+    x = await pg.evaluate(async () => {
+      const el = document.getElementById('rest-in'); el.focus(); el.__mark = 1;
+      el.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
+      el.value = '하'; el.dispatchEvent(new InputEvent('input', { bubbles: true, isComposing: true }));
+      window.__setRest(['휴대폰 핫스팟', '집 Wi-Fi', '새 망']);
+      await new Promise((r) => setTimeout(r, 300));
+      const during = { same: document.getElementById('rest-in')?.__mark === 1, listed: /새 망/.test(document.getElementById('room').innerText) };
+      el.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: '하' }));
+      await new Promise((r) => setTimeout(r, 300));
+      return { during, listed: /새 망/.test(document.getElementById('room').innerText), value: document.getElementById('rest-in')?.value, focus: document.activeElement?.id || '' };
+    });
+    check('한글을 조합하는 동안에는 칸을 갈아 끼우지 않고, 조합이 끝나면 다시 그리며 적던 글과 포커스를 지킨다', x.during.same && !x.during.listed && x.listed && x.value === '하' && x.focus === 'rest-in', JSON.stringify(x));
+    await click(pg, '#room [data-act="drawer"]'); await click(pg, '#drawer-panel [data-act="ai-tools"]');
+    x = await pg.evaluate(() => ({ screen: document.getElementById('stage').dataset.screen, text: document.getElementById('room').innerText, calls: window.__calls.slice() }));
+    check('「AI 도구」 화면이 열리면 aiToolsState로 이어 온 도구를 다시 읽어 이름과 띄운 프로그램을 보인다', x.screen === 'ai-tools' && x.calls.includes('aiToolsState') && /claude-code/.test(x.text) && /claude\.exe/.test(x.text), JSON.stringify(x).slice(0, 300));
+    await click(pg, '#room [data-act="ai-tool"][data-tool="find_restorable"]');
+    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setAiTools').map((a) => a.input), label: document.querySelector('#room [data-tool="find_restorable"]')?.textContent, focus: document.activeElement?.dataset?.tool || '' }));
+    check('「켜기」는 그 도구 하나만 setAiTools로 켜고, 단추가 「끄기」가 되며 포커스가 그 단추에 남는다', JSON.stringify(x.args) === JSON.stringify([{ tools: { find_restorable: true } }]) && x.label === '끄기' && x.focus === 'find_restorable', JSON.stringify(x));
+    await pg.fill('#mask-in', '건강'); await pg.press('#mask-in', 'Enter'); await pg.waitForTimeout(600);
+    x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'setAiTools').map((a) => a.input), text: document.getElementById('room').innerText, val: document.getElementById('mask-in')?.value }));
+    check('가리는 낱말은 도구를 바꾸지 않고(tools 빈 칸) masks에 더하고 칸을 비운다', JSON.stringify(x.args[1]) === JSON.stringify({ tools: {}, masks: ['건강'] }) && /건강/.test(x.text) && x.val === '', JSON.stringify(x.args));
+    check('쪽 오류 없음(쉬는 Wi-Fi · AI 도구)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  // 11. 솔리오가 넘긴 처음 시작(state.solio.setup) — 「Google로 시작」을 누르지 않아도 hint를 실어 로그인을 연다. 같은 요청은 한 번만
+  {
+    const { pg, ctx, errors } = await scenario('solio');
+    let x = await pg.evaluate(() => ({ args: window.__args.filter((a) => a.method === 'signInGoogle').map((a) => a.input), text: document.getElementById('room').innerText }));
+    check('솔리오의 「보호 시작」으로 온 창은 누르지 않아도 hint를 실어 signInGoogle을 부르고, 브라우저가 열린 까닭을 쓴다', JSON.stringify(x.args) === JSON.stringify([{ hint: 'studio@example.com' }]) && /솔리오에서 「보호 시작」을 눌러 Google 로그인을 바로 열었습니다/.test(x.text), JSON.stringify(x).slice(0, 400));
+    await pg.evaluate(() => window.__resetup()); await pg.waitForTimeout(300);
+    await pg.evaluate(() => window.__finishSignIn?.()); await pg.waitForTimeout(300);
+    await pg.evaluate(() => window.__resetup()); await pg.waitForTimeout(300);
+    x = await pg.evaluate(() => ({ n: window.__calls.filter((c) => c === 'signInGoogle').length, text: document.getElementById('room').innerText }));
+    check('같은 요청(at)이 다시 와도 로그인을 다시 열지 않고, 마치지 않으면 「Google로 시작」으로 남는다', x.n === 1 && /Google로 시작/.test(x.text) && !/솔리오에서/.test(x.text), JSON.stringify(x).slice(0, 300));
+    await pg.evaluate(() => window.__resetup('2026-11-17T04:10:00.000Z')); await pg.waitForTimeout(300);
+    x = await pg.evaluate(() => ({ n: window.__calls.filter((c) => c === 'signInGoogle').length }));
+    check('새 요청(다른 at)은 다시 연다', x.n === 2, JSON.stringify(x));
+    await pg.evaluate(() => window.__finishSignIn?.()); await pg.waitForTimeout(200);
+    check('쪽 오류 없음(솔리오 처음 시작)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  {
+    const { pg, ctx, errors } = await scenario('solio-move');
+    const x = await pg.evaluate(() => ({ calls: window.__calls.slice(), args: window.__args.filter((a) => a.method === 'signInGoogle').map((a) => a.input) }));
+    const i = x.calls.indexOf('signInGoogle'), j = x.calls.indexOf('openAccountBackup');
+    check('솔리오의 「이 PC로 옮겨 오기」로 온 창은 로그인 뒤, 다른 PC가 백업하는 계정이면 계정의 백업을 열어 옮겨 오기로 간다(hint가 없으면 빈 입력)', i >= 0 && j > i && JSON.stringify(x.args) === '[{}]', JSON.stringify(x));
+    check('쪽 오류 없음(솔리오 옮겨 오기)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  // 12. 옮겨 온 백업을 되살리기만 하는 PC로 온 솔리오의 「보호 시작」 — 말없이 버리지 않고 까닭을 상자로(Opus 대체 검수 F2)
+  {
+    const { pg, ctx, errors } = await scenario('solio-restore');
+    const x = await pg.evaluate(() => ({ n: window.__calls.filter((c) => c === 'signInGoogle').length, box: [...document.querySelectorAll('#room .box')].map((b) => b.innerText).join(' | '), screen: document.getElementById('stage').dataset.screen,
+      buttons: [...document.querySelectorAll('#room [data-act]')].map((b) => b.textContent.trim()) }));
+    // 상자가 누르라는 단추는 그 화면에 실제로 있는 단추다(옮겨 오기 상태를 읽으면 「옮겨 오기 끝」 화면의 단추가 된다)
+    const named = (x.box.match(/아래 「([^」]+)」/) || [])[1];
+    check('되살리기만 하는 PC로 온 「보호 시작」은 로그인을 열지 않고 기본 화면에 까닭과 다음 걸음을 상자로 쓴다', x.n === 0 && x.screen === 'home' && /솔리오의 「보호 시작」을 여기서 바로 잇지 못했습니다/.test(x.box) && !!named && x.buttons.some((b) => b.startsWith(named)), JSON.stringify(x));
+    await pg.evaluate(() => window.__handover()); await pg.waitForTimeout(500);
+    const y = await pg.evaluate(() => ({ box: [...document.querySelectorAll('#room .box')].map((b) => b.innerText).join(' | ') }));
+    check('이어서 백업해 백업하는 PC가 되면 그 상자를 걷는다(Opus 대체 다시 검수 -b)', !/여기서 바로 잇지 못했습니다/.test(y.box), JSON.stringify(y));
+    check('쪽 오류 없음(솔리오 · 되살리기만 하는 PC)', !errors.length, errors.join(' | '));
     await ctx.close();
   }
   // 8. 도는 되살리기 그만두기(요청 16) — 「되살리기 그만두기」 → cancelRestore → 그만두는 중 → 그만둔 뒤의 한 줄

@@ -93,6 +93,18 @@ async function wd(method, url, body) {
     // folder 없는 범위 받기는 거절되고(NO_METHOD가 아니다), 만들다 만 폴더가 없는 이 시험 PC에서는 NOT_FOUND다
     const rsNo = await callOf('restoreScope', '{profile:"local"}'), olNo = await callOf('openRestoreFolder', '{unfinished:true}');
     check('restoreScope · openRestoreFolder({unfinished})가 엔진에 닿는다', !!rsNo && rsNo.ok === false && ['INVALID_REQUEST', 'BAD_INPUT'].includes(rsNo.code) && !!olNo && olNo.ok === false && olNo.code === 'NOT_FOUND', JSON.stringify({ rsNo, olNo }));
+    // 솔리오 잇기(엔진 305e380fe) — 창 상태의 solio 칸과 새 메서드 셋이 다리와 계약을 지나 엔진에 닿는다. 쓰는 곳은 시험 상태 폴더뿐이다
+    const so = await callOf('getState', '');
+    const sov = so?.value?.solio || null;
+    check('창 상태에 solio 칸(setup · restNetworks · aiTools)이 있다', !!sov && sov.setup === null && Array.isArray(sov.restNetworks) && !!sov.aiTools && typeof sov.aiTools.tools === 'object', JSON.stringify(sov));
+    const restSet = await callOf('setRestNetworks', '["시험 Wi-Fi"]'), restBad = await callOf('setRestNetworks', `["${'가'.repeat(11)}"]`), restClear = await callOf('setRestNetworks', '[]');
+    check('setRestNetworks가 엔진에 닿아 목록을 쓰고 새 상태를 돌려주며, 32바이트 넘는 이름은 BAD_INPUT으로 거절한다', restSet?.ok === true && JSON.stringify(restSet.value?.solio?.restNetworks) === '["시험 Wi-Fi"]'
+      && restBad?.code === 'BAD_INPUT' && restClear?.ok === true && JSON.stringify(restClear.value?.solio?.restNetworks) === '[]', JSON.stringify({ restSet: restSet?.value?.solio?.restNetworks, restBad, restClear: restClear?.value?.solio?.restNetworks }));
+    const wifi = await callOf('wifiName', '');
+    check('wifiName(E30)이 엔진에 닿고 시험 모드에서는 Wi-Fi 이름을 읽지 않는다(null)', wifi?.ok === true && wifi.value === null, JSON.stringify(wifi));
+    const aiNow = await callOf('aiToolsState', ''), aiBad = await callOf('setAiTools', '{tools:{protection_status:true}}'), aiMask = await callOf('setAiTools', '{tools:{},masks:["시험"]}'), aiBack = await callOf('setAiTools', '{tools:{},masks:[]}');
+    check('aiToolsState · setAiTools가 엔진에 닿는다(켜고 끄는 칸이 없는 상태 도구는 거절)', aiNow?.ok === true && Array.isArray(aiNow.value?.clients) && aiNow.value?.tools && 'find_restorable' in aiNow.value.tools
+      && aiBad?.code === 'BAD_INPUT' && aiMask?.ok === true && JSON.stringify(aiMask.value?.solio?.aiTools?.masks) === '["시험"]' && aiBack?.ok === true, JSON.stringify({ aiNow: aiNow?.value, aiBad, aiMask: aiMask?.value?.solio?.aiTools }));
     // E17 · E24 — moveState에 깔기 · 설정 결과, 다시 로그인할 곳의 남은 수, begun이 실린다(옮겨 온 적 없는 PC는 비었다)
     const mvs = mvState?.value || {};
     check('moveState · moveResult가 엔진에 닿는다', mvState?.ok === true && mvState.value && mvs.unfinished === false && mvs.running === false && mvResult?.ok === true && mvResult.value === null

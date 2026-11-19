@@ -369,7 +369,7 @@ function baseModel(state, now, opts) {
       return { ...base, id: 'home-continue', tone: 'setup', kick: `${device} · 이어서 백업할 차례`, title: '이 계정의 백업을 열어 두었습니다.',
         sub: picked.length ? '「이어서 백업」을 누르면 이 PC가 그 백업에 이어서 매시간 올립니다. 지금까지의 판은 그대로 둡니다.' : '이어서 지킬 폴더를 먼저 고르세요. 고른 뒤 「이어서 백업」을 누르면 이 PC가 그 백업에 이어서 매시간 올립니다.',
         box: a.googleStepRequired ? GOOGLE_STEP : null, googleStep: !!a.googleStepRequired,
-        actions: [picked.length ? { id: 'continue', label: '이어서 백업', kind: 'main', call: 'continueBackup', account: true } : { id: 'pick', label: '지킬 폴더 고르기', kind: 'main', call: 'chooseSources', onAccountProfile: true },
+        actions: [picked.length ? { id: 'continue', label: '이어서 백업', kind: 'main', call: 'continueBackup', account: true, take: true } : { id: 'pick', label: '지킬 폴더 고르기', kind: 'main', call: 'chooseSources', onAccountProfile: true, take: true },
           ...(picked.length ? [{ id: 'pick', label: '폴더 다시 고르기', kind: 'link', call: 'chooseSources', onAccountProfile: true }] : []), { ...RESTORE, kind: 'line' }],
         evidence: evidence(s, now, { state: 'moved' }) };
     }
@@ -382,7 +382,7 @@ function baseModel(state, now, opts) {
         return { ...base, ...step, id: 'home-move-stopped', tone: 'warn', stamp: '멈춤', kick: `${device} · 옮겨 오기 멈춤`, title: '옮겨 오기가 중간에 멈췄습니다.', sub: moveStopText(s, mvs),
           // 파일을 놓기 전에 공간이나 목록 때문에 멈췄으면 같은 자리로는 또 멈춘다 — 자리를 다시 고르게 한다(E9 GA1)
           actions: [moveRechoose(s, mvs) ? { id: 'move-in', label: '자리 다시 고르기', kind: 'main', to: 'move-1' } : { id: 'move-resume', label: '이어서 옮겨 오기', kind: 'main', flow: 'moveResume' },
-            { ...RESTORE, kind: 'line' }, { id: 'move-quit', label: '그만두고 이 PC로 이어서 백업', kind: 'link', to: 'move-4' }],
+            { ...RESTORE, kind: 'line' }, { id: 'move-quit', label: '그만두고 이 PC로 이어서 백업', kind: 'link', to: 'move-4', take: true }],
           evidence: evidence(s, now, { state: 'moved' }) };
       }
       if (mvs.resultAt && !mvs.released) {
@@ -390,7 +390,7 @@ function baseModel(state, now, opts) {
         const title = opts?.result && mvs.complete !== true ? moveTitle(opts.result).main : '옮겨 왔습니다.';
         return { ...base, ...step, id: 'home-move-done', tone: 'moved', stamp: '옮김', kick: `${device} · 옮겨 오기 끝`, title,
           sub: mvs.complete === true ? '이 PC로 이어서 백업하면 옛 PC는 그때부터 백업하지 않습니다. 그때까지 이 PC는 파일을 되살리기만 합니다.' : moveDoneLeftText(opts?.result),
-          actions: [{ id: 'move-next', label: '이 PC로 이어서 백업', kind: 'main', to: 'move-4' }, { id: 'move-result', label: '결과 보기', kind: 'line', to: 'move-3' },
+          actions: [{ id: 'move-next', label: '이 PC로 이어서 백업', kind: 'main', to: 'move-4', take: true }, { id: 'move-result', label: '결과 보기', kind: 'line', to: 'move-3' },
             ...(moveBigFolders(opts?.result).length ? [{ id: 'old-start', label: '옛 PC 백업에서 꺼내기', kind: 'link' }] : []), { ...RESTORE, kind: 'link' }],
           evidence: evidence(s, now, { state: 'moved' }) };
       }
@@ -402,7 +402,7 @@ function baseModel(state, now, opts) {
         sub: `이 계정의 백업은 ${writer ? `「${writer}」${josa(writer, '이/가').slice(writer.length)}` : '다른 PC가'} 하고 있습니다. 새 PC로 바꾸셨다면 옛 PC의 백업을 이 PC로 옮겨 올 수 있습니다.`,
         box: a.googleStepRequired ? GOOGLE_STEP : null, googleStep: !!a.googleStepRequired,
         actions: [RESTORE, { id: 'move-in', label: '이 PC로 옮겨 오기', kind: 'line', to: 'move-1' },
-          picked.length ? { id: 'take-go', label: '되살리지 않고 이 PC에서 이어서 백업', kind: 'link', flow: 'takeOver', account: true, google: true } : { id: 'pick', label: '이 PC에서 백업할 폴더 고르기', kind: 'link', call: 'chooseSources', onAccountProfile: true },
+          picked.length ? { id: 'take-go', label: '되살리지 않고 이 PC에서 이어서 백업', kind: 'link', flow: 'takeOver', account: true, google: true, take: true } : { id: 'pick', label: '이 PC에서 백업할 폴더 고르기', kind: 'link', call: 'chooseSources', onAccountProfile: true, take: true },
           ...(picked.length ? [{ id: 'pick', label: '폴더 다시 고르기', kind: 'link', call: 'chooseSources', onAccountProfile: true }] : [])],
         hint: `이 PC에서 이어서 백업하면 ${writer ? `「${writer}」${josa(writer, '은/는').slice(writer.length)}` : '그 PC는'} 그때부터 백업하지 않습니다.`,
         evidence: evidence(s, now, { state: 'moved' }) };
@@ -1118,3 +1118,32 @@ export function appsPhase(s, apps, st = null) {
   if (apps.list.wingetStatus?.ready !== true) return 'notready';
   return 'pick';
 }
+
+/* ── 솔리오 잇기(설계 4.13 · 4.14 · 4.16) ── */
+/** 엔진(engine/src/solio.cjs)이 받는 꼴 — 쉬는 Wi-Fi는 20개 · 이름 하나 UTF-8 32바이트, 가리는 낱말은 20개 · 낱말 하나 40자 */
+export const REST_MAX = 20, MASK_MAX = 20, MASK_LEN = 40;
+const CTRL = /[\u0000-\u001f\u007f]/;
+/** 쉴 Wi-Fi 이름을 엔진에 보내기 전에 거른다 — 맞으면 null, 아니면 손님에게 보일 까닭 */
+export function restNameProblem(name, names = []) {
+  if (typeof name !== 'string' || !name) return 'Wi-Fi 이름을 적어 주세요.';
+  if (CTRL.test(name)) return '이름에 쓸 수 없는 글자가 들어 있습니다.';
+  if (new TextEncoder().encode(name).length > 32) return 'Wi-Fi 이름이 너무 깁니다. 한글은 10자, 영문과 숫자는 32자까지입니다.';
+  if (names.includes(name)) return '이미 고른 Wi-Fi입니다.';
+  if (names.length >= REST_MAX) return `${REST_MAX}개까지 고를 수 있습니다. 하나를 뺀 뒤 더해 주세요.`;
+  return null;
+}
+/** 가릴 낱말(앞뒤 빈칸을 뗀 것)을 거른다 — 맞으면 null */
+export function maskProblem(word, masks = []) {
+  const w = typeof word === 'string' ? word.trim() : '';
+  if (!w) return '가릴 낱말을 적어 주세요.';
+  if (CTRL.test(w)) return '낱말에 쓸 수 없는 글자가 들어 있습니다.';
+  if (w.length > MASK_LEN) return `가리는 낱말은 ${MASK_LEN}자까지입니다.`;
+  if (masks.includes(w)) return '이미 가리는 낱말입니다.';
+  if (masks.length >= MASK_MAX) return `${MASK_MAX}개까지 둘 수 있습니다. 하나를 뺀 뒤 더해 주세요.`;
+  return null;
+}
+/** 동의가 드는 AI 도구(엔진 AI_TOOLS) — 백업 상태(protection_status)는 이름이 없어 늘 답하므로 켜고 끄는 칸이 없다 */
+export const AI_TOOL_ROWS = Object.freeze([
+  Object.freeze({ id: 'space_report', name: '공간 보고서', obj: '공간 보고서를', what: '드라이브마다 남은 공간과 늘어나는 속도, 지난 7일 늘어난 폴더, 비울 수 있는 후보를 알려 줍니다.' }),
+  Object.freeze({ id: 'find_restorable', name: '백업 안 파일 찾기', obj: '백업 안 파일 찾기를', what: '이름 일부로 백업 안의 파일을 찾아 경로, 크기, 백업한 때를 50개까지 알려 줍니다.' }),
+]);

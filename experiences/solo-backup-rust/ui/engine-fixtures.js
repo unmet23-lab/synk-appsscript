@@ -7,6 +7,10 @@ export const NOW = Date.parse('2026-11-13T14:40:00+09:00');
 const SOURCES = ['C:\\Users\\studio\\Documents', 'C:\\Users\\studio\\Desktop', 'C:\\Users\\studio\\Pictures', 'D:\\Projects'];
 const GB = 1024 ** 3;
 
+// 솔리오 잇기(설계 4.13 · 4.14 · 4.16 — 엔진 305e380fe): 창 상태의 solio 칸
+const SOLIO = { setup: null, restNetworks: [], aiTools: { tools: { space_report: false, find_restorable: false }, masks: [], clients: [] } };
+const SOLIO_SET = { setup: null, restNetworks: ['휴대폰 핫스팟', 'Cafe_Free', '사무실 손님'], aiTools: { tools: { space_report: false, find_restorable: true }, masks: ['건강', '계약'],
+  clients: [{ name: 'claude-code', version: '2.1.0', exe: 'C:\\Users\\studio\\AppData\\Local\\AnthropicClaude\\claude.exe', firstSeen: '2026-11-10T01:00:00Z', lastSeen: '2026-11-13T04:40:00Z' }] } };
 const base = {
   version: '0.7.0', configured: true, mode: 'backup', readOnly: false, automatic: true, providerType: 'b2', profile: 'b2',
   device: '작업 노트북', sources: SOURCES, missingSources: [], intervalMinutes: 60, recoverySaved: true, credentialRequired: false,
@@ -18,7 +22,7 @@ const base = {
   lastPartial: null, nextBackupAt: at('2026-11-13T15:02:00+09:00'), pausedUntil: null, clockHold: false,
   lastProbe: { result: 'passed', at: at('2026-11-10T10:02:00+09:00'), files: 23, bytes: 61 * 1024 * 1024, nextAt: at('2026-11-17T10:02:00+09:00'), reason: 'sample-decrypted' },
   probeHold: null, health: null, lastError: null, warning: null, job: null, launchAtLogin: true,
-  protection: { level: 'active', reason: 'active', nextAction: 'backup' },
+  protection: { level: 'active', reason: 'active', nextAction: 'backup' }, solio: SOLIO,
 };
 
 const acct = (v = {}) => ({ available: true, signedIn: false, email: null, connected: false, role: null, deviceId: null, device: '새 데스크톱', writer: null,
@@ -26,10 +30,12 @@ const acct = (v = {}) => ({ available: true, signedIn: false, email: null, conne
 const signed = (role) => ({ signedIn: true, email: 'studio@example.com', connected: true, role, deviceId: 'd'.repeat(12) });
 const restoreOf = (v) => ({ hold: true, jobId: 'job-1', state: null, awaitingChoice: false, at: Date.parse('2026-11-12T14:59:00+09:00'), byThisDevice: true, error: null, undo: false, ...v });
 const first = { version: '0.7.0', configured: false, mode: 'backup', profile: 'b2', device: '새 데스크톱', sources: [], selection: { sources: [], target: null }, job: null,
-  protection: { level: 'setup', reason: 'setup', nextAction: 'setup' } };
+  protection: { level: 'setup', reason: 'setup', nextAction: 'setup' }, solio: SOLIO };
 
 export const STATES = {
   home: base,
+  // 쉬는 Wi-Fi 셋 · 백업 안 파일 찾기를 켜고 가리는 낱말 둘 · 이어 온 AI 도구 하나
+  'home-solio': { ...base, solio: SOLIO_SET },
   'home-run': { ...base, job: { kind: 'backup', stage: '예약 백업 · 작업 파일 백업 중', percent: 62, scheduled: true }, nextBackupAt: at('2026-11-13T16:02:00+09:00'), protection: { level: 'running', reason: 'job', nextAction: 'none' } },
   'home-partial': { ...base, lastBackup: { ...base.lastBackup, at: at('2026-11-13T13:02:00+09:00') }, lastPartial: { id: 'b'.repeat(64), at: at('2026-11-13T14:02:00+09:00'), unreadable: 2, cut: false, files: 12480, bytes: Math.round(18.4 * GB), program: 'Outlook' }, admin: true },
   'home-missing': { ...base, missingSources: [SOURCES[3]], lastBackup: { ...base.lastBackup, files: 10610, bytes: Math.round(16.2 * GB) } },
@@ -69,6 +75,9 @@ export const STATES = {
   'start-write-picked': { ...first, selection: { sources: SOURCES.slice(0, 3), target: null }, account: acct(signed('write')) },
   'start-google-step': { ...first, selection: { sources: SOURCES.slice(0, 3), target: null }, account: acct({ ...signed('write'), googleStepRequired: true }) },
   'start-read': { ...first, account: acct({ ...signed('read'), writer: '작업 노트북' }) },
+  // 솔리오의 「보호 시작」 · 「이 PC로 옮겨 오기」로 온 처음 시작(state.solio.setup, 30분)
+  'start-solio': { ...first, account: acct(), solio: { ...SOLIO, setup: { mode: 'protect', hint: 'studio@example.com', at: '2026-11-17T04:00:00.000Z' } } },
+  'start-solio-move': { ...first, account: acct(), solio: { ...SOLIO, setup: { mode: 'move', hint: null, at: '2026-11-17T04:00:00.000Z' } } },
   'home-writekey': { ...base, account: acct({ ...signed('write'), device: base.device, needs: ['write-key'] }) },
   // 이 PC에 앞서 깔았던 연결이 계정에 남은 PC(account.sameInstall — 조율 세션 616e9dce5)
   'home-same-install': { ...base, account: acct({ ...signed('write'), device: base.device, sameInstall: ['e'.repeat(12)] }) },

@@ -122,6 +122,9 @@ a { color: inherit; }
 .flow { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(28px, 4vh, 44px); min-height: 100%; align-content: center; padding-bottom: 3vh; }
 .flow .l, .flow .r { min-width: 0; }
 .panel { display: grid; align-content: start; }
+.panel + .panel { margin-top: clamp(32px, 5vh, 48px); }
+.panel .now { padding: 14px 0 6px; font: 400 14px/1.6 var(--sans); color: var(--dim); }
+.row .meta { overflow-wrap: anywhere; }
 .panel-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 14px; padding-bottom: 12px; border-bottom: 1px solid var(--hair-2); }
 .panel-h h2 { font: 500 15px/1.35 var(--sans); white-space: nowrap; }
 .panel-h p, .meta { font: 400 13px/1.45 var(--sans); color: var(--dim); }

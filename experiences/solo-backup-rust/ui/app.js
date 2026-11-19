@@ -4,7 +4,7 @@
 
 import { createStore, failureText } from './state-store.js';
 import { homeModel, startStep, restorePlace, afterUndo, moveJob, moveOpen, moveFrom, moveTakeList, moveVolumes, pickedSources, pathKey, moveLeft, moveRows,
-  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps, moveBigFolders, oldFolders, oldUp, scopeFailText } from './screen-model.js';
+  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps, moveBigFolders, oldFolders, oldUp, scopeFailText, restNameProblem, maskProblem, AI_TOOL_ROWS } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -23,6 +23,8 @@ const drawerWrap = $('#drawer'), drawerPanel = $('#drawer-panel');
 let lastHtml = '', screen = 'home', shownId = null, out = null, fixture = null, catalog = null, ui = { pick: 'same' }, noteTimer = 0, findTimer = 0, lit = false;
 let failure = null, queued = null, closing = null, opener = null, lastDrawer = '', lastLive = '', retryTimer = 0, shownQuery = null;
 let prevJob = null;
+// 쉬는 Wi-Fi · 가리는 낱말 칸에서 한글을 조합하는 중인지, 그동안 미룬 그리기가 있는지
+let composing = false, composeWait = false;
 // 창이 기억하는 개통 걸음(엔진 상태에 없는 것) — 로그인 기다림 · 기기가 다 참(LIMIT_DEVICES의 기기 목록) · 저장소가 이미 있음(REPO_EXISTS) ·
 // Google 걸음 확인 · 계정의 기기 목록(devicesList). 되돌리기 미리 보기(restorePlan)는 undo에 둔다
 let acct = { signing: false, limit: null, repoExists: false, googleAck: false, devices: null, devicesError: null, devicesBusy: false };
@@ -41,6 +43,7 @@ let prevReinstall = false;
 const runningCalls = new Set();
 function watchJobs(s) {
   if (!s) return;
+  solioSetup(s);
   // 예약 백업 때문에 못 연 되살리기 목록은 그 일이 끝나면 저절로 연다(Fable F5)
   if (prevJob && !s.job && screen === 'restore' && catalog?.waiting) void openCatalog();
   // 하던 일 때문에 못 읽은 기기 목록은 그 일이 끝나면 다시 읽는다(Fable F2)
@@ -135,17 +138,21 @@ function paint() {
   // 같은 화면을 다시 그릴 때는 찾기 칸의 글과 커서, 목록의 스크롤, 포커스가 있던 단추나 줄을 지킨다(Fable F4 · F7)
   const active = document.activeElement, inRoom = active && room.contains(active);
   const key = inRoom ? focusKey(active) : null;
-  const caret = active?.id === 'find' ? [active.selectionStart, active.selectionEnd] : null;
+  const caret = active?.tagName === 'INPUT' && active.type !== 'checkbox' ? [active.selectionStart, active.selectionEnd] : null;
+  // 한글을 조합하는 칸이 있으면 갈아 끼우지 않는다 — 조합이 끝나면(compositionend) 다시 그린다(Opus 대체 검수 F3)
+  const hold = composing && inRoom && active?.tagName === 'INPUT';
   const typed = active?.id === 'find' ? active.value : null;
   const sameList = id === 'restore' ? (catalog?.query ?? null) === shownQuery : !fresh;
   const filesTop = sameList ? [...room.querySelectorAll('.files')].map((e) => e.scrollTop) : [], roomTop = room.scrollTop;
   shownQuery = id === 'restore' ? (catalog?.query ?? null) : null;
   if (fresh) { stage.classList.remove('shown'); room.scrollTop = 0; }
-  if (lastHtml !== out.html) {
+  if (lastHtml !== out.html && hold) composeWait = true;
+  else if (lastHtml !== out.html) {
     room.innerHTML = out.html; lastHtml = out.html; fillBars(room, fresh);
+    for (const [id, k] of [['rest-in', 'restDraft'], ['mask-in', 'maskDraft']]) { const el = room.querySelector(`#${id}`); if (el && ui[k]) el.value = ui[k]; }
     if (!fresh) { room.querySelectorAll('.files').forEach((e, i) => { e.scrollTop = filesTop[i] || 0; }); room.scrollTop = roomTop; }
   }
-  if (key) { const el = room.querySelector(key); if (el) { if (typed !== null) el.value = typed; el.focus({ preventScroll: true }); if (caret) el.setSelectionRange(...caret); } }
+  if (key && !hold) { const el = room.querySelector(key); if (el) { if (typed !== null) el.value = typed; el.focus({ preventScroll: true }); if (caret) el.setSelectionRange(...caret); } }
   const live = out.kind === 'home' ? `${model.kick}. ${model.title}` : out.here || '';
   if (live !== lastLive) { lastLive = live; $('#live').textContent = live; }
   if (fresh) {
@@ -182,6 +189,7 @@ function focusKey(el) {
   if (el.dataset?.app) return `${q('data-act', el.dataset.act || '')}${q('data-app', el.dataset.app)}`;
   if (el.dataset?.check) return q('data-check', el.dataset.check);
   if (el.dataset?.device) return q('data-device', el.dataset.device);
+  if (el.dataset?.tool) return q('data-tool', el.dataset.tool);
   if (el.dataset?.act) return q('data-act', el.dataset.act);
   return null;
 }
@@ -195,6 +203,10 @@ function go(id, scope = null) {
   // 옛 기기 이름을 못 읽었으면 이 두 화면에 올 때 한 번 더 읽는다(Opus 대체 검수 F5)
   if ((id === 'restore' || id === 'restore-old') && acct.devicesError && !acct.devicesBusy) { acct = { ...acct, devicesError: null, devices: null }; mvTried.delete('names'); }
   screen = SCREENS.includes(id) ? id : 'home';
+  // 쉬는 Wi-Fi는 들어올 때마다 지금 Wi-Fi 이름을, AI 도구는 이어 온 도구 목록을 다시 읽는다(창 상태에는 창을 연 때 읽은 것만 있다)
+  if (!fixture && screen === 'rest-net') void loadWifi();
+  if (!fixture && screen === 'ai-tools') void loadAiTools();
+  if (screen !== 'home') acct = { ...acct, solioNoMove: false, solioBox: null };
   if (screen === 'restore') openCatalog();
   // 되돌리기 화면을 떠나면 찾은 시각을 버린다 — 다시 들어오면 새로 찾는다(서버가 5분 동안 같은 답을 준다)
   if (!screen.startsWith('undo-')) undo = null;
@@ -298,25 +310,116 @@ async function limitRevoke(deviceId) {
     if (acct.freed && fell) room.querySelector('[data-act="google"]')?.focus({ preventScroll: true });
   }
 }
-/** Google로 시작 — 브라우저 로그인을 기다린다(5분이면 엔진이 REAUTH로 끝낸다) */
-async function signIn() {
+/** Google로 시작 — 브라우저 로그인을 기다린다(5분이면 엔진이 REAUTH로 끝낸다). solio는 솔리오가 넘긴 처음 시작({ mode, hint }, 설계 4.13) */
+async function signIn(solio = null) {
   const s = state();
   if (s?.account && s.account.available === false) return note(failureText('NO_GOOGLE'));
   // 기기를 끊는 중이면 버린다 — 목록을 먼저 지우고 BUSY로 끝나지 않게(단추도 그동안 막힌다)
   if (acct.signing || runningCalls.has('revokeDevice')) return;
-  acct = { ...acct, signing: true, limit: null, freed: null, limitWhy: null, denied: false };
+  acct = { ...acct, signing: true, limit: null, freed: null, limitWhy: null, denied: false, solio: solio?.mode || null, solioNoMove: false };
   if (/^Google(에서 허락을 받지 못| 로그인을 마치지 않)/.test(noteBar.textContent)) noteBar.classList.remove('on');
   paint();
-  const r = await store.call('signInGoogle', {});
-  acct = { ...acct, signing: false, devices: null };
+  const r = await store.call('signInGoogle', solio?.hint ? { hint: solio.hint } : {});
+  acct = { ...acct, signing: false, devices: null, solio: null };
   if (!r.ok) {
     if (r.code === 'LIMIT_DEVICES') acct = { ...acct, limit: Array.isArray(r.details?.devices) ? r.details.devices : [] };
     // Drive 칸을 켜지 않았거나 Google 화면에서 그만둠(DENIED) — 다시 누르기 전에 그 칸을 상자로도 보인다
     else if (r.code === 'DENIED') { acct = { ...acct, denied: true }; note(failureText('DENIED'), 12000); }
     else if (['REAUTH', 'CANCELED'].includes(r.code)) note('Google 로그인을 마치지 않았습니다. 다시 눌러 주세요.');
     else note(failureText(r.code));
-  }
+  } else if (solio?.mode === 'move') solioMove();
   paint();
+}
+/**
+ * 솔리오가 넘긴 처음 시작(state.solio.setup — 엔진 창이 떠 있는 동안 요청 파일에서 받아 30분 둔다, 설계 4.13). 손님은 솔리오에서 이미
+ * 눌렀으므로 「Google로 시작」을 건너뛰고 Google 로그인을 바로 연다. 같은 요청(at)은 한 번만 — 로그인을 마치지 않아도 되풀이하지 않고
+ * 「Google로 시작」 화면으로 남긴다(signInGoogle을 부르면 엔진이 setup을 지운다)
+ */
+function solioSetup(s) {
+  const st = s?.solio?.setup;
+  if (!st || typeof st.at !== 'string' || acct.setupAt === st.at || s.job) return;
+  acct = { ...acct, setupAt: st.at };
+  const mode = st.mode === 'move' ? 'move' : 'protect';
+  // 이미 설정한 PC(옮겨 온 백업을 되살리기만 하는 PC, 외장 드라이브만 쓰는 PC)는 엔진이 요청을 받지만 이 창이 바로 이을 길이 없다 —
+  // 말없이 버리지 않고 기본 화면에 그 까닭과 이 PC에서 할 수 있는 다음 걸음을 쓴다(Opus 대체 검수 F2)
+  if (s.configured) { acct = { ...acct, solioBox: { mode, restore: s.mode === 'restore' } }; closeDrawer(); if (screen !== 'home') go('home'); else paint(); return; }
+  if (startStep(s) === 'signin') { closeDrawer(); if (screen !== 'home') go('home'); setTimeout(() => void signIn({ mode, hint: typeof st.hint === 'string' ? st.hint : null }), 0); }
+  else if (mode === 'move') setTimeout(solioMove, 0);
+}
+/** 솔리오의 「이 PC로 옮겨 오기」 — 다른 PC가 이 계정을 백업하고 있으면 옮겨 오기를 바로 연다(Google 걸음 · 실패는 openAccount가 알린다). 아니면 그 까닭을 보인다 */
+function solioMove() {
+  const step = startStep(state());
+  if (step === 'read') void openMove();
+  else if (step === 'scope') { acct = { ...acct, solioNoMove: true }; paint(); }
+}
+/* ── 솔리오 잇기 — 쉬는 Wi-Fi(설계 4.14) · AI 도구(4.16) ── */
+let wifiSeq = 0;
+/** 지금 이어진 Wi-Fi 이름 — 그 메서드가 없는 엔진 판이거나 실패하면 false(화면은 직접 적는 칸만 둔다), 못 읽으면 null */
+async function loadWifi() {
+  const seq = ++wifiSeq;
+  ui = { ...ui, wifi: undefined };
+  const r = await store.aside('wifiName');
+  if (seq !== wifiSeq || screen !== 'rest-net') return;
+  ui = { ...ui, wifi: r.ok ? (typeof r.value === 'string' && r.value ? r.value : null) : false }; paint();
+}
+/** MCP로 이어 온 도구 목록 — 창 상태의 것은 창을 연 때 읽은 것이다 */
+async function loadAiTools() {
+  const r = await store.aside('aiToolsState');
+  if (screen !== 'ai-tools' || !r.ok || !Array.isArray(r.value?.clients)) return;
+  ui = { ...ui, aiClients: r.value.clients }; paint();
+}
+/** 지운 줄 다음 줄의 「빼기」(없으면 앞 줄, 그것도 없으면 이름 칸) — 지운 단추와 함께 포커스가 떨어지지 않게(Opus 대체 검수 F5) */
+function nextDrop(act, list, gone, input) {
+  const i = list.indexOf(gone), next = list[i + 1] ?? list[i - 1];
+  return next === undefined ? input : `[data-act="${act}"][data-name="${CSS.escape(next)}"]`;
+}
+/** 더한 뒤 칸을 비운다 — 칸의 글은 그림에 넣지 않으므로 지금 칸도 직접 비운다 */
+function draftOut(id) { const el = room.querySelector(`#${id}`); if (el) el.value = ''; }
+/** 쉬는 Wi-Fi · AI 도구 설정을 엔진에 쓴다(답은 새 창 상태). 고르는 동안 두 화면의 단추를 막는다. focus는 끝난 뒤 옮길 곳(F5) */
+async function solioSave(method, arg, done, onOk = null, focus = null) {
+  if (acct.running) return false;
+  acct = { ...acct, running: method }; paint();
+  const r = await store.call(method, arg);
+  acct = { ...acct, running: null };
+  if (r.ok) { if (method === 'setAiTools') ui = { ...ui, aiClients: undefined }; onOk?.(); note(done, 5000); }
+  else note(r.code === 'BAD_INPUT' ? (method === 'setRestNetworks' ? 'Wi-Fi 이름을 받지 못했습니다. 이름을 고쳐 다시 더해 주세요.' : 'AI 도구 설정을 받지 못했습니다. 다시 눌러 주세요.') : failureText(r.code));
+  paint();
+  // 키보드로 누른 단추가 그림과 함께 사라졌으면 정한 곳으로(그 사이 손님이 옮겨 둔 포커스는 두고)
+  const fell = !document.activeElement || document.activeElement === document.body;
+  if (r.ok && focus && fell) room.querySelector(focus)?.focus({ preventScroll: true });
+  return r.ok;
+}
+const restNames = () => (Array.isArray(state()?.solio?.restNetworks) ? state().solio.restNetworks : []);
+const aiState = () => state()?.solio?.aiTools || {};
+/** typed는 칸에 적은 이름(앞뒤 빈칸을 뗀다), 아니면 지금 Wi-Fi 이름 그대로 */
+function restAdd(raw, typed) {
+  let name = typed ? String(raw ?? '').trim() : raw, fixed = false;
+  if (typed && typeof ui.wifi === 'string' && name !== ui.wifi && name.toLowerCase() === ui.wifi.toLowerCase()) { name = ui.wifi; fixed = true; }
+  const names = restNames(), why = restNameProblem(name, names);
+  if (why) return note(why, 6000);
+  return solioSave('setRestNetworks', [...names, name], fixed ? `대소문자를 지금 이어진 Wi-Fi 이름에 맞춰 「${name}」 그대로 더했습니다. 이 Wi-Fi에 이어져 있는 동안 매시간 백업을 쉽니다.` : `「${name}」에 이어져 있는 동안 매시간 백업을 쉽니다.`,
+    typed ? () => { ui = { ...ui, restDraft: '' }; draftOut('rest-in'); } : null, '#rest-in');
+}
+function restDrop(name) {
+  const names = restNames();
+  if (!names.includes(name)) return;
+  return solioSave('setRestNetworks', names.filter((n) => n !== name), `이제 「${name}」에서도 매시간 백업합니다.`, null, nextDrop('rest-drop', names, name, '#rest-in'));
+}
+function aiToggle(id) {
+  const t = AI_TOOL_ROWS.find((x) => x.id === id);
+  if (!t) return;
+  const on = aiState().tools?.[id] === true;
+  return solioSave('setAiTools', { tools: { [id]: !on } }, on ? `${t.obj} 껐습니다. AI 도구가 물어도 답하지 않습니다.` : `${t.obj} 켰습니다. AI 도구가 물으면 답합니다.`);
+}
+function maskAdd(raw) {
+  const w = String(raw ?? '').trim(), masks = Array.isArray(aiState().masks) ? aiState().masks : [], why = maskProblem(w, masks);
+  if (why) return note(why, 6000);
+  return solioSave('setAiTools', { tools: {}, masks: [...masks, w] }, `「${w}」 낱말이 든 경로는 이제 AI 도구에 보이지 않습니다.`, () => { ui = { ...ui, maskDraft: '' }; draftOut('mask-in'); }, '#mask-in');
+}
+function maskDrop(w) {
+  const masks = Array.isArray(aiState().masks) ? aiState().masks : [];
+  if (!masks.includes(w)) return;
+  return solioSave('setAiTools', { tools: {}, masks: masks.filter((m) => m !== w) }, `「${w}」 낱말을 더는 가리지 않습니다.`, null, nextDrop('mask-drop', masks, w, '#mask-in'));
 }
 /** 사고 되돌리기 — 서버가 찾은 시각과 그 시각의 계획(restorePlan). 계획은 시각마다 한 번만 묻는다(서버 하루 20번) */
 async function loadPlan(at) {
@@ -858,6 +961,7 @@ const GLOBAL = {
   add: { call: 'addSources' }, drop: { call: 'removeSource' }, 'auto-on': { call: 'setAutomatic', arg: true }, 'auto-off': { call: 'setAutomatic', arg: false },
   code: { to: 'code' }, lost: { to: 'lost' }, 'undo-1': { to: 'undo-1' }, 'move-apps': { to: 'move-apps' }, partial: { to: 'partial' }, 'partial-std': { to: 'partial-std' }, 'move-0': { to: 'move-0' }, 'mass-list': { to: 'mass-list' },
   'move-count': { flow: 'moveCount' }, 'move-add': { flow: 'moveAdd' },
+  'rest-net': { to: 'rest-net' }, 'ai-tools': { to: 'ai-tools' },
   external: { pending: '외장 드라이브 사본' }, tray: { pending: '트레이 아이콘' }, telemetry: { pending: '시범 측정 내용 보기' }, help: { pending: '도움 요청' },
 };
 
@@ -876,6 +980,13 @@ stage.addEventListener('click', (e) => {
   if (id === 'clear') return void select('clear');
   if (id === 'reopen') return void openCatalog();
   if (id === 'limit-revoke') return void limitRevoke(el.dataset.device);
+  // 솔리오 잇기 — 설정 서랍에서 여는 쉬는 Wi-Fi · AI 도구
+  if (id === 'rest-add') return void restAdd(room.querySelector('#rest-in')?.value, true);
+  if (id === 'rest-here') return void restAdd(ui.wifi, false);
+  if (id === 'rest-drop') return void restDrop(el.dataset.name);
+  if (id === 'ai-tool') return void aiToggle(el.dataset.tool);
+  if (id === 'mask-add') return void maskAdd(room.querySelector('#mask-in')?.value);
+  if (id === 'mask-drop') return void maskDrop(el.dataset.name);
   // 옛 PC 백업에서 꺼내기 — 고르기는 창 안에서, 한 층 읽기와 목록 열기는 엔진에
   if (id === 'old-start') return oldStart(el.dataset.folder);
   if (id === 'old-folder') { const f = oldFolders(mv?.result).find((x) => x.original === el.dataset.folder); if (!f || !old) return; old = { ...old, folder: f.original, label: f.label, sub: '' }; return void oldLoad(); }
@@ -959,7 +1070,12 @@ stage.addEventListener('click', (e) => {
   void run(a, el);
 });
 $('#orb-btn').addEventListener('click', () => { closeDrawer(); go('home'); });
+room.addEventListener('compositionstart', () => { composing = true; });
+room.addEventListener('compositionend', () => { composing = false; if (composeWait) { composeWait = false; paint(); } });
 room.addEventListener('input', (e) => {
+  // 쉬는 Wi-Fi · 가리는 낱말 칸 — 다시 그려도 적던 글이 남게 초안으로 둔다
+  if (e.target.id === 'rest-in') { ui = { ...ui, restDraft: e.target.value }; return; }
+  if (e.target.id === 'mask-in') { ui = { ...ui, maskDraft: e.target.value }; return; }
   if (e.target.id !== 'find') return;
   const q = e.target.value.trim().slice(0, 200);
   clearTimeout(findTimer); findTimer = setTimeout(() => void query(q, 0, false), 250);
@@ -993,6 +1109,10 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     const all = $$('[data-pick]', room), i = all.indexOf(pk), next = all[(i + (/Up|Left/.test(e.key) ? all.length - 1 : 1)) % all.length];
     ui = { ...ui, pick: next.dataset.pick }; paint(); room.querySelector(`[data-pick="${next.dataset.pick}"]`)?.focus(); return;
+  }
+  // 두 칸에서 Enter는 「더하기」 — 한글을 조합하는 동안의 Enter는 버린다
+  if (e.key === 'Enter' && !e.isComposing && (e.target.id === 'rest-in' || e.target.id === 'mask-in') && !e.target.readOnly) {
+    e.preventDefault(); return void (e.target.id === 'rest-in' ? restAdd(e.target.value, true) : maskAdd(e.target.value));
   }
   if (e.key !== 'Escape') return;
   if (!drawerWrap.hidden) return closeDrawer();

@@ -1723,3 +1723,102 @@ test('Google 동의 화면의 Drive 칸(개통 서버 세션 실측 11-17): 누�
   // 공용 거절 글(다른 Google 로그인 단추 — 복구 정보 다시 맡기기 · 이어서 백업 등)도 그 칸을 말한다. 「취소」를 눌러도 DENIED라 두 경우에 맞는 말이다
   assert.equal(failureText('DENIED'), 'Google에서 허락을 받지 못했습니다. 다시 눌러 Google 화면에서 「계속」까지 눌러 주세요. Google Drive가 적힌 칸이 나오면 켜 주세요.');
 });
+
+test('솔리오 잇기(엔진 305e380fe · 설계 4.13 · 4.14 · 4.16): 처음 시작 이어 하기 · 쉬는 Wi-Fi · AI 도구', async () => {
+  const m = await load('screen-model.js');
+  const { renderScreen, drawer, SCREENS } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  assert.ok(SCREENS.includes('rest-net') && SCREENS.includes('ai-tools'));
+  const draw = (id, st, extra = {}) => renderScreen(id, { state: st, model: m.homeModel(st, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true, ...extra }).html;
+  // 설정 서랍 — solio 칸이 있는 엔진만 두 줄을 그린다
+  const dr = drawer(STATES['home-solio'], { now: NOW });
+  assert.match(dr, /「휴대폰 핫스팟」, 「Cafe_Free」 외 1곳에서는 매시간 백업을 쉽니다/); assert.match(dr, /data-act="rest-net"/);
+  assert.match(dr, /백업 안 파일 찾기 켜짐 · AI 도구에 파일 이름과 폴더 이름이 나갑니다/); assert.match(dr, /data-act="ai-tools"/);
+  assert.match(drawer(STATES.home, { now: NOW }), /백업 상태만 답합니다 · 파일 이름은 나가지 않습니다/);
+  assert.doesNotMatch(drawer({ ...STATES.home, solio: undefined }, { now: NOW }), /rest-net|ai-tools/);
+  // 쉬는 Wi-Fi — 지금 Wi-Fi(ui.wifi)의 네 갈래
+  const st = STATES['home-solio'];
+  const here = draw('rest-net', st, { ui: { wifi: '집 Wi-Fi' } });
+  assert.match(here, /지금 이어진 Wi-Fi는 「집 Wi-Fi」입니다\. <button class="lnk sm" type="button" data-act="rest-here">이 Wi-Fi에서 쉬기/);
+  assert.match(draw('rest-net', st, { ui: { wifi: 'Cafe_Free' } }), /지금 이어진 Wi-Fi 「Cafe_Free」에서는 매시간 백업을 쉽니다\. 이미 고른 Wi-Fi입니다/);
+  assert.match(draw('rest-net', st, { ui: { wifi: null } }), /이름을 읽지 못했습니다\. Wi-Fi가 아닌 회선에 이어져 있거나, Windows가 위치 권한을 막았을/);
+  assert.match(draw('rest-net', st, { ui: {} }), /확인하고 있습니다/);
+  assert.doesNotMatch(draw('rest-net', st, { ui: { wifi: false } }), /지금 이어진 Wi-Fi/);
+  assert.equal((here.match(/data-act="rest-drop"/g) || []).length, 3);
+  assert.match(here, /「데이터 통신 연결」을 켜 두세요/);
+  // 고르는 동안은 단추를 막고 칸은 읽기만(포커스를 지킨다), 20개가 차면 칸을 막는다
+  // Opus 대체 검수 F1 — 매시간 저절로 도는 백업만 쉰다. F3 — 칸의 글(초안)은 그림에 넣지 않는다. F4 — 이름은 글자 그대로 견준다
+  assert.doesNotMatch(here, /첫 백업/); assert.match(here, /매시간 저절로 도는 백업을 쉬고.*「보호 시작」, 「이어서 백업」, 「지금 백업」을 직접 눌러 도는 백업은 쉬지 않습니다/s);
+  assert.match(here, /대소문자와 띄어쓰기까지 같게 적어 주세요/);
+  const busy = draw('rest-net', st, { ui: { wifi: '집 Wi-Fi', restDraft: '새 이름' }, acct: { running: 'setRestNetworks' } });
+  assert.match(busy, /id="rest-in"[^>]* readonly/); assert.doesNotMatch(busy, /value="새 이름"/); assert.match(busy, /data-act="rest-add" aria-disabled="true"/); assert.match(busy, /data-act="rest-here" aria-disabled="true"/);
+  const full = draw('rest-net', { ...st, solio: { ...st.solio, restNetworks: Array.from({ length: 20 }, (_, i) => `망${i}`) } }, { ui: { wifi: false } });
+  assert.match(full, /id="rest-in"[^>]* disabled/); assert.match(full, /data-act="rest-add" aria-disabled="true"/);
+  // 거르기 — 엔진(solio.cjs okNetworkName · writeAiTools)과 같은 꼴
+  assert.equal(m.restNameProblem('가'.repeat(10)), null); assert.equal(m.restNameProblem('a'.repeat(32)), null);
+  assert.match(m.restNameProblem('가'.repeat(11)), /너무 깁니다/); assert.match(m.restNameProblem('a'.repeat(33)), /너무 깁니다/);
+  assert.match(m.restNameProblem(''), /적어 주세요/); assert.match(m.restNameProblem('a\u0007b'), /쓸 수 없는 글자/);
+  assert.match(m.restNameProblem('x', ['x']), /이미 고른/); assert.match(m.restNameProblem('y', Array.from({ length: 20 }, (_, i) => `n${i}`)), /20개까지/);
+  assert.equal(m.maskProblem(' 건강 '), null); assert.match(m.maskProblem('   '), /적어 주세요/); assert.match(m.maskProblem('x'.repeat(41)), /40자까지/);
+  assert.match(m.maskProblem(' 계약', ['계약']), /이미 가리는/); assert.match(m.maskProblem('z', Array.from({ length: 20 }, (_, i) => `m${i}`)), /20개까지/);
+  // AI 도구 — 켜고 끄기 · 가리는 낱말 · 이어 온 도구(화면에 들어와 다시 읽은 것이 먼저)
+  const ai = draw('ai-tools', st);
+  assert.match(ai, /켜면 AI 도구에 파일 이름과 폴더 이름이 나갑니다<\/b>파일 내용은 나가지 않습니다/);
+  assert.match(ai, /백업 상태.*늘 답함/s); assert.doesNotMatch(ai, /data-tool="protection_status"/);
+  assert.match(ai, /꺼짐 <button class="lnk sm" type="button" data-act="ai-tool" data-tool="space_report" aria-label="공간 보고서 켜기">켜기/); assert.match(ai, /data-tool="find_restorable" aria-label="백업 안 파일 찾기 끄기">끄기/);
+  assert.equal((ai.match(/data-act="mask-drop"/g) || []).length, 2);
+  assert.match(ai, /claude-code <span class="num">2\.1\.0<\/span><\/span><span class="v"><span class="meta">C:\\Users\\studio\\AppData\\Local\\AnthropicClaude\\claude\.exe/);
+  assert.match(ai, /처음 11월 10일 · 마지막 오후 1:40/); assert.match(ai, /스스로 알린 것입니다/);
+  assert.match(draw('ai-tools', st, { ui: { aiClients: [] } }), /아직 이 앱에 이은 AI 도구가 없습니다/);
+  assert.match(draw('ai-tools', STATES.home), /가리는 낱말이 없습니다/);
+  assert.match(draw('ai-tools', st, { acct: { running: 'setAiTools' } }), /data-tool="space_report" aria-disabled="true"/);
+  // 처음 시작 — 솔리오가 연 로그인의 까닭, 옮겨 올 PC가 없을 때의 상자
+  assert.match(draw('start-1', STATES['start-signin'], { acct: { signing: true, solio: 'protect' } }), /솔리오에서 「보호 시작」을 눌러 Google 로그인을 바로 열었습니다\. 브라우저에서/);
+  assert.match(draw('start-1', STATES['start-signin'], { acct: { signing: true, solio: 'move' } }), /솔리오에서 「이 PC로 옮겨 오기」를 눌러/);
+  assert.doesNotMatch(draw('start-1', STATES['start-signin'], { acct: { signing: false, solio: 'protect' } }), /솔리오에서/);
+  assert.match(draw('start-2', STATES['start-write'], { acct: { solioNoMove: true } }), /<b>옮겨 올 PC가 없습니다<\/b>.*이 PC를 지키려면 지킬 폴더를 고르세요/);
+  assert.match(draw('start-2', STATES['start-write'], { acct: { solioNoMove: true, repoExists: true } }), /이 계정의 백업에 이어서 이 PC가 백업할 수 있습니다/);
+  assert.doesNotMatch(draw('start-2', STATES['start-write']), /옮겨 올 PC가 없습니다/);
+  // Opus 대체 검수 F2 · 다시 검수 -b — 이미 설정한 PC로 온 처음 시작은 기본 화면에 까닭과, 지금 화면에 있는 단추 이름으로 다음 걸음을 쓴다
+  const readSt = STATES['home-move-read'];
+  const home = (st, sb) => renderScreen('home', { state: st, model: m.homeModel(st, { now: NOW }), now: NOW, acct: { solioBox: sb }, fake: true }).html;
+  const boxed = home(readSt, { mode: 'protect', restore: true });
+  assert.match(boxed, /<b>솔리오의 「보호 시작」을 여기서 바로 잇지 못했습니다<\/b>이 PC는 이미 한 Google 계정의 백업에 이어 둔 연결이라 처음부터 새로 시작하지 않았습니다\. 아직 이 PC에서는 백업하지 않고 있습니다\. 같은 Google 계정으로 이 PC에서 백업하려면 아래 「이 PC에서 백업할 폴더 고르기」를 누르세요\. 다른 Google 계정으로/);
+  assert.match(boxed, /data-act="pick"/); assert.doesNotMatch(boxed, /옮겨 온 백업/);
+  assert.match(home({ ...readSt, selection: { sources: ['C:\\work'], target: null } }, { mode: 'protect', restore: true }), /아래 「되살리지 않고 이 PC에서 이어서 백업」을 누르세요/);
+  // 이어서 백업해 백업하는 PC가 되면 걷는다. 처음부터 백업하던 PC(외장 드라이브만 쓰는 PC 등)는 그 까닭을 쓴다
+  assert.doesNotMatch(home(STATES.home, { mode: 'protect', restore: true }), /여기서 바로 잇지 못했습니다/);
+  assert.match(home(STATES.home, { mode: 'protect', restore: false }), /이미 이 앱으로 백업하도록 설정되어 있습니다/);
+  assert.doesNotMatch(home(readSt, null), /여기서 바로 잇지 못했습니다/);
+  // 다시 검수 -c · -d — 짚는 단추는 화면 모델이 표시한 걸음(take)뿐이다. 이어서 백업할 차례 · 되돌리기 확인 · 옮겨 오기가 멈춘 화면과 끝난 화면
+  const cont = STATES['home-continue'];
+  assert.match(home(cont, { mode: 'protect', restore: true }), /아래 「이어서 백업」을 누르세요/); assert.doesNotMatch(home(cont, { mode: 'protect', restore: true }), /폴더 다시 고르기」를 누르세요/);
+  assert.match(home({ ...cont, selection: { sources: [], target: null } }, { mode: 'protect', restore: true }), /아래 「지킬 폴더 고르기」를 누르세요/);
+  const hold = home(STATES['home-restore-read-hold'], { mode: 'protect', restore: true });
+  assert.match(hold, /여기서 바로 잇지 못했습니다<\/b>이 PC는 이미 한 Google 계정의 백업에 이어 둔 연결이라 처음부터 새로 시작하지 않았습니다/); assert.doesNotMatch(hold, /누르세요/);
+  // 다시 검수 -e — 계정이 이어지지 않은 되살리기 연결은 머리 글과 같은 이름(「되살리기만 하는 연결」)으로 부르고, 짚을 단추가 없다
+  const noAcct = { ...readSt, account: { ...readSt.account, connected: false } };
+  assert.equal(m.homeModel(noAcct, { now: NOW }).id, 'home-restore-only');
+  const loose = home(noAcct, { mode: 'protect', restore: true });
+  assert.match(loose, /<\/b>이 PC는 이미 되살리기만 하는 연결로 설정되어 있어 처음부터 새로 시작하지 않았습니다\. 다른 Google 계정으로/); assert.doesNotMatch(loose, /누르세요|백업을 되살리는 연결/);
+  // 옮겨 오기가 멈춘 화면과 끝난 화면 — 옮겨 오기 상태(mv)로 그린다
+  const { MOVE_MV } = await load('engine-fixtures.js');
+  const mvHome = (mv) => { const mm = m.homeModel(readSt, { now: NOW, move: mv.state, result: mv.result || null }); return { mm, html: renderScreen('home', { state: readSt, model: mm, now: NOW, acct: { solioBox: { mode: 'protect', restore: true } }, mv, fake: true }).html }; };
+  assert.equal(mvHome(MOVE_MV.stopped).mm.id, 'home-move-stopped'); assert.match(mvHome(MOVE_MV.stopped).html, /아래 「그만두고 이 PC로 이어서 백업」을 누르세요/);
+  assert.equal(mvHome(MOVE_MV.result).mm.id, 'home-move-done'); assert.match(mvHome(MOVE_MV.result).html, /아래 「이 PC로 이어서 백업」을 누르세요/);
+  for (const [name, mv] of Object.entries(MOVE_MV)) {
+    if (!mv?.state) continue;
+    const { mm, html } = mvHome(mv), named = (html.match(/아래 「([^」]+)」/) || [])[1];
+    assert.ok(mm.actions.filter((x) => x.take).length <= 1, `옮겨 오기 ${name}: 걸음은 하나`);
+    if (/^home-move-(stopped|done)$/.test(mm.id)) assert.ok(named && mm.actions.some((x) => x.take && x.label === named), `옮겨 오기 ${name}: ${mm.id}`);
+  }
+  // 짚는 단추는 그 화면의 단추 줄에 실제로 있다 — 되살리기 쪽 예시 상태 모두
+  for (const [name, st] of Object.entries(STATES)) {
+    if (st.mode !== 'restore') continue;
+    const mm = m.homeModel(st, { now: NOW });
+    const html = renderScreen('home', { state: st, model: mm, now: NOW, acct: { solioBox: { mode: 'protect', restore: true } }, fake: true }).html;
+    const named = (html.match(/아래 「([^」]+)」/) || [])[1];
+    assert.ok(mm.actions.filter((x) => x.take).length <= 1, `${name}: 걸음은 하나`);
+    if (named) assert.ok(mm.actions.some((x) => x.take && x.label === named), `${name}: 「${named}」`);
+  }
+});

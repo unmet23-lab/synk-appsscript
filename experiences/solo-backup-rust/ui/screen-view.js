@@ -7,7 +7,7 @@ import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.
 import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo,
   moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo,
   moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, tooBigKept, oldWho, oldFolders, oldWhere, oldFailText, OLD_NO_SPLIT_THEN, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
-  appsJob, appsSettings, appsUnrestored, movedHere } from './screen-model.js';
+  appsJob, appsSettings, appsUnrestored, movedHere, AI_TOOL_ROWS, REST_MAX, MASK_MAX, MASK_LEN } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 import { failureText } from './state-store.js';
 
@@ -59,7 +59,25 @@ function homeRows(m) {
   return `<div class="rows rise i4">${out.join('')}</div>`;
 }
 
-export function homeScreen(m, acct = null) {
+/**
+ * 솔리오가 넘긴 처음 시작을 이 창이 바로 잇지 못했을 때의 상자(app.js solioSetup — acct.solioBox = { mode, restore }). 글은 그릴 때마다
+ * 지금 상태와 지금 화면의 단추로 짓는다. 되살리기만 하던 PC가 이어서 백업해 백업하는 PC가 되면 상자를 걷는다(Opus 대체 다시 검수 -b).
+ * 짚는 단추는 화면 모델이 「이 PC에서 백업을 시작하는 걸음」으로 표시한 것(take)뿐이다. 그런 걸음이 없는 화면(되돌리기 확인 등)에는 짚지 않는다(-c)
+ */
+function solioBoxOf(sb, s, m) {
+  if (!sb) return null;
+  const restore = s?.mode === 'restore';
+  if (sb.restore && !restore) return null;
+  const title = `솔리오의 ${sb.mode === 'move' ? '「이 PC로 옮겨 오기」를' : '「보호 시작」을'} 여기서 바로 잇지 못했습니다`;
+  if (!restore) return { title, text: '이 PC는 이미 이 앱으로 백업하도록 설정되어 있습니다. 지키는 폴더는 설정 서랍에서 바꿀 수 있습니다.' };
+  const take = (m?.actions || []).find((x) => x.take);
+  const lead = s?.account?.connected ? '이 PC는 이미 한 Google 계정의 백업에 이어 둔 연결이라 처음부터 새로 시작하지 않았습니다. 아직 이 PC에서는 백업하지 않고 있습니다.'
+    : '이 PC는 이미 되살리기만 하는 연결로 설정되어 있어 처음부터 새로 시작하지 않았습니다.';
+  return { title, text: [lead,
+    take ? `같은 Google 계정으로 이 PC에서 백업하려면 아래 「${take.label}」${josa(take.label, '을/를').slice(take.label.length)} 누르세요.` : '',
+    '다른 Google 계정으로 새로 지키는 길은 다음 업데이트에서 엽니다.'].filter(Boolean).join(' ') };
+}
+export function homeScreen(m, acct = null, s = null) {
   const link = m.link ? `<div class="act rise i3"><button class="lnk" type="button" data-act="${h(m.link.to)}">${h(m.link.label)} ${I.rarr}</button></div>` : '';
   const r = m.restored;
   const done = r ? `<p class="done${r.bad ? ' bad' : ''} rise i3"><i class="dot" aria-hidden="true"></i><span>${h(r.text)}</span>${r.act ? `<button class="lnk sm" type="button" data-act="${h(r.act.id)}">${h(r.act.label)}</button>` : ''}</p>` : '';
@@ -67,7 +85,7 @@ export function homeScreen(m, acct = null) {
   const ack = !!acct?.googleAck, stepAck = m.googleStep ? stepAckOf(ack) : '';
   // 도는 중인 단추(acct.running)와, Google 걸음을 확인하기 전의 계정 단추는 막는다
   const actions = m.actions.map((a) => (acct?.running === a.id || (m.googleStep && !ack && a.account) ? { ...a, disabled: true } : a));
-  const html = `<div class="in">${kick(h(m.kick))}${say(h(m.title))}${then(h(m.sub))}${box(m.box)}${stepAck}${notes((m.notes || []).map(h))}${link}${done}${homeRows(m)}${acts(actions.map((a) => ({ ...a })), `${m.hint ? `<span class="hint">${h(m.hint)}</span>` : ''}${gcancel(acct)}`)}</div>`;
+  const html = `<div class="in">${kick(h(m.kick))}${say(h(m.title))}${then(h(m.sub))}${box(m.box)}${box(solioBoxOf(acct?.solioBox, s, m))}${stepAck}${notes((m.notes || []).map(h))}${link}${done}${homeRows(m)}${acts(actions.map((a) => ({ ...a })), `${m.hint ? `<span class="hint">${h(m.hint)}</span>` : ''}${gcancel(acct)}`)}</div>`;
   const map = {}; for (const a of m.actions) map[a.id] = a; if (m.googleStep) map['google-ack'] = { id: 'google-ack' }; if (m.link) map[m.link.to] = { id: m.link.to, to: m.link.to }; if (r?.act) map[r.act.id] = r.act;
   return { kind: 'home', tone: m.tone, here: '백업·복구', top: [{ id: 'drawer', label: '설정' }], html, acts: map };
 }
@@ -125,7 +143,9 @@ function start1(s, acct, now, fake) {
   // 기기를 끊는 동안(limit-revoke)에도 브라우저의 Google 로그인을 기다린다 — 그 걸음에 맞는 글을 쓴다(카본 A1)
   const revoking = acct?.running === 'limit-revoke';
   // Google 동의 화면의 Drive 칸은 꺼진 채로 나온다 — 켜지 않으면 DENIED로 끝난다(개통 서버 세션 실측 11-17). 누르기 전부터 말한다
-  const hint = signing ? '브라우저에서 Google 계정을 고르고 「계속」을 누르세요. Google Drive가 적힌 칸이 나오면 켜고 「계속」을 눌러 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.'
+  // 솔리오의 「보호 시작」 · 「이 PC로 옮겨 오기」로 온 처음 시작(설계 4.13) — 브라우저가 저절로 열린 까닭을 먼저 쓴다
+  const solioBy = signing && acct?.solio ? `솔리오에서 ${acct.solio === 'move' ? '「이 PC로 옮겨 오기」를' : '「보호 시작」을'} 눌러 Google 로그인을 바로 열었습니다. ` : '';
+  const hint = signing ? `${solioBy}브라우저에서 Google 계정을 고르고 「계속」을 누르세요. Google Drive가 적힌 칸이 나오면 켜고 「계속」을 눌러 주세요. 5분 안에 마치지 않으면 다시 눌러야 합니다.`
     : revoking ? '브라우저에서 Google 계정을 고르고 「계속」을 누르세요. Google Drive가 적힌 칸이 나오면 켜고 「계속」을 눌러 주세요. 그러면 그 기기의 연결을 끊습니다.' : '브라우저가 열리면 계정을 고르고 「계속」을 누르세요. Google Drive가 적힌 칸이 나오면 꼭 켜 주세요.';
   // 앞선 「Google로 시작」이 DENIED로 끝났으면 다시 누르기 전에 그 칸을 상자로 보인다(다음 누름에 비운다)
   const denied = acct?.denied && !limit ? '<div class="box rise i3"><b>Google에서 허락을 받지 못했습니다</b>Google 화면의 Google Drive가 적힌 칸은 꺼진 채로 나옵니다. 그 칸을 켜지 않고 넘어가면 복구 정보를 Google 계정에 맡길 수 없어 시작하지 못합니다. 다시 눌러 「계속」까지 눌러 주세요. 그 칸이 나오면 켜 주세요.</div>' : '';
@@ -164,14 +184,16 @@ function start2(s, acct, fake, now) {
   const blocked = !picked.length || (needStep && !ack) || !!run;
   // 보호 범위도 같은 상자와 두 페이지 단추를 쓴다(카본 셋째 B1)
   const stepBox = stepBoxOf(needStep, ack);
+  // 솔리오의 「이 PC로 옮겨 오기」로 왔는데 이 계정을 백업하는 다른 PC가 없다 — 옮겨 오기를 열지 않은 까닭을 쓴다(app.js solioMove)
+  const noMove = acct?.solioNoMove ? `<div class="box rise i3"><b>옮겨 올 PC가 없습니다</b>솔리오에서 「이 PC로 옮겨 오기」를 고르셨지만, 이 계정을 지금 백업하는 다른 PC가 없어 옮겨 오기를 시작하지 않았습니다. ${acct.repoExists ? '이 계정의 백업에 이어서 이 PC가 백업할 수 있습니다.' : '이 PC를 지키려면 지킬 폴더를 고르세요.'}</div>` : '';
   const list = picked.length ? picked.map((p) => row(h(folderName(p)), `<span class="meta">${h(p)}</span>`)).join('') : '<p class="empty">아직 고른 폴더가 없습니다.</p>';
   const r = panel(acct?.repoExists ? '이어서 지킬 폴더' : '보호 범위', picked.length ? `폴더 ${count(picked.length)}개` : '', `<div class="rows">${list}</div>
     <div class="act"><button class="lnk sm" type="button" data-act="pick"${run ? ' aria-disabled="true"' : ''}>${picked.length ? '폴더 다시 고르기' : '폴더 고르기'} ${I.rarr}</button></div>
     <p class="foot">여러 폴더를 한 번에 고를 수 있습니다. 고른 폴더 안의 파일을 모두 암호화해 올립니다. 프로그램 목록과 앱 설정도 하루 한 번 함께 지킵니다. 로그인 정보와 열쇠는 담지 않습니다.</p>`);
   const hint = !picked.length ? '<span class="hint">지킬 폴더를 먼저 골라 주세요.</span>' : needStep && !ack ? '<span class="hint">Google 계정을 정리한 뒤에 누를 수 있습니다.</span>' : '';
   const l = acct?.repoExists
-    ? `${kick(`${device} · 이어서 백업`)}${say('이 계정에는', '이미 백업이 있습니다.')}${then('같은 PC를 다시 깔았거나 옛 PC의 연결을 끊었다면, 그 백업에 이어서 이 PC가 매시간 올립니다. 지금까지의 판은 그대로 둡니다.')}${stepBox}${acts([{ id: 'continue', label: '이어서 백업', kind: 'main', disabled: blocked }], hint)}`
-    : `${kick(`${device} · 보호 범위`)}${say(picked.length ? '이 폴더를 지킵니다.' : '지킬 폴더를 고르세요.')}${then(picked.length ? '「보호 시작」을 누르면 목록의 폴더를 암호화해 올리기 시작합니다.' : '문서, 바탕화면, 작업 폴더처럼 매일 고치는 폴더를 고르세요.')}${stepBox}${acts([{ id: 'protect', label: '보호 시작', kind: 'main', disabled: blocked }], hint)}`;
+    ? `${kick(`${device} · 이어서 백업`)}${say('이 계정에는', '이미 백업이 있습니다.')}${then('같은 PC를 다시 깔았거나 옛 PC의 연결을 끊었다면, 그 백업에 이어서 이 PC가 매시간 올립니다. 지금까지의 판은 그대로 둡니다.')}${noMove}${stepBox}${acts([{ id: 'continue', label: '이어서 백업', kind: 'main', disabled: blocked }], hint)}`
+    : `${kick(`${device} · 보호 범위`)}${say(picked.length ? '이 폴더를 지킵니다.' : '지킬 폴더를 고르세요.')}${then(picked.length ? '「보호 시작」을 누르면 목록의 폴더를 암호화해 올리기 시작합니다.' : '문서, 바탕화면, 작업 폴더처럼 매일 고치는 폴더를 고르세요.')}${noMove}${stepBox}${acts([{ id: 'protect', label: '보호 시작', kind: 'main', disabled: blocked }], hint)}`;
   return { kind: 'flow', tone: 'setup', here: '보호 범위', top: [], html: flow(l, r),
     acts: { protect: { id: 'protect', call: 'startProtection', account: true }, continue: { id: 'continue', call: 'continueBackup', account: true }, pick: { id: 'pick', call: 'chooseSources', onAccountProfile: true }, 'google-ack': { id: 'google-ack' } } };
 }
@@ -1099,11 +1121,24 @@ export function drawer(s, extra = {}) {
       ${myDevices(st, extra, R)}
       ${R('사고가 났을 때 되돌리기', st.account?.connected && st.configured ? '29일 안이면 그 시각으로 되돌립니다' : '29일 안이면 그 시각으로 되돌립니다 · 계정으로 시작한 PC에서 엽니다', { id: 'undo-1', label: '되돌리기' })}`)}
     ${G('이 앱', `${R('매시간 자동 백업', automatic ? '켜짐 · 창을 닫아도 매시간 뒤에서 조용히 돕니다' : '꺼짐', { id: automatic ? 'auto-off' : 'auto-on', label: automatic ? '끄기' : '켜기' })}
+      ${solioRows(st, R)}
       ${R('트레이 아이콘', '알림 영역의 아이콘이 없어도 백업은 매시간 돕니다', { id: 'tray', label: '켜고 끄기' })}
       ${R('시범 측정', '백업, 알림, 설치 결과 숫자를 보냅니다. 파일 이름, 경로, 내용은 보내지 않습니다', { id: 'telemetry', label: '보내는 내용 보기' })}
       ${R('업데이트', `지금 판 <span class="num">${h(st.version || '0.7.0')}</span>`)}
       ${R('도움 요청', '보낼 내용을 먼저 보여 드립니다', { id: 'help', label: '쓰기' })}
       ${R('계정', `${h(mail(st) || 'Google 계정')} · Google 2단계 인증을 켜 두세요`)}`)}`;
+}
+
+/** 설정 서랍의 솔리오 잇기 줄 — 쉬는 Wi-Fi(설계 4.14) · AI 도구(4.16). 이 칸이 없는 엔진 판에는 그리지 않는다 */
+function solioRows(st, R) {
+  const so = st.solio && typeof st.solio === 'object' ? st.solio : null;
+  if (!so) return '';
+  const rest = Array.isArray(so.restNetworks) ? so.restNetworks : [];
+  const on = AI_TOOL_ROWS.filter((x) => so.aiTools?.tools?.[x.id] === true).map((x) => x.name);
+  const restText = rest.length ? `${rest.slice(0, 2).map((n) => `「${h(n)}」`).join(', ')}${rest.length > 2 ? ` 외 ${h(count(rest.length - 2))}곳` : ''}에서는 매시간 백업을 쉽니다`
+    : '휴대폰 핫스팟처럼 데이터 요금이 드는 Wi-Fi에서 매시간 백업을 쉬게 합니다';
+  return `${R('쉬는 Wi-Fi', restText, { id: 'rest-net', label: '고르기' })}
+      ${R('AI 도구', on.length ? `${h(on.join(', '))} 켜짐 · AI 도구에 파일 이름과 폴더 이름이 나갑니다` : '백업 상태만 답합니다 · 파일 이름은 나가지 않습니다', { id: 'ai-tools', label: '열기' })}`;
 }
 
 /**
@@ -1132,6 +1167,65 @@ function partialMode(id, s, fake) {
   return 'plain';
 }
 
+/* ── 솔리오 잇기 — 쉬는 Wi-Fi(설계 4.14) ─────── */
+/**
+ * 설정 서랍의 「쉬는 Wi-Fi」(setRestNetworks). ui.wifi는 지금 이어진 Wi-Fi — undefined 읽는 중 · false 읽을 길이 없음(그 메서드가 없는 엔진 판) ·
+ * null 읽지 못함(Wi-Fi가 아니거나 위치 권한) · 문자열 그 이름. 고르는 동안(acct.running)은 단추를 막고 칸은 읽기만 둔다(포커스를 지킨다)
+ */
+function restNet(s, ui, acct) {
+  const names = Array.isArray(s?.solio?.restNetworks) ? s.solio.restNetworks : [];
+  const run = !!acct?.running, full = names.length >= REST_MAX, dis = run ? ' aria-disabled="true"' : '';
+  const wifi = ui?.wifi;
+  const here = typeof wifi === 'string' && wifi
+    ? (names.includes(wifi) ? `<p class="now">지금 이어진 Wi-Fi 「${h(wifi)}」에서는 매시간 백업을 쉽니다. 이미 고른 Wi-Fi입니다.</p>`
+      : `<p class="now">지금 이어진 Wi-Fi는 「${h(wifi)}」입니다. <button class="lnk sm" type="button" data-act="rest-here"${run || full ? ' aria-disabled="true"' : ''}>이 Wi-Fi에서 쉬기</button></p>`)
+    : wifi === null ? '<p class="now">지금 이어진 Wi-Fi 이름을 읽지 못했습니다. Wi-Fi가 아닌 회선에 이어져 있거나, Windows가 위치 권한을 막았을 수 있습니다.</p>'
+    : wifi === undefined ? '<p class="now">지금 이어진 Wi-Fi를 확인하고 있습니다.</p>' : '';
+  const list = names.length ? names.map((n) => row(h(n), '', `<button class="lnk sm" type="button" data-act="rest-drop" data-name="${h(n)}"${dis} aria-label="${h(`「${n}」 빼기`)}">빼기</button>`)).join('')
+    : '<p class="empty">아직 고른 Wi-Fi가 없습니다.</p>';
+  const add = `<div class="find add"><input id="rest-in" type="text" aria-label="쉴 Wi-Fi 이름" placeholder="Wi-Fi 이름 적기" maxlength="32" autocomplete="off" spellcheck="false"${full ? ' disabled' : run ? ' readonly' : ''}><button class="lnk sm" type="button" data-act="rest-add"${run || full ? ' aria-disabled="true"' : ''}>더하기</button></div>`;
+  const l = `${kick('설정 · 쉬는 Wi-Fi')}${say('고른 Wi-Fi에서는', '매시간 백업을 쉽니다.')}
+    ${then('휴대폰 핫스팟처럼 데이터 요금이 드는 Wi-Fi를 고르세요. 그 Wi-Fi에 이어져 있는 동안에는 매시간 저절로 도는 백업을 쉬고, 다른 회선에 이어지면 다시 합니다. 이 창에서 「보호 시작」, 「이어서 백업」, 「지금 백업」을 직접 눌러 도는 백업은 쉬지 않습니다.')}
+    ${acts([{ id: 'drawer', label: '설정으로 돌아가기', kind: 'link' }])}`;
+  const r = panel('쉬는 Wi-Fi', names.length ? `${count(names.length)}개` : '', `${here}<div class="rows">${list}</div>${add}
+    <p class="foot">Windows에 보이는 이름 그대로, 대소문자와 띄어쓰기까지 같게 적어 주세요. 한 글자라도 다르면 쉬지 않습니다. 그 Wi-Fi에 이어진 채로 「이 Wi-Fi에서 쉬기」를 누르면 가장 정확합니다.</p>
+    <p class="foot">Wi-Fi 이름은 이 PC에만 두고 어디로도 보내지 않습니다. ${REST_MAX}개까지 고를 수 있습니다.</p>
+    <p class="foot">Windows가 위치 권한을 막으면 이 앱이 Wi-Fi 이름을 읽지 못해, 고른 Wi-Fi에서도 쉬지 않습니다. 그럴 때는 Windows 설정의 「네트워크 및 인터넷」에서 그 Wi-Fi의 「데이터 통신 연결」을 켜 두세요. 데이터 통신 연결에서는 Wi-Fi 이름과 상관없이 쉽니다.</p>`);
+  return { kind: 'flow', tone: 'setup', here: '쉬는 Wi-Fi', top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: { drawer: { id: 'drawer', drawer: true } } };
+}
+
+/* ── 솔리오 잇기 — AI 도구(설계 4.16) ─────── */
+/**
+ * 설정 서랍의 「AI 도구」 — 도구마다 켜고 끄기와 가리는 낱말(setAiTools), MCP로 이어 온 도구(aiToolsState의 clients — 화면에 들어올 때
+ * 다시 읽은 ui.aiClients가 먼저). 이름과 판은 그 도구가 스스로 알린 것이라 그렇게 적고, 그 연결을 띄운 프로그램의 경로를 함께 보인다
+ */
+function aiToolsScreen(s, ui, acct, now) {
+  const t = s?.solio?.aiTools || {}, tools = t.tools || {}, masks = Array.isArray(t.masks) ? t.masks : [];
+  const clients = Array.isArray(ui?.aiClients) ? ui.aiClients : Array.isArray(t.clients) ? t.clients : [];
+  const run = !!acct?.running, full = masks.length >= MASK_MAX, dis = run ? ' aria-disabled="true"' : '';
+  const toolRows = row('백업 상태', '<span class="meta">지켜지고 있는지, 마지막으로 백업한 때, 살펴볼 것을 알려 줍니다. 파일 이름이 들어 있지 않아 늘 답합니다.</span>', '늘 답함')
+    + AI_TOOL_ROWS.map((x) => {
+      const on = tools[x.id] === true;
+      return row(h(x.name), `<span class="meta">${h(x.what)}</span>`, `${on ? '켜짐' : '꺼짐'} <button class="lnk sm" type="button" data-act="ai-tool" data-tool="${h(x.id)}"${dis} aria-label="${h(`${x.name} ${on ? '끄기' : '켜기'}`)}">${on ? '끄기' : '켜기'}</button>`);
+    }).join('');
+  const maskRows = masks.length ? masks.map((w) => row(h(w), '', `<button class="lnk sm" type="button" data-act="mask-drop" data-name="${h(w)}"${dis} aria-label="${h(`「${w}」 가리지 않기`)}">빼기</button>`)).join('')
+    : '<p class="empty">가리는 낱말이 없습니다.</p>';
+  const maskAdd = `<div class="find add"><input id="mask-in" type="text" aria-label="가릴 낱말" placeholder="가릴 낱말 적기 (예: 건강, 계약)" maxlength="${MASK_LEN}" autocomplete="off" spellcheck="false"${full ? ' disabled' : run ? ' readonly' : ''}><button class="lnk sm" type="button" data-act="mask-add"${run || full ? ' aria-disabled="true"' : ''}>더하기</button></div>`;
+  const seen = (c) => [c.firstSeen ? `처음 ${dayKo(c.firstSeen).replace(/ \S$/, '')}` : '', c.lastSeen ? `마지막 ${whenKo(c.lastSeen, now)}` : ''].filter(Boolean).join(' · ');
+  const clientRows = clients.length ? clients.map((c) => row(`${h(c.name)}${c.version ? ` <span class="num">${h(c.version)}</span>` : ''}`, `<span class="meta">${h(c.exe || '띄운 프로그램을 알 수 없습니다')}</span>`, h(seen(c)))).join('')
+    : '<p class="empty">아직 이 앱에 이은 AI 도구가 없습니다.</p>';
+  const l = `${kick('설정 · AI 도구')}${say('AI 도구에는', '켠 것만 답합니다.')}
+    ${then('Claude 같은 AI 도구를 이 앱에 이으면, AI 도구가 이 PC의 백업을 물어볼 수 있습니다. 백업 상태는 파일 이름이 들어 있지 않아 늘 답합니다. 공간 보고서와 백업 안 파일 찾기는 여기서 켠 것만 답합니다.')}
+    <div class="box rise i3"><b>켜면 AI 도구에 파일 이름과 폴더 이름이 나갑니다</b>파일 내용은 나가지 않습니다. 지금 AI 도구는 보기만 하고, 백업을 바꾸거나 지우지 못합니다.</div>
+    ${acts([{ id: 'drawer', label: '설정으로 돌아가기', kind: 'link' }])}`;
+  const r = panel('AI 도구에 답하는 것', '', `<div class="rows">${toolRows}</div>`)
+    + panel('가리는 낱말', masks.length ? `${count(masks.length)}개` : '', `<div class="rows">${maskRows}</div>${maskAdd}
+    <p class="foot">이 낱말이 경로에 든 파일과 폴더는 AI 도구에 보이지 않습니다. 이 낱말로 찾으면 찾은 것이 없다고 답합니다. ${MASK_MAX}개까지, 낱말 하나는 ${MASK_LEN}자까지입니다.</p>`)
+    + panel('이은 AI 도구', clients.length ? `${count(clients.length)}개` : '', `<div class="rows">${clientRows}</div>
+    <p class="foot">이름과 판은 그 AI 도구가 스스로 알린 것입니다. 줄마다 적은 경로는 그 연결을 띄운 프로그램입니다. AI 도구에 잇는 단추는 다음 업데이트에서 엽니다.</p>`);
+  return { kind: 'flow', tone: 'setup', here: 'AI 도구', top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: { drawer: { id: 'drawer', drawer: true } } };
+}
+
 /** 화면 이름 → 그릴 것. ctx = { state, model, now, catalog, ui, fake } — fake는 예시 상태로 그리는 화면 확인용(시험 · 캡처) */
 export function renderScreen(id, ctx) {
   const s = ctx.state, now = ctx.now, fake = !!ctx.fake;
@@ -1156,11 +1250,13 @@ export function renderScreen(id, ctx) {
     case 'lost': return ctx.acct?.lostTarget ? lost1Real(s, ctx.acct) : lost1();
     case 'lost-2': return ctx.acct?.lost || (!fake && s?.account) ? lost2Real(s, ctx.acct, now) : lost2();
     case 'code': return code(s);
+    case 'rest-net': return restNet(s, ctx.ui, ctx.acct);
+    case 'ai-tools': return aiToolsScreen(s, ctx.ui, ctx.acct, now);
     case 'mass-list': return massList();
-    default: return homeScreen(ctx.model, ctx.acct);
+    default: return homeScreen(ctx.model, ctx.acct, s);
   }
 }
 
 /** 앱이 그리는 화면 이름 전부(시험 · tauri-driver · 캡처가 돈다) */
-export const SCREENS = ['home', 'start-1', 'start-2', 'start-3', 'restore', 'restore-old', 'partial', 'partial-std', 'move-0', 'move-1', 'move-2', 'move-3', 'move-apps', 'move-4', 'undo-1', 'undo-2', 'undo-3', 'lost', 'lost-2', 'code', 'mass-list'];
+export const SCREENS = ['home', 'start-1', 'start-2', 'start-3', 'restore', 'restore-old', 'partial', 'partial-std', 'move-0', 'move-1', 'move-2', 'move-3', 'move-apps', 'move-4', 'undo-1', 'undo-2', 'undo-3', 'lost', 'lost-2', 'code', 'mass-list', 'rest-net', 'ai-tools'];
 export { FAKE };
