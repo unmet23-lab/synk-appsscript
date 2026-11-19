@@ -94,10 +94,39 @@ test('잰 편이 다섯이 안 되거나 조회 합이 300 아래면 상태를 �
 });
 
 test('재지 못한 반응은 0으로 치지 않고 기준에서도 뺀다', () => {
-  // 댓글만 잰 계정(유튜브 공개 숫자). 댓글 2번이면 좋음이다
-  const d = 진단(계정(50, Array.from({ length: 8 }, () => ({ views: 1000, comments: 3, likes: 20 }))), NOW);
+  // 댓글과 좋아요만 잰 계정(유튜브 공개 숫자). 유튜브의 선은 댓글 1 · 좋아요 30이다
+  const d = 진단(계정(50, Array.from({ length: 8 }, () => ({ views: 1000, comments: 2, likes: 30 })), { platform: 'youtube' }), NOW);
   assert.equal(신호(d, '깊이').판정, '좋음');
   assert.deepEqual(신호(d, '깊이').못잰것, ['공유', '저장']);
+});
+
+test('반응의 선은 플랫폼마다 다르다 — 같은 숫자가 틱톡에서는 보통, 인스타그램에서는 나쁨', () => {
+  const posts = () => Array.from({ length: 8 }, () => ({ views: 2000, shares: 3, comments: 1, likes: 40 })); // 1,000번에 공유 1.5 · 댓글 0.5 · 좋아요 20
+  assert.equal(신호(진단(계정(50, posts(), { platform: 'tiktok' }), NOW), '깊이').판정, '보통');
+  assert.equal(신호(진단(계정(50, posts(), { platform: 'instagram' }), NOW), '깊이').판정, '나쁨');
+});
+
+test('한 편이 반응을 다 만들었으면 그 편을 뺀 값으로 판정한다', () => {
+  const posts = [...Array.from({ length: 7 }, () => 편(1000, 0, 0, 0, 5)), 편(3000, 60, 30, 40, 200)];
+  const s = 신호(진단(계정(50, posts), NOW), '깊이');
+  assert.equal(s.한편뺌, true);
+  assert.equal(s.판정, '나쁨');
+  assert.ok(s.전체지수 > s.지수);
+});
+
+test('선만큼 반응해도 다섯이 안 나올 조회로는 반응의 좋고 나쁨을 가르지 않는다', () => {
+  // 틱톡의 선은 공유 4 · 댓글 1이라 조회 1,000번부터 가른다
+  const s = 신호(진단(계정(50, Array.from({ length: 6 }, () => ({ views: 120, shares: 0, comments: 0, likes: 2 })), { platform: 'tiktok' }), NOW), '깊이');
+  assert.equal(s.판정, '모름');
+  assert.match(s.글, /1,000번부터 가릅니다/);
+});
+
+test('반응은 나쁘지 않은데 넘김이 많으면 첫 장면에서 놓치는 계정, 유튜브는 붙잡음이 가장 무겁다', () => {
+  const posts = Array.from({ length: 8 }, () => ({ views: 1500, shares: 2, comments: 1, likes: 30, screen: { stayedToWatchPct: 35 } }));
+  const d = 진단(계정(50, posts, { platform: 'youtube' }), NOW);
+  assert.equal(d.유형, '첫 장면에서 놓치는 계정');
+  assert.equal(d.신호[0].키, '붙잡음');
+  assert.match(d.처방[0], /첫 2초/);
 });
 
 test('화면에서 읽은 넘김 비율이 있으면 첫 장면을 처방한다', () => {

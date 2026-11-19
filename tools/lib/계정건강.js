@@ -28,9 +28,23 @@ const 기준 = Object.freeze({
   // 좋음은 같은 크기 계정의 평균쯤, 나쁨은 그 3분의 1 아래다(Socialinsider 릴스 · 틱톡 규모별 평균, README 「기준 숫자」)
   닿음: { 팔로워최소: 100, 구간: [{ 까지: 5000, 나쁨: 0.05, 좋음: 0.2 }, { 까지: 50000, 나쁨: 0.03, 좋음: 0.1 }, { 까지: Infinity, 나쁨: 0.015, 좋음: 0.06 }] },
   껍데기팔로워: 500,    // 닿음이 나쁠 때 「팔로워만 큰 계정」으로 부르는 팔로워 수
-  깊이: {               // 조회 1,000번마다. 잰 반응만 더하고 기준도 잰 것만 더한다. 나쁨은 좋음의 30%
-    좋음: { comments: 2, shares: 5, saves: 3 }, 나쁨비율: 0.3,
-    좋아요: { 나쁨: 10, 좋음: 40 },
+  깊이: {
+    // 조회 1,000번마다의 반응에서, 그 플랫폼 계정의 평균쯤을 「선」으로 둔다(11-19 다시 잼, 출처와 셈은 README 「기준 숫자」).
+    // 틱톡은 Socialinsider 2025의 조회 대비 참여율 4%를 좋아요 · 공유 · 댓글의 평균 비로 나눈 값, 인스타그램 저장 · 댓글은 같은 곳의 릴스 평균,
+    // 인스타그램 공유는 출처가 없어 우리 편의 위 25%(5.6), 유튜브와 그 밖은 출처가 약한 첫 값이다.
+    선: {
+      tiktok: { shares: 4, saves: 3, comments: 1, likes: 35 },
+      instagram: { shares: 5, saves: 3, comments: 4, likes: 35 },
+      youtube: { shares: 2, saves: 3, comments: 1, likes: 30 },
+      기본: { shares: 4, saves: 3, comments: 1, likes: 35 },
+    },
+    // 반응마다 선의 몇 배인지를 내고(위는 3배에서 자른다) 무게로 평균한다. 보내기가 가장 무겁고 좋아요가 가장 가볍다.
+    // 좋아요는 3배여도 혼자서는 「좋음」에 닿지 못하고, 저장이나 공유 하나가 아주 높으면 닿는다
+    무게: { shares: 3, saves: 2, comments: 2, likes: 1 }, 덮개: 3,
+    한편빼기: 6,          // 편이 이만큼 넘으면 가장 잘된 한 편을 뺀 값도 내고, 둘 가운데 낮은 쪽으로 판정한다
+    좋음: 1, 나쁨: 0.3,   // 평균한 값이 선(1)을 넘으면 좋음, 선의 30% 아래면 나쁨
+    기대반응: 5,          // 선만큼 반응했을 때 공유 · 저장 · 댓글이 이만큼은 나올 조회가 쌓여야 판정한다
+    좋아요만: 0.5,        // 좋아요는 선을 넘는데 나머지가 선의 이 비율 아래면 「좋아요만 받는」
   },
   남김: { 조회최소: 2000, 나쁨: 0.5, 좋음: 3, 수상함: 100, 수상한수: 100 }, // 조회 1,000번마다 늘어난 팔로워
   흐름: { 편수: 3, 조회최소: 30, 나쁨: 0.6, 좋음: 1.3 },            // 최근 편 가운데 값 ÷ 그 앞 편 가운데 값(같은 나이)
@@ -43,9 +57,12 @@ const 기준 = Object.freeze({
     completionRatePct: { 이름: '끝까지 본 비율', 나쁨: 10, 좋음: 30 },
   },
   막힘: { 앞편수: 5, 앞가운데: 200, 연속: 3, 비율: 0.2 },
+  // 신호의 무게. 플랫폼이 공식으로 밝힌 신호를 그 플랫폼에서 더 무겁게 본다: 인스타그램은 보내기(반응),
+  // 유튜브 쇼츠는 시청함 대 넘김(붙잡음), 틱톡은 끝까지 보기(붙잡음)와 반응
   무게: { 깊이: 3, 닿음: 2, 흐름: 2, 남김: 2, 붙잡음: 2, 쏠림: 1, 꾸준함: 1 },
+  플랫폼무게: { youtube: { 깊이: 2, 붙잡음: 3 }, tiktok: { 붙잡음: 3 } },
   아는무게: 4,          // 잰 신호의 무게 합이 이보다 작으면 상태를 말하지 않는다
-  점수: { 건강: 0.25, 나쁨: -0.3 },
+  점수: { 건강: 0.3, 나쁨: -0.3 },
 });
 
 const num = n => typeof n === 'number' && Number.isFinite(n);
@@ -100,31 +117,50 @@ function 닿음(seen, fol) {
   return { ...base, 판정, 값: `팔로워의 ${r >= 1 ? times(r) : pct(r)}`, 글, 비율: r, 팔로워: last.n, 가운데조회: mid, 좋음선: rule.좋음 };
 }
 
-function 깊이(seen) {
+const 플랫폼이름 = { instagram: '인스타그램', tiktok: '틱톡', youtube: '유튜브', facebook: '페이스북' };
+const 무게 = platform => ({ ...기준.무게, ...(기준.플랫폼무게[platform] || {}) });
+
+function 깊이(seen, platform) {
   const base = { 키: '깊이', 이름: '본 사람이 반응하는가' };
   const views = sum(seen.map(p => p.v.views));
   if (views < 기준.표본조회) return { ...base, 판정: '모름', 값: '', 글: `조회 합이 ${fmt(views)}번이라 비율을 내기에 적습니다.` };
-  const NAME = { shares: '공유', saves: '저장', comments: '댓글' };
-  const VERB = { comments: ['말을 걸', '말을 겁니다'], shares: ['보내', '보냅니다'], saves: ['저장하', '저장합니다'] };
-  let got = 0, good = 0; const parts = [], missing = [], strong = [];
-  for (const key of Object.keys(NAME)) {
-    // 그 반응을 잰 편만 모아서, 그 편들의 조회로 나눈다
-    const with_ = seen.filter(p => num(p.v[key])), v = sum(with_.map(p => p.v.views));
-    if (!with_.length || v < 기준.표본조회) { missing.push(NAME[key]); continue; }
-    const per = sum(with_.map(p => p.v[key])) / v * 1000;
-    got += per; good += 기준.깊이.좋음[key]; parts.push(`${NAME[key]} ${one(per)}`);
-    if (per >= 기준.깊이.좋음[key]) strong.push(VERB[key]);
+  const rule = 기준.깊이, line = rule.선[platform] || rule.선.기본;
+  const NAME = { shares: '공유', saves: '저장', comments: '댓글', likes: '좋아요' };
+  const VERB = { shares: ['보내', '보냅니다'], saves: ['저장하', '저장합니다'], comments: ['말을 걸', '말을 겁니다'] };
+  // 그 반응을 잰 편만 모아서, 그 편들의 조회로 나눈다
+  const rates = posts => {
+    const out = {};
+    for (const key of Object.keys(NAME)) {
+      const with_ = posts.filter(p => num(p.v[key])), v = sum(with_.map(p => p.v.views));
+      if (with_.length && v >= 기준.표본조회) out[key] = sum(with_.map(p => p.v[key])) / v * 1000;
+    }
+    return out;
+  };
+  const rate = rates(seen), missing = Object.keys(NAME).filter(k => k !== 'likes' && rate[k] == null).map(k => NAME[k]);
+  const deep = Object.keys(rate).filter(k => k !== 'likes');
+  if (!deep.length) return { ...base, 판정: '모름', 값: '', 글: '공유, 저장, 댓글을 잰 값이 없습니다.', 좋아요: rate.likes ?? null };
+  // 선만큼 반응했을 때 나올 공유 · 저장 · 댓글이 다섯이 안 되는 조회로는 좋고 나쁨을 가르지 않는다
+  const need = Math.ceil(rule.기대반응 / sum(deep.map(k => line[k])) * 1000 / 100) * 100;
+  const shown = Object.keys(rate).map(k => `${NAME[k]} ${one(rate[k])}`).join(' · ');
+  if (views < need) return { ...base, 판정: '모름', 값: '', 글: `조회 1,000번마다 ${shown}번입니다. 조회 합이 ${fmt(views)}번이라 좋고 나쁨을 가르기에 적습니다(${fmt(need)}번부터 가릅니다).`, 좋아요: rate.likes ?? null };
+  const index = (r, keys) => sum(keys.map(k => rule.무게[k] * Math.min(r[k] / line[k], rule.덮개))) / sum(keys.map(k => rule.무게[k]));
+  const whole = index(rate, Object.keys(rate)), deepIndex = index(rate, deep);
+  // 한 편이 반응을 다 만든 계정을 「좋음」으로 부르지 않게, 가장 잘된 편을 뺀 값이 더 낮으면 그것으로 판정한다
+  let all = whole, 한편뺌 = false;
+  if (seen.length >= rule.한편빼기) {
+    const top = seen.reduce((a, b) => (b.v.views > a.v.views ? b : a)), r = rates(seen.filter(p => p !== top)), keys = Object.keys(rate).filter(k => r[k] != null);
+    const band = v => (v >= rule.좋음 ? 2 : v < rule.나쁨 ? 0 : 1);
+    if (keys.some(k => k !== 'likes') && index(r, keys) < whole) { all = index(r, keys); 한편뺌 = band(all) !== band(whole); } // 판정이 바뀔 때만 화면에 말한다
   }
-  const liked = seen.filter(p => num(p.v.likes)), lv = sum(liked.map(p => p.v.views));
-  const likes = liked.length && lv >= 기준.표본조회 ? sum(liked.map(p => p.v.likes)) / lv * 1000 : null;
-  if (!parts.length) return { ...base, 판정: '모름', 값: '', 글: '댓글, 공유, 저장을 잰 값이 없습니다.', 좋아요: likes };
-  const 판정 = got >= good ? '좋음' : got < good * 기준.깊이.나쁨비율 ? '나쁨' : '보통';
-  const 좋아요만 = 판정 === '나쁨' && likes != null && likes >= 기준.깊이.좋아요.좋음;
-  // 기준을 넘은 반응만 말한다: 「보내고 저장합니다」
+  const 판정 = all >= rule.좋음 ? '좋음' : all < rule.나쁨 ? '나쁨' : '보통';
+  const 좋아요만 = 판정 !== '좋음' && rate.likes != null && rate.likes >= line.likes && deepIndex < rule.좋아요만;
+  // 선을 넘은 반응만 말한다: 「보내고 저장합니다」
+  const strong = deep.filter(k => rate[k] >= line[k]).map(k => VERB[k]);
   const did = strong.length ? strong.map((w, i) => (i < strong.length - 1 ? w[0] + '고' : w[1])).join(' ') : '반응합니다';
-  const 요약 = `조회 1,000번마다 ${parts.join(' · ')}번입니다.` + (판정 === '좋음' ? ` 본 사람이 ${did}.` : 판정 === '나쁨' ? (좋아요만 ? ' 좋아요만 누르고 지나갑니다.' : ' 보고 지나갑니다.') : '');
-  const 글 = 요약 + (likes == null ? '' : ` 좋아요는 ${one(likes)}번입니다.`) + (missing.length ? ` 재지 못해 뺀 반응: ${missing.join(', ')}.` : '');
-  return { ...base, 판정, 값: `1,000번에 ${one(got)}번`, 글, 요약, 깊은반응: got, 좋음선: good, 좋아요: likes, 좋아요만, 못잰것: missing };
+  const 요약 = `조회 1,000번마다 ${shown}번입니다.` + (좋아요만 ? ' 좋아요는 누르는데 보내거나 말을 걸지 않습니다.' : 판정 === '좋음' ? ` 본 사람이 ${did}.` : 판정 === '나쁨' ? ' 보고 지나갑니다.' : '');
+  const where = 플랫폼이름[platform] ? `${플랫폼이름[platform]} 계정의 평균쯤인 선은` : '평균쯤으로 보는 선은';
+  const 글 = 요약 + ` ${where} ${Object.keys(rate).map(k => `${NAME[k]} ${line[k]}`).join(' · ')}번입니다.` + (한편뺌 ? ` 가장 잘된 한 편을 빼면 선의 ${Math.floor(all * 100)}%로 내려가 그 값으로 판정했습니다.` : '') + (missing.length ? ` 재지 못해 뺀 반응: ${missing.join(', ')}.` : '');
+  return { ...base, 판정, 값: `선의 ${Math.floor(all * 100)}%`, 글, 요약, 지수: all, 전체지수: whole, 한편뺌, 깊은지수: deepIndex, 비율: rate, 선: line, 좋아요: rate.likes ?? null, 좋아요만, 못잰것: missing };
 }
 
 function 남김(all, seen, fol, now) {
@@ -223,7 +259,18 @@ function 막힘(all) {
 
 const 처방글 = {
   닿음: s => `팔로워 수를 늘리는 일(이벤트, 맞팔, 구매)은 멈춥니다. 지금 팔로워가 처음 따라온 주제로 세 편을 올리고, 한 편의 조회가 팔로워의 ${pct(s.좋음선)}를 넘는지 봅니다. 플랫폼은 팔로워 수가 아니라 본 사람의 반응으로 다음 노출을 정합니다.`,
-  깊이: s => (s.좋아요만 ? '좋아요는 받는데 보내거나 저장하지 않습니다. ' : '') + '다음 세 편에는 보낼 까닭이나 저장할 까닭을 한 가지씩 넣습니다. 친구에게 보낼 만한 한 장면, 다시 볼 목록이나 순서, 댓글로 답할 물음 가운데 하나입니다.',
+  // 선에서 가장 먼 반응 하나를 짚어, 그 반응을 부르는 장치를 처방한다
+  깊이: s => {
+    const HOW = {
+      shares: ['공유', '다음 세 편에는 친구에게 보낼 까닭을 한 가지씩 넣습니다. 「이거 너 얘기야」 하고 보낼 만한 한 장면이나, 보는 사람이 바로 써먹을 한 줄입니다.'],
+      saves: ['저장', '다음 세 편에는 저장할 까닭을 한 가지씩 넣습니다. 다시 볼 목록, 순서, 표처럼 한 번 보고 외울 수 없는 것입니다.'],
+      comments: ['댓글', '다음 세 편은 한 낱말로 답할 수 있는 물음으로 끝냅니다. 둘 가운데 하나를 고르게 하면 가장 쉽습니다. 달린 댓글에는 그날 답합니다.'],
+    };
+    const lack = k => 기준.깊이.무게[k] * (1 - Math.min(s.비율[k] / s.선[k], 1));
+    const weak = Object.keys(HOW).filter(k => s.비율?.[k] != null).sort((a, b) => lack(b) - lack(a))[0];
+    if (!weak) return '다음 세 편에는 보낼 까닭이나 저장할 까닭을 한 가지씩 넣습니다.';
+    return `${s.좋아요만 ? '좋아요는 받는데 보내거나 말을 걸지 않습니다. ' : ''}${HOW[weak][0]}${weak === 'shares' ? '가' : '이'} 선의 ${pct(s.비율[weak] / s.선[weak])}입니다. ${HOW[weak][1]}`;
+  },
   남김: s => (s.수상함 ? '팔로워를 늘리는 이벤트나 맞팔을 멈추고, 늘어난 팔로워가 다음 편을 보는지 2주 동안 봅니다.' : '끝 장면에서 다음 편을 예고하고, 프로필 첫 줄에 이 계정을 따라오면 무엇을 받는지 한 문장으로 적습니다. 같은 틀의 편을 이어 올려 따라올 까닭을 만듭니다.'),
   흐름: (s, ctx) => `최근 편이 그 앞보다 덜 나옵니다. ${ctx.best ? `가장 잘된 「${ctx.best}」의 주제와 첫 장면으로 돌아가 두 편을 만들고` : '가장 잘된 편의 주제와 첫 장면으로 돌아가 두 편을 만들고'}, 최근에 바꾼 것(주제, 길이, 올리는 시각)을 하나씩 되돌려 봅니다.`,
   쏠림: s => `${s.잘된편 ? `「${s.잘된편}」` : '잘된 한 편'}의 주제와 첫 2초를 그대로 두고 두 편을 더 만듭니다. 다시 되면 그것이 이 계정의 틀입니다.`,
@@ -253,7 +300,8 @@ function 진단(account, now = Date.now()) {
       결론: stopped ? `마지막으로 올린 지 ${steady.쉰날}일이 지났고, 볼 편이 ${seen.length}편뿐입니다.` : `숫자를 잰 편이 ${seen.length}편입니다. ${기준.표본편수}편이 쌓이면 진단합니다.`,
       처방: [stopped ? 처방글.꾸준함(steady) : `올린 지 하루가 지난 편이 ${기준.표본편수}편 쌓일 때까지는 조회수로 판단하지 않습니다. 같은 틀로 계속 올립니다.`] };
   }
-  const S = { 닿음: 닿음(seen, fol), 깊이: 깊이(seen), 남김: 남김(all, seen, fol, now), 흐름: 흐름(all), 쏠림: 쏠림(seen), 꾸준함: steady, 붙잡음: 붙잡음(seen) };
+  const S = { 닿음: 닿음(seen, fol), 깊이: 깊이(seen, head.platform), 남김: 남김(all, seen, fol, now), 흐름: 흐름(all), 쏠림: 쏠림(seen), 꾸준함: steady, 붙잡음: 붙잡음(seen) };
+  const W = 무게(head.platform);
   const blocked = 막힘(all), views = sum(seen.map(p => p.v.views));
   if (views < 기준.표본조회) {
     return { ...head, 상태: 상태이름.이름, 유형: '아직 노출이 시작되지 않은 계정', 점수: null, 막힘: null, 신호: [steady],
@@ -261,7 +309,7 @@ function 진단(account, now = Date.now()) {
       처방: ['편이 좋고 나쁜지를 따질 때가 아니라 노출이 시작되지 않은 것입니다. 플랫폼의 계정 상태 화면에 제한이 있는지 보고, 프로필(이름, 소개, 사진, 나라와 말)을 채웁니다. 제한이 없으면 같은 틀로 열 편까지 올린 뒤 다시 봅니다.'] };
   }
   let score = 0, weight = 0;
-  for (const [k, s] of Object.entries(S)) if (s.판정 !== '모름') { weight += 기준.무게[k]; score += 기준.무게[k] * (s.판정 === '좋음' ? 1 : s.판정 === '나쁨' ? -1 : 0); }
+  for (const [k, s] of Object.entries(S)) if (s.판정 !== '모름') { weight += W[k]; score += W[k] * (s.판정 === '좋음' ? 1 : s.판정 === '나쁨' ? -1 : 0); }
   const 점수 = weight >= 기준.아는무게 ? score / weight : null;
   let 상태 = 점수 == null ? 상태이름.이름 : 점수 >= 기준.점수.건강 ? 상태이름.건강 : 점수 <= 기준.점수.나쁨 ? 상태이름.나쁨 : 상태이름.주의;
   const is = (k, v) => S[k].판정 === v, worse = to => { if (상태 === 상태이름.건강 || to === 상태이름.나쁨) 상태 = to; };
@@ -286,10 +334,21 @@ function 진단(account, now = Date.now()) {
     const growing = is('흐름', '좋음') || is('남김', '좋음');
     유형 = growing ? '반응이 진하고 자라는 계정' : '반응이 진한 계정';
     if (상태 === 상태이름.나쁨) 상태 = 상태이름.주의;
-    결론 = `한 편의 조회는 ${fmt(head.조회가운데)}번쯤입니다. ${S.깊이.요약} ${growing ? '반응이 좋은 채로 자라고 있습니다.' : '조회수의 크기와 상관없이 건강한 계정입니다.'}`;
-  } else if (is('깊이', '나쁨') && (S.닿음.비율 >= 1 || is('닿음', '모름'))) {
-    유형 = S.깊이.좋아요만 ? '좋아요만 받는 계정' : '보고 지나가는 계정'; worse(is('남김', '나쁨') ? 상태이름.나쁨 : 상태이름.주의);
+    // 반응은 좋은데 다른 신호가 걸려 「건강함」이 아니면, 걸리는 것을 결론에서 말한다
+    const BUT = { 붙잡음: S.붙잡음.첫장면 ? '첫 장면에서 넘기는 사람이 많습니다' : '끝까지 보는 사람이 적습니다', 남김: '본 사람이 팔로워로 남지 않습니다', 닿음: '팔로워에게는 잘 닿지 않습니다', 꾸준함: '올리는 간격이 뜹니다' };
+    const but = Object.keys(BUT).filter(k => is(k, '나쁨')).map(k => BUT[k]);
+    결론 = `한 편의 조회는 ${fmt(head.조회가운데)}번쯤입니다. ${S.깊이.요약} `
+      + (상태 !== 상태이름.건강 && but.length ? `다만 ${but[0]}.` : growing ? '반응이 좋은 채로 자라고 있습니다.' : '조회수의 크기와 상관없이 건강한 계정입니다.');
+  } else if (S.깊이.좋아요만) {
+    유형 = '좋아요만 받는 계정'; worse(is('깊이', '나쁨') && is('남김', '나쁨') ? 상태이름.나쁨 : 상태이름.주의);
     결론 = `한 편의 조회는 ${fmt(head.조회가운데)}번쯤입니다. ${S.깊이.요약}`;
+  } else if (is('깊이', '나쁨')) {
+    유형 = '보고 지나가는 계정'; worse(is('남김', '나쁨') ? 상태이름.나쁨 : 상태이름.주의);
+    결론 = `한 편의 조회는 ${fmt(head.조회가운데)}번쯤입니다. ${S.깊이.요약}`;
+  } else if (is('붙잡음', '나쁨')) {
+    // 반응은 나쁘지 않은데 붙잡지 못한다. 본 사람은 괜찮게 보지만 보기 전에 떠난다
+    유형 = S.붙잡음.첫장면 ? '첫 장면에서 놓치는 계정' : '끝까지 붙잡지 못하는 계정'; worse(상태이름.주의);
+    결론 = `${S.붙잡음.글} 남아서 본 사람의 반응은 나쁘지 않습니다.`;
   } else if (is('흐름', '나쁨')) {
     유형 = '식어 가는 계정'; worse(상태이름.주의);
     결론 = S.흐름.글;
@@ -301,12 +360,14 @@ function 진단(account, now = Date.now()) {
     결론 = 상태 === 상태이름.건강 ? '눈에 띄게 나쁜 신호가 없고 편마다 고르게 나옵니다.' : '크게 나쁜 신호는 없지만 뚜렷하게 좋은 신호도 아직 없습니다.';
   }
   // 처방: 나쁜 신호를 무게 순으로 셋까지. 좋은 신호가 있으면 지킬 것 하나를 끝에 붙인다
-  const order = Object.keys(S).sort((a, b) => 기준.무게[b] - 기준.무게[a]);
+  const order = Object.keys(S).sort((a, b) => W[b] - W[a]);
   const 처방 = [];
   if (blocked) 처방.push('플랫폼 앱의 계정 상태 화면을 엽니다(인스타그램은 설정의 「계정 상태」, 틱톡은 「계정 확인」). 제한이나 경고가 있으면 그 편을 지우거나 이의를 냅니다. 없으면 일주일 동안 평소 틀로 두 편만 올리고 조회가 돌아오는지 봅니다.');
   // 유형을 정한 신호의 처방이 맨 앞이다
-  const lead = { '팔로워만 큰 계정': '닿음', '팔로워가 조회보다 빨리 느는 계정': '남김', '멈춘 계정': '꾸준함', '한 편에 기대는 계정': '쏠림', '식어 가는 계정': '흐름' }[유형];
-  for (const k of [lead, ...order.filter(k => k !== lead)]) if (k && S[k].판정 === '나쁨' && 처방.length < 3) 처방.push(처방글[k](S[k], { best }));
+  const lead = { '팔로워만 큰 계정': '닿음', '팔로워가 조회보다 빨리 느는 계정': '남김', '멈춘 계정': '꾸준함', '한 편에 기대는 계정': '쏠림', '식어 가는 계정': '흐름',
+    '좋아요만 받는 계정': '깊이', '보고 지나가는 계정': '깊이', '첫 장면에서 놓치는 계정': '붙잡음', '끝까지 붙잡지 못하는 계정': '붙잡음' }[유형];
+  const act = k => S[k].판정 === '나쁨' || (k === '깊이' && S.깊이.좋아요만);
+  for (const k of [lead, ...order.filter(k => k !== lead)]) if (k && act(k) && 처방.length < 3) 처방.push(처방글[k](S[k], { best }));
   const keep = order.find(k => S[k].판정 === '좋음' && 유지글[k]);
   if (keep && 처방.length < 3) 처방.push(유지글[keep]);
   if (!처방.length) 처방.push('지금 틀로 계속 올리고 2주 뒤에 다시 봅니다.');
