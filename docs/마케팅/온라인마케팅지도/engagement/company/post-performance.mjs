@@ -155,6 +155,13 @@ export function normalizePerformancePostUrl(input) {
   throw fail('지원하는 플랫폼의 게시물 주소를 넣어 주세요. 프로필·단축·공유 링크로는 안 돼요.');
 }
 
+// 페이스북 일반 게시물 주소의 정체성(facebook:post:<앞칸>:<번호>)과 페이지 게시물 번호(「페이지번호_게시물번호」)가 같은 게시물인가 — 앞칸이 숫자(페이지 번호)면
+// 「앞칸_번호」와 같아야 하고, 이름이면 「_번호」로 끝나야 한다(11-19 페북 수집기 pagePostId 검수 GA2 · 설계 검토 3 조건 3). 체크포인트와 자동 등록이 함께 쓴다.
+function samePagePost(postIdentity, pagePostId) {
+  const match = /^facebook:post:([^:]+):(\d{1,50})$/.exec(typeof postIdentity === 'string' ? postIdentity : '');
+  if (!match || typeof pagePostId !== 'string' || !/^\d{1,50}_\d{1,50}$/.test(pagePostId)) return false;
+  return /^\d+$/.test(match[1]) ? pagePostId === `${match[1]}_${match[2]}` : pagePostId.endsWith(`_${match[2]}`);
+}
 // transient: 이번 응답에 일시 오류(한도·시간 초과·연결)가 있었다. 그때 응답에 칸이 있는데 빈 지원 지표는 「제공하지 않음」이 아니라 「일시 오류로 못 받음」으로 남긴다(10-20).
 function valuesAndReasons(values, platform, { manual = false, unavailable = [], hours = null, transient = false } = {}) {
   const capability = capabilityOf(platform), supported = new Set([...(capability?.metrics || []), ...(capability?.postMetrics || [])]), lagged = new Set(manual ? [] : capability?.laggedMetrics || []), metrics = {}, unavailableReasons = {};
@@ -413,7 +420,11 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     const at = stamp(), now = Date.parse(at), since = now - AUTO_TRACK_WINDOW;
     const channels = new Map(store.all('channels').filter(channel => channel.active !== false && channel.hidden !== true && AUTO_TRACK_PLATFORMS.has(channel.platform) && isConnected(channel)).map(channel => [channel.id, channel]));
     if (!channels.size) return summary;
-    const known = new Set(store.all(KIND).map(row => row.id));
+    const entries = store.all(KIND), known = new Set(entries.map(row => row.id));
+    // 페이스북 채널마다 기록의 일반 게시물 주소 정체성. 영상 줄의 페이지 게시물 번호(pagePostId)가 피드 글 주소로 이미 기록한 게시물이면 그 영상을 다시 올리지
+    // 않는다 — 주소 모양이 달라도(/123/posts/700 · /synk/posts/700) 같은 번호면 같은 게시물이다(11-19 페북 수집기 pagePostId 설계 검토 3 조건 3).
+    const postIdentities = new Map();
+    for (const row of entries) if (row.platform === 'facebook' && String(row.postIdentity || '').startsWith('facebook:post:')) (postIdentities.get(row.channelId) || postIdentities.set(row.channelId, []).get(row.channelId)).push(row.postIdentity);
     const fresh = store.all('posts').filter(post => {
       const published = Date.parse(post.publishedAt);
       return channels.has(post.channelId) && String(post.source || '').startsWith('api:') && !post.unavailableAt && !(post.expiresAt && Date.parse(post.expiresAt) <= now)
@@ -426,6 +437,7 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
       // Facebook 피드 글은 워크스페이스 게시가 다른 주소 모양으로 등록할 수 있어 영상·릴스만 자동으로 올린다.
       if (url.platform !== channel.platform || channel.platform === 'facebook' && !url.externalId.startsWith('video:')) { summary.skipped++; continue; }
       if (known.has(createHash('sha256').update(`${channel.id}\0${url.identity}`).digest('hex'))) continue;
+      if (channel.platform === 'facebook' && (postIdentities.get(channel.id) || []).some(identity => samePagePost(identity, post.pagePostId))) continue;
       const format = FORMAT_PLATFORM[post.publicationFormat] === channel.platform ? post.publicationFormat : null;
       try {
         const { entry } = registerStored(actor, { channelId: channel.id, url: post.url, publishedAt: post.publishedAt, title: post.title, ...(format ? { publicationFormat: format } : {}) }, true, true);
@@ -521,9 +533,30 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
           } else if (at > checkpoint.closesAt || lock.leaseUntil < at) {
             next = { ...checkpoint, status: 'missed', timing: 'missed', nextAttemptAt: null, message: '모을 기간 안에 받기를 끝내지 못해 이 시점 숫자는 기록하지 않았어요. 본 값이 있으면 직접 넣어 주세요.' }; summary.missed++;
           } else {
-            const post = result?.posts?.find(item => { try { return normalizePerformancePostUrl(item.url).identity === row.postIdentity; } catch { return false; } });
-            const published = post?.publishedAt && Date.parse(post.publishedAt), mismatch = !!post && (!Number.isFinite(published) || Math.abs(published - Date.parse(row.publishedAt)) > 5 * 60000);
-            const hasMetric = post && Object.values(valuesAndReasons(post.metrics, row.platform).metrics).some(value => value !== null);
+            // 페이스북 수집기는 같은 게시물의 줄을 합치며 주 주소와 정체성이 다른 주소를 별칭(aliasUrls: 주소와 그 주소의 게시 시각)으로 단다. 기록이
+            // 별칭 주소로 등록됐으면 그 별칭의 게시 시각으로 견준다(11-19 페북 수집기 pagePostId 설계 검토 2).
+            const identityOf = value => { try { return normalizePerformancePostUrl(value).identity; } catch { return null; } };
+            let matchedAt = null, byNumber = false;
+            let post = result?.posts?.find(item => {
+              if (identityOf(item?.url) === row.postIdentity) { matchedAt = item.publishedAt; return true; }
+              const alias = Array.isArray(item?.aliasUrls) ? item.aliasUrls.find(entry => typeof entry?.url === 'string' && identityOf(entry.url) === row.postIdentity) : null;
+              if (alias) { matchedAt = alias.publishedAt; return true; }
+              return false;
+            });
+            // 일반 게시물 주소로 등록한 페이스북 기록은 결과 줄의 페이지 게시물 번호(pagePostId)로도 찾는다 — 그 게시물이 이번 회차에 영상 목록에서만 와서
+            // 게시물 주소가 결과에 없을 수 있다(11-19 post-performance 검수 GA2). 번호는 Meta가 준 그 게시물 자신의 번호라 게시 시각 대조는 기록의 시각 그대로 둔다
+            // (영상 목록만의 줄은 영상의 시각만 알고 게시물 시각을 모른다). 주소의 앞 칸이 숫자(페이지 번호)면 그 번호까지 같아야 한다.
+            // 주소로 찾은 줄에 지원 지표가 하나도 없을 때도 번호로 찾는다 — 수집기는 post_id만으로 영상을 게시물 줄에 붙이지 않아, 그 게시물의 조회수는 같은 번호의
+            // 영상 줄에 있을 수 있다(11-19 유호님 「post_id 붙이기 빼기」 · 9회차 GA2). 번호가 같은 줄 가운데 지표가 있는 줄을 먼저 쓴다.
+            const metricOf = item => !!item && Object.values(valuesAndReasons(item.metrics, row.platform).metrics).some(value => value !== null);
+            if (row.platform === 'facebook' && !metricOf(post)) {
+              const numbered = (result?.posts || []).filter(item => samePagePost(row.postIdentity, item?.pagePostId));
+              const byNum = numbered.find(metricOf) || (!post ? numbered[0] : null);
+              // 주소로 찾은 줄이 있었으면 그 줄의 게시 시각(플랫폼이 준 시각)으로 견준다(10회차 perf GA1). 번호로만 찾았을 때만 기록의 시각을 쓴다.
+              if (byNum) { const urlAt = post ? matchedAt : null; post = byNum; matchedAt = urlAt ?? row.publishedAt; byNumber = !urlAt; }
+            }
+            const published = matchedAt && Date.parse(matchedAt), mismatch = !!post && (!Number.isFinite(published) || Math.abs(published - Date.parse(row.publishedAt)) > 5 * 60000);
+            const hasMetric = metricOf(post);
             // 인사이트·Analytics의 일시 오류(한도·시간 초과·연결)로 지원 지표가 비었으면 바로 확정하지 않는다. 관측 기간 안에서 몇 번 더 본 뒤
             // 마지막 기회에만 있는 값으로 기록한다(10-20: 일시 오류 한 번이 조회·도달·공유·저장 없이 기록을 끝냈다). 늦게 반영되는 지표(laggedMetrics)는
             // 이 지점에 기록하지 않아 빈 칸으로 보지 않고, 응답에 칸이 없는 지표(릴스가 아닌 게시물의 릴스 지표)도 보지 않는다.
@@ -534,7 +567,8 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             const absent = !error && !post && platformAnchored(row) && inventoryCovers(result, row.publishedAt);
             if (!error && post && !mismatch && hasMetric && (!gap || lastChance)) {
               next = observation(checkpoint, post.metrics, { observedAt: at, recordedAt: at, source: `api:${cleanText(result.coverage?.source || row.platform, 80)}`, unavailable: gap ? [] : result.coverage?.unavailableMetrics || [], platform: row.platform, details: post.metricDetails, transient: gap });
-              next.providerPublishedAt = post.publishedAt; summary.recorded++;
+              // 번호로 찾았으면 견준 시각은 기록 자신의 시각이라 플랫폼이 준 시각으로 남기지 않는다 — 「사라짐」 판정의 근거가 되지 않게(설계 검토 5 P3).
+              next.providerPublishedAt = byNumber ? null : matchedAt; summary.recorded++;
             } else if (gap) {
               const delay = (checkpoint.attempts === 1 ? 5 : checkpoint.attempts === 2 ? 15 : 30) * 60000;
               next = { ...checkpoint, status: 'retry', nextAttemptAt: new Date(Math.min(Date.parse(at) + delay, Date.parse(checkpoint.closesAt) - 10 * 60000)).toISOString(), lastErrorCode: String(result.coverage.collectionError.code || 'METRICS_PARTIAL').slice(0, 40),
