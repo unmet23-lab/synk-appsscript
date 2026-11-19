@@ -92,9 +92,9 @@ const Bubble: React.FC<{ at: [number, number]; text: string; t: number; from: nu
         <rect x={w / 2 + tail * 10 - 4} y={h - 12} width={56} height={12} fill={C.cream} transform={tail < 0 ? `translate(${-52} 0)` : undefined} />
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: KO, fontWeight: 800, fontSize: 92, color: tone }}>{text}</div>
-      {/* ✓ 도장은 화면 가운데 쪽 귀퉁이에 — 오른쪽 말풍선의 도장이 단추 자리(오른쪽 안전선 920px 밖)로 나가지 않게(11-19 글자 검사 LK 9.5초 · 20초) */}
+      {/* ✓ 도장은 화면 가운데 쪽 귀퉁이에 — 오른쪽 말풍선의 도장이 단추 자리(오른쪽 안전선 920px 밖)로 나가지 않게(11-19 글자 검사 LK 9.5초 · 20초). 위 띠 바로 밑에 뜨는 말풍선(언니 장면)은 도장이 띠에 가려져 아래 귀퉁이에 둔다(11-20 JP · LK · VN 19.6~21.8초) */}
       {mark === 'ok' ? (
-        <div style={{ position: 'absolute', ...(x > 540 ? { left: -24 } : { right: -24 }), top: -28, width: 78, height: 78, borderRadius: 999, background: OK, border: `6px solid ${C.cream}`, boxShadow: '0 5px 12px rgba(0,0,0,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'rotate(-8deg)' }}>
+        <div style={{ position: 'absolute', ...(x > 540 ? { left: -24 } : { right: -24 }), ...(y - h / 2 < 620 ? { bottom: -34 } : { top: -28 }), width: 78, height: 78, borderRadius: 999, background: OK, border: `6px solid ${C.cream}`, boxShadow: '0 5px 12px rgba(0,0,0,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'rotate(-8deg)' }}>
           <svg width={44} height={44} viewBox="0 0 58 58">
             <path d="M9 31 L23 45 L49 14" stroke="#fff" strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" fill="none" />
           </svg>

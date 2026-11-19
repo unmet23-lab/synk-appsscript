@@ -3,8 +3,8 @@
   "컴포지션": "m32-LK",
   "언어": "si",
   "글": "docs/마케팅/LAB_수고하세요_mn_20261109/remotion/src/film/판본/LK.json",
-  "글sha256": "140869c0e3156a3ddff125ef5b6b2c0656bc4f5f259902a675c447d5ee3e6c40",
-  "시각": "2026-11-18T14:52:12.939Z",
+  "글sha256": "b353213baa19cb67fdcc1257afd5f84e40e198941f63c3dba8182e0ffe24ac95",
+  "시각": "2026-11-19T16:18:24.516Z",
   "영상": "docs/마케팅/LAB_수고하세요_mn_20261109/게시/판본/LK/video.mp4",
   "표지": "docs/마케팅/LAB_수고하세요_mn_20261109/게시/판본/LK/cover.png",
   "표지초": 2.47,
@@ -27,9 +27,9 @@
   "프레임": 678,
   "영상Mbps": 11.54,
   "소리kbps": 352,
-  "영상sha256": "48cf1d1cffc39757fb0b8dffdb2208dc14b19bcbd48cee75f8a7ea5f15de6011",
-  "자산sha256": "8e6abcd4b4c0917d9c68fcc911144b8daa2dac00cba2803aad18b67eb3fe73ab",
+  "영상sha256": "71f9b05df6c6476b02823750ddd146afcb7cdde6dd886798e986c15eb31733ae",
+  "자산sha256": "91fa713dc98545eb737dcc92a91c87e5be8f2487aecb0c9ffabfa0572adaf288",
   "자산수": 93,
-  "구운때": "2026-11-18T14:52:12.490Z",
+  "구운때": "2026-11-19T16:18:23.197Z",
   "표지프레임": 74
 }
