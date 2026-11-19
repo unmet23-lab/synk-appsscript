@@ -25,6 +25,7 @@ const {createPortalNavigation}=require('./portal-navigation.cjs');
 const {createDownloadHandler}=require('./downloads.cjs');
 const {installDraftExitGuard,WORKSPACE_EXIT_TEXT}=require('./draft-exit.cjs');
 const {createPlatformTray}=require('./platform-tray.cjs');
+const {createTrayMemoryReclaimer}=require('./platform-tray-memory.cjs');
 const {createDesktopPreferences,readStartHidden}=require('./desktop-preferences.cjs');
 const {createCareNotifications,validPatch:validCareNotificationPatch}=require('./care-notifications.cjs');
 const {shouldNotify:careReminderDue}=require('./care-notification-model.cjs');
@@ -75,7 +76,7 @@ app.setName(current.productName);
 app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.sessionScope+(smoke?'.smoke':'')));
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
-let window,platformTray,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
+let window,platformTray,trayMemory,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
 // 켜짐부터 열림까지(1-가 구현 설계 2절). orbBoot는 구가 드러나기 시작한 시각과 움직임 종류다. 본체가 정해 시작 창과 앱 창에 같은 값을 준다.
 // startupHandoff는 시작 창에서 앱 창으로 겹쳐 넘기는 동안의 상태, unseenFailure는 숨은 채 시작한 길에서 아직 보이지 않은 실패다.
 let orbBoot=null,startupHandoff=null,unseenFailure=null;
@@ -235,7 +236,7 @@ else {
     appLocationReady=true;
     if(runtime.clientId==='platform'){
       const cacheRoot=path.join(app.getPath('userData'),'PlatformUpdates');
-      platformUpdate=createPlatformUpdater({enabled:packaged&&!smoke,config:runtime.update,currentVersion:app.getVersion(),platform:process.platform,arch:process.arch,cacheRoot,onChange:state=>{sendDesktop('synk:update-changed',state);startupGate?.observe(state);if(unseenFailureResolved(unseenFailure,state))unseenFailure=null;},
+      platformUpdate=createPlatformUpdater({enabled:packaged&&!smoke,config:runtime.update,currentVersion:app.getVersion(),platform:process.platform,arch:process.arch,cacheRoot,onChange:state=>{if(['downloading','opening'].includes(state.state))trayMemory?.cancel();sendDesktop('synk:update-changed',state);startupGate?.observe(state);if(unseenFailureResolved(unseenFailure,state))unseenFailure=null;},
         requestQuit:()=>setImmediate(()=>app.quit()),openDiskImage:file=>shell.openPath(file),
         prepareHandoff:info=>prepareUpdateHandoff(info),onHandoffCancelled:info=>{if(info?.reason!=='failed')endHandoff();},
         openInstaller:async(file,options)=>{const nonce=options.automatic?await updateRecovery.prepare({targetVersion:options.version,installerSHA256:options.artifact.sha256,...(options.token?{nonce:options.token}:{})}):null;await launchWindowsUpdate({spawn,file,pid:process.pid,automatic:options.automatic,nonce});}});
@@ -292,6 +293,7 @@ function showKeptFailure(){
 // 다시 열 때(트레이, 두 번째 실행, 단축키)는 숨어 있던 앱 창을 바로 보인다. 시작 창을 띄우지 않고, 미뤄 둔 판 목록을 비운 뒤 곧바로 뒤에서 확인한다.
 // 다만 숨은 채 시작한 길에서 아직 보이지 않은 실패 장면이 있으면 그 장면을 먼저 보이고, 그 판은 목록에서 비우지 않는다(1-가 구현 설계 2절)
 function requestPlatformWindow(action){
+  trayMemory?.cancel();
   // 사람이 부른 열기는 늘 앞으로 띄운다. 도착 쪽지의 「뒤」는 업데이트 뒤 저절로 보일 때만 쓴다. 로그인 때의 숨은 시작도 여기서 끝난다(0.4.96 검수 D5)
   arrivalShow=null;autostartHidden=false;
   if(!startupAllowed&&!startupGate)openBeforeStartupGate=true;
@@ -467,7 +469,17 @@ function initializeMain(){
     draftRecovery=createDraftRecovery({directory:path.join(app.getPath('userData'),'DraftRecovery'),safeStorage,getAccount:accountStatus,configFingerprint:authConfig?.fingerprint||'unconfigured',enabled:!smoke,onChange:status=>sendDesktop('synk:draft-recovery-changed',status)});
     draftRecoveryRequests=createDraftRecoveryRequests({getAccount:accountStatus,recovery:draftRecovery});
   }
-  platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,onShow:()=>requestPlatformWindow(),revealForQuit:()=>!quietQuit,enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>requestPlatformWindow(action)});
+  if(runtime.clientId==='platform'&&process.platform==='win32'&&process.arch==='x64'&&packaged&&!smoke){
+    const reported=new Set();
+    trayMemory=createTrayMemoryReclaimer({getWindows:()=>BrowserWindow.getAllWindows(),getMetrics:()=>app.getAppMetrics(),
+      busy:()=>quittingRequested||!platformTray?.isActive()||['downloading','opening'].includes(platformUpdate?.snapshot().state),
+      reportError:code=>{
+        if(reported.has(code))return;reported.add(code);
+        void fs.promises.appendFile(path.join(app.getPath('userData'),'tray-memory.log'),new Date().toISOString()+' '+code+'\n').catch(()=>process.emitWarning(code));
+      }});
+    app.on('before-quit',trayMemory.cancel);
+  }
+  platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,onShow:()=>requestPlatformWindow(),onCloseToTray:trayMemory?.schedule,revealForQuit:()=>!quietQuit,enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>requestPlatformWindow(action)});
   if(runtime.clientId==='platform'&&platformTray.isActive()&&arrivalShow!=='minimized'){
     const preferences=desktopPreferences.snapshot().preferences;
     const hidden=arrivalShow==='hidden'?preferences.closeToTray!==false:!arrivalShow&&autostartHidden&&preferences.startHidden;

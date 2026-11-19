@@ -125,9 +125,12 @@ test('all platform reveal entry points share the pre-show gate and createWindow 
   // 미룬 실패를 보이는 한 함수(showKeptFailure)도 함께 읽는다(0.4.97 엔진 다시 검수 설계 정리)
   const body=main.match(/function showKeptFailure\(\)\{([\s\S]*?)\n\}/)[0]+'\n'+main.match(/function requestPlatformWindow\(action\)\{([\s\S]*?)\n\}/)[0];const calls=[];
   const context={window:{isDestroyed:()=>false,isVisible:()=>false,isMinimized:()=>false},mainWindowReady:true,startupAllowed:true,startupGate:null,unseenFailure:null,pendingDesktopAction:null,showStartupWindow:()=>calls.push('gate-focus'),platformUpdate:{snapshot:()=>({state:'current'}),reopenCheck:()=>calls.push('reopen-check')},quittingRequested:false,beginPlatformStartup:(...args)=>calls.push(['begin',args[2]?.initialError?.code]),showPlatformMain:()=>calls.push('main')};
+  let reclaimCancellations=0;
+  context.trayMemory={cancel(){reclaimCancellations++;}};
   vm.createContext(context);vm.runInContext(body,context);
   // 다시 열 때는 시작 창 없이 앱 창을 바로 보이고, 미뤄 둔 판 목록을 비운 뒤 뒤에서 확인한다(1-가 구현 설계 2절)
   context.requestPlatformWindow();assert.deepEqual(calls,['main','reopen-check']);
+  assert.equal(reclaimCancellations,1);
   context.window.isVisible=()=>true;context.requestPlatformWindow();assert.deepEqual(calls,['main','reopen-check','main']);
   context.mainWindowReady=false;context.requestPlatformWindow();assert.deepEqual(calls,['main','reopen-check','main']);
   context.startupAllowed=false;context.requestPlatformWindow();assert.deepEqual(calls.at(-1),'gate-focus');

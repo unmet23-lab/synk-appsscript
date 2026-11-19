@@ -139,7 +139,7 @@ test('a failure kept back while the app was restored minimized is shown when a p
   // 마지막 둘은 0.4.97 엔진 다시 검수(GPT GA1): 최소화로 되돌려 켠 직후 창이 아직 준비되지 않았을 때 연 경우. 실패가 있으면 기다리지 않고 실패부터, 없으면 준비를 기다린다
   for(const [minimized,failure,expected,ready=true] of [[true,true,['begin:UPDATE_RECOVERED']],[false,true,['main']],[true,false,['main']],[false,true,['begin:UPDATE_RECOVERED'],false],[false,false,[],false]]){
     const events=[];
-    const context={arrivalShow:'minimized',autostartHidden:false,pendingDesktopAction:null,startupAllowed:true,startupGate:null,quittingRequested:false,mainWindowReady:ready,
+    const context={arrivalShow:'minimized',autostartHidden:false,pendingDesktopAction:null,startupAllowed:true,startupGate:null,quittingRequested:false,mainWindowReady:ready,trayMemory:null,
       window:{isDestroyed:()=>false,isVisible:()=>true,isMinimized:()=>minimized},unseenFailure:failure?{code:'UPDATE_RECOVERED',stage:'check'}:null,
       platformUpdate:{snapshot:()=>({state:'current'}),reopenCheck(){}},showStartupWindow:()=>events.push('startup'),showPlatformMain:()=>events.push('main'),
       beginPlatformStartup:(a,b,o)=>{events.push('begin:'+o.initialError.code);return Promise.resolve();},Boolean};
@@ -220,15 +220,28 @@ test('only an accessible hidden platform cold start initializes the tray without
     [null,true,true,true,false,'window'],['hidden',false,true,false,true,'window'],
   ]){
     const calls=[];
-    const context={mainInitialized:false,startupAllowed:true,appLocationReady:true,waitingForFirstWindow:false,
-      runtime:{clientId:'platform'},app:{getPath:()=>'/profile',getAppPath:()=>'/app'},current:{appId:'platform',productName:'SYNK'},
-      process:{platform:'win32'},path,smoke:false,authConfig:null,windowPlacement:{},packaged:true,
+    const app=Object.assign(new EventEmitter(),{getPath:()=>'/profile',getAppPath:()=>'/app'});
+    const memory={schedule(){},cancel(){}};
+    let services,options;
+    const context={mainInitialized:false,startupAllowed:true,appLocationReady:true,waitingForFirstWindow:false,trayMemory:null,
+      runtime:{clientId:'platform'},app,current:{appId:'platform',productName:'SYNK'},
+      process:{platform:'win32',arch:'x64'},path,smoke:false,authConfig:null,windowPlacement:{},packaged:true,
+      quittingRequested:false,platformUpdate:{snapshot:()=>({state:'current'})},
       screen:{},safeStorage:{},globalShortcut:{},Tray:{},Menu:{},accountStatus:()=>null,createWindow:()=>calls.push('window'),
       initializeAccountServices:()=>calls.push('background'),createDesktopPreferences:()=>({initialize(){calls.push('settings');},snapshot:()=>({preferences:{startHidden,closeToTray}})}),
-      createDraftRecovery:()=>({}),createDraftRecoveryRequests:()=>({}),createPlatformTray:()=>({isActive:()=>tray}),
+      createDraftRecovery:()=>({}),createDraftRecoveryRequests:()=>({}),
+      createTrayMemoryReclaimer(settings){services=settings;return memory;},
+      createPlatformTray(settings){options=settings;return {isActive:()=>tray};},
       autostartHidden:autostart,arrivalShow:arrival,sendDesktop(){},requestPlatformWindow(){}};
     vm.createContext(context);vm.runInContext(source,context);
     context.initializeMain();context.initializeMain();
+    assert.equal(options.onCloseToTray,memory.schedule);
+    assert.deepEqual(app.listeners('before-quit'),[memory.cancel]);
+    assert.equal(services.busy(),!tray);
+    for(const state of ['downloading','opening']){
+      context.platformUpdate.snapshot=()=>({state});
+      assert.equal(services.busy(),true);
+    }
     assert.deepEqual(calls,['settings',expected],JSON.stringify([arrival,autostart,startHidden,closeToTray,tray]));
     assert.equal(context.waitingForFirstWindow,expected==='background');
     if(expected==='background'){assert.equal(context.arrivalShow,null);assert.equal(context.autostartHidden,false);}
