@@ -625,6 +625,26 @@ test('GPT fourth round GA1: 보호 시작 decides on its own fresh check, whatev
   assert.deepEqual(opened, ['synk-workbackup:open?topic=status'], 'the installed engine is opened, not downloaded again');
 });
 
+test('GPT fifth round: an 「installed」 answer is never overwritten by an older 「not installed」, and 보호 시작 trusts it', async () => {
+  const dir = engineDir(), opened = [], env = appdata(temp());
+  let calls = 0;
+  // 누를 때의 확인은 늦게 「없음」, 그사이 주기 확인은 빨리 「있음」
+  const run = async () => { const n = ++calls; if (n === 1) { await new Promise(r => setTimeout(r, 120)); return '{}'; } return JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }); };
+  const service = B.createSolioBackup({ platform: 'win32', env, run, request: async () => { throw Error('must not download'); }, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  const pressed = service.start(ME, 'protect');
+  await new Promise(r => setTimeout(r, 10));
+  await service.snapshot(ME);
+  await pressed; await service.whenIdle();
+  assert.deepEqual(opened, ['synk-workbackup:open?topic=status']);
+  assert.equal((await service.snapshot(ME)).engine.installed, true);
+});
+
+test('GPT fifth round GA3: the request never gets its engine-readable name once the sign-in changed', async () => {
+  const env = appdata(temp()), paths = B.statusPaths(env);
+  await assert.rejects(B.writeSetupRequest({ paths, mode: 'protect', hint: 'owner@example.com', stillCurrent: () => false }), /ACCOUNT_CHANGED/);
+  assert.deepEqual(fs.readdirSync(paths.requests), [], 'neither the request nor its temporary file is left');
+});
+
 test('GPT fourth round GA2: while held, nothing can be renamed, moved or copied over the installer', { skip: process.platform !== 'win32' }, async () => {
   const dir = temp(), file = path.join(dir, 'a.exe'), other = path.join(dir, 'b.exe');
   fs.writeFileSync(file, 'orig'); fs.writeFileSync(other, 'evil');

@@ -261,7 +261,7 @@ async function realDirectory(dir, fsImpl) {
   const stat = await fsImpl.lstat(dir);
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw fault('STORAGE');
 }
-async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), random = () => crypto.randomBytes(8).toString('hex'), fsImpl = fsp }) {
+async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), random = () => crypto.randomBytes(8).toString('hex'), fsImpl = fsp, stillCurrent = () => true }) {
   if (!paths || !MODES.includes(mode)) throw fault('INVALID');
   await fsImpl.mkdir(paths.requests, { recursive: true });
   for (const dir of [paths.root, paths.solio, paths.requests]) await realDirectory(dir, fsImpl);
@@ -273,6 +273,8 @@ async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), r
   const temp = path.join(paths.requests, `.${random()}.tmp`), file = path.join(paths.requests, name);
   try {
     await fsImpl.writeFile(temp, JSON.stringify(body), { flag: 'wx' });
+    // 엔진이 읽는 이름으로 바꾸기 바로 앞에서 로그인을 다시 본다. 임시 이름(점으로 시작)은 엔진이 읽지 않는다(GPT 다섯째 검수 GA3)
+    if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
     await fsImpl.rename(temp, file);
   } catch (error) { await fsImpl.unlink(temp).catch(() => {}); throw error?.backupCode ? error : fault('STORAGE'); }
   return name;
@@ -412,7 +414,8 @@ function createSolioBackup({
   const paths = statusPaths(env);
   // 엔진 확인마다 차례 번호를 붙여, 늦게 끝난 앞 확인이 뒤 확인의 답을 덮지 않게 한다(GPT 셋째 검수 GA1)
   let engine = null, engineAt = 0, engineLoading = null, engineAsked = 0, engineKept = 0;
-  const keepEngine = (seq, value) => { if (seq > engineKept) { engineKept = seq; engine = value; engineAt = now(); } };
+  // 「깔려 있음」은 먼저 시작한 확인의 답이어도 받는다. 이 흐름에서 엔진은 생기기만 하고, 누르는 동안 지워지는 일은 열기 실패로 드러난다(GPT 넷째 · 다섯째 검수 GA1 · GA2)
+  const keepEngine = (seq, value) => { if (seq > engineKept || (value.installed && !engine?.installed)) { engineKept = Math.max(engineKept, seq); engine = value; engineAt = now(); } };
   let feedState = { state: 'unknown', version: null, at: 0 }, feedLoading = null;
   let install = { phase: 'idle', progress: 0, code: null, mode: null };
   let busy = null, mode = null, swept = false;
@@ -532,7 +535,7 @@ function createSolioBackup({
       if (!verifySignature(digest.blake, parsed, keys)) throw fault('VERIFY_FAILED');
       // 받는 동안 로그인이 바뀌었으면(다른 계정이나 같은 계정의 새 로그인) 요청을 쓰지 않고 멈춘다(GPT 다시 검수 GA3 · 셋째 검수 GA4)
       if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
-      requestName = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises });
+      requestName = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises, stillCurrent });
       // 쓰는 사이에 로그인이 바뀌었으면 쓴 요청을 거두고 멈춘다(GPT 넷째 검수 GA3). keepRequest가 거짓이라 finally가 지운다
       if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       // 받는 동안 다른 길로 엔진이 깔렸으면 설치기를 다시 띄우지 않고 엔진 창을 연다(GPT 검수 GA4).
@@ -585,7 +588,12 @@ function createSolioBackup({
     // 누를 때는 엔진 확인을 새로 한다. 15초 전의 「없음」으로 깔린 엔진 위에 다시 받지 않게 한다(GPT 검수 GA4).
     // 지금 확인이 실패하면 아무것도 하지 않는다(GPT 다시 검수 GA5)
     // 갈래는 캐시가 아니라 이 순간의 확인 값으로 정한다. 다른 확인이 캐시를 어떤 차례로 바꿔도 이 판단은 흔들리지 않는다(GPT 넷째 검수 GA1)
-    try { fresh = await engineFresh(); if (!fresh.error) ({ view } = await state(fresh)); } catch { view = null; }
+    try {
+      fresh = await engineFresh();
+      // 이 순간의 확인이 「없음」이어도, 그사이 다른 확인이 「있음」을 적었으면 깔린 것으로 본다
+      const known = !fresh.error && !fresh.installed && engine?.installed ? engine : fresh;
+      if (!fresh.error) ({ view } = await state(known));
+    } catch { view = null; }
     if (fresh?.error) { busy = null; release(); return { ok: false, code: 'ENGINE_UNKNOWN' }; }
     if (!['no-engine', 'engine-removed', 'needs-setup'].includes(view)) { busy = null; release(); return { ok: false, code: 'NOT_NEEDED' }; }
     mode = asked;
@@ -598,7 +606,7 @@ function createSolioBackup({
         setInstall('opening');
         let name;
         if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
-        try { name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises }); } catch { throw fault('REQUEST_FAILED'); }
+        try { name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises, stillCurrent }); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('REQUEST_FAILED'); }
         if (!stillCurrent()) { await fsImpl.promises.unlink(path.join(paths.requests, name)).catch(() => {}); throw fault('ACCOUNT_CHANGED'); }
         try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); }
         catch {
