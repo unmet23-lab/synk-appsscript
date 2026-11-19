@@ -1341,6 +1341,205 @@ test('a first read refused while the main process was still refreshing is read o
   assert.ok(shown.every((c, i) => i === 0 || c >= shown[i - 1]), 'the objects appear once: ' + shown.join(','));
 });
 
+/* ── 솔리오 「계정 건강」 오브제와 방(계정건강 PC앱_구현설계 10절 · 11절) ── */
+const HEALTH_SUMMARY = () => ({
+  판: 1, 만든때: new Date(Date.now() - 3600e3).toISOString(), 숫자: { 게시: new Date(Date.now() - 2 * 3600e3).toISOString(), 팔로워: '2026-11-19' },
+  방: {
+    say: '진단한 계정 둘 가운데 하나가 건강합니다.', then: '하나는 건강하지 않습니다.', scope: '진단 2 · 아직 이른 계정 1',
+    rows: [
+      { key: 'a-instagram', nm: '인스타그램 @a', mid: '보고 지나가는 계정', val: '건강하지 않음', when: '팔로워 0 · 한 편 133번', now: 1, unread: 0, more: [
+        ['say', '한 편의 조회는 133번쯤입니다.'], ['good', '잘하고 있는 것', '꾸준히 올립니다.'], ['head', '조회 1,000번이 가는 길'],
+        ['flow', [{ 이름: '첫 장면', 명: 348.5, 큰: null, 글: '349명이 3초 넘게 봅니다', 판정: '보통', 샘: false }, { 이름: '반응', 명: 1.46, 큰: null, 글: '1.5명이 반응합니다', 판정: '나쁨', 샘: true }], '반응에서 가장 많이 샙니다.'],
+        ['text', '잘된 편은 첫 장면에서 다릅니다.'], ['row', '본 사람이 반응하는가', '평균의 23%입니다.', '나쁨', '평균의 23%', 1], ['row', '꾸준히 올리는가', '지난 14일 동안 9편입니다.', '좋음', '2주에 9편', 0],
+        ['do', '할 일 1', '보낼 까닭을 넣습니다.'], ['do', '할 일 2', '끝 장면에서 다음 편을 예고합니다.'], ['goal', '다음 목표', '조회 1,000번마다 공유 2.4번입니다.'], ['note', '재지 못한 것은 없습니다.'],
+      ] },
+      { key: 'b-tiktok', nm: '틱톡 @b', mid: '고른 계정', val: '건강함', when: '팔로워 177 · 한 편 917번', now: 0, unread: 0, more: [['say', '고르게 붙잡습니다.']] },
+    ],
+  },
+});
+const healthy = () => ({ ok: true, available: true, summary: HEALTH_SUMMARY() });
+const unseen = () => ({ ok: true, available: false });
+const readFake = answer => {
+  const asked = [];
+  return { asked, api: { snapshot: async () => { asked.push(1); return typeof answer === 'function' ? answer(asked.length) : answer; } } };
+};
+
+test('계정 건강 stands after 방문자 분석, and each read program stands only when it is visible (both, one of two, none)', async t => {
+  const cases = [
+    [visible(), healthy(), ['subs', 'visits', 'health'], ['구독', '방문자 분석', '계정 건강']],
+    [visible(), unseen(), ['subs', 'visits'], ['구독', '방문자 분석']],
+    [unseen(), healthy(), ['subs', 'health'], ['구독', '계정 건강']],
+    [unseen(), unseen(), [], []],
+  ];
+  for (const [v, hv, keys, labels] of cases) {
+    const visits = readFake(v), health = readFake(hv);
+    const h = harness(t, { options: { siteVisits: visits.api, snsHealth: health.api } });
+    await settle();
+    h.face.setState(signedIn());
+    await settle(20);
+    assert.deepEqual(programKeys(h), keys);
+    assert.deepEqual((h.view.last().room.programs || []).map(p => p.label), labels);
+    assert.equal(h.view.last().room.prog, 'subs');
+    assert.equal(h.view.last().room.health.visible, hv.available === true);
+    // 방문자 분석을 묻는 호출은 계정 건강이 보이든 말든 솔리오를 열 때 한 번이다(계정건강 설계 7절의 전제: 그때 볼 계정 대기 줄이 남는다)
+    assert.equal(visits.asked.length, 1, 'the 방문자 분석 read stays on the way into Solio');
+    assert.equal(health.asked.length, 1, 'the 계정 건강 summary is read once on the way into Solio');
+    assert.equal(h.face.handle('prog', 'health'), keys.includes('health'), 'only a program that is there opens');
+  }
+});
+
+test('opening 계정 건강 reads it again and only it, shows its lines, and 구독 brings the subscriptions back', async t => {
+  const visits = readFake(visible()), health = readFake(healthy());
+  const h = harness(t, { options: { siteVisits: visits.api, snsHealth: health.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(h.face.handle('prog', 'health'), true);
+  await settle(10);
+  const room = h.view.last().room;
+  assert.equal(room.prog, 'health');
+  assert.equal(health.asked.length, 2, 'the summary is read again when the room opens');
+  assert.equal(visits.asked.length, 1, 'opening 계정 건강 does not read 방문자 분석');
+  assert.equal(room.health.say, '진단한 계정 둘 가운데 하나가 건강합니다.');
+  assert.equal(room.health.scope, '진단 2 · 아직 이른 계정 1');
+  assert.match(room.health.when, /^게시 숫자는 .+, 팔로워는 11월 19일에 잰 값입니다\./);
+  assert.deepEqual(room.health.rows.map(r => r.key), ['a-instagram', 'b-tiktok']);
+  const more = room.health.rows[0].more;
+  assert.deepEqual(more.map(m => m[0]), ['say', 'good', 'head', 'flow', 'text', 'row', 'row', 'do', 'do', 'goal', 'note']);
+  assert.deepEqual(more[3][1].map(s => [s.name, s.big, s.leak]), [['조회', '1,000', false], ['첫 장면', '349', false], ['반응', '1.5', true]]);
+  assert.deepEqual(more.filter(m => m[0] === 'row').map(m => m[5]), [1, 0], 'the summary marks the bad signal');
+  assert.equal(h.face.handle('prog', 'subs'), true);
+  assert.equal(h.view.last().room.prog, 'subs');
+  assert.equal(h.face.handle('prog', 'visits'), true);
+  await settle(10);
+  assert.equal(health.asked.length, 2, 'opening 방문자 분석 does not read 계정 건강');
+});
+
+test('when the account changes with 계정 건강 open, its object goes, the room is 구독 again, and a late answer is dropped', async t => {
+  let release = null, current = ACCOUNT;
+  const asked = [];
+  const api = { snapshot: () => { const who = current; asked.push(who); if (who === ACCOUNT && asked.length > 1) return new Promise(r => { release = () => r(healthy()); }); return Promise.resolve(who === ACCOUNT ? healthy() : unseen()); } };
+  const h = harness(t, { options: { snsHealth: api } });
+  await settle();
+  h.face.setState(signedIn(ACCOUNT, 1));
+  await settle(20);
+  assert.deepEqual(programKeys(h), ['subs', 'health'], 'an app whose 방문자 분석 is not shown still gets 계정 건강');
+  assert.equal(h.face.handle('prog', 'health'), true);
+  await settle(4);
+  assert.equal(h.view.last().room.prog, 'health');
+  current = OTHER;
+  const before = h.view.scenes.length;
+  h.face.setState(signedIn(OTHER, 2));
+  await settle(40);
+  release?.();
+  await settle(20);
+  const room = h.view.last().room;
+  assert.equal(h.face.getState().accountKey, OTHER);
+  assert.equal(room.health.visible, false, 'the previous account answer is dropped');
+  assert.deepEqual(programKeys(h), []);
+  assert.equal(room.prog, 'subs');
+  assert.ok(asked.includes(OTHER), 'the new account asks for itself');
+  assert.ok(!h.view.scenes.slice(before).some(s => s.room?.health?.visible), 'no scene after the change shows the previous answer');
+});
+
+test('a refusal during a refresh or a read that throws keeps the 계정 건강 answer already shown', async t => {
+  let n = 0;
+  const api = { snapshot: async () => { n += 1; if (n === 1) return healthy(); if (n === 2) return { ok: false, code: 'SIGN_IN_REQUIRED' }; throw new Error('ipc closed'); } };
+  const h = harness(t, { options: { snsHealth: api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  h.face.handle('prog', 'health');
+  await settle(10);
+  h.face.handle('prog', 'subs');
+  h.face.handle('prog', 'health');
+  await settle(10);
+  assert.equal(n, 3);
+  assert.deepEqual(programKeys(h), ['subs', 'health']);
+  assert.equal(h.view.last().room.health.visible, true);
+  assert.equal(h.view.last().room.prog, 'health');
+});
+
+test('a first 계정 건강 read refused during a refresh is read again once the account is signed in', async t => {
+  let n = 0, refusing = true;
+  const api = { snapshot: async () => (++n, refusing ? { ok: false, code: 'SIGN_IN_REQUIRED' } : healthy()) };
+  const h = harness(t, { options: { snsHealth: api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const refused = n;
+  assert.ok(refused >= 1 && refused <= 3, 'asked on the way in and, refused, once more by itself: ' + refused);
+  assert.deepEqual(programKeys(h), []);
+  refusing = false;
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(n, refused + 1, 'the next signed-in notice reads once more');
+  assert.deepEqual(programKeys(h), ['subs', 'health']);
+});
+
+test('when 계정 건강 stops being shown while it is open, Solio goes back to 구독 and 방문자 분석 stays', async t => {
+  const health = readFake(k => (k <= 2 ? healthy() : unseen()));
+  const visits = readFake(visible());
+  const h = harness(t, { options: { siteVisits: visits.api, snsHealth: health.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(h.face.handle('prog', 'health'), true);
+  await settle(10);
+  assert.equal(h.view.last().room.prog, 'health');
+  h.face.handle('prog', 'subs');
+  assert.equal(h.face.handle('prog', 'health'), true);
+  await settle(10);
+  assert.equal(health.asked.length, 3);
+  assert.deepEqual(programKeys(h), ['subs', 'visits']);
+  assert.equal(h.view.last().room.prog, 'subs');
+  assert.equal(h.view.last().room.health.visible, false);
+});
+
+test('a summary that could not be read still opens 계정 건강 and says why, never as a guest', async t => {
+  const health = readFake({ ok: false, available: true, code: 'VERSION', version: 2, supported: 1 });
+  const h = harness(t, { options: { snsHealth: health.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.deepEqual(programKeys(h), ['subs', 'health']);
+  h.face.handle('prog', 'health');
+  await settle(10);
+  const room = h.view.last().room.health;
+  assert.equal(room.say, '진단을 읽지 못했습니다.');
+  assert.equal(room.then, '진단 도구가 새 꼴로 썼습니다. 앱을 업데이트하면 보입니다.');
+  assert.deepEqual(room.rows, []);
+});
+
+test('the 계정 건강 room is drawn as text only, with its own row box, the six new line kinds, and the object names timed by how many are shown', async () => {
+  const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  assert.match(src, /<div class="room room-top" data-room="solio-health" hidden>/);
+  assert.match(src, /<div class="rows vis hea rise" style="--i:3" role="group" aria-label="SNS 계정 건강" data-hea-rows><\/div>/);
+  assert.match(src, /data-orb-prog="health"/);
+  const start = src.indexOf('/* ── 방문자 분석의 방');
+  const end = src.indexOf('function setUnavailable(');
+  const room = src.slice(start, end);
+  for (const kind of ['head', 'text', 'flow']) assert.match(room, new RegExp(`kind === '${kind}'`), kind);
+  assert.match(room, /kind === 'good' \|\| kind === 'goal' \|\| kind === 'do'/);
+  assert.match(room, /el\('div', mark \? 'row sub now' : 'row sub'\)/, 'a marked signal line is bright');
+  assert.match(room, /kind === 'do' && firstDo \? ' first' : ''/, 'the first to-do has a line above it');
+  assert.match(room, /cell\.setAttribute\('role', 'listitem'\)/);
+  assert.doesNotMatch(room, /innerHTML|outerHTML|insertAdjacentHTML|createContextualFragment|DOMParser/, 'summary words never become markup');
+  assert.match(src, /for \(const box of readBoxes\) \{\s+box\.addEventListener\('pointerover', onVisOver\);/, 'the 계정 건강 rows open and close like the 방문자 분석 rows');
+  assert.match(src, /const onVisLeave = event => \{ const box = event\?\.currentTarget \|\| app\.visRows;/, 'leaving a box folds that box only');
+  assert.match(src, /for \(const c of box \? \[box\] : \[\.\.\.readBoxes, app\.rows, \.\.\.asideBoxes\]\)/);
+  // 오브제가 넷이면 690ms. 펼치는 늦춤(--k)은 보이는 차례라 가운데 오브제가 빠져도 railSettleMs와 맞는다
+  const { railSettleMs } = await import('../renderer/orb-face-view.mjs');
+  assert.equal(railSettleMs(4), 690);
+  assert.match(src, /const at = String\(k\+\+\);\s+if \(o\.style\.getPropertyValue\('--k'\) !== at\) o\.style\.setProperty\('--k', at\);/);
+  const css = fs.readFileSync(new URL('../renderer/orb-face.css', import.meta.url), 'utf8');
+  assert.match(css, /#portal-entry \.rows\.hea\{grid-template-columns:minmax\(150px,240px\) minmax\(0,1fr\) max-content minmax\(150px,max-content\)\}/, 'the status column keeps its words on one line');
+  for (const sel of ['.more-head', '.more-text', '.flow', '.step', '.step.leak', '.more-in .row.do.first']) assert.ok(css.includes('#portal-entry ' + sel + '{') || css.includes('#portal-entry ' + sel + ','), sel);
+  const narrow = css.slice(css.indexOf('@media (max-width:640px){'));
+  assert.match(narrow, /#portal-entry \.row\.good \.mid,#portal-entry \.row\.goal \.mid,#portal-entry \.row\.do \.mid\{grid-column:1 \/ -1;grid-row:2\}/, 'a narrow window puts the words under the name');
+  assert.match(narrow, /#portal-entry \.step\{flex-basis:50%;/);
+});
+
 /* ── 2단계 첫 조각 · 구 곁의 펼침(2단계_첫조각_구현설계.md 1.3절) ── */
 test('after entering, the orb opens a fan beside it instead of the centred chooser; pressing pins it and pressing again closes it', async t => {
   const h = harness(t);
@@ -1447,7 +1646,7 @@ test('the view opens the fan only on Enter, Space or the down arrow, never on fo
 
 test('while the fan is open the hidden name, the object row and the dimmed rooms leave the Tab order; hidden rooms do not take Esc (카본 A1 · A6)', () => {
   const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
-  assert.match(src, /const back = \[app\.nameBtn, app\.rail, app\.solio, app\.visits, app\.space, \.\.\.Object\.values\(app\.asides\)\.map\(a => a\.room\)\]\.filter\(Boolean\);/, 'the rooms opened from the fan leave the Tab order too');
+  assert.match(src, /const back = \[app\.nameBtn, app\.rail, app\.solio, app\.visits, app\.health, app\.space, \.\.\.Object\.values\(app\.asides\)\.map\(a => a\.room\)\]\.filter\(Boolean\);/, 'the rooms opened from the fan leave the Tab order too');
   assert.match(src, /if \(open\) \{ const a = doc\.activeElement; if \(a && back\.some\(x => x\.contains\(a\)\)\) \{ fanReturn = f\.pin \? null : a; app\.orbBtn\.focus/, 'focus inside them moves to the visible orb before they turn inert');
   assert.match(src, /for \(const x of back\) if \(x\.inert !== open\) x\.inert = open;/);
   assert.match(src, /\[\.\.\.root\.querySelectorAll\('\.more\.open'\)\]\.some\(m => !m\.closest\('\[hidden\]'\)\)/, 'a pinned row left in a hidden room does not swallow Esc');

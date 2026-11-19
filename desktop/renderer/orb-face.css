@@ -215,6 +215,40 @@
 #portal-entry .week i{display:block;width:2px;height:var(--h);min-height:1px;background:rgba(243,241,236,.38)}
 #portal-entry .week i.today{background:var(--paper)}
 #portal-entry .week i.none{background:rgba(243,241,236,.12)}
+/* ── 계정 건강(솔리오 계정건강 시안 81~107행, PC앱_구현설계 10절). 짜임은 방문자 분석과 같다. 줄에는 계정, 유형, 상태, 팔로워와 한 편 조회가 있고
+   건강하지 않은 줄만 밝다. 계정 이름(가장 긴 것 「페이스북 facebook.com/synkworld」)과 상태(「건강하지 않음」)가 한 줄에 들게 열을 잡는다.
+   상태 칸은 글 폭(max-content)으로 잡는다. auto로 두면 자리가 모자랄 때 칸이 글보다 좁아져 오른쪽 맞춤 글이 왼쪽 칸 위로 번졌다(873 · 768px 흐름 시험) ── */
+#portal-entry .rows.hea{grid-template-columns:minmax(150px,240px) minmax(0,1fr) max-content minmax(150px,max-content)}
+/* 가운데 폭의 창(641~900px)에서는 이름 칸을 줄이고, 숫자 칸은 넘치지 않고 줄을 바꾼다.
+   이 폭에서는 옛 런처의 `.rows .row{gap:2px}`(launcher.css 900px 아래)가 줄 안의 칸 사이를 2px로 좁힌다. 계정 건강의 줄은 바깥 격자의 틈을 그대로 쓴다 */
+@media (min-width:641px) and (max-width:900px){
+  #portal-entry .rows.hea{grid-template-columns:minmax(110px,170px) minmax(120px,1fr) max-content minmax(96px,max-content)}
+  #portal-entry .rows.hea .row{column-gap:normal}
+  #portal-entry .rows.hea .when{white-space:normal}
+}
+/* 안쪽: 잘하고 있는 것 · 할 일 · 다음 목표는 이름과 밝은 글이다. 글은 가운데부터 끝까지 쓴다 */
+#portal-entry .row.good .mid,#portal-entry .row.goal .mid,#portal-entry .row.do .mid{grid-column:2 / -1;max-width:44em;font:400 14px/1.55 var(--orb-sans);color:var(--paper)}
+#portal-entry .row.goal .mid{font-weight:500}
+#portal-entry .more-in .row.do .nm{color:var(--paper)}
+/* 할 일은 신호 줄과 틈을 두고, 첫 줄 위에 가는 줄을 긋는다 */
+#portal-entry .more-in .row.do.first{margin-top:10px;padding-top:16px;border-top:1px solid var(--hair)}
+/* 구역 이름: 작은 글, 위에 가는 줄. 풀어 쓴 글: 작은 글 */
+#portal-entry .more-head{margin:14px 0 0;padding:14px 0 8px;border-top:1px solid var(--hair);font:400 12px/1 var(--orb-sans);letter-spacing:.14em;color:var(--dim)}
+#portal-entry .more-text{margin:0;padding:4px 0 6px;max-width:52em;font:var(--small);color:rgba(243,241,236,.84)}
+/* 판정이 나쁨인 신호 줄은 값까지 밝다 */
+#portal-entry .more-in .row.sub.now .val{color:var(--paper)}
+/* 조회 1,000번이 가는 길: 큰 숫자가 단계마다 줄어든다. 가장 먼저 새는 단계만 밝다 */
+#portal-entry .flow{display:flex;flex-wrap:wrap;align-items:stretch;padding:6px 0 12px}
+#portal-entry .step{flex:1 1 0;min-width:118px;padding:2px 18px 4px 0;color:var(--dim)}
+#portal-entry .step + .step{padding-left:18px;border-left:1px solid var(--hair)}
+#portal-entry .step b{display:block;font:300 clamp(24px,2.6vw,38px)/1.1 var(--orb-sans);letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:rgba(243,241,236,.62)}
+#portal-entry .step i{display:block;margin-top:7px;font:400 12px/1 var(--orb-sans);font-style:normal;letter-spacing:.08em}
+#portal-entry .step span{display:block;margin-top:6px;font:var(--small)}
+#portal-entry .step em{font-style:normal;margin-left:6px;color:var(--dim)}
+#portal-entry .step.leak,#portal-entry .step.leak b,#portal-entry .step.leak em{color:var(--paper)}
+#portal-entry .step.leak b{font-weight:400}
+/* 안쪽의 마지막 줄 아래에 다음 계정 줄과의 틈을 둔다 */
+#portal-entry [data-room="solio-health"] .more-in > :last-child{padding-bottom:20px}
 /* 다른 프로그램의 방이 뜰 때 안의 것들이 차례로 떠오른다 */
 #portal-entry .room.enter > *{animation:orb-room-up .55s cubic-bezier(.2,.7,.2,1) both}
 #portal-entry .room.enter > :nth-child(2){animation-delay:.05s}
@@ -321,6 +355,10 @@ html[data-orb-client="app"] #portal-entry .orb-stage[data-fan] ~ .portal-window-
   #portal-entry .mid{grid-column:1 / -1;grid-row:2}
   #portal-entry .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
   #portal-entry .row-plain > :last-child{grid-column:2;grid-row:1}
+  /* 계정 건강: 이름 아래에 글이 오고, 길의 단계는 둘씩 놓는다(계정건강 시안 110~125행) */
+  #portal-entry .row.good .mid,#portal-entry .row.goal .mid,#portal-entry .row.do .mid{grid-column:1 / -1;grid-row:2}
+  #portal-entry .step{flex-basis:50%;padding-bottom:14px}
+  #portal-entry .step:nth-child(odd){padding-left:0;border-left:0}
   /* 글을 넣는 칸도 좁은 창에서는 이름 아래로 내려오고 도움말은 왼쪽에 둔다(시안 318~319행) */
   #portal-entry .fld{grid-template-columns:minmax(0,1fr);row-gap:2px;padding:8px 0}
   #portal-entry .fld .hint{grid-column:1;justify-self:start;text-align:left}

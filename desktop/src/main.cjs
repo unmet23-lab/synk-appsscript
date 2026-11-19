@@ -42,6 +42,7 @@ const {launchWindowsUpdate,writeHandoffNote,removeHandoffNote,launchCurtain,cons
 const {createUpdateRecovery}=require('./platform-update-recovery.cjs');
 const {yieldToUpdatingInstaller}=require('./platform-update-marker.cjs');
 const {createSiteVisits}=require('./site-visits.cjs');
+const {createSnsHealth}=require('./sns-health.cjs');
 const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');
 const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
 const {createLocalServerGate}=require('./local-server-owner.cjs');
@@ -181,6 +182,10 @@ function subscriptions(){if(runtime.clientId!=='platform'||smoke)return null;if(
 // 파일이 없는 PC에서는 available:false라 화면에 나오지 않는다. 플랫폼 창에서 로그인한 회원만 묻고, 그 계정이 viewers.json에 있어야 보인다(site-visits.cjs).
 let siteVisits=null;
 function siteVisitsCall(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};if(!siteVisits)siteVisits=createSiteVisits();return siteVisits.snapshot(accountStatus()?.account);}
+// 솔리오 계정 건강(11-19 유호님 「PC 앱에 옮겨」): 이 PC의 진단 도구(tools/계정건강.js --요약쓰기)가 쓴 요약 한 장만 읽는다.
+// 확인은 방문자 분석과 같다. 플랫폼 창에서 로그인한 회원만 묻고, 그 계정이 방문자 분석의 viewers.json에 있어야 보인다(sns-health.cjs).
+let snsHealth=null;
+function snsHealthCall(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};if(!snsHealth)snsHealth=createSnsHealth();return snsHealth.snapshot(accountStatus()?.account);}
 function subscriptionCall(operation){const service=subscriptions();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return operation(service);}
 // 계정판 자동 읽기(지난 7일 사용량 기록용): 로그인한 회원이 계정판을 써 본 PC에서만, 앱이 켜 있는 동안 2분마다 읽을 때인지 본다.
 // 읽을 때는 ai-subscriptions.cjs의 autoDue가 정한다(마지막 확인 6시간 뒤 · 계정마다 주간 초기화 10분 전 · 결제일 아침). 끄는 중에는 새로 읽지 않는다.
@@ -658,6 +663,7 @@ function createWindow(){
     'synk:subscriptions-tokens-enable':on=>subscriptionCall(s=>s.tokensEnable(on===true)),
     'synk:subscriptions-tokens-live':on=>subscriptionCall(s=>s.tokensLive(on===true)),
     'synk:site-visits-snapshot':()=>siteVisitsCall(),
+    'synk:sns-health-snapshot':()=>snsHealthCall(),
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});

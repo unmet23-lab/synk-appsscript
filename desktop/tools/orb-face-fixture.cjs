@@ -8,7 +8,7 @@ if(process.argv.includes('--orb-qa-no-canvas'))contextBridge.exposeInMainWorld('
 const GUEST_GEN='90000000-0000-4000-8000-000000000009';
 let auth={configured:true,status:'restoring',signedIn:false,sessionGeneration:0,accountGeneration:GUEST_GEN};
 let env={platform:'win32',arch:'x64',version:'0.4.95',mode:'development',publicAppsAvailable:[],qaGuestEntry:false};
-let assignment={status:'resolved',destinations:[],unavailable:[]},inviteMode='received',subs=null,subsFail=0,checkResult=null,tray=[],visits=null;
+let assignment={status:'resolved',destinations:[],unavailable:[]},inviteMode='received',subs=null,subsFail=0,checkResult=null,tray=[],visits=null,health=null;
 const listeners=new Set(),subsListeners=new Set(),calls=[];
 // 계정 관리 방(2단계 둘째 조각)이 부르는 구독 다리. 부른 것을 적고, 저장은 이 창의 합성 자료에만 고쳐 넣는다(실제 로그인 · 설치 · 브라우저 열기는 없다)
 let subsSeq=100;
@@ -113,9 +113,11 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   }),
   // 본체(main.cjs siteVisitsCall)처럼 로그인한 회원에게만 답한다. 정하지 않으면 볼 계정이 아닌 답(available:false)이다
   siteVisits:Object.freeze({snapshot:async()=>{calls.push('visits-snapshot');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return visits||{ok:true,available:false};}}),
+  // 계정 건강(main.cjs snsHealthCall)도 같다. 정하지 않으면 볼 계정이 아닌 답이다
+  snsHealth:Object.freeze({snapshot:async()=>{calls.push('health-snapshot');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return health||{ok:true,available:false};}}),
 }));
 contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
-  configure:value=>{if(value?.env)env={...env,...value.env};if(value?.assignment)assignment=value.assignment;if(value?.invite)inviteMode=value.invite;if(value?.subs!==undefined)subs=value.subs;if(value?.subsFail)subsFail=value.subsFail;if(value?.visits!==undefined)visits=value.visits;if(value?.tokens)tokens=value.tokens;configured();},
+  configure:value=>{if(value?.env)env={...env,...value.env};if(value?.assignment)assignment=value.assignment;if(value?.invite)inviteMode=value.invite;if(value?.subs!==undefined)subs=value.subs;if(value?.subsFail)subsFail=value.subsFail;if(value?.visits!==undefined)visits=value.visits;if(value?.health!==undefined)health=value.health;if(value?.tokens)tokens=value.tokens;configured();},
   // 모델별 토큰의 새 판을 알린다(세는 중의 진행, 다 센 판). 순서 번호는 이 창이 붙인다
   setTokens:value=>{nextTokens(value||{});emitTokens();},
   tokens:()=>JSON.parse(JSON.stringify(tokens)),
@@ -135,6 +137,8 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   subs:()=>JSON.parse(JSON.stringify(subs)),
   // 방문자 분석 요약의 답을 바꾼다(다음 읽기부터)
   setVisits:value=>{visits=value||null;},
+  // 계정 건강 요약의 답을 바꾼다(다음 읽기부터)
+  setHealth:value=>{health=value||null;},
   // 설정 방: 업데이트 판을 바꿔 알리고, 데스크톱 설정 · 쓰던 글 되살리기 · 복사한 진단 정보를 읽는다
   setUpdate:value=>setUpdate(value||{}),
   prefs:()=>({...prefs}),
