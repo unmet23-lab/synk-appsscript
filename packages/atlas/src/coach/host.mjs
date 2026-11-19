@@ -146,13 +146,25 @@ function createHost({
       if (types.has(state.trail.heldEvent(id)?.type)) ids.add(id);
     return ids.size;
   };
+  // 저장소가 닫혔다는 알림은 알림 통로(셸의 onAccount 함수)마다 한 번이다. 틀이 먼저 연 호스트(통로 없음)가 닫힌 뒤 셸이 받으면 그 셸의
+  // 통로에 한 번 알린다(Fable 5.2 끝 판 둘째 넘친 #6 · 설계 주인 조건 (a) 고쳐 읽기 — 단계 4 계획 §23-3). 닫은(닫는 중인) 호스트는 알리지 않는다.
+  const toldGone = new WeakSet();
+  const tellGone = () => {
+    if (!onAccount || toldGone.has(onAccount)) return;
+    toldGone.add(onAccount);
+    try {
+      onAccount({ kind: 'store', code: 'STORE_CLOSED', status: null, revision: null });
+    } catch {
+      // 셸의 알림이 던져도 호스트는 그대로다
+    }
+  };
   const listeners = new Set();
   const state = {
     trail: null,
     channel: null,
     users: 0,
     closed: false,
-    storeGone: false, // 저장소 연결이 닫혔다고 알렸다(호스트마다 한 번 — F5)
+    storeGone: false, // 저장소 연결이 닫혔다(계기는 호스트마다 한 번 — F5, 셸 알림은 통로마다 한 번 — §23-3)
     carry: null, // 옛 기록 옮기기의 약속 — 호스트당 하나(계획 §16 ③)
     unsaved: false, // 저장 실패가 이어지는 중(받기를 한 번 강제했다 — F5)
     // 이 호스트(= 이 기록부)에서 저장 실패가 한 번이라도 났다 — 성공으로 끄지 않는다. 기록부는 실패한 답 · 도움의 계열을 메모리 만남 표에
@@ -313,14 +325,10 @@ function createHost({
     // 저장소는 지워질 수 있어 셸(onAccount)에 알리고, 손님 저장소는 지우기 대상이 아니라 계기만 남긴다(셸이 손님 호스트에는 onAccount를
     // 주지 않는다 — Fable 5.2 끝 판 F5 · 설계 주인 11-13).
     storeClosed() {
-      if (state.closed || state.storeGone) return;
+      if (state.closed) return;
+      if (!state.storeGone) note('save', { ok: false, code: 'STORE_CLOSED' });
       state.storeGone = true;
-      note('save', { ok: false, code: 'STORE_CLOSED' });
-      try {
-        onAccount?.({ kind: 'store', code: 'STORE_CLOSED', status: null, revision: null });
-      } catch {
-        // 셸의 알림이 던져도 호스트는 그대로다
-      }
+      tellGone();
     },
     get health() {
       return health;
@@ -338,6 +346,8 @@ function createHost({
       if (nextTransport) transport = nextTransport;
       if (nextHealth) health = nextHealth;
       if (nextAccount) onAccount = nextAccount;
+      // 이미 닫힌 저장소를 새 통로로 받았다 — 그 통로에 한 번 알린다(틀이 먼저 연 뒤 닫힌 호스트를 셸이 받음 — 계획 §23-3).
+      if (nextAccount && state.storeGone && !state.closed) tellGone();
       if (nextTransport && !guest && !state.closed) void sync.first();
       // 옛 기록 옮기기는 차례 안에서 — 못 얻으면 기다리지 않고 차례 없이 한다(coach.ready가 기다리는 일, §18-5-1 R2).
       if (guest && reader && !state.carry)
@@ -573,9 +583,10 @@ function nextDocument(registry) {
 
 // 저장소 연결을 연다(제품이 준 포트면 그것). 연 연결이 닫히면(다른 탭이 판이 오른 저장소를 열어 이 판을 지움 — 포트의 onClosed) 호스트가
 // 셸에 알린다 — 호스트가 서기 전에 닫혔으면 선 뒤에 알린다(watch.early, Fable 5.2 끝 판 F5).
-async function openWatched(openPort, key, given) {
+async function openWatched(openPort, key, given, gone) {
   const watch = { host: null, early: false };
   const onClosed = () => {
+    gone();
     if (watch.host) watch.host.storeClosed();
     else watch.early = true;
   };
@@ -591,18 +602,24 @@ function newEntry(registry, key, options, openPort) {
   const claims = { users: 0 };
   // shellUsers: 셸로 받은 코치 수, shellAt: 셸이 마지막으로 받은 차례(문서 호스트는 가장 나중의 셸 것).
   const entry = { key, shell: false, shellUsers: 0, shellAt: 0, claims };
-  const onClose = () => {
-    if (registry.get(key) === entry) registry.delete(key);
+  // 등록부의 그 열쇠 자리가 이 자리일 때만 내린다 — 저장소가 닫혀 먼저 내려간 자리의 늦은 닫기 · 셸 놓기가 같은 열쇠로 새로 연 자리와
+  // 문서 호스트를 건드리지 않게(계획 §23-3).
+  const drop = () => {
+    if (registry.get(key) !== entry) return;
+    registry.delete(key);
     leaveDocument(registry, key);
   };
+  const onClose = drop;
   const shellGone = () => {
     entry.shellUsers = Math.max(0, entry.shellUsers - 1);
     if (entry.shellUsers > 0) return;
     entry.shell = false;
-    leaveDocument(registry, key);
+    if (registry.get(key) === entry) leaveDocument(registry, key);
   };
   entry.opening = (async () => {
-    const { port, watch } = await openWatched(openPort, key, options.port);
+    // 저장소 연결이 닫히면(다른 탭이 판이 오른 저장소를 열어 이 판을 지움) 이 자리를 등록부에서 내린다 — 같은 열쇠로 새로 여는 코치는 새 자리 ·
+    // 새 연결을 받고, 쥔 코치는 그대로 쥔다(저장이 실패해 판에서 빠진다). Fable 5.2 끝 판 둘째 넘친 #6 · 계획 §23-3.
+    const { port, watch } = await openWatched(openPort, key, options.port, drop);
     // 판이 오른 계정 저장소를 열었으면 같은 계정의 앞 판 사본을 버린다(설계 §5-3 · 단계 4 §18-5-5 E3 — 기다리지 않는다).
     if (!options.port) void dropEarlier(key).catch(() => {});
     try {
@@ -655,7 +672,9 @@ function shellTakes(registry, entry, host, options) {
   entry.shellAt = registry.shellSeq;
   if (options.claim) options.claim.shell = true; // 놓을 때 이 표로 셸 수를 내린다(release)
   // 가장 나중에 받은 셸의 호스트가 문서 호스트다 — 옛 주인의 호스트를 틀이 아직 쥐고 있어도 새 틀은 새 주인의 것을 받는다(카본 · GPT 끝 판 C).
-  if (registry.document !== entry.key) setDocument(registry, entry.key);
+  // 저장소가 닫혀 등록부에서 내려간 자리는 문서 호스트가 되지 않는다 — 틀이 없는 열쇠를 받지 않게(계획 §23-3).
+  if (registry.get(entry.key) === entry && registry.document !== entry.key)
+    setDocument(registry, entry.key);
 }
 
 const missing = () => hostError('HOST_MISSING', '위 창의 셸이 연 문서 호스트가 없다');
