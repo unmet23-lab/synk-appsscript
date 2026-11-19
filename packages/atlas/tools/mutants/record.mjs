@@ -119,8 +119,8 @@ export const RECORD_MUTANTS = [
     '기기',
     '꼬리 읽기를 내 덧붙이기 자리부터 한다(다른 탭이 먼저 쓴 기록을 건너뛴다)',
     LOG,
-    'for (const row of await port.range(state.readKey)) {',
-    'for (const row of await port.range(state.lastKey)) {',
+    'await port.range(state.readKey)',
+    'await port.range(state.lastKey)',
   ],
   // ── 어댑터 — 2판 제시의 firstExposure false(제품만 아는 앞선 노출)는 장부 만남, null은 읽지 않음(계획 §14-8) ──
   [
