@@ -108,10 +108,10 @@ test('rows of one post are never joined: a reel row and the feed row of its post
 });
 
 test('other platforms never store the facebook fields',async t=>{
-  const f=await fixture(t,{collector:async c=>({...result(c),posts:result(c).posts.map(p=>({...p,pagePostId:'123_700',videoId:'555'}))})});
+  const f=await fixture(t,{collector:async c=>({...result(c),posts:result(c).posts.map(p=>({...p,pagePostId:'123_700',videoId:'555',urlFromAttachment:true}))})});
   const rows=f.app.store.all('posts');
   assert.ok(rows.length>0);
-  for(const row of rows){assert.equal(row.pagePostId,undefined);assert.equal(row.videoId,undefined);}
+  for(const row of rows){assert.equal(row.pagePostId,undefined);assert.equal(row.videoId,undefined);assert.equal(row.urlFromAttachment,undefined);}
 });
 
 // 운영 꼴: 칸 없는 저장 줄(릴스 주소 하나, 피드 둘)에 영상 둘 게시물이 오는 첫 수집. 기존 줄 번호는 그대로이고 칸만 채워진다. 둘째 영상은 자기 번호의 새 줄이다.
@@ -215,9 +215,6 @@ test('a facebook row is marked as using its attached reel address only while the
   item={url:REEL,urlFromAttachment:true};await f.again();
   item={url:REEL,urlFromAttachment:'true'};await f.again();
   assert.deepEqual(mark(),[REEL,undefined,false],'only the value true marks a row');
-  const other=await fixture(t,{collector:async c=>({...result(c),posts:result(c).posts.map(p=>({...p,urlFromAttachment:true}))})});
-  assert.ok(other.app.store.all('posts').length>0);
-  for(const row of other.app.store.all('posts'))assert.equal(row.urlFromAttachment,undefined,'other platforms never store the mark');
 });
 
 test('complete inventory hides unavailable posts without erasing history; partial inventory never hides unseen posts',async t=>{
