@@ -216,7 +216,7 @@ const yielded=runtime.clientId==='platform'&&packaged&&!smoke&&process.platform=
 if(yielded){/* 설치기에 넘겼다. app.exit(0)이 끝낸다 */}
 else if(!app.requestSingleInstanceLock())app.quit();
 else {
-  app.on('second-instance',(_event,argv)=>{if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();void connectionRecovery?.retryIfDisconnected();}});
+  app.on('second-instance',(_event,argv)=>{if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();if(!connectionRecovery?.recoverIfGone?.())void connectionRecovery?.retryIfDisconnected();}});
   app.on('window-all-closed',()=>{if(process.platform!=='darwin'&&(!platformTray?.isActive()||platformTray.isQuitting()||desktopPreferences?.snapshot().preferences.closeToTray===false))app.quit();});
   app.on('activate',()=>{if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(platformTray?.isActive())platformTray.show();else if(!window||window.isDestroyed())createWindow();});
   app.whenReady().then(async()=>{
@@ -257,7 +257,8 @@ else {
 function showPlatformMain(){
   if(!mainInitialized)initializeMain();
   else if(!window||window.isDestroyed())createWindow();
-  else{if(window.isMinimized())window.restore();window.show();window.focus();}
+  // 이미 보이고 초점이 있는 창에는 show · focus가 오지 않는다. 사람이 연 때도 사라진 화면을 되살린다(화면 다시 검수 -d)
+  else{if(window.isMinimized())window.restore();window.show();window.focus();connectionRecovery?.recoverIfGone?.();}
   deliverPendingAction();
 }
 /* 단축키 따위로 미뤄 둔 요청(명령 메뉴 열기 등)을 앱 창 화면에 한 번 전달한다. 창을 보이는 일과 따로 둔다.
@@ -543,7 +544,8 @@ function createWindow(){
   contents.on('will-redirect',(event,url)=>{if(!allowedNavigation(url,entry,runtime.clientId))event.preventDefault();});
   const programRoot=resolveProgramRoot({platform:process.platform,env:process.env,getHome:()=>app.getPath('home')});
   if(!installations)installations=createClientLifecycle({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,programRoot,packageRoot:packaged?path.join(process.resourcesPath,'clients'):path.join(app.getAppPath(),'dist'),cacheRoot:path.join(app.getPath('userData'),'Installers'),releases:runtime.releases||[],spawn,openPath:file=>shell.openPath(file),onChange:async()=>{try{const state=await installations.getClients();send('synk:clients-changed',state);send('synk:client-progress',state);}catch{}}});
-  // 자동 되살리기가 멈춘 뒤에도(10분 안에 세 번 넘게 사라짐) 사람이 창을 꺼내거나 누르면 첫 화면을 다시 싣는다(엔진 검수 GA2)
+  // 자동 되살리기가 멈춘 뒤에도(10분 안에 세 번 넘게 사라짐) 사람이 창을 꺼내거나 다른 창에서 돌아오면 첫 화면을 다시 싣는다(엔진 검수 GA2).
+  // 이미 보이고 초점이 있는 창은 트레이 열기와 다시 실행이 showPlatformMain(Workspace는 second-instance)에서 싣는다
   window.on('show',()=>{connectionRecovery?.recoverIfGone?.();});
   window.on('focus',async()=>{connectionRecovery?.recoverIfGone?.();try{send('synk:clients-changed',await installations.getClients());}catch{}});
   // 최소화한 채 되돌려 켠 앱의 미룬 실패는 사람이 작업 표시줄에서 창을 되살릴 때 보인다(0.4.97 엔진 검수 GA2)

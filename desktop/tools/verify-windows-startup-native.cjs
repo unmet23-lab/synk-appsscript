@@ -152,7 +152,8 @@ function observe(config){
       check('orb settings room opens in the face with the launcher still inert',room.launcherInert&&room.orbClient==='app'&&room.rows[0]==='update'&&room.foot.includes(config.version)&&room.foot.includes('시험판'),room);
       const UPDATE_ROW='#portal-entry [data-room=settings] button.row[data-key="update"]';
       await clickVisible(UPDATE_ROW,'settings update row visible and unobscured');
-      await waitFor(contents,"(()=>{const b=document.querySelector("+JSON.stringify(UPDATE_ROW)+"),c=b?.nextElementSibling?.querySelector('[data-room-act=\"update-check\"]');return !!b&&b.classList.contains('opened')&&!!c&&!b.nextElementSibling.inert&&getComputedStyle(c).opacity==='1';})()",'settings-update-open');
+      // 줄 안쪽은 0.46초 동안 줄 아래로 펼쳐진다. 단추 자신의 불투명도는 늘 1이라, 단추를 품은 칸이 다 드러나고 단추가 줄 아래로 내려온 뒤에 누른다(대역 빌드 검사)
+      await waitFor(contents,"(()=>{const b=document.querySelector("+JSON.stringify(UPDATE_ROW)+"),c=b?.nextElementSibling?.querySelector('[data-room-act=\"update-check\"]'),box=c?.closest('.more-in > *');if(!b||!b.classList.contains('opened')||!c||!box||b.nextElementSibling.inert)return false;const s=getComputedStyle(box);return s.opacity==='1'&&s.transform==='none'&&c.getBoundingClientRect().top>=b.getBoundingClientRect().bottom-1;})()",'settings-update-open');
       await run("(()=>{const c=document.querySelector("+JSON.stringify(UPDATE_ROW)+").nextElementSibling.querySelector('[data-room-act=\"update-check\"]');c.id='qa-settings-update-check';c.focus();return true;})()");
       await clickVisible('#qa-settings-update-check','settings 「지금 확인」 visible and unobscured');
       await waitFor(contents,"(()=>{const r=document.querySelector('#portal-entry [data-room=settings]'),b=document.querySelector("+JSON.stringify(UPDATE_ROW)+");return (r.querySelector('[data-aside-text]')?.textContent||'').trim()==='이 PC의 SYNK는 최신 판입니다.'&&(window.__qaUpdateStates||[]).includes('current');})()",'settings-update-current');

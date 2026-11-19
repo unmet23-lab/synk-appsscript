@@ -6,9 +6,14 @@ const ENTRY='http://127.0.0.1:4280/synk-account/client.html?product=world',STATU
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 const failure=(code=-102)=>Object.assign(Error(code===-3?'ERR_ABORTED':'ERR_CONNECTION_REFUSED'),{errno:code,code:code===-3?'ERR_ABORTED':'ERR_CONNECTION_REFUSED'});
 class Contents extends EventEmitter{
-  constructor(){super();this.url='';this.loads=[];this.destroyed=false;}
+  constructor(){super();this.url='';this.loads=[];this.destroyed=false;this.loading=false;}
+  // 주 프레임 이동이 시작되면 싣는 중이다. 실리거나 실패하거나 취소되면 did-stop-loading과 함께 끝난다
+  emit(name,...args){if(name==='did-start-navigation'&&args[3]&&!args[2])this.loading=true;return super.emit(name,...args);}
   getURL(){return this.url;}
   isDestroyed(){return this.destroyed;}
+  isLoadingMainFrame(){return this.loading;}
+  stopLoading(){this.loading=false;this.emit('did-stop-loading');}
+  cancel(url){this.emit('did-fail-load',{},-3,'ERR_ABORTED',url,true);this.stopLoading();}
   send(){}
   setWindowOpenHandler(){}
   loadURL(url){
@@ -16,11 +21,11 @@ class Contents extends EventEmitter{
     let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});
     this.loads.push({url,resolve,reject});return promise;
   }
-  success(index){const item=this.loads[index];this.url=item.url;this.emit('did-navigate',{},item.url,200,'OK');item.resolve();}
-  fail(index,error=failure()){const item=this.loads[index];this.emit('did-fail-load',{},error.errno,error.code,item.url,true);item.reject(error);}
+  success(index){const item=this.loads[index];this.url=item.url;this.emit('did-navigate',{},item.url,200,'OK');this.stopLoading();item.resolve();}
+  fail(index,error=failure()){const item=this.loads[index];this.emit('did-fail-load',{},error.errno,error.code,item.url,true);this.stopLoading();item.reject(error);}
   click(url){const event={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};this.emit('will-navigate',event,url);return event;}
 }
-async function mainFixture(runtime={clientId:'world',mode:'development',entry:ENTRY,auth:null}){
+async function mainFixture(runtime={clientId:'world',mode:'development',entry:ENTRY,auth:null},{dialog={}}={}){
   const app=new EventEmitter(),contents=new Contents();let window,headersHandler,protocolHandler;
   Object.assign(app,{isPackaged:true,enableSandbox(){},setName(){},setPath(){},getPath:name=>name==='home'?'C:\\Users\\synthetic':'/synthetic',getAppPath:()=>'/synthetic/app',getVersion:()=> '0.4.0',setAppUserModelId(){},requestSingleInstanceLock:()=>true,whenReady:()=>Promise.resolve()});
   class Window extends EventEmitter{
@@ -34,7 +39,7 @@ async function mainFixture(runtime={clientId:'world',mode:'development',entry:EN
   const ownSession={setPermissionRequestHandler(){},setPermissionCheckHandler(){},webRequest:{onBeforeRequest(){},onHeadersReceived(handler){headersHandler=handler;}},removeAllListeners(){},on(){},protocol:{handle(_scheme,handler){protocolHandler=handler;}}};
   const noop=()=>({});
   const stubs={
-    electron:{app,BrowserWindow:Window,ipcMain:{removeHandler(){},handle(){}},session:{fromPartition:()=>ownSession},protocol:{registerSchemesAsPrivileged(){}},Menu:{setApplicationMenu(){}},shell:{},dialog:{},safeStorage:{}},
+    electron:{app,BrowserWindow:Window,ipcMain:{removeHandler(){},handle(){}},session:{fromPartition:()=>ownSession},protocol:{registerSchemesAsPrivileged(){}},Menu:{setApplicationMenu(){}},shell:{},dialog,safeStorage:{}},
     'node:fs':{readFileSync:()=>JSON.stringify(runtime)},
     'node:child_process':{spawn(){throw Error('No process allowed');}},
     './auth-config.cjs':{configuration:()=>null},'./auth-config-path.cjs':{resolveAuthConfigPath:()=>null},
@@ -128,7 +133,7 @@ test('main retains its navigation guard for arbitrary links from the guide',asyn
 test('destroying the window invalidates pending work and removes recovery listeners',async()=>{
   const {contents,recovery}=fixture(),loading=recovery.connect();await settle();contents.destroyed=true;contents.emit('destroyed');contents.fail(0);
   assert.equal(await loading,false);assert.equal(await recovery.connect(),false);assert.equal(await recovery.retryIfDisconnected(),false);assert.equal(contents.loads.length,1);
-  for(const event of ['did-start-navigation','did-navigate','will-navigate','destroyed'])assert.equal(contents.listenerCount(event),0);recovery.dispose();
+  for(const event of ['did-start-navigation','did-navigate','will-navigate','render-process-gone','did-stop-loading','destroyed'])assert.equal(contents.listenerCount(event),0);recovery.dispose();
 });
 
 const CLOUD_ENTRY='https://workspace.synk.im/?tab=messenger';
@@ -175,6 +180,47 @@ test('a renderer that exits cleanly with no replacement is reloaded even though 
   f.gone('clean-exit');f.contents.crashed=false;f.run();await settle();
   assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.recovery.dispose();
 });
+test('a navigation that started before the old renderer went away and then commits in the new one is not reloaded (화면 다시 검수 -d)',async()=>{
+  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
+  const next='http://127.0.0.1:4280/learning-hub/';
+  f.contents.emit('did-start-navigation',{},next,false,true);f.gone();f.contents.crashed=false;f.contents.url=next;f.contents.emit('did-navigate',{},next,200,'OK');
+  f.run();await settle();assert.equal(f.contents.loads.length,1,'the committed page is kept');
+  assert.equal(f.recovery.recoverIfGone(),false,'nothing is left to recover');f.recovery.dispose();
+});
+test('a navigation that starts after the renderer went away but is cancelled before it commits still gets the entry back (엔진 다시 검수 -b GA1)',async()=>{
+  const next='http://127.0.0.1:4280/learning-hub/';
+  // 이동이 도는 동안 400ms가 지나면 기다렸다가, 취소되면 싣는다
+  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
+  f.gone();f.contents.crashed=false;f.contents.emit('did-start-navigation',{},next,false,true);f.run();await settle();
+  assert.equal(f.contents.loads.length,1,'waits while the other navigation is still loading');
+  f.contents.cancel(next);await settle();assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.recovery.dispose();
+  // 400ms 전에 취소되면 타이머가 싣는다
+  const g=goneFixture(),gl=g.recovery.connect();await settle();g.contents.success(0);await gl;
+  g.gone();g.contents.emit('did-start-navigation',{},next,false,true);g.contents.cancel(next);g.run();await settle();
+  assert.deepEqual(g.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);g.recovery.dispose();
+  // 자동 한도 뒤에는 사람이 창을 연 때 싣는다
+  const h=goneFixture(),hl=h.recovery.connect();await settle();h.contents.success(0);await hl;
+  for(let i=1;i<=3;i++){h.gone();h.run();await settle();h.contents.success(i);await settle();h.tick(60000);}
+  h.gone();h.contents.emit('did-start-navigation',{},next,false,true);h.contents.cancel(next);h.run();await settle();
+  assert.equal(h.contents.loads.length,4);assert.equal(h.recovery.recoverIfGone(),true);await settle();assert.equal(h.contents.loads.length,5);
+  // 기다리던 중에 창을 버리면 아무것도 싣지 않고 듣던 것을 거둔다
+  const d=goneFixture(),dl=d.recovery.connect();await settle();d.contents.success(0);await dl;
+  d.gone();d.contents.emit('did-start-navigation',{},next,false,true);d.run();d.recovery.dispose();assert.equal(d.contents.listenerCount('did-stop-loading'),0);
+  d.contents.cancel(next);await settle();assert.equal(d.contents.loads.length,1);h.recovery.dispose();
+});
+test('Workspace reloads a lost renderer after a quit is cancelled to keep unsaved work, but not after leaving without saving (엔진 다시 검수 -b GA2)',async()=>{
+  for(const [choice,reloads] of [[0,1],[1,0]]){
+    const dialog={showMessageBoxSync:()=>choice};
+    const f=await mainFixture({clientId:'messenger',mode:'development',entry:CLOUD_ENTRY,messengerCloudPreview:true,auth:null},{dialog});
+    f.contents.success(0);await settle();
+    f.app.emit('before-quit');
+    const unload={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};f.contents.emit('will-prevent-unload',unload);
+    assert.equal(unload.defaultPrevented,choice===1,'the draft prompt decides');
+    f.contents.emit('render-process-gone',{},{reason:'crashed',exitCode:1});await new Promise(resolve=>setTimeout(resolve,460));
+    assert.equal(f.contents.loads.length-1,reloads,choice===0?'「돌아가서 저장」 keeps the window, so it is reloaded':'leaving without saving is quitting');
+    f.contents.emit('destroyed');
+  }
+});
 test('after the automatic limit, showing or focusing the window loads the entry again; nothing happens when the page is fine (엔진 검수 GA2)',async()=>{
   const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.success(0);await loading;
   assert.equal(f.recovery.recoverIfGone(),false,'a live page is left alone');
@@ -192,6 +238,9 @@ test('main resets the quit flag for every client when unsaved writing cancels th
   assert.match(main,/\n  contents\.on\('will-prevent-unload',event=>\{if\(!event\.defaultPrevented\)\{quittingRequested=false;if\(isPlatform\)\{/);
   assert.match(main,/window\.on\('show',\(\)=>\{connectionRecovery\?\.recoverIfGone\?\.\(\);\}\);/);
   assert.match(main,/window\.on\('focus',async\(\)=>\{connectionRecovery\?\.recoverIfGone\?\.\(\);/);
+  // 이미 보이고 초점이 있는 창에는 show · focus가 오지 않으므로, 사람이 연 때도 부른다(화면 다시 검수 -d)
+  assert.match(main,/function showPlatformMain\(\)\{[\s\S]{0,300}window\.show\(\);window\.focus\(\);connectionRecovery\?\.recoverIfGone\?\.\(\);\}/);
+  assert.match(main,/sendTeachingView\(\);if\(!connectionRecovery\?\.recoverIfGone\?\.\(\)\)void connectionRecovery\?\.retryIfDisconnected\(\);/);
 });
 test('main passes the quit flag so a window closing for quit is not reloaded',()=>{
   const main=fs.readFileSync(path.join(__dirname,'..','src','main.cjs'),'utf8');
