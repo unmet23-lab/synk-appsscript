@@ -1496,7 +1496,23 @@ test('when 계정 건강 stops being shown while it is open, Solio goes back to 
   assert.equal(h.view.last().room.health.visible, false);
 });
 
-test('a summary that could not be read still opens 계정 건강 and says why, never as a guest', async t => {
+test('a summary that could not be read still opens 계정 건강 and says why, and a guest never gets or asks for it', async t => {
+  // 손님으로 들어온 솔리오에는 계정 건강이 없고, 본체에 묻지도 않는다(카본 A)
+  const guestHealth = readFake(healthy());
+  const g = harness(t, {
+    initial: { status: 'signed-out' },
+    options: { snsHealth: guestHealth.api, allowGuestEntry: () => true, onBrowse: () => ({ ok: true, action: 'purpose' }), onSelectPurpose: () => ({ ok: true }) },
+  });
+  await settle();
+  g.face.handle('qa-guest');
+  await settle(20);
+  assert.equal(g.face.getState().phase, 'entered');
+  assert.equal(g.view.last().room.space, 'solio');
+  assert.deepEqual(programKeys(g), []);
+  assert.equal(g.view.last().room.health.visible, false);
+  assert.equal(g.face.handle('prog', 'health'), false);
+  assert.equal(guestHealth.asked.length, 0, 'a guest never asks');
+
   const health = readFake({ ok: false, available: true, code: 'VERSION', version: 2, supported: 1 });
   const h = harness(t, { options: { snsHealth: health.api } });
   await settle();
@@ -1537,7 +1553,9 @@ test('the 계정 건강 room is drawn as text only, with its own row box, the si
   for (const sel of ['.more-head', '.more-text', '.flow', '.step', '.step.leak', '.more-in .row.do.first']) assert.ok(css.includes('#portal-entry ' + sel + '{') || css.includes('#portal-entry ' + sel + ','), sel);
   const narrow = css.slice(css.indexOf('@media (max-width:640px){'));
   assert.match(narrow, /#portal-entry \.row\.good \.mid,#portal-entry \.row\.goal \.mid,#portal-entry \.row\.do \.mid\{grid-column:1 \/ -1;grid-row:2\}/, 'a narrow window puts the words under the name');
-  assert.match(narrow, /#portal-entry \.step\{flex-basis:50%;/);
+  // 길의 단계를 둘씩 놓는 규칙은 900px 아래 전체이고, 무게가 같은 단계 규칙 뒤에 있어야 이긴다(카본 A1)
+  const twoByTwo = css.search(/@media \(max-width:900px\)\{\s+#portal-entry \.step\{flex-basis:50%;/);
+  assert.ok(twoByTwo > css.indexOf('#portal-entry .step + .step{') && twoByTwo > css.indexOf('#portal-entry .step{flex:1 1 0;'), 'the two-by-two step rule comes after the base step rules');
 });
 
 /* ── 2단계 첫 조각 · 구 곁의 펼침(2단계_첫조각_구현설계.md 1.3절) ── */

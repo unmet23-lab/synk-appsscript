@@ -98,7 +98,8 @@ if(!process.versions.electron){
     }
     const state=w=>w.js(`(()=>{const r=document.getElementById('portal-entry'),s=r?.querySelector('.orb-stage');return {phase:r?.dataset.portalState,ui:s?.dataset.ui,mode:document.documentElement.dataset.orbClient,wait:s?.dataset.wait||null,active:r?.dataset.portalActive,hidden:document.hidden,ready:document.documentElement.dataset.ready,eyes:s?.dataset.eyes||null,fan:s?.dataset.fan==='1'};})()`);
     async function until(w,fn,{timeout=9000,every=40}={}){const t=Date.now();let last;while(Date.now()-t<timeout){last=await state(w);if(fn(last))return {ok:true,ms:Date.now()-t,state:last};await wait(every);}return {ok:false,ms:Date.now()-t,state:last};}
-    // 창 밖으로 나간 글을 찾을 때, 스크롤하는 조상(방)이 잘라 보이지 않는 부분은 빼고 본다. 방의 아래 끝에 걸친 줄을 창 밖으로 세지 않는다(계정 건강 390 캡처)
+    // 창 밖으로 나간 글을 찾을 때, 스크롤하는 조상(방)이 위아래로 잘라 보이지 않는 부분은 빼고 본다. 방의 아래 끝에 걸친 줄을 창 밖으로 세지 않는다(계정 건강 390 캡처).
+    // 가로는 자르지 않는다. 방 안의 가로 넘침은 숨은 가로 스크롤이라 창 밖으로 나간 것처럼 센다(계정 건강 카본 B)
     // 끝 모습으로 찍는다: 첫 화면(구가 드러나는 중) 말고는 글의 나타남 효과를 끄고, 숨은 창이 새 장면을 그리도록 다시 그리기를 요청한 뒤 두 번 찍는다
     async function capture(w,name,{moving=false}={}){
       await w.js('document.fonts.ready');
@@ -107,7 +108,7 @@ if(!process.versions.electron){
       w.win.webContents.invalidate();await w.win.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});await wait(200);w.win.webContents.invalidate();
       const image=await w.win.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});
       const file=path.join(out,`${String(++shot).padStart(2,'0')}-${mode}-${name}.png`);fs.writeFileSync(file,image.toPNG());
-      const metrics=await w.js(`(()=>{const W=innerWidth,Hh=innerHeight,outside=[];for(const el of document.querySelectorAll('#portal-entry *')){const st=getComputedStyle(el);if(st.visibility==='hidden'||st.display==='none'||el.closest('[inert]')||!el.textContent.trim()||el.children.length)continue;const b=el.getBoundingClientRect();if(!b.width||!b.height)continue;if(Number(st.opacity)===0)continue;let hiddenBy=null,pos=st.position;const c={l:b.left,t:b.top,r:b.right,b:b.bottom};for(let a=el.parentElement;a&&a!==document.body;a=a.parentElement){const as=getComputedStyle(a);if(Number(as.opacity)===0){hiddenBy=a;break;}if(pos==='fixed')continue;if(pos!=='absolute'||as.position!=='static'){const r=a.getBoundingClientRect();if(as.overflowY!=='visible'){c.t=Math.max(c.t,r.top);c.b=Math.min(c.b,r.bottom);}if(as.overflowX!=='visible'){c.l=Math.max(c.l,r.left);c.r=Math.min(c.r,r.right);}if(c.b<=c.t+1||c.r<=c.l+1){hiddenBy=a;break;}}if(!(pos==='absolute'&&as.position==='static'))pos=as.position;}if(hiddenBy)continue;if(c.r>W+1||c.l<-1||c.b>Hh+1||c.t<-1)outside.push((el.className||el.tagName)+':'+el.textContent.trim().slice(0,30));}return {pageOverflow:Math.max(0,document.documentElement.scrollWidth-W),outside};})()`);
+      const metrics=await w.js(`(()=>{const W=innerWidth,Hh=innerHeight,outside=[];for(const el of document.querySelectorAll('#portal-entry *')){const st=getComputedStyle(el);if(st.visibility==='hidden'||st.display==='none'||el.closest('[inert]')||!el.textContent.trim()||el.children.length)continue;const b=el.getBoundingClientRect();if(!b.width||!b.height)continue;if(Number(st.opacity)===0)continue;let hiddenBy=null,pos=st.position;const c={l:b.left,t:b.top,r:b.right,b:b.bottom};for(let a=el.parentElement;a&&a!==document.body;a=a.parentElement){const as=getComputedStyle(a);if(Number(as.opacity)===0){hiddenBy=a;break;}if(pos==='fixed')continue;if(pos!=='absolute'||as.position!=='static'){const r=a.getBoundingClientRect();if(as.overflowY!=='visible'){c.t=Math.max(c.t,r.top);c.b=Math.min(c.b,r.bottom);}if(as.overflowX!=='visible'&&(b.right<=r.left+1||b.left>=r.right-1)){hiddenBy=a;break;}if(c.b<=c.t+1){hiddenBy=a;break;}}if(!(pos==='absolute'&&as.position==='static'))pos=as.position;}if(hiddenBy)continue;if(c.r>W+1||c.l<-1||c.b>Hh+1||c.t<-1)outside.push((el.className||el.tagName)+':'+el.textContent.trim().slice(0,30));}return {pageOverflow:Math.max(0,document.documentElement.scrollWidth-W),outside};})()`);
       check('capture '+name,metrics.pageOverflow===0&&metrics.outside.length===0,{file:path.basename(file),...metrics});
       return file;
     }
@@ -439,13 +440,20 @@ if(!process.versions.electron){
           await key(w,'Tab');await wait(250);
           const kbIn=await w.js(kbState);
           check('19 Tab from the open object 계정 건강 goes into its room',kbIn.obj===null&&kbIn.room==='solio-health',kbIn);
+          // 가운데 폭(768 · 641)에서도 길의 단계는 둘씩 놓이고, 줄을 바꾼 단계 왼쪽에 빈 세로 선이 남지 않는다(카본 A)
+          const mids=[];
+          await move(w,12,500);await w.js(rowsNow+"[0].click()");await wait(800);
+          for(const W of [873,768,641]){w.win.setContentSize(W,560);for(let i=0;i<40&&(await w.js('innerWidth'))!==W;i++)await wait(50);await wait(300);
+            mids.push(await w.js("(()=>{const m="+ROOM+".querySelector('.more.open .more-in');const steps=[...m.querySelectorAll('.step')];const left=Math.min(...steps.map(s=>Math.round(s.getBoundingClientRect().left)));const room="+ROOM+";return {W:innerWidth,overflow:Math.max(document.documentElement.scrollWidth-innerWidth,room.scrollWidth-room.clientWidth),steps:steps.length,rows:new Set(steps.map(s=>Math.round(s.getBoundingClientRect().top))).size,rowStartsWithLine:steps.filter(s=>Math.round(s.getBoundingClientRect().left)===left&&getComputedStyle(s).borderLeftStyle!=='none'&&parseFloat(getComputedStyle(s).borderLeftWidth)>0).length};})()"));}
+          w.win.setContentSize(1440,900);await wait(400);await w.js(rowsNow+"[0].click()");await wait(500);
+          check('19 at 641 to 900 px the path steps go two by two, no step that starts a line carries a left rule, and the open room does not overflow sideways',mids.every(m=>m.rows===Math.ceil(m.steps/2)&&m.rowStartsWithLine===0&&m.overflow<=0),{mids});
           // 좁은 창(390): 이름 아래에 글, 단계는 둘씩
           await move(w,12,600);
           w.win.setContentSize(390,844);await wait(500);
           await w.js(ROOM+".scrollTop=0");await wait(100);
           await capture(w,'health-390');
           await w.js(rowsNow+"[0].click()");await wait(800);
-          const narrow=await w.js("(()=>{const m="+ROOM+".querySelector('.more.open .more-in');const steps=[...m.querySelectorAll('.step')];const d=m.querySelector('.row.do');const nm=d.querySelector('.nm').getBoundingClientRect(),mid=d.querySelector('.mid').getBoundingClientRect();return {perRow:steps.length?steps.filter(s=>Math.round(s.getBoundingClientRect().top)===Math.round(steps[0].getBoundingClientRect().top)).length:0,midBelow:mid.top>=nm.bottom-1,overflow:document.documentElement.scrollWidth-innerWidth};})()");
+          const narrow=await w.js("(()=>{const m="+ROOM+".querySelector('.more.open .more-in');const steps=[...m.querySelectorAll('.step')];const d=m.querySelector('.row.do');const nm=d.querySelector('.nm').getBoundingClientRect(),mid=d.querySelector('.mid').getBoundingClientRect();const room="+ROOM+";return {perRow:steps.length?steps.filter(s=>Math.round(s.getBoundingClientRect().top)===Math.round(steps[0].getBoundingClientRect().top)).length:0,midBelow:mid.top>=nm.bottom-1,overflow:Math.max(document.documentElement.scrollWidth-innerWidth,room.scrollWidth-room.clientWidth)};})()");
           check('19 at 390 px the words sit under the names and the steps go two by two',narrow.perRow===2&&narrow.midBelow&&narrow.overflow<=0,narrow);
           await capture(w,'health-open-390');
           await w.js(rowsNow+"[0].scrollIntoView({block:'start'})");await w.js(ROOM+".querySelector('.flow').scrollIntoView({block:'center'})");await wait(200);

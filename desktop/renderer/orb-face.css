@@ -247,6 +247,12 @@
 #portal-entry .step em{font-style:normal;margin-left:6px;color:var(--dim)}
 #portal-entry .step.leak,#portal-entry .step.leak b,#portal-entry .step.leak em{color:var(--paper)}
 #portal-entry .step.leak b{font-weight:400}
+/* 길의 단계(6개까지, 하나에 118px 넘게)는 900px 아래에서 한 줄에 다 들지 않는다. 시안(860px 아래)처럼 둘씩 놓아 줄을 바꾼 단계에 빈 세로 선이 남지 않게 한다.
+   위의 단계 규칙과 무게가 같아 그 뒤에 둔다(카본 A1) */
+@media (max-width:900px){
+  #portal-entry .step{flex-basis:50%;padding-bottom:14px}
+  #portal-entry .step:nth-child(odd){padding-left:0;border-left:0}
+}
 /* 안쪽의 마지막 줄 아래에 다음 계정 줄과의 틈을 둔다 */
 #portal-entry [data-room="solio-health"] .more-in > :last-child{padding-bottom:20px}
 /* 다른 프로그램의 방이 뜰 때 안의 것들이 차례로 떠오른다 */
@@ -355,10 +361,8 @@ html[data-orb-client="app"] #portal-entry .orb-stage[data-fan] ~ .portal-window-
   #portal-entry .mid{grid-column:1 / -1;grid-row:2}
   #portal-entry .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
   #portal-entry .row-plain > :last-child{grid-column:2;grid-row:1}
-  /* 계정 건강: 이름 아래에 글이 오고, 길의 단계는 둘씩 놓는다(계정건강 시안 110~125행) */
+  /* 계정 건강: 이름 아래에 글이 온다(계정건강 시안 110~125행). 길의 단계를 둘씩 놓는 규칙은 900px 아래 전체에 있다 */
   #portal-entry .row.good .mid,#portal-entry .row.goal .mid,#portal-entry .row.do .mid{grid-column:1 / -1;grid-row:2}
-  #portal-entry .step{flex-basis:50%;padding-bottom:14px}
-  #portal-entry .step:nth-child(odd){padding-left:0;border-left:0}
   /* 글을 넣는 칸도 좁은 창에서는 이름 아래로 내려오고 도움말은 왼쪽에 둔다(시안 318~319행) */
   #portal-entry .fld{grid-template-columns:minmax(0,1fr);row-gap:2px;padding:8px 0}
   #portal-entry .fld .hint{grid-column:1;justify-self:start;text-align:left}
