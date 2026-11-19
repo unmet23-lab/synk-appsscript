@@ -586,33 +586,34 @@ async function facebook(channel, credentials, request, recent) {
       hasMore=hasMore||videos.hasMore;pages+=videos.pages;warnings.push(...videos.warnings);
       if(!publishedKnown)warnings.push('Facebook이 영상의 공개 여부를 알려 주지 않아, 예약·초안 영상이 게시물에 섞였을 수 있어요.');
       // 게시물 목록과 영상 번호로 짝지은 영상은 영상의 post_id가 그 게시물 번호와 같은지 센다(matched · agreed). 운영에서 post_id를 제대로 읽는지 이 수로 확인한다.
-      videoPostIds={asked:postIdKnown,videos:0,withPostId:0,matched:0,agreed:0,byPostId:0,conflicts:0};
-      // 먼저 영상마다 짝지을 게시물 줄을 정한다. row는 첨부 대상 · 주소로 짝지은 줄(byVideo)이나, 없으면 영상의 post_id가 가리키는 이번 회차의 게시물 줄이다.
-      // 첨부 대상으로만 짝지은 게시물이 영상의 post_id와 다른 게시물이고 그 post_id의 게시물이 이번 목록에 없으면(conflict) 어느 쪽이 맞는지 모른다. 앞 판처럼 조회수를 그 게시물에 주고 영상 주소를
-      // 별칭으로 달되, 어느 게시물의 영상인지 모르므로 영상 번호는 달지 않는다(11-19 5회차 GA2 · 설계 검토 3 조건 2 · 6회차 GA2). 게시물 주소가 그 영상 주소인 짝은 그대로 믿는다.
-      // Meta가 릴스의 post_id를 게시물 목록 번호와 다르게 준다면 이 수(conflicts)와 matched − agreed가 운영 기록에 보인다.
+      videoPostIds={asked:postIdKnown,videos:0,withPostId:0,matched:0,agreed:0,conflicts:0};
+      // 먼저 영상마다 짝지을 게시물 줄을 정한다. row는 첨부 대상 · 게시물 주소로 짝지은 줄이다. post_id만으로는 게시물 줄에 붙이지 않는다(11-19 유호님 결정 —
+      // 첨부 칸이 빠진 회차에 게시물 줄의 영상과 조회수가 다른 영상 것으로 바뀌지 않게, 8회차 GA2). 첨부 대상으로 짝지은 게시물이 영상의 post_id와 다른 게시물이면
+      // (conflict) 어느 쪽이 맞는지 모른다. 앞 판처럼 조회수를 그 게시물에 주고 영상 주소를 별칭으로 달되, 영상 번호는 달지 않는다(5회차 GA2 · 설계 검토 3 조건 2).
+      // 게시물 주소가 그 영상 주소인 짝은 그대로 믿는다. Meta가 릴스의 post_id를 게시물 목록 번호와 다르게 준다면 이 수(conflicts)와 matched − agreed가 운영 기록에 보인다.
+      const named=row=>{const key=addressKey(row.url)||'';return key.startsWith('video:')?key.slice(6):null;};
       const entries=[],seen=new Set();
       for(const video of videos.entries){
         if(video.published===false){unpublished++;continue;}
         const id=String(video.id);if(seen.has(id))continue;seen.add(id);
         const postId=postIdKnown?videoPostId(video.post_id):null,createdAt=isoDate(video.created_time);
-        // post_id가 가리키는 게시물이 이번 게시물 목록에 있으면 어긋난 첨부 대상보다 그 게시물을 믿는다(6회차 자체 불변식 시험). 목록에 없을 때만 충돌로 둔다.
-        const attached=known.get(id)||null,viaPost=postId&&known.get(postId)||null,clash=!!attached&&!!postId&&!!attached.pagePostId&&attached.pagePostId!==postId&&addressed.get(id)!==attached;
-        const byVideo=clash&&viaPost?null:attached,conflict=clash&&!viaPost,row=byVideo||viaPost||null;
+        const row=known.get(id)||null,conflict=!!row&&!!postId&&!!row.pagePostId&&row.pagePostId!==postId&&addressed.get(id)!==row;
+        // 영상 목록만의 영상이 가리키는 게시물이 이번 게시물 목록에 있고 그 게시물이 첨부 대상이나 주소로 영상을 밝혔으면, 이 영상은 그 게시물의 영상이 아니라
+        // 그 게시물 번호를 달지 않는다(blocked).
+        const listed=!row&&postId?known.get(postId)||null:null,blocked=!!listed&&(targets.has(listed)||!!named(listed));
         // 빈 주소를 첫 화면 주소로 풀지 않고, 깨진 주소는 주소 없음으로 본다(11-19 셋째 검수 GA1 · 넷째 GA4).
         const permalink=typeof video.permalink_url==='string'?video.permalink_url.trim():'';
         let url=null;try{url=permalink?safeUrl(new URL(permalink,'https://www.facebook.com').href):null;}catch{url=null;}
-        entries.push({video,id,postId,createdAt,byVideo,conflict,row,url,group:row||(postId?'post:'+postId:null)});
+        entries.push({video,id,postId,createdAt,conflict,row,url,blocked,group:row||(postId?'post:'+postId:null)});
       }
       // 한 게시물 줄은 영상 하나만 차지한다. 어느 영상이 차지하는지는 회차와 목록 순서에 따라 바뀌지 않게 정한다(11-19 post-performance 검수 GA1 · 6회차
       // GA1 · GA8 · 자체 불변식 시험): 게시물 주소가 영상 주소면 그 영상(이번 목록에 없어도), 아니면 그 줄에 짝지어지는 영상 가운데 가장 먼저 올린 영상(시각이
       // 같으면 번호가 작은 영상). 첨부 대상이 있는 게시물은 첨부 대상 영상만 차지한다(그 영상이 이번 목록에 없으면 이번에는 아무도 차지하지 않는다).
-      // 게시물 목록에 없는 게시물도 같은 post_id의 영상 가운데 같은 규칙으로 하나만 게시물 번호 줄이다. 나머지 영상은 자기 주소 · 조회수를 가진 영상 번호
-      // 줄이다 — 한 줄에 다른 영상의 주소를 달면 그 주소로 등록된 기록이 첫 영상의 조회수를 받는다. 그 줄에는 게시물 번호를 달지 않는다.
-      const named=row=>{const key=addressKey(row.url)||'';return key.startsWith('video:')?key.slice(6):null;};
+      // 게시물 줄에 붙지 않은 영상은 자기 주소 · 조회수를 가진 영상 번호 줄이다 — 한 줄에 다른 영상의 주소를 달면 그 주소로 등록된 기록이 첫 영상의 조회수를
+      // 받는다. 같은 post_id의 영상 가운데 같은 규칙으로 하나에만 게시물 번호를 단다(blocked인 영상은 빼고).
       const earlier=(a,b)=>{const x=a.createdAt||'9999',y=b.createdAt||'9999';return x!==y?x<y:a.id.length!==b.id.length?a.id.length<b.id.length:a.id<b.id;};
       const owners=new Map();
-      for(const e of entries){if(!e.group)continue;const held=e.row&&named(e.row);if(held){owners.set(e.group,held);continue;}
+      for(const e of entries){if(!e.group||e.blocked)continue;const held=e.row&&named(e.row);if(held){owners.set(e.group,held);continue;}
         const only=e.row&&targets.get(e.row);if(only&&!only.has(e.id)){if(!owners.has(e.group))owners.set(e.group,'');continue;}
         // 게시물 목록에 없는 게시물(group이 post:번호)은 주소를 읽은 영상이 먼저다 — 주소 없는 줄은 서버가 빼므로 게시물 번호는 저장되는 줄에 단다.
         const best=owners.get(e.group),readable=x=>typeof e.group!=='string'||!!x.url;
@@ -622,15 +623,13 @@ async function facebook(channel, credentials, request, recent) {
       // 등록됐어도 이 줄을 찾는다(11-19 넷째 검수 GA3 · 설계 검토 2 조건 8 · 9).
       const alias=(row,aliasUrl,aliasAt)=>{const key=aliasUrl&&addressKey(aliasUrl);if(!key||key===addressKey(row.url)||(row.aliasUrls||[]).some(a=>addressKey(a.url)===key))return;(row.aliasUrls||=[]).push({url:aliasUrl,publishedAt:aliasAt});};
       for(const e of entries){
-        const {video,id,postId,createdAt,byVideo,conflict,row,url}=e,mine=!!e.group&&ownerOf(e.group)===id;
+        const {video,id,postId,createdAt,conflict,row,url}=e,mine=!!e.group&&ownerOf(e.group)===id;
         // 어긋난 짝은 그 영상이 게시물 줄을 차지하지 못해도 센다(11-19 post-performance 7회차 GA6).
         videoPostIds.videos++;if(postId)videoPostIds.withPostId++;if(conflict)videoPostIds.conflicts++;
-        // 차지한 게시물 줄에 합친다. 첨부 대상 · 주소로 짝지은 줄은 예전처럼 조회수를 받고, post_id로 합친 줄은 비었을 때만 받는다(같은 게시물은 한 회차에
-        // 줄 하나 — 11-19 검수 GA1 · 설계 검토 조건 3). 주 주소는 바꾸지 않는다 — 직접 게시가 그 주소로 등록하고, 체크포인트는 별칭까지 보고 그 기록의
-        // 줄을 찾는다(5회차 GA3). 주 주소가 비었을 때만 영상 주소 · 영상 시각으로 채우고, 아니면 영상 주소를 그 시각과 함께 별칭으로 단다.
+        // 차지한 게시물 줄에 합친다. 예전처럼 그 영상의 조회수를 받는다. 주 주소는 바꾸지 않는다 — 직접 게시가 그 주소로 등록하고, 체크포인트는 별칭까지 보고
+        // 그 기록의 줄을 찾는다(5회차 GA3). 주 주소가 비었을 때만 영상 주소 · 영상 시각으로 채우고, 아니면 영상 주소를 그 시각과 함께 별칭으로 단다.
         if(row&&mine){
-          if(byVideo){row.metrics.views=number(video.views);videoPostIds.matched++;if(!conflict&&postId&&postId===row.pagePostId)videoPostIds.agreed++;}
-          else{if(row.metrics.views===null)row.metrics.views=number(video.views);videoPostIds.byPostId++;}
+          row.metrics.views=number(video.views);videoPostIds.matched++;if(!conflict&&postId&&postId===row.pagePostId)videoPostIds.agreed++;
           if(!conflict)row.videoId=id;
           if(!row.url&&url){row.url=url;row.publishedAt=createdAt||row.publishedAt;}
           else{if(!row.publishedAt)row.publishedAt=createdAt;alias(row,url,createdAt);}

@@ -129,6 +129,45 @@ test('production form: keyless stored rows keep their ids and gain the fields, a
   assert.deepEqual(f.rows().map(r=>[r.id,r.pagePostId,r.videoId,r.retired]),[['fb:123_700','123_700','555',false],['fb:123_701','123_701','557',false],['fb:123_702','123_702',null,false],['fb:558',null,'558',false]]);
 });
 
+// 8회차 GA1: 같은 날 전체 수집이 못 받은(null) 수치는 그날 앞서 받은 값을 지우지 않는다. 조회수는 그 줄이 이번에 다른 영상을 가리키면 앞 값으로 채우지 않는다.
+test('a same-day facebook snapshot keeps the views a later collection lacks, unless the row now names another video',async t=>{
+  let round=1;
+  const views={1:12,2:null,3:null},video={1:'555',2:null,3:'556'};
+  const f=await fbFixture(t,async()=>fbResult([fbPost('123_700',{url:FEED,pagePostId:'123_700',videoId:video[round],metrics:{views:views[round],likes:round}})]));
+  const snap=()=>f.app.store.all('snapshots').find(s=>s.postId==='fb:123_700');
+  assert.deepEqual([snap().views,snap().videoId],[12,'555']);
+  round=2;await f.again();
+  assert.deepEqual([snap().views,snap().videoId,snap().likes],[12,'555',2],'the video list failed, so the views of the day stay');
+  round=3;await f.again();
+  assert.deepEqual([snap().views,snap().videoId,snap().likes],[null,null,3],'the row now names another video, so the earlier views are not its views');
+});
+
+// 8회차 GA3: 두 칸은 이번 회차가 다 알 수 있었을 때만(전체 수집 · 목록 완전 · 영상 목록을 읽음, 게시물 번호는 post_id도 물음) 빈 값으로 지운다. 아니면 앞 값을 둔다.
+test('the facebook fields are cleared only by a complete full collection that read the video list, and the page post id only when it asked post_id',async t=>{
+  const KNOWN={status:'complete',inventoryComplete:true,ownerAuthorized:true,videoPostIds:{asked:true,videos:1,withPostId:1,matched:0,agreed:0,conflicts:0}};
+  let coverage=KNOWN,fields={pagePostId:'123_700'},feed={videoId:'557'};
+  const f=await fbFixture(t,async()=>fbResult([fbPost('556',{videoId:'556',...fields}),fbPost('123_701',{url:FEED,pagePostId:'123_701',...feed})],coverage));
+  const keys=()=>f.rows().map(r=>[r.id,r.pagePostId,r.videoId]);
+  assert.deepEqual(keys(),[['fb:123_701','123_701','557'],['fb:556','123_700','556']]);
+  fields={};feed={};coverage=PARTIAL;await f.again();
+  assert.deepEqual(keys(),[['fb:123_701','123_701','557'],['fb:556','123_700','556']],'an incomplete collection keeps both fields');
+  coverage={...KNOWN,videoPostIds:{...KNOWN.videoPostIds,asked:false}};await f.again();
+  assert.deepEqual(keys(),[['fb:123_701','123_701',null],['fb:556','123_700','556']],'without post_id the video id is cleared but the page post id stays');
+  coverage=KNOWN;await f.again();
+  assert.deepEqual(keys(),[['fb:123_701','123_701',null],['fb:556',null,'556']]);
+});
+
+// 8회차 perf GA2: 이번에 주소를 못 읽은 영상도 같은 줄에 저장된 주소가 있으면 그 줄을 갱신한다(다른 줄은 보지 않는다).
+test('a facebook item whose address this collection could not read updates its own stored row with the stored address',async t=>{
+  let round=1;
+  const f=await fbFixture(t,async()=>fbResult(round===2?[]:[fbPost('555',{videoId:'555',url:round===1?REEL:null,metrics:{views:round===1?19:29}})],round===3?PARTIAL:undefined));
+  round=2;await f.again();
+  assert.equal(f.rows()[0].retired,true);
+  round=3;await f.again();
+  assert.deepEqual(f.rows().map(r=>[r.id,r.url,r.retired]),[['fb:555',REEL,false]]);
+  assert.equal(f.app.store.all('snapshots').find(s=>s.postId==='fb:555').views,29);
+});
+
 test('complete inventory hides unavailable posts without erasing history; partial inventory never hides unseen posts',async t=>{
   let complete=true,items=true;
   const f=await fixture(t,{collector:async c=>({...result(c),posts:items?result(c).posts:[],coverage:{status:complete?'complete':'partial',inventoryComplete:complete,ownerAuthorized:false}})});
