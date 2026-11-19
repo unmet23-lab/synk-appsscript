@@ -106,6 +106,21 @@ test('글에 자격 문장이 없으면 첨부에서 읽어 판정하고 출처�
   assert.strictEqual(v.출처, '첨부(붙임1. 모집 공고.pdf)');
 });
 
+test('다시 보다가 카본이 실패하면 앞서 정한 「됨」을 지우지 않는다', async () => {
+  const dir = 폴더();
+  const 제목 = '전국 누구나 AI 영상 공모전';
+  fs.writeFileSync(path.join(dir, '자격판정.json'), JSON.stringify({ schema: 'synk-contest-eligibility-v1', items: {
+    [자격.열쇠(제목)]: { title: 제목, status: '됨', reason: '누구나 응모할 수 있다', by: '카본', checkedAt: '2026-11-01T00:00:00.000Z' },
+  } }));
+  const fetchPage = async () => ({ 됨: true, 글: '<p>응모자격: 전국 누구나</p>' });
+  const carbon = async () => { throw Error('구독 통로 실패 — agy가 빈 답을 냈다'); };
+  await 자격.자격확인(dir, [{ 제목, 주소: 'https://example.kr/n' }], { fetchPage, carbon, budgetMs: 600000, 지금: new Date('2026-11-20T00:00:00Z') });
+  const v = 자격.판정찾기(자격.판정읽기(dir), 제목);
+  assert.strictEqual(v.status, '됨');
+  assert.match(v.retryReason, /빈 답/);
+  assert.strictEqual(v.checkedAt, '2026-11-01T00:00:00.000Z', '다음 회차에 다시 보도록 확인 시각을 그대로 둔다');
+});
+
 test('수동 제외는 제목 조각으로 맞고, 지도의 열린 공모에서 빠진다', () => {
   const dir = 폴더();
   자격.수동제외(dir, '응답하라, 제천', '만 14세 이상 제천시민만 응모(공고 원문)');

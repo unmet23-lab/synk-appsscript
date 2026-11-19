@@ -288,17 +288,30 @@ async function 자격확인(folder, 후보, { fetchPage, carbon, budgetMs = 6000
     읽은것.push({ ...job, url, 모음: 모음사이트.test(사이트(url)), 첨부출처, id: job.key, text });
   }
   let 물음 = 0;
-  for (let i = 0; i < 읽은것.length; i += batchSize) {
+  // 묶음은 batchSize 건까지, 글이 길면(합 7,000자 넘음) 한 건씩 묻는다. 길게 두 건을 묶으면 구독 통로가 빈 답을 자주 냈다(11-20 채우기 7묶음 실패).
+  const 묶음들 = [];
+  for (const job of 읽은것) {
+    const 끝 = 묶음들[묶음들.length - 1];
+    if (끝 && 끝.length < batchSize && 끝.reduce((n, x) => n + x.text.length, 0) + job.text.length <= 7000) 끝.push(job);
+    else 묶음들.push([job]);
+  }
+  for (const batch of 묶음들) {
     const timeoutMs = Math.min(300000, until - Date.now() - 40000);
     if (timeoutMs < 30000) break;
-    const batch = 읽은것.slice(i, i + batchSize);
     let cases = [];
     try {
       const record = await carbon({ model, thinking: 'high', prompt: 프롬프트(batch), schema, timeoutMs });
       if (record.selectedModel && record.selectedModel !== 'gemini-4-carbon-high') throw Error('요청한 카본 모델로 확인하지 못했습니다.');
       cases = JSON.parse(record.text)?.cases || [];
     } catch (error) {
-      for (const job of batch) 기록(job.key, job.제목, { status: '확인 필요', reason: '카본 확인 실패: ' + String(error.message || error).slice(0, 120), url: job.url, retry: true });
+      const 까닭 = '카본 확인 실패: ' + String(error.message || error).slice(0, 120);
+      for (const job of batch) {
+        // 다시 보다가 실패하면 앞서 정한 「됨 · 안 됨」을 지우지 않는다(11-20 채우기에서 됨 14건이 확인 필요로 덮였다). 확인 시각을 그대로 두어 다음 회차에 다시 본다.
+        const 앞 = 판정.items[job.key];
+        if (앞 && (앞.status === '됨' || 앞.status === '안 됨')) { 앞.retryReason = 까닭; continue; }
+        기록(job.key, job.제목, { status: '확인 필요', reason: 까닭, url: job.url, retry: true });
+      }
+      판정저장(folder, 판정);
       continue;
     }
     물음++;
