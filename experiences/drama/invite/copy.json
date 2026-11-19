@@ -1,0 +1,24 @@
+{
+  "en": {
+    "title": "Step into a Korean drama scene and ask for directions",
+    "intro": "As an exchange student, ask a senior student in Korean how to get to the main gate. You’ll get guidance and feedback in English, and then you can try again.",
+    "start": "Start the scene",
+    "soon": "We’re working to add more languages and will make them available as soon as possible.",
+    "study": "Join the pilot for Mongolian learners of Korean (optional)",
+    "language": "Choose language",
+    "browser": "Open this link in Chrome or Safari on your phone to use your microphone.",
+    "guide": "SYNK ID sign-up guide",
+    "authhelp": "The account buttons are in Korean. New here? Tap “가입하기” (Sign up). Already have an account? Tap “Google로 로그인” (Sign in with Google) or “이메일로 로그인” (Sign in with email)."
+  },
+  "mn": {
+    "title": "Солонгос драмын үзэгдэлд орж зам асуугаарай",
+    "intro": "Солилцооны оюутны хувиар ахлах курсийн оюутнаас гол хаалга руу очих замыг солонгосоор асуугаарай. Заавар, зөвлөгөөг монголоор авч, дараа нь дахин оролдож болно.",
+    "start": "Үзэгдлийг эхлүүлэх",
+    "soon": "Бид бусад хэлийг нэмэхээр бэлтгэж байгаа бөгөөд аль болох хурдан ашиглах боломжтой болгоно.",
+    "study": "Монгол суралцагчдад зориулсан туршилтад бүртгүүлэх (сайн дурын)",
+    "language": "Хэл сонгох",
+    "browser": "Микрофоноо ашиглахын тулд энэ холбоосыг утасныхаа Chrome эсвэл Safari дээр нээнэ үү.",
+    "guide": "SYNK ID бүртгэлийн заавар",
+    "authhelp": "Нэвтрэх хуудасны товчнууд солонгос хэл дээр байна. Шинээр бүртгүүлэх бол “가입하기”, бүртгэлтэй бол “Google로 로그인” (Google-ээр нэвтрэх) эсвэл “이메일로 로그인” (имэйлээр нэвтрэх) дээр дарна уу."
+  }
+}

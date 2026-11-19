@@ -1,0 +1,478 @@
+@font-face {
+  font-family: "Inter Tight";
+  src: url("/world/drama/media/InterTight-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-024F, U+2000-206F;
+}
+
+@font-face {
+  font-family: "SUIT Variable";
+  src: url("/world/drama/media/SUIT-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #0e0a0b;
+  --surface: #171113;
+  --surface-raised: #1f1619;
+  --border: rgba(244, 230, 228, 0.13);
+  --border-strong: rgba(244, 230, 228, 0.22);
+  --text: #f6efed;
+  --text-muted: #d1c4c2;
+  --text-soft: #b7a6a5;
+  --oxblood: #84202d;
+  --oxblood-hover: #982636;
+  --oxblood-border: rgba(236, 148, 160, 0.38);
+  --soon-bg: rgba(136, 32, 46, 0.24);
+  --soon-border: rgba(204, 84, 100, 0.36);
+  --soon-accent: #c95162;
+  --soon-text: #f7e6e8;
+  --focus-ring: #eab0b8;
+  --font-sans: "SUIT Variable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Inter Tight", "SUIT Variable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+body.invite-page {
+  min-height: 100dvh;
+  overflow-x: clip;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  background-image: radial-gradient(circle at 50% 0%, rgba(132, 32, 45, 0.2), transparent 62%);
+}
+
+:lang(mn) {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "SUIT Variable", sans-serif;
+}
+
+.invite-shell {
+  width: 100%;
+  max-width: 68rem;
+  margin-inline: auto;
+  padding: 0.75rem 1rem 1.75rem;
+}
+
+.invite-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  padding-block: 0.25rem 0.6875rem;
+  margin-bottom: 0.875rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.invite-wordmark {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.invite-lang-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.invite-lang-label {
+  margin-right: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-soft);
+}
+
+.invite-lang-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.invite-lang-link:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background-color: var(--surface);
+}
+
+.invite-lang-link[aria-current="page"] {
+  color: var(--text);
+  background-color: var(--surface-raised);
+  border-color: var(--soon-border);
+}
+
+.invite-stage {
+  display: grid;
+  gap: 1rem;
+}
+
+.invite-media {
+  margin: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background-color: var(--surface);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.46);
+}
+
+.invite-stage-localized .invite-media {
+  aspect-ratio: 16 / 10;
+}
+
+.invite-stage-neutral .invite-media {
+  aspect-ratio: 16 / 9;
+}
+
+.invite-still {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+}
+
+.invite-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.invite-title,
+.invite-card-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+:lang(mn) .invite-title,
+:lang(mn) .invite-card-title,
+.invite-title:lang(mn),
+.invite-card-title:lang(mn) {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.invite-title {
+  font-size: clamp(1.625rem, 5vw, 2.375rem);
+  line-height: 1.15;
+}
+
+.invite-card-title {
+  font-size: clamp(1.1875rem, 3.4vw, 1.4375rem);
+  line-height: 1.2;
+}
+
+.invite-intro {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.96875rem;
+  line-height: 1.52;
+}
+
+.invite-bilingual {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.invite-locale-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+}
+
+.invite-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+}
+
+.invite-locale-card .invite-intro {
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.invite-soon {
+  margin: 0;
+  padding: 0.625rem 0.8125rem;
+  border: 1px solid var(--soon-border);
+  border-left: 3px solid var(--soon-accent);
+  border-radius: 4px;
+  background-color: var(--soon-bg);
+  color: var(--soon-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.42;
+}
+
+.invite-locale-card .invite-soon {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.84375rem;
+}
+
+.invite-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  border: 1px solid var(--oxblood-border);
+  background: linear-gradient(180deg, #912433 0%, var(--oxblood) 100%);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+:lang(mn) .invite-cta,
+.invite-cta:lang(mn) {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.invite-cta:hover {
+  background: var(--oxblood-hover);
+  border-color: rgba(244, 176, 186, 0.56);
+}
+
+.invite-cta:active {
+  transform: translateY(1px);
+}
+
+.invite-choice-cta {
+  margin-top: auto;
+  min-height: 2.75rem;
+  padding-block: 0.625rem;
+  font-size: 0.9375rem;
+}
+
+.invite-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.125rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--border);
+}
+
+.invite-browser {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.84375rem;
+  line-height: 1.5;
+}
+
+.invite-guide {
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+}
+
+.invite-guide-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.875rem;
+  cursor: pointer;
+  list-style: none;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.invite-guide-summary::-webkit-details-marker {
+  display: none;
+}
+
+.invite-guide-summary::after {
+  content: "";
+  flex: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 1.75px solid var(--text-soft);
+  border-bottom: 1.75px solid var(--text-soft);
+  transform: rotate(45deg);
+  transition: transform 150ms ease;
+}
+
+.invite-guide[open] .invite-guide-summary::after {
+  transform: rotate(-135deg);
+}
+
+.invite-authhelp {
+  margin: 0;
+  padding: 0.75rem 0.875rem 0.875rem;
+  border-top: 1px solid var(--border);
+  font-family: "SUIT Variable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--text-muted);
+  font-size: 0.84375rem;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.invite-study {
+  margin: 0;
+}
+
+.invite-study-link {
+  display: inline-block;
+  padding-block: 0.25rem;
+  color: var(--text-soft);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  transition: color 150ms ease;
+}
+
+.invite-study-link:hover {
+  color: var(--text);
+}
+
+a:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+@media (min-width: 760px) {
+  .invite-shell {
+    padding: 1rem 1.5rem 2.25rem;
+  }
+
+  .invite-stage-localized {
+    grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+    gap: 1.75rem;
+    align-items: start;
+  }
+
+  .invite-stage-neutral {
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  .invite-stage-neutral .invite-media {
+    aspect-ratio: 4 / 3;
+  }
+
+  .invite-bilingual {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem;
+    align-items: stretch;
+  }
+}
+
+@media (min-width: 760px) and (max-height: 500px) {
+  .invite-shell {
+    padding-block: 0.625rem 1.5rem;
+  }
+
+  .invite-header {
+    padding-block: 0.125rem 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .invite-panel {
+    gap: 0.625rem;
+  }
+
+  .invite-title {
+    font-size: 1.5rem;
+  }
+
+  .invite-intro {
+    font-size: 0.90625rem;
+    line-height: 1.44;
+  }
+
+  .invite-cta {
+    min-height: 2.875rem;
+  }
+}
+
+@media (min-width: 1040px) {
+  .invite-shell {
+    padding: 1.5rem 2.25rem 3rem;
+  }
+
+  .invite-header {
+    padding-block: 0.5rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .invite-stage-localized {
+    grid-template-columns: minmax(0, 1.14fr) minmax(0, 0.86fr);
+    gap: 2.75rem;
+    align-items: center;
+  }
+
+  .invite-stage-neutral {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .invite-locale-card {
+    padding: 1.25rem 1.375rem;
+    gap: 0.6875rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

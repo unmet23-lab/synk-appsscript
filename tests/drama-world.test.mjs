@@ -114,7 +114,9 @@ test('WORLD 통로: 드라마 틀에만 마이크 · 통로를 두고, 패널을
   assert.match(shell, /payload\.action!=='take'/, '통로로는 take만');
   // 로그인은 전체 페이지 이동이라 바로가기를 이 탭에 남기고, 로그인한 상태로 들어왔을 때 비우며 연다.
   assert.match(shell, /get\('drama'\)==='1'\)sessionStorage\.setItem\(DRAMA_PENDING/);
-  assert.ok(shell.includes("else if(dramaRequested){if(client.snapshot)try{sessionStorage.removeItem(DRAMA_PENDING);}catch{}void launchGame('drama');}"));
+  const route = shell.slice(shell.indexOf('else if(dramaRequested)'), shell.indexOf('else if(me2Requested)'));
+  assert.match(route, /if\(client\.snapshot\)\s*\{[\s\S]*?else try\{sessionStorage\.removeItem\(DRAMA_PENDING\);\}/, '기존 드라마 링크는 로그인 뒤에만 지운다');
+  assert.match(route, /void launchGame\('drama'\)/, '두 입구 모두 원래 드라마를 연다');
 });
 
 test('화면: WORLD 통로는 같은 출처 부모에서만 찾고, 받아쓰기 끄기는 판 바뀜(409)에만', () => {
