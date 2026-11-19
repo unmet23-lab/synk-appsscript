@@ -1427,7 +1427,7 @@ body.base-j :is(.ja,.d2h) .chs.st2 .ch .nx{grid-column:2;align-self:start}
 body.base-j :is(.ja,.d2h) .chs.st2 .ch::after{content:"→";content:"→" / "";position:static;inset:auto;transform:none;grid-column:3;grid-row:1 / span 2;color:var(--act);font-size:19px;font-weight:600}
 body.base-j :is(.ja,.d2h) .chs.st2 .ch:hover .gl,body.base-j :is(.ja,.d2h) .chs.st2 .ch[aria-pressed="true"] .gl{background:var(--k);color:#FBF8F2}
 body.base-j :is(.ja,.d2h) .chs.st2 .ch:not(:has(.nx)) .lb{grid-row:1 / span 2;align-self:center}
-@media (min-width:1024px){ html:lang(ko) body.base-j .ja .chs.st2,html:lang(ko) body.base-j .d2h .chs.st2{grid-template-columns:1fr;max-width:460px} }
+@media (min-width:1024px){ html:lang(ko) body.base-j .ja .chs.st2,html body.base-j .d2h .chs.st2{grid-template-columns:1fr;max-width:460px} }   /* 둘째 날 한글 질문은 세 언어 모두 한 칸(Fable F9) */
 /* 밤: 같은 글자 칸을 창틀 전등 빛으로, 답은 글 폭만큼(창가 종이컵 · 창틀과 겹치지 않게) */
 body.base-j .night .chs.dark.st2{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 body.base-j .night .chs.dark.st2 .ch{display:inline-flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;width:auto;min-height:56px;padding:4px 18px 4px 4px;border-radius:14px;background:transparent;box-shadow:none;color:#FBF8F2}
