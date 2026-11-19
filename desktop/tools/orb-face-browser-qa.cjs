@@ -624,6 +624,15 @@ if(!process.versions.electron){
           await w.js('window.__orbFixture.setLogin('+JSON.stringify({id:'l-qa',service:'claude',stage:'done',url:null,needsCode:false,message:'qa@example.com 계정을 연결했어요.'})+')');await wait(500);
           const done=await w.js("(()=>({opened:window.__q('add').classList.contains('opened'),foot:document.querySelector('#portal-entry [data-room=manage] [data-aside-foot]').textContent}))()");
           check('18-5 Claude: e-mail, browser code, a short code refused, the code sent, and the add line folds when it is done',loginCalled&&codeStep.field&&codeStep.console&&shortCode==='코드를 끝까지 붙여 넣어 주세요.'&&codeSent&&!done.opened&&/Claude 새 계정 줄을 더했습니다\./.test(done.foot),{loginCalled,codeStep,shortCode,codeSent,done});
+          // Typecast 연결이 실패하면 다시 입력할 수 있고, 성공하면 접힌 줄에도 방금 넣은 시험 키가 남지 않는다.
+          await w.js("window.__q('add').click()");await wait(300);
+          await w.js("[...window.__q('add').nextElementSibling.querySelectorAll('[data-pv]')].find(b=>b.dataset.pv==='typecast').click()");await wait(300);
+          await w.js("window.__type('add','key','orb-qa-rejected-key')");await key(w,'Return');await wait(400);
+          const retryKey=await w.js("(()=>{const i=window.__q('add','input[data-f=key]');return !!i&&i.offsetWidth>0&&i.value==='orb-qa-rejected-key';})()");
+          await w.js("window.__type('add','key','orb-qa-accepted-key')");await key(w,'Return');await wait(500);
+          const finishedKey=await w.js("(()=>{const b=window.__q('add');return {closed:!b.classList.contains('opened'),retained:[...document.querySelectorAll('input[type=password]')].some(i=>i.value==='orb-qa-accepted-key')};})()");
+          const keyCalls=(await calls(w)).filter(call=>call==='subs-key:typecast').length;
+          check('18-5 Enter preserves a rejected key for retry and clears a successfully connected key from the closed row',retryKey&&keyCalls===2&&finishedKey.closed&&!finishedKey.retained,{retryKey,keyCalls,finishedKey});
           // 9. 막혔을 때: 물음 열둘, 누르면 답이 바로 아래에 나온다
           await w.js("window.__q('help').click()");await wait(400);
           const help=await w.js("(()=>{const m=window.__q('help').nextElementSibling,q=[...m.querySelectorAll('button[data-qa]')];q[3].click();const a=q[3].parentElement.nextElementSibling;return {count:q.length,shown:!a.hidden,expanded:q[3].getAttribute('aria-expanded'),answer:a.textContent};})()");
@@ -834,6 +843,11 @@ if(!process.versions.electron){
           await sact('notice','quiet-save');await wait(500);
           const n1=await w.js("(()=>{let saved=null;try{saved=JSON.parse(localStorage.getItem('synk-platform-notifications-v1'));}catch{}return {saved,live:window.__slive('notice'),grpHidden:window.__sin('notice').querySelector('[data-grp=quiet]').hidden,focus:document.activeElement===window.__sact('notice','grp','quiet'),old:{banners:document.getElementById('notification-banners')?.checked,start:document.getElementById('notification-start')?.value,end:document.getElementById('notification-end')?.value,weekdays:document.getElementById('notification-weekdays')?.checked}};})()");
           check('18-12 the banner switch and the quiet hours are saved where the convenience notices read them, and the old settings shows the same',n1.saved?.banners===false&&n1.saved?.start==='23:30'&&n1.saved?.end==='07:00'&&n1.saved?.weekdays===true&&n1.live==='저장했습니다. 조용한 시간을 켜면 이 시각에 배너를 띄우지 않습니다.'&&n1.grpHidden&&n1.focus&&n1.old.banners===false&&n1.old.start==='23:30'&&n1.old.end==='07:00'&&n1.old.weekdays===true,n1);
+          await sact('notice','grp','quiet');await wait(300);
+          await stype('notice','quietStart','23:45');
+          await w.js("window.__sin('notice').querySelector('[data-f=quietEnd]').focus()");await key(w,'Return');await wait(500);
+          const enteredQuiet=await w.js("(()=>{const s=JSON.parse(localStorage.getItem('synk-platform-notifications-v1'));return {start:s.start,end:s.end,closed:window.__sin('notice').querySelector('[data-grp=quiet]').hidden,returned:document.activeElement===window.__sact('notice','grp','quiet')};})()");
+          check('18-12 Enter from the unchanged end time saves the new start, closes the editor and returns focus',enteredQuiet.start==='23:45'&&enteredQuiet.end==='07:00'&&enteredQuiet.closed&&enteredQuiet.returned,enteredQuiet);
           await sact('notice','rest','30');await wait(400);
           const r1={live:await slive('notice'),mid:await sval('notice','mid'),muted:await w.js("(JSON.parse(localStorage.getItem('synk-platform-notifications-v1'))||{}).mutedUntil||0")};
           check('18-12 「30분」 rests the banners and says until when',/^\d\d:\d\d까지 배너를 띄우지 않습니다\.$/.test(r1.live)&&r1.mid===r1.live.slice(0,-1)&&r1.muted>Date.now()+25*60e3,r1);

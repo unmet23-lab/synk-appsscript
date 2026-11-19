@@ -99,7 +99,10 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     useExisting:async service=>{calls.push('subs-existing:'+service);return {ok:false,code:'NOT_LOGGED_IN'};},
     install:async service=>{calls.push('subs-install:'+service);return {ok:true};},
     help:async key=>{calls.push('subs-help:'+key);return {ok:true};},
-    connectKey:async(service,_key,options)=>{calls.push('subs-key:'+service+(options?.replace?':'+options.replace:''));return {ok:false,code:'INVALID_KEY'};},
+    connectKey:async(service,key,options)=>{
+      calls.push('subs-key:'+service+(options?.replace?':'+options.replace:''));
+      return key==='orb-qa-accepted-key'?{ok:true}:{ok:false,code:'INVALID_KEY'};
+    },
     submitCode:async id=>{calls.push('subs-code:'+id);return {ok:true};},
     openLoginUrl:async id=>{calls.push('subs-open-url:'+id);return {ok:true};},
     tokens:async()=>{calls.push('subs-tokens');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return tokens;},

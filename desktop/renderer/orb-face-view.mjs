@@ -853,7 +853,12 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   }
   /* 컨트롤러의 요청(방을 열 때 열어 둘 줄, 끝난 뒤 접을 줄, 초점을 둘 단추)은 번호마다 한 번만 따른다 */
   function applyRequests(box, room, d) {
-    if (d.closing && applied.close[room] !== d.closing.seq) { applied.close[room] = d.closing.seq; const b = rowByKey(box, d.closing.key); if (b) setMore(b, false); }
+    if (d.closing && applied.close[room] !== d.closing.seq) {
+      applied.close[room] = d.closing.seq;
+      const b = rowByKey(box, d.closing.key), inner = b?.nextElementSibling?.firstElementChild;
+      if (inner && stale.has(inner)) buildInner(b, inner, stale.get(inner).items);
+      if (b) setMore(b, false);
+    }
     if (d.opening && applied.open[room] !== d.opening.seq) { applied.open[room] = d.opening.seq; const b = rowByKey(box, d.opening.key); if (b) { openVis(b, true); showRow(b); } }
     if (d.focus && applied.focus[room] !== d.focus.seq) { applied.focus[room] = d.focus.seq; focusInRoom(box, room, d.focus); }
   }
@@ -922,7 +927,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     // 다만 칸의 글이 방금 저장되어 새 처음 값으로 돌아왔으면 쓰던 중이 아니다. 바로 다시 지어 저장 뒤의 문장을 보인다(초점은 같은 칸으로 돌아간다)
     const a = doc.activeElement;
     const typing = !!a && inner.contains(a) && !!a.matches?.('input,textarea,select');
-    const savedBack = typing && !!a.dataset?.f && a.value !== (a.dataset.d ?? '') && fieldDefault(items, a.dataset.f) === a.value;
+    const def = typing && a.dataset?.f ? fieldDefault(items, a.dataset.f) : undefined;
+    const savedBack = def === null || (def !== undefined && a.value !== (a.dataset.d ?? '') && def === a.value);
     if ((typing && !savedBack) || (pressing && pressing !== true && inner.contains(pressing))) {
       stale.set(inner, { b, items, room });
       // 다시 짓기를 미루는 동안에도 알림 줄의 글은 고쳐 쓴다. 칸에서 Enter로 저장해도 「저장했습니다.」가 들린다
@@ -1523,7 +1529,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (event.key === 'Enter' && typing && mode === 'app' && t && root.contains(t) && t.closest?.('.more-in')) {
       const scope = t.closest('.grp') || t.closest('.more-in');
       const go = [...scope.querySelectorAll('[data-enter]')].find(x => !x.closest('.grp[hidden]'));
-      if (go) { event.preventDefault(); go.click(); }
+      if (go) { event.preventDefault(); go.focus?.({ preventScroll: true }); go.click(); }
       return;
     }
     if (mode === 'legacy' || typing || event.ctrlKey || event.metaKey || event.altKey) return;
