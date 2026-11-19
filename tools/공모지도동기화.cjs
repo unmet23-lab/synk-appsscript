@@ -6,7 +6,7 @@ const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 const { 가져오기, 보고서읽기 } = require('./lib/grok-contests.cjs');
 const { 클로드지도갱신 } = require('./lib/공모지도-클로드.cjs');
-const { openTrial, runTrial, needsReceipt } = require('./lib/contest-pilot.cjs');
+const { openTrial, runTrial, needsReceipt, scheduled } = require('./lib/contest-pilot.cjs');
 const { acquireLock } = require('./lib/backup-primitives.cjs');
 
 const 기본보관함 = path.join(os.homedir(), 'Documents', 'SYNK-보관함', '지원사업');
@@ -20,7 +20,7 @@ function 오류문구(error, 기본문구) {
   return typeof message === 'string' && message.trim() ? message : 기본문구;
 }
 
-function 브라우저수신(config, importedIds) {
+function 브라우저수신(config, importedIds, missingSlots) {
   if (!/^https:\/\/grok\.com\/bot\/[0-9a-f-]{36}$/i.test(config?.botUrl) ||
       typeof config.detailsName !== 'string' || typeof config.pageTitle !== 'string' || !path.isAbsolute(config.downloadLock || '') ||
       path.basename(config.downloadLock) !== 'ego_받기.lock') {
@@ -30,7 +30,7 @@ function 브라우저수신(config, importedIds) {
   const source = fs.readFileSync(path.join(__dirname, 'grok-contest-source.mjs'), 'utf8');
   const command = 'const contestSource = ' + JSON.stringify({
     botUrl: config.botUrl, detailsName: config.detailsName, pageTitle: config.pageTitle, downloadLock: config.downloadLock, importedIds,
-    profileId: config.egoProfile,
+    profileId: config.egoProfile, missingSlots,
   }) + ';\n' + source;
   const run = (input, timeout) => spawnSync(browserExe, ['nodejs'], {
     input, encoding: 'utf8', windowsHide: true, timeout, maxBuffer: 4 * 1024 * 1024,
@@ -70,15 +70,17 @@ async function 동기화실행(folder, config, { 수신 = 브라우저수신, �
   try {
     const known = 보고서읽기(folder).map(report => report.reportId);
     // 지도에 먼저 들어갔어도 비교용 원본이 비어 있으면 같은 정기 보고서를 다시 받는다.
-    const imported = trial && !trial.closed && !trial.previous?.collectionClosed ?
-      known.filter(id => !trial.slots.includes(id) || !needsReceipt(trial, id, 'grok')) : known;
-    const feed = await 수신(config.grok, imported);
+    const now = 비교옵션.now || new Date();
+    const missingSlots = trial && !trial.closed && !trial.previous?.collectionClosed ?
+      trial.slots.filter(id => scheduled(id) <= +now && needsReceipt(trial, id, 'grok')) : [];
+    const feed = await 수신(config.grok, known.filter(id => !missingSlots.includes(id)), missingSlots);
     if (!(feed.receipts > 0) || !Array.isArray(feed.reports) || feed.reports.length > 24 ||
         (feed.failures != null && !Array.isArray(feed.failures))) {
       throw Error('그록 수집 페이지의 회차 목록 형식이 맞지 않습니다.');
     }
     summary.reports = feed.receipts;
     summary.failedReports = [...(feed.failures || [])];
+    if (feed.missingReports?.length) summary.missingReports = missingSlots.filter(id => feed.missingReports.includes(id));
     rawGrok = feed.reports;
     for (const report of feed.reports) {
       try {

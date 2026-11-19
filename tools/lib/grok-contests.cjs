@@ -166,7 +166,9 @@ function 동일공고(a, b) {
       /^(?:id|p|no|seq|sn)$/i.test(key) && /\d/.test(value));
   });
   const left = urls(a);
-  if (urls(b).some((url) => left.includes(url))) return true;
+  // 한 모음 기사에서 소개한 서로 다른 대회를 합치지 않는다. 주소 단독 일치는 공식 상세 주소에만 쓴다.
+  const official = [주소(a.officialUrl), 주소(b.officialUrl)].filter(Boolean);
+  if (urls(b).some((url) => left.includes(url) && official.includes(url))) return true;
   if (hostA && hostB && hostA !== hostB) return false;
   if (idA && idB) return !!(hostA || hostB);
   const title = 비교글(a.title);

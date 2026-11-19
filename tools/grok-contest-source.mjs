@@ -36,6 +36,23 @@ async function openConversation() {
 
 await openConversation();
 
+const missing = contestSource.missingSlots || [];
+if (missing.length) await page.waitForFunction(() => document.querySelector('[role=log]')?.innerText?.trim().length > 30,
+  undefined, { timeout: 12000 }).catch(() => {});
+const replies = missing.length ? await page.evaluate((slots) => {
+  const reports = [];
+  for (const block of document.querySelectorAll('[role=log] [data-bot-message-text="true"] pre')) {
+    const text = block.innerText.trim();
+    if (text.length > 550000 || !text.includes('synk-grok-contests-v1')) continue;
+    let r;
+    try { r = JSON.parse(text); } catch { continue; }
+    if (r?.schema !== 'synk-grok-contests-v1' || !slots.includes(r.reportId) ||
+        !Array.isArray(r.reports) || !Array.isArray(r.items) || r.items.length > 100) continue;
+    reports.push(r);
+  }
+  return reports;
+}, missing) : [];
+
 async function pageFeed() {
   await page.waitForFunction(() => document.querySelector('[role=log]')?.innerText?.trim().length > 30, undefined, { timeout: 12000 });
   const names = ['Open latest version: ' + pageTitle, 'Open page: ' + pageTitle, pageTitle + ' 열기'];
@@ -91,17 +108,42 @@ async function pageFeed() {
 }
 
 const pageReports = await pageFeed().catch(() => null);
-if (pageReports) {
-  const known = new Set(importedIds);
-  console.log('SYNKGROKDATA=' + JSON.stringify({
-    receipts: pageReports.length, reports: pageReports.filter((report) => !known.has(report.reportId)), failures: [],
-  }));
-} else {
-  await openConversation();
-  await libraryFeed();
+const { isDeepStrictEqual } = await import('node:util');
+const rows = new Map(), ids = new Set(), conflicts = new Set(), failed = new Set();
+const known = new Set(importedIds);
+function addReports(reports) {
+  for (const r of reports) {
+    const id = r?.reportId;
+    if (typeof id !== 'string' || !/^[\w.-]{1,100}$/.test(id)) continue;
+    ids.add(id);
+    if (known.has(id)) continue;
+    if (r.schema !== 'synk-grok-contests-v1' || !Array.isArray(r.reports) || !Array.isArray(r.items) || r.items.length > 100) {
+      failed.add(id);
+    } else if (rows.has(id) && !isDeepStrictEqual(rows.get(id), r)) {
+      conflicts.add(id);
+    } else rows.set(id, r);
+  }
 }
+addReports(pageReports || []);
+const gaps = missing.filter(id => !rows.has(id));
+if (!pageReports || gaps.length) {
+  try {
+    await openConversation();
+    const files = await libraryFeed([...known, ...rows.keys()]);
+    for (const id of files.ids) ids.add(id);
+    addReports(files.reports);
+    for (const id of files.failures) failed.add(id);
+  } catch (error) {
+    if (!pageReports && !replies.length) throw error;
+    for (const id of gaps) failed.add(id);
+  }
+}
+addReports(replies);
+for (const id of conflicts) { rows.delete(id); failed.add(id); }
+console.log('SYNKGROKDATA=' + JSON.stringify({ receipts: ids.size, reports: [...rows.values()],
+  failures: [...failed].filter(id => !rows.has(id)), missingReports: missing.filter(id => !rows.has(id) && !failed.has(id)) }));
 
-async function libraryFeed() {
+async function libraryFeed(knownIds) {
   const english = await page.evaluate(() => document.querySelector('[role=log]').getAttribute('aria-label') === 'Conversation');
   const detailsLabel = english ? detailsName.replace(/ 세부 정보$/, ' details') : detailsName;
   const libraryLabel = english ? 'Library' : '라이브러리';
@@ -136,7 +178,7 @@ async function libraryFeed() {
   const receipts = [...new Set(names.filter((label) => partition(label)))].slice(0, 24);
   if (!receipts.length) throw Error('비공개 그록 라이브러리에 공모 보고서 파일이 없습니다.');
 
-  const imported = new Set(importedIds);
+  const imported = new Set(knownIds);
   const pending = receipts.filter((label) => !imported.has(partition(label)[2] || 'bootstrap-20261117-20261118'));
   const result = [];
   const failures = [];
@@ -184,5 +226,5 @@ async function libraryFeed() {
       failures.push(wantedId);
     }
   }
-  console.log('SYNKGROKDATA=' + JSON.stringify({ receipts: receipts.length, reports: result, failures }));
+  return { ids: receipts.map(label => partition(label)[2] || 'bootstrap-20261117-20261118'), reports: result, failures };
 }

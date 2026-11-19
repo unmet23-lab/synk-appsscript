@@ -110,7 +110,10 @@ test('실제 예약 진입점에서 지도 게시가 보류되어도 같은 회�
   save(path.join(folder, '통합목록.json'), { items: [] });
   let calls = 0, receives = 0;
   const options = {
-    수신: (_config, known) => ({ receipts: 1, failures: [], reports: known.includes(morning) ? [] : [grok([])] }),
+    수신: (_config, known, missing) => {
+      assert.deepEqual(missing, known.includes(morning) ? [] : [morning]);
+      return { receipts: 1, failures: [], reports: known.includes(morning) ? [] : [grok([])] };
+    },
     웹갱신: () => {
       assert.equal(report().rounds[0].status, 'paired');
       assert.equal(report().mapCheck, 'pending');
@@ -127,6 +130,18 @@ test('실제 예약 진입점에서 지도 게시가 보류되어도 같은 회�
   assert.equal(calls, 1); assert.equal(receives, 1);
   assert.deepEqual(report().rounds[0].notices[0].map, { pcMatches: 0, webMatches: null });
   assert.equal(report().maps.web, 'deferred');
+});
+
+test('모음 기사 한 편에 실린 서로 다른 주최사의 공고는 별도 카드와 별도 검증 대상이 된다', () => {
+  const { 합치기 } = require('../tools/lib/grok-contests.cjs');
+  const discoveryUrl = 'https://example.com/features/december-film-festivals';
+  const first = { ...notice, title: '첫 번째 국제 AI 영화제', organizer: '주최사 하나', noticeId: '', discoveryUrl,
+    officialUrl: 'https://first.example.com/' };
+  const second = { ...first, title: '다른 영상 챌린지', organizer: '주최사 둘', officialUrl: 'https://second.example.com/challenge' };
+  const raw = grok([first, second, first]);
+  const results = compareSlot(raw, gemini([]));
+  assert.deepEqual(results.map(g => g.duplicates.grok), [1, 0]);
+  assert.deepEqual(합치기({ items: [] }, [raw]).items.map(c => c.title), [first.title, second.title]);
 });
 
 test('카본은 원문이 있는 불일치만 받고 근거 없는 판정은 보류하며 같은 근거를 재사용한다', async t => {

@@ -67,7 +67,8 @@ function receiveGemini(config) {
   if (run.status !== 0 || !line) throw Error('예약 계정의 Gemini 대화를 읽지 못했습니다. 다음 실행에서 다시 확인합니다.');
   const messages = JSON.parse(line[1]);
   if (!Array.isArray(messages)) throw Error('Gemini 응답 목록을 읽지 못했습니다.');
-  return messages.flatMap(extractReports);
+  const distinct = new Map(messages.flatMap(extractReports).map(r => [JSON.stringify(r), r]));
+  return [...distinct.values()];
 }
 
 // 모델 답변 안의 JSON만 받는다. 중괄호가 들어 있는 인용문, 앞뒤 설명, 여러 코드 블록을 처리한다.
@@ -220,7 +221,8 @@ function cardsFrom(html) {
   const line = /^const 자료 = (.+);$/m.exec(html || '');
   if (!line) return null;
   const map = JSON.parse(line[1]);
-  return [...map.열린, ...map.진행].map(c => ({ title: c.전체이름 || c.이름, officialUrl: c.주소,
+  return [...map.열린, ...map.진행].map(c => ({ title: c.전체이름 || c.이름, officialUrl: c.원문확인안함 ? '' : c.주소,
+    ...(c.원문확인안함 && { discoveryUrl: c.주소 }),
     ai: c.AI허용, deadline: c.마감글 || c.마감, deliverables: c.제출물, evidence: [c.AI주소, c.마감주소, c.제출물주소] }));
 }
 
@@ -394,4 +396,4 @@ async function runLocked(trial, { rawGrok = [], now = new Date(), receive = rece
   return { total: status.total, due: status.due, paired: status.paired, disputes: status.disputes, confirmed: status.confirmed, errors };
 }
 
-module.exports = { openTrial, runTrial, receiveGemini, extractReports, accept, needsReceipt, compareSlot, save };
+module.exports = { openTrial, runTrial, receiveGemini, extractReports, accept, needsReceipt, scheduled, compareSlot, save };

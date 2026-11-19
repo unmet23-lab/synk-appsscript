@@ -12,8 +12,12 @@ try {
   const page = tab.label ? task.page(tab.label) : await task.adopt(tab.page);
   const target = new URL(threadUrl);
   target.searchParams.set('authuser', account);
-  await page.goto(target.href, { timeout: 25000 });
-  await page.waitForSelector('loc=css:model-response message-content', { timeout: 22000 });
+  try { await page.goto(target.href, { timeout: 25000 }); }
+  catch (error) {
+    const at = new URL(await page.url());
+    if (at.origin !== target.origin || at.pathname.replace(/^\/u\/\d+\//, '/') !== target.pathname.replace(/^\/u\/\d+\//, '/')) throw error;
+  }
+  await page.waitForFunction(() => !!document.querySelector('model-response message-content'), undefined, { timeout: 22000 });
   await page.waitForFunction((email) => Array.from(document.querySelectorAll('a[aria-label],button[aria-label]'))
     .some(el => /Google (계정|Account)/i.test(el.getAttribute('aria-label')) &&
       el.getAttribute('aria-label').toLowerCase().includes(email.toLowerCase())), account, { timeout: 10000 });
