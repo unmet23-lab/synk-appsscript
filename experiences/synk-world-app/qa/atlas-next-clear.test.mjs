@@ -313,14 +313,15 @@ test('같은 판의 「새 길 간 적 있음」 길은 확인된 쪽만 바꾼�
 });
 
 // talk 비우기 문의 공유 막이(단계4_계획 §6 「1단계 켜기」 3 — 설계 주인 11-19 밤): #25가 들어갈 때까지 교실 · 타운 공유가 켜진 계정의 비우기를
-// 거절한다. 상태와 코드는 4-8 세션이 정한다 — 바꾸면 이 값을 그 값으로 맞춘다. 기기는 408 · 429 · 5xx가 아닌 4xx를 「서버가 받지 않음」으로 본다.
+// 거절한다. 상태 · 코드 · 본문 꼴은 4-8 세션이 talk에 지은 것이다(가지 claude/atlas-20-readers-fenced 7b094807 — 409, 이 길의 다른 오류와 같은
+// { ok: false, error: { code, message } }). 기기는 408 · 429 · 5xx가 아닌 4xx를 「서버가 받지 않음」으로 본다.
 const SHARING_REFUSAL = { status: 409, error: 'CLASSROOM_SHARING_ON' };
 test('비우기 문이 공유가 켜진 계정을 거절하면(#25 전 talk 막이) 결과를 아는 실패다 — 아무것도 바꾸지 않고, 셸은 「지금은 비우지 못했어요」로 알린다(입구 다시 검수 -c GPT GA1 · 설계 주인 11-19 밤)', { timeout: 60_000 }, async () => {
   const h = harness();
   const storage = filledStorage();
   const fetcher = async (url, init = {}) => {
     if (String(url).endsWith('/rehearsal/trail-clear') && (init.method ?? 'GET') === 'POST')
-      return { ok: false, status: SHARING_REFUSAL.status, json: async () => ({ ok: false, error: SHARING_REFUSAL.error }) };
+      return { ok: false, status: SHARING_REFUSAL.status, json: async () => ({ ok: false, error: { code: SHARING_REFUSAL.error, message: SHARING_REFUSAL.error } }) };
     return h.fetcher(url, init);
   };
   const next = createAtlasNext({ owner: A_ID, storage, trail: rehearsalTrail({ fetcher }), load: h.load, health: recorder(), oldEngine: oldEngine(storage) });
