@@ -241,154 +241,262 @@ body[data-tone="dark"] .nav{color:var(--paper)}
   .lines .state{display:flex;margin:10px 0 0}
 }
 
-/* ── 무기: 한 화면에 큰 말 하나. 강조할 낱말만 색이 차오른다 ──
-   참고: Apple 제품 쪽(큰 문장 하나와 색 낱말), Stripe · 당근(큰 숫자), 당근 · Linear(내려가면 켜지는 문장), Wise(굵은 큰 글자) */
-.edge{background:#000;color:var(--paper);padding:0 var(--gut) clamp(24px,5svh,60px)}
-/* 한눈 줄: 이 쪽의 무기 셋 */
-.arms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 clamp(16px,3vw,48px);padding:clamp(40px,8svh,96px) 0 clamp(28px,5svh,56px)}
-.arms li{padding-top:clamp(18px,3svh,30px);border-top:2px solid var(--paper)}
-.arms b{display:block;font:700 clamp(36px,5.6vw,96px)/1 var(--sans);letter-spacing:-.045em;white-space:nowrap;font-variant-numeric:tabular-nums}
-.arms li>span{display:block;margin-top:clamp(10px,1.6svh,16px);font:600 clamp(16px,1.45vw,22px)/1.4 var(--sans)}
+/* ── 무기 자리: 애플 제품 쪽의 결 (11-19 유호님 「저 애플 시안처럼」 → 「미학을 살려주고 … 강조할곳만 코랄」) ──
+   흰 바탕, 가운데 큰 문장 하나, 그 아래 둥근 판 하나. 한 장이 한 화면이다.
+   색 규칙: 글자는 먹 하나다. 강조는 굵기로 한다. 코랄은 쪽의 첫 큰 말 한 구절과, 판 안에서 뜻이 걸린 한 점에만 쓴다. 글자에 그라디언트를 쓰지 않는다. */
+:root{--ink:#1d1d1f;--mist:#F6F4F1;--hair:#E2DED9;--cap:#4a4744;--acc:#F2573F;--wide:max(var(--gut),calc((100vw - 1240px)/2))}
+.edge{background:var(--paper);color:var(--ink);padding:0 var(--wide) clamp(40px,8svh,96px)}
+/* 한눈 줄: 조용한 차례 한 줄 */
+.arms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 clamp(20px,3vw,48px);padding-top:clamp(48px,8svh,96px)}
+.arms li{padding-top:18px;border-top:1px solid var(--hair);display:grid;gap:6px;align-content:start}
+.arms b{font:700 clamp(22px,2.3vw,34px)/1.2 var(--sans);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.arms li>span{font:500 clamp(15px,1.2vw,18px)/1.45 var(--sans)}
 /* 무기 한 장 */
-.e{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:clamp(24px,5vw,88px);align-items:center;min-height:min(92svh,920px);padding:clamp(48px,9svh,110px) 0;border-top:1px solid var(--line-d)}
-.e-no{display:block;font:700 clamp(15px,1.25vw,19px)/1 var(--sans);margin-bottom:clamp(20px,4svh,44px)}
-.e-no i{font-style:normal;margin-right:14px;font-variant-numeric:tabular-nums}
-.e-claim{font:700 clamp(44px,7.2vw,124px)/1.07 var(--sans);letter-spacing:-.045em}
-.e-claim .ln{display:block;overflow:hidden;padding-bottom:.12em;margin-bottom:-.12em}
+.e{display:grid;justify-items:center;text-align:center;gap:clamp(40px,7svh,80px);padding-top:clamp(112px,20svh,230px)}
+.e-say{display:grid;justify-items:center}
+.e-no{font:600 clamp(17px,1.45vw,22px)/1.2 var(--sans);margin-bottom:clamp(14px,2.4svh,24px)}
+.e-claim{font:400 clamp(38px,5.9vw,94px)/1.12 var(--sans);letter-spacing:-.045em}
+.e-claim .ln{display:block;overflow:hidden;padding-bottom:.14em;margin-bottom:-.14em}
 .e-claim .ln>span{display:block}
-.e-proof{margin-top:clamp(20px,3.8svh,40px);font:500 clamp(19px,1.75vw,27px)/1.55 var(--sans);max-width:24em}
-.e-state{margin-top:clamp(16px,2.6svh,26px)}
-/* 색이 차오르는 글자 */
-mark,.fill{color:var(--butter);background:none}
-.e-fig{margin:0;display:grid;gap:16px;justify-items:start}
-.e-fig figcaption{font:600 clamp(14px,1.1vw,16px)/1.5 var(--sans)}
-.e-fig>img{width:100%;height:auto;outline:1px solid rgba(255,255,255,.22)}
-.e-fig.phone>img{width:min(100%,300px);border-radius:30px;outline:7px solid #1c1c1c;justify-self:center}
-.e-fig.phone{justify-items:center}
-/* 큰 숫자 한 장: 숫자가 위에서 화면을 채우고, 말은 그 아래 */
-.e.n{grid-template-columns:1fr;gap:clamp(8px,2svh,24px);align-content:center}
-.e.n .e-no{margin-bottom:0}
-.e-big{display:block;font:700 clamp(110px,24vw,400px)/.84 var(--sans);letter-spacing:-.065em;font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:-.03em}
-.e-big{padding-bottom:.05em}
-.e-big small{font:inherit;font-size:.42em;letter-spacing:-.04em;margin-left:.06em}
-.e.n .e-say{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:clamp(20px,5vw,88px);align-items:end}
-.e.n .e-claim{font-size:clamp(36px,5.2vw,88px)}
-.e.n .e-proof{margin-top:0}
-/* 넓은 화면 한 장: 말이 위, 앱 화면이 아래에서 폭을 다 쓴다 */
-.e.w{grid-template-columns:1fr;gap:clamp(28px,5svh,60px);min-height:0}
-.e.w .e-say{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:clamp(20px,5vw,88px);align-items:end}
-.e.w .e-proof{margin-top:0}
-.e-fig.wide{width:100%}
-.e-fig.wide.crop>img{aspect-ratio:16/8.6;object-fit:cover;object-position:top}
-.trio{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,1.6vw,24px);align-items:start}
-.trio div{display:grid;gap:12px}
-.trio img{width:100%;height:auto;outline:1px solid rgba(255,255,255,.22)}
-.trio span{font:700 clamp(17px,1.5vw,24px)/1.3 var(--sans)}
-.trio span i{font-style:normal;color:var(--butter);margin-right:10px;font-variant-numeric:tabular-nums}
-/* 한 곳만 고치는 문장 */
-.fix{gap:clamp(14px,2.6svh,26px)}
-.fix p{font:700 clamp(34px,4.4vw,72px)/1.25 var(--sans);letter-spacing:-.035em}
-.fix s{text-decoration:none;position:relative;white-space:nowrap}
-.fix s::after{content:"";position:absolute;left:-.04em;right:-.04em;top:52%;height:.09em;background:var(--coral);transform-origin:0 50%}
-.fix b{display:block;color:var(--butter);font:inherit}
-/* 차례로 켜지는 줄 */
-.seq ol{display:grid;gap:clamp(6px,1.2svh,12px);width:100%}
-.seq li{display:flex;align-items:baseline;gap:16px;font:700 clamp(26px,3.3vw,54px)/1.12 var(--sans);letter-spacing:-.03em;padding-bottom:clamp(6px,1.2svh,12px);border-bottom:1px solid var(--line-d)}
-.seq li b{font:700 .5em/1 var(--sans);letter-spacing:0;min-width:3.6em;font-variant-numeric:tabular-nums}
-.seq li.new{color:var(--butter)}
+mark{background:none;color:inherit;font-weight:700}
+.e.first mark{color:var(--acc)}
+.e-proof{margin-top:clamp(20px,3.4svh,34px);font:500 clamp(18px,1.55vw,23px)/1.55 var(--sans);max-width:26em;text-wrap:balance}
+.e-state{margin-top:clamp(14px,2.4svh,22px)}
+/* 둥근 판 */
+.e-fig{margin:0;width:100%;background:var(--mist);border-radius:clamp(22px,2.6vw,36px);padding:clamp(24px,4.6vw,72px);display:grid;justify-items:center;gap:18px;overflow:hidden;text-align:left}
+.e-fig figcaption{font:500 clamp(14px,1.1vw,16px)/1.5 var(--sans);color:var(--cap);text-align:center}
+.e-fig>img{width:100%;height:auto;border-radius:clamp(10px,1.1vw,16px);box-shadow:0 40px 70px -44px rgba(40,30,20,.45)}
+.e-fig.crop>img{aspect-ratio:16/8.6;object-fit:cover;object-position:top}
+.e-fig.phone>img{width:min(100%,320px);border-radius:38px;outline:8px solid #111;box-shadow:0 50px 80px -46px rgba(40,30,20,.5)}
+.e-fig.photo{padding:0;position:relative}
+.e-fig.photo>img{border-radius:0;box-shadow:none;aspect-ratio:16/8.4;object-fit:cover}
+.e-fig.photo figcaption{position:absolute;left:0;right:0;bottom:0;padding:clamp(40px,7svh,80px) 24px clamp(16px,2.6vw,28px);color:#fff;background:linear-gradient(0deg,rgba(0,0,0,.6),rgba(0,0,0,0))}
+/* 숫자의 뜻을 보이는 판 */
+.vnum,.viz li>b,.bar90 b{font:700 clamp(72px,11.5vw,180px)/.95 var(--sans);letter-spacing:-.055em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vnum small,.bar90 b small{font:inherit;font-size:.36em;font-weight:600;letter-spacing:-.03em;margin-left:.08em}
+.e-fig.viz{padding-block:clamp(44px,8.5svh,100px);gap:clamp(22px,4svh,40px)}
+/* 1 · 7 · 30일: 점점 벌어지는 간격 */
+.days ol{--p:clamp(30px,4.6svh,46px);position:relative;display:grid;grid-template-columns:18fr 40fr 42fr;width:100%;padding-top:var(--p)}
+.days ol::before{content:"";position:absolute;left:0;right:0;top:6px;height:2px;background:var(--ink);transform-origin:0 50%}
+.days li{position:relative;display:flex;align-items:baseline;gap:.5em}
+.days li::before{content:"";position:absolute;left:0;top:calc(-1 * var(--p));width:14px;height:14px;border-radius:50%;background:var(--ink)}
+.days li.hot::before{background:var(--acc);box-shadow:0 0 0 7px rgba(242,87,63,.18)}
+.days li>span{font:600 clamp(15px,1.5vw,22px)/1 var(--sans)}
+/* 90분 가운데 30분 */
+.bar90{display:flex;width:100%;height:clamp(170px,30svh,280px);border-radius:clamp(18px,2vw,28px);overflow:hidden;background:#fff}
+.bar90>span{display:grid;align-content:end;gap:8px;padding:clamp(18px,2.4vw,34px);min-width:0}
+.bar90 .rest{flex:60 1 0}
+.bar90 .hot{flex:30 1 0;background:var(--acc);color:#fff}
+.bar90 i{font:600 clamp(15px,1.4vw,21px)/1.2 var(--sans);font-style:normal;white-space:nowrap}
+.bar90 b{font-size:clamp(56px,8vw,128px)}
+/* 6개월 */
+.months ol{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(6px,.9vw,12px);width:min(100%,680px)}
+.months li{height:clamp(12px,1.4vw,18px);border-radius:99px;background:var(--ink)}
+/* 90초 */
+.ring>div{position:relative;width:clamp(250px,30vw,400px);aspect-ratio:1;display:grid;place-items:center}
+.ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke:#fff;stroke-width:9}
+.ring .arc{stroke:var(--acc);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:0}
+.ring .vnum{font-size:clamp(76px,10vw,150px)}
+/* 30일, 10년: 숫자 옆에 내용 */
+.e-fig.cal,.e-fig.years{grid-template-columns:auto minmax(0,1fr);align-items:center;justify-items:stretch;gap:clamp(28px,6vw,96px)}
+.cal ol{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:clamp(5px,.8vw,12px)}
+.cal li{aspect-ratio:1;border-radius:28%;background:#D9D3CC}
+.cal li:last-child{background:var(--acc)}
+.years ul{display:grid;gap:10px}
+.years li{padding:clamp(14px,1.7vw,22px) clamp(18px,2.2vw,30px);background:#fff;border-radius:16px;font:600 clamp(18px,1.9vw,28px)/1.3 var(--sans);letter-spacing:-.02em}
 /* 상황극 한 컷 */
-.talk{position:relative;aspect-ratio:4/5;overflow:hidden;width:100%}
-.talk>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;outline:0}
-.talk figcaption{position:absolute;left:0;right:0;bottom:0;padding:18px;display:grid;gap:10px;background:linear-gradient(0deg,rgba(0,0,0,.86),rgba(0,0,0,0))}
-.talk p{justify-self:start;max-width:90%;padding:12px 16px;background:var(--paper);color:var(--ink);font:600 clamp(15px,1.25vw,19px)/1.45 var(--sans);border-radius:4px 18px 18px 18px}
-.talk p b{display:block;font:800 12px/1 var(--sans);margin-bottom:6px}
-.talk p.me{justify-self:end;background:var(--butter);border-radius:18px 4px 18px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:0 10px}
+.e-fig.talk{position:relative;padding:0;background:#000;aspect-ratio:16/9}
+.talk>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%;border-radius:0;box-shadow:none}
+.talk figcaption{position:absolute;left:0;right:0;bottom:0;padding:clamp(18px,3vw,44px);display:grid;gap:12px;background:linear-gradient(0deg,rgba(0,0,0,.66),rgba(0,0,0,0));text-align:left}
+.talk p{justify-self:start;max-width:min(90%,26em);padding:14px 20px;background:#fff;color:var(--ink);font:600 clamp(16px,1.5vw,22px)/1.45 var(--sans);border-radius:6px 22px 22px 22px}
+.talk p b{display:block;font:700 13px/1 var(--sans);margin-bottom:7px}
+.talk p.me{justify-self:end;background:var(--ink);color:#fff;border-radius:22px 6px 22px 22px;display:flex;flex-wrap:wrap;align-items:center;gap:0 10px}
 .talk p.me b{flex-basis:100%}
-.mic{width:11px;height:11px;border-radius:50%;background:var(--ink);animation:mic 1.1s ease-in-out infinite}
-@keyframes mic{0%,100%{transform:scale(.7);opacity:.5}50%{transform:scale(1.25);opacity:1}}
+.mic{width:11px;height:11px;border-radius:50%;background:var(--acc);animation:mic 1.1s ease-in-out infinite}
+@keyframes mic{0%,100%{transform:scale(.7);opacity:.6}50%{transform:scale(1.3);opacity:1}}
+/* 차례 */
+.seq ol{display:grid;gap:10px;width:min(100%,760px)}
+.seq li{display:flex;align-items:baseline;gap:clamp(14px,2vw,28px);padding:clamp(14px,1.8vw,24px) clamp(18px,2.4vw,32px);background:#fff;border-radius:18px;font:600 clamp(22px,2.6vw,40px)/1.15 var(--sans);letter-spacing:-.03em}
+.seq li b{font:600 .52em/1 var(--sans);letter-spacing:0;min-width:3.4em;font-variant-numeric:tabular-nums;color:var(--cap)}
+.seq li.new{background:var(--ink);color:#fff}
+.seq li.new b{color:#fff}
 /* 몸으로 배우는 낱말 */
-.verbs{gap:clamp(18px,4svh,40px)}
-.verbs b{display:inline-block;font:700 clamp(54px,8vw,132px)/1 var(--sans);letter-spacing:-.05em}
-.verbs .spin{color:var(--butter);animation:spin 5s var(--ease) infinite}
+.e-fig.verbs{grid-auto-flow:column;justify-content:center;align-items:center;gap:clamp(28px,8vw,130px);padding-block:clamp(56px,11svh,130px)}
+.verbs b{display:inline-block;font:700 clamp(54px,10vw,160px)/1 var(--sans);letter-spacing:-.05em}
+.verbs .spin{animation:spin 5s var(--ease) infinite}
 .verbs .stop{animation:halt 3.6s var(--ease) infinite}
 @keyframes spin{0%{transform:none}34%,100%{transform:rotate(360deg)}}
 @keyframes halt{0%{transform:translateX(-22%)}38%,100%{transform:none}}
 /* 도장 */
-.stamp b{display:grid;place-items:center;width:clamp(190px,22vw,340px);aspect-ratio:1;border-radius:50%;border:7px solid var(--coral);color:var(--coral);font:800 clamp(38px,4.8vw,76px)/1.1 var(--sans);letter-spacing:-.03em;text-align:center;transform:rotate(-9deg)}
-/* 지금 도는 예약표 */
-.live{width:100%;padding:clamp(20px,2.6vw,36px);border:2px solid var(--paper);gap:6px}
-.live>p{font:700 clamp(14px,1.1vw,16px)/1 var(--sans)}
-.live>b{font:300 clamp(72px,10vw,168px)/.95 var(--sans);letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--butter)}
-.live dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 18px;width:100%;margin-top:14px;border-top:1px solid var(--line-d)}
-.live dt,.live dd{padding:13px 0;border-bottom:1px solid var(--line-d);font:600 clamp(15px,1.25vw,19px)/1.45 var(--sans);margin:0}
-.live dt{font-weight:800;white-space:nowrap}
-/* 겹쳐 놓은 화면 셋 */
-.stack{position:relative;width:100%;aspect-ratio:1/1.06}
-.stack img{position:absolute;width:86%;height:auto;outline:1px solid rgba(255,255,255,.28);box-shadow:0 30px 60px -30px #000}
-.stack img:nth-child(1){left:0;top:0}
-.stack img:nth-child(2){left:7%;top:27%}
-.stack img:nth-child(3){left:14%;top:54%}
+.e-fig.stamp{padding-block:clamp(48px,9svh,100px)}
+.stamp b{display:grid;place-items:center;width:clamp(200px,24vw,330px);aspect-ratio:1;border-radius:50%;border:7px solid var(--acc);color:var(--acc);font:800 clamp(40px,5vw,76px)/1.1 var(--sans);letter-spacing:-.03em;text-align:center;transform:rotate(-9deg)}
+/* 지금 도는 예약표: 검은 판 */
+.e-fig.live{background:#000;color:#fff;gap:8px;padding-block:clamp(44px,8svh,96px)}
+.live>p{display:flex;align-items:center;gap:10px;font:600 clamp(15px,1.3vw,19px)/1 var(--sans)}
+.live>p i{width:10px;height:10px;border-radius:50%;background:var(--acc);animation:mic 1.4s ease-in-out infinite}
+.live>b{font:600 clamp(84px,14vw,220px)/1 var(--sans);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.live dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 22px;width:min(100%,640px);margin-top:14px;border-top:1px solid rgba(255,255,255,.28)}
+.live dt,.live dd{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.28);font:500 clamp(16px,1.35vw,20px)/1.45 var(--sans);margin:0}
+.live dt{font-weight:700;white-space:nowrap}
+.live figcaption{color:#fff;margin-top:10px}
+/* 화면 셋 */
+.e-fig.trio{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,1.8vw,28px);align-items:start;justify-items:stretch}
+.trio div{display:grid;gap:14px}
+.trio img{width:100%;height:auto;border-radius:12px;box-shadow:0 30px 60px -40px rgba(40,30,20,.5)}
+.trio span{font:600 clamp(17px,1.5vw,22px)/1.3 var(--sans)}
+.trio span i{font-style:normal;font-weight:700;margin-right:10px;font-variant-numeric:tabular-nums}
+/* 한 곳만 고치는 문장 */
+.e-fig.fix{padding-block:clamp(48px,10svh,120px);text-align:center}
+.fix p{font:500 clamp(34px,5.2vw,84px)/1.25 var(--sans);letter-spacing:-.04em}
+.fix s{text-decoration:none;position:relative;white-space:nowrap}
+.fix s::after{content:"";position:absolute;left:-.04em;right:-.04em;top:52%;height:.07em;border-radius:99px;background:var(--acc);transform-origin:0 50%}
+.fix b{display:block;font:inherit;font-weight:700;color:var(--acc)}
 /* 큰 낱말 다섯 */
 .five li{grid-template-columns:clamp(44px,5vw,84px) minmax(0,1.2fr) minmax(0,.8fr);padding:clamp(14px,2.4svh,26px) 0}
-.five h3{font-size:clamp(56px,9.6vw,164px);line-height:1.04;letter-spacing:-.055em}
-.five p{font-weight:600;font-size:clamp(18px,1.6vw,25px);max-width:16em}
-/* 밝은 구역의 강조 글: 형광 줄이 왼쪽에서 그어진다 */
-.quote em,em.hl{font-style:normal;background:linear-gradient(transparent 62%,var(--butter) 62%,var(--butter) 92%,transparent 92%) 0 0/100% 100% no-repeat}
-.sec.dark .quote em{background:none;color:var(--butter)}
+.five h3{font-size:clamp(56px,9vw,150px);line-height:1.04;letter-spacing:-.055em}
+.five p{font-weight:500;font-size:clamp(18px,1.6vw,25px);max-width:16em}
 .num-h{font-variant-numeric:tabular-nums}
 
 /* 움직임: 화면에 들어올 때 한 번. 스크립트가 없거나 움직임을 줄였으면 처음부터 다 보인다 */
-.js mark,.js .fill{color:transparent;-webkit-text-stroke:0;background:linear-gradient(90deg,var(--butter) 50%,var(--paper) 50%) 100% 0/200% 100% no-repeat;-webkit-background-clip:text;background-clip:text;transition:background-position 1s var(--ease) 1s}
-.js .in mark,.js .in .fill{background-position:0 0}
-.js .e-big.fill,.js .arms .fill{background-image:linear-gradient(90deg,var(--butter) 50%,rgba(255,255,255,0) 50%);-webkit-text-stroke:1.5px var(--butter);transition:background-position 1.3s var(--ease) .3s}
-.js .arms li:nth-child(2) .fill{transition-delay:.5s}.js .arms li:nth-child(3) .fill{transition-delay:.7s}
-.js .arms:not(.in) li>span{opacity:0;transform:translateY(12px)}
-.js .arms li>span{transition:opacity .6s .9s,transform .7s var(--ease) .9s}
-.js .e:not(.in) .e-claim .ln>span{transform:translateY(108%)}
-.js .e .e-claim .ln>span{transition:transform .9s var(--ease);transition-delay:calc(.3s + var(--i,0) * .13s)}
-.js .e:not(.in) .e-no,.js .e:not(.in) .e-proof,.js .e:not(.in) .e-state{opacity:0;transform:translateY(14px)}
-.js .e .e-no{transition:opacity .6s,transform .7s var(--ease)}
-.js .e .e-proof,.js .e .e-state{transition:opacity .7s 1.1s,transform .7s var(--ease) 1.1s}
-.js .e:not(.in) .e-fig{opacity:0;transform:translateY(24px)}
-.js .e .e-fig{transition:opacity .8s .6s,transform .9s var(--ease) .6s}
-.js .e:not(.in) .seq li{opacity:.16}
-.js .e .seq li{transition:opacity .5s;transition-delay:calc(.9s + var(--i,0) * .22s)}
-.js .e:not(.in) .stamp b{transform:rotate(-9deg) scale(1.9);opacity:0}
-.js .e .stamp b{transition:transform .45s cubic-bezier(.3,1.5,.5,1) 1.1s,opacity .2s 1.1s}
-.js .e:not(.in) .stack img{opacity:0;transform:translateY(30px)}
-.js .e .stack img{transition:opacity .6s,transform .8s var(--ease)}
-.js .e .stack img:nth-child(1){transition-delay:.6s}.js .e .stack img:nth-child(2){transition-delay:.85s}.js .e .stack img:nth-child(3){transition-delay:1.1s}
-.js .e:not(.in) .trio div{opacity:0;transform:translateY(26px)}
-.js .e .trio div{transition:opacity .6s,transform .8s var(--ease)}
-.js .e .trio div:nth-child(1){transition-delay:.7s}.js .e .trio div:nth-child(2){transition-delay:.95s}.js .e .trio div:nth-child(3){transition-delay:1.2s}
-.js .e .fix s::after{transition:transform .5s var(--ease) 1.3s}
-.js .e:not(.in) .fix s::after{transform:scaleX(0)}
-.js .e .fix b{transition:opacity .5s 1.8s,transform .6s var(--ease) 1.8s}
-.js .e:not(.in) .fix b{opacity:0;transform:translateY(14px)}
+.js mark{transition:font-weight .9s var(--ease) .75s,color .9s var(--ease) .75s}
+.js .e-say:not(.in) mark{font-weight:400;color:var(--ink)}
+.js .arms:not(.in) li{opacity:0;transform:translateY(20px)}
+.js .arms li{transition:opacity .7s,transform .9s var(--ease)}
+.js .arms li:nth-child(2){transition-delay:.1s}.js .arms li:nth-child(3){transition-delay:.2s}
+.js .e-say:not(.in) .e-claim .ln>span{transform:translateY(106%)}
+.js .e-say .e-claim .ln>span{transition:transform .9s var(--ease);transition-delay:calc(.12s + var(--i,0) * .12s)}
+.js .e-say:not(.in) .e-no,.js .e-say:not(.in) .e-proof,.js .e-say:not(.in) .e-state{opacity:0;transform:translateY(14px)}
+.js .e-say .e-no{transition:opacity .6s,transform .7s var(--ease)}
+.js .e-say .e-proof,.js .e-say .e-state{transition:opacity .7s .7s,transform .7s var(--ease) .7s}
+.js .e-fig:not(.in){opacity:0;transform:translateY(44px) scale(.97)}
+.js .e-fig{transition:opacity .9s,transform 1.1s var(--ease)}
+.js .days:not(.in) ol::before{transform:scaleX(0)}
+.js .days ol::before{transition:transform 1.5s var(--ease) .3s}
+.js .days:not(.in) li{opacity:0;transform:translateY(16px)}
+.js .days li{transition:opacity .6s,transform .7s var(--ease)}
+.js .days li:nth-child(1){transition-delay:.3s}.js .days li:nth-child(2){transition-delay:.65s}.js .days li:nth-child(3){transition-delay:1.1s}
+.js .split:not(.in) .hot{flex-grow:.0001;padding-inline:0;opacity:0}
+.js .split .hot{transition:flex-grow 1.2s var(--ease) .4s,padding 1.2s var(--ease) .4s,opacity .5s .4s}
+.js .months:not(.in) li,.js .cal:not(.in) li{background:#fff}
+.js .cal:not(.in) li:last-child{background:#fff}
+.js .months li{transition:background .4s;transition-delay:calc(.4s + var(--i,0) * .14s)}
+.js .cal li{transition:background .3s;transition-delay:calc(.3s + var(--i,0) * .035s)}
+.js .ring:not(.in) .arc{stroke-dashoffset:100}
+.js .ring .arc{transition:stroke-dashoffset 1.7s var(--ease) .3s}
+.js .years:not(.in) li{opacity:0;transform:translateX(18px)}
+.js .years li{transition:opacity .5s,transform .7s var(--ease);transition-delay:calc(.4s + var(--i,0) * .15s)}
+.js .seq:not(.in) li{opacity:0;transform:translateY(16px)}
+.js .seq li{transition:opacity .5s,transform .6s var(--ease);transition-delay:calc(.35s + var(--i,0) * .18s)}
+.js .stamp:not(.in) b{transform:rotate(-9deg) scale(1.9);opacity:0}
+.js .stamp b{transition:transform .45s cubic-bezier(.3,1.5,.5,1) .6s,opacity .2s .6s}
+.js .trio:not(.in) div{opacity:0;transform:translateY(26px)}
+.js .trio div{transition:opacity .6s,transform .8s var(--ease)}
+.js .trio div:nth-child(1){transition-delay:.3s}.js .trio div:nth-child(2){transition-delay:.5s}.js .trio div:nth-child(3){transition-delay:.7s}
+.js .fix s::after{transition:transform .5s var(--ease) .8s}
+.js .fix:not(.in) s::after{transform:scaleX(0)}
+.js .fix b{transition:opacity .5s 1.3s,transform .6s var(--ease) 1.3s}
+.js .fix:not(.in) b{opacity:0;transform:translateY(14px)}
 .js .rv:not(.in){opacity:0;transform:translateY(18px)}
 .js .rv{transition:opacity .7s,transform .8s var(--ease)}
-.js .rv .quote em,.js .rv em.hl{transition:background-size .9s var(--ease) .5s}
-.js .rv:not(.in) .quote em,.js .rv:not(.in) em.hl{background-size:0 100%}
-.js .five h3{color:transparent;background:linear-gradient(90deg,var(--ink) 50%,rgba(20,20,20,.13) 50%) 100% 0/200% 100% no-repeat;-webkit-background-clip:text;background-clip:text;transition:background-position 1s var(--ease) .15s}
+.js .five h3{color:transparent;background:linear-gradient(90deg,var(--ink) 50%,rgba(29,29,31,.13) 50%) 100% 0/200% 100% no-repeat;-webkit-background-clip:text;background-clip:text;transition:background-position 1s var(--ease) .15s}
 .js .five li.in h3{background-position:0 0}
 .js .five li:not(.in) p{opacity:0;transform:translateY(12px)}
 .js .five li p{transition:opacity .6s .6s,transform .7s var(--ease) .6s}
 /* 내려가면 낱말이 차례로 켜지는 문장 */
-.js .lit .w{opacity:.18;transition:opacity .35s}
+.js .lit .w{opacity:.2;transition:opacity .35s}
 .js .lit .w.on{opacity:1}
 
 @media (max-width:900px){
-  .arms{grid-template-columns:1fr;gap:18px 0}
+  .arms,.e-fig.trio,.e-fig.cal,.e-fig.years{grid-template-columns:1fr}
+  .arms{gap:14px 0}
+  .e{padding-top:92px}
+  .e-fig.talk{aspect-ratio:4/5}
+  .e-fig.photo>img{aspect-ratio:4/3}
+  .e-fig.verbs{grid-auto-flow:row}
+  .e-fig.cal,.e-fig.years{justify-items:center}
+  .cal ol{width:100%}
+  .years ul{width:100%}
+  .days ol{grid-template-columns:1fr 1.3fr 1.7fr}
+  .days li{flex-direction:column;gap:6px}
+  .vnum,.viz li>b{font-size:clamp(56px,17vw,120px)}
+  .bar90 .rest{flex:50 1 0}
+  .bar90 .hot{flex:50 1 0}
   .five li{grid-template-columns:34px minmax(0,1fr)}
   .five h3{font-size:clamp(52px,17vw,96px)}
-  .arms b{font-size:clamp(44px,13vw,72px)}
-  .e,.e.n .e-say,.e.w .e-say,.trio{grid-template-columns:1fr}
-  .e{min-height:0;padding:52px 0}
-  .e-big{font-size:clamp(96px,31vw,200px)}
-  .talk{aspect-ratio:1}
 }
-@media (prefers-reduced-motion:reduce){.verbs .spin,.verbs .stop,.mic{animation:none}}
-.still .verbs .spin,.still .verbs .stop,.still .mic{animation:none}
+@media (prefers-reduced-motion:reduce){.verbs .spin,.verbs .stop,.mic,.live>p i{animation:none}}
+.still .verbs .spin,.still .verbs .stop,.still .mic,.still .live>p i{animation:none}
+
+/* ── 쪽의 나머지 구역도 같은 결로: 흰 바탕과 옅은 회색 판, 둥근 모서리, 가는 선, 가운데 맞춘 폭 ── */
+html,body{background:var(--paper)}
+body{color:var(--ink)}
+.hero{background:#FAF1ED}
+.tag{font:700 clamp(17px,1.45vw,22px)/1.2 var(--sans);letter-spacing:0}
+.tag::before{display:none}
+.pill{background:var(--ink)}
+.sec{padding:clamp(88px,15svh,180px) var(--wide)}
+.sec.warm{background:var(--mist)}
+.sec.dark{margin:clamp(12px,2vw,24px) var(--wide);border-radius:clamp(24px,2.8vw,40px);padding:clamp(52px,10svh,120px) clamp(22px,5vw,80px)}
+.edge+.sec.dark{margin-top:clamp(64px,11svh,130px)}
+.sec-head h2,.arm-say h2{letter-spacing:-.035em}
+.lines{border-top:1px solid var(--hair)}
+.lines li{border-bottom-color:var(--hair)}
+.feats{border-top-width:1px}
+.shot img,.shot video{border-radius:clamp(10px,1.1vw,16px);outline:0;box-shadow:0 40px 70px -44px rgba(0,0,0,.5)}
+.sec.dark .shot img,.sec.dark .shot video{outline:1px solid rgba(255,255,255,.16)}
+.shot.phone img,.shot.phone video{outline:8px solid #111}
+.steps img,.flow img{border-radius:14px}
+/* 숫자 줄: 둥근 판 */
+.nums{border-top:0;padding-top:0;gap:clamp(12px,1.4vw,20px)}
+.nums>*{background:var(--mist);border-radius:clamp(22px,2.2vw,30px);padding:clamp(24px,2.8vw,40px)}
+.sec.warm .nums>*{background:#fff}
+.sec.dark .nums>*{background:#1c1c1e}
+.nums b{font-weight:700}
+.bar{border:0;border-radius:22px;overflow:hidden;background:var(--mist)}
+/* 강사 */
+.teacher-pic{border-radius:clamp(22px,2.4vw,32px)}
+.cv{border-top:1px solid var(--hair)}
+.cv dt,.cv dd{border-bottom-color:var(--hair)}
+.cast img{border-radius:22px}
+.cast .sample i{border-radius:999px;border-width:1px}
+/* 지금 되는 것과 준비 중: 둥근 판 둘 */
+.status{gap:clamp(12px,1.4vw,20px)}
+.status>div{background:var(--mist);border-radius:clamp(22px,2.2vw,30px);padding:clamp(24px,2.8vw,40px)}
+.sec.warm .status>div{background:#fff}
+.status h3{border-bottom:1px solid var(--hair)}
+.status li{border-bottom-color:var(--hair)}
+.status li:last-child{border-bottom:0}
+.note{color:var(--cap)}
+/* 모델 고르기 */
+.pick-stage{border-radius:clamp(22px,2.4vw,32px);background:var(--mist)}
+.pick-tag{border-radius:0 0 16px 0}
+.pick-row button img{border-radius:12px}
+.pick-row.faces button img{border-radius:50%}
+/* 강조 글 */
+.quote,.sec-head p.quote{font-weight:400}
+.quote em{font-style:normal;background:none;color:inherit;font-weight:700}
+em.hl{font-style:normal;background:none;color:inherit}
+.sec.dark .quote em{color:var(--butter)}
+/* 창업자의 말: 검은 판에 색 글자 */
+.credo{margin-top:clamp(56px,10svh,120px);background:#000;border-radius:clamp(24px,2.8vw,40px);padding:clamp(56px,12svh,140px) clamp(24px,6vw,110px);justify-items:center;text-align:center;gap:clamp(20px,3.6svh,36px)}
+.credo .quote{max-width:19em;font-size:clamp(28px,4vw,62px);line-height:1.3;color:#fff}
+.credo .quote em{color:var(--butter)}
+.credo span{color:#fff}
+/* 다음 곳과 바닥 */
+.next{margin:0 var(--wide) clamp(20px,4vw,56px);border-radius:clamp(24px,2.8vw,40px);min-height:62svh}
+.foot{background:var(--mist);color:var(--ink)}
+.foot nav{color:var(--cap)}
+@media (max-width:900px){
+  .sec.dark{margin-inline:12px}
+  .next{margin-inline:12px}
+}
+/* 메뉴: 흐린 유리 띠 */
+.nav{height:60px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);transition:color .3s,background .3s}
+body[data-tone="dark"] .nav{background:rgba(0,0,0,.55)}
+.nav .logo{font-size:23px}
+.nav ul{font-size:15px}
+.nav .me{height:34px;font-size:14px;border-width:1px}
 </style>
 </head>
 <body data-tone="light">
@@ -410,16 +518,16 @@ mark,.fill{color:var(--butter);background:none}
     </div>
   </header>
 
-  <section class="edge" data-tone="dark">
+  <section class="edge" data-tone="light">
     <ul class="arms" aria-label="이 쪽의 무기 셋">
-      <li><b class="fill">말해야</b><span>장면이 넘어갑니다</span></li>
-      <li><b class="fill"><span data-count="1">1</span> · <span data-count="7">7</span> · <span data-count="30">30</span>일</b><span>뒤에 처음 보는 문제로 다시</span></li>
-      <li><b class="fill">하나만</b><span>고칠 곳을 짚습니다</span></li>
+      <li><b>말해야</b><span>장면이 넘어갑니다</span></li>
+      <li><b>1 · 7 · 30일</b><span>뒤에 처음 보는 문제로 다시</span></li>
+      <li><b>하나만</b><span>고칠 곳을 짚습니다</span></li>
     </ul>
     <ol>
-      <li class="e"><div class="e-say"><span class="e-no"><i>01</i>K드라마 상황극</span><h2 class="e-claim">말해야<br><mark>장면이 넘어갑니다</mark></h2><p class="e-proof">상대가 먼저 말을 걸고, 소리 내어 대답해야 다음 장면이 열립니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig talk"><img src="assets/d/drama-hello.webp" alt="학생 식당에서 손을 흔드는 권태오 선배. 상황극 1화의 한 장면이다." loading="lazy"><figcaption><p><b>권태오 선배</b>저기, 혹시 신입생이에요?</p><p class="me"><b>나</b><span class="mic" aria-hidden="true"></span>말할 차례입니다</p></figcaption></figure></li>
-      <li class="e n"><span class="e-no"><i>02</i>아틀라스 엔진</span><b class="e-big fill" aria-hidden="true"><span data-count="1">1</span><small> · </small><span data-count="7">7</span><small> · </small><span data-count="30">30</span></b><div class="e-say"><h2 class="e-claim">외운 것은<br><mark>실력으로 치지 않습니다</mark></h2><div><p class="e-proof">틀린 말은 1일, 7일, 30일 뒤에 처음 보는 문제로 다시 묻습니다. 그때 혼자 해내야 실력입니다.</p><span class="state e-state">지금 됩니다</span></div></div></li>
-      <li class="e"><div class="e-say"><span class="e-no"><i>03</i>코치 노트</span><h2 class="e-claim">고칠 곳은<br><mark>하나만</mark> 짚습니다</h2><p class="e-proof">말하기 앱 리뷰 3,519건을 분류해 얻은 답입니다. 확신할 때만, 하나만.</p></div><figure class="e-fig fix"><p>어제 친구를 <s>만나요</s><b>만났어요</b></p><figcaption>예시입니다</figcaption></figure></li>
+      <li class="e first"><div class="e-say"><span class="e-no">K드라마 상황극</span><h2 class="e-claim">말해야<br><mark>장면이 넘어갑니다.</mark></h2><p class="e-proof">상대가 먼저 말을 걸고, 소리 내어 대답해야 다음 장면이 열립니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig talk"><img src="assets/d/drama-hello.webp" alt="학생 식당에서 손을 흔드는 권태오 선배. 상황극 1화의 한 장면이다." loading="lazy"><figcaption><p><b>권태오 선배</b>저기, 혹시 신입생이에요?</p><p class="me"><b>나</b><span class="mic" aria-hidden="true"></span>말할 차례입니다</p></figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">아틀라스 엔진</span><h2 class="e-claim">외운 것은<br><mark>실력으로 치지 않습니다.</mark></h2><p class="e-proof">틀린 말은 1일, 7일, 30일 뒤에 다시 묻습니다. 그때 혼자 해내야 실력입니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig viz days" aria-label="1일, 7일, 30일 뒤에 다시 묻는다"><ol><li><b><span data-count="1">1</span></b><span>일 뒤</span></li><li><b><span data-count="7">7</span></b><span>일 뒤</span></li><li class="hot"><b><span data-count="30">30</span></b><span>일 뒤</span></li></ol><figcaption>처음 보는 문제로 다시 묻습니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">코치 노트</span><h2 class="e-claim">고칠 곳은<br><mark>하나만</mark> 짚습니다.</h2><p class="e-proof">말하기 앱 리뷰 3,519건을 분류해 얻은 답입니다. 확신할 때만, 하나만.</p></div><figure class="e-fig fix"><p>어제 친구를 <s>만나요</s><b>만났어요</b></p><figcaption>예시입니다</figcaption></figure></li>
     </ol>
   </section>
 
@@ -486,16 +594,16 @@ mark,.fill{color:var(--butter);background:none}
     </div>
   </header>
 
-  <section class="edge" data-tone="dark">
+  <section class="edge" data-tone="light">
     <ul class="arms" aria-label="이 쪽의 무기 셋">
-      <li><b class="fill"><span data-count="30">30</span>분</b><span>함께 말합니다</span></li>
-      <li><b class="fill">몸으로</b><span>K-POP과 K드라마로 배웁니다</span></li>
-      <li><b class="fill"><span data-count="6">6</span>개월</b><span>4급에 못 미치면 앱 연장</span></li>
+      <li><b>30분</b><span>함께 말합니다</span></li>
+      <li><b>몸으로</b><span>K-POP과 K드라마로 배웁니다</span></li>
+      <li><b>6개월</b><span>4급에 못 미치면 앱 연장</span></li>
     </ul>
     <ol>
-      <li class="e n"><span class="e-no"><i>01</i>말하기</span><b class="e-big fill" aria-hidden="true"><span data-count="30">30</span><small>분</small></b><div class="e-say"><h2 class="e-claim">90분 가운데<br><mark>30분은 함께 말합니다</mark></h2><div><p class="e-proof">내 생각을 정하고, 친구의 이유를 듣고, 마지막 선택을 스스로 설명합니다.</p></div></div></li>
-      <li class="e"><div class="e-say"><span class="e-no"><i>02</i>K-POP · K드라마</span><h2 class="e-claim">동사는 <mark>몸으로</mark>,<br>대사는 <mark>장면 안에서</mark></h2><p class="e-proof">댄스 전공 강사와 몸을 풀고, 주말 워크숍에서 한 학기에 작품 한 편을 만듭니다.</p></div><figure class="e-fig verbs"><b class="spin">돌다</b><b class="stop">멈추다</b></figure></li>
-      <li class="e n"><span class="e-no"><i>03</i>교실과 앱</span><b class="e-big fill" aria-hidden="true"><span data-count="6">6</span><small>개월</small></b><div class="e-say"><h2 class="e-claim">교실에서 고친 말을<br><mark>앱이 다시 꺼냅니다</mark></h2><div><p class="e-proof">과정을 마친 뒤 첫 TOPIK에서 4급에 못 미치면 앱 계정을 6개월 연장합니다.</p></div></div></li>
+      <li class="e first"><div class="e-say"><span class="e-no">말하기</span><h2 class="e-claim">90분 가운데<br><mark>30분은 함께 말합니다.</mark></h2><p class="e-proof">내 생각을 정하고, 친구의 이유를 듣고, 마지막 선택을 스스로 설명합니다.</p></div><figure class="e-fig viz split" aria-label="수업 90분 가운데 30분은 함께 말한다"><div class="bar90"><span class="rest"><i>수업 90분</i></span><span class="hot"><b><span data-count="30">30</span><small>분</small></b><i>함께 말하기</i></span></div></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">K-POP · K드라마</span><h2 class="e-claim">동사는 <mark>몸으로</mark>,<br>대사는 <mark>장면 안에서.</mark></h2><p class="e-proof">댄스 전공 강사와 몸을 풀고, 주말 워크숍에서 한 학기에 작품 한 편을 만듭니다.</p></div><figure class="e-fig verbs"><b class="spin">돌다</b><b class="stop">멈추다</b></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">교실과 앱</span><h2 class="e-claim">교실에서 고친 말을<br><mark>앱이 다시 꺼냅니다.</mark></h2><p class="e-proof">과정을 마친 뒤 첫 TOPIK에서 4급에 못 미치면 앱 계정을 6개월 연장합니다.</p></div><figure class="e-fig viz months" aria-label="앱 계정 6개월 연장"><b class="vnum"><span data-count="6">6</span><small>개월</small></b><ol><li></li><li></li><li></li><li></li><li></li><li></li></ol></figure></li>
     </ol>
   </section>
 
@@ -551,16 +659,16 @@ mark,.fill{color:var(--butter);background:none}
     </div>
   </header>
 
-  <section class="edge" data-tone="dark">
+  <section class="edge" data-tone="light">
     <ul class="arms" aria-label="이 쪽의 무기 셋">
-      <li><b class="fill">면접관 셋</b><span>집에서 먼저 만납니다</span></li>
-      <li><b class="fill">도장 세 칸</b><span>차면 준비가 끝납니다</span></li>
-      <li><b class="fill">서울 하루</b><span>떠나기 전에 짜 봅니다</span></li>
+      <li><b>면접관 셋</b><span>집에서 먼저 만납니다</span></li>
+      <li><b>도장 세 칸</b><span>차면 준비가 끝납니다</span></li>
+      <li><b>서울 하루</b><span>떠나기 전에 짜 봅니다</span></li>
     </ul>
     <ol>
-      <li class="e"><div class="e-say"><span class="e-no"><i>01</i>면접 연습</span><h2 class="e-claim">면접관 셋 앞에<br><mark>집에서 먼저</mark><br>앉습니다</h2><p class="e-proof">60~90초 동안 한국어로 답합니다. Quest를 쓰면 면접실 안에 앉습니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig "><img src="assets/d/path-home.webp" alt="자기 방에서 노트북으로 면접관 셋과 면접을 연습하는 뒷모습. 옆에 반쯤 싼 여행 가방이 있다." loading="lazy"><figcaption>첫 질문을 먼저 듣고 시작합니다</figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no"><i>02</i>PATH 앱</span><h2 class="e-claim">도장 세 칸이 차면<br><mark>준비가 끝납니다</mark></h2><p class="e-proof">기회 찾기, 자료 준비, 직접 확인.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig phone"><img src="assets/d/path-app-2.webp" alt="PATH 앱의 홈. 도장 세 칸이 모두 찍혀 있다." loading="lazy"><figcaption>PATH 앱의 실제 화면입니다</figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no"><i>03</i>서울 하루</span><h2 class="e-claim">서울의 하루를<br><mark>떠나기 전에</mark><br>짜 봅니다</h2><p class="e-proof">하고 싶은 것과 시간만 고르면 됩니다. 가입 없이.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig seq"><ol><li><b>10:00</b>안국역</li><li><b>10:08</b>운현궁</li><li><b>11:02</b>차 한 잔</li><li class="new"><b>12:00</b>북촌 한옥마을</li></ol><figcaption>세 시간짜리 예시입니다</figcaption></figure></li>
+      <li class="e first"><div class="e-say"><span class="e-no">면접 연습</span><h2 class="e-claim">면접관 셋 앞에<br><mark>집에서 먼저</mark><br>앉습니다.</h2><p class="e-proof">60~90초 동안 한국어로 답합니다. Quest를 쓰면 면접실 안에 앉습니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig photo"><img src="assets/d/path-home.webp" alt="자기 방에서 노트북으로 면접관 셋과 면접을 연습하는 뒷모습. 옆에 반쯤 싼 여행 가방이 있다." loading="lazy"><figcaption>첫 질문을 먼저 듣고 시작합니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">PATH 앱</span><h2 class="e-claim">도장 세 칸이 차면<br><mark>준비가 끝납니다.</mark></h2><p class="e-proof">기회 찾기, 자료 준비, 직접 확인.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig phone"><img src="assets/d/path-app-2.webp" alt="PATH 앱의 홈. 도장 세 칸이 모두 찍혀 있다." loading="lazy"><figcaption>PATH 앱의 실제 화면입니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">서울 하루</span><h2 class="e-claim">서울의 하루를<br><mark>떠나기 전에</mark><br>짜 봅니다.</h2><p class="e-proof">하고 싶은 것과 시간만 고르면 됩니다. 가입 없이.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig seq"><ol><li><b>10:00</b>안국역</li><li><b>10:08</b>운현궁</li><li><b>11:02</b>차 한 잔</li><li class="new"><b>12:00</b>북촌 한옥마을</li></ol><figcaption>세 시간짜리 예시입니다</figcaption></figure></li>
     </ol>
   </section>
 
@@ -607,16 +715,16 @@ mark,.fill{color:var(--butter);background:none}
     </div>
   </header>
 
-  <section class="edge" data-tone="dark">
+  <section class="edge" data-tone="light">
     <ul class="arms" aria-label="이 쪽의 무기 셋">
-      <li><b class="fill">한 줄</b><span>오늘 할 일이 보입니다</span></li>
-      <li><b class="fill">준비 완료</b><span>직접 확인한 것만</span></li>
-      <li><b class="fill"><span data-count="90">90</span>초</b><span>면접관 셋 앞에서</span></li>
+      <li><b>한 줄</b><span>오늘 할 일이 보입니다</span></li>
+      <li><b>준비 완료</b><span>직접 확인한 것만</span></li>
+      <li><b>90초</b><span>면접관 셋 앞에서</span></li>
     </ul>
     <ol>
-      <li class="e w"><div class="e-say"><div><span class="e-no"><i>01</i>PATH 앱</span><h2 class="e-claim">오늘 할 일이<br><mark>한 줄로</mark> 보입니다</h2></div><div><p class="e-proof">기회를 둘러보고, 자료를 쓰고, 직접 확인합니다.</p><span class="state e-state">지금 됩니다</span></div></div><figure class="e-fig wide crop"><img src="assets/d/path-app-wide.webp" alt="PATH 앱의 PC 화면. 「오늘은 여기부터예요」 아래에 기회 찾기, 자료 준비, 직접 확인 세 단계가 보인다." loading="lazy"><figcaption>PATH 앱의 실제 화면입니다</figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no"><i>02</i>본인 확인</span><h2 class="e-claim">직접 확인한 것만<br><mark>「준비 완료」</mark></h2><p class="e-proof">공식 창구에서 내가 확인한 것에만 도장이 찍힙니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig stamp"><b>준비<br>완료</b></figure></li>
-      <li class="e n"><span class="e-no"><i>03</i>면접 연습</span><b class="e-big fill" aria-hidden="true"><span data-count="90">90</span><small>초</small></b><div class="e-say"><h2 class="e-claim">면접관 셋 앞에서<br><mark>소리 내어</mark> 답합니다</h2><div><p class="e-proof">첫 질문을 먼저 듣고, 한국어로 답해 봅니다.</p><span class="state e-state">지금 됩니다</span></div></div></li>
+      <li class="e first"><div class="e-say"><span class="e-no">PATH 앱</span><h2 class="e-claim">오늘 할 일이<br><mark>한 줄로</mark> 보입니다.</h2><p class="e-proof">기회를 둘러보고, 자료를 쓰고, 직접 확인합니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig crop"><img src="assets/d/path-app-wide.webp" alt="PATH 앱의 PC 화면. 「오늘은 여기부터예요」 아래에 기회 찾기, 자료 준비, 직접 확인 세 단계가 보인다." loading="lazy"><figcaption>PATH 앱의 실제 화면입니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">본인 확인</span><h2 class="e-claim">직접 확인한 것만<br><mark>「준비 완료」</mark></h2><p class="e-proof">공식 창구에서 내가 확인한 것에만 도장이 찍힙니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig stamp"><b>준비<br>완료</b></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">면접 연습</span><h2 class="e-claim">면접관 셋 앞에서<br><mark>소리 내어</mark> 답합니다.</h2><p class="e-proof">첫 질문을 먼저 듣고, 한국어로 답해 봅니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig viz ring" aria-label="90초 동안 답한다"><div><svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="92"/><circle class="arc" cx="100" cy="100" r="92" pathLength="100"/></svg><b class="vnum"><span data-count="90">90</span><small>초</small></b></div></figure></li>
     </ol>
   </section>
 
@@ -644,16 +752,16 @@ mark,.fill{color:var(--butter);background:none}
     </div>
   </header>
 
-  <section class="edge" data-tone="dark">
+  <section class="edge" data-tone="light">
     <ul class="arms" aria-label="이 쪽의 무기 셋">
-      <li><b class="fill"><span data-count="30">30</span>일</b><span>도착한 뒤 끝까지 챙깁니다</span></li>
-      <li><b class="fill">한 팀</b><span>한국인과 함께 뜁니다</span></li>
-      <li><b class="fill">한 바퀴</b><span>선배가 되어 다음 사람을 맞습니다</span></li>
+      <li><b>30일</b><span>도착한 뒤 끝까지 챙깁니다</span></li>
+      <li><b>한 팀</b><span>한국인과 함께 뜁니다</span></li>
+      <li><b>한 바퀴</b><span>선배가 되어 다음 사람을 맞습니다</span></li>
     </ul>
     <ol>
-      <li class="e n"><span class="e-no"><i>01</i>정착 동행</span><b class="e-big fill" aria-hidden="true"><span data-count="30">30</span><small>일</small></b><div class="e-say"><h2 class="e-claim">도착한 뒤<br><mark>첫 30일</mark>을 챙깁니다</h2><div><p class="e-proof">외국인등록, 계좌, 건강보험. 전담 매니저와 선배 유학생이 함께합니다.</p><span class="state soon e-state">준비 중</span></div></div></li>
-      <li class="e"><div class="e-say"><span class="e-no"><i>02</i>시즌 리그</span><h2 class="e-claim">한국인과<br><mark>한 팀으로</mark> 뜁니다</h2><p class="e-proof">격주 시즌 리그, 요리와 언어 교환, 술 없는 저녁.</p><span class="state soon e-state">준비 중</span></div><figure class="e-fig phone"><img src="assets/d/settle-meet.webp" alt="정착 동행 앱의 모임 화면 시안. 풋살 팀과 시즌 순위가 보인다." loading="lazy"><figcaption>준비 중인 화면입니다</figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no"><i>03</i>한 바퀴</span><h2 class="e-claim"><mark>다시 온 사람</mark>의<br>비율로 잽니다</h2><p class="e-proof">자리를 잡은 사람은 선배가 되어 다음 한 사람을 맞습니다.</p></div><figure class="e-fig phone"><img src="assets/d/settle-todo.webp" alt="정착 동행 앱의 할 일 화면 시안. 첫 30일 가운데 7일째이고 외국인등록 신청과 계좌 개설이 보인다." loading="lazy"><figcaption>준비 중인 화면입니다</figcaption></figure></li>
+      <li class="e first"><div class="e-say"><span class="e-no">정착 동행</span><h2 class="e-claim">도착한 뒤<br><mark>첫 30일</mark>을 챙깁니다.</h2><p class="e-proof">외국인등록, 계좌, 건강보험. 전담 매니저와 선배 유학생이 함께합니다.</p><span class="state soon e-state">준비 중</span></div><figure class="e-fig viz cal" aria-label="도착한 뒤 첫 30일"><b class="vnum"><span data-count="30">30</span><small>일</small></b><ol><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ol></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">시즌 리그</span><h2 class="e-claim">한국인과<br><mark>한 팀으로</mark> 뜁니다.</h2><p class="e-proof">격주 시즌 리그, 요리와 언어 교환, 술 없는 저녁.</p><span class="state soon e-state">준비 중</span></div><figure class="e-fig phone"><img src="assets/d/settle-meet.webp" alt="정착 동행 앱의 모임 화면 시안. 풋살 팀과 시즌 순위가 보인다." loading="lazy"><figcaption>준비 중인 화면입니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">한 바퀴</span><h2 class="e-claim"><mark>다시 온 사람</mark>의<br>비율로 잽니다.</h2><p class="e-proof">자리를 잡은 사람은 선배가 되어 다음 한 사람을 맞습니다.</p></div><figure class="e-fig phone"><img src="assets/d/settle-todo.webp" alt="정착 동행 앱의 할 일 화면 시안. 첫 30일 가운데 7일째이고 외국인등록 신청과 계좌 개설이 보인다." loading="lazy"><figcaption>준비 중인 화면입니다</figcaption></figure></li>
     </ol>
   </section>
 
@@ -696,16 +804,16 @@ mark,.fill{color:var(--butter);background:none}
     </div>
   </header>
 
-  <section class="edge" data-tone="dark">
+  <section class="edge" data-tone="light">
     <ul class="arms" aria-label="이 쪽의 무기 셋">
-      <li><b class="fill"><span data-count="30">30</span>+</b><span>사람 없이 제시간에 도는 일</span></li>
-      <li><b class="fill">결과물 하나</b><span>강의가 끝나면 남습니다</span></li>
-      <li><b class="fill">솔리오</b><span>배운 것을 잇는 앱</span></li>
+      <li><b>30개 넘는 일</b><span>사람 없이 제시간에 돕니다</span></li>
+      <li><b>결과물 하나</b><span>강의가 끝나면 남습니다</span></li>
+      <li><b>솔리오</b><span>배운 것을 잇는 앱</span></li>
     </ul>
     <ol>
-      <li class="e"><div class="e-say"><span class="e-no"><i>01</i>증거</span><h2 class="e-claim">강사의 회사가<br><mark>지금도 AI로 돕니다</mark></h2><p class="e-proof">30개 넘는 일이 사람 없이 제시간에 돌고, 20가지 넘는 검사가 실수를 막습니다.</p></div><figure class="e-fig live"><p>서울 지금</p><b id="live-now">00:00</b><dl><dt>지난 차례</dt><dd id="live-prev"></dd><dt>다음 차례</dt><dd id="live-next"></dd></dl><figcaption>SYNK의 실제 예약표 가운데 일부입니다</figcaption></figure></li>
-      <li class="e"><div class="e-say"><span class="e-no"><i>02</i>강의 방식</span><h2 class="e-claim">끝나면<br><mark>결과물 하나</mark>가<br>손에 남습니다</h2><p class="e-proof">듣는 사람이 자기 일에서 직접 만들어 갑니다.</p></div><figure class="e-fig seq"><ol><li><b>10분</b>같은 질문 두 번</li><li><b>15분</b>빈칸 채우기 실험</li><li><b>15분</b>한 줄씩 맞춰 보기</li><li class="new"><b>10분</b>내 요청문 한 줄</li></ol><figcaption>50분 수업 예시입니다</figcaption></figure></li>
-      <li class="e w"><div class="e-say"><div><span class="e-no"><i>03</i>솔리오 앱</span><h2 class="e-claim">배운 것을<br><mark>앱이 이어 줍니다</mark></h2></div><div><p class="e-proof">여러 AI 구독의 남은 양과 결제일을 한 화면에서 봅니다.</p><div class="hero-go e-state"><span class="state">지금 됩니다 · 회원은 무료</span><a class="pill light" href="https://synk.im/account/platform.html">PC 앱 받기 <span class="arr" aria-hidden="true">→</span></a></div></div></div><figure class="e-fig wide"><img src="assets/solio-subs.webp" alt="솔리오의 AI 구독 관리 화면. 구독마다 남은 양이 한 줄씩 보인다." loading="lazy"><figcaption>솔리오의 실제 화면입니다. 숫자는 예시 값입니다.</figcaption></figure></li>
+      <li class="e first"><div class="e-say"><span class="e-no">증거</span><h2 class="e-claim">강사의 회사가<br><mark>지금도 AI로 돕니다.</mark></h2><p class="e-proof">30개 넘는 일이 사람 없이 제시간에 돌고, 20가지 넘는 검사가 실수를 막습니다.</p></div><figure class="e-fig live"><p><i aria-hidden="true"></i>서울 지금</p><b id="live-now">00:00</b><dl><dt>지난 차례</dt><dd id="live-prev"></dd><dt>다음 차례</dt><dd id="live-next"></dd></dl><figcaption>SYNK의 실제 예약표 가운데 일부입니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">강의 방식</span><h2 class="e-claim">끝나면<br><mark>결과물 하나</mark>가<br>손에 남습니다.</h2><p class="e-proof">듣는 사람이 자기 일에서 직접 만들어 갑니다.</p></div><figure class="e-fig seq"><ol><li><b>10분</b>같은 질문 두 번</li><li><b>15분</b>빈칸 채우기 실험</li><li><b>15분</b>한 줄씩 맞춰 보기</li><li class="new"><b>10분</b>내 요청문 한 줄</li></ol><figcaption>50분 수업 예시입니다</figcaption></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">솔리오 앱</span><h2 class="e-claim">배운 것을<br><mark>앱이 이어 줍니다.</mark></h2><p class="e-proof">여러 AI 구독의 남은 양과 결제일을 한 화면에서 봅니다.</p><div class="hero-go e-state" style="justify-content:center"><span class="state">지금 됩니다 · 회원은 무료</span><a class="pill" href="https://synk.im/account/platform.html">PC 앱 받기 <span class="arr" aria-hidden="true">→</span></a></div></div><figure class="e-fig"><img src="assets/solio-subs.webp" alt="솔리오의 AI 구독 관리 화면. 구독마다 남은 양이 한 줄씩 보인다." loading="lazy"><figcaption>솔리오의 실제 화면입니다. 숫자는 예시 값입니다.</figcaption></figure></li>
     </ol>
   </section>
 
@@ -749,16 +857,16 @@ mark,.fill{color:var(--butter);background:none}
     </div>
   </header>
 
-  <section class="edge" data-tone="dark">
+  <section class="edge" data-tone="light">
     <ul class="arms" aria-label="이 쪽의 무기 셋">
-      <li><b class="fill"><span data-count="10">10</span>년</b><span>카메라 앞에 선 배우가 연출</span></li>
-      <li><b class="fill">세 번</b><span>영상을 만들기 전에 확인</span></li>
-      <li><b class="fill"><span data-count="21">21</span>명</b><span>옷과 머리까지 미리 고릅니다</span></li>
+      <li><b>10년</b><span>카메라 앞에 선 배우가 연출</span></li>
+      <li><b>세 번</b><span>영상을 만들기 전에 확인</span></li>
+      <li><b>21명</b><span>옷과 머리까지 미리 고릅니다</span></li>
     </ul>
     <ol>
-      <li class="e n"><span class="e-no"><i>01</i>연출</span><b class="e-big fill" aria-hidden="true"><span data-count="10">10</span><small>년</small></b><div class="e-say"><h2 class="e-claim"><mark>배우</mark>가<br>AI 모델을 연출합니다</h2><div><p class="e-proof">넷플릭스 공개 「보라! 데보라」, tvN 「코미디빅리그」 출연. 2026 서울로미디어캔버스 공모 당선.</p></div></div></li>
-      <li class="e w"><div class="e-say"><div><span class="e-no"><i>02</i>PULSE 앱</span><h2 class="e-claim">만들기 전에<br><mark>세 번</mark> 확인합니다</h2></div><div><p class="e-proof">영상을 굽기 전에 고칩니다. 아래는 PULSE 앱의 실제 화면입니다.</p><span class="state e-state">지금 됩니다</span></div></div><figure class="e-fig wide trio"><div><img src="assets/d/pulse-2-direction.webp" alt="PULSE 앱의 방향 고르기 화면." loading="lazy"><span><i>1</i>방향과 모델</span></div><div><img src="assets/d/pulse-3-script.webp" alt="PULSE 앱의 글 콘티 화면." loading="lazy"><span><i>2</i>글 콘티</span></div><div><img src="assets/d/pulse-4-frames.webp" alt="PULSE 앱의 장면 이미지 화면." loading="lazy"><span><i>3</i>컷마다 장면 이미지</span></div></figure></li>
-      <li class="e w"><div class="e-say"><div><span class="e-no"><i>03</i>PULSE 앱</span><h2 class="e-claim">멈춘 <mark>그 시점</mark>에<br>의견을 남깁니다</h2></div><div><p class="e-proof">1차와 2차를 나란히 놓고 달라진 곳을 봅니다.</p><span class="state e-state">지금 됩니다</span></div></div><figure class="e-fig wide crop"><img src="assets/d/pulse-5-review.webp" alt="PULSE 앱의 영상 확인 화면. 영상 아래 프레임 띠와 시점별 의견이 보인다." loading="lazy"><figcaption>PULSE 앱의 실제 화면입니다</figcaption></figure></li>
+      <li class="e first"><div class="e-say"><span class="e-no">연출</span><h2 class="e-claim"><mark>배우</mark>가<br>AI 모델을 연출합니다.</h2><p class="e-proof">카메라 앞에 섰던 시간이 연출의 기준입니다.</p></div><figure class="e-fig viz years"><b class="vnum"><span data-count="10">10</span><small>년</small></b><ul><li>넷플릭스 공개 「보라! 데보라」</li><li>tvN 「코미디빅리그」</li><li>2026 서울로미디어캔버스 공모 당선</li></ul></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">PULSE 앱</span><h2 class="e-claim">만들기 전에<br><mark>세 번</mark> 확인합니다.</h2><p class="e-proof">영상을 굽기 전에 고칩니다. 아래는 PULSE 앱의 실제 화면입니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig trio"><div><img src="assets/d/pulse-2-direction.webp" alt="PULSE 앱의 방향 고르기 화면." loading="lazy"><span><i>1</i>방향과 모델</span></div><div><img src="assets/d/pulse-3-script.webp" alt="PULSE 앱의 글 콘티 화면." loading="lazy"><span><i>2</i>글 콘티</span></div><div><img src="assets/d/pulse-4-frames.webp" alt="PULSE 앱의 장면 이미지 화면." loading="lazy"><span><i>3</i>컷마다 장면 이미지</span></div></figure></li>
+      <li class="e"><div class="e-say"><span class="e-no">PULSE 앱</span><h2 class="e-claim">멈춘 <mark>그 시점</mark>에<br>의견을 남깁니다.</h2><p class="e-proof">1차와 2차를 나란히 놓고 달라진 곳을 봅니다.</p><span class="state e-state">지금 됩니다</span></div><figure class="e-fig crop"><img src="assets/d/pulse-5-review.webp" alt="PULSE 앱의 영상 확인 화면. 영상 아래 프레임 띠와 시점별 의견이 보인다." loading="lazy"><figcaption>PULSE 앱의 실제 화면입니다</figcaption></figure></li>
     </ol>
   </section>
 
@@ -833,7 +941,7 @@ mark,.fill{color:var(--butter);background:none}
   if (still) document.documentElement.classList.add('still');
   const fmt = n => n.toLocaleString('ko-KR');
   $$('.e-claim', art).forEach(h => { h.innerHTML = h.innerHTML.split(/<br\s*\/?>/).map((l, i) => `<span class="ln"><span style="--i:${i}">${l}</span></span>`).join(''); });
-  $$('.seq li', art).forEach(li => li.style.setProperty('--i', [...li.parentNode.children].indexOf(li)));
+  $$('.seq li, .months li, .cal li, .years li', art).forEach(li => li.style.setProperty('--i', [...li.parentNode.children].indexOf(li)));
   $$('.sec-head, .nums, .teacher, .pick, .flow li, .cast, .credo, .status', art).forEach(el => el.classList.add('rv'));
   function count(root) {
     $$('[data-count]', root).forEach(n => {
@@ -844,8 +952,8 @@ mark,.fill{color:var(--butter);background:none}
   }
   if (!still) {
     document.documentElement.classList.add('js');
-    const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; e.target.classList.add('in'); count(e.target); io.unobserve(e.target); }), { threshold: .3 });
-    $$('.e, .rv, .arms, .five li', art).forEach(el => io.observe(el));
+    const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; e.target.classList.add('in'); count(e.target); io.unobserve(e.target); }), { threshold: .28 });
+    $$('.e-say, .e-fig, .rv, .arms, .five li', art).forEach(el => io.observe(el));
     /* 내려가면 낱말이 차례로 켜지는 문장 */
     const lits = $$('.quote', art);
     lits.forEach(p => { p.classList.add('lit'); p.innerHTML = p.innerHTML.replace(/(<[^>]+>)|([^\s<]+)/g, (m, tag, w) => tag || `<span class="w">${w}</span>`); });
