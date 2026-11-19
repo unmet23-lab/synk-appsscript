@@ -146,30 +146,3 @@ test('a quiet update quit keeps the hidden tray window hidden',()=>{
   f.app.quit();
   assert.equal(window.calls.show,0,'the hidden window must not flash while a quiet update quits');assert.equal(window.destroyed,true);
 });
-test('tray shortcuts are remembered per signed-in account so a tray-only start shows them before the first window (엔진 다시 검수 -g GA1)',t=>{
-  const os=require('node:os'),crypto=require('node:crypto'),directory=fs.mkdtempSync(path.join(os.tmpdir(),'synk-tray-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));
-  const file=path.join(directory,'tray-shortcuts.json');let owner='user-a';
-  const make=()=>{let menu;class Tray extends EventEmitter{isDestroyed(){return false;}setToolTip(){}setContextMenu(value){menu=value;}destroy(){}}
-    const tray=createPlatformTray({app:new EventEmitter(),Tray,Menu:{buildFromTemplate:value=>value},getWindow:()=>null,createWindow:()=>{},directory,getOwner:()=>owner});
-    return {tray,labels:()=>menu.map(item=>item.label).filter(Boolean)};};
-  const bare=['SYNK Platform 열기','완전히 종료'],full=['SYNK Platform 열기','SYNK Workspace','SYNK WORLD','완전히 종료'];
-  const first=make();assert.equal(first.tray.setShortcuts([{id:'messenger',kind:'favorite'},{id:'world',kind:'recent'}]).ok,true);first.tray.dispose();
-  assert.doesNotMatch(fs.readFileSync(file,'utf8'),/user-a/,'the account number itself is not written');
-  // 트레이로 숨은 채 다시 켜면 창이 없어도 계정이 확인되는 대로 바로가기가 보인다
-  const second=make();assert.deepEqual(second.labels(),bare);
-  second.tray.accountChanged();assert.deepEqual(second.labels(),full);
-  // 다른 계정이거나 로그아웃이면 비운다. 로그아웃 때 화면이 보낸 빈 목록은 그 계정의 기억을 지우지 않는다
-  owner='user-b';second.tray.accountChanged();assert.deepEqual(second.labels(),bare);
-  owner=null;second.tray.accountChanged();assert.deepEqual(second.labels(),bare);second.tray.setShortcuts([]);
-  owner='user-a';second.tray.accountChanged();assert.deepEqual(second.labels(),full);
-  // 망가진 파일, 목록에 없는 앱, 너무 큰 파일은 버린다
-  const hash=crypto.createHash('sha256').update('user-a').digest('hex');
-  for(const text of ['{',JSON.stringify({owner:hash,items:[{id:'../cmd'}]}),JSON.stringify({owner:hash,items:[{id:'world'}],pad:'x'.repeat(5000)})]){fs.writeFileSync(file,text);second.tray.accountChanged();assert.deepEqual(second.labels(),bare,text.slice(0,20));}
-  second.tray.dispose();
-  // 꺼진 트레이(다른 앱, Mac)는 파일을 읽거나 쓰지 않는다
-  fs.rmSync(file,{force:true});const off=createPlatformTray({app:new EventEmitter(),Tray:class{},Menu:{},getWindow:()=>null,createWindow:()=>{},enabled:false,directory,getOwner:()=>owner});
-  off.setShortcuts([{id:'world'}]);off.accountChanged();assert.equal(fs.existsSync(file),false);
-  const main=fs.readFileSync(path.join(__dirname,'..','src','main.cjs'),'utf8');
-  assert.match(main,/syncCompanyEntry\(\);platformTray\?\.accountChanged\?\.\(\);/);
-  assert.match(main,/directory:app\.getPath\('userData'\),getOwner:\(\)=>\{const state=accountStatus\(\);return state\?\.signedIn===true\?state\.account\?\.synk_user_id:null;\}/);
-});
