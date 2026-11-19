@@ -904,7 +904,7 @@ test('자리 — 전체 잠금 mkdir가 한도 내내 권한 오류만 내면(�
   assert.throws(() => 관련.자리잡기(폴더, { 수: 1, 막힘한도ms: 150 }), (e) => e.code === 'EPERM' && /mkdir/.test(e.message));
   assert.ok(Date.now() - 앞 >= 150, '한도만큼은 다시 해 봤다');
   assert.ok(Date.now() - 앞 < 10e3, '한도를 넘겨 오래 돌지 않았다');
-  assert.ok(본.시도 >= 3, `여러 번 다시 했다(${본.시도}번)`);
+  assert.ok(본.시도 >= 2, `다시 해 본 뒤에 던졌다(${본.시도}번)`); // 바쁜 PC에서 첫 쉼이 한도보다 길면 둘째에서 던진다
   assert.deepEqual(표들(폴더), [], '못 잡았으면 표를 두지 않는다');
   t.mock.restoreAll();
 
@@ -920,6 +920,18 @@ test('자리 — 권한 오류 사이에 남이 쥔 잠금(EEXIST)이 보이면 
   const 가 = 관련.자리잡기(폴더, { 수: 1, 막힘한도ms: 60 });
   assert.equal(가.번호, 0);
   assert.equal(본.시도, 11);
+  가.놓기();
+});
+
+test('자리 — 권한 오류를 다시 하는 한도는 단조 시계로 센다(시스템 시각이 앞으로 뛰어도 그 자리에서 던지지 않는다 · GPT 11-19 P2)', (t) => {
+  const 폴더 = 자리폴더(t);
+  const 본 = 잠금mkdir흉내(t, ['EPERM', 'EPERM']);
+  const 진짜now = Date.now;
+  // 첫 EPERM 뒤에 시스템 시각이 31초 앞으로 맞춰진 꼴 — 기본 한도 30초를 벽시계로 세면 둘째 EPERM에서 던진다
+  t.mock.method(Date, 'now', () => 진짜now() + (본.시도 >= 2 ? 31e3 : 0));
+  const 가 = 관련.자리잡기(폴더, { 수: 1 });
+  assert.equal(가.번호, 0);
+  assert.equal(본.시도, 3, '두 번 막힌 뒤 셋째에 만들었다');
   가.놓기();
 });
 

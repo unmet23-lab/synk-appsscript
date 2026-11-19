@@ -626,6 +626,7 @@ function 살아있나(pid) {
 // 그래서 이 셋은 잠깐 쉬고 다시 한다. 진짜 권한 문제는 한 번도 안 풀리니, 이 오류만 연달아 난 시간이 한도를 넘으면 그 오류를 던진다.
 const 잠금잠깐막힘 = new Set(['EPERM', 'EACCES', 'EBUSY']);
 const 잠금막힘한도ms = 30e3;
+const 단조ms = () => Number(process.hrtime.bigint() / 1000000n); // 시스템 시각을 맞춰도 안 뛰는 시계 — 한도는 이것으로 센다
 
 /** 짧은 전체 잠금 — 쥐고 있는 동안만 표를 치우고 센다. 풀기 함수를 돌려준다. 막힘한도ms는 시험이 준다. */
 function 잠그기(폴더, { 막힘한도ms = 잠금막힘한도ms } = {}) {
@@ -640,8 +641,8 @@ function 잠그기(폴더, { 막힘한도ms = 잠금막힘한도ms } = {}) {
         막힌때 = null;
         try { if (Date.now() - fs.statSync(잠금).mtimeMs > 10e3) fs.rmdirSync(잠금); } catch { /* 그새 풀렸다 */ }
       } else if (잠금잠깐막힘.has(e.code)) {
-        if (막힌때 === null) 막힌때 = Date.now();
-        else if (Date.now() - 막힌때 >= 막힘한도ms) throw e;
+        if (막힌때 === null) 막힌때 = 단조ms();
+        else if (단조ms() - 막힌때 >= 막힘한도ms) throw e;
       } else throw e;
       잠깐(20);
     }
