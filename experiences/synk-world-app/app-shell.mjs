@@ -1165,7 +1165,7 @@ const deviceRecords=createDeviceRecordsOffer({storage:localStorage,learningStatu
 commands['seoul-move']=button=>seoul.moveChoice(button.dataset.choice);
 commands['device-records']=button=>{const line=document.querySelector('[data-device-records-status]');return deviceRecords.choose(button.dataset.choice,{owner:client.snapshot?.accountId||'guest',
  status:(text,busy)=>{if(line)line.textContent=text;document.querySelectorAll('[data-world="device-records"]').forEach(node=>{node.disabled=busy;});}});};
-seoul=createSeoulEntry({dramaPending:()=>dramaRequested||me2Requested,restored:initialRestoreReady,operating,client:()=>client,life,home,worldUrl,launchGame,signIn,show,close,selectLanguage,tutorStatus,native:()=>operating&&account?.supportsSpeaking===false,frontOn:()=>!!front?.on()});
+seoul=createSeoulEntry({dramaPending:()=>dramaRequested||me2Requested,restored:initialRestoreReady,operating,client:()=>client,life,home,worldUrl,launchGame,signIn,show,close,selectLanguage,tutorStatus,native:()=>operating&&account?.supportsSpeaking===false,frontOn:()=>!!front?.soon()});
 // 첫날 끝 · 맞춤 앞면(1차, 결정 11-19): 서울행을 끝낸 학생은 튜터 고르기 · 펠트 동네 대신 앞면을 홈으로 쓴다. 스위치(FRONT_AUTO)를 끄면 지금 길 그대로다.
 front=createFrontEntry({client:()=>client,life,home,worldUrl,launchGame,openLife:(...v)=>openLife(...v),signIn,profile,openStory:()=>seoul.openRoad(),native:()=>operating&&account?.supportsSpeaking===false,
  guestArrival:()=>seoul.arrival?.('guest')||null,newEngine:owner=>atlasNextOn&&(owner!=='guest'||atlasNextGuestOn),blocked:()=>{try{return !!tutorStatus(client.snapshot?.accountId||'guest')?.blocked;}catch{return true;}},hangulReading:(...v)=>hangulReading(...v),setHangulReading:(...v)=>setHangulReading(...v),
@@ -1194,8 +1194,9 @@ entryGate=createWorldEntryGate({
   if(entryDestinationHandled)return;entryDestinationHandled=true;
   queueMicrotask(()=>{
    if(entryGate.state().phase!=='ready'||identity.owner!==(client.snapshot?.accountId||'guest')||identity.generation!==client.generation)return;
-   // 앞면 학생은 앞면이 홈이다(바로가기 주소는 frontMode가 걸러 지금 길로 간다). 틀을 못 올리면 지금 길 그대로.
-   if(front?.free()){void front.enter().catch(()=>{});return;}
+   // 앞면 학생은 앞면이 홈이다(바로가기 주소는 frontMode가 걸러 지금 길로 간다). 틀을 못 올리면(15초 · 주인 바뀜) 지금 길 그대로.
+   const same=()=>entryGate.state().phase==='ready'&&identity.owner===(client.snapshot?.accountId||'guest')&&identity.generation===client.generation;
+   if(front?.free()){void front.enter().then(ok=>{if(!ok&&same())openReminderLink();},()=>{if(same())openReminderLink();});return;}
    if(wardrobeRequested){if(client.snapshot)void wardrobe();else signIn();}
    else if(new URLSearchParams(location.search).get('cafe')==='1')void openLife('cafe').catch(()=>home.toast('카페를 열지 못했어요. 우리 동네에서 카페를 다시 눌러 주세요.'));
    // ?drama=1(11-02): 드라마 말하기 1화 코호트 링크 — 다른 게임과 같은 launchGame(로그인 전이면 로그인부터).

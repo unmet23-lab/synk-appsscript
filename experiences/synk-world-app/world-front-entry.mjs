@@ -99,19 +99,32 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  function readMark(who){try{const v=JSON.parse(storage.getItem(markKey(who))||'null');return v&&typeof v==='object'?v:{};}catch{return {};}}
  function writeMark(who,patch){try{storage.setItem(markKey(who),JSON.stringify({...readMark(who),...patch}));}catch{/* 사생활 창: 이번에는 화면만 넘어간다 */}}
  const on=()=>autoOn();
+ // 서울행 도중(아직 stage가 left가 아님)에 「끝나면 앞면으로 가나」 — 서울행 끝 단추 글을 고를 때 쓴다(자격에서 서울행 단계만 뺀 것).
+ function soon(){
+  try{return frontEligible({auto:on(),search:location.search,arrival:{stage:'left'},blocked:!!blocked(),newEngine:!!newEngine(owner())});}catch{return false;}
+ }
  function free(){
   try{return frontEligible({auto:on(),search:location.search,arrival:arrivalOf(owner()),blocked:!!blocked(),newEngine:!!newEngine(owner())});}catch{return false;}
  }
  const education=()=>life.education||null;
+ function profileOf(){try{return life.progress?.learningProfile?.()?.profile||null;}catch{return null;}}
+ // 계정에 저장된 목표(다른 기기나 학습 목표 창에서 고른 것) → 앞면 목표 열쇠. 기기 표에 목표가 없을 때 쓴다.
+ function accountGoal(){
+  const p=profileOf();if(!p?.consent)return '';
+  const r=p.primaryReason||(Array.isArray(p.reasons)&&p.reasons.length===1?p.reasons[0]:null);
+  return Object.keys(GOAL_REASONS).find(k=>GOAL_REASONS[k]===r)||'';
+ }
  function currentPlan(){try{education()?.refresh?.();return education()?.metrics?.().plan||null;}catch{return null;}}
  async function stateOf(view){
   const who=owner(),arrival=arrivalOf(who),guest=who==='guest',pc=!!native();
   let hangul='ask';try{const answer=await hangulReading(who);hangul=answer?.answer==='new'?'new':answer?.answer==='reads'?'reads':'ask';}catch{hangul='ask';}
   const mark=readMark(who);
   const {plan,alts}=planState(currentPlan(),{label:entry=>home.planLabel?.(entry)||entry?.label||''});
-  let consent={needed:true,label:'',note:''};try{consent=goalConsent()||consent;}catch{}
+  let consent={needed:true,label:'',note:''};try{consent={...consent,...(goalConsent()||{})};}catch{}
+  // 이미 학습 목표 저장에 동의한 학생에게는 체크 상자를 다시 그리지 않는다(학습 목표 창과 같다).
+  if(profileOf()?.consent)consent={...consent,needed:false};
   return {view,lang:currentLang(),who:pc?'pc':guest?'guest':'login',dream:arrival?.dream||'idol',student:studentOf(arrival),record:recordOf(arrival,{guest}),
-   hangul,after:!!mark.after,goal:view==='front'?(mark.goal||''):'',step:'',plan,alts,today:todayOf(arrival,mark,{guest,pc,view}),position:null,consent,reduced:!!home.state?.reduced};
+   hangul,after:!!mark.after,goal:view==='front'?(mark.goal||accountGoal()):'',step:'',plan,alts,today:todayOf(arrival,mark,{guest,pc,view}),position:null,consent,reduced:!!home.state?.reduced};
  }
  // 「오늘 한 것」: 있는 사실만. card · lines · heard · mom은 틀이 세 언어 글로 쓰고, practice는 그 활동의 화면 언어 이름을 그대로 쓴다.
  function todayOf(arrival,mark,{guest,pc,view}){
@@ -128,12 +141,14 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  function finished(pending){
   const {entry,at}=pending;
   if(entry.route==='lesson'&&entry.lessonId){try{const done=life.progress?.lessonState?.(entry.lessonId)?.completedAt,t=typeof done==='number'?done:Date.parse(done);return Number.isFinite(t)&&t>=at-1000;}catch{return false;}}
-  const plan=currentPlan();
-  return !!plan?.selected&&plan.selected.id!==entry.id;
+  // 레슨이 아닌 활동(놀이 · 짧은 연습 · 진단 · 복습 · 시험 형식)은 끝낸 기록을 따로 읽지 못한다 — 연 뒤에 엔진의 추천이 바뀌었을 때만 마친 것으로 본다.
+  const now=currentPlan()?.selected?.id||null;
+  return !!pending.before&&!!now&&now!==pending.before;
  }
  async function show(view){
   const s=session;if(!s?.api)return;
-  try{s.view=view;s.api.show(await stateOf(view));}catch(error){console.warn('Front state failed',error);}
+  const who=owner();s.view=view;
+  try{const next=await stateOf(view);if(session===s&&s.view===view&&owner()===who&&s.owner===who)s.api.show(next);}catch(error){console.warn('Front state failed',error);}
  }
 
  /* ── 틀 ── 서울행과 같은 전체 화면 dialog. 레슨 · 게임 시트(#world-panel)는 그 위에 모달로 뜨고, 닫히면 앞면을 다시 그린다 */
@@ -169,7 +184,10 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  // 관문을 지난 뒤(onEnter) 부른다. 앞면 학생이면 틀을 올리고 참을 돌려준다.
  async function enter(){
   if(!free())return false;
-  const who=owner(),view=frontView({arrival:arrivalOf(who),mark:readMark(who),native:!!native()});
+  const who=owner(),mark=readMark(who);
+  let view=frontView({arrival:arrivalOf(who),mark,native:!!native()});
+  // 다른 기기에서 이미 목표를 골랐으면 둘째 날 아침의 목표 질문을 다시 하지 않는다.
+  if(view==='day2'&&!mark.goal&&accountGoal())view='front';
   const s=mount();
   const api=await Promise.race([s.ready,new Promise(res=>setTimeout(()=>res(null),FRAME_WAIT_MS))]);
   if(!api||session!==s||owner()!==who){if(session===s)drop();return false;}
@@ -186,8 +204,10 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   async answerHangul(value){
    // 관문의 한글 질문과 같은 질문이라 출처 값도 'question'이다(학습 기록이 받는 값만 쓴다).
    if(!same()||!['reads','new'].includes(value))return null;
-   try{await setHangulReading(value,owner(),{via:'question'});}catch(error){home.toast?.(error?.message||'');return null;}
-   return stateOf(session.view);
+   const s=session,who=owner();
+   try{await setHangulReading(value,who,{via:'question'});}catch(error){home.toast?.(error?.message||'');return null;}
+   if(session!==s||!same()||owner()!==who)return null;
+   return stateOf(s.view);
   },
   async chooseGoal(goal,{consent=false}={}){
    if(!same())return null;
@@ -209,14 +229,24 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    if(!same())return null;
    const plan=currentPlan(),entry=[plan?.selected,...(plan?.alternatives||[])].find(e=>e?.id===token);
    if(!entry)return null;
-   session.pending={entry,at:Date.now(),view:session.view};
-   return launch(entry);
+   const s=session;s.pending={entry,at:Date.now(),view:s.view,before:plan?.selected?.id||null};
+   try{await launch(entry);}catch(error){if(s.pending?.entry===entry)s.pending=null;throw error;}
+   // 시트가 뜨지 않았으면(준비 실패 · 취소) 남긴 기록을 지운다 — 다른 시트가 닫힐 때 첫날 끝을 넘기지 않게.
+   if(s.pending?.entry===entry&&!document.querySelector('#world-panel')?.open)s.pending=null;
+   return null;
   },
-  async openStory(){if(!same()||native())return null;return openStory?.();},
-  async openTab(tab){if(!same())return null;if(tab==='learn')return openLife('packs');if(tab==='play')return home.showPlay?.();return null;},
-  async openAll(){if(!same())return null;try{return education()?.position?.();}catch{return null;}},
-  async openMe(){if(!same())return null;return profile?.();},
-  async signIn(){return signIn?.();}
+  // 「이야기」는 서울행 자기 창을 띄운다(#world-panel이 아니다) — 닫히면 1화 기록 · 엄마 답이 바뀌었을 수 있어 새 state를 돌려준다.
+  async openStory(){
+   if(!same()||native())return null;
+   const s=session,who=owner();s.pending=null;
+   try{await openStory?.();}catch{}
+   if(session!==s||owner()!==who)return null;
+   return stateOf(s.view);
+  },
+  async openTab(tab){if(!same())return null;session.pending=null;if(tab==='learn')return openLife('packs');if(tab==='play')return home.showPlay?.();return null;},
+  async openAll(){if(!same())return null;session.pending=null;try{return education()?.position?.();}catch{return null;}},
+  async openMe(){if(!same())return null;session.pending=null;return profile?.();},
+  async signIn(){if(session)session.pending=null;return signIn?.();}
  });
  // 고른 활동 열기 — 학습 화면 launch(world-learning-ui.mjs)와 같은 갈래. 첫날에는 목표 창을 거치지 않는다(네 갈래 검토 12절 ③).
  function launch(entry){
@@ -228,5 +258,5 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   if(entry.route==='mock')return ed?.mock?.();
   return openLife('start',entry.lessonId);
  }
- return Object.freeze({on,free,enter,drop,onIdentity,active:()=>!!session,host});
+ return Object.freeze({on,soon,free,enter,drop,onIdentity,active:()=>!!session,host});
 }

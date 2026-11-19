@@ -117,8 +117,9 @@ function amb(name, vol, sec = 1.2) {
 }
 function ramp(a, to, sec) {
   if (!a) return;
-  const from = a.volume, t0 = performance.now();
-  (function f(t) { const k = Math.min(1, (t - t0) / (sec * 1000)); a.volume = Math.max(0, Math.min(1, from + (to - from) * k)); if (k < 1) requestAnimationFrame(f); else if (to === 0) a.pause(); })(t0);
+  const from = a.volume, t0 = performance.now(), id = (a._ramp || 0) + 1;
+  a._ramp = id;   // 새 램프가 앞 램프를 이긴다 — 껐다 곧 켜도 앞의 「0까지」 램프가 멈추지 않게
+  (function f(t) { if (a._ramp !== id) return; const k = Math.min(1, (t - t0) / (sec * 1000)); a.volume = Math.max(0, Math.min(1, from + (to - from) * k)); if (k < 1) requestAnimationFrame(f); else if (to === 0) a.pause(); })(t0);
 }
 function stopAmb(sec = 1) { Object.values(S.amb).forEach(a => ramp(a, 0, sec)); }
 function noise(c, len) { const b = c.createBuffer(1, c.sampleRate * len, c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; }
@@ -236,6 +237,7 @@ function sheet(kind) {
     body = `<img class="momshot" src="${NOTE}" alt="엄마의 쪽지: 공부 잘 돼? 친구 있어? 엄마도 한국말 해 볼래. 맞아?"><div class="myreply"><span>${ok ? '맞아.' : '있어. ㅅ 두 개!'}</span></div>`;
   }
   card.innerHTML = `<div class="sheet-head"><b>${esc(head)}</b><button type="button" data-act="close">${esc(ui('닫기'))}</button></div>${body}`;
+  box.setAttribute('aria-label', head);   // 화면 읽기: 이름 있는 대화상자
   box.classList.add('on'); sfx('paper'); setTimeout(() => card.focus({preventScroll: true}), 60);
   [...v.children].forEach(c => { if (c !== box) c.inert = true; });   // 10g: 판이 열린 동안 초점은 판 안에만
 }
@@ -345,7 +347,7 @@ function homeView() {
     // PC 앱 창: 서울행이 없어 서하를 아직 만나지 않았다 — 사람 없이 화면 글로
     const pcLine = plan.line ? plan.line : P.after ? josa(plan.title, '다음은 ‘{t}’이에요', '다음은 ‘{t}’예요') : plan.title === '첫 인사 세 마디' ? '처음 만나는 사람에게 ‘{t}’부터 해요' : '오늘은 ‘{t}’부터 해요';
     lead = P.pc
-      ? `<h1 class="lede">${speech(pcLine, {t: plan.title})}${sub(pcLine, {t: plan.title})}</h1>`
+      ? `${day2 && goalName() && !isHangul(plan) ? `<p class="who pcg">${choseLine()}</p>` : ''}<h1 class="lede">${speech(pcLine, {t: plan.title})}${sub(pcLine, {t: plan.title})}</h1>`   // PC: 서하 이름 줄이 없어 고른 목표 · 바꾸기를 따로 한 줄
       : `<p class="who"><span class="face" style="background-image:url(assets/seoha.webp)" aria-hidden="true"></span><b>${esc(SEOHA)}</b>${day2 && goalName() && !isHangul(plan) ? choseLine() : ''}</p><h1 class="lede">${speech(line, {t: plan.title})}${sub(line, {t: plan.title})}</h1>`;
   }
   const opts = optionsFor();
@@ -550,6 +552,7 @@ function render() {
     const goals = box.classList.contains('goals');
     const opts = goals ? null : optionsFor();
     box.dataset.start = goals ? String(goalStart()) : String(pickIndex(opts));
+    if (opts) { const nb = v.querySelectorAll('.rnav button'), i0 = Number(box.dataset.start) || 0; if (nb.length === 2) { nb[0].disabled = i0 <= 0; nb[1].disabled = i0 >= opts.length - 1; } }   // 첫 칸에서도 갈 수 없는 쪽 화살표는 끈다
     RAIL = mountRail(box, {loop: goals,
       onCenter: i => { stopSay(); const cap = v.querySelector('.cap'); cap.classList.remove('swap'); void cap.offsetWidth; cap.innerHTML = goals ? goalCap(i) : capHTML(opts[i]); cap.classList.add('swap'); fitToday(true); const st = v.querySelector('.start small'); if (st && opts) st.textContent = mins(opts[i].min); if (opts) { const nb = v.querySelectorAll('.rnav button'); if (nb.length === 2) { nb[0].disabled = i === 0; nb[1].disabled = i === opts.length - 1; } } },
       onTap: (i, el) => { const s = el.querySelector('.pcard'); sfx('tap'); if (!calm() && s && goals) s.animate([{transform: 'none'}, {transform: 'scale(.95) rotate(-1.5deg)', offset: .4}, {transform: 'none'}], {duration: 380, easing: 'cubic-bezier(.3,.7,.3,1)'}); }
@@ -677,7 +680,8 @@ function refreshFoot() {   // 한글 답 뒤: 아래 덩어리만 다시 그린�
 // 답(한글): 누른 카드를 고르고 → 다음
 function pressAns(b, then) {
   b.closest('.chs').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-  sfx('tap'); setTimeout(then, calm() ? 0 : 420);
+  busy = true;   // 누름 뒤 기다리는 동안 다른 답 · 「나중에」를 받지 않는다
+  sfx('tap'); setTimeout(() => { busy = false; then(); }, calm() ? 0 : 420);
 }
 
 let busy = false;
@@ -729,10 +733,10 @@ app.addEventListener('click', e => {
   if (b.dataset.hangul) {   // 밤 끝 화면 한글 질문: 답하면 아래 덩어리만 다시
     sfx('tap'); b.closest('.chs, .askq').querySelectorAll('[data-hangul]').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
     const k = b.dataset.hangul;
-    if (k === 'skip') { L.hangul = 'skip'; syncP(); setTimeout(refreshFoot, 460); return; }
+    if (k === 'skip') { L.hangul = 'skip'; syncP(); busy = true; setTimeout(() => { busy = false; refreshFoot(); }, 460); return; }
     busy = true; TRANS = true; PENDING = null;
     Promise.all([call('answerHangul', k), wait(460)]).then(([res]) => {
-      const next = res && res.view ? res : PENDING; PENDING = null; TRANS = false; busy = false;
+      const next = PENDING || (res && res.view ? res : null); PENDING = null; TRANS = false; busy = false;   // 기다리는 동안 host가 보낸 더 새 state가 있으면 그것을
       if (next) take(next); else state = {...state, hangul: k};
       syncP(); refreshFoot();
     });
@@ -829,8 +833,10 @@ async function findHost() {
   let h = get();
   for (let i = 0; !h && window.parent !== window && i < 30; i++) { await wait(50); h = get(); }
   if (h) return h;
+  // 앱 틀 안에서는 가짜 학생 화면을 띄우지 않는다 — host가 끝내 없으면(앱이 틀을 떼는 중) 빈 채로 둔다. 가짜 host는 이 폴더를 혼자 열었을 때만.
+  if (window.parent !== window) return null;
   const {createDevHost} = await import('./dev-host.mjs');
   return createDevHost();
 }
 const host = await findHost();
-host.ready(api);
+if (host) host.ready(api);

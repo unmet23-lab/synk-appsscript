@@ -90,7 +90,7 @@ if (OFF) {
 }
 
 // ── 첫날 끝 ──
-await until('앞면 틀', () => page.evaluate(() => document.querySelector('#front-layer')?.open) && F(), 20000);
+await until('앞면 틀', async () => (await page.evaluate(() => !!document.querySelector('#front-layer')?.open)) && F(), 20000);
 await until('첫날 끝 화면', () => inF(() => !!document.querySelector('.view.night:not(.off)')), 20000);
 await sleep(2500); await shot('1-첫날끝');
 check(!await page.evaluate(() => document.querySelector('#world-panel')?.open), '튜터 고르기 · 입장 관문 시트가 안 뜸');
@@ -131,7 +131,7 @@ if (bye) {
 if (!LOGIN) await page.reload({waitUntil: 'domcontentloaded'});
 // 같은 탭에서는 오프닝을 본 뒤라 타이틀 없이 바로 들어갈 수 있다
 if (!LOGIN && await until('다시 연 타이틀 또는 앞면', () => page.evaluate(() => window.__synkOpening?.stage?.() === 'title' || !!document.querySelector('#front-layer')?.open)) && await page.evaluate(() => window.__synkOpening?.stage?.() === 'title')) { await sleep(800); await page.mouse.click(W / 2, H * .55); }
-await until('다시 연 앞면', () => page.evaluate(() => document.querySelector('#front-layer')?.open) && F(), 20000);
+await until('다시 연 앞면', async () => (await page.evaluate(() => !!document.querySelector('#front-layer')?.open)) && F(), 20000);
 const home = await until('첫날 맞춤 화면', () => inF(() => !!document.querySelector('.view') && !document.querySelector('.view.night')), 15000);
 await sleep(1800); await shot('3-첫날맞춤');
 if (home) {
