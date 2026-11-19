@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f5",
+ "text": "그럼 네가 골라!",
+ "dur": 1.327,
+ "words": [
+  {
+   "text": "그럼",
+   "start": 0.02,
+   "end": 0.262
+  },
+  {
+   "text": "네가",
+   "start": 0.342,
+   "end": 0.564
+  },
+  {
+   "text": "골라!",
+   "start": 0.624,
+   "end": 1.327
+  }
+ ],
+ "source": {
+  "key": "4b3b257c21543d18535dc6bad2cbbd4f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1119,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "글쎄… 참을성이 바닥난 친구가 메뉴판을 몽글 앞에 내밀며 버럭 소리친다.",
+   "next": "…아무거나~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 207
+ }
+}

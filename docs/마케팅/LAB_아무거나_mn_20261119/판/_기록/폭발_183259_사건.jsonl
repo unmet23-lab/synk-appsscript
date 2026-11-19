@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f327-0133-7b60-8760-48102dc96f5f"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one portrait image with the friend’s outburst, Mongle’s calm stare, and the picture-only menu between them.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"An exasperated felt friend thrusts a food-picture menu toward calm Mongle in the warm lantern-lit alley."}}
+{"type":"turn.completed","usage":{"input_tokens":100927,"cached_input_tokens":85888,"cache_write_input_tokens":0,"output_tokens":1785,"reasoning_output_tokens":264}}

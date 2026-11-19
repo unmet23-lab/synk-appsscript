@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f327-0990-7da1-982a-f0e66b75020d"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"몽글의 눈웃음과 네 가지 음식 메뉴판을 중심으로, 요청하신 세로 이미지 한 장을 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"친구가 든 음식 메뉴판 앞에서 몽글이 눈웃음을 지으며 둥실 떠 있는 따뜻한 밤 골목 장면입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":110714,"cached_input_tokens":92416,"cache_write_input_tokens":0,"output_tokens":1671,"reasoning_output_tokens":271}}

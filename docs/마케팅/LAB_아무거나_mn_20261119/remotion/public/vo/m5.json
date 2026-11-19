@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m5",
+ "text": "…아무거나~",
+ "dur": 1.036,
+ "words": [
+  {
+   "text": "…아무거나~",
+   "start": 0.24,
+   "end": 1.036
+  }
+ ],
+ "source": {
+  "key": "9515a8a71a3610e0ef99176a842ff459",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1120,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "참다못한 친구가 메뉴판을 내밀며 「그럼 네가 골라!」 하고 소리친다. 메뉴판을 한참 보던 몽글이 아무 일 없다는 듯 해맑게 또 말한다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 328
+ }
+}

@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f2",
+ "text": "떡볶이?",
+ "dur": 0.757,
+ "words": [
+  {
+   "text": "떡볶이?",
+   "start": 0.09,
+   "end": 0.757
+  }
+ ],
+ "source": {
+  "key": "64dc5c619a909f59b22ae06d3ffe55aa",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1119,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "아무거나~ 친구가 떡볶이 가게를 가리키며 밝게 제안한다.",
+   "next": "그건 좀…"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": null
+ }
+}

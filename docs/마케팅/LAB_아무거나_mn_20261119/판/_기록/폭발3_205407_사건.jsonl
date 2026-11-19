@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f3a8-3722-7330-b8d1-24b4d2e83dc0"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use Image 1 as the base and change only the friend’s pose to the next beat of his shout.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The friend lifts a foot to stamp and thrusts the menu board toward calm Mongle, shouting even louder."}}
+{"type":"turn.completed","usage":{"input_tokens":130004,"cached_input_tokens":109952,"cache_write_input_tokens":0,"output_tokens":1453,"reasoning_output_tokens":123}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f331-60c9-7b82-8779-07718ec30a68"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"참고 이미지의 모습과 양모 질감을 살려, 치킨 가게 앞의 설레는 장면을 세로 이미지 한 장으로 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"따뜻한 치킨 가게 앞에서 두 손을 모은 친구와 치킨을 바라보는 몽글의 양모 인형 장면입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":48697,"cached_input_tokens":36352,"cache_write_input_tokens":0,"output_tokens":1844,"reasoning_output_tokens":518}}

@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Subject: a needle-felted wool doll of a young Korean university student, the "friend" character of a short series. He stands alone, facing the camera straight on, framed from the knees up, his face large and fully visible in the upper-middle of the image. He smiles warmly with a small open stitched mouth.
+
+His look (keep every detail exactly like this — this picture will be the face and outfit reference for every other picture of him):
+- short, fluffy, curly dark-brown wool hair that sits above the eyebrows (nothing covers the eyes)
+- warm peach felt skin, two glossy round black bead eyes, short dark-brown felt eyebrows, a small rounded felt nose, soft pink felt cheeks
+- an olive-green felt jacket, open at the front, sleeves reaching the wrists
+- a cream ribbed knit sweater with a round neck under the jacket
+- dark-brown felt trousers, cream felt sneakers with white laces
+- no hat, no glasses, no bag, no scarf
+
+Background: a Korean food alley at night in late November, softly out of focus — warm paper lanterns, glowing shop windows, a few yellow ginkgo leaves on the cobblestones. No cherry blossoms.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm natural light, gentle depth of field, cute but not babyish (for university students and young workers). Absolutely no text, letters, numbers, logos or symbols anywhere (signs and windows stay blank or show only abstract felt shapes).

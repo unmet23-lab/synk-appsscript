@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1119,
+  "lufs": -16
+ },
+ "made": "2026-11-19T09:40:15.833Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "아무거나~",
+   "dur": 1.404,
+   "syllablesPerSec": 2.85,
+   "src": "m1.wav",
+   "key": "27a3aab3a5283e6e929bea8ff2dd8131",
+   "words": 1
+  },
+  {
+   "id": "m2",
+   "text": "그건 좀…",
+   "dur": 1.239,
+   "syllablesPerSec": 2.42,
+   "src": "m2.wav",
+   "key": "449abf347833905555088fa083771a41",
+   "words": 2
+  },
+  {
+   "id": "m3",
+   "text": "다른 거 없어?",
+   "dur": 1.024,
+   "syllablesPerSec": 4.88,
+   "src": "m3.wav",
+   "key": "e704c0f8d3af57a007adefa8e3e84582",
+   "words": 3
+  },
+  {
+   "id": "m4",
+   "text": "글쎄…",
+   "dur": 1.057,
+   "syllablesPerSec": 1.89,
+   "src": "m4.wav",
+   "key": "381b48625bf6187adcccf851de87048e",
+   "words": 1
+  },
+  {
+   "id": "m5",
+   "text": "…아무거나~",
+   "dur": 1.036,
+   "syllablesPerSec": 3.86,
+   "src": "m5.wav",
+   "key": "9515a8a71a3610e0ef99176a842ff459",
+   "words": 1
+  },
+  {
+   "id": "f1",
+   "text": "뭐 먹을래?",
+   "dur": 0.841,
+   "syllablesPerSec": 4.76,
+   "src": "f1.wav",
+   "key": "1dfb37ff66effebad9649617b4cb619b",
+   "words": 2
+  },
+  {
+   "id": "f2",
+   "text": "떡볶이?",
+   "dur": 0.757,
+   "syllablesPerSec": 3.96,
+   "src": "f2.wav",
+   "key": "64dc5c619a909f59b22ae06d3ffe55aa",
+   "words": 1
+  },
+  {
+   "id": "f3",
+   "text": "치킨?",
+   "dur": 0.558,
+   "syllablesPerSec": 3.58,
+   "src": "f3.wav",
+   "key": "1684fbde8a1551c7ab4e57804d5c0b72",
+   "words": 1
+  },
+  {
+   "id": "f4",
+   "text": "라면…?",
+   "dur": 0.545,
+   "syllablesPerSec": 3.67,
+   "src": "f4.wav",
+   "key": "87d8abdb98a8291b8f7aee812c8b3a8d",
+   "words": 1
+  },
+  {
+   "id": "f5",
+   "text": "그럼 네가 골라!",
+   "dur": 1.327,
+   "syllablesPerSec": 4.52,
+   "src": "f5.wav",
+   "key": "4b3b257c21543d18535dc6bad2cbbd4f",
+   "words": 3
+  }
+ ]
+}

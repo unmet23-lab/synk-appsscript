@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f331-4058-7823-b283-b1fb2dddf44b"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"몽글이 몸을 뒤로 기울여 떡볶이를 사양하는 장면을 만들겠습니다. imagegen 스킬을 적용해 두 캐릭터의 모습과 위쪽·왼쪽 여백을 지키겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"몽글이 매운 떡볶이를 피해 몸을 기울이고, 뒤에서 친구가 어색하게 웃는 따뜻한 밤 골목 장면입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":122313,"cached_input_tokens":104064,"cache_write_input_tokens":0,"output_tokens":1658,"reasoning_output_tokens":208}}

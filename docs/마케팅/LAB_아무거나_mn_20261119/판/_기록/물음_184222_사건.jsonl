@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f32f-9297-7a01-8692-21533d137ea6"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one portrait image with both characters fully visible, preserving the open space at the top and left.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The hungry friend and Mongle explore a warmly lit Korean food alley in handmade needle-felt style."}}
+{"type":"turn.completed","usage":{"input_tokens":153496,"cached_input_tokens":130944,"cache_write_input_tokens":0,"output_tokens":1912,"reasoning_output_tokens":547}}

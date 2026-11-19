@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f36f-30b7-7583-9448-ccbb74237384"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to keep the scene intact and change only the friend’s posture to halfway through his collapse.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The friend slumps forward toward the menu board, eyes closed and arms limp, beside smiling Mongle."}}
+{"type":"turn.completed","usage":{"input_tokens":162310,"cached_input_tokens":142592,"cache_write_input_tokens":0,"output_tokens":1500,"reasoning_output_tokens":178}}

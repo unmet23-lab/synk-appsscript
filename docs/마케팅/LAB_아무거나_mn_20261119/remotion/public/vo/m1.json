@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "아무거나~",
+ "dur": 1.404,
+ "words": [
+  {
+   "text": "아무거나~",
+   "start": 0.22,
+   "end": 1.404
+  }
+ ],
+ "source": {
+  "key": "27a3aab3a5283e6e929bea8ff2dd8131",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1119,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "저녁 먹자골목에서 친구가 「뭐 먹을래?」 하고 묻는다. 몽글이 아무 생각 없이 해맑고 느긋하게 대답한다.",
+   "next": "그건 좀…"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 377
+ }
+}
