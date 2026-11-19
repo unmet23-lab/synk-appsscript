@@ -92,7 +92,7 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* 종류가 다른 줄(이 PC) 앞에는 틈을 둔다 */
 .row.gap{margin-top:clamp(14px,2.6cqh,26px)}
 .more:has(+ .row.gap){border-bottom:1px solid var(--hair)}
-.quiet{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;margin:0;padding:0 0 4px;font:var(--small);color:rgba(243,241,236,.8);cursor:pointer;transition:color .25s ease,border-color .25s ease}
+.quiet{appearance:none;background:none;text-align:left;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;margin:0;padding:0 0 4px;font:var(--small);color:rgba(243,241,236,.8);cursor:pointer;transition:color .25s ease,border-color .25s ease}
 .quiet:hover{color:var(--paper);border-bottom-color:var(--paper)}
 .quiet[aria-pressed="false"]{border-bottom-color:transparent;color:var(--dim)}
 .quiet[aria-pressed="true"],.quiet.warn{color:var(--paper);border-bottom-color:var(--paper)}
@@ -173,7 +173,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 
 /* ── 자료(모두 예시) ─────────────────────────────────────────── */
 const DEPTS = [
-  {id:'mkt', name:'마케팅부', col:0, row:0, role:'블로그와 SNS 글을 쓰고 반응을 정리합니다.', dir:'문서\\마케팅'},
+  {id:'mkt', name:'마케팅부', col:0, row:0, role:'블로그와 SNS 글을 쓰고, 반응과 경쟁사를 살핍니다.', dir:'문서\\마케팅'},
   {id:'law', name:'법무부', col:1, row:0, role:'계약서와 약관을 읽고 위험한 조항을 짚습니다.', dir:'문서\\계약'},
   {id:'dev', name:'개발부', col:2, row:0, role:'코드를 고치고 시험을 돌립니다.', dir:'코드\\shop'},
   {id:'des', name:'디자인부', col:0, row:1, role:'상세 페이지와 배너 시안을 만듭니다.', dir:'문서\\디자인'},
@@ -244,6 +244,15 @@ const whyText = d => { const w = queueWhy[d]; return !w || w === 'pc' ? '이 PC�
 let scene = 'ask', staff = [];
 const toolOf = {}; DEPTS.forEach(d => toolOf[d.id] = d.id === 'dev' ? 'Codex' : 'Claude Code');
 const notes = {};
+/* 경쟁사 살펴보기: 마케팅부가 정해 둔 곳의 공개된 쪽을 매주 다시 읽고, 지난번과 달라진 것만 말한다(이름과 값은 모두 예시).
+   첫 값은 지난 월요일에 읽은 것이고, 「지금 읽기」를 누를 때마다 다음 값으로 넘어간다. 마지막 값은 바뀐 곳이 없는 때다 */
+const MISS = '한뼘상점의 후기는 로그인이 필요해 읽지 않았습니다';
+const SCOUTS = [
+  {head:'한 곳이 바뀌었습니다', when:'월 09:02', who:'온결상점', what:'기본 묶음을 39,000원에서 29,000원으로 내렸습니다', src:'가격 쪽 · onkyeol.example', rest:'한뼘상점과 두루상점은 지난번과 같습니다'},
+  {head:'한 곳이 바뀌었습니다', when:'방금', who:'두루상점', what:'무료 배송 기준을 5만 원에서 3만 원으로 낮췄습니다', src:'배송 안내 · duru.example', rest:'온결상점과 한뼘상점은 지난번과 같습니다', say:['두루상점이 무료 배송 기준을 낮췄습니다.', '마케팅부가 경쟁사 세 곳을 방금 다 읽었습니다.']},
+  {head:'세 곳 모두 지난번과 같습니다', when:'방금', rest:'온결상점, 한뼘상점, 두루상점', say:['경쟁사 세 곳은 지난번과 같습니다.', '마케팅부가 방금 다 읽었습니다.']},
+];
+let scoutI = 0, scouting = null, scoutT = [], scoutSay = null;
 
 /* ── 말 ─────────────────────────────────────────────────────── */
 const 받침 = w => { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; };
@@ -293,9 +302,20 @@ function moreHTML(d, st) {
   h += `<form class="give" data-give="${d.id}" style="--j:${j++}"><label class="sr" for="task-${d.id}">${esc(d.name)}에 맡길 일</label><input id="task-${d.id}" type="text" placeholder="${esc(d.name)}에 맡길 일" autocomplete="off"><button class="go" type="submit">맡기기</button></form>`;
   h += `<p class="more-acts" style="--j:${j++}"><span class="lab">실행</span><button class="quiet" type="button" aria-pressed="${tool === 'Claude Code'}" data-tool="Claude Code">Claude Code</button><button class="quiet" type="button" aria-pressed="${tool === 'Codex'}" data-tool="Codex">Codex</button></p>`;
   h += `<p class="more-note" style="--j:${j++}">${esc(notes[d.id] || `이 PC에 설치된 ${tool}로 실행합니다. 사용량은 내 ${plan} 구독에서 나갑니다.${tight}`)}</p>`;
+  if (d.id === 'mkt') { const r = rivalsHTML(j); h += r.h; j = r.j; }
   h += `<div class="row sub fact" style="--j:${j++}"><span class="nm">역할</span><span class="mid"><b>${esc(d.role)}</b></span><span class="when"><button class="quiet" type="button" data-noop>고치기</button></span></div>`;
   h += `<div class="row sub fact" style="--j:${j++}"><span class="nm">폴더</span><span class="mid"><b>${esc(d.dir)}</b></span><span class="when">${까지(seatCap())}</span></div>`;
   return h;
+}
+/* 마케팅부 안쪽의 경쟁사 줄: 바뀐 곳은 무엇이 어떻게 바뀌었는지와 읽은 곳, 읽은 때를 적고, 나머지는 한 줄로 묶는다 */
+function rivalsHTML(j) {
+  const r = SCOUTS[scoutI], read = esc(r.when) + ' 읽음';
+  const row = (cls, nm, b, small, when) => `<div class="row sub${cls}" style="--j:${j++}"><span class="nm">${nm}</span><span class="mid"><b>${b}</b><small>${small}</small></span><span class="when">${when}</span></div>`;
+  let h = row(' fact', '경쟁사', esc(scouting ? '세 곳을 다시 읽고 있습니다' : r.head), '세 곳을 월요일 09:00마다 다시 읽습니다', scouting ? '읽는 중' : '<button class="quiet" type="button" data-scout>지금 읽기</button>');
+  if (r.who) h += row('', esc(r.who), esc(r.what), `<button class="quiet" type="button" data-noop>${esc(r.src)}</button>`, read);
+  h += row(' fact', r.who ? '그 밖' : '읽은 곳', esc(r.rest), esc(MISS), r.who ? '' : read);
+  h += `<p class="more-acts" style="--j:${j++}"><button class="quiet" type="button" data-noop>목록 고치기</button><span class="lab">누구나 볼 수 있는 쪽만 읽습니다.</span></p>`;
+  return {h, j};
 }
 /* 이 PC: 프로세서와 메모리를 읽어 함께 일할 수 있는 인원을 정한다 */
 function pcHTML(snap) {
@@ -375,6 +395,7 @@ rowsEl.addEventListener('click', e => {
   if (t.dataset.term) { const s = staff.find(x => x.id === t.dataset.term); if (s) { s.state = 'work'; s.say = '승인을 받아 계약서 폴더를 정리하고 있습니다'; s.act = '명령 · 폴더 정리'; s.when = '방금'; render(true); } return; }
   if (t.dataset.tool) { const id = t.closest('.more').dataset.d; toolOf[id] = t.dataset.tool; delete notes[id]; render(true); return; }
   if (t.dataset.send) { send(t.dataset.send); return; }
+  if ('scout' in t.dataset) { scout(); return; }
   if ('diag' in t.dataset) diagnose();
 });
 /* 사무실을 처음 열 때와 「다시 살펴보기」: PC를 읽고, 몇이 함께 일할 수 있는지 한 문장으로 말한다 */
@@ -416,6 +437,26 @@ function give(id, txt) {
   }
   const who = rest || staff[staff.length - 1];
   setTimeout(() => { if (who.act === '시작하는 중') { who.act = '읽기 · ' + d.dir; render(true); } }, 2600);
+  return who;
+}
+/* 「지금 읽기」: 마케팅부의 직원 하나가 경쟁사의 공개된 쪽을 차례로 읽는다. 다 읽으면 지난번과 달라진 것을 맨 위 문장과 경쟁사 줄이 말한다.
+   자리가 없으면 다른 일처럼 차례를 기다린다 */
+function scout() {
+  if (scouting) return;
+  const who = give('mkt', '경쟁사 세 곳의 공개된 쪽을 다시 읽고 있습니다');
+  if (!who) { render(true); return; }
+  scouting = who;
+  const steps = ['읽기 · 온결상점 가격 쪽', '읽기 · 한뼘상점 새 글', '읽기 · 두루상점 배송 안내'];
+  who.act = steps[0];
+  steps.slice(1).forEach((a, i) => scoutT.push(setTimeout(() => { who.act = a; render(true); }, 1700 * (i + 1))));
+  scoutT.push(setTimeout(() => {
+    scoutI = Math.min(scoutI + 1, SCOUTS.length - 1); scouting = null;
+    const r = SCOUTS[scoutI];
+    Object.assign(who, {state:'done', say:'경쟁사 세 곳을 다 읽었습니다. ' + (r.who ? '한 곳이 바뀌었습니다' : '바뀐 곳이 없습니다'), act:'끝냄 · 경쟁사_47주.md', when:'방금'});
+    sayHold = scoutSay = r.say; render(true);
+    scoutT.push(setTimeout(() => { if (sayHold === scoutSay) { sayHold = null; render(true); } }, 4600));
+  }, 1700 * steps.length + 300));
+  render(true);
 }
 function send(to) {
   const s = staff.find(x => x.dept === 'lobby'); if (!s) return;
@@ -627,7 +668,7 @@ function wake() { meta.classList.remove('away'); clearTimeout(awayT); awayT = se
 addEventListener('pointermove', wake); addEventListener('keydown', wake); wake();
 $('#m-view').onclick = e => { viewTo = viewTo ? 0 : 1; e.currentTarget.textContent = '보기 · ' + (viewTo ? '비스듬히' : '위에서'); };
 const CASES = [['ask', '승인 대기'], ['calm', '평소'], ['rest', '모두 쉼']];
-function setCase(i) { scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
+function setCase(i) { scoutT.forEach(clearTimeout); scoutT = []; scoutI = 0; scouting = null; if (sayHold === scoutSay) sayHold = null; scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
 let ci = 0; $('#m-case').onclick = () => setCase(ci = (ci + 1) % CASES.length);
 const SIZES = [['꽉 참'], ['1080×700', 1080, 700], ['720×760', 720, 760], ['420×760', 420, 760], ['380×250', 380, 250]];
 let si = 0; $('#m-size').onclick = e => { si = (si + 1) % SIZES.length; const z = SIZES[si]; document.body.classList.toggle('sized', !!z[1]); stage.style.setProperty('--sw', z[1] ? z[1] + 'px' : '100%'); stage.style.setProperty('--sh', z[1] ? z[2] + 'px' : '100%'); e.currentTarget.textContent = '창 크기 · ' + z[0]; };
@@ -642,6 +683,7 @@ $('#m-sub').onclick = e => { sbi = (sbi + 1) % SUBCASES.length; e.currentTarget.
 if (/2d/.test(location.hash)) { view = viewTo = 0; $('#m-view').textContent = '보기 · 위에서'; }
 const h0 = CASES.findIndex(c => location.hash.includes(c[0])); if (h0 > 0) ci = h0;
 resize(); setCase(ci); requestAnimationFrame(frame);
+if (/mkt/.test(location.hash)) pin('mkt');          // #mkt: 마케팅부의 줄을 연 채로 연다
 })();
 </script>
 </body>
