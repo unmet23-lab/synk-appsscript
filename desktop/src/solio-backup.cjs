@@ -530,8 +530,9 @@ function createSolioBackup({
       if (digest.size !== feed.size || digest.sha256 !== feed.sha256 || holder.sha256 !== feed.sha256) throw fault('VERIFY_FAILED');
       const parsed = parseSignature(feed.signature);
       if (!verifySignature(digest.blake, parsed, keys)) throw fault('VERIFY_FAILED');
-      // 받는 동안 다른 계정으로 바뀌었으면 누른 계정의 주소를 넣지 않는다(GPT 다시 검수 GA3)
-      requestName = await writeSetupRequest({ paths, mode, hint: stillCurrent() ? hint : null, now: now(), fsImpl: fsImpl.promises });
+      // 받는 동안 로그인이 바뀌었으면(다른 계정이나 같은 계정의 새 로그인) 요청을 쓰지 않고 멈춘다(GPT 다시 검수 GA3 · 셋째 검수 GA4)
+      if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
+      requestName = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises });
       // 받는 동안 다른 길로 엔진이 깔렸으면 설치기를 다시 띄우지 않고 엔진 창을 연다(GPT 검수 GA4).
       // 지금 확인이 실패하면 깔렸는지 모르므로 띄우지 않는다(GPT 다시 검수 GA5)
       const fresh = await engineFresh();
@@ -543,6 +544,7 @@ function createSolioBackup({
         setInstall('opened');
         return;
       }
+      if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       setInstall('admin');
       let started = false;
       const ran = await holder.run(() => { started = true; setInstall('install'); });
@@ -591,7 +593,8 @@ function createSolioBackup({
       if (view === 'needs-setup') {
         setInstall('opening');
         let name;
-        try { name = await writeSetupRequest({ paths, mode, hint: stillCurrent() ? hint : null, now: now(), fsImpl: fsImpl.promises }); } catch { throw fault('REQUEST_FAILED'); }
+        if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
+        try { name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises }); } catch { throw fault('REQUEST_FAILED'); }
         try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); }
         catch {
           // 열지 못했으면 요청을 남기지 않는다. 나중에 따로 연 엔진이 실패한 시도의 요청을 읽지 않게 한다(GPT 검수 GA7)

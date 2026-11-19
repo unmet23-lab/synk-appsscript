@@ -745,7 +745,8 @@ function createWindow(){
     'synk:site-visits-snapshot':()=>siteVisitsCall(),
     'synk:sns-health-snapshot':()=>snsHealthCall(),
     'synk:solio-backup-snapshot':()=>solioBackupCall((service,account)=>service.snapshot(account)),
-    'synk:solio-backup-start':mode=>solioBackupCall((service,account)=>service.start(account,mode,{getHint:solioBackupHint,isCurrent:()=>accountStatus()?.signedIn===true&&accountStatus()?.account?.synk_user_id===account.synk_user_id})),
+    // 누를 때의 계정과 로그인 세대를 잡아 둔다. 같은 계정이라도 다시 로그인했으면 다른 회차로 본다(GPT 셋째 검수 GA4)
+    'synk:solio-backup-start':mode=>solioBackupCall((service,account)=>{const generation=accountStatus()?.sessionGeneration;return service.start(account,mode,{getHint:solioBackupHint,isCurrent:()=>{const now=accountStatus();return now?.signedIn===true&&now.account?.synk_user_id===account.synk_user_id&&now.sessionGeneration===generation;}});}),
     'synk:solio-backup-open':topic=>solioBackupCall((service,account)=>service.open(account,topic)),
     'synk:solio-backup-dismiss':()=>solioBackupCall((service,account)=>service.dismiss(account)),
   };

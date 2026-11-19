@@ -455,6 +455,7 @@ test('GA2: the hint is asked for the account that pressed the button', async () 
   assert.deepEqual(asked, [ME]);
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
   assert.ok(main.includes('result.accountId!==account.synk_user_id)return null'), 'main gives no hint once another account is signed in');
+  assert.ok(main.includes('now.sessionGeneration===generation'), 'a new sign-in of the same account counts as a change');
 });
 
 test('GA3: an installer that exits with an error is not 「done」 even if an engine is there', async () => {
@@ -521,7 +522,7 @@ test('GPT GA1 (again): a real hold reports a Korean path intact', { skip: proces
   finally { await holder.release(); }
 });
 
-test('GPT GA3 (again): the request keeps no hint once another account is signed in', async () => {
+test('GPT GA3 (again) · third GA4: a changed sign-in stops before any request or prompt', async () => {
   const key = minisignKey(), data = crypto.randomBytes(500), engineState = {}, env = appdata(temp());
   let current = true;
   const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }),
@@ -530,9 +531,9 @@ test('GPT GA3 (again): the request keeps no hint once another account is signed 
   const watch = setInterval(() => { const names = requestsIn(env); if (names[0] && !written) written = JSON.parse(fs.readFileSync(path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests', names[0]), 'utf8')); }, 1);
   await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current });
   await service.whenIdle(); clearInterval(watch);
-  const names = requestsIn(env);
-  const body = written || JSON.parse(fs.readFileSync(path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests', names[0]), 'utf8'));
-  assert.equal(body.hint, undefined);
+  assert.equal(written, null, 'no request is written once the sign-in changed (third round GA4)');
+  assert.deepEqual(requestsIn(env), []);
+  assert.equal((await service.snapshot(ME)).install.code, 'ACCOUNT_CHANGED');
 });
 
 test('GPT GA4 (again): a lost exit code is 「not confirmed」, never 「done」, and the request stays', async () => {
