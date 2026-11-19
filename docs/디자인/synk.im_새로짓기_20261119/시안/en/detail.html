@@ -43,7 +43,7 @@
 }
 *,*::before,*::after{box-sizing:border-box}
 html{background:var(--paper);scroll-behavior:smooth}
-body{margin:0;background:var(--paper);color:var(--ink);font:var(--t-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;word-break:keep-all;overflow-wrap:break-word;overflow-x:clip}
+body{margin:0;background:var(--paper);color:var(--ink);font:var(--t-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;letter-spacing:-.012em;word-break:keep-all;overflow-wrap:break-word;overflow-x:clip}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 h1,h2,h3,p,ul,ol,figure,dl,dd{margin:0;padding:0}
@@ -153,6 +153,9 @@ mark{background:none;color:inherit;font-weight:700}
 /* 둥근 판 */
 .e-fig{margin:0;width:100%;background:var(--mist);border-radius:var(--r-lg);padding:var(--pad);display:grid;justify-items:center;gap:var(--g2);overflow:hidden;text-align:left}
 .e-fig figcaption{font:var(--t-cap);color:var(--cap);text-align:center}
+/* 폭은 둘: 사진과 앱 화면은 넓게(본문 폭), 뜻을 보이는 판은 좁게. 큰 말과 판이 한 화면에 들어온다 */
+.e-fig{max-width:1040px}
+.e-fig.talk,.e-fig.gal,.e-fig:has(>img):not(.phone){max-width:none}
 .e-fig>img{width:100%;height:auto;border-radius:var(--r-sm);box-shadow:var(--shadow)}
 .e-fig.crop>img{aspect-ratio:16/8.6;object-fit:cover;object-position:top;box-shadow:none;-webkit-mask-image:linear-gradient(#000 78%,transparent);mask-image:linear-gradient(#000 78%,transparent)}
 .e-fig.phone>img{width:min(100%,320px);border-radius:38px;outline:8px solid #111;box-shadow:0 30px 56px -36px rgba(40,30,20,.42)}
@@ -160,8 +163,8 @@ mark{background:none;color:inherit;font-weight:700}
 .e-fig.photo>img{border-radius:0;box-shadow:none;aspect-ratio:16/8.4;object-fit:cover}
 .e-fig.photo figcaption{position:absolute;left:0;right:0;bottom:0;padding:clamp(40px,7svh,80px) 24px clamp(18px,2.4vw,28px);color:#fff;background:linear-gradient(0deg,rgba(0,0,0,.6),rgba(0,0,0,0))}
 /* 숫자의 뜻을 보이는 판 */
-.vnum,.viz li>b,.bar90 b{font:700 clamp(72px,11.1vw,160px)/.95 var(--sans);letter-spacing:-.055em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.vnum small,.bar90 b small{font:inherit;font-size:.36em;font-weight:600;letter-spacing:-.03em;margin-left:.08em}
+.vnum,.viz li>b,.bar90 b{font:600 clamp(72px,11.1vw,160px)/.95 var(--sans);letter-spacing:-.055em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vnum small,.bar90 b small{font:inherit;font-size:.36em;font-weight:500;letter-spacing:-.03em;margin-left:.08em}
 .e-fig.viz{padding-block:clamp(44px,7vw,96px);gap:var(--g3)}
 /* 1 · 7 · 30일: 점점 벌어지는 간격 */
 .days ol{--p:clamp(30px,3.4vw,46px);position:relative;display:grid;grid-template-columns:23fr 77fr auto;width:100%;padding-top:var(--p)}
