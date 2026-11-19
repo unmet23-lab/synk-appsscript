@@ -621,29 +621,42 @@ function 살아있나(pid) {
   try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; }
 }
 
-/** 짧은 전체 잠금 — 쥐고 있는 동안만 표를 치우고 센다. 풀기 함수를 돌려준다. */
-function 잠그기(폴더) {
+// Windows는 남이 막 지우는 폴더 자리에 mkdir를 하면 EEXIST가 아니라 EPERM을 낸다(지워지는 중인 이름은 손잡이가 다 닫힐 때까지 못 쓴다).
+// 11-13 · 11-19에 여러 세션이 함께 자리를 고르다 이 EPERM으로 올리기가 죽었다(재현: 아홉 프로세스 5초에 2,439번, 가장 길게 0.03초).
+// 그래서 이 셋은 잠깐 쉬고 다시 한다. 진짜 권한 문제는 한 번도 안 풀리니, 이 오류만 연달아 난 시간이 한도를 넘으면 그 오류를 던진다.
+const 잠금잠깐막힘 = new Set(['EPERM', 'EACCES', 'EBUSY']);
+const 잠금막힘한도ms = 30e3;
+
+/** 짧은 전체 잠금 — 쥐고 있는 동안만 표를 치우고 센다. 풀기 함수를 돌려준다. 막힘한도ms는 시험이 준다. */
+function 잠그기(폴더, { 막힘한도ms = 잠금막힘한도ms } = {}) {
   const 잠금 = path.join(폴더, 고르는중);
+  let 막힌때 = null; // 잠깐 막힘 오류가 연달아 나기 시작한 때 — 잠금이 보이면(EEXIST) 처음부터 다시 센다
   for (;;) {
     try {
       fs.mkdirSync(잠금);
       return () => { try { fs.rmdirSync(잠금); } catch { /* 이미 없다 */ } };
     } catch (e) {
-      if (e.code !== 'EEXIST') throw e;
-      try { if (Date.now() - fs.statSync(잠금).mtimeMs > 10e3) fs.rmdirSync(잠금); } catch { /* 그새 풀렸다 */ }
+      if (e.code === 'EEXIST') {
+        막힌때 = null;
+        try { if (Date.now() - fs.statSync(잠금).mtimeMs > 10e3) fs.rmdirSync(잠금); } catch { /* 그새 풀렸다 */ }
+      } else if (잠금잠깐막힘.has(e.code)) {
+        if (막힌때 === null) 막힌때 = Date.now();
+        else if (Date.now() - 막힌때 >= 막힘한도ms) throw e;
+      } else throw e;
       잠깐(20);
     }
   }
 }
 
-/** 자리 하나를 잡는다 → { 번호(먼저 쥔 수), 수, 기다린초, 놓기() }. 기다림ms 안에 못 잡으면 번호 null(자리 없이 돈다 — 막지는 않는다). */
-function 자리잡기(폴더, { 수 = 기본자리, 기다림ms = 30 * 60e3, 간격ms = 2000 } = {}) {
+/** 자리 하나를 잡는다 → { 번호(먼저 쥔 수), 수, 기다린초, 놓기() }. 기다림ms 안에 못 잡으면 번호 null(자리 없이 돈다 — 막지는 않는다).
+ *  전체 잠금을 끝내 못 만들면(막힘한도ms 동안 권한 오류만 났다) 그 오류를 던진다 — 막힘한도ms는 시험만 준다. */
+function 자리잡기(폴더, { 수 = 기본자리, 기다림ms = 30 * 60e3, 간격ms = 2000, 막힘한도ms = 잠금막힘한도ms } = {}) {
   const 시작 = Date.now();
   const 초 = () => Math.round((Date.now() - 시작) / 1000);
   fs.mkdirSync(폴더, { recursive: true });
   for (;;) {
     let 내자리 = null, 쥔수 = 0;
-    const 풀기 = 잠그기(폴더);
+    const 풀기 = 잠그기(폴더, { 막힘한도ms });
     try {
       const 지금 = Date.now();
       for (const 이름 of fs.readdirSync(폴더)) {

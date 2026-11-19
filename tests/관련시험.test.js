@@ -871,6 +871,77 @@ test('자리 — 고르다 죽은 프로세스의 전체 잠금(.고르는중)�
   가.놓기();
 });
 
+// 전체 잠금 폴더를 만드는 mkdir만 정해 둔 오류 코드 차례로 실패시킨다(코드가 다 떨어지면 진짜 mkdir). 자리 폴더를 만드는 mkdir는 그대로 둔다.
+function 잠금mkdir흉내(t, 코드들) {
+  const 진짜 = fs.mkdirSync;
+  const 남은 = [...코드들];
+  const 본 = { 시도: 0 };
+  t.mock.method(fs, 'mkdirSync', (경로, ...나머지) => {
+    if (path.basename(String(경로)) !== '.고르는중') return 진짜(경로, ...나머지);
+    본.시도++;
+    const 코드 = typeof 코드들 === 'string' ? 코드들 : 남은.shift();
+    if (!코드) return 진짜(경로, ...나머지);
+    throw Object.assign(new Error(`${코드}: 흉내, mkdir '${경로}'`), { code: 코드 });
+  });
+  return 본;
+}
+
+test('자리 — 전체 잠금 mkdir가 잠깐 EPERM · EACCES · EBUSY를 내도(Windows의 막 지워지는 폴더 자리) 죽지 않고 다시 해서 잡는다', (t) => {
+  const 폴더 = 자리폴더(t);
+  const 본 = 잠금mkdir흉내(t, ['EPERM', 'EPERM', 'EACCES', 'EBUSY']);
+  const 가 = 관련.자리잡기(폴더, { 수: 1, 기다림ms: 2000, 간격ms: 50 });
+  assert.equal(가.번호, 0);
+  assert.equal(본.시도, 5, '네 번 막힌 뒤 다섯째에 만들었다');
+  assert.equal(fs.existsSync(path.join(폴더, '.고르는중')), false, '잡은 뒤에는 전체 잠금을 푼다');
+  assert.equal(표들(폴더).length, 1);
+  가.놓기();
+});
+
+test('자리 — 전체 잠금 mkdir가 한도 내내 권한 오류만 내면(진짜 권한 문제) 끝없이 돌지 않고 그 오류를 던진다 · 다른 오류는 바로 던진다', (t) => {
+  const 폴더 = 자리폴더(t);
+  const 본 = 잠금mkdir흉내(t, 'EPERM');
+  const 앞 = Date.now();
+  assert.throws(() => 관련.자리잡기(폴더, { 수: 1, 막힘한도ms: 150 }), (e) => e.code === 'EPERM' && /mkdir/.test(e.message));
+  assert.ok(Date.now() - 앞 >= 150, '한도만큼은 다시 해 봤다');
+  assert.ok(Date.now() - 앞 < 10e3, '한도를 넘겨 오래 돌지 않았다');
+  assert.ok(본.시도 >= 3, `여러 번 다시 했다(${본.시도}번)`);
+  assert.deepEqual(표들(폴더), [], '못 잡았으면 표를 두지 않는다');
+  t.mock.restoreAll();
+
+  const 다른 = 잠금mkdir흉내(t, 'ENOSPC');
+  assert.throws(() => 관련.자리잡기(폴더, { 수: 1 }), (e) => e.code === 'ENOSPC');
+  assert.equal(다른.시도, 1, '다시 할 오류가 아니면 첫 번에 던진다');
+});
+
+test('자리 — 권한 오류 사이에 남이 쥔 잠금(EEXIST)이 보이면 연달아 막힌 시간을 처음부터 다시 센다(바쁠 때 한도에 걸려 죽지 않는다)', (t) => {
+  const 폴더 = 자리폴더(t);
+  // 한 바퀴가 20ms라 열 번을 번갈아 실패하면 200ms — 한도 60ms를 통째로 세면 던졌을 길이다
+  const 본 = 잠금mkdir흉내(t, Array.from({ length: 10 }, (_, i) => (i % 2 ? 'EEXIST' : 'EPERM')));
+  const 가 = 관련.자리잡기(폴더, { 수: 1, 막힘한도ms: 60 });
+  assert.equal(가.번호, 0);
+  assert.equal(본.시도, 11);
+  가.놓기();
+});
+
+test('자리 — 여러 프로세스가 같은 때 자리를 고르고 놓기를 되풀이해도 전체 잠금에서 죽는 프로세스가 없다(11-19 EPERM)', async (t) => {
+  const 폴더 = 자리폴더(t);
+  const 도구 = path.join(__dirname, '..', 'tools', '관련시험.js');
+  // 자리 수를 넉넉히 줘 전체 잠금에서만 다툰다. 고치기 전 판은 Windows에서 여섯 번 가운데 네 번 한 프로세스 이상이 EPERM으로 끝났다.
+  const 끝 = await Promise.all(Array.from({ length: 6 }, () => new Promise((resolve) => {
+    const 자식 = spawn(process.execPath, ['-e', `
+      const 관련 = require(${JSON.stringify(도구)});
+      for (let i = 0; i < 200; i++) 관련.자리잡기(${JSON.stringify(폴더)}, { 수: 99 }).놓기();
+    `], { stdio: ['ignore', 'ignore', 'pipe'] });
+    let 글 = '';
+    자식.stderr.on('data', (d) => { 글 += d; });
+    자식.on('exit', (코드) => resolve(코드 === 0 ? '됨' : (글.match(/E[A-Z]+: [^\n]*/) || [글.slice(0, 300)])[0]));
+    t.after(() => { try { 자식.kill(); } catch { /* 이미 끝남 */ } });
+  })));
+  assert.deepEqual(끝, Array(6).fill('됨'));
+  assert.deepEqual(표들(폴더), []);
+  assert.equal(fs.existsSync(path.join(폴더, '.고르는중')), false);
+});
+
 test('자리 — 다른 프로세스가 쥔 자리는 놓을 때까지 기다린다', async (t) => {
   const 폴더 = 자리폴더(t);
   const 도구 = path.join(__dirname, '..', 'tools', '관련시험.js');
