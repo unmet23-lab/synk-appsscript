@@ -172,20 +172,19 @@ test('요약 모으기: 복습 때를 모르던 요약 뒤 처음 아는 요약�
  clock+=60000;push.sync({digest:{...base,reviews:[2]}});assert.equal(syncs().length,2,'그 뒤 바뀐 때는 지금처럼 5분 모으기');
 });
 
-// 11-20 GPT GA1: 처음 아는 요약을 보낸 뒤 응답 전에 앱을 닫으면(계정 정리가 요청을 끊는다) 떠날 때 그 요약을 keepalive로 다시 보낸다.
-test('요약 보내기: 응답을 받지 못한 요약은 떠날 때 keepalive로 다시 간다 — 응답을 받은 뒤에는 다시 보내지 않는다',async()=>{
+// 11-20 GPT GA1: 처음 아는 요약을 보낸 뒤 응답 전에 앱을 닫으면 계정 정리(stop)가 그 요청을 끊는다. 그래서 그 요약은 keepalive로 보낸다
+// (keepalive 요청에는 끊는 신호를 달지 않는다 — world-account pushRequest). 떠날 때 다시 보내지는 않는다(다른 탭의 새 설정을 덮지 않게, 다시 검수 GA1).
+test('요약 보내기: 복습 때를 모르던 요약 뒤 처음 아는 요약은 keepalive로 간다 — 나머지는 지금처럼',async()=>{
  const b=browser({registered:true,subscribed:'https://fcm.googleapis.com/fcm/send/x'}),s=server({device:true,active:true});
- let hold=null;const request=(action,body,options)=>action==='sync'&&hold?(s.calls.push({action,body,options}),new Promise(()=>{})):s.request(action,body,options);
- const push=make(b,{...s,request});
+ const push=make(b,s);
  await push.setAccount('acc-1');
  const base={examDate:null,planWeek:null,lastStudyDay:'2026-10-21',studyHour:null,lang:'ko',timeZone:'Asia/Seoul'};
  const syncs=()=>s.calls.filter(call=>call.action==='sync');
- push.sync({digest:{...base}});await flush();
- hold=true;push.sync({digest:{...base,reviews:[1]}});assert.equal(syncs().length,2);
- push.flush();assert.equal(syncs().length,3,'응답을 못 받은 요약을 다시');
- assert.equal(syncs()[2].options.keepalive,true);assert.deepEqual(syncs()[2].body.digest.reviews,[1]);
- push.flush();assert.equal(syncs().length,3,'한 번만');
- hold=null;push.sync({settings:{frequency:1,hour:9}});await flush();push.flush();assert.equal(syncs().length,4,'응답을 받은 요청은 다시 보내지 않는다');
+ push.sync({digest:{...base}});assert.equal(syncs()[0].options.keepalive,undefined,'모르는 요약은 보통 요청');
+ push.sync({digest:{...base,reviews:[1]}});assert.equal(syncs()[1].options.keepalive,true,'처음 아는 요약');
+ push.sync({settings:{frequency:1,hour:9}});assert.equal(syncs()[2].options.keepalive,undefined,'설정은 보통 요청');
+ push.sync({digest:{...base,reviews:[1],lastStudyDay:'2026-10-22'}});assert.equal(syncs()[3].options.keepalive,undefined,'아는 요약 뒤 아는 요약은 보통 요청');
+ push.flush();assert.equal(syncs().length,4,'보낸 요청을 떠날 때 다시 보내지 않는다');
 });
 
 // 11-20 GPT GA2: 앞 요청의 응답이 뒤 요청의 응답보다 늦게 와도 화면의 계획은 뒤 응답 것이다.
