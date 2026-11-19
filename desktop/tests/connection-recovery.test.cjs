@@ -185,7 +185,7 @@ test('after three automatic reloads in ten minutes the next loss loads the stopp
   f.gone();f.run();await settle();assert.equal(f.contents.loads[4].url,STOPPED);f.contents.success(4);await settle();
   assert.equal(f.recovery.recoverIfGone(),false,'the stopped page is a screen');
   // 사람이 트레이에서 다시 열면(Platform의 showPlatformMain) 안내 화면에서 첫 화면으로 다시 잇는다. 「다시 연결」 고리도 잡는다
-  const reopened=f.recovery.retryIfDisconnected();await settle();assert.equal(f.contents.loads[5].url,ENTRY);f.contents.success(5);await reopened;
+  assert.equal(f.recovery.reopen(),true);await settle();assert.equal(f.contents.loads[5].url,ENTRY);f.contents.success(5);await settle();
   f.tick(10*60000);f.gone();f.run();await settle();assert.equal(f.contents.loads[6].url,ENTRY);f.contents.success(6);await settle();
   f.contents.url=STOPPED;assert.equal(f.contents.click(ENTRY).defaultPrevented,true,'the retry link on the stopped page is handled');f.recovery.dispose();
 });
@@ -310,6 +310,28 @@ test('after a person reconnects from the stopped page, the next loss within ten 
   f.gone();f.run();await settle();assert.equal(f.contents.loads[6].url,STOPPED,'the stopped page once more');f.contents.success(6);await settle();
   f.gone();f.run();await settle();assert.equal(f.contents.loads.length,7,'but not again by itself');f.recovery.dispose();
 });
+test('opening the window while the stopped page is still loading ends on the entry once it has loaded (엔진 다시 검수 -f GA1)',async()=>{
+  const f=await loaded();
+  for(let i=1;i<=3;i++){f.gone();f.run();await settle();f.contents.success(i);await settle();}
+  f.gone();f.run();await settle();assert.equal(f.contents.loads[4].url,STOPPED);
+  // 안내 화면이 아직 싣는 중에 트레이에서 Platform을 연다. 다 실린 뒤 첫 화면으로 잇는다
+  assert.equal(f.recovery.reopen(),false,'waits for the stopped page');assert.equal(f.contents.loads.length,5);
+  f.contents.success(4);await settle();assert.equal(f.contents.loads[5].url,ENTRY,'then the entry');f.contents.success(5);await settle();
+  assert.equal(f.contents.loads.length,6,'only once');
+  // 종료 알림 뒤 400ms 안에 열어도 저절로의 안내 화면 대신 첫 화면이다
+  f.gone();assert.equal(f.recovery.reopen(),false,'the pause still runs');f.run();await settle();assert.equal(f.contents.loads[6].url,ENTRY);f.recovery.dispose();
+});
+test('an open is answered by an entry attempt already in flight; when it ends on the connection guide only another open reconnects, not show or focus (엔진 다시 검수 -f GA1)',async()=>{
+  const f=await loaded();
+  f.gone('crashed',{notify:false});
+  // 창이 보이며 첫 화면을 싣기 시작하고, 곧이어 같은 열기 요청이 온다
+  assert.equal(f.recovery.recoverIfGone(),true);await settle();assert.equal(f.contents.loads[1].url,ENTRY);
+  assert.equal(f.recovery.reopen(),false);
+  f.contents.fail(1);await settle();assert.equal(f.contents.loads[2].url,STATUS);f.contents.success(2);await settle();
+  assert.equal(f.contents.loads.length,3,'one attempt for one open');
+  assert.equal(f.recovery.recoverIfGone(),false,'focus leaves the connection guide alone');assert.equal(f.contents.loads.length,3);
+  assert.equal(f.recovery.reopen(),true,'opening again reconnects');await settle();assert.equal(f.contents.loads[3].url,ENTRY);f.recovery.dispose();
+});
 test('Workspace reloads a lost renderer after a quit is cancelled to keep unsaved work, but not after leaving without saving (엔진 다시 검수 -b GA2)',async()=>{
   for(const [choice,reloads] of [[0,1],[1,0]]){
     const dialog={showMessageBoxSync:()=>choice};
@@ -329,9 +351,9 @@ test('main resets the quit flag for every client when unsaved writing cancels th
   assert.match(main,/window\.on\('show',\(\)=>\{connectionRecovery\?\.recoverIfGone\?\.\(\);\}\);/);
   assert.match(main,/window\.on\('focus',async\(\)=>\{connectionRecovery\?\.recoverIfGone\?\.\(\);/);
   // 이미 보이고 초점이 있는 창에는 show · focus가 오지 않으므로, 사람이 연 때도 부른다(화면 다시 검수 -d)
-  // 안내 화면이 떠 있으면 사람이 연 때 첫 화면으로 다시 잇는다(화면 다시 검수 -g)
-  assert.match(main,/function showPlatformMain\(\)\{[\s\S]{0,500}window\.show\(\);window\.focus\(\);if\(!connectionRecovery\?\.recoverIfGone\?\.\(\)\)void connectionRecovery\?\.retryIfDisconnected\?\.\(\);\}/);
-  assert.match(main,/sendTeachingView\(\);if\(!connectionRecovery\?\.recoverIfGone\?\.\(\)\)void connectionRecovery\?\.retryIfDisconnected\(\);/);
+  // 창 열기 요청은 안내 화면도 첫 화면으로 다시 잇고, 싣는 중이면 다 실린 뒤 잇는다(화면 다시 검수 -g · 엔진 다시 검수 -f GA1)
+  assert.match(main,/function showPlatformMain\(\)\{[\s\S]{0,700}window\.show\(\);window\.focus\(\);connectionRecovery\?\.reopen\?\.\(\);\}/);
+  assert.match(main,/sendTeachingView\(\);connectionRecovery\?\.reopen\?\.\(\);\}/);
 });
 test('main passes the quit flag so a window closing for quit is not reloaded',()=>{
   const main=fs.readFileSync(path.join(__dirname,'..','src','main.cjs'),'utf8');

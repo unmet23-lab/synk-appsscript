@@ -221,7 +221,7 @@ const yielded=runtime.clientId==='platform'&&packaged&&!smoke&&process.platform=
 if(yielded){/* 설치기에 넘겼다. app.exit(0)이 끝낸다 */}
 else if(!app.requestSingleInstanceLock())app.quit();
 else {
-  app.on('second-instance',(_event,argv)=>{if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();if(!connectionRecovery?.recoverIfGone?.())void connectionRecovery?.retryIfDisconnected();}});
+  app.on('second-instance',(_event,argv)=>{if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();connectionRecovery?.reopen?.();}});
   app.on('window-all-closed',()=>{if(process.platform!=='darwin'&&(!platformTray?.isActive()||platformTray.isQuitting()||desktopPreferences?.snapshot().preferences.closeToTray===false))app.quit();});
   app.on('activate',()=>{if(!appLocationReady)return;if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(platformTray?.isActive())platformTray.show();else if(!window||window.isDestroyed())createWindow();});
   app.whenReady().then(async()=>{
@@ -264,8 +264,8 @@ function showPlatformMain(){
   if(!mainInitialized)initializeMain();
   else if(!window||window.isDestroyed())createWindow();
   // 이미 보이고 초점이 있는 창에는 show · focus가 오지 않는다. 사람이 연 때도 화면이 없으면 되살린다(화면 다시 검수 -d).
-  // 안내 화면이 떠 있으면 Workspace의 다시 실행처럼 첫 화면으로 다시 잇는다(화면 다시 검수 -g)
-  else{if(window.isMinimized())window.restore();window.show();window.focus();if(!connectionRecovery?.recoverIfGone?.())void connectionRecovery?.retryIfDisconnected?.();}
+  // 안내 화면이 떠 있으면 Workspace의 다시 실행처럼 첫 화면으로 다시 잇는다(화면 다시 검수 -g). 안내 화면을 싣는 중이면 다 실린 뒤 잇는다(엔진 다시 검수 -f GA1)
+  else{if(window.isMinimized())window.restore();window.show();window.focus();connectionRecovery?.reopen?.();}
   deliverPendingAction();
 }
 /* 단축키 따위로 미뤄 둔 요청(명령 메뉴 열기 등)을 앱 창 화면에 한 번 전달한다. 창을 보이는 일과 따로 둔다.

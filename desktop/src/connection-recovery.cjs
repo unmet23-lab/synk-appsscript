@@ -14,10 +14,10 @@ function processAlive(pid){
    사건(화면 프로세스 종료 알림, 창이 보임, 초점, 열기 요청)은 「지금 화면이 있는지 보라」는 신호일 뿐이다.
    종료 알림은 작업 큐를 거쳐 늦게 올 수 있고, 오지 않는 죽음이 있는지도 모른다 */
 function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.now,setTimer=setTimeout,clearTimer=clearTimeout,isProcessAlive=processAlive}){
-  // want: 기다리는 동안 들어온 요청. 사람이 연 요청(person)이 하나라도 있으면 사람 쪽을 따른다. goneAt: 저절로 첫 화면을 다시 실은 때
+  // want: 기다리는 동안 들어온 요청. 여럿이면 순위가 높은 쪽을 따른다(창 열기 > 보임 · 초점 > 저절로). timerWant: 종료 알림 뒤 400ms 안에 들어온 요청. goneAt: 저절로 첫 화면을 다시 실은 때
   // failedDocument: 주 프레임 이동이 문서를 싣지 못하고 오류 문서(연결 거부 따위)가 실렸다. 다음 정상 실림(did-navigate)까지 화면으로 치지 않는다(엔진 다시 검수 -e GA1).
   // stoppedAt: 저절로 안내 화면을 실은 때. 10분 안에 한 번만 싣는다(엔진 다시 검수 -e GA2)
-  let disposed=false,started=false,current=null,goneTimer=null,settling=null,awaiting=null,want=null,personDuringTimer=false,failedDocument=false,stoppedAt=-Infinity;const goneAt=[];
+  let disposed=false,started=false,current=null,goneTimer=null,settling=null,awaiting=null,want=null,timerWant=null,failedDocument=false,stoppedAt=-Infinity;const goneAt=[];
   const live=()=>!disposed&&!contents.isDestroyed();
   const aborted=error=>error?.errno===-3||error?.code==='ERR_ABORTED';
   function start(kind){
@@ -73,19 +73,26 @@ function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.
     if(!isProcessAlive(contents.getOSProcessId?.()))return false;
     try{return Boolean(contents.mainFrame?.url);}catch{return false;}
   }
-  /* 화면이 없으면 첫 화면을 싣는다. 실었으면 true다. mode는 저절로(auto: 종료 알림 뒤)와 사람이 연 때(person)다.
+  const RANK={auto:0,person:1,open:2},higher=(a,b)=>!a||RANK[b]>RANK[a]?b:a;
+  /* 화면이 없으면 첫 화면을 싣는다. 실었으면 true다. mode는 저절로(auto: 종료 알림 뒤), 창이 보이거나 초점을 받음(person), 창 열기 요청(open)이다.
      저절로는 10분 안에 세 번까지 첫 화면을 싣고, 그 뒤에는 안내 화면을 싣는다. 실제로 실은 때만 센다(화면 다시 검수 -g).
-     사람이 연 때는 세지 않고 늘 첫 화면이다. 이 모듈의 연결 시도가 도는 중이거나 주 프레임이 싣는 중이면 끝난 뒤 다시 본다 */
+     사람 쪽(person, open)은 세지 않고 늘 첫 화면이다. 창 열기는 안내 화면이 떠 있어도 첫 화면으로 다시 잇는다.
+     이 모듈의 연결 시도가 도는 중이거나 주 프레임이 싣는 중이면 끝난 뒤 다시 본다 */
   function recover(mode){
     if(!live()||!started||isQuitting())return false;
     const pending=!!current?.pending;
     if(pending||contents.isLoadingMainFrame?.()){
-      want=want==='person'||mode==='person'?'person':'auto';
+      // 첫 화면을 잇는 시도가 이미 돌면 창 열기는 그 시도로 채워진다. 그 시도가 실패해 연결 안내가 떠도 한 번 더 잇지 않는다
+      want=higher(want,mode==='open'&&pending&&current.kind==='entry'?'person':mode);
       if(pending){if(!awaiting){const attempt=current.promise;awaiting=attempt;attempt.finally(()=>{if(awaiting===attempt){awaiting=null;resume();}});}}
       else if(!settling){settling=()=>{settling=null;resume();};contents.once('did-stop-loading',settling);}
       return false;
     }
-    if(hasScreen())return false;
+    if(hasScreen()){
+      // 안내 화면을 싣는 도중에 창을 열어 달라고 했어도, 다 실린 뒤 첫 화면으로 다시 잇는다(엔진 다시 검수 -f GA1)
+      if(mode==='open'&&onGuide(contents.getURL())){void connect();return true;}
+      return false;
+    }
     let kind='entry';
     if(mode==='auto'){
       const at=now();while(goneAt.length&&at-goneAt[0]>GONE_WINDOW_MS)goneAt.shift();
@@ -94,23 +101,27 @@ function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.
       else if(at-stoppedAt>GONE_WINDOW_MS){kind='stopped';stoppedAt=at;}
       else return false;
     }
-    if(mode==='person')stoppedAt=-Infinity;
+    else stoppedAt=-Infinity;
     current=null;void start(kind);return true;
   }
   function resume(){const mode=want||'auto';want=null;recover(mode);}
   function rendererGone(){
     if(!live()||isQuitting())return;
     clearTimer(goneTimer);
-    goneTimer=setTimer(()=>{goneTimer=null;const mode=personDuringTimer?'person':'auto';personDuringTimer=false;recover(mode);},GONE_DELAY_MS);
+    goneTimer=setTimer(()=>{goneTimer=null;const mode=timerWant||'auto';timerWant=null;recover(mode);},GONE_DELAY_MS);
   }
-  /* 창이 보이거나 초점을 받을 때, 그리고 사람이 창을 열어 달라고 할 때(이미 보이고 초점이 있어도) 부른다.
-     종료 알림을 받았는지와 상관없이 지금 화면이 없으면 첫 화면을 싣는다. 실었으면 true다 */
-  function recoverIfGone(){
-    if(goneTimer!==null){personDuringTimer=true;return false;}
-    return recover('person');
+  function request(mode){
+    if(goneTimer!==null){timerWant=higher(timerWant,mode);return false;}
+    return recover(mode);
   }
+  /* 창이 보이거나 초점을 받을 때 부른다. 종료 알림을 받았는지와 상관없이 지금 화면이 없으면 첫 화면을 싣는다. 실었으면 true다.
+     연결 안내는 그대로 둔다. 초점이 올 때마다 연결을 다시 시도하지 않는다 */
+  function recoverIfGone(){return request('person');}
+  /* 사람이 창을 열어 달라고 할 때(트레이, 두 번째 실행) 부른다. 이미 보이고 초점이 있는 창에도 온다.
+     화면이 없거나 안내 화면이 떠 있으면 첫 화면을 싣는다. 싣는 중이면 끝난 뒤 다시 본다 */
+  function reopen(){return request('open');}
   function dispose(){
-    if(disposed)return;disposed=true;current=null;awaiting=null;want=null;clearTimer(goneTimer);goneTimer=null;
+    if(disposed)return;disposed=true;current=null;awaiting=null;want=null;timerWant=null;clearTimer(goneTimer);goneTimer=null;
     if(settling){contents.removeListener('did-stop-loading',settling);settling=null;}
     contents.removeListener('did-start-navigation',navigationStarted);
     contents.removeListener('did-navigate',navigationCommitted);
@@ -125,6 +136,6 @@ function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.
   contents.on('will-navigate',retryLink);
   contents.on('render-process-gone',rendererGone);
   contents.on('destroyed',dispose);
-  return {connect,retryIfDisconnected,recoverIfGone,dispose};
+  return {connect,retryIfDisconnected,recoverIfGone,reopen,dispose};
 }
 module.exports={createConnectionRecovery,STATUS_URL};
