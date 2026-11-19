@@ -778,21 +778,25 @@ export function createCompanyApp(options={}) {
         const link=new URL(p.url);if(link.protocol!=='https:')continue;
         const publicationFormat=['youtube-shorts','youtube-video','instagram-reels'].includes(p.publicationFormat)?p.publicationFormat:previous?.publicationFormat||null;
         // 페이스북 줄에는 게시 성과가 같은 게시물을 찾을 칸 둘을 적는다 — 페이지 게시물 번호(pagePostId, 「페이지번호_게시물번호」)와 영상 번호(videoId).
-        // 칸으로만 저장하고 같은 게시물의 줄을 잇거나 합치지 않는다(11-19 유호님 결정). 이번 회차가 그 칸을 다 알 수 있었으면(전체 수집 · 목록 완전 · 영상 목록을
-        // 읽음, 게시물 번호는 post_id도 물음) 받은 값 그대로 적어 빈 값이면 지운다. 다 알 수 없었으면 빈 값에 앞 값을 둔다(8회차 GA3).
-        const facebook=channel.platform==='facebook',read=result.coverage?.videoPostIds,knows=facebook&&mode==='full'&&result.coverage?.inventoryComplete===true&&!!read;
+        // 칸으로만 저장하고 같은 게시물의 줄을 잇거나 합치지 않는다(11-19 유호님 결정). 게시물 번호는 수집기가 「이 줄에는 번호가 없다」고 밝힌 줄(null — post_id를
+        // 받았는데 그 게시물의 번호 줄이 아닌 영상)에서만 지우고, 밝히지 않은 줄(칸 없음 — post_id를 못 받은 영상)은 앞 값을 둔다(8회차 GA3 · 9회차 GA1 · GA7).
+        // 영상 번호는 이번 회차가 다 알 수 있었을 때(전체 수집 · 목록 완전 · 영상 목록을 읽음)만 빈 값으로 지우고, 아니면 앞 값을 둔다.
+        const facebook=channel.platform==='facebook',knows=facebook&&mode==='full'&&result.coverage?.inventoryComplete===true&&!!result.coverage?.videoPostIds;
         const pagePostId=facebook&&typeof p.pagePostId==='string'&&/^\d{1,50}_\d{1,50}$/.test(p.pagePostId)?p.pagePostId:null;
         const videoId=facebook&&typeof p.videoId==='string'&&/^\d{1,40}$/.test(p.videoId)?p.videoId:null;
-        const keys=!facebook?{}:{pagePostId:pagePostId||(knows&&read.asked===true?undefined:previous?.pagePostId)||undefined,videoId:videoId||(knows?undefined:previous?.videoId)||undefined};
+        const keys=!facebook?{}:{pagePostId:pagePostId||(p.pagePostId===null?undefined:previous?.pagePostId)||undefined,videoId:videoId||(knows?undefined:previous?.videoId)||undefined};
         store.put('posts',id,{...previous,id,channelId:channel.id,externalId:p.externalId,title:text(p.title,1000)||'제목 없음',url:link.href,publishedDate,publishedAt:p.publishedAt,thumbnailUrl:p.thumbnailUrl||null,publicationFormat,...keys,source:`api:${channel.platform}`,expiresAt,unavailableAt:null,lastSeenAt:stamp});
         const snapshot={id:`${id}:${date}`,postId:id,date,checkedAt:stamp,source:`api:${channel.platform}`,expiresAt,ownership},raw={};
         for(const key of metricKeys)snapshot[key]=raw[key]=count(p.metrics?.[key]);
         // 페이스북 당일 스냅샷: 이번 회차에 못 받은(null) 수치는 같은 날 앞서 받은 값을 지우지 않는다 — 조회수는 따로 받는 영상 목록에서 오고 그 목록만 실패한 회차가
-        // 있다(8회차 GA1). 조회수는 그 값의 영상 번호(videoId)를 스냅샷에 함께 두고, 이번 줄이 다른 영상을 가리키면 앞 값으로 채우지 않는다. 시각별 관측은 이번 값 그대로다.
+        // 있다(8회차 GA1). 담당이 같을 때만 채운다(9회차 GA3 — 앞 담당의 실적이 새 담당 스냅샷에 들지 않게). 조회수는 그 값의 영상 번호(videoId)를 스냅샷에 함께
+        // 두고, 이번에 적은 줄의 영상 번호(최근 수집이 바꾼 값 포함)가 그 영상이 아니면 앞 값으로 채우지 않는다(9회차 perf GA1). 영상 번호가 적히기 전 스냅샷(칸 없음)은
+        // 같은 영상으로 본다(9회차 GA6). 시각별 관측은 이번 값 그대로다.
         if(facebook&&mode==='full'){
-          const before=store.get('snapshots',snapshot.id),keepViews=!!before&&raw.views===null&&(!videoId||before.videoId===videoId);
+          const found=store.get('snapshots',snapshot.id),before=found&&JSON.stringify(found.ownership??null)===JSON.stringify(ownership??null)?found:null;
+          const rowVideo=keys.videoId??null,keepViews=!!before&&raw.views===null&&(before.videoId===undefined||before.videoId===rowVideo);
           if(before)for(const key of metricKeys)if(snapshot[key]===null&&(key!=='views'||keepViews))snapshot[key]=before[key]??null;
-          snapshot.videoId=raw.views!==null?videoId:keepViews?before.videoId??null:null;
+          snapshot.videoId=raw.views!==null?videoId:keepViews?before.videoId??rowVideo:null;
         }
         if(mode==='full')store.put('snapshots',snapshot.id,snapshot);
         if(Date.parse(p.publishedAt)>=Date.parse(stamp)-HYPE_RECENT_MS&&Date.parse(p.publishedAt)<=Date.parse(stamp)){

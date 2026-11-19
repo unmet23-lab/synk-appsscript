@@ -437,6 +437,21 @@ test('a Facebook post-address checkpoint finds its post by the page post id when
   assert.notEqual(point(otherPage.id).status, 'recorded', 'a different page number does not match');
 });
 
+// 9회차 GA2: 수집기는 post_id만으로 영상을 게시물 줄에 붙이지 않는다. 피드 주소로 찾은 줄에 지원 지표가 하나도 없으면 같은 페이지 게시물 번호의 영상 줄 수치를 쓴다.
+test('a Facebook feed-address checkpoint uses the video row of the same page post id when the feed row has no metric', async t => {
+  const videoAt = new Date(Date.parse(BASE) + 10 * 60000).toISOString();
+  const f = fixture(t, { collector: async () => ({ posts: [
+    { url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE, pagePostId: '123_700', videoId: null, metrics: { views: null, likes: null, comments: null, shares: null } },
+    { url: 'https://www.facebook.com/reel/555/', publishedAt: videoAt, pagePostId: '123_700', videoId: '555', metrics: { views: 9 } }],
+    coverage: { source: 'facebook-pages-api', inventoryComplete: true, status: 'complete' } }) });
+  f.store.put('channels', 'fb', { ...f.channel, id: 'fb', platform: 'facebook', canonicalUrl: 'https://www.facebook.com/synk' }); f.store.setSecret('channel:fb', { accessToken: 'synthetic' });
+  f.now(1);
+  const entry = f.service.register(f.owner, { channelId: 'fb', url: 'https://www.facebook.com/synk/posts/700', publishedAt: BASE }).entry;
+  f.now(24.5); await f.service.collectDue();
+  const point = f.service.list(f.owner).entries.find(item => item.id === entry.id).checkpoints[0];
+  assert.equal(point.metrics.views, 9); assert.equal(point.providerPublishedAt ?? null, null);
+});
+
 // 설계 검토 3 장면 4: 게시물 주소가 그 릴스 주소인 짝은 post_id가 달라도 한 줄이고, 그 릴스 주소로 등록한 기록이 영상 조회수를 받는다(수집기부터 체크포인트까지).
 test('a reel whose feed post carries its own address stays one row from the collector to the checkpoint even when post_id disagrees', async t => {
   const f = fixture(t, { collector: async () => collectChannel('https://facebook.com/profile.php?id=123', { accessToken: 'fixture' }, { fetchImpl: async raw => {

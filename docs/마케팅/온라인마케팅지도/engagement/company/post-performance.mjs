@@ -546,12 +546,16 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
             // 일반 게시물 주소로 등록한 페이스북 기록은 결과 줄의 페이지 게시물 번호(pagePostId)로도 찾는다 — 그 게시물이 이번 회차에 영상 목록에서만 와서
             // 게시물 주소가 결과에 없을 수 있다(11-19 post-performance 검수 GA2). 번호는 Meta가 준 그 게시물 자신의 번호라 게시 시각 대조는 기록의 시각 그대로 둔다
             // (영상 목록만의 줄은 영상의 시각만 알고 게시물 시각을 모른다). 주소의 앞 칸이 숫자(페이지 번호)면 그 번호까지 같아야 한다.
-            if (!post && row.platform === 'facebook') {
-              post = result?.posts?.find(item => samePagePost(row.postIdentity, item?.pagePostId));
-              if (post) { matchedAt = row.publishedAt; byNumber = true; }
+            // 주소로 찾은 줄에 지원 지표가 하나도 없을 때도 번호로 찾는다 — 수집기는 post_id만으로 영상을 게시물 줄에 붙이지 않아, 그 게시물의 조회수는 같은 번호의
+            // 영상 줄에 있을 수 있다(11-19 유호님 「post_id 붙이기 빼기」 · 9회차 GA2). 번호가 같은 줄 가운데 지표가 있는 줄을 먼저 쓴다.
+            const metricOf = item => !!item && Object.values(valuesAndReasons(item.metrics, row.platform).metrics).some(value => value !== null);
+            if (row.platform === 'facebook' && !metricOf(post)) {
+              const numbered = (result?.posts || []).filter(item => samePagePost(row.postIdentity, item?.pagePostId));
+              const byNum = numbered.find(metricOf) || (!post ? numbered[0] : null);
+              if (byNum) { post = byNum; matchedAt = row.publishedAt; byNumber = true; }
             }
             const published = matchedAt && Date.parse(matchedAt), mismatch = !!post && (!Number.isFinite(published) || Math.abs(published - Date.parse(row.publishedAt)) > 5 * 60000);
-            const hasMetric = post && Object.values(valuesAndReasons(post.metrics, row.platform).metrics).some(value => value !== null);
+            const hasMetric = metricOf(post);
             // 인사이트·Analytics의 일시 오류(한도·시간 초과·연결)로 지원 지표가 비었으면 바로 확정하지 않는다. 관측 기간 안에서 몇 번 더 본 뒤
             // 마지막 기회에만 있는 값으로 기록한다(10-20: 일시 오류 한 번이 조회·도달·공유·저장 없이 기록을 끝냈다). 늦게 반영되는 지표(laggedMetrics)는
             // 이 지점에 기록하지 않아 빈 칸으로 보지 않고, 응답에 칸이 없는 지표(릴스가 아닌 게시물의 릴스 지표)도 보지 않는다.

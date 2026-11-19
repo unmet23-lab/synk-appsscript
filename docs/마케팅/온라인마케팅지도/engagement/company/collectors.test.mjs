@@ -427,7 +427,7 @@ test('Facebook keeps the page post id of feed posts and of reels found only in t
   assert.deepEqual(videoFields, [['published', 'post_id']]);
   assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views, post.url]), [
     ['123_700', '123_700', 5, 'https://www.facebook.com/reel/555/'], ['556', '123_801', 6, 'https://www.facebook.com/reel/556/'], ['557', '123_802', null, 'https://www.facebook.com/reel/557/'],
-    ['558', null, null, 'https://www.facebook.com/reel/558/'], ['559', null, null, 'https://www.facebook.com/reel/559/'], ['560', null, null, 'https://www.facebook.com/reel/560/'], ['561', null, null, 'https://www.facebook.com/reel/561/'],
+    ['558', undefined, null, 'https://www.facebook.com/reel/558/'], ['559', undefined, null, 'https://www.facebook.com/reel/559/'], ['560', undefined, null, 'https://www.facebook.com/reel/560/'], ['561', undefined, null, 'https://www.facebook.com/reel/561/'],
   ]);
   assert.ok(result.posts.slice(1).every(post => post.externalId === post.videoId), 'a reel found only in the video list keeps its video id as externalId');
   assert.deepEqual(result.coverage.videoPostIds, { asked: true, videos: 7, withPostId: 3, matched: 1, agreed: 1, conflicts: 0 }, 'a bare post_id 700 becomes the feed id 123_700 once the page id is added');
@@ -699,7 +699,7 @@ test('Facebook reads videos again without post_id only when Meta rejects that fi
   } });
   const result = await collect([{ id: '555', views: 5, published: true }, { id: '556', post_id: '801', permalink_url: '/reel/556/', published: true, created_time: '2026-10-29T13:00:00Z' }, { id: '557', permalink_url: '/reel/557/', published: false, created_time: '2026-10-29T14:00:00Z' }]);
   assert.deepEqual(videoFields, [[true, true], [true, false]]);
-  assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [['123_700', '123_700', 5], ['556', null, null]], 'a post_id the request did not ask for is not trusted');
+  assert.deepEqual(result.posts.map(post => [post.externalId, post.pagePostId, post.metrics.views]), [['123_700', '123_700', 5], ['556', undefined, null]], 'a post_id the request did not ask for is not trusted, and the row does not say it has no number');
   assert.ok(result.warnings.some(warning => /영상 목록에서만 찾은 1개는 게시물 번호 없이/.test(warning)));
   assert.ok(!result.warnings.some(warning => /공개 여부를 알려 주지 않아/.test(warning)));
   assert.deepEqual(result.coverage.videoPostIds, { asked: false, videos: 2, withPostId: 0, matched: 1, agreed: 0, conflicts: 0 });

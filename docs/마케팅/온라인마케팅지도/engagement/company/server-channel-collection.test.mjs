@@ -80,7 +80,7 @@ async function fbFixture(t,collector){
 }
 const fbResult=(posts,coverage={status:'complete',inventoryComplete:true,ownerAuthorized:true})=>({channel:{externalId:'123',followers:0,views:null,metrics:{}},posts,coverage});
 const REEL='https://www.facebook.com/reel/555/',FEED='https://www.facebook.com/synk/posts/700',AT='2026-10-10T00:00:00.000Z';
-const fbPost=(externalId,fields={})=>({externalId,url:REEL,title:'릴스',publishedAt:AT,pagePostId:null,videoId:null,...fields,metrics:{views:null,likes:null,comments:null,shares:null,...fields.metrics}});
+const fbPost=(externalId,fields={})=>({externalId,url:REEL,title:'릴스',publishedAt:AT,videoId:null,...fields,metrics:{views:null,likes:null,comments:null,shares:null,...fields.metrics}});
 const PARTIAL={status:'partial',inventoryComplete:false,ownerAuthorized:true};
 
 test('a page post id is stored only in its exact form, a video id only as digits, and both stay when a later collection lacks them',async t=>{
@@ -142,8 +142,32 @@ test('a same-day facebook snapshot keeps the views a later collection lacks, unl
   assert.deepEqual([snap().views,snap().videoId,snap().likes],[null,null,3],'the row now names another video, so the earlier views are not its views');
 });
 
-// 8회차 GA3: 두 칸은 이번 회차가 다 알 수 있었을 때만(전체 수집 · 목록 완전 · 영상 목록을 읽음, 게시물 번호는 post_id도 물음) 빈 값으로 지운다. 아니면 앞 값을 둔다.
-test('the facebook fields are cleared only by a complete full collection that read the video list, and the page post id only when it asked post_id',async t=>{
+// 9회차 perf GA1: 최근 수집이 줄의 영상 번호를 바꾼 뒤 영상 목록만 실패한 전체 수집은 앞 영상의 조회수를 채우지 않는다.
+test('a same-day facebook snapshot does not carry the views of a video the row no longer holds',async t=>{
+  let views=9;
+  const f=await fbFixture(t,async()=>fbResult([fbPost('123_700',{url:FEED,pagePostId:'123_700',videoId:views===null?null:'555',metrics:{views,likes:2}})]));
+  const row=f.app.store.get('posts','fb:123_700');f.app.store.put('posts',row.id,{...row,videoId:'556'});
+  views=null;await f.again();
+  const snap=f.app.store.all('snapshots').find(s=>s.postId==='fb:123_700');
+  assert.deepEqual([snap.views,snap.videoId,snap.likes,f.app.store.get('posts','fb:123_700').videoId],[null,null,2,'556']);
+});
+
+// 9회차 GA3 · GA6: 같은 날 앞 값은 담당이 같을 때만 채운다. 영상 번호가 적히기 전에 쓴 스냅샷(배포 전)은 같은 영상으로 본다.
+test('a same-day facebook snapshot keeps earlier values only for the same owner, and treats a snapshot written before video ids as the same video',async t=>{
+  let views=12;
+  const f=await fbFixture(t,async()=>fbResult([fbPost('123_700',{url:FEED,pagePostId:'123_700',videoId:'555',metrics:{views,likes:4}})]));
+  const snap=()=>f.app.store.all('snapshots').find(s=>s.postId==='fb:123_700');
+  const {videoId:_v,...older}=snap();f.app.store.put('snapshots',older.id,older);
+  views=null;await f.again();
+  assert.deepEqual([snap().views,snap().videoId],[12,'555'],'a snapshot without a video id keeps its views for the video the row names');
+  const owner=snap().ownership;f.app.store.put('snapshots',snap().id,{...snap(),ownership:{ownerIds:['earlier-owner'],teamId:'beta',known:true}});
+  await f.again();
+  assert.deepEqual([snap().views,snap().likes,snap().ownership],[null,4,owner],'the views an earlier owner got that day are not carried to the current owner');
+});
+
+// 8회차 GA3 · 9회차 GA1 · GA7: 게시물 번호는 수집기가 null(번호 없음)로 밝힌 줄에서만 지우고, 칸이 없으면 앞 값을 둔다. 영상 번호는 이번 회차가 다 알 수
+// 있었을 때(전체 수집 · 목록 완전 · 영상 목록을 읽음)만 빈 값으로 지운다.
+test('a page post id is cleared only when the collector says the row has none, and a video id only by a complete full collection that read the video list',async t=>{
   const KNOWN={status:'complete',inventoryComplete:true,ownerAuthorized:true,videoPostIds:{asked:true,videos:1,withPostId:1,matched:0,agreed:0,conflicts:0}};
   let coverage=KNOWN,fields={pagePostId:'123_700'},feed={videoId:'557'};
   const f=await fbFixture(t,async()=>fbResult([fbPost('556',{videoId:'556',...fields}),fbPost('123_701',{url:FEED,pagePostId:'123_701',...feed})],coverage));
@@ -151,10 +175,10 @@ test('the facebook fields are cleared only by a complete full collection that re
   assert.deepEqual(keys(),[['fb:123_701','123_701','557'],['fb:556','123_700','556']]);
   fields={};feed={};coverage=PARTIAL;await f.again();
   assert.deepEqual(keys(),[['fb:123_701','123_701','557'],['fb:556','123_700','556']],'an incomplete collection keeps both fields');
-  coverage={...KNOWN,videoPostIds:{...KNOWN.videoPostIds,asked:false}};await f.again();
-  assert.deepEqual(keys(),[['fb:123_701','123_701',null],['fb:556','123_700','556']],'without post_id the video id is cleared but the page post id stays');
   coverage=KNOWN;await f.again();
-  assert.deepEqual(keys(),[['fb:123_701','123_701',null],['fb:556',null,'556']]);
+  assert.deepEqual(keys(),[['fb:123_701','123_701',null],['fb:556','123_700','556']],'a complete collection clears the video id, and a row without the field keeps its page post id');
+  fields={pagePostId:null};coverage=PARTIAL;await f.again();
+  assert.deepEqual(keys(),[['fb:123_701','123_701',null],['fb:556',null,'556']],'a row the collector says has no number loses it, even in an incomplete collection');
 });
 
 // 8회차 perf GA2: 이번에 주소를 못 읽은 영상도 같은 줄에 저장된 주소가 있으면 그 줄을 갱신한다(다른 줄은 보지 않는다).

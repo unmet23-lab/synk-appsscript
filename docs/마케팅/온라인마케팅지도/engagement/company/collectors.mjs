@@ -637,9 +637,10 @@ async function facebook(channel, credentials, request, recent) {
           if(!url&&addressKey(row.url)!==`video:${id}`)unreadable++;
           continue;
         }
-        // 영상 목록에서만 찾은 릴스는 영상 번호 줄이다. post_id를 알면 그 게시물 번호를 pagePostId로 단다. 다른 영상이 차지한 게시물의 영상에는 게시물 번호를 달지 않는다.
+        // 영상 목록에서만 찾은 릴스는 영상 번호 줄이다. post_id를 알면 그 게시물 번호를 pagePostId로 단다. post_id를 받았는데 그 게시물의 번호 줄이 아닌 영상은
+        // null(번호 없음)로 밝히고, post_id를 못 받은 영상은 칸을 두지 않는다 — 서버는 null일 때만 앞 번호를 지운다(9회차 GA1 · GA7).
         const owns=!row&&mine&&!!postId;
-        posts.push({externalId:id,url,title:text(video.title)||text(video.description),publishedAt:createdAt,thumbnailUrl:null,pagePostId:owns?postId:null,videoId:id,metrics:metrics({views:video.views,likes:video.likes?.summary?.total_count,comments:video.comments?.summary?.total_count})});
+        posts.push({externalId:id,url,title:text(video.title)||text(video.description),publishedAt:createdAt,thumbnailUrl:null,...(owns?{pagePostId:postId}:postId?{pagePostId:null}:{}),videoId:id,metrics:metrics({views:video.views,likes:video.likes?.summary?.total_count,comments:video.comments?.summary?.total_count})});
         if(!row&&!postId)numberless++;
         // 주소 없는 영상 줄은 서버가 빼고, 그 영상 주소로 등록한 기록은 이번 결과에서 찾지 못한다 — 목록을 다 본 것으로 치지 않는다(설계 검토 3 조건 4).
         if(!url)unreadable++;
