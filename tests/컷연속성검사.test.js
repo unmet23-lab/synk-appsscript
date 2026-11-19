@@ -2429,3 +2429,90 @@ test('감정흐름 T24 — 갈래가 넷 다 같거나 세기가 넷 다 같으�
   assert.match(틀글(틀돌리기((s) => { delete s.감정흐름; }))[0], /^주의 표: 「감정흐름」 칸이 비었다/, '날짜를 못 읽는 편은 주의');
   assert.match(틀글(틀돌리기((s) => { delete s.감정흐름; s.편.만든날 = '2026-11-19'; }))[0], /^걸림 표: 「감정흐름」 칸이 비었다/);
 });
+
+// ───────── 감정 자리(T28) · 이웃 컷의 앵글(T29) — 11-19 유호님 「너무 엥글이 와이드엥글이 대부분이고 감정표현이 (감정전달)이 너무너무 부족해」 ·
+//   11-20 「계속 엥글이 똑같아 … 상황에맞춰서 다양한 엥글을 써줘야해」(점검표 33 · 50) ─────────
+// 걸려야 할 옛 판: 감정 자리가 없는 편 · 감정 컷을 모두 가슴 위 · 눈높이 · 정면으로 바꾼 편 · 앵글 칸이 없는 편. 지나가야 할 새 판: 예시 틀 그대로 · 이어 찍은 컷 · 낱말 뒤에 풀이를 붙인 칸.
+test('감정 자리 T28 · 앵글 T29(표) — 감정 자리가 없거나 이웃 컷의 크기 · 높이 · 방향이 모두 같으면 걸림(11-20부터, 앞선 편은 주의), 앵글 칸 · 까닭이 비거나 낱말 밖이면 걸림, 예시 틀과 이어 찍은 컷은 지나간다', { skip: !파이썬 && '파이썬 없음' }, async () => {
+  const 새편 = (s) => { s.편.만든날 = '2026-11-20'; };
+  const 자리없음 = (s) => { for (const d of s.detail) { delete d.감정자리; delete d.감정부위; } s.사건[0].압축 = true; };
+  const 같은앵글 = (s) => { for (const c of ['C1', 'C2', 'C3']) Object.assign(컷(s, c).앵글, { 크기: '가슴 위', 높이: '눈높이', 방향: '정면' }); };
+  const 앵글없음 = (s) => { for (const d of s.detail) delete d.앵글; };
+  const 판 = {
+    그대로: 새편,
+    자리없음: (s) => { 새편(s); 자리없음(s); },
+    자리없음_앞선편: (s) => { 자리없음(s); s.편.만든날 = '2026-11-19'; },
+    사건의감정컷만: (s) => { 새편(s); for (const d of s.detail) { delete d.감정자리; delete d.감정부위; } },
+    같은앵글: (s) => { 새편(s); 같은앵글(s); },
+    같은앵글_앞선편: (s) => { 같은앵글(s); s.편.만든날 = '2026-11-19'; },
+    같은앵글_날짜없음: 같은앵글,
+    이어찍기: (s) => { 새편(s); Object.assign(컷(s, 'C2').앵글, { 크기: '허리 위', 높이: '눈높이', 방향: '비스듬히' }); 컷(s, 'C2').이어찍기 = true; },
+    앵글없음: (s) => { 새편(s); 앵글없음(s); },
+    앵글없음_앞선편: (s) => { 앵글없음(s); s.편.만든날 = '2026-11-19'; },
+    낱말밖: (s) => { 새편(s); 컷(s, 'C1').앵글.크기 = '바스트'; },
+    까닭없음: (s) => { 새편(s); 컷(s, 'C4').앵글.까닭 = ' '; },
+    풀이붙임: (s) => { 새편(s); 컷(s, 'C1').앵글.방향 = '시점 — 문간에 선 사람의 눈'; 컷(s, 'C1').앵글.높이 = '하이(문틀 위)'; },
+    두칸이어짐: (s) => { 새편(s); for (const [c, 크기] of [['C1', '허리 위'], ['C2', '클로즈'], ['C3', '극접']]) Object.assign(컷(s, c).앵글, { 크기, 높이: '눈높이', 방향: '정면' }); },
+  };
+  const 이름들 = Object.keys(판);
+  const 결과들 = await 틀돌리기_여럿(이름들.map((k) => 판[k]));
+  const r = Object.fromEntries(이름들.map((k, i) => [k, 결과들[i]]));
+  const 줄 = (x, 등급) => x.항목들.filter((y) => y.항목 === '틀' && y.등급 === 등급 && /감정 자리|앵글|같은 두 칸/.test(y.글)).map((y) => `${y.컷}: ${y.글}`);
+  // 지나가야 할 판
+  for (const k of ['그대로', '사건의감정컷만', '이어찍기', '풀이붙임']) {
+    assert.equal(r[k].코드, 0, `${k}: ${JSON.stringify(r[k].항목들.filter((y) => y.등급 === '걸림'))}`);
+    assert.deepEqual([...줄(r[k], '걸림'), ...줄(r[k], '주의')], [], k);
+  }
+  // T28 — 감정 자리가 하나도 없다
+  assert.equal(r.자리없음.코드, 1);
+  assert.deepEqual(줄(r.자리없음, '걸림').length, 1);
+  assert.match(줄(r.자리없음, '걸림')[0], /^표: 사람이 나오는 편인데 감정 자리가 하나도 없다.*가로 그림 25% · 세로 그림 35%부터.*\(33\)/);
+  assert.equal(r.자리없음_앞선편.코드, 0); assert.equal(줄(r.자리없음_앞선편, '주의').length, 1); assert.deepEqual(줄(r.자리없음_앞선편, '걸림'), []);
+  // T29 — 감정 컷을 모두 가슴 위 · 눈높이 · 정면으로(11-20 김천 꼴)
+  const 같 = 줄(r.같은앵글, '걸림');
+  assert.equal(r.같은앵글.코드, 1); assert.equal(같.length, 2, JSON.stringify(같));
+  assert.match(같[0], /^C2: 앵글이 앞 컷 C1과 크기 · 높이 · 방향 모두 같다\(가슴 위 · 눈높이 · 정면\).*이어찍기: true\(50\)/);
+  assert.match(같[1], /^C3: 앵글이 앞 컷 C2과 크기 · 높이 · 방향 모두 같다/);
+  for (const k of ['같은앵글_앞선편', '같은앵글_날짜없음']) { assert.equal(r[k].코드, 0, k); assert.deepEqual(줄(r[k], '걸림'), [], k); assert.equal(줄(r[k], '주의').length, 2, k); }
+  // T29 — 칸
+  assert.equal(r.앵글없음.코드, 1); assert.equal(줄(r.앵글없음, '걸림').length, 1);
+  assert.match(줄(r.앵글없음, '걸림')[0], /^표: 컷 4개\(C1 · C2 · C3 · C4\)에 「앵글」의 크기 · 높이 · 방향 칸이 없다.*크기: 극접 · 클로즈 · 가슴 위.*\(50\)/);
+  assert.equal(r.앵글없음_앞선편.코드, 0); assert.equal(줄(r.앵글없음_앞선편, '주의').length, 1, '앞선 편은 이 한 줄만 주의');
+  assert.match(줄(r.낱말밖, '걸림')[0], /^C1: 「앵글\.크기」의 「바스트」은 정한 낱말이 아니다 — 극접 · 클로즈 · 가슴 위 · 허리 위 · 무릎 위 · 전신 · 넓게 가운데 하나로 시작한다/);
+  assert.match(줄(r.까닭없음, '걸림')[0], /^C4: 「앵글\.까닭」 칸이 비었다/);
+  // 세 컷이 잇달아 같은 두 칸 — 주의만
+  assert.equal(r.두칸이어짐.코드, 0); assert.deepEqual(줄(r.두칸이어짐, '걸림'), []);
+  assert.match(줄(r.두칸이어짐, '주의')[0], /^표: 세 컷이 잇달아 같은 두 칸을 쓴다 — C1~C3\(높이 · 방향\)/);
+});
+
+test('감정 자리 T28(그림) — 얼굴 폭이 아래선(가로 25% · 세로 35%)에 못 미치면 걸림(앞선 편은 주의), 못 찾으면 확인(앞선 편은 알림), 손으로 보이는 자리는 재지 않는다', { skip: !파이썬 && '파이썬 없음' }, () => {
+  // 판정 — 11-19 실측 꼴: 가로 편의 미디엄 클로즈 주문 컷 8.6% · 얼굴 클로즈 28%, 세로 편의 가슴 위 23% · 얼굴 클로즈 40%
+  const 읽기 = String.raw`
+import sys, json, importlib.util
+sys.dont_write_bytecode = True
+spec = importlib.util.spec_from_file_location("m", sys.argv[1]); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+틀 = json.load(open(sys.argv[2], encoding="utf-8"))
+print(json.dumps({"판정": [m.감정자리판정(*x)[0] for x in json.loads(sys.argv[3])], "자리": sorted(m.감정자리컷(틀)), "선": m.감정자리아래선}, ensure_ascii=False))
+`;
+  const 물음 = [[8.6, false, true], [8.6, false, false], [28, false, true], [25, false, true], [23, true, true], [28, true, true], [40, true, true], [null, false, true], [null, true, false]];
+  const 답 = spawnSync('python', ['-I', '-X', 'utf8', '-c', 읽기, 도구, 틀경로, JSON.stringify(물음)], { encoding: 'utf8' });
+  assert.equal(답.status, 0, 답.stderr);
+  const 값 = JSON.parse(답.stdout);
+  assert.deepEqual(값.판정, ['걸림', '주의', '통과', '통과', '걸림', '걸림', '통과', '확인', '알림']);
+  assert.deepEqual(값.자리, ['C2', 'C3'], '사건의 감정 컷(C2)과 감정자리를 적은 컷(C2 · C3)');
+  assert.deepEqual(값.선, { 가로: 25, 세로: 35 });
+  // 도구 — 얼굴이 없는 한 색 그림. 그림 라이브러리가 없는 CI에서도 돌게 PNG를 여기서 짓는다(그때 도구는 「검출기를 못 불러 못 쟀다」를 같은 등급으로 낸다)
+  const zlib = require('node:zlib');
+  const 덩이 = (이름, 몸) => { const 앞 = Buffer.concat([Buffer.from(이름, 'ascii'), 몸]); const 길이 = Buffer.alloc(4); 길이.writeUInt32BE(몸.length); const 끝 = Buffer.alloc(4); 끝.writeUInt32BE(zlib.crc32(앞)); return Buffer.concat([길이, 앞, 끝]); };
+  const 색판 = (w, h) => { const 머리 = Buffer.alloc(13); 머리.writeUInt32BE(w, 0); 머리.writeUInt32BE(h, 4); 머리[8] = 8; 머리[9] = 2; const 한줄 = Buffer.concat([Buffer.from([0]), Buffer.alloc(w * 3, 60)]); return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), 덩이('IHDR', 머리), 덩이('IDAT', zlib.deflateSync(Buffer.concat(Array(h).fill(한줄)))), 덩이('IEND', Buffer.alloc(0))]); };
+  const 돌 = (폴더이름, 그림인자) => {
+    const dir = 임시(); const 편 = path.join(dir, 폴더이름); fs.mkdirSync(path.join(편, '정지'), { recursive: true });
+    for (const c of ['C1', 'C2', 'C3', 'C4']) fs.writeFileSync(path.join(편, '정지', `${c}.png`), 색판(90, 160));
+    const r = 돌리기([쓰기(편, '컷표.json', JSON.stringify(틀읽기())), ...(그림인자 ? ['--그림', path.join(편, '정지')] : []), '--항목', '얼굴', '--출력', path.join(dir, '검사')]);
+    return { 코드: r.코드, 줄: r.항목들.filter((x) => x.항목 === '얼굴') };
+  };
+  const 새 = 돌('라면_20261120', true); const 옛 = 돌('라면_20261119', true); const 표만 = 돌('라면_20261120', false);
+  for (const x of [새, 표만]) { assert.equal(x.줄.length, 1, JSON.stringify(x.줄)); assert.equal(x.줄[0].등급, '확인'); assert.equal(x.코드, 2); }   // 감정 자리는 C2 · C3인데 C3은 손이라 재지 않는다. 표만 돌려도 시작그림 파일이 있으면 잰다
+  assert.equal(옛.줄.length, 1); assert.equal(옛.줄[0].등급, '알림'); assert.equal(옛.코드, 0);
+  assert.ok(['C2', '표'].includes(새.줄[0].컷), JSON.stringify(새.줄));
+});
