@@ -267,7 +267,7 @@ def 남길것검사(글):
 #   ⑥ 소리만 쓰는 판(_순서.json 「방식」: 「목소리 판」 · 「소리만」: true)과 프리비즈 판만 통째로 건너뛴다 — 둘 다 판 목록에 밝힌 판이다.
 #   자리 · 자세 · 모양을 지키라는 말(stay where they are · stays seated … she does not stand up · stays rigid)은 정지 말이 아니다(넣었다가 실물이 잘못 걸려 뺐다).
 #   정지 말 목록은 닫힌 목록이 아니다 — 못 잡는 말은 정지낱말에, 물건으로 읽혀야 할 낱말은 _물건에 더한다. 알려진 한계는 docs/마케팅/제작양식/영상작업_진단_20261110.md.
-아는라벨 = ("ACTION", "CAMERA", "LOOK", "SOUND", "VOICE", "WHO", "LIGHT", "SETTING", "PLACE", "PROPS", "PHYSICS", "NOT", "OUTFIT", "PRODUCT", "TEXT", "MOMENT", "FRAME",
+아는라벨 = ("ACTION", "CAMERA", "LOOK", "SOUND", "VOICE", "WHO", "LIGHT", "SETTING", "PLACE", "PROPS", "PHYSICS", "NOT", "OUTFIT", "PRODUCT", "TEXT", "MOMENT", "FRAME", "PALETTE",
             "GRADE", "INDOORS", "OUTDOORS", "AUDIO", "MUSIC", "SFX", "AMBIENCE", "NOTE")
 # 줄 머리 라벨: 대문자 낱말 하나~넷(「ACTION:」 · 「CLEAR UMBRELLA:」 · 「YUNA:」 · 「HARIN_FACE:」 · 「MOM50:」)이나 아는 낱말(「Indoors:」 · 「Camera:」 · 「Action:」), 「SHOT 1 (0–2 s)」, 한글 이름 줄(「유나:」)
 _줄라벨 = re.compile(r"^[ \t]*(?:(SHOT \d+)\b|((?:[A-Z][A-Z0-9_'’\-]*(?: [A-Z][A-Z0-9_'’\-]*){0,3})|(?i:action|camera|look|sound|voice|who|light|setting|place|props|physics|indoors|outdoors|note)|[가-힣]{1,8})"
@@ -1691,6 +1691,11 @@ def 소품줄검사(seq):
 색감이름표경로 = 빛이름표경로.parent / "색감이름.json"
 _색감표캐시 = None
 색감부터 = "20261119"
+# 11-19 덧: 「세트」 · 인물 「옷」 — 색감 견본에서 흰 · 회색 벽과 검은 옷 방에 색감 줄만 바꾼 판은 유호님 「퀄리티가 떨어져보이네」였고 옷 · 벽을 원색 둘로 정한 팝만
+#   「좋아보이는데」였다(만족 사례 S58). 그래서 색감을 고른 편은 맨 위 「세트」(옷 · 벽 · 소품 색 두세 개를 묶는 영어 한 문장)를 적고 이미지 지시문 PALETTE 줄에
+#   그대로 쓴다. 또 Seedream 5.5(11-19 영상 그림 엔진 고정)는 옷을 적지 않으면 참고 사진의 옷을 그대로 입혔다(시드림시험_20261119) — 사람이 나오는 인물은 「옷」을 적는다.
+#   둘 다 편 날짜 2026-11-20부터 걸림, 앞선 편 · 날짜를 못 읽는 편은 주의.
+세트부터 = "20261120"
 
 
 def 색감이름표():
@@ -1744,6 +1749,20 @@ def 색감검사(seq, 폴더=None):
         if 걸친:
             out.append(("주의", f"장면 {이름}", f"장면 「{이름}」의 빛 이름({' · '.join(걸친)})이 색감 「{줄['이름']}」에 어긋난다 — 어울리는 빛: "
                         f"{' · '.join(줄.get('어울빛') or [])}. 일부러 고른 빛이면 넘긴다(51)"))
+    날짜 = 편날짜(seq, 폴더); 새편 = "걸림" if (날짜 and 날짜 >= 세트부터) else "주의"
+    if 빈칸(seq.get("세트")):
+        예 = f" — 이 색감의 세트: {줄['세트']}" if not 빈칸(줄.get("세트")) else ""
+        out.append((새편, "표", f"「세트」 칸이 비었다 — 색감 「{줄['이름']}」에 맞춘 옷 · 벽 · 소품 색 두세 개를 영어 한 문장으로 적고 이미지 지시문 PALETTE 줄에 그대로 쓴다{예}. "
+                    f"흰 · 회색 무지 벽에 검은 옷이면 색감 줄을 바꿔도 싸 보인다(60)"))
+    elif not isinstance(seq.get("세트"), str):
+        out.append(("걸림", "표", "「세트」는 영어 한 문장으로 적는다 — 이미지 지시문 PALETTE 줄에 글자 그대로 들어간다(60)"))
+    인물표 = seq.get("인물") if isinstance(seq.get("인물"), dict) else {}
+    나오는 = list(dict.fromkeys(n for d in seq.get("detail") or [] if isinstance(d, dict) for n in (d.get("인물") if isinstance(d.get("인물"), list) else []) if isinstance(n, str)))
+    for n in 나오는:
+        p = 인물표.get(n)
+        if isinstance(p, dict) and 빈칸(p.get("옷")):
+            out.append((새편, f"인물 {n}", f"인물 「{n}」의 「옷」 칸이 비었다 — 옷을 적지 않으면 Seedream이 참고 사진의 옷을 그대로 입힌다(시드림시험_20261119). "
+                        f"세트 색에 맞춘 옷을 영어 한 문장으로 적는다(12 · 60)"))
     return out
 
 
@@ -2437,6 +2456,7 @@ def 그림지시문항목(seq, r, 경로들):
             v = (장면 or {}).get(k) if isinstance(장면, dict) else None
             if not 빈칸(v) and 한칸(v) not in 글: 빠짐.append(f"장면 「{d.get('장면')}」의 {k}")
         for _, 말 in 색감대조(seq, 원문, "그림"): 빠짐.append(f"색감 「{seq.get('색감').strip()}」의 뼈대")   # T22 — GRADE 줄
+        if isinstance(seq.get("세트"), str) and not 빈칸(seq.get("세트")) and 한칸(seq["세트"]) not in 글: 빠짐.append("「세트」(PALETTE 줄)")   # T22 — 옷 · 벽 · 소품 색
         맨얼굴 = d.get("그림단계") == "맨얼굴"   # 칠한 얼굴을 두 단계로 굽는 컷 — 1단계 판은 인물의 「맨얼굴묘사」로 견주고, 칠은 편 공통 편집 지시문(_로 시작하는 파일)이 맡는다
         # 그 그림에 실제로 나오는 사람 — 컷 도중에 들어오는 사람은 시작 그림에 없다(「그림인물」), 끝 그림은 「끝그림인물」. 없으면 컷의 「인물」
         칸 = "끝그림인물" if cut.endswith("_끝") else ("그림인물" if not cut.endswith("_가운데") else None)
