@@ -526,7 +526,16 @@ function createSolioBackup({
     setInstall('feed');
     const feed = await refreshFeed(true);
     // 피드를 받지 못했어도 그사이 엔진이 깔렸으면 엔진 창을 연다(GPT 여섯째 검수 GA2)
-    if (!feed && (await engineFresh()).installed) { await openSetup(mode, hint); return; }
+    if (!feed) {
+      const fresh = await engineFresh();
+      if (fresh.installed) {
+        // 엔진이 생겼어도 보호 시작 갈래일 때만 요청을 쓴다(꼴 번호가 큰 상태 파일 따위면 멈춘다, GPT 일곱째 검수 GA1)
+        const { view } = await state(fresh);
+        if (view !== 'needs-setup') throw fault('NOT_NEEDED');
+        await openSetup(mode, hint);
+        return;
+      }
+    }
     if (!feed) throw fault(feedState.state === 'missing' ? 'FEED_MISSING' : feedState.state === 'invalid' ? 'FEED_INVALID' : 'NETWORK');
     if (typeof cacheRoot !== 'string' || !path.isAbsolute(cacheRoot)) throw fault('STORAGE');
     await fsImpl.promises.mkdir(cacheRoot, { recursive: true });
