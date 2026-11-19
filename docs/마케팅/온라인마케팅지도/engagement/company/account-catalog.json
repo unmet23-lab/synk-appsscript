@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-19T09:31:05.528Z",
+  "generatedAt": "2026-11-19T13:22:07.638Z",
   "sourceAt": "2026-11-10",
   "accounts": [
     {
@@ -395,6 +395,44 @@
       "platform": "tistory",
       "handle": "yuhobuilds.tistory.com",
       "publicUrl": "https://yuhobuilds.tistory.com/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "pulse-tistory",
+      "business": "PULSE",
+      "secondaryBusinesses": [],
+      "contentTrack": "PULSE",
+      "purpose": "PULSE 한국어 검색 블로그. AI 광고 영상을 찾는 국내 사장님과 마케터를 구글 · 다음 검색으로 데려온다(사례 · 만드는 과정 · 의뢰 안내)",
+      "classificationBasis": "2026-11-19 유호님이 쓰지 않던 티스토리(호유앤테라피)를 마케팅용으로 바꾸라고 하셨고, 조율 세션이 PULSE 한국어 블로그로 정했다. 의뢰는 synk.im/pulse.",
+      "classificationSourcePaths": [
+        "docs/마케팅/티스토리_PULSE_솔리오_20261119/README.md",
+        "docs/마케팅/sns-계정.json"
+      ],
+      "platform": "tistory",
+      "handle": "hoyoointernational.tistory.com",
+      "publicUrl": "https://hoyoointernational.tistory.com/",
+      "externalId": null,
+      "country": "공통·미분리",
+      "countryCode": null,
+      "accountStatus": "operating"
+    },
+    {
+      "id": "solio-tistory",
+      "business": "SHIFT",
+      "secondaryBusinesses": [],
+      "contentTrack": "SHIFT",
+      "purpose": "솔리오(SHIFT의 AI 1인기업 업무 앱) 블로그. AI로 혼자 회사를 꾸리는 사람에게 솔리오로 하는 일을 보여 준다",
+      "classificationBasis": "2026-11-19 유호님이 쓰지 않던 티스토리(리빙스나이퍼)를 마케팅용으로 바꾸라고 하셨고, 조율 세션이 솔리오 블로그로 정했다. 솔리오는 SHIFT 안의 제품이다(결정 11-14).",
+      "classificationSourcePaths": [
+        "docs/마케팅/티스토리_PULSE_솔리오_20261119/README.md",
+        "docs/마케팅/sns-계정.json"
+      ],
+      "platform": "tistory",
+      "handle": "throneandliberty.tistory.com",
+      "publicUrl": "https://throneandliberty.tistory.com/",
       "externalId": null,
       "country": "공통·미분리",
       "countryCode": null,

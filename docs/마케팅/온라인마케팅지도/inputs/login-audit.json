@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "auditedAt": "2026-11-09",
-  "scope": "SNS·채널 전체 89행 = 기존 등록 40 + LAB 확장 49. 별도 장기 계획 16(11-12 PULSE TikTok 영어 공통 @synkpulse가 계획에서 기존 등록으로), 서비스 가입은 따로 관리",
+  "scope": "SNS·채널 전체 91행 = 기존 등록 42 + LAB 확장 49. 별도 장기 계획 16(11-12 PULSE TikTok 영어 공통 @synkpulse가 계획에서 기존 등록으로), 서비스 가입은 따로 관리",
   "definition": "한 행은 공개 채널/프로필 또는 미개설 자리. 로그인 연결 수는 고유 사람·메일 계정 수가 아님.",
   "freshVerification": "11-09 YouTube 전환 메뉴 24채널의 Google 연결, Behance Google 재로그인과 Pinterest·Naver Clip의 현재 소유자 세션·로그인 ID를 확인. 나머지는 09-14~11-09 연결·복구·개설 기록 대조. 모든 채널에 새 로그인을 한 결과가 아님.",
   "privateDetails": "전체 이메일·실제 Naver ID·Aside 프로필 식별자는 저장소 밖 비공개 로그인 표에서 관리. 비밀번호·인증코드는 포함하지 않음.",
   "counts": {
-    "channelRows": 89,
-    "activeExisting": 71,
+    "channelRows": 91,
+    "activeExisting": 73,
     "excludedExisting": 1,
     "uncreatedOrExcluded": 2,
     "labExpansionPending": 14,
@@ -15,7 +15,7 @@
     "byStatus": {
       "confirmed": 57,
       "switch-only": 6,
-      "partial": 10,
+      "partial": 12,
       "missing": 0,
       "not-created": 0,
       "excluded": 0
@@ -227,7 +227,7 @@
       "id": "kakao-tistory",
       "label": "Kakao · Tistory 운영자",
       "loginType": "Kakao 로그인",
-      "currentUse": "shift-tistory",
+      "currentUse": "shift-tistory · pulse-tistory · solio-tistory",
       "assignment": "일부 확인 · 보완 필요",
       "security": "이번 점검 범위 밖",
       "nextAction": "Aside 기본 프로필의 기존 로그인 세션으로 관리 화면 확인"
@@ -1173,6 +1173,36 @@
         "docs/마케팅/로그인경로_점검_20261109.md"
       ],
       "loginSessionStatus": "현재 세션 전체 재검증 안 함"
+    },
+    "pulse-tistory": {
+      "loginIdentityRef": "kakao-tistory",
+      "loginAlias": "Kakao · Tistory 운영자",
+      "loginMethod": "Kakao 로그인 → Tistory 관리(같은 카카오 계정의 블로그 셋 가운데 하나)",
+      "loginBrowser": "Aside · 기본 u0",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-11-19",
+      "loginCaveat": "11-19 Aside u0에서 관리 화면 · 블로그 설정 · 글쓰기를 확인. 정확한 Kakao 로그인 이메일 미기록",
+      "loginSourcePaths": [
+        "docs/마케팅/티스토리_PULSE_솔리오_20261119/README.md",
+        "docs/현장노트/브라우저_게시.md"
+      ],
+      "loginSessionStatus": "11-19 관리 화면 확인"
+    },
+    "solio-tistory": {
+      "loginIdentityRef": "kakao-tistory",
+      "loginAlias": "Kakao · Tistory 운영자",
+      "loginMethod": "Kakao 로그인 → Tistory 관리(같은 카카오 계정의 블로그 셋 가운데 하나)",
+      "loginBrowser": "Aside · 기본 u0",
+      "loginMappingStatus": "partial",
+      "loginStatusLabel": "일부 확인 · 보완 필요",
+      "loginEvidenceAt": "2026-11-19",
+      "loginCaveat": "11-19 Aside u0에서 관리 화면 · 블로그 설정 · 글쓰기를 확인. 정확한 Kakao 로그인 이메일 미기록",
+      "loginSourcePaths": [
+        "docs/마케팅/티스토리_PULSE_솔리오_20261119/README.md",
+        "docs/현장노트/브라우저_게시.md"
+      ],
+      "loginSessionStatus": "11-19 관리 화면 확인"
     },
     "shift-kakao": {
       "loginIdentityRef": "kakao-shift",

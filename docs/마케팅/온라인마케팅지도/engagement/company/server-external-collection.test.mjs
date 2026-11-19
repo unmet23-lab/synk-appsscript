@@ -299,9 +299,9 @@ test('creator.rednote.com is an accepted creator host; Telegram t.me public page
   assert.equal(f.app.store.secret('channel:'+telegram),null);
 });
 
-test('admin registers all 72 managed ledger accounts once; retry and the pre-registered API channel stay untouched',async t=>{
+test('admin registers all 74 managed ledger accounts once; retry and the pre-registered API channel stay untouched',async t=>{
   const f=await fixture(t);
-  assert.equal(MANAGED.length,72,'원장 관리 계정 수(2026-11-19 원장 기준 — yuhobuilds-linkedin이 운영으로 돌아왔다)');
+  assert.equal(MANAGED.length,74,'원장 관리 계정 수(2026-11-19 원장 기준 — yuhobuilds-linkedin이 운영으로 돌아왔고, 티스토리 PULSE · 솔리오 블로그 둘을 더했다)');
   const made=await f.request('member','/api/channels',{urls:['https://www.youtube.com/channel/UCmZplYKuNHLPng4iL2AbLLg']});
   assert.equal(made.status,201);
   const existingId=made.body.added[0].id;
@@ -309,7 +309,7 @@ test('admin registers all 72 managed ledger accounts once; retry and the pre-reg
   const before={channel:f.app.store.get('channels',existingId),history:f.app.store.all('ownershipEvents').filter(event=>event.channelId===existingId)};
   const first=await f.request('admin','/api/channels/from-catalog',{accountIds:MANAGED});
   assert.equal(first.status,201,JSON.stringify(first.body).slice(0,500));
-  assert.deepEqual(first.body.summary,{requested:72,added:71,existing:1});
+  assert.deepEqual(first.body.summary,{requested:74,added:73,existing:1});
   assert.deepEqual(first.body.existing.map(row=>[row.accountId,row.channel.id]),[['lab-youtube',existingId]]);
   assert.equal(first.body.existing[0].channel.connected,true);
   assert.deepEqual(f.app.store.get('channels',existingId),before.channel,'the existing channel document is not rewritten');
@@ -325,15 +325,15 @@ test('admin registers all 72 managed ledger accounts once; retry and the pre-reg
     assert.equal(f.app.store.secret('channel:'+stored.id),null,'no credentials are created');
     assert.ok(f.app.store.get('ownershipEvents','ownership-baseline:'+stored.id));
   }
-  assert.equal(f.app.store.all('audit').filter(row=>row.action==='channel-from-catalog').length,71);
+  assert.equal(f.app.store.all('audit').filter(row=>row.action==='channel-from-catalog').length,73);
   const again=await f.request('admin','/api/channels/from-catalog',{accountIds:MANAGED});
   assert.equal(again.status,200);
-  assert.deepEqual(again.body.summary,{requested:72,added:0,existing:72});
-  assert.equal(f.app.store.all('channels').length,72);
+  assert.deepEqual(again.body.summary,{requested:74,added:0,existing:74});
+  assert.equal(f.app.store.all('channels').length,74);
   const simple=await f.request('admin','/api/social/simple');
   assert.equal(simple.status,200);
   const coverage=simple.body.accountMap.coverage;
-  assert.equal(coverage.managed,72);assert.equal(coverage.registered,72);assert.equal(coverage.unregistered,0);
+  assert.equal(coverage.managed,74);assert.equal(coverage.registered,74);assert.equal(coverage.unregistered,0);
   assert.equal(coverage.connected,1,'registration does not count as an API connection');
   assert.equal(coverage.externallyObserved,0);
 });

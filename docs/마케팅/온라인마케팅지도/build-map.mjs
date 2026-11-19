@@ -38,6 +38,8 @@ const profileLabels = {
   'pulse-english-2026-11-17; handle-name-bio-logo-website-saved-profile-reread; name-under-review':'PULSE 아이디·이름·영어 소개·로고·링크 확인 · 이름은 X 검토 중',
   'pulse-centric-2026-11-17; ko-en-headline-about-website-title-featured-saved; public-preview-reread':'PULSE 헤드라인·소개·웹사이트·직함·추천 확인',
   'v6-saved-public-verified':'저장·공개 확인 기록',
+  // 11-19 쓰지 않던 티스토리 둘을 PULSE · 솔리오 블로그로 바꿈(docs/마케팅/티스토리_PULSE_솔리오_20261119)
+  'tistory-repurposed-2026-11-19':'이름·설명·그림·카테고리 확인 · 11-19 쓰임새 바꿈',
   'v6-saved-editor-verified':'저장·편집화면 확인 기록',
   'v6-saved-settings-verified':'저장·설정화면 확인 기록',
   'v6-saved-profile-verified':'저장·프로필 확인 기록',

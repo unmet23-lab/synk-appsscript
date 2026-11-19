@@ -8,14 +8,14 @@
     "scope": "11-09 전체 로그인 경로 대조. 11-04 별도 개설 기록·11-08 로그인 복구 기록의 누락 채널 10곳 추가. 11-09 YouTube 전환 메뉴에서 연결을 대조했지만 모든 채널의 현재 로그인·게시 권한을 실시간 재검증한 결과는 아니다. 후속으로 Behance Google 로그인과 Pinterest·유호 Naver Clip의 현재 소유자 세션·로그인 ID 3곳을 확인했다.",
     "grain": "accounts의 한 행은 실제 관리 계정/채널, 소유 미확인 준비 자리, 운영 제외 계정 또는 별도 웹 도착지 하나다. 공유·재사용 관계는 같은 id에 연결하며 새 계정 행으로 복제하지 않는다.",
     "counts": {
-      "registeredAccountEntries": 40,
-      "operatingAccountsAndChannels": 37,
-      "publicPublishingTargets": 23,
+      "registeredAccountEntries": 42,
+      "operatingAccountsAndChannels": 39,
+      "publicPublishingTargets": 25,
       "personalContactProfiles": 1,
       "plannedOrDeferredAccountEntries": 2,
       "excludedExistingAccounts": 1,
       "webDestinations": 6,
-      "totalRows": 46,
+      "totalRows": 48,
       "latestProfileSaved": 22,
       "latestProfileTarget": 23,
       "latestProfileDeferred": 1,
@@ -668,6 +668,54 @@
         "SHIFT"
       ],
       "loginIdentityRef": "kakao-tistory"
+    },
+    {
+      "id": "pulse-tistory",
+      "brand": "PULSE",
+      "platform": "tistory",
+      "handle": "hoyoointernational.tistory.com",
+      "publicUrl": "https://hoyoointernational.tistory.com/",
+      "loginAlias": "Kakao · Tistory 운영자",
+      "accountStatus": "operating",
+      "profileStatus": "tistory-repurposed-2026-11-19",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-11-19",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/티스토리_PULSE_솔리오_20261119/README.md",
+        "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      ],
+      "country": null,
+      "publishable": true,
+      "sharedBrands": [],
+      "loginIdentityRef": "kakao-tistory",
+      "nextAction": "비공개 첫 글을 유호님이 보신 뒤 공개한다. 옛 글 4편의 처리는 유호님 답을 따른다.",
+      "channelRole": "PULSE 한국어 검색 블로그(옛 호유앤테라피). 사례 · 만드는 과정 · 의뢰 안내",
+      "operatingScope": "PULSE"
+    },
+    {
+      "id": "solio-tistory",
+      "brand": "SHIFT",
+      "platform": "tistory",
+      "handle": "throneandliberty.tistory.com",
+      "publicUrl": "https://throneandliberty.tistory.com/",
+      "loginAlias": "Kakao · Tistory 운영자",
+      "accountStatus": "operating",
+      "profileStatus": "tistory-repurposed-2026-11-19",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-11-19",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/티스토리_PULSE_솔리오_20261119/README.md",
+        "docs/마케팅/온라인마케팅지도/inputs/login-audit.json"
+      ],
+      "country": null,
+      "publishable": true,
+      "sharedBrands": [],
+      "loginIdentityRef": "kakao-tistory",
+      "nextAction": "비공개 첫 글을 유호님이 보신 뒤 공개한다. 옛 글 1편의 처리는 유호님 답을 따른다.",
+      "channelRole": "솔리오 블로그(옛 리빙스나이퍼). 솔리오로 하는 일 · 쓰는 법 · 소식",
+      "operatingScope": "SHIFT"
     },
     {
       "id": "shift-pinterest",
