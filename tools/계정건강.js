@@ -46,7 +46,10 @@ function 계정들(repo) {
     const acc = get(r.account, r.platform), p = post(acc, r.post);
     owner.set(r.post, acc);
     p.title = 제목(r.folder) || p.title; p.publishedAt = r.publishedAt || p.publishedAt;
-    if (r.point) p.points[r.point] = { ...p.points[r.point], ...r.metrics }; // 같은 점의 뒤 줄이 앞 줄을 덮는다
+    if (r.role) p.group = r.role; // 우리 편의 갈래는 기획 장부의 구실(유입 · 권위 · 육성 · 전환)이다
+    if (r.format) p.format = r.format; // 쇼츠와 긴 영상, 릴스와 사진은 따로 본다
+    // 같은 점의 뒤 줄이 앞 줄을 덮는다. 유튜브의 「구독 늘어남」은 진단의 팔로우 칸으로 옮긴다
+    if (r.point) p.points[r.point] = { ...p.points[r.point], ...r.metrics, ...(typeof r.metrics?.subscribersGained === 'number' ? { follows: r.metrics.subscribersGained } : {}) };
   }
   for (const r of ledger) if (r.kind === '화면' && owner.has(r.post)) Object.assign(post(owner.get(r.post), r.post).screen, r.metrics);
   for (const r of lines(path.join(repo, 'docs', '_ops', '채널성과.jsonl'))) {
@@ -64,8 +67,13 @@ function 계정들(repo) {
 
 function 글(d) {
   const out = [`■ ${d.name} — ${d.상태} · ${d.유형}`, `  ${d.결론}`];
+  const x = d.세부;
+  if (x?.강점) out.push(`  잘하고 있는 것: ${x.강점}`);
+  if (x?.길.length) out.push(`  조회 1,000번이 가는 길: ${x.길.map(s => `${s.이름}[${s.판정}] ${s.글}`).join(' → ')}`, `    ${[x.새는곳.글, x.고름].filter(Boolean).join(' ')}`);
+  if (x?.대조) out.push(`  잘된 편과 안 된 편: ${[x.대조.글, x.갈래].filter(Boolean).join(' ')}`);
   for (const s of d.신호) out.push(`  [${s.판정}] ${s.이름}${s.값 ? ` (${s.값})` : ''}: ${s.글}`);
   d.처방.forEach((p, i) => out.push(`  할 일 ${i + 1}. ${p}`));
+  if (x?.목표) out.push(`  ${x.목표}`);
   return out.join('\n');
 }
 

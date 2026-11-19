@@ -29,14 +29,16 @@ const 기준 = Object.freeze({
   닿음: { 팔로워최소: 100, 구간: [{ 까지: 5000, 나쁨: 0.05, 좋음: 0.2 }, { 까지: 50000, 나쁨: 0.03, 좋음: 0.1 }, { 까지: Infinity, 나쁨: 0.015, 좋음: 0.06 }] },
   껍데기팔로워: 500,    // 닿음이 나쁠 때 「팔로워만 큰 계정」으로 부르는 팔로워 수
   깊이: {
-    // 조회 1,000번마다의 반응에서, 그 플랫폼 계정의 평균쯤을 「선」으로 둔다(11-19 다시 잼, 출처와 셈은 README 「기준 숫자」).
-    // 틱톡은 Socialinsider 2025의 조회 대비 참여율 4%를 좋아요 · 공유 · 댓글의 평균 비로 나눈 값, 인스타그램 저장 · 댓글은 같은 곳의 릴스 평균,
-    // 인스타그램 공유는 출처가 없어 우리 편의 위 25%(5.6), 유튜브와 그 밖은 출처가 약한 첫 값이다.
+    // 조회 1,000번마다의 반응에서, 그 플랫폼의 가운데 값을 「선」으로 둔다(11-19 세 번째로 잼, 출처는 README 「기준 숫자」).
+    // 틱톡 · 릴스 · 쇼츠의 좋아요 · 댓글 · 공유와 틱톡의 저장은 영상 150만 편의 가운데 값(viral.app, 2025-10~2026-08)이다.
+    // 릴스의 저장은 Socialinsider 릴스 평균과 Dash Social의 「저장은 공유의 절반쯤」에서 1.5로 잡았다.
+    // 쇼츠의 좋아요는 두 조사(9.3과 20.8)의 사이, 쇼츠의 공유는 공개된 수가 없어 틱톡 값을 빌렸다. 페이스북은 릴스 값을, 그 밖은 틱톡 값을 빌렸다.
     선: {
-      tiktok: { shares: 4, saves: 3, comments: 1, likes: 35 },
-      instagram: { shares: 5, saves: 3, comments: 4, likes: 35 },
-      youtube: { shares: 2, saves: 3, comments: 1, likes: 30 },
-      기본: { shares: 4, saves: 3, comments: 1, likes: 35 },
+      tiktok: { shares: 1.5, saves: 4, comments: 0.7, likes: 47 },
+      instagram: { shares: 2.4, saves: 1.5, comments: 0.4, likes: 18 },
+      facebook: { shares: 2.4, saves: 1.5, comments: 0.4, likes: 18 },
+      youtube: { shares: 1.5, saves: 4, comments: 0.6, likes: 15 },
+      기본: { shares: 1.5, saves: 4, comments: 0.7, likes: 47 },
     },
     // 반응마다 선의 몇 배인지를 내고(위는 3배에서 자른다) 무게로 평균한다. 보내기가 가장 무겁고 좋아요가 가장 가볍다.
     // 좋아요는 3배여도 혼자서는 「좋음」에 닿지 못하고, 저장이나 공유 하나가 아주 높으면 닿는다
@@ -50,11 +52,15 @@ const 기준 = Object.freeze({
   흐름: { 편수: 3, 조회최소: 30, 나쁨: 0.6, 좋음: 1.3 },            // 최근 편 가운데 값 ÷ 그 앞 편 가운데 값(같은 나이)
   쏠림: { 나쁨몫: 0.5, 나쁨배수: 10, 좋음배수: 4 },     // 가장 잘된 편이 조회 합에서 차지하는 몫, 가운데 값의 몇 배인지
   꾸준함: { 멈춤: 21, 나쁨: 14, 좋음편수: 3, 좋음기간: 14 },
-  붙잡음: {             // 플랫폼 화면에서만 나오는 값. 있는 것 가운데 위에서부터 하나를 쓴다
+  // 플랫폼 화면에서만 나오는 값. 있는 것 가운데 위에서부터 하나를 쓴다. 좋음은 조사된 평균쯤이고, 플랫폼이 공식으로 낸 기준은 없다.
+  //   넘기지 않고 본 비율(쇼츠): 쇼츠 5,400편 분석에서 잘된 편이 70~90%, 60% 아래는 드물게 성공
+  //   3초 넘게 본 비율(릴스): 릴스 977만 편의 3초 안 넘김이 평균 60~65%라 남는 쪽은 35~40%(Socialinsider 2026 상반기). 처음 값 60은 통념이었다
+  //   평균 시청 비율(쇼츠): 브랜드 630곳 평균 86%(Dash Social 2025)   끝까지 본 비율(틱톡): 브랜드 970곳 평균 10%(같은 곳)
+  붙잡음: {
     stayedToWatchPct: { 이름: '넘기지 않고 본 비율', 나쁨: 55, 좋음: 70, 첫장면: true },
-    earlyRetention3sPct: { 이름: '3초 넘게 본 비율', 나쁨: 40, 좋음: 60, 첫장면: true },
+    earlyRetention3sPct: { 이름: '3초 넘게 본 비율', 나쁨: 25, 좋음: 40, 첫장면: true },
     averageViewPct: { 이름: '평균 시청 비율', 나쁨: 50, 좋음: 80 },
-    completionRatePct: { 이름: '끝까지 본 비율', 나쁨: 10, 좋음: 30 },
+    completionRatePct: { 이름: '끝까지 본 비율', 나쁨: 5, 좋음: 10 },
   },
   막힘: { 앞편수: 5, 앞가운데: 200, 연속: 3, 비율: 0.2 },
   // 신호의 무게. 플랫폼이 공식으로 밝힌 신호를 그 플랫폼에서 더 무겁게 본다: 인스타그램은 보내기(반응),
@@ -88,9 +94,27 @@ function 게시물값(post) {
 }
 const when = p => Date.parse(p.publishedAt);
 
-function 본편들(posts, now) {
-  const all = (posts || []).filter(p => Number.isFinite(when(p)) && when(p) <= now)
+/**
+ * 내가 편마다 다는 고정 댓글은 본 사람의 반응이 아니다. 계정에 ownComments(편마다 내가 다는 댓글 수)가 있으면 그만큼,
+ * 없으면 댓글이 달린 편이 절반을 넘고 그 가운데 70% 넘게가 꼭 하나일 때 하나씩 뺀다(11-19 우리 유튜브 세 계정: 23편 가운데 21편이 꼭 하나).
+ */
+function 자기댓글(all, given) {
+  if (num(given)) return Math.max(0, given);
+  const c = all.map(p => p.v.comments).filter(num), has = c.filter(x => x >= 1);
+  return c.length >= 기준.표본편수 && has.length >= c.length * 0.5 && has.filter(x => x === 1).length >= has.length * 0.7 ? 1 : 0;
+}
+
+function 본편들(posts, now, ownComments) {
+  let all = (posts || []).filter(p => Number.isFinite(when(p)) && when(p) <= now)
     .map(p => ({ ...p, v: 게시물값(p), t: when(p) })).filter(p => num(p.v.views)).sort((a, b) => a.t - b.t);
+  // 형식(format)이 적혀 있으면 가장 많은 형식의 편끼리만 견준다. 쇼츠와 긴 영상, 릴스와 사진은 숫자의 뜻이 다르다
+  const count = {}; for (const p of all) if (p.format) count[p.format] = (count[p.format] || 0) + 1;
+  const main = Object.keys(count).sort((a, b) => count[b] - count[a])[0], before = all.length;
+  if (main) all = all.filter(p => !p.format || p.format === main);
+  all.뺀편 = before - all.length;
+  const own = 자기댓글(all, ownComments);
+  if (own) for (const p of all) if (num(p.v.comments)) p.v.comments = Math.max(0, p.v.comments - own);
+  all.own = own;
   const recent = all.filter(p => now - p.t <= 기준.창일수 * DAY);
   // 최근 28일에 다섯 편이 안 되면 90일 안의 마지막 열 편으로 본다(뜸한 계정도 반응의 질은 잴 수 있다)
   const seen = recent.length >= 기준.표본편수 ? recent : all.filter(p => now - p.t <= 90 * DAY).slice(-10);
@@ -120,7 +144,7 @@ function 닿음(seen, fol) {
 const 플랫폼이름 = { instagram: '인스타그램', tiktok: '틱톡', youtube: '유튜브', facebook: '페이스북' };
 const 무게 = platform => ({ ...기준.무게, ...(기준.플랫폼무게[platform] || {}) });
 
-function 깊이(seen, platform) {
+function 깊이(seen, platform, own = 0) {
   const base = { 키: '깊이', 이름: '본 사람이 반응하는가' };
   const views = sum(seen.map(p => p.v.views));
   if (views < 기준.표본조회) return { ...base, 판정: '모름', 값: '', 글: `조회 합이 ${fmt(views)}번이라 비율을 내기에 적습니다.` };
@@ -159,8 +183,9 @@ function 깊이(seen, platform) {
   const did = strong.length ? strong.map((w, i) => (i < strong.length - 1 ? w[0] + '고' : w[1])).join(' ') : '반응합니다';
   const 요약 = `조회 1,000번마다 ${shown}번입니다.` + (좋아요만 ? ' 좋아요는 누르는데 보내거나 말을 걸지 않습니다.' : 판정 === '좋음' ? ` 본 사람이 ${did}.` : 판정 === '나쁨' ? ' 보고 지나갑니다.' : '');
   const where = 플랫폼이름[platform] ? `${플랫폼이름[platform]} 계정의 평균쯤인 선은` : '평균쯤으로 보는 선은';
-  const 글 = 요약 + ` ${where} ${Object.keys(rate).map(k => `${NAME[k]} ${line[k]}`).join(' · ')}번입니다.` + (한편뺌 ? ` 가장 잘된 한 편을 빼면 선의 ${Math.floor(all * 100)}%로 내려가 그 값으로 판정했습니다.` : '') + (missing.length ? ` 재지 못해 뺀 반응: ${missing.join(', ')}.` : '');
-  return { ...base, 판정, 값: `선의 ${Math.floor(all * 100)}%`, 글, 요약, 지수: all, 전체지수: whole, 한편뺌, 깊은지수: deepIndex, 비율: rate, 선: line, 좋아요: rate.likes ?? null, 좋아요만, 못잰것: missing };
+  const 글 = 요약 + ` ${where} ${Object.keys(rate).map(k => `${NAME[k]} ${line[k]}`).join(' · ')}번입니다.` + (한편뺌 ? ` 가장 잘된 한 편을 빼면 선의 ${Math.floor(all * 100)}%로 내려가 그 값으로 판정했습니다.` : '') + (missing.length ? ` 재지 못해 뺀 반응: ${missing.join(', ')}.` : '')
+    + (own ? ` 편마다 ${own}개씩 달린 댓글은 내가 단 고정 댓글로 보고 뺐습니다.` : '');
+  return { ...base, 판정, 값: `선의 ${Math.floor(all * 100)}%`, 글, 요약, 한일: did, 지수: all, 전체지수: whole, 한편뺌, 깊은지수: deepIndex, 비율: rate, 선: line, 좋아요: rate.likes ?? null, 좋아요만, 못잰것: missing };
 }
 
 function 남김(all, seen, fol, now) {
@@ -238,10 +263,13 @@ function 붙잡음(seen) {
   for (const [key, rule] of Object.entries(기준.붙잡음)) {
     const rows = seen.filter(p => num(p.v[key]));
     if (rows.length < 3) continue;
-    const mid = median(rows.map(p => p.v[key])), 판정 = grade(mid, rule);
+    const vals = rows.map(p => p.v[key]).sort((a, b) => a - b), mid = median(vals), 판정 = grade(mid, rule);
+    // 이 계정의 편 절반이 드는 띠. 고정된 선만 보이면 거의 모든 계정이 나쁨으로 보이므로, 내 편끼리의 자리도 함께 말한다
+    const band = vals.length >= 6 ? [vals[Math.floor(vals.length * 0.25)], vals[Math.min(vals.length - 1, Math.floor(vals.length * 0.75))]] : null;
     const 글 = `${rule.이름}이 ${rows.length}편의 가운데 값으로 ${Math.round(mid)}%입니다.`
+      + (band && Math.round(band[1]) > Math.round(band[0]) ? ` 이 계정의 편 절반은 ${Math.round(band[0])}~${Math.round(band[1])}% 사이입니다.` : '')
       + (판정 === '나쁨' ? (rule.첫장면 ? ' 첫 장면에서 놓칩니다.' : ' 보다가 나갑니다.') : 판정 === '좋음' ? (rule.첫장면 ? ' 첫 장면이 붙잡습니다.' : ' 끝까지 붙잡습니다.') : '');
-    return { ...base, 이름: rule.첫장면 ? base.이름 : '끝까지 붙잡는가', 판정, 값: `${Math.round(mid)}%`, 글, 지표: key, 가운데: mid, 첫장면: !!rule.첫장면 };
+    return { ...base, 이름: rule.첫장면 ? base.이름 : '끝까지 붙잡는가', 판정, 값: `${Math.round(mid)}%`, 글, 지표: key, 가운데: mid, 띠: band, 첫장면: !!rule.첫장면 };
   }
   return { ...base, 판정: '모름', 값: '', 글: '넘기지 않고 본 비율은 플랫폼의 통계 화면에만 나옵니다. 세 편 넘게 읽어 넣으면 보입니다.' };
 }
@@ -266,8 +294,7 @@ const 처방글 = {
       saves: ['저장', '다음 세 편에는 저장할 까닭을 한 가지씩 넣습니다. 다시 볼 목록, 순서, 표처럼 한 번 보고 외울 수 없는 것입니다.'],
       comments: ['댓글', '다음 세 편은 한 낱말로 답할 수 있는 물음으로 끝냅니다. 둘 가운데 하나를 고르게 하면 가장 쉽습니다. 달린 댓글에는 그날 답합니다.'],
     };
-    const lack = k => 기준.깊이.무게[k] * (1 - Math.min(s.비율[k] / s.선[k], 1));
-    const weak = Object.keys(HOW).filter(k => s.비율?.[k] != null).sort((a, b) => lack(b) - lack(a))[0];
+    const weak = 약한반응(s);
     if (!weak) return '다음 세 편에는 보낼 까닭이나 저장할 까닭을 한 가지씩 넣습니다.';
     return `${s.좋아요만 ? '좋아요는 받는데 보내거나 말을 걸지 않습니다. ' : ''}${HOW[weak][0]}${weak === 'shares' ? '가' : '이'} 선의 ${pct(s.비율[weak] / s.선[weak])}입니다. ${HOW[weak][1]}`;
   },
@@ -286,12 +313,161 @@ const 유지글 = {
   붙잡음: '끝까지 붙잡습니다. 지금 편의 첫 장면과 길이를 다음 편에도 씁니다.',
 };
 
+/* ── 사용자 눈의 세부 분석(11-19 유호님 「더 디테일하게 사용자입장에서 뭐가 문제인지 분석해줬으면 좋겠어」) ──
+   조회 1,000번이 어디서 줄어드는지, 잘된 편과 안 된 편이 무엇이 다른지, 무엇을 잘하고 있는지, 다음 목표가 무엇인지를 낸다.
+   말하는 순서는 잘하고 있는 것이 먼저다(같은 날 「지금처럼 긍정적인 방향으로 해주는게맞고」). */
+
+const 반응이름 = { shares: '공유', saves: '저장', comments: '댓글' };
+const midOf = (posts, key) => { const a = posts.filter(p => num(p.v[key])).map(p => p.v[key]); return a.length >= 3 ? median(a) : null; };
+/** 무게를 곱한 모자람이 가장 큰 반응 */
+function 약한반응(s) {
+  if (!s.비율) return null;
+  // 공유가 선의 절반 아래면 공유부터다. 세 플랫폼 모두 보내기를 낯선 사람에게 퍼지는 신호로 밝혔다
+  if (s.비율.shares != null && s.비율.shares < s.선.shares * 0.5) return 'shares';
+  const lack = k => 기준.깊이.무게[k] * (1 - Math.min(s.비율[k] / s.선[k], 1));
+  return Object.keys(반응이름).filter(k => s.비율[k] != null).sort((a, b) => lack(b) - lack(a))[0] || null;
+}
+
+/** 조회 1,000번이 가는 길. 단계마다 { 키, 이름, 명, 글, 판정, 신호 }이고 재지 못한 단계는 없다 */
+function 길(S, seen) {
+  const steps = [], B = 기준.붙잡음;
+  const firstKey = ['stayedToWatchPct', 'earlyRetention3sPct'].find(k => midOf(seen, k) != null);
+  if (firstKey) {
+    const v = midOf(seen, firstKey);
+    steps.push({ 키: '첫장면', 이름: '첫 장면', 명: v * 10, 글: `${fmt(v * 10)}명이 ${firstKey === 'stayedToWatchPct' ? '넘기지 않고 봅니다' : '3초 넘게 봅니다'}`, 판정: grade(v, B[firstKey]), 신호: '붙잡음' });
+  }
+  const end = midOf(seen, 'completionRatePct'), avp = midOf(seen, 'averageViewPct');
+  if (end != null) steps.push({ 키: '끝까지', 이름: '끝까지', 명: end * 10, 글: `${fmt(end * 10)}명이 끝까지 봅니다`, 판정: grade(end, B.completionRatePct), 신호: '붙잡음' });
+  else if (avp != null) steps.push({ 키: '끝까지', 이름: '보는 길이', 명: null, 큰: `${Math.round(avp)}%`, 글: `본 사람은 평균해서 편의 ${Math.round(avp)}%를 봅니다`, 판정: grade(avp, B.averageViewPct), 신호: '붙잡음' });
+  if (S.깊이.비율) {
+    const ACT = { shares: ['보내', '보냅니다'], saves: ['저장하', '저장합니다'], comments: ['댓글을 달', '댓글을 답니다'] };
+    const keys = Object.keys(ACT).filter(k => S.깊이.비율[k] != null);
+    if (keys.length) {
+      const n = sum(keys.map(k => S.깊이.비율[k]));
+      steps.push({ 키: '반응', 이름: '반응', 명: n, 글: `${one(n)}명이 ${keys.map((k, i) => (i < keys.length - 1 ? ACT[k][0] + '거나' : ACT[k][1])).join(' ')}`, 판정: S.깊이.판정, 신호: '깊이' });
+    }
+  }
+  if (num(S.남김.비율) && !S.남김.수상함) {
+    const n = Math.max(S.남김.비율, 0);
+    steps.push({ 키: '팔로우', 이름: '팔로우', 명: n, 글: `${one(n)}명이 팔로우합니다`, 판정: S.남김.판정, 신호: '남김' });
+  }
+  return steps;
+}
+
+/** 길에서 가장 먼저 나쁜 단계. 앞에서 떠난 사람은 뒤의 숫자에 들 수 없으므로 앞 단계부터 고친다 */
+function 새는곳(steps) {
+  if (!steps.length) return { 단계: null, 신호: null, 글: '' };
+  const leak = steps.find(s => s.판정 === '나쁨');
+  if (!leak) return { 단계: null, 신호: null, 글: steps.every(s => s.판정 === '좋음') ? '잰 단계마다 선을 넘습니다. 새는 곳이 없습니다.' : '크게 새는 곳은 없습니다.' };
+  const later = steps.indexOf(leak) < steps.length - 1;
+  const 글 = leak.키 === '첫장면' ? `가장 먼저 새는 곳은 첫 장면입니다. 조회 1,000번 가운데 ${fmt(1000 - leak.명)}번은 첫 장면에서 넘어갑니다.${later ? ` 그 뒤의 숫자는 남은 ${fmt(leak.명)}명에게서만 나옵니다.` : ''}`
+    : leak.키 === '끝까지' ? `가장 먼저 새는 곳은 끝까지 보기입니다. ${leak.명 != null ? `1,000명 가운데 ${fmt(leak.명)}명만 끝까지 봅니다.` : '보기 시작한 사람이 일찍 나갑니다.'}`
+      : leak.키 === '반응' ? '보는 데까지는 오는데 반응으로 이어지지 않습니다. 가장 먼저 새는 곳은 반응입니다.'
+        : '반응까지는 오는데 팔로우로 이어지지 않습니다. 가장 먼저 새는 곳은 팔로우입니다.';
+  return { 단계: leak.키, 신호: leak.신호, 글 };
+}
+
+/** 잘된 편과 안 된 편을 같은 나이의 조회로 가르고, 두 묶음의 숫자가 어디서 다른지 본다 */
+function 대조(all, seen) {
+  const same = 같은나이(all), inSeen = new Set(seen);
+  const rows = same ? same.rows.filter(r => inSeen.has(r.p)) : [];
+  if (rows.length < 6) return null;
+  const n = rows.length >= 9 ? 3 : 2, sorted = [...rows].sort((a, b) => b.views - a.views);
+  const top = sorted.slice(0, n).map(r => r.p), low = sorted.slice(-n).map(r => r.p);
+  const tv = median(sorted.slice(0, n).map(r => r.views)), lv = median(sorted.slice(-n).map(r => r.views));
+  const names = ps => { const t = ps.map(p => p.title).filter(Boolean); return t.length === ps.length ? `(${t.map(x => `「${x}」`).join(', ')})` : ''; };
+  const age = same.point === '72h' ? '올린 지 사흘째에' : '올린 지 하루째에';
+  const head = `잘된 ${n}편${names(top)}은 ${age} ${fmt(tv)}번, 안 된 ${n}편${names(low)}은 ${fmt(lv)}번입니다.`;
+  const out = { 잘된: top.map(p => p.title || null), 안된: low.map(p => p.title || null), 잘된조회: tv, 안된조회: lv, 차이: null };
+  if (!(tv >= Math.max(lv, 1) * 2)) return { ...out, 글: `${head} 편마다 조회가 비슷해 두 묶음을 가를 만큼 차이가 나지 않습니다.` };
+  const two = key => { const a = top.filter(p => num(p.v[key])).map(p => p.v[key]), b = low.filter(p => num(p.v[key])).map(p => p.v[key]); return a.length >= 2 && b.length >= 2 ? [median(a), median(b)] : null; };
+  // 첫 장면 → 보는 길이 → 반응 순으로, 처음 눈에 띄게 다른 것을 말한다
+  for (const key of ['stayedToWatchPct', 'earlyRetention3sPct', 'completionRatePct', 'averageViewPct']) {
+    const v = two(key); if (!v || Math.abs(v[0] - v[1]) < 10) continue;
+    const nm = 기준.붙잡음[key].이름, first = 기준.붙잡음[key].첫장면;
+    const 글 = v[0] > v[1] ? `${head} 잘된 편은 ${nm}이 ${Math.round(v[0])}%이고 안 된 편은 ${Math.round(v[1])}%입니다. 조회의 차이가 ${first ? '첫 장면' : '끝까지 붙잡는 힘'}에서 납니다.`
+      : `${head} ${nm}은 잘된 편이 ${Math.round(v[0])}%로 안 된 편(${Math.round(v[1])}%)보다 낮습니다. 넓게 퍼질수록 관심이 덜한 사람에게도 보이기 때문이라, ${first ? '첫 장면' : '길이'}의 탓으로 보지 않습니다.`;
+    return { ...out, 차이: { 지표: key, 잘된: v[0], 안된: v[1] }, 글 };
+  }
+  const deep = ps => { const keys = Object.keys(반응이름), w = ps.filter(p => keys.some(k => num(p.v[k]))), V = sum(w.map(p => p.v.views)); return V >= 기준.표본조회 ? sum(w.map(p => sum(keys.map(k => p.v[k] || 0)))) / V * 1000 : null; };
+  const d = [deep(top), deep(low)];
+  if (d[0] != null && d[1] != null && Math.abs(d[0] - d[1]) >= 1 && Math.max(d[0], d[1]) >= Math.min(d[0], d[1]) * 1.5) {
+    const 글 = d[0] > d[1] ? `${head} 조회 1,000번마다 공유, 저장, 댓글이 잘된 편은 ${one(d[0])}번, 안 된 편은 ${one(d[1])}번입니다. 반응이 나온 편이 더 멀리 갔습니다.`
+      : `${head} 조회 1,000번마다 공유, 저장, 댓글은 안 된 편이 ${one(d[1])}번으로 잘된 편(${one(d[0])}번)보다 많습니다. 적게 보였지만 본 사람에게는 더 맞았던 편입니다.`;
+    return { ...out, 차이: { 지표: '반응', 잘된: d[0], 안된: d[1] }, 글 };
+  }
+  return { ...out, 글: `${head} 첫 장면과 반응의 숫자는 두 묶음이 비슷합니다. 차이는 주제에서 나는 것으로 보입니다. 두 묶음의 제목을 견줘 보세요.` };
+}
+
+/** 반응이 몇 편에서 나왔는지. 한두 편에 몰렸는지, 편마다 나오는지를 본다 */
+function 고름(seen) {
+  const parts = [];
+  for (const [k, nm] of Object.entries(반응이름)) {
+    const w = seen.filter(p => num(p.v[k])); if (w.length < 5) continue;
+    parts.push(`${nm}${k === 'shares' ? '가' : '이'} ${w.length}편 가운데 ${w.filter(p => p.v[k] > 0).length}편`);
+  }
+  return parts.length ? `한 번이라도 나온 편을 세면 ${parts.join(', ')}입니다.` : '';
+}
+
+/** 편에 갈래(group)가 붙어 있으면 갈래마다의 조회를 견준다. 갈래는 쓰는 사람이 붙인 이름이다(시리즈, 주제) */
+function 갈래(all, seen) {
+  const same = 같은나이(all), inSeen = new Set(seen), g = {};
+  for (const r of same ? same.rows : []) if (inSeen.has(r.p) && r.p.group) (g[r.p.group] ??= []).push(r.views);
+  const list = Object.entries(g).filter(([, a]) => a.length >= 3).map(([k, a]) => ({ k, mid: median(a), n: a.length })).sort((a, b) => b.mid - a.mid);
+  if (list.length < 2 || !(list[0].mid >= Math.max(list.at(-1).mid, 1) * 1.5)) return '';
+  return `갈래로 나누면 ${list.map(x => `「${x.k}」 ${x.n}편은 한 편에 ${fmt(x.mid)}번`).join(', ')}입니다. 「${list[0].k}」 편이 가장 잘 나옵니다.`;
+}
+
+/** 잘하고 있는 것. 좋은 신호를 무게 순으로 셋까지, 없으면 선에 가장 가까운 반응을 말한다 */
+function 강점(S, order, all) {
+  return [강점신호(S, order), 최근잘된편(all)].filter(Boolean).join(' ');
+}
+/** 최근 다섯 편 가운데 이 계정의 보통 편보다 눈에 띄게 잘된 편. 인스타그램의 「최근 평균보다 잘되고 있어요」 알림처럼 칭찬과 숫자와 다음 행동을 함께 말한다 */
+function 최근잘된편(all) {
+  const same = 같은나이(all || []); if (!same || same.rows.length < 6) return '';
+  const typical = median(same.rows.map(r => r.views)), top = same.rows.slice(-5).reduce((a, b) => (b.views > a.views ? b : a));
+  if (!(typical > 0) || top.views < typical * 1.2 || !top.p.title) return '';
+  const r = top.views / typical;
+  return `최근 편 가운데 「${top.p.title}」${r >= 2 ? `은(는) 이 계정의 보통 편의 ${times(r)}` : `은(는) 이 계정의 보통 편보다 ${pct(r - 1)} 더`} 나왔습니다. 이런 편을 더 만듭니다.`.replace('은(는)', ' 편이');
+}
+function 강점신호(S, order) {
+  const WORD = { 깊이: `본 사람이 ${S.깊이.한일 || '반응합니다'}`, 닿음: S.닿음.비율 >= 1 ? '팔로워 밖의 사람에게 퍼집니다' : '팔로워가 편을 챙겨 봅니다', 남김: '본 사람이 팔로워로 남습니다',
+    흐름: '조회가 오르고 있습니다', 붙잡음: S.붙잡음.첫장면 ? '첫 장면이 붙잡습니다' : '끝까지 붙잡습니다', 쏠림: '한 편에 기대지 않고 편마다 고르게 나옵니다', 꾸준함: '꾸준히 올립니다' };
+  const good = order.filter(k => S[k].판정 === '좋음');
+  if (good.length) return good.slice(0, 3).map(k => WORD[k]).join('. ') + '.';
+  const r = S.깊이.비율, near = r && Object.keys(반응이름).filter(k => r[k] != null).sort((a, b) => r[b] / S.깊이.선[b] - r[a] / S.깊이.선[a])[0];
+  return near && r[near] > 0 ? `아직 선을 넘은 신호는 없습니다. 선에 가장 가까운 것은 ${반응이름[near]}입니다(선의 ${pct(r[near] / S.깊이.선[near])}).` : '아직 선을 넘은 신호는 없습니다.';
+}
+
+/** 다음 목표. 맨 앞 할 일의 신호에서, 나쁨이면 나쁨을 벗어나는 숫자를, 보통이면 선을 목표로 준다 */
+function 목표(S, lead) {
+  if (lead === '붙잡음' && num(S.붙잡음.가운데)) {
+    const rule = 기준.붙잡음[S.붙잡음.지표], now = Math.round(S.붙잡음.가운데), line = S.붙잡음.가운데 < rule.나쁨 ? rule.나쁨 : rule.좋음;
+    // 선이 멀면 이 계정의 잘된 편들이 이미 내는 숫자(위 25%)를 먼저 목표로 준다. 닿을 수 있는 목표여야 한다
+    const own = S.붙잡음.띠 ? Math.round(S.붙잡음.띠[1]) : null;
+    if (own != null && own > now + 2 && own < line) return `다음 세 편의 목표는 ${rule.이름} ${own}%입니다(지금 ${now}%). 이 계정의 잘된 편들이 이미 내는 숫자입니다. 그다음은 ${line}%입니다.`;
+    return `다음 세 편의 목표는 ${rule.이름} ${line}%입니다(지금 ${now}%).`;
+  }
+  if (lead === '깊이') {
+    const k = 약한반응(S.깊이); if (!k) return '';
+    const now = S.깊이.비율[k], line = S.깊이.선[k], to = now < line * 기준.깊이.나쁨 ? line * 기준.깊이.나쁨 : line;
+    return `다음 세 편의 목표는 조회 1,000번마다 ${반응이름[k]} ${one(to)}번입니다(지금 ${one(now)}번).`;
+  }
+  if (lead === '남김' && num(S.남김.비율) && !S.남김.수상함) {
+    const now = Math.max(S.남김.비율, 0), to = now < 기준.남김.나쁨 ? 기준.남김.나쁨 : 기준.남김.좋음;
+    return `다음 2주의 목표는 조회 1,000번마다 팔로워 ${to}명입니다(지금 ${one(now)}명).`;
+  }
+  if (lead === '닿음' && num(S.닿음.비율)) return `다음 세 편의 목표는 한 편의 조회가 팔로워의 ${pct(S.닿음.좋음선)}를 넘는 것입니다(지금 ${pct(S.닿음.비율)}).`;
+  if (lead === '흐름' && num(S.흐름.앞) && S.흐름.판정 === '나쁨') return `다음 세 편의 목표는 그 앞 편들의 조회 ${fmt(S.흐름.앞)}번입니다(지금 ${fmt(S.흐름.최근)}번).`;
+  return '';
+}
+
 /**
  * 계정 하나를 진단한다.
  * @returns {{ key, name, platform, 상태, 유형, 결론, 신호:[…], 처방:[글], 점수:number|null, 편수, 팔로워:number|null, 조회가운데:number|null, 막힘 }}
  */
 function 진단(account, now = Date.now()) {
-  const { all, seen } = 본편들(account.posts, now), fol = 팔로워기록(account.followers);
+  const { all, seen } = 본편들(account.posts, now, account.ownComments), fol = 팔로워기록(account.followers);
   const head = { key: account.key, name: account.name || account.key, platform: account.platform || '', 편수: seen.length, 팔로워: fol.at(-1)?.n ?? null, 조회가운데: median(seen.map(p => p.v.views)) };
   const steady = 꾸준함(all, now);
   if (seen.length < 기준.표본편수) {
@@ -300,7 +476,7 @@ function 진단(account, now = Date.now()) {
       결론: stopped ? `마지막으로 올린 지 ${steady.쉰날}일이 지났고, 볼 편이 ${seen.length}편뿐입니다.` : `숫자를 잰 편이 ${seen.length}편입니다. ${기준.표본편수}편이 쌓이면 진단합니다.`,
       처방: [stopped ? 처방글.꾸준함(steady) : `올린 지 하루가 지난 편이 ${기준.표본편수}편 쌓일 때까지는 조회수로 판단하지 않습니다. 같은 틀로 계속 올립니다.`] };
   }
-  const S = { 닿음: 닿음(seen, fol), 깊이: 깊이(seen, head.platform), 남김: 남김(all, seen, fol, now), 흐름: 흐름(all), 쏠림: 쏠림(seen), 꾸준함: steady, 붙잡음: 붙잡음(seen) };
+  const S = { 닿음: 닿음(seen, fol), 깊이: 깊이(seen, head.platform, all.own), 남김: 남김(all, seen, fol, now), 흐름: 흐름(all), 쏠림: 쏠림(seen), 꾸준함: steady, 붙잡음: 붙잡음(seen) };
   const W = 무게(head.platform);
   const blocked = 막힘(all), views = sum(seen.map(p => p.v.views));
   if (views < 기준.표본조회) {
@@ -339,16 +515,20 @@ function 진단(account, now = Date.now()) {
     const but = Object.keys(BUT).filter(k => is(k, '나쁨')).map(k => BUT[k]);
     결론 = `한 편의 조회는 ${fmt(head.조회가운데)}번쯤입니다. ${S.깊이.요약} `
       + (상태 !== 상태이름.건강 && but.length ? `다만 ${but[0]}.` : growing ? '반응이 좋은 채로 자라고 있습니다.' : '조회수의 크기와 상관없이 건강한 계정입니다.');
+  } else if (is('붙잡음', '나쁨')) {
+    // 길의 앞 단계가 먼저다. 붙잡지 못해 떠난 사람은 반응도 팔로우도 할 수 없으므로, 반응이 적어도 여기를 유형으로 부른다
+    유형 = S.붙잡음.첫장면 ? '첫 장면에서 놓치는 계정' : '끝까지 붙잡지 못하는 계정'; worse(is('깊이', '나쁨') && is('남김', '나쁨') ? 상태이름.나쁨 : 상태이름.주의);
+    결론 = `${S.붙잡음.글} ${is('깊이', '나쁨') ? '남아서 본 사람의 반응도 적지만, 붙잡는 것부터 고칩니다.' : is('깊이', '모름') ? '' : '남아서 본 사람의 반응은 나쁘지 않습니다.'}`.trim();
   } else if (S.깊이.좋아요만) {
     유형 = '좋아요만 받는 계정'; worse(is('깊이', '나쁨') && is('남김', '나쁨') ? 상태이름.나쁨 : 상태이름.주의);
     결론 = `한 편의 조회는 ${fmt(head.조회가운데)}번쯤입니다. ${S.깊이.요약}`;
   } else if (is('깊이', '나쁨')) {
     유형 = '보고 지나가는 계정'; worse(is('남김', '나쁨') ? 상태이름.나쁨 : 상태이름.주의);
     결론 = `한 편의 조회는 ${fmt(head.조회가운데)}번쯤입니다. ${S.깊이.요약}`;
-  } else if (is('붙잡음', '나쁨')) {
-    // 반응은 나쁘지 않은데 붙잡지 못한다. 본 사람은 괜찮게 보지만 보기 전에 떠난다
-    유형 = S.붙잡음.첫장면 ? '첫 장면에서 놓치는 계정' : '끝까지 붙잡지 못하는 계정'; worse(상태이름.주의);
-    결론 = `${S.붙잡음.글} 남아서 본 사람의 반응은 나쁘지 않습니다.`;
+  } else if (is('남김', '나쁨')) {
+    // 길의 마지막 단계. 보고 반응까지는 하는데 따라오지 않는다
+    유형 = '팔로우로 이어지지 않는 계정'; worse(상태이름.주의);
+    결론 = S.남김.글;
   } else if (is('흐름', '나쁨')) {
     유형 = '식어 가는 계정'; worse(상태이름.주의);
     결론 = S.흐름.글;
@@ -365,13 +545,16 @@ function 진단(account, now = Date.now()) {
   if (blocked) 처방.push('플랫폼 앱의 계정 상태 화면을 엽니다(인스타그램은 설정의 「계정 상태」, 틱톡은 「계정 확인」). 제한이나 경고가 있으면 그 편을 지우거나 이의를 냅니다. 없으면 일주일 동안 평소 틀로 두 편만 올리고 조회가 돌아오는지 봅니다.');
   // 유형을 정한 신호의 처방이 맨 앞이다
   const lead = { '팔로워만 큰 계정': '닿음', '팔로워가 조회보다 빨리 느는 계정': '남김', '멈춘 계정': '꾸준함', '한 편에 기대는 계정': '쏠림', '식어 가는 계정': '흐름',
-    '좋아요만 받는 계정': '깊이', '보고 지나가는 계정': '깊이', '첫 장면에서 놓치는 계정': '붙잡음', '끝까지 붙잡지 못하는 계정': '붙잡음' }[유형];
+    '좋아요만 받는 계정': '깊이', '보고 지나가는 계정': '깊이', '팔로우로 이어지지 않는 계정': '남김', '첫 장면에서 놓치는 계정': '붙잡음', '끝까지 붙잡지 못하는 계정': '붙잡음' }[유형];
   const act = k => S[k].판정 === '나쁨' || (k === '깊이' && S.깊이.좋아요만);
   for (const k of [lead, ...order.filter(k => k !== lead)]) if (k && act(k) && 처방.length < 3) 처방.push(처방글[k](S[k], { best }));
   const keep = order.find(k => S[k].판정 === '좋음' && 유지글[k]);
   if (keep && 처방.length < 3) 처방.push(유지글[keep]);
   if (!처방.length) 처방.push('지금 틀로 계속 올리고 2주 뒤에 다시 봅니다.');
-  return { ...head, 상태, 유형, 결론, 점수, 막힘: blocked, 신호: order.map(k => S[k]), 처방 };
+  const steps = 길(S, seen), leak = 새는곳(steps);
+  const 세부 = { 강점: 강점(S, order, all), 뺀편: all.뺀편 || 0, 길: steps, 새는곳: leak, 고름: 고름(seen), 대조: 대조(all, seen), 갈래: 갈래(all, seen),
+    목표: blocked ? '' : 목표(S, lead && act(lead) ? lead : order.find(k => act(k)) || null) };
+  return { ...head, 상태, 유형, 결론, 점수, 막힘: blocked, 신호: order.map(k => S[k]), 처방, 세부 };
 }
 
 /* ── 솔리오 방의 꼴. 방문자 분석(desktop/renderer/site-visits-model.mjs)과 같은 { say, then, when, scope, rows } ── */
@@ -383,21 +566,33 @@ function 방(list, { now = Date.now(), 모은때 = '' } = {}) {
   const sorted = [...list].sort((a, b) => 순서.indexOf(a.상태) - 순서.indexOf(b.상태) || (b.조회가운데 || 0) - (a.조회가운데 || 0));
   const count = s => sorted.filter(d => d.상태 === s).length;
   const judged = sorted.filter(d => d.상태 !== 상태이름.이름), bad = count(상태이름.나쁨), watch = count(상태이름.주의), good = count(상태이름.건강);
+  // 받침이 있으면 앞의 것, 없으면 뒤의 것(하나가 · 둘이 · 11개가)
+  const josa = (word, a, b) => ((word.charCodeAt(word.length - 1) - 0xac00) % 28 ? a : b);
+  const N = 낱수(judged.length), G = 낱수(good), B = 낱수(bad), W = 낱수(watch);
+  // 건강한 계정부터 말한다(11-19 유호님 「긍정적인 방향으로」)
   const say = !judged.length ? '아직 진단할 만큼 숫자가 쌓인 계정이 없습니다.'
-    : bad ? `계정 ${낱수(judged.length)} 가운데 ${낱수(bad)}${bad === 1 ? '가' : '이'} 건강하지 않습니다.`
-      : watch ? `건강하지 않은 계정은 없고, ${낱수(watch)}${/[나섯]$/.test(낱수(watch)) ? '를' : '을'} 지켜봐야 합니다.`
-        : `진단한 계정 ${낱수(judged.length)}${judged.length === 1 ? '가' : '이'} 모두 건강합니다.`;
+    : good === judged.length ? `진단한 계정 ${N}${josa(N, '이', '가')} 모두 건강합니다.`
+      : good ? `진단한 계정 ${N} 가운데 ${G}${josa(G, '이', '가')} 건강합니다.`
+        : `진단한 계정 ${N} 가운데 아직 건강한 계정은 없습니다.`;
   const first = sorted.find(d => d.상태 === 상태이름.나쁨) || sorted.find(d => d.상태 === 상태이름.주의);
-  const then = first ? `${first.name}부터 봅니다. ${first.유형}입니다.` : good ? '조회수의 크기가 아니라 본 사람의 반응으로 판단했습니다.' : '';
+  const then = first ? `${bad ? `${B}${josa(B, '은', '는')} 건강하지 않습니다. ` : watch ? `${W}${josa(W, '은', '는')} 지켜봅니다. ` : ''}${first.name}부터 봅니다. ${first.유형}입니다.`
+    : good ? '조회수의 크기가 아니라 본 사람의 반응으로 판단했습니다.' : '';
   const early = sorted.filter(d => d.상태 === 상태이름.이름);
   const rows = judged.map(d => ({
     key: d.key, nm: d.name, mid: d.유형, val: d.상태,
     when: [d.팔로워 != null ? `팔로워 ${fmt(d.팔로워)}` : '', d.조회가운데 != null ? `한 편 ${fmt(d.조회가운데)}번` : ''].filter(Boolean).join(' · '),
     now: d.상태 === 상태이름.나쁨 ? 1 : 0, unread: d.상태 === 상태이름.이름 ? 1 : 0,
+    // 안쪽의 순서: 결론 → 잘하고 있는 것 → 조회 1,000번이 가는 길 → 잘된 편과 안 된 편 → 신호 → 할 일과 목표
     more: [['say', d.결론],
+      ...(d.세부?.강점 ? [['good', '잘하고 있는 것', d.세부.강점]] : []),
+      ...(d.세부?.길.length ? [['head', '조회 1,000번이 가는 길'], ['flow', d.세부.길.map(s => ({ 이름: s.이름, 명: s.명, 큰: s.큰 || null, 글: s.글, 판정: s.판정, 샘: s.키 === d.세부.새는곳.단계 })), [d.세부.새는곳.글, d.세부.고름].filter(Boolean).join(' ')]] : []),
+      ...(d.세부?.대조 ? [['head', '잘된 편과 안 된 편'], ['text', [d.세부.대조.글, d.세부.갈래].filter(Boolean).join(' ')]] : []),
+      ['head', '신호마다'],
       ...d.신호.filter(s => s.판정 !== '모름').map(s => ['row', s.이름, s.글, s.판정, s.값]),
       ...d.처방.map((p, i) => ['do', d.처방.length > 1 ? `할 일 ${i + 1}` : '할 일', p]),
-      ...(d.신호.some(s => s.판정 === '모름') ? [['note', '재지 못한 것: ' + d.신호.filter(s => s.판정 === '모름').map(s => `${s.이름}(${s.글})`).join(' ')]] : [])],
+      ...(d.세부?.목표 ? [['goal', '다음 목표', d.세부.목표]] : []),
+      ...(d.신호.some(s => s.판정 === '모름') ? [['note', '재지 못한 것: ' + d.신호.filter(s => s.판정 === '모름').map(s => `${s.이름}(${s.글})`).join(' ')]] : []),
+      ...(d.세부?.뺀편 ? [['note', `형식이 다른 ${d.세부.뺀편}편은 숫자의 뜻이 달라 견주지 않았습니다.`]] : [])],
   }));
   // 아직 판단하지 않는 계정은 한 줄로 묶고, 안쪽에 유형마다 이름을 적는다
   if (early.length) {

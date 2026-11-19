@@ -83,6 +83,26 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row.do .nm{color:var(--paper)}
 .row.do.first{margin-top:10px;padding-top:16px;border-top:1px solid var(--hair)}
 .more-note{margin:0;padding:10px 0 0;max-width:52em;font:var(--small);color:var(--dim)}
+/* 잘하고 있는 것: 결론 바로 아래, 밝은 글 */
+.row.good .mid{grid-column:2 / -1;color:var(--paper);font:400 14px/1.55 var(--sans);max-width:44em}
+.row.good .nm{color:var(--dim)}
+/* 구역의 이름: 작은 글, 위에 가는 줄 */
+.more-head{margin:14px 0 0;padding:14px 0 8px;border-top:1px solid var(--hair);font:400 12px/1 var(--sans);letter-spacing:.14em;color:var(--dim)}
+.more-text{margin:0;padding:4px 0 6px;max-width:52em;font:var(--small);color:var(--soft)}
+/* 조회 1,000번이 가는 길: 큰 숫자가 단계마다 줄어든다. 새는 단계만 밝다 */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;padding:6px 0 12px}
+.step{flex:1 1 0;min-width:118px;padding:2px 18px 4px 0;color:var(--dim)}
+.step + .step{padding-left:18px;border-left:1px solid var(--hair)}
+.step b{display:block;font:300 clamp(24px,3cqw,38px)/1.1 var(--sans);letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:rgba(243,241,236,.62)}
+.step i{display:block;margin-top:7px;font:400 12px/1 var(--sans);font-style:normal;letter-spacing:.08em}
+.step span{display:block;margin-top:6px;font:var(--small)}
+.step em{font-style:normal;margin-left:6px;color:var(--dim)}
+.step.leak,.step.leak b{color:var(--paper)}
+.step.leak b{font-weight:400}
+.step.leak em{color:var(--paper)}
+/* 다음 목표: 할 일 아래의 한 줄 */
+.row.goal .mid{grid-column:2 / -1;color:var(--paper);font:500 14px/1.55 var(--sans);max-width:44em}
+.row.goal .nm{color:var(--dim)}
 .more-in > :last-child{padding-bottom:20px}
 .read{margin:0;padding-top:16px;border-top:1px solid var(--hair);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 14px;font:var(--small);color:var(--dim)}
 
@@ -97,7 +117,9 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .row.sub{row-gap:3px}
   .row.sub .nm{grid-column:1}
   .row.sub .val{grid-column:2;grid-row:1}
-  .row.sub .mid,.row.do .mid{grid-column:1 / -1;grid-row:2}
+  .row.sub .mid,.row.do .mid,.row.good .mid,.row.goal .mid{grid-column:1 / -1;grid-row:2}
+  .step{flex-basis:50%;padding-bottom:14px}
+  .step:nth-child(odd){padding-left:0;border-left:0}
   .row.sub .when{display:none}
   .rail .obj:not([aria-current="true"]){display:none}
 }
@@ -174,6 +196,18 @@ function build(name) {
     for (const [kind, a, c, v, w] of r.more) {
       if (kind === 'say') put(el('p', 'more-say', a));
       else if (kind === 'note') put(el('p', 'more-note', a));
+      else if (kind === 'head') put(el('p', 'more-head', a));
+      else if (kind === 'text') put(el('p', 'more-text', a));
+      else if (kind === 'good' || kind === 'goal') { const row = el('div', 'row sub ' + kind); row.append(el('span', 'nm', a), el('span', 'mid', c)); put(row); }
+      else if (kind === 'flow') {
+        // a: 단계들 [{ 이름, 명, 글, 판정, 샘 }], c: 새는 곳을 말하는 글. 맨 앞에 조회 1,000번을 세운다
+        const flow = el('div', 'flow'); flow.setAttribute('role', 'list');
+        const cell = (big, name, text, verdict, leak) => { const s = el('div', 'step' + (leak ? ' leak' : '')); s.setAttribute('role', 'listitem'); const i = el('i', '', name); if (verdict) i.appendChild(el('em', '', verdict)); s.append(el('b', '', big), i, el('span', '', text)); return s; };
+        const big = n => (n == null ? '·' : n >= 10 ? Math.round(n).toLocaleString('ko-KR') : (Math.round(n * 10) / 10).toLocaleString('ko-KR'));
+        flow.appendChild(cell('1,000', '조회', '1,000번 보이면', '', false));
+        for (const s of a) flow.appendChild(cell(s.큰 || big(s.명), s.이름, s.글, s.판정, s.샘));
+        put(flow); if (c) put(el('p', 'more-text', c));
+      }
       else if (kind === 'do') { const row = el('div', 'row sub do' + (firstDo ? ' first' : '')); firstDo = false; row.append(el('span', 'nm', a), el('span', 'mid', c)); put(row); }
       else { const row = el('div', 'row sub' + (v === '나쁨' ? ' now' : '')); row.append(el('span', 'nm', a), el('span', 'mid', c), el('span', 'val', v), el('span', 'when', w)); put(row); }
     }
