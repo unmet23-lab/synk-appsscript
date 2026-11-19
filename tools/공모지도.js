@@ -97,8 +97,69 @@ function 검사(현황) {
   return 문제;
 }
 
-/** 접수 중인 영상 공모 — 통합목록에서 ai_video가 「AI 영상」이나 「영상」이고, 마감이 안 지났고, 신청현황에 없고, 자격 판정이 「안 됨」이 아닌 것. */
-function 열린영상(통합, 현황, 기준일, 지금, 자격판정 = null) {
+/** 같은 공고인지 볼 제목 열쇠 — 연도 · 회차 · 숫자 · 흔한 낱말(공모전 · AI · 영상 …)을 걷는다. 「KTX광명역 미래비전 AI영상 공모전」과 「광명역 미래비전 AI 영상 공모전」이 겹친다. */
+function 제목열쇠(t) {
+  return String(t || '').normalize('NFKC').replace(/20\d\d|제\s?\d+\s?회|\d+(st|nd|rd|th)?/gi, '').replace(/[^\p{L}]/gu, '')
+    .replace(/공모전|공모|콘테스트|챌린지|대회|영상|숏폼|모집|ai|ktx|season/gi, '').toLowerCase();
+}
+
+/**
+ * 같은 공고가 그록 · Gemini · 옛 장부에서 다른 id로 들어온 것을 한 장으로 합친다(11-20, 지도에 같은 공고가 둘씩 나왔다).
+ * 제목 열쇠가 한쪽이 다른 쪽을 품고(다섯 자 이상) 마감이 같거나 한쪽이 비었으면 같은 공고다. 주소가 query까지 같아도 같은 공고다.
+ * 남기는 쪽: 공식 주소 → 그록 확인 → 자격 판정 → 마감이 있는 쪽. 합친 쪽 id는 같은공고에 남긴다.
+ */
+function 중복합치기(나옴) {
+  const 점수 = (x) => (x.주소 && !/linkareer|wevity|contestkorea|thinkcontest|allcon|all-con|detizen/i.test(x.주소) ? 4 : 0)
+    + (x.그록 !== undefined ? 2 : 0) + (x.자격 && x.자격 !== '확인 전' ? 1 : 0) + (x.마감 ? 1 : 0);
+  const 남김 = [];
+  for (const x of [...나옴].sort((a, b) => 점수(b) - 점수(a))) {
+    const k = 제목열쇠(x.전체이름);
+    const 같음 = 남김.find((y) => {
+      if (x.주소 && y.주소 && x.주소 === y.주소) return true;
+      const j = 제목열쇠(y.전체이름);
+      if (k.length < 5 || j.length < 5 || !(k.includes(j) || j.includes(k))) return false;
+      return !x.마감 || !y.마감 || x.마감 === y.마감;
+    });
+    if (같음) (같음.같은공고 ||= []).push(x.id);
+    else 남김.push(x);
+  }
+  return 남김;
+}
+
+/**
+ * 우리 기준 추천 점수(첫 시안, 2026-11-20). 유호님 11-20 「다섯 개 다 해」로 정한 기준은 현장 참석 · 1인 1작품 · 확인 전화 · 서명 · 날인 · 경력 가치 · 제작 시간이다.
+ * 더함: AI 영상 허용 20, 자격 됨 15, 제작 여유(마감까지 7일 이상 25 · 4~6일 15 · 2~3일 5),
+ *   경력 가치(공공 주최 20 · 기업 15 · 학교와 단체 10 · 모름 5, 총상금 1,000만 원 이상 10 · 300만 원 이상 5).
+ * 뺌: 현장 참석 20, 공고 원문 확인 전 10, 서명 · 날인 서류 5, 확인 전화 5, 1인 1작품 3.
+ * 70점 이상이고 마감까지 3일 이상 남았으면 「추천」을 단다. 운영 조건은 자격 판정(tools/공모자격.js)이 공고 원문에서 읽는다.
+ */
+function 추천점수(o, 기준일) {
+  const 까닭 = [];
+  let 점 = 0;
+  const 더 = (n, 말) => { 점 += n; 까닭.push(`${말} ${n > 0 ? '+' : ''}${n}`); };
+  if (o.값 === 'AI 영상') 더(20, 'AI 영상 허용');
+  if (o.자격 === '됨') 더(15, '자격 됨');
+  const 날 = o.마감 ? Math.round((Date.parse(o.마감) - Date.parse(기준일)) / 864e5) : null;
+  if (날 != null && 날 >= 7) 더(25, `제작 여유 ${날}일`);
+  else if (날 != null && 날 >= 4) 더(15, `제작 여유 ${날}일`);
+  else if (날 != null && 날 >= 2) 더(5, `제작 여유 ${날}일`);
+  const g = o.공고조건 || {};
+  const 주최 = { 공공: 20, 기업: 15, 학교: 10, 단체: 10 }[g.주최종류];
+  더(주최 ?? 5, 주최 ? `${g.주최종류} 주최` : '주최 모름');
+  if (g.상금합계만원 >= 1000) 더(10, `총상금 ${g.상금합계만원.toLocaleString('ko-KR')}만 원`);
+  else if (g.상금합계만원 >= 300) 더(5, `총상금 ${g.상금합계만원.toLocaleString('ko-KR')}만 원`);
+  if (g.현장참석) 더(-20, '현장 참석');
+  if (o.원문확인안함) 더(-10, '공고 원문 확인 전');
+  if (g.서명날인) 더(-5, '서명 · 날인 서류');
+  if (g.확인전화) 더(-5, '확인 전화');
+  if (g.작품수상한 === 1) 더(-3, '1인 1작품');
+  점 = Math.max(0, Math.min(100, 점));
+  return { 점수: 점, 까닭, 추천: 점 >= 70 && 날 != null && 날 >= 3 };
+}
+
+/** 접수 중인 영상 공모 — 통합목록에서 ai_video가 「AI 영상」이나 「영상」이고, 마감이 안 지났고, 신청현황에 없고, 자격 판정이 「안 됨」이 아닌 것.
+ * 자격 판정이 공고 원문에서 마감을 읽었으면 그 마감을 쓴다(주최가 마감을 늘리거나 당긴다). 선택.안됨포함은 자격 확인 후보를 만들 때 쓴다. */
+function 열린영상(통합, 현황, 기준일, 지금, 자격판정 = null, 선택 = {}) {
   const 현황id = new Set((현황.items || []).map((o) => o.id));
   const 현황이름 = (현황.items || []).map((o) => 정규(짧은이름(o.name)));
   const 겹침 = (제목) => {
@@ -117,21 +178,25 @@ function 열린영상(통합, 현황, 기준일, 지금, 자격판정 = null) {
       ? (영상 ? (허용 === '허용' || 허용 === '조건부 허용' ? 'AI 영상' : '영상') : '기타 공모')
       : 기존값;
     if (값 !== 'AI 영상' && 값 !== '영상' && !그록공고) continue;
-    const 마감 = 공고마감(o);
+    const 판정 = 자격판정 ? 자격.판정찾기(자격판정, o.title) : null;
+    if (판정?.status === '안 됨' && !선택.안됨포함) continue;
+    const 공식마감 = 판정?.공고?.마감 || '';
+    const 장부마감 = 공고마감(o);
+    const 마감 = 공식마감 ? 공식마감.slice(0, 10) : 장부마감;
     if (마감 && 마감 < 기준일) continue;
-    const 시각 = 그록공고?.deadline.kst;
+    const 시각 = 공식마감 ? (공식마감.length > 10 ? `${공식마감.replace(' ', 'T')}:00+09:00` : '') : 그록공고?.deadline.kst;
     if (시각 && 지금 && Date.parse(시각) <= +지금) continue;
     if (현황id.has(o.id) || 겹침(o.title)) continue;
-    const 판정 = 자격판정 ? 자격.판정찾기(자격판정, o.title) : null;
-    if (판정?.status === '안 됨') continue;
     나옴.push({
       id: o.id,
       이름: 짧은이름(o.title),
       전체이름: o.title,
       값,
       마감,
-      마감글: 시각 ? 시각.slice(0, 16).replace('T', ' ') + ' KST'
+      마감글: 공식마감 ? `${공식마감} KST` : 시각 ? 시각.slice(0, 16).replace('T', ' ') + ' KST'
         : 그록공고 ? (그록공고.deadline.date || '') : (o.grok_20261117?.deadline_text || ''),
+      ...(공식마감 && 장부마감 && 장부마감 !== 공식마감.slice(0, 10) && { 마감바뀜: `장부 ${장부마감} → 공고 원문 ${공식마감.slice(0, 10)}` }),
+      ...(판정?.공고 && { 공고조건: 판정.공고 }),
       근거: 그록공고 ? [
         'AI 사용 ' + 허용,
         그록공고.ai.quote,
@@ -149,8 +214,10 @@ function 열린영상(통합, 현황, 기준일, 지금, 자격판정 = null) {
       }),
     });
   }
-  나옴.sort((a, b) => (a.마감 || '9999') .localeCompare(b.마감 || '9999') || a.이름.localeCompare(b.이름, 'ko'));
-  return 나옴;
+  const 합침 = 중복합치기(나옴);
+  for (const x of 합침) x.추천 = 추천점수(x, 기준일);
+  합침.sort((a, b) => (a.마감 || '9999') .localeCompare(b.마감 || '9999') || a.이름.localeCompare(b.이름, 'ko'));
+  return 합침;
 }
 
 function 자료만들기(현황, 통합, 지금 = new Date(), 자격판정 = null) {
@@ -294,6 +361,7 @@ section.open h2 { margin: 0; font-size: clamp(28px, 4vw, 44px); font-weight: 800
       <div class="bar" role="group" aria-label="영상 공모 고르기">
         <button class="pill" id="o-ai" type="button" aria-pressed="true">AI 영상</button>
         <button class="pill" id="o-all" type="button" aria-pressed="false">AI 확인 필요 영상까지</button>
+        <button class="pill" id="o-rec" type="button" aria-pressed="false">추천만</button>
       </div>
     </div>
     <div class="rows" id="open"></div>
@@ -431,9 +499,9 @@ function 판() {
 }
 
 function 열린판() {
-  const xs = 자료.열린.filter((o) => 열린보기 === 'all' || o.값 === 'AI 영상');
+  const xs = 자료.열린.filter((o) => 열린보기 === 'all' || (열린보기 === 'rec' ? o.추천 && o.추천.추천 : o.값 === 'AI 영상'));
   const box = document.getElementById('open'); box.textContent = '';
-  if (!xs.length) box.append(el('div', 'empty', '지금 열린 AI 영상 공모가 없습니다.'));
+  if (!xs.length) box.append(el('div', 'empty', 열린보기 === 'rec' ? '지금 추천 기준(70점 이상, 마감까지 3일 넘게)을 넘는 공모가 없습니다.' : '지금 열린 AI 영상 공모가 없습니다.'));
   for (const o of xs) {
     const r = el('article', 'row');
     const n = o.마감 ? 남은날(o.마감) : null;
@@ -447,12 +515,22 @@ function 열린판() {
     t.append(el('span', o.값 === 'AI 영상' ? 'tag ai' : 'tag', o.값 === 'AI 영상' ? 'AI 영상' : 'AI 확인 필요'));
     if (o.원문확인안함) t.append(el('span', 'tag warn', '그록 보고 · 원문 확인 전'));
     if (o.자격 && o.자격 !== '됨') t.append(el('span', 'tag warn', '자격 확인 필요'));
+    if (o.추천 && o.추천.추천) t.prepend(el('span', 'tag ai', '추천 ' + o.추천.점수));
+    if (o.마감바뀜) { const b = el('span', 'tag warn', '마감 바뀜'); b.title = o.마감바뀜; t.append(b); }
+    const g = o.공고조건 || {};
+    if (g.현장참석) { const b = el('span', 'tag warn', '현장 참석'); if (g.현장quote) b.title = g.현장quote; t.append(b); }
+    if (g.서명날인) t.append(el('span', 'tag', '서명 · 날인 서류'));
+    if (g.확인전화) t.append(el('span', 'tag', '확인 전화'));
+    if (g.작품수상한) t.append(el('span', 'tag kind', '1인 ' + g.작품수상한 + '작품'));
+    if (g.상금합계만원) t.append(el('span', 'tag kind', '총상금 ' + g.상금합계만원.toLocaleString('ko-KR') + '만 원'));
     r.append(t);
     if (o.근거) r.append(el('div', 'note', o.근거));
+    if (o.추천) r.append(el('div', 'note', '추천 점수 ' + o.추천.점수 + ': ' + o.추천.까닭.join(' · ')));
     box.append(r);
   }
   document.getElementById('o-ai').setAttribute('aria-pressed', String(열린보기 === 'ai'));
   document.getElementById('o-all').setAttribute('aria-pressed', String(열린보기 === 'all'));
+  document.getElementById('o-rec').setAttribute('aria-pressed', String(열린보기 === 'rec'));
 }
 
 function 저장() { try { localStorage.setItem('공모지도-보기', 보기); localStorage.setItem('공모지도-열린', 열린보기); } catch (e) {} }
@@ -460,6 +538,7 @@ document.getElementById('f-all').onclick = () => { 보기 = 'all'; 저장(); 판
 document.getElementById('f-ai').onclick = () => { 보기 = 'ai'; 저장(); 판(); };
 document.getElementById('o-ai').onclick = () => { 열린보기 = 'ai'; 저장(); 열린판(); };
 document.getElementById('o-all').onclick = () => { 열린보기 = 'all'; 저장(); 열린판(); };
+document.getElementById('o-rec').onclick = () => { 열린보기 = 'rec'; 저장(); 열린판(); };
 document.getElementById('asof').textContent = '장부 기준 ' + 자료.기준 + ' KST';
 판(); 열린판();
 </script>
@@ -518,4 +597,4 @@ async function main(argv) {
 if (require.main === module) main(process.argv.slice(2)).then((code) => { process.exitCode = code; })
   .catch((error) => { console.error(error.message); process.exitCode = 1; });
 
-module.exports = { 단계들, 오늘, 짧은이름, 공고마감, 공고주소, 카드, 검사, 열린영상, 자료만들기, 페이지, 읽기, 기본보관함 };
+module.exports = { 단계들, 오늘, 짧은이름, 공고마감, 공고주소, 카드, 검사, 열린영상, 중복합치기, 제목열쇠, 추천점수, 자료만들기, 페이지, 읽기, 기본보관함 };

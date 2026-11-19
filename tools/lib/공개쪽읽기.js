@@ -99,7 +99,7 @@ function 형식읽기(머리) {
 const 압축풀기 = { gzip: () => zlib.createGunzip(), deflate: () => zlib.createInflate(), br: () => zlib.createBrotliDecompress() };
 
 /** 한 걸음: 확인한 주소로 GET 한 번. 넘김은 따라가지 않는다. → { 상태, 머리, 몸(Buffer), 잘림 } */
-function 한걸음(u, 주소들, { 시한, 최대바이트, signal }) {
+function 한걸음(u, 주소들, { 시한, 최대바이트, signal, 허용형식 = 받는형식, 쿠키 = '', 참조 = '' }) {
   return new Promise((resolve, reject) => {
     const lib = u.protocol === 'https:' ? https : http;
     let 끝 = false;
@@ -107,7 +107,11 @@ function 한걸음(u, 주소들, { 시한, 최대바이트, signal }) {
     const req = lib.request({
       protocol: u.protocol, hostname: u.hostname, port: u.port || (u.protocol === 'https:' ? 443 : 80), path: `${u.pathname}${u.search}`, method: 'GET',
       lookup: 고정lookup(주소들), agent: false, timeout: 시한, signal,
-      headers: { 'user-agent': 이름표, accept: 'text/html,application/xhtml+xml,application/json;q=0.9,text/plain;q=0.8', 'accept-language': 'ko,en;q=0.8', 'accept-encoding': 'gzip, deflate, br' },
+      headers: {
+        'user-agent': 이름표, accept: `text/html,application/xhtml+xml,application/json;q=0.9,text/plain;q=0.8${허용형식.length > 받는형식.length ? ',*/*;q=0.5' : ''}`,
+        'accept-language': 'ko,en;q=0.8', 'accept-encoding': 'gzip, deflate, br',
+        ...(쿠키 ? { cookie: 쿠키 } : {}), ...(참조 ? { referer: 참조 } : {}),
+      },
     });
     req.on('timeout', () => req.destroy(new 거절('시간 안에 답이 오지 않았다')));
     req.on('error', (오류) => 마침(reject, 오류));
@@ -116,7 +120,7 @@ function 한걸음(u, 주소들, { 시한, 최대바이트, signal }) {
       const 그만 = (값) => { res.destroy(); 마침(resolve, 값); };
       if (상태 >= 300 && 상태 < 400) return 그만({ 상태, 머리: res.headers, 몸: Buffer.alloc(0), 잘림: false });
       const { 형식 } = 형식읽기(res.headers['content-type']);
-      if (상태 < 200 || 상태 >= 300 || !받는형식.includes(형식)) return 그만({ 상태, 머리: res.headers, 몸: Buffer.alloc(0), 잘림: false });
+      if (상태 < 200 || 상태 >= 300 || !(허용형식.includes(형식) || 허용형식.includes('*/*'))) return 그만({ 상태, 머리: res.headers, 몸: Buffer.alloc(0), 잘림: false });
       const 압축 = String(res.headers['content-encoding'] || '').toLowerCase().trim();
       let 흐름 = res;
       if (압축 === 'gzip' || 압축 === 'x-gzip') 흐름 = res.pipe(압축풀기.gzip());
@@ -173,7 +177,12 @@ const 오류글 = (오류) => {
 };
 
 /**
- * 주소 하나를 읽는다. 선택: 시한 · 전체시한 · 최대바이트 · 최대넘김. lookup · 주소허용 · 포트허용 · 걸음은 시험이 갈아 끼우는 자리다
+ * 주소 하나를 읽는다. 선택: 시한 · 전체시한 · 최대바이트 · 최대넘김 · 받을형식.
+ * 받을형식은 글 말고 더 받을 형식 목록이다(공모 공고의 PDF · HWP · 그림 첨부, 11-20). 그 형식이면 { 됨, 바이너리: true, 형식, 몸(Buffer), 파일이름 }을 돌려준다.
+ *   「모든 형식」(별표 둘을 빗금으로 이은 값)을 넣으면 형식을 가리지 않는다(게시판 첨부가 file/unknown 같은 형식으로 올 때 — 부르는 쪽이 파일 머리로 가린다).
+ * 쿠키({ 이름(host): 'a=b; c=d' }) · 참조(referer)는 게시판 첨부처럼 쪽을 본 세션으로만 받을 수 있는 파일을 받을 때 쓴다.
+ *   쿠키는 그 이름(host)으로 가는 걸음에만 붙고, 받은 쿠키는 결과의 쿠키에 이름별로 담아 돌려준다(다음 읽기에 그대로 넘긴다).
+ * lookup · 주소허용 · 포트허용 · 걸음은 시험이 갈아 끼우는 자리다
  * (손님 입력이나 명령줄로는 닿지 않는다 — 운영 코드는 주지 않는다).
  */
 async function 읽기(주소글, 선택 = {}) {
@@ -189,12 +198,25 @@ async function 읽기(주소글, 선택 = {}) {
     return 약속.then(resolve, reject).finally(() => signal.removeEventListener('abort', 끊김));
   });
   let 지금글 = 처음, 끝주소 = '';
+  const 단지 = new Map(Object.entries(옵션.쿠키 || {}).map(([이름, 값]) => [이름, new Map(String(값).split(/;\s*/).filter(Boolean).map(쌍 => [쌍.split('=')[0], 쌍]))]));
+  const 쿠키글 = (이름) => [...(단지.get(이름)?.values() || [])].join('; ');
+  const 쿠키담기 = (이름, 머리) => {
+    const 받은 = [].concat(머리?.['set-cookie'] || []);
+    if (!받은.length) return;
+    const 칸 = 단지.get(이름) || new Map();
+    for (const 줄 of 받은) { const 쌍 = String(줄).split(';')[0].trim(); if (쌍.includes('=')) 칸.set(쌍.split('=')[0], 쌍); }
+    단지.set(이름, 칸);
+  };
+  const 쿠키결과 = () => Object.fromEntries([...단지.keys()].map(이름 => [이름, 쿠키글(이름)]));
   try {
     for (let 넘김 = 0; ; 넘김++) {
       const u = 주소정리(지금글, { 포트허용: 옵션.포트허용 });
       const 주소들 = await 시한안에(이름풀기(u.hostname.replace(/\.$/, ''), { lookup: 옵션.lookup, 주소허용: 옵션.주소허용 }));
       끝주소 = u.href;
-      const r = await 걸음(u, 주소들, { 시한: 옵션.시한, 최대바이트: 옵션.최대바이트, signal });
+      const 허용형식 = [...받는형식, ...(옵션.받을형식 || [])];
+      const 이름 = u.hostname.replace(/\.$/, '');
+      const r = await 걸음(u, 주소들, { 시한: 옵션.시한, 최대바이트: 옵션.최대바이트, signal, 허용형식, 쿠키: 쿠키글(이름), 참조: 옵션.참조 || '' });
+      쿠키담기(이름, r.머리);
       if (r.까닭) return { 됨: false, 주소: 처음, 끝주소, 까닭: r.까닭 };
       if (r.상태 >= 300 && r.상태 < 400) {
         const 갈곳 = String(r.머리?.location || '').trim();
@@ -208,9 +230,16 @@ async function 읽기(주소글, 선택 = {}) {
         const 막힘 = [401, 403, 429, 503].includes(r.상태);
         return { 됨: false, 주소: 처음, 끝주소, 상태: r.상태, 까닭: 막힘 ? `사이트가 자동 읽기를 막았다(${r.상태})` : `쪽이 없거나 오류다(${r.상태})` };
       }
+      if (!받는형식.includes(형식) && ((옵션.받을형식 || []).includes(형식) || (옵션.받을형식 || []).includes('*/*'))) {
+        const 처분 = String(r.머리?.['content-disposition'] || '');
+        const 이름 = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(처분)?.[1] || /filename="?([^";]+)"?/i.exec(처분)?.[1] || '';
+        let 파일이름 = '';
+        try { 파일이름 = decodeURIComponent(이름.trim()); } catch { 파일이름 = 이름.trim(); }
+        return { 됨: true, 바이너리: true, 주소: 처음, 끝주소, 상태: r.상태, 형식, 바이트: r.몸.length, 잘림: !!r.잘림, 넘김, 몸: r.몸, 파일이름, 쿠키: 쿠키결과() };
+      }
       if (!받는형식.includes(형식)) return { 됨: false, 주소: 처음, 끝주소, 상태: r.상태, 까닭: `글이 아닌 형식이다(${형식.slice(0, 40) || '모름'})` };
       const 풀림 = 글로(r.몸, 문자셋, 형식);
-      return { 됨: true, 주소: 처음, 끝주소, 상태: r.상태, 형식, 문자셋: 풀림.문자셋, 바이트: r.몸.length, 잘림: !!r.잘림, 넘김, 글: 풀림.글 };
+      return { 됨: true, 주소: 처음, 끝주소, 상태: r.상태, 형식, 문자셋: 풀림.문자셋, 바이트: r.몸.length, 잘림: !!r.잘림, 넘김, 글: 풀림.글, 쿠키: 쿠키결과() };
     }
   } catch (오류) {
     return { 됨: false, 주소: 처음, ...(끝주소 ? { 끝주소 } : {}), 까닭: signal.aborted ? '시간 안에 끝나지 않았다' : 오류글(오류) };

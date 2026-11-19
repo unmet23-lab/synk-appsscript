@@ -35,6 +35,18 @@ test('카본 인용이 원문에 없으면 버린다', () => {
   assert.strictEqual(자격.답읽기({ quote: '만 14세 이상 제천시민', 최대나이: -1 }, 원문).제한.최대나이, null);
 });
 
+test('운영 조건은 원문에 있는 인용만 받고, 엉뚱한 숫자는 버린다', () => {
+  const 원문 = '응모자격: 누구나 접수기간: 2026. 11. 3.(월) ~ 11. 30.(일) 18:00까지 시상식: 12. 4.(금) 수상자 참석 필수 1인 2작품 이내 총상금 1,000만원';
+  const 답 = 자격.답읽기({ quote: '응모자격: 누구나', 누구나: true, 지역: [], 최소나이: -1, 최대나이: -1,
+    마감: '2026-11-30 18:00', 마감quote: '11. 30.(일) 18:00까지', 현장참석: true, 현장quote: '시상식: 12. 4.(금) 수상자 참석 필수',
+    확인전화: false, 서명날인: false, 작품수상한: 2, 상금합계만원: 1000, 주최종류: '공공' }, 원문);
+  assert.deepStrictEqual(답.공고, { 마감: '2026-11-30 18:00', 마감quote: '11. 30.(일) 18:00까지', 현장참석: true, 현장quote: '시상식: 12. 4.(금) 수상자 참석 필수',
+    확인전화: false, 서명날인: false, 작품수상한: 2, 상금합계만원: 1000, 주최종류: '공공' });
+  const 틀린 = 자격.답읽기({ quote: '응모자격: 누구나', 마감: '2026-12-01', 마감quote: '12월 1일까지', 현장참석: true, 현장quote: '본선 참석', 작품수상한: -1, 상금합계만원: -1, 주최종류: '정부' }, 원문);
+  assert.deepStrictEqual(틀린.공고, { 마감: '', 현장참석: false, 확인전화: false, 서명날인: false, 작품수상한: null, 상금합계만원: null, 주최종류: '모름' });
+  assert.match(자격.공고문장(원문), /시상식: 12\. 4\./);
+});
+
 test('자격 문장만 뽑는다', () => {
   const t = '공모명: 응답하라 제천 공모기간: 9월 28일 ~ 11월 20일 응모자격: 만 14세 이상 제천시민 공모분야: AI영상';
   assert.match(자격.자격문장(t), /응모자격: 만 14세 이상 제천시민/);
@@ -70,6 +82,28 @@ test('자격확인은 원문을 읽고 카본 판정을 쌓는다(개인 조건�
   // 이미 판정한 공고는 다시 묻지 않는다.
   const r2 = await 자격.자격확인(dir, [{ 제목: '응답하라 제천 AI영상 공모전', 주소: 'https://jecheon.example.kr/notice' }], { fetchPage, carbon, budgetMs: 600000 });
   assert.strictEqual(r2.checked, 0);
+  // 운영 조건이 없는 「확인 필요」는 7일 주기를 지키고, 마감이 7일 안쪽이면 하루마다 다시 본다.
+  const 사흘뒤 = new Date(Date.now() + 3 * 864e5);
+  const 마감 = 사흘뒤.toISOString().slice(0, 10);
+  const r3 = await 자격.자격확인(dir, [{ 제목: '주소 없는 공모', 주소: '', 마감 }], { fetchPage, carbon, budgetMs: 600000 });
+  assert.strictEqual(r3.checked, 0);
+  const r4 = await 자격.자격확인(dir, [{ 제목: '주소 없는 공모', 주소: '', 마감 }], { fetchPage, carbon, budgetMs: 600000, 지금: new Date(Date.now() + 864e5) });
+  assert.strictEqual(r4.checked, 1);
+});
+
+test('글에 자격 문장이 없으면 첨부에서 읽어 판정하고 출처를 남긴다', async () => {
+  const dir = 폴더();
+  const fetchPage = async () => ({ 됨: true, 글: '<p>포스터를 보세요</p><a href="/bbs/download.php?no=0">붙임1. 모집 공고.pdf</a>' });
+  const 첨부읽기 = async (page, u, { 고르기 }) => {
+    const 글 = '공모개요 응모자격: 만 14세 이상 제천시민(제천 소재 학생 및 직장인 포함) 공모분야';
+    assert.ok(고르기(글));
+    return { 글, 출처: { 종류: '첨부', 이름: '붙임1. 모집 공고.pdf' }, 본: [{ 이름: '붙임1. 모집 공고.pdf' }] };
+  };
+  const carbon = async () => ({ selectedModel: 'gemini-4-carbon-high', text: JSON.stringify({ cases: [{ id: 자격.열쇠('응답하라 제천 AI영상 공모전'), quote: '만 14세 이상 제천시민', 누구나: false, 지역: ['제천'], 학생만: false, 직장인만: false, 단체만: false, 최소나이: 14, 최대나이: -1, 현장지역: [] }] }) });
+  await 자격.자격확인(dir, [{ 제목: '응답하라 제천 AI영상 공모전', 주소: 'https://jecheon.example.kr/n' }], { fetchPage, carbon, 첨부읽기, budgetMs: 600000 });
+  const v = 자격.판정찾기(자격.판정읽기(dir), '응답하라 제천 AI영상 공모전');
+  assert.strictEqual(v.status, '안 됨');
+  assert.strictEqual(v.출처, '첨부(붙임1. 모집 공고.pdf)');
 });
 
 test('수동 제외는 제목 조각으로 맞고, 지도의 열린 공모에서 빠진다', () => {

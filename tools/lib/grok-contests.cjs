@@ -251,7 +251,9 @@ function 합치기(통합, reports) {
       } else if (!row.onlyExisting) {
         const id = (row.geminiOnly ? 'gemini-contest:' : 'grok-contest:') + sha([row.organizer, row.title, row.edition, row.noticeId, row.officialUrl].join('\n')).slice(0, 20);
         keys.push(row);
-        items.push({ id, title: row.title, grok_contest: row });
+        // 처음 받은 회차의 날짜 — 늦게 찾은 공고를 재는 데 쓴다(tools/공모늦음.js, 11-20).
+        const 처음 = 회차시각(report);
+        items.push({ id, title: row.title, grok_contest: row, ...(Number.isFinite(처음) && { grok_first_seen: new Date(처음 + 9 * 36e5).toISOString().slice(0, 10) }) });
       }
     }
   }

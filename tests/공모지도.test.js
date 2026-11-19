@@ -10,6 +10,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const 지도 = require('../tools/공모지도.js');
 const { 지도동기화 } = require('../tools/공모지도동기화.cjs');
+const { 열쇠: 자격열쇠 } = require('../tools/lib/contest-eligibility.cjs');
 
 const 도구 = path.join(__dirname, '..', 'tools', '공모지도.js');
 
@@ -311,4 +312,41 @@ test('Claude 지도 예약은 같은 비공개 주소와 생성된 파일에 한
     assert.equal(result.status, 0, result.stderr);
     assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, 판정);
   }
+});
+
+// 11-20 유호님 「다섯 개 다 해」: 같은 공고 합치기, 공고 원문 마감, 우리 기준 추천 점수.
+test('같은 공고가 다른 id로 와도 한 장으로 합치고, 공식 주소 쪽을 남긴다', () => {
+  const 나옴 = [
+    { id: 'a', 전체이름: '광명역 미래비전 AI 영상 공모전', 마감: '2026-11-24', 주소: 'https://linkareer.com/activity/363148' },
+    { id: 'b', 전체이름: 'KTX광명역 미래비전 AI영상 공모전', 마감: '2026-11-24', 주소: 'https://www.gm.go.kr/pt/n?no=68755', 그록: true },
+    { id: 'c', 전체이름: '장기실종아동찾기 영상 공모전', 마감: '', 주소: 'https://www.contestkorea.com/sub/view.php?str_no=1' },
+    { id: 'd', 전체이름: '쉽고 바른 ICT 공공언어 웹툰 공모전', 마감: '', 주소: 'https://www.contestkorea.com/sub/view.php?str_no=2' },
+    { id: 'e', 전체이름: '2026 시민 영상 공모전', 마감: '2026-11-30' },
+    { id: 'f', 전체이름: '2026 시민 영상 공모전', 마감: '2026-12-15' },
+  ];
+  const r = 지도.중복합치기(나옴);
+  assert.deepStrictEqual(r.map(x => x.id).sort(), ['b', 'c', 'd', 'e', 'f']);
+  assert.deepStrictEqual(r.find(x => x.id === 'b').같은공고, ['a']);
+});
+
+test('자격 판정이 공고 원문에서 읽은 마감을 지도 마감으로 쓰고, 늘어난 마감을 알린다', () => {
+  const 통합 = { items: [{ id: 'x', title: 'AI 달인 꿀팁 챌린지', ai_video: { value: 'AI 영상' }, calendar_20261110: { end: '2026-11-20' } }] };
+  const 판정 = { schema: 'synk-contest-eligibility-v1', items: { [자격열쇠('AI 달인 꿀팁 챌린지')]: { title: 'AI 달인 꿀팁 챌린지', status: '됨', 공고: { 마감: '2026-11-30 23:59', 주최종류: '공공' } } } };
+  const xs = 지도.열린영상(통합, { items: [] }, '2026-11-21', new Date('2026-11-21T03:00:00Z'), 판정);
+  assert.strictEqual(xs.length, 1, '장부 마감(11-20)이 지나도 공고 원문 마감(11-30)으로 남는다');
+  assert.strictEqual(xs[0].마감, '2026-11-30');
+  assert.strictEqual(xs[0].마감바뀜, '장부 2026-11-20 → 공고 원문 2026-11-30');
+  assert.strictEqual(xs[0].추천.점수, 80);
+  assert.strictEqual(xs[0].추천.추천, true);
+});
+
+test('추천 점수는 현장 참석 · 서류 · 확인 전화 · 1인 1작품을 빼고, 마감 3일 안쪽은 추천하지 않는다', () => {
+  const 기본 = { 값: 'AI 영상', 자격: '됨', 마감: '2026-12-10', 공고조건: { 주최종류: '공공', 상금합계만원: 1000 } };
+  assert.strictEqual(지도.추천점수(기본, '2026-11-20').점수, 90);
+  const 무거움 = { ...기본, 공고조건: { ...기본.공고조건, 현장참석: true, 서명날인: true, 확인전화: true, 작품수상한: 1 } };
+  const r = 지도.추천점수(무거움, '2026-11-20');
+  assert.strictEqual(r.점수, 57);
+  assert.strictEqual(r.추천, false);
+  assert.match(r.까닭.join(' · '), /현장 참석 -20/);
+  assert.strictEqual(지도.추천점수({ ...기본, 마감: '2026-11-22' }, '2026-11-20').추천, false);
 });

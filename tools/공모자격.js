@@ -29,7 +29,9 @@ function 후보(보관함) {
   const 원본 = new Map((통합.items || []).map(o => [o.id, o]));
   // 공고에 딸린 주소를 모두 모은다(공식 원문, 발견한 모음 사이트, 옛 장부의 링크).
   const 딸린주소 = o => [...new Set((JSON.stringify(o || {}).match(/https?:\/\/[^\s"'<>)\\\]]+/g) || []))].slice(0, 8);
-  return 지도.열린영상(통합, 현황, 기준일, new Date()).map(o => ({ 제목: o.전체이름, 주소: o.주소, 주소들: 딸린주소(원본.get(o.id)) }));
+  // 판정의 공고 원문 마감을 쓰고(늘어난 마감) 「안 됨」도 넣어 7일마다 다시 본다.
+  const 판정 = 자격.판정읽기(보관함);
+  return 지도.열린영상(통합, 현황, 기준일, new Date(), 판정, { 안됨포함: true }).map(o => ({ 제목: o.전체이름, 주소: o.주소, 주소들: 딸린주소(원본.get(o.id)), 마감: o.마감 || '' }));
 }
 
 async function main(argv) {
