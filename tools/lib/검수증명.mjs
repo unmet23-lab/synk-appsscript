@@ -3,7 +3,29 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import 자식 from 'node:child_process';
 import { spawnSync } from 'node:child_process';
+
+// Windows에서 경로 한 칸이 재분석 지점(정션 · 볼륨 마운트 지점 · 클라우드 파일 따위)인지 묻는다. fsutil은 그 지점을 열기만 하고 따라가지 않는다
+// (설계 검토 3, `.tmp/pulse-app-media-20261119/설계검토3_Fable.md`). 답은 셋이다: true(끝 부호 0 — 재분석 지점), false(끝 부호 1이고 표준 출력의
+// 오류 번호 자리에 `4390:` — 재분석 지점이 아님), null(그 밖 — 실행 실패 · 시간 초과 · 없는 경로 · 다른 오류). 글은 언어마다 달라 번호만 본다.
+// 프로세스 안에서 true · false만 기억한다. null은 기억하지 않는다.
+const 재분석기억 = new Map();
+function 재분석지점(대상) {
+  if (재분석기억.has(대상)) return 재분석기억.get(대상);
+  const r = 자식.spawnSync(path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'fsutil.exe'), ['reparsepoint', 'query', 대상], { windowsHide: true, encoding: 'latin1', timeout: 15_000 });
+  const 답 = r.error || r.status === null ? null : r.status === 0 ? true : r.status === 1 && /(^|\s)4390:/.test(r.stdout || '') ? false : null;
+  if (답 !== null) 재분석기억.set(대상, 답);
+  return 답;
+}
+// 부모 폴더 목록에서 한 칸의 항목을 찾는다(글자 그대로, 없으면 대소문자만 다른 것). 목록 읽기는 그 칸을 열지 않고, libuv는 목록에 보이는
+// 재분석 속성을 링크(isSymbolicLink)로 표시한다 — 정션 · 심볼릭 링크 · 볼륨 마운트 지점이 그렇다. 못 찾으면(없음, 8.3 짧은 이름, 끝 점) null.
+function 목록항목(부모, 이름) {
+  let 목록;
+  try { 목록 = fs.readdirSync(부모, { withFileTypes: true }); } catch (e) { if (e.code === 'ENOENT' || e.code === 'ENOTDIR') return null; throw e; }
+  const 작게 = 이름.toLowerCase();
+  return 목록.find(e => e.name === 이름) ?? 목록.find(e => e.name.toLowerCase() === 작게) ?? null;
+}
 
 export const sha256 = b => crypto.createHash('sha256').update(b).digest('hex');
 const sort = v => Array.isArray(v) ? v.map(sort) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, sort(v[k])])) : v;
@@ -11,8 +33,30 @@ export const 정규해시 = v => sha256(JSON.stringify(sort(v)));
 export function 안전경로(root, relative) {
   if (typeof relative !== 'string' || !relative || relative.includes('\\') || path.isAbsolute(relative) || relative.split('/').some(p => !p || p === '.' || p === '..') || relative.includes(':')) throw new Error(`검수 상대 경로가 아니다: ${relative}`);
   const f = path.resolve(root, relative);
-  // 후보 안의 symlink/junction을 따라 저장소 밖 파일을 읽지 않는다.
-  for (let p = f; p !== path.resolve(root); p = path.dirname(p)) if (fs.existsSync(p) && fs.lstatSync(p).isSymbolicLink()) throw new Error(`검수 경로에 연결 파일이 있다: ${relative}`);
+  // 후보 안의 symlink/junction을 따라 저장소 밖 파일을 읽지 않는다. 뿌리에서 아래로 칸마다 lstat만 본다.
+  // existsSync · stat은 링크를 따라가므로, 링크인지 알기 전에 그 너머(공유 폴더 따위)에 먼저 닿는다(11-19 GPT, company-release-common-tools-20261119 -d ~ -f).
+  // 없는 칸이나 파일인 중간 칸에서는 걷기를 끝낸다 — 그 아래에는 열 것이 없다.
+  // Windows의 볼륨 마운트 지점은 lstat(libuv)이 따라가 보통 폴더로 보고한다. 그래서 Windows에서는 칸마다 재분석 속성을 lstat보다 먼저 본다
+  // (11-19 GPT review-tool-safe-path-20261119 GA1 · -b Q1 · -c GA1: 실제 경로 글자 비교와 볼륨 번호 비교는 표지를 읽지 않아 놓쳤다).
+  // 먼저 부모 폴더 목록의 그 항목을 본다(목록항목). 목록에 그 이름이 없을 때만 fsutil에 묻는다(재분석지점). 바쁜 PC에서 fsutil 한 번이 2초 가까이
+  // 걸려, 칸마다 부르면 모든 배포 문의 판정이 몇십 분으로 는다(설계 검토 3 규칙 1을 이렇게 바꿨다 — 배경 `.tmp/pulse-app-media-20261119/배경_안전경로.md`).
+  // 재분석 지점이면 lstat 없이 멈춘다. 모르면 lstat으로 있는지만 보고, 없으면 걷기를 끝내고 있으면 멈춘다.
+  // 볼륨 번호(dev)가 뿌리와 다른 칸도 막는다(Linux의 다른 파일 시스템도). 뿌리 자신은 따라가 본다 — 뿌리나 그 위의 링크는 검수 도구와 git이 함께 도는 작업본 자리라 보지 않는다.
+  const 뿌리 = path.resolve(root), 볼륨 = fs.statSync(뿌리, { throwIfNoEntry: false })?.dev, 창 = process.platform === 'win32';
+  const 있나 = q => { try { return fs.lstatSync(q); } catch (e) { if (e.code === 'ENOENT' || e.code === 'ENOTDIR') return null; throw e; } };
+  let p = 뿌리;
+  for (const 칸 of relative.split('/')) {
+    const 부모 = p;
+    p = path.join(p, 칸);
+    let 표지 = false;
+    if (창) { const 항목 = 목록항목(부모, 칸); 표지 = 항목 ? 항목.isSymbolicLink() : 재분석지점(p); }
+    if (표지 === true) throw new Error(`검수 경로에 연결 파일이 있다: ${relative}`);
+    const st = 있나(p);
+    if (!st) break;
+    if (표지 === null) throw new Error(`검수 경로의 재분석 지점을 확인하지 못했다: ${relative}`);
+    if (st.isSymbolicLink() || 볼륨 !== undefined && st.dev !== 볼륨) throw new Error(`검수 경로에 연결 파일이 있다: ${relative}`);
+    if (!st.isDirectory()) break;
+  }
   return f;
 }
 function git(cwd, args, buffer = false) {
