@@ -15,7 +15,7 @@ import { solioToday, solioTodayNeedsReread } from './solio-today.mjs';
 import { solioBrief } from './solio-brief.mjs';
 import { siteVisitsView, SITE_VISITS_NAME } from './site-visits-model.mjs';
 import { snsHealthView, SNS_HEALTH_NAME } from './sns-health-model.mjs';
-import { solioBackupView, SOLIO_BACKUP_NAME } from './solio-backup-model.mjs';
+import { solioBackupView, backupActionNotice, SOLIO_BACKUP_NAME } from './solio-backup-model.mjs';
 import { createOrbFaceView } from './orb-face-view.mjs';
 import { createOrbRooms, ASIDE_ROOMS } from './orb-rooms.mjs';
 
@@ -154,7 +154,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   const subs = options.subscriptions && typeof options.subscriptions.snapshot === 'function' ? options.subscriptions : null;
   const bridgeOf = v => (v && typeof v.snapshot === 'function' ? v : null);
   const readApi = { visits: bridgeOf(options.siteVisits), health: bridgeOf(options.snsHealth), backup: bridgeOf(options.solioBackup) };
-  let backupPoll = null, backupPollMs = 0;
+  let backupPoll = null, backupPollMs = 0, backupNotice = null;
 
   const machine = createPortalStateMachine({
     status: options.initialState?.status ?? 'restoring',
@@ -408,7 +408,10 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function readScene(key, state) {
     const r = reads[key];
     if (!readApi[key] || !memberShown(state) || !state.accountKey || r.account !== state.accountKey) return { visible: false };
-    return READ_VIEW[key](r.result, now());
+    const scene = READ_VIEW[key](r.result, now());
+    // 백업 방에서 누른 단추가 거절되거나 열지 못했으면 그 한 줄을 둘째 문장 앞에 10초 둔다(Fable 최종 검수 F3)
+    if (key === 'backup' && scene.visible && backupNotice && now() - backupNotice.at < 10000) return { ...scene, then: `${backupNotice.text} ${scene.then || ''}`.trim() };
+    return scene;
   }
   function readScenes(state) { return Object.fromEntries(READ_PROGRAMS.map(key => [key, readScene(key, state)])); }
   /* 오브제 줄. 읽기 프로그램을 하나라도 볼 계정에게만 있고, 프로그램마다 자기가 보일 때만 선다(계정건강 PC앱_구현설계 10절 「새로 정한 것」).
@@ -535,7 +538,14 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const api = readApi.backup;
     if (!api || space !== 'solio' || prog !== 'backup' || clientMode() !== 'app') return false;
     const call = name === 'backup-start' ? api.start?.(arg) : name === 'backup-open' ? api.open?.(arg) : api.dismiss?.();
-    Promise.resolve(call).catch(() => null).then(() => { if (!disposed) syncRead('backup', { again: true }); });
+    backupNotice = null;
+    Promise.resolve(call).catch(() => ({ ok: false })).then(result => {
+      if (disposed) return;
+      const text = backupActionNotice(result);
+      backupNotice = text ? { text, at: now() } : null;
+      syncRead('backup', { again: true });
+      if (text) render();
+    });
     return true;
   }
 
@@ -1525,7 +1535,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const r = reads[key];
     r.seq += 1;
     if (r.timer !== null) clearTimer(r.timer);
-    Object.assign(r, { account: undefined, result: null, loading: false, done: false, retried: false, timer: null });
+    Object.assign(r, { account: undefined, result: null, loading: false, done: false, retried: false, timer: null, again: false });
     if (prog === key) prog = 'subs';
   }
   function stopReads() { for (const key of READ_PROGRAMS) stopRead(key); }
@@ -1538,6 +1548,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const state = machine.read();
     const account = memberShown(state) && state.accountKey ? state.accountKey : null;
     if (r.account !== account) { stopRead(key); r.account = account; }
+    // 읽는 중에 다시 읽기 부탁이 오면 표시만 남기고, 그 읽기가 끝난 뒤 한 번 더 읽는다(백업 방에서 누른 직후의 다시 읽기가 주기 읽기에 묻히지 않게, Fable 최종 검수 F5)
+    if (r.loading && again) { r.again = true; return; }
     if (!api || !account || state.phase !== 'entered' || space !== 'solio' || !solioReadable(state) || r.loading) return;
     if (r.done && !again) return;
     const my = ++r.seq;
@@ -1545,7 +1557,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     let pending;
     try { pending = Promise.resolve(api.snapshot()); } catch { pending = Promise.resolve(null); }
     pending.catch(() => null).then(res => {
-      if (my === r.seq) r.loading = false;
+      if (my === r.seq) { r.loading = false; if (r.again) { r.again = false; setTimer(() => { if (!disposed) syncRead(key, { again: true }); }, 0); } }
       // 늦게 온 답은 그 계정이 지금도 같은 회차일 때만 받는다. 로그아웃 뒤 같은 계정으로 다시 들어와도 앞 회차의 답은 버린다
       if (disposed || my !== r.seq || r.account !== account || machine.read().accountKey !== account) return;
       r.done = true;

@@ -745,7 +745,7 @@ function createWindow(){
     'synk:site-visits-snapshot':()=>siteVisitsCall(),
     'synk:sns-health-snapshot':()=>snsHealthCall(),
     'synk:solio-backup-snapshot':()=>solioBackupCall((service,account)=>service.snapshot(account)),
-    'synk:solio-backup-start':mode=>solioBackupCall((service,account)=>service.start(account,mode,{getHint:solioBackupHint})),
+    'synk:solio-backup-start':mode=>solioBackupCall((service,account)=>service.start(account,mode,{getHint:solioBackupHint,isCurrent:()=>accountStatus()?.signedIn===true&&accountStatus()?.account?.synk_user_id===account.synk_user_id})),
     'synk:solio-backup-open':topic=>solioBackupCall((service,account)=>service.open(account,topic)),
     'synk:solio-backup-dismiss':()=>solioBackupCall((service,account)=>service.dismiss(account)),
   };

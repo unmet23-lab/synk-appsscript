@@ -66,7 +66,22 @@ const ERROR_SAY = Object.freeze({
   STORAGE: ['이 PC에 설치 파일을 저장하지 못했습니다.', '디스크 공간을 확인한 뒤 「다시 받기」를 눌러 주세요.'],
   REQUEST_FAILED: ['엔진에 보호 시작을 알리지 못했습니다.', '이 Windows 계정의 앱 데이터 폴더에 쓰지 못했습니다. 「다시 하기」를 눌러 주세요.'],
   OPEN_FAILED: ['엔진 창을 열지 못했습니다.', '시작 메뉴에서 「SYNK 업무 백업」을 직접 열어도 이어집니다. 다시 하려면 「다시 하기」를 눌러 주세요.'],
+  INSTALL_UNCONFIRMED: ['설치가 끝났는지 확인하지 못했습니다.', '엔진 창이 열리면 그 창에서 이어서 해 주세요. 열리지 않으면 「다시 받기」를 눌러 주세요.'],
+  ENGINE_UNKNOWN: ['백업 엔진이 깔려 있는지 확인하지 못해 설치를 멈췄습니다.', '잠시 뒤 「다시 받기」를 눌러 주세요. 확인하지 못한 채로는 설치기를 띄우지 않습니다.'],
 });
+/* 단추를 눌렀는데 본체가 거절하거나 열지 못했을 때 방에 잠깐 보이는 한 줄(Fable 최종 검수 F3) */
+const NOTICE = Object.freeze({
+  OPEN_FAILED: '엔진 창을 열지 못했습니다. 시작 메뉴에서 「SYNK 업무 백업」을 직접 열어 주세요.',
+  NO_ENGINE: '백업 엔진이 이 PC에 없어 엔진 창을 열 수 없습니다.',
+  BUSY: '앞서 누른 일이 아직 진행 중입니다.',
+  NOT_NEEDED: '지금 상태에서는 할 일이 없어 다시 읽었습니다.',
+  ENGINE_UNKNOWN: '백업 엔진이 깔려 있는지 확인하지 못했습니다. 잠시 뒤 다시 눌러 주세요.',
+  SIGN_IN_REQUIRED: 'SYNK ID로 로그인한 뒤 쓸 수 있습니다.',
+});
+export function backupActionNotice(result) {
+  if (!result || result.ok !== false) return '';
+  return NOTICE[result.code] || '요청을 처리하지 못했습니다. 잠시 뒤 다시 눌러 주세요.';
+}
 /* 엔진이 이미 있는 길(요청만 쓰고 창 열기)의 실패는 받기가 아니므로 다시 하기 단추 이름이 다르다 */
 const RETRY_LABEL = Object.freeze({ REQUEST_FAILED: '다시 하기', OPEN_FAILED: '다시 하기' });
 
@@ -115,9 +130,12 @@ export function solioBackupView(snap, now = Date.now()) {
   const base = { visible: true, when: '', scope: '', rows: [], acts: [], note: '' };
   const view = snap.view;
   if (view === 'windows-only') return { ...base, say: '백업은 Windows PC에서만 쓸 수 있습니다.', then: 'Mac에는 백업 엔진을 깔 수 없습니다. Windows PC의 솔리오에서 시작해 주세요.', note: 'Windows 전용' };
-  const installing = installScene(snap.install);
   const engineRows = statusRows(snap, now);
   const startView = view === 'no-engine' || view === 'engine-removed' || view === 'needs-setup';
+  // 끝난 설치 결과(열었음 · 깔았음 · 실패)는 처음 시작 갈래에서만 맨 위에 둔다. 엔진 창에서 설정을 마쳐 상태가 생기면
+  // 그 상태가 맨 위다(Fable 최종 검수 F1). 도는 중인 단계(받기 · 확인 · 관리자 확인 · 설치)는 언제나 보인다
+  const finished = ['opened', 'done', 'error'].includes(snap.install?.phase);
+  const installing = finished && !startView ? null : installScene(snap.install);
   if (installing) return { ...base, say: installing.say, then: installing.then, acts: installing.acts, rows: startView ? [...SETUP_ROWS] : engineRows, busy: !!installing.busy, note: installing.busy ? '설치 중' : '' };
 
   if (view === 'no-engine' || view === 'engine-removed') {

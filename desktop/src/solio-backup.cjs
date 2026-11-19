@@ -283,6 +283,8 @@ async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), r
      셸도 같은 파일로 설치기를 띄운다. 공유 0이면 셸이 열지 못해 띄울 수 없다(엔진 업데이터와 같은 공유, 4.10) ── */
 const HOLDER_SCRIPT = [
   "$ErrorActionPreference='Stop'",
+  // 경로에 한글이 있어도 깨지지 않게 UTF-8로 내보낸다(GPT 다시 검수 GA1). 본체도 UTF-8로 읽는다
+  '[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)',
   "try{$h=[IO.File]::Open($env:SWB_SETUP,'Open','Read','Read')}catch{[Console]::Out.WriteLine('LOCKFAIL');exit 3}",
   // 쥔 핸들이 실제로 가리키는 파일의 경로(GetFinalPathNameByHandleW)를 알린다. 본체가 받은 경로와 같을 때만 확인을 잇는다(GPT 검수 GA1).
   // C# 선언은 따옴표가 들어 있어 명령 줄 대신 환경 변수로 넘긴다
@@ -299,9 +301,10 @@ const HOLDER_SCRIPT = [
 ].join(';');
 
 const FINAL_SIG = '[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] public static extern uint GetFinalPathNameByHandleW(Microsoft.Win32.SafeHandles.SafeFileHandle h, System.Text.StringBuilder b, uint n, uint f);';
-/* \\?\C:\a\b 꼴과 대소문자를 걷어 견준다 */
+/* \\?\C:\a\b 꼴만 걷고 글자 그대로 견준다. 대소문자를 가리는 폴더에서 다른 폴더가 같다고 나오지 않게 대소문자는 접지 않는다.
+   두 쪽 모두 GetFinalPathNameByHandleW(libuv의 realpath도 같다)가 낸 디스크의 글자라 같은 파일이면 글자도 같다(GPT 다시 검수 GA2). 드라이브 글자만 접는다 */
 const samePath = (a, b) => {
-  const norm = value => path.resolve(String(value || '').replace(/^\\\\\?\\UNC\\/i, '\\\\').replace(/^\\\\\?\\/, '')).toLowerCase();
+  const norm = value => path.resolve(String(value || '').replace(/^\\\\\?\\UNC\\/i, '\\\\').replace(/^\\\\\?\\/, '')).replace(/^[a-z]:/, d => d.toUpperCase());
   return !!a && !!b && norm(a) === norm(b);
 };
 
@@ -315,6 +318,7 @@ function holdSetup(file, { spawnImpl = spawn, timeout = 30000 } = {}) {
       child = spawnImpl('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', HOLDER_SCRIPT], { env: { ...process.env, SWB_SETUP: file, SWB_FINAL_SIG: FINAL_SIG }, shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'ignore'] });
     } catch { reject(fault('LOCK_FAILED')); return; }
     const timer = setTimeout(() => { try { child.kill(); } catch {} fail('LOCK_FAILED'); }, timeout);
+    child.stdout.setEncoding('utf8');
     child.stdout.on('data', chunk => {
       buffer += chunk;
       let at;
@@ -420,6 +424,13 @@ function createSolioBackup({
     }
     return engineLoading;
   }
+  /* 누를 때와 설치기를 띄우기 직전에는 앞의 답을 쓰지 않고 지금 답만 쓴다. 확인이 실패하면 error 그대로 돌려줘 아무것도 띄우지 않게 한다(GPT 다시 검수 GA5) */
+  async function engineFresh() {
+    if (platform !== 'win32') return { installed: false, version: null };
+    const value = await readEngine({ run, fsImpl: fsImpl.promises });
+    if (!value.error) { engine = value; engineAt = now(); }
+    return value;
+  }
   function refreshFeed(force = false) {
     if (feedLoading || (!force && feedState.state !== 'unknown' && now() - feedState.at < FEED_AGE)) return feedLoading;
     feedLoading = fetchFeed({ request })
@@ -508,9 +519,13 @@ function createSolioBackup({
       if (digest.size !== feed.size || digest.sha256 !== feed.sha256) throw fault('VERIFY_FAILED');
       const parsed = parseSignature(feed.signature);
       if (!verifySignature(digest.blake, parsed, keys)) throw fault('VERIFY_FAILED');
-      requestName = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises });
-      // 받는 동안 다른 길로 엔진이 깔렸으면 설치기를 다시 띄우지 않고 엔진 창을 연다(GPT 검수 GA4)
-      if ((await engineNow(true)).installed) {
+      // 받는 동안 다른 계정으로 바뀌었으면 누른 계정의 주소를 넣지 않는다(GPT 다시 검수 GA3)
+      requestName = await writeSetupRequest({ paths, mode, hint: stillCurrent() ? hint : null, now: now(), fsImpl: fsImpl.promises });
+      // 받는 동안 다른 길로 엔진이 깔렸으면 설치기를 다시 띄우지 않고 엔진 창을 연다(GPT 검수 GA4).
+      // 지금 확인이 실패하면 깔렸는지 모르므로 띄우지 않는다(GPT 다시 검수 GA5)
+      const fresh = await engineFresh();
+      if (fresh.error) throw fault('ENGINE_UNKNOWN');
+      if (fresh.installed) {
         keepRequest = true;
         await holder.release(); holder = null;
         try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); } catch { keepRequest = false; throw fault('OPEN_FAILED'); }
@@ -525,9 +540,12 @@ function createSolioBackup({
       if (!started) throw fault('INSTALL_STOPPED');
       // 설치기가 실패를 알렸으면(종료 코드 0이 아님) 엔진이 남아 있어도 끝난 것으로 보지 않는다(GPT 검수 GA3)
       if (ran.outcome === 'exited' && ran.code !== 0 && ran.code !== null) throw fault('INSTALL_STOPPED');
-      // 쥔 PowerShell이 설치 도중 끝나도 설치기는 돌 수 있다. 띄운 뒤라면 요청을 남기고 엔진이 생기는지 몇 번 더 본다
+      // 쥔 PowerShell이 설치 도중 끝났거나 종료 코드를 받지 못했으면, 설치기는 아직 돌 수 있다. 요청은 남기되 끝났다고 하지 않는다.
+      // 엔진이 보이면 「끝났는지 확인하지 못함 — 엔진 창에서 이어서」로 둔다(Fable 설계 검토 P2 · GPT 다시 검수 GA4)
       keepRequest = true;
-      if (!(await engineAppeared())) throw fault('INSTALL_STOPPED');
+      const confirmed = ran.outcome === 'exited' && ran.code === 0;
+      if (!(await engineAppeared())) throw fault(confirmed ? 'INSTALL_STOPPED' : 'INSTALL_UNCONFIRMED');
+      if (!confirmed) throw fault('INSTALL_UNCONFIRMED');
       setInstall('done');
     } finally {
       if (holder) await holder.release();
@@ -538,18 +556,22 @@ function createSolioBackup({
 
   /* 「보호 시작」 · 「이 PC로 옮겨 오기」 · 「다시 깔기」. 엔진이 있으면 setup만 쓰고 엔진 창을 연다.
      누름이 겹치지 않게 첫 await 전에 busy를 세운다(설계 검토 P1, 11-20) */
-  async function start(account, asked, { getHint = async () => null } = {}) {
+  let stillCurrent = () => true;
+  async function start(account, asked, { getHint = async () => null, isCurrent = () => true } = {}) {
     if (!allowed(account)) return { ok: false, code: 'NOT_AVAILABLE' };
     if (!MODES.includes(asked)) return { ok: false, code: 'INVALID' };
     if (busy) return { ok: false, code: 'BUSY' };
     let release;
     const gate = new Promise(resolve => { release = resolve; });
     busy = gate;
-    let view = null;
-    // 누를 때는 엔진 확인을 새로 한다. 15초 전의 「없음」으로 깔린 엔진 위에 다시 받지 않게 한다(GPT 검수 GA4)
-    try { await engineNow(true); ({ view } = await state()); } catch { view = null; }
+    let view = null, fresh = null;
+    // 누를 때는 엔진 확인을 새로 한다. 15초 전의 「없음」으로 깔린 엔진 위에 다시 받지 않게 한다(GPT 검수 GA4).
+    // 지금 확인이 실패하면 아무것도 하지 않는다(GPT 다시 검수 GA5)
+    try { fresh = await engineFresh(); ({ view } = await state()); } catch { view = null; }
+    if (fresh?.error) { busy = null; release(); return { ok: false, code: 'ENGINE_UNKNOWN' }; }
     if (!['no-engine', 'engine-removed', 'needs-setup'].includes(view)) { busy = null; release(); return { ok: false, code: 'NOT_NEEDED' }; }
     mode = asked;
+    stillCurrent = () => { try { return isCurrent() === true; } catch { return false; } };
     busy = (async () => {
       let hint = null;
       // 힌트는 누른 계정의 것만 받는다. 그사이 다른 계정으로 바뀌었으면 getHint가 null을 준다(GPT 검수 GA2, main.cjs)
@@ -557,7 +579,7 @@ function createSolioBackup({
       if (view === 'needs-setup') {
         setInstall('opening');
         let name;
-        try { name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises }); } catch { throw fault('REQUEST_FAILED'); }
+        try { name = await writeSetupRequest({ paths, mode, hint: stillCurrent() ? hint : null, now: now(), fsImpl: fsImpl.promises }); } catch { throw fault('REQUEST_FAILED'); }
         try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); }
         catch {
           // 열지 못했으면 요청을 남기지 않는다. 나중에 따로 연 엔진이 실패한 시도의 요청을 읽지 않게 한다(GPT 검수 GA7)
