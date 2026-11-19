@@ -2086,3 +2086,14 @@ test('a room left open over an account reset opens again, the old account screen
   const launcher = fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8');
   assert.match(launcher, /if\(subs&&portalHost\?\.isClientShown\?\.\(\)\)\{subscriptionsBoard\.setVisible\(false\);/);
 });
+
+/* 별 지도와 효과음(2026-11-20, Fable 최종 검수 F1 · F3) */
+test('pointing at a place name taps once: moving between the texts inside one name neither clears nor repeats it, and no sound plays while the window is behind', () => {
+  const view = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  assert.match(view, /if \(name && on\) \{ if \(!name\.classList\.contains\('hot'\)\) sound\.key\(\);/);
+  assert.match(view, /else if \(!on && \(!name \|\| !name\.contains\(event\.relatedTarget\)\)\) \{ stage\.setHot\(null\);/);
+  assert.match(view, /if \(b && on\) \{ if \(!b\.classList\.contains\('hot'\)\) sound\.key\(\);/);
+  assert.match(view, /else if \(!on && \(!b \|\| !b\.contains\(event\.relatedTarget\)\)\)/);
+  assert.match(view, /createOrbSound\(\{ win, enabled: \(\) => look\.sound !== false && doc\?\.hasFocus\?\.\(\) !== false \}\)/);
+  assert.doesNotMatch(view, /sweepIn|sweepDone/);
+});

@@ -114,44 +114,42 @@ test('a device that takes over 200 ms a frame, even at rest, draws less finely; 
 });
 
 /* 2단계 첫 조각 · 구 곁의 펼침(설계 1.3절, 검토 1차 8 · 15) */
-test('the fan grows the static orb too, and rings sweep in one after another', () => {
+test('the fan grows the static orb too, and the map shows a star for each visible place with the lines between them', () => {
   const { canvas, frames, props } = fakeCanvas();
-  let t = 1000;
-  canvas.ownerDocument.defaultView.performance.now = () => t;
   const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 38 }) });
   try {
-    stage.snap('home'); frames.shift()?.(t);
+    stage.setVisiblePlaces(['solio', 'workspace', 'pulse']);
+    stage.snap('home'); frames.shift()?.(1000);
     const small = px(props['--orb-sr']);
-    stage.snap('fan'); stage.sweepIn(); frames.shift()?.(t);
+    assert.deepEqual(stage.state().map, { lit: 0, lines: 0 }, 'no map on the small orb');
+    stage.snap('fan'); frames.shift()?.(1100);   // 쉬는 구는 32ms 안에 다시 그리지 않는다
     assert.ok(px(props['--orb-sr']) > small * 3, JSON.stringify(props));
-    assert.deepEqual(stage.state().sweep, [0, 0, 0]);
-    t += 170 + 200; frames.shift()?.(t);
-    const mid = stage.state().sweep;
-    assert.ok(mid[0] > 0 && mid[0] < 1 && mid[1] < mid[0] && mid[2] === 0, JSON.stringify(mid));
-    t += 1200; frames.shift()?.(t);
-    assert.deepEqual(stage.state().sweep, [1, 1, 1]);
+    assert.deepEqual(stage.state().map, { lit: 9, lines: 2 });
+    stage.setVisiblePlaces(['solio']); frames.shift()?.(1200);
+    assert.deepEqual(stage.state().map, { lit: 7, lines: 0 }, 'one star, six far stars, nothing to join');
+    assert.equal(stage.placeUnder(stage.state().marks[1][0], stage.state().marks[1][1]), null, 'a hidden place cannot be pointed at');
+    assert.equal(stage.placeUnder(stage.state().marks[0][0], stage.state().marks[0][1]), 'solio');
   } finally { stage.dispose(); }
 });
 
-test('reduced motion lights all rings at once and never grows the small orb near the pointer', () => {
+test('reduced motion never grows the small orb near the pointer', () => {
   const { canvas, frames } = fakeCanvas();
   const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 38 }), getReducedMotion: () => true });
   try {
     stage.snap('home'); stage.setNear(true); stage.setPointer(40 / 1200, 38 / 800);
-    stage.sweepIn(); frames.shift()?.(1000);
-    assert.deepEqual(stage.state().sweep, [1, 1, 1]);
     for (let i = 0; i < 30; i++) frames.shift()?.(1000 + i * 16);
     assert.equal(stage.state().nearK, 0);
   } finally { stage.dispose(); }
 });
 
-test('with places off the fan still grows and faces the place but draws no rings', () => {
+test('with places off the fan still grows but draws no map', () => {
   const { canvas, frames } = fakeCanvas();
   const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 38 }), places: false });
   try {
     stage.setSpace('pulse'); stage.snap('fan'); frames.shift()?.(1000);
     const s = stage.state();
     assert.ok(s.r >= 50 && s.mark === 1, JSON.stringify({ r: s.r, mark: s.mark }));
+    assert.deepEqual(s.map, { lit: 0, lines: 0 });
     const src = fs.readFileSync(new URL('../renderer/orb-stage.mjs', import.meta.url), 'utf8');
     assert.match(src, /const mark = options\.places === false \? 0 : S\.mark;/);
   } finally { stage.dispose(); }
@@ -167,5 +165,29 @@ test('the small orb grows up to a fifth as the pointer comes near, only while ne
     stage.setNear(true);
     for (let i = 0; i < 200; i++) frames.shift()?.(5000 + i * 40);
     assert.ok(stage.state().nearK > 0.9, String(stage.state().nearK));
+  } finally { stage.dispose(); }
+});
+
+/* Fable 최종 검수 F2 */
+test('entering from the sign-in pose, where the orb has no eyes, never shows the eyes on the way', async () => {
+  const { canvas, frames } = fakeCanvas();
+  let t = 1000;
+  canvas.ownerDocument.defaultView.performance.now = () => t;
+  const stage = createOrbStage(canvas, { getHome: () => ({ x: 40, y: 38 }), eyes: true });
+  try {
+    stage.setVisiblePlaces(['solio']); stage.eyesCalm({ instant: true });
+    stage.snap('ask'); frames.shift()?.(t);
+    assert.equal(stage.state().eyeShown, 0);
+    stage.setDive('solio'); void stage.tween('inside', 1250);
+    let most = 0;
+    for (let i = 0; i < 40 && frames.length; i++) { t += 40; frames.shift()(t); most = Math.max(most, stage.state().eyeShown); }
+    assert.equal(most, 0, 'the eyes stayed hidden all the way in');
+    // 눈이 보이는 작은 구에서 지도를 켤 때는 첫머리에 눈이 물러난다
+    stage.snap('home'); t += 100; frames.shift()?.(t);
+    assert.equal(stage.state().eyeShown, 1);
+    void stage.tween('fan', 440);
+    const seen = [];
+    for (let i = 0; i < 20 && frames.length; i++) { t += 40; frames.shift()(t); seen.push(stage.state().eyeShown); }
+    assert.ok(seen.some(v => v > 0 && v < 1) && seen[seen.length - 1] === 0, JSON.stringify(seen.map(v => +v.toFixed(2))));
   } finally { stage.dispose(); }
 });
