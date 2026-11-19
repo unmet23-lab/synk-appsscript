@@ -125,9 +125,11 @@ let generation = 0;
 const keyOf = (kind, account) => `${kind.prefix}${account}`;
 
 // 지우는 길(로그아웃 · 동의 끔 · 계정 바꿈 · 연습 기록 비우기) — 그 계정의 두 열쇠(학습일 답 · 근거)를 지우고 세대 수를 올린다(물은 뒤의 늦은
-// 답을 적지 않게). 한 열쇠를 지우다 저장소가 던져도 다른 열쇠는 지운다.
-export function clearMonthAnswer(storage, account) {
+// 답을 적지 않게). 한 열쇠를 지우다 저장소가 던져도 다른 열쇠는 지운다. before(연습 기록 비우기가 올린 새 판)를 주면 그보다 앞선 판의 답만
+// 지운다 — 늦게 끝난 앞 비우기가 새 판에서 적은 답을 지웠다(4-5 입구 다시 검수 GPT GA1 · GB6). 판을 읽을 수 없는 값은 지운다.
+export function clearMonthAnswer(storage, account, { before = null } = {}) {
   generation += 1;
+  if (Number.isSafeInteger(before)) storage = keepNewer(storage, before);
   for (const kind of KINDS) {
     try {
       if (account) storage?.removeItem(keyOf(kind, account));
@@ -136,6 +138,21 @@ export function clearMonthAnswer(storage, account) {
     }
   }
 }
+
+// before(비우기가 올린 새 판)와 그 뒤 판의 답은 지우지 않는 저장소 — 읽을 수 없는 값은 지운다.
+const keepNewer = (storage, before) =>
+  storage && {
+    removeItem(key) {
+      let value = null;
+      try {
+        value = JSON.parse(storage.getItem(key) ?? 'null');
+      } catch {
+        value = null;
+      }
+      if (Number.isSafeInteger(value?.revision) && value.revision >= before) return;
+      storage.removeItem(key);
+    },
+  };
 
 // 저장소 — 계정마다 열쇠 하나(종류마다). storage는 localStorage 꼴(getItem · setItem · removeItem). kind는 상자의 종류(없으면 학습일 답).
 export function createMonthAnswers({ storage = globalThis.localStorage, kind = MONTH_KIND } = {}) {

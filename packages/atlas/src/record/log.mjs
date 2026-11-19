@@ -835,16 +835,23 @@ export function createRecord({
     return result;
   }
 
-  // 꼬리를 읽는 사이 통째로 다시 읽었으면(비우기 · 막이 · 치운 표시) 그 꼬리는 낡았다 — 버린다(다시 읽기가 그 뒤의 꼬리까지 읽었다). 받으면
-  // 지운 제시가 메모리 사본에 되살아나, 앞 세대에 지은 부모를 남은 것으로 보는 막이(clearedSince)가 그 자식을 새 세대에 썼다(GC1 묶음 GPT GA2).
+  // 꼬리를 읽는 사이 통째로 다시 읽었으면(비우기 · 막이 · 치운 표시) 그 꼬리는 낡았다 — 버린다. 받으면 지운 제시가 메모리 사본에 되살아나,
+  // 앞 세대에 지은 부모를 남은 것으로 보는 막이(clearedSince)가 그 자식을 새 세대에 썼다(GC1 묶음 GPT GA2). 버린 뒤에는 다시 읽은 자리부터
+  // 꼬리를 한 번 더 읽는다 — 다시 읽기의 꼬리가 아직 오지 않았는데 돌아가면, 그사이 다른 탭이 저장한 사건을 모른 채 계정 비우기의 0 걸음이
+  // 대기열을 세어 다시 묻지 않고 서버를 비웠다(입구 다시 검수 GPT GB1). 세 번 거듭 밀리면 통째로 다시 읽게 해 둔다 — 부르는 refresh가 곧
+  // 다시 읽는다.
   async function readTail() {
-    const round = state.readRound;
-    const rows = await port.range(state.readKey);
-    if (round !== state.readRound) return;
-    for (const row of rows) {
-      accept(row);
-      state.readKey = Math.max(state.readKey, row.key);
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const round = state.readRound;
+      const rows = await port.range(state.readKey);
+      if (round !== state.readRound) continue;
+      for (const row of rows) {
+        accept(row);
+        state.readKey = Math.max(state.readKey, row.key);
+      }
+      return;
     }
+    state.resync = true; // 꼬리 읽기가 거듭 밀렸다(입구 다시 검수 GPT GB1)
   }
 
   // 꼬리를 읽는다 — 다른 탭의 치운 표시 · 새 세대의 비움 표지를 만났으면 포트를 통째로 다시 읽는다(A6 · 단계 4 계획 §22-4). 손님 기록부는

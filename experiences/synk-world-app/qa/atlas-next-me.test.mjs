@@ -791,18 +791,33 @@ test('옛 동기화의 다시 세기(unsent)는 새 길의 올리는 문만 부�
   const shipped = execFileSync('git', ['ls-files', '-z', '--', '*.js', '*.mjs', '*.cjs'], { cwd: root, encoding: 'utf8', maxBuffer: 256 << 20 })
     .split('\0')
     .filter(name => name && !/^(docs|tests|packages\/atlas|\.tmp)\//.test(name) && !/\/(qa|tests?)\//.test(name));
-  // 넘겨주기 식(typeof sync?.unsent === 'function' ? sync.unsent() : …)만 뺀 뒤의 부름. 옛 학습 호스트의 unsent가 옛 동기화의 unsent를
-  // 부르는 그 식은 생성 사본 · 묶음에도 든다. 묶음은 이름을 sync2처럼 바꾸고, 따옴표와 띄어쓰기도 바꾼다(드라마 시범 · 계정 dist · WORLD
-  // 계정 묶음 — GC1을 넣으며 다시 만든 판). 넘겨주기가 있는 파일의 그 밖의 부름은 센다(GC1 묶음 카본 A1 · GPT GA4 — 파일 하나에 넘겨주기가
-  // 있으면 그 파일의 다른 부름까지 건너뛰었다). 받는 쪽이 이름 · 부름 · 꺾쇠로 끝나고 선택적 연결(?.)이어도 센다 — host?.unsent?.() ·
-  // host().unsent() · list[0].unsent().
+  // 넘겨주기만 뺀 뒤의 부름 — 옛 학습 호스트의 unsent 속성 본문(check() 뒤 typeof sync?.unsent === 'function' ? sync.unsent() : null)이
+  // 옛 동기화의 unsent를 부르는 그 식은 생성 사본 · 묶음에도 든다. 묶음은 이름을 check2 · sync2처럼 바꾸고, 따옴표 · 띄어쓰기 · 같음 기호와
+  // 몸통 꼴(중괄호와 return, 또는 괄호와 쉼표)도 바꾼다(드라마 시범 · 계정 dist · WORLD 계정 묶음). 속성 본문째로만 뺀다 — 같은 조건식이 다른
+  // 함수에 있으면 센다(입구 다시 검수 GPT GA3 — 조건식만 지워 다른 함수의 부름까지 건너뛰었다). 넘겨주기가 있는 파일의 그 밖의 부름도 센다(GC1
+  // 묶음 카본 A1 · GPT GA4). 받는 쪽이 이름 · 부름 · 꺾쇠로 끝나고 선택적 연결(?.)이어도 센다 — host?.unsent?.() · host().unsent() ·
+  // list[0].unsent().
+  const handOff = String.raw`typeof (sync\d*)\?\.unsent\s*={2,3}\s*["']function["']\s*\?\s*\1\.unsent\(\)\s*:\s*null`;
+  const handOffs = [
+    new RegExp(String.raw`(?<![\w$])unsent\s*:\s*\(\)\s*=>\s*\{\s*check\d*\(\)\s*;\s*return\s+${handOff}\s*;?\s*\}`, 'g'),
+    new RegExp(String.raw`(?<![\w$])unsent\s*:\s*\(\)\s*=>\s*\(\s*check\d*\(\)\s*,\s*${handOff}\s*\)`, 'g'),
+  ];
   const unsentCalls = text =>
-    text
-      .replace(/typeof (sync\d*)\?\.unsent\s*={2,3}\s*["']function["']\s*\?\s*\1\.unsent\(\)/g, '')
-      .match(/[\w$)\]]+\??\.unsent\??\.?\(/g) ?? [];
+    handOffs.reduce((rest, form) => rest.replace(form, ''), text).match(/[\w$)\]]+\??\.unsent\??\.?\(/g) ?? [];
   const passing = "unsent: () => { check(); return typeof sync?.unsent === 'function' ? sync.unsent() : null; },";
   assert.deepEqual(unsentCalls(passing), [], '넘겨주기 식은 부름으로 세지 않는다');
   assert.deepEqual(unsentCalls('unsent:()=>{check();return typeof sync2?.unsent==="function"?sync2.unsent():null}'), [], '묶음의 꼴도 같다');
+  assert.deepEqual(unsentCalls('unsent:()=>(check2(),typeof sync?.unsent=="function"?sync.unsent():null),'), [], '괄호와 쉼표 꼴의 묶음도 같다');
+  assert.deepEqual(
+    unsentCalls('unsent: () => {\n  check();\n  return typeof sync?.unsent === "function" ? sync.unsent() : null;\n},'),
+    [],
+    '여러 줄 꼴도 같다',
+  );
+  assert.deepEqual(
+    unsentCalls(`${passing} later: () => (typeof sync?.unsent === 'function' ? sync.unsent() : null),`),
+    ['sync.unsent('],
+    '넘겨주기 속성 밖의 같은 조건식은 센다(입구 다시 검수 GPT GA3)',
+  );
   assert.deepEqual(
     unsentCalls(`${passing} retry: () => { sync.unsent(); return sync.retry(); },`),
     ['sync.unsent('],

@@ -25469,8 +25469,9 @@ var shapeOf = ({ askedFrom, at, windows, month }) => ({
 });
 var generation = 0;
 var keyOf = (kind, account) => `${kind.prefix}${account}`;
-function clearMonthAnswer(storage, account) {
+function clearMonthAnswer(storage, account, { before = null } = {}) {
   generation += 1;
+  if (Number.isSafeInteger(before)) storage = keepNewer(storage, before);
   for (const kind of KINDS) {
     try {
       if (account) storage?.removeItem(keyOf(kind, account));
@@ -25478,6 +25479,18 @@ function clearMonthAnswer(storage, account) {
     }
   }
 }
+var keepNewer = (storage, before) => storage && {
+  removeItem(key) {
+    let value = null;
+    try {
+      value = JSON.parse(storage.getItem(key) ?? "null");
+    } catch {
+      value = null;
+    }
+    if (Number.isSafeInteger(value?.revision) && value.revision >= before) return;
+    storage.removeItem(key);
+  }
+};
 function createMonthAnswers({ storage = globalThis.localStorage, kind = MONTH_KIND } = {}) {
   return {
     generation: () => generation,

@@ -846,3 +846,83 @@ test('늦게 끝난 꼬리 읽기는 그사이 통째로 다시 읽은 메모리
   assert.equal(await made.stored, false, '지운 제시의 답을 새 세대에 쓰지 않는다');
   assert.deepEqual(await eventIds(port), [], '저장소에 부모 없는 답이 없다');
 });
+
+// 붙든 꼬리 읽기가 그 뒤의 읽기를 기다리도록, 붙든 읽기가 끝나기를 몇 차례 기다린다(끝나지 않으면 그대로 둔다 — 시험이 실패로 알린다).
+const ticks = async (done, limit = 200) => {
+  for (let tick = 0; !done() && tick < limit; tick += 1)
+    await new Promise(resolve => setImmediate(resolve));
+};
+
+// 두 GB1 시험은 시간 한도를 둔다 — 꼬리 읽기를 붙드는 시험이라, 다시 읽지 않는 판(변형)에서는 붙든 읽기가 풀리지 않아 멈출 수 있다.
+test('버린 꼬리 읽기 뒤에는 다시 읽은 자리부터 꼬리를 한 번 더 읽는다 — 그사이 다른 탭이 저장한 사건을 모른 채 돌아가지 않는다(입구 다시 검수 GPT GB1)', {
+  timeout: 5000,
+}, async () => {
+  const port = memoryPort();
+  let gate = null;
+  const slow = {
+    ...port,
+    async range(...args) {
+      if (gate) {
+        const wait = gate;
+        gate = null;
+        await wait;
+      }
+      return port.range(...args); // 풀린 뒤에 읽는다 — 늦은 꼬리에 그사이 다른 탭이 저장한 사건이 든다
+    },
+  };
+  const late = await guestOn(slow, { exclusive: busy });
+  await practise(late, items[0]);
+  let release;
+  gate = new Promise(resolve => {
+    release = resolve;
+  });
+  const stale = late.refresh();
+  const other = await guestOn(port, { exclusive: busy });
+  await other.clear();
+  await late.refresh(); // 새 세대를 읽어 통째로 다시 읽었다 — 붙든 꼬리 읽기는 낡았다
+  const [fresh] = await practise(other, items[1]); // 다른 탭이 비운 뒤 새로 저장한 제시
+  release();
+  await stale;
+  assert.ok(
+    late.heldEvents().some(event => event.id === fresh),
+    '낡은 꼬리를 버린 뒤 다시 읽은 자리부터 읽어 다른 탭의 새 사건을 든다',
+  );
+});
+
+test('꼬리 읽기가 세 번 거듭 다시 읽기에 밀리면 통째로 다시 읽게 해 둔다 — 부르는 refresh가 곧 다시 읽어 그사이 저장한 사건을 든다(입구 다시 검수 GPT GB1)', {
+  timeout: 5000,
+}, async () => {
+  const port = memoryPort();
+  const gates = [];
+  let holds = 0;
+  const slow = {
+    ...port,
+    async range(...args) {
+      if (holds > 0) {
+        holds -= 1;
+        await new Promise(resolve => gates.push(resolve));
+      }
+      return port.range(...args);
+    },
+  };
+  const late = await guestOn(slow, { exclusive: busy });
+  const other = await guestOn(port, { exclusive: busy });
+  holds = 1;
+  const stale = late.refresh();
+  let fresh = null;
+  for (let round = 0; round < 3; round += 1) {
+    await other.clear();
+    holds = 0; // 이 탭의 읽기는 붙들지 않는다 — 붙든 읽기가 다음 시도를 하지 않았으면(변형) 남은 붙들기가 이 읽기를 막는다
+    await late.refresh(); // 통째로 다시 읽어 읽기 차례가 오른다 — 붙든 꼬리 읽기는 또 낡았다
+    if (round === 2) [fresh] = await practise(other, items[2]);
+    holds = round < 2 ? 1 : 0; // 다음 시도의 꼬리 읽기도 붙든다
+    assert.equal(typeof gates[round], 'function', `붙든 꼬리 읽기가 ${round + 1}번째 시도에 있다`);
+    gates[round]();
+    if (round < 2) await ticks(() => gates.length === round + 2);
+  }
+  await stale;
+  assert.ok(
+    late.heldEvents().some(event => event.id === fresh),
+    '세 번 밀린 뒤 통째로 다시 읽어 다른 탭의 새 사건을 든다',
+  );
+});

@@ -1025,8 +1025,10 @@ test('서버가 받지 않은 비우기는 그사이 다른 탭이 적은 표지
     refuse = resolve;
   });
   let resetting = false;
+  // 이 기기의 옛 손님 로그는 다른 창이 쥐고 있다 — 4b는 어느 탭에서도 아직 못 한다.
+  const busy = { ok: true, path: 'upload', settled: 'legacy', guest: { ok: true, dropped: 0, legacy: 'busy' } };
   const { load } = fakeLoader(async given => {
-    if (given.settle) return settled;
+    if (given.settle) return busy;
     resetting = true;
     await refusing;
     return { ok: false, path: 'upload', step: 'clear', code: 'REVISION_CONFLICT', known: true };
@@ -1034,10 +1036,14 @@ test('서버가 받지 않은 비우기는 그사이 다른 탭이 적은 표지
   const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load, health: recorder(), oldEngine: flushed });
   const done = next.clearPractice();
   await until(() => resetting);
-  const theirs = { account: A_ID, path: 'upload', revision: 2, at: Date.now() + 1, left: 'cleared' }; // 다른 탭이 같은 판을 비우고(1 → 2) 남은 걸음을 적었다
+  // 다른 탭이 같은 판을 비우고(1 → 2) 몫을 마쳤고, 4b가 남았다 — 서버도 판 2와 그 마지막 비우기를 준다(입구 다시 검수 GPT GA6).
+  const theirs = { account: A_ID, path: 'upload', revision: 2, at: Date.now() + 1, left: 'legacy' };
   storage.setItem(CLEARING_MARK + A_ID, JSON.stringify(theirs));
+  storage.setItem(CLEARED_MARK + A_ID, JSON.stringify({ account: A_ID, settled: 2, asked: 2 }));
+  line.revision = 2;
+  line.lastClear = async () => ({ ok: true, revision: 2, lastClear: { revision: 2, at: 1 } });
   refuse();
-  assert.equal((await done).code, 'REVISION_CONFLICT');
+  assert.equal((await done).code, 'PLAN_CHANGED', '서버가 받지 않았고 다른 탭이 비웠다 — 판이 바뀌었다고 알린다');
   assert.deepEqual(markOf(storage), theirs, '다른 탭의 표지를 지우지 않았다');
   next.dispose();
 });
@@ -1297,6 +1303,8 @@ test('결과를 모르는 비우기를 맞추기 전에 다시 비워도 앞 비
     const doc2 = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: second.load, health: recorder(), oldEngine: flushed });
     assert.equal((await doc2.practiceCoach(POOL))?.options.host.revision, 2);
     assert.equal(storage.getItem(log(1)), 'engine-r1', '아직 맞추지 못했다');
+    // 판 2에서 고른 화면 값 — 다시 비우기가 닿으면 가장 가까운 판(2)의 값을 옮겨야 한다(입구 다시 검수 GPT GA7).
+    if (reaches) storage.setItem(own(2), '{"support":"independent"}');
     online = true;
     const again = await doc2.clearPractice();
     if (!reaches) {
@@ -1314,7 +1322,7 @@ test('결과를 모르는 비우기를 맞추기 전에 다시 비워도 앞 비
       );
     } else {
       assert.deepEqual(again, { ok: true, path: 'upload', revision: 3, partial: false });
-      assert.equal(storage.getItem(own(3)), '{"support":"step"}', '본인 값이 남은 가장 가까운 앞 판(1)에서 판 3으로 옮겼다');
+      assert.equal(storage.getItem(own(3)), '{"support":"independent"}', '본인 값이 남은 가장 가까운 앞 판(2)에서 판 3으로 옮겼다');
       assert.equal(storage.getItem(log(1)), null, '앞 판을 쓸었다');
       assert.deepEqual(clearedOf(storage), { account: A_ID, settled: 3, asked: 3 });
       assert.equal(markOf(storage), null);
@@ -1366,4 +1374,206 @@ test('표지가 없는 기기도 다른 기기의 비우기를 따라 한다 —
   await new Promise(resolve => setTimeout(resolve, 50));
   assert.equal(opened.flatMap(made => made.resets).length, 1, '몫을 마친 비우기는 다시 하지 않는다');
   next.dispose();
+});
+
+// ── 입구 다시 검수(atlas-redesign-stage4-me-clearing-20261119 — GPT)의 장면 ─────────────────────────────────────
+test('늦게 끝난 앞 비우기는 그사이 새 판에서 적은 30일째 답을 지우지 않는다 — 그 비우기보다 앞선 판의 답만 지운다(입구 다시 검수 GPT GA1 · GB6)', async () => {
+  const storage = filledStorage();
+  const line = accountLine();
+  const slow = heldTrail(line);
+  const a = fakeLoader(given => {
+    if (given.settle) return settled;
+    line.revision = 2;
+    slow.hold();
+    return CLEARED(2);
+  });
+  const tabA = createAtlasNext({ owner: A_ID, storage, trail: slow.trail, load: a.load, health: recorder(), oldEngine: flushed });
+  const doneA = tabA.clearPractice();
+  await until(() => slow.held());
+  const b = fakeLoader(given => {
+    if (given.settle) return settled;
+    line.revision = 3;
+    return CLEARED(3);
+  });
+  const tabB = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: b.load, health: recorder(), oldEngine: flushed });
+  assert.equal((await tabB.clearPractice()).ok, true);
+  assert.equal(storage.getItem(`synk:world:month-answer:${A_ID}`), null, '판 3의 비우기는 앞 판의 답을 지웠다');
+  const answer = JSON.stringify({ v: 1, revision: 3, day: 30 });
+  storage.setItem(`synk:world:month-answer:${A_ID}`, answer); // 판 3에서 적은 답
+  slow.release();
+  assert.equal((await doneA).ok, true);
+  assert.equal(storage.getItem(`synk:world:month-answer:${A_ID}`), answer, '늦게 끝난 판 2의 비우기가 판 3의 답을 지우지 않았다');
+  tabA.dispose();
+  tabB.dispose();
+});
+
+test('이 기기가 따라 한 비우기보다 앞선 판을 늦게 온 계정 읽기가 주면 그 판의 코치를 열지 않고 다시 정한다(입구 다시 검수 GPT GA2 · GB3)', async () => {
+  const storage = filledStorage([
+    [CLEARED_MARK + A_ID, JSON.stringify({ account: A_ID, settled: 2, asked: 2 })],
+    [NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'upload', revision: 2 })],
+  ]);
+  const line = accountLine({ revision: 2 });
+  let late = true;
+  const trail = async () => {
+    const value = await line.trail();
+    if (!late) return value;
+    late = false;
+    return { ...value, learning: { ...value.learning, revision: 1 } }; // 다른 탭이 비우기 전에 떠난 계정 읽기가 늦게 왔다
+  };
+  const next = createAtlasNext({ owner: A_ID, storage, trail, load: fakeLoader(() => settled).load, health: recorder() });
+  assert.equal((await next.practiceCoach(POOL))?.options.host.revision, 2, '비운 판(1)의 코치를 열지 않는다');
+  next.dispose();
+});
+
+test('남은 걸음 표지를 못 적으면 몫을 마친 판을 올리지 않는다 — 다음에 열 때 다시 따라 해 넷째 걸음과 4b를 한다(입구 다시 검수 GPT GB2 · GA4)', async () => {
+  const storage = filledStorage([[NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'upload', revision: 1 })]]);
+  const put = storage.setItem;
+  let full = true;
+  storage.setItem = (key, value) => {
+    if (full && key.startsWith(CLEARING_MARK)) throw Error('QuotaExceededError');
+    put(key, value);
+  };
+  const line = accountLine({ revision: 2 });
+  line.lastClear = async () => ({ ok: true, revision: 2, lastClear: { revision: 2, at: 5 } });
+  const doc1 = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: fakeLoader(() => settled).load, health: recorder() });
+  assert.equal((await doc1.practiceCoach(POOL))?.options.host.revision, 2);
+  assert.equal(clearedOf(storage)?.settled ?? 0, 0, '표지를 못 적어 올리지 않았다');
+  doc1.dispose();
+  full = false;
+  const second = fakeLoader(() => settled);
+  const doc2 = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: second.load, health: recorder() });
+  assert.ok(await doc2.practiceCoach(POOL));
+  await until(() => clearedOf(storage)?.settled === 2 && markOf(storage) === null);
+  assert.ok(
+    second.opened.some(made => made.resets.some(given => given.settle === 'cleared' && given.revision === 2)),
+    '다음에 열 때 넷째 걸음과 4b를 했다',
+  );
+  doc2.dispose();
+});
+
+test('판 견줌은 두 구역의 본인 값을 모두 옮긴다 — 고른 길과 다른 길에서 고른 값도 비운 뒤의 판에 남는다(입구 다시 검수 GPT GB4)', async () => {
+  const storage = filledStorage([[NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'upload', revision: 1 })]]);
+  storage.setItem(ownKeys(`local:${A_ID}`, 2).hangul, '{"v":2}'); // 판 2의 기기 길에서 고른 한글 진도
+  const line = accountLine({ revision: 3 });
+  line.lastClear = async () => ({ ok: true, revision: 3, lastClear: { revision: 3, at: 5 } });
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: fakeLoader(() => settled).load, health: recorder() });
+  assert.ok(await next.practiceCoach(POOL));
+  assert.equal(storage.getItem(ownKeys(`local:${A_ID}`, 3).hangul), '{"v":2}', '기기 길 구역의 가장 가까운 앞 판(2)에서 옮겼다');
+  assert.equal(storage.getItem(ownKeys(A_ID, 3).hangul), '{"v":1}', '올리는 길 구역도 옮겼다');
+  next.dispose();
+});
+
+test('본인 값을 못 옮기면 몫을 마친 판을 올리지 않는다 — 따라 한 비우기는 다음에 열 때 다시 옮기고, 누른 비우기는 「일부만 비움」이다(입구 다시 검수 GPT GB5)', async () => {
+  const failing = target => {
+    const storage = filledStorage([[NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'upload', revision: 1 })]]);
+    const put = storage.setItem;
+    storage.full = true;
+    storage.setItem = (key, value) => {
+      if (storage.full && key === target) throw Error('QuotaExceededError');
+      put(key, value);
+    };
+    return storage;
+  };
+  const target = ownKeys(A_ID, 2).hangul;
+  const storage = failing(target);
+  const line = accountLine({ revision: 2 });
+  line.lastClear = async () => ({ ok: true, revision: 2, lastClear: { revision: 2, at: 5 } });
+  const doc1 = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: fakeLoader(() => settled).load, health: recorder() });
+  assert.ok(await doc1.practiceCoach(POOL));
+  assert.equal(storage.getItem(target), null);
+  assert.equal(clearedOf(storage)?.settled ?? 0, 0, '본인 값을 다 옮기지 못해 올리지 않았다');
+  doc1.dispose();
+  storage.full = false;
+  const doc2 = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: fakeLoader(() => settled).load, health: recorder() });
+  assert.ok(await doc2.practiceCoach(POOL));
+  await until(() => clearedOf(storage)?.settled === 2);
+  assert.equal(storage.getItem(target), '{"v":1}', '다음에 열 때 다시 옮겼다');
+  doc2.dispose();
+  const pressedAt = failing(target);
+  const l2 = accountLine();
+  const pressed = createAtlasNext({
+    owner: A_ID,
+    storage: pressedAt,
+    trail: l2.trail,
+    load: fakeLoader(given => {
+      if (given.settle) return settled;
+      l2.revision = 2;
+      return CLEARED(2);
+    }).load,
+    health: recorder(),
+    oldEngine: flushed,
+  });
+  assert.deepEqual(await pressed.clearPractice(), { ok: true, path: 'upload', revision: 2, partial: true });
+  assert.equal(clearedOf(pressedAt)?.settled ?? 0, 0, '누른 비우기도 올리지 않았다');
+  pressed.dispose();
+});
+
+test('기기 길 판은 판 견줌에 읽은 계정 줄을 넘긴다 — 다시 정한 판에서 마지막 비우기를 물으려고 계정 줄을 또 읽지 않는다(입구 다시 검수 GPT GB7)', async () => {
+  const line = accountLine({ enabled: false, revision: 2 });
+  let reads = 0;
+  const trail = async () => {
+    reads += 1;
+    const value = await line.trail();
+    return reads === 1 ? { ...value, learning: { ...value.learning, revision: 1 } } : value; // 첫 읽기는 앞 판
+  };
+  const next = createAtlasNext({ owner: A_ID, storage: filledStorage(), trail, load: fakeLoader().load, health: recorder() });
+  const coach = await next.practiceCoach(POOL);
+  assert.deepEqual([coach?.options.host.guest, coach?.options.host.revision], [true, 2]);
+  assert.equal(reads, 3, '판 정하기 · 다시 보기 · 다시 정하기 — 판 견줌은 읽지 않는다');
+  next.dispose();
+});
+
+test('동의로 판만 오르면 물은 판(asked)만 오르고 몫을 마친 판(settled)은 그대로다 — 다시 열어도 같은 마지막 비우기를 또 묻지 않는다(입구 다시 검수 GPT GA5)', async () => {
+  const storage = filledStorage([[CLEARED_MARK + A_ID, JSON.stringify({ account: A_ID, settled: 1, asked: 1 })]]);
+  const line = accountLine({ revision: 3 }); // 동의를 껐다 켜 판만 3으로 올랐다
+  let asks = 0;
+  line.lastClear = async () => {
+    asks += 1;
+    return { ok: true, revision: 3, lastClear: { revision: 1, at: 3 } };
+  };
+  const next = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: fakeLoader().load, health: recorder() });
+  assert.ok(await next.practiceCoach(POOL));
+  assert.deepEqual(clearedOf(storage), { account: A_ID, settled: 1, asked: 3 });
+  next.redecide();
+  assert.ok(await next.practiceCoach(POOL));
+  assert.equal(asks, 1, '판이 그대로 — 다시 묻지 않는다');
+  next.dispose();
+});
+
+test('두 탭이 같은 비우기를 따라 할 때 늦은 탭은 다른 탭이 마친 남은 걸음을 다시 적지 않는다(입구 다시 검수 GPT GB6)', async () => {
+  const storage = filledStorage([[NEXT_MARK + A_ID, JSON.stringify({ went: true, path: 'upload', revision: 1 })]]);
+  const line = accountLine({ revision: 2 });
+  line.lastClear = async () => ({ ok: true, revision: 2, lastClear: { revision: 2, at: 5 } });
+  // 탭 A — 판 견줌의 몫에서 쓸기 직전의 계정 다시 읽기가 늦는다(둘째 읽기).
+  let reads = 0;
+  let release;
+  const gate = new Promise(resolve => {
+    release = resolve;
+  });
+  const slowTrail = async () => {
+    reads += 1;
+    if (reads === 2) await gate;
+    return line.trail();
+  };
+  const a = fakeLoader(() => settled);
+  const tabA = createAtlasNext({ owner: A_ID, storage, trail: slowTrail, load: a.load, health: recorder() });
+  const openingA = tabA.practiceCoach(POOL);
+  await until(() => reads === 2);
+  const tabB = createAtlasNext({ owner: A_ID, storage, trail: line.trail, load: fakeLoader(() => settled).load, health: recorder() });
+  assert.ok(await tabB.practiceCoach(POOL));
+  await until(() => clearedOf(storage)?.settled === 2 && markOf(storage) === null);
+  const answer = JSON.stringify({ v: 1, revision: 2, day: 30 });
+  storage.setItem(`synk:world:month-answer:${A_ID}`, answer); // 탭 B가 판 2에서 적은 30일째 답
+  release();
+  assert.ok(await openingA);
+  await new Promise(resolve => setTimeout(resolve, 50));
+  assert.equal(storage.getItem(`synk:world:month-answer:${A_ID}`), answer, '늦은 탭이 판 2의 답을 지우지 않았다');
+  assert.equal(markOf(storage), null, '늦은 탭이 마친 남은 걸음 표지를 다시 적지 않았다');
+  assert.deepEqual(
+    a.opened.flatMap(made => made.resets.map(given => given.settle ?? null)),
+    [],
+    '늦은 탭은 손님 저장소의 걸음을 다시 하지 않았다',
+  );
+  tabA.dispose();
+  tabB.dispose();
 });
