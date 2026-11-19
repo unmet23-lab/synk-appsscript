@@ -462,9 +462,9 @@ test('an unconnected channel keeps its window waiting instead of closing it, and
   f.store.setSecret('channel:channel', { apiKey: 'synthetic-key' }); f.now(500); await f.service.collectDue();
   point = f.service.list(f.owner).entries[0].checkpoints[1]; assert.equal(point.window.status, 'recorded'); assert.equal(point.metrics.shares, 3); assert.equal(f.windowCalls(), 1);
 });
-// 11-19 페북 수집기 pagePostId 5회차 GA3 · GA5: 자동 등록은 저장 줄의 별칭(aliasUrls)까지 본다. 주 주소가 피드 글이면 첫 영상 별칭을 그 시각으로 올리고,
-// 주 주소나 별칭 가운데 하나라도 이미 기록이면 올리지 않는다. 별칭 시각이 없거나 기간 밖이면 올리지 않는다. 다른 플랫폼은 별칭을 보지 않는다.
-test('Facebook auto tracking reads stored aliases: a feed row registers its reel alias once, and a known address stops a second record', async t => {
+// 11-19 페북 수집기 pagePostId: 자동 등록은 예전처럼 영상 · 릴스 줄만 올린다. 그 줄의 페이지 게시물 번호(pagePostId)가 피드 글 주소로 이미 기록한 게시물이면
+// 올리지 않는다(설계 검토 3 조건 3). 주소 모양이 달라도(숫자 앞칸 · 이름 앞칸 · permalink.php) 같은 번호면 같은 게시물이다. 저장 줄의 별칭은 보지 않는다.
+test('Facebook auto tracking registers reels only and skips a reel whose page post id is already recorded by a feed address', async t => {
   const directory = mkdtempSync(join(tmpdir(), 'synk-post-performance-'));
   const store = new Store(directory), at = atHours(30), ago = hours => new Date(Date.parse(at) - hours * 3600000).toISOString();
   t.after(() => { store.close(); assert.ok(directory.startsWith(join(tmpdir(), 'synk-post-performance-'))); rmSync(directory, { recursive: true, force: true }); });
@@ -475,28 +475,22 @@ test('Facebook auto tracking reads stored aliases: a feed row registers its reel
     store.setSecret(`channel:${id}`, { accessToken: 'synthetic-token' });
   }
   let n = 0;
-  const post = (channelId, url, hoursAgo, aliasUrls, extra = {}) => { const id = `${channelId}:${++n}`; store.put('posts', id, { id, channelId, externalId: String(n), title: `post ${n}`, url, publishedAt: ago(hoursAgo), source: `api:${store.get('channels', channelId).platform}`, unavailableAt: null, aliasUrls, ...extra }); };
+  const post = (channelId, url, hoursAgo, extra = {}) => { const id = `${channelId}:${++n}`; store.put('posts', id, { id, channelId, externalId: String(n), title: `post ${n}`, url, publishedAt: ago(hoursAgo), source: `api:${store.get('channels', channelId).platform}`, unavailableAt: null, ...extra }); };
   const service = createPostPerformanceService({ store, clock: () => at, collector: async () => ({ posts: [], coverage: {} }), autoTrack: true });
-  post('fb', 'https://www.facebook.com/synkworld/posts/700', 2, [{ url: 'https://www.facebook.com/reel/555/', publishedAt: ago(1.8) }]);
-  service.register(admin, { channelId: 'fb', url: 'https://www.facebook.com/synkworld/posts/701', publishedAt: ago(3) });
-  post('fb', 'https://www.facebook.com/synkworld/posts/701', 3, [{ url: 'https://www.facebook.com/reel/556/', publishedAt: ago(3) }]);
-  service.register(admin, { channelId: 'fb', url: 'https://www.facebook.com/synkworld/posts/702', publishedAt: ago(4) });
-  post('fb', 'https://www.facebook.com/reel/557/', 4, [{ url: 'https://www.facebook.com/synkworld/posts/702', publishedAt: ago(4) }]);
-  post('fb', 'https://www.facebook.com/synkworld/posts/703', 2, [{ url: 'https://www.facebook.com/reel/558/', publishedAt: null }]);
-  post('fb', 'https://www.facebook.com/synkworld/posts/704', 2, [{ url: 'https://www.facebook.com/reel/559/', publishedAt: ago(25) }]);
-  post('ig', 'https://www.instagram.com/p/FEED9/', 2, [{ url: 'https://www.instagram.com/p/OTHER9/', publishedAt: ago(2) }]);
-  // 설계 검토 3 조건 3: 주소 모양이 달라도 같은 페이지 게시물 번호의 기록이 있으면 올리지 않는다(숫자 앞칸 · permalink.php).
   service.register(admin, { channelId: 'fb', url: 'https://www.facebook.com/123/posts/710', publishedAt: ago(5) });
-  post('fb', 'https://www.facebook.com/synkworld/posts/710', 5, [{ url: 'https://www.facebook.com/reel/560/', publishedAt: ago(5) }], { pagePostId: '123_710' });
+  post('fb', 'https://www.facebook.com/reel/560/', 5, { pagePostId: '123_710' });
   service.register(admin, { channelId: 'fb', url: 'https://www.facebook.com/permalink.php?story_fbid=720&id=123', publishedAt: ago(6) });
-  post('fb', 'https://www.facebook.com/reel/561/', 6, undefined, { pagePostId: '123_720' });
-  // 6회차 GA6: 피드 글이 찾는 기간 밖이어도 릴스 별칭이 기간 안이면 올린다. 주 주소가 영상인데 기간 밖이면 올리지 않는다.
-  post('fb', 'https://www.facebook.com/synkworld/posts/730', 24 + 5 / 60, [{ url: 'https://www.facebook.com/reel/562/', publishedAt: ago(23 + 55 / 60) }]);
-  post('fb', 'https://www.facebook.com/reel/563/', 25, [{ url: 'https://www.facebook.com/synkworld/posts/740', publishedAt: ago(2) }]);
+  post('fb', 'https://www.facebook.com/reel/561/', 6, { pagePostId: '123_720' });
+  service.register(admin, { channelId: 'fb', url: 'https://www.facebook.com/synkworld/posts/730', publishedAt: ago(7) });
+  post('fb', 'https://www.facebook.com/reel/562/', 7, { pagePostId: '123_730' });
+  post('fb', 'https://www.facebook.com/reel/563/', 2, { pagePostId: '123_740' });
+  post('fb', 'https://www.facebook.com/reel/564/', 3);
+  post('fb', 'https://www.facebook.com/synkworld/posts/750', 2, { pagePostId: '123_750', videoId: '565', aliasUrls: [{ url: 'https://www.facebook.com/reel/565/', publishedAt: ago(2) }] });
+  post('ig', 'https://www.instagram.com/p/FEED9/', 2, { pagePostId: '123_710' });
   const entries = () => store.all('postPerformanceEntries');
   assert.equal((await service.collectDue()).autoRegistered, 3);
   assert.deepEqual(entries().filter(row => row.origin === 'auto').map(row => [row.url, row.publishedAt]).sort(),
-    [['https://www.facebook.com/reel/555/', ago(1.8)], ['https://www.facebook.com/reel/562/', ago(23 + 55 / 60)], ['https://www.instagram.com/p/FEED9/', ago(2)]]);
-  assert.equal(entries().length, 7);
-  assert.equal((await service.collectDue()).autoRegistered, 0, 'the next pass finds the reel record through the alias');
+    [['https://www.facebook.com/reel/563/', ago(2)], ['https://www.facebook.com/reel/564/', ago(3)], ['https://www.instagram.com/p/FEED9/', ago(2)]]);
+  assert.equal(entries().length, 6);
+  assert.equal((await service.collectDue()).autoRegistered, 0);
 });

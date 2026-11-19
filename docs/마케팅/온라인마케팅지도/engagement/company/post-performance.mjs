@@ -421,36 +421,26 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
     const channels = new Map(store.all('channels').filter(channel => channel.active !== false && channel.hidden !== true && AUTO_TRACK_PLATFORMS.has(channel.platform) && isConnected(channel)).map(channel => [channel.id, channel]));
     if (!channels.size) return summary;
     const entries = store.all(KIND), known = new Set(entries.map(row => row.id));
-    // 페이스북 채널마다 기록의 일반 게시물 주소 정체성 — 주소 모양이 달라도(/123/posts/700 · /synk/posts/700 · permalink.php) 같은 페이지 게시물 번호면 이미 기록이다(설계 검토 3 조건 3).
+    // 페이스북 채널마다 기록의 일반 게시물 주소 정체성. 영상 줄의 페이지 게시물 번호(pagePostId)가 피드 글 주소로 이미 기록한 게시물이면 그 영상을 다시 올리지
+    // 않는다 — 주소 모양이 달라도(/123/posts/700 · /synk/posts/700) 같은 번호면 같은 게시물이다(11-19 페북 수집기 pagePostId 설계 검토 3 조건 3).
     const postIdentities = new Map();
     for (const row of entries) if (row.platform === 'facebook' && String(row.postIdentity || '').startsWith('facebook:post:')) (postIdentities.get(row.channelId) || postIdentities.set(row.channelId, []).get(row.channelId)).push(row.postIdentity);
-    const inWindow = value => { const at = typeof value === 'string' ? Date.parse(value) : NaN; return Number.isFinite(at) && at > since && at <= now; };
-    // 페이스북 줄은 주 주소의 시각이 기간 밖이어도 별칭(영상 주소)의 시각이 기간 안이면 본다 — 피드 글과 릴스의 시각이 다를 수 있다(6회차 GA6).
-    const fresh = store.all('posts').filter(post => channels.has(post.channelId) && String(post.source || '').startsWith('api:') && !post.unavailableAt && !(post.expiresAt && Date.parse(post.expiresAt) <= now)
-      && Number.isFinite(Date.parse(post.publishedAt)) && (inWindow(post.publishedAt) || channels.get(post.channelId).platform === 'facebook' && Array.isArray(post.aliasUrls) && post.aliasUrls.some(alias => inWindow(alias?.publishedAt))))
-      .sort((a, b) => Date.parse(a.publishedAt) - Date.parse(b.publishedAt));
+    const fresh = store.all('posts').filter(post => {
+      const published = Date.parse(post.publishedAt);
+      return channels.has(post.channelId) && String(post.source || '').startsWith('api:') && !post.unavailableAt && !(post.expiresAt && Date.parse(post.expiresAt) <= now)
+        && Number.isFinite(published) && published > since && published <= now;
+    }).sort((a, b) => Date.parse(a.publishedAt) - Date.parse(b.publishedAt));
     for (const post of fresh) {
       if (summary.registered >= AUTO_TRACK_BATCH) break;
       const channel = channels.get(post.channelId);
       let url; try { url = normalizePerformancePostUrl(post.url); } catch { summary.skipped++; continue; }
-      if (url.platform !== channel.platform) { summary.skipped++; continue; }
-      const entryOf = identity => createHash('sha256').update(`${channel.id}\0${identity}`).digest('hex');
-      let target = { url: post.url, publishedAt: post.publishedAt };
-      if (channel.platform === 'facebook') {
-        // Facebook 피드 글은 워크스페이스 게시가 다른 주소 모양으로 등록할 수 있어 영상·릴스만 자동으로 올린다. 같은 게시물의 다른 주소는 저장 줄의
-        // 별칭(aliasUrls: 주소와 그 주소의 게시 시각)에 있다 — 주 주소나 별칭 가운데 하나라도 이미 기록이면 올리지 않고, 주 주소가 피드 글이면 첫 영상
-        // 별칭을 그 시각으로 올린다(11-19 페북 수집기 pagePostId 5회차 검수 GA3). 별칭 시각이 없거나 찾는 기간 밖이면 올리지 않는다.
-        const aliases = (Array.isArray(post.aliasUrls) ? post.aliasUrls : []).flatMap(entry => { try { const alias = normalizePerformancePostUrl(entry?.url); return alias.platform === 'facebook' ? [{ url: entry.url, publishedAt: entry.publishedAt, identity: alias.identity, video: alias.externalId.startsWith('video:') }] : []; } catch { return []; } });
-        const video = url.externalId.startsWith('video:') ? null : aliases.find(alias => alias.video && inWindow(alias.publishedAt));
-        if (url.externalId.startsWith('video:') && !inWindow(post.publishedAt)) continue;
-        if (!url.externalId.startsWith('video:') && !video) { summary.skipped++; continue; }
-        if ([url.identity, ...aliases.map(alias => alias.identity)].some(identity => known.has(entryOf(identity)))) continue;
-        if ((postIdentities.get(channel.id) || []).some(identity => samePagePost(identity, post.pagePostId))) continue;
-        if (video) target = { url: video.url, publishedAt: video.publishedAt };
-      } else if (known.has(entryOf(url.identity))) continue;
+      // Facebook 피드 글은 워크스페이스 게시가 다른 주소 모양으로 등록할 수 있어 영상·릴스만 자동으로 올린다.
+      if (url.platform !== channel.platform || channel.platform === 'facebook' && !url.externalId.startsWith('video:')) { summary.skipped++; continue; }
+      if (known.has(createHash('sha256').update(`${channel.id}\0${url.identity}`).digest('hex'))) continue;
+      if (channel.platform === 'facebook' && (postIdentities.get(channel.id) || []).some(identity => samePagePost(identity, post.pagePostId))) continue;
       const format = FORMAT_PLATFORM[post.publicationFormat] === channel.platform ? post.publicationFormat : null;
       try {
-        const { entry } = registerStored(actor, { channelId: channel.id, url: target.url, publishedAt: target.publishedAt, title: post.title, ...(format ? { publicationFormat: format } : {}) }, true, true);
+        const { entry } = registerStored(actor, { channelId: channel.id, url: post.url, publishedAt: post.publishedAt, title: post.title, ...(format ? { publicationFormat: format } : {}) }, true, true);
         known.add(entry.id); summary.registered++;
       } catch { summary.skipped++; }
     }

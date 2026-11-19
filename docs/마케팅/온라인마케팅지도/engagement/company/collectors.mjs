@@ -536,12 +536,12 @@ async function facebook(channel, credentials, request, recent) {
   page = await api('me', { fields: 'id,name,username,link,fan_count,followers_count' });
   if (!page?.id || !facebookMatches(channel, page) || (credentials.accountId && credentials.accountId !== String(page.id))) throw mismatch();
   const pageId = graphId(String(page.id));
-  // 같은 게시물을 잇는 열쇠 둘(11-19 설계 검토 B · 설계 검토 2).
+  // 게시 성과가 같은 게시물을 찾을 칸 둘(11-19). 서버는 이 두 칸을 저장 줄에 적기만 하고 같은 게시물의 줄을 잇거나 합치지 않는다(11-19 유호님 결정).
   // - pagePostId: 페이지 게시물 번호(「페이지번호_게시물번호」). 게시결과에는 이 번호가 적힌다. /posts는 id가 그 꼴이고, /videos에서만 찾은 릴스는
   //   영상의 post_id로 채운다. post_id는 Graph API Video 참조(v19.0)에 "identifier of the post this video belongs to"로 적힌 칸이다.
   //   이 페이지의 번호만 쓴다 — 숫자만 오면 이 페이지 번호를 붙이고, 다른 페이지 번호가 붙은 값은 버린다.
-  // - videoId: /videos 항목으로 확인한 영상 번호. 영상 목록만의 줄과 영상과 짝지은 게시물 줄에만 단다(첨부 대상 번호만으로는 달지 않는다).
-  // 영상 목록에서만 찾은 릴스는 pagePostId를 알면 externalId도 그 번호다. 서버는 두 열쇠로 같은 게시물의 저장 줄을 찾아 잇는다.
+  // - videoId: 영상 번호. 영상 목록만의 줄, 영상과 짝지은 게시물 줄, 주소가 릴스 · 영상 주소인 게시물 줄에 단다(첨부 대상 번호만으로는 달지 않는다).
+  // 영상 목록에서만 찾은 릴스의 externalId는 예전처럼 영상 번호다.
   const fullPostId = value => typeof value === 'string' && /^\d{1,50}_\d{1,50}$/.test(value) ? value : null;
   const videoPostId = value => typeof value !== 'string' ? null : /^\d{1,50}$/.test(value) ? `${pageId}_${value}` : value.startsWith(`${pageId}_`) ? fullPostId(value) : null;
   // 주소 정체성은 게시 성과(normalizePerformancePostUrl)의 페이스북 규칙과 같다 — 영상(/reel/번호 · /이름/videos/번호 · /watch?v=번호)과 게시물(/이름/posts/번호).
@@ -555,7 +555,7 @@ async function facebook(channel, credentials, request, recent) {
   // 회차에도 게시물 줄의 영상이 바뀌지 않는다).
   const reelOf = value => { const key = addressKey(safeUrl(value)) || ''; return key.startsWith('video:') ? key.slice(6) : null; };
   const list = await graphList(`${pageId}/posts`, { fields: 'id,message,created_time,permalink_url,attachments{target},shares,reactions.type(LIKE).limit(0).summary(true),comments.limit(0).summary(true)' }, api, cap, recent, post => post.created_time);
-  const posts = list.entries.map(post => ({ externalId: String(post.id), url: safeUrl(post.permalink_url), title: text(post.message), publishedAt: isoDate(post.created_time), thumbnailUrl: null, pagePostId: fullPostId(String(post.id)), videoId: reelOf(post.permalink_url), ...(reelOf(post.permalink_url) ? { videoHeldBy: 'address' } : {}), metrics: metrics({ likes: post.reactions?.summary?.total_count, comments: post.comments?.summary?.total_count, shares: post.shares?.count }) }));
+  const posts = list.entries.map(post => ({ externalId: String(post.id), url: safeUrl(post.permalink_url), title: text(post.message), publishedAt: isoDate(post.created_time), thumbnailUrl: null, pagePostId: fullPostId(String(post.id)), videoId: reelOf(post.permalink_url), metrics: metrics({ likes: post.reactions?.summary?.total_count, comments: post.comments?.summary?.total_count, shares: post.shares?.count }) }));
   const warnings = [...list.warnings, 'Facebook은 영상 조회수와 게시물 좋아요를 받은 그대로 적어요. 일반 게시물 조회수·저장·도달과 받지 못한 공유 수는 비워 둬요.'];
   let videosPartial=false,hasMore=list.hasMore,pages=list.pages,videoPostIds=null;
   const videoId=url=>{try{const u=new URL(url,'https://www.facebook.com');return u.searchParams.get('v')||u.pathname.match(/\/(?:reel|videos)\/(\d+)/)?.[1]||null;}catch{return null;}};
@@ -589,7 +589,7 @@ async function facebook(channel, credentials, request, recent) {
       videoPostIds={asked:postIdKnown,videos:0,withPostId:0,matched:0,agreed:0,byPostId:0,conflicts:0};
       // 먼저 영상마다 짝지을 게시물 줄을 정한다. row는 첨부 대상 · 주소로 짝지은 줄(byVideo)이나, 없으면 영상의 post_id가 가리키는 이번 회차의 게시물 줄이다.
       // 첨부 대상으로만 짝지은 게시물이 영상의 post_id와 다른 게시물이고 그 post_id의 게시물이 이번 목록에 없으면(conflict) 어느 쪽이 맞는지 모른다. 앞 판처럼 조회수를 그 게시물에 주고 영상 주소를
-      // 별칭으로 달되, 영상 번호는 달지 않아 서버가 다음 회차에 그 짝으로 줄을 잇지 않는다(11-19 5회차 GA2 · 설계 검토 3 조건 2 · 6회차 GA2). 게시물 주소가 그 영상 주소인 짝은 그대로 믿는다.
+      // 별칭으로 달되, 어느 게시물의 영상인지 모르므로 영상 번호는 달지 않는다(11-19 5회차 GA2 · 설계 검토 3 조건 2 · 6회차 GA2). 게시물 주소가 그 영상 주소인 짝은 그대로 믿는다.
       // Meta가 릴스의 post_id를 게시물 목록 번호와 다르게 준다면 이 수(conflicts)와 matched − agreed가 운영 기록에 보인다.
       const entries=[],seen=new Set();
       for(const video of videos.entries){
@@ -608,42 +608,39 @@ async function facebook(channel, credentials, request, recent) {
       // GA1 · GA8 · 자체 불변식 시험): 게시물 주소가 영상 주소면 그 영상(이번 목록에 없어도), 아니면 그 줄에 짝지어지는 영상 가운데 가장 먼저 올린 영상(시각이
       // 같으면 번호가 작은 영상). 첨부 대상이 있는 게시물은 첨부 대상 영상만 차지한다(그 영상이 이번 목록에 없으면 이번에는 아무도 차지하지 않는다).
       // 게시물 목록에 없는 게시물도 같은 post_id의 영상 가운데 같은 규칙으로 하나만 게시물 번호 줄이다. 나머지 영상은 자기 주소 · 조회수를 가진 영상 번호
-      // 줄이다 — 한 줄에 다른 영상의 주소를 달면 그 주소로 등록된 기록이 첫 영상의 조회수를 받는다. 그 줄에는 그 게시물의 줄이 아니라는 표시(sharedPostId)를
-      // 붙여, 서버가 영상 번호만 보고 게시물 줄로 잇지 않게 한다.
+      // 줄이다 — 한 줄에 다른 영상의 주소를 달면 그 주소로 등록된 기록이 첫 영상의 조회수를 받는다. 그 줄에는 게시물 번호를 달지 않는다.
       const named=row=>{const key=addressKey(row.url)||'';return key.startsWith('video:')?key.slice(6):null;};
       const earlier=(a,b)=>{const x=a.createdAt||'9999',y=b.createdAt||'9999';return x!==y?x<y:a.id.length!==b.id.length?a.id.length<b.id.length:a.id<b.id;};
-      // videoHeldBy: 게시물 줄이 그 영상을 쥔 근거 — 게시물 주소(address) > 첨부 대상(attachment) > post_id(postid). 서버는 더 약한 근거로 쥔 영상을 바꾸지 않는다.
-      const owners=new Map(),evidence=new Map();
-      for(const e of entries){if(!e.group)continue;const held=e.row&&named(e.row);if(held){owners.set(e.group,held);evidence.set(e.group,'address');continue;}
+      const owners=new Map();
+      for(const e of entries){if(!e.group)continue;const held=e.row&&named(e.row);if(held){owners.set(e.group,held);continue;}
         const only=e.row&&targets.get(e.row);if(only&&!only.has(e.id)){if(!owners.has(e.group))owners.set(e.group,'');continue;}
-        // 게시물 목록에 없는 게시물(group이 post:번호)은 주소를 읽은 영상이 먼저다 — 주소 없는 줄은 서버가 빼서 그 게시물 줄이 앞 영상을 놓지 못한다(자체 불변식 시험).
+        // 게시물 목록에 없는 게시물(group이 post:번호)은 주소를 읽은 영상이 먼저다 — 주소 없는 줄은 서버가 빼므로 게시물 번호는 저장되는 줄에 단다.
         const best=owners.get(e.group),readable=x=>typeof e.group!=='string'||!!x.url;
-        if(!best||(readable(e)!==readable(best)?readable(e):earlier(e,best))){owners.set(e.group,e);evidence.set(e.group,only?'attachment':'postid');}}
+        if(!best||(readable(e)!==readable(best)?readable(e):earlier(e,best)))owners.set(e.group,e);}
       const ownerOf=group=>{const o=owners.get(group);return typeof o==='string'?o:o?.id;};
       // 합친 줄에서 주 주소와 정체성이 다른 주소는 별칭(aliasUrls: 주소와 그 주소의 게시 시각)으로 단다. 게시 성과 기록이 어느 주소로
       // 등록됐어도 이 줄을 찾는다(11-19 넷째 검수 GA3 · 설계 검토 2 조건 8 · 9).
       const alias=(row,aliasUrl,aliasAt)=>{const key=aliasUrl&&addressKey(aliasUrl);if(!key||key===addressKey(row.url)||(row.aliasUrls||[]).some(a=>addressKey(a.url)===key))return;(row.aliasUrls||=[]).push({url:aliasUrl,publishedAt:aliasAt});};
       for(const e of entries){
         const {video,id,postId,createdAt,byVideo,conflict,row,url}=e,mine=!!e.group&&ownerOf(e.group)===id;
-        videoPostIds.videos++;if(postId)videoPostIds.withPostId++;
+        // 어긋난 짝은 그 영상이 게시물 줄을 차지하지 못해도 센다(11-19 post-performance 7회차 GA6).
+        videoPostIds.videos++;if(postId)videoPostIds.withPostId++;if(conflict)videoPostIds.conflicts++;
         // 차지한 게시물 줄에 합친다. 첨부 대상 · 주소로 짝지은 줄은 예전처럼 조회수를 받고, post_id로 합친 줄은 비었을 때만 받는다(같은 게시물은 한 회차에
-        // 줄 하나 — 11-19 검수 GA1 · 설계 검토 조건 3). 주 주소는 바꾸지 않는다 — 직접 게시가 그 주소로 등록하고, 자동 등록은 별칭까지 보고 같은 게시물을 두 번
-        // 올리지 않는다(5회차 GA3). 주 주소가 비었을 때만 영상 주소 · 영상 시각으로 채우고, 아니면 영상 주소를 그 시각과 함께 별칭으로 단다.
+        // 줄 하나 — 11-19 검수 GA1 · 설계 검토 조건 3). 주 주소는 바꾸지 않는다 — 직접 게시가 그 주소로 등록하고, 체크포인트는 별칭까지 보고 그 기록의
+        // 줄을 찾는다(5회차 GA3). 주 주소가 비었을 때만 영상 주소 · 영상 시각으로 채우고, 아니면 영상 주소를 그 시각과 함께 별칭으로 단다.
         if(row&&mine){
-          if(byVideo){row.metrics.views=number(video.views);videoPostIds.matched++;if(conflict)videoPostIds.conflicts++;else if(postId&&postId===row.pagePostId)videoPostIds.agreed++;}
+          if(byVideo){row.metrics.views=number(video.views);videoPostIds.matched++;if(!conflict&&postId&&postId===row.pagePostId)videoPostIds.agreed++;}
           else{if(row.metrics.views===null)row.metrics.views=number(video.views);videoPostIds.byPostId++;}
-          if(!conflict){row.videoId=id;row.videoHeldBy=evidence.get(e.group);}
+          if(!conflict)row.videoId=id;
           if(!row.url&&url){row.url=url;row.publishedAt=createdAt||row.publishedAt;}
           else{if(!row.publishedAt)row.publishedAt=createdAt;alias(row,url,createdAt);}
           // 별칭이 있어야 찾을 영상인데 주소를 못 읽었으면 이번 목록은 다 본 것이 아니다 — 그 주소로 등록한 기록을 「없음」으로 끄지 않게(5회차 GA4).
           if(!url&&addressKey(row.url)!==`video:${id}`)unreadable++;
           continue;
         }
-        // 영상 목록에서만 찾은 릴스는 post_id를 알면 externalId도 그 게시물 번호다. 다음 회차에 게시물 목록이 같은 게시물을 주어도 서버의 같은 줄이다
-        // (설계 검토 B). 모르면 예전처럼 영상 번호이고 pagePostId는 없다. 다른 영상이 차지한 게시물의 영상은 영상 번호 줄이고 게시물 번호는 달지 않는다.
+        // 영상 목록에서만 찾은 릴스는 영상 번호 줄이다. post_id를 알면 그 게시물 번호를 pagePostId로 단다. 다른 영상이 차지한 게시물의 영상에는 게시물 번호를 달지 않는다.
         const owns=!row&&mine&&!!postId;
-        const shared=owns?null:row?.pagePostId||postId||null;
-        posts.push({externalId:owns?postId:id,url,title:text(video.title)||text(video.description),publishedAt:createdAt,thumbnailUrl:null,pagePostId:owns?postId:null,videoId:id,...(shared?{sharedPostId:shared}:{}),...(owns?{videoHeldBy:'postid'}:{}),metrics:metrics({views:video.views,likes:video.likes?.summary?.total_count,comments:video.comments?.summary?.total_count})});
+        posts.push({externalId:id,url,title:text(video.title)||text(video.description),publishedAt:createdAt,thumbnailUrl:null,pagePostId:owns?postId:null,videoId:id,metrics:metrics({views:video.views,likes:video.likes?.summary?.total_count,comments:video.comments?.summary?.total_count})});
         if(!row&&!postId)numberless++;
         // 주소 없는 영상 줄은 서버가 빼고, 그 영상 주소로 등록한 기록은 이번 결과에서 찾지 못한다 — 목록을 다 본 것으로 치지 않는다(설계 검토 3 조건 4).
         if(!url)unreadable++;
