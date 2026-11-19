@@ -26,6 +26,9 @@ for (const [이름, 갈래] of Object.entries(새컷이름)) {
   fs.copyFileSync(있음 ? 새 : 자리표시[갈래], path.join(밖, '영상', `${이름}.mp4`));
   쓴것.push(`${이름} ${있음 ? path.basename(새) : '자리 표시'}`);
 }
+// 11-19: 첫 화면 영상 칸의 바탕 그림(N1 시작 그림). 없으면 검은 칸이다
+const 첫장면 = path.join(ROOT, '.tmp', '꿈무대촬영시험_20261118', '정지', 'N1.png');
+if (fs.existsSync(첫장면)) { fs.copyFileSync(첫장면, path.join(밖, '영상', '첫장면.png')); 쓴것.push('첫장면 N1.png'); }
 const 원고 = fs.readFileSync(path.join(__dirname, '원고.htm'), 'utf8');
 const { html } = 폰트.심기(원고);
 fs.writeFileSync(path.join(밖, 'index.html'), html);
