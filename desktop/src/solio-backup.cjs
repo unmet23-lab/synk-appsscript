@@ -290,7 +290,10 @@ const HOLDER_SCRIPT = [
   // C# 선언은 따옴표가 들어 있어 명령 줄 대신 환경 변수로 넘긴다
   "try{$t=Add-Type -MemberDefinition $env:SWB_FINAL_SIG -Name SwbFinal -Namespace SynkSolio -PassThru;$b=New-Object System.Text.StringBuilder 1024;$n=$t::GetFinalPathNameByHandleW($h.SafeFileHandle,$b,1024,0)}catch{$n=0}",
   "if($n -eq 0 -or $n -ge 1024){[Console]::Out.WriteLine('LOCKFAIL');$h.Dispose();exit 3}",
-  "[Console]::Out.WriteLine('LOCKED '+$b.ToString())",
+  // 쥔 핸들로 직접 SHA-256을 셈해 함께 알린다. 본체는 이 값 · 자기가 읽은 값 · 피드 값이 모두 같을 때만 잇는다.
+  // 그래서 서명을 확인한 바이트가 쥔 바이트라는 것이 경로 글자와 상관없이 선다(Fable 설계 재검토 11-20)
+  "try{$sha=[Security.Cryptography.SHA256]::Create();$hex=([BitConverter]::ToString($sha.ComputeHash($h))).Replace('-','').ToLower()}catch{[Console]::Out.WriteLine('LOCKFAIL');$h.Dispose();exit 3}",
+  "[Console]::Out.WriteLine('LOCKED '+$hex+' '+$b.ToString())",
   '$c=[Console]::In.ReadLine()',
   "if($c -ne 'RUN'){$h.Dispose();exit 0}",
   "try{$p=Start-Process -FilePath $env:SWB_SETUP -ArgumentList '/P','/R' -Verb RunAs -PassThru}catch{[Console]::Out.WriteLine('DECLINED');$h.Dispose();exit 4}",
@@ -325,7 +328,8 @@ function holdSetup(file, { spawnImpl = spawn, timeout = 30000 } = {}) {
       while ((at = buffer.indexOf('\n')) >= 0) {
         const line = buffer.slice(0, at).trim(); buffer = buffer.slice(at + 1);
         if (!locked) {
-          if (line.startsWith('LOCKED ')) { holder.finalPath = line.slice(7); locked = true; settled = true; clearTimeout(timer); resolve(holder); }
+          const got = /^LOCKED ([a-f0-9]{64}) (.+)$/.exec(line);
+          if (got) { holder.sha256 = got[1]; holder.finalPath = got[2]; locked = true; settled = true; clearTimeout(timer); resolve(holder); }
           else if (line === 'LOCKFAIL') fail('LOCK_FAILED');
           continue;
         }
@@ -475,8 +479,7 @@ function createSolioBackup({
   async function sameRealPath(file) {
     let real;
     try { real = await fsImpl.promises.realpath(file); } catch { return false; }
-    const norm = value => path.resolve(String(value).replace(/^\\\\\?\\/, '')).toLowerCase();
-    return norm(real) === norm(file);
+    return samePath(real, file);
   }
   /* 막 받은 파일을 백신이 잠깐 쥐면 읽기 공유 핸들이 열리지 않는다. 세 번까지 다시 쥐어 본다 */
   async function holdWithRetry(file) {
@@ -484,12 +487,16 @@ function createSolioBackup({
       try { return await hold(file); } catch (error) { if (i >= 2 || error?.backupCode !== 'LOCK_FAILED') throw error; await wait(1000); }
     }
   }
+  /* 설치 뒤 엔진이 보이는지. 확인이 끝까지 실패했으면(error) 「없음」과 갈라 unknown으로 돌려준다(Fable 설계 재검토 11-20) */
   async function engineAppeared() {
+    let unknown = true;
     for (let i = 0; i < 6; i++) {
-      if ((await engineNow(true)).installed) return true;
+      const value = await engineFresh();
+      if (value.installed) return 'yes';
+      if (!value.error) unknown = false;
       await wait(2000);
     }
-    return false;
+    return unknown ? 'unknown' : 'no';
   }
 
   async function installEngine(mode, hint) {
@@ -516,7 +523,7 @@ function createSolioBackup({
       // 가리키게 바뀌었으면 여기서 멈춘다(설계 검토 P1, GPT 검수 GA1)
       if (!samePath(holder.finalPath, file) || !(await sameRealPath(file))) throw fault('VERIFY_FAILED');
       const digest = await digestFile(file, feed.size, fsImpl);
-      if (digest.size !== feed.size || digest.sha256 !== feed.sha256) throw fault('VERIFY_FAILED');
+      if (digest.size !== feed.size || digest.sha256 !== feed.sha256 || holder.sha256 !== feed.sha256) throw fault('VERIFY_FAILED');
       const parsed = parseSignature(feed.signature);
       if (!verifySignature(digest.blake, parsed, keys)) throw fault('VERIFY_FAILED');
       // 받는 동안 다른 계정으로 바뀌었으면 누른 계정의 주소를 넣지 않는다(GPT 다시 검수 GA3)
@@ -544,7 +551,8 @@ function createSolioBackup({
       // 엔진이 보이면 「끝났는지 확인하지 못함 — 엔진 창에서 이어서」로 둔다(Fable 설계 검토 P2 · GPT 다시 검수 GA4)
       keepRequest = true;
       const confirmed = ran.outcome === 'exited' && ran.code === 0;
-      if (!(await engineAppeared())) throw fault(confirmed ? 'INSTALL_STOPPED' : 'INSTALL_UNCONFIRMED');
+      const seen = await engineAppeared();
+      if (seen !== 'yes') throw fault(confirmed && seen === 'no' ? 'INSTALL_STOPPED' : 'INSTALL_UNCONFIRMED');
       if (!confirmed) throw fault('INSTALL_UNCONFIRMED');
       setInstall('done');
     } finally {

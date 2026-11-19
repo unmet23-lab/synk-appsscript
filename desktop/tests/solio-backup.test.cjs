@@ -71,7 +71,7 @@ function fakeHold(log, { outcome = 'exited', engineState, afterInstall } = {}) {
   return async file => {
     log.push(['hold', path.basename(file)]);
     return {
-      finalPath: file,
+      finalPath: file, sha256: shaOf(file),
       release() { log.push(['release']); },
       async run(onStarted) {
         log.push(['run']);
@@ -84,6 +84,7 @@ function fakeHold(log, { outcome = 'exited', engineState, afterInstall } = {}) {
     };
   };
 }
+const shaOf = file => { try { return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'); } catch { return null; } };
 const requestsIn = env => { const dir = path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests'); return fs.existsSync(dir) ? fs.readdirSync(dir).filter(n => !n.startsWith('.') && n !== 'claimed') : []; };
 
 test('only the owner account sees the real entry; the built-in list keeps no account id in the source', async () => {
@@ -322,6 +323,7 @@ test('a real hold on Windows: while held nobody can write, rename or delete the 
     assert.throws(() => fs.renameSync(dir, dir + '-moved'), /EBUSY|EPERM|EACCES/, 'the folder holding it cannot be moved away either');
     const digest = await B.digestFile(file, 1000);
     assert.equal(digest.sha256, crypto.createHash('sha256').update('original bytes').digest('hex'));
+    assert.equal(holder.sha256, digest.sha256, 'the holder hashes the bytes through its own handle');
   } finally { holder.release(); }
   for (let i = 0; i < 50; i++) { try { fs.unlinkSync(file); break; } catch { await new Promise(r => setTimeout(r, 100)); } }
   assert.equal(fs.existsSync(file), false, 'released after QUIT');
@@ -350,7 +352,7 @@ test('P1: a folder swapped for a junction after the hold is caught before anythi
     fs.renameSync(dir, dir + '-gone');
     fs.symlinkSync(other, dir, 'junction');
     log.push(['hold']);
-    return { finalPath: file, release() { log.push(['release']); }, async run() { log.push(['run']); return { outcome: 'exited', code: 0 }; } };
+    return { finalPath: file, sha256: shaOf(file), release() { log.push(['release']); }, async run() { log.push(['run']); return { outcome: 'exited', code: 0 }; } };
   };
   const env = appdata(temp());
   const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
@@ -399,7 +401,7 @@ test('P2: an unreadable status file with the engine installed opens the engine i
 
 test('P2: if the holder dies after the installer started, the request stays and the engine is looked for again', async () => {
   const key = minisignKey(), data = crypto.randomBytes(1000), env = appdata(temp()), engineState = {};
-  const hold = async file => ({ finalPath: file, release() {}, async run(onStarted) { onStarted(); setTimeout(() => { engineState.dir = engineDir(); }, 5); return { outcome: 'gone' }; } });
+  const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run(onStarted) { onStarted(); setTimeout(() => { engineState.dir = engineDir(); }, 5); return { outcome: 'gone' }; } });
   const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, wait: () => new Promise(r => setTimeout(r, 20)) });
   await service.start(ME, 'protect');
   await service.whenIdle();
@@ -457,7 +459,7 @@ test('GA2: the hint is asked for the account that pressed the button', async () 
 
 test('GA3: an installer that exits with an error is not 「done」 even if an engine is there', async () => {
   const key = minisignKey(), data = crypto.randomBytes(500), engineState = { dir: null }, env = appdata(temp());
-  const hold = async file => ({ finalPath: file, release() {}, async run(onStarted) { onStarted(); engineState.dir = engineDir(); return { outcome: 'exited', code: 2 }; } });
+  const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run(onStarted) { onStarted(); engineState.dir = engineDir(); return { outcome: 'exited', code: 2 }; } });
   const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_STOPPED');
@@ -466,7 +468,7 @@ test('GA3: an installer that exits with an error is not 「done」 even if an en
 
 test('GA4: an engine that appeared while downloading is opened, not installed again', async () => {
   const key = minisignKey(), data = crypto.randomBytes(500), engineState = { dir: null }, env = appdata(temp()), log = [], opened = [];
-  const hold = async file => { engineState.dir = engineDir(); return { finalPath: file, release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } }; };
+  const hold = async file => { engineState.dir = engineDir(); return { finalPath: file, sha256: shaOf(file), release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } }; };
   const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, openExternal: async url => opened.push(url), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'move'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.phase, 'opened');
@@ -537,7 +539,7 @@ test('GPT GA4 (again): a lost exit code is 「not confirmed」, never 「done」
   const key = minisignKey(), data = crypto.randomBytes(500), env = appdata(temp()), engineState = {};
   for (const ran of [{ outcome: 'gone' }, { outcome: 'exited', code: null }]) {
     engineState.dir = null;
-    const hold = async file => ({ finalPath: file, release() {}, async run(onStarted) { onStarted(); engineState.dir = engineDir(); return ran; } });
+    const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run(onStarted) { onStarted(); engineState.dir = engineDir(); return ran; } });
     const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
     await service.start(ME, 'protect'); await service.whenIdle();
     assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_UNCONFIRMED', JSON.stringify(ran));
@@ -549,7 +551,7 @@ test('GPT GA5 (again): a failed engine check right before the prompt launches no
   const key = minisignKey(), data = crypto.randomBytes(500), env = appdata(temp()), log = [];
   let checks = 0;
   const run = async () => (++checks <= 1 ? '{}' : null);
-  const hold = async file => ({ finalPath: file, release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } });
+  const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } });
   const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'ENGINE_UNKNOWN');
@@ -573,4 +575,24 @@ test('Fable F1 · F3: a finished install result yields to the protection state; 
   const face = fs.readFileSync(path.join(__dirname, '..', 'renderer', 'orb-face.mjs'), 'utf8');
   assert.match(face, /backupNotice = text \? \{ text, at: now\(\) \} : null;/);
   assert.match(face, /if \(r\.loading && again\) \{ r\.again = true; return; \}/, 'a re-read asked during a read runs after it (Fable F5)');
+});
+
+/* ── Fable 설계 재검토(11-20) ── */
+test('a holder whose own hash differs from the feed is never run, whatever the path says', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(500), log = [], env = appdata(temp());
+  const hold = async file => ({ finalPath: file, sha256: 'f'.repeat(64), release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } });
+  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  await service.start(ME, 'protect'); await service.whenIdle();
+  assert.equal((await service.snapshot(ME)).install.code, 'VERIFY_FAILED');
+  assert.deepEqual(log, ['release']);
+});
+
+test('a clean installer exit followed by failed engine checks is 「not confirmed」, not 「stopped」', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(500), env = appdata(temp());
+  let checks = 0;
+  const run = async () => (++checks <= 2 ? '{}' : null);
+  const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run(onStarted) { onStarted(); return { outcome: 'exited', code: 0 }; } });
+  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  await service.start(ME, 'protect'); await service.whenIdle();
+  assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_UNCONFIRMED');
 });
