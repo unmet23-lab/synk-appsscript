@@ -787,7 +787,7 @@ app.addEventListener('click', e => {
       TRANS = true; PENDING = null;
       const res = await call('chooseGoal', k, {consent});
       if (res && res.error === 'needConsent') { TRANS = false; busy = false; needConsent(); flush(); return; }
-      if (res && res.error === 'goalWindow') { TRANS = false; busy = false; flush(); return; }   // 시험 정보가 있는 학생: 학습 목표 창이 열렸다(닫히면 host가 새 state를 보낸다)
+      if (res && res.error === 'goalWindow') { TRANS = false; busy = false; toast(ui('시험 정보가 있어서 학습 목표 창에서 바꿔요.')); flush(); return; }   // 시험 정보가 있는 학생: 학습 목표 창이 열렸다(닫히면 host가 새 state를 보낸다)
       if (res && res.error) { TRANS = false; busy = false; toast(ui('저장하지 못했어요. 잠시 뒤 다시 골라 주세요.')); flush(); return; }
       const next = res && res.view ? res : PENDING; if (next === PENDING) PENDING = null;
       if (!next) { TRANS = false; busy = false; return; }   // 고르지 못함(host가 알림을 띄운다) — 화면은 그대로

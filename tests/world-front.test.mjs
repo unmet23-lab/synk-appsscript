@@ -1,7 +1,7 @@
 // 첫날 끝 · 맞춤 앞면(1차) 다리의 순수 함수 — 판별 · 날 · 기록 · 할 일 바꾸기(구현 계획 docs/WORLD_첫날끝_1차_구현계획_20261119.md 5절).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {FRONT_AUTO,frontMode,frontEligible,dayKey,dayIndex,firstOf,frontView,recordOf,studentOf,itemOf,reasonOf,planState,GOAL_REASONS} from '../experiences/synk-world-app/world-front-entry.mjs';
+import {FRONT_AUTO,frontMode,frontEligible,dayKey,dayIndex,firstOf,frontView,recordOf,studentOf,itemOf,reasonOf,planState,GOAL_REASONS,goalPatch} from '../experiences/synk-world-app/world-front-entry.mjs';
 
 const left={version:1,stage:'left',dream:'idol',name:'볼로르',nameEn:'Bolor',call:'언니',from:'몽골',look:'mn_f',best:{s1e01:{n:3,t2:true,tr:false}},
  scenes:[{id:'s1e01.wrap',at:Date.parse('2026-11-19T13:00:00Z'),lines:4}],momAnswer:'fix',updatedAt:Date.parse('2026-11-19T13:05:00Z')};
@@ -110,4 +110,12 @@ test('계획 → 오늘 할 일 하나와 다른 걸로 둘', () => {
 
 test('둘째 날 목표 값은 학습 목표 창과 같은 열쇠', () => {
   assert.deepEqual(Object.keys(GOAL_REASONS).sort(), ['culture', 'exam', 'life', 'people', 'travel', 'work']);
+});
+
+test('목표 저장: 이유만 바꾸고 나머지는 둔다, 시험 정보가 있으면 시험 밖 목표는 학습 목표 창으로', () => {
+  const exam = {reasons: ['exam'], primaryReason: 'exam', examType: 'topik1', targetGrade: 2, examDate: '2027-04', support: 'hints'};
+  assert.deepEqual(goalPatch(exam, 'travel'), {window: true});
+  assert.deepEqual(goalPatch(exam, 'exam').values, {...exam, reasons: ['exam'], primaryReason: 'exam', goal: null});
+  assert.deepEqual(goalPatch({support: 'hints'}, 'travel').values, {support: 'hints', reasons: ['travel'], primaryReason: 'travel', goal: null});
+  assert.deepEqual(goalPatch(null, 'life').values, {reasons: ['life'], primaryReason: 'life', goal: null});
 });

@@ -96,6 +96,14 @@ export function planState(plan,{label}={}){
 }
 // 둘째 날 목표 → 학습 목표의 이유 값(학습 목표 창과 같은 값, world-learning-plan REASON_BROAD_GOAL 열쇠).
 export const GOAL_REASONS=Object.freeze({travel:'travel',people:'people',life:'life',work:'work',culture:'culture',exam:'exam'});
+// 둘째 날 목표 저장 규칙: 이유만 바꾸고 나머지(도움 방식 · 설명 길이 · 화면 설정)는 그대로 둔다. 시험 정보(종류 · 급 · 날짜 · 방식 · 주당 시간)가
+// 저장된 학생이 시험 밖 목표를 고르면 코어 규칙상 시험 정보를 지워야 저장되므로, 앞면은 저장하지 않고 학습 목표 창으로 넘긴다({window:true}).
+const EXAM_FIELDS=['examType','targetGrade','examDate','examMode','weeklyMinutes'];
+export function goalPatch(saved,reason){
+ const v=saved&&typeof saved==='object'?saved:{};
+ if(reason!=='exam'&&EXAM_FIELDS.some(k=>v[k]!=null))return {window:true};
+ return {values:{...v,reasons:[reason],primaryReason:reason,goal:null}};
+}
 
 /* ── 다리 ── */
 export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,signIn,openStory,profile,storage=globalThis.localStorage,
@@ -214,7 +222,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  onLang(code=>{
   try{session?.api?.setLang(code);}catch{}
   // 「나」로 연 설정에서 언어를 바꾸면 홈이 설정을 튜터 판으로 다시 그린다 — 앞면의 설정(내 계정 단추 · 튜터 단추 없음)으로 다시 연다.
-  const s=session;if(s?.settings&&typeof openSettings==='function')setTimeout(()=>{if(session===s&&s.settings&&document.querySelector('#world-panel')?.open){try{openSettings();}catch{}}},0);
+  const s=session;if(s?.settings&&typeof openSettings==='function')setTimeout(()=>{if(session===s&&s.settings&&document.querySelector('#world-panel')?.open&&document.querySelector('#world-panel input[name="world-lang"]')){try{openSettings();}catch{}}},0);
  });
 
  /* ── 부모 통로 ── 틀(같은 출처)이 부른다. 요청한 때의 주인이 지금 주인일 때만 쓴다 */
@@ -238,12 +246,10 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
    const progress=life.progress;
    let profile=null;try{profile=progress?.learningProfile?.()?.profile||null;}catch{profile=null;}
    if(!consent&&!profile?.consent)return {error:'needConsent'};
-   const saved=profile?.values||{},EXAM=['examType','targetGrade','examDate','examMode','weeklyMinutes'];
-   // 시험 정보(종류 · 급 · 날짜)를 저장한 학생이 시험 밖 목표를 고르면 그 정보를 지워야 저장된다(코어 규칙). 앞면에는 시험 칸이 안 보이므로
-   // 몰래 지우지 않고, 시험 칸이 보이는 학습 목표 창을 연다 — 거기서 학생이 직접 바꾼다.
-   if(reason!=='exam'&&EXAM.some(k=>saved[k]!=null)){try{education()?.open?.();}catch{}return {error:'goalWindow'};}
-   // 이유만 바꾸고 나머지(도움 방식 · 설명 길이 · 화면 설정)는 그대로 둔다.
-   try{progress.updateLearningProfile({consent:true,expectedRevision:profile?.revision,values:{...saved,reasons:[reason],primaryReason:reason,goal:null}});}
+   // 앞면에는 시험 칸이 안 보이므로 시험 정보를 몰래 지우지 않고, 시험 칸이 보이는 학습 목표 창을 연다(goalPatch). 창이 실제로 떴을 때만 goalWindow.
+   const patch=goalPatch(profile?.values,reason);
+   if(patch.window){try{education()?.open?.();}catch{}return document.querySelector('#world-panel')?.open?{error:'goalWindow'}:{error:'save'};}
+   try{progress.updateLearningProfile({consent:true,expectedRevision:profile?.revision,values:patch.values});}
    catch(error){return {error:error?.message||'save'};}
    writeMark(who,{day2:true,goal});session.view='front';
    return stateOf('front');
