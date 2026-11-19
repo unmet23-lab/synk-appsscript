@@ -1,12 +1,12 @@
 'use strict';
 // 게시물별 누적값(post-lifetime) 보완 수집(2026-11-19). 서버에 계정 합계만 있던 계정에서 로그인한 통계 화면의 게시물별 숫자를 읽는다.
 // 계정 합계 수집(ownerCapture · officialScreen)과 따로, 회차마다 한 번 돈다. 서버가 하루 한 벌(snapshots)로 남기면 3시간 판정(tools/게시성과.js)이 줍는다.
-// 읽기만 한다: 화면이 스스로 부르는 목록을 같은 로그인으로 다시 읽을 뿐 게시 · 설정 · 삭제는 하지 않는다. ego 프로필에서만 돈다(Aside 계정은 건너뛴다).
+// 읽기만 한다: 화면이 스스로 부르는 목록을 같은 로그인으로 다시 읽을 뿐 게시 · 설정 · 삭제는 하지 않는다. 길마다 정한 브라우저(ego 프로필 또는 Aside 계정)에서만 돈다.
 const fs=require('node:fs');
 const path=require('node:path');
-const {parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts,parseTistoryDaily}=require('../lib/외부통계파싱.cjs');
+const {parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts,parseTistoryDaily,parseVkClips,parseNaverBlogPosts}=require('../lib/외부통계파싱.cjs');
 
-// 아래 두 함수는 계정에 지정된 ego 프로필의 페이지 안에서 그대로 돈다(pageJob이 toString으로 넘긴다). 바깥 이름을 쓰지 않는다.
+// 아래 함수들은 계정에 지정된 브라우저의 페이지 안에서 그대로 돈다(pageJob이 toString으로 넘긴다). 바깥 이름을 쓰지 않는다.
 async function douyinWorksPage(p,args){
   await p.waitForFunction(()=>/作品\s*[(（]\s*\d+\s*[)）]|没有更多作品|暂无作品/.test(document.body.innerText),undefined,{timeout:18000}).catch(()=>{});
   const at=await p.evaluate(()=>location.origin+location.pathname);
@@ -121,29 +121,133 @@ async function tistoryDailyPage(p,args){
   },{days:args.days});
 }
 
+// VK 커뮤니티의 공개 클립 목록(vk.ru/clips/<커뮤니티>)에서 클립 번호를 모으고, 클립 화면이 받은 응답에 박힌 조회 · 좋아요 · 댓글 · 공유와 게시 시각을 읽는다(11-19).
+// 로그인 없는 요청에는 보안 확인 화면이 떠서 등록 커뮤니티를 관리하는 ego 프로필로 연다. 값은 누구나 보는 공개 수치라 공개 화면(public-page)으로 올린다.
+async function vkClipsPage(p,args){
+  const owner='-'+args.communityId;
+  await p.waitForFunction(()=>!!document.querySelector('a[href*="z=clip-"]'),undefined,{timeout:20000}).catch(()=>{});
+  const at=await p.evaluate(()=>location.origin+location.pathname);
+  if(at!==args.entry)return {reason:'need_owner'};
+  // 목록은 내릴 때 더 불러온다. 2.5초씩 세 번(7.5초) 연달아 늘지 않아야 끝으로 본다. 40번 내려도 계속 늘면 덜 읽은 목록이라 올리지 않는다(GPT GA3).
+  const links=()=>p.evaluate(()=>[...document.querySelectorAll('a[href*="z=clip-"]')].map(a=>{const u=new URL(a.getAttribute('href'),location.href);
+    return {z:u.searchParams.get('z')||'',owner:u.searchParams.get('owner')||'',feed:u.searchParams.get('feedType')||''};}));
+  let seen=await links(),still=0;
+  for(let i=0;i<40&&still<3;i++){
+    await p.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+    await p.waitForTimeout(2500);
+    const next=await links();
+    still=next.length>seen.length?0:still+1;seen=next;
+  }
+  if(still<3)return {reason:'retry',at:'list'};
+  if(!seen.length)return {reason:'no_posts'};
+  const ids=[...new Set(seen.map(l=>{const m=/^clip(-?\d+)_(\d+)$/.exec(l.z);return m&&m[1]===owner?m[2]:null;}).filter(Boolean))];
+  const rows=await p.evaluate(async ({owner,ids})=>{
+    const BS=String.fromCharCode(92);
+    // 여는 괄호에서 짝이 맞는 닫는 괄호까지(글자 안의 괄호와 이스케이프는 건너뛴다).
+    const objectAt=(body,index)=>{
+      let s=-1,depth=0;
+      for(let i=index;i>=0;i--){const c=body[i];if(c==='}')depth++;else if(c==='{'){if(depth===0){s=i;break;}depth--;}}
+      if(s<0)return null;
+      let inText=false;depth=0;
+      for(let i=s;i<body.length;i++){
+        const c=body[i];
+        if(inText){if(c===BS){i++;continue;}if(c==='"')inText=false;continue;}
+        if(c==='"'){inText=true;continue;}
+        if(c==='{')depth++;else if(c==='}'){depth--;if(depth===0)return body.slice(s,i+1);}
+      }
+      return null;
+    };
+    const out=[];
+    for(const id of ids){
+      const res=await fetch('/clip'+owner+'_'+id,{credentials:'include'});
+      if(!res.ok){out.push({clipId:id,error:'http'});continue;}
+      const body=await res.text(),key='"owner_id":'+owner+',"id":'+id+',';
+      let item=null;
+      for(let at=body.indexOf(key);at>=0&&!item;at=body.indexOf(key,at+1)){
+        try{const o=JSON.parse(objectAt(body,at)||'null');if(o&&o.engagement&&o.publish_timestamp!==undefined)item=o;}catch{/* 다음 자리 */}
+      }
+      if(!item){out.push({clipId:id,error:'missing'});continue;}
+      const e=item.engagement;
+      out.push({clipId:id,ownerId:item.owner_id,publishTimestamp:item.publish_timestamp,isAuthor:item.is_author,viewPrivacy:item.privacy&&item.privacy.view?item.privacy.view.category:null,
+        engagement:{views:e.view_count,likes:e.like_count,comments:e.comment_count,shares:e.repost_count}});
+    }
+    return out;
+  },{owner,ids});
+  if(rows.some(r=>r.error))return {reason:'format',at:'clip'};
+  return {observedAt:new Date().toISOString(),sourceUrl:at,communityId:args.communityId,links:seen,rows};
+}
+
+// 네이버 블로그 주인이 로그인해 연 자기 블로그(blog.naver.com/<아이디>)에서 글 목록(PostTitleListAsync)을 읽는다(11-19). 글별 누적 조회수(readCount)는
+// 주인 세션에만 차고 로그인 없이는 빈칸이다. 목록의 날짜는 「9시간 전」 꼴이라 게시 시각은 같은 블로그 RSS의 pubDate로 잇는다. Aside 계정에서 돈다.
+async function naverBlogPostsPage(p,args){
+  await p.waitForLoadState('domcontentloaded').catch(()=>{});
+  const at=await p.evaluate(()=>location.origin+location.pathname);
+  if(at!==args.entry)return {reason:'need_owner'};
+  const list=await p.evaluate(async handle=>{
+    const BS=String.fromCharCode(92),rows=[];let total=null;
+    // 30편씩 33쪽(990편)까지 읽는다. 파서의 읽기 상한(1,000줄) 안이고, 더 많은 블로그는 앞쪽만 읽어도 RSS 글이 모두 그 안에 있으면 받는다(GPT GA4).
+    for(let page=1;page<=33;page++){
+      const res=await fetch('/PostTitleListAsync.naver?blogId='+encodeURIComponent(handle)+'&viewdate=&currentPage='+page+'&categoryNo=0&parentCategoryNo=&countPerPage=30',{credentials:'include'});
+      if(!res.ok)return {error:'http'};
+      // 이 응답은 쪽 번호 HTML 칸에 JSON이 아닌 \' 이스케이프를 쓴다. 그 두 글자만 '로 바꿔 읽는다.
+      let data;
+      try{data=JSON.parse((await res.text()).split(BS+"'").join("'"));}catch{return {error:'json'};}
+      if(!data||data.resultCode!=='S'||!Array.isArray(data.postList))return {error:'result'};
+      total=Number(data.totalCount);
+      for(const post of data.postList){
+        // 제목은 주소 꼴로 담기고 그 안에 &quot; 같은 HTML 기호가 남는다. textarea에 넣어 글자로만 푼다(실행되는 요소를 만들지 않는다).
+        let title='';
+        try{const box=document.createElement('textarea');box.innerHTML=decodeURIComponent(String(post.title||'').split('+').join(' '));title=box.value;}catch{title='';}
+        rows.push({logNo:String(post.logNo||''),readCount:post.readCount===undefined||post.readCount===null?'':String(post.readCount),addDate:String(post.addDate||''),title:title.slice(0,200)});
+      }
+      if(!data.postList.length||rows.length>=total)break;
+    }
+    return {total,rows};
+  },args.handle);
+  if(!list||list.error)return {reason:'format',at:list?list.error:'list'};
+  const observedAt=new Date().toISOString();
+  await p.goto('https://rss.blog.naver.com/'+args.handle+'.xml',{waitUntil:'domcontentloaded',timeout:25000});
+  const times=await p.evaluate(handle=>{
+    const out={},prefix='https://blog.naver.com/'+handle+'/';
+    for(const item of document.querySelectorAll('item')){
+      const guid=(item.querySelector('guid')?.textContent||'').trim(),no=guid.startsWith(prefix)?guid.slice(prefix.length):'';
+      const when=new Date((item.querySelector('pubDate')?.textContent||'').trim());
+      if(/^[0-9]{6,20}$/.test(no)&&!Number.isNaN(when.getTime()))out[no]=when.toISOString();
+    }
+    return out;
+  },args.handle);
+  return {observedAt,sourceUrl:at,total:list.total,rows:list.rows,times};
+}
+
+// live:false인 길은 서버(회사 판)가 그 주소를 받기 전이라 돌지 않는다. VK 클립은 11-19 회사 건이 운영에 오른 뒤 true로 바꾼다. 네이버 글 목록은 서버 규칙을 따로 싣기 전까지 꺼 둔다.
 const ROUTES=Object.freeze({
-  douyin:{name:'douyin-works',page:douyinWorksPage,parse:parseDouyinWorks,handle:/^[0-9]{6,20}$/,entry:()=>'https://creator.douyin.com/creator-micro/content/manage'},
-  threads:{name:'threads-insights',page:threadsInsightsPage,parse:parseThreadsInsights,handle:/^[A-Za-z0-9_.]{1,40}$/,entry:()=>'https://www.threads.com/insights/'},
+  douyin:{name:'douyin-works',browser:'ego',live:true,page:douyinWorksPage,parse:parseDouyinWorks,handle:/^[0-9]{6,20}$/,entry:()=>'https://creator.douyin.com/creator-micro/content/manage'},
+  threads:{name:'threads-insights',browser:'ego',live:true,page:threadsInsightsPage,parse:parseThreadsInsights,handle:/^[A-Za-z0-9_.]{1,40}$/,entry:()=>'https://www.threads.com/insights/'},
   // 개인 프로필(/in/<이름>/)만 읽는다. 회사 페이지는 다른 화면이라 이 길로 읽지 않는다.
-  linkedin:{name:'linkedin-posts',page:linkedinPostsPage,parse:parseLinkedInPosts,handle:/^[A-Za-z0-9_-]{3,100}$/,limit:10,
+  linkedin:{name:'linkedin-posts',browser:'ego',live:true,page:linkedinPostsPage,parse:parseLinkedInPosts,handle:/^[A-Za-z0-9_-]{3,100}$/,limit:10,
     entry:handle=>'https://www.linkedin.com/in/'+handle+'/',personal:account=>/^https:\/\/www\.linkedin\.com\/in\/[^/]+\/?$/.test(account.publicUrl||'')},
   // 티스토리는 Aside로 읽는다. 45일 전부터 오늘까지 하루씩 읽는다(판정은 7일까지만 쓴다).
   tistory:{name:'tistory-daily',page:tistoryDailyPage,parse:parseTistoryDaily,handle:/^[a-z0-9-]{1,63}\.tistory\.com$/,browsers:['aside'],days:45,
     entry:handle=>'https://'+handle+'/manage/statistics/blog'},
+  vk:{name:'vk-clips',browser:'ego',live:false,stage:'public-page',page:vkClipsPage,parse:parseVkClips,handle:/^[A-Za-z0-9_.]{2,64}$/,entry:h=>'https://vk.ru/clips/'+h,community:true},
+  'naver-blog':{name:'naver-blog-list',browser:'aside',live:false,page:naverBlogPostsPage,parse:parseNaverBlogPosts,handle:/^[a-z0-9_-]{2,40}$/,entry:h=>'https://blog.naver.com/'+h},
 });
+// 길마다 쓰는 브라우저(browser 하나 또는 browsers 여럿)와 개인 설정의 브라우저가 맞아야 읽는다. Aside는 계정, ego는 프로필이 있어야 한다.
+const usable=(route,profile)=>(route.browsers||[route.browser||'ego']).includes(profile?.browser)&&(profile.browser==='aside'?!!profile.account:!!profile.profileId);
 
 // 게시물별 값을 읽어 올린다 → null(이 계정은 대상 아님) · 'limited'(올림) · 'need_owner' · 'format' · 'retry' · 'no_posts'
-async function postLifetime(ctx,{pageJob,storeBatch}){
-  const {account:a,profile}=ctx,route=ROUTES[a.platform];
-  const browsers=route?.browsers||['ego'];
-  if(!route||!browsers.includes(profile?.browser)||(profile.browser==='aside'?!profile.account:!profile.profileId)||route.personal&&!route.personal(a))return null;
+async function postLifetime(ctx,{pageJob,storeBatch},routes=ROUTES){
+  const {account:a,profile}=ctx,route=routes[a.platform];
+  if(!route||route.live===false||!usable(route,profile)||route.personal&&!route.personal(a))return null;
   const handle=String(a.handle||'').replace(/^@/,'');
   if(!route.handle.test(handle))return 'need_owner';
-  await ctx.setStage('creator-screen');
-  const data=await pageJob(ctx,route.name,route.page,{entry:route.entry(handle),handle,limit:route.limit||0,days:route.days||0});
+  // VK 클립 번호의 소유자 칸은 커뮤니티 번호다. 개인 설정(browser-profiles)의 communityId와 등록 공개 주소가 맞아야 읽는다.
+  if(route.community&&(!/^[0-9]{1,15}$/.test(String(profile.communityId||''))||a.publicUrl!=='https://vk.ru/'+handle))return 'need_owner';
+  await ctx.setStage(route.stage||'creator-screen');
+  const data=await pageJob(ctx,route.name,route.page,{entry:route.entry(handle),handle,limit:route.limit||0,days:route.days||0,...(route.community?{communityId:String(profile.communityId)}:{})});
   if(!data||data.reason)return data?.reason||'retry';
   let parsed;
-  try{parsed=route.parse(data,{accountId:a.id,handle});}
+  try{parsed=route.parse(data,{accountId:a.id,handle,...(route.community?{communityId:String(profile.communityId)}:{})});}
   catch(error){
     if(error.code==='SYNK_METRICS_NO_ROWS')return 'no_posts';
     throw error;
@@ -158,4 +262,4 @@ function note(ctx,reason,error){
   if(!ctx.dir)return;
   try{fs.writeFileSync(path.join(ctx.dir,'post-lifetime-failed.json'),JSON.stringify({at:new Date().toISOString(),reason,code:String(error?.code||'').slice(0,60)}),{flag:'wx'});}catch{/* 이미 있으면 첫 실패를 둔다 */}
 }
-module.exports={postLifetime,douyinWorksPage,threadsInsightsPage,linkedinPostsPage,tistoryDailyPage,note,ROUTES};
+module.exports={postLifetime,douyinWorksPage,threadsInsightsPage,linkedinPostsPage,tistoryDailyPage,vkClipsPage,naverBlogPostsPage,note,ROUTES};

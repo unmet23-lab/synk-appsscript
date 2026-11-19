@@ -234,3 +234,163 @@ test('postLifetime: 티스토리는 Aside 계정으로만 읽고, 판정 도구�
   assert.equal(판정.postIdOf('https://yuhobuilds.tistory.com/27').key,'tistory:yuhobuilds.tistory.com/27');
   assert.equal(판정.postIdOf('https://yuhobuilds.tistory.com/manage/posts'),null);
 });
+
+// VK 클립(공개 클립 목록 · 클립 화면)과 네이버 블로그 글 목록(주인 세션 · RSS 게시 시각) — 11-19. 서버 회사 판이 오르기 전에는 길이 꺼져 있다.
+const {parseVkClips,parseNaverBlogPosts}=require('../tools/lib/외부통계파싱.cjs');
+const {vkClipsPage,naverBlogPostsPage,ROUTES}=require('../tools/계정통계예약/post-lifetime.cjs');
+const VK={accountId:'lab-ru-vk',handle:'synklab_ru',communityId:'243082040'},NB={accountId:'shift-naverblog',handle:'synkshift'};
+const link=id=>({z:'clip-243082040_'+id,owner:'-243082040',feed:'ownerFeed'});
+const clip=(id,at,engagement={views:21,likes:0,comments:0,shares:0},extra={})=>({clipId:id,ownerId:-243082040,publishTimestamp:at,isAuthor:true,viewPrivacy:'all',engagement,...extra});
+const vk=(ids,rows,extra={})=>({observedAt:OBSERVED,sourceUrl:'https://vk.ru/clips/synklab_ru',communityId:'243082040',links:ids.map(link),rows,...extra});
+const blog=(no,readCount,title='사흘 전에 지운 앱이 7만 5천 원을 가져갔다')=>({logNo:no,readCount,addDate:'9시간 전',title});
+const naver=(rows,times,extra={})=>({observedAt:OBSERVED,sourceUrl:'https://blog.naver.com/synkshift',total:rows.length,rows,times,...extra});
+
+test('VK: 공개 클립 목록의 클립을 clip-<소유자>_<번호>로 남기고, 예약 · 비공개 클립은 건너뛴다',()=>{
+  const {envelope,summary}=parseVkClips(vk(['456239018','456239019','456239020'],[
+    clip('456239018',sec('2026-11-17T10:00:56Z')),
+    clip('456239019',sec('2026-11-19T10:00:00Z'),{views:0,likes:0,comments:0,shares:0}),
+    clip('456239020',sec('2026-11-16T10:00:00Z'),{views:3,likes:0,comments:0,shares:0},{viewPrivacy:'friends'})]),VK);
+  assert.deepEqual(summary,{listed:3,published:1,scheduled:1,hidden:1});
+  assert.equal(envelope.sourceType,'public-page');assert.equal(envelope.sourceUrl,'https://vk.ru/clips/synklab_ru');
+  assert.deepEqual(envelope.identity,{accountId:'lab-ru-vk',handle:'synklab_ru'});
+  assert.deepEqual(envelope.observations,[{kind:'post-lifetime',post:{externalId:'clip-243082040_456239018',url:'https://vk.ru/clip-243082040_456239018',publishedAt:'2026-11-17T10:00:56.000Z'},
+    metrics:{views:21,likes:0,comments:0,shares:0}}]);
+});
+test('VK: 다른 커뮤니티 칸 · 작성자 아님 · 덜 읽은 목록 · 줄인 수 · 다른 화면은 묶음 전체를 거절한다',()=>{
+  const at=sec('2026-11-17T10:00:56Z');
+  assert.throws(()=>parseVkClips(vk(['456239018'],[clip('456239018',at)],{links:[{z:'clip-1_456239018',owner:'-1',feed:'ownerFeed'}]}),VK),code('IDENTITY'));
+  assert.throws(()=>parseVkClips(vk(['456239018'],[clip('456239018',at)],{links:[{...link('456239018'),feed:'forYou'}]}),VK),code('IDENTITY'));
+  assert.throws(()=>parseVkClips(vk(['456239018'],[clip('456239018',at,undefined,{isAuthor:false})]),VK),code('IDENTITY'));
+  assert.throws(()=>parseVkClips(vk(['456239018'],[clip('456239018',at,undefined,{ownerId:-1})]),VK),code('IDENTITY'));
+  assert.throws(()=>parseVkClips(vk(['456239018'],[clip('456239018',at)],{communityId:'1'}),VK),code('IDENTITY'));
+  assert.throws(()=>parseVkClips(vk(['456239018','456239019'],[clip('456239018',at)]),VK),code('INCOMPLETE'));
+  assert.throws(()=>parseVkClips(vk(['456239018'],[clip('456239018',at,{views:'1.2K',likes:0,comments:0,shares:0})]),VK),code('COUNT'));
+  assert.throws(()=>parseVkClips(vk(['456239018'],[clip('456239018',at,{views:21,likes:null,comments:0,shares:0})]),VK),code('COUNT'));
+  assert.throws(()=>parseVkClips(vk(['456239018'],[clip('456239018',at)],{sourceUrl:'https://vk.ru/synklab_ru'}),VK),code('SOURCE'));
+  assert.throws(()=>parseVkClips(vk(['456239018'],[clip('456239018',at)]),{...VK,communityId:''}),code('IDENTITY'));
+  assert.throws(()=>parseVkClips(vk(['456239019'],[clip('456239019',sec('2026-11-19T10:00:00Z'))]),VK),code('NO_ROWS'));
+});
+
+test('네이버 블로그: 주인 세션의 누적 조회수와 RSS 게시 시각으로 글 주소를 만들고, RSS에 없는 글은 건너뛴다',()=>{
+  const {envelope,summary}=parseNaverBlogPosts(naver([blog('224478068429','1'),blog('224478065618','2'),blog('224400000001','12')],
+    {'224478068429':'2026-11-18T12:10:00.000Z','224478065618':'2026-11-17T12:10:00.000Z'}),NB);
+  assert.deepEqual(summary,{rows:3,posts:2,untimed:1});
+  assert.equal(envelope.sourceType,'creator-screen');assert.equal(envelope.sourceUrl,'https://blog.naver.com/synkshift');
+  assert.deepEqual(envelope.observations[0],{kind:'post-lifetime',post:{externalId:'224478068429',url:'https://blog.naver.com/synkshift/224478068429',publishedAt:'2026-11-18T12:10:00.000Z',
+    title:'사흘 전에 지운 앱이 7만 5천 원을 가져갔다'},metrics:{views:1}});
+});
+test('네이버 블로그: 빈 조회수(주인 세션 아님) · 덜 읽은 목록 · 줄인 수 · 다른 화면은 묶음 전체를 거절한다',()=>{
+  const t={'224478068429':'2026-11-18T12:10:00.000Z'};
+  assert.throws(()=>parseNaverBlogPosts(naver([blog('224478068429','')],t),NB),code('IDENTITY'));
+  // 앞쪽만 읽은 목록은 RSS 글이 모두 그 안에 있을 때만 받는다(GPT GA4). 전체 수가 읽은 수보다 작으면 거절한다.
+  assert.throws(()=>parseNaverBlogPosts(naver([blog('224478068429','1')],{...t,'224478065618':'2026-11-17T12:10:00.000Z'},{total:19}),NB),code('INCOMPLETE'));
+  assert.throws(()=>parseNaverBlogPosts(naver([blog('224478068429','1'),blog('224478065618','2')],t,{total:1}),NB),code('INCOMPLETE'));
+  assert.equal(parseNaverBlogPosts(naver([blog('224478068429','1')],t,{total:1200}),NB).summary.posts,1);
+  assert.throws(()=>parseNaverBlogPosts(naver([blog('224478068429','1.2만')],t),NB),code('COUNT'));
+  assert.throws(()=>parseNaverBlogPosts(naver([blog('224478068429','1')],t,{sourceUrl:'https://admin.blog.naver.com/synkshift/stat/today'}),NB),code('SOURCE'));
+  assert.throws(()=>parseNaverBlogPosts(naver([blog('224478068429','1')],{'224478068429':'2026-11-20T12:10:00.000Z'}),NB),code('ROW'));
+  assert.throws(()=>parseNaverBlogPosts(naver([blog('224478068429','1'),blog('224478068429','1')],t),NB),code('DUPLICATE'));
+  assert.throws(()=>parseNaverBlogPosts(naver([blog('224400000001','3')],t),NB),code('NO_ROWS'));
+});
+
+test('VK 봉투는 바뀐 서버 기록 규칙(external-observations.mjs)을 메모리 미리 보기에서 통과하고, 네이버 글 목록 봉투는 서버 규칙이 실리기 전이라 출처에서 걸린다',async t=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-post-lifetime-vk-'));
+  t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+  const recent=new Date(Date.now()-60000).toISOString(),day=new Date(Date.now()-2*86400000);
+  const batches=[];
+  for(const [name,accountId,evidence,parse,identity] of [
+    ['vk.json','lab-ru-vk',vk(['456239018'],[clip('456239018',Math.floor(day/1000))],{observedAt:recent}),parseVkClips,VK],
+    ['naver.json','shift-naverblog',naver([blog('224478068429','1')],{'224478068429':day.toISOString()},{observedAt:recent}),parseNaverBlogPosts,NB]]){
+    const raw=Buffer.from(JSON.stringify(evidence));fs.writeFileSync(path.join(dir,name),raw);
+    const {envelope}=parse(evidence,identity);
+    batches.push({accountId,evidenceFile:name,envelope:{...envelope,evidenceSha256:crypto.createHash('sha256').update(raw).digest('hex')}});
+  }
+  const manifestPath=path.join(dir,'manifest.json');fs.writeFileSync(manifestPath,JSON.stringify({version:1,batches}));
+  const report=await 수집.run({manifestPath,env:{},logDir:dir,connect:()=>{throw new Error('미리 보기에서 로그인하면 안 된다');}});
+  // 네이버 블로그 주인 글 목록(blog.naver.com/<아이디>)을 받는 서버 규칙은 운영 데이터 확인 뒤 따로 싣는다(11-19). 그 전에는 수집기의 네이버 길도 꺼 둔다.
+  assert.deepEqual(report.results.map(r=>[r.accountId,r.status,r.code]),[['lab-ru-vk','ready',null],['shift-naverblog','invalid','SYNK_EXTERNAL_SOURCE']]);
+});
+
+test('VK 페이지 함수: 목록의 이 커뮤니티 클립만 골라 클립 화면 응답에 박힌 수치와 게시 시각을 읽는다',async()=>{
+  const item=(id,views)=>({owner_id:-243082040,id:Number(id),description:'«не делай» {괄호} \\"따옴표\\"',engagement:{view_count:views,comment_count:0,like_count:1,repost_count:2,is_subscribed:true},
+    publish_timestamp:1794909656,privacy:{view:{category:'all'}},is_author:true});
+  // 실제 화면처럼 같은 열쇠가 다른 객체(수치 없는 짧은 꼴)에 먼저 나와도 수치가 있는 객체를 고른다.
+  const html=id=>'<script>var x={"short_video_raw_ids":"-243082040_'+id+'","stub":{"owner_id":-243082040,"id":'+id+',"title":"}"},"response":{"feed":{"items":[{"type":"short_video_full","item":'+JSON.stringify(item(id,21))+'}]}}};</script>';
+  const anchors=['?z=clip-243082040_456239018&feedType=ownerFeed&owner=-243082040','?z=clip-999_1&feedType=forYou&owner=-999'];
+  const asked=[];
+  const realm={location:new URL('https://vk.ru/clips/synklab_ru'),URL,JSON,String,Number,
+    document:{querySelector:()=>({}),querySelectorAll:()=>anchors.map(h=>({getAttribute:()=>h})),documentElement:{scrollHeight:1}},window:{scrollTo(){return 0;}},
+    fetch:async route=>{asked.push(route);return {ok:true,text:async()=>html(route.split('_')[1])};}};
+  const data=await vkClipsPage(fakePage(realm),{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',communityId:'243082040'});
+  assert.deepEqual(asked,['/clip-243082040_456239018']);
+  assert.deepEqual(data.rows,[{clipId:'456239018',ownerId:-243082040,publishTimestamp:1794909656,isAuthor:true,viewPrivacy:'all',engagement:{views:21,likes:1,comments:0,shares:2}}]);
+  // 다른 커뮤니티 칸이 섞인 목록은 파서가 거절한다(페이지 함수는 그 칸을 읽지 않고 그대로 남긴다).
+  assert.throws(()=>parseVkClips({...data,observedAt:OBSERVED},VK),code('IDENTITY'));
+  assert.equal(parseVkClips({...data,links:data.links.slice(0,1),observedAt:OBSERVED},VK).envelope.observations[0].metrics.shares,2);
+  // 내릴 때마다 칸이 늘어 끝을 확인하지 못하면 덜 읽은 목록이라 올리지 않는다(GPT GA3).
+  let grow=0;realm.document={...realm.document,querySelectorAll:()=>Array.from({length:++grow},(_,i)=>({getAttribute:()=>'?z=clip-243082040_'+(456239000+i)+'&feedType=ownerFeed&owner=-243082040'}))};
+  assert.deepEqual(await vkClipsPage(fakePage(realm),{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',communityId:'243082040'}),{reason:'retry',at:'list'});
+  realm.location=new URL('https://vk.ru/synklab_ru');
+  assert.deepEqual(await vkClipsPage(fakePage(realm),{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',communityId:'243082040'}),{reason:'need_owner'});
+});
+test('네이버 페이지 함수: 쪽을 넘겨 끝까지 읽고 \\\' 이스케이프와 HTML 기호를 풀며, RSS에서 이 블로그 글의 게시 시각만 모은다',async()=>{
+  const BS='\\',page=(rows,total)=>'{"resultCode":"S","resultMessage":"","postList":'+JSON.stringify(rows)+',"countPerPage":"30","totalCount":"'+total+'","pagingHtml":"<div class='+BS+"'blog2_paginate"+BS+"'></div>\"}";
+  const row=(no,read,title)=>({logNo:no,title:encodeURIComponent(title).replace(/%20/g,'+'),readCount:read,addDate:'2026. 11. 17.',commentCount:''});
+  const asked=[];
+  const rss={querySelectorAll:()=>[['https://blog.naver.com/synkshift/224478068429','Wed, 18 Nov 2026 21:10:00 +0900'],['https://blog.naver.com/other/224000000000','Wed, 18 Nov 2026 21:10:00 +0900']]
+    .map(([guid,pub])=>({querySelector:sel=>({textContent:sel==='guid'?guid:pub})}))};
+  const realm={location:new URL('https://blog.naver.com/synkshift'),JSON,String,Number,Date,encodeURIComponent,decodeURIComponent,
+    document:{createElement:()=>{const box={};Object.defineProperty(box,'innerHTML',{set(v){box.value=v.replace(/&quot;/g,'"');}});return box;}},
+    pages:{'https://rss.blog.naver.com/synkshift.xml':rss},
+    fetch:async route=>{asked.push(route);const n=Number(/currentPage=(\d+)/.exec(route)[1]);
+      return {ok:true,text:async()=>n===1?page([row('224478068429','1','ChatGPT에 &quot;보고서 써&quot;')],2):page([row('224478065618','2','둘째 글')],2)};}};
+  const p=fakePage(realm);p.waitForLoadState=async()=>{};
+  const data=await naverBlogPostsPage(p,{entry:'https://blog.naver.com/synkshift',handle:'synkshift'});
+  assert.equal(asked.length,2);assert.match(asked[0],/blogId=synkshift&.*currentPage=1&.*countPerPage=30/);
+  assert.deepEqual(data.rows.map(r=>[r.logNo,r.readCount,r.title]),[['224478068429','1','ChatGPT에 "보고서 써"'],['224478065618','2','둘째 글']]);
+  assert.deepEqual(data.times,{'224478068429':'2026-11-18T12:10:00.000Z'});
+  assert.deepEqual(parseNaverBlogPosts({...data,observedAt:OBSERVED},NB).summary,{rows:2,posts:1,untimed:1});
+  realm.location=new URL('https://section.blog.naver.com/BlogHome.naver');
+  assert.deepEqual(await naverBlogPostsPage(p,{entry:'https://blog.naver.com/synkshift',handle:'synkshift'}),{reason:'need_owner'});
+});
+
+test('postLifetime: VK · 네이버 길은 서버 판 전이라 꺼져 있고, 켜면 VK는 ego와 커뮤니티 번호, 네이버는 Aside 계정에서만 돈다',async()=>{
+  assert.deepEqual([ROUTES.vk.live,ROUTES['naver-blog'].live,ROUTES.douyin.live,ROUTES.threads.live],[false,false,true,true]);
+  const stages=[];
+  const ctx=(id,platform,handle,profile,publicUrl)=>({account:{id,platform,handle,publicUrl},profile,setStage:async s=>{stages.push(s);}});
+  const vkCtx=(profile={browser:'ego',profileId:'Profile 5',communityId:'243082040'},url='https://vk.ru/synklab_ru')=>ctx('lab-ru-vk','vk','synklab_ru',profile,url);
+  const nbCtx=(profile={browser:'aside',account:'u0'})=>ctx('shift-naverblog','naver-blog','synkshift',profile,'https://blog.naver.com/synkshift');
+  const at=sec('2026-11-17T10:00:56Z');let saved=null;const args=[];
+  const helpers={pageJob:async(c,name,fn,a)=>{args.push([name,a]);return name==='vk-clips'?vk(['456239018'],[clip('456239018',at)]):naver([blog('224478068429','1')],{'224478068429':'2026-11-18T12:10:00.000Z'});},
+    storeBatch:async(c,name,raw,envelope)=>{saved={name,envelope};}};
+  assert.equal(await postLifetime(vkCtx(),helpers),null);assert.equal(await postLifetime(nbCtx(),helpers),null);assert.equal(saved,null);
+  const on=Object.fromEntries(Object.entries(ROUTES).map(([k,r])=>[k,{...r,live:true}]));
+  assert.equal(await postLifetime(vkCtx(),helpers,on),'limited');
+  assert.equal(saved.name,'vk-clips-posts');assert.equal(saved.envelope.sourceType,'public-page');
+  assert.deepEqual(args.at(-1),['vk-clips',{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',limit:0,days:0,communityId:'243082040'}]);
+  assert.equal(await postLifetime(nbCtx(),helpers,on),'limited');
+  assert.equal(saved.name,'naver-blog-list-posts');assert.equal(saved.envelope.sourceType,'creator-screen');
+  assert.deepEqual(stages,['public-page','creator-screen']);
+  saved=null;
+  assert.equal(await postLifetime(vkCtx({browser:'ego',profileId:'Profile 5'}),helpers,on),'need_owner');
+  assert.equal(await postLifetime(vkCtx(undefined,'https://vk.ru/other'),helpers,on),'need_owner');
+  assert.equal(await postLifetime(vkCtx({browser:'aside',account:'u0',communityId:'243082040'}),helpers,on),null);
+  assert.equal(await postLifetime(nbCtx({browser:'ego',profileId:'Profile 5'}),helpers,on),null);
+  assert.equal(await postLifetime(nbCtx({browser:'aside'}),helpers,on),null);
+  assert.equal(saved,null);
+});
+
+test('판정 도구가 VK 클립 · 벽 글과 네이버 블로그 글 주소를 서버 postRoute와 같은 번호로 읽는다',()=>{
+  assert.deepEqual(판정.postIdOf('https://vk.ru/clip-243082040_456239018'),{platform:'vk',externalId:'clip-243082040_456239018',key:'vk:clip-243082040_456239018'});
+  assert.equal(판정.postIdOf('https://vk.com/CLIP-243082040_456239018').key,'vk:clip-243082040_456239018');
+  assert.equal(판정.postIdOf('https://vk.ru/wall-243082040_456239018').key,'vk:wall-243082040_456239018');
+  for(const url of ['https://vk.ru/clips/synklab_ru','https://vk.ru/synklab_ru','https://blog.naver.com/synkshift','https://blog.naver.com/PostList.naver'])assert.equal(판정.postIdOf(url),null,url);
+  assert.deepEqual(판정.postIdOf('https://blog.naver.com/synkshift/224478068429'),{platform:'naver-blog',externalId:'224478068429',key:'naver-blog:synkshift/224478068429'});
+  assert.equal(판정.postIdOf('https://m.blog.naver.com/SynkShift/224478068429').key,'naver-blog:synkshift/224478068429');
+  assert.equal(판정.formatOf({platform:'vk',url:'https://vk.ru/clip-243082040_456239018'}),'vk-clip');
+  assert.equal(판정.formatOf({platform:'vk',url:'https://vk.ru/wall-243082040_1'}),'vk-post');
+  assert.equal(판정.formatOf({platform:'naver-blog',url:'https://blog.naver.com/synkshift/224478068429'}),'naver-blog-post');
+  assert.deepEqual([판정.PLATFORM_LABEL.vk,판정.PLATFORM_LABEL['naver-blog']],['VK','네이버 블로그']);
+  const {PLATFORMS}=require('../tools/lib/게시성과읽기.cjs');
+  assert.deepEqual(['vk','naver-blog'].map(p=>PLATFORMS.includes(p)),[true,true]);
+});

@@ -65,6 +65,9 @@ export const EXTERNAL_SOURCE_RULES=Object.freeze({
   rutube:{source:['studio.rutube.ru','rutube.ru'],post:['rutube.ru']},
   vk:{source:['vk.com','vk.ru'],post:['vk.com','vk.ru']},
 });
+// VK 게시물 주소(wall-<소유자>_<번호> · clip-<소유자>_<번호>)의 소유자 칸과 대조할 커뮤니티 번호(11-19). 원장에 VK 커뮤니티 번호 칸이 아직 없어 원장 계정 ID로 여기에 둔다.
+// 원장이나 채널에 숫자 외부 번호가 생기면 그 값도 함께 받는다. 근거: 공개 클립 목록 vk.ru/clips/synklab_ru의 클립 칸이 모두 owner=-243082040이고, 공식 내보내기 파일 이름이 243082040_community_common_…이다.
+export const VK_COMMUNITY_IDS=Object.freeze({'lab-ru-vk':'243082040'});
 const API_PLATFORMS=new Set(PLATFORM_CAPABILITIES.filter(capability=>capability.mode!=='manual').map(capability=>capability.id));
 const MANAGED=new Set(MANAGED_ACCOUNT_STATUSES);
 const TOP_KEYS=Object.freeze(['sourceType','sourceUrl','observedAt','evidenceSha256','identity','labels','exportFormat','observations']);
@@ -190,7 +193,10 @@ function postRoute(platform,link){
     case 'douyin':return n===2&&['video','note'].includes(low[0])&&num(s[1])?{id:s[1]}:null;
     case 'xiaohongshu':return n===2&&low[0]==='explore'&&XHS_NOTE.test(s[1])?{id:s[1]}:n===4&&low[0]==='user'&&low[1]==='profile'&&XHS_NOTE.test(s[3])?{id:s[3],profile:s[2]}:null;
     case 'rutube':return n===2&&low[0]==='video'&&/^[A-Za-z0-9]{6,64}$/.test(s[1])?{id:s[1]}:null;
-    case 'vk':return n===1&&/^wall-?\d+_\d+$/i.test(s[0])?{id:'wall'+s[0].slice(4),aliases:[s[0].slice(4)]}:null;
+    // VK는 벽 글(wall-<소유자>_<번호>)과 클립(clip-<소유자>_<번호>)을 받는다. 벽 글은 wall을 뺀 API 표기도 같은 글로 받는다.
+    // 클립은 wall을 뺀 표기가 벽 글 번호와 겹치므로 clip이 붙은 표기 하나만 받는다(11-19). 게시결과도 vk.ru/clip-… 꼴로 적는다.
+    // 소유자 칸(커뮤니티는 -<번호>)은 owner로 넘겨 rowOf가 이 채널의 VK 소유자 번호와 대조한다.
+    case 'vk':{const m=n===1?/^(wall|clip)((-?\d{1,15})_\d{1,20})$/i.exec(s[0]):null;return !m?null:m[1].toLowerCase()==='wall'?{id:'wall'+m[2],aliases:[m[2]],owner:m[3]}:{id:'clip'+m[2],owner:m[3]};}
     default:return null;
   }
 }
@@ -227,7 +233,10 @@ function channelIdentity(platform,rule,live,account,ownHost){
   // 계정 칸 플랫폼의 소유자는 등록 주소가 정확한 프로필 경로일 때만 꺼낸다: /<계정>, 또는 공개 미리보기 /<접두 칸>/<계정>(Telegram /s/<채널>). 다른 모양이나 handle은 쓰지 않는다.
   const profileOwner=({segments})=>segments.length===1?segments[0]:segments.length===2&&(rule.publicPrefix||[]).includes(segments[0].toLowerCase())?segments[1]:null;
   const ownSegment=rule.ownerSegment?urls.map(profileOwner).find(Boolean)||null:null,exactOwner=!!ownSegment&&/^(?:_|@@)/.test(ownSegment);
+  // VK 게시물 주소의 소유자 칸과 대조할 값: 원장·채널의 숫자 외부 번호와 VK_COMMUNITY_IDS의 커뮤니티 번호. 커뮤니티 글의 소유자 칸은 -<번호>라 그 꼴로 모은다.
+  const vkOwners=new Set(platform==='vk'?[...externalIds,VK_COMMUNITY_IDS[account.id]].map(value=>/^-?\d{1,15}$/.test(String(value||''))?'-'+String(value).replace(/^-/,''):null).filter(Boolean):[]);
   return {ownHost,ownerSegment:rule.ownerSegment===true,prefix:rule.publicPrefix||[],externalIds,catalog,
+    ownsVkOwner:value=>typeof value==='string'&&vkOwners.has(value),
     ownsId:value=>typeof value==='string'&&ids.has(value),
     ownsName:value=>typeof value==='string'&&!!value&&(names.has(value.toLowerCase())||names.has(value.toLowerCase().replace(/^@/,''))),
     ownerIs:value=>!!ownSegment&&typeof value==='string'&&(exactOwner?value===ownSegment:value.toLowerCase()===ownSegment.toLowerCase()),
@@ -277,7 +286,9 @@ function publicRoute(platform,link,ctx){
   const ownPost=()=>{const route=postRoute(platform,link);return !!route?.owner&&mine(String(route.owner).toLowerCase());};
   switch(platform){
     case 'telegram':case 'naver-blog':case 'kakao-channel':case 'brunch':{const at=prefix.includes(low[0])?1:0,route=postRoute(platform,link);return ctx.ownerIs(s[at])&&n===at+1||!!route&&ctx.ownerIs(route.owner);}
-    case 'instagram':case 'x':case 'pinterest':case 'vk':return n===1&&mine(low[0])||ownPost();
+    case 'instagram':case 'x':case 'pinterest':return n===1&&mine(low[0])||ownPost();
+    // VK 공개 클립 목록(/clips/<커뮤니티>)은 그 커뮤니티의 클립만 모아 보이고, 클립은 이 목록 위에 열린다(11-19 실화면). VK 게시물 주소에는 계정 이름이 없어 ownPost는 쓰지 않는다.
+    case 'vk':return n===1&&mine(low[0])||n===2&&low[0]==='clips'&&mine(s[1]);
     case 'threads':case 'tiktok':case 'naver-clip':return n===1&&low[0].startsWith('@')&&mine(low[0])||ownPost();
     case 'behance':return mine(low[0])&&(n===1||n===2&&low[1]==='info');
     case 'youtube':{if(link.host==='youtu.be')return false;const at=low[0]?.startsWith('@')?1:['channel','c','user'].includes(low[0])?2:0,owned=at===1?mine(s[0]):at===2&&(low[0]==='channel'&&known(s[1])||registered(2,low[0]==='channel'?[1]:[]));return !!owned&&(n===at||n===at+1&&tabs.includes(low[at]));}
@@ -315,7 +326,8 @@ function rowOf(raw,index,{platform,postHosts,ctx,observedAt,observedDate}){
     const link=officialUrl(value.url,postHosts,{label:`${where} 게시물 주소`,code:'SYNK_EXTERNAL_POST',keepQuery:POST_QUERY}),route=postRoute(platform,link);
     if(!route||!POST_ID.test(route.id))throw invalid(`${where}: 이 플랫폼에서 게시물 하나를 여는 공식 주소 모양이 아니에요.`,'SYNK_EXTERNAL_POST');
     // 게시물 주소의 계정 칸: 계정 칸 플랫폼은 실제 등록 주소의 첫 칸과, Facebook 숫자 칸은 아는 번호와, 그 밖의 이름은 등록 handle·등록 주소 이름과 같아야 한다.
-    const ownerOk=ctx.ownerSegment?ctx.ownerIs(route.owner):!route.owner||(platform==='facebook'&&/^\d{1,30}$/.test(route.owner)?ctx.ownsId(route.owner):ctx.ownsName(route.owner));
+    // VK는 소유자 칸을 이 채널의 커뮤니티 번호(-<번호>)와 견준다. 모르는 번호의 글과 클립은 받지 않는다.
+    const ownerOk=ctx.ownerSegment?ctx.ownerIs(route.owner):platform==='vk'?ctx.ownsVkOwner(route.owner):!route.owner||(platform==='facebook'&&/^\d{1,30}$/.test(route.owner)?ctx.ownsId(route.owner):ctx.ownsName(route.owner));
     if(!ownerOk)throw invalid(`${where}: 게시물 주소가 이 계정의 게시물이 아니에요.`,'SYNK_EXTERNAL_POST');
     if(route.profile&&!ctx.ownsId(route.profile))throw invalid(`${where}: 게시물 주소에 든 프로필 번호를 이 계정의 번호로 확인하지 못했어요.`,'SYNK_EXTERNAL_POST');
     if(route.id!==value.externalId&&!(route.aliases||[]).includes(value.externalId))throw invalid(`${where}: 게시물 번호가 주소에 든 게시물 번호(${route.id})와 달라요.`,'SYNK_EXTERNAL_POST');
@@ -461,6 +473,15 @@ export function createExternalObservations({store,clock=()=>new Date().toISOStri
     if(!Array.isArray(input.observations)||!input.observations.length||input.observations.length>EXTERNAL_LIMITS.rows)throw invalid(`관측(observations)은 한 번에 1~${EXTERNAL_LIMITS.rows}개 넣어 주세요.`);
     const observedDate=kstDay(observedMs);
     const rows=input.observations.map((raw,index)=>rowOf(raw,index,{platform,postHosts:[...rule.post,...(ownHost?[ownHost]:[])],ctx,observedAt,observedDate}));
+    // 출처 화면마다 받는 관측을 좁힌다(11-19).
+    // ① VK 공개 클립 목록에서는 클립만, 커뮤니티 첫 화면에서는 벽 글만 받는다. 같은 숫자의 클립과 벽 글이 서로의 값을 받지 않게 한다.
+    //    커뮤니티 첫 화면의 벽 글은 운영판처럼 wall을 뺀 API 표기도 받는다(클립 번호만 막는다).
+    // ② 공개 클립 목록은 게시물 목록이라 게시물 누적값만 받는다. 계정 합계로 적지 못한다.
+    const seg=source.segments.map(value=>value.toLowerCase()),posts=rows.filter(row=>row.kind==='post-lifetime');
+    const vkClips=platform==='vk'&&publicPage&&seg.length===2&&seg[0]==='clips',vkWall=platform==='vk'&&publicPage&&seg.length===1;
+    if(vkClips&&posts.some(row=>!row.post.externalId.toLowerCase().startsWith('clip')))throw invalid('VK 공개 클립 목록에서 읽은 게시물은 클립(clip-…)이어야 해요.','SYNK_EXTERNAL_POST');
+    if(vkWall&&posts.some(row=>row.post.externalId.toLowerCase().startsWith('clip')))throw invalid('VK 커뮤니티 첫 화면에서 읽은 게시물은 벽 글(wall-…)이어야 해요. 클립은 공개 클립 목록 주소로 적어 주세요.','SYNK_EXTERNAL_POST');
+    if(vkClips&&rows.some(row=>row.kind!=='post-lifetime'))throw invalid('게시물 목록에서는 게시물 누적값(post-lifetime)만 기록해요.','SYNK_EXTERNAL_METRIC_GRAIN');
     const recordedAt=new Date(nowMs).toISOString();
     const drafts=rows.map(row=>({
       id:'xmo_'+sha(JSON.stringify(['v1',live.id,row.kind,row.period?`${row.period.start}..${row.period.end}`:'',row.post?.externalId||'',evidenceSha256])).slice(0,40),

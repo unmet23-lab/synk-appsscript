@@ -951,7 +951,9 @@ test('텔레그램 · 샤오훙수 · 스레드 · RUTUBE 게시 주소를 서�
   assert.equal(판정.postIdOf('https://www.threads.com/@yuhobuilds/post/DfzTsA5EXiJ').key, 'threads:DfzTsA5EXiJ');
   assert.equal(판정.postIdOf('https://rutube.ru/video/a8ea98cb3466a8dc813e221072f1514a/').key, 'rutube:a8ea98cb3466a8dc813e221072f1514a');
   assert.equal(판정.postIdOf('https://rutube.ru/channel/81398864/'), null);
-  assert.equal(판정.postIdOf('https://vk.ru/clip-243082040_456239018'), null);
+  // VK 클립은 11-19부터 서버 postRoute처럼 clip-<소유자>_<번호>로 읽는다(자세한 시험은 계정통계게시물별). 커뮤니티 화면은 게시물이 아니다.
+  assert.equal(판정.postIdOf('https://vk.ru/clip-243082040_456239018').key, 'vk:clip-243082040_456239018');
+  assert.equal(판정.postIdOf('https://vk.ru/synklab_ru'), null);
 });
 
 test('API 수집이 없는 플랫폼은 하루 숫자로 24·72시간(±6시간)·7일을 재고, 같은 채널 앞선 편과 같은 나이로 견준다', () => {

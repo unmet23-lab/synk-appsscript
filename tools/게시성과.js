@@ -21,7 +21,7 @@
  * 장부 = docs/_ops/게시성과.jsonl (한 줄 = 판정 하나 또는 화면 읽기 하나 · 바뀐 판정만 덧붙인다 · 고치지 않는다)
  * 요약 = docs/마케팅/게시성과.md (07시 제작·월요일 스캔·금요일 판정이 읽는다 · 이 도구가 다시 만든다)
  * 정기 실행: Windows 작업 스케줄러 「SYNK 게시 성과 판정」이 3시간마다 --실행(tools/게시성과예약/install-task.ps1).
- * 텔레그램 · 샤오훙수 · 스레드 · RUTUBE · 더우인 · 링크드인(11-19)은 서버 게시 성과 등록이 없어, 계정 통계 수집이 서버에 넣은 하루 숫자로 24·72시간·7일을 잰다(lib/게시성과판정.js 머리 주석).
+ * 텔레그램 · 샤오훙수 · 스레드 · RUTUBE · 더우인 · 링크드인 · VK · 네이버 블로그(11-19)는 서버 게시 성과 등록이 없어, 계정 통계 수집이 서버에 넣은 하루 숫자로 24·72시간·7일을 잰다(lib/게시성과판정.js 머리 주석).
  * 읽기만 한다: 회사 서버는 읽기 전용 조회, 플랫폼은 유튜브 공개 목록(쇼츠 탭)만. 게시·댓글·설정 변경 없음.
  */
 const fs = require('node:fs');
@@ -356,7 +356,7 @@ function 시험절(t) {
 }
 
 /** 서버가 게시 성과를 받지 않는 플랫폼의 이름(sns-계정.json platform → 보일 이름) — 없으면 그 값 그대로 */
-const 안셈이름 = Object.freeze({ 'naver-blog': '네이버 블로그', tistory: '티스토리', 'naver-clip': '네이버 클립', xiaohongshu: '샤오훙수', threads: '스레드', x: 'X', linkedin: '링크드인', telegram: '텔레그램', douyin: '더우인' });
+const 안셈이름 = Object.freeze({ 'naver-blog': '네이버 블로그', tistory: '티스토리', 'naver-clip': '네이버 클립', xiaohongshu: '샤오훙수', threads: '스레드', x: 'X', linkedin: '링크드인', telegram: '텔레그램', douyin: '더우인', vk: 'VK' });
 
 /** 미리 보기 한 줄 — 「시험 편 N · 판 N · 갈래 N(계속 1 · 아직 2)」 */
 function 시험요약글(t) {

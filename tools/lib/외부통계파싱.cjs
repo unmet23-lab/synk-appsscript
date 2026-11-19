@@ -34,6 +34,13 @@
  * parseTistoryDaily(evidence, identity) — https://<블로그>.tistory.com/manage/statistics/blog 의 인기글(일간)과 글 목록(11-19)
  *   evidence {observedAt, sourceUrl, host, posts:[{id, published, visibility, scheduled, permalink, comments}], days:[{date, length, entries:[{entryId, count}]}]}
  *   글별 누적 조회수가 화면에 없어 게시한 날부터의 일간 인기글 조회수를 더한다(이름표에 「합」으로 적는다). 하루 목록이 10개 이상이면 거절한다.
+ * parseVkClips(evidence, identity) — https://vk.ru/clips/<커뮤니티> 공개 클립 목록과 그 위에 여는 클립 화면(11-19)
+ *   evidence {observedAt, sourceUrl, communityId, links:[{z:'clip-<소유자>_<번호>', owner, feed}], rows:[{clipId, ownerId, publishTimestamp(초), isAuthor, viewPrivacy, engagement:{views,likes,comments,shares}}]}
+ *   identity {accountId, handle, communityId}. 목록의 모든 클립이 그 커뮤니티 것이고 모든 클립을 읽었어야 한다. 누구에게나 공개가 아닌 클립과 예약 클립은 건너뛴다.
+ *   공개 수치라 public-page로 올린다. 게시물 번호는 서버 postRoute와 같은 clip-<소유자>_<번호>다.
+ * parseNaverBlogPosts(evidence, identity) — 주인이 로그인해 연 https://blog.naver.com/<아이디> 글 목록(PostTitleListAsync)과 RSS 게시 시각(11-19)
+ *   evidence {observedAt, sourceUrl, total, rows:[{logNo, readCount, addDate, title}], times:{<logNo>: 게시 시각}}
+ *   identity {accountId, handle(블로그 아이디)}. 모든 글의 readCount가 정확한 수여야 한다(빈칸이면 주인 세션이 아니다). RSS에 없는 글(비공개 · 오래된 글)은 건너뛴다.
  * parseNaverDaily(input, identity, observedAt) — https://admin.blog.naver.com/<blogId>/stat/download 조회수·일간 xlsx를 디코딩한 값
  *   input은 {sheets:[{name?, rows}]}(첫 장만) 또는 행 배열. 행은 칸 배열, 칸 주소 열쇠 객체({A8,B8,C8} — 모두 같은 행 번호이고 그 번호가
  *   배열 순서+1), 또는 A·B… / 0·1… 열 열쇠 객체. 머리 행의 「요일」 열은 날짜의 실제 요일과 맞는지만 보고 수치로 읽지 않는다.
@@ -378,6 +385,82 @@ function parseTistoryDaily(evidence,identity){
     labels:{screenTitle:'티스토리 방문 통계 · 인기글(일간)',timeZone:'Asia/Seoul'},observations},summary:{posts:observations.length,older,hidden,days:days.length}};
 }
 
+const VK_SOURCE=handle=>'https://vk.ru/clips/'+handle;
+// VK 커뮤니티 공개 클립 목록의 클립마다, 클립 화면이 받은 응답(engagement · publish_timestamp)의 조회 · 좋아요 · 댓글 · 공유다(11-19). 누구나 보는 수치라 public-page다.
+// 목록의 모든 클립 주소가 설정의 커뮤니티 번호(-<communityId>) 것이고, 읽은 클립이 목록과 하나도 어긋나지 않아야 한다. 로그인한 관리자가 그 클립의 작성자(isAuthor)여야 한다.
+function parseVkClips(evidence,identity){
+  const accountId=accountIdOf(identity),handle=handleOf(identity),community=plain(identity)?String(identity.communityId||''):'';
+  if(!accountId||!/^[A-Za-z0-9_.]{2,64}$/.test(handle)||!/^[0-9]{1,15}$/.test(community))throw fail('IDENTITY','VK 설정에 accountId · 커뮤니티 주소 이름(handle) · 커뮤니티 번호(communityId)가 있어야 해요.');
+  known(evidence,['observedAt','sourceUrl','communityId','links','rows'],'VK 증거');
+  const observedAt=instant(evidence.observedAt,'관측 시각(observedAt)'),owner='-'+community;
+  if(evidence.sourceUrl!==VK_SOURCE(handle))throw fail('SOURCE',`공개 클립 목록 주소는 ${VK_SOURCE(handle)} 이어야 해요.`);
+  if(evidence.communityId!==community)throw fail('IDENTITY','화면을 읽은 커뮤니티 번호가 설정과 달라요.');
+  const links=rowsOf(evidence.links),listed=new Set();
+  links.forEach((link,i)=>{
+    known(link,['z','owner','feed'],`${i+1}번째 목록 칸`);
+    const m=typeof link.z==='string'?/^clip(-[0-9]{1,15})_([0-9]{1,20})$/.exec(link.z):null;
+    if(!m||m[1]!==owner||link.owner!==owner||link.feed!=='ownerFeed')throw fail('IDENTITY',`${i+1}번째 목록 칸: 이 커뮤니티의 클립 목록 칸이 아니에요.`);
+    listed.add(m[2]);
+  });
+  const rows=rowsOf(evidence.rows),seen=new Set(),observations=[];
+  let scheduled=0,hidden=0;
+  rows.forEach((row,i)=>{
+    const where=`${i+1}번째 클립`;
+    known(row,['clipId','ownerId','publishTimestamp','isAuthor','viewPrivacy','engagement'],where);
+    if(typeof row.clipId!=='string'||!listed.has(row.clipId))throw fail('ROW',`${where}: 목록에 없는 클립이에요.`);
+    if(seen.has(row.clipId))throw fail('DUPLICATE',`${where}: 같은 클립이 두 번 있어요.`);
+    seen.add(row.clipId);
+    if(row.ownerId!==Number(owner)||row.isAuthor!==true)throw fail('IDENTITY',`${where}: 이 커뮤니티가 올린 클립으로 확인되지 않아요.`);
+    if(!Number.isSafeInteger(row.publishTimestamp)||row.publishTimestamp<1_500_000_000)throw fail('TIME',`${where}: 게시 시각(publishTimestamp, 초)을 확인해 주세요.`);
+    const publishedAt=new Date(row.publishTimestamp*1000).toISOString();
+    if(Date.parse(publishedAt)>Date.parse(observedAt)){scheduled++;return;}
+    if(row.viewPrivacy!=='all'){hidden++;return;}
+    known(row.engagement,['views','likes','comments','shares'],`${where} 수치`);
+    const metrics={views:count(row.engagement.views,`${where} 조회`),likes:count(row.engagement.likes,`${where} 좋아요`),comments:count(row.engagement.comments,`${where} 댓글`),shares:count(row.engagement.shares,`${where} 공유`)};
+    const id=`clip${owner}_${row.clipId}`;
+    observations.push({kind:'post-lifetime',post:{externalId:id,url:'https://vk.ru/'+id,publishedAt},metrics});
+  });
+  if(seen.size!==listed.size)throw fail('INCOMPLETE',`목록의 클립 ${listed.size}개 가운데 ${seen.size}개만 읽었어요.`);
+  if(!observations.length)throw fail('NO_ROWS','공개된 클립이 없어 보낼 관측이 없어요.');
+  capped(observations,'예약 · 비공개 클립');
+  return {envelope:{sourceType:'public-page',sourceUrl:VK_SOURCE(handle),observedAt,evidenceSha256:null,identity:{accountId,handle},
+    labels:{screenTitle:'VK 커뮤니티 공개 클립 목록 · 클립 화면'},observations},summary:{listed:listed.size,published:observations.length,scheduled,hidden}};
+}
+
+const NAVER_LIST=handle=>'https://blog.naver.com/'+handle;
+// 주인이 로그인해 연 자기 블로그 글 목록의 글별 누적 조회수(readCount)다(11-19). 로그인 없이 부르면 이 칸이 빈칸이라, 모든 글에 정확한 수가 있어야 주인 화면으로 본다.
+// 목록의 날짜는 「9시간 전」 · 「2026. 11. 17.」 꼴이라 쓰지 않고, 게시 시각은 같은 블로그 RSS의 pubDate(times)로 잇는다. RSS에 없는 글은 건너뛴다.
+function parseNaverBlogPosts(evidence,identity){
+  const accountId=accountIdOf(identity),handle=handleOf(identity);
+  if(!accountId||!/^[a-z0-9_-]{2,40}$/.test(handle))throw fail('IDENTITY','네이버 블로그 설정에 accountId와 블로그 아이디(handle)가 있어야 해요.');
+  known(evidence,['observedAt','sourceUrl','total','rows','times'],'네이버 블로그 증거');
+  const observedAt=instant(evidence.observedAt,'관측 시각(observedAt)');
+  if(evidence.sourceUrl!==NAVER_LIST(handle))throw fail('SOURCE',`글 목록 주소는 ${NAVER_LIST(handle)} 이어야 해요.`);
+  if(!plain(evidence.times))throw fail('SHAPE','게시 시각 목록(times)이 없어요.');
+  const rows=rowsOf(evidence.rows),seen=new Set(),observations=[];
+  if(!Number.isSafeInteger(evidence.total)||evidence.total<rows.length)throw fail('INCOMPLETE',`글 목록의 전체 수(${evidence.total})가 읽은 글 수(${rows.length})와 맞지 않아요.`);
+  let untimed=0;
+  rows.forEach((row,i)=>{
+    const where=`${i+1}번째 글`;
+    known(row,['logNo','readCount','addDate','title'],where);
+    if(typeof row.logNo!=='string'||!/^[0-9]{6,20}$/.test(row.logNo))throw fail('ROW',`${where}: 글 번호(logNo)를 확인해 주세요.`);
+    if(seen.has(row.logNo))throw fail('DUPLICATE',`${where}: 같은 글이 두 번 있어요.`);
+    seen.add(row.logNo);
+    if(blank(row.readCount))throw fail('IDENTITY',`${where}: 조회수가 빈칸이에요. 블로그 주인으로 로그인한 화면이 아니에요.`);
+    const views=count(row.readCount,`${where} 조회수`);
+    if(blank(evidence.times[row.logNo])){untimed++;return;}
+    const publishedAt=instant(evidence.times[row.logNo],`${where} 게시 시각`);
+    if(Date.parse(publishedAt)>Date.parse(observedAt))throw fail('ROW',`${where}: 게시 시각이 관측 시각보다 뒤예요.`);
+    observations.push({kind:'post-lifetime',post:{externalId:row.logNo,url:`https://blog.naver.com/${handle}/${row.logNo}`,publishedAt,title:optionalText(row.title,120,`${where} 제목`,true)},metrics:{views}});
+  });
+  // 목록 앞쪽(최근 글)만 읽었으면 RSS에 있는 글이 모두 그 안에 있어야 한다. 하나라도 빠지면 덜 읽은 목록으로 보고 거절한다.
+  if(rows.length<evidence.total&&Object.keys(evidence.times).some(no=>!seen.has(no)))throw fail('INCOMPLETE',`글 목록 ${evidence.total}편 가운데 ${rows.length}편만 읽었는데 RSS의 글이 그 안에 다 있지 않아요.`);
+  if(!observations.length)throw fail('NO_ROWS','게시 시각을 아는 글이 없어 보낼 관측이 없어요.');
+  capped(observations,'RSS에 없는 글');
+  return {envelope:{sourceType:'creator-screen',sourceUrl:NAVER_LIST(handle),observedAt,evidenceSha256:null,identity:{accountId,handle},
+    labels:{screenTitle:'네이버 블로그 · 주인이 보는 글 목록',timeZone:'Asia/Seoul'},observations},summary:{rows:rows.length,posts:observations.length,untimed}};
+}
+
 function sheetOf(input){
   const sheet=Array.isArray(input)?{rows:input}:plain(input)&&Array.isArray(input.sheets)?input.sheets[0]:null;
   if(!plain(sheet)||!Array.isArray(sheet.rows)||!sheet.rows.length||sheet.rows.length>MAX_ROWS+40)throw fail('SHAPE',`디코딩한 첫 장(sheets[0].rows)이 1~${MAX_ROWS+40}행 배열이어야 해요.`);
@@ -498,4 +581,4 @@ function periodSummaries(dailyRows,endDay,durations=[7,30,60,90]){
   })};
 }
 
-module.exports={parseXhs,parseTelegram,parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts,parseTistoryDaily,parseNaverDaily,periodSummaries,MAX_ROWS,MAX_INPUT_ROWS};
+module.exports={parseXhs,parseTelegram,parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts,parseTistoryDaily,parseVkClips,parseNaverBlogPosts,parseNaverDaily,periodSummaries,MAX_ROWS,MAX_INPUT_ROWS};
