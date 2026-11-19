@@ -282,11 +282,21 @@ def f0_track(x, sr):
 _models = {}
 
 
+def _받아쓰기장치():
+    """tools/lib/받아쓰기장치.py — faster-whisper를 GPU 먼저(공용 GPU 줄이 비었을 때), 안 되면 CPU로 연다."""
+    if '받아쓰기장치' not in sys.modules:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('받아쓰기장치', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib', '받아쓰기장치.py'))
+        모듈 = importlib.util.module_from_spec(spec)
+        sys.modules['받아쓰기장치'] = 모듈
+        spec.loader.exec_module(모듈)
+    return sys.modules['받아쓰기장치']
+
+
 def whisper(name):
     os.environ.setdefault('HF_HUB_OFFLINE', '1')
     if name not in _models:
-        from faster_whisper import WhisperModel
-        _models[name] = WhisperModel(name, device='cpu', compute_type='int8', cpu_threads=8)
+        _models[name] = _받아쓰기장치().모델열기(name, cpu_threads=8)[0]
     return _models[name]
 
 

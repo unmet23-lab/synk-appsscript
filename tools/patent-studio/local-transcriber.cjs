@@ -80,7 +80,7 @@ function createLocalTranscriber({ configPath = path.join(__dirname, '.runtime/lo
       last = { ok: true };
       return { text: result.text, alternatives: result.text ? [{ text: result.text }] : [], provider: 'local', model: config.modelId,
         raw: { request: { audioSha256: sha, audioRef: 'sha256:' + sha, audioBytes: copy.length, mimeType,
-          settings: SETTINGS, modelFingerprint: config.modelFingerprint, workerSha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, 'local-stt-worker.py'))).digest('hex') },
+          settings: { ...SETTINGS, ...(metadata?.device ? { device: metadata.device, computeType: metadata.computeType } : {}) }, modelFingerprint: config.modelFingerprint, workerSha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, 'local-stt-worker.py'))).digest('hex') },
           response: result, runtime: metadata, alternativesKind: 'single_decoder_result', coverage: 'not_complete', needsHumanVerification: true,
           offline: true, networkAttempts: result.networkAttempts } };
     } catch (e) { last = { ok: false }; throw e; }

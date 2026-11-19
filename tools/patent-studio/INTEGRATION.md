@@ -87,7 +87,7 @@ const result = await transcribe({ bytes: Buffer.from(audioBytes), mimeType: reco
 
 ### 인터넷 없이 실행하는 기본 경로
 
-발표용 server는 resilient-transcriber.cjs로 local을 기본 선택한다. local-transcriber.cjs가 별도Python작업자 local-stt-worker.py를 띄운다. 기존 Whisper small 모델을 CPU int8로 실행하며 모델 파일 지문과 실제 오디오 지문을 검증한다. 자체 패키지 venv에 faster-whisper1.2.1·CTranslate2 4.8.2·PyAV18.1.0을 공식PyPI에서 설치했다. 기존 모델은 새로 내려받지 않았다. 모델 위치·실행파일·자료폴더는 Git밖 .runtime에 연결된다.
+발표용 server는 resilient-transcriber.cjs로 local을 기본 선택한다. local-transcriber.cjs가 별도Python작업자 local-stt-worker.py를 띄운다. 기존 Whisper small 모델을 공용 GPU 줄이 비어 있으면 GPU float16, 아니면 CPU int8로 실행하며(2026-11-19부터, 쓴 장치는 ready와 요청 settings에 남는다) 모델 파일 지문과 실제 오디오 지문을 검증한다. 자체 패키지 venv에 faster-whisper1.2.1·CTranslate2 4.8.2·PyAV18.1.0을 공식PyPI에서 설치했다. 기존 모델은 새로 내려받지 않았다. 모델 위치·실행파일·자료폴더는 Git밖 .runtime에 연결된다.
 
 작업자는 local_files_only와 offline 설정을 사용하고 외부 소켓 연결을 비활성화한다. 실제 원음 바이트로 추론하며 정답 원고·문항·교정문을 받지 않는다. 기계 단일 전사는 사람 확인이나 후보 범위 완결로 승격되지 않는다. 두 자체 합성 음성의 전사가 성공했고 외부 통신 시도는0회였다. 실제 Chrome의 MediaRecorder WebM도 로컬 인식에 성공했다.
 

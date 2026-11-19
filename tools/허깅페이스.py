@@ -22,7 +22,8 @@
   허깅페이스 먼저 · 남은 것만 로컬(결과가 같은 일 — 11-02 유호님 「가능한것들은 전부 먼저 허깅페이스 gpu 먼저」):
   python -X utf8 tools/허깅페이스.py 목소리떼기 <출력폴더> <입력…> --남에게보내도됨 [--로컬만] [--cpu]
          → <이름>_목소리.wav · <이름>_바탕.wav(로컬 Demucs 목소리떼기.py와 같은 이름), 엔진은 떼기기록.json
-  python -X utf8 tools/허깅페이스.py 받아쓰기 <파일…> --남에게보내도됨 [--로컬만] [--언어 ko] [--json]
+  python -X utf8 tools/허깅페이스.py 받아쓰기 <파일…> --남에게보내도됨 [--로컬만] [--언어 ko] [--cpu] [--json]
+         (로컬은 공용 GPU 줄이 비었으면 잠금을 잡고 GPU, 아니면 기다리지 않고 CPU — tools/lib/받아쓰기장치.py)
   python -X utf8 tools/허깅페이스.py 블렌더렌더 <packed.blend> <출력폴더> --프레임 1-48 --남에게보내도됨
          [--가로 1280 --세로 720 --샘플 64 --장당초 20 --묶음 4] [--허깅페이스최대 N] [--로컬만] [--cpu]
          → frame_000001.png …(Space와 로컬이 같은 설정 · 같은 이름), 엔진은 렌더기록.json. 몫이 모자랄 게 보이면 앞은 Space, 뒤는 로컬 동시에
@@ -472,24 +473,38 @@ def 목소리떼기(출력폴더, 입력들: list, 로컬만=False, cpu=False, �
     return {'결과': 해냄, '로컬로간까닭': 까닭 if 남음 else '', '코드': 코드}
 
 
-def _로컬받아쓰기(파일들: list, 언어: str | None, 모델: str = 'large-v3') -> list:
-    """faster-whisper CPU int8(이 PC는 CUDA 12 dll이 없어 GPU로 못 돈다 — 현장노트 영상) · 이 프로세스를 낮은 우선순위로."""
+def _받아쓰기장치():
+    """tools/lib/받아쓰기장치.py — faster-whisper를 GPU 먼저(공용 GPU 줄이 비었을 때), 안 되면 CPU로 연다."""
+    if '받아쓰기장치' not in sys.modules:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('받아쓰기장치', str(여기 / 'lib' / '받아쓰기장치.py'))
+        모듈 = importlib.util.module_from_spec(spec)
+        sys.modules['받아쓰기장치'] = 모듈
+        spec.loader.exec_module(모듈)
+    return sys.modules['받아쓰기장치']
+
+
+def _로컬받아쓰기(파일들: list, 언어: str | None, 모델: str = 'large-v3', cpu: bool = False) -> list:
+    """faster-whisper GPU float16(공용 GPU 줄이 비었을 때) 또는 CPU int8 · 이 프로세스를 낮은 우선순위로."""
     if sys.platform == 'win32':
         import ctypes
         ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x40)   # IDLE_PRIORITY_CLASS
-    from faster_whisper import WhisperModel
-    m = WhisperModel(모델, device='cpu', compute_type='int8')
+    장치 = _받아쓰기장치()
+    m, 쓴장치 = 장치.모델열기(모델, cpu=cpu, 상한분=30 + 2 * len(파일들))   # CPU가 꽉 차면 large-v3 불러오기만 4분 넘게 걸린다
     out = []
-    for f in 파일들:
-        시작 = time.time()
-        조각, _ = m.transcribe(str(f), language=언어, beam_size=5)
-        out.append({'파일': str(f), '글': ' '.join(s.text.strip() for s in 조각).strip(),
-                    '엔진': f'로컬 faster-whisper {모델} CPU', '왕복초': round(time.time() - 시작, 1)})
+    try:
+        for f in 파일들:
+            시작 = time.time()
+            조각, _ = m.transcribe(str(f), language=언어, beam_size=5)
+            out.append({'파일': str(f), '글': ' '.join(s.text.strip() for s in 조각).strip(),
+                        '엔진': f'로컬 faster-whisper {모델} {쓴장치}', '왕복초': round(time.time() - 시작, 1)})
+    finally:
+        장치.놓기()
     return out
 
 
-def 받아쓰기(파일들: list, 로컬만=False, 남에게보내도됨=False, 언어: str | None = None, 메모='') -> dict:
-    """허깅페이스 whisper-large-v3 먼저, 남은 것만 로컬 faster-whisper large-v3. 글만(낱말 시각 없음)."""
+def 받아쓰기(파일들: list, 로컬만=False, 남에게보내도됨=False, 언어: str | None = None, 메모='', cpu=False) -> dict:
+    """허깅페이스 whisper-large-v3 먼저, 남은 것만 로컬 faster-whisper large-v3(GPU 먼저 · cpu면 CPU). 글만(낱말 시각 없음)."""
     import tempfile
     for x in 파일들:
         if not Path(x).is_file():
@@ -507,7 +522,7 @@ def 받아쓰기(파일들: list, 로컬만=False, 남에게보내도됨=False, 
     해냄, 남음, 까닭 = _허깅페이스먼저(파일들, 한개, 로컬만, 남에게보내도됨, '받아쓰기')
     if 남음:
         print(f'로컬 받아쓰기로 {len(남음)}개 — {까닭 or "허깅페이스 실패"}', file=sys.stderr)
-        해냄 += _로컬받아쓰기(남음, 언어)
+        해냄 += _로컬받아쓰기(남음, 언어, cpu=cpu)
     차례 = {str(x): i for i, x in enumerate(파일들)}
     return {'결과': sorted(해냄, key=lambda x: 차례[x['파일']]), '로컬로간까닭': 까닭 if 남음 else ''}
 
@@ -730,7 +745,7 @@ def _명령_목소리떼기(a) -> int:
 
 
 def _명령_받아쓰기(a) -> int:
-    out = 받아쓰기(a.파일, a.로컬만, a.남에게보내도됨, a.언어, a.메모)
+    out = 받아쓰기(a.파일, a.로컬만, a.남에게보내도됨, a.언어, a.메모, a.cpu)
     if a.json:
         print(json.dumps(out, ensure_ascii=False))
     else:
@@ -812,6 +827,7 @@ def main(argv=None) -> int:
     s.add_argument('--로컬만', action='store_true')
     s.add_argument('--남에게보내도됨', action='store_true', help='얼굴 · 고객 · 학생 자료가 아니라는 확인(없으면 모두 로컬)')
     s.add_argument('--언어', help='로컬로 갈 때 언어(ko 등, 없으면 알아서)')
+    s.add_argument('--cpu', action='store_true', help='로컬로 갈 때 GPU를 보지 않고 CPU로')
     s.add_argument('--메모', default='')
     s.add_argument('--json', action='store_true')
     s.set_defaults(fn=_명령_받아쓰기)

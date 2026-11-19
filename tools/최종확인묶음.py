@@ -435,15 +435,24 @@ def step_stt():
         say('받아쓰기 건너뜀')
         return
     os.environ['HF_HUB_OFFLINE'] = '1'
-    from faster_whisper import WhisperModel
-    m = WhisperModel('large-v3-turbo', device='cpu', compute_type='int8')
-    segs, _ = m.transcribe(wav, language='ko', word_timestamps=False, vad_filter=False, beam_size=5, condition_on_previous_text=False)
-    with open(os.path.join(OUT, 'stt.txt'), 'w', encoding='utf-8') as f:
-        for s in segs:
-            line = f'{s.start:6.2f}-{s.end:6.2f}  {s.text.strip()}'
-            info['받아쓰기'].append(f'{s.start:.2f}-{s.end:.2f} {s.text.strip()}')
-            info['받아쓰기줄'].append({'초': round(s.start, 2), '끝초': round(s.end, 2), '글': s.text.strip()})
-            f.write(line + '\n')
+    if '받아쓰기장치' not in sys.modules:   # tools/lib/받아쓰기장치.py — 공용 GPU 줄이 비었으면 GPU, 아니면 CPU로 연다
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('받아쓰기장치', os.path.join(HERE, 'lib', '받아쓰기장치.py'))
+        sys.modules['받아쓰기장치'] = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sys.modules['받아쓰기장치'])
+    장치 = sys.modules['받아쓰기장치']
+    m, _ = 장치.모델열기('large-v3-turbo')
+    try:
+        segs, _ = m.transcribe(wav, language='ko', word_timestamps=False, vad_filter=False, beam_size=5, condition_on_previous_text=False)
+        with open(os.path.join(OUT, 'stt.txt'), 'w', encoding='utf-8') as f:
+            for s in segs:
+                line = f'{s.start:6.2f}-{s.end:6.2f}  {s.text.strip()}'
+                info['받아쓰기'].append(f'{s.start:.2f}-{s.end:.2f} {s.text.strip()}')
+                info['받아쓰기줄'].append({'초': round(s.start, 2), '끝초': round(s.end, 2), '글': s.text.strip()})
+                f.write(line + '\n')
+    finally:
+        m = None
+        장치.놓기()
     say(f'받아쓰기 {len(info["받아쓰기"])}줄 → stt.txt')
 
 

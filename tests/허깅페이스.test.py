@@ -260,7 +260,7 @@ class 허깅페이스먼저시험(바탕):
             patch.object(hf, '_소리맞추기', lambda 입력, 출력, *a: Path(출력).write_bytes(Path(입력).read_bytes())),
             patch.object(hf, '_줄서서돌리기', lambda 이름, 할일, 상한, 명령: self.로컬명령.append(('줄', 명령)) or 0),
             patch.object(hf, '_낮게돌리기', lambda 명령: self.로컬명령.append(('cpu', 명령)) or 0),
-            patch.object(hf, '_로컬받아쓰기', lambda 파일들, 언어, 모델='large-v3': [
+            patch.object(hf, '_로컬받아쓰기', lambda 파일들, 언어, 모델='large-v3', cpu=False: [
                 {'파일': str(f), '글': '로컬 글', '엔진': '로컬', '왕복초': 1.0} for f in 파일들]),
         ]
         for p in self.patches2:

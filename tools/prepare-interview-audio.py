@@ -103,10 +103,13 @@ def load_prompts() -> list[dict]:
 
 
 def verify_audio(output_dir: Path, asr_model: Path, only: str | None = None) -> None:
-    """Check known scripted speech with an existing model, never download an ASR model."""
-    from faster_whisper import WhisperModel
-    model = WhisperModel(str(asr_model.resolve()), device="cpu", compute_type="int8",
-                         cpu_threads=4, local_files_only=True)
+    """Check known scripted speech with an existing model, never download an ASR model.
+    The GPU is used first when the shared GPU queue is idle, otherwise the CPU (tools/lib/받아쓰기장치.py)."""
+    spec = importlib.util.spec_from_file_location("받아쓰기장치", ROOT / "tools/lib/받아쓰기장치.py")
+    device_helper = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(device_helper)
+    model, device = device_helper.모델열기(str(asr_model.resolve()), cpu_threads=4, local_files_only=True)
+    engine = f"faster-whisper local {device} {device_helper.계산형[device]}"
     manifest_path = output_dir / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     clean = lambda text: re.sub(r"[^가-힣a-z0-9]", "", text.lower())
@@ -117,9 +120,10 @@ def verify_audio(output_dir: Path, asr_model: Path, only: str | None = None) -> 
                                        beam_size=5, vad_filter=False, condition_on_previous_text=False)
         transcript = " ".join(segment.text.strip() for segment in segments)
         similarity = difflib.SequenceMatcher(None, clean(clip["text"]), clean(transcript)).ratio()
-        clip["asrCheck"] = {"engine": "faster-whisper local CPU int8", "transcript": transcript,
+        clip["asrCheck"] = {"engine": engine, "transcript": transcript,
                             "normalizedTextSimilarity": round(similarity, 4), "humanListeningVerified": False}
         print(f"ASR {clip['id']}: {similarity:.4f} {transcript}", flush=True)
+    device_helper.놓기()
     complete = all(clip.get("asrCheck") for clip in manifest["clips"])
     manifest["reviewStatus"] = ("Local ASR comparison complete; human listening and headset playback review required"
                                 if complete else "Partial local ASR comparison; human listening review required")

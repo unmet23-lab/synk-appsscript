@@ -44,9 +44,21 @@ try:
             for chunk in iter(lambda: stream.read(1024 * 1024), b""):
                 digest.update(chunk)
         model_files.append({"name": name, "bytes": os.path.getsize(file_path), "sha256": digest.hexdigest()})
-    model = WhisperModel(model_path, device="cpu", compute_type="int8",
-                         cpu_threads=6, num_workers=1, local_files_only=True)
+    # GPU first when the shared GPU queue is idle, otherwise CPU int8 (tools/lib/받아쓰기장치.py).
+    # This worker stays alive, so it only checks the queue and never holds the queue lock.
+    helper_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib", "받아쓰기장치.py")
+    if os.path.isfile(helper_path):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("받아쓰기장치", helper_path)
+        device_helper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(device_helper)
+        model, device = device_helper.모델열기(model_path, 차례잡기=False,
+                                            cpu_threads=6, num_workers=1, local_files_only=True)
+    else:
+        model, device = WhisperModel(model_path, device="cpu", compute_type="int8",
+                                     cpu_threads=6, num_workers=1, local_files_only=True), "CPU"
     emit({"type": "ready", "loadMs": round((time.monotonic()-started)*1000, 2),
+          "device": "cuda" if device == "GPU" else "cpu", "computeType": "float16" if device == "GPU" else "int8",
           "engine": "faster-whisper", "version": faster_whisper.__version__,
           "ctranslate2": ctranslate2.__version__, "python": sys.version.split()[0],
           "networkAttempts": network_attempts, "modelFiles": model_files})
