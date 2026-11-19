@@ -802,10 +802,23 @@ test('옛 동기화의 다시 세기(unsent)는 새 길의 올리는 문만 부�
     new RegExp(String.raw`(?<![\w$])unsent\s*:\s*\(\)\s*=>\s*\{\s*check\d*\(\)\s*;\s*return\s+${handOff}\s*;?\s*\}`, 'g'),
     new RegExp(String.raw`(?<![\w$])unsent\s*:\s*\(\)\s*=>\s*\(\s*check\d*\(\)\s*,\s*${handOff}\s*\)`, 'g'),
   ];
-  const unsentCalls = text =>
-    handOffs.reduce((rest, form) => rest.replace(form, ''), text).match(/[\w$)\]]+\??\.unsent\??\.?\(/g) ?? [];
+  const unsentCalls = (text, exempt = true) =>
+    (exempt ? handOffs.reduce((rest, form) => rest.replace(form, ''), text) : text).match(/[\w$)\]]+\??\.unsent\??\.?\(/g) ?? [];
+  const handOffCount = text => handOffs.reduce((count, form) => count + (text.match(form) ?? []).length, 0);
+  // 넘겨주기가 있어도 되는 곳 — 옛 학습 호스트와 그 생성 사본 · 묶음이고, 파일마다 한 번이다. 다른 파일이나 같은 파일의 둘째 넘겨주기는 빼지
+  // 않고 센다(입구 다시 검수 -b GPT GA6 — 속성 본문 꼴만 보고 빼면 다른 곳에 같은 꼴로 위임을 더해도 세지 않았다).
+  const HANDOFF_FILES = [
+    'account/world-learning-host.js',
+    'experiences/drama/pilot/atlas-learning.js',
+    'experiences/synk-account/dist/client.js',
+    'experiences/synk-account/dist/local-world.js',
+    'experiences/synk-account/dist/preview.js',
+    'experiences/synk-account/src/generated/world-learning-host.cjs',
+    'experiences/synk-world-app/world-account.bundle.mjs',
+  ];
   const passing = "unsent: () => { check(); return typeof sync?.unsent === 'function' ? sync.unsent() : null; },";
   assert.deepEqual(unsentCalls(passing), [], '넘겨주기 식은 부름으로 세지 않는다');
+  assert.deepEqual(unsentCalls(passing, false), ['sync.unsent('], '알려진 파일 밖의 넘겨주기는 부름으로 센다(입구 다시 검수 -b GPT GA6)');
   assert.deepEqual(unsentCalls('unsent:()=>{check();return typeof sync2?.unsent==="function"?sync2.unsent():null}'), [], '묶음의 꼴도 같다');
   assert.deepEqual(unsentCalls('unsent:()=>(check2(),typeof sync?.unsent=="function"?sync.unsent():null),'), [], '괄호와 쉼표 꼴의 묶음도 같다');
   assert.deepEqual(
@@ -825,6 +838,7 @@ test('옛 동기화의 다시 세기(unsent)는 새 길의 올리는 문만 부�
   );
   const callers = [];
   const doorImporters = [];
+  const handOffAt = [];
   for (const name of shipped) {
     let text;
     try {
@@ -834,8 +848,15 @@ test('옛 동기화의 다시 세기(unsent)는 새 길의 올리는 문만 부�
     }
     if (text.includes('world-old-engine-doors') && /(from|import\()\s*['"][^'"]*world-old-engine-doors\.mjs['"]/.test(text)) doorImporters.push(name);
     if (!text.includes('unsent')) continue;
-    for (const call of unsentCalls(text)) callers.push(`${name} · ${call}`);
+    const found = handOffCount(text);
+    if (found) handOffAt.push(`${name} · ${found}`);
+    for (const call of unsentCalls(text, found === 1 && HANDOFF_FILES.includes(name))) callers.push(`${name} · ${call}`);
   }
+  assert.deepEqual(
+    handOffAt.sort(),
+    HANDOFF_FILES.map(name => `${name} · 1`).sort(),
+    '넘겨주기는 옛 학습 호스트와 그 사본 · 묶음에 한 번씩만 있다(입구 다시 검수 -b GPT GA6)',
+  );
   assert.deepEqual(callers, ['experiences/synk-world-app/world-old-engine-doors.mjs · owner.unsent?.('], '옛 동기화의 셈을 부르는 곳은 올리는 문뿐이다');
   assert.deepEqual(doorImporters, ['experiences/synk-world-app/world-atlas-next.mjs'], '올리는 문은 새 길 입구만 들인다');
   const shell = readFileSync(new URL('experiences/synk-world-app/app-shell.mjs', root), 'utf8');

@@ -1220,6 +1220,14 @@ export function createAtlasNext({
       await settleClearing(plan, at, seen);
       if (disposed) return null;
       if (at !== generation) continue;
+      // 이 기기가 이미 따라 한 비우기(settled)보다 앞선 판이면 이 판의 코치를 열지 않고 다시 정한다. 늦게 온 계정 읽기(입구 다시 검수 GPT GA2 ·
+      // GB3), 판 견줌을 기다리는 사이 다른 탭이 따라 한 비우기, 이 세대의 판 견줌을 다시 쓰는 열기(-b GPT GA5 · GA8)가 앞 판 코치를 열었다.
+      // 「새 길 간 적 있음」은 쓰지 않는다 — 늦게 온 판의 길로 쓰면 그사이 기기 길로 비운 판의 길을 덮었다(-b GPT GA1). 표지는 몫을 마친 쪽이
+      // 이미 그 판으로 적었고, 계정을 못 읽은 채 연 판은 그 표지의 판이라 여기 걸리지 않는다.
+      if (account && NEXT_PATHS.has(plan.path) && plan.revision < clearedOf(store, owner).settled) {
+        retire('cleared');
+        continue;
+      }
       return { plan, at };
     }
     return null;
@@ -1363,14 +1371,6 @@ export function createAtlasNext({
           await guestSteps(plan, at, whose, mark).catch(() => {});
         }
       })();
-      return;
-    }
-    // 이 기기가 이미 따라 한 비우기(settled)보다 앞선 판 — 늦게 온 계정 읽기다. 그 판의 코치를 열지 않고 다시 정한다(GC3와 같다 — 입구 다시
-    // 검수 GPT GA2 · GB3). 「새 길 간 적 있음」은 settled보다 늘 크거나 같아, 계정을 못 읽은 채 연 판은 여기 걸리지 않는다.
-    const settledAt = clearedOf(store, owner).settled;
-    if (plan.revision < settledAt) {
-      writeMark(store, owner, { went: true, path: plan.path, revision: settledAt });
-      retire('cleared');
       return;
     }
     // 판 견줌 — 계정 판이 마지막으로 물은 판(asked)보다 올랐을 때만 마지막 비우기를 읽는다(계정을 못 읽은 채 연 판은 묻지 않는다). 비우기는
@@ -1574,21 +1574,23 @@ export function createAtlasNext({
     const marked = settleLeft(path, revision, rest);
     // 이 판까지 몫을 마쳤으면 두 수를 올린다 — 다음 다시 정하기는 이 판에서 마지막 비우기를 다시 묻지 않는다. 남은 걸음 표지나 본인 값을 못
     // 적었으면 올리지 않고 「일부만 비움」으로 알린다 — 다음 다시 정하기가 마지막 비우기를 다시 읽어 몫을 다시 한다(입구 다시 검수 GPT GB2 · GB5).
-    const whole = marked && done.moved;
-    if (whole) raiseCleared(store, owner, { settled: revision, asked: revision });
-    return afterClear(path, revision, rest, !whole);
+    if (marked && done.moved) raiseCleared(store, owner, { settled: revision, asked: revision });
+    return afterClear(path, revision, rest);
   }
   // 비운 뒤의 끝 — 이 문서의 코치를 은퇴시킨다(새 판으로 다시 연다). 이 비우기의 걸음이 남았으면(rest) 곧바로 다시 정해 새 판의 코치로
   // 마저 한다 — 그사이 다른 탭이 적은 더 새 비우기의 걸음은 그 탭이 한다(GC2). 남은 걸음이 있으면 「일부만 비움」이다(다음 다시 정하기가
   // 또 한다).
-  async function afterClear(path, revision, rest, unfinished = false) {
+  async function afterClear(path, revision, rest) {
     retire('cleared');
     if (rest && !disposed) {
       await planNow();
       // 판 정하기는 손님 저장소의 걸음을 기다리지 않지만, 누른 비우기는 「일부만 비움」인지 알리려고 그 걸음을 한 번 기다린다(F7).
       await settling?.guest;
     }
-    return { ok: true, path, revision, partial: unfinished || leftFor(revision) };
+    // 끝낼 때의 상태로 정한다 — 남은 걸음이 있거나 이 기기의 몫을 마친 판(settled)이 이 비우기에 이르지 못했으면(표지 · 본인 값을 못 적음)
+    // 「일부만 비움」이다. 같은 요청 안의 다시 정하기가 몫을 마쳤으면 일부가 아니고, 마지막 비우기로 맞춘 길에서 표지를 못 적었으면 일부다
+    // (입구 다시 검수 -b GPT GA2 · GA7).
+    return { ok: true, path, revision, partial: leftFor(revision) || clearedOf(store, owner).settled < revision };
   }
   let clearing = null; // 지금 도는 비우기 — 겹쳐 누르면 같은 약속을 준다
 

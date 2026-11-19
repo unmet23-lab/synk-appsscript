@@ -845,7 +845,11 @@ export function createRecord({
       const round = state.readRound;
       const rows = await port.range(state.readKey);
       if (round !== state.readRound) continue;
+      // 그사이 같은 차례의 다른 꼬리 읽기가 받은 데(seen)까지는 다시 받지 않는다 — 늦게 온 앞 수신 표지가 시계를 앞 차이로 되돌렸다(입구
+      // 다시 검수 -b GPT GA3). 받는 동안은 기다리지 않으니 이 사이에 다른 읽기가 끼지 않는다.
+      const seen = state.readKey;
       for (const row of rows) {
+        if (row.key <= seen) continue;
         accept(row);
         state.readKey = Math.max(state.readKey, row.key);
       }

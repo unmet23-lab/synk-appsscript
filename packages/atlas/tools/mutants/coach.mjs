@@ -1962,8 +1962,8 @@ export const COACH_MUTANTS = [
     '받기 알림(4-4c watch)',
     '꼬리를 읽을 때도 다른 탭에 알린다 — 받는 탭이 되알려 두 탭이 서로 끝없이 알린다(받기 알림 설계 검토 D2 · 설계 주인 조건 3)',
     'src/record/log.mjs',
-    '      for (const row of rows) {\n        accept(row);\n        state.readKey = Math.max(state.readKey, row.key);\n      }\n      return;\n',
-    '      for (const row of rows) {\n        accept(row);\n        state.readKey = Math.max(state.readKey, row.key);\n      }\n      announceSaved();\n      return;\n',
+    '        accept(row);\n        state.readKey = Math.max(state.readKey, row.key);\n      }\n      return;\n',
+    '        accept(row);\n        state.readKey = Math.max(state.readKey, row.key);\n      }\n      announceSaved();\n      return;\n',
   ],
   // ── 4-4c 둘째 묶음(단계4_계획 §21-22) ──
   [

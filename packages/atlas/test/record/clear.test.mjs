@@ -926,3 +926,43 @@ test('꼬리 읽기가 세 번 거듭 다시 읽기에 밀리면 통째로 다�
     '세 번 밀린 뒤 통째로 다시 읽어 다른 탭의 새 사건을 든다',
   );
 });
+
+test('같은 읽기 차례의 꼬리 읽기가 늦게 와도 이미 받은 기록을 다시 받지 않는다 — 늦게 온 앞 수신 표지가 시계를 앞 차이로 되돌리지 않는다(입구 다시 검수 -b GPT GA3)', {
+  timeout: 5000,
+}, async () => {
+  const port = memoryPort();
+  let hold = null;
+  const slow = {
+    ...port,
+    async range(...args) {
+      const rows = await port.range(...args); // 붙들기 전에 읽는다 — 늦게 오는 꼬리는 그때의 행을 든다
+      if (hold) {
+        const wait = hold;
+        hold = null;
+        await wait;
+      }
+      return rows;
+    },
+  };
+  const open = at =>
+    openRecord({ port: at, revision: 1, memory, params: PARAMS, index, now: () => T0 });
+  const late = await open(slow);
+  const other = await open(port);
+  const base = { edition: other.edition(), lines: [], full: true, issued: [] };
+  await other.receive({ summary: { ...base, lineSeq: 1, foldedUntil: 1 }, serverTime: T0 + 1000 }); // 차이 1000의 받은 답
+  let release;
+  hold = new Promise(resolve => {
+    release = resolve;
+  });
+  const stale = late.refresh(); // 차이 1000의 받은 답을 든 꼬리가 늦게 온다
+  await late.refresh(); // 같은 차례의 다른 꼬리 읽기가 먼저 받는다
+  await other.receive({ summary: { ...base, lineSeq: 2, foldedUntil: 2 }, serverTime: T0 + 3000 }); // 새 답 — 차이 3000
+  await late.refresh();
+  assert.ok(Math.abs(late.clock.offsetMs - 3000) < 50, '새 답의 차이를 받았다');
+  release();
+  await stale;
+  assert.ok(
+    Math.abs(late.clock.offsetMs - 3000) < 50,
+    '늦게 온 꼬리가 앞 차이(1000)로 되돌리지 않는다',
+  );
+});
