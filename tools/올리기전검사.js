@@ -59,6 +59,10 @@
  *      (쓸 말 여러 개(N마디) · 한 가지)이 없거나, 「누구에게」에 「보낼 사람」과 「저장할 까닭」이 없으면 고칠 것. 쓸 말 여러 개 편의 첫 2초에
  *      숫자가 없음 · 근거에 공유율과 저장율이 없음 · 한 가지 편을 21:00에 둠(그 주 꼴별 수를 보인다)은 확인할 것. 규칙은 LAB 장부 머리말
  *      「몽골 편 고르기」 — 11-18 유호님 「잘된편들 모아서 왜 잘됬는지 분석해서 다음편부터 적용해서」
+ *   ㉒ 맞는 말 · 틀린 말 색(11-19, tools/lib/맞음틀림관문.js) — LAB 편(편 폴더 날짜 11-20부터, 노래 · 퀴즈 틀은 뺌)의 기획.md에 「맞음틀림」 칸이 없거나
+ *      값이 「없음」 · 「있음」으로 시작하지 않으면, 「있음」인데 화면 코드(remotion/src, 주석 뺌)에 맞는 말 초록 · 틀린 말 빨강 두 색이 다 없으면 고칠 것.
+ *      「없음」인데 화면에 틀림 표시(✗ 글자 · mark 값 ng)가 있거나, 화면 코드가 없거나 못 읽어 색을 못 봤으면 확인할 것. 규칙은 제작 절차 「맞는 말 · 틀린 말」 —
+ *      11-19 유호님 「맞았을때 표현이랑 틀렸을때 표현이랑 글씨 색이 똑같아서 외국인 입장에서 보면 많이 헷갈리거든」
  *
  * 「고칠 것」은 올리기 전에 꼭 고칠 것(서버·API가 거절하거나 기준을 어김), 「확인할 것」은 기계가 확신하지 못해 눈으로 볼 것이다.
  * 결과는 그 편 게시/준비.json의 「검사」 칸에 남긴다(--저장안함이면 안 남김). 영상마다 크기·수정 시각·SHA-256을 같이 적어 두어,
@@ -82,6 +86,7 @@ const { aestheticFindings, AESTHETIC_FROM } = require('./lib/미학관문.js');
 const { musicLayerFindings } = require('./lib/음악층관문.js');
 const { finalCutFindings } = require('./lib/최종본관문.js');
 const { mnPickFindings } = require('./lib/몽골고르기관문.js');
+const { rightWrongFindings } = require('./lib/맞음틀림관문.js');
 const T = require('./lib/계정시간.js');
 const 돌림표 = require('./돌림표.js');
 const 장부 = require('./게시장부.js');
@@ -1117,6 +1122,7 @@ async function run(dir, opts = {}) {
   findings.push(...rotationFindings(bundle, plates));
   findings.push(...closedFindings(bundle, plates, { posted }));
   findings.push(...mnPickFindings(bundle, plates));
+  findings.push(...rightWrongFindings(bundle));
   // 그림 검사 기록(11-11 Fable 5.2 끝 판 검수 P2-11) — 게시/그림검사.json이 있는 편만 본다: 「다시 굽기」로 나온 그림을 판단 없이 썼거나, 검사 뒤 그림이
   // 바뀌었거나, 답이 빠진 기록이면 확인할 것으로 보인다(막지는 않는다 — 결과가 문서에만 있고 도구 · 관문이 모르던 것을 보이게 한다).
   try {

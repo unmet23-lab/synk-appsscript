@@ -17,6 +17,9 @@ export { FPS };
 
 const INK = '#2B2522';
 const CORAL = '#E8503D';
+// 맞는 말 · 틀린 말 색(11-19 유호님 「맞았을때 표현이랑 틀렸을때 표현이랑 글씨 색이 똑같아서 … 헷갈리거든」) — 맞는 말은 초록 + ✓, 틀린 말은 빨강 + ✗. 색만으로 가르지 않는다(제작 절차 「맞는 말 · 틀린 말」)
+const OK = '#0A9A66';
+const NG = '#D92D20';
 const MEAN = '#B23A26'; // 뜻 줄 — 흰 말풍선 위 진한 산호
 const BUBBLE_TOP = 995; // v7: 말풍선 위 끝(px) — 계산대 앞판 위쪽
 const TAIL_TIP: [number, number] = [770, 965]; // 꼬리 끝 — 계산대 위 몽글 자리
@@ -53,6 +56,9 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
   // 칸이 바뀔 때 말풍선만 4프레임 살짝 튀어나온다(그림은 바로 바뀜)
   const p = c.cont ? 1 : interpolate(frame, [fr(c.at), fr(c.at) + 4], [0.9, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
   const enFont = L.font;
+  // 귀퉁이 도장 — 배울 세 낱말(단계 1~3)은 ✓, 사장님께 반말(단계 0)은 ✗. 말풍선이 뜬 0.35초 뒤에 찍힌다
+  const stamp: 'ok' | 'ng' | undefined = c.zero ? 'ng' : c.level && c.level <= 3 ? 'ok' : undefined;
+  const sq = interpolate(frame, [fr(c.at) + 10, fr(c.at) + 15], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.8)) });
   // 목소리 박자대로 밝아지는 줄 — v5부터 줄 전체가 처음부터 흐리게 보이고, 말한 낱말만 진해진다(3.2초 동안 끝 낱말까지 읽히게)
   const koLine = c.words ? (
     <div style={{ fontFamily: KO, fontWeight: 800, fontSize: c.koSize, color: INK, lineHeight: 1.16 }}>
@@ -61,14 +67,14 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
         const at = fr(c.voAt + t);
         const q = interpolate(frame, [at, at + 3], [0, 1], clamp);
         return (
-          <span key={k} style={{ display: 'inline-block', opacity: 0.32 + 0.68 * q, transform: `scale(${1 + 0.06 * q * (1 - q) * 4})`, color: hot && q > 0.5 ? CORAL : INK, marginRight: 18 }}>
+          <span key={k} style={{ display: 'inline-block', opacity: 0.32 + 0.68 * q, transform: `scale(${1 + 0.06 * q * (1 - q) * 4})`, color: hot && q > 0.5 ? OK : INK, marginRight: 18 }}>
             {w}
           </span>
         );
       })}
     </div>
   ) : (
-    <div style={{ fontFamily: KO, fontWeight: 800, fontSize: c.koSize, color: INK, lineHeight: 1.16, whiteSpace: 'pre-line' }}>{c.ko}</div>
+    <div style={{ fontFamily: KO, fontWeight: 800, fontSize: c.koSize, color: c.zero ? NG : c.level && c.level <= 3 ? OK : INK, lineHeight: 1.16, whiteSpace: 'pre-line' }}>{c.ko}</div>
   );
   return (
     <>
@@ -77,6 +83,7 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
         <div
           style={{
             display: 'inline-block',
+            position: 'relative',
             minWidth: 520,
             maxWidth: 760,
             textAlign: 'center',
@@ -89,16 +96,26 @@ const Bubble: React.FC<{ i: number; L: LocPack }> = ({ i, L }) => {
             transformOrigin: '60% 0%',
           }}
         >
+          {stamp ? (
+            <div style={{ position: 'absolute', left: -46, top: -42, width: 100, height: 100, borderRadius: 999, background: stamp === 'ng' ? NG : OK, border: '7px solid #FFFDF7', boxShadow: '0 6px 14px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: sq, transform: `scale(${0.6 + 0.4 * sq}) rotate(${stamp === 'ng' ? 8 : -8}deg)` }}>
+              <svg width={56} height={56} viewBox="0 0 58 58">
+                {stamp === 'ng' ? <path d="M12 12 L46 46 M46 12 L12 46" stroke="#fff" strokeWidth={10} strokeLinecap="round" fill="none" /> : <path d="M9 31 L23 45 L49 14" stroke="#fff" strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" fill="none" />}
+              </svg>
+            </div>
+          ) : null}
           {c.zero ? (
             <div style={{ marginBottom: 4 }}>
-              <span style={{ display: 'inline-block', background: INK, color: '#fff', fontFamily: enFont, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
-                {levelText(L, 0)} ❌
+              <span style={{ display: 'inline-block', background: NG, color: '#fff', fontFamily: enFont, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
+                {levelText(L, 0)}
+                <svg width={30} height={30} viewBox="0 0 30 30" style={{ marginLeft: 12, verticalAlign: -3 }}>
+                  <path d="M4 4 L26 26 M26 4 L4 26" stroke="#fff" strokeWidth={6} strokeLinecap="round" fill="none" />
+                </svg>
               </span>
             </div>
           ) : null}
           {c.level ? (
             <div style={{ marginBottom: 4 }}>
-              <span style={{ display: 'inline-block', background: CORAL, color: '#fff', fontFamily: enFont, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
+              <span style={{ display: 'inline-block', background: OK, color: '#fff', fontFamily: enFont, fontWeight: 800, fontSize: 44, lineHeight: 1, padding: '10px 24px 12px', borderRadius: 999 }}>
                 {levelText(L, c.level)}
               </span>
             </div>
@@ -146,7 +163,7 @@ const EndCard: React.FC<{ L: LocPack }> = ({ L }) => {
   return (
     <div style={{ position: 'absolute', left: 360, top: 290, maxWidth: 540, textAlign: 'left', transform: `scale(${p})`, transformOrigin: '0% 0%' }}>
       <span style={{ display: 'inline-block', background: '#FFFDF7', color: INK, border: `4px solid ${INK}`, boxShadow: '0 6px 16px rgba(0,0,0,0.3)', fontFamily: L.font, fontWeight: 800, lineHeight: Math.max(1.2, L.lineH), padding: '10px 22px 12px', borderRadius: 22, whiteSpace: 'pre-line' }}>
-        {L.endCard ? <span style={{ display: 'block', fontSize: L.endSize, color: CORAL }}>{L.endCard}</span> : null}
+        {L.endCard ? <span style={{ display: 'block', fontSize: L.endSize, color: OK }}>{L.endCard}</span> : null}
         {L.ask ? <span style={{ display: 'block', fontSize: L.askSize, color: '#4F3F33', marginTop: L.endCard ? 6 : 0 }}>{L.ask}</span> : null}
       </span>
     </div>

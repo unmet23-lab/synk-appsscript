@@ -9,6 +9,11 @@ import { fr, T } from './timeline';
 import { LocPack } from './판본';
 
 const C = { coral: '#F96859', coralShade: '#AE322A', brown: '#2B1A14', cream: '#FFFDF8' };
+// 맞는 말 · 틀린 말 색(11-19 유호님 「맞았을때 표현이랑 틀렸을때 표현이랑 글씨 색이 똑같아서 … 헷갈리거든」) — 맞는 말은 초록 + ✓, 틀린 말은 빨강 + ✗. 색만으로 가르지 않는다(제작 절차 「맞는 말 · 틀린 말」)
+const OK = '#0A9A66';
+const NG = '#D92D20';
+type Mark = 'ok' | 'ng';
+const toneOf = (mark?: Mark) => (mark === 'ok' ? OK : mark === 'ng' ? NG : C.coralShade);
 const MN = "'Inter Tight', 'SUIT', sans-serif";
 const KO = "'SUIT', 'Inter Tight', sans-serif";
 const MASTER = 0.8; // Remotion은 소리를 16비트로 더해 넘치면 자른다 — 모든 볼륨에 같은 값을 곱한다(현장 노트)
@@ -71,7 +76,8 @@ const Plate: React.FC = () => {
 };
 
 // 말풍선 — 그림 좌표(Plate 안에서 그림과 함께 움직인다)
-const Bubble: React.FC<{ at: [number, number]; text: string; t: number; from: number; tail: -1 | 1 }> = ({ at, text, t, from, tail }) => {
+const Bubble: React.FC<{ at: [number, number]; text: string; t: number; from: number; tail: -1 | 1; mark?: Mark }> = ({ at, text, t, from, tail, mark }) => {
+  const tone = toneOf(mark);
   const a = interpolate(t, [from, from + 0.18], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2.2)) });
   if (a <= 0) return null;
   const w = text.length > 1 ? 300 : 230;
@@ -81,11 +87,19 @@ const Bubble: React.FC<{ at: [number, number]; text: string; t: number; from: nu
   return (
     <div style={{ position: 'absolute', left: x - w / 2, top: y - h / 2, width: w, height: h, transform: `scale(${a})`, transformOrigin: `${50 + tail * 30}% 100%` }}>
       <svg width={w} height={h + 46} style={{ position: 'absolute', left: 0, top: 0, overflow: 'visible' }}>
-        <path d={`M ${w / 2 + tail * 10} ${h - 4} L ${w / 2 + tail * 60} ${h + 44} L ${w / 2 + tail * 62} ${h - 4} Z`} fill={C.cream} stroke={C.coralShade} strokeWidth={6} strokeLinejoin="round" />
-        <rect x={3} y={3} width={w - 6} height={h - 6} rx={60} fill={C.cream} stroke={C.coralShade} strokeWidth={6} />
+        <path d={`M ${w / 2 + tail * 10} ${h - 4} L ${w / 2 + tail * 60} ${h + 44} L ${w / 2 + tail * 62} ${h - 4} Z`} fill={C.cream} stroke={tone} strokeWidth={6} strokeLinejoin="round" />
+        <rect x={3} y={3} width={w - 6} height={h - 6} rx={60} fill={C.cream} stroke={tone} strokeWidth={6} />
         <rect x={w / 2 + tail * 10 - 4} y={h - 12} width={56} height={12} fill={C.cream} transform={tail < 0 ? `translate(${-52} 0)` : undefined} />
       </svg>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: KO, fontWeight: 800, fontSize: 92, color: C.coralShade }}>{text}</div>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: KO, fontWeight: 800, fontSize: 92, color: tone }}>{text}</div>
+      {/* ✓ 도장은 화면 가운데 쪽 귀퉁이에 — 오른쪽 말풍선의 도장이 단추 자리(오른쪽 안전선 920px 밖)로 나가지 않게(11-19 글자 검사 LK 9.5초 · 20초) */}
+      {mark === 'ok' ? (
+        <div style={{ position: 'absolute', ...(x > 540 ? { left: -24 } : { right: -24 }), top: -28, width: 78, height: 78, borderRadius: 999, background: OK, border: `6px solid ${C.cream}`, boxShadow: '0 5px 12px rgba(0,0,0,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'rotate(-8deg)' }}>
+          <svg width={44} height={44} viewBox="0 0 58 58">
+            <path d="M9 31 L23 45 L49 14" stroke="#fff" strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          </svg>
+        </div>
+      ) : null}
     </div>
   );
 };
@@ -99,7 +113,7 @@ const WrongMark: React.FC<{ at: [number, number]; t: number; from?: number; unti
   const y = at[1] * K;
   return (
     <svg width={200} height={200} style={{ position: 'absolute', left: x - 100, top: y - 100, opacity: o, transform: `scale(${a})` }}>
-      <path d="M 40 40 L 160 160 M 160 40 L 40 160" stroke="#D93A2B" strokeWidth={22} strokeLinecap="round" />
+      <path d="M 40 40 L 160 160 M 160 40 L 40 160" stroke={NG} strokeWidth={22} strokeLinecap="round" />
     </svg>
   );
 };
@@ -108,9 +122,9 @@ const Bubbles: React.FC<{ k: number; t: number }> = ({ k, t }) => {
   if (k === -1) {
     return (
       <>
-        {t >= T.reveal ? <Bubble at={KEY.boy} text="형!" t={t} from={T.boy} tail={1} /> : null}
-        {t < T.wrong ? <Bubble at={KEY.boy} text="형!" t={t} from={T.boy} tail={1} /> : null}
-        {t < T.wrong ? <Bubble at={KEY.girl} text="형!" t={t} from={T.girl} tail={-1} /> : t < T.reveal ? <Bubble at={OOPS.girl} text="형!" t={t} from={T.wrong - 1} tail={-1} /> : <Bubble at={KEY.girl} text="오빠!" t={t} from={T.reveal} tail={-1} />}
+        {t >= T.reveal ? <Bubble at={KEY.boy} text="형!" t={t} from={T.boy} tail={1} mark="ok" /> : null}
+        {t < T.wrong ? <Bubble at={KEY.boy} text="형!" t={t} from={T.boy} tail={1} mark="ok" /> : null}
+        {t < T.wrong ? <Bubble at={KEY.girl} text="형!" t={t} from={T.girl} tail={-1} mark="ng" /> : t < T.reveal ? <Bubble at={OOPS.girl} text="형!" t={t} from={T.wrong - 1} tail={-1} mark="ng" /> : <Bubble at={KEY.girl} text="오빠!" t={t} from={T.reveal} tail={-1} mark="ok" />}
         <WrongMark at={t < T.reveal ? OOPS.girl : KEY.girl} t={t} />
       </>
     );
@@ -120,12 +134,12 @@ const Bubbles: React.FC<{ k: number; t: number }> = ({ k, t }) => {
     if (k === 2) {
       return (
         <>
-          {t < T.fix2 ? <Bubble at={sc.bubble} text="언니!" t={t} from={T.scenes[2] + 0.05} tail={sc.tail} /> : <Bubble at={sc.bubble} text="누나!" t={t} from={T.fix2} tail={sc.tail} />}
+          {t < T.fix2 ? <Bubble at={sc.bubble} text="언니!" t={t} from={T.scenes[2] + 0.05} tail={sc.tail} mark="ng" /> : <Bubble at={sc.bubble} text="누나!" t={t} from={T.fix2} tail={sc.tail} mark="ok" />}
           <WrongMark at={sc.bubble} t={t} from={T.wrong2} until={T.fix2} />
         </>
       );
     }
-    return <Bubble at={sc.bubble} text={`${sc.ko}!`} t={t} from={T.scenes[k] + 0.05} tail={sc.tail} />;
+    return <Bubble at={sc.bubble} text={`${sc.ko}!`} t={t} from={T.scenes[k] + 0.05} tail={sc.tail} mark="ok" />;
   }
   return null;
 };
@@ -153,20 +167,21 @@ const BottomBand: React.FC = () => {
     const at = stage === 0 ? T.boy : stage === 1 ? T.girl : T.reveal;
     const a = fadeIn(t, at, 0.15);
     const ko = stage === 2 ? '오빠' : '형';
+    const tone = stage === 1 ? NG : OK; // 남동생의 형 · 여동생의 오빠는 맞는 말, 여동생의 형은 틀린 말
     const read = stage === 2 ? L.reads[1] : L.reads[0];
     const x = stage === 1 ? interpolate(t, [T.wrong, T.wrong + 0.15], [0, 1], clamp) : 0;
     const xs = why ? 0 : x; // 11-07 두 채널 판 v3: 띠의 낱말엔 ✗를 긋지 않는다 — ✗는 말풍선에만
     return (
       <div style={{ ...band, padding: '22px 30px 30px', transform: `translateY(${(1 - a) * 16}px)` }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 28, position: 'relative' }}>
-          <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: C.coralShade, opacity: 1 - 0.45 * xs }}>{ko}</div>
-          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 56, color: C.coralShade, opacity: 1 - 0.45 * xs }}>🔊 {read}</div>
-          {xs > 0 ? <div style={{ position: 'absolute', left: -20, top: -14, fontFamily: MN, fontWeight: 900, fontSize: 150, lineHeight: 1, color: '#D93A2B', opacity: x }}>✗</div> : null}
+          <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: tone, opacity: 1 - 0.45 * xs }}>{ko}</div>
+          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: 56, color: tone, opacity: 1 - 0.45 * xs }}>🔊 {read}</div>
+          {xs > 0 ? <div style={{ position: 'absolute', left: -20, top: -14, fontFamily: MN, fontWeight: 900, fontSize: 150, lineHeight: 1, color: NG, opacity: x }}>✗</div> : null}
         </div>
         {/* 11-07 두 채널 판 시험관 둘 「여동생의 형!이 맞는 말처럼 보임」 → 첫 「형」에 「남자가 부르는 말」 줄을 먼저 — 여동생이 형! 하는 순간 어긋남이 보인다(몽골 판은 why가 비어 그대로) */}
         {why && stage <= 1 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L.lineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: stage === 0 ? fadeIn(t, T.boy + 0.15, 0.2) : 1 }}>{L.means[0]}</div> : null}
         {stage === 2 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.revealMeanSize, lineHeight: L.meanLineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.reveal + 0.15, 0.2) }}>{L.means[1]}</div> : null}
-        {stage === 1 && why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: '#D93A2B', marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.wrong + 0.1, 0.2) }}>{L.why[0]}</div> : null}
+        {stage === 1 && why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: NG, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.wrong + 0.1, 0.2) }}>{L.why[0]}</div> : null}
       </div>
     );
   }
@@ -188,12 +203,12 @@ const BottomBand: React.FC = () => {
     return (
       <div style={{ ...band, padding: '22px 30px 30px', transform: `translateY(${(1 - a) * 16}px)` }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 28, position: 'relative' }}>
-          <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: C.coralShade, opacity: 1 - 0.45 * xs }}>언니</div>
-          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: L.readSize, color: C.coralShade, opacity: 1 - 0.45 * xs }}>🔊 {L.reads[3]}</div>
-          {xs > 0 ? <div style={{ position: 'absolute', left: -20, top: -14, fontFamily: MN, fontWeight: 900, fontSize: 150, lineHeight: 1, color: '#D93A2B', opacity: x }}>✗</div> : null}
+          <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: NG, opacity: 1 - 0.45 * xs }}>언니</div>
+          <div style={{ fontFamily: MN, fontWeight: 700, fontSize: L.readSize, color: NG, opacity: 1 - 0.45 * xs }}>🔊 {L.reads[3]}</div>
+          {xs > 0 ? <div style={{ position: 'absolute', left: -20, top: -14, fontFamily: MN, fontWeight: 900, fontSize: 150, lineHeight: 1, color: NG, opacity: x }}>✗</div> : null}
         </div>
         {why ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L.lineH, color: C.brown, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.scenes[2] + 0.2, 0.2) }}>{L.means[3]}</div> : null}
-        {why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: '#D93A2B', marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.wrong2 + 0.1, 0.2) }}>{L.why[1]}</div> : null}
+        {why && x > 0 ? <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.whySize, lineHeight: L.lineH, color: NG, marginTop: 10, whiteSpace: ws, textAlign: 'center', opacity: fadeIn(t, T.wrong2 + 0.1, 0.2) }}>{L.why[1]}</div> : null}
       </div>
     );
   }
@@ -201,8 +216,8 @@ const BottomBand: React.FC = () => {
   return (
     <div style={{ ...band, padding: '22px 30px 30px', transform: `translateY(${(1 - a) * 16}px)` }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 28 }}>
-        <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: C.coralShade }}>{sc.ko}</div>
-        <div style={{ fontFamily: MN, fontWeight: 700, fontSize: L.readSize, color: C.coralShade }}>🔊 {L.reads[k]}</div>
+        <div style={{ fontFamily: KO, fontWeight: 800, fontSize: 130, lineHeight: 1.0, color: OK }}>{sc.ko}</div>
+        <div style={{ fontFamily: MN, fontWeight: 700, fontSize: L.readSize, color: OK }}>🔊 {L.reads[k]}</div>
       </div>
       <div style={{ fontFamily: L.font, fontWeight: 800, fontSize: L.meanSize, lineHeight: L.meanLineH, color: C.brown, marginTop: 10, opacity: mm, transform: `translateY(${(1 - mm) * 12}px)`, whiteSpace: ws, textAlign: 'center' }}>{L.means[k]}</div>
     </div>
