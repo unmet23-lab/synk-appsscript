@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T22:11:24.512Z",
+  "generatedAt": "2026-11-19T09:31:05.528Z",
   "sourceAsOf": {
     "registry": "2026-11-10",
     "social": "2026-09-21",
@@ -19,8 +19,8 @@
     "identities": 28,
     "activeManagedChannels": 72,
     "loginStatusCounts": {
-      "historical": 69,
-      "verified": 3
+      "historical": 71,
+      "verified": 1
     }
   },
   "files": [
@@ -74,7 +74,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "e40390a1b49c31a7441b2b8a18056d9a703fb565b7f134b47352b54abc0f0ad2"
+      "sha256": "f140097cefe0c88fa943ec97b4a9e95651ff411bd6793131ab0b119922907a11"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",

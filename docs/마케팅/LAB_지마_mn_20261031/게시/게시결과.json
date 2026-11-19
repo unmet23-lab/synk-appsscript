@@ -416,16 +416,16 @@
     },
     {
       "계정": "lab-id-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-19T13:00:00+07:00",
       "지문": "d2905e1631c89c4b68806d670c43516abf7a5c5ec638aaf9e27dc82f54098351",
       "게시글지문": "0e3343b4b06b84a903c1157b8512ac42b087fa9d7c564b2e1ee4502d94c393c6",
       "방법": "ego-browser · Profile 15 · 공간 「틱톡 synklab.id 1116-1424」(85) · TikTok Studio 업로드 → 예약 · AI 표시 끔 · 스크립트 C:/Users/q1212/ego/tiktok-20261116-1424/run-id-1119-15.mjs",
       "게시물ID": "7708639745600933138",
       "주소": "https://www.tiktok.com/@synklab.id/video/7708639745600933138",
-      "확인": "TikTok Studio 콘텐츠 목록(@synklab.id, Profile 15) 줄 「Nov 19, 3:00 PM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「Mau bilang “jangan…” ke teman dalam bahasa Korea? Tinggal tambahin -지 마 (-ji ma) di belakang kata dasar kata kerjanya.」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 19, 2026 15:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true",
+      "확인": "11-19 18:30 로그인 없는 curl — statusCode 0 · privateItem false · createTime 2026-11-19 15:00 KST(자카르타 13:00) · desc 첫 줄 원고와 같음",
       "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과(11-16 14시 회차 — 장면 띠 · −14.5~−14.8 LUFS · 1.2초 넘는 무음 0 · 캡션과 영상 대조 · 링크 200)",
-      "기록시각": "2026-11-16T05:52:27.036Z"
+      "기록시각": "2026-11-19T09:26:22.298Z"
     },
     {
       "계정": "lab-ru-vk",

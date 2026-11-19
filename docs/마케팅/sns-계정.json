@@ -2369,7 +2369,8 @@
         "노래": "미정"
       },
       "postRoute": "tiktok-studio",
-      "postRouteVerified": "첫판",
+      "postRouteVerified": true,
+      "postRouteVerifiedNote": "2026-11-19 첫 판(LAB_지마_mn_20261031, 7708639745600933138)이 자카르타 13:00에 공개된 것을 로그인 없는 curl로 대조(statusCode 0 · privateItem false · 게시글 첫 줄 원고와 같음)",
       "postRoutePolicy": "browser-tos-prohibited",
       "metricsRoute": "server",
       "metricsState": "unconfirmed",
