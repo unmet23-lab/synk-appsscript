@@ -74,6 +74,9 @@ function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.
     try{return Boolean(contents.mainFrame?.url);}catch{return false;}
   }
   const RANK={auto:0,person:1,open:2},higher=(a,b)=>!a||RANK[b]>RANK[a]?b:a;
+  // 첫 화면을 잇는 시도가 이미 돌면 창 열기는 그 시도로 채워진다. 그 시도가 실패해 연결 안내가 떠도 한 번 더 잇지 않는다.
+  // 종료 알림 뒤 400ms를 기다리는 동안 들어온 창 열기도 같다(엔진 다시 검수 -g GA3)
+  const answered=mode=>mode==='open'&&current?.pending&&current.kind==='entry'?'person':mode;
   /* 화면이 없으면 첫 화면을 싣는다. 실었으면 true다. mode는 저절로(auto: 종료 알림 뒤), 창이 보이거나 초점을 받음(person), 창 열기 요청(open)이다.
      저절로는 10분 안에 세 번까지 첫 화면을 싣고, 그 뒤에는 안내 화면을 싣는다. 실제로 실은 때만 센다(화면 다시 검수 -g).
      사람 쪽(person, open)은 세지 않고 늘 첫 화면이다. 창 열기는 안내 화면이 떠 있어도 첫 화면으로 다시 잇는다.
@@ -82,8 +85,7 @@ function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.
     if(!live()||!started||isQuitting())return false;
     const pending=!!current?.pending;
     if(pending||contents.isLoadingMainFrame?.()){
-      // 첫 화면을 잇는 시도가 이미 돌면 창 열기는 그 시도로 채워진다. 그 시도가 실패해 연결 안내가 떠도 한 번 더 잇지 않는다
-      want=higher(want,mode==='open'&&pending&&current.kind==='entry'?'person':mode);
+      want=higher(want,answered(mode));
       if(pending){if(!awaiting){const attempt=current.promise;awaiting=attempt;attempt.finally(()=>{if(awaiting===attempt){awaiting=null;resume();}});}}
       else if(!settling){settling=()=>{settling=null;resume();};contents.once('did-stop-loading',settling);}
       return false;
@@ -111,7 +113,7 @@ function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.
     goneTimer=setTimer(()=>{goneTimer=null;const mode=timerWant||'auto';timerWant=null;recover(mode);},GONE_DELAY_MS);
   }
   function request(mode){
-    if(goneTimer!==null){timerWant=higher(timerWant,mode);return false;}
+    if(goneTimer!==null){timerWant=higher(timerWant,answered(mode));return false;}
     return recover(mode);
   }
   /* 창이 보이거나 초점을 받을 때 부른다. 종료 알림을 받았는지와 상관없이 지금 화면이 없으면 첫 화면을 싣는다. 실었으면 true다.

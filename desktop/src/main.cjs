@@ -97,7 +97,7 @@ let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();platformTray?.accountChanged?.();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // The suite can mask a verified sign-in (suite-session.cjs project). Only a verified sign-in carries the entry
 // portal's visit-purpose state (auth-service.cjs), so a masked one never shows the question pending.
 function projectAuth(state){const value=suitePublisher?suitePublisher.project(state):state;return value?.onboarding&&value.signedIn!==true?{...value,onboarding:null}:value;}
@@ -273,7 +273,8 @@ function showPlatformMain(){
 function deliverPendingAction(){
   if(!pendingDesktopAction||!window||window.isDestroyed())return;
   const contents=window.webContents;
-  if(contents.isLoading()||!trustedEntry(contents.getURL(),entry,runtime.clientId))return;
+  // 첫 화면이 실린 뒤 다 싣기 전에 화면 프로세스가 사라져도 did-stop-loading이 온다. 그때는 보내지 않고, 되살린 화면이 다 실린 뒤 보낸다(엔진 다시 검수 -g GA2)
+  if(contents.isLoading()||contents.isCrashed?.()||contents.getOSProcessId?.()===0||!trustedEntry(contents.getURL(),entry,runtime.clientId))return;
   const action=pendingDesktopAction;pendingDesktopAction=null;
   sendDesktop('synk:desktop-action',action);
 }
@@ -461,7 +462,7 @@ function initializeMain(){
     draftRecovery=createDraftRecovery({directory:path.join(app.getPath('userData'),'DraftRecovery'),safeStorage,getAccount:accountStatus,configFingerprint:authConfig?.fingerprint||'unconfigured',enabled:!smoke,onChange:status=>sendDesktop('synk:draft-recovery-changed',status)});
     draftRecoveryRequests=createDraftRecoveryRequests({getAccount:accountStatus,recovery:draftRecovery});
   }
-  platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,onShow:()=>requestPlatformWindow(),revealForQuit:()=>!quietQuit,enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>requestPlatformWindow(action)});
+  platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,onShow:()=>requestPlatformWindow(),revealForQuit:()=>!quietQuit,enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,directory:app.getPath('userData'),getOwner:()=>{const state=accountStatus();return state?.signedIn===true?state.account?.synk_user_id:null;},shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>requestPlatformWindow(action)});
   if(runtime.clientId==='platform'&&platformTray.isActive()&&arrivalShow!=='minimized'){
     const preferences=desktopPreferences.snapshot().preferences;
     const hidden=arrivalShow==='hidden'?preferences.closeToTray!==false:!arrivalShow&&autostartHidden&&preferences.startHidden;

@@ -1,8 +1,25 @@
 'use strict';
+const nodeFs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 
 const TRAY_APPS=Object.freeze({world:'SYNK WORLD',messenger:'SYNK Workspace',teacher:'SYNK Workspace · 내 수업',path:'SYNK PATH',pulse:'SYNK PULSE',partners:'SYNK Partners',care:'SYNK 플레저',fortune:'SYNK 무료 운세'});
-function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onAction=()=>{},onShow=null,revealForQuit=()=>true}){
+const validShortcuts=items=>Array.isArray(items)&&items.length<=5&&items.every(item=>item&&typeof item.id==='string'&&Object.hasOwn(TRAY_APPS,item.id)&&(item.kind===undefined||['favorite','recent'].includes(item.kind)));
+/* 트레이 바로가기는 앱 창 화면이 계정의 즐겨찾기와 최근 앱으로 정해 보낸다. 트레이로 숨은 채 시작하면 처음 열 때까지 창이 없으므로,
+   계정마다 마지막으로 받은 바로가기를 directory에 기억해 두고 계정이 확인될 때 다시 건다(엔진 다시 검수 -g GA1).
+   파일에는 계정 번호 대신 그 해시와 앱 이름표만 둔다. getOwner는 확인된 계정 번호나 null을 돌려준다 */
+function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onAction=()=>{},onShow=null,revealForQuit=()=>true,directory=null,getOwner=()=>null,fs=nodeFs}){
   let tray=null,quitting=false,shortcuts=[];
+  const memoryFile=directory?path.join(directory,'tray-shortcuts.json'):null;
+  function ownerKey(){try{const id=getOwner();return typeof id==='string'&&id?crypto.createHash('sha256').update(id).digest('hex'):null;}catch{return null;}}
+  function remembered(owner){
+    if(!memoryFile||!owner||!isActive())return [];
+    try{const text=fs.readFileSync(memoryFile,'utf8');if(text.length>=4096)return [];const saved=JSON.parse(text);return saved?.owner===owner&&validShortcuts(saved.items)?saved.items:[];}catch{return [];}
+  }
+  function remember(owner,items){
+    if(!memoryFile||!owner||!isActive())return;
+    const next=JSON.stringify({owner,items});
+    try{if(fs.readFileSync(memoryFile,'utf8')===next)return;}catch{}
+    try{fs.mkdirSync(directory,{recursive:true});fs.writeFileSync(memoryFile+'.tmp',next,{mode:0o600});fs.renameSync(memoryFile+'.tmp',memoryFile);}catch{}
+  }
   const bindings=new Map();
   function isActive(){return !!tray&&!tray.isDestroyed();}
   function show({forQuit=false}={}){
@@ -54,11 +71,16 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
     ]));
   }
   function onWillQuit(event){if(!event.defaultPrevented)dispose();}
-  function setShortcuts(items){
-    if(!Array.isArray(items)||items.length>5||items.some(item=>!item||typeof item.id!=='string'||!Object.hasOwn(TRAY_APPS,item.id)||item.kind!==undefined&&!['favorite','recent'].includes(item.kind)))return {ok:false,code:'INVALID_TRAY_SHORTCUTS'};
+  function apply(items){
     shortcuts=items.filter((item,index)=>items.findIndex(row=>row.id===item.id)===index).map(item=>({id:item.id}));
     try{updateMenu();return {ok:true};}catch{return {ok:false,code:'TRAY_UNAVAILABLE'};}
   }
+  function setShortcuts(items){
+    if(!validShortcuts(items))return {ok:false,code:'INVALID_TRAY_SHORTCUTS'};
+    const result=apply(items);remember(ownerKey(),shortcuts);return result;
+  }
+  // 로그인 상태가 바뀌거나 다시 확인될 때 부른다. 그 계정이 마지막으로 보낸 바로가기로 돌린다. 로그인하지 않았거나 다른 계정이면 비운다
+  function accountChanged(){return apply(remembered(ownerKey()));}
   if(enabled){
     try{
       tray=new Tray(icon);
@@ -71,6 +93,6 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
       dispose();
     }
   }
-  return {attachWindow,show,isActive,isQuitting:()=>quitting,cancelQuit,dispose,setShortcuts};
+  return {attachWindow,show,isActive,isQuitting:()=>quitting,cancelQuit,dispose,setShortcuts,accountChanged};
 }
 module.exports={createPlatformTray,TRAY_APPS};

@@ -187,6 +187,23 @@ test('a request kept back by a shortcut reaches the app screen once, whether or 
   }
   assert.ok(extract(/function showPlatformMain\(\)\{[\s\S]*?\n\}\n/,'showPlatformMain').includes('deliverPendingAction();'));
 });
+// 엔진 다시 검수 -g GA2: 첫 화면이 실린 뒤 다 싣기 전에 화면 프로세스가 사라져도 did-stop-loading이 온다. 그때는 보내지 않고, 되살린 화면이 다 실린 뒤 보낸다
+test('a kept request is not spent on a renderer that went away while loading, and reaches the recovered screen',()=>{
+  const source=extract(/function deliverPendingAction\(\)\{[\s\S]*?\n\}\n/,'deliverPendingAction');
+  const listeners=extract(/const contents=window\.webContents;\n  contents\.on\('did-finish-load',sendTeachingView\);[\s\S]*?(?=\n  if\(isPlatform\)\{placementControl)/,'platform load listeners');
+  for(const reason of ['crashed','clean-exit']){
+    let pid=0,crashed=reason==='crashed';const sent=[];
+    const webContents=Object.assign(new EventEmitter(),{isLoading:()=>false,getURL:()=>'synk-desktop://platform/index.html',isCrashed:()=>crashed,getOSProcessId:()=>pid});
+    const context={pendingDesktopAction:{type:'command-menu'},entry:'synk-desktop://platform/index.html',runtime:{clientId:'platform'},
+      isPlatform:true,sendTeachingView(){},trustedEntry:(page,entry)=>page===entry,window:{isDestroyed:()=>false,isVisible:()=>false,webContents},
+      sendDesktop:(channel,value)=>sent.push([channel,value.type])};
+    vm.createContext(context);vm.runInContext(source+listeners,context);
+    webContents.emit('did-stop-loading');
+    assert.deepEqual(sent,[],reason);assert.notEqual(context.pendingDesktopAction,null);
+    pid=4242;crashed=false;webContents.emit('did-stop-loading');
+    assert.deepEqual(sent,[['synk:desktop-action','command-menu']],reason);assert.equal(context.pendingDesktopAction,null);
+  }
+});
 
 
 test('only an accessible hidden platform cold start initializes the tray without a window',()=>{

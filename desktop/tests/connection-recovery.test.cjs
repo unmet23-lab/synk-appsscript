@@ -332,6 +332,16 @@ test('an open is answered by an entry attempt already in flight; when it ends on
   assert.equal(f.recovery.recoverIfGone(),false,'focus leaves the connection guide alone');assert.equal(f.contents.loads.length,3);
   assert.equal(f.recovery.reopen(),true,'opening again reconnects');await settle();assert.equal(f.contents.loads[3].url,ENTRY);f.recovery.dispose();
 });
+test('an open during the pause after a loss notice is answered by a reconnect already in flight (엔진 다시 검수 -g GA3)',async()=>{
+  const f=goneFixture(),loading=f.recovery.connect();await settle();f.contents.fail(0);await settle();f.contents.success(1);await loading;
+  // 옛 화면 프로세스의 종료 알림이 늦게 와 400ms를 기다리는 동안, 연결 안내에서 「다시 연결」을 누르고 곧이어 Workspace를 다시 실행한다
+  f.contents.emit('render-process-gone',{},{reason:'clean-exit',exitCode:0});
+  const retry=f.recovery.retryIfDisconnected();await settle();assert.equal(f.contents.loads[2].url,ENTRY);
+  assert.equal(f.recovery.reopen(),false);
+  f.contents.fail(2);await settle();assert.equal(f.contents.loads[3].url,STATUS);f.contents.success(3);await retry;
+  f.run();await settle();
+  assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,STATUS,ENTRY,STATUS],'one reconnect for one open');f.recovery.dispose();
+});
 test('Workspace reloads a lost renderer after a quit is cancelled to keep unsaved work, but not after leaving without saving (엔진 다시 검수 -b GA2)',async()=>{
   for(const [choice,reloads] of [[0,1],[1,0]]){
     const dialog={showMessageBoxSync:()=>choice};
