@@ -16,7 +16,12 @@ AI를 부르지 않는다. 등록은 같은 폴더의 install-task.ps1.
 차례는 판정 → 요약 쓰기 → 팔로워 재기다. 재기는 이 입구가 끝난 뒤에도 남는 따로 띄운 프로세스(이 파일을 --팔로워로 다시 부른다)가
 하고, 재고 나면 요약을 한 번 더 쓴다. 11-20 첫 회차에 판정이 24분 걸린 뒤 재기가 이 입구 안에서 돌다가 예약의 30분 한도에 끊겨
 요약도 기록도 남지 않았다. 그래서 몇 초면 되는 요약을 먼저 쓰고, 몇 분이 걸리는 재기는 한도 밖으로 뺐다.
+
+재기는 장부에 줄을 쓰고 origin에 올린다. 바쁜 밤에는 그 올리기가 25분을 넘긴다(11-20 03:06 실측: 재는 데는 1분, 올리기에서 멈춤).
+그래서 운영 사본에서는 재기가 올리지 않게 하고(SYNK_장부올리기=나중) 두 경로를 「남은 장부」에 적는다. 5분마다 도는
+「SYNK 운영 사본 갱신」이 그 목록을 올린다(tools/운영사본.js). 요약은 올리기를 기다리지 않고 바로 다시 쓴다.
 """
+import json
 import os
 import pathlib
 import subprocess
@@ -55,6 +60,17 @@ def start_followers(env):
         pass
 
 
+LEDGER_PATHS = ["docs/_ops/채널성과.jsonl", "docs/마케팅/채널성과.md"]
+IS_OPS = "process.stdout.write(require('./tools/운영사본.js').운영사본인가(process.cwd()) ? '1' : '0')"
+NOTE_LEFT = ("require('./tools/운영사본.js').남은장부적기(JSON.parse(process.argv[1]), "
+             "{ 결과: '미룸', 이유: '게시 성과 예약 입구가 팔로워를 재기만 했다. 올리기는 운영 사본 갱신이 한다' })")
+
+
+def node(env, *args, timeout=60):
+    return subprocess.run([str(NODE), *args], cwd=ROOT, env=env, capture_output=True,
+                          creationflags=subprocess.CREATE_NO_WINDOW, timeout=timeout)
+
+
 def measure_followers(env):
     """팔로워를 다시 잰다(따로 띄운 프로세스 안에서). 재면 True."""
     folder = ROOT / "output" / "계정건강"
@@ -62,9 +78,20 @@ def measure_followers(env):
     stamp, running, log = folder / "팔로워잰때.txt", folder / "팔로워재는중.txt", folder / "팔로워재기.log"
     running.write_text(time.strftime("%Y-%m-%d %H:%M:%S"), encoding="utf-8")
     try:
-        r = subprocess.run([str(NODE), str(ROOT / "tools" / "채널성과.js"), "--재기"], cwd=ROOT, env=env,
-                           capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=1500)
-        log.write_bytes(r.stdout + b"\n--- stderr ---\n" + r.stderr + f"\n--- 종료 {r.returncode} ---\n".encode())
+        try:
+            ops = node(env, "-e", IS_OPS).stdout.strip() == b"1"
+        except Exception:
+            ops = False
+        # 운영 사본에서는 재기가 장부를 올리지 않게 하고, 올리기는 운영 사본 갱신에 넘긴다
+        r = node({**env, "SYNK_장부올리기": "나중"} if ops else env, str(ROOT / "tools" / "채널성과.js"), "--재기", timeout=1500)
+        note = b""
+        if ops:
+            try:
+                n = node(env, "-e", NOTE_LEFT, json.dumps(LEDGER_PATHS, ensure_ascii=False))
+                note = "\n--- 남은 장부에 적음: ".encode() + (b"ok" if n.returncode == 0 else n.stderr[-300:]) + b" ---\n"
+            except Exception as e:
+                note = f"\n--- 남은 장부에 적지 못함: {e} ---\n".encode()
+        log.write_bytes(r.stdout + b"\n--- stderr ---\n" + r.stderr + note + f"\n--- 종료 {r.returncode} ---\n".encode())
         if r.returncode == 0:
             stamp.write_text(time.strftime("%Y-%m-%d %H:%M:%S"), encoding="utf-8")
         return r.returncode == 0
