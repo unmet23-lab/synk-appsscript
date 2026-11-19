@@ -15,7 +15,7 @@ function processAlive(pid){
    종료 알림은 작업 큐를 거쳐 늦게 올 수 있고, 오지 않는 죽음이 있는지도 모른다 */
 function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.now,setTimer=setTimeout,clearTimer=clearTimeout,isProcessAlive=processAlive}){
   // want: 기다리는 동안 들어온 요청. 사람이 연 요청(person)이 하나라도 있으면 사람 쪽을 따른다. goneAt: 저절로 첫 화면을 다시 실은 때
-  // failedDocument: 주 프레임에 오류 문서(연결 거부 따위)가 실렸다. 다음 정상 실림(did-navigate)까지 화면으로 치지 않는다(엔진 다시 검수 -e GA1).
+  // failedDocument: 주 프레임 이동이 문서를 싣지 못하고 오류 문서(연결 거부 따위)가 실렸다. 다음 정상 실림(did-navigate)까지 화면으로 치지 않는다(엔진 다시 검수 -e GA1).
   // stoppedAt: 저절로 안내 화면을 실은 때. 10분 안에 한 번만 싣는다(엔진 다시 검수 -e GA2)
   let disposed=false,started=false,current=null,goneTimer=null,settling=null,awaiting=null,want=null,personDuringTimer=false,failedDocument=false,stoppedAt=-Infinity;const goneAt=[];
   const live=()=>!disposed&&!contents.isDestroyed();
@@ -39,6 +39,8 @@ function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.
     return attempt.promise;
   }
   function connect(){
+    // 사람이 「다시 연결」이나 창 열기로 첫 화면을 다시 이으면, 그 뒤 또 사라질 때 안내 화면을 한 번 더 싣는다(화면 다시 검수 -h)
+    stoppedAt=-Infinity;
     if(live()&&current?.kind==='entry'&&current.pending)return current.promise;
     return start('entry');
   }
@@ -56,7 +58,8 @@ function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.
     failedDocument=false;
     if(current?.url===url)current.committed=true;
   }
-  // Electron은 오류 문서가 실리면 did-navigate 대신 주 프레임 did-fail-load를 낸다. 다른 이동에 밀려 그만둔 것(-3)은 오류 문서가 아니다
+  // 오류 문서는 문서가 실리지 못한 이동의 실패(did-fail-provisional-load)로 가린다. 다른 이동에 밀려 그만둔 것(-3)은 오류 문서가 아니다.
+  // did-fail-load는 실린 문서의 본문을 받다 끊겨도(-354, -355) 와서 쓰지 않는다(화면 다시 검수 -h, Electron 44.5.1 실측)
   function mainFailed(_event,code,_description,_url,isMainFrame){if(isMainFrame&&code!==-3)failedDocument=true;}
   function retryLink(event,url){
     if(event.defaultPrevented||!live()||!onGuide(contents.getURL())||url!==entry)return;
@@ -91,6 +94,7 @@ function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.
       else if(at-stoppedAt>GONE_WINDOW_MS){kind='stopped';stoppedAt=at;}
       else return false;
     }
+    if(mode==='person')stoppedAt=-Infinity;
     current=null;void start(kind);return true;
   }
   function resume(){const mode=want||'auto';want=null;recover(mode);}
@@ -110,14 +114,14 @@ function createConnectionRecovery({contents,entry,isQuitting=()=>false,now=Date.
     if(settling){contents.removeListener('did-stop-loading',settling);settling=null;}
     contents.removeListener('did-start-navigation',navigationStarted);
     contents.removeListener('did-navigate',navigationCommitted);
-    contents.removeListener('did-fail-load',mainFailed);
+    contents.removeListener('did-fail-provisional-load',mainFailed);
     contents.removeListener('will-navigate',retryLink);
     contents.removeListener('render-process-gone',rendererGone);
     contents.removeListener('destroyed',dispose);
   }
   contents.on('did-start-navigation',navigationStarted);
   contents.on('did-navigate',navigationCommitted);
-  contents.on('did-fail-load',mainFailed);
+  contents.on('did-fail-provisional-load',mainFailed);
   contents.on('will-navigate',retryLink);
   contents.on('render-process-gone',rendererGone);
   contents.on('destroyed',dispose);

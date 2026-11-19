@@ -272,8 +272,9 @@ test('a relaunch retry that is in flight when the guide renderer went away finis
   f.contents.fail(2,failure(-2));await settle();assert.equal(f.contents.loads[3].url,STATUS);f.contents.success(3);await retry;await settle();
   assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,STATUS,ENTRY,STATUS]);f.recovery.dispose();
 });
-// Electron 44.5.1 실측: 오류 문서가 실리면 주 프레임 did-fail-load와 did-finish-load가 오고 did-navigate는 오지 않는다. 주 프레임 주소는 실패한 주소다
-function errorPage(contents,url,code=-102){contents.emit('did-start-navigation',{},url,false,true);contents.url=url;contents.frameUrl=url;contents.emit('did-fail-load',{},code,'ERR_CONNECTION_REFUSED',url,true);contents.emit('did-finish-load');contents.stopLoading();}
+// Electron 44.5.1 실측: 오류 문서가 실리면 주 프레임 did-fail-provisional-load와 did-fail-load, did-finish-load가 오고 did-navigate는 오지 않는다. 주 프레임 주소는 실패한 주소다.
+// 실린 문서의 본문을 받다 끊기면 did-navigate 뒤에 did-fail-load(-354, -355)만 온다
+function errorPage(contents,url,code=-102){contents.emit('did-start-navigation',{},url,false,true);contents.url=url;contents.frameUrl=url;contents.emit('did-fail-provisional-load',{},code,'ERR_CONNECTION_REFUSED',url,true);contents.emit('did-fail-load',{},code,'ERR_CONNECTION_REFUSED',url,true);contents.emit('did-finish-load');contents.stopLoading();}
 test('an error document is not a screen: after a loss, or on a live window, the entry comes back (엔진 다시 검수 -e GA1)',async()=>{
   const f=await loaded();
   f.gone();errorPage(f.contents,NEXT);assert.equal(f.contents.getOSProcessId(),ALIVE);f.run();await settle();
@@ -282,7 +283,15 @@ test('an error document is not a screen: after a loss, or on a live window, the 
   errorPage(f.contents,NEXT);assert.equal(f.recovery.recoverIfGone(),true);await settle();assert.equal(f.contents.loads[2].url,ENTRY);
   f.contents.success(2);await settle();assert.equal(f.recovery.recoverIfGone(),false,'a normal document after the error is a screen again');
   // 다른 이동에 밀려 그만둔 것(-3)은 오류 문서가 아니다
-  f.contents.emit('did-fail-load',{},-3,'ERR_ABORTED',NEXT,true);assert.equal(f.recovery.recoverIfGone(),false);f.recovery.dispose();
+  f.contents.emit('did-fail-provisional-load',{},-3,'ERR_ABORTED',NEXT,true);assert.equal(f.recovery.recoverIfGone(),false);f.recovery.dispose();
+});
+test('a document that committed but lost the rest of its body is still a screen (화면 다시 검수 -h)',async()=>{
+  const f=await loaded();
+  for(const code of [-354,-355]){
+    f.contents.emit('did-start-navigation',{},NEXT,false,true);f.contents.commit(NEXT);f.contents.emit('did-fail-load',{},code,'ERR_CONTENT_LENGTH_MISMATCH',NEXT,true);
+    assert.equal(f.recovery.recoverIfGone(),false,'the drawn document is kept ('+code+')');
+  }
+  assert.equal(f.contents.loads.length,1);f.recovery.dispose();
 });
 test('when even the stopped page keeps going away, it is loaded automatically once per ten minutes; a person still gets the entry (엔진 다시 검수 -e GA2)',async()=>{
   const f=await loaded();
@@ -291,6 +300,15 @@ test('when even the stopped page keeps going away, it is loaded automatically on
   f.gone();f.run();await settle();assert.equal(f.contents.loads.length,5,'the stopped page is not reloaded again by itself');
   assert.equal(f.recovery.recoverIfGone(),true);await settle();assert.equal(f.contents.loads[5].url,ENTRY,'a person opening the window gets the entry');f.contents.success(5);await settle();
   f.tick(10*60000+1);f.gone();f.run();await settle();assert.equal(f.contents.loads[6].url,ENTRY,'after ten minutes the count starts again');f.recovery.dispose();
+});
+test('after a person reconnects from the stopped page, the next loss within ten minutes shows the stopped page again instead of a black window (화면 다시 검수 -h)',async()=>{
+  const f=await loaded();
+  for(let i=1;i<=3;i++){f.gone();f.run();await settle();f.contents.success(i);await settle();}
+  f.gone();f.run();await settle();assert.equal(f.contents.loads[4].url,STOPPED);f.contents.success(4);await settle();
+  // 「다시 연결」(또는 창 열기)로 첫 화면을 다시 잇는다
+  const again=f.recovery.retryIfDisconnected();await settle();assert.equal(f.contents.loads[5].url,ENTRY);f.contents.success(5);await again;
+  f.gone();f.run();await settle();assert.equal(f.contents.loads[6].url,STOPPED,'the stopped page once more');f.contents.success(6);await settle();
+  f.gone();f.run();await settle();assert.equal(f.contents.loads.length,7,'but not again by itself');f.recovery.dispose();
 });
 test('Workspace reloads a lost renderer after a quit is cancelled to keep unsaved work, but not after leaving without saving (엔진 다시 검수 -b GA2)',async()=>{
   for(const [choice,reloads] of [[0,1],[1,0]]){

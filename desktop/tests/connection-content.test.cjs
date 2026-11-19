@@ -21,7 +21,9 @@ test('connection page links only to the configured entry, loads packaged brand a
 });
 test('the stopped page says the screen kept stopping, not that the internet is down, and links only to the entry (화면 다시 검수 -g)',async()=>{
   const serve=createConnectionContent({...options,mode:'release',clientId:'platform',entry:'synk-desktop://platform/index.html'}),response=await serve('synk-desktop://status/stopped'),html=await response.text();
-  assert.equal(response.status,200);assert.match(html,/화면이 잇달아 멈췄어요/);assert.doesNotMatch(html,/인터넷|연결할 수 없어요/);assert.ok(html.includes('href="synk-desktop://platform/index.html"'));assert.doesNotMatch(html,/<script|onclick=|onload=/);
+  assert.equal(response.status,200);assert.match(html,/화면이 잇달아 멈췄어요/);assert.doesNotMatch(html,/인터넷|연결할 수 없어요/);
+  // 화면에 생긴 일은 「멈춤」, 앱이 그만둔 일은 「그만둠」 한 낱말씩이다
+  assert.match(html,/<title>SYNK Platform · 화면 멈춤<\/title>/);assert.match(html,/여러 번 멈춰서 저절로 다시 불러오기를 그만뒀어요/);assert.doesNotMatch(html,/꺼져/);assert.ok(html.includes('href="synk-desktop://platform/index.html"'));assert.doesNotMatch(html,/<script|onclick=|onload=/);
   assert.match(response.headers.get('content-security-policy'),/script-src 'none'/);
   for(const url of ['synk-desktop://status/stopped?x=1','synk-desktop://status/stopped#x','synk-desktop://status/stopped/','synk-desktop://status/Stopped'])assert.equal((await serve(url)).status,404,url);
 });
