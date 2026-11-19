@@ -220,6 +220,8 @@ function openGame(id){
 // 첫 실행에서만 묻고, 이미 고른 언어(이 기기 또는 계정에서 되살린 값)가 있으면 건너뛴다. 설정에서 언제든 바꾼다.
 async function openTutor({then=null,force=false}={}){
  try{
+  // 첫날 끝 · 맞춤 앞면 학생(서울행을 끝냄, world-front-entry.mjs)은 튜터를 고르지 않는다 — 배우기 · 놀이 · 팩이 바로 열린다. 설정의 「튜터 바꾸기」(force)는 그대로.
+  if(!force&&host?.tutorFree?.()){if(typeof then==='function')await then();return;}
   if(host?.prepareTutor&&await host.prepareTutor()===false)return;
   // 처음 온 사람(튜터를 아직 안 고름)은 첫 실행 단계를 차례로 지난다: 언어 고르기 → 한글 질문 → 튜터 고르기.
   if(!force&&!tutorUI.choice()){void firstRun.run({then}).catch(error=>toast(error?.message||t('msg.firstRunFailed')));return;}
@@ -502,6 +504,7 @@ export const home={
  connectEducation(value){education=value;},connectPlayLevel(value){playLevel=value;},connectReminders(value){reminders=value;},openLearningGame:launchGame,
  hangulReading,setHangulReading,startLifeLesson,firstRun:()=>({order:[...firstRun.order],active:firstRun.active()}),
  scene:()=>living.metrics(),memory:()=>memory.snapshot(),town:()=>({place,moving:trip?.to||null,...town.metrics()}),enterRoom:()=>go('room'),leaveRoom:()=>go('town'),
+ showPlay:()=>showPlay(),showSettings:()=>showSettings(),
  startTutorial:()=>openTutor(),chooseTutor:()=>openTutor({force:true}),ensureTutor:then=>openTutor({then}),tutor:()=>tutorUI.metrics(),homeTutor:()=>homeTutor?.metrics(),
  applyTutorChoice:(id,owner)=>tutorUI.applyChoice(id,owner),refreshTutorStatus:()=>tutorUI.refreshStatus()
 };

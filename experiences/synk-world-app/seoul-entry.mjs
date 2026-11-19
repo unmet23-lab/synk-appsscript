@@ -54,7 +54,7 @@ export function seoulDecision({mode=null,owner='guest',arrival=null,guest=null,t
  return {run:true,at:'title',fresh:true};
 }
 
-export function createSeoulEntry({dramaPending,restored,operating,client,life,home,worldUrl,launchGame,signIn,show,close,selectLanguage,tutorStatus,native}){
+export function createSeoulEntry({dramaPending,restored,operating,client,life,home,worldUrl,launchGame,signIn,show,close,selectLanguage,tutorStatus,native,frontOn=()=>false}){
  const owner=()=>client().snapshot?.accountId||'guest';
  const mode=()=>seoulMode({search:location.search,feature:autoOn(),dramaPending:dramaPending()});
  let session=null,decision=null,moveAnswer=null;
@@ -157,6 +157,8 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
  const host=Object.freeze({
   ready(api){const s=session;if(!s)return;s.api=api;try{api.setLang(currentLang());}catch{}s.markReady?.(api);},
   reduced:()=>!!home.state?.reduced,insets,save,prepareEpisode,openEpisode,
+  // 첫날 끝 · 맞춤 앞면(world-front-entry.mjs)이 켜졌나 — 켜졌으면 내 길 끝 단추가 「오늘 마무리하기」다.
+  front:()=>{try{return !!frontOn();}catch{return false;}},
   leave(){finish();},
  });
  function installHost(){window.SYNKSeoulHost=host;}
@@ -262,5 +264,5 @@ export function createSeoulEntry({dramaPending,restored,operating,client,life,ho
  // 서울행 중 주인이 바뀌면(다른 탭 로그인 · PC 창 연결) 다시 불러 판별부터 한다. 저장은 걸음마다 되어 있다.
  // 서울행 밖이면 「내 길」 문만 새 주인에게 맞춘다(새 계정의 생활 기록이 아직이면 숨고, 관문의 onEnter가 다시 맞춘다).
  function onIdentity(){const s=session;if(s?.raised&&s.owner!==owner())location.reload();else if(!s)syncDoor();}
- return Object.freeze({active,beforeTitle,tap,run,openRoad,syncDoor,onIdentity,moveChoice:value=>moveAnswer?.(value==='yes'?'yes':'no'),get open(){return !!session?.dialog;}});
+ return Object.freeze({active,beforeTitle,tap,run,openRoad,syncDoor,onIdentity,arrival:who=>mine(who),moveChoice:value=>moveAnswer?.(value==='yes'?'yes':'no'),get open(){return !!session?.dialog;}});
 }

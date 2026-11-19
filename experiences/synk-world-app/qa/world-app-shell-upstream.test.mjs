@@ -42,6 +42,8 @@ function fixture({operating=true,owner='alpha',generation=1,recordsFactory=null}
   refreshLife:no,repaintWritingRow:no,showEntryRecovery:no,commands:{},accountPrint:()=>'',initialRestoreReady:Promise.resolve(),sessionTask:null,sessionConfirmed:true,restoreSession:async()=>{},prepareWorldTutor:no,
   createDeviceRecordsOffer:args=>{captures.device=args;return recordsFactory?recordsFactory(args):{offer:id=>{captures.offered=id;return 'offered';}};},createWorldEntryGate:args=>{captures.gate=args;return args;},
   dramaRequested:false,close:no,selectLanguage:no,tutorStatus:no,createSeoulEntry:()=>({active:()=>false,syncDoor:no,onIdentity:no,moveChoice:no,openRoad:no}),
+  // 첫날 끝 · 맞춤 앞면 다리(스위치 꺼진 판): 이 시험은 지금 길의 셸을 돈다.
+  createFrontEntry:()=>({on:()=>false,free:()=>false,enter:async()=>{},drop:no,onIdentity:no,active:()=>false}),
  };
  vm.createContext(context);
  const run=text=>vm.runInContext(text,context);

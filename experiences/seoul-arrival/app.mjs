@@ -1141,7 +1141,7 @@ function buildRoad(){
   });
   $('#road').innerHTML=`<div class="goal"><img src="${IMG[state.dream+'Goal']}" alt=""><div class="goal-copy"><i>${L(D.goalEn)}</i><b>${L(D.goal)}</b><span>${L(D.goalSub)}</span><span class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>${L('4급에서 열려요')}</span></div></div>`
     +`<div class="steps">${rows.reverse().join('')}</div>`
-    +`<div class="start">${episodeDone()?`<button class="go-btn" id="goHome" type="button">${L('우리 동네로')}</button><button class="back-btn" id="startEp" type="button">${L('1화 다시 하기')}</button>`:`<button class="go-btn" id="startEp" type="button">${L('1화 시작')}</button><p>${L('한 장면 5분 남짓 · 상대가 먼저 말을 걸어요')}</p><button class="back-btn" id="goHome" type="button">${L('우리 동네 먼저 둘러보기')}</button>`}</div>`;
+    +`<div class="start">${episodeDone()?`<button class="go-btn" id="goHome" type="button">${L(HOST?.front?.()?'오늘 마무리하기':'우리 동네로')}</button><button class="back-btn" id="startEp" type="button">${L('1화 다시 하기')}</button>`:`<button class="go-btn" id="startEp" type="button">${L('1화 시작')}</button><p>${L('한 장면 5분 남짓 · 상대가 먼저 말을 걸어요')}</p><button class="back-btn" id="goHome" type="button">${L(HOST?.front?.()?'오늘은 여기까지':'우리 동네 먼저 둘러보기')}</button>`}</div>`;
   $('#startEp').onclick=playScene;$('#goHome').onclick=leave;
   $('#road').classList.toggle('calm',!!state.ringShown);state.ringShown=true;
 }

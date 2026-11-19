@@ -1,0 +1,1946 @@
+/* 첫날 끝 · 맞춤 앞면 틀(2026-11-19). 시안 10z6(.tmp/first-day-end-20261110/시안10z6/app.css)의 뼈대 판(J) · 사진 결만 남겼다.
+   몸에 붙는 look-photo · base-j는 index.html이 늘 달아 둔다. 우표 결 · 바탕 결 ed · 옛 머리 · 옛 답 칸 · PC 이야기 문 규칙은 걷었다.
+   글꼴은 ../brand-opening/assets의 같은 파일을 쓴다. 맨 아래 「틀에서 더한 것」만 새로 썼다.
+   (시안 머리말) 이야기(밤 · 새벽 창가)는 서울행 결의 사진, 맞춤(공부)은 종이. 바닥은 참고 사이트 장부 4절: 제목 400~600 · 자간 거의 0 · 9~20px 둥근 상자 없음 · 단추는 각지게 · 넓은 여백 위에 실물 하나. */
+@font-face{font-family:'World SUIT';src:url(../brand-opening/assets/SUIT.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'World Latin';src:url(../brand-opening/assets/SYNKLatin-Regular.woff2) format('woff2');font-weight:100 549;font-display:swap;unicode-range:U+0020-007E,U+00A0-00FF,U+2010-2027,U+2030-203A,U+20A9}
+@font-face{font-family:'World Latin';src:url(../brand-opening/assets/SYNKLatin-SemiBold.woff2) format('woff2');font-weight:550 649;font-display:swap;unicode-range:U+0020-007E,U+00A0-00FF,U+2010-2027,U+2030-203A,U+20A9}
+@font-face{font-family:'World Latin';src:url(../brand-opening/assets/SYNKLatin-Bold.woff2) format('woff2');font-weight:650 1000;font-display:swap;unicode-range:U+0020-007E,U+00A0-00FF,U+2010-2027,U+2030-203A,U+20A9}
+@font-face{font-family:'World Cyrillic';src:url(../brand-opening/assets/SYNKCyrillic-Regular.woff2) format('woff2');font-weight:100 549;font-display:swap;unicode-range:U+0400-052F,U+2116}
+@font-face{font-family:'World Cyrillic';src:url(../brand-opening/assets/SYNKCyrillic-SemiBold.woff2) format('woff2');font-weight:550 649;font-display:swap;unicode-range:U+0400-052F,U+2116}
+@font-face{font-family:'World Cyrillic';src:url(../brand-opening/assets/SYNKCyrillic-Bold.woff2) format('woff2');font-weight:650 1000;font-display:swap;unicode-range:U+0400-052F,U+2116}
+:root{
+  --sky:#050b1a; --ink:#FAFAF9; --ink2:rgba(250,250,249,.82); --ink3:rgba(250,250,249,.64); --ink4:rgba(250,250,249,.46);
+  --line2:rgba(255,255,255,.16);
+  --idol:#A77CFF; --idol2:#D9C6FF; --actor:#66CCFF; --actor2:#CBEFFF;
+  --dream:var(--idol); --dream2:var(--idol2);
+  --lamp:#F3DFA6;                       /* 할 일 이름 — 램프 빛(서울행 --voice) */
+  --tap:#FFD48A;                        /* 사진 위 누를 수 있는 일 — 전등 빛(학교 설계 4-6) */
+  --seoha:#FFA98F; --seoha-p:#B4472B;   /* 서하 이름 — 사진 위 · 종이 위(4-6) */
+  --paper:#F3EEE6; --k:#161513; --k2:#4c4842; --k3:#7a746b; --k4:#bcb5a9; --kl:rgba(22,21,19,.12);
+  --pen:#c2412d; --navy:#1d2547; --st:#FBEFD9;   /* 붉은 펜 = 짚어 줌, 남색 = 나(학생증 뒤 B ⑧), 우표 종이 */
+  --sans:'World Latin','World Cyrillic','World SUIT','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --sp:cubic-bezier(.2,.8,.2,1); --sp2:cubic-bezier(.16,1,.3,1);
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+}
+body[data-dream="actor"]{--dream:var(--actor);--dream2:var(--actor2)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;color:var(--ink);font-family:var(--sans);font-weight:450;letter-spacing:-.015em;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button{font:inherit;letter-spacing:inherit;color:inherit;background:none;border:0;cursor:pointer}
+b,strong,h1,h2,h3{text-wrap:balance}
+p{text-wrap:pretty}
+p,h1,h2,h3,li{word-break:keep-all;overflow-wrap:break-word}
+html:lang(en) body,html:lang(mn) body,html:lang(en) small,html:lang(mn) small{letter-spacing:0}
+:focus-visible{outline:2px solid var(--dream2);outline-offset:3px;border-radius:4px}
+.paper :focus-visible{outline-color:var(--navy)}
+
+/* ── 틀: 휴대폰 폭 기둥 + 넓은 화면 뒤 흐린 바탕(밤 · 새벽). 종이는 넓은 화면에서 화면 전체 ── */
+.ambient{position:fixed;inset:0;z-index:0;overflow:hidden;background:#000}
+.ambient img{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;filter:blur(38px) brightness(.42) saturate(1.1)}
+#app{position:relative;z-index:1;height:100dvh;max-width:460px;margin:0 auto;overflow:hidden;background:var(--sky)}
+#app.paper{background:var(--paper)}
+.view{position:absolute;inset:0;overflow:hidden}
+
+/* 소리 단추: 사진 위 옅은 원 하나(테두리 1px) */
+.hud{position:absolute;z-index:40;top:max(14px,var(--sat));left:14px}
+.hud button{height:40px;width:40px;border-radius:50%;display:grid;place-items:center;color:var(--ink2);background:rgba(4,7,16,.26);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.hud svg{width:18px;height:18px}
+
+/* ══ 밤 창가(첫날 끝) — 장면은 9판 그대로, 글 굵기 · 단추만 고침 ══ */
+.night .ph{position:absolute;left:0;right:0;top:0;aspect-ratio:852/1846;transform-origin:50% 30%}
+.night .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.night .ph .off{opacity:0}
+.night .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,11,26,.16) 0,rgba(5,11,26,0) 26%,rgba(3,5,12,0) 50%,rgba(3,5,12,.52) 68%,rgba(3,5,12,.42) 100%)}
+.night.enter .ph{animation:push 7s var(--sp) both}
+@keyframes push{from{transform:scale(1.045)}to{transform:none}}
+.night.enter .ph img.on{animation:fadein 1.3s ease both}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+.tag{position:absolute;z-index:5;left:24px;top:max(74px,calc(var(--sat) + 62px));display:flex;align-items:center;gap:10px;font-size:13px;font-weight:560;color:var(--ink3);letter-spacing:-.005em}
+.tag::after{content:"";width:28px;height:1px;background:currentColor;opacity:.6}
+.tag .me-tag{display:inline-flex;align-items:center;gap:7px;min-height:44px;margin:-12px 0;padding:0 2px;font-size:13px;font-weight:650;color:var(--ink2)}
+.tag .me-tag .me{width:22px;height:22px;box-shadow:0 0 0 1.2px rgba(255,255,255,.6)}
+
+/* 시 세 줄: 굵은 기본 고딕(680) → 가늘게(520), 첫 줄은 옅은 둘째 결. 누르면 열리는 낱말은 전등 빛 글 + 점 밑줄(아르곤 6차 「굵은 기본 고딕과 직선 밑줄」) */
+.poem{position:absolute;z-index:5;left:24px;right:20px;top:max(108px,calc(var(--sat) + 96px))}
+.ln{display:block}
+.ln + .ln{margin-top:5px}
+.ln .ko{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 11px;font-size:33px;font-weight:520;line-height:1.2;letter-spacing:-.025em;color:var(--ink)}
+.ln small{display:block;margin-top:2px;font-size:13px;font-weight:450;line-height:1.35;letter-spacing:0;color:var(--ink3)}
+.ln.lead .ko{font-size:21px;font-weight:430;color:var(--ink3);letter-spacing:-.015em;margin-bottom:3px}
+.ln .w{font:inherit;letter-spacing:inherit;color:inherit;padding:2px 0;margin:-2px 0;border-radius:3px}
+.ln .w:hover{background:rgba(255,255,255,.08)}
+.ln .w:active{opacity:.7}
+.night.enter .ln{animation:rise .6s var(--sp) both}
+.night.enter .ln:nth-child(1){animation-delay:.9s}
+.night.enter .ln:nth-child(2){animation-delay:1.45s}
+.night.enter .ln:nth-child(3){animation-delay:2s}
+.night.enter .ln:nth-child(4){animation-delay:2.6s}
+.night.enter .tag{animation:rise .6s var(--sp) .45s both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* 사진 속 자리 이름표: 흰 점 핀 → 그 창의 불빛 번짐 + 가는 지시선 + 전등 빛 글 */
+.spot{position:absolute;z-index:4;display:flex;flex-direction:column;align-items:flex-end;text-align:right;pointer-events:none;opacity:0;transition:opacity .8s;transform:translate(calc(-100% + 5px),calc(-100% + 5px))}
+.spot.on{opacity:1}
+.spot span{padding:2px 0;font-size:12.5px;font-weight:620;color:var(--tap);white-space:nowrap;letter-spacing:0;text-shadow:0 1px 2px rgba(0,0,0,.95),0 0 10px rgba(0,0,0,.9),0 0 22px rgba(0,0,0,.75)}
+.spot i{display:block;width:1px;height:26px;margin:3px 4.5px 0 0;background:linear-gradient(rgba(255,212,138,.75),rgba(255,212,138,.12))}
+.spot b{display:block;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#fff6e2 0 2px,rgba(255,226,170,.9) 3px,rgba(255,200,120,0) 5px);box-shadow:0 0 14px 5px rgba(255,196,110,.42)}
+.spot.hide{display:none}
+
+/* 아래: 서하가 내일을 말하고, 작은 흰 단추 하나 + 같은 줄 글 단추 */
+.foot{position:absolute;z-index:6;left:0;right:0;bottom:0;padding:0 24px max(24px,calc(var(--sab) + 14px))}
+.night .foot::before{content:"";position:absolute;left:0;right:0;top:-70px;bottom:0;z-index:-1;background:linear-gradient(180deg,rgba(3,5,12,0),rgba(3,5,12,.6) 42%,rgba(3,5,12,.78));pointer-events:none}
+.night.enter .seoha{animation:rise .6s var(--sp) 3.2s both}
+.night.enter .acts{animation:rise .6s var(--sp) 3.75s both}
+.seoha{display:grid;grid-template-columns:38px minmax(0,1fr);gap:12px;align-items:start;margin-bottom:20px}
+.face{width:38px;height:38px;border-radius:50%;background-size:cover;background-position:50% 35%;box-shadow:0 0 0 1.5px rgba(255,255,255,.55),0 6px 14px rgba(0,0,0,.35)}
+.who{font-size:13px;color:var(--ink3);margin-top:1px;text-shadow:0 1px 10px rgba(0,0,0,.6)}
+.who b{font-weight:700;color:var(--seoha);letter-spacing:-.005em}
+.say{margin-top:3px;font-size:20px;font-weight:560;line-height:1.38;letter-spacing:-.025em;color:var(--ink)}
+.say q{quotes:none;color:var(--lamp);font-weight:640;white-space:nowrap}
+.say small{display:block;margin-top:2px;font-size:13px;font-weight:450;line-height:1.4;letter-spacing:0;color:var(--ink3)}
+.quote{margin-top:6px;font-size:17px;font-weight:560;letter-spacing:-.025em;color:var(--lamp)}
+.meta{margin-top:6px;font-size:13px;font-weight:500;color:var(--ink3);letter-spacing:-.005em;text-shadow:0 1px 10px rgba(0,0,0,.6)}
+.acts{display:flex;flex-direction:column;align-items:center;gap:2px}
+.go{display:inline-flex;align-items:center;justify-content:center;min-width:236px;height:54px;padding:0 40px;border-radius:27px;font-size:16.5px;font-weight:640;color:#0b0c10;background:#FAFAF9;box-shadow:0 10px 30px rgba(0,0,0,.32);transition:transform .38s var(--sp)}
+.go:active{transform:scale(.97);transition-duration:.08s}
+.tx{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;font-size:14.5px;font-weight:560;color:var(--ink2);text-shadow:0 1px 8px rgba(0,0,0,.75)}
+.arw{display:inline-block;margin-left:7px;font-weight:500;transition:transform .3s var(--sp)}
+.tx:hover .arw,.next:hover .arw{transform:translateX(3px)}
+
+/* 한글 화면 질문(사람 말 아님) — 동그라미 답 */
+.askq{margin-bottom:4px}
+.ask-lab{font-size:13px;font-weight:560;color:var(--ink3);text-shadow:0 1px 8px rgba(0,0,0,.7)}
+.ask-q{margin-top:4px;font-size:22px;font-weight:560;line-height:1.35;letter-spacing:-.025em;color:var(--ink)}
+.ask-q small{display:block;font-size:13px;font-weight:450;color:var(--ink3);margin-top:2px}
+.askq .later{min-height:44px;margin-top:2px;padding:0 2px;font-size:14px;font-weight:560;color:var(--ink3);text-shadow:0 1px 8px rgba(0,0,0,.75)}
+
+/* 불 끈 뒤: 사진만 남고 왼쪽 아래 자막 + 전등 빛 글 단추. 화면 끝에서 넉넉히 띄운다(아르곤 6차 「바닥에 붙어 있음 · 안전 여백」) */
+.night .rest{position:absolute;z-index:6;left:24px;right:16px;bottom:max(72px,calc(var(--sab) + 58px));display:flex;align-items:center;justify-content:space-between;gap:14px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity 1.2s ease}
+.rest p{max-width:220px;font-size:14px;font-weight:480;line-height:1.5;color:var(--ink2);letter-spacing:-.01em;text-shadow:0 1px 10px rgba(0,0,0,.85)}
+.rest .next{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 8px;font-size:15px;font-weight:600;color:var(--tap);text-shadow:0 1px 10px rgba(0,0,0,.8)}
+.night.off .ph .off{opacity:1;transition:opacity .16s linear}
+.night.off .ph .on{opacity:0;transition:opacity .16s linear}
+.night.off .poem,.night.off .foot,.night.off .spot,.night.off .tag,.night.off .hud{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .7s ease,visibility 0s .7s}
+.night.off .rest{opacity:1;pointer-events:auto;visibility:visible;transition:opacity 1.2s ease 1.6s,visibility 0s 1.6s}
+
+/* 기록 열기(서울행 엄마 쪽지 판과 같은 바닥 판) */
+.sheet{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(3,5,12,0);transition:background .35s;pointer-events:none}
+.sheet.on{background:rgba(3,5,12,.62);pointer-events:auto}
+.sheet-card{width:100%;max-height:86%;overflow:auto;padding:20px 22px max(18px,calc(var(--sab) + 12px));border-radius:22px 22px 0 0;background:#10131b;box-shadow:inset 0 1px 0 var(--line2);transform:translateY(105%);transition:transform .5s var(--sp)}
+.sheet.on .sheet-card{transform:none}
+.sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+.sheet-head b{font-size:18px;font-weight:620;letter-spacing:-.025em}
+.sheet-head button{min-height:44px;padding:0 4px;font-size:14px;font-weight:560;color:var(--ink3)}
+.said{list-style:none;display:grid;gap:12px}
+.said li{display:grid;grid-template-columns:16px 1fr;gap:10px;align-items:start}
+.said li svg{width:12px;height:19px;margin-top:3px;color:var(--dream);filter:drop-shadow(0 0 5px var(--dream))}
+.said li span{font-size:17px;font-weight:560;line-height:1.4;letter-spacing:-.025em;color:var(--ink)}
+.said li small{display:block;font-size:12.5px;font-weight:450;color:var(--ink3);margin-top:2px}
+.momshot{display:block;width:min(100%,330px);border-radius:12px 12px 12px 4px;box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.myreply{display:flex;justify-content:flex-end;margin-top:10px}
+.myreply span{max-width:84%;padding:10px 15px 11px;border-radius:19px 19px 6px 19px;background:#FAFAF9;color:#08090C;font-size:17px;font-weight:540}
+.expr{margin-top:16px;padding-top:14px;border-top:1px solid var(--line2)}
+.expr span{display:block;font-size:12.5px;font-weight:560;color:var(--ink3)}
+.expr b{display:block;margin-top:4px;font-size:17px;font-weight:600;color:var(--lamp);letter-spacing:-.025em}
+/* 학생증(서울행 .idcard를 줄여 옮김) */
+.idcard{position:relative;width:min(100%,330px);aspect-ratio:1.586;margin:6px auto 8px;border-radius:16px;overflow:hidden;padding:15px 17px;display:grid;grid-template-columns:88px minmax(0,1fr);grid-template-rows:auto 1fr auto;column-gap:15px;color:#141826;background:linear-gradient(135deg,#fbf8f2 0,#eee7da 100%);box-shadow:0 20px 40px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.6)}
+.id-school{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;padding-bottom:9px;border-bottom:1px solid rgba(20,24,38,.14)}
+.id-school b{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:680;letter-spacing:-.03em}
+.id-school b svg{width:15px;height:15px;color:#2c3a66}
+.id-school span{font-size:10.5px;font-weight:600;letter-spacing:.06em;color:#6b6f80}
+.id-photo{grid-row:2/4;margin-top:11px;border-radius:11px;background-size:cover;background-position:50% 22%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.id-info{margin-top:11px;display:grid;gap:3px;align-content:start;font-size:12.5px;color:#4a4f60;min-width:0}
+.id-info .nm{font-size:23px;font-weight:680;letter-spacing:-.04em;color:#141826;line-height:1.1}
+.id-info .nm small{display:block;margin-top:3px;font-size:10.5px;font-weight:600;letter-spacing:.06em;color:#6b6f80}
+.id-info b{color:#141826;font-weight:600}
+.id-foot{grid-column:2;display:flex;justify-content:space-between;align-items:end;gap:8px}
+.id-dream{padding:4px 9px;border-radius:8px;font-size:12.5px;font-weight:600;color:#14102a;background:var(--dream2)}
+
+/* ══ 둘째 날 1 — 새벽 창가(같은 창, 해 뜨기 몇 분 전) ══ */
+.dawn .ph::after{background:linear-gradient(180deg,rgba(6,12,32,.18) 0,rgba(6,12,32,0) 30%,rgba(4,8,20,0) 58%,rgba(4,8,20,.42) 82%,rgba(4,8,20,.6) 100%)}
+.dawn .dtop{position:absolute;z-index:5;left:24px;right:22px;top:max(104px,calc(var(--sat) + 92px))}
+.dawn .dtop .who{display:flex;align-items:center;gap:9px;font-size:14px}
+.dawn .dtop .face{width:30px;height:30px}
+.dawn .big{margin-top:12px;font-size:30px;font-weight:530;line-height:1.28;letter-spacing:-.025em;color:#fff}
+.dawn .big small{display:block;margin-top:6px;font-size:13px;font-weight:450;letter-spacing:0;color:var(--ink2)}
+.dawn .big.plain{font-weight:450;color:var(--ink2)}
+.dawn.enter .dtop{animation:rise .7s var(--sp) .7s both}
+.dawn.enter .foot .acts{animation:rise .6s var(--sp) 1.6s both}
+.dawn .foot::before{display:none}
+
+/* ══ 종이(맞춤) — 램프 아래(첫날 밤) · 아침 햇빛(둘째 날) ══ */
+.home{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--paper);color:var(--k)}
+.home.lamp{background:radial-gradient(120% 55% at 96% -8%,rgba(255,190,110,.2),rgba(255,190,110,0) 62%),var(--paper)}
+.home.morning{background:radial-gradient(110% 50% at 0% -10%,rgba(200,218,240,.42),rgba(200,218,240,0) 60%),var(--paper)}
+.home::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .3 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* 머리: 「이야기 · 맞춤」(같은 높이 · 작은 글 없음) + 나 */
+.hd{position:relative;z-index:3;flex:none;display:flex;align-items:center;gap:10px;min-height:58px;padding:max(8px,var(--sat)) 18px 0 12px}
+.hd .me{flex:none;margin-left:auto;width:32px;height:32px;border-radius:50%;background-size:cover;background-position:50% 30%;box-shadow:0 0 0 1.5px #fff,0 3px 8px rgba(40,25,10,.18)}
+.hd .me.nm{width:auto;height:auto;background:none;box-shadow:none;font-size:14px;font-weight:620;color:var(--k2)}
+.hd .tag{position:static;color:var(--k3)}
+.me{display:block;border-radius:50%;background-size:cover;background-position:50% 30%}
+
+.pg{position:relative;z-index:1;flex:1;overflow:auto;overscroll-behavior:contain}
+.cols{padding:0 24px 26px}
+.home .today .tag{position:static;margin-top:4px;color:var(--k3)}
+.home .who{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:14px;text-shadow:none}
+.home .who .face{width:26px;height:26px;box-shadow:0 0 0 1.5px #fff,0 2px 6px rgba(40,25,10,.18)}
+.home .who b{color:var(--seoha-p)}
+/* 서하 말: 앞은 옅게(450), 할 일 이름부터 진하게 — 굵기 둘 · 색 둘 */
+.lede{margin-top:8px;font-size:26px;font-weight:560;line-height:1.32;letter-spacing:-.025em;color:var(--k)}
+.lede .pre{font-weight:430;color:var(--k3)}
+.lede q{quotes:none;font-weight:660;color:var(--k)}
+.lede .nw{white-space:nowrap}
+.lede small{display:block;margin-top:6px;font-size:13px;font-weight:450;line-height:1.4;letter-spacing:0;color:var(--k3)}
+.lede.q{font-size:27px}
+.lede.two-l .pre{display:block;margin-bottom:2px}
+
+/* 우표 줄 — 가운데만 크고 또렷하게. 칸 자리 · 크기 · 옅기는 스크립트가 거리로 정한다 */
+.rail{--rh:256px;--sw:162px;position:relative;height:var(--rh);margin:12px -24px 0;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;outline:none}
+.rail.dragging{cursor:grabbing}
+.rail:focus-visible{outline:2px solid var(--navy);outline-offset:-6px;border-radius:6px}
+.ri{position:absolute;left:50%;top:50%;width:var(--sw);padding:0;transform:translate(-50%,-50%);transform-origin:50% 50%;will-change:transform,opacity;-webkit-touch-callout:none;cursor:inherit}
+.ri:focus-visible{outline:none}
+.ticks{display:flex;justify-content:center;align-items:flex-end;gap:7px;height:14px;margin-top:2px}
+.ticks i{width:1.5px;height:7px;background:var(--k4);transition:height .25s var(--sp),background .25s}
+.ticks i.on{width:2px;height:13px;background:var(--navy)}
+.rail.task + .ticks{display:none}   /* 셋이 다 보이는 줄에는 눈금이 군더더기 */
+
+/* 가운데 우표의 이름표: 이름 · 분 / 그 레슨이 가르치는 말 셋 / 왜(서하가 고른 것) · 다른 걸로 */
+.cap{margin-top:12px;text-align:center}
+.cap.swap{animation:capin .34s var(--sp) both}
+@keyframes capin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.cap .nm{font-size:20px;font-weight:640;letter-spacing:-.025em;color:var(--k)}
+.cap .nm .mn{margin-left:9px;font-size:14px;font-weight:520;color:var(--k3);letter-spacing:0}
+.cap .says{margin-top:7px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;row-gap:2px;font-size:16.5px;font-weight:450;line-height:1.55;color:var(--k2);letter-spacing:-.02em}
+.cap .says span{white-space:nowrap}
+.cap .says i{display:inline-block;width:3px;height:3px;border-radius:50%;background:var(--k4);margin:0 10px}
+.cap .tp{margin-top:7px;font-size:15.5px;font-weight:450;color:var(--k2)}
+.cap .why{margin-top:7px;font-size:13.5px;font-weight:470;line-height:1.45;color:var(--k3)}
+.cap .why.chose{display:inline-flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 8px;font-weight:580;color:var(--navy)}
+.cap .why.chose button{min-height:44px;margin:-12px 0;padding:0 4px;font-weight:620;color:var(--k2);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--k4)}
+.cap .nm.g{font-size:24px}
+.cap .nm.g .mn{font-size:13px}
+
+/* 시작: 내가 하는 일 = 남색, 각진 단추(알약 · 반쯤 둥근 상자 없이) */
+.start{display:flex;align-items:center;justify-content:center;gap:10px;min-width:224px;height:54px;margin:18px auto 0;padding:0 30px;border-radius:4px;background:var(--navy);color:#fff;font-size:16.5px;font-weight:620;box-shadow:0 8px 18px rgba(29,37,71,.16);transition:transform .38s var(--sp)}
+.start:active{transform:scale(.97);transition-duration:.08s}
+.start small{font-size:14px;font-weight:520;color:rgba(255,255,255,.62)}
+
+/* 내 위치 */
+.pos-ph{margin-top:22px}
+.pos-row{display:flex;align-items:baseline;gap:10px;width:100%;min-height:52px;padding:14px 2px 0;border-top:1px solid var(--kl);text-align:left;color:var(--k)}
+.pos-row b{font-size:15px;font-weight:680;letter-spacing:-.02em}
+.pos-row span{font-size:13px;font-weight:520;color:var(--k3)}
+.pos-row .arw{margin-left:auto;font-size:16px;color:var(--navy)}
+.pos{padding-top:12px;border-top:1px solid var(--kl)}
+.pos-h{display:flex;align-items:baseline;gap:10px}
+.pos-h b{font-size:15px;font-weight:680;letter-spacing:-.02em}
+.pos-h > span{font-size:13px;font-weight:520;color:var(--k3)}
+.pos-h button{margin:-12px 0 -12px auto;min-height:44px;padding:0 2px;font-size:13.5px;font-weight:600;color:var(--navy)}
+.strip{margin-top:8px;display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);align-items:end;column-gap:8px}
+.dl{font-size:12.5px;font-weight:650;line-height:1;color:var(--k2)}
+.rule{display:grid;grid-template-columns:repeat(8,1fr);height:16px;border-bottom:1.5px solid var(--k2)}
+.rule + .dl{margin-left:6px}
+.rule i{position:relative;display:block}
+.rule i::before{content:"";position:absolute;left:0;bottom:0;width:1px;height:6px;background:var(--k3)}
+.rule i:last-child::after{content:"";position:absolute;right:0;bottom:0;width:1px;height:6px;background:var(--k3)}
+.rule i b{position:absolute;left:2px;right:2px;top:1px;bottom:2px;background:repeating-linear-gradient(135deg,var(--navy) 0 1.2px,transparent 1.2px 4px)}
+.named{margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:14px;font-weight:560;color:var(--k);line-height:1.4}
+.named .sw{width:18px;height:11px;border-bottom:1.5px solid var(--k2);background:repeating-linear-gradient(135deg,var(--navy) 0 1.2px,transparent 1.2px 4px)}
+.named em{font-style:normal;font-size:12.5px;font-weight:600;color:var(--k3)}
+.side{display:none}
+.skip{display:block;margin:20px auto 0;min-height:44px;padding:0 14px;font-size:14px;font-weight:560;color:var(--k3);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--k4)}
+.asking .lede.q{margin-top:18px}
+@media (max-width:1023px){ .asking .today .tag::after,.d2q .hd .tag::after{display:none} .asking .pg{display:flex;flex-direction:column} .asking .cols{flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:40px} .asking .today{text-align:center} .asking .today .tag{justify-content:center} }
+
+/* 둘째 날 2 — 종이 질문(한글 · 목표) */
+.d2q .hd{padding-left:24px;padding-right:18px}
+.d2q .pg{display:flex;flex-direction:column}
+.d2q .today.solo{margin:auto 0;padding:0 24px 36px;text-align:center}
+.d2q .lede.q{margin-top:22px;text-align:center}
+.d2q .hint{margin-top:10px;font-size:14px;font-weight:460;color:var(--k3)}
+.d2q .rail.goals{--rh:290px;--sw:178px;margin-top:18px}
+.acts2{display:flex;flex-direction:column;align-items:center;margin-top:16px}
+.acts2 .skip{margin-top:6px}
+
+/* 문 두 짝(Motion 「Doors」 — 학교 시안 2판과 같은 넘김): 닫힌 동안 우표가 가운데 */
+.doors{position:absolute;inset:0;z-index:50;pointer-events:none}
+.doors i{position:absolute;top:0;bottom:0;width:50.5%;background:var(--navy);transition:transform .62s cubic-bezier(.7,0,.2,1)}
+.doors i:first-child{left:0;transform:translateX(-101%)}
+.doors i:nth-child(2){right:0;transform:translateX(101%)}
+.doors.shut i{transform:none}
+.doors.open i:first-child{transform:translateX(-101%)}
+.doors.open i:nth-child(2){transform:translateX(101%)}
+.doors b{position:absolute;left:50%;top:50%;width:150px;opacity:0;transform:translate(-50%,-50%) scale(.6) rotate(-8deg);transition:opacity .3s,transform .55s var(--sp2)}
+.doors.shut b{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-2deg);transition-delay:.24s}
+.doors.open b{opacity:0;transform:translate(-50%,-50%) scale(1.06);transition-delay:0s}
+
+.toast{position:absolute;z-index:60;left:50%;bottom:max(96px,calc(var(--sab) + 86px));transform:translate(-50%,8px);padding:10px 16px;border-radius:4px;background:var(--k);color:#fff;font-size:14px;font-weight:580;opacity:0;pointer-events:none;transition:opacity .4s,transform .45s var(--sp);white-space:nowrap}
+.night .toast,.dawn .toast{background:#FAFAF9;color:#0b0c10}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* 화면 언어 줄이 붙는 판(영어 · 몽골어)은 우표를 조금 작게 — 첫 연습 뒤 내 위치 눈금까지 첫 화면에.
+   10e: 휴대폰 폭에만(넓은 화면 규칙을 덮던 것, Fable 10 P2-5) · 키 작은 휴대폰 값(아래)이 뒤에서 이기게 앞으로 옮김 */
+@media (max-width:1023px){ html:lang(en) .rail.task,html:lang(mn) .rail.task{--rh:224px;--sw:140px} }
+/* 키가 작은 휴대폰(360×740 등) */
+@media (max-height:780px) and (max-width:1023px){
+  .home .who{margin-top:10px}
+  .lede{font-size:23.5px}
+  .lede.q{font-size:25px}
+  .rail{--rh:200px;--sw:126px;margin-top:8px}
+  html:lang(en) .rail.task,html:lang(mn) .rail.task{--rh:184px;--sw:114px}
+  .pos-ph{margin-top:12px}
+  .d2q .rail.goals{--rh:214px;--sw:134px}
+  .cap{margin-top:8px}
+  .cap .nm{font-size:18.5px}
+  .cap .says{font-size:15.5px;margin-top:5px}
+  .start{height:50px;margin-top:14px}
+  .poem{top:max(100px,calc(var(--sat) + 88px))}
+  .ln .ko{font-size:30px}
+  .dawn .big{font-size:27px}
+}
+@media (max-width:370px){ .lede{font-size:23px} .ln .ko{font-size:30px} }
+
+/* ══ 넓은 화면 ══ 종이는 화면 전체 — 왼쪽 단 오늘 할 일, 오른쪽 단 내 위치 · 기록. 탐색은 위 한 줄로(아래 줄 없음) */
+@media (min-width:1024px){
+  #app.paper{max-width:none}
+  .home .hd{min-height:76px;padding:16px 48px 0 40px}
+  .hd .me{margin-left:14px}
+  .cols{max-width:1200px;margin:0 auto;padding:6px 56px 56px;display:grid;grid-template-columns:minmax(0,1fr) 340px;column-gap:104px;align-items:start}
+  .home .today .tag{margin-top:14px}
+  .home .who{margin-top:22px;font-size:15px}
+  .home .who .face{width:30px;height:30px}
+  .lede{max-width:700px;font-size:42px;line-height:1.24}
+  .lede small{font-size:15px}
+  .rail{--rh:332px;--sw:214px;margin:18px 0 0}
+  .cap .nm{font-size:24px}
+  .cap .says{font-size:19px}
+  .cap .why{font-size:15px}
+  .start{height:58px;min-width:300px;font-size:17px}
+  .pos-ph{display:none}
+  .side{display:grid;gap:36px;padding-top:150px}
+  .side .lab{font-size:13px;font-weight:620;color:var(--k3)}
+  .side .done{margin-top:9px;display:flex;flex-wrap:wrap;align-items:center;row-gap:4px;font-size:16px;font-weight:520;line-height:1.55;color:var(--k)}
+  .side .done i{display:inline-block;width:3px;height:3px;border-radius:50%;background:var(--k4);margin:0 10px}
+  .side .expr-q{margin-top:10px;padding-left:14px;border-left:2px solid var(--navy);font-size:18px;font-weight:560;line-height:1.45;letter-spacing:-.02em;color:var(--k)}
+  .side .pos-row{padding-top:16px}
+  .asking .lede.q{margin-top:26px}
+  .asking .skip{margin-left:0}
+  .d2q .hd{padding:16px 48px 0 48px}
+  .d2q .today.solo{max-width:900px;margin:0 auto;padding-top:24px}
+  .d2q .lede.q{font-size:40px}
+  .d2q .rail.goals{--rh:330px;--sw:206px;margin-top:26px}
+  .toast{bottom:48px}
+}
+@media (min-width:1024px) and (max-height:820px){
+  .lede{font-size:36px}
+  .rail{--rh:280px;--sw:176px}
+  .side{padding-top:120px}
+}
+
+/* 동작 줄이기 · 멈춘 판 */
+.still *,.still *::before,.still *::after{animation:none!important;transition:none!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01ms!important}}
+.look-photo .home .today{text-align:center}
+.look-photo .home .today .tag{justify-content:center}
+.look-photo .home .today .tag::after{display:none}
+.look-photo .home .who{justify-content:center}
+.look-photo .rail{--rh:318px;--sw:210px;margin-top:14px}
+.look-photo .rail.goals{--rh:352px;--sw:214px}
+.pcard{display:block;width:100%;aspect-ratio:3/4;border-radius:3px;overflow:hidden;background:#2a2622;box-shadow:0 16px 34px rgba(40,25,10,.2),0 2px 6px rgba(40,25,10,.12)}
+.pcard img{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
+.rlab{display:block;margin-top:10px;font-size:14px;font-weight:600;color:var(--k2);white-space:nowrap;transition:opacity .25s}
+.ri.on .rlab{opacity:0}
+.look-photo .ri.on .pcard{box-shadow:0 22px 44px rgba(40,25,10,.26),0 3px 8px rgba(40,25,10,.14)}
+.look-photo .start{border-radius:27px;box-shadow:none;min-width:236px;height:54px}
+.look-photo .cap .nm{font-size:21px}
+.look-photo .cap .why.chose{color:var(--k3);font-weight:480}
+.look-photo .cap .why.chose button{text-decoration:none;color:var(--navy);font-weight:620}
+.look-photo .cap .why.chose button .arw{margin-left:4px}
+.doneln{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;row-gap:2px;margin-top:22px;font-size:13.5px;font-weight:480;line-height:1.5;color:var(--k2)}
+.doneln b{margin-right:10px;font-weight:620;color:var(--k3)}
+.doneln i{display:inline-block;width:3px;height:3px;border-radius:50%;background:var(--k4);margin:0 9px}
+.look-photo .pos-ph{margin-top:14px}
+.look-photo .pos-row{justify-content:center;gap:10px;padding-top:12px}
+.look-photo .pos-row .arw{margin-left:0}
+.look-photo .pos{text-align:left;max-width:342px;margin:0 auto}
+.look-photo .asking .tb{margin-top:6px}
+.doors b .pcard{width:200px}
+.look-photo .doors b{width:200px}
+@media (max-height:780px) and (max-width:1023px){
+  .look-photo .rail{--rh:252px;--sw:168px}
+  .look-photo .rail.goals{--rh:280px;--sw:170px}
+  .doneln{margin-top:14px}
+}
+@media (max-width:1023px){ html:lang(en) .look-photo .rail.task,html:lang(mn) .look-photo .rail.task{--rh:280px;--sw:184px} }   /* 10e: 휴대폰 폭에만(Fable 10 P2-5) */
+@media (max-height:780px) and (max-width:1023px){ html:lang(en) .look-photo .rail.task,html:lang(mn) .look-photo .rail.task{--rh:236px;--sw:156px} }
+@media (min-width:1024px){
+  .look-photo .home .cols{display:block;max-width:1180px;padding-top:0}
+  .look-photo .home .side{display:none}
+  .look-photo .home .today,.look-photo .d2q .today.solo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:1fr auto auto 1fr;grid-template-areas:"rail ." "rail ta" "rail tb" "rail .";column-gap:80px;min-height:calc(100dvh - 92px);text-align:left;max-width:1180px;margin:0 auto;padding:0 0 24px}
+  .look-photo .today > .ta{grid-area:ta}
+  .look-photo .today > .trail{grid-area:rail;align-self:center;overflow:hidden;padding:24px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 9%,#000 91%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 9%,#000 91%,transparent 100%)}
+  .look-photo .today > .tb{grid-area:tb}
+  .look-photo .home .today .tag,.look-photo .home .who{justify-content:flex-start}
+  .look-photo .rail{--rh:560px;--sw:300px;margin:0}
+  .look-photo .rail.goals{--rh:580px;--sw:296px}
+  .look-photo .lede{font-size:40px}
+  .look-photo .d2q .lede.q{text-align:left;font-size:40px}
+  .look-photo .cap{text-align:left;margin-top:22px}
+  .look-photo .cap .says{justify-content:flex-start}
+  .look-photo .cap .why.chose{justify-content:flex-start}
+  .look-photo .start{margin:26px 0 0;min-width:280px;height:58px;border-radius:29px}
+  .look-photo .acts2{align-items:flex-start}
+  .look-photo .acts2 .skip{margin-left:0}
+  .look-photo .doneln{justify-content:flex-start;margin-top:26px}
+  .look-photo .pos-ph{display:block;max-width:440px;margin-top:16px}
+  .look-photo .pos-row{justify-content:flex-start}
+  .look-photo .asking .today{display:block;max-width:760px;margin:0 auto;padding-top:10vh;text-align:center}
+  .look-photo .asking .today .tag{justify-content:center}
+  .look-photo .asking .skip{margin:20px auto 0}
+}
+@media (min-width:1024px) and (max-height:820px){
+  .look-photo .rail{--rh:480px;--sw:264px}
+  .look-photo .rail.goals{--rh:500px;--sw:260px}
+  .look-photo .lede{font-size:34px}
+}
+
+/* ══ 10c(맹검 8차 첫 묶음) ══ 첫날 밤 종이에 램프 공기 — 오른쪽 위 램프 빛이 종이에 고이고 가장자리는 조금 어둡게(「밤 시간대의 드라마틱한 공기감 없이」) */
+.look-photo .home.lamp{background:radial-gradient(80% 52% at 88% 2%,rgba(255,186,104,.36),rgba(255,186,104,0) 62%),radial-gradient(150% 110% at 50% 36%,rgba(60,38,16,0) 56%,rgba(60,38,16,.16) 100%),#EFE7DA}
+.look-photo .home.lamp::before{background-color:transparent}
+.look-photo .cap{min-height:96px}
+.look-photo .cap .says{margin-top:0;font-size:17px;color:var(--k)}
+.look-photo .cap .nm + .says{margin-top:6px}
+.look-photo .cap .tp{margin-top:0}
+.look-photo .cap .nm{font-size:19px}
+@media (max-height:780px) and (max-width:1023px){ .look-photo .cap{min-height:84px} }
+@media (min-width:1024px){ .look-photo .cap{min-height:0} }
+.look-photo .home:not(.d2q) .today .ta > .tag{display:none}
+.look-photo .home .who{margin-top:6px}
+.look-photo .asking .today .ta > .tag{display:flex}
+.look-photo .cap{min-height:118px}
+@media (max-height:780px) and (max-width:1023px){ .look-photo .cap{min-height:104px} }
+.doneln{flex-direction:column;gap:2px}
+.doneln .dl1,.doneln .dl2{display:flex;flex-wrap:wrap;justify-content:center;align-items:center}
+.doneln .dl2 b{margin-right:10px}
+@media (min-width:1024px){ .look-photo .doneln{align-items:flex-start} .look-photo .doneln .dl1,.look-photo .doneln .dl2{justify-content:flex-start} }
+.look-photo .d2q .cap{min-height:64px}
+
+/* ══ 10c 셋째(맹검 8차 셋째 묶음 — 사진 화면) ══ */
+.night .tag::after{display:none}
+.tag .me-tag{color:var(--dream2);font-weight:640}
+.go{min-width:208px;height:50px;padding:0 34px;font-size:16px}
+.tx{color:var(--ink);font-weight:580;font-size:15px}
+.tx .arw{margin-left:6px;opacity:.8}
+.rest p{color:var(--ink3);font-size:13.5px}
+.rest .next{font-weight:620}
+
+/* ══ 10c 넷째(맹검 8차 넷째 묶음) ══ */
+/* 한글 답: 견본 글자 + 말 — 누르는 칸이 칸으로 보이게(K56), 고르면 남색 */
+.chs{display:grid;gap:10px;width:100%;max-width:342px;margin:26px auto 0}
+.ch{display:flex;align-items:center;gap:16px;width:100%;min-height:64px;padding:0 18px;border-radius:4px;text-align:left;color:var(--k);background:rgba(255,255,255,.42);box-shadow:inset 0 0 0 1px rgba(22,21,19,.16);transition:box-shadow .2s,background .2s}
+.ch .lb{font-size:17px;font-weight:620;letter-spacing:-.02em}
+.ch:hover{background:rgba(255,255,255,.7)}
+.ch[aria-pressed="true"]{box-shadow:inset 0 0 0 1.6px var(--navy);background:rgba(29,37,71,.06)}
+.ch[aria-pressed="true"] .lb{color:var(--navy)}
+.chs.dark{max-width:none;margin:12px 0 0}
+.chs.dark .ch{color:var(--ink);background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);min-height:58px}
+.chs.dark .ch:hover{background:rgba(255,255,255,.12)}
+.chs.dark .ch[aria-pressed="true"]{box-shadow:inset 0 0 0 1.6px var(--tap);background:rgba(255,212,138,.1)}
+.chs.dark .ch[aria-pressed="true"] .lb{color:var(--tap)}
+.look-photo .asking .chs{margin-top:30px}
+@media (min-width:1024px){ .look-photo .asking .chs{margin:34px auto 0} }
+/* 내 위치: 가는 칸 막대(바닥선 · 눈금 대신) — 연습 중 칸만 남색 빗금 */
+.rule{height:8px;border-bottom:0;gap:3px;align-self:center}
+.rule i{background:rgba(22,21,19,.1);border-radius:1px}
+.rule i::before,.rule i:last-child::after{display:none}
+.rule i b{inset:0;border-radius:1px;background:repeating-linear-gradient(135deg,var(--navy) 0 1.3px,rgba(29,37,71,.18) 1.3px 3.6px)}
+.strip{align-items:center}
+/* 넓은 화면 사진 줄: 자르지 않음(셋이 단 안에) */
+@media (min-width:1024px){
+  .look-photo .today > .trail{overflow:visible;-webkit-mask-image:none;mask-image:none;padding:0}
+  .look-photo .home .today,.look-photo .d2q .today.solo{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+  .look-photo .rail{--rh:470px;--sw:280px}
+  .look-photo .rail.goals{--rh:500px;--sw:270px}
+}
+@media (min-width:1024px) and (max-height:820px){
+  .look-photo .rail{--rh:420px;--sw:250px}
+  .look-photo .rail.goals{--rh:450px;--sw:240px}
+}
+
+/* ══ 10e(11-10 밤) — Fable 최종 P1 · P2 + 아르곤 맹검 9차 ══ */
+/* 시 속 누르는 낱말: 전등 빛 글 — 자리 이름표 · 「지금 더 하기」와 같은 색 = 누를 수 있음(Fable 10 P2-4) */
+.ln .w{color:var(--tap)}
+/* 닫힌 기록 판은 화면 읽기에서도 닫힘(늘 떠 있던 aria-modal, Fable 10 P2-2) */
+.sheet{visibility:hidden;transition:background .35s,visibility 0s .5s}
+.sheet.on{visibility:visible;transition:background .35s,visibility 0s}
+/* 넘긴 뒤 초점을 받는 첫 말 — 누르는 것이 아니라 테두리 없음(Fable 10 P2-3) */
+.lede:focus,.big:focus,.poem:focus,.say:focus{outline:none}
+/* 밤 · 새벽 화면 토스트는 흰 판(토스트는 .view 밖이라 #app에서 고른다, Fable 10 P2-10) */
+#app:has(> .view.night) .toast,#app:has(> .view.dawn) .toast{background:#FAFAF9;color:#0b0c10}
+/* 읽기만 하는 기록은 옅게, 누르는 줄(내 위치)은 남색 — 같은 색 · 굵기라 갈리지 않던 것(맹검 9차 K56) */
+.doneln{color:var(--k3)}
+.doneln b{color:var(--k3);font-weight:650}
+.pos-row b{color:var(--navy)}
+/* 첫 연습 뒤 휴대폰: 연습 중 칸 이름 줄은 「전체 보기」로(아래가 여덟 층으로 쌓임, 맹검 9차 C016 · C018) */
+@media (max-width:1023px){ .look-photo .pos .named{display:none} }
+
+/* 한글 답: 1px 테두리 상자 → 종이 위에 놓인 판(그림자), 견본 글자 없이 말만(맹검 9차 C016 · K57) */
+.ch{justify-content:center;min-height:60px;padding:0 18px;text-align:center;background:#FBF8F2;box-shadow:0 1px 2px rgba(60,40,15,.12),0 8px 20px rgba(60,40,15,.08)}
+.ch .lb{font-size:17.5px;font-weight:640}
+.ch:hover{background:#fff}
+.ch[aria-pressed="true"]{background:#fff;box-shadow:inset 0 0 0 2px var(--navy),0 8px 20px rgba(29,37,71,.12)}
+/* 밤 사진 위 답: 유리 상자 → 테두리 캡슐 둘을 한 줄에(끝 단추 캡슐과 같은 꼴, 맹검 9차 C016 「기본 유리 카드」) */
+.chs.dark{grid-template-columns:1fr 1fr;gap:10px}
+.chs.dark .ch{min-height:52px;padding:6px 12px;border-radius:26px;background:rgba(3,5,12,.18);box-shadow:inset 0 0 0 1.2px rgba(255,255,255,.62)}
+.chs.dark .ch .lb{font-size:15.5px;font-weight:620;line-height:1.25;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.chs.dark .ch:hover{background:rgba(255,255,255,.08)}
+.chs.dark .ch[aria-pressed="true"]{background:rgba(255,212,138,.16);box-shadow:inset 0 0 0 1.6px var(--tap)}
+/* 나중에: 밑줄 없는 조용한 글 단추 */
+.skip{text-decoration:none;color:var(--k2);font-weight:580}
+/* 질문 줄: 화면 언어가 크고 한국어 견본이 아래(맹검 9차 C129) */
+.lede small.kq{margin-top:7px;font-size:17px;font-weight:520;color:var(--k2);letter-spacing:-.02em}
+.ask-q small.kq{margin-top:4px;font-size:16px;font-weight:520;color:var(--ink2);letter-spacing:-.02em}
+/* 밤 한글 질문 동안 시를 줄여 질문이 주인공(답하면 원래 크기로) — 열두 단이 창밖을 가리던 것(맹검 9차 C129) */
+.ln .ko{transition:font-size .5s var(--sp)}
+.night.asking .ln .ko{font-size:25px}
+.night.asking .ln.lead .ko{font-size:17px}
+.night.asking .ln small{font-size:12px}
+.night.asking .ln .w{padding:7px 0;margin:-7px 0}   /* 줄인 시에서도 누를 높이 44px(찍기 「작은 누를 곳」) */
+
+/* 학생증 작은 판(한글 질문 위) — 서울행에서 받은 그 학생증 */
+.idcard.mini{width:232px;margin:2px auto 22px;padding:11px 12px;text-align:left;border-radius:12px;grid-template-columns:60px minmax(0,1fr);column-gap:11px;transform:rotate(-2.4deg);box-shadow:0 18px 32px rgba(60,40,15,.18),0 2px 5px rgba(60,40,15,.12),inset 0 0 0 1px rgba(255,255,255,.6)}
+.idcard.mini .id-school{padding-bottom:6px}
+.idcard.mini .id-school b{font-size:11.5px;gap:4px}
+.idcard.mini .id-school b svg{width:11px;height:11px}
+.idcard.mini .id-school span{font-size:8px}
+.idcard.mini .id-photo{margin-top:8px;border-radius:7px}
+.idcard.mini .id-info{margin-top:8px;font-size:9.5px;gap:2px}
+.idcard.mini .id-info .nm{font-size:22px}
+.idcard.mini .id-info .nm small{margin-top:2px;font-size:8.5px}
+.look-photo .asking .tag{justify-content:center}
+@media (max-height:780px) and (max-width:1023px){ .idcard.mini{width:200px;margin-bottom:14px} .idcard.mini .id-info .nm{font-size:19px} }
+
+/* 넓은 화면: 머리는 본문 폭 안으로(양 끝 구석의 작은 글, 맹검 9차 C016), 사진 줄 · 예문은 크게 */
+@media (min-width:1024px){
+  .look-photo .home .hd{max-width:1180px;width:100%;margin:0 auto;padding:16px 56px 0 46px}
+  .look-photo .home.d2q .hd{padding:16px 56px 0}
+  .look-photo .rail{--rh:560px;--sw:336px}
+  .look-photo .rail.goals{--rh:520px;--sw:290px}
+  .look-photo .asking .idcard.mini{width:300px;margin:0 auto 30px}
+  .look-photo .asking .idcard.mini .id-info .nm{font-size:28px}
+}
+@media (min-width:1024px) and (max-height:820px){
+  .look-photo .rail{--rh:470px;--sw:282px}
+  .look-photo .rail.goals{--rh:470px;--sw:262px}
+}
+
+/* ══ 10f(11-11 저녁) — 아르곤 맹검 10차(카본) ══ */
+/* ② · ③ 사진 줄: 옆 칸은 가운데 뒤로 겹쳐 화면 안에(스크립트 g1), 휴대폰은 옆 칸 이름을 숨긴다(화면 끝에서 잘린 「험·자격 준비」) */
+.look-photo .rlab{display:none}
+.rlab small{display:block;margin-bottom:2px;font-size:.78em;font-weight:520;color:var(--k3)}
+/* 사진 모서리 · 그림자: 날카로운 직각 + 짙은 그림자 = 「낡은 발표 자료 콜라주」(맹검 10차 C023) */
+.pcard{border-radius:6px;box-shadow:0 10px 26px rgba(40,25,10,.13),0 1px 3px rgba(40,25,10,.1)}
+.look-photo .ri.on .pcard{box-shadow:0 16px 36px rgba(40,25,10,.17),0 2px 5px rgba(40,25,10,.1)}
+/* 가는 회색 줄 걷기 · 휴대폰 첫 연습 뒤는 한 줄 링크(넓은 화면은 눈금 그대로) */
+.look-photo .pos-row{border-top:0;padding-top:4px;min-height:44px}
+.pos-row.pos-m{display:none}
+@media (max-width:1023px){ .look-photo .pos-row.pos-m{display:flex} .look-photo .pos-ph .pos{display:none} }
+/* ⑥ 한글 질문: 회색 앞말은 작게(본 질문만큼 크던 몽골어 판, 맹검 10차 C011) · 학생증 판이 있으면 머리 얼굴은 숨김(같은 사진 두 번, C018) */
+.look-photo .lede.q.two-l .pre{font-size:16px;font-weight:500;letter-spacing:-.01em;margin-bottom:6px}
+.look-photo .asking:has(.idcard.mini) .hd .me{visibility:hidden}
+/* 밤 답: 1px 흰 테두리 캡슐 → 채운 캡슐(맹검 10차 C016), 「나중에」는 누를 일 색(K56) */
+.chs.dark .ch{background:rgba(255,255,255,.15);box-shadow:none;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.chs.dark .ch:hover{background:rgba(255,255,255,.22)}
+.chs.dark .ch[aria-pressed="true"]{background:rgba(255,212,138,.2);box-shadow:inset 0 0 0 1.6px var(--tap)}
+.night .later{color:var(--tap)}
+@media (min-width:1024px){
+  /* ③ 넓은 화면 옆 칸 이름표: 0.5배로 줄어드는 칸 안이라 글자를 두 배로 — 보이는 크기 13~14px */
+  .look-photo .rlab{display:block;margin-top:22px;font-size:27px;font-weight:600;line-height:1.25;white-space:normal;color:var(--k2)}
+}
+
+/* ══ 10g(11-11 밤) — Fable 5.2 다시 확인(작업/fable10e/review.md) ══ */
+/* P2-B 첫 연습 뒤 한 줄 링크: 「연습 중」 · 화면 읽기에만 칸 이름 */
+.pos-row em{font-style:normal;font-size:13px;font-weight:620;color:var(--navy)}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* P2-C 밤 · 새벽 화면 토스트는 위로(흰 캡슐과 겹쳐 한 덩어리로 보이던 것) */
+#app:has(> .view.night) .toast,#app:has(> .view.dawn) .toast{top:max(20px,calc(var(--sat) + 14px));bottom:auto}
+/* P2-D 휴대폰: 화면 밖 칸이 만든 가로 넘침 숨김 */
+.pg{overflow-x:hidden}
+/* P3-D 키 작은 휴대폰 시 낱말 누를 높이 44px */
+@media (max-height:780px) and (max-width:1023px){ .ln .w{padding:4px 0;margin:-4px 0} }
+/* P3-C 넓은 화면 둘째 날 질문 머리: 얼굴은 오른쪽 끝 */
+@media (min-width:1024px){ .d2q .hd .me{margin-left:auto} }
+/* P2-D 바로잡기: 가로 넘침은 사진 줄에서 자른다(휴대폰 — 옆 칸은 이미 화면 안, 화면 밖 칸만 잘림) */
+@media (max-width:1023px){ .rail{overflow-x:clip} }
+
+/* ══ 10g — Fable 5.2 다시 확인 2(작업/fable10g/review.md) ══ */
+/* P2-A · B 넓은 화면 옆 칸 이름표는 바깥쪽으로(가운데 칸에 가리지 않게) */
+@media (min-width:1024px){
+  .look-photo .ri[data-side="r"] .rlab{text-align:right}
+  .look-photo .ri[data-side="l"] .rlab{text-align:left}
+}
+/* P2-C · P3-A 서하 말 크기를 화면 폭에 맞춤 — 가장 긴 이름(「‘언제, 어디서 만날까요?’부터」)이 한 덩어리로도 글 단 안에 */
+/* P2-D 넓은 화면 둘째 날 한글 질문은 한 단 가운데(맞춤 한글 질문 .asking .today와 같은 배치) */
+@media (min-width:1024px){
+  .look-photo .d2q.d2h .today.solo{display:block;max-width:760px;margin:0 auto;padding-top:10vh;text-align:center}
+  .look-photo .d2q.d2h .chs{margin:34px auto 0}
+  .look-photo .d2q.d2h .skip{margin:20px auto 0}
+  .look-photo .d2q.d2h .idcard.mini{width:300px;margin:0 auto 30px}
+  .look-photo .d2q.d2h .idcard.mini .id-info .nm{font-size:28px}
+  /* P3-B 질문 글이 답 · 학생증과 같은 가운데 */
+  .look-photo .asking .lede,.look-photo .d2q.d2h .lede{margin-left:auto;margin-right:auto}
+}
+/* P3-C 둘째 날 한글 질문도 학생증 판이 있으면 머리 얼굴은 숨김(같은 얼굴 두 번) */
+.look-photo .d2h:has(.idcard.mini) .hd .me{visibility:hidden}
+/* P3-D 시작 단추의 분(「2 мин」)은 꺾이지 않게 */
+.start small{white-space:nowrap}
+
+/* ══ 10j(11-12 새벽) — 맹검 14차: 칸 손질이 아니라 뼈대(주소 값 base=j) ══
+   ① 탐색 한 벌(「이야기 · 맞춤 · 배우기 · 놀이」 한 캡슐) ② 휴대폰은 자리 사진이 위 끝까지 + 종이 한 장에 왼쪽 한 축, 넓은 화면은 한 틀(1240)
+   ③ 다른 걸로 = 이름 · 분이 보이는 작은 사진 둘 ④ 누를 글은 남색 빛 한 색, 시작 단추는 먹색 ⑤ 제목 한 색 ⑥ PC 이야기 상자 없음 · 계정 이름 ⑦ 한글 질문 */
+body.base-j{--act:#2F45A5}
+.jnav{display:flex;gap:2px;padding:4px;border-radius:999px;background:#FBF8F2;box-shadow:0 0 0 1px rgba(22,21,19,.1),0 10px 30px rgba(50,35,15,.14)}
+.jnav button{min-height:40px;padding:0 15px;border-radius:999px;font-size:14.5px;font-weight:560;letter-spacing:-.01em;color:var(--k2);white-space:nowrap}
+.jnav button.on{background:var(--k);color:#FBF8F2;font-weight:640}
+html:lang(mn) .jnav button,html:lang(en) .jnav button{padding:0 12px;font-size:13.5px}
+body.base-j .jhd .me{margin-left:auto}
+/* 제목 한 색 — 앞말은 굵기만 낮춤 */
+body.base-j .jm .lede .pre{color:var(--k);font-weight:430}
+body.base-j .jm .lede q{font-weight:740}
+body.base-j .jm .today{text-align:left}
+body.base-j .jm .today .tag{display:block;margin:0 0 12px;font-size:12.5px;font-weight:600;color:var(--k3)}
+body.base-j .jm .who{justify-content:flex-start;margin-top:0;gap:9px;font-size:14.5px}
+body.base-j .jm .who .face{width:28px;height:28px}
+body.base-j .jm .who b{font-weight:700}
+body.base-j .jm .cap{min-height:0;margin-top:14px;text-align:left}
+body.base-j .jm .cap .nm{font-size:18px;text-align:left}
+body.base-j .jm .cap .why{margin-top:8px;text-align:left}
+body.base-j .jm .cap .why.chose{display:flex;justify-content:flex-start}
+body.base-j .jm .cap .why.chose button,body.base-j .jm .pos-row b{color:var(--act)}
+body.base-j .jm .cap .why.alt{color:var(--k3)}
+/* 시작 단추 — 먹색, 폭을 채우고 분은 오른쪽 끝 */
+body.base-j .jm .start{width:100%;min-width:0;height:56px;margin:22px 0 0;padding:0 24px;justify-content:space-between;border-radius:28px;background:var(--k);font-size:16.5px;font-weight:660}
+body.base-j .jm .start small{font-weight:560;color:rgba(255,255,255,.66)}
+body.base-j .jm .start small::after{content:"→";margin-left:10px;color:#fff}
+/* 기록 · 내 위치 */
+body.base-j .jm .doneln{align-items:flex-start;justify-content:flex-start;margin-top:22px;font-size:13px}
+body.base-j .jm .doneln .dl1,body.base-j .jm .doneln .dl2{justify-content:flex-start}
+body.base-j .jm .pos-ph{margin-top:6px}
+body.base-j .jm .pos-row{justify-content:flex-start;gap:8px;padding-top:6px}
+/* 긴 말(몽골어 · 영어)은 낱말 덩어리째 줄을 바꾼다 — 세 칸이 저마다 두 줄로 꺾이던 것(10j 찍기 more-after mn) */
+body.base-j .jm .pos-row{flex-wrap:wrap;row-gap:0;column-gap:8px}
+body.base-j .jm .pos-row > *{white-space:nowrap}
+body.base-j .jm .start{text-align:left;line-height:1.25;gap:14px}
+body.base-j .jm .start small{flex:none}
+body.base-j .jm .pos-row .pe{display:inline-flex;align-items:baseline;gap:8px}
+body.base-j .jm .pos-row em{color:var(--act)}
+@media (max-width:1023px){ html:lang(mn) body.base-j .jm .rail.task,html:lang(en) body.base-j .jm .rail.task{--rh:clamp(200px,26vh,250px)} }   /* 말이 긴 판은 위 사진을 조금 낮춰 첫 화면에 내 위치까지 */
+@media (max-height:780px) and (max-width:1023px){ html:lang(mn) body.base-j .jm .rail.task,html:lang(en) body.base-j .jm .rail.task{--rh:clamp(150px,21vh,190px)} }
+body.base-j .jm .rail.task .rlab{display:none}
+@media (max-width:1023px){
+  body.base-j .jm .jhd,body.base-j .ja .jhd{position:absolute;top:0;left:0;right:0;z-index:20;justify-content:flex-end;min-height:0;padding:max(14px,calc(var(--sat) + 10px)) 16px 0;pointer-events:none}
+  body.base-j .jhd .me{pointer-events:auto}
+  body.base-j .jm .jhd .me{width:38px;height:38px;box-shadow:0 0 0 2px rgba(255,255,255,.92),0 4px 14px rgba(0,0,0,.28)}
+  body.base-j .jhd .jnav{position:fixed;left:50%;bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px));z-index:30;transform:translateX(-50%);pointer-events:auto}
+  body.base-j .jm .pg,body.base-j .ja .pg{padding-bottom:92px}
+  body.base-j .jm .cols{padding:0}
+  body.base-j .jm .today{display:flex;flex-direction:column}
+  body.base-j .jm .today > .trail{order:-1;position:relative;z-index:0}   /* 줄 칸의 z-index(100)를 이 안에 가둔다 — 종이가 사진 아래 끝을 덮게 */
+  body.base-j .jm .rail.task{--rh:clamp(220px,31vh,300px);height:var(--rh);margin:0;overflow:hidden;border-radius:0 0 22px 22px}
+  body.base-j .jm .rail.task .ri{width:100%;height:100%}
+  body.base-j .jm .rail.task .pcard{aspect-ratio:auto;width:100%;height:100%;border-radius:0;box-shadow:none}
+  body.base-j .jm .rail.task + .ticks{display:flex;position:absolute;left:0;right:0;bottom:34px;z-index:3;height:8px;margin:0;gap:6px;align-items:center;pointer-events:none}
+  body.base-j .jm .ticks i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.55);box-shadow:0 1px 4px rgba(0,0,0,.25);transition:width .25s var(--sp),background .25s}
+  body.base-j .jm .ticks i.on{width:18px;height:6px;background:#fff}
+  body.base-j .jm .today > .ta{padding:20px 24px 0}   /* 종이 덮개 대신 사진 아래 모서리를 둥글게 — 덮개(무늬 없는 종이)와 바탕(램프 빛 · 결) 사이 이음매가 보였다 */
+  body.base-j .jm .today > .tb{padding:0 24px}
+  body.base-j .jm .lede{margin-top:8px;font-size:26px;line-height:1.28}
+  body.base-j .jm .cap{margin-top:12px}
+  body.base-j .jm .cap .why{margin-top:6px}
+  body.base-j .jm .start{height:54px;margin-top:18px}
+  body.base-j .jm .doneln{margin-top:16px}
+  body.base-j .jm .pos-ph{margin-top:0}
+  body.base-j .ja .pg{padding-top:calc(var(--sat) + 60px)}
+}
+@media (max-height:780px) and (max-width:1023px){
+  body.base-j .jm .rail.task{--rh:clamp(180px,25vh,230px)}
+  body.base-j .jm .lede{font-size:24px}
+  body.base-j .jm .start{height:50px;margin-top:14px}
+  body.base-j .jm .doneln{margin-top:12px}
+}
+@media (min-width:1024px){
+  body.base-j .jm .jhd{width:100%;max-width:1240px;margin:0 auto;padding:26px 48px 0;min-height:0}
+  body.base-j .jm .cols{max-width:1240px;padding:34px 48px 48px}
+  body.base-j .jm .today{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;grid-template-areas:"rail ta" "rail tb" "rail .";column-gap:64px;min-height:0;max-width:none;align-items:start}
+  body.base-j .jm .today > .trail{grid-area:rail;align-self:start;overflow:visible;padding:0;-webkit-mask-image:none;mask-image:none}
+  body.base-j .jm .rail.task{--rh:min(calc(100dvh - 180px),700px);height:var(--rh);margin:0;overflow:hidden;border-radius:12px}   /* 둥근 모서리는 사진 줄에만 — 아래 눈금이 잘리지 않게 */
+  body.base-j .jm .rail.task .ri{width:100%;height:100%}
+  body.base-j .jm .rail.task .pcard{aspect-ratio:auto;width:100%;height:100%;border-radius:12px;box-shadow:none}
+  body.base-j .jm .rail.task + .ticks{display:flex;justify-content:flex-start;gap:6px;height:10px;margin-top:14px}
+  body.base-j .jm .ticks i{width:6px;height:6px;border-radius:3px;background:var(--k4)}
+  body.base-j .jm .ticks i.on{width:18px;background:var(--k)}
+  body.base-j .jm .today > .ta{padding-top:10px}
+  body.base-j .jm .lede{font-size:44px;line-height:1.18}
+  body.base-j .jm .start{max-width:440px;height:58px;border-radius:29px}
+}
+/* ⑦ 한글 질문 — 학생증 기울임 없음 · 두 답은 같은 무게의 테 두른 캡슐 · 왼쪽 한 축(휴대폰) */
+body.base-j .ja .idcard.mini{transform:none;rotate:none}
+body.base-j .ja .chs{grid-template-columns:1fr 1fr;gap:10px;max-width:none;margin:28px 0 0}
+body.base-j .ja .ch{min-height:58px;padding:6px 14px;border-radius:29px;background:transparent;box-shadow:inset 0 0 0 1.5px var(--k);justify-content:center;text-align:center}
+body.base-j .ja .ch .lb{font-size:16px;line-height:1.25}
+body.base-j .ja .ch[aria-pressed="true"]{background:var(--k);color:#FBF8F2}
+body.base-j .ja .skip{color:var(--act)}
+@media (max-width:1023px){
+  body.base-j .ja .cols{padding:0 24px}
+  body.base-j .ja .today{text-align:left}
+  body.base-j .ja .today .tag{justify-content:flex-start}
+  body.base-j .ja .idcard.mini{margin:0 0 22px}
+  body.base-j .ja .lede.q.two-l .pre{font-size:14px;font-weight:600;color:var(--k3);margin-bottom:8px}
+  body.base-j .ja .skip{margin:14px 0 0;padding:0}
+}
+@media (min-width:1024px){
+  body.base-j .ja .jhd{width:100%;max-width:1240px;margin:0 auto;padding:26px 48px 0;min-height:0}
+  body.base-j .ja .chs{max-width:520px;margin:34px auto 0}
+}
+/* 밤 한글 질문 — 두 답은 흰 단추(가장 강한 일), 「나중에」는 작게 */
+body.base-j .night .chs.dark .ch{background:#FBF8F2;box-shadow:none}
+body.base-j .night .chs.dark .ch .lb{color:#16171A;text-shadow:none}
+body.base-j .night .skip{font-size:14px;font-weight:540}
+body.base-j .night .me-tag small{margin-left:6px;font-size:.86em;font-weight:500;opacity:.8}
+
+/* ══ 10k(11-12 아침) — 맹검 15차: 짝 넷은 9판을 모두 이김, 낱장 다섯(3~4)은 지목된 칸만 고침 ══ */
+body.base-j{--act:#A9441F}   /* 누를 글 한 색 = 우표 잉크 계열의 붉은 흙빛(15차 「구식 하이퍼링크 같은 원색 파랑」) */
+/* ② 서하 이름은 먹색 굵은 글 · 얼굴 원은 흰 테 없이 */
+body.base-j .jm .who b{color:var(--k)}
+body.base-j .home .who .face{box-shadow:0 0 0 1px rgba(22,21,19,.12)}
+/* ③ 제목: 앞말은 작은 머리말, 할 일은 한 굵기 */
+body.base-j .jm .lede{font-weight:720;letter-spacing:-.03em}
+body.base-j .jm .lede .pre{display:block;margin:0 0 7px;font-size:15px;font-weight:620;line-height:1.3;letter-spacing:-.01em;color:var(--k2)}
+body.base-j .jm .lede q{font-weight:720}
+body.base-j .jm .lede small{font-weight:500;letter-spacing:0}
+/* ③ 시작 단추: 글을 가운데로 모음 */
+body.base-j .jm .start{justify-content:center;gap:0;text-align:center}
+body.base-j .jm .start small{font-weight:540;color:rgba(255,255,255,.62)}
+body.base-j .jm .start small::before{content:"·";margin:0 9px;color:rgba(255,255,255,.4)}
+body.base-j .jm .start small::after{content:"→";margin-left:14px;color:#fff}
+/* ④ 아래 탐색: 연한 알약, 칸마다 숨 쉴 틈 */
+body.base-j .jnav{gap:4px;padding:5px;background:#FBF8F2}
+body.base-j .jnav button{min-height:42px;padding:0 17px;font-weight:600;color:var(--k3)}
+body.base-j .jnav button.on{background:rgba(22,21,19,.075);color:var(--k);font-weight:740}
+html:lang(mn) body.base-j .jnav button,html:lang(en) body.base-j .jnav button{padding:0 12px;font-size:13.5px}
+@media (max-width:1023px){
+  body.base-j .jm .jhd .me,body.base-j .ja .jhd .me{display:none}
+}
+/* ⑤ 넓은 화면 · PC: 사진이 창 왼쪽 절반을 위아래 끝까지, 글은 오른쪽 절반 */
+@media (min-width:1024px){
+  body.base-j .jm .jhd,body.base-j .ja .jhd{position:absolute;top:0;left:50%;right:0;z-index:20;width:auto;max-width:none;margin:0;padding:28px clamp(40px,4.6vw,76px) 0;min-height:0}
+  body.base-j .jm .pg,body.base-j .ja .pg{padding:0}
+  body.base-j .jm .cols{max-width:none;margin:0;padding:0}
+  body.base-j .jm .today{grid-template-columns:50% 50%;grid-template-rows:minmax(116px,1fr) auto auto minmax(44px,1fr);grid-template-areas:"rail ." "rail ta" "rail tb" "rail .";column-gap:0;min-height:100dvh}
+  body.base-j .jm .today > .trail{position:sticky;top:0;height:100dvh;align-self:start}
+  body.base-j .jm .rail.task{--rh:100dvh;border-radius:0}
+  body.base-j .jm .rail.task .pcard{border-radius:0}
+  body.base-j .jm .today > .ta,body.base-j .jm .today > .tb{max-width:680px;padding-left:clamp(40px,4.6vw,76px);padding-right:clamp(40px,4.6vw,76px)}
+  body.base-j .jm .today > .ta{padding-top:0}
+  body.base-j .jm .today > .tb{padding-bottom:8px}
+  body.base-j .jm .rail.task + .ticks{position:absolute;left:0;right:0;bottom:30px;z-index:3;justify-content:center;margin:0;pointer-events:none}
+  body.base-j .jm .ticks i{background:rgba(255,255,255,.55);box-shadow:0 1px 4px rgba(0,0,0,.28)}
+  body.base-j .jm .ticks i.on{background:#fff}
+  body.base-j .jm .lede{font-size:clamp(34px,3vw,46px);line-height:1.16}
+  body.base-j .jm .lede .pre{margin-bottom:12px;font-size:19px}
+  body.base-j .jm .start{max-width:420px}
+}
+/* ⑥ 맞춤 한글 질문: 위 끝까지 오는 사진 + 왼쪽 한 축 */
+body.base-j .ja .jhero .pcard{display:block;width:100%;height:100%;aspect-ratio:auto;border-radius:0;box-shadow:none}
+body.base-j .ja .jhero .pcard img{width:100%;height:100%;object-fit:cover}
+body.base-j .ja .skip{color:var(--k3);font-weight:560;text-decoration:underline;text-decoration-color:rgba(22,21,19,.28);text-underline-offset:4px}
+@media (max-width:1023px){
+  body.base-j .ja .pg{padding-top:0}
+  body.base-j .ja .jhero{height:clamp(200px,30vh,270px);overflow:hidden;border-radius:0 0 22px 22px}
+  body.base-j .ja .cols{padding:22px 24px 0}
+  body.base-j .ja .lede.q.two-l{margin-top:0}
+}
+@media (max-height:780px) and (max-width:1023px){ body.base-j .ja .jhero{height:clamp(150px,22vh,190px)} }
+@media (min-width:1024px){
+  body.base-j .ja .pg{display:grid;grid-template-columns:50% 50%;min-height:100dvh}
+  body.base-j .ja .jhero{grid-column:1;grid-row:1;position:sticky;top:0;height:100dvh}
+  body.base-j .ja .cols{grid-column:2;grid-row:1;display:flex;flex-direction:column;justify-content:center;max-width:680px;margin:0;padding:116px clamp(40px,4.6vw,76px) 56px}
+  body.base-j .ja .today{text-align:left}
+  body.base-j .ja .chs{max-width:440px;margin:34px 0 0}
+  body.base-j .ja .skip{margin:16px 0 0;padding:0}
+}
+/* ⑥ 두 답 = 우표 둘(가 책 · ㄱ 블록) + 말 — 단추 테 · 유리 · 흰 알약 없이, 누르면 소인 */
+body.base-j .chs{grid-template-columns:1fr 1fr;gap:12px}
+body.base-j .chs .ch{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;min-height:0;height:auto;padding:14px 8px 12px;border-radius:18px;background:transparent;box-shadow:none;color:var(--k);text-align:center;transition:background .2s}
+body.base-j .chs .ch .lb{font-size:15.5px;font-weight:660;line-height:1.3;letter-spacing:-.015em;word-break:keep-all;text-shadow:none}
+body.base-j .chs .ch:hover{background:rgba(22,21,19,.035)}
+body.base-j .chs .ch[aria-pressed="true"]{background:rgba(22,21,19,.05);color:var(--k)}
+body.base-j .night .chs.dark .ch{background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+body.base-j .night .chs.dark .ch .lb{color:#FAFAF9;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+body.base-j .night .chs.dark .ch:hover,body.base-j .night .chs.dark .ch[aria-pressed="true"]{background:rgba(255,255,255,.07)}
+body.base-j .night .chs.dark .ch[aria-pressed="true"] .lb{color:var(--tap)}
+/* ⑥ 밤: 「나중에」는 흰 글 밑줄(성취어의 전등 빛과 다른 일), 내 얼굴 원은 흰 테 없이, 창틀이 한쪽만 걸리지 않게 사진을 당김 */
+body.base-j .night .askq .later{color:rgba(250,250,249,.72);font-weight:520;text-decoration:underline;text-decoration-color:rgba(250,250,249,.32);text-underline-offset:4px}
+body.base-j .tag .me-tag .me{box-shadow:0 0 0 1px rgba(255,255,255,.3)}
+body.base-j .night.asking .ph img{transform:scale(1.2);transform-origin:30% 40%}
+
+/* ══ 10k 다듬기 ══ */
+body.base-j .jm .rail.task + .ticks{z-index:120}   /* ① 사진 칸(.ri z 100) 위에 */
+@media (max-width:1023px){
+  body.base-j .ja .cols{flex:none;justify-content:flex-start;padding-bottom:0}   /* ② 사진 바로 아래부터 */
+  html:lang(mn) body.base-j .jm .start,html:lang(en) body.base-j .jm .start{font-size:15px;letter-spacing:-.015em}   /* ④ 한 줄로 */
+}
+@media (max-height:780px) and (max-width:1023px){
+  html:lang(mn) body.base-j .jm .rail.task,html:lang(en) body.base-j .jm .rail.task{--rh:clamp(128px,18vh,165px)}
+}
+@media (min-width:1024px){
+  body.base-j .ja .today{display:block;max-width:none;margin:0;padding-top:0;text-align:left}   /* ③ */
+  body.base-j .ja .chs{max-width:460px}
+  body.base-j .ja .chs .ch .lb{font-size:17px}
+  body.base-j .jm:not(.d2q) .today .ta > .tag{display:block;margin:0 0 22px;font-size:13.5px;font-weight:600;letter-spacing:.01em;color:var(--k3)}   /* ⑤ */
+}
+
+/* ══ 10k 다듬기 2 ══ */
+@media (min-width:1024px){ body.base-j .ja .today{min-height:0} body.base-j .ja .cols{align-items:stretch} }
+
+/* ══ 10l(11-12 낮) — 맹검 16차: 우표 걷기 · 다른 걸로 칸 없음 · 넓은 화면 화살 · 밤 답은 10차 6점 꼴 · 꼬리표 · 머리 얼굴 걷기 · 인쇄 따옴표 ══ */
+body.base-j q::before{content:"‘"}
+body.base-j q::after{content:"’"}
+body.base-j q::before,body.base-j q::after{font-family:Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:0}
+body.base-j .jm .lede q::before{margin-right:.04em}
+body.base-j .jm .lede q::after{margin-left:.02em}
+/* ① 넓은 화면 ‹ › — 사진 아래 오른쪽 */
+.rnav{display:none}
+@media (min-width:1024px){
+  body.base-j .jm .rnav{position:absolute;right:28px;bottom:18px;z-index:121;display:flex;gap:8px}
+  body.base-j .jm .rnav button{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:rgba(251,248,242,.92);color:var(--k);font-size:24px;line-height:1;box-shadow:0 2px 10px rgba(0,0,0,.18);transition:opacity .2s,transform .2s var(--sp)}
+  body.base-j .jm .rnav button:hover:not(:disabled){transform:scale(1.06)}
+  body.base-j .jm .rnav button:disabled{opacity:.38;cursor:default}
+  body.base-j .jm .rail.task + .ticks{bottom:36px}
+}
+/* ② 맞춤 한글 질문 두 답 — 테 두른 캡슐(같은 무게 · 한 줄) */
+body.base-j .ja .chs .ch{flex-direction:row;justify-content:center;gap:0;min-height:56px;padding:6px 14px;border-radius:28px;background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1.5px var(--k)}
+body.base-j .ja .chs .ch .lb{font-size:15.5px;font-weight:680;line-height:1.25}
+body.base-j .ja .chs .ch:hover{background:rgba(255,255,255,.85)}
+body.base-j .ja .chs .ch[aria-pressed="true"]{background:var(--k);color:#FBF8F2}
+@media (min-width:1024px){ body.base-j .ja .chs .ch .lb{font-size:16.5px} }
+/* ③ 밤 한글 질문 두 답 — 흰 1.2px 테 + 반투명 어둠 알약(10차 6점 꼴) */
+body.base-j .night .chs.dark .ch{flex-direction:row;justify-content:center;gap:0;min-height:52px;padding:6px 12px;border-radius:26px;background:rgba(3,5,12,.18);box-shadow:inset 0 0 0 1.2px rgba(255,255,255,.62);-webkit-backdrop-filter:none;backdrop-filter:none}
+body.base-j .night .chs.dark .ch .lb{font-size:15.5px;font-weight:620;line-height:1.25;color:var(--ink);text-shadow:0 1px 8px rgba(0,0,0,.6)}
+body.base-j .night .chs.dark .ch:hover{background:rgba(255,255,255,.08)}
+body.base-j .night .chs.dark .ch[aria-pressed="true"]{background:rgba(255,212,138,.16);box-shadow:inset 0 0 0 1.6px var(--tap)}
+body.base-j .night .chs.dark .ch[aria-pressed="true"] .lb{color:var(--tap)}
+body.base-j .night .ln small{color:rgba(250,250,249,.84);font-size:13.5px}
+body.base-j .night.asking .ln small{font-size:13px}
+/* ④ 넓은 화면: 장면 꼬리표 걷기 · 글 단을 오른쪽 절반에 맞게 */
+@media (min-width:1024px){
+  body.base-j .jm:not(.d2q) .today .ta > .tag{display:none}
+  body.base-j .jm .today > .ta,body.base-j .jm .today > .tb{max-width:720px}
+  body.base-j .jm .lede{font-size:clamp(38px,3.5vw,56px);line-height:1.14}
+  body.base-j .jm .lede .pre{font-size:clamp(17px,1.4vw,21px)}
+  body.base-j .jm .start{max-width:520px;height:60px;border-radius:30px;font-size:17.5px}
+  body.base-j .jm .doneln{font-size:14px}
+}
+
+/* ══ 10l 다듬기 ══ */
+body.base-j .hud button{width:44px;height:44px;background:transparent;box-shadow:none;color:rgba(250,250,249,.6);transition:background .2s,color .2s}
+body.base-j .hud button:hover,body.base-j .hud button:focus-visible{background:rgba(255,255,255,.1);color:var(--ink)}
+body.base-j .hud svg{width:20px;height:20px}
+
+/* ══ 10m(11-12 오후) — 맹검 17차 낱장: 점 · 화살 한 알약, 「내 위치」는 화살표만 색, 휴대폰 사진 키움, 한글 시험 문장, 넓은 화면 단추 · 탐색 ══ */
+/* ② 넘김 점 = 어두운 반투명 알약 안 */
+body.base-j .jm .rail.task + .ticks{left:50%;right:auto;transform:translateX(-50%);width:auto;height:auto;padding:7px 10px;border-radius:999px;background:rgba(12,12,14,.36);gap:6px}
+body.base-j .jm .ticks i{box-shadow:none;background:rgba(255,255,255,.5)}
+body.base-j .jm .ticks i.on{background:#fff}
+@media (min-width:1024px){
+  body.base-j .jm .rail.task + .ticks{bottom:30px;padding:9px 12px}
+  body.base-j .jm .rnav{left:50%;right:auto;bottom:22px;transform:translateX(-50%);width:156px;justify-content:space-between;gap:0;padding:0;border-radius:999px;background:rgba(12,12,14,.36);z-index:119}
+  body.base-j .jm .rnav button{width:40px;height:40px;background:transparent;box-shadow:none;color:#fff;font-size:22px}
+  body.base-j .jm .rnav button:hover:not(:disabled){transform:none;background:rgba(255,255,255,.16)}
+  body.base-j .jm .rnav button:disabled{opacity:.3}
+  body.base-j .jm .rail.task + .ticks{background:transparent;bottom:22px;padding:17px 0;z-index:121}
+}
+/* ③ 「내 위치」 — 이름은 먹색, 화살표만 누를 글 색 */
+body.base-j .jm .pos-row b{color:var(--k);font-weight:700}
+body.base-j .jm .pos-row .arw{color:var(--act)}
+body.base-j .jm .pos-row em{color:var(--k2)}
+/* ④ 휴대폰 위 사진을 키워 아래 빈 여백을 줄임(한국어 판 · 맞춤 한글 질문) */
+@media (max-width:1023px){
+  html:lang(ko) body.base-j .jm .rail.task{--rh:clamp(220px,35vh,330px)}
+  body.base-j .ja .jhero{height:clamp(220px,40vh,360px)}
+}
+@media (max-height:780px) and (max-width:1023px){
+  html:lang(ko) body.base-j .jm .rail.task{--rh:clamp(180px,25vh,230px)}
+  body.base-j .ja .jhero{height:clamp(150px,22vh,190px)}
+}
+/* ⑤ 맞춤 한글 질문: 한국어 줄 = 시험 문장 */
+body.base-j .ja .lede small.kq{margin-top:12px;font-size:23px;font-weight:640;color:var(--k);letter-spacing:-.03em}
+html:lang(mn) body.base-j .ja .chs .ch{padding:6px 10px}
+html:lang(mn) body.base-j .ja .chs .ch .lb{font-size:14.5px}
+/* ⑥ 넓은 화면: 단추는 글 너비만큼, 탐색 캡슐은 그림자 없이 */
+@media (min-width:1024px){
+  body.base-j .jm .start{width:auto;min-width:300px;padding:0 40px}
+  body.base-j .jnav{box-shadow:0 0 0 1px rgba(22,21,19,.12)}
+}
+
+/* ══ 10n(11-12 오후) — Fable 5.2 확인(10m): P2 열한 건 · P3 넷 ══ */
+/* P2-1 둘째 날 한글 질문(뼈대 판) 두 답 = 맞춤 한글 질문과 같은 테 캡슐 */
+body.base-j .d2h .chs{grid-template-columns:1fr 1fr;gap:10px}
+body.base-j .d2h .chs .ch{flex-direction:row;justify-content:center;gap:0;min-height:56px;padding:6px 14px;border-radius:28px;background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1.5px var(--k)}
+body.base-j .d2h .chs .ch .lb{font-size:15.5px;font-weight:680;line-height:1.25}
+body.base-j .d2h .chs .ch:hover{background:rgba(255,255,255,.85)}
+body.base-j .d2h .chs .ch[aria-pressed="true"]{background:var(--k);color:#FBF8F2}
+html:lang(mn) body.base-j .d2h .chs .ch{padding:6px 10px}
+html:lang(mn) body.base-j .d2h .chs .ch .lb{font-size:14.5px}
+/* P2-2 사진 줄 키보드 초점 테 — 사진 칸(z 100) 위에 */
+body.base-j .rail.task:focus-visible::after{content:"";position:absolute;inset:8px;border-radius:14px;box-shadow:0 0 0 2px #fff,0 0 0 4.5px var(--navy);z-index:125;pointer-events:none}
+/* P2-3 넓은 화면 헛 스크롤 — 옛 .today 아래 여백 걷기 */
+@media (min-width:1024px){ body.base-j .jm .today{padding:0} }
+/* P2-9 낮은 화면: Tab 초점이 떠 있는 탐색 아래에 깔리지 않게 */
+@media (max-width:1023px){ body.base-j .jm .pg,body.base-j .ja .pg{scroll-padding-bottom:104px} }
+/* P2-5 밤 한글 질문: 답할 때 사진 배율이 부드럽게 1로 */
+body.base-j .night .ph img{transition:transform .9s var(--sp)}
+/* P2-6 누를 곳 44px */
+body.base-j .jnav button{min-height:44px}
+@media (min-width:1024px){
+  body.base-j .jm .rnav{width:168px}
+  body.base-j .jm .rnav button{width:44px;height:44px}
+  body.base-j .jm .rail.task + .ticks{padding:19px 0}
+}
+/* P2-8 320 폭: 밤 꼬리표의 작은 이름(키릴 · 로마 글자)은 빼고 한 줄로 */
+@media (max-width:359px){ body.base-j .night .me-tag small{display:none} }
+/* P2-10 눕힌 폰: 맞춤 한글 질문 위 사진이 세로 flex에 눌려 줄지 않게 */
+body.base-j .ja .jhero{flex:none}
+/* P3-6 넓은 화면 첫 연습 뒤 눈금 표도 왼쪽 축 */
+body.base-j .jm .pos{margin-left:0}
+/* P3-7 시작 단추의 · → 는 화면 읽기 이름에 들어가지 않게 · 320 몽골어 탐색 여백 */
+body.base-j .jm .start small::before{content:"·" / ""}
+body.base-j .jm .start small::after{content:"→" / ""}
+@media (max-width:340px){ html:lang(mn) body.base-j .jnav button,html:lang(en) body.base-j .jnav button{padding:0 9px} }
+
+/* ══ 10o(11-12 저녁) — 7점을 향해: 대사 줄 + 듣기 · 휴대폰 시작 단추는 엄지 자리 ══ */
+/* ① 대사 줄: 줄마다 듣기 단추(누를 글 색 바탕 원), 따옴표 없이 */
+body.base-j .jm .cap .says.sl{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:6px}
+body.base-j .jm .cap .says.sl li{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:620;line-height:1.35;letter-spacing:-.02em;color:var(--k)}
+body.base-j .say-play{flex:none;display:grid;place-items:center;width:44px;height:44px;margin:-4px 0 -4px -8px;padding:0;border-radius:50%;color:var(--act);cursor:pointer}
+body.base-j .say-play:focus-visible{outline:2px solid var(--navy);outline-offset:0}
+body.no-tts .say-play{display:none}
+@media (min-width:1024px){
+  body.base-j .jm .cap .says.sl{gap:8px;margin-top:18px}
+  body.base-j .jm .cap .says.sl li{font-size:clamp(19px,1.55vw,22px)}
+}
+/* ② 휴대폰: 시작 단추는 떠 있는 탐색 바로 위(엄지 자리) — 아래로 갈수록 종이빛이 짙어져 지나가는 글이 단추 뒤로 묻힌다 */
+@media (max-width:1023px){
+  body.base-j .jm .start{position:fixed;left:16px;right:16px;bottom:calc(max(14px, env(safe-area-inset-bottom) + 8px) + 66px);z-index:29;width:auto;margin:0;box-shadow:0 10px 24px rgba(30,20,10,.2)}
+  body.base-j .jm .pg{padding-bottom:172px;scroll-padding-bottom:176px}
+  body.base-j .jm .pg::after{content:"";position:fixed;left:0;right:0;bottom:0;height:168px;z-index:28;pointer-events:none;background:linear-gradient(to top,var(--paper) 62%,rgba(243,238,230,0))}   /* 덮개는 스크롤 상자 안 쌓임에(시작 단추 29 · 탐색 30 아래) */
+  body.base-j .jm .cap{margin-bottom:4px}
+}
+/* 10o 다듬기: 대사 줄은 글 단 왼쪽 축에 붙임(.cap 가운데 정렬을 받지 않게) */
+body.base-j .jm .cap .says.sl{align-self:stretch;justify-self:stretch;width:100%;text-align:left}
+/* 10o 다듬기 2: 대사 줄은 기본 .cap .says의 가운데 맞춤(justify-content:center)을 받지 않게 · 휴대폰 머리 상자(떠 있는 탐색을 품음)는 아래 덮개(28)보다 위 */
+body.base-j .jm .cap .says.sl{grid-template-columns:minmax(0,1fr);justify-content:stretch;align-items:stretch}
+@media (max-width:1023px){ body.base-j .jm .jhd,body.base-j .ja .jhd{z-index:31} }
+
+/* ══ 10p(11-12 밤) — 7점을 향해 둘째 판: 묻는 화면(밤 · 맞춤 한글 질문 · 둘째 날 한글 질문) · 이름 자리 ══ */
+/* ① 두 답 = 위아래 카드(종이: 크림 카드 + 가는 테, 밤: 크림 카드 — 이 화면에서 가장 강한 일) · 오른쪽 › 는 누를 글 색 */
+body.base-j .chs.st2{grid-template-columns:minmax(0,1fr);gap:10px}
+body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-height:66px;height:auto;padding:11px 48px 11px 18px;border-radius:16px;text-align:left;background:#FBF8F2;color:var(--k);box-shadow:0 0 0 1px rgba(22,21,19,.13),0 6px 16px rgba(60,40,15,.07);-webkit-backdrop-filter:none;backdrop-filter:none;transition:background .2s,box-shadow .2s,transform .15s var(--sp)}
+body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch .lb{font-size:17px;font-weight:700;line-height:1.28;letter-spacing:-.02em;color:inherit;text-shadow:none}
+html:lang(mn) body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch,html:lang(en) body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch{padding:10px 46px 10px 18px}
+html:lang(mn) body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch .lb,html:lang(en) body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch .lb{font-size:16.5px}
+body.base-j .chs.st2 .ch .nx{display:block;font-size:13.5px;font-weight:560;line-height:1.3;color:var(--k3);letter-spacing:-.01em}
+body.base-j .chs.st2 .ch .nx::before{content:"→ " / "";color:var(--k4)}
+body.base-j .chs.st2 .ch::after{content:"›" / "";position:absolute;right:16px;top:50%;transform:translateY(-52%);font-size:26px;font-weight:400;line-height:1;color:var(--act)}
+body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch:hover{background:#fff}
+body.base-j .chs.st2 .ch:active{transform:scale(.985)}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch[aria-pressed="true"]{background:var(--k);color:#FBF8F2;box-shadow:none}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch[aria-pressed="true"] .nx{color:rgba(251,248,242,.72)}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch[aria-pressed="true"]::after{color:#FBF8F2}
+body.base-j .night .chs.dark.st2 .ch{background:rgba(251,248,242,.95);box-shadow:0 10px 26px rgba(0,0,0,.32)}
+body.base-j .night .chs.dark.st2 .ch .lb{color:#16171A;text-shadow:none}
+body.base-j .night .chs.dark.st2 .ch .nx{color:#6B655C}
+body.base-j .night .chs.dark.st2 .ch:hover{background:#fff}
+body.base-j .night .chs.dark.st2 .ch[aria-pressed="true"]{background:var(--tap);box-shadow:none}
+body.base-j .night .chs.dark.st2 .ch[aria-pressed="true"] .lb,body.base-j .night .chs.dark.st2 .ch[aria-pressed="true"] .nx,body.base-j .night .chs.dark.st2 .ch[aria-pressed="true"]::after{color:#16171A}
+@media (min-width:1024px){
+  body.base-j .ja .chs.st2,body.base-j .d2h .chs.st2{max-width:440px;margin-left:0}
+  body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch{min-height:70px}
+  body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch .lb{font-size:18px}
+}
+/* ② 한국어 시험 문장 = 읽어 볼 쪽지(번역 판에서만 — 한국어 판은 제목이 곧 그 문장) */
+body.base-j .ja .lede small.kq,body.base-j .d2h .lede small.kq{display:table;margin-top:16px;padding:11px 18px 12px;border-radius:14px;background:#FBF8F2;box-shadow:0 0 0 1px rgba(22,21,19,.1),0 8px 20px rgba(60,40,15,.08);font-size:24px;font-weight:700;line-height:1.3;color:var(--k);letter-spacing:-.03em}
+body.base-j .night .ask-q small.kq{display:table;margin-top:12px;padding:8px 15px 9px;border-radius:13px;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-size:21px;font-weight:680;line-height:1.3;color:#FAFAF9;letter-spacing:-.025em}
+@media (min-width:1024px){ body.base-j .ja .lede small.kq,body.base-j .d2h .lede small.kq{font-size:28px;padding:13px 22px 14px} }
+/* ③ 「나중에 할게요」 — 밑줄 없이 누를 글 색(종이: 흙빛 · 밤: 전등 빛) */
+body.base-j .ja .skip,body.base-j .d2h .skip{text-decoration:none;color:var(--act);font-weight:620}
+body.base-j .night .askq .later{text-decoration:none;color:var(--tap);font-weight:600}
+/* ④ 이름 자리 칩: 「저는 [얼굴 볼로르]예요.」 — 연습 문장 속 이름이 학생 자신의 것임을 보이게 */
+body.base-j .nmslot{display:inline-block;margin:0 .1em;padding:0 .42em 0 .14em;border-radius:999px;background:rgba(22,21,19,.07);box-shadow:inset 0 0 0 1px rgba(22,21,19,.1);white-space:nowrap}
+
+/* 10p ⑤ 탐색 아이콘 — 휴대폰: 아이콘 위 · 글 아래(캡슐 60px) / 넓은 화면: 아이콘 옆 글 */
+body.base-j .jnav .ni{display:block;flex:none;width:22px;height:22px;color:currentColor;transform-origin:50% 60%}
+body.base-j .jnav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;padding:5px 13px 4px;border-radius:26px;font-size:12px;line-height:1.15}
+body.base-j .jnav button span{display:block;white-space:nowrap}
+html:lang(mn) body.base-j .jnav button,html:lang(en) body.base-j .jnav button{padding:5px 11px 4px;font-size:11.5px}
+body.base-j .jnav button:not(.on):hover .ni{transform:translateY(-1px)}
+body.base-j .jnav .ni.pop{animation:niPop .44s var(--sp)}
+@keyframes niPop{0%{transform:none}32%{transform:scale(.8) rotate(-7deg)}68%{transform:scale(1.14) rotate(3deg)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){ body.base-j .jnav .ni.pop{animation:none} }
+@media (max-width:340px){ html:lang(mn) body.base-j .jnav button,html:lang(en) body.base-j .jnav button{padding:5px 8px 4px} }
+@media (max-width:1023px){
+  body.base-j .jm .start{bottom:calc(max(14px, env(safe-area-inset-bottom) + 8px) + 72px)}
+  body.base-j .jm .pg{padding-bottom:178px;scroll-padding-bottom:182px}
+  body.base-j .jm .pg::after{height:174px}
+  body.base-j .ja .pg{padding-bottom:100px;scroll-padding-bottom:112px}
+}
+@media (min-width:1024px){
+  body.base-j .jnav button{flex-direction:row;gap:7px;min-height:44px;padding:0 16px 0 13px;font-size:14.5px;line-height:1}
+  body.base-j .jnav .ni{width:20px;height:20px}
+  html:lang(mn) body.base-j .jnav button,html:lang(en) body.base-j .jnav button{padding:0 14px 0 11px;font-size:13.5px}
+}
+
+/* 10p ⑥ 넓은 화면 · PC: 사진 56 : 글 44, 글 단은 세 층(위 탐색 / 가운데 오늘 할 일 / 아래 끝 기록 · 내 위치) */
+@media (min-width:1024px){
+  body.base-j .jm{--gx:clamp(44px,4.4vw,84px)}
+  body.base-j .jm .jhd,body.base-j .ja .jhd{left:56%;padding-left:clamp(44px,4.4vw,84px);padding-right:clamp(44px,4.4vw,84px)}
+  body.base-j .jm .today{grid-template-columns:56% 44%;grid-template-rows:minmax(132px,21vh) auto auto auto minmax(36px,1fr) auto auto;grid-template-areas:"rail ." "rail ta" "rail cap" "rail start" "rail ." "rail done" "rail pos"}
+  body.base-j .jm .today > .tb{display:contents}
+  body.base-j .jm .today > .ta{max-width:none;padding:0 var(--gx)}
+  body.base-j .jm .today .tb > .cap{grid-area:cap;max-width:none;margin:0 var(--gx);padding:0}
+  body.base-j .jm .today .tb > .start{grid-area:start;justify-self:start;margin:30px 0 0 var(--gx)}
+  body.base-j .jm .today .tb > .doneln{grid-area:done;margin:0 var(--gx);padding:20px 0 0;border-top:1px solid rgba(22,21,19,.1)}
+  body.base-j .jm .today .tb > .pos-ph{grid-area:pos;margin:0 var(--gx);padding:4px 0 clamp(30px,4.4vh,48px)}
+  body.base-j .jm.pc .today .tb > .pos-ph{border-top:1px solid rgba(22,21,19,.1);padding-top:18px}
+  body.base-j .jm .lede{font-size:clamp(40px,3.5vw,60px);line-height:1.12;letter-spacing:-.035em}
+  body.base-j .jm .lede .pre{font-size:clamp(18px,1.35vw,22px);margin-bottom:14px}
+  body.base-j .jm .cap .says.sl{gap:10px;margin-top:26px}
+  body.base-j .jm .cap .says.sl li{font-size:clamp(21px,1.7vw,26px);gap:14px}
+  body.base-j .jm .say-play{width:48px;height:48px;margin-left:-10px}
+  body.base-j .jm .cap .why{margin-top:14px;font-size:15px}
+  body.base-j .jm .start{height:64px;min-width:340px;padding:0 44px;border-radius:32px;font-size:18px}
+  body.base-j .jm .doneln{font-size:14.5px}
+  /* 맞춤 한글 질문도 같은 비율 */
+  body.base-j .ja .pg{grid-template-columns:56% 44%}
+  body.base-j .ja .cols{padding-left:clamp(44px,4.4vw,84px);padding-right:clamp(44px,4.4vw,84px)}
+}
+@media (min-width:1024px) and (max-height:820px){   /* 10p ⑥ 키 작은 넓은 창: 위 여백 · 글 크기를 줄여 아래 끝 줄까지 한 화면에 */
+  body.base-j .jm .today{grid-template-rows:minmax(124px,15vh) auto auto auto minmax(28px,1fr) auto auto}
+  body.base-j .jm .lede{font-size:clamp(36px,3.3vw,48px)}
+  body.base-j .jm .cap .says.sl{gap:6px;margin-top:18px}
+  body.base-j .jm .cap .says.sl li{font-size:clamp(19px,1.6vw,22px)}
+  body.base-j .jm .today .tb > .start{margin-top:22px}
+  body.base-j .jm .today .tb > .doneln{padding-top:14px}
+  body.base-j .jm .today .tb > .pos-ph{padding-bottom:22px}
+}
+
+/* 10p ⑦ 첫 연습 뒤: 「✓ 첫 연습을 마쳤어요」 칩 — 먹색 원에 흰 체크, 들어올 때 체크가 그어짐 */
+body.base-j .jm .fdone{display:inline-flex;align-items:center;gap:8px;margin:0 0 14px;padding:5px 14px 5px 5px;border-radius:999px;background:rgba(22,21,19,.06);box-shadow:inset 0 0 0 1px rgba(22,21,19,.09);font-size:14px;font-weight:680;letter-spacing:-.01em;color:var(--k)}
+body.base-j .jm .fdone svg{flex:none;width:22px;height:22px}
+body.base-j .jm .fdone circle{fill:var(--k)}
+body.base-j .jm .fdone path{fill:none;stroke:#FBF8F2;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:14;stroke-dashoffset:0;animation:fdCheck .5s .25s var(--sp) backwards}
+@keyframes fdCheck{from{stroke-dashoffset:14}}
+@media (prefers-reduced-motion:reduce){ body.base-j .jm .fdone path{animation:none} }
+@media (min-width:1024px){ body.base-j .jm .fdone{margin-bottom:20px;font-size:15px} }
+/* 10p ⑧ 휴대폰: 기록 · 내 위치 위에 가는 선 */
+@media (max-width:1023px){
+  body.base-j .jm .doneln{padding-top:14px;border-top:1px solid rgba(22,21,19,.1)}
+  body.base-j .jm .doneln:empty{display:none}
+}
+@media (max-width:1023px){   /* 10p ⑦ 휴대폰: 칩은 「서하 언니」 줄 오른쪽 같은 줄(읽는 순서는 칩 → 서하 → 제목) — 높이를 늘려 「내 위치」가 떠 있는 단추 뒤로 밀리지 않게 */
+  body.base-j .jm .ta.fd{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;align-items:center}
+  body.base-j .jm .ta.fd > *{grid-column:1 / -1}
+  body.base-j .jm .ta.fd > .who{grid-column:1;grid-row:2;margin:0}
+  body.base-j .jm .ta.fd > .fdone{grid-column:2;grid-row:2;margin:0;padding:4px 12px 4px 4px;font-size:13px}
+  body.base-j .jm .ta.fd > .fdone svg{width:20px;height:20px}
+  body.base-j .jm .ta.fd > .lede{grid-row:3}
+}
+@media (max-width:1023px){ body.base-j .jm .ta.fd > .who{white-space:nowrap} }
+@media (max-width:374px){   /* 10p ⑦ 좁은 폭: 칩은 위 사진 왼쪽 위에 얹음(높이를 더하지 않게 · 이름이 두 줄로 꺾이지 않게) */
+  body.base-j .jm .today{position:relative}
+  body.base-j .jm .ta.fd{display:block}
+  body.base-j .jm .ta.fd > .fdone{position:absolute;top:calc(var(--sat) + 12px);left:12px;z-index:5;margin:0;background:rgba(251,248,242,.95);box-shadow:0 4px 14px rgba(0,0,0,.2)}
+  body.base-j .jm .ta.fd > .who{margin-top:0}
+}
+
+/* 10p ⑨ 뼈대 판 둘째 날 질문(.d2q): 시작 단추 · 눈금 먹색, 「나중에 · 그대로 둘게요」는 밑줄 없는 누를 글 색 */
+body.base-j .d2q .start{background:var(--k);color:#FBF8F2}
+body.base-j .d2q .ticks i.on{background:var(--k)}
+body.base-j .d2q .skip{text-decoration:none;color:var(--act);font-weight:620}
+/* 10p ⑩ 가운데가 아닌 목표 카드는 사진을 낮춰 가운데에 초점 */
+body.base-j .d2q .rail .ri .pcard img{transition:filter .35s var(--sp)}
+body.base-j .d2q .rail .ri:not([aria-selected="true"]) .pcard img{filter:brightness(.8) saturate(.82)}
+@media (prefers-reduced-motion:reduce){ body.base-j .d2q .rail .ri .pcard img{transition:none} }
+/* 10p ⑫ 밤 · 새벽 소리 단추: 「어느 앱에나 있는 기본 선 아이콘이 덩그러니」(18차 03 · 09 K57) → 젖빛 원(44) + 채운 스피커 */
+body.base-j .hud button{border-radius:50%;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:rgba(250,250,249,.88)}
+body.base-j .hud button:hover,body.base-j .hud button:focus-visible{background:rgba(255,255,255,.18);color:#FAFAF9}
+body.base-j .hud svg{width:19px;height:19px}
+body.base-j .hud svg path:first-child{fill:currentColor}
+
+/* ══ 10q(11-12 밤) — 19차: 눌러 듣는 말풍선 · 휴대폰 아래 한 판 ══ */
+/* ① 말풍선 — 왼쪽 아래 모서리만 각진 크림 풍선, 끝에 소리 물결 막대 넷(누를 글 색). 읽는 동안(.on) 막대가 출렁 */
+body.base-j .jm .cap .says.sl{gap:6px;margin-top:12px}
+body.base-j .jm .cap .says.sl li{display:block}
+body.base-j .say-play.bub{display:inline-flex;align-items:center;gap:14px;width:auto;height:auto;min-height:44px;max-width:100%;margin:0;padding:8px 15px 9px 16px;border-radius:19px 19px 19px 5px;background:#FBF8F2;box-shadow:0 0 0 1px rgba(22,21,19,.1),0 5px 14px rgba(60,40,15,.06);color:var(--k);text-align:left;font:inherit;font-size:18px;font-weight:650;line-height:1.35;letter-spacing:-.02em;transition:background .2s,box-shadow .2s,transform .15s var(--sp)}
+body.base-j .say-play.bub > span{min-width:0}
+body.base-j .say-play.bub:hover{background:#fff}
+body.base-j .say-play.bub:active{transform:scale(.98)}
+body.base-j .say-play.bub.on{background:#fff;box-shadow:0 0 0 1.5px var(--act),0 6px 16px rgba(169,68,31,.12)}
+body.base-j .say-play.bub:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+body.base-j .say-play.bub .wv{flex:none;display:inline-flex;align-items:center;gap:2.5px;width:auto;height:16px;margin:0;border-radius:0;background:none}
+body.base-j .say-play.bub .wv b{display:block;width:2.5px;border-radius:2px;background:var(--act);transform-origin:50% 50%}
+body.base-j .say-play.bub .wv b:nth-child(1){height:7px}
+body.base-j .say-play.bub .wv b:nth-child(2){height:14px}
+body.base-j .say-play.bub .wv b:nth-child(3){height:10px}
+body.base-j .say-play.bub .wv b:nth-child(4){height:5px}
+body.base-j .say-play.bub.on .wv b{animation:wvPulse .7s ease-in-out infinite alternate}
+body.base-j .say-play.bub.on .wv b:nth-child(2){animation-delay:-.25s}
+body.base-j .say-play.bub.on .wv b:nth-child(3){animation-delay:-.5s}
+body.base-j .say-play.bub.on .wv b:nth-child(4){animation-delay:-.15s}
+@keyframes wvPulse{from{transform:scaleY(.45)}to{transform:scaleY(1.15)}}
+@media (prefers-reduced-motion:reduce){ body.base-j .say-play.bub.on .wv b{animation:none} }
+@media (min-width:1024px){
+  body.base-j .jm .cap .says.sl{gap:10px}
+  body.base-j .say-play.bub{min-height:52px;padding:11px 20px 12px;font-size:clamp(19px,1.6vw,24px);border-radius:22px 22px 22px 6px}
+}
+@media (min-width:1024px) and (max-height:820px){ body.base-j .say-play.bub{min-height:46px;padding:8px 18px 9px;font-size:clamp(18px,1.5vw,21px)} }
+/* ② 휴대폰 아래 한 판: 크림 바닥 판 안에 시작 단추와 탐색 줄이 같은 폭 */
+@media (max-width:1023px){
+  body.base-j .jm .pg::after,body.base-j .ja .pg::after{content:"";position:fixed;left:0;right:0;bottom:0;z-index:28;pointer-events:none;background:#FBF8F2;border-radius:22px 22px 0 0;box-shadow:0 -1px 0 rgba(22,21,19,.07),0 -14px 34px rgba(50,35,15,.1)}
+  body.base-j .jm .pg::after{height:calc(max(14px, env(safe-area-inset-bottom) + 8px) + 52px + 10px + 54px + 14px)}
+  body.base-j .ja .pg::after{height:calc(max(14px, env(safe-area-inset-bottom) + 8px) + 52px + 12px)}
+  body.base-j .jhd .jnav{left:12px;right:12px;width:auto;transform:none;justify-content:space-around;gap:0;padding:0;background:transparent;box-shadow:none}
+  body.base-j .jhd .jnav button{flex:1 1 auto;min-width:0;padding-left:6px;padding-right:6px}
+  body.base-j .jhd .jnav button.on{background:rgba(22,21,19,.07)}
+  body.base-j .jm .start{bottom:calc(max(14px, env(safe-area-inset-bottom) + 8px) + 52px + 10px);box-shadow:none}
+  body.base-j .jm .pg{padding-bottom:182px;scroll-padding-bottom:186px}
+  body.base-j .ja .pg{padding-bottom:104px;scroll-padding-bottom:116px}
+}
+/* 10q ③ 밤 · 새벽 큰 단추: 순백 기본 알약(19차 03 「밤 창가의 빛 · 질감과 겉돎」) → 창틀 전등 빛과 같은 따뜻한 크림 */
+body.base-j .night .go{background:linear-gradient(180deg,#FFF5E4 0%,#F3E1C2 100%);color:#1B140B;box-shadow:0 12px 32px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.75),inset 0 -1px 0 rgba(120,80,30,.12)}
+body.base-j .night .go:hover{background:linear-gradient(180deg,#FFF8EC 0%,#F6E7CE 100%)}
+
+/* ══ 10r(11-13 새벽) — 21차: 아이콘 한 벌 · 이름은 붙여 쓰기 · 말풍선 테두리 걷기 · 형광펜 시험 문장 · 밤 단추 왼쪽 ══ */
+/* ① 아이콘: 판 크기 24 · 고르지 않은 칸은 옅게. 휴대폰 고른 칸 = 넓은 알약 대신 굵은 글 + 아래 짧은 막대 */
+body.base-j .jnav .ni{width:24px;height:24px}
+body.base-j .jnav button:not(.on) .ni{opacity:.55}
+@media (max-width:1023px){
+  body.base-j .jhd .jnav button{position:relative;border-radius:14px}
+  body.base-j .jhd .jnav button.on{background:transparent;color:var(--k);font-weight:760}
+  body.base-j .jhd .jnav button.on::after{content:"";position:absolute;left:50%;bottom:2px;width:16px;height:3px;margin-left:-8px;border-radius:2px;background:var(--k)}
+}
+@media (min-width:1024px){ body.base-j .jnav .ni{width:21px;height:21px} }
+/* ② 이름 자리: 알약 없이 얼굴만 이름 앞에(글은 붙여 씀) */
+body.base-j .nmslot{display:inline;margin:0;padding:0;border-radius:0;background:none;box-shadow:none;white-space:nowrap}
+/* ③ 말풍선: 테두리 없이 그림자만 */
+body.base-j .say-play.bub{background:#FFFDF8;box-shadow:0 1px 2px rgba(60,40,15,.07),0 6px 18px rgba(60,40,15,.08)}
+body.base-j .say-play.bub:hover{background:#fff}
+/* ④ 한국어 시험 문장 = 형광펜 칠한 큰 글(누르는 카드와 다른 꼴) · 「고르면 무엇부터」 앞 화살 걷기 */
+body.base-j .ja .lede small.kq,body.base-j .d2h .lede small.kq{display:table;margin-top:14px;padding:0 .08em;border-radius:0;background:linear-gradient(transparent 56%,rgba(255,196,92,.5) 56%,rgba(255,196,92,.5) 90%,transparent 90%);box-shadow:none;font-size:27px;font-weight:760;line-height:1.3;color:var(--k)}
+body.base-j .night .ask-q small.kq{display:table;margin-top:10px;padding:0 .08em;border-radius:0;background:linear-gradient(transparent 58%,rgba(255,212,138,.34) 58%,rgba(255,212,138,.34) 90%,transparent 90%);box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;font-size:23px;font-weight:720;color:#FAFAF9}
+@media (min-width:1024px){ body.base-j .ja .lede small.kq,body.base-j .d2h .lede small.kq{font-size:32px;padding:0 .08em} }
+body.base-j .chs.st2 .ch .nx::before{content:none}
+/* ⑤ 밤: 소리 단추의 보이는 원은 32px(누를 곳 44 그대로) · 큰 단추 묶음은 글 단 왼쪽 */
+body.base-j .hud button{position:relative;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+body.base-j .hud button::before{content:"";position:absolute;inset:6px;border-radius:50%;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:background .2s}
+body.base-j .hud button:hover,body.base-j .hud button:focus-visible{background:transparent}
+body.base-j .hud button:hover::before,body.base-j .hud button:focus-visible::before{background:rgba(255,255,255,.2)}
+body.base-j .hud svg{position:relative;width:16px;height:16px}
+body.base-j .night .foot .acts{align-items:flex-start}
+
+/* ══ 10s(11-13 새벽) — Fable 5.2 확인(10q): P2 여덟 · P3 열 ══ */
+/* P2-1 폭 461~1023: 아래 판 · 시작 단추 · 탐색을 앱 틀(가운데 460) 안으로 */
+@media (min-width:461px) and (max-width:1023px){
+  body.base-j .jm .start{left:calc(50% - 214px);right:calc(50% - 214px)}
+  body.base-j .jm .pg::after,body.base-j .ja .pg::after{left:calc(50% - 230px);right:calc(50% - 230px)}
+  body.base-j .jhd .jnav{left:calc(50% - 218px);right:calc(50% - 218px)}
+}
+/* P2-2 · 10t S3-2 눕힌 폰(키 500 아래): 낮은 아래 판 — 시작 단추 46 + 탐색 44(아이콘 20), 단추는 판 안에 떠 있어 첫 화면에 늘 보임 */
+@media (max-width:1023px) and (max-height:500px){
+  body.base-j .jhd .jnav{bottom:max(8px,calc(env(safe-area-inset-bottom) + 4px))}
+  body.base-j .jnav button{min-height:44px;padding:3px 11px 2px;gap:1px}
+  body.base-j .jnav .ni{width:20px;height:20px}
+  body.base-j .jm .start{bottom:calc(max(8px, env(safe-area-inset-bottom) + 4px) + 44px + 6px);height:46px;margin-top:0}
+  body.base-j .jm .pg::after{height:calc(max(8px, env(safe-area-inset-bottom) + 4px) + 44px + 6px + 46px + 8px)}
+  body.base-j .ja .pg::after{height:calc(max(8px, env(safe-area-inset-bottom) + 4px) + 44px + 8px)}
+  body.base-j .jm .pg{padding-bottom:128px;scroll-padding-bottom:136px}
+  body.base-j .ja .pg{padding-bottom:76px;scroll-padding-bottom:84px}
+}
+/* P2-3 맞춤 화면 토스트는 떠 있는 시작 단추 위 · 화면 읽기에만 알릴 때는 숨김 */
+@media (max-width:1023px){ body.base-j .toast.ovjm{bottom:calc(max(14px, env(safe-area-inset-bottom) + 8px) + 52px + 10px + 54px + 12px)} }
+@media (max-width:1023px) and (max-height:500px){ body.base-j .toast.ovjm{bottom:calc(max(8px, env(safe-area-inset-bottom) + 4px) + 44px + 6px + 46px + 12px)} }
+.toast.sr{position:fixed!important;left:0!important;bottom:0!important;width:1px!important;height:1px!important;margin:0!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important}
+/* P2-4 넓은 화면: 넘칠 때만 줄인다(10t — app.js fitToday가 가운데 띠 · 위 여백(--tg · --tt)을 먼저, 그래도 넘치면 .tight로 글 한 단계) · 한글 질문 카드 옆으로 둘은 한국어 맞춤 · 둘째 날만 */
+@media (min-width:1024px){
+  body.base-j .jm .today{grid-template-rows:var(--tt,minmax(132px,21vh)) auto auto auto var(--tg,minmax(36px,1fr)) auto auto}
+  body.base-j .jm .today.tight .lede{font-size:clamp(32px,2.8vw,46px)}
+  body.base-j .jm .today.tight .cap .says.sl{gap:6px;margin-top:14px}
+  body.base-j .jm .today.tight .say-play.bub{min-height:44px;padding:7px 16px 8px;font-size:clamp(17px,1.3vw,20px)}
+  body.base-j .jm .today.tight .cap .why{margin-top:10px}
+  body.base-j .jm .today.tight .tb > .start{margin-top:18px;height:56px}
+  body.base-j .jm .today.tight .tb > .doneln{padding-top:14px}
+  body.base-j .jm .today.tight .tb > .pos-ph{padding-bottom:16px}
+  body.base-j .jm .today.tight .fdone{margin-bottom:10px}
+  html:lang(ko) body.base-j .ja .chs.st2,body.base-j .d2h .chs.st2{grid-template-columns:1fr 1fr;max-width:600px}
+}
+@media (min-width:1024px) and (max-height:820px){ body.base-j .jm .today{grid-template-rows:var(--tt,minmax(124px,15vh)) auto auto auto var(--tg,minmax(28px,1fr)) auto auto} }
+/* P2-5 넓은 화면 1024~1199: 여백 · 탐색 칸을 줄여 창 안, 시작 단추 폭에 상한 */
+@media (min-width:1024px) and (max-width:1199px){
+  body.base-j .jm{--gx:30px}
+  body.base-j .jm .jhd,body.base-j .ja .jhd{padding-left:30px;padding-right:30px}
+  body.base-j .ja .cols{padding-left:30px;padding-right:30px}
+  body.base-j .jnav button{padding:0 9px;gap:5px;font-size:12.5px}
+  html:lang(mn) body.base-j .jnav button,html:lang(en) body.base-j .jnav button{padding:0 8px;font-size:12.5px}
+  body.base-j .jnav .ni{width:18px;height:18px}
+}
+@media (min-width:1024px){ body.base-j .jm .today .tb > .start{max-width:calc(100% - var(--gx) * 2);white-space:normal} }
+/* P2-7 말소리 없음: 풍선은 누르지 않는 글 */
+body.base-j .say-play.bub.nob{cursor:default}
+body.base-j .say-play.bub.nob:hover{background:#FFFDF8}
+/* P2-8 긴 예문은 풍선 안에서 줄을 바꿈(낱말 단위) */
+body.base-j .say-play.bub > span{white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+/* P3-5 강제 색: 그림자 · 배경으로만 그린 테 · 막대를 글 색으로 */
+@media (forced-colors:active){
+  body.base-j .say-play.bub .wv b,body.base-j .jhd .jnav button.on::after{background:CanvasText}
+  body.base-j .say-play.bub,body.base-j .chs.st2 .ch,body.base-j .jm .start{border:1px solid CanvasText}
+  body.base-j .jm .pg::after,body.base-j .ja .pg::after{border-top:1px solid CanvasText}
+}
+/* P3-6 › 대체 글 문법이 없는 브라우저 */
+body.base-j .chs.st2 .ch::after{content:"›";content:"›" / ""}
+/* P3-7 대비 4.5 넘게: 카드 할 일 줄 · 휴대폰 탐색의 꺼진 글 */
+body.base-j .chs.st2 .ch .nx{color:#6B655C}
+@media (max-width:1023px){ body.base-j .jhd .jnav button:not(.on){color:#6B655C} }
+/* P3-9 PC 좁은 창 첫 연습 뒤: 서하 줄이 없으니 칩은 제 줄 */
+@media (max-width:1023px){
+  body.base-j .jm.pc .ta.fd{display:block}
+  body.base-j .jm.pc .ta.fd > .fdone{display:inline-flex;margin:0 0 10px}
+}
+@media (max-width:1023px) and (max-height:500px){   /* 10s P2-2 사진: 눕힌 폰은 위 사진을 낮춰 제목까지 첫 화면에 */
+  html:lang(ko) body.base-j .jm .rail.task,html:lang(mn) body.base-j .jm .rail.task,html:lang(en) body.base-j .jm .rail.task{--rh:clamp(118px,33vh,168px)}
+}
+
+/* ══ 10t(11-13) — Fable 10q P3-10: 넓은 화면 첫 연습 뒤 「내 위치」 표 위 가는 선도 기록 줄 위 선과 같은 길이(글 단 폭) · 같은 색 ══ */
+@media (min-width:1024px){
+  body.base-j .jm .today .tb > .pos-ph.full{max-width:none;border-top:1px solid rgba(22,21,19,.1);padding-top:16px}
+  body.base-j .jm .today .tb > .pos-ph > .pos{border-top:0;padding-top:0}
+}
+
+/* ══ 10t(11-13) 덧붙임 — Fable 5.2 다시 확인(10s): S3-4 · S3-6 · S3-2 사진 ══ */
+/* S3-4 넓은 화면 여백: 1200에서 30 → 52.8로 뛰던 값을 잇는다(1200까지 30, 1440에서 약 64, 84에서 멈춤) · 1024~1239 시작 단추는 안 여백 · 글 한 단계 */
+@media (min-width:1024px){
+  body.base-j .jm,body.base-j .ja{--gx:clamp(30px,calc(30px + (100vw - 1200px) * .14),84px)}
+  body.base-j .jm .jhd,body.base-j .ja .jhd{padding-left:var(--gx);padding-right:var(--gx)}
+  body.base-j .ja .cols{padding-left:var(--gx);padding-right:var(--gx)}
+}
+@media (min-width:1024px) and (max-width:1239px){ body.base-j .jm .today .tb > .start{padding:0 26px;font-size:17px} }
+/* S3-6 넓은 화면 탐색: 꺼진 글 대비 5.4:1 · 1024~1199 글 13px · 강제 색에서 고른 칸 밑줄 */
+@media (min-width:1024px){ body.base-j .jhd .jnav button:not(.on){color:#6B655C} }
+@media (min-width:1024px) and (max-width:1199px){ body.base-j .jnav button,html:lang(mn) body.base-j .jnav button,html:lang(en) body.base-j .jnav button{font-size:13px} }
+@media (forced-colors:active) and (min-width:1024px){ body.base-j .jhd .jnav button.on{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px} }
+/* S3-2 키 340 아래 눕힌 폰: 위 사진을 더 낮춰 제목 번역 줄까지 판 위에 */
+@media (max-width:1023px) and (max-height:340px){
+  html:lang(ko) body.base-j .jm .rail.task,html:lang(mn) body.base-j .jm .rail.task,html:lang(en) body.base-j .jm .rail.task{--rh:clamp(88px,28vh,118px)}
+}
+
+/* ══ 10t 덧붙임 — 넓은 화면 맞추기 둘째 단계(1280×720 en · mn 첫 연습 뒤) · 눕힌 폰 번역 판 사진 ══ */
+@media (min-width:1024px){
+  body.base-j .jm .today.tight2 .lede{font-size:clamp(30px,2.6vw,40px)}
+  body.base-j .jm .today.tight2 .cap .says.sl{gap:4px;margin-top:10px}
+  body.base-j .jm .today.tight2 .say-play.bub{padding:6px 14px 7px}
+  body.base-j .jm .today.tight2 .cap .why{margin-top:6px}
+  body.base-j .jm .today.tight2 .tb > .start{margin-top:12px;height:52px}
+  body.base-j .jm .today.tight2 .tb > .doneln{padding-top:10px}
+  body.base-j .jm .today.tight2 .tb > .pos-ph{padding-bottom:8px}
+  body.base-j .jm .today.tight2 .fdone{margin-bottom:6px}
+}
+@media (max-width:1023px) and (max-height:500px){ html:lang(mn) body.base-j .jm .rail.task,html:lang(en) body.base-j .jm .rail.task{--rh:clamp(96px,27vh,150px)} }
+@media (max-width:1023px) and (max-height:340px){ html:lang(mn) body.base-j .jm .rail.task,html:lang(en) body.base-j .jm .rail.task{--rh:clamp(64px,21vh,96px)} }
+
+/* 10t 키 640 아래 넓은 창: 한글 질문 두 화면의 위아래 여백만 줄여 한 화면에(1024×600 — Fable 재현 m_new g) */
+@media (min-width:1024px) and (max-height:640px){
+  body.base-j .ja .cols{padding-top:96px;padding-bottom:24px}
+  body.base-j .d2q.d2h .today.solo{padding-top:32px}
+  body.base-j .d2q.d2h .idcard.mini{margin-bottom:22px}
+}
+
+/* ══ 10t 덧붙임 — 넓힌 찍기(768 · 844×390 · 누를 곳 44)가 처음 잡은 것 ══ */
+/* 밤 시 속 누르는 낱말(다섯 줄 · 한 줄): 누를 높이 44 이상(43.6이던 것) — 바깥 여백을 같은 만큼 빼 줄 높이는 그대로 */
+body.base-j .night:not(.asking) .ln .w{padding:5px 0;margin:-5px 0}
+/* 눕힌 폰 밤 화면(새벽 화면 빼고): 시와 아래 덩어리가 겹치던 것 → 스크롤, 시는 글 흐름 안, 아래 덩어리는 바닥에 붙는 어두운 판, 사진은 앱 틀에 고정 */
+@media (max-width:1023px) and (max-height:500px){
+  body.base-j .view.night:not(.dawn){overflow-y:auto;overscroll-behavior:contain}
+  body.base-j .night:not(.dawn) .ph{position:fixed;top:0;bottom:0;left:max(0px,calc(50% - 230px));right:max(0px,calc(50% - 230px));aspect-ratio:auto}
+  body.base-j .night:not(.dawn) .poem{position:relative;top:auto;left:auto;right:auto;margin:100px 20px 0 24px}
+  body.base-j .night:not(.dawn) .foot{position:sticky;bottom:0;margin-top:18px;padding-top:30px;background:linear-gradient(180deg,rgba(4,6,13,0) 0,#04060D 30px)}   /* 뒤 시 글자가 비치지 않게 불투명 */
+  /* 둘째 날 목표: 「이걸로 할게요 · 나중에」를 바닥 판에(맞춤 화면과 같은 낮은 판), 사진 줄은 낮춤 */
+  body.base-j .d2q .acts2{position:fixed;left:max(0px,calc(50% - 230px));right:max(0px,calc(50% - 230px));bottom:0;z-index:28;flex-direction:row;align-items:center;justify-content:center;gap:14px;margin:0;padding:10px 16px max(10px,calc(env(safe-area-inset-bottom) + 6px));background:#FBF8F2;border-radius:22px 22px 0 0;box-shadow:0 -1px 0 rgba(22,21,19,.07),0 -14px 34px rgba(50,35,15,.1)}
+  body.base-j .d2q .acts2 .start{flex:0 1 260px;height:46px;margin:0}
+  body.base-j .d2q .acts2 .skip{margin:0;min-height:44px}
+  body.base-j .d2q:not(.d2h) .pg{padding-bottom:84px}
+  body.base-j .d2q .trail{position:relative;z-index:0}   /* 줄 칸의 z-index가 바닥 판 위로 올라오지 않게 가둔다 */
+  body.base-j .d2q .rail.goals{--rh:148px;--sw:90px}
+}
+
+/* ══ 10u(11-13 아침) — 24차(GPT 눈) 7 미만 여섯 화면의 공통 지적 ══ */
+/* ① 이름 자리 = 글자 굵기만(얼굴 · 머리글자 배지 = 「문장 위 스티커」 C018) */
+body.base-j .nmslot{font-weight:800}
+/* ② 밤 이름표 = 흰 글(보라 글 = 「방문한 링크」) */
+body.base-j .night .tag .me-tag{color:var(--ink);font-weight:680;text-decoration:none}
+/* ③ 말풍선 = 그림자 없는 옅은 먹빛 판(흰 판 + 그림자 = 기성 조합 C016) · 누른 풍선은 흙빛 테 */
+body.base-j .say-play.bub{background:rgba(22,21,19,.06);box-shadow:none}
+body.base-j .say-play.bub:hover{background:rgba(22,21,19,.09)}
+body.base-j .say-play.bub.nob:hover{background:rgba(22,21,19,.06)}
+body.base-j .say-play.bub.on{background:rgba(169,68,31,.08);box-shadow:inset 0 0 0 1.5px var(--act)}
+/* ④ 휴대폰 아래 판 = 종이와 같은 바닥, 둥근 판 · 그림자 없이 가는 선 하나 */
+@media (max-width:1023px){
+  body.base-j .jm .pg::after,body.base-j .ja .pg::after{background:var(--paper);border-radius:0;box-shadow:0 -1px 0 rgba(22,21,19,.1)}
+}
+/* ⑤ 한국어 시험 문장 = 화면 말 아래 조용한 둘째 줄(형광펜 · 크고 굵은 글 = 발표 장표 C011 · 「한국어가 지나치게 큰 비중」) */
+body.base-j .ja .lede small.kq,body.base-j .d2h .lede small.kq{display:block;margin-top:12px;padding:0;background:none;font-size:20px;font-weight:600;line-height:1.35;color:var(--k2);letter-spacing:-.02em}
+body.base-j .night .ask-q small.kq{display:block;margin-top:8px;padding:0;background:none;font-size:18px;font-weight:580;line-height:1.35;color:rgba(250,250,249,.84);letter-spacing:-.015em}
+@media (min-width:1024px){ body.base-j .ja .lede small.kq,body.base-j .d2h .lede small.kq{font-size:23px;padding:0} }
+/* ⑥ 두 답 = 테 · 그림자 · › 없는 옅은 판(설문 · 예약 카드 C016), 밤은 유리 판 — 누른 답은 그대로 먹 판 · 전등 빛 판 */
+body.base-j :is(.ja,.d2h) .chs.st2 .ch{background:rgba(22,21,19,.06);box-shadow:none;padding-right:18px}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch:hover{background:rgba(22,21,19,.095)}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch .nx{color:var(--k2)}
+html:lang(mn) body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch,html:lang(en) body.base-j :is(.ja,.d2h,.night) .chs.st2 .ch{padding-right:18px}
+body.base-j .chs.st2 .ch::after{content:none}
+body.base-j .night .chs.dark.st2 .ch{background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding-right:18px}
+body.base-j .night .chs.dark.st2 .ch .lb{color:var(--ink)}
+body.base-j .night .chs.dark.st2 .ch .nx{color:rgba(250,250,249,.78)}
+body.base-j .night .chs.dark.st2 .ch:hover{background:rgba(255,255,255,.16)}
+/* ⑦ 첫 연습 뒤 휴대폰: 칩이 「마쳤다」를 말하니 까닭 줄 · 「맞춤 첫 인사 세 마디」 줄은 접는다(C017), 칩은 판 없이 글로 */
+@media (max-width:1023px){
+  body.base-j .jm .today.fd .cap .why:not(.alt),body.base-j .jm .today.fd .doneln .dl2{display:none}
+}
+body.base-j .jm .fdone{background:none;box-shadow:none;color:var(--k2);font-weight:650}
+body.base-j .jm .fdone svg{width:18px;height:18px}
+@media (min-width:375px) and (max-width:1023px){ body.base-j .jm .ta.fd > .fdone{padding:0} body.base-j .jm .ta.fd > .fdone svg{width:18px;height:18px} }
+/* ⑧ 넓은 화면 바닥 글(오늘 한 것 · 내 위치)은 한 단계 크게 · 진하게(「바닥에 붙인 주석」) */
+@media (min-width:1024px){
+  body.base-j .jm .doneln,body.base-j .jm .pos-row{font-size:15.5px}
+  body.base-j .jm .doneln{color:var(--k2)}
+  body.base-j .jm .doneln b{color:var(--k2)}
+}
+/* ⑨ 서하 말 제목 = 할 일 이름만 굵게, 「부터 해요 · 이에요」는 가늘게(「보통의 굵은 고딕」 · 「핵심이 문장 속에 묻힘」) */
+body.base-j .jm .lede{font-weight:500}
+body.base-j .jm .lede q{font-weight:790}
+/* ⑪ 둘째 날 목표: 큰 사진 그림자는 낮게(「카드를 공중에 띄운 장식」) */
+body.base-j .d2q .rail.goals .ri.on .pcard{box-shadow:0 6px 16px rgba(40,25,10,.1),0 1px 3px rgba(40,25,10,.08)}
+@media (forced-colors:active){ body.base-j .say-play.bub,body.base-j .chs.st2 .ch{border:1px solid CanvasText} }
+/* ⑧-2 넘쳐서 줄이는 단계(.tight · .tight2)에서는 바닥 글을 원래 크기로(1280×720 몽골어 헛 스크롤 7px) */
+@media (min-width:1024px){
+  body.base-j .jm .today:is(.tight,.tight2) .doneln,body.base-j .jm .today:is(.tight,.tight2) .pos-row{font-size:14px}
+}
+/* ⑫ 탐색 아이콘 = 판 없는 그림 넷(24차 K57) — 흙빛 한 점(자막 줄 · 체크 · 가의 획 · 단추)은 고른 칸에서만 */
+body.base-j .jnav button.on .ni{--ni-acc:var(--act)}
+@media (forced-colors:active){ body.base-j .jnav .ni{--ni-acc:currentColor} }
+
+/* ══ 10v(11-13 아침) — 25차(GPT 눈 · 카본) 공통 지적 ══ */
+/* ① 세 마디 = 상자 없는 큰 글줄(말풍선 꼴은 판 색과 상관없이 「챗봇 부품 · 익숙한 조합」) — 밤 시와 같은 결, 읽는 동안은 글 아래 흙빛 줄 */
+body.base-j .jm .cap .says.sl{gap:0;margin-top:8px}
+body.base-j .say-play.bub,body.base-j .say-play.bub:hover,body.base-j .say-play.bub.nob:hover,body.base-j .say-play.bub.on{background:none;box-shadow:none}
+body.base-j .say-play.bub{border-radius:0;padding:6px 0 7px;min-height:46px;font-size:22px;font-weight:560;letter-spacing:-.025em;gap:12px}
+body.base-j .say-play.bub.on > span{text-decoration:underline;text-decoration-color:var(--act);text-decoration-thickness:2px;text-underline-offset:7px}
+@media (hover:hover){ body.base-j .say-play.bub:not(.nob):not(.on):hover > span{text-decoration:underline;text-decoration-color:rgba(22,21,19,.25);text-decoration-thickness:1.5px;text-underline-offset:7px} }
+@media (min-width:1024px){ body.base-j .say-play.bub{font-size:clamp(24px,2vw,30px);padding:5px 0 6px;min-height:48px} }
+@media (min-width:1024px) and (max-height:820px){ body.base-j .say-play.bub{font-size:clamp(21px,1.7vw,25px);padding:4px 0 5px;min-height:44px} }
+body.base-j .jm .today:is(.tight,.tight2) .say-play.bub{font-size:clamp(20px,1.6vw,24px);padding:4px 0 5px;min-height:44px}
+@media (max-width:359px){ body.base-j .say-play.bub{font-size:20px} }
+/* ② 소리 물결 = 그 말의 음절 박자(높이는 그리는 쪽이 음절마다 줌) · 낱말 사이 틈 */
+body.base-j .say-play.bub .wv{gap:2.5px}
+body.base-j .say-play.bub .wv .sp{display:inline-block;flex:none;width:3.5px;height:1px;margin:0;border-radius:0;background:none}   /* .cap .says i(가운뎃점) 규칙이 새지 않게 */
+/* ③ 밤 한글 질문 = 손님 끝과 같은 갈린 짜임 — 두 답은 창틀 빛 크림 알약, 할 일 줄은 뺌(고르면 서하가 내일 할 일을 말함) */
+body.base-j .night .chs.dark.st2{gap:10px}
+body.base-j .night .chs.dark.st2 .ch{min-height:54px;padding:0 24px;border-radius:27px;background:linear-gradient(180deg,#FFF5E4 0%,#F3E1C2 100%);box-shadow:0 12px 32px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.75);-webkit-backdrop-filter:none;backdrop-filter:none}
+body.base-j .night .chs.dark.st2 .ch:hover{background:linear-gradient(180deg,#FFF8EC 0%,#F6E7CE 100%)}
+body.base-j .night .chs.dark.st2 .ch .lb{color:#1B140B;font-size:16.5px}
+body.base-j .night .chs.dark.st2 .ch .nx{display:none}
+@media (forced-colors:active){ body.base-j .night .chs.dark.st2 .ch{border:1px solid CanvasText} }
+
+/* ══ 10w-2(11-13 아침) — 25차 남은 공통 지적 ══ */
+/* ⓑ 밤 끝 글 단추(오늘은 여기까지 · 지금 더 연습하기) = 큰 단추 왼쪽 끝에 맞춘 전등 빛 글 */
+body.base-j .night .foot .acts .tx{padding-left:0;color:var(--tap);font-weight:600}
+/* ⓒ 「나중에 할게요」 = 진회색 + 옅은 밑줄(흙빛은 시선을 건너뛰기로 끈다) */
+body.base-j .ja .skip,body.base-j .d2h .skip,body.base-j .d2q .skip{color:var(--k2);font-weight:560;text-decoration:underline;text-decoration-color:rgba(22,21,19,.3);text-decoration-thickness:1px;text-underline-offset:4px}
+/* ⓓ 넓은 화면 = 위 탐색 + 세로 가운데 할 일 덩어리(시작 단추 바로 아래 기록 · 내 위치) — 맨 아래 줄은 최소 0(fitToday가 줄이지 않는 줄이라, 최소를 두면 1280×720 첫 연습 뒤가 3px 넘침 · 아래 여백은 「내 위치」 안 여백) */
+@media (min-width:1024px){
+  body.base-j .jm .today{grid-template-rows:var(--tt,minmax(132px,1fr)) auto auto auto var(--tg,40px) auto auto minmax(0,1fr);grid-template-areas:"rail ." "rail ta" "rail cap" "rail start" "rail ." "rail done" "rail pos" "rail ."}
+}
+@media (min-width:1024px) and (max-height:820px){ body.base-j .jm .today{grid-template-rows:var(--tt,minmax(124px,1fr)) auto auto auto var(--tg,32px) auto auto minmax(0,1fr)} }
+
+/* ══ 10x(11-13 아침) — 26차 GPT · 카본: 템플릿 부품(둥근 사진 아래 · 사진 위 알약 표시 · 큰 검정 알약 · 회색 카드 · 크림 알약) · 흩어진 물결 · 빽빽한 아래 정보 · 밤 질문의 빈 하늘 · 커버플로 ══ */
+/* ① 휴대폰 위 사진은 네모 그대로(둥근 아래 모서리 = 기성 온보딩 카드 — 26차 02 · 10) */
+@media (max-width:1023px){
+  body.base-j .jm .rail.task,body.base-j .ja .jhero{border-radius:0}
+}
+/* ② 사진 위 넘김 표시: 어두운 알약 없이 가는 흰 막대 셋, 글 단 왼쪽 끝에(26차 「회색 캐러셀 알약」 · 카본 「뜻 모를 점」) */
+body.base-j .jm .rail.task + .ticks{left:24px;right:auto;transform:none;width:auto;height:12px;padding:0;border-radius:0;background:transparent;gap:5px;bottom:14px;align-items:center}
+body.base-j .jm .ticks i,body.base-j .jm .ticks i.on{width:16px;height:2px;border-radius:1px;box-shadow:0 0 4px rgba(0,0,0,.45)}
+body.base-j .jm .ticks i{background:rgba(255,255,255,.48)}
+body.base-j .jm .ticks i.on{background:#fff}
+@media (min-width:1024px){
+  body.base-j .jm .rail.task + .ticks{left:44px;bottom:38px;padding:0}
+  body.base-j .jm .ticks i,body.base-j .jm .ticks i.on{width:22px}
+  body.base-j .jm .rnav{left:auto;right:30px;bottom:22px;transform:none;width:auto;gap:4px;background:transparent;border-radius:0}
+  body.base-j .jm .rnav button{width:44px;height:44px;border-radius:50%;background:transparent;color:#fff;font-size:26px;text-shadow:0 1px 6px rgba(0,0,0,.45)}
+  body.base-j .jm .rnav button:hover:not(:disabled){background:rgba(255,255,255,.14)}
+}
+/* ③ 시작 단추: 큰 검정 알약 → 모서리 10의 먹 판, 이름은 왼쪽 · 시간과 화살표는 오른쪽 끝(26차 「거대한 검정 알약」) */
+body.base-j .jm .start{border-radius:10px;justify-content:space-between;padding:0 20px 0 22px;letter-spacing:-.01em}
+body.base-j .jm .start small::before{content:none}
+body.base-j .jm .start small{margin-left:auto;padding-left:16px}
+@media (min-width:1024px){ body.base-j .jm .start{border-radius:12px;padding:0 26px 0 28px} }
+/* ④ 세 마디 줄: 줄 전체가 듣기 단추, 오른쪽 끝 같은 자리에 같은 크기의 듣기 칸(그 말의 음절 박자 막대) — 26차 07 「흩어진 물결 · 조작부인지 장식인지」 */
+body.base-j .says.sl li{width:100%}
+body.base-j .say-play.bub{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;text-align:left}
+body.base-j .say-play.bub > span{flex:1 1 auto;min-width:0}
+body.base-j .say-play.bub .wv{flex:none;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:1.4px;width:64px;height:34px;margin:0;padding:0 7px;overflow:hidden;border-radius:10px;box-shadow:inset 0 0 0 1.5px rgba(169,68,31,.32);background:transparent;transition:background .2s,box-shadow .2s}
+body.base-j .say-play.bub .wv b{flex:0 1 2.4px;width:auto;min-width:1.2px;border-radius:1.2px;background:var(--act)}
+body.base-j .say-play.bub .wv .sp{flex:0 1 2.6px;width:auto;min-width:.8px}
+body.base-j .say-play.bub:hover .wv{box-shadow:inset 0 0 0 1.5px rgba(169,68,31,.6)}
+body.base-j .say-play.bub.on .wv{background:var(--act);box-shadow:none}
+body.base-j .say-play.bub.on .wv b{background:#FBF3EA}
+body.base-j .say-play.bub.nob{display:block}
+@media (forced-colors:active){ body.base-j .say-play.bub .wv{box-shadow:none;border:1px solid CanvasText} body.base-j .say-play.bub.on .wv{background:Highlight} }
+/* ⑤ 아래 정보: 휴대폰 앞면은 「내 위치」 한 줄만(오늘 한 것은 밤 끝 화면이 막 말했다 — 26차 07 · 10 「작은 정보 띠에서 갑자기 빽빽」),
+      「TOPIK I 16칸」 옆에 칸 열여섯(듣기 8 · 읽기 8)을 그려 처음 온 사람도 진행판으로 읽게(26차 12 「내부 체계 이름만」 · 네 갈래 R10) */
+@media (max-width:1023px){ body.base-j .jm .tb > .doneln{display:none} }
+body.base-j .pos-row{flex-wrap:wrap;row-gap:6px}
+body.base-j .pos-row .mt{display:inline-flex;align-items:center;gap:6px;flex:none}
+body.base-j .pos-row .mt .g{display:inline-flex;gap:2px}
+body.base-j .pos-row .mt .g i{display:block;width:7px;height:6px;border-radius:1.5px;margin:0;background:rgba(22,21,19,.13)}
+body.base-j .pos-row .mt .g i.p{background:var(--act)}
+@media (forced-colors:active){ body.base-j .pos-row .mt .g i{background:GrayText} body.base-j .pos-row .mt .g i.p{background:CanvasText} }
+/* ⑥ 한글 질문의 두 답: 회색 카드 · 크림 알약 → 글자 칸(가 = 읽을 수 있어요 · ㄱ = 처음부터) + 이름 + 할 일, 카드 바탕 없음 */
+body.base-j .chs.st2 .ch .gl{display:grid;place-items:center;flex:none;width:48px;height:48px;border-radius:12px;font-style:normal;font-weight:760;font-size:24px;line-height:1;letter-spacing:0;background:#E7DED0;color:var(--k)}
+body.base-j :is(.ja,.d2h) .chs.st2{gap:0}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch{display:grid;grid-template-columns:48px 1fr auto;grid-template-rows:auto auto;column-gap:16px;row-gap:3px;align-items:center;min-height:76px;padding:14px 4px;border-radius:0;background:transparent;box-shadow:inset 0 -1px 0 rgba(22,21,19,.12);text-align:left}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch:first-child{box-shadow:inset 0 1px 0 rgba(22,21,19,.12),inset 0 -1px 0 rgba(22,21,19,.12)}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch .gl{grid-row:1 / span 2}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch .lb{grid-column:2;align-self:end}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch .nx{grid-column:2;align-self:start}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch::after{content:"→";content:"→" / "";position:static;inset:auto;transform:none;grid-column:3;grid-row:1 / span 2;color:var(--act);font-size:19px;font-weight:600}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch:hover .gl,body.base-j :is(.ja,.d2h) .chs.st2 .ch[aria-pressed="true"] .gl{background:var(--k);color:#FBF8F2}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch:not(:has(.nx)) .lb{grid-row:1 / span 2;align-self:center}
+@media (min-width:1024px){ html:lang(ko) body.base-j .ja .chs.st2,html:lang(ko) body.base-j .d2h .chs.st2{grid-template-columns:1fr;max-width:460px} }
+/* 밤: 같은 글자 칸을 창틀 전등 빛으로, 답은 글 폭만큼(창가 종이컵 · 창틀과 겹치지 않게) */
+body.base-j .night .chs.dark.st2{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+body.base-j .night .chs.dark.st2 .ch{display:inline-flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;width:auto;min-height:56px;padding:4px 18px 4px 4px;border-radius:14px;background:transparent;box-shadow:none;color:#FBF8F2}
+body.base-j .night .chs.dark.st2 .ch .gl{width:46px;height:46px;border-radius:11px;background:linear-gradient(180deg,#FFF3DC 0%,#F3DDB6 100%);color:#1B140B;box-shadow:0 6px 18px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.7)}
+body.base-j .night .chs.dark.st2 .ch .lb{font-size:18px;font-weight:680;color:#FBF8F2}
+body.base-j .night .chs.dark.st2 .ch::after{content:"→";content:"→" / "";position:static;inset:auto;transform:none;margin-left:2px;font-size:18px;line-height:1;color:var(--tap);font-weight:600}
+body.base-j .night .chs.dark.st2 .ch:hover,body.base-j .night .chs.dark.st2 .ch[aria-pressed="true"]{background:rgba(255,255,255,.08)}
+body.base-j .night .chs.dark.st2 .ch[aria-pressed="true"] .lb{color:var(--tap)}
+/* ⑦ 밤 한글 질문: 사진을 당기지 않고 창틀이 보이는 손님 판과 같은 짜임(26차 03 「창틀을 무대로」 7점) · 이름 줄은 이름만, 회차 · 때는 그 위 작은 줄로(26차 09 「역할이 다른 글이 같은 굵기로 붙음」) */
+body.base-j .night.asking .ph img{transform:none}
+body.base-j .night .tag > span{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;font-weight:480;letter-spacing:.015em;color:rgba(250,250,249,.56)}
+body.base-j .night .tag > span::before{content:"";flex:none;width:1px;height:12px;background:rgba(250,250,249,.3)}
+body.base-j .night .tag .me-tag small{font-weight:460;color:rgba(250,250,249,.58)}
+/* ⑧ 둘째 날 목표: 커버플로(가운데 크고 양옆 작게 + 그림자) → 한 장씩 넘기는 큰 사진, 눈금 대신 여섯 목표 이름(26차 06 「익숙한 커버플로 · 다른 목적의 이름이 안 보임」) */
+body.base-j .d2q .trail{margin-left:0;margin-right:0}
+body.base-j .d2q .rail.goals{height:clamp(110px,36vh,360px)}
+body.base-j .d2q .rail.goals .ri{width:calc(100% - 48px);max-width:520px;height:100%}
+body.base-j .d2q .rail.goals .pcard{display:block;width:100%;height:100%;aspect-ratio:auto;border-radius:3px;box-shadow:none}
+body.base-j .d2q .rail.goals .pcard img{width:100%;height:100%;object-fit:cover}
+body.base-j .d2q .rail.goals .rlab{display:none}
+body.base-j .d2q .ticks.gn{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 16px;height:auto;margin:16px 24px 0;padding:0}
+body.base-j .d2q .ticks.gn i{display:inline-block;width:auto;height:auto;padding:5px 0 6px;font-style:normal;font-size:15px;font-weight:560;line-height:1.2;color:#6B655C;background:none;box-shadow:none;border-radius:0;cursor:pointer;transition:color .2s}
+body.base-j .d2q .ticks.gn i.on{color:var(--k);font-weight:760;box-shadow:inset 0 -2px 0 var(--act)}
+body.base-j .d2q .cap .nm.g{display:none}
+body.base-j .d2q .ticks.gn i small{display:none;margin-left:5px;font-size:.86em;font-weight:520;color:var(--k3)}
+body.base-j .d2q .ticks.gn i.on small{display:inline}
+html:lang(mn) body.base-j .d2q .ticks.gn i,html:lang(en) body.base-j .d2q .ticks.gn i{font-size:14px}
+body.base-j .d2q .rail.goals{overflow:hidden}
+@media (max-width:1023px) and (max-height:780px){ body.base-j .d2q .rail.goals{height:clamp(110px,29vh,300px)} body.base-j .d2q .ticks.gn{gap:0 14px;margin-top:12px} }
+body.base-j .d2q .start,body.base-j .d2h .start{border-radius:10px}
+@media (forced-colors:active){ body.base-j .d2q .ticks.gn i.on{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px} }
+/* ⑨ 넓은 화면: 오른쪽 단의 오렌지 빛 그러데이션 걷기(26차 12 「베이지 그러데이션이 분위기를 대신」), 위 탐색은 캡슐 · 회색 알약 없이 글 줄(26차 11 「회색 선택 알약 = UI 키트」) */
+@media (min-width:1024px){
+  body.base-j .jm.lamp,body.base-j .ja.lamp,body.base-j .jm.morning,body.base-j .ja.morning{background:var(--paper)}
+  body.base-j .jhd .jnav{gap:8px;padding:0;background:transparent;box-shadow:none;border-radius:0}
+  body.base-j .jhd .jnav button{position:relative;padding:0 10px;border-radius:10px}
+  body.base-j .jhd .jnav button.on{background:transparent;color:var(--k);font-weight:760}
+  body.base-j .jhd .jnav button.on::after{content:"";position:absolute;left:10px;right:10px;bottom:4px;height:2px;border-radius:1px;background:var(--act)}
+  body.base-j .jhd .jnav button:not(.on):hover{background:rgba(22,21,19,.05)}
+}
+/* ⑩ 넓은 화면: 세 마디 줄과 시작 단추를 같은 폭으로 — 듣기 칸 오른쪽 끝 = 단추 오른쪽 끝(짧은 말에서 칸이 단 끝에 떠 보이지 않게) */
+@media (min-width:1024px){
+  body.base-j .jm .says.sl{max-width:min(430px,100%)}
+  body.base-j .jm .today .tb > .start{width:min(430px,100%);min-width:0}
+}
+/* ⑪ 휴대폰(키 800 이상): 「오늘 한 것」 줄을 뺀 만큼 위 사진을 키워 아래 빈 여백을 줄임 */
+@media (max-width:1023px) and (min-height:800px){ html:lang(ko) body.base-j .jm .rail.task{--rh:clamp(240px,40vh,360px)} }
+/* ⑫ 키 700 아래 넓은 창: 한글 질문 두 답 줄을 조금 낮춰 헛 스크롤 없게(1024×600 둘째 날 19px) */
+@media (min-width:1024px) and (max-height:700px){
+  body.base-j :is(.ja,.d2h) .chs.st2 .ch{min-height:60px;padding:8px 4px}
+  body.base-j :is(.ja,.d2h) .chs.st2 .ch .gl{width:40px;height:40px;font-size:20px;border-radius:10px}
+  body.base-j :is(.ja,.d2h) .chs.st2 .ch{grid-template-columns:40px 1fr auto}
+}
+/* ⑬ 두 답 줄의 왼쪽 축: 몽골어 · 영어 판의 옛 안쪽 여백(18px — 더 높은 우선순위)이 글자 칸을 질문 글보다 안으로 밀었다 */
+html body.base-j :is(.ja,.d2h) .chs.st2 .ch.ch{padding:14px 4px 14px 0}
+html body.base-j .night .chs.dark.st2 .ch{padding:4px 18px 4px 0}
+@media (min-width:1024px) and (max-height:700px){ html body.base-j :is(.ja,.d2h) .chs.st2 .ch.ch{padding:8px 4px 8px 0} }
+@media (min-width:1024px) and (max-width:1239px){
+  html body.base-j :is(.ja,.d2h) .chs.st2 .ch.ch{grid-template-columns:40px 1fr auto;column-gap:12px}
+  body.base-j :is(.ja,.d2h) .chs.st2 .ch .gl{width:40px;height:40px;font-size:20px;border-radius:10px}
+}
+
+/* ══ 10y(11-13 오전) — Fable 5.2 10t 확인 P2 넷 + 27차 GPT 눈 7 미만 넷(02 맞춤 첫 화면 · 09 밤 한글 질문 · 12 PC · 13 맞춤 한글 질문)과 7점 화면의 지적 ══ */
+/* T2-4 세운 작은 폰(키 501 ~ 600) 밤 화면 en · mn(한글 질문 · 나중에 판) = 눕힌 폰과 같은 흐름 — 시 셋째 줄 · 번역 줄이 질문 글 · 서하 얼굴과 겹치던 것(한국어는 겹침 0이라 그대로) */
+@media (max-width:1023px) and (min-height:501px) and (max-height:600px){
+  html:is(:lang(en),:lang(mn)) body.base-j .view.night:not(.dawn){overflow-y:auto;overscroll-behavior:contain}
+  html:is(:lang(en),:lang(mn)) body.base-j .night:not(.dawn) .ph{position:fixed;top:0;bottom:0;left:max(0px,calc(50% - 230px));right:max(0px,calc(50% - 230px));aspect-ratio:auto}
+  html:is(:lang(en),:lang(mn)) body.base-j .night:not(.dawn) .poem{position:relative;top:auto;left:auto;right:auto;margin:100px 20px 0 24px}
+  html:is(:lang(en),:lang(mn)) body.base-j .night:not(.dawn) .foot{position:sticky;bottom:0;margin-top:18px;padding-top:30px;background:linear-gradient(180deg,rgba(4,6,13,0) 0,#04060D 30px)}
+}
+/* ① 듣기 칸: 굵은 살구색 테두리를 걷고 음절 박자 막대만 옅은 먹으로 — 자리(줄 오른쪽 끝)는 그대로, 누르거나 읽는 동안 흙빛
+      (27차 02 C018 「살구색 테두리와 파형이 문장마다 반복돼 본문을 잘게 분절 · 검정 단추와 결이 안 이어짐」) */
+body.base-j .say-play.bub .wv{width:56px;padding:0;justify-content:flex-end;box-shadow:none;background:transparent}
+body.base-j .say-play.bub .wv b{background:rgba(22,21,19,.34)}
+body.base-j .say-play.bub:hover .wv{box-shadow:none}
+body.base-j .say-play.bub:hover .wv b,body.base-j .say-play.bub:focus-visible .wv b{background:var(--act)}
+body.base-j .say-play.bub.on .wv{background:transparent}
+body.base-j .say-play.bub.on .wv b{background:var(--act);animation:wvBeat .9s ease-in-out infinite;transform-origin:50% 50%}
+body.base-j .say-play.bub.on .wv b:nth-of-type(2n){animation-delay:-.3s}
+body.base-j .say-play.bub.on .wv b:nth-of-type(3n){animation-delay:-.6s}
+@keyframes wvBeat{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.5)}}
+@media (prefers-reduced-motion:reduce){ body.base-j .say-play.bub.on .wv b{animation:none} }
+@media (forced-colors:active){ body.base-j .say-play.bub .wv{border:0} body.base-j .say-play.bub .wv b{background:CanvasText} body.base-j .say-play.bub.on .wv b{background:Highlight} }
+/* ② 휴대폰: 세 마디는 제목보다 한 단 작게(27차 07 · 10 「제목과 예문의 크기가 비슷해 제목의 지배력이 약함」) */
+@media (max-width:1023px){
+  body.base-j .jm .says.sl li span[lang=ko]{font-size:19.5px;font-weight:560;letter-spacing:-.015em}
+}
+/* ③ 내 위치: 칸을 정사각으로, 오늘 채울 두 칸은 흙빛 테두리 · 연습한 칸은 흙빛(현재 자리) — 휴대폰 꼬리표는 「TOPIK I」만(16칸은 칸이 말함), 연습 뒤에는 「연습 중」만
+      (27차 02 · 07 「작은 회색 칸이 현재 위치를 구별해 보여 주지 않음」 · 10 「칸 · TOPIK · 연습 상태 · 화살표가 한 줄에 몰림」) */
+body.base-j .pos-row .mt .g i{width:7px;height:7px;border-radius:1.5px}
+body.base-j .pos-row .mt .g i.t{background:transparent;box-shadow:inset 0 0 0 1.4px var(--act)}
+body.base-j .pos-row .tk{flex:none;font-size:12.5px;font-weight:620;letter-spacing:.02em;color:var(--k3)}
+body.base-j .rule i.t{background:transparent;box-shadow:inset 0 0 0 1.4px var(--act)}
+@media (forced-colors:active){ body.base-j .pos-row .mt .g i.t,body.base-j .rule i.t{box-shadow:none;border:1.5px solid CanvasText;background:Canvas} }
+/* ④ 밤 한글 질문: 오늘 한 것(시)은 작은 기록 줄로 물러나고 노란 강조 없이 — 한국어 줄 · 몽골어 줄이 비슷한 크기로 짝을 이뤄, 큰 글은 질문 하나만
+      (27차 09 C011 「흰 고딕과 노란 강조가 감성 문구 배경화면」 · 「위는 한국어가 크고 아래는 몽골어가 큼 — 언어 위계가 일관되지 않음」) */
+body.base-j .night.asking .poem .ln .ko{font-size:18px;font-weight:620;letter-spacing:-.02em}
+body.base-j .night.asking .poem .ln.lead .ko{font-size:13.5px;font-weight:520;color:rgba(250,250,249,.62)}
+body.base-j .night.asking .poem .ln small{font-size:13.5px;font-weight:480;color:rgba(250,250,249,.74)}
+body.base-j .night.asking .poem .ln.lead small{font-size:12.5px;color:rgba(250,250,249,.56)}
+body.base-j .night.asking .ln .w{padding:12px 6px;margin:-12px -6px;color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:rgba(250,250,249,.4);text-underline-offset:4px}   /* 누를 곳 44 이상(글이 작아진 만큼 바깥 여백으로) */
+/* 두 답: 같은 폭 · 화살표는 한 세로줄, 「나중에」는 옅은 흰 글(노란 글 아님) — 27차 09 「화살표가 글 길이마다 다른 자리 · 나중에가 따로 떨어짐」 */
+body.base-j .night .chs.dark.st2{display:inline-flex;flex-direction:column;align-items:stretch;align-self:flex-start;width:max-content;max-width:100%}   /* 폭은 긴 답만큼 — 창가 종이컵과 겹치지 않게(10x 그대로) */
+body.base-j .night .chs.dark.st2 .ch{display:flex;width:100%}
+body.base-j .night .chs.dark.st2 .ch::after{margin-left:auto;padding-left:16px}
+body.base-j .night .askq .later{color:rgba(250,250,249,.72);font-weight:540;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:rgba(250,250,249,.32);text-underline-offset:4px}
+/* ⑤ 넓은 화면: 제목 · 세 마디 · 시작 단추 · 아래 정보의 오른쪽 끝을 한 줄로(27차 11 「제목과 구분선은 길게, 듣기 · 시작 단추는 안쪽에서 끝남」),
+      아래 정보는 한 단 키워 부록처럼 보이지 않게(27차 11 「작은 회색 글자 · 구분점 · 사각형 막대로 갑자기 촘촘」) */
+@media (min-width:1024px){
+  body.base-j .jm .says.sl{max-width:none}
+  body.base-j .jm .today .tb > .start{width:100%}
+  body.base-j .jm .pos-ph > .pos{width:auto;max-width:none}
+  body.base-j .jm .strip .dl{color:var(--k2)}
+}
+@media (min-width:1024px) and (min-height:800px){   /* 키에 여유가 있는 넓은 창만 글을 한 단 키움(키 720 · 768 첫 연습 뒤 헛 스크롤을 늘리지 않게) */
+  body.base-j .jm .pos-h b{font-size:16px}
+  body.base-j .jm .pos-h > span{font-size:14px}
+  body.base-j .jm .pos-h button{font-size:14.5px}
+  body.base-j .jm .strip{margin-top:10px;column-gap:10px}
+  body.base-j .jm .strip .dl{font-size:13.5px}
+  body.base-j .jm .rule{height:9px;gap:4px}
+}
+/* 넓은 화면 첫 연습 뒤: 칩 「첫 연습을 마쳤어요」를 휴대폰처럼 「서하 언니」 줄 오른쪽 같은 줄에 — T2-1로 위 여백 바닥을 탐색 아래로 올린 만큼 줄 하나를 덜어 헛 스크롤이 생기지 않게(PC는 서하 줄이 없어 그대로) */
+@media (min-width:1024px){
+  body.base-j .jm:not(.pc) .ta.fd{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:18px;align-items:center}
+  body.base-j .jm:not(.pc) .ta.fd > *{grid-column:1 / -1}
+  body.base-j .jm:not(.pc) .ta.fd > .who{grid-column:1;grid-row:2;margin:0}
+  body.base-j .jm:not(.pc) .ta.fd > .fdone{grid-column:2;grid-row:2;justify-self:end;margin:0}
+  body.base-j .jm:not(.pc) .ta.fd > .lede{grid-row:3}
+}
+/* ⑥ PC 머리: 내 이름표(이니셜 + 이름) — 「저는 볼로르예요」의 이름이 누구인지 화면 안에서 보이게(27차 12) */
+body.base-j .jhd .jme{display:inline-flex;align-items:center;gap:9px;margin:0 0 0 auto;font-size:14.5px;font-weight:640;letter-spacing:-.01em;color:var(--k);white-space:nowrap}
+body.base-j .jhd .jme .ini{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;background:#E6DCCD;color:var(--k);font-size:13px;font-weight:720;font-style:normal;box-shadow:0 0 0 1px rgba(22,21,19,.1)}
+@media (forced-colors:active){ body.base-j .jhd .jme .ini{border:1px solid CanvasText} }
+/* ⑦ 탐색 아이콘 = 판화 한 벌(먹 면에 파낸 선 — 마스크로 바탕이 비침) · 고른 칸은 인주 빛(아이콘 시험 6차 · 27차 02 · 07 · 13 K57) */
+body.base-j .jnav button.on .ni{color:var(--act)}
+@media (forced-colors:active){ body.base-j .jnav button.on .ni{color:Highlight} }
+/* ⑧ 둘째 날 목표 이름: 가운데 모인 글 링크 두 줄(27차 06 「선택 영역의 조형적 존재감이 약해 부속 메뉴처럼」) → 세 칸 두 줄의 고르는 판
+      (칸 위 가는 줄, 고른 칸은 흙빛 굵은 줄 · 먹 굵은 글), 아래 안내 칸의 빈 높이를 줄여 사진을 조금 키움(「큰 공백이 반복」) */
+body.base-j .d2q .ticks.gn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 12px;margin:14px 24px 0;justify-content:stretch;align-items:stretch}
+body.base-j .d2q .ticks.gn i{display:block;padding:14px 2px 13px;text-align:center;font-size:14.5px;font-weight:620;letter-spacing:-.02em;white-space:nowrap;word-break:keep-all;color:var(--k2);box-shadow:inset 0 1px 0 rgba(22,21,19,.16)}
+body.base-j .d2q .ticks.gn i.on{color:var(--k);font-weight:780;box-shadow:inset 0 2.5px 0 var(--act)}
+html:lang(mn) body.base-j .d2q .ticks.gn,html:lang(en) body.base-j .d2q .ticks.gn{grid-template-columns:repeat(2,minmax(0,1fr))}   /* 긴 말은 두 칸 세 줄 */
+html:lang(mn) body.base-j .d2q .ticks.gn i,html:lang(en) body.base-j .d2q .ticks.gn i{font-size:13.5px;white-space:normal;letter-spacing:-.01em}
+body.base-j .d2q .ticks.gn i.on small{display:block;margin:2px 0 0;font-size:12px}
+@media (forced-colors:active){ body.base-j .d2q .ticks.gn i{border-top:1px solid GrayText;box-shadow:none} body.base-j .d2q .ticks.gn i.on{border-top:3px solid CanvasText;text-decoration:none} }
+@media (max-width:1023px){
+  body.base-j .d2q .cap{min-height:24px}
+  body.base-j .d2q .rail.goals{height:clamp(110px,38vh,380px)}
+}
+@media (max-width:1023px) and (max-height:780px){ body.base-j .d2q .rail.goals{height:clamp(110px,28vh,300px)} body.base-j .d2q .ticks.gn{margin-top:10px} body.base-j .d2q .ticks.gn i{padding:13px 2px 12px} }
+/* 영어 · 몽골어 목표 이름은 두 칸 세 줄이라 사진을 조금 낮춰 「나중에」까지 첫 화면 안에(390×844 mn 63px 넘치던 것) */
+@media (max-width:1023px) and (min-height:781px){ html:is(:lang(en),:lang(mn)) body.base-j .d2q .rail.goals{height:clamp(110px,31vh,330px)} }
+@media (max-width:1023px){ body.base-j .d2q:not(.d2h) .today.solo{padding-bottom:20px} }
+/* 가장 낮은 넓은 창의 긴 번역 판(tight2): 내 위치 판 위 여백을 6px 덜어 헛 스크롤 0(1280×720 mn 첫 연습 뒤 5px) */
+@media (min-width:1024px){ body.base-j .jm .today.tight2 .tb > .pos-ph.full{padding-top:10px} }
+/* ⑨ 눕힌 폰(키 500 이하) · 세운 작은 폰 en · mn(키 501 ~ 600) 밤 화면 — Fable 10t P3
+      T3-1 Tab 초점 · 누를 곳이 붙는 아래 덩어리 밑에 깔림 → 스크롤 여백(초점이 아래 덩어리 위로 오게) + 아래 덩어리 위 비치는 띠는 누름을 가로채지 않게
+      T3-2 시트가 열린 동안 뒤 화면이 스크롤되어 시트가 따라 올라감 → 열린 동안 잠금(.lock — app.js 시트 열기 · 닫기) */
+@media (max-width:1023px) and (max-height:500px){
+  body.base-j .view.night:not(.dawn){scroll-padding-top:12px;scroll-padding-bottom:62%}
+  body.base-j .night:not(.dawn) .foot{pointer-events:none}
+  body.base-j .night:not(.dawn) .foot > *{pointer-events:auto}
+}
+@media (max-width:1023px) and (min-height:501px) and (max-height:600px){
+  html:is(:lang(en),:lang(mn)) body.base-j .view.night:not(.dawn){scroll-padding-top:12px;scroll-padding-bottom:55%}
+  html:is(:lang(en),:lang(mn)) body.base-j .night:not(.dawn) .foot{pointer-events:none}
+  html:is(:lang(en),:lang(mn)) body.base-j .night:not(.dawn) .foot > *{pointer-events:auto}
+}
+body.base-j .view.night.lock{overflow-y:hidden}
+/* ⑩ 눕힌 폰 둘째 날 목표 — Fable 10t T3-3 「첫 화면에서 고른 목표 이름이 바닥 판 밑」: 사진과 목표 이름을 옆으로(사진 왼쪽 · 이름 두 칸 오른쪽) */
+@media (max-width:1023px) and (max-height:500px){
+  body.base-j .d2q:not(.d2h) .trail{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);column-gap:18px;align-items:start}
+  body.base-j .d2q:not(.d2h) .trail > .rail.goals{grid-column:1;grid-row:1;height:clamp(96px,calc(100vh - 256px),170px)}   /* 사진 아래 끝이 바닥 판 위(844×390 en · mn 사진 위 182 → 아래 316 · 판 324) */
+  body.base-j .d2q:not(.d2h) .trail > .ticks.gn{grid-column:2;grid-row:1;margin:18px 0 0;grid-template-columns:repeat(2,minmax(0,1fr))}   /* 위 끝 = 사진 위 끝 */
+  body.base-j .d2q:not(.d2h) .ticks.gn i{padding:13px 2px 12px;white-space:normal}
+}
+
+/* ══ 10z(11-13 낮) — 28차 GPT 눈(10y) 7 미만 넷(02 맞춤 첫 화면 6 · 09 밤 한글 질문 5 · 10 첫 연습 뒤 6 · 13 맞춤 한글 질문 6)과 카본 28차(둘째 날 목표 4 · 둘째 날 맞춤 4) ══ */
+/* ① 「내 위치」: 휴대폰도 영역별 칸 판(듣기 · 읽기 이름 + 오늘 칸 · 연습 중 칸의 이름 줄) — R10 「휴대폰은 영역별 칸 상태가 보이는 요약」,
+      28차 02 · 07 · 10 · 11 · 카본 07 「채움과 테두리의 뜻을 모름 · 왜 두 칸만 주황 테두리인지」 */
+body.base-j .jm .pos-h > span.tk{display:none}   /* 넓은 화면은 「TOPIK I 16칸」 그대로 */
+body.base-j .jm .pos-h button{color:var(--act)}   /* 「전체 보기」도 누를 글 한 색(10m C012 — 남색이 남아 있었다) */
+@media (max-width:1023px){
+  body.base-j .jm .pos-row.pos-m{display:none}
+  body.base-j .jm .pos-ph .pos{display:block;margin:0;padding:14px 0 0;border-top:1px solid rgba(22,21,19,.1)}
+  body.base-j .jm .pos-h{align-items:center}
+  body.base-j .jm .pos-h b{font-size:15px}
+  body.base-j .jm .pos-h > span.tkf{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}   /* 「TOPIK I 16칸」은 화면 읽기로 */
+  body.base-j .jm .pos-h > span.tk{display:inline;font-size:12px;font-weight:620;letter-spacing:.02em;color:var(--k3)}
+  body.base-j .jm .pos-h button{font-size:13.5px}
+  body.base-j .jm .strip{margin-top:10px;column-gap:8px}
+  body.base-j .jm .strip .dl{font-size:12.5px;font-weight:600;color:var(--k2)}
+  body.base-j .jm .rule{height:8px;gap:3px}
+}
+body.base-j .jm .named{display:block;margin-top:10px;font-size:13.5px;font-weight:600;line-height:1.45;color:var(--k)}   /* 이름 줄은 글 흐름(네모가 홀로 한 줄을 차지하지 않게 — 몽골어 넓은 화면) */
+@media (max-width:1023px){ body.base-j .jm .pos-ph .pos .named{display:block} }
+body.base-j .jm .named .sw{display:inline-block;vertical-align:-1px;margin-right:8px}
+body.base-j .jm .named em{margin-left:4px;white-space:nowrap}
+body.base-j .jm .named em{font-size:12.5px;font-weight:650;color:var(--act)}
+body.base-j .jm .named .sw{flex:none;width:14px;height:9px;border:0;border-radius:2px;background:var(--act)}
+body.base-j .jm .named .sw.t{background:transparent;box-shadow:inset 0 0 0 1.4px var(--act)}
+body.base-j .jm .rule i.p{background:var(--act)}
+body.base-j .jm .rule i.p b{display:none}
+@media (forced-colors:active){ body.base-j .jm .named .sw{background:CanvasText} body.base-j .jm .named .sw.t{background:Canvas;border:1.5px solid CanvasText} body.base-j .jm .rule i.p{background:CanvasText} }
+/* ② 듣기: 줄마다 붙던 음절 막대를 걷고, 세 말 아래 「모두 듣기」 단추 하나(테두리 가는 보조 단추 · 흙빛 박자 막대) — 줄을 누르면 그 말만, 읽는 동안 그 줄은 흙빛 */
+body.base-j .say-play.bub .wv{display:none}
+body.base-j .say-play.bub{border-radius:8px;transition:color .2s}
+body.base-j .say-play.bub:hover span[lang=ko]{color:var(--act)}
+body.base-j .say-play.bub.on span[lang=ko]{color:var(--act);text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:rgba(169,68,31,.45);text-underline-offset:6px}
+body.base-j .say-all{display:inline-flex;align-items:center;gap:10px;min-height:44px;margin:8px 0 0;padding:0 16px 0 14px;border-radius:10px;box-shadow:inset 0 0 0 1.2px rgba(22,21,19,.22);background:transparent;font-size:14.5px;font-weight:650;letter-spacing:-.01em;color:var(--k);transition:background .2s,color .2s}
+body.base-j .say-all .sa-g{display:inline-flex;align-items:center;gap:2px;height:16px}
+body.base-j .say-all .sa-g b{display:block;width:2.2px;border-radius:1.1px;background:var(--act)}
+body.base-j .say-all .sa-g b:nth-child(1){height:7px} body.base-j .say-all .sa-g b:nth-child(2){height:14px} body.base-j .say-all .sa-g b:nth-child(3){height:10px} body.base-j .say-all .sa-g b:nth-child(4){height:16px} body.base-j .say-all .sa-g b:nth-child(5){height:8px}
+body.base-j .say-all:hover{background:rgba(22,21,19,.05)}
+body.base-j .say-all.on{background:var(--k);color:#FBF8F2;box-shadow:none}
+body.base-j .say-all.on .sa-g b{background:#F0B98F;animation:wvBeat .9s ease-in-out infinite}
+body.base-j .say-all.on .sa-g b:nth-child(2n){animation-delay:-.3s}
+body.base-j .say-all.on .sa-g b:nth-child(3n){animation-delay:-.6s}
+@media (prefers-reduced-motion:reduce){ body.base-j .say-all.on .sa-g b{animation:none} }
+@media (forced-colors:active){ body.base-j .say-all{border:1px solid ButtonText} body.base-j .say-all .sa-g b{background:ButtonText} body.base-j .say-all.on{background:Highlight;color:HighlightText} }
+@media (max-width:1023px) and (min-height:501px){   /* 세운 폰: 위 사진 = 남는 키(아래 판 · 세 마디 · 내 위치 판을 뺀 만큼) — 키 667 ~ 932에서 내 위치 판이 아래 판 위, 눕힌 폰은 10t 그대로 */
+  html:lang(ko) body.base-j .jm .rail.task{--rh:clamp(140px,calc(100vh - 506px),360px)}
+  html:lang(en) body.base-j .jm .rail.task{--rh:clamp(110px,calc(100vh - 546px),330px)}
+  html:lang(mn) body.base-j .jm .rail.task{--rh:clamp(110px,calc(100vh - 566px),330px)}
+}
+@media (min-width:1024px){   /* 넓은 화면: 「모두 듣기」는 첫 줄 오른쪽 끝(키를 늘리지 않음 — 키 720 · 768 첫 연습 뒤 헛 스크롤 0) */
+  body.base-j .jm .sayw{position:relative}
+  body.base-j .jm .sayw .say-all{position:absolute;top:3px;right:0;margin:0}
+  body.base-j .jm .sayw .says.sl li:first-child .say-play{padding-right:176px}
+}
+@media (max-width:1023px) and (min-width:360px){   /* 휴대폰(폭 360 이상)도 첫 줄 오른쪽 끝 — 세 마디 아래 한 줄을 아껴 내 위치 판까지 첫 화면에(키 667 · 740) */
+  body.base-j .jm .sayw{position:relative}
+  body.base-j .jm .sayw .say-all{position:absolute;top:0;right:0;margin:0}
+  body.base-j .jm .sayw .says.sl li:first-child .say-play{padding-right:124px}
+  html:lang(en) body.base-j .jm .sayw .says.sl li:first-child .say-play{padding-right:146px}
+  html:lang(mn) body.base-j .jm .sayw .says.sl li:first-child .say-play{padding-right:176px}
+}
+/* ③ 밤 한글 질문: 오늘 한 것은 이름 줄 아래 두 줄 기록(한국어 · 화면 언어, 누르는 낱말 없이) — 큰 글은 질문 하나, 두 답은 글자 칸 없이 가는 줄 사이 글 줄(28차 09 「가 · ㄱ 크림 칸이 임시 낱말 카드」) */
+body.base-j .night.asking .poem.rec .ln.rc{display:block}
+body.base-j .night.asking .poem.rec .ln.rc .ko{display:block;font-size:15px;font-weight:560;line-height:1.45;letter-spacing:-.015em;color:rgba(250,250,249,.92)}
+body.base-j .night.asking .poem.rec .ln.rc small{display:block;margin-top:3px;font-size:13px;font-weight:450;line-height:1.45;color:rgba(250,250,249,.64)}
+body.base-j .night .chs.dark.st2{display:flex;gap:0;width:max-content;min-width:240px;max-width:100%}   /* 블록 상자 — 「나중에」가 옆 줄로 붙지 않게 */
+body.base-j .night .chs.dark.st2 .ch .gl{display:none}
+body.base-j .night .chs.dark.st2 .ch{min-height:54px;padding:4px 2px 4px 0;border-radius:0;box-shadow:inset 0 -1px 0 rgba(250,250,249,.18)}
+body.base-j .night .chs.dark.st2 .ch:first-child{box-shadow:inset 0 1px 0 rgba(250,250,249,.18),inset 0 -1px 0 rgba(250,250,249,.18)}
+body.base-j .night .chs.dark.st2 .ch .lb{font-size:18px;font-weight:650}
+body.base-j .night .chs.dark.st2 .ch:hover,body.base-j .night .chs.dark.st2 .ch[aria-pressed="true"]{background:transparent}
+body.base-j .night .chs.dark.st2 .ch:hover .lb,body.base-j .night .chs.dark.st2 .ch:hover::after{color:var(--tap)}
+@media (forced-colors:active){ body.base-j .night .chs.dark.st2 .ch{border-bottom:1px solid CanvasText} }
+/* ④ 맞춤 한글 질문(종이): 아래쪽 굵은 글이 겹겹(답 이름 · 할 일 줄 · 탐색 글 — 28차 13) → 할 일 줄은 보통 굵기 · 옅은 먹 */
+body.base-j :is(.ja,.d2h) .chs.st2 .ch .nx{font-weight:470;color:var(--k3)}
+/* ⑤ 탐색 줄: 고른 칸은 인주 빛 아이콘 + 굵은 이름만(아래 검정 막대 · 밑줄 겹 표시 걷음 — 카본 28차 07 「주황 아이콘과 검정 밑줄 중복」), 안 고른 칸 이름은 보통 굵기 */
+body.base-j .jnav button.on::after,body.base-j .jhd .jnav button.on::after{content:none}
+body.base-j .jnav button:not(.on){font-weight:520}
+@media (forced-colors:active){ body.base-j .jnav button.on span{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px} }
+/* ⑥ 첫 연습 뒤 글 단 머리: 완료 칩은 흙빛 테두리 체크 + 옅은 글(검정 원 걷음), 제목의 따옴표를 걷어 굵기 하나로 레슨 이름을 말함(28차 10 「소개 · 완료 · 제목이 짧은 구간에서 각각 주목 · 따옴표와 굵기 전환」) */
+body.base-j .jm .fdone circle{fill:none;stroke:var(--act);stroke-width:1.6}
+body.base-j .jm .fdone path{stroke:var(--act)}
+body.base-j .jm .fdone{font-weight:560;color:var(--k3)}
+body.base-j .jm .lede q,body.base-j .d2q .lede q{quotes:none}
+body.base-j .jm .lede q::before,body.base-j .jm .lede q::after{content:none}
+/* ⑦ 둘째 날 목표: 이름 판 = 사진 폭 그대로, 이름은 먹(누를 곳으로 읽히게), 시작 단추도 같은 폭(카본 28차 06 「회색 글 · 얇은 윗선만이라 누르는 자리로 안 읽힘 · 단추 폭이 사진 · 격자와 안 맞음」 · GPT 06 「폭이 차례로 좁아짐」) */
+@media (max-width:1023px) and (min-height:501px){
+  body.base-j .d2q:not(.d2h) .ticks.gn{margin-left:0;margin-right:0}
+  body.base-j .d2q:not(.d2h) .acts2{align-items:stretch}
+  body.base-j .d2q:not(.d2h) .acts2 .start{width:100%;max-width:none}
+  body.base-j .d2q:not(.d2h) .acts2 .skip{align-self:center}
+  body.base-j .d2q:not(.d2h) .ticks.gn i{font-size:16px}   /* 고르는 이름을 한 단 키움(28차 06 「사진에 비해 여섯 항목이 작은 글 줄로 밀려 여행 화보처럼」) */
+  html:lang(mn) body.base-j .d2q:not(.d2h) .ticks.gn i,html:lang(en) body.base-j .d2q:not(.d2h) .ticks.gn i{font-size:13.5px}   /* 영어 · 몽골어는 10y 그대로(두 칸 세 줄 — 키우면 몽골어가 두 줄로 꺾여 칸이 61px) */
+}
+@media (max-width:1023px) and (min-height:781px){ body.base-j .d2q .rail.goals{height:clamp(110px,35vh,380px)} }   /* 한국어 판 사진 38 → 35vh(그만큼 이름 판 쪽으로 무게) */
+body.base-j .d2q .ticks.gn i{color:var(--k);font-weight:600;min-height:44px;box-sizing:border-box}   /* 누를 높이 44 — 10y에서 한 줄 이름 칸이 41 ~ 43(영어 · 몽골어 가운데 줄 · 키 780 아래 한국어) */
+body.base-j .d2q .ticks.gn i:hover{background:rgba(22,21,19,.04)}
+body.base-j .d2q .ticks.gn i.on{font-weight:800}
+/* ⑧ 밤 끝(손님 · 첫날): 누르는 글 줄(「오늘은 여기까지」 · 「지금 더 연습하기 →」)은 금빛 대신 흰 글 + 가는 밑줄 — 대사 속 강조(금빛)와 갈리고 「나중에」(10y)와 한 문법(28차 03 「누르는 종료 동작인지 마지막 인사말인지」),
+      서하 줄 아래 「만남 · 감사 · 소개 · 2분」은 작고 옅게 붙여 말의 꼬리로(28차 03 「강의 목록의 메타 정보처럼 끼어듦」) */
+body.base-j .night .foot .acts .tx{color:rgba(250,250,249,.84);font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-decoration-color:rgba(250,250,249,.36);text-underline-offset:5px}
+body.base-j .night .foot .acts .tx:has(.arw){text-decoration:none}   /* 화살표가 있는 글 단추(「지금 더 연습하기 →」)는 화살표가 누를 표지 — 밑줄이 화살표 밑에 따로 끊겨 그어지던 것(단추가 flex라 화살표에도 번짐) */
+body.base-j .night .foot .acts .tx:hover{color:#FBF8F2;text-decoration-color:rgba(250,250,249,.7)}
+body.base-j .night .seoha .meta{margin-top:4px;font-size:12.5px;font-weight:450;letter-spacing:.01em;color:rgba(250,250,249,.52)}
+@media (forced-colors:active){ body.base-j .night .foot .acts .tx{color:LinkText} }
+/* ⑨ 밤 한글 질문: 위 기록에 「오늘 한 것」 꼬리표(아래 「내일 할 일을 고르려고 해요」와 짝 — 오늘 ↔ 내일), 기록 · 질문 · 두 답은 같은 폭 한 단(280 — 창가 종이컵 왼쪽), 이름 줄과 기록 사이를 띄움
+      (밤대안 짝 맹검 · GPT 11-13: 「이름 · 상황 · 오늘의 성취가 긴 자막 묶음」 · 「질문은 창 오른쪽까지인데 답 줄은 안쪽에서 끝남」 · 「회고가 독립된 공지처럼 떠 있음」) */
+body.base-j .night.asking .poem.rec{right:auto;max-width:280px}
+body.base-j .night.asking .poem.rec .ln.rc{padding-top:14px}
+body.base-j .night.asking .poem.rec .ln.rc .rl{display:block;margin:0 0 6px;font-size:12.5px;font-weight:600;letter-spacing:.02em;color:rgba(250,250,249,.56)}
+body.base-j .night.asking .askq{max-width:280px}
+body.base-j .night .chs.dark.st2{width:280px;min-width:0;max-width:100%}
+
+/* ══ 10z2(11-13 오후) — 29차 GPT 눈(10z) 7 미만 다섯 · 카본 29차: 「내 위치」 두 줄 · 먹 한 빛 칸 문법 · 「모두 듣기」 세 문장 아래 · 맞춤 한글 질문 비례 ══ */
+/* ① 「내 위치」: 머리 줄 = 이름 · 짧은 꼬리표(오늘 연습 / 연습 중) · 전체 보기, 둘째 줄 = 듣기 · 읽기 칸(GPT 02 · 07 · 10 「복잡한 학습 현황판」, 카본 02 · 07 「자잘한 게이지 · 교재 용어」).
+      긴 칸 이름(낱말 뜻 읽기 · 조사·문형 읽기)과 TOPIK은 화면 읽기로(R10 ① 급수를 말하지 않음과도 맞음) */
+body.base-j .jm .pos-ph .pos{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:10px;row-gap:10px;align-items:center}
+body.base-j .jm .pos-ph .pos .pos-h{display:contents}
+body.base-j .jm .pos-ph .pos .pos-h > b{grid-column:1;grid-row:1}
+body.base-j .jm .pos-ph .pos .pos-h > button{grid-column:3;grid-row:1;margin-top:-12px;margin-bottom:-12px}
+body.base-j .jm .pos-ph .pos .named{grid-column:2;grid-row:1;justify-self:start;display:inline-flex;flex-wrap:nowrap;align-items:center;gap:7px;margin:0;font-size:12.5px;font-weight:600;line-height:1.3;color:var(--k2)}
+/* 이름표(■ 오늘 연습)가 「전체 보기」 앞에 안 들어가는 좁은 폰(몽골어 360 · 320 — 단추와 겹쳤다)은 칸 줄 위 둘째 줄로(app.js fitNamed가 .nm2) */
+body.base-j .jm .pos-ph .pos.nm2 .named{grid-column:1 / -1;grid-row:2}
+body.base-j .jm .pos-ph .pos.nm2 .strip{grid-row:3}
+body.base-j .jm .pos-ph .pos .named .sw{margin:0;vertical-align:baseline}
+body.base-j .jm .pos-ph .pos .named > span{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+body.base-j .jm .pos-ph .pos .named em{margin:0;font-size:12.5px;font-weight:600;color:var(--k2);white-space:nowrap}
+body.base-j .jm .pos-ph .pos .strip{grid-column:1 / -1;grid-row:2;margin:0}
+body.base-j .jm .pos-h > span.tkf{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+body.base-j .jm .pos-h > span.tk{display:none}
+/* 칸 문법 = 먹 한 빛: 옅은 테두리 = 아직 · 진한 테두리 = 오늘 · 채움 = 한 것. 흙빛은 누르는 글(바꾸기 · 전체 보기 · 모두 듣기)에만(카본 07 K56 「누르는 링크와 상태 표시가 같은 주황」, GPT 11 「붉은 빈칸과 회색 채운 칸」) */
+body.base-j .jm .rule i{background:transparent;box-shadow:inset 0 0 0 1px rgba(22,21,19,.24)}
+body.base-j .jm .rule i.t{background:transparent;box-shadow:inset 0 0 0 1.6px var(--k)}
+body.base-j .jm .rule i.p{background:var(--k);box-shadow:none}
+body.base-j .jm .named .sw{background:var(--k);box-shadow:none}
+body.base-j .jm .named .sw.t{background:transparent;box-shadow:inset 0 0 0 1.6px var(--k)}
+@media (forced-colors:active){
+  body.base-j .jm .rule i{border:1px solid GrayText;box-shadow:none}
+  body.base-j .jm .rule i.t{border:1.5px solid CanvasText}
+  body.base-j .jm .rule i.p{background:CanvasText;border-color:CanvasText}
+}
+/* ② 「모두 듣기」: 첫 줄 옆 테두리 단추 → 세 문장 아래 테두리 없는 글 단추 + 「줄마다 따로 들을 수 있어요」(GPT 02 · 10 「첫 문장에 붙은 조작 · 읽기 리듬을 끊음」, 카본 02 · 07 「개별 재생 단서 없음」) */
+body.base-j .jm .sayw .say-all{position:static}
+body.base-j .jm .sayw .says.sl li:first-child .say-play,html:lang(en) body.base-j .jm .sayw .says.sl li:first-child .say-play,html:lang(mn) body.base-j .jm .sayw .says.sl li:first-child .say-play{padding-right:0}
+body.base-j .jm .sa-row{display:flex;flex-wrap:wrap;align-items:center;column-gap:10px;margin:2px 0 0}
+body.base-j .jm .sa-row .say-all{margin-left:-10px}   /* 단추 글자만 세 마디 글 축에 — 안내가 줄을 바꿔도 글 축(몽골어 폰) */
+body.base-j .say-all{min-height:44px;margin:0;padding:0 10px;border-radius:10px;box-shadow:none;background:transparent;font-size:14.5px;font-weight:650;color:var(--k)}
+body.base-j .say-all:hover{background:rgba(22,21,19,.05)}
+body.base-j .say-all.on{background:var(--k);color:#FBF8F2}
+@media (forced-colors:active){ body.base-j .say-all{border:0;text-decoration:underline;text-underline-offset:4px} }
+/* ③ 맞춤 한글 질문(종이 · 세운 폰 키 781 이상): 위 사진 40 → 32vh, 한국어 둘째 줄 20 → 19 · 굵기 600 → 560(GPT 13 「사진 40% · 두 언어 질문이 커서 선택지가 아래로 밀림」).
+      한국어 줄은 읽을 수 있는지 묻는 시험 문장 그대로라 19 아래로는 내리지 않음(10m · 10u) */
+@media (max-width:1023px) and (min-height:781px){ body.base-j .ja .jhero{height:clamp(200px,32vh,300px)} }
+@media (max-width:1023px){ body.base-j .ja .lede small.kq{margin-top:10px;font-size:19px;font-weight:560} }
+/* ④ 손님 밤 끝: 소리 단추 원은 옅게(GPT 03 「회색 원판과 테두리가 무겁다」), 「만남 · 감사 · 소개 · 2분」은 10z보다 조금 또렷하게(「흐릿해 마감이 고르지 않다」) */
+body.base-j .hud button::before{background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+body.base-j .night .seoha .meta{color:rgba(250,250,249,.66)}
+/* 넓은 화면 사진 위 ‹ › 화살표: 밝은 바닥에서도 보이게 그늘을 한 겹 더(GPT 12 「밝은 바닥 무늬에 묻힘」) */
+@media (min-width:1024px){ body.base-j .jm .rnav button{text-shadow:0 1px 3px rgba(0,0,0,.6),0 0 14px rgba(0,0,0,.42)} }
+/* ⑤ 밤 한글 질문: 질문 동안 위 기록은 숨김(짝 맹검 밤대안2 — 기록 없는 판이 지금 판을 이김 「밤 풍경과 내일을 위한 질문에 시선이 모임」), 답하면 시가 돌아옴.
+      질문 아래 한국어 줄은 18 → 15.5 · 옅게(「보조 언어의 시각적 비중이 높다」) */
+body.base-j .night.asking .poem.rec{display:none}
+body.base-j .night .ask-q small.kq{margin-top:6px;font-size:15.5px;font-weight:500;color:rgba(250,250,249,.7)}
+
+/* ══ 10z3(11-13 오후) — 29차 카본 · GPT의 나머지 + 짝 맹검 셋(밤대안3 · 밤목표대안 · 맞춤대안): 밤 질문 위 이름 줄 · 「나중에」 밑줄 · 둘째 날 목표 머리 · 손님 밤 단추 · 넓은 화면 사진 아래 그늘 ══ */
+/* ① 밤 한글 질문: 질문 동안 위 이름 줄(이름 · 날짜)도 숨김 — 짝 맹검 밤목표대안 「이름 · 시간 띠가 없어 창밖 장면과 질문 사이에서 시선이 덜 분산」(I > A). 답하면 돌아옴(asking이 풀림) */
+body.base-j .night.asking > .tag{display:none}
+/* 「나중에」 밑줄은 글자에서 띄우고 옅게(밤대안3 GPT 「글자에 바짝 붙은 밑줄이 브라우저 기본 링크처럼」) */
+body.base-j .night .askq .later{text-decoration-color:rgba(250,250,249,.26);text-decoration-thickness:1px;text-underline-offset:7px}
+/* ② 둘째 날 목표: 날짜 꼬리표는 질문 바로 위(머리 왼쪽 위에 홀로 떨어져 있던 것 — 카본 29차 06 「좌상단에 홀로 떨어진 개강 둘째 날 · 아침」, 밤목표대안 GPT 「날짜와 질문 사이의 긴 공백」) */
+body.base-j .d2q:not(.d2h) .hd{display:none}
+body.base-j .d2q .ta .tag.ey{margin:0 0 12px;font-size:12.5px;font-weight:520;letter-spacing:.01em;line-height:1.4;color:var(--k3)}
+/* ③ 손님 · 밤 끝 큰 단추: 폭 절반쯤에서 264로 · 아래 글 단추와 사이 10(카본 29차 03 「어중간한 길이 · 아래 밑줄과 답답하게 붙음」) */
+body.base-j .night .foot .acts{gap:10px}
+body.base-j .night .foot .acts .go{min-width:min(100%,264px)}
+/* ④ 넓은 화면 사진: 아래 끝에 옅은 그늘 — 밝은 바닥에서도 ‹ › 화살표와 넘김 표시가 보이게(GPT 29차 12 · 카본 29차 11 · 12 「밝은 바닥 무늬에 묻힘」) */
+@media (min-width:1024px){
+  body.base-j .jm .rail.task .ri .pcard{position:relative}
+  body.base-j .jm .rail.task .ri .pcard::after{content:"";position:absolute;left:0;right:0;bottom:0;height:200px;background:linear-gradient(180deg,rgba(12,10,8,0) 0%,rgba(12,10,8,.3) 100%);pointer-events:none;z-index:2}
+}
+/* ⑤ 한글 질문(맞춤 종이 · 둘째 날): 두 답 앞 글자 칸 「가 · ㄱ」을 걷고 밤 질문과 같은 글 줄로 — 짝 맹검 맞춤대안 J2 > J1 「글자 타일이 빠지면서 선택 문장의 정렬과 읽는 흐름이 선명 · 범용 학습 카드 인상이 줄어듦」(카본 29차 13 「상징 없이 글자만 · ㄱ은 뜻이 안 통함」) */
+body.base-j :is(.ja,.d2h) .chs.st2 .ch .gl{display:none}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch{grid-template-columns:0 minmax(0,1fr) 19px;column-gap:0}
+body.base-j :is(.ja,.d2h) .chs.st2 .ch .lb,body.base-j :is(.ja,.d2h) .chs.st2 .ch .nx{padding-right:12px}
+/* ⑥ 넓은 화면 머리 탐색: 글 단 폭에 고르게(오른쪽 끝 = 세 마디 · 시작 단추의 오른쪽 끝선) — 짝 맹검 넓은대안 W2 > W1 「상단 메뉴가 본문과 버튼의 가로 폭을 따라 배치돼 정렬과 균형이 분명」(카본 29차 11 「좌측에만 몰아넣어 우측 상단이 비어 헤더 균형이 허술」). PC 창(오른쪽 내 이름표)은 그대로 */
+@media (min-width:1024px){
+  body.base-j :is(.jm,.ja):not(.pc) .jhd .jnav{flex:1 1 auto;box-sizing:border-box;width:100%;justify-content:space-between}
+}
+
+/* ══ 10z4(11-13 오후) — 30차 GPT 7 미만 셋(둘째 날 맞춤 6 · 밤 한글 질문 6 · 첫 연습 뒤 6) · 짝 맹검 넷(칸줄대안 · z4대안 · z4대안2 · z4대안3, GPT 눈) ══ */
+/* ① 「내 위치」 칸 = 캡슐 세 단계 먹(아직 12% · 오늘 50% · 한 것 100%), 빗금 없음 — 칸줄대안 B3 > B1(휴대폰 · 넓은 화면 모두 7 : 6 「속 빈 사각형 = 체크박스 · 입력 양식」), 빗금 판(칸대안 B2)은 「공사 표시 · 로딩」으로 짐 */
+body.base-j .jm .rule{height:6px;gap:4px}
+body.base-j .jm .rule i{border:0;border-radius:3px;background:rgba(22,21,19,.12);box-shadow:none}
+body.base-j .jm .rule i.t{background:rgba(22,21,19,.5);box-shadow:none}
+body.base-j .jm .rule i.p{background:var(--k);box-shadow:none}
+body.base-j .jm .named .sw{width:16px;height:6px;border-radius:3px;box-shadow:none;background:var(--k)}
+body.base-j .jm .named .sw.t{background:rgba(22,21,19,.5);box-shadow:none}
+@media (min-width:1024px){
+  body.base-j .jm .rule{height:10px;gap:5px}
+  body.base-j .jm .rule i{border-radius:5px}
+  body.base-j .jm .strip .dl{font-size:13.5px}
+  body.base-j .jm .pos-ph .pos .pos-h > b{font-size:15.5px}
+  body.base-j .jm .pos-ph .pos .named,body.base-j .jm .pos-ph .pos .named em{font-size:13.5px}
+  body.base-j .jm .named .sw{width:20px;height:10px;border-radius:5px}
+}
+@media (forced-colors:active){
+  body.base-j .jm .rule i{border:1px solid GrayText;background:Canvas}
+  body.base-j .jm .rule i.t{background:GrayText}
+  body.base-j .jm .rule i.p{background:CanvasText;border-color:CanvasText}
+  body.base-j .jm .named .sw{background:CanvasText}
+  body.base-j .jm .named .sw.t{background:GrayText}
+}
+/* ② 예문 줄마다 「누르면 들림」 표지: 줄 오른쪽 한 축에 「모두 듣기」와 같은 흙빛 소리 막대(줄마다 같은 꼴) — z4대안 L3 > P0 「문장별 파형이 개별 듣기를 눈에 보이는 행동으로」, z4대안2 L3 > L4(문장 바로 뒤) 「오른쪽 한 축 — 문장 길이가 달라도 질서」.
+      28차 「줄마다 꼴이 다른 회색 파형 = 장식」과는 다름(같은 꼴 · 누를 글 흙빛). 말소리가 없는 브라우저(span.nob)에는 없음 */
+body.base-j .cap .says.sl button.say-play{display:flex;align-items:center}
+body.base-j .cap .says.sl button.say-play::after{content:"";flex:none;box-sizing:content-box;margin-left:auto;padding-left:16px;width:18px;height:14px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 14'%3E%3Cg fill='%23A9441F'%3E%3Crect x='1' y='4.5' width='2.2' height='5' rx='1.1'/%3E%3Crect x='5.6' y='1' width='2.2' height='12' rx='1.1'/%3E%3Crect x='10.2' y='3' width='2.2' height='8' rx='1.1'/%3E%3Crect x='14.8' y='5.5' width='2.2' height='3' rx='1.1'/%3E%3C/g%3E%3C/svg%3E") right center/18px 14px no-repeat;opacity:.9}
+body.base-j .cap .says.sl button.say-play.on::after{opacity:1}
+/* ③ 둘째 날: 「‘여행’을 골라서 정했어요 · 바꾸기」는 서하 이름 줄 오른쪽(choseLine) — 아래 작은 줄 넷 → 셋(z4대안3 T2 > T1, 7 : 6 「선택 이유를 위에 모아 듣기 → 진도 → 시작 흐름이 덜 끊김」), 글과 「바꾸기」 사이 8(T2 「간격이 빠듯」) */
+body.base-j .jm .ta .who{display:flex;flex-wrap:wrap;align-items:center;column-gap:10px;row-gap:2px}
+body.base-j .jm .ta .who .why.chose{margin:0 0 0 auto;display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;line-height:1.3;color:var(--k3)}
+body.base-j .jm .ta .who .why.chose button{display:inline-flex;align-items:center;gap:2px;min-height:44px;margin:-12px -10px -12px 0;padding:0 10px;font-size:12.5px;font-weight:600;color:var(--act)}
+/* ④ 넓은 화면 아래 기록 구역을 넉넉하게(z4대안 S2 > W0 「기록과 구분선 사이 여백이 충분해 눌리지 않음」) · ⑤ 넓은 화면 카페 사진은 카운터 쪽으로 1.3배(z4대안2 S3 > S2, 7 「인물의 표정과 대화 관계가 크게 — 카페 소개보다 드라마의 한 장면」) */
+@media (min-width:1024px){
+  body.base-j .jm .today .tb > .doneln{line-height:1.75;padding-top:16px;padding-bottom:16px}   /* 글 크기는 15.5 그대로(10u 「바닥 글 15 넘게」) · 옛 판(.tb > .doneln 20 · 0)과 같은 세기로 뒤에 */
+  body.base-j .jm .today .tb > .pos-ph{margin-top:8px}
+  body.base-j .jm .today.tight .tb > .doneln{padding-bottom:10px}   /* 키 낮은 창(fitToday가 붙이는 tight · tight2)은 덜 띄움 */
+  body.base-j .jm .today.tight2 .tb > .doneln{padding-bottom:6px}
+  body.base-j .jm .today:is(.tight,.tight2) .tb > .pos-ph{margin-top:0}
+  body.base-j .jm .pos-ph .pos{row-gap:14px}
+  body.base-j .jm .rail.task .ri img[src*="ph8-cafe"]{transform:scale(1.3);transform-origin:88% 58%}   /* 기준점을 카운터 오른쪽에 — 66%에서는 커피 머신이 오른쪽 끝에서 잘렸다 */
+}
+@media (min-width:1024px) and (max-height:820px){   /* 키 낮은 넓은 창(1024×768 · 1280×720 · 1366×768)은 10z3 여백 그대로 — 넉넉히 주면 넘쳐서 fitToday가 시작 단추 ↔ 기록 사이를 24 밑으로 줄였다 */
+  body.base-j .jm .today .tb > .doneln{line-height:1.5;padding-top:14px;padding-bottom:0}
+  body.base-j .jm .today .tb > .pos-ph{margin-top:0}
+  body.base-j .jm .pos-ph .pos{row-gap:10px}
+}
+/* ⑥ 탐색 = 아이콘 없이 글 이름만 — 탐색대안 I2 > I1(휴대폰 7 : 6 「문자 탐색이 사진 · 큰 제목의 차분함을 하단까지」 · 넓은 화면 7 : 6 「메뉴의 시각적 잡음이 적어 구도에 시선」).
+      29 · 30차 두 눈이 판마다 K57 「범용 아이콘 모음」을 남겨 그림을 걷음(그림 묶음 · 톡 튐도 app.js에서 걷음). 고른 칸 = 먹 800 + 짧은 흙빛 막대(휴대폰은 이름 위 · 넓은 화면은 이름 아래), 안 고른 칸 = #6B655C 보통 굵기 */
+body.base-j .jnav button span{position:relative}
+body.base-j .jhd .jnav button.on{color:var(--k);font-weight:800}
+body.base-j .jhd .jnav button.on span::before{content:"";position:absolute;left:50%;width:18px;height:3px;margin-left:-9px;border-radius:2px;background:var(--act)}
+@media (max-width:1023px){
+  body.base-j .jhd .jnav button{gap:0;font-size:15px;letter-spacing:-.01em}
+  html:lang(mn) body.base-j .jhd .jnav button,html:lang(en) body.base-j .jhd .jnav button{font-size:13.5px;letter-spacing:0}
+  body.base-j .jhd .jnav button.on span::before{top:-10px}
+}
+@media (max-width:340px){ html:lang(mn) body.base-j .jhd .jnav button,html:lang(en) body.base-j .jhd .jnav button{font-size:12.5px} }
+@media (min-width:1024px){
+  body.base-j .jhd .jnav button{gap:0;padding:0 14px;font-size:15px}
+  html:lang(mn) body.base-j .jhd .jnav button,html:lang(en) body.base-j .jhd .jnav button{padding:0 12px;font-size:14px}
+  body.base-j .jhd .jnav button.on span::before{bottom:-10px}
+}
+@media (min-width:1024px) and (max-width:1199px){ body.base-j .jhd .jnav button,html:lang(mn) body.base-j .jhd .jnav button,html:lang(en) body.base-j .jhd .jnav button{padding:0 9px;font-size:13.5px} }
+@media (forced-colors:active){ body.base-j .jhd .jnav button.on span::before{background:CanvasText} }
+/* ⑦ 넓은 화면 맨 아래 줄은 최소 20(키 낮은 창에서 「내 위치」가 화면 아래 끝에 붙지 않게 — fitToday는 이 최소를 넣고 넘침을 잰다) · 사이 줄 상한은 app.js(fitToday) */
+@media (min-width:1024px){ body.base-j .jm .today{grid-template-rows:var(--tt,minmax(132px,1fr)) auto auto auto var(--tg,40px) auto auto minmax(20px,1fr)} }
+@media (min-width:1024px) and (max-height:820px){ body.base-j .jm .today{grid-template-rows:var(--tt,minmax(124px,1fr)) auto auto auto var(--tg,32px) auto auto minmax(20px,1fr)} }
+
+/* ══ 10z5(11-13 오후) — 30차 카본 · 짝 맹검 z5대안(상자 판은 두 눈 모두 짐) 뒤: 사진 다섯 장 다시 · 안내 줄 걷음(app.js) · 손님 끝 큰 단추 · 얼굴 원 ══ */
+/* ① 손님 · 밤 끝 큰 단추: 휴대폰은 글 단 폭 전체(카본 30차 03 「화면 왼쪽 3분의 2 폭에 어정쩡하게 치우침」 — 29차 「폭 절반쯤」에서 264로 올린 뒤에도 남음) */
+@media (max-width:1023px){
+  body.base-j .night .foot .acts .go{width:100%;min-width:0}
+}
+/* ② 밤 화면 얼굴 원 한 규격: 위 이름 칩(볼로르) · 아래 서하 모두 같은 가는 흰 테 1px(카본 30차 03 「테두리 없는 작은 원과 두꺼운 흰 테 큰 원 — 규격이 제각각」), 크기는 자리 몫 그대로 */
+body.base-j .night .seoha .face{box-shadow:0 0 0 1px rgba(255,255,255,.45)}
+body.base-j .night .tag .me-tag .me{box-shadow:0 0 0 1px rgba(255,255,255,.45)}
+/* ③ 휴대폰 자리 사진 아래 옅은 그늘(넓은 화면 10z3 ⑥과 같은 결, 높이만 짧게): 넘김 막대 셋이 사진 속 손 · 옷 주름과 겹쳐 「— + —」로 읽히던 것(카본 30차 01 · z5대안 R0 · R2) */
+@media (max-width:1023px){
+  body.base-j .jm .rail.task .ri .pcard{position:relative}
+  body.base-j .jm .rail.task .ri .pcard::after{content:"";position:absolute;left:0;right:0;bottom:0;height:72px;background:linear-gradient(180deg,rgba(12,10,8,0) 0%,rgba(12,10,8,.34) 100%);pointer-events:none;z-index:2}
+}
+/* ④ 누를 글 = 흙빛(종이) · 전등 빛(밤): 두 답의 이름 글을 질문과 다른 색으로(카본 30차 K56 「질문과 누를 선택지가 같은 검정 · 흰 굵은 글」 — 상자 판은 두 눈 모두 짐,
+      짝 맹검 z5대안2 GPT: 맞춤 한글 질문 A1 8 > A0 7 「주황이 두 선택지의 행동 역할을 분명하게」 · 밤 N1 > N0 「금색이 응답 선택지의 역할 · 사진 속 따뜻한 조명과 연결」).
+      예문 아래 점선(T1 · W1)은 「맞춤법 검사 같은 점선」으로 짐 → 예문은 줄 끝 소리 막대만. 흙빛 #A9441F는 종이 위 5.1 : 1, 전등 빛 #FFD48A는 밤 사진 위 12 : 1 */
+body.base-j :is(.ja,.d2h) .chs.st2 .ch .lb{color:var(--act)}
+body.base-j .night .chs.dark.st2 .ch .lb,body.base-j .night .chs.dark.st2 .ch::after{color:var(--tap)}
+/* ④-2 「모두 듣기」 글도 누를 글 한 색(흙빛) — 카본 z5대안2 T1 > R0 「실행 요소를 포인트 색으로 구분해 설명 문구 없이 누를 곳의 위계가 읽힘」(같은 판의 예문 점선은 두 눈 모두 「뜻풀이 · 맞춤법 표시처럼 모호」라 안 씀) */
+body.base-j .jm .say-all:not(.on){color:var(--act)}
+
+/* ══ 10z6(11-13 저녁) — Fable 5.2 10z5 확인(P0 0 · P1 0 · P2 1 · P3 10, 노트 폴더 fable-5.2-실측-10z5/review.md)과 31차 카본 · GPT ══ */
+/* Z2-1(P2) 밤 한글 질문 · 스크롤 흐름 판(눕힌 폰 · 키 501 ~ 600 세운 작은 폰 en · mn): 질문 동안 시 · 이름 줄을 숨기면 아래 덩어리가 흐름의 첫 줄이 되어
+      화면 맨 위로 붙고 소리 단추가 꼬리 글을 덮었다 → 질문 판은 세로 줄 세우기로 아래 덩어리를 바닥에, 넘칠 때도 위는 소리 단추 아래(64)부터 */
+@media (max-width:1023px) and (max-height:500px){
+  body.base-j .view.night.asking:not(.dawn){display:flex;flex-direction:column;box-sizing:border-box;padding-top:64px}
+  body.base-j .night.asking:not(.dawn) .foot{margin-top:auto}
+}
+@media (max-width:1023px) and (min-height:501px) and (max-height:600px){
+  html:is(:lang(en),:lang(mn)) body.base-j .view.night.asking:not(.dawn){display:flex;flex-direction:column;box-sizing:border-box;padding-top:64px}
+  html:is(:lang(en),:lang(mn)) body.base-j .night.asking:not(.dawn) .foot{margin-top:auto}
+}
+/* Z3-6 글자 칸을 걷은 두 답(10z3 ⑦)은 폭 1024 ~ 1239에서도 질문과 같은 축 — 그 폭의 옛 「40px 글자 칸」 규칙이 더 무거워 52px 들여 썼다 */
+html body.base-j :is(.ja,.d2h) .chs.st2 .ch.ch{grid-template-columns:0 minmax(0,1fr) 19px;column-gap:0}
+/* Z3-7 둘째 날 목표: ① 작은 폰 · 눕힌 폰에서 날짜 꼬리표가 화면 위 끝에 붙던 것 — 위 14 ② 320 폭 한국어 긴 이름(「사람들과 대화」 · 「시험·자격 준비」)이 칸보다 넓던 것 */
+@media (max-width:1023px){ body.base-j .d2q:not(.d2h) .ta{padding-top:14px} }
+@media (max-width:340px){ html:lang(ko) body.base-j .d2q:not(.d2h) .ticks.gn i{font-size:14px;white-space:normal;word-break:keep-all} }
+/* Z3-8 강제 색: 「모두 듣기」 켜짐이 보이게(1976 .on 바탕이 Highlight 규칙을 덮었다) */
+@media (forced-colors:active){
+  body.base-j .say-all.on,body.base-j .jm .say-all.on{background:Highlight;color:HighlightText}
+  body.base-j .say-all.on .sa-g b{background:HighlightText}
+}
+/* Z3-9 새 자리의 작은 회색 글(12.5 · 14px #7a746b 3.9 : 1) → #6B655C(5.0 : 1): 고른 목표 줄 · 날짜 꼬리표 · 「한국어를」 */
+body.base-j .jm .ta .who .why.chose{color:#6B655C}
+body.base-j .d2q .ta .tag.ey{color:#6B655C}
+body.base-j :is(.ja,.d2q) .lede.q.two-l .pre{color:#6B655C}
+/* T3-5 키 700 아래 넓은 창: 맨 아래 줄 최소 20(10z4 ⑦)이 넘침을 키웠다(12 → 43판) — 그 키에서는 0으로 */
+@media (min-width:1024px) and (max-height:700px){ body.base-j .jm .today{grid-template-rows:var(--tt,minmax(124px,1fr)) auto auto auto var(--tg,32px) auto auto minmax(0,1fr)} }
+/* 세운 폰 쪽 아래 여백 = fitPhone이 잰 값(Z3-3 — 182 고정이면 다 보이는데도 24 ~ 28px 스크롤됐다) */
+@media (max-width:1023px) and (min-height:501px){ body.base-j .jm .pg{padding-bottom:var(--pb,182px)} }
+/* 카본 31차 · GPT 31차 */
+/* ⓐ 「내 위치」 이름표의 작은 알약 표지를 걷음(두 눈 「정체불명의 회색 알약 기호 · 범례를 해독해야」) — 이름표 글(오늘 연습 · 연습 중)과 칸 색으로 말함 */
+body.base-j .jm .named .sw{display:none}
+/* ⓑ 손님 · 밤 끝 둘째 글 단추(「오늘은 여기까지」 · 「지금 더 연습하기 →」): 휴대폰은 전체 폭 큰 단추 아래 가운데, 밑줄 없이(두 눈 「기본 밑줄 링크」) */
+@media (max-width:1023px){
+  body.base-j .night .foot .acts .tx{align-self:center;text-decoration:none}
+}
+/* ⓒ 밤 한글 질문: 「나중에」가 화면 바닥에 바짝 붙던 것(카본 30 · 31차) — 아래 여유 16 더 */
+body.base-j .night.asking .foot{padding-bottom:calc(max(16px, env(safe-area-inset-bottom)) + 16px)}
+/* ⓓ 맞춤 한글 질문(세운 폰 키 781 이상): 위 사진 32 → 38%(두 눈 「나중에 아래 하단 4분의 1이 텅 빔」 · 카본 「표지판 아래 사람 뒤통수만 잘림」) */
+@media (max-width:1023px) and (min-height:781px){ body.base-j .ja .jhero{height:clamp(200px,38vh,340px)} }
+/* T3-5 ② 키 820 이하 넓은 창의 줄인 판(tight · tight2)도 기록 줄 아래 여백 0 — 10z4의 tight 판 6 · 10이 820 이하 규칙(0)을 덮어 10z3보다 6 더 넘쳤다 */
+@media (min-width:1024px) and (max-height:820px){ body.base-j .jm .today:is(.tight,.tight2) .tb > .doneln{padding-bottom:0} }
+
+/* ══ 틀에서 더한 것(2026-11-19) ══ */
+/* 「나」 단추: 머리 오른쪽 끝의 머리글자 원 — 내 계정 · 설정 · 로그아웃(host.openMe). PC는 10y 이름표 그대로 누르는 단추 */
+body.base-j .jhd .jme{pointer-events:auto;border-radius:20px}
+body.base-j .jhd .jme-o{flex:none;margin-left:auto}
+@media (max-width:1023px){ body.base-j :is(.jm,.ja) .jhd .jme-o .ini{width:34px;height:34px;box-shadow:0 0 0 2px rgba(255,255,255,.92),0 4px 14px rgba(0,0,0,.28)} }
+@media (min-width:1024px){ body.base-j :is(.jm,.ja) .jhd .jme-o{margin-left:22px} }
+/* 목표 저장 동의: 고르기 단추 바로 위 조용한 한 줄 — 상자 + 이름(굵게) + 작은 설명. 꺼진 채 고르면 그 아래 한 줄 */
+.d2q .consent{display:flex;align-items:flex-start;gap:10px;max-width:440px;margin:18px auto 0;text-align:left;color:var(--k2);cursor:pointer}
+.d2q .consent input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:var(--k);cursor:pointer}
+.d2q .consent .ct{display:flex;flex-direction:column;gap:2px;min-width:0}
+.d2q .consent b{font-size:14px;font-weight:640;line-height:1.35;color:var(--k)}
+.d2q .consent small{font-size:12.5px;line-height:1.4;color:var(--k3)}
+.d2q .consent-need{max-width:440px;margin:8px auto 0;font-size:13px;font-weight:580;line-height:1.4;color:var(--pen);text-align:left}
+@media (min-width:1024px){ .d2q .consent,.d2q .consent-need{margin-left:0;margin-right:0} }
+/* 학생증 사진이 없으면(state.student.card 없음) 사진 칸 없이 한 단 */
+.idcard.nophoto,.idcard.mini.nophoto{grid-template-columns:minmax(0,1fr)}
+.idcard.nophoto .id-foot{grid-column:1}
