@@ -238,6 +238,13 @@ WORLD 계정 브라우저 시험은 부모 화면의 애니메이션 프레임�
 
 회귀는 `node --test tests/conditional-qa.test.cjs tests/conditional-qa-tested-tree.test.cjs tests/conditional-qa-retry.test.cjs tests/conditional-qa-diagnosed.test.cjs tests/conditional-qa-reregister.test.cjs tests/ci넓은시험.test.js`다. 이 자동화는 등록된 119건의 지속 검증이며, 새 보안 감사나 운영 접근 권한 전체의 재점검을 대신하지 않는다. 최초 실제 실행과 원격 CI 결과는 비공개 설치·실행 영수증과 해당 커밋의 GitHub Checks에서 확인한다.
 
+<a id="world-frozen-greeting"></a>
+### 보관한 WORLD 화면의 인사 복습 시험
+
+S079~S081은 10월 27일에 보관한 WORLD 화면에서 도움말을 따라 복습하고 진도를 이어가는지 검사한다. 11월 19일에 현재 레슨의 인사 문항을 개정하자, 옛 화면의 질문을 현재 소스와 비교하는 세 시험이 함께 실패했다. 운영 PC에서 나머지 82건은 통과했고 소스와 입력은 실행 전후에 같았다. [실패한 실행](https://github.com/unmet23-lab/synk-appsscript/actions/runs/44431461930) · [문항 개정 근거](../../experiences/topik-items/review/reports/life-hello-transfer-20261119.md)
+
+보관판을 검사할 때는 그 판의 `life-content.mjs`에서 예상 문항을 읽는다. 단독 화면은 별도로 묶인 질문을 표시하므로, 질문이 원본과 다르면 시험이 실패한다. 같은 판을 여는 카페 시험 S071도 같은 방식으로 정답을 확인한다.
+
 <a id="s122-trace"></a>
 
 ### S122의 임시 영상이 공용 원장을 읽은 경우
