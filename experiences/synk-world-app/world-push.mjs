@@ -202,10 +202,11 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    // 요약 · 설정 요청은 모두 keepalive로 보낸다. 보낸 뒤 응답 전에 앱을 닫아도 계정 정리(stop)가 끊지 않는다 — keepalive 요청에는 끊는 신호를
    // 달지 않는다(world-account pushRequest). 보통 요청이면 바뀐 설정 · 오늘 공부함 · 처음 아는 복습 때가 다음에 앱을 열 때까지 서버에 닿지 않는다
    // (11-20 GPT 끝 판 GA1 · 다시 검수 GA1 · GA2 · GA3). 몸은 작다(복습 때 60개 · 보낸 줄 · 설정 — keepalive 몫 64KB 안). 다시 보내지는 않는다.
-   // 보낸 차례(seq)를 붙여 늦게 온 앞 응답은 뒤 응답이 그린 계획을 덮지 않는다(GPT GA2).
+   // 보낸 차례(seq)를 붙여 늦게 온 앞 응답은 뒤 응답이 그린 계획을 덮지 않는다(GPT GA2). keepalive 요청에는 12초 끊기가 없으므로 기다림만
+   // 12초에 끝낸다(요청은 끊지 않는다) — 응답이 영영 안 와도 화면이 멈추지 않고 오류를 띄운다(Fable 설계 검토 P2-5).
    const send=body=>{
     const expected=epoch,seq=++syncSeq;
-    return request('sync',body,{keepalive:true}).then(data=>{if(current(expected)&&seq>appliedSeq){appliedSeq=seq;applyStatus(data,expected);}},
+    return bounded(request('sync',body,{keepalive:true})).then(data=>{if(current(expected)&&seq>appliedSeq){appliedSeq=seq;applyStatus(data,expected);}},
      error=>{if(current(expected)&&seq>appliedSeq)emit({error:error.code||'PUSH_UNAVAILABLE'});});
    };
    const drop=()=>{clearTimeout(syncTimer);syncTimer=null;pendingSync=null;};

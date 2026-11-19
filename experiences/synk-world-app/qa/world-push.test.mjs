@@ -207,6 +207,26 @@ test('요약 보내기: 늦게 온 앞 응답은 뒤 응답의 계획을 덮지 
  answers[0](reply(5000));await flush();assert.equal(push.snapshot().plan.next,2000,'옛 응답은 버린다');
 });
 
+// 11-20 Fable 설계 검토 P2-2 · P3-7 · P2-5: 응답을 기다리는 동안 떠나도 다시 보내지 않고(다른 탭의 새 설정을 덮지 않게), 늦게 온 앞 요청의 실패는
+// 뒤 응답을 지우지 않고, 응답이 영영 안 오면 12초에 오류를 띄운다(요청은 끊지 않는다).
+test('요약 보내기: 응답을 기다리는 동안 떠나도 다시 보내지 않는다 · 늦은 앞 실패는 뒤 응답을 지우지 않는다 · 응답이 없으면 12초에 오류',async t=>{
+ t.mock.timers.enable({apis:['setTimeout']});
+ const b=browser({registered:true,subscribed:'https://fcm.googleapis.com/fcm/send/x'}),s=server({device:true,active:true});
+ const answers=[];const request=(action,body,options)=>action==='sync'?(s.calls.push({action,body,options}),new Promise((resolve,reject)=>answers.push({resolve,reject}))):s.request(action,body,options);
+ const push=make(b,{...s,request});
+ await push.setAccount('acc-1');
+ const base={examDate:null,planWeek:null,lastStudyDay:'2026-10-21',studyHour:null,lang:'ko',timeZone:'Asia/Seoul'};
+ const syncs=()=>s.calls.filter(call=>call.action==='sync');
+ const reply=next=>({ok:true,accountId:'acc-1',enabled:true,publicKey:KEY,account:{active:true,devices:1},plan:{next,log:[]}});
+ push.sync({digest:{...base}});push.sync({settings:{frequency:1,hour:9}});assert.equal(syncs().length,2);
+ push.flush();assert.equal(syncs().length,2,'응답을 기다리는 요약 · 설정을 떠날 때 다시 보내지 않는다');
+ answers[1].resolve(reply(3000));await flush();assert.equal(push.snapshot().plan.next,3000);
+ answers[0].reject(Object.assign(Error('PUSH_UNAVAILABLE'),{code:'PUSH_UNAVAILABLE'}));await flush();
+ assert.equal(push.snapshot().error,null,'늦게 실패한 앞 요청은 뒤 응답 뒤의 화면에 오류를 띄우지 않는다');assert.equal(push.snapshot().plan.next,3000);
+ push.sync({digest:{...base,lastStudyDay:'2026-10-22'}});assert.equal(syncs().length,3);
+ t.mock.timers.tick(12000);await flush();assert.equal(push.snapshot().error,'PUSH_TIMEOUT','응답이 없으면 12초에 오류');
+});
+
 test('요약 모으기: 2단이 켜진 계정만 — 같은 요약은 6시간에 한 번, 바뀌면 5분에 한 번(마지막 것), 「오늘 공부함」·설정은 바로, 떠날 때는 keepalive',async t=>{
  t.mock.timers.enable({apis:['setTimeout']});
  let clock=Date.UTC(2026,9,22,3);
