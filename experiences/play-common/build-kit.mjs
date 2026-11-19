@@ -16,6 +16,11 @@ export const JOSA_FILE = 'josa.mjs';
 // 키트 화면은 쓰지 않고 재방문 맞춤 판정만 같은 원본을 쓰는 게임 — kit/에 이 한 파일만 복사한다.
 export const RETURN_ONLY_GAMES = ['subway-rush'];
 export const RETURN_FILE = 'return-practice.mjs';
+// 새 엔진 게임 문(4-6c — 단계4_계획 §23-6)은 키트 게임 모두와, 키트 화면을 쓰지 않는 게임 가운데 이 둘이 받는다.
+export const ATLAS_NEXT_FILE = 'atlas-next.mjs';
+export const ATLAS_NEXT_ALSO = ['snap-words', 'subway-rush'];
+// 키트 일부만 받는 게임의 파일 — 받침 조사나 재방문 판정 한 파일에, 게임 문을 받는 게임이면 그 파일을 더한다.
+export const partialFiles = (game, base) => [base, ...(ATLAS_NEXT_ALSO.includes(game) ? [ATLAS_NEXT_FILE] : [])].sort();
 
 export function kitFiles(dir = KIT_SRC, base = '') {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
@@ -38,23 +43,21 @@ export function buildKit(games = KIT_GAMES) {
   }
 }
 
+function buildPartial(game, base) {
+  const dst = path.join(here, '..', game, 'kit');
+  const files = partialFiles(game, base);
+  if (fs.existsSync(dst)) for (const rel of kitFiles(dst)) if (!files.includes(rel)) fs.rmSync(path.join(dst, rel));
+  fs.mkdirSync(dst, { recursive: true });
+  for (const rel of files) fs.copyFileSync(path.join(KIT_SRC, rel), path.join(dst, rel));
+  console.log(`${game}/kit ← ${files.join(' · ')}`);
+}
+
 export function buildJosa(games = JOSA_ONLY_GAMES) {
-  for (const game of games) {
-    const dst = path.join(here, '..', game, 'kit');
-    if (fs.existsSync(dst)) for (const rel of kitFiles(dst)) if (rel !== JOSA_FILE) fs.rmSync(path.join(dst, rel));
-    fs.mkdirSync(dst, { recursive: true });
-    fs.copyFileSync(path.join(KIT_SRC, JOSA_FILE), path.join(dst, JOSA_FILE));
-    console.log(`${game}/kit ← ${JOSA_FILE}`);
-  }
+  for (const game of games) buildPartial(game, JOSA_FILE);
 }
 
 export function buildReturnOnly(games = RETURN_ONLY_GAMES) {
-  for (const game of games) {
-    const dst = path.join(here, '..', game, 'kit');
-    fs.mkdirSync(dst, { recursive: true });
-    fs.copyFileSync(path.join(KIT_SRC, RETURN_FILE), path.join(dst, RETURN_FILE));
-    console.log(`${game}/kit ← ${RETURN_FILE}`);
-  }
+  for (const game of games) buildPartial(game, RETURN_FILE);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) { buildKit(); buildJosa(); buildReturnOnly(); }

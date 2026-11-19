@@ -25,6 +25,7 @@ import { meUnits } from './world-me-next.mjs';
 export { oldEngineDoors } from './world-old-engine-doors.mjs';
 import { clearMonthAnswer, FIRST_GAME } from './world-month-answer.mjs';
 import { lifeReviewCandidate } from './world-account.bundle.mjs';
+import { createGameDoor, FLOW_MEMORY_PREFIX, GAME_BANKS, gamePrefs } from './world-atlas-game.mjs';
 
 const ENTRY = '/atlas/loader.mjs';
 // 「내 위치」 새 판(4-4a — 단계4_계획 §21-2 ~ 21-5): 계약(칸 셋 · 다시 확인 카드 · 짧은 진단)과 최소 그림. 홈 플래너에 실어 셸에 넘긴다 — 홈 코치
@@ -358,12 +359,14 @@ function sweepEarlier(storage, owner, below) {
   for (const accountKey of [owner, `local:${owner}`]) {
     const zone = `synk.account.${accountKey}.r`;
     const plans = `${PLAN_LOG_PREFIX}synk-atlas:${accountKey}:`;
+    // 앞 판의 순간 맞춤 내용 기억(4-6b — 단계4_계획 §23-4, GPT GA9): 저장소 이름이 판마다라 열쇠도 판마다다.
+    const flows = `${FLOW_MEMORY_PREFIX}synk-atlas:${accountKey}:`;
     for (const name of names)
       if (name.startsWith(zone)) {
         const found = /^(\d+)\.(.+)$/.exec(name.slice(zone.length));
         if (found && Number(found[1]) < below && engineRecord(found[2], accountKey)) drop.push(name);
-      } else if (name.startsWith(plans)) {
-        const revision = name.slice(plans.length);
+      } else if (name.startsWith(plans) || name.startsWith(flows)) {
+        const revision = name.slice((name.startsWith(plans) ? plans : flows).length);
         if (/^\d+$/.test(revision) && Number(revision) < below) drop.push(name);
       }
   }
@@ -693,6 +696,8 @@ export function createAtlasNext({
   firstSyncMs = FIRST_SYNC_MS,
   switchAskMs = SWITCH_ASK_MS,
   oldEngine = null,
+  // 게임 코치가 읽는 표시 설정(4-6c — 셸의 학습 설정, world-atlas-game.mjs gamePrefs).
+  presentation = () => null,
 } = {}) {
   let health = given;
   const early = [];
@@ -701,6 +706,12 @@ export function createAtlasNext({
     else if (early.length < 32) early.push([kind, outcome]);
   };
   const store = storage === undefined ? deviceStorage(note) : storage;
+  // 코치의 오늘 · 표시 설정 · 옛 내용 기억 읽개(4-6b · 4-6c — 단계4_계획 §23-4). 옛 내용 기억(씨앗)은 손님 코치만 받는다.
+  const prefs = gamePrefs({ storage: store, presentation });
+  const prefsFor = plan =>
+    plan.path === 'guest'
+      ? prefs
+      : { today: prefs.today, presentation: prefs.presentation };
   const account = owner !== 'guest';
   // 은행 조합 · 판마다 코치 하나(준비 중인 약속째) — 후보에 다른 은행이 섞이면 그 은행을 받는 코치를 따로 연다(아르곤 끝 판 B5 · 다시 A4).
   // 같은 저장소의 호스트를 나눠 쓰므로 기록은 하나다.
@@ -1124,7 +1135,7 @@ export function createAtlasNext({
         banks,
         // 이유 줄이 「「은행」 처음 만나요」처럼 낱말 이름을 말하려면 낱말 이름이 든다 — 조각이 실으면 조각에서, 아니면 낱말 표에서.
         words: true,
-        host: hostOf(plan, at),
+        host: { ...hostOf(plan, at), prefs: prefsFor(plan) },
         lang: lang(),
         label,
       });
@@ -1650,6 +1661,27 @@ export function createAtlasNext({
       const since = loosened;
       if (!account) return answered(await coachFor(GUEST, banksOf(pool), FIRST_GAME), since);
       return faceCoach(banksOf(pool), FIRST_GAME, since);
+    },
+    // 게임 코치(4-6c — 단계4_계획 §23-2). 게임 문(world-atlas-game.mjs)이 부른다 — 짧은 연습 · 생활 · 홈과 같은 판 정하기 · 같은 호스트이고
+    // gameId는 그 게임의 이름, banks는 셸의 게임 은행 표(GAME_BANKS)의 것이다. 지금 판이면 null(게임은 옛 길).
+    async gameCoach(gameId, banks) {
+      if (disposed) return null;
+      const since = loosened;
+      if (!account) return answered(await coachFor(GUEST, banks, gameId), since);
+      return faceCoach(banks, gameId, since);
+    },
+    // 게임 틀을 열 때의 문(4-6c — 단계4_계획 §23-2). 이 문서에서 계정이 이미 지금 판으로 정해졌으면(서버 스위치 꺼짐 · 낮춘 판) 문을 두지 않는다
+    // (카본 A9). 문이 서도 open이 null을 줄 수 있다 — 게임은 기다린 뒤 옛 길로 연다. 게임 은행 표에 없는 게임도 문이 없다.
+    gameDoor(gameId) {
+      if (disposed || !Object.hasOwn(GAME_BANKS, gameId) || (account && gave === 'old')) return null;
+      const self = this;
+      return createGameDoor({
+        entry: {
+          gameCoach: (game, banks) => self.gameCoach(game, banks),
+          retired: (made, fn) => self.retired(made, fn),
+        },
+        gameId,
+      });
     },
     // 홈 플래너(4-3 — world-today.mjs). 엔진을 받아야 화면 언어의 문장(Vellum)을 그린다 — 못 받으면 null(셸은 생활 판정을 따라 지금 판으로 간다).
     async homePlanner() {
