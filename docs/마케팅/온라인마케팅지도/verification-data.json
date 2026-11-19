@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-19T13:22:07.638Z",
+  "generatedAt": "2026-11-19T16:11:36.380Z",
   "sourceAsOf": {
     "registry": "2026-11-10",
     "social": "2026-09-21",
@@ -54,7 +54,7 @@
     },
     {
       "file": "inputs/existing-accounts.json",
-      "sha256": "4e0b6fd2716febb9246c5a2698ded8323fbef980ee3103db16e21211cbf8e51f"
+      "sha256": "7bc8a2790db46aa7e85badc0febbab87e8be32cbedccd13dcf990dfbd5476862"
     },
     {
       "file": "inputs/content-status.json",
@@ -74,7 +74,7 @@
     },
     {
       "file": "../sns-계정.json",
-      "sha256": "9238607b7004fcd50b330b5ffd2457767c9fb90aeaab59f305d6be025f7e8caf"
+      "sha256": "6988e01794a888b21d6f011c46077a3e94ae2c576f3340cba53032ba132a4b9e"
     },
     {
       "file": "../SNS_계정_전체목록_20260919.md",

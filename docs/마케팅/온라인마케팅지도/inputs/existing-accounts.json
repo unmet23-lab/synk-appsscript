@@ -689,7 +689,7 @@
       "publishable": true,
       "sharedBrands": [],
       "loginIdentityRef": "kakao-tistory",
-      "nextAction": "비공개 첫 글을 유호님이 보신 뒤 공개한다. 옛 글 4편의 처리는 유호님 답을 따른다.",
+      "nextAction": "첫 글은 11-19에 공개했다. 하루 한 편 10:30 예약 발행이고, 매주 월 20:20 예약 작업이 다음 7일을 채운다. 옛 글 4편은 그대로 둔다(유호님 11-19).",
       "channelRole": "PULSE 한국어 검색 블로그(옛 호유앤테라피). 사례 · 만드는 과정 · 의뢰 안내",
       "operatingScope": "PULSE"
     },
@@ -713,7 +713,7 @@
       "publishable": true,
       "sharedBrands": [],
       "loginIdentityRef": "kakao-tistory",
-      "nextAction": "비공개 첫 글을 유호님이 보신 뒤 공개한다. 옛 글 1편의 처리는 유호님 답을 따른다.",
+      "nextAction": "첫 글은 11-19에 공개했다. 하루 한 편 13:30 예약 발행이고, 매주 월 20:20 예약 작업이 다음 7일을 채운다. 옛 글 1편은 그대로 둔다(유호님 11-19).",
       "channelRole": "솔리오 블로그(옛 리빙스나이퍼). 솔리오로 하는 일 · 쓰는 법 · 소식",
       "operatingScope": "SHIFT"
     },
