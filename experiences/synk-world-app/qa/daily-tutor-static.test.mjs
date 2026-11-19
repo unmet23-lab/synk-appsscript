@@ -1,4 +1,4 @@
-import {handleWorldProfileRead,assetFailure} from './static-world-fixture.mjs';
+import {handleWorldProfileRead,assetFailure,loadWorldLifeContent} from './static-world-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -7,7 +7,6 @@ import os from 'node:os';
 import http from 'node:http';
 import {createRequire} from 'node:module';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
-import {lessonById} from '../life-content.mjs';
 
 const require=createRequire(import.meta.url),{chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
 // 검증할 공개 /world 판은 Git 밖에 둔다. 현재 기준은 c55d5a78(2026-10-27), 환경 변수로 입력 폴더를 명시할 수 있다.
@@ -18,6 +17,7 @@ const A='11111111-1111-4111-8111-111111111111',LIFE='synk.life-korean.progress.v
 const STUDY_TIME=Date.parse('2026-10-27T12:00:00+09:00');
 
 test('frozen /world daily tutor stores assisted practice and recap, resumes on a fresh visit and isolates owner history',{timeout:120000,...frozen},async()=>{
+ const {lessonById}=await loadWorldLifeContent(payload);
  const config=JSON.parse(fs.readFileSync(path.join(payload,'world-config.json'),'utf8')).account;
  const out=path.resolve('experiences/synk-world-app/qa/daily-tutor-20261011',process.env.SYNK_DAILY_TUTOR_STATIC_QA_RUN||'account');fs.mkdirSync(out,{recursive:true});
  const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.mp3':'audio/mpeg','.mp4':'video/mp4','.wav':'audio/wav','.webp':'image/webp','.png':'image/png','.woff2':'font/woff2'};

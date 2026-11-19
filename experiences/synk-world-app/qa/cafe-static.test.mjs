@@ -1,4 +1,4 @@
-import {handleWorldProfileRead,assetFailure,openWorldLibrary} from './static-world-fixture.mjs';
+import {handleWorldProfileRead,assetFailure,openWorldLibrary,loadWorldLifeContent} from './static-world-fixture.mjs';
 import {closeOwnedEdge,navigationBefore} from './owned-edge.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -69,7 +69,7 @@ test('frozen /world cafe completes and restores the physical checkpoint through 
   await next();await choose('a');await synced();stored=JSON.parse(state.records[key]).lessons['cafe-apply'];check('all language responses remain incomplete before actual tea pickup',Object.keys(stored.answers).length===3&&stored.completedAt===null&&stored.stage.cafe.phase==='response');
   await page.reload(navigation());await open();check('fresh frozen page preserves tea awaiting pickup',await page.locator('[data-cafe-drink=takeout][data-cafe-received=false]').count()===1);await next();await synced();stored=JSON.parse(state.records[key]).lessons['cafe-apply'];check('explicit takeaway pickup completes exactly once with the first error retained',stored.stage.cafe.phase==='complete'&&stored.completedAt!==null&&!stored.answers['cafe-apply-order'].correct);
   await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>document.documentElement.dataset.layout==='portrait');await page.screenshot({path:path.join(output,'complete-portrait.png')});
-  const {lessonById}=await import('../life-content.mjs');
+  const {lessonById}=await loadWorldLifeContent(payload);
   for(const id of ['cafe-visit-taste','cafe-visit-soldout','cafe-visit-change']){
    // The new compose visit can be the completion CTA. Visit cards remain the
    // deliberate entry for testing a particular story independent of ordering.

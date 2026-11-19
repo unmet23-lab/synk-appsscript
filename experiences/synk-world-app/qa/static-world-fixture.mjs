@@ -1,4 +1,12 @@
 import assert from 'node:assert/strict';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+
+// Both the /world page and its separately built standalone bundle use this release's lessons.
+export function loadWorldLifeContent(payload) {
+  return import(pathToFileURL(path.join(payload, 'life-content.mjs')).href);
+}
+
 export async function handleWorldProfileRead(route,accountApiUrl,accountId){
  const r=route.request(),u=new URL(r.url());if(u.origin!==new URL(accountApiUrl).origin)return false;
  let status=200,data;

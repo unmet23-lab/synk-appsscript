@@ -1,4 +1,4 @@
-import {handleWorldProfileRead,assetFailure,openWorldLibrary} from './static-world-fixture.mjs';
+import {handleWorldProfileRead,assetFailure,openWorldLibrary,loadWorldLifeContent} from './static-world-fixture.mjs';
 import {navigationBefore,openOwnedEdge,stopTutorFixture,afterTutorCleanup} from './owned-edge.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,7 +8,6 @@ import os from 'node:os';
 import http from 'node:http';
 import {createRequire} from 'node:module';
 import {emptyPlayState} from '../../play-common/play-data.mjs';
-import {lessonById} from '../life-content.mjs';
 const require=createRequire(import.meta.url),{chromium}=(()=>{try{return require('playwright');}catch{return require(path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'));}})();
 // 검증할 공개 /world 판은 Git 밖에 둔다. 현재 기준은 c55d5a78(2026-10-27), 환경 변수로 입력 폴더를 명시할 수 있다.
 const payload=path.resolve(process.env.SYNK_LIFE_TUTOR_STATIC_PAYLOAD||'.tmp/world-static-c55d5a78-20261027/world'),frozen={skip:Boolean(process.env.CI)&&!fs.existsSync(path.join(payload,'world-config.json'))&&'CI 체크아웃에는 없다 — .tmp/world-static-c55d5a78-20261027/world (git 밖 고정 /world 판)'};
@@ -17,6 +16,7 @@ const core=value=>JSON.stringify({owner:value.owner,version:value.version,lesson
 const tutorTestMs=90_000;
 test('frozen /world tutor follows owner choice, preserves guided records and disposes on logout',{timeout:tutorTestMs,...frozen},async t=>{
  const workDeadline=performance.now()+tutorTestMs-7000;
+ const {lessonById}=await loadWorldLifeContent(payload);
  const config=JSON.parse(fs.readFileSync(path.join(payload,'world-config.json'),'utf8')).account;
  const standaloneHtml=path.resolve(process.env.SYNK_LIFE_TUTOR_STANDALONE_HTML||'experiences/brand-opening/home.html');
  const out=path.resolve('experiences/synk-world-app/qa/life-tutor-20261011',process.env.SYNK_LIFE_TUTOR_STATIC_RUN||'account');fs.mkdirSync(out,{recursive:true});
