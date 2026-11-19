@@ -1162,7 +1162,7 @@ commands['device-records']=button=>{const line=document.querySelector('[data-dev
 seoul=createSeoulEntry({dramaPending:()=>dramaRequested||me2Requested,restored:initialRestoreReady,operating,client:()=>client,life,home,worldUrl,launchGame,signIn,show,close,selectLanguage,tutorStatus,native:()=>operating&&account?.supportsSpeaking===false,frontOn:()=>!!front?.on()});
 // 첫날 끝 · 맞춤 앞면(1차, 결정 11-19): 서울행을 끝낸 학생은 튜터 고르기 · 펠트 동네 대신 앞면을 홈으로 쓴다. 스위치(FRONT_AUTO)를 끄면 지금 길 그대로다.
 front=createFrontEntry({client:()=>client,life,home,worldUrl,launchGame,openLife:(...v)=>openLife(...v),signIn,profile,openStory:()=>seoul.openRoad(),native:()=>operating&&account?.supportsSpeaking===false,
- guestArrival:()=>seoul.arrival?.('guest')||null,blocked:()=>{try{return !!tutorStatus(client.snapshot?.accountId||'guest')?.blocked;}catch{return true;}},hangulReading:(...v)=>hangulReading(...v),setHangulReading:(...v)=>setHangulReading(...v),
+ guestArrival:()=>seoul.arrival?.('guest')||null,newEngine:owner=>atlasNextOn&&(owner!=='guest'||atlasNextGuestOn),blocked:()=>{try{return !!tutorStatus(client.snapshot?.accountId||'guest')?.blocked;}catch{return true;}},hangulReading:(...v)=>hangulReading(...v),setHangulReading:(...v)=>setHangulReading(...v),
  goalConsent:()=>{let scoped=false;try{scoped=!!life.progress?.status?.()?.scoped;}catch{}return {needed:true,label:t(scoped?'goal.consent.account':'goal.consent.device'),note:t('goal.consent.note')};}});
 entryGate=createWorldEntryGate({
  restore:async()=>{await initialRestoreReady;if(sessionTask)await sessionTask;else if(!sessionConfirmed)await restoreSession();},

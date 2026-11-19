@@ -21,6 +21,7 @@ test('자격: 스위치가 켜지고 서울행을 끝낸 학생만', () => {
   assert.equal(frontEligible({auto: true, arrival: null}), false, '서울행 기록 없음(옛 학생)');
   assert.equal(frontEligible({auto: true, arrival: left, search: '?drama=1'}), false, '바로가기');
   assert.equal(frontEligible({auto: true, arrival: left, blocked: true}), false, '저장 충돌로 막힘');
+  assert.equal(frontEligible({auto: true, arrival: left, newEngine: true}), false, 'Atlas 새 엔진을 켠 계정은 새 엔진 입구로');
 });
 
 test('날: 새벽 4시에 바뀐다', () => {

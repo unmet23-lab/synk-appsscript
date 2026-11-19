@@ -19,8 +19,9 @@ export function frontMode(search=''){
  if(q.get('seoul')==='1'||q.get('drama')==='1'||q.get('me2')==='1'||q.get('cafe')==='1'||q.get('wardrobe')==='1'||q.has('exam')||q.has('tutor')||q.get('opening')==='off')return 'bypass';
  return null;
 }
-export function frontEligible({auto=false,search='',arrival=null,blocked=false}={}){
- if(!auto||blocked||frontMode(search)==='bypass')return false;
+// Atlas 새 엔진(atlasNext)을 켠 주인은 계획이 새 엔진에서 나온다 — 앞면은 옛 계획을 읽으므로 그 주인은 새 엔진 입구로 보낸다(두 길 합치기는 Atlas 설계와 정한다).
+export function frontEligible({auto=false,search='',arrival=null,blocked=false,newEngine=false}={}){
+ if(!auto||blocked||newEngine||frontMode(search)==='bypass')return false;
  return arrival?.stage==='left';
 }
 // 하루는 새벽 4시에 바뀐다(밤늦게 1화를 끝낸 학생의 「오늘」이 자정에 끊기지 않게).
@@ -89,7 +90,7 @@ export const GOAL_REASONS=Object.freeze({travel:'travel',people:'people',life:'l
 
 /* ── 다리 ── */
 export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,signIn,openStory,profile,storage=globalThis.localStorage,
- native=()=>false,guestArrival=()=>null,blocked=()=>false,hangulReading,setHangulReading,goalConsent=()=>({needed:true,label:'',note:''})}){
+ native=()=>false,guestArrival=()=>null,blocked=()=>false,newEngine=()=>false,hangulReading,setHangulReading,goalConsent=()=>({needed:true,label:'',note:''})}){
  const owner=()=>client().snapshot?.accountId||'guest';
  let session=null;
  const accountArrival=()=>{try{return life.progress?.arrival?.()??null;}catch{return null;}};
@@ -99,7 +100,7 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
  function writeMark(who,patch){try{storage.setItem(markKey(who),JSON.stringify({...readMark(who),...patch}));}catch{/* 사생활 창: 이번에는 화면만 넘어간다 */}}
  const on=()=>autoOn();
  function free(){
-  try{return frontEligible({auto:on(),search:location.search,arrival:arrivalOf(owner()),blocked:!!blocked()});}catch{return false;}
+  try{return frontEligible({auto:on(),search:location.search,arrival:arrivalOf(owner()),blocked:!!blocked(),newEngine:!!newEngine(owner())});}catch{return false;}
  }
  const education=()=>life.education||null;
  function currentPlan(){try{education()?.refresh?.();return education()?.metrics?.().plan||null;}catch{return null;}}
