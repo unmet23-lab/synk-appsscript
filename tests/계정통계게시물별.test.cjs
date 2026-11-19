@@ -142,19 +142,23 @@ test('링크드인: 게시물마다 분석 화면 주소를 출처로 한 봉투
   const {envelope}=batches[0];
   assert.equal(envelope.sourceUrl,`https://www.linkedin.com/analytics/post-summary/urn:li:activity:${ACT}/`);
   assert.deepEqual(envelope.observations[0].post,{externalId:`urn:li:activity:${ACT}`,url:`https://www.linkedin.com/feed/update/urn:li:activity:${ACT}/`,publishedAt:new Date(Number(BigInt(ACT)>>22n)).toISOString()});
-  assert.deepEqual(envelope.observations[0].metrics,{views:1204,reach:830,likes:7,comments:1,saves:2,shares:3});
-  assert.equal(envelope.observations[0].labels.metricLabels.views,'노출수');
+  // 조회 칸은 동영상 조회(3)다. 노출수(1,204)는 조회가 아니라서 넣지 않는다(11-19 GPT 검수 P1).
+  assert.deepEqual(envelope.observations[0].metrics,{views:3,reach:830,likes:7,comments:1,saves:2,shares:3});
+  assert.equal(envelope.observations[0].labels.metricLabels.views,'동영상 조회');
   // 회원 도달 칸이 없는 게시물(11-19 실측)은 도달을 빼고 나머지를 넣는다.
   const noReach=summaryLines().filter((l,i,a)=>l!=='회원 도달'&&a[i+1]!=='회원 도달');
   const one=parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({lines:noReach})]},LI).batches[0].envelope.observations[0];
   assert.deepEqual(one.metrics,{views:3,likes:0,comments:0,saves:0,shares:0});assert.equal('reach' in one.labels.metricLabels,false);
+  // 동영상이 없는 글은 조회 칸이 없다.
+  const text=summaryLines().filter((l,i,a)=>!['동영상 실적','동영상 조회'].includes(l)&&a[i+1]!=='동영상 조회');
+  assert.deepEqual(parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({lines:text})]},LI).batches[0].envelope.observations[0].metrics,{reach:2,likes:0,comments:0,saves:0,shares:0});
 });
 test('링크드인: 다른 계정 · 다른 화면 · 빠진 칸 · 줄인 수 · 관측보다 뒤인 활동 번호는 거절한다',()=>{
   const ok={handle:'yuhobuilds',posts:[liPost()]};
   assert.throws(()=>parseLinkedInPosts({...ok,handle:'someone'},LI),code('IDENTITY'));
   assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({sourceUrl:'https://www.linkedin.com/analytics/creator/content/'})]},LI),code('SOURCE'));
   assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({lines:summaryLines().filter(l=>l!=='저장수')})]},LI),code('ROW'));
-  assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({lines:summaryLines({views:'1.2천',reach:'2',likes:'0',comments:'0',saves:'0',shares:'0'})})]},LI),code('COUNT'));
+  assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({lines:summaryLines({views:'3',reach:'2',likes:'1.2천',comments:'0',saves:'0',shares:'0'})})]},LI),code('COUNT'));
   assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[liPost({observedAt:'2026-11-01T00:00:00.000Z'})]},LI),code('TIME'));
   assert.throws(()=>parseLinkedInPosts({handle:'yuhobuilds',posts:[]},LI),code('NO_ROWS'));
 });

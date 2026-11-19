@@ -280,9 +280,10 @@ function parseThreadsInsights(evidence,identity){
 }
 
 // 링크드인 개인 프로필 게시물 분석 화면(/analytics/post-summary/urn:li:activity:<번호>/)의 게시물별 누적값이다(11-19).
-// 노출수를 조회 칸에, 회원 도달을 도달 칸에 넣고 화면 이름을 metricLabels로 남긴다. 퍼감(재게시)은 공유에 넣지 않고 「LinkedIn에서 보내기」만 공유로 센다.
+// 동영상 조회를 조회 칸에, 회원 도달을 도달 칸에 넣고 화면 이름을 metricLabels로 남긴다. 노출수는 조회가 아니라서 넣지 않는다(11-19 GPT 검수 P1).
+// 퍼감(재게시)은 공유에 넣지 않고 「LinkedIn에서 보내기」만 공유로 센다. 동영상이 없는 글은 조회 칸을 비운다.
 // 게시 시각은 활동 번호의 앞 41비트(밀리초)다. 화면은 「9시간」 같은 상대 시각만 보여 준다. 게시물마다 출처 주소가 달라 게시물 하나가 봉투 하나다.
-const LINKEDIN_LABELS=Object.freeze({views:'노출수',reach:'회원 도달',likes:'반응',comments:'댓글',saves:'저장수',shares:'LinkedIn에서 보내기'});
+const LINKEDIN_LABELS=Object.freeze({views:'동영상 조회',reach:'회원 도달',likes:'반응',comments:'댓글',saves:'저장수',shares:'LinkedIn에서 보내기'});
 function parseLinkedInPosts(evidence,identity){
   const accountId=accountIdOf(identity),handle=handleOf(identity);
   if(!accountId||!/^[A-Za-z0-9_-]{3,100}$/.test(handle))throw fail('IDENTITY','링크드인 설정에 accountId와 프로필 주소 이름(handle)이 있어야 해요.');
@@ -300,11 +301,13 @@ function parseLinkedInPosts(evidence,identity){
     const observedAt=instant(post.observedAt,`${where} 관측 시각`);
     const lines=Array.isArray(post.lines)?post.lines.map(cell):[];
     // 회원 도달 칸은 게시물에 따라 화면에 없다(11-19 실측). 없으면 0이 아니라 칸을 뺀다.
-    const viewsAt=lines.indexOf(LINKEDIN_LABELS.views),reachAt=viewsAt<1?-1:lines.indexOf(LINKEDIN_LABELS.reach,viewsAt+1),likesAt=viewsAt<1?-1:lines.indexOf(LINKEDIN_LABELS.likes,viewsAt+1);
-    if(viewsAt<1||likesAt<0)throw fail('ROW',`${where}: 「노출수」와 「반응」 칸을 찾지 못했어요.`);
-    const after=label=>{const at=lines.indexOf(label,viewsAt+1);if(at<0||at+1>=lines.length)throw fail('ROW',`${where}: 「${label}」 칸을 찾지 못했어요.`);return lines[at+1];};
-    const metrics={views:count(lines[viewsAt-1],`${where} 노출수`)};
-    if(reachAt>viewsAt&&reachAt<likesAt)metrics.reach=count(lines[reachAt-1],`${where} 회원 도달`);
+    // 화면 줄은 「노출수」 수 칸에서 시작한다(post-lifetime.cjs). 그 뒤에서만 칸 이름을 찾는다.
+    const startAt=lines.indexOf('노출수'),likesAt=startAt<1?-1:lines.indexOf(LINKEDIN_LABELS.likes,startAt+1);
+    if(startAt<1||likesAt<0)throw fail('ROW',`${where}: 「노출수」와 「반응」 칸을 찾지 못했어요.`);
+    const before=label=>{const at=lines.indexOf(label,startAt+1);return at>startAt+1&&at<likesAt?lines[at-1]:null;};
+    const after=label=>{const at=lines.indexOf(label,startAt+1);if(at<0||at+1>=lines.length)throw fail('ROW',`${where}: 「${label}」 칸을 찾지 못했어요.`);return lines[at+1];};
+    const metrics={};
+    for(const key of ['views','reach']){const value=before(LINKEDIN_LABELS[key]);if(value!==null)metrics[key]=count(value,`${where} ${LINKEDIN_LABELS[key]}`);}
     for(const key of ['likes','comments','saves','shares'])metrics[key]=count(after(LINKEDIN_LABELS[key]),`${where} ${LINKEDIN_LABELS[key]}`);
     const ms=Number(BigInt(post.activityId)>>22n),publishedAt=new Date(ms).toISOString();
     if(ms<Date.parse('2016-01-01T00:00:00Z')||ms>Date.parse(observedAt))throw fail('TIME',`${where}: 활동 번호에서 읽은 게시 시각(${publishedAt})이 관측 시각과 맞지 않아요.`);
