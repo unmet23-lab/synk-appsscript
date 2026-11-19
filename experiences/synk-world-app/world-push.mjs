@@ -37,7 +37,8 @@ export function decodeVapidKey(value,decode=globalThis.atob){
  return bytes;
 }
 // 마지막으로 보낸 요약의 표: 무엇(key) · 언제(at) · 마지막으로 공부한 날(day) · 보낸 줄(rows) — day·rows가 바뀌면 모으지 않고 바로 보낸다.
-const syncMark=(item,at)=>({key:JSON.stringify(item),at,day:item.digest?.lastStudyDay??null,rows:JSON.stringify(item.handover||[])});
+// known: 복습 때를 실었나(새 길 판정이 「확인 중」이면 그 칸을 뺀다 — 4-8 §24-2). 모르던 요약 뒤 처음 아는 요약도 바로 보낸다(서버가 옛 때를 쥐고 있다).
+const syncMark=(item,at)=>({key:JSON.stringify(item),at,day:item.digest?.lastStudyDay??null,rows:JSON.stringify(item.handover||[]),known:Array.isArray(item.digest?.reviews)});
 const bounded=(promise,ms=REQUEST_MS)=>{let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Object.assign(Error('PUSH_TIMEOUT'),{code:'PUSH_TIMEOUT'})),ms);})]).finally(()=>clearTimeout(timer));};
 
 // request(action, body, {keepalive}): 이 탭의 SYNK ID로 world-push를 부른다(world-account.mjs pushRequest).
@@ -207,7 +208,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    const item=digest?{digest,...(Array.isArray(handover)&&handover.length?{handover}:{})}:null;
    if(settings){const value=item||pendingSync;drop();if(value)mark(value);return send({settings,...(value||{})});}
    if(!item)return;
-   const next=syncMark(item,time),changed=next.key!==lastSync?.key,urgent=next.day!==lastSync?.day||next.rows!==lastSync?.rows;
+   const next=syncMark(item,time),changed=next.key!==lastSync?.key,urgent=next.day!==lastSync?.day||next.rows!==lastSync?.rows||next.known&&lastSync?.known===false;
    if(!changed&&time-lastSync.at<SYNC_REFRESH_MS){drop();return;}
    if(!lastSync||urgent||!changed||time-lastSync.at>=SYNC_GAP_MS){drop();lastSync=next;return send(item);}
    pendingSync=item;

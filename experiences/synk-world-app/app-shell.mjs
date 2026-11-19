@@ -482,7 +482,8 @@ function reminderInputs(){
  // 판정이 없으면 지금 판 그대로(진도의 dueAt). 「돌아올 것이 있는가」는 두 판 모두 복습 기록이 있는가다.
  const judged=life.lifeDue?.judge(snapshot,Date.now())??null,records=Object.values(snapshot.reviews||{});
  const reviews=judged?(judged.state==='engine'?[...judged.times]:[]):records.map(review=>review?.dueAt).filter(Number.isFinite);
- return {reviews,exam,examPlan,studyTimes:studyTimes(snapshot),hangulStage:snapshot.hangul?.answer==='new',hasReturn:(judged?records.length>0:reviews.length>0)||typeof exam?.date==='string'&&exam.date.length===10};
+ // 확인 중의 빈 reviews는 「복습이 없다」가 아니라 「아직 모른다」다 — 2단 서버 요약으로 보내면 서버가 아는 복습 때를 지운다(§24-2).
+ return {reviews,reviewsPending:!!judged&&judged.state!=='engine',exam,examPlan,studyTimes:studyTimes(snapshot),hangulStage:snapshot.hangul?.answer==='new',hasReturn:(judged?records.length>0:reviews.length>0)||typeof exam?.date==='string'&&exam.date.length===10};
 }
 // 공부한 시각(「그날 이미 공부했는지」와 공부하던 시간대): 학습 기록(Trail)의 답 · 생활 레슨·복습의 답 · 쓰기 점검.
 // 학습 기록은 읽기 전용 코치로 읽는다(쓰지 않는다 — world-reminder-device.mjs createTrailTimes, 게임 판이 닫혀 코치가 끊기면 다시 만든다).
