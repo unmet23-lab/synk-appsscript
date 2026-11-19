@@ -89,6 +89,18 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .more-acts .lab{font:var(--small);color:var(--dim)}
 .more-note{margin:0;padding:0 0 12px;font:var(--small);color:var(--dim)}
 .more-in > :last-child{padding-bottom:18px}
+/* 부서의 기능 줄: 누르면 그 자리에서 안쪽이 열린다. 펼침은 줄의 안쪽과 같은 움직임이다 */
+.fold{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;grid-template-rows:0fr;transition:grid-template-rows .46s cubic-bezier(.2,.8,.2,1)}
+.fold.open{grid-template-rows:1fr}
+.fold-in{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;align-content:start;min-height:0;overflow:hidden}
+.fold-in > *{grid-column:1 / -1;opacity:0;transform:translateY(-7px);transition:opacity .14s ease,transform .14s ease}
+.fold.open .fold-in > *{opacity:1;transform:none;transition:opacity .34s ease calc(70ms + var(--j,0) * 50ms),transform .46s cubic-bezier(.2,.8,.2,1) calc(70ms + var(--j,0) * 50ms)}
+.fold.snap,.fold.snap .fold-in > *{transition:none !important}
+.fold.open .fold-in > :last-child{padding-bottom:12px}
+.more-in .row.item,.more-in .row.soon{padding:9px 0;align-items:center}
+.row.soon .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.sub.item .nm{font-weight:500;color:rgba(243,241,236,.84)}
+.row.sub.item:hover .nm,.row.sub.item.opened .nm{color:var(--paper)}
 /* 종류가 다른 줄(이 PC) 앞에는 틈을 둔다 */
 .row.gap{margin-top:clamp(14px,2.6cqh,26px)}
 .more:has(+ .row.gap){border-bottom:1px solid var(--hair)}
@@ -133,7 +145,7 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #meta button{appearance:none;border:0;background:none;color:rgba(243,241,236,.7);font:400 12px/1 var(--sans);padding:9px 13px;border-radius:999px;white-space:nowrap;cursor:pointer}
 #meta button:hover,#meta button:focus-visible{color:var(--paper);background:rgba(243,241,236,.08);outline:none}
 @media (prefers-reduced-motion:reduce){
-  .more,.more-in > *,.obj-n{transition:none !important}
+  .more,.more-in > *,.fold,.fold-in > *,.obj-n{transition:none !important}
   .flag.pop{animation:none}
 }
 </style>
@@ -162,7 +174,6 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   </div>
 </div>
 <div id="meta" role="toolbar" aria-label="시안 조작">
-  <button type="button" id="m-view">보기 · 비스듬히</button>
   <button type="button" id="m-case">상황 · 승인 대기</button>
   <button type="button" id="m-ping">알림 받기</button>
   <button type="button" id="m-pc">PC</button>
@@ -263,7 +274,17 @@ const SCOUTS = [
   {head:'한 곳이 바뀌었습니다', when:'방금', who:'두루상점', what:'무료 배송 기준을 5만 원에서 3만 원으로 낮췄습니다', src:'배송 안내 · duru.example', rest:'온결상점과 한뼘상점은 지난번과 같습니다', say:['두루상점이 무료 배송 기준을 낮췄습니다.', '마케팅부가 경쟁사 세 곳을 방금 다 읽었습니다.']},
   {head:'세 곳 모두 지난번과 같습니다', when:'방금', rest:'온결상점, 한뼘상점, 두루상점', say:['경쟁사 세 곳은 지난번과 같습니다.', '마케팅부가 방금 다 읽었습니다.']},
 ];
-let scoutI = 0, scouting = null, scoutT = [], lastHold = null;
+let scoutI = 0, scouting = null, scoutT = [], lastHold = null, rivalNews = 0;
+/* 부서의 기능: 부서를 누르면 직원 줄과 맡기기 칸 아래에 기능 이름이 한 줄씩 차례로 펼쳐진다. 기능이 늘어도 줄 하나씩만 는다.
+   「경쟁사」만 지었고, soon이 붙은 둘은 기능이 늘었을 때의 모습을 보이는 자리다. 모든 부서의 맨 아래에는 「부서 설정」이 있다 */
+const ITEMS = {
+  mkt: [
+    {id:'rivals', name:'경쟁사'},
+    {id:'blog', name:'블로그 글', soon:'매주 글감을 찾아 초안을 씁니다'},
+    {id:'sns', name:'SNS 반응', soon:'올린 글의 반응을 모아 정리합니다'},
+  ],
+};
+const openItem = {};
 /* 알림: 승인을 기다리는 직원, 진전이 없는 직원, 끝냈는데 아직 보지 않은 일에 붙는다.
    끝낸 일의 알림은 그 부서의 줄을 열었다 닫으면 본 것으로 치고 지운다 */
 const alerting = s => s.state === 'ask' || s.state === 'stall' || (s.state === 'done' && !!s.news);
@@ -317,22 +338,43 @@ function moreHTML(d, st) {
   const tool = toolOf[d.id], plan = tool === 'Codex' ? 'ChatGPT' : 'Claude';
   const tight = subOf(tool).left < 50 ? ` 지금 ${subOf(tool).left}% 남아 ${까지(toolCap(tool))} 일합니다.` : '';
   h += `<form class="give" data-give="${d.id}" style="--j:${j++}"><label class="sr" for="task-${d.id}">${esc(d.name)}에 맡길 일</label><input id="task-${d.id}" type="text" placeholder="${esc(d.name)}에 맡길 일" autocomplete="off"><button class="go" type="submit">맡기기</button></form>`;
-  h += `<p class="more-acts" style="--j:${j++}"><span class="lab">실행</span><button class="quiet" type="button" aria-pressed="${tool === 'Claude Code'}" data-tool="Claude Code">Claude Code</button><button class="quiet" type="button" aria-pressed="${tool === 'Codex'}" data-tool="Codex">Codex</button></p>`;
-  h += `<p class="more-note" style="--j:${j++}">${esc(notes[d.id] || `이 PC에 설치된 ${tool}로 실행합니다. 사용량은 내 ${plan} 구독에서 나갑니다.${tight}`)}</p>`;
-  if (d.id === 'mkt') { const r = rivalsHTML(j); h += r.h; j = r.j; }
-  h += `<div class="row sub fact" style="--j:${j++}"><span class="nm">역할</span><span class="mid"><b>${esc(d.role)}</b></span><span class="when"><button class="quiet" type="button" data-noop>고치기</button></span></div>`;
-  h += `<div class="row sub fact" style="--j:${j++}"><span class="nm">폴더</span><span class="mid"><b>${esc(d.dir)}</b></span><span class="when">${까지(seatCap())}</span></div>`;
+  if (notes[d.id]) h += `<p class="more-note" style="--j:${j++}">${esc(notes[d.id])}</p>`;
+  const setHTML = `<p class="more-acts" style="--j:0"><span class="lab">실행</span><button class="quiet" type="button" aria-pressed="${tool === 'Claude Code'}" data-tool="Claude Code">Claude Code</button><button class="quiet" type="button" aria-pressed="${tool === 'Codex'}" data-tool="Codex">Codex</button></p>`
+    + `<p class="more-note" style="--j:1">${esc(`이 PC에 설치된 ${tool}로 실행합니다. 사용량은 내 ${plan} 구독에서 나갑니다.${tight}`)}</p>`
+    + `<div class="row sub fact" style="--j:2"><span class="nm">역할</span><span class="mid"><b>${esc(d.role)}</b></span><span class="when"><button class="quiet" type="button" data-noop>고치기</button></span></div>`
+    + `<div class="row sub fact" style="--j:3"><span class="nm">폴더</span><span class="mid"><b>${esc(d.dir)}</b></span><span class="when">${까지(seatCap())}</span></div>`;
+  // 기능: 이름이 한 줄씩 차례로 펼쳐지고, 누르면 그 자리에서 안쪽이 열린다. 한 번에 하나만 열린다
+  const item = (id, name, mid, when, inner, news) => {
+    const on = openItem[d.id] === id, key = d.id + ':' + id;
+    return `<button class="row sub item${on ? ' opened' : ''}" type="button" data-item="${key}" aria-expanded="${on}" aria-controls="fold-${key}" style="--j:${j++}"><span class="nm">${esc(name)}${news ? flag(news) : ''}</span><span class="mid">${esc(mid)}</span><span class="when">${esc(when)}</span></button>`
+      + `<div class="fold${on ? ' open' : ''} snap" id="fold-${key}" data-fold="${key}"${on ? '' : ' inert'}><div class="fold-in">${inner}</div></div>`;
+  };
+  for (const f of ITEMS[d.id] || []) {
+    if (f.soon) h += `<div class="row sub fact soon" style="--j:${j++}"><span class="nm">${esc(f.name)}</span><span class="mid">${esc(f.soon)}</span><span class="when">준비 중</span></div>`;
+    else if (f.id === 'rivals') { const r = SCOUTS[scoutI]; h += item('rivals', f.name, scouting ? '세 곳을 다시 읽고 있습니다' : r.head, scouting ? '읽는 중' : r.when + ' 읽음', rivalsHTML(), rivalNews); }
+  }
+  h += item('set', '부서 설정', `${tool} · ${d.dir}`, '', setHTML);
   return h;
 }
-/* 마케팅부 안쪽의 경쟁사 줄: 바뀐 곳은 무엇이 어떻게 바뀌었는지와 읽은 곳, 읽은 때를 적고, 나머지는 한 줄로 묶는다 */
-function rivalsHTML(j) {
-  const r = SCOUTS[scoutI], read = esc(r.when) + ' 읽음';
+/* 마케팅부 「경쟁사」의 안쪽: 바뀐 곳은 무엇이 어떻게 바뀌었는지와 읽은 곳, 읽은 때를 적고, 나머지는 한 줄로 묶는다 */
+function rivalsHTML() {
+  const r = SCOUTS[scoutI], read = esc(r.when) + ' 읽음'; let j = 0;
   const row = (cls, nm, b, small, when) => `<div class="row sub${cls}" style="--j:${j++}"><span class="nm">${nm}</span><span class="mid"><b>${b}</b><small>${small}</small></span><span class="when">${when}</span></div>`;
-  let h = row(' fact', '경쟁사', esc(scouting ? '세 곳을 다시 읽고 있습니다' : r.head), '세 곳을 월요일 09:00마다 다시 읽습니다', scouting ? '읽는 중' : '<button class="quiet" type="button" data-scout>지금 읽기</button>');
+  let h = '';
   if (r.who) h += row('', esc(r.who), esc(r.what), `<button class="quiet" type="button" data-noop>${esc(r.src)}</button>`, read);
   h += row(' fact', r.who ? '그 밖' : '읽은 곳', esc(r.rest), esc(MISS), r.who ? '' : read);
-  h += `<p class="more-acts" style="--j:${j++}"><button class="quiet" type="button" data-noop>목록 고치기</button><span class="lab">누구나 볼 수 있는 쪽만 읽습니다.</span></p>`;
-  return {h, j};
+  h += `<p class="more-acts" style="--j:${j++}">${scouting ? '<span class="lab">읽는 중</span>' : '<button class="quiet" type="button" data-scout>지금 읽기</button>'}<button class="quiet" type="button" data-noop>목록 고치기</button></p>`;
+  h += `<p class="more-note" style="--j:${j++}">세 곳을 월요일 09:00마다 다시 읽습니다. 누구나 볼 수 있는 쪽만 읽습니다.</p>`;
+  return h;
+}
+/* 설정: 사무실을 보는 각도를 고른다. 비스듬히(3D)와 위에서(2D)를 둘 다 지원한다 */
+function cfgHTML(snap) {
+  const on = open.has('cfg');
+  return `<button class="row${on ? ' opened' : ''}" type="button" data-d="cfg" aria-expanded="${on}" aria-controls="more-cfg"><span class="nm">설정</span><span class="mid">보기 · ${viewTo ? '비스듬히' : '위에서'}</span><span class="val"></span></button>`
+    + `<div class="more${on ? ' open' : ''}${snap ? ' snap' : ''}" id="more-cfg" data-d="cfg"${on ? '' : ' inert'}><div class="more-in">`
+    + `<p class="more-acts" style="--j:0"><span class="lab">보기</span><button class="quiet" type="button" aria-pressed="${viewTo === 1}" data-view="1">비스듬히</button><button class="quiet" type="button" aria-pressed="${viewTo === 0}" data-view="0">위에서</button></p>`
+    + `<p class="more-note" style="--j:1">같은 사무실을 보는 각도입니다. 고른 보기는 다음에 열 때도 그대로입니다.</p>`
+    + `</div></div>`;
 }
 /* 이 PC: 프로세서와 메모리를 읽어 함께 일할 수 있는 인원을 정한다 */
 function pcHTML(snap) {
@@ -362,26 +404,35 @@ function render(snap) {
     h += `<button class="row${m.now ? ' now' : ''}${on ? ' opened' : ''}${al.length ? ' news' : ''}" type="button" data-d="${d.id}" aria-expanded="${on}" aria-controls="more-${d.id}"><span class="nm">${esc(d.name)}${al.length ? flag(Math.max(...al.map(s => s.newsT0 || -1e9))) : ''}</span><span class="mid">${esc(m.mid)}</span><span class="val">${esc(m.val)}</span></button>`;
     h += `<div class="more${on ? ' open' : ''}${snap ? ' snap' : ''}" id="more-${d.id}" data-d="${d.id}"${on ? '' : ' inert'}><div class="more-in">${moreHTML(d, m.st)}</div></div>`;
   }
-  h += pcHTML(snap);
+  h += pcHTML(snap) + cfgHTML(snap);
   h += `<p class="read"><span>방금 읽었습니다. 이름과 일은 모두 예시입니다.</span><button class="reread" type="button" data-noop>부서 더하기</button></p>`;
   rowsEl.innerHTML = h;
   officeObj.classList.toggle('news', staff.some(alerting));
   if (keep) { const el = document.getElementById(keep.id); if (el) { el.value = keep.v || ''; el.focus(); try { el.setSelectionRange(keep.a, keep.a); } catch (e) {} } }
-  if (snap) requestAnimationFrame(() => rowsEl.querySelectorAll('.more.snap').forEach(m => m.classList.remove('snap')));
+  requestAnimationFrame(() => rowsEl.querySelectorAll('.snap').forEach(m => m.classList.remove('snap')));
   mark();
 }
 let wasOpen = new Set();
 function sync() {
-  rowsEl.querySelectorAll('button.row').forEach(r => { const on = open.has(r.dataset.d); r.classList.toggle('opened', on); r.setAttribute('aria-expanded', on); });
+  rowsEl.querySelectorAll('button.row[data-d]').forEach(r => { const on = open.has(r.dataset.d); r.classList.toggle('opened', on); r.setAttribute('aria-expanded', on); });
   rowsEl.querySelectorAll('.more').forEach(m => { const on = open.has(m.dataset.d); m.classList.toggle('open', on); m.inert = !on; });
   // 열었다 닫은 부서의 끝낸 일은 본 것으로 친다. 줄이 다 접힌 뒤에 알림을 지운다
   let read = false;
-  for (const id of wasOpen) if (!open.has(id)) for (const s of staff) if (s.dept === id && s.news) { s.news = false; read = true; }
+  for (const id of wasOpen) if (!open.has(id)) {
+    if (openItem[id]) { openItem[id] = null; read = true; }          // 닫힌 부서는 다음에 열 때 기능이 접힌 채로 열린다
+    if (id === 'mkt' && rivalNews) { rivalNews = 0; read = true; }
+    for (const s of staff) if (s.dept === id && s.news) { s.news = false; read = true; }
+  }
   wasOpen = new Set(open);
   if (read) setTimeout(() => render(true), 520);
 }
+/* 기능 줄을 누르면 그 기능의 안쪽이 열리고, 열려 있던 다른 기능은 접힌다 */
+function syncItems() {
+  rowsEl.querySelectorAll('[data-item]').forEach(b => { const [dep, id] = b.dataset.item.split(':'), on = openItem[dep] === id; b.classList.toggle('opened', on); b.setAttribute('aria-expanded', on); });
+  rowsEl.querySelectorAll('[data-fold]').forEach(f => { const [dep, id] = f.dataset.fold.split(':'), on = openItem[dep] === id; f.classList.toggle('open', on); f.inert = !on; });
+}
 function mark() {
-  rowsEl.querySelectorAll('button.row').forEach(r => r.classList.toggle('hot', r.dataset.d === hotDept));
+  rowsEl.querySelectorAll('button.row[data-d]').forEach(r => r.classList.toggle('hot', r.dataset.d === hotDept));
   rowsEl.querySelectorAll('.row.sub[data-s]').forEach(r => r.classList.toggle('hot', r.dataset.s === hotStaff));
 }
 /* 다가가서 잠깐 머물면 열리고, 벗어나서 잠깐 지나면 접힌다. 줄은 아래쪽만 접는다(손 밑의 줄이 달아나지 않게) */
@@ -390,7 +441,7 @@ function approach(id, wait) {
   clearTimeout(closeT); clearTimeout(openT);
   if (!id || open.has(id)) return;
   openT = setTimeout(() => {
-    const ids = [...DEPTS.map(d => d.id), 'pc'], i = ids.indexOf(id);
+    const ids = [...DEPTS.map(d => d.id), 'pc', 'cfg'], i = ids.indexOf(id);
     ids.forEach((x, k) => { if (k > i && x !== pinned) open.delete(x); });
     open.add(id); sync();
   }, wait);
@@ -405,7 +456,7 @@ function pin(id) {
   setTimeout(() => { const m = document.getElementById('more-' + id); if (m && pinned === id) m.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'}); }, 480);
 }
 rowsEl.addEventListener('mouseover', e => {
-  const r = e.target.closest('button.row, .more');
+  const r = e.target.closest('button.row[data-d], .more');
   if (r) { hotDept = r.dataset.d; approach(r.dataset.d, 120); }
   const s = e.target.closest('.row.sub[data-s]'); hotStaff = s ? s.dataset.s : null;
   mark();
@@ -414,7 +465,13 @@ rowsEl.addEventListener('mouseleave', () => { hotDept = hotStaff = null; mark();
 rowsEl.addEventListener('focusin', e => { const m = e.target.closest('.more'); if (m) pin(m.dataset.d); });
 rowsEl.addEventListener('pointerdown', e => { const m = e.target.closest('.more'); if (m) pin(m.dataset.d); });
 rowsEl.addEventListener('click', e => {
-  const t = e.target, r = t.closest('button.row');
+  const t = e.target, it = t.closest('[data-item]'), r = t.closest('button.row[data-d]');
+  if (it) {
+    const [dep, id] = it.dataset.item.split(':'); openItem[dep] = openItem[dep] === id ? null : id; syncItems();
+    if (openItem[dep]) setTimeout(() => { const f = rowsEl.querySelector(`[data-fold="${dep}:${id}"]`); if (f && openItem[dep] === id) f.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'}); }, 480);
+    return;
+  }
+  if (t.dataset.view) { viewTo = +t.dataset.view; render(true); return; }
   if (r) { const id = r.dataset.d; if (pinned === id) { pinned = null; open.delete(id); sync(); } else pin(id); return; }
   if (t.dataset.term) { const s = staff.find(x => x.id === t.dataset.term); if (s) { s.state = 'work'; s.say = '승인을 받아 계약서 폴더를 정리하고 있습니다'; s.act = '명령 · 폴더 정리'; s.when = '방금'; render(true); } return; }
   if (t.dataset.tool) { const id = t.closest('.more').dataset.d; toolOf[id] = t.dataset.tool; delete notes[id]; render(true); return; }
@@ -478,6 +535,7 @@ function scout() {
     const r = SCOUTS[scoutI];
     // 바뀐 곳이 있을 때만 알림이 붙는다
     Object.assign(who, {state:'done', say:'경쟁사 세 곳을 다 읽었습니다. ' + (r.who ? '한 곳이 바뀌었습니다' : '바뀐 곳이 없습니다'), act:'끝냄 · 경쟁사_47주.md', when:'방금', news:!!r.who, newsT0:performance.now()});
+    rivalNews = r.who ? performance.now() : 0;
     hold(r.say, 4600);
   }, 1700 * steps.length + 300));
   render(true);
@@ -700,9 +758,8 @@ slot.addEventListener('click', e => { const b = stage.getBoundingClientRect(), h
 const meta = $('#meta'); let awayT = 0;
 function wake() { meta.classList.remove('away'); clearTimeout(awayT); awayT = setTimeout(() => { if (!meta.matches(':hover') && !meta.contains(document.activeElement)) meta.classList.add('away'); }, 4000); }
 addEventListener('pointermove', wake); addEventListener('keydown', wake); wake();
-$('#m-view').onclick = e => { viewTo = viewTo ? 0 : 1; e.currentTarget.textContent = '보기 · ' + (viewTo ? '비스듬히' : '위에서'); };
 const CASES = [['ask', '승인 대기'], ['calm', '평소'], ['rest', '모두 쉼']];
-function setCase(i) { scoutT.forEach(clearTimeout); scoutT = []; scoutI = 0; scouting = null; if (sayHold === lastHold) sayHold = null; wasOpen = new Set(); scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
+function setCase(i) { scoutT.forEach(clearTimeout); scoutT = []; scoutI = 0; scouting = null; if (sayHold === lastHold) sayHold = null; wasOpen = new Set(); rivalNews = 0; for (const k in openItem) delete openItem[k]; scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
 let ci = 0; $('#m-case').onclick = () => setCase(ci = (ci + 1) % CASES.length);
 /* 「알림 받기」: 일하던 직원 하나가 일을 끝내 알림이 오는 순간을 본다 */
 $('#m-ping').onclick = () => {
@@ -722,7 +779,7 @@ $('#m-sub').onclick = e => { sbi = (sbi + 1) % SUBCASES.length; e.currentTarget.
 { const m = location.hash.match(/sub(\d)/); if (m && SUBCASES[m[1]]) sbi = +m[1]; $('#m-sub').textContent = '구독 · ' + SUBCASES[sbi].name; }
 
 /* 주소 끝의 #2d · #calm · #rest로 바로 그 모습을 연다(화면 확인용) */
-if (/2d/.test(location.hash)) { view = viewTo = 0; $('#m-view').textContent = '보기 · 위에서'; }
+if (/2d/.test(location.hash)) view = viewTo = 0;
 const h0 = CASES.findIndex(c => location.hash.includes(c[0])); if (h0 > 0) ci = h0;
 resize(); setCase(ci); requestAnimationFrame(frame);
 if (/mkt/.test(location.hash)) pin('mkt');          // #mkt: 마케팅부의 줄을 연 채로 연다
