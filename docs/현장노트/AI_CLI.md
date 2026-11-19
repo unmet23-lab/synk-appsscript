@@ -1090,6 +1090,12 @@
 - 다시 확인: `tools/사이트방문/AI재기.js`의 `클로드묻기`가 `web_search_20250305`를 쓴다. 11-17 1회차에서 브랜드 질문 6개 모두 synk.im을 인용했다.
 
 ### 문항 2중 검수의 1차(`topik-review.mjs 클로드 --보내기`)가 「쓸 수 있는 키가 없다」로 멈춘다 — 같은 요청 글을 구독 서브에이전트에 주고 `claude.json`을 만든다 (2026-11-19 Claude)
+
+- 증상: WORLD 문항 하나를 고친 뒤 `node tools/topik-review.mjs 클로드 <묶음> --보내기`가 `쓸 수 있는 키가 없다 — unmet27:소진, unmet25:소진, founder:소진, synk.yuh:소진`으로 끝났다.
+- 원인: 검수 키 목록의 API 키 넷이 모두 한도에 닿았다. 1차는 일괄(Message Batches)만 부른다.
+- 고침: `claudeRequests(packet)`가 만드는 두 요청(블라인드 풀이 · 기준 검수)의 system · user 글과 JSON 스키마를 파일로 꺼내, 같은 모델(Opus 5.5)의 Claude Code 서브에이전트 둘에 따로 주었다(블라인드 쪽에는 정답 · 해설이 없다). 받은 JSON 둘로 `output/topik-review/<묶음>/claude.json`을 `{batch, key, total:{요청, 성공, 추정USD:0, usage:0들}, results:{u001:{blind, review, errors:[]}}}` 꼴로 쓰고 `판정` → `반영` → `보고`를 그대로 돌렸다. 보고서 첫머리에 구독 통로로 돌렸다고 적는다. 해설만 고친 둘째 묶음은 블라인드 요청 글이 같아(`cmp`로 확인) 앞 풀이를 다시 썼다.
+- 다시 확인: `보고`의 표에 Claude · 카본 칸이 모두 차고, `existing-verdicts.json`의 그 문항 `hash`가 새 지문, `packet`이 새 묶음 이름인지 본다. `node --test tests/world-life-review.test.mjs`가 통과한다.
+
 ## Claude Code 자동 모드
 
 ### 번호나 오래된 말로 승인하면 공개 push가 막힌다 (2026-10-19 Claude)
