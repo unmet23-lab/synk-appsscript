@@ -596,3 +596,16 @@ test('a clean installer exit followed by failed engine checks is 「not confirme
   await service.start(ME, 'protect'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_UNCONFIRMED');
 });
+
+test('GPT third round GA1: a slow earlier engine check never overwrites a newer 「installed」', async () => {
+  const dir = engineDir(), opened = [];
+  let calls = 0;
+  const run = async () => { const n = ++calls; if (n === 1) { await new Promise(r => setTimeout(r, 150)); return '{}'; } return JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }); };
+  const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp(), { status: sample() }), run, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  const slow = service.snapshot(ME);
+  await new Promise(r => setTimeout(r, 20));
+  await service.start(ME, 'protect');
+  await slow; await service.whenIdle();
+  assert.deepEqual(await service.open(ME, 'status'), { ok: true });
+  assert.equal((await service.snapshot(ME)).engine.installed, true);
+});

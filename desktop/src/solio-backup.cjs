@@ -410,7 +410,9 @@ function createSolioBackup({
   fsImpl = fs, keys = ENGINE_KEYS, previewAccounts = PREVIEW_ACCOUNTS, wait = ms => new Promise(resolve => setTimeout(resolve, ms)),
 } = {}) {
   const paths = statusPaths(env);
-  let engine = null, engineAt = 0, engineLoading = null;
+  // 엔진 확인마다 차례 번호를 붙여, 늦게 끝난 앞 확인이 뒤 확인의 답을 덮지 않게 한다(GPT 셋째 검수 GA1)
+  let engine = null, engineAt = 0, engineLoading = null, engineAsked = 0, engineKept = 0;
+  const keepEngine = (seq, value) => { if (seq > engineKept) { engineKept = seq; engine = value; engineAt = now(); } };
   let feedState = { state: 'unknown', version: null, at: 0 }, feedLoading = null;
   let install = { phase: 'idle', progress: 0, code: null, mode: null };
   let busy = null, mode = null, swept = false;
@@ -422,8 +424,9 @@ function createSolioBackup({
     if (platform !== 'win32') return { installed: false, version: null };
     if (!force && engine && now() - engineAt < (engine.installed ? ENGINE_AGE * 4 : ENGINE_AGE)) return engine;
     if (!engineLoading) {
+      const seq = ++engineAsked;
       engineLoading = readEngine({ run, fsImpl: fsImpl.promises })
-        .then(value => { if (value.error && engine && !engine.error) return engine; engine = value; engineAt = now(); return value; })
+        .then(value => { if (value.error && engine && !engine.error) return engine; keepEngine(seq, value); return seq >= engineKept ? value : engine; })
         .finally(() => { engineLoading = null; });
     }
     return engineLoading;
@@ -431,8 +434,9 @@ function createSolioBackup({
   /* 누를 때와 설치기를 띄우기 직전에는 앞의 답을 쓰지 않고 지금 답만 쓴다. 확인이 실패하면 error 그대로 돌려줘 아무것도 띄우지 않게 한다(GPT 다시 검수 GA5) */
   async function engineFresh() {
     if (platform !== 'win32') return { installed: false, version: null };
+    const seq = ++engineAsked;
     const value = await readEngine({ run, fsImpl: fsImpl.promises });
-    if (!value.error) { engine = value; engineAt = now(); }
+    if (!value.error) keepEngine(seq, value);
     return value;
   }
   function refreshFeed(force = false) {
@@ -575,7 +579,7 @@ function createSolioBackup({
     let view = null, fresh = null;
     // 누를 때는 엔진 확인을 새로 한다. 15초 전의 「없음」으로 깔린 엔진 위에 다시 받지 않게 한다(GPT 검수 GA4).
     // 지금 확인이 실패하면 아무것도 하지 않는다(GPT 다시 검수 GA5)
-    try { fresh = await engineFresh(); ({ view } = await state()); } catch { view = null; }
+    try { fresh = await engineFresh(); if (!fresh.error) ({ view } = await state()); } catch { view = null; }
     if (fresh?.error) { busy = null; release(); return { ok: false, code: 'ENGINE_UNKNOWN' }; }
     if (!['no-engine', 'engine-removed', 'needs-setup'].includes(view)) { busy = null; release(); return { ok: false, code: 'NOT_NEEDED' }; }
     mode = asked;
