@@ -257,8 +257,9 @@ else {
 function showPlatformMain(){
   if(!mainInitialized)initializeMain();
   else if(!window||window.isDestroyed())createWindow();
-  // 이미 보이고 초점이 있는 창에는 show · focus가 오지 않는다. 사람이 연 때도 화면이 없으면 되살린다(화면 다시 검수 -d)
-  else{if(window.isMinimized())window.restore();window.show();window.focus();connectionRecovery?.recoverIfGone?.();}
+  // 이미 보이고 초점이 있는 창에는 show · focus가 오지 않는다. 사람이 연 때도 화면이 없으면 되살린다(화면 다시 검수 -d).
+  // 안내 화면이 떠 있으면 Workspace의 다시 실행처럼 첫 화면으로 다시 잇는다(화면 다시 검수 -g)
+  else{if(window.isMinimized())window.restore();window.show();window.focus();if(!connectionRecovery?.recoverIfGone?.())void connectionRecovery?.retryIfDisconnected?.();}
   deliverPendingAction();
 }
 /* 단축키 따위로 미뤄 둔 요청(명령 메뉴 열기 등)을 앱 창 화면에 한 번 전달한다. 창을 보이는 일과 따로 둔다.

@@ -163,7 +163,7 @@ test('main rejects cloud runtime without exact boolean, client, mode and fixed e
 
 /* 화면 프로세스가 사라진 창은 첫 화면을 다시 싣는다(11-19 트레이에 숨은 채 켜진 0.4.97 창이 검게 남음).
    판정은 사건의 순서가 아니라 지금 상태로 한다(2026-11-19 설계 검토) */
-const NEXT='http://127.0.0.1:4280/learning-hub/';
+const NEXT='http://127.0.0.1:4280/learning-hub/',STOPPED='synk-desktop://status/stopped';
 function goneFixture({quitting=false}={}){
   const contents=new Contents();
   let clock=0;const timers=[];
@@ -178,13 +178,34 @@ test('a main window whose renderer is gone loads the entry again after a short p
   assert.equal(f.timers[0].ms,400);f.run();await settle();
   assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY]);f.contents.success(1);await settle();f.recovery.dispose();
 });
-test('after three losses in ten minutes the next loss loads the guide instead, and the entry again once the window passes (설계 검토 P2-2)',async()=>{
+test('after three automatic reloads in ten minutes the next loss loads the stopped page instead, and the entry again once the window passes (설계 검토 P2-2 · 화면 다시 검수 -g)',async()=>{
   const f=await loaded();
   for(let i=1;i<=3;i++){f.gone();f.run();await settle();assert.equal(f.contents.loads[i].url,ENTRY);f.contents.success(i);await settle();f.tick(60000);}
-  // 보이고 초점 있는 창이 네 번째로 사라져도 검게 남지 않는다. 스크립트 없는 안내 화면을 싣고, 「다시 연결」이 첫 화면으로 잇는다
-  f.gone();f.run();await settle();assert.equal(f.contents.loads[4].url,STATUS);f.contents.success(4);await settle();
-  assert.equal(f.recovery.recoverIfGone(),false,'the guide is a screen');
-  f.tick(10*60000);f.gone();f.run();await settle();assert.equal(f.contents.loads[5].url,ENTRY);f.recovery.dispose();
+  // 보이고 초점 있는 창이 네 번째로 사라져도 검게 남지 않는다. 「화면이 잇달아 멈췄어요」 안내를 싣고, 「다시 연결」이 첫 화면으로 잇는다
+  f.gone();f.run();await settle();assert.equal(f.contents.loads[4].url,STOPPED);f.contents.success(4);await settle();
+  assert.equal(f.recovery.recoverIfGone(),false,'the stopped page is a screen');
+  // 사람이 트레이에서 다시 열면(Platform의 showPlatformMain) 안내 화면에서 첫 화면으로 다시 잇는다. 「다시 연결」 고리도 잡는다
+  const reopened=f.recovery.retryIfDisconnected();await settle();assert.equal(f.contents.loads[5].url,ENTRY);f.contents.success(5);await reopened;
+  f.tick(10*60000);f.gone();f.run();await settle();assert.equal(f.contents.loads[6].url,ENTRY);f.contents.success(6);await settle();
+  f.contents.url=STOPPED;assert.equal(f.contents.click(ENTRY).defaultPrevented,true,'the retry link on the stopped page is handled');f.recovery.dispose();
+});
+test('loss notices that arrive while the page is fine do not use up the automatic reloads (화면 다시 검수 -g)',async()=>{
+  const f=await loaded();
+  for(let i=0;i<3;i++){f.contents.emit('render-process-gone',{},{reason:'clean-exit',exitCode:0});f.run();await settle();}
+  assert.equal(f.contents.loads.length,1,'nothing is loaded over a live page');
+  f.gone();f.run();await settle();assert.equal(f.contents.loads[1].url,ENTRY,'the first real loss still loads the entry');f.recovery.dispose();
+});
+test('a person opening the window while an automatic recovery waits gets the entry, and it is not counted (화면 다시 검수 -g)',async()=>{
+  const f=await loaded();
+  for(let i=1;i<=3;i++){f.gone();f.run();await settle();f.contents.success(i);await settle();}
+  // 한도에 닿은 채 다른 이동이 도는 동안 저절로의 되살리기와 사람의 창 열기가 겹친다
+  f.gone();f.contents.emit('did-start-navigation',{},NEXT,false,true);f.run();await settle();
+  assert.equal(f.recovery.recoverIfGone(),false,'both wait for the navigation');f.contents.cancel(NEXT);await settle();
+  assert.equal(f.contents.loads[4].url,ENTRY,'the person asked, so the entry');f.contents.success(4);await settle();
+  // 사람 쪽은 세지 않아, 다음 저절로의 사라짐은 여전히 한도에 걸린다
+  f.gone();f.run();await settle();assert.equal(f.contents.loads[5].url,STOPPED);f.contents.success(5);await settle();
+  // 400ms 안에 사람이 창을 열어도 사람 쪽을 따른다
+  f.gone();assert.equal(f.recovery.recoverIfGone(),false,'the pause still runs');f.run();await settle();assert.equal(f.contents.loads[6].url,ENTRY);f.recovery.dispose();
 });
 test('renderer recovery does nothing while quitting, after dispose, or before the window ever connected',async()=>{
   const quitting=await loaded({quitting:true});quitting.gone();quitting.run();await settle();assert.equal(quitting.recovery.recoverIfGone(),false);assert.equal(quitting.contents.loads.length,1);quitting.recovery.dispose();
@@ -251,6 +272,26 @@ test('a relaunch retry that is in flight when the guide renderer went away finis
   f.contents.fail(2,failure(-2));await settle();assert.equal(f.contents.loads[3].url,STATUS);f.contents.success(3);await retry;await settle();
   assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,STATUS,ENTRY,STATUS]);f.recovery.dispose();
 });
+// Electron 44.5.1 실측: 오류 문서가 실리면 주 프레임 did-fail-load와 did-finish-load가 오고 did-navigate는 오지 않는다. 주 프레임 주소는 실패한 주소다
+function errorPage(contents,url,code=-102){contents.emit('did-start-navigation',{},url,false,true);contents.url=url;contents.frameUrl=url;contents.emit('did-fail-load',{},code,'ERR_CONNECTION_REFUSED',url,true);contents.emit('did-finish-load');contents.stopLoading();}
+test('an error document is not a screen: after a loss, or on a live window, the entry comes back (엔진 다시 검수 -e GA1)',async()=>{
+  const f=await loaded();
+  f.gone();errorPage(f.contents,NEXT);assert.equal(f.contents.getOSProcessId(),ALIVE);f.run();await settle();
+  assert.deepEqual(f.contents.loads.map(row=>row.url),[ENTRY,ENTRY],'the error document left after the loss is replaced');f.contents.success(1);await settle();
+  // 멀쩡한 창에서 다른 이동이 실패해 오류 문서가 실려도, 창을 열거나 초점을 주면 첫 화면으로 돌아온다
+  errorPage(f.contents,NEXT);assert.equal(f.recovery.recoverIfGone(),true);await settle();assert.equal(f.contents.loads[2].url,ENTRY);
+  f.contents.success(2);await settle();assert.equal(f.recovery.recoverIfGone(),false,'a normal document after the error is a screen again');
+  // 다른 이동에 밀려 그만둔 것(-3)은 오류 문서가 아니다
+  f.contents.emit('did-fail-load',{},-3,'ERR_ABORTED',NEXT,true);assert.equal(f.recovery.recoverIfGone(),false);f.recovery.dispose();
+});
+test('when even the stopped page keeps going away, it is loaded automatically once per ten minutes; a person still gets the entry (엔진 다시 검수 -e GA2)',async()=>{
+  const f=await loaded();
+  for(let i=1;i<=3;i++){f.gone();f.run();await settle();f.contents.success(i);await settle();}
+  f.gone();f.run();await settle();assert.equal(f.contents.loads[4].url,STOPPED);f.contents.success(4);await settle();
+  f.gone();f.run();await settle();assert.equal(f.contents.loads.length,5,'the stopped page is not reloaded again by itself');
+  assert.equal(f.recovery.recoverIfGone(),true);await settle();assert.equal(f.contents.loads[5].url,ENTRY,'a person opening the window gets the entry');f.contents.success(5);await settle();
+  f.tick(10*60000+1);f.gone();f.run();await settle();assert.equal(f.contents.loads[6].url,ENTRY,'after ten minutes the count starts again');f.recovery.dispose();
+});
 test('Workspace reloads a lost renderer after a quit is cancelled to keep unsaved work, but not after leaving without saving (엔진 다시 검수 -b GA2)',async()=>{
   for(const [choice,reloads] of [[0,1],[1,0]]){
     const dialog={showMessageBoxSync:()=>choice};
@@ -270,7 +311,8 @@ test('main resets the quit flag for every client when unsaved writing cancels th
   assert.match(main,/window\.on\('show',\(\)=>\{connectionRecovery\?\.recoverIfGone\?\.\(\);\}\);/);
   assert.match(main,/window\.on\('focus',async\(\)=>\{connectionRecovery\?\.recoverIfGone\?\.\(\);/);
   // 이미 보이고 초점이 있는 창에는 show · focus가 오지 않으므로, 사람이 연 때도 부른다(화면 다시 검수 -d)
-  assert.match(main,/function showPlatformMain\(\)\{[\s\S]{0,300}window\.show\(\);window\.focus\(\);connectionRecovery\?\.recoverIfGone\?\.\(\);\}/);
+  // 안내 화면이 떠 있으면 사람이 연 때 첫 화면으로 다시 잇는다(화면 다시 검수 -g)
+  assert.match(main,/function showPlatformMain\(\)\{[\s\S]{0,500}window\.show\(\);window\.focus\(\);if\(!connectionRecovery\?\.recoverIfGone\?\.\(\)\)void connectionRecovery\?\.retryIfDisconnected\?\.\(\);\}/);
   assert.match(main,/sendTeachingView\(\);if\(!connectionRecovery\?\.recoverIfGone\?\.\(\)\)void connectionRecovery\?\.retryIfDisconnected\(\);/);
 });
 test('main passes the quit flag so a window closing for quit is not reloaded',()=>{

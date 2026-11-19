@@ -19,6 +19,12 @@ test('connection page links only to the configured entry, loads packaged brand a
   for(const [asset,mime] of [['synk.svg','image/svg+xml'],['button.webp','image/webp'],['SUIT.woff2','font/woff2'],['InterTight.woff2','font/woff2']]){const r=await serve('synk-desktop://status/assets/'+asset);assert.equal(r.status,200);assert.equal(r.headers.get('content-type'),mime);assert.ok((await r.arrayBuffer()).byteLength>100);}
   assert.match(response.headers.get('content-security-policy'),/script-src 'none'/);assert.match(response.headers.get('content-security-policy'),/connect-src 'none'/);
 });
+test('the stopped page says the screen kept stopping, not that the internet is down, and links only to the entry (화면 다시 검수 -g)',async()=>{
+  const serve=createConnectionContent({...options,mode:'release',clientId:'platform',entry:'synk-desktop://platform/index.html'}),response=await serve('synk-desktop://status/stopped'),html=await response.text();
+  assert.equal(response.status,200);assert.match(html,/화면이 잇달아 멈췄어요/);assert.doesNotMatch(html,/인터넷|연결할 수 없어요/);assert.ok(html.includes('href="synk-desktop://platform/index.html"'));assert.doesNotMatch(html,/<script|onclick=|onload=/);
+  assert.match(response.headers.get('content-security-policy'),/script-src 'none'/);
+  for(const url of ['synk-desktop://status/stopped?x=1','synk-desktop://status/stopped#x','synk-desktop://status/stopped/','synk-desktop://status/Stopped'])assert.equal((await serve(url)).status,404,url);
+});
 test('connection handler rejects arbitrary origins, parameters, files, traversal and write requests',async()=>{
   const serve=createConnectionContent(options);
   for(const url of ['synk-desktop://status/?entry=https://example.org','synk-desktop://user@status/','synk-desktop://status:123/','https://status/','synk-desktop://platform/','synk-desktop://status/#x','synk-desktop://status/src/main.cjs','synk-desktop://status/runtime.json','synk-desktop://status/assets/sources.json','synk-desktop://status/assets/../','synk-desktop://status/assets/%2e%2e/','synk-desktop://status/assets/..%5cmain.cjs'])assert.equal((await serve(url)).status,404,url);
