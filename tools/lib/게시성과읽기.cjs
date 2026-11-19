@@ -27,7 +27,7 @@ const TITLE_MAX = 160;
 // posts·snapshots(하루 한 벌)에 넣어 둔다(11-19: 텔레그램 · 샤오훙수 · 스레드 · RUTUBE 계정이 장부에 한 줄도 없었다).
 // 더우인은 같은 날 크리에이터 센터 작품 목록의 영상별 숫자를, 링크드인은 개인 프로필 게시물 분석 화면의 숫자를 넣기 시작했다(tools/계정통계예약/post-lifetime.cjs).
 const API_PLATFORMS = Object.freeze(['youtube', 'instagram', 'facebook', 'tiktok']);
-const PLATFORMS = Object.freeze([...API_PLATFORMS, 'telegram', 'xiaohongshu', 'threads', 'rutube', 'douyin', 'linkedin']);
+const PLATFORMS = Object.freeze([...API_PLATFORMS, 'telegram', 'xiaohongshu', 'threads', 'rutube', 'douyin', 'linkedin', 'tistory']);
 
 function 파이썬(매개) {
   // 매개는 숫자만 받아 문자열에 넣는다(주입 막기).

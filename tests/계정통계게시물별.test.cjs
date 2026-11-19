@@ -1,7 +1,7 @@
 'use strict';
 // 게시물별 누적값 보완 수집(2026-11-19): 더우인 작품 목록 · 스레드 인사이트 목록 → 외부 관측 post-lifetime, 계정 합계 수집 뒤에 돈다.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),crypto=require('node:crypto'),vm=require('node:vm');
-const {parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts}=require('../tools/lib/외부통계파싱.cjs');
+const {parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts,parseTistoryDaily}=require('../tools/lib/외부통계파싱.cjs');
 const {postLifetime,douyinWorksPage,threadsInsightsPage,linkedinPostsPage}=require('../tools/계정통계예약/post-lifetime.cjs');
 const {capture}=require('../tools/계정통계예약/capture-routes.cjs');
 const 수집=require('../tools/계정통계수집.cjs');
@@ -184,4 +184,53 @@ test('postLifetime: 링크드인은 개인 프로필만 읽고 게시물마다 �
   assert.deepEqual(saved,['linkedin-post-'+ACT,'linkedin-post-7528711928051847168']);
   assert.equal(await postLifetime(ctx('https://www.linkedin.com/company/synk-im/'),helpers),null);
   assert.deepEqual(판정.postIdOf(`https://www.linkedin.com/feed/update/urn:li:activity:${ACT}/`),{platform:'linkedin',externalId:`urn:li:activity:${ACT}`,key:`linkedin:urn:li:activity:${ACT}`});
+});
+
+// ── 티스토리: 글별 누적이 없어 일간 인기글 조회수를 게시일부터 더한다(11-19 유호님 「기간 값이라도 넣어」) ──
+const TI={accountId:'shift-tistory',handle:'yuhobuilds.tistory.com'};
+const tDays=(from,n,map={})=>Array.from({length:n},(_,i)=>{const date=new Date(Date.parse(from+'T00:00:00Z')+i*86400000).toISOString().slice(0,10);const entries=(map[date]||[]).map(([entryId,count])=>({entryId,count}));return {date,length:entries.length,entries};});
+const tPost=(id,published,extra={})=>({id,published,visibility:'PUBLIC',scheduled:false,permalink:`https://yuhobuilds.tistory.com/${id}`,comments:'0',...extra});
+const tistory=(posts,days,extra={})=>({observedAt:'2026-11-19T10:30:00.000Z',sourceUrl:'https://yuhobuilds.tistory.com/manage/statistics/blog',host:'yuhobuilds.tistory.com',posts,days,...extra});
+test('티스토리: 게시한 날부터 관측한 날까지 일간 인기글 조회수를 더하고, 이름표에 「합」으로 적는다',()=>{
+  const days=tDays('2026-11-05',15,{'2026-11-16':[[27,1]],'2026-11-17':[[27,2],[28,1]],'2026-11-19':[[28,1]],'2026-11-10':[[27,9]]});
+  const {envelope,summary}=parseTistoryDaily(tistory([tPost('27','2026-11-16 21:30'),tPost('28','2026-11-17 21:30',{comments:'1'}),tPost('31','2026-11-22 21:30',{visibility:'RESERVED_PUBLIC',scheduled:true}),tPost('3','2026-10-21 21:30')],days),TI);
+  assert.deepEqual(summary,{posts:2,older:1,hidden:1,days:15});
+  assert.deepEqual(envelope.observations.map(o=>[o.post.url,o.post.publishedAt,o.metrics]),[
+    ['https://yuhobuilds.tistory.com/27','2026-11-16T21:30:00+09:00',{views:3,comments:0}],
+    ['https://yuhobuilds.tistory.com/28','2026-11-17T21:30:00+09:00',{views:2,comments:1}]]);
+  assert.match(envelope.observations[0].labels.periodLabel,/2026-11-16부터 2026-11-19까지 일간 인기글 조회수 합/);
+  assert.equal(envelope.observations[0].labels.metricLabels.views,'인기글 일간 조회수 합(게시일부터)');
+});
+test('티스토리: 잘렸을 수 있는 날 · 빠진 날 · 오늘까지 안 읽은 목록 · 다른 블로그는 거절한다',()=>{
+  const ok=tDays('2026-11-10',10);
+  assert.throws(()=>parseTistoryDaily(tistory([tPost('27','2026-11-16 21:30')],tDays('2026-11-10',10,{'2026-11-17':Array.from({length:16},(_,i)=>[i+1,1])})),TI),code('INCOMPLETE'));
+  assert.doesNotThrow(()=>parseTistoryDaily(tistory([tPost('27','2026-11-16 21:30')],tDays('2026-11-10',10,{'2026-11-15':Array.from({length:15},(_,i)=>[i+1,1])})),TI));
+  assert.throws(()=>parseTistoryDaily(tistory([tPost('27','2026-11-16 21:30')],ok.filter(d=>d.date!=='2026-11-15')),TI),code('INCOMPLETE'));
+  assert.throws(()=>parseTistoryDaily(tistory([tPost('27','2026-11-16 21:30')],ok.slice(0,-1)),TI),code('INCOMPLETE'));
+  assert.throws(()=>parseTistoryDaily(tistory([tPost('27','2026-11-16 21:30')],ok,{host:'other.tistory.com'}),TI),code('SOURCE'));
+  assert.throws(()=>parseTistoryDaily(tistory([tPost('27','2026-11-16 21:30',{permalink:'https://other.tistory.com/27'})],ok),TI),code('ROW'));
+});
+test('티스토리 봉투도 서버 기록 규칙을 메모리 미리 보기에서 통과한다',async t=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'synk-post-lifetime-ti-'));
+  t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+  const now=new Date(Date.now()-60000),today=new Date(now.getTime()+9*3600000).toISOString().slice(0,10);
+  const from=new Date(Date.parse(today+'T00:00:00Z')-5*86400000).toISOString().slice(0,10);
+  const published=new Date(Date.parse(today+'T00:00:00Z')-2*86400000).toISOString().slice(0,10)+' 21:30';
+  const evidence=tistory([tPost('29',published)],tDays(from,6),{observedAt:now.toISOString()});
+  const raw=Buffer.from(JSON.stringify(evidence));fs.writeFileSync(path.join(dir,'t.json'),raw);
+  const {envelope}=parseTistoryDaily(evidence,TI);
+  fs.writeFileSync(path.join(dir,'manifest.json'),JSON.stringify({version:1,batches:[{accountId:'shift-tistory',evidenceFile:'t.json',envelope:{...envelope,evidenceSha256:crypto.createHash('sha256').update(raw).digest('hex')}}]}));
+  const report=await 수집.run({manifestPath:path.join(dir,'manifest.json'),env:{},logDir:dir,connect:()=>{throw new Error('미리 보기에서 로그인하면 안 된다');}});
+  assert.deepEqual(report.results.map(r=>[r.status,r.code]),[['ready',null]]);
+});
+test('postLifetime: 티스토리는 Aside 계정으로만 읽고, 판정 도구는 블로그 주소를 열쇠에 넣는다',async()=>{
+  let asked=null;const saved=[];
+  const helpers={pageJob:async(c,name,fn,args)=>{asked=args;return tistory([tPost('27','2026-11-16 21:30')],tDays('2026-11-05',15));},storeBatch:async(c,name)=>{saved.push(name);}};
+  const ctx=profile=>({account:{id:'shift-tistory',platform:'tistory',handle:'yuhobuilds.tistory.com'},profile,setStage:async()=>{}});
+  assert.equal(await postLifetime(ctx({browser:'aside',account:'u0'}),helpers),'limited');
+  assert.equal(asked.entry,'https://yuhobuilds.tistory.com/manage/statistics/blog');assert.equal(asked.days,45);assert.deepEqual(saved,['tistory-daily-posts']);
+  assert.equal(await postLifetime(ctx({browser:'ego',profileId:'Profile 7'}),helpers),null);
+  assert.equal(await postLifetime(ctx({browser:'aside'}),helpers),null);
+  assert.equal(판정.postIdOf('https://yuhobuilds.tistory.com/27').key,'tistory:yuhobuilds.tistory.com/27');
+  assert.equal(판정.postIdOf('https://yuhobuilds.tistory.com/manage/posts'),null);
 });

@@ -4,7 +4,7 @@
 // 읽기만 한다: 화면이 스스로 부르는 목록을 같은 로그인으로 다시 읽을 뿐 게시 · 설정 · 삭제는 하지 않는다. ego 프로필에서만 돈다(Aside 계정은 건너뛴다).
 const fs=require('node:fs');
 const path=require('node:path');
-const {parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts}=require('../lib/외부통계파싱.cjs');
+const {parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts,parseTistoryDaily}=require('../lib/외부통계파싱.cjs');
 
 // 아래 두 함수는 계정에 지정된 ego 프로필의 페이지 안에서 그대로 돈다(pageJob이 toString으로 넘긴다). 바깥 이름을 쓰지 않는다.
 async function douyinWorksPage(p,args){
@@ -96,22 +96,51 @@ async function linkedinPostsPage(p,args){
   return {handle:args.handle,posts};
 }
 
+// 티스토리(Aside u0 · 10-26 유호님 규칙): 관리자 방문 통계 화면이 부르는 글 목록과 하루 인기글을 같은 로그인으로 읽는다. Playwright 꼴 페이지(Aside)와 ego에서 같이 돈다.
+async function tistoryDailyPage(p,args){
+  await p.waitForFunction(()=>document.readyState!=='loading',undefined,{timeout:15000}).catch(()=>{});
+  const at=await p.evaluate(()=>location.origin+location.pathname);
+  if(at!==args.entry)return {reason:'need_owner'};
+  return await p.evaluate(async({days})=>{
+    const get=async route=>{const res=await fetch(route,{credentials:'include'});if(!res.ok)throw new Error('HTTP '+res.status+' '+route.split('?')[0]);return res.json();};
+    const posts=[];
+    for(let page=1;page<=10;page++){
+      const list=await get('/manage/posts.json?category=-3&page='+page+'&searchKeyword=&searchType=title&visibility=all');
+      for(const item of list.items||[])posts.push({id:String(item.id),published:item.published,visibility:item.visibility,scheduled:item.isScheduled===true,permalink:item.permalink,comments:item.countOfComments});
+      if(!list.items||!list.items.length||posts.length>=list.totalCount)break;
+    }
+    const observedAt=new Date().toISOString(),today=Date.parse(new Date(Date.now()+9*3600000).toISOString().slice(0,10)+'T00:00:00Z');
+    const out=[];
+    for(let i=days;i>=0;i--){
+      const date=new Date(today-i*86400000).toISOString().slice(0,10);
+      const top=await get('/manage/v2/statistics/blog/topEntry?metric=pv&startDate='+date+'&granularity=day');
+      const entries=(top.data&&top.data.result||[]).map(r=>({entryId:r.entryId,count:r.count}));
+      out.push({date,length:entries.length,entries});
+    }
+    return {observedAt,sourceUrl:location.origin+location.pathname,host:location.hostname,posts,days:out};
+  },{days:args.days});
+}
+
 const ROUTES=Object.freeze({
   douyin:{name:'douyin-works',page:douyinWorksPage,parse:parseDouyinWorks,handle:/^[0-9]{6,20}$/,entry:()=>'https://creator.douyin.com/creator-micro/content/manage'},
   threads:{name:'threads-insights',page:threadsInsightsPage,parse:parseThreadsInsights,handle:/^[A-Za-z0-9_.]{1,40}$/,entry:()=>'https://www.threads.com/insights/'},
   // 개인 프로필(/in/<이름>/)만 읽는다. 회사 페이지는 다른 화면이라 이 길로 읽지 않는다.
   linkedin:{name:'linkedin-posts',page:linkedinPostsPage,parse:parseLinkedInPosts,handle:/^[A-Za-z0-9_-]{3,100}$/,limit:10,
     entry:handle=>'https://www.linkedin.com/in/'+handle+'/',personal:account=>/^https:\/\/www\.linkedin\.com\/in\/[^/]+\/?$/.test(account.publicUrl||'')},
+  // 티스토리는 Aside로 읽는다. 45일 전부터 오늘까지 하루씩 읽는다(판정은 7일까지만 쓴다).
+  tistory:{name:'tistory-daily',page:tistoryDailyPage,parse:parseTistoryDaily,handle:/^[a-z0-9-]{1,63}\.tistory\.com$/,browsers:['aside'],days:45,
+    entry:handle=>'https://'+handle+'/manage/statistics/blog'},
 });
 
 // 게시물별 값을 읽어 올린다 → null(이 계정은 대상 아님) · 'limited'(올림) · 'need_owner' · 'format' · 'retry' · 'no_posts'
 async function postLifetime(ctx,{pageJob,storeBatch}){
   const {account:a,profile}=ctx,route=ROUTES[a.platform];
-  if(!route||profile?.browser!=='ego'||!profile.profileId||route.personal&&!route.personal(a))return null;
+  const browsers=route?.browsers||['ego'];
+  if(!route||!browsers.includes(profile?.browser)||(profile.browser==='aside'?!profile.account:!profile.profileId)||route.personal&&!route.personal(a))return null;
   const handle=String(a.handle||'').replace(/^@/,'');
   if(!route.handle.test(handle))return 'need_owner';
   await ctx.setStage('creator-screen');
-  const data=await pageJob(ctx,route.name,route.page,{entry:route.entry(handle),handle,limit:route.limit||0});
+  const data=await pageJob(ctx,route.name,route.page,{entry:route.entry(handle),handle,limit:route.limit||0,days:route.days||0});
   if(!data||data.reason)return data?.reason||'retry';
   let parsed;
   try{parsed=route.parse(data,{accountId:a.id,handle});}
@@ -129,4 +158,4 @@ function note(ctx,reason,error){
   if(!ctx.dir)return;
   try{fs.writeFileSync(path.join(ctx.dir,'post-lifetime-failed.json'),JSON.stringify({at:new Date().toISOString(),reason,code:String(error?.code||'').slice(0,60)}),{flag:'wx'});}catch{/* 이미 있으면 첫 실패를 둔다 */}
 }
-module.exports={postLifetime,douyinWorksPage,threadsInsightsPage,linkedinPostsPage,note,ROUTES};
+module.exports={postLifetime,douyinWorksPage,threadsInsightsPage,linkedinPostsPage,tistoryDailyPage,note,ROUTES};

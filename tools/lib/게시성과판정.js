@@ -48,9 +48,9 @@ const METRICS = Object.freeze({
 });
 const NEXT_STEP_METRICS = new Set(['earlyRetention3sPct', 'stayedToWatchPct', 'averageWatchSeconds', 'averageViewPct', 'completionRatePct', 'shares', 'saves', 'toolVisits']);
 const POINTS = Object.freeze([{ key: '24h', hours: 24, label: '24시간' }, { key: '72h', hours: 72, label: '72시간' }, { key: '7d', hours: 168, label: '7일' }]);
-const PLATFORM_LABEL = Object.freeze({ youtube: '유튜브', instagram: '인스타', facebook: '페북', tiktok: '틱톡', telegram: '텔레그램', xiaohongshu: '샤오훙수', threads: '스레드', rutube: 'RUTUBE', douyin: '더우인', linkedin: '링크드인' });
+const PLATFORM_LABEL = Object.freeze({ youtube: '유튜브', instagram: '인스타', facebook: '페북', tiktok: '틱톡', telegram: '텔레그램', xiaohongshu: '샤오훙수', threads: '스레드', rutube: 'RUTUBE', douyin: '더우인', linkedin: '링크드인', tistory: '티스토리' });
 /** API 수집이 없는 플랫폼의 형식(한 계정에 형식이 하나다) */
-const EXTERNAL_FORMAT = Object.freeze({ telegram: 'telegram-post', xiaohongshu: 'xiaohongshu-note', threads: 'threads-post', rutube: 'rutube-video', douyin: 'douyin-video', linkedin: 'linkedin-post' });
+const EXTERNAL_FORMAT = Object.freeze({ telegram: 'telegram-post', xiaohongshu: 'xiaohongshu-note', threads: 'threads-post', rutube: 'rutube-video', douyin: 'douyin-video', linkedin: 'linkedin-post', tistory: 'tistory-post' });
 /** 형식마다 v2 §6 네 숫자 가운데 화면에서 읽어야 할 수 있는 칸(서버가 이미 받은 칸은 뺀다). */
 const SCREEN_FIELDS = Object.freeze({
   'youtube-shorts': ['stayedToWatchPct', 'averageWatchSeconds', 'averageViewPct', 'shares', 'subscribersGained'],
@@ -98,7 +98,7 @@ function postIdOf(url) {
     const m = /\/video\/(\d{6,})/.exec(u.pathname);
     return m ? { platform: 'tiktok', externalId: m[1], key: 'tiktok:' + m[1] } : null;
   }
-  // 아래 여섯은 서버 external-observations.mjs postRoute와 같은 모양만 받는다(11-19). 텔레그램 글 번호는 채널마다 1부터라 열쇠에 채널을 넣는다.
+  // 아래 일곱은 서버 external-observations.mjs postRoute와 같은 모양만 받는다(11-19). 텔레그램 글 번호는 채널마다 1부터라 열쇠에 채널을 넣는다.
   if (host === 't.me') {
     const m = /^\/(?:s\/)?([A-Za-z][A-Za-z0-9_]{3,31})\/(\d{1,12})\/?$/.exec(u.pathname);
     return m ? { platform: 'telegram', externalId: m[2], key: `telegram:${m[1].toLowerCase()}/${m[2]}` } : null;
@@ -114,6 +114,11 @@ function postIdOf(url) {
   if (host === 'rutube.ru') {
     const m = /^\/(?:video|shorts)\/([0-9a-f]{32})\/?$/.exec(u.pathname);
     return m ? { platform: 'rutube', externalId: m[1], key: 'rutube:' + m[1] } : null;
+  }
+  // 티스토리 글 번호는 블로그마다 1부터라 열쇠에 블로그 주소를 넣는다.
+  if (/^[a-z0-9-]{1,63}\.tistory\.com$/.test(host)) {
+    const m = /^\/([1-9]\d{0,8})\/?$/.exec(u.pathname);
+    return m ? { platform: 'tistory', externalId: m[1], key: `tistory:${host}/${m[1]}` } : null;
   }
   if (host === 'linkedin.com') {
     const m = /^\/feed\/update\/(urn:li:activity:\d{15,25})\/?$/.exec(u.pathname);

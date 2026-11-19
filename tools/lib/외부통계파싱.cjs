@@ -31,6 +31,9 @@
  * parseLinkedInPosts(evidence, identity) — https://www.linkedin.com/analytics/post-summary/urn:li:activity:<번호>/ 게시물 분석 화면들(11-19)
  *   evidence {handle, posts:[{activityId, observedAt, sourceUrl, lines}]} → {batches:[{name, evidence, envelope}]}(게시물마다 출처 주소가 달라 봉투 하나씩).
  *   노출수 → views, 회원 도달 → reach, 반응 → likes, 댓글, 저장수 → saves, LinkedIn에서 보내기 → shares(퍼감은 빼고). 게시 시각은 활동 번호의 앞 41비트다.
+ * parseTistoryDaily(evidence, identity) — https://<블로그>.tistory.com/manage/statistics/blog 의 인기글(일간)과 글 목록(11-19)
+ *   evidence {observedAt, sourceUrl, host, posts:[{id, published, visibility, scheduled, permalink, comments}], days:[{date, length, entries:[{entryId, count}]}]}
+ *   글별 누적 조회수가 화면에 없어 게시한 날부터의 일간 인기글 조회수를 더한다(이름표에 「합」으로 적는다). 하루 목록이 10개 이상이면 거절한다.
  * parseNaverDaily(input, identity, observedAt) — https://admin.blog.naver.com/<blogId>/stat/download 조회수·일간 xlsx를 디코딩한 값
  *   input은 {sheets:[{name?, rows}]}(첫 장만) 또는 행 배열. 행은 칸 배열, 칸 주소 열쇠 객체({A8,B8,C8} — 모두 같은 행 번호이고 그 번호가
  *   배열 순서+1), 또는 A·B… / 0·1… 열 열쇠 객체. 머리 행의 「요일」 열은 날짜의 실제 요일과 맞는지만 보고 수치로 읽지 않는다.
@@ -322,6 +325,59 @@ function parseLinkedInPosts(evidence,identity){
   return {batches,summary:{posts:batches.length}};
 }
 
+// 티스토리 관리자에는 글별 누적 조회수가 없다(11-19 실측). 「인기글」(/manage/v2/statistics/blog/topEntry)의 하루 조회수를 게시한 날부터 관측한 날까지
+// 더해 넣는다(유호님 11-19 「기간 값이라도 넣어」). 화면 이름표(periodLabel · metricLabels)에 「일간 인기글 조회수 합」이라고 적어 누적 화면 값과 가른다.
+// 같은 목록이 월간에서 16개를 돌려준 것을 봤다(11-19). 하루 목록이 16개 이상이면 잘렸을 수 있어 묶음 전체를 거절한다.
+// 읽은 첫날보다 먼저 올린 글은 합이 모자라므로 넣지 않는다. 날짜는 한국 날짜다.
+const TISTORY_DAY_CAP=16;
+function parseTistoryDaily(evidence,identity){
+  const accountId=accountIdOf(identity),host=handleOf(identity);
+  if(!accountId||!/^[a-z0-9-]{1,63}\.tistory\.com$/.test(host))throw fail('IDENTITY','티스토리 설정에 accountId와 블로그 주소(handle, <이름>.tistory.com)가 있어야 해요.');
+  known(evidence,['observedAt','sourceUrl','host','posts','days'],'티스토리 증거');
+  const observedAt=instant(evidence.observedAt,'관측 시각(observedAt)'),today=kstDay(Date.parse(observedAt));
+  const sourceUrl=`https://${host}/manage/statistics/blog`;
+  if(evidence.host!==host||evidence.sourceUrl!==sourceUrl)throw fail('SOURCE',`통계 화면 주소는 ${sourceUrl} 이어야 해요.`);
+  const days=rowsOf(evidence.days),views=new Map();
+  if(!days.length)throw fail('INCOMPLETE','읽은 날이 없어요.');
+  days.forEach((day,i)=>{
+    const where=`${i+1}번째 날`;
+    known(day,['date','length','entries'],where);
+    if(typeof days[0].date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(days[0].date)||day.date!==shiftDay(days[0].date,i))throw fail('INCOMPLETE',`${where}: 날짜가 하루씩 이어지지 않아요(${day.date}).`);
+    if(!Array.isArray(day.entries)||day.length!==day.entries.length)throw fail('SHAPE',`${where}: 인기글 목록을 확인해 주세요.`);
+    if(day.length>=TISTORY_DAY_CAP)throw fail('INCOMPLETE',`${where}(${day.date}): 인기글이 ${day.length}개라 목록이 잘렸을 수 있어요.`);
+    for(const entry of day.entries){
+      known(entry,['entryId','count'],`${where} 인기글`);
+      if(!Number.isSafeInteger(entry.entryId)||entry.entryId<1)throw fail('ROW',`${where}: 글 번호를 확인해 주세요.`);
+      const at=views.get(entry.entryId)||new Map();at.set(day.date,count(entry.count,`${where} 조회수`));views.set(entry.entryId,at);
+    }
+  });
+  if(days.at(-1).date!==today)throw fail('INCOMPLETE',`마지막으로 읽은 날(${days.at(-1).date})이 관측한 날(${today})이 아니에요.`);
+  const first=days[0].date,observations=[],seen=new Set();
+  let older=0,hidden=0;
+  rowsOf(evidence.posts).forEach((post,i)=>{
+    const where=`${i+1}번째 글`;
+    known(post,['id','published','visibility','scheduled','permalink','comments'],where);
+    if(typeof post.id!=='string'||!/^[1-9][0-9]{0,8}$/.test(post.id))throw fail('ROW',`${where}: 글 번호를 확인해 주세요.`);
+    if(seen.has(post.id))throw fail('DUPLICATE',`${where}: 같은 글이 두 번 있어요.`);
+    seen.add(post.id);
+    const url=`https://${host}/${post.id}`;
+    if(post.permalink!==url)throw fail('ROW',`${where}: 글 주소가 ${url} 과 같지 않아요.`);
+    if(post.visibility!=='PUBLIC'||post.scheduled!==false){hidden++;return;}
+    const m=typeof post.published==='string'?/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/.exec(post.published):null;
+    if(!m||!realDay(+m[1],+m[2],+m[3])||+m[4]>23||+m[5]>59)throw fail('TIME',`${where}: 게시 시각(${post.published})을 확인해 주세요.`);
+    const publishedAt=`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:00+09:00`,day=`${m[1]}-${m[2]}-${m[3]}`;
+    if(Date.parse(publishedAt)>Date.parse(observedAt)){hidden++;return;}
+    if(day<first){older++;return;}
+    let sum=0;for(const [date,value] of views.get(Number(post.id))||[])if(date>=day)sum+=value;
+    observations.push({kind:'post-lifetime',post:{externalId:post.id,url,publishedAt},metrics:{views:sum,comments:count(post.comments,`${where} 댓글`)},
+      labels:{periodLabel:`${day}부터 ${today}까지 일간 인기글 조회수 합`,metricLabels:{views:'인기글 일간 조회수 합(게시일부터)',comments:'댓글'},timeZone:'Asia/Seoul'}});
+  });
+  if(!observations.length)throw fail('NO_ROWS','읽은 기간 안에 올린 공개 글이 없어 보낼 관측이 없어요.');
+  capped(observations,'비공개 · 예약 · 오래된 글');
+  return {envelope:{sourceType:'creator-screen',sourceUrl,observedAt,evidenceSha256:null,identity:{accountId,handle:host},
+    labels:{screenTitle:'티스토리 방문 통계 · 인기글(일간)',timeZone:'Asia/Seoul'},observations},summary:{posts:observations.length,older,hidden,days:days.length}};
+}
+
 function sheetOf(input){
   const sheet=Array.isArray(input)?{rows:input}:plain(input)&&Array.isArray(input.sheets)?input.sheets[0]:null;
   if(!plain(sheet)||!Array.isArray(sheet.rows)||!sheet.rows.length||sheet.rows.length>MAX_ROWS+40)throw fail('SHAPE',`디코딩한 첫 장(sheets[0].rows)이 1~${MAX_ROWS+40}행 배열이어야 해요.`);
@@ -442,4 +498,4 @@ function periodSummaries(dailyRows,endDay,durations=[7,30,60,90]){
   })};
 }
 
-module.exports={parseXhs,parseTelegram,parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts,parseNaverDaily,periodSummaries,MAX_ROWS,MAX_INPUT_ROWS};
+module.exports={parseXhs,parseTelegram,parseDouyinWorks,parseThreadsInsights,parseLinkedInPosts,parseTistoryDaily,parseNaverDaily,periodSummaries,MAX_ROWS,MAX_INPUT_ROWS};
