@@ -1897,8 +1897,11 @@ def 타당성검사(seq, 폴더=None):
     빠진 = []
     for d in seq.get("detail") or []:
         if not isinstance(d, dict): continue
-        사람 = [n for n in (d.get("인물") if isinstance(d.get("인물"), list) else []) if isinstance(n, str) and n.strip()]
-        if len(사람) >= 2 and 빈칸(d.get("타당성")): 빠진.append(d.get("cut"))
+        사람 = []   # 시작 · 끝 그림에만 함께 나오는 사람도 센다(「그림인물」 · 「끝그림인물」 — 11-20 GPT 검수 GA2)
+        for 칸 in ("인물", "그림인물", "끝그림인물"):
+            v = d.get(칸)
+            if isinstance(v, list): 사람 += [x for x in v if isinstance(x, str) and x.strip() and x not in 사람]
+        if len(사람) >= 2 and not _글있음(d.get("타당성")): 빠진.append(d.get("cut"))   # 빈 배열 · 객체는 글이 아니다(GA1)
     if not 빠진: return []
     날짜 = 편날짜(seq, 폴더); 등급 = "걸림" if (날짜 and 날짜 >= 타당성부터) else "주의"
     return [(등급, cut, "두 사람 이상이 한 화면인데 「타당성」 칸이 비었다 — 이 장소 · 주변 사람 수 · 관계에서 이 거리 · 자세 · 행동이 왜 말이 되는지 한 줄로 적는다"
