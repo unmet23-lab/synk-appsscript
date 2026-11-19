@@ -414,8 +414,8 @@ function createSolioBackup({
   const paths = statusPaths(env);
   // 엔진 확인마다 차례 번호를 붙여, 늦게 끝난 앞 확인이 뒤 확인의 답을 덮지 않게 한다(GPT 셋째 검수 GA1)
   let engine = null, engineAt = 0, engineLoading = null, engineAsked = 0, engineKept = 0;
-  // 「깔려 있음」은 먼저 시작한 확인의 답이어도 받는다. 이 흐름에서 엔진은 생기기만 하고, 누르는 동안 지워지는 일은 열기 실패로 드러난다(GPT 넷째 · 다섯째 검수 GA1 · GA2)
-  const keepEngine = (seq, value) => { if (seq > engineKept || (value.installed && !engine?.installed)) { engineKept = Math.max(engineKept, seq); engine = value; engineAt = now(); } };
+  // 캐시는 화면 표시에만 쓴다. 늦게 시작한 확인의 답이 이긴다. 누르기 · 열기 · 설치기 띄우기의 판단은 늘 그 순간의 새 확인으로 한다(GPT 여섯째 검수)
+  const keepEngine = (seq, value) => { if (seq > engineKept) { engineKept = seq; engine = value; engineAt = now(); } };
   let feedState = { state: 'unknown', version: null, at: 0 }, feedLoading = null;
   let install = { phase: 'idle', progress: 0, code: null, mode: null };
   let busy = null, mode = null, swept = false;
@@ -506,9 +506,27 @@ function createSolioBackup({
     return unknown ? 'unknown' : 'no';
   }
 
+  /* 엔진이 이미 있는 길: setup 요청만 쓰고 엔진 창을 연다 */
+  async function openSetup(mode, hint) {
+    setInstall('opening');
+    let name;
+    if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
+    try { name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises, stillCurrent }); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('REQUEST_FAILED'); }
+    if (!stillCurrent()) { await fsImpl.promises.unlink(path.join(paths.requests, name)).catch(() => {}); throw fault('ACCOUNT_CHANGED'); }
+    try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); }
+    catch {
+      // 열지 못했으면 요청을 남기지 않는다. 나중에 따로 연 엔진이 실패한 시도의 요청을 읽지 않게 한다(GPT 검수 GA7)
+      await fsImpl.promises.unlink(path.join(paths.requests, name)).catch(() => {});
+      throw fault('OPEN_FAILED');
+    }
+    setInstall('opened');
+  }
+
   async function installEngine(mode, hint) {
     setInstall('feed');
     const feed = await refreshFeed(true);
+    // 피드를 받지 못했어도 그사이 엔진이 깔렸으면 엔진 창을 연다(GPT 여섯째 검수 GA2)
+    if (!feed && (await engineFresh()).installed) { await openSetup(mode, hint); return; }
     if (!feed) throw fault(feedState.state === 'missing' ? 'FEED_MISSING' : feedState.state === 'invalid' ? 'FEED_INVALID' : 'NETWORK');
     if (typeof cacheRoot !== 'string' || !path.isAbsolute(cacheRoot)) throw fault('STORAGE');
     await fsImpl.promises.mkdir(cacheRoot, { recursive: true });
@@ -588,12 +606,7 @@ function createSolioBackup({
     // 누를 때는 엔진 확인을 새로 한다. 15초 전의 「없음」으로 깔린 엔진 위에 다시 받지 않게 한다(GPT 검수 GA4).
     // 지금 확인이 실패하면 아무것도 하지 않는다(GPT 다시 검수 GA5)
     // 갈래는 캐시가 아니라 이 순간의 확인 값으로 정한다. 다른 확인이 캐시를 어떤 차례로 바꿔도 이 판단은 흔들리지 않는다(GPT 넷째 검수 GA1)
-    try {
-      fresh = await engineFresh();
-      // 이 순간의 확인이 「없음」이어도, 그사이 다른 확인이 「있음」을 적었으면 깔린 것으로 본다
-      const known = !fresh.error && !fresh.installed && engine?.installed ? engine : fresh;
-      if (!fresh.error) ({ view } = await state(known));
-    } catch { view = null; }
+    try { fresh = await engineFresh(); if (!fresh.error) ({ view } = await state(fresh)); } catch { view = null; }
     if (fresh?.error) { busy = null; release(); return { ok: false, code: 'ENGINE_UNKNOWN' }; }
     if (!['no-engine', 'engine-removed', 'needs-setup'].includes(view)) { busy = null; release(); return { ok: false, code: 'NOT_NEEDED' }; }
     mode = asked;
@@ -602,21 +615,7 @@ function createSolioBackup({
       let hint = null;
       // 힌트는 누른 계정의 것만 받는다. 그사이 다른 계정으로 바뀌었으면 getHint가 null을 준다(GPT 검수 GA2, main.cjs)
       try { hint = await getHint(account); } catch { hint = null; }
-      if (view === 'needs-setup') {
-        setInstall('opening');
-        let name;
-        if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
-        try { name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises, stillCurrent }); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('REQUEST_FAILED'); }
-        if (!stillCurrent()) { await fsImpl.promises.unlink(path.join(paths.requests, name)).catch(() => {}); throw fault('ACCOUNT_CHANGED'); }
-        try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); }
-        catch {
-          // 열지 못했으면 요청을 남기지 않는다. 나중에 따로 연 엔진이 실패한 시도의 요청을 읽지 않게 한다(GPT 검수 GA7)
-          await fsImpl.promises.unlink(path.join(paths.requests, name)).catch(() => {});
-          throw fault('OPEN_FAILED');
-        }
-        setInstall('opened');
-        return;
-      }
+      if (view === 'needs-setup') { await openSetup(mode, hint); return; }
       await installEngine(mode, hint);
     })().catch(error => { setInstall('error', { code: error?.backupCode || (['ENOSPC', 'EACCES', 'EPERM', 'EROFS', 'EIO'].includes(error?.code) ? 'STORAGE' : 'NETWORK') }); })
       .finally(() => { busy = null; release(); });
@@ -626,7 +625,9 @@ function createSolioBackup({
   async function open(account, topic) {
     if (!allowed(account)) return { ok: false, code: 'NOT_AVAILABLE' };
     if (!OPEN_TOPICS.includes(topic)) return { ok: false, code: 'INVALID' };
-    const eng = await engineNow();
+    // 캐시가 「없음」이면 거절하기 전에 새로 확인한다(GPT 여섯째 검수 GA3)
+    let eng = await engineNow();
+    if (!eng.installed) eng = await engineFresh();
     if (!eng.installed) return { ok: false, code: 'NO_ENGINE' };
     try { await openExternal(`synk-workbackup:open?topic=${topic}`); return { ok: true }; } catch { return { ok: false, code: 'OPEN_FAILED' }; }
   }
