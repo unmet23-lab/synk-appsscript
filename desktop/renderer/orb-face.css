@@ -636,8 +636,9 @@ html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;
 
 /* ── 옛 런처 규칙에서 옮긴 값(PC 0.5.0 설계 4.5 R3) ──
    launcher.css의 .rows · .rows .row가 얼굴 줄에 주던 값이다. 옛 규칙과 같은 낮은 우선순위(:where)로 두어 얼굴의 다른 규칙이 그대로 이긴다.
-   901px 위의 칸 틈 24px, 줄 높이 바닥 60px, 줄 묶음 위 테두리는 그대로 둔다. 641~900px의 칸 틈 2px(트랙 ①)만 바깥 격자의 틈으로 바꾼다 */
-:where(#portal-entry) .rows{border-top:1px solid var(--ink)}
+   901px 위의 칸 틈 24px, 줄 높이 바닥 60px, 줄 묶음 위 테두리 1px은 그대로 둔다. 641~900px의 칸 틈 2px(트랙 ①)만 바깥 격자의 틈으로 바꾼다.
+   위 테두리 색은 옛 var(--ink)가 밤 테마에서 밝은 줄이 되어 얼굴의 hair로 둔다(0.5.0 최종 검수 F2) */
+:where(#portal-entry) .rows{border-top:1px solid var(--hair)}
 :where(#portal-entry) .rows .row{gap:24px;min-height:60px}
 @media (max-width:900px){:where(#portal-entry) .rows .row{column-gap:normal;row-gap:2px}}
 /* 창이 다른 창 뒤로 가면 움직임을 멈춘다(convenience.mjs가 data-background를 세운다) */

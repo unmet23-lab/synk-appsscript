@@ -1273,9 +1273,14 @@ function noticeRow(s, st, now) {
   ];
   const care = careOn(s.care) && s.member === true ? s.care : null;
   if (care) {
-    const at = String(care.hour ?? 9).padStart(2, '0') + ':' + String(care.minute ?? 0).padStart(2, '0'), cap = s.desktop?.capabilities || {};
-    const desc = care.enabled === true ? '매일 ' + at + '(한국 시간)에 플레저에 저장한 일정과 챙길 일을 PC 알림으로 알려 드립니다. PC를 끄거나 SYNK를 완전히 종료한 동안에는 받을 수 없습니다'
-      : '매일 ' + at + '(한국 시간)에 플레저에 저장한 일정과 챙길 일을 알려 드립니다. 켜면 창을 닫아도 트레이에 남' + (cap.launchAtLogin ? '고, 컴퓨터를 켤 때 창 없이 함께 켜집니다' : '습니다');
+    const at = String(care.hour ?? 9).padStart(2, '0') + ':' + String(care.minute ?? 0).padStart(2, '0'), cap = s.desktop?.capabilities || {}, p = s.desktop?.preferences || {};
+    // 본체(main.cjs careNotifications.configure)는 켤 때 트레이에 남기기를 켜고, 자동 시작이 꺼져 있을 때만 자동 시작과 트레이로 시작을 함께 켠다.
+    // 끌 때는 아무것도 되돌리지 않는다. 그래서 켜기 전 글은 지금 설정으로 고르고, 켠 뒤 글에는 남는 설정을 적는다(0.5.0 최종 검수 F4)
+    // 트레이가 없는 PC(맥 등)에는 트레이 말을 하지 않는다(카본 A1)
+    const boot = [cap.tray && '켜면 창을 닫아도 트레이에 남습니다', cap.launchAtLogin && p.launchAtLogin !== true && (cap.tray ? '자동 시작도 함께 켜져, 컴퓨터를 켤 때 창 없이 트레이로 켜집니다' : '켜면 자동 시작도 함께 켜져, 컴퓨터를 켤 때 SYNK도 켜집니다')].filter(Boolean).map(x => '. ' + x).join('');
+    const kept = [cap.tray && '트레이', cap.launchAtLogin && '자동 시작'].filter(Boolean).join('와 ');
+    const desc = care.enabled === true ? '매일 ' + at + '(한국 시간)에 플레저에 저장한 일정과 챙길 일을 PC 알림으로 알려 드립니다. PC를 끄거나 SYNK를 완전히 종료한 동안에는 받을 수 없습니다' + (kept ? '. 꺼도 「켜고 닫을 때」의 ' + kept + ' 설정은 그대로 둡니다' : '')
+      : '매일 ' + at + '(한국 시간)에 플레저에 저장한 일정과 챙길 일을 알려 드립니다' + boot;
     more.push(['tog', '플레저 PC 알림', desc, care.enabled === true, 'care', st.busy === 'notice:care' ? 'off' : '']);
   }
   if (s.tipsOff === true || s.tipsOff === false) more.push(['tog', '구독 팁', '구독 줄과 요금 줄 안쪽에 아끼는 법과 막히지 않는 법을 한 줄씩 알려 드립니다', s.tipsOff === false, 'tips', st.busy === 'notice:tips' ? 'off' : '']);

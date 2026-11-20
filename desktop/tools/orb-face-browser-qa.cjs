@@ -202,15 +202,21 @@ if(!process.versions.electron){
           check('9-toast no signed-in toast over the face',await w.js("document.getElementById('toast').hidden||!document.getElementById('toast').textContent.includes('로그인했어요')"));
           await captureSizes(w,'solio-ready');
           // 21. 옛 런처의 .rows · .rows .row 규칙을 걷은 뒤에도 얼굴 줄이 같은 값을 받는다(PC 0.5.0 설계 4.5 R3).
-          //     창이 앱 최소 폭보다 좁아지지 않으므로 기대는 실제 CSS 폭(innerWidth)으로 정한다. 901px 위는 칸 틈 24px · 줄 높이 바닥 60px · 줄 묶음 위 테두리 1px이다. 641~900px은 2px 대신 바깥 격자의 틈(normal)을, 640px 아래는 얼굴의 16px을 쓴다
+          //     901px 위는 칸 틈 24px · 줄 높이 바닥 60px · 줄 묶음 위 테두리 1px이다. 641~900px은 2px 대신 바깥 격자의 틈(normal)을, 640px 아래는 얼굴의 16px · 10px을 쓴다.
+          //     숨은 창은 크기를 바꿔도 새 판을 그리기 전까지 innerWidth가 그대로일 때가 있다. 다시 그리기를 청하며 innerWidth가 W가 될 때까지 기다리고, 잰 폭이 W인지도 단언한다(0.5.0 최종 검수 F1)
+          const rowsLook=W=>`(()=>{const rows=document.querySelector('#portal-entry .rows:not([hidden])'),row=rows?.querySelector(':scope > .row');if(!row)return {W:${W},iw:innerWidth,missing:true};const a=getComputedStyle(rows),b=getComputedStyle(row);return {W:${W},iw:innerWidth,theme:document.documentElement.dataset.theme,top:a.borderTopWidth+' '+a.borderTopStyle,topColor:a.borderTopColor,rowTopColor:b.borderTopColor,col:b.columnGap,rowGap:b.rowGap,min:b.minHeight};})()`;
+          const sizeTo=async(W,Hh)=>{w.win.setContentSize(W,Hh);for(let i=0;i<60&&(await w.js('innerWidth'))!==W;i++){w.win.webContents.invalidate();if(i===20)await w.win.webContents.capturePage(undefined,{stayHidden:true,stayAwake:true});await wait(50);}await wait(120);};
           const rowStyle=[];
-          for(const [W,Hh] of [[1440,900],[960,680],[873,618],[768,544],[640,453],[390,844]]){
-            w.win.setContentSize(W,Hh);await wait(380);
-            rowStyle.push(await w.js(`(()=>{const rows=document.querySelector('#portal-entry .rows:not([hidden])'),row=rows?.querySelector(':scope > .row');if(!row)return {W:${W},iw:innerWidth,missing:true};const a=getComputedStyle(rows),b=getComputedStyle(row);return {W:${W},iw:innerWidth,top:a.borderTopWidth+' '+a.borderTopStyle,col:b.columnGap,rowGap:b.rowGap,min:b.minHeight};})()`));
-          }
-          w.win.setContentSize(1440,900);await wait(300);
+          for(const [W,Hh] of [[1440,900],[960,680],[873,618],[768,544],[640,453],[390,844]]){await sizeTo(W,Hh);rowStyle.push(await w.js(rowsLook(W)));}
           const wantRow=W=>W>900?{col:'24px',rowGap:'24px'}:W>640?{col:'normal',rowGap:'2px'}:{col:'16px',rowGap:'10px'};
-          check('21 the face rows keep the old values above 900 px, take the outer grid gap at 641~900 px and their own gap below',rowStyle.every(r=>!r.missing&&r.top==='1px solid'&&r.min==='60px'&&r.col===wantRow(r.iw).col&&r.rowGap===wantRow(r.iw).rowGap),rowStyle);
+          check('21 the face rows keep the old values above 900 px, take the outer grid gap at 641~900 px and their own gap below',rowStyle.every(r=>!r.missing&&r.iw===r.W&&r.top==='1px solid'&&r.min==='60px'&&r.col===wantRow(r.W).col&&r.rowGap===wantRow(r.W).rowGap),rowStyle);
+          // 전에 「밤」을 고른 사람(어두운 Windows의 「기기 설정」도 같은 색)에게도 줄 묶음 위 테두리가 줄의 hair 선과 같은 색이다. 옛 값 var(--ink)는 밤에 밝은 줄이 됐다(0.5.0 최종 검수 F2)
+          await sizeTo(1440,900);
+          const themeWas=await w.js('document.documentElement.dataset.theme');
+          const rowTheme=[];
+          for(const theme of ['day','night']){await w.js(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);await wait(60);rowTheme.push(await w.js(rowsLook(1440)));if(theme==='night')await capture(w,'solio-rows-night-1440');}
+          await w.js(typeof themeWas==='string'?`document.documentElement.dataset.theme=${JSON.stringify(themeWas)}`:'delete document.documentElement.dataset.theme');
+          check('21 in day and night the rows top border has the same hair colour as the row lines',rowTheme.length===2&&rowTheme.every(r=>!r.missing&&r.top==='1px solid'&&r.topColor===r.rowTopColor)&&rowTheme[0].topColor===rowTheme[1].topColor,rowTheme);
           // 15. 화면 확대
           for(const z of [1.25,1.5]){w.win.webContents.setZoomFactor(z);await wait(500);await capture(w,'solio-zoom-'+Math.round(z*100));}
           w.win.webContents.setZoomFactor(1);await wait(300);

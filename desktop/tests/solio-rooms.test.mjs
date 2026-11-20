@@ -774,6 +774,23 @@ test('settings room: notices say what the banner really does, the quiet hours ha
   for (const bad of [{ quietStart: '', quietEnd: '08:00' }, { quietStart: '24:00', quietEnd: '08:00' }, { quietStart: '22:00', quietEnd: '8시' }]) assert.equal(checkQuiet(bad).say, '시각은 22:00처럼 넣어 주세요.');
 });
 
+test('settings room: the 플레저 PC 알림 words follow what the main process changes and say what stays after turning it off (0.5.0 최종 검수 F4)', () => {
+  const careDesc = (desktop, enabled = false) => togs(setRow(setRoom({ desktop, care: { ok: true, available: true, signedIn: true, enabled, hour: 9, minute: 0 } }), 'notice')).find(t => t[1] === '플레저 PC 알림')[2];
+  const head = '매일 09:00(한국 시간)에 플레저에 저장한 일정과 챙길 일을 알려 드립니다. 켜면 창을 닫아도 트레이에 남습니다';
+  // 자동 시작이 꺼져 있으면 본체가 자동 시작과 트레이로 시작을 함께 켠다
+  assert.equal(careDesc(deskSnap()), head + '. 자동 시작도 함께 켜져, 컴퓨터를 켤 때 창 없이 트레이로 켜집니다');
+  // 자동 시작이 이미 켜져 있으면 본체가 트레이로 시작을 건드리지 않으므로 「창 없이」라고 하지 않는다
+  for (const startHidden of [false, true]) assert.equal(careDesc(deskSnap({ launchAtLogin: true, startHidden })), head, 'startHidden ' + startHidden);
+  assert.equal(careDesc(deskSnap({}, { launchAtLogin: false })), head, 'a build without the login item only keeps the tray');
+  // 트레이가 없는 PC에는 트레이 말을 하지 않는다(카본 A1)
+  assert.equal(careDesc(deskSnap({}, { tray: false })), '매일 09:00(한국 시간)에 플레저에 저장한 일정과 챙길 일을 알려 드립니다. 켜면 자동 시작도 함께 켜져, 컴퓨터를 켤 때 SYNK도 켜집니다');
+  assert.equal(careDesc(deskSnap({}, { tray: false, launchAtLogin: false })), '매일 09:00(한국 시간)에 플레저에 저장한 일정과 챙길 일을 알려 드립니다');
+  const on = '매일 09:00(한국 시간)에 플레저에 저장한 일정과 챙길 일을 PC 알림으로 알려 드립니다. PC를 끄거나 SYNK를 완전히 종료한 동안에는 받을 수 없습니다';
+  assert.equal(careDesc(deskSnap({ launchAtLogin: true, startHidden: true }), true), on + '. 꺼도 「켜고 닫을 때」의 트레이와 자동 시작 설정은 그대로 둡니다');
+  assert.equal(careDesc(deskSnap({}, { launchAtLogin: false }), true), on + '. 꺼도 「켜고 닫을 때」의 트레이 설정은 그대로 둡니다');
+  assert.equal(careDesc(null, true), on, 'without desktop settings it names none');
+});
+
 test('settings room: draft recovery is locked for a guest or without encrypted storage', () => {
   const on = setRow(setRoom(), 'draft');
   assert.deepEqual([on.mid, on.val, on.unread, togs(on)[0].slice(1, 6)], ['창이 갑자기 닫혀도 쓰던 글을 7일 동안 되살립니다', '켜짐', false, ['되살리기', '이 PC에 암호화해 두고, 끄거나 로그아웃하면 지웁니다', true, 'draft', '']]);

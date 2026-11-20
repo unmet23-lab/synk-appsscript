@@ -168,7 +168,8 @@ test('the old account page opens an installed Workspace and says why it cannot o
   assert.deepEqual(launched,['messenger']);assert.deepEqual(installed.toasts,['Workspace를 열었습니다.']);
   const missing=await fixture({initialAuth:account('member-g'),clients:[{id:'messenger',status:'not-installed',canLaunch:false,installer:{}}]});
   await missing.run('launchWorkspace()');
-  assert.match(missing.toasts[0],/설치돼 있지 않습니다/);
+  // synk.im에는 Workspace 설치 파일이 없어 웹 계정 화면과 같은 말로 브라우저의 Workspace 주소를 안내한다(0.5.0 최종 검수 F5)
+  assert.equal(missing.toasts[0],'이 PC에 Workspace 앱이 설치돼 있지 않습니다. 회사에서 안내받은 Workspace 주소로 브라우저에서 열어 주세요.');
   const denied=await fixture({initialAuth:account('member-h',['pulse'])});
   await denied.run('launchWorkspace()');
   assert.match(denied.toasts[0],/열 수 없습니다/);

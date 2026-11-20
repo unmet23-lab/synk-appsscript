@@ -1,8 +1,9 @@
 'use strict';
-// 「내 계정」 in a real Chrome with a synthetic bridge (no Electron, sign-in, account server or network):
-// the renderer is served by renderer-preview.cjs and the bridge answers with fixed synthetic accounts.
-//   node desktop/tools/account-page-browser-qa.cjs <playwright module dir> <out dir>
-// Prints one JSON line per check and writes screenshots (1440 and 390 wide).
+// 옛 「내 계정」 화면을 실제 Chrome에서 합성 다리로 본다(Electron · 로그인 · 계정 서버 · 네트워크 없음).
+// renderer-preview.cjs가 렌더러를 내주고, 다리는 고정된 합성 계정으로 답한다.
+// 0.5.0부터 옛 화면은 검정 구 얼굴의 내 계정 방 → 「내 데이터」 → 마을 기록 「열기」로만 열린다. 이 도구도 그 길로 들어간다(0.5.0 최종 검수 F3).
+//   node desktop/tools/account-page-browser-qa.cjs <playwright 모듈 폴더> <출력 폴더>
+// 확인마다 JSON 한 줄을 찍고 캡처(1440 · 390 폭)를 쓴다.
 const {spawn}=require('node:child_process'),fs=require('node:fs'),path=require('node:path');
 const [playwrightDir,outDir]=process.argv.slice(2);
 if(!playwrightDir||!outDir)throw new Error('usage: account-page-browser-qa.cjs <playwright module dir> <out dir>');
@@ -19,7 +20,7 @@ const scenarios={
 // Runs in the page before the renderer: the platform's preload bridge, answering from a synthetic account.
 function bridgeScript(name,scenario){
   return `(()=>{const s=${JSON.stringify(scenario)},id=${JSON.stringify(ID)},calls=[];window.__accountQaCalls=calls;
-  const auth={configured:true,status:'signed-in',signedIn:true,secureStorage:true,sessionGeneration:1,account:{synk_user_id:id,display_name:'합성 회원'},learningSync:true,library:{status:s.status==='active'?'ready':'unavailable',appIds:s.status==='active'?s.appIds:[]}};
+  const auth={configured:true,status:'signed-in',signedIn:true,secureStorage:true,sessionGeneration:1,accountGeneration:'10000000-0000-4000-8000-000000000001',account:{synk_user_id:id,display_name:'합성 회원'},learningSync:true,library:{status:s.status==='active'?'ready':'unavailable',appIds:s.status==='active'?s.appIds:[]}};
   const listeners=new Set(),day=n=>new Date(Date.now()-n*3600000).toISOString();
   // SYNK TOWN's 「마을 기록」 card as talk's records route sends it (W6c) — a deletion request closes it (403 ACCOUNT_UNAVAILABLE).
   let townRev=4,townKnown=true,townBands=true,townSeen=true;
@@ -40,6 +41,8 @@ function bridgeScript(name,scenario){
       if(operation==='townRights'){if(params.expectedRevision!==townRev)return {ok:false,error:{code:'stale-command'}};if(params.type==='MEMORY_FORGET')townKnown=false;if(params.type==='PREF_VISIT_BANDS')townBands=params.payload.on;if(['SEEN_CLEAR','MEMORY_CLEAR'].includes(params.type))townSeen=false;townRev++;return town();}if(operation==='updateProfile')return {ok:true,account:{...view().account,profile:{...view().account.profile,...params.profile}}};return {ok:true};},
     accountIdentity:async()=>{calls.push('identity');return {ok:true,accountId:id,email:'member@synthetic.test',newEmail:null,createdAt:'2026-09-30T23:10:00Z',identities:s.identities.map(provider=>({provider,email:provider==='google'?'member.google@synthetic.test':'member@synthetic.test',createdAt:'2026-10-01T00:00:00Z'}))};},
     authSecurity:async()=>{calls.push('authSecurity');return {ok:true};},authSignOut:async()=>({ok:true,serverRevoked:true,serverSessionRevoked:true}),
+    // 얼굴은 들어올 때 배정된 작업 공간을 묻는다. 배정이 없으면 공간 고르기를 건너 솔리오로 간다
+    resolveCompanyEntryDestinations:async req=>({ok:true,requestId:req.requestId,accountGeneration:req.accountGeneration,result:{status:'resolved',destinations:[],unavailable:[]}}),cancelCompanyEntry:async()=>null,
   });})();`;
 }
 const results=[];const check=(name,ok,details={})=>{results.push({name,ok:!!ok,...details});console.log(JSON.stringify({name,ok:!!ok,...details}));};
@@ -55,15 +58,19 @@ const results=[];const check=(name,ok,details={})=>{results.push({name,ok:!!ok,.
       page.on('response',response=>{if(response.status()>=400&&new URL(response.url()).pathname!=='/favicon.ico')errors.push(response.status()+' '+new URL(response.url()).pathname);});
       await page.addInitScript(bridgeScript(name,scenario));await page.goto(base,{waitUntil:'networkidle'});
       await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
-      // Signed in: the title-bar account (or 설정 → 내 계정 on a narrow window) opens the screen.
-      await page.evaluate(()=>document.getElementById(innerWidth>760?'account-button':'settings-login').click());
-      await page.waitForFunction(()=>!document.getElementById('view-account').hidden&&/member@synthetic\.test/.test(document.getElementById('view-account').textContent));
+      // 얼굴의 구를 눌러 「계정」으로 내 계정 방을 열고, 「내 데이터」 줄을 펼쳐 마을 기록 「열기」를 누른다
+      await page.waitForFunction(()=>document.documentElement.dataset.orbClient==='app'&&document.querySelector('#portal-entry .orb-stage')?.dataset.ui==='app');
+      await page.click('#portal-entry .here-orb');await page.waitForFunction(()=>document.querySelector('#portal-entry .orb-stage')?.dataset.fan==='1');
+      await page.click('#portal-entry .fan [data-foot="account"]');await page.waitForFunction(()=>document.querySelector('#portal-entry [data-room=account]')?.hidden===false&&!!document.querySelector('#portal-entry [data-room=account] button.row[data-key=data]'));
+      await page.click('#portal-entry [data-room=account] button.row[data-key=data]');
+      const town=page.locator('#portal-entry [data-room=account] [data-room-act=town]');await town.waitFor({state:'visible'});await town.click();
+      await page.waitForFunction(()=>document.documentElement.dataset.orbClient==='legacy'&&!document.getElementById('view-account').hidden&&/member@synthetic\.test/.test(document.getElementById('view-account').textContent));
       const calls=await page.evaluate(()=>window.__accountQaCalls.slice()),text=await page.evaluate(()=>document.getElementById('view-account').innerText);
       const overflow=await page.evaluate(()=>Math.max(0,document.documentElement.scrollWidth-innerWidth,document.getElementById('main').scrollWidth-document.getElementById('main').clientWidth));
-      const settingsLit=await page.evaluate(()=>document.querySelector('.nav-links [data-view=settings]').getAttribute('aria-current')==='page');
+      const legacy=await page.evaluate(()=>({mode:document.documentElement.dataset.orbClient,view:document.documentElement.dataset.view}));
       // The app scrolls inside #main; a tall window shows the whole screen in one picture.
       await page.setViewportSize({width,height:width>500?2700:3600});await page.waitForTimeout(150);await page.screenshot({path:path.join(outDir,`account-${name}-${width}.png`)});await page.setViewportSize({width,height:width>500?1000:844});
-      check(`${name} ${width}: opens with accountView and identity, never load`,calls.includes('accountView')&&calls.includes('identity')&&!calls.slice(calls.indexOf('accountView')).includes('load')&&overflow===0&&settingsLit&&!errors.length,{overflow,settingsLit,errors,screenshot:`account-${name}-${width}.png`});
+      check(`${name} ${width}: 내 계정 방의 마을 기록이 옛 화면을 accountView와 identity로 열고 load는 부르지 않는다`,calls.includes('accountView')&&calls.includes('identity')&&!calls.slice(calls.indexOf('accountView')).includes('load')&&overflow===0&&legacy.mode==='legacy'&&legacy.view==='account'&&!errors.length,{overflow,legacy,errors,screenshot:`account-${name}-${width}.png`});
       if(name==='student'&&width===1440){
         check('student: profile, sessions and records read as the member sees them',['학생 · S-0412','member@synthetic.test','이 PC','SYNK WORLD','학습 기록 연결','켜져 있어요','지우기 요청…','비밀번호 바꾸기','2026년 10월 1일'].every(part=>text.includes(part)),{});
         await page.click('[data-account-action=name-edit]');await page.fill('#account-name-input','새 합성 이름');await page.screenshot({path:path.join(outDir,'account-student-name-edit-1440.png')});
