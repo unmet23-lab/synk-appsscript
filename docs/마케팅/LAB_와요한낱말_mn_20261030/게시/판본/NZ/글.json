@@ -111,8 +111,8 @@
     {
       "id": "title",
       "칸": "머리",
-      "글": "English changes the word. Korean doesn’t.",
-      "원문": "영어는 낱말을 바꾼다. 한국어는 안 바꾼다.",
+      "글": "5 different English words. 1 Korean word.",
+      "원문": "서로 다른 영어 낱말 5개. 한국어 낱말 1개.",
       "초": [
         1.45,
         5.93

@@ -111,8 +111,8 @@
     {
       "id": "title",
       "칸": "머리",
-      "글": "5 sentences. Same Korean word.",
-      "원문": "다섯 문장. 같은 한국어 낱말.",
+      "글": "English uses 5 words. Korean uses 1.",
+      "원문": "영어는 낱말 5개를 쓴다. 한국어는 1개를 쓴다.",
       "초": [
         1.3,
         5.78

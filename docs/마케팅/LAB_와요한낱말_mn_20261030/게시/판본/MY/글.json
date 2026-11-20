@@ -83,7 +83,7 @@
         "줄높이": 1.21,
         "최대줄": 2,
         "가운데": true,
-        "글자크기": 37,
+        "글자크기": 34,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -684,14 +684,14 @@
     {
       "id": "게시글.youtube.제목.1",
       "칸": "게시글",
-      "글": "Hujan, salji, ngantuk, telefon pun “datang” dalam bahasa Korea 📞 #learnkorean",
-      "원문": "비, 눈, 졸음, 전화까지 한국어로는 「온다」 📞 #learnkorean"
+      "글": "Hujan, salji, rasa mengantuk, malah panggilan telefon pun “datang” dalam bahasa Korea 📞 #learnkorean",
+      "원문": "비, 눈, 졸음, 심지어 걸려 온 전화까지 한국어로는 「온다」 📞 #learnkorean"
     },
     {
       "id": "게시글.youtube.본문.1",
       "칸": "게시글",
-      "글": "Kawan, hujan, salji, ngantuk, telefon — BM guna 4 perkataan. Bahasa Korea cuma satu: 와요 (wa-yo).",
-      "원문": "친구, 비, 눈, 졸음, 전화 — 말레이어(BM)는 낱말 4개를 쓴다. 한국어는 하나뿐: 와요."
+      "글": "Kawan datang, hujan dan salji turun, saya mengantuk, telefon berbunyi — BM guna 4 perkataan berbeza. Bahasa Korea pula cuma guna satu: 와요 (wa-yo).",
+      "원문": "친구가 오고, 비와 눈이 내리고, 나는 졸리고, 전화가 울린다 — 말레이어(BM)는 서로 다른 낱말 4개를 쓴다. 한국어는 하나만 쓴다: 와요."
     },
     {
       "id": "게시글.youtube.본문.2",

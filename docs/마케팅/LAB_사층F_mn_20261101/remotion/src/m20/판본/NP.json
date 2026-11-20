@@ -130,7 +130,7 @@
   "lang": "ne",
   "font": "'Inter Tight', 'Nirmala UI', 'SUIT', sans-serif",
   "lineH": 1.45,
-  "hook": "लिफ्टमा 4 तल्ला खोई?",
+  "hook": "चौथो तला खोइ?",
   "hookSize": 54,
   "counts": [
     "il",
@@ -142,8 +142,8 @@
   "deathSize": 76,
   "sameSound": "उस्तै सुनिन्छ!",
   "sameSize": 49,
-  "floorA": "4 तल्ला =",
-  "floorF": "भूतहरूको तल्ला",
+  "floorA": "चौथो तला =",
+  "floorF": "भूतहरूको तला",
   "floorSize": 59,
   "so": "4 → F",
   "soSize": 59,
@@ -163,7 +163,7 @@
   "helloVo": "",
   "helloSec": 1,
   "_원문": {
-    "hook": "엘리베이터에 4층은 어디 있지?",
+    "hook": "4층은 어디 있지?",
     "death": "죽음 =",
     "sameSound": "똑같이 들린다!",
     "floorA": "4층 =",
