@@ -303,6 +303,17 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
       profiles.assertOutput(place.parent);
       return launchJob(engine, () => engine.restoreLatest(place));
     }, { codes: true });
+    // 대량 삭제 · 변경 멈춤 (4.4) 「지워지기 전으로 되살리기」: the folders that changed, from the backup the hold keeps, into a
+    // new folder (`place` as restoreLatest). 「확인을 마침」: the change is the person's, and the backups before it may go.
+    const massInput = (input, keys) => { if (input !== undefined && input !== null && (typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some(k => !keys.includes(k)))) throw Object.assign(new Error('요청을 확인하지 못했습니다.'), { code: 'BAD_INPUT' }); return input || {}; };
+    handle('restoreMassBefore', async ({ engine }, input) => {
+      const given = massInput(input, ['place', 'folder', 'sub']);
+      if (!engine.config?.massHold) throw Object.assign(new Error('한꺼번에 지워지기 전의 판이 없습니다.'), { code: 'NOT_FOUND' });
+      const place = await restorePlace(given, '지워지기 전 파일을 담을 별도 폴더 선택'); if (!place) throw new Error('복구를 취소했습니다.');
+      profiles.assertOutput(place.parent);
+      return launchJob(engine, () => engine.restoreMassBefore({ ...place, folder: given.folder, sub: given.sub }));
+    }, { codes: true });
+    handle('massConfirm', async ({ engine }, input) => { massInput(input, []); await engine.massConfirm(); return state(); }, { codes: true });
     function catalogInput({ engine }, input, keys, required = keys) {
       fileSelection.request(input, keys, required);
       if (!['local', 'b2'].includes(input.profile) || input.profile !== profiles.profile || engine !== profiles.engines[input.profile]) throw fileSelection.issue('CATALOG_EXPIRED');

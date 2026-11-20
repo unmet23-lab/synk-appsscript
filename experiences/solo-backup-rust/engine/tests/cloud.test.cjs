@@ -25,7 +25,7 @@ async function fixture(extra = {}) {
   await fs.mkdir(source); await fs.mkdir(keys); await fs.writeFile(path.join(source,'fixture.txt'),'fixture only');
   const calls = [];
   const engine = new BackupEngine({ stateDir:path.join(root,'state'), resticPath:'fixture', providerType:'b2', secretStore, intervalMs:3600000,
-    probe:async()=>({serverTime:Date.now()}), runner:async (args, options)=>{ calls.push({args,options}); if (args[0]==='cat') return JSON.stringify({id}); return ''; }, ...extra });
+    probe:async()=>({serverTime:Date.now()}), runner:async (args, options)=>{ calls.push({args,options}); if (args[0] === 'diff') { await options.consumeStdout(require('node:stream').Readable.from([Buffer.from(JSON.stringify({ message_type: 'statistics', changed_files: 0, added: { files: 0, bytes: 0 }, removed: { files: 0, dirs: 0, others: 0, bytes: 0 } }))])); return ''; } if (args[0]==='cat') return JSON.stringify({id}); return ''; }, ...extra });
   await engine.open(); return { engine, root, source, keys, calls };
 }
 const setup = f => f.engine.setupCloud({sources:[f.source],endpoint:provider.endpoint,bucket:provider.bucket,credentials:key});

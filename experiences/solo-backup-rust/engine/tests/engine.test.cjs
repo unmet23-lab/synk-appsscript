@@ -522,6 +522,54 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     await engine.backupNow();
     assert.equal(engine.config.lastPartial, null);
   });
+  // 대량 삭제 · 변경 멈춤 (4.4) with the real `restic diff`: most files of the folder go at once. The next clean-up compares
+  // the backup it would forget with the newest, holds every backup and keeps the one before by number; 「지워지기 전으로
+  // 되살리기」 brings the folder back from it; 「확인을 마침」 lets the clean-up go on from there. A handful of files here, so
+  // the count threshold is lowered; the shares are the real ones.
+  await t.test('a backup that lost most of its files holds the clean-up and keeps the one before; restoring from it and confirming (4.4)', async () => {
+    engine.massLimits = { files: 10 };
+    const many = path.join(source, '많은 기록');
+    await fs.mkdir(many);
+    for (let i = 0; i < 30; i++) await fs.writeFile(path.join(many, `기록 ${i}.txt`), `기록 ${i}`);
+    clock += 3 * DAY; await engine.backupNow();
+    const full = engine.config.lastBackup.id;
+    assert.equal(engine.config.massHold ?? null, null, 'files added are no hold');
+    // restic tells which folders a backup holds: the folder, the drive it is on (as a drive chosen whole is named), not a
+    // path it lacks (Fable 후속 3).
+    const tree = '/' + source.replace(/^([A-Za-z]):/, '$1').replaceAll('\\', '/').replace(/\/+$/, ''), drive = tree.slice(0, 2), lacks = tree + '/없는 폴더';
+    const holds = await engine.massHas(full, [tree, drive, lacks], new Map());
+    assert.deepEqual([holds(tree), holds(drive), holds(lacks)], [true, true, false]);
+    // Every backup folder counts (this engine backs up two by now).
+    let total = 0; for (const p of engine.config.sources) total += (await files(p)).length;
+    for (let i = 0; i < 25; i++) await fs.rm(path.join(many, `기록 ${i}.txt`));
+    assert.ok(25 >= total * 0.3, 'the share the threshold needs');
+    clock += 3600000; await engine.backupNow();
+    const hold = engine.config.massHold, gone = engine.config.lastBackup.id;
+    assert.deepEqual([hold?.kind, hold?.removed, hold?.changed, hold?.beforeId, hold?.afterId, hold?.before], ['removed', 25, 0, full, gone, total]);
+    assert.equal(hold.path, source);
+    assert.equal(hold.left, (await files(source)).length, 'the files of that folder in the newest backup');
+    assert.deepEqual(hold.folders, [{ path: source, removed: 25, changed: 0 }]);
+    assert.ok(hold.list.some(i => i.name === '많은 기록/기록 0.txt' && i.kind === 'removed'));
+    // Nothing goes while it waits, however late.
+    clock += 3 * DAY; await engine.backupNow();
+    assert.ok((await engine.snapshots()).some(s => s.id === full), 'the backup before is kept by number');
+    // 「지워지기 전으로 되살리기」: that folder from the backup before, whole, into a new folder.
+    await engine.restoreMassBefore({ parent: restore });
+    const back = engine.config.lastRestore;
+    assert.equal(back.mass.beforeId, full);
+    const mapping = JSON.parse(await fs.readFile(path.join(back.path, '복구경로.json'), 'utf8'));
+    assert.deepEqual(mapping.map(m => m.original), [source]);
+    for (let i = 0; i < 30; i++) assert.equal(await fs.readFile(path.join(back.path, mapping[0].restoredFolder, '많은 기록', `기록 ${i}.txt`), 'utf8'), `기록 ${i}`);
+    assert.ok(engine.config.massHold, 'the hold stays until the person says they are done');
+    // 「확인을 마침」: the clean-up goes on; the next comparison starts from the backup the hold saw last.
+    await engine.massConfirm();
+    clock += 3600000; await engine.backupNow();
+    assert.equal(engine.config.massHold ?? null, null);
+    assert.ok(!(await engine.snapshots()).some(s => s.id === full), 'the backup before goes now');
+    delete engine.massLimits;
+    await fs.rm(many, { recursive: true });
+    await engine.backupNow();
+  });
   await t.test('real pack corruption fails a full data check and disables pruning', async () => {
     const packs = (await files(path.join(engine.config.repository, 'data'))).filter(p => /^[a-f0-9]{64}$/.test(path.basename(p)));
     assert.ok(packs.length); const handle = await fs.open(packs[0], 'r+'); await handle.write(Buffer.from('CORRUPTED-FIXTURE'), 0, 17, 0); await handle.close();

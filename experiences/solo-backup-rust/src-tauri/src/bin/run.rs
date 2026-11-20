@@ -39,7 +39,7 @@ use std::{fs::{self, File}, path::{Path, PathBuf}, sync::{Arc, Mutex}, time::{Du
 const TRIGGERS: [&str; 7] = ["hourly", "logon", "wake", "unlock", "manual", "request", "test"];
 /// Per-profile fields copied into runs.jsonl. Everything else the worker sends
 /// back stays out, so no file name, path or secret reaches the record.
-const FIELDS: [&str; 17] = ["outcome", "reason", "exitCode", "newSnapshot", "files", "bytes", "filesNew", "filesChanged", "filesUnmodified", "dataAdded", "durationMs", "nextAt", "unlock", "lastBackupMs", "automatic", "unreadable", "missing"];
+const FIELDS: [&str; 18] = ["outcome", "reason", "exitCode", "newSnapshot", "files", "bytes", "filesNew", "filesChanged", "filesUnmodified", "dataAdded", "durationMs", "nextAt", "unlock", "lastBackupMs", "automatic", "unreadable", "missing", "mass"];
 /// The run's overall result is its most notable profile result.
 const ORDER: [&str; 7] = ["failed", "partial", "fill", "busy", "complete", "not-due", "skipped"];
 
@@ -214,6 +214,10 @@ fn problems(profiles: &Value, now: u64) -> (Vec<notify::Notice>, Vec<&'static st
     // A profile the person set aside (off · paused · read-only) may be the one a notice was about: while there is one,
     // the problem is not judged resolved and its record stays (끝판 b B4).
     let set_aside = all.iter().any(|p| p["outcome"] == "skipped" && ["off", "read-only", "paused"].contains(&p["reason"].as_str().unwrap_or("")));
+    // 「한꺼번에 지워짐」 (4.4): every profile's result says whether its clean-up holds (the engine adds it to any result,
+    // a skipped or manual one too), so it is told and judged from all of them, not only the watched ones (GPT GA10).
+    let mass = all.iter().any(|p| p["mass"] == 1);
+    let any = !all.is_empty();
     let watched: Vec<&Value> = all.into_iter().filter(|p| p["automatic"] == true && !chosen(p)).collect();
     if watched.iter().any(|p| p["lastBackupMs"].is_u64()) { found.push(notify::first_backup()); }
     // 「몇 파일만 못 지킴」: a partial snapshot this run kept (its count is there only when its list was saved). A run
@@ -223,8 +227,12 @@ fn problems(profiles: &Value, now: u64) -> (Vec<notify::Notice>, Vec<&'static st
     if watched.iter().any(|p| p["outcome"] == "partial" && p["unreadable"].is_u64() && !filled(p)) { found.push(notify::partial()); }
     // 「폴더를 찾을 수 없음」: a folder this run did not find, whether the others were backed up or none was there.
     if watched.iter().any(|p| p["missing"].as_u64().is_some_and(|n| n > 0)) { found.push(notify::missing()); }
+    if mass { found.push(notify::mass()); }
     let backed_up = |p: &Value| p["outcome"] == "complete" || (p["outcome"] == "partial" && p["unreadable"].is_u64());
-    if !watched.is_empty() && !set_aside && watched.iter().all(|p| backed_up(p)) { judged.push("partial"); judged.push("missing"); }
+    if !watched.is_empty() && !set_aside && watched.iter().all(|p| backed_up(p)) {
+        judged.push("partial"); judged.push("missing");
+    }
+    if any && !mass { judged.push("mass"); }
     if !watched.is_empty() {
         if !set_aside { judged.push("stale"); }
         // Late: three days past the last backup, or stopped for the clock with the clock behind that backup — such a
@@ -531,13 +539,21 @@ fn main() { std::process::exit(run()); }
         let names = |found: &[notify::Notice]| found.iter().map(|n| (n.problem, n.body)).collect::<Vec<_>>();
         let first = ("first-backup", notify::first_backup().body);
         let (found, judged) = problems(&json!({"local": {"outcome": "complete", "newSnapshot": true, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first], vec!["partial", "missing", "stale"]));
+        assert_eq!((names(&found), judged), (vec![first], vec!["partial", "missing", "mass", "stale"]));
+        // 「한꺼번에 지워짐」 (4.4): told while the hold waits, on any run the engine answered; resolved once none reports it.
+        let (found, judged) = problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now, "mass": 1}}), now);
+        assert_eq!((names(&found), judged.contains(&"mass")), (vec![first, ("mass", notify::mass().body)], false));
+        let (found, _) = problems(&json!({"local": {"outcome": "failed", "automatic": true, "lastBackupMs": now, "mass": 1}}), now);
+        assert!(names(&found).contains(&("mass", notify::mass().body)));
         // From the state: a later run with no new snapshot still finds it (the ledger keeps it to once).
         let (found, _) = problems(&json!({"local": {"outcome": "not-due", "automatic": true, "lastBackupMs": now}}), now);
         assert_eq!(names(&found), [first]);
-        // A backup made by hand with automatic off is not 「이제 매시간 저절로 지킵니다」, nor judged at all.
+        // A backup made by hand with automatic off is not 「이제 매시간 저절로 지킵니다」, nor judged — but for the hold of 4.4,
+        // which every profile's result tells (GPT GA10): none held, it is resolved; one held, it is told.
         let (found, judged) = problems(&json!({"local": {"outcome": "complete", "newSnapshot": true, "lastBackupMs": now}}), now);
-        assert!(found.is_empty() && judged.is_empty());
+        assert!(found.is_empty() && judged == ["mass"]);
+        let (found, judged) = problems(&json!({"local": {"outcome": "complete", "lastBackupMs": now, "mass": 1}, "b2": {"outcome": "complete", "automatic": true, "lastBackupMs": now}}), now);
+        assert!(names(&found).contains(&("mass", notify::mass().body)) && !judged.contains(&"mass"), "a held profile with automatic off is told, and not resolved by another");
         // Three days exactly is not yet 「사흘 넘게」.
         let (found, _) = problems(&json!({"local": {"outcome": "failed", "automatic": true, "lastBackupMs": now - notify::STALE_MS}}), now);
         assert_eq!(names(&found), [first]);
@@ -549,12 +565,13 @@ fn main() { std::process::exit(run()); }
                                (json!({"outcome": "busy", "reason": "job", "automatic": true, "lastBackupMs": old}), notify::stale("").body),
                                (json!({"outcome": "skipped", "reason": "credential", "automatic": true, "lastBackupMs": old}), notify::stale("").body)] {
             let (found, judged) = problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now}, "b2": record}), now);
-            assert_eq!((names(&found), judged), (vec![first, ("stale", body)], vec!["stale"]), "{record}");
+            assert_eq!((names(&found), judged), (vec![first, ("stale", body)], vec!["mass", "stale"]), "{record}");
         }
-        // The person's choice is not judged at all, so an earlier record is kept, not cleared.
+        // The person's choice is not judged, so an earlier record is kept, not cleared — but for the hold of 4.4, which the
+        // engine tells on a skipped result too (GPT GA10).
         for (reason, automatic) in [("off", false), ("not-configured", false), ("read-only", true), ("paused", true)] {
             let (found, judged) = problems(&json!({"b2": {"outcome": "skipped", "reason": reason, "automatic": automatic, "lastBackupMs": old}}), now);
-            assert!(found.is_empty() && judged.is_empty(), "{reason}");
+            assert!(found.is_empty() && judged == ["mass"], "{reason}");
         }
         // A clock behind the last backup: told at once (끝판 b A2).
         let (found, _) = problems(&json!({"local": {"outcome": "skipped", "reason": "clock", "automatic": true, "lastBackupMs": now + 1_000}}), now);
@@ -572,32 +589,32 @@ fn main() { std::process::exit(run()); }
         for reason in ["off", "paused", "read-only"] {
             let (found, judged) = problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now},
                                                    "b2": {"outcome": "skipped", "reason": reason, "automatic": reason != "off", "lastBackupMs": old}}), now);
-            assert!(judged.is_empty() && names(&found) == [first], "{reason}");
+            assert!(judged == ["mass"] && names(&found) == [first], "{reason}");
         }
         // A partial snapshot kept with its list is told; one without (exit 3, no list) is not; complete runs resolve it.
         let (found, judged) = problems(&json!({"local": {"outcome": "partial", "unreadable": 2, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first, ("partial", notify::partial().body)], vec!["partial", "missing", "stale"]));
+        assert_eq!((names(&found), judged), (vec![first, ("partial", notify::partial().body)], vec!["partial", "missing", "mass", "stale"]));
         // A folder not found: told whether the others were backed up or none was there; only a run that backed up
         // every watched profile can resolve it (4.2 「사라진 원본 폴더」).
         let missing = ("missing", notify::missing().body);
         let (found, judged) = problems(&json!({"local": {"outcome": "complete", "missing": 1, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first, missing], vec!["partial", "missing", "stale"]));
+        assert_eq!((names(&found), judged), (vec![first, missing], vec!["partial", "missing", "mass", "stale"]));
         let (found, judged) = problems(&json!({"local": {"outcome": "partial", "unreadable": 1, "missing": 1, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first, ("partial", notify::partial().body), missing], vec!["partial", "missing", "stale"]));
+        assert_eq!((names(&found), judged), (vec![first, ("partial", notify::partial().body), missing], vec!["partial", "missing", "mass", "stale"]));
         let (found, judged) = problems(&json!({"local": {"outcome": "failed", "missing": 2, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first, missing], vec!["stale"]));
+        assert_eq!((names(&found), judged), (vec![first, missing], vec!["mass", "stale"]));
         let (found, _) = problems(&json!({"local": {"outcome": "complete", "missing": 0, "automatic": true, "lastBackupMs": now}}), now);
         assert_eq!(names(&found), [first]);
         let (found, judged) = problems(&json!({"local": {"outcome": "failed", "missing": 1, "lastBackupMs": now}}), now);
-        assert!(found.is_empty() && judged.is_empty(), "automatic off: not told");
+        assert!(found.is_empty() && judged == ["mass"], "automatic off: not told");
         // Exit 3 with no list kept: nothing to tell, and not a backup that could resolve it (GPT GA3).
         let (found, judged) = problems(&json!({"local": {"outcome": "partial", "exitCode": 3, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first], vec!["stale"]));
+        assert_eq!((names(&found), judged), (vec![first], vec!["mass", "stale"]));
         let (_, judged) = problems(&json!({"local": {"outcome": "not-due", "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!(judged, ["stale"], "a run that did not back up cannot say the partial one is resolved");
+        assert_eq!(judged, ["mass", "stale"], "a run that did not back up cannot say the partial one is resolved");
         let (found, judged) = problems(&json!({"local": {"outcome": "failed", "automatic": true}}), now);
-        assert!(found.is_empty() && judged == ["stale"], "never backed up: judged, and nothing to show");
-        assert_eq!(problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now}}), now).1, ["partial", "missing", "stale"]);
+        assert!(found.is_empty() && judged == ["mass", "stale"], "never backed up: judged, and nothing to show");
+        assert_eq!(problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now}}), now).1, ["partial", "missing", "mass", "stale"]);
         assert_eq!(problems(&Value::Null, now), (vec![], vec![]));
     }
     #[test] fn requests_are_recorded_as_words_only() {
@@ -621,7 +638,7 @@ fn main() { std::process::exit(run()); }
         let partial = ("partial", notify::partial().body);
         let (found, judged) = problems(&line["profiles"], 10);
         assert!(!found.iter().any(|n| n.problem == partial.0), "every left-out file was filled");
-        assert_eq!(judged, ["partial", "missing", "stale"]);
+        assert_eq!(judged, ["partial", "missing", "mass", "stale"]);
         line["profiles"]["local"]["fill"]["cut"] = json!(true);
         assert!(problems(&line["profiles"], 10).0.iter().any(|n| n.problem == partial.0), "a cut list is never taken as all filled");
         line["profiles"]["local"]["fill"]["cut"] = Value::Null;

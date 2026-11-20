@@ -93,6 +93,17 @@ test('an earlier listing is read only when needed, and a folder stops at the fir
   assert.deepEqual(names(r.extra), ['project/a.txt@P1']);
 });
 
+test('a fill that read a whole folder read all of it: what it lacks was gone by then, and no older backup is listed for it (4.4 r7 GA4 · Fable 후속 4)', async () => {
+  let loaded = 0;
+  const lazy = (selector, entries, more = {}) => ({ selector, at: selector, blind: new Set(), cut: false, ...more, load: async () => { loaded++; return listing(entries); } });
+  // `only` '' is how fillFor names a fill asked for the folder itself.
+  const F = lazy('F', [['project', 'dir'], ['project/a.txt', 'file', 1]], { only: new Set(['']) });
+  const C = lazy('C', [['project', 'dir'], ['project/a.txt', 'file', 1], ['project/old.txt', 'file', 1]]);
+  const r = await gatherEarlier(['project'], listing([]), [F, C]);
+  assert.deepEqual(names(r.extra), ['project/a.txt@F']);
+  assert.equal(loaded, 1, 'C is not listed');
+});
+
 // restoreBases — the backup each folder comes from.
 const snap = (id, time, paths, tags = []) => ({ id, time: new Date(Date.UTC(2026, 10, 14, time)).toISOString(), paths, tags });
 const lists = map => async s => map[s.id] ?? { v: 1, unreadable: [], cut: false };

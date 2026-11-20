@@ -49,13 +49,23 @@ const inside = (folder, item) => {
   if (typeof item !== 'string' || item.length <= base.length + 1 || item.slice(0, base.length).toLowerCase() !== base.toLowerCase() || !/[\\/]/.test(item[base.length])) return null;
   return item.slice(base.length + 1).replace(/[\\/]+/g, '/').replace(/\/$/, '') || null;
 };
+/** A path from restic's error lines as Windows writes it: `/E/pics` → `E:\pics`, `/E` → `E:\` (4.4 r5 GA6). */
+const winItem = p => { const m = typeof p === 'string' && /^\/([A-Za-z])(\/.*)?$/.exec(p); return m ? `${m[1].toUpperCase()}:\\` + (m[2] || '').slice(1).replaceAll('/', '\\') : p; };
+/** `item` (either form) as seen from `folder`: '' when it is the folder or holds it — a drive root, a folder above —
+ *  so the whole folder (4.4 r7 GA3 · GA4); its path inside when inside; null when neither. */
+const asSeen = (folder, item) => {
+  const w = winItem(item);
+  if (typeof w !== 'string') return null;
+  const trim = p => p.replace(/[\\/]+$/, '').toLowerCase();
+  return trim(w) === trim(folder) || inside(w, folder) !== null ? '' : inside(folder, w);
+};
 /** A partial snapshot's list as stored (workbackup-unreadable.json), or an error. */
 function checkList(list) {
   if (list?.v !== 1 || !Array.isArray(list.unreadable) || list.unreadable.some(p => typeof p !== 'string') || typeof list.cut !== 'boolean') throw new Error('읽지 못한 파일 목록의 형식을 확인하지 못했습니다.');
   return list;
 }
 /** `rel` (inside a folder, forward slashes) is one of `blind` (lower-cased) or under one of them. */
-const covered = (blind, rel) => { const parts = rel.toLowerCase().split('/'); for (let i = 1; i <= parts.length; i++) if (blind.has(parts.slice(0, i).join('/'))) return true; return false; };
+const covered = (blind, rel) => { if (blind.has('')) return true; const parts = rel.toLowerCase().split('/'); for (let i = 1; i <= parts.length; i++) if (blind.has(parts.slice(0, i).join('/'))) return true; return false; };
 /** Something under `rel` is in `blind`. */
 const unreadUnder = (blind, rel) => { const k = rel.toLowerCase() + '/'; for (const b of blind) if (b.startsWith(k)) return true; return false; };
 /** A snapshot whose folder list a restore can follow: 1 to 30 plain Windows folders. */
@@ -141,6 +151,10 @@ async function gatherEarlier(wanted, manifest, seen) {
 }
 /** The run record's count of folders not found, when there were any. */
 const gone = n => n > 0 ? { missing: n } : {};
+// The thresholds of 4.4 (처음 문턱, to be tuned by T17): files removed (30 % and 200), files changed (50 % and 200), bytes
+// removed (30 % and 1 GiB); `list` is how many names a hold keeps for the 「지워진 파일」 screen.
+// `compare`: backups compared in one clean-up (the rest wait for the next); `typed`: type changes whose files are counted.
+const MASS = Object.freeze({ files: 200, removedShare: 0.3, changedShare: 0.5, bytes: 1024 ** 3, list: 500, compare: 6, ask: 300 });
 /** How long a folder taken out of the backup keeps its backups (4.2 「폴더 더하기 · 빼기」). */
 const REMOVED_KEEP = 30 * DAY;
 /** Fills are at most one in 4 hours — 6 a day — and the runs between stay partial (4.2 「채움의 비용」). */
@@ -343,7 +357,7 @@ class BackupEngine extends EventEmitter {
       lastRestore: c?.lastRestore || null, lastRestoreError: c?.lastRestoreError || null, lastMoveError: c?.lastMoveError || null, moveKit: c?.moveKit || null, health: c?.health || null, lastError: c?.lastError || null, movedTo: c?.movedTo || null, nextSources: c?.nextSources || [],
       lastSelectedRestore: c?.lastSelectedRestore || null, lastSelectedRestoreError: c?.lastSelectedRestoreError || null,
       pausedUntil: c?.pausedUntil || null, lastAttemptAt: c?.lastAttemptAt || null, nextBackupAt: timing.nextBackupAt, clockHold: timing.clockHold,
-      lastProbe: c?.lastProbe || null, probeHold: c?.probeHold || null, protectRun: c?.protectRun || null, startupWarning: c?.startupWarning || null,
+      lastProbe: c?.lastProbe || null, probeHold: c?.probeHold || null, massHold: c?.massHold || null, protectRun: c?.protectRun || null, startupWarning: c?.startupWarning || null,
       warning: c?.warning || null, job: this.job ? { ...this.job } : null };
   }
   isCloud() { return this.providerType === 'b2'; }
@@ -446,7 +460,7 @@ class BackupEngine extends EventEmitter {
     } finally { this.transientSecrets = []; this.job = null; this.emitState(); this.emit('idle'); }
   }
   clean(message) { return b2.redact(message, [this.secret, this.cloudCredentials?.keyId, this.cloudCredentials?.applicationKey, this.connection?.credentials.keyId, this.connection?.credentials.applicationKey, ...this.transientSecrets]); }
-  async run(args, { repository = this.config.repository, password = this.secret, provider = this.config?.provider, credentials = this.cloudCredentials, timeoutMs = DAY, consumeStdout = null, readOnly = !!this.config?.readOnly, onErrorItem = null, stdinText = null } = {}) {
+  async run(args, { repository = this.config.repository, password = this.secret, provider = this.config?.provider, credentials = this.cloudCredentials, timeoutMs = DAY, consumeStdout = null, readOnly = !!this.config?.readOnly, onErrorItem = null, stdinText = null, stderrFails = false } = {}) {
     if (this.stopping && !this.job) throw new Error('앱을 종료하고 있습니다. 이전 정상 백업은 유지됩니다.');
     if (this.job?.cancelled) throw Object.assign(new Error('되살리기를 그만두었습니다. 만들다 만 폴더는 그대로 두었습니다.'), { code: 'CANCELED' });
     const { env, args: providerArgs } = b2.childOptions(provider, credentials, this.workDir || this.stateDir, process.env, password);
@@ -456,7 +470,7 @@ class BackupEngine extends EventEmitter {
       providerArgs.push('--no-lock');
     }
     if (this.resticStartedAt === null) this.resticStartedAt = Date.now();
-    if (this.runner) return this.runner(args, { repository, password, engine: this, consumeStdout, provider, credentials, env, providerArgs, onErrorItem, stdinText });
+    if (this.runner) return this.runner(args, { repository, password, engine: this, consumeStdout, provider, credentials, env, providerArgs, onErrorItem, stdinText, stderrFails });
     return new Promise((resolve, reject) => {
       const child = spawn(this.resticPath, ['--repo', repository, ...providerArgs, '--retry-lock', '10s', ...args], { env, windowsHide: true, shell: false, stdio: [stdinText === null ? 'ignore' : 'pipe', 'pipe', 'pipe'] });
       this.child = child;
@@ -492,6 +506,8 @@ class BackupEngine extends EventEmitter {
           if (this.isCloud() && /(?:transaction|storage|download)_cap_exceeded|cap[_ ]exceeded/i.test(details) && this.config) this.config.retryAfter = new Date(Math.floor(this.now() / DAY) * DAY + DAY).toISOString();
           const error = new Error(this.clean(`${explanation}\n${details}`)); error.exitCode = code; return reject(error);
         }
+        // 대량 삭제 · 변경 멈춤 (4.4): restic may tell a tree it could not read on stderr and still end with 0 (GPT GA5).
+        if (stderrFails && errors.trim()) return reject(new Error(this.clean(`백업을 비교하는 중 오류가 있었습니다.\n${errors.slice(-1800)}`)));
         resolve(output);
       });
     });
@@ -1016,10 +1032,23 @@ class BackupEngine extends EventEmitter {
     const info = await this.cachedFill(listsIn(all, f)[0]);
     const mapped = linked(info.roots, folder);
     if (!mapped || info.fills !== runOf(s)) return null;
-    const rels = list => new Set(list.map(item => inside(folder, item)).filter(Boolean).map(rel => rel.toLowerCase()));
-    const only = rels(info.asked), blind = info.cut ? new Set([...only]) : rels(info.failed);
+    const rels = list => new Set(list.map(item => asSeen(folder, item)).filter(rel => rel !== null).map(rel => rel.toLowerCase()));
+    // Its list cut short, it says nothing of what it read there: nothing to use (as before, every path it was asked blind).
+    if (info.cut) return null;
+    const only = rels(info.asked), blind = rels(info.failed);
+    // Asked for the folder itself, it read it whole only if it holds a folder there: the folder may have been a file then
+    // (r8 GA2 — a restore would list a file as a folder and fail). Asked only when that could matter (r9 GA3).
+    if (only.has('') && !covered(blind, '') && !(await this.fillHasFolder(f.id, subtreeOf(mapped)))) only.delete('');
     if (![...only].some(rel => !covered(blind, rel))) return null;
     return { snapshot: f, selector: `${f.id}:${subtreeOf(mapped)}`, only, blind };
+  }
+  /** Whether fill `id` holds `tree` as a folder: one `restic ls` without recursion, kept for this engine (a fill never changes).
+   *  It fails by restic's exit code only, as a restore's other listings do (Fable 후속 5). */
+  async fillHasFolder(id, tree) {
+    this.fillFolders ||= new Map();
+    const key = `${id}:${tree}`;
+    if (!this.fillFolders.has(key)) { let dir = false; await this.listNodes(id, [tree], node => { if (node.path === tree && node.type === 'dir') dir = true; }, { recursive: false, stderrFails: false }); this.fillFolders.set(key, dir); }
+    return this.fillFolders.get(key);
   }
   /** The drives a fill would copy now, or null (4.2 「채움의 비용」): the newest partial snapshot is not filled yet and
    *  the last attempt — done or not — is 4 hours back. */
@@ -1159,6 +1188,8 @@ class BackupEngine extends EventEmitter {
   }
   async retain() {
     if (this.config.mode !== 'backup' || this.config.health?.status !== 'ok' || this.config.probeHold) throw new Error('이 저장소는 정리할 수 없습니다.');
+    // 대량 삭제 · 변경 멈춤 (4.4): while a hold waits for the person, no backup is forgotten — the one before it stays by number.
+    if (this.config.massHold) return;
     await this.identity();
     let now = this.now();
     if (this.isCloud()) {
@@ -1260,13 +1291,518 @@ class BackupEngine extends EventEmitter {
         }
       }
     }
-    const ids = all.filter(s => !keep.has(s.id) && mine(s) && now - Date.parse(s.time) > DAY).map(s => s.id);
+    let ids = all.filter(s => !keep.has(s.id) && mine(s) && now - Date.parse(s.time) > DAY).map(s => s.id);
+    if (!ids.length) return;
+    ids = await this.massCheck(all, latest, ids, mine, chosen);
     if (!ids.length) return;
     this.stage('24시간이 지난 이전 백업 정리 중');
     for (let i = 0; i < ids.length; i += 100) await this.run(['forget', ...ids.slice(i, i + 100)]);
     const gone = new Set(ids);
     for (const id of gone) { this.listCache?.delete(id); await fs.rm(path.join(this.stateDir, 'lists', `${id}.json`), { force: true }).catch(() => {}); }
     await this.run(['prune', ...(this.isCloud() ? ['--max-repack-size', '0'] : [])]);
+  }
+  /**
+   * 대량 삭제 · 변경 멈춤 (4.4). Every backup retain() would forget is first compared (massCompare) — oldest first,
+   * `limit.compare` a run, the rest waiting for the next with their lists and fills (r2 GA1) — so a change spread over hours
+   * is seen whole (GA3), and a backup kept longer for another reason is compared when it finally goes (GA6). Partial
+   * backups are compared too (GA7), each folder with the newest backup that stays and has it (r3 GA2 · Fable 1). What
+   * 「확인을 마침」 covered — each folder between the two backups a confirmed hold compared it in, the newer apart — is not
+   * compared again; a backup all of whose folders are covered goes without (`massCheck`, Fable 2 · r4 GA1). Past a
+   * threshold (MASS) the hold (`massHold`) keeps every backup until the person answers. Returns the ids that may go.
+   * `massLimits` lowers the thresholds in tests.
+   */
+  async massCheck(all, latest, ids, mine, chosen = () => true) {
+    const forget = new Set(ids), limit = { ...MASS, ...(this.massLimits || {}) };
+    const ranges = this.config.massCheck?.folders || [];
+    // `far`: within what some way of a folder counted more than one way saw it — to any backup a way compared it with
+    // (`reach`), on either side of the one kept (massCompare).
+    const covers = (folder, t, far = false) => ranges.some(r => (r.path === null || (folder !== null && r.path === folder)) && (far && Array.isArray(r.reach) ? r.reach : [r.to]).some(end => {
+      const from = Date.parse(r.from), to = Date.parse(end);
+      // The backup compared with is not covered (what came after it is not yet seen) — unless the hold compared the
+      // backup with nothing (a folder no backup that stays has), when the range is that backup alone (Fable 후속 2). The
+      // folder as spelled: one spelled otherwise may be another folder, not looked at (설계 검토 기록10).
+      return (t !== to || from === to) && t >= Math.min(from, to) && t <= Math.max(from, to);
+    }));
+    const passed = s => { const t = Date.parse(s.time), plans = this.plansOf(s); return plans ? plans.length > 0 && plans.every(p => covers(p.original, t)) : covers(null, t); };
+    const comparable = s => mine(s) && (s.tags.includes(VERIFIED) || s.tags.includes('partial')) && !s.tags.some(t => ['fill', 'meta', 'movekit', 'pending'].includes(t));
+    const stays = all.filter(s => comparable(s) && !forget.has(s.id)), newest = stays[0] || latest;
+    const due = all.filter(s => forget.has(s.id) && comparable(s) && !passed(s)).reverse();
+    if (!due.length) return ids;
+    const wait = new Set();
+    for (const s of due.slice(limit.compare)) {
+      wait.add(s.id);
+      for (const l of listsIn(all, s)) wait.add(l.id);
+      for (const fill of fillsIn(all, s)) { wait.add(fill.id); for (const l of listsIn(all, fill)) wait.add(l.id); }
+    }
+    this.stage('한꺼번에 지워지거나 바뀐 파일이 있는지 확인 중');
+    const cache = new Map();
+    for (const base of due.slice(0, limit.compare)) {
+      const t = Date.parse(base.time);
+      const found = await this.massCompare(base, newest, limit, { all, stays: stays.length ? stays : [newest], skip: folder => covers(folder, t), apart: folder => !covers(folder, t) && covers(folder, t, true), chosen, cache });
+      if (!found.kind) continue;
+      const weight = f => found.kind === 'changed' ? f.changed : f.removed;
+      const worst = [...found.folders].sort((a, b) => weight(b) - weight(a) || (b.removed + b.changed) - (a.removed + a.changed))[0] || { path: null };
+      // What the folder has now: in the backup it was compared with (r5 GA5).
+      const by = worst.path ? found.where.get(worst.path) : null;
+      const left = by ? (await this.countFiles(by.s, by.l).catch(() => null))?.files ?? null : null;
+      const n = v => Number.isSafeInteger(v) && v >= 0 ? v : null;
+      this.config.massHold = { since: new Date(this.now()).toISOString(), at: new Date(Date.parse(newest.time)).toISOString(), kind: found.kind, path: worst.path,
+        removed: found.removed, changed: found.changed, removedBytes: found.bytes, left, totalNow: n(newest.summary?.total_files_processed),
+        bytesNow: n(newest.summary?.total_bytes_processed), before: n(found.before), beforeId: base.id, beforeAt: new Date(Date.parse(base.time)).toISOString(),
+        afterId: newest.id, folders: found.folders.filter(f => f.removed || f.changed), list: found.list, compared: found.compared };
+      await this.save();
+      return [];
+    }
+    return ids.filter(id => !wait.has(id));
+  }
+  /** A backup's folder plans, or null when restore would refuse its folder list. */
+  plansOf(snapshot) { try { return selection.sourcePlans(snapshot); } catch { return null; } }
+  /**
+   * One comparison of 4.4: `base` (a backup going), each of its folders with the newest backup that stays and has it
+   * (massHolder): `latest`, or for a folder it lacks (a drive not plugged in, a folder taken out) the one retain keeps for
+   * it (Fable 1). A folder `skip` says the person confirmed, or one `base` could not read at all, is left out. A folder no
+   * backup that stays has is left out when it is no longer chosen; while chosen, what `base` holds there is its last copy,
+   * so each file of it not on the disk is gone (r5 GA2). One `restic diff --json` of the two backups whole for each backup
+   * compared with, its lines taken by folder — a folder one of them lacks is no error (r4 GA2); a folder whose name the two
+   * spell in other cases, `판:폴더` by itself (r5 GA4). Any restic error on the way fails it (GA5). Counted from the lines:
+   * - a file `-` still on the disk as a file (a OneDrive placeholder restic leaves out, one a program held; a folder there
+   *   now is no file, r5 GA3) or one the fill of the backup compared with holds (r4 GA3) is not gone (GA9); once enough
+   *   are gone for the file threshold, the rest are counted without looking;
+   * - a file where the backup compared with, a partial one, could not read is gone only when no other backup that stays and
+   *   has the folder holds it either (r5 GA1);
+   * - restic counts what is gone that is neither file nor folder (a symbolic link) apart, as `removed.others`: with none,
+   *   every `-` line that is no folder is a file; with some, the backup before is listed for them first and the lines are
+   *   read again with them left out (r2 GA3 · r3 GA1 · GA3 · GA4);
+   * - under the file threshold, when a path's type changed or the bytes can still reach theirs, one `restic ls` of the
+   *   backup before a folder: the files under each path whose type changed (GA8 · r2 GA8) and the sizes of the files gone
+   *   (r2 GA5 · GA9: restic's removed bytes leave out content another file still holds, and count a placeholder's).
+   * A partial `base`'s fill holds what it could not read (Fable 3): each of its files not on the disk, nor in a backup that
+   * stays and has the folder, nor in the fill of the one compared with, is gone, with its size. The share is of the files
+   * and bytes `base` and its fill had in the folders compared. `compared` is each folder with the time of the backup it
+   * was compared with (what 「확인을 마침」 covers); `where` that backup and its plan, by folder.
+   */
+  async massCompare(base, latest, limit, { all = [], stays = [latest], skip = () => false, apart = () => false, chosen = () => true, cache = new Map() } = {}) {
+    const basePlans = this.plansOf(base), latestPlans = this.plansOf(latest);
+    const treeOf = p => p.selector.slice(p.selector.indexOf(':') + 1);
+    // A unit is one folder: compared with `other` (null: with none), a line's path is `tree` + rel (`tree` '' for backups
+    // compared whole, their paths as they are); `disk` is where rel was on this PC; `kept` what the fill of `other` holds
+    // there; `blind` where `other`, a partial one, could not read (lower-case, no leading slash); `elsewhere()` every backup
+    // that stays and has the folder, and their fills, as { s, l } to ask by path — found only when a file is in doubt.
+    // `apartBytes`: of folders counted though out of the share (`apart`) — what may yet be gone there (r14 GA1).
+    const units = [], fills = [], orphans = [], compared = [], where = new Map(), also = [];
+    let apartBytes = 0;
+    const unit = (folder, tree, disk, h) => {
+      const u = { folder, tree, disk, other: h?.s || null, otherPlan: h?.l || null, otherTree: h?.l ? treeOf(h.l) : tree, blind: h?.blind || new Set(), kept: new Set(), elsewhere: async () => [], bytes: 0 };
+      units.push(u); return u;
+    };
+    const relOf = (u, p) => !u.tree ? p : p.startsWith(u.tree + '/') ? p.slice(u.tree.length) : null;
+    let before = base.summary?.total_files_processed, beforeBytes = base.summary?.total_bytes_processed;
+    // Folders it cannot tell apart (a folder list restore would refuse): the backups whole, the disk by each path's own
+    // drive — so one odd backup does not stop every clean-up after it.
+    if (!basePlans || !latestPlans) {
+      unit(null, '', at => { const m = /^\/([A-Za-z])(\/.*)?$/.exec(at); return m ? path.win32.join(`${m[1]}:\\`, ...(m[2] || '').slice(1).split('/')) : null; }, { s: latest, l: null });
+      compared.push({ path: null, at: latest.time });
+    } else {
+      // Which folders this backup holds in its own tree: asked of restic, not guessed from its list (r6 GA1).
+      const has = await this.massHas(base.id, basePlans.map(treeOf), cache);
+      // None of its folders in its tree, yet files saved: restic's answer is not what it seems — nothing goes (Fable 후속 3).
+      if (base.summary?.total_files_processed > 0 && !basePlans.some(b => has(treeOf(b)))) throw new Error('지울 백업의 폴더를 확인하지 못했습니다.');
+      // The spellings the backups that stay give a folder in other cases. Such a one may be this folder, spelled anew when it
+      // was taken out and chosen again, or another folder beside it (a parent that tells case apart); neither this disk nor
+      // restic tells which it was then (r12 GA1 · r13 GA1 · GA2), and the folders of one backup need not all be one way
+      // (설계 검토 기록11). So each folder is counted as another one, and as the same as each such spelling; of each count
+      // the most any way gives is taken at the end. The way that is so is always one of them.
+      const spellings = new Map();
+      for (const x of stays) for (const p of (x.id === latest.id ? latestPlans : this.plansOf(x)) || []) for (const b of basePlans) {
+        if (p.original === b.original || !same(p.original, b.original)) continue;
+        if (!spellings.has(b.original)) spellings.set(b.original, new Set());
+        spellings.get(b.original).add(p.original);
+      }
+      for (const b of basePlans) {
+        const out = async () => { const other = await this.countFiles(base, b); if (Number.isSafeInteger(before)) before -= other.files; if (Number.isSafeInteger(beforeBytes)) beforeBytes -= other.bytes; return other; };
+        if (skip(b.original)) { await out(); continue; }
+        // Past what 「확인을 마침」 covered, though within what some way of it saw: counted, and out of the share, as covered
+        // folders are — else it would thin the share of the others (설계 검토 기록11).
+        const away = apart(b.original);
+        if (away) apartBytes += (await out()).bytes;
+        const tree = treeOf(b), disk = at => path.win32.join(b.original, ...at.slice(1).split('/'));
+        const made = [];
+        for (const names of [[b.original], ...[...(spellings.get(b.original) || [])].map(v => [b.original, v])]) {
+          const h = await this.massHolder(all, stays, latest, latestPlans, b.original, cache, names);
+          // No longer chosen, and none that stays holds it as spelled: left out as before, whatever another spelling has —
+          // else its files would thin the share of the others (설계 검토 기록11).
+          if (!h && !chosen(b.original)) { if (names.length === 1) break; continue; }
+          // Compared with the backup the folder as spelled is, a way finds only more copies: it counts no more.
+          const own = made.find(m => m.names.length === 1);
+          if (own && (own.h?.s.id ?? null) === (h?.s.id ?? null) && (own.h?.l.original ?? null) === (h?.l.original ?? null)) continue;
+          // In its own tree: compared with the one that has the folder — or, with none, against the disk (r5 GA2). Not
+          // there: nothing of it to lose but what its fill holds.
+          const u = unit(b.original, tree, disk, has(tree) ? h : null);
+          if (has(tree) && !h) orphans.push(u);
+          if (h && !where.has(b.original)) where.set(b.original, h);
+          compared.push({ path: b.original, at: h ? h.s.time : base.time });
+          // A file the fill of the one compared with holds is not lost with this one (r4 GA3).
+          const hFill = h?.s.tags.includes('partial') ? await this.fillFor(all, h.s, b.original) : null;
+          if (hFill) { const at = treeOf(hFill); await this.listFiles(hFill.snapshot.id, [at], file => { if (file.path.startsWith(at + '/')) u.kept.add(file.path.slice(at.length)); }); }
+          // Where else its files may be: each backup that stays, in its tree when it has the folder and in its fill whether
+          // or not (r6 GA3 · r7 GA2 · GA5) — looked for only when a file is in doubt, so a usual clean-up asks restic of no
+          // backup but the one compared with (Fable 후속 3).
+          let others = null;
+          u.elsewhere = async () => {
+            if (others) return others;
+            others = [];
+            for (const x of stays) {
+              const plans = x.id === latest.id ? latestPlans : this.plansOf(x), l = this.massPlan(plans, names);
+              if (!l) continue;
+              if ((await this.massHas(x.id, plans.map(treeOf), cache))(treeOf(l))) others.push({ s: x, l });
+              const xf = !x.tags.includes('partial') ? null : h && x.id === h.s.id ? hFill : await this.fillFor(all, x, b.original);
+              if (xf) others.push({ s: xf.snapshot, l: xf });
+            }
+            return others;
+          };
+          made.push({ u, h, names });
+        }
+        if (!made.length) { if (!away) await out(); continue; }
+        // What a partial backup could not read is in its fill (Fable 3 · r6 GA2): its files are in the shares — once for
+        // the folder, however many ways it is counted.
+        if (base.tags.includes('partial')) {
+          const fill = await this.fillFor(all, base, b.original);
+          if (fill) {
+            const at = treeOf(fill), had = [];
+            await this.listFiles(fill.snapshot.id, [at], file => { if (file.path.startsWith(at + '/')) had.push({ rel: file.path.slice(at.length), size: file.size }); });
+            // With no tree of the folder, the fill is all it had there. With one, the fill's files the tree holds too are not
+            // to count twice, however their names are spelled (r7 GA1 · r8 GA3): the share is told at the end both ways.
+            if (away) apartBytes += had.reduce((sum, x) => sum + x.size, 0); else if (!has(tree)) {
+              if (Number.isSafeInteger(before)) before += had.length;
+              if (Number.isSafeInteger(beforeBytes)) beforeBytes += had.reduce((sum, x) => sum + x.size, 0);
+            } else also.push({ u: made[0].u, had });
+            for (const { u } of made) fills.push({ u, had });
+          }
+        }
+      }
+    }
+    // The most the share can be of: with every fill file its tree may hold too (r9 GA1). How many are counted with the disk,
+    // and whether the sizes are read, go by it, so a share told of more files still has every count and size it needs.
+    const sum = (n, add) => Number.isSafeInteger(n) ? n + add : n;
+    const most = sum(before, also.reduce((n, a) => n + a.had.length, 0)), mostBytes = sum(beforeBytes, also.reduce((n, a) => n + a.had.reduce((m, x) => m + x.size, 0), 0));
+    const known = Number.isSafeInteger(most) && most > 0;
+    // Enough files gone for the file threshold: the rest are counted without looking at the disk.
+    const need = known ? Math.max(limit.files, Math.ceil(most * limit.removedShare)) : limit.files;
+    // On the disk as a file, or a link to one: a folder there now — or a junction to one — holds no file of that name
+    // (r5 GA3 · r6 GA6). Nor is a file there through a folder that is a link or a junction now: that is another folder's
+    // (설계 검토 기록11 — a folder taken out, then made a junction to another). No backup folder is a link (paths.cjs).
+    const layers = new Map();
+    const through = dir => {
+      if (!layers.has(dir)) layers.set(dir, (async () => { const up = path.win32.dirname(dir); if (up === dir) return false; try { if ((await fs.lstat(dir)).isSymbolicLink()) return true; } catch { return false; } return through(up); })());
+      return layers.get(dir);
+    };
+    const onDisk = async at => { if (typeof at !== 'string' || await through(path.win32.dirname(at))) return false; try { const st = await fs.lstat(at); return st.isSymbolicLink() ? (await fs.stat(at)).isFile() : st.isFile(); } catch { return false; } };
+    // A path's size in `sizes` (rel → size): as spelled; else, Windows telling no case apart, of the paths spelled otherwise,
+    // the one `pick` chooses (r10 GA1 — a folder that tells case apart may hold both). For the share only, the larger: a
+    // smaller share, toward a hold.
+    const spelled = (sizes, pick) => {
+      const folded = new Map();
+      for (const [rel, size] of sizes) { const k = rel.toLowerCase(); folded.set(k, folded.has(k) ? pick(folded.get(k), size) : size); }
+      return rel => sizes.has(rel) ? sizes.get(rel) : folded.get(rel.toLowerCase());
+    };
+    // What of `items` ({ rel, size }) goes with this backup: not in the fill of the one compared with, not on the disk as a
+    // file, and in no backup that stays nor its fill (asked only when some are left). One rule for where the one compared
+    // with could not read, for this backup's fill and for a folder no backup that stays has (Fable 후속 4).
+    const lost = async (u, items) => {
+      const left = [];
+      for (const x of items) if (!u.kept.has(x.rel) && !(await onDisk(u.disk(x.rel)))) left.push(x);
+      if (!left.length) return left;
+      const there = await this.massAsk(await u.elsewhere(), left.map(x => x.rel));
+      return left.filter(x => !there.has(x.rel));
+    };
+    // One line of the list a hold shows, once: a folder counted more than one way names a path in each (r14 GA3).
+    const note = (c, x) => { const k = JSON.stringify([x.folder, x.name, x.kind]); if (c.list.length < limit.list && !c.listed.has(k)) { c.listed.add(k); c.list.push(x); } };
+    // The files gone so far: a folder counted more than one way at its most, not each way's lines added up — else the
+    // file threshold would seem near, the disk be looked at no more and the sizes not read (설계 검토 기록11).
+    const goneSoFar = () => { const top = new Map(); for (const u of units) top.set(u.folder, Math.max(top.get(u.folder) || 0, u.gone)); let n = 0; for (const v of top.values()) n += v; return n; };
+    // One reading of the change lines; `odd` the paths, by unit, of what the backup before had that is neither file nor folder.
+    const count = async odd => {
+      const c = { changed: 0, gone: 0, typed: 0, others: 0, list: [], listed: new Set() };
+      for (const u of units) Object.assign(u, { names: new Set(), counted: new Map(), typed: new Set(), unsure: [], gone: 0, entry: { path: u.folder, removed: 0, changed: 0 } });
+      const change = async (u, at, modifier) => {
+        const name = at.replace(/\/$/, '');
+        if (!name || name === '/') return;
+        const shown = u.folder ? name.slice(1) : name;
+        if (modifier.includes('T')) {
+          c.typed++; u.typed.add(name); u.entry.removed++;
+          note(c, { folder: u.folder, name: shown, kind: 'removed' });
+          return;
+        }
+        if (at.endsWith('/')) return;
+        if (modifier === '-') {
+          if (odd?.get(u)?.has(name) || u.kept.has(name)) return;
+          // Where the backup compared with could not read: asked of the other backups that stay, below (r5 GA1).
+          if (u.blind.size && covered(u.blind, name.slice(1))) { u.unsure.push({ rel: name, size: 0 }); return; }
+          if (goneSoFar() < need) { const spot = u.disk(name); if (!spot || await onDisk(spot)) return; u.names.add(name); }
+          c.gone++; u.gone++; u.entry.removed++;
+          note(c, { folder: u.folder, name: shown, kind: 'removed' });
+        } else if (modifier.includes('M')) {
+          c.changed++; u.entry.changed++;
+          note(c, { folder: u.folder, name: shown, kind: 'changed' });
+        }
+      };
+      // The folders spelled alike in both: one diff of the backups whole for each backup compared with.
+      const groups = new Map();
+      for (const u of units) if (u.other && u.otherTree === u.tree) { if (!groups.has(u.other.id)) groups.set(u.other.id, { other: u.other, mine: [] }); groups.get(u.other.id).mine.push(u); }
+      for (const { other, mine } of groups.values()) {
+        await this.massDiff([base.id, other.id], c, async (p, modifier) => {
+          const lower = p.toLowerCase(), u = mine.find(x => x.tree ? lower.startsWith(x.tree.toLowerCase() + '/') : /^\/[A-Za-z](\/|$)/.test(p));
+          if (u) await change(u, u.tree ? p.slice(u.tree.length) : p, modifier);
+        });
+      }
+      // A folder the two spell in other cases: by itself, inside each (restic tells names apart by case, r5 GA4).
+      for (const u of units) if (u.other && u.otherTree !== u.tree) await this.massDiff([`${base.id}:${u.tree}`, `${u.other.id}:${u.otherTree}`], c, (p, modifier) => change(u, p.startsWith('/') ? p : '/' + p, modifier));
+      return c;
+    };
+    let c = await count(null);
+    if (c.others) {
+      const odd = new Map();
+      for (const u of units) {
+        if (!u.other) continue;
+        const set = new Set(); odd.set(u, set);
+        await this.listNodes(base.id, u.tree ? [u.tree] : [], node => { const rel = relOf(u, node.path); if (rel && node.type !== 'file' && node.type !== 'dir') set.add(rel); });
+      }
+      c = await count(odd);
+    }
+    // Where the backup compared with could not read: gone only when lost (r5 GA1 · r7 GA3).
+    for (const u of units) {
+      if (!u.unsure.length) continue;
+      for (const { rel: name } of await lost(u, u.unsure)) {
+        c.gone++; u.gone++; u.entry.removed++; u.names.add(name);
+        note(c, { folder: u.folder, name: name.slice(1), kind: 'removed' });
+      }
+    }
+    let removed = c.gone + c.typed, bytes = 0;
+    const add = (u, n) => { bytes += n; u.bytes += n; };
+    const list = c.list;
+    // Under the file threshold the backup before tells what a changed type held and how big the files gone were (one
+    // `restic ls` a folder; a failure fails the comparison, GA6). A backup under the byte threshold in all is not listed for it.
+    // With what is counted though out of the share too: a large file gone there is no less gone (r14 GA1).
+    const bytesCan = !(Number.isSafeInteger(mostBytes) && mostBytes >= 0 && mostBytes + apartBytes < limit.bytes);
+    if (goneSoFar() < need && (c.typed || (c.gone && bytesCan))) {
+      removed = c.gone;
+      for (const u of units) {
+        if (!u.names.size && !u.typed.size) continue;
+        let under = 0;
+        await this.listFiles(base.id, u.tree ? [u.tree] : [], file => {
+          const rel = relOf(u, file.path);
+          if (!rel) return;
+          if (u.names.has(rel)) { add(u, file.size); u.counted.set(rel, file.size); return; }
+          let hit = false;
+          if (u.typed.size) for (let at = rel; !hit && at.length > 1; at = at.slice(0, at.lastIndexOf('/')) || '/') hit = u.typed.has(at);
+          if (hit) { under++; add(u, file.size); u.counted.set(rel, file.size); }
+        });
+        removed += under; u.entry.removed += under - u.typed.size;
+      }
+    }
+    const gone = (u, rel, size) => { removed++; add(u, size); u.entry.removed++; u.counted.set(rel, size); note(c, { folder: u.folder, name: rel.slice(1), kind: 'removed' }); };
+    // A folder still chosen that no backup that stays has in its tree: each file of it this one holds and lost is gone
+    // (r5 GA2 · r7 GA2).
+    for (const u of orphans) {
+      const had = [];
+      await this.listFiles(base.id, [u.tree], file => { const rel = relOf(u, file.path); if (rel) had.push({ rel, size: file.size }); });
+      for (const x of await lost(u, had)) gone(u, x.rel, x.size);
+    }
+    // This backup's fill: each file of it lost is gone (Fable 3 · r6 GA2). One its tree's side counted gone already — a
+    // line, a changed type, a folder none that stays has — adds only the size its fill's copy has beyond the tree's (r8 GA1 ·
+    // Fable 후속 5).
+    for (const { u, had } of fills) {
+      for (const n of u.names) if (!u.counted.has(n)) u.counted.set(n, 0);
+      // As spelled only: a folder that tells case apart may hold a file of another spelling that is no copy — counted as one
+      // of its own, which is toward a hold (r11 GA1).
+      const rest = [];
+      for (const x of had) { const at = u.counted.get(x.rel); if (at !== undefined) add(u, Math.max(0, x.size - at)); else rest.push(x); }
+      for (const x of await lost(u, rest)) gone(u, x.rel, x.size);
+    }
+    // A folder counted more than one way: of each count, the most any way gives, the folder once in the share (설계 검토
+    // 기록11); shown as compared with the backup of the way that found the most.
+    let changed = c.changed, folders = units.filter(u => u.folder).map(u => u.entry);
+    const byFolder = new Map();
+    for (const u of units) { if (!byFolder.has(u.folder)) byFolder.set(u.folder, []); byFolder.get(u.folder).push(u); }
+    if ([...byFolder.values()].some(w => w.length > 1)) {
+      const top = (w, of) => Math.max(...w.map(of));
+      removed = 0; changed = 0; bytes = 0; folders = [];
+      for (const [folder, w] of byFolder) {
+        const r = top(w, u => u.entry.removed), ch = top(w, u => u.entry.changed);
+        removed += r; changed += ch; bytes += top(w, u => u.bytes);
+        if (!folder) continue;
+        folders.push({ path: folder, removed: r, changed: ch });
+        const most = [...w].sort((a, b) => (b.entry.removed + b.entry.changed) - (a.entry.removed + a.entry.changed))[0];
+        if (most.other) where.set(folder, { s: most.other, l: most.otherPlan });
+      }
+    }
+    // Each count as it is: massKind takes a share of none, or of an unknown count, for no share (Fable 후속 5 확인).
+    const told = (files, size) => this.massKind({ removed, changed, bytes, before: files, beforeBytes: size, limit, folders, list });
+    let result = told(before, beforeBytes);
+    if (also.length) {
+      const all = told(most, mostBytes);
+      // The share told without the fill's files and with all of them: no hold either way, it stands. A hold — its counts
+      // are shown (r9 GA2) — or the two apart: the tree's list of each such folder is read once; a fill file it lacks counts,
+      // one it holds adds only the size its fill's copy has beyond the tree's (Fable 후속 5 · r9 GA4). Most clean-ups read none.
+      if (all.kind !== result.kind || result.kind) {
+        let files = before, size = beforeBytes;
+        for (const { u, had } of also) {
+          const listed = new Map();
+          await this.listFiles(base.id, [u.tree], file => { const rel = relOf(u, file.path); if (rel) listed.set(rel, file.size); });
+          const mine = spelled(listed, Math.max);
+          for (const x of had) { const at = mine(x.rel); if (at !== undefined) size = sum(size, Math.max(0, x.size - at)); else { files = sum(files, 1); size = sum(size, x.size); } }
+        }
+        result = told(files, size);
+      }
+    }
+    // 「확인을 마침」 covers a folder counted more than one way only as far as every way saw it: to the nearest backup
+    // compared with when each is after this one, else this one alone (설계 검토 기록11 — the way that is not so may reach
+    // past the last copy of the folder).
+    const ways = new Map();
+    for (const x of compared) { if (!ways.has(x.path)) ways.set(x.path, []); ways.get(x.path).push(x.at); }
+    // `reach`: the backup each way compared it with — within what any of them saw and past `at`, it is counted, out of
+    // the share (설계 검토 기록11).
+    const seen = [...ways].map(([p, at]) => {
+      const each = [...new Set(at)];
+      if (each.length === 1) return { path: p, at: each[0] };
+      const early = each.reduce((a, b) => Date.parse(b) < Date.parse(a) ? b : a), late = each.reduce((a, b) => Date.parse(b) > Date.parse(a) ? b : a);
+      const near = Date.parse(early) > Date.parse(base.time) ? early : base.time;
+      // Every way's range holds this backup, so together they are one: from the earliest to the latest (r14 GA2).
+      return { path: p, at: near, reach: [early, late] };
+    });
+    return { ...result, compared: seen, where };
+  }
+  /** Which of `rels` (paths inside a folder) the backups `holders` ({ s, l }) hold there: asked by path, a hundred at a
+   *  time and no more than 16 000 characters (the Windows command line), a path one lacks telling nothing — or, past
+   *  `MASS.ask` of them, by reading that backup's list of the folder once (Fable 후속 2: not thousands of calls). */
+  async massAsk(holders, rels) {
+    const found = new Set();
+    for (const { s, l } of holders) {
+      const tree = l.selector.slice(l.selector.indexOf(':') + 1), left = rels.filter(r => !found.has(r));
+      if (!left.length) break;
+      if (left.length > MASS.ask) {
+        const want = new Set(left);
+        await this.listFiles(s.id, [tree], file => { const rel = file.path.startsWith(tree + '/') ? file.path.slice(tree.length) : null; if (rel && want.has(rel)) found.add(rel); });
+        continue;
+      }
+      for (let i = 0; i < left.length;) {
+        const ask = [];
+        for (let size = 0; i < left.length && ask.length < 100 && (!ask.length || size + tree.length + left[i].length < 16000); i++) { size += tree.length + left[i].length + 3; ask.push(tree + left[i]); }
+        await this.listFiles(s.id, ask, file => { if (file.path.startsWith(tree + '/')) found.add(file.path.slice(tree.length)); });
+      }
+    }
+    return found;
+  }
+  /** A partial backup's list when known whole (one list, not cut); undefined when not. */
+  async knownList(all, s) {
+    const lists = listsIn(all, s);
+    const list = lists.length === 1 ? await this.cachedList(lists[0]).catch(() => null) : null;
+    return list && !list.cut ? list : undefined;
+  }
+  /** The newest backup of `stays` that holds `folder` in its tree — asked of restic (massHas), so a partial one that could
+   *  not read it, whatever its list says or leaves out, is passed over (r4 GA2 · r5 GA6 · r6 GA4 · GA7) — with its plan
+   *  for it; the search ends at the first one whose list is known (Fable 후속 3: not a `restic ls` of every backup that
+   *  stays each clean-up). A partial one whose list is known whole tells where inside it could not read (`blind`, '' the
+   *  whole folder); one whose list is not known is chosen only when no other holds the folder. Null when none does. */
+  async massHolder(all, stays, latest, latestPlans, folder, cache = new Map(), names = [folder]) {
+    const treeOf = p => p.selector.slice(p.selector.indexOf(':') + 1), found = [];
+    const look = async s => {
+      const plans = s.id === latest.id ? latestPlans : this.plansOf(s), l = this.massPlan(plans, names);
+      if (!l || !(await this.massHas(s.id, plans.map(treeOf), cache))(treeOf(l))) return;
+      let blind = new Set(), sure = true;
+      if (s.tags.includes('partial')) {
+        const list = await this.knownList(all, s);
+        if (!list) sure = false;
+        else blind = new Set(list.unreadable.map(item => asSeen(folder, item)).filter(rel => rel !== null).map(rel => rel.toLowerCase()));
+      }
+      found.push({ s, l, blind, sure });
+    };
+    let i = 0;
+    while (i < stays.length && !found.some(x => x.sure)) await look(stays[i++]);
+    return found.find(x => x.sure) || found[0] || null;
+  }
+  /** The plan of `plans` for a folder spelled as one of `names` (a backup holds one folder of a name, however spelled). */
+  massPlan(plans, names) { return plans?.find(p => names.includes(p.original)); }
+  /** Which of `trees` (restic paths of backup folders) backup `id` holds: one `restic ls` without recursion for those
+   *  paths — a path it lacks tells nothing — kept in `cache` for the clean-up. */
+  async massHas(id, trees, cache) {
+    if (!cache.has(id)) cache.set(id, new Map());
+    const known = cache.get(id), ask = [...new Set(trees)].filter(t => !known.has(t));
+    if (ask.length) {
+      const seen = new Set();
+      await this.listNodes(id, ask, node => { if (node.type === 'dir') seen.add(node.path); }, { recursive: false });
+      for (const t of ask) known.set(t, seen.has(t));
+    }
+    return t => known.get(t) === true;
+  }
+  /** One `restic diff --json` of 4.4: each change line to `onChange`, restic's count of what is gone that is no file or
+   *  folder to `c.others`. No statistics line, or anything restic writes to its errors, fails it. */
+  async massDiff(args, c, onChange) {
+    await this.run(['diff', '--json', ...args], { stderrFails: true, consumeStdout: async stream => {
+      const decoder = new StringDecoder('utf8'); let pending = '', seen = false;
+      const line = async text => {
+        if (!text.trim()) return;
+        let node; try { node = JSON.parse(text); } catch { throw new Error('바뀐 파일 목록을 읽지 못했습니다.'); }
+        if (node?.message_type === 'statistics') {
+          if (![node.removed?.files, node.removed?.others].every(n => Number.isSafeInteger(n) && n >= 0)) throw new Error('바뀐 파일 수를 확인하지 못했습니다.');
+          c.others += node.removed.others; seen = true; return;
+        }
+        if (node?.message_type === 'change' && typeof node.path === 'string' && typeof node.modifier === 'string') await onChange(node.path, node.modifier);
+      };
+      for await (const chunk of stream) {
+        pending += decoder.write(chunk); let i;
+        while ((i = pending.indexOf('\n')) >= 0) { const text = pending.slice(0, i); pending = pending.slice(i + 1); await line(text); }
+        if (pending.length > 1024 * 1024) throw new Error('바뀐 파일 목록을 읽지 못했습니다.');
+      }
+      await line(pending + decoder.end());
+      if (!seen) throw new Error('바뀐 파일 수를 확인하지 못했습니다.');
+    } });
+  }
+  /** The thresholds of 4.4 over counts of one comparison; a share is of the files and bytes the backup before had. */
+  massKind({ removed, changed, bytes, before, beforeBytes, limit, folders, list }) {
+    const share = (n, of, part) => !Number.isSafeInteger(of) || of <= 0 || n >= of * part;
+    const kind = removed >= limit.files && share(removed, before, limit.removedShare) ? 'removed'
+      : changed >= limit.files && share(changed, before, limit.changedShare) ? 'changed'
+      : removed > 0 && bytes >= limit.bytes && share(bytes, beforeBytes, limit.removedShare) ? 'bytes' : null;
+    return { kind, removed, changed, bytes, before: Number.isSafeInteger(before) && before > 0 ? before : null, folders, list };
+  }
+  /** The files of one backup folder (`plan`), or of a path inside it (`rel`), in `snapshot` — none when that backup lacks
+   *  the path (a folder it could not read). */
+  async countFiles(snapshot, plan, rel = '') {
+    let files = 0, bytes = 0;
+    const at = plan.selector.slice(plan.selector.indexOf(':') + 1) + (rel ? '/' + rel : '');
+    await this.listFiles(snapshot.id, [at], file => { files++; bytes += file.size; });
+    return { files, bytes };
+  }
+  /** Each file `restic ls` streams for backup `id` — under the absolute `paths` given, a path it lacks giving none — as
+   *  { path, size } (0 when not told); any restic error fails it. */
+  async listFiles(id, paths, onFile) { await this.listNodes(id, paths, node => { if (node.type === 'file') onFile(node); }); }
+  /** Each node `restic ls` streams, as { path, type, size } — without `recursive`, the paths given and what is right in them. */
+  async listNodes(id, paths, onNode, { recursive = true, stderrFails = true } = {}) {
+    await this.run(['ls', '--json', ...(recursive ? ['--recursive'] : []), id, ...paths], { stderrFails, consumeStdout: async stream => {
+      const decoder = new StringDecoder('utf8'); let pending = '';
+      const line = text => {
+        if (!text.trim()) return;
+        let node; try { node = JSON.parse(text); } catch { throw new Error('파일 수를 세지 못했습니다.'); }
+        if (node?.message_type === 'node') onNode({ path: String(node.path ?? ''), type: String(node.type ?? ''), size: Number.isSafeInteger(node.size) && node.size > 0 ? node.size : 0 });
+      };
+      for await (const chunk of stream) {
+        pending += decoder.write(chunk); let i;
+        while ((i = pending.indexOf('\n')) >= 0) { line(pending.slice(0, i)); pending = pending.slice(i + 1); }
+        if (pending.length > 1024 * 1024) throw new Error('파일 수를 세지 못했습니다.');
+      }
+      line(pending + decoder.end());
+    } });
+  }
+  /** 「확인을 마침」 on a hold (4.4): the change is the person's. Each folder the hold compared is covered between the backup
+   *  it kept and the one it compared that folder with (Fable 2 · r4 GA1); what is outside is compared when it goes. */
+  async massConfirm() {
+    const hold = this.config?.massHold;
+    if (!hold) return this.getState();
+    const covered = (hold.compared || []).map(c => ({ path: c.path, from: hold.beforeAt, to: c.at, ...(c.reach ? { reach: c.reach } : {}) }));
+    this.config.massCheck = { folders: [...(this.config.massCheck?.folders || []), ...covered].slice(-100) };
+    this.config.massHold = null;
+    await this.save(); return this.getState();
   }
   /** 「지금 상태」 plans (4.2), shared by restoreLatest and 옮겨 오기 (STAGE1_DESIGN.md 4.6): each folder from its own newest
    *  backup (restoreBases — a missing folder from the backups retain() keeps for it, a newer partial one's content over
@@ -1571,49 +2107,91 @@ class BackupEngine extends EventEmitter {
       await this.identity(); await this.assertNoRemoteMaintenance();
       const snapshot = (await this.snapshots([VERIFIED], { host }))[0];
       if (!snapshot) throw selection.issue('NO_SNAPSHOT');
-      const plans = selection.sourcePlans(snapshot), [part] = selection.scopeOf(plans, { folder, sub }), plan = plans[part.index];
-      const base = await directory(parent);
-      // Never where the backup's folders were, on this PC or the old one (as the selected restore).
-      if ([...this.forbidden(), ...this.config.sources, ...plans.map(p => p.original)].some(p => overlap(base, p))) throw Object.assign(new Error('작업 폴더·백업 저장소와 분리된 복구 폴더를 선택해 주세요.'), { code: 'OUTPUT_UNSAFE' });
-      const selector = part.sub ? `${plan.selector}/${part.sub}` : plan.selector;
-      this.stage('복구할 파일 목록 확인 중');
+      const plans = selection.sourcePlans(snapshot), parts = selection.scopeOf(plans, { folder, sub });
+      const done = await this.restoreParts({ snapshot, plans, parts, parent, named, from: other });
+      this.config.lastRestore = { ...done, scope: { from: other, folder: plans[parts[0].index].original, sub: parts[0].sub, snapshotAt: snapshot.time } };
+      await this.save();
+      return this.getState();
+    }, { named: named === true, ...(fromNote ? { from: fromNote } : {}) });
+  }
+  /**
+   * 대량 삭제 · 변경 멈춤 (4.4) 「지워지기 전으로 되살리기」: the folders that lost or changed files, from the backup the hold
+   * keeps by number (massHold.beforeId), whole into a new folder as restoreScope does. The hold stays: the person says when
+   * they are done (massConfirm), and until then no backup before it is forgotten.
+   */
+  async restoreMassBefore({ parent, named = false, folder, sub }) {
+    return this.operation('restore', async () => {
+      const hold = this.config.massHold;
+      if (!hold) throw Object.assign(new Error('한꺼번에 지워지기 전의 판이 없습니다.'), { code: 'NOT_FOUND' });
+      await this.identity(); await this.assertNoRemoteMaintenance();
+      // The backup the hold keeps, complete or partial (r2 GA2): the comparison takes both.
+      const snapshot = (await this.snapshots([], { host: this.hostName })).find(s => s.id === hold.beforeId && (s.tags.includes(VERIFIED) || s.tags.includes('partial')));
+      if (!snapshot) throw selection.issue('NO_SNAPSHOT');
+      const plans = selection.sourcePlans(snapshot);
+      // A folder past the list limit is taken a part at a time (`folder` · `sub`, as restoreScope — GPT GA11).
+      const touched = plans.filter(p => hold.folders.some(f => (f.removed || f.changed) && same(f.path, p.original)));
+      const parts = folder !== undefined || sub !== undefined ? selection.scopeOf(plans, { folder, sub }) : (touched.length ? touched : plans).map(p => ({ index: p.index, sub: '' }));
+      const done = await this.restoreParts({ snapshot, plans, parts, parent, named, from: null });
+      this.config.lastRestore = { ...done, mass: { beforeId: snapshot.id, beforeAt: snapshot.time } };
+      await this.save();
+      return this.getState();
+    }, { named: named === true });
+  }
+  /**
+   * Restores `parts` (scopeOf's `{ index, sub }`) of `snapshot` whole into one new folder, each as `<번호-폴더>/<sub>`, every
+   * file checked against its list (SHA-256, restore-tar), as the 「지금 상태」 restore does: inside a restore operation, so
+   * cancelRestore stops it; a failure names the folder it made and, unless stopped, asks for a check. Never where the
+   * backup's folders were, on this PC or the old one. A part past the list limit is CATALOG_TOO_LARGE (`scopeListMax`
+   * lowers it in tests).
+   */
+  async restoreParts({ snapshot, plans, parts, parent, named, from }) {
+    const base = await directory(parent);
+    if ([...this.forbidden(), ...this.config.sources, ...plans.map(p => p.original)].some(p => overlap(base, p))) throw Object.assign(new Error('작업 폴더·백업 저장소와 분리된 복구 폴더를 선택해 주세요.'), { code: 'OUTPUT_UNSAFE' });
+    this.stage('복구할 파일 목록 확인 중');
+    const reads = [];
+    for (const part of parts) {
+      const plan = plans[part.index], selector = part.sub ? `${plan.selector}/${part.sub}` : plan.selector;
       let manifest;
       await this.readPart(plan, snapshot.id, part.sub, async () => {
         try { await this.run(['ls', '--json', '--recursive', selector], { consumeStdout: async stream => { manifest = await readManifest(stream, base, this.scopeListMax ? { max: this.scopeListMax } : {}); } }); }
         catch (e) { if (e?.tooMany) throw Object.assign(new Error('이 폴더는 파일과 폴더가 100만 개를 넘어 통째로 꺼낼 수 없습니다. 안쪽 폴더를 골라 주세요.'), { code: 'CATALOG_TOO_LARGE' }); throw e; }
       });
-      const space = await fs.statfs(base, { bigint: true });
-      const required = [...manifest.nodes.values()].reduce((n, entry) => n + (entry.type === 'dir' ? space.bsize : ((BigInt(entry.size) + space.bsize - 1n) / space.bsize) * space.bsize), 16n * 1024n * 1024n);
-      if (required > space.bavail * space.bsize) throw Object.assign(new Error('복구할 파일을 저장할 여유 공간이 부족합니다. 다른 드라이브를 선택해 주세요.'), { code: 'NO_SPACE' });
-      const restoredFolder = part.sub ? `${plan.label}/${part.sub}` : plan.label;
-      let target;
-      try {
-        if (named) target = await namedFolder(base, this.now());
-        else { const fresh = path.join(base, `복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`); await fs.mkdir(fresh); target = fresh; }
+      reads.push({ plan, part, selector, manifest });
+    }
+    const space = await fs.statfs(base, { bigint: true });
+    const required = reads.reduce((sum, { manifest }) => [...manifest.nodes.values()].reduce((n, entry) => n + (entry.type === 'dir' ? space.bsize : ((BigInt(entry.size) + space.bsize - 1n) / space.bsize) * space.bsize), sum), 16n * 1024n * 1024n);
+    if (required > space.bavail * space.bsize) throw Object.assign(new Error('복구할 파일을 저장할 여유 공간이 부족합니다. 다른 드라이브를 선택해 주세요.'), { code: 'NO_SPACE' });
+    let target;
+    try {
+      // Written down only once the folder is there (카본 끝판 A1 of the 화면 세션 E27 · E29 review).
+      if (named) target = await namedFolder(base, this.now());
+      else { const fresh = path.join(base, `복구-${new Date(this.now()).toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`); await fs.mkdir(fresh); target = fresh; }
+      this.stage('파일 복구 및 내용 검증 중');
+      const mapping = []; let skipped = 0;
+      for (const { plan, part, selector, manifest } of reads) {
+        const restoredFolder = part.sub ? `${plan.label}/${part.sub}` : plan.label;
         const destination = entryPath(target, restoredFolder);
         await fs.mkdir(destination, { recursive: true }); await directory(destination);
-        this.stage('파일 복구 및 내용 검증 중');
         await this.run(['dump', selector, '/', '--archive', 'tar'], { consumeStdout: stream => extractVerified(stream, destination, manifest) });
-        this.restoreFinal();
         const leftItems = manifest.skipped?.list || [];
         const left = manifest.skipped?.count ? { skipped: { count: manifest.skipped.count, items: leftItems.slice(0, 1000), ...(manifest.skipped.cut ? { cut: true } : {}) } } : {};
+        skipped += manifest.skipped?.count || 0;
         const original = part.sub ? path.win32.join(plan.original, ...part.sub.split('/')) : plan.original;
-        await fs.writeFile(path.join(target, '복구경로.json'), JSON.stringify([{ original, restoredFolder, backupAt: snapshot.time, ...(other ? { from: other } : {}), ...left }], null, 2), { flag: 'wx' });
+        mapping.push({ original, restoredFolder, backupAt: snapshot.time, ...(from ? { from } : {}), ...left });
       }
-      catch (e) {
-        // As 「지금 상태」 restore: stopped by the person, the health stays; failing, nothing more may stop it.
-        const stopped = !!this.job?.cancelled; if (this.job) this.job.final = true;
-        if (!stopped) {
-          this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: '복구 또는 검증이 끝나지 않았습니다. 전체 점검 전에는 이전 백업을 정리하지 않습니다.' };
-          await this.save();
-        }
-        throw Object.assign(new Error(`${e.message}\n${target ? `완료되지 않은 복구 폴더: ${target}` : '복구 파일을 만들기 전에 중단했습니다.'}`), { exitCode: e.exitCode, code: e.code, ...(target ? { restorePath: target } : {}) });
+      this.restoreFinal();
+      await fs.writeFile(path.join(target, '복구경로.json'), JSON.stringify(mapping, null, 2), { flag: 'wx' });
+      return { path: target, at: new Date(this.now()).toISOString(), fromEarlier: 0, inNone: 0, ...(skipped ? { skipped } : {}) };
+    }
+    catch (e) {
+      // As 「지금 상태」 restore: stopped by the person, the health stays; failing, nothing more may stop it.
+      const stopped = !!this.job?.cancelled; if (this.job) this.job.final = true;
+      if (!stopped) {
+        this.config.health = { status: 'attention', checkedAt: new Date(this.now()).toISOString(), detail: '복구 또는 검증이 끝나지 않았습니다. 전체 점검 전에는 이전 백업을 정리하지 않습니다.' };
+        await this.save();
       }
-      this.config.lastRestore = { path: target, at: new Date(this.now()).toISOString(), fromEarlier: 0, inNone: 0, ...(manifest.skipped?.count ? { skipped: manifest.skipped.count } : {}),
-        scope: { from: other, folder: plan.original, sub: part.sub, snapshotAt: snapshot.time } };
-      await this.save();
-      return this.getState();
-    }, { named: named === true, ...(fromNote ? { from: fromNote } : {}) });
+      throw Object.assign(new Error(`${e.message}\n${target ? `완료되지 않은 복구 폴더: ${target}` : '복구 파일을 만들기 전에 중단했습니다.'}`), { exitCode: e.exitCode, code: e.code, ...(target ? { restorePath: target } : {}) });
+    }
   }
   queryFileCatalog({ token, query, offset }) { return this.catalogFor(token).query(query, offset); }
   setFileSelection(input) {
@@ -1748,7 +2326,13 @@ class BackupEngine extends EventEmitter {
   // scheduler (hourly · logon · wake · unlock); this decides whether this run
   // backs up and reports what happened for the run log. `dueMs` is 55 minutes so
   // an hourly trigger that fires a little early still runs.
-  async runOnce({ skipCloud = null, force = false, dueMs = 55 * 60000 } = {}) {
+  async runOnce(options = {}) {
+    // 대량 삭제 · 변경 멈춤 (4.4): every result says while a hold waits — a skipped, busy or manual one too — so the run
+    // executable tells it and judges it from all of them (GPT GA10).
+    const result = await this.runOnceBody(options);
+    return this.config?.massHold ? { ...result, mass: 1 } : result;
+  }
+  async runOnceBody({ skipCloud = null, force = false, dueMs = 55 * 60000 } = {}) {
     const c = this.config;
     if (!c?.repositoryId) return { outcome: 'skipped', reason: 'not-configured' };
     if (c.mode !== 'backup' || c.readOnly) return { outcome: 'skipped', reason: 'read-only' };

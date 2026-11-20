@@ -369,9 +369,13 @@ test('run mode: one $run per boot, person-started run is forced, app methods are
     const settings = path.join(state, 'vault', 'settings.json'), config = JSON.parse(fs.readFileSync(settings, 'utf8')), at = new Date().toISOString();
     config.lastRestoreError = { code: 'CANCELED', message: '되살리기를 그만두었습니다.', at, path: leftWhole };
     config.lastSelectedRestoreError = { code: 'CANCELED', message: '되살리기를 그만두었습니다.', at, path: leftPicked };
+    // A hold of the clean-up (4.4) on this PC's own backup, as the engine writes one: the folder `data` lost a file.
+    const kept = config.lastBackup.id;
+    config.massHold = { since: at, at, kind: 'removed', path: data, removed: 1, changed: 0, removedBytes: 0, left: 1, totalNow: 1, bytesNow: 8, before: 2,
+      beforeId: kept, beforeAt: config.lastBackup.at, afterId: 'f'.repeat(64), folders: [{ path: data, removed: 1, changed: 0 }], list: [{ folder: data, name: '밖.txt', kind: 'removed' }] };
     fs.writeFileSync(settings, JSON.stringify(config, null, 2));
     const reopened = [];
-    const again = worker(state, { answers: { openPath: a => { reopened.push(a[0]); return null; } } });
+    const again = worker(state, { answers: { openPath: a => { reopened.push(a[0]); return null; } }, dialogs: [{ method: 'dialog.open', value: { canceled: false, filePaths: [out] } }] });
     await again.call('$boot');
     assert.equal((await again.call('openRestoreFolder', [{ unfinished: true }])).value.ok, true);
     const picked = (await again.call('openSelectedRestoreFolder', [{ profile: 'local', unfinished: true }])).value;
@@ -381,6 +385,21 @@ test('run mode: one $run per boot, person-started run is forced, app methods are
     fs.rmSync(leftWhole, { recursive: true });
     assert.equal((await again.call('openRestoreFolder', [{ unfinished: true }])).value.code, 'NOT_FOUND');
     assert.equal(reopened.length, 3);
+    // 「지워지기 전으로 되살리기」 through the window (4.4): the folder the hold names, from the backup it keeps, into the folder
+    // picked; the hold stays until 「확인을 마침」, which the window can send on its own.
+    const top = async () => (await again.call('getState')).value.value;
+    assert.equal((await again.call('restoreMassBefore', [{ place: 'pick', other: 1 }])).value.code, 'BAD_INPUT');
+    const mass = (await again.call('restoreMassBefore', [{ place: 'pick' }])).value;
+    assert.equal(mass.ok, true, JSON.stringify(mass));
+    for (let i = 0; i < 600 && (await top()).profiles.local.job; i++) await new Promise(r => setTimeout(r, 100));
+    const held = await top();
+    assert.equal(held.lastRestore?.mass?.beforeId, kept, JSON.stringify(held.lastRestoreError));
+    const massLabel = fs.readdirSync(held.lastRestore.path).find(n => n !== '복구경로.json');
+    assert.equal(fs.readFileSync(path.join(held.lastRestore.path, massLabel, '밖.txt'), 'utf8'), 'not in the part');
+    assert.equal(held.massHold?.beforeId, kept);
+    const confirmed = (await again.call('massConfirm')).value;
+    assert.deepEqual([confirmed.ok, confirmed.value.massHold], [true, null]);
+    assert.equal((await again.call('restoreMassBefore', [{ place: 'pick' }])).value.code, 'NOT_FOUND', 'no hold, nothing to restore from');
     await again.call('$shutdown'); assert.equal(await again.exited, 0);
   });
 });

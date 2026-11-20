@@ -20,6 +20,14 @@ async function fixture({ provider = 'local', folders = 1 } = {}) {
   const repositoryId = 'd'.repeat(64);
   const engine = new BackupEngine({ stateDir: path.join(root, 'state'), resticPath: 'fixture', secretStore, now: () => now, intervalMs: 3600000, runner: async (args, opts = {}) => {
     calls.push(args.includes('--stdin') ? 'backup-list' : args[0]); seen[args[0]] = args;
+    // 대량 삭제 · 변경 멈춤 (4.4): the comparison before clean-up finds nothing changed.
+    if (args[0] === 'diff') { await opts.consumeStdout(require('node:stream').Readable.from([Buffer.from(JSON.stringify({ message_type: 'statistics', changed_files: 0, added: { files: 0, bytes: 0 }, removed: { files: 0, dirs: 0, others: 0, bytes: 0 } }))])); return ''; }
+    // Which of its folders a backup holds, as restic answers a listing without recursion: each folder it was given.
+    if (args[0] === 'ls' && !args.includes('--recursive')) {
+      const s = snapshots.find(x => x.id === args[2]), trees = (s?.paths || []).map(p => '/' + p.replace(/^([A-Za-z]):/, '$1').replaceAll('\\', '/'));
+      const nodes = args.slice(3).filter(t => trees.includes(t)).map(t => JSON.stringify({ message_type: 'node', type: 'dir', path: t }));
+      await opts.consumeStdout(require('node:stream').Readable.from([Buffer.from(nodes.join('\n'))])); return '';
+    }
     const tagged = () => snapshots.push({ id: crypto.randomBytes(32).toString('hex'), time: new Date(now).toISOString(), hostname: engine.config.vaultId, paths: ['/workbackup-unreadable.json'], stdinText: opts.stdinText, tags: args[args.indexOf('--tag') + 1].split(','), summary: { total_files_processed: 1, total_bytes_processed: 5 } });
     // A list snapshot read back (cachedList, when the state folder has no copy).
     if (args[0] === 'dump') { const s = snapshots.find(x => x.id === args[1]); if (s?.stdinText !== undefined) await opts.consumeStdout(require('node:stream').Readable.from([Buffer.from(s.stdinText)])); return ''; }

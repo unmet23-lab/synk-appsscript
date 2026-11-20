@@ -24,6 +24,8 @@ async function fixture() {
     calls.push(args);
     if (args[0] === 'cat' && args[1] === 'config') return JSON.stringify({ id: repositoryId });
     if (args[0] === 'snapshots') return JSON.stringify(fake.snapshots);
+    // 대량 삭제 · 변경 멈춤 (4.4): the comparison before clean-up finds nothing changed.
+    if (args[0] === 'diff') { await opts.consumeStdout(require('node:stream').Readable.from([Buffer.from(JSON.stringify({ message_type: 'statistics', changed_files: 0, added: { files: 0, bytes: 0 }, removed: { files: 0, dirs: 0, others: 0, bytes: 0 } }))])); return ''; }
     if (args[0] === 'forget' || args[0] === 'prune') return '';
     if (args[0] === 'ls') {
       await opts.consumeStdout(Readable.from([Buffer.from([{ message_type: 'snapshot', id: args.at(-1).slice(0, 64) }, { message_type: 'node', path: '/a.txt', type: 'file', size: 1 }].map(x => JSON.stringify(x)).join('\n'))]));

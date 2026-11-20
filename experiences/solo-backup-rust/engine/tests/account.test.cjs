@@ -31,6 +31,8 @@ function restic({ password = null, snapshots = [] } = {}) {
   const r = { password, snapshots, calls: [] };
   r.run = async (args, options) => {
     r.calls.push({ args, password: options.password, credentials: options.credentials, repository: options.repository });
+    // 대량 삭제 · 변경 멈춤 (4.4): the comparison before clean-up finds nothing changed.
+    if (args[0] === 'diff') { await options.consumeStdout(require('node:stream').Readable.from([Buffer.from(JSON.stringify({ message_type: 'statistics', changed_files: 0, added: { files: 0, bytes: 0 }, removed: { files: 0, dirs: 0, others: 0, bytes: 0 } }))])); return ''; }
     if (args[0] === 'cat') { if (r.password === null) throw exit(10); if (options.password !== r.password) throw exit(12); return JSON.stringify({ id: ID }); }
     if (args[0] === 'init') { r.password = options.password; return ''; }
     if (args[0] === 'snapshots') return JSON.stringify(r.snapshots);

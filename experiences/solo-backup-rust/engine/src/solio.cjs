@@ -65,7 +65,7 @@ function statusOf({ state: s, version, ledger = null, update = null, startupRegi
   if (configured && !moved && !restoreOnly) {
     if (s.credentialRequired) topics.add('signin');
     if (p && ['recovery', 'clock', 'probe', 'error', 'overdue', 'startup'].includes(p.reason)) topics.add('status');
-    if (p?.reason === 'health') topics.add('changes');
+    if (p?.reason === 'health' || p?.reason === 'mass') topics.add('changes');
     if ((Array.isArray(s.missingSources) && s.missingSources.length) || days.includes('missing')) topics.add('folders');
     if (days.includes('stale') || days.includes('partial')) topics.add('status');
   }
