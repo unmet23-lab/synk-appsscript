@@ -85,7 +85,7 @@
 .sc[data-head="c"] .sc-dock .sc-cal-page{transform:none;box-shadow:inset 0 0 0 1px var(--card-edge),0 2px 0 #F0F0F2,0 3px 0 #D9D9DE,0 5px 0 #EEEEF1,0 6px 0 #D3D3D9,0 8px 0 #ECECEF,0 9px 0 #CFCFD5}
 /* 꽂이 달력은 줄 위 카드와 같은 물건으로: 떼는 종이가 겹겹이 쌓인 두께, 비스듬한 광택, 붉은 띠의 빛 */
 .sc[data-head="c"] .sc-dock .sc-cal-page::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.7) 46%,rgba(255,255,255,0) 60%);mix-blend-mode:soft-light}
-.sc[data-head="c"] .sc-dock .sc-cal-m{background:linear-gradient(180deg,#E8573F,#C93B2B);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,0,0,.12)}
+.sc[data-head="c"] .sc-dock .sc-cal-m{background:linear-gradient(180deg,#BF3E2C,#A3301F);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,0,0,.12)}
 .sc[data-head="c"] .sc-dock .sc-cal-d{font-family:'SYNK Latin',var(--sans);font-weight:700;letter-spacing:-.05em}
 .sc[data-head="c"] .sc-dock .sc-cal-stack::before{inset:10px -2px -12px;background:#E4E4E8;box-shadow:0 26px 30px -18px rgba(30,30,60,.5),0 3px 6px -2px rgba(30,30,60,.18)}
 .sc[data-head="c"] .sc-shot{position:absolute;left:0;right:0;top:clamp(18px,3vh,40px)}

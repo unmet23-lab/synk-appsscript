@@ -10,7 +10,7 @@
   --sans:'SYNK Latin','SUIT Variable',system-ui,sans-serif;
   --bg:#F7F7F5;--bg-lo:#EFEFEC;--ink:#17171A;--ink2:rgba(23,23,26,.62);--ink3:rgba(23,23,26,.38);--hair:rgba(23,23,26,.12);
   --card:#FFFFFF;--card-edge:#E4E4E8;--card-side:#D9D9DE;
-  --stamp:#D8432C;--hot:#FF5A3C;--cord:#9A9AA2;
+  --stamp:#B5382A;--hot:#FF5A3C;--cord:#9A9AA2;
   --metal-hi:#FBFBFD;--metal:#C9CBD2;--metal-lo:#8E9099;
   --cw:clamp(150px,13vw,214px);--ch:calc(var(--cw) * 1.42);--ct:5px;
   --gut:clamp(20px,4.4vw,64px);color-scheme:light
@@ -78,8 +78,8 @@ button{font:inherit;color:inherit}
 /* 3D 배지 */
 .sc-cards{position:absolute;inset:0;pointer-events:none}
 .sc-card{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);transform-origin:50% 0;will-change:transform;cursor:pointer;touch-action:pan-y;pointer-events:auto;outline:none;-webkit-tap-highlight-color:transparent}
-.sc-card.is-grab{cursor:grabbing}
 .sc-card[aria-disabled="true"]{cursor:grab}
+.sc-card.is-grab{cursor:grabbing}
 .sc-card-in{position:absolute;inset:0;perspective:1100px;transition:transform .12s cubic-bezier(.3,1.6,.5,1)}
 .sc-card.is-down .sc-card-in{transform:scale(.96)}
 .sc-box,.sc-flip{position:absolute;inset:0;transform-style:preserve-3d}
@@ -99,6 +99,7 @@ button{font:inherit;color:inherit}
 /* 앞면: 위에 움직이는 그림 창, 아래에 번호와 낱말 */
 .sc-pic{position:relative;margin:9px 9px 0;aspect-ratio:4/5;border-radius:9px;overflow:hidden;background:var(--tone,#DDE6EE)}
 .sc-pic video,.sc-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.sc-pic video:not(.is-ready){opacity:0}
 .sc-cap{position:absolute;left:6%;right:6%;bottom:7%;z-index:2;padding:3px 6px 4px;border-radius:8px;background:rgba(23,23,26,.8);color:#fff;font-size:calc(var(--cw) * .07);font-weight:700;line-height:1.25;letter-spacing:.01em;text-align:center;opacity:0;pointer-events:none}
 .sc-cap:empty{display:none}
 .sc-pic::after{content:"";position:absolute;inset:0;border-radius:9px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);pointer-events:none}
@@ -135,7 +136,7 @@ button{font:inherit;color:inherit}
 .sc-card.is-wrong .sc-word{color:var(--stamp)}
 .sc-card.is-wrong .sc-pic{filter:grayscale(.85) brightness(1.04);transition:filter .5s}
 .sc-card.is-called .sc-face{box-shadow:inset 0 0 0 1px var(--card-edge),0 0 0 3px var(--hot),0 0 0 10px rgba(255,90,60,.14)}
-.sc-card:focus-visible .sc-front{box-shadow:inset 0 0 0 1px var(--card-edge),0 0 0 3px var(--ink)}
+.sc-card:focus-visible .sc-face{box-shadow:inset 0 0 0 1px var(--card-edge),0 0 0 3px #fff,0 0 0 6px var(--ink)}
 .sc-mark{position:absolute;left:-3%;width:106%;overflow:visible;pointer-events:none}
 .sc-mark path{fill:none;stroke-linecap:round;stroke-linejoin:round}
 .sc-mark.is-under{bottom:-.26em;height:.32em}
@@ -150,7 +151,7 @@ button{font:inherit;color:inherit}
 .sc-pin-b{position:absolute;left:5px;right:5px;top:0;height:10px;border:2px solid var(--metal-lo);border-bottom:0;border-radius:6px 6px 0 0;transform-origin:50% 100%;transition:transform .14s cubic-bezier(.3,1.6,.5,1)}
 .sc-card.is-open .sc-pin-b{transform:rotateX(-38deg) translateY(-2px)}
 .sc-card.is-open .sc-pin-a{transform:translateY(-2px)}
-.sc-hook{left:0;top:0;margin-left:0;transition:opacity .25s;opacity:.92}
+.sc-pin.sc-hook{left:0;top:0;margin-left:0;transition:opacity .25s;opacity:.92}
 .sc-shadow{position:absolute;left:0;top:0;width:var(--cw);height:var(--ch);border-radius:16px;background:rgba(40,40,70,.18);filter:blur(14px);pointer-events:none;transform-origin:50% 0}
 
 /* 답한 뒤 */
@@ -212,7 +213,7 @@ button{font:inherit;color:inherit}
 .sc-seal{position:absolute;left:50%;top:31%;z-index:2;display:flex;flex-direction:column;align-items:center;gap:1px;padding:calc(var(--cw) * .035) calc(var(--cw) * .06);margin-left:calc(var(--cw) * -.36);width:calc(var(--cw) * .72);border:3px solid currentColor;border-radius:8px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5),inset 0 0 0 4px currentColor;color:var(--ink);background:rgba(255,255,255,.28);transform:rotate(-13deg);
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.5 1.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.5 1.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E")}
 .sc-seal b{font-size:calc(var(--cw) * .125);font-weight:850;letter-spacing:-.04em;line-height:1.1;white-space:nowrap}
-.sc-seal small{font-size:calc(var(--cw) * .045);font-weight:700;white-space:nowrap;opacity:.85}
+.sc-seal small{font-size:calc(var(--cw) * .045);font-weight:700;white-space:nowrap}
 .sc-seal.is-x{color:var(--stamp)}
 .sc-end.is-now{color:var(--ink)}
 /* 내 위치: 줄 · 매듭 · 빈 집게가 물러나 앞으로 나온 카드만 또렷하다 */
@@ -317,8 +318,10 @@ a.sc-btn{text-decoration:none}
 .sc-hintfig-x::before,.sc-hintfig-x::after{content:"";position:absolute;left:8px;right:8px;top:13px;height:2px;border-radius:1px;background:var(--ink);transform:rotate(45deg)}
 .sc-hintfig-x::after{transform:rotate(-45deg)}
 .sc-hintfig-x:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.sc-seal.is-help{color:#A4570A;width:calc(var(--cw) * .8);margin-left:calc(var(--cw) * -.4)}
+.sc-seal.is-help{color:#8A4A08;width:calc(var(--cw) * .8);margin-left:calc(var(--cw) * -.4)}
 .sc-seal.is-help b{font-size:calc(var(--cw) * .088);white-space:normal;text-align:center;line-height:1.08}
+:lang(en) .sc-seal{width:calc(var(--cw) * .8);margin-left:calc(var(--cw) * -.4)}
+:lang(en) .sc-seal b{font-size:calc(var(--cw) * .088);white-space:normal;text-align:center;line-height:1.08}
 .sc-after > *{transition:opacity .2s}
 .sc-after.is-tipped > :not(.sc-next){opacity:.08!important}
 /* 묻는 말 + 힌트 단추 한 줄(좁으면 접힌다) */
@@ -332,7 +335,7 @@ a.sc-btn{text-decoration:none}
   .sc-hintfig{padding:6px 6px 7px;border-radius:13px}
   .sc-hintfig figcaption{font-size:12px;padding:2px 36px 7px 4px}
 }
-@media (prefers-reduced-motion:reduce){.sc *{transition:none!important;animation:none!important}}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{transition:none!important;animation:none!important}}
 
 /* ── 힌트 언어(11-19): 머리 오른쪽, 소리 스위치 앞의 작은 고르기 ── */
 .sc-hl{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
