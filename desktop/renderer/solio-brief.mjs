@@ -300,8 +300,9 @@ function creditVerdict(snapshot, g) {
   // 4주 동안 쓴 양을 한 달로 늘려 한 달 크레딧과 견준다. 「지난 4주 동안 n%를 썼다」가 아니라 「지금 속도면 한 달에 n%」다(GPT 검수 GA9)
   const pct = Math.round((spent / allot) * 100), pace = '지금 속도면 한 달에 크레딧의 ' + pct + '%를 씁니다.';
   // 첫 화면 한 줄은 속도 문장이다. 「모자람」 옆에 「크레딧이 모자랍니다」만 되풀이하거나 「남음」 옆에서 할 일이 빠졌다(0.5.0 공개 후보 카본 E6)
-  // 모자람에는 더 사라고 하지 않는다(업셀, subscriptions-model 머리 원칙). 한 달 크레딧을 넘는 속도일 때만 그 결과를 덧붙인다(최종 검수 solio-pub-p2-20261120 F3)
-  if (spent / allot >= DIAG.creditShort) return { verdict: 'short', say: pace + (spent > allot ? ' 이대로면 다음 충전 전에 크레딧이 바닥납니다.' : ''), more: '', scope: '' };
+  // 모자람에는 더 사라고 하지 않는다(업셀, subscriptions-model 머리 원칙, 최종 검수 solio-pub-p2-20261120 F3).
+  // 한 달 크레딧 안에 드는 속도면 여유가 거의 없다고 덧붙여 「모자람」과 숫자가 어긋나지 않게 한다. 잔액과 충전일을 보지 않으니 바닥나는 때는 말하지 않는다(다시 검수 solio-pub-p2-20261120-2 FA1 · FA2)
+  if (spent / allot >= DIAG.creditShort) return { verdict: 'short', say: pace + (spent <= allot ? ' 한 달 크레딧에 여유가 거의 없습니다.' : ''), more: '', scope: '' };
   if (spent / allot <= DIAG.creditSpare) return { verdict: 'spare', say: pace + ' 끊거나 낮은 요금제로 바꿔도 됩니다.', more: '', scope: '' };
   return { verdict: 'fit', say: pace + ' 지금 요금제가 알맞습니다.', more: '', scope: '' };
 }

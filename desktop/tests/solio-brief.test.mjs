@@ -190,8 +190,8 @@ test('credits: the 4-week pace is said as a month, and only with every account c
   const one = cr('c1', 'plus');
   const used = n => ({ cover: true, known: true, weeks: [0, 1, 2, 3].map(() => ({ used: n / 4, peak: null, reads: 4 })) });
   let d = briefDiag(snap([one], { c1: { weeks4: used(850) } }), briefGroups(snap([one], { c1: { weeks4: used(850) } }), NOW), NOW).items[0];
-  // 한 달 크레딧 안에 드는 모자람은 속도만 말하고, 더 사라고 하지 않는다(최종 검수 solio-pub-p2-20261120 F3)
-  assert.equal(d.say, '지금 속도면 한 달에 크레딧의 92%를 씁니다.');
+  // 한 달 크레딧 안에 드는 모자람은 여유가 거의 없다고 말하고, 더 사라고 하지 않는다(최종 검수 solio-pub-p2-20261120 F3, 다시 검수 -2 FA2)
+  assert.equal(d.say, '지금 속도면 한 달에 크레딧의 92%를 씁니다. 한 달 크레딧에 여유가 거의 없습니다.');
   // 첫 화면 한 줄은 판정 낱말을 되풀이하지 않고 속도와 할 일을 함께 말한다(0.5.0 공개 후보 카본 E6)
   assert.equal(d.word, '모자람');
   assert.equal(d.line, d.say);
@@ -201,8 +201,9 @@ test('credits: the 4-week pace is said as a month, and only with every account c
   assert.equal(d.line, '지금 속도면 한 달에 크레딧의 5%를 씁니다. 끊거나 낮은 요금제로 바꿔도 됩니다.');
   const over = snap([one], { c1: { weeks4: used(1200) } });
   d = briefDiag(over, briefGroups(over, NOW), NOW).items[0];
-  assert.equal(d.line, '지금 속도면 한 달에 크레딧의 130%를 씁니다. 이대로면 다음 충전 전에 크레딧이 바닥납니다.');
-  assert.doesNotMatch(d.say + d.more, /사거나|올리/);
+  // 잔액과 충전일을 보지 않으니 바닥나는 때는 말하지 않는다(다시 검수 -2 FA1)
+  assert.equal(d.line, '지금 속도면 한 달에 크레딧의 130%를 씁니다.');
+  assert.doesNotMatch(d.say + d.more, /사거나|올리|바닥/);
   const two = cr('c2', 'plus');
   const s = snap([one, two], { c1: { weeks4: used(40) } });
   d = briefDiag(s, briefGroups(s, NOW), NOW).items[0];
