@@ -2,8 +2,10 @@
 //   ① 공개 판이다 — 판 이름이 숫자 세 칸(-dev · .dirty 판은 멈춘다)이고, manifest · 입구(loader.js의 판 이름 한 줄)가 같은 판을 말한다
 //   ② 꼭 있어야 할 파일(엔진 묶음 atlas.mjs · 입구 loader.js · loader.mjs)이 manifest에 있고, 나무의 파일 목록이 manifest에 적힌 것과
 //      꼭 같으며(적히지 않은 파일 · 빠진 파일 없음), 파일마다 sha256이 같다. 지도(판 폴더의 map/ — manifest의 map 칸)도 같다:
-//      지도가 빠지거나 다르면 켜진 길의 코치가 지도를 못 받아(MAP_FAILED) 목록의 계정이 모두 지금 판으로 돌아간다(설계 주인 11-20)
-//   ③ 판 폴더를 덮지 않는다 — 공개본에 같은 판의 manifest가 있으면 바이트가 같을 때만 지나간다(다시 올려도 바뀌는 것이 없을 때)
+//      지도가 빠지거나 다르면 켜진 길의 코치가 지도를 못 받아(MAP_FAILED) 목록의 계정이 모두 지금 판으로 돌아간다(설계 주인 11-20).
+//      그래서 공개 판은 지도 파일이 하나 이상 적힌 manifest여야 한다(GPT GA2). 폴더 · 파일 자리가 뒤바뀌면 던지지 않고 문제로 알린다(GA3)
+//   ③ 판 폴더를 덮지 않는다 — 공개본에 같은 판의 manifest가 있으면 바이트가 같을 때만 지나가고, 판 폴더의 파일(엔진 묶음 · 지도)은
+//      하나씩 본다: 공개본에 없으면(404) 이번에 더하고(선택 공개 2단계의 지도처럼), 있으면 sha256이 같아야 한다(GPT GA1)
 //   ④ 다 맞으면 tools/공개.js 올리기 명령(미리 보기)을 찍는다. 실행(--실행 --계획 --검수)은 그 도구의 절차 그대로다.
 // 이 도구는 공개하지 않는다. 단계 0에서는 쓰지 않는다(공개본이 바뀌지 않는다) — 첫 공개는 단계 4의 제품 전환과 함께다.
 //   node packages/atlas/tools/publish.mjs <밖> [--사이트 https://synk.im]
@@ -21,9 +23,11 @@ const filesIn = dir =>
     .readdirSync(dir, { withFileTypes: true })
     .filter(entry => entry.isFile())
     .map(entry => entry.name);
-// 지도 폴더는 아래 폴더(items/)까지 — 이름은 map/ 뒤 경로(items/talk.json). 폴더가 없으면 빈 목록이다.
+const isDirectory = file => fs.existsSync(file) && fs.statSync(file).isDirectory();
+const isFile = file => fs.existsSync(file) && fs.statSync(file).isFile();
+// 지도 폴더는 아래 폴더(items/)까지 — 이름은 map/ 뒤 경로(items/talk.json). 폴더가 아니면 빈 목록이다(그 자리는 contentProblems가 알린다).
 const filesUnder = (dir, prefix = '') =>
-  fs.existsSync(dir)
+  isDirectory(dir)
     ? fs
         .readdirSync(dir, { withFileTypes: true })
         .flatMap(entry =>
@@ -49,7 +53,7 @@ function hashProblems(dir, table, label = '') {
   return Object.entries(table ?? {})
     .filter(([name, info]) => {
       const file = path.join(dir, name);
-      return !fs.existsSync(file) || sha256(fs.readFileSync(file)) !== info.sha256;
+      return !isFile(file) || sha256(fs.readFileSync(file)) !== info.sha256;
     })
     .map(([name]) => `${label}${name}이 manifest와 다르다`);
 }
@@ -61,8 +65,17 @@ function contentProblems({ atlas, edition, manifest }) {
   const editionDir = path.join(atlas, edition);
   const mapDir = path.join(editionDir, 'map');
   const mapTable = manifest.map?.files ?? {};
+  const mapShape = [
+    ...(Object.keys(mapTable).length
+      ? []
+      : [
+          'manifest에 지도 파일이 없다(공개 판은 지도와 함께 낸다 — 없으면 켜진 길의 코치가 MAP_FAILED)',
+        ]),
+    ...(fs.existsSync(mapDir) && !isDirectory(mapDir) ? ['map이 폴더가 아니다'] : []),
+  ];
   return [
     ...required,
+    ...mapShape,
     ...listingProblems(
       editionDir,
       new Set([...Object.keys(manifest.files ?? {}), 'manifest.json']),
@@ -100,16 +113,37 @@ function treeProblems({ atlas, edition, manifest }) {
   return [...problems, ...contentProblems({ atlas, edition, manifest })];
 }
 
-async function publicProblems({ edition, manifestBytes }, site, fetcher) {
-  const url = `${site.replace(/\/$/, '')}/atlas/${edition}/manifest.json?probe=${Date.now()}`;
-  const response = await fetcher(url, { headers: { 'cache-control': 'no-cache' } });
+// 판 폴더의 파일(엔진 묶음 · 제3자 고지 · 지도) — 이름은 판 폴더 뒤 경로다.
+const editionFiles = manifest => [
+  ...Object.entries(manifest.files ?? {}),
+  ...Object.entries(manifest.map?.files ?? {}).map(([name, info]) => [`map/${name}`, info]),
+];
+
+async function publicProblems({ edition, manifest, manifestBytes }, site, fetcher) {
+  const folder = `${site.replace(/\/$/, '')}/atlas/${edition}/`;
+  const get = name =>
+    fetcher(`${folder}${name}?probe=${Date.now()}`, { headers: { 'cache-control': 'no-cache' } });
+  const response = await get('manifest.json');
   if (response.status === 404) return [];
   if (!response.ok)
     return [`공개본을 확인하지 못했다(${response.status}) — 확인하기 전에는 올리지 않는다`];
   const published = Buffer.from(await response.arrayBuffer());
-  return sha256(published) === sha256(manifestBytes)
-    ? []
-    : [`공개본에 다른 ${edition} 판이 있다 — 판 폴더는 덮지 않는다(판을 올린다)`];
+  if (sha256(published) !== sha256(manifestBytes))
+    return [`공개본에 다른 ${edition} 판이 있다 — 판 폴더는 덮지 않는다(판을 올린다)`];
+  // 같은 판이 이미 있다. 판 폴더의 파일은 하나씩 본다 — 없으면(404) 이번에 더하고(선택 공개 2단계의 지도처럼), 있으면 sha256이
+  // 같아야 한다. 다르면 같은 판 폴더를 덮게 되므로 멈춘다(GPT GA1).
+  const problems = [];
+  for (const [name, info] of editionFiles(manifest)) {
+    const file = await get(name);
+    if (file.status === 404) continue;
+    if (!file.ok)
+      problems.push(
+        `공개본의 ${name}을 확인하지 못했다(${file.status}) — 확인하기 전에는 올리지 않는다`,
+      );
+    else if (sha256(Buffer.from(await file.arrayBuffer())) !== info.sha256)
+      problems.push(`공개본의 ${name}이 manifest와 다르다 — 판 폴더는 덮지 않는다(판을 올린다)`);
+  }
+  return problems;
 }
 
 // 올릴 공개 경로 — 판 폴더의 엔진 묶음 · 지도 · manifest와 입구. manifest에 적힌 것 모두다(지도가 빠지면 켜진 길이 MAP_FAILED).

@@ -19,4 +19,20 @@ export const RELEASE_MUTANTS = [
     "    ...hashProblems(mapDir, mapTable, 'map/'),\n",
     '',
   ],
+  [
+    'unit',
+    '공개',
+    '같은 판이 공개돼 있으면 판 폴더 파일을 보지 않는다 — 공개된 지도와 다른 바이트로 같은 판 폴더를 덮는다(GPT GA1)',
+    PUBLISH,
+    '  for (const [name, info] of editionFiles(manifest)) {\n',
+    '  for (const [name, info] of []) {\n',
+  ],
+  [
+    'unit',
+    '공개',
+    '지도 없는 공개 판을 받는다 — 켜진 길의 코치가 MAP_FAILED로 지금 판에 돌아간다(GPT GA2)',
+    PUBLISH,
+    "          'manifest에 지도 파일이 없다(공개 판은 지도와 함께 낸다 — 없으면 켜진 길의 코치가 MAP_FAILED)',\n",
+    '',
+  ],
 ];
