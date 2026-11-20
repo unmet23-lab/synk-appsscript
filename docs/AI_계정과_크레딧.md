@@ -31,9 +31,9 @@
 | 서비스 | 계정 | 쓰는 곳 | 바닥나거나 막히면 | 자세히 |
 |---|---|---|---|---|
 | Claude 구독(앱 · Code 탭 · CLI) | 열 계정 — 77yuhbs · unmet23 · unmet25 · unmet27 · unmet29 · synk.yuh · founder · 77unmet · unmet22 · yuhobuilds. 5시간 한도는 10-31 기준 77yuhbs만 풀렸다 | Code 탭 세션, 무인 예약, CLI 검수 | 앱에서 다른 계정으로 바꿔 잇는다(세션 공유 미러가 세션을 그대로 보여 준다). Fable 주간 몫이 10% 남거나 막히면 Opus 5.5로 같은 검수를 한다 | [Claude 구독 계정](#claude-subscriptions) · [Fable 한도 대체](#fable-quota-fallback) |
-| Claude API 크레딧(Console 조직 키) | 결제 수단이 없는 다섯 — founder · synk.yuh · unmet25 · unmet27 · unmet29(운영 전용). 카드가 붙은 둘은 검수 목록의 한도키로만 쓴다 — unmet23 프로모 · 77yuhbs. 아직 Console에 잇지 않은 셋 — 77unmet · unmet22 · yuhobuilds | 서비스 속 AI, 서버와 봇 통로, 반값 일괄, Managed Agents | 다음 계정 키로 저절로 넘어간다(「갈아타기」 표). 한 목록이 모두 소진이어도 다른 목록과 구독 길이 남았는지 본다 | [Claude API 크레딧](#claude-api-크레딧) |
+| Claude API 크레딧(Console 조직 키) | 결제 수단 없는 계정은 founder, synk.yuh, unmet25, unmet27, unmet29(운영 전용), 77unmet, unmet22, yuhobuilds다. unmet23 프로모와 77yuhbs는 검수 한도키다. | 서비스 속 AI, 서버와 봇, 일괄 처리, Managed Agents | 크레딧이 소진되면 같은 기능에 연결된 다음 계정으로 넘어간다. | [Claude API 크레딧](#claude-api-크레딧) |
 | GPT(Codex) 구독 | 굽기 계정 셋 — bake1 · bake2 · bake3(synk.yuh Pro). GPT 검수는 앱 본 계정 `~/.codex`까지 넣어 고른다 | 그림 굽기, GPT 검수(`gpt-6.2-sol` · max) | 굽기는 다음 굽기 계정으로 저절로 넘어간다. 검수는 주간 · 5시간 몫이 남은 Pro 계정이면 끝까지 쓰고(10% 문턱 없음), 모두 100%면 GPT 검수를 생략한다(11-18) | [GPT](#gpt) |
-| OpenAI API | synk.yuh의 「Personal」 조직(결제 수단 없음) | WORLD 말하기 받아쓰기와 수업 녹음 전사에만 쓴다. 사진 아바타 시범은 상한 $30 안에서 | 넘어갈 다른 조직이 없다. 바닥나면 학생 화면이 스스로 확인으로 넘어간다 | [GPT](#gpt) |
+| OpenAI API | synk.yuh와 q121235의 Personal 조직. 두 조직 모두 결제 수단이 없다. | WORLD 말하기와 수업 녹음 받아쓰기에 사용한다. 사진 아바타 시범은 synk.yuh의 별도 키로 상한 $30 안에서 진행한다. | 받아쓰기 키 목록의 첫 계정은 synk.yuh이고 다음 계정은 q121235다. | [GPT](#gpt) |
 | Gemini Ultra 구독 | 본 계정 77yuhbs(Ultra 20x)와 가족 넷 — unmet25 · 77unmet · synk.yuh · unmet22(가족 자리 하나 남음) | 카본 웹 검수 · 그림 · 딥리서치(다섯 줄), agy(카본 CLI · 서버 예약 조사), Flow 영상 | 웹 몫은 계정마다 따로라 공용 차례가 빈 줄을 쓴다. agy 몫은 가족이 같이 써서 계정을 바꿔도 늘지 않는다. 이 다섯 밖(unmet23 Pro, 유료 API)으로는 넘어가지 않는다 | [아르곤 계정](#아르곤-계정) |
 | 77yuhbs Ultra에 딸린 크레딧 | Flow 매달 25,000(날마다 50 더, 이월 없음) · Google Cloud 매달 $100(받은 달부터 12개월) | Flow 영상, Gemini API, Compute Engine(켜 두었고 VM은 없다) | Google Cloud는 후불이라 크레딧을 넘기면 카드로 나간다. 쓰기 전에 예산 알림부터 건다 | [아르곤 계정](#아르곤-계정) · [코랩](#코랩) |
 | Gemini API 키 | 무료 키 「SYNK Free Voice Test」(77yuhbs AI Studio). 유료 1등급 키는 아직 없다 | 지어낸 내부 글과 대본만 넣는다(무료 등급은 보낸 글이 구글 학습에 쓰인다) | 429가 나면 Ultra 웹이나 구독 통로로 넘어간다 | [Gemini 구독 대체](#gemini-구독-대체) |
@@ -62,7 +62,6 @@
 ### 아직 확인하지 않은 것과 유호님 손
 
 - founder와 synk.yuh 키는 11-13 Opus 호출 한 번의 「credit balance is too low」로 소진 표시가 됐다. 그런데 11-12 Console에서 읽은 founder 잔액은 $199.71이었고, 이번 주기 호출도 각 한 번뿐이다. 실제로 바닥났는지는 Console에서 확인하지 않았다(11-15).
-- 77unmet, unmet22, yuhobuilds는 기록상 아직 Console 조직에 잇지 않아 월 API 크레딧을 받지 않고 있다(11-15 두 키 목록에도 없다). claude.ai 결제 화면의 「API 크레딧」에서 결제 수단이 없는 새 Console 조직에 잇는 일이다. 유호님이 「이어 줘」라고 하시면 Claude가 ego에서 잇고 키를 받아 목록에 넣는다. 비밀번호나 코드 칸이 뜨면 그 칸만 유호님께 넘긴다. unmet22 · yuhobuilds는 Google Play 결제라 그 칸이 뜨는지는 확인 안 함([트랙](_ops/트랙.md) 「Claude API 키 — 아직 잇지 않은 계정 셋」).
 - Gemini API 유료 키 하나와 회사 서버의 다음 결제 자리는 [트랙](_ops/트랙.md) §1에 있다.
 
 <a id="current-ai-settings"></a>
@@ -133,6 +132,8 @@ Fable로 검수할 때는 **5.2(`claude-fable-5-2`)**로만 부른다(2026-11-11
 
 ## GPT
 
+11-20에는 q121235의 ChatGPT Pro 월 $200 혜택이 연결된 Personal 조직에서 잔액 $168을 확인했다. 이 조직에는 결제 수단이 없다. 받아쓰기 전용 키로 실제 음성 전사에 성공했다. WORLD 말하기와 수업 녹음의 운영 키 목록에는 synk.yuh 다음 계정으로 q121235를 등록했다. 수업 녹음의 첫 키는 `OPENAI_API_KEY`이고 예비 키 목록은 `TRANSCRIBE_OPENAI_API_KEYS`다.
+
 GPT 그림 굽기는 2026-10-17 사용자 결정으로 등록한 굽기 계정 사이에서 한도에 막히면 자동으로 바꿔 쓴다(`tools/codex계정.js`). 굽기 계정은 셋이다 — 보조 bake1 · bake2와 synk.yuh Pro(bake3). 보조 둘이 막히면 synk.yuh로 이어 굽고, 그것을 「막힘」으로 치거나 꺼리지 않는다(2026-11-07 유호님 「지금 왜 gpt 계정 두개만 생각하고있는거야? synk.yuh계정도 있잖아」). synk.yuh는 백엔드와 한도를 같이 쓰므로 큰 묶음 앞에서 `node tools/codex계정.js`로 남은 양만 본다. 굽는 모델·용도와 실제 버전 확인의 한계는 [현재 모델·생성 도구](#current-ai-settings)를 따른다. 10-22 기준 GPT 앱 본 계정(`~/.codex`)은 unmet23 Pro(크레딧 잔액 있음)이고 synk.yuh Pro는 굽기 장부의 예비(bake3, 크레딧 0)로만 로그인돼 있다 — Pro가 둘이라 사용량은 나눠 본다.
 
 Claude 백엔드의 GPT 2차 검수(2026-10-22, `tools/검수묶음.mjs GPT`)는 등록된 Pro 계정 가운데 주간 · 5시간 몫이 100%에 닿지 않고 주간을 가장 덜 쓴 계정으로 돌고(11-18부터 90% 문턱 없음), 모델·추론은 [현재 모델 설정](#current-ai-settings)의 GPT 백엔드 검수 값을 따른다(2026-11-11 — 앱 기본값을 따르던 동안 검수 강도가 저절로 바뀌어 뗐고, Pro 하나의 주간 몫으로 하루 70회 안팎을 감당하는 쪽을 골랐다, [결정](_ops/결정.md)). 11-14부터 11-17까지는 주간 90%를 넘긴 계정을 쓰지 않고 카본으로 넘겼다(남긴 10%는 유호님의 GPT 세션과 그림 굽기 몫이었다). 11-18 유호님이 그 문턱을 없애라고 하셔서, 지금은 몫이 남은 계정이면 쓰고 모두 100%면 GPT 검수를 생략한다([운영 원칙 「한도」](AI_운영원칙.md#quota-handoff)). 2026-11-14 실측으로 Codex 한도는 계정마다 통 하나(`codex`)여서 sol·astra가 같은 몫을 쓰고(모델을 바꿔도 새 몫이 생기지 않는다), 등록 계정은 모두 크레딧 0이라 한도를 넘기면 돈이 나가지 않고 멈춘다. 문턱을 둔 처음 까닭(크레딧이 있는 계정이 한도를 넘기면 크레딧이 나간다)에 해당하는 계정은 unmet23 Pro가 끝난 11-12 뒤로 없다. GPT 세션도 앱 안의 그림 도구로 바로 굽지 않고 `codex exec` 대신 `node tools/codex계정.js exec <같은 인자>`(지시문은 표준입력)로 굽는다.
@@ -178,7 +179,7 @@ Claude API는 2026-10-17 사용자 결정으로 Max·Team 플랜에 딸린 월 A
 
 키마다 쓰임이 정해져 있다. 10-28에 일곱 조직의 Console 결제 화면을 계정마다 로그인해 확인했다 — 자동 충전은 모두 꺼져 있거나 결제 수단이 없어 켤 수 없다(유호님 「전부 자동결제는 안되도록」). 크레딧 만료일은 Console 결제 화면 「프로모션 크레딧」 표의 만료일이다(UTC 0시 — 한국 시각 오전 9시. 청구서 내역 줄 이름은 11월부터 「API credit (Ultra)」, 옛 「Max 20x」).
 
-| 계정(Console 표시 이름) | 조직 | 쓰는 곳 | 결제 수단 · 월 지출 한도 | 크레딧(10-28) |
+| 계정(Console 표시 이름) | 조직 | 쓰는 곳 | 결제 수단 · 월 지출 한도 | 확인 당시 크레딧 |
 |---|---|---|---|---|
 | founder@synk.im(공자) | c22447c4… | 인스타 DM 자동 답 | 없음 | $200 중 $199(10-17 받음, 11-04 만료) |
 | synk.yuh(세종) | c7e4a3a9… | 강사 도우미 · WORLD 쓰기 · 말하기의 첫 키, 검수 목록 | 없음 | 다 쓰고 -$3.13 미납(11-12 만료 — 그날 새 크레딧) |
@@ -187,15 +188,18 @@ Claude API는 2026-10-17 사용자 결정으로 Max·Team 플랜에 딸린 월 A
 | unmet27(양만춘) | 001d5f5d… | 이 PC 무인 작업 목록(`클로드_키목록.json` — 팁 적용안) | 없음 | $200(10-28 받음, 11-22 만료) |
 | unmet23(양유호) | f6ddc1be… | talk 기본 AI `ANTHROPIC_API_KEY`(기록 기준) · 검수 한도키 | 카드 있음 · 자동 충전 꺼짐 · $500 | Max $200 중 $197(11-22 만료), 산 잔액 -$1.31 미납 |
 | 77yuhbs(카레가츠) | 2e74db0b… | 이 PC 검수 · 시험 목록의 「한도키」(한도 $185 · 만료 11-20) | 카드 있음(Console에서 못 지움) · 자동 충전 꺼짐 · $200 | $200(10-28 받음, 11-22 만료) + 옛 잔액 $2.52 |
+| 77unmet | 개인 조직 | 무인 작업, 검수, talk, 헤르메스 | 없음 | 11-20에 $200 지급. 12-04 09:00 KST 만료 |
+| unmet22 | 개인 조직 | 무인 작업, 검수, talk, 헤르메스 | 없음 | 11-20에 $200 지급. 12-04 09:00 KST 만료 |
+| yuhobuilds | 개인 조직 | 무인 작업, 검수, talk, 헤르메스 | 없음 | 11-20에 $200 지급. 12-13 09:00 KST 만료 |
 
 - 「공자」는 founder@synk.im 계정의 Claude 표시 이름이다. 10-28 유호님 「앞으로 공자라고 하지말고 founder라고 저장해」로 이름을 founder로 통일했고(키 파일도 `클로드키_공자.txt` → `클로드키_founder.txt`), 옛 기록의 「공자」는 founder를 뜻한다. Console 조직 이름 「공자's Individual Org」는 그대로다. 다른 계정도 표시 이름이 별명이라 이름만으로 메일을 짐작하지 않는다.
 - synk.yuh는 운영(강사 도우미 · 쓰기 · 말하기 · 10-28까지 헤르메스)과 시험 · 검수가 한 크레딧을 나눠 쓰다 10-28 전에 바닥났다. 그래서 unmet29는 운영 몫 전용으로 두고 시험 · 검수 목록에 넣지 않는다. talk 운영 `COMPANION_ANTHROPIC_API_KEYS`와 WORLD 쓰기 · 말하기 `…_ANTHROPIC_API_KEYS`(리허설 쓰기 · 말하기도 같게)에 synk.yuh 뒤로 들어 있다.
 - 헤르메스 키는 10-28 오후 unmet29 → unmet25로 옮겼다(옛 키 백업 `.env.bak-20261028-unmet29` · `.env.bak-20261028-unmet25`). 헤르메스 쪽 쓴 양은 agent.log의 호출별 토큰으로 센다.
 - 77yuhbs는 처음엔 Max 크레딧이 그 조직에 없었다(잔액 $2.53). 10-28 유호님이 claude.ai 설정 → 결제 → API 크레딧에서 연결해 $200이 들어왔다. 카드를 먼저 지우려 했지만 Console은 하나뿐인 기본 결제 수단의 삭제 단추를 주지 않는다(지우려면 고객지원). 카드가 있어도 자동 충전이 꺼져 있으면 「크레딧 구매」를 직접 누르지 않는 한 돈이 나가지 않는다. 그래도 카드가 붙은 조직이라 unmet23 프로모처럼 검수 목록의 「한도키」로만 쓰고, 다음 달 크레딧이 들어오면 「한도시작」 · 「만료일」을 새로 적는다.
 - Console 월 지출 한도는 크레딧으로 쓴 몫까지 센다(unmet29가 크레딧만 쓰고도 「$0.15 사용됨」). 77yuhbs는 $20이라 크레딧을 한 달에 $20어치밖에 못 써서 10-28 유호님 「$200으로 올려」로 $200으로 올렸다.
-- 11-01 여덟째 Max 계정 77unmet(Max 5x — 월 API 크레딧 $100)이 생겼다. 이 PC Claude 앱 · 세션 공유 · PC 계정판(계정 폴더 `claude-6y5xo4d0`)에 들어 있고, Console 조직 연결 · 키는 아직 없어 위 표와 키 목록에는 없다. 넣을 때는 다른 계정처럼 결제 수단 없는 새 Console 조직에 연결한 뒤 키를 받는다. 11-02 계정판 읽기와 계정 폴더 등급 칸(`default_claude_max_20x`)으로는 Ultra(옛 Max 20x)가 되어 있어, 연결하면 월 크레딧은 $200일 것이다.
-- 11-02 아홉째 계정 unmet22(Ultra — 계정 폴더 등급 `default_claude_max_20x`, 11-01 22:30 KST 구독, 결제는 Google Play 구독)가 생겼다. 이 PC Claude 앱 · 세션 공유(b868eba8 짝, 첫 로그인 37초 뒤 709개 채움) · PC 계정판(계정 폴더 `claude-kjsy44ra`, 11-02 05:36 앱이 직접 읽어 정상)에 들어 있다. Console 조직 연결 · 키는 없다 — 7일 규칙으로 11-08 22:31 KST 뒤에야 claude.ai 결제 화면에 API 크레딧 칸이 뜰 수 있고, Google Play 결제 계정에도 그 칸이 뜨는지는 그때 본다.
-- 11-11 열째 계정 yuhobuilds(Ultra — CLI `planTier` `max_20x`, 결제는 Google Play 구독, 조직 89a9e7f8…)가 생겼다(유호님 「이 계정 세션공유하기 해주고 우리 구독현황판에도 추가해줘」). 이 PC Claude 앱 · 세션 공유(b43ab132 짝, 05:39:51 첫 로그인 39초 뒤 1088개 채움 — 앱을 껐다 켜야 목록에 보임) · PC 계정판(계정 폴더 `claude-uorf0aa2`, 05:46 CLI 로그인 → 앱을 끄고 줄을 넣어 바로 읽음 「이번 주 0%」)에 들어 있다. Console 조직 연결 · 키는 없다 — 구독 7일 뒤부터 claude.ai 결제 화면의 API 크레딧 칸으로 연결할 수 있고(구독 시작일은 아직 모름), Google Play 결제에도 그 칸이 뜨는지는 unmet22에서처럼 그때 본다.
+- 77unmet은 11-01에 Max 5x로 시작했고 11-02에 계정판에서 Ultra 등급을 확인했다. 11-20에 Console에서 월 $200을 받았다.
+- 11-02 아홉째 계정 unmet22(Ultra — 계정 폴더 등급 `default_claude_max_20x`, 11-01 22:30 KST 구독, 결제는 Google Play 구독)가 생겼다. 이 PC Claude 앱 · 세션 공유(b868eba8 짝, 첫 로그인 37초 뒤 709개 채움) · PC 계정판(계정 폴더 `claude-kjsy44ra`, 11-02 05:36 앱이 직접 읽어 정상)에 들어 있다. 11-20에 Google Play 구독을 개인 Console 조직과 연결하고 월 $200을 받았다.
+- 11-11 열째 계정 yuhobuilds(Ultra — CLI `planTier` `max_20x`, 결제는 Google Play 구독, 조직 89a9e7f8…)가 생겼다(유호님 「이 계정 세션공유하기 해주고 우리 구독현황판에도 추가해줘」). 이 PC Claude 앱 · 세션 공유(b43ab132 짝, 05:39:51 첫 로그인 39초 뒤 1088개 채움 — 앱을 껐다 켜야 목록에 보임) · PC 계정판(계정 폴더 `claude-uorf0aa2`, 05:46 CLI 로그인 → 앱을 끄고 줄을 넣어 바로 읽음 「이번 주 0%」)에 들어 있다. 11-20에 Google Play 구독을 개인 Console 조직과 연결했다.
 - claude.ai 설정의 「사용 크레딧 · 자동 충전」은 Console의 API 자동 충전과 다른 자동 결제다. 77yuhbs는 10-28 꺼져 있었고(단추가 「켜기」), 다른 계정은 아직 보지 않았다.
 - 쓴 곳(10-28 사용 기록 `~/SYNK_보안/클로드_사용기록.jsonl` · 헤르메스 agent.log 어림): synk.yuh를 바닥낸 것은 10-27 「중계」(`크레딧실행.js 중계` — Claude Code 작업을 크레딧으로 띄움) 14번 약 $141(한 번에 많게는 $36)이다. TOPIK 문항 검수는 10-21 약 $28, 헤르메스 DM(Opus)은 10-19~28 약 $38(많이 쓴 10-21 하루 $24), 팁 카드는 한 장에 약 $2(10-28 세 장 $6.38), unmet23의 talk 기본 AI는 이번 달 $8, founder DM 자동 답은 11일 동안 약 $0.8이다. synk.yuh 크레딧은 11-12에 다시 찬다(검수 목록 갱신일 12).
 - 「검수 목록」(`~/SYNK_보안/클로드_키목록_검수.json`)은 밀린 검수가 아니라 GPT 중계와 검수 · 시험이 꺼내 쓰는 키 묶음이라 10-28부터 「GPT 중계 · 검수 키 목록」으로 부른다(파일 이름은 그대로). 다음 주 들어올 $200 키 둘도 이 목록에 넣는다(결정 10-28).
@@ -222,15 +226,15 @@ Claude API는 2026-10-17 사용자 결정으로 Max·Team 플랜에 딸린 월 A
 - Console 실측(11-12 저녁, ego — 유호님 「자동충전 안되게 꼼꼼히 확인해줘」): founder · unmet29 모두 「등록된 결제 수단이 없습니다」 · 청구지 주소 없음 · 산 크레딧 $0이고, 대시보드 「조직 크레딧」 단추가 「자동 충전 켜기」라 자동 충전은 꺼져 있다. 자동 충전 · 크레딧 구매는 기본 결제 수단으로 청구되므로 두 조직은 돈이 나갈 길이 없다. 월 지출 한도는 founder $200 · unmet29 $500. founder는 어림(거의 $200)과 맞았고, unmet29의 「모름」은 $199.82였다 — talk 운영 키 목록에서 synk.yuh 다음 자리인데 11월에 이 키로 나간 호출이 없다. 같은 계정의 claude.ai 구독 조직(Ultra, 카드 결제)에 따로 붙는 「사용 크레딧 자동 충전」은 이날 보지 않았다(유호님 「Console만 봐」).
 - unmet29 차례는 그대로 둔다(11-13, Claude 판단): 11-21까지 내부 목록 맨 앞에 넣어도 하루 뒤(11-22) 사라지는 unmet25와 자리만 바뀐다. 11-01~13 두 사용 기록의 합이 약 $255(하루 평균 약 $20 — 많은 날 $74, 안 쓴 날도 있음)라 11-21까지 8일이면 $160 안팎인데, unmet29와 unmet25 남은 몫은 합 $330 안팎이라 어느 쪽을 먼저 써도 사라지는 합은 비슷하다. 그래서 「unmet29는 운영 전용」([결정](_ops/결정.md) 11-12)을 깨지 않는다. 사라지는 몫을 줄이는 길은 차례가 아니라 API 전용 일(위 「쓰는 곳 원칙」 ①~③)을 늘리는 것이고, 어디에 쓸지는 유호님이 정한다(11-12 「일단 어디에 쓸지 고민하고 다음에 알려줄게」).
 
-**갈아타기(2026-11-12) — 바닥나면 다음 키로.** 결제 수단 없는 조직 키(founder · synk.yuh · unmet25 · unmet27 · unmet29)만 서로 잇는다. 카드가 붙은 unmet23 · 77yuhbs는 검수 목록의 한도키로만 둔다. unmet29는 운영(학생 화면) 전용이라 내부 작업 목록에 넣지 않는다. 학생 · 손님 기능의 대체 키가 이어지기 전에는 그 기능의 첫 키를 내부 작업 목록에 넣지 않는다 — 내부 작업이 먼저 바닥내면 그 기능이 멈춘다.
+**갈아타기(2026-11-12) — 바닥나면 다음 키로.** 결제 수단 없는 조직 키(founder · synk.yuh · unmet25 · unmet27 · unmet29 · 77unmet · unmet22 · yuhobuilds)만 서로 잇는다. 카드가 붙은 unmet23 · 77yuhbs는 검수 목록의 한도키로만 둔다. unmet29는 운영(학생 화면) 전용이라 내부 작업 목록에 넣지 않는다. 학생 · 손님 기능의 대체 키가 이어지기 전에는 그 기능의 첫 키를 내부 작업 목록에 넣지 않는다 — 내부 작업이 먼저 바닥내면 그 기능이 멈춘다.
 
 | 쓰는 곳 | 키 차례 | 바닥날 때 | 상태 |
 |---|---|---|---|
-| 무인 작업 · 팁 적용안(`~/SYNK_보안/클로드_키목록.json`) | unmet25 → unmet27 → founder → synk.yuh(곧 사라질 크레딧부터) → PC CLI 구독 | 1토큰 확인 · 첫 턴의 크레딧 거절이면 다음 키(`클로드키.js`) | 11-12 됨(synk.yuh는 talk 쪽 대체 키가 이어진 15:51 뒤에) |
-| GPT 중계 · 검수 · 일괄(`클로드_키목록_검수.json`) | 한도키 unmet23-프로모 · 77yuhbs → unmet25 → founder → synk.yuh(unmet27은 11-22부터) | 같음 | 11-12 됨(founder는 DM 서버 쪽 대체 키가 이어진 15:51 뒤에) |
-| 헤르메스 DM(`hermes auth list anthropic`) | founder → unmet27 → unmet25(`.env`) — 직접 넣은 키가 `.env` 키보다 앞선다 | 결제 오류면 바로 다음 키, 그 키는 1시간 쉼(헤르메스 키 묶음) | 11-12 됨 |
-| talk 강사 도우미 · WORLD 쓰기 · 말하기 · 인스타 DM(Supabase 비밀값 `COMPANION_` · `WORLD_WRITING_` · `WORLD_SPEAKING_` · `SYNKBRIEF_ANTHROPIC_API_KEYS`) | 강사 도우미 · WORLD 쓰기 · 말하기: synk.yuh → unmet29 → founder → unmet25 → unmet27 · DM: founder → unmet25 → unmet27 → synk.yuh → unmet29(11-12 전에는 강사 도우미 · WORLD가 synk.yuh → unmet29, DM이 founder 하나) | 코드에 돌림이 있다(크레딧 거절 → 같은 요청을 다음 키로, 그 키는 6시간 쉼) — 비밀값에 키만 더하면 된다(배포 없음, 함수가 새로 뜰 때부터) | 11-12 15:51 됨 — 유호님 「응, 붙여」 뒤 운영 비밀값 쓰기를 자동 모드 판정기가 막아, 지금 값을 지문으로 확인하고 쓰고 다시 대조하는 스크립트를 유호님이 실행. 다섯 칸 지문이 새 목록과 맞음 |
-| talk AI 교정(`correct`) · 관찰 초안(`teach/observation`)(Supabase 비밀값 `ANTHROPIC_API_KEY` 첫 키 + `ANTHROPIC_API_KEYS`) | 첫 키는 그대로(운영 = 이 PC에 없는 09-10 키, 옛 기록상 unmet23 조직) → founder → unmet25 → unmet27 → synk.yuh → unmet29 | 11-12부터 코드에 돌림이 있다(talk `lib/claude-keys.js` — 위 줄과 같은 규칙, 같은 금액 예약 안에서 키만 바꿈). 교정 일괄 배치는 만든 조직의 키로만 보여(다른 조직 키는 404 — 11-12 실측) 회수 때 목록의 키로 차례로 물어 보이는 키로 걷는다 — 영수증에 키를 적지 않는다(마이그레이션 없음). 목록은 걷지 않은 배치가 없을 때만 바꾼다(`tools/교정키_설정.js`가 막는다) | 코드 11-12 됨 — talk `a1d5d2af` · 리허설 correct v140 · teach v125 · 운영 correct v102 · teach v104(배포대조 14/14 · 24/24, GPT 5건 · 카본 7건 모두 반영 — 카본 끝 판 P2 중 correct 되찾기 마감 · 조기 종료 두 줄은 검수 뒤 v102에 실려 다음 correct 검수에서 본다). 비밀값 `ANTHROPIC_API_KEYS`도 11-12 리허설 · 운영 모두 들어갔다(다이제스트 b49f472e — founder → unmet25 → unmet27 → synk.yuh → unmet29, 다섯 키 모두 교정 모델 200 · 걷지 않은 영수증 0). 목록을 바꿀 때는 talk `tools/교정키_설정.js`(미리보기 → `--적용` · 운영은 PowerShell에서 `$env:SUPABASE_PROJECT_REF='<운영REF>';` 앞머리와 `--운영` — Claude의 비밀값 쓰기는 판정기가 막아 유호님 손, 걷지 않은 배치가 있으면 도구가 멈춘다) |
+| 무인 작업 · 팁 적용안(`클로드_키목록.json`) | unmet25, unmet27, founder, synk.yuh, 77unmet, unmet22, yuhobuilds 중 만료가 가까운 계정부터 쓴다. | 1토큰 확인이나 첫 요청에서 크레딧 부족이 확인되면 다음 키를 쓴다. | 11-20 신규 세 계정으로 각각 API 응답 확인 |
+| GPT 중계 · 검수 · 일괄(`클로드_키목록_검수.json`) | unmet23 프로모와 77yuhbs는 한도 안에서만 쓴다. 나머지는 synk.yuh, unmet25, unmet27, founder, 77unmet, unmet22, yuhobuilds다. | 같은 순환 규칙을 쓴다. | 11-20 세 계정 등록 확인 |
+| 헤르메스 DM(`hermes auth list anthropic`) | founder와 unmet27 뒤에 77unmet, yuhobuilds, unmet22를 추가했다. 기본 환경 키는 unmet25다. | 결제 오류가 나면 다음 키로 넘어가고 이전 키는 1시간 쉰다. | 11-20 세 계정의 키를 등록하고 대조했다. |
+| talk 강사 도우미 · WORLD 쓰기 · 말하기 · 인스타 DM(Supabase 비밀값 `COMPANION_` · `WORLD_WRITING_` · `WORLD_SPEAKING_` · `SYNKBRIEF_ANTHROPIC_API_KEYS`) | 강사 도우미와 WORLD는 synk.yuh → unmet29 → founder → unmet25 → unmet27, DM은 founder → unmet25 → unmet27 → synk.yuh → unmet29 순서다. 각 목록 끝에 77unmet, yuhobuilds, unmet22를 붙였다. | 크레딧이 거절되면 같은 요청을 다음 키로 보낸다. | 11-20 운영 네 설정과 리허설 WORLD 두 설정을 다시 읽어 대조했다. |
+| talk AI 교정(`correct`) · 관찰 초안(`teach/observation`)(Supabase 비밀값 `ANTHROPIC_API_KEY` 첫 키 + `ANTHROPIC_API_KEYS`) | 기존 첫 키 → founder → unmet25 → unmet27 → synk.yuh → unmet29 → 77unmet → yuhobuilds → unmet22 | 같은 금액 예약 안에서 키를 바꾼다. 이미 접수된 일괄은 만든 조직의 키로 회수한다. | 11-20 교정 모델의 여덟 키 확인과 미회수 영수증 0건을 확인한 뒤 `tools/교정키_설정.js`로 적용하고 리허설·운영 설정을 대조했다. |
 | GPT(OpenAI) — 받아 적기 · 상황극 · 튜터 · 전사 | 크레딧 조직은 synk.yuh 하나(unmet23 Pro는 11-12에 끝) | `voice-link`는 돌림이 있지만 넘어갈 다른 크레딧 조직이 없다 · `transcribe` · `tutor`는 키 하나 | 갈아탈 곳 없음 |
 
 유호님이 허락한 크레딧: 10-21 「당분간 api 키 테스트할테는 이 synk.yuh의 무료 크레딧으로 전부 진행해도 좋아」 — 새 Max 키가 오기 전까지 API 검수·시험은 synk.yuh로 하고 따로 묻지 않는다(검수 목록 `~/SYNK_보안/클로드_키목록_검수.json`을 `SYNK_CLAUDE_KEYS`로 준다. 무인 순환 목록 `클로드_키목록.json`에는 10-28부터 unmet27 하나만 있다). 10-20 유호님은 여러 Max 계정을 합쳐 월 $600 이상의 API 무료 크레딧 키를 준비해 주기로 했다(TOPIK 문항 AI 교원 검수·쓰기 첨삭, 결정 10-20 「교원 검수를 AI로」 — 키 전달은 트랙 §1에 남은 유호님 차례) — 「필요하면 1000달러 무료크레딧까지 늘릴수도있어. 일단 이건 필요하면 말해줘」. 어림이나 시범 실측으로 월 $600을 넘을 것 같을 때만 먼저 말하고, 키가 들어오면 돌려 쓰기 목록에 넣고 50문항 시범 비용부터 보고한다. 일괄은 크게 모아 1시간 캐시가 식기 전에 이어 보낸다 — 10-21 실측에서 캐시가 데워진 큰 일괄은 문항당 2.6~3.1센트, 캐시를 새로 쓰는 첫 일괄·작은 일괄은 6~8센트였다.
