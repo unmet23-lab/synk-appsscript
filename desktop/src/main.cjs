@@ -264,6 +264,11 @@ async function solioBackupHint(account){const result=await auth.identity();if(!r
 // 솔리오 「사무실」(11-20, docs/디자인/솔리오_사무실_20261119/구현설계.md 11.1 · 13절, 15절 6단계): 플랫폼 창에서 로그인한 계정만 묻는다. 볼 계정인지는 office.cjs가 채널마다 viewers.json으로 본다.
 // 처음 부를 때 office-model.mjs를 불러 한 번 만든다. 훅 서버(office-hooks.cjs)를 넘겨 판에 훅의 모습을 싣는다. 로그인이 바뀌면 publishAuthState가 accountChanged를 부른다.
 // 같은 계정의 토큰 갱신은 잠깐 restoring(계정 없음)으로 보이므로 그동안은 그 계정 그대로 본다(PULSE의 renewingAccount와 같다). 그래야 갱신마다 세션 기억과 기록 살피기가 끊기지 않는다.
+// PC 0.5.2는 사무실을 꺼 둔 채 낸다(11-20). 검수의 P1이 남아 있고 설계를 고치는 중이라서다(docs/디자인/솔리오_사무실_20261119/구현설계.md). 켜는 자리는 officeShipped 한 줄이다.
+// 꺼 둔 포장 판은 사무실 채널이 모두 NOT_AVAILABLE로 답해 오브제와 방이 서지 않는다. 훅 서버를 열지 않고 손님의 Claude Code 설정 파일에 줄을 더하지 않는다.
+// --office-unhook은 전과 같이 돌아 솔리오의 줄만 지운다. 소스 실행은 그대로 열린다
+const officeShipped=false;
+const officeOff=()=>packaged&&!officeShipped;
 let officeService=null,officeLoading=null;
 const officeAccountOf=state=>{if(state?.signedIn===true&&state.account)return state.account;const renewing=renewingAccount();return renewing?{synk_user_id:renewing}:null;};
 // 로그인 묶음(구현설계 11.1 「계정 묶기」, GPT 검수 r7 · r8 GA1): 계정에 로그인 회차(sessionGeneration)를 실어 넘긴다. 사무실은 들어온 순간의 묶음이 지금 묶음과 같을 때만 기억을 바꾸고 답한다
@@ -273,14 +278,18 @@ function office(){if(officeService)return Promise.resolve(officeService);if(!off
 // 서버는 앱을 켤 때 훅이 켜져 있으면 연다(initializeMain). 받은 소식은 볼 계정이 로그인해 있을 때만 읽어 사무실에 넘긴다. 계정이 바뀌어도 서버는 닫지 않는다.
 // 접는 계정은 받기를 허락한 그 계정이다(accepts가 돌려준 값). 몸을 받는 사이에 다른 볼 계정으로 바뀌면 사무실의 ingest가 지금 계정이 아니라며 버린다(GPT 검수 r8 GA1).
 let officeHooks=null;
-const officeHooksInstalled=()=>packaged&&runtime.mode==='release'&&!smoke;
+// 지우는 길(--office-unhook)은 사무실을 꺼 둔 판에서도 설치본으로 돈다. 넘겨받은 폴더(SYNK_OFFICE_HOOK_DIRS)는 소스 실행의 것이라 설치본이 지우지 않는다(GPT 검수 solio-office-off GA1).
+// 꺼 둔 판은 상태 파일에 적어 둔 폴더에서만 지운다. 이 판은 손님의 설정 파일에 줄을 쓰지 않으므로, 기본 설정 폴더(CLAUDE_CONFIG_DIR)에 있는 줄은 다른 실행의 것이다(r2 GA1)
+const officeHooksRelease=()=>packaged&&runtime.mode==='release'&&!smoke;
+const officeHooksInstalled=()=>!officeOff()&&officeHooksRelease();
 function officeHooksService(){if(!officeHooks)officeHooks=createOfficeHooks({userData:app.getPath('userData'),installed:officeHooksInstalled(),accepts:async()=>{const login=officeLoginOf(accountStatus());return login&&await (await office()).accepts(login)?login:false;},deliver:(event,account)=>{if(account&&typeof account==='object')void office().then(service=>service.ingest(event,account)).catch(()=>{});},onChange:()=>sendDesktop('synk:office-changed')});return officeHooks;}
 // 끄기는 볼 계정이 아니어도 된다(11.1, 13절). 플랫폼 창인지와 보낸 창(handlers의 assertSender)만 본다. 구 곁의 설정 방이 켜졌는지만 묻는 길도 같다. 답에 폴더 경로를 싣지 않는다
-async function officeHooksOff(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const result=await officeHooksService().disable();return {ok:result?.ok===true,...(typeof result?.code==='string'?{code:result.code}:{})};}
-async function officeHooksStatus(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=await officeHooksService().status([]);return {ok:true,on:status?.on===true};}
+// 사무실을 꺼 둔 판은 훅 서비스를 만들지 않고 꺼진 것으로 답한다. 설정 방에 끄는 줄이 서지 않는다
+async function officeHooksOff(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};if(officeOff())return {ok:true};const result=await officeHooksService().disable();return {ok:result?.ok===true,...(typeof result?.code==='string'?{code:result.code}:{})};}
+async function officeHooksStatus(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};if(officeOff())return {ok:true,on:false};const status=await officeHooksService().status([]);return {ok:true,on:status?.on===true};}
 // 부를 때의 계정과 로그인 회차(sessionGeneration)를 잡아 두고, 모델을 싣거나 일을 마친 뒤에도 같을 때만 답을 넘긴다. 로그아웃하거나 다시 로그인했으면 답을 버린다.
 // 같은 계정의 토큰 갱신은 회차가 그대로이고 officeAccountOf가 그 계정으로 보므로 같은 계정이다(GPT 검수 GA1)
-async function officeCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};const held=status.account.synk_user_id,generation=status.sessionGeneration;const same=()=>{const now=accountStatus();return officeAccountOf(now)?.synk_user_id===held&&now?.sessionGeneration===generation;};const service=await office();if(!same())return {ok:false,code:'AUTH_CHANGED'};const result=await work(service,{...status.account,sessionGeneration:generation});return same()?result:{ok:false,code:'AUTH_CHANGED'};}
+async function officeCall(work){if(officeOff())return {ok:false,code:'NOT_AVAILABLE'};if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};const held=status.account.synk_user_id,generation=status.sessionGeneration;const same=()=>{const now=accountStatus();return officeAccountOf(now)?.synk_user_id===held&&now?.sessionGeneration===generation;};const service=await office();if(!same())return {ok:false,code:'AUTH_CHANGED'};const result=await work(service,{...status.account,sessionGeneration:generation});return same()?result:{ok:false,code:'AUTH_CHANGED'};}
 // 폴더는 화면이 경로 글자로 보내지 않는다(13절). 고르기 창은 볼 계정에만 띄우고, 고르는 사이에 로그인이 바뀌었으면 고른 폴더를 버린다(백업 시작과 같은 확인)
 async function officeChooseFolder(service,account){
   if(!await service.allowed(account))return {ok:false,code:'NOT_ALLOWED'};
@@ -353,7 +362,7 @@ app.on('will-quit',event=>{
 // 솔리오 「사무실」의 훅 지우기(구현설계.md 11.1 · 12.3 「앱을 지울 때」): 지우는 프로그램이 --office-unhook으로 한 번 돌린다. 앱이 켜져 있어도 되도록 단일 실행 잠금보다 먼저,
 // 창과 서비스를 만들지 않고 적어 둔 설정 폴더(설치본은 기본 설정 폴더까지)에서 솔리오의 줄만 지운 뒤 끝난다. 켜져 있는 앱은 상태 파일이 바뀐 것을 보고 서버를 닫는다
 const officeUnhook=runtime.clientId==='platform'&&!smoke&&process.argv.includes('--office-unhook');
-if(officeUnhook)void Promise.resolve().then(()=>createOfficeHooks({userData:app.getPath('userData'),installed:officeHooksInstalled()}).unhook()).catch(()=>{}).finally(()=>app.exit(0));
+if(officeUnhook)void Promise.resolve().then(()=>createOfficeHooks({userData:app.getPath('userData'),installed:officeHooksRelease(),...(officeOff()?{baseDirs:()=>[]}:{})}).unhook()).catch(()=>{}).finally(()=>app.exit(0));
 const yielded=!officeUnhook&&runtime.clientId==='platform'&&packaged&&!smoke&&process.platform==='win32'&&typeof process.env.LOCALAPPDATA==='string'&&yieldToUpdatingInstaller({localAppData:process.env.LOCALAPPDATA,exit:code=>app.exit(code)});
 if(officeUnhook||yielded){/* 훅을 지우거나 설치기에 넘겼다. app.exit(0)이 끝낸다 */}
 else if(!app.requestSingleInstanceLock())app.quit();
@@ -597,8 +606,8 @@ function initializeMain(){
   suiteStore=suiteDirectory?createSuiteStore({directory:suiteDirectory,key:suiteBindingKey}):null;suiteDeviceId=suiteDirectory?suiteDevice({directory:suiteDirectory}):null;
   suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(projectAuth(auth.status()));}}):null;
   if(runtime.clientId==='platform'){
-    // 「승인 물음도 보기」가 켜져 있으면 훅을 받는 서버를 연다. 저장한 포트를 다른 프로그램이 쓰면 솔리오의 줄을 지운다(구현설계.md 12.3)
-    if(!smoke)void officeHooksService().start().catch(()=>{});
+    // 「승인 물음도 보기」가 켜져 있으면 훅을 받는 서버를 연다. 저장한 포트를 다른 프로그램이 쓰면 솔리오의 줄을 지운다(구현설계.md 12.3). 사무실을 꺼 둔 판은 열지 않는다
+    if(!smoke&&!officeOff())void officeHooksService().start().catch(()=>{});
     desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>{sendDesktop('synk:desktop-preferences',desktopSnapshot());pulseView?.relayout();},enabled:!smoke,packaged,name:current.appId});
     desktopPreferences.initialize();
     windowPlacement=windowPlacement||createWindowPlacement({directory:app.getPath('userData'),screen,enabled:!smoke});

@@ -233,7 +233,7 @@ test('only an accessible hidden platform cold start initializes the tray without
       createTrayMemoryReclaimer(settings){services=settings;return memory;},
       createPlatformTray(settings){options=settings;return {isActive:()=>tray};},
       autostartHidden:autostart,arrivalShow:arrival,sendDesktop(){},requestPlatformWindow(){},
-      officeHooksService:()=>({start:()=>Promise.resolve()}),trayAppsTick:null,ticks:[],setInterval(fn,ms){const timer={fn,ms,unref(){}};context.ticks.push(timer);return timer;},syncTrayApps(){},launchFromTray(id){calls.push('launch '+id);}};
+      officeOff:()=>false,officeHooksService:()=>({start:()=>Promise.resolve()}),trayAppsTick:null,ticks:[],setInterval(fn,ms){const timer={fn,ms,unref(){}};context.ticks.push(timer);return timer;},syncTrayApps(){},launchFromTray(id){calls.push('launch '+id);}};
     vm.createContext(context);vm.runInContext(source,context);
     context.initializeMain();context.initializeMain();
     assert.equal(options.onCloseToTray,memory.schedule);
