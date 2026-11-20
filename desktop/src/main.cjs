@@ -102,7 +102,7 @@ let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeAccountOf(state));solioBackupService?.accountChanged();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeAccountOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
   if(installations)return installations;
@@ -254,7 +254,10 @@ function snsHealthCall(){if(runtime.clientId!=='platform'||smoke)return {ok:fals
 // 솔리오 「백업·복구」(11-20): 업무 백업 엔진의 입구. 플랫폼 창에서 로그인한 계정만 묻고, 실제 입구는 유호님 계정에만 보인다(solio-backup.cjs).
 // 힌트는 SYNK ID에 Google 로그인이 이어져 있고 그 주소를 알 때만 엔진의 setup 요청에 넘긴다(STAGE1_DESIGN 4.13 「로그인」).
 let solioBackupService=null;
-function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};if(!solioBackupService)solioBackupService=createSolioBackup({cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url)});return work(solioBackupService,status.account);}
+function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBackup({cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url)});return solioBackupService;}
+// 로그인 알림마다 남은 setup 요청을 치운다. 방을 아직 열지 않았어도 서비스를 만들어 치우므로, 앱을 다시 켠 뒤 첫 알림이 앞 실행의 요청을 지운다(Fable 요청 수명 확인 P2)
+function solioBackupSweep(){if(runtime.clientId!=='platform'||smoke)return;try{solioBackup().accountChanged();}catch{}}
+function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};return work(solioBackup(),status.account);}
 // 누른 계정과 지금 로그인한 계정이 같을 때만 그 계정의 Google 주소를 준다(GPT 검수 GA2)
 async function solioBackupHint(account){const result=await auth.identity();if(!result?.ok||typeof account?.synk_user_id!=='string'||result.accountId!==account.synk_user_id)return null;const google=(result.identities||[]).find(row=>row?.provider==='google'&&typeof row.email==='string');return google?.email||null;}
 // 솔리오 「사무실」(11-20, docs/디자인/솔리오_사무실_20261119/구현설계.md 11.1 · 13절, 15절 6단계): 플랫폼 창에서 로그인한 계정만 묻는다. 볼 계정인지는 office.cjs가 채널마다 viewers.json으로 본다.
@@ -627,6 +630,7 @@ function initializeAccountServices(){
   if(!auth){const store=createTokenStore({directory:app.getPath('userData'),safeStorage,scope:current.sessionScope,configFingerprint:authConfig?.fingerprint||'unconfigured'});
     const signInReturn=createSignInReturn();
     auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),device:suiteDeviceId,onChange:state=>{suitePublisher?.publish(state);publishAuthState(projectAuth(state));if(signInReturn(state))bringToFront(window,{app});}});
+    solioBackupSweep();
     if(suiteStore&&runtime.clientId!=='platform'){suiteFollower=createSuiteFollower({store:suiteStore,auth});void suiteFollower.start();}else if(suitePublisher)void suitePublisher.initialize(auth);else void auth.initialize();
   }
   if(runtime.clientId==='platform'&&!careNotifications){

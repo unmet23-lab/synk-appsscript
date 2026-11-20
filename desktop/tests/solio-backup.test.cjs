@@ -545,8 +545,9 @@ test('GPT GA4 (again): a lost exit code is 「not confirmed」, never 「done」
     const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
     await service.start(ME, 'protect'); await service.whenIdle();
     assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_UNCONFIRMED', JSON.stringify(ran));
+    // 요청은 남는다. 다음 실행(새 서비스)의 첫 표시가 앞 실행의 것을 치우므로 늘 하나다(r8 요청 수명)
+    assert.equal(requestsIn(env).length, 1, JSON.stringify(ran));
   }
-  assert.equal(requestsIn(env).length, 2);
 });
 
 test('GPT GA5 (again): a failed engine check right before the prompt launches nothing', async () => {
@@ -726,7 +727,9 @@ test('GPT r6 GA5: a sign-in change removes the pending request at that moment; m
   kept.accountChanged();
   assert.equal(requestsIn(env2).length, 1);
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
-  assert.match(main, /function publishAuthState\(state\)\{[^}]*solioBackupService\?\.accountChanged\(\);/);
+  assert.match(main, /function publishAuthState\(state\)\{[^}]*solioBackupSweep\(\);/);
+  assert.match(main, /function solioBackupSweep\(\)\{if\(runtime\.clientId!=='platform'\|\|smoke\)return;try\{solioBackup\(\)\.accountChanged\(\);\}catch\{\}\}/, 'the sweep runs even before the room is first opened');
+  assert.match(main, /auth=createAuthService\([^\n]*\n\s*solioBackupSweep\(\);/, 'and once at start-up');
 });
 
 test('GPT r6 GA5: on the download path the engine is checked before the request is written, and the installer runs right after', async () => {
@@ -785,12 +788,13 @@ test('GPT r7 GA5: a failed check when opening the engine window says 「not know
   assert.match(backupActionNotice({ ok: false, code: 'ENGINE_UNKNOWN' }), /확인하지 못했습니다/);
 });
 
-test('GPT r7 GA8: every request still waiting is removed when the sign-in changes, not only the last', async () => {
+test('GPT r7 GA8: no older request is left behind; a new press replaces it and a sign-in change removes it', async () => {
   const env = appdata(temp());
   let current = true;
   const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   for (const asked of ['protect', 'move']) { await service.start(ME, asked, { getHint: async () => 'owner@example.com', isCurrent: () => current }); await service.whenIdle(); }
-  assert.equal(requestsIn(env).length, 2);
+  assert.equal(requestsIn(env).length, 1, 'the second press replaced the first');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests', requestsIn(env)[0]), 'utf8')).mode, 'move');
   current = false;
   service.accountChanged();
   assert.deepEqual(requestsIn(env), []);
@@ -809,4 +813,64 @@ test('GPT r7 GA2: a same-generation token renewal keeps the request; main tells 
   assert.deepEqual(requestsIn(env), []);
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
   assert.match(main, /isSameLogin:\(\)=>\{const now=accountStatus\(\);if\(now\?\.sessionGeneration!==generation\)return false;return now\?\.signedIn===true\?now\.account\?\.synk_user_id===account\.synk_user_id:renewingAccount\(\)===account\.synk_user_id;\}/);
+});
+
+/* ── GPT 아홉째 회차(r8): 잠겨서 지우지 못한 요청은 목록에 남겨 다시 지운다(11-20) ── */
+test('GPT r8 GA3 · GA4: a request the sign-in change or a failed open could not delete is deleted again once the lock lifts', async () => {
+  let locked = true;
+  const fsImpl = { ...fs, promises: fs.promises, unlinkSync: file => { if (locked && /setup-request|\.json$/.test(String(file))) throw Object.assign(Error('busy'), { code: 'EBUSY' }); return fs.unlinkSync(file); } };
+  // 로그인 바뀜 때 잠겨 있으면 남았다가 다음 방 표시에서 지운다
+  const env = appdata(temp());
+  let current = true;
+  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current }); await service.whenIdle();
+  assert.equal(requestsIn(env).length, 1);
+  current = false;
+  service.accountChanged();
+  assert.equal(requestsIn(env).length, 1, 'locked: still there');
+  service.accountChanged();
+  assert.equal(requestsIn(env).length, 1);
+  locked = false;
+  await service.snapshot(ME);
+  assert.deepEqual(requestsIn(env), [], 'deleted on the next look even though the sign-in did not change again');
+  // 엔진 창을 열지 못했을 때 잠겨 있으면 같은 로그인 아래에서도 다시 지운다
+  locked = true;
+  const env2 = appdata(temp());
+  const failing = B.createSolioBackup({ platform: 'win32', env: env2, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: async () => { throw Error('no handler'); }, previewAccounts: MINE });
+  await failing.start(ME, 'move', { getHint: async () => 'owner@example.com' }); await failing.whenIdle();
+  assert.equal((await failing.snapshot(ME)).install.code, 'OPEN_FAILED');
+  assert.equal(requestsIn(env2).length, 1, 'locked after the failed open');
+  locked = false;
+  await new Promise(r => setTimeout(r, 1100));
+  assert.deepEqual(requestsIn(env2), [], 'the timed retry deletes it with no other call');
+});
+
+test('r8 request lifetime: the folder on disk is the record — leftovers from an earlier run and stray temp files go, other kinds stay', async () => {
+  const env = appdata(temp()), dir = path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests');
+  fs.mkdirSync(path.join(dir, 'claimed'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '1794880000000-aaaaaaaaaaaaaaaa.json'), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' }));
+  fs.writeFileSync(path.join(dir, '.0123456789abcdef.tmp'), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' }));
+  fs.writeFileSync(path.join(dir, '1794880000001-bbbbbbbbbbbbbbbb.json'), JSON.stringify({ v: 1, kind: 'run-now' }));
+  fs.writeFileSync(path.join(dir, 'claimed', '1794880000002-cccccccccccccccc.json'), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect' }));
+  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  service.accountChanged();
+  assert.deepEqual(fs.readdirSync(dir).sort(), ['1794880000001-bbbbbbbbbbbbbbbb.json', 'claimed'], "the earlier run's setup request and the temp file are gone; run-now and the engine's claimed folder are untouched");
+  assert.equal(fs.readdirSync(path.join(dir, 'claimed')).length, 1);
+  const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
+  assert.doesNotMatch(src, /pending/, 'no in-memory list of requests to fall out of step with the disk');
+  assert.match(src, /fsSync\.renameSync\(temp, file\);\s*onPlaced\(file\);/, 'the live request is recorded in the same synchronous step as the rename');
+});
+
+test('Fable request-lifetime P1: a request the sweep cannot read is retried, not taken for 「not setup」', async () => {
+  let locked = true;
+  const fsImpl = { ...fs, promises: fs.promises, readFileSync: (file, ...a) => { if (locked && /^[0-9]{13}-/.test(path.basename(String(file)))) throw Object.assign(Error('busy'), { code: 'EBUSY' }); return fs.readFileSync(file, ...a); } };
+  const env = appdata(temp()), dir = path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, '1794880000000-aaaaaaaaaaaaaaaa.json'), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' }));
+  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  service.accountChanged();
+  assert.equal(requestsIn(env).length, 1, 'unreadable: still there');
+  locked = false;
+  await new Promise(r => setTimeout(r, 1100));
+  assert.deepEqual(requestsIn(env), [], 'the timed retry reads it and deletes it with no other call');
 });

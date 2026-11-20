@@ -260,7 +260,7 @@ async function realDirectory(dir, fsImpl) {
   const stat = await fsImpl.lstat(dir);
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw fault('STORAGE');
 }
-async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), random = () => crypto.randomBytes(8).toString('hex'), fsImpl = fsp, fsSync = fs, stillCurrent = () => true }) {
+async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), random = () => crypto.randomBytes(8).toString('hex'), fsImpl = fsp, fsSync = fs, stillCurrent = () => true, onPlaced = () => {} }) {
   if (!paths || !MODES.includes(mode)) throw fault('INVALID');
   await fsImpl.mkdir(paths.requests, { recursive: true });
   for (const dir of [paths.root, paths.solio, paths.requests]) await realDirectory(dir, fsImpl);
@@ -276,6 +276,7 @@ async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), r
     fsSync.writeFileSync(temp, JSON.stringify(body), { flag: 'wx' });
     if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
     fsSync.renameSync(temp, file);
+    onPlaced(file);
   } catch (error) { try { fsSync.unlinkSync(temp); } catch {} throw error?.backupCode ? error : fault('STORAGE'); }
   return name;
 }
@@ -418,8 +419,6 @@ function createSolioBackup({
   let feedState = { state: 'unknown', version: null, at: 0 }, feedLoading = null;
   let install = { phase: 'idle', progress: 0, code: null, mode: null };
   let busy = null, mode = null, swept = false;
-  // 엔진이 아직 읽지 않았을 수 있는 이번 실행의 요청들. 파일마다 그 요청을 쓴 누름의 「같은 로그인인가」 확인을 붙여 둔다(GPT 여덟째 검수 GA8)
-  const pending = new Map();
 
   const allowed = account => previewAllowed(account, previewAccounts);
   /* 지금 엔진 확인 하나. 실패하면 error를 그대로 돌려줘 「깔려 있지 않음」과 가른다(GPT 다시 검수 GA5) */
@@ -443,6 +442,7 @@ function createSolioBackup({
 
   async function snapshot(account) {
     if (!allowed(account)) return { ok: true, available: false };
+    sweepRequests();
     const { engine: eng, read, view } = await state();
     if ((view === 'no-engine' || view === 'engine-removed') && install.phase === 'idle') void refreshFeed();
     return {
@@ -491,30 +491,53 @@ function createSolioBackup({
     return unknown ? 'unknown' : 'no';
   }
 
-  /* 이번 누름이 쓴 요청 파일을 적어 둔다. 로그인이 바뀌는 순간 accountChanged가 지운다 */
-  async function writeRequest(mode, hint) {
-    const name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises, fsSync: fsImpl, stillCurrent });
-    pending.set(path.join(paths.requests, name), sameLogin);
-    return name;
+  /* ── setup 요청 파일의 수명(GPT 여덟째 GA8 · 아홉째 GA3 · GA4를 설계로 닫음, 11-20) ──
+     정본은 디스크다. 메모리에는 「지금 누름이 쓴, 그 누름의 로그인이 아직 가진 요청」 하나(live)만 둔다.
+     치우기(sweepRequests)는 requests 폴더를 그때마다 읽어, live가 아닌 setup 요청과 남은 임시 파일을 모두 지운다.
+     지우기가 실패해도 기억할 것이 없다. 다음 치우기가 폴더를 다시 읽어 같은 파일을 또 찾는다.
+     치우는 때: 로그인 알림마다(main publishAuthState, 동기) · 방 표시 · 누르기 · 열기 · 누름이 끝날 때, 지우지 못한 파일이 있으면 1초 뒤 다시.
+     그래서 앱을 다시 켠 뒤의 첫 표시도 앞 실행이 남긴 요청을 치운다. setup 요청은 솔리오만 쓰므로(계약 README) 다른 종류의 요청은 건드리지 않는다 */
+  let live = null, retrying = null;
+  const TEMP_NAME = /^\.[0-9a-f]{16}\.tmp$/;
+  /* 'yes' · 'no' · 'unknown'. 백신 따위가 쥐어 읽지 못하면 「모름」이다. 「아님」으로 넘기면 다시 보지 않게 된다(Fable 요청 수명 확인 P1) */
+  function setupKind(file) {
+    let text;
+    try {
+      const stat = fsImpl.lstatSync(file);
+      if (!stat.isFile() || stat.size > 4096) return 'no';
+      text = fsImpl.readFileSync(file, 'utf8');
+    } catch (error) { return error?.code === 'ENOENT' ? 'no' : 'unknown'; }
+    try { return JSON.parse(text)?.kind === 'setup' ? 'yes' : 'no'; } catch { return 'no'; }
   }
-  /* 요청 하나를 그 자리에서 지운다 */
-  function dropRequest(name) {
-    const file = path.join(paths.requests, name);
-    try { fsImpl.unlinkSync(file); } catch {}
-    pending.delete(file);
-  }
-  /* 본체가 로그인 상태를 알릴 때마다 부른다(main.cjs publishAuthState). 요청마다 그 요청을 쓴 누름의 로그인과 같은지 보고,
-     다르면 그 자리에서 지운다. 같은 스레드에서 바로 지우므로, 바뀐 로그인 아래에서 그 요청이 남는 때가 없다(GPT 일곱째 검수 GA5 · 여덟째 GA8).
-     같은 로그인 세대의 토큰 갱신(잠시 로그인 확인 중으로 보임)은 같은 로그인으로 본다(여덟째 GA2). 엔진이 이미 가져간 요청은 목록에서만 뺀다 */
-  function accountChanged() {
-    for (const [file, same] of pending) {
-      if (!fsImpl.existsSync(file)) { pending.delete(file); continue; }
-      let keep = false;
-      try { keep = same() === true; } catch { keep = false; }
-      if (keep) continue;
-      try { fsImpl.unlinkSync(file); } catch {}
-      pending.delete(file);
+  function sweepRequests() {
+    if (platform !== 'win32' || !paths) return;
+    if (live) { let keep = false; try { keep = live.same() === true; } catch { keep = false; } if (!keep) live = null; }
+    let names, failed = false;
+    try { names = fsImpl.readdirSync(paths.requests); } catch (error) { names = []; if (error?.code !== 'ENOENT') failed = true; }
+    for (const name of names) {
+      const file = path.join(paths.requests, name);
+      if (live && samePath(file, live.file)) continue;
+      if (!TEMP_NAME.test(name)) {
+        if (!REQUEST_NAME.test(name)) continue;
+        const kind = setupKind(file);
+        if (kind === 'unknown') { failed = true; continue; }
+        if (kind === 'no') continue;
+      }
+      try { fsImpl.unlinkSync(file); } catch (error) { if (error?.code !== 'ENOENT') failed = true; }
     }
+    // 지우거나 읽지 못한 파일이 있으면 1초 뒤 다시 치운다. 실패가 이어지면 1초마다 다시 건다
+    if (failed && !retrying) { retrying = setTimeout(() => { retrying = null; sweepRequests(); }, 1000); retrying.unref?.(); }
+  }
+  const accountChanged = sweepRequests;
+  /* 요청을 쓰는 같은 동기 구간에서 live로 적는다. 이름 바꾸기와 live 사이에 치우기가 끼지 못한다 */
+  async function writeRequest(mode, hint) {
+    const same = sameLogin;
+    return writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises, fsSync: fsImpl, stillCurrent, onPlaced: file => { live = { file, same }; } });
+  }
+  /* 이번 요청을 내려놓고 그 자리에서 치운다 */
+  function dropRequest(name) {
+    if (live && samePath(live.file, path.join(paths.requests, name))) live = null;
+    sweepRequests();
   }
 
   /* 엔진이 이미 있는 길: setup 요청만 쓰고 엔진 창을 연다 */
@@ -594,7 +617,7 @@ function createSolioBackup({
       // 엔진 확인은 요청을 쓰기 전에 한다. 요청이 놓인 뒤에는 기다리는 일 없이 바로 설치기를 띄운다(GPT 일곱째 검수 GA5).
       // 지금 확인이 실패하면 깔렸는지 모르므로 띄우지 않는다(GPT 다시 검수 GA5)
       if (await openIfInstalled(mode, hint, releaseHolder)) return;
-      // 요청 쓰기는 로그인 확인과 함께 동기로 한다. 쓴 뒤 로그인이 바뀌면 accountChanged가 그 자리에서 지운다
+      // 요청 쓰기는 로그인 확인과 함께 동기로 한다. 쓴 뒤 로그인이 바뀌면 치우기(sweepRequests)가 그 자리에서 지운다
       requestName = await writeRequest(mode, hint);
       if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       setInstall('admin');
@@ -628,6 +651,7 @@ function createSolioBackup({
   async function start(account, asked, { getHint = async () => null, isCurrent = () => true, isSameLogin = isCurrent } = {}) {
     if (!allowed(account)) return { ok: false, code: 'NOT_AVAILABLE' };
     if (!MODES.includes(asked)) return { ok: false, code: 'INVALID' };
+    sweepRequests();
     if (busy) return { ok: false, code: 'BUSY' };
     let release;
     const gate = new Promise(resolve => { release = resolve; });
@@ -649,13 +673,14 @@ function createSolioBackup({
       if (view === 'needs-setup') { await openSetup(mode, hint); return; }
       await installEngine(mode, hint);
     })().catch(error => { setInstall('error', { code: error?.backupCode || (['ENOSPC', 'EACCES', 'EPERM', 'EROFS', 'EIO'].includes(error?.code) ? 'STORAGE' : 'NETWORK') }); })
-      .finally(() => { busy = null; release(); });
+      .finally(() => { busy = null; release(); sweepRequests(); });
     return { ok: true };
   }
 
   async function open(account, topic) {
     if (!allowed(account)) return { ok: false, code: 'NOT_AVAILABLE' };
     if (!OPEN_TOPICS.includes(topic)) return { ok: false, code: 'INVALID' };
+    sweepRequests();
     // 여는 순간의 새 확인으로만 정한다(GPT 여섯째 검수 GA3). 확인이 실패하면 「없음」이 아니라 「확인하지 못함」이다(여덟째 GA5)
     const eng = await engineFresh();
     if (eng.error) return { ok: false, code: 'ENGINE_UNKNOWN' };
