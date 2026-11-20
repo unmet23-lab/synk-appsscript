@@ -516,7 +516,9 @@ async function prepareUpdateHandoff({token,version,file}={}){
       // 그때는 조용히 가지 않는다. 설치기 창과 새 앱이 앞으로 뜬다(0.4.96 공개 후보 검수 D1 2차)
       const asked=!!startupWin&&!startupWin.isMinimized();
       // 창 안의 PULSE가 살아 있으면 조용히 가지 않는다. PULSE에 쓰던 글이 있는지 미리 물을 길이 없다(3단계 구현 설계 2.3, 바깥 창일 때와 같은 결과)
-      const quiet=!asked&&others.length===0&&!pulseView?.hasSurface()&&(!main||!(await draftsUnsaved(main)));
+      const draftless=!asked&&others.length===0&&!pulseView?.hasSurface()&&(!main||!(await draftsUnsaved(main)));
+      // 초안을 묻는 사이(0.7초까지) PULSE가 열렸으면(최소화된 창에 초대가 온 따위) 조용히 가지 않는다(3단계 GPT 엔진 검수 GA1)
+      const quiet=draftless&&!pulseView?.hasSurface();
       const minimized=!!(main?.isMinimized()||startupWin?.isMinimized()||!main&&!startupWin&&arrivalShow==='minimized');
       if(gen!==handoffGen)return;
       // 초안을 묻는 사이(0.7초까지) 사람이 창을 열었으면 조용히 가지 않고 보이는 넘김으로 간다(0.4.96 검수 C5)

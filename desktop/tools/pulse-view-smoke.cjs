@@ -85,8 +85,9 @@ app.whenReady().then(async()=>{
       const last={...(surface.webContents.getLastWebPreferences?.()||{}),ran:await surface.webContents.executeJavaScript('window.__pulseViewSmokePreload===true')};
       require('node:fs').rmSync(preload,{force:true});
       const fetched=await surface.webContents.executeJavaScript("fetch('https://pulse-view-smoke.invalid/probe').then(()=>'loaded',()=>'refused')");
+      // 조회는 확인 처리기를 지난다. 거절(denied)이어야 한다. 묻지 않음(prompt)이나 오류는 통과가 아니다(GPT 엔진 검수 GA3)
       const permission=await surface.webContents.executeJavaScript("navigator.permissions.query({name:'notifications'}).then(r=>r.state,()=>'error')");
-      check('the view runs in the session it was given, under its refusals and its request filter, with the preload it was given',surface.webContents.session===isolated&&seen.includes('https://pulse-view-smoke.invalid/probe')&&fetched==='refused'&&permission!=='granted'&&last.ran===true&&last.sandbox===true&&last.contextIsolation===true,{seen,fetched,permission,preload:last.ran,sandbox:last.sandbox});
+      check('the view runs in the session it was given, under its refusals and its request filter, with the preload it was given',surface.webContents.session===isolated&&seen.includes('https://pulse-view-smoke.invalid/probe')&&fetched==='refused'&&permission==='denied'&&last.ran===true&&last.sandbox===true&&last.contextIsolation===true,{seen,fetched,permission,preload:last.ran,sandbox:last.sandbox});
       surface.destroy();win.destroy();
     }
     {

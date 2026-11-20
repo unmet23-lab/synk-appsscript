@@ -375,6 +375,10 @@ test('every handoff step that throws falls back to the old path: the app still q
   // 초안을 묻는 사이 사람이 창을 열면 조용히 가지 않고 보이는 넘김(덮는 창, 쪽지, 가림막)으로 간다(0.4.96 카본 C5)
   const reopened=handoffContext(null,{visible:false,onDrafts:view=>{view.visible=true;}});await reopened.context.prepareUpdateHandoff({token:'a'.repeat(64),version:'0.4.97',file:'x.exe'});
   assert.equal(reopened.context.quietQuit,false);assert.deepEqual(reopened.calls.filter(c=>c!=='end'),['cover','note','curtain']);
+  // 초안을 묻는 사이 창 안의 PULSE가 열리면(최소화된 창에 초대가 온 따위) 조용히 가지 않는다(3단계 GPT 엔진 검수 GA1)
+  const late={};const opened=handoffContext(null,{visible:false,onDrafts:()=>{late.context.pulseView={hasSurface:()=>true};}});late.context=opened.context;
+  await opened.context.prepareUpdateHandoff({token:'a'.repeat(64),version:'0.4.97',file:'x.exe'});
+  assert.equal(opened.context.quietQuit,false);assert.deepEqual(opened.calls.filter(c=>c!=='end'),['note']);
 });
 test('a curtain handle that throws while the last window closes still hands the update to the installer',async()=>{
   const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8').replace(/\r\n/g,'\n');
