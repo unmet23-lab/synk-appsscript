@@ -655,3 +655,87 @@ test('GPT fourth round GA2: while held, nothing can be renamed, moved or copied 
     assert.equal(fs.readFileSync(file, 'utf8'), 'orig');
   } finally { await holder.release(); }
 });
+
+/* ── GPT 일곱째 회차(r6)의 남은 넷: 엔진 캐시를 없애고, 요청을 동기로 쓰고, 로그인이 바뀌면 그 자리에서 지운다(11-20) ── */
+test('GPT r6 GA2 · GA4: the room shows each fresh check at once, never an older answer for 15 or 60 seconds', async () => {
+  const state = { dir: engineDir() }, env = appdata(temp(), { status: sample() });
+  let t = Date.parse('2026-11-20T03:00:00Z');
+  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine(state), previewAccounts: MINE, now: () => t });
+  assert.equal((await service.snapshot(ME)).engine.installed, true);
+  state.dir = null; t += 1000;
+  assert.equal((await service.snapshot(ME)).engine.installed, false, 'removed one second later shows removed');
+  state.dir = engineDir(); t += 1000;
+  assert.equal((await service.snapshot(ME)).engine.installed, true, 'installed one second later shows installed');
+  // 앞에 시작한 느린 확인이 뒤에 시작한 확인보다 늦게 끝나도, 각 화면 읽기는 제 확인의 답을 보인다
+  let calls = 0;
+  const dir = engineDir();
+  const run = async () => { const n = ++calls; if (n === 1) { await new Promise(r => setTimeout(r, 80)); return JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }); } return '{}'; };
+  const racing = B.createSolioBackup({ platform: 'win32', env, run, previewAccounts: MINE });
+  const slow = racing.snapshot(ME);
+  await new Promise(r => setTimeout(r, 10));
+  assert.equal((await racing.snapshot(ME)).engine.installed, false);
+  await slow;
+  assert.equal((await racing.snapshot(ME)).engine.installed, false, 'the slower, earlier answer is not shown afterwards');
+});
+
+test('GPT r6 GA3: a failed download opens the engine that appeared meanwhile instead of ending in an error', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(500), engineState = { dir: null }, env = appdata(temp()), opened = [];
+  const net = fakeNet({ feed: release(key, data), file: data });
+  const request = async (url, options) => { if (url.startsWith('https://release-assets.githubusercontent.com/')) { engineState.dir = engineDir(); throw Object.assign(Error('reset'), { code: 'ECONNRESET' }); } return net(url, options); };
+  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request, hold: async () => { throw Error('must not hold'); }, openExternal: async url => opened.push(url), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  await service.start(ME, 'protect'); await service.whenIdle();
+  assert.equal((await service.snapshot(ME)).install.phase, 'opened');
+  assert.deepEqual(opened, ['synk-workbackup:open?topic=status']);
+  assert.equal(requestsIn(env).length, 1);
+  // 엔진이 없으면 처음 오류 그대로다
+  const none = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run: fakeEngine({}), request: async (url, options) => { if (url.startsWith('https://release-assets.githubusercontent.com/')) throw Object.assign(Error('reset'), { code: 'ECONNRESET' }); return net(url, options); }, previewAccounts: MINE, keys: [{ role: 'operating', pub: key.pub }], ...quiet });
+  await none.start(ME, 'protect'); await none.whenIdle();
+  assert.equal((await none.snapshot(ME)).install.phase, 'error');
+});
+
+test('GPT r6 GA5: the request is written, checked and renamed in one synchronous step', async () => {
+  const env = appdata(temp()), paths = B.statusPaths(env), order = [];
+  const fsSync = { ...fs, writeFileSync: (...a) => { order.push('write'); return fs.writeFileSync(...a); }, renameSync: (...a) => { order.push('rename'); return fs.renameSync(...a); }, unlinkSync: (...a) => fs.unlinkSync(...a) };
+  let flips = 0;
+  const name = await B.writeSetupRequest({ paths, mode: 'protect', hint: 'owner@example.com', fsSync, stillCurrent: () => { order.push('check'); flips++; return true; } });
+  assert.deepEqual(order, ['write', 'check', 'rename']);
+  assert.equal(flips, 1);
+  assert.deepEqual(fs.readdirSync(paths.requests), [name]);
+  const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
+  const body = src.slice(src.indexOf('fsSync.writeFileSync(temp'), src.indexOf('fsSync.renameSync(temp, file)'));
+  assert.doesNotMatch(body, /await/, 'nothing between the write and the rename can yield to a sign-in change');
+});
+
+test('GPT r6 GA5: a sign-in change removes the pending request at that moment; main calls it on every auth change', async () => {
+  const env = appdata(temp());
+  let current = true, letOpen;
+  const opening = new Promise(r => { letOpen = r; });
+  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current });
+  for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
+  assert.equal(requestsIn(env).length, 1, 'the request is out while the engine window opens');
+  current = false;
+  service.accountChanged();
+  assert.deepEqual(requestsIn(env), [], 'gone synchronously, before anything else can run');
+  letOpen(); await service.whenIdle();
+  // 같은 로그인이면 지우지 않는다
+  const env2 = appdata(temp());
+  const kept = B.createSolioBackup({ platform: 'win32', env: env2, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  await kept.start(ME, 'protect', { isCurrent: () => true }); await kept.whenIdle();
+  kept.accountChanged();
+  assert.equal(requestsIn(env2).length, 1);
+  const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
+  assert.match(main, /function publishAuthState\(state\)\{[^}]*solioBackupService\?\.accountChanged\(\);/);
+});
+
+test('GPT r6 GA5: on the download path the engine is checked before the request is written, and the installer runs right after', async () => {
+  const key = minisignKey(), data = crypto.randomBytes(500), engineState = { dir: null }, env = appdata(temp()), seen = [];
+  const engine = fakeEngine(engineState);
+  const run = async () => { seen.push(['check', requestsIn(env).length]); return engine(); };
+  const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run(onStarted) { seen.push(['run', requestsIn(env).length]); onStarted(); engineState.dir = engineDir(); return { outcome: 'exited', code: 0 }; } });
+  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  await service.start(ME, 'protect'); await service.whenIdle();
+  const runAt = seen.findIndex(s => s[0] === 'run');
+  assert.deepEqual(seen.slice(0, runAt + 1).map(s => s[1]), seen.slice(0, runAt).map(() => 0).concat(1), 'no engine check happens while the request is out before the prompt');
+  assert.equal((await service.snapshot(ME)).install.phase, 'done');
+});

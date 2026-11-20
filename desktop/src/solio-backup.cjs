@@ -25,7 +25,6 @@ const FEED_MAX = 64 * 1024;
 const SETUP_MAX = 512 * 1024 * 1024;
 const FEED_URL = 'https://synk.im/desktop/releases/workbackup.json';
 const FEED_AGE = 10 * 60 * 1000;
-const ENGINE_AGE = 15 * 1000;
 const CHECKING_AFTER = 2 * 60 * 60 * 1000;
 const DOWNLOAD_FOR = 30 * 60 * 1000;
 const STATES = Object.freeze(['safe', 'starting', 'attention', 'paused', 'off', 'not-set-up', 'moved', 'restore-only']);
@@ -261,7 +260,7 @@ async function realDirectory(dir, fsImpl) {
   const stat = await fsImpl.lstat(dir);
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw fault('STORAGE');
 }
-async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), random = () => crypto.randomBytes(8).toString('hex'), fsImpl = fsp, stillCurrent = () => true }) {
+async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), random = () => crypto.randomBytes(8).toString('hex'), fsImpl = fsp, fsSync = fs, stillCurrent = () => true }) {
   if (!paths || !MODES.includes(mode)) throw fault('INVALID');
   await fsImpl.mkdir(paths.requests, { recursive: true });
   for (const dir of [paths.root, paths.solio, paths.requests]) await realDirectory(dir, fsImpl);
@@ -271,12 +270,13 @@ async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), r
   const name = `${String(Math.trunc(now)).padStart(13, '0')}-${random()}.json`;
   if (!REQUEST_NAME.test(name)) throw fault('INVALID');
   const temp = path.join(paths.requests, `.${random()}.tmp`), file = path.join(paths.requests, name);
+  // 임시 이름에 쓰고, 로그인 확인과 엔진이 읽는 이름으로 바꾸기를 한 번에 동기로 한다. 본체의 로그인 상태는 같은 스레드에서만 바뀌므로
+  // 그 사이에 로그인이 바뀔 수 없다(GPT 다섯째 · 여섯째 · 일곱째 검수의 로그인 바뀜). 임시 이름(점으로 시작)은 엔진이 읽지 않는다
   try {
-    await fsImpl.writeFile(temp, JSON.stringify(body), { flag: 'wx' });
-    // 엔진이 읽는 이름으로 바꾸기 바로 앞에서 로그인을 다시 본다. 임시 이름(점으로 시작)은 엔진이 읽지 않는다(GPT 다섯째 검수 GA3)
+    fsSync.writeFileSync(temp, JSON.stringify(body), { flag: 'wx' });
     if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
-    await fsImpl.rename(temp, file);
-  } catch (error) { await fsImpl.unlink(temp).catch(() => {}); throw error?.backupCode ? error : fault('STORAGE'); }
+    fsSync.renameSync(temp, file);
+  } catch (error) { try { fsSync.unlinkSync(temp); } catch {} throw error?.backupCode ? error : fault('STORAGE'); }
   return name;
 }
 
@@ -412,35 +412,27 @@ function createSolioBackup({
   fsImpl = fs, keys = ENGINE_KEYS, previewAccounts = PREVIEW_ACCOUNTS, wait = ms => new Promise(resolve => setTimeout(resolve, ms)),
 } = {}) {
   const paths = statusPaths(env);
-  // 엔진 확인마다 차례 번호를 붙여, 늦게 끝난 앞 확인이 뒤 확인의 답을 덮지 않게 한다(GPT 셋째 검수 GA1)
-  let engine = null, engineAt = 0, engineLoading = null, engineAsked = 0, engineKept = 0;
-  // 캐시는 화면 표시에만 쓴다. 늦게 시작한 확인의 답이 이긴다. 누르기 · 열기 · 설치기 띄우기의 판단은 늘 그 순간의 새 확인으로 한다(GPT 여섯째 검수)
-  const keepEngine = (seq, value) => { if (seq > engineKept) { engineKept = seq; engine = value; engineAt = now(); } };
+  // 엔진이 있는지는 기억해 두지 않는다. 방의 표시 · 누르기 · 열기 · 설치기 띄우기가 모두 그때마다 새로 확인한다.
+  // 그래서 확인들이 끝나는 차례 때문에 옛 답이 보이거나 쓰이는 일이 없다(GPT 셋째 ~ 일곱째 검수의 캐시 경합을 설계로 없앰, 11-20).
+  // 방의 표시만, 설치가 도는 동안과 지금 확인이 실패한 때에 마지막 답을 쓴다. 마지막 답은 가장 늦게 시작한 성공한 확인의 것이다
+  let lastEngine = null, asked = 0, kept = 0;
   let feedState = { state: 'unknown', version: null, at: 0 }, feedLoading = null;
   let install = { phase: 'idle', progress: 0, code: null, mode: null };
-  let busy = null, mode = null, swept = false;
+  let busy = null, mode = null, swept = false, pendingRequest = null;
 
   const allowed = account => previewAllowed(account, previewAccounts);
-  /* 엔진 확인이 실패하면(PowerShell 오류 · 시간 초과) 앞의 답을 그대로 쓴다. 앞의 답이 없으면 error로 둬서 「깔려 있지 않음」과 가른다.
-     있다고 확인된 답은 1분 쓴다(방이 보이는 동안 PowerShell을 덜 띄운다) */
-  async function engineNow(force = false) {
-    if (platform !== 'win32') return { installed: false, version: null };
-    if (!force && engine && now() - engineAt < (engine.installed ? ENGINE_AGE * 4 : ENGINE_AGE)) return engine;
-    if (!engineLoading) {
-      const seq = ++engineAsked;
-      engineLoading = readEngine({ run, fsImpl: fsImpl.promises })
-        .then(value => { if (value.error && engine && !engine.error) return engine; keepEngine(seq, value); return seq >= engineKept ? value : engine; })
-        .finally(() => { engineLoading = null; });
-    }
-    return engineLoading;
-  }
-  /* 누를 때와 설치기를 띄우기 직전에는 앞의 답을 쓰지 않고 지금 답만 쓴다. 확인이 실패하면 error 그대로 돌려줘 아무것도 띄우지 않게 한다(GPT 다시 검수 GA5) */
+  /* 지금 엔진 확인 하나. 실패하면 error를 그대로 돌려줘 「깔려 있지 않음」과 가르고, 아무것도 띄우지 않게 한다(GPT 다시 검수 GA5) */
   async function engineFresh() {
     if (platform !== 'win32') return { installed: false, version: null };
-    const seq = ++engineAsked;
+    const seq = ++asked;
     const value = await readEngine({ run, fsImpl: fsImpl.promises });
-    if (!value.error) keepEngine(seq, value);
+    if (!value.error && seq > kept) { kept = seq; lastEngine = value; }
     return value;
+  }
+  async function engineNow() {
+    if (busy && lastEngine) return lastEngine;
+    const value = await engineFresh();
+    return value.error && lastEngine ? lastEngine : value;
   }
   function refreshFeed(force = false) {
     if (feedLoading || (!force && feedState.state !== 'unknown' && now() - feedState.at < FEED_AGE)) return feedLoading;
@@ -506,12 +498,26 @@ function createSolioBackup({
     return unknown ? 'unknown' : 'no';
   }
 
+  /* 이번 누름이 쓴 요청 파일. 로그인이 바뀌는 순간 accountChanged가 지운다 */
+  async function writeRequest(mode, hint) {
+    const name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises, fsSync: fsImpl, stillCurrent });
+    pendingRequest = path.join(paths.requests, name);
+    return name;
+  }
+  /* 본체가 로그인 상태를 알릴 때마다 부른다(main.cjs publishAuthState). 누른 때의 계정 · 로그인 세대가 아니면
+     이번 누름이 쓴 요청을 그 자리에서 지운다. 같은 스레드에서 바로 지우므로, 바뀐 로그인 아래에서 그 요청이 남는 때가 없다(GPT 일곱째 검수 GA5) */
+  function accountChanged() {
+    if (!pendingRequest || stillCurrent()) return;
+    try { fsImpl.unlinkSync(pendingRequest); } catch {}
+    pendingRequest = null;
+  }
+
   /* 엔진이 이미 있는 길: setup 요청만 쓰고 엔진 창을 연다 */
   async function openSetup(mode, hint) {
     setInstall('opening');
     let name;
     if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
-    try { name = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises, stillCurrent }); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('REQUEST_FAILED'); }
+    try { name = await writeRequest(mode, hint); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('REQUEST_FAILED'); }
     if (!stillCurrent()) { await fsImpl.promises.unlink(path.join(paths.requests, name)).catch(() => {}); throw fault('ACCOUNT_CHANGED'); }
     try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); }
     catch {
@@ -522,20 +528,25 @@ function createSolioBackup({
     setInstall('opened');
   }
 
+  /* 엔진이 이미 있으면 그 자리에서 갈래를 다시 정해 엔진 창을 연다. 엔진이 없거나 확인이 실패하면 false.
+     받기 전 · 받다 실패한 뒤 · 설치기를 띄우기 직전에 같은 함수를 쓴다(GPT 여섯째 · 일곱째 검수 GA1 · GA3) */
+  async function openIfInstalled(mode, hint, beforeOpen = async () => {}) {
+    const fresh = await engineFresh();
+    if (fresh.error) throw fault('ENGINE_UNKNOWN');
+    if (!fresh.installed) return false;
+    // 엔진이 생겼어도 보호 시작 갈래일 때만 요청을 쓴다(꼴 번호가 큰 상태 파일 따위면 멈춘다)
+    const { view } = await state(fresh);
+    if (view !== 'needs-setup') throw fault('NOT_NEEDED');
+    await beforeOpen();
+    await openSetup(mode, hint);
+    return true;
+  }
+
   async function installEngine(mode, hint) {
     setInstall('feed');
     const feed = await refreshFeed(true);
     // 피드를 받지 못했어도 그사이 엔진이 깔렸으면 엔진 창을 연다(GPT 여섯째 검수 GA2)
-    if (!feed) {
-      const fresh = await engineFresh();
-      if (fresh.installed) {
-        // 엔진이 생겼어도 보호 시작 갈래일 때만 요청을 쓴다(꼴 번호가 큰 상태 파일 따위면 멈춘다, GPT 일곱째 검수 GA1)
-        const { view } = await state(fresh);
-        if (view !== 'needs-setup') throw fault('NOT_NEEDED');
-        await openSetup(mode, hint);
-        return;
-      }
-    }
+    if (!feed && await openIfInstalled(mode, hint)) return;
     if (!feed) throw fault(feedState.state === 'missing' ? 'FEED_MISSING' : feedState.state === 'invalid' ? 'FEED_INVALID' : 'NETWORK');
     if (typeof cacheRoot !== 'string' || !path.isAbsolute(cacheRoot)) throw fault('STORAGE');
     await fsImpl.promises.mkdir(cacheRoot, { recursive: true });
@@ -545,38 +556,41 @@ function createSolioBackup({
     const dir = await fsImpl.promises.mkdtemp(path.join(base, 'setup-'));
     const file = path.join(dir, setupName(feed.version));
     let holder = null, requestName = null, keepRequest = false;
+    const releaseHolder = async () => { if (holder) { await holder.release(); holder = null; } };
     try {
-      setInstall('download');
-      // 받기 전체에 30분 기한을 둔다. 조금씩 이어지는 느린 응답이 누름을 끝없이 붙잡지 않게 한다(GPT 검수 GA8)
-      const signal = AbortSignal.timeout(DOWNLOAD_FOR);
-      try { await download({ feed, file, request, signal, onProgress: progress => { install = { ...install, progress }; } }); }
-      catch (error) { throw signal.aborted ? fault('NETWORK') : error; }
-      setInstall('verify');
-      holder = await holdWithRetry(file);
-      // 쥔 핸들이 가리키는 실제 파일이 받은 경로의 그 파일이어야 한다. 연결점을 거쳐 다른 파일을 쥐었거나, 쥔 뒤 경로가 다른 곳을
-      // 가리키게 바뀌었으면 여기서 멈춘다(설계 검토 P1, GPT 검수 GA1)
-      if (!samePath(holder.finalPath, file) || !(await sameRealPath(file))) throw fault('VERIFY_FAILED');
-      const digest = await digestFile(file, feed.size, fsImpl);
-      if (digest.size !== feed.size || digest.sha256 !== feed.sha256 || holder.sha256 !== feed.sha256) throw fault('VERIFY_FAILED');
-      const parsed = parseSignature(feed.signature);
-      if (!verifySignature(digest.blake, parsed, keys)) throw fault('VERIFY_FAILED');
+      try {
+        setInstall('download');
+        // 받기 전체에 30분 기한을 둔다. 조금씩 이어지는 느린 응답이 누름을 끝없이 붙잡지 않게 한다(GPT 검수 GA8)
+        const signal = AbortSignal.timeout(DOWNLOAD_FOR);
+        try { await download({ feed, file, request, signal, onProgress: progress => { install = { ...install, progress }; } }); }
+        catch (error) { throw signal.aborted ? fault('NETWORK') : error; }
+        setInstall('verify');
+        holder = await holdWithRetry(file);
+        // 쥔 핸들이 가리키는 실제 파일이 받은 경로의 그 파일이어야 한다. 연결점을 거쳐 다른 파일을 쥐었거나, 쥔 뒤 경로가 다른 곳을
+        // 가리키게 바뀌었으면 여기서 멈춘다(설계 검토 P1, GPT 검수 GA1)
+        if (!samePath(holder.finalPath, file) || !(await sameRealPath(file))) throw fault('VERIFY_FAILED');
+        const digest = await digestFile(file, feed.size, fsImpl);
+        if (digest.size !== feed.size || digest.sha256 !== feed.sha256 || holder.sha256 !== feed.sha256) throw fault('VERIFY_FAILED');
+        const parsed = parseSignature(feed.signature);
+        if (!verifySignature(digest.blake, parsed, keys)) throw fault('VERIFY_FAILED');
+      } catch (error) {
+        // 받기 · 확인이 실패했어도 그사이 다른 길로 엔진이 깔렸으면 오류 대신 엔진 창을 연다(GPT 일곱째 검수 GA3).
+        // 로그인이 바뀌었거나 엔진 확인이 실패하면 처음 오류를 그대로 낸다
+        if (error?.backupCode !== 'ACCOUNT_CHANGED' && stillCurrent()) {
+          let opened = false;
+          try { opened = await openIfInstalled(mode, hint, releaseHolder); } catch (other) { if (other?.backupCode !== 'ENGINE_UNKNOWN') throw other; }
+          if (opened) return;
+        }
+        throw error;
+      }
       // 받는 동안 로그인이 바뀌었으면(다른 계정이나 같은 계정의 새 로그인) 요청을 쓰지 않고 멈춘다(GPT 다시 검수 GA3 · 셋째 검수 GA4)
       if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
-      requestName = await writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises, stillCurrent });
-      // 쓰는 사이에 로그인이 바뀌었으면 쓴 요청을 거두고 멈춘다(GPT 넷째 검수 GA3). keepRequest가 거짓이라 finally가 지운다
-      if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       // 받는 동안 다른 길로 엔진이 깔렸으면 설치기를 다시 띄우지 않고 엔진 창을 연다(GPT 검수 GA4).
+      // 엔진 확인은 요청을 쓰기 전에 한다. 요청이 놓인 뒤에는 기다리는 일 없이 바로 설치기를 띄운다(GPT 일곱째 검수 GA5).
       // 지금 확인이 실패하면 깔렸는지 모르므로 띄우지 않는다(GPT 다시 검수 GA5)
-      const fresh = await engineFresh();
-      if (fresh.error) throw fault('ENGINE_UNKNOWN');
-      if (fresh.installed) {
-        keepRequest = true;
-        await holder.release(); holder = null;
-        if (!stillCurrent()) { keepRequest = false; throw fault('ACCOUNT_CHANGED'); }
-        try { await openExternal(`synk-workbackup:open?topic=${mode === 'move' ? 'move' : 'status'}`); } catch { keepRequest = false; throw fault('OPEN_FAILED'); }
-        setInstall('opened');
-        return;
-      }
+      if (await openIfInstalled(mode, hint, releaseHolder)) return;
+      // 요청 쓰기는 로그인 확인과 함께 동기로 한다. 쓴 뒤 로그인이 바뀌면 accountChanged가 그 자리에서 지운다
+      requestName = await writeRequest(mode, hint);
       if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       setInstall('admin');
       let started = false;
@@ -595,8 +609,8 @@ function createSolioBackup({
       if (!confirmed) throw fault('INSTALL_UNCONFIRMED');
       setInstall('done');
     } finally {
-      if (holder) await holder.release();
-      if (requestName && paths && !keepRequest) await fsImpl.promises.unlink(path.join(paths.requests, requestName)).catch(() => {});
+      await releaseHolder();
+      if (requestName && paths && !keepRequest) { try { fsImpl.unlinkSync(path.join(paths.requests, requestName)); } catch {} pendingRequest = null; }
       await removeDir(dir);
     }
   }
@@ -634,9 +648,8 @@ function createSolioBackup({
   async function open(account, topic) {
     if (!allowed(account)) return { ok: false, code: 'NOT_AVAILABLE' };
     if (!OPEN_TOPICS.includes(topic)) return { ok: false, code: 'INVALID' };
-    // 캐시가 「없음」이면 거절하기 전에 새로 확인한다(GPT 여섯째 검수 GA3)
-    let eng = await engineNow();
-    if (!eng.installed) eng = await engineFresh();
+    // 여는 순간의 새 확인으로만 정한다(GPT 여섯째 검수 GA3)
+    const eng = await engineFresh();
     if (!eng.installed) return { ok: false, code: 'NO_ENGINE' };
     try { await openExternal(`synk-workbackup:open?topic=${topic}`); return { ok: true }; } catch { return { ok: false, code: 'OPEN_FAILED' }; }
   }
@@ -644,7 +657,7 @@ function createSolioBackup({
   /* 끝난 설치 결과(오류 · 완료)를 지우고 처음 화면으로 */
   function dismiss(account) { if (allowed(account) && !busy) setInstall('idle'); return { ok: true }; }
 
-  return { snapshot, start, open, dismiss, whenIdle: () => busy || Promise.resolve() };
+  return { snapshot, start, open, dismiss, accountChanged, whenIdle: () => busy || Promise.resolve() };
 }
 
 module.exports = {
