@@ -1,10 +1,11 @@
 // 순간 맞춤의 내용 기억(단계 4 계획 §23-4 (나) · 카본 A8 · GPT GA8): 저장소의 세대마다 열쇠 하나, 씨앗은 세대 0에서 한 번, 비움 세대가
-// 다르면 읽지도 쓰지도 않는다. 비우면 기본 열쇠에 「비운 세대」 표지가 남아, 비운 것을 아직 모르는 탭도 읽지도 쓰지도 않는다(설계 검토 가).
+// 다르면 읽지도 쓰지도 않는다. 비우면 따로 열쇠(#cleared)에 「비운 세대」 표지가 남아, 비운 것을 아직 모르는 탭도 읽지도 쓰지도 않는다
+// (설계 검토 가 · GPT 다시 검수 -b — 기억을 쓰는 탭은 그 열쇠에 쓰지 않아 늦은 쓰기가 표지를 지우지 못한다).
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { subject } from '../support/subject.mjs';
 
-const { createFlowMemory, clearFlowMemory, FLOW_MEMORY_PREFIX } =
+const { createFlowMemory, clearFlowMemory, FLOW_MEMORY_PREFIX, FLOW_CLEARED_SUFFIX } =
   await subject('coach/flow-memory.mjs');
 
 function fakeStorage() {
@@ -18,6 +19,7 @@ function fakeStorage() {
 }
 const STORE = 'synk-atlas:guest';
 const BASE = `${FLOW_MEMORY_PREFIX}${STORE}`;
+const MARK = `${BASE}${FLOW_CLEARED_SUFFIX}`;
 const OLD = {
   contents: { 'order-rush.rush': { content: 'order-rush.rush', at: 'x', i: 1 } },
   declined: {},
@@ -168,7 +170,7 @@ test('앞 세대의 탭이 늦게 써도 비운 뒤의 기억을 덮지 않는�
   assert.ok(storage.map.has(`${FLOW_MEMORY_PREFIX}${STORE}@1`));
 });
 
-test('비우면 기본 열쇠에 비운 세대의 표지를 쓴다(그 세대의 열쇠에는 쓰지 않는다) — 비운 것을 아직 모르는 탭도 앞 기억을 읽지 않고, 세대 0이 아니면 씨앗을 다시 읽지 않는다', () => {
+test('비우면 따로 열쇠에 비운 세대의 표지를 쓴다(기억 열쇠에는 쓰지 않는다) — 비운 것을 아직 모르는 탭도 앞 기억을 읽지 않고, 세대 0이 아니면 씨앗을 다시 읽지 않는다', () => {
   const storage = fakeStorage();
   let reads = 0;
   const seed = () => {
@@ -177,8 +179,10 @@ test('비우면 기본 열쇠에 비운 세대의 표지를 쓴다(그 세대의
   };
   const before = createFlowMemory({ storage, store: STORE, generation: () => 0, seed });
   assert.deepEqual(before.memory('order-rush.rush'), OLD.contents['order-rush.rush']);
+  const kept = storage.getItem(BASE);
   assert.equal(clearFlowMemory(storage, STORE, 1), true);
-  assert.equal(JSON.parse(storage.getItem(BASE)).gen, 1);
+  assert.equal(JSON.parse(storage.getItem(MARK)).gen, 1);
+  assert.equal(storage.getItem(BASE), kept, '비우기가 기억 열쇠를 건드렸다');
   assert.equal(storage.getItem(`${BASE}@1`), null);
   assert.equal(before.memory('order-rush.rush'), null, '비운 것을 모르는 탭이 앞 기억을 읽었다');
   const after = createFlowMemory({ storage, store: STORE, generation: () => 2, seed });
@@ -216,11 +220,12 @@ test('비우기는 그 세대의 열쇠에 쓰지 않는다 — 표지가 늦게
   assert.equal(storage.getItem(`${BASE}@1`), bytes, '늦은 표지가 새 세대의 기억을 건드렸다');
   assert.deepEqual(c.memory('a'), { at: 'new' });
   assert.equal(before.memory('a'), null, '비운 것을 모르는 탭이 비우기 전 기억을 읽었다');
-  // 그 세대의 열쇠가 비어 있어도 쓰지 않는다 — 세대 1 이상은 열쇠가 없으면 원래 씨앗 없는 빈 기억이다. 표지는 기본 열쇠에 선다.
+  // 그 세대의 열쇠가 비어 있어도 쓰지 않는다 — 세대 1 이상은 열쇠가 없으면 원래 씨앗 없는 빈 기억이다. 표지는 따로 열쇠에만 선다.
   const empty = fakeStorage();
   assert.equal(clearFlowMemory(empty, STORE, 1), true);
   assert.equal(empty.getItem(`${BASE}@1`), null);
-  assert.equal(JSON.parse(empty.getItem(BASE)).gen, 1);
+  assert.equal(empty.getItem(BASE), null);
+  assert.equal(JSON.parse(empty.getItem(MARK)).gen, 1);
 });
 
 test('앞 꼴(기본 열쇠에 세대를 함께 둔 꼴)로 저장된 같은 세대의 기억을 이어받는다 — 그 세대의 열쇠가 없을 때만(GPT GA1)', () => {
@@ -262,7 +267,7 @@ test('다른 탭이 비워 다음 세대의 열쇠가 섰으면, 이 탭의 세�
   assert.equal(stale.declined('b'), null);
   assert.equal(stale.save('a', { at: 'late' }, stale.since()), false);
   assert.deepEqual(next.memory('a'), { at: 'new' });
-  // 두 번 뒤처진 탭: 세대 1(옮긴 사건 지우기)에는 아무도 쓰지 않았고 손님 비우기가 세대 2로 올렸다. 기본 열쇠의 표지(세대 2)가 이 탭의
+  // 두 번 뒤처진 탭: 세대 1(옮긴 사건 지우기)에는 아무도 쓰지 않았고 손님 비우기가 세대 2로 올렸다. 비운 세대 표지(세대 2)가 이 탭의
   // 세대보다 앞서, 세대 0 탭도 비우기 전 기억을 읽지 않는다.
   const twice = fakeStorage();
   const behind = createFlowMemory({ storage: twice, store: STORE, generation: () => 0 });
@@ -272,7 +277,7 @@ test('다른 탭이 비워 다음 세대의 열쇠가 섰으면, 이 탭의 세�
   assert.equal(behind.save('a', { at: 'late' }, behind.since()), false);
 });
 
-test('저장 없이 세대를 여럿 건너뛰어 비워도 뒤처진 탭은 읽지도 쓰지도 않는다 — 기본 열쇠의 표지 하나로 안다(GPT GA3)', () => {
+test('저장 없이 세대를 여럿 건너뛰어 비워도 뒤처진 탭은 읽지도 쓰지도 않는다 — 비운 세대 표지 하나로 안다(GPT GA3)', () => {
   const check = tabs => {
     for (const [g, tab] of tabs) {
       assert.equal(tab.memory('a'), null, `세대 ${g} 탭이 비우기 전 기억을 읽었다`);
@@ -309,7 +314,7 @@ test('저장 없이 세대를 여럿 건너뛰어 비워도 뒤처진 탭은 읽
   check([[1, one]]);
 });
 
-test('비우기는 기본 열쇠에 이미 그 세대 이상이 찍혀 있으면 덮지 않는다 — 옛 판 탭이 비운 뒤 기본 열쇠에 쓴 기억이 남고, 새 세대 탭이 이어받고, 뒤처진 탭은 막힌다(Fable 설계 검토 1 · GPT GA2)', () => {
+test('비우기는 기본 열쇠를 덮지 않는다 — 옛 판 탭이 비운 뒤 기본 열쇠에 쓴 기억이 남고, 새 세대 탭이 이어받고, 뒤처진 탭은 막힌다(Fable 설계 검토 1 · GPT GA2)', () => {
   for (const marked of [1, 2]) {
     const storage = fakeStorage();
     const stale = createFlowMemory({ storage, store: STORE, generation: () => 0 });
@@ -337,38 +342,88 @@ test('비우기는 기본 열쇠에 이미 그 세대 이상이 찍혀 있으면
   }
 });
 
-test('알려진 한계(계획 §6): 세대 0 탭의 마지막 읽기와 쓰기 사이에 표지가 서면 그 쓰기가 표지를 지운다 — 그래도 새 세대 탭은 빈 기억이다(Fable 설계 검토 2)', () => {
-  const storage = fakeStorage();
-  const stale = createFlowMemory({ storage, store: STORE, generation: () => 0 });
-  assert.equal(stale.save('a', { at: 'old' }, stale.since()), true);
+// 비운 것을 모르는 탭이 막혔는지 본 뒤 쓰기 전에 다른 탭의 비우기가 끝나는 장면 — 그 탭의 쓰기가 자기 열쇠에 닿는 순간 비우기를 끼운다.
+function lateWrite(storage, key, gen, write) {
   const set = storage.setItem;
   let injected = false;
   storage.setItem = (name, value) => {
-    if (!injected && name === BASE) {
+    if (!injected && name === key) {
       injected = true;
-      assert.equal(clearFlowMemory(storage, STORE, 1), true);
+      assert.equal(clearFlowMemory(storage, STORE, gen), true);
     }
     return set(name, value);
   };
-  stale.save('b', { at: 'late' }, stale.since());
-  storage.setItem = set;
+  try {
+    write();
+  } finally {
+    storage.setItem = set;
+  }
   assert.ok(injected, '쓰기 사이에 끼어들지 못했다');
-  assert.equal(JSON.parse(storage.getItem(BASE)).gen, 0, '이 장면은 표지가 지워지는 한계다');
+}
+
+test('비운 것을 모르는 탭의 늦은 쓰기가 비우기와 겹쳐도 표지는 남는다 — 그 탭은 그 뒤 비우기 전 기억을 읽지도 쓰지도 않고, 새 세대 탭은 빈 기억이다(GPT 다시 검수 -b GA1 · GA3)', () => {
+  const storage = fakeStorage();
+  const stale = createFlowMemory({ storage, store: STORE, generation: () => 0 });
+  assert.equal(stale.save('a', { at: 'old' }, stale.since()), true);
+  assert.equal(stale.decline('b', 'when', stale.since()), true);
+  lateWrite(storage, BASE, 1, () => stale.save('c', { at: 'late' }, stale.since()));
+  assert.equal(JSON.parse(storage.getItem(MARK)).gen, 1, '늦은 쓰기가 표지를 지웠다');
+  assert.equal(stale.memory('a'), null, '비운 것을 모르는 탭이 비우기 전 기억을 다시 읽었다');
+  assert.equal(stale.declined('b'), null);
+  assert.equal(stale.save('a', { at: 'again' }, stale.since()), false);
   const next = createFlowMemory({ storage, store: STORE, generation: () => 1 });
-  assert.equal(next.memory('a'), null, '표지가 지워진 뒤 새 세대 탭이 비우기 전 기억을 읽었다');
-  assert.equal(next.memory('b'), null);
-  assert.equal(next.save('c', { at: 'new' }, next.since()), true);
-  assert.deepEqual(next.memory('c'), { at: 'new' });
+  assert.equal(next.memory('a'), null, '새 세대 탭이 비우기 전 기억을 읽었다');
+  assert.equal(next.memory('c'), null);
+  assert.equal(next.save('d', { at: 'new' }, next.since()), true);
+  assert.deepEqual(next.memory('d'), { at: 'new' });
+  // 세대를 여럿 건너뛴 비우기(세대 3)와 세대 1 탭의 늦은 쓰기가 겹쳐도 같다.
+  const other = fakeStorage();
+  const one = createFlowMemory({ storage: other, store: STORE, generation: () => 1 });
+  assert.equal(one.save('a', { at: 'old' }, one.since()), true);
+  lateWrite(other, `${BASE}@1`, 3, () => one.save('c', { at: 'late' }, one.since()));
+  assert.equal(one.memory('a'), null, '세대 1 탭이 비우기 전 기억을 다시 읽었다');
+  assert.equal(one.save('a', { at: 'again' }, one.since()), false);
 });
 
-test('기본 열쇠의 표지가 낮은 세대 값으로 덮여도 바로 앞 세대 탭은 빈 기억이다 — 비우기가 바로 앞 세대의 열쇠도 덮는다(둘째 방어선 · Fable 설계 검토 5)', () => {
+test('기억 열쇠가 어떻게 덮여도 비운 세대 표지는 남는다 — 기억을 쓰는 탭은 표지 열쇠에 쓰지 않는다', () => {
   const storage = fakeStorage();
   const one = createFlowMemory({ storage, store: STORE, generation: () => 1 });
   assert.equal(one.save('a', { at: 'old' }, one.since()), true);
   assert.equal(clearFlowMemory(storage, STORE, 2), true);
-  // 뒤처진 세대 0 탭의 늦은 쓰기(위 한계의 동기 구간)가 기본 열쇠의 표지를 지웠다.
+  const mark = storage.getItem(MARK);
+  // 앞 꼴로 쓰는 옛 판 탭과 세대 0 탭이 기본 열쇠를 낮은 세대 값으로 덮었다.
   storage.setItem(BASE, JSON.stringify({ v: 1, gen: 0, seeded: true, contents: {}, declined: {} }));
+  assert.equal(storage.getItem(MARK), mark);
   assert.equal(one.memory('a'), null, '바로 앞 세대 탭이 비우기 전 기억을 읽었다');
+  assert.equal(one.save('a', { at: 'late' }, one.since()), false);
+  const zero = createFlowMemory({ storage, store: STORE, generation: () => 0 });
+  assert.equal(zero.save('a', { at: 'late' }, zero.since()), false);
+  assert.equal(storage.getItem(MARK), mark);
+});
+
+test('비운 세대 표지는 세대가 오를 때만 바뀐다 — 늦게 끝난 앞 비우기가 표지를 낮추지 않는다', () => {
+  const storage = fakeStorage();
+  const two = createFlowMemory({ storage, store: STORE, generation: () => 2 });
+  assert.equal(two.save('a', { at: 'old' }, two.since()), true);
+  assert.equal(clearFlowMemory(storage, STORE, 3), true);
+  assert.equal(clearFlowMemory(storage, STORE, 2), true);
+  assert.equal(JSON.parse(storage.getItem(MARK)).gen, 3, '늦은 앞 비우기가 표지를 낮췄다');
+  assert.equal(two.memory('a'), null, '세대 2 탭이 비우기 전 기억을 읽었다');
+  assert.equal(two.save('a', { at: 'late' }, two.since()), false);
+});
+
+test('옛 판 탭이 기본 열쇠에 더 뒤 세대의 기억을 썼으면, 표지가 없어도 뒤처진 탭은 읽지도 쓰지도 않는다 — 그 기억을 덮지 않는다', () => {
+  const storage = fakeStorage();
+  const stale = createFlowMemory({ storage, store: STORE, generation: () => 0 });
+  assert.equal(stale.save('a', { at: 'old' }, stale.since()), true);
+  storage.setItem(
+    BASE,
+    JSON.stringify({ v: 1, gen: 1, seeded: true, contents: { a: { at: 'new' } }, declined: {} }),
+  );
+  const bytes = storage.getItem(BASE);
+  assert.equal(stale.memory('a'), null);
+  assert.equal(stale.save('a', { at: 'late' }, stale.since()), false);
+  assert.equal(storage.getItem(BASE), bytes, '뒤처진 탭이 더 뒤 세대의 기억을 덮었다');
 });
 
 test('세대를 모르는 탭(generation()이 던짐)은 빈 기억으로 읽고, 쓰지 않고, 씨앗도 읽지 않는다(Fable 설계 검토 4)', () => {
@@ -380,17 +435,18 @@ test('세대를 모르는 탭(generation()이 던짐)은 빈 기억으로 읽고
   const lost = () => {
     throw new Error('closed');
   };
-  // 기본 열쇠에 표지가 선 뒤 — 그 바이트를 덮으면 비운 것을 모르는 탭의 막이가 풀린다.
+  // 비운 세대 표지가 선 뒤 — 세대를 모르는 탭은 표지와 기억 열쇠 어디에도 쓰지 않는다.
   const storage = fakeStorage();
   assert.equal(clearFlowMemory(storage, STORE, 1), true);
-  const bytes = storage.getItem(BASE);
+  const bytes = storage.getItem(MARK);
   const memory = createFlowMemory({ storage, store: STORE, generation: lost, seed });
   assert.equal(memory.since(), null);
   assert.equal(memory.memory('order-rush.rush'), null);
   assert.equal(memory.declined('x'), null);
   assert.equal(memory.save('a', { at: 'x' }, memory.since()), false);
   assert.equal(memory.decline('a', 'when', memory.since()), false);
-  assert.equal(storage.getItem(BASE), bytes);
+  assert.equal(storage.getItem(MARK), bytes);
+  assert.equal(storage.map.size, 1, '세대를 모르는 탭이 기억 열쇠에 썼다');
   // 빈 저장소에서도 씨앗을 읽거나 쓰지 않는다.
   const empty = fakeStorage();
   const none = createFlowMemory({ storage: empty, store: STORE, generation: lost, seed });
@@ -399,16 +455,19 @@ test('세대를 모르는 탭(generation()이 던짐)은 빈 기억으로 읽고
   assert.equal(reads, 0);
 });
 
+// 셸(world-plan-next.mjs · world-atlas-next.mjs)의 앞 판 쓸기 규칙을 옮긴 것이다(4-6e 설계 · 단계4_계획 §25) — 앞 세대 열쇠는 지우고,
+// 기본 열쇠는 그 gen이 지금 세대보다 작을 때만 지운다. 비운 세대 표지(#cleared)는 「@세대」도 기본 열쇠도 아니라 남는다. 규칙이 바뀌면
+// 아래 두 시험도 함께 고친다.
+function sweep(storage, now) {
+  for (const name of [...storage.map.keys()]) {
+    const at = name.startsWith(`${BASE}@`) ? Number(name.slice(BASE.length + 1)) : null;
+    if (Number.isSafeInteger(at) && at < now) storage.removeItem(name);
+  }
+  const kept = JSON.parse(storage.getItem(BASE) ?? 'null');
+  if (kept && Number.isSafeInteger(kept.gen) && kept.gen < now) storage.removeItem(BASE);
+}
+
 test('비우기 뒤 셸의 앞 판 쓸기(4-6 — 앞 세대 열쇠는 지우고, 기본 열쇠는 그 gen이 지금 세대보다 작을 때만 지운다)를 거쳐도 뒤처진 탭은 비우기 전 기억을 읽지도 쓰지도 않는다', () => {
-  // 셸(world-plan-next.mjs · world-atlas-next.mjs)의 쓸기 규칙을 옮긴 것이다 — 규칙이 바뀌면 이 시험도 함께 고친다.
-  const sweep = (storage, now) => {
-    for (const name of [...storage.map.keys()]) {
-      const at = name.startsWith(`${BASE}@`) ? Number(name.slice(BASE.length + 1)) : null;
-      if (Number.isSafeInteger(at) && at < now) storage.removeItem(name);
-    }
-    const kept = JSON.parse(storage.getItem(BASE) ?? 'null');
-    if (kept && Number.isSafeInteger(kept.gen) && kept.gen < now) storage.removeItem(BASE);
-  };
   const storage = fakeStorage();
   const zero = createFlowMemory({ storage, store: STORE, generation: () => 0 });
   const one = createFlowMemory({ storage, store: STORE, generation: () => 1 });
@@ -417,7 +476,8 @@ test('비우기 뒤 셸의 앞 판 쓸기(4-6 — 앞 세대 열쇠는 지우고
   assert.equal(clearFlowMemory(storage, STORE, 2), true);
   sweep(storage, 2);
   assert.equal(storage.getItem(`${BASE}@1`), null, '쓸기가 앞 세대 열쇠를 지우지 않았다');
-  assert.equal(JSON.parse(storage.getItem(BASE)).gen, 2, '쓸기가 비운 세대의 표지를 지웠다');
+  assert.equal(storage.getItem(BASE), null, '쓸기가 비우기 전 세대 0 기억을 남겼다');
+  assert.equal(JSON.parse(storage.getItem(MARK)).gen, 2, '쓸기가 비운 세대 표지를 지웠다');
   for (const [g, tab] of [
     [0, zero],
     [1, one],
@@ -429,4 +489,28 @@ test('비우기 뒤 셸의 앞 판 쓸기(4-6 — 앞 세대 열쇠는 지우고
   assert.equal(two.memory('a'), null);
   assert.equal(two.save('a', { at: 'two' }, two.since()), true);
   assert.deepEqual(two.memory('a'), { at: 'two' });
+});
+
+test('비우기 뒤 쓸기를 돌려도 같은 세대의 이어받기는 그대로다 — 기본 열쇠의 같은 세대 앞 꼴 기억을 새 세대 탭이 읽고, 앞선 세대 열쇠만 사라진다(설계 주인 25-12의 8)', () => {
+  const storage = fakeStorage();
+  const one = createFlowMemory({ storage, store: STORE, generation: () => 1 });
+  assert.equal(one.save('a', { at: 'one' }, one.since()), true);
+  // 손님 비우기가 세대 2로 올렸고, 표지가 서기 전에 앞 꼴로 쓰는 옛 판 탭이 기본 열쇠에 세대 2 기억을 썼다.
+  storage.setItem(
+    BASE,
+    JSON.stringify({
+      v: 1,
+      gen: 2,
+      seeded: true,
+      contents: { a: { at: 'old-format' } },
+      declined: { b: 'when' },
+    }),
+  );
+  assert.equal(clearFlowMemory(storage, STORE, 2), true);
+  sweep(storage, 2);
+  assert.equal(storage.getItem(`${BASE}@1`), null, '쓸기가 앞선 세대 열쇠를 남겼다');
+  const two = createFlowMemory({ storage, store: STORE, generation: () => 2 });
+  assert.deepEqual(two.memory('a'), { at: 'old-format' }, '비우기 · 쓸기 뒤 이어받기가 깨졌다');
+  assert.equal(two.declined('b'), 'when');
+  assert.equal(one.memory('a'), null, '비운 것을 모르는 탭이 비우기 전 기억을 읽었다');
 });
