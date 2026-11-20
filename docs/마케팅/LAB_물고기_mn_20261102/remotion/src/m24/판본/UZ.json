@@ -141,7 +141,7 @@
   "lang": "uz",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "Suv + goʻsht =\nkoreyscha nima?",
+  "hook": "Suv + goʻsht =\nkoreyschada nima boʻladi?",
   "hookSize": 52,
   "reads": [
     "mul",
@@ -161,7 +161,7 @@
   "lunchSize": 84,
   "bye": "Xayr, steyk!",
   "byeSize": 62,
-  "endCard": "Baliq (물고기) yedi!",
+  "endCard": "Baliq (물고기) yeb qoʻydi!",
   "endSize": 52,
   "ask": "",
   "askSize": 40,
@@ -172,7 +172,7 @@
   "helloVo": "",
   "helloSec": 1,
   "_원문": {
-    "hook": "물 + 고기 =\n한국어로 뭐?",
+    "hook": "물 + 고기 =\n한국어로는 뭐가 될까?",
     "water": "물",
     "meat": "고기",
     "eye": "눈",
@@ -181,7 +181,7 @@
     "tears": "눈물",
     "lunch": "내 점심!!",
     "bye": "잘 가, 스테이크!",
-    "endCard": "물고기(물고기)가 먹었다!",
+    "endCard": "물고기(물고기)가 먹어 버렸다!",
     "ask": ""
   }
 }

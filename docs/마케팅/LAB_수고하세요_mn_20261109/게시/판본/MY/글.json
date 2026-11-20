@@ -161,8 +161,8 @@
     {
       "id": "literalNote",
       "칸": "진행",
-      "글": "Kat prof ke bos,\nkadang macam arahan",
-      "원문": "교수님이나 상사에게는\n가끔 명령 같아요",
+      "글": "Kat prof atau bos,\nkadang bunyi macam arahan",
+      "원문": "교수님이나 상사에게는\n가끔 명령처럼 들려요",
       "초": [
         5.5,
         8.7
@@ -373,8 +373,8 @@
     {
       "id": "gag",
       "칸": "진행",
-      "글": "Prof boleh",
-      "원문": "교수님은 돼요",
+      "글": "Kalau prof, boleh",
+      "원문": "교수님이면 괜찮아요",
       "초": [
         16.5,
         17.3

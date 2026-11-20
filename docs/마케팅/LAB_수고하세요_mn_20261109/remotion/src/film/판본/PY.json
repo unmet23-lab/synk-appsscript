@@ -180,9 +180,9 @@
   "ruleElder": "Con profes y jefes",
   "ruleSize": 46,
   "ruleTop": 872,
-  "gag": "Él sí dice 수고해요",
+  "gag": "Él sí",
   "gagSize": 54,
-  "b2Mean": "",
+  "b2Mean": "¡Trabajá bien!",
   "end": "Al profe:",
   "endSize": 62,
   "meanSize": 44,
@@ -212,7 +212,8 @@
     "b1Mean": "그래, 잘 가",
     "ruleFriend": "친구 · 동료에게",
     "ruleElder": "선생님 · 상사에게",
-    "gag": "그분은 수고해요라고 말해도 돼요",
-    "end": "선생님께:"
+    "gag": "그분은 돼요",
+    "end": "선생님께:",
+    "b2Mean": "일 잘해!(수고해요의 뜻 — 반말 vos)"
   }
 }

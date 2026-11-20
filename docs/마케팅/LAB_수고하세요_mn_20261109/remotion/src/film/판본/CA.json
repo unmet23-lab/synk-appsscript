@@ -166,7 +166,7 @@
   "lang": "en",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.18,
-  "hook": "Is “수고하세요” rude\nto a prof?",
+  "hook": "Is it rude to say\n“수고하세요” to a prof?",
   "hookSize": 58,
   "a1Mean": "Professor, work hard!",
   "literal": "수고하세요 = “Work hard!”",
@@ -180,9 +180,9 @@
   "ruleElder": "To profs & bosses",
   "ruleSize": 46,
   "ruleTop": 872,
-  "gag": "Profs can say 수고해요",
+  "gag": "Profs can say",
   "gagSize": 54,
-  "b2Mean": "",
+  "b2Mean": "Work hard",
   "end": "To your prof:",
   "endSize": 62,
   "meanSize": 44,
@@ -203,7 +203,7 @@
   "helloSec": 1.3,
   "_원문": {
     "hello": "수고하세요(일 잘하세요) — 이 편의 말",
-    "hook": "「수고하세요」는 무례할까\n교수님께?",
+    "hook": "무례할까, 교수님께\n「수고하세요」라고 하면?",
     "a1Mean": "교수님, 열심히 일하세요!",
     "literal": "수고하세요 = 「열심히 일하세요!」",
     "literalNote": "교수님은 명령하는 말처럼 느낄 수 있어요",
@@ -212,8 +212,8 @@
     "b1Mean": "그래요, 조심히 가요!",
     "ruleFriend": "친구 · 동료에게",
     "ruleElder": "교수님 · 상사에게",
-    "gag": "교수님은 수고해요라고 말해도 돼요",
-    "b2Mean": "",
+    "gag": "교수님은 말해도 돼요",
+    "b2Mean": "일 열심히 해요(수고해요의 뜻)",
     "end": "교수님께:"
   }
 }

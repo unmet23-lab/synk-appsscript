@@ -180,9 +180,9 @@
   "ruleElder": "Profs e chefes",
   "ruleSize": 46,
   "ruleTop": 872,
-  "gag": "Já ele diz 수고해요",
+  "gag": "Ele sim",
   "gagSize": 54,
-  "b2Mean": "",
+  "b2Mean": "Trabalhe bem",
   "end": "Pro prof:",
   "endSize": 62,
   "meanSize": 44,
@@ -211,7 +211,8 @@
     "b1Mean": "그래요, 또 봐요!",
     "ruleFriend": "친구 · 동료에게",
     "ruleElder": "교수님들 · 상사들",
-    "gag": "그분은 수고해요라고 말해(그건 괜찮아요)",
-    "end": "교수님께:"
+    "gag": "그분은 돼요",
+    "end": "교수님께:",
+    "b2Mean": "일 잘해요(수고해요의 뜻)"
   }
 }
