@@ -948,3 +948,23 @@ test('GPT r10 GA1 · GA4: no owner file behind a junction, and no request when t
   assert.deepEqual(requestsIn(env2), []);
   assert.equal((await noOwner.snapshot(ME)).install.code, 'REQUEST_FAILED');
 });
+
+/* ── PC 0.5.2: 포장된 판에서는 꺼 둔다(11-20) ── */
+test('PC 0.5.2: in a packaged build the room is hidden and the calls say NOT_AVAILABLE; one switch turns it on', async () => {
+  const env = appdata(temp(), { status: sample() });
+  const off = B.createSolioBackup({ platform: 'win32', env, packaged: true, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  assert.deepEqual(await off.snapshot(ME), { ok: true, available: false });
+  assert.deepEqual(await off.start(ME, 'protect'), { ok: false, code: 'NOT_AVAILABLE' });
+  assert.deepEqual(await off.open(ME, 'status'), { ok: false, code: 'NOT_AVAILABLE' });
+  assert.deepEqual(requestsIn(env), []);
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  assert.equal(solioBackupView(await off.snapshot(ME)).visible, false, 'the room does not show');
+  const on = B.createSolioBackup({ platform: 'win32', env, packaged: true, inRelease: true, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  assert.equal((await on.snapshot(ME)).available, true);
+  const source = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  assert.equal((await source.snapshot(ME)).available, true, 'a source run stays open');
+  const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
+  assert.match(src, /^const IN_RELEASE = false;$/m, 'PC 0.5.2 ships with the room off');
+  const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
+  assert.match(main, /createSolioBackup\(\{packaged,/);
+});

@@ -53,6 +53,10 @@ const ENGINE_KEYS = Object.freeze([
 // sha256(PREVIEW_SALT + synk_user_id). 이 PC의 방문자 분석 볼 계정(viewers.json)에 있는 유호님 SYNK 계정이다(11-20).
 const PREVIEW_SALT = 'SYNK-SOLIO-BACKUP-PREVIEW-v1:';
 const PREVIEW_ACCOUNTS = Object.freeze(['1c9b96c34bc629877b01afa944a64ece23b5cd5d965ec84af4ca46c69d8bc424']);
+// 포장된 판(설치본)에서 이 방을 여는가. PC 0.5.2는 GPT 검수의 P1(로그인이 바뀐 뒤 앞 로그인의 요청 · 엔진 계약의 취소 표식 대기)이
+// 남아 꺼 둔다. 꺼지면 방이 보이지 않고(available:false) 누르기 · 열기는 NOT_AVAILABLE이다. 소스 실행은 그대로 열린다.
+// 켜는 것은 이 한 줄이다(11-20 검정 구 3단계 세션 · 조율 세션 결정)
+const IN_RELEASE = false;
 
 const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const fault = code => Object.assign(new Error(code), { backupCode: code });
@@ -418,7 +422,7 @@ async function download({ feed, file, request, signal, onProgress }) {
 function createSolioBackup({
   platform = process.platform, env = process.env, cacheRoot, now = Date.now,
   run = runPowerShell, request = requestHttps, hold = holdSetup, openExternal = async () => {},
-  fsImpl = fs, keys = ENGINE_KEYS, previewAccounts = PREVIEW_ACCOUNTS, wait = ms => new Promise(resolve => setTimeout(resolve, ms)),
+  fsImpl = fs, keys = ENGINE_KEYS, previewAccounts = PREVIEW_ACCOUNTS, packaged = false, inRelease = IN_RELEASE, wait = ms => new Promise(resolve => setTimeout(resolve, ms)),
   tag = runTag(),
 } = {}) {
   const paths = statusPaths(env);
@@ -429,7 +433,7 @@ function createSolioBackup({
   let install = { phase: 'idle', progress: 0, code: null, mode: null };
   let busy = null, mode = null, swept = false;
 
-  const allowed = account => previewAllowed(account, previewAccounts);
+  const allowed = account => (!packaged || inRelease === true) && previewAllowed(account, previewAccounts);
   /* 지금 엔진 확인 하나. 실패하면 error를 그대로 돌려줘 「깔려 있지 않음」과 가른다(GPT 다시 검수 GA5) */
   async function engineFresh() {
     if (platform !== 'win32') return { installed: false, version: null };
