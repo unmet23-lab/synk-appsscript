@@ -736,7 +736,7 @@
   // 좁은 화면: 고를 때는 카드 밑(묻는 말을 가리지 않는다), 답한 뒤에는 카드 위(결과 글을 가리지 않는다). 단추는 손가락만 가리킨다
   const guidePick = (cs, demo, t = G.pick, s = G.pickSub) => {
     const b = union(cs.map((c) => c.el));
-    const edge = Math.min(root.clientWidth, ...[...cards].filter((k) => !cs.includes(k) && k.op > 0.5).map((k) => rel(k.el)).filter((o) => o.x > b.x + b.w && o.y < b.y + b.h && o.y + o.h > b.y).map((o) => o.x - 12));
+    const edge = Math.min(root.clientWidth, ...[...cards].filter((k) => !cs.includes(k) && k.op > 0.5).map((k) => rel(k.el)).filter((o) => o.x > b.x + b.w && o.y < b.y + b.h && o.y + o.h > b.y).map((o) => o.x));   // tip이 이 끝에서 12px 앞에 멈춘다
     const side = narrow || edge - (b.x + b.w + 16) < 150 + 12 ? 'bottom' : 'right';
     tip(t, s, b, side, false, edge); if (demo) demoCards(cs);
   };
