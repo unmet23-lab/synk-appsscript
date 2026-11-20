@@ -7,7 +7,7 @@ import { Audio } from '@remotion/media';
 import { AbsoluteFill, Img, interpolate, Sequence, staticFile, useCurrentFrame } from 'remotion';
 import { KO } from '../lib/fonts';
 import { clamp, IN_OUT, mix, OUT, prog } from '../lib/motion';
-import { BUTTER, DISC, INK, PAPER, STAGE, STEM, SUB } from './data';
+import { BUTTER, DISC, INK, PAPER, STAGE, STEM, STEM_R, SUB } from './data';
 import { BGM, LEN, SFX, T, VO } from './timeline';
 
 export const FPS = 30;
@@ -117,18 +117,22 @@ export const Strips: React.FC<{ t: number; at: [number, number, number]; rings: 
         const fy = (STEM[key].y + DISC[key].y) / 2 + 6 * Math.sin(t * 0.9 + i);
         const fx = STEM[key].x + 14 * Math.sin(t * 0.7 + i * 1.7);
         const rp = appear(t, rings[i], 0.28);
-        const wp = wipes ? interpolate(t, [wipes[i], wipes[i] + 0.22], [0, 100], { ...clamp, easing: IN_OUT }) : 0;
+        const wp = wipes ? interpolate(t, [wipes[i], wipes[i] + 0.32], [0, 100], { ...clamp, easing: IN_OUT }) : 0;
         const fk = FIXED[key];
         return (
           <React.Fragment key={key}>
             <div style={{ opacity: p, transform: `translateY(${(1 - p) * 60}px)` }}>
               <Pic src={`img/${key}.jpg`} x={STRIP.x} y={y} w={STRIP.w} h={STRIP.h} fx={fx} fy={fy} s={drift}>
-                {(k) => <Ring x={STEM[key].x} y={STEM[key].y} r={94} p={rp * (1 - wp / 100)} k={k} t={t} />}
+                {(k) => <Ring x={STEM[key].x} y={STEM[key].y} r={STEM_R[key]} p={rp * (1 - wp / 100)} k={k} t={t} />}
               </Pic>
               {wp > 0 && (
                 <Pic src={`img/${fk}.jpg`} x={STRIP.x} y={y} w={STRIP.w} h={STRIP.h} fx={DISC[fk].x + 14 * Math.sin(t * 0.7 + i * 1.7)} fy={DISC[fk].y - 40 + 6 * Math.sin(t * 0.9 + i)} s={drift} clip={`inset(0 ${100 - wp}% 0 0 round 22px)`} />
               )}
-              {wp > 0 && wp < 100 && <div style={{ position: 'absolute', left: STRIP.x + (STRIP.w * wp) / 100 - 6, top: y, width: 12, height: STRIP.h, background: BUTTER }} />}
+              {wp > 0 && wp < 100 && (
+                <div style={{ position: 'absolute', left: STRIP.x, top: y, width: STRIP.w, height: STRIP.h, overflow: 'hidden', borderRadius: 22 }}>
+                  <div style={{ position: 'absolute', left: (STRIP.w * wp) / 100 - 6, top: 0, width: 12, height: STRIP.h, background: BUTTER }} />
+                </div>
+              )}
             </div>
             {labels && (
               <div style={{ position: 'absolute', left: 84, top: y + STRIP.h / 2 - 40, fontFamily: KO, fontWeight: 800, fontSize: 64, color: INK, opacity: p, letterSpacing: -1.5 }}>{i + 1}화</div>
@@ -173,7 +177,7 @@ const StemScene: React.FC<{ t: number }> = ({ t }) => {
   return (
     <AbsoluteFill>
       <Pic src="img/p2.jpg" {...BIG} fx={STEM.p2.x + 12 * Math.sin(u * 1.4)} fy={STEM.p2.y + 40 + 10 * Math.cos(u * 1.1)} s={s * bump}>
-        {(k) => <Ring x={STEM.p2.x} y={STEM.p2.y} r={92} p={rp} k={k} t={t} />}
+        {(k) => <Ring x={STEM.p2.x} y={STEM.p2.y} r={STEM_R.p2} p={rp} k={k} t={t} />}
       </Pic>
       <Head
         t={t}
@@ -212,7 +216,7 @@ const PersonScene: React.FC<{ t: number }> = ({ t }) => {
 /** 8.61~11.91초 — 핵심 장면: 1화 · 2화 · 3화 세 장이 박마다 놓이고 꼭지마다 테. */
 const ThreeScene: React.FC<{ t: number }> = ({ t }) => (
   <AbsoluteFill>
-    <Strips t={t} at={[T.s1, T.s2, T.s3]} rings={[T.r1, T.r2, T.r3]} />
+    <Strips t={t} at={[T.s1, T.s2, T.s3]} rings={[T.r1, T.r2, T.r3]} push={1 + 0.09 * interpolate(t, [T.r3 + 0.2, T.prompt], [0, 1], { ...clamp, easing: IN_OUT })} />
     <Head
       t={t}
       lines={[
@@ -229,12 +233,9 @@ const PromptScene: React.FC<{ t: number }> = ({ t }) => {
   const card = appear(t, T.prompt, 0.35);
   const float = 6 * Math.sin(u * 1.3);
   const hl = [appear(t, T.h1, 0.3), appear(t, T.h2, 0.3), appear(t, T.h3, 0.3)];
-  const row = (en: string, ko: string, p: number) => (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: 26, marginTop: 22, opacity: 0.25 + 0.75 * p, transform: `translateX(${(1 - p) * -18}px)` }}>
-      <span style={{ fontFamily: KO, fontWeight: 700, fontSize: 44, color: SUB, width: 236, flexShrink: 0 }}>{en}</span>
-      <span style={{ fontFamily: KO, fontWeight: 900, fontSize: 86, color: INK, letterSpacing: -2 }}>
-        <Mark p={p}>{ko}</Mark>
-      </span>
+  const row = (ko: string, p: number) => (
+    <div style={{ marginTop: 20, opacity: p, transform: `translateX(${(1 - p) * -40}px)`, fontFamily: KO, fontWeight: 900, fontSize: 86, color: INK, letterSpacing: -2 }}>
+      <Mark p={p}>{ko}</Mark>
     </div>
   );
   return (
@@ -242,13 +243,13 @@ const PromptScene: React.FC<{ t: number }> = ({ t }) => {
       <div style={{ position: 'absolute', left: 64, top: 690 + float, width: 900, padding: '50px 52px 56px', boxSizing: 'border-box', borderRadius: 28, background: PAPER, boxShadow: '0 24px 70px rgba(40,30,15,0.18)', opacity: card, transform: `translateY(${(1 - card) * 50}px) scale(${1 + 0.02 * (u / 4.8)})` }}>
         <div style={{ fontFamily: KO, fontWeight: 700, fontSize: 42, color: SUB }}>1화를 다시 만들 때 AI한테 적은 말</div>
         <div style={{ fontFamily: KO, fontWeight: 600, fontSize: 44, color: INK, lineHeight: 1.3, marginTop: 18, marginBottom: 14 }}>
-          A flat printed mark — no stem,
+          A flat printed mark — <Mark p={hl[0]}>no stem</Mark>,
           <br />
-          no leaves, no fruit, no drawing.
+          <Mark p={hl[1]}>no leaves</Mark>, <Mark p={hl[2]}>no fruit</Mark>, no drawing.
         </div>
-        {row('no stem', '꼭지 없음', hl[0])}
-        {row('no leaves', '잎 없음', hl[1])}
-        {row('no fruit', '과일 없음', hl[2])}
+        {row('꼭지 없음', hl[0])}
+        {row('잎 없음', hl[1])}
+        {row('과일 없음', hl[2])}
       </div>
       <Head
         t={t}
@@ -274,7 +275,7 @@ const AgainScene: React.FC<{ t: number }> = ({ t }) => {
   return (
     <AbsoluteFill>
       <Pic src="img/p1b.jpg" {...BIG} fx={STEM.p1b.x + 26 * Math.sin(u * 1.9)} fy={fy + 6 * Math.cos(u * 1.2)} s={s}>
-        {(k) => <Ring x={STEM.p1b.x} y={STEM.p1b.y} r={close ? 52 : 62} p={rp} k={k} t={t} />}
+        {(k) => <Ring x={STEM.p1b.x} y={STEM.p1b.y} r={close ? 40 : 46} p={rp} k={k} t={t} />}
       </Pic>
       <Head
         t={t}
@@ -306,8 +307,9 @@ const WordScene: React.FC<{ t: number }> = ({ t }) => {
       <Head
         t={t}
         lines={[
-          { at: T.word, node: "'토마토'라는 말이", size: 96 },
-          { at: T.wordLine, node: '토마토를 불러온 것 같아요', size: 72, color: SUB },
+          { at: T.word, node: "'토마토'라는 말이", size: 84, color: SUB },
+          { at: T.wordLine, node: '토마토를', size: 108 },
+          { at: T.wordLine, node: '불러온 것 같아요', size: 108 },
         ]}
       />
     </AbsoluteFill>
@@ -388,7 +390,7 @@ const CardScene: React.FC<{ t: number }> = ({ t }) => {
     <div style={{ marginTop: 44 }}>
       <div style={{ opacity: pn, transform: `translateX(${(1 - pn) * -140}px)`, fontFamily: KO, fontWeight: 700, fontSize: 58, color: SUB, display: 'flex', alignItems: 'center', gap: 20 }}>
         <span style={{ fontWeight: 900, fontSize: 50 }}>✕</span>
-        <span style={{ textDecoration: 'line-through', textDecorationThickness: 5 }}>{no}</span>
+        <span>{no}</span>
       </div>
       <div style={{ opacity: py, transform: `translateX(${(1 - py) * -140}px)`, marginTop: 18, display: 'flex', alignItems: 'center', gap: 22, fontFamily: KO, fontWeight: 900, fontSize: 74, color: INK, letterSpacing: -2.5 }}>
         {swatch}
@@ -422,7 +424,7 @@ const EndScene: React.FC<{ t: number }> = ({ t }) => {
   const punch = (t >= T.e1 ? 1.15 : 1) * (1 + 0.08 * appear(t, T.last, 0.3));
   return (
     <AbsoluteFill>
-      <Strips t={t} at={[T.end + 0.05, T.end + 0.25, T.end + 0.45]} rings={[T.end + 0.6, T.end + 0.75, T.end + 0.9]} wipes={[T.e1, T.e2, T.e3]} push={punch} />
+      <Strips t={t} at={[T.end + 0.05, T.end + 0.25, T.end + 0.45]} rings={[T.end + 0.6, T.end + 0.75, T.end + 0.9]} wipes={[T.w1, T.w2, T.w3]} push={punch} />
       <Head
         t={t}
         lines={[
