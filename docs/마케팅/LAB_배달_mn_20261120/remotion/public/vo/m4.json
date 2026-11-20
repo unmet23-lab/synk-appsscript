@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m4",
+ "text": "도착하면 문자 주세요.",
+ "dur": 1.44,
+ "words": [
+  {
+   "text": "도착하면",
+   "start": 0.02,
+   "end": 0.563
+  },
+  {
+   "text": "문자",
+   "start": 0.623,
+   "end": 0.865
+  },
+  {
+   "text": "주세요.",
+   "start": 0.925,
+   "end": 1.44
+  }
+ ],
+ "source": {
+  "key": "f93b1656fffc5c16ec03daf7326c2e54",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1120,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "벨 누르지 말아 주세요. 몽글이 휴대폰을 무음으로 하고 마지막 요청 사항을 작게 소곤소곤 적는다. 이제 됐다는 듯 살짝 안심하며.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 444
+ }
+}

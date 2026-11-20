@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "덜 맵게 해 주세요.",
+ "dur": 1.39,
+ "words": [
+  {
+   "text": "덜",
+   "start": 0.25,
+   "end": 0.432
+  },
+  {
+   "text": "맵게",
+   "start": 0.492,
+   "end": 0.693
+  },
+  {
+   "text": "해",
+   "start": 0.774,
+   "end": 0.834
+  },
+  {
+   "text": "주세요.",
+   "start": 0.894,
+   "end": 1.39
+  }
+ ],
+ "source": {
+  "key": "a552af610bb4332564bb473beae6f252",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1120,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "한밤중 원룸, 룸메이트가 옆에서 자고 있다. 배고픈 몽글이 배달 앱 요청 사항 칸에 한 줄씩 적으며 작게 소곤소곤 읽는다. 지난번 떡볶이가 너무 매웠던 게 떠올라서 조심스럽게.",
+   "next": "문 앞에 놔 주세요."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 424
+ }
+}

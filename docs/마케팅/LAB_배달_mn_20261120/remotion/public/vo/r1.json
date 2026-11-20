@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "r1",
+ "text": "나도 먹을래!",
+ "dur": 1.234,
+ "words": [
+  {
+   "text": "나도",
+   "start": 0.02,
+   "end": 0.221
+  },
+  {
+   "text": "먹을래!",
+   "start": 0.282,
+   "end": 1.234
+  }
+ ],
+ "source": {
+  "key": "76d33f905396da45d88b05f6906906a9",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1120,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "벨도 안 울렸고 문자만 왔다. 몽글이 떡볶이 뚜껑을 열자 김이 퍼진다. 자던 룸메이트가 냄새를 맡고 벌떡 일어나 눈을 반짝이며 떡볶이를 가리키고 반갑고 간절하게 외친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 188
+ }
+}

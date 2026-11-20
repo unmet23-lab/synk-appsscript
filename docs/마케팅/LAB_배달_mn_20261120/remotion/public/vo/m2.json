@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "문 앞에 놔 주세요.",
+ "dur": 1.388,
+ "words": [
+  {
+   "text": "문",
+   "start": 0.2,
+   "end": 0.361
+  },
+  {
+   "text": "앞에",
+   "start": 0.422,
+   "end": 0.563
+  },
+  {
+   "text": "놔",
+   "start": 0.623,
+   "end": 0.724
+  },
+  {
+   "text": "주세요.",
+   "start": 0.784,
+   "end": 1.388
+  }
+ ],
+ "source": {
+  "key": "ecdeb937383147216be6a7a961d427c8",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1120,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "덜 맵게 해 주세요. 잠든 룸메이트를 깨우지 않으려고 몽글이 작게 소곤소곤 요청 사항을 하나 더 적는다.",
+   "next": "벨 누르지 말아 주세요."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 489
+ }
+}

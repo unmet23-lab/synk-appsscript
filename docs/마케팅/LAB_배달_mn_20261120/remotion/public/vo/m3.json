@@ -1,0 +1,57 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "벨 누르지 말아 주세요.",
+ "dur": 1.643,
+ "words": [
+  {
+   "text": "벨",
+   "start": 0.25,
+   "end": 0.371
+  },
+  {
+   "text": "누르지",
+   "start": 0.512,
+   "end": 0.773
+  },
+  {
+   "text": "말아",
+   "start": 0.834,
+   "end": 1.015
+  },
+  {
+   "text": "주세요.",
+   "start": 1.075,
+   "end": 1.643
+  }
+ ],
+ "source": {
+  "key": "05ab7980475d9ba90fed66f8c8a5335d",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1120,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "문 앞에 놔 주세요. 인터폰이 룸메이트 머리 바로 위에 있다. 몽글이 숨을 죽이고 아주 작게 소곤소곤 적는다.",
+   "next": "도착하면 문자 주세요."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 450
+ }
+}

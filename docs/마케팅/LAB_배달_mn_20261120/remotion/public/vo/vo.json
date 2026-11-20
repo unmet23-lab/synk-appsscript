@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1120,
+  "lufs": -16
+ },
+ "made": "2026-11-20T09:47:23.312Z",
+ "lines": [
+  {
+   "id": "m1",
+   "text": "덜 맵게 해 주세요.",
+   "dur": 1.39,
+   "syllablesPerSec": 5.04,
+   "src": "m1.wav",
+   "key": "a552af610bb4332564bb473beae6f252",
+   "words": 4
+  },
+  {
+   "id": "m2",
+   "text": "문 앞에 놔 주세요.",
+   "dur": 1.388,
+   "syllablesPerSec": 5.04,
+   "src": "m2.wav",
+   "key": "ecdeb937383147216be6a7a961d427c8",
+   "words": 4
+  },
+  {
+   "id": "m3",
+   "text": "벨 누르지 말아 주세요.",
+   "dur": 1.643,
+   "syllablesPerSec": 5.48,
+   "src": "m3.wav",
+   "key": "05ab7980475d9ba90fed66f8c8a5335d",
+   "words": 4
+  },
+  {
+   "id": "m4",
+   "text": "도착하면 문자 주세요.",
+   "dur": 1.44,
+   "syllablesPerSec": 6.25,
+   "src": "m4.wav",
+   "key": "f93b1656fffc5c16ec03daf7326c2e54",
+   "words": 3
+  },
+  {
+   "id": "r1",
+   "text": "나도 먹을래!",
+   "dur": 1.234,
+   "syllablesPerSec": 4.05,
+   "src": "r1.wav",
+   "key": "76d33f905396da45d88b05f6906906a9",
+   "words": 2
+  }
+ ]
+}
