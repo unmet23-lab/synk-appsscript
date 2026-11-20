@@ -210,13 +210,13 @@ if(!process.versions.electron){
           for(const [W,Hh] of [[1440,900],[960,680],[873,618],[768,544],[640,453],[390,844]]){await sizeTo(W,Hh);rowStyle.push(await w.js(rowsLook(W)));}
           const wantRow=W=>W>900?{col:'24px',rowGap:'24px'}:W>640?{col:'normal',rowGap:'2px'}:{col:'16px',rowGap:'10px'};
           check('21 the face rows keep the old values above 900 px, take the outer grid gap at 641~900 px and their own gap below',rowStyle.every(r=>!r.missing&&r.iw===r.W&&r.top==='1px solid'&&r.min==='60px'&&r.col===wantRow(r.W).col&&r.rowGap===wantRow(r.W).rowGap),rowStyle);
-          // 전에 「밤」을 고른 사람(어두운 Windows의 「기기 설정」도 같은 색)에게도 줄 묶음 위 테두리가 줄의 hair 선과 같은 색이다. 옛 값 var(--ink)는 밤에 밝은 줄이 됐다(0.5.0 최종 검수 F2)
+          // 줄 묶음 위 테두리는 낮이든 밤이든(어두운 Windows의 「기기 설정」도 밤과 같은 색) 1px 자리만 있고 보이지 않는다. 옛 값 var(--ink)는 밤에 밝은 줄이 됐고(0.5.0 최종 검수 F2), var(--hair)는 첫 선을 2px로 만들었다(후속 검수 F4)
           await sizeTo(1440,900);
           const themeWas=await w.js('document.documentElement.dataset.theme');
           const rowTheme=[];
           for(const theme of ['day','night']){await w.js(`document.documentElement.dataset.theme=${JSON.stringify(theme)}`);await wait(60);rowTheme.push(await w.js(rowsLook(1440)));if(theme==='night')await capture(w,'solio-rows-night-1440');}
           await w.js(typeof themeWas==='string'?`document.documentElement.dataset.theme=${JSON.stringify(themeWas)}`:'delete document.documentElement.dataset.theme');
-          check('21 in day and night the rows top border has the same hair colour as the row lines',rowTheme.length===2&&rowTheme.every(r=>!r.missing&&r.top==='1px solid'&&r.topColor===r.rowTopColor)&&rowTheme[0].topColor===rowTheme[1].topColor,rowTheme);
+          check('21 in day and night the rows top border keeps its 1px but is not seen',rowTheme.length===2&&rowTheme.every(r=>!r.missing&&r.top==='1px solid'&&r.topColor==='rgba(0, 0, 0, 0)'),rowTheme);
           // 15. 화면 확대
           for(const z of [1.25,1.5]){w.win.webContents.setZoomFactor(z);await wait(500);await capture(w,'solio-zoom-'+Math.round(z*100));}
           w.win.webContents.setZoomFactor(1);await wait(300);

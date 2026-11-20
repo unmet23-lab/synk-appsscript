@@ -141,14 +141,8 @@ function 기본표(root = 뿌리) {
     환경: ['packages/atlas/node_modules/@biomejs/biome'],
     결과물: [], 원천: ['packages/atlas/**'], 낡음: /atlas check\(형식만\): 걸림/,
   });
-  표.push({
-    // 고침은 이 생성기 하나로 — check-account-bundles.js --build는 포털까지 다시 만들려다 의존성 없는 워크트리에서 FAIL로 끝난다.
-    이름: 'PC 계정 라이브러리 묶음', 단계: 계정단계, 명령: ['desktop/tools/build-platform-continuity.cjs', '--check'],
-    고침: 'node desktop/tools/build-platform-continuity.cjs',
-    결과물: ['desktop/renderer/platform-continuity.mjs', 'desktop/renderer/platform-continuity.css'],
-    원천: ['experiences/synk-account/src/platform-library.css'], 주석원천: ['desktop/renderer/platform-continuity.mjs'],
-    낡음: /Stale platform continuity bundle/,
-  });
+  // 「PC 계정 라이브러리 묶음」(build-platform-continuity.cjs → renderer/platform-continuity.*) 줄은 PC 0.5.0이 옛 런처 화면과 함께
+  // 생성기와 결과물을 지워(bcf857fbbc) 거뒀다(11-20, 0.5.0 최종 화면 검수 후속 F3).
   표.push({
     // 포털은 experiences/synk-account의 의존성(@supabase)이 있어야 돈다 — 앱 워크트리에는 보통 없어 「못 돌림」(CI가 본다).
     이름: '계정 포털·교사 연결 묶음', 단계: 계정단계, 명령: ['tools/check-account-bundles.js'], 고침: 'node tools/check-account-bundles.js --build',

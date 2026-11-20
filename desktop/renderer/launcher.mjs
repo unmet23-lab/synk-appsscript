@@ -88,7 +88,7 @@ async function launchWorkspace(){
   const action=getAppAction(id);
   if(action.disabled||action.action!=='launch'){toast('이 PC에 Workspace 앱이 설치돼 있지 않습니다. 회사에서 안내받은 Workspace 주소로 브라우저에서 열어 주세요.');return;}
   const epoch=ownerEpoch;busy.add(id);
-  try{const result=await bridge.launch(id);if(epoch!==ownerEpoch)return;toast(result?.ok?'Workspace를 열었습니다.':'Workspace를 열지 못했습니다. 다시 눌러 보고, 계속 안 되면 다시 설치해 주세요.');}
+  try{const result=await bridge.launch(id);if(epoch!==ownerEpoch)return;toast(result?.ok?'Workspace를 열었습니다.':'Workspace를 열지 못했습니다. 다시 눌러 보고, 계속 안 되면 회사에서 안내받은 Workspace 주소로 브라우저에서 열어 주세요.');}
   catch{if(epoch===ownerEpoch)toast('Workspace를 열지 못했습니다. 잠시 뒤 다시 눌러 주세요.');}
   finally{busy.delete(id);}
 }
