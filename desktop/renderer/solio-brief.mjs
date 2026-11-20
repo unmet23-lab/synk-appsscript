@@ -1,7 +1,7 @@
 // 솔리오 구독 방의 비서 판(2026-11-20, docs/디자인/솔리오_구독비서_20261120/설계.md 3절과 7절 설계 검토 반영). DOM이 없다.
 // 유호님 11-20 「딱 하나만 봤으면 좋겠어」, 「급한것 중요한것 위주로 맨 위로」, 「토큰 출력량이 실시간으로」, 「하루에 한번씩 총 사용량 진단」.
 // 맨 위 한 가지(briefHead), 다가오는 일(briefSoon), 지금 출력(briefLive), 오늘 진단(briefDiag), 줄 안쪽 결론(poolSay)을 만든다.
-import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, nextRefill, balance, poolTimeline, poolRunout, serviceFacts, shareOf, POOL_SHORT, DAY_MS } from './subscriptions-model.mjs';
+import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, nextRefill, balance, poolTimeline, poolRunout, serviceFacts, shareOf, DAY_MS } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, whenWords, josa, joinNames } from './solio-today.mjs';
 import { tokenDay, tokenText } from './subscriptions-tokens.mjs';
 /* 풀 모의와 계정 사실은 subscriptions-model.mjs 한 곳에 있다(구조 다시 보기 5절). 시험과 옛 호출을 위해 이름을 그대로 내보낸다 */
@@ -435,14 +435,13 @@ export function briefDial(snapshot, groups, now, focusService = null) {
   const events = briefSoon(snapshot, groups, now, [], DIAL_MS + HOUR).all
     .map(i => ({ off: i.key === 'runout:' + focus.service && fc ? fc.at - now : i.at - now, kind: KIND[i.key.split(':')[0]] || 'other', text: i.when + ' ' + i.text }))
     .filter(e => e.off > 0 && e.off <= DIAL_MS);
-  // 바깥 궤도: 풀 모의의 막힌 구간을 붉게, 그 사이를 금색으로 그린다. 지금 막힌 것은 짧아도 그린다(화면 검수 dial A2).
-  // 앞날의 막힘은 글과 같은 문턱(30분)을 넘는 것만 그린다. 낭독이 「막히지 않습니다」인데 궤도가 붉었다(다시 검수 FA4)
+  // 바깥 궤도: 풀 모의가 고른 막힌 구간(shown)을 붉게, 그 사이를 금색으로 그린다. 지금 막힌 것은 짧아도 그리고(화면 검수 dial A2),
+  // 앞날의 막힘은 글과 같은 문턱(30분)을 넘는 것만 그린다(다시 검수 FA4). 문턱은 풀 모의가 한 번만 건다
   // 풀 모의가 없으면(합칠 수 없는 요금제, 읽지 않은 계정) 지금 모두 막혔을 때 첫 다시 열림까지만 붉게 그리고 그 뒤는 모름(점선)이다
   const arcs = [], add = (from, to, k) => { const x = Math.max(0, from), y = Math.min(DIAL_MS, to); if (y > x) arcs.push({ from: x, to: y, k }); };
   if (p) {
     let t0 = 0;
-    for (const b of p.blocks) {
-      if (b !== p.now && b.to - b.from < POOL_SHORT) continue;
+    for (const b of p.shown) {
       const s0 = b.from - now, e0 = b.to - now;
       if (s0 >= DIAL_MS) break;
       add(t0, s0, 'safe'); add(s0, e0, 'gap'); t0 = Math.max(t0, Math.min(DIAL_MS, e0));

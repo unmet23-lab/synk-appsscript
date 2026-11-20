@@ -681,7 +681,7 @@ export function serviceFacts(g, prices = null) {
    첫 막힘에서 멈추지 않고 일주일 안의 막힌 구간을 모두 모은다(구조 다시 보기 5절, Opus 대체 설계 검토 P1-1).
    읽지 않은 계정, 속도를 모르는 계정(기록 3일 미만), 합칠 수 없는 요금제(Codex Pro와 Plus), 주간 몫을 모르는 5시간 한도 계정이 있으면 null.
    돌려주는 값: { blocks 막힌 구간 모두 [{ from, to, by: { t, a, type } | null }](to가 Infinity면 일주일 안에 열리지 않음),
-   now 지금 막힌 구간(짧아도) · first 30분 넘는 첫 막힘(지금일 수도) · forecast 30분 넘는 앞날의 첫 막힘 { at, sayAt 「…쯤」, untilAt 「…까지는」, next },
+   now 지금 막힌 구간(짧아도) · shown 그릴 구간(지금 막힌 구간과 30분 넘는 막힘, 문자판 궤도가 읽는다) · first 30분 넘는 첫 막힘(지금일 수도) · forecast 30분 넘는 앞날의 첫 막힘 { at, sayAt 「…쯤」, untilAt 「…까지는」, next },
    beyond 일주일 안에 30분 넘게 막히지 않음, perWeek 한 주에 쓰는 계정 수(가장 큰 요금제 기준), same 요금제가 모두 같은지, accounts }.
    같은 판에서 여러 소비자가 불러도 서비스마다 한 번만 센다 */
 const poolCache = new WeakMap();
@@ -753,7 +753,9 @@ function sweepPool(snapshot, g, now) {
   const long = b => b.to - b.from >= POOL_SHORT;
   const nowBlock = blocks.find(b => b.from <= now + 60e3) || null, first = blocks.find(long) || null, fut = blocks.find(b => long(b) && b.from > now + 60e3) || null;
   const forecast = fut ? { at: fut.from, sayAt: poolSayAt(fut.from, now), untilAt: poolUntilAt(fut.from, now), next: fut.by } : null;
-  return { blocks, now: nowBlock, first, forecast, beyond: !first, perWeek, same, accounts: list.length };
+  // 30분 문턱은 여기서만 건다. 문자판이 따로 걸면 문턱을 바꿀 때 글과 궤도가 갈라진다(다시 검수 solio-dial-20261120-3 FA1)
+  const shown = blocks.filter(b => b === nowBlock || long(b));
+  return { blocks, now: nowBlock, shown, first, forecast, beyond: !first, perWeek, same, accounts: list.length };
 }
 /* 첫 막힘 하나(옛 이름). { at 모두 막히는 때, next 그 뒤 처음 몫이 생기는 사건, beyond 일주일 안에 막히지 않음, perWeek, same, accounts } */
 export function poolRunout(snapshot, g, now) {
