@@ -58,12 +58,13 @@ test('대표 그림: 확인 뒤에는 우리가 올린 가장 최근 그림, 없
   assert.equal(staffBoard([requestProject('w',{assets:[pdf]})],NOW).fresh[0].picture,null,'그림이 아닌 파일은 쓰지 않는다');
 });
 
-test('첫 화면: 숫자 셋 · 다섯 칸 · 카드는 옛 계약(open-project) 그대로, 손님 체험 큰 상자와 영문 꼬리표는 없다',t=>{
+test('첫 화면: 숫자 넷 · 다섯 칸 · 카드는 옛 계약(open-project) 그대로, 손님 체험 큰 상자와 영문 꼬리표는 없다',t=>{
   t.mock.timers.enable({apis:['Date'],now:NOW}); // 화면은 지금 시각으로 D-n · 기다린 날을 센다 — 시험 날과 상관없이 같게(카본 B1)
   const projects=[requestProject('a'),legacyProject('make','producing',{dueDate:day(1),nextStep:'2번 컷 <다듬기>'}),legacyProject('wait','review',{updatedAt:ago(48)}),legacyProject('old','archived')];
   const html=picker({mode:'staff',user:{id:'u',name:'하늘'},workspace:{projects,canWrite:true}});
   assert.match(html,/class="project-picker staff-home"/);
-  assert.equal((html.match(/<p class="staff-meter/g)||[]).length,3);
+  assert.equal((html.match(/<p class="staff-meter/g)||[]).length,4); // 새 의뢰 · 답할 문의(11-21 돌봄 값) · 우리 차례 · 사흘 안 전달
+  assert.match(html,/<p class="staff-meter"><b>0<\/b><span>답할 문의<small>없어요<\/small><\/span><\/p>/);
   assert.match(html,/<p class="staff-meter is-hot"><b>1<\/b><span>새 의뢰/);
   assert.equal((html.match(/<section class="staff-col/g)||[]).length,5);
   for(const id of ['a','make','wait','old'])assert.match(html,new RegExp(`data-action="open-project" data-id="${id}"`));

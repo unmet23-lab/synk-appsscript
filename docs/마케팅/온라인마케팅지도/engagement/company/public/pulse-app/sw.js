@@ -76,7 +76,8 @@
 // v71(11-18): 「마케팅 성과」 다듬기 — 휴대폰 머리의 셋째 줄(완성 광고 · 마케팅 성과), 칸의 바로 가기 줄 · 칸 끝 · 이름이 나오지 않은 질문 접기로
 // film.css · film-legacy.css · app.mjs · i18n/en.mjs와 받을 때 담는 marketing-view.mjs가 바뀌었다(v70 위). 목록은 그대로이고 판만 올린다.
 // v72(11-20): 고객 방 낮 판 — 방(roomView)만 밝은 작업실로 그리고 담당자 한마디 · 받으실 날 · 제목의 강조 구절을 더했다. 목록은 그대로이고, 바뀐 화면 모듈 · 스타일 · 사전을 새로 받게 판만 올린다.
-const CACHE = 'synk-pulse-shell-v72-room-day-20261120';
+// v73(11-21): 담당자 화면 — 제작 보드의 답할 문의 · 소식 없이 지난 평일 꼬리표, 의뢰 확인의 「문의와 답」, 소식 쓰기 창의 미리 보기. 목록은 그대로이고 바뀐 화면 모듈 · 스타일을 새로 받게 판만 올린다.
+const CACHE = 'synk-pulse-shell-v73-staff-care-20261121';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','entry-handoff.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

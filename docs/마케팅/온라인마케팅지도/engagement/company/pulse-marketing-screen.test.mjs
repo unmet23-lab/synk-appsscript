@@ -286,7 +286,7 @@ test('the tab stays inside the screen rules: no style attributes, no service nam
   assert.doesNotMatch(body,/매출|순위|노출을 (?:늘|올)|보장|1위|최고|최초/,'no sales, rank or exposure promises');
   assert.deepEqual([...new Set(body.match(/https?:\/\/[^'"`\s]+/g))],['https://www.facebook.com/ads/library/?id='],'the only outside link is the ad library');
   const sw=read('sw.js');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v72-room-day-20261120';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v73-staff-care-20261121';/);
   assert.match(sw,/RUNTIME\.push\(BASE\+'marketing-view\.mjs'\);/);
   assert.doesNotMatch(sw.slice(sw.indexOf('const BASE'),sw.indexOf('const RUNTIME')),/marketing-view/,'not precached for every customer');
   // 서버의 /pulse-app/ 정적 허용 목록에는 있다(없으면 칸을 열 때 모듈이 404라 「불러오지 못했어요」만 선다).

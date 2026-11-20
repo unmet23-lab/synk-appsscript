@@ -770,7 +770,22 @@ document.addEventListener('focusin',event=>{const area=event.target;if(!area?.ma
 const FIT_BOXES='.scene-image,.concept-image,.reference-media,.focus-media',measuring=new WeakSet();
 function fitBox(media){if(!media.closest(FIT_BOXES))return;const video=media.tagName==='VIDEO',fit=()=>media.closest(FIT_BOXES)?.classList.toggle('is-portrait',video?media.videoHeight>media.videoWidth*1.05:media.naturalHeight>media.naturalWidth*1.05);if(video?media.readyState>=1:media.complete&&media.naturalWidth)fit();else if(!measuring.has(media)){measuring.add(media);media.addEventListener(video?'loadedmetadata':'load',()=>{measuring.delete(media);fit();},{once:true});}}
 function wireMedia(){for(const media of main.querySelectorAll('video,img')){fitBox(media);if(wiredMedia.has(media))continue;wiredMedia.add(media);media.addEventListener('error',()=>{if(media.id==='review-video'){const error=document.querySelector('#video-error');if(error)error.hidden=false;}else if(media.tagName==='IMG'&&!media.closest('.welcome-art')){media.hidden=true;if(media.closest('[data-film-box]')){const error=document.querySelector('#video-error[data-photo-error]');if(error)error.hidden=false;}const parent=media.closest('[data-action=image]');if(parent){parent.disabled=true;parent.textContent=t('이미지를 불러오지 못했어요');parent.classList.add('empty-visual');if(parent.classList.contains('sx-dr-zoom'))parent.removeAttribute('aria-label');}}},{once:true});}}
-function openDialog(type,item={}){if(dialog.open)dialog.close();dialog.dataset.installGuide=String(type==='install');dialog.className=type==='image'?'app-dialog image-dialog':'app-dialog';dialog.innerHTML=(demo?'<p class="demo-dialog-note">체험이라 실제 의뢰나 승인으로 이어지지 않아요.</p>':'')+dialogContent(type,item);restore(dialog);dialog.showModal();} // i18n-skip
+// 소식 쓰기 창의 미리 보기(조각 B2 · 11-21): 쓴 글과 고른 그림을 손님 방에 걸릴 모습으로 보인다. 새로 고른 파일은 이 창에서만 쓰는 주소(blob)로 보이고, 그림을 다시 고르거나 창을 닫으면 놓는다.
+let previewUrls=[];
+const dropPreviewUrls=()=>{for(const url of previewUrls)URL.revokeObjectURL(url);previewUrls=[];};
+function progressPreview({pictures=true}={}){
+  const form=dialog.querySelector('form[data-form="desk-progress"]'),box=dialog.querySelector('[data-progress-preview]');if(!form||!box)return;
+  const text=String(form.elements.text?.value||'').trim(),say=box.querySelector('[data-preview-text]');
+  say.textContent=text||'쓴 글이 여기에 보여요.';say.classList.toggle('is-empty',!text); // i18n-skip
+  if(!pictures)return;
+  dropPreviewUrls();
+  const kept=Array.from(form.querySelectorAll('input[name="keep"]:checked')).map(input=>input.closest('label')?.querySelector('img')?.getAttribute('src')).filter(Boolean);
+  const fresh=Array.from(form.elements.files?.files||[]).filter(file=>/^image\/(png|jpeg)$/.test(file.type)).map(file=>{const url=URL.createObjectURL(file);previewUrls.push(url);return url;});
+  const shelf=box.querySelector('[data-preview-shelf]'),list=[...kept,...fresh].slice(0,4);
+  shelf.replaceChildren(...list.map(src=>{const img=document.createElement('img');img.src=src;img.alt='';return img;}));
+  shelf.dataset.count=String(list.length);const none=box.querySelector('[data-preview-none]');if(none)none.hidden=list.length>0;
+}
+function openDialog(type,item={}){if(dialog.open)dialog.close();dialog.dataset.installGuide=String(type==='install');dialog.className=type==='image'?'app-dialog image-dialog':type==='desk-progress'?'app-dialog is-wide':'app-dialog';dialog.innerHTML=(demo?'<p class="demo-dialog-note">체험이라 실제 의뢰나 승인으로 이어지지 않아요.</p>':'')+dialogContent(type,item);restore(dialog);dialog.showModal();if(type==='desk-progress')progressPreview();} // i18n-skip
 function closeDialog(){if(dialog.open)dialog.close();scheduleApply();}
 function showMutationError(message){
   if(!dialog.open)return;
@@ -1043,6 +1058,8 @@ document.addEventListener('submit',async event=>{
   if(type==='desk-pay-cancel'){await mutate(()=>studioAction('payment_cancel',{note:String(values.note||'').trim()}),{form,message:'결제 취소를 적었어요.',after:closeDialog});return;} // i18n-skip
   // 카본 화면 검수 A2: 지금 받으실 날 그대로 보내면 서버가 400을 내므로 보내기 전에 날짜 칸으로 돌려보낸다.
   if(type==='desk-due'){const note=String(values.note||'').trim();if(String(values.dueDate||'')===String(s.project?.studio?.request?.payment?.dueDate||'')){showMutationError('지금 받으실 날과 같아요. 바꿀 날을 골라 주세요.');form.querySelector('[name=dueDate]')?.focus();return;}await mutate(()=>studioAction('due_change',{dueDate:String(values.dueDate||''),reason:String(values.reason||''),...(note?{note}:{})}),{form,message:'받으실 날을 고쳤어요. 손님에게 알림이 가요.',after:closeDialog});return;} // i18n-skip
+  // 문의와 답(조각 B2): 의뢰 확인 화면에서 손님에게 보이는 답을 보낸다(영상 확인의 대화 답과 같은 길).
+  if(type==='desk-reply'){const text=String(values.text||'').trim();if(!text){notice('답을 적어 주세요.');return;}await mutate(()=>request(staffPath('/messages'),{...options(),body:{revision:s.project.revision,text,visibility:'customer'}}),{form,message:'손님에게 답을 보냈어요.'});return;} // i18n-skip
   if(type==='desk-contact'){await mutate(()=>studioAction('request_contact',{email:String(values.email||'').trim(),mailOff:values.mailOff==='on'}),{form,message:'알림 메일 설정을 바꿨어요.'});return;} // i18n-skip
   if(type==='desk-propose'){await mutate(()=>{const tr=staffLocale();if(tr)needEnglish([[values.note,values.noteTr,'왜 이 모델인지']]);return studioAction('propose_model',{modelId:values.modelId,note:values.note||'',...(tr?{translation:{note:trText(values.noteTr)}}:{})});},{form,message:'고객에게 모델을 제안했어요.',after:closeDialog});return;} // i18n-skip
   if(type==='desk-direction'){await mutate(async()=>{const body=await directionBody(form,values);return studioAction('propose_direction',body);},{form,message:'고객에게 방향을 보냈어요.',after:closeDialog});return;} // i18n-skip
@@ -1105,12 +1122,15 @@ document.addEventListener('click',async event=>{
       // 의뢰 흐름 손님은 대응표 하나(roomRoute)로 간다 — 대화는 묻기 화면, 최종본은 영상 화면의 그 최종본, 옛 탭 소식은 고객 방.
       const routed=roomCustomer()?roomRoute(item,s.project):null;
       if(routed?.journal){const at=journalModel(s.project).items.findIndex(item=>item.id===routed.journal);if(at>=JOURNAL_SHOWN)s.journalAll=true;}
-      s.tab=routed?(routed.tab||roomTab(s.tab)):['overview','draft','desk','strategy','direction','concepts','storyboard','review','history','manage'].includes(item.tab)?item.tab:'history';
+      // 직원: 의뢰서가 있는 프로젝트의 손님 문의 알림은 의뢰 확인의 「문의와 답」으로 간다(조각 B2 · 답 칸이 거기 있다). 자료를 지운 의뢰(retired)는 그 칸이 없어 전처럼 간다.
+      s.tab=routed?(routed.tab||roomTab(s.tab)):s.mode==='staff'&&item.type==='customer_support'&&s.project?.studio?.request&&s.project.studio.request.status!=='retired'?'desk':['overview','draft','desk','strategy','direction','concepts','storyboard','review','history','manage'].includes(item.tab)?item.tab:'history';
       const versionId=routed?routed.versionId:item.versionId;if(versionId)s.versionId=versionId;
+      // 의뢰 확인 화면 모듈을 아직 안 받았으면 받은 뒤에 그린다 — 알림이 가리키는 문의 줄에 바로 초점이 가게.
+      if(s.tab==='desk'&&!s.deskView){loadDesk();if(deskLoading)await deskLoading;if(moveEpoch!==epoch||s.project?.id!==item.projectId)return;}
       render();
       if(routed?.journal){openJournal({target:routed.journal});return;}
       const pointer=item.messageId||item.commentId;
-      const target=pointer&&Array.from(main.querySelectorAll('[data-message-id]')).find(node=>node.dataset.messageId===pointer&&node.matches('article'))
+      const target=pointer&&Array.from(main.querySelectorAll('[data-message-id]')).find(node=>node.dataset.messageId===pointer&&(node.matches('article')||node.matches('[data-desk-talk] li')))
         ||item.requestId&&Array.from(main.querySelectorAll('[data-scene-request-id]')).find(node=>node.dataset.sceneRequestId===item.requestId)
         ||item.sceneId&&Array.from(main.querySelectorAll('.scene-card')).find(node=>node.id==='scene-'+item.sceneId)
         ||item.conceptId&&Array.from(main.querySelectorAll('.concept-card')).find(node=>node.id==='concept-'+item.conceptId)
@@ -1151,7 +1171,7 @@ document.addEventListener('click',async event=>{
   if(action==='cancel-new'){withLeave(()=>{s.newProject=false;render();});return;}
   if(!s.project)return;
   // 작업 소식(운영 조각 4): 쓰기 · 고치기는 대화 창, 올리기 · 거두기는 한 번 더 묻는다(올리면 손님 알림, 거두면 그림 파일까지 지워질 수 있다).
-  if(action==='desk-progress-new'||action==='desk-progress-edit'){const model=deskModel(s.project)||{},item=action==='desk-progress-edit'?(model.progress||[]).find(value=>value.id===id&&value.state==='draft'):null;if(action==='desk-progress-edit'&&!item){notice('고칠 초안을 찾지 못했어요. 최신 내용을 불러와 주세요.');return;}openDialog('desk-progress',{...trOf(),...(model.photo?{photo:true}:{}),...(item?{id:item.id,text:item.text,stage:item.stage,pictures:item.pictures}:{stage:['check','draft','make','review'].find(value=>value===roomStage(roomState(s.project)))||''}),used:model.progressUsed||0});return;} // i18n-skip
+  if(action==='desk-progress-new'||action==='desk-progress-edit'){const model=deskModel(s.project)||{},item=action==='desk-progress-edit'?(model.progress||[]).find(value=>value.id===id&&value.state==='draft'):null;if(action==='desk-progress-edit'&&!item){notice('고칠 초안을 찾지 못했어요. 최신 내용을 불러와 주세요.');return;}openDialog('desk-progress',{...trOf(),...(model.photo?{photo:true}:{}),...(item?{id:item.id,text:item.text,stage:item.stage,pictures:item.pictures}:{stage:['check','draft','make','review'].find(value=>value===roomStage(roomState(s.project)))||''}),used:model.progressUsed||0,owner:s.project?.ownerName||''});return;} // i18n-skip
   if(action==='desk-progress-post'){confirmAction=()=>mutate(()=>studioAction('progress_post',{id}),{message:'손님에게 올렸어요. 앱 안 알림이 가요.',after:closeDialog});openDialog('confirm',{title:'이 소식을 손님에게 올릴까요?',text:'손님 일지와 저희 차례 화면에 「작업 중인 화면이에요 · 완성본이 아니에요」와 함께 보이고 앱 안 · 기기 알림이 가요. 올린 뒤에는 고칠 수 없고 거두기만 할 수 있어요.',button:'손님에게 올리기'});return;} // i18n-skip
   if(action==='desk-progress-withdraw'){confirmAction=()=>mutate(()=>studioAction('progress_withdraw',{id}),{message:'소식을 거뒀어요.',after:closeDialog});openDialog('confirm',{title:'이 소식을 거둘까요?',text:'손님 일지 · 화면 · 알림에서 빠져요. 이 소식에만 올린 그림은 파일까지 지워요(다른 곳에서 쓰는 그림은 남아요). 되돌릴 수 없어요.',button:'거두기'});return;} // i18n-skip
   if(action==='desk-confirm'){confirmAction=()=>mutate(()=>studioAction('request_confirm'),{message:'확인을 마쳤어요. 답을 제작 설계로 옮겼어요.',after:closeDialog});openDialog('confirm',{title:'의뢰서 확인을 끝낼까요?',text:'답을 제작 설계로 옮기고, 고객 화면은 「1차안을 만들고 있어요」로 바뀌어요.',button:'확인 끝'});return;} // i18n-skip
@@ -1248,6 +1268,9 @@ window.matchMedia?.(JOURNAL_SHEET)?.addEventListener?.('change',()=>{if(s.journa
 document.addEventListener('keydown',event=>{if(event.key!=='Escape'||!s.journalOpen||document.querySelector('.sx-round-sheet[open],dialog[open]'))return;closeJournal();});
 window.addEventListener('hashchange',queueInviteNavigation);
 dialog.addEventListener('close',()=>{if(inviteNavigationPrompt&&!dialog.open)cancelInviteNavigation();scheduleInviteNavigation();});
+dialog.addEventListener('input',event=>{if(event.target?.name==='text'&&event.target.closest?.('form[data-form="desk-progress"]'))progressPreview({pictures:false});});
+dialog.addEventListener('change',event=>{if(['keep','files'].includes(event.target?.name)&&event.target.closest?.('form[data-form="desk-progress"]'))progressPreview();});
+dialog.addEventListener('close',dropPreviewUrls);
 document.addEventListener('compositionend',scheduleInviteNavigation);
 document.addEventListener('pulse-preview-playback',scheduleApply);
 document.addEventListener('pause',scheduleApply,true);

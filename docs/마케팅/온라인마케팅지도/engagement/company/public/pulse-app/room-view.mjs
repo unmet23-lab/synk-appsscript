@@ -413,6 +413,40 @@ function staffPicture(p,stage){
   const pick=stage==='check'?theirs[0]||ours[0]:ours[0]||theirs[0];
   return pick?{src:mediaOf(p,pick),mine:pick.author!=='customer'}:null;
 }
+// ── 돌봄 값(조각 B1 · 11-21 · 설계 docs/디자인/PULSE고객경험_20261120/운영설계.md 5-1 · 9절) ── 제작 보드와 의뢰 확인 화면이 같은 값을 쓴다.
+// asks: 답하지 않은 손님 문의 수 — 손님이 쓴 문의(support) 가운데 처리 표시(resolved)가 없고, 그 뒤에 사람이 손님에게 보이게 쓴 답이 없는 것.
+//   답은 직원 글(자동 안내 · 내부 메모 제외)과 손님에게 보이는 프로젝트 댓글이다(서버의 「답했다」 판정과 같은 조건). askSince: 그 가운데 가장 오래된 글의 때.
+// quiet: 저희 차례인 의뢰 프로젝트에서, 손님에게 마지막으로 닿은 일(올린 소식 · 사람이 쓴 답 · 차례가 넘어온 때) 뒤로 지난 평일 수.
+//   한국 날짜로 세고 토 · 일은 뺀다(공휴일은 보지 않는다). 손님 차례(영상을 고치는 동안 포함) · 끝 · 보관 · 옛 흐름은 null.
+// 영상 의견(feedback)은 의견 묶음과 처리 상태가 맡아 세지 않는다. 소식은 두 꼴을 받는다 — 직원 원본({state, postedAt})은 올린 것만, 손님 보기 꼴({at})은 그대로.
+const careTimes=list=>list.map(item=>Date.parse(item?.at||'')).filter(Number.isFinite);
+const humanReplies=p=>careTimes([...(p?.messages||[]).filter(m=>m.author==='staff'&&!m.automated&&m.visibility==='customer'),...(p?.studio?.comments||[]).filter(c=>c.targetType==='project'&&c.author!=='customer'&&c.visibility==='customer')]);
+const postedTimes=p=>[...(Array.isArray(p?.studio?.progress)?p.studio.progress:[]),...(Array.isArray(requestOf(p)?.progress)?requestOf(p).progress:[])].map(item=>Date.parse((item?.state?item.state==='posted'&&item.postedAt:item?.at)||'')).filter(Number.isFinite);
+function weekdaysSince(fromMs,toMs){
+  let count=0;
+  for(let day=Date.parse(kstDay(fromMs)+'T00:00:00Z')+86400000,end=Date.parse(kstDay(toMs)+'T00:00:00Z');day<=end;day+=86400000){const week=new Date(day).getUTCDay();if(week!==0&&week!==6)count++;}
+  return count;
+}
+export function careOf(p,now=Date.now()){
+  const replies=humanReplies(p),answered=replies.length?Math.max(...replies):-Infinity;
+  const open=careTimes((p?.messages||[]).filter(m=>m.action==='support'&&m.author!=='staff'&&!m.resolved)).filter(time=>time>answered);
+  const r=requestOf(p),live=!!r&&r.status!=='retired'&&p.stage!=='archived';
+  let quiet=null;
+  if(live&&ROOM_COPY[roomState(p)]?.turn==='us'){const touched=[turnSince(r),...postedTimes(p),...replies].filter(Number.isFinite);if(touched.length)quiet=weekdaysSince(Math.max(...touched),now);}
+  return {asks:open.length,askSince:open.length?new Date(Math.min(...open)).toISOString():'',quiet};
+}
+// 문의와 답(조각 B2 · 11-21): 의뢰 확인 화면 오른쪽 단 맨 위. 손님 문의와 손님에게 보이는 글(사람이 쓴 답 · 자동 안내 · 프로젝트 댓글)만 새 것부터 싣는다 —
+// 내부 메모와 영상 의견은 싣지 않는다. open은 답하지 않은 문의(careOf와 같은 조건), closed는 답 없이 닫은 문의. 앞선 글은 수만 싣는다(영상 확인의 대화에 있다).
+const TALK_SHOWN=12;
+function deskTalk(p){
+  const replies=humanReplies(p),answered=replies.length?Math.max(...replies):-Infinity;
+  const rows=[...(p?.messages||[]).filter(m=>m.action==='support'&&m.author!=='staff'||m.author==='staff'&&m.visibility==='customer').map(m=>{
+      const mine=m.author==='staff',time=Date.parse(m.at||''),after=Number.isFinite(time)&&time>answered;
+      return {id:m.id,who:mine?(m.automated?'auto':'staff'):'customer',name:mine?m.authorName||'':'',at:m.at||'',text:m.text||'',pictures:messagePictures(p,m),open:!mine&&!m.resolved&&after,closed:!mine&&!!m.resolved&&after};}),
+    ...(p?.studio?.comments||[]).filter(c=>c.targetType==='project'&&c.visibility==='customer').map(c=>({id:c.id,who:c.author==='customer'?'customer':'staff',name:c.author==='customer'?'':c.authorName||'',at:c.at||'',text:c.text||'',pictures:[],open:false,closed:false,comment:true}))]
+    .sort((a,b)=>(Date.parse(b.at)||0)-(Date.parse(a.at)||0));
+  return {items:rows.slice(0,TALK_SHOWN),more:Math.max(0,rows.length-TALK_SHOWN),open:rows.filter(item=>item.open).length};
+}
 const legacyTurnOf=(p,legacyTurn)=>{if(p.stage==='delivered')return 'done';try{const turn=legacyTurn?.(p);if(['us','them','done'].includes(turn))return turn;}catch{}return LEGACY_TURN[p.stage]||'us';};
 export function staffBoard(projects=[],now=Date.now(),{legacyTurn=null}={}){
   const today=kstDay(now),rows={fresh:[],ours:[],theirs:[],done:[],archived:[]};
@@ -421,23 +455,30 @@ export function staffBoard(projects=[],now=Date.now(),{legacyTurn=null}={}){
     const state=r?roomState(p):'',archived=p.stage==='archived';
     const stage=r?STAFF_STAGE_OF[state]||'check':LEGACY_STAGE[p.stage]||'check';
     const turn=archived?'archived':r?(ROOM_COPY[state]?.turn==='us'?'us':ROOM_COPY[state]?.turn==='done'?'done':'them'):legacyTurnOf(p,legacyTurn);
-    const due=/^\d{4}-\d{2}-\d{2}$/.test(p.dueDate||'')?p.dueDate:'',left=due?dayGap(today,due):null;
+    // 전달일: 결제를 확인하며 손님에게 약속한 날(payment.dueDate)이 먼저다 — 손님 방의 「받으실 날」과 같은 날을 본다. 없으면 프로젝트의 날.
+    const promised=r?.payment?.status==='confirmed'&&/^\d{4}-\d{2}-\d{2}$/.test(r.payment.dueDate||'')?r.payment.dueDate:'';
+    const due=promised||(/^\d{4}-\d{2}-\d{2}$/.test(p.dueDate||'')?p.dueDate:''),left=due?dayGap(today,due):null;
     const moved=Date.parse(p.updatedAt||p.createdAt||''),waited=Number.isFinite(moved)?Math.max(0,dayGap(kstDay(moved),today)):null;
     const missing=r&&state==='check'?deskChecks(p).filter(check=>!check.ok):[];
     const item={id:p.id,title:p.title||'',who:p.customerName||'',owner:p.ownerName||'',number:r?.number||'',at:r?.submittedAt||p.createdAt||'',
       kind:KINDS.find(item=>item.id===a.kind)?.label||'',pkg:r?(pkgOf(a)?`${pkgOf(a).label} ${pkgOf(a).title}`:''):'',
       state:r?deskState(p,state):LEGACY_STATE[p.stage]||'',note:String(p.nextStep||'').trim(),stage,step:STAFF_STAGES.findIndex(s=>s.id===stage)+1,turn,
-      fresh:!!r&&state==='check'&&!archived,due,left,waited,missing:missing.map(check=>check.label),picture:staffPicture(p,stage)};
+      fresh:!!r&&state==='check'&&!archived,due,left,waited,missing:missing.map(check=>check.label),picture:staffPicture(p,stage),...careOf(p,now)};
     if(archived)rows.archived.push(item);else if(item.fresh)rows.fresh.push(item);else if(turn==='done')rows.done.push(item);else if(turn==='us')rows.ours.push(item);else rows.theirs.push(item);
   }
   const at=item=>String(item.at||'');
   rows.fresh.sort((x,y)=>at(y).localeCompare(at(x)));
-  rows.ours.sort((x,y)=>(x.left??1e9)-(y.left??1e9)||at(x).localeCompare(at(y)));
-  rows.theirs.sort((x,y)=>(y.waited??-1)-(x.waited??-1)||at(x).localeCompare(at(y)));
+  // 답할 문의가 있는 건이 먼저(오래된 문의부터), 그다음은 전처럼 — 우리 차례는 남은 날, 손님 차례는 기다린 날.
+  const asked=(x,y)=>(y.asks>0)-(x.asks>0)||(x.asks&&y.asks?String(x.askSince).localeCompare(String(y.askSince)):0);
+  rows.ours.sort((x,y)=>asked(x,y)||(x.left??1e9)-(y.left??1e9)||at(x).localeCompare(at(y)));
+  rows.theirs.sort((x,y)=>asked(x,y)||(y.waited??-1)-(x.waited??-1)||at(x).localeCompare(at(y)));
   rows.done.sort((x,y)=>at(y).localeCompare(at(x)));
   const live=[...rows.fresh,...rows.ours,...rows.theirs];
   const soon=[...rows.ours,...rows.theirs].filter(item=>item.left!==null&&item.left<=3);
-  return {...rows,stages:STAFF_STAGES.map(s=>({...s,items:[...rows.fresh,...rows.ours,...rows.theirs,...rows.done].filter(item=>item.stage===s.id)})),soon,total:live.length};
+  // 단계 칸: 답할 문의가 있는 건을 맨 위에(오래된 문의부터), 나머지는 전 순서 그대로. 머리 숫자의 문의는 끝난 건까지 센다(보관은 뺀다).
+  const shown=[...rows.fresh,...rows.ours,...rows.theirs,...rows.done],asking=shown.filter(item=>item.asks>0).sort((x,y)=>String(x.askSince).localeCompare(String(y.askSince)));
+  const column=id=>[...asking.filter(item=>item.stage===id),...shown.filter(item=>item.stage===id&&!item.asks)];
+  return {...rows,stages:STAFF_STAGES.map(s=>({...s,items:column(s.id)})),soon,total:live.length,asking,asks:asking.reduce((sum,item)=>sum+item.asks,0)};
 }
 // 내부 확인 화면: 답을 그대로 믿지 않고 빠진 칸을 코드가 먼저 짚는다. 판단(묻기 · 넘기기)은 사람이 한다.
 export function deskChecks(p){
@@ -487,6 +528,8 @@ export function deskModel(p){
       ...(['chosen','settled'].includes(direction.status)&&direction.modelId&&direction.look&&modelLooks(direction.modelId)&&(!a.models?.[0]||a.models[0]===direction.modelId&&(a.outfit||'')===(direction.look.outfit||'')&&(a.hair||'')===(direction.look.hair||''))?{look:(look=>`옷 ${look.outfitLabel||'맡김'} · 머리 ${look.hairLabel||'맡김'}`)(lookOf(direction.modelId,direction.look))}:{})}:null,
     canDirect,
     canSettle:direction?.status==='declined'&&direction.round>=2&&!(r.rounds||[]).length,
+    // 문의와 답(조각 B2): 손님 문의와 손님에게 보이는 답 · 답할 문의 수(제작 보드와 같은 값).
+    talk:deskTalk(p),
     // 사진 상품: 내부 확인 화면이 판 이름 · 단계 이름 · 결제 안내를 사진 말로 쓴다(영상 상품은 키가 없다).
     ...(a.package==='photo'?{photo:true}:{})};
 }

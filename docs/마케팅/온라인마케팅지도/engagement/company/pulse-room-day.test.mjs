@@ -174,5 +174,5 @@ test('the day look is switched on and off in one place and never leaks to other 
     for(const one of selector.split(/,(?![^(]*\))/).map(part=>part.trim()).filter(Boolean))assert.ok(/\[data-day\]|sx-day|^\.sx-room-(due|say)\b|^\.sx-done-next\b/.test(one),one);
   }
   // 캐시 판을 올렸다(바뀐 화면 모듈과 스타일을 새로 받게).
-  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v72-room-day-20261120';/);
+  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v73-staff-care-20261121';/);
 });

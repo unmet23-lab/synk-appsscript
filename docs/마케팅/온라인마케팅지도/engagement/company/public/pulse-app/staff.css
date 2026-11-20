@@ -129,6 +129,11 @@ html.is-staff .staff-turn.is-them i{background:transparent;box-shadow:inset 0 0 
 html.is-staff .staff-turn.is-them b{color:var(--st-ink-70)}
 html.is-staff .staff-turn.is-done i{background:var(--st-green)}
 html.is-staff .staff-card-note{display:block;margin-top:4px;font-size:13px;line-height:1.45;color:var(--st-ink-56)}
+/* 돌봄 꼬리표(조각 B1 · 11-21): 답할 문의는 베리 면, 소식 없이 지난 평일은 종이 면 */
+html.is-staff .staff-cares{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
+html.is-staff .staff-care{padding:2px 7px;font-size:13px;font-weight:600;line-height:1.45}
+html.is-staff .staff-care.is-ask{background:var(--st-berry);color:#fff}
+html.is-staff .staff-care.is-quiet{background:var(--st-paper-2);color:var(--st-ink-70)}
 html.is-staff .staff-empty{margin:0;padding:22px 0;border-bottom:1px dashed var(--st-line);font-size:13px;color:var(--st-ink-56)}
 /* 끝남 · 보관 접기 */
 html.is-staff .staff-fold{border-bottom:1px solid var(--st-line)}
@@ -214,7 +219,7 @@ html.is-staff .desk-mail-edit>summary{display:inline-flex;align-items:center;min
   html.is-staff .notification-panel{top:0;left:0;width:100vw;border-left:0;z-index:60}
   html.is-staff .mstep{top:0}
   html.is-staff .staff-top{grid-template-columns:minmax(0,1fr);gap:18px;padding:20px 16px 18px}
-  html.is-staff .staff-meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  html.is-staff .staff-meters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
   html.is-staff .staff-meter{flex-direction:column;align-items:flex-start;gap:6px;margin:0;padding:0 12px}
   html.is-staff .staff-meter:first-child{padding-left:0}
   html.is-staff .staff-meter:not(:last-child){border-right:1px solid var(--st-line)}
