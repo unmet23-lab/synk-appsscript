@@ -239,6 +239,17 @@
         "화면필요": []
       },
       {
+        "계정": "lab-vn-tiktok",
+        "채널": "틱톡 @synklab.vn",
+        "주소": "https://www.tiktok.com/@synklab.vn/video/7709384700309032210?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
+        "형식": "tiktok-video",
+        "게시": "2026-11-20T06:00:00.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-tiktok",
         "채널": "틱톡 @synk.mn",
         "주소": "https://www.tiktok.com/@synk.mn/video/7704555608531537172?utm_campaign=tt4d_open_api&utm_source=sbawa7xabwj54nyv5i",
@@ -336,6 +347,17 @@
             "completionRatePct": 15.5
           }
         }
+      },
+      {
+        "계정": "lab-tw-youtube",
+        "채널": "유튜브 @synklabtaiwan",
+        "주소": "https://www.youtube.com/watch?v=lakx-9_4Si8",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-20T05:00:01.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
       },
       {
         "계정": "lab-ca-youtube",
