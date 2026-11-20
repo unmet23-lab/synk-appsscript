@@ -152,9 +152,11 @@ test('a browser sign-in that ends badly says why once; a cancel says nothing',as
 });
 
 test('with no editor left nothing asks before sign-out, update or closing, and leaving the page is never held',async()=>{
-  const f=await fixture({initialAuth:account('member-e')});
+  const noop=async()=>({ok:true});
+  const f=await fixture({initialAuth:account('member-e'),bridgeOverrides:{updateStatus:noop,checkForUpdate:noop,downloadUpdate:noop,installUpdate:noop,onUpdateChanged:()=>()=>{}}});
   assert.equal(await f.portal.options.faceOptions.rooms.confirmLeave(),true);
-  assert.equal(await f.portal.options.faceOptions.rooms.updates?.confirmInstall?.()??true,true);
+  assert.equal(typeof f.portal.options.faceOptions.rooms.updates.confirmInstall,'function','the update room gets the install check');
+  assert.equal(await f.portal.options.faceOptions.rooms.updates.confirmInstall(),true);
   assert.equal(f.beforeUnload(),false);
   assert.equal(f.element('leave-dialog').open,false);
 });
@@ -170,6 +172,17 @@ test('the old account page opens an installed Workspace and says why it cannot o
   const denied=await fixture({initialAuth:account('member-h',['pulse'])});
   await denied.run('launchWorkspace()');
   assert.match(denied.toasts[0],/열 수 없습니다/);
+  // 카본 검수 B1: 여는 중에 다시 누르면 아무 말도 하지 않고, 앱 줄을 아직 못 읽었으면 확인 중이라고 말한다
+  let release;const slow=[];
+  const pending=await fixture({initialAuth:account('member-i'),clients:[{id:'messenger',status:'installed',canLaunch:true}],bridgeOverrides:{launch:id=>{slow.push(id);return new Promise(resolve=>{release=resolve;});}}});
+  const first=pending.run('launchWorkspace()');await settle();
+  await pending.run('launchWorkspace()');
+  assert.deepEqual(slow,['messenger']);assert.deepEqual(pending.toasts,[],'a second press while opening says nothing');
+  release({ok:true});await first;
+  assert.deepEqual(pending.toasts,['Workspace를 열었습니다.']);
+  const loading=await fixture({initialAuth:account('member-j')});
+  await loading.run('launchWorkspace()');
+  assert.match(loading.toasts[0],/확인하는 중입니다/);
 });
 
 test('a face that fails to mount leaves window buttons and one line instead of an empty frameless window',async()=>{
@@ -228,8 +241,10 @@ test('Ctrl with + and − steps the zoom through the settings room list, Ctrl+0 
   assert.deepEqual(c.updates,[{zoomFactor:1.1}]);
   c.key({key:'-',ctrlKey:true});await settle();
   assert.deepEqual(c.updates.at(-1),{zoomFactor:1});
+  c.key({key:'+',ctrlKey:true});await settle();
+  const before=c.updates.length;
   c.key({key:'0',ctrlKey:true});await settle();
-  assert.deepEqual(c.updates.at(-1),{zoomFactor:1});
+  assert.equal(c.updates.length,before+1,'Ctrl+0 saves');assert.deepEqual(c.updates.at(-1),{zoomFactor:1});
   assert.equal(c.key({key:'+'}).defaultPrevented,false);
   delete globalThis.document;
 });

@@ -237,6 +237,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     return true;
   }
   /* 런처가 계정 생명주기에서 부른다(같은 사람의 새 세션 포함). 보이던 자료와 오는 중인 답을 버리고, 방이 열려 있으면 다시 읽는다 */
+  // 플레저 PC 알림 줄에 마지막으로 쓴 말. 계정마다라 계정이 바뀌면 그 말만 거둔다(카본 검수 C1). 같은 줄의 알림 배너 · 조용한 시간 말은 PC 설정이라 남긴다
+  let careNote = '';
   function accountChanged() {
     accGen += 1;
     acc = freshAcc();
@@ -246,6 +248,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     if (st.armed && ACCOUNT_ROWS.includes(st.armed.key)) disarm();
     for (const k of ACCOUNT_ROWS) st.notes.delete(k);
     st.notes.delete('draft');
+    if (careNote && st.notes.get('notice') === careNote) st.notes.delete('notice');
+    careNote = '';
     if (current === 'account') void accLoad();
     // 쓰던 글 되살리기는 계정마다 따로다. 설정 방이 열려 있으면 새 계정의 상태를 다시 읽는다
     // 플레저 PC 알림도 계정마다다(본체가 계정마다 따로 저장한다)
@@ -625,8 +629,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         if (my !== gen) return true;
         if (st.busy === 'notice:care' && a === accGen) st.busy = null;
         if (a !== accGen || s !== sets) { changed(); return true; }
-        if (res?.ok === true) { s.care = res; note(key, res.enabled === true ? '플레저 PC 알림을 켰습니다.' : '플레저 PC 알림을 껐습니다.'); }
-        else { note(key, CARE_SAY[res?.code] || CARE_SAY.no); readCare(); }
+        if (res?.ok === true) { s.care = res; careNote = res.enabled === true ? '플레저 PC 알림을 켰습니다.' : '플레저 PC 알림을 껐습니다.'; note(key, careNote); }
+        else { careNote = CARE_SAY[res?.code] || CARE_SAY.no; note(key, careNote); readCare(); }
         changed(); return true;
       }
       // 문제 알리기용 정보: 편의와 같은 셈(safeDiagnostics)으로 버전과 연결 상태만 복사한다. 결과는 맨 아래 작은 줄에 쓴다

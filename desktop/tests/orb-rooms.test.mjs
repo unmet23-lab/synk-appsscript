@@ -631,8 +631,8 @@ test('when the launcher says the account changed, a late answer for the old acco
 });
 
 /* ── 셋째 묶음: 설정 방(설계 6.4, 설계 검토 D7 · D9)과 구독 줄의 팁(D7) ── */
-function setHarness({ desktop = { ok: true, preferences: { closeToTray: true, launchAtLogin: false, startHidden: false, globalShortcut: '', zoomFactor: 1 }, capabilities: { launchAtLogin: true, globalShortcut: true, tray: true } }, drafts = { ok: true, available: true, enabled: false }, update = { state: 'current', currentVersion: '0.4.97' }, answers = {}, confirm = true, rows = [weekly('c', 'claude', { passCount: 1, passUntil: NOW + 2 * D })], member = true } = {}) {
-  let clock = NOW, desk = desktop, draft = drafts, up = update, notices = { banners: true, mutedUntil: 0, schedule: false, start: '22:00', end: '08:00', weekdays: false };
+function setHarness({ desktop = { ok: true, preferences: { closeToTray: true, launchAtLogin: false, startHidden: false, globalShortcut: '', zoomFactor: 1 }, capabilities: { launchAtLogin: true, globalShortcut: true, tray: true } }, drafts = { ok: true, available: true, enabled: false }, update = { state: 'current', currentVersion: '0.4.97' }, answers = {}, confirm = true, rows = [weekly('c', 'claude', { passCount: 1, passUntil: NOW + 2 * D })], member = true, care = null } = {}) {
+  let careNow = care, clock = NOW, desk = desktop, draft = drafts, up = update, notices = { banners: true, mutedUntil: 0, schedule: false, start: '22:00', end: '08:00', weekdays: false };
   let snap = { ok: true, seq: 1, rows, check: { at: NOW - 60e3 }, usage: { accounts: {} }, settings: {}, tools: {}, login: null };
   const calls = [], listeners = { desktop: null, drafts: null, updates: null }, offs = [];
   const answer = (name, fallback) => (...args) => { calls.push([name, ...args]); const a = answers[name]; return Promise.resolve(typeof a === 'function' ? a(...args) : a ?? fallback(...args)); };
@@ -644,6 +644,7 @@ function setHarness({ desktop = { ok: true, preferences: { closeToTray: true, la
     updates: { status: answer('updates.status', () => up), check: answer('updates.check', () => (up = { ...up, state: 'checking' })), download: answer('updates.download', () => (up = { ...up, state: 'downloading', progress: 0 })), install: answer('updates.install', () => (up = { ...up, state: 'opening' })), confirmInstall: answer('confirmInstall', () => confirm), onChange: listen('updates') },
     environment: () => ({ platform: 'win32', version: '0.4.97', mode: 'development' }),
     copyDiagnostics: answer('copyDiagnostics', () => true),
+    ...(care ? { care: { status: answer('care.status', () => careNow), configure: answer('care.configure', ({ enabled }) => (careNow = { ...careNow, enabled })) } } : {}),
   };
   const subs = { save: answer('save', patch => (snap = { ...snap, seq: snap.seq + 1, settings: { ...snap.settings, ...(patch.settings || {}), ...(patch.tip ? { tips: { [patch.tip.key]: { until: clock + 28 * D, stops: 1 } } } : {}) } })) };
   let changes = 0;
@@ -910,6 +911,22 @@ test('an account change during the draft switch keeps the old failure out of the
   release({ ok: false });
   await pressing; await settle();
   assert.equal(h.live('draft'), '');
+});
+
+test('an account change takes the PLEASURE notice word away and keeps the banner word', async () => {
+  // 카본 검수 C1: 계정이 바뀐 뒤에도 앞 계정의 플레저 PC 알림 말이 알림 줄에 남았다
+  const care = { ok: true, available: true, signedIn: true, enabled: false };
+  const h = setHarness({ care, answers: { 'care.configure': ({ enabled }) => ({ ...care, enabled }) } });
+  h.rooms.open('settings'); await settle();
+  h.rooms.scene({ aside: 'settings', member: true });
+  await h.press('notice', 'care'); await settle();
+  assert.equal(h.live('notice'), '플레저 PC 알림을 켰습니다.');
+  h.rooms.accountChanged(); await settle();
+  assert.equal(h.live('notice'), '', 'the old account’s word is gone');
+  await h.press('notice', 'notice', 'banners'); await settle();
+  const banner = h.live('notice');
+  h.rooms.accountChanged(); await settle();
+  assert.equal(h.live('notice'), banner, 'a PC setting word stays');
 });
 
 test('a login that ends while another room is open does not write into that room’s foot', () => {

@@ -47,6 +47,7 @@ test('public apps offer a usable browser action while packaged and unsupported a
     assert.equal(primaryAction({id},{publicAppsAvailable,productPreviewsAvailable:[id]}).action,'product-preview');
   }
   const pathAction=primaryAction({id:'path'},{native:true,publicAppsAvailable:['path'],productPreviewsAvailable:['path']});
+  assert.deepEqual(pathAction,{label:'면접 연습 열기',action:'public-web',disabled:false});
   for(const id of ['teacher','family-album','partners','unknown']){
     assert.equal(primaryAction({id},{publicAppsAvailable:[...publicAppsAvailable,id]}).disabled,true);
   }

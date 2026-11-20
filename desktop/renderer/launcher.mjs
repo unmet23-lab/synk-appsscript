@@ -81,6 +81,9 @@ function getAppAction(id){const action=primaryAction(client(id),{native:!!bridge
 async function launchWorkspace(){
   const id='messenger';
   if(!bridge||!allowed(id)){toast('이 계정에서는 Workspace를 열 수 없습니다.');return;}
+  // 여는 중에 다시 누르면 아무것도 하지 않는다. 앱 줄을 아직 못 읽었으면 「설치 안 됨」이 아니라 확인 중이라고 말한다(카본 검수 B1)
+  if(busy.has(id))return;
+  if(client(id)?.reason==='CHECKING'){toast('Workspace 설치 상태를 확인하는 중입니다. 잠시 뒤 다시 눌러 주세요.');return;}
   const action=getAppAction(id);
   if(action.disabled||action.action!=='launch'){toast('이 PC에 Workspace가 설치돼 있지 않습니다. synk.im에서 받아 설치해 주세요.');return;}
   const epoch=ownerEpoch;busy.add(id);
