@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f640-a3a1-7800-9b7c-089be1705028"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one panel with Mongle leaning over to inspect its smooth side, with the friend’s mustard wrist warmers blurred behind it.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle searches its woolly side for a wrist as its friend shows off mustard wrist warmers behind it."}}
+{"type":"turn.completed","usage":{"input_tokens":129524,"cached_input_tokens":113536,"cache_write_input_tokens":0,"output_tokens":1953,"reasoning_output_tokens":546}}

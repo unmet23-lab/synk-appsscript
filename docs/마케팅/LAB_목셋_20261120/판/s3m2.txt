@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photo, portrait 2:3, soft warm dusk light, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style, light and scale of the felt reference photo — NOT its café, NOT its barista).
+
+WORLD (same in every panel): a tiny snowy felt street at dusk — soft white felt snow on the ground, little felt houses with warm glowing windows, a felt pine tree and an old felt street lamp, a dusky blue-violet sky. No snowflakes in the air.
+CHARACTERS (same in every panel):
+- THE FRIEND: a Korean felt doll young man with short neat black felt hair, a round friendly face, small black bead eyes, rosy cheeks. He wears a dark sage-green felt duffel coat whose sleeves are a little too short (his bare wrists show), brown felt trousers cropped above the ankle (his bare ankles show above short white socks), and small brown felt shoes. His three winter pieces are all the SAME mustard-yellow chunky hand-knit wool: one long scarf, two wrist warmers, and two long knee socks.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera; closed eyes are two short curved dark stitched lines). Mongle has NO arms, NO legs, NO hands and NO neck, ever — its head and body are one soft dome. It moves by tilting, squashing and bouncing its whole body.
+
+Attached images in order: (1) the panel to reproduce — keep its camera, framing, light, blur, Mongle's pose and expression EXACTLY, (2) the base street panel — the friend's legs must look like THIS (cropped brown trousers, BARE ankles, short white socks, brown shoes).
+
+Reproduce the first attached image EXACTLY, with ONE change only: the out-of-focus friend in the background does NOT wear long socks yet — below his cropped brown trousers his BARE ankles show above short white socks and brown shoes, exactly like in the second attached image. He still wears the mustard scarf and the mustard wrist warmers on his raised hands. Mongle stays exactly the same: tilted far to one side, peering down at its own smooth round flank in a puzzled squint, one small sweat drop.
+
+Exactly ONE friend and exactly ONE Mongle, nobody else. Absolutely no text, letters, numbers, symbols, question marks or watermarks anywhere. No real brand, no logos.
