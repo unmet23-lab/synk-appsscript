@@ -25,7 +25,7 @@
 | `시안_원고.html` | 보는 판의 원고. 캡션, 첫 DM, 나눌 자료가 들어 있다 |
 | `벤치마크.md` | 조사 범위, 세 가지 꼴, 계정별 숫자 |
 
-보는 판은 `시안_원고.html`을 `.tmp/계정개편_시안_20261120/index.html`로 복사한 뒤 `node tools/lib/브랜드폰트.js --심기`로 서체를 심어 만든다. yuhobuilds 표지의 얼굴 사진은 git 밖 `synk-vendor/yuho-motion-20261101/selected`의 승인 얼굴 C다.
+보는 판은 `시안_원고.html`에서 서체 줄(`SUIT-Variable.woff2`가 든 `@font-face` 한 줄)을 뺀 사본을 `.tmp/계정개편_시안_20261120/index.html`로 두고 `node tools/lib/브랜드폰트.js --심기`로 서체를 심어 만든다. 원고는 저장소의 정본 서체를 상대 경로로 싣는다. yuhobuilds 표지의 얼굴 사진은 git 밖 `synk-vendor/yuho-motion-20261101/selected`의 승인 얼굴 C다.
 
 ## 첫 편 릴스(11-20 유호님 「네, A로 만들어」)
 

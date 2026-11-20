@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>계정 개편 첫 편 시안</title>
 <!-- 원고다. 보는 판은 node tools/lib/브랜드폰트.js --심기 로 서체를 심어 .tmp/계정개편_시안_20261120/index.html 에 만든다(README). -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
 <style>
+/* 서체: 저장소의 정본을 상대 경로로 싣는다. 보는 판을 만들 때는 이 줄을 빼고 브랜드폰트 --심기로 심는다(README) */
+@font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url("../../브랜드_폰트/SUIT/SUIT-Variable.woff2") format('woff2')}
 :root{
   /* 배치: 한 단 읽기 판. 위에 고르실 것, 아래에 계정마다 표지 → 격자 → 캡션 → DM → 자료 순서. */
   --paper:#F6F4EE; --card:#FFFFFF; --ink:#141413; --muted:#6A665D; --line:#DFDACF; --butter:#F5C445; --lapis:#2F58B8; --box:#F0EDE5;
