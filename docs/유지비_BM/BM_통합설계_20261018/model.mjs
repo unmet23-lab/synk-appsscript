@@ -559,7 +559,10 @@ function run(inp, scName, opts = {}) {
     // ② LAB 밖 몽골 학생: 그달 울란바토르에서 새로 한국 유학을 가는 사람(LAB에서 간 사람은 뺌) 가운데 extShare
     let admExt = ubLive ? Math.max(0, mk.ubNew / 12 - admLab) * step(P.extShare[scName], m) * pm : 0;
     if (opts.pathShare) { // [10-19 세 지표] 그 나라 한 해 새 한국 유학생의 pathShare(10%)를 PATH가 맡는다. LAB에서 가는 학생을 먼저 세고 나머지는 LAB 밖
-      const total = ubLive && m >= (P.shareFrom || P.startUB) ? (mk.countryNew / 12) * opts.pathShare * pm : 0; // [11-14] 몫 계약은 shareFrom부터(몽골 2028-03)
+      // [11-20 유호님 「27년 1% 28년 2% 29년 5% 30년 10%」] 신뢰는 해마다 쌓인다 — pathShareRamp가 있으면 그 나라 교실을 연 해부터 그 길로 오르고 pathShare(목표)에서 멈춘다
+      const rampK = opts.pathShareRamp && opts.pathShareRamp.length ? Math.max(0, Math.min(opts.pathShareRamp.length - 1, Number(m.slice(0, 4)) - Number(L.openMonth.slice(0, 4)))) : -1;
+      const shareNow = rampK < 0 ? opts.pathShare : Math.min(opts.pathShare, opts.pathShareRamp[rampK]);
+      const total = ubLive && m >= (P.shareFrom || P.startUB) ? (mk.countryNew / 12) * shareNow * pm : 0; // [11-14] 몫 계약은 shareFrom부터(몽골 2028-03)
       admLab = Math.min(admLab, total); admExt = total - admLab;
     }
     const plansExt = ubLive ? step(P.externalPlansPerMonth, m) * sc.volume : 0; // 유학 준비 계획(입구 상품). 계획에서 계약으로 가는 사람은 ②에 들어 있다
@@ -1236,7 +1239,7 @@ function countryInp(key) {
   deepMerge(inp, C0.overrides || {});
   return inp;
 }
-const FILL = { labMode: 'full4', stopRule: false, labFill: base.targets.labFill, labRamp: !!base.targets.labRamp, pathShare: base.targets.pathShare }; // labRamp [11-19 유호님 「차오르게 바꿔」]
+const FILL = { labMode: 'full4', stopRule: false, labFill: base.targets.labFill, labRamp: !!base.targets.labRamp, pathShare: base.targets.pathShare, pathShareRamp: base.targets.pathShareRamp || null }; // labRamp [11-19 유호님 「차오르게 바꿔」] · pathShareRamp [11-20 유호님]
 const planHz = base.planHorizon || { end: base.timeline.end, years: [2027, 2028, 2029] }; // [10-19] 세 지표만 2030-12까지
 const lastY = planHz.years[planHz.years.length - 1];
 const withHz = (inp) => { inp.timeline = { ...inp.timeline, end: planHz.end }; return inp; };
@@ -1286,7 +1289,7 @@ const plans = Object.fromEntries(planNames.map((p) => [p, runPlan(p)]));
 // [10-19 유호님 확정] 운영 계획: 새 나라 유학 몫만 opPlan.newPathShare(1.5%)로. 세 지표(10%)는 투자 자료의 성공 시나리오
 const opPlans = base.opPlan ? Object.fromEntries(planNames.map((p) => [p, runPlan(p, { newOnly: base.opPlan.newPathShare })])) : null;
 // 유학 몫 견주기(inputs.pathShareChecks): 세 지표마다 해마다(2027~2030) 영업이익과 유학 계약
-const planChecks = (base.pathShareChecks || []).map((ck) => ({ label: ck.label, byPlan: Object.fromEntries(planNames.map((p) => { const r = runPlan(p, { newOnly: ck.newOnly, all: ck.all }); return [p, { ebitda: Object.fromEntries(planHz.years.map((y) => [y, r.years[y].ebitda])), contracts: Object.fromEntries(planHz.years.map((y) => [y, r.years[y].path.contracts])), revenue2029: r.years[2029].revenue, contracts2029: r.years[2029].path.contracts, pathProfit2029: r.years[2029].path.profit, byC2029: Object.fromEntries(Object.entries(r.years[2029].byC).map(([c, v]) => [c, { contracts: v.contracts, pathProfit: v.pathProfit }])), byCLast: Object.fromEntries(Object.entries(r.years[lastY].byC).map(([c, v]) => [c, { contracts: v.contracts, pathProfit: v.pathProfit, ebitda: v.ebitda }])), need: r.need }]; })) }));
+const planChecks = (base.pathShareChecks || []).map((ck) => ({ label: ck.label, byPlan: Object.fromEntries(planNames.map((p) => { const r = runPlan(p, { newOnly: ck.newOnly, all: ck.all, ...(ck.flat ? { pathShareRamp: null } : {}) }); return [p, { ebitda: Object.fromEntries(planHz.years.map((y) => [y, r.years[y].ebitda])), contracts: Object.fromEntries(planHz.years.map((y) => [y, r.years[y].path.contracts])), revenue2029: r.years[2029].revenue, contracts2029: r.years[2029].path.contracts, pathProfit2029: r.years[2029].path.profit, byC2029: Object.fromEntries(Object.entries(r.years[2029].byC).map(([c, v]) => [c, { contracts: v.contracts, pathProfit: v.pathProfit }])), byCLast: Object.fromEntries(Object.entries(r.years[lastY].byC).map(([c, v]) => [c, { contracts: v.contracts, pathProfit: v.pathProfit, ebitda: v.ebitda }])), need: r.need }]; })) }));
 // 운영 계획용 개원 전 관문 [제안 · 10-19, inputs.lab.opGate]: 몽골(보수적 지표) 운영 계획의 개원 달 등록에서 거꾸로 센 문의·체험·사전 등록 문턱과,
 // 못 미칠 때 몽골만 다시 센 값(4실 반을 다 열었는데 학원만 덜 참 · 학원과 유학이 함께 반쯤), 유학 첫 석 달 계약 문턱
 const opGate = base.lab.opGate && opPlans ? (() => {

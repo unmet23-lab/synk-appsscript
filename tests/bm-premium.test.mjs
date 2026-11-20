@@ -163,7 +163,7 @@ test('break-even pays the one-times bonus tier and revenue-linked field bonus be
 // 운영 계획(보수적)의 몽골 판을 2030-12까지 돌린다. model.mjs의 runPlan이 몽골에 쓰는 것과 같은 선택이다
 const mnPlanRun = () => {
   const inp = structuredClone(base); inp.timeline = { ...inp.timeline, end: inp.planHorizon.end };
-  const opts = { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, labRamp: !!inp.targets.labRamp, pathShare: inp.targets.pathShare, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans['보수적'] };
+  const opts = { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, labRamp: !!inp.targets.labRamp, pathShare: inp.targets.pathShare, pathShareRamp: inp.targets.pathShareRamp || null, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans['보수적'] };
   return { inp, r: run(inp, '기본', opts) };
 };
 const near = (actual, expected, tol = 1, what = '') => assert.ok(Math.abs(actual - expected) <= tol, `${what} ${actual} != ${expected}`);
@@ -220,7 +220,7 @@ function addMonth(label, n) { let [y, m] = label.split('-').map(Number); m += n;
 test('11-18 founder lives in Vietnam and Uzbekistan in the plans that open them: Korean teacher from the first move, founder hours and moving costs', () => {
   const runFor = (planName, patch) => {
     const inp = structuredClone(base); inp.timeline = { ...inp.timeline, end: inp.planHorizon.end }; if (patch) patch(inp);
-    const opts = { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, labRamp: !!inp.targets.labRamp, pathShare: inp.targets.pathShare, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans[planName] };
+    const opts = { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, labRamp: !!inp.targets.labRamp, pathShare: inp.targets.pathShare, pathShareRamp: inp.targets.pathShareRamp || null, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans[planName] };
     return { inp, r: run(inp, '기본', opts) };
   };
   const { inp, r } = runFor('성공적');
@@ -377,3 +377,24 @@ test('11-19 classroom ramps up from opening to 80% of the 4-room capacity', () =
   near(fullRun.rows.find((x) => x.m === inp.lab.openMonth).lab.students, target, 1e-6, '차오름 없이 돌리면 개원 달부터 80%');
 });
 
+test('11-20 study-abroad share climbs 1 · 2 · 5 · 10% from the year the classroom opens and stops at the target', () => {
+  const { inp, r } = mnPlanRun();
+  assert.deepEqual(inp.targets.pathShareRamp, [0.01, 0.02, 0.05, 0.1], '유호님 11-20: 27년 1% · 28년 2% · 29년 5% · 30년 10%');
+  const ct = (y) => r.rows.filter((x) => x.m.startsWith(String(y))).reduce((a, x) => a + x.path.admissions, 0);
+  assert.equal(ct(2027), 0, '2027년은 계약을 여는 달(shareFrom) 전이라 0건');
+  assert.ok(r.rows.filter((x) => x.m >= '2028-01' && x.m < inp.path.shareFrom).every((x) => x.path.admissions === 0), '현지 등록 전에는 계약이 없다');
+  // 한 해 계약 = 그 해 새 유학생 × 그 해 몫(2028년은 3월부터 열 달)
+  const R = JSON.parse(readFileSync(new URL('../docs/유지비_BM/BM_통합설계_20261018/results.json', import.meta.url), 'utf8'));
+  const P = R.opPlans['보수적'].years;
+  near(P[2028].path.contracts, ct(2028), 1e-6, '2028 계약(저장된 결과)');
+  assert.ok(ct(2029) / ct(2028) > 2.9 && ct(2029) / ct(2028) < 3.4, `2% 열 달 → 5% 열두 달(성장 7%)이면 약 3.2배 — ${ct(2029) / ct(2028)}`);
+  assert.ok(ct(2030) / ct(2029) > 2.0 && ct(2030) / ct(2029) < 2.3, `5% → 10%(성장 7%)이면 약 2.1배 — ${ct(2030) / ct(2029)}`);
+  // 오르는 길을 끄면 옛 판(처음부터 10%)이다
+  const flat = run(structuredClone(inp), '기본', { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, labRamp: !!inp.targets.labRamp, pathShare: inp.targets.pathShare, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans['보수적'] });
+  const flat2030 = flat.rows.filter((x) => x.m.startsWith('2030')).reduce((a, x) => a + x.path.admissions, 0);
+  near(flat2030, ct(2030), 1e-6, '넷째 해에는 목표(10%)에 닿아 옛 판과 계약 수가 같다');
+  // 목표가 길보다 낮으면 목표에서 멈춘다(운영 계획의 새 나라 1.5%)
+  const capped = run(structuredClone(inp), '기본', { labMode: 'full4', stopRule: false, labFill: inp.targets.labFill, labRamp: !!inp.targets.labRamp, pathShare: 0.015, pathShareRamp: inp.targets.pathShareRamp, ...inp.targets.mnStart, countryOnly: false, plan: inp.plans['보수적'] });
+  const c = (y) => capped.rows.filter((x) => x.m.startsWith(String(y))).reduce((a, x) => a + x.path.admissions, 0);
+  near(c(2030) / ct(2030), 0.15, 1e-6, '1.5%에서 멈추면 2030년 계약은 10% 판의 15%');
+});
