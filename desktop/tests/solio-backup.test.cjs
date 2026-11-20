@@ -993,15 +993,43 @@ test('cancel mark: a sign-in change marks the request before deleting it, and th
   assert.deepEqual(marksIn(env), [], 'the live request has no mark');
   current = false;
   service.accountChanged();
-  assert.deepEqual(order.slice(0, 2), ['mark', 'delete'], 'the mark comes first');
+  assert.equal(order[0], 'mark', 'the mark comes first');
+  assert.ok(order.indexOf('delete') > 0, 'then the delete');
   assert.deepEqual(marksIn(env), [`${name}.cancel`], 'marked synchronously at the sign-in change');
   assert.deepEqual(requestsIn(env), [name], 'the delete is locked');
+  // 엔진의 실제 처리(GPT 취소 표식 검수 GA5): 지우지 못한 요청을 엔진이 먼저 가져가도 hint를 넘기기 전에 거절한다
   const files = new engineSolio.SolioFiles({ root: path.join(env.APPDATA, 'SynkWorkBackup') });
-  assert.equal(await files.cancelled(name), true, 'the engine\'s own check sees the mark');
+  await files.ready();
+  const handled = [];
+  const answers = await files.process({ wants: c => !c.ok || c.value.kind === 'setup', handle: async v => { handled.push(v.hint); return { result: 'done' }; } });
+  assert.deepEqual(answers, [{ kind: 'setup', result: 'rejected', reason: 'cancelled' }]);
+  assert.deepEqual(handled, [], 'the old address never reaches the engine window');
+  assert.deepEqual(requestsIn(env), [], 'the engine took it');
+  locked = false; letOpen();
+  await service.whenIdle();
+});
+
+test('cancel mark (GPT GA1): a sign-in change marks this run\'s request even when its body and the folder cannot be read', async () => {
+  let locked = true;
+  const busy = () => Object.assign(Error('busy'), { code: 'EBUSY' });
+  const fsImpl = { ...fs, promises: fs.promises,
+    readFileSync: (file, ...a) => { if (locked && /^[0-9]{13}-.*\.json$/.test(path.basename(String(file)))) throw busy(); return fs.readFileSync(file, ...a); },
+    readdirSync: (file, ...a) => { if (locked && path.basename(String(file)) === 'requests') throw busy(); return fs.readdirSync(file, ...a); },
+    unlinkSync: file => { if (locked && /^[0-9]{13}-.*\.json$/.test(path.basename(String(file)))) throw busy(); return fs.unlinkSync(file); } };
+  const env = appdata(temp(), { status: { ...sample(), state: 'not-set-up' } });
+  let current = true, letOpen;
+  const opening = new Promise(r => { letOpen = r; });
+  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current });
+  for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
+  const [name] = requestsIn(env);
+  current = false;
+  service.accountChanged();
+  assert.deepEqual(marksIn(env), [`${name}.cancel`], 'marked at once, from the name this run already knows');
   locked = false; letOpen();
   await service.whenIdle();
   for (let i = 0; i < 30 && requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 50));
-  assert.deepEqual(requestsIn(env), [], 'deleted once the lock lifts');
+  assert.deepEqual(requestsIn(env), [], 'deleted once the locks lift');
   assert.deepEqual(marksIn(env), [`${name}.cancel`], 'the mark stays after the delete (contract 1)');
 });
 
@@ -1019,10 +1047,10 @@ test('cancel mark: a request the engine already moved to claimed is marked, and 
   assert.deepEqual(marksIn(env), [`${name}.cancel`], 'an existing mark counts as made');
 });
 
-test('cancel mark: a mark is removed only after 35 minutes and only when the request is gone from requests and claimed', async () => {
+test('cancel mark: a mark is removed only after 24 hours 5 minutes (the longer limit, since the kind is gone with the request) and only when the request is gone from requests and claimed', async () => {
   const env = appdata(temp()), dir = requestsDir(env);
   fs.mkdirSync(path.join(dir, 'claimed'), { recursive: true });
-  const t = 1794880000000, now = t + 35 * 60000;
+  const t = 1794880000000, now = t + 24 * 3600000 + 5 * 60000;
   const at = (ms, id) => `${String(ms)}-${id}.json`;
   const gone = at(t, 'deadbeef00000000000000a1'), recent = at(t + 60000, 'deadbeef00000000000000a2'), inClaimed = at(t, 'deadbeef00000000000000a3'),
     future = at(now + 3600000, 'deadbeef00000000000000a4'), folder = at(t, 'deadbeef00000000000000a5');
@@ -1051,6 +1079,8 @@ test('cancel mark: the hint goes only to an engine that keeps the mark (0.7.0 or
   assert.equal(await hintIn({ status: setup('0.6.9') }), null, 'an older engine gets no hint');
   assert.equal(await hintIn({ status: { ...setup('0.7.0'), engine: undefined } }), null, 'no engine version, no hint');
   assert.equal(await hintIn({ status: setup('0.7.0'), ver: '0.6.0' }), null, 'an older engine installed over a newer status file gets no hint');
+  assert.equal(await hintIn({ status: setup('0.7.0'), ver: '0.6.9-rc.1' }), null, 'an unreadable installed version gets no hint (GPT GA2)');
+  assert.equal(await hintIn({ status: setup('0.7.0'), ver: '' }), null, 'no installed version, no hint');
   // 설치 길: 서명을 확인한 피드의 판으로 가린다
   const install = async version => {
     const key = minisignKey(), data = crypto.randomBytes(2000), engineState = {}, env = appdata(temp()), cacheRoot = temp();
@@ -1063,4 +1093,23 @@ test('cancel mark: the hint goes only to an engine that keeps the mark (0.7.0 or
   };
   assert.equal(await install('0.7.0'), 'owner@example.com');
   assert.equal(await install('0.6.5'), null, 'an older engine in the feed gets no hint');
+});
+
+test('cancel mark (GPT GA3): an expired mark stays when the claimed folder could not be read, so a request still there keeps its mark', async () => {
+  const t = 1794880000000, now = t + 24 * 3600000 + 5 * 60000;
+  for (const fault of ['readdir', 'lstat']) {
+    const env = appdata(temp()), dir = requestsDir(env);
+    fs.mkdirSync(path.join(dir, 'claimed'), { recursive: true });
+    const name = `${t}-deadbeef00000000000000b1.json`;
+    fs.writeFileSync(path.join(dir, `${name}.cancel`), '');
+    fs.writeFileSync(path.join(dir, 'claimed', name), setupBody);
+    const busy = () => Object.assign(Error('busy'), { code: 'EBUSY' });
+    const isClaimed = file => path.basename(String(file)) === 'claimed';
+    const fsImpl = { ...fs, promises: fs.promises,
+      readdirSync: (file, ...a) => { if (fault === 'readdir' && isClaimed(file)) throw busy(); return fs.readdirSync(file, ...a); },
+      lstatSync: (file, ...a) => { if (fault === 'lstat' && isClaimed(file)) throw busy(); return fs.lstatSync(file, ...a); } };
+    const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
+    service.accountChanged();
+    assert.deepEqual(marksIn(env), [`${name}.cancel`], `${fault} failure: the mark stays`);
+  }
 });
