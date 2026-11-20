@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_6a3350f8e5a50a4abe948fa8",
+  "name": "도윤"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1120,
+  "lufs": -16
+ },
+ "made": "2026-11-19T22:52:01.516Z",
+ "lines": [
+  {
+   "id": "f1",
+   "text": "으, 추워!",
+   "dur": 0.981,
+   "syllablesPerSec": 3.06,
+   "src": "f1.wav",
+   "key": "ab50ed4fbd3aa883dcc4fbc9ced73da7",
+   "words": 2
+  },
+  {
+   "id": "f2",
+   "text": "목!",
+   "dur": 0.358,
+   "syllablesPerSec": 2.79,
+   "src": "f2.wav",
+   "key": "5083f823201389a135cd030210f13ce4",
+   "words": 1
+  },
+  {
+   "id": "f3",
+   "text": "손목!",
+   "dur": 0.48,
+   "syllablesPerSec": 4.17,
+   "src": "f3.wav",
+   "key": "b28cb182f1e05f7cdbb35ef1f309b973",
+   "words": 1
+  },
+  {
+   "id": "f4",
+   "text": "발목!",
+   "dur": 0.493,
+   "syllablesPerSec": 4.06,
+   "src": "f4.wav",
+   "key": "fff0172cdd362924cdbbc6a5356b46d4",
+   "words": 1
+  },
+  {
+   "id": "m1",
+   "text": "목이… 셋?!",
+   "dur": 0.809,
+   "syllablesPerSec": 3.71,
+   "src": "m1.wav",
+   "key": "b1d6a212d07f04ca506463c4f8ff4af0",
+   "words": 2
+  },
+  {
+   "id": "f5",
+   "text": "너도!",
+   "dur": 0.646,
+   "syllablesPerSec": 3.1,
+   "src": "f5.wav",
+   "key": "515231efa0b11b53c4b96d85be50201d",
+   "words": 1
+  },
+  {
+   "id": "m2",
+   "text": "내 목은…?",
+   "dur": 1.16,
+   "syllablesPerSec": 2.59,
+   "src": "m2.wav",
+   "key": "3939912966aca5fcb34c27c1371c9096",
+   "words": 2
+  },
+  {
+   "id": "m3",
+   "text": "따뜻해~",
+   "dur": 0.653,
+   "syllablesPerSec": 4.59,
+   "src": "m3.wav",
+   "key": "bb677182dfc5d0c052be8bc8cca00f9f",
+   "words": 1
+  },
+  {
+   "id": "f6",
+   "text": "하하!",
+   "dur": 0.468,
+   "syllablesPerSec": 4.27,
+   "src": "f6.wav",
+   "key": "2e43e0de7774e9de8a1327cb5ac3bf10",
+   "words": 1
+  }
+ ]
+}

@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "따뜻해~",
+ "dur": 0.653,
+ "words": [
+  {
+   "text": "따뜻해~",
+   "start": 0.02,
+   "end": 0.653
+  }
+ ],
+ "source": {
+  "key": "bb677182dfc5d0c052be8bc8cca00f9f",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2207,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "내 목은…? 청년이 목도리를 작은 친구 온몸에 빙빙 감아 주자, 털실 고치처럼 감긴 작은 친구가 눈을 감고 행복하게 녹아내리듯 말한다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 487
+ }
+}

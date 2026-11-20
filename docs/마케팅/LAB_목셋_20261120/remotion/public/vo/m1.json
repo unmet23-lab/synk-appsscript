@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "목이… 셋?!",
+ "dur": 0.809,
+ "words": [
+  {
+   "text": "목이…",
+   "start": 0.02,
+   "end": 0.366
+  },
+  {
+   "text": "셋?!",
+   "start": 0.956,
+   "end": 0.809
+  }
+ ],
+ "source": {
+  "key": "b1d6a212d07f04ca506463c4f8ff4af0",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2207,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "목에도, 손목에도, 발목에도 노란 털실을 두른 친구를 올려다보며, 목이 없는 작은 친구가 눈이 휘둥그레져 깜짝 놀라 묻는다.",
+   "next": "너도!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 437
+ }
+}
