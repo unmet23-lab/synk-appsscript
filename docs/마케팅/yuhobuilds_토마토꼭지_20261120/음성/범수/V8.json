@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V8",
+ "text": "앞으로 그릴 장면에 적어 둔 토마토색, 아흔한 곳도 다 바꿨고요.",
+ "dur": 3.053,
+ "words": [
+  {
+   "text": "앞으로",
+   "start": 0.02,
+   "end": 0.231
+  },
+  {
+   "text": "그릴",
+   "start": 0.281,
+   "end": 0.455
+  },
+  {
+   "text": "장면에",
+   "start": 0.492,
+   "end": 0.791
+  },
+  {
+   "text": "적어",
+   "start": 0.841,
+   "end": 0.99
+  },
+  {
+   "text": "둔",
+   "start": 1.052,
+   "end": 1.101
+  },
+  {
+   "text": "토마토색,",
+   "start": 1.139,
+   "end": 1.599
+  },
+  {
+   "text": "아흔한",
+   "start": 1.898,
+   "end": 2.146
+  },
+  {
+   "text": "곳도",
+   "start": 2.183,
+   "end": 2.333
+  },
+  {
+   "text": "다",
+   "start": 2.382,
+   "end": 2.445
+  },
+  {
+   "text": "바꿨고요.",
+   "start": 2.482,
+   "end": 3.053
+  }
+ ],
+ "source": {
+  "key": "cb9a30cccf9c7e96fcfaab9ff642e05d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.12,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 136
+ }
+}

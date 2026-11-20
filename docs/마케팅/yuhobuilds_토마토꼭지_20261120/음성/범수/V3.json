@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "웹드라마 등장인물 조끼에 다는 마크였는데요,",
+ "dur": 2.16,
+ "words": [
+  {
+   "text": "웹드라마",
+   "start": 0.01,
+   "end": 0.365
+  },
+  {
+   "text": "등장인물",
+   "start": 0.415,
+   "end": 0.868
+  },
+  {
+   "text": "조끼에",
+   "start": 0.905,
+   "end": 1.151
+  },
+  {
+   "text": "다는",
+   "start": 1.187,
+   "end": 1.359
+  },
+  {
+   "text": "마크였는데요,",
+   "start": 1.395,
+   "end": 2.16
+  }
+ ],
+ "source": {
+  "key": "f5dc1409d8762678c706c65a6a8cb3aa",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

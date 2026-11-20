@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V7",
+ "text": "패치 세 장을 다시 고치느라, 그림 값 이십칠 크레딧을 또 썼어요.",
+ "dur": 2.921,
+ "words": [
+  {
+   "text": "패치",
+   "start": 0.04,
+   "end": 0.214
+  },
+  {
+   "text": "세",
+   "start": 0.272,
+   "end": 0.342
+  },
+  {
+   "text": "장을",
+   "start": 0.377,
+   "end": 0.539
+  },
+  {
+   "text": "다시",
+   "start": 0.574,
+   "end": 0.736
+  },
+  {
+   "text": "고치느라,",
+   "start": 0.771,
+   "end": 1.12
+  },
+  {
+   "text": "그림",
+   "start": 1.306,
+   "end": 1.492
+  },
+  {
+   "text": "값",
+   "start": 1.55,
+   "end": 1.677
+  },
+  {
+   "text": "이십칠",
+   "start": 1.712,
+   "end": 2.002
+  },
+  {
+   "text": "크레딧을",
+   "start": 2.037,
+   "end": 2.339
+  },
+  {
+   "text": "또",
+   "start": 2.374,
+   "end": 2.42
+  },
+  {
+   "text": "썼어요.",
+   "start": 2.455,
+   "end": 2.921
+  }
+ ],
+ "source": {
+  "key": "67eb92a48bbde12d88fe6231b10dab9d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.12,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

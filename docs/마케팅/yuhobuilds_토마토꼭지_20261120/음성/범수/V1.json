@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "AI 그림에 색 적을 때, 토마토색이라고 쓰지 마세요.",
+ "dur": 2.912,
+ "words": [
+  {
+   "text": "AI",
+   "start": 0.03,
+   "end": 0.315
+  },
+  {
+   "text": "그림에",
+   "start": 0.36,
+   "end": 0.585
+  },
+  {
+   "text": "색",
+   "start": 0.63,
+   "end": 0.721
+  },
+  {
+   "text": "적을",
+   "start": 0.765,
+   "end": 0.945
+  },
+  {
+   "text": "때,",
+   "start": 0.99,
+   "end": 1.08
+  },
+  {
+   "text": "토마토색이라고",
+   "start": 1.546,
+   "end": 2.191
+  },
+  {
+   "text": "쓰지",
+   "start": 2.237,
+   "end": 2.372
+  },
+  {
+   "text": "마세요.",
+   "start": 2.417,
+   "end": 2.912
+  }
+ ],
+ "source": {
+  "key": "0a640f5602d3fe29ca3380cefb5c63b4",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 170
+ }
+}

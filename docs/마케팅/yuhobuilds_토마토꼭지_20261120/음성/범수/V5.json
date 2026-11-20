@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "그런데, 작은 꼭지가 또 붙어 있었어요.",
+ "dur": 2.246,
+ "words": [
+  {
+   "text": "그런데,",
+   "start": 0.02,
+   "end": 0.293
+  },
+  {
+   "text": "작은",
+   "start": 0.716,
+   "end": 0.958
+  },
+  {
+   "text": "꼭지가",
+   "start": 1.005,
+   "end": 1.292
+  },
+  {
+   "text": "또",
+   "start": 1.337,
+   "end": 1.443
+  },
+  {
+   "text": "붙어",
+   "start": 1.488,
+   "end": 1.67
+  },
+  {
+   "text": "있었어요.",
+   "start": 1.715,
+   "end": 2.246
+  }
+ ],
+ "source": {
+  "key": "a15a77a1fc769ece1e9ba426c9e33a4b",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 148
+ }
+}

@@ -1,0 +1,120 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1123,
+  "lufs": -17
+ },
+ "made": "2026-11-19T23:26:01.430Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "AI 그림에 색 적을 때, 토마토색이라고 쓰지 마세요.",
+   "dur": 2.912,
+   "syllablesPerSec": 6.52,
+   "src": "V1.wav",
+   "key": "0a640f5602d3fe29ca3380cefb5c63b4",
+   "words": 8
+  },
+  {
+   "id": "V2",
+   "text": "동그라미 위에 꼭지가 달려 나와요.",
+   "dur": 1.618,
+   "syllablesPerSec": 8.65,
+   "src": "V2.wav",
+   "key": "3f78e65304fb746b9137d14901596fbb",
+   "words": 5
+  },
+  {
+   "id": "V3",
+   "text": "웹드라마 등장인물 조끼에 다는 마크였는데요,",
+   "dur": 2.16,
+   "syllablesPerSec": 8.8,
+   "src": "V3.wav",
+   "key": "f5dc1409d8762678c706c65a6a8cb3aa",
+   "words": 5
+  },
+  {
+   "id": "V3b",
+   "text": "일화, 이화, 삼화. 세 장 다요.",
+   "dur": 2.256,
+   "syllablesPerSec": 4.43,
+   "src": "V3b.wav",
+   "key": "2cdba3cf8e8dbf4a5111c61e4c9f1ac5",
+   "words": 6
+  },
+  {
+   "id": "V4",
+   "text": "그래서 일화는 AI한테, 꼭지 없음, 잎 없음, 과일 없음까지 적어서 다시 만들었어요.",
+   "dur": 4.561,
+   "syllablesPerSec": 6.8,
+   "src": "V4.wav",
+   "key": "74ac312b6623fdfe9b5cdffa3fc1c089",
+   "words": 12
+  },
+  {
+   "id": "V5",
+   "text": "그런데, 작은 꼭지가 또 붙어 있었어요.",
+   "dur": 2.246,
+   "syllablesPerSec": 6.68,
+   "src": "V5.wav",
+   "key": "a15a77a1fc769ece1e9ba426c9e33a4b",
+   "words": 6
+  },
+  {
+   "id": "V6",
+   "text": "토마토라는 말이, 토마토를 불러온 것 같아요.",
+   "dur": 2.203,
+   "syllablesPerSec": 8.17,
+   "src": "V6.wav",
+   "key": "0ce7eb1648a5dfe0800f5390327c9fcd",
+   "words": 6
+  },
+  {
+   "id": "V7",
+   "text": "패치 세 장을 다시 고치느라, 그림 값 이십칠 크레딧을 또 썼어요.",
+   "dur": 2.921,
+   "syllablesPerSec": 8.56,
+   "src": "V7.wav",
+   "key": "67eb92a48bbde12d88fe6231b10dab9d",
+   "words": 11
+  },
+  {
+   "id": "V8",
+   "text": "앞으로 그릴 장면에 적어 둔 토마토색, 아흔한 곳도 다 바꿨고요.",
+   "dur": 3.053,
+   "syllablesPerSec": 8.19,
+   "src": "V8.wav",
+   "key": "cb9a30cccf9c7e96fcfaab9ff642e05d",
+   "words": 10
+  },
+  {
+   "id": "V9",
+   "text": "이제 색은 물건 이름 말고, 색이랑 모양으로 적어요.",
+   "dur": 2.728,
+   "syllablesPerSec": 7.33,
+   "src": "V9.wav",
+   "key": "369fc726f53c08217ae2953fe598126b",
+   "words": 8
+  },
+  {
+   "id": "V10",
+   "text": "토마토 말고, 진한 빨강 동그라미요.",
+   "dur": 2.114,
+   "syllablesPerSec": 6.62,
+   "src": "V10.wav",
+   "key": "4106967d6383c1a6f92cc51b9dce51b3",
+   "words": 5
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3b",
+ "text": "일화, 이화, 삼화. 세 장 다요.",
+ "dur": 2.256,
+ "words": [
+  {
+   "text": "일화,",
+   "start": 0.03,
+   "end": 0.185
+  },
+  {
+   "text": "이화,",
+   "start": 0.648,
+   "end": 0.803
+  },
+  {
+   "text": "삼화.",
+   "start": 1.054,
+   "end": 1.267
+  },
+  {
+   "text": "세",
+   "start": 1.595,
+   "end": 1.672
+  },
+  {
+   "text": "장",
+   "start": 1.73,
+   "end": 1.846
+  },
+  {
+   "text": "다요.",
+   "start": 1.904,
+   "end": 2.256
+  }
+ ],
+ "source": {
+  "key": "2cdba3cf8e8dbf4a5111c61e4c9f1ac5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 131
+ }
+}

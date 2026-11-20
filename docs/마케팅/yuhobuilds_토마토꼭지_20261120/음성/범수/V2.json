@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "동그라미 위에 꼭지가 달려 나와요.",
+ "dur": 1.618,
+ "words": [
+  {
+   "text": "동그라미",
+   "start": 0.02,
+   "end": 0.385
+  },
+  {
+   "text": "위에",
+   "start": 0.453,
+   "end": 0.561
+  },
+  {
+   "text": "꼭지가",
+   "start": 0.602,
+   "end": 0.872
+  },
+  {
+   "text": "달려",
+   "start": 0.912,
+   "end": 1.088
+  },
+  {
+   "text": "나와요.",
+   "start": 1.129,
+   "end": 1.618
+  }
+ ],
+ "source": {
+  "key": "3f78e65304fb746b9137d14901596fbb",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 143
+ }
+}

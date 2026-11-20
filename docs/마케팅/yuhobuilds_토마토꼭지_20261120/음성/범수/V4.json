@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "그래서 일화는 AI한테, 꼭지 없음, 잎 없음, 과일 없음까지 적어서 다시 만들었어요.",
+ "dur": 4.561,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.211
+  },
+  {
+   "text": "일화는",
+   "start": 0.252,
+   "end": 0.539
+  },
+  {
+   "text": "AI한테,",
+   "start": 0.963,
+   "end": 1.428
+  },
+  {
+   "text": "꼭지",
+   "start": 1.646,
+   "end": 1.893
+  },
+  {
+   "text": "없음,",
+   "start": 1.934,
+   "end": 2.18
+  },
+  {
+   "text": "잎",
+   "start": 2.481,
+   "end": 2.522
+  },
+  {
+   "text": "없음,",
+   "start": 2.59,
+   "end": 2.85
+  },
+  {
+   "text": "과일",
+   "start": 3.014,
+   "end": 3.178
+  },
+  {
+   "text": "없음까지",
+   "start": 3.232,
+   "end": 3.56
+  },
+  {
+   "text": "적어서",
+   "start": 3.602,
+   "end": 3.807
+  },
+  {
+   "text": "다시",
+   "start": 3.848,
+   "end": 3.998
+  },
+  {
+   "text": "만들었어요.",
+   "start": 4.039,
+   "end": 4.561
+  }
+ ],
+ "source": {
+  "key": "74ac312b6623fdfe9b5cdffa3fc1c089",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.14,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}
