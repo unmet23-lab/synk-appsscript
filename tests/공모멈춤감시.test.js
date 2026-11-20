@@ -21,9 +21,12 @@ test('마감 시각은 시간대가 없으면 한국 시각, 날짜만 있으면
   assert.ok(Number.isNaN(감시.마감시각('미정')));
 });
 
-test('준비 중 · 제작 중이고 48시간 안쪽인 공고만 보고, 12시간 안쪽은 문턱이 60분이다', () => {
+test('준비 중 · 제작 중이고 7일 안쪽인 공고만 보고, 문턱은 12시간 안쪽 60분 · 48시간 안쪽 120분 · 그 밖 720분이다', () => {
   const 볼 = 감시.볼것(현황, 지금);
   assert.deepStrictEqual(볼.map(x => x.이름), ['마 공모', '나 공모', '가 공모']);
+  const 멀리 = 감시.볼것({ items: [{ id: '6', name: '바 공모', stage: '제작 중', deadline: '2026-11-25T23:59', owner_session: A }] }, 지금);
+  assert.strictEqual(멀리[0].문턱분, 720);
+  assert.strictEqual(감시.볼것({ items: [{ id: '7', name: '사 공모', stage: '제작 중', deadline: '2026-11-28T23:59' }] }, 지금).length, 0, '7일 밖은 보지 않는다');
   assert.strictEqual(볼.find(x => x.이름 === '나 공모').문턱분, 60);
   assert.strictEqual(볼.find(x => x.이름 === '가 공모').문턱분, 120);
 });
@@ -58,4 +61,14 @@ test('주인 세션이 없고 24시간 안쪽이면 알린다', () => {
   const 볼 = 감시.볼것(현황, 지금);
   const r = 감시.판정({ sessions: {} }, [], 볼, 지금);
   assert.deepStrictEqual(r.map(x => [x.할일, x.공고[0]]), [['알리기', '마 공모']]);
+});
+
+test('사용 한도로 멈춘 세션은 깨우지 않고 알린다', () => {
+  const 볼 = 감시.볼것(현황, 지금);
+  const 상태 = { sessions: {} };
+  const 본 = [{ session_id: B, 상태: 'idle', 끝글: "You've hit your Fable limit · resets Nov 26, 9pm", 판단: '한도' }];
+  감시.판정(상태, 본, 볼, 지금);
+  const r = 감시.판정(상태, 본, 볼, new Date(+지금 + 61 * 6e4));
+  assert.strictEqual(r[0].할일, '알리기');
+  assert.match(r[0].까닭, /사용 한도/);
 });
