@@ -2302,7 +2302,7 @@ test('opening the fan in the band hides PULSE; closing it or choosing PULSE agai
   assert.deepEqual(e.last(), { visible: true, top: 56 });
 });
 
-test('a closed PULSE view leaves the room with a way to reopen it and no band', async t => {
+test('a closed PULSE view leaves the room with a way to reopen it and keeps the band place', async t => {
   const { h, e } = await enteredWithPulse(t);
   h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
   e.setOpen(false); await settle();
