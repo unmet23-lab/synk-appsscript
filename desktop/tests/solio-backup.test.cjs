@@ -545,9 +545,10 @@ test('GPT GA4 (again): a lost exit code is 「not confirmed」, never 「done」
     const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
     await service.start(ME, 'protect'); await service.whenIdle();
     assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_UNCONFIRMED', JSON.stringify(ran));
-    // 요청은 남는다. 다음 실행(새 서비스)의 첫 표시가 앞 실행의 것을 치우므로 늘 하나다(r8 요청 수명)
-    assert.equal(requestsIn(env).length, 1, JSON.stringify(ran));
+    assert.ok(requestsIn(env).length >= 1, JSON.stringify(ran));
   }
+  // 요청은 남는다. 두 서비스는 아직 살아 있는 서로 다른 실행이라(표 파일을 쥠) 서로의 요청을 지우지 않는다
+  assert.equal(requestsIn(env).length, 2);
 });
 
 test('GPT GA5 (again): a failed engine check right before the prompt launches nothing', async () => {
@@ -876,24 +877,29 @@ test('Fable request-lifetime P1: a request the sweep cannot read is retried, not
 });
 
 /* ── GPT 열째 회차(r9): 다른 실행의 요청 · 연결점 · 잠금이 풀린 뒤 빨리 다시 지우기(11-20) ── */
-test('GPT r9 GA1: a second app run sharing the folder keeps the first run\'s live request and clears a finished run\'s', async () => {
+test('GPT r9 GA1 · Opus design: a second app run sharing the folder keeps a live run\'s request and clears a finished run\'s, by the run\'s held owner file', async () => {
   const env = appdata(temp()), dir = path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests');
   let letOpen;
   const opening = new Promise(r => { letOpen = r; });
-  const alive = pid => pid === 1111 || pid === 2222;
-  const first = B.createSolioBackup({ platform: 'win32', env, pid: 1111, alive, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  const first = B.createSolioBackup({ platform: 'win32', env, tag: 'aaaa1111', run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
   await first.start(ME, 'move', { getHint: async () => 'owner@example.com' });
   for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
   assert.equal(requestsIn(env).length, 1);
-  assert.match(requestsIn(env)[0], new RegExp(`^[0-9]{13}-${(1111).toString(36).padStart(8, '0')}[0-9a-f]{16}\.json$`));
-  // 끝난 실행(3333)이 남긴 요청
-  const dead = `${String(Date.now()).padStart(13, '0')}-${(3333).toString(36).padStart(8, '0')}0123456789abcdef.json`;
+  assert.match(requestsIn(env)[0], /^[0-9]{13}-aaaa1111[0-9a-f]{16}\.json$/);
+  assert.ok(fs.existsSync(path.join(dir, '.owner-aaaa1111')), 'the run holds its owner file');
+  // 끝난 실행(표 파일이 남았지만 아무도 쥐지 않음)이 남긴 요청
+  const dead = `${String(Date.now()).padStart(13, '0')}-cccc33330123456789abcdef.json`;
   fs.writeFileSync(path.join(dir, dead), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' }));
-  const second = B.createSolioBackup({ platform: 'win32', env, pid: 2222, alive, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  fs.writeFileSync(path.join(dir, '.owner-cccc3333'), '');
+  const second = B.createSolioBackup({ platform: 'win32', env, tag: 'bbbb2222', run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   second.accountChanged();
   assert.equal(requestsIn(env).length, 1, 'the live run\'s request stays; the finished run\'s is gone');
   assert.ok(!requestsIn(env).includes(dead));
+  assert.ok(!fs.existsSync(path.join(dir, '.owner-cccc3333')), 'the finished run\'s owner file is cleared too');
+  assert.ok(fs.existsSync(path.join(dir, '.owner-aaaa1111')), 'a held owner file cannot be removed');
   letOpen(); await first.whenIdle();
+  const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
+  assert.doesNotMatch(src, /process\.kill|processAlive/, 'process numbers are not used to tell runs apart');
 });
 
 test('GPT r9 GA2: the sweep does not follow a junction in place of the requests folder', async () => {
