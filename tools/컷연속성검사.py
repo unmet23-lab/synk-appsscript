@@ -1252,8 +1252,8 @@ def 소품표검사(seq, r):
 
 def 사건표검사(seq, r):
     det = seq.get("detail", []); 사건들 = seq.get("사건")
-    if not 사건들:
-        if 사건들 == []: r.더함("사건", "표", "통과", "이 편에는 쪼갤 사건이 없다고 표에 밝혔다(사건: [])"); return
+    if 사건들 == []: r.더함("사건", "표", "통과", "이 편에는 쪼갤 사건이 없다고 표에 밝혔다(사건: [])"); return
+    if 사건들 is None:   # 칸이 없을 때만 「표가 없다」다 — 목록이 아닌 값은 비어 보여도({} · false · 0 · "") 아래에서 걸린다(11-21 GPT 다시 검수)
         r.더함("사건", "표", "확인", "사건 표가 없다 — 사건(처음 하는 일 · 망설임 · 놀람 · 건넴 · 발견)마다 넓게 · 감정 · 행동 · 결과 컷을 적는다(없으면 사건: [] · 점검표 33)"); return
     if not isinstance(사건들, list):   # 꼴 관문 없이 도는 실행(--항목 사건)에서도 말없이 지나가지 않는다(11-21 GPT 다시 검수 GA3)
         r.더함("사건", "표", "걸림", f"「사건」은 목록으로 적는다 — 지금은 {컷표읽기().꼴이름(사건들)}이다(없으면 사건: [])"); return
@@ -1289,6 +1289,23 @@ def 유한수(v):
     return x if x is not None and x == x and x not in (float("inf"), float("-inf")) else None
 
 
+def 컷시각(d, 칸, 기본=None):
+    """컷 줄의 시각 칸(t · dur · in · out)을 수로 읽는다 — 영상 · 받은 판을 재는 항목이 쓴다. 칸이 없고 기본이 있으면 기본.
+    읽을 수 없으면(참 · 거짓 · 글 · NaN · 아주 큰 수 · 없음) ValueError — 재는 자리의 except가 그 컷의 「확인」으로 낸다.
+    날것으로 셈하면 false가 0초로 읽혀 엉뚱한 프레임을 그 컷의 값으로 적는다(11-21 GPT 다시 검수 — 꼴 관문이 돌지 않는 실행에서도 막는다)."""
+    v = d.get(칸)
+    if v is None and 기본 is not None: return 기본
+    x = 유한수(v)
+    if x is None: raise ValueError(f"컷 줄의 「{칸}」를 읽을 수 없다({'없음' if v is None else repr(v)[:20]}) — 초(수)로 적는다")
+    return x
+
+
+def 컷구간(d):
+    """받은 판에서 그 컷이 쓰는 구간 (in, out) — 「in」이 없으면 0, 「out」이 없으면 in + dur. 읽을 수 없으면 ValueError(컷시각)"""
+    a = 컷시각(d, "in", 0.0)
+    return a, (컷시각(d, "out") if d.get("out") is not None else a + 컷시각(d, "dur"))
+
+
 def 반응시각(seq, ev):
     if ev.get("반응t") is not None:   # 적어 둔 값은 그대로 읽는다 — 읽을 수 없으면 반응 컷으로 바꿔 읽지 않고 걸림이다(11-21 GPT 다시 검수 GA2)
         rt = 유한수(ev.get("반응t"))
@@ -1307,8 +1324,8 @@ def 반응시각(seq, ev):
 
 def 소리표검사(seq, r, 간격=(0.6, 1.0), 영상=None):
     사건들 = seq.get("소리사건")
-    if not 사건들:
-        if 사건들 == []: r.더함("소리", "표", "통과", "이 편에는 반응을 부르는 소리 사건이 없다고 표에 밝혔다(소리사건: [])"); return
+    if 사건들 == []: r.더함("소리", "표", "통과", "이 편에는 반응을 부르는 소리 사건이 없다고 표에 밝혔다(소리사건: [])"); return
+    if 사건들 is None:   # 칸이 없을 때만 「표가 없다」다 — 목록이 아닌 값은 비어 보여도 아래에서 걸린다
         r.더함("소리", "표", "확인", "소리 사건 표가 없다 — 노크 · 초인종 · 전화처럼 반응을 부르는 소리마다 t와 반응 컷을 적는다(없으면 소리사건: [] · 점검표 42)"); return
     if not isinstance(사건들, list):   # 꼴 관문 없이 도는 실행(--항목 소리)에서도 말없이 지나가지 않는다(11-21 GPT 다시 검수 GA3)
         r.더함("소리", "표", "걸림", f"「소리사건」은 목록으로 적는다 — 지금은 {컷표읽기().꼴이름(사건들)}이다(없으면 소리사건: [])"); return
@@ -3058,11 +3075,11 @@ def 지도항목(seq, r, 지도, 출력, 그림폴더=None, 영상=None, 받음=
         몇째 = sum(1 for x in det[:det.index(d) + 1] if x["cut"] == cut)   # 같은 컷의 토막마다 시트 이름을 달리(앞 토막 시트를 뒤 토막이 덮지 않게)
         try:
             if 영상 is not None:
-                t = d["t"] + min(0.4, d["dur"] / 2); rgb = 한장(영상, t); 어디 = f"최종 {t:.1f}s"
+                t = 컷시각(d, "t") + min(0.4, 컷시각(d, "dur") / 2); rgb = 한장(영상, t); 어디 = f"최종 {t:.1f}s"
             elif 받음 is not None:
                 clip = Path(받음) / f"{앞}{d.get('판', cut)}.mp4"
                 if not clip.exists(): r.더함("지도", cut, "확인", f"받은 판 없음: {clip.name}"); continue
-                t = float(d.get("in", 0)) + min(0.4, d["dur"] / 2); rgb = 한장(clip, t); 어디 = f"{clip.name} {t:.1f}s"
+                t = 컷시각(d, "in", 0.0) + min(0.4, 컷시각(d, "dur") / 2); rgb = 한장(clip, t); 어디 = f"{clip.name} {t:.1f}s"
             else:
                 p = 정지그림(그림폴더, cut)
                 if not p: r.더함("지도", cut, "확인", f"정지 그림 없음: {그림폴더}/{cut}.png"); continue
@@ -3139,20 +3156,19 @@ def 고요항목(seq, r, 지도, 영상=None, 받음=None, 앞=""):
         if not (st and 지도) and not 고정: continue
         if 영상 is not None:
             # 컷 경계 안쪽으로 두 장쯤 여백 — -ss 찾기가 한두 장 밀려 앞 · 뒤 컷 장이 섞이면 장면 전환 차이가 거짓 걸림이 된다(11-09 아르곤)
-            t, dur = 유한수(d.get("t")), 유한수(d.get("dur"))
-            if t is None or dur is None: r.더함("고요", cut, "확인", "컷 줄의 시각을 읽을 수 없어 못 쟀다(「t」 · 「dur」를 초로 적는다)"); continue
+            본것 += 1   # 대상 컷으로 먼저 센다 — 시각을 못 읽어 못 잰 컷도 대상이다(「대상 컷이 없다」 안내를 잘못 내지 않게, 11-21 GPT 다시 검수)
+            try: t, dur = 컷시각(d, "t"), 컷시각(d, "dur")
+            except ValueError as e: r.더함("고요", cut, "확인", f"컷 줄의 시각을 읽을 수 없어 못 쟀다 — {e}"); continue
             src, t0, t1, 어디 = 영상, t + 0.08, t + dur - 0.08, f"최종 {t + 0.08:.2f}~{t + dur - 0.08:.2f}s"
         elif 받음 is not None:
             src = Path(받음) / f"{앞}{d.get('판', cut)}.mp4"
             if not src.exists(): r.더함("고요", cut, "확인", f"받은 판 없음: {src.name}"); continue
-            t0 = 유한수(d.get("in")) if d.get("in") is not None else 0.0
-            dur = 유한수(d.get("dur"))
-            t1 = 유한수(d.get("out")) if d.get("out") is not None else (t0 + dur if t0 is not None and dur is not None else None)
-            if t0 is None or t1 is None: r.더함("고요", cut, "확인", "컷 줄의 시각을 읽을 수 없어 못 쟀다(「in」 · 「out」 · 「dur」를 초로 적는다)"); continue
+            본것 += 1
+            try: t0, t1 = 컷구간(d)
+            except ValueError as e: r.더함("고요", cut, "확인", f"컷 줄의 시각을 읽을 수 없어 못 쟀다 — {e}"); continue
             어디 = f"{src.name} {t0:.1f}~{t1:.1f}s"
         else:
             continue
-        본것 += 1
         if st and 지도 and st != "없음":
             try: fr = 프레임들(src, fps=20, t0=t0, t1=t1, width=720)
             except Exception as e: r.더함("고요", cut, "확인", f"프레임 못 읽음 — {e}"); continue
@@ -3222,11 +3238,11 @@ def 점항목(seq, r, 출력, 그림폴더=None, 영상=None, 받음=None, 앞="
         cut = d["cut"]; 장들 = []
         try:
             if 영상 is not None:
-                for lab, t in (("첫", d["t"] + 0.1), ("끝", d["t"] + d["dur"] - 0.1)): 장들.append((f"최종 {t:.1f}s({lab})", 한장(영상, t)))
+                for lab, t in (("첫", 컷시각(d, "t") + 0.1), ("끝", 컷시각(d, "t") + 컷시각(d, "dur") - 0.1)): 장들.append((f"최종 {t:.1f}s({lab})", 한장(영상, t)))
             elif 받음 is not None:
                 clip = Path(받음) / f"{앞}{d.get('판', cut)}.mp4"
                 if not clip.exists(): r.더함("점", cut, "확인", f"받은 판 없음: {clip.name}"); continue
-                a, b = float(d.get("in", 0)), float(d.get("out", d.get("in", 0) + d["dur"]))
+                a, b = 컷구간(d)
                 for lab, t in (("첫", a + 0.1), ("끝", b - 0.1)): 장들.append((f"{clip.name} {t:.1f}s({lab})", 한장(clip, t)))
             else:
                 p = 정지그림(그림폴더, cut)
@@ -3314,11 +3330,11 @@ def 빛항목(seq, r, 그림폴더=None, 영상=None, 받음=None, 앞=""):
         cut = d["cut"]; 장면 = 장면표[d["장면"]]
         try:
             if 영상 is not None:
-                t = d["t"] + d["dur"] / 2; rgb = 한장(영상, t); 어디 = f"최종 {t:.1f}s"
+                t = 컷시각(d, "t") + 컷시각(d, "dur") / 2; rgb = 한장(영상, t); 어디 = f"최종 {t:.1f}s"
             elif 받음 is not None:
                 clip = Path(받음) / f"{앞}{d.get('판', cut)}.mp4"
                 if not clip.exists(): r.더함("빛", cut, "확인", f"받은 판 없음: {clip.name}"); continue
-                a = float(d.get("in", 0)); b = float(d.get("out", a + d["dur"])); t = (a + b) / 2; rgb = 한장(clip, t); 어디 = f"{clip.name} {t:.1f}s"
+                a, b = 컷구간(d); t = (a + b) / 2; rgb = 한장(clip, t); 어디 = f"{clip.name} {t:.1f}s"
             else:
                 p = 정지그림(그림폴더, cut)
                 if not p: r.더함("빛", cut, "확인", f"정지 그림 없음: {그림폴더}/{cut}.png"); continue
@@ -3426,11 +3442,11 @@ def 색감항목(seq, r, 그림폴더=None, 영상=None, 받음=None, 앞="", �
         cut = d["cut"]
         try:
             if 영상 is not None:
-                t = d["t"] + d["dur"] / 2; rgb = 한장(영상, t); 어디 = f"최종 {t:.1f}s"
+                t = 컷시각(d, "t") + 컷시각(d, "dur") / 2; rgb = 한장(영상, t); 어디 = f"최종 {t:.1f}s"
             elif 받음 is not None:
                 clip = Path(받음) / f"{앞}{d.get('판', cut)}.mp4"
                 if not clip.exists(): r.더함("색감", cut, "확인", f"받은 판 없음: {clip.name}"); continue
-                a = float(d.get("in", 0)); b = float(d.get("out", a + d["dur"])); t = (a + b) / 2; rgb = 한장(clip, t); 어디 = f"{clip.name} {t:.1f}s"
+                a, b = 컷구간(d); t = (a + b) / 2; rgb = 한장(clip, t); 어디 = f"{clip.name} {t:.1f}s"
             else:
                 p = 정지그림(그림폴더, cut)
                 if not p: r.더함("색감", cut, "확인", f"정지 그림 없음: {그림폴더}/{cut}.png"); continue
@@ -3553,7 +3569,7 @@ def main(argv):
             for 등급, 항, 말 in 남길것검사(" ".join(str(d.get(k, "")) for k in ("keep", "남길 것", "line"))): r.더함("지시문", d["cut"], 등급, f"({항}) {말}")
     if "그림지시문" in 항목 and o.get("그림지시문"): 그림지시문항목(seq, r, o["그림지시문"])
     매체 = 영상 or 받음 or 그림
-    if 매체:   # 컷 줄의 시각(t · dur · in · out)은 재는 자리마다 읽는다 — 못 읽으면 그 컷만 「못 쟀다」고 낸다(지도 · 점 · 빛 · 색감은 try로, 고요는 유한수()로)
+    if 매체:   # 컷 줄의 시각(t · dur · in · out)은 재는 자리마다 컷시각() · 컷구간()으로 읽는다 — 못 읽으면 그 컷만 「확인」으로 낸다(날것으로 셈하지 않는다)
         if "점" in 항목: 점항목(seq, r, 출력, 그림, 영상, 받음, o["앞"])
         if "지도" in 항목:
             if 지도: 지도항목(seq, r, 지도, 출력, 그림, 영상, 받음, o["앞"])

@@ -549,3 +549,82 @@ print(json.dumps(out, ensure_ascii=False))
 `);
   for (const [이름, 줄] of Object.entries(값)) { assert.equal(줄.length, 1, `${이름}: ${JSON.stringify(줄)}`); assert.equal(줄[0][1], '확인', 이름); assert.match(줄[0][2], /시각을 읽을 수 없어 못 쟀다/, 이름); }
 });
+
+// ───────── 11-21 GPT 다시 검수(영상컷표꼴관문-20261120-다시2) — 꼴 관문이 돌지 않는 실행에서 날것을 읽던 자리 ─────────
+
+// GA3 — 「사건」 · 「소리사건」은 칸이 없을 때만 「표가 없다」 확인이다. 목록이 아닌 값은 비어 보여도 걸림이다
+test('사건 · 소리 표 — 목록이 아닌 값은 비어 보여도({} · false · 0 · 빈 글) 걸림이고, 칸이 없으면 확인, 빈 목록이면 통과다', 건너뜀, () => {
+  const 값 = 파(String.raw`
+def 본(함수, 칸, v):
+    s = copy.deepcopy(틀)
+    if v is ...: s.pop(칸)
+    else: s[칸] = v
+    r = m.결과(); getattr(m, 함수)(s, r)
+    return [x["등급"] for x in r.항목들]
+out = {}
+for 함수, 칸 in (("사건표검사", "사건"), ("소리표검사", "소리사건")):
+    out[칸] = {repr(v): 본(함수, 칸, v) for v in ({}, False, 0, "", "글", {"이름": "x"}, 3, True)}
+    out[칸]["없음"] = 본(함수, 칸, ...); out[칸]["null"] = 본(함수, 칸, None); out[칸]["[]"] = 본(함수, 칸, [])
+print(json.dumps(out, ensure_ascii=False))
+`);
+  for (const 칸 of ['사건', '소리사건']) {
+    for (const [v, 등급들] of Object.entries(값[칸])) {
+      const 원함 = v === '없음' || v === 'null' ? ['확인'] : v === '[]' ? ['통과'] : ['걸림'];
+      assert.deepEqual(등급들, 원함, `${칸} = ${v}`);
+    }
+  }
+});
+
+// GA1 · GA2 — 영상 · 받은 판을 재는 항목이 컷 줄의 시각을 날것으로 셈하면 false가 0초로 읽혀 엉뚱한 프레임을 그 컷의 값으로 적는다
+test('매체 항목 — 컷 줄의 시각(t · dur · in · out)을 읽을 수 없으면 그 컷은 재지 않고 「확인」을 낸다(참 · 거짓 · 글 · NaN · 큰 정수 · 없음), 읽을 수 있으면 잰다', 건너뜀, () => {
+  const 값 = 파(String.raw`
+import tempfile, os
+from pathlib import Path
+class 표식(Exception): pass
+def 가짜한장(p, t): raise 표식(f"한장 {t:.2f}")
+def 가짜프레임들(*a, **kw): raise 표식("프레임들")
+m.한장 = 가짜한장; m.프레임들 = 가짜프레임들      # 그림 · 영상을 읽는 자리에 닿았는지 본다(닿으면 「한장 …」 · 「프레임들」이 확인 글에 남는다)
+받음폴더 = tempfile.mkdtemp(); 출력 = Path(tempfile.mkdtemp())
+for 이름 in ("C1", "C2", "C3", "C4"): open(os.path.join(받음폴더, 이름 + ".mp4"), "wb").close()
+try:
+    import numpy; 넘파이 = True
+except Exception: 넘파이 = False
+def 돌림(항목, 고침, 받음):
+    s = copy.deepcopy(틀); c = {d["cut"]: d for d in s["detail"]}; c["C1"]["상태"] = "식탁"; c["C1"]["고정"] = [0.1, 0.1, 0.5, 0.5]; 고침(c["C1"])
+    r = m.결과(); 영 = None if 받음 else "없는.mp4"; 받 = 받음폴더 if 받음 else None
+    if 항목 == "지도": m.지도항목(s, r, {}, 출력, None, 영, 받, "")
+    elif 항목 == "점": m.점항목(s, r, 출력, None, 영, 받, "")
+    elif 항목 == "색감": m.색감항목(s, r, None, 영, 받, "")
+    elif 항목 == "빛": m.빛항목(s, r, None, 영, 받, "")
+    elif 항목 == "고요": m.고요항목(s, r, None, 영, 받, "")
+    return [[x["등급"], x["글"]] for x in r.항목들 if x["컷"] == "C1"], [x["글"] for x in r.항목들 if x["컷"] == "표"]
+항목들 = ["지도", "점", "고요"] + (["색감"] if 넘파이 else [])
+if 넘파이 and not any("얼굴 검출기를 못 불러" in g or "빛 이름 표를 못 읽어" in g for g in 돌림("빛", lambda d: None, False)[1]): 항목들.append("빛")
+나쁜 = [False, True, "곧", float("nan"), 10 ** 309, [], ...]      # ...은 칸을 뺀다
+def 넣음(칸, v, 더=()):
+    def f(d):
+        for x in 더: d.pop(x, None)
+        if v is ...: d.pop(칸, None)
+        else: d[칸] = v
+    return f
+틀림, 돌린 = [], 0
+for 항목 in 항목들:
+    for 받음 in (False, True):
+        닿음 = "프레임들" if 항목 == "고요" else "한장"
+        줄, _ = 돌림(항목, lambda d: None, 받음)
+        if not (len(줄) == 1 and 닿음 in 줄[0][1]): 틀림.append([항목, 받음, "그대로", 줄])
+        if 받음: 칸들 = [("in", ()), ("dur", ("out",))] + ([] if 항목 == "지도" else [("out", ())]) + ([("dur", ())] if 항목 == "지도" else [])
+        else: 칸들 = [("t", ()), ("dur", ())]
+        for 칸, 더 in 칸들:
+            for v in 나쁜:
+                if v is ... and 칸 in ("in", "out"): continue      # in · out은 없어도 된다(0 · in + dur)
+                돌린 += 1
+                줄, 표줄 = 돌림(항목, 넣음(칸, v, 더), 받음)
+                if not (len(줄) == 1 and 줄[0][0] == "확인" and "읽을 수 없다" in 줄[0][1] and 닿음 not in 줄[0][1]): 틀림.append([항목, 받음, 칸, repr(v)[:12], 줄])
+                if 항목 == "고요" and any("적힌 컷이 없다" in g for g in 표줄): 틀림.append([항목, 받음, 칸, repr(v)[:12], "대상 컷이 없다는 안내가 잘못 났다"])
+print(json.dumps({"항목": 항목들, "돌린": 돌린, "틀림수": len(틀림), "틀림": 틀림[:12]}, ensure_ascii=False))
+`);
+  assert.ok(값.항목.includes('지도') && 값.항목.includes('점') && 값.항목.includes('고요'), JSON.stringify(값.항목));
+  assert.ok(값.돌린 >= 60, `돌린 수 ${값.돌린}`);
+  assert.equal(값.틀림수, 0, JSON.stringify(값.틀림));
+});
