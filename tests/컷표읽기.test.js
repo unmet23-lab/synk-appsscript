@@ -582,13 +582,11 @@ import tempfile, os
 from pathlib import Path
 class 표식(Exception): pass
 def 가짜한장(p, t): raise 표식(f"한장 {t:.2f}")
-def 가짜프레임들(*a, **kw): raise 표식("프레임들")
-m.한장 = 가짜한장; m.프레임들 = 가짜프레임들      # 그림 · 영상을 읽는 자리에 닿았는지 본다(닿으면 「한장 …」 · 「프레임들」이 확인 글에 남는다)
+def 가짜프레임들(src, **kw): raise 표식(f"프레임들 {kw['t0']:.2f}~{kw['t1']:.2f}")
+m.한장 = 가짜한장; m.프레임들 = 가짜프레임들      # 그림 · 영상을 읽는 자리에 닿았는지, 어느 시각으로 닿았는지 본다(「한장 3.90」 · 「프레임들 0.50~4.00」이 확인 글에 남는다)
+m._np = lambda: None; m._얼굴검출기 = lambda: None      # 프레임을 읽기 전에 부르는 의존성(NumPy · 얼굴 검출 모델)도 가짜로 — 그것이 없는 PC에서도 다섯 항목을 모두 본다
 받음폴더 = tempfile.mkdtemp(); 출력 = Path(tempfile.mkdtemp())
 for 이름 in ("C1", "C2", "C3", "C4"): open(os.path.join(받음폴더, 이름 + ".mp4"), "wb").close()
-try:
-    import numpy; 넘파이 = True
-except Exception: 넘파이 = False
 def 돌림(항목, 고침, 받음):
     s = copy.deepcopy(틀); c = {d["cut"]: d for d in s["detail"]}; c["C1"]["상태"] = "식탁"; c["C1"]["고정"] = [0.1, 0.1, 0.5, 0.5]; 고침(c["C1"])
     r = m.결과(); 영 = None if 받음 else "없는.mp4"; 받 = 받음폴더 if 받음 else None
@@ -598,8 +596,7 @@ def 돌림(항목, 고침, 받음):
     elif 항목 == "빛": m.빛항목(s, r, None, 영, 받, "")
     elif 항목 == "고요": m.고요항목(s, r, None, 영, 받, "")
     return [[x["등급"], x["글"]] for x in r.항목들 if x["컷"] == "C1"], [x["글"] for x in r.항목들 if x["컷"] == "표"]
-항목들 = ["지도", "점", "고요"] + (["색감"] if 넘파이 else [])
-if 넘파이 and not any("얼굴 검출기를 못 불러" in g or "빛 이름 표를 못 읽어" in g for g in 돌림("빛", lambda d: None, False)[1]): 항목들.append("빛")
+항목들 = ["지도", "점", "고요", "색감", "빛"]
 나쁜 = [False, True, "곧", float("nan"), 10 ** 309, [], ...]      # ...은 칸을 뺀다
 def 넣음(칸, v, 더=()):
     def f(d):
@@ -622,9 +619,20 @@ for 항목 in 항목들:
                 줄, 표줄 = 돌림(항목, 넣음(칸, v, 더), 받음)
                 if not (len(줄) == 1 and 줄[0][0] == "확인" and "읽을 수 없다" in 줄[0][1] and 닿음 not in 줄[0][1]): 틀림.append([항목, 받음, 칸, repr(v)[:12], 줄])
                 if 항목 == "고요" and any("적힌 컷이 없다" in g for g in 표줄): 틀림.append([항목, 받음, 칸, repr(v)[:12], "대상 컷이 없다는 안내가 잘못 났다"])
-print(json.dumps({"항목": 항목들, "돌린": 돌린, "틀림수": len(틀림), "틀림": 틀림[:12]}, ensure_ascii=False))
+# 읽을 수 있는 값은 그 시각으로 잰다 — 숫자를 글로 적은 시각도 수로 읽고, 받은 판 구간은 「out」이 있으면 「dur」 없이도 정해진다
+def 글시각(d): d["t"] = "3.5"; d["dur"] = "3.0"
+def 받음구간(d): d["in"] = "0.5"; d["out"] = 4; d.pop("dur", None)
+def 받음지도(d): d["in"] = "0.5"; d["dur"] = "3.0"      # 지도는 받은 판의 앞머리 한 장(in + 0.4초 안쪽)을 본다
+원함 = {("지도", False): "한장 3.90", ("점", False): "한장 3.60", ("고요", False): "프레임들 3.58~6.42", ("색감", False): "한장 5.00", ("빛", False): "한장 5.00",
+       ("지도", True): "한장 0.90", ("점", True): "한장 0.60", ("고요", True): "프레임들 0.50~4.00", ("색감", True): "한장 2.25", ("빛", True): "한장 2.25"}
+잰 = 0
+for (항목, 받음), 닿은 in 원함.items():
+    줄, _ = 돌림(항목, (받음지도 if 항목 == "지도" else 받음구간) if 받음 else 글시각, 받음); 잰 += 1
+    if not (len(줄) == 1 and 닿은 in 줄[0][1]): 틀림.append([항목, 받음, "읽을 수 있는 값", 닿은, 줄])
+print(json.dumps({"항목": 항목들, "돌린": 돌린, "잰": 잰, "틀림수": len(틀림), "틀림": 틀림[:12]}, ensure_ascii=False))
 `);
-  assert.ok(값.항목.includes('지도') && 값.항목.includes('점') && 값.항목.includes('고요'), JSON.stringify(값.항목));
-  assert.ok(값.돌린 >= 60, `돌린 수 ${값.돌린}`);
+  assert.deepEqual(값.항목, ['지도', '점', '고요', '색감', '빛'], '다섯 항목을 모두 본다(NumPy · 얼굴 검출 모델이 없어도)');
+  assert.ok(값.돌린 >= 160, `돌린 수 ${값.돌린}`);
+  assert.equal(값.잰, 10, '읽을 수 있는 값 열 경우(다섯 항목 × 영상 · 받은 판)');
   assert.equal(값.틀림수, 0, JSON.stringify(값.틀림));
 });
