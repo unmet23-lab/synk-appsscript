@@ -19,6 +19,7 @@ function fixture() {
     t: key => key, notice: (...parts) => parts.join(' '), escape: String, errorText: () => '다시 해 주세요.',
     worldUrl: path => path, queueMicrotask, refreshLife() {},
     front: null, // 첫날 끝 · 맞춤 앞면 다리가 없는 지금 길
+    atlasNextOn: false, // 새 엔진 스위치가 꺼진 지금 길(문은 qa/atlas-next-game-door.test.mjs가 본다)
   });
   context.show = (title, html, type) => { context.gameLaunch++; screens.push({ title, html, type }); };
   vm.runInContext(launch, context);
