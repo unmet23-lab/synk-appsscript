@@ -58,6 +58,13 @@ test('a saved shortcut occupied by another app does not block unrelated preferen
 test('invalid zoom, unmodified hotkey, arbitrary preference, and wrong types are rejected before effects',t=>{
   const f=fixture(t);for(const patch of [{zoomFactor:5},{zoomFactor:NaN},{globalShortcut:'S'},{globalShortcut:'Shift+S'},{closeToTray:'true'},{command:'cmd.exe'},null])assert.equal(f.preferences.update(patch).code,'INVALID_DESKTOP_PREFERENCES');assert.equal(f.startup.length,0);assert.equal(f.registrations.size,0);
 });
+test('the orb sound switch is a saved true or false, and the file names it only when sound is off so an older version still reads the file (2026-11-20)',t=>{
+  const f=fixture(t),file=path.join(f.directory,'desktop-preferences.json');assert.equal(f.preferences.snapshot().preferences.uiSound,true);
+  for(const patch of [{uiSound:'false'},{uiSound:0},{uiSound:null}])assert.equal(f.preferences.update(patch).code,'INVALID_DESKTOP_PREFERENCES');
+  assert.equal(f.preferences.update({uiSound:false}).ok,true);assert.equal(JSON.parse(fs.readFileSync(file,'utf8')).uiSound,false);assert.equal(createDesktopPreferences(f.args).snapshot().preferences.uiSound,false);
+  assert.equal(f.preferences.update({uiSound:true,zoomFactor:1.1}).ok,true);const saved=JSON.parse(fs.readFileSync(file,'utf8'));assert.equal(Object.hasOwn(saved,'uiSound'),false);assert.equal(saved.zoomFactor,1.1);
+  const reloaded=createDesktopPreferences(f.args).snapshot().preferences;assert.equal(reloaded.uiSound,true);assert.equal(reloaded.zoomFactor,1.1);
+});
 test('smoke mode never loads or mutates native preferences and does not register an OS shortcut',t=>{
   const f=fixture(t,{enabled:false});assert.equal(f.preferences.update({launchAtLogin:true}).code,'DESKTOP_UNAVAILABLE');assert.equal(f.startup.length,0);assert.equal(f.preferences.snapshot().capabilities.globalShortcut,false);
 });

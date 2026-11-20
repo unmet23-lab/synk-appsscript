@@ -1,7 +1,7 @@
 // 검정 구 지도의 효과음(2026-11-20 유호님). 소리를 낼 수 없는 환경에서도 화면이 멈추지 않고, 악보가 약속한 모양인지 본다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createOrbSound, mapScore, unmapScore } from '../renderer/orb-sound.mjs';
+import { createOrbSound, followSoundPreference, mapScore, unmapScore } from '../renderer/orb-sound.mjs';
 
 /* 부른 것을 적기만 하는 가짜 AudioContext */
 function fakeAudio() {
@@ -141,4 +141,36 @@ test('a first map sound still waiting for the context is dropped when the map fo
   muted.map(false); on = false;
   await new Promise(r => setTimeout(r, 0));
   assert.equal(c.log.starts.length, 0);
+});
+
+test('the sound follows the switch in the settings room: silent while the setting is being read, on when it cannot be read, and a late read never undoes a newer change', async () => {
+  const tick = () => new Promise(r => setTimeout(r, 0));
+  assert.equal(followSoundPreference(null).on(), true, 'no settings bridge: sound stays on');
+  const snap = uiSound => ({ ok: true, preferences: { zoomFactor: 1, ...(uiSound === undefined ? {} : { uiSound }) } });
+  let answer, listener = null, unsubscribed = 0;
+  const desk = { get: () => new Promise(r => { answer = r; }), onChange: fn => { listener = fn; return () => { unsubscribed++; listener = null; }; } };
+  const pref = followSoundPreference(desk);
+  assert.equal(pref.on(), false, 'not yet read');
+  answer(snap(false)); await tick();
+  assert.equal(pref.on(), false);
+  listener(snap(true));
+  assert.equal(pref.on(), true, 'turned on in the settings room');
+  listener({ ok: false });
+  assert.equal(pref.on(), true, 'a failed notice keeps what was known');
+  pref.dispose();
+  assert.equal(unsubscribed, 1);
+  // 바뀜 알림이 읽기 답보다 먼저 오면 늦게 온 답은 쓰지 않는다
+  const late = followSoundPreference(desk);
+  listener(snap(false));
+  answer(snap(true)); await tick();
+  assert.equal(late.on(), false);
+  late.dispose();
+  // 효과음 칸을 모르는 본체 판이거나 읽기가 실패하면 켠 것으로 본다
+  const old = followSoundPreference({ get: () => Promise.resolve(snap(undefined)) }); await tick();
+  assert.equal(old.on(), true);
+  const failed = followSoundPreference({ get: () => Promise.reject(new Error('x')) }); await tick();
+  assert.equal(failed.on(), true);
+  const throwing = followSoundPreference({ get: () => { throw new Error('x'); }, onChange: () => { throw new Error('y'); } });
+  assert.equal(throwing.on(), true);
+  throwing.dispose();
 });

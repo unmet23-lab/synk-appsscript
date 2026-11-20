@@ -4,7 +4,7 @@
 // [data-portal-auth-feedback], [data-portal-action="close-invite"], [data-portal-action="continue-personal"])를 같은 뜻으로 둔다(설계 6절).
 // 모듈 맨 위에서는 DOM을 건드리지 않는다.
 import { fanR, HOME_R, createOrbStage, easeIO, easeIOQ, easeOut, lerp, smooth, switchGeom, PLACE_LON } from './orb-stage.mjs';
-import { createOrbSound } from './orb-sound.mjs';
+import { createOrbSound, followSoundPreference } from './orb-sound.mjs';
 import { createOrbSignature } from './orb-signature.mjs';
 import { rowSpeech } from './site-visits-model.mjs';
 import { createOfficeFloor } from './office-floor.mjs';
@@ -257,8 +257,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   let introPainted = false, firstFrameSent = false;
   const onRender = () => { if (!introPainted || firstFrameSent) return; firstFrameSent = true; try { void Promise.resolve(options.onFirstFrame?.()).catch(() => {}); } catch { /* 무시 */ } };
   const stage = createOrbStage($('.orb-canvas'), { getReducedMotion: reduced, getHome: homePoint, places: look.places !== false, eyes: look.eyes !== false, noWebGL, noCanvas, onRender, onEyes: m => { stageEl.dataset.eyes = m; } });
-  /* 지도의 효과음(2026-11-20 유호님). look.sound가 false면 내지 않는다 */
-  const sound = createOrbSound({ win, enabled: () => look.sound !== false && doc?.hasFocus?.() !== false });   // 앱 창이 뒤에 있을 때는 내지 않는다(Fable 최종 검수 F3)
+  /* 지도의 효과음(2026-11-20 유호님). look.sound가 false이거나 설정 방 「화면」 줄에서 끄면 내지 않는다 */
+  const soundPref = followSoundPreference(options.rooms?.desktop);
+  const sound = createOrbSound({ win, enabled: () => look.sound !== false && soundPref.on() && doc?.hasFocus?.() !== false });   // 앱 창이 뒤에 있을 때는 내지 않는다(Fable 최종 검수 F3)
   const sig = createOrbSignature($('.orb-sig'), { getReducedMotion: reduced, getWidth: () => stageEl.getBoundingClientRect().width || win.innerWidth || 1440 });
 
   /* ── 옛 런처 가리기(지금 얼굴의 lockHostElements와 같다) ── */
@@ -2138,7 +2139,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       resizeObserver?.disconnect();
       sig.stop();
       stage.dispose();
-      sound.dispose();
+      sound.dispose(); soundPref.dispose();
       setHostLocked(false);
       root.hidden = true;
       root.dataset.portalActive = 'false';

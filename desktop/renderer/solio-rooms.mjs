@@ -1247,11 +1247,14 @@ function keyRow(desk, env, st) {
   return { key: 'key', nm: '어디서나 열기', mid, val: key, when: '', unread: !key, label: rowLabel(['어디서나 열기', mid, key]), more };
 }
 /* 화면. 움직임 줄이기는 저장할 길이 없어 두지 않는다(설계 검토 D6) */
+/* 화면 크기와 효과음(효과음은 2026-11-20 검정 구 지도). 효과음 칸을 모르는 본체 판이면 켜고 끄기를 세우지 않는다 */
 function viewRow(desk, st) {
   if (!desk) return null;
   const z = Number(desk.preferences?.zoomFactor) || 1, list = ZOOMS.includes(z) ? ZOOMS : [...ZOOMS, z].sort((a, b) => a - b);
-  const mid = '크기 ' + pctOf(z);
-  return { key: 'view', nm: '화면', mid, val: '', when: '', label: rowLabel(['화면', mid]), more: [['pick', '화면 크기', list.map(v => [pctOf(v), String(v)]), String(z), '', 'zoom'], ['note', 'Ctrl과 +, − 키로도 바꿀 수 있습니다.'], ['live', st.notes?.get?.('view') || '']] };
+  const sound = typeof desk.preferences?.uiSound === 'boolean' ? desk.preferences.uiSound : null;
+  const mid = '크기 ' + pctOf(z) + (sound === false ? ' · 효과음 꺼짐' : '');
+  const tog = sound === null ? [] : [['tog', '효과음', '구가 별 지도로 바뀔 때와 공간 이름을 가리킬 때 작은 소리를 냅니다', sound, 'pref', st.busy === 'view:pref' ? 'off' : '', 'uiSound']];
+  return { key: 'view', nm: '화면', mid, val: '', when: '', label: rowLabel(['화면', mid]), more: [['pick', '화면 크기', list.map(v => [pctOf(v), String(v)]), String(z), '', 'zoom'], ['note', 'Ctrl과 +, − 키로도 바꿀 수 있습니다.'], ...tog, ['live', st.notes?.get?.('view') || '']] };
 }
 /* 알림. 배너는 앱 설치 파일이 준비됐거나 실패했을 때만 뜬다(편의 31행, 설계 검토 D10). 구독 팁 켜고 끄기도 이 줄 안쪽이다(설계 검토 16절 D7) */
 function noticeRow(s, st, now) {

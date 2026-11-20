@@ -2101,7 +2101,9 @@ test('pointing at a place name taps once: moving between the texts inside one na
   assert.match(view, /else if \(!on && \(!name \|\| !name\.contains\(event\.relatedTarget\)\)\) \{ stage\.setHot\(null\);/);
   assert.match(view, /if \(b && on\) \{ if \(!b\.classList\.contains\('hot'\)\) sound\.key\(\);/);
   assert.match(view, /else if \(!on && \(!b \|\| !b\.contains\(event\.relatedTarget\)\)\)/);
-  assert.match(view, /createOrbSound\(\{ win, enabled: \(\) => look\.sound !== false && doc\?\.hasFocus\?\.\(\) !== false \}\)/);
+  assert.match(view, /const soundPref = followSoundPreference\(options\.rooms\?\.desktop\);/);
+  assert.match(view, /createOrbSound\(\{ win, enabled: \(\) => look\.sound !== false && soundPref\.on\(\) && doc\?\.hasFocus\?\.\(\) !== false \}\)/);
+  assert.match(view, /sound\.dispose\(\); soundPref\.dispose\(\);/);
   assert.doesNotMatch(view, /sweepIn|sweepDone/);
 });
 

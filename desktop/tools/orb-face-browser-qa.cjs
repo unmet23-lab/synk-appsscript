@@ -243,6 +243,17 @@ if(!process.versions.electron){
           await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await w.js("document.querySelector('.fan [data-foot=settings]').focus()");await click(w,'.fan [data-foot="settings"]');await wait(700);
           const st9=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=settings]');return {shown:!!r&&!r.hidden,mode:document.documentElement.dataset.orbClient,onSay:document.activeElement===r?.querySelector('[data-aside-say]'),heading:document.querySelector('#portal-entry [data-orb-heading]').textContent};})()");
           check('9 「설정」 opens the settings room in the face, not the old settings view',st9.shown&&st9.mode==='app'&&st9.onSay&&st9.heading==='설정',st9);await captureWide(w,'settings-room');
+          // 「화면」 줄의 효과음 켜고 끄기(11-20). 켜진 채로 서고, 끄면 줄 글에 「효과음 꺼짐」이 붙는다. 다시 켜 두고 줄을 접는다
+          const SND='#portal-entry [data-room=settings] [role=switch][data-room-arg=uiSound]',VIEW='#portal-entry [data-room=settings] button.row[data-key="view"]';
+          await click(w,VIEW);await wait(500);
+          const snd0=await w.js(`(()=>{const q=document.querySelector(${JSON.stringify(SND)});return {on:q?.getAttribute('aria-checked'),label:q?.getAttribute('aria-label')};})()`);
+          await captureWide(w,'settings-view-sound');
+          await click(w,SND);await wait(500);
+          const snd1=await w.js(`(()=>({on:document.querySelector(${JSON.stringify(SND)})?.getAttribute('aria-checked'),row:document.querySelector(${JSON.stringify(VIEW)})?.textContent||''}))()`);
+          await click(w,SND);await wait(500);
+          const snd2=await w.js(`document.querySelector(${JSON.stringify(SND)})?.getAttribute('aria-checked')`);
+          check('9 the screen line has the sound switch, on by default, and turning it off says so in the line',snd0.on==='true'&&snd0.label==='효과음'&&snd1.on==='false'&&snd1.row.includes('효과음 꺼짐')&&snd2==='true',{snd0,snd1,snd2});
+          await click(w,VIEW);await wait(400);
           await key(w,'Escape');await wait(400);
           const lb2=await w.js("(()=>({settings:document.querySelector('#portal-entry [data-room=settings]').hidden,solio:!document.querySelector('#portal-entry [data-room=solio]').hidden,mode:document.documentElement.dataset.orbClient}))()");
           check('9 Esc closes the settings room back to Solio',lb2.settings&&lb2.solio&&lb2.mode==='app',lb2);

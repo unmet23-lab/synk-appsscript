@@ -34,7 +34,7 @@ const accountOps={
 };
 // 설정 방(2단계 둘째 조각 6절)이 부르는 PC 다리. 본체(desktop-preferences.cjs, draft-recovery-ipc.cjs, 업데이트)의 답 모양만 흉내 내고 부른 것을 적는다.
 // 실제로 자동 시작을 등록하거나, 단축키를 잡거나, 새 판을 받거나, 설치 파일을 열지 않는다. 시험이 __orbFixture.setUpdate로 업데이트 판을 바꿔 알린다
-let prefs={closeToTray:true,launchAtLogin:false,startHidden:false,globalShortcut:'',zoomFactor:1},drafts={enabled:false},diag=null;
+let prefs={closeToTray:true,launchAtLogin:false,startHidden:false,globalShortcut:'',zoomFactor:1,uiSound:true},drafts={enabled:false},diag=null;
 let update={ok:true,state:'current',currentVersion:'0.4.97',latestVersion:null,progress:0,code:null,automatic:false};
 const prefListeners=new Set(),draftListeners=new Set(),updateListeners=new Set(),careListeners=new Set();
 // 플레저 PC 알림(PC 0.5.0 설계 4.5 R7): 본체(care-notifications.cjs view)의 답 모양만 흉내 낸다. 로그인한 회원만 켤 수 있다

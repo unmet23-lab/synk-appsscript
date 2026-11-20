@@ -15,6 +15,16 @@ export function unmapScore() {
   return [0, 1, 2].map(i => ({ at: 0.02 + i * 0.055, gain: 0.05 - i * 0.008, freq: 2300 - i * 350 }));
 }
 
+/* 설정 방 「화면」 줄의 효과음 켜고 끄기(데스크톱 설정 uiSound)를 따라간다. desk는 { get, onChange }다.
+   읽는 동안에는 끈 것으로 보고, 읽지 못했거나 다리가 없으면 켠 것으로 본다. 바뀜 알림을 받은 뒤에 늦게 온 읽기 답은 쓰지 않는다 */
+export function followSoundPreference(desk) {
+  let on = typeof desk?.get === 'function' ? null : true, heard = false, dead = false, off = null;
+  const take = v => { if (dead) return; if (v?.ok === true && v.preferences && typeof v.preferences === 'object') on = v.preferences.uiSound !== false; else if (on === null) on = true; };
+  if (on === null) { try { Promise.resolve(desk.get()).then(v => { if (!heard) take(v); }, () => { if (!heard) take(null); }); } catch { on = true; } }
+  try { const f = typeof desk?.onChange === 'function' ? desk.onChange(v => { if (v?.ok === true) heard = true; take(v); }) : null; if (typeof f === 'function') off = f; } catch { /* 무시 */ }
+  return { on: () => on === true, dispose() { dead = true; try { off?.(); } catch { /* 무시 */ } off = null; } };
+}
+
 /* options: win(AudioContext를 가진 창) · enabled() → 소리를 낼지 */
 export function createOrbSound({ win = globalThis, enabled = () => true } = {}) {
   /* turn은 지도가 켜지거나 접힐 때마다 오르는 차례 번호다. 뒤늦게 낼 소리가 그 사이에 지나간 지도의 것인지 가린다 */

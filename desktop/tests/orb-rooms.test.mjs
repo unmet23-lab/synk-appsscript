@@ -704,6 +704,17 @@ test('pressing a start-up switch sends the flipped value; 트레이로 시작 is
   assert.equal(h.calls.filter(c => c[0] === 'desktop.update').length, 2, 'an unknown field is not sent');
 });
 
+test('the sound switch in the screen line sends the flipped value and the line then says sound is off (2026-11-20)', async () => {
+  const h = setHarness({ desktop: { ok: true, preferences: { closeToTray: true, launchAtLogin: false, startHidden: false, globalShortcut: '', zoomFactor: 1, uiSound: true }, capabilities: { launchAtLogin: true, globalShortcut: true, tray: true } } });
+  h.rooms.open('settings'); await settle();
+  await h.press('view', 'pref', 'uiSound');
+  assert.deepEqual(h.calls.find(c => c[0] === 'desktop.update')[1], { uiSound: false });
+  assert.equal(h.line('view').mid, '크기 100% · 효과음 꺼짐');
+  await h.press('view', 'pref', 'uiSound');
+  assert.deepEqual(h.calls.filter(c => c[0] === 'desktop.update').at(-1)[1], { uiSound: true });
+  assert.equal(h.line('view').mid, '크기 100%');
+});
+
 test('the anywhere shortcut is checked before it is sent, a taken one is named, and switching it off clears it (설계 검토 D9)', async () => {
   const h = setHarness({ answers: { 'desktop.update': patch => (patch.globalShortcut === 'Ctrl+Alt+K' ? { ok: false, code: 'SHORTCUT_UNAVAILABLE' } : { ok: true, preferences: { closeToTray: true, launchAtLogin: false, startHidden: false, zoomFactor: 1, globalShortcut: patch.globalShortcut }, capabilities: { launchAtLogin: true, globalShortcut: true, tray: true } }) } });
   h.rooms.open('settings'); await settle();

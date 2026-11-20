@@ -1283,7 +1283,8 @@ function buildAccount() {
 }
 
 /* 설정. 이 PC에서 SYNK가 켜지고, 열리고, 알리는 방식만 남겼다. 라이브러리와 플레저에만 쓰이던 설정은 그 화면과 함께 거둔다 */
-const SET = { auto: true, tray: true, keep: true, key: 'Ctrl+Alt+S', zoom: 2, calm: false, banner: true, rest: 2, quiet: true, draft: true };
+/* sound는 효과음이다. 시안은 브라우저가 소리를 막아 꺼진 채로 시작하고, 아래 막대의 「소리」와 같은 값이다. PC 앱은 켜진 채로 시작한다 */
+const SET = { auto: true, tray: true, keep: true, key: 'Ctrl+Alt+S', zoom: 2, calm: false, banner: true, rest: 2, quiet: true, draft: true, sound: false };
 const ZOOMS = ['80%', '90%', '100%', '110%', '125%', '150%'];
 function buildSettings() {
   const flip = name => on => { SET[name] = on; buildSettings(); };
@@ -1309,9 +1310,10 @@ function buildSettings() {
         ['note', '다른 앱이 쓰는 단축키면 적용하지 않고, 다른 조합을 고르라고 알립니다.'],
         ['live'],
       ] },
-      { key: 'view', nm: '화면', mid: '크기 ' + ZOOMS[SET.zoom] + ' · 움직임 ' + (SET.calm ? '줄임' : '그대로'), more: [
+      { key: 'view', nm: '화면', mid: '크기 ' + ZOOMS[SET.zoom] + ' · 움직임 ' + (SET.calm ? '줄임' : '그대로') + (SET.sound ? '' : ' · 효과음 꺼짐'), more: [
         ['pick', '화면 크기', ZOOMS, SET.zoom, k => { SET.zoom = k; buildSettings(); }],
         ['tog', '움직임 줄이기', '구와 줄이 움직이지 않고 바로 바뀝니다', SET.calm, flip('calm')],
+        ['tog', '효과음', '구가 별 지도로 바뀔 때와 공간 이름을 가리킬 때 작은 소리를 냅니다', SET.sound, on => { setSound(on); buildSettings(); }],
       ] },
       { key: 'notice', nm: '알림', mid: [SET.banner ? '배너 켜짐' : '배너 꺼짐', SET.quiet ? '조용한 시간 22:00~08:00' : ''].filter(Boolean).join(' · '), more: [
         ['tog', '알림 배너', '새 판이 준비됐을 때처럼 알릴 일이 있으면 배너를 띄웁니다', SET.banner, flip('banner')],
@@ -1511,11 +1513,13 @@ function setSize(i, quick = false) {
   if (full) sizeTimer = setTimeout(() => { document.body.classList.remove('sized'); stage.style.removeProperty('--sw'); stage.style.removeProperty('--sh'); }, quick ? 0 : 900);
 }
 $('#sizebtn').addEventListener('click', () => setSize((sizeNo + 1) % SIZES.length));
-$('#sound').addEventListener('click', () => {
-  const on = !snd.on; snd.set(on);
+/* 효과음 켜고 끄기. 아래 막대의 「소리」와 설정 방의 「효과음」이 같은 값을 바꾼다 */
+function setSound(on) {
+  SET.sound = on; snd.set(on);
   $('#sound').setAttribute('aria-pressed', String(on)); $('#sound').textContent = on ? '소리 켜짐' : '소리 꺼짐';
   if (on) snd.tick();
-});
+}
+$('#sound').addEventListener('click', () => { setSound(!snd.on); buildSettings(); });
 let idleTimer = 0;
 const canHover = matchMedia('(hover: hover)').matches;
 function wakeMeta() { meta.classList.remove('idle'); clearTimeout(idleTimer); if (canHover) idleTimer = setTimeout(() => { if (!meta.matches(':hover') && !meta.contains(document.activeElement)) meta.classList.add('idle'); }, 4200); }

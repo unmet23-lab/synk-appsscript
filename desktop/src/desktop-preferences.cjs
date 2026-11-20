@@ -1,10 +1,11 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path');
-const DEFAULTS=Object.freeze({closeToTray:true,launchAtLogin:false,startHidden:false,globalShortcut:'',zoomFactor:1});
+// uiSound: 검정 구 지도의 효과음(설정 방 「화면」 줄, 2026-11-20)
+const DEFAULTS=Object.freeze({closeToTray:true,launchAtLogin:false,startHidden:false,globalShortcut:'',zoomFactor:1,uiSound:true});
 function validShortcut(value){return typeof value==='string'&&value.length<=80&&(value===''||/^(?:(?:CommandOrControl|Control|Ctrl|Alt|Shift|Super|Command)\+){1,3}(?:[A-Z0-9]|F(?:[1-9]|1[0-9]|2[0-4])|Space)$/.test(value)&&/(?:CommandOrControl|Control|Ctrl|Alt|Super|Command)\+/.test(value));}
 function validatePatch(patch){
   if(!patch||typeof patch!=='object'||Array.isArray(patch))return false;
-  return Object.keys(patch).every(key=>Object.hasOwn(DEFAULTS,key)&&(['closeToTray','launchAtLogin','startHidden'].includes(key)?typeof patch[key]==='boolean':key==='globalShortcut'?validShortcut(patch[key]):typeof patch[key]==='number'&&Number.isFinite(patch[key])&&patch[key]>=0.8&&patch[key]<=1.5));
+  return Object.keys(patch).every(key=>Object.hasOwn(DEFAULTS,key)&&(['closeToTray','launchAtLogin','startHidden','uiSound'].includes(key)?typeof patch[key]==='boolean':key==='globalShortcut'?validShortcut(patch[key]):typeof patch[key]==='number'&&Number.isFinite(patch[key])&&patch[key]>=0.8&&patch[key]<=1.5));
 }
 // 로그인 때 숨은 채 시작할지만 읽는다. 시작 관문은 이 설정 모듈을 만들기 전에 돌므로 파일을 바로 읽는다(1-가 구현 설계 2절)
 function readStartHidden(directory){try{const text=fs.readFileSync(path.join(directory,'desktop-preferences.json'),'utf8');if(text.length>=4096)return false;const parsed=JSON.parse(text);return validatePatch(parsed)&&parsed.startHidden===true;}catch{return false;}}
@@ -48,7 +49,9 @@ function createDesktopPreferences({directory,app,globalShortcut,getWindow,onActi
         try{app.setLoginItemSettings({...startup,openAtLogin:next.launchAtLogin,enabled:next.launchAtLogin});const actual=loginState(true);if(actual.enabled!==next.launchAtLogin||actual.registered!==next.launchAtLogin)throw Error('Startup setting was not applied');}
         catch{throw Object.assign(Error('Startup setting was not applied'),{code:'STARTUP_UNAVAILABLE'});}
       }
-      fs.mkdirSync(directory,{recursive:true});fs.writeFileSync(file+'.tmp',JSON.stringify(next),{mode:0o600});fs.renameSync(file+'.tmp',file);
+      // 효과음을 켠 채면 그 칸을 적지 않는다. 그 칸을 모르는 옛 판으로 돌아가도 파일 전체를 버리지 않는다
+      const {uiSound,...kept}=next;
+      fs.mkdirSync(directory,{recursive:true});fs.writeFileSync(file+'.tmp',JSON.stringify(uiSound===false?next:kept),{mode:0o600});fs.renameSync(file+'.tmp',file);
     }catch(error){if(newlyRegistered)globalShortcut.unregister(next.globalShortcut);if(startupApplied)try{app.setLoginItemSettings({...startup,openAtLogin:previousStartup.registered,enabled:previousStartup.enabled});}catch{}return {ok:false,code:error.code==='STARTUP_UNAVAILABLE'?error.code:'PREFERENCES_SAVE_FAILED'};}
     if(shortcutRequested){if(registered&&registered!==next.globalShortcut)globalShortcut.unregister(registered);registered=next.globalShortcut;shortcutError=null;}values=next;
     const window=getWindow();if(window&&!window.isDestroyed())window.webContents.setZoomFactor(values.zoomFactor);

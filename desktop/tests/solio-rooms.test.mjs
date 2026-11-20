@@ -750,6 +750,16 @@ test('settings room: the screen size picks 80 to 150 percent and keeps an odd sa
   assert.deepEqual(setRow(setRoom({ desktop: deskSnap({ zoomFactor: 1.2 }) }), 'view').more.find(x => x[0] === 'pick')[2].map(o => o[0]), ['80%', '90%', '100%', '110%', '120%', '125%', '150%']);
 });
 
+test('settings room: the screen line has a sound switch when the app knows the setting, and says so in the line when sound is off (2026-11-20)', () => {
+  const on = setRow(setRoom({ desktop: deskSnap({ uiSound: true }) }), 'view');
+  assert.equal(on.mid, '크기 100%');
+  assert.deepEqual(togs(on).map(t => [t[1], t[2], t[3], t[4], t[5], t[6]]), [['효과음', '구가 별 지도로 바뀔 때와 공간 이름을 가리킬 때 작은 소리를 냅니다', true, 'pref', '', 'uiSound']]);
+  const off = setRow(setRoom({ desktop: deskSnap({ uiSound: false }) }, setSt({ busy: 'view:pref' })), 'view');
+  assert.equal(off.mid, '크기 100% · 효과음 꺼짐');
+  assert.deepEqual(togs(off).map(t => [t[3], t[5]]), [[false, 'off']], 'the switch waits while the change is being saved');
+  assert.deepEqual(togs(setRow(setRoom({ desktop: deskSnap() }), 'view')), [], 'an older app that does not know the setting shows no switch');
+});
+
 test('settings room: notices say what the banner really does, the quiet hours have their own fields, resting says until when, and the tip switch sits in the same line (설계 검토 D7 · D10)', () => {
   const n = setRow(setRoom(), 'notice');
   assert.deepEqual(togs(n).map(t => [t[1], t[2], t[3], t[4], t[6]]), [

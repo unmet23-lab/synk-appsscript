@@ -17,7 +17,7 @@ export const ROOM_TIMING = Object.freeze({ armGuard: 600, armExpire: 10000, acco
 /* 펼침이나 구독 방에서 여는 방 */
 export const ASIDE_ROOMS = Object.freeze(['manage', 'account', 'settings']);
 const UPDATE_METHOD = Object.freeze({ 'update-check': 'check', 'update-download': 'download', 'update-install': 'install' });
-const PREF_KEYS = Object.freeze(['launchAtLogin', 'startHidden', 'closeToTray']);
+const PREF_KEYS = Object.freeze(['launchAtLogin', 'startHidden', 'closeToTray', 'uiSound']);
 /* 알림 잠시 쉬기(옛 설정과 같은 30분 · 1시간 · 쉬지 않음) */
 const REST_MINUTES = Object.freeze({ 30: 30, 60: 60, 0: 0 });
 const hm = t => (d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'))(new Date(t));
