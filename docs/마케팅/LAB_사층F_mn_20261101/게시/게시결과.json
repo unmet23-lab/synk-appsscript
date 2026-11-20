@@ -154,7 +154,7 @@
     },
     {
       "계정": "lab-mx-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-19T13:00:00-06:00",
       "지문": "a821a0cdd0e6d31653b153a67b64495f3d387873a883e4ebad482bdc69c2bd7e",
       "게시글지문": "e21db5eb5f193b9db03c00cb78fa53ab63b6bc0b87329549da338f855653b3c3",
@@ -174,10 +174,10 @@
         }
       ],
       "게시물ID": "3Sw3xEbfXfc",
-      "주소": "https://youtube.com/shorts/3Sw3xEbfXfc",
-      "확인": "예약 한국 시각 2026-11-20 04:00 = 현지 13:00(2026-11-19) · 스튜디오 예약 창 「2026. 11. 20. 오전 4:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB México | Coreano divertido」 목록 「예약됨 2026. 11. 20.」 · 글 첫 줄 「¿Por qué los elevadores en Corea no tienen 4? 👻 #aprendecoreano」 · 동영상 언어 스페인어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "주소": "https://www.youtube.com/shorts/3Sw3xEbfXfc",
+      "확인": "11-20 19시 확인(읽기만) — 시청 화면 HTML(curl) playabilityStatus OK · isPrivate false · isUnlisted false · publishDate 2026-11-19T11:00:20-08:00 = 한국 2026-11-20 04:00 · 채널 「SYNK LAB México | Coreano divertido」 · 제목 「¿Por qué los elevadores en Corea no tienen 4? 👻 #aprendecoreano」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-17T05:45:26.605Z"
+      "기록시각": "2026-11-20T10:21:44.421Z"
     },
     {
       "계정": "lab-my-youtube",
@@ -194,16 +194,16 @@
     },
     {
       "계정": "lab-jp-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00+09:00",
       "지문": "4d181a72639f07de2b3efe3d06d0ba4ff652746686eb76ca5890caa3ae419e9d",
       "게시글지문": "5f442c6f01dff0d38f3e206d92643bfbb512d711b8243e4bbf9dfa218325036d",
       "방법": "ego",
       "게시물ID": "HAL39X1_tdw",
-      "주소": "https://youtube.com/shorts/HAL39X1_tdw",
-      "확인": "예약 한국 시각 2026-11-20 13:00 = 현지 13:00(2026-11-20) · 스튜디오 예약 창 「2026. 11. 20. 오후 1:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Japan | 楽しい韓国語」 목록 「예약됨 2026. 11. 20.」 · 글 첫 줄 「韓国のエレベーターに4がない理由👻 #韓国語」 · 동영상 언어 일본어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "주소": "https://www.youtube.com/shorts/HAL39X1_tdw",
+      "확인": "11-20 19시 확인(읽기만) — 시청 화면 HTML(curl) playabilityStatus OK · isPrivate false · isUnlisted false · publishDate 2026-11-19T20:00:39-08:00 = 한국 2026-11-20 13:00 · 채널 「SYNK LAB Japan | 楽しい韓国語」 · 제목 「韓国のエレベーターに4がない理由👻 #韓国語」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-16T16:58:20.463Z"
+      "기록시각": "2026-11-20T10:21:44.421Z"
     },
     {
       "계정": "lab-vn-youtube",
@@ -244,14 +244,16 @@
     },
     {
       "계정": "lab-cn-douyin",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00+08:00",
       "지문": "245d2db75929da87202d449529aaf24ab68e13a6ad1c412b850baa06d6d02d26",
       "게시글지문": "91fd51bde975951d895191a36b908b45e04eab220f1308165cf992ffc306cc9e",
       "방법": "ego",
-      "확인": "作品 관리(作品 5) 맨 위 줄 「定时发布中 定时: 2026年11月20日 14:00」 · 글 첫 줄 「韩语的4读 사（sa），死字的韩语发音也是 사（sa）。所以韩国很多电梯里，4楼按钮写的是F（Four）。」 · 길이 00:16 · 썸네일이 판 표지(「4楼去哪了?」 띠 · 엘리베이터 단추 5 F 3 2 1) · 걸기 전 목록에 11-20 줄 없었음 · 계정 홈 「抖音号：39504393074」 · 예약 칸 기본값 17:00 ≈ 지금+2시간 한국 시각(16:57)이라 한국 14:00으로 넣음 · 누르기 전 Everyone · Schedule · 게시글 일치 177자 · 자주 성명(AI) 비워 둠 · Post 때 오른쪽 「rapid detection」은 아직 44%였다 · 방법 ego-browser · Profile 5 · 공간 「igjpdy 1117 douyin」(322) · 올리기 → 세로 표지 Upload cover에 판 cover.png → Done(가로는 자동 생성) → Schedule → Post · 스크립트 C:/Users/q1212/ego/igjpdy-20261117-1438/dy-a2-f4.mjs · dy-b-f4.mjs · 목록 dy-c3.mjs",
+      "확인": "11-20 19시 확인(읽기만) — 더우인 작품 목록 응답(Profile 5, creator.douyin.com) 7709015432778353960 · 2026-11-20 14:00(한국) · private_status 0 · 삭제 아님 · 글 첫머리 「韩语的4读 사（sa），死字的韩语发音也是 사（sa）。」 = 판본/CN/원고_douyin.json 첫 줄",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-17T06:02:24.416Z"
+      "기록시각": "2026-11-20T10:21:44.421Z",
+      "주소": "https://www.douyin.com/video/7709015432778353960",
+      "게시물ID": "7709015432778353960"
     },
     {
       "계정": "lab-mm-youtube",
@@ -268,16 +270,16 @@
     },
     {
       "계정": "lab-kg-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00+06:00",
       "지문": "bb03d5230872627aff74b5506f128a1d68afc722bf38d995ab5f10b42828f78d",
       "게시글지문": "fdd55bf25e26efc12ed4a1a019755a2eedffa01292b1a9176fb8bc94c29d7b28",
       "방법": "ego",
       "게시물ID": "yyoetTetTxs",
-      "주소": "https://youtube.com/shorts/yyoetTetTxs",
-      "확인": "예약 한국 시각 2026-11-20 16:00 = 현지 13:00(2026-11-20) · 스튜디오 예약 창 「2026. 11. 20. 오후 4:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Kyrgyzstan | Кызыктуу корей тили」 목록 「예약됨 2026. 11. 20.」 · 글 첫 줄 「Кореядагы лифттерде эмне үчүн 4 жок? 👻 #learnkorean」 · 동영상 언어 키르기스어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "주소": "https://www.youtube.com/shorts/yyoetTetTxs",
+      "확인": "11-20 19시 확인(읽기만) — 시청 화면 HTML(curl) playabilityStatus OK · isPrivate false · isUnlisted false · publishDate 2026-11-19T23:00:00-08:00 = 한국 2026-11-20 16:00 · 채널 「SYNK LAB Kyrgyzstan | Кызыктуу корей тили」 · 제목 「Кореядагы лифттерде эмне үчүн 4 жок? 👻 #learnkorean」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-17T05:51:47.886Z"
+      "기록시각": "2026-11-20T10:21:44.421Z"
     },
     {
       "계정": "lab-vn-tiktok",
@@ -318,16 +320,16 @@
     },
     {
       "계정": "lab-id-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00+07:00",
       "지문": "d50f72cbb3fc3d46d3cc30a11e7ba34fa4dd11ad7e7cdc45f7aa3b2cbf3a67d2",
       "게시글지문": "d8520803a0f3be8619b347fb3c650c0bb150f918f2c1f2c3e23ff64a97b252f2",
       "방법": "ego",
       "게시물ID": "v6LSgsgQGpo",
-      "주소": "https://youtube.com/shorts/v6LSgsgQGpo",
-      "확인": "예약 한국 시각 2026-11-20 15:00 = 현지 13:00(2026-11-20) · 스튜디오 예약 창 「2026. 11. 20. 오후 3:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Indonesia | Serunya Bahasa Korea」 목록 「예약됨 2026. 11. 20.」 · 글 첫 줄 「Kenapa tombol 4 di lift Korea jadi F? 👻 #belajarkorea」 · 동영상 언어 인도네시아어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "주소": "https://www.youtube.com/shorts/v6LSgsgQGpo",
+      "확인": "11-20 19시 확인(읽기만) — 시청 화면 HTML(curl) playabilityStatus OK · isPrivate false · isUnlisted false · publishDate 2026-11-19T22:00:01-08:00 = 한국 2026-11-20 15:00 · 채널 「SYNK LAB Indonesia | Serunya Bahasa Korea」 · 제목 「Kenapa tombol 4 di lift Korea jadi F? 👻 #belajarkorea」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-18T05:43:56.104Z"
+      "기록시각": "2026-11-20T10:21:44.421Z"
     },
     {
       "계정": "lab-th-youtube",

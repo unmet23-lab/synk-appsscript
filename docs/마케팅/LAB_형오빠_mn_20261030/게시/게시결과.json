@@ -108,7 +108,7 @@
     },
     {
       "계정": "lab-nz-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00+13:00",
       "지문": "cce71fbeb5196848d65c9306bfc4bdd78b70eea8b85395a3a636af8535bf9a98",
       "게시글지문": "de7ffe15cea56d59672eb29cb0b578e29ecc55afcc9921e895870301c4709f28",
@@ -128,10 +128,10 @@
         }
       ],
       "게시물ID": "PcsbB4l4BRI",
-      "주소": "https://youtube.com/shorts/PcsbB4l4BRI",
-      "확인": "예약 한국 시각 2026-11-20 09:00 = 현지 13:00(2026-11-20) · 스튜디오 예약 칸 「2026. 11. 20.」 「오전 9:00」 현지 시간(GMT+0900, 시간대 0) · 「동영상 예약됨 — 2026년 11월 20일 9:00에 동영상이 공개 상태로 설정됩니다」 창 · 채널 「SYNK LAB New Zealand | Korean Made Fun」 목록 PcsbB4l4BRI 「예약됨 2026. 11. 20. 예약 날짜」 · 글 첫 줄 「Korean has two words for “big brother” 🤯 #learnkorean」 · 제목 · 설명 원고와 일치 · 동영상 언어 영어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님 · 영상 판본/NZ/video.mp4(새 틀 렌더, sha256 cce71fbe…가 준비.json 지문과 같음) · 11-20 04:50 KST",
+      "주소": "https://www.youtube.com/shorts/PcsbB4l4BRI",
+      "확인": "11-20 19시 확인(읽기만) — 시청 화면 HTML(curl) playabilityStatus OK · isPrivate false · isUnlisted false · publishDate 2026-11-19T16:00:33-08:00 = 한국 2026-11-20 09:00 · 채널 「SYNK LAB New Zealand | Korean Made Fun」 · 제목 「Korean has two words for “big brother” 🤯 #learnkorean」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 11-20 「응, 점검해」(바뀐 판본으로 다시 걸기) · 자체검수 통과",
-      "기록시각": "2026-11-19T19:51:48.293Z"
+      "기록시각": "2026-11-20T10:21:44.421Z"
     },
     {
       "계정": "lab-ph-youtube",
@@ -188,29 +188,29 @@
     },
     {
       "계정": "lab-br-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-19T13:00:00-03:00",
       "지문": "754ce74a74a87cbac8649a894ab02586e2e2f2071bb793024e9d8e01a3637435",
       "게시글지문": "ebf231467a3e3f7746322fdc3d7199c677998098c89b54ad1d3af5a81d04fcc8",
       "방법": "ego",
       "게시물ID": "WVcIpu1sh6o",
-      "주소": "https://youtube.com/shorts/WVcIpu1sh6o",
-      "확인": "예약 한국 시각 2026-11-20 01:00 = 현지 13:00(2026-11-19) · 스튜디오 예약 창 「2026. 11. 20. 오전 1:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Brasil | Coreano divertido」 목록 「예약됨 2026. 11. 20.」 · 글 첫 줄 「Por que as coreanas chamam o irmão mais velho de “oppa” 👀 #aprendacoreano」 · 동영상 언어 포르투갈어(브라질) · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "주소": "https://www.youtube.com/shorts/WVcIpu1sh6o",
+      "확인": "11-20 19시 확인(읽기만) — 시청 화면 HTML(curl) playabilityStatus OK · isPrivate false · isUnlisted false · publishDate 2026-11-19T08:00:11-08:00 = 한국 2026-11-20 01:00 · 채널 「SYNK LAB Brasil | Coreano divertido」 · 제목 「Por que as coreanas chamam o irmão mais velho de “oppa” 👀 #aprendacoreano」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-16T16:48:50.127Z"
+      "기록시각": "2026-11-20T10:21:44.421Z"
     },
     {
       "계정": "lab-py-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-19T13:00:00-03:00",
       "지문": "476f53fad0d9286c879696654d7071b9e8cd8da8f428970f3824bf2181e9a740",
       "게시글지문": "b3efc6f789e56f7aada81aa2a4c7444ef8ae2d3c973b8d8cca14cf76a4578e8c",
       "방법": "ego",
       "게시물ID": "sRVQLoRicwk",
-      "주소": "https://youtube.com/shorts/sRVQLoRicwk",
-      "확인": "예약 한국 시각 2026-11-20 01:00 = 현지 13:00(2026-11-19) · 스튜디오 예약 창 「2026. 11. 20. 오전 1:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Paraguay | Coreano divertido」 목록 「예약됨 2026. 11. 20.」 · 글 첫 줄 「¿Por qué las chicas coreanas le dicen “oppa” a su hermano mayor? 👀 #aprendecoreano」 · 동영상 언어 스페인어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "주소": "https://www.youtube.com/shorts/sRVQLoRicwk",
+      "확인": "11-20 19시 확인(읽기만) — 시청 화면 HTML(curl) playabilityStatus OK · isPrivate false · isUnlisted false · publishDate 2026-11-19T08:00:25-08:00 = 한국 2026-11-20 01:00 · 채널 「SYNK LAB Paraguay | Coreano divertido」 · 제목 「¿Por qué las chicas coreanas le dicen “oppa” a su hermano mayor? 👀 #aprendecoreano」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-16T16:54:51.581Z"
+      "기록시각": "2026-11-20T10:21:44.421Z"
     },
     {
       "계정": "lab-tw-youtube",
@@ -320,7 +320,7 @@
     },
     {
       "계정": "lab-my-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00+08:00",
       "지문": "8ab64d3d326f0c3a46fb1b420e5f2bd45f3bcc3720c4c34931902972f3f90315",
       "게시글지문": "47a53d1ab540c7758ba39c49e590d6fd96eb1d1d4e752031a0edab2f4ea3195f",
@@ -340,14 +340,14 @@
         }
       ],
       "게시물ID": "qu5UtdMaXu0",
-      "주소": "https://youtube.com/shorts/qu5UtdMaXu0",
-      "확인": "예약 한국 시각 2026-11-20 14:00 = 현지 13:00(2026-11-20) · 스튜디오 예약 칸 「2026. 11. 20.」 「오후 2:00」 현지 시간(GMT+0900, 시간대 0) · 완료 창 「표준 화질(SD) 처리가 완료된 후 2026년 11월 20일 14:00에 동영상이 공개 상태로 설정됩니다」 · 채널 「SYNK LAB Malaysia | Seronok Belajar Korea」 목록 qu5UtdMaXu0 「예약됨 2026. 11. 20. 예약 날짜」 · 글 첫 줄 「Kenapa perempuan Korea panggil abang “oppa” 👀 #belajarkorea」 · 제목 · 설명 원고와 일치 · 동영상 언어 말레이어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님 · 영상 판본/MY/video.mp4(sha256 8ab64d3d…가 준비.json 지문과 같음) · 11-20 04:5x KST",
+      "주소": "https://www.youtube.com/shorts/qu5UtdMaXu0",
+      "확인": "11-20 19시 확인(읽기만) — 시청 화면 HTML(curl) playabilityStatus OK · isPrivate false · isUnlisted false · publishDate 2026-11-19T21:00:27-08:00 = 한국 2026-11-20 14:00 · 채널 「SYNK LAB Malaysia | Seronok Belajar Korea」 · 제목 「Kenapa perempuan Korea panggil abang “oppa” 👀 #belajarkorea」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 11-20 「응, 점검해」(바뀐 판본으로 다시 걸기) · 자체검수 통과",
-      "기록시각": "2026-11-19T19:55:28.048Z"
+      "기록시각": "2026-11-20T10:21:44.421Z"
     },
     {
       "계정": "lab-jp-instagram",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00+09:00",
       "지문": "7be4d25b3b8e6ecf911a792b485981b5a49abee0149ee7bda6c9345f676dc806",
       "게시글지문": "dfe9574d5a6858b4e8eaad471d476d2ed72a23435cb6898c44a1458d82a14fb8",
@@ -364,9 +364,11 @@
           "기록시각": "2026-11-19T20:02:18.807Z"
         }
       ],
-      "확인": "instagram.com/scheduled_content/ 주간 보기(Asia/Seoul) 「Fri 20」 칸 1건 「1:00 PM」 · 글 첫 줄 「韓国語では、お兄ちゃん・お姉ちゃんの呼び方が、呼ぶ人で変わります。」 · 예약 창 「Your reel has been scheduled.」 · 누르기 전 「Date Fri, Nov 20, 2026 · Time 01 : 00 PM」 · AI 레이블 끔 · Facebook 공유 끔 · 게시글 일치 238/238 · 계정 머리 「synk.jp SYNK LAB Japan」 · 방법 ego-browser · Profile 16 · 인스타 웹 Create → Schedule content · 영상 판본/JP/video.mp4(새 색 판, sha256 7be4d25b…가 준비.json 지문과 같음) · 11-20 05:42 KST",
+      "확인": "11-20 19시 확인(읽기만) — @synk.jp 릴스 맨 위(Profile 16 · /synk.jp/reels/) Df8vzh-vcHz · og 글 첫머리 「韓国語では、お兄ちゃん・お姉ちゃんの呼び方が、呼ぶ人で変わります。」 = 판본/JP/원고_instagram.json caption 첫 줄",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 11-20 「응, 점검해」(바뀐 판본으로 다시 걸기) · 자체검수 통과",
-      "기록시각": "2026-11-19T20:43:17.222Z"
+      "기록시각": "2026-11-20T10:21:44.421Z",
+      "주소": "https://www.instagram.com/reel/Df8vzh-vcHz/",
+      "게시물ID": "Df8vzh-vcHz"
     },
     {
       "계정": "lab-vn-tiktok",
@@ -397,20 +399,20 @@
     },
     {
       "계정": "lab-mx-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-19T13:00:00-06:00",
       "지문": "6ce894c2282ae03f30861eb48d59dbd84c395d2b678202be84664558b79509b4",
       "게시글지문": "396c246bd25614cb0d51f0f45f90e5399b627e9d8674454bab126d2ee207dd3e",
       "방법": "ego",
       "게시물ID": "7709386859432004882",
       "주소": "https://www.tiktok.com/@synklab.mx/video/7709386859432004882",
-      "확인": "예약 한국 시각 2026-11-20 04:00 · TikTok Studio 콘텐츠 목록(@synklab.mx, Profile 12) 줄 「Nov 20, 4:00 AM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「En coreano, cómo le dices a tu hermano o hermana mayor depende de quién habla. Los chicos dicen 형 (hyeong) y 누나 (nuna); 」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 20, 2026 04:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 5.9, 첫 장면과 51.4) · 누르기 전 표지 유지 true",
+      "확인": "11-20 19시 확인(읽기만) — 로그인 없는 영상 화면(curl) statusCode 0 · privateItem false · createTime 2026-11-20 04:00(한국) · desc 첫머리 「En coreano, cómo le dices a tu hermano o hermana mayor depende de quién habla. Los chicos 」",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-18T06:24:33.591Z"
+      "기록시각": "2026-11-20T10:21:44.421Z"
     },
     {
       "계정": "lab-lk-facebook",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00+05:30",
       "지문": "4088fa21152cdedf0ff1acbab84d98601105fe4dd95a992ab2c1d396ba906718",
       "게시글지문": "148f6df8e2b6186fb5073598318934c2b4e464842cb304849399a1efc56ff378",
@@ -427,9 +429,9 @@
           "기록시각": "2026-11-19T20:07:44.111Z"
         }
       ],
-      "확인": "예약 한국 시각 2026-11-20 16:30 · 완료 창 「릴스 예약됨 — 릴스가 처리 완료 후 2026. 11. 20.에 게시되도록 예약되었습니다.」 · 게시할 위치 「SYNK LAB Sri Lanka」 한 곳(자산 1322127544319220) · 누르기 전 예약 칸 Facebook 한 줄 오후 4:30 · 2026년 11월 20일 · 시간대 Asia/Jayapura(UTC+9) · 예약됨 목록 줄 「2026년 11월 20일 금요일 4:30 전체 공개」 FB · 글 첫머리 「කොරියන් භාෂාවේ අයියාට සහ අක්කාට…」가 판본/LK/원고_facebook.json caption 첫 줄과 같음 · 캡션 일치(472/471자, 6/6줄) · 표지 판본/LK/cover.png · 영상 판본/LK/video.mp4(새 색 판, sha256 4088fa21…가 준비.json 지문과 같음) · AI 표시 켜지 않음 · 11-20 05:46 KST",
+      "확인": "11-20 19시 확인(읽기만) — Business Suite 게시됨 목록(Profile 5, 스리랑카 자산 1322127544319220) 맨 위 FB 줄 0:28 · 글 첫머리 「කොරියන් භාෂාවේ අයියාට සහ අක්කාට කියන වචනය…」 = 판본/LK/원고_facebook.json 첫 줄",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 11-20 「응, 점검해」(바뀐 판본으로 다시 걸기) · 자체검수 통과",
-      "기록시각": "2026-11-19T20:46:53.511Z"
+      "기록시각": "2026-11-20T10:21:44.421Z"
     },
     {
       "계정": "lab-cn-douyin",
