@@ -298,6 +298,12 @@ SYNK-appsscript 메인 작업본은 Claude 세션 여럿과 GPT가 같은 폴더
 - 고침: 회사 선택 시험이 글 파일을 읽어 단언할 때는 줄끝을 맞춰 읽는다(CSS·JS `\r\n` → `\n`). sha를 고정할 때는 「모든 줄끝이 CRLF인 꼴」만 LF로 되돌려 재고, 섞인 줄끝·외톨이 CR은 원시 바이트로 재서 걸리게 한다(`teaching-restoring-client.test.mjs`의 `teachingHostBytes`). 시험만 바꿨어도 운영 후보 사본에 그 시험 파일을 얹어 한 번 돌린다.
 - 다시 확인: 사슬 38 후보 사본에 두 시험만 얹어 10/10, 거절 변이에서 LF · 전부 CRLF · 운영 바이트는 통과하고 줄끝 섞임 · 외톨이 CR은 실패.
 
+### 회사 판 공용 도구의 지문을 다음 판 사본에서 재면 공용 폴더의 지문과 어긋난다 (2026-11-20 Claude)
+- 증상: 다음 판 사본(`.tmp/company-release-tools-common-next-20261119`)에서 `REVIEWED-TOOLS.json`의 `tools.sha256`을 재면 `lib.cjs` 하나부터 공용 폴더(`.tmp/company-release-tools-common-20261115`)와 값이 다르다. 그 기록을 그대로 빨리감기하면 공용 폴더의 `assertReviewedTools()`가 멈추고, 묶음도 도구 지문에서 멈춘다.
+- 원인: 공용 폴더에는 저장소 설정 `core.autocrlf=false`가 있어 작업본이 blob과 같은 LF다. 사본은 전역 설정 `core.autocrlf=true`를 따라 작업본이 CRLF다. 지문은 작업본 바이트로 잰다.
+- 고침: 기록의 지문은 사본 작업본이 아니라 커밋 blob으로 잰다(`git -c core.autocrlf=false show <커밋>:<파일>`). 기록을 사본에서 커밋해 두면 공용 폴더는 `git pull --ff-only` 한 번으로 바뀌어 지문이 어긋나는 틈이 없다.
+- 다시 확인: 빨리감기 전에 `git -c core.autocrlf=false archive <커밋>`으로 LF 판을 꺼내 그 안에서 `node -e "require('./lib.cjs').assertReviewedTools()"`를 돌린다. 11-20 공용 폴더를 `832c083`으로 빨리감기한 뒤에도 같은 확인이 통과했다.
+
 ### `git -c core.autocrlf=false stash apply`는 CRLF 작업본을 다 바뀐 파일로 보고 「would be overwritten by merge」로 멈춘다 (2026-11-09 Claude)
 - 증상: 워크트리를 origin에 맞추려고 `stash push -u` → `merge --ff-only` 뒤 `git -c core.autocrlf=false stash apply <sha>`를 하자 추적 파일이 하나도 안 돌아오고 위 오류로 끝났다(미추적 파일만 돌아옴). 작업본은 깨끗해 보였다.
 - 원인: 이 저장소는 `core.autocrlf=true`로 풀려 있어 끈 채로 보면 모든 CRLF 파일이 「바뀜」이다.
