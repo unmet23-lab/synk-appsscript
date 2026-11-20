@@ -1,7 +1,8 @@
 // 공개 전 확인(설계 §9). 빌드 나무(tools/build.mjs --release가 낸 <밖>)를 받아 공개해도 되는지 기계로 보고, 올릴 명령을 찍는다.
 //   ① 공개 판이다 — 판 이름이 숫자 세 칸(-dev · .dirty 판은 멈춘다)이고, manifest · 입구(loader.js의 판 이름 한 줄)가 같은 판을 말한다
 //   ② 꼭 있어야 할 파일(엔진 묶음 atlas.mjs · 입구 loader.js · loader.mjs)이 manifest에 있고, 나무의 파일 목록이 manifest에 적힌 것과
-//      꼭 같으며(적히지 않은 파일 · 빠진 파일 없음), 파일마다 sha256이 같다
+//      꼭 같으며(적히지 않은 파일 · 빠진 파일 없음), 파일마다 sha256이 같다. 지도(판 폴더의 map/ — manifest의 map 칸)도 같다:
+//      지도가 빠지거나 다르면 켜진 길의 코치가 지도를 못 받아(MAP_FAILED) 목록의 계정이 모두 지금 판으로 돌아간다(설계 주인 11-20)
 //   ③ 판 폴더를 덮지 않는다 — 공개본에 같은 판의 manifest가 있으면 바이트가 같을 때만 지나간다(다시 올려도 바뀌는 것이 없을 때)
 //   ④ 다 맞으면 tools/공개.js 올리기 명령(미리 보기)을 찍는다. 실행(--실행 --계획 --검수)은 그 도구의 절차 그대로다.
 // 이 도구는 공개하지 않는다. 단계 0에서는 쓰지 않는다(공개본이 바뀌지 않는다) — 첫 공개는 단계 4의 제품 전환과 함께다.
@@ -20,24 +21,37 @@ const filesIn = dir =>
     .readdirSync(dir, { withFileTypes: true })
     .filter(entry => entry.isFile())
     .map(entry => entry.name);
+// 지도 폴더는 아래 폴더(items/)까지 — 이름은 map/ 뒤 경로(items/talk.json). 폴더가 없으면 빈 목록이다.
+const filesUnder = (dir, prefix = '') =>
+  fs.existsSync(dir)
+    ? fs
+        .readdirSync(dir, { withFileTypes: true })
+        .flatMap(entry =>
+          entry.isDirectory()
+            ? filesUnder(path.join(dir, entry.name), `${prefix}${entry.name}/`)
+            : entry.isFile()
+              ? [`${prefix}${entry.name}`]
+              : [],
+        )
+    : [];
 
-function listingProblems(dir, expected) {
-  const present = new Set(filesIn(dir));
+function listingProblems(dir, expected, { list = filesIn, label = '' } = {}) {
+  const present = new Set(list(dir));
   const unlisted = [...present].filter(name => !expected.has(name));
   const missing = [...expected].filter(name => !present.has(name));
   return [
-    ...unlisted.map(name => `${name}이 manifest에 없다(적히지 않은 파일은 올리지 않는다)`),
-    ...missing.map(name => `${name}이 나무에 없다`),
+    ...unlisted.map(name => `${label}${name}이 manifest에 없다(적히지 않은 파일은 올리지 않는다)`),
+    ...missing.map(name => `${label}${name}이 나무에 없다`),
   ];
 }
 
-function hashProblems(dir, table) {
+function hashProblems(dir, table, label = '') {
   return Object.entries(table ?? {})
     .filter(([name, info]) => {
       const file = path.join(dir, name);
       return !fs.existsSync(file) || sha256(fs.readFileSync(file)) !== info.sha256;
     })
-    .map(([name]) => `${name}이 manifest와 다르다`);
+    .map(([name]) => `${label}${name}이 manifest와 다르다`);
 }
 
 function contentProblems({ atlas, edition, manifest }) {
@@ -45,6 +59,8 @@ function contentProblems({ atlas, edition, manifest }) {
     names.filter(name => !manifest[table]?.[name]).map(name => `manifest에 ${name}이 없다`),
   );
   const editionDir = path.join(atlas, edition);
+  const mapDir = path.join(editionDir, 'map');
+  const mapTable = manifest.map?.files ?? {};
   return [
     ...required,
     ...listingProblems(
@@ -52,7 +68,9 @@ function contentProblems({ atlas, edition, manifest }) {
       new Set([...Object.keys(manifest.files ?? {}), 'manifest.json']),
     ),
     ...listingProblems(atlas, new Set(Object.keys(manifest.entry ?? {}))),
+    ...listingProblems(mapDir, new Set(Object.keys(mapTable)), { list: filesUnder, label: 'map/' }),
     ...hashProblems(editionDir, manifest.files),
+    ...hashProblems(mapDir, mapTable, 'map/'),
     ...hashProblems(atlas, manifest.entry),
   ];
 }
@@ -94,6 +112,16 @@ async function publicProblems({ edition, manifestBytes }, site, fetcher) {
     : [`공개본에 다른 ${edition} 판이 있다 — 판 폴더는 덮지 않는다(판을 올린다)`];
 }
 
+// 올릴 공개 경로 — 판 폴더의 엔진 묶음 · 지도 · manifest와 입구. manifest에 적힌 것 모두다(지도가 빠지면 켜진 길이 MAP_FAILED).
+export function publishItems(manifest, edition) {
+  return [
+    ...Object.keys(manifest.files ?? {}).map(name => `atlas/${edition}/${name}`),
+    ...Object.keys(manifest.map?.files ?? {}).map(name => `atlas/${edition}/map/${name}`),
+    `atlas/${edition}/manifest.json`,
+    ...Object.keys(manifest.entry ?? {}).map(name => `atlas/${name}`),
+  ];
+}
+
 export async function checkPublish({
   out,
   site = 'https://synk.im',
@@ -102,11 +130,7 @@ export async function checkPublish({
   const tree = readTree(path.resolve(out));
   const problems = treeProblems(tree);
   if (!problems.length) problems.push(...(await publicProblems(tree, site, fetcher)));
-  const items = [
-    ...Object.keys(tree.manifest.files ?? {}).map(name => `atlas/${tree.edition}/${name}`),
-    `atlas/${tree.edition}/manifest.json`,
-    ...Object.keys(tree.manifest.entry ?? {}).map(name => `atlas/${name}`),
-  ];
+  const items = publishItems(tree.manifest, tree.edition);
   const command = `node tools/공개.js 올리기 --원본 "${path.resolve(out)}" ${items.join(' ')}`;
   return {
     ok: problems.length === 0,

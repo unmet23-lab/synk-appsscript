@@ -18,6 +18,7 @@ import { FLOW_MUTANTS } from './mutants/flow.mjs';
 import { MAP_MUTANTS } from './mutants/map.mjs';
 import { ME_MUTANTS } from './mutants/me.mjs';
 import { RECORD_MUTANTS } from './mutants/record.mjs';
+import { RELEASE_MUTANTS } from './mutants/release.mjs';
 import { testEnv } from './test.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -33,7 +34,11 @@ export const MUTANTS = [
   ...COACH_MUTANTS,
   ...ME_MUTANTS,
   ...FLOW_MUTANTS,
+  ...RELEASE_MUTANTS,
 ];
+
+// 사본에 함께 넣는 도구 파일(패키지 기준) — 변형이 바꿀 수 있고, 시험은 subjectTool로 사본의 것을 부른다.
+export const TOOL_SUBJECTS = ['tools/publish.mjs'];
 
 export const SELF_TEST = [
   [
@@ -52,6 +57,12 @@ function prepare(label, change = null) {
   fs.rmSync(dir, { recursive: true, force: true });
   for (const part of ['src', 'loader'])
     fs.cpSync(path.join(ROOT, part), path.join(dir, part), { recursive: true });
+  // 공개 전 확인(tools/publish.mjs)도 사본으로 시험한다 — 지도를 올리기 목록에서 빼는 변형(설계 주인 11-20). node 내장만 부르는 파일이라
+  // 사본 하나로 돈다. 시험은 test/support/subject.mjs의 subjectTool로 부른다.
+  for (const file of TOOL_SUBJECTS) {
+    fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
+    fs.copyFileSync(path.join(ROOT, file), path.join(dir, file));
+  }
   if (!change) return dir;
   const target = path.join(dir, change.file);
   const text = fs.readFileSync(target, 'utf8').replace(/\r\n/g, '\n');

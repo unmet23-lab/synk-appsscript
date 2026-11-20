@@ -4,13 +4,17 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import { checkPublish } from '../../tools/publish.mjs';
+import { subjectTool } from '../support/subject.mjs';
 import { tempDir } from '../support/temp.mjs';
+
+// 변형 실행기가 고친 사본(ATLAS_SUBJECT_ROOT)의 공개 전 확인을 시험한다 — 기본은 이 패키지의 것.
+const { checkPublish } = await subjectTool('publish.mjs');
 
 const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
 // tools/build.mjs가 내는 나무와 같은 꼴을 손으로 만든다(이 묶음은 esbuild 없이 돈다).
-function tree(edition, { release = true, loaderEdition = edition } = {}) {
+// map: 지도 파일(map/ 뒤 경로 → 내용) — 있으면 판 폴더의 map/ 아래에 쓰고 manifest의 map 칸에 적는다(tools/build.mjs와 같은 꼴).
+function tree(edition, { release = true, loaderEdition = edition, map = null } = {}) {
   const out = tempDir('atlas-publish-');
   const dir = path.join(out, 'atlas', edition);
   fs.mkdirSync(dir, { recursive: true });
@@ -26,6 +30,16 @@ function tree(edition, { release = true, loaderEdition = edition } = {}) {
     files: { 'atlas.mjs': { sha256: sha256(code) } },
     entry: { 'loader.js': { sha256: sha256(loader) }, 'loader.mjs': { sha256: sha256(wrapper) } },
   };
+  if (map) {
+    manifest.map = { edition: 1, files: {} };
+    for (const [name, text] of Object.entries(map)) {
+      const bytes = Buffer.from(text);
+      const file = path.join(dir, 'map', name);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, bytes);
+      manifest.map.files[name] = { sha256: sha256(bytes) };
+    }
+  }
   const manifestBytes = Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`);
   fs.writeFileSync(path.join(dir, 'manifest.json'), manifestBytes);
   return { out, manifestBytes };
@@ -53,6 +67,43 @@ test('새 판이면(공개본에 없음) 올릴 명령을 준다 — 판 폴더 
     assert.ok(result.command.includes(` ${item}`), item);
   }
   assert.ok(result.command.startsWith('node tools/공개.js 올리기 --원본 '));
+});
+
+const MAP = { 'index.json': '{"edition":1}', 'units.json': '[]', 'items/talk-rally.json': '[1]' };
+
+test('지도 파일(map/ — 아래 폴더 포함)이 모두 올리기 목록에 든다 — 빠지면 켜진 길의 코치가 MAP_FAILED(설계 주인 11-20)', async () => {
+  const { out } = tree('1.0.0', { map: MAP });
+  const result = await checkPublish({ out, fetcher: answer(404) });
+  assert.equal(result.ok, true, result.problems.join());
+  for (const name of Object.keys(MAP))
+    assert.ok(result.command.includes(` atlas/1.0.0/map/${name}`), name);
+});
+
+test('지도 파일 하나의 해시가 다르거나, 빠지거나, 적히지 않은 지도 파일이 있으면 막는다', async () => {
+  const fetcher = answer(404);
+  const changed = tree('1.0.0', { map: MAP });
+  fs.writeFileSync(
+    path.join(changed.out, 'atlas', '1.0.0', 'map', 'items', 'talk-rally.json'),
+    '[2]',
+  );
+  const result = await checkPublish({ out: changed.out, fetcher });
+  assert.equal(result.ok, false);
+  assert.equal(result.command, null);
+  assert.deepEqual(result.problems, ['map/items/talk-rally.json이 manifest와 다르다']);
+
+  const missing = tree('1.0.0', { map: MAP });
+  fs.rmSync(path.join(missing.out, 'atlas', '1.0.0', 'map', 'units.json'));
+  assert.match(
+    (await checkPublish({ out: missing.out, fetcher })).problems.join(),
+    /map\/units\.json이 나무에 없다/,
+  );
+
+  const extra = tree('1.0.0', { map: MAP });
+  fs.writeFileSync(path.join(extra.out, 'atlas', '1.0.0', 'map', 'items', 'debug.json'), '{}');
+  assert.match(
+    (await checkPublish({ out: extra.out, fetcher })).problems.join(),
+    /map\/items\/debug\.json이 manifest에 없다/,
+  );
 });
 
 test('공개본에 같은 판이 같은 바이트로 있으면 지나가고, 다른 바이트면 덮지 않는다', async () => {

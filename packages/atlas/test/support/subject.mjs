@@ -12,5 +12,7 @@ export const SUBJECT_ROOT = process.env.ATLAS_SUBJECT_ROOT
 export const subjectPath = (...parts) => path.join(SUBJECT_ROOT, ...parts);
 export const subject = (relative = 'index.mjs') =>
   import(pathToFileURL(subjectPath('src', relative)).href);
+// 사본에 든 도구(tools/mutants.mjs의 TOOL_SUBJECTS) — 공개 전 확인처럼 변형이 바꾸는 도구 파일을 사본에서 부른다.
+export const subjectTool = name => import(pathToFileURL(subjectPath('tools', name)).href);
 export const loaderSource = (name = 'loader.js') =>
   fs.readFileSync(subjectPath('loader', name), 'utf8').replace(/\r\n/g, '\n');
