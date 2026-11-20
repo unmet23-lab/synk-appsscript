@@ -75,6 +75,9 @@ export function createRally(coach, { audio = () => true } = {}) {
     get retired() {
       return retired;
     },
+    // 엔진이 이 답을 판정했나 — 등급(grade)이 있을 때만이다. 소리를 끄거나 소리가 끊겨 다 듣지 못한 답은 화면 판정(verdict)이 맞힘이어도
+    // 등급이 없다(옛 코치의 'unassessed'와 같은 자리, 4-6 끝 판 GD7). app.mjs가 결과의 recorded를 이 값으로 정한다.
+    assessed: rec => !!rec && rec.grade != null,
     round: (options = {}) => roundOf(engine, options),
     fixed: queue => fixedOf(engine, queue),
     // 받아친 결과를 순간 맞춤에 — 그 공의 제시 번호와 함께(제시가 있는 관찰, §23-4).

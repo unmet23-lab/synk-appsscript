@@ -16,12 +16,12 @@
 //   순간 맞춤  돋보기 시점(live) · stuck · 도움 줄이기 권함은 옛 겉과 같은 이름으로 쓴다. 손님마다 답은 한 번이라 한 제시가 Flow를 한 번만 움직인다.
 //   은행 밖  지도(은행)에 없는 손님은 present하지 않는다 — 내면 엔진이 태그 없는 문항으로 받아 하루 새것 한도를 깎는다(itemUnits로 본다).
 //   오류    문을 거친 오류는 셸 창의 것이라 code로만 가른다. 겉이 닫혀도(RUN_ENDED) 고르기가 실패해도 근무는 게임 차례로 이어 간다.
-//           판을 다시 정하면(onRetired) 이번 근무는 기록 없이 잇고, app.mjs가 다음 근무를 열 때 문을 다시 연다.
+//           판을 다시 정하면(onRetired) 이번 근무는 기록 없이 잇고, app.mjs가 다음 근무 · 한 손님 연습을 열 때 문을 다시 연다.
 // 옛 return-practice · 옛 요약 여섯 상태 · 이벤트 읽기 · 즉시 확인 바꿔 넣기 · 짝 맞추기 · 기록 지우기 · 동기 알림은 새 길에서 쓰지 않는다(§23-6).
 import { SHIFT_SIZE, SKILL_LABEL, VENUES } from './content.mjs';
 import { composeShift, minutes } from './core.mjs';
 import { GAME_ID, caseCandidates, caseMetadata } from './learning.mjs';
-import { answerOf, openNext, setPlay } from './kit/atlas-next.mjs';
+import { answerOf, nextDoor, openNext, setPlay } from './kit/atlas-next.mjs';
 
 // 셸의 게임 은행 표(synk-world-app/world-atlas-game.mjs GAME_BANKS['entry-check'])와 같다 — 시험이 견준다.
 export const BANKS = Object.freeze(['entry-check']);
@@ -42,7 +42,9 @@ const quietly = (fn, fallback = null) => {
 const ordinary = venue => venue.cases.filter(c => !c.followupOnly);
 
 // 새 길 코치를 연다. 문이 없고 개발 깃발도 없거나 셸이 지금 판이라고 하면 null(옛 길). RUN_ENDED는 그대로 던진다 — 옛 길을 열지 않는다.
+// 계정 코치로 문을 거쳤을 때만 「WORLD 계정에 이어진다」(hosted) — 손님 코치(동의를 끈 계정의 기기 길 포함)는 이 브라우저의 기록이다.
 export async function openShiftCoach({ win = globalThis.window } = {}) {
+  const viaDoor = nextDoor(win) != null;
   const coach = await openNext({
     win,
     gameId: GAME_ID,
@@ -50,11 +52,13 @@ export async function openShiftCoach({ win = globalThis.window } = {}) {
     // 혼자 뜨는 길(개발 깃발)의 능력 이름 — 셸이 넘기는 표와 같은 이름(단위 이름은 지도 조각이 안다).
     label: id => SKILL_LABEL[id] ?? null,
   });
-  return coach ? createShiftCoach(coach) : null;
+  if (!coach) return null;
+  const hosted = viaDoor && quietly(() => coach.summary()?.storage?.guest === false, false) === true;
+  return createShiftCoach(coach, { hosted });
 }
 
-// coach: 키트가 감싼 게임 겉(openNext의 값).
-export function createShiftCoach(coach) {
+// coach: 키트가 감싼 게임 겉(openNext의 값). hosted: 그 코치의 기록이 WORLD 계정의 것인가(app.mjs의 기록 안내).
+export function createShiftCoach(coach, { hosted = false } = {}) {
   let retired = false;
   // 판을 다시 정했다 — 이번 근무는 기록 없이 잇고 다음 근무에서 문을 다시 연다(§23-2).
   quietly(() =>
@@ -92,6 +96,7 @@ export function createShiftCoach(coach) {
     get retired() {
       return retired;
     },
+    hosted,
     // 정규 근무 — 손님이 올 때마다 고른다.
     shift: (venue, options = {}) => shiftOf(coach, inBank, venue, options),
     // 정해진 손님(연수) — recommend 없이 present만, 근무 끝에 판을 닫는다.
@@ -203,7 +208,9 @@ function shiftOf(coach, inBank, venue, { firstTime = false } = {}) {
 
 // 정해진 손님 — 제품 차례라 recommend 없이 present만(연수). 첫 손님을 부를 때(첫 present 전) 판 길이를 코치에 넘긴다(open — 코치
 // startSet). 길이는 이 판에서 낼 제시 수(은행에 있는 손님 수)다. 앞 판은 app.mjs가 이 판을 짓기 전에 닫는다(endPlan).
-// set을 주면(한 손님 연습 — 고를 때 recommend로 연 판) 열지 않고 그 판을 닫기만 한다.
+// set을 주면(한 손님 연습 — 고를 때 recommend로 연 판) 열지 않고 그 판을 닫기만 한다. 그 판은 손님을 부르기 전(근무 전 안내에서 그만두기 ·
+// 연수 다시 보기)에도 이미 열려 있어 그때도 닫는다(4-6 끝 판 A1). 입구 · 결과의 근무지 추천(venueOf)이 판 옵션 없이
+// 고르며 기본 판을 열어 두었으면 코치가 { opened: false }를 낸다 — 그 판(제시 없음)을 기록 없이 닫고 다시 연다(4-6 끝 판 F4).
 function fixedOf(coach, queue, given = null, inBank = () => true) {
   const set = given ?? setPlay(coach, { length: queue.filter(c => inBank(caseMetadata(c))).length });
   const end = closer(set);
@@ -213,14 +220,19 @@ function fixedOf(coach, queue, given = null, inBank = () => true) {
     queue,
     pool: queue,
     at(index) {
-      if (!started && !given) quietly(() => set.open());
+      if (!started && !given)
+        quietly(() => {
+          if (set.open()?.opened !== false) return;
+          set.end();
+          set.open();
+        });
       started = true;
       return queue[index] ?? null;
     },
     line: () => null,
     kinds: () => queue.map(() => 'game'),
     end() {
-      if (started) end();
+      if (started || given) end();
       return null;
     },
   });

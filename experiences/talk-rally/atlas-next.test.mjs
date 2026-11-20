@@ -376,6 +376,36 @@ test('판을 다시 정하면 이번 판은 기록 없이 잇고, 다음 판은 
   coach.dispose();
 });
 
+test('소리를 끈 공 — 엔진이 판정하지 못한 답(등급 없음)은 결과에 기록된 답으로 세지 않는다(4-6 끝 판 GD7)', async () => {
+  const { coach, time } = await engineCoach();
+  const { rally } = await throughDoor(coach);
+  const plan = rally.round({ firstTime: true, seed: 1 });
+  // app.mjs speakCur의 차례: 소리를 끄면 말을 글로 보이고(도움 text) 다 듣지 못한 채(전달 failed) 공을 친다. 소리가 도중에 끊긴 공도 같다.
+  const ball = (i, { heard, help = null, right = true }) => {
+    const item = plan.at(i);
+    const ex = createExchange(rally.coach, item);
+    if (help) ex.help(help);
+    time.advance(2000); ex.heard(heard); time.advance(1000);
+    return ex.confirm(right ? item.answer : item.options.find((option) => option !== item.answer));
+  };
+  const muted = ball(0, { heard: false, help: 'text' });
+  const mutedWrong = ball(1, { heard: false, help: 'text', right: false });
+  const alone = ball(2, { heard: true });
+  const replayed = ball(3, { heard: true, help: 'replay' });
+  assert.equal(muted.verdict, 'correct', '화면의 맞힘은 그대로');
+  assert.equal(muted.grade, null, '소리를 끈 답은 엔진이 판정하지 않는다');
+  assert.equal(mutedWrong.grade, null);
+  assert.notEqual(alone.grade, null);
+  assert.notEqual(replayed.grade, null, '다 듣고 다시 들은 답은 판정한다(옛 길도 기록한 답)');
+  assert.deepEqual([muted, mutedWrong, alone, replayed].map((rec) => rally.assessed(rec)), [false, false, true, true]);
+  assert.equal(rally.assessed(null), false, '답이 코치에 닿지 않았으면(닫힌 겉 · 오류) 기록되지 않은 답');
+  // app.mjs는 새 길에서 이 값으로 결과의 recorded를 정하고, 옛 길(rally 없음)은 옛 판정 비교 그대로다.
+  const source = readFileSync(new URL('./app.mjs', import.meta.url), 'utf8');
+  assert.ok(source.includes("cur.recorded = rally ? rally.assessed(rec) : !!rec && rec.verdict !== 'unassessed';"));
+  plan.end();
+  coach.dispose();
+});
+
 test('원문 — 꺼진 판은 새 길 모듈을 싣지 않고 옛 코치를 지금 자리에서 같은 인수로 만든다', () => {
   const source = readFileSync(new URL('./app.mjs', import.meta.url), 'utf8');
   const imports = [...source.matchAll(/^import\s[^;]*?from\s+'([^']+)'/gm)].map((match) => match[1]);

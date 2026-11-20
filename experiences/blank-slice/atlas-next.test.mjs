@@ -226,6 +226,7 @@ test('같은 날 둘째 판 — idle(채우기)은 엔진이 고른 문장, none
   for (const [skill, n] of Object.entries(skillsOf(second.queue))) assert.ok(n >= 4, `${skill} ${n}문장`);
   const results = spy.calls.slice(from).filter((call) => call.name === 'recommend').map((call) => call.result);
   const idle = results.map((result, i) => [result, i]).filter(([result]) => result.status === 'idle').map(([, i]) => i);
+  assert.ok(idle.length > 0, '둘째 판에 채우기가 선다 — 아래 단언이 돈다(끝 판 F6 ⑤)');
   for (const i of idle) {
     assert.equal(second.kinds()[i], 'engine', `문장 ${i + 1}: idle은 엔진이 고른 문장(§23-6)`);
     assert.equal(second.queue[i].id, results[i].selected.itemId, '엔진의 채우기 그대로');

@@ -35,11 +35,11 @@ if (!globalThis.SynkPlayCollection) for (const n of $$('.synk-collection-line'))
 let coach = null, learningFailed = false, nextPlan = null, audioTicket = null;
 // 새 길(단계 4 §23-7): WORLD 셸의 게임 문이 있거나 개발 깃발이 있을 때만 새 코치를 연다. 새 길 모듈(atlas-next-play.mjs)은 그때만 싣는다.
 // open이 null이면(지금 판) 아래 옛 코치로 시작하고, RUN_ENDED면 옛 길을 열지 않고 시작 화면에 멈춘다. 새 길의 다른 실패는 기록 없이 논다.
-// 문이 없으면 옛 코치를 지금과 같은 때 · 같은 인수로 만든다.
-let atlasNext = null, nextWhy = null;
+// 문이 없으면 옛 코치를 지금과 같은 때 · 같은 인수로 만든다. nextFailed: 새 길로 정해진 판인데 코치를 열지 못했다(옛 길을 열지 않는다).
+let atlasNext = null, nextWhy = null, nextFailed = false;
 if (nextDoor(window) || devFlag(window)) {
   try { atlasNext = await (await import('./atlas-next-play.mjs')).openCafe({ win: window }); }
-  catch (error) { if (ended(error)) await new Promise(() => {}); learningFailed = true; }
+  catch (error) { if (ended(error)) await new Promise(() => {}); learningFailed = true; nextFailed = true; }
   coach = atlasNext;
 }
 if (!atlasNext && !learningFailed) try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage, followups:true }) || null; } catch { learningFailed = true; }
@@ -49,8 +49,10 @@ function noteLearningError(error) { if (error?.code === 'STORAGE_BUSY') hostStor
 // 요약 읽기가 된 것만으로는 차례가 돌아왔다고 보지 않는다: 쓰기 성공이나 요약의 저장 상태(storageStatus)로만 대기를 푼다.
 function learn(method, ...args) { try { const value = coach?.[method](...args); if (method !== 'summary') hostStorageBusy = false; return value; } catch (error) { noteLearningError(error); return null; } }
 const assignment = () => { try { return coach?.assignment?.() || null; } catch { return null; } };
-// SYNK WORLD 안에서는 기록이 계정의 것이다: 이 브라우저가 아니라 계정에서 보관하고 지운다.
-const hosted = atlasNext ? atlasNext.hosted : (() => { try { return typeof coach?.assignment === 'function'; } catch { return false; } })();
+// SYNK WORLD 안에서는 기록이 계정의 것이다: 이 브라우저가 아니라 계정에서 보관하고 지운다. 실제로 연 코치로 정한다 — 새 길이면 그 코치의
+// 저장소(겉의 hosted), 옛 코치면 지금처럼. 판을 다시 정해 길이 바뀌면(reopenNext) 다시 정한다.
+const hostedOf = () => atlasNext ? atlasNext.hosted : (() => { try { return typeof coach?.assignment === 'function'; } catch { return false; } })();
+let hosted = hostedOf();
 
 /* ── 아틀라스 순간 맞춤: 손님 속도·주문 종류를 이 사람에 맞춘다(입구에서 끌 수 있다) ── */
 const FLOW_KEY = 'synk.order-rush.flow-mode';
@@ -158,14 +160,38 @@ function updateLearning() {
   $('#learning-reason').textContent = tip ? `${text} ${tip}` : text;
 }
 function selectOrder(orders) {
-  // 새 길: 이 판의 recommend(키트 setPlay). none이면 게임 차례(덱의 첫 주문)로 낸다.
-  if (atlasNext) { const pick = learningFailed ? null : learn('pick', orders); nextWhy = pick?.why?.line ?? null; updateLearning(); return pick?.selected ?? orders[0]; }
+  // 새 길: 손님이 줄에 설 때는 덱 차례의 첫 주문으로 자리만 잡는다 — 그 손님의 주문은 들을 때 고른다(chooseLate).
+  if (atlasNext) return orders[0];
   if (!coach || learningFailed) return orders[0];
   try {
     const plan = live ? chooseOrderLive(live, orders) : chooseOrder(coach, orders);
     if (plan?.selected) { nextPlan = plan; updateLearning(); return plan.selected; }
   } catch (error) { noteLearningError(error); }
   return orders[0];
+}
+// 새 길: 손님의 주문은 그 손님을 들을 때 이 판의 recommend(키트 setPlay)로 고르고 곧바로 낸다. 코치는 마지막에 고른 줄 하나만 들므로, 줄에
+// 설 때 고르면 그사이 다른 손님의 고르기가 그 근거를 덮는다(다시 보기 GB3). 후보는 이 판에서 아직 고르지 않은 주문과 이 손님이 잡아 둔
+// 주문이다. none이면 게임 차례 — 잡아 둔 주문 그대로다. WORLD 줄의 손님(얼굴 · 이름)은 주문과 상관없고, 주문 목소리는 들을 때 정한다.
+function chooseLate(t) {
+  const s = state.session;
+  if (learningFailed || !s) return;
+  const queued = new Set(s.queue.filter((x) => x !== t).map((x) => x.order.id));
+  const orders = [t.order, ...s.deck.filter((o) => o.id !== t.order.id && !s.selectedOrderIds.has(o.id) && !queued.has(o.id))];
+  const pick = learn('pick', orders), chosen = orders.find((o) => o.id === pick?.selected?.id);
+  nextWhy = pick?.why?.line ?? null;
+  if (chosen && chosen !== t.order) { s.selectedOrderIds.delete(t.order.id); s.selectedOrderIds.add(chosen.id); t.order = chosen; }
+  updateLearning();
+}
+// 새 길: 손님마다 한 번 고른다(ordered). 제시 번호를 받지 못해 다시 낼 때도 이미 들려준 주문은 바꾸지 않는다. 서빙은 고른 뒤에만 받는다(serve).
+// LAB 펠트 동물은 주문마다 정해져 있어 계산대의 손님을 고른 주문의 동물로 맞춘다. 계산대에 세운 차례 안이라 바뀌기 전 그림은 그려지지 않는다(둘째 다시 보기 F2).
+function presentTicket(t) {
+  if (atlasNext && !t.ordered) {
+    const held = t.order;
+    chooseLate(t);
+    t.ordered = true;
+    if (!cast && t.order !== held && $('#guest').dataset.uid === String(t.uid)) { const img = $('#guest-img'); img.src = `assets/cast/${customerOf(t.order.id)}.webp`; img.alt = guestName(t); }
+  }
+  return presentOrder(t.order);
 }
 function refreshRecommendation() { if (atlasNext) nextWhy = learningFailed ? null : learn('reason', ORDERS) ?? null; else if (coach) selectOrder(ORDERS); updateLearning(); refreshDelayed(); }
 // 영업 중에는 글만 고친다: live.pick은 순간 맞춤 상태를 건드리고, 다음 손님은 어차피 새로 고른다.
@@ -192,12 +218,15 @@ function watchHostStorage(checks = 40) {
 }
 // 며칠 뒤 주문 후보 — 새 길은 돌아온 단위(due())가 든 처음 듣는 주문이다(옛 followups 대신).
 function delayedList(){return atlasNext?learn('delayed',DELAYED_ORDERS)||[]:delayedOrders(coach,DELAYED_ORDERS);}
+// 새 길: 판을 다시 정한 뒤 닫힌 겉은 후보를 모른다 — 문을 다시 열 때까지 단추를 그대로 두고, 누르면 다시 연 코치로 다시 본다(GC4).
 function refreshDelayed(){
+ if(atlasNext?.retired)return;
  const available=!assignment()&&!learningFailed&&delayedList().length>0;
  for(const id of ['#followup-start','#followup-result']){const button=$(id);if(button)button.hidden=!available;}
 }
-function startDelayed(){const next=!assignment()&&!learningFailed?delayedList()[0]:null;if(next)start(false,next);else refreshDelayed();}
+function startDelayed(){if(atlasNext?.retired){reopenNext(startDelayed);return;}const next=!assignment()&&!learningFailed?delayedList()[0]:null;if(next)start(false,next);else refreshDelayed();}
 // 판을 다시 정한 뒤의 다음 판(§23-2): openNext를 다시 부른다. 새 겉이면 그 겉으로, 지금 판(null)이면 옛 코치로, 닫혔으면 기록 없이 잇는다.
+// 길이 바뀌었을 수 있다(손님 · 계정 코치, 옛 코치) — 실제로 연 코치로 기록의 자리 · 지우기 단추와 입구의 다음 이유를 다시 그린다(끝 판 C1).
 let reopening = false;
 function reopenNext(then) {
   if (reopening) return;
@@ -205,6 +234,7 @@ function reopenNext(then) {
   atlasNext.reopen().then((how) => {
     reopening = false;
     if (how === 'old') { atlasNext = null; coach = null; try { coach = globalThis.SynkLearning?.createGame({ gameId: 'order-rush', storage: localStorage, followups:true }) || null; } catch { learningFailed = true; } }
+    hosted = hostedOf(); paintScope(true); refreshRecommendation(); renderLobby();
     then();
   });
 }
@@ -253,7 +283,7 @@ const tone = (kind) => { if (!world) audio.tone(kind); };
 function playTicket(t) {
   if (!t) return;
   t.chimeHold = false;
-  if (!t.presentationId) t.presentationId = presentOrder(t.order);
+  if (!t.presentationId) t.presentationId = presentTicket(t);
   if (!audio.isOn()) { if (!t.textShown) showOrderText(t); return; }   // 소리를 꺼 두었으면 주문을 글로(도움으로 남는다)
   if (t.heard) learn('help', t.presentationId, 'replay');
   setMood(t, 'order');   // WORLD: 다시 주문하는 얼굴로
@@ -262,7 +292,7 @@ function playTicket(t) {
   audio.play(t.order, voiceSrc(t));
 }
 function showOrderText(t) {
-  if (!t.presentationId) t.presentationId = presentOrder(t.order);
+  if (!t.presentationId) t.presentationId = presentTicket(t);
   t.textShown = true;
   t.help = true;
   learn('help', t.presentationId, 'text');
@@ -574,6 +604,8 @@ function removeCup() {
 
 function serve() {
   if (state.screen !== 'game' || state.paused || state.celebrating || !ticket()) return;
+  // 새 길: 손님이 말하기 전(WORLD 문 종이 울리는 동안)의 주문은 자리만 잡은 것이다. 그 주문으로 판정하지 않게 서빙을 받지 않는다(둘째 다시 보기 F2).
+  if (atlasNext && !ticket().ordered) return;
   const t = ticket(), judged = judgeOrder(t.order, state.cups);
   const evidence = t.presentationId ? answerWithFlow(t, { ...orderAnswer(judged, t), attemptNo: t.attempts + 1 },
     { pressure: pressureOf(t, state.session), ...(t.audioCompleted === true || t.help ? {} : { outcome: 'void' }) }) : null;
@@ -932,12 +964,20 @@ window.addEventListener('pagehide', () => { audio.stop(); if (state.screen === '
 let fitTimer = 0;
 window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(fitBubble, 120); });
 
-// 학습 기록 지우기: WORLD 계정이면 계정 설정에서 하므로 숨긴다
-$('#learning-reset').hidden = hosted || !!atlasNext;   // 새 길에는 이 화면의 기록 지우기가 없다(「나」의 연습 기록 비우기)
-if (hosted) {
-  $('#learning-scope').textContent = '연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
-  $('#result-scope').textContent = '주문 음성은 합성 음성이에요. 학습 효과는 아직 학생들과 확인하지 않았어요. 연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
+// 학습 기록 지우기: WORLD 계정이면 계정 설정에서 하므로 숨긴다. 새 길로 정해진 판에는(코치를 열지 못한 판도) 이 화면의 기록 지우기가 없다
+// (「나」의 연습 기록 비우기). 판을 다시 정해 길이 바뀌면(again) 기록의 자리 글도 처음 글로 되돌려 다시 그린다.
+const SCOPE_TEXT = { learning: $('#learning-scope').textContent, result: $('#result-scope').textContent };
+function paintScope(again = false) {
+  $('#learning-reset').hidden = hosted || !!atlasNext || nextFailed;
+  if (hosted) {
+    $('#learning-scope').textContent = '연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
+    $('#result-scope').textContent = '주문 음성은 합성 음성이에요. 학습 효과는 아직 학생들과 확인하지 않았어요. 연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
+  } else if (again) {
+    $('#learning-scope').textContent = SCOPE_TEXT.learning;
+    $('#result-scope').textContent = SCOPE_TEXT.result;
+  }
 }
+paintScope();
 // 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다: 추천·대기 글이 쓰는 칸이 아니라 덮이지 않고, 화면 읽기는 #sr-live로 듣는다.
 const RESET_NOTICE = {
   done: '이 브라우저의 모든 게임 학습 기록을 지웠어요. 공통 코인은 그대로 남아요.',

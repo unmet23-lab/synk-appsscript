@@ -486,8 +486,14 @@ test('원문 — 꺼진 판은 새 길 모듈을 싣지 않고 옛 코치를 지
   assert.match(source, /const atlasNext = !!\(nextDoor\(window\) \|\| devFlag\(window\)\);/);
   assert.match(source, /\nif \(!atlasNext\) openOldCoach\(\);\n/, '문이 없으면 이 자리에서 동기로 옛 코치');
   assert.match(source, /\nif \(atlasNext\) await openNextCoach\(\);\n/, '문이 있을 때만 기다린다');
-  assert.ok(source.indexOf('if (WORLD) setupWorld();') < source.indexOf('if (atlasNext) await openNextCoach();'), '그리기 고리와 WORLD 문구 뒤에서 기다린다');
-  assert.ok(source.indexOf('requestAnimationFrame(frame);') < source.indexOf('if (atlasNext) await openNextCoach();'));
+  // 세 줄이 모두 있는지 먼저 본다 — 없으면 indexOf가 -1이라 차례 단언이 늘 참이다. 그리기 고리는 frame 함수 안의 다음 프레임 요청이 아니라
+  // 맨 위(줄머리)의 첫 호출이다(끝 판 F6 ②).
+  const wait = source.search(/^if \(atlasNext\) await openNextCoach\(\);\r?$/m);
+  const world = source.search(/^if \(WORLD\) setupWorld\(\);\r?$/m);
+  const loop = source.search(/^requestAnimationFrame\(frame\);\r?$/m);
+  assert.ok(wait > 0 && world > 0 && loop > 0, '기다림 · WORLD 문구 · 그리기 고리 줄이 있다');
+  assert.ok(world < wait, '그리기 고리와 WORLD 문구 뒤에서 기다린다');
+  assert.ok(loop < wait, '맨 위 그리기 고리를 기다림 앞에서 돌린다');
   assert.equal(source.includes('/atlas/'), false, '게임이 입구를 직접 부르지 않는다');
   // 이 폴더의 다른 파일도 새 길 모듈을 정적으로 싣지 않는다.
   for (const name of readdirSync(new URL('.', import.meta.url))) {

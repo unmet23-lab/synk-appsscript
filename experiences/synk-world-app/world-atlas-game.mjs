@@ -151,6 +151,18 @@ function makeFacade(coach, { leave, onRetired }) {
   };
 }
 
+// 문 여럿이 셸의 같은 코치를 받을 수 있다 — 셸은 판 · 은행 조합마다 코치를 다시 쓰므로 패널을 닫고 다시 연 같은 게임의 문은 앞 문과 같은
+// 코치를 받는다. 코치마다 앉힌 겉의 수를 세어, 다른 문이 앉혀 쓰는 코치의 판은 닫지 않는다(끝 판 GD1).
+const holders = new WeakMap();
+const hold = (coach, by) => {
+  const count = Math.max(0, (holders.get(coach) ?? 0) + by);
+  holders.set(coach, count);
+  return count;
+};
+// 코치 → 다음 차례에 닫기로 한 앞 겉의 닫기들. 다른 문이 같은 코치를 앉히기 전에 먼저 닫는다 — 미룬 닫기가 돌기 전에 새 문이 앉으면 앞 판이
+// 닫히지 않고 새 틀에 넘어갔다(다시 보기 C2). 새 틀이 문을 열 때는 앞 틀이 이미 내려가 그 마지막 답도 들어 있다.
+const retiring = new WeakMap();
+
 // entry: 입구(gameCoach(gameId, banks) · retired(coach, fn)). gameId: launchGame이 연 게임.
 // later(fn): 셸 창의 다음 차례 — 시험만 바꾼다.
 export function createGameDoor({ entry, gameId, later = fn => setTimeout(fn, 0) }) {
@@ -167,63 +179,91 @@ export function createGameDoor({ entry, gameId, later = fn => setTimeout(fn, 0) 
       // 닫을 판이 없다
     }
   }
-  // 지금 겉을 닫고 그 판을 닫는다.
+  // 지금 겉을 닫고 그 판을 닫는다 — 그 코치를 앉혀 쓰는 다른 문이 없을 때만.
   function retireCurrent() {
     const slot = current;
     current = null;
     if (!slot) return;
     slot.facade.close();
     slot.stopRetired?.();
-    endSet(slot.coach);
+    if (hold(slot.coach, -1) === 0) endSet(slot.coach);
   }
 
+  // 그 겉을 셸 창의 다음 차례에 닫는다 — 그 전에 다른 문이 같은 코치를 앉히면 그때 닫는다(위 retiring).
+  function retireLater(slot) {
+    const finish = () => {
+      retiring.get(slot.coach)?.delete(finish);
+      if (current === slot) retireCurrent();
+    };
+    if (!retiring.has(slot.coach)) retiring.set(slot.coach, new Set());
+    retiring.get(slot.coach).add(finish);
+    later(finish);
+  }
+
+  // 틀이 넘긴 은행 목록을 먼저 셸 창의 사본으로 옮기고 그 사본을 본다 — 본 목록과 입구에 넘기는 목록이 같다(끝 판 GD6).
   function checkAsk(asked, banks) {
     if (asked !== gameId) throw coded('DOOR_GAME', `이 문은 ${gameId}만 받는다`);
-    if (!Array.isArray(banks) || !banks.length || banks.some(bank => !allowed.has(bank)))
+    const list = Array.isArray(banks) ? Array.from(banks) : null;
+    if (!list?.length || list.some(bank => typeof bank !== 'string' || !allowed.has(bank)))
       throw coded('DOOR_BANK', `${gameId}의 은행이 아니다`);
+    return list;
   }
 
   function seat(coach, run) {
     const listeners = new Set();
-    const slot = { coach, run, listeners, stopRetired: null, facade: null };
+    const slot = { coach, run, listeners, stopRetired: null, facade: null, retired: null };
+    const tell = (fn, detail) => {
+      try {
+        fn(detail);
+      } catch {
+        // 틀의 정리는 문을 막지 않는다
+      }
+    };
     slot.facade = makeFacade(coach, {
-      leave: () =>
-        later(() => {
-          if (current === slot) retireCurrent();
-        }),
+      leave: () => retireLater(slot),
+      // 겉을 받은 틀이 듣개를 걸기 전에 판을 다시 정했으면(받은 뒤 await 사이) 건 때 다음 차례로 알린다(끝 판 D1).
       onRetired: fn => {
         if (typeof fn !== 'function') return () => {};
+        if (slot.retired) {
+          let live = true;
+          later(() => {
+            if (live) tell(fn, slot.retired);
+          });
+          return () => {
+            live = false;
+          };
+        }
         listeners.add(fn);
         return () => listeners.delete(fn);
       },
     });
+    for (const finish of [...(retiring.get(coach) ?? [])]) finish();
+    current = slot;
+    hold(coach, 1);
     // 판을 다시 정했다 — 틀에 알리고 겉을 닫는다(코치는 입구가 닫는다 — finishSet은 부르지 않는다).
     slot.stopRetired = entry.retired?.(coach, detail => {
       if (current !== slot) return;
       current = null;
+      hold(coach, -1);
+      slot.retired = { reason: detail?.reason ?? 'retired' };
       slot.facade.close();
-      for (const fn of [...listeners])
-        try {
-          fn({ reason: detail?.reason ?? 'retired' });
-        } catch {
-          // 틀의 정리는 문을 막지 않는다
-        }
+      for (const fn of [...listeners]) tell(fn, slot.retired);
+      listeners.clear();
     });
-    current = slot;
     return slot.facade.api;
   }
 
   async function open({ gameId: asked, banks } = {}) {
     if (closed) throw ended();
-    checkAsk(asked, banks);
+    const list = checkAsk(asked, banks);
     runs += 1;
     const run = runs;
     retireCurrent(); // 같은 패널의 다시 open — 앞 문서의 겉을 닫고 그 판을 닫는다
-    const coach = await entry.gameCoach(gameId, [...banks].sort());
+    const coach = await entry.gameCoach(gameId, list.sort());
     // 기다리는 사이 패널이 닫혔거나 틀 문서가 바뀌었다 — 겉을 주지 않고 RUN_ENDED(다시 검토 A2). 받은 코치의 판은 닫는다 — 같은
-    // 코치를 새 문서가 이미 받아 판을 열었으면 건드리지 않는다(셸은 판 · 은행 조합마다 코치를 다시 쓴다).
+    // 코치를 이 문이나 다른 문(다시 연 패널)이 앉혀 쓰고 있으면 건드리지 않는다(끝 판 GD1).
     if (closed || run !== runs) {
-      if (coach && current?.coach !== coach) endSet(coach);
+      if (coach && !holders.get(coach)) endSet(coach);
       throw ended();
     }
     return coach ? seat(coach, run) : null;
@@ -231,10 +271,12 @@ export function createGameDoor({ entry, gameId, later = fn => setTimeout(fn, 0) 
 
   return Object.freeze({
     api: Object.freeze({ open }),
-    // 패널이 닫힌다(attachPanelResource) — 문을 치우고 겉과 판을 닫는다.
+    // 패널이 닫힌다(attachPanelResource) — 문을 치우고(새 open은 바로 RUN_ENDED) 겉과 판은 셸 창의 다음 차례에 닫는다. 셸은 틀을 내리기
+    // 전에 이것을 부르므로, 틀이 내려가며(pagehide) 내는 마지막 답이 겉 닫기보다 먼저 든다(끝 판 GD5 — 키트의 leave와 같은 차례).
     dispose() {
+      if (closed) return;
       closed = true;
-      retireCurrent();
+      if (current) retireLater(current);
     },
     get closed() {
       return closed;

@@ -19,7 +19,7 @@ const UNITS = readJson('../../packages/atlas/map/units.json');
 const WORDS = readJson('../../packages/atlas/map/words.json'); // 셸이 여는 은행 조각처럼 낱말 이름이 서게(이유 줄)
 const T0 = Date.UTC(2026, 10, 19, 1, 0, 0); // 서울 10시
 const DAY = 86_400_000;
-const SET = { length: SONG_LENGTH, newLimit: 3 * SONG_LENGTH };
+const SET ={ length: SONG_LENGTH, newLimit: 3 * SONG_LENGTH };
 const COACH_METHODS = ['recommend', 'present', 'help', 'delivery', 'answer', 'exposure', 'exposures', 'summary', 'due', 'itemUnits', 'finishSet', 'today', 'presentation', 'live'];
 
 const clockAt = (start = T0) => { const state = { t: start }; return { now: () => state.t, advance: (ms = 4000) => (state.t += ms) }; };
@@ -310,6 +310,46 @@ test('startSet이 없는 지금 엔진 — 정해진 판도 놀이는 그대로 
   door.dispose();
 });
 
+test('정해진 판 — 도는 판에 답을 기다리는 제시가 있으면 다른 판을 열지 않는다(false). 그 제시의 답이나 판정 못 한 답을 받은 뒤에 연다. 같은 판은 잇고, 판을 다시 정한 겉은 막지 않는다(둘째 다시 보기 Q6)', async () => {
+  const { play, coach, port, spy, clock, door } = await opened({ startSet: true });
+  const trackId = play.song().trackId;
+  const { round } = playSong(play, trackId, clock);
+  play.song();
+  const recallOf = q => rhythmItem(trackId, q, { recall: true });
+  const recalls = round.questions.map(recallOf);
+  const queue = supplementalItems({ purpose: 'practice' }).slice(0, 2);
+  assert.equal(play.fixed(queue), true, '보충 연습의 판을 연다');
+  const sid = play.coach.present(queue[0]); clock.advance();
+  play.coach.delivery(sid, { audio: 'completed' }); clock.advance();
+  let from = spy.calls.length;
+  assert.equal(play.fixed(recalls, round.questions), false, '보충 대화가 답을 기다리면 새 문장 확인의 판을 열지 않는다');
+  assert.deepEqual(setCalls(spy.calls.slice(from)), [], '앞 판을 닫지 않는다');
+  assert.equal(play.holds(sid), true);
+  assert.equal(play.fixed(queue.slice(1), queue), true, '같은 판은 그대로 잇는다');
+  play.coach.answer(sid, { correct: true, assessable: true }); clock.advance();
+  from = spy.calls.length;
+  assert.equal(play.fixed(recalls, round.questions), true, '답한 뒤에는 연다');
+  assert.deepEqual(setCalls(spy.calls.slice(from)), ['finishSet', 'startSet']);
+  const pid = play.coach.present(recalls[0]); clock.advance();
+  assert.equal(play.fixed(queue.slice(1), queue), false, '새 문장이 답을 기다리면 보충 연습의 판을 다시 열지 않는다');
+  play.coach.answer(pid, { correct: null, assessable: false, reason: 'unanswered' }); clock.advance();
+  assert.equal(play.fixed(queue.slice(1), queue), true, '판정 못 한 답을 받은 뒤에도 연다');
+  const next = play.coach.present(queue[1]); clock.advance();
+  const rows = await events(coach, port);
+  for (const id of [sid, pid]) assert.equal(rows.filter(x => x.type === 'practice.attempted' && x.presentationId === id).length, 1, id);
+  const shown = rows.filter(e => e.type === 'practice.presented');
+  const setOf = id => shown.find(e => e.id === id).setId;
+  assert.equal(new Set([setOf(sid), setOf(pid), setOf(next)]).size, 3, '판마다 다른 판');
+  // 판을 다시 정했다 — 그 겉의 제시는 기록되지 않으니 다음 판을 막지 않는다.
+  const o = await opened({ startSet: true });
+  o.play.fixed(queue);
+  assert.ok(o.play.coach.present(queue[0]));
+  o.entry.retire(o.spy);
+  assert.equal(o.play.fixed(recalls, round.questions), true);
+  door.dispose();
+  o.door.dispose();
+});
+
 test('none — 같은 날 넷째 게임(다른 게임이 하루 새것 한도를 다 씀): 추천 곡 없이 고른 곡 그대로, 문장은 보면의 섞기로 이유 줄 없이 곡 끝까지 기록한다', async () => {
   const clock = clockAt();
   const port = atlas.memoryPort(), key = `synk-atlas:korean-rhythm-none-${process.pid}`;
@@ -384,7 +424,7 @@ test('idle — 같은 날 곡을 이어 하면 엔진이 채우기를 고를 때
 });
 
 test('순간 맞춤 — 판정 폭(박자)만 움직이고, 박자는 제시 없이 관찰한다. 듣기 O·X 답은 Flow를 움직이지 않는다(trace)', async () => {
-  const { play, spy, clock, door } = await opened();
+  const { play, spy, clock, door, shell } = await opened();
   const live = play.coach.live(FLOW_RHYTHM, { declared: {} });
   assert.deepEqual(spy.calls.find(([name]) => name === 'live')[1], [FLOW_RHYTHM, { declared: {} }]);
   const start = live.settings().values.window;
@@ -413,6 +453,7 @@ test('순간 맞춤 — 판정 폭(박자)만 움직이고, 박자는 제시 없
   for (let i = 0; i < 12; i++) fixed.observe({ outcome: 'timeout' });
   assert.equal(fixed.settings().values.window, 1);
   door.dispose();
+  shell.run(); // 문은 겉과 판을 셸 창의 다음 차례에 닫는다(끝 판 GD5)
   assert.throws(() => live.observe({ outcome: 'timeout' }), { code: 'RUN_ENDED' }, '닫힌 손잡이 — app.mjs는 잡아서 순간 맞춤 없이 잇는다');
 });
 
@@ -471,6 +512,7 @@ test('오류는 code로만 가른다 — 겉이 닫히면(RUN_ENDED) 기록 없�
   // 패널이 닫혔다(셸 dispose) — 그 뒤 부르기는 모두 기록 없이 지나간다.
   const closed = await opened();
   closed.door.dispose();
+  closed.shell.run();
   assert.equal(closed.play.coach.present(rhythmItem(0, { sourceIndex: 0 })), null);
   assert.deepEqual(closed.play.song(), { trackId: null, line: null, held: null });
   const track = closed.play.variants(TRACKS[0]);

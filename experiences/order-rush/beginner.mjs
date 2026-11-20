@@ -224,7 +224,9 @@ function showHint() {
 function serve() {
   if (screen !== 'play' || paused || solved || busy || !attempt.heard || !tray.length) return;
   const result = judge(current, tray); attempt.attempts++;
+  // 새 길: 고쳐 건넨 답도 같은 제시의 다음 답으로 넘긴다 — 두뇌 판 상태는 엔진이 첫 판정 답으로만 움직인다(§23-5 · §23-7). 옛 길은 첫 서빙만.
   if (attempt.firstCorrect === null) { attempt.firstCorrect = result.correct; if (phase === 'order') learn('answer', presentation, { correct: result.correct, assessable: attempt.heard, reason: attempt.heard ? undefined : 'audio' }); }
+  else if (atlasNext && phase === 'order') learn('answer', presentation, { correct: result.correct, assessable: attempt.heard, reason: attempt.heard ? undefined : 'audio' });
   if (!result.correct) {
     attempt.help = true; hint = true; learn('help', presentation, 'hint');
     message = result.itemMismatch ? '손님이 기다리는 물건을 그림으로 다시 볼까요? 쟁반에서 빼고 바꿀 수 있어요.' : `물건은 맞아요. 그림의 수만큼 담아 볼까요?`;

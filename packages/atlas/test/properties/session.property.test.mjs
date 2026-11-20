@@ -165,6 +165,7 @@ function openSession(run) {
     sinceNew: 0,
     missStreak: 0,
     units: new Set(), // 이 판에서 낸 기억 없는 단위(한 판 한도는 이것으로 센다)
+    shownAt: new Map(), // 이 판에서 계열을 낸 시각(시험이 따로 적는다 — 채우기 차례 「차」)
     // 시험이 따로 적는 판 장부(Fable 끝 판 P2-1 — 두뇌의 session.retries · session.met을 읽으면 그 장부가 틀려도 못 잡는다):
     //   ledger 단위 → { position(놓친 때까지 낸 문항 수), family, tries, pending } · met 이 판에서 판정된 답으로 만난 단위
     ledger: new Map(),
@@ -268,13 +269,17 @@ function checkHeld(run, rows, top) {
     run.fail('사. idle의 이유가 미룬 까닭과 다름', `${top.why.code} ≠ ${want}`);
 }
 
-// 차 — 채우기(3 · 4층) 안의 차례: 흐려진 정도(0.02 단위)가 큰 것 → 가장 오래 안 본 것(설계 §3-5 층 표).
+// 차 — 채우기(3 · 4층) 안의 차례: 흐려진 정도(0.02 단위)가 큰 것 → 가장 오래전에 만난 것(설계 §3-5 층 표 · 단계4 §23-14). 만난 때는
+// 단위들의 마지막 사건 시각(latestAt)과 이번 판에서 그 계열을 낸 시각(시험이 따로 적은 s.shownAt) 가운데 늦은 것이다. 학습자 하나로 판을
+// 이어 가도 앞 판에서 낸 자리는 보지 않는다(코치는 판마다 shown을 비운다 — 같은 차례).
 function fillKey(run, item) {
   const faded = unitsOf(item).map(unit =>
     run.s.met.has(unit) || run.sitting(unit) ? 0 : 1 - run.recall(unit),
   );
-  const last = run.shownFamilies.lastIndexOf(item.familyKey);
-  return [Math.round(Math.max(...faded) * 50), last];
+  let touched = run.s.shownAt.get(item.familyKey) ?? -Infinity;
+  for (const unit of unitsOf(item))
+    touched = Math.max(touched, run.mem(unit)?.latestAt ?? -Infinity);
+  return [Math.round(Math.max(...faded) * 50), touched];
 }
 function checkFill(run, rows, top) {
   if (top.breather || !(top.tier === 3 || top.tier === 4)) return;
@@ -284,7 +289,7 @@ function checkFill(run, rows, top) {
     const [b, l] = fillKey(run, row.item);
     return b > bucket || (b === bucket && l < last);
   });
-  if (ahead) run.fail('차. 채우기 차례가 흐려진 정도 → 오래 안 본 것이 아님', top.item.itemKey);
+  if (ahead) run.fail('차. 채우기 차례가 흐려진 정도 → 오래전에 만난 것이 아님', top.item.itemKey);
 }
 
 // 바 — 겨눈 단위와 이유의 종류, 회차 구분.
@@ -630,6 +635,7 @@ function answer(run, top, units) {
   const result = record(learner, memory, top.item, { ...reply, target: top.target }, run.now, P);
   run.shownCount += 1;
   run.shownFamilies.push(top.item.familyKey);
+  s.shownAt.set(top.item.familyKey, run.now);
   noteLedger(run, top, units, result);
   if (result.grade != null) s.missStreak = result.grade === 'again' ? s.missStreak + 1 : 0;
   if (result.grade === 'again') checkCredit(run, top, units, result, lapses);

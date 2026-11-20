@@ -258,6 +258,32 @@ test('이어 하기 — 남은 제시 수로 판을 연다(둘째 장면에서 �
   door.dispose();
 });
 
+test('판을 다시 정한 뒤 문을 다시 여는 동안 시작 · 이어 하기를 또 눌러도 이야기는 한 번만 연다(끝 판 C2)', async () => {
+  const { createGameDoor } = await import('../synk-world-app/world-atlas-game.mjs');
+  const calls = [];
+  const retirers = [];
+  let opens = 0, release = null;
+  const gate = new Promise((resolve) => { release = resolve; });
+  const entry = {
+    gameCoach: async () => { opens += 1; if (opens > 1) await gate; return shellCoach(calls); },
+    retired: (_made, fn) => { retirers.push(fn); return () => {}; },
+  };
+  const door = createGameDoor({ entry, gameId: 'story-classroom', later: (fn) => fn() });
+  const page = await boot({ door: door.api });
+  retirers[0]({ reason: 'account' });
+  calls.length = 0;
+  const first = page.$('#start').onclick();
+  const again = page.$('#start').onclick();   // 문을 다시 여는 동안(입구가 아직 열려 있다) 또 누른다
+  const resume = page.$('#resume').onclick();
+  release();
+  await Promise.all([first, again, resume]);
+  assert.equal(opens, 2, '문은 한 번 다시 연다');
+  assert.deepEqual(setCalls(calls), ['finishSet'], '이야기는 한 번 연다(beginRun 한 번 — 열 때 앞 판 닫기 한 번)');
+  await toAsk(page);
+  assert.deepEqual(setCalls(calls), ['finishSet', 'startSet 9', 'present', 'present'], '먼저 누른 시작(새 이야기) — 판 하나');
+  door.dispose();
+});
+
 test('셸 코치에 startSet이 없으면(앞 판 엔진) 판 길이 없이 첫 제시가 기본 판을 열고 놀이는 그대로다', async () => {
   const { createGameDoor } = await import('../synk-world-app/world-atlas-game.mjs');
   const calls = [];

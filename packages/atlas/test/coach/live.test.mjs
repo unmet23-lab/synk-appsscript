@@ -239,3 +239,40 @@ test('오답 뒤 떠난 손님의 시간 초과는 같은 제시의 몫이고, v
   assert.equal(live.trace().length, 4, '시간 초과를 먼저 본 제시의 뒤 답은 움직이지 않는다');
   coach.dispose();
 });
+
+test('같은 제시의 몫을 이미 쓴 관찰도 첫 관찰과 같은 꼴로 답한다 — evidence가 거짓으로 든다(카본 끝 판 D3)', async () => {
+  const { coach, time } = await open();
+  const live = coach.live(RUSH());
+  const served = live.present(items[0]);
+  time.advance(3_000);
+  const first = live.observe({ outcome: 'timeout' }, served);
+  const again = live.observe({ outcome: 'timeout' }, served);
+  assert.equal(typeof first.evidence, 'boolean');
+  assert.deepEqual(Object.keys(again).sort(), Object.keys(first).sort());
+  assert.equal(again.evidence, false);
+  assert.equal(again.change, null);
+  coach.dispose();
+});
+
+test('소리 전달이 안 된 답은 게임이 맞음이라 해도 Flow의 몫을 쓰지 않고, 제대로 들은 뒤의 판정 답이 움직인다(GPT 끝 판 D3)', async () => {
+  const { coach, time } = await open();
+  const live = coach.live(RUSH());
+  const item = { ...items[0], audioRequired: true, modality: 'listening' };
+  const pid = live.present(item);
+  coach.delivery(pid, { audio: 'failed' });
+  time.advance(2_000);
+  const first = live.answer(pid, { correct: true, assessable: true });
+  assert.equal(first.recorded.grade, null, '전달이 안 된 답은 판정하지 않는다');
+  assert.equal(first.evidence, false);
+  assert.equal(live.trace().length, 0, '판정 못 한 답이 Flow를 움직였다');
+  coach.delivery(pid, { audio: 'completed' });
+  time.advance(2_000);
+  const second = live.answer(pid, { correct: false, assessable: true });
+  assert.equal(second.recorded.grade, 'again');
+  assert.deepEqual(
+    live.trace().map(row => row.outcome),
+    ['fail'],
+    '제대로 들은 뒤의 판정 답이 움직인다',
+  );
+  coach.dispose();
+});

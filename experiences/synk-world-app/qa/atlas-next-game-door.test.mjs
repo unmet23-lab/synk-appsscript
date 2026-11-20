@@ -86,7 +86,7 @@ test('문은 그 게임 하나와 표의 은행만 받고, 지금 판이면 null
   assert.deepEqual(Object.keys(GAME_BANKS).sort().length, 11);
 });
 
-test('패널이 닫히면 기다리던 open은 null이 아니라 RUN_ENDED로 거절하고, 받은 코치의 판을 닫는다(카본 다시 검토 A2)', async () => {
+test('패널이 닫히면 기다리던 open은 null이 아니라 RUN_ENDED로 거절하고, 받은 코치의 판을 닫는다(다시 검토 A2)', async () => {
   let release;
   const coach = fakeCoach();
   const entry = fakeEntry({ coach, give: () => new Promise(resolve => (release = () => resolve(coach))) });
@@ -101,12 +101,17 @@ test('패널이 닫히면 기다리던 open은 null이 아니라 RUN_ENDED로 �
 
 test('패널을 닫으면 겉이 닫히고 판을 한 번 닫는다 — 닫힌 겉과 손잡이는 RUN_ENDED, 오류는 code로 가른다', async () => {
   const entry = fakeEntry();
-  const door = createGameDoor({ entry, gameId: 'talk-rally' });
+  const clock = tasks();
+  const door = createGameDoor({ entry, gameId: 'talk-rally', later: clock.later });
   const facade = await door.api.open({ gameId: 'talk-rally', banks: ['talk-rally'] });
   const live = facade.live({ id: 'rally' });
   const pid = facade.present({ itemKey: 'a' });
   facade.answer(pid, { correct: true, assessable: true });
   door.dispose();
+  await assert.rejects(door.api.open({ gameId: 'talk-rally', banks: ['talk-rally'] }), { code: 'RUN_ENDED' }, '닫은 문은 바로 거절한다');
+  clock.run();
+  door.dispose();
+  clock.run();
   const finished = entry.coach.calls.filter(([name]) => name === 'finishSet');
   assert.deepEqual(finished, [['finishSet', { record: false }]]);
   const names = entry.coach.calls.map(([name]) => name);
@@ -179,6 +184,7 @@ test('판 열기 startSet도 겉으로 넘기고(인수는 사본), 키트 setPl
   assert.equal(setPlay(facade).open(), null, '길이를 모르는 판은 startSet을 부르지 않는다');
   assert.equal(entry.coach.calls.filter(([name]) => name === 'startSet').length, 1);
   door.dispose();
+  await new Promise(resolve => setTimeout(resolve, 0));
   assert.throws(() => facade.startSet({ length: 9 }), { code: 'RUN_ENDED' });
   assert.equal(set.open(), null);
   const { startSet, ...older } = fakeCoach();
@@ -274,6 +280,34 @@ test('셸의 내용 기억 열쇠 앞마디는 엔진의 것과 같고, 읽개�
   assert.deepEqual(next.presentation(), { support: 'step' });
 });
 
+test('셸 원문 — 문은 게임 이름(주소의 폴더)으로 청하고, 셸 게임 표의 주소 폴더는 문 · 은행 표의 게임 이름이다(짧은 이름 runner로 청하면 문이 늘 null이었다)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const shell = readFileSync(new URL('../app-shell.mjs', import.meta.url), 'utf8');
+  const start = shell.indexOf('async function launchGame(');
+  const body = shell.slice(start, shell.indexOf('\n}\n', start));
+  assert.ok(body.includes('life.atlasNext.gameDoor(String(listed.path).split(/[/?#]/)[0])'), '문은 게임 이름으로 청한다');
+  // 문을 기다린 뒤에는 그 사이 다른 화면을 열었거나 패널을 닫았는지(gameLaunch)만 본다 — 패널을 열지 않고 게임을 여는 길(리허설 · 운영 손님 ·
+  // 홈 「맞춤 연습 시작」)이 패널이 닫혀 있다는 까닭으로 아무것도 열지 못했다(4-6 브라우저 확인).
+  const wait = body.slice(body.indexOf('if(life.atlasNext?.gameDoor){'), body.indexOf('window.SYNKAtlasGame=gameDoor.api'));
+  assert.ok(wait.includes('if(doorTicket!==gameLaunch||loadingGone()){'), '문을 기다린 뒤 gameLaunch와 계정 길의 로딩 패널을 본다');
+  assert.ok(!wait.includes('worldPanel.open'), '문을 기다린 뒤 패널이 열려 있는지 묻지 않는다');
+  // 스위치가 켜진 판에서는 문을 보기 전에 생활 세션이 다 서기를 기다린다 — 로그인 직후 바로 연 게임이 입구가 서기 전이라 문 없이 옛 길로
+  // 열렸다(4-6 브라우저 다시 보기). 꺼진 판은 기다리지 않는다.
+  const gate = body.indexOf('await life.ensure();if(doorTicket!==gameLaunch||loadingGone()){');
+  // 로딩 패널을 띄운 열기(계정 길)만 그 패널이 아직 열려 있는지 본다 — 홈의 닫기는 패널 종류를 곧바로 비우고 gameLaunch는 160ms 전환 뒤에
+  // 바뀐다(다시 보기 GB4). 패널 없이 연 길은 패널을 묻지 않는다.
+  assert.ok(body.includes("loadingGone=()=>loadingShown&&(!worldPanel.open||typeof home.openPanel==='function'&&home.openPanel()!=='world-game-loading')"));
+  assert.ok(body.includes("'world-game-loading');loadingShown=true;"), '계정 길이 로딩 패널을 띄울 때만 표를 단다');
+  assert.ok(gate >= 0 && gate < body.indexOf('if(life.atlasNext?.gameDoor){'), '입구를 보기 전에 생활 세션을 기다린다');
+  const from = shell.indexOf('const games={');
+  const table = shell.slice(from, shell.indexOf('\n};', from));
+  const folders = new Set([...table.matchAll(/['`]([a-z-]+)\/(?:\?[^'`]*)?['`]/g)].map(match => match[1]));
+  const reachable = Object.keys(GAME_BANKS).filter(game => folders.has(game)).sort();
+  assert.deepEqual(reachable, ['blank-slice', 'entry-check', 'korean-racing', 'korean-rhythm', 'korean-runner', 'order-rush', 'snap-words', 'subway-rush', 'talk-rally'], 'WORLD가 여는 아홉 게임');
+  for (const path of ['korean-runner/', 'snap-words/?grade=3', 'subway-rush/?grade=4', 'talk-rally/'])
+    assert.ok(Object.hasOwn(GAME_BANKS, path.split(/[/?#]/)[0]), path);
+});
+
 test('셸 원문 — 문은 새 길 입구가 있을 때만 틀보다 먼저 서고, 패널이 닫히면 치운다(꺼진 판에는 문이 없다)', async () => {
   const { readFileSync } = await import('node:fs');
   const shell = readFileSync(new URL('../app-shell.mjs', import.meta.url), 'utf8');
@@ -286,4 +320,88 @@ test('셸 원문 — 문은 새 길 입구가 있을 때만 틀보다 먼저 서
   assert.ok(sets[0].index < body.indexOf('class="game-frame"'), '틀보다 먼저 둔다');
   assert.match(body, /attachPanelResource\(\{dispose:\(\)=>\{closeDoor\(gameDoor\);/, '패널이 닫히면 문을 치운다');
   assert.match(body, /const closeDoor=door=>\{if\(!door\)return;door\.dispose\(\);if\(window\.SYNKAtlasGame===door\.api\)delete window\.SYNKAtlasGame;\};/);
+});
+
+test('겉을 받은 틀이 onRetired를 걸기 전에 판을 다시 정했으면 건 때 다음 차례로 알린다 — 알림이 사라지지 않는다(끝 판 D1)', async () => {
+  const entry = fakeEntry();
+  const { later, run } = tasks();
+  const door = createGameDoor({ entry, gameId: 'talk-rally', later });
+  const facade = await door.api.open({ gameId: 'talk-rally', banks: ['talk-rally'] });
+  entry.retire(entry.coach, 'account');
+  assert.equal(facade.closed, true);
+  const heard = [];
+  const stop = facade.onRetired(detail => heard.push(detail));
+  assert.deepEqual(heard, [], '건 자리에서 바로 부르지 않는다');
+  run();
+  assert.deepEqual(heard, [{ reason: 'account' }]);
+  // 끊은 듣개는 부르지 않는다
+  const late = [];
+  facade.onRetired(detail => late.push(detail))();
+  run();
+  assert.deepEqual(late, []);
+  stop();
+});
+
+test('패널을 닫으면 겉 닫기는 셸 창의 다음 차례다 — 틀이 내려가며(pagehide) 내는 마지막 답이 먼저 든다(끝 판 GD5)', async () => {
+  const entry = fakeEntry();
+  const clock = tasks();
+  const door = createGameDoor({ entry, gameId: 'subway-rush', later: clock.later });
+  const facade = await door.api.open({ gameId: 'subway-rush', banks: ['subway-rush'] });
+  const pid = facade.present({ itemKey: 'a' });
+  door.dispose(); // 셸의 닫기 단추 — 틀을 내리기 전
+  facade.answer(pid, { correct: null, assessable: false, reason: 'unanswered' }); // 틀의 pagehide
+  clock.run();
+  const names = entry.coach.calls.map(([name]) => name);
+  assert.deepEqual(names.slice(-2), ['answer', 'finishSet']);
+  assert.throws(() => facade.recommend([]), { code: 'RUN_ENDED' });
+});
+
+test('다시 연 패널의 문이 같은 코치를 앉혀 쓰면, 앞 문의 늦은 open은 그 판을 닫지 않는다(끝 판 GD1)', async () => {
+  const coach = fakeCoach();
+  let release;
+  const slow = fakeEntry({ coach, give: () => new Promise(resolve => (release = () => resolve(coach))) });
+  const old = createGameDoor({ entry: slow, gameId: 'talk-rally', later: fn => fn() });
+  const late = old.api.open({ gameId: 'talk-rally', banks: ['talk-rally'] });
+  old.dispose();
+  const fresh = createGameDoor({ entry: fakeEntry({ coach }), gameId: 'talk-rally', later: fn => fn() });
+  const facade = await fresh.api.open({ gameId: 'talk-rally', banks: ['talk-rally'] });
+  facade.present({ itemKey: 'a' });
+  release();
+  await assert.rejects(late, { code: 'RUN_ENDED' });
+  assert.deepEqual(coach.calls.filter(([name]) => name === 'finishSet'), [], '새 문의 판을 앞 문이 닫았다');
+  assert.equal(facade.closed, false);
+  fresh.dispose();
+  assert.deepEqual(coach.calls.filter(([name]) => name === 'finishSet'), [['finishSet', { record: false }]]);
+});
+
+test('은행 목록은 셸 창의 사본으로 옮긴 뒤 본다 — 본 목록과 입구에 넘기는 목록이 같다(끝 판 GD6)', async () => {
+  const entry = fakeEntry();
+  const door = createGameDoor({ entry, gameId: 'order-rush' });
+  let reads = 0;
+  const shifty = new Proxy(['order-rush'], {
+    get(target, key, receiver) {
+      if (key === '0') return (reads += 1) === 1 ? 'order-rush' : 'talk-rally';
+      return Reflect.get(target, key, receiver);
+    },
+  });
+  await door.api.open({ gameId: 'order-rush', banks: shifty });
+  assert.deepEqual(entry.asked.at(-1), ['order-rush', ['order-rush']]);
+  await assert.rejects(door.api.open({ gameId: 'order-rush', banks: [7] }), { code: 'DOOR_BANK' });
+});
+
+test('닫은 패널의 미룬 닫기가 돌기 전에 다시 연 패널의 문이 같은 코치를 앉히면, 앞 판을 먼저 닫고 앉는다(다시 보기 C2)', async () => {
+  const coach = fakeCoach();
+  const clock = tasks();
+  const old = createGameDoor({ entry: fakeEntry({ coach }), gameId: 'talk-rally', later: clock.later });
+  const first = await old.api.open({ gameId: 'talk-rally', banks: ['talk-rally'] });
+  first.present({ itemKey: 'a' });
+  old.dispose(); // 닫기는 다음 차례 — 아직 돌지 않았다
+  const fresh = createGameDoor({ entry: fakeEntry({ coach }), gameId: 'talk-rally', later: clock.later });
+  const facade = await fresh.api.open({ gameId: 'talk-rally', banks: ['talk-rally'] });
+  assert.deepEqual(coach.calls.filter(([name]) => name === 'finishSet'), [['finishSet', { record: false }]], '앞 판을 먼저 닫는다');
+  assert.equal(first.closed, true);
+  facade.present({ itemKey: 'b' });
+  clock.run(); // 미룬 닫기가 이제 돈다 — 새 문의 판은 건드리지 않는다
+  assert.equal(coach.calls.filter(([name]) => name === 'finishSet').length, 1);
+  assert.equal(facade.closed, false);
 });

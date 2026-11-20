@@ -196,9 +196,15 @@ function lobbyReason() {
 }
 
 /* ── 시작·이어 하기 ── */
+let renewing = false;
 async function start(resume = false, practiceId = null) {
   // 새 길: 판을 다시 정해 겉이 닫혔으면 이 판을 열 때 문을 다시 연다 — 새 길이면 새 겉, 지금 판이면 옛 길(옛 겉에는 retired가 없다).
-  if (learning.retired) learning = await learning.renew();
+  // 다시 여는 동안 입구 단추를 또 누르면 그 누름은 버린다 — 먼저 누른 시작만 판을 연다(끝 판 C2).
+  if (learning.retired) {
+    if (renewing) return;
+    renewing = true;
+    try { learning = await learning.renew(); } finally { renewing = false; }
+  }
   const target = learning.assignment(), targetMissions = target ? assignmentMissions(ALL_MISSIONS, target) : null;
   if (target && !targetMissions.length) { $('#lobby-note').hidden = false; $('#lobby-note').textContent = '과제 부탁을 불러오지 못했어요. WORLD에서 다시 열어 주세요.'; return; }
   if (target) resume = false;

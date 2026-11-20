@@ -223,11 +223,17 @@ function validMemory(spec, memory) {
     indices[knob.id] =
       Number.isInteger(index) && index >= 0 && index < knob.values.length ? index : knob.start;
   }
+  // 마지막으로 관찰한 문항 난도 자리 — 오래 쉬고 돌아온 판의 추정 상한이 그 자리에서 선다(카본 끝 판 E2). 없거나 틀리면 내용의 시작 단계.
+  const item = memory.item;
   return {
     estimates: copy(memory.estimates),
     at: memory.at,
     indices,
     latencies: [...memory.latencies],
+    item:
+      spec.items && Number.isInteger(item) && item >= 0 && item < spec.items.levels.length
+        ? item
+        : null,
   };
 }
 
@@ -437,7 +443,7 @@ function openReturning(r) {
   for (const dimension of DIMENSIONS)
     r.estimates[dimension].theta = Math.min(
       r.estimates[dimension].theta,
-      logit(r.aim[dimension]) + challenge(r.spec, r.indices, dimension, r.item),
+      logit(r.aim[dimension]) + challenge(r.spec, r.indices, dimension, r.seen),
     );
 }
 
@@ -559,11 +565,14 @@ function quietStep(r, pressure) {
 }
 
 // 내림이 먼저다 — 목표에서 가장 아래로 먼 차원부터. 그다음 때가 된 올림. 올리는 것은 혼자 해낸 성공뿐이다 — 놓치거나 시간이 다 되거나
-// 도움을 본 답은 다른 차원이 준비돼 보여도 올리지 않는다.
-function decide(r, { outcome, assisted, pressure }) {
-  const lower = DIMENSIONS.filter(d => gap(r, d) <= -DEADBAND).sort(
-    (a, b) => gap(r, a) - gap(r, b),
-  );
+// 도움을 본 답은 다른 차원이 준비돼 보여도 올리지 않는다. 난도를 실은 응답을 혼자 해냈으면 내용 차원은 내리지 않는다 — 그 난도를 해낸
+// 증거다. 두뇌가 더 어려운 문항을 내 기대 성공률이 내려갔다는 것만으로는 내리지 않는다(끝 판 E1 · 다시 보기 C1 — 같은 난도를 이어 해내도
+// 그대로다). 난도를 관찰한 뒤 난도를 싣지 않은 응답은 지금 난도 자리의 응답이라 같다(둘째 다시 보기 A1). 난도를 한 번도 관찰하지 않은 판은
+// 옛 판과 같다.
+function decide(r, { outcome, assisted, pressure, level }) {
+  const held = outcome === 'success' && !assisted && (level != null || r.leveled);
+  const below = d => gap(r, d) <= -DEADBAND && !(held && d === 'content');
+  const lower = DIMENSIONS.filter(below).sort((a, b) => gap(r, a) - gap(r, b));
   const raise =
     !r.calm && outcome === 'success' && !assisted
       ? DIMENSIONS.filter(
@@ -603,7 +612,9 @@ function observe(r, input = {}) {
   const evidence = about.content || about.pace;
   r.responses += 1;
   if (evidence) r.step += 1;
-  if (level !== null) r.item = r.spec.items.levels.indexOf(level);
+  // 증거가 아닌 응답(건너뜀 · 무효)의 문항 난도는 판의 기준으로 두지 않는다(GPT 끝 판 E2).
+  if (level !== null && evidence) r.item = r.seen = r.spec.items.levels.indexOf(level);
+  r.leveled ||= level !== null && evidence;
   const before = expected(r);
   learnFrom(r, observed, about);
   countRun(r, observed, evidence);
@@ -730,6 +741,7 @@ function memoryOf(r, at) {
       ]),
     ),
     latencies: [...r.latencies],
+    ...(spec.items ? { item: r.seen } : {}),
   };
 }
 
@@ -844,8 +856,13 @@ function runOf(spec, { mode, locks, condition, arm, remembered, placed }) {
     // 오늘의 여는 자리가 앞선 근거나 기억만의 자리에서 손잡이마다 얼마나 떨어져 끝났나 — 오늘의 선택(피곤한 날, 쉽게 · 어렵게 고른 판)만을
     // 위해 간 몫이다. 남기는 것에서 되돌려, 다음 날은 적응 판이 닿은 자리에서 연다.
     todayOnly: {},
-    // 낸 문항의 난도 자리(관찰 칸). 관찰 전에는 내용의 시작 단계다.
+    // 낸 문항의 난도 자리(관찰 칸). 판을 열 때는 내용의 시작 단계다 — 아직 낸 문항이 없다.
     item: spec.items ? spec.items.start : 0,
+    // 마지막으로 관찰한 난도 자리 — 기억에 남기고, 오래 쉬고 돌아온 판의 추정 상한만 이 자리에서 선다(카본 끝 판 E2). 보통 날 여는 자리는
+    // 시작 단계로 셈한다 — 기억한 어려운 난도로 셈하면 혼자 해낸 판을 다시 열자마자 내린다(GPT 다시 보기 GC4).
+    seen: spec.items ? (remembered?.item ?? spec.items.start) : 0,
+    // 이 판에서 낸 문항의 난도를 한 번이라도 관찰했다 — 그 뒤 난도를 싣지 않은 응답도 지금 난도 자리(item)의 응답으로 본다.
+    leveled: false,
     unbound: null,
   };
 }

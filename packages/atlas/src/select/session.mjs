@@ -104,7 +104,9 @@ function noteRetry(learner, session, item, grade, credited, params) {
 // 답 하나를 받는다: 내 사건으로 요약 줄에 얹고(applyOwn), 이 판의 상태(다시 낼 것 · 이 판에서 만난 단위 · 이어서 놓친 수)를 고친다.
 // 성공은 문항이 묻는 모든 단위에, 실패는 그 문항이 겨눈 단위 하나에 적힌다 — 겨눈 단위(answer.target)는 문항을 보일 때 사건에 적힌 값이다.
 // 같은 제시의 뒤 답(answer.presentationId — 고쳐 다시 서빙 · 다시 놓기 · 맞힐 때까지, 단계 4 계획 §23-5): 판 상태(낸 문항 · 이어서 놓친 수 ·
-// 「다시」 · 만난 단위 · blank)는 그 제시의 첫 판정 답만 움직인다. 뒤 답은 기억(같은 자리 규칙 — 그 자리는 놓침)으로만 간다. 가르는 기준은
+// 「다시」 · 만난 단위 · blank)는 그 제시의 첫 판정 답만 움직인다. 판정 못 한 답이 그 문항을 blank에 넣고, 같은 제시의 첫 판정 답이
+// 다시 뺀다 — 판정한 문항은 그 판에서 「다시」 · 채우기로 다시 낼 수 있다(같은 단위의 문항이 하나뿐인 게임 — 카본 끝 판 E3 · GPT 끝 판 E1).
+// 뒤 답은 기억(같은 자리 규칙 — 그 자리는 놓침)으로만 간다. 가르는 기준은
 // 「이 제시에 이미 판정한 답이 있는가」다 — 판정 못 한 첫 답(건너뜀 · 소리 없음) 뒤의 답은 첫 판정 답이다(설계 주인 11-19). 낸 문항(shown)은
 // 제시마다 한 줄이다. 제시 번호가 없는 답(가상 학습자 · 옛 부름)은 늘 첫 답이다.
 export function record(learner, memory, item, answer, now, params = PARAMS) {
@@ -127,6 +129,7 @@ export function record(learner, memory, item, answer, now, params = PARAMS) {
     return { grade, first: lead };
   }
   if (pid != null) session.judged.add(pid);
+  session.blank.delete(item.itemKey);
   for (const unit of units) session.met.add(unit);
   session.missStreak = grade === 'again' ? session.missStreak + 1 : 0;
   noteRetry(learner, session, item, grade, credited, params);

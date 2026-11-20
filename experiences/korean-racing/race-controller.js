@@ -41,8 +41,9 @@ export function createRaceState(initial = {}) {
  *  scene    { car(), wheels(), rivals(), placeCar(mesh,s,offset,yaw), buildGate({q,types,s}), removeGate(gate), applyEquipment(), hideRoundEffects(),
  *             resetCamera(playerS), wrapCamera(playerS,offset), mascotMood(mood,seconds), contactSparks(hit) }
  *  learning { learn(action,fallback), presentGate(q), answerGate(pid,response,flow), endLive(), nextPersonalized(), learningScope(),
- *             gateQuestion(index)?, followUps()?, endPlan()? } — 끝의 셋은 새 길(atlas-next-play.mjs)의 자리다: 맞춤 판은 관문을 세울 때
- *             그 자리의 문제를 고르고(questionBank[index]를 채운다), 판 안 후속 바꿔 넣기 · recheck를 쓰지 않으며(followUps() 거짓), 완주에 판을 닫는다.
+ *             gateQuestion(index)?, retryGate(index)?, adoptGate(index)?, followUps()?, endPlan()? } — 끝의 다섯은 새 길(atlas-next-play.mjs)의 자리다: 맞춤 판은 관문을 세울 때
+ *             그 자리의 문제를 고르고(questionBank[index]를 채운다 · 소리를 다시 켜면 고를 문항이 없던 관문을 다가가기 전이면 다시 고르고, 글이 이미 나왔으면
+ *             보이는 그 문제를 게임 차례로 낸다), 판 안 후속 바꿔 넣기 · recheck를 쓰지 않으며(followUps() 거짓), 완주에 판을 닫는다.
  *  rewards  { account(), storage, loadGarage(), storeGarage(state), wishText(), awardRace, recordRound, loadProgress }
  *  tutorial { active(), chooseLane(), tapLane(id), render(), repeat(), delivered(), clearVoice() }
  *  coastRadio · clock{getDelta} · reducedMotion · coastDrive · questionPace (기본은 새로 만든다)
@@ -224,7 +225,12 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
     const next = nextStage();
     $('next-stage').disabled = !next || !s.roundWasDemo && !isUnlocked(next); $('next-stage').hidden = $('next-stage').disabled;
     $('next-stage').firstChild.textContent = next?.finale ? '챕터 결승전 달리기' : next?.personalized ? '맞춤 5문항 달리기' : next ? '다음 코스 달리기' : '마지막 코스예요';
-    view.renderResults(resultSummary({ rank, total, passed, earned, saved, flowEnd, next }));
+    // 결과 화면은 지금 보상(확정 · 거절이 바꾼다)으로 그린다. 새 길의 답은 저장 근거가 온 뒤에 독립 응답이 정해져(learning.counting) 그때 다시 그린다.
+    let shownEarned = earned;
+    const showResults = (now) => { shownEarned = now; view.renderResults(resultSummary({ rank, total, passed, earned: now, saved, flowEnd, next })); };
+    showResults(earned);
+    const counting = s.answers.map(a => a.learning?.counting).filter(p => typeof p?.then === 'function');
+    if (counting.length) void Promise.all(counting).then(() => { if (s.roundId === finishedRound && s.finished) showResults(shownEarned); });
     view.renderLobby(); disposeGate(); setQuestionExpanded(false); s.boost = 0; hud.hideQuestion();
     $('progress').style.width = '100%';
     view.screenEl.classList.add('coasting'); $('cruise-banner').hidden = false; $('cruise-action').hidden = false;
@@ -236,7 +242,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
       // Read the host's current record, including a retried receipt, rather than a
       // stale result snapshot. An older round must never replace the next round UI.
       s.progress = loadProgress(rewards.storage);
-      s.garage = result.state; view.renderCollection(); view.renderLobby(); view.renderResults(resultSummary({ rank, total, passed, earned: result, saved, flowEnd, next }));
+      s.garage = result.state; view.renderCollection(); view.renderLobby(); showResults(result);
     };
     if (pendingReward) void pendingReward.then(confirmReward).catch(cause => {
       // The host marks only definitive rejections whose full command it preserved.
@@ -261,7 +267,7 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
       s.progress = loadProgress(rewards.storage); s.garage = rewards.loadGarage(); saved = false;
       $('next-stage').disabled = !next || !isUnlocked(next); $('next-stage').hidden = $('next-stage').disabled;
       view.renderCollection(); view.renderLobby();
-      view.renderResults(resultSummary({ rank, total, passed, earned: { state: s.garage, coins: 0, breakdown: [], newUnlocks: [], reason: 'account-rejected' }, saved, flowEnd, next }));
+      showResults({ state: s.garage, coins: 0, breakdown: [], newUnlocks: [], reason: 'account-rejected' });
     });
   }
   // 결과 화면에 줄 것: 맞힌 수·메달·순위·공통 코인·문제 목록·보상·다음 레이스.
@@ -456,6 +462,16 @@ export function createRaceController({ view, sound, scene, learning, rewards, tu
   async function toggleSound() {
     s.soundTouched = true; s.soundEnabled = !s.soundEnabled; view.syncSoundToggles();
     syncCoastRadio();
+    // 새 길의 맞춤 판: 고를 문항이 없어(소리를 끈 채 듣기 문항만) 미리 둔 문제로 세운 관문에 아직 다가가지 않았으면 같은 자리에서 다시 골라
+    // 그 문제로 다시 세운다(다시 보기 GA1). 옛 길에는 retryGate가 없다.
+    if (s.soundEnabled && s.running && s.gate && !s.gate.announced && !s.gate.judged && learning.retryGate?.(s.gateIndex)) makeGate(s.gateIndex, s.gate.s);
+    // 그 관문의 글이 이미 화면에 나왔으면 문제를 바꾸지 않고, 보이는 그 문제를 이때 게임 차례로 내 그 뒤 답이 기록되게 한다. 소리를 끈 동안
+    // 글로 열려 있던 문제라(듣기 · 그림) 글 도움을 함께 적는다(둘째 다시 보기 Q2). 옛 길에는 고를 판이 없어 adoptGate가 거짓이다.
+    const shown = s.gate;
+    if (s.soundEnabled && s.running && shown?.announced && !shown.judged && shown.presentationId == null && learning.adoptGate?.(s.gateIndex)) {
+      shown.presentationId = learning.presentGate(shown.q);
+      if (shown.presentationId && shown.q.mode !== 'reading') learn(c => c.help(shown.presentationId, 'text'));
+    }
     if (tutorial.active()) { silence(); tutorial.clearVoice(); if (s.soundEnabled) { await sound.ensureAudio(); if (s.running && !s.paused) tutorial.repeat(); } else tutorial.delivered(); tutorial.render(); return; }
     if (s.soundEnabled) { await sound.ensureAudio(); setQuestionExpanded(false); if (s.running && !s.paused && s.gate?.announced && !s.gate.judged) narrateQuestion(); } else { silence(); displayQuestion(); }
     if (!s.running) view.renderLobby();

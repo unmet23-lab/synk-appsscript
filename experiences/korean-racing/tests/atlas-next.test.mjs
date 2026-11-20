@@ -5,6 +5,9 @@
 // 문항 단계(items)는 손잡이가 아님 · 판을 다시 정하면 기록 없이 이어 감 · 진짜 race-controller.js로 맞춤 판 한 판(관문을 세울 때 고름 ·
 // 판 안 후속 바꿔 넣기 없음 · 완주에 판 닫기). 정해진 차례의 판(코스 · 시연 · 조작 연습)은 첫 제시 전에 판 길이를 startSet으로 넘긴다
 // (판마다 한 번 · 앞 판을 닫은 뒤 · 코치에 startSet이 없으면 기본 판으로 그대로). 끝에 원문 검사(꺼진 판은 새 길 모듈을 싣지 않는다).
+// 소리를 끄면 게임 차례도 듣기 문항을 내지 않고, 결과의 독립 응답은 답의 저장 근거가 온 뒤에 센다(4-6 끝 판 GB7 · B9).
+// 달리는 중에 소리를 끄면 고를 문항이 없는 관문은 기록 없이 지나가고 소리를 켜면 다시 고르며, 독립 응답은 엔진의 최종 근거로 정한다(다시 보기 GA1 · GA2).
+// 그 관문의 글이 이미 나온 뒤 소리를 켜면 보이는 그 문제를 게임 차례로 내고, 미리 둔 문제는 이 판에 이미 나온 문항을 다시 보이지 않는다(둘째 다시 보기 Q2).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -174,8 +177,11 @@ test('빈 기억 손님의 맞춤 판 — 관문마다 recommend, 제시 · 전�
     const offered = new Set(call.args[0].map((row) => row.id));
     assert.ok(gates.slice(0, i).every((gate) => !offered.has(gate.q.id)), `관문 ${i + 1}: 앞 관문의 문항은 후보가 아니다`);
   });
-  // 결과 화면이 읽는 도움 여부 · 독립 응답 — 처음 만남 · 도움 없음 · 소리 전달 · 판정된 답.
+  // 결과 화면이 읽는 도움 여부 · 독립 응답 — 처음 만남 · 도움 없음 · 소리 전달 · 판정된 답. 독립 응답은 저장 근거가 온 뒤에 참이 된다.
   assert.deepEqual(gates.map((gate) => gate.recorded.assisted), [false, false, true, false, false]);
+  assert.deepEqual(gates.map((gate) => gate.recorded.independent), Array(5).fill(false), '저장 근거가 오기 전에는 세지 않는다');
+  assert.equal(gates[2].recorded.counting, null, '도움을 받은 답은 독립 응답 후보가 아니다');
+  assert.deepEqual(await Promise.all(gates.map((gate) => gate.recorded.counting ?? false)), [true, true, false, true, true]);
   assert.deepEqual(gates.map((gate) => gate.recorded.independent), [true, true, false, true, true]);
   // 엔진이 고른 관문에만, 다시 만나는 까닭일 때만 이유 줄이 붙는다.
   const reasons = asked.map((call) => call.result.why);
@@ -495,7 +501,7 @@ function raceHarness(race, stage, time, { progress = emptyProgress() } = {}) {
       applyEquipment() {}, hideRoundEffects() {}, resetCamera() {}, wrapCamera() {}, mascotMood() {}, contactSparks() {} },
     learning: {
       learn,
-      presentGate(q) { const item = racingItem(q), why = plan?.line(q.id); if (why) state.laterToast = why; if (live) { try { return live.present(item); } catch { live = null; } } return learn((c) => c.present(item)); },
+      presentGate(q) { if (plan?.unpicked(q.id)) return null; const item = racingItem(q), why = plan?.line(q.id); if (why) state.laterToast = why; if (live) { try { return live.present(item); } catch { live = null; } } return learn((c) => c.present(item)); },
       answerGate(pid, response, flow) {
         if (live) { try { const out = live.answer(pid, response, flow); if (out.change?.knob === 'cruise') state.cruise = out.settings.values.cruise; return out.recorded; } catch { live = null; } }
         return learn((c) => c.answer(pid, response));
@@ -503,7 +509,9 @@ function raceHarness(race, stage, time, { progress = emptyProgress() } = {}) {
       endLive() { const end = live?.end() ?? null; live = null; return end; },
       nextPersonalized: () => race.personal({ progress: state.progress }),
       learningScope: () => '',
-      gateQuestion(index) { const q = plan?.at(index); if (q) state.questionBank[index] = q; },
+      gateQuestion(index) { const q = plan?.at(index, state.questionBank[index]) ?? plan?.held?.(index); if (q) state.questionBank[index] = q; },
+      retryGate(index) { const q = plan?.retry(index); if (!q) return false; state.questionBank[index] = q; return true; },
+      adoptGate(index) { return !!plan?.adopt?.(index, state.gate?.q?.id); },
       followUps: () => false,
       endPlan() { const current = plan; plan = null; current?.end(); },
     },
@@ -519,15 +527,15 @@ function raceHarness(race, stage, time, { progress = emptyProgress() } = {}) {
     controller, state, feedback, get results() { return results; },
     // app.js start(): 판을 열고(첫 관문은 reset에서 고른다) 순간 맞춤을 연다.
     start() {
-      plan = race.begin(stage, { progress, random: () => 0.3 });
+      plan = race.begin(stage, { progress, random: () => 0.3, audio: () => state.soundEnabled });
       live = race.coach.live(FLOW_RACE, { words: FLOW_WORDS });
       state.flowStart = live.settings().values;
       controller.reset(true);
       return plan;
     },
     // 달린다 — 관문이 열리면 소리를 끝까지 듣고(전달), choose(i, q)의 길로 옮겨 고른다.
-    drive(choose = (_i, q) => q.answer, frames = 60 * 600) {
-      for (let f = 0; f < frames && !state.finished; f += 1) {
+    drive(choose = (_i, q) => q.answer, frames = 60 * 600, stop = () => false) {
+      for (let f = 0; f < frames && !state.finished && !stop(); f += 1) {
         const gate = state.gate;
         if (gate?.announced && !gate.judged) {
           if (gate.readyAt == null) { race.coach.delivery(gate.presentationId, { audio: 'completed' }); controller.questionReady(); }
@@ -571,10 +579,11 @@ test('진짜 race-controller로 맞춤 판 한 판 — 관문을 세울 때 고�
   // 결과 화면: 이번 판의 문제와 독립 응답 수(처음 만난 · 도움 없이 고른 답).
   assert.equal(x.results.total, 5);
   assert.deepEqual(x.results.questions.map((q) => q.prompt), x.state.questionBank.map((q) => q.prompt));
-  assert.match(x.results.learning, /^도움 없이 처음 고른 답 5개/);
+  await Promise.all(x.state.answers.map((a) => a.learning.counting));
+  await settle();
+  assert.match(x.results.learning, /^도움 없이 처음 고른 답 5개/, '저장 근거가 온 뒤 결과를 다시 센다');
   assert.ok(x.state.answers.every((a) => a.learning?.eventId && a.learning.independent === true));
   await Promise.all(x.state.answers.map((a) => a.learning.stored));
-  await settle();
   const presented = await presentedOf(port);
   assert.deepEqual(presented.map((event) => event.itemKey), x.state.questionBank.map((q) => racingItem(q).itemKey));
   assert.ok(presented.every((event) => event.arm !== 'host'), '엔진이 고른 관문');
@@ -601,6 +610,243 @@ test('진짜 race-controller로 정해진 코스 두 판 — 출발에서 판 �
   assert.deepEqual(spy.names(['startSet', 'recommend', 'present', 'live.present', 'finishSet']), [...one, ...one]);
   assert.deepEqual(spy.calls.filter((call) => call.name === 'startSet').map((call) => [call.args[0], call.result.opened]), [[{ length: 5 }, true], [{ length: 5 }, true]]);
   coach.dispose();
+});
+
+test('소리를 끄면 게임 차례도 듣기 문항을 내지 않는다 — 듣기 영역만 남으면 맞춤 판을 짓지 않고(입구가 소리를 켜라고 안내) 관문도 고르지 않는다', async () => {
+  const { coach, time } = await engineCoach();
+  const spy = traced(coach);
+  const { race } = await throughDoor(spy.coach);
+  const progress = emptyProgress();
+  // 입구: 소리를 끈 채 듣기 영역이면 맞춤 판이 없다(옛 길의 personalizedStage도 audioAvailable: false면 null — 입구가 안내한다).
+  assert.equal(race.personal({ progress, modality: 'listening', audio: false }), null);
+  assert.ok(race.personal({ progress, modality: 'listening' }).stage.items.every((q) => racingItem(q).audioRequired), '소리를 켜면 듣기 판');
+  assert.ok(race.personal({ progress, audio: false }).stage.items.every((q) => !racingItem(q).audioRequired), '섞인 판은 읽기 문항으로 채운다');
+  // 소리를 켠 채 지은 듣기 판을 소리를 끈 채 달린다 — 엔진은 none, 게임 차례도 듣기 문항을 내지 않는다.
+  const listening = race.begin(personal(progress, 'listening'), { progress, audio: () => false });
+  assert.equal(listening.at(0), null, '낼 문항이 없다(듣기 문항을 글로 풀게 하지 않는다)');
+  const asked = spy.calls.filter((call) => call.name === 'recommend');
+  assert.equal(asked.length, 1);
+  assert.equal(asked[0].args[1].audio, false);
+  assert.equal(asked[0].result.status, 'none', '엔진은 소리 없이 낼 듣기 문항이 없다');
+  listening.end();
+  // 섞인 판에서 엔진이 none이면(그날의 한도 등) 게임 차례는 소리 없이 풀 수 있는 첫 문항이다.
+  const none = { ...spy.coach, recommend: (candidates, options) => { spy.coach.recommend(candidates, options); return { status: 'none', selected: null, why: null }; } };
+  const quiet = (await throughDoor(none)).race;
+  const mixed = quiet.begin(personal(progress), { progress, audio: () => false });
+  const gates = runGates(quiet, mixed, time);
+  mixed.end();
+  assert.equal(gates.length, 5, '놀이는 멈추지 않는다');
+  assert.deepEqual(mixed.kinds(), Array(5).fill('game'));
+  assert.ok(gates.every((gate) => !racingItem(gate.q).audioRequired), '게임 차례도 듣기 문항을 내지 않는다');
+  assert.equal(gates[0].q.id, gameOrder(progress).find((q) => !racingItem(q).audioRequired).id, '게임 순서에서 소리 없이 풀 수 있는 첫 문항');
+  // 소리를 켜면 게임 차례는 지금처럼 게임 순서의 첫 문항(듣기여도)이다.
+  const loud = quiet.begin(personal(progress), { progress });
+  assert.equal(loud.at(0).id, gameOrder(progress)[0].id);
+  loud.end();
+  coach.dispose();
+});
+
+test('답 저장이 실패하면 결과의 독립 응답으로 세지 않는다 — 저장 근거(stored)가 온 뒤에 정하고, 결과 화면은 그때 다시 센다', async () => {
+  // 관문 하나: 새 읽기 문항의 답 쓰기를 실패시킨다(엔진의 최종 근거는 stored: false · independent: false).
+  {
+    const { coach, port, time } = await engineCoach();
+    const { race } = await throughDoor(coach);
+    const progress = emptyProgress();
+    const plan = race.begin(personal(progress, 'reading'), { progress });
+    const answer = (q) => {
+      const pid = race.coach.present(racingItem(q));
+      time.advance(4000);
+      return race.coach.answer(pid, { correct: true, assessable: true, choice: { selectedId: q.answer, correctId: q.answer } });
+    };
+    port.failNext(Object.assign(new Error('쓰기 실패'), { code: 'STORAGE_ERROR' }));
+    const failed = answer(plan.at(0));
+    assert.equal(failed.verdict, 'correct');
+    assert.equal(failed.independent, false, '저장 근거가 오기 전에는 세지 않는다');
+    assert.equal(await failed.counting, false);
+    assert.equal(failed.independent, false, '저장되지 않은 답은 다음 추천에 반영되지 않는다');
+    const proof = await failed.evidence;
+    assert.equal(proof.stored, false);
+    assert.equal(proof.independent, false, '엔진의 최종 근거와 같다');
+    port.heal();
+    const kept = answer(plan.at(1));
+    assert.equal(await kept.counting, true);
+    assert.equal(kept.independent, true, '저장된 첫 만남 · 도움 없는 답');
+    plan.end();
+    coach.dispose();
+  }
+  // 진짜 race-controller로 한 판 — 답 쓰기가 모두 실패하면 결과는 「도움 없이 처음 고른 답 0개」다.
+  {
+    const { coach, port, time } = await engineCoach();
+    const { race } = await throughDoor(coach);
+    const x = raceHarness(race, personal(), time);
+    x.start();
+    port.failNext(Object.assign(new Error('쓰기 실패'), { code: 'STORAGE_ERROR' }));
+    x.drive();
+    assert.equal(x.state.finished, true);
+    assert.equal(x.state.answers.length, 5);
+    await Promise.all(x.state.answers.map((a) => a.learning?.counting));
+    await settle();
+    assert.ok(x.state.answers.every((a) => a.learning?.independent === false));
+    assert.match(x.results.learning, /^도움 없이 처음 고른 답 0개/, '저장되지 않은 답은 다음 추천에 반영한다고 말하지 않는다');
+    port.heal();
+    coach.dispose();
+  }
+});
+
+test('듣기 맞춤 판을 달리다 소리를 끄면 고를 문항이 없는 관문은 기록 없이 지나가고, 소리를 켜면 같은 자리(다가가기 전) · 다음 자리에서 다시 고른다', async () => {
+  const progress = emptyProgress();
+  // 가: 첫 관문을 지난 뒤 소리를 끄고, 둘째 관문에 다가가기 전에 다시 켠다 — 같은 자리에서 다시 골라 그 문제로 관문을 다시 세운다.
+  {
+    const { coach, port, time } = await engineCoach();
+    const spy = traced(coach);
+    const { race } = await throughDoor(spy.coach);
+    const x = raceHarness(race, personal(progress, 'listening'), time);
+    const plan = x.start();
+    x.drive(undefined, undefined, () => x.state.gateIndex === 0 && x.state.gate?.judged);
+    await x.controller.toggleSound();   // 끔
+    x.drive(undefined, undefined, () => x.state.gateIndex === 1);
+    assert.equal(x.state.gate.announced, false);
+    assert.deepEqual(plan.kinds(), ['engine', 'none'], '둘째 자리는 엔진도 게임 차례도 고르지 않았다');
+    assert.equal(spy.calls.filter((call) => call.name === 'recommend').at(-1).args[1].audio, false);
+    await x.controller.toggleSound();   // 켬 — 다가가기 전
+    assert.deepEqual(plan.kinds(), ['engine', 'engine'], '같은 자리에서 다시 골랐다');
+    assert.equal(x.state.gate.q, plan.at(1), '다시 고른 문제로 관문을 다시 세웠다');
+    x.drive();
+    assert.equal(x.state.finished, true);
+    assert.deepEqual(plan.kinds(), Array(5).fill('engine'));
+    await Promise.all(x.state.answers.map((a) => a.learning?.stored));
+    await settle();
+    assert.deepEqual((await presentedOf(port)).map((event) => event.itemKey), x.state.questionBank.map((q) => racingItem(q).itemKey), '다섯 관문 모두 고른 문제로 기록');
+    coach.dispose();
+  }
+  // 나: 소리를 끈 채 둘째 관문을 지나고, 셋째 관문 전에 켠다 — 둘째 관문은 미리 둔 문제로 기록 없이 지나가고 셋째부터 다시 고른다.
+  {
+    const { coach, port, time } = await engineCoach();
+    const spy = traced(coach);
+    const { race } = await throughDoor(spy.coach);
+    const x = raceHarness(race, personal(progress, 'listening'), time);
+    const plan = x.start();
+    x.drive(undefined, undefined, () => x.state.gateIndex === 0 && x.state.gate?.judged);
+    await x.controller.toggleSound();   // 끔
+    x.drive(undefined, undefined, () => x.state.gateIndex === 1 && x.state.gate?.judged);
+    const held = x.state.gate.q;
+    assert.equal(x.state.gate.presentationId, null, '고르지 않은 관문은 제시하지 않는다(기록 없음)');
+    assert.equal(plan.unpicked(held.id), true);
+    await x.controller.toggleSound();   // 켬 — 셋째 관문 전
+    x.drive();
+    assert.equal(x.state.finished, true);
+    assert.equal(x.state.answers.length, 5, '놀이는 다섯 관문을 끝까지');
+    assert.deepEqual(plan.kinds(), ['engine', 'none', 'engine', 'engine', 'engine'], '셋째부터 다시 엔진이 고른다');
+    assert.equal(spy.calls.filter((call) => call.name === 'recommend').length, 5);
+    assert.equal(x.state.answers[1].learning, undefined, '둘째 관문의 답은 기록하지 않았다');
+    assert.equal(new Set(x.state.questionBank.map((q) => q.id)).size, 5, '미리 둔 문제를 다시 고르지 않는다');
+    await Promise.all(x.state.answers.map((a) => a.learning?.stored));
+    await settle();
+    const presented = await presentedOf(port);
+    assert.equal(presented.length, 4);
+    assert.ok(!presented.some((event) => event.itemKey === racingItem(held).itemKey));
+    coach.dispose();
+  }
+});
+
+test('소리를 끈 채 미리 둔 문제가 화면에 나온 뒤 답하기 전에 소리를 켜면, 보이는 그 문제를 게임 차례로 내고 답을 기록한다(둘째 다시 보기 Q2)', async () => {
+  const progress = emptyProgress();
+  // 가: 둘째 관문의 글이 보인 뒤 켠다 — 문제는 그대로, 그 자리는 게임 차례(제시 · 글 도움 · 답)다.
+  {
+    const { coach, port, time } = await engineCoach();
+    const spy = traced(coach);
+    const { race } = await throughDoor(spy.coach);
+    const x = raceHarness(race, personal(progress, 'listening'), time);
+    const plan = x.start();
+    x.drive(undefined, undefined, () => x.state.gateIndex === 0 && x.state.gate?.judged);
+    await x.controller.toggleSound();   // 끔
+    x.drive(undefined, undefined, () => x.state.gateIndex === 1 && x.state.gate?.announced);
+    const held = x.state.gate.q;
+    assert.equal(x.state.gate.judged, false);
+    assert.equal(x.state.gate.presentationId, null, '소리를 끈 동안은 기록하지 않는다');
+    assert.deepEqual(plan.kinds(), ['engine', 'none']);
+    const asked = spy.calls.filter((call) => call.name === 'recommend').length;
+    await x.controller.toggleSound();   // 켬 — 글이 보인 뒤 · 답하기 전
+    assert.equal(x.state.gate.q, held, '보이는 문제를 바꾸지 않는다');
+    const pid = x.state.gate.presentationId;
+    assert.ok(pid, '보이는 그 문제를 이때 제시했다');
+    assert.deepEqual(plan.kinds(), ['engine', 'game'], '그 자리는 게임 차례다');
+    assert.equal(plan.unpicked(held.id), false);
+    assert.equal(spy.calls.filter((call) => call.name === 'recommend').length, asked, '엔진에 다시 묻지 않는다');
+    assert.ok(spy.calls.some((call) => call.name === 'help' && call.args[0] === pid && call.args[1] === 'text'), '소리를 끈 동안 글로 본 문제라 글 도움을 적는다');
+    x.drive();
+    assert.equal(x.state.finished, true);
+    assert.deepEqual(plan.kinds(), ['engine', 'game', 'engine', 'engine', 'engine']);
+    assert.ok(x.state.answers[1].learning?.eventId, '둘째 관문의 답을 기록했다');
+    assert.equal(x.state.answers[1].learning.assisted, true, '글로 본 답은 도움 받은 답이다');
+    assert.equal(new Set(x.state.questionBank.map((q) => q.id)).size, 5);
+    await Promise.all(x.state.answers.map((a) => a.learning?.stored));
+    await settle();
+    const presented = await presentedOf(port);
+    assert.deepEqual(presented.map((event) => event.itemKey), x.state.questionBank.map((q) => racingItem(q).itemKey), '다섯 관문 모두 기록');
+    assert.equal(presented[1].itemKey, racingItem(held).itemKey);
+    coach.dispose();
+  }
+  // 나: 엔진이 첫 관문에 코스의 둘째 문항을 골랐는데 소리를 끈 채 둘째 관문에 고를 문항이 없다 — 그 자리에 미리 둔 문제는 이미 나온
+  // 문항이라 아직 안 나온 문항으로 달리고(같은 문제를 두 번 보이지 않는다), 글이 보인 뒤 소리를 켜면 그 문제를 낸다.
+  {
+    const { coach, port, time } = await engineCoach();
+    let first = true;
+    const forced = { ...coach, recommend: (candidates, options) => { const only = first ? [candidates[1]] : candidates; first = false; return coach.recommend(only, options); } };
+    const { race } = await throughDoor(forced);
+    const stage = personal(progress, 'listening');
+    const x = raceHarness(race, stage, time);
+    const plan = x.start();
+    assert.equal(x.state.questionBank[0].id, stage.items[1].id, '첫 관문은 코스의 둘째 문항');
+    x.drive(undefined, undefined, () => x.state.gateIndex === 0 && x.state.gate?.judged);
+    await x.controller.toggleSound();   // 끔
+    x.drive(undefined, undefined, () => x.state.gateIndex === 1 && x.state.gate?.announced);
+    assert.deepEqual(plan.kinds(), ['engine', 'none']);
+    const held = x.state.gate.q;
+    assert.notEqual(held.id, x.state.questionBank[0].id, '이미 나온 문제를 다시 보이지 않는다');
+    await x.controller.toggleSound();   // 켬
+    assert.equal(x.state.gate.q, held);
+    assert.ok(x.state.gate.presentationId, '보이는 그 문제를 이때 제시했다');
+    x.drive();
+    assert.equal(x.state.finished, true);
+    assert.equal(new Set(x.state.questionBank.map((q) => q.id)).size, 5, '다섯 관문이 모두 다른 문제');
+    await Promise.all(x.state.answers.map((a) => a.learning?.stored));
+    await settle();
+    assert.deepEqual((await presentedOf(port)).map((event) => event.itemKey), x.state.questionBank.map((q) => racingItem(q).itemKey), '다섯 관문 모두 기록');
+    coach.dispose();
+  }
+});
+
+test('같은 저장소의 다른 판이 먼저 낸 문항이면 결과의 독립 응답으로 세지 않는다 — 엔진의 최종 근거(다시 만남)를 따른다', async () => {
+  const port = atlas.memoryPort(), key = newKey(), time = clock();
+  const first = (await engineCoach({ port, key, time })).coach;
+  const second = (await engineCoach({ port, key, time })).coach;
+  const one = (await throughDoor(first)).race;
+  const two = (await throughDoor(second)).race;
+  const progress = emptyProgress();
+  const plan = one.begin(personal(progress, 'reading'), { progress });
+  const q = plan.at(0);
+  const meta = racingItem(q);
+  const right = { correct: true, assessable: true, choice: { selectedId: q.answer, correctId: q.answer } };
+  // 두 판이 같은 읽기 문항을 내고, 먼저 낸 판의 답이 먼저 저장된다.
+  const early = one.coach.present(meta);
+  time.advance(1000);
+  const late = two.coach.present(meta);
+  time.advance(3000);
+  const kept = one.coach.answer(early, right);
+  assert.equal(await kept.stored, true);
+  assert.equal(await kept.counting, true);
+  time.advance(1000);
+  const again = two.coach.answer(late, right);
+  assert.equal(await again.stored, true, '나중 답도 저장됐다');
+  const proof = await again.evidence;
+  assert.equal(proof.exposure, 'repeat');
+  assert.equal(proof.independent, false);
+  assert.equal(await again.counting, false, '엔진이 다시 만남으로 본 답은 세지 않는다');
+  assert.equal(again.independent, false);
+  plan.end();
+  first.dispose();
+  second.dispose();
 });
 
 test('원문 — 꺼진 판은 새 길 모듈을 싣지 않고 옛 코치를 지금 자리에서 같은 인수로 만든다', () => {

@@ -55,6 +55,8 @@ const QA = new URLSearchParams(location.search).has('qa');
 // 자리에서 동기로 만든다.
 // nextRace: 새 길(코치 겉 · 맞춤 판 · 다시 열기). racePlan: 달리는 판(새 길만). learningQuiet: 문이 닫히는 중이라 기록 · 안내 없이 달린다.
 // nextFailed: 새 길을 열지 못했다 — 옛 길도 열지 않고 기록을 쓸 수 없다고만 알린다.
+// requestHeld: 새 길에서 학습 허브가 요청한 맞춤 코스(?learning=)를 소리를 끈 채라 짓지 못했다 — 출발을 누르면 그때 다시 짓는다.
+let requestHeld = false;
 let coach = null, learningAvailable = true, nextRace = null, racePlan = null, learningQuiet = false, nextFailed = false, learningOpening = null;
 let requestedModality = new URLSearchParams(location.search).get('learning');
 if (!['listening', 'reading'].includes(requestedModality)) requestedModality = null;
@@ -72,10 +74,12 @@ async function openNextRace() {
   learningPathChanged(true);
 }
 // 판을 다시 정한 뒤의 다음 판(§23-2): 문을 다시 연다. 새 겉이면 그 겉으로, 지금 판(null)이면 옛 코치로, 닫혔으면 기록 없이 달린다.
+// 계정 기록인지(hosted)는 다시 연 그 코치로 다시 정한다(손님 ↔ 계정 — 4-6 끝 판 B2 · GB8과 같은 규칙).
 let reopening = null;
 function reopenRace() {
   reopening ??= nextRace.reopen().then((how) => {
-    if (how === 'old') { nextRace = null; coach = null; openOldCoach(); hosted = learn((c) => typeof c.assignment === 'function', false); watchStorage(); }
+    if (how === 'next') hosted = nextRace.hosted;
+    else if (how === 'old') { nextRace = null; coach = null; openOldCoach(); hosted = learn((c) => typeof c.assignment === 'function', false); watchStorage(); }
     else if (how === 'ended') { nextRace = null; coach = null; learningQuiet = true; }
     learningPathChanged();
   }).finally(() => { reopening = null; });
@@ -94,6 +98,10 @@ function learn(action, fallback = null) { try { return coach ? action(coach) : f
 function learningScope() {
   if (learningQuiet || learningOpening) return '';   // 새 길: 문이 닫히는 중(기록 없이 달림) · 셸의 코치를 받는 중 — 안내하지 않는다
   const summary = learn((c) => c.summary());
+  // 새 길: 연 뒤에 겉이 닫혔으면(RUN_ENDED — 요약을 부르다 알 수도 있다) 기록 없이 달리는 판이라 안내하지 않고, 판을 다시 정했으면 다음
+  // 레이스에서 다시 잇는다고 말한다 — 둘 다 요약이 null이라 「저장이 제한되어」로 떨어지지 않게 한다(4-6 끝 판 B6).
+  if (nextRace?.closed) return '';
+  if (nextRace?.retired) return '학습 기록은 다음 레이스를 시작할 때 다시 이어요.';
   if (!coach || !learningAvailable) return '맞춤 기록을 연결하지 못했어요. 기본 코스는 계속 플레이할 수 있어요.';
   if (/다른 탭/.test(summary?.storage.warning || '')) return '학습 기록을 기다리는 중이에요. 다른 탭에서 쓰고 있다면 그 탭을 닫아 주세요. 그러면 여기서 이어서 저장해요.';
   if (!summary?.storage.available) return '저장이 제한되어 이번 페이지에서만 맞춤 기록을 유지해요.';
@@ -111,7 +119,8 @@ function startLive() {
 }
 function endLive() { let end = null; try { end = live?.end() || null; } catch { /* 속도 기억은 편의 */ } live = null; return end; }
 // 새 길의 맞춤 판: 엔진이 다시 만나는 까닭(방금 놓침 · 흔들림 · 돌아옴)으로 고른 관문이면 그 이유 한 줄을 잠깐 보인다. 게임 차례 관문에는 없다.
-function presentGate(q) { const item = racingItem(q), why = racePlan?.line(q.id); if (why) round.laterToast = why; if (live) { try { return live.present(item); } catch { live = null; } } return learn((c) => c.present(item)); }
+// 새 길: 고를 문항이 없어(소리를 끈 채 듣기 문항만 남음) 미리 둔 문제로 달리는 관문은 제시 · 답을 기록하지 않는다(다시 보기 GA1).
+function presentGate(q) { if (racePlan?.unpicked(q.id)) return null; const item = racingItem(q), why = racePlan?.line(q.id); if (why) round.laterToast = why; if (live) { try { return live.present(item); } catch { live = null; } } return learn((c) => c.present(item)); }
 // 답은 늘 Trail에 남고, 순간 맞춤 레이스면 같은 답이 속도와 단계도 움직인다.
 function answerGate(pid, response, flow) {
   if (live) {
@@ -129,7 +138,7 @@ const racingAudio = () => !round.soundTouched || round.soundEnabled;
 function returnPlanNow() { if (nextRace) return null; return learn((c) => missedRacing(c, { audioAvailable: racingAudio(), modality: requestedModality })); }
 // 새 길의 맞춤 판은 관문마다 그때 고른다 — 입구에서는 코스의 꼴만 짓고(문항 자리는 게임 순서) 엔진에 묻지 않는다.
 function nextPersonalized(lead = null) {
-  if (nextRace) return nextRace.personal({ progress: round.progress, modality: requestedModality });
+  if (nextRace) return nextRace.personal({ progress: round.progress, modality: requestedModality, audio: racingAudio() });
   return learn((c) => personalizedStage(c, { audioAvailable: racingAudio(), modality: requestedModality, live: flowOf(), lead: lead ?? missedRacing(c, { audioAvailable: racingAudio(), modality: requestedModality })?.target.item ?? null }));
 }
 // 새 길의 판. takePlan: 지금 판을 떼어 낸다 — 부른 쪽이 들은 문제를 응답 없음으로 닫은(reset) 뒤 end()로 기록 없이 닫는다.
@@ -138,12 +147,30 @@ function beginPlan(stage, options = {}) {
   takePlan()?.end();
   racePlan = nextRace ? nextRace.begin(stage, { progress: round.progress, audio: () => racingAudio() && !round.narrationUnavailable, ...options }) : null;
 }
-// 관문을 세울 때(race-controller.js makeGate): 맞춤 판이면 그 자리의 문제를 그때 고르고 그 소리를 미리 받는다.
+// 관문을 세울 때(race-controller.js makeGate): 맞춤 판이면 그 자리의 문제를 그때 고르고 그 소리를 미리 받는다. 고를 문항이 없으면 그 자리에
+// 미리 둔 문제(이 판에 이미 나온 문항이면 아직 안 나온 문항 — held)로 달린다(기록하지 않음 — presentGate).
 function gateQuestion(index) {
-  const q = racePlan?.at(index);
+  const q = racePlan?.at(index, round.questionBank[index]) ?? racePlan?.held(index);
   if (!q || round.questionBank[index] === q) return;
   round.questionBank[index] = q;
   if (round.soundEnabled) void narrator.prepare(stageClips({ campaign: true, items: [q] }));
+}
+// 소리를 다시 켰을 때(race-controller.js toggleSound): 고를 문항이 없던 관문에 아직 다가가지 않았으면 같은 자리에서 다시 고른다. 고르면 참 —
+// 부른 쪽이 그 관문을 새 문제로 다시 세운다(다시 보기 GA1).
+function retryGate(index) {
+  const q = racePlan?.retry(index);
+  if (!q) return false;
+  round.questionBank[index] = q;
+  if (round.soundEnabled) void narrator.prepare(stageClips({ campaign: true, items: [q] }));
+  return true;
+}
+// 소리를 다시 켰을 때(race-controller.js toggleSound): 고를 문항이 없어 미리 둔 문제로 달리는 관문의 글이 이미 화면에 나왔으면, 그 문제를
+// 바꾸지 않고 그 자리를 게임 차례로 바꾼다. 바꾸면 참 — 부른 쪽이 보이는 그 문제를 이때 제시해 답이 기록된다(둘째 다시 보기 Q2).
+function adoptGate(index) {
+  const q = racePlan?.adopt(index, round.gate?.q?.id);
+  if (!q) return false;
+  if (round.soundEnabled) void narrator.prepare(stageClips({ campaign: true, items: [q] }));
+  return true;
 }
 const assignment = () => learn((c) => c.assignment?.());
 // 듣기 목표인데 소리가 꺼져 있으면 문항이 없는 게 아니라 소리를 켜면 된다고 말한다.
@@ -260,7 +287,7 @@ const race = createRaceController({
     resetCamera(s) { if (rig) { rig.snapCamera(round); return; } camera.position.copy(roadPoint(s - (mobile ? 12.5 : 7.4), mobile ? -1.8 : 5.4, mobile ? 4.5 : 3.6)); camera.lookAt(roadPoint(s + (mobile ? 14 : 12), mobile ? 3.8 : 1.8, 1.2)); },
     wrapCamera(s, offset) { if (rig) { rig.snapCamera(round); return; } camera.position.copy(roadPoint(s - (mobile ? 8.8 : 9), offset * (mobile ? .92 : .62), mobile ? 3.35 : 3.6)); },
   },
-  learning: { learn, presentGate, answerGate, endLive, nextPersonalized, learningScope, gateQuestion, followUps: () => !nextRace, endPlan: () => takePlan()?.end() },
+  learning: { learn, presentGate, answerGate, endLive, nextPersonalized, learningScope, gateQuestion, retryGate, adoptGate, followUps: () => !nextRace, endPlan: () => takePlan()?.end() },
   rewards: { account: () => globalThis.SynkPlayAccount, storage: progressStorage, loadGarage: loadGarageSafe, storeGarage, wishText },
   tutorial: { active: () => !!tutorial, chooseLane: chooseTutorialLane, tapLane: tutorialTapLane, render: renderTutorial, repeat: repeatTutorial, delivered: tutorialDelivered,
     clearVoice: () => { tutorialVoicePending = false; } },
@@ -423,6 +450,7 @@ function clearResetNotice() { resetNotice = null; paintResetNotice(); }
 function showLobby() { returnLead = null; showScreen('lobby'); worldShown = false; renderLobby(); }
 function lobbyNote(text) { $('l-reason').textContent = text; hud.announce(text); }
 function selectStage(s) {
+  requestHeld = false;   // 코스를 골랐다 — 요청한 맞춤 코스를 기다리지 않는다
   if (assignment()) { const plan = nextPersonalized(); if (!plan) { lobbyNote(targetUnavailable()); return; } s = plan.stage; }
   if (starting) return;
   if (garageOpen) garageUI.close();
@@ -602,7 +630,11 @@ async function init() {
 // 학습 허브의 ‘읽기부터’(또는 ‘듣기’)로 열면 첫 듣기 코스가 아니라 그 맞춤 코스를 준비한다. 새 길을 받는 중이면 받은 뒤에(learningPathChanged).
 function prepareRequestedCourse() {
   if (learningOpening) return;
-  if (requestedModality && !assignment()) { const plan = nextPersonalized(); if (plan?.stage) selectStage(plan.stage); }
+  if (requestedModality && !assignment()) {
+    const plan = nextPersonalized();
+    if (plan?.stage) selectStage(plan.stage);
+    else if (nextRace) requestHeld = true;   // 새 길: 소리를 끈 채 듣기 영역만 남았다 — 기본 코스로 출발하지 않고 출발 때 다시 짓는다(다시 보기 GA3)
+  }
 }
 function runPendingStart() {
   const queued = pendingStart; pendingStart = null;
@@ -729,6 +761,7 @@ function repeatTutorial() {
 }
 async function startTutorial() {
   if (learningOpening) await learningOpening;   // 새 길: 셸의 게임 코치를 받는 중이면 기다린다
+  if (nextRace?.retired) await reopenRace();   // 판을 다시 정해 겉이 닫혔으면 조작 연습 판도 문을 다시 연 뒤에 연다(4-6 끝 판 B9)
   if (!ready || starting) return;
   if (garageOpen) garageUI.close();
   clearResetNotice(); clearTutorial(); starting = true; round.running = false; silence(); round.narrationUnavailable = false; renderLobby();
@@ -829,6 +862,17 @@ async function start(demo = false, bypassTutorial = false) {
     round.selectedStage = plan.stage;
   }
   if (starting || !demo && !isUnlocked(round.selectedStage)) return;
+  // 새 길: 요청한 맞춤 코스를 아직 짓지 못했으면(예약한 출발 포함) 지금 짓고, 소리를 끈 채라 여전히 못 지으면 기본 코스로 출발하지 않고
+  // 소리를 켜라고 안내한다(다시 보기 GA3).
+  if (nextRace && !demo && requestHeld) {
+    const plan = nextPersonalized();
+    if (!plan) { lobbyNote('이번 맞춤 판은 듣기 문항이에요. 소리를 켜면 바로 시작할 수 있어요.'); return; }
+    selectStage(plan.stage);
+  }
+  // 새 길의 맞춤 판: 소리를 끈 채 듣기 문항만 남았으면(엔진도 게임 차례도 듣기 문항을 내지 않는다) 출발 전에 소리 설정을 안내한다(4-6 끝 판 GB7).
+  if (nextRace && !demo && round.selectedStage?.personalized && !nextRace.personal({ progress: round.progress, modality: round.selectedStage.modality ?? null, audio: racingAudio() })) {
+    lobbyNote('이번 맞춤 판은 듣기 문항이에요. 소리를 켜면 바로 시작할 수 있어요.'); return;
+  }
   // 3D가 아직 준비 중이면 누른 것을 기억했다가 준비되는 대로 출발한다(소리는 누른 순간에 연다).
   if (!ready) { if (loadState === 'loading') { pendingStart = { demo, bypassTutorial }; if (round.soundEnabled) void ensureAudio(); renderLobby(); } return; }
   // 준비된 뒤 컨텍스트를 잃은 사이에 눌렀으면 빈 화면으로 출발하지 않고 복구되는 대로 출발한다.

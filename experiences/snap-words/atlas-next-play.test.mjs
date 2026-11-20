@@ -131,7 +131,7 @@ test('은행 이름은 셸의 게임 은행 표와 같고, 게임이 낼 수 있
 test('문을 거친 진짜 코치로 장소 한 판 — 제시 · 전달 · 도움 · 답의 차례, 판 하나(게임 차례), 판 끝 finishSet', async () => {
   const { learn, coach, port, spy, entry, clock, door, frame } = await opened();
   assert.deepEqual(entry.asked, [[GAME_ID, ['snap-words']]]);
-  assert.deepEqual(frame.listeners.map(([type]) => type), ['pagehide'], '키트의 leave만 — 게임은 떠날 때 답을 지어내지 않는다');
+  assert.deepEqual(frame.listeners.map(([type]) => type), ['pagehide', 'pagehide'], '키트의 leave가 먼저, 게임의 떠날 때 답(답하지 않은 부탁)이 뒤');
   const { missions, qs } = playRound(learn, clock, { wrongs: [2, 1], recallWrong: 1 });
   assert.equal(missions.length, 4);
   assert.ok(missions.some((m) => m.kind === 'sound'), '소리 부탁이 든 판(씨앗 7)');
@@ -285,6 +285,33 @@ test('나가기 — 답하지 않은 부탁은 다음 차례 번호로 unanswere
   const rows = await events(coach, port);
   const left = rows.filter((e) => e.type === 'practice.attempted' && e.presentationId === m.pid);
   assert.deepEqual(left.map((e) => [e.attemptNo, e.verdict, e.reason ?? null]), [[1, 'incorrect', null], [2, 'unassessed', 'unanswered']]);
+});
+
+test('틀을 떠날 때(pagehide — 틀 다시 싣기 · 패널 닫힘)도 나가기와 같다 — 답하지 않은 부탁을 다음 차례 번호로 닫고, 셸이 판을 닫기 전에 든다(GC6)', async () => {
+  const { learn, coach, port, spy, clock, frame, shell } = await opened();
+  const m = { kind: 'meaning', group: 'blade', word: 'bank', tries: 0 };
+  learn.begin([m]);
+  learn.present(m); clock.advance();
+  learn.answer(m, { correct: false, selected: 'post', attemptNo: 1 }); clock.advance();
+  frame.leave(); // 같은 pagehide: 키트가 먼저 건 leave(셸의 다음 차례로 미룸), 그다음 게임의 떠날 때 답
+  assert.deepEqual(spy.calls.slice(-2).map(([name, args]) => [name, args]), [
+    ['answer', [m.pid, { correct: null, assessable: false, reason: 'unanswered', attemptNo: 2 }]],
+    ['finishSet', [{ record: false }]],
+  ], '셸이 겉을 닫기 전에 들어간다');
+  shell.run(); // 셸의 다음 차례 — 겉과 판을 닫는다
+  const rows = await events(coach, port);
+  const left = rows.filter((e) => e.type === 'practice.attempted' && e.presentationId === m.pid);
+  assert.deepEqual(left.map((e) => [e.attemptNo, e.verdict, e.reason ?? null]), [[1, 'incorrect', null], [2, 'unassessed', 'unanswered']], '마지막 unanswered가 남는다');
+
+  // 입구로 나간 뒤(그 판의 부탁을 이미 닫았다) 떠나면 더 부르지 않는다.
+  const other = await opened();
+  const n = { kind: 'word', group: null, word: 'cat', tries: 0 };
+  other.learn.begin([n]);
+  other.learn.present(n); other.clock.advance();
+  other.learn.leave();
+  const count = other.spy.calls.length;
+  other.frame.leave();
+  assert.equal(other.spy.calls.length, count);
 });
 
 test('약한 낱말 — 기억이 없으면 없고, 돌아온 단위(떠올릴 확률이 낮은 것부터) · 끈질긴 단위의 낱말이며, 그 장소의 부탁 낱말만', async () => {

@@ -313,7 +313,8 @@ test('without observed levels, the new Flow on items and time knobs is the old o
       const kept = [old.memory(at), run.memory(at)];
       assert.deepEqual(
         kept[1],
-        { ...kept[0], indices: withoutItem(kept[0].indices) },
+        // 새 기억은 관찰한 난도 자리(item)를 따로 남긴다 — 옛 판의 문항 난도 칸 값과 같다(카본 끝 판 E2).
+        { ...kept[0], indices: withoutItem(kept[0].indices), item: kept[0].indices[Old.ITEM] },
         `row ${row}`,
       );
       memories = kept;

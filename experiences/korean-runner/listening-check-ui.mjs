@@ -90,7 +90,8 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onF
         const sourceAttemptId = recheckSource; recheckSource = null;
         let recheckLine = '';
         if (sourceAttemptId && result.eventId) {
-          try { const line = coach.recheck?.(sourceAttemptId, result.eventId)?.line; if (typeof line === 'string') recheckLine = line; }
+          // 이 판을 연 코치(checkCoach)에서 찾는다 — coach는 코치를 돌려주는 함수일 수 있다(app.mjs, 4-6 끝 판 GB1 · C1).
+          try { const line = checkCoach?.recheck?.(sourceAttemptId, result.eventId)?.line; if (typeof line === 'string') recheckLine = line; }
           catch { /* old bundle or unavailable history: keep the original answer */ }
         }
         const right = choice === item.correct; if (right) rightCount += 1;

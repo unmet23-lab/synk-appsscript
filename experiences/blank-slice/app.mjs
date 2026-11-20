@@ -55,8 +55,10 @@ function openOldCoach() {
 if (atlasNext) coachOpening = openNextCoach(); else openOldCoach();
 const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { return fn(coach); } catch { return fallback; } };
 const assignment = () => atlas(c => c.assignment?.());
-// 새 길은 기록 지우기를 쓰지 않는다(계정 · 손님 기록은 WORLD가 맡는다).
-const hostedOf = () => (oldPath ? atlas(c => typeof c.assignment === 'function', false) : true);
+// 계정의 기록인가(hosted)는 실제로 연 코치로 정한다 — 옛 길은 옛 코치에 과제가 있을 때(WORLD 옛 학습 호스트), 새 길은 그 코치의 저장소가
+// 계정일 때. 셸의 코치를 기다리는 동안 · 문이 닫히는 중에는 연 코치가 없어 아니다. 길이 바뀌면 openNextCoach가 다시 정한다.
+// 새 길은 기록 지우기를 쓰지 않는다(paintScope).
+const hostedOf = () => (oldPath ? atlas(c => typeof c.assignment === 'function', false) : slice?.hosted === true);
 let hosted = hostedOf();
 async function openNextCoach() {
   slice = null; coach = null; quiet = false;
@@ -69,6 +71,9 @@ async function openNextCoach() {
   // 옛 길로 돌아오면 새 길이 숨긴 이유 줄을 다시 보인다(셸이 지금 판이라고 한 때 · 판을 다시 정한 뒤)
   if (oldPath) for (const id of ['#l-reason', '#r-next-reason']) $(id).hidden = false;
   if (!$('#lobby').hidden) { paintScope(); paintLobbyPlan(); }
+  // 결과 화면의 「다음 판 시작」으로 옛 길에 돌아왔다(판을 다시 정한 뒤 셸이 지금 판) — 입구를 지나지 않으니 옛 코치의 필요 순서를 여기서
+  // 받는다(입구의 paintLobbyPlan과 같은 규칙, 4-6 끝 판 A5).
+  else if (oldPath) state.ranked = progress.plays === 0 ? null : atlas((c) => rankItems(c, ITEMS));
 }
 // 이 화면을 연 WORLD 과제가 닫혔다(다른 과제를 열었거나 끝남). 더는 기록되지 않으니 결과 화면이 그렇게 알린다.
 const runClosed = () => { if (!coach || !hosted) return false; try { coach.assignment?.(); return false; } catch (error) { return error?.code === 'RUN_ENDED'; } };
@@ -160,9 +165,14 @@ function renderLobby() {
   syncToggles();
   show('lobby');
 }
+// 기록 안내와 기록 지우기 단추. 지우기는 옛 길에서 계정의 기록이 아닐 때만이다(새 길 · 셸의 코치를 기다리는 동안은 숨긴다). 계정 안내로
+// 바꾸기 전의 처음 글(index.html)을 받아 두고, 계정이 아닌 길로 돌아오면 한 번 되돌린다(4-6 끝 판 A4).
+let scopeFirst = null;
 function paintScope() {
-  $('#reset-learning').hidden = hosted;
-  if (hosted) $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
+  $('#reset-learning').hidden = hosted || !oldPath;
+  const scope = $('#learning-scope');
+  if (hosted) { scopeFirst ??= scope.textContent; scope.textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.'; }
+  else if (scopeFirst != null) { scope.textContent = scopeFirst; scopeFirst = null; }
 }
 
 function syncToggles() {
@@ -571,7 +581,7 @@ function finish() {
   }
   $('#r-again span').textContent = target ? '목표 문장 다시 풀기' : '다음 판 시작';
   $('#r-again').disabled = closed;
-  $('#r-hub').hidden = hosted || !location.pathname.includes('/blank-slice/');
+  $('#r-hub').hidden = hosted || !oldPath || !location.pathname.includes('/blank-slice/');
   show('results');
   world?.roundEnd();
   world?.results({ correct: s.correct, stars: s.stars, rows: state.results });

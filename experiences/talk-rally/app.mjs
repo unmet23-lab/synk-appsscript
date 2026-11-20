@@ -414,7 +414,8 @@ function onArrive(token) {
   cur.phase = 'hit';
   const word = cur.options[cur.choice], correct = word === cur.item.answer;
   const rec = cur.ex?.confirm(word);
-  cur.recorded = !!rec && rec.verdict !== 'unassessed';
+  // 새 길은 엔진이 판정한 답(등급이 있음)만 기록된 답이다 — 새 코치의 verdict는 소리를 못 들은 답도 맞힘으로 둔다(GD7). 옛 길은 옛 판정 그대로.
+  cur.recorded = rally ? rally.assessed(rec) : !!rec && rec.verdict !== 'unassessed';
   followFlow(cur, cur.choice);
   if (correct) state.rally += 1; else state.rally = 0;
   const smash = correct && isSmash(state.rally) && !state.practice;

@@ -9,7 +9,7 @@
 const LOCAL_HOST = /^(localhost|127\.0\.0\.1|\[::1\]|.+\.localhost)$/;
 // 옛 기기 흐름 열쇠(오늘 · 표시 설정) — 혼자 뜨는 길이 읽기만 한다.
 const DEVICE_KEY = 'synk.atlas.learning.v1.device';
-// 옛 겉의 판정 못 한 까닭 — 새 겉의 assessable: false로 넘긴다. 'skip'은 본인이 건너뛴 답이라 skipped로 옮긴다(GPT 다시 검토 GA7).
+// 옛 겉의 판정 못 한 까닭 — 새 겉의 assessable: false로 넘긴다. 'skip'은 본인이 건너뛴 답이라 skipped로 옮긴다(다시 검토 GA7).
 const UNJUDGED = new Set(['motor', 'visual', 'unanswered', 'audio', 'demo', 'storage']);
 const OPTION = /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/;
 
@@ -89,7 +89,7 @@ async function soloCoach(win, { gameId, banks, label }) {
   return coach;
 }
 
-// 고른 후보를 게임이 넘긴 원래 후보로 되맞춘다 — 문을 거친 값은 셸 창의 사본이다(Fable 5.2 다시 검토 F2).
+// 고른 후보를 게임이 넘긴 원래 후보로 되맞춘다 — 문을 거친 값은 셸 창의 사본이다(다시 검토 F2).
 function originals(result, candidates) {
   if (!result?.selected) return result;
   const byKey = new Map((candidates ?? []).map(candidate => [candidate?.itemKey, candidate]));
@@ -122,7 +122,7 @@ function wrapCoach(coach) {
 }
 
 // 새 길 코치를 연다. 문이 있으면 그 겉(null이면 지금 판 — 옛 길로), 개발 깃발이면 혼자 뜨는 손님 코치, 둘 다 없으면 null.
-// 문의 open이 RUN_ENDED로 거절하면 그대로 던진다 — 게임은 옛 길을 열지 않고 멈춘다(§23-2 · 카본 다시 검토 A2).
+// 문의 open이 RUN_ENDED로 거절하면 그대로 던진다 — 게임은 옛 길을 열지 않고 멈춘다(§23-2 · 다시 검토 A2).
 // 문을 거친 겉은 틀이 떠날 때(pagehide) 셸에 알린다 — 셸이 다음 차례에 판을 닫는다(같은 pagehide의 마지막 답이 먼저).
 export async function openNext({ win = globalThis.window, gameId, banks, label = null } = {}) {
   const door = nextDoor(win);

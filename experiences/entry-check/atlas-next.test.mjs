@@ -285,6 +285,24 @@ test('연수 — 정해진 손님을 recommend 없이 present만 하고, 근무 
   coach.dispose();
 });
 
+test('연수 다시 보기 — 입구의 근무지 추천이 기본 판을 열어 두었어도 연수는 판 길이로 새 판을 연다(4-6 끝 판 F4)', async () => {
+  const { coach, port, time } = await engineCoach();
+  const spy = traced(coach);
+  const { shifts } = await throughDoor(spy.coach);
+  shifts.venue(['pool']);
+  const plan = shifts.fixed(tutorialOf(venue('pool')));
+  playShift(shifts, plan, time, {});
+  const opened = spy.calls.filter((call) => call.name === 'startSet').map((call) => call.result.opened);
+  assert.deepEqual(opened, [false, true], '추천이 연 기본 판을 닫고 다시 연다');
+  plan.end();
+  await settle();
+  const presented = await presentedOf(port);
+  assert.equal(presented.length, 6);
+  assert.equal(new Set(presented.map((event) => event.setId)).size, 1, '연수 손님 여섯이 한 판');
+  assert.ok(presented.every((event) => event.arm === 'host'), '추천이 남긴 고른 손님이 연수의 첫 손님을 엔진의 줄로 바꾸지 않는다(GA1)');
+  coach.dispose();
+});
+
 // 연수 근무의 손님(app.mjs tutorialQueue와 같은 짜임).
 const tutorialOf = (v) => [...TUTORIAL_CASES.map((id) => v.cases.find((c) => c.id === id)), ...composeShift(v, { firstTime: true }).filter((c) => !TUTORIAL_CASES.includes(c.id))]
   .slice(0, 6).sort((a, b) => minutes(a.at) - minutes(b.at));
@@ -411,6 +429,33 @@ test('한 손님 연습 — 놓친 단위가 든 손님 가운데 보여 주지 
   const presented = (await presentedOf(port)).at(-1);
   assert.equal(presented.itemKey, caseMetadata(drill.item).itemKey);
   assert.notEqual(presented.arm, 'host', '엔진이 고른 손님');
+  coach.dispose();
+});
+
+test('한 손님 연습 — 근무 전 안내에서 나가면(첫 손님 전) 고를 때 연 판을 기록 없이 닫아, 다음 연수는 앞 판 없이 판 길이로 연다(4-6 끝 판 A1)', async () => {
+  const { coach, port, time } = await engineCoach();
+  const spy = traced(coach);
+  const { shifts } = await throughDoor(spy.coach);
+  const pool = venue('pool');
+  const first = shifts.shift(pool, {});
+  playShift(shifts, first, time, { choose: (i, item) => (i < 2 ? wrongChoice(pool, item) : item.answer) });
+  first.end();
+  time.advance(60_000);
+  const drill = shifts.drill(['pool', 'library', 'museum'], { tutorial: true, plays: 1 });
+  assert.ok(drill);
+  // 근무 전 안내에서 그만두기 · 연수 다시 보기(app.mjs leaveShift → endPlan) — 손님을 부르지 않았다.
+  const from = spy.calls.length;
+  drill.plan.end();
+  drill.plan.end();
+  assert.deepEqual(spy.calls.slice(from).filter((call) => call.name === 'finishSet').map((call) => call.args[0]), [{ record: false }], '고를 때 연 판을 한 번 닫는다');
+  const tutorial = shifts.fixed(tutorialOf(pool));
+  playShift(shifts, tutorial, time);
+  tutorial.end();
+  assert.deepEqual(spy.calls.slice(from).filter((call) => call.name === 'startSet').map((call) => call.result.opened), [true], '연수는 남은 판 없이 바로 연다');
+  await settle();
+  const presented = (await presentedOf(port)).slice(-6);
+  assert.equal(new Set(presented.map((event) => event.setId)).size, 1);
+  assert.ok(presented.every((event) => event.arm === 'host'), '연수 손님은 제품 차례');
   coach.dispose();
 });
 

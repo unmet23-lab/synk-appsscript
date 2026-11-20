@@ -356,7 +356,7 @@ const ITEM_MUTANTS = [
     '순간 맞춤 items',
     '낸 문항의 난도를 관찰하지 않는다',
     FLOW,
-    '  if (level !== null) r.item = r.spec.items.levels.indexOf(level);\n',
+    '  if (level !== null && evidence) r.item = r.seen = r.spec.items.levels.indexOf(level);\n',
     '',
   ],
   [
@@ -364,8 +364,8 @@ const ITEM_MUTANTS = [
     '순간 맞춤 items',
     '낸 단계가 다음 관찰까지 남지 않는다(단계를 말하지 않은 응답은 시작 단계로)',
     FLOW,
-    '  if (level !== null) r.item = r.spec.items.levels.indexOf(level);',
-    '  r.item = level !== null ? r.spec.items.levels.indexOf(level) : (r.spec.items?.start ?? 0);',
+    '  if (level !== null && evidence) r.item = r.seen = r.spec.items.levels.indexOf(level);',
+    '  r.item = r.seen = level !== null && evidence ? r.spec.items.levels.indexOf(level) : (r.spec.items?.start ?? 0);',
   ],
   [
     F,
@@ -445,10 +445,79 @@ const LINE_MUTANTS = [
   ],
 ];
 
+// 관찰 칸의 두 자리(4-6 끝 판 검수 · 카본 E1 · E2) — test/flow/item-observed.test.mjs가 잡는다.
+const OBSERVED_MUTANTS = [
+  [
+    F,
+    '관찰 칸(끝 판)',
+    '혼자 해낸 성공 뒤에도 더 어려운 문항을 냈다는 것만으로 내린다',
+    FLOW,
+    "  const below = d => gap(r, d) <= -DEADBAND && !(held && d === 'content');\n",
+    '  const below = d => gap(r, d) <= -DEADBAND;\n',
+  ],
+  [
+    F,
+    '관찰 칸(끝 판)',
+    '난도를 관찰한 뒤 난도를 싣지 않은 혼자 성공에는 내용 내림을 막지 않는다(둘째 다시 보기 A1)',
+    FLOW,
+    "  const held = outcome === 'success' && !assisted && (level != null || r.leveled);\n",
+    "  const held = outcome === 'success' && !assisted && level != null;\n",
+  ],
+  [
+    F,
+    '관찰 칸(끝 판)',
+    '난도를 관찰했다는 것을 남기지 않는다',
+    FLOW,
+    '  r.leveled ||= level !== null && evidence;\n',
+    '',
+  ],
+  [
+    F,
+    '관찰 칸(끝 판)',
+    '내용 기억이 관찰한 난도 자리를 남기지 않는다',
+    FLOW,
+    '    ...(spec.items ? { item: r.seen } : {}),\n',
+    '',
+  ],
+  [
+    F,
+    '관찰 칸(끝 판)',
+    '다시 연 판이 기억의 난도 자리를 읽지 않고 시작 단계에서 연다',
+    FLOW,
+    '    seen: spec.items ? (remembered?.item ?? spec.items.start) : 0,\n',
+    '    seen: spec.items ? spec.items.start : 0,\n',
+  ],
+  [
+    F,
+    '관찰 칸(끝 판)',
+    '같은 날 다시 연 판이 기억한 난도로 여는 자리를 셈한다(다시 보기 GC4)',
+    FLOW,
+    '    item: spec.items ? spec.items.start : 0,\n',
+    '    item: spec.items ? (remembered?.item ?? spec.items.start) : 0,\n',
+  ],
+  [
+    F,
+    '관찰 칸(끝 판)',
+    '오래 쉬고 돌아온 판의 추정 상한이 관찰한 난도 자리를 쓰지 않는다',
+    FLOW,
+    '      logit(r.aim[dimension]) + challenge(r.spec, r.indices, dimension, r.seen),\n',
+    '      logit(r.aim[dimension]) + challenge(r.spec, r.indices, dimension, r.item),\n',
+  ],
+  [
+    F,
+    '관찰 칸(끝 판)',
+    '증거가 아닌 응답(건너뜀 · 무효)의 난도를 판의 기준으로 둔다',
+    FLOW,
+    '  if (level !== null && evidence) r.item = r.seen = r.spec.items.levels.indexOf(level);\n',
+    '  if (level !== null) r.item = r.seen = r.spec.items.levels.indexOf(level);\n',
+  ],
+];
+
 export const FLOW_MUTANTS = [
   ...CONSTANT_MUTANTS,
   ...GUARD_MUTANTS,
   ...RULE_MUTANTS,
   ...ITEM_MUTANTS,
   ...LINE_MUTANTS,
+  ...OBSERVED_MUTANTS,
 ];

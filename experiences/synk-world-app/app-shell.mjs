@@ -1068,7 +1068,7 @@ async function launchGame(id,{seoul:fromSeoul=false}={}){
  // 게임 문을 치운다 — 패널이 닫히면 겉과 그 판을 닫는다(4-6c).
  const closeDoor=door=>{if(!door)return;door.dispose();if(window.SYNKAtlasGame===door.api)delete window.SYNKAtlasGame;};
  const listed=games[id];if(!listed)return;const game=fromSeoul?{...listed,title:seoulText('dramaTitle')}:listed;
- const owner=client.snapshot?.accountId;let launchTicket=gameLaunch,session,trialHost=null,companion,dramaHost=null,gameDoor=null;
+ const owner=client.snapshot?.accountId;let launchTicket=gameLaunch,session,trialHost=null,companion,dramaHost=null,gameDoor=null,loadingShown=false;
  try{
  if(!fromSeoul&&!front?.free()&&home.ensureTutor&&!home.tutor()?.tutor)return await home.ensureTutor(()=>launchGame(id));
  // 손님의 한글 만나기는 계정 놀이 기록 없이 기기 진도로, 바람길·리듬은 체험이 남아 있으면 한 판 체험으로 연다(계정 호스트를 설치하지 않는다).
@@ -1076,7 +1076,7 @@ async function launchGame(id,{seoul:fromSeoul=false}={}){
  if(operating&&!(guest&&(GUEST_GAMES.has(id)||trial))){
   if(!client.snapshot)return signIn(id);
   const accountId=client.snapshot.accountId;
-  show(game.title,`<p class="panel-description" role="status">${t('account.gameLoading')}</p>`,'world-game-loading');
+  show(game.title,`<p class="panel-description" role="status">${t('account.gameLoading')}</p>`,'world-game-loading');loadingShown=true;
   const ticket=gameLaunch;
   launchTicket=ticket;
   try{session=await account.prepareGame({target:window,onStatus:state=>{if(!session||activeGameSession!==session||screen!=='game')return;if(state.play.phase==='conflict')showGameConflict(id,session);else if(state.play.phase==='stopped')show(t('account.gameStopped'),`${notice('PLAY','check',t('account.gameStoppedNotice'),t('account.gameStoppedBody'))}<div class="world-actions"><button class="felt-button" data-world="profile">${t('account.checkMine')}</button><button class="quiet-button" data-world="home">${t('account.toTown')}</button></div>`,'world-game-error');}});}
@@ -1084,8 +1084,8 @@ async function launchGame(id,{seoul:fromSeoul=false}={}){
   if(ticket!==gameLaunch||!worldPanel.open||home.isMaru&&home.openPanel()!=='world-game-loading'||client.snapshot?.accountId!==accountId){session.dispose();return;}
   if(session.status().play.phase==='conflict'){showGameConflict(id,session);return;}
  }
- // 새 엔진 게임 문(4-6c — 단계4_계획 §23-2): 새 길 입구가 있으면 틀보다 먼저 둔다. 틀의 게임이 셸 창의 게임 코치를 겉으로 받는다(입구가 판을 정한다).
- if(life.atlasNext?.gameDoor){const doorTicket=gameLaunch;gameDoor=await life.atlasNext.gameDoor(id).catch(()=>null);if(doorTicket!==gameLaunch||!worldPanel.open){gameDoor?.dispose();gameDoor=null;session?.dispose();return;}if(gameDoor)window.SYNKAtlasGame=gameDoor.api;}
+ // 새 엔진 게임 문(4-6c — 단계4_계획 §23-2): 새 길 입구가 있으면 틀보다 먼저 둔다. 틀의 게임이 셸 창의 게임 코치를 겉으로 받는다(입구가 판을 정한다). 문은 게임 이름(주소의 폴더 — korean-runner)으로 청한다. 셸의 짧은 이름(runner)은 게임 이름이 아니다. 기다리는 동안 패널을 닫거나 다른 화면을 열면 gameLaunch가 바뀐다 — 패널이 열려 있는지는 묻지 않는다(패널 없이 여는 길 · 리허설 · 운영 손님, 4-6 브라우저 확인). 문을 보기 전에 생활 세션이 다 서기를 기다린다 — 로그인 직후 바로 연 게임이 입구가 서기 전이라 문 없이 옛 길로 열렸다(같은 확인). 계정 길이 띄운 로딩 패널을 기다리는 사이 닫았으면(닫기 전환 160ms 동안은 gameLaunch가 그대로다 — 홈은 패널 종류를 곧바로 비운다) 열지 않는다(다시 보기 GB4).
+ if(atlasNextOn){const doorTicket=gameLaunch;const loadingGone=()=>loadingShown&&(!worldPanel.open||typeof home.openPanel==='function'&&home.openPanel()!=='world-game-loading');await life.ensure();if(doorTicket!==gameLaunch||loadingGone()){session?.dispose();return;}if(life.atlasNext?.gameDoor){gameDoor=await life.atlasNext.gameDoor(String(listed.path).split(/[/?#]/)[0]).catch(()=>null);}if(doorTicket!==gameLaunch||loadingGone()){gameDoor?.dispose();gameDoor=null;session?.dispose();return;}if(gameDoor)window.SYNKAtlasGame=gameDoor.api;}
  if(life.education?.applyPreferences()===false)throw Error('도움 방식을 저장하지 못했어요. 잠시 뒤 다시 저장해 주세요.');
  // 체험 판의 틀은 메모리 호스트를 받는다: 판이 끝나면 그 게임의 체험을 닫고 추천을 다시 고르며, 결과의 로그인 단추는 계정 연결을 연다.
  if(trial){trialHost=createGuestTrialPlayHost({game:id,onRound:()=>{guestTrials.finish(id);life.education?.refresh();},signIn:()=>setTimeout(()=>{if(client.snapshot)return;close();signIn(id);},0)});window.SYNKPlayHost=trialHost;}

@@ -89,9 +89,20 @@ function connect(first, win) {
   };
 }
 
+// 계정의 기록인가 — 연 코치의 저장소가 손님이 아니다(storage.guest === false). 혼자 뜨는 길(개발 깃발)은 늘 손님이다.
+function accountOf(coach) {
+  try {
+    return coach.summary()?.storage?.guest === false;
+  } catch {
+    return false;
+  }
+}
+
 // 카페. 게임 본문(app.mjs)은 이 겉을 옛 코치 자리(coach)에 두고 learn(이름, …)으로 부른다 — 던지면 지금처럼 learningFailed로 간다.
+//   hosted: 지금 연 코치가 WORLD 계정의 기록인가. 판을 다시 정해 다른 코치를 받으면(reopen) 그 코치로 다시 정한다(끝 판 C1).
 //   begin(판) · end(): 판을 열고 닫는다(판 끝 · 그만두기에 finishSet({ record: false })).
-//   pick(주문들) → { selected, why, engine }: 엔진이 고른 주문, 아니면 게임 차례. reason(주문들): 입구 · 결과에 쓸 다음 이유 한 줄(없으면 null).
+//   pick(주문들) → { selected, why, engine }: 엔진이 고른 주문, 아니면 게임 차례. 코치는 마지막에 고른 줄 하나만 들므로 게임은 고른 주문을
+//     곧바로 낸다 — 러시는 손님이 줄에 설 때가 아니라 그 손님을 들을 때 고른다(app.mjs chooseLate · 다시 보기 GB3). reason(주문들): 입구 · 결과에 쓸 다음 이유 한 줄(없으면 null).
 //   live(내용, 옵션): 순간 맞춤을 열고 settings · intro · end · trace를 준다. present(meta) · delivery · help · answer(pid, 옛 답, flow) · observe(관찰, pid).
 //   delayed(주문들): 며칠 뒤 주문 후보. summary(): 확인 도구용.
 export function createCafePlay(coach, { win = globalThis.window, hosted = false } = {}) {
@@ -99,23 +110,42 @@ export function createCafePlay(coach, { win = globalThis.window, hosted = false 
   let set = null;
   let flow = null;
   let tokens = 0;
+  let account = hosted;
+  let accountFor = coach; // account를 정한 코치 — 다시 연 코치가 앉으면 읽을 때 다시 정한다
+  // 답을 기다리는 제시 — 들었지만 아직 맞게 서빙하지도, 응답 없이 닫지도, 떠나지도 않은 손님. 이런 제시가 있는 동안에는 판 옵션(set) 없이
+  // 고른다: 오래 쉰 뒤(30분 · 날이 바뀜)의 set은 코치가 새 판을 열어 그 제시를 지운다(PRESENTATION_GONE — GC2). 열린 판은 판 옵션 없는
+  // 고르기에 그대로 남는다. 기다리는 제시가 없으면 지금처럼 set으로 고르고, 쉼 · 날이 판을 가른다(§23-6).
+  const waiting = new Set();
   // setPlay에 넘기는 코치 — 판을 다시 정해 다시 연 겉으로도 간다.
   const seat = {
     recommend: (candidates, options) => line.state.coach.recommend(candidates, options),
     finishSet: options => line.state.coach.finishSet(options),
   };
+  // 판 옵션을 빼고 고르는 판(열린 판을 잇는다) — next만 쓴다.
+  const keep = setPlay({
+    recommend: (candidates, { set: _set, ...options } = {}) => line.state.coach.recommend(candidates, options),
+    finishSet: () => {},
+  });
+  const turnOf = (candidates, gameTurn) => (waiting.size ? keep : set).next(candidates, gameTurn);
   // 게임 차례: 덱 차례의 첫 주문(지금 기본 순서와 같다).
   const gameTurn = candidates => candidates[0] ?? null;
 
   function end() {
     flow = null;
+    waiting.clear();
     const current = set;
     set = null;
     if (current) line.call(null, () => current.end());
   }
 
   return Object.freeze({
-    hosted,
+    get hosted() {
+      if (line.state.coach !== accountFor) {
+        accountFor = line.state.coach;
+        account = accountOf(accountFor);
+      }
+      return account;
+    },
     get retired() {
       return line.retired;
     },
@@ -128,7 +158,7 @@ export function createCafePlay(coach, { win = globalThis.window, hosted = false 
     pick(orders) {
       const candidates = orderCandidates(orders);
       set ??= setPlay(seat, {});
-      const turn = line.call(null, () => set.next(candidates, gameTurn));
+      const turn = line.call(null, () => turnOf(candidates, gameTurn));
       if (!turn) return candidates.length ? { selected: gameTurn(candidates), why: null, engine: false, idle: false } : null;
       return { selected: turn.item, why: turn.why, engine: turn.engine, idle: turn.idle === true };
     },
@@ -152,21 +182,25 @@ export function createCafePlay(coach, { win = globalThis.window, hosted = false 
     // 제시 번호 — 겉이 닫혔으면 기록 없는 자리표(어느 코치도 모르는 번호)를 준다. 게임은 그대로 듣기 · 서빙을 잇는다.
     present(meta) {
       const pid = line.call(null, c => (flow ? flow.present(meta) : c.present(meta)));
+      if (pid) waiting.add(pid);
       return pid ?? `ended:${(tokens += 1)}`;
     },
     delivery: (pid, options) => line.call(null, c => c.delivery(pid, options)),
     help: (pid, kind) => line.call(null, c => c.help(pid, kind)),
     // 답 하나. 러시면 순간 맞춤 겉이 같은 응답으로 Flow를 움직인다(한 제시에 한 번 — 엔진). { recorded, settings, line } 또는 null.
+    // 맞게 서빙했거나 응답 없이 닫으면(떠남 · 판 끝) 그 제시는 더 답을 기다리지 않는다.
     answer(pid, result, flowOptions = {}) {
       const response = responseOf(result);
+      if (result?.correct === true || result?.reason === 'unanswered') waiting.delete(pid);
       return line.call(null, c => {
         if (!flow) return { recorded: c.answer(pid, response), settings: null, line: null };
         const out = flow.answer(pid, response, flowOptions);
         return { recorded: out.recorded, settings: out.settings ?? null, line: out.line ?? null };
       });
     },
-    // 문항이 아닌 관찰(떠난 손님). 제시 번호를 주면 그 제시의 한 번 몫을 쓴다. 순간 맞춤이 없으면 null.
+    // 문항이 아닌 관찰(떠난 손님). 제시 번호를 주면 그 제시의 한 번 몫을 쓴다 — 그 손님은 떠났으니 답을 기다리지 않는다. 순간 맞춤이 없으면 null.
     observe(input, pid = null) {
+      if (pid != null) waiting.delete(pid);
       if (!flow) return null;
       const handle = flow;
       return line.call(null, () => {
@@ -232,13 +266,7 @@ export async function openCafe({ win = globalThis.window } = {}) {
   const viaDoor = nextDoor(win) != null;
   const coach = await openNext({ win, gameId: GAME_ID, banks: [...BANKS] });
   if (!coach) return null;
-  let hosted = false;
-  try {
-    hosted = viaDoor && coach.summary()?.storage?.guest === false;
-  } catch {
-    hosted = false;
-  }
-  return createCafePlay(coach, { win, hosted });
+  return createCafePlay(coach, { win, hosted: viaDoor && accountOf(coach) });
 }
 
 // 초급 가게를 연다 — null이면 지금 판(옛 길), RUN_ENDED는 그대로 던진다.

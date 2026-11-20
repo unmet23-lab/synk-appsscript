@@ -45,7 +45,8 @@ const progress = loadProgress();
 // 새 길(Atlas 재설계 4-6d — 단계4_계획 §23-7): 문 · 개발 깃발이 있으면 새 길 모듈(atlas-next-play.mjs)을 동적으로 불러 셸 창의 게임 코치를
 // 받는다. 셸이 지금 판이라고 하면(null) 옛 길로 연다. 문이 없으면 옛 코치를 지금처럼 이 자리에서 동기로 만든다.
 // shiftCoach: 새 길(근무 · 손님 고르기 · 한 손님 연습 · 추천 근무지). quiet: 문이 닫히는 중(RUN_ENDED) — 옛 길을 열지 않고 안내 없이 놀기만 한다.
-let coach = null, shiftCoach = null, quiet = false, reopening = null;
+// oldPath: 옛 코치의 길(문이 없거나 셸이 지금 판이라고 함). 문이 닫히는 중 · 새 길이 실패한 판은 옛 길이 아니다(옛 코치를 열지 않는다).
+let coach = null, shiftCoach = null, quiet = false, reopening = null, oldPath = !atlasNext;
 function openOldCoach() {
   try { coach = window.SynkLearning?.createGame({ gameId: GAME_ID, storage: window.localStorage }) || null; } catch { coach = null; }
 }
@@ -54,7 +55,7 @@ function openNextPath() {
 }
 /** 새 길을 연 결과를 받는다. 겉이면 새 길, null이면 옛 길, 거절이면 옛 길을 열지 않는다(새 길이 맡은 판 — 새 길 계정에 옛 동기가 켜지지 않게). */
 function takeNext({ opened = null, error = null }) {
-  shiftCoach = opened; coach = opened?.coach ?? null; quiet = !!error && ended(error);
+  shiftCoach = opened; coach = opened?.coach ?? null; quiet = !!error && ended(error); oldPath = !opened && !error;
   if (error && !quiet) console.error(error);
   if (!opened && !error) openOldCoach();
 }
@@ -62,7 +63,10 @@ if (nextOpening) takeNext(await nextOpening); else openOldCoach();
 const atlas = (fn, fallback = null) => { if (!coach) return fallback; try { return fn(coach); } catch { return fallback; } };
 const assignment=()=>atlas(c=>c.assignment?.());
 // SYNK WORLD 안에서는 계정의 기록이다. 이 브라우저가 아니라 WORLD 계정 설정에서 공유·삭제를 관리한다. 새 길은 기록 지우기를 쓰지 않는다.
-const hosted = atlasNext || atlas((c) => typeof c.assignment === 'function', false);
+// 계정의 기록인가(hosted)는 실제로 연 코치로 정한다 — 새 길은 그 코치의 저장소가 계정일 때, 옛 길은 옛 코치에 과제가 있을 때(WORLD 옛 학습
+// 호스트). 연 코치가 없으면(문이 닫히는 중 · 새 길 실패) 아니다. 판을 다시 정한 뒤 문을 다시 열면 다시 정한다(reopenIfRetired).
+const hostedOf = () => (shiftCoach ? shiftCoach.hosted === true : atlas((c) => typeof c.assignment === 'function', false));
+let hosted = hostedOf();
 const assignmentSeen=new Set();
 // The WORLD run this page was opened for has closed (the student opened another task, or it was finished):
 // nothing more is recorded, so the results screen says so instead of offering the next shift.
@@ -142,10 +146,22 @@ function paintLobbyPlan() {
   $('#storage-note').hidden = !warn; $('#storage-note').textContent = warn || '';
   return { target, targetVenues, venue };
 }
+// 기록 안내 두 줄의 처음 글(index.html) — 계정 안내 · 「이번 근무의」로 바꾸기 전에 받아 두고, 계정이 아닌 길로 돌아오면 한 번 되돌린다.
+const firstText = new Map();
+function setText(sel, text) {
+  if (!firstText.has(sel)) firstText.set(sel, $(sel).textContent);
+  $(sel).textContent = text;
+}
+/** 기록 안내와 기록 지우기 단추. 지우기는 옛 길에서 계정의 기록이 아닐 때만이다(새 길은 기록 지우기를 쓰지 않는다). 길이 바뀌면 다시 부른다. */
+function paintScope() {
+  $('#reset-learning').hidden = hosted || !oldPath;
+  if (hosted) { setText('#learning-scope', 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.'); setText('#skills-scope', 'WORLD 계정에 남은'); return; }
+  for (const [sel, text] of firstText) $(sel).textContent = text;
+  firstText.clear();
+}
 function renderLobby() {
   const { target, targetVenues, venue } = paintLobbyPlan();
-  $('#reset-learning').hidden = hosted;
-  if (hosted) { $('#learning-scope').textContent = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.'; $('#skills-scope').textContent = 'WORLD 계정에 남은'; }
+  paintScope();
   const list = $('#venues'); list.textContent = '';
   for (const v of VENUES) {
     const open = target?targetVenues.some(x=>x.id===v.id):unlocked(progress, v.id), stars = progress.stars[v.id] || 0;
@@ -166,13 +182,17 @@ function renderLobby() {
 /* ── 근무 시작 ── */
 // 공통 코인 스크립트(collection.js)를 읽지 못했으면 코인 줄을 숨긴다(모듈은 본문 끝 스크립트 뒤에 돈다).
 if (!globalThis.SynkPlayCollection) for (const n of document.querySelectorAll('.synk-collection-line')) n.hidden = true;
+// 새 길: 판을 다시 정해 겉이 닫혔으면(onRetired) 문을 다시 열고 then을 부른다 — 새 겉이면 새 길, 지금 판이면 옛 길. 길이 바뀌니 기록 안내(hosted)를
+// 다시 정하고, 옛 길이면 옛 코치의 저장 알림을 듣는다. 여는 동안 다시 누른 단추는 하나로 친다. 소리 열기는 누른 자리에서 먼저. 닫히지 않았으면 false.
+function reopenIfRetired(then) {
+  if (!shiftCoach?.retired) return false;
+  if (!reopening) { sound.unlock(); reopening = openNextPath().then((result) => { reopening = null; takeNext(result); hosted = hostedOf(); paintScope(); listenStorage(); then(); }); }
+  return true;
+}
 function startShift(venueId, { tutorial = !progress.tutorial, drill = null } = {}) {
-  // 새 길: 판을 다시 정해 겉이 닫혔으면(onRetired) 이 근무를 열 때 문을 다시 연다 — 새 겉이면 새 길, 지금 판이면 옛 길. 소리 열기는 누른 자리에서 먼저.
-  // 한 손님 연습은 손님만 넘긴다 — 앞 겉에서 고른 판(drill.plan)은 닫힌 겉에 묶여 있어 새 겉에서 다시 연다.
-  if (shiftCoach?.retired) {
-    if (!reopening) { sound.unlock(); reopening = openNextPath().then((result) => { reopening = null; takeNext(result); startShift(venueId, { tutorial, drill: shiftCoach && drill ? { ...drill, plan: null } : null }); }); }
-    return;
-  }
+  // 새 길: 판을 다시 정해 겉이 닫혔으면 이 근무를 열 때 문을 다시 연다. 한 손님 연습은 다시 연 길에서 손님을 다시 고른다 — 앞 겉에서 고른
+  // 판(drill.plan)은 닫힌 겉에 묶여 있고, 다시 연 길이 지금 판이면 옛 길의 한 손님 연습이다.
+  if (reopenIfRetired(() => (drill ? practice() : startShift(venueId, { tutorial })))) return;
   sound.unlock(); sound.stopVoice();
   const v = venueById(venueId);
   const target=assignment(),targetCases=v&&target?assignmentCases(v.cases,target):null;
@@ -700,7 +720,7 @@ function finishShift() {
   }
   const next = renderNext(v);
   renderSkills(score, next?.skillId);
-  $('#r-hub').hidden = hosted || !location.pathname.includes('/entry-check/');
+  $('#r-hub').hidden = hosted || !oldPath || !location.pathname.includes('/entry-check/');
   show('results');
 }
 
@@ -721,7 +741,7 @@ function renderSkills(score, focusId) {
   const ul = $('#r-skills'); ul.textContent = '';
   // 새 길: 학습 항목마다 이번 근무에 맞힌 수만 쓴다(옛 요약 여섯 상태는 쓰지 않는다 — §23-6, 칸 줄은 리디자인에서).
   if (shiftCoach) {
-    $('#skills-scope').textContent = '이번 근무의';
+    setText('#skills-scope', '이번 근무의');
     for (const id of Object.keys(SKILL_LABEL)) {
       const shift = score.bySkill[id];
       ul.append(el('li', '', `<b>${esc(SKILL_LABEL[id])}</b><em>${shift ? `이번 ${shift.correct}/${shift.total}` : '이번 0'}</em>`));
@@ -783,12 +803,15 @@ $('#quit').onclick = () => { $('#pause-dialog').close(); leaveShift(); renderLob
 $('#replay-tutorial').onclick = () => { $('#pause-dialog').close(); leaveShift(); startShift('pool', { tutorial: true }); };
 $('#how-tutorial').onclick = () => startShift('pool', { tutorial: true });
 // 입구를 그린 뒤 다른 탭에서 기록이 바뀌었을 수 있어 누른 때에 다시 판단한다.
-$('#rec-practice').onclick = () => {
+function practice() {
+  // 새 길: 판을 다시 정해 겉이 닫혔으면 문을 먼저 다시 열고 다시 연 길에서 고른다(닫힌 겉으로 고르면 단추만 사라진다 — 4-6 끝 판 A2).
+  if (reopenIfRetired(practice)) return;
   // 새 길: 누른 때 그 손님을 고른다(엔진이 고르면 그 이유 한 줄이 근무 전 안내에 실린다).
   if (shiftCoach) { const drill = atlas(() => shiftCoach.drill(unlockedIds(), progress)); if (drill) startShift(drill.venueId, { drill }); else renderLobby(); return; }
   const plan = assignment() ? null : atlas((c) => soloGuestPlan(c, unlockedIds(), progress));
   if (plan) startShift(plan.target.venueId, { drill: { item: plan.target.item, why: plan.why } }); else renderLobby();
-};
+}
+$('#rec-practice').onclick = practice;
 $('#voice-toggle').onclick = () => { sound.setVoiceOn(!sound.isVoiceOn()); syncSound(); };
 $('#motion-toggle').onclick = () => {
   progress.motion = progress.motion === false; saveProgress(); applyMotion();
@@ -828,7 +851,7 @@ function paintResetNotice(force = false) {
 function showResetNotice(kind) { resetNotice = kind; paintResetNotice(true); }
 function clearResetNotice() { resetNotice = null; paintResetNotice(); }
 $('#reset-learning').onclick = () => {
-  if (hosted) return;
+  if (hosted || !oldPath) return;   // 계정의 기록 · 새 길은 여기서 지우지 않는다(단추도 숨긴다)
   if (!coach) { showResetNotice('unavailable'); return; }
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 근무지 별은 그대로 남아요.')) return;
   let outcome;
@@ -983,14 +1006,20 @@ function refreshStorageText() {
     for (const b of document.querySelectorAll('#venues .venue')) b.classList.toggle('is-rec', b.dataset.venue === venue.id);
   } else if (!$('#results').hidden && state.venue) renderNext(state.venue);
 }
-let storagePaint = false;
-try {
-  coach?.syncPort?.subscribe?.((event) => {
-    if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
-    storagePaint = true;
-    Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
-  });
-} catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
+let storagePaint = false, storageHeard = false;
+// 옛 코치의 저장 알림만 듣는다(새 길의 겉에는 syncPort가 없다). 판을 다시 정한 뒤 다시 연 길이 옛 길이면 그때 듣는다(reopenIfRetired).
+function listenStorage() {
+  if (storageHeard || !coach || !oldPath) return;
+  storageHeard = true;
+  try {
+    coach?.syncPort?.subscribe?.((event) => {
+      if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
+      storagePaint = true;
+      Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
+    });
+  } catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
+}
+listenStorage();
 renderLobby();
 // 시험·확인용 읽기 전용 관찰(상태를 바꾸지 않는다)
 if (QA) {

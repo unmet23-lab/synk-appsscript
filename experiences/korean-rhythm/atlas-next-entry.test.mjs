@@ -4,6 +4,7 @@
 //            같다(짓는 때 원래 파일과 이 파일을 같은 틀에서 돌려 견준 값). 새 길 모듈을 싣지 않는다.
 //   문이 있고 open이 null이면 기다린 뒤 옛 길로 정상 시작, RUN_ENDED면 옛 길을 열지 않고 안내 없이 논다.
 //   문이 진짜 엔진 코치를 주면 그 겉으로 연다 — 입구의 추천 곡과 이유 한 줄, 곡 하나(제시 · 전달 · 도움 · 답 · 순간 맞춤 · 판 끝), 새 문장 확인.
+//   판 나누기(곡 · 보충 연습 · 새 문장 확인)와 판을 다시 정한 뒤(onRetired)의 다시 열기, 저장 안내 · 기록 지우기 — 4-6 끝 판 검수 지적.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -13,6 +14,7 @@ import { TRACKS, LEVELS, RoundState } from './core.mjs';
 import { rhythmItem, RHYTHM_CANDIDATES, assignmentTracks, assignmentTrack, rhythmTargetLabel, FLOW_RHYTHM, timingObservation, timingSummary, nextTrackLine, missedRhythm, returnLine } from './personalization.mjs';
 import { rhythmSupport } from '../brand-opening/game-tutor-support.mjs';
 import { createSupplementalPanel } from './supplemental-player.mjs';
+import { supplementalItems } from './supplemental.mjs';
 import { josa } from './kit/josa.mjs';
 import { nextDoor, devFlag, ended } from './kit/atlas-next.mjs';
 import { createGameDoor } from '../synk-world-app/world-atlas-game.mjs';
@@ -29,7 +31,8 @@ const WORDS = readJson('../../packages/atlas/map/words.json');
 
 const SOURCE = fs.readFileSync(new URL('./app.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const LOADER = "import('./atlas-next-play.mjs')";
-const BODY = SOURCE.replace(LOADER, '__loadNext()');
+// 실린 모듈의 약속을 틀(vm) 안의 Promise로 감싼다 — 브라우저처럼 같은 실행 영역의 약속이라 await의 차례가 같다(다시 보기 GB2).
+const BODY = SOURCE.replace(LOADER, 'Promise.resolve(__loadNext())');
 const APP = `(async()=>{'use strict';${BODY.replace(/^import .*;$/gm, '')}\n})()`;
 const IMPORTED = [...SOURCE.matchAll(/^import\s*\{([^}]*)\}\s*from\s*'[^']+';$/gm)].flatMap(m => m[1].split(',').map(name => name.trim()).filter(Boolean));
 
@@ -46,13 +49,16 @@ function element(tag = 'div') {
 }
 const storageOf = () => { const map = new Map(); return { getItem: k => map.get(k) ?? null, setItem: (k, v) => map.set(k, String(v)), removeItem: k => map.delete(k) }; };
 
-// 옛 코치(진짜 옛 엔진)를 지켜본다 — 부른 메서드 이름과 syncPort 읽기를 차례대로 적는다.
-function watchedOld(log) {
+// 옛 코치(진짜 옛 엔진)를 지켜본다 — 부른 메서드 이름과 syncPort 읽기를 차례대로 적는다. 저장 알림을 건 함수는 heard에 남는다.
+function watchedOld(log, heard = []) {
   const real = createGame({ gameId: 'korean-rhythm', map: strata, storage: storageOf() });
   return new Proxy(real, {
     get(target, name) {
       const value = target[name];
-      if (name === 'syncPort') log.push('syncPort');
+      if (name === 'syncPort') {
+        log.push('syncPort');
+        return value && { ...value, subscribe: fn => { heard.push(fn); return value.subscribe(fn); } };
+      }
       if (typeof value !== 'function') return value;
       return (...args) => { log.push(name); return value.apply(target, args); };
     },
@@ -62,7 +68,11 @@ function watchedOld(log) {
 // 소리 · 무대 흉내 — 곡의 시각은 시험이 정하고, 문장 소리가 끝나는 때 전달을 알린다(audio.mjs의 onDelivery와 같은 꼴).
 class FakeMusic {
   constructor({ onDelivery }) { this.onDelivery = onDelivery; this.time = -5; this.state = 'running'; this.enabled = true; this.questions = []; this.reviews = []; FakeMusic.last = this; }
-  prepare(_track, questions) { this.questions = questions; return Promise.resolve('buffer'); }
+  // questions가 함수면 보면이 정해진 뒤(새 길이 코치를 받는 동안 — app.mjs start) 문장 소리를 받는다(audio.mjs prepare와 같은 꼴).
+  prepare(_track, questions) {
+    const take = list => { this.questions = list; return 'buffer'; };
+    return typeof questions === 'function' ? Promise.resolve(questions()).then(take) : Promise.resolve(take(questions));
+  }
   start() {} stop() {} hit() {} setSound() {} seek() {}
   pause() { return Promise.resolve(); } resume() { return Promise.resolve(); }
   review(voice) { this.reviews.push(voice); return FakeMusic.failReview-- > 0 ? Promise.reject(new Error('끊김')) : Promise.resolve(); }
@@ -84,13 +94,15 @@ async function boot({ door = null, search = '', load = () => import('./atlas-nex
   const storage = storageOf();
   const frames = [];
   const listeners = [];
-  const old = watchedOld(log);
+  const audios = []; // 보충 연습 대화의 소리(연습 하나에 하나) — 시험이 onended로 끝까지 들은 것을 알린다
+  const heard = []; // 옛 코치의 저장 알림을 건 함수
+  const old = watchedOld(log, heard);
   const up = door ? { SYNKAtlasGame: door } : undefined;
   let perf = 1000;
   const context = {
     TRACKS, LEVELS, RoundState, rhythmItem, RHYTHM_CANDIDATES, missedRhythm, returnLine, assignmentTracks, assignmentTrack, rhythmTargetLabel,
     FLOW_RHYTHM, timingObservation, timingSummary, nextTrackLine, rhythmSupport, josa, nextDoor, devFlag, ended, recordTrialStarted() {},
-    createSupplementalPanel: options => createSupplementalPanel({ ...options, document, audioFactory: () => ({ pause() {}, play: async () => {} }) }),
+    createSupplementalPanel: options => createSupplementalPanel({ ...options, document, audioFactory: () => { const audio = { pause() {}, play: async () => {} }; audios.push(audio); return audio; } }),
     MusicPlayer: FakeMusic, Stage: FakeStage, document, localStorage: storage, location: { hostname: 'synk.im', search, pathname: '/korean-rhythm/' },
     parent: up, top: up,
     SynkLearning: { createGame: options => { log.push('createGame'); created.push(options); return old; } },
@@ -122,8 +134,25 @@ async function boot({ door = null, search = '', load = () => import('./atlas-nex
     }
     return music;
   }
-  return { log, created, loads, $, storage, listeners, context, playSong, done };
+  return { log, created, loads, $, storage, listeners, audios, heard, context, playSong, done };
 }
+const tick = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));
+// 보충 연습 패널(입구 supplemental-ready · 결과 supplemental-practice)을 손으로 돈다 — 시작 · 대화 듣기(끝까지) · 답(O) · 다음 대화 · 닫기.
+function practiceOf(page, id) {
+  const host = page.$(id);
+  const button = label => host.children.find(node => node.tag === 'button' && node.textContent === label);
+  return {
+    button,
+    start: (label = '보충 연습') => button(label).click(),
+    listen: () => { button('대화 듣기').click(); page.audios.at(-1).onended(); },
+    answer: () => button('O · 맞아요').click(),
+    next: () => (button('다음 대화') ?? button('보충 연습 마치기')).click(),
+    close: () => button('보충 연습 닫기').click(),
+  };
+}
+const RECALL = /:recall(:v\d+)?$/; // 새 문장 확인 문항(rhythmItem recall)
+const PRACTICE = /^korean-rhythm\./; // 보충 연습 · 며칠 뒤 확인 대화(supplemental.mjs presented)
+const SONG_SET = { set: { length: 5, newLimit: 15 } };
 
 // 4-6d 앞의 app.mjs가 시작할 때 옛 코치에 닿는 차례(같은 틀 · 빈 기록에서 잰 값 — 끝의 만남 읽기는 며칠 뒤 확인 대화와 같은 출처 대화).
 const OLD_START = ['account.ready', 'createGame', 'syncPort', 'recommend', 'summary', 'events', 'summary', 'summary', 'events', 'followups', ...Array(34).fill('exposure')];
@@ -162,6 +191,9 @@ test('문이 있고 셸이 지금 판이라고 하면(null) 기다린 뒤 옛 �
   assert.deepEqual(page.log, OLD_START, '옛 길은 지금과 같은 차례');
   assert.equal(page.created[0].storage, page.storage);
   assert.ok(page.$('recommendation-reason').textContent.length > 0, '입구의 추천 안내를 그린다');
+  // 기록 지우기 · 저장 안내도 옛 코치대로 — 이 브라우저의 기록이면 지우기를 두고 「이 브라우저」라고 한다(B1).
+  assert.equal(page.$('reset-learning').hidden, false, '옛 길(이 브라우저 기록)은 기록 지우기를 둔다');
+  assert.match(page.$('learning-scope').textContent, /이 브라우저에 저장돼요/);
 });
 
 test('문이 닫히는 중이면(RUN_ENDED) 옛 길을 열지 않고 안내 없이 논다 — 다른 실패도 옛 길을 열지 않는다', async () => {
@@ -242,8 +274,113 @@ test('코치를 받는 동안 — 곡 고르기와 단추는 먼저 서고, 추�
   await page.done;
   const [, , result] = shell.calls.find(([name]) => name === 'recommend');
   assert.equal(page.$('recommendation-reason').textContent, result.why.line, '받은 뒤 추천과 이유를 그린다');
-  assert.match(page.$('learning-scope').textContent, /WORLD 계정/);
+  assert.match(page.$('learning-scope').textContent, /이 브라우저에 저장돼요/, '손님 코치는 이 브라우저의 기록이다');
   shell.door.dispose();
+});
+
+test('저장 안내는 받은 코치를 따른다 — 손님 코치는 이 브라우저, 계정 코치만 WORLD 계정. 기록 지우기는 어느 쪽이든 쓰지 않는다(B1 · GB8)', async () => {
+  const guest = await shellCoach();
+  const one = await boot({ door: guest.door.api });
+  assert.match(one.$('learning-scope').textContent, /이 브라우저에 저장돼요/);
+  assert.equal(one.$('reset-learning').hidden, true);
+  guest.door.dispose();
+  const account = await shellCoach();
+  const summary = account.spy.summary;
+  account.spy.summary = (...args) => { const real = summary(...args); return { ...real, storage: { ...real.storage, guest: false } }; };
+  const two = await boot({ door: account.door.api });
+  assert.match(two.$('learning-scope').textContent, /WORLD 계정에 이어지고/);
+  assert.equal(two.$('reset-learning').hidden, true);
+  account.door.dispose();
+});
+
+test('판을 다시 정한 뒤 셸이 지금 판이라고 하면(null) 옛 길로 열고, 기록 지우기와 저장 안내를 옛 코치대로 다시 정한다(B1)', async () => {
+  const shell = await shellCoach();
+  let opens = 0;
+  const door = { open: async request => (++opens === 1 ? shell.door.api.open(request) : null) };
+  const page = await boot({ door, search: '?qa' });
+  assert.equal(page.$('reset-learning').hidden, true, '새 길은 기록 지우기를 쓰지 않는다');
+  shell.entry.retire();
+  const lobby = practiceOf(page, 'supplemental-ready');
+  lobby.start();
+  await tick(20);
+  assert.equal(opens, 2, '첫 대화 앞에서 문을 다시 연다');
+  assert.equal(page.created.length, 1, '셸이 지금 판이라고 하면 옛 코치를 연다');
+  lobby.close();
+  assert.equal(page.$('reset-learning').hidden, false, '옛 코치(이 브라우저 기록)는 기록 지우기를 둔다');
+  assert.match(page.$('learning-scope').textContent, /이 브라우저에 저장돼요/);
+  shell.door.dispose();
+});
+
+test('새 문장 확인 문장을 낸 뒤 판을 다시 정해 옛 길로 바뀌면, 그 문장의 답은 옛 코치에 보내지 않는다 — 옛 코치가 끊기지 않는다(B1 · B3와 같은 짜임)', async () => {
+  const shell = await shellCoach();
+  let opens = 0;
+  const door = { open: async request => (++opens === 1 ? shell.door.api.open(request) : null) };
+  const page = await boot({ door, search: '?qa' });
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  await page.$('recall-button').click(); // 새 겉으로 낸 확인 문장 — 다 듣고 답을 기다린다
+  shell.entry.retire();
+  practiceOf(page, 'supplemental-practice').start(); // 보충 연습이 문을 다시 열고 셸은 지금 판이라고 한다 — 옛 코치
+  await tick(20);
+  assert.equal(page.created.length, 1, '옛 코치를 연다');
+  page.$('recall-options').children[0].click();
+  assert.ok(!page.log.includes('answer'), '새 겉의 제시 번호를 옛 코치에 보내지 않는다');
+  assert.match(page.$('learning-scope').textContent, /이 브라우저에 저장돼요/, '옛 코치는 그대로 쓸 수 있다');
+  shell.door.dispose();
+});
+
+test('새 길로 시작한 뒤 「다른 문장 듣기」에서 문을 다시 열어 옛 길로 바뀌면 그 옛 코치의 저장 알림을 한 번 듣는다(다시 보기 GA4)', async () => {
+  const off = await boot();
+  assert.equal(off.heard.length, 1, '꺼진 판은 지금처럼 처음에 한 번 건다');
+  const shell = await shellCoach();
+  let opens = 0;
+  const door = { open: async request => (++opens === 1 ? shell.door.api.open(request) : null) };
+  const page = await boot({ door, search: '?qa' });
+  assert.equal(page.heard.length, 0, '새 겉에는 저장 알림이 없다');
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  shell.entry.retire();
+  await page.$('recall-button').click(); // 문을 다시 열고 셸은 지금 판이라고 한다 — 옛 코치
+  await tick(20);
+  assert.equal(page.created.length, 1, '옛 코치를 연다');
+  assert.equal(page.heard.length, 1, '다시 연 옛 코치의 저장 알림을 한 번 건다');
+  const before = page.log.filter(name => name === 'recommend').length;
+  page.heard[0]({ kind: 'storage-ready' });
+  await tick();
+  assert.ok(page.log.filter(name => name === 'recommend').length > before, '저장 상태가 바뀌면 결과의 추천 · 저장 안내를 다시 그린다');
+  page.$('back-button').click();
+  await page.$('start-button').click();
+  assert.equal(page.heard.length, 1, '두 번 걸지 않는다');
+  shell.door.dispose();
+});
+
+test('코치를 받는 동안 사람이 고른 곡은 받은 뒤에도 그대로 둔다 — 추천 표시만 그린다(B8 · GB6)', async () => {
+  for (const track of TRACKS) {
+    const shell = await shellCoach();
+    let release;
+    const gate = new Promise(resolve => (release = resolve));
+    const door = { open: async request => { await gate; return shell.door.api.open(request); } };
+    const page = await boot({ door, wait: false });
+    await tick(20);
+    page.$('track-grid').children[track.id].click();
+    release();
+    await page.done;
+    assert.equal(page.context.synkRhythm.snapshot().track, track.id, `직접 고른 곡 ${track.id}`);
+    shell.door.dispose();
+  }
+});
+
+test('겉이 닫힌 뒤(판을 다시 정함 · RUN_ENDED) 입구는 저장 안내를 비운다 — 「기록을 저장할 수 없어서」라고 하지 않는다(B7)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  assert.match(page.$('learning-scope').textContent, /이 브라우저에 저장돼요/);
+  shell.entry.retire();
+  page.$('back-button').click();
+  assert.equal(page.$('learning-scope').textContent, '', '판을 다시 정함');
+  shell.door.dispose();
+  const other = await shellCoach();
+  const second = await boot({ door: other.door.api, search: '?qa' });
+  other.door.dispose(); // 패널이 닫히는 중 — 겉의 부르기는 RUN_ENDED
+  second.$('back-button').click();
+  assert.equal(second.$('learning-scope').textContent, '', 'RUN_ENDED');
 });
 
 test('판을 다시 정하면 그 곡은 기록 없이 잇고, 다음 곡을 열 때 문을 다시 연다 — 새 겉이면 다시 기록한다', async () => {
@@ -255,13 +392,292 @@ test('판을 다시 정하면 그 곡은 기록 없이 잇고, 다음 곡을 열
   page.$('back-button').click(); // 입구를 다시 그려도 닫힌 겉은 부르지 않는다
   assert.equal(shell.calls.length, count);
   assert.equal(page.$('recommendation-reason').textContent, '');
-  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  const music = await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
   assert.equal(shell.entry.asked, 2, '다음 곡을 열 때 문을 다시 연다');
-  const song = shell.calls.slice(count).map(([name]) => name);
-  // 코치를 받는 사이 지은 보면(게임 차례) — 첫 문장 앞에서 앞 판을 닫고 이 곡의 판을 연다.
-  assert.deepEqual(song.slice(0, 4), ['live', 'itemUnits', 'finishSet', 'recommend']);
+  const calls = shell.calls.slice(count);
+  const song = calls.map(([name]) => name);
+  // 소리 길은 누른 그 순간에 열고, 코치를 받은 뒤 앞 판을 닫고 문장마다 변형을 골라 그 변형으로 보면을 짓는다(GB5).
+  assert.deepEqual(song.slice(0, 7), ['finishSet', 'recommend', 'recommend', 'recommend', 'recommend', 'recommend', 'live']);
+  const track = page.context.synkRhythm.snapshot().track;
+  calls.slice(1, 6).forEach(([, [items], result], i) => {
+    assert.deepEqual(items.map(item => item.id), [`t${track}q${i}v0`, `t${track}q${i}v1`]);
+    if (result.status !== 'none') assert.equal(music.questions[i].id, result.selected.id, '받은 코치가 고른 변형으로 연주한다');
+  });
   assert.equal(song.filter(name => name === 'present').length, 5, 'retire 뒤 다음 곡도 다시 기록된다');
   assert.equal(song.filter(name => name === 'answer').length, 5);
+  shell.door.dispose();
+});
+
+test('판을 다시 정한 뒤 곡 대신 보충 연습을 열어도 문을 다시 열고, 받은 뒤 그 연습의 첫 대화를 새 겉으로 낸다(4-6 끝 판 F5 · B3)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  assert.equal(shell.entry.asked, 1);
+  shell.entry.retire();
+  const lobby = practiceOf(page, 'supplemental-ready');
+  assert.ok(lobby.button('보충 연습'), '입구의 보충 연습 단추');
+  const count = shell.calls.length;
+  lobby.start();
+  assert.equal(shell.calls.length, count, '닫힌 겉은 부르지 않는다');
+  await tick(20);
+  assert.equal(shell.entry.asked, 2, '첫 대화 앞에서 문을 다시 연다');
+  const names = shell.calls.slice(count).map(([name]) => name);
+  assert.ok(names.includes('present'), `받은 뒤 첫 대화를 새 겉으로 낸다 — ${names.join(' ')}`);
+  lobby.listen();
+  lobby.answer();
+  const rows = await shell.events();
+  const shown = rows.filter(e => e.type === 'practice.presented' && PRACTICE.test(e.itemKey));
+  assert.equal(shown.length, 1);
+  assert.equal(rows.filter(e => e.type === 'practice.attempted' && e.presentationId === shown[0].id).length, 1, '그 답이 남는다');
+  shell.door.dispose();
+});
+
+test('결과 화면에서 판을 다시 정한 뒤 「다른 문장 듣기」를 누르면 문을 다시 열고 그 확인 문장을 새 겉으로 기록한다(B3 · GB4)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  shell.entry.retire();
+  await page.$('recall-button').click();
+  assert.equal(shell.entry.asked, 2, '확인 문장을 내기 전에 문을 다시 연다');
+  page.$('recall-options').children[0].click();
+  const rows = await shell.events();
+  const shown = rows.filter(e => e.type === 'practice.presented' && RECALL.test(e.itemKey));
+  assert.equal(shown.length, 1, '새 겉으로 낸다');
+  assert.equal(rows.filter(e => e.type === 'practice.attempted' && e.presentationId === shown[0].id).length, 1, '그 답이 남는다');
+  shell.door.dispose();
+});
+
+test('판을 다시 정한 뒤 이미 보이는 「며칠 뒤 다시 확인」을 누르면 문을 먼저 다시 열고, 받은 코치로 대화를 다시 골라 낸다(다시 보기 GB1)', async () => {
+  const shell = await shellCoach();
+  // 보충 연습에서 「-(으)면」(G401) 대화를 놓친 지 사흘 — 돌아온 단위가 있다.
+  const missed = supplementalItems({ purpose: 'practice' }).find(item => shell.coach.itemUnits(item.itemKey).some(row => row.unit === 'ko.grammar.G401'));
+  const pid = shell.coach.present(missed); shell.clock.t += 4000;
+  shell.coach.delivery(pid, { audio: 'completed' }); shell.clock.t += 4000;
+  shell.coach.answer(pid, { correct: false, assessable: true }); shell.clock.t += 4000;
+  await shell.coach.finishSet({ record: false }).folded;
+  shell.clock.t += 3 * 86_400_000;
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  const lobby = practiceOf(page, 'supplemental-ready');
+  assert.ok(lobby.button('며칠 뒤 다시 확인'), '며칠 뒤 다시 확인 단추');
+  shell.entry.retire();
+  const count = shell.calls.length;
+  lobby.start('며칠 뒤 다시 확인');
+  await tick(20);
+  assert.equal(shell.entry.asked, 2, '문을 다시 연다');
+  assert.ok(!page.$('supplemental-ready').children.some(node => node.textContent === '지금 확인할 수 있는 문항이 없어요.'));
+  const shown = shell.calls.slice(count).filter(([name]) => name === 'present').map(([, [item]]) => item.itemKey);
+  const delayed = new Set(supplementalItems({ purpose: 'delayed', seen: () => false }).map(item => item.itemKey));
+  assert.equal(shown.length, 1, '받은 코치로 며칠 뒤 확인 대화 하나를 낸다');
+  assert.ok(delayed.has(shown[0]), shown[0]);
+  shell.door.dispose();
+});
+
+const presentedKeys = (calls, pattern) => calls.filter(([name]) => name === 'present').map(([, [item]]) => item.itemKey).filter(key => pattern.test(key));
+const attemptsOf = (rows, e) => rows.filter(x => x.type === 'practice.attempted' && x.presentationId === e.id);
+
+test('판을 다시 정한 뒤 보충 연습이 코치를 기다리는 동안 「다른 문장 듣기」를 누르면, 받은 뒤 답을 기다리는 보충 대화의 판을 닫지 않는다 — 그 대화의 답이 남고, 답한 뒤 다시 누른 새 문장은 다른 판에 든다(다시 보기 GB2 · 둘째 다시 보기 Q6)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  shell.entry.retire();
+  const panel = practiceOf(page, 'supplemental-practice');
+  panel.start(); // 문을 다시 여는 중 — 받은 뒤 첫 대화
+  await page.$('recall-button').click(); // 같은 받기를 기다린다 — 받은 뒤 보충 대화가 먼저 나와 답을 기다린다
+  const held = { recalls: presentedKeys(shell.calls, RECALL).length, note: page.$('recall-feedback').textContent, hidden: page.$('recall-button').hidden };
+  panel.listen();
+  panel.answer();
+  await page.$('recall-button').click();
+  page.$('recall-options').children[0].click();
+  const rows = await shell.events();
+  const practice = rows.filter(e => e.type === 'practice.presented' && PRACTICE.test(e.itemKey));
+  const recall = rows.filter(e => e.type === 'practice.presented' && RECALL.test(e.itemKey));
+  assert.equal(practice.length, 1);
+  assert.deepEqual(attemptsOf(rows, practice[0]).map(e => e.verdict === 'unassessed'), [false], '보충 대화에 고른 답이 남는다');
+  assert.deepEqual(held, { recalls: 0, note: '보충 연습 대화에 먼저 답하거나 보충 연습을 닫아 주세요.', hidden: false }, '그 대화가 답을 기다리는 동안 새 문장은 안내만 한다');
+  assert.equal(recall.length, 1);
+  assert.equal(attemptsOf(rows, recall[0]).length, 1, '답한 뒤 다시 누른 새 문장의 답도 남는다');
+  assert.notEqual(practice[0].setId, recall[0].setId, '두 연습의 제시는 다른 판');
+  shell.door.dispose();
+});
+
+test('보충 연습이 코치를 기다리다 결과를 떠나면 그 보충 연습은 판을 열지 않는다(다시 보기 GB2)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  const panel = practiceOf(page, 'supplemental-practice');
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  shell.entry.retire();
+  const count = shell.calls.length;
+  panel.start();
+  page.$('back-button').click();
+  await tick(20);
+  assert.equal(shell.entry.asked, 2);
+  const opened = shell.calls.slice(count).filter(([name, args]) => name === 'present' || (name === 'itemUnits' && PRACTICE.test(args[0])));
+  assert.deepEqual(opened, [], '떠난 보충 연습은 판을 열지도 대화를 내지도 않는다');
+  shell.door.dispose();
+});
+
+const HELD_PRACTICE = '새 문장에 먼저 O·X로 답해 주세요.';
+const notedIn = host => host.children.some(node => node.tag === 'p' && node.textContent === HELD_PRACTICE);
+
+test('새 문장이 답을 기다리는 동안 보충 연습을 누르면 판을 바꾸지 않고 안내만 한다 — 그 문장의 답이 남고, 답한 뒤 누른 보충 연습은 다른 판에 든다(둘째 다시 보기 Q6과 같은 짜임)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  const panel = practiceOf(page, 'supplemental-practice');
+  await page.$('recall-button').click(); // 끝까지 듣고 O·X를 기다린다
+  const count = shell.calls.length;
+  panel.start();
+  const held = { practice: presentedKeys(shell.calls.slice(count), PRACTICE).length, noted: notedIn(page.$('supplemental-practice')) };
+  page.$('recall-options').children[0].click();
+  panel.button('보충 연습')?.click(); // 새 문장에 답했으니 보충 연습의 판을 연다
+  panel.listen();
+  panel.answer();
+  const rows = await shell.events();
+  const practice = rows.filter(e => e.type === 'practice.presented' && PRACTICE.test(e.itemKey));
+  const recall = rows.filter(e => e.type === 'practice.presented' && RECALL.test(e.itemKey));
+  assert.equal(recall.length, 1);
+  assert.equal(attemptsOf(rows, recall[0]).length, 1, '새 문장의 답이 남는다');
+  assert.deepEqual(held, { practice: 0, noted: true }, '새 문장이 답을 기다리면 보충 연습을 시작하지 않는다');
+  assert.equal(practice.length, 1);
+  assert.equal(attemptsOf(rows, practice[0]).length, 1, '답한 뒤 시작한 보충 대화의 답도 남는다');
+  assert.notEqual(practice[0].setId, recall[0].setId, '두 연습은 다른 판');
+  shell.door.dispose();
+});
+
+test('보충 대화에 답한 뒤 새 문장이 답을 기다리는 동안 「다음 대화」를 누르면 넘기지 않고 안내만 한다 — 그 문장의 답이 남고, 답한 뒤 넘긴 둘째 대화는 보충 연습의 판에 든다(둘째 다시 보기 Q6과 같은 짜임)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  const panel = practiceOf(page, 'supplemental-practice');
+  const host = page.$('supplemental-practice');
+  panel.start();
+  panel.listen();
+  panel.answer();
+  await page.$('recall-button').click(); // 보충 대화에 답했으니 새 문장의 판으로 잇는다 — 끝까지 듣고 O·X를 기다린다
+  const count = shell.calls.length;
+  panel.next();
+  const held = { practice: presentedKeys(shell.calls.slice(count), PRACTICE).length, noted: notedIn(host), heading: host.children[0].textContent };
+  page.$('recall-options').children[0].click();
+  panel.button('다음 대화')?.click();
+  panel.listen();
+  panel.answer();
+  const rows = await shell.events();
+  const practice = rows.filter(e => e.type === 'practice.presented' && PRACTICE.test(e.itemKey));
+  const recall = rows.filter(e => e.type === 'practice.presented' && RECALL.test(e.itemKey));
+  assert.equal(recall.length, 1);
+  assert.equal(attemptsOf(rows, recall[0]).length, 1, '새 문장의 답이 남는다');
+  assert.deepEqual(held, { practice: 0, noted: true, heading: '듣기 보충 1 / 3' }, '「다음 대화」를 넘기지 않는다');
+  assert.equal(practice.length, 2);
+  for (const e of practice) assert.equal(attemptsOf(rows, e).length, 1, `보충 대화의 답이 남는다 — ${e.itemKey}`);
+  assert.notEqual(practice[1].setId, recall[0].setId, '둘째 대화는 새 문장의 판에 들지 않는다');
+  shell.door.dispose();
+});
+
+test('입구에서 보충 연습 대화를 듣고 답하기 전에 곡을 시작하면 그 대화는 보충 연습의 판에 판정 못 한 답으로 남는다(GB2)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  const lobby = practiceOf(page, 'supplemental-ready');
+  lobby.start();
+  lobby.listen();
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  const rows = await shell.events();
+  const shown = rows.filter(e => e.type === 'practice.presented');
+  const practice = shown.find(e => PRACTICE.test(e.itemKey));
+  assert.ok(practice, '보충 연습 대화를 냈다');
+  const attempts = rows.filter(e => e.type === 'practice.attempted' && e.presentationId === practice.id);
+  assert.equal(attempts.length, 1, '판정 못 한 답이 남는다');
+  assert.equal(attempts[0].reason, 'unanswered');
+  assert.notEqual(shown.find(e => !PRACTICE.test(e.itemKey)).setId, practice.setId, '곡은 다른 판');
+  shell.door.dispose();
+});
+
+test('결과 화면 — 보충 연습 첫 대화 답 → 새 문장 확인 답 → 보충 「다음 대화」면 둘째 대화는 새 문장 확인 판이 아닌 보충 연습의 판에 남는다(GB3)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  const panel = practiceOf(page, 'supplemental-practice');
+  panel.start();
+  panel.listen();
+  panel.answer();
+  await page.$('recall-button').click();
+  page.$('recall-options').children[0].click();
+  panel.next();
+  panel.listen();
+  panel.answer();
+  const rows = await shell.events();
+  const shown = rows.filter(e => e.type === 'practice.presented');
+  const practice = shown.filter(e => PRACTICE.test(e.itemKey));
+  const recall = shown.filter(e => RECALL.test(e.itemKey));
+  assert.equal(practice.length, 2);
+  assert.equal(recall.length, 1);
+  assert.notEqual(practice[1].setId, recall[0].setId, '둘째 보충 대화는 새 문장 확인 판에 들지 않는다');
+  for (const e of [...practice, ...recall]) assert.equal(rows.filter(x => x.type === 'practice.attempted' && x.presentationId === e.id).length, 1, e.itemKey);
+  shell.door.dispose();
+});
+
+test('새 문장 소리가 끊긴 뒤 보충 연습을 눌러도 그 문장의 판은 그대로다 — 「다시 듣기」는 같은 제시의 도움이다. 판을 다시 정한 뒤의 「다시 듣기」는 판을 다시 열어 새로 내고 그 답이 남는다(B5 · 둘째 다시 보기 Q6)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  FakeMusic.failReview = 1;
+  await page.$('recall-button').click();
+  assert.equal(page.$('recall-button').textContent, '다시 듣기');
+  const panel = practiceOf(page, 'supplemental-practice');
+  panel.start(); // 새 문장이 답을 기다린다 — 보충 연습은 안내만 하고 판을 바꾸지 않는다
+  await page.$('recall-button').click();
+  page.$('recall-options').children[0].click();
+  // 둘째 문장 — 소리가 끊긴 뒤 판을 다시 정한다.
+  FakeMusic.failReview = 1;
+  await page.$('recall-button').click();
+  assert.equal(page.$('recall-button').textContent, '다시 듣기');
+  shell.entry.retire();
+  await page.$('recall-button').click();
+  page.$('recall-options').children[0].click();
+  const rows = await shell.events();
+  const recall = rows.filter(e => e.type === 'practice.presented' && RECALL.test(e.itemKey));
+  assert.ok(!rows.some(e => e.type === 'practice.presented' && PRACTICE.test(e.itemKey)), '보충 대화를 내지 않았다');
+  assert.equal(recall.length, 3, '첫 문장은 한 번, 판을 다시 정한 둘째 문장은 다시 낸다');
+  assert.equal(rows.filter(e => e.type === 'practice.helped' && e.helpId === 'replay' && e.presentationId === recall[0].id).length, 1, '첫 문장의 다시 듣기는 같은 제시의 도움');
+  assert.notEqual(recall[2].setId, recall[1].setId, '판을 다시 열고');
+  const answers = rows.filter(e => e.type === 'practice.attempted' && recall.some(r => r.id === e.presentationId));
+  assert.deepEqual(answers.map(e => e.presentationId), [recall[0].id, recall[2].id], '답은 같은 제시와 다시 낸 제시에 남는다');
+  shell.door.dispose();
+});
+
+test('보충 연습을 닫거나 새 문장 확인을 다 하거나 결과를 떠나면 그 정해진 판을 닫는다 — 다음 곡 추천은 곡의 판으로 고른다(B4)', async () => {
+  const shell = await shellCoach();
+  const page = await boot({ door: shell.door.api, search: '?qa' });
+  const lastSongPick = later => later.filter(([name]) => name === 'recommend').at(-1)?.[1][1];
+  // 입구의 보충 연습을 열고 닫는다 — 판정 못 한 답 뒤에 그 판을 닫고, 입구 추천은 곡의 판으로.
+  const lobby = practiceOf(page, 'supplemental-ready');
+  let count = shell.calls.length;
+  lobby.start();
+  lobby.close();
+  let later = shell.calls.slice(count).map(([name, args]) => [name, args]);
+  const unanswered = later.findIndex(([name]) => name === 'answer');
+  const closed = later.findIndex(([name], at) => name === 'finishSet' && at > unanswered);
+  assert.ok(unanswered >= 0 && closed > unanswered, '닫을 때의 판정 못 한 답 뒤에 그 판을 닫는다');
+  assert.deepEqual(lastSongPick(later.slice(closed)), SONG_SET, '돌아온 입구의 추천 곡은 곡의 판으로 고른다');
+  // 결과 — 새 문장 확인 다섯을 다 하면 그 판을 닫고 곡의 판으로 고른다.
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  count = shell.calls.length;
+  for (let i = 0; i < 5; i++) {
+    await page.$('recall-button').click();
+    page.$('recall-options').children[0].click();
+  }
+  later = shell.calls.slice(count);
+  const names = later.map(([name]) => name);
+  assert.ok(names.lastIndexOf('finishSet') > names.lastIndexOf('answer'), '마지막 답 뒤에 새 문장 확인 판을 닫는다');
+  assert.deepEqual(lastSongPick(later), SONG_SET);
+  // 결과 — 새 문장 확인을 하나만 하고 입구로 돌아가도 그 판을 닫는다.
+  await page.playSong({ plan: ['right', 'right', 'right', 'right', 'right'] });
+  await page.$('recall-button').click();
+  page.$('recall-options').children[0].click();
+  count = shell.calls.length;
+  page.$('back-button').click();
+  later = shell.calls.slice(count);
+  const left = later.map(([name]) => name);
+  assert.ok(left.includes('finishSet') && left.indexOf('finishSet') < left.indexOf('recommend'), `결과를 떠나면 새 문장 확인 판을 닫는다 — ${left.join(' ')}`);
+  assert.deepEqual(lastSongPick(later), SONG_SET);
   shell.door.dispose();
 });
 
@@ -376,12 +792,15 @@ test('정해진 판(app.mjs 차례) — 새 문장 확인은 첫 확인 문장 �
   panel.children.find(node => node.textContent === '보충 연습').click();
   const later = shell.calls.slice(count);
   const sets = later.map(([name]) => name).filter(name => ['startSet', 'present', 'finishSet'].includes(name));
-  assert.deepEqual(sets, ['finishSet', 'startSet', ...Array(5).fill('present'), 'finishSet', 'startSet', 'present'], '판마다 앞 판을 닫고 첫 제시 앞에서 한 번');
+  // 새 문장 확인을 다 하면 그 판을 닫고(B4), 보충 연습은 그 뒤 곡 추천이 연 판을 닫고 연다.
+  assert.deepEqual(sets, ['finishSet', 'startSet', ...Array(5).fill('present'), 'finishSet', 'finishSet', 'startSet', 'present'], '판마다 앞 판을 닫고 첫 제시 앞에서 한 번');
   assert.deepEqual(later.filter(([name]) => name === 'startSet').map(([, [options]]) => options), [{ length: 5 }, { length: 3 }], 'n = 확인 문장 수 · 보충 연습 대화 수');
-  // 판이 도는 동안 추천 곡은 판 옵션 없이 고른다.
-  const peeks = later.filter(([name]) => name === 'recommend');
-  assert.ok(peeks.length >= questions.length, '확인 문장의 답마다 입구 추천을 다시 그린다');
+  // 판이 도는 동안 추천 곡은 판 옵션 없이 고른다. 마지막 확인 문장 뒤에는 그 판을 닫았으니 곡의 판으로 고른다.
+  const finishes = later.map(([name], at) => (name === 'finishSet' ? at : -1)).filter(at => at >= 0);
+  const peeks = later.filter(([name], at) => name === 'recommend' && at < finishes[1]);
+  assert.ok(peeks.length >= questions.length - 1, '확인 문장의 답마다 입구 추천을 다시 그린다');
   for (const [, [, options]] of peeks) assert.deepEqual(options, {});
+  assert.deepEqual(later.filter(([name], at) => name === 'recommend' && at > finishes[1]).map(([, [, options]]) => options), [SONG_SET]);
   // 보충 연습을 닫는다 — 답하지 않은 대화는 판정 못 한 답으로 남는다(판이 그사이 바뀌지 않았다).
   panel.children.find(node => node.textContent === '보충 연습 닫기').click();
   const rows = await shell.events();

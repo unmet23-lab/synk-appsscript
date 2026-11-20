@@ -84,9 +84,10 @@ export function createLive({ coach, memory, prefs, clock }) {
       line: null,
     });
     // 이 답(또는 게임이 준 관찰)이 Flow를 움직일 결과 — 없으면 null.
-    const outcomeOf = (pid, verdict, flow) => {
+    // 게임이 결과를 주지 않으면 접기가 판정한 답(grade)만 움직인다 — 소리 전달이 안 된 답은 게임이 맞음이라 해도 몫을 쓰지 않는다(GPT 끝 판 D3).
+    const outcomeOf = (pid, { verdict, grade }, flow) => {
       if (moved.has(pid)) return null;
-      return flow.outcome ?? JUDGED[verdict] ?? null;
+      return flow.outcome ?? (grade == null ? null : (JUDGED[verdict] ?? null));
     };
     return Object.freeze({
       spec,
@@ -116,7 +117,7 @@ export function createLive({ coach, memory, prefs, clock }) {
       // 기록 먼저(코치의 답), 그다음 같은 응답이 Flow를 움직인다 — 한 제시에 한 번만. flow: { outcome, pressure, latencyMs, assisted, repeat }.
       answer(pid, response, flow = {}) {
         const { recorded, assisted } = coach.answer(pid, response);
-        const outcome = outcomeOf(pid, recorded.verdict, flow);
+        const outcome = outcomeOf(pid, recorded, flow);
         if (!outcome) return still(recorded);
         if (EVIDENCE.has(outcome)) moved.add(pid);
         const seen = shown.get(pid);
@@ -135,7 +136,8 @@ export function createLive({ coach, memory, prefs, clock }) {
       // 제시가 있는 관찰(오답 뒤 떠난 손님의 시간 초과)은 그 제시 번호를 준다 — 답과 같은 한 번을 나눠 쓴다(GPT 다시 검토 GA3).
       observe(input, pid = null) {
         if (pid != null) {
-          if (moved.has(pid)) return { change: null, settings: run.settings(), line: null };
+          if (moved.has(pid))
+            return { change: null, settings: run.settings(), evidence: false, line: null };
           if (EVIDENCE.has(input?.outcome)) moved.add(pid);
         }
         const observed = run.observe(input);

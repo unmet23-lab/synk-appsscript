@@ -13,6 +13,9 @@
 //   정해진 판  새 문장 확인 · 보충 연습 · 며칠 뒤 다시 확인은 저마다 판 하나다(fixed). 첫 제시 바로 앞에서 앞 판을 닫고 판 길이(낼 제시 수)를
 //           코치 startSet으로 넘긴다(키트 setPlay().open() — 새것 한도 3n). 코치에 startSet이 없으면 첫 제시가 코치의 기본 판을 연다.
 //           이 판이 도는 동안 추천 곡은 판 옵션 없이 고른다 — 곡의 판 옵션을 넘기면 코치가 판을 새로 열어 이 판의 제시가 닫힌다.
+//           결과 화면에서 둘을 번갈아 하면 다음 제시 앞에서 남은 문항으로 그쪽 판을 다시 연다. 앞 판에 답을 기다리는 제시가 있으면
+//           다시 열지 않는다 — 그 제시의 답이나 판정 못 한 답을 받은 뒤에 연다(둘째 다시 보기 Q6). 판을 다시 정해 앞 판의 제시가 끝났으면
+//           새 문장 확인은 다시 들을 때 새로 낸다(holds). 마치거나 닫거나 결과를 떠나면 그 판을 닫는다(release).
 //   뒤 답   새 문장 확인 · 보충 연습의 다시 듣기는 같은 제시의 도움(replay)일 뿐이다 — 답은 한 번.
 //   순간 맞춤  판정 폭(FLOW_RHYTHM — live). 박자는 문항이 아니라 제시 번호 없이 관찰하고, 듣기 O·X 답은 순간 맞춤을 움직이지 않는다.
 //   답      옛 답 꼴을 키트 answerOf로 옮긴다. 혼자 처음 맞혔나(independent)는 저장 뒤에 선다 — 판 끝에서 기다린다(settled).
@@ -63,6 +66,8 @@ export function createRhythm(coach) {
   let retired = false;
   let inSong = false; // 이 곡의 판을 열었나(곡의 첫 문장 앞에서 앞 판을 닫는다)
   let fixedKey = null; // 도는 정해진 판(새 문장 확인 · 보충 연습)의 열쇠 — 판을 닫으면 null
+  const shown = new Set(); // 지금 판에서 낸 제시 번호 — 판을 닫으면 비운다(닫힌 판의 번호는 엔진이 PRESENTATION_GONE으로 받지 않는다)
+  const waiting = new Set(); // 지금 판에서 냈고 아직 답(판정 못 한 답 포함)을 받지 않은 제시 번호 — 판을 닫으면 비운다
   let last = null; // 마지막 recommend의 결과 — none의 까닭(held)을 읽는다
   const call = fn => {
     if (!open) return null;
@@ -103,6 +108,8 @@ export function createRhythm(coach) {
   const end = () => {
     inSong = false;
     fixedKey = null;
+    shown.clear();
+    waiting.clear();
     call(() => set.end());
   };
   const banked = item => (call(c => c.itemUnits(item.itemKey))?.length ?? 0) > 0;
@@ -122,13 +129,19 @@ export function createRhythm(coach) {
         // 문장마다 주장 변형 둘 가운데 recommend — 지금도 낸 변형을 고르면 엔진이 고른 제시, 아니면 게임 차례(host).
         pick(claimsOf(Number(claim[1]), Number(claim[2])));
       }
-      return call(c => c.present(item));
+      const pid = call(c => c.present(item));
+      if (pid) {
+        shown.add(pid);
+        waiting.add(pid);
+      }
+      return pid;
     },
     delivery: (pid, status) => (pid ? call(c => c.delivery(pid, { audio: status?.audio })) : null),
     help: (pid, kind) => (pid ? call(c => c.help(pid, kind)) : null),
     // 화면 값(correct)은 바로 쓰고, 혼자 처음 맞혔나(independent)는 저장 뒤 근거가 서면 채운다.
     answer(pid, old) {
       if (!pid) return null;
+      waiting.delete(pid); // 저장이 거절돼도 화면은 이 제시를 마쳤다 — 다음 판을 막지 않는다
       const recorded = call(c => c.answer(pid, answerOf(old)));
       if (!recorded) return null;
       const out = { eventId: recorded.eventId, verdict: recorded.verdict, correct: recorded.correct, independent: null, evidence: null };
@@ -150,6 +163,14 @@ export function createRhythm(coach) {
     coach: surface,
     get retired() {
       return retired;
+    },
+    // 겉이 닫혔다(RUN_ENDED · 판을 다시 정함) — 그 뒤는 기록 없이 놀고, 입구는 저장 안내를 하지 않는다.
+    get closed() {
+      return !open;
+    },
+    // 그 제시가 지금 판에서 낸 것이고 겉이 열려 있나 — 아니면 그 번호에 다시 듣기 · 답을 보내지 않고 새로 낸다(새 문장 확인).
+    holds(pid) {
+      return Boolean(open && pid && shown.has(pid));
     },
     // 추천 곡 — { trackId(엔진이 고르지 않았으면 null), line(why.line), held(엔진이 그 까닭으로 멈춘 한 줄) }.
     song(tracks = TRACKS) {
@@ -175,12 +196,23 @@ export function createRhythm(coach) {
     end,
     // 정해진 판(새 문장 확인 · 보충 연습 · 며칠 뒤 다시 확인)을 연다 — 그 판의 첫 제시 바로 앞에서 부른다. 앞 판을 닫고 판 길이(items 가운데
     // 은행에 있는 문항 수 — 낼 제시 수)를 코치 startSet으로 넘긴다. key는 판 하나를 가른다 — 같은 판이 돌고 있으면 아무것도 하지 않는다.
+    // 다른 판이 그 자리를 받았으면(새 문장 확인과 보충 연습을 번갈아 함) 남은 items로 판을 다시 연다 — 잇는 쪽이 남은 문항을 준다.
+    // 도는 다른 판에 답을 기다리는 제시가 있으면 그 판을 닫지 않고 false를 준다 — 닫으면 화면에 남은 그 문항의 답이 기록되지 않는다.
+    // 부르는 쪽은 제시하지 않고 안내만 하며, 그 문항의 답이나 판정 못 한 답(연습을 닫음)을 받은 뒤 다시 부르면 연다(둘째 다시 보기 Q6).
+    // 같은 판이면, 또는 새로 열었으면 true.
     fixed(items = [], key = items) {
-      if (key !== null && key === fixedKey) return;
+      if (key !== null && key === fixedKey) return true;
+      if (open && fixedKey !== null && waiting.size) return false;
       end();
       fixedKey = key;
       const length = items.filter(item => item?.itemKey && banked(item)).length;
       call(c => setPlay(c, { length }).open());
+      return true;
+    },
+    // 정해진 판 하나를 마쳤다(보충 연습을 닫음 · 새 문장 확인을 다 함 · 결과 화면을 떠남) — 그 판이 아직 도는 판이면 기록 없이 닫는다.
+    // 다른 판이 그 자리를 받았으면 건드리지 않는다. 닫아야 입구의 추천 곡이 곡의 판 옵션으로 다시 고른다(B4).
+    release(key) {
+      if (key != null && key === fixedKey) end();
     },
     // 며칠 뒤 다시 확인 — 돌아온 단위(due)가 든, 아직 듣지 않은 며칠 뒤 확인 대화(같은 출처 대화까지 듣지 않은 것).
     dueItems() {

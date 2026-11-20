@@ -109,7 +109,7 @@ function awaitingChecks() {
 
 let boots = 0;
 // 한 페이지를 띄운다. door: 위 창의 window.SYNKAtlasGame(없으면 꺼진 판).
-async function boot({ door = null, host = 'synk.im', search = '?qa', progress = awaitingChecks() } = {}) {
+async function boot({ door = null, host = 'synk.im', search = '?qa', progress = awaitingChecks(), audio = FakeAudio } = {}) {
   const log = [];
   const created = [];
   const listeners = [];
@@ -130,7 +130,7 @@ async function boot({ door = null, host = 'synk.im', search = '?qa', progress = 
     requestAnimationFrame: () => 0, cancelAnimationFrame() {}, devicePixelRatio: 1,
     matchMedia: () => ({ matches: true, addEventListener() {} }), scrollTo() {},
     addEventListener: (type, fn) => listeners.push([`window.${type}`, fn]), removeEventListener() {},
-    Image: FakeImage, AudioContext: FakeAudio,
+    Image: FakeImage, AudioContext: audio,
     indexedDB: { open: () => { log.push('indexedDB.open'); throw new Error('닫힘'); } },
     fetch: async (input) => {
       const url = String(input?.url ?? input);
@@ -310,6 +310,97 @@ test('셸이 코치를 준비하는 동안에도 첫 화면은 그려지고, 소
   release();
   await page.heard();
   assert.deepEqual(calls, ['itemUnits', 'present', 'delivery']);
+  page.done();
+  door.dispose();
+});
+
+test('모험 시작이 코치를 기다리는 사이 실험실에 들어가면 코치가 열린 뒤에도 실험실 그대로다 — 시작을 이어 가지 않는다(4-6 끝 판 GD8)', async () => {
+  const { createGameDoor } = await import('../synk-world-app/world-atlas-game.mjs');
+  // 남은 소리 확인을 이어 하는 진행(확인 화면으로 가는 시작)과 장 가운데의 진행(퍼즐 화면으로 가는 시작).
+  const midChapter = initialProgress();
+  midChapter.introduced = ['size'];
+  midChapter.completed = PUZZLES.filter((p) => p.chapter === 0).slice(0, 2).map((p) => p.id);
+  for (const [progress, after] of [[awaitingChecks(), 'checkpoint'], [JSON.stringify(midChapter), 'puzzle']]) {
+    const calls = [];
+    const coach = {
+      itemUnits: () => { calls.push('itemUnits'); return [{ unit: 'u' }]; },
+      present: () => { calls.push('present'); return 'p1'; },
+      delivery: () => { calls.push('delivery'); },
+      help: () => { calls.push('help'); },
+      answer: () => { calls.push('answer'); return {}; },
+      finishSet: () => { calls.push('finishSet'); },
+    };
+    let release;
+    const door = createGameDoor({ entry: { gameCoach: () => new Promise((resolve) => (release = () => resolve(coach))), retired: () => () => {} }, gameId: 'word-magic', later: (fn) => fn() });
+    const page = await boot({ door: door.api, progress });
+    page.$('#start').onclick();
+    for (let i = 0; i < 20; i += 1) await tick();
+    assert.equal(page.qa().busy, true, `${after}: 코치를 기다린다`);
+    await page.$('#open-lab').onclick();
+    assert.equal(page.qa().screen, 'lab', `${after}: 실험실에 들어갔다`);
+    release();
+    for (let i = 0; i < 20; i += 1) await tick();
+    assert.equal(page.qa().screen, 'lab', `${after}: 기다린 시작이 실험실을 바꾸지 않는다`);
+    assert.deepEqual(calls, [], `${after}: 소리 확인을 내지 않는다`);
+    assert.equal(page.$('#start').disabled, false, `${after}: 처음으로 돌아오면 다시 시작할 수 있다`);
+    assert.equal(page.$('#audio-status').textContent, '', `${after}: 「모험을 준비하고 있어요」를 남기지 않는다`);
+    // 처음으로 돌아와 다시 누르면 시작한다(실험실에 들어가 이어 할 자리가 실험실이 됐다 — 「하던 곳에서 이어 하기」).
+    page.$('#pause-home').onclick();
+    assert.equal(page.qa().screen, 'lobby');
+    page.$('#start').onclick();
+    await until(() => page.qa().screen === 'lab' && !page.qa().busy, `${after}: 다시 시작`);
+    page.done();
+    door.dispose();
+  }
+});
+
+test('모험 시작이 소리를 준비하는 사이 보관함을 열면 소리 · 코치 준비가 끝난 뒤에도 시작을 이어 가지 않는다 — 토큰은 첫 기다림 전에 잡는다(다시 보기 GC3)', async () => {
+  const { createGameDoor } = await import('../synk-world-app/world-atlas-game.mjs');
+  const calls = [];
+  const coach = {
+    itemUnits: () => { calls.push('itemUnits'); return [{ unit: 'u' }]; },
+    present: () => { calls.push('present'); return 'p1'; },
+    delivery: () => { calls.push('delivery'); },
+    help: () => { calls.push('help'); },
+    answer: () => { calls.push('answer'); return {}; },
+    finishSet: () => { calls.push('finishSet'); },
+  };
+  // 소리 준비(AudioContext.resume)를 붙잡아 둔다. 코치는 곧바로 열린다.
+  let release;
+  const gate = new Promise((resolve) => (release = resolve));
+  class SlowAudio extends FakeAudio { resume() { return gate; } }
+  const door = createGameDoor({ entry: { gameCoach: async () => coach, retired: () => () => {} }, gameId: 'word-magic', later: (fn) => fn() });
+  const page = await boot({ door: door.api, audio: SlowAudio });
+  page.$('#start').onclick();
+  for (let i = 0; i < 20; i += 1) await tick();
+  assert.equal(page.qa().busy, true, '소리를 준비한다');
+  page.$('#open-keepsakes').onclick();
+  release();
+  for (let i = 0; i < 40; i += 1) await tick();
+  assert.equal(page.qa().screen, 'lobby', '기다린 시작이 보관함 뒤에서 소리 확인 화면을 열었다');
+  assert.deepEqual(calls, [], '소리 확인을 내지 않는다');
+  page.done();
+  door.dispose();
+});
+
+test('모험 시작이 소리를 준비하는 사이 보관함을 열고 그 준비가 실패하면, 취소된 시작은 오류 글을 쓰지 않는다(둘째 다시 보기 Q11)', async () => {
+  const { createGameDoor } = await import('../synk-world-app/world-atlas-game.mjs');
+  let opens = 0;
+  const coach = { itemUnits: () => [{ unit: 'u' }], present: () => 'p1', delivery() {}, help() {}, answer: () => ({}), finishSet() {} };
+  let release;
+  const gate = new Promise((resolve) => (release = resolve));
+  class FailingAudio extends FakeAudio { resume() { return gate.then(() => { throw new Error('막힘'); }); } }
+  const door = createGameDoor({ entry: { gameCoach: async () => { opens += 1; return coach; }, retired: () => () => {} }, gameId: 'word-magic', later: (fn) => fn() });
+  const page = await boot({ door: door.api, audio: FailingAudio });
+  page.$('#start').onclick();
+  for (let i = 0; i < 20; i += 1) await tick();
+  const before = opens;
+  page.$('#open-keepsakes').onclick();
+  release();
+  for (let i = 0; i < 40; i += 1) await tick();
+  assert.equal(page.$('#audio-status').textContent, '', '취소된 시작이 오류 글을 썼다');
+  assert.equal(page.$('#start').disabled, false);
+  assert.equal(opens, before, '취소된 시작이 코치 문을 다시 열었다');
   page.done();
   door.dispose();
 });

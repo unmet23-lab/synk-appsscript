@@ -10,7 +10,8 @@
 //           idle(채우기)은 엔진이 고른 문항이다(키트 setPlay).
 //   시연 · 조작 연습  기록은 지금처럼 도움 판이다(제시 뒤 곧 도움 answer, 답 없음). 시연은 맞춤 판이어도 엔진에 묻지 않는다.
 //   답      옛 답 꼴(race-controller.js judgeGate)을 키트 answerOf로 옮긴다. 관문마다 답은 한 번이다(뒤 답 없음). 결과 화면이 읽는 도움 여부 ·
-//           독립 응답은 엔진의 판정과 같은 규칙(처음 만남 · 도움 없음 · 소리 전달 · 판정된 답)으로 이 제시에서 바로 센다.
+//           독립 응답은 엔진의 판정과 같은 규칙(처음 만남 · 도움 없음 · 소리 전달 · 판정된 답)으로 이 제시에서 세고, 그 답이 저장된 뒤에야
+//           참이 된다(counting — 결과 화면은 그때 다시 센다).
 //   순간 맞춤  달리는 속도(live — FLOW_RACE). 새 길에서 문항 단계(items)는 손잡이가 아니다 — Flow는 낸 문항의 난도를 관찰만 하고(level()은
 //           null), 문항은 두뇌가 고른다(pick = recommend). 한 제시는 Flow를 한 번만 움직인다(엔진).
 //   오류    문을 거친 오류는 셸 창의 것이라 code로만 가른다. 겉이 닫혔거나(RUN_ENDED) 끝난 제시(PRESENTATION_GONE)면 기록 없이 잇는다.
@@ -61,23 +62,27 @@ export function raceLabel(id) {
 }
 
 // 게임 순서 — 게임이 권하는 코스(아직 통과하지 못한, 또는 가장 덜 익숙한 문장 도전 코스)의 문항, 그다음 코스 차례.
-// modality가 있으면 그 영역의 문항만.
-export function gameOrder(progress, modality = null) {
+// modality가 있으면 그 영역의 문항만. audio가 false(소리를 끈 사람)면 듣기 문항(audioRequired)을 뺀다 — 엔진의 audio: false와 같다.
+export function gameOrder(progress, modality = null, { audio = true } = {}) {
   const lead = recommendedStage(progress ?? { stages: {} })?.items ?? [];
   const seen = new Set();
   const order = [];
   for (const question of [...lead, ...RACING_CANDIDATES.map(candidate => candidate.item)]) {
     if (seen.has(question.id)) continue;
     seen.add(question.id);
-    if (!modality || racingItem(question).modality === modality) order.push(question);
+    const item = racingItem(question);
+    if (modality && item.modality !== modality) continue;
+    if (audio === false && item.audioRequired === true) continue;
+    order.push(question);
   }
   return order;
 }
 
 // 맞춤 판(나에게 맞는 5문항)의 코스 — 입구 · 결과가 그리는 꼴은 옛 판과 같다. 문항 자리는 게임 순서로 채워 두고(시연은 이대로 달린다),
 // 달릴 때 관문마다 다시 고른다. 놓친 문제를 첫 자리에 두는 옛 길(lead)은 없다. 엔진에 묻지 않는다.
-export function personalStage({ progress = null, modality = null, size = PERSONAL_SIZE } = {}) {
-  const items = gameOrder(progress, modality).slice(0, size);
+// 소리를 끈 채(audio: false) 낼 문항이 없으면(듣기 영역만) null — 입구가 출발 전에 소리 설정을 안내한다(4-6 끝 판 GB7).
+export function personalStage({ progress = null, modality = null, audio = true, size = PERSONAL_SIZE } = {}) {
+  const items = gameOrder(progress, modality, { audio }).slice(0, size);
   if (!items.length) return null;
   return {
     reason: '다섯 관문의 문항은 달리는 동안 하나씩 골라요.',
@@ -99,11 +104,16 @@ export function personalStage({ progress = null, modality = null, size = PERSONA
   };
 }
 
-// 문(또는 혼자 뜨는 길)으로 연 겉 하나와 그 상태 — 판을 다시 정함(retired) · 겉이 닫힘(closed) · 다시 열기(reopen).
-function connect(first, win) {
-  const state = { coach: null, retired: false, closed: false, reopening: null };
-  const seat = coach => {
+// 문을 거친 계정 코치인가 — 손님 코치는 이 브라우저의 손님 기록이다. 요약을 읽지 못하면 계정이라고 하지 않는다.
+const accountCoach = coach => quietly(() => coach.summary()?.storage?.guest === false) === true;
+
+// 문(또는 혼자 뜨는 길)으로 연 겉 하나와 그 상태 — 판을 다시 정함(retired) · 겉이 닫힘(closed) · 다시 열기(reopen) · 지금 겉이 계정
+// 기록인가(hosted — 다시 열면 그 겉으로 다시 정한다).
+function connect(first, win, hosted) {
+  const state = { coach: null, hosted: false, retired: false, closed: false, reopening: null };
+  const seat = (coach, account) => {
     state.coach = coach;
+    state.hosted = account;
     state.retired = false;
     quietly(() =>
       coach.onRetired?.(() => {
@@ -111,7 +121,7 @@ function connect(first, win) {
       }),
     );
   };
-  seat(first);
+  seat(first, hosted === true);
 
   async function reopen() {
     if (state.closed) return 'ended';
@@ -124,7 +134,7 @@ function connect(first, win) {
     try {
       const coach = await openNext({ win, gameId: GAME_ID, banks: [...BANKS], label: raceLabel });
       if (!coach) return 'old';
-      seat(coach);
+      seat(coach, accountCoach(coach)); // 문을 거친 겉이다(위에서 문을 확인했다)
       return 'next';
     } catch {
       state.closed = true; // RUN_ENDED(패널이 닫힘 · 틀 문서가 바뀜)든 다른 실패든 옛 길을 열지 않는다
@@ -163,13 +173,16 @@ function connect(first, win) {
 /**
  * 키트로 연 겉 하나로 레이싱을 기록한다. app.js는 coach를 옛 코치 자리에 두고 learn((c) => …)으로 부른다.
  *   coach   summary · live · present · help · delivery · answer — 옛 겉과 같은 꼴(답은 answerOf로 옮기고 assisted · independent를 얹는다).
- *   personal({ progress, modality }) — 맞춤 판의 코스(personalStage).
- *   begin(코스, { demo, tutorial, progress, audio, random }) — 판 하나. at(i): i번째 관문의 문제(맞춤 판만 — 그때 고른다, 아니면 null) ·
- *           line(문제 id): 관문 앞 이유 한 줄 · kinds(): 관문마다 engine · game · end(): 기록 없이 닫기(finishSet({ record: false })).
+ *   personal({ progress, modality, audio }) — 맞춤 판의 코스(personalStage). 소리를 끈 채 낼 문항이 없으면 null.
+ *   begin(코스, { demo, tutorial, progress, audio, random }) — 판 하나. at(i, 미리 둔 문제): i번째 관문의 문제(맞춤 판만 — 그때 고른다,
+ *           아니면 null) · held(i): 고를 문항이 없던 자리에서 달리는 문제 · retry(i): 고를 문항이 없던 자리를 다시 고르기 ·
+ *           adopt(i, 문제 id): 그 자리의 글이 이미 나온 뒤 소리를 켰을 때 보이는 그 문제를 게임 차례로 · unpicked(문제 id): 기록하지 않는 관문인가 ·
+ *           line(문제 id): 관문 앞 이유 한 줄 · kinds(): 관문마다 engine · game · none · end(): 기록 없이 닫기(finishSet({ record: false })).
  *   retired · reopen(): 판을 다시 정한 뒤 다음 판에서 — 'next' 새 겉 · 'old' 지금 판(옛 길) · 'ended' 기록 없이.
+ *   closed: 겉이 닫혔다(RUN_ENDED) — 이 페이지는 기록 없이 잇는다. hosted: 지금 겉이 계정 기록인가(다시 열면 그 겉으로 다시 정한다).
  */
 export function createRace(first, { win = globalThis.window, hosted = false } = {}) {
-  const line = connect(first, win);
+  const line = connect(first, win, hosted);
   const banked = new Map(); // itemKey → 은행에 있나
   const shown = new Map(); // 제시 번호 → { audioRequired, met, helped, audio, answered }
   // setPlay에 넘기는 코치 — 판을 다시 정해 다시 연 겉으로도 간다. startSet은 지금 겉에 있을 때만 있다(없으면 키트 open()이 null).
@@ -205,17 +218,24 @@ export function createRace(first, { win = globalThis.window, hosted = false } = 
     });
   }
   // 답 뒤 — 결과 화면이 읽는 도움 여부 · 독립 응답(처음 만남 · 도움 없음 · 소리 전달 · 판정된 답)을 얹는다. 던지지 않는다.
+  // 독립 응답은 그 답의 저장 근거(evidence)가 온 뒤에 엔진의 최종 근거로 정한다 — 저장되지 않은 답(stored: false)과, 같은 저장소의 다른
+  // 판이 먼저 낸 문항이라 엔진이 다시 만남(exposure: 'repeat')으로 본 답은 세지 않는다(4-6 끝 판 GB9 · 다시 보기 GA2). 이 제시의 규칙은
+  // 먼저 거르는 조건이다. counting은 그 판정이 정해지는 약속이고(독립 응답 후보가 아니면 null), 결과 화면(race-controller.js)은 이것이
+  // 다 온 뒤 다시 센다.
   function settled(pid, recorded) {
     const seen = shown.get(pid);
     if (!recorded) return recorded;
-    if (!seen) return { ...recorded, assisted: null, independent: false };
+    if (!seen) return { ...recorded, assisted: null, independent: false, counting: null };
     seen.answered = true;
     const heard = !seen.audioRequired || seen.audio === 'completed';
-    return {
-      ...recorded,
-      assisted: seen.helped,
-      independent: JUDGED.has(recorded.verdict) && !seen.helped && seen.met === false && heard,
-    };
+    const solo = JUDGED.has(recorded.verdict) && !seen.helped && seen.met === false && heard;
+    const out = { ...recorded, assisted: seen.helped, independent: false, counting: null };
+    if (solo)
+      out.counting = Promise.resolve(recorded.evidence).then(
+        proof => (out.independent = proof?.stored === true && proof.independent === true),
+        () => false,
+      );
+    return out;
   }
 
   // 순간 맞춤 겉. 제시 · 답은 코치와 같은 규칙(은행 · 닫힘 · 끝난 제시)으로 가고, 그 밖의 메서드는 닫힌 겉이면 RUN_ENDED를 던진다
@@ -279,13 +299,20 @@ export function createRace(first, { win = globalThis.window, hosted = false } = 
     // 놀이는 그대로 간다.
     if (!personal && line.open) quietly(() => set.open());
     const order = personal ? gameOrder(progress, stage.modality ?? null) : [];
-    const picked = []; // { question, kind, line }
+    // 자리마다 하나 — { question, kind, line }. 엔진도 게임 차례도 고를 문항이 없던 자리(소리를 끈 채 듣기 문항만 남음)는
+    // { question: null, kind: 'none', held: 그 자리에 미리 둔 문제 }다. 그 자리는 기록하지 않고(unpicked), 그 관문에 다가가기 전에 소리를
+    // 다시 켜면 같은 자리에서 다시 고르며(retry), 다음 자리는 그대로 고른다(다시 보기 GA1). 그 관문의 글이 이미 화면에 나온 뒤 소리를 켜면
+    // 보이는 그 문제를 게임 차례로 바꿔 낸다(adopt — 둘째 다시 보기 Q2).
+    const picked = [];
     let closed = false;
+    // 이 판에 이미 나온 문항 — 고른 문제와 미리 둔 문제.
+    const usedIds = () => new Set(picked.map(one => (one.question ?? one.held)?.id).filter(Boolean));
 
-    // 게임 차례 — 후보 목록은 게임 순서대로라 맨 앞이 그 차례다.
-    const gameTurn = list => list[0] ?? null;
+    // 게임 차례 — 후보 목록은 게임 순서대로라 맨 앞이 그 차례다. 소리를 끈 사람에게는 듣기 문항(audioRequired)을 내지 않는다 — 엔진의
+    // audio: false와 같은 조건이다(4-6 끝 판 GB7).
+    const gameTurn = list => (audio() === false ? list.find(row => row.audioRequired !== true) : list[0]) ?? null;
     function pick() {
-      const used = new Set(picked.map(one => one.question.id));
+      const used = usedIds();
       const rest = order.filter(question => !used.has(question.id));
       if (!rest.length) return null;
       const list = rest.map(question => racingItem(question));
@@ -312,17 +339,54 @@ export function createRace(first, { win = globalThis.window, hosted = false } = 
       });
       return question;
     }
+    // 고를 문항이 없던 자리에서 달릴 문제. 미리 둔 문제가 이 판에 이미 나온 문항이면 아직 안 나온 게임 순서의 문항으로 바꾼다 — 한 판에
+    // 같은 문제를 두 번 보이지 않고, 소리를 켜면 그 문제를 그대로 낼 수 있다(둘째 다시 보기 Q2).
+    function spare(held) {
+      const used = usedIds();
+      if (held && !used.has(held.id)) return held;
+      const source = order.find(question => !used.has(question.id));
+      return source ? makeQuestions({ campaign: true, items: [source] }, random)[0] : held;
+    }
 
     return Object.freeze({
       personal,
       size,
-      at(index) {
+      // held: 이 자리에 이미 둔 문제(입구가 게임 순서로 채운 자리) — 고를 문항이 없으면 그 문제(이미 나온 문항이면 spare)로 달리되 기록하지
+      // 않는다. 그 문제는 held(i)로 읽는다.
+      at(index, held = null) {
         if (!personal || closed) return null;
         if (index < picked.length) return picked[index].question;
         if (index !== picked.length || picked.length >= size) return null;
-        return pick();
+        const question = pick();
+        if (!question) picked.push({ question: null, kind: 'none', line: null, held: spare(held) });
+        return question;
       },
-      line: id => picked.find(one => one.question.id === id)?.line ?? null,
+      // 고를 문항이 없던 자리에서 달리는 문제(기록하지 않는다). 그런 자리가 아니면 null.
+      held: index => (picked[index]?.kind === 'none' ? (picked[index].held ?? null) : null),
+      // 고를 문항이 없던 마지막 자리를 다시 고른다(소리를 다시 켠 때). 고르면 그 문제, 여전히 없으면 null.
+      retry(index) {
+        const slot = picked[index];
+        if (!personal || closed || slot?.kind !== 'none' || index !== picked.length - 1) return null;
+        picked.pop();
+        const question = pick();
+        if (!question) picked.push(slot);
+        return question;
+      },
+      // 고를 문항이 없어 미리 둔 문제로 달리는 마지막 자리의 글이 이미 화면에 나온 뒤 소리를 켰을 때, 문제를 바꾸지 않고 그 자리를 게임
+      // 차례로 바꾼다 — 엔진은 이 자리에서 이미 none이었다. 보이는 문제(id)가 그 자리의 문제이고, 게임 순서의 문항이며, 이 판의 다른 자리에
+      // 나오지 않았을 때만 바꾼다. 바꾸면 그 문제(부른 쪽이 이때 제시한다), 아니면 null(둘째 다시 보기 Q2).
+      adopt(index, id) {
+        const slot = picked[index];
+        if (!personal || closed || slot?.kind !== 'none' || index !== picked.length - 1 || audio() === false) return null;
+        const held = slot.held;
+        if (!held || held.id !== id || !order.some(question => question.id === id)) return null;
+        if (picked.some(one => one !== slot && (one.question ?? one.held)?.id === id)) return null;
+        picked[index] = { question: held, kind: 'game', line: null };
+        return held;
+      },
+      // 고를 문항이 없어 미리 둔 문제로 달리는 관문인가 — 그 관문은 제시 · 답을 기록하지 않는다.
+      unpicked: id => picked.some(one => one.kind === 'none' && one.held?.id === id),
+      line: id => picked.find(one => one.question?.id === id)?.line ?? null,
       kinds: () => picked.map(one => one.kind),
       end() {
         if (closed) return;
@@ -334,12 +398,17 @@ export function createRace(first, { win = globalThis.window, hosted = false } = 
 
   return Object.freeze({
     coach,
-    hosted,
+    get hosted() {
+      return line.state.hosted;
+    },
     get retired() {
       return line.state.retired && !line.state.closed;
     },
+    get closed() {
+      return line.state.closed;
+    },
     reopen: () => line.reopen(),
-    personal: ({ progress = null, modality = null } = {}) => personalStage({ progress, modality }),
+    personal: ({ progress = null, modality = null, audio = true } = {}) => personalStage({ progress, modality, audio }),
     begin,
   });
 }
@@ -350,6 +419,5 @@ export async function openRace({ win = globalThis.window } = {}) {
   const viaDoor = nextDoor(win) != null;
   const coach = await openNext({ win, gameId: GAME_ID, banks: [...BANKS], label: raceLabel });
   if (!coach) return null;
-  const hosted = viaDoor && quietly(() => coach.summary()?.storage?.guest === false) === true;
-  return createRace(coach, { win, hosted });
+  return createRace(coach, { win, hosted: viaDoor && accountCoach(coach) });
 }

@@ -64,6 +64,12 @@ test('비우면 씨앗 끝 표지가 남아 옛 기억을 다시 읽지 않는�
   const memory = createFlowMemory({ storage, store: STORE, generation: () => 1, seed });
   assert.equal(memory.memory('order-rush.rush'), null);
   assert.equal(reads, 0);
+  // 비운 뒤의 세대를 모르면(null) 세대 0 열쇠에 표지를 쓴다 — 세대 0에서 열어도 씨앗을 다시 읽지 않는다.
+  const unknown = fakeStorage();
+  assert.equal(clearFlowMemory(unknown, STORE, null), true);
+  const zero = createFlowMemory({ storage: unknown, store: STORE, generation: () => 0, seed });
+  assert.equal(zero.memory('order-rush.rush'), null);
+  assert.equal(reads, 0);
 });
 
 test('저장소마다 열쇠가 따로다 — 판이 오르면 새로 선다', () => {
@@ -107,4 +113,79 @@ test('거절한 도움 줄이기 제안도 세대를 따른다', () => {
   assert.equal(memory.declined('c'), '2026-11-19T00:00:00.000Z');
   gen = 1;
   assert.equal(memory.declined('c'), null);
+});
+
+test('다른 탭이 비워 저장된 세대가 앞서면, 이 탭의 세대가 아직 그대로여도 쓰지 않는다(카본 끝 판 D2)', () => {
+  const storage = fakeStorage();
+  let other = 0;
+  const stale = createFlowMemory({ storage, store: STORE, generation: () => 0 });
+  const since = stale.since();
+  assert.equal(stale.save('a', { at: '1' }, since), true);
+  // 다른 탭: 비워 세대 1로 오르고 새 기억을 쓴다.
+  other = 1;
+  const fresh = createFlowMemory({ storage, store: STORE, generation: () => other });
+  assert.equal(fresh.save('a', { at: 'new' }, fresh.since()), true);
+  assert.equal(
+    stale.save('a', { at: 'old' }, since),
+    false,
+    '앞 세대의 탭이 비운 뒤의 기억을 덮었다',
+  );
+  assert.deepEqual(fresh.memory('a'), { at: 'new' });
+});
+
+test('앞 세대의 탭이 늦게 써도 비운 뒤의 기억을 덮지 않는다 — 세대마다 열쇠가 다르다(GPT 다시 보기 GC1 · 카본 둘째 다시 보기 A2)', () => {
+  const storage = fakeStorage();
+  const stale = createFlowMemory({ storage, store: STORE, generation: () => 0 });
+  const since = stale.since();
+  assert.equal(stale.save('a', { at: '1' }, since), true);
+  // 다른 탭(세대 1 — 비운 뒤)이, 이 탭이 다음 세대 열쇠를 본 뒤 · 쓰기 전에 끼어들어 새 기억을 쓴다. Web Storage에는 탭 사이 잠금이 없다.
+  const fresh = createFlowMemory({ storage, store: STORE, generation: () => 1 });
+  const get = storage.getItem;
+  let reads = 0;
+  let injected = false;
+  storage.getItem = name => {
+    if (!injected) {
+      reads += 1;
+      if (reads === 2) {
+        injected = true;
+        assert.equal(fresh.save('a', { at: 'new' }, fresh.since()), true);
+      }
+    }
+    return get(name);
+  };
+  stale.save('a', { at: 'old' }, since);
+  storage.getItem = get;
+  assert.ok(injected, '쓰기 사이에 끼어들지 못했다');
+  assert.deepEqual(
+    fresh.memory('a'),
+    { at: 'new' },
+    '앞 세대 탭의 늦은 쓰기가 비운 뒤의 기억을 지웠다',
+  );
+  assert.ok(storage.map.has(`${FLOW_MEMORY_PREFIX}${STORE}@1`));
+});
+
+test('비우면 그 세대와 바로 앞 세대의 열쇠에 표지를 쓴다 — 비운 것을 아직 모르는 탭도 앞 기억을 읽지 않고, 세대 0이 아니면 씨앗을 다시 읽지 않는다', () => {
+  const storage = fakeStorage();
+  let reads = 0;
+  const seed = () => {
+    reads += 1;
+    return OLD;
+  };
+  const before = createFlowMemory({ storage, store: STORE, generation: () => 0, seed });
+  assert.deepEqual(before.memory('order-rush.rush'), OLD.contents['order-rush.rush']);
+  assert.equal(clearFlowMemory(storage, STORE, 1), true);
+  assert.equal(before.memory('order-rush.rush'), null, '비운 것을 모르는 탭이 앞 기억을 읽었다');
+  const after = createFlowMemory({ storage, store: STORE, generation: () => 2, seed });
+  assert.equal(after.memory('order-rush.rush'), null);
+  assert.equal(reads, 1, '세대가 오른 뒤 씨앗을 다시 읽었다');
+});
+
+test('열쇠의 세대와 값의 세대가 다르면(비우기가 덮은 앞 세대 열쇠) 빈 기억이다', () => {
+  const storage = fakeStorage();
+  storage.setItem(
+    `${FLOW_MEMORY_PREFIX}${STORE}`,
+    JSON.stringify({ v: 1, gen: 1, seeded: true, contents: { a: { at: 'x' } }, declined: {} }),
+  );
+  const memory = createFlowMemory({ storage, store: STORE, generation: () => 0 });
+  assert.equal(memory.memory('a'), null);
 });

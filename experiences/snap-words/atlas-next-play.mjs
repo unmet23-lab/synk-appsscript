@@ -10,7 +10,7 @@
 //           부탁의 꼴 · 차례는 게임(core.mjs pickMissions)이 정한다.
 //   게임 차례  부탁 · 인화는 present만 한다(제품 차례 — 이유 줄이 없다). 인화는 이름 없는 카드 먼저(core.mjs makeRecall).
 //   뒤 답    부탁은 맞힐 때까지 같은 제시에 답한다(attemptNo 1, 2, …). 코치는 둘째부터를 기록만 하고 두뇌 판 상태는 첫 판정 답만
-//           움직인다(§23-5). 입구로 나가면 답하지 않은 부탁을 다음 차례 번호로 unanswered 답한다.
+//           움직인다(§23-5). 입구로 나가거나 틀을 떠나면(pagehide) 답하지 않은 부탁을 다음 차례 번호로 unanswered 답한다.
 //   그 밖    소리 전달은 제시마다 한 번(답을 기다리는 동안만). 은행에 없는 문항은 내지 않는다. 순간 맞춤(live) · 오늘은 쓰지 않는다.
 //   옛 것 대신(§23-6): 옛 추천의 focusSkillId · alternatives(약한 낱말)는 due() · summary().units로 바뀐다.
 //   오류    문을 거친 오류는 셸 창의 것이라 code로만 가른다. RUN_ENDED(겉이 닫힘)면 그 판은 기록 없이 잇고, 판을 다시 정했으면(onRetired)
@@ -108,6 +108,14 @@ export function createNextLearning(coach, { win = globalThis.window, old = offli
     opened = false;
     call((c) => c.finishSet({ record: false }));
   }
+  // 판을 그만두었다 — 답하지 않은 부탁을 다음 차례 번호로 unanswered 답하고 판을 닫는다.
+  function leave() {
+    for (const [pid, answered] of open) reply(pid, { correct: null, reason: 'unanswered' }, answered + 1);
+    end();
+  }
+  // 틀을 떠날 때(pagehide — 틀 다시 싣기 · 패널 닫힘)도 그만두기와 같다(§23-13 「떠날 때」 · GC6). 키트가 먼저 건 leave가 셸의 판 닫기를
+  // 셸의 다음 차례로 미루므로 이 답이 먼저 든다. 입구로 나간 뒤라 열린 부탁이 없으면 아무것도 하지 않는다.
+  quietly(() => win?.addEventListener?.('pagehide', leave));
 
   return Object.freeze({
     available: () => Boolean(live),
@@ -160,11 +168,8 @@ export function createNextLearning(coach, { win = globalThis.window, old = offli
       const pid = show(recallMetadata(q));
       if (pid) reply(pid, { correct: selected === q.answer, assessable: true, choice: choiceOf(selected, q.answer) }, 1);
     },
-    /** 판을 그만두었다(입구로) — 답하지 않은 부탁을 다음 차례 번호로 닫고 판을 닫는다. */
-    leave() {
-      for (const [pid, answered] of open) reply(pid, { correct: null, reason: 'unanswered' }, answered + 1);
-      end();
-    },
+    /** 판을 그만두었다(입구로 · 틀을 떠남) — 답하지 않은 부탁을 다음 차례 번호로 닫고 판을 닫는다. */
+    leave,
     /** 판 끝(인화 뒤) — 판을 기록 없이 닫는다. */
     end,
     /** 판을 다시 정해 겉이 닫힌 뒤 다음 판에서 문을 다시 연다 — openLearning과 같은 꼴을 돌려준다. */

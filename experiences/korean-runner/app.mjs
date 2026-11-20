@@ -56,9 +56,11 @@ let coach = null, learningFailed = false, nextPlan = null;
 // 불러 셸 창의 게임 코치를 받는다(아래 setupWorld 뒤 — 그리기 고리와 WORLD 문구를 막지 않는다). 셸이 지금 판이라고 하면(null) 옛 길로 연다.
 // 문이 없으면 옛 코치를 지금처럼 이 자리에서 동기로 만든다.
 // runner: 새 길(달리기 판 · 게임 차례 · 듣기 확인 판 · 순간 맞춤의 제시 번호). quiet: 문이 닫히는 중(RUN_ENDED) — 옛 길을 열지 않고 안내 없이 놀기만 한다.
-let runner = null, quiet = false, reopening = null;
+// oldWay: 옛 코치로 열었다(문이 없거나 셸이 지금 판이라고 함) — 기록 지우기 단추는 이 길에만 있다.
+let runner = null, quiet = false, reopening = null, oldWay = false;
 const atlasNext = !!(nextDoor(window) || devFlag(window));
 function openOldCoach() {
+  oldWay = true;
   try { coach = globalThis.SynkLearning?.createGame({ gameId: 'korean-runner', storage: localStorage }) || null; } catch { learningFailed = true; }
 }
 async function openNextCoach() {
@@ -69,10 +71,10 @@ async function openNextCoach() {
   if (runner) coach = runner.coach; else { openOldCoach(); showReasons(); }
 }
 // 판을 다시 정해 겉이 닫혔으면(onRetired · RUN_ENDED) 다음 판(달리기 · 듣기 확인)을 열 때 문을 다시 연다 — 새 길이면 새 겉, 지금 판이면 옛 길.
-// 여는 동안 다시 눌러도 한 번만 연다.
+// 여는 동안 다시 눌러도 한 번만 연다. 연 뒤에는 그 코치로 계정 기록인지 다시 정하고 입구의 저장 안내를 다시 쓴다.
 function reopenNext() {
   if (!runner?.stale) return null;
-  return (reopening ??= openNextCoach().finally(() => { reopening = null; }));
+  return (reopening ??= openNextCoach().then(() => { paintLearningPath(); if (oldWay) watchStorage(); }).finally(() => { reopening = null; }));
 }
 // 새 길이 숨긴 이유 줄을 옛 길로 돌아올 때 다시 보인다(판을 다시 정한 뒤 셸이 지금 판이라고 한 때).
 function showReasons() { for (const id of ['l-reason', 'r-next-reason']) byId(id).hidden = false; }
@@ -687,8 +689,6 @@ if (WORLD) setupWorld();
 // 새 길: 문(또는 개발 깃발)이 있으면 셸이 게임 코치를 여는 동안 여기서 기다린다 — 그리기 고리와 WORLD 문구는 이미 섰고, 단추 · 듣기 확인 ·
 // 입구 글은 연 뒤에 잇는다.
 if (atlasNext) await openNextCoach();
-// WORLD 안에서는 기록이 계정의 것이다: 지우기·보관은 WORLD에서 한다. 새 길은 기록 지우기를 쓰지 않는다.
-const hosted = atlasNext || (() => { try { return typeof coach?.assignment === 'function'; } catch { return false; } })();
 
 byId('restart').addEventListener('click', () => { cancelVoice(); start(); });
 byId('result-home').addEventListener('click', () => { cancelVoice(); home(); });
@@ -729,8 +729,23 @@ window.addEventListener('blur', () => { keyboard.reset(); if (running && !paused
 
 /* ── 입구의 소리 단추 · 학습 기록 지우기 · 듣기 확인 ── */
 for (const t of document.querySelectorAll('[data-sound-toggle]')) t.addEventListener('click', () => { setSound(!sound); if (sound) { audioInit(); audio?.resume?.().catch(() => {}); tone(1046.5, 0.12, 'sine', 0.18); } });
-byId('learning-reset').hidden = hosted;
-if (hosted) byId('learning-scope').textContent = '학습 기록은 WORLD 계정에 이어져요. 기록 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
+// WORLD 안에서는 기록이 계정의 것이다: 지우기·보관은 WORLD에서 한다. hosted는 실제로 연 코치로 정한다 — 새 길이면 그 코치의 저장소(손님이
+// 아니면 계정), 옛 길이면 지금처럼 옛 코치의 assignment. 새 길은 기록 지우기를 쓰지 않고(셸 · 「나」의 일), 코치 없이 노는 판(문이 닫히는 중 ·
+// 열지 못함)은 저장 안내도 쓰지 않는다. 길이 바뀌면(판을 다시 정한 뒤 다시 열기 — reopenNext) 다시 정하고 다시 쓴다(4-6 끝 판 B2 · GB8).
+const LOCAL_SCOPE = byId('learning-scope').textContent;
+const ACCOUNT_SCOPE = '학습 기록은 WORLD 계정에 이어져요. 기록 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
+let hosted = false;
+function hostedNow() {
+  if (runner) { try { return runner.coach.summary()?.storage?.guest === false; } catch { return false; } }
+  try { return typeof coach?.assignment === 'function'; } catch { return false; }
+}
+function paintLearningPath() {
+  hosted = hostedNow();
+  byId('learning-reset').hidden = hosted || !oldWay;
+  const line = hosted ? ACCOUNT_SCOPE : runner || oldWay ? LOCAL_SCOPE : '';
+  if (byId('learning-scope').textContent !== line) byId('learning-scope').textContent = line;
+}
+paintLearningPath();
 // 지우기 결과는 누른 단추 바로 옆(#learning-scope)에 남긴다: 추천·대기 글이 쓰는 칸이 아니라 덮이지 않고, 화면 읽기는 #sr-live로 듣는다.
 const RESET_NOTICE = {
   done: '이 브라우저의 모든 게임 학습 기록을 지웠어요. 최고 거리는 그대로 남아요.',
@@ -802,13 +817,17 @@ function refreshStorageText() {
   else if (model?.finished && (screen === 'results' || ending)) { refreshRecommendation(); renderResultLearning(scoreRun(model.answers, { completed: model.reason === 'tour' })); }
 }
 let storagePaint = false;
-try {
-  coach?.syncPort?.subscribe?.((event) => {
-    if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
-    storagePaint = true;
-    Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
-  });
-} catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
+// 판을 다시 정한 뒤 옛 길로 다시 열었을 때(reopenNext)도 그 옛 코치의 저장 알림을 듣는다.
+function watchStorage() {
+  try {
+    coach?.syncPort?.subscribe?.((event) => {
+      if (storagePaint || !['storage-ready', 'storage-wait', 'storage-error'].includes(event?.kind)) return;
+      storagePaint = true;
+      Promise.resolve().then(() => { storagePaint = false; refreshStorageText(); }).catch(() => {});
+    });
+  } catch { /* 알림이 없어도 입구를 다시 열 때 최신 상태를 읽는다 */ }
+}
+watchStorage();
 renderLobby();
 
 /* ── 확인용 ── */

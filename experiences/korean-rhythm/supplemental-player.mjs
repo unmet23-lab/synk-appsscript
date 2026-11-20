@@ -55,36 +55,48 @@ export function missedSupplementalPool(coach,row){
 }
 
 // getDue: 며칠 뒤 다시 확인할 대화를 주는 길(Atlas 새 길 — 코치의 돌아온 단위 due()가 든 대화). null을 주면 옛 길(followups)이다.
+// prepare: 연습을 고른 그 순간 부른다(Atlas 새 길 — 판을 다시 정했으면 문을 다시 연다). 약속을 돌려주면 풀린 뒤, 그사이 패널을 닫거나 다른
+//   연습을 고르지 않았을 때만 그때의 코치로 대화 목록을 다시 보고 판을 열어 첫 대화를 낸다 — 한 차례에 한다(다시 보기 GB1 · GB2).
 // beginSet: 연습 하나(보충 연습 · 며칠 뒤 다시 확인)의 첫 대화를 내기 바로 앞에서 낼 대화 목록으로 부른다(Atlas 새 길 — 정해진 판의 판 길이).
-export function createSupplementalPanel({host,getCoach,getReturn=()=>null,getDue=()=>null,beginSet=()=>{},onReturn=()=>{},audioFactory=()=>new Audio(),seed=()=>Date.now(),document:doc=globalThis.document}){
- let session=null,queue=[],index=0;
+// continueSet: 둘째 대화부터 내기 바로 앞에서 (남은 대화, 이 연습의 목록)으로 부른다 — 그사이 다른 판(새 문장 확인)이 자리를 받았으면 다시 연다.
+//   둘이 false를 주면 다른 연습(새 문장 확인)의 문항이 답을 기다리는 중이다 — 대화를 내지 않고 안내 한 줄만 둔다. 그 문항에 답한 뒤
+//   같은 단추를 다시 누르면 잇는다(둘째 다시 보기 Q6).
+// endSet: 연습을 닫을 때(마침 · 닫기 · 화면 전환 — 답하지 않은 대화의 기록 뒤) 이 연습의 목록으로 부른다.
+const HELD='새 문장에 먼저 O·X로 답해 주세요.';
+export function createSupplementalPanel({host,getCoach,getReturn=()=>null,getDue=()=>null,prepare=()=>null,beginSet=()=>{},continueSet=()=>{},endSet=()=>{},onReturn=()=>{},audioFactory=()=>new Audio(),seed=()=>Date.now(),document:doc=globalThis.document}){
+ let session=null,queue=[],index=0,starts=0,notice=null;
  const delayed=coach=>getDue()??delayedSupplemental(coach);
- function close(){session?.close();session=null;queue=[];host?.replaceChildren();}
+ function close(){const done=session?queue:null;session?.close();session=null;queue=[];starts++;notice=null;host?.replaceChildren();if(done)try{endSet(done);}catch{/* 판을 닫지 못해도 패널은 닫는다 */}}
+ // 연습을 잇지 못한 까닭 한 줄 — 같은 단추를 다시 눌러도 한 줄이고, 화면을 다시 그리면 사라진다.
+ function say(text){if(!notice){notice=element('p');notice.setAttribute('aria-live','polite');host.append(notice);}notice.textContent=text;}
  // 연습을 끝내거나 닫아 패널 첫 화면으로 돌아올 때: 답·미응답 기록이 끝난 뒤 위쪽 안내를 다시 맞추게 알리고, 누른 단추가 사라졌으니 포커스를 패널 첫 단추로 옮긴다.
  function back(){show();onReturn();host?.querySelector?.('button')?.focus?.({preventScroll:true});}
  const element=(tag,text)=>{const node=doc.createElement(tag);if(text)node.textContent=text;return node;};
  const button=(label,click)=>{const node=element('button',label);node.type='button';node.className='chip-btn';node.addEventListener('click',click);return node;};
+ // 연습을 고른 단추 — prepare가 약속을 주면 풀린 뒤 이 고르기가 아직 유효할 때만 잇는다.
+ function choose(go){let ready=null;try{ready=prepare();}catch{/* 준비하지 못해도 연습은 잇는다 */}if(typeof ready?.then!=='function'){go();return;}const mine=++starts,on=()=>{if(mine===starts)go();};ready.then(on,on);}
  function show(){
   close();if(!host)return;
   const coach=getCoach(),heading=element('h3','노래 밖에서도 들어 볼까요?'),note=element('p','시간 제한 없이 대화를 듣고 O·X로 확인해요. 노래 점수와 코인에는 들어가지 않아요.');
   host.append(heading,note);
   const missed=getReturn();
-  if(missed?.target.item.kind==='supplemental')host.append(button('놓친 표현 바로 연습',()=>{const now=getReturn();if(now?.target.item.kind==='supplemental')start(missedSupplementalPool(getCoach(),now.target.item.row),3,{inOrder:true});else back();}));
-  host.append(button('보충 연습',()=>start(supplementalItems())));
+  if(missed?.target.item.kind==='supplemental')host.append(button('놓친 표현 바로 연습',()=>choose(()=>{const now=getReturn();if(now?.target.item.kind==='supplemental')start(missedSupplementalPool(getCoach(),now.target.item.row),3,{inOrder:true});else back();})));
+  host.append(button('보충 연습',()=>choose(()=>start(supplementalItems()))));
   let due=[];try{due=delayed(coach);}catch{/* unreadable history is not unseen */}
   // Recheck at click time and consume only one reserve; the first answer may satisfy the due cell.
-  if(due.length)host.append(button('며칠 뒤 다시 확인',()=>{let fresh=[];try{fresh=delayed(getCoach());}catch{}start(fresh,1);}));
+  if(due.length)host.append(button('며칠 뒤 다시 확인',()=>choose(()=>{let fresh=[];try{fresh=delayed(getCoach());}catch{}start(fresh,1);})));
   if(!coach)host.append(element('p','학습 기록을 연결하지 못했어요. 이번 답은 기록되지 않을 수 있어요.'));
  }
  function start(pool,limit=3,{inOrder=false}={}){
   queue=(inOrder?[...pool]:shuffled(pool,seed())).slice(0,limit);index=0;
   if(!queue.length){host.append(element('p','지금 확인할 수 있는 문항이 없어요.'));return;}
-  try{beginSet(queue);}catch{/* 판을 열지 못해도 연습은 잇는다 */}
+  let held=false;try{held=beginSet(queue)===false;}catch{/* 판을 열지 못해도 연습은 잇는다 */}
+  if(held){queue=[];say(HELD);return;}
   session=createSupplementalSession({coach:getCoach(),audio:audioFactory(),onChange:render});session.open(queue[index]);
  }
  function render(row){
   if(!row||!host)return;
-  host.replaceChildren(element('h3',`듣기 보충 ${index+1} / ${queue.length}`));
+  notice=null;host.replaceChildren(element('h3',`듣기 보충 ${index+1} / ${queue.length}`));
   const status=element('p',row.failed?'소리가 재생되지 않았어요. 다시 듣기를 눌러 주세요.':row.answered?(row.correct?'맞아요.':'다시 확인해 봐요.'):row.completed?'끝까지 들었어요. 이제 답해 주세요.':'먼저 대화를 끝까지 들어 주세요.');
   status.setAttribute('aria-live','polite');host.append(status,element('p',row.item.question));
   if(!row.answered){
@@ -93,7 +105,7 @@ export function createSupplementalPanel({host,getCoach,getReturn=()=>null,getDue
    for(const choice of row.item.choices){const b=button(choice.label,()=>session.answer(choice.id));b.disabled=!row.completed;host.append(b);}
   }else{
    const explain=button('해설 보기',()=>{const why=session.explanation();if(why){explain.disabled=true;host.append(element('p',why));}});host.append(explain);
-   host.append(button(index+1<queue.length?'다음 대화':'보충 연습 마치기',()=>{if(++index<queue.length)session.open(queue[index]);else back();}));
+   host.append(button(index+1<queue.length?'다음 대화':'보충 연습 마치기',()=>{if(index+1<queue.length){let held=false;try{held=continueSet(queue.slice(index+1),queue)===false;}catch{/* 판을 열지 못해도 잇는다 */}if(held){say(HELD);return;}session.open(queue[++index]);}else back();}));
   }
   host.append(button('보충 연습 닫기',back));
  }

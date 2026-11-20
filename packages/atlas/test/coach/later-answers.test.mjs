@@ -4,6 +4,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  choose,
   clock,
   createLearner,
   createMemory,
@@ -71,11 +72,15 @@ test('두뇌 — 틀림 셋(같은 제시): 이어서 놓친 수 1 · 「다시�
   assert.equal(learner.shown.length, 1);
 });
 
-test('두뇌 — 건너뜀 → 맞음: 맞음이 첫 판정 답으로 판을 움직인다', () => {
+test('두뇌 — 건너뜀 → 맞음: 맞음이 첫 판정 답으로 판을 움직이고, 판정한 문항은 blank에서 빠진다', () => {
   const { learner, unit, item } = brain([SKIP, RIGHT]);
   const s = learner.session;
   assert.ok(s.met.has(unit), '맞음이 만난 단위를 적는다');
-  assert.ok(s.blank.has(item.itemKey), '건너뛴 문항은 이 판에서 다시 내지 않는다');
+  assert.equal(
+    s.blank.has(item.itemKey),
+    false,
+    '판정한 문항은 이 판에서 다시 낼 수 있다(카본 끝 판 E3)',
+  );
   assert.equal(s.missStreak, 0);
   assert.equal(learner.shown.length, 1);
 });
@@ -154,4 +159,22 @@ test('코치 — 첫 틀림을 제외하면 뒤 맞음이 첫 판정 답이 된�
     '제외된 틀림이 「다시」를 남겼다',
   );
   coach.dispose();
+});
+
+test('두뇌 — 건너뜀 → 틀림: 그 단위의 문항이 하나뿐이어도 「다시」로 돌아온다(GPT 끝 판 E1 · 카본 끝 판 E3)', () => {
+  const memory = createMemory();
+  const learner = createLearner();
+  startSession(learner, T0, PARAMS, { length: 6 });
+  const only = itemOf('solo', 'a', 0);
+  let at = T0;
+  for (const answer of [SKIP, WRONG])
+    record(learner, memory, only, { ...answer, presentationId: 'p1' }, (at += 5_000), PARAMS);
+  for (const [i, other] of [BANK[2], BANK[4]].entries())
+    record(learner, memory, other, { ...RIGHT, presentationId: `o${i}` }, (at += 5_000), PARAMS);
+  const rows = choose([only], learner, memory, at + 5_000, { params: PARAMS });
+  assert.equal(
+    rows[0]?.tier,
+    0,
+    `놓친 단위가 그 문항으로 다시 선다 — ${JSON.stringify(rows[0]?.tier)}`,
+  );
 });

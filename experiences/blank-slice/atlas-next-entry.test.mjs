@@ -55,9 +55,9 @@ function fakeStorage(seed = {}) {
   const map = new Map(Object.entries(seed));
   return { getItem: (k) => (map.has(k) ? map.get(k) : null), setItem: (k, v) => map.set(k, String(v)), removeItem: (k) => map.delete(k) };
 }
-// 옛 코치 흉내 — 부른 메서드를 차례대로 적는다(syncPort는 읽기만 해도 적는다).
-function loggingCoach(log) {
-  const answers = { summary: () => ({ skills: [], storage: { available: true }, evidenceComplete: true }), events: () => [], recommend: () => ({ status: 'none' }) };
+// 옛 코치 흉내 — 부른 메서드를 차례대로 적는다(syncPort는 읽기만 해도 적는다). more: 메서드의 답을 바꾼다.
+function loggingCoach(log, more = {}) {
+  const answers = { summary: () => ({ skills: [], storage: { available: true }, evidenceComplete: true }), events: () => [], recommend: () => ({ status: 'none' }), ...more };
   return new Proxy({}, {
     get(_t, name) {
       if (name === 'then' || typeof name === 'symbol') return undefined;
@@ -70,14 +70,15 @@ function loggingCoach(log) {
 
 let boots = 0;
 const settle = () => new Promise((resolve) => setTimeout(resolve, 30));
-// 한 페이지를 띄운다. door: 위 창의 window.SYNKAtlasGame(없으면 꺼진 판).
-async function boot({ door = null, plays = 0, host = 'synk.im', search = '' } = {}) {
+// 한 페이지를 띄운다. door: 위 창의 window.SYNKAtlasGame(없으면 꺼진 판). texts: 마디의 처음 글(index.html). old: 옛 코치 흉내의 답.
+async function boot({ door = null, plays = 0, host = 'synk.im', search = '', texts = {}, old = {} } = {}) {
   const log = [];
   const created = [];
   const storage = fakeStorage(plays ? { 'synk.blank-slice.v1': JSON.stringify({ v: 1, plays, practiced: true, slow: false, best: null }) } : {});
   const local = fakeStorage();
   const doc = fakeDocument();
-  const coach = loggingCoach(log);
+  for (const [sel, text] of Object.entries(texts)) doc.querySelector(sel).textContent = text;
+  const coach = loggingCoach(log, old);
   const up = door ? { SYNKAtlasGame: door } : null;
   const from = resolved.length;
   Object.assign(globalThis, {
@@ -154,11 +155,10 @@ test('문이 닫히는 중이면(RUN_ENDED) 옛 길을 열지 않고 안내 없�
   assert.match(broken.$('#storage-note').textContent, /학습 기록을 쓸 수 없어/);
 });
 
-// 문을 거친 가짜 셸 코치 — 부른 메서드를 적는다.
-async function doorWith(calls) {
-  const { createGameDoor } = await import('../synk-world-app/world-atlas-game.mjs');
-  const coach = {
-    summary: () => { calls.push('summary'); return { storage: { available: true, guest: true } }; },
+// 가짜 셸 코치 — 부른 메서드를 적는다. guest: 저장소가 손님인가(아니면 계정).
+function shellCoach(calls, { guest = true } = {}) {
+  return {
+    summary: () => { calls.push('summary'); return { storage: { available: true, guest } }; },
     recommend: () => { calls.push('recommend'); return { status: 'none', selected: null }; },
     present: () => { calls.push('present'); return 'p1'; },
     itemUnits: () => { calls.push('itemUnits'); return [{ unit: 'ko.word.w0001', kind: 'word', label: null }]; },
@@ -166,7 +166,21 @@ async function doorWith(calls) {
     today: () => { calls.push('today'); return null; },
     live: () => { calls.push('live'); throw Object.assign(new Error('없음'), { code: 'NOT_IMPLEMENTED' }); },
   };
+}
+// 문을 거친 가짜 셸 코치 — 부른 메서드를 적는다.
+async function doorWith(calls) {
+  const { createGameDoor } = await import('../synk-world-app/world-atlas-game.mjs');
+  const coach = shellCoach(calls);
   return createGameDoor({ entry: { gameCoach: async () => coach, retired: () => () => {} }, gameId: 'blank-slice', later: (fn) => fn() });
+}
+// 판을 다시 정할 수 있는 문(retire). give(n, coach): n번째 open이 받는 코치(기본은 늘 그 코치). guest: 그 코치의 저장소가 손님인가.
+async function retiringDoor(calls, { guest = true, give = (_n, coach) => coach } = {}) {
+  const { createGameDoor } = await import('../synk-world-app/world-atlas-game.mjs');
+  const coach = shellCoach(calls, { guest });
+  const retirers = new Set();
+  let opens = 0;
+  const door = createGameDoor({ entry: { gameCoach: async () => give((opens += 1), coach), retired: (_made, fn) => { retirers.add(fn); return () => retirers.delete(fn); } }, gameId: 'blank-slice', later: (fn) => fn() });
+  return { door, opens: () => opens, retire: () => [...retirers].forEach((fn) => fn({ reason: 'account' })) };
 }
 
 test('문이 겉을 주면 그 겉으로 연다 — 옛 코치 없음, 입구에서 판을 미리 짜지 않음, 기록 지우기 숨김', async () => {
@@ -175,7 +189,7 @@ test('문이 겉을 주면 그 겉으로 연다 — 옛 코치 없음, 입구에
   const page = await boot({ door: door.api, plays: 3 });
   await settle();
   assert.equal(page.log.includes('createGame'), false);
-  assert.deepEqual(calls, ['summary'], '입구는 저장 상태만 읽는다(문장마다 고른다)');
+  assert.deepEqual(calls, ['summary', 'summary'], '저장소만 읽는다 — 열 때 계정의 기록인가, 입구의 저장 안내(판은 문장마다 고른다)');
   assert.equal(page.$('#reset-learning').hidden, true);
   assert.equal(page.$('#l-reason').hidden, true, '판을 미리 짜지 않으니 이유를 지어내지 않는다');
   assert.equal(page.$('#storage-note').hidden, true);
@@ -204,9 +218,65 @@ test('셸이 코치를 준비하는 동안에도 입구를 먼저 그리고, 시
   assert.equal(page.log.includes('createGame'), false);
   assert.equal(page.$('#game').hidden, false, '열린 뒤 판을 시작한다');
   assert.equal(calls.filter((name) => name === 'today').length, 1, '판은 한 번만 시작한다');
-  assert.deepEqual(calls.filter((name) => name !== 'itemUnits'), ['summary', 'today', 'live'], '입구 다시 그리기 → 순간 맞춤(오늘 · 조각 시간)');
+  assert.deepEqual(calls.filter((name) => name !== 'itemUnits'), ['summary', 'summary', 'today', 'live'], '열 때 계정의 기록인가 → 입구 다시 그리기 → 순간 맞춤(오늘 · 조각 시간)');
   assert.equal(calls.filter((name) => name === 'itemUnits').length, 32, '처음 판의 쉬운 문장이 은행에 있는지 본다');
   inner.dispose();
+});
+
+const FIRST_SCOPE = '학습 기록은 이 브라우저에만 저장되고, 같은 주소에서 연 다른 SYNK 게임과 같이 써요.';
+const ACCOUNT_SCOPE = 'WORLD에서 선택한 계정의 학습 기록으로 연결해요. 기록 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
+
+test('기록 안내는 실제로 연 코치로 정한다 — 기다리는 동안은 계정이라 하지 않고, 문이 null이면 옛 코치의 처음 글 · 기록 지우기, 새 길은 그 코치의 저장소, 판을 다시 정한 뒤에는 다시 연 길로 다시 그린다(4-6 끝 판 A4)', async () => {
+  const texts = { '#learning-scope': FIRST_SCOPE };
+  const scope = (page) => ({ reset: page.$('#reset-learning').hidden, text: page.$('#learning-scope').textContent });
+  // 셸이 코치를 준비하는 동안 입구를 먼저 그린다 — 아직 연 코치가 없다. 셸이 지금 판(null)이라고 하면 이 브라우저의 옛 코치다.
+  let release;
+  const gate = new Promise((resolve) => (release = resolve));
+  const waiting = await boot({ door: { open: async () => { await gate; return null; } }, plays: 3, texts });
+  assert.deepEqual(scope(waiting), { reset: true, text: FIRST_SCOPE }, '기다리는 동안 기록 지우기는 숨기고 계정 안내도 하지 않는다');
+  release();
+  await settle();
+  assert.equal(waiting.log.includes('createGame'), true);
+  assert.deepEqual(scope(waiting), { reset: false, text: FIRST_SCOPE }, '옛 코치의 기록 지우기와 처음 글');
+  // 새 길 손님 코치 — 기록 지우기는 쓰지 않고 계정 안내도 하지 않는다.
+  const visitor = await retiringDoor([]);
+  const guest = await boot({ door: visitor.door.api, plays: 3, texts });
+  await settle();
+  assert.deepEqual(scope(guest), { reset: true, text: FIRST_SCOPE });
+  visitor.door.dispose();
+  // 새 길 계정 코치 — 계정 안내. 판을 다시 정한 뒤 셸이 지금 판이면 옛 코치로 판을 열고, 처음 글 · 기록 지우기로 돌아온다.
+  const member = await retiringDoor([], { guest: false, give: (n, coach) => (n === 1 ? coach : null) });
+  const page = await boot({ door: member.door.api, plays: 3, texts });
+  await settle();
+  assert.deepEqual(scope(page), { reset: true, text: ACCOUNT_SCOPE });
+  member.retire();
+  page.$('#btn-start').onclick();
+  await settle();
+  assert.equal(member.opens(), 2);
+  assert.equal(page.log.includes('createGame'), true, '다시 연 길은 옛 길');
+  assert.deepEqual(scope(page), { reset: false, text: FIRST_SCOPE });
+  member.door.dispose();
+});
+
+test('결과 화면에서 판을 다시 정한 뒤 「다음 판 시작」이 옛 길로 돌아오면 입구를 지나지 않아도 옛 코치의 필요 순서로 판을 짠다(4-6 끝 판 A5)', async () => {
+  const { ITEMS } = await import('./content.mjs');
+  const { composeRound } = await import('./core.mjs');
+  // 옛 코치는 원고의 거꾸로 차례를 필요 순서로 준다(learning.mjs rankItems).
+  const ranking = (list) => ({ status: 'ready', selected: list.at(-1), alternatives: list.slice(0, -1).reverse(), reason: '기록에 맞췄어요.', focusSkillId: null, state: null });
+  const d = await retiringDoor([], { give: (n, coach) => (n === 1 ? coach : null) });
+  const page = await boot({ door: d.door.api, plays: 3, search: '?qa', old: { recommend: ranking } });
+  await settle();
+  // 새 길의 판을 마친 결과 화면(입구는 숨김) — 노드에는 3D 무대가 없어 판을 끝까지 돌지 않고 화면만 결과로 둔다.
+  page.$('#lobby').hidden = true;
+  page.$('#results').hidden = false;
+  d.retire();
+  page.$('#r-again').onclick();
+  await settle();
+  assert.equal(d.opens(), 2);
+  assert.equal(page.log.includes('createGame'), true, '다시 연 길은 옛 길');
+  const ranked = [...ITEMS].reverse().map((x) => x.id);
+  assert.deepEqual(globalThis.__slice.state().queue, composeRound(ITEMS, { ranked, seed: 4 }).map((x) => x.id), '옛 코치의 필요 순서로 짠 판');
+  d.door.dispose();
 });
 
 test('로컬 개발 깃발(?atlas=next)은 문이 없어도 새 길로 간다 — 옛 코치를 만들지 않는다', async () => {

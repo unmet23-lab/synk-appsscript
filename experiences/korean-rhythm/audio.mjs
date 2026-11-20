@@ -104,7 +104,9 @@ export class MusicPlayer {
     this.analyser = context.createAnalyser(); this.analyser.fftSize = 2048;
     this.master.connect(this.analyser); this.analyser.connect(context.destination);
     const buffer = await (this.recordingSource || loadRecording)(track, context, abort.signal);
-    const voices = await Promise.all(questions.map(async (q) => ({ q, buffer: await loadNarration(q.voice, context, abort.signal) })));
+    // questions가 함수면 보면의 문장이 아직 정해지지 않았다(Atlas 새 길이 코치를 받는 중 — app.mjs start). 소리 문맥은 위에서 이미 열었다.
+    const list = typeof questions === 'function' ? await questions() : questions;
+    const voices = await Promise.all(list.map(async (q) => ({ q, buffer: await loadNarration(q.voice, context, abort.signal) })));
     if (this.session !== session || context.state === 'closed') throw new DOMException('Cancelled', 'AbortError');   // 문맥을 다시 쓰면 문맥만으로는 앞 요청을 가려내지 못한다
     this.voices = voices;
     this.recording = { title: track.title, sourceId: track.sourceId, url: track.audioUrl, duration: buffer.duration, sampleRate: buffer.sampleRate, channels: buffer.numberOfChannels };

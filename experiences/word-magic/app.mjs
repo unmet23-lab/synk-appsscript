@@ -107,10 +107,14 @@ async function beginChapter(index,completion=false){
  const scene=PUZZLES.findIndex(p=>p.chapter===index&&!saved.completed.includes(p.id));await begin(scene>=0?scene:index*6,false,false,false,status.discoveries===6&&status.missing.length>0&&saved.introduced.includes(CHAPTERS[index].id),completion&&status.finished);
 }
 async function begin(index,preview,resume=false,playground=false,continueChecks=false,showChapterEnd=false){
- if(state.busy)return;state.busy=true;$('#start').disabled=true;$('#audio-status').textContent=say('Preparing your adventure…','모험을 준비하고 있어요…');
+ if(state.busy)return;state.busy=true;const token=state.token;$('#start').disabled=true;$('#audio-status').textContent=say('Preparing your adventure…','모험을 준비하고 있어요…');
  try{await Promise.all([assets,preview?Promise.resolve():voice.prepare()]);}
- catch(error){$('#audio-status').textContent=state.assetReady?say('Korean voice is not ready yet. Try again, or explore with pictures.','한국어 소리를 아직 준비하지 못했어요. 다시 시도하거나 그림으로 체험할 수 있어요.'):say('Could not load the scene. Check your connection and try again.','장면을 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.');$('#start').disabled=false;state.busy=false;return;}
- if(atlasNext&&!preview)await learningReady();
+ catch(error){if(atlasNext&&!preview&&token!==state.token){$('#audio-status').textContent='';$('#start').disabled=false;return;}$('#audio-status').textContent=state.assetReady?say('Korean voice is not ready yet. Try again, or explore with pictures.','한국어 소리를 아직 준비하지 못했어요. 다시 시도하거나 그림으로 체험할 수 있어요.'):say('Could not load the scene. Check your connection and try again.','장면을 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.');$('#start').disabled=false;state.busy=false;return;}
+ // 새 길: 소리 · 장면 준비나 코치를 기다리는 사이 다른 화면으로 갔으면(stop — 실험실 · 보관함 등) 이 시작을 이어 가지 않는다(startCheck와 같은
+ // 화면 토큰, 4-6 끝 판 GD8). 토큰은 첫 기다림 전에 잡는다 — 소리 준비 뒤에 잡으면 그사이 바뀐 화면을 놓친다(다시 보기 GC3). 소리 준비가 끝나거나
+ // 실패한 바로 뒤에도 보고, 취소된 시작은 오류 글을 쓰지 않고 코치 문도 다시 열지 않는다(둘째 다시 보기 Q11).
+ // 처음 화면의 시작 단추와 준비 글만 되돌린다 — busy는 stop이 이미 풀었고, 그 뒤에 다른 화면이 잡았을 수 있다.
+ if(atlasNext&&!preview){if(token===state.token)await learningReady();if(token!==state.token){$('#audio-status').textContent='';$('#start').disabled=false;return;}}
  $('#audio-status').textContent='';$('#start').disabled=false;state.busy=false;state.preview=preview;state.pendingLab=playground;state.progress=preview?initialProgress():clone(saved);if(preview)state.progress.language=saved.language;state.sceneIndex=index;toggleScreens(true);const returning=state.progress.resume?.screen==='lab'&&state.progress.adventureResume,snapshot=returning||state.progress.resume;if(!preview&&resume&&snapshot){if(returning)state.progress.adventureResume=null;restoreScene(snapshot);remember();}else if(showChapterEnd){state.sceneIndex=Math.floor(index/6)*6+5;showEnding();}else if(continueChecks){state.progress.adventureResume=null;state.sceneIndex=Math.floor(index/6)*6+5;const status=chapterProgress(state.progress,Math.floor(index/6));state.checkRound=checkpointRound(Math.floor(index/6)).sort((a,b)=>Number(status.missing.includes(a.spell))-Number(status.missing.includes(b.spell)));await startCheck(2-status.missing.length,true);}else enterScene(index);
 }
 function restoreScene(snapshot){

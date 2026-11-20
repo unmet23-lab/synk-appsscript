@@ -17,7 +17,7 @@
 import { ITEMS, ROUND_SIZE, SKILL_LABEL } from './content.mjs';
 import { composeRound } from './core.mjs';
 import { GAME_ID, candidates, itemMetadata } from './learning.mjs';
-import { answerOf, openNext, setPlay } from './kit/atlas-next.mjs';
+import { answerOf, nextDoor, openNext, setPlay } from './kit/atlas-next.mjs';
 
 // 셸의 게임 은행 표(synk-world-app/world-atlas-game.mjs GAME_BANKS['blank-slice'])와 같다 — 시험이 견준다.
 export const BANKS = Object.freeze(['blank-slice']);
@@ -35,7 +35,9 @@ const quietly = fn => {
 };
 
 // 새 길 코치를 연다. 문이 없고 개발 깃발도 없거나 셸이 지금 판이라고 하면 null(옛 길). RUN_ENDED는 그대로 던진다 — 옛 길을 열지 않는다.
+// 계정 코치로 문을 거쳤을 때만 「WORLD 계정에 이어진다」(hosted) — 손님 코치(동의를 끈 계정의 기기 길 포함)는 이 브라우저의 기록이다.
 export async function openSlice({ win = globalThis.window } = {}) {
+  const viaDoor = nextDoor(win) != null;
   const coach = await openNext({
     win,
     gameId: GAME_ID,
@@ -43,11 +45,13 @@ export async function openSlice({ win = globalThis.window } = {}) {
     // 혼자 뜨는 길(개발 깃발)의 능력 이름 — 셸이 넘기는 표와 같은 이름(단위 이름은 지도 조각이 안다).
     label: id => SKILL_LABEL[id] ?? null,
   });
-  return coach ? createSlice(coach) : null;
+  if (!coach) return null;
+  const hosted = viaDoor && quietly(() => coach.summary()?.storage?.guest === false) === true;
+  return createSlice(coach, { hosted });
 }
 
-// coach: 키트가 감싼 게임 겉(openNext의 값).
-export function createSlice(coach) {
+// coach: 키트가 감싼 게임 겉(openNext의 값). hosted: 그 코치의 기록이 WORLD 계정의 것인가(app.mjs의 기록 안내).
+export function createSlice(coach, { hosted = false } = {}) {
   let retired = false;
   // 판을 다시 정했다 — 이번 판은 기록 없이 잇고 다음 판에서 문을 다시 연다(§23-2).
   quietly(() =>
@@ -67,6 +71,7 @@ export function createSlice(coach) {
     get retired() {
       return retired;
     },
+    hosted,
     round: (options = {}) => roundOf(coach, options),
     // 던진 결과를 순간 맞춤에 — 그 문장의 제시 번호와 함께(제시가 있는 관찰, §23-4).
     observe: (flow, pid, observation) => flow.observe(observation, pid ?? null),

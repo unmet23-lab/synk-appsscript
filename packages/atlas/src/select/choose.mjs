@@ -36,7 +36,9 @@ function contextOf(learner, memory, now, params) {
   const from = Math.max(session.start, learner.shown.length - params.avoidRecent);
   // 「방금 본 것」은 이 판 안에서만 센다(며칠 전에 본 것은 방금이 아니다).
   const recent = new Set(learner.shown.slice(from).map(row => row.family));
-  const lastShown = new Map(learner.shown.map((row, index) => [row.family, index]));
+  // 이번 판에서 계열을 낸 시각 — 채우기 차례의 「마지막으로 만난 때」에 든다. 앞 판은 단위 기억의 마지막 사건 시각(latestAt)이 맡는다.
+  // 코치는 판마다 shown을 비우고 학습자 흉내는 판을 넘어 쌓으므로, 둘이 같은 차례를 내게 이번 판 줄만 본다(단계4 §23-14).
+  const shownAt = new Map(learner.shown.slice(session.start).map(row => [row.family, row.at]));
   // 이 판에서 이미 만난 단위는 돌아옴 층에 다시 들지 않는다.
   const dueNow = unit => !session.met.has(unit) && memory.isDue(learner.memory.get(unit), now);
   let backlog = 0;
@@ -53,7 +55,7 @@ function contextOf(learner, memory, now, params) {
     session,
     day,
     recent,
-    lastShown,
+    shownAt,
     dueNow,
     backlog,
     rescue,
@@ -171,6 +173,15 @@ function fillShape(facts, ctx) {
   return { tier: need >= 0.03 ? 3 : 4, need, promote: 0, why: idleReason() };
 }
 
+// 채우기 차례의 「마지막으로 만난 때」 — 문항 단위들의 마지막 사건 시각(latestAt)과 이번 판에서 그 계열을 낸 시각 가운데 늦은 것. 만난 적
+// 없으면 가장 앞. lastAt(그 자리의 첫 답)이 아니다 — 같은 자리 안의 뒤 답에 움직이지 않아 같은 날 이어 한 판이 같은 차례가 된다
+// (단계4 §23-14 · Fable F1). 단위를 나눠 가진 문항은 서로의 답으로 「방금 만난 것」이 된다(같은 단위를 방금 연습했다 — 알려진 한계).
+function touchedOf(item, facts, ctx) {
+  let at = ctx.shownAt.get(item.familyKey) ?? -Infinity;
+  for (const state of facts.states) if (state && state.latestAt > at) at = state.latestAt;
+  return at;
+}
+
 function shapeOf(item, tier, target, facts, ctx) {
   if (tier === 9) return { tier, need: -(item.order ?? 0), promote: 0, why: idleReason() };
   if (tier === 0 || tier === 5) return { tier, ...retryShape(item, target, ctx) };
@@ -222,7 +233,7 @@ function rowOf(item, ctx, seed) {
     brandNew: facts.brandNew,
     firstHere: facts.firstHere,
     rested: restedOf(blocked, facts, ctx),
-    last: ctx.lastShown.get(item.familyKey) ?? -1,
+    touched: touchedOf(item, facts, ctx),
     tie: hash(`${seed}|${learner.shown.length}|${item.itemKey}`),
   };
 }
@@ -230,15 +241,22 @@ function rowOf(item, ctx, seed) {
 // 차례: 할 것(0~2층)이 늘 채우기보다 앞이고, 내지 않는 것은 맨 뒤다. 그 안에서 방금 본 계열을 피하고, 층 → 층 안의 순서.
 //   다시 · 돌아온 것: 급한 정도 → 만들어 내는 꼴 먼저(간격이 벌어진 단위) → 끈질긴 단위는 놓친 적 없는 꼴 먼저 → 난도 맞음.
 //   새것: 진도 순 → 난도 맞음(예상 성공 0.8 근처).
-//   따뜻하게 · 가볍게: 흐려진 정도(0.02 단위) → 가장 오래 안 본 것.
+//   따뜻하게 · 가볍게: 흐려진 정도(0.02 단위) → 가장 오래전에 만난 것(touched) → 진도 순 → 문항 열쇠. 채우기는 씨앗을 쓰지 않는다 —
+//   같은 기억 · 같은 판 일지면 늘 같은 차례이고, 같은 날 이어 한 판이 앞 판과 같은 차례가 되지 않는다(단계4 §23-14).
 const groupOf = row => {
   if (row.tier <= 2) return 0;
   return row.tier === 9 ? 2 : 1;
 };
 const bucket = value => Math.round(value * 50);
+const older = (a, b) => (a.touched === b.touched ? 0 : a.touched < b.touched ? -1 : 1);
+const byKey = (a, b) =>
+  a.item.itemKey < b.item.itemKey ? -1 : a.item.itemKey > b.item.itemKey ? 1 : 0;
 const within = (a, b) =>
   a.tier === 3 || a.tier === 4
-    ? bucket(b.need) - bucket(a.need) || a.last - b.last
+    ? bucket(b.need) - bucket(a.need) ||
+      older(a, b) ||
+      (a.item.order ?? 0) - (b.item.order ?? 0) ||
+      byKey(a, b)
     : b.need - a.need || b.promote - a.promote || b.alt - a.alt || b.fit - a.fit;
 const byRank = (a, b) =>
   groupOf(a) - groupOf(b) ||
