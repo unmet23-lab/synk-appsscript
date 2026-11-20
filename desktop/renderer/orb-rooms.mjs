@@ -4,7 +4,7 @@
 // drafts · notices · updates · environment · copyDiagnostics, 뒤의 길은 옛 설정 화면과 같은 다리와 편의의 알림 통로)를 쓴다.
 // 되돌릴 수 없는 일의 첫 누름(armed)은 1분 장면이 와도 지워지지 않게 화면이 아니라 여기에 둔다(설계 8.2).
 import { manageRoom, costRow, tokRow, accountRoom, accountSay, checkName, dateTimeWords, ACCOUNT_SAY, ACCOUNT_CONFLICTS, CODE_SAY, codeSay, manageKey, manageOpenKey, addInfo, parseCost, parsePass, parseApi, parseFlow, parseManual, checkCode, checkKey, checkEmail, checkRate,
-  settingsRoom, subTips, tipDoneWords, updateOf, updateAuto, checkShortcut, checkQuiet, desktopSay, ZOOMS, DIAG_SAY, DRAFT_SAY } from './solio-rooms.mjs';
+  settingsRoom, subTips, tipDoneWords, updateOf, updateAuto, checkShortcut, checkQuiet, desktopSay, ZOOMS, DIAG_SAY, DRAFT_SAY, careOn, CARE_SAY } from './solio-rooms.mjs';
 import { isUsedUp, num, nameOf } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, josa } from './solio-today.mjs';
 import { profileChange, pendingDeletion } from './account-page.mjs';
@@ -39,7 +39,7 @@ const hasRows = res => !!res && res.ok !== false && Array.isArray(res.rows);
 
 /* account: 내 계정 어댑터 { request(op, params), identity(), security(section), securityOpened(), changed() }. 없으면 내 계정 방을 열지 않는다.
    confirmLeave: 모든 곳에서 로그아웃 전 쓰던 글 확인(런처의 confirmDraftExit). signOut: 이 PC 로그아웃. openOld: 옛 내 계정 화면을 연다(마을 기록 · 내려받기)
-   pc: 설정 방의 어댑터 { desktop{get, update, onChange}, drafts{status, set, onChange}, notices{get, set}, updates{status, check, download, install, confirmInstall, onChange}, environment(), copyDiagnostics() }.
+   pc: 설정 방의 어댑터 { desktop{get, update, onChange}, drafts{status, set, onChange}, notices{get, set}, care{status, configure, onChange}, updates{status, check, download, install, confirmInstall, onChange}, environment(), copyDiagnostics() }.
        없는 칸은 그 줄을 세우지 않는다 */
 export function createOrbRooms({ subs = null, account = null, pc = {}, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout, setTick = globalThis.setInterval, clearTick = globalThis.clearInterval, snapshot = () => null, accept = () => {}, reread = () => {}, copyText = null, changed = () => {}, sentence = s => s, confirmLeave = null, signOut = null, openOld = null, randomId = () => globalThis.crypto?.randomUUID?.() || Date.now().toString(16) + Math.random().toString(16).slice(2) } = {}) {
   const st = { armed: null, grps: new Set(), add: { svc: '' }, relogin: null, kinds: {}, installing: new Set(), busy: null, notes: new Map(), ended: null, roomNote: '', tokRange: 'week', tokAll: false, tipDone: new Map(), restChoice: '' };
@@ -56,7 +56,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
   /* 설정(설계 6.4). 방이 열릴 때 데스크톱 설정 · 쓰던 글 되살리기 · 업데이트 상태를 읽고, 열린 동안 바뀜 알림을 듣고, 닫으면 듣기를 뗀다.
      rev는 업데이트 판이 들어온 차례다. 동작을 보낸 뒤 알림으로 새 판이 먼저 오면 늦게 온 답으로 덮지 않는다(update-view.mjs와 같다).
      member는 방을 그릴 때 받은 「회원으로 보이는가」다. 손님에게 잠긴 칸(쓰던 글 되살리기, 구독 팁)은 동작도 받지 않는다 */
-  const freshSet = () => ({ desktop: null, drafts: null, update: null, rev: 0, unsubs: [], member: false });
+  const freshSet = () => ({ desktop: null, drafts: null, care: null, update: null, rev: 0, unsubs: [], member: false });
   let sets = freshSet();
 
   const note = (key, text) => { if (text) st.notes.set(key, text); else st.notes.delete(key); };
@@ -242,13 +242,14 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     acc = freshAcc();
     deleteRequestId = null;
     // 쓰던 글 되살리기(draft)도 계정마다라 같이 거둔다(검수 B)
-    if (st.busy && (ACCOUNT_ROWS.includes(st.busy.split(':')[0]) || st.busy === 'draft:draft')) st.busy = null;
+    if (st.busy && (ACCOUNT_ROWS.includes(st.busy.split(':')[0]) || st.busy === 'draft:draft' || st.busy === 'notice:care')) st.busy = null;
     if (st.armed && ACCOUNT_ROWS.includes(st.armed.key)) disarm();
     for (const k of ACCOUNT_ROWS) st.notes.delete(k);
     st.notes.delete('draft');
     if (current === 'account') void accLoad();
     // 쓰던 글 되살리기는 계정마다 따로다. 설정 방이 열려 있으면 새 계정의 상태를 다시 읽는다
-    if (current === 'settings') { sets.drafts = null; readDrafts(); }
+    // 플레저 PC 알림도 계정마다다(본체가 계정마다 따로 저장한다)
+    if (current === 'settings') { sets.drafts = null; sets.care = null; readDrafts(); readCare(); }
     changed();
   }
 
@@ -268,10 +269,17 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     const my = gen, a = accGen, s = sets;
     Promise.resolve().then(() => dev.drafts.status()).then(v => { if (my === gen && a === accGen && s === sets) { s.drafts = v && typeof v === 'object' ? v : { ok: false }; changed(); } }, () => { if (my === gen && a === accGen && s === sets) { s.drafts = { ok: false }; changed(); } });
   }
+  /* 플레저 PC 알림(PC 0.5.0 설계 4.5 R7). 본체가 「쓸 수 있음」과 로그인을 함께 알려 줄 때만 알림 줄 안쪽에 켜고 끄기가 선다 */
+  function readCare() {
+    if (typeof dev.care?.status !== 'function') return;
+    const my = gen, a = accGen, s = sets;
+    Promise.resolve().then(() => dev.care.status()).then(v => { if (my === gen && a === accGen && s === sets) { s.care = v && typeof v === 'object' ? v : { ok: false }; changed(); } }, () => { if (my === gen && a === accGen && s === sets) { s.care = { ok: false }; changed(); } });
+  }
   function setStart() {
     const my = gen, s = sets;
     if (typeof dev.desktop?.get === 'function') Promise.resolve().then(() => dev.desktop.get()).then(v => { if (my === gen && s === sets && v?.ok === true) { s.desktop = v; changed(); } }, () => {});
     readDrafts();
+    readCare();
     if (typeof dev.updates?.status === 'function') {
       const start = s.rev;
       Promise.resolve().then(() => dev.updates.status()).then(v => { if (my === gen && s === sets && s.rev === start && !takeUpdate(v, s)) takeUpdate({ ...(s.update || {}), state: 'error', code: 'UPDATE_UNAVAILABLE' }, s); },
@@ -280,6 +288,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     const listen = (on, fn) => { try { const off = on(fn); if (typeof off === 'function') s.unsubs.push(off); } catch { /* 듣지 못하면 열 때 읽은 값으로 둔다 */ } };
     if (typeof dev.desktop?.onChange === 'function') listen(dev.desktop.onChange, v => { if (s === sets && v?.ok === true) { s.desktop = v; changed(); } });
     if (typeof dev.drafts?.onChange === 'function') listen(dev.drafts.onChange, () => { if (s === sets) readDrafts(); });
+    if (typeof dev.care?.onChange === 'function') listen(dev.care.onChange, () => { if (s === sets) readCare(); });
     if (typeof dev.updates?.onChange === 'function') listen(dev.updates.onChange, v => { takeUpdate(v, s); });
   }
   function setStop() { for (const off of sets.unsubs) { try { off(); } catch { /* 무시 */ } } sets = freshSet(); }
@@ -604,6 +613,22 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         if (res?.ok === true) s.drafts = res; else note(key, DRAFT_SAY);
         changed(); return true;
       }
+      case 'care': {
+        const c = sets.care;
+        if (typeof dev.care?.configure !== 'function' || !careOn(c) || !sets.member) return true;
+        if (st.busy) { refuseBusy(key); return true; }
+        const my = gen, a = accGen, s = sets, enabled = c.enabled !== true;
+        st.busy = 'notice:care';
+        changed();
+        let res;
+        try { res = await dev.care.configure({ enabled }); } catch { res = { ok: false }; }
+        if (my !== gen) return true;
+        if (st.busy === 'notice:care' && a === accGen) st.busy = null;
+        if (a !== accGen || s !== sets) { changed(); return true; }
+        if (res?.ok === true) { s.care = res; note(key, res.enabled === true ? '플레저 PC 알림을 켰습니다.' : '플레저 PC 알림을 껐습니다.'); }
+        else { note(key, CARE_SAY[res?.code] || CARE_SAY.no); readCare(); }
+        changed(); return true;
+      }
       // 문제 알리기용 정보: 편의와 같은 셈(safeDiagnostics)으로 버전과 연결 상태만 복사한다. 결과는 맨 아래 작은 줄에 쓴다
       case 'diag-copy': {
         if (st.busy) return true;
@@ -841,7 +866,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         // 구독 팁 켜고 끄기는 회원의 구독 자료가 있을 때만 둔다(저장 자리가 구독 판의 settings.tipsOff다, 설계 검토 D7)
         const snap = snapshot(), tipsOff = member && snap && snap.ok !== false && snap.settings ? snap.settings.tipsOff === true : null;
         sets.member = !!member;
-        return { settings: { ...settingsRoom({ update: sets.update, loading: typeof dev.updates?.status === 'function', desktop: sets.desktop, drafts: sets.drafts, notices: noticesNow(), env: envNow(), member: !!member, tipsOff }, view(), now()), ...req } };
+        return { settings: { ...settingsRoom({ update: sets.update, loading: typeof dev.updates?.status === 'function', desktop: sets.desktop, drafts: sets.drafts, care: sets.care, notices: noticesNow(), env: envNow(), member: !!member, tipsOff }, view(), now()), ...req } };
       }
       return null;
     },

@@ -20,10 +20,9 @@ const credit4=v=>({cover:true,known:true,hCover:false,hPeak:null,weeks:v.map(x=>
 const snap=(rows,accounts={},{settings={},prices=priceBook(),services={},now=NOW}={})=>({ok:true,rows,settings:{usdKrw:1400,...settings},usage:{since:now-40*D,buckets:[],services,accounts},prices});
 const won1000=v=>Math.round(v/1000)*1000;
 
-test('the screen module re-exports every moved calculation as the same function',async()=>{
-  const m=await model,screen=await import('../renderer/subscriptions.mjs');
-  for(const name of ['hasReset','nextReset','isUsedUp','nextBill','balance','isLow','leftPercent','usedShown','limitGauge','gaugeLevel','planName','nameOf','accountState','passesOf','serviceGroups','upcoming','costSummary','freshness'])assert.equal(screen[name],m[name],name);
-  // 한눈에 순서와 짧은 이름은 같은 다섯 서비스다(화면의 AUTO 표도 이 이름을 쓴다).
+test('the model keeps the five services in one order with their short names and the three goals',async()=>{
+  // 옛 구독 판(renderer/subscriptions.mjs)은 PC 0.5.0에서 거뒀다. 셈은 이 모델 하나에 있다
+  const m=await model;
   assert.deepEqual([...m.ORDER].sort(),Object.keys(m.SHORT).sort());
   assert.deepEqual(m.GOAL_KEYS,['save','smooth','unsure']);
 });

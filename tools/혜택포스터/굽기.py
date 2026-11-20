@@ -1,7 +1,7 @@
 # 플랫폼 회원 혜택 포스터 물건을 GPT 이미지 2.5(ChatGPT 구독 · Codex CLI)로 굽는다. 비용 0(구독, 계정 한도는 씀).
 # 사용: python -X utf8 tools/혜택포스터/굽기.py [이름 …] [--again] [--판=2] [--동시=3]
 #   결과: .tmp/혜택포스터/boards/<이름>[-판].png, 기록 log/. 같은 이름이 있으면 굽지 않는다(--again으로 다시).
-#   참고 그림(재질·빛)은 desktop/assets/launcher의 펠트 별·메모를 흰 바탕 JPEG로 바꿔 넣는다(투명 PNG는 참고가 안 먹는다).
+#   참고 그림(재질·빛)은 펠트 별·메모 원본을 흰 바탕 JPEG로 바꿔 넣는다(투명 PNG는 참고가 안 먹는다).
 # 굽기 계정은 tools/codex계정.js가 돌린다 — 한도에 막히면 다음 보조 계정, 본 계정은 맨 마지막 예비.
 import json, os, re, shutil, subprocess, sys, time
 from concurrent.futures import ThreadPoolExecutor
@@ -19,11 +19,11 @@ for d in ('boards', 'log', 'refs'):
     os.makedirs(os.path.join(WORK, d), exist_ok=True)
 
 refs = []
-for name in ('fortune-star.avif', 'care-note.webp'):
+for name, source in (('fortune-star.avif', 'docs/Loom_자산/구움/공방_별똥별.avif'), ('care-note.webp', 'docs/디자인/펠트부품/assets/배경/note-brief.webp')):
     out = os.path.join(WORK, 'refs', os.path.splitext(name)[0] + '.jpg')
     if not os.path.exists(out):
         subprocess.run(['node', '-e', "require(process.argv[1])(process.argv[2]).flatten({background:'#ffffff'}).resize({width:900,height:900,fit:'inside'}).jpeg({quality:90}).toFile(process.argv[3])",
-                        os.path.join(REPO, 'desktop', 'node_modules', 'sharp'), os.path.join(REPO, 'desktop', 'assets', 'launcher', name), out], check=True)
+                        os.path.join(REPO, 'desktop', 'node_modules', 'sharp'), os.path.join(REPO, *source.split('/')), out], check=True)
     refs.append(out)
 
 HEAD = ('Use your built-in image generation tool to create exactly ONE image. Do not run any shell commands and do not '

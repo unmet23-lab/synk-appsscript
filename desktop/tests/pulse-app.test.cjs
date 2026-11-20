@@ -805,10 +805,11 @@ test('the window preload drops a hand-off main ended: a bound document without t
 test('the PC app no longer opens the old customer lounge, which now redirects to the PULSE app',()=>{
   // workspace.synk.im/pulse/ answers 302 → /pulse-app/; the platform's own invite
   // broker and review window were removed with it. Only the customer API stays.
-  const files=['src/main.cjs','src/preload.cjs','src/pulse-app.cjs','renderer/launcher.mjs','renderer/pulse-client.mjs'];
+  // 옛 PULSE 요청 화면(renderer/pulse-client.mjs)은 PC 0.5.0에서 옛 보기와 함께 거뒀다
+  const files=['src/main.cjs','src/preload.cjs','src/pulse-app.cjs','renderer/launcher.mjs'];
   const source=files.map(file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8')).join('\n');
   assert.doesNotMatch(source,/synk:pulse-request|pulseRequest\b|pulse-requests|pulse-workflow/);
   for(const [found] of source.matchAll(/\/pulse\/[^'"`\s)]*/g))assert.match(found,/^\/pulse\/api\//,found);
-  for(const file of ['src/pulse-requests.cjs','renderer/pulse-workflow.mjs','renderer/pulse-workflow.css'])assert.equal(fs.existsSync(path.join(__dirname,'..',file)),false,file);
+  for(const file of ['src/pulse-requests.cjs','renderer/pulse-workflow.mjs','renderer/pulse-workflow.css','renderer/pulse-client.mjs'])assert.equal(fs.existsSync(path.join(__dirname,'..',file)),false,file);
   assert.doesNotMatch(fs.readFileSync(path.join(__dirname,'../renderer/index.html'),'utf8'),/pulse-workflow/);
 });

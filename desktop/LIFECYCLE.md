@@ -105,6 +105,14 @@ Windows x64에서 사용한 창을 트레이로 닫으면 같은 창과 작성 �
 
 평소 쓰는 설치판은 0.4.99에서 0.4.100으로 자동 업데이트됐다. 설치된 파일 75개와 패키지에 든 원천 파일 239개가 공식 빌드와 일치했다. 업데이트 중 전면 창 표본 748개에서 앱이나 설치기가 앞에 나온 경우는 없었다. [공식 릴리스](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.100) · [공식 빌드와 시험](https://github.com/unmet23-lab/synk-policy/actions/runs/44620787892)
 
+### 화면은 검정 구 얼굴 하나 · 0.5.0
+
+0.5.0부터 Platform 창의 화면은 검정 구 얼굴과, 내 계정 방의 마을 기록 · 연습 기록 내려받기가 여는 옛 내 계정 하나다. 옛 런처의 보기 일곱(내 홈, 라이브러리, 솔리오, 회원 혜택, 맞춤 정보, 설치 · 업데이트, 설정)과 그 모듈 · 그림은 거뒀다. 웹 계정 화면이 가져다 쓰는 렌더러 파일은 남는다. 설계는 [PC 0.5.0 설계](../docs/디자인/플랫폼_클라이언트_검정구_20261116/PC0500_설계.md) 4절이다.
+
+- 트레이 메뉴의 「SYNK Workspace」 줄은 본체가 로그인 값, 계정 권한, 설치 확인으로 만든다. 누르면 본체가 Platform 창 없이 Workspace를 띄우고, 띄울 수 없으면 Platform 창을 연다(설계 1절).
+- 쓰던 글을 지키던 편집기가 없어졌으므로 본체는 켤 때마다 `DraftRecovery` 폴더를 지운다.
+- Platform 안에서 Workspace를 설치하거나 업데이트하는 화면은 없다. Workspace는 synk.im에서 받는다.
+
 ### 계정 라이브러리 자동 연결 · 0.4.9
 
 설치형 Platform은 기존 로그인의 검증이 끝나면 계정 라이브러리를 자동으로 시작한다. 앱을 닫고 다시 실행하거나 업데이트 후 재실행해도 같은 흐름을 사용한다. `launcher.setAuth`는 검증된 계정 주인이 있을 때 `mountPlatformLibrary.connect()`를 호출하며, 연결 중·연결 완료 상태의 중복 호출은 기존 연결을 유지한다. 이후 계정 변경·재검증은 이미 연결한 어댑터의 구독이 처리한다.
@@ -138,7 +146,7 @@ Windows x64에서 사용한 창을 트레이로 닫으면 같은 창과 작성 �
 ```powershell
 $releaseWork = '<새 작업 폴더>'
 node desktop/tools/freeze-platform-release.cjs --source=desktop "--out=$releaseWork/frozen" "--definition=$releaseWork/release-definition.json"
-node --test desktop/tests/platform-update.test.cjs desktop/tests/update-view.test.cjs desktop/tests/release-pipeline.test.cjs desktop/tests/assemble-platform-release.test.cjs desktop/tests/platform-publication.test.cjs
+node --test desktop/tests/platform-update.test.cjs desktop/tests/release-pipeline.test.cjs desktop/tests/assemble-platform-release.test.cjs desktop/tests/platform-publication.test.cjs
 ```
 
 2. **세 대상 빌드와 별도 QA.** 하나의 동결 폴더와 그에 맞는 도구·자산을 각 대상 빌드 환경에 바이트 그대로 전달한다. Git을 거치면 동결 `source/**`의 줄바꿈 변환을 막는 `-text` 속성을 둔다. 빌더는 대상과 같은 OS·Node CPU 아키텍처를 요구하고, Electron 44.10.0·electron-builder 26.15.3을 사용한다. 기준 파일과 자식 설치파일의 승인 해시, 전달할 ASAR의 구성·내용·메타데이터를 검증한다. 서명 자격증명을 Preview 빌드에 넣지 않는다.

@@ -1,51 +1,23 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path');
-// The real bridge runs in the hidden, isolated smoke profile without signing in.
-// Account-specific scenarios are in renderer-responsive-smoke with synthetic IPC.
+// 개발 점검 실행(--synk-smoke)에서 진짜 다리로 검정 구 얼굴이 서는지 본다. 로그인하지 않은 숨은 창이다.
+// 옛 런처의 보기와 대화상자는 PC 0.5.0에서 거뒀으므로(PC 0.5.0 설계 4절) 그것들이 없는지도 본다. 화면 흐름은 orb-face-browser-qa.cjs가 본다.
 async function probeNativeUI(contents,artifacts){
-  const original=await contents.executeJavaScript("localStorage.getItem('synk-launcher-view-v1')");
   const checks=await contents.executeJavaScript(`(async()=>{
     const checks=[],q=s=>document.querySelector(s),check=(name,ok)=>checks.push({name,ok:!!ok}),wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-    // 검정 구 얼굴(PC 클라이언트 1단계): 개발 점검 실행에서만 열리는 검사 실행 길로 들어온 뒤의 화면까지 간 다음, 가린 옛 런처를 그대로 점검한다
     for(let i=0;i<240&&q('#portal-entry')?.dataset.portalState!=='auth';i++)await wait(50);
+    check('orb-face-mounted',!!q('#portal-entry [data-portal-stage]'));
     q('#portal-entry')?.dispatchEvent(new CustomEvent('synk:qa-guest-entry'));
     for(let i=0;i<240&&document.documentElement.dataset.orbClient!=='app';i++)await wait(50);
     check('orb-qa-guest-entry',document.documentElement.dataset.orbClient==='app'&&q('#portal-entry')?.dataset.portalState==='entered');
-    const environment=await window.synkDesktop.getEnvironment(),development=environment.mode==='development'&&environment.clientId==='platform'&&environment.nativeShell===true;
-    // Source development exposes the catalogue for review. Teacher shares the
-    // Workspace card; this does not grant product data or an account session.
-    const expectedApps=development?['world','messenger','path','pulse','care','fortune']:['world'];
-    q('[data-filter="all"]').click();q('#search').value='';q('#search').dispatchEvent(new Event('input',{bubbles:true}));
-    const displayed=[...document.querySelectorAll('#app-list [data-app]')].map(row=>row.dataset.app);
-    check('catalogue-matches-current-runtime',displayed.length===expectedApps.length&&expectedApps.every(id=>displayed.includes(id)));
-    check('retired-and-shared-cards-not-duplicated',!q('[data-app="teacher"]')&&!q('[data-app="studio"]')&&!q('[data-app="shift"]')&&!q('[data-app="partners"]'));
-    check('teacher-web-link-hidden',q('#teacher-web-link').hidden);
-    // 3차 A 진열대(11-08): 앱 칸은 글자 타일 대신 회색 선반 위 펠트 물건 그림이다.
-    const marks=[...document.querySelectorAll('#app-list .shelf-item .stage img')];check('library-objects-render',marks.length===expectedApps.length&&marks.every(img=>img.complete&&img.naturalWidth>0&&img.getAttribute('src')));
-    q('[data-view="downloads"]').click();check('installation-manager-matches-runtime-catalogue',!q('#view-downloads').hidden&&q('#view-library').hidden&&document.querySelectorAll('.download-row').length===(development?2:1));
-    q('[data-view="settings"]').click();check('settings-view',!q('#view-settings').hidden&&q('#view-downloads').hidden);
-    q('#density').value='compact';q('#density').dispatchEvent(new Event('change',{bubbles:true}));check('density-persisted',document.documentElement.classList.contains('compact')&&JSON.parse(localStorage.getItem('synk-launcher-view-v1')).density==='compact');q('#density').value='comfortable';q('#density').dispatchEvent(new Event('change',{bubbles:true}));
-    q('#search').value='메신저';q('#search').dispatchEvent(new Event('input',{bubbles:true}));check('search-respects-runtime-catalogue',development?document.querySelectorAll('[data-app]').length===1&&!!q('[data-app="messenger"]'):document.querySelectorAll('[data-app]').length===0);q('#search').value='';q('#search').dispatchEvent(new Event('input',{bubbles:true}));q('[data-app="world"]').click();
-    const before=q('#favorite').getAttribute('aria-pressed');q('#favorite').click();check('public-world-favorite-persisted',q('#favorite').getAttribute('aria-pressed')!==before&&JSON.parse(localStorage.getItem('synk-launcher-view-v1')).favorites.includes('world')===(before!=='true'));q('#favorite').click();
-    q('[data-game="racing"]').click();check('public-content-dialog',q('#content-dialog').open&&q('#content-title').textContent==='한국어 레이싱');q('#content-go-world').click();check('content-dialog-return',!q('#content-dialog').open&&q('#breadcrumb-app').textContent==='SYNK WORLD');
-    q('#account-button').click();check('account-dialog',q('#account-dialog').open&&!!q('#account-state').textContent);q('#account-dialog .dialog-close').click();check('account-dialog-close',!q('#account-dialog').open);
-    // 새 얼굴이 보이는 동안 Ctrl+K 명령 메뉴는 닫힌 길이다(가린 화면을 열지 않는다)
-    document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}));check('command-menu-closed-behind-orb',!q('#command-dialog').open);if(q('#command-dialog').open)q('#command-dialog').close();await document.fonts.ready;check('fonts-loaded',document.fonts.status==='loaded');
+    check('old-launcher-views-gone',['#view-home','#view-library','#view-settings','#view-downloads','#account-dialog','#command-dialog','#content-dialog'].every(s=>!q(s))&&!!q('#view-account')?.hidden);
+    await document.fonts.ready;check('fonts-loaded',document.fonts.status==='loaded');
     const rejected=await window.synkDesktop.windowAction('arbitrary-command');check('window-action-allowlist',rejected.code==='INVALID_WINDOW_ACTION');
     const desktop=await window.synkDesktop.getDesktopPreferences();check('desktop-preferences-ipc-ready',desktop.ok===true&&typeof desktop.preferences.closeToTray==='boolean'&&typeof desktop.preferences.zoomFactor==='number'&&desktop.capabilities.globalShortcut===false);
-    const recovery=await window.synkDesktop.draftRecoveryStatus(null);check('smoke-draft-recovery-disabled',recovery.ok===true&&recovery.enabled===false);
     const diagnostic=await window.synkDesktop.copyPlatformDiagnostics({clients:[]});check('smoke-keeps-user-clipboard-untouched',diagnostic.ok===false&&diagnostic.code==='CLIPBOARD_UNAVAILABLE');return checks;
   })()`);
-  for(const [name,script]of [
-    ['platform-downloads-hidden-preview.png',"document.querySelector('[data-view=downloads]').click()"],
-    ['platform-settings-hidden-preview.png',"document.querySelector('[data-view=settings]').click()"],
-    ['platform-guest-hidden-preview.png',"document.querySelector('[data-app=world]').click()"],
-    ['platform-account-hidden-preview.png',"document.getElementById('account-button').click()"],
-  ]){await contents.executeJavaScript(script);await contents.capturePage(undefined,{stayHidden:true,stayAwake:true});await new Promise(resolve=>setTimeout(resolve,180));fs.writeFileSync(path.join(artifacts,name),(await contents.capturePage(undefined,{stayHidden:true,stayAwake:true})).toPNG());}
-  await contents.executeJavaScript(original===null?"localStorage.removeItem('synk-launcher-view-v1')":"localStorage.setItem('synk-launcher-view-v1',"+JSON.stringify(original)+")");
-  await contents.executeJavaScript("document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());document.querySelector('[data-app=world]').click();document.querySelector('#main').scrollTop=0;");
-  await contents.executeJavaScript("document.fonts.ready.then(()=>Promise.all([...document.images].map(image=>image.decode().catch(()=>{}))))");
-  await contents.executeJavaScript(original===null?"localStorage.removeItem('synk-launcher-view-v1')":"localStorage.setItem('synk-launcher-view-v1',"+JSON.stringify(original)+")");
+  await contents.capturePage(undefined,{stayHidden:true,stayAwake:true});await new Promise(resolve=>setTimeout(resolve,180));
+  fs.writeFileSync(path.join(artifacts,'platform-face-hidden-preview.png'),(await contents.capturePage(undefined,{stayHidden:true,stayAwake:true})).toPNG());
   return {ok:checks.every(c=>c.ok),checks,installerOpened:false,clientLaunched:false,accountLoginStarted:false};
 }
 module.exports={probeNativeUI};

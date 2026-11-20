@@ -201,6 +201,16 @@ if(!process.versions.electron){
           check('9-tray the face sends no tray list (the main process builds the tray menu, PC 0.5.0 design 1)',JSON.stringify(await w.js('window.__orbFixture.tray()'))==='[]',{tray:await w.js('window.__orbFixture.tray()')});
           check('9-toast no signed-in toast over the face',await w.js("document.getElementById('toast').hidden||!document.getElementById('toast').textContent.includes('로그인했어요')"));
           await captureSizes(w,'solio-ready');
+          // 21. 옛 런처의 .rows · .rows .row 규칙을 걷은 뒤에도 얼굴 줄이 같은 값을 받는다(PC 0.5.0 설계 4.5 R3).
+          //     창이 앱 최소 폭보다 좁아지지 않으므로 기대는 실제 CSS 폭(innerWidth)으로 정한다. 901px 위는 칸 틈 24px · 줄 높이 바닥 60px · 줄 묶음 위 테두리 1px이다. 641~900px은 2px 대신 바깥 격자의 틈(normal)을, 640px 아래는 얼굴의 16px을 쓴다
+          const rowStyle=[];
+          for(const [W,Hh] of [[1440,900],[960,680],[873,618],[768,544],[640,453],[390,844]]){
+            w.win.setContentSize(W,Hh);await wait(380);
+            rowStyle.push(await w.js(`(()=>{const rows=document.querySelector('#portal-entry .rows:not([hidden])'),row=rows?.querySelector(':scope > .row');if(!row)return {W:${W},iw:innerWidth,missing:true};const a=getComputedStyle(rows),b=getComputedStyle(row);return {W:${W},iw:innerWidth,top:a.borderTopWidth+' '+a.borderTopStyle,col:b.columnGap,rowGap:b.rowGap,min:b.minHeight};})()`));
+          }
+          w.win.setContentSize(1440,900);await wait(300);
+          const wantRow=W=>W>900?{col:'24px',rowGap:'24px'}:W>640?{col:'normal',rowGap:'2px'}:{col:'16px',rowGap:'10px'};
+          check('21 the face rows keep the old values above 900 px, take the outer grid gap at 641~900 px and their own gap below',rowStyle.every(r=>!r.missing&&r.top==='1px solid'&&r.min==='60px'&&r.col===wantRow(r.iw).col&&r.rowGap===wantRow(r.iw).rowGap),rowStyle);
           // 15. 화면 확대
           for(const z of [1.25,1.5]){w.win.webContents.setZoomFactor(z);await wait(500);await capture(w,'solio-zoom-'+Math.round(z*100));}
           w.win.webContents.setZoomFactor(1);await wait(300);
@@ -1013,7 +1023,7 @@ if(!process.versions.electron){
           const capRow=async(name,key)=>{for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js('window.__sq('+JSON.stringify(key)+').scrollIntoView({block:"start"})');await wait(150);await capture(w,`${name}-${W}`);}w.win.setContentSize(1440,900);await wait(300);};
           const s0=await w.js(`(()=>{const r=document.querySelector('#portal-entry [data-room=settings]');return {shown:!!r&&!r.hidden,mode:document.documentElement.dataset.orbClient,solioHidden:document.querySelector('#portal-entry [data-room=solio]').hidden,say:r.querySelector('[data-aside-text]').textContent,then:r.querySelector('[data-aside-then]').textContent,foot:r.querySelector('[data-aside-foot]').textContent,act:r.querySelector('.read [data-room-act]').textContent,heading:document.querySelector('#portal-entry [data-orb-heading]').textContent,onSay:document.activeElement===r.querySelector('[data-aside-say]'),rows:[...r.querySelectorAll('button.row[data-key]')].map(b=>b.dataset.key)};})()`);
           const c0=await calls(w);
-          check('18-12 「설정」 opens the settings room in the face with the update sentence, how it starts, and the version',s0.shown&&s0.mode==='app'&&s0.solioHidden&&s0.onSay&&s0.heading==='설정'&&s0.say==='이 PC의 SYNK는 최신 판입니다.'&&s0.then==='컴퓨터를 켤 때 함께 켜지 않습니다.'&&s0.foot==='SYNK Platform 0.4.97 · 시험판 · Windows'&&s0.act==='문제 알리기용 정보 복사'&&JSON.stringify(s0.rows)==='["update","start","key","view","notice","draft"]'&&['prefs-get','drafts-status','update-status'].every(c=>c0.includes(c)),s0);
+          check('18-12 「설정」 opens the settings room in the face with the update sentence, how it starts, and the version',s0.shown&&s0.mode==='app'&&s0.solioHidden&&s0.onSay&&s0.heading==='설정'&&s0.say==='이 PC의 SYNK는 최신 판입니다.'&&s0.then==='컴퓨터를 켤 때 함께 켜지 않습니다.'&&s0.foot==='SYNK Platform 0.4.97 · 시험판 · Windows'&&s0.act==='문제 알리기용 정보 복사'&&JSON.stringify(s0.rows)==='["update","start","key","view","notice"]'&&['prefs-get','care-status','update-status'].every(c=>c0.includes(c)),s0);
           await captureSizes(w,'settings-room');
           // 업데이트: 지금 확인 → 확인 중 → 최신. 새 판이 나오면 받기와 받는 몫, 다 받으면 쓰던 글 확인 뒤 설치 파일 열기, 실패 문장
           await sopen('update');await wait(300);await sact('update','update-check');await wait(80);
@@ -1071,8 +1081,8 @@ if(!process.versions.electron){
           await stype('notice','quietStart','23:30');await stype('notice','quietEnd','07:00');
           await w.js("(()=>{const b=[...window.__sin('notice').querySelectorAll('[data-pick][data-f=quietDays] button')].find(x=>x.dataset.pv==='weekdays');b.focus();b.click();return true;})()");await wait(100);
           await sact('notice','quiet-save');await wait(500);
-          const n1=await w.js("(()=>{let saved=null;try{saved=JSON.parse(localStorage.getItem('synk-platform-notifications-v1'));}catch{}return {saved,live:window.__slive('notice'),grpHidden:window.__sin('notice').querySelector('[data-grp=quiet]').hidden,focus:document.activeElement===window.__sact('notice','grp','quiet'),old:{banners:document.getElementById('notification-banners')?.checked,start:document.getElementById('notification-start')?.value,end:document.getElementById('notification-end')?.value,weekdays:document.getElementById('notification-weekdays')?.checked}};})()");
-          check('18-12 the banner switch and the quiet hours are saved where the convenience notices read them, and the old settings shows the same',n1.saved?.banners===false&&n1.saved?.start==='23:30'&&n1.saved?.end==='07:00'&&n1.saved?.weekdays===true&&n1.live==='저장했습니다. 조용한 시간을 켜면 이 시각에 배너를 띄우지 않습니다.'&&n1.grpHidden&&n1.focus&&n1.old.banners===false&&n1.old.start==='23:30'&&n1.old.end==='07:00'&&n1.old.weekdays===true,n1);
+          const n1=await w.js("(()=>{let saved=null;try{saved=JSON.parse(localStorage.getItem('synk-platform-notifications-v1'));}catch{}return {saved,live:window.__slive('notice'),grpHidden:window.__sin('notice').querySelector('[data-grp=quiet]').hidden,focus:document.activeElement===window.__sact('notice','grp','quiet')};})()");
+          check('18-12 the banner switch and the quiet hours are saved where the convenience notices read them',n1.saved?.banners===false&&n1.saved?.start==='23:30'&&n1.saved?.end==='07:00'&&n1.saved?.weekdays===true&&n1.live==='저장했습니다. 조용한 시간을 켜면 이 시각에 배너를 띄우지 않습니다.'&&n1.grpHidden&&n1.focus,n1);
           await sact('notice','grp','quiet');await wait(300);
           await stype('notice','quietStart','23:45');
           await w.js("window.__sin('notice').querySelector('[data-f=quietEnd]').focus()");await key(w,'Return');await wait(500);
@@ -1087,10 +1097,12 @@ if(!process.versions.electron){
           await sact('notice','tips');await wait(600);
           const tg1={checked:await w.js("window.__sact('notice','tips')?.getAttribute('aria-checked')||null"),live:await slive('notice'),saved:(await calls(w)).includes('subs-save:{"settings":{"tipsOff":true}}')};
           check('18-6 「구독 팁」 in the notice line saves settings.tipsOff',tg0==='true'&&tg1.checked==='false'&&tg1.saved&&tg1.live==='구독 팁을 껐습니다. 구독 줄과 요금 줄에 팁을 띄우지 않습니다.',{tg0,...tg1});
-          // 쓰던 글 되살리기(회원): 본체 다리로 켠다
-          await sopen('draft');await wait(300);await sact('draft','draft');await wait(700);
-          const d1={checked:await w.js("window.__sact('draft','draft')?.getAttribute('aria-checked')||null"),val:await sval('draft','val'),drafts:await w.js('window.__orbFixture.drafts()')};
-          check('18-12 a member switches draft recovery on through the bridge',(await calls(w)).includes('drafts-set:true')&&d1.checked==='true'&&d1.val==='켜짐'&&d1.drafts.enabled===true,d1);
+          // 플레저 PC 알림(회원): 알림 줄 안쪽의 켜고 끄기가 본체 다리로 켠다(PC 0.5.0 설계 4.5 R7). 쓰던 글 되살리기 줄은 없다(4.2-4)
+          const noDraft=await w.js("!document.querySelector('#portal-entry [data-room=settings] button.row[data-key=draft]')");
+          const care0=await w.js("window.__sact('notice','care')?.getAttribute('aria-checked')||null");
+          await sact('notice','care');await wait(700);
+          const c1={checked:await w.js("window.__sact('notice','care')?.getAttribute('aria-checked')||null"),live:await slive('notice')};
+          check('18-12 a member switches PLEASURE PC notifications on in the notice line, and there is no draft recovery line',noDraft&&care0==='false'&&(await calls(w)).includes('care-configure:{"enabled":true}')&&c1.checked==='true'&&c1.live==='플레저 PC 알림을 켰습니다.',{noDraft,care0,...c1});
           // 문제 알리기용 정보 복사: 버전과 연결 상태만 넘기고, 맨 아래 줄이 그렇게 말한다
           await w.js("(()=>{const b=document.querySelector('#portal-entry [data-room=settings] .read [data-room-act]');b.focus();b.click();return true;})()");await wait(500);
           const g1={foot:await stext('[data-aside-foot]'),diag:await w.js('window.__orbFixture.diag()')};
@@ -1261,15 +1273,14 @@ if(!process.versions.electron){
           const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});
           check('12 QA guest path reaches Solio with the guest line',r.ok&&(await text(w,'[data-say]'))==='로그인하면 구독별 남은 양이 여기에 보입니다.',{...r.state,say:await text(w,'[data-say]')});await capture(w,'qa-guest');
           await click(w,'.here-orb');await until(w,s=>s.fan);check('12 the guest fan has only 「설정」',JSON.stringify(await w.js("[...document.querySelectorAll('.fan-foot button')].map(b=>b.textContent)"))==='["설정"]');await key(w,'Escape');await until(w,s=>!s.fan);await captureSizes(w,'guest-room');
-          // 손님도 설정 방에 온다. 쓰던 글 되살리기만 잠기고, 구독 팁 켜고 끄기는 없다(2단계 둘째 조각 설계 6절)
+          // 손님도 설정 방에 온다. 회원에게만 있는 칸(구독 팁, 플레저 PC 알림)은 없고, 쓰던 글 되살리기 줄은 누구에게도 없다(PC 0.5.0 설계 4.2-4)
           await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);await w.js("document.querySelector('.fan [data-foot=settings]').focus()");await click(w,'.fan [data-foot="settings"]');await wait(800);
           const gq="(k=>[...document.querySelectorAll('#portal-entry [data-room=settings] button.row[data-key]')].find(b=>b.dataset.key===k))";
-          const gs=await w.js(`(()=>{const r=document.querySelector('#portal-entry [data-room=settings]'),q=${gq};const d=q('draft')?.nextElementSibling?.querySelector('[data-room-act=draft]');return {shown:!!r&&!r.hidden,rows:[...r.querySelectorAll('button.row[data-key]')].map(b=>b.dataset.key),draftLocked:d?.getAttribute('aria-disabled')==='true',tips:!!q('notice')?.nextElementSibling?.querySelector('[data-room-act=tips]')};})()`);
-          check('12 a guest opens the settings room; only draft recovery is locked and there is no tip switch',gs.shown&&JSON.stringify(gs.rows)==='["update","start","key","view","notice","draft"]'&&gs.draftLocked&&!gs.tips,gs);
-          await w.js(`(()=>{const b=${gq}('draft');b.click();return true;})()`);await wait(400);
-          await w.js(`(()=>{const d=${gq}('draft').nextElementSibling.querySelector('[data-room-act=draft]');d.focus();d.click();return true;})()`);await wait(400);
-          check('12 the locked draft switch sends nothing for a guest',!(await calls(w)).some(c=>c.startsWith('drafts-set')));
-          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js(`${gq}('draft').scrollIntoView({block:'start'})`);await wait(150);await capture(w,`guest-settings-${W}`);}
+          const gs=await w.js(`(()=>{const r=document.querySelector('#portal-entry [data-room=settings]'),q=${gq};const more=q('notice')?.nextElementSibling;return {shown:!!r&&!r.hidden,rows:[...r.querySelectorAll('button.row[data-key]')].map(b=>b.dataset.key),tips:!!more?.querySelector('[data-room-act=tips]'),care:!!more?.querySelector('[data-room-act=care]')};})()`);
+          check('12 a guest opens the settings room without the tip and PLEASURE switches, and with no draft line',gs.shown&&JSON.stringify(gs.rows)==='["update","start","key","view","notice"]'&&!gs.tips&&!gs.care,gs);
+          await w.js(`(()=>{const b=${gq}('notice');b.click();return true;})()`);await wait(400);
+          check('12 a guest sends no PLEASURE notification change',!(await calls(w)).some(c=>c.startsWith('care-configure')));
+          for(const [W,Hh] of sizes){w.win.setContentSize(W,Hh);await wait(380);await w.js(`${gq}('notice').scrollIntoView({block:'start'})`);await wait(150);await capture(w,`guest-settings-${W}`);}
           w.win.setContentSize(1440,900);await wait(300);
           w.win.destroy();
         }

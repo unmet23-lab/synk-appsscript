@@ -207,7 +207,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
      stale은 입력 중이거나 누르는 중이라 다시 짓기를 미룬 안쪽이다. 손을 떼거나 초점이 그 안쪽을 떠나면 마저 짓는다 */
   let lastAside = null, asideReturn = null, pressing = false, liveSeq = 0, fldSeq = 0;
   // 칸에서 Enter로 누른 단추. 일이 끝났는데 칸이 남아 있으면(실패나 칸이 남는 저장) 초점을 그 칸으로 돌린다(PC 0.5.0 설계 2절)
-  let enterBack = null;
+  // 끝났는지는 그 일이 그린 마지막 판을 보고 정한다. 한 번에 끝나는 저장도 중간에 한 번 그리므로, 판단은 그리기 묶음이 지나간 뒤로 미룬다
+  let enterBack = null, enterTimer = 0;
   /* 방 안에서 옛 화면(마을 기록)을 열 때 누른 단추. 옛 화면을 닫으면 그리로 초점을 돌린다 */
   let legacyReturn = null, lastModeSeen = null;
   const applied = { open: {}, close: {}, focus: {} };
@@ -219,7 +220,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   let keyboardModality = false;
   const focusVisible = el => { if (keyboardModality) return true; try { return el.matches(':focus-visible'); } catch { return false; } };
   const onAnyKey = event => { if (event.key === 'Tab' || event.key?.startsWith?.('Arrow')) keyboardModality = true; };
-  const onAnyPointer = () => { keyboardModality = false; };
+  // 포인터를 누르면 Enter로 누른 단추의 되돌림 약속도 버린다(PC 0.5.0 설계 2.2, 검토 D10)
+  const onAnyPointer = () => { keyboardModality = false; enterBack = null; };
+  // 그 단추에서 초점이 떠나면(되돌리는 중이 아닐 때) 약속을 버린다. 그리기 없이 끝난 일 뒤에 1분 장면이 초점을 끌어오지 않는다
+  const onEnterLeave = event => { if (enterBack && !restoringVis && event.target?.dataset?.roomAct === enterBack.act && (event.target.dataset.roomArg ?? '') === enterBack.arg) enterBack = null; };
 
   const reduced = () => {
     try { if (getReducedMotion() === true) return true; } catch { /* 무시 */ }
@@ -1181,7 +1185,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (!inner) return;
     const items = Array.isArray(r.more) ? r.more : [];
     // 같은 글로 실패해 안쪽이 그대로여도 Enter로 누른 일의 끝을 본다
-    if (moreKeys.get(inner) === JSON.stringify(items)) { stale.delete(inner); settleEnter(b, inner); return; }
+    if (moreKeys.get(inner) === JSON.stringify(items)) { stale.delete(inner); queueSettle(b, inner); return; }
     // 쓰던 칸에 초점이 있거나 그 안쪽을 누르는 중이면 지금은 다시 짓지 않는다. 1분 장면이 쓰던 글과 누르던 단추를 지우지 않게 한다(설계 1.3절).
     // 다만 칸의 글이 방금 저장되어 새 처음 값으로 돌아왔으면 쓰던 중이 아니다. 바로 다시 지어 저장 뒤의 문장을 보인다(초점은 같은 칸으로 돌아간다)
     const a = doc.activeElement;
@@ -1213,6 +1217,13 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   }
   /* Enter로 누른 단추의 일이 끝났는지 다시 지은 뒤에 본다. 초점이 아직 그 단추에 있고 단추가 바쁘지 않으면 끝난 것이다.
    * 같은 이름의 칸이 보이면 그 칸의 글 끝으로 돌아간다. 묶음이 접혀 칸이 없거나 초점이 다른 곳으로 갔으면 그대로 둔다 */
+  /* 저장 도중의 그리기(바쁨 표시 전, 값만 바뀐 판)에서 끝났다고 보고 칸으로 초점을 옮기면, 바로 뒤 묶음을 닫는 그리기가 「쓰는 중」으로 미뤄져
+   * 묶음이 열린 채 남았다(흐름 시험 18-12 「Enter from the unchanged end time」). 그래서 마지막 그리기 뒤 한 번만 본다 */
+  function queueSettle(b, inner) {
+    if (!enterBack || b.dataset.key !== enterBack.key) return;
+    clearTimeout(enterTimer);
+    enterTimer = setTimeout(() => { enterTimer = 0; if (!disposed) settleEnter(b, inner); }, 0);
+  }
   function settleEnter(b, inner) {
     const e = enterBack;
     if (!e || b.dataset.key !== e.key) return;
@@ -1242,7 +1253,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     stale.delete(inner);
     const box = b.parentElement;
     if (had && box) restoreFocus(box, had);
-    settleEnter(b, inner);
+    queueSettle(b, inner);
     // 방금 안쪽을 누른 줄이 길어졌으면 지금 할 차례가 보이게 올린다. 그 줄이 화면에 걸쳐 있을 때만 한다(시안 putRows의 끝)
     const room = b.closest('.room');
     // 걸쳐 있는지는 줄 머리와 그 아래 열린 안쪽(형제 칸)을 합쳐 본다. 긴 줄을 내려 머리가 위로 지나가도 안쪽을 누른 것은 따라간다(검수 A)
@@ -1769,6 +1780,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     else if (!on && (!name || !name.contains(event.relatedTarget))) { stage.setHot(null); stage.setFace(null); for (const b of sw.names.children) b.classList.remove('hot'); }
   };
   const onKeyDown = event => {
+    // 다음 키 누름은 앞 Enter의 되돌림 약속을 버린다. 이번 키가 Enter 저장이면 아래에서 다시 적는다(검토 D10)
+    enterBack = null;
     if (disposed || event.defaultPrevented || event.isComposing) return;
     const mode = getMode();
     if (mode === 'off') return;
@@ -1938,6 +1951,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   doc.addEventListener('pointerup', onPressEnd, true);
   doc.addEventListener('pointercancel', onPressEnd, true);
   doc.addEventListener('keydown', onKeyDown);
+  doc.addEventListener('focusout', onEnterLeave, true);
   doc.addEventListener('paste', onPaste);
   doc.addEventListener('focusin', onFocusIn);
   doc.addEventListener('visibilitychange', onVisibility);
@@ -1973,6 +1987,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (disposed) return;
       disposed = true;
       clearTimeout(settleTimer);
+      clearTimeout(enterTimer);
       clearTimeout(progTimer);
       clearTimeout(visTimer);
       clearTimeout(visLeave);
@@ -1997,6 +2012,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       doc.removeEventListener('pointerup', onPressEnd, true);
       doc.removeEventListener('pointercancel', onPressEnd, true);
       doc.removeEventListener('keydown', onKeyDown);
+      doc.removeEventListener('focusout', onEnterLeave, true);
       doc.removeEventListener('paste', onPaste);
       doc.removeEventListener('focusin', onFocusIn);
       doc.removeEventListener('visibilitychange', onVisibility);

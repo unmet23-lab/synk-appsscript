@@ -2,7 +2,6 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const libraryModule=import('../renderer/library.mjs');
 const stateModule=import('../renderer/state.mjs');
-const homeModule=import('../renderer/member-home.mjs');
 const preview={clientId:'platform',mode:'development',nativeShell:true};
 const signed=id=>({status:'signed-in',signedIn:true,account:{synk_user_id:id},library:{status:'ready',appIds:[]}});
 
@@ -18,16 +17,12 @@ test('a signed-in account with no menu grants sees all development apps without 
 });
 
 test('development discovery survives logout and pending auth without manufacturing a member identity',async()=>{
-  const {resolveLibrary}=await libraryModule,{APP_IDS}=await stateModule,{createHomeStore}=await homeModule;
-  const data=new Map(),store=createHomeStore({getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)});
+  const {resolveLibrary}=await libraryModule,{APP_IDS}=await stateModule;
   for(const status of ['signed-out','unconfigured','restoring','signing-in','signing-out','error']){
     const library=resolveLibrary({status,signedIn:false},preview);
     assert.deepEqual(library.appIds,APP_IDS);
     assert.ok(library.owner===null||library.owner==='anonymous-local');assert.notEqual(library.status,'ready');
-    assert.deepEqual(store.list(library),[]);
-    assert.throws(()=>store.add(library,{appId:'messenger',kind:'note',title:'must not save',consent:true}),/로그인/);
   }
-  assert.equal(data.size,0);
 });
 
 test('release, browser, other clients and malformed development flags retain account-filtered visibility',async()=>{
@@ -38,32 +33,20 @@ test('release, browser, other clients and malformed development flags retain acc
   }
 });
 
-test('full development discovery keeps local member records private across accounts and logout',async()=>{
-  const {resolveLibrary}=await libraryModule,{createHomeStore}=await homeModule;
-  const data=new Map(),store=createHomeStore({getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)},{clock:()=>1791475200000});
-  const a=resolveLibrary(signed('member-a'),preview),b=resolveLibrary(signed('member-b'),preview);
-  store.add(a,{kind:'note',appId:'messenger',title:'private A note',consent:true});
-  assert.equal(store.list(a).length,1);assert.deepEqual(store.list(b),[]);
-  assert.deepEqual(store.list(resolveLibrary({status:'signed-out',signedIn:false},preview)),[]);
-  assert.equal(store.list(a)[0].title,'private A note');
-});
-
 test('public apps offer a usable browser action while packaged and unsupported apps keep honest availability',async()=>{
-  const {primaryAction,statusLabel}=await stateModule,{canOpenFromHome}=await homeModule;
+  const {primaryAction,statusLabel}=await stateModule;
   const publicAppsAvailable=['care','fortune'];
   // 무료 운세는 다시 만드는 동안 앱 칸이 없어, 본체가 공개 웹 목록에 남아 있어도 열기를 내지 않는다(10-30).
   assert.deepEqual(primaryAction({id:'fortune'},{native:true,publicAppsAvailable}),{label:'이용할 수 없음',action:'none',disabled:true});
   for(const id of ['care']){
     const action=primaryAction({id},{native:true,publicAppsAvailable});
     assert.deepEqual(action,{label:'웹에서 열기',action:'public-web',disabled:false});
-    assert.equal(canOpenFromHome(action),true);
     assert.equal(statusLabel({id,publicWebAvailable:true}),'웹에서 열림');
     assert.equal(primaryAction({id},{native:false,publicAppsAvailable}).disabled,true);
     assert.equal(primaryAction({id},{busy:true,publicAppsAvailable}).disabled,true);
     assert.equal(primaryAction({id},{publicAppsAvailable,productPreviewsAvailable:[id]}).action,'product-preview');
   }
   const pathAction=primaryAction({id:'path'},{native:true,publicAppsAvailable:['path'],productPreviewsAvailable:['path']});
-  assert.deepEqual(pathAction,{label:'면접 연습 열기',action:'public-web',disabled:false});assert.equal(canOpenFromHome(pathAction),true);
   for(const id of ['teacher','family-album','partners','unknown']){
     assert.equal(primaryAction({id},{publicAppsAvailable:[...publicAppsAvailable,id]}).disabled,true);
   }

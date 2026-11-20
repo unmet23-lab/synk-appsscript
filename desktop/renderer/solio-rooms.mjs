@@ -1034,8 +1034,11 @@ const pctOf = z => Math.round(z * 100) + '%';
 const OS_NAME = Object.freeze({ win32: 'Windows', darwin: 'macOS', linux: 'Linux' });
 export const DIAG_SAY = Object.freeze({ ok: '버전과 연결 상태만 복사했습니다. 이름, 글, 파일 경로는 넣지 않았습니다.', no: '복사하지 못했습니다. 앱 창을 한 번 누른 뒤 다시 해 주세요.' });
 export const DRAFT_SAY = '쓰던 글 되살리기를 바꾸지 못했습니다. 로그인 상태와 PC 저장 공간을 봐 주세요.';
+/* 플레저 PC 알림(PC 0.5.0 설계 4.5 R7). 본체가 쓸 수 있고 로그인했다고 알려 줄 때만 켜고 끄기를 세운다 */
+export const careOn = c => c?.ok === true && c.available === true && c.signedIn === true;
+export const CARE_SAY = Object.freeze({ CARE_DATA_REQUIRED: '플레저에 저장한 일정이 아직 없어 켜지 못했습니다. synk.im/care에서 로그인하고 일정을 저장한 뒤 다시 켜 주세요.', AUTH_CHANGED: '그사이 계정이 바뀌어 바꾸지 않았습니다. 다시 눌러 주세요.', no: '플레저 PC 알림을 바꾸지 못했습니다. 로그인 상태와 인터넷 연결을 보고 다시 해 주세요.' });
 
-/* s: { update(본체 판, 없으면 받을 수 없음), desktop(데스크톱 설정 판), drafts(쓰던 글 되살리기 상태), notices(알림 설정), env(판 정보), member(회원으로 보이는가), tipsOff(구독 팁을 껐는가, 구독 자료가 없으면 null) }
+/* s: { update(본체 판, 없으면 받을 수 없음), desktop(데스크톱 설정 판), drafts(쓰던 글 되살리기 상태), care(플레저 PC 알림 상태), notices(알림 설정), env(판 정보), member(회원으로 보이는가), tipsOff(구독 팁을 껐는가, 구독 자료가 없으면 null) }
    st: 방 상태(busy · notes · grps · roomNote · restChoice). 바꿀 수 없는 칸은 줄에서 뺀다(편의 79행과 같다) */
 export function settingsRoom(s = {}, st = {}, now = Date.now()) {
   const env = s.env || {}, u = updateOf(s.update) || { state: 'disabled' };
@@ -1111,10 +1114,17 @@ function noticeRow(s, st, now) {
     ], !open],
     ['pick', '잠시 쉬기', [['30분', '30'], ['1시간', '60'], ['쉬지 않음', '0']], resting ? st.restChoice || '' : '0', '', 'rest'],
   ];
+  const care = careOn(s.care) && s.member === true ? s.care : null;
+  if (care) {
+    const at = String(care.hour ?? 9).padStart(2, '0') + ':' + String(care.minute ?? 0).padStart(2, '0'), cap = s.desktop?.capabilities || {};
+    const desc = care.enabled === true ? '매일 ' + at + '(한국 시간)에 플레저에 저장한 일정과 챙길 일을 PC 알림으로 알려 드립니다. PC를 끄거나 SYNK를 완전히 종료한 동안에는 받을 수 없습니다'
+      : '매일 ' + at + '(한국 시간)에 플레저에 저장한 일정과 챙길 일을 알려 드립니다. 켜면 창을 닫아도 트레이에 남' + (cap.launchAtLogin ? '고, 컴퓨터를 켤 때 창 없이 함께 켜집니다' : '습니다');
+    more.push(['tog', '플레저 PC 알림', desc, care.enabled === true, 'care', st.busy === 'notice:care' ? 'off' : '']);
+  }
   if (s.tipsOff === true || s.tipsOff === false) more.push(['tog', '구독 팁', '구독 줄과 요금 줄 안쪽에 아끼는 법과 막히지 않는 법을 한 줄씩 알려 드립니다', s.tipsOff === false, 'tips', st.busy === 'notice:tips' ? 'off' : '']);
   more.push(['live', st.notes?.get?.('notice') || '']);
   const mid = resting ? hm(n.mutedUntil) + '까지 배너를 띄우지 않습니다'
-    : [n.banners ? '배너 켜짐' : '배너 꺼짐', n.schedule ? '조용한 시간 ' + (n.start === n.end ? '하루 종일' : n.start + '~' + n.end) : '', s.tipsOff === true ? '구독 팁 꺼짐' : ''].filter(Boolean).join(' · ');
+    : [n.banners ? '배너 켜짐' : '배너 꺼짐', n.schedule ? '조용한 시간 ' + (n.start === n.end ? '하루 종일' : n.start + '~' + n.end) : '', care?.enabled === true ? '플레저 PC 알림 켜짐' : '', s.tipsOff === true ? '구독 팁 꺼짐' : ''].filter(Boolean).join(' · ');
   return { key: 'notice', nm: '알림', mid, val: '', when: '', label: rowLabel(['알림', mid]), more };
 }
 /* 쓰던 글 되살리기. 로그인하지 않았거나 이 PC의 암호화 저장을 쓸 수 없으면 켜는 칸을 누를 수 없다(손님 포함) */

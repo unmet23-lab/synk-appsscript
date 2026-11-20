@@ -533,8 +533,6 @@ html[data-orb-client="legacy"] #portal-entry .here{top:6px}
 html[data-orb-client="legacy"] #portal-entry .legacy-back{display:inline-block}
 html[data-orb-client="legacy"] #portal-entry .rail{display:none}
 html[data-orb-client="legacy"] #portal-entry .room{display:none}
-/* 임시 옛 화면에서 로그인 전 SYNK ID 줄(「로그인하지 않음 · 로그인」)은 숨긴다. 들어온 회원이 토큰 갱신 중이어도 그 줄이 뜨고, 새 얼굴이 계정 연결을 맡는다(0.4.95 원천 후보 검수 F2) */
-html[data-orb-client="legacy"] .setting-row:has(#settings-login[data-signed-in="false"]){display:none}
 html[data-orb-client="legacy"] #portal-entry .orb-stage[data-ui="app"] [data-layer="app"] .rise{transition-delay:0s}
 /* 옛 메뉴로 라이브러리나 플레저에 가지 못하게 옛 제목 줄과 아래 상태 줄을 숨긴다 */
 html[data-orb-client="legacy"] .launcher{padding-top:56px}
@@ -568,3 +566,23 @@ html[data-orb-client] #leave-dialog p{color:rgba(243,241,236,.72)}
 html[data-orb-client] #leave-dialog::backdrop{background:rgba(0,0,0,.72)}
 html[data-orb-client] #leave-dialog .solid-button{background:#F3F1EC;color:#000;border-color:#F3F1EC}
 html[data-orb-client] #leave-dialog .ghost-button{background:none;color:#F3F1EC;border:1px solid rgba(243,241,236,.42)}
+
+/* ── 옛 런처 규칙에서 옮긴 값(PC 0.5.0 설계 4.5 R3) ──
+   launcher.css의 .rows · .rows .row가 얼굴 줄에 주던 값이다. 옛 규칙과 같은 낮은 우선순위(:where)로 두어 얼굴의 다른 규칙이 그대로 이긴다.
+   901px 위의 칸 틈 24px, 줄 높이 바닥 60px, 줄 묶음 위 테두리는 그대로 둔다. 641~900px의 칸 틈 2px(트랙 ①)만 바깥 격자의 틈으로 바꾼다 */
+:where(#portal-entry) .rows{border-top:1px solid var(--ink)}
+:where(#portal-entry) .rows .row{gap:24px;min-height:60px}
+@media (max-width:900px){:where(#portal-entry) .rows .row{column-gap:normal;row-gap:2px}}
+/* 창이 다른 창 뒤로 가면 움직임을 멈춘다(convenience.mjs가 data-background를 세운다) */
+:root[data-background=true] *,:root[data-background=true] *::before,:root[data-background=true] *::after{animation-play-state:paused!important}
+/* 얼굴을 붙이지 못했을 때: 창 단추와 한 줄 안내(launcher.mjs showHostFallback, 설계 검토 R9) */
+.host-fallback{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:#000;color:#F3F1EC;font:400 15px/1.6 var(--sans)}
+.host-fallback .portal-window-bar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;height:40px;-webkit-app-region:drag;app-region:drag}
+.host-fallback .portal-window-drag{flex:1;height:100%}
+.host-fallback .portal-window-actions{display:flex;height:100%}
+.host-fallback .portal-window-actions button{display:grid;place-items:center;width:46px;height:100%;color:#F3F1EC;-webkit-app-region:no-drag;app-region:no-drag}
+.host-fallback .portal-window-actions button:hover{background:rgba(243,241,236,.12)}
+.host-fallback .portal-window-actions .window-close:hover{background:#C42B1C}
+.host-fallback .i{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6}
+.host-fallback [data-maximized=true] .when-normal,.host-fallback [data-maximized=false] .when-maximized{display:none}
+.host-fallback p{margin:0;padding:0 24px;text-align:center}

@@ -3,7 +3,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {SOLIO,SOLIO_SECTIONS,SOLIO_BACKUP,SOLIO_SUBSCRIPTIONS,SOLIO_SEARCH,solioSection,solioMigrateRoute,solioSearch} from '../renderer/solio.mjs';
 import {MEMBER_BENEFITS,MEMBER_INSIGHT,memberBenefit} from '../renderer/benefits.mjs';
-import {buildHomeModel,HOME_PINNED_ONLY} from '../renderer/member-home.mjs';
 import {normalizeRoute} from '../renderer/convenience-state.mjs';
 import {renderAccountPage} from '../renderer/account-page.mjs';
 
@@ -54,18 +53,6 @@ test('search finds the new places by their old names too',()=>{
   assert.ok(ids('회원 혜택').includes('care'));assert.deepEqual(ids('   '),[]);
   assert.equal(SOLIO_SEARCH.find(item=>item.id==='insight').where,'내 계정 · 맞춤 정보');
   assert.equal(SOLIO_SEARCH.find(item=>item.id==='solio-subscriptions').hash,'#solio/subscriptions');
-});
-
-test('home candidates: PLEASURE stands on home only when pinned, used, holding an open task or chosen for this window',()=>{
-  assert.deepEqual(HOME_PINNED_ONLY,['care']);
-  const library={owner:'a',status:'ready',appIds:['messenger','care']};
-  const quiet=buildHomeModel({library,prefs:{}});assert.deepEqual(quiet.homeOrder,['messenger']);assert.equal(quiet.first,'messenger');assert.ok(quiet.order.includes('care'),'the memo and grant order still know care');
-  assert.ok(buildHomeModel({library,prefs:{favorites:['care']}}).homeOrder.includes('care'),'pinned');
-  assert.ok(buildHomeModel({library,prefs:{lastLaunch:{care:200}}}).homeOrder.includes('care'),'recently opened');
-  assert.ok(buildHomeModel({library,prefs:{},records:[{kind:'task',appId:'care',done:false}]}).homeOrder.includes('care'),'open task');
-  assert.ok(!buildHomeModel({library,prefs:{},records:[{kind:'task',appId:'care',done:true}]}).homeOrder.includes('care'),'a finished task does not');
-  assert.ok(buildHomeModel({library,personal:{sessionOnly:true,selected:'care'},prefs:{}}).homeOrder.includes('care'),'chosen for this window');
-  const onlyCare=buildHomeModel({library:{owner:'b',status:'ready',appIds:['care']},prefs:{}});assert.deepEqual(onlyCare.homeOrder,[]);assert.equal(onlyCare.first,null);
 });
 
 test('the account page shows 맞춤 정보 with 내 성향 right after the profile and before sign-in',()=>{

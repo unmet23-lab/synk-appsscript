@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {resolveLibrary,visibleSelection,displayLibraryAppIds,visibleLibraryAppIds,moveLibraryFavorite,projectLibraryPreferences,accountStorageKey} from '../renderer/library.mjs';
 import {APP_IDS,APPS,parsePreferences} from '../renderer/state.mjs';
-import {createHomeStore,HOME_KEY,buildHomeModel} from '../renderer/member-home.mjs';
 import {trayShortcuts,normalizeRoute} from '../renderer/convenience-state.mjs';
 import {previewPurpose} from '../renderer/personalization.mjs';
 import {emptyPlatformLibrary,updatePlatformLibrary,projectPlatformLibrary} from '../../experiences/synk-account/src/platform-library-data.mjs';
@@ -36,30 +35,6 @@ test('saved PATH favorites and recents do not become shortcuts or restored route
 test('career and student recommendations exclude PATH while existing note contents remain visible',()=>{
   const library=resolveLibrary(signed(),preview),state={order:[...APP_IDS],values:{}};
   for(const purpose of ['career','student']){const projection=previewPurpose(state,purpose,displayLibraryAppIds(library));assert.ok(!['path','world'].includes(projection.selected));assert.ok(!projection.order.includes('path'));}
-  const note={id:'path-note',kind:'note',appId:'path',title:'Read existing note',body:'existing body',createdAt:1793174400000};
-  const model=buildHomeModel({library,personal:state,prefs:{},records:[note]});assert.deepEqual(model.notes,[note]);assert.ok(!model.order.includes('path'));assert.notEqual(model.first,'path');
-  const task={...note,kind:'task',done:false};const pending=buildHomeModel({library,personal:state,prefs:{},records:[task]});assert.deepEqual(pending.tasks,[task]);assert.notEqual(pending.first,'path');
-});
-
-test('existing PATH notes remain readable and survive another app record addition and edit',()=>{
-  const data=new Map(),storage={getItem:key=>data.get(key),setItem:(key,value)=>data.set(key,value)},owner='synthetic-owner',key=accountStorageKey(HOME_KEY,owner),at=1793174400000;
-  const saved={id:'saved-path-note',kind:'note',appId:'path',title:'Preserved interview note',body:'synthetic private data',done:false,createdAt:at};
-  data.set(key,JSON.stringify({version:1,owner,records:[saved]}));const original=data.get(key),library=resolveLibrary(signed(owner),preview),store=createHomeStore(storage,{clock:()=>at+1});
-  assert.deepEqual(store.list(library),[saved]);assert.equal(data.get(key),original);
-  const row=store.add(library,{kind:'task',appId:'world',title:'World task',body:'',consent:true});store.change(library,row.id,'toggle');
-  assert.deepEqual(JSON.parse(data.get(key)).records.find(row=>row.id===saved.id),saved);assert.equal(store.list(library).length,2);
-});
-
-test('a stored note for the paused free fortune stays hidden and kept while other notes can be added, toggled and removed',()=>{
-  const data=new Map(),storage={getItem:key=>data.get(key),setItem:(key,value)=>data.set(key,value)},owner='synthetic-owner',key=accountStorageKey(HOME_KEY,owner),at=1793174400000;
-  const saved={id:'saved-fortune-note',kind:'note',appId:'fortune',title:'Paused fortune note',body:'synthetic private data',done:false,createdAt:at};
-  data.set(key,JSON.stringify({version:1,owner,records:[saved]}));const library=resolveLibrary(signed(owner,['world','care','fortune']),preview),store=createHomeStore(storage,{clock:()=>at+1});
-  assert.equal(APP_IDS.includes('fortune'),false);assert.equal(library.appIds.includes('fortune'),false);
-  assert.deepEqual(store.list(library),[]);assert.deepEqual(store.storageStatus(library),{ok:true});
-  assert.throws(()=>store.add(library,{kind:'task',appId:'fortune',title:'New fortune task',body:'',consent:true}),/연결할 앱/);
-  const row=store.add(library,{kind:'task',appId:'world',title:'World task',body:'',consent:true});store.change(library,row.id,'toggle');
-  assert.deepEqual(JSON.parse(data.get(key)).records.find(item=>item.id===saved.id),saved);assert.deepEqual(store.list(library).map(item=>item.id),[row.id]);
-  store.change(library,row.id,'remove');assert.deepEqual(JSON.parse(data.get(key)).records,[saved]);
 });
 
 test('reordering visible local favorites preserves hidden IDs and their slots',()=>{

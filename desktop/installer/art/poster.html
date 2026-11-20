@@ -30,7 +30,7 @@
 </div>
 <script>
   const product=new URLSearchParams(location.search).get('product');
-  const felt={world:'../../assets/launcher/world-book.avif',messenger:'../../assets/launcher/laptop.webp'}[product];
+  const felt={world:'./world-book.avif',messenger:'./laptop.webp'}[product];
   if(felt){document.getElementById('poster').classList.add(product);document.querySelector('.felt').src=felt;}
 </script>
 </html>

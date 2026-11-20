@@ -36,7 +36,10 @@ const accountOps={
 // 실제로 자동 시작을 등록하거나, 단축키를 잡거나, 새 판을 받거나, 설치 파일을 열지 않는다. 시험이 __orbFixture.setUpdate로 업데이트 판을 바꿔 알린다
 let prefs={closeToTray:true,launchAtLogin:false,startHidden:false,globalShortcut:'',zoomFactor:1},drafts={enabled:false},diag=null;
 let update={ok:true,state:'current',currentVersion:'0.4.97',latestVersion:null,progress:0,code:null,automatic:false};
-const prefListeners=new Set(),draftListeners=new Set(),updateListeners=new Set();
+const prefListeners=new Set(),draftListeners=new Set(),updateListeners=new Set(),careListeners=new Set();
+// 플레저 PC 알림(PC 0.5.0 설계 4.5 R7): 본체(care-notifications.cjs view)의 답 모양만 흉내 낸다. 로그인한 회원만 켤 수 있다
+let care={enabled:false,hour:9,minute:0};
+const careStatus=()=>({ok:true,available:true,signedIn:auth.signedIn===true,enabled:auth.signedIn===true&&care.enabled,hour:care.hour,minute:care.minute,timeZone:'Asia/Seoul'});
 const tell=(set,value)=>{for(const fn of set){try{fn(value);}catch{}}};
 const prefSnap=()=>({ok:true,preferences:{...prefs},capabilities:{launchAtLogin:true,globalShortcut:true,tray:true,encryptedDrafts:true}});
 // 본체처럼 다른 앱이 잡은 단축키는 거절한다. 시험에서는 Ctrl+Alt+K를 그런 단축키로 친다
@@ -86,6 +89,12 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   downloadUpdate:async()=>{calls.push('update-download');return setUpdate({state:'downloading',progress:35});},
   installUpdate:async()=>{calls.push('update-install');return setUpdate({state:'opening'});},
   onUpdateChanged:fn=>{updateListeners.add(fn);return ()=>updateListeners.delete(fn);},
+  careNotifications:Object.freeze({
+    status:async()=>{calls.push('care-status');return careStatus();},
+    configure:async patch=>{calls.push('care-configure:'+JSON.stringify(patch));if(auth.signedIn!==true)return {ok:false,available:true,code:'AUTH_REQUIRED'};care={...care,...patch};const value=careStatus();setTimeout(()=>tell(careListeners,value),0);return value;},
+    test:async()=>({ok:false,code:'TEST_RATE_LIMITED'}),
+    onChanged:fn=>{careListeners.add(fn);return ()=>careListeners.delete(fn);},
+  }),
   copyPlatformDiagnostics:async summary=>{calls.push('diag-copy');diag=summary;return {ok:true};},
   // 트레이 목록은 본체가 짓는다(PC 0.5.0 설계 1절). 화면이 부르면 흐름 시험 9번이 잡도록 남긴 덫이다
   setTrayShortcuts:async items=>{tray=items;return {ok:true};},

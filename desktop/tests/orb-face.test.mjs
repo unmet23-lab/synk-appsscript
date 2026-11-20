@@ -1654,8 +1654,9 @@ test('「설정」 opens the settings room and never the old screen, 「계정�
   const launcher = fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8');
   assert.doesNotMatch(launcher, /data-subs="manage"|orbManageTimer/, 'the old 25-try click loop is gone');
   assert.doesNotMatch(launcher, /kind==='subscriptions'|kind==='settings'/);
-  assert.match(launcher, /function openOrbLegacy\(kind\)\{if\(kind==='account'\)\{showView\('account'\);return;\}\}/, 'the village record still uses the old account screen, and nothing else does');
-  assert.match(launcher, /if\(portalHost\?\.clientMode\?\.\(\)==='legacy'&&next!=='account'\)return;/, 'the old account screen cannot lead to the old settings or Solio views');
+  assert.match(launcher, /function openOrbLegacy\(kind\)\{if\(kind==='account'\)showView\('account'\);\}/, 'the village record still uses the old account screen, and nothing else does');
+  // PC 0.5.0: 옛 보기는 내 계정 하나만 남았다. 다른 이름은 내 계정을 닫을 뿐이다(PC 0.5.0 설계 4.2-2)
+  assert.match(launcher, /function showView\(next\)\{\r?\n  if\(next!=='account'\)\{hideAccount\(\);return;\}/, 'the old account screen cannot lead to any other old view');
 });
 
 test('the view opens the fan only on Enter, Space or the down arrow, never on focus alone (설계 검토 1차 1)', () => {
@@ -2074,11 +2075,12 @@ test('a member’s subscription row carries its tip with two reactions; a reacti
   assert.equal(h.solio().rows.find(r => r.key === 'claude').more.tip, undefined, 'the tip goes from the row');
 });
 
-test('the launcher hands the settings room its bridges: preferences, drafts, notices through convenience, updates with the install question, and the problem report', () => {
+test('the launcher hands the settings room its bridges: preferences, no drafts, notices through convenience, the PLEASURE switch, updates with the install question, and the problem report', () => {
   const launcher = fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8');
   assert.match(launcher, /confirmInstall:\(\)=>confirmUpdateInstall\(\)/, 'the install asks about unsaved writing first, as the old screen did');
   assert.match(launcher, /convenience\?\.notifications/, 'notices go through convenience, never straight to storage');
-  assert.match(launcher, /desktop,drafts,notices,updates,environment:\(\)=>environment,copyDiagnostics\}/);
+  // 쓰던 글 되살리기는 지킬 편집기가 없어 다리를 두지 않는다(PC 0.5.0 설계 4.2-4). 플레저 PC 알림은 설정 방이 켜고 끈다(4.5 R7)
+  assert.match(launcher, /desktop,drafts:null,notices,care,updates,environment:\(\)=>environment,copyDiagnostics\}/);
   assert.match(launcher, /safeDiagnostics\(\{environment,auth,clients,view:'settings',online:navigator\.onLine\}\)/);
 });
 
@@ -2087,7 +2089,8 @@ test('a room left open over an account reset opens again, the old account screen
   assert.match(ctl, /rooms\.reset\(\);\s*\/\/[^\n]*\n\s*if \(aside && !disposed\) rooms\.open\(aside\);/);
   assert.match(ctl, /if \(aside === 'account'\) rooms\.reloadAccount\?\.\(\);/);
   const launcher = fs.readFileSync(new URL('../renderer/launcher.mjs', import.meta.url), 'utf8');
-  assert.match(launcher, /if\(subs&&portalHost\?\.isClientShown\?\.\(\)\)\{subscriptionsBoard\.setVisible\(false\);/);
+  // 옛 구독 판은 PC 0.5.0에서 거뒀다. 얼굴 밑에서 다시 설 자리가 없다
+  assert.doesNotMatch(launcher, /subscriptionsBoard|subscriptions\.mjs/);
 });
 
 /* 별 지도와 효과음(2026-11-20, Fable 최종 검수 F1 · F3) */

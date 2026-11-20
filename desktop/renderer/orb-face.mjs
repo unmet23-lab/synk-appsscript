@@ -228,6 +228,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       desktop: roomPart('desktop', ['get', 'update']),
       drafts: roomPart('drafts', ['status', 'set']),
       notices: roomPart('notices', ['get', 'set']),
+      // 플레저 PC 알림 켜고 끄기(PC 0.5.0 설계 4.5 R7). 옛 설정 화면에만 있던 칸이다
+      care: roomPart('care', ['status', 'configure']),
       updates: roomPart('updates', ['status', 'check', 'download', 'install']),
       environment: typeof roomOptions.environment === 'function' ? () => roomOptions.environment() : null,
       copyDiagnostics: typeof roomOptions.copyDiagnostics === 'function' ? () => roomOptions.copyDiagnostics() : null,
