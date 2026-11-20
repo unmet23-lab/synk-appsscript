@@ -227,7 +227,8 @@ export function costRow(snapshot, st = {}, now = Date.now()) {
   // 솔리오 구독 비서 설계 3.6). 7일 안에 결제되는 계정만 그 아래에 이름과 함께 따로 둔다
   const bills = billList(prices, rows, now), groups = new Map();
   for (const b of bills) {
-    const { row } = b, family = row.source === 'auto' && row.service === 'gemini' && planKey(row.plan) === 'family';
+    // 가족 공유라도 직접 넣은 요금이 있으면 그 요금을 묶음 합에 넣는다. 맨 위 합계와 7일 안 결제 줄은 넣는데 묶음 줄만 「가족 공유」로 덮었다(0.5.0 공개 후보 카본 E2)
+    const { row } = b, family = row.source === 'auto' && row.service === 'gemini' && planKey(row.plan) === 'family' && num(row.price) === null;
     const key = svcName(row) + '|' + (row.source === 'auto' ? planName(row.plan, row.service) : '');
     if (!groups.has(key)) groups.set(key, { svc: svcName(row), plan: row.source === 'auto' ? planName(row.plan, row.service) : '', list: [], family: true });
     const g = groups.get(key);

@@ -855,3 +855,17 @@ test('screen words: no 해요체 endings and no GEO or SEO anywhere the room fun
   assert.ok(!all.some(t => /\bGEO\b|\bSEO\b/.test(t)));
   assert.ok(all.length > 200, 'the check saw the room words (' + all.length + ')');
 });
+
+test('a Gemini family account with its own price keeps that price in the grouped bill row, as the total and the due row do (0.5.0 공개 후보 카본 E2)', () => {
+  const tomorrow = new Date(NOW + D).getDate();
+  const fam = { ...weekly('fam', 'gemini', 20, NOW + 3 * D), plan: 'family', price: 30000, currency: 'KRW', billDay: tomorrow };
+  const shared = { ...weekly('shared', 'gemini', 20, NOW + 3 * D), plan: 'family', billDay: tomorrow };
+  const own = costRow(snap([fam]), st(), NOW);
+  assert.equal(own.mid.split(' · ')[0], '한 달 30,000원');
+  const group = own.more.find(x => x[0] === 'row' && !x[5]);
+  assert.deepEqual([group[1], group[3]], ['Gemini 가족 공유', '30,000원']);
+  assert.equal(own.more.find(x => x[0] === 'row' && x[5])[3], '30,000원');
+  // 요금을 넣지 않은 가족 공유 계정은 전처럼 「가족 공유」다
+  const none = costRow(snap([shared]), st(), NOW).more.find(x => x[0] === 'row' && !x[5]);
+  assert.equal(none[3], '가족 공유');
+});

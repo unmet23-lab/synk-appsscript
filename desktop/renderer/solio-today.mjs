@@ -18,13 +18,13 @@ const partOf = h => (h < 6 ? '새벽' : h < 12 ? '오전' : h < 18 ? '오후' : 
 const fmt = n => Math.round(Number(n) || 0).toLocaleString('ko-KR');
 
 /* 받침이 있으면 true. 한글은 끝 글자로, 숫자는 읽는 소리로(1 일, 3 삼, 7 칠), 영문은 흔한 끝소리로 본다.
-   계정 이름(unmet23, 77unmet)이 문장에 들어가며 「unmet23가」로 읽혔다(11-20 솔리오 구독 비서) */
+   계정 이름(robot23, 77robot 같은)이 문장에 들어가며 「robot23가」로 읽혔다(11-20 솔리오 구독 비서) */
 const DIGIT_BATCHIM = { 0: true, 1: true, 2: false, 3: true, 4: false, 5: false, 6: true, 7: true, 8: true, 9: false };
 function hasBatchim(word) {
   const w = String(word || '').trim(), ch = w.slice(-1), code = ch.charCodeAt(0);
   if (code >= 0xac00 && code <= 0xd7a3) return (code - 0xac00) % 28 !== 0;
   if (/[0-9]/.test(ch)) return DIGIT_BATCHIM[ch];
-  // 영문: l · m · n · ng로 끝나거나(Gmail → 지메일), 모음 뒤 t · k · p로 끝나면(unmet → 언멧) 받침으로 읽는다. 그 밖(Claude, Codex, founder)은 모음으로 읽는다
+  // 영문: l · m · n · ng로 끝나거나(Gmail → 지메일), 모음 뒤 t · k · p로 끝나면(robot → 로봇) 받침으로 읽는다. 그 밖(Claude, Codex, writer)은 모음으로 읽는다
   const lower = w.toLowerCase();
   return /(?:[lmn]|ng)$/.test(lower) || /[aeiou][tkp]$/.test(lower);
 }
