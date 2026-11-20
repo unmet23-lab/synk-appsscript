@@ -209,6 +209,14 @@ test('credits: the 4-week pace is said as a month, and only with every account c
   assert.equal(at(919), '지금 속도면 한 달에 크레딧의 100%를 씁니다. 한 달 크레딧에 여유가 거의 없습니다.');
   assert.equal(at(922), '지금 속도면 한 달에 크레딧의 100%를 씁니다. 한 달 크레딧에 여유가 거의 없습니다.');
   assert.equal(at(926), '지금 속도면 한 달에 크레딧의 101%를 씁니다.');
+  // 판정 문턱도 보이는 %로: 「90%」는 늘 모자람, 「89%」는 알맞음, 「10%」는 늘 남음, 「11%」는 알맞음(다시 검수 -4가 남긴 옛 문제)
+  const verdictAt = n => { const x = snap([one], { c1: { weeks4: used(n) } }), i = briefDiag(x, briefGroups(x, NOW), NOW).items[0]; return [i.word, i.line]; };
+  assert.deepEqual(verdictAt(825), ['모자람', '지금 속도면 한 달에 크레딧의 90%를 씁니다. 한 달 크레딧에 여유가 거의 없습니다.']);
+  assert.deepEqual(verdictAt(830), ['모자람', '지금 속도면 한 달에 크레딧의 90%를 씁니다. 한 달 크레딧에 여유가 거의 없습니다.']);
+  assert.deepEqual(verdictAt(822), ['알맞음', '지금 속도면 한 달에 크레딧의 89%를 씁니다. 지금 요금제가 알맞습니다.']);
+  assert.deepEqual(verdictAt(90), ['남음', '지금 속도면 한 달에 크레딧의 10%를 씁니다. 끊거나 낮은 요금제로 바꿔도 됩니다.']);
+  assert.deepEqual(verdictAt(96), ['남음', '지금 속도면 한 달에 크레딧의 10%를 씁니다. 끊거나 낮은 요금제로 바꿔도 됩니다.']);
+  assert.deepEqual(verdictAt(98), ['알맞음', '지금 속도면 한 달에 크레딧의 11%를 씁니다. 지금 요금제가 알맞습니다.']);
   const two = cr('c2', 'plus');
   const s = snap([one, two], { c1: { weeks4: used(40) } });
   d = briefDiag(s, briefGroups(s, NOW), NOW).items[0];

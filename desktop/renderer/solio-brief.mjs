@@ -303,8 +303,9 @@ function creditVerdict(snapshot, g) {
   // 모자람에는 더 사라고 하지 않는다(업셀, subscriptions-model 머리 원칙, 최종 검수 solio-pub-p2-20261120 F3).
   // 한 달 크레딧 안에 드는 속도면 여유가 거의 없다고 덧붙여 「모자람」과 숫자가 어긋나지 않게 한다. 잔액과 충전일을 보지 않으니 바닥나는 때는 말하지 않는다(다시 검수 solio-pub-p2-20261120-2 FA1 · FA2)
   // 덧붙이는 조건은 화면에 보이는 %다. 같은 「100%」가 두 문장으로 갈리지 않게(다시 검수 -3 FA1)
-  if (spent / allot >= DIAG.creditShort) return { verdict: 'short', say: pace + (pct <= 100 ? ' 한 달 크레딧에 여유가 거의 없습니다.' : ''), more: '', scope: '' };
-  if (spent / allot <= DIAG.creditSpare) return { verdict: 'spare', say: pace + ' 끊거나 낮은 요금제로 바꿔도 됩니다.', more: '', scope: '' };
+  // 판정 문턱도 화면에 보이는 %로 견준다. 반올림 전 값으로 견주면 같은 「90%」가 「알맞음」과 「모자람」으로, 같은 「10%」가 「남음」과 「알맞음」으로 갈렸다(다시 검수 solio-pub-p2-20261120-4가 남긴 옛 문제)
+  if (pct >= Math.round(DIAG.creditShort * 100)) return { verdict: 'short', say: pace + (pct <= 100 ? ' 한 달 크레딧에 여유가 거의 없습니다.' : ''), more: '', scope: '' };
+  if (pct <= Math.round(DIAG.creditSpare * 100)) return { verdict: 'spare', say: pace + ' 끊거나 낮은 요금제로 바꿔도 됩니다.', more: '', scope: '' };
   return { verdict: 'fit', say: pace + ' 지금 요금제가 알맞습니다.', more: '', scope: '' };
 }
 
