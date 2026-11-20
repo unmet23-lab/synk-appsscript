@@ -1,0 +1,71 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n6",
+ "text": "경찰과 금감원은, 직접 만나거나 안전결제로 거래하라고 해요.",
+ "show": "경찰과 금감원은, 직접 만나거나 안전결제로 거래하라고 해요.",
+ "dur": 3.204,
+ "words": [
+  {
+   "text": "경찰과",
+   "start": 0.02,
+   "end": 0.379
+  },
+  {
+   "text": "금감원은,",
+   "start": 0.434,
+   "end": 0.944
+  },
+  {
+   "text": "직접",
+   "start": 1.055,
+   "end": 1.289
+  },
+  {
+   "text": "만나거나",
+   "start": 1.358,
+   "end": 1.744
+  },
+  {
+   "text": "안전결제로",
+   "start": 1.841,
+   "end": 2.379
+  },
+  {
+   "text": "거래하라고",
+   "start": 2.434,
+   "end": 2.889
+  },
+  {
+   "text": "해요.",
+   "start": 2.93,
+   "end": 3.204
+  }
+ ],
+ "source": {
+  "key": "80ec091781b313f66f137c13a64eee76",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 143
+ }
+}

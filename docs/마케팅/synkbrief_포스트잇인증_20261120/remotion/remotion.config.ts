@@ -44,3 +44,6 @@ if (nvidiaGpu) {
     return [...args.slice(0, i + 1), "-profile:v", "high", ...args.slice(i + 1)];
   });
 }
+
+// 기계가 붐빌 때 영상 토막 읽기가 28초를 넘겨 소리 렌더(음악층)가 멈췄다(11-20) — 기다림을 2분으로
+Config.setDelayRenderTimeoutInMilliseconds(120000);

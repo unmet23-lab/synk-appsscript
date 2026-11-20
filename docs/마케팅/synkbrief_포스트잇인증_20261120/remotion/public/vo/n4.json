@@ -1,0 +1,86 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n4",
+ "text": "같은 사진에 포스트잇 글씨만 AI로 바꿔서, 여러 명에게 보낸 거예요.",
+ "show": "같은 사진에 포스트잇 글씨만 AI로 바꿔서, 여러 명에게 보낸 거예요.",
+ "dur": 3.72,
+ "words": [
+  {
+   "text": "같은",
+   "start": 0.02,
+   "end": 0.269
+  },
+  {
+   "text": "사진에",
+   "start": 0.31,
+   "end": 0.573
+  },
+  {
+   "text": "포스트잇",
+   "start": 0.628,
+   "end": 0.946
+  },
+  {
+   "text": "글씨만",
+   "start": 0.987,
+   "end": 1.332
+  },
+  {
+   "text": "AI로",
+   "start": 1.388,
+   "end": 1.719
+  },
+  {
+   "text": "바꿔서,",
+   "start": 1.761,
+   "end": 2.092
+  },
+  {
+   "text": "여러",
+   "start": 2.534,
+   "end": 2.7
+  },
+  {
+   "text": "명에게",
+   "start": 2.741,
+   "end": 3.017
+  },
+  {
+   "text": "보낸",
+   "start": 3.059,
+   "end": 3.28
+  },
+  {
+   "text": "거예요.",
+   "start": 3.321,
+   "end": 3.72
+  }
+ ],
+ "source": {
+  "key": "b555e773b8e2182b86be9b724a6a8450",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}

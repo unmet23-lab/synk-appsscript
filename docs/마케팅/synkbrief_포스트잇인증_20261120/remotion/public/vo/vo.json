@@ -1,0 +1,98 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1120,
+  "lufs": -17
+ },
+ "made": "2026-11-20T04:23:07.330Z",
+ "lines": [
+  {
+   "id": "n1",
+   "text": "포스트잇 인증까지 받았는데, 24만 원이 사라졌어요.",
+   "show": "포스트잇 인증까지 받았는데, 24만 원이 사라졌어요.",
+   "scene": "훅",
+   "dur": 2.971,
+   "syllablesPerSec": 6.73,
+   "src": "n1.wav",
+   "key": "e025837b7df8b29375ed8ca4c8ba85c9",
+   "words": 6
+  },
+  {
+   "id": "n2",
+   "text": "닉네임 적힌 게임기 사진이라, 믿고 보냈어요.",
+   "show": "닉네임 적힌 게임기 사진이라, 믿고 보냈어요.",
+   "scene": "송금",
+   "dur": 2.649,
+   "syllablesPerSec": 6.8,
+   "src": "n2.wav",
+   "key": "f76a00f4451e13df946ce03a9bc658d1",
+   "words": 6
+  },
+  {
+   "id": "n3",
+   "text": "운송장 사진까지 왔는데, 그 뒤로 답이 없어요.",
+   "show": "운송장 사진까지 왔는데, 그 뒤로 답이 없어요.",
+   "scene": "답 없음",
+   "dur": 2.851,
+   "syllablesPerSec": 6.31,
+   "src": "n3.wav",
+   "key": "fae3e7ecf768e775280ee440c5b01450",
+   "words": 7
+  },
+  {
+   "id": "n4",
+   "text": "같은 사진에 포스트잇 글씨만 AI로 바꿔서, 여러 명에게 보낸 거예요.",
+   "show": "같은 사진에 포스트잇 글씨만 AI로 바꿔서, 여러 명에게 보낸 거예요.",
+   "scene": "같은 사진",
+   "dur": 3.72,
+   "syllablesPerSec": 6.99,
+   "src": "n4.wav",
+   "key": "b555e773b8e2182b86be9b724a6a8450",
+   "words": 10
+  },
+  {
+   "id": "n5",
+   "text": "이 일당에게 당한 사람은, 천 명이 넘는 걸로 추정돼요.",
+   "show": "이 일당에게 당한 사람은, 천 명이 넘는 걸로 추정돼요.",
+   "scene": "판매자 책상 · 규모",
+   "dur": 2.89,
+   "syllablesPerSec": 7.27,
+   "src": "n5.wav",
+   "key": "9fb76c51dbb6925612f664990a6f67e7",
+   "words": 9
+  },
+  {
+   "id": "n6",
+   "text": "경찰과 금감원은, 직접 만나거나 안전결제로 거래하라고 해요.",
+   "show": "경찰과 금감원은, 직접 만나거나 안전결제로 거래하라고 해요.",
+   "scene": "누가 권하나(금감원 · 경찰청 소비자경보)",
+   "dur": 3.204,
+   "syllablesPerSec": 7.8,
+   "src": "n6.wav",
+   "key": "80ec091781b313f66f137c13a64eee76",
+   "words": 7
+  },
+  {
+   "id": "n7",
+   "text": "포스트잇 사진도 AI로 만들어요. 계좌이체 말고, 안전결제.",
+   "show": "포스트잇 사진도 AI로 만들어요. 계좌이체 말고, 안전결제.",
+   "scene": "끝 줄",
+   "dur": 3.448,
+   "syllablesPerSec": 6.38,
+   "src": "n7.wav",
+   "key": "877606381d9d9f73d67b30bb5875bae7",
+   "words": 7
+  }
+ ]
+}

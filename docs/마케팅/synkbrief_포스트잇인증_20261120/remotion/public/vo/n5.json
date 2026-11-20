@@ -1,0 +1,81 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "n5",
+ "text": "이 일당에게 당한 사람은, 천 명이 넘는 걸로 추정돼요.",
+ "show": "이 일당에게 당한 사람은, 천 명이 넘는 걸로 추정돼요.",
+ "dur": 2.89,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.02,
+   "end": 0.034
+  },
+  {
+   "text": "일당에게",
+   "start": 0.146,
+   "end": 0.512
+  },
+  {
+   "text": "당한",
+   "start": 0.554,
+   "end": 0.765
+  },
+  {
+   "text": "사람은,",
+   "start": 0.821,
+   "end": 1.145
+  },
+  {
+   "text": "천",
+   "start": 1.384,
+   "end": 1.539
+  },
+  {
+   "text": "명이",
+   "start": 1.581,
+   "end": 1.736
+  },
+  {
+   "text": "넘는",
+   "start": 1.778,
+   "end": 2.003
+  },
+  {
+   "text": "걸로",
+   "start": 2.045,
+   "end": 2.186
+  },
+  {
+   "text": "추정돼요.",
+   "start": 2.228,
+   "end": 2.89
+  }
+ ],
+ "source": {
+  "key": "9fb76c51dbb6925612f664990a6f67e7",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 167
+ }
+}
