@@ -159,6 +159,8 @@ export function roomModel(p){
     personaRemoved:p?.personaRemoved&&typeof p.personaRemoved.at==='string'?{at:p.personaRemoved.at}:null,
     // 작업 소식(운영 조각 4): 저희 차례 큰 그림 칸에 띄울 최근 소식 그림(없으면 null — 예시 그림 그대로).
     news:roomNews(p,state),
+    // 낮 판(11-20): 방 첫 화면의 담당자 한마디와 받으실 날(없으면 null — 그 줄을 그리지 않는다).
+    word:roomWord(p,state),due:roomDue(p,state),
   };
 }
 // 결제 안내 카드(판 4): 값 · 받으실 날 · 수정 · 접수 번호 · 결제 상태. 값은 결제 요청에 적힌 값, 없으면 고른 방향의 값, 없으면 패키지 값.
@@ -233,6 +235,22 @@ export function roomNews(p,state=roomState(p)){
   if(ROOM_COPY[state]?.turn!=='us')return null;
   const since=turnSince(requestOf(p)),item=progressLines(p).filter(line=>line.pictures.length&&(since===null||Date.parse(line.at)>=since)).at(-1);
   return item?{id:item.id,at:item.at,pictures:item.pictures}:null;
+}
+// 담당자 한마디(낮 판 · 11-20): 저희 차례에, 차례가 넘어온 뒤 올린 소식 가운데 가장 최근 것의 글. 그림이 없는 소식도 고른다. 손님 차례 · 끝이면 null.
+// 서버가 손님 보기에 내린 소식만 읽는다(progressLines — 올린 소식의 id · at · text). 전문과 그림은 일지의 그 줄에 그대로 있다.
+export function roomWord(p,state=roomState(p)){
+  if(ROOM_COPY[state]?.turn!=='us')return null;
+  const since=turnSince(requestOf(p)),item=progressLines(p).filter(line=>line.text.trim()&&(since===null||Date.parse(line.at)>=since)).at(-1);
+  return item?{id:item.id,at:item.at,text:item.text.trim()}:null;
+}
+// 받으실 날(낮 판 · 11-20): 결제를 확인하며 정한 날(payment.dueDate)만 — 날짜를 약속하지 않은 손님에게는 없다. 납품 · 끝과 지난 날은 싣지 않는다
+// (지난 약속을 방 첫 화면에 크게 두지 않는다 — 아래 의뢰서 요약의 줄은 그대로). 남은 날(left)은 저희 차례에만, 한국 날짜로 센다.
+export function roomDue(p,state=roomState(p),now=Date.now()){
+  const pay=requestOf(p)?.payment,date=pay?.status==='confirmed'&&/^\d{4}-\d{2}-\d{2}$/.test(pay.dueDate||'')?pay.dueDate:'';
+  if(!date||['deliver','done'].includes(state))return null;
+  const today=new Date(now+9*3600000).toISOString().slice(0,10),left=Math.round((Date.parse(date+'T00:00:00Z')-Date.parse(today+'T00:00:00Z'))/86400000);
+  if(!Number.isFinite(left)||left<0)return null;
+  return {date,left:ROOM_COPY[state]?.turn==='us'?left:null,changed:!!pay.dueChangedAt};
 }
 // ── 일지(판 3b) ──
 // 담당자가 한 말과 손님이 한 일을 한 줄기로. 손님 보기에 이미 오는 필드만 쓴다(서버 읽음 기록 없음). 그리기는 film-views.mjs journalView.

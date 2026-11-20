@@ -106,7 +106,7 @@ export function mountFilmDemo(host,{internal=false,start='',onLeave,extra=[]}={}
   let noteTimer=0;
   const say=text=>{let box=document.querySelector('.sx-demo-note');if(!box){box=document.createElement('p');box.className='sx-demo-note sx-small';box.setAttribute('role','status');document.body.append(box);}box.textContent=text;box.hidden=false;play(box,[{opacity:0},{opacity:1}],{duration:220});clearTimeout(noteTimer);noteTimer=setTimeout(()=>{box.hidden=true;},3600);};
   let handle=null,state=exampleState(),nextPanel='',scene='';
-  function clear(){handle?.unmount?.();handle=null;const next=host.cloneNode(false);host.replaceWith(next);host=next;document.documentElement.classList.remove('view-dr','has-journal-open');journalRelease();exampleOpener=null;return next;}
+  function clear(){handle?.unmount?.();handle=null;const next=host.cloneNode(false);host.replaceWith(next);host=next;document.documentElement.classList.remove('view-dr','has-journal-open');journalRelease();document.documentElement.classList.remove('sx-day');exampleOpener=null;return next;}
   // 실제 화면을 그리고, 앱이 하던 일(시안 고르기 · 의견 넣기 · 나란히 보기)을 여기서 가짜로 한다.
   function drawProject(root,tab){
     state.tab=tab;

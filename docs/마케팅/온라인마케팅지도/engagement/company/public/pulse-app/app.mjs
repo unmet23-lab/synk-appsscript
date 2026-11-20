@@ -124,6 +124,8 @@ function mountScreens(){
   draftHandle?.unmount();draftHandle=null;reviewHandle?.unmount();reviewHandle=null;finalHandle?.unmount();finalHandle=null;directionHandle?.unmount();directionHandle=null;
   const entry=main.querySelector('.sx-home'),draft=main.querySelector('.sx-draft'),review=main.querySelector('.sx-review'),room=main.querySelector('.sx-room,.sx-shell');
   const classes=document.documentElement.classList;classes.toggle('view-dr',!!(draft||review));
+  // 낮 판(11-20): 방(roomView)만 밝다. 그릴 때마다 판정해 다른 화면으로 옮기면 바로 뗀다(view-dr과 같은 방식). 휴대폰 주소창 색도 따라 바꾼다.
+  const day=!!main.querySelector('.sx-room[data-day]');classes.toggle('sx-day',day);document.querySelector('meta[name="theme-color"]')?.setAttribute('content',day?'#ffffff':'#000000');
   const model=draft?draftModel(s.project):null,key=entry?'entry':model?`draft:${model.round}`:room?`room:${s.tab}:${roomState(s.project)}`:'',animate=key!==screenKey;screenKey=key;
   if(animate&&s.journalOpen){s.journalOpen=false;journalOpener=null;}
   // PC 앱 창은 예시 주소로 옮겨 가지 못한다(desktop/src/pulse-app.cjs 허용 목록) — 그 창에서는 제자리에서 연다.
@@ -1225,7 +1227,12 @@ main.addEventListener('click',event=>{
   if(act==='more'){s.journalAll=!s.journalAll;render();journalBox()?.querySelector('[data-journal-do="more"]')?.focus({preventScroll:true});return;}
   if(act==='talk'){s.journalTalk=!s.journalTalk;render();journalBox()?.querySelector('[data-journal-do="talk"]')?.focus({preventScroll:true});return;}
   const go=event.target.closest('[data-journal-go]');if(go){goRoom(go.dataset.journalGo,{versionId:go.dataset.version||''});return;}
-  const ask=event.target.closest('[data-room-do="journal"]');if(ask)openJournal({opener:ask,target:ask.dataset.journalTarget||''});
+  const ask=event.target.closest('[data-room-do="journal"]');if(ask){
+    openJournal({opener:ask,target:ask.dataset.journalTarget||''});
+    // 끝맺음의 「다음 편 묻기」(낮 판 11-20): 묻기 칸이 비어 있을 때만 글을 채운다. input 사건을 내 쓰던 글로 기억시켜(remember) 실시간 다시 그리기에도 남고, 보내기는 손님이 누른다.
+    const say=ask.dataset.journalSay||'',field=say?journalBox()?.querySelector('form[data-form="support"] textarea[name="text"]'):null;
+    if(field&&!field.value.trim()){field.value=say;field.dispatchEvent(new Event('input',{bubbles:true}));field.focus({preventScroll:true});}
+  }
 });
 main.addEventListener('input',event=>{const area=event.target;if(area?.matches?.('[data-journal] textarea[data-grow]')){area.style.height='auto';area.style.height=`${area.scrollHeight+2}px`;}});
 // 문의 사진 고르기 · 빼기(운영 조각 8-B).

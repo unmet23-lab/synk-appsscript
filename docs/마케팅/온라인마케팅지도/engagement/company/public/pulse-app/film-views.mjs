@@ -1,5 +1,5 @@
 import {esc,safeUrl,stamp} from './api.mjs';
-import {t,k} from './i18n.mjs';
+import {t,k,locale,intlLocale} from './i18n.mjs';
 import {CASTING_MODELS,modelLooks} from './casting-catalog.mjs';
 import {MODEL_LINES,MODEL_PICKS,sceneSet} from './request-data.mjs';
 import {ROOM_STAGES,ROOM_COPY,CONFIRM_OF,modelCard,roomTab,lookOf,lookLine} from './room-view.mjs';
@@ -323,6 +323,39 @@ const otherModels=m=>`<div class="sx-wall is-plain">${CASTING_MODELS.filter(item
 // 고객 전용 인물(판 3, persona-view.mjs): 인물이 손님 차례이고 영상 쪽이 손님 차례가 아니면 인물이 「지금 차례」(머리 글 · 카드 · 스크린)가 되고,
 // 영상 쪽도 손님 차례면 인물 카드는 그 아래 제 머리를 단 카드로, 인물이 저희 차례 · 끝이면 작은 한 줄로 선다. 인물이 없으면 판 3 전과 바이트가 같다(기존 줄 안에만 이어 붙인다).
 // 되묻기 차례는 답할 칸이 일지 맨 위에 있어(「아래 칸만 채워 주시면」) 인물 칸을 일지 뒤로 보낸다 — 되묻기 글과 답 칸 사이에 끼지 않게.
+// ── 낮 판(2026-11-20, 설계 docs/디자인/PULSE고객경험_20261120/운영설계.md) ──
+// 방(roomView)만 밝은 작업실로 그린다: 뿌리에 data-day를 달고, 색 · 선반 · 인화지는 film.css 끝의 낮 판 절이 맡는다. 1차안 · 방향 · 영상 확인 같은 보는 화면은 그대로 어둡다.
+// 제목의 강조 구절: 한국어는 이 표의 구절, 다른 언어는 사전의 mark 문맥 값(키는 한국어 제목). 번역한 제목 안에 그 구절이 없으면 강조하지 않는다.
+// 그리는 글(roomView)의 제목은 그대로 두고, 화면에 붙일 때(mountRoom) 그 구절만 감싼다 — 제목 글을 통째로 읽는 자리(자동 안내가 손님 방과 같은 말을 하는지 대조하는 시험 등)가 바뀌지 않게.
+// i18n-skip-start
+const TITLE_MARKS={
+  '의뢰서를 써 주세요':'의뢰서','지금은 저희 차례예요':'저희 차례','이것만 더 알려 주세요':'이것만','새 방향을 준비하고 있어요':'새 방향','이 모델로 갈까요?':'이 모델',
+  '1차안을 만들고 있어요':'1차안','장면 이미지를 만들고 있어요':'장면 이미지','글 콘티가 도착했어요':'글 콘티','장면 이미지가 도착했어요':'장면 이미지','의견을 반영하고 있어요':'의견',
+  '확인하신 컷으로 만들고 있어요':'확인하신 컷','영상이 도착했어요':'영상','완성본을 받으세요':'완성본','글 콘티를 확인해 주셨어요':'글 콘티','완성본을 받으셨어요':'완성본',
+  '결제가 취소됐어요':'결제','크몽에서 결제해 주세요':'결제','첫 장을 확인해 주셨어요':'첫 장','결제를 확인했어요':'결제','이 방향으로 정했어요':'이 방향','담당자가 직접 연락드려요':'담당자',
+  '첫 장이 도착했어요':'첫 장','사진이 도착했어요':'사진','첫 장을 만들고 있어요':'첫 장','확인하신 첫 장대로 만들고 있어요':'확인하신 첫 장',
+};
+// i18n-skip-end
+// 지금 언어로 그려진 제목 글 → 그 안의 강조 구절(없으면 '').
+export function titleKey(text){
+  for(const [title,ko] of Object.entries(TITLE_MARKS)){if(t(title)!==text)continue;const mark=locale()==='ko'?ko:t(title,null,'mark');return mark&&mark!==title&&text.includes(mark)?mark:'';}
+  return '';
+}
+// 제목 칸의 글에서 강조 구절만 <b class="sx-key">로 감싼다. 감쌌으면 true(이미 감쌌거나 구절이 없으면 false).
+function markTitle(node){
+  const text=node.textContent||'',mark=node.children.length?'':titleKey(text),at=mark?text.indexOf(mark):-1;if(at<0)return false;
+  const key=document.createElement('b');key.className='sx-key';key.textContent=mark;node.textContent='';node.append(text.slice(0,at),key,text.slice(at+mark.length));return true;
+}
+// 담당자 한마디: 저희 차례에 가장 최근에 올린 소식의 글. 넉 줄까지만 보이고(CSS가 자른다) 전문은 일지의 그 줄에 있다 — 알림과 「소식 보기」가 가는 자리는 그대로 일지다.
+// 손님 화면에서 일지의 이름은 「나눈 말」이다(머리 단추 · 칸 제목과 같은 말).
+const wordCard=p=>p.word?`<figure class="sx-room-say" data-room-in data-room-say><blockquote class="sx-body">${esc(p.word.text)}</blockquote><figcaption class="sx-small"><b>${esc(p.manager)}</b>${stamp(p.word.at)?` · <time datetime="${esc(p.word.at)}">${esc(stamp(p.word.at))}</time>`:''} <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.word.id)}">${esc(t('나눈 말에서 보기'))}</button></figcaption></figure>`:'';
+// 받으실 날: 결제를 확인하며 정한 날(room-view roomDue). 저희 차례에는 남은 날을 함께, 손님 차례에는 날짜만. 지난 날은 싣지 않아 이 줄이 없다.
+const dueDay=date=>{try{return new Intl.DateTimeFormat(intlLocale(locale()),{month:'long',day:'numeric',weekday:'long',timeZone:'UTC'}).format(new Date(date+'T00:00:00Z'));}catch{return date;}};
+const dueLine=p=>{
+  const due=p.due;if(!due)return '';
+  const date=dueDay(due.date),lead=due.left===null?'':due.left===0?t('오늘'):t('{count}일 뒤',{count:due.left});
+  return `<p class="sx-room-due" data-room-in data-room-due>${lead?`<b>${esc(lead)}</b> `:''}<span>${esc(due.left===null?t('받으실 날 {date}',{date}):t('{date}에 받으세요',{date}))}</span>${due.changed?` <span class="sx-small">${esc(t('담당자가 다시 정한 날'))}</span>`:''}</p>`;
+};
 export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',tail='',ui={}}={}){
   const room=copyOf(p),pc=p.persona?.card?personaCopy(p.persona):null,main=!!pc&&room.turn!=='you',copy=main?pc:room,confirm=main||p.photo?'':CONFIRM_OF[p.state];
   // 판 4: 인물 칸 바로 아래 「내 모델로 모아 두기」(앱이 회원 상태를 읽어 넘긴 p.keep이 있을 때만 — 없으면 판 4 전과 같다).
@@ -331,7 +364,7 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',
   // 90일 시계로 지운 인물(판 4 설계 11-6)은 지운 날 한 줄만(p.personaRemoved — 살아 있는 인물이 있으면 서버가 싣지 않는다).
   const below=!main&&p.persona?(p.persona.card?personaCard(p.persona):personaLine(p.persona))+keep:!p.persona&&p.keep?.state==='reuse'?personaReuseLine():!p.persona&&p.personaRemoved?personaRemovedLine(p.personaRemoved):'',late=p.state==='ask'&&!!journal;
   const preview=!(p.state==='model'&&p.proposal)?roomPreviewScreen(p):'',screen=preview||(main&&personaScreen(p.persona)||roomScreen(p,{news:!main})),heroCls=preview?' is-preview-first':screen?'':' is-no-screen';
-  return `<div class="sx-room" data-state="${esc(p.state)}">
+  return `<div class="sx-room" data-state="${esc(p.state)}" data-day>
     ${bar?exampleHead(p):''}
     <section class="sx-room-hero${heroCls}">
       <div class="sx-room-left">
@@ -339,7 +372,7 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',
           ${top}
           <p class="sx-kicker sx-turn"><i class="${copy.turn==='you'?'is-you':copy.turn==='done'?'is-done':''}" aria-hidden="true"></i>${esc(copy.turn==='you'?t('내 차례'):copy.turn==='done'?t('마쳤어요'):t('저희 차례'))}${confirm?`<span>${esc(t('영상 전 확인'))} <b class="sx-no">${confirm}</b></span>`:''}${main&&pc.confirm?`<span>${esc(t('맞춤 인물 확인'))} <b class="sx-no">${pc.confirm}</b></span>`:''}</p>
           <h1 class="sx-display" data-room-title>${esc(t(copy.title))}</h1>
-          <p class="sx-body sx-room-lead" data-room-in>${esc(copy.text)}</p>
+          <p class="sx-body sx-room-lead" data-room-in>${esc(copy.text)}</p>${main?'':dueLine(p)+wordCard(p)}
           ${copy.action?`<div data-room-in><button type="button" class="sx-go is-solid" data-room-go="${esc(copy.action.go)}"><span>${esc(t(copy.action.label))}</span>${arrow}</button></div>`:''}${main?personaCard(p.persona,{main:true})+keep:''}
           ${p.state==='pay'?payCard(p):''}
           ${p.state==='done'?doneCard(p):''}
@@ -431,7 +464,7 @@ function payCard(p){
 }
 // 끝맺음(판 4 B4): 수령 확인 뒤. 크몽 구매확정 · 후기 · 같은 모델로 다음 편, 방이 닫히기 전에 파일을 따로 두라는 말.
 function doneCard(p){
-  return `<section class="sx-done" data-room-in><ol class="sx-pay-steps sx-body"><li><span>${esc(t('크몽에서 작업물을 확인하시고 「구매확정」을 눌러 주세요'))}</span></li><li><span>${esc(t('마음에 드셨다면 크몽 후기 한 줄이 다음 손님께 큰 도움이 돼요'))}</span></li><li><span>${esc(p?.photo?t('같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요'):t('같은 모델 · 같은 자막 규격으로 다음 편을 이어 만들 수 있어요. 담당자에게 알려 주세요'))}</span></li></ol><p class="sx-small">${esc(t('프로젝트를 마치면 이 방이 닫혀요. 받은 파일은 따로 보관해 주세요.'))}</p></section>`;
+  return `<section class="sx-done" data-room-in><ol class="sx-pay-steps sx-body"><li><span>${esc(t('크몽에서 작업물을 확인하시고 「구매확정」을 눌러 주세요'))}</span></li><li><span>${esc(t('마음에 드셨다면 크몽 후기 한 줄이 다음 손님께 큰 도움이 돼요'))}</span></li><li><span>${esc(p?.photo?t('같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요'):t('같은 모델 · 같은 자막 규격으로 다음 편을 이어 만들 수 있어요. 담당자에게 알려 주세요'))}</span></li></ol><p class="sx-done-next"><button type="button" class="sx-quiet" data-room-do="journal" data-journal-say="${esc(p?.photo?t('다음 사진을 이어 만들고 싶어요.'):t('다음 편을 이어 만들고 싶어요.'))}">${esc(p?.photo?t('다음 사진 묻기'):t('다음 편 묻기'))}</button></p><p class="sx-small">${esc(t('프로젝트를 마치면 이 방이 닫혀요. 받은 파일은 따로 보관해 주세요.'))}</p></section>`;
 }
 // 고른 방향: 이름 · 한 문장 · 값 · 받으실 날 · 수정 · 다음 길. 판이 오기 전까지 다시 고를 수 있다.
 function chosenCard(d){
@@ -456,11 +489,22 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
   // 휴대폰 단계 띠: 지금 단계가 화면 안에 오게 띠만 민다.
   const steps=host.querySelector('.sx-steps-run'),current=steps?.querySelector('.is-now');
   if(current&&steps.scrollWidth>steps.clientWidth)steps.scrollLeft=current.offsetLeft-(steps.clientWidth-current.offsetWidth)/2;
+  // 낮 판: 붙이는 화면이 방(roomView)이면 html에 sx-day를 달고, 아니면 뗀다 — 예시가 같은 프로젝트 안에서 어두운 화면으로 옮겨 그릴 때도 남지 않게.
+  // 앱은 그릴 때마다 mountScreens도 판정하고(이 함수를 부르지 않는 화면까지), 예시는 장면을 지울 때도 뗀다.
+  document.documentElement.classList.toggle('sx-day',host.matches('.sx-room[data-day]'));
+  // 낮 판 제목의 강조 구절은 그릴 때마다 여기서 감싼다(그리는 글은 통짜 그대로).
+  const roomTitle=host.matches('.sx-room')?host.querySelector('[data-room-title]'):null,keyed=!!roomTitle&&host.matches('[data-day]')&&markTitle(roomTitle);
   if(animate&&host.matches('.sx-room')){
-    const title=host.querySelector('[data-room-title]');if(title)revealWords(title,{delay:60});
+    // 강조 구절이 든 제목은 어절로 쪼개지 않는다(쪼개면 구절 표시가 지워진다) — 제목 전체를 한 번에 올린다.
+    if(roomTitle){if(keyed)rise(roomTitle,{delay:60});else revealWords(roomTitle,{delay:60});}
     riseAll(host.querySelectorAll('[data-room-in]'),{start:140});
+    // 낮 판: 선반의 인화지가 한 장씩 올라와 선다(처음 그릴 때만 — 실시간 다시 그리기에는 움직이지 않는다).
+    if(host.matches('[data-day]'))riseAll(host.querySelectorAll('.sx-room-screen>.sx-q-fill,.sx-room-screen>.sx-room-files>img,.sx-room-screen>.sx-room-cuts,.sx-room-screen>.sx-room-word'),{start:220,gap:80,y:8,blur:0,duration:420});
   }
   const film=host.querySelector('[data-room-film]');if(film&&!reduced())film.play?.().catch(()=>{});else if(film)holdPoster(film);
+  // 낮 판의 영상 인화지: 재생 표를 영상 한가운데에 둔다(가로 영상은 선반 칸보다 낮아 칸 기준으로는 영상 밖에 선다). 영상 크기가 바뀔 때마다 다시 잰다 — 지켜보는 것은 영상 노드라 다시 그리면 함께 사라진다.
+  const playMark=host.matches('[data-day]')?host.querySelector('.sx-room-screen>.sx-room-play'):null,printed=playMark?host.querySelector('.sx-room-screen>video.sx-q-fill'):null;
+  if(printed){const place=()=>{playMark.style.setProperty('--play-x',`${printed.offsetLeft+printed.offsetWidth/2}px`);playMark.style.setProperty('--play-y',`${printed.offsetTop+printed.offsetHeight/2}px`);};place();if(typeof ResizeObserver==='function')new ResizeObserver(place).observe(printed);printed.addEventListener('loadedmetadata',place,{once:true});}
   host.querySelectorAll('video[data-hold]').forEach(video=>holdPoster(video));
   // 모델 제안 카드의 옷 · 머리(사진 상품): 누르면 고르고 다시 누르면 맡김. 사진을 못 받으면 사진만 숨기고 이름은 남긴다(글로는 늘 고를 수 있게).
   // 처음 값: 그릴 때 누른 채로 그린 칸(앞서 정한 값)을 읽는다 — 다시 그릴 때는 ui에 이미 고르던 값이 있다.

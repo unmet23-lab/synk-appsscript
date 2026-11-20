@@ -165,7 +165,7 @@ test('the video box lays the still from the last picture round under the hold po
 test('old tab roads close: strategy is the room, and changes, preparation and specs sit below it without links to absent screens (D9)',()=>{
   const p=roomProject({status:'confirmed'},{changes:{enabled:true,status:'changed',changes:[]},kickoff:{enabled:true,status:'waiting'}},{deliverables:{revision:2,request:{deliverableRevision:2},confirmation:null,items:[],history:[]}});
   const html=projectView(state(p,{tab:'strategy'}));
-  assert.match(html,/^<div class="sx-room" data-state="prepare">/);assert.doesNotMatch(html,/data-form="strategy"/);
+  assert.match(html,/^<div class="sx-room" data-state="prepare" data-day>/);assert.doesNotMatch(html,/data-form="strategy"/);
   for(const key of ['changes','kickoff','deliverables']){assert.match(html,new RegExp(`data-room-do="paper" data-paper="${key}"`),key);assert.match(html,new RegExp(`<div data-paper-for="${key}">`),key);}
   assert.doesNotMatch(html,/data-action="(changes-strategy|kickoff-reference|kickoff-strategy|tab)"/,'nothing leads to a screen this customer does not have');
   assert.match(html,/자료 더 보내기」로, 링크는 「담당자에게 묻기」로/,'Fable N6');assert.match(html,/class="section-gap panel-card deliverables-panel"/);

@@ -246,7 +246,7 @@ const roomState2=(r,extra={})=>({mode:'customer',tab:'overview',live:{},project:
 test('a customer with a request gets the new room; the review and delivery tabs keep working inside its rail',()=>{
   const r=request({status:'submitted'});
   const room=projectView(roomState2(r));
-  assert.match(room,/^<div class="sx-room" data-state="check">/);
+  assert.match(room,/^<div class="sx-room" data-state="check" data-day>/);
   assert.doesNotMatch(room,/sx-room-bar/,'the app header is already on top');
   assert.match(room,/지금은 저희 차례예요/);
   const script=request({status:'confirmed',rounds:[{round:1,kind:'script',oneLine:'한 문장',scenes:[{id:'s',revision:1}]}]});
@@ -256,10 +256,10 @@ test('a customer with a request gets the new room; the review and delivery tabs 
   assert.match(projectView({...roomState2(script),tab:'draft',error:'그사이 새 소식이 생겼어요',conflict:true}),/role="alert"[\s\S]*data-action="refresh"/,'a conflict on the draft can be refreshed from the draft');
   // 판 3: 영상이 오기 전 review 탭(옛 링크 · 알림)은 고객 방으로. 판 3b: 묻기는 화면이 아니라 일지 — 옛 contact 탭은 방(일지가 있는 곳). 단계 줄은 앱 머리에 한 번.
   const legacy=projectView({...roomState2(script),tab:'review'});
-  assert.match(legacy,/^<div class="sx-room" data-state="script">/,'before any video the review tab is the room');
+  assert.match(legacy,/^<div class="sx-room" data-state="script" data-day>/,'before any video the review tab is the room');
   assert.doesNotMatch(legacy,/class="sx-steps/,'no step line inside the screen');
   const asking=projectView({...roomState2(request({status:'submitted'})),tab:'contact'});
-  assert.match(asking,/^<div class="sx-room" data-state="check">/);assert.equal(asking.split('data-form="support"').length-1,1);assert.match(asking,/담당자와 나눈 말/);
+  assert.match(asking,/^<div class="sx-room" data-state="check" data-day>/);assert.equal(asking.split('data-form="support"').length-1,1);assert.match(asking,/담당자와 나눈 말/);
   assert.doesNotMatch(asking,/의견은 모아서 한 번에 보내요/,'before any preview there is no such box');assert.match(asking,/담당자에게 물어보세요/);assert.equal(asking.split('후속 문의').length,1);
   const head=headerCrumb(roomState2(r)),actions=header({...roomState2(r),desktopApp:false});
   assert.match(head,/<nav class="sx-steps sx-head-steps" aria-label="단계"><div class="sx-steps-run">/,'on a phone the steps scroll in the head');
