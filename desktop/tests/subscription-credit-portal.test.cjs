@@ -23,6 +23,7 @@ test('account links open the Flow wallet separately from Google AI Studio usage'
 
 async function inBrowser(options, documentFor, onClick = () => {}) {
   let location = new URL(options.url), finished = false, documentTime = 100;
+  const browserGlobals = {};
   const page = {
     goto:async url => { location = new URL(url); documentTime++; },
     url:async () => location.href,
@@ -31,7 +32,7 @@ async function inBrowser(options, documentFor, onClick = () => {}) {
       if(selector.startsWith('button[aria-label="계정"]')) location = new URL('/settings/account',location);
       if(selector.startsWith('button[aria-label="결제"]')) location = new URL('/settings/billing',location);
     },
-    evaluate:async fn => vm.runInNewContext(typeof fn === 'string' ? fn : '(' + fn.toString() + ')()', { document:{querySelector:()=>null,...documentFor(location)}, location, performance:{timeOrigin:documentTime} }),
+    evaluate:async fn => vm.runInNewContext(typeof fn === 'string' ? fn : '(' + fn.toString() + ')()', { document:{querySelector:()=>null,...documentFor(location)}, location, globalThis:browserGlobals, performance:{timeOrigin:documentTime} }),
   };
   const space = { pages:async () => [page], finish:async () => { finished = true; } };
   const result = await vm.runInNewContext('(' + inspectPages.toString() + ')(options)', {
@@ -86,9 +87,11 @@ test('an applied monthly Google Cloud credit has an actual billing account and b
   assert.equal((await withCards()).status,'unlinked');
   cards.push({innerText:base+'Example account\nBalance: USD 10'});
   assert.equal((await withCards()).status,'linked');
+  cards[1]={innerText:base+'Example account\nBalance: USD 2'};
+  assert.equal((await withCards()).status,'linked');
   cards.splice(1);
   cards[0].innerText+='\nExpires: Nov 25, 2026';
-  assert.equal((await withCards()).status,'linked');
+  assert.equal((await withCards()).ok,false);
 });
 
 test('Claude reopens the billing dialog through its fragment without replacing the account document', async () => {
@@ -96,7 +99,7 @@ test('Claude reopens the billing dialog through its fragment without replacing t
   let menu=false, identityReads=0;
   const doc=loc=>({
     body:{innerText:loc.hash==='#settings/billing'?'API credits\nExample organization\nConnected\nMonthly credits':''},
-    querySelector:()=>({innerText:'Example · Pro'}),
+    querySelector:s=>s.startsWith('[role="dialog"]')?{innerText:loc.hash==='#settings/billing'?'API credits\nExample organization\nConnected\nMonthly credits':''}:{innerText:'Example · Pro'},
     querySelectorAll:()=>menu?[{getClientRects:()=>[1],innerText:email}]:[],
   });
   const result=await inBrowser(opts,doc,(selector,loc)=>{
@@ -105,6 +108,43 @@ test('Claude reopens the billing dialog through its fragment without replacing t
   });
   assert.equal(result.status,'linked');
   assert.equal(identityReads,2);
+});
+
+test('Google confirms a grant for the same signed-in user while the billing name resolves', async () => {
+  const opts={kind:'api',service:'gemini',email,to:'2026-11-20',url:'https://me.developers.google.com/benefits'};
+  let reads=0, first='Personal';
+  const doc=()=>({querySelectorAll:s=>s==='[aria-label]'?[accountButton]:[{
+    getClientRects:()=>[1],querySelectorAll:()=>[],
+    innerText:"Nov '26\nMonthly Google Cloud credits\nBilling account\n"+(++reads===1?first:'Second')+'\nBalance: USD 10',
+  }]});
+  assert.equal((await inBrowser(opts,doc)).status,'linked');
+  reads=0;first='billingAccounts/example';
+  assert.equal((await inBrowser(opts,doc)).status,'linked');
+  let calls=0;
+  const slowly=()=>({querySelectorAll:s=>s==='[aria-label]'?[accountButton]:[{
+    getClientRects:()=>[1],querySelectorAll:()=>[],
+    innerText:"Nov '26\nMonthly Google Cloud credits\nBilling account\n"+(++calls<=2?'billingAccounts/example':'Second')+'\nBalance: USD 10',
+  }]});
+  assert.equal((await inBrowser(opts,slowly)).status,'linked');
+  let logins=0;
+  const switched=()=>({querySelectorAll:s=>s==='[aria-label]'&&++logins>=3?[{getClientRects:()=>[1],getAttribute:()=>'Google Account (another@example.com)'}]:slowly().querySelectorAll(s)});
+  assert.deepEqual(await inBrowser(opts,switched),{ok:false,code:'CREDIT_WRONG_ACCOUNT'});
+});
+
+test('Claude also reopens from its canonical billing path and ignores a team subscription', async () => {
+  const opts={kind:'api',service:'claude',email,url:'https://claude.ai/settings/billing'};
+  let menu=false, team=false;
+  const doc=()=>{
+    const innerText=(team?'Team annual subscription\n':'')+'API credits\nExample organization\nConnected\nMonthly credits';
+    return {body:{innerText:'Team plan\n'+innerText},querySelector:s=>s.startsWith('[role="dialog"]')?{innerText}:{innerText:'Studio Team · Pro'},
+      querySelectorAll:()=>menu?[{getClientRects:()=>[1],innerText:email}]:[]};
+  };
+  const click=(selector,loc)=>{
+    if(selector.includes('dialog-close')){loc.pathname='/new';loc.hash='';menu=false;}
+    if(selector.includes('user-menu-button'))menu=true;
+  };
+  assert.equal((await inBrowser(opts,doc,click)).status,'linked');
+  team=true;assert.equal((await inBrowser(opts,doc,click)).ok,false);
 });
 
 test('a Flow loading placeholder or an unfamiliar debit cannot overwrite a previous reading with zero', async () => {
@@ -133,7 +173,50 @@ test('alternate invoice contacts require an independently matching signed-in pro
     {querySelectorAll:()=>[{getClientRects:()=>[1],innerText:'The email address linked to your account\n'+email}]};
   assert.deepEqual(await inBrowser(opts,doc),{ok:false,code:'CREDIT_SOURCE_UNKNOWN'});
   const withProfile=loc=>({...doc(loc),querySelector:()=>({getAttribute:()=>'Profile for Example'})});
-  assert.equal((await inBrowser(opts,withProfile)).status,'linked');
+  assert.equal((await inBrowser(opts,withProfile)).ok,false);
+  const withBillingOwner=loc=>{
+    const d=withProfile(loc);
+    if(loc.pathname.endsWith('/billing')) d.body.innerText+='\nAccount email\n'+email;
+    return d;
+  };
+  assert.equal((await inBrowser(opts,withBillingOwner)).status,'linked');
+});
+
+test('billing actions can finish loading without changing the verified API organization', async () => {
+  const opts={kind:'api',service:'gpt',email,url:'https://chatgpt.com/settings/billing'};
+  let visits=0, changeOrganization=false;
+  const doc=loc=>{
+    if(!loc.pathname.endsWith('/billing')) return {querySelectorAll:()=>[{getClientRects:()=>[1],innerText:'Account email\nThe email address linked to your account\n'+email}]};
+    const later=++visits>1, org=later && changeOrganization?'Second':'Personal';
+    return {body:{innerText:'Billing email\n'+email+'\nAPI 구독 혜택\nAPI 조직\nAPI 조직 “'+org+'”에 연결되어 있습니다.\n연결됨\n'+(later?'새로 표시된 관리 동작':'플랜 취소')}};
+  };
+  assert.equal((await inBrowser(opts,doc)).status,'linked');
+  visits=0;changeOrganization=true;
+  assert.equal((await inBrowser(opts,doc)).ok,false);
+});
+
+test('two settled consecutive Flow pages may contain exactly the same transactions', async () => {
+  const opts={kind:'flow',service:'gemini',email,from:'2026-11-01',to:'2026-11-20',url:'https://one.google.com/ai/activity'};
+  let next=false;
+  const row='Nov 19, 2026\tGoogle Flow\t-20';
+  const nodes=()=>Array.from({length:2},()=>({getClientRects:()=>[1],cells:[{innerText:'Nov 19, 2026'}]}));
+  const firstRows=nodes(),nextRows=nodes();
+  let replace=true;
+  const doc=()=>({body:{innerText:['Google Flow credits','100',row,row,next?'3–4 of 4':'1–2 of 4'].join('\n')},
+    querySelectorAll:s=>s==='[aria-label]'?[accountButton]:s==='table tbody tr'?(next&&replace?nextRows:firstRows):[]});
+  assert.equal((await inBrowser(opts,doc,()=>{next=true;})).used,80);
+  next=false;replace=false;
+  assert.deepEqual(await inBrowser(opts,doc,()=>{next=true;}),{ok:false,code:'CREDIT_SOURCE_UNKNOWN'});
+});
+
+test('a named empty Flow activity table settles, while a busy table or enclosing indicator never confirms zero', async () => {
+  const opts={kind:'flow',service:'gemini',email,from:'2026-11-01',to:'2026-11-20',url:'https://one.google.com/ai/activity'};
+  const region={getClientRects:()=>[1],getAttribute:k=>k==='aria-label'?'Recent activity':null,querySelectorAll:()=>[],innerText:'No recent activity'};
+  const busy={getClientRects:()=>[1],getAttribute:k=>k==='aria-busy'?'true':null};
+  const doc=(indicator,text)=>({body:{innerText:'Google Flow credits\n100\nNo recent activity\n'+text},
+    querySelectorAll:s=>s==='[aria-label]'?[accountButton]:s.includes('aria-busy')?(indicator?[busy]:[]):[region]});
+  assert.equal((await inBrowser(opts,()=>doc(false,''))).used,0);
+  assert.equal((await inBrowser(opts,()=>doc(true,'0–0 of 0'))).ok,false);
 });
 
 test('a redirect during navigation never reads the identity or balance of the next origin', async () => {
