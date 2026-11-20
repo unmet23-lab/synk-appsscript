@@ -398,7 +398,8 @@ export function homeModel(state, opts = {}) {
   const lo = leftOutOf(st);
   if (lo && lo.count > 0 && LEFT_ALSO.has(out.id) && !(out.id === 'home-mass' && out.box)) {
     // 수는 파일과 폴더를 함께 센 이름 수다 — 목록 화면(「이 백업에 담지 못한 이름」)과 같은 말로 부른다(다시 검수 -b 1)
-    const mine = { label: `백업에 담지 못한 이름 ${count(lo.count)}개${lo.cut ? ' 이상' : ''} 보기`, to: 'left-out' };
+    // 이름을 모르면(names 빈 목록) 목록에 이름이 없으니 이름을 보여 준다고 하지 않는다 — 기본 화면 제목의 말로 부른다(다시 검수 -c 곁 메모)
+    const mine = { label: lo.names.length ? `백업에 담지 못한 이름 ${count(lo.count)}개${lo.cut ? ' 이상' : ''} 보기` : '이름 때문에 담지 못한 파일 자세히 보기', to: 'left-out' };
     return { ...out, link: out.link || mine, links: [...(out.links || (out.link ? [out.link] : [])), mine] };
   }
   return out;

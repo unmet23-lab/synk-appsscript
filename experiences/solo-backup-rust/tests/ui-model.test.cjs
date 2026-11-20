@@ -2083,6 +2083,8 @@ test('이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 조율 
   const unnamed = { ...STATES.home, leftOutNames: { at: s.leftOutNames.at, count: 5, names: [], cut: true, checked: false } };
   assert.deepEqual(m.homeModel(unnamed, { now: NOW }).notes, [m.UNNAMED]);
   assert.deepEqual(m.homeModel(unnamed, { now: NOW }).links.map((l) => [l.label, l.to]), [['자세히 보기', 'left-out']]);
+  // 더 급한 주의 화면의 고리도 이름을 모르면 이름을 보여 준다고 하지 않는다
+  assert.deepEqual(m.homeModel({ ...STATES['home-missing'], leftOutNames: unnamed.leftOutNames }, { now: NOW }).links.at(-1), { label: '이름 때문에 담지 못한 파일 자세히 보기', to: 'left-out' });
   const ul = strip(renderScreen('left-out', { state: unnamed, model: m.homeModel(unnamed, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html);
   assert.match(ul, /이름은 아직 알아내지 못했습니다/); assert.doesNotMatch(ul, /외 5개|찾은 이름이 없습니다/);
   const odd = m.leftOutOf({ leftOutNames: { count: 'x', names: [null, 5, 'C:\\a.'], checked: 0 } });
