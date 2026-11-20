@@ -739,3 +739,16 @@ test('GPT r6 GA5: on the download path the engine is checked before the request 
   assert.deepEqual(seen.slice(0, runAt + 1).map(s => s[1]), seen.slice(0, runAt).map(() => 0).concat(1), 'no engine check happens while the request is out before the prompt');
   assert.equal((await service.snapshot(ME)).install.phase, 'done');
 });
+
+test('the engine feed tool writes the size and sha256 this room checks, and its feed passes the room as is', () => {
+  const { feed } = require(path.join(ROOT, 'experiences', 'solo-backup-rust', 'scripts', 'update-feed.cjs'));
+  const dir = temp(), key = minisignKey(), data = crypto.randomBytes(700), name = 'SynkWorkBackup-0.7.0-setup.exe';
+  const setup = path.join(dir, name), sig = path.join(dir, `${name}.sig`);
+  fs.writeFileSync(setup, data);
+  fs.writeFileSync(sig, key.sign(data, `timestamp:1794880000\tfile:${name}\tversion:0.7.0`));
+  const { feed: value } = feed({ setup, signature: sig, url: `https://github.com/unmet23-lab/synk-policy/releases/download/workbackup-0.7.0/${name}` });
+  const checked = B.validateFeed(JSON.parse(JSON.stringify(value)));
+  assert.equal(checked.size, data.length);
+  assert.equal(checked.sha256, crypto.createHash('sha256').update(data).digest('hex'));
+  assert.equal(B.verifySignature(crypto.createHash('blake2b512').update(data).digest(), B.parseSignature(checked.signature), [{ role: 'operating', pub: key.pub }]), 'operating');
+});

@@ -95,6 +95,12 @@ test('update-feed.cjs makes the static feed only for a signature bound to that i
   assert.equal(value.platforms['windows-x86_64'].url, url);
   assert.equal(trustedComment(value.platforms['windows-x86_64-nsis'].signature).version, '0.7.1');
   assert.match(sha256, /^[0-9a-f]{64}$/);
+  // The Solio backup room checks these two before the signature (desktop/src/solio-backup.cjs validateFeed)
+  for (const entry of Object.values(value.platforms)) {
+    assert.equal(entry.size, fs.statSync(setup).size);
+    assert.equal(entry.sha256, crypto.createHash('sha256').update(fs.readFileSync(setup)).digest('hex'));
+    assert.equal(entry.sha256, sha256);
+  }
   fs.writeFileSync(sig, signature({ version: '0.7.0', file: 'SynkWorkBackup-0.7.1-setup.exe' }));
   assert.throws(() => feed({ setup, signature: sig, url }), /signature is for version 0\.7\.0/);
   fs.writeFileSync(sig, signature({ version: null, file: 'SynkWorkBackup-0.7.1-setup.exe' }));

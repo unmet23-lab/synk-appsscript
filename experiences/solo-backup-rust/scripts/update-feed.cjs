@@ -31,11 +31,15 @@ function feed({ setup, signature, url, notes = '', now = new Date() }) {
   const address = new URL(url);
   if (!['https:', 'http:'].includes(address.protocol) || path.posix.basename(address.pathname) !== name) throw Error('download url must end in the installer name');
   if (typeof notes !== 'string' || notes.length > 500) throw Error('notes: 500 characters at most');
-  const entry = { signature: sig, url: address.href };
+  const bytes = fs.readFileSync(setup), sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
+  // size and sha256 are for the SYNK PC app's Solio backup room (desktop/src/solio-backup.cjs validateFeed, STAGE1_DESIGN.md 4.13):
+  // it downloads this installer itself and checks both before the signature. The Tauri updater (2.14.1) reads only
+  // url and signature and ignores other fields.
+  const entry = { signature: sig, url: address.href, size: bytes.length, sha256 };
   // The updater looks for <target>-<installer> first, then <target>.
   return {
     feed: { version, notes, pub_date: now.toISOString().replace(/\.\d{3}Z$/, 'Z'), platforms: { 'windows-x86_64-nsis': entry, 'windows-x86_64': entry } },
-    sha256: crypto.createHash('sha256').update(fs.readFileSync(setup)).digest('hex'),
+    sha256,
   };
 }
 
