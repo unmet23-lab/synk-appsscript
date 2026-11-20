@@ -1,9 +1,12 @@
 // 솔리오 구독 방의 비서 판(docs/디자인/솔리오_구독비서_20261120/설계.md 3절 · 7절). 구독 스냅숏은 합성이다.
 // 공개 저장소라 계정 이름은 지어낸 것만 쓴다. 숫자의 모양은 11-20 유호님 PC 자료(계정 열 개 가운데 일곱이 다 씀)를 본떴다.
+// 규칙: 조건이 맞을 때만 확인하는 단언을 쓰지 않는다. 어떤 문장에도 맞는 정규식을 쓰지 않는다. 이름에 적은 경우는 본문에서 확인한다.
+// 무작위 맞대기처럼 갈래를 나눠야 하면 갈래마다 걸린 수도 단언한다(구조 다시 보기 4절 P2-6).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { solioBrief, briefHead, briefSoon, briefDiag, briefDial, briefGroups, poolRunout, poolSay, dailyDiag, diagWhen, briefLive, tokSample, recentOut, soonWhen, SOON_SHOWN, RECENT_MS, DIAL_MS } from '../renderer/solio-brief.mjs';
 import { solioToday } from '../renderer/solio-today.mjs';
+import { serviceFacts, poolTimeline } from '../renderer/subscriptions-model.mjs';
 
 const D = 864e5, H = 3600e3, W = 7 * D;
 const NOW = new Date(2026, 10, 20, 3, 0).getTime(); // 2026-11-20(금) 03:00
@@ -501,11 +504,13 @@ test('the dial: the service on top in the middle, its pooled share, every accoun
   assert.equal(d.ticks.length, 72);
   assert.deepEqual(d.days.map(x => x.label), ['지금', '내일', '모레', '월요일']);
   assert.equal(d.days[1].off, 21 * H);
-  // 바깥 궤도: 지금 속도로 막히지 않는 때까지(금색), 모두 막히는 동안(붉게), 그 뒤(점선)
-  assert.deepEqual(d.arcs.map(a => a.k), ['safe', 'gap', 'after']);
+  // 바깥 궤도: 사흘 안의 막힌 구간을 모두 붉게, 그 사이를 금색으로(구조 다시 보기 P1-1). 시간당 12.5%p로 손으로 센 값:
+  // 0~32h 열림 · 32~40h 막힘(out1이 열림) · 40~48h · 48~52h 막힘(out2) · 52~68h(58h에 out3이 더해짐) · 68~72h 막힘(out4는 76h)
+  assert.deepEqual(d.arcs.map(a => a.k), ['safe', 'gap', 'safe', 'gap', 'safe', 'gap']);
   const safe = d.arcs[0], gap = d.arcs[1];
   assert.ok(safe.from === 0 && safe.to > 31 * H && safe.to < 33 * H);
   assert.deepEqual([gap.from, gap.to], [safe.to, 40 * H]);
+  assert.deepEqual(d.arcs.slice(2).map(x => [x.from, x.to].map(t => Math.round(t / H * 10) / 10)), [[40, 48], [48, 52], [52, 68], [68, 72]]);
   // 막힘 표식은 궤도와 같은 때(반올림 전)에 찍는다(화면 검수 dial A5)
   assert.equal(d.events.find(e => e.kind === 'runout').off, safe.to);
   assert.ok(d.events.some(e => e.kind === 'open' && e.off === 6 * H && e.text.includes('out0')));
@@ -590,4 +595,87 @@ test('a 5-hour block keeps its weekly share in the pooled number; its cell says 
   assert.deepEqual(d.hero, { value: '70', unit: '%', label: 'Claude 남은 몫' });
   const cell = d.rings[0].accounts.find(x => x.id === a.id);
   assert.deepEqual([cell.blocked, cell.note], [true, '5시간 한도로 막힘 · 주간 60% 남음']);
+});
+
+/* ── 소비자끼리 맞대기(구조 다시 보기 2절 D, Opus 대체 설계 검토). 줄 안쪽 · 문자판 · 맨 위 · 다가오는 일이 같은 사실을 같게 말하는지 본다.
+   조건 안에 숨은 단언을 두지 않는다: 갈래가 걸리지 않아 아무것도 보지 않은 채 통과하지 않게, 갈래마다 걸린 수도 단언한다 ── */
+test('cross-check: a 5-hour block counts its weekly share in the row and on the dial alike (Opus 재현 1)', () => {
+  const a = row({ plan: 'pro', email: 'a@example.com', live: { readAt: NOW - 5 * 60e3, session: { usedPercent: 100, resetsAt: NOW + 2 * H }, weekly: { usedPercent: 40, resetsAt: NOW + 4 * D } } });
+  const b = weekly('claude', 20, NOW + 5 * D, { plan: 'pro', email: 'b@example.com' });
+  const s = snap([a, b], { [a.id]: 10, [b.id]: 10 }), today = solioToday({ snapshot: s }, NOW);
+  assert.equal(today.rows.find(x => x.name === 'Claude').val, '합쳐서 70% 남음');
+  assert.deepEqual(brief(s).dial.hero, { value: '70', unit: '%', label: 'Claude 남은 몫' });
+});
+
+test('cross-check: a plan changed within three days gives one runout time to the top, the row, coming-up and the dial (Opus 재현 2, GPT 검수 GA3)', () => {
+  // 무게로 센 속도 400%p/하루, max_20x 무게 20: 남은 50 × 20 ÷ 400 = 2.5일 → 모레(일) 15:00. 옛 paceTip은 지금 무게로 100 × 20을 써 「오늘 오후」라 했다
+  const a = weekly('claude', 50, NOW + 5 * D, { plan: 'max_20x' });
+  const s = snap([a], { [a.id]: { rate3: 100, rate3w: 400 } }), b = brief(s), g = briefGroups(s, NOW)[0];
+  assert.equal(poolTimeline(s, g, NOW).forecast.at, NOW + 60 * H);
+  assert.equal(b.head.say, 'Claude가 모레 오후에 바닥납니다.');
+  assert.equal(b.says.claude, '지금 속도면 모레 오후 3시쯤 바닥납니다.');
+  assert.match(b.dial.label, / 지금 속도면 모레 오후 3시쯤 바닥납니다\.$/);
+  assert.deepEqual(b.soon.all.filter(i => i.key === 'runout:claude').map(i => i.at), [NOW + 60 * H]);
+});
+
+test('cross-check: an account not read yet is neither shut nor a reason to forecast (Opus 재현 2)', () => {
+  const a = row({ id: 'p1', plan: 'pro', email: 'busy@example.com', live: { readAt: NOW - 5 * 60e3, weekly: { usedPercent: 70, resetsAt: NOW + 5 * D } } });
+  const b = row({ id: 'p2', plan: 'pro', email: 'new@example.com', live: null });
+  const s = snap([a, b], { p1: 20 }), today = solioToday({ snapshot: s }, NOW), g = briefGroups(s, NOW);
+  assert.equal(poolTimeline(s, g[0], NOW), null);
+  assert.equal(today.state, 'first');
+  assert.doesNotMatch(today.say + ' ' + today.then + ' ' + today.rows[0].more.say, /바닥/);
+  assert.equal(briefDial(s, g, NOW, 'claude').label, 'Claude 계정 2개 가운데 1개가 열려 있습니다. 1개는 아직 읽는 중입니다. Claude 남은 몫 30%.');
+});
+
+test('cross-check on 400 random Claude pools: row, dial, top and coming-up agree, and every branch is hit', () => {
+  let seed = 20261120;
+  const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648, pick = a => a[Math.floor(rnd() * a.length)];
+  const hits = { pooledRow: 0, shareRange: 0, speaks: 0, silent: 0, gaps: 0, noPool: 0, login: 0, pending: 0, fixable: 0 };
+  for (let k = 0; k < 400; k++) {
+    const rows = [], stats = {}, n = 1 + Math.floor(rnd() * 5);
+    for (let i = 0; i < n; i++) {
+      const plan = pick(['pro', 'max_5x', 'max_20x']), email = 'c' + k + '_' + i + '@example.com', what = rnd();
+      let r;
+      if (what < 0.08) r = row({ plan, email, state: 'needs-login' });
+      else if (what < 0.13) r = row({ plan, email, state: 'error' });
+      else if (what < 0.18) r = row({ plan, email, live: null });
+      else {
+        const used = rnd() < 0.35 ? 100 : Math.round(rnd() * 99), live = { readAt: NOW - 5 * 60e3, weekly: { usedPercent: used, resetsAt: NOW + Math.round((rnd() * 7 * D) / 60e3) * 60e3 } };
+        if (used < 100 && rnd() < 0.15) live.session = { usedPercent: 100, resetsAt: NOW + Math.round((rnd() * 5 * H) / 60e3) * 60e3 };
+        r = row({ plan, email, live });
+      }
+      rows.push(r); stats[r.id] = Math.round(rnd() * 150);
+    }
+    const s = snap(rows, stats), today = solioToday({ snapshot: s }, NOW), b = brief(s), groups = briefGroups(s, NOW);
+    const g = groups.find(x => x.service === 'claude'), f = serviceFacts(g, s.prices), p = poolTimeline(s, g, NOW), fc = p?.forecast || null, d = briefDial(s, groups, NOW, 'claude');
+    const tag = 'case ' + k;
+    // 줄 안쪽의 합친 몫과 문자판 큰 숫자는 같은 수다
+    const pooled = /^합쳐서 (\d+)% 남음$/.exec(today.rows.find(x => x.name === 'Claude')?.val || '');
+    if (pooled) { hits.pooledRow++; assert.equal(pooled[1], d.hero.value, tag); }
+    // 큰 숫자(합친 몫)는 칸들의 최솟값과 최댓값 사이다
+    const cells = d.rings[0].accounts.map(a => a.left).filter(v => v !== null);
+    if (f.share !== null) { hits.shareRange++; assert.ok(f.share >= Math.min(...cells) && f.share <= Math.max(...cells), tag); }
+    // 바닥나는 때를 말하는 글은 풀 모의에 앞날의 막힘이 있을 때만이고, 쓸 계정이 열려 있으면 반드시 어딘가에서 말한다
+    const texts = [today.say, today.then, b?.head?.say, b?.head?.then, b?.says?.claude, d.label, ...(b?.soon?.all || []).map(i => i.text)].filter(Boolean).join(' ');
+    const speaks = /바닥납니다|모두 막힙니다/.test(texts);
+    assert.ok(!speaks || fc, tag + ' speaks a runout the pool does not have: ' + texts);
+    assert.ok(!(fc && f.open.length) || speaks, tag + ' the pool runs out but nothing says so');
+    hits[speaks ? 'speaks' : 'silent']++;
+    // 문자판 막힘 표식은 풀 모의의 때(반올림 전)에, 말하는 때(반올림)가 사흘 안일 때 하나만 찍힌다
+    assert.deepEqual(d.events.filter(e => e.kind === 'runout').map(e => e.off), fc && fc.sayAt <= NOW + DIAL_MS ? [fc.at - NOW] : [], tag);
+    // 붉은 호는 풀 모의의 막힌 구간 그대로다. 풀 모의가 없으면 금색 호를 그리지 않는다
+    const gaps = d.arcs.filter(a => a.k === 'gap').map(a => [a.from, a.to]);
+    if (p) {
+      const want = p.blocks.map(x => [Math.max(0, x.from - NOW), Math.min(DIAL_MS, x.to - NOW)]).filter(([x, y]) => y > x);
+      assert.deepEqual(gaps, want, tag);
+      if (want.length) hits.gaps++;
+    } else { hits.noPool++; assert.ok(!d.arcs.some(a => a.k === 'safe'), tag); }
+    // 다시 로그인할 계정은 「다시 로그인」으로, 「읽는 중」은 아직 읽지 않은 계정이 있을 때만이다
+    if (f.login.length) { hits.login++; assert.match(d.label, /다시 로그인/, tag); }
+    if (/읽는 중/.test(d.label)) { hits.pending++; assert.ok(f.pending.length > 0, tag); }
+    // 쓸 계정은 없고 손볼 계정이 있으면 어느 글도 「모든 계정」이라 하지 않는다(Fable 최종 F1)
+    if (f.kind === 'fixable') { hits.fixable++; assert.doesNotMatch(texts, /모든 계정/, tag); }
+  }
+  for (const [k, v] of Object.entries(hits)) assert.ok(v >= 5, k + ' was hit ' + v + ' times');
 });

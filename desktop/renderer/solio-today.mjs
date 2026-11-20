@@ -1,7 +1,7 @@
 // 솔리오 첫 화면(PC 클라이언트 1단계, 2026-11-16)의 맨 위 문장과 구독별 줄을 구독 스냅숏에서 만든다. DOM이 없다.
 // 규칙의 원문은 docs/디자인/플랫폼_클라이언트_검정구_20261116/1단계_구현설계.md 8절이다. 셈은 subscriptions-model.mjs를 그대로 쓰고,
 // 새로 세는 것은 「쓰는 속도를 셀 기록이 사흘 안 됐는지」(rate3가 없는 계정이 있는지) 하나뿐이다.
-import { serviceGroups, paceTip, balance, monthCredits, nextBill, freshness, DAY_MS, usageDays, monthPrice, monthlyBill, nextRefill, planKey, weightOf } from './subscriptions-model.mjs';
+import { serviceGroups, poolTimeline, serviceFacts, balance, monthCredits, nextBill, freshness, DAY_MS, usageDays, monthPrice, monthlyBill, nextRefill, planKey } from './subscriptions-model.mjs';
 
 /* 서비스의 짧은 이름은 이 표 한 곳에서만 읽는다(문장 · 줄 · 화면 읽기 프로그램의 글). gpt 줄의 남은 양은 Codex가 알려 주는 한도다 */
 export const SOLIO_TODAY_NAMES = Object.freeze({ claude: 'Claude', gpt: 'Codex', gemini: 'Gemini', higgsfield: 'Higgsfield', typecast: 'Typecast' });
@@ -89,39 +89,37 @@ function weeklyFact(snapshot, g, now) {
   const stats = snapshot?.usage?.accounts || {}, usable = g.usable.filter(a => a.g?.weekly);
   if (!usable.length && !g.projected.length && g.out.length) return { kind: 'out', at: g.out[0].unblock, focus: g.out[0].focus || 'weekly' };
   if (!usable.length) return { kind: 'unknown' };
-  const pace = paceTip(snapshot, g, now);
-  if (pace) return { kind: 'pace', at: pace.at, release: pace.release };
+  // 바닥나는 때는 솔리오 구독 비서(맨 위 · 다가오는 일 · 문자판)와 같은 풀 모의 하나에서 읽는다. 옛 paceTip은 사흘 속도를 지금 요금제 무게로 세어
+  // 맨 위가 「오늘 오후」, 문자판이 「모레 오후 3시쯤」이라 했다(구조 다시 보기 P1-2, Opus 대체 설계 검토). 때는 풀 모의가 반올림한 그대로 쓴다
+  const p = poolTimeline(snapshot, g, now), fc = p?.forecast;
+  if (fc) return { kind: 'pace', at: fc.sayAt, release: fc.next?.t ?? null };
   const best = g.best;
   if (best && (best.state === 'low' || best.state === 'out')) return { kind: 'low', left: best.left, at: best.g?.resetsAt || null };
   // 「기록이 아직 쌓이지 않았다」는 읽은 계정의 기록이 정말 모자랄 때만이다. 다른 계정이 초기화 시각을 지나 다시 찼을 것이라는 것은
   // 기록 부족이 아니다. 그 묶음은 「모든 구독이 넉넉합니다」에서만 빠진다(allSure, 0.4.95 원천 후보 검수 E1)
   const young = usable.some(a => a.g.weekly.guess || !Number.isFinite(stats[a.row.id]?.rate3));
-  return young ? { kind: 'young' } : { kind: 'fine', reset: Math.min(...usable.map(a => a.g.weekly.resetsAt).filter(Boolean)) };
+  if (young) return { kind: 'young' };
+  // 풀 모의가 없으면(아직 읽지 않은 계정, 합칠 수 없는 요금제 등) 읽힌 계정마다 자기 속도로 초기화까지 가는지만 본다.
+  // 하나라도 못 가면 넉넉하다고도, 언제 바닥난다고도 하지 않는다(구조 다시 보기 P1-3, Opus 재현 2)
+  if (!p && !usable.every(a => { const r = stats[a.row.id].rate3, rs = a.g.weekly.resetsAt; return r <= 0 || (rs && now + (a.g.weekly.left / r) * DAY_MS >= rs); })) return { kind: 'unknown' };
+  return { kind: 'fine', reset: Math.min(...usable.map(a => a.g.weekly.resetsAt).filter(Boolean)) };
 }
 
-/* 이 PC 계정을 합친 주간 몫(요금제 무게). 다 쓴 계정은 0이고, 다시 로그인하거나 못 읽은 계정은 뺀다.
-   무게를 아는 Claude나 요금제가 모두 같은 서비스에서만 부른다. Codex Pro와 Plus를 같은 크기로 더하면 남은 몫을 부풀린다(GPT 검수 GA5) */
-function pooledLeft(g) {
-  let left = 0, weight = 0;
-  for (const a of here(g)) {
-    if (!['ok', 'low', 'out'].includes(a.state)) continue;
-    const w = weightOf(a.row), v = a.state === 'out' ? 0 : a.g?.weekly && !a.g.weekly.guess ? a.g.weekly.left : a.left ?? 0;
-    left += v * w; weight += w;
-  }
-  return weight ? Math.floor(left / weight) : 0;
-}
+/* 합친 몫은 문자판 큰 숫자와 같은 serviceFacts.share를 쓴다. 5시간 한도로 잠깐 막힌 계정은 주간 남은 양으로 센다(구조 다시 보기 P1-3, Opus 재현 1).
+   합칠 수 있는지(pooled)도 같은 판정이다. Codex Pro와 Plus를 같은 크기로 더하면 남은 몫을 부풀린다(GPT 검수 GA5) */
 
 function rowOf(snapshot, g, fact, now, checking) {
   const name = groupName(g), count = here(g).length, best = g.best, row = { key: g.key, name, sub: count > 1 ? '계정 ' + count + '개' : '', gauge: null, val: '', when: '', spoken: '', urgent: false };
   const prices = snapshot?.prices || null;
+  let facts = null;
   if (g.kind === 'weekly') {
     if (fact?.kind === 'out') {
       Object.assign(row, { val: '다 씀', gauge: 0, when: fact.at ? shortWhen(fact.at, now) + '에 다시 열림' : '', urgent: true });
       row.spoken = fact.at ? spokenWhen(fact.at, now) + '에 다시 열림' : '';
-    } else if (count >= 2 && g.out.length && g.usable.length && !g.projected.length && (g.service === 'claude' || new Set(here(g).map(a => planKey(a.row.plan))).size === 1)) {
+    } else if (count >= 2 && g.out.length && g.usable.length && !g.projected.length && (facts = serviceFacts(g, prices)).pooled && facts.share !== null) {
       // 계정 여럿 가운데 다 쓴 계정이 있으면 가장 좋은 계정 하나가 아니라 합친 몫을 쓴다. 「100% 남음」이 10개 가운데 7개를 다 쓴 것을 가렸다
       // (11-20 유호님 「너무 엉망이야」, 솔리오 구독 비서 설계 검토 D5). 끝 칸은 가장 먼저 다시 열리는 계정이다
-      const pool = pooledLeft(g), first = g.out[0], stuck = g.out.some(a => a.focus === 'session') ? '개 막힘' : '개 다 씀';
+      const pool = facts.share, first = g.out[0], stuck = g.out.some(a => a.focus === 'session') ? '개 막힘' : '개 다 씀';
       Object.assign(row, { sub: '계정 ' + count + '개 · ' + g.out.length + stuck, val: '합쳐서 ' + pool + '% 남음', gauge: pool, when: first.unblock ? shortWhen(first.unblock, now) + '에 ' + first.name + ' 열림' : '', urgent: true });
       row.spoken = first.unblock ? spokenWhen(first.unblock, now) + '에 ' + first.name + ' 다시 열림' : '';
     } else if (best && best.g && !best.projected && (best.state === 'ok' || best.state === 'low')) {

@@ -1,13 +1,13 @@
 // 솔리오 구독 방의 비서 판(2026-11-20, docs/디자인/솔리오_구독비서_20261120/설계.md 3절과 7절 설계 검토 반영). DOM이 없다.
 // 유호님 11-20 「딱 하나만 봤으면 좋겠어」, 「급한것 중요한것 위주로 맨 위로」, 「토큰 출력량이 실시간으로」, 「하루에 한번씩 총 사용량 진단」.
 // 맨 위 한 가지(briefHead), 다가오는 일(briefSoon), 지금 출력(briefLive), 오늘 진단(briefDiag), 줄 안쪽 결론(poolSay)을 만든다.
-import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, nextRefill, balance, DAY_MS } from './subscriptions-model.mjs';
+import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, nextRefill, balance, poolTimeline, poolRunout, serviceFacts, shareOf, DAY_MS } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, whenWords, josa, joinNames } from './solio-today.mjs';
 import { tokenDay, tokenText } from './subscriptions-tokens.mjs';
+/* 풀 모의와 계정 사실은 subscriptions-model.mjs 한 곳에 있다(구조 다시 보기 5절). 시험과 옛 호출을 위해 이름을 그대로 내보낸다 */
+export { poolRunout };
 
-const HOUR = 3600e3, TEN_MIN = 600e3, SOON_MS = 48 * HOUR, LOOK_MS = 7 * DAY_MS, W_MS = 7 * DAY_MS;
-/* 30분 안에 다시 열리는 막힘은 막힘으로 치지 않는다(GPT 검수 GA2, 화면 검수 r2 A1) */
-const SHORT_MS = 30 * 60e3;
+const HOUR = 3600e3, SOON_MS = 48 * HOUR;
 /* 문자판 바깥 눈금이 보이는 길이: 지금부터 사흘(11-20 유호님이 고르신 A 문자판) */
 export const DIAL_MS = 72 * HOUR;
 export const SOON_SHOWN = 3;      // 첫 화면의 다가오는 일(설계 검토 D11). 나머지는 상세내역 맨 위
@@ -28,12 +28,7 @@ const here = g => g.accounts.filter(a => !a.away);
 const svcName = g => (g.service && SOLIO_TODAY_NAMES[g.service]) || String(g.label || '').trim() || '직접 넣은 구독';
 const dayStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const daysBetween = (t, now) => Math.round((dayStart(t) - dayStart(now)) / DAY_MS);
-/* 예측한 때는 한 시간 단위로 반올림해 「…쯤」으로 말한다. 읽은 때(초기화, 다시 열림)는 그대로 쓴다.
-   30분 단위는 맨 위 문장을 두 줄로 밀어 첫 화면이 한 화면을 넘었다(11-20 실제 자료 캡처).
-   반올림이 지금보다 앞이 되면(14:20에 14:28을 14:00으로) 10분 단위로 올린다(화면 검수 r2 A8) */
-const roundHalf = (t, now) => { const r = Math.round(t / HOUR) * HOUR; return r > now ? r : Math.ceil(t / TEN_MIN) * TEN_MIN; };
-/* 「…까지는 막히지 않습니다」는 늦게 말하지 않게 내린다(화면 검수 r2 A8) */
-const floorAt = (t, now) => { const f = Math.floor(t / HOUR) * HOUR; return f > now ? f : Math.floor(t / TEN_MIN) * TEN_MIN; };
+/* 예측한 때(「…쯤」은 반올림, 「…까지는」은 내림)는 풀 모의의 forecast가 한 번만 센다. 여기서는 다시 반올림하지 않는다(구조 다시 보기 P2-2) */
 const spoken = (t, now) => whenWords(t, now, { withTime: true });
 /* 다가오는 일 왼쪽 칸: 「오늘 22:15」, 「내일 10:59」, 「모레 07:00」, 그 뒤 「일 03:00」 */
 export function soonWhen(t, now, dateOnly = false) {
@@ -60,110 +55,34 @@ export function briefGroups(snapshot, now) {
   return serviceGroups(snapshot?.rows || [], now, snapshot?.check?.at || null).filter(g => here(g).length > 0);
 }
 
-/* ── 지금 속도면 언제 모두 막히나(설계 3.1, 설계 검토 D1, 화면 검수 A1 · A2) ──
-   계정 여럿을 돌려 쓰면 막힌 계정의 몫이 남은 계정으로 옮겨 간다. 그래서 남은 계정 각자의 지난 속도가 아니라
-   이 PC 계정 모두의 최근 3일 속도 합(요금제 무게)을 서비스의 속도로 본다.
-   계정마다 남은 몫을 따로 들고, 쓰는 몫은 먼저 초기화되는 계정부터 덜어 낸다(솔리오가 권하는 「오늘은 이 계정부터」와 같은 차례).
-   계정이 초기화되거나 다시 열리면 그 계정만 다시 찬다(5시간 한도로 막힌 계정은 풀릴 때 주간 남은 몫, 주간 초기화 때 100%). 초기화 뒤 7일마다 또 찬다.
-   다시 찼을 계정, 아직 읽지 않은 계정, 속도를 모르는 계정(기록 3일 미만), 요금제 무게를 모르는 서비스(Codex Pro와 Plus)는 null이다.
-   돌려주는 값: { at 모두 막히는 때, next 그 뒤 처음 몫이 생기는 사건(없으면 null), beyond 일주일 넘어서야 막힘, perWeek 한 주에 쓰는 계정 수, same 모든 계정의 요금제가 같은지 } */
-export function poolRunout(snapshot, g, now) {
-  if (g.kind !== 'weekly' || !g.service) return null;
-  const stats = snapshot?.usage?.accounts || {}, list = here(g);
-  if (!list.length || g.projected.length || g.pending.length) return null;
-  const known = list.filter(a => ['ok', 'low', 'out'].includes(a.state));
-  if (!known.length || known.some(a => !Number.isFinite(stats[a.row.id]?.rate3))) return null;
-  // 다시 로그인하거나 못 읽은 계정의 속도도 그 서비스에서 쓴 양이라 있으면 넣는다
-  // 본체가 그때의 요금제 무게로 센 속도(rate3w)를 먼저 쓴다. 3일 안에 요금제를 바꾼 계정의 옛 몫을 지금 무게로 부풀리지 않는다(GPT 검수 GA3)
-  const rateOf = a => { const st = stats[a.row.id]; return Number.isFinite(st?.rate3w) ? st.rate3w : Number.isFinite(st?.rate3) ? st.rate3 * weightOf(a.row) : 0; };
-  const rateW = list.reduce((n, a) => n + rateOf(a), 0);
-  if (!(rateW > 0)) return null;
-  // 요금제 무게를 모르는 서비스(Codex Pro와 Plus)는 계정마다의 %를 더할 수 없다(설계 검토 D4)
-  const same = new Set(list.map(a => planKey(a.row.plan))).size === 1;
-  if (g.service !== 'claude' && !same) return null;
-  const end = now + LOOK_MS, weekOf = a => (a.g?.weekly && !a.g.weekly.guess ? a.g.weekly : null);
-  // 계정마다: 지금 남은 몫(무게 곱)과 앞으로 차는 때들
-  const accts = [];
-  for (const a of known) {
-    const w = weightOf(a.row), wk = weekOf(a), fills = [];
-    const every = t0 => { for (let t = t0; t && t <= end; t += W_MS) fills.push({ t, to: 100 * w, type: 'reset' }); };
-    if (a.state === 'out') {
-      if (a.focus === 'session') {
-        // 5시간 한도로 막힌 계정: 주간 몫이나 풀리는 때를 모르면 셀 수 없다. 5시간 풀림을 주간 100%로 부풀리지 않는다(화면 검수 r2 A2)
-        if (!wk || !a.unblock) return null;
-        // 주간 초기화가 5시간 한도가 풀리기 전에 오면, 풀릴 때 100%로 열린다
-        if (wk.resetsAt && wk.resetsAt <= a.unblock) { fills.push({ t: a.unblock, to: 100 * w, type: 'reopen' }); every(wk.resetsAt + W_MS); }
-        else { fills.push({ t: a.unblock, to: wk.left * w, type: 'reopen' }); every(wk.resetsAt); }
-      } else if (a.unblock) { fills.push({ t: a.unblock, to: 100 * w, type: 'reopen' }); every(a.unblock + W_MS); }
-      fills.sort((p, q) => p.t - q.t);
-      accts.push({ a, level: 0, fills });
-      continue;
-    }
-    every(wk?.resetsAt || null);
-    accts.push({ a, level: (wk ? wk.left : a.left ?? 0) * w, fills });
-  }
-  const events = accts.flatMap(x => x.fills.filter(f => f.t > now).map(f => ({ ...f, x }))).sort((p, q) => p.t - q.t);
-  const nextFill = x => x.fills.find(f => f.t > tNow)?.t ?? Infinity;
-  const unit = Math.max(...list.map(a => weightOf(a.row))), perWeek = (rateW * 7) / (100 * unit);
-  const perMs = rateW / DAY_MS, base = { perWeek, same, accounts: list.length };
-  let tNow = now;
-  // 그 사이에 쓸 몫을 먼저 초기화되는 계정부터 덜어 낸다. 모자라면 그때 모두 막힌다
-  const drain = until => {
-    let need = (until - tNow) * perMs;
-    const total = accts.reduce((n, x) => n + x.level, 0);
-    // 다 쓰는 바로 그때 다른 계정이 열리면 막히지 않는다(GPT 검수 GA2)
-    if (need > total) return tNow + total / perMs;
-    for (const x of [...accts].filter(x => x.level > 0).sort((p, q) => nextFill(p) - nextFill(q))) {
-      const take = Math.min(x.level, need);
-      x.level -= take; need -= take;
-      if (need <= 0) break;
-    }
-    return null;
-  };
-  // 모두 바닥난 때. 30분 안에 다시 열리면 막힘으로 치지 않고 이어 세어 그 뒤의 진짜 막힘을 찾는다(화면 검수 r2 A1)
-  let gapAt = null;
-  for (const e of events) {
-    const out = drain(e.t);
-    if (out !== null) { if (gapAt === null) gapAt = out; for (const x of accts) x.level = 0; }
-    tNow = e.t;
-    // 몫이 늘지 않는 사건(주간 몫이 0인 채 풀리는 5시간 한도 같은)은 다시 열림이 아니다(화면 검수 r2 A1)
-    if (!(e.to > e.x.level)) continue;
-    if (gapAt !== null) {
-      if (e.t - gapAt >= SHORT_MS) return { ...base, at: gapAt, next: { t: e.t, a: e.x.a, type: e.type }, beyond: false };
-      gapAt = null;
-    }
-    e.x.level = e.to;
-  }
-  if (gapAt !== null) return { ...base, at: gapAt, next: null, beyond: false };
-  const total = accts.reduce((n, x) => n + x.level, 0), at = tNow + total / perMs;
-  return { ...base, at, next: null, beyond: at > end };
-}
+/* ── 지금 속도면 언제 모두 막히나 ── subscriptions-model.mjs poolTimeline(막힌 구간 모두, 서비스마다 한 번)과 poolRunout(첫 막힘)으로 옮겼다 */
 
 /* 줄 안쪽의 결론 문장(설계 검토 D5). 다 쓴 계정이 있거나 일주일 안에 모두 막히는 서비스만 만든다. 그 밖에는 지금 문장(solio-today moreSay) 그대로 */
 export function poolSay(snapshot, g, now) {
   if (g.kind !== 'weekly' || !g.service) return '';
-  const list = here(g), name = svcName(g), r = poolRunout(snapshot, g, now), one = list.length === 1;
-  // 쓸 계정은 없는데 다시 로그인하거나 읽지 못한 계정이 있으면 「모든 계정」이 아니라 그 할 일을 말한다(Fable 최종 F1)
-  if (!g.usable.length && !g.projected.length && g.out.length && (g.login.length || g.error.length)) return fixSay(g);
-  if (!g.usable.length && !g.projected.length && g.out.length) {
+  const f = serviceFacts(g, snapshot?.prices), p = poolTimeline(snapshot, g, now), list = here(g), name = svcName(g), one = list.length === 1;
+  // 쓸 계정은 없는데 손볼 계정(다시 로그인, 못 읽음, 아직 읽지 않음)이 있으면 「모든 계정」이 아니라 그 할 일을 말한다(Fable 최종 F1, 구조 다시 보기 P1-3)
+  if (f.kind === 'fixable') return fixSay(g, f);
+  if (f.kind === 'allOut') {
     const first = g.out[0];
     return (one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : allOutSay(name, g.out))
       + (first.unblock ? ' ' + spoken(first.unblock, now) + '에 ' + (one ? '' : ga(first.name) + ' 먼저 ') + '다시 열립니다.' : '');
   }
-  const runWords = r && !r.beyond ? '지금 속도면 ' + whenWords(roundHalf(r.at, now), now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.') : '';
+  const fc = p?.forecast;
+  const runWords = fc ? '지금 속도면 ' + whenWords(fc.sayAt, now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.') : '';
   if (g.out.length && !one) {
     const first = g.out[0];
     return name + ' ' + outCount(list.length, g.out) + ' '
-      + (runWords || (r ? '지금 속도면 이번 주는 모두 막히지는 않습니다.' : first.unblock ? spoken(first.unblock, now) + '에 ' + ga(first.name) + ' 먼저 다시 열립니다.' : ''));
+      + (runWords || (p ? '지금 속도면 이번 주는 모두 막히지는 않습니다.' : first.unblock ? spoken(first.unblock, now) + '에 ' + ga(first.name) + ' 먼저 다시 열립니다.' : ''));
   }
   return runWords;
 }
 
-/* 다 쓴 계정과 다시 로그인할(또는 읽지 못한) 계정만 있는 서비스: 「Claude 3개 가운데 2개를 다 썼고 1개는 다시 로그인해야 합니다.」 */
-function fixSay(g) {
-  const n = here(g).length, login = g.login.length, error = g.error.length;
-  const rest = login && error ? login + '개는 다시 로그인해야 하고 ' + error + '개는 읽지 못했습니다.' : login ? login + '개는 다시 로그인해야 합니다.' : error + '개는 읽지 못했습니다.';
-  return svcName(g) + ' ' + n + '개 가운데 ' + g.out.length + '개를 다 썼고 ' + rest;
+/* 다 쓴 계정과 손볼 계정만 있는 서비스: 「Claude 3개 가운데 2개를 다 썼고 1개는 다시 로그인해야 합니다.」 아직 읽지 않은 계정도 막힌 쪽으로 세지 않는다(구조 다시 보기 P1-3) */
+function fixSay(g, f = serviceFacts(g)) {
+  const n = here(g).length, login = f.login.length, error = f.error.length, pending = f.pending.length;
+  const rest = login && error ? login + '개는 다시 로그인해야 하고 ' + error + '개는 읽지 못했습니다.' : login ? login + '개는 다시 로그인해야 합니다.' : error ? error + '개는 읽지 못했습니다.' : '';
+  return svcName(g) + ' ' + n + '개 가운데 ' + g.out.length + '개를 다 썼고 ' + rest + (pending ? (rest ? ' ' : '') + pending + '개는 아직 읽는 중입니다.' : '');
 }
 
 /* 맨 위 한 가지(설계 3.1, 설계 검토 D5). 자료를 다 읽은 상태에서만 부른다.
@@ -171,12 +90,13 @@ function fixSay(g) {
    고를 것이 없으면 지금 solioToday 문장(fallback)을 쓴다 */
 export function briefHead(snapshot, groups, now, fallback = null) {
   const weekly = groups.filter(g => g.kind === 'weekly' && g.service);
-  const runs = new Map(weekly.map(g => [g, poolRunout(snapshot, g, now)]));
-  // 0. 쓸 계정은 없고 다시 로그인하거나 읽지 못한 계정이 남은 서비스: 로그인하면 바로 쓸 수 있으니 그 할 일이 맨 위다(Fable 최종 F1)
-  const fixable = weekly.find(g => !g.usable.length && !g.projected.length && g.out.length && (g.login.length || g.error.length));
-  if (fixable) return { say: fixSay(fixable), then: '계정 관리에서 ' + (fixable.login.length ? '다시 로그인합니다.' : '연결을 확인합니다.'), covers: [], service: fixable.service };
+  // 서비스 판정과 풀 모의는 서비스마다 한 번 센다(구조 다시 보기 P1-3 · P3-3)
+  const runs = new Map(weekly.map(g => [g, poolTimeline(snapshot, g, now)])), facts = new Map(weekly.map(g => [g, serviceFacts(g, snapshot?.prices)]));
+  // 0. 쓸 계정은 없고 손볼 계정이 남은 서비스: 로그인하면 바로 쓸 수 있으니 그 할 일이 맨 위다(Fable 최종 F1)
+  const fixable = weekly.find(g => facts.get(g).kind === 'fixable');
+  if (fixable) { const f = facts.get(fixable); return { say: fixSay(fixable, f), then: f.login.length ? '계정 관리에서 다시 로그인합니다.' : f.error.length ? '계정 관리에서 연결을 확인합니다.' : '', covers: [], service: fixable.service }; }
   // 1. 한 서비스의 이 PC 계정이 모두 막힘. 다시 열리는 때가 가장 늦은 것부터
-  const allOut = weekly.filter(g => !g.usable.length && !g.projected.length && g.out.length && !g.login.length && !g.error.length).sort((a, b) => (b.out[0].unblock ?? Infinity) - (a.out[0].unblock ?? Infinity));
+  const allOut = weekly.filter(g => facts.get(g).kind === 'allOut').sort((a, b) => (b.out[0].unblock ?? Infinity) - (a.out[0].unblock ?? Infinity));
   if (allOut.length) {
     const g = allOut[0], first = g.out[0], name = svcName(g), one = here(g).length === 1;
     const say = one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : allOutSay(name, g.out);
@@ -184,22 +104,22 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     return { say, then, covers: first.unblock ? ['unblock:' + first.row.id] : [], service: g.service };
   }
   // 2. 지금 속도면 48시간 안에 모두 막힘. 막히는 때가 가장 이른 것부터. 30분 안에 다시 열리면 말하지 않는다
-  const soonRun = weekly.map(g => ({ g, r: runs.get(g) })).filter(({ r }) => r && !r.beyond && r.at <= now + SOON_MS && (!r.next || r.next.t - r.at >= 30 * 60e3)).sort((a, b) => a.r.at - b.r.at)[0];
+  const soonRun = weekly.map(g => ({ g, fc: runs.get(g)?.forecast })).filter(({ fc }) => fc && fc.at <= now + SOON_MS).sort((a, b) => a.fc.at - b.fc.at)[0];
   if (soonRun) {
-    const { g, r } = soonRun, name = svcName(g), one = here(g).length === 1;
-    const say = '지금 속도면 ' + neun(name) + ' ' + whenWords(roundHalf(r.at, now), now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.');
-    const then = r.next
-      ? spoken(r.next.t, now) + '에 ' + (one ? '' : ga(r.next.a.name) + ' ') + (r.next.type === 'reopen' ? '다시 열릴' : '초기화될') + ' 때까지 ' + spanWords(r.next.t - r.at) + '쯤 막힙니다.'
+    const { g, fc } = soonRun, name = svcName(g), one = here(g).length === 1, nx = fc.next;
+    const say = '지금 속도면 ' + neun(name) + ' ' + whenWords(fc.sayAt, now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.');
+    const then = nx && nx.t <= now + 7 * DAY_MS
+      ? spoken(nx.t, now) + '에 ' + (one ? '' : ga(nx.a.name) + ' ') + (nx.type === 'reopen' ? '다시 열릴' : '초기화될') + ' 때까지 ' + spanWords(nx.t - fc.at) + '쯤 막힙니다.'
       : '일주일 안에는 다시 열리는 계정이 없습니다.';
-    return { say, then, covers: ['runout:' + g.service, ...(r.next ? [(r.next.type === 'reopen' ? 'unblock:' : 'reset:') + r.next.a.row.id] : [])], service: g.service };
+    return { say, then, covers: ['runout:' + g.service, ...(nx ? [(nx.type === 'reopen' ? 'unblock:' : 'reset:') + nx.a.row.id] : [])], service: g.service };
   }
   // 3. 계정 둘 이상인 서비스에서 절반 이상이 막힘. 막힌 몫이 큰 것부터
   const many = weekly.filter(g => here(g).length >= 2 && g.out.length * 2 >= here(g).length).sort((a, b) => b.out.length / here(b).length - a.out.length / here(a).length)[0];
   if (many) {
-    const name = svcName(many), r = runs.get(many), first = many.out[0];
+    const name = svcName(many), p = runs.get(many), first = many.out[0];
     const say = name + ' ' + outCount(here(many).length, many.out);
     let then = '', covers = [];
-    if (r) then = r.beyond ? '지금 속도면 이번 주는 모두 막히지는 않습니다.' : '지금 속도면 ' + whenWords(floorAt(r.at, now), now, { withTime: true }) + '까지는 막히지 않습니다.';
+    if (p) then = p.forecast ? '지금 속도면 ' + whenWords(p.forecast.untilAt, now, { withTime: true }) + '까지는 막히지 않습니다.' : '지금 속도면 이번 주는 모두 막히지는 않습니다.';
     else if (first.unblock) { then = spoken(first.unblock, now) + '에 ' + ga(first.name) + ' 먼저 다시 열립니다.'; covers = ['unblock:' + first.row.id]; }
     return { say, then, covers, service: many.service };
   }
@@ -292,12 +212,11 @@ export function briefSoon(snapshot, groups, now, covers = [], horizon = SOON_MS)
   }
   for (const g of groups) {
     if (g.kind !== 'weekly' || !g.service || skip.has('runout:' + g.service)) continue;
-    const r = poolRunout(snapshot, g, now);
-    // 30분 안에 다시 열리는 막힘은 맨 위처럼 다가오는 일에도 쓰지 않는다(GPT 검수 GA2)
-    if (r && !r.beyond && r.at > now && (!r.next || r.next.t - r.at >= 30 * 60e3)) {
+    // 30분 넘는 앞날의 막힘만(풀 모의가 한 번 거른 forecast). 줄 세우는 때와 보이는 때를 같게 한다(화면 검수 r2 A8)
+    const fc = poolTimeline(snapshot, g, now)?.forecast;
+    if (fc) {
       const what = here(g).length === 1 ? ga(svcName(g)) + ' 바닥납니다' : svcName(g) + ' 계정이 모두 막힙니다';
-      // 줄 세우는 때와 보이는 때를 같게 한다(반올림한 15:00이 14:45 일정 위에 오지 않게, 화면 검수 r2 A8)
-      const at = roundHalf(r.at, now);
+      const at = fc.sayAt;
       items.push({ at, when: soonWhen(at, now), text: what + ' · 지금 속도면', key: 'runout:' + g.service, say: '지금 속도면 ' + whenWords(at, now, { withTime: true }) + '쯤 ' + what + '.' });
     }
   }
@@ -479,18 +398,6 @@ export function briefLive(tokens, samples, now) {
    hero: 가운데 구독(맨 위가 말한 구독, 없으면 계정이 가장 많은 한도형 구독)의 큰 숫자.
    arcs: 바깥 궤도의 구간들(from · to, k: safe 막히지 않음 · gap 모두 막힘 · after 그 뒤나 모름). 지금 모두 막혀 있으면 첫 다시 열림까지 gap부터다.
    ticks · days · events: 바깥 눈금(한 시간마다, 여섯 시간마다, 자정), 날 이름, 다가오는 일 표식 */
-const weeklyLeft = a => Math.max(0, Math.min(100, Math.round(a.g?.weekly && !a.g.weekly.guess ? a.g.weekly.left : a.left ?? 0)));
-/* 칸의 남은 양(0~100, 모르면 null). 주간 한도를 다 쓴 계정은 0, 5시간 한도로 잠깐 막힌 계정은 주간 남은 양(Fable 최종 P2),
-   크레딧형은 남은 크레딧 ÷ 한 달 크레딧(상세내역 줄과 같은 셈, Fable 최종 P1) */
-function cellLeft(a, prices) {
-  if (a.row.kind === 'credit') {
-    if (!['ok', 'low'].includes(a.state)) return null;
-    const b = balance(a.row), allot = monthCredits(prices, a.row);
-    return b && allot?.credits > 0 ? Math.max(0, Math.min(100, Math.floor((b.value / allot.credits) * 100))) : null;
-  }
-  if (a.state === 'out') return a.focus === 'session' && a.g?.weekly && !a.g.weekly.guess ? weeklyLeft(a) : 0;
-  return ['ok', 'low'].includes(a.state) ? weeklyLeft(a) : null;
-}
 /* 칸에 다가가면 뜨는 글 */
 function cellNote(a, left) {
   if (a.state === 'out') return a.focus === 'session' ? '5시간 한도로 막힘' + (left > 0 ? ' · 주간 ' + left + '% 남음' : '') : '다 씀';
@@ -507,49 +414,43 @@ export function briefDial(snapshot, groups, now, focusService = null) {
   const focus = auto.find(g => g.service === focusService) || [...weekly].sort((a, b) => here(b).length - here(a).length || (b.service === 'claude') - (a.service === 'claude'))[0] || auto[0];
   if (!focus) return null;
   const prices = snapshot?.prices || null;
-  const rings = auto.map(g => ({ key: g.service, name: svcName(g), focus: g === focus, accounts: here(g).filter(a => a.row.source === 'auto').map(a => { const left = cellLeft(a, prices); return { id: a.row.id, name: a.name || '', state: a.state, left, blocked: a.state === 'out', note: cellNote(a, left) }; }) }));
-  // 큰 숫자: 계정 여럿은 합친 몫(무게를 아는 Claude나 요금제가 같을 때), 섞인 요금제는 열린 계정 수, 하나는 그 계정의 남은 양.
-  // 크레딧형은 남은 크레딧 ÷ 한 달 크레딧, 한 달 양을 모르면 남은 크레딧 수다(Fable 최종 P1)
-  const list = here(focus).filter(a => a.row.source === 'auto'), name = svcName(focus), read = list.filter(a => ['ok', 'low', 'out'].includes(a.state));
-  const pooled = focus.service === 'claude' || new Set(list.map(a => planKey(a.row.plan))).size === 1;
-  const lefts = read.map(a => ({ a, v: cellLeft(a, prices) })), known = lefts.filter(x => x.v !== null);
-  const login = list.some(a => focus.login.includes(a)), broken = list.some(a => focus.error.includes(a));
+  const rings = auto.map(g => ({ key: g.service, name: svcName(g), focus: g === focus, accounts: here(g).filter(a => a.row.source === 'auto').map(a => { const left = shareOf(a, prices); return { id: a.row.id, name: a.name || '', state: a.state, left, blocked: a.state === 'out', note: cellNote(a, left) }; }) }));
+  // 큰 숫자와 낭독은 서비스 판정(serviceFacts) 하나를 읽는다(구조 다시 보기 P1-3). 합칠 수 있으면 합친 몫, 크레딧형은 남은 양 또는 남은 크레딧 수,
+  // 합칠 수 없는 요금제(Codex Pro와 Plus)는 열린 계정 수다. 읽힌 계정이 없으면 그 까닭을 말한다(Fable 최종 P1)
+  const f = serviceFacts(focus, prices), name = svcName(focus), one = f.list.length === 1, openN = f.open.length + f.projected.length;
   let hero;
-  // 읽힌 계정이 없으면 까닭을 가른다. 다시 로그인이나 못 읽음을 「읽는 중」이라 하지 않는다(Fable 최종 P1)
-  if (!read.length) hero = { value: '–', unit: '', label: name + (login ? ' 다시 로그인 필요' : broken ? ' 읽지 못함' : ' 읽는 중') };
-  else if (focus.kind === 'credit' && !known.length) hero = { value: fmt(read.reduce((n, a) => n + (balance(a.row)?.value || 0), 0)), unit: '', label: name + ' 남은 크레딧' };
-  else if (list.length === 1 || focus.kind === 'credit') hero = { value: String(Math.floor(known.reduce((n, x) => n + x.v, 0) / Math.max(1, known.length))), unit: '%', label: name + ' 남은 양' };
-  else if (pooled) { const w = known.reduce((n, x) => n + weightOf(x.a.row), 0); hero = { value: String(w ? Math.floor(known.reduce((n, x) => n + x.v * weightOf(x.a.row), 0) / w) : 0), unit: '%', label: name + ' 남은 몫' }; }
-  else hero = { value: String(read.filter(a => a.state !== 'out').length), unit: '/' + list.length, label: name + ' 열린 계정' };
+  if (!f.read.length) hero = { value: '–', unit: '', label: name + (f.login.length ? ' 다시 로그인 필요' : f.error.length ? ' 읽지 못함' : ' 읽는 중') };
+  else if (focus.kind === 'credit' && f.share === null) hero = { value: fmt(f.read.reduce((n, a) => n + (balance(a.row)?.value || 0), 0)), unit: '', label: name + ' 남은 크레딧' };
+  else if (f.share !== null) hero = { value: String(f.share), unit: '%', label: name + (one || focus.kind === 'credit' ? ' 남은 양' : ' 남은 몫') };
+  else hero = { value: String(openN), unit: '/' + f.list.length, label: name + ' 열린 계정' };
   const end = now + DIAL_MS, ticks = [];
   for (let t = Math.ceil(now / HOUR) * HOUR; t < end; t += HOUR) { const h = new Date(t).getHours(); ticks.push({ off: t - now, k: h === 0 ? 'day' : h % 6 === 0 ? 'six' : 'hour' }); }
   // 자정이 「지금」이나 사흘 끝에서 한 시간 반 안이면 날 이름이 「지금」과 겹친다. 그 자정은 눈금만 남긴다(화면 검수 dial A4)
   const NEAR = 1.5 * HOUR;
   const days = [{ off: 0, label: '지금' }, ...ticks.filter(k => k.k === 'day' && k.off > NEAR && k.off < DIAL_MS - NEAR).map(k => ({ off: k.off, label: soonWhen(now + k.off, now, true) }))];
-  const r = focus.kind === 'weekly' ? poolRunout(snapshot, focus, now) : null;
+  const p = focus.kind === 'weekly' ? poolTimeline(snapshot, focus, now) : null, fc = p?.forecast || null;
   // 맨 위 구독의 막힘 표식은 궤도와 같은 때(반올림 전)에 찍는다. 글(title)은 반올림한 때 그대로다(화면 검수 dial A5)
   const events = briefSoon(snapshot, groups, now, [], DIAL_MS).all.filter(i => i.at > now && i.at <= end)
-    .map(i => ({ off: i.key === 'runout:' + focus.service && r && r.at > now ? r.at - now : i.at - now, kind: KIND[i.key.split(':')[0]] || 'other', text: i.when + ' ' + i.text }));
-  const open = read.filter(a => a.state !== 'out').length;
-  // 바깥 궤도. 지금 모두 막혀 있으면 첫 다시 열림까지가 붉다. 30분 안에 열리는 막힘도 지금 막힌 것이라 그린다(화면 검수 dial A2)
-  const firstOpen = open || !read.length ? null : Math.min(...read.map(a => (a.unblock && a.unblock > now ? a.unblock : Infinity)));
-  const arcs = [], add = (from, to, k) => { const a = Math.max(0, from), b = Math.min(DIAL_MS, to); if (b > a) arcs.push({ from: a, to: b, k }); };
-  let start = 0;
-  if (read.length && !open) { const t = Number.isFinite(firstOpen) ? firstOpen - now : DIAL_MS; add(0, t, 'gap'); start = t; }
-  if (r) {
-    const at = r.beyond ? Infinity : r.at - now, back = r.next ? r.next.t - now : DIAL_MS;
-    add(start, at, 'safe');
-    if (at < DIAL_MS) { add(Math.max(start, at), back, 'gap'); add(back, DIAL_MS, 'after'); }
-  } else add(start, DIAL_MS, 'after');
-  // 낭독 이름. 읽는 중에는 열린 계정 수를 단정하지 않고, 지금 모두 막혔으면 예측 대신 첫 다시 열림을 말한다(화면 검수 dial A2)
-  const reopenWords = Number.isFinite(firstOpen) ? ' ' + spoken(firstOpen, now) + '에 처음 다시 열립니다.' : '';
-  // 계정이 하나면 「1개 가운데 1개」가 아니라 「Codex는 열려 있습니다」, 「바닥납니다」로 말한다
-  const one = list.length === 1;
-  // 다시 로그인하거나 못 읽은 계정을 막힌 계정으로 세지 않는다. 맨 위(fixSay)와 같은 말로 나눈다(Fable 최종 P2)
-  const label = !read.length ? (login ? name + ' 계정은 다시 로그인해야 합니다.' : broken ? name + ' 계정을 읽지 못했습니다.' : name + ' 계정을 읽는 중입니다.')
-    : !open ? (read.length < list.length && (login || broken) ? fixSay(focus) : one ? neun(name) + ' 막혀 있습니다.' : name + ' 계정 ' + read.length + '개가 모두 막혀 있습니다.') + reopenWords
-    : [one ? neun(name) + ' 열려 있습니다.' : name + ' 계정 ' + list.length + '개 가운데 ' + open + '개가 열려 있습니다.', hero.unit === '%' ? hero.label + ' ' + hero.value + '%.' : '',
-      r && !r.beyond && r.at > now && r.at < end ? '지금 속도면 ' + whenWords(roundHalf(r.at, now), now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.') : r ? '지금 속도면 사흘 안에는 막히지 않습니다.' : ''].filter(Boolean).join(' ');
+    .map(i => ({ off: i.key === 'runout:' + focus.service && fc ? fc.at - now : i.at - now, kind: KIND[i.key.split(':')[0]] || 'other', text: i.when + ' ' + i.text }));
+  // 바깥 궤도: 풀 모의의 막힌 구간을 모두 붉게, 그 사이를 금색으로 그린다. 지금 막힌 것은 짧아도 그린다(화면 검수 dial A2).
+  // 풀 모의가 없으면(합칠 수 없는 요금제, 읽지 않은 계정) 지금 모두 막혔을 때 첫 다시 열림까지만 붉게 그리고 그 뒤는 모름(점선)이다
+  const arcs = [], add = (from, to, k) => { const x = Math.max(0, from), y = Math.min(DIAL_MS, to); if (y > x) arcs.push({ from: x, to: y, k }); };
+  if (p) {
+    let t0 = 0;
+    for (const b of p.blocks) { const s0 = b.from - now, e0 = b.to - now; if (s0 >= DIAL_MS) break; add(t0, s0, 'safe'); add(s0, e0, 'gap'); t0 = Math.max(t0, Math.min(DIAL_MS, e0)); }
+    add(t0, DIAL_MS, 'safe');
+  } else {
+    let start = 0;
+    if (f.read.length && !openN) { const t = f.firstOpen ? f.firstOpen.unblock - now : DIAL_MS; add(0, t, 'gap'); start = t; }
+    add(start, DIAL_MS, 'after');
+  }
+  // 낭독 이름. 읽지 않은 계정을 막힌 계정으로 세지 않고 따로 말한다. 지금 모두 막혔으면 예측 대신 첫 다시 열림을 말한다(화면 검수 dial A2, 구조 다시 보기 P1-3)
+  const reopenWords = f.firstOpen ? ' ' + spoken(f.firstOpen.unblock, now) + '에 처음 다시 열립니다.' : '';
+  const unread = [f.login.length ? f.login.length + '개는 다시 로그인해야 합니다.' : '', f.error.length ? f.error.length + '개는 읽지 못했습니다.' : '', f.pending.length ? f.pending.length + '개는 아직 읽는 중입니다.' : ''].filter(Boolean).join(' ');
+  const label = !f.read.length ? (f.login.length ? name + ' 계정은 다시 로그인해야 합니다.' : f.error.length ? name + ' 계정을 읽지 못했습니다.' : name + ' 계정을 읽는 중입니다.')
+    : !openN ? (f.kind === 'fixable' ? fixSay(focus, f) : one ? neun(name) + ' 막혀 있습니다.' : name + ' 계정 ' + f.read.length + '개가 모두 막혀 있습니다.') + reopenWords
+    : [one ? neun(name) + ' 열려 있습니다.' : name + ' 계정 ' + f.list.length + '개 가운데 ' + openN + '개가 열려 있습니다.', unread, hero.unit === '%' ? hero.label + ' ' + hero.value + '%.' : '',
+      fc && fc.at < end ? '지금 속도면 ' + whenWords(fc.sayAt, now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.') : p ? '지금 속도면 사흘 안에는 막히지 않습니다.' : ''].filter(Boolean).join(' ');
   return { span: DIAL_MS, focus: focus.service, hero, rings, arcs, ticks, days, events, label };
 }
 

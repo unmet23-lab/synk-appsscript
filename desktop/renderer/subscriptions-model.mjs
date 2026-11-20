@@ -634,3 +634,131 @@ export function annualTips(snapshot, rows, now) {
 }
 // 요금·결제일 칸에 보일 연간 결제 팁(「팁 끄기」면 없음, 쉬는 팁은 뺀다). 서비스마다 하나, 화면에 둘까지.
 export const shownAnnual = (snapshot, rows, now, answered = {}) => (snapshot?.settings?.tipsOff === true ? [] : annualTips(snapshot, rows, now).filter(t => !isResting(snapshot?.settings, t.key, now, answered)).slice(0, MAX_TIPS));
+
+/* ── 계정 사실과 서비스 판정, 풀 모의(솔리오 구독 비서 · 구조 다시 보기 5절, 11-20) ──
+   솔리오의 맨 위 · 다가오는 일 · 줄 안쪽 · 문자판 · 진단이 같은 사실을 여기서 한 번 읽는다. 소비자마다 원자료를 다시 해석하다
+   크레딧형, 5시간 한도, 다시 로그인, 아직 읽지 않은 계정 가운데 하나를 빠뜨려 온 것을 막는다(세 회차 P1 18건의 뿌리). */
+const POOL_LOOK = 7 * DAY_MS, POOL_W = 7 * DAY_MS, HOUR_MS = 3600e3, TEN_MS = 600e3;
+/* 30분 안에 다시 열리는 막힘은 막힘으로 치지 않는다. 이 문턱은 여기서 한 번만 건다 */
+export const POOL_SHORT = 30 * 60e3;
+const weekOfAcct = a => (a.g?.weekly && !a.g.weekly.guess ? a.g.weekly : null);
+/* 계정 하나의 남은 양(자기 한도에서 0~100, 모르면 null). 주간 한도를 다 쓴 계정은 0, 5시간 한도로 잠깐 막힌 계정은 주간 남은 양,
+   크레딧형은 남은 크레딧 ÷ 한 달 크레딧(상세내역 줄과 같은 셈) */
+export function shareOf(a, prices) {
+  if (a.row.kind === 'credit') {
+    if (!['ok', 'low'].includes(a.state)) return null;
+    const b = balance(a.row), allot = monthCredits(prices, a.row);
+    return b && allot?.credits > 0 ? Math.max(0, Math.min(100, Math.floor((b.value / allot.credits) * 100))) : null;
+  }
+  const wk = weekOfAcct(a), left = v => Math.max(0, Math.min(100, Math.round(v)));
+  if (a.state === 'out') return a.focus === 'session' && wk ? left(wk.left) : 0;
+  return ['ok', 'low'].includes(a.state) ? left(wk ? wk.left : a.left ?? 0) : null;
+}
+/* 서비스 하나의 판정. kind: allOut 읽힌 계정이 모두 막힘 · fixable 쓸 계정은 없고 손볼(다시 로그인, 못 읽음, 아직 읽지 않음) 계정이 섞임 ·
+   someOut 막힌 계정이 있지만 쓸 계정도 있음 · open 막힌 계정 없음 · login · error · pending 읽힌 계정이 없고 그 까닭.
+   pooled: 남은 몫을 합칠 수 있나(Claude는 요금제 무게로, 다른 서비스는 요금제가 모두 같을 때만).
+   countable: 「계정 n개 몫」처럼 계정 수로 말할 수 있나(모든 서비스에서 요금제가 같을 때만). share: 합친 몫(합칠 수 없으면 null) */
+export function serviceFacts(g, prices = null) {
+  const list = g.accounts.filter(a => !a.away && a.row.source === 'auto');
+  const read = list.filter(a => ['ok', 'low', 'out'].includes(a.state));
+  const out = read.filter(a => a.state === 'out'), open = read.filter(a => a.state !== 'out');
+  const login = list.filter(a => a.state === 'login'), error = list.filter(a => a.state === 'error'), pending = list.filter(a => a.state === 'unknown');
+  const projected = list.filter(a => g.projected.includes(a));
+  const countable = new Set(list.map(a => planKey(a.row.plan))).size === 1, pooled = g.service === 'claude' || countable;
+  const known = read.map(a => ({ a, v: shareOf(a, prices), w: g.kind === 'credit' ? 1 : weightOf(a.row) })).filter(x => x.v !== null);
+  const w = known.reduce((n, x) => n + x.w, 0);
+  const share = pooled && w ? Math.floor(known.reduce((n, x) => n + x.v * x.w, 0) / w) : null;
+  const firstOpen = out.filter(a => a.unblock).sort((x, y) => x.unblock - y.unblock)[0] || null;
+  const fix = login.length + error.length + pending.length;
+  const kind = !read.length && !projected.length ? (login.length ? 'login' : error.length ? 'error' : 'pending')
+    : !open.length && !projected.length ? (fix ? 'fixable' : 'allOut')
+    : out.length ? 'someOut' : 'open';
+  return { kind, list, read, open, out, login, error, pending, projected, pooled, countable, share, firstOpen };
+}
+
+/* 풀 모의: 이 PC 계정 모두의 최근 3일 속도 합(요금제 무게)을 서비스의 속도로 보고, 다시 차는 때와 때 사이를 정확히 덜어 낸다.
+   쓰는 몫은 먼저 다시 차는 계정부터 덜어 낸다. 같은 때의 채움은 한꺼번에 넣고, 몫이 늘어야 열림이다.
+   첫 막힘에서 멈추지 않고 일주일 안의 막힌 구간을 모두 모은다(구조 다시 보기 5절, Opus 대체 설계 검토 P1-1).
+   읽지 않은 계정, 속도를 모르는 계정(기록 3일 미만), 합칠 수 없는 요금제(Codex Pro와 Plus), 주간 몫을 모르는 5시간 한도 계정이 있으면 null.
+   돌려주는 값: { blocks 막힌 구간 모두 [{ from, to, by: { t, a, type } | null }](to가 Infinity면 일주일 안에 열리지 않음),
+   now 지금 막힌 구간(짧아도) · first 30분 넘는 첫 막힘(지금일 수도) · forecast 30분 넘는 앞날의 첫 막힘 { at, sayAt 「…쯤」, untilAt 「…까지는」, next },
+   beyond 일주일 안에 30분 넘게 막히지 않음, perWeek 한 주에 쓰는 계정 수(가장 큰 요금제 기준), same 요금제가 모두 같은지, accounts }.
+   같은 판에서 여러 소비자가 불러도 서비스마다 한 번만 센다 */
+const poolCache = new WeakMap();
+export function poolTimeline(snapshot, g, now) {
+  const c = poolCache.get(g);
+  if (c && c.snapshot === snapshot && c.now === now) return c.value;
+  const value = sweepPool(snapshot, g, now);
+  poolCache.set(g, { snapshot, now, value });
+  return value;
+}
+/* 「…쯤」에 쓰는 때: 한 시간 단위로 반올림하되 지금보다 앞이 되면 10분 단위로 올린다. 「…까지는」: 늦게 말하지 않게 내린다 */
+export const poolSayAt = (t, now) => { const r = Math.round(t / HOUR_MS) * HOUR_MS; return r > now ? r : Math.ceil(t / TEN_MS) * TEN_MS; };
+export const poolUntilAt = (t, now) => { const f = Math.floor(t / HOUR_MS) * HOUR_MS; return f > now ? f : Math.floor(t / TEN_MS) * TEN_MS; };
+function sweepPool(snapshot, g, now) {
+  if (g.kind !== 'weekly' || !g.service) return null;
+  const stats = snapshot?.usage?.accounts || {}, list = g.accounts.filter(a => !a.away);
+  if (!list.length || g.projected.length || g.pending.length) return null;
+  const known = list.filter(a => ['ok', 'low', 'out'].includes(a.state));
+  if (!known.length || known.some(a => !Number.isFinite(stats[a.row.id]?.rate3))) return null;
+  // 다시 로그인하거나 못 읽은 계정의 속도도 그 서비스에서 쓴 양이라 있으면 넣는다. 본체가 그때의 요금제 무게로 센 속도(rate3w)를 먼저 쓴다(GPT 검수 GA3)
+  const rateOf = a => { const st = stats[a.row.id]; return Number.isFinite(st?.rate3w) ? st.rate3w : Number.isFinite(st?.rate3) ? st.rate3 * weightOf(a.row) : 0; };
+  const rateW = list.reduce((n, a) => n + rateOf(a), 0);
+  if (!(rateW > 0)) return null;
+  const same = new Set(list.map(a => planKey(a.row.plan))).size === 1;
+  if (g.service !== 'claude' && !same) return null;
+  const end = now + POOL_LOOK, accts = [];
+  for (const a of known) {
+    const w = weightOf(a.row), wk = weekOfAcct(a), fills = [];
+    const every = t0 => { for (let t = t0; t && t <= end; t += POOL_W) fills.push({ t, to: 100 * w, type: 'reset' }); };
+    if (a.state === 'out') {
+      if (a.focus === 'session') {
+        // 5시간 한도로 막힌 계정: 주간 몫이나 풀리는 때를 모르면 셀 수 없다. 주간 초기화가 먼저 오면 풀릴 때 100%로 열린다(화면 검수 r2 A2)
+        if (!wk || !a.unblock) return null;
+        if (wk.resetsAt && wk.resetsAt <= a.unblock) { fills.push({ t: a.unblock, to: 100 * w, type: 'reopen' }); every(wk.resetsAt + POOL_W); }
+        else { fills.push({ t: a.unblock, to: wk.left * w, type: 'reopen' }); every(wk.resetsAt); }
+      } else if (a.unblock) { fills.push({ t: a.unblock, to: 100 * w, type: 'reopen' }); every(a.unblock + POOL_W); }
+      fills.sort((p, q) => p.t - q.t);
+      accts.push({ a, level: 0, fills });
+      continue;
+    }
+    every(wk?.resetsAt || null);
+    accts.push({ a, level: (wk ? wk.left : a.left ?? 0) * w, fills });
+  }
+  const unit = Math.max(...list.map(a => weightOf(a.row))), perWeek = (rateW * 7) / (100 * unit), perMs = rateW / DAY_MS;
+  const times = [...new Set(accts.flatMap(x => x.fills.map(f => f.t)).filter(t => t > now && t <= end))].sort((p, q) => p - q);
+  const blocks = [];
+  let t = now, cur = null;
+  for (const te of [...times, end]) {
+    // te 전까지 쓸 몫을 먼저 다시 차는 계정부터 덜어 낸다. 다 쓰는 바로 그때 다른 계정이 열리면 막히지 않는다(GPT 검수 GA2)
+    let need = (te - t) * perMs;
+    const total = accts.reduce((n, x) => n + x.level, 0);
+    if (need > total) { if (!cur) cur = { from: t + total / perMs, to: Infinity, by: null }; for (const x of accts) x.level = 0; }
+    else {
+      const nextFill = x => x.fills.find(f => f.t > t)?.t ?? Infinity;
+      for (const x of accts.filter(x => x.level > 0).sort((p, q) => nextFill(p) - nextFill(q))) { const take = Math.min(x.level, need); x.level -= take; need -= take; if (need <= 0) break; }
+    }
+    t = te;
+    if (te === end) break;
+    // 같은 때의 채움을 한꺼번에 넣는다. 몫이 늘어야 열림이다(주간 몫이 0인 채 풀리는 5시간 한도는 열림이 아니다, 화면 검수 r2 A1)
+    let by = null;
+    for (const x of accts) for (const f of x.fills) if (f.t === te && f.to > x.level) { x.level = f.to; if (!by) by = { t: te, a: x.a, type: f.type }; }
+    if (cur && by) { cur.to = te; cur.by = by; blocks.push(cur); cur = null; }
+  }
+  if (cur) {
+    // 일주일 안에 열리지 않는 막힘: 그 뒤 처음 몫이 생기는 사건을 알면 적는다
+    const later = accts.flatMap(x => x.fills.filter(f => f.t > end && f.to > 0).map(f => ({ t: f.t, a: x.a, type: f.type }))).sort((p, q) => p.t - q.t)[0] || null;
+    cur.by = later; blocks.push(cur);
+  }
+  const long = b => b.to - b.from >= POOL_SHORT;
+  const nowBlock = blocks.find(b => b.from <= now + 60e3) || null, first = blocks.find(long) || null, fut = blocks.find(b => long(b) && b.from > now + 60e3) || null;
+  const forecast = fut ? { at: fut.from, sayAt: poolSayAt(fut.from, now), untilAt: poolUntilAt(fut.from, now), next: fut.by } : null;
+  return { blocks, now: nowBlock, first, forecast, beyond: !first, perWeek, same, accounts: list.length };
+}
+/* 첫 막힘 하나(옛 이름). { at 모두 막히는 때, next 그 뒤 처음 몫이 생기는 사건, beyond 일주일 안에 막히지 않음, perWeek, same, accounts } */
+export function poolRunout(snapshot, g, now) {
+  const p = poolTimeline(snapshot, g, now);
+  if (!p) return null;
+  const base = { perWeek: p.perWeek, same: p.same, accounts: p.accounts };
+  return p.first ? { ...base, at: p.first.from, next: p.first.by, beyond: false } : { ...base, at: Infinity, next: null, beyond: true };
+}
