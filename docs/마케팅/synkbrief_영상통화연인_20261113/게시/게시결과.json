@@ -62,7 +62,22 @@
       "주소": "https://www.instagram.com/reel/DfuKEM-kZ2H/",
       "게시관측시각": "2026-11-14T12:01:44.000Z",
       "플랫폼": "instagram",
-      "게시물ID": "DfuKEM-kZ2H"
+      "게시물ID": "DfuKEM-kZ2H",
+      "성과구분": "콘텐츠",
+      "연결근거": [
+        {
+          "path": "docs/_ops/qa/게시성과연결_20261118/인스타공개캡션.md",
+          "sha256": "c736e2c9a896c11692a78f4728ebb4b5c6db852fdda1aadbe60fd7a85714c614"
+        },
+        {
+          "path": "docs/마케팅/synkbrief_영상통화연인_20261113/게시/게시결과.json",
+          "sha256": "a5396e8b52b8833e5caf38edf9dc02fa05f0006f541da4f9c2871b7ef05834f8"
+        },
+        {
+          "path": "docs/마케팅/synkbrief_영상통화연인_20261113/게시/01-synkbrief-instagram/원고.json",
+          "sha256": "f78cea93cb66e052c9574fbc3f7d39293a677c411715d59b6ebe6c22804eb368"
+        }
+      ]
     },
     {
       "계정": "synkbrief-youtube",
@@ -118,32 +133,6 @@
       "점검": "dry · 확인 단계: 소제목 3/3(1. 실제로 있었던 일 · 2. 「저걸 왜 속나」가 아닌 까닭 · 3. 지키는 법) · 그림 3/3(01_통화_재연 95526 · 02_사진_재연 188830 · 03_엎은폰_재연 120839 바이트, 저장소 파일 그대로) · 짜임 image,sectionTitle,image,sectionTitle,sectionTitle,image,horizontalLine(원고와 같음 — 끝 구분선 뒤 출처 목록 포함) · 남은 〔〕 0 · youtu 글자 0 · 빈 문단 0 · 글자 수 1105/1105 · 카테고리 작업 기록 · 전체공개 · 댓글 허용 · 공지 아님 · 태그 0 · 예약 2026. 11. 20 21:10",
       "후속": [
         "쇼츠 공개 뒤 영상 칸 넣기(원고의 〔유튜브 쇼츠〕 자리 — 첫 문단 뒤)"
-      ]
-    }
-  ],
-  "추가게시": [
-    {
-      "계정": "synkbrief-instagram",
-      "상태": "공개 확인 필요",
-      "시각": "2026-11-14T12:01:44.000Z",
-      "주소": "https://www.instagram.com/p/DfuKEM-kZ2H/",
-      "편ID": "synkbrief_영상통화연인_20261113",
-      "플랫폼": "instagram",
-      "게시물ID": "DfuKEM-kZ2H",
-      "성과구분": "콘텐츠",
-      "연결근거": [
-        {
-          "path": "docs/_ops/qa/게시성과연결_20261118/인스타공개캡션.md",
-          "sha256": "c736e2c9a896c11692a78f4728ebb4b5c6db852fdda1aadbe60fd7a85714c614"
-        },
-        {
-          "path": "docs/마케팅/synkbrief_영상통화연인_20261113/게시/게시결과.json",
-          "sha256": "a5396e8b52b8833e5caf38edf9dc02fa05f0006f541da4f9c2871b7ef05834f8"
-        },
-        {
-          "path": "docs/마케팅/synkbrief_영상통화연인_20261113/게시/01-synkbrief-instagram/원고.json",
-          "sha256": "f78cea93cb66e052c9574fbc3f7d39293a677c411715d59b6ebe6c22804eb368"
-        }
       ]
     }
   ]
