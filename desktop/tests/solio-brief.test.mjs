@@ -204,6 +204,11 @@ test('credits: the 4-week pace is said as a month, and only with every account c
   // 잔액과 충전일을 보지 않으니 바닥나는 때는 말하지 않는다(다시 검수 -2 FA1)
   assert.equal(d.line, '지금 속도면 한 달에 크레딧의 130%를 씁니다.');
   assert.doesNotMatch(d.say + d.more, /사거나|올리|바닥/);
+  // 보이는 100% 양쪽 경계: 100%로 보이면 여유 문장이 붙고, 101%부터는 붙지 않는다(다시 검수 -3 FA1)
+  const at = n => { const x = snap([one], { c1: { weeks4: used(n) } }); return briefDiag(x, briefGroups(x, NOW), NOW).items[0].line; };
+  assert.equal(at(919), '지금 속도면 한 달에 크레딧의 100%를 씁니다. 한 달 크레딧에 여유가 거의 없습니다.');
+  assert.equal(at(922), '지금 속도면 한 달에 크레딧의 100%를 씁니다. 한 달 크레딧에 여유가 거의 없습니다.');
+  assert.equal(at(926), '지금 속도면 한 달에 크레딧의 101%를 씁니다.');
   const two = cr('c2', 'plus');
   const s = snap([one, two], { c1: { weeks4: used(40) } });
   d = briefDiag(s, briefGroups(s, NOW), NOW).items[0];
