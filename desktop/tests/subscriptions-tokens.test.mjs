@@ -66,7 +66,7 @@ test('칸: 꺼짐 · 처음 세는 중 · 다 셈, 끄기는 두 번, 모델 이
   // 펼친 줄만 날마다 막대와 기록의 모델 이름을 보인다.
   assert.equal((ready.match(/class="mt-detail"/g) || []).length, 1);
   assert.match(ready, /<code>claude-opus-5-5<\/code>/);
-  assert.match(ready, /Antigravity CLI\(Gemini\)는/);
+  assert.doesNotMatch(ready, /Antigravity CLI/);
   assert.match(ready, /data-subs="tokens-off"/);
   // 기간 단추는 다시 그린 뒤에도 초점을 찾을 수 있게 data-id, 날마다 막대는 화면 낭독 글, 읽지 못한 파일 수, 도구별 시작 날.
   assert.match(ready, /data-subs="tokens-range" data-id="range-month"/);

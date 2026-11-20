@@ -119,7 +119,7 @@ test('manage room: the first sentence counts accounts, and an empty room offers 
   assert.deepEqual([empty.say, empty.then, empty.act], ['아직 연결한 계정이 없습니다.', '구독을 하나 연결하면 남은 양과 결제일을 여기에서 봅니다.', null]);
   assert.deepEqual(empty.rows.map(r => r.key), ['add', 'help']);
   const four = manageRoom(snap([weekly('a', 'claude', 10, NOW + D), weekly('b', 'gpt', 10, NOW + D), weekly('c', 'gemini', 10, NOW + D), credit('d', 900)]), st(), NOW);
-  assert.equal(four.say, '연결한 계정은 넷입니다.');
+  assert.equal(four.say, '연결한 계정은 셋이고, 사용량 조회가 꺼진 계정은 하나입니다.');
   const mixed = manageRoom(snap([weekly('a', 'claude', 10, NOW + D), manual('m', 'Suno')]), st(), NOW);
   assert.equal(mixed.say, '연결한 계정은 하나이고, 직접 넣은 구독은 하나입니다.');
   assert.equal(mixed.foot, '로그인 정보와 사용량은 이 PC 밖으로 나가지 않습니다.');
@@ -144,9 +144,9 @@ test('manage room: the second line says one thing in order — reading, re-login
   const unread = weekly('u', 'gpt', 0, NOW + D, { live: null });
   assert.equal(then([ok, unread]), 'Codex u 계정은 아직 읽지 않았습니다.');
   assert.equal(then([unread, { ...unread, id: 'v', email: 'v@example.com' }]), '아직 읽지 않은 계정이 둘 있습니다.');
-  const away = weekly('a', 'gemini', 10, NOW + D, { state: 'elsewhere' });
+  const away = weekly('a', 'gpt', 10, NOW + D, { state: 'elsewhere' });
   assert.equal(then([ok, away], { check: { at: NOW - 60e3 } }), '이 PC에 로그인된 계정은 모두 방금 읽었고, 막힌 계정은 없습니다.');
-  assert.equal(then([away]), 'Gemini a 계정은 지금 이 PC에 로그인되어 있지 않습니다.');
+  assert.equal(then([away]), 'Codex a 계정은 지금 이 PC에 로그인되어 있지 않습니다.');
 });
 
 test('manage room: the middle of an account line follows its state, and the bright lines are the ones to act on', () => {
@@ -154,7 +154,7 @@ test('manage room: the middle of an account line follows its state, and the brig
     weekly('ok', 'claude', 36, NOW + D),
     weekly('lo', 'claude', 0, NOW + D, { state: 'needs-login' }),
     weekly('er', 'claude', 0, NOW + D, { state: 'error' }),
-    weekly('aw', 'gemini', 10, NOW + D, { state: 'elsewhere' }),
+    weekly('aw', 'gpt', 10, NOW + D, { state: 'elsewhere' }),
     { ...weekly('un', 'gpt', 0, NOW + D), live: null },
     weekly('ou', 'gpt', 100, NOW + D),
     { ...weekly('pj', 'gpt', 50, NOW - H), live: { readAt: NOW - 3 * H, weekly: { usedPercent: 50, resetsAt: NOW - H } } },
@@ -236,7 +236,7 @@ test('manage room: the actions of an account line and the twice press of 「지�
   const labels = id => m.rows.find(r => r.key === 'a:' + id).more.filter(x => x[0] === 'acts').flatMap(x => x[1]).map(a => a[0]);
   assert.deepEqual(labels('e'), ['다시 로그인', '이 계정 다시 읽기', '공식 화면에서 연결 확인', '요금과 결제일', '지우기']);
   assert.deepEqual(labels('t'), ['키 다시 넣기', '요금과 결제일', '지우기']);
-  assert.deepEqual(labels('a'), ['이 계정으로 바꾸기', '공식 화면에서 연결 확인', '이번 달 Flow 사용량 읽기', '요금과 결제일', '지우기']);
+  assert.deepEqual(labels('a'), ['요금과 결제일', '지우기']);
   assert.deepEqual(labels('m'), ['다 썼습니다', '고치기', '지우기']);
   const remove = m.rows[1].more.flatMap(x => (x[0] === 'acts' ? x[1] : [])).find(a => a[1] === 'remove');
   assert.deepEqual(remove, ['지우기', 'remove', '', 'far']);
@@ -259,12 +259,15 @@ test('manage room: the cost group carries the fields of the old edit form', () =
   assert.ok(field(asWeekly, 'resetDay') && field(asWeekly, 'resetTime') && !field(asWeekly, 'credits'), 'picking the limit kind changes the fields');
 });
 
-test('manage room: 「막혔을 때」 has twelve questions with the two facts the sketch shortened', () => {
+test('manage room: help counts the available questions and preserves the manual Gemini credit guide', () => {
   const m = manageRoom(snap([]), st(), NOW);
   const help = m.rows.find(r => r.key === 'help');
-  assert.equal(help.more.length, 12);
+  assert.equal(help.more.length, MANAGE_HELP.length);
+  assert.match(help.mid, /열한 가지/);
   assert.ok(help.more.every(x => x[0] === 'qa'));
-  assert.equal(MANAGE_HELP.length, 12);
+  assert.equal(MANAGE_HELP.length, 11);
+  assert.ok(MANAGE_HELP.some(([question]) => /Gemini 크레딧/.test(question)));
+  assert.ok(MANAGE_HELP.every(entry => !/Antigravity|Google OAuth/.test(entry.join(' '))));
   assert.match(MANAGE_HELP.find(h => /구독 한도가 없다/.test(h[0]))[1], /「그 밖의 구독」으로 결제일만 넣어 둘 수 있습니다\./);
   assert.match(MANAGE_HELP.find(h => /Claude API/.test(h[0]))[1], /Claude Console 조직을 연결해야 들어옵니다\./);
 });
@@ -278,6 +281,39 @@ test('manage room: which line opens when the room opens (설계 9.3)', () => {
 });
 
 /* ── 계정 더하기(설계 4.5) ── */
+test('a saved Gemini grant and its dated balance stay editable with usage collection off', async () => {
+  const { apiCreditOf, apiCredits, flowCreditOf, officialPrice, serviceGroups } = await import('../renderer/subscriptions-model.mjs');
+  const { solioToday, solioTodayNeedsReread } = await import('../renderer/solio-today.mjs');
+  const gemini = weekly('ledger', 'gemini', 100, NOW - D, {
+    usageDisabled: true, state: 'manual', live: null, plan: 'ultra_20x',
+    apiCredit: 73.25, apiCreditAt: NOW - 45 * D, flowCredit: 1200, flowCreditAt: NOW - D,
+  });
+  const board = snap([gemini], { prices: PRICES, check: null });
+  assert.deepEqual(apiCreditOf(PRICES, gemini, NOW), { grant: 100, left: 73.25, until: null, at: NOW - 45 * D });
+  const totals = apiCredits(PRICES, [gemini], NOW, 'gemini');
+  assert.deepEqual([totals.monthly, totals.left], [100, 73.25]);
+  const flow = flowCreditOf(PRICES, gemini, NOW);
+  assert.deepEqual([flow.grant, flow.left, flow.at], [25000, 1200, NOW - D]);
+  assert.equal(officialPrice(PRICES, gemini, NOW).price, 360000);
+  assert.deepEqual(serviceGroups([gemini], NOW), []);
+  assert.equal(solioTodayNeedsReread(board, NOW), false);
+  assert.equal(solioToday({ snapshot: board }, NOW).action, 'connect', 'the only saved account is reachable from the dashboard');
+  const manage = manageRoom(board, st(), NOW);
+  assert.equal(manage.act, null);
+  const saved = manage.rows.find(row => row.key === 'a:ledger');
+  assert.ok(saved, 'the ledger keeps its original row ID');
+  const anonymous = { ...gemini, email: null, label: '저장한 표시명' };
+  const storedLine = row => manageRoom(snap([row]), st(), NOW).rows.find(line => line.key === 'a:ledger');
+  assert.match(storedLine(anonymous).sub, /저장한 표시명/);
+  assert.doesNotMatch(storedLine({ ...anonymous, label: '' }).sub, /이 PC 로그인/);
+  const money = saved.more.find(item => item[0] === 'row' && item[1] === 'API 크레딧');
+  assert.match(money[2], /매달 \$100/);
+  assert.equal(money[3], '$73.25');
+  assert.match(money[4].text, /에 넣은 값/);
+  assert.ok(!ADD_SERVICES.includes('gemini'));
+  assert.equal(solioTodayNeedsReread({ ...board, rows: [gemini, weekly('c', 'claude', 20, NOW + D)] }, NOW), true);
+});
+
 test('add: the steps follow the tools and the login stage', () => {
   const add = (svc, extra = {}, state = {}) => addItems(snap([], extra), st({ add: { svc }, ...state }), NOW);
   const pick = addItems(snap([]), st(), NOW);
@@ -304,7 +340,7 @@ test('add: the steps follow the tools and the login stage', () => {
   assert.ok(kinds(ready, 'fld').some(f => f[4] === 'email' && f[5] === 'email'));
   assert.deepEqual(actsOf(ready).filter(a => a[1] === 'login' || a[1] === 'existing').map(a => a[0]), ['새 계정 연결', '이 PC의 기존 로그인 쓰기']);
   const gem = add('gemini', { tools: { gemini: { installed: true } } });
-  assert.deepEqual(actsOf(gem).filter(a => a[1] === 'login' || a[1] === 'existing').map(a => a[0]), ['Gemini 로그인']);
+  assert.deepEqual(actsOf(gem).filter(a => a[1] === 'login' || a[1] === 'existing'), []);
   const busy = add('claude', { tools: { claude: { installed: true } }, login: { id: 'l', service: 'gpt', stage: 'browser' } });
   assert.ok(kinds(busy, 'note').some(n => n[1] === '다른 로그인이 진행 중입니다. 끝난 뒤 이어서 해 주세요.'));
   assert.ok(actsOf(busy).filter(a => a[1] === 'login').every(a => /off/.test(a[3])), 'and its buttons cannot be pressed');
@@ -320,8 +356,8 @@ test('add: browser, code, black window, checking, failure', () => {
   const code = at('claude', { stage: 'browser', url: 'https://example.com/login', needsCode: true });
   assert.ok(kinds(code, 'fld').some(f => f[4] === 'code'));
   assert.ok(actsOf(code).some(a => a[1] === 'console-login'), 'Claude can fall back to the black window');
-  const consoleNow = at('gemini', { stage: 'console' });
-  assert.equal(kinds(consoleNow, 'note').length, 2);
+  const consoleNow = at('claude', { stage: 'console' });
+  assert.ok(kinds(consoleNow, 'note').length > 0);
   assert.deepEqual(actsOf(consoleNow).map(a => a[1]), ['cancel-login']);
   assert.equal(kinds(at('gpt', { stage: 'verifying' }), 'row').at(-1)[2], '연결을 확인하고 있습니다.');
   const failed = at('gpt', { stage: 'error', message: '로그인을 마치지 못했어요.' }, { ended: { id: 'l', stage: 'error' } });
@@ -495,7 +531,7 @@ test('token line: a share under 0.5% says 「1% 미만」, more than six models 
   assert.equal(actsOf(all.more).find(a => a[1] === 'tok-all')[0], '여섯 개만 보기');
 });
 
-test('token line: tools that start late, unreadable files, a stopped count, no records and Antigravity are said as facts', () => {
+test('token line: tools that start late, unreadable files, a stopped count and the current set of collected tools are shown', () => {
   const late = tokRow(tokOn({ sinceBy: { claude: dayKey(20), gpt: dayKey(3) } }), tokSt(), NOW);
   const month = (k => (d => (d.getMonth() + 1) + '월 ' + d.getDate() + '일')(new Date(NOW - k * D)))(3);
   assert.ok(kinds(late.more, 'note').some(n => n[1] === 'Codex 기록은 ' + month + '부터 있습니다. 그 전 날은 비어 있습니다.'), 'the tool whose records begin inside the range');
@@ -505,9 +541,11 @@ test('token line: tools that start late, unreadable files, a stopped count, no r
   assert.match(notes, /구독 방을 열어 두면 답이 끝날 때마다 숫자를 더합니다\./);
   assert.match(notes, /읽지 못한 파일이 3개 있습니다\./);
   assert.match(notes, /지난번에는 끝까지 세지 못했습니다\./);
-  assert.match(notes, /Antigravity CLI는 토큰 수를 남기지 않아 세지 못합니다\./);
+  assert.doesNotMatch(notes, /Antigravity|Gemini CLI/);
   const empty = tokRow(tokOn({ cells: [], tools: {} }), tokSt(), NOW);
-  assert.match(kinds(empty.more, 'note').map(n => n[1]).join(' '), /이 PC에서 Claude Code, Codex, Grok CLI, Gemini CLI의 기록을 아직 찾지 못했습니다\./);
+  const missingTools = kinds(empty.more, 'note').map(n => n[1]).join(' ');
+  assert.match(missingTools, /Claude Code.*Codex.*Grok CLI.*기록/);
+  assert.doesNotMatch(missingTools, /Gemini CLI/);
   assert.ok(!/많은 순서입니다/.test(kinds(empty.more, 'note').map(n => n[1]).join(' ')), 'no order sentence without models');
   const again = tokRow(tokOn({ scanning: true, progress: { done: 3, total: 9 } }), tokSt(), NOW);
   assert.match(kinds(again.more, 'note').map(n => n[1]).join(' '), /지금 다시 세고 있습니다\(기록 파일 3\/9\)\./);

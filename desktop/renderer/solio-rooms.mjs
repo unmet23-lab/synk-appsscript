@@ -87,9 +87,10 @@ const MANUAL_KIND = Object.freeze({ suno: 'credit', typecast: 'credit', elevenla
 export const manualKindOf = label => MANUAL_KIND[String(label || '').trim().toLowerCase().replace(/\s+/g, '')] || null;
 const GEMINI_PLANS = Object.freeze([['고르지 않음', ''], ['Pro', 'pro'], ['Ultra 5x', 'ultra_5x'], ['Ultra 20x', 'ultra_20x'], ['Plus', 'plus'], ['가족 공유', 'family']]);
 const geminiPlanChoice = row => row?.source === 'auto' && row.service === 'gemini';
+const isUsageDisabled = row => row?.source === 'auto' && (Boolean(row.usageDisabled) || row.service === 'gemini');
 const LOGIN_SOON_MS = 7 * DAY_MS;
-const loginSoon = (row, now) => row?.source === 'auto' && row.state === 'ok' && num(row.loginUntil) !== null && row.loginUntil - now <= LOGIN_SOON_MS;
-const activeLogin = login => !!login && !['done', 'error', 'cancelled'].includes(login.stage);
+const loginSoon = (row, now) => row?.source === 'auto' && !isUsageDisabled(row) && row.state === 'ok' && num(row.loginUntil) !== null && row.loginUntil - now <= LOGIN_SOON_MS;
+const activeLogin = login => !!login && login.service !== 'gemini' && !['done', 'error', 'cancelled'].includes(login.stage);
 const flags = (...list) => list.filter(Boolean).join(' ');
 
 /* ── 입력 검사(옛 onForm 335~383행의 규칙). { ok:true, … } 또는 { ok:false, say } ── */
@@ -353,9 +354,9 @@ function creditLine(prices, rows, now) {
 /* ── 구독 줄 안쪽 「계정 관리」가 열 계정 줄(설계 9.3). 손볼 계정이 있으면 그 계정, 없으면 그 구독의 첫 계정이다 ── */
 export const manageKey = row => 'a:' + row.id;
 export function manageOpenKey(snapshot, svc = null, now = Date.now()) {
-  const rows = (snapshot?.rows || []).filter(r => r.kind === 'weekly' || r.kind === 'credit' || r.source !== 'auto');
+  const rows = (snapshot?.rows || []).filter(r => r.kind === 'weekly' || r.kind === 'credit' || r.source !== 'auto' || isUsageDisabled(r));
   if (!rows.length) return 'add';
-  const fix = rows.find(r => r.source === 'auto' && (r.state === 'needs-login' || r.state === 'error'));
+  const fix = rows.find(r => r.source === 'auto' && !isUsageDisabled(r) && (r.state === 'needs-login' || r.state === 'error'));
   if (fix) return manageKey(fix);
   if (!svc) return null;
   const groups = serviceGroups(snapshot.rows || [], now, snapshot.check?.at || null);
@@ -368,7 +369,6 @@ export function manageOpenKey(snapshot, svc = null, now = Date.now()) {
 const ADD = Object.freeze({
   claude: { nm: 'Claude', plan: 'Claude Pro, Max, Ultra 요금제가 있어야 합니다. 무료 요금제로는 읽지 못합니다.', planLink: 'claude-plans', tool: 'Claude Code', cmd: 'irm https://claude.ai/install.ps1 | iex', installLink: 'claude-install', email: true, code: true },
   gpt: { nm: 'Codex', plan: 'ChatGPT 계정으로 로그인합니다. 요금제마다 Codex 한도가 다릅니다.', planLink: 'chatgpt-plans', tool: 'Codex', cmd: 'powershell -ExecutionPolicy ByPass -c "irm https://chatgpt.com/codex/install.ps1 | iex"', installLink: 'codex-install' },
-  gemini: { nm: 'Gemini', plan: 'Antigravity CLI에 로그인한 Google 계정의 한도를 읽습니다. 한 번에 한 계정만 로그인됩니다.', planLink: 'gemini-plans', tool: 'Antigravity CLI', cmd: 'irm https://antigravity.google/cli/install.ps1 | iex', installLink: 'antigravity-install', dark: true },
   higgsfield: { nm: 'Higgsfield', plan: '남은 크레딧을 읽습니다. 계정 여러 개를 하나씩 연결할 수 있습니다.', planLink: null, tool: 'Higgsfield CLI', cmd: 'npm install -g @higgsfield/cli', installLink: 'higgsfield-install', node: true },
   typecast: { nm: 'Typecast', plan: 'API 요금제의 이번 달 남은 크레딧을 읽습니다. 설치할 프로그램은 없습니다.', planLink: 'typecast-api-pricing', key: true },
   other: { nm: '그 밖의 구독', manual: true },
@@ -383,7 +383,6 @@ const HELP = Object.freeze([
   ['코드를 붙여 넣어도 넘어가지 않습니다', 'Claude는 검은 창으로 로그인하는 길이 따로 있습니다. 코드가 들어가지 않으면 그 길로 로그인합니다.'],
   ['「구독 한도가 없다」고 나옵니다', 'Claude 무료 요금제로는 읽지 못합니다. Pro, Max, Ultra 요금제인지 확인합니다. 무료 요금제는 「그 밖의 구독」으로 결제일만 넣어 둘 수 있습니다.'],
   ['ChatGPT가 휴대폰 인증을 요구합니다', '안내대로 인증을 마치면 이 화면이 저절로 넘어갑니다.'],
-  ['Gemini 검은 창에서 막혔습니다', '검은 창에 /logout을 치고 Enter, /login을 치고 Enter를 누릅니다. 「1. Google OAuth」를 고르고 브라우저에서 계정을 고른 뒤, 복사한 코드를 검은 창에 오른쪽 클릭으로 붙여 넣고 Enter를 누릅니다.'],
   ['Typecast 키가 맞지 않다고 나옵니다', '키를 새로 만들면 예전 키는 쓸 수 없습니다. 개발자 화면에서 지금 키를 다시 복사해 넣습니다.'],
   ['연결을 끊고 싶습니다', '그 계정 줄을 열고 「지우기」를 두 번 누릅니다. 이 앱이 만든 로그인 폴더까지 지웁니다. 기존 로그인을 가져온 계정은 목록에서만 빠집니다.'],
   ['Claude API 크레딧 남은 금액은 어디서 봅니까', 'Claude Console의 결제 화면에 남은 금액과 만료 날짜가 있습니다. 그 값을 계정 줄에 넣어 둡니다. Max와 Ultra의 API 크레딧은 claude.ai에서 Claude Console 조직을 연결해야 들어옵니다.'],
@@ -400,23 +399,36 @@ const API_BILLING = Object.freeze({ claude: ['Console 결제 화면 열기 ↗',
 
 /* st: 방 상태(orb-rooms.mjs). armed · grps · add · relogin · kinds · installing · busy · notes · ended · roomNote
    ctx: { checking, sentence(본체 글을 화면 말투로) } */
+const HELP_COUNT_WORDS = Object.freeze(['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉', '열', '열한', '열두', '열세', '열네', '열다섯', '열여섯', '열일곱', '열여덟', '열아홉', '스무']);
+const helpCountWord = n => (HELP_COUNT_WORDS[n] ? HELP_COUNT_WORDS[n] + ' 가지' : n + '가지');
+
 export function manageRoom(snapshot, st = {}, now = Date.now(), ctx = {}) {
   const rows = snapshot?.rows || [];
   const checkAt = snapshot?.check?.at || null;
   const autos = ORDER.flatMap(s => rows.filter(r => r.source === 'auto' && r.service === s));
+  const liveAutos = autos.filter(r => !isUsageDisabled(r));
+  const savedAutos = autos.filter(r => isUsageDisabled(r));
   const manuals = rows.filter(r => r.source !== 'auto');
   const list = [...autos, ...manuals];
   const lines = list.map((row, i) => accountRow(snapshot, row, st, now, ctx, i === 0));
+  const helpCount = helpCountWord(HELP.length);
   lines.unshift({ key: 'add', nm: '계정 더하기', sub: '', mid: '구독 하나를 이 PC에 연결합니다', val: '', when: '', label: '계정 더하기, 구독 하나를 이 PC에 연결합니다. 자세한 내용은 이 줄 아래에 펼쳐집니다.', more: addItems(snapshot, st, now, ctx) });
-  lines.push({ key: 'help', gap: true, nm: '막혔을 때', sub: '', mid: '설치, 로그인, 코드, 키에서 막힐 때 보는 열두 가지', val: '', when: '', label: '막혔을 때, 물음 열두 가지. 자세한 내용은 이 줄 아래에 펼쳐집니다.', more: HELP.map(([q, a]) => ['qa', q, a]) });
-  const say = !list.length ? '아직 연결한 계정이 없습니다.'
-    : autos.length && manuals.length ? '연결한 계정은 ' + countWord(autos.length) + '이고, 직접 넣은 구독은 ' + countWord(manuals.length) + '입니다.'
-      : autos.length ? '연결한 계정은 ' + countWord(autos.length) + '입니다.' : '직접 넣은 구독은 ' + countWord(manuals.length) + '입니다.';
-  return { say, then: manageThen(snapshot, autos, now, checkAt, ctx), rows: lines, foot: st.roomNote || '로그인 정보와 사용량은 이 PC 밖으로 나가지 않습니다.', act: autos.length ? ['모두 다시 읽기', 'reread-all', ctx.checking || snapshot?.checking ? 'off' : ''] : null };
+  lines.push({ key: 'help', gap: true, nm: '막혔을 때', sub: '', mid: '설치, 로그인, 코드, 키에서 막힐 때 보는 ' + helpCount, val: '', when: '', label: '막혔을 때, 물음 ' + helpCount + '. 자세한 내용은 이 줄 아래에 펼쳐집니다.', more: HELP.map(([q, a]) => ['qa', q, a]) });
+  const sayParts = [];
+  if (liveAutos.length) sayParts.push('연결한 계정은 ' + countWord(liveAutos.length));
+  if (savedAutos.length) sayParts.push('사용량 조회가 꺼진 계정은 ' + countWord(savedAutos.length));
+  if (manuals.length) sayParts.push('직접 넣은 구독은 ' + countWord(manuals.length));
+  const say = sayParts.length ? sayParts.join('이고, ') + '입니다.' : '아직 연결한 계정이 없습니다.';
+  return { say, then: manageThen(snapshot, liveAutos, savedAutos, manuals, now, checkAt, ctx), rows: lines, foot: st.roomNote || '로그인 정보와 사용량은 이 PC 밖으로 나가지 않습니다.', act: liveAutos.length ? ['모두 다시 읽기', 'reread-all', ctx.checking || snapshot?.checking ? 'off' : ''] : null };
 }
 /* 둘째 줄은 하나만 말한다. 차례: 읽는 중 · 다시 로그인 · 못 읽음 · 로그인 기한 7일 안 · 다 씀 · 모두 괜찮음 */
-function manageThen(snapshot, autos, now, checkAt, ctx) {
-  if (!autos.length) return snapshot?.rows?.length ? '직접 넣은 구독은 한도를 읽지 않습니다.' : '구독을 하나 연결하면 남은 양과 결제일을 여기에서 봅니다.';
+function manageThen(snapshot, autos, savedAutos, manuals, now, checkAt, ctx) {
+  if (!autos.length) {
+    if (savedAutos.length && manuals.length) return '사용량 조회 꺼짐 계정과 직접 넣은 구독은 한도를 읽지 않습니다.';
+    if (savedAutos.length) return '사용량 조회 꺼짐 계정은 한도를 읽지 않고 저장된 기록만 보입니다.';
+    if (manuals.length) return '직접 넣은 구독은 한도를 읽지 않습니다.';
+    return '구독을 하나 연결하면 남은 양과 결제일을 여기에서 봅니다.';
+  }
   if (ctx.checking || snapshot?.checking) {
     const p = snapshot?.progress;
     return '지금 읽고 있습니다.' + (p?.total ? ' ' + p.done + '/' + p.total : '');
@@ -444,6 +456,7 @@ function manageThen(snapshot, autos, now, checkAt, ctx) {
 
 function stateMid(row, a, now) {
   if (row.source !== 'auto') return isUsedUp(row, now) ? '다 썼다고 표시했습니다' : '한도는 읽지 않습니다';
+  if (isUsageDisabled(row)) return '사용량 조회 꺼짐';
   const read = readWord(row.live?.readAt, now);
   const withRead = t => [t, read].filter(Boolean).join(' · ');
   if (a.away) return '지금 이 PC에 로그인되어 있지 않습니다';
@@ -459,6 +472,7 @@ function stateMid(row, a, now) {
 function stateSay(row, a, now) {
   const who = whoOf(row);
   if (row.source !== 'auto') return isUsedUp(row, now) ? neun(who) + ' 다 썼다고 표시했습니다.' : '직접 넣은 구독입니다. 한도는 읽지 않고, 넣은 요금과 결제일만 셉니다.';
+  if (isUsageDisabled(row)) return neun(who) + ' 사용량 조회 꺼짐 상태입니다. 저장된 구독 정보와 크레딧 기록은 그대로 보입니다.';
   if (a.away) return neun(who) + ' 지금 이 PC에 로그인되어 있지 않습니다. 마지막으로 읽은 값을 보입니다.';
   if (a.state === 'login') return neun(who) + ' 로그인이 풀렸습니다. 다시 로그인하면 이어서 읽습니다.';
   if (a.state === 'error') return neun(who) + ' 읽지 못했습니다. 이 계정만 다시 읽어 볼 수 있습니다.';
@@ -486,13 +500,13 @@ function accountRow(snapshot, row, st, now, ctx, first) {
   const off = act => (st.busy === key + ':' + act ? 'off' : '');
   const sub = auto ? [nameOf(row), planName(row.plan, row.service)].filter(Boolean).join(' · ') : KIND_NAME[row.kind] || '';
   const mid = stateMid(row, a, now), val = priceVal(snapshot, row, now), when = billWhen(row);
-  const bright = auto && (a.state === 'login' || a.state === 'error' || (a.state === 'out' && !a.away) || loginSoon(row, now));
+  const bright = auto && !isUsageDisabled(row) && (a.state === 'login' || a.state === 'error' || (a.state === 'out' && !a.away) || loginSoon(row, now));
   const more = [['say', stateSay(row, a, now)]];
-  if (auto && row.stateMessage && (a.state === 'error' || a.away)) more.push(['note', sentence(row.stateMessage)]);
+  if (auto && !isUsageDisabled(row) && row.stateMessage && (a.state === 'error' || a.away)) more.push(['note', sentence(row.stateMessage)]);
   // 다시 로그인을 누른 계정은 그 줄 안에서 로그인 단계를 밟는다(설계 4.5)
-  if (st.relogin === row.id) more.push(...loginSteps(snapshot, row.service, st, key, ctx, { relogin: row }));
+  if (!isUsageDisabled(row) && st.relogin === row.id) more.push(...loginSteps(snapshot, row.service, st, key, ctx, { relogin: row }));
   // 로그인 기한(Claude): 읽히는 계정에만 있다
-  if (auto && row.state === 'ok' && num(row.loginUntil) !== null) {
+  if (auto && !isUsageDisabled(row) && row.state === 'ok' && num(row.loginUntil) !== null) {
     const soon = loginSoon(row, now), passed = row.loginUntil <= now;
     more.push(['row', '로그인', passed ? '기한이 지나 곧 끊깁니다' : soon ? '기한 전에 다시 로그인하면 끊기지 않습니다' : '한 번 로그인하면 4주쯤 이어집니다', '', passed ? md(row.loginUntil) + '에 끝남' : md(row.loginUntil) + '까지', soon]);
   }
@@ -553,7 +567,7 @@ function accountRow(snapshot, row, st, now, ctx, first) {
   if (auto && API_CREDIT_SERVICES.includes(row.service) && (apiCreditPlan(row) || num(row.apiCredit) !== null)) {
     const c = apiCreditOf(snapshot?.prices, row, now), gemini = row.service === 'gemini';
     const has = !!c && c.left !== null;
-    const midText = c?.expired ? '넣어 둔 금액이 ' + md(c.expired) + '에 사라졌습니다' : '구독에 함께 들어 있는 API 사용 금액입니다' + (!has && c?.grant ? ' · 매달 ' + usd(c.grant) : '');
+    const midText = c?.expired ? '넣어 둔 금액이 ' + md(c.expired) + '에 사라졌습니다' : '구독에 함께 들어 있는 API 사용 금액입니다' + ((!has || (gemini && row.usageDisabled === true)) && c?.grant ? ' · 매달 ' + usd(c.grant) : '');
     const right = has ? (gemini ? (c.at ? md(c.at) + '에 넣은 값' : '') : c.until ? md(c.until) + '에 사라짐' : '') : '';
     more.push(['row', 'API 크레딧', midText, has ? usd(c.left) : '', { text: right, btn: editBtn(has, 'api', grpOpen('api')) }]);
     const [billLabel, billLink, where] = API_BILLING[row.service];
@@ -614,15 +628,11 @@ function accountRow(snapshot, row, st, now, ctx, first) {
   if (row.note) more.push(['note', row.note]);
   // 할 수 있는 일
   const acts = [];
-  if (auto) acts.push([reloginLabel(row), 'relogin', '', off('relogin')]);
-  if (auto && a.state === 'error') acts.push(['이 계정 다시 읽기', 'reread-one', '', off('reread-one')]);
+  if (auto && !isUsageDisabled(row)) acts.push([reloginLabel(row), 'relogin', '', off('relogin')]);
+  if (auto && !isUsageDisabled(row) && a.state === 'error') acts.push(['이 계정 다시 읽기', 'reread-one', '', off('reread-one')]);
   const creditEmail = auto ? verifiedEmail(row) : '';
-  if (creditEmail && (row.service === 'claude' || row.service === 'gpt' || row.service === 'gemini')) {
-    const creditArg = creditReadArg(row, creditEmail);
-    acts.push(['공식 화면에서 연결 확인', 'read-credit-api', creditArg, off('read-credit-api')]);
-    if (row.service === 'gemini') {
-      acts.push(['이번 달 Flow 사용량 읽기', 'read-credit-flow', creditArg, off('read-credit-flow')]);
-    }
+  if (creditEmail && (row.service === 'claude' || row.service === 'gpt')) {
+    acts.push(['공식 화면에서 연결 확인', 'read-credit-api', creditReadArg(row, creditEmail), off('read-credit-api')]);
   }
   if (!auto && row.kind === 'weekly') acts.push([isUsedUp(row, now) ? '다 쓴 것 풀기' : '다 썼습니다', 'used', '', off('used')]);
   if (claude && pass) acts.push(['1장 썼습니다', 'pass-used', '', off('pass-used')]);
@@ -722,7 +732,7 @@ function kindItems(kind, row = {}) {
 
 /* ── 계정 더하기(설계 4.5). 단계는 스냅숏의 tools[서비스]와 login에서 정한다 ── */
 export function addItems(snapshot, st = {}, now = Date.now(), ctx = {}) {
-  const svc = st.add?.svc || '', s = ADD[svc];
+  const svc = st.add?.svc && Object.hasOwn(ADD, st.add.svc) ? st.add.svc : '', s = ADD[svc];
   const items = [['pick', '무엇을 더하시겠습니까', ADD_SERVICES.map(k => [ADD[k].nm, k]), svc, '', 'add-pick']];
   const live = ['live', st.notes?.get?.('add') || ''];
   if (!s) return [...items, ['note', '고르면 그 자리에서 차례대로 안내합니다. 연결하면 바로 한 번 읽습니다.'], live];
@@ -753,7 +763,7 @@ export function addItems(snapshot, st = {}, now = Date.now(), ctx = {}) {
 /* 설치와 로그인 단계. relogin을 주면 그 계정 줄 안에서 밟는다(Claude는 그 줄의 메일로만 로그인한다) */
 function loginSteps(snapshot, svc, st, key, ctx, { relogin = null } = {}) {
   const s = ADD[svc], sentence = ctx.sentence || (x => x);
-  if (!s || s.manual) return [];
+  if (!s || s.manual || svc === 'gemini' || (relogin && isUsageDisabled(relogin))) return [];
   const off = act => (st.busy === key + ':' + act ? 'off' : '');
   if (s.key) {
     // 키 다시 넣기(Typecast): 그 줄의 키를 바꾼다
@@ -835,8 +845,8 @@ function loginSteps(snapshot, svc, st, key, ctx, { relogin = null } = {}) {
 /* ── 구독 방의 「모델별 토큰」 줄(설계 3절, 설계 검토 D8). 기간 묶기와 모델 이름은 subscriptions-tokens.mjs를 그대로 쓴다.
    st: { tokRange, tokAll, armed, busy, notes }. 토큰 자료가 없거나(아직 읽지 않음, 본체가 거절) ok가 아니면 줄을 세우지 않는다 ── */
 export const TOK_SHOWN = 6;
-// 오른쪽 칸의 프로그램 이름. 본체가 기록을 읽는 도구 넷이다
-const TOK_TOOLS = Object.freeze({ claude: 'Claude Code', gpt: 'Codex', grok: 'Grok CLI', gemini: 'Gemini CLI' });
+// 오른쪽 칸의 프로그램 이름. 본체가 기록을 읽는 도구 셋이다
+const TOK_TOOLS = Object.freeze({ claude: 'Claude Code', gpt: 'Codex', grok: 'Grok CLI' });
 const TOK_SPAN = Object.freeze({ today: '오늘', week: '지난 7일', month: '지난 30일' });
 const tokDay = (key, now) => (Number(key.slice(0, 4)) !== new Date(now).getFullYear() ? Number(key.slice(0, 4)) + '년 ' : '') + Number(key.slice(5, 7)) + '월 ' + Number(key.slice(8, 10)) + '일';
 const tokShare = m => { const p = Math.round((m.share || 0) * 100); return p === 0 && m.out > 0 ? '1% 미만' : p + '%'; };
@@ -882,12 +892,11 @@ export function tokRow(tokens, st = {}, now = Date.now()) {
   for (const m of st.tokAll ? s.models : s.models.slice(0, TOK_SHOWN)) more.push(['gauge', m.label, Math.max(Math.round(m.share * 100), m.out > 0 ? 1 : 0), tokenText(m.out), (TOK_TOOLS[m.service] || m.tool) + ' · 응답 ' + fmt(m.n) + '번']);
   if (s.models.length > TOK_SHOWN) more.push(['acts', [[st.tokAll ? '여섯 개만 보기' : '모델 ' + s.models.length + '개 모두 보기', 'tok-all', '']]]);
   if (s.late.length) more.push(['note', s.late.map(l => (TOK_TOOLS[l.service] || l.tool) + ' 기록은 ' + tokDay(l.since, now) + '부터').join(', ') + ' 있습니다. 그 전 날은 비어 있습니다.']);
-  const tools = tokens.tools || {}, found = ['claude', 'gpt', 'grok', 'gemini'].some(k => tools[k] > 0);
+  const tools = tokens.tools || {}, found = ['claude', 'gpt', 'grok'].some(k => tools[k] > 0);
   const about = [];
   if (top) about.push('AI가 답으로 쓴 토큰(글의 양)이 많은 순서입니다.', '오른쪽은 그 모델을 쓴 프로그램입니다.');
-  if (!found) about.push('이 PC에서 Claude Code, Codex, Grok CLI, Gemini CLI의 기록을 아직 찾지 못했습니다.');
+  if (!found) about.push('이 PC에서 Claude Code, Codex, Grok CLI의 기록을 아직 찾지 못했습니다.');
   about.push('이 PC에 기록이 남지 않는 웹과 휴대폰 사용은 빠집니다.');
-  if (tools.agy) about.push('Antigravity CLI는 토큰 수를 남기지 않아 세지 못합니다.');
   more.push(['note', about.join(' ')]);
   const last = Math.max(Number(tokens.scannedAt) || 0, Number(tokens.liveAt) || 0), facts = [];
   if (tokens.scanning) facts.push('지금 다시 세고 있습니다' + (progress ? '(기록 파일 ' + progress + ')' : '') + '.');

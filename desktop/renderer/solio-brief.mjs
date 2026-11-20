@@ -357,7 +357,7 @@ export function todayOut(tokens, now) {
   const day = tokenDay(now), by = {};
   let out = 0;
   for (const r of Array.isArray(tokens?.cells) ? tokens.cells : []) {
-    if (!Array.isArray(r) || r[0] !== day) continue;
+    if (!Array.isArray(r) || r[0] !== day || r[1] === 'gemini') continue;
     const v = Number(r[4]) || 0;
     out += v; by[r[1]] = (by[r[1]] || 0) + v;
   }

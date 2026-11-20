@@ -74,6 +74,7 @@ function createSubscriptionRuntime({platform,env,spawn,now,home}) {
     const searchEnv=childEnv();
     const next={};
     for(const [key,spec] of Object.entries(SERVICES)){
+      if(spec.manualOnly){next[key]={path:null,version:null};continue;}
       if(!spec.bin){next[key]={path:null,version:null,api:true};continue;}
       const found=candidatePaths(spec.bin,{platform,env:searchEnv,home}).find(p=>{try{return fs.statSync(p).isFile();}catch{return false;}})||null;
       let version=null;

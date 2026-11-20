@@ -78,7 +78,7 @@ const here = g => g.accounts.filter(a => !a.away);
 /* 들어올 때 스스로 한 번 다시 읽을지: 한 번도 안 읽었거나, 1시간이 넘었거나, 초기화가 지나 「다시 찼을 것」인 계정이 있으면 */
 export function solioTodayNeedsReread(snapshot, now) {
   if (!snapshot?.ok) return false;
-  const rows = snapshot.rows || [], autos = rows.filter(r => r.source === 'auto');
+  const rows = snapshot.rows || [], autos = rows.filter(r => r.source === 'auto' && !r.usageDisabled);
   if (!autos.length) return false;
   const checkAt = snapshot.check?.at || null;
   if (!checkAt || freshness(checkAt, now) === 'stale') return true;

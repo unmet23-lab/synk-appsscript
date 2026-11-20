@@ -14,7 +14,6 @@ const HELP_LINKS=Object.freeze({
   'codex-install':'https://github.com/openai/codex#installing-and-running-codex-cli',
   'higgsfield-install':'https://github.com/higgsfield-ai/cli#install',
   'gemini-plans':'https://gemini.google/subscriptions/',
-  'antigravity-install':'https://antigravity.google/docs/cli',
   'typecast-api':'https://studio.typecast.ai/developers/api',
   // 아끼는 팁의 근거(공식 도움말, 10-19 확인). Typecast 팁은 위 API 안내로 잇는다.
   'higgsfield-credits':'https://higgsfield.ai/creator-hub/help-center/credits/how-credits-work',

@@ -58,17 +58,37 @@ function harness({ rows = [weekly('c', 'claude', { price: 290000, billDay: 9 }),
 }
 const removeLabel = (h, key) => h.line(key).more.filter(x => x[0] === 'acts').flatMap(x => x[1]).find(a => a[1] === 'remove');
 
-test('official credit buttons send the account printed on the button and keep a failed read separate from a manual confirmation', async () => {
-  const row=weekly('studio','gemini'), h=harness({rows:[row],answers:{save:{ok:false,code:'CREDIT_WRONG_ACCOUNT'}}});
-  const key='a:'+row.id, arg=JSON.stringify([row.email,row.plan]);
-  const actions=h.line(key).more.filter(part=>part[0]==='acts').flatMap(part=>part[1]);
-  const read=actions.find(button=>button[1]==='read-credit-flow');
-  assert.equal(read[2],arg);
-  await h.press(key,read[1],read[2]);
-  assert.deepEqual(h.calls.filter(c=>c[0]==='save'),[['save',{creditRead:{kind:'flow',id:row.id,email:row.email,plan:row.plan}}]]);
-  assert.match(h.live(key),/계정|이메일/);
-  await h.press(key,'save-flow-usage',arg,{flowFrom:'2026-11-01',flowTo:'2026-11-18',flowUsed:'0'});
-  assert.deepEqual(h.calls.filter(c=>c[0]==='save').at(-1),['save',{creditCheck:{kind:'flow',id:row.id,email:row.email,plan:row.plan,from:'2026-11-01',to:'2026-11-18',used:0}}]);
+test('a Claude credit read verifies the email and plan printed on the button', async () => {
+  const row = weekly('owner', 'claude', { plan: 'max_20x' });
+  const h = harness({ rows: [row], answers: { save: { ok: false, code: 'CREDIT_WRONG_ACCOUNT' } } });
+  const key = 'a:' + row.id, arg = JSON.stringify([row.email, row.plan]);
+  const buttons = h.line(key).more.filter(part => part[0] === 'acts').flatMap(part => part[1]);
+  const read = buttons.find(button => button[1] === 'read-credit-api');
+  assert.equal(read[2], arg);
+  await h.press(key, read[1], read[2]);
+  assert.deepEqual(h.calls.filter(call => call[0] === 'save'), [
+    ['save', { creditRead: { kind: 'api', id: row.id, email: row.email, plan: row.plan } }],
+  ]);
+  assert.match(h.live(key), /계정|이메일/);
+});
+
+test('saved Gemini accounts accept manual records and ignore old read and login actions', async () => {
+  const row = weekly('studio', 'gemini', { usageDisabled: true, state: 'manual', live: null, plan: 'ultra_20x', apiCredit: 100, apiCreditAt: NOW - D });
+  const h = harness({ rows: [row] }), key = 'a:' + row.id, arg = JSON.stringify([row.email, row.plan]);
+  const line = h.line(key);
+  const buttons = line.more.filter(part => part[0] === 'acts').flatMap(part => part[1]).map(button => button[1]);
+  for (const action of ['read-credit-api', 'read-credit-flow', 'reread-one', 'relogin']) {
+    assert.ok(!buttons.includes(action), action);
+    await h.press(key, action, arg);
+  }
+  for (const action of ['install', 'existing', 'login', 'console-login']) await h.press('add', action, 'gemini');
+  assert.deepEqual(h.calls, []);
+  await h.press(key, 'save-api', '', { apiCredit: '100' });
+  await h.press(key, 'save-flow-usage', arg, { flowFrom: '2026-11-01', flowTo: '2026-11-18', flowUsed: '0' });
+  assert.deepEqual(h.calls.filter(call => call[0] === 'save'), [
+    ['save', { row: { id: row.id, apiCredit: 100 } }],
+    ['save', { creditCheck: { kind: 'flow', id: row.id, email: row.email, plan: row.plan, from: '2026-11-01', to: '2026-11-18', used: 0 } }],
+  ]);
 });
 
 test('the rooms opened from the fan are listed, and the guard values are the reviewed ones (설계 검토 D1)', () => {

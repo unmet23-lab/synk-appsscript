@@ -5,7 +5,7 @@
 
 export const TOKEN_RANGES = Object.freeze([['today', '오늘', 1], ['week', '7일', 7], ['month', '30일', 30]]);
 export const TOKEN_TOOLS = Object.freeze({ claude: 'Claude', gpt: 'GPT', grok: 'Grok', gemini: 'Gemini' });
-const TOOL_NAMES = 'Claude Code · Codex · Grok CLI · Gemini CLI';
+const TOOL_NAMES = 'Claude Code · Codex · Grok CLI';
 const SHOWN = 6; // 처음에 보이는 모델 줄 수. 나머지는 「모두 보기」.
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -98,13 +98,12 @@ function modelRow(m, s, open) {
     + `<span class="mt-val" aria-hidden="true"><b class="ms-num">${esc(tokenText(m.out))}</b><small>응답 ${esc(m.n.toLocaleString('ko-KR'))}번</small></span>${chevron}</button>${detail}</div>`;
 }
 function notes(state) {
-  const tools = state?.tools || {}, found = ['claude', 'gpt', 'grok', 'gemini'].filter(k => tools[k] > 0);
+  const tools = state?.tools || {}, found = ['claude', 'gpt', 'grok'].filter(k => tools[k] > 0);
   const lines = [];
   // 처음 세는 중에는 아직 모른다 — 「찾지 못했어요」는 다 센 뒤에만(검수 지적: 진행 표시와 함께 떴다).
   if (!found.length && state?.scannedAt) lines.push(`이 PC에서 ${TOOL_NAMES}의 기록을 아직 찾지 못했어요. 이 도구들을 쓰면 여기에 모여요.`);
   // 실시간(11-16)은 이 화면이 열려 있을 때만이라 그렇게 알린다.
   lines.push('이 화면을 열어 두면 AI가 답을 마칠 때마다 몇 초 안에 숫자를 더해요. 화면을 닫아 두면 3시간마다 다시 세어요.');
-  if (tools.agy) lines.push('Antigravity CLI(Gemini)는 토큰 수를 읽을 수 있는 기록으로 남기지 않아 세지 못해요.');
   lines.push('claude.ai · ChatGPT 웹과 휴대폰 앱처럼 이 PC에 기록이 남지 않는 사용은 빠져요.');
   return `<ul class="mt-notes">${lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>`;
 }

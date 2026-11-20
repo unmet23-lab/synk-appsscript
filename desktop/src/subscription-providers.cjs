@@ -5,13 +5,13 @@ const {adapters}=require('./subscription-catalog.cjs');
 // 공통 재시도·연결 확인만 맡으며 공급자별 명령과 로그인 분기는 어댑터로 보낸다.
 function createSubscriptionProviders({runtime,accounts,system,now,retryDelay,definitions=adapters}){
  const {fetch:fetchImpl}=system;
- const instances=Object.fromEntries(Object.entries(definitions).map(([id,a])=>[id,{...a.create({runtime,accounts,system,now,helpers}),spec:a.spec,policy:a.policy}]));
+ const instances=Object.fromEntries(Object.entries(definitions).map(([id,a])=>[id,{...a.create?.({runtime,accounts,system,now,helpers}),spec:a.spec,policy:a.policy}]));
  const get=id=>Object.hasOwn(instances,id)?instances[id]:null;
 async function readRow(row){
     // Preserve the legacy error shape for a malformed stored service name.
     // Public registration still accepts only catalog-owned names.
     const spec=get(row.service)?.spec||helpers.SERVICES[row.service];
-    if(!spec||row.source!=='auto')return null;
+    if(!spec||spec.manualOnly||row.source!=='auto')return null;
     if(!spec.apiKey&&!runtime.tools[row.service]?.path)return {state:'error',message:`${spec.label}용 공식 프로그램이 이 PC에서 보이지 않습니다. 계정 관리의 「계정 더하기」에서 설치 단계를 확인해 주세요.`};
     try{return await get(row.service).read(row);}
     catch{return {state:'error',message:'읽는 중 문제가 생겼습니다. 잠시 뒤 다시 확인해 주세요.'};}
@@ -33,7 +33,11 @@ async function readConfirmed(row){
     if(second?.state==='needs-login'&&!await reachable(row.service))return offline();
     return second;
   }
- const verifyLogin=(service,folder)=>get(service).verify(folder);
+ const verifyLogin=async(service,folder)=>{
+   const provider=get(service);
+   if(provider?.spec.manualOnly)return {ok:false,code:'USAGE_DISABLED'};
+   return provider?.verify ? provider.verify(folder) : {ok:false,code:'UNKNOWN_SERVICE'};
+ };
  return {get,readConfirmed,verifyLogin};
 }
 module.exports={createSubscriptionProviders};

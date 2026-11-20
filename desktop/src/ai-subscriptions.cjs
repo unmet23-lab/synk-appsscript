@@ -11,8 +11,7 @@ const {createSharedAccounts,groupSubscriptionReads}=require('./subscription-shar
 // - Claude: Claude Code `claude -p /usage` · `claude auth status --json`
 // - GPT: Codex app-server `account/read` · `account/rateLimits/read`(한도와 초기화권 개수·만료일. 초기화권을 쓰는 요청은 보내지 않는다)
 // - Higgsfield: `higgsfield account status --json` (계정마다 홈 폴더를 나눠 여러 계정)
-// - Gemini: Antigravity CLI `agy -p /usage --output-format json --log-file <임시>`(모델 호출 없음, 토큰 0). 지금 로그인된 계정 메일은
-//   그 실행이 남긴 CLI 기록의 `OAuth: authenticated successfully as <메일>` 줄에서 읽고 기록은 바로 지운다
+// - Gemini는 회원이 기록해 둔 요금제와 크레딧을 보관한다.
 // - Typecast: 공식 API `GET /v1/users/me/subscription` — 회원이 넣은 API 키로만, 키는 이 PC에 암호화해 둔다
 // 토큰·자격 파일은 열지 않는다. 실행 대상과 인자는 고정이며, 화면에서 받은 값은 검증한 이메일과
 // 로그인 코드(표준입력)·회원이 붙여 넣은 API 키뿐이다. 기록은 이 PC의 앱 데이터 폴더에만 둔다.
@@ -25,7 +24,7 @@ const {createTokenUsageWorker}=require('./ai-tokens.cjs');
 const {PRICES_URL,DEFAULT_PRICES,validatePrices,mergePrices,readCapped}=require('./ai-prices.cjs');
 
 const {
-  SERVICES, serviceSpec, API_KEY, KINDS, INSTALLERS, MAC_INSTALLERS, HELP_LINKS, AUTO_EVERY, PRE_RESET, BILL_HOUR, DAY_MS, TIP_KEY, PRICE_EVERY, PRICE_TIMEOUT, GOALS, FOLDER, clampNumber, cleanText, randomId, parseResetText, parseClaudeUsage, claudeNeedsLogin, codexWindows, codexResets, parseAgyUsage, loginUrl, candidatePaths, commandFor,
+  AGY_LOG, AGY_LOG_STALE, SERVICES, serviceSpec, API_KEY, KINDS, INSTALLERS, MAC_INSTALLERS, HELP_LINKS, AUTO_EVERY, PRE_RESET, BILL_HOUR, DAY_MS, TIP_KEY, PRICE_EVERY, PRICE_TIMEOUT, GOALS, FOLDER, clampNumber, cleanText, randomId, parseResetText, parseClaudeUsage, claudeNeedsLogin, codexWindows, codexResets, parseAgyUsage, loginUrl, candidatePaths, commandFor,
 }=require('./subscription-common.cjs');
 
 // secrets: {available(),encrypt(text)->Buffer,decrypt(Buffer)->text} — 데스크톱 본체가 safeStorage로 넘긴다. 없으면 키를 받지 않는다.
@@ -107,16 +106,53 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       state,awayReason:state==='elsewhere'&&row.awayReason==='none'?'none':null,stateMessage:cleanText(row.stateMessage,200),stateAt:clampNumber(row.stateAt,0,9e15),
     };
   }
-  // seq: 화면은 알림(send)과 응답(invoke)을 따로 받아 도착 순서가 바뀔 수 있다. 번호가 작은 옛 스냅숏은 버리게 한다.
+  const usageDisabled=row=>serviceSpec(row.service)?.manualOnly===true;
+  const readsUsage=row=>row.source==='auto'&&!usageDisabled(row);
+  function publicRow({keyId,...row}){
+    const result={...row,folder:!!row.folder};
+    if(!usageDisabled(row))return result;
+    // 예전 한도와 로그인 상태를 새 값처럼 보이지 않는다. 계정에 적은 금액과 확인 날짜는 그대로 보낸다.
+    return {...result,usageDisabled:true,state:'manual',stateMessage:'',stateAt:null,awayReason:null,
+      live:null,loginUntil:null,usedUpAt:null,resetDay:null,resetHour:null,resetMinute:null};
+  }
+  // seq: 화면이 알림과 응답을 받은 순서와 관계없이 최신 판을 쓴다.
   function publicSnapshot(){
-    const b=load();
+    const b=load(),active=b.rows.filter(readsUsage);
+    const checked=active.filter(row=>row.state!=='elsewhere');
+    const check=b.check?{...b.check,total:checked.length,ok:checked.filter(row=>row.state==='ok').length}:null;
     return {ok:true,seq:++seq,platform,tools:runtime.tools?Object.fromEntries(Object.entries(runtime.tools).map(([k,v])=>[k,{installed:!!v.path||!!v.api,version:v.version||null,npm:providerPolicy(k)?.requiresNpm?!!v.npm:undefined,api:v.api?true:undefined}])):null,
-      rows:b.rows.map(({keyId,...row})=>({...row,folder:row.folder?true:false})),settings:b.settings,check:b.check,
-      usage:usageSummary({rows:b.rows,history:loadHistory(),now:now()}),prices:loadPrices(),
+      rows:b.rows.map(publicRow),settings:b.settings,check,
+      usage:usageSummary({rows:active,history:loadHistory(),now:now()}),prices:loadPrices(),
       login:loginCoordinator.state?{id:loginCoordinator.state.id,service:loginCoordinator.state.service,stage:loginCoordinator.state.stage,url:loginCoordinator.state.url,needsCode:loginCoordinator.state.needsCode,message:loginCoordinator.state.message,console:!!loginCoordinator.state.console}:null,
       checking:!!checking&&!checkQuiet,progress:checking&&!checkQuiet&&checkProgress?{...checkProgress}:null,quiet:checkQuiet};
   }
   const emit=()=>{try{onChange(publicSnapshot());}catch{}};
+
+  // 이전 버전이 비정상 종료하면서 남긴 앱 전용 임시 로그를 정리한다. 내용은 읽지 않는다.
+  let nextLegacyLogCheck=0;
+  function removeExpiredUsageLogs(){
+    const at=now();
+    if(at<nextLegacyLogCheck)return;
+    nextLegacyLogCheck=Infinity;
+    try{
+      if(!fs.lstatSync(root).isDirectory())return;
+      for(const name of fs.readdirSync(root)){
+        if(!AGY_LOG.test(name))continue;
+        const file=path.join(root,name);
+        try{
+          const stat=fs.lstatSync(file);
+          if(!stat.isFile())continue;
+          const expires=stat.mtimeMs+AGY_LOG_STALE+1;
+          if(at>=expires)fs.unlinkSync(file);
+          else nextLegacyLogCheck=Math.min(nextLegacyLogCheck,expires);
+        }catch(error){
+          if(error.code!=='ENOENT')nextLegacyLogCheck=Math.min(nextLegacyLogCheck,at+AGY_LOG_STALE);
+        }
+      }
+    }catch(error){
+      if(error.code!=='ENOENT')nextLegacyLogCheck=at+AGY_LOG_STALE;
+    }
+  }
 
   // agy는 실행 폴더를 작업 공간으로 본다. 회원 파일이 있는 곳이 아니라 이 혜택의 데이터 폴더에서 돌린다.
   const agyCwd=()=>{try{fs.mkdirSync(root,{recursive:true});return root;}catch{return undefined;}};
@@ -173,7 +209,10 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   // 돌려주는 스냅숏은 `checking`을 비운 뒤에 만든다. 안에서 만들면 「확인 중」인 채로 마지막 알림보다 늦게 도착해 화면이 멈춘다.
   // 확인 중에 들어온 확인은 끝나기를 기다린 뒤, 그 확인이 읽지 않은 줄(도는 사이 새로 연결한 계정 등)만 이어서 읽는다.
   async function check({ids,quiet=false}={}){
-    const wanted=()=>load().rows.filter(row=>row.source==='auto'&&(!Array.isArray(ids)||ids.includes(row.id))).map(row=>row.id);
+    const full=!Array.isArray(ids);
+    const matches=row=>readsUsage(row)&&(full||ids.includes(row.id));
+    const wanted=()=>load().rows.filter(matches).map(row=>row.id);
+    if(!load().rows.some(matches))return publicSnapshot();
     if(checking){
       // 자동 읽기 중에 회원이 「지금 확인」을 누르면 그때부터 진행이 보이게 한다.
       if(!quiet&&checkQuiet){checkQuiet=false;emit();}
@@ -182,7 +221,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       return missing.length?check({ids:missing,quiet}):publicSnapshot();
     }
     checkQuiet=!!quiet;
-    const full=!Array.isArray(ids),b=load(),targets=b.rows.filter(row=>row.source==='auto'&&(full||ids.includes(row.id)));
+    const b=load(),targets=b.rows.filter(matches);
     const {groups,covered}=groupSubscriptionReads(targets,b.rows,sharedAccounts);
     checkingIds=covered;checkProgress={done:0,total:targets.length};
     checking=(async()=>{
@@ -204,7 +243,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       await Promise.all([worker(),worker()]);
       // 요약은 지금 판 전체로 센다. 한 줄만 다시 읽었을 때는 「마지막 확인」 시각을 전체 확인 때 것으로 둔다.
       // 지금 로그인되지 않은 Gemini 계정(elsewhere)은 읽을 수 없는 게 맞아 「못 읽음」으로 세지 않는다.
-      const autos=b.rows.filter(row=>row.source==='auto'&&row.state!=='elsewhere');
+      const autos=b.rows.filter(row=>readsUsage(row)&&row.state!=='elsewhere');
       b.check={at:full||!b.check?.at?now():b.check.at,total:autos.length,ok:autos.filter(row=>row.state==='ok').length};
       persist();
     })();
@@ -262,7 +301,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     setTimeout(again,1000).unref?.();
   }
   async function useExisting(service){
-    const spec=serviceSpec(service);if(!spec||spec.apiKey)return {ok:false,code:'UNKNOWN_SERVICE'};
+    const spec=serviceSpec(service);if(spec?.manualOnly)return {ok:false,code:'USAGE_DISABLED'};
+    if(!spec||spec.apiKey)return {ok:false,code:'UNKNOWN_SERVICE'};
     await detectTools();if(!runtime.tools[service].path)return {ok:false,code:'TOOL_MISSING'};
     const v=await verifyLogin(service,null);
     if(!v.ok)return {ok:false,code:v.code||'NOT_LOGGED_IN'};
@@ -295,6 +335,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
 
   /* 설치 도움 */
   async function openInstaller(service){
+    if(serviceSpec(service)?.manualOnly)return {ok:false,code:'USAGE_DISABLED'};
     if(!serviceSpec(service)||!Object.hasOwn(INSTALLERS,service))return {ok:false,code:'UNKNOWN_SERVICE'};
     if(providerPolicy(service)?.requiresNpm){await detectTools(true);if(platform==='win32'&&!runtime.tools[service].npm)return {ok:false,code:'NODE_REQUIRED'};}
     else await refreshPath(true);
@@ -324,6 +365,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     return publicSnapshot();
   }
   async function readPortal(row,input){
+    if(usageDisabled(row))return {ok:false,code:'USAGE_DISABLED'};
+    if(input.kind!=='api')return {ok:false,code:'INVALID_CREDIT_CHECK'};
     const today=localDay(new Date(now()));
     const query={id:row.id,kind:input.kind,email:input.email,plan:input.plan,from:today.slice(0,8)+'01',to:today};
     const check=checkForSave(row,{...query,status:'linked',used:0},now());
@@ -337,10 +380,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       const current=load().rows.find(r=>r.id===query.id);
       if(current!==row||receipt.account!==check.value.account||JSON.stringify(current[check.field])!==previous)return {ok:false,code:'CREDIT_ACCOUNT_CHANGED'};
       const checkedAt=now();
-      if(query.kind==='flow'&&(localDay(new Date(checkedAt))!==query.to||receipt.from!==query.from||receipt.to!==query.to||!Number.isSafeInteger(receipt.wallet)||receipt.wallet<0||receipt.wallet>10000000))return {ok:false,code:'CREDIT_SOURCE_UNKNOWN'};
-      const previousFlow=current.flowUsage;
-      if(query.kind==='flow'&&previousFlow?.source==='official'&&previousFlow.from===query.from&&previousFlow.to<=query.to&&receipt.used<previousFlow.used)return {ok:false,code:'CREDIT_SOURCE_UNKNOWN'};
-      const result=checkForSave(current,{...query,status:receipt.status,used:receipt.used,wallet:receipt.wallet},checkedAt,true);
+      const result=checkForSave(current,{...query,status:receipt.status},checkedAt,true);
       return storeCredit(current,result);
     }finally{portalBusy=false;}
   }
@@ -415,13 +455,13 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   // 지금 읽을 때인지: 마지막 전체 확인에서 6시간 · 결제일 아침 9시 뒤 첫 확인 · 자정 10분 전 · 날짜가 바뀐 뒤 첫 때 → 전체, 주간 초기화 10분 전에 그 뒤로 안 읽은 계정 → 그 계정만.
   // 앱이 꺼져 있던 동안은 읽지 않는다(그 구간은 기록에서 「모르는 구간」으로 남는다).
   function autoDue(at=now()){
-    const b=load(),autos=b.rows.filter(row=>row.source==='auto');
+    const b=load(),autos=b.rows.filter(readsUsage);
     if(!autos.length)return null;
     const last=b.check?.at||0;
     if(at-last>=AUTO_EVERY)return {};
     const morning=new Date(at);morning.setHours(BILL_HOUR,0,0,0);
     const billToday=day=>{const d=new Date(at),lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return d.getDate()===Math.min(Number(day),lastDay);};
-    if(at>=morning.getTime()&&last<morning.getTime()&&b.rows.some(row=>row.billDay&&billToday(row.billDay)))return {};
+    if(at>=morning.getTime()&&last<morning.getTime()&&b.rows.some(row=>!usageDisabled(row)&&row.billDay&&billToday(row.billDay)))return {};
     // 하루 막대(11-02 검수 F1): 자정 10분 전에 한 번, 날짜가 바뀐 뒤 첫 때에 한 번 전체를 읽는다 —
     // 6시간마다만 읽으면 자정 앞 마지막 읽기 뒤의 저녁 소비가 다음 날 막대에 실린다(경계 오차를 2분 tick + 10분 안으로).
     const today=new Date(at);today.setHours(0,0,0,0);
@@ -433,6 +473,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     return pre.length?{ids:pre}:null;
   }
   async function autoTick(){
+    removeExpiredUsageLogs();
     void refreshPrices();
     if(checking||(loginCoordinator.state&&!['done','error','cancelled'].includes(loginCoordinator.state.stage)))return null;
     let due=null;try{due=autoDue();}catch{return null;}
@@ -443,7 +484,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   const guard=fn=>async(...args)=>{try{return await fn(...args);}catch(error){if(error?.code==='BOARD_BUSY')return {ok:false,code:'BOARD_BUSY'};throw error;}};
   return {
     // 계정판을 열 때 요금표 갱신본을 뒤에서 물어본다(하루 한 번까지). 화면은 기다리지 않고, 바뀌면 알림으로 다시 그린다.
-    snapshot:guard(async({refreshTools=false}={})=>{await detectTools(refreshTools);void refreshPrices();return publicSnapshot();}),
+    snapshot:guard(async({refreshTools=false}={})=>{removeExpiredUsageLogs();await detectTools(refreshTools);void refreshPrices();return publicSnapshot();}),
     refreshPrices:guard(refreshPrices),
     check:guard(check),useExisting:guard(useExisting),startLogin,submitCode,cancelLogin,openLoginUrl,openInstaller,openHelp,save:guard(save),connectKey:guard(connectKey),
     autoTick:guard(autoTick),autoDue:guard(async at=>autoDue(at)),

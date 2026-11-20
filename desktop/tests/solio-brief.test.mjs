@@ -4,7 +4,8 @@
 // 무작위 맞대기처럼 갈래를 나눠야 하면 갈래마다 걸린 수도 단언한다(구조 다시 보기 4절 P2-6).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { solioBrief, briefHead, briefSoon, briefDiag, briefDial, briefGroups, poolRunout, poolSay, dailyDiag, diagWhen, briefLive, tokSample, recentOut, soonWhen, SOON_SHOWN, RECENT_MS, DIAL_MS } from '../renderer/solio-brief.mjs';
+import { solioBrief, briefHead, briefSoon, briefDiag, briefDial, briefGroups, poolRunout, poolSay, dailyDiag, diagWhen, briefLive, tokSample, todayOut, recentOut, soonWhen, SOON_SHOWN, RECENT_MS, DIAL_MS } from '../renderer/solio-brief.mjs';
+import { tokenSummary } from '../renderer/subscriptions-tokens.mjs';
 import { solioToday } from '../renderer/solio-today.mjs';
 import { serviceFacts, poolTimeline, POOL_SHORT } from '../renderer/subscriptions-model.mjs';
 
@@ -404,6 +405,17 @@ test('diagnosis once a day: kept through the day, counted again on a new day rea
   const s4 = snap([{ ...a, plan: 'max_5x' }], { [a.id]: 1 }, { checkAt: later - 60e3 });
   assert.notEqual(dailyDiag(m1, s4, briefGroups(s4, later), later), m1, 'a changed plan counts again');
   assert.equal(diagWhen(NOW - 4 * H, NOW), '어제 23:00에 읽은 기록으로');
+});
+
+test('Gemini tokens recorded earlier today stay in dated history and do not count toward live output', () => {
+  const day = '2026-11-20';
+  const tokens = { cells: [
+    [day, 'gemini', 'gemini-3.5-flash', 1, 50, 0, 0, 0, 1],
+    [day, 'gpt', 'gpt-test', 1, 9, 0, 0, 0, 1],
+  ] };
+  assert.deepEqual(todayOut(tokens, NOW), { day, by: { gpt: 9 }, out: 9 });
+  const stored = tokenSummary(tokens, 'week', NOW).models.find(model => model.service === 'gemini');
+  assert.equal(stored.daily[day], 50);
 });
 
 test('live output: off, first count, and today with the last ten minutes (설계 3.3, 설계 검토 D8)', () => {

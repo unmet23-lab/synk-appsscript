@@ -11,7 +11,6 @@ const { inspectPages, readCreditPortal } = require('../src/subscription-credit-p
 const { HELP_LINKS } = require('../src/subscription-common.cjs');
 
 const email = 'studio@example.com';
-const accountButton = { getClientRects:() => [1], getAttribute:() => 'Google Account (' + email + ')' };
 
 test('account links open the Flow wallet separately from Google AI Studio usage', () => {
   const activity=new URL(HELP_LINKS['flow-activity']);
@@ -42,20 +41,6 @@ async function inBrowser(options, documentFor, onClick = () => {}) {
   return JSON.parse(JSON.stringify(result));
 }
 
-test('Flow waits for statement rows as well as pagination and counts only debits from the Flow wallet', async () => {
-  let second = false, waiting = 2;
-  const make = (time, type, change) => '2026. 11. 19. ' + time + '\t' + type + '\t' + change;
-  const first = [make('12:05','Google Flow 크레딧',-100),make('12:04','Google Flow 크레딧',-100)];
-  const next = [make('12:04','Google Flow',-300),make('12:02','AI 크레딧',-50)];
-  const opts = {kind:'flow',service:'gemini',email,from:'2026-11-01',to:'2026-11-20',url:'https://one.google.com/ai/activity'};
-  const captured=await inBrowser(opts, () => {
-    const rows = !second ? first : waiting-- > 0 ? [] : next;
-    const innerText = ['Google Flow 크레딧','0','내 최근 활동',...rows,second ? '4 중 3–4':'4 중 1–2'].join('\n');
-    return {body:{innerText},querySelectorAll:() => [accountButton]};
-  }, () => { second = true; });
-  assert.deepEqual(captured,{ok:true,account:email,from:opts.from,to:opts.to,used:500,wallet:0});
-});
-
 test('a negated English API organization label stays unlinked and a later account switch is rejected', async () => {
   const opts={kind:'api',service:'gpt',email,url:'https://chatgpt.com/settings/billing'};
   let profile = email;
@@ -74,26 +59,6 @@ test('a negated English API organization label stays unlinked and a later accoun
   assert.deepEqual(changed,{ok:false,code:'CREDIT_WRONG_ACCOUNT'});
 });
 
-test('an applied monthly Google Cloud credit has an actual billing account and balance on the same card', async () => {
-  const opts={kind:'api',service:'gemini',email,to:'2026-11-20',url:'https://me.developers.google.com/benefits'};
-  const base="Nov '26\n$10 monthly Gen AI & Cloud credits\nBilling account\n";
-  const inspect=async lines=>inBrowser(opts,()=>({querySelectorAll:selector=>selector==='[aria-label]' ? [accountButton] : [{getClientRects:()=>[],querySelector:()=>({getClientRects:()=>[1]}),querySelectorAll:()=>[],innerText:base+lines}]}));
-  assert.equal((await inspect('Example account\nAlways use this billing account\nBalance: USD 0')).status,'linked');
-  assert.equal((await inspect('Select a billing account\nAlways use this billing account')).status,'unlinked');
-  assert.equal((await inspect('Example account\nAlways use this billing account')).ok,false);
-  assert.equal((await inspect('Example account\nBalance: USD 10\nApply')).status,'unlinked');
-  const cards=[{innerText:"Oct '26\nMonthly Google Cloud credits\nBilling account\nOther account\nBalance: USD 10"},{innerText:base+'Select a billing account'}];
-  const withCards=()=>inBrowser(opts,()=>({querySelectorAll:s=>s==='[aria-label]'?[accountButton]:cards.map(card=>({...card,getClientRects:()=>[1],querySelectorAll:()=>[]}))}));
-  assert.equal((await withCards()).status,'unlinked');
-  cards.push({innerText:base+'Example account\nBalance: USD 10'});
-  assert.equal((await withCards()).status,'linked');
-  cards[1]={innerText:base+'Example account\nBalance: USD 2'};
-  assert.equal((await withCards()).status,'linked');
-  cards.splice(1);
-  cards[0].innerText+='\nExpires: Nov 25, 2026';
-  assert.equal((await withCards()).ok,false);
-});
-
 test('Claude reopens the billing dialog through its fragment without replacing the account document', async () => {
   const opts={kind:'api',service:'claude',email,url:'https://claude.ai/new#settings/billing'};
   let menu=false, identityReads=0;
@@ -110,27 +75,6 @@ test('Claude reopens the billing dialog through its fragment without replacing t
   assert.equal(identityReads,2);
 });
 
-test('Google confirms a grant for the same signed-in user while the billing name resolves', async () => {
-  const opts={kind:'api',service:'gemini',email,to:'2026-11-20',url:'https://me.developers.google.com/benefits'};
-  let reads=0, first='Personal';
-  const doc=()=>({querySelectorAll:s=>s==='[aria-label]'?[accountButton]:[{
-    getClientRects:()=>[1],querySelectorAll:()=>[],
-    innerText:"Nov '26\nMonthly Google Cloud credits\nBilling account\n"+(++reads===1?first:'Second')+'\nBalance: USD 10',
-  }]});
-  assert.equal((await inBrowser(opts,doc)).status,'linked');
-  reads=0;first='billingAccounts/example';
-  assert.equal((await inBrowser(opts,doc)).status,'linked');
-  let calls=0;
-  const slowly=()=>({querySelectorAll:s=>s==='[aria-label]'?[accountButton]:[{
-    getClientRects:()=>[1],querySelectorAll:()=>[],
-    innerText:"Nov '26\nMonthly Google Cloud credits\nBilling account\n"+(++calls<=2?'billingAccounts/example':'Second')+'\nBalance: USD 10',
-  }]});
-  assert.equal((await inBrowser(opts,slowly)).status,'linked');
-  let logins=0;
-  const switched=()=>({querySelectorAll:s=>s==='[aria-label]'&&++logins>=3?[{getClientRects:()=>[1],getAttribute:()=>'Google Account (another@example.com)'}]:slowly().querySelectorAll(s)});
-  assert.deepEqual(await inBrowser(opts,switched),{ok:false,code:'CREDIT_WRONG_ACCOUNT'});
-});
-
 test('Claude also reopens from its canonical billing path and ignores a team subscription', async () => {
   const opts={kind:'api',service:'claude',email,url:'https://claude.ai/settings/billing'};
   let menu=false, team=false;
@@ -145,26 +89,6 @@ test('Claude also reopens from its canonical billing path and ignores a team sub
   };
   assert.equal((await inBrowser(opts,doc,click)).status,'linked');
   team=true;assert.equal((await inBrowser(opts,doc,click)).ok,false);
-});
-
-test('a Flow loading placeholder or an unfamiliar debit cannot overwrite a previous reading with zero', async () => {
-  const opts={kind:'flow',service:'gemini',email,from:'2026-11-01',to:'2026-11-20',url:'https://one.google.com/ai/activity'};
-  for(const history of ['No recent activity','Nov 19, 2026\tUnknown ledger\t-20\n1–1 of 1']){
-    const result=await inBrowser(opts,()=>({body:{innerText:'Google Flow credits\n0\n'+history},querySelector:()=>null,querySelectorAll:s=>s==='[aria-label]'?[accountButton]:[]}));
-    assert.deepEqual(result,{ok:false,code:'CREDIT_SOURCE_UNKNOWN'});
-  }
-  const placeholder={getClientRects:()=>[1],getAttribute:()=>null,querySelectorAll:()=>[],innerText:'No recent activity'};
-  const pending=await inBrowser(opts,()=>({body:{innerText:'Google Flow credits\n0\nNo recent activity'},querySelectorAll:s=>s==='[aria-label]'?[accountButton]:[placeholder]}));
-  assert.equal(pending.ok,false);
-});
-
-test('an explicitly empty statement settles twice, and other named Google products never add to Flow usage', async () => {
-  const opts={kind:'flow',service:'gemini',email,from:'2026-11-01',to:'2026-11-20',url:'https://one.google.com/ai/activity'};
-  const doc=text=>({body:{innerText:'Google Flow credits\n100\n'+text},querySelector:()=>null,querySelectorAll:s=>s==='[aria-label]'?[accountButton]:[]});
-  const none=await inBrowser(opts,()=>doc('0–0 of 0'));
-  assert.equal(none.used,0);
-  const mixed=await inBrowser(opts,()=>doc('Nov 19, 2026\tGoogle Flow\t-20\nNov 18, 2026\tGoogle Antigravity\t-5\n1–2 of 2'));
-  assert.equal(mixed.used,20);
 });
 
 test('alternate invoice contacts require an independently matching signed-in profile', async () => {
@@ -195,39 +119,31 @@ test('billing actions can finish loading without changing the verified API organ
   assert.equal((await inBrowser(opts,doc)).ok,false);
 });
 
-test('two settled consecutive Flow pages may contain exactly the same transactions', async () => {
-  const opts={kind:'flow',service:'gemini',email,from:'2026-11-01',to:'2026-11-20',url:'https://one.google.com/ai/activity'};
-  let next=false;
-  const row='Nov 19, 2026\tGoogle Flow\t-20';
-  const nodes=()=>Array.from({length:2},()=>({getClientRects:()=>[1],cells:[{innerText:'Nov 19, 2026'}]}));
-  const firstRows=nodes(),nextRows=nodes();
-  let replace=true;
-  const doc=()=>({body:{innerText:['Google Flow credits','100',row,row,next?'3–4 of 4':'1–2 of 4'].join('\n')},
-    querySelectorAll:s=>s==='[aria-label]'?[accountButton]:s==='table tbody tr'?(next&&replace?nextRows:firstRows):[]});
-  assert.equal((await inBrowser(opts,doc,()=>{next=true;})).used,80);
-  next=false;replace=false;
-  assert.deepEqual(await inBrowser(opts,doc,()=>{next=true;}),{ok:false,code:'CREDIT_SOURCE_UNKNOWN'});
-});
-
-test('a named empty Flow activity table settles, while a busy table or enclosing indicator never confirms zero', async () => {
-  const opts={kind:'flow',service:'gemini',email,from:'2026-11-01',to:'2026-11-20',url:'https://one.google.com/ai/activity'};
-  const region={getClientRects:()=>[1],getAttribute:k=>k==='aria-label'?'Recent activity':null,querySelectorAll:()=>[],innerText:'No recent activity'};
-  const busy={getClientRects:()=>[1],getAttribute:k=>k==='aria-busy'?'true':null};
-  const doc=(indicator,text)=>({body:{innerText:'Google Flow credits\n100\nNo recent activity\n'+text},
-    querySelectorAll:s=>s==='[aria-label]'?[accountButton]:s.includes('aria-busy')?(indicator?[busy]:[]):[region]});
-  assert.equal((await inBrowser(opts,()=>doc(false,''))).used,0);
-  assert.equal((await inBrowser(opts,()=>doc(true,'0–0 of 0'))).ok,false);
-});
-
 test('a redirect during navigation never reads the identity or balance of the next origin', async () => {
-  const opts={kind:'api',service:'gemini',email,url:'https://me.developers.google.com/benefits'};
+  const opts={kind:'api',service:'gpt',email,url:'https://chatgpt.com/settings/billing'};
   let reads=0;
   const r=await inBrowser(opts,location=>{
-    location.hostname='accounts.google.com';
-    return {querySelectorAll(){reads++;return [accountButton];}};
+    location.hostname='example.test';
+    return {querySelectorAll(){reads++;return [];}};
   });
   assert.equal(reads,0);
   assert.equal(r.ok,false);
+});
+
+test('Gemini and Flow requests are refused before finding the browser, starting a process or creating a tab', async () => {
+  const forbidden = () => assert.fail('a disabled portal request tried to open a browser');
+  const runtime = {get rawRun(){return forbidden();}, get childEnv(){return forbidden();}};
+  const system = {runtime, platform:'win32', get home(){return undefined;}};
+  for (const [service,kind,code] of [
+    ['gemini','api','USAGE_DISABLED'], ['gemini','flow','USAGE_DISABLED'],
+    ['gpt','flow','INVALID_CREDIT_CHECK'], ['claude','flow','INVALID_CREDIT_CHECK'],
+  ]) {
+    assert.deepEqual(await readCreditPortal(system,{service,email},{kind}),{ok:false,code});
+    const reply = await vm.runInNewContext('(' + inspectPages.toString() + ')(options)', {
+      options:{service,kind,email},taskSpace:forbidden,
+    });
+    assert.deepEqual(JSON.parse(JSON.stringify(reply)),{ok:false,code});
+  }
 });
 
 test('the browser receives a private temporary module and the command line contains no account address', async t => {

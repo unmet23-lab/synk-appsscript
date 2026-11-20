@@ -10,7 +10,9 @@ function createSubscriptionLogin({runtime,providers,accounts,system,now,onChange
   const {verifyLogin}=providers;
   let login=null;
   async function startLogin(service,{email,console:useConsole=false}={}){
-    const adapter=providers.get(service),spec=adapter?.spec,behavior=adapter?.policy.login;if(!spec||!behavior)return {ok:false,code:'UNKNOWN_SERVICE'};
+    const adapter=providers.get(service),spec=adapter?.spec,behavior=adapter?.policy.login;
+    if(spec?.manualOnly)return {ok:false,code:'USAGE_DISABLED'};
+    if(!spec||!behavior)return {ok:false,code:'UNKNOWN_SERVICE'};
     if(spec.consoleLogin)useConsole=true;
     if(login&&!['done','error','cancelled'].includes(login.stage))return {ok:false,code:'LOGIN_BUSY'};
     await detectTools();if(!runtime.tools[service].path)return {ok:false,code:'TOOL_MISSING'};

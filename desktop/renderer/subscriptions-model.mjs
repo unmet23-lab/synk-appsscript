@@ -121,7 +121,7 @@ export const planKey = plan => String(plan || '').toLowerCase().replace(/[\s_-]/
 export const planName = (plan, service = null) => (plan ? (service === 'gpt' && GPT_PLAN[planKey(plan)]) || PLAN[planKey(plan)] || String(plan) : '');
 // 계정 이름: 메일 앞부분(Gemini도 — 본체가 agy 기록에서 지금 로그인된 계정 메일을 읽는다, 10-22) → API 키 끝 네 글자(서비스가 이미 Typecast라
 // 「키」는 붙이지 않는다) → 아직 메일을 못 읽은 Gemini 줄(새 판으로 처음 읽기 전)은 이 PC 로그인 → 직접 넣은 구독 이름.
-export const nameOf = row => (row?.email ? row.email.split('@')[0] : row?.keyHint ? row.keyHint : row?.source === 'auto' && row.service === 'gemini' ? '이 PC 로그인' : row?.label || '');
+export const nameOf = row => (row?.email ? row.email.split('@')[0] : row?.keyHint ? row.keyHint : row?.source === 'auto' && row.service === 'gemini' ? (row.usageDisabled ? String(row.label || '').trim() || '저장된 계정' : '이 PC 로그인') : row?.label || '');
 
 // 계정 하나의 지금 상태.
 //  ok 넉넉 · low 10% 이하 남음이나 크레딧 부족 · out 다 씀(unblock = 다시 열리는 때) · login 다시 로그인 ·
@@ -186,7 +186,7 @@ export const apiCreditEndsAtBill = row => apiCreditPlan(row) && row.service !== 
 const UNKNOWN_TIER = { claude: 'max', gemini: 'ultra' };
 function grantOf(prices, row, now) {
   if (row?.source !== 'auto' || !API_CREDIT_SERVICES.includes(row.service)) return null;
-  if (row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
+  if (!(row.service === 'gemini' && row.usageDisabled === true) && row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
   const table = priceTable(prices, row.service, now), key = planKey(row.plan);
   if (!table) return null;
   const v = num(table.plans?.[key]?.apiCredit);
@@ -232,7 +232,7 @@ export function apiCredits(prices, rows, now, service = 'claude') {
 // 한 달 양을 모르면(등급 모름 · 가족 공유) 굴리지 않고 「다시 찼어요」(expired)만 말한다. 한 달 양은 요금제 사실이라 요금표 60일 문 밖에서 읽는다(monthCredits처럼 — P2-3).
 function flowGrantOf(prices, row, now) {
   if (row?.source !== 'auto' || row.service !== 'gemini') return null;
-  if (row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
+  if (!(row.service === 'gemini' && row.usageDisabled === true) && row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
   const key = planKey(row.plan), v = num(prices?.services?.gemini?.plans?.[key]?.flowCredits);
   return v > 0 ? { grant: v } : key === 'ultra' ? { unknown: true } : null;
 }
@@ -277,7 +277,7 @@ export function flowCredits(prices, rows, now) {
 export function serviceGroups(rows, now, checkAt = null) {
   const map = new Map();
   for (const row of rows || []) {
-    if (row.kind !== 'weekly' && row.kind !== 'credit') continue;
+    if (row.usageDisabled || (row.kind !== 'weekly' && row.kind !== 'credit')) continue;
     const auto = row.source === 'auto' && Object.hasOwn(SHORT, row.service), label = String(row.label || '').trim();
     const key = auto ? row.service : `m-${row.kind}-${label.toLowerCase()}`;
     if (!map.has(key)) map.set(key, { key, service: auto ? row.service : null, label: auto ? SHORT[row.service] : label || '직접 넣은 구독', kind: row.kind, accounts: [] });
@@ -373,7 +373,7 @@ export function planPrice(t, key) { const p = t?.plans?.[key]; return p && Numbe
 // 마지막으로 읽은 지 30일이 넘은 채 못 읽히는 줄(구독을 끊고 로그인만 남았을 수 있다)은 채우지 않는다(3차 시안 검수 P3-1).
 export function officialPrice(prices, row, now) {
   if (row.source !== 'auto' || num(row.price) !== null) return null;
-  if (row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
+  if (!(row.service === 'gemini' && row.usageDisabled === true) && row.state !== 'ok' && now - (row.live?.readAt || 0) > 30 * DAY_MS) return null;
   const table = priceTable(prices, row.service, now), plan = planPrice(table, planKey(row.plan));
   return plan ? { price: row.cycle === 'annual' && plan.year ? plan.year / 12 : plan.month, currency: table.currency, table } : null;
 }
