@@ -1,7 +1,24 @@
 // 솔리오 첫 화면의 문장과 줄(PC 클라이언트 1단계, 1단계_구현설계.md 8절). 구독 스냅숏은 합성이다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { solioToday, solioTodayNeedsReread, SOLIO_TODAY_NAMES, whenWords, shortWhen, readLine, joinNames, josa } from '../renderer/solio-today.mjs';
+import { solioToday, solioTodayNeedsReread, SOLIO_TODAY_NAMES, whenWords, shortWhen, readLine, joinNames, josa, korDate, benefitInfo } from '../renderer/solio-today.mjs';
+
+test('확인 시각은 현지 날짜로 보이고 거래 명세의 달력 날짜는 그대로 보인다', () => {
+  const timestamp = '2026-11-20T01:00:00+14:00';
+  const local = new Date(timestamp);
+  const expected = local.getFullYear() + '년 ' + (local.getMonth() + 1) + '월 ' + local.getDate() + '일';
+  assert.equal(korDate(timestamp), expected);
+  assert.equal(korDate(local.getTime()), expected);
+  assert.equal(korDate('2026-11-20'), '2026년 11월 20일');
+});
+
+test('확인되지 않은 이메일에 다른 계정의 API 연결 결과를 표시하지 않는다', () => {
+  for (const identity of [{email:'one@example.com',emailVerified:false},{email:'one@'}]) {
+    const result = benefitInfo({source:'auto',service:'gpt',plan:'pro',...identity,apiBenefit:{account:identity.email,plan:'pro',status:'linked',checkedAt:1}});
+    assert.equal(result.matched,false);
+    assert.equal(result.label,'미확인');
+  }
+});
 
 const D = 864e5, H = 3600e3;
 const NOW = new Date(2026, 10, 16, 10, 0).getTime(); // 2026-11-16(월) 10:00

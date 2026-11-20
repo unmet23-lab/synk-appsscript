@@ -1,5 +1,7 @@
 'use strict';
 const {createSubscriptionStore}=require('./subscription-store.cjs');
+const {storedCheck,checkForSave,localDay}=require('./subscription-credit-checks.cjs');
+const {readCreditPortal}=require('./subscription-credit-portal.cjs');
 const {createSubscriptionRuntime}=require('./subscription-runtime.cjs');
 const {createSubscriptionProviders}=require('./subscription-providers.cjs');
 const {createSubscriptionLogin}=require('./subscription-login.cjs');
@@ -29,7 +31,7 @@ const {
 // secrets: {available(),encrypt(text)->Buffer,decrypt(Buffer)->text} — 데스크톱 본체가 safeStorage로 넘긴다. 없으면 키를 받지 않는다.
 // retryDelay: 「로그인 필요」로 읽힌 줄을 다시 읽기 전에 기다리는 시간(ms).
 // priceFetch: 요금표 갱신본을 받는 fetch(3차). 데스크톱 본체만 넘긴다 — 없으면 앱 기본 사본만 쓰고 밖으로 아무것도 묻지 않는다(시험이 인터넷에 닿지 않게).
-function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,priceFetch=null,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{},onTokens=()=>{},retryDelay=3000}){
+function createAiSubscriptions({root,platform=process.platform,env=process.env,home,spawn=nodeSpawn,fetch:fetchImpl=globalThis.fetch,priceFetch=null,secrets=null,openExternal=async()=>{},now=()=>Date.now(),onChange=()=>{},onTokens=()=>{},retryDelay=3000,creditPortal=readCreditPortal}){
   if(!root)throw new TypeError('root is required');
   const accountsDir=path.join(root,'accounts'),pricesFile=path.join(root,'prices.json');
   // checkQuiet: 자동 읽기처럼 회원이 누르지 않은 확인. 화면에는 「확인 중」·진행 수를 보이지 않고, 알림에 quiet를 달아 숫자를 굴리지 않게 한다.
@@ -89,6 +91,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       // API 크레딧(회원이 넣음, Claude 10-28 · GPT 10-29): Claude Max는 Console 조직, GPT Pro는 OpenAI API 조직에 들어오는 크레딧. 잔액을 읽는 공식 경로가 없어
       // 그 결제 화면(Console 결제 · OpenAI Credit grants)의 남은 금액(달러, 센트까지)과 만료 날짜를 넣는다. apiCreditAt은 넣은 때(본체가 찍는다). 받는 줄은 어댑터 editable이 정한다.
       apiCredit:(n=>n===null?null:Math.round(n*100)/100)(clampNumber(row.apiCredit,0,1e5)),apiCreditUntil:clampNumber(row.apiCreditUntil,0,9e15),apiCreditAt:clampNumber(row.apiCreditAt,0,9e15),
+      apiBenefit:storedCheck(row,'api',row.apiBenefit),
+      flowUsage:storedCheck(row,'flow',row.flowUsage),
       // Flow 크레딧(회원이 넣음, Gemini 11-02): 요금제에 매달 딸려 오는 Google Flow 크레딧의 남은 개수와 다시 차는 때(Flow 프로필의 「… 초기화」).
       // 읽는 공식 경로가 없어 회원이 넣고, flowCreditAt은 넣은 때(본체가 찍는다). 받는 줄은 어댑터 editable이 정한다.
       flowCredit:(n=>n===null?null:Math.round(n))(clampNumber(row.flowCredit,0,1e7)),flowCreditUntil:clampNumber(row.flowCreditUntil,0,9e15),flowCreditAt:clampNumber(row.flowCreditAt,0,9e15),
@@ -148,12 +152,13 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
       const email=cleanText(result.email,254);
       // 같은 줄에 다른 계정이 로그인됐으면(이 PC의 기본 로그인을 바꾼 경우 등) 앞 계정을 보고 넣은 초기화권·API 크레딧은 비운다(10-28 설계 검토 P3-9).
       // Flow 크레딧과 회원이 고른 요금제(Gemini, 11-02)도 그 계정의 것이라 같이 비운다.
-      if(row.email&&row.email.toLowerCase()!==email.toLowerCase())Object.assign(row,{passCount:null,passUntil:null,apiCredit:null,apiCreditUntil:null,apiCreditAt:null,flowCredit:null,flowCreditUntil:null,flowCreditAt:null},providerPolicy(row.service)?.planChoices?{plan:null}:{});
+      if(row.email&&row.email.toLowerCase()!==email.toLowerCase())Object.assign(row,{passCount:null,passUntil:null,apiCredit:null,apiCreditUntil:null,apiCreditAt:null,apiBenefit:null,flowUsage:null,flowCredit:null,flowCreditUntil:null,flowCreditAt:null},providerPolicy(row.service)?.planChoices?{plan:null}:{});
       row.email=email;
     }
     // Claude Max 등급(max_5x·max_20x)을 알던 줄에 이번 읽기만 등급 없이 「max」가 오면(설정 파일을 그 순간 못 읽음) 알던 등급을 지킨다.
     // 덮으면 기록에 무게가 다른 읽기가 섞여 사용량 막대가 부푼다(2차 검수 P1-4). 다른 요금제로 바뀐 것은 그대로 따른다.
     if(result.plan){const plan=cleanText(result.plan,40);if(!(providerPolicy(row.service)?.preservePlan?.(row.plan,plan)))row.plan=plan;}
+    if(row.apiBenefit)row.apiBenefit=storedCheck(row,'api',row.apiBenefit);
     // 로그인 기한은 공식 프로그램이 알려 준 읽기에서만 바꾼다(결과에 칸이 없으면 알던 기한을 그대로 둔다).
     if(Object.hasOwn(result,'loginUntil'))row.loginUntil=clampNumber(result.loginUntil,0,9e15);
     if(result.state!=='ok'||!result.live)return;
@@ -223,7 +228,11 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
     if(same){
       // 폴더를 옮긴 줄이 지금 도는 확인에 들어 있으면 그 확인의 몫에서 뺀다 — 옛 폴더로 읽은 결과는 버리고(check), 연결 뒤의 읽기가 새 폴더로 다시 읽는다(검수 F3).
       if(folder&&same.folder!==folder){removeFolder(same.folder);same.folder=folder;checkingIds?.delete(same.id);}
-      if(email&&!same.email)same.email=cleanText(info.email,254);same.state='unknown';if(info.plan)same.plan=info.plan;
+      if(email&&!same.email)same.email=cleanText(info.email,254);same.state='unknown';
+      if(info.plan&&!providerPolicy(service)?.preservePlan?.(same.plan,info.plan)){
+        same.plan=info.plan;
+        if(same.apiBenefit)same.apiBenefit=storedCheck(same,'api',same.apiBenefit);
+      }
       // 로그인 기한은 그 기한을 준 로그인이 이 줄의 로그인일 때만 넣는다(자기 폴더로 읽던 줄에 기본 로그인의 기한을 적지 않는다 — 검수 F4).
       if(Object.hasOwn(info,'loginUntil')&&(same.folder||null)===(folder||null))same.loginUntil=clampNumber(info.loginUntil,0,9e15);
       persist();return same;
@@ -305,10 +314,48 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   }
   async function openHelp(key){if(!Object.hasOwn(HELP_LINKS,key))return {ok:false,code:'UNKNOWN_LINK'};try{await openExternal(HELP_LINKS[key]);return {ok:true};}catch{return {ok:false,code:'OPEN_FAILED'};}}
 
+  let portalBusy=false;
+  function storeCredit(row,result){
+    if(!result.ok)return result;
+    const previous=row[result.field];
+    row[result.field]=result.value;
+    try{persist();}catch(error){row[result.field]=previous;throw error;}
+    emit();
+    return publicSnapshot();
+  }
+  async function readPortal(row,input){
+    const today=localDay(new Date(now()));
+    const query={id:row.id,kind:input.kind,email:input.email,plan:input.plan,from:today.slice(0,8)+'01',to:today};
+    const check=checkForSave(row,{...query,status:'linked',used:0},now());
+    if(!check.ok)return check;
+    if(portalBusy)return {ok:false,code:'CREDIT_CHECK_BUSY'};
+    const previous=JSON.stringify(row[check.field]);
+    portalBusy=true;
+    try{
+      const receipt=await creditPortal({runtime,home,platform},row,query);
+      if(!receipt?.ok)return receipt||{ok:false,code:'CREDIT_SOURCE_UNKNOWN'};
+      const current=load().rows.find(r=>r.id===query.id);
+      if(current!==row||receipt.account!==check.value.account||JSON.stringify(current[check.field])!==previous)return {ok:false,code:'CREDIT_ACCOUNT_CHANGED'};
+      const checkedAt=now();
+      if(query.kind==='flow'&&(localDay(new Date(checkedAt))!==query.to||receipt.from!==query.from||receipt.to!==query.to||!Number.isSafeInteger(receipt.wallet)||receipt.wallet<0||receipt.wallet>10000000))return {ok:false,code:'CREDIT_SOURCE_UNKNOWN'};
+      const previousFlow=current.flowUsage;
+      if(query.kind==='flow'&&previousFlow?.source==='official'&&previousFlow.from===query.from&&previousFlow.to<=query.to&&receipt.used<previousFlow.used)return {ok:false,code:'CREDIT_SOURCE_UNKNOWN'};
+      const result=checkForSave(current,{...query,status:receipt.status,used:receipt.used,wallet:receipt.wallet},checkedAt,true);
+      return storeCredit(current,result);
+    }finally{portalBusy=false;}
+  }
   /* 직접 넣는 값 */
   function save(patch){
     const b=load();
     if(!patch||typeof patch!=='object')return {ok:false,code:'INVALID_REQUEST'};
+    if(Object.hasOwn(patch,'creditCheck')||Object.hasOwn(patch,'creditRead')){
+      const read=Object.hasOwn(patch,'creditRead');
+      const input=read?patch.creditRead:patch.creditCheck;
+      if(!input||typeof input!=='object'||Object.keys(patch).length!==1)return {ok:false,code:'INVALID_CREDIT_CHECK'};
+      const row=b.rows.find(r=>r.id===input.id);
+      if(!row)return {ok:false,code:'UNKNOWN_ROW'};
+      return read?readPortal(row,input):storeCredit(row,checkForSave(row,input,now()));
+    }
     if(patch.settings&&typeof patch.settings==='object'){
       // 목표(아끼기·막힘 없이 쓰기·아직 몰라요)와 「팁 전부 끄기」, 3차 「한 달 요약 끄기」. 모르는 값이면 아무것도 바꾸지 않고 거절한다.
       // 요약을 꺼도 사용 기록은 지우지 않는다(끄는 것과 기록 지우기를 나눈다 — 스크린타임 불만 원문).

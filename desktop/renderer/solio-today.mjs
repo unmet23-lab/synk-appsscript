@@ -194,6 +194,36 @@ function moreSay(snapshot, g, fact, now) {
 }
 
 /* 계정 하나의 남은 양 글. 쓰지 않는 말: 「지금 쓰는 계정」(자료가 없다, 설계 검토 1차 5) */
+export const BENEFIT_SERVICES = Object.freeze(['claude', 'gpt', 'gemini']);
+const BENEFIT_LABELS = Object.freeze({ linked: '연결됨', unlinked: '미연결', 'not-shown': '혜택 항목 안 보임' });
+const normBenefitText = v => String(v ?? '').trim().toLowerCase();
+
+export function korDate(t) {
+  if (t === null || t === undefined || t === '' || t === false || t === 0) return '';
+  const s = typeof t === 'string' ? t.trim() : '';
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (m) return Number(m[1]) + '년 ' + Number(m[2]) + '월 ' + Number(m[3]) + '일';
+  const d = new Date(typeof t === 'number' ? t : /^\d+$/.test(s) ? Number(s) : s);
+  return Number.isFinite(d.getTime()) ? d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일' : '';
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function benefitInfo(row) {
+  if (row?.source !== 'auto' || !BENEFIT_SERVICES.includes(row.service)) return null;
+  const rawEmail = row.emailVerified === false || typeof row.email !== 'string' ? '' : row.email.trim();
+  const email = EMAIL_RE.test(rawEmail) ? rawEmail : '';
+  const b = row.apiBenefit;
+  const matched = !!email && !!b && typeof b === 'object'
+    && Object.hasOwn(BENEFIT_LABELS, b.status)
+    && normBenefitText(b.account) === normBenefitText(email)
+    && normBenefitText(b.plan) === normBenefitText(row.plan);
+  const label = matched ? BENEFIT_LABELS[b.status] : '미확인';
+  const date = matched ? korDate(b.checkedAt) : '';
+  const checked = matched ? (date ? '마지막 확인 ' + date : '확인일 없음') : '';
+  return { email, label, status: matched ? b.status : null, matched, date, checked };
+}
+
 function accountLine(a, g, now) {
   const line = { name: a.name || '이름 없는 계정', val: '', when: '', tag: g.today === a ? '먼저 쓸 계정' : '' };
   if (a.state === 'login') line.val = '다시 로그인해야 합니다';

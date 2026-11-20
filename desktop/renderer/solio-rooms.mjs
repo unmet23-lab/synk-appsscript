@@ -13,7 +13,7 @@
 //   tog의 일곱째 칸은 그 단추의 인자다(설정 방의 칸 이름). 같은 동작의 tog가 여럿이어도 다시 그린 뒤 초점이 같은 단추로 돌아온다
 // 줄의 watch가 참이면 화면이 그 줄을 열고 접을 때 알린다(모델별 토큰의 실시간, 계정 지우기 확인 묶음).
 import { ORDER, num, nameOf, planName, planKey, accountState, passesOf, passPlan, apiCreditPlan, apiCreditOf, apiCreditEndsAtBill, apiCredits, API_CREDIT_SERVICES, flowCreditOf, flowCredits, officialPrice, costOf, billList, nextMonthlyBill, monthSummary, summaryOn, shownAnnual, serviceGroups, isUsedUp, nextBill, pickUsageTips, restWeeks, DAY_MS } from './subscriptions-model.mjs';
-import { SOLIO_TODAY_NAMES, josa, joinNames, whenWords } from './solio-today.mjs';
+import { SOLIO_TODAY_NAMES, josa, joinNames, whenWords, korDate, benefitInfo } from './solio-today.mjs';
 import { TOKEN_RANGES, tokenSummary, tokenText } from './subscriptions-tokens.mjs';
 import { NAME_MAX, nameProblem, pendingDeletion, membershipLines, sessionRows, signInMethods } from './account-page.mjs';
 
@@ -38,6 +38,8 @@ export const CODE_SAY = Object.freeze({
   BOARD_BUSY: '다른 프로그램이 구독 관리 파일을 잠깐 쓰고 있습니다. 잠시 뒤 다시 해 주세요.',
   NO_WORKSPACE: 'Higgsfield에서 쓸 작업공간이 골라져 있지 않습니다. 터미널에서 「higgsfield workspace set」으로 고른 뒤 다시 해 주세요.',
   SAVE_FAILED: '이 PC에 저장하지 못했습니다. 잠시 뒤 다시 해 주세요.',
+  CREDIT_ACCOUNT_CHANGED: '확인하는 사이 계정이나 요금제가 바뀌었습니다. 지금 보이는 계정 정보를 다시 확인해 주세요.',
+  INVALID_CREDIT_CHECK: '확인할 계정 정보나 기입한 값을 읽지 못했습니다. 내용을 다시 확인해 주세요.',
   DELETE_FAILED: '모은 숫자를 지우지 못해 켜 둔 채로 두었습니다. 다른 프로그램이 그 파일을 쓰고 있을 수 있습니다. 잠시 뒤 다시 꺼 주세요.',
 });
 export const DEFAULT_SAY = '요청을 마치지 못했습니다. 잠시 뒤 다시 해 주세요.';
@@ -147,6 +149,51 @@ export function parseFlow(fields, row, now) {
   if (until !== null && until <= now) return bad('다시 차는 때가 이미 지났습니다. 날짜와 시각을 확인해 주세요.');
   const billDay = until !== null && row && !row.billDay && row.cycle !== 'annual' && row.plan !== 'family' ? date[2] : null;
   return { ok: true, patch: { flowCredit: amount, flowCreditUntil: until, ...(billDay ? { billDay } : {}) }, billDay };
+}
+const BENEFIT_STATUSES = Object.freeze(['linked', 'unlinked', 'not-shown']);
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const normLower = v => clean(v).toLowerCase();
+function validIsoDate(s) {
+  const p = parseDate(s);
+  if (!p) return null;
+  const d = new Date(p[0], p[1] - 1, p[2]);
+  return d.getFullYear() === p[0] && d.getMonth() === p[1] - 1 && d.getDate() === p[2] ? d.getTime() : null;
+}
+export function flowUsageOf(row) {
+  if (row?.source !== 'auto' || row.service !== 'gemini') return null;
+  const email = verifiedEmail(row).toLowerCase(), u = row.flowUsage;
+  if (!email || !u || typeof u !== 'object' || normLower(u.account) !== email) return null;
+  const from = clean(u.from), to = clean(u.to);
+  if (validIsoDate(from) === null || validIsoDate(to) === null || from > to) return null;
+  if (typeof u.used !== 'number' || !Number.isInteger(u.used) || u.used < 0 || u.used > 10000000) return null;
+  return { account: clean(u.account), checkedAt: u.checkedAt ?? null, from, to, used: u.used };
+}
+export function parseFlowUsage(fields, now) {
+  const from = clean(fields?.flowFrom), to = clean(fields?.flowTo);
+  if (!from || !to) return bad('시작일과 마감일을 모두 기입해 주세요.');
+  const fromTs = validIsoDate(from), toTs = validIsoDate(to);
+  if (fromTs === null || toTs === null) return bad('날짜 형식을 확인해 주세요.');
+  if (fromTs > toTs) return bad('시작일은 마감일보다 뒤일 수 없습니다.');
+  if (fromTs > dayStart(now) || toTs > dayStart(now)) return bad('오늘보다 뒤의 날짜는 기입할 수 없습니다.');
+  if (typeof fields?.flowUsed === 'boolean') return bad('실제 기간 사용량은 0에서 10,000,000 사이 정수로 기입해 주세요.');
+  const usedText = numText(fields?.flowUsed);
+  if (usedText === '') return bad('직접 확인한 실제 기간 사용량을 기입해 주세요.');
+  const used = Number(usedText);
+  if (!/^\d+$/.test(usedText) || !Number.isInteger(used) || used < 0 || used > 10000000) return bad('실제 기간 사용량은 0에서 10,000,000 사이 정수로 기입해 주세요.');
+  return { ok: true, from, to, used };
+}
+export function checkCreditTarget(row, arg, kind) {
+  let parsed = null;
+  try { parsed = JSON.parse(arg); } catch { parsed = null; }
+  const expectLen = kind === 'api' ? 3 : 2;
+  if (!Array.isArray(parsed) || parsed.length !== expectLen || parsed.some(x => typeof x !== 'string')) return { ok: false, code: 'INVALID_CREDIT_CHECK' };
+  const email = clean(parsed[0]), plan = clean(parsed[1]), status = kind === 'api' ? parsed[2] : '';
+  if (!EMAIL_RE.test(email) || (kind === 'api' && !BENEFIT_STATUSES.includes(status))) return { ok: false, code: 'INVALID_CREDIT_CHECK' };
+  const rowEmail = verifiedEmail(row);
+  if (!row || !rowEmail || rowEmail.toLowerCase() !== email.toLowerCase() || (kind === 'api' && normLower(row.plan) !== plan.toLowerCase())) return { ok: false, code: 'CREDIT_ACCOUNT_CHANGED' };
+  const validSvc = row.source === 'auto' && (kind === 'api' ? API_CREDIT_SERVICES.includes(row.service) : row.service === 'gemini');
+  if (!validSvc) return { ok: false, code: 'INVALID_CREDIT_CHECK' };
+  return { ok: true, email, plan, status };
 }
 /* 요금과 결제일(옛 editForm · onForm 'edit'). 직접 넣은 구독은 이름 · 한도 종류 · 종류별 칸을 더한다 */
 function costFields(fields, kind) {
@@ -344,6 +391,11 @@ const HELP = Object.freeze([
   ['Gemini 크레딧은 어디서 봅니까', 'API 크레딧은 AI Studio의 결제 화면에, Flow 크레딧은 Flow에 있습니다.'],
 ]);
 export const MANAGE_HELP = HELP;
+const BENEFIT_CHECK = Object.freeze({
+  claude: ['Claude 혜택 설정 열기 ↗', 'claude-benefit-settings', 'Claude Console 결제 조직이'],
+  gpt: ['ChatGPT 혜택 설정 열기 ↗', 'gpt-benefit-settings', 'OpenAI 결제 조직이'],
+  gemini: ['Google 개발자 혜택 열기 ↗', 'gemini-dev-benefits', 'AI Studio 결제 계정이(Google AI Studio의 Veo API 사용량은 Flow와 별개)'],
+});
 const API_BILLING = Object.freeze({ claude: ['Console 결제 화면 열기 ↗', 'claude-console-billing', 'Claude Console 결제 화면의 Promotional credits에 남은 금액과 만료 날짜가 있습니다.'], gpt: ['Credit grants 열기 ↗', 'gpt-credit-grants', 'OpenAI 플랫폼 결제의 Credit grants 표에서 BALANCE 앞 숫자와 EXPIRES를 봅니다.'], gemini: ['AI Studio 결제 열기 ↗', 'gemini-ai-studio-billing', 'AI Studio 결제 화면에 크레딧 금액이 있습니다. 선불로 넣은 돈은 빼고 넣습니다.'] });
 
 /* st: 방 상태(orb-rooms.mjs). armed · grps · add · relogin · kinds · installing · busy · notes · ended · roomNote
@@ -472,6 +524,31 @@ function accountRow(snapshot, row, st, now, ctx, first) {
     const g = serviceGroups(snapshot?.rows || [], now, checkAt).find(x => x.key === row.service);
     if (g && g.accounts.some(x => x.row.id === row.id && x.pass)) more.push(['note', passWords(passPlan(g, now))]);
   }
+  // 무료 API 혜택 연결
+  if (auto && API_CREDIT_SERVICES.includes(row.service)) {
+    const b = benefitInfo(row), open = grpOpen('benefit'), pName = planName(row.plan, row.service) || '요금제 미선택';
+    const [billLabel, billLink] = API_BILLING[row.service];
+    const [chkLabel, chkLink, orgGuide] = BENEFIT_CHECK[row.service];
+    const bMid = b.email ? b.email + (b.matched ? ' · 공식 화면에서 직접 확인한 연결 상태입니다' : '') : '계정 이메일이 확인된 뒤 연결 상태를 기입할 수 있습니다';
+    more.push(['row', '무료 API 혜택 연결', bMid, b.label, { text: b.checked, btn: ['확인', 'grp', 'benefit', open ? 'on' : ''] }]);
+    const bSaves = b.email ? [
+      ['연결됨으로 직접 확인', 'save-benefit', JSON.stringify([row.email, row.plan || '', 'linked']), off('save-benefit')],
+      ['미연결로 직접 확인', 'save-benefit', JSON.stringify([row.email, row.plan || '', 'unlinked']), off('save-benefit')],
+      ['혜택 항목 안 보임으로 직접 확인', 'save-benefit', JSON.stringify([row.email, row.plan || '', 'not-shown']), off('save-benefit')],
+    ] : [];
+    const bLinks = [
+      [chkLabel, 'help', chkLink],
+      [billLabel, 'help', billLink],
+      ...(row.service === 'gemini' ? [['AI Studio Veo API 사용량 열기 ↗', 'help', 'gemini-studio-usage']] : []),
+      ['닫기', 'grp', 'benefit'],
+    ];
+    more.push(['grp', 'benefit', [
+      ['note', b.email
+        ? b.email + ' (' + pName + ') 계정으로 로그인한 공식 설정과 ' + orgGuide + ' 같은지 직접 확인한 뒤 아래 단추로 상태를 기입합니다. 화면을 열기만 해서는 바뀌지 않습니다.'
+        : '이 계정의 이메일을 아직 확인하지 못했습니다. 이메일이 확인될 때까지는 공식 화면 열기만 쓸 수 있습니다.'],
+      ['acts', [...bSaves, ...bLinks]],
+    ], !open]);
+  }
   // API 크레딧
   if (auto && API_CREDIT_SERVICES.includes(row.service) && (apiCreditPlan(row) || num(row.apiCredit) !== null)) {
     const c = apiCreditOf(snapshot?.prices, row, now), gemini = row.service === 'gemini';
@@ -492,24 +569,61 @@ function accountRow(snapshot, row, st, now, ctx, first) {
   // Flow 크레딧(Gemini)
   if (auto && row.service === 'gemini') {
     const f = flowCreditOf(snapshot?.prices, row, now);
-    const has = !!f && f.left !== null;
-    const midText = f?.refilled && has ? '영상과 그림에 씁니다 · ' + md(f.refilled) + '에 다시 찼을 것으로 셉니다'
-      : f?.refilled || f?.expired ? '넣어 둔 값이 지났습니다. Flow 프로필에서 보고 다시 넣습니다' : '영상과 그림에 씁니다' + (!has && f?.grant ? ' · 매달 ' + fmt(f.grant) + '개' : '');
-    more.push(['row', 'Flow 크레딧', midText, has ? fmt(f.left) : '', { text: has && f.until ? md(f.until) + '에 다시 참' : '', btn: editBtn(has && !f.refilled, 'flow', grpOpen('flow')) }]);
-    const at = f?.until && f.until > now ? f.until : null;
+    const staleFlow = !!(f?.refilled || f?.expired);
+    const has = !staleFlow && !!f && f.left !== null;
+    const flowSrcDate = has ? korDate(f?.at ?? f?.checkedAt ?? row.flowCreditAt) : '';
+    const flowSrc = has ? (flowSrcDate ? '마지막 확인 ' + flowSrcDate : '확인일 없음') : '';
+    const midText = staleFlow ? '기입한 다시 차는 때가 지났습니다 · Flow에서 직접 확인해 다시 기입해 주세요'
+      : '영상과 그림에 씁니다' + (has ? ' · ' + flowSrc : f?.grant ? ' · 매달 ' + fmt(f.grant) + '개' : '');
+    more.push(['row', 'Flow 크레딧', midText, staleFlow ? '재확인 필요' : has ? fmt(f.left) : '', { text: has && f.until ? md(f.until) + '에 다시 참' : '', btn: editBtn(has, 'flow', grpOpen('flow')) }]);
+    const at = has && f.until && f.until > now ? f.until : null;
     more.push(['grp', 'flow', [
-      ['fld', '남은 Flow 크레딧', has && !f.refilled ? String(f.left) : '', '정수, 0에서 10,000,000', 'flowCredit', 'number'],
+      ['fld', '남은 Flow 크레딧', has ? String(f.left) : '', '정수, 0에서 10,000,000', 'flowCredit', 'number'],
       ['fld', '다시 차는 날짜', at ? isoDay(at) : '', '', 'flowDate', 'date'],
       ['fld', '다시 차는 시각(선택)', at && hm(at) !== '23:59' ? hm(at) : '', '비우면 그날 23:59로 봅니다', 'flowTime', 'time'],
-      ['note', '그 계정으로 로그인한 브라우저에서 Google Flow 오른쪽 위 프로필을 누르면 남은 개수와 다시 차는 때가 있습니다. 개수를 비우고 저장하면 넣은 값을 지웁니다.'],
+      ['note', '그 계정으로 로그인한 브라우저에서 Google Flow 오른쪽 위 프로필을 눌러 요금제 기본 남은 개수와 다시 차는 때를 직접 확인해 기입합니다. 추가 보충 AI 크레딧과 구분해 보며, 개수를 비우고 저장하면 기입한 값을 지웁니다.'],
       ['acts', [['저장', 'save-flow', '', flags('enter', off('save-flow'))], ['Flow 열기 ↗', 'help', 'flow-app'], ['닫기', 'grp', 'flow']]],
     ], !grpOpen('flow')]);
+    const u = flowUsageOf(row), uOpen = grpOpen('flow-usage'), uEmail = verifiedEmail(row);
+    const uDate = u ? korDate(u.checkedAt) : '';
+    const uChecked = u ? (uDate ? '마지막 확인 ' + uDate : '확인일 없음') : '';
+    const uMid = u ? uEmail + ' · ' + korDate(u.from) + ' ~ ' + korDate(u.to) + ' ' + (row.flowUsage?.source === 'official' ? '공식 활동 내역' : '직접 기입')
+      : uEmail ? 'Google One 활동에서 실제 기간 사용량과 마감일을 직접 확인해 기입합니다'
+      : '계정 이메일이 확인된 뒤 실제 기간 사용량을 기입할 수 있습니다';
+    more.push(['row', 'Flow 활동 사용량', uMid, u ? fmt(u.used) + ' 크레딧 사용' : '미확인', { text: uChecked, btn: editBtn(!!u, 'flow-usage', uOpen) }]);
+    more.push(['grp', 'flow-usage', [
+      ...(uEmail ? [
+        ['fld', '시작일', u ? u.from : '', '', 'flowFrom', 'date'],
+        ['fld', '마감일', u ? u.to : '', '', 'flowTo', 'date'],
+        ['fld', '실제 기간 사용량', u ? String(u.used) : '', '정수, 0에서 10,000,000', 'flowUsed', 'number'],
+      ] : []),
+      ['note', uEmail
+        ? uEmail + ' 계정의 Google One 활동에서 실제 기간 사용량과 마감일을 직접 확인해 기입합니다(제공량에서 잔액을 뺀 추정치 아님). Flow 요금제 기본 잔액과 보충 AI 크레딧은 구분하며, Google AI Studio의 Veo API 사용량은 별개입니다.'
+        : '이 계정의 이메일을 아직 확인하지 못했습니다. 이메일이 확인될 때까지는 공식 화면 열기만 쓸 수 있습니다. Flow 요금제 기본 잔액과 보충 AI 크레딧은 구분하며, Google AI Studio의 Veo API 사용량은 별개입니다.'],
+      ['acts', [
+        ...(uEmail ? [['저장', 'save-flow-usage', JSON.stringify([row.email, row.plan || '']), flags('enter', off('save-flow-usage'))]] : []),
+        ['Google One 활동 열기 ↗', 'help', 'flow-activity'],
+        ['Flow 잔액 열기 ↗', 'help', 'flow-app'],
+        ['닫기', 'grp', 'flow-usage'],
+      ]],
+    ], !uOpen]);
   }
+  // Render confirmed official Google Flow wallet next to dated Flow usage without mixing into AI credits.
+  const flowWallet = flowWalletValue(row);
+  if (flowWallet) more.push(['row', 'Flow 확인 잔액', flowWallet]);
   if (row.note) more.push(['note', row.note]);
   // 할 수 있는 일
   const acts = [];
   if (auto) acts.push([reloginLabel(row), 'relogin', '', off('relogin')]);
   if (auto && a.state === 'error') acts.push(['이 계정 다시 읽기', 'reread-one', '', off('reread-one')]);
+  const creditEmail = auto ? verifiedEmail(row) : '';
+  if (creditEmail && (row.service === 'claude' || row.service === 'gpt' || row.service === 'gemini')) {
+    const creditArg = creditReadArg(row, creditEmail);
+    acts.push(['공식 화면에서 연결 확인', 'read-credit-api', creditArg, off('read-credit-api')]);
+    if (row.service === 'gemini') {
+      acts.push(['이번 달 Flow 사용량 읽기', 'read-credit-flow', creditArg, off('read-credit-flow')]);
+    }
+  }
   if (!auto && row.kind === 'weekly') acts.push([isUsedUp(row, now) ? '다 쓴 것 풀기' : '다 썼습니다', 'used', '', off('used')]);
   if (claude && pass) acts.push(['1장 썼습니다', 'pass-used', '', off('pass-used')]);
   acts.push([auto ? '요금과 결제일' : '고치기', 'grp', 'cost', grpOpen('cost') ? 'on' : '']);
@@ -521,6 +635,48 @@ function accountRow(snapshot, row, st, now, ctx, first) {
   more.push(['live', note]);
   const label = [svcName(row), sub, mid, val, when].filter(Boolean).join(', ') + '. 자세한 내용은 이 줄 아래에 펼쳐집니다.';
   return { key, gap: first, nm: svcName(row), sub, mid, val, when, now: bright, label, more };
+}
+// Helpers for verified-account provider reads and official Flow wallet display.
+function verifiedEmail(row) {
+  if (!row || row.emailVerified === false || typeof row.email !== 'string') return '';
+  const email = row.email.trim();
+  return EMAIL_RE.test(email) ? email : '';
+}
+function creditReadArg(row, email) {
+  const plan = typeof row?.plan === 'string' ? row.plan : '';
+  return JSON.stringify([email, plan || '']);
+}
+function flowCheckedDate(value) {
+  if (typeof value === 'string') {
+    const s = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      const d = new Date(`${s}T00:00:00Z`);
+      return Number.isFinite(d.getTime()) && d.toISOString().slice(0, 10) === s ? s : '';
+    }
+    if (!s) return '';
+    const ms = Date.parse(s);
+    if (!Number.isFinite(ms) || ms <= 0) return '';
+    const d = new Date(ms);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    const d = new Date(value);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+  return '';
+}
+function flowWalletValue(row) {
+  if (row?.service !== 'gemini') return '';
+  const email = verifiedEmail(row);
+  const usage = row.flowUsage;
+  if (!email || !usage || usage.source !== 'official') return '';
+  const rawAcct = usage.email ?? usage.account ?? usage.accountEmail;
+  const observedEmail = typeof rawAcct === 'string' ? rawAcct.trim() : '';
+  if (!observedEmail || observedEmail.toLowerCase() !== email.toLowerCase()) return '';
+  if (!Number.isInteger(usage.wallet) || usage.wallet < 0) return '';
+  const checked = flowCheckedDate(usage.checkedAt);
+  if (!checked) return '';
+  return `${usage.wallet.toLocaleString('ko-KR')}개 · ${checked}`;
 }
 function passWords(plan) {
   if (plan.use) return '모든 계정이 막혔고 하루 넘게 기다려야 합니다. 지금 초기화권을 쓰면 바로 다시 찹니다.';

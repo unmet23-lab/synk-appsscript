@@ -719,6 +719,106 @@ test('removing a connected Higgsfield account deletes its home folder, sign-in a
 /* ---------- 10-18 본체 검토에서 찾은 것 ---------- */
 const writeBoard=(f,rows)=>{fs.mkdirSync(path.join(f.root,'data'),{recursive:true});fs.writeFileSync(path.join(f.root,'data','board.json'),JSON.stringify({version:1,rows,settings:{usdKrw:1400},check:null}));};
 
+test('credit observations require the same provider account and plan and never follow a login or stored balance', async t => {
+  const f = fakeSystem();
+  t.after(() => { f.service.dispose(); fs.rmSync(f.root, { recursive:true, force:true }); });
+  const common = { source:'auto', plan:'pro', email:'first@example.com', apiCredit:0, apiCreditAt:NOW - 100 };
+  writeBoard(f, [
+    { ...common, id:'first', service:'gpt' },
+    { ...common, id:'second', service:'gpt', email:'second@example.com', apiCredit:50 },
+    { ...common, id:'google', service:'gemini' },
+  ]);
+  const initial = await f.service.snapshot();
+  assert.ok(initial.rows.every(row => row.apiBenefit === null && row.flowUsage === null));
+  const input = { kind:'api', id:'first', email:'FIRST@example.com', plan:'pro', status:'linked', checkedAt:NOW + 1 };
+  const result = await f.service.save({ creditCheck:input });
+  const expected = { account:common.email, plan:'pro', status:'linked', checkedAt:NOW };
+  assert.deepEqual(result.rows[0].apiBenefit, expected);
+  assert.equal(result.rows[1].apiBenefit, null);
+  assert.equal(result.rows[0].apiCreditAt, NOW - 100);
+  assert.equal((await f.service.save({ creditCheck:{ ...input, id:'second' } })).code, 'CREDIT_ACCOUNT_CHANGED');
+  assert.equal((await f.service.save({ creditCheck:{ ...input, plan:'other' } })).code, 'CREDIT_ACCOUNT_CHANGED');
+  assert.equal((await f.service.save({ creditCheck:{ ...input, status:'yes' } })).code, 'INVALID_CREDIT_CHECK');
+  assert.equal((await f.service.save({ creditCheck:input, remove:'first' })).code, 'INVALID_CREDIT_CHECK');
+  const ordinary = await f.service.save({ row:{ id:'first', apiCredit:17, apiBenefit:{ status:'unlinked' } } });
+  assert.deepEqual(ordinary.rows[0].apiBenefit, expected);
+  const usage = { kind:'flow', id:'google', email:common.email, plan:'pro', from:'2026-10-01', to:'2026-10-17', used:0 };
+  const read = await f.service.save({ creditCheck:usage });
+  assert.deepEqual(read.rows[2].flowUsage, { account:common.email, from:usage.from, to:usage.to, used:0, checkedAt:NOW });
+  assert.equal(read.rows[2].flowCredit, null);
+  const afterPlanChange = await f.service.save({ row:{ id:'google', plan:'family' } });
+  assert.equal(afterPlanChange.rows[2].flowUsage.used, 0);
+  assert.equal((await f.service.save({ creditCheck:usage })).rows[2].flowUsage.used, 0);
+  for (const invalid of [{used:-1}, {used:'0'}, {used:0.5}, {from:'2026-02-30'}, {from:'2026-10-18'}, {to:'2026-10-18'}, {id:'first'}]) {
+    assert.equal((await f.service.save({ creditCheck:{ ...usage, ...invalid } })).code, 'INVALID_CREDIT_CHECK');
+  }
+  const data = path.join(f.root,'data');
+  const offline = {platform:'linux',home:f.root,env:{},spawn:()=>{throw Error('offline test');}};
+  const reopened = createAiSubscriptions({root:data,now:()=>NOW,...offline});
+  t.after(() => reopened.dispose());
+  assert.deepEqual((await reopened.snapshot()).rows[0].apiBenefit, expected);
+  const rows = JSON.parse(fs.readFileSync(path.join(data,'board.json'),'utf8')).rows;
+  rows[0].email = 'new@example.com';
+  rows[2].email = 'new@example.com';
+  writeBoard(f, rows);
+  const switched = createAiSubscriptions({root:data,now:()=>NOW,...offline});
+  t.after(() => switched.dispose());
+  const changed = await switched.snapshot();
+  assert.equal(changed.rows[0].apiBenefit, null);
+  assert.equal(changed.rows[2].flowUsage, null);
+});
+
+test('official credit reads only save a verified account and a complete monthly Flow statement', async t => {
+  const f = fakeSystem();
+  t.after(() => { f.service.dispose(); fs.rmSync(f.root, { recursive:true, force:true }); });
+  const row = {id:'google', source:'auto', service:'gemini', email:'lab@example.com', plan:'pro'};
+  writeBoard(f, [row]);
+  let respond, entered, clock=NOW;
+  const started = () => new Promise(resolve => { entered=resolve; });
+  const bridge = createAiSubscriptions({root:path.join(f.root,'data'),platform:'linux',home:f.root,env:{},spawn:()=>{throw Error('offline test');},now:()=>clock,creditPortal:(_system,_row,query) => new Promise(resolve=>{respond=resolve; entered(query);})});
+  t.after(()=>bridge.dispose());
+  const req={id:row.id,email:row.email,plan:row.plan,kind:'flow'};
+  let called=started();
+  const pending=bridge.save({creditRead:req});
+  const query=await called;
+  assert.equal(query.from,'2026-10-01');
+  assert.equal(query.to,'2026-10-17');
+  assert.equal((await bridge.save({creditRead:req})).code,'CREDIT_CHECK_BUSY');
+  respond({ok:true,account:row.email,from:query.from,to:query.to,used:340,wallet:0});
+  const current=await pending;
+  assert.deepEqual(current.rows[0].flowUsage,{account:row.email,checkedAt:NOW,from:query.from,to:query.to,used:340,source:'official',wallet:0});
+  assert.equal(current.rows[0].apiBenefit,null);
+  called=started();
+  const empty=bridge.save({creditRead:req});
+  await called; respond({ok:true,account:row.email,from:query.from,to:query.to,used:0,wallet:0});
+  assert.equal((await empty).code,'CREDIT_SOURCE_UNKNOWN');
+  assert.equal((await bridge.snapshot()).rows[0].flowUsage.used,340);
+  called=started();
+  const cross=bridge.save({creditRead:{...req,kind:'api'}});
+  await called; respond({ok:true,account:'elsewhere@example.com',status:'linked'});
+  assert.equal((await cross).code,'CREDIT_ACCOUNT_CHANGED');
+  called=started();
+  const late=bridge.save({creditRead:{...req,kind:'api'}});
+  await called;
+  await bridge.save({creditCheck:{...req,kind:'api',status:'unlinked',source:'official'}});
+  respond({ok:true,account:row.email,status:'linked'});
+  assert.equal((await late).code,'CREDIT_ACCOUNT_CHANGED');
+  assert.deepEqual((await bridge.snapshot()).rows[0].apiBenefit,{account:row.email,plan:row.plan,status:'unlinked',checkedAt:NOW});
+  called=started();
+  const partial=bridge.save({creditRead:req});
+  await called; respond({ok:true,account:row.email,from:query.to,to:query.to,used:1,wallet:0});
+  assert.equal((await partial).code,'CREDIT_SOURCE_UNKNOWN');
+  assert.equal((await bridge.snapshot()).rows[0].flowUsage.used,340);
+  clock=new Date(2026,9,31,23,59).getTime();
+  called=started();
+  const rollover=bridge.save({creditRead:req});
+  const atStart=await called;
+  clock=new Date(2026,10,1,0,1).getTime();
+  respond({ok:true,account:row.email,from:atStart.from,to:atStart.to,used:350,wallet:10});
+  assert.equal((await rollover).code,'CREDIT_SOURCE_UNKNOWN');
+  assert.equal((await bridge.snapshot()).rows[0].flowUsage.used,340);
+});
+
 test('inherited service names in a damaged board cannot stop checking or removing accounts',async t=>{
   const f=fakeSystem();t.after(()=>{f.service.dispose();fs.rmSync(f.root,{recursive:true,force:true});});
   const services=['__proto__','constructor','toString'];

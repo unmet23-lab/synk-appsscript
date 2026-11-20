@@ -3,7 +3,7 @@
 // 내 계정은 런처가 넘기는 계정 어댑터(faceOptions.rooms.account, 뒤의 길은 옛 내 계정과 같은 다리)를, 설정은 런처가 넘기는 PC 어댑터(faceOptions.rooms의 desktop ·
 // drafts · notices · updates · environment · copyDiagnostics, 뒤의 길은 옛 설정 화면과 같은 다리와 편의의 알림 통로)를 쓴다.
 // 되돌릴 수 없는 일의 첫 누름(armed)은 1분 장면이 와도 지워지지 않게 화면이 아니라 여기에 둔다(설계 8.2).
-import { manageRoom, costRow, tokRow, accountRoom, accountSay, checkName, dateTimeWords, ACCOUNT_SAY, ACCOUNT_CONFLICTS, CODE_SAY, codeSay, manageKey, manageOpenKey, addInfo, parseCost, parsePass, parseApi, parseFlow, parseManual, checkCode, checkKey, checkEmail, checkRate,
+import { manageRoom, costRow, tokRow, accountRoom, accountSay, checkName, dateTimeWords, ACCOUNT_SAY, ACCOUNT_CONFLICTS, CODE_SAY, codeSay, manageKey, manageOpenKey, addInfo, parseCost, parsePass, parseApi, parseFlow, parseFlowUsage, checkCreditTarget, parseManual, checkCode, checkKey, checkEmail, checkRate,
   settingsRoom, subTips, tipDoneWords, updateOf, updateAuto, checkShortcut, checkQuiet, desktopSay, ZOOMS, DIAG_SAY, DRAFT_SAY, careOn, CARE_SAY } from './solio-rooms.mjs';
 import { isUsedUp, num, nameOf } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, josa } from './solio-today.mjs';
@@ -96,7 +96,32 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     st.busy = null;
     return res ?? { ok: true };
   }
-  function failed(key, res) { note(key, codeSay(failCode(res))); changed(); }
+  // Provider credit and Flow read error messages shared with CODE_SAY when mutable.
+  const CREDIT_CODE_SAY = {
+    CREDIT_SOURCE_UNKNOWN: '공식 화면에서 읽을 위치를 찾지 못했습니다. 아래 혜택이나 Flow 칸에서 공식 화면을 열어 직접 적어 저장해 주세요.',
+    CREDIT_WRONG_ACCOUNT: '열린 브라우저 계정이 이 줄의 이메일과 다릅니다. 같은 이메일로 로그인한 뒤 다시 읽거나 공식 화면을 열어 직접 적어 주세요.',
+    CREDIT_SIGN_IN: '공식 화면 로그인이 필요합니다. 같은 이메일로 다시 로그인한 뒤 읽거나 공식 화면을 열어 직접 적어 주세요.',
+    CREDIT_BROWSER_UNAVAILABLE: '지금 이 PC에서 확인용 브라우저를 열 수 없습니다. 같은 이메일로 로그인한 브라우저에서 공식 화면을 열어 직접 적어 저장해 주세요.',
+    CREDIT_CHECK_BUSY: '다른 공식 화면 확인이 이미 진행 중입니다. 잠시 뒤 다시 눌러 주세요.',
+  };
+  try { Object.assign(CODE_SAY, CREDIT_CODE_SAY); } catch {}
+  function parseCreditReadArg(raw) {
+    if (typeof raw !== 'string' || !raw) return null;
+    let parsed = null;
+    try { parsed = JSON.parse(raw); } catch { return null; }
+    if (!Array.isArray(parsed) || parsed.length < 1 || parsed.length > 2) return null;
+    if (typeof parsed[0] !== 'string') return null;
+    if (parsed.length === 2 && typeof parsed[1] !== 'string') return null;
+    const email = parsed[0].trim();
+    if (!email || !email.includes('@')) return null;
+    const plan = typeof parsed[1] === 'string' ? parsed[1] : '';
+    return { email, plan };
+  }
+  function failed(key, res) {
+    const code = failCode(res);
+    note(key, CREDIT_CODE_SAY[code] || codeSay(code));
+    changed();
+  }
   function saved(key, grp, text = '저장했습니다.') {
     note(key, text);
     if (grp) { st.grps.delete(key + ':' + grp); focusReq = ask({ key, act: 'grp', arg: grp }); }
@@ -509,6 +534,28 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         await save(key, act, { row: { id: row.id, ...v.patch } }, () => saved(key, 'pass'));
         return true;
       }
+      case 'read-credit-api':
+      case 'read-credit-flow': {
+        if (!row) return true;
+        const kind = act === 'read-credit-flow' ? 'flow' : 'api';
+        if (kind === 'flow' && row.service && row.service !== 'gemini') return true;
+        const creditArg = parseCreditReadArg(arg);
+        if (!creditArg) {
+          note(key, CREDIT_CODE_SAY.CREDIT_SOURCE_UNKNOWN);
+          changed();
+          return true;
+        }
+        const doneText = kind === 'flow'
+          ? '이번 달 Flow 사용량을 읽었습니다.'
+          : '공식 화면에서 혜택 연결 상태를 읽었습니다.';
+        await save(
+          key,
+          act,
+          { creditRead: { kind, id: row.id, email: creditArg.email, plan: creditArg.plan } },
+          () => saved(key, '', doneText),
+        );
+        return true;
+      }
       case 'pass-used': {
         if (!row) return true;
         const left = Math.max(0, (num(row.passCount) || 0) - 1);
@@ -534,6 +581,20 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         const v = parseFlow(fields, row, t);
         if (!v.ok) { note(key, v.say); changed(); return true; }
         await save(key, act, { row: { id: row.id, ...v.patch } }, () => saved(key, 'flow', v.billDay ? '저장했습니다. Flow 크레딧은 결제 주기가 시작될 때 다시 차서 결제일도 매월 ' + v.billDay + '일로 넣었습니다.' : '저장했습니다.'));
+        return true;
+      }
+      case 'save-benefit': {
+        const g = checkCreditTarget(row, arg, 'api');
+        if (!g.ok) { const s = codeSay(g.code); note(key, s); if (!row) st.roomNote = s; changed(); return true; }
+        await save(key, act, { creditCheck: { kind: 'api', id: row.id, email: g.email, plan: g.plan, status: g.status } }, () => saved(key, 'benefit'));
+        return true;
+      }
+      case 'save-flow-usage': {
+        const g = checkCreditTarget(row, arg, 'flow');
+        if (!g.ok) { const s = codeSay(g.code); note(key, s); if (!row) st.roomNote = s; changed(); return true; }
+        const v = parseFlowUsage(fields, t);
+        if (!v.ok) { note(key, v.say); changed(); return true; }
+        await save(key, act, { creditCheck: { kind: 'flow', id: row.id, email: g.email, plan: g.plan, from: v.from, to: v.to, used: v.used } }, () => saved(key, 'flow-usage'));
         return true;
       }
       case 'used': {

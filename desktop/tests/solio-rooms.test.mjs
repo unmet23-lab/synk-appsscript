@@ -208,17 +208,20 @@ test('manage room: fact lines appear only with their data, and each editable fac
   const claude = weekly('c', 'claude', 10, NOW + D, { plan: 'max20x', loginUntil: NOW + 3 * D, passCount: 2, passUntil: NOW + 5 * D, apiCredit: 50, apiCreditUntil: NOW + 6 * D });
   const more = manageRoom(snap([claude]), st({ grps: new Set(['a:c:pass']) }), NOW).rows[1].more;
   const facts = kinds(more, 'row').map(r => [r[1], r[2], r[3], typeof r[4] === 'string' ? r[4] : r[4].text, r[5]]);
-  assert.deepEqual(facts, [
+  const benefit = facts.find(([name]) => name === '무료 API 혜택 연결');
+  assert.equal(benefit[2], '미확인', 'a recorded dollar balance does not confirm the benefit');
+  assert.deepEqual(facts.filter(f => f !== benefit), [
     ['로그인', '기한 전에 다시 로그인하면 끊기지 않습니다', '', '11월 21일까지', true],
     ['초기화권', '주간 한도를 한 번 다시 채웁니다', '2장', '11월 23일까지', undefined],
     ['API 크레딧', '구독에 함께 들어 있는 API 사용 금액입니다', '$50', '11월 24일에 사라짐', undefined],
   ]);
   assert.deepEqual(kinds(more, 'row')[1][4].btn, ['고치기', 'grp', 'pass', 'on']);
   const grps = Object.fromEntries(kinds(more, 'grp').map(g => [g[1], g[3]]));
-  assert.deepEqual(grps, { pass: false, api: true, cost: true }, 'only the group that was opened shows');
+  assert.deepEqual(grps, { pass: false, benefit: true, api: true, cost: true }, 'only the group that was opened shows');
   assert.ok(actsOf(more).some(a => a[1] === 'pass-used' && a[0] === '1장 썼습니다'));
   const gpt = manageRoom(snap([weekly('g', 'gpt', 10, NOW + D, { plan: 'plus', live: { readAt: NOW, weekly: { usedPercent: 10, resetsAt: NOW + D }, resets: { count: 0 } } })]), st(), NOW).rows[1].more;
-  assert.deepEqual(kinds(gpt, 'row').map(r => [r[1], r[2], r[3]]), [['초기화권', 'Codex가 알려 준 값입니다', '없음']]);
+  assert.deepEqual(kinds(gpt, 'row').map(r => [r[1], r[3]]), [['초기화권', '없음'], ['무료 API 혜택 연결', '미확인']]);
+  assert.equal(kinds(gpt, 'row')[0][2], 'Codex가 알려 준 값입니다');
   assert.ok(!kinds(gpt, 'grp').some(g => g[1] === 'pass'), 'Codex passes cannot be edited');
   const gem = manageRoom(snap([weekly('m', 'gemini', 10, NOW + D, { plan: null })]), st(), NOW).rows[1].more;
   assert.ok(kinds(gem, 'note').some(n => n[1] === '요금제를 고르면 매달 딸려 오는 Flow와 API 크레딧을 알려 드립니다.'));
@@ -231,9 +234,9 @@ test('manage room: the actions of an account line and the twice press of 「지�
   const rows = [weekly('e', 'claude', 0, NOW + D, { state: 'error' }), weekly('t', 'typecast', 0, NOW + D, { kind: 'credit', keyHint: 'a41c', email: null }), weekly('a', 'gemini', 0, NOW + D, { state: 'elsewhere' }), manual('m', 'Kling', { kind: 'weekly' })];
   const m = manageRoom(snap(rows), st(), NOW);
   const labels = id => m.rows.find(r => r.key === 'a:' + id).more.filter(x => x[0] === 'acts').flatMap(x => x[1]).map(a => a[0]);
-  assert.deepEqual(labels('e'), ['다시 로그인', '이 계정 다시 읽기', '요금과 결제일', '지우기']);
+  assert.deepEqual(labels('e'), ['다시 로그인', '이 계정 다시 읽기', '공식 화면에서 연결 확인', '요금과 결제일', '지우기']);
   assert.deepEqual(labels('t'), ['키 다시 넣기', '요금과 결제일', '지우기']);
-  assert.deepEqual(labels('a'), ['이 계정으로 바꾸기', '요금과 결제일', '지우기']);
+  assert.deepEqual(labels('a'), ['이 계정으로 바꾸기', '공식 화면에서 연결 확인', '이번 달 Flow 사용량 읽기', '요금과 결제일', '지우기']);
   assert.deepEqual(labels('m'), ['다 썼습니다', '고치기', '지우기']);
   const remove = m.rows[1].more.flatMap(x => (x[0] === 'acts' ? x[1] : [])).find(a => a[1] === 'remove');
   assert.deepEqual(remove, ['지우기', 'remove', '', 'far']);
