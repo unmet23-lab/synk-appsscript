@@ -1,4 +1,4 @@
-import {applySharingFence} from './sharing-fence.mjs';
+import {applySharingFence,carriedSharing} from './sharing-fence.mjs';
 import {learnerOverview,compareTeacherRows} from './workspace-overview.mjs';
 
 // 교사 화면 한 장이 「지금 무엇을 보고 있나」를 이 세션 하나가 가진다. 화면(DOM)·부모 창·요청 통로는 모른다.
@@ -8,6 +8,7 @@ import {learnerOverview,compareTeacherRows} from './workspace-overview.mjs';
 // - 작성 창(원고) 묶음: 열 때의 반·학생·공유 판·과제/챙길 일 판. 묶음이 풀리면 onRelease(까닭)로 화면에 알린다.
 //   selection  일반 선택 변경(학생·반을 고름, 부모가 학생을 고름) — 조용히 닫는다.
 //   permission 묶인 학생의 공유·연결·과제·챙길 일 판이 바뀜 — 닫고 알린다. 다른 학생의 변화로는 닫히지 않는다.
+//              학생이 혼자 연습을 비워 판만 오른 같은 공유(carriedFrom)는 바뀐 것으로 보지 않고 묶음의 판만 옮긴다.
 //   suspend    판을 다시 확인하지 못함(권한 확인 실패·연결 끊김) — 고른 반·학생은 남긴다.
 //   signout    연결이 끝남 — 고른 반·학생까지 지운다.
 //   discard    새 작성 창을 열기 전에 비움 — 세대는 그대로다.
@@ -33,6 +34,12 @@ export function createSelectionSession({invites=false,onRelease=()=>{}}={}){
     if(draft.careId){const care=careFor(row).find(task=>task.id===draft.careId);if(!care||care.revision!==draft.careRevision)return false;}
     return true;
   }
+  // 묶인 학생 줄이 묶음의 판에서 이어진 같은 공유면 묶음을 새 판으로 옮긴다. 묶음은 그 판에서 공유 중일 때 열렸다.
+  // 부모가 알린 공유로 거른 판이든 이 화면이 직접 읽은 판이든, 받아들인 줄의 carriedFrom으로 같은 규칙을 쓴다.
+  function carryDraft(){
+    const row=draft&&workspace?.classes.find(c=>c.id===draft.classId)?.learners?.find(s=>s.id===draft.learnerId);
+    if(row&&carriedSharing({revision:draft.sharingRevision,enabled:true,connected:true,revoked:false},{revision:row.sharing?.revision,carriedFrom:row.sharing?.carriedFrom,enabled:row.sharing?.enabled,connected:studentLinked(row),revoked:row.revoked===true}))draft.sharingRevision=row.sharing.revision;
+  }
   function release(reason){draft=null;onRelease(reason);}
   function withdraw(reason){access++;release(reason);}
   return Object.freeze({
@@ -48,7 +55,7 @@ export function createSelectionSession({invites=false,onRelease=()=>{}}={}){
     accept(data,{requested=null}={}){
       data=applySharingFence(data,sharing).workspace;
       workspace={...data,classes:data.classes.map(row=>({...row,learners:[...(row.learners||[])].sort(compareTeacherRows)})).sort(compareTeacherRows)};ready=true;
-      if(linked&&draft&&!allows(draft.kind))withdraw('permission');
+      if(linked&&draft){carryDraft();if(!allows(draft.kind))withdraw('permission');}
       workspace.assignments=workspace.assignments.map(a=>({...a,status:a.status==='cancelled'?'cancelled':a.completedCount>=a.assignedCount?'submitted':'assigned',submission:a.submissions?.[0]}));
       classId=workspace.classes.some(c=>c.id===classId)?classId:workspace.classes[0]?.id;
       const wanted=requested?.classId===classId?requested.learnerId:null;
@@ -61,7 +68,7 @@ export function createSelectionSession({invites=false,onRelease=()=>{}}={}){
       if(!workspace)return {changed:false};
       const fenced=applySharingFence(workspace,sharing);if(!fenced.changedLearnerIds.length)return {changed:false};
       workspace=fenced.workspace;reads++;
-      if(draft&&!allows(draft.kind))withdraw('permission');
+      if(draft){carryDraft();if(!allows(draft.kind))withdraw('permission');}
       if(!learners().some(row=>row.id===learnerId))learnerId=learners()[0]?.id;
       return {changed:true};
     },

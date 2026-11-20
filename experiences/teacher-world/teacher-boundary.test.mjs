@@ -153,3 +153,38 @@ test('the selection session separates a plain selection change, a permission los
   const read=session.beginRead();session.suspend();assert.deepEqual(reasons.at(-1),'suspend');assert.equal(session.ready,false);assert.equal(session.classId,'class-a');assert.equal(session.learnerId,'b');assert.equal(read(),true);
   session.signOut();assert.deepEqual(reasons.at(-1),'signout');assert.equal(session.classId,null);assert.equal(session.learnerId,null);assert.equal(read(),false,'연결이 끝나면 앞선 읽기의 답은 버린다');
 });
+// 학생이 혼자 한 연습을 비우면 서버는 반 공유 판을 올리고 교사 쪽 줄에 carriedFrom을 싣는다(같은 공유가 이어짐).
+const care=(revision,sharingRevision)=>({id:'care-1',classId:'class-a',learnerId:'a',sharingRevision,revision,title:'상담',status:'open'});
+const cleared=(revision,carriedFrom,extra={})=>({...student('a',revision),sharing:{enabled:true,revision,...(carriedFrom===undefined?{}:{carriedFrom})},careTasks:[care(1,revision)],...extra});
+const carriedSnapshot=row=>({...snapshot([row,student('b')]),assignments:[{id:'as-1',classId:'class-a',learnerId:'a',status:'assigned',revision:5,assignedCount:1,completedCount:0}]});
+for(const [kind,record] of [['note',null],['assignment',{id:'as-1',revision:5}],['care',care(1,2)]])test('a carried sharing revision moves the open '+kind+' draft instead of closing it, from the parent and from its own read',()=>{
+  const reasons=[],session=createSelectionSession({onRelease:reason=>reasons.push(reason)});session.setLinked(true);
+  session.accept(carriedSnapshot(cleared(2)));const draft=session.captureDraft(kind,record);assert.equal(draft.sharingRevision,2);
+  session.adoptSharing([{id:'a',revision:3,carriedFrom:2,enabled:true,connected:true,revoked:false},{id:'b',revision:2,enabled:true,connected:true,revoked:false}]);
+  assert.deepEqual(session.fence(),{changed:true});assert.equal(session.holds(draft),true);assert.equal(draft.sharingRevision,3);assert.deepEqual(reasons,[]);
+  assert.deepEqual(session.careFor(session.student()).map(row=>[row.id,row.sharingRevision]),[['care-1',3]],'그 학생의 챙길 일은 새 판으로 옮겨 남는다');
+  // 다른 창에 갔다 돌아와 이 화면이 직접 다시 읽은 판도 같은 규칙으로 받는다(부모가 아직 앞 판을 알려도).
+  session.accept(carriedSnapshot(cleared(4,2)));assert.equal(session.holds(draft),true);assert.equal(draft.sharingRevision,4);assert.deepEqual(reasons,[]);
+  session.accept(carriedSnapshot(cleared(6,5)));assert.equal(session.holds(draft),false,'범위 밖이면 지금처럼 닫는다');assert.deepEqual(reasons,['permission']);
+});
+test('without carriedFrom a higher read still closes the draft, and a carried read for another student leaves it alone',()=>{
+  const reasons=[],session=createSelectionSession({onRelease:reason=>reasons.push(reason)});session.setLinked(true);
+  session.accept(carriedSnapshot(cleared(2)));const draft=session.captureDraft('note');
+  session.accept({...carriedSnapshot(cleared(2)),classes:[{id:'class-a',name:'반',learners:[cleared(2),{...student('b',3),sharing:{enabled:true,revision:3,carriedFrom:2}}]}]});assert.equal(session.holds(draft),true);assert.equal(draft.sharingRevision,2);
+  session.accept(carriedSnapshot(cleared(3)));assert.equal(session.holds(draft),false);assert.deepEqual(reasons,['permission']);
+});
+test('the account port accepts carriedFrom only when it is absent or a whole number below the revision',()=>{
+  const p=portal(),port=connectAccountHost({frame:p.frame,origin}),row=(extra={})=>({id:'a',revision:3,enabled:true,connected:true,revoked:false,...extra});
+  assert.deepEqual(port.sharingScope('class-a',[row()]),[row()]);
+  for(const carriedFrom of [0,2])assert.deepEqual(port.sharingScope('class-a',[row({carriedFrom})]),[row({carriedFrom})]);
+  for(const carriedFrom of [3,4,-1,1.5,'2',null])assert.equal(port.sharingScope('class-a',[row({carriedFrom}),{...row(),id:'b'}]),null,String(carriedFrom));
+});
+test('a draft opened on a carried revision closes when the next revision is a new sharing, from the parent and from its own read',()=>{
+  for(const path of ['parent','read']){
+    const reasons=[],session=createSelectionSession({onRelease:reason=>reasons.push(reason)});session.setLinked(true);
+    session.accept(carriedSnapshot(cleared(3,2)));const draft=session.captureDraft('note');assert.equal(draft.sharingRevision,3);
+    session.adoptSharing([{id:'a',revision:5,enabled:true,connected:true,revoked:false},{id:'b',revision:2,enabled:true,connected:true,revoked:false}]);
+    if(path==='parent')session.fence();else session.accept(carriedSnapshot(cleared(3,2)));
+    assert.equal(session.holds(draft),false,path);assert.deepEqual(reasons,['permission'],path);assert.equal(Object.hasOwn(session.student().sharing,'carriedFrom'),false,path);
+  }
+});

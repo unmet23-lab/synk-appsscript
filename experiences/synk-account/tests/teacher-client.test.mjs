@@ -211,3 +211,37 @@ test('network loss blocks requests until successful membership recheck, and forb
 test('late membership response after page shutdown cannot attach a frame',async t=>{
   const p=classroom(t),pending=deferred();p.hold(pending);const load=p.workspace.load();p.workspace.stop();pending.resolve({mode:'account-linked',classes:[{id:'a',name:'A',role:'teacher'}]});await assert.rejects(load,{code:'ACCOUNT_CHANGED'});assert.equal(p.windowObject.SYNKClassroomHost,undefined);assert.equal(p.root.hidden,true);
 });
+// 학생이 혼자 한 연습을 비우면 서버는 반 공유 판을 올리고 교사 쪽 줄에 carriedFrom을 싣는다(같은 공유가 이어짐).
+// 포털은 이것을 공유가 바뀐 것으로 보지 않는다: iframe을 다시 만들지 않고, 비우기 전에 나간 읽기도 409로 막지 않는다.
+const clearedLearner=(id,revision,carriedFrom)=>({...privacyLearner(id,revision),sharing:{revision,enabled:true,...(carriedFrom===undefined?{}:{carriedFrom})}});
+function watchFrame(page,view){const posted=[];frameOf(page).contentWindow={postMessage:data=>posted.push(data),SYNKTeacherView:view};page.windowObject.confirm=()=>true;return posted;}
+test('a selected student who cleared solo practice keeps the open frame through polling, reselection and a held snapshot',async t=>{
+  const page=classroom(t),before=privacyLearner('student-a'),other=privacyLearner('student-b'),after=clearedLearner('student-a',3,2);
+  page.learners({a:[before,other]});page.snapshots({a:[before,other]});await page.workspace.load();await selectOverview(page,'student-a');
+  const host=page.windowObject.SYNKClassroomHost,frame=frameOf(page),applied=[],posted=watchFrame(page,{hasDraft:()=>true,applySharing:scope=>{applied.push(scope);return true;}});
+  const pending=deferred();page.workspaceHold(pending);const held=host.request('/api/workspace');
+  page.learners({a:[after,other]});page.snapshots({a:[after,other]});await page.workspace.load();
+  assert.equal(page.windowObject.SYNKClassroomHost,host);assert.equal(frameOf(page),frame);assert.equal(page.notices.length,0);assert.equal(applied.length,0,'바뀐 공유로 보지 않아 따로 거르게 하지 않는다');
+  assert.deepEqual(posted.filter(data=>data.type==='synk-teacher-sharing').at(-1).learners.map(row=>[row.id,row.revision,row.carriedFrom]),[['student-a',3,2],['student-b',2,undefined]],'iframe에는 새 줄을 carriedFrom과 함께 보낸다');
+  await selectOverview(page,'student-a');assert.equal(page.windowObject.SYNKClassroomHost,host,'학생을 다시 골라도 그대로 간다');assert.equal(frameOf(page),frame);
+  pending.resolve({mode:'account-linked',classes:[{id:'a',learners:[before,other]}]});assert.equal((await held).classes[0].learners[0].sharing.revision,2,'비우기 전에 나간 읽기도 409 없이 받는다');
+  assert.equal((await host.request('/api/workspace')).classes[0].learners[0].sharing.carriedFrom,2);
+  page.learners({a:[clearedLearner('student-a',4,2),other]});page.snapshots({a:[clearedLearner('student-a',4,2),other]});await page.workspace.load();
+  assert.equal(page.windowObject.SYNKClassroomHost,host);assert.equal(frameOf(page),frame);assert.equal(applied.length,0);assert.equal(page.notices.length,0);
+});
+for(const [label,after] of [['carriedFrom after the remembered revision',clearedLearner('student-a',4,3)],['no carriedFrom (consent turned off and on)',clearedLearner('student-a',3)]]){
+  test('a selected student with '+label+' is still fenced as a sharing change and its held snapshot is rejected',async t=>{
+    const page=classroom(t),before=privacyLearner('student-a');page.learners({a:[before]});page.snapshots({a:[before]});await page.workspace.load();await selectOverview(page,'student-a');
+    const host=page.windowObject.SYNKClassroomHost,applied=[];watchFrame(page,{hasDraft:()=>true,applySharing:scope=>{applied.push(scope);return true;}});
+    const pending=deferred();page.workspaceHold(pending);const held=host.request('/api/workspace');
+    page.learners({a:[after]});page.snapshots({a:[after]});await page.workspace.load();
+    assert.equal(applied.length,1);assert.equal(page.windowObject.SYNKClassroomHost,host);
+    pending.resolve({mode:'account-linked',classes:[{id:'a',learners:[before]}]});await assert.rejects(held,{code:'CLASSROOM_SNAPSHOT_CHANGED'});
+  });
+  test('a frame that cannot fence '+label+' is rebuilt as before and the closed unsaved work is announced',async t=>{
+    const page=classroom(t),before=privacyLearner('student-a');page.learners({a:[before]});page.snapshots({a:[before]});await page.workspace.load();await selectOverview(page,'student-a');
+    const old=page.windowObject.SYNKClassroomHost,frame=frameOf(page);watchFrame(page,{hasDraft:()=>true,applySharing:()=>false});
+    page.learners({a:[after]});page.snapshots({a:[after]});await page.workspace.load();
+    assert.notEqual(page.windowObject.SYNKClassroomHost,old);assert.notEqual(frameOf(page),frame);assert.match(page.notices.at(-1)[0],/저장하지 않은 내용은 닫혔어요/);
+  });
+}

@@ -212,6 +212,7 @@ $('note-form').addEventListener('submit',async event=>{event.preventDefault();if
  });
  // 부모(계정 포털)가 확인한 반 학생 모두의 공유 상태로 이 판을 그 자리에서 거른다. 바뀐 학생의 기록과 그 학생의 공유에 묶인 작성 창은 바로 닫고,
  // 명부 기준인 과제 첨삭은 그대로 둔다. 걸렀으면(판을 아직 못 읽었으면 다음 읽기부터 거른다) true — 부모는 이 답을 받아야 iframe을 다시 만들지 않는다.
+ // 학생이 혼자 연습을 비워 판만 오른 같은 공유는 기록·작성 창을 두고 판만 옮긴다. 작성 창이 없으면 다시 읽어 비운 연습을 뺀다.
  function applyParentSharing(target,latest){
   const scope=host.sharingScope(target,latest);if(!scope)return false;
   session.adoptSharing(scope);courseUI?.applySharing(scope);

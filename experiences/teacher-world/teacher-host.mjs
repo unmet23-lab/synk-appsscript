@@ -75,7 +75,9 @@ export function detachedAccountHost(){
   return Object.freeze({...parentless,mode:'account-linked',linked:false,signedIn:false,request,readWorkspace:lease=>request('/api/workspace',undefined,lease)});
 }
 
-const validPermission=row=>typeof row?.id==='string'&&Number.isSafeInteger(row.revision)&&typeof row.enabled==='boolean'&&typeof row.connected==='boolean'&&typeof row.revoked==='boolean';
+// carriedFrom(학생이 혼자 연습을 비워 이어진 같은 공유의 가장 앞 판)은 없거나 0 이상 그 판 미만의 정수다.
+const validCarry=row=>row.carriedFrom===undefined||Number.isSafeInteger(row.carriedFrom)&&row.carriedFrom>=0&&row.carriedFrom<row.revision;
+const validPermission=row=>typeof row?.id==='string'&&Number.isSafeInteger(row.revision)&&typeof row.enabled==='boolean'&&typeof row.connected==='boolean'&&typeof row.revoked==='boolean'&&validCarry(row);
 // frame은 이 iframe의 window, origin은 이 문서의 출처다. 같은 출처의 부모가 연 반 하나에만 붙는다.
 export function connectAccountHost({frame,origin}){
   const parent=frame.parent;

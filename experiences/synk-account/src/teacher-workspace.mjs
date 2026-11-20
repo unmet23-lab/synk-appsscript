@@ -1,5 +1,6 @@
 import {createClassroomClient} from './classroom-client.mjs';
 import {createTeacherOverview,compareTeacherRows} from '../../teacher-world/workspace-overview.mjs';
+import {carriedSharing} from '../../teacher-world/sharing-fence.mjs';
 
 // All server-approved classes are visible; individual work uses one scoped host.
 export function createTeacherWorkspace({root,transport,guard,notice,documentObject=document,windowObject=window,locationHref=location.href,pollMs=15000}){
@@ -12,9 +13,11 @@ export function createTeacherWorkspace({root,transport,guard,notice,documentObje
   const active=()=>{guard();if(stopped)throw Object.assign(new Error('내 수업 연결이 끊겼어요. 다시 열어 주세요.'),{code:'ACCOUNT_CHANGED'});};
   const current=version=>{active();if(version!==epoch)throw Object.assign(new Error('고른 반이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
   function clearFrame(){epoch++;frame?.remove();frame=null;if(windowObject.SYNKClassroomHost===host)delete windowObject.SYNKClassroomHost;delete windowObject.SYNKClassroomSelection;host=null;framePermissions=new Map();mount.replaceChildren();}
-  const permission=row=>row&&({id:row.id,revision:row.sharing?.revision,enabled:row.sharing?.enabled,connected:row.accountConnected,revoked:row.revoked===true||row.accountConnectionStatus==='revoked',townRevision:row.activity?.town?.sharing?.revision,townEnabled:row.activity?.town?.sharing?.enabled});
+  // carriedFrom: 학생이 혼자 연습을 비워 판만 오른 같은 공유의 가장 앞 판. 서버가 정수로 줄 때만 싣는다.
+  const permission=row=>row&&({id:row.id,revision:row.sharing?.revision,enabled:row.sharing?.enabled,connected:row.accountConnected,revoked:row.revoked===true||row.accountConnectionStatus==='revoked',townRevision:row.activity?.town?.sharing?.revision,townEnabled:row.activity?.town?.sharing?.enabled,...(Number.isSafeInteger(row.sharing?.carriedFrom)?{carriedFrom:row.sharing.carriedFrom}:{})});
   const knownLearner=id=>overviewData?.classes?.find(row=>row.id===selected?.id)?.learners?.find(row=>row.id===id);
-  const permissionChanged=(previous,next)=>{if(!previous)return false;if(!next)return true;if(Number.isSafeInteger(previous.revision)&&Number.isSafeInteger(next.revision)){if(next.revision<previous.revision)return false;if(next.revision>previous.revision)return true;}return previous.enabled===true&&next.enabled===false||previous.connected===true&&next.connected===false||!previous.revoked&&next.revoked;};
+  // 이어진 같은 공유는 바뀐 것으로 보지 않는다 — 폴링·학생 고르기에서 iframe을 다시 만들지 않고, 응답 대조도 막지 않는다.
+  const permissionChanged=(previous,next)=>{if(!previous)return false;if(!next)return true;if(carriedSharing(previous,next))return false;if(Number.isSafeInteger(previous.revision)&&Number.isSafeInteger(next.revision)){if(next.revision<previous.revision)return false;if(next.revision>previous.revision)return true;}return previous.enabled===true&&next.enabled===false||previous.connected===true&&next.connected===false||!previous.revoked&&next.revoked;};
   const townPermissionChanged=(previous,next)=>{if(!previous||!next)return false;if(Number.isSafeInteger(previous.townRevision)&&Number.isSafeInteger(next.townRevision)){if(next.townRevision<previous.townRevision)return false;if(next.townRevision>previous.townRevision)return true;}return previous.townEnabled===true&&next.townEnabled===false;};
   function rememberPermissions(data,classId){framePermissions=new Map((data.classes?.find(row=>row.id===classId)?.learners||[]).map(row=>[row.id,permission(row)]));}
   const sharingChanged=()=>Object.assign(new Error('학생의 공유 상태가 바뀌었어요. 다시 불러와 주세요.'),{code:'CLASSROOM_SNAPSHOT_CHANGED',status:409});

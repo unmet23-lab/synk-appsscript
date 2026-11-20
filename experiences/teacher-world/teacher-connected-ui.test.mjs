@@ -33,6 +33,7 @@ function fixture({hash='',storedToken='',mode='local-linked',account=false,cours
   vm.createContext(context);vm.runInContext(source.replace("import {mountCourseWriting} from './course-writing-ui.mjs';",''),context,{filename:'app.mjs'});
   return {element,requests,storage,pending,posted,parent:context.window.parent,origin:context.location.origin,view:()=>context.window.SYNKTeacherView,get cleanURL(){return cleanURL;},
     message(event){for(const listener of windowEvents.get('message')||[])listener(event);},
+    focus(){for(const listener of windowEvents.get('focus')||[])listener();},
     resolve(url,body,status=200){const at=pending.findIndex(row=>row.url===url);assert.notEqual(at,-1,`pending ${url}`);pending.splice(at,1)[0].resolve(reply(body,status));},
     reject(url,error=Error('network failure')){const at=pending.findIndex(row=>row.url===url);assert.notEqual(at,-1);pending.splice(at,1)[0].reject(error);},
     click(id,dataset={}){return documentEvents.get('click')({target:{closest:()=>({id,dataset,disabled:false,classList:{contains:()=>false}})}});},
@@ -357,3 +358,70 @@ test('the account frame keeps the browser credential store and fetch out of its 
  assert.deepEqual(f.requests.map(row=>row.url),['/api/workspace','/api/observations','/api/workspace']);assert.ok(f.requests.every(row=>!('options' in row)),'부모 통로만 쓰고 이 frame의 fetch는 쓰지 않는다');
  assert.equal(f.storage.get('synk.teacher.local-linked.session'),'local-only-token');assert.equal(f.storage.size,1);
 });
+// 학생이 혼자 한 연습을 비우면 서버는 반 공유 판을 올리고 교사 쪽 줄에 carriedFrom을 싣는다(같은 공유가 이어짐).
+// 교사가 쓰던 메모·챙길 일·숙제 창과 그 학생의 기록·숙제 몫·챙길 일은 그대로 남고, 판 번호만 옮긴다.
+const careTask=sharingRevision=>({id:'care-1',classId:'class-local',learnerId:'learner-a',sharingRevision,revision:1,title:'상담 일정',status:'open',assigneeId:'teacher-local',dueAt:'2026-11-25T00:00:00Z'});
+const practiced=(revision=2,carriedFrom)=>learner({accountConnected:true,recommendation:{title:'세부 정보 다시 읽기',contentId:'reading-detail'},skills:[{id:'ko.reading.detail',label:'세부 정보',status:'practice',source:'independent-language-items',n:3,correct:1}],careTasks:[careTask(revision)],activity:{world:{status:'shared',eventCount:12,lastReceivedAt:'2026-11-20T00:00:00Z'}},sharing:{enabled:true,revision,...(carriedFrom===undefined?{}:{carriedFrom})}});
+const classData=a=>({...workspace([a,learner({id:'learner-b',name:'하늘 학생',accountConnected:true})]),mode:'account-linked',careAssignees:[{id:'teacher-local',name:'담임 선생님'}],assignments:[{id:'as-a',classId:'class-local',learnerId:'learner-a',title:'세부 정보 숙제',status:'assigned',assignedCount:1,completedCount:0,revision:1,dueAt:'2026-11-27T14:59:59Z',createdAt:'2026-11-19T00:00:00Z'}]});
+const carriedA=(revision=3,carriedFrom=2)=>[{...share('learner-a',revision,true),carriedFrom},share('learner-b',2,true)];
+const openDrafts={
+  note:{open:f=>f.click('add-note'),field:'note-text',dialog:'note-dialog',form:'note-form',url:'/api/observations'},
+  care:{open:f=>f.click('add-care'),field:'care-title',dialog:'care-dialog',form:'care-form',url:'/api/teacher/care'},
+  'care edit':{open:f=>f.click('',{careEdit:'care-1'}),field:'care-title',dialog:'care-dialog',form:'care-form',url:'/api/teacher/care'},
+  assignment:{open:f=>f.click('assign'),field:'assignment-title',dialog:'assignment-dialog',form:'assignment-form',url:'/api/assignments'}
+};
+const settled=async()=>{for(let i=0;i<4;i++)await tick();};
+async function openOn(draft){
+  const f=fixture({account:true});f.resolve('/api/workspace',classData(practiced()));await tick();
+  await draft.open(f);assert.equal(f.element(draft.dialog).open,true);f.element(draft.field).value='쓰던 글';return f;
+}
+function assertKept(f,draft){
+  assert.equal(f.element(draft.dialog).open,true);assert.equal(f.element(draft.field).value,'쓰던 글');assert.equal(f.element('toast').textContent,'');
+  assert.match(f.element('student-detail').innerHTML,/세부 정보/);assert.match(f.element('student-detail').innerHTML,/data-care-edit="care-1"/,'그 학생의 챙길 일이 비지 않는다');assert.match(f.element('assignments').innerHTML,/세부 정보 숙제/);
+}
+for(const [kind,draft] of Object.entries(openDrafts)){
+  test('a student clearing solo practice keeps the open '+kind+' draft and its words when the portal reports the carried revision',{timeout:10000},async()=>{
+    const f=await openOn(draft),before=reads(f);
+    assert.equal(f.view().applySharing({classId:'class-local',learners:carriedA()}),true);
+    assertKept(f,draft);assert.equal(reads(f),before,'쓰던 창이 있으면 판을 다시 읽어 덮지 않는다');
+    void f.submit(draft.form);await tick();assert.ok(f.requests.some(row=>row.url===draft.url),'새 판으로 옮긴 묶음으로 저장한다');
+  });
+  test('a student clearing solo practice keeps the open '+kind+' draft and its words when the frame reads the carried revision itself on focus',{timeout:10000},async()=>{
+    const f=await openOn(draft),before=reads(f);
+    f.focus();assert.equal(reads(f),before+1);f.resolve('/api/workspace',classData(practiced(3,2)));await settled();
+    assertKept(f,draft);
+    void f.submit(draft.form);await tick();assert.ok(f.requests.some(row=>row.url===draft.url));
+  });
+}
+test('another student\'s open draft does not leave the student who cleared solo practice waiting with empty records',{timeout:10000},async()=>{
+  const f=fixture({account:true});f.resolve('/api/workspace',classData(practiced()));await tick();
+  await f.click('',{student:'learner-b'});await f.click('add-note');f.element('note-text').value='하늘 학생 관찰';
+  assert.equal(f.view().applySharing({classId:'class-local',learners:carriedA()}),true);
+  assert.equal(f.element('note-dialog').open,true);assert.equal(f.element('note-text').value,'하늘 학생 관찰');
+  assert.match(f.element('roster').innerHTML,/연결 학생<\/strong><small>세부 정보 다시 읽기/);assert.match(f.element('assignments').innerHTML,/세부 정보 숙제/);
+  await f.click('',{student:'learner-a'});
+  const detail=f.element('student-detail').innerHTML;assert.match(detail,/활동 12건/);assert.doesNotMatch(detail,/기록 불러오는 중/);assert.match(detail,/세부 정보/);assert.match(detail,/data-care-edit="care-1"/);
+});
+test('a student clearing solo practice with no open draft is read again so the cleared practice leaves the cache',{timeout:10000},async()=>{
+  const f=fixture({account:true});f.resolve('/api/workspace',classData(practiced()));await tick();const before=reads(f);
+  assert.equal(f.view().applySharing({classId:'class-local',learners:carriedA()}),true);assert.equal(reads(f),before+1);
+  assert.match(f.element('student-detail').innerHTML,/세부 정보/,'다시 읽는 동안에도 대기로 비우지 않는다');
+});
+// 이어진 범위가 아니면 지금처럼 새 공유로 본다: 기록·숙제 몫을 비우고 묶인 창을 닫는다.
+for(const [label,steps,read] of [
+  ['consent turned off and on (no carriedFrom)',[share('learner-a',3,true)],practiced(3)],
+  ['sharing turned off and on',[share('learner-a',3,false),share('learner-a',4,true)],practiced(4)],
+  ['carriedFrom after the remembered revision',[{...share('learner-a',4,true),carriedFrom:3}],practiced(4,3)]
+]){
+  test('portal sharing for '+label+' still clears the student and closes the bound draft',{timeout:10000},async()=>{
+    const f=await openOn(openDrafts.note);
+    for(const meta of steps)assert.equal(f.view().applySharing({classId:'class-local',learners:[meta,share('learner-b',2,true)]}),true);
+    assert.equal(f.element('note-dialog').open,false);assert.equal(f.element('note-text').value,'');assert.match(f.element('toast').textContent,/공유나 과제가 바뀌어 쓰던 창을 닫았어요/);
+    assert.doesNotMatch(f.element('student-detail').innerHTML,/세부 정보/);assert.doesNotMatch(f.element('assignments').innerHTML,/세부 정보 숙제/);
+  });
+  test('the frame\'s own read for '+label+' still closes the bound draft',{timeout:10000},async()=>{
+    const f=await openOn(openDrafts.care);
+    f.focus();f.resolve('/api/workspace',classData(read));await settled();
+    assert.equal(f.element('care-dialog').open,false);assert.equal(f.element('care-title').value,'');assert.match(f.element('toast').textContent,/공유나 과제가 바뀌어 쓰던 창을 닫았어요/);
+  });
+}

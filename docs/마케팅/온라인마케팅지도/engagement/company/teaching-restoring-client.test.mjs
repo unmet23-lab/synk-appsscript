@@ -16,6 +16,8 @@ const TEACHING_HOST_BUILDS=new Map([
   ['a6523a7edfec01267becc707b23f5a771ceb566151a3bd82fd99a0dcac114b03','PATH a556b16bd · path-live-ui-20261110 → r3'],
   // 회사 운영(사슬 27~): a85da04a6 원천에 28dfe3234 고침만 얹어 지은 판 — b4b28e17a 글은 10-31 현재 회사에 나가지 않았다.
   ['143eb4b84073d70b388bbe37e9913678cd6db28cac12aebbe9071e45f53fe395','운영 사슬 27'],
+  // Atlas #25 가지 claude/atlas-25-teacher-carried: PATH 판에 이어진 공유 판(carriedFrom) 거르기만 얹은 판. 검수 전이라 master에 넣기 전에 검수한다.
+  ['1beb6b7beba3f9eb37db7bebd46a67ccf9a4c4df1844a2ffeffaa844b33a926c','Atlas #25 이어진 공유 판 · 검수 전'],
 ]);
 function teachingHostBytes(){
   const raw=readFileSync(new URL('./public/teaching-host.js',import.meta.url)),text=raw.toString('latin1');
