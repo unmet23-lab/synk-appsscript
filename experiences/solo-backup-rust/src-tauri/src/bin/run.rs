@@ -39,7 +39,7 @@ use std::{fs::{self, File}, path::{Path, PathBuf}, sync::{Arc, Mutex}, time::{Du
 const TRIGGERS: [&str; 7] = ["hourly", "logon", "wake", "unlock", "manual", "request", "test"];
 /// Per-profile fields copied into runs.jsonl. Everything else the worker sends
 /// back stays out, so no file name, path or secret reaches the record.
-const FIELDS: [&str; 18] = ["outcome", "reason", "exitCode", "newSnapshot", "files", "bytes", "filesNew", "filesChanged", "filesUnmodified", "dataAdded", "durationMs", "nextAt", "unlock", "lastBackupMs", "automatic", "unreadable", "missing", "mass"];
+const FIELDS: [&str; 19] = ["outcome", "reason", "exitCode", "newSnapshot", "files", "bytes", "filesNew", "filesChanged", "filesUnmodified", "dataAdded", "durationMs", "nextAt", "unlock", "lastBackupMs", "automatic", "unreadable", "missing", "odd", "mass"];
 /// The run's overall result is its most notable profile result.
 const ORDER: [&str; 7] = ["failed", "partial", "fill", "busy", "complete", "not-due", "skipped"];
 
@@ -227,10 +227,13 @@ fn problems(profiles: &Value, now: u64) -> (Vec<notify::Notice>, Vec<&'static st
     if watched.iter().any(|p| p["outcome"] == "partial" && p["unreadable"].is_u64() && !filled(p)) { found.push(notify::partial()); }
     // 「폴더를 찾을 수 없음」: a folder this run did not find, whether the others were backed up or none was there.
     if watched.iter().any(|p| p["missing"].as_u64().is_some_and(|n| n > 0)) { found.push(notify::missing()); }
+    // 「이름 때문에 못 담음」 (4.2 「이 백업에 담지 못하는 이름」): a backup this run made that could not hold a name ending in a
+    // dot or a space. Resolved as the partial one is: a run that backed up every watched profile without one.
+    if watched.iter().any(|p| p["odd"].as_u64().is_some_and(|n| n > 0)) { found.push(notify::odd()); }
     if mass { found.push(notify::mass()); }
     let backed_up = |p: &Value| p["outcome"] == "complete" || (p["outcome"] == "partial" && p["unreadable"].is_u64());
     if !watched.is_empty() && !set_aside && watched.iter().all(|p| backed_up(p)) {
-        judged.push("partial"); judged.push("missing");
+        judged.push("partial"); judged.push("missing"); judged.push("odd");
     }
     if any && !mass { judged.push("mass"); }
     if !watched.is_empty() {
@@ -376,21 +379,21 @@ fn run() -> i32 {
             code
         }
     };
-    // A test run keeps the ledger as a real one would, without showing anything.
+    // A test run keeps the ledger as a real one would, without showing anything. Today is read once the ledger's lock is
+    // held and again for each mark: a run that waited past midnight does not show a notice twice (설치 세션이 넘긴 P2).
     if line["profiles"].is_object() {
         let (found, judged) = problems(&line["profiles"], epoch_ms());
-        let today: String = schedule::local_now().chars().take(10).collect();
-        let records = notify::deliver(&root, &found, &judged, &today, |n| if args.test { Ok(()) } else { notify::show(n) });
+        let records = notify::deliver_now(&root, &found, &judged, || schedule::local_now().chars().take(10).collect(), |n| if args.test { Ok(()) } else { notify::show(n) });
         if !records.is_empty() { line["notify"] = json!(records); }
     }
     line["end"] = json!(iso(epoch_ms()));
     line["ms"] = json!(clock.elapsed().as_millis() as u64);
     line["exit"] = json!(code);
-    // 공간 비우기 1판 (4.15): the day's first run scans once, after the run — whether it backed up, rested, failed or was
-    // busy — with the engine lock already let go (the scan only reads). Its own time is in `space`, not in `ms`; whatever
-    // happens to it, this run's result above stays.
+    // 공간 비우기 1판 (4.15): the day's first run other than a request (scans_space) scans once, after the run — whether it
+    // backed up, rested, failed or was busy — with the engine lock already let go (the scan only reads). Its own time is
+    // in `space`, not in `ms`; whatever happens to it, this run's result above stays.
     let today: String = schedule::local_now().chars().take(10).collect();
-    if let Some((places, budget)) = space_places(args.test).filter(|_| space_wanted(&line) && space::due(&root, &today)) {
+    if let Some((places, budget)) = space_places(args.test).filter(|_| scans_space(args.trigger) && space_wanted(&line) && space::due(&root, &today)) {
         drop(worker.take());
         drop(guard.take());
         line["space"] = space::daily(&root, &places, &today, budget, epoch_ms());
@@ -436,6 +439,9 @@ const WINDOW_APP: &str = "WorkBackup.exe";
 /// The request task, which SYNK 솔리오 wakes on demand, does not wait for the feed: while it runs, Task Scheduler ignores a
 /// second wake (IgnoreNew), so a request left meanwhile would wait for the next run (GPT full GA1). The hourly run checks.
 fn checks_update(trigger: &str) -> bool { trigger != "request" }
+/// Nor does it scan for 공간 비우기 (4.15), for the same reason: the day's scan waits for the next run of another kind
+/// (설치 세션이 bb36db543과 함께 넘김).
+fn scans_space(trigger: &str) -> bool { trigger != "request" }
 /// How long a run waits for the window app's check: its own feed timeout is a minute.
 const UPDATE_CHECK_WAIT: Duration = Duration::from_secs(120);
 
@@ -532,6 +538,8 @@ fn main() { std::process::exit(run()); }
     #[test] fn the_request_task_does_not_wait_for_the_feed() {
         assert!(!checks_update("request"));
         for trigger in ["hourly", "logon", "wake", "unlock", "manual"] { assert!(checks_update(trigger), "{trigger}"); }
+        assert!(!scans_space("request"), "nor scans for space");
+        for trigger in ["hourly", "logon", "wake", "unlock", "manual", "test"] { assert!(scans_space(trigger), "{trigger}"); }
     }
     #[test] fn problems_come_from_the_records_of_profiles_meant_to_run() {
         let now = 10 * notify::STALE_MS;
@@ -539,7 +547,7 @@ fn main() { std::process::exit(run()); }
         let names = |found: &[notify::Notice]| found.iter().map(|n| (n.problem, n.body)).collect::<Vec<_>>();
         let first = ("first-backup", notify::first_backup().body);
         let (found, judged) = problems(&json!({"local": {"outcome": "complete", "newSnapshot": true, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first], vec!["partial", "missing", "mass", "stale"]));
+        assert_eq!((names(&found), judged), (vec![first], vec!["partial", "missing", "odd", "mass", "stale"]));
         // 「한꺼번에 지워짐」 (4.4): told while the hold waits, on any run the engine answered; resolved once none reports it.
         let (found, judged) = problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now, "mass": 1}}), now);
         assert_eq!((names(&found), judged.contains(&"mass")), (vec![first, ("mass", notify::mass().body)], false));
@@ -593,20 +601,31 @@ fn main() { std::process::exit(run()); }
         }
         // A partial snapshot kept with its list is told; one without (exit 3, no list) is not; complete runs resolve it.
         let (found, judged) = problems(&json!({"local": {"outcome": "partial", "unreadable": 2, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first, ("partial", notify::partial().body)], vec!["partial", "missing", "mass", "stale"]));
+        assert_eq!((names(&found), judged), (vec![first, ("partial", notify::partial().body)], vec!["partial", "missing", "odd", "mass", "stale"]));
         // A folder not found: told whether the others were backed up or none was there; only a run that backed up
         // every watched profile can resolve it (4.2 「사라진 원본 폴더」).
         let missing = ("missing", notify::missing().body);
         let (found, judged) = problems(&json!({"local": {"outcome": "complete", "missing": 1, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first, missing], vec!["partial", "missing", "mass", "stale"]));
+        assert_eq!((names(&found), judged), (vec![first, missing], vec!["partial", "missing", "odd", "mass", "stale"]));
         let (found, judged) = problems(&json!({"local": {"outcome": "partial", "unreadable": 1, "missing": 1, "automatic": true, "lastBackupMs": now}}), now);
-        assert_eq!((names(&found), judged), (vec![first, ("partial", notify::partial().body), missing], vec!["partial", "missing", "mass", "stale"]));
+        assert_eq!((names(&found), judged), (vec![first, ("partial", notify::partial().body), missing], vec!["partial", "missing", "odd", "mass", "stale"]));
         let (found, judged) = problems(&json!({"local": {"outcome": "failed", "missing": 2, "automatic": true, "lastBackupMs": now}}), now);
         assert_eq!((names(&found), judged), (vec![first, missing], vec!["mass", "stale"]));
         let (found, _) = problems(&json!({"local": {"outcome": "complete", "missing": 0, "automatic": true, "lastBackupMs": now}}), now);
         assert_eq!(names(&found), [first]);
         let (found, judged) = problems(&json!({"local": {"outcome": "failed", "missing": 1, "lastBackupMs": now}}), now);
         assert!(found.is_empty() && judged == ["mass"], "automatic off: not told");
+        // A name the backup could not hold (4.2 「이 백업에 담지 못하는 이름」): told from a run that backed up; a run that backed
+        // up every watched profile without one resolves it, a failed one does not.
+        let odd = ("odd", notify::odd().body);
+        let (found, judged) = problems(&json!({"local": {"outcome": "complete", "odd": 2, "automatic": true, "lastBackupMs": now}}), now);
+        assert_eq!((names(&found), judged), (vec![first, odd], vec!["partial", "missing", "odd", "mass", "stale"]));
+        let (found, _) = problems(&json!({"local": {"outcome": "partial", "unreadable": 1, "odd": 1, "automatic": true, "lastBackupMs": now}}), now);
+        assert_eq!(names(&found), [first, ("partial", notify::partial().body), odd]);
+        let (found, judged) = problems(&json!({"local": {"outcome": "complete", "odd": 1, "lastBackupMs": now}}), now);
+        assert!(found.is_empty() && judged == ["mass"], "automatic off: not told");
+        let (found, judged) = problems(&json!({"local": {"outcome": "failed", "automatic": true, "lastBackupMs": now}}), now);
+        assert!(!names(&found).contains(&odd) && !judged.contains(&"odd"), "a failed run neither tells nor resolves it");
         // Exit 3 with no list kept: nothing to tell, and not a backup that could resolve it (GPT GA3).
         let (found, judged) = problems(&json!({"local": {"outcome": "partial", "exitCode": 3, "automatic": true, "lastBackupMs": now}}), now);
         assert_eq!((names(&found), judged), (vec![first], vec!["mass", "stale"]));
@@ -614,7 +633,7 @@ fn main() { std::process::exit(run()); }
         assert_eq!(judged, ["mass", "stale"], "a run that did not back up cannot say the partial one is resolved");
         let (found, judged) = problems(&json!({"local": {"outcome": "failed", "automatic": true}}), now);
         assert!(found.is_empty() && judged == ["mass", "stale"], "never backed up: judged, and nothing to show");
-        assert_eq!(problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now}}), now).1, ["partial", "missing", "mass", "stale"]);
+        assert_eq!(problems(&json!({"local": {"outcome": "complete", "automatic": true, "lastBackupMs": now}}), now).1, ["partial", "missing", "odd", "mass", "stale"]);
         assert_eq!(problems(&Value::Null, now), (vec![], vec![]));
     }
     #[test] fn requests_are_recorded_as_words_only() {
@@ -638,7 +657,7 @@ fn main() { std::process::exit(run()); }
         let partial = ("partial", notify::partial().body);
         let (found, judged) = problems(&line["profiles"], 10);
         assert!(!found.iter().any(|n| n.problem == partial.0), "every left-out file was filled");
-        assert_eq!(judged, ["partial", "missing", "mass", "stale"]);
+        assert_eq!(judged, ["partial", "missing", "odd", "mass", "stale"]);
         line["profiles"]["local"]["fill"]["cut"] = json!(true);
         assert!(problems(&line["profiles"], 10).0.iter().any(|n| n.problem == partial.0), "a cut list is never taken as all filled");
         line["profiles"]["local"]["fill"]["cut"] = Value::Null;

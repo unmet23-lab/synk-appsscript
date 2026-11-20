@@ -179,8 +179,8 @@ impl FirstBackup{
         let seen=self.app.get_webview_window("main").is_some_and(|w|w.is_visible().unwrap_or(false)&&!w.is_minimized().unwrap_or(true)&&w.is_focused().unwrap_or(false));
         let (root,test)=(self.root.clone(),self.test);
         std::thread::spawn(move||{
-            let today:String=schedule::local_now().chars().take(10).collect();
-            notify::deliver(&root,&[notify::first_backup()],&[],&today,|n|if test||seen{Ok(())}else{notify::show(n)});
+            // Today read under the ledger's lock, as the run executable does (설치 세션이 넘긴 P2).
+            notify::deliver_now(&root,&[notify::first_backup()],&[],||schedule::local_now().chars().take(10).collect(),|n|if test||seen{Ok(())}else{notify::show(n)});
         });
     }
 }

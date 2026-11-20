@@ -17,7 +17,7 @@ pub const TOPICS: [&str; 9] = ["status", "folders", "changes", "devices", "resto
 const ONCE: [&str; 1] = ["first-backup"];
 /// Problems shown at most once a week rather than once a day.
 const WEEKLY: [&str; 1] = ["update-admin"];
-const PROBLEMS: [&str; 7] = ["first-backup", "stale", "partial", "missing", "mass", "update", "update-admin"];
+const PROBLEMS: [&str; 8] = ["first-backup", "stale", "partial", "missing", "odd", "mass", "update", "update-admin"];
 /// 「사흘 넘게」 (2.2).
 pub const STALE_MS: u64 = 72 * 3_600_000;
 
@@ -41,6 +41,11 @@ pub fn partial() -> Notice {
 /// backups that hold the missing one are kept. True also when none could be found (the run then failed).
 pub fn missing() -> Notice {
     Notice { problem: "missing", topic: "folders", title: "백업할 폴더를 찾을 수 없습니다", body: "외장 드라이브라면 다시 연결해 주세요. 찾을 수 있는 폴더는 계속 백업하고, 그 폴더가 든 이전 백업은 지우지 않습니다.", action: Some("확인하기") }
+}
+/// 「이름 때문에 못 담음」 (4.2 「이 백업에 담지 못하는 이름」): a file or folder whose name ends in a dot or a space, which
+/// Windows cannot open as it is written. Renaming it is the one thing to do; the status screen lists the names.
+pub fn odd() -> Notice {
+    Notice { problem: "odd", topic: "status", title: "이름 때문에 백업하지 못한 파일이 있습니다", body: "이름 끝에 점이나 칸이 있는 파일은 Windows에서 백업할 수 없습니다. 이름을 바꾸면 다음 백업에 담깁니다.", action: Some("확인하기") }
 }
 /// 「한꺼번에 지워짐」 (4.4 대량 삭제 · 변경 멈춤): while the hold waits, once a day. It opens the home screen, where the
 /// person chooses; it promises only what the hold does (no backup before it is forgotten), and does not call it an attack.
@@ -232,6 +237,7 @@ fn deliver_waiting(root: &Path, found: &[Notice], judged: &[&str], today: impl F
         assert!(xml.contains(r#"<action content="확인&lt;" activationType="protocol" arguments="synk-workbackup:open?topic=status"/>"#));
         assert!(!toast_xml(&first_backup()).contains("<actions>"), "the first-backup notice has nothing to do");
         assert!(!toast_xml(&partial()).contains("<actions>"), "nor has the partial one");
+        assert_eq!((odd().problem, odd().topic, odd().action), ("odd", "status", Some("확인하기")));
         for cause in ["metered", "battery", "clock", "", "failed"] { let n = stale(cause); assert_eq!((n.problem, n.topic, n.action), ("stale", "status", Some("확인하기"))); }
     }
     #[test] fn the_same_problem_once_a_day_and_once_only_notices_once_ever() {

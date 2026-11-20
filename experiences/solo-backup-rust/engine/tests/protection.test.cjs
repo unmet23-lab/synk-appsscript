@@ -168,3 +168,23 @@ test('only configured cloud profile opens first; polling publishes changing time
   let events = 0; profiles.on('state', () => events++); profiles.tick();
   assert.equal(events, 1); assert.equal(profiles.engines.b2.config.automatic, false);
 });
+
+test('the names a backup could not hold are read back as written, or not at all (4.2 「이 백업에 담지 못하는 이름」)', () => {
+  const { normalizeProtection } = require('../src/protection.cjs');
+  const read = o => { const c = { leftOutNames: o }; normalizeProtection(c); return c.leftOutNames; };
+  const at = '2026-11-20T01:00:00.000Z';
+  assert.deepEqual(read({ at, count: 2, names: ['C:\\a\\b.', 'C:\\a\\c '], cut: false }), { at, count: 2, names: ['C:\\a\\b.', 'C:\\a\\c '], cut: false });
+  assert.deepEqual(read({ at, count: 1, names: ['C:\\a\\b.', 7, ''], cut: 'yes', checked: false }), { at, count: 1, names: ['C:\\a\\b.'], cut: false, checked: false });
+  assert.deepEqual(read({ at, count: 1, names: 'C:\\a' }), { at, count: 1, names: [], cut: false }, 'a backup that can no longer list them still counts them');
+  assert.deepEqual(read({ at, count: 0, names: [], cut: false, checked: false }), { at, count: 0, names: [], cut: false, checked: false }, 'a walk that did not finish is told with none found');
+  assert.equal(read({ at, count: 2, names: Array.from({ length: 1200 }, (_, i) => 'C:\\a\\' + i + '.') }).names.length, 1000);
+  assert.equal(read({ at, count: 40, names: Array.from({ length: 40 }, (_, i) => 'C:\\' + 'x'.repeat(990) + i + '.') }).names.length, 32, 'and 32,768 characters in all (GPT GA1)');
+  // Where each is held, apart from the settings (설계 검토 기록 3): which file, how many, whether more were found.
+  const held = o => { const c = { leftOutHeld: o, leftOutAll: { names: ['C:\\a\\b.'] } }; normalizeProtection(c); return [c.leftOutHeld, 'leftOutAll' in c]; };
+  assert.deepEqual(held({ id: 'x1', count: 3, cut: 'yes' }), [{ id: 'x1', seq: 0, count: 3, cut: false }, false]);
+  assert.deepEqual(held({ id: 'x1', seq: 7, count: 3 }), [{ id: 'x1', seq: 7, count: 3, cut: false }, false]);
+  assert.deepEqual(held({ id: 'x1', seq: -1, count: 3 })[0].seq, 0);
+  assert.deepEqual(held({ id: 'x1', count: 0, cut: true }), [{ id: 'x1', seq: 0, count: 0, cut: true }, false]);
+  for (const bad of [null, 'x', {}, { id: '', count: 1 }, { id: 'x'.repeat(65), count: 1 }, { id: 'x', count: -1 }, { id: 'x', count: 1.5 }, { id: 'x', count: 2 ** 31 + 1 }]) assert.deepEqual(held(bad), [null, false]);
+  for (const bad of [null, 'x', { count: 1, names: [] }, { at, count: 0, names: [] }, { at, count: 1.5, names: [] }, { at: 'later', count: 1, names: [] }]) assert.equal(read(bad), null);
+});

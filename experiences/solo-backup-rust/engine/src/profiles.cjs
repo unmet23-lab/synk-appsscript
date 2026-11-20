@@ -58,7 +58,7 @@ class Profiles extends EventEmitter {
   getState() {
     const profiles = {};
     for (const [name, e] of Object.entries(this.engines)) {
-      const s = e.getState(); profiles[name] = { configured: s.configured, mode: s.mode, readOnly: s.readOnly, automatic: s.automatic, lastBackup: s.lastBackup, lastError: s.lastError, credentialRequired: s.credentialRequired, job: s.job, pausedUntil: s.pausedUntil, nextBackupAt: s.nextBackupAt, clockHold: s.clockHold, lastProbe: s.lastProbe, lastSelectedRestore: s.lastSelectedRestore, lastSelectedRestoreError: s.lastSelectedRestoreError, lastRestoreError: s.lastRestoreError, massHold: s.massHold };
+      const s = e.getState(); profiles[name] = { configured: s.configured, mode: s.mode, readOnly: s.readOnly, automatic: s.automatic, lastBackup: s.lastBackup, lastError: s.lastError, credentialRequired: s.credentialRequired, job: s.job, pausedUntil: s.pausedUntil, nextBackupAt: s.nextBackupAt, clockHold: s.clockHold, lastProbe: s.lastProbe, lastSelectedRestore: s.lastSelectedRestore, lastSelectedRestoreError: s.lastSelectedRestoreError, lastRestoreError: s.lastRestoreError, massHold: s.massHold, leftOutNames: s.leftOutNames };
     }
     return { ...this.current.getState(), profile: this.profile, selection: { sources: [...this.selection.sources], target: this.selection.target }, profiles };
   }

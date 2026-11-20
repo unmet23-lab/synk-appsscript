@@ -1184,7 +1184,7 @@ test('「지워지기 전으로 되살리기」 restores the folders that change
   fake.ls[`${before.id}:${treeOf(docs)}`] = [{ message_type: 'node', path: '/a.txt', type: 'file', size: 3 }];
   await engine.restoreMassBefore({ parent: out });
   const done = engine.config.lastRestore;
-  assert.deepEqual(done.mass, { beforeId: before.id, beforeAt: before.time });
+  assert.deepEqual(done.mass, { beforeId: before.id, beforeAt: before.time, folder: null, sub: '' }, 'every folder that changed (화면 세션 E31)');
   assert.equal(await fs.readFile(path.join(done.path, label, 'a.txt'), 'utf8'), 'abc');
   assert.deepEqual(JSON.parse(await fs.readFile(path.join(done.path, '복구경로.json'), 'utf8')), [{ original: docs, restoredFolder: label, backupAt: before.time }], 'only the folder that changed');
   // A part of it, when the whole is past the list limit.
@@ -1192,6 +1192,14 @@ test('「지워지기 전으로 되살리기」 restores the folders that change
   fake.ls[`${before.id}:${treeOf(docs)}/안쪽`] = [{ message_type: 'node', path: '/b.txt', type: 'file', size: 2 }];
   await engine.restoreMassBefore({ parent: out, folder: docs, sub: '안쪽' });
   assert.equal(await fs.readFile(path.join(engine.config.lastRestore.path, label, '안쪽', 'b.txt'), 'utf8'), 'bb');
+  assert.deepEqual(engine.config.lastRestore.mass, { beforeId: before.id, beforeAt: before.time, folder: docs, sub: '안쪽' }, 'that part (E31)');
+  // A failure says what it was taking: the screen tells one folder's failure from the whole's (E31).
+  await assert.rejects(engine.restoreMassBefore({ parent: docs, folder: docs, sub: '안쪽' }), e => e.code === 'OUTPUT_UNSAFE');
+  assert.deepEqual([engine.config.lastRestoreError.code, engine.config.lastRestoreError.mass], ['OUTPUT_UNSAFE', { folder: docs, sub: '안쪽' }]);
+  await assert.rejects(engine.restoreMassBefore({ parent: docs }), e => e.code === 'OUTPUT_UNSAFE');
+  assert.deepEqual(engine.config.lastRestoreError.mass, { folder: null, sub: '' });
+  await engine.restoreMassBefore({ parent: out });
+  assert.equal(engine.config.lastRestoreError, null, 'cleared by the next one that works');
   assert.ok(engine.config.massHold, 'the hold stays until the person says they are done');
   // The backup a hold keeps may be a partial one (r2 GA2).
   const g = await fixture();

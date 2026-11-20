@@ -70,6 +70,8 @@ function statusOf({ state: s, version, ledger = null, update = null, startupRegi
     if (p?.reason === 'health' || p?.reason === 'mass') topics.add('changes');
     if ((Array.isArray(s.missingSources) && s.missingSources.length) || days.includes('missing')) topics.add('folders');
     if (days.includes('stale') || days.includes('partial')) topics.add('status');
+    // 이 백업에 담지 못하는 이름 (4.2): told on the status screen, not alarming, as a partial snapshot is.
+    if (s.leftOutNames?.count > 0 || days.includes('odd')) topics.add('status');
   }
   if (configured && s.serverRestore) topics.add('restore');
   const available = typeof update?.available === 'string' && /^[0-9]+\.[0-9]+\.[0-9]+$/.test(update.available) ? update.available : null;
@@ -267,7 +269,8 @@ class SolioFiles {
     if (st.isSymbolicLink() || !st.isFile()) return true;
     const mine = await fs.lstat(path.join(this.claimed, name), { bigint: true }).catch(() => null);
     if (!mine || mine.ino !== st.ino || mine.dev !== st.dev) return false;
-    try { await fs.rm(left); return true; } catch { return false; }
+    // 솔리오가 그사이 먼저 지웠으면(ENOENT) 사라진 것이다(취소 표식 r3 GA1).
+    try { await fs.rm(left); return true; } catch (e) { return e?.code === 'ENOENT'; }
   }
   /** 남은 차지와 하루 지난 결과를 치운다. 엔진 잠금을 쥔 쪽만 부른다. */
   async sweep() {

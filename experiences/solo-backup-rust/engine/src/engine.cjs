@@ -151,6 +151,8 @@ async function gatherEarlier(wanted, manifest, seen) {
 }
 /** The run record's count of folders not found, when there were any. */
 const gone = n => n > 0 ? { missing: n } : {};
+/** A run result's count of names its backup could not hold (4.2 「이 백업에 담지 못하는 이름」). */
+const oddOf = n => n > 0 ? { odd: n } : {};
 // The thresholds of 4.4 (처음 문턱, to be tuned by T17): files removed (30 % and 200), files changed (50 % and 200), bytes
 // removed (30 % and 1 GiB); `list` is how many names a hold keeps for the 「지워진 파일」 screen.
 // `compare`: backups compared in one clean-up (the rest wait for the next); `typed`: type changes whose files are counted.
@@ -183,17 +185,149 @@ async function lockedVolumes(items) {
   }
   return [...out].sort();
 }
-/** restic's JSON error lines, however they are split into chunks: each `item` goes to onItem. A line past
- *  4 MB is not held — onItem(null) says an item may be lost, so the list is marked cut (GPT GA4). */
+/** restic's JSON error lines, however they are split into chunks: each `item` goes to onItem with the step it was met
+ *  in (`during`: scan, archival). A line past 4 MB is not held — onItem(null) says an item may be lost, so the list is
+ *  marked cut (GPT GA4). */
 function errorItems(onItem) {
   let rest = '';
   const lines = text => {
     const all = (rest + text).split('\n'); rest = all.pop();
     if (rest.length > 4194304) { rest = ''; onItem(null); }
-    for (const line of all) { let m = null; try { m = JSON.parse(line); } catch { } if (m?.message_type === 'error' && typeof m.item === 'string' && m.item) onItem(m.item); }
+    for (const line of all) { let m = null; try { m = JSON.parse(line); } catch { } if (m?.message_type === 'error' && typeof m.item === 'string' && m.item) onItem(m.item, typeof m.during === 'string' ? m.during : null); }
   };
   return { push: lines, end: () => lines('\n') };
 }
+/** A name Windows cannot open as it is written: one ending in a dot or a space. Windows drops those ends from a path, so
+ *  restic 0.19.1 asks for another name: with none there, the file is left out and told only while counting (`scan`), and
+ *  the run still ends with 0; with the name without its ends there, that one's content is saved under this name, with no
+ *  error (4.2 「이 백업에 담지 못하는 이름」, measured 11-20). restic stops counting once the backup is saved, so what it
+ *  tells is not every one (GPT GA2): the engine also reads the folders through for them (walkOdd). */
+const oddName = p => typeof p === 'string' && /[. ]$/.test(p) && !/(^|[\\/])\.\.?$/.test(p);
+/** How many of those names the state lists — at most 1,000 and 32,768 characters in all, since the window's state and its
+ *  profile summary both carry the list (GPT GA1); past it the count goes on. */
+const ODD_KEEP = 1000, ODD_LIST_CHARS = 32768;
+/** The first of `names` the state lists (ODD_KEEP · ODD_LIST_CHARS). */
+function oddList(names) {
+  const out = []; let chars = 0;
+  for (const p of names) { if (out.length >= ODD_KEEP || chars + p.length > ODD_LIST_CHARS) break; out.push(p); chars += p.length; }
+  return out;
+}
+/** The file in the state folder that holds each such name found, apart from the settings (설계 검토 기록 3), so a walk
+ *  that does not get through can look at each found before (GPT GA2 · GA6): as many as a walk keeps (UNREADABLE_MAX),
+ *  written when they change and before the settings that point at it (`leftOutHeld = { id, count, cut }`). Not in the
+ *  window's state. 50,000,000 characters at most, well under what one JSON string can be (r4 GA4); past it, `cut`. */
+const ODD_FILE = 'left-out-names.json', ODD_HOLD_CHARS = 50000000;
+/** Every backup reads the folders through for those names (설계 검토 기록 1 F1: restic tells none beside the name
+ *  without its end). A walk stops at 10 minutes (`checked` false); the next backup's begins anew. Two folders are read
+ *  at a time, so one that never answers (a share gone) leaves the other file work its threads (F6; measured 11-21:
+ *  189,133 folders in 14 to 19 seconds with two, 12 to 17 with eight, once read). Looking again at the names found
+ *  before stops at 30 seconds (GPT GA4), and so does a walk that gets no place to read in (설계 검토 기록 2 F2). */
+const ODD_WALK_BUDGET = 10 * 60000, ODD_LOOK_BUDGET = 30000, ODD_SLOT_WAIT = 30000, ODD_READERS = 2;
+/** The reads for those names not answered yet, of every walk and look in this process — one profile's after another's
+ *  too (GPT GA5): ODD_READERS at most, a read left behind at a deadline still holding its place until it answers. */
+const oddReads = new Set();
+/** Those waiting for a place to free: each told once, then gone — nothing is hung on a read left behind (r3 GA2). */
+let oddWaiting = new Set();
+/** `read()` once it holds a place in oddReads; what it gives. */
+function oddRead(read) {
+  const t = Promise.resolve().then(read);
+  const place = t.then(() => {}, () => {}).finally(() => { oddReads.delete(place); const told = oddWaiting; oddWaiting = new Set(); for (const f of told) f(true); });
+  oddReads.add(place);
+  return t;
+}
+/** Whether a place frees before `deadline` (epoch ms). */
+function placeFreed(deadline) {
+  return new Promise(res => {
+    const told = ok => { clearTimeout(timer); oddWaiting.delete(told); res(ok); };
+    const timer = setTimeout(() => told(false), Math.max(0, deadline - Date.now())); timer.unref?.();
+    oddWaiting.add(told);
+  });
+}
+/** Whether one of `waits` settles before `deadline` (epoch ms). */
+async function settles(waits, deadline) {
+  let timer;
+  const r = await Promise.race([...waits.map(w => Promise.resolve(w).then(() => true, () => true)), new Promise(res => { timer = setTimeout(() => res(false), Math.max(0, deadline - Date.now())); timer.unref?.(); })]);
+  clearTimeout(timer);
+  return r;
+}
+/** A name as compared: the slash used aside, case and all — a folder may tell `A.` from `a.` (GPT GA3). */
+const nameKey = p => p.replace(/[\\/]+/g, '/').replace(/\/$/, '');
+/** A name as Windows finds it in a folder that tells no case apart (r2 GA3). */
+const caseKey = p => nameKey(p).toLowerCase();
+/** Each path once and none inside another: a folder left out says what it holds. Sorted. */
+function topMost(paths) {
+  const keys = new Set(), out = [];
+  for (const p of [...new Set(paths)].sort((a, b) => a.length - b.length)) {
+    const parts = nameKey(p).split('/');
+    if (parts.some((_, i) => i > 0 && keys.has(parts.slice(0, i).join('/'))) || keys.has(nameKey(p))) continue;
+    keys.add(nameKey(p)); out.push(p);
+  }
+  return out.sort();
+}
+/** A Windows path in the long form, read as written: past 260 characters too, and with no dot or space dropped from
+ *  its end (restic reads the same way). A drive path or a share; anything else as it is. */
+const longPath = p => process.platform !== 'win32' ? p : /^[A-Za-z]:\\/.test(p) ? '\\\\?\\' + p : /^\\\\[^\\?.]/.test(p) ? '\\\\?\\UNC\\' + p.slice(2) : p;
+/** Every name under `roots` that ends in a dot or a space, topmost only (4.2 「이 백업에 담지 못하는 이름」). Folders are
+ *  read, nothing is opened. A link or junction is not followed, as restic does not; a reparse point that is a folder
+ *  all the same (a cloud folder) is. A folder that cannot be read is passed over and counted (`failed`): what it holds
+ *  is not known (GPT GA5). Stops at `budgetMs` of real time, a folder still being read too (`done` false — GA4), and
+ *  keeps `max` names (`more` past it). Folders are read in the places of oddReads. */
+async function walkOdd(roots, { budgetMs, max, slotWaitMs = ODD_SLOT_WAIT }) {
+  const names = [], queue = [...roots], running = new Set(), deadline = Date.now() + budgetMs, unread = []; let more = false, done = true, failed = 0, unreadCut = false;
+  // The folders not read, up to 1,000 of them (`unreadCut` past it): what a walk in time did not see (설계 검토 기록 5 F2).
+  const miss = dir => { failed++; if (unread.length < 1000) unread.push(dir); else unreadCut = true; };
+  const visit = async dir => {
+    // A chosen folder gone while it is walked (a drive pulled out) is one not read; a folder inside, gone, is gone (설계 검토 기록 6 F4).
+    let list; try { list = await fs.readdir(longPath(dir), { withFileTypes: true }); } catch (e) { if (e?.code !== 'ENOENT' || roots.includes(dir)) miss(dir); return; }
+    for (const e of list) {
+      const p = path.join(dir, e.name);
+      if (oddName(e.name)) { if (names.length < max) names.push(p); else more = true; continue; }
+      if (e.isDirectory()) queue.push(p);
+      else if (e.isSymbolicLink()) { try { if ((await fs.lstat(longPath(p))).isDirectory()) queue.push(p); } catch (err) { if (err?.code !== 'ENOENT') miss(p); } }
+    }
+  };
+  while (queue.length || running.size) {
+    if (Date.now() >= deadline) { done = false; break; }
+    while (queue.length && oddReads.size < ODD_READERS) { const dir = queue.pop(), t = oddRead(() => visit(dir)).finally(() => running.delete(t)); running.add(t); }
+    // A folder still being read when the time is up is not waited for: it goes on alone, and what it finds is not used.
+    // A place an earlier walk's read still holds is waited for the same way (r2 GA5) — with none of this walk's own
+    // reads going, for slotWaitMs at most (설계 검토 기록 2 F2).
+    if (!await placeFreed(running.size ? deadline : Math.min(deadline, Date.now() + slotWaitMs)) && !running.size) { done = false; break; }
+  }
+  // A chosen folder gone by the end — a drive pulled out while it was walked — is one not read, whatever was read below
+  // it: what was not found there was not looked for (설계 검토 기록 7 F2).
+  if (done) {
+    const there = await stillThere(roots, deadline);
+    if (!there.done) done = false;
+    for (const r of roots) if (!there.names.includes(r) && !unread.includes(r)) miss(r);
+  }
+  return { names: names.slice(), more, done, failed, unread: unread.slice(), unreadCut };
+}
+/** Of `paths`, those still there under that very name — read as written, with no end dropped. Only "not there" lets
+ *  one go: one that cannot be looked at (EACCES and the like) stays (설계 검토 F5), and so does each not looked at by
+ *  `deadline` (r2 GA4 — `done` false). One at a time, in a place of oddReads. */
+async function stillThere(paths, deadline) {
+  const out = [];
+  for (let i = 0; i < paths.length; i++) {
+    // None begun past the deadline (설계 검토 기록 3 F3).
+    if (Date.now() >= deadline) return { names: out.concat(paths.slice(i)), done: false };
+    while (oddReads.size >= ODD_READERS) if (!await placeFreed(deadline)) return { names: out.concat(paths.slice(i)), done: false };
+    const look = oddRead(() => fs.lstat(longPath(paths[i])));
+    if (!await settles([look], deadline)) return { names: out.concat(paths.slice(i)), done: false };
+    try { await look; out.push(paths[i]); } catch (e) { if (e?.code !== 'ENOENT' && e?.code !== 'ENOTDIR') out.push(paths[i]); }
+  }
+  return { names: out, done: true };
+}
+/** Which file `p` is (its volume and number, read as written), by `deadline`; null when that cannot be told. */
+async function fileId(p, deadline) {
+  if (Date.now() >= deadline) return null;
+  while (oddReads.size >= ODD_READERS) if (!await placeFreed(deadline)) return null;
+  const r = oddRead(() => fs.lstat(longPath(p), { bigint: true }));
+  if (!await settles([r], deadline)) return null;
+  try { const st = await r; return st.ino ? `${st.dev}:${st.ino}` : null; } catch { return null; }
+}
+/** The notice of what a backup could not hold for its name (4.2 「이 백업에 담지 못하는 이름」). */
+const oddWarning = o => o?.count > 0 ? `이름 끝에 점이나 칸이 있는 파일이나 폴더 ${o.count}${o.cut ? '개 이상을' : '개를'} 이번 백업에 담지 못했습니다.${o.checked === false ? ' 이번에는 폴더를 다 보지 못해 더 있을 수 있습니다.' : ''} Windows에서는 이런 이름을 백업할 수 없습니다. 이름을 바꾸면 다음 백업에 담깁니다.` : null;
 // Exit 11 (another process holds the repository lock) is shown as this notice, not as an error;
 // the next operation that succeeds clears it (review B2).
 const BUSY_WARNING = '다른 작업이 백업 저장소를 쓰는 중이라 이번 작업은 하지 못했습니다. 잠시 뒤 다시 해 주세요. 자동 백업은 다음 회차에 다시 합니다.';
@@ -352,7 +486,7 @@ class BackupEngine extends EventEmitter {
       providerType: this.providerType, provider: c?.provider || null, initializing: !!c && !c.repositoryId,
       cloudConnection: this.isCloud() && c && !c.repositoryId && this.cloudCredentials ? { endpoint: c.provider.endpoint, bucket: c.provider.bucket } : !c && this.connection ? { endpoint: this.connection.endpoint, bucket: this.connection.bucket } : null,
       credentialRequired: !!c && !this.secret, intervalMinutes: this.intervalMs / 60000, fullCheckDays: this.isCloud() ? 30 : 1, retryAfter: c?.retryAfter || null,
-      recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null, lastPartial: c?.lastPartial || null, lastFill: c?.lastFill || null, missingSources: c?.missingSources || [],
+      recoverySaved: this.hasRecovery(), manualRecoverySaved: c?.recoverySaved || false, readOnly: !!c?.readOnly, automatic: c?.automatic || false, lastBackup: c?.lastBackup || null, lastPartial: c?.lastPartial || null, lastFill: c?.lastFill || null, leftOutNames: c?.leftOutNames || null, missingSources: c?.missingSources || [],
       removedSources: (c?.removedSources || []).map(r => ({ path: r.path, at: r.at, until: new Date(Date.parse(r.since ?? r.at) + REMOVED_KEEP).toISOString() })),
       lastRestore: c?.lastRestore || null, lastRestoreError: c?.lastRestoreError || null, lastMoveError: c?.lastMoveError || null, moveKit: c?.moveKit || null, health: c?.health || null, lastError: c?.lastError || null, movedTo: c?.movedTo || null, nextSources: c?.nextSources || [],
       lastSelectedRestore: c?.lastSelectedRestore || null, lastSelectedRestoreError: c?.lastSelectedRestoreError || null,
@@ -448,7 +582,9 @@ class BackupEngine extends EventEmitter {
       if (this.job) this.job.final = true;
       if (this.config && OWN_ERROR[kind]) {
         const code = cancelled ? 'CANCELED' : e.exitCode === 11 ? 'BUSY' : typeof e.code === 'string' && /^[A-Z][A-Z_]{1,31}$/.test(e.code) ? e.code : kind === 'move' ? 'MOVE_FAILED' : 'RESTORE_FAILED';
-        this.config[OWN_ERROR[kind]] = { code, at: new Date(this.now()).toISOString(), ...(typeof e.restorePath === 'string' ? { path: e.restorePath } : {}), ...(note.named === true ? { named: true } : {}), ...(typeof note.from === 'string' ? { from: note.from } : {}) };
+        this.config[OWN_ERROR[kind]] = { code, at: new Date(this.now()).toISOString(), ...(typeof e.restorePath === 'string' ? { path: e.restorePath } : {}), ...(note.named === true ? { named: true } : {}), ...(typeof note.from === 'string' ? { from: note.from } : {}),
+          // 「지워지기 전으로 되살리기」가 받으려던 범위(화면 세션 E31).
+          ...(note.mass ? { mass: note.mass } : {}) };
         await this.save().catch(() => {});
       } else if (this.config && e.exitCode === 11) { if (this.config.mode === 'backup' && !this.config.readOnly) { this.config.warning = BUSY_WARNING; await this.save().catch(() => {}); } }
       else if (this.config) { this.config.lastError = this.clean(e.message); await this.save().catch(() => {}); }
@@ -702,7 +838,7 @@ class BackupEngine extends EventEmitter {
       const info = json(await this.run(['cat', 'config'], { credentials: key, timeoutMs: 60000 }));
       if (info.id !== c.repositoryId) throw new Error('다른 저장소의 키입니다.');
       await this.storeCredential(this.secret, key); this.cloudCredentials = key;
-      Object.assign(c, { mode: 'backup', readOnly: false, host, sources: checked, automatic: false, lastBackup: null, lastPartial: null, lastFill: null, health: null, warning: null, retryAfter: null });
+      Object.assign(c, { mode: 'backup', readOnly: false, host, sources: checked, automatic: false, lastBackup: null, lastPartial: null, lastFill: null, leftOutNames: null, leftOutHeld: null, health: null, warning: null, retryAfter: null });
       delete c.nextSources;
       await this.save(); return this.getState();
     });
@@ -891,14 +1027,23 @@ class BackupEngine extends EventEmitter {
       // OneDrive online-only files would be downloaded by reading them; OneDrive keeps them (4.2 step 7, review GA1).
       // Exit 3 (some files could not be read) still saves the snapshot. With the list U of what was not read, it is kept
       // as a partial one (4.2 「완료본 · 부분 판 · 채움 판」); without a list it stays pending and goes as before.
-      const unreadable = []; let partial = false, cut = false;
+      // A name ending in a dot or a space that restic told only while counting is not one another program holds: it
+      // goes in no list of what was not read, and is told as a name this backup cannot hold (4.2 「이 백업에 담지 못하는
+      // 이름」). Told while reading too, it stays what it was.
+      const unreadable = [], odd = new Set(), read = new Set(); let partial = false, cut = false, oddCut = false;
+      const onErrorItem = (item, during) => {
+        if (item !== null && oddName(item) && during === 'scan') { if (odd.size < UNREADABLE_MAX) odd.add(item); else oddCut = true; return; }
+        if (item !== null && oddName(item)) read.add(item);
+        if (item !== null && unreadable.length < UNREADABLE_MAX) unreadable.push(item); else cut = true;
+      };
       try {
         await this.run(['backup', '--json', ...(process.platform === 'win32' ? ['--exclude-cloud-files'] : []), '--exclude', MOVE_TEMP, '--host', this.hostName, '--tag', `${APP},vault:${this.config.vaultId},${runTag},pending`, '--', ...present],
-          { onErrorItem: item => { if (item !== null && unreadable.length < UNREADABLE_MAX) unreadable.push(item); else cut = true; } });
+          { onErrorItem });
       } catch (e) {
         if (e.exitCode !== 3 || !unreadable.length) throw e;
         partial = true;
       }
+      for (const item of read) odd.delete(item);
       const pending = await this.snapshots([runTag, 'pending']);
       if (pending.length !== 1) throw new Error('새 백업을 정확하게 확인하지 못했습니다. 이전 정상 백업은 유지됩니다.');
       if (partial) {
@@ -934,8 +1079,12 @@ class BackupEngine extends EventEmitter {
         }
         this.lastSummary = s.summary || null; this.lastRun = 'partial';
         // No promise that an earlier backup holds them: a file made since the last complete one is in none (GPT GA2).
-        this.config.warning = [`다른 프로그램이 쓰는 중인 파일 ${unreadable.length}${cut ? '개 이상을' : '개를'} 이번 백업에 담지 못했습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.`, missingWarning(missing)].filter(Boolean).join(' ');
-        await this.save();
+        const warn = () => [`다른 프로그램이 쓰는 중인 파일 ${unreadable.length}${cut ? '개 이상을' : '개를'} 이번 백업에 담지 못했습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.`, oddWarning(this.config.leftOutNames), missingWarning(missing)].filter(Boolean).join(' ');
+        // Written down before the walk, which may take minutes (설계 검토 F7), with the names as known so far (r2 GA1).
+        const before = await this.oddPending(s, present, odd, oddCut);
+        this.config.warning = warn(); await this.save();
+        await this.keepOddNames(s, present, odd, oddCut, before);
+        this.config.warning = warn(); await this.save();
       } else {
         this.stage('백업 완료 기록 중');
         await this.run(['tag', '--add', VERIFIED, '--remove', 'pending', pending[0].id]);
@@ -945,7 +1094,11 @@ class BackupEngine extends EventEmitter {
         this.config.lastBackup = { id: s.id, at: s.time, files: s.summary?.total_files_processed || 0, bytes: s.summary?.total_bytes_processed || 0 };
         this.config.lastPartial = null;
         this.lastSummary = s.summary || null; this.lastRun = 'complete';
-        this.config.warning = missingWarning(missing); await this.save();
+        const warn = () => [oddWarning(this.config.leftOutNames), missingWarning(missing)].filter(Boolean).join(' ') || null;
+        const before = await this.oddPending(s, present, odd, oddCut);
+        this.config.warning = warn(); await this.save();
+        await this.keepOddNames(s, present, odd, oddCut, before);
+        this.config.warning = warn(); await this.save();
       }
       let busy = false;
       if (!this.config.health || this.config.health.status !== 'ok' || this.now() - Date.parse(this.config.health.checkedAt) >= (this.isCloud() ? 30 : 1) * DAY) {
@@ -961,6 +1114,132 @@ class BackupEngine extends EventEmitter {
         }
       }
       await this.save(); return this.getState();
+  }
+  /** The names found before (4.2 「이 백업에 담지 못하는 이름」), whether more were found than those (`cut`), and the count told:
+   *  those in ODD_FILE with those the window shows. The file is taken as it reads, whichever backup wrote it, as each is
+   *  looked at again before it is told. Which is newer is told by the turn each was written at (`seq`, r6 GA7): a file
+   *  past the settings' (one stopped after writing it, before the settings — r4 GA1 · GA6) says itself whether more were
+   *  found (설계 검토 기록 5 F1); one behind them (its write failed since, 기록 5 F3) holds fewer than there are. A file
+   *  that cannot be read leaves those shown, and there may be more (r5 GA2 · GA8). With none there, those shown, more
+   *  only as the settings say (r4 GA5, 설계 검토 기록 4 F1; r3 GA3). */
+  async oddBefore() {
+    const shown = this.config.leftOutNames, held = this.config.leftOutHeld, heldSeq = held?.seq || 0;
+    this.oddFile = null; this.oddUnread = false;
+    // Read whether or not the settings point at it: a backup may stop after writing it before the settings ever did,
+    // and the turns go on from it (설계 검토 기록 6 F2).
+    let file = null, none = false;
+    try { file = json(await fs.readFile(path.join(this.stateDir, ODD_FILE), 'utf8')); } catch (e) { none = e?.code === 'ENOENT'; }
+    const ok = typeof file?.id === 'string' && Array.isArray(file.names) && file.names.every(p => typeof p === 'string' && p.length >= 1 && p.length <= 32767);
+    if (!shown && !held && !ok) return null;
+    let names = shown?.names || [], cut = shown?.cut === true, count = Math.max(shown?.count || 0, held?.count || 0), says = null;
+    if (ok) {
+      const seq = Number.isSafeInteger(file.seq) && file.seq >= 0 ? file.seq : 0;
+      const many = Number.isSafeInteger(file.count) && file.count >= file.names.length ? file.count : file.names.length;
+      this.oddFile = { id: file.id, seq, names: file.names, cut: file.cut === true, count: many };
+      names = [...new Set([...file.names, ...names])].sort();
+      cut = seq > heldSeq ? file.cut === true : seq < heldSeq || cut || !!held?.cut || file.cut === true;
+      // How many the hold stands for, those it could not name too (past its limit, or a write that failed — GPT r7 GA3 ·
+      // GA4 · GA5): a file past the settings says it alone, those shown aside.
+      if (seq > heldSeq) { count = many; says = many - file.names.length; } else count = Math.max(count, many);
+    } else if (none) cut = cut || !!held?.cut;
+    else { this.oddUnread = true; cut = true; }
+    // Those counted but not known by name (`unknown`).
+    return { names, cut, count: Math.max(count, names.length), unknown: says ?? Math.max(0, count - names.length) };
+  }
+  /** Sets the names for backup `s` as known before the walk — what restic told, and those found before in the folders
+   *  still backed up — not yet looked through (`checked` false), so a run that stops in the walk leaves no backup told
+   *  as holding all (r2 GA1); and holds what restic told with all held before, so none is lost if it stops there (r4
+   *  GA2 · r5 GA1). The names found before. */
+  async oddPending(s, present, told, toldCut) {
+    const before = await this.oddBefore();
+    const all = topMost([...told, ...(before?.names || []).filter(p => present.some(f => inside(f, p) !== null))]);
+    await this.oddHold(all, this.oddShow(s, all, { cut: toldCut, before, checked: false }), { present, complete: false });
+    return before;
+  }
+  /** `all` as the names backup `s` could not hold, as the window shows them. With `before` past what was held — past
+   *  200,000 names, or with a names file that could not be read or written — and not every folder looked through, there
+   *  may be more (`cut`), and those counted but not known by name stay counted: where they are is not known (r6 GA4 ·
+   *  GA5 · GA6 · GA8, 설계 검토 기록 6 F1).
+   *  Whether there may be more. */
+  oddShow(s, all, { cut, before, checked }) {
+    // Those counted but not known by name stay counted; those known are looked at again — so a count kept once does not
+    // keep itself (설계 검토 기록 6 F1).
+    // Of those, any found now not known by name before may be them, so they are not told twice (GPT r7 GA1) — all but
+    // one: a name found now may be another, so one stays not known by name until a walk of every folder (설계 검토
+    // 기록 7 F1).
+    const known = new Set((before?.names || []).map(nameKey)), had = before?.cut ? before.unknown : 0;
+    const fresh = had ? all.filter(p => !known.has(nameKey(p))).length : 0, unknown = Math.max(Math.min(had, 1), had - fresh);
+    const past = !checked && !!before?.cut, count = past ? all.length + unknown : all.length, more = !!cut || past;
+    this.oddUnknown = unknown;
+    this.config.leftOutNames = count || !checked ? { at: s.time, count, names: oddList(all), cut: more, ...(checked ? {} : { checked: false }) } : null;
+    this.lastOdd = count;
+    return more;
+  }
+  /** Holds in ODD_FILE the names the next backup starts from — before the settings that point at it are saved, each
+   *  write a turn on from the last (`seq`). Until a walk reads every folder (`complete`) they only grow: `all` with
+   *  every one held before that is in a chosen folder (r5 GA1) — or, after a walk in time that could not read some
+   *  folders, those in them and in a chosen folder not there now (설계 검토 기록 5 F2). After one, `all` with those
+   *  held in a chosen folder not there now — an unplugged drive (r5 GA1 · GA5). A file that could not be read is left as
+   *  it is until a walk of every chosen folder (r5 GA2 · GA8, 기록 5 F4), the settings saying it holds fewer (r6 GA1).
+   *  None left, the file is written empty, not removed (r5 GA7). Written when they change; one that cannot be written
+   *  leaves the file as it was, the settings a turn past it and `cut`. */
+  async oddHold(all, cut, { present, complete, unread = null }) {
+    const chosen = this.config.sources || [], inChosen = p => chosen.some(f => inside(f, p) !== null), now = this.oddFile, held = this.config.leftOutHeld;
+    // Those not known by name stay counted in the hold until a walk of every chosen folder — one away may hold them (GPT
+    // r7 GA3).
+    const carry = complete && present.length >= chosen.length ? 0 : this.oddUnknown || 0, heldSeq = held?.seq || 0;
+    if (this.oddUnread && (!complete || present.length < chosen.length)) { this.config.leftOutHeld = { id: held?.id || 'unwritten', seq: heldSeq, count: all.length + carry, cut: true }; return; }
+    const away = p => inChosen(p) && !present.some(f => inside(f, p) !== null);
+    const keep = (now?.names || []).filter(complete ? away : unread ? p => away(p) || unread.some(d => inside(d, p) !== null) : inChosen);
+    const every = keep.length ? [...new Set([...all, ...keep])].sort() : all;
+    const names = [], max = this.oddHoldMax ?? UNREADABLE_MAX, maxChars = this.oddHoldChars ?? ODD_HOLD_CHARS; let chars = 0;
+    for (const p of every) { if (names.length >= max || chars + p.length > maxChars) break; names.push(p); chars += p.length; }
+    // How many it stands for: those it could not name past its limit too (GPT r7 GA3 · GA4).
+    const count = every.length + carry, more = !!cut || names.length < every.length || carry > 0 || (!complete && !!now?.cut), file = path.join(this.stateDir, ODD_FILE);
+    const seq = Math.max(heldSeq, now?.seq || 0) + 1;
+    // The same file as it is stays — unless the settings are past it (a write failed since): it is written again a turn
+    // past them, or it would read as the older (GPT r7 GA6).
+    if (now && heldSeq <= now.seq && now.cut === more && now.count === count && now.names.length === names.length && now.names.every((p, i) => p === names[i])) { this.config.leftOutHeld = { id: now.id, seq: now.seq, count, cut: more }; return; }
+    if (!names.length && !more && !now && !held) return;
+    const id = crypto.randomUUID();
+    try { await atomic(file, JSON.stringify({ v: 1, id, seq, names, count, cut: more })); this.oddFile = { id, seq, names, cut: more, count }; this.config.leftOutHeld = { id, seq, count, cut: more }; }
+    catch { this.config.leftOutHeld = { id: now?.id || 'unwritten', seq, count, cut: true }; }
+  }
+  /** What backup `s` could not hold for a name ending in a dot or a space (4.2 「이 백업에 담지 못하는 이름」): those restic
+   *  told while counting (`told`), and — as restic stops counting once the backup is saved and tells none beside the
+   *  name without its end (GPT GA2, 설계 검토 F1) — those a walk of the folders backed up (`present`) finds, at every
+   *  backup. A walk that read every folder says it all, what was found before (`before`) aside. One that ran out of
+   *  time (GPT GA3) or could not read a folder (GA5 · r2 GA6) also keeps each found before that is still there under
+   *  that very name — not one Windows finds as one found now or kept already (r2 GA3 · r5 GA3) — and says it did not see
+   *  all (`checked` false). */
+  async keepOddNames(s, present, told, toldCut, before) {
+    this.stage('이름 때문에 담지 못한 파일 확인 중');
+    const walked = await walkOdd(present, { budgetMs: this.oddWalkBudgetMs ?? ODD_WALK_BUDGET, max: UNREADABLE_MAX });
+    const found = topMost([...told, ...walked.names]), checked = walked.done && !walked.failed;
+    if (checked) return this.oddHold(found, this.oddShow(s, found, { cut: toldCut || walked.more, before, checked }), { present, complete: true });
+    // A walk in time read every folder but those it could not: one found before elsewhere, not found now, is gone (설계
+    // 검토 기록 5 F2). Past the time, or with too many not read to tell, any may be there still.
+    const unread = walked.done && !walked.unreadCut ? walked.unread : null, notRead = p => !unread || unread.some(d => inside(d, p) !== null);
+    const exact = new Set(found.map(nameKey));
+    const by = Date.now() + (this.oddLookBudgetMs ?? ODD_LOOK_BUDGET);
+    const look = await stillThere((before?.names || []).filter(p => !exact.has(nameKey(p)) && present.some(f => inside(f, p) !== null) && notRead(p)), by);
+    // One found now under another spelling is told once, as found now, when it is that very file (r2 GA3) — any of those
+    // found under that spelling (r4 GA3), or kept already under another (r5 GA3); two files in a folder that tells case
+    // apart stay two (r3 GA1). Each is looked at once, by its volume and number (r6 GA3); one that cannot be stays.
+    const spellings = new Map();
+    for (const p of [...found, ...look.names]) spellings.set(caseKey(p), (spellings.get(caseKey(p)) || 0) + 1);
+    const taken = new Set(), kept = [];
+    // Within each spelling: two names that differ past case are two, one file under both or not (GPT r7 GA2).
+    const same = async p => { const id = await fileId(p, by); return id && `${caseKey(p)}\0${id}`; };
+    for (const p of found) if (spellings.get(caseKey(p)) > 1) { const id = await same(p); if (id) taken.add(id); }
+    for (const p of look.names) {
+      const id = spellings.get(caseKey(p)) > 1 ? await same(p) : null;
+      if (id && taken.has(id)) continue;
+      if (id) taken.add(id);
+      kept.push(p);
+    }
+    const all = topMost([...found, ...kept]);
+    await this.oddHold(all, this.oddShow(s, all, { cut: toldCut || walked.more, before, checked }), { present, complete: false, unread });
   }
   /** The chosen folders that are there now. One that is gone — an unplugged drive, a folder moved or deleted — is
    *  left out of this backup, and the backups that hold it are kept (retain) and restored (restoreLatest); with
@@ -1130,7 +1409,7 @@ class BackupEngine extends EventEmitter {
     const marked = await this.snapshots([runTag, 'fill']);
     if (marked.length !== 1) throw new Error('채움 백업 기록을 확인하지 못했습니다.');
     const read = info.cut ? 0 : asked.length - failed.length, left = list.unreadable.length - read;
-    this.config.warning = [left > 0 ? `다른 프로그램이 쓰는 중인 파일 ${left}${list.cut || info.cut ? '개 이상을' : '개를'} 이번 백업에 담지 못했습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.` : '', missingWarning(this.config.missingSources || [])].filter(Boolean).join(' ') || null;
+    this.config.warning = [left > 0 ? `다른 프로그램이 쓰는 중인 파일 ${left}${list.cut || info.cut ? '개 이상을' : '개를'} 이번 백업에 담지 못했습니다. 그 프로그램을 닫으면 다음 백업에 담깁니다.` : '', oddWarning(this.config.leftOutNames), missingWarning(this.config.missingSources || [])].filter(Boolean).join(' ') || null;
     await attempt({ id: marked[0].id, outcome: 'fill', asked: asked.length, failed: failed.length, cut: info.cut });
     // left: what is still not in any snapshot of this run — 0 tells the run executable there is nothing to tell (4.2).
     return { outcome: 'fill', asked: asked.length, failed: failed.length, left: Math.max(0, left), ...(list.cut || info.cut ? { cut: true } : {}), durationMs: this.now() - started, newSnapshot: true, dataAdded: marked[0].summary?.data_added ?? null };
@@ -2132,10 +2411,13 @@ class BackupEngine extends EventEmitter {
       const touched = plans.filter(p => hold.folders.some(f => (f.removed || f.changed) && same(f.path, p.original)));
       const parts = folder !== undefined || sub !== undefined ? selection.scopeOf(plans, { folder, sub }) : (touched.length ? touched : plans).map(p => ({ index: p.index, sub: '' }));
       const done = await this.restoreParts({ snapshot, plans, parts, parent, named, from: null });
-      this.config.lastRestore = { ...done, mass: { beforeId: snapshot.id, beforeAt: snapshot.time } };
+      // What it took (화면 세션 E31): every folder that changed (`folder` null), or that one folder and the folder inside it —
+      // so the screen knows whether every changed folder came back before it puts 「확인을 마침」 first.
+      const scoped = folder !== undefined || sub !== undefined;
+      this.config.lastRestore = { ...done, mass: { beforeId: snapshot.id, beforeAt: snapshot.time, folder: scoped ? plans[parts[0].index].original : null, sub: scoped ? parts[0].sub : '' } };
       await this.save();
       return this.getState();
-    }, { named: named === true });
+    }, { named: named === true, mass: { folder: typeof folder === 'string' ? folder.slice(0, 32767) : null, sub: typeof sub === 'string' ? sub.slice(0, 32767) : '' } });
   }
   /**
    * Restores `parts` (scopeOf's `{ index, sub }`) of `snapshot` whole into one new folder, each as `<번호-폴더>/<sub>`, every
@@ -2357,16 +2639,16 @@ class BackupEngine extends EventEmitter {
     const unlock = await this.unlockStale();
     const before = c.lastBackup?.id || null, started = this.now();
     try {
-      this.lastRun = null; this.lastMissing = 0;
+      this.lastRun = null; this.lastMissing = 0; this.lastOdd = 0;
       await this.backupNow();
       const s = this.config.lastBackup, sum = this.lastSummary || {}, num = v => Number.isFinite(v) ? v : null;
       if (this.lastRun === 'partial') {
         const p = this.config.lastPartial;
         const fill = this.fillDue();
-        return { outcome: 'partial', unreadable: p?.unreadable ?? null, ...(fill ? { fill } : {}), ...gone(this.lastMissing), unlock, durationMs: this.now() - started, newSnapshot: true, files: p?.files ?? null, bytes: p?.bytes ?? null,
+        return { outcome: 'partial', unreadable: p?.unreadable ?? null, ...(fill ? { fill } : {}), ...gone(this.lastMissing), ...oddOf(this.lastOdd), unlock, durationMs: this.now() - started, newSnapshot: true, files: p?.files ?? null, bytes: p?.bytes ?? null,
           filesNew: num(sum.files_new), filesChanged: num(sum.files_changed), filesUnmodified: num(sum.files_unmodified), dataAdded: num(sum.data_added), resticStartedAt: this.resticStartedAt };
       }
-      return { outcome: 'complete', ...gone(this.lastMissing), unlock, durationMs: this.now() - started, newSnapshot: !!s?.id && s.id !== before, files: s?.files ?? null, bytes: s?.bytes ?? null,
+      return { outcome: 'complete', ...gone(this.lastMissing), ...oddOf(this.lastOdd), unlock, durationMs: this.now() - started, newSnapshot: !!s?.id && s.id !== before, files: s?.files ?? null, bytes: s?.bytes ?? null,
         filesNew: num(sum.files_new), filesChanged: num(sum.files_changed), filesUnmodified: num(sum.files_unmodified), dataAdded: num(sum.data_added), resticStartedAt: this.resticStartedAt };
     } catch (e) {
       const exitCode = e.exitCode ?? null;
@@ -2383,4 +2665,4 @@ class BackupEngine extends EventEmitter {
     return this.job ? new Promise(resolve => this.once('idle', resolve)) : Promise.resolve();
   }
 }
-module.exports = { BackupEngine, customerVault, APP, VERIFIED, knownTags, KNOWN_TAGS, DAY, RESTIC_SHA256, parseKit, errorItems, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };
+module.exports = { BackupEngine, customerVault, APP, VERIFIED, knownTags, KNOWN_TAGS, DAY, RESTIC_SHA256, parseKit, errorItems, oddName, walkOdd, stillThere, oddReads, topMost, gatherEarlier, restoreBases, checkFill, linked, subtreeOf, lockedVolumes, FILL_SPACING };

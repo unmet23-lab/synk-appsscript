@@ -50,6 +50,8 @@ test('status: one fixed word, no names, the fields solio reads', () => {
   assert.deepEqual(attention({ serverRestore: { since: 'x' } }), ['safe', ['restore']]);
   assert.deepEqual(attention({}, { ledger: { days: { partial: '2026-11-17' } } }), ['safe', ['status']], 'a partial snapshot is told, not alarming');
   assert.deepEqual(attention({}, { ledger: { days: { missing: '2026-11-17' } } }), ['attention', ['folders']]);
+  assert.deepEqual(attention({}, { ledger: { days: { odd: '2026-11-20' } } }), ['safe', ['status']], 'a name a backup cannot hold is told, not alarming');
+  assert.deepEqual(attention({ leftOutNames: { at: '2026-11-20T01:00:00.000Z', count: 1, names: ['C:\\작업\\메모.'], cut: false } }), ['safe', ['status']]);
   assert.deepEqual(attention({}, { update: { available: '0.7.1' } }), ['safe', ['update']]);
   assert.deepEqual(attention({}, { update: { available: '0.7.0' } }), ['safe', []], 'the version already installed is not an update');
   assert.deepEqual(attention({}, { version: '0.7.2', update: { available: '0.7.1' } }), ['safe', []], 'a version passed by an update is not one');
@@ -246,6 +248,14 @@ test('requests: a cancel mark, seen after claiming and before handling, refuses 
   await a.sweep();
   assert.deepEqual([await a.process({ wants, handle }), handled], [[], ['new@example.com', 'next@example.com']]);
   fs.rmSync(path.join(a.results, name(NOW + 1, 'afterhld')));
+  // 솔리오 removed the original itself just as the sweep went to: gone all the same, and the claim and the mark go (r3 GA1).
+  put(a, name(NOW, 'racegone'), { v: 1, kind: 'setup', mode: 'protect' });
+  fs.linkSync(path.join(a.requests, name(NOW, 'racegone')), path.join(a.claimed, name(NOW, 'racegone')));
+  fs.writeFileSync(a.mark(name(NOW, 'racegone')), '');
+  const race = path.join(a.requests, name(NOW, 'racegone'));
+  fsp.rm = async (p, ...rest) => { if (p === race) { fs.rmSync(race); throw Object.assign(new Error('gone'), { code: 'ENOENT' }); } return rm(p, ...rest); };
+  try { await a.sweep(); } finally { fsp.rm = rm; }
+  assert.deepEqual([fs.existsSync(path.join(a.claimed, name(NOW, 'racegone'))), fs.existsSync(a.mark(name(NOW, 'racegone'))), result(a, name(NOW, 'racegone')).reason], [false, false, 'interrupted']);
   // Under the claimed name in requests, something that is not a request — a folder, a link — is left alone, and the sweep goes on (r2 GA2).
   for (const [tag, make] of [['adirectr', p => fs.mkdirSync(p)], ['alinkreq', p => junction(p, temp(t))]]) {
     fs.writeFileSync(path.join(a.claimed, name(NOW, tag)), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect' }));

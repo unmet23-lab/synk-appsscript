@@ -451,11 +451,14 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
       assert.deepEqual(engine.fillDue(), [volume]);
       await assert.rejects(engine.fillNow({ links: [{ volume, root: '..\\snap' }] }), /FILL_INPUT/, 'a link root must be an absolute path');
       await fs.mkdir(path.dirname(mirrored), { recursive: true }); await fs.writeFile(mirrored, now);
+      // A name the last backup could not hold (4.2 「이 백업에 담지 못하는 이름」) is still told once the fill is done.
+      engine.config.leftOutNames = { at: engine.config.lastPartial.at, count: 1, names: [path.join(source, '메모.')], cut: false };
       const r = await engine.fillNow({ links: [{ volume, root: linkRoot }] });
       assert.equal(r.outcome, 'fill'); assert.equal(r.asked, 1); assert.equal(r.failed, 0);
       assert.equal(engine.config.lastFill.partial, engine.config.lastPartial.id);
       assert.equal(engine.fillDue(), null, 'this partial one is filled');
-      assert.equal(engine.config.warning, null, 'nothing is left out any more');
+      assert.equal(engine.config.warning, '이름 끝에 점이나 칸이 있는 파일이나 폴더 1개를 이번 백업에 담지 못했습니다. Windows에서는 이런 이름을 백업할 수 없습니다. 이름을 바꾸면 다음 백업에 담깁니다.', 'nothing another program holds is left out any more');
+      engine.config.leftOutNames = null; engine.config.warning = null;
       const [partial] = await engine.snapshots(['partial']);
       const run = partial.tags.find((tag) => tag.startsWith('run:')).slice(4);
       const fills = await engine.snapshots(['fill', `fills:${run}`]);
@@ -569,6 +572,28 @@ test('real Windows restic: backup, changed files, new-PC recovery, failure prese
     delete engine.massLimits;
     await fs.rm(many, { recursive: true });
     await engine.backupNow();
+  });
+  await t.test('a name ending in a dot or a space is told as one this backup cannot hold, and the backup stays complete (4.2 「이 백업에 담지 못하는 이름」)', async () => {
+    // restic 0.19.1 on Windows drops those ends from the path it reads (measured 11-20): a name with nothing under the
+    // name without its ends is left out — told only while counting, exit 0 — and one beside that name is saved with its
+    // content. Both are told; nothing else changes. Every backup walks the folders for them.
+    const long = p => '\\\\?\\' + p;
+    const alone = path.join(source, '끝이 점인 메모.'), spaced = path.join(source, '끝에 칸 '), twin = path.join(source, '쌍 폴더.');
+    await fs.writeFile(long(alone), 'a'); await fs.writeFile(long(spaced), 'b');
+    await fs.mkdir(long(twin)); await fs.writeFile(long(path.join(twin, '속.txt')), 'c');
+    await fs.mkdir(path.join(source, '쌍 폴더')); await fs.writeFile(path.join(source, '쌍 폴더', '다른.txt'), 'd');
+    clock += 3600000; await engine.backupNow();
+    assert.equal(engine.lastRun, 'complete');
+    assert.equal(engine.config.lastPartial, null);
+    assert.deepEqual(engine.config.leftOutNames, { at: engine.config.lastBackup.at, count: 3, names: [alone, spaced, twin].sort(), cut: false });
+    assert.match(engine.config.warning, /이름 끝에 점이나 칸이 있는 파일이나 폴더 3개를 이번 백업에 담지 못했습니다/);
+    // Renamed, they go into the next backup and the notice goes.
+    await fs.rename(long(alone), path.join(source, '끝이 점인 메모.txt')); await fs.rename(long(spaced), path.join(source, '끝에 칸.txt'));
+    await fs.rename(long(twin), path.join(source, '쌍 폴더 2'));
+    clock += 3600000; await engine.backupNow();
+    assert.equal(engine.config.leftOutNames, null);
+    assert.doesNotMatch(engine.config.warning || '', /이름 끝에/);
+    for (const p of ['끝이 점인 메모.txt', '끝에 칸.txt', '쌍 폴더 2', '쌍 폴더']) await fs.rm(path.join(source, p), { recursive: true });
   });
   await t.test('real pack corruption fails a full data check and disables pruning', async () => {
     const packs = (await files(path.join(engine.config.repository, 'data'))).filter(p => /^[a-f0-9]{64}$/.test(path.basename(p)));

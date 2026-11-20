@@ -14,6 +14,9 @@ function normalizeProtection(c) {
   if (!c.probeHold || !iso(c.probeHold.since)) c.probeHold = null;
   else c.probeHold = { since: iso(c.probeHold.since), snapshotId: /^[a-f0-9]{64}$/.test(c.probeHold.snapshotId) ? c.probeHold.snapshotId : null, cause: 'size-mismatch' };
   c.massHold = massHoldOf(c.massHold);
+  c.leftOutNames = leftOutOf(c.leftOutNames);
+  c.leftOutHeld = leftOutHeldOf(c.leftOutHeld);
+  delete c.leftOutAll;
   // 「확인을 마침」: each folder covered between two backup times (engine massCheck); `path` null for every folder. `reach`:
   // for a folder counted more than one way, the backup each way compared it with — past `to` and within any of them it
   // is counted, out of the share.
@@ -39,6 +42,26 @@ function massHoldOf(h) {
     // Each folder compared, with the time of the backup it was compared with: what 「확인을 마침」 covers (`reach`: as far
     // as some way of a folder counted more than one way saw it).
     compared: (Array.isArray(h.compared) ? h.compared : []).filter(x => (x?.path === null || text(x?.path)) && iso(x?.at)).slice(0, 30).map(x => ({ path: x.path, at: iso(x.at), ...(times(x.reach) ? { reach: times(x.reach) } : {}) })) };
+}
+// 이 백업에 담지 못하는 이름 (4.2): the names a backup could not hold for ending in a dot or a space, as the engine wrote
+// them, or none. `count` is a lower bound when `cut`; `checked` false while the last walk of the folders did not finish —
+// then none found is told too.
+function leftOutOf(o) {
+  if (!o || typeof o !== 'object' || !iso(o.at) || !Number.isSafeInteger(o.count) || o.count < (o.checked === false ? 0 : 1)) return null;
+  const names = []; let chars = 0;
+  for (const p of Array.isArray(o.names) ? o.names : []) {
+    if (typeof p !== 'string' || p.length < 1 || p.length > 32767) continue;
+    if (names.length >= 1000 || chars + p.length > 32768) break;
+    names.push(p); chars += p.length;
+  }
+  return { at: iso(o.at), count: Math.max(o.count, names.length), names, cut: o.cut === true, ...(o.checked === false ? { checked: false } : {}) };
+}
+// Where each of those names is held, apart from the settings (left-out-names.json in the state folder): which file
+// (`id`), how many it stands for — those it could not name too — and whether more were found (`cut`). Not in the
+// window's state.
+function leftOutHeldOf(o) {
+  if (!o || typeof o !== 'object' || typeof o.id !== 'string' || !o.id || o.id.length > 64 || !Number.isSafeInteger(o.count) || o.count < 0 || o.count > 2 ** 31) return null;
+  return { id: o.id, seq: Number.isSafeInteger(o.seq) && o.seq >= 0 ? o.seq : 0, count: o.count, cut: o.cut === true };
 }
 function schedule(c, intervalMs, now, inMemoryAttempt = 0) {
   const attempt = Math.max(time(c?.lastAttemptAt), inMemoryAttempt);
