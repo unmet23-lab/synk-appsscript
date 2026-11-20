@@ -111,8 +111,8 @@
     {
       "id": "title",
       "칸": "머리",
-      "글": "English swaps words each time, Korean keeps 1",
-      "원문": "영어는 매번 낱말을 바꾸고, 한국어는 1낱말을 그대로 쓴다",
+      "글": "English changes the word. Korean doesn’t.",
+      "원문": "영어는 낱말을 바꾼다. 한국어는 안 바꾼다.",
       "초": [
         1.45,
         5.93
@@ -731,7 +731,7 @@
     {
       "id": "게시글.youtube.본문.1",
       "칸": "게시글",
-      "글": "Come, rain, snow, sleepy, ring: five different English words. In Korean, all five are 와요 (wa-yo), which means “comes”.",
+      "글": "Come, rain, snow, sleepy, ring: five different English words. In Korean, all five use 와요 (wa-yo), which means “comes”.",
       "원문": "come, rain, snow, sleepy, ring: 영어로는 서로 다른 다섯 낱말. 한국어로는 다섯 다 와요이고, 뜻은 「온다」다."
     },
     {

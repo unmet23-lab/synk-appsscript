@@ -547,7 +547,8 @@
     "글": "remotion/src/m24/판본/KH.json",
     "지도": "판본지도.json",
     "원고": {
-      "facebook": "게시/판본/KH/원고_facebook.json"
+      "facebook": "게시/판본/KH/원고_facebook.json",
+      "tiktok": "게시/판본/KH/원고_tiktok.json"
     },
     "도구": "tools/lib/판본잇기.js — 손으로 고치지 않는다(원천을 고치고 node tools/판본글잇기.js 뽑기)"
   }

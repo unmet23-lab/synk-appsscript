@@ -111,8 +111,8 @@
     {
       "id": "title",
       "칸": "머리",
-      "글": "Korean uses one word for all 5 sentences",
-      "원문": "한국어는 다섯 문장 모두에 낱말 하나를 쓴다",
+      "글": "5 sentences. Same Korean word.",
+      "원문": "다섯 문장. 같은 한국어 낱말.",
       "초": [
         1.3,
         5.78
@@ -731,8 +731,8 @@
     {
       "id": "게시글.youtube.본문.1",
       "칸": "게시글",
-      "글": "English has a different word for each: come, rain, snow, sleepy, ring. Korean just says 와요 (wa-yo), “comes”, every single time.",
-      "원문": "영어는 하나하나 다른 낱말이 있다: come, rain, snow, sleepy, ring. 한국어는 매번 그냥 와요, 「온다」라고 한다."
+      "글": "English needs a different word for each sentence: come, rain, snow, sleepy, ring. Korean just says 와요 (wa-yo), “comes”, every single time.",
+      "원문": "영어는 문장마다 다른 낱말이 필요하다: come, rain, snow, sleepy, ring. 한국어는 매번 그냥 와요, 「온다」라고 한다."
     },
     {
       "id": "게시글.youtube.본문.2",
@@ -773,14 +773,14 @@
     {
       "id": "게시글.youtube.본문.8",
       "칸": "게시글",
-      "글": "Small tip: words ending in a vowel take 가 (전화가), words ending in a consonant take 이 (눈이).",
+      "글": "Quick tip: words ending in a vowel take 가 (전화가), and words ending in a consonant take 이 (눈이).",
       "원문": "작은 팁: 모음으로 끝나는 낱말에는 가(전화가), 자음으로 끝나는 낱말에는 이(눈이)가 붙는다."
     },
     {
       "id": "게시글.youtube.고정댓글.1",
       "칸": "게시글",
-      "글": "Fill in the blank: 비가 ___ (bi-ga ___) = rain is falling. Write the missing word below 👇",
-      "원문": "빈칸 채우기: 비가 ___ = 비가 내린다. 빠진 낱말을 아래에 써 줘 👇"
+      "글": "Fill in the blank: 비가 ___ (bi-ga ___) = it’s raining. Write the missing word below 👇",
+      "원문": "빈칸 채우기: 비가 ___ = 비가 오고 있어. 빠진 낱말을 아래에 써 줘 👇"
     }
   ],
   "원천": {
