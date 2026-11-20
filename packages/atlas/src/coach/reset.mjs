@@ -46,13 +46,22 @@ async function wipeLegacy(legacy, before, check = null) {
 // 다른 탭에 알리고, 옛 엔진의 손님 기록을 비운다. 옛 엔진 비우기가 되면 같은 걸음에서 바닥을 거둔다. 안 되면(busy · failed) 「일부만 비움」이다
 // — 새 길은 이미 비었고 바닥이 있어 되살아나지 않는다. 다시 누르면 처음부터 다시 해 끝까지 간다. 손님 판 기록 열쇠와 같은 문서의 손님 코치
 // 은퇴는 입구가 한다(손님 3 · 4).
-export async function resetGuest(host, legacy) {
+// cleared(gen): 손님 저장소를 비운 바로 뒤, 같은 차례 안에서 부른다 — 순간 맞춤 내용 기억을 비운 뒤의 세대로 비운다(flow-memory.mjs
+// clearFlowMemory · 단계 4 계획 §23-13). 옛 엔진 비우기처럼 기다리는 걸음 뒤에 두면 그사이 새 세대에 저장한 다른 탭의 기억 앞에 표지가
+// 늦게 선다(설계 관문 검토 M1 — 표지는 그 세대의 열쇠가 비어 있을 때만 쓴다). 던져도 비우기는 된 것이다.
+export async function resetGuest(host, legacy, cleared = null) {
   const record = host.trail.record;
   const old = await readLegacy(legacy?.read);
   const floor = old.missing ? null : { epoch: old.value?.epoch ?? null };
   let gen;
   try {
-    ({ gen } = await host.turn('reset', () => record.clear({ legacy: floor })));
+    ({ gen } = await host.turn('reset', async () => {
+      const done = await record.clear({ legacy: floor });
+      try {
+        cleared?.(done?.gen ?? null);
+      } catch {}
+      return done;
+    }));
   } catch (error) {
     return { ok: false, path: 'guest', step: 'store', code: codeOf(error, 'STORAGE_ERROR') };
   }

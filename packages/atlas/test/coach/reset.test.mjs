@@ -11,6 +11,7 @@ import { bankOf, clock, createCoach, fakeMap, memoryPort, STEP } from './support
 const { installHostMaker } = await subject('coach/host.mjs');
 const { storeName } = await subject('record/port.mjs');
 const { resetAccount } = await subject('coach/reset.mjs');
+const { createFlowMemory, FLOW_MEMORY_PREFIX } = await subject('coach/flow-memory.mjs');
 const { createServer } = await import('../support/trail-sync.mjs');
 
 const indexOfMap = map => ({ edition: 'index-t', lookup: key => map.item(key) });
@@ -134,6 +135,42 @@ test('손님 — 손님 저장소를 비우고 옛 엔진 기록도 비운다. �
   );
   const cleared = await lastCleared(w.guestPort);
   assert.equal(cleared.legacy, null, '옛 엔진을 비웠으니 바닥이 필요 없다');
+  coach.dispose();
+});
+
+test('손님 — 비우면 순간 맞춤 내용 기억도 비운 뒤의 세대로 비운다. 표지는 record.clear() 바로 뒤, 옛 엔진 비우기보다 먼저 선다(§23-13 · 설계 관문 검토 M1)', async () => {
+  const w = world(47);
+  const map = new Map();
+  const storage = {
+    getItem: name => (map.has(name) ? map.get(name) : null),
+    setItem: (name, value) => map.set(name, String(value)),
+    removeItem: name => map.delete(name),
+  };
+  const store = storeName({});
+  const coach = open(w, { guest: true, key: store, port: w.guestPort, prefs: { storage } });
+  await coach.ready;
+  const base = `${FLOW_MEMORY_PREFIX}${store}`;
+  storage.setItem(
+    base,
+    JSON.stringify({ v: 1, gen: 0, seeded: true, contents: { a: { at: 'x' } }, declined: {} }),
+  );
+  let marked = null;
+  const done = await coach.reset({
+    legacy: {
+      read: () => ({ log: [], ledger: null, epoch: marked === null ? 'e1' : 'e2' }),
+      // 옛 엔진 비우기(기다리는 걸음) 때는 표지가 이미 서 있다.
+      clear: async () => {
+        marked = storage.getItem(`${base}@1`);
+      },
+    },
+  });
+  assert.deepEqual(done, { ok: true, path: 'guest', gen: 1, legacy: 'cleared' });
+  assert.ok(marked, '옛 엔진 비우기 전에 순간 맞춤 표지가 서지 않았다');
+  assert.equal(JSON.parse(marked).seeded, true);
+  const after = createFlowMemory({ storage, store, generation: () => 1 });
+  assert.equal(after.memory('a'), null, '비운 뒤에 비우기 전 기억을 읽었다');
+  const stale = createFlowMemory({ storage, store, generation: () => 0 });
+  assert.equal(stale.memory('a'), null, '비운 것을 모르는 탭이 비우기 전 기억을 읽었다');
   coach.dispose();
 });
 

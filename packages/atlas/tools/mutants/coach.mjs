@@ -2313,8 +2313,32 @@ export const COACH_MUTANTS = [
     '순간 맞춤(4-6b)',
     '비우기가 씨앗 끝 표지를 남기지 않는다(비운 뒤 옛 기억에서 다시 씨앗을 읽는다)',
     'src/coach/flow-memory.mjs',
+    '  const mark = kept || writeRaw(storage, keyOf(base, gen), fresh(gen, true));\n',
+    '  const mark = kept || writeRaw(storage, keyOf(base, gen), fresh(gen, false));\n',
+  ],
+  [
+    'coach',
+    '순간 맞춤(4-6b)',
+    '비우기 표지를 그 세대의 열쇠에 조건 없이 쓴다 — 늦은 표지가 그사이 새 세대에 저장한 다른 탭의 기억을 지운다(설계 관문 검토 M1)',
+    'src/coach/flow-memory.mjs',
+    '  const mark = kept || writeRaw(storage, keyOf(base, gen), fresh(gen, true));\n',
     '  const mark = writeRaw(storage, keyOf(base, gen), fresh(gen, true));\n',
-    '  const mark = writeRaw(storage, keyOf(base, gen), fresh(gen, false));\n',
+  ],
+  [
+    'coach',
+    '순간 맞춤(4-6b)',
+    '앞 꼴로 기본 열쇠에 저장된 같은 세대의 기억을 이어받지 않는다 — 같은 세대를 이어 열어도 맞춤 설정이 처음으로 돌아간다(GPT GA1)',
+    'src/coach/flow-memory.mjs',
+    '    const stored = readRaw(storage, keyOf(base, now)) ?? (now ? inherited(now) : null);\n',
+    '    const stored = readRaw(storage, keyOf(base, now));\n',
+  ],
+  [
+    'coach',
+    '순간 맞춤(4-6b)',
+    '다음 세대의 열쇠가 섰는데도 앞 세대 탭이 비우기 전 기억을 읽는다(GPT GA2)',
+    'src/coach/flow-memory.mjs',
+    '    if (Number.isSafeInteger(now) && readRaw(storage, keyOf(base, now + 1)))\n      return fresh(now, true);\n',
+    '',
   ],
   // ── 같은 제시의 뒤 답(4-6b) — 코치가 제시 번호를 두뇌까지 넘긴다 ──
   [

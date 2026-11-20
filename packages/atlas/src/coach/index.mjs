@@ -822,7 +822,9 @@ export function createCoach(options = {}) {
           revision,
           own: account != null,
         });
-      if (host.guest && account == null) return resetGuest(host, legacy);
+      // 손님 비우기는 저장소 이름이 그대로라 순간 맞춤 내용 기억도 그 저장소에서 비운다(§23-11의 2 · §23-13 — record.clear() 바로 뒤).
+      if (host.guest && account == null)
+        return resetGuest(host, legacy, gen => state.flow?.clear(gen));
       const transport = options.host?.transport;
       const call =
         clear ??
