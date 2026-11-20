@@ -113,3 +113,32 @@ test('the very first sound after the app starts is not lost when the new context
   await new Promise(r => setTimeout(r, 0));
   assert.equal(log.starts.filter(s => s.kind === 'noise').length, 1);
 });
+
+test('a first map sound still waiting for the context is dropped when the map folds or sound is turned off meanwhile (Fable FA1)', async () => {
+  // 켜지는 소리가 기다리는 사이에 지도가 접히면, 깨어난 뒤에도 그 소리는 나지 않는다
+  const a = fakeAudio();
+  a.log.state = 'suspended'; a.log.wake = true;
+  const folded = createOrbSound({ win: a.win });
+  assert.equal(folded.map(true), false);
+  folded.unmap();
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(a.log.starts.filter(s => s.kind === 'noise').length, 3, 'only the three taps of the fold itself, played once the context was awake');
+  assert.equal(a.log.starts.filter(s => s.kind === 'osc').length, 3, 'no clear notes of the map that already folded');
+  // 접히지 않았으면 그대로 뒤늦게 난다. 그사이 이름을 가리킨 것은 지도의 소리를 지우지 않는다
+  const b = fakeAudio();
+  b.log.state = 'suspended'; b.log.wake = true;
+  const kept = createOrbSound({ win: b.win });
+  kept.map(true);
+  assert.equal(kept.key(), true, 'the context is awake by now, so pointing at a name taps at once');
+  assert.equal(b.log.starts.filter(s => s.kind === 'noise').length, 1);
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(b.log.starts.filter(s => s.kind === 'noise').length, 1 + 4, 'the tap did not cancel the map sound that was waiting');
+  // 기다리는 사이에 소리를 내면 안 되게 됐으면(창이 뒤로 갔으면) 내지 않는다
+  const c = fakeAudio();
+  c.log.state = 'suspended'; c.log.wake = true;
+  let on = true;
+  const muted = createOrbSound({ win: c.win, enabled: () => on });
+  muted.map(false); on = false;
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(c.log.starts.length, 0);
+});

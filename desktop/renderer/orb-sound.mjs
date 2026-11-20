@@ -17,12 +17,14 @@ export function unmapScore() {
 
 /* options: win(AudioContext를 가진 창) · enabled() → 소리를 낼지 */
 export function createOrbSound({ win = globalThis, enabled = () => true } = {}) {
-  let ac = null, out = null, bus = null, dead = false, waking = null;
+  /* turn은 지도가 켜지거나 접힐 때마다 오르는 차례 번호다. 뒤늦게 낼 소리가 그 사이에 지나간 지도의 것인지 가린다 */
+  let ac = null, out = null, bus = null, dead = false, waking = null, turn = 0;
+  const allowed = () => { try { return enabled() === true; } catch { return false; } };
   /* 소리를 낼 수 있는 때에만 맥락을 돌려준다. 맥락이 멈춰 있으면(창을 한 번도 누르지 않아 브라우저가 소리를 막은 때) 깨우기만 하고 이번 소리는 내지 않는다.
      멈춘 맥락에 예약하면 시계가 서 있어 소리가 쌓였다가, 처음 누르는 순간 한꺼번에 난다(카본 검수 A1) */
   function ctx() {
     if (dead) return null;
-    try { if (enabled() !== true) return null; } catch { return null; }
+    if (!allowed()) return null;
     try {
       if (!ac) {
         const C = win.AudioContext || win.webkitAudioContext;
@@ -36,6 +38,7 @@ export function createOrbSound({ win = globalThis, enabled = () => true } = {}) 
   /* 지도의 소리는 한 묶음(bus)으로 낸다. 지도가 접히거나 다시 켜지면 앞 묶음에 남은 소리를 바로 거둔다.
      잠깐 스친 구의 맑은 음 셋이 접힌 뒤까지 울리거나 다음 소리와 겹치지 않는다(카본 검수 A2) */
   function hush() {
+    turn++;
     const old = bus; bus = null;
     if (!old || !ac) return;
     try { old.gain.setTargetAtTime(0, ac.currentTime, 0.012); } catch { /* 무시 */ }
@@ -57,13 +60,15 @@ export function createOrbSound({ win = globalThis, enabled = () => true } = {}) 
     tone(c, to, freq * 0.09, delay, 0.001, 0.03, gain * 0.45, freq * 0.05);
   }
   /* 방금 만든 맥락은 곧 깨어날 수 있다. 0.4초 안에 깨어나면 그 소리 하나만 뒤늦게 낸다(앱을 켠 뒤의 첫 소리가 빠지지 않게, Fable 최종 검수 F4).
-     전부터 있던 맥락이 멈춰 있으면 내지 않고 쌓지도 않는다(카본 검수 A1) */
+     전부터 있던 맥락이 멈춰 있으면 내지 않고 쌓지도 않는다(카본 검수 A1).
+     기다리는 사이에 지도가 접히거나 다시 켜졌으면(turn이 달라졌으면), 또는 그사이 소리를 내면 안 되게 됐으면 내지 않는다.
+     접힌 지도의 켜지는 소리가 뒤늦게 울리지 않는다(다시 검수 FA1) */
   const play = fn => {
     const made = !ac, c = ctx();
     if (c) { try { fn(c); return true; } catch { return false; } }
     if (made && ac && typeof waking?.then === 'function') {
-      const a = ac, t0 = Date.now();
-      void waking.then(() => { if (!dead && a === ac && a.state === 'running' && Date.now() - t0 < 400) { try { fn(a); } catch { /* 무시 */ } } }).catch(() => {});
+      const a = ac, t0 = Date.now(), mine = turn;
+      void waking.then(() => { if (!dead && a === ac && mine === turn && a.state === 'running' && Date.now() - t0 < 400 && allowed()) { try { fn(a); } catch { /* 무시 */ } } }).catch(() => {});
     }
     return false;
   };
