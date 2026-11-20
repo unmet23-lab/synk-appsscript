@@ -336,3 +336,150 @@ test('뼈대 탈 — 「틀」이 수가 아니거나 detail이 목록이 아니
   assert.equal(r.status, 1, r.stderr.slice(-400)); assert.ok(!/Traceback/.test(r.stderr), r.stderr.slice(-400));
   assert.ok(JSON.parse(r.stdout).every((x) => x.항목 === '틀' && x.등급 === '걸림'));
 });
+
+// ───────── 11-21 GPT 검수(영상컷표꼴관문-20261120 · 영상타당성검사-20261120-다시1)가 낸 자리 ─────────
+
+// GA1 — 목록으로 적은 원고 줄은 줄 전체가 목록이라는 이유로 지나갔다(글 자리에 []를 넣으면 T21이 그 줄을 말없이 버렸다)
+test('원고 줄 — 목록으로 적은 줄도 [컷 이름, 초, 원고 글] 꼴을 본다: 틀린 줄은 걸림이고 그 줄만 빼며, 남은 줄은 T21이 그대로 본다', 건너뜀, () => {
+  const 값 = 파(String.raw`
+def 원고(줄들_):
+    def f(c, s): s["소리"]["원고"] = 줄들_
+    return f
+좋은 = ["C2", 1.0, "혼자 먹는 밤이다"]
+out = {"나쁜": {}}
+for 이름, 나쁜 in (("글 자리 목록", ["C1", 0.5, []]), ("글 자리 수", ["C1", 0.5, 3]), ("컷 자리 수", [1, 0.5, "글"]), ("한 칸", ["C1"]), ("가운데 글", ["C1", "곧", "글"]), ("빈 줄", [])):
+    x = 줄들(표(원고([나쁜, 좋은])))
+    out["나쁜"][이름] = [sum(y[2] == "걸림" and "「원고 1번째 줄」" in y[3] for y in x), sum(y[2] == "걸림" and "원고 1줄에 「원고시험」 칸이 없다" in y[3] for y in x)]
+out["좋은"] = [y[3] for y in 줄들(표(원고([좋은, ["C1", "혼자 끓인다"], ["C3", "1.5", "둘이 먹는다"], {"컷": "C1", "글": "물이 끓는다"}]))) if "꼴로 적는다" in y[3]]
+out["객체"] = [y[3].split(". 꼴이")[0] for y in 줄들(표(원고([{"컷": ["C1"], "글": "물이 끓는다"}, 좋은]))) if "꼴로 적는다" in y[3]]
+print(json.dumps(out, ensure_ascii=False))
+`);
+  for (const [이름, 수] of Object.entries(값.나쁜)) assert.deepEqual(수, [1, 1], `${이름}: 꼴 걸림 한 줄 · 남은 한 줄의 T21 걸림`);
+  assert.deepEqual(값.좋은, [], '컷 이름 · (초) · 글 차례의 줄과 객체 줄은 꼴 걸림이 없다');
+  assert.deepEqual(값.객체, ['「원고 1번째 줄.컷」 칸은 글 꼴로 적는다 — 지금은 목록이다']);
+});
+
+// GA2 — 이름 목록에 글이 아닌 것이 섞였다고 목록을 통째로 지우면, 그 컷이 사람 컷이라는 사실까지 사라져 판 검사의 기준이 낮아졌다
+test('이름 목록 — 글이 아닌 원소가 섞이면 걸림이고 읽을 수 있는 이름은 남긴다(사람 판의 박자 둘 기준이 그대로다), 남는 이름이 없으면 칸을 비운다', 건너뜀, () => {
+  const 값 = 파(String.raw`
+out = {}
+for 이름, v in (("섞임", ["수아", None]), ("수 섞임", ["수아", 3, "옆집"]), ("모두 틀림", [None, 1]), ("글", "수아")):
+    s = 표(lambda c, s_: c["C2"].__setitem__("인물", v)); x = 줄들(s)
+    c2 = [d for d in s["detail"] if d["cut"] == "C2"][0]
+    정보 = m.판정보({"id": "C2", "폴더": "002_C2"}, s)
+    out[이름] = {"꼴": [y[3] for y in x if y[2] == "걸림" and y[1] == "C2" and "「인물」 칸은" in y[3]], "남은": c2.get("인물", "없음"), "박자최소": 정보["박자최소"], "인물": 정보["인물"]}
+print(json.dumps(out, ensure_ascii=False))
+`);
+  assert.equal(값.섞임.꼴.length, 1); assert.match(값.섞임.꼴[0], /「인물」 칸은 글 목록 꼴로 적는다 — 지금은 목록이다 — 글이 아닌 것이 들어 있다\. 글이 아닌 것은 빼고 읽는다/);
+  assert.deepEqual([값.섞임.남은, 값.섞임.박자최소, 값.섞임.인물], [['수아'], 2, ['수아']]);
+  assert.deepEqual([값['수 섞임'].남은, 값['수 섞임'].박자최소], [['수아', '옆집'], 2]);
+  assert.deepEqual([값['모두 틀림'].꼴.length, 값['모두 틀림'].남은], [1, '없음']);
+  assert.deepEqual([값.글.꼴.length, 값.글.남은], [1, '없음']);
+});
+
+// GA3 — 컷의 「실내」를 null로 적으면 열쇠가 있다는 이유로 장면의 실내를 물려받지 않았다(꼴 관문은 null을 칸이 없는 것으로 읽는다)
+test('장면실내채움 — 컷의 「실내」 · 「실외」가 null이면 칸이 없는 것과 같아 장면의 「실내」를 물려받는다', 건너뜀, () => {
+  const 값 = 파(String.raw`
+def 본(고침):
+    s = 표(고침); m.장면실내채움(s)
+    return [d.get("실내") for d in s["detail"] if d["cut"] == "C1"][0]
+out = {
+    "null": 본(lambda c, s: c["C1"].__setitem__("실내", None)),
+    "없음": 본(lambda c, s: c["C1"].pop("실내")),
+    "실외 null": 본(lambda c, s: (c["C1"].pop("실내"), c["C1"].__setitem__("실외", None))),
+    "실외 true": 본(lambda c, s: (c["C1"].pop("실내"), c["C1"].__setitem__("실외", True))),
+    "false": 본(lambda c, s: c["C1"].__setitem__("실내", False)),
+}
+print(json.dumps(out, ensure_ascii=False))
+`);
+  assert.deepEqual(값, { null: true, 없음: true, '실외 null': true, '실외 true': null, false: false });
+});
+
+// GA4 · GA5 — 수 칸은 숫자를 적은 글도 받는데 사건 검사가 날것을 견줘 글 순서로 정렬하거나 죽었고, 꼴이 틀려 지워진 시각 칸을 대괄호로 읽다 죽었다
+test('시각 칸 — 숫자를 적은 글은 수로 읽어 수로 적은 표와 결과가 같고, 꼴이 틀려 지워진 시각은 그 줄의 걸림이 된다(예외로 죽지 않는다)', 건너뜀, () => {
+  const 값 = 파(String.raw`
+def 본(고침): return [list(y[:3]) for y in 줄들(표(고침)) if y[0] in ("사건", "소리")]
+def 글로(c, s):
+    for d in s["detail"]: d["t"] = str(float(d["t"])); d["dur"] = str(d["dur"])
+    for ev in s["소리사건"]: ev["t"] = str(ev["t"])
+out = {"수": 본(lambda c, s: None), "글": 본(글로), "하나만 글": 본(lambda c, s: c["C2"].__setitem__("t", "3.5"))}
+def 걸림글(고침): return [y[3] for y in 줄들(표(고침)) if y[2] == "걸림" and y[0] in ("사건", "소리")]
+out["컷 t false"] = 걸림글(lambda c, s: c["C1"].__setitem__("t", False))
+out["소리 t true"] = 걸림글(lambda c, s: s["소리사건"][0].__setitem__("t", True))
+out["반응t 목록"] = 걸림글(lambda c, s: s["소리사건"][0].__setitem__("반응t", [3.5]))
+out["반응번째 글"] = 걸림글(lambda c, s: s["소리사건"][0].__setitem__("반응번째", "둘째"))
+out["반응 컷 t 없음"] = 걸림글(lambda c, s: c["C2"].pop("t"))
+print(json.dumps(out, ensure_ascii=False))
+`);
+  assert.deepEqual(값.글, 값.수, '숫자를 글로 적은 표');
+  assert.deepEqual(값['하나만 글'], 값.수, '한 칸만 글로 적은 표');
+  assert.ok(값.수.some((x) => x[0] === '사건' && x[2] === '통과') && 값.수.some((x) => x[0] === '소리' && x[2] === '통과'), JSON.stringify(값.수));
+  assert.ok(값['컷 t false'].some((x) => /C1.*「t」/.test(x)), JSON.stringify(값['컷 t false']));
+  assert.ok(값['소리 t true'].some((x) => /「t」/.test(x)), JSON.stringify(값['소리 t true']));
+  assert.equal(값['반응t 목록'].length, 0, '반응t가 지워지면 반응 컷의 시작으로 잰다 — 꼴 걸림은 「틀」 항목에 있다');
+  assert.equal(값['반응번째 글'].length, 0, '반응번째가 지워지면 첫 토막으로 잰다');
+  assert.ok(값['반응 컷 t 없음'].some((x) => /C2.*「t」/.test(x)), JSON.stringify(값['반응 컷 t 없음']));
+});
+
+// GA5 · GA6 · GA7 — 틀 예시의 모든 칸에 틀린 값을 넣어도 표 검사와 판 대조(판정보 · 빛대조 · 시늉대조)가 예외로 죽지 않는다
+test('전수 — 틀 예시의 모든 칸에 null · 빈 것 · 다른 꼴을 넣어도 표 검사와 판 대조가 예외로 죽지 않는다', 건너뜀, () => {
+  const 값 = 파(String.raw`
+def 길들(o, 길=()):
+    if isinstance(o, dict):
+        for x, v in o.items(): yield 길 + (x,); yield from 길들(v, 길 + (x,))
+    elif isinstance(o, list):
+        for i, v in enumerate(o): yield 길 + (i,); yield from 길들(v, 길 + (i,))
+나쁜값 = [None, [], {}, 0, False, True, "", "글", ["글"], [None], {"k": "글"}, float("nan")]
+판 = {"id": "C1", "폴더": "001_C1"}
+죽음, 돌림 = [], 0
+for 길 in 길들(틀):
+    for v in 나쁜값:
+        s = 넣기(틀, 길, v); 돌림 += 1
+        try:
+            r = m.결과(); m.표검사(m.장면실내채움(s), r, m.기본항목)
+            if not k.뼈대검사(s):
+                정보 = m.판정보(판, s); 컷들 = 정보["컷들"] or ["C1"]
+                m.빛대조(s, 컷들, "LIGHT: warm"); m.시늉대조(s, 컷들, "ACTION: she mimes eating with an empty hand.")
+        except Exception as e:
+            죽음.append([길글(길), repr(v), type(e).__name__, str(e)[:70]])
+print(json.dumps({"돌림": 돌림, "죽음수": len(죽음), "죽음": 죽음[:25]}, ensure_ascii=False))
+`);
+  assert.ok(값.돌림 > 2000, `돌린 수 ${값.돌림}`);
+  assert.equal(값.죽음수, 0, `예외로 죽은 입력 ${값.죽음수}개 — ${JSON.stringify(값.죽음)}`);
+});
+
+// 타당성 다시 검수 GA1 — 세 목록을 합쳐 세면 시작 그림과 끝 그림에 따로 나오는 두 사람도 「한 화면」으로 걸리고, 한 목록에 같은 이름을 두 번 적어도 둘로 셌다
+test('T27 — 한 목록(영상 · 시작 그림 · 끝 그림)에 서로 다른 사람이 둘 이상일 때만 타당성을 묻는다', 건너뜀, () => {
+  const 값 = 파(String.raw`
+def 본(인물, 그림=None, 끝=None):
+    def f(c, s):
+        c["C3"]["인물"] = 인물; c["C3"].pop("타당성", None)
+        if 그림 is not None: c["C3"]["그림인물"] = 그림
+        if 끝 is not None: c["C3"]["끝그림인물"] = 끝
+    return sum(y[2] == "걸림" and y[1] == "C3" and "「타당성」 칸이 비었다" in y[3] for y in 줄들(표(f)))
+out = {
+    "영상에 둘": 본(["수아", "옆집"]),
+    "시작 그림에 둘": 본(["수아"], ["수아", "옆집"]),
+    "끝 그림에 둘": 본(["수아"], ["수아"], ["수아", "옆집"]),
+    "따로 한 사람씩": 본(["수아"], ["수아"], ["옆집"]),
+    "같은 이름 두 번": 본(["수아"], ["수아", "수아"]),
+    "한 사람": 본(["수아"]),
+}
+print(json.dumps(out, ensure_ascii=False))
+`);
+  assert.deepEqual(값, { '영상에 둘': 1, '시작 그림에 둘': 1, '끝 그림에 둘': 1, '따로 한 사람씩': 0, '같은 이름 두 번': 0, '한 사람': 0 });
+});
+
+// 타당성 다시 검수 GA3 — T22는 영상의 「인물」만 봐서, 시작 · 끝 그림에만 나오는 사람의 빈 「옷」이 지나갔다
+test('T22 옷 — 시작 그림 · 끝 그림에만 나오는 사람도 「옷」을 묻고, 공백뿐인 글은 빈칸이다', 건너뜀, () => {
+  const 값 = 파(String.raw`
+def 본(고침): return [y[1] for y in 줄들(표(고침)) if y[2] == "걸림" and "「옷」 칸이 비었다" in y[3]]
+def 그림에만(칸):
+    def f(c, s): c["C3"]["인물"] = ["수아"]; c["C3"][칸] = ["수아", "옆집"]; c["C3"]["타당성"] = "문 앞에서 그릇을 건네는 거리다"; s["인물"]["옆집"]["옷"] = ""
+    return f
+out = {"그림인물": 본(그림에만("그림인물")), "끝그림인물": 본(그림에만("끝그림인물")), "공백": 본(lambda c, s: s["인물"]["수아"].__setitem__("옷", "   ")),
+       "안 나오는 사람": 본(lambda c, s: (c["C3"].__setitem__("인물", ["수아"]), s["인물"]["옆집"].__setitem__("옷", ""))), "그대로": 본(lambda c, s: None)}
+print(json.dumps(out, ensure_ascii=False))
+`);
+  assert.deepEqual(값, { 그림인물: ['인물 옆집'], 끝그림인물: ['인물 옆집'], 공백: ['인물 수아'], '안 나오는 사람': [], 그대로: [] });
+});

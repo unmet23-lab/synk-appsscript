@@ -1255,30 +1255,46 @@ def 사건표검사(seq, r):
     if not 사건들:
         if 사건들 == []: r.더함("사건", "표", "통과", "이 편에는 쪼갤 사건이 없다고 표에 밝혔다(사건: [])"); return
         r.더함("사건", "표", "확인", "사건 표가 없다 — 사건(처음 하는 일 · 망설임 · 놀람 · 건넴 · 발견)마다 넓게 · 감정 · 행동 · 결과 컷을 적는다(없으면 사건: [] · 점검표 33)"); return
-    시각 = {}   # 「A11」은 첫 토막, 「A11#2」는 둘째 토막
+    시각, 적힌 = {}, {}   # 「A11」은 첫 토막, 「A11#2」는 둘째 토막. 시각은 수로 읽은 값(못 읽으면 None), 적힌은 표에 적힌 그대로(보이는 글)
     for d in det:
+        if not isinstance(d, dict) or not isinstance(d.get("cut"), str): continue
         n = sum(1 for k in 시각 if k.startswith(d["cut"] + "#")) + 1
-        시각.setdefault(d["cut"], d["t"]); 시각[f"{d['cut']}#{n}"] = d["t"]
-    for ev in 사건들:
+        t = 유한수(d.get("t"))   # 숫자를 적은 글도 수로 견준다 — 날것을 견주면 글 순서로 정렬하거나 죽는다(11-21 GPT 검수 GA4 · GA5)
+        for k in (d["cut"], f"{d['cut']}#{n}"):
+            if k not in 시각: 시각[k] = t; 적힌[k] = d.get("t")
+    for ev in 사건들 if isinstance(사건들, list) else []:
+        if not isinstance(ev, dict): continue
         이름 = ev.get("이름", "?")
         if ev.get("압축"):
             r.더함("사건", 이름, "통과", "압축 몽타주 — 네 박을 묻지 않는다"); continue
-        빠짐 = [k for k in ("넓게", "감정", "행동", "결과") if not ev.get(k)]
-        없는컷 = [f"{k}={ev[k]}" for k in ("넓게", "감정", "행동", "결과") if ev.get(k) and ev[k] not in 시각]
+        박 = {k: ev.get(k) for k in ("넓게", "감정", "행동", "결과")}
+        빠짐 = [k for k, v in 박.items() if not (isinstance(v, str) and v)]
+        없는컷 = [f"{k}={v}" for k, v in 박.items() if k not in 빠짐 and v not in 시각]
+        못읽음 = [f"{k}={v}" for k, v in 박.items() if k not in 빠짐 and v in 시각 and 시각[v] is None]
         if 빠짐: r.더함("사건", 이름, "걸림", f"네 박 가운데 {' · '.join(빠짐)} 컷이 없다 — 넓게 → 감정 클로즈 → 행동 클로즈 → 결과(점검표 33)")
         if 없는컷: r.더함("사건", 이름, "걸림", f"컷순서에 없는 컷을 가리킨다: {' · '.join(없는컷)}")
-        if not 빠짐 and not 없는컷:
-            ts = [시각[ev[k]] for k in ("넓게", "감정", "행동", "결과")]   # 결과까지 순서를 본다(11-09 Astra)
-            if ts != sorted(ts): r.더함("사건", 이름, "걸림", f"순서가 넓게 → 감정 → 행동 → 결과가 아니다({ev['넓게']} {ts[0]}s · {ev['감정']} {ts[1]}s · {ev['행동']} {ts[2]}s · {ev['결과']} {ts[3]}s)")
-            else: r.더함("사건", 이름, "통과", f"넓게 {ev['넓게']} → 감정 {ev['감정']} → 행동 {ev['행동']} → 결과 {ev['결과']}")
+        if 못읽음: r.더함("사건", 이름, "걸림", f"{' · '.join(못읽음)} — 이 컷의 「t」(시작 시각)를 읽을 수 없어 네 박의 순서를 못 본다. 「t」를 초(수)로 적는다")
+        if not 빠짐 and not 없는컷 and not 못읽음:
+            ts = [시각[박[k]] for k in ("넓게", "감정", "행동", "결과")]   # 결과까지 순서를 본다(11-09 Astra)
+            if ts != sorted(ts): r.더함("사건", 이름, "걸림", "순서가 넓게 → 감정 → 행동 → 결과가 아니다(" + " · ".join(f"{박[k]} {적힌[박[k]]}s" for k in ("넓게", "감정", "행동", "결과")) + ")")
+            else: r.더함("사건", 이름, "통과", f"넓게 {박['넓게']} → 감정 {박['감정']} → 행동 {박['행동']} → 결과 {박['결과']}")
+
+
+def 유한수(v):
+    """숫자()로 읽은 값이 유한한 수면 그 수, 아니면 None(NaN · Infinity는 시각이 아니다)"""
+    x = 숫자(v)
+    return x if x is not None and x == x and x not in (float("inf"), float("-inf")) else None
 
 
 def 반응시각(seq, ev):
-    if ev.get("반응t") is not None: return float(ev["반응t"]), f"{ev['반응t']}s"
-    cut = ev.get("반응"); n = int(ev.get("반응번째", 1))
-    tokes = [d for d in seq.get("detail", []) if d["cut"] == cut]
+    rt = 유한수(ev.get("반응t"))
+    if rt is not None: return rt, f"{ev['반응t']}s"
+    cut = ev.get("반응"); n = 유한수(ev.get("반응번째")); n = int(n) if n is not None and 1 <= n < 1e6 else 1
+    tokes = [d for d in seq.get("detail") or [] if isinstance(d, dict) and d.get("cut") == cut]
     if not tokes or n > len(tokes): return None, f"컷 {cut} 없음"
-    return float(tokes[n - 1]["t"]), f"{cut} 시작 {tokes[n - 1]['t']}s"
+    t = 유한수(tokes[n - 1].get("t"))
+    if t is None: return None, f"컷 {cut}의 「t」(시작 시각)를 읽을 수 없다"
+    return t, f"{cut} 시작 {tokes[n - 1]['t']}s"
 
 
 def 소리표검사(seq, r, 간격=(0.6, 1.0), 영상=None):
@@ -1292,8 +1308,12 @@ def 소리표검사(seq, r, 간격=(0.6, 1.0), 영상=None):
         elif d < 간격[0]: r.더함("소리", 이름, "걸림", f"{출처}소리({t:.2f}s) → 반응({어디}) 간격 {d:.2f}초 — {간격[0]}초보다 짧다, 소리를 앞당긴다(점검표 42)")
         elif d > 간격[1]: r.더함("소리", 이름, "확인", f"{출처}소리({t:.2f}s) → 반응({어디}) 간격 {d:.2f}초 — {간격[1]}초보다 길다, 반응이 늦어 보이지 않는지 본다")
         else: r.더함("소리", 이름, "통과", f"{출처}소리 {t:.2f}s → 반응 {어디} 간격 {d:.2f}초")
-    for ev in 사건들:
-        이름 = ev.get("이름", "?"); t = float(ev["t"]); rt, 어디 = 반응시각(seq, ev)
+    for ev in 사건들 if isinstance(사건들, list) else []:
+        if not isinstance(ev, dict): continue
+        이름 = ev.get("이름", "?"); t = 유한수(ev.get("t"))
+        if t is None:   # 꼴이 틀려 지워졌거나 안 적은 시각 — 대괄호로 읽다 죽지 않고 그 줄의 걸림으로 낸다(11-21 GPT 검수 GA5)
+            r.더함("소리", 이름, "걸림", "소리 사건의 「t」(소리가 나는 시각)를 읽을 수 없다 — 초(수)로 적는다(점검표 42)"); continue
+        rt, 어디 = 반응시각(seq, ev)
         if rt is None: r.더함("소리", 이름, "걸림", f"반응 자리를 못 찾음 — {어디}"); continue
         간격판정(이름, t, rt, 어디, "표: ")
         if 영상 is not None and not ev.get("소리없음"):
@@ -1466,7 +1486,7 @@ def 장면실내채움(seq):
     if not 틀둘(seq) or not isinstance(seq.get("detail"), list): return seq
     장면표 = seq.get("장면") if isinstance(seq.get("장면"), dict) else {}
     for d in seq["detail"]:
-        if not isinstance(d, dict) or "실내" in d or "실외" in d: continue   # 객체가 아닌 줄은 표 검사의 뼈대 검사가 건다
+        if not isinstance(d, dict) or d.get("실내") is not None or d.get("실외") is not None: continue   # 객체가 아닌 줄은 표 검사의 뼈대 검사가 건다. null은 칸이 없는 것과 같다
         s = 장면표.get(d.get("장면")) if isinstance(d.get("장면"), str) else None
         if isinstance(s, dict) and s.get("실내") is True: d["실내"] = True
         elif isinstance(s, dict) and s.get("실내") is False: d["실외"] = True
@@ -1762,10 +1782,12 @@ def 색감검사(seq, 폴더=None):
     elif not isinstance(seq.get("세트"), str):
         out.append(("걸림", "표", "「세트」는 영어 한 문장으로 적는다 — 이미지 지시문 PALETTE 줄에 글자 그대로 들어간다(60)"))
     인물표 = seq.get("인물") if isinstance(seq.get("인물"), dict) else {}
-    나오는 = list(dict.fromkeys(n for d in seq.get("detail") or [] if isinstance(d, dict) for n in (d.get("인물") if isinstance(d.get("인물"), list) else []) if isinstance(n, str)))
+    # 영상에 나오는 사람뿐 아니라 시작 · 끝 그림에만 나오는 사람도 옷을 입고 나온다(「그림인물」 · 「끝그림인물」 — 11-21 GPT 검수)
+    나오는 = list(dict.fromkeys(n for d in seq.get("detail") or [] if isinstance(d, dict) for 칸 in ("인물", "그림인물", "끝그림인물")
+                             for n in (d.get(칸) if isinstance(d.get(칸), list) else []) if isinstance(n, str)))
     for n in 나오는:
         p = 인물표.get(n)
-        if isinstance(p, dict) and 빈칸(p.get("옷")):
+        if isinstance(p, dict) and not _글있음(p.get("옷")):
             out.append((새편, f"인물 {n}", f"인물 「{n}」의 「옷」 칸이 비었다 — 옷을 적지 않으면 Seedream이 참고 사진의 옷을 그대로 입힌다(시드림시험_20261119). "
                         f"세트 색에 맞춘 옷을 영어 한 문장으로 적는다(12 · 60)"))
     return out
@@ -1898,11 +1920,10 @@ def 타당성검사(seq, 폴더=None):
     빠진 = []
     for d in seq.get("detail") or []:
         if not isinstance(d, dict): continue
-        사람 = []   # 시작 · 끝 그림에만 함께 나오는 사람도 센다(「그림인물」 · 「끝그림인물」 — 11-20 GPT 검수 GA2)
-        for 칸 in ("인물", "그림인물", "끝그림인물"):
-            v = d.get(칸)
-            if isinstance(v, list): 사람 += [x for x in v if isinstance(x, str) and x.strip() and x not in 사람]
-        if len(사람) >= 2 and not _글있음(d.get("타당성")): 빠진.append(d.get("cut"))   # 빈 배열 · 객체는 글이 아니다(GA1)
+        # 한 화면 = 한 목록이다 — 영상(「인물」) · 시작 그림(「그림인물」) · 끝 그림(「끝그림인물」)을 따로 세고, 어느 한 목록에 서로 다른 사람이 둘 이상이면 묻는다.
+        # 세 목록을 합쳐 세면 시작 그림과 끝 그림에 따로 나오는 두 사람도 걸리고, 같은 이름을 두 번 적어도 둘로 센다(11-21 GPT 검수 — 11-20 GA2는 그림에만 함께 나오는 사람을 세게 했다)
+        한화면 = max((len({x.strip() for x in d.get(칸) if isinstance(x, str) and x.strip()}) for 칸 in ("인물", "그림인물", "끝그림인물") if isinstance(d.get(칸), list)), default=0)
+        if 한화면 >= 2 and not _글있음(d.get("타당성")): 빠진.append(d.get("cut"))   # 빈 배열 · 객체는 글이 아니다(GA1)
     if not 빠진: return []
     날짜 = 편날짜(seq, 폴더); 등급 = "걸림" if (날짜 and 날짜 >= 타당성부터) else "주의"
     return [(등급, cut, "두 사람 이상이 한 화면인데 「타당성」 칸이 비었다 — 이 장소 · 주변 사람 수 · 관계에서 이 거리 · 자세 · 행동이 왜 말이 되는지 한 줄로 적는다"
@@ -2635,10 +2656,13 @@ def 표검사(seq, r, 항목=기본항목, 간격=(0.6, 1.0), 영상=None, 폴�
     틀 2 표의 꼴이 틀린 칸(글 칸의 배열 · 객체 · 수 · 참거짓 …)은 「틀」 항목의 걸림이고, 그 칸은 seq에서 지워 값 검사가 빈칸으로 읽게 한다(면제 칸도 꼴이 틀리면 면제하지 않는다)."""
     읽기 = 컷표읽기()
     뼈대 = 읽기.뼈대검사(seq)
+    r.뼈대탈 = bool(뼈대); r.꼴탈 = False   # 내기 도구가 읽는다 — 뼈대 탈 · 꼴 걸림이 있는 표로는 내지 못한다(--걸림무시로도 못 넘긴다)
     if 뼈대:
         for 어디, 글 in 뼈대: r.더함("틀", 어디, "걸림", 글)
         return
+    if seq.get("detail") is None: seq.pop("detail", None)   # 「detail」: null은 칸이 없는 것과 같다 — 뒤의 검사가 빈 목록으로 읽는다(11-21 GPT 검수 GA6)
     꼴줄 = 읽기.꼴검사(seq, 비움=True) if "틀" in 항목 and 틀둘(seq) else []
+    r.꼴탈 = bool(꼴줄)
     표빈칸(seq, r)
     if "틀" in 항목:
         if 틀둘(seq):
@@ -2829,7 +2853,8 @@ def 그림지시문항목(seq, r, 경로들):
             v = (장면 or {}).get(k) if isinstance(장면, dict) else None
             if not 빈칸(v) and 한칸(v) not in 글: 빠짐.append(f"장면 「{d.get('장면')}」의 {k}")
         for _, 말 in 색감대조(seq, 원문, "그림"): 빠짐.append(f"색감 「{seq.get('색감').strip()}」의 뼈대")   # T22 — GRADE 줄
-        if isinstance(seq.get("세트"), str) and not 빈칸(seq.get("세트")) and 한칸(seq["세트"]) not in 글: 빠짐.append("「세트」(PALETTE 줄)")   # T22 — 옷 · 벽 · 소품 색
+        # T22 — 옷 · 벽 · 소품 색. PALETTE 줄의 글에서 찾는다 — 지시문 어디에든 있으면 지나가게 두면 PALETTE를 다른 색으로 적고 표의 문장을 NOTE에 남긴 지시문이 통과한다(11-21 GPT 검수)
+        if isinstance(seq.get("세트"), str) and not 빈칸(seq.get("세트")) and not any(한칸(seq["세트"]) in 한칸(t) for l, t in 칸들(원문) if l == "PALETTE"): 빠짐.append("「세트」(PALETTE 줄)")
         맨얼굴 = d.get("그림단계") == "맨얼굴"   # 칠한 얼굴을 두 단계로 굽는 컷 — 1단계 판은 인물의 「맨얼굴묘사」로 견주고, 칠은 편 공통 편집 지시문(_로 시작하는 파일)이 맡는다
         # 그 그림에 실제로 나오는 사람 — 컷 도중에 들어오는 사람은 시작 그림에 없다(「그림인물」), 끝 그림은 「끝그림인물」. 없으면 컷의 「인물」
         칸 = "끝그림인물" if cut.endswith("_끝") else ("그림인물" if not cut.endswith("_가운데") else None)
@@ -3509,6 +3534,11 @@ def main(argv):
             for 등급, 항, 말 in 남길것검사(" ".join(str(d.get(k, "")) for k in ("keep", "남길 것", "line"))): r.더함("지시문", d["cut"], 등급, f"({항}) {말}")
     if "그림지시문" in 항목 and o.get("그림지시문"): 그림지시문항목(seq, r, o["그림지시문"])
     매체 = 영상 or 받음 or 그림
+    # 영상 · 받은 판을 재는 항목은 컷 줄의 「dur」(--영상은 「t」도)를 수로 읽는다 — 못 읽는 줄이 있으면 걸림만 내고 재지 않는다(꼴이 틀려 지워진 시각을 읽다 죽지 않게, 11-21)
+    시각못읽음 = [str(d.get("cut")) for d in seq.get("detail") or [] if isinstance(d, dict) and (유한수(d.get("dur")) is None or (영상 and 유한수(d.get("t")) is None))] if (영상 or 받음) else []
+    if 매체 and 시각못읽음:
+        r.더함("틀", "표", "걸림", f"컷 줄의 「t」 · 「dur」를 읽을 수 없어 영상 · 받은 판을 재는 항목을 돌리지 않았다({' · '.join(dict.fromkeys(시각못읽음))}) — 초(수)로 적은 뒤 다시 돌린다")
+        매체 = None
     if 매체:
         if "점" in 항목: 점항목(seq, r, 출력, 그림, 영상, 받음, o["앞"])
         if "지도" in 항목:
