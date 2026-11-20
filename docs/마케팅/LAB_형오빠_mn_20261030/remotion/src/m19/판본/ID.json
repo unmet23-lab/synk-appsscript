@@ -140,7 +140,7 @@
   "lang": "id",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "Bahasa Koreanya\nkakak?",
+  "hook": "Kakak dalam\nbahasa Korea?",
   "hookSize": 56,
   "reveal": "1 kakak,\n2 panggilan!",
   "revealSize": 72,
@@ -165,12 +165,12 @@
   "meanOneLine": false,
   "revealMeanSize": 50,
   "why": [
-    "Cewek gak “형”!",
-    "Cowok gak “언니”!"
+    "Cewek gak bilang “형”!",
+    "Cowok gak bilang “언니”!"
   ],
   "whySize": 50,
-  "rowM": "Kalau cowok manggil",
-  "rowF": "Kalau cewek manggil",
+  "rowM": "Cowok yang manggil",
+  "rowF": "Cewek yang manggil",
   "rowSize": 64,
   "end": "Tergantung yang manggil",
   "endSize": 53,
@@ -190,10 +190,10 @@
     "means.1": "여자는 손위 남자 형제를 이렇게 불러",
     "means.2": "남자는 손위 여자 형제를 이렇게 불러",
     "means.3": "여자는 손위 여자 형제를 이렇게 불러",
-    "why.0": "여자는 「형」 안 해!",
-    "why.1": "남자는 「언니」 안 해!",
-    "rowM": "남자가 부르면",
-    "rowF": "여자가 부르면",
+    "why.0": "여자는 「형」이라고 말 안 해!",
+    "why.1": "남자는 「언니」라고 말 안 해!",
+    "rowM": "남자가 부르는 쪽",
+    "rowF": "여자가 부르는 쪽",
     "end": "부르는 사람에 따라 달라"
   }
 }
