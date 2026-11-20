@@ -367,10 +367,11 @@ function desktopOpenDestinationErrorMessage(code) {
     case 'PULSE_APP_DEMO_ACTIVE':
       return '열려 있는 PULSE에서 예시 화면을 보는 중이에요. 예시 화면을 닫은 뒤 다시 열어 주세요.';
     case 'PULSE_APP_BUSY':
+      return 'PULSE가 다른 작업을 처리하고 있어요. 잠시 뒤 다시 눌러 주세요.';
     case 'BUSY':
       return '작업 공간 창이 다른 작업을 처리하고 있어요. 잠시 뒤 다시 눌러 주세요.';
     case 'PULSE_APP_STORAGE_UNAVAILABLE':
-      return '이전 계정의 작업 공간 정리가 아직 끝나지 않았어요. 잠시 뒤 다시 확인해 주세요.';
+      return '이전 계정의 PULSE 정리가 아직 끝나지 않았어요. 잠시 뒤 다시 확인해 주세요.';
     case 'SUITE_UNAVAILABLE':
       return '이 PC의 로그인 보관함을 확인하지 못했어요. 저장 공간을 확인한 뒤 다시 시도해 주세요.';
     case 'HANDOFF_UNAVAILABLE':

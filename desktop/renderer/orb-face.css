@@ -589,7 +589,9 @@ html[data-motion="reduced"] #portal-entry .room.enter > *{animation:none}
 #portal-entry[data-orb-band="pulse"] .band-close:not([hidden]){display:inline-block}
 /* 펼친 동안에는 띠 선과 「PULSE 닫기」를 감춘다. 자란 구와 펼침의 첫 줄이 띠 높이에 걸린다 */
 #portal-entry[data-orb-band="pulse"]:has(.orb-stage[data-fan="1"])::after,
-#portal-entry[data-orb-band="pulse"]:has(.orb-stage[data-fan="1"]) .band-close{display:none}
+#portal-entry[data-orb-band="pulse"]:has(.orb-stage[data-fan="1"]) .band-close,
+#portal-entry[data-orb-band="pulse"]:has(.room-aside:not([hidden]))::after,
+#portal-entry[data-orb-band="pulse"]:has(.room-aside:not([hidden])) .band-close{display:none}
 /* 띠가 선 동안 알림 줄은 띠 안 가운데에 둔다. 아래는 PULSE 뷰가 덮는다(설계 검토 R11) */
 html[data-orb-band="pulse"] #toast{bottom:auto;top:8px}
 

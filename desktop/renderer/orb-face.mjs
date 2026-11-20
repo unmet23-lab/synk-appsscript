@@ -526,7 +526,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       rooms: mode === 'portal' || !aside ? null : rooms.scene({ aside, checking: sol.checking, name: roomName(), accountKey: state.accountKey || '', member: memberShown(state) }),
       legacy: legacyKind,
       band: bandOn() ? 'pulse' : null,
-      bandClose: bandOn() && pulseOpen && !pulseClosing && !switchOpen && typeof embed?.close === 'function',
+      bandClose: bandOn() && pulseOpen && !pulseClosing && !switchOpen && !aside && typeof embed?.close === 'function',
       focus: focusKey,
       focusSeq,
     };
@@ -552,10 +552,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   }
   /* 본체의 알림. 「돌아가서 저장」을 고르면 PULSE로 데려가 쓰던 글을 보인다(3절). 사람이 하지 않은 일이라 구를 들여보내지 않고 그 자리에서 바꾼다(설계 검토 R12) */
   function revealPulse() {
-    if (disposed || clientMode() !== 'app' || !pulseOpen) return;
+    if (disposed || !pulseOpen) return;
+    // 옛 화면이 열려 있으면 clientMode()가 'legacy'라 먼저 닫는다(카본 A1)
+    if (legacyKind && clientMode() === 'legacy') closeLegacy({ silent: true });
+    if (clientMode() !== 'app') return;
     if (switchOpen) { switchOpen = false; fanPin = false; }
     if (aside) { aside = null; rooms.close(); }
-    if (legacyKind) closeLegacy({ silent: true });
     if (space !== 'pulse') {
       if (!assignedFor(machine.read()).includes('pulse') || orbTarget !== 'home') { render(); return; }
       space = 'pulse';
@@ -585,6 +587,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   async function closePulse() {
     if (disposed || !bandOn() || !pulseOpen || pulseClosing || busyAction !== null || typeof embed.close !== 'function') return;
     pulseClosing = true;
+    // 손님의 「로그인」은 펼침에서 온다. 묻는 동안 펼침을 닫아 두어야 남기면 PULSE가 곧 다시 보인다
+    if (switchOpen) { switchOpen = false; fanPin = false; feedback.switch = ''; }
     render();
     let outcome = 'kept';
     try { outcome = (await embed.close())?.outcome || 'kept'; } catch { outcome = 'kept'; }
@@ -1506,8 +1510,13 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 「계정」은 내 계정 방을, 「설정」은 설정 방을 연다(2단계 둘째 조각 설계 9.3). 설정 방은 손님에게도 있다
     if (action === 'account') { if (rooms.hasAccount()) openAside('account'); else openLegacy('account'); return; }
     if (action === 'settings') { openAside('settings'); return; }
-    // 손님의 「로그인」은 묻는 화면으로 돌아간다. PULSE는 숨은 채 살아 있고, 로그인하면 본체가 손님의 PULSE를 닫는다
-    if (action === 'signin') { if (guestPulse && !machine.read().accountKey) { guestPulse = false; leaveToAsk({ status: 'signed-out' }); render(); } return; }
+    // 손님의 「로그인」은 묻는 화면으로 돌아간다. 살아 있는 손님 PULSE는 「PULSE 닫기」와 같은 문으로 먼저 닫는다.
+    // 쓰던 글을 남기면 PULSE에 머문다. 숨은 PULSE를 묻는 화면 뒤에 남기면 「돌아가서 저장」이 돌아올 곳이 없다(카본 A1)
+    if (action === 'signin') {
+      if (!guestPulse || machine.read().accountKey) return;
+      if (pulseOpen && typeof embed?.close === 'function') { void closePulse(); return; }
+      guestPulse = false; leaveToAsk({ status: 'signed-out' }); render(); return;
+    }
     if (action === 'logout') {
       // 로그아웃 확인(쓰던 글 물음)이 뜨는 동안에는 PULSE 뷰가 그 대화상자를 가리지 않게 숨겨 둔다(설계 검토 R11)
       signingOut = true;

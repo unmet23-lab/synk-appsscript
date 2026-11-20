@@ -2428,6 +2428,45 @@ test('a signed-out guest whose PULSE invite is received goes into PULSE in the w
   assert.deepEqual(e.last(), { visible: false, top: 56 });
 });
 
+test('「로그인」 from a guest closes the live PULSE through the same door: keeping a draft stays in PULSE, closing goes to the ask scene (카본 A1)', async t => {
+  const e = pulseEmbed();
+  const h = harness(t, { initial: { status: 'signed-out' }, options: { embed: e.embed, onInvite: () => { e.setOpen(true); return { ok: true, state: 'received', destination: '/pulse-app/' }; } } });
+  await settle();
+  h.view.type('https://workspace.synk.im/pulse-app/#invite=SyntheticInvite_1234567890');
+  h.face.handle('invite-submit');
+  await settle();
+  e.closeAnswer = 'kept';
+  h.face.handle('open-switch'); await settle();
+  const focused = e.focused.length;
+  h.face.handle('foot', 'signin'); await settle();
+  assert.deepEqual([h.face.getState().phase, h.face.clientMode(), h.view.last().space, h.view.last().fan.open], ['entered', 'app', 'pulse', false], 'the draft was kept, so the guest stays in PULSE');
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+  assert.equal(e.focused.length, focused + 1, 'the focus goes back to the draft');
+  e.closeAnswer = 'closed';
+  h.face.handle('open-switch'); await settle();
+  h.face.handle('foot', 'signin'); await settle();
+  assert.equal(h.face.getState().phase, 'auth');
+  assert.deepEqual(e.last(), { visible: false, top: 56 });
+  e.event({ type: 'reveal' }); await settle();
+  assert.equal(h.face.getState().phase, 'auth', 'nothing is left alive behind the ask scene to reveal');
+});
+
+test('reveal closes an old screen first and shows PULSE; the band hides 「PULSE 닫기」 while a room is open (카본 A1 · A2)', async t => {
+  const { h, e } = await enteredWithPulse(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  h.face.handle('open-switch'); await settle(); h.face.handle('foot', 'settings'); await settle();
+  assert.equal(h.view.last().aside, 'settings');
+  assert.deepEqual([h.view.last().band, h.view.last().bandClose], ['pulse', false], 'the band keeps the orb in place but offers no close over the room');
+  assert.deepEqual(e.last(), { visible: false, top: 56 });
+  h.face.handle('open-switch'); await settle(); h.face.handle('foot', 'account'); await settle();
+  assert.equal(h.face.clientMode(), 'legacy');
+  assert.deepEqual(e.last(), { visible: false, top: 56 });
+  e.event({ type: 'reveal' }); await settle();
+  assert.deepEqual([h.face.clientMode(), h.view.last().space, h.view.last().aside, h.view.last().bandClose], ['app', 'pulse', null, true]);
+  assert.equal(h.view.last().legacy, null, 'the old screen was closed');
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+});
+
 test('a guest Workspace invite still stays on the ask scene with its line (the company window is outside)', async t => {
   const e = pulseEmbed();
   const h = harness(t, { initial: { status: 'signed-out' }, options: { embed: e.embed, onInvite: () => ({ ok: true, state: 'received', destination: '/' }) } });
