@@ -116,6 +116,8 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
 
   // agy는 실행 폴더를 작업 공간으로 본다. 회원 파일이 있는 곳이 아니라 이 혜택의 데이터 폴더에서 돌린다.
   const agyCwd=()=>{try{fs.mkdirSync(root,{recursive:true});return root;}catch{return undefined;}};
+  // 남은 양을 읽으려고 앱이 스스로 돌리는 Claude Code는 이 폴더에서 돈다. 솔리오 사무실은 작업 폴더 끝이 AiSubscriptions\run인 세션을 직원으로 세우지 않는다(사무실 구현설계 4.4).
+  const claudeRunCwd=()=>{const dir=path.join(root,'run');try{fs.mkdirSync(dir,{recursive:true});return dir;}catch{return undefined;}};
   const homeEnv=(service,folder)=>{
     const spec=SERVICES[service];if(!folder||!spec)return {};
     const dir=path.join(accountsDir,folder);
@@ -129,7 +131,7 @@ function createAiSubscriptions({root,platform=process.platform,env=process.env,h
   const {refreshPath,detectTools,childEnv,openWindowsConsole,psEncoded}=runtime;
   const rows=()=>load().rows;
   const system={platform,env,spawn,fetch:fetchImpl};
-  const accounts={accountsDir,home,homeEnv,rows,root,agyCwd,secrets};
+  const accounts={accountsDir,home,homeEnv,rows,root,agyCwd,claudeRunCwd,secrets};
   // 모델별 토큰(11-15): 이 PC의 AI 도구 기록에서 모델별 토큰을 센다(ai-tokens.cjs). 계정판이 연결한 Claude 계정 폴더의 기록도 함께 본다.
   // 세기는 일꾼 스레드에서 돈다(첫 세기에 주 프로세스가 1초 넘게 서던 것 — ai-tokens.cjs 「일꾼 스레드」). 처음 부를 때 띄운다.
   const tokenUsage=createTokenUsageWorker({root,home,env,claudeDirs:()=>rows().filter(row=>row.service==='claude'&&typeof row.folder==='string'&&row.folder).map(row=>path.join(accountsDir,row.folder)),onChange:state=>{try{onTokens(state);}catch{}}});

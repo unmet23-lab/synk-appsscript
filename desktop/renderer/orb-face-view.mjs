@@ -7,6 +7,7 @@ import { fanR, HOME_R, createOrbStage, easeIO, easeIOQ, easeOut, lerp, smooth, s
 import { createOrbSound } from './orb-sound.mjs';
 import { createOrbSignature } from './orb-signature.mjs';
 import { rowSpeech } from './site-visits-model.mjs';
+import { createOfficeFloor } from './office-floor.mjs';
 
 export const PORTAL_STATE_EVENT = 'synk:portal-state';
 export const QA_GUEST_EVENT = 'synk:qa-guest-entry';
@@ -23,6 +24,8 @@ const PROGRAM_ICON = Object.freeze({
   backup: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M7 11.2A3.2 3.2 0 1 0 7.9 7.6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M6.6 6.2l1.5 1.6-2 .6Z" fill="currentColor"/></svg>',
   /* 계정 건강: 맥박 한 줄(솔리오 계정건강 시안의 오브제) */
   health: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 10.5h3.2l1.8-4.5 3 8 2-5.5 1.2 2h3.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  /* 사무실: 방 하나와 점 눈 둘(솔리오 사무실 시안의 오브제) */
+  office: '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3.4" y="5" width="13.2" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="7.6" cy="10" r="1.2" fill="currentColor"/><circle cx="12.4" cy="10" r="1.2" fill="currentColor"/></svg>',
 });
 /* 다가가서 잠깐 머물러야 열리고, 벗어나서 잠깐 지나야 닫힌다(시안 NEAR). pad는 오브제 줄에 다가갔다고 보는 거리(px) */
 const NEAR = Object.freeze({ row: 120, prog: 180, close: 400, pad: 64, open: 150, fast: 260, orb: 18, name: 10, zone: 44 });
@@ -86,6 +89,7 @@ function markup() {
         <button class="obj" type="button" data-orb-prog="backup" aria-current="false" style="--k:1">${PROGRAM_ICON.backup}<span class="obj-n"></span></button>
         <button class="obj" type="button" data-orb-prog="visits" aria-current="false" style="--k:2">${PROGRAM_ICON.visits}<span class="obj-n"></span></button>
         <button class="obj" type="button" data-orb-prog="health" aria-current="false" style="--k:3">${PROGRAM_ICON.health}<span class="obj-n"></span></button>
+        <button class="obj" type="button" data-orb-prog="office" aria-current="false" style="--k:4">${PROGRAM_ICON.office}<span class="obj-n"></span></button>
       </nav>
       <button class="quiet legacy-back" type="button" data-orb-act="legacy-back">돌아가기</button>
     </div>
@@ -124,6 +128,15 @@ function markup() {
       <p class="say rise" style="--i:1"><span data-hea-say></span><span class="then" data-hea-then></span></p>
       <div class="rows vis hea rise" style="--i:3" role="group" aria-label="SNS 계정 건강" data-hea-rows></div>
       <p class="read rise" style="--i:5"><span data-hea-when></span><span data-hea-scope></span></p>
+    </div>
+    <div class="room room-top" data-room="solio-office" hidden>
+      <p class="say rise" style="--i:1" tabindex="-1" data-off-head><span data-off-say></span><span class="then" data-off-then></span></p>
+      <p class="more-note off-hint rise" style="--i:2" data-off-hint hidden></p>
+      <div class="office rise" style="--i:3">
+        <div class="off-slot" role="img" aria-label="부서마다 직원이 앉아 있는 사무실 그림입니다. 같은 내용이 부서 줄에 글로 있습니다." data-off-slot hidden><canvas aria-hidden="true" data-off-floor></canvas></div>
+        <div class="rows off" role="group" aria-label="사무실의 부서" data-off-rows></div>
+      </div>
+      <p class="read rise" style="--i:5"><span data-off-foot></span></p>
     </div>
     ${ASIDE_NAMES.map(asideMarkup).join('')}
     <div class="room" data-room="space">
@@ -171,12 +184,14 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     visits: $('[data-room="solio-visits"]'), visSay: $('[data-vis-say]'), visThen: $('[data-vis-then]'), visRows: $('[data-vis-rows]'), visWhen: $('[data-vis-when]'), visScope: $('[data-vis-scope]'),
     backup: $('[data-room="solio-backup"]'), bakSay: $('[data-bak-say]'), bakThen: $('[data-bak-then]'), bakActs: $('[data-bak-acts]'), bakRows: $('[data-bak-rows]'), bakWhen: $('[data-bak-when]'), bakScope: $('[data-bak-scope]'),
     health: $('[data-room="solio-health"]'), heaSay: $('[data-hea-say]'), heaThen: $('[data-hea-then]'), heaRows: $('[data-hea-rows]'), heaWhen: $('[data-hea-when]'), heaScope: $('[data-hea-scope]'),
+    office: $('[data-room="solio-office"]'), offHead: $('[data-off-head]'), offSay: $('[data-off-say]'), offThen: $('[data-off-then]'), offHint: $('[data-off-hint]'), offSlot: $('[data-off-slot]'), offFloor: $('[data-off-floor]'), offRows: $('[data-off-rows]'), offFoot: $('[data-off-foot]'),
     asides: Object.fromEntries(ASIDE_NAMES.map(name => {
       const r = $(`[data-room="${name}"]`);
       return [name, { room: r, say: r.querySelector('[data-aside-say]'), text: r.querySelector('[data-aside-text]'), then: r.querySelector('[data-aside-then]'), rows: r.querySelector('[data-aside-rows]'), foot: r.querySelector('[data-aside-foot]'), act: r.querySelector('.read [data-room-act]') }];
     })),
   };
-  const asideBoxes = Object.values(app.asides).map(a => a.rows);
+  // 사무실 방의 줄도 방의 줄(data-key)과 같은 규칙으로 열고 접는다(다가가면 열림 · 누르면 고정 · Esc로 접힘). 그래서 같은 묶음 목록에 둔다
+  const asideBoxes = [...Object.values(app.asides).map(a => a.rows), app.offRows];
   /* 솔리오의 읽기 프로그램 방(방문자 분석, 계정 건강). 짜임이 같다: 결론, 줄, 잰 때와 범위. key는 마지막으로 그린 글이다 */
   const readRooms = {
     visits: { room: app.visits, say: app.visSay, then: app.visThen, rows: app.visRows, when: app.visWhen, scope: app.visScope, key: '' },
@@ -647,9 +662,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const asideName = s.aside && app.asides[s.aside] ? s.aside : null;
     app.solio.hidden = !solio || prog !== 'subs' || !!asideName;
     for (const [name, r] of Object.entries(readRooms)) r.room.hidden = prog !== name || !!asideName;
+    app.office.hidden = prog !== 'office' || !!asideName;
     app.space.hidden = solio || !!asideName;
     renderRail(s, solio ? room.programs || [] : [], prog);
     for (const [name, r] of Object.entries(readRooms)) renderRead(r, solio ? room[name] : null);
+    renderOffice(solio ? room.office : null, solio && prog === 'office' && !asideName && s.layer === 'app' && s.mode === 'app');
     if (prog !== lastProg) {
       closeMores(true);
       if (lastProg !== null && prog && !asideName) enterRoom(prog);
@@ -657,7 +674,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     }
     renderAsides(asideName, s.rooms);
     // 방이 가려진 동안(옛 화면, 다른 공간) 스크롤은 사건 없이 0으로 돌아온다. 그릴 때마다 위쪽 흐림 표시를 지금 스크롤에 맞춘다(0.4.97 검수 A3)
-    for (const r of [app.solio, app.backup, app.visits, app.health, ...Object.values(app.asides).map(a => a.room)]) if (r.classList.contains('scrolled') && !(r.scrollTop > 0)) r.classList.remove('scrolled');
+    for (const r of [app.solio, app.backup, app.visits, app.health, app.office, ...Object.values(app.asides).map(a => a.room)]) if (r.classList.contains('scrolled') && !(r.scrollTop > 0)) r.classList.remove('scrolled');
     layers.app.setAttribute('aria-label', solio ? '솔리오' : room.space === 'workspace' ? 'Workspace' : 'PULSE');
     if (solio) {
       const t = room.solio;
@@ -706,11 +723,13 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     for (const o of app.objs) {
       const p = programs.find(x => x.key === o.dataset.orbProg);
       o.hidden = !p;
+      // 알림이 있는 프로그램(사무실)은 오브제에 느낌표가 붙는다. 다른 프로그램을 보고 있어도 붙는다(사무실 구현설계 7절)
+      o.classList.toggle('news', !!p?.alert);
       if (!p) continue;
       // 이름이 펼쳐지는 늦춤(--k)은 보이는 차례로 준다. 가운데 오브제가 빠져도 펼치는 시간이 railSettleMs와 맞는다
       const at = String(k++);
       if (o.style.getPropertyValue('--k') !== at) o.style.setProperty('--k', at);
-      const label = p.note ? `${p.label}, ${p.note}` : p.label;
+      const label = (p.note ? `${p.label}, ${p.note}` : p.label) + (p.alert ? ', 새 소식' : '');
       if (o.getAttribute('aria-label') !== label) {
         o.setAttribute('aria-label', label);
         const name = o.querySelector('.obj-n');
@@ -727,7 +746,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   }
   /* 다른 프로그램의 방이 뜰 때 안의 것들이 차례로 떠오른다(시안 flashRoom) */
   function enterRoom(prog) {
-    const el = app.asides[prog]?.room || readRooms[prog]?.room || app.solio;
+    const el = app.asides[prog]?.room || readRooms[prog]?.room || (prog === 'office' ? app.office : null) || app.solio;
     el.scrollTop = 0;
     el.classList.remove('scrolled');
     el.classList.remove('enter');
@@ -765,6 +784,61 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const o = event.target?.closest?.('.obj[data-orb-prog]');
     if (o && focusVisible(o)) onAction('prog', o.dataset.orbProg);
   };
+
+  /* ── 솔리오 「사무실」의 방(사무실 구현설계 11.2, 시안 사무실.html). 맨 위 두 줄, 사무실 그림, 줄(방의 줄과 같은 data-key 줄)이다.
+     그림에서 부서에 다가가 0.18초 머물면 그 부서의 줄이 열리고, 벗어나 0.4초 지나면 고정하지 않은 줄이 접힌다(시안의 그림 머무는 시간 = NEAR.prog · NEAR.close).
+     그림을 누르면 그 줄이 고정되고, 빈 곳을 누르면 모두 접힌다. 줄이나 직원 줄에 손을 대면 그림의 그 부서와 직원이 밝아진다 ── */
+  let offTimer = 0, offLeave = 0;
+  const markOfficeStaff = id => { for (const r of app.offRows.querySelectorAll('.row.staff')) r.classList.toggle('hot', !!id && r.dataset.staff === id); };
+  const officeFloor = createOfficeFloor(app.offFloor, {
+    win,
+    reduced,
+    isOpen: key => !!rowByKey(app.offRows, key)?.classList.contains('opened'),
+    onHover: (zone, staff, event) => {
+      markOfficeStaff(staff);
+      if (event?.pointerType && event.pointerType !== 'mouse') return;
+      clearTimeout(offTimer);
+      const b = zone ? rowByKey(app.offRows, zone) : null;
+      if (b) { clearTimeout(offLeave); clearTimeout(subLeave); if (!b.classList.contains('opened')) offTimer = setTimeout(() => { if (!disposed && b.isConnected) openVis(b); }, NEAR.prog); }
+      else { clearTimeout(offLeave); offLeave = setTimeout(() => { if (!disposed) closeMores(false, app.offRows); }, NEAR.close); }
+    },
+    onPress: zone => {
+      clearTimeout(offTimer); clearTimeout(offLeave);
+      const b = zone ? rowByKey(app.offRows, zone) : null;
+      if (b) { openVis(b, true); showRow(b); } else closeMores(true, app.offRows);
+    },
+  });
+  // 줄의 열림이 바뀌면 그림의 밝은 부서도 바뀐다. 움직임 줄이기에서는 그림이 저절로 다시 그려지지 않으므로 그때 한 번 그린다
+  const offObserver = typeof win.MutationObserver === 'function' ? new win.MutationObserver(() => { if (reduced()) officeFloor.redraw(); }) : null;
+  offObserver?.observe(app.offRows, { attributes: true, attributeFilter: ['class'], subtree: false });
+  const onOfficeOver = event => {
+    const t = event.target, s = t?.closest?.('.row.staff'), m = t?.closest?.('.more');
+    const b = t?.closest?.('button.row[data-key]') || (m ? m.previousElementSibling : null);
+    officeFloor.setHot({ zone: b?.dataset?.key || null, staff: s?.dataset?.staff || null });
+    markOfficeStaff(s?.dataset?.staff || null);
+  };
+  const onOfficeLeave = () => { officeFloor.setHot(null); markOfficeStaff(null); };
+  function renderOffice(v, shown) {
+    const on = !!(v && v.visible);
+    setText(app.offSay, on ? v.say : '');
+    setText(app.offThen, on ? v.then : '');
+    setText(app.offHint, on ? v.hint : '');
+    app.offHint.hidden = !(on && v.hint);
+    setText(app.offFoot, on ? v.foot : '');
+    const zones = on && v.floor ? v.floor.zones || [] : [];
+    // 세션도 부서도 없으면 빈 그림을 두지 않는다. 흐름 시험이 구역과 보기를 읽도록 자리에 적어 둔다
+    app.offSlot.hidden = !zones.length;
+    const zoneKeys = zones.map(z => z.key).join(' '), viewName = on && v.floor ? v.floor.view : '';
+    if (app.offSlot.dataset.zones !== zoneKeys) app.offSlot.dataset.zones = zoneKeys;
+    if (app.offSlot.dataset.view !== viewName) app.offSlot.dataset.view = viewName;
+    officeFloor.setScene(on ? v.floor : null);
+    officeFloor.show(shown && zones.length > 0);
+    putRows(app.offRows, on ? v.rows || [] : [], 'solio-office');
+    if (!on) return;
+    // 부서를 뺀 뒤처럼 줄이 사라지면 맨 위 문장에 초점을 둔다
+    if (v.focus?.say && applied.focus['solio-office'] !== v.focus.seq) { applied.focus['solio-office'] = v.focus.seq; focusEl(app.offHead); }
+    applyRequests(app.offRows, 'solio-office', v.focus?.say ? { ...v, focus: null } : v);
+  }
 
   /* ── 방문자 분석의 방(시안 buildVis)과 계정 건강의 방(계정건강 시안 build). 요약에서 온 글이 섞이므로 모두 textContent로만 넣는다
      (사이트방문 설계 6절, 검토 P2-5, 계정건강 PC앱_구현설계 4절) ── */
@@ -1177,10 +1251,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (r.watch) b.dataset.watch = '1'; else delete b.dataset.watch;
     const label = r.label || [r.nm, r.sub, r.mid, r.val, r.when].filter(Boolean).join(', ');
     if (b.getAttribute('aria-label') !== label) b.setAttribute('aria-label', label);
-    const cells = [['nm', r.nm, r.sub], ['mid', r.mid], ['val', r.val], ['when', r.when]], ck = JSON.stringify(cells);
+    // flag가 참이면 이름 옆에 느낌표가 붙는다(사무실의 부서 줄, 구현설계 7절). 낭독 이름(label)이 「새 소식」을 읽는다
+    const cells = [['nm', r.nm, r.sub, !!r.flag], ['mid', r.mid], ['val', r.val], ['when', r.when]], ck = JSON.stringify(cells);
     if (cellKeys.get(b) !== ck) {
       cellKeys.set(b, ck);
-      b.replaceChildren(...cells.map(([cls, text, sub]) => { const n = el('span', cls, text || ''); if (sub) n.append(el('small', '', sub)); return n; }));
+      b.replaceChildren(...cells.map(([cls, text, sub, flag]) => { const n = el('span', cls, text || ''); if (flag) { const f = el('i', 'flag', '!'); f.setAttribute('aria-hidden', 'true'); n.append(f); } if (sub) n.append(el('small', '', sub)); return n; }));
     }
     const inner = b.nextElementSibling?.firstElementChild;
     if (!inner) return;
@@ -1418,6 +1493,26 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
         p.append(q);
         out.push(p, n);
       } else if (kind === 'grp') { const g = el('div', 'grp'); g.dataset.grp = a; g.hidden = !!c; g.append(...nodesOf(b || [], liveId)); out.push(g); }
+      else if (kind === 'staff') {
+        // 사무실의 직원 줄(office-room.mjs): 도구와 모델, 상태 문장과 하는 일. 그림에서 그 직원을 가리키면 이 줄이 밝아진다
+        const fl = flagsOf(g), r = el('div', 'row sub staff' + (fl.includes('now') ? ' now' : '')), nm = el('span', 'nm', b || ''), mid = el('span', 'mid');
+        r.dataset.staff = String(a ?? '');
+        if (fl.includes('alert')) { const f = el('i', 'flag', '!'); f.setAttribute('aria-hidden', 'true'); nm.append(f, el('span', 'sr', ' 새 소식')); }
+        if (c) nm.append(el('small', '', c));
+        mid.append(el('b', '', d || ''));
+        if (e) mid.append(el('small', '', e));
+        r.append(nm, mid, el('span', 'val', ''));
+        out.push(r);
+      } else if (kind === 'item') {
+        // 부서의 기능 줄(사무실 시안 「담은 것」 16): 누르면 바로 아래 묶음이 그 자리에서 열린다. 다가가기만 해서는 열리지 않는다
+        const q = el('button', 'row sub item' + (c ? ' opened' : ''));
+        q.type = 'button';
+        q.dataset.roomAct = 'grp';
+        q.dataset.roomArg = String(d ?? '');
+        q.setAttribute('aria-expanded', String(!!c));
+        q.append(el('span', 'nm', a || ''), el('span', 'mid', b || ''), el('span', 'val', e || ''));
+        out.push(q);
+      }
     }
     return out;
   }
@@ -1943,6 +2038,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   app.fan.addEventListener('pointerout', onFanPoint);
   app.fan.addEventListener('focusin', onFanPoint);
   app.fan.addEventListener('focusout', onFanPoint);
+  app.offRows.addEventListener('pointerover', onOfficeOver);
+  app.offRows.addEventListener('pointerleave', onOfficeLeave);
   root.addEventListener('pointermove', onRootMove, { passive: true });
   root.addEventListener('pointerleave', onRootLeave);
   root.addEventListener('pointerdown', onRootDown, true);
@@ -1996,6 +2093,12 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       clearTimeout(subLeave);
       clearTimeout(fanTimer);
       clearTimeout(fanLeave);
+      clearTimeout(offTimer);
+      clearTimeout(offLeave);
+      offObserver?.disconnect();
+      officeFloor.dispose();
+      app.offRows.removeEventListener('pointerover', onOfficeOver);
+      app.offRows.removeEventListener('pointerleave', onOfficeLeave);
       if (introWait) introWait();
       root.removeEventListener('pointermove', onRootMove);
       root.removeEventListener('pointerleave', onRootLeave);

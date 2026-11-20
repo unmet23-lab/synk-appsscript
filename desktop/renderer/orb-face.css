@@ -443,6 +443,44 @@ html[data-motion="reduced"] #portal-entry .dial .d-sweep,html[data-motion="reduc
 #portal-entry .room[data-room="solio"] .read:has(> [data-read]:empty){justify-content:flex-start}
 #portal-entry .room[data-room="solio"] .read > [data-read]:empty{display:none}
 
+/* ── 솔리오 「사무실」(사무실 구현설계 11.2 · 11.3, 시안 사무실.html 53~140행). 맨 위 두 줄 아래에 사무실 그림과 부서 줄이 나란히 선다.
+   1000px 아래에서는 그림이 위, 줄이 아래로 쌓인다. 아주 낮은 창에서는 그림을 빼고 문장과 줄만 둔다. 색은 하나이고 알림은 느낌표만이다(유호님 11-19 「느낌표만」) ── */
+#portal-entry .off-hint{margin:12px 0 0;padding:0}
+#portal-entry .office{margin-top:clamp(22px,4.6vh,52px);display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);column-gap:clamp(22px,3.6vw,60px);align-items:start}
+/* 그림이 놓이는 자리. 줄이 펼쳐져 방이 길어져도 제자리에 있다 */
+#portal-entry .off-slot{position:sticky;top:0;height:clamp(230px,54vh,540px);min-width:0}
+#portal-entry .off-slot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#portal-entry .office > .rows{margin-top:0}
+#portal-entry .office > .off-slot[hidden] + .rows{grid-column:1 / -1}
+/* 줄은 이름, 하는 일, 상태 세 칸이다. 비어 있는 오른쪽 칸은 자리를 차지하지 않는다 */
+#portal-entry .rows.off{grid-template-columns:minmax(84px,auto) minmax(0,1fr) auto;column-gap:18px}
+#portal-entry .rows.off .row{column-gap:normal}
+#portal-entry .rows.off .row > .val:empty,#portal-entry .rows.off .row > .when:empty{display:none}
+#portal-entry .rows.off .val{font:var(--small)}
+#portal-entry .rows.off > button.row .val{font:var(--small);color:inherit}
+/* 직원 줄: 상태 문장은 밝게, 작업 폴더와 마지막 도구는 작게. 그림에서 가리킨 직원(hot)과 승인을 물은 직원은 더 밝다 */
+#portal-entry .row.staff .nm{font:var(--small);color:rgba(243,241,236,.7)}
+#portal-entry .row.staff .mid b{display:block;font:var(--small);font-weight:400;color:rgba(243,241,236,.84)}
+#portal-entry .row.staff .mid small{display:block;margin-top:3px;font:var(--small);color:var(--dim)}
+#portal-entry .row.staff.now .mid b,#portal-entry .row.staff.hot .mid b,#portal-entry .row.staff.hot .nm{color:var(--paper)}
+/* 부서의 기능 줄(「부서 설정」): 직원 줄과 가는 줄로 나눈다. 누르면 그 자리에서 열린다 */
+#portal-entry .more-in .row.sub.item{margin-top:6px;padding:10px 0;border-top:1px solid var(--hair)}
+#portal-entry .row.sub.item .nm{font:var(--small);font-weight:500;color:rgba(243,241,236,.84)}
+#portal-entry .row.sub.item:hover .nm,#portal-entry .row.sub.item.opened .nm{color:var(--paper)}
+#portal-entry .row.sub.item:focus-visible{outline:1px solid var(--ring);outline-offset:-1px}
+/* 느낌표: 부서 줄과 직원 줄의 이름 옆, 위쪽 「사무실」 오브제 */
+#portal-entry .flag{display:inline-block;margin-left:7px;font:700 13px/1 var(--orb-sans);font-style:normal;color:var(--paper)}
+#portal-entry .obj.news{position:relative}
+#portal-entry .obj.news::after{content:"!";position:absolute;left:25px;top:5px;font:700 11px/1 var(--orb-sans);color:var(--paper)}
+@media (max-width:1000px){
+  #portal-entry .office{grid-template-columns:minmax(0,1fr);row-gap:22px}
+  #portal-entry .off-slot{position:relative;height:clamp(200px,36vh,320px)}
+}
+@media (max-height:420px){
+  #portal-entry .office{grid-template-columns:minmax(0,1fr)}
+  #portal-entry .off-slot{display:none}
+}
+
 /* 구를 누르면 구가 가운데로 와서 지금 있는 자리를 앞에 보인다. 고리 하나가 공간 하나다 */
 #portal-entry .sw-top{position:absolute;left:16px;right:16px;top:calc(var(--portal-chrome-h,40px) + clamp(14px,4vh,40px));display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
 #portal-entry .sw-lead,#portal-entry .sw-error{margin:0;max-width:34em;font:400 14px/1.5 var(--orb-sans);color:rgba(243,241,236,.72);text-align:center}
@@ -489,6 +527,7 @@ html[data-orb-client="app"] #portal-entry .orb-stage[data-fan] ~ .portal-window-
   #portal-entry .gauge{grid-column:1 / -1;grid-row:2}
   #portal-entry .when{grid-column:1 / -1;grid-row:3;text-align:left;white-space:normal}
   #portal-entry .rows.vis{grid-template-columns:minmax(0,1fr)}
+  #portal-entry .rows.off{grid-template-columns:minmax(0,1fr)}
   #portal-entry .mid{grid-column:1 / -1;grid-row:2}
   #portal-entry .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
   #portal-entry .row-plain > :last-child{grid-column:2;grid-row:1}

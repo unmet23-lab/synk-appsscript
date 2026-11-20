@@ -16,6 +16,7 @@ import { solioBrief } from './solio-brief.mjs';
 import { siteVisitsView, SITE_VISITS_NAME } from './site-visits-model.mjs';
 import { snsHealthView, SNS_HEALTH_NAME } from './sns-health-model.mjs';
 import { solioBackupView, backupActionNotice, SOLIO_BACKUP_NAME } from './solio-backup-model.mjs';
+import { createOfficeRoom, OFFICE_NAME, OFFICE_TIMING } from './office-room.mjs';
 import { createOrbFaceView } from './orb-face-view.mjs';
 import { createOrbRooms, ASIDE_ROOMS } from './orb-rooms.mjs';
 
@@ -32,9 +33,11 @@ export const SOLIO_PROGRAMS = Object.freeze([
   Object.freeze({ key: 'backup', label: SOLIO_BACKUP_NAME }),
   Object.freeze({ key: 'visits', label: SITE_VISITS_NAME }),
   Object.freeze({ key: 'health', label: SNS_HEALTH_NAME }),
+  // 사무실은 계정 건강 다음이다(사무실 구현설계 11.1). 본체가 볼 계정에만 available:true로 답한다
+  Object.freeze({ key: 'office', label: OFFICE_NAME }),
 ]);
 /* 이 PC의 요약 한 장을 읽어 보이는 프로그램(읽기 프로그램). 오브제 줄은 이 가운데 하나라도 보이면 선다 */
-const READ_PROGRAMS = Object.freeze(['visits', 'health', 'backup']);
+const READ_PROGRAMS = Object.freeze(['visits', 'health', 'backup', 'office']);
 const READ_VIEW = Object.freeze({ visits: siteVisitsView, health: snsHealthView, backup: solioBackupView });
 /* 백업 방이 보이는 동안 다시 읽는 간격(ms). 설치가 도는 동안은 짧게, 아니면 엔진이 상태를 쓰는 주기에 맞춘다 */
 const BACKUP_POLL = Object.freeze({ busy: 2000, idle: 15000 });
@@ -153,8 +156,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   const look = { ...ORB_LOOK, ...(options.look && typeof options.look === 'object' ? options.look : {}) };
   const subs = options.subscriptions && typeof options.subscriptions.snapshot === 'function' ? options.subscriptions : null;
   const bridgeOf = v => (v && typeof v.snapshot === 'function' ? v : null);
-  const readApi = { visits: bridgeOf(options.siteVisits), health: bridgeOf(options.snsHealth), backup: bridgeOf(options.solioBackup) };
+  const readApi = { visits: bridgeOf(options.siteVisits), health: bridgeOf(options.snsHealth), backup: bridgeOf(options.solioBackup), office: bridgeOf(options.office) };
   let backupPoll = null, backupPollMs = 0, backupNotice = null;
+  /* 솔리오 「사무실」(사무실 구현설계 11절). 판은 읽기 프로그램처럼 읽고(reads.office), 방의 동작과 화면 상태는 office-room.mjs가 가진다.
+   * 방이 보이는 동안 기록 살피기를 켜고(watch), 분 글은 15초마다 다시 쓴다. 솔리오가 보이는 동안은 1분마다와 바뀜 알림 때 다시 읽어 오브제의 느낌표를 맞춘다 */
+  const office = createOfficeRoom({ api: readApi.office, snapshot: () => reads.office.result, reread: () => syncRead('office', { again: true }), changed: () => render() });
+  let officeWatching = false, officeClock = null, officePoll = null, officeChange = null, officeOff = null;
 
   const machine = createPortalStateMachine({
     status: options.initialState?.status ?? 'restoring',
@@ -410,7 +417,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function readScene(key, state) {
     const r = reads[key];
     if (!readApi[key] || !memberShown(state) || !state.accountKey || r.account !== state.accountKey) return { visible: false };
-    const scene = READ_VIEW[key](r.result, now());
+    // 사무실의 장면은 방의 화면 상태(열어 둔 묶음, 알림 줄)와 구독 방의 남은 양까지 쓴다
+    const scene = key === 'office' ? office.scene(r.result, now(), sol.snapshot) : READ_VIEW[key](r.result, now());
     // 백업 방에서 누른 단추가 거절되거나 열지 못했으면 그 한 줄을 둘째 문장 앞에 10초 둔다(Fable 최종 검수 F3)
     if (key === 'backup' && scene.visible && backupNotice && now() - backupNotice.at < 10000) return { ...scene, then: `${backupNotice.text} ${scene.then || ''}`.trim() };
     return scene;
@@ -420,7 +428,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
    * 볼 계정인지는 솔리오가 열릴 때 한 번 읽어 정하고, 답이 오기 전에는 줄을 두지 않는다 */
   function programsFor(state, scenes) {
     if (!memberShown(state) || !READ_PROGRAMS.some(key => scenes[key]?.visible)) return [];
-    return SOLIO_PROGRAMS.filter(p => p.key === 'subs' || scenes[p.key]?.visible).map(p => (p.key === 'backup' && scenes.backup?.note ? { ...p, note: scenes.backup.note } : { ...p }));
+    return SOLIO_PROGRAMS.filter(p => p.key === 'subs' || scenes[p.key]?.visible).map(p => (p.key === 'backup' && scenes.backup?.note ? { ...p, note: scenes.backup.note } : p.key === 'office' && scenes.office?.alert ? { ...p, alert: true } : { ...p }));
   }
 
   function roomScene(state) {
@@ -526,6 +534,39 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 모델별 토큰의 실시간은 구독 방이 보이는 동안 부탁한다(11-20부터 맨 위 「지금 출력」이 늘 보인다, 솔리오 구독 비서 설계 3.3)
     rooms.syncLive(scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && scene.room?.prog === 'subs' && !aside && !isHidden(), Boolean(scene.room?.solio?.brief?.live));
     syncBackupPoll(scene.mode === 'app' && scene.layer === 'app' && space === 'solio' && scene.room?.prog === 'backup' && !aside && !isHidden(), Boolean(scene.room?.backup?.busy));
+    syncOffice(scene);
+  }
+  /* 사무실(구현설계 3.4의 8, 7절). 방이 보이는 동안만 본체의 기록 살피기를 켜고 15초마다 다시 그린다(분 글). 방을 떠나면 끄고 방의 화면 상태를 지운다.
+   * 솔리오가 보이고 이 계정이 사무실을 볼 수 있으면 1분마다 판을 다시 읽는다. 다른 프로그램을 보고 있어도 오브제의 느낌표가 맞는다.
+   * scene이 null이면(창이 가려짐, 끝냄) 모두 끈다 */
+  function syncOffice(scene) {
+    const api = readApi.office;
+    const app = !!scene && !disposed && scene.mode === 'app' && space === 'solio' && !isHidden();
+    const shown = app && scene.layer === 'app' && scene.room?.prog === 'office' && !aside;
+    if (api && typeof api.onChanged === 'function' && officeOff === null && !disposed) {
+      try {
+        const off = api.onChanged(() => {
+          // 바뀜 알림이 몰려 와도 한 번만 다시 읽는다
+          if (disposed || officeChange !== null) return;
+          // 사무실을 볼 수 있는 계정일 때만 다시 읽는다
+          officeChange = setTimer(() => { officeChange = null; if (!disposed && clientMode() === 'app' && space === 'solio' && !isHidden() && reads.office.result?.available === true) syncRead('office', { again: true }); }, OFFICE_TIMING.changed);
+        });
+        officeOff = typeof off === 'function' ? off : () => {};
+      } catch { officeOff = () => {}; }
+    }
+    if (shown !== officeWatching) {
+      officeWatching = shown;
+      if (!shown) office.close();
+      let pending;
+      try { pending = typeof api?.watch === 'function' ? Promise.resolve(api.watch(shown)) : null; } catch { pending = null; }
+      // 켠 뒤에는 살핀 결과를 한 번 더 읽는다(첫 살피기가 끝난 판)
+      if (shown && pending) pending.catch(() => null).then(() => { if (!disposed && officeWatching) syncRead('office', { again: true }); });
+    }
+    if (shown && officeClock === null && typeof setTick === 'function') officeClock = setTick(() => { if (!isHidden()) render(); }, OFFICE_TIMING.clock);
+    else if (!shown && officeClock !== null) { clearTick(officeClock); officeClock = null; }
+    const poll = app && reads.office.result?.available === true;
+    if (poll && officePoll === null && typeof setTick === 'function') officePoll = setTick(() => { if (!isHidden()) syncRead('office', { again: true }); }, OFFICE_TIMING.poll);
+    else if (!poll && officePoll !== null) { clearTick(officePoll); officePoll = null; }
   }
   /* 백업 방이 보이는 동안만 본체에 다시 묻는다. 설치 단계와 엔진의 상태 파일이 바뀌는 것을 보여 주려는 것이다 */
   function syncBackupPoll(on, busy) {
@@ -1539,6 +1580,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     if (r.timer !== null) clearTimer(r.timer);
     Object.assign(r, { account: undefined, result: null, loading: false, done: false, retried: false, timer: null, again: false });
     if (prog === key) prog = 'subs';
+    // 사무실 방의 화면 상태(쓰던 이름, 열어 둔 묶음, 늦게 올 답)도 앞 계정의 것을 남기지 않는다
+    if (key === 'office') office.reset();
   }
   function stopReads() { for (const key of READ_PROGRAMS) stopRead(key); }
   function syncReads(opts) { for (const key of READ_PROGRAMS) syncRead(key, opts); }
@@ -1751,6 +1794,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       /* 방 안쪽의 단추. 줄을 열고 접는 일은 화면 안에서 끝나고, 동작만 여기로 온다 */
       case 'room':
         if (clientMode() !== 'app' || !payload || typeof payload !== 'object') return false;
+        // 사무실 방의 줄 동작은 office-room.mjs가 받는다. 방을 떠나며 접힌 줄의 알림(row-fold)은 방을 떠난 뒤에 와도 받는다(끝냄을 본 것으로)
+        if (payload.room === 'solio-office') {
+          if (!['row-open', 'row-fold', 'disarm'].includes(payload.act) && (aside || space !== 'solio' || prog !== 'office')) return false;
+          void office.handle(payload);
+          return true;
+        }
         if (!aside && payload.room !== 'solio') return false;
         void rooms.handle(payload);
         return true;
@@ -1769,7 +1818,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       case 'pageshow': if (payload === true) releaseNavigationHold(); return true;
       case 'visible': if (!isHidden()) render(); return true;
       // 창이 가려지면 모델별 토큰의 실시간 부탁을 거둔다(설계 3.4)
-      case 'hidden': rooms.syncLive(false); return true;
+      case 'hidden': rooms.syncLive(false); syncOffice(null); return true;
       case 'escape': return escape();
       default: return false;
     }
@@ -1891,6 +1940,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       aside = null;
       if (clockTimer !== null) { clearTick(clockTimer); clockTimer = null; }
       if (backupPoll !== null) { clearTick(backupPoll); backupPoll = null; backupPollMs = 0; }
+      if (officeWatching) { officeWatching = false; try { void Promise.resolve(readApi.office?.watch?.(false)).catch(() => {}); } catch { /* 본체의 일이다 */ } }
+      if (officeClock !== null) { clearTick(officeClock); officeClock = null; }
+      if (officePoll !== null) { clearTick(officePoll); officePoll = null; }
+      if (officeChange !== null) { clearTimer(officeChange); officeChange = null; }
+      try { officeOff?.(); } catch { /* 무시 */ }
+      officeOff = null;
       if (hadBusyInvite) options.onCancelInvite?.();
       view.dispose?.();
     },

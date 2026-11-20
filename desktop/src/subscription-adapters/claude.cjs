@@ -10,7 +10,7 @@ const LOGIN_ENDED_MESSAGE='Claude 로그인 기한이 끝났습니다. Claude는
 const loginUntilOf=value=>{const t=typeof value==='string'?Date.parse(value):NaN;return Number.isFinite(t)&&t>0?t:null;};
 // 공급자 명령·출력·로그인 방식은 이 어댑터가 함께 소유한다.
 function create({runtime,accounts,system,now,helpers}){
- const {accountsDir,home,homeEnv,rows}=accounts;
+ const {accountsDir,home,homeEnv,rows,claudeRunCwd}=accounts;
 
  const {runTool}=runtime;
  const {parseJson,claudeNeedsLogin,parseClaudeUsage,stripAnsi,cleanText}=helpers;
@@ -31,7 +31,7 @@ async function claudeAccount(folder){
   }
 
 async function readClaude(row){
-    const r=await runTool(runtime.tools.claude.path,['-p','/usage'],{extraEnv:homeEnv('claude',row.folder)});
+    const r=await runTool(runtime.tools.claude.path,['-p','/usage'],{extraEnv:homeEnv('claude',row.folder),cwd:claudeRunCwd?.()});
     const text=r.out+'\n'+r.err;
     if(LOGIN_TIME_LIMIT.test(stripAnsi(text)))return {state:'needs-login',message:LOGIN_ENDED_MESSAGE};
     if(claudeNeedsLogin(text))return {state:'needs-login',message:'Claude 로그인이 풀렸습니다. 다시 연결해 주세요.'};

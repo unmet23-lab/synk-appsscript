@@ -46,6 +46,29 @@ const prefSnap=()=>({ok:true,preferences:{...prefs},capabilities:{launchAtLogin:
 const prefUpdate=patch=>{if(patch?.globalShortcut==='Ctrl+Alt+K')return {ok:false,code:'SHORTCUT_UNAVAILABLE'};prefs={...prefs,...patch};const snap=prefSnap();setTimeout(()=>tell(prefListeners,snap),0);return snap;};
 const draftStatus=owner=>({ok:true,available:true,enabled:Boolean(owner)&&auth.signedIn===true&&drafts.enabled});
 const setUpdate=patch=>{update={...update,...patch};tell(updateListeners,{...update});return {...update};};
+// 솔리오 「사무실」(사무실 구현설계 14.2): 본체(main.cjs synk:office-*)의 답 모양만 흉내 낸다. 세션은 짧은 꼴(sessions)로 받아, 읽을 때마다 지금 시각에 맞춰
+// 상태 규칙(office-model.mjs)이 읽는 칸으로 짓는다. 폴더 고르기 창은 열지 않고 정해 둔 가짜 폴더를 고른 것으로 친다. 정하지 않으면 볼 계정이 아닌 답이다
+let office=null;const officeListeners=new Set(),officeSeen={};let officeSeq=0;
+const officeEmit=()=>setTimeout(()=>{for(const fn of officeListeners){try{fn();}catch{}}},0);
+const officeNorm=p=>String(p||'').replace(/[\\/]+/g,'\\').replace(/\\+$/,'').toLowerCase();
+const officeDeptOf=spec=>{if(Object.hasOwn(office?.assignments||{},spec.id))return office.assignments[spec.id];const here=officeNorm(spec.cwd);let best=null,depth=-1;for(const d of office?.departments||[]){const f=officeNorm(d.folder);if(f&&(here===f||here.startsWith(f+'\\'))&&f.length>depth){best=d.id;depth=f.length;}}return best;};
+// kind: work(일하는 중) · ask(승인을 물음) · done(2분 넘게 걸려 끝냄) · rest(쉬는 중) · silent(소식 없음). Codex는 훅 소식이 없는 세션이다(기록만)
+function officeSession(spec,t){
+  const at=t-(Number(spec.ago)||0),hooked=spec.tool!=='codex'&&spec.hooked!==false;
+  const s={id:spec.id,tool:spec.tool==='codex'?'codex':'claude',cwd:spec.cwd||null,model:spec.model||null,hooked,firstAt:at-600e3,hookedAt:null,lastHookAt:null,lastRecordAt:null,postAt:null,askAt:null,clearAt:null,idleAt:null,stopAt:null,turnStartAt:null,doneLong:false,seenAt:null,endedAt:null,agents:{},anonAgents:0,lastTool:spec.toolName?{name:spec.toolName,detail:spec.detail||''}:null,lastToolAt:spec.toolName?at:null};
+  for(let i=0;i<(Number(spec.helpers)||0);i++)s.agents['qa-agent-'+i]=true;
+  if(!hooked){s.lastRecordAt=at;return s;}
+  s.hookedAt=s.firstAt;s.lastHookAt=at;
+  if(spec.kind==='ask')s.askAt=at;
+  else if(spec.kind==='done'){s.postAt=at-240e3;s.clearAt=at;s.stopAt=at;s.doneLong=true;const seen=officeSeen[spec.id];s.seenAt=Number.isFinite(seen)?seen:null;}
+  else if(spec.kind==='rest'){s.postAt=at-240e3;s.clearAt=at;s.stopAt=at;s.seenAt=at+1;}
+  else{s.postAt=at;s.clearAt=at;s.turnStartAt=at-60e3;}
+  return s;
+}
+const officeSnap=()=>{if(!office||office.available!==true)return {ok:true,available:false};const t=Date.now();const sessions={};for(const spec of office.sessions||[])sessions[spec.id]=officeSession(spec,t);
+  return {ok:true,available:true,state:{sessions,ignored:{}},departments:JSON.parse(JSON.stringify(office.departments||[])),assignments:{...(office.assignments||{})},settings:{view:'tilted',manualCap:null,...(office.settings||{})},roots:JSON.parse(JSON.stringify(office.roots||{claude:[],codex:[],added:[]})),pc:office.pc===undefined?{cores:16,totalMemGb:31.7,freeMemGb:19,cpuPercent:38}:office.pc,hooks:{on:false,available:false},readAt:t};};
+const officeGate=()=>auth.signedIn!==true?{ok:false,code:'SIGN_IN_REQUIRED'}:!office||office.available!==true?{ok:false,code:'NOT_ALLOWED'}:null;
+const officeChange=work=>{const refused=officeGate();if(refused)return refused;const res=work();if(res?.ok!==false)officeEmit();return res||{ok:true};};
 let release=null;let restoring=new Promise(resolve=>{release=resolve;});
 let configured=null;const ready=new Promise(resolve=>{configured=resolve;});
 const emit=()=>{for(const fn of listeners){try{fn(auth);}catch{}}};
@@ -132,9 +155,36 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     open:async topic=>{calls.push('backup-open:'+topic);return {ok:true};},
     dismiss:async()=>{calls.push('backup-dismiss');return {ok:true};},
   }),
+  // 솔리오 「사무실」(main.cjs synk:office-*). 로그인한 회원에게만 답하고, 정하지 않으면 볼 계정이 아닌 답이다
+  office:Object.freeze({
+    snapshot:async()=>{calls.push('office-snapshot');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return officeSnap();},
+    watch:async on=>{calls.push('office-watch:'+(on===true));return officeGate()||{ok:true,watching:on===true};},
+    saveDepartment:async input=>{calls.push('office-save:'+JSON.stringify(input));return officeChange(()=>{
+      const name=String(input?.name||'').trim(),id=input?.id??null,list=office.departments||(office.departments=[]);
+      if(!name||[...name].length>20)return {ok:false,code:'NAME'};
+      if(list.some(d=>d.id!==id&&d.name.toLowerCase()===name.toLowerCase()))return {ok:false,code:'NAME_TAKEN'};
+      let folder;
+      if(input?.folder==='choose'){if(office.cancelChoose)return {ok:false,code:'CANCELLED'};folder='C:\\qa\\고른 폴더\\'+name;}
+      else if(input?.folder&&typeof input.folder==='object'){const spec=(office.sessions||[]).find(s=>s.id===input.folder.fromSession);if(!spec?.cwd)return {ok:false,code:'NOT_FOUND'};folder=spec.cwd;}
+      else if(input?.folder===undefined&&id!==null){const d=list.find(x=>x.id===id);if(!d)return {ok:false,code:'NOT_FOUND'};folder=d.folder;}
+      else return {ok:false,code:'VALUE'};
+      if(id!==null){const d=list.find(x=>x.id===id);if(!d)return {ok:false,code:'NOT_FOUND'};d.name=name;d.folder=folder;}
+      else{if(list.length>=24)return {ok:false,code:'LIMIT'};list.push({id:'qd'+(++officeSeq).toString().padStart(3,'0'),name,folder});}
+      return {ok:true};});},
+    removeDepartment:async id=>{calls.push('office-remove:'+id);return officeChange(()=>{const list=office.departments||[],at=list.findIndex(d=>d.id===id);if(at<0)return {ok:false,code:'NOT_FOUND'};list.splice(at,1);for(const [k,v] of Object.entries(office.assignments||{}))if(v===id)delete office.assignments[k];return {ok:true};});},
+    assign:async(sessionId,departmentId)=>{calls.push('office-assign:'+sessionId+':'+departmentId);return officeChange(()=>{if(!(office.sessions||[]).some(s=>s.id===sessionId))return {ok:false,code:'NOT_FOUND'};office.assignments={...(office.assignments||{})};if(departmentId===null)delete office.assignments[sessionId];else office.assignments[sessionId]=departmentId;return {ok:true};});},
+    saveSettings:async patch=>{calls.push('office-settings:'+JSON.stringify(patch));return officeChange(()=>{office.settings={...(office.settings||{}),...patch};return {ok:true};});},
+    addRoot:async()=>{calls.push('office-root-add');return officeChange(()=>{const r=office.roots||(office.roots={claude:[],codex:[],added:[]}),dir='C:\\qa\\.claude-work';if(r.added.includes(dir))return {ok:true};r.added.push(dir);r.claude.push(dir);return {ok:true};});},
+    removeRoot:async dir=>{calls.push('office-root-remove:'+dir);return officeChange(()=>{const r=office.roots;if(!r?.added?.includes(dir))return {ok:false,code:'NOT_FOUND'};r.added=r.added.filter(d=>d!==dir);r.claude=r.claude.filter(d=>d!==dir);return {ok:true};});},
+    seen:async departmentId=>{calls.push('office-seen:'+departmentId);return officeChange(()=>{const t=Date.now();for(const spec of office.sessions||[])if(spec.kind==='done'&&officeDeptOf(spec)===(departmentId??null))officeSeen[spec.id]=t;return {ok:true};});},
+    onChanged:fn=>{officeListeners.add(fn);return ()=>officeListeners.delete(fn);},
+  }),
 }));
 contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
-  configure:value=>{if(value?.env)env={...env,...value.env};if(value?.assignment)assignment=value.assignment;if(value?.invite)inviteMode=value.invite;if(value?.subs!==undefined)subs=value.subs;if(value?.subsFail)subsFail=value.subsFail;if(value?.visits!==undefined)visits=value.visits;if(value?.backup!==undefined)backup=value.backup;if(value?.health!==undefined)health=value.health;if(value?.tokens)tokens=value.tokens;configured();},
+  configure:value=>{if(value?.env)env={...env,...value.env};if(value?.assignment)assignment=value.assignment;if(value?.invite)inviteMode=value.invite;if(value?.subs!==undefined)subs=value.subs;if(value?.subsFail)subsFail=value.subsFail;if(value?.visits!==undefined)visits=value.visits;if(value?.backup!==undefined)backup=value.backup;if(value?.health!==undefined)health=value.health;if(value?.office!==undefined)office=value.office;if(value?.tokens)tokens=value.tokens;configured();},
+  // 사무실의 판을 바꾸고 본체처럼 바뀜을 알린다. office()는 지금 판(짧은 꼴)이다
+  setOffice:value=>{office=value||null;officeEmit();},
+  office:()=>(office?JSON.parse(JSON.stringify(office)):null),
   // 모델별 토큰의 새 판을 알린다(세는 중의 진행, 다 센 판). 순서 번호는 이 창이 붙인다
   setTokens:value=>{nextTokens(value||{});emitTokens();},
   tokens:()=>JSON.parse(JSON.stringify(tokens)),

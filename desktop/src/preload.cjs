@@ -36,6 +36,14 @@ const companyCode=input=>{const fields=inviteFields(input,['code','requestId','a
 const companyEntryIds=input=>{const fields=inviteFields(input,['requestId','accountGeneration']);return fields&&inviteUuid(fields.requestId)&&inviteUuid(fields.accountGeneration)?{requestId:fields.requestId,accountGeneration:fields.accountGeneration}:null;};
 const companyDestination=input=>{const fields=inviteFields(input,['destination','requestId','accountGeneration']);return fields&&typeof fields.destination==='string'&&COMPANY_DESTINATIONS.includes(fields.destination)&&inviteUuid(fields.requestId)&&inviteUuid(fields.accountGeneration)?{destination:fields.destination,requestId:fields.requestId,accountGeneration:fields.accountGeneration}:null;};
 const companyInvalid=input=>Promise.resolve({ok:false,requestId:inviteNamed(input,'requestId'),accountGeneration:inviteNamed(input,'accountGeneration'),code:'INVALID_INPUT',retryable:false});
+// 솔리오 「사무실」(구현설계.md 13절): 부서 번호와 세션 번호는 정해진 꼴만, 부서 폴더는 'choose'(본체의 고르기 창)나 {fromSession}(그 세션의 작업 폴더)뿐이다.
+// 부서 폴더와 더할 보는 폴더는 경로 글자로 건너가지 않는다. 빼는 보는 폴더만 글자로 건너가고, 본체가 손님이 더한 목록에 있는지 다시 본다.
+const OFFICE_ID=/^[A-Za-z0-9_-]{4,32}$/,OFFICE_SESSION=/^[A-Za-z0-9_-]{8,128}$/,OFFICE_VIEWS=['tilted','top'];
+const officeId=value=>typeof value==='string'&&OFFICE_ID.test(value);
+const officeSession=value=>typeof value==='string'&&OFFICE_SESSION.test(value);
+const officeInvalid=()=>Promise.resolve({ok:false,code:'VALUE'});
+const officeDepartment=input=>{if(!input||typeof input!=='object'||typeof input.name!=='string'||(input.id!==undefined&&input.id!==null&&!officeId(input.id)))return null;const value={...(officeId(input.id)?{id:input.id}:{}),name:input.name.slice(0,200)},folder=input.folder;if(folder==='choose')value.folder='choose';else if(folder&&typeof folder==='object'&&officeSession(folder.fromSession))value.folder={fromSession:folder.fromSession};else if(folder!==undefined||!value.id)return null;return value;};
+const officeSettings=input=>{if(!input||typeof input!=='object')return null;const value={};if(input.view!==undefined){if(!OFFICE_VIEWS.includes(input.view))return null;value.view=input.view;}if(input.manualCap!==undefined){if(input.manualCap!==null&&!Number.isInteger(input.manualCap))return null;value.manualCap=input.manualCap;}return 'view' in value||'manualCap' in value?value:null;};
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   teacher:Object.freeze({
     getEnvironment:()=>ipcRenderer.invoke('synk:teacher-environment'),
@@ -137,6 +145,19 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     start:mode=>['protect','move'].includes(mode)?ipcRenderer.invoke('synk:solio-backup-start',mode):Promise.resolve({ok:false,code:'INVALID'}),
     open:topic=>typeof topic==='string'&&/^[a-z]{1,16}$/.test(topic)?ipcRenderer.invoke('synk:solio-backup-open',topic):Promise.resolve({ok:false,code:'INVALID'}),
     dismiss:()=>ipcRenderer.invoke('synk:solio-backup-dismiss'),
+  }),
+  // 솔리오 「사무실」(11-20): 세션 모음의 모습을 받고, 부서 · 보낼 부서 · 설정 · 보는 폴더를 고친다. 인자는 위의 꼴로 다시 만든 것만 건너간다.
+  office:Object.freeze({
+    snapshot:()=>ipcRenderer.invoke('synk:office-snapshot'),
+    watch:on=>ipcRenderer.invoke('synk:office-watch',on===true),
+    saveDepartment:input=>{const value=officeDepartment(input);return value?ipcRenderer.invoke('synk:office-department-save',value):officeInvalid();},
+    removeDepartment:id=>officeId(id)?ipcRenderer.invoke('synk:office-department-remove',id):officeInvalid(),
+    assign:(sessionId,departmentId)=>officeSession(sessionId)&&(departmentId===null||officeId(departmentId))?ipcRenderer.invoke('synk:office-session-assign',sessionId,departmentId):officeInvalid(),
+    saveSettings:input=>{const value=officeSettings(input);return value?ipcRenderer.invoke('synk:office-settings-save',value):officeInvalid();},
+    addRoot:()=>ipcRenderer.invoke('synk:office-roots-add'),
+    removeRoot:dir=>typeof dir==='string'&&dir.length>0&&dir.length<=1024?ipcRenderer.invoke('synk:office-roots-remove',dir):officeInvalid(),
+    seen:departmentId=>departmentId===null||officeId(departmentId)?ipcRenderer.invoke('synk:office-seen',departmentId):officeInvalid(),
+    onChanged:callback=>subscribe('synk:office-changed',callback),
   }),
   onAuthChanged:callback=>{if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,status)=>callback(status);ipcRenderer.on('synk:auth-changed',listener);return ()=>ipcRenderer.removeListener('synk:auth-changed',listener);},
   onClientsChanged:callback=>subscribe('synk:clients-changed',callback),

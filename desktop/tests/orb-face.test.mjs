@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createOrbFaceController, faceSentence, ORB_RETURNING_KEY, sanitizeInviteFeedback, unconfiguredReason, workspaceLead } from '../renderer/orb-face.mjs';
 import { ROOM_TIMING } from '../renderer/orb-rooms.mjs';
+import { officeState, officeReduce } from '../renderer/office-model.mjs';
 
 const ACCOUNT = '20000000-0000-4000-8000-000000000002';
 const OTHER = '60000000-0000-4000-8000-000000000006';
@@ -2102,4 +2103,129 @@ test('pointing at a place name taps once: moving between the texts inside one na
   assert.match(view, /else if \(!on && \(!b \|\| !b\.contains\(event\.relatedTarget\)\)\)/);
   assert.match(view, /createOrbSound\(\{ win, enabled: \(\) => look\.sound !== false && doc\?\.hasFocus\?\.\(\) !== false \}\)/);
   assert.doesNotMatch(view, /sweepIn|sweepDone/);
+});
+
+/* ── 솔리오 「사무실」 오브제와 방(사무실 구현설계 11.1 · 7절 · 3.4의 8) ── */
+const OFFICE_SHOP = 'C:\\work\\shop';
+const officeBoard = ({ asked = true } = {}) => {
+  const state = asked ? officeReduce(officeState(), { kind: 'hook', event: 'Notification', notificationType: 'permission_prompt', sessionId: 'sess-ask-0001', cwd: OFFICE_SHOP, at: Date.now() - 20e3 }) : officeState();
+  return { ok: true, available: true, state, departments: [{ id: 'ddev', name: '개발부', folder: OFFICE_SHOP }], assignments: {}, settings: { view: 'tilted', manualCap: null },
+    roots: { claude: [], codex: [], added: [] }, pc: { cores: 8, totalMemGb: 15.7, freeMemGb: 6, cpuPercent: 20 }, hooks: { on: false, available: false }, readAt: Date.now() };
+};
+function officeFake(answer) {
+  const calls = [], listeners = new Set();
+  let current = answer;
+  return {
+    calls, set: next => { current = next; }, emit: () => { for (const fn of listeners) fn(); },
+    reads: () => calls.filter(c => c === 'snapshot').length,
+    api: {
+      snapshot: async () => { calls.push('snapshot'); return typeof current === 'function' ? current() : current; },
+      watch: async on => { calls.push('watch:' + on); return { ok: true }; },
+      seen: async id => { calls.push('seen:' + id); return { ok: true }; },
+      onChanged: fn => { listeners.add(fn); return () => listeners.delete(fn); },
+    },
+  };
+}
+
+test('사무실 stands last, only when the main process answers available:true, and an app without the bridge has no object', async t => {
+  const cases = [
+    [{ office: officeFake(officeBoard()) }, ['subs', 'office'], ['구독', '사무실']],
+    [{ office: officeFake(officeBoard()), visits: readFake(visible()), health: readFake(healthy()) }, ['subs', 'visits', 'health', 'office'], ['구독', '방문자 분석', '계정 건강', '사무실']],
+    [{ office: officeFake({ ok: true, available: false }), visits: readFake(visible()) }, ['subs', 'visits'], ['구독', '방문자 분석']],
+    [{ office: officeFake({ ok: true, available: false }) }, [], []],
+    [{}, [], []],
+  ];
+  for (const [fakes, keys, labels] of cases) {
+    const h = harness(t, { options: { office: fakes.office?.api, siteVisits: fakes.visits?.api, snsHealth: fakes.health?.api } });
+    await settle();
+    h.face.setState(signedIn());
+    await settle(20);
+    assert.deepEqual(programKeys(h), keys);
+    assert.deepEqual((h.view.last().room.programs || []).map(p => p.label), labels);
+    assert.equal(h.view.last().room.office.visible, keys.includes('office'), 'the room scene follows available');
+    if (fakes.office) assert.equal(fakes.office.reads(), 1, 'asked once on the way into Solio');
+    assert.equal(h.face.handle('prog', 'office'), keys.includes('office'), 'only an office that is there opens');
+  }
+});
+
+test('the 사무실 object carries the alert mark while another program is open, and loses it after a change notice', async t => {
+  const office = officeFake(officeBoard());
+  const h = harness(t, { options: { office: office.api, siteVisits: readFake(visible()).api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  const mark = () => h.view.last().room.programs.find(p => p.key === 'office')?.alert === true;
+  assert.equal(h.view.last().room.prog, 'subs');
+  assert.equal(mark(), true, 'a question waits: the object shows ! on the 구독 room');
+  assert.equal(h.face.handle('prog', 'visits'), true);
+  await settle(10);
+  assert.equal(mark(), true, 'still there while 방문자 분석 is open');
+  assert.ok(!h.view.last().room.programs.some(p => p.key !== 'office' && p.alert), 'only 사무실 carries it');
+  // 본체의 바뀜 알림이 오면 다시 읽고, 알림이 풀린 판이면 느낌표가 빠진다
+  office.set(officeBoard({ asked: false }));
+  const before = office.reads();
+  office.emit(); office.emit(); office.emit();
+  await settle(20);
+  assert.equal(office.reads(), before + 1, 'several notices close together read once');
+  assert.equal(mark(), false);
+  assert.ok(!office.calls.includes('watch:true'), 'records are watched only while the office room is open');
+});
+
+test('opening 사무실 watches the records, the headline comes from the board, a folded department is marked seen, and leaving stops watching', async t => {
+  const office = officeFake(officeBoard());
+  const h = harness(t, { options: { office: office.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.equal(h.face.handle('prog', 'office'), true);
+  await settle(20);
+  const room = h.view.last().room;
+  assert.equal(room.prog, 'office');
+  assert.ok(office.calls.includes('watch:true'));
+  assert.ok(office.reads() >= 2, 'read again when the room opens: ' + office.reads());
+  assert.equal(room.office.say, '개발부가 방금 승인을 물었습니다.');
+  assert.deepEqual(room.office.rows.map(r => r.key), ['d:ddev', 'cap', 'cfg', 'add']);
+  assert.equal(room.office.rows.find(r => r.key === 'cap').val, '넷까지', '8 cores and 15.7 GB (16) give four');
+  assert.equal(h.face.handle('room', { room: 'solio-office', key: 'd:ddev', act: 'row-open' }), true);
+  assert.equal(h.face.handle('room', { room: 'solio-office', key: 'd:ddev', act: 'row-fold' }), true);
+  await settle(10);
+  assert.ok(office.calls.includes('seen:ddev'));
+  assert.equal(h.face.handle('prog', 'subs'), true);
+  await settle(10);
+  assert.equal(office.calls.filter(c => c.startsWith('watch:')).at(-1), 'watch:false');
+  // 방을 떠나며 접힌 줄의 알림은 떠난 뒤에 와도 받는다. 방 안의 단추는 받지 않는다
+  assert.equal(h.face.handle('room', { room: 'solio-office', key: 'lobby', act: 'row-fold' }), true);
+  await settle(10);
+  assert.ok(office.calls.includes('seen:null'));
+  assert.equal(h.face.handle('room', { room: 'solio-office', key: 'add', act: 'dept-add', fields: { name: '법무부' } }), false);
+});
+
+test('a hidden window stops watching the records and the room watches again when it shows', async t => {
+  const office = officeFake(officeBoard());
+  const h = harness(t, { options: { office: office.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  h.face.handle('prog', 'office');
+  await settle(10);
+  h.face.handle('hidden');
+  await settle(4);
+  assert.equal(office.calls.filter(c => c.startsWith('watch:')).at(-1), 'watch:false');
+  h.face.handle('visible');
+  await settle(10);
+  assert.equal(office.calls.filter(c => c.startsWith('watch:')).at(-1), 'watch:true');
+});
+
+test('the view draws the office room with the house row rules and the floor keeps its motion small', async () => {
+  const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  assert.match(src, /data-orb-prog="office" aria-current="false" style="--k:4"/, 'the object stands after 계정 건강');
+  assert.match(src, /<div class="room room-top" data-room="solio-office" hidden>/);
+  assert.match(src, /const asideBoxes = \[\.\.\.Object\.values\(app\.asides\)\.map\(a => a\.rows\), app\.offRows\];/, 'office rows open, pin and fold like the room rows');
+  assert.match(src, /o\.classList\.toggle\('news', !!p\?\.alert\)/);
+  const { railSettleMs } = await import('../renderer/orb-face-view.mjs');
+  assert.equal(railSettleMs(5), 760, 'five names take 0.76 s before resting opens one');
+  const floor = fs.readFileSync(new URL('../renderer/office-floor.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(floor, /setLineDash/, 'no dotted or dashed rings');
+  assert.doesNotMatch(floor, /\bsmx\b|\bsmy\b|\bbob\b/, 'no pointer-following camera and no bobbing body');
+  assert.match(floor, /Math\.min\(2, Number\(win\.devicePixelRatio\) \|\| 1\)/);
 });

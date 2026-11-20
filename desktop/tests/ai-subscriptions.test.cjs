@@ -201,6 +201,8 @@ test('finds the official tools, reads existing logins and keeps tokens out of th
   // 자식 프로세스에는 개발 세션의 Claude 변수가 새지 않고, 기본 로그인은 기본 폴더를 쓴다.
   const usageCall=f.calls.find(c=>c.argv.includes('/usage'));
   assert.equal(usageCall.options.env.CLAUDECODE,undefined);assert.equal(usageCall.options.env.CLAUDE_CONFIG_DIR,undefined);assert.equal(usageCall.options.shell,false);
+  // 남은 양 읽기는 전용 폴더(AiSubscriptions 자리의 run)에서 돈다. 솔리오 사무실이 이 세션을 직원으로 세우지 않는다.
+  assert.equal(usageCall.options.cwd,path.join(f.root,'data','run'));assert.ok(fs.statSync(usageCall.options.cwd).isDirectory());
   assert.ok(!JSON.stringify(after).includes('Token'));
   // 저장 파일도 다시 읽힌다.
   const reread=createAiSubscriptions({root:path.join(f.root,'data'),platform:'win32',env:{},home:path.join(f.root,'home'),spawn:()=>{throw new Error('no spawn');},now:()=>NOW});

@@ -48,6 +48,7 @@ const {createSolioBackup}=require('./solio-backup.cjs');
 const {createMacApplicationLocationGate}=require('./mac-application-location.cjs');
 const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
 const {createLocalServerGate}=require('./local-server-owner.cjs');
+const {createOffice,loadOfficeModel}=require('./office.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
@@ -100,7 +101,7 @@ let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeAccountOf(state));scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
   if(installations)return installations;
@@ -255,6 +256,42 @@ let solioBackupService=null;
 function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};if(!solioBackupService)solioBackupService=createSolioBackup({cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url)});return work(solioBackupService,status.account);}
 // 누른 계정과 지금 로그인한 계정이 같을 때만 그 계정의 Google 주소를 준다(GPT 검수 GA2)
 async function solioBackupHint(account){const result=await auth.identity();if(!result?.ok||typeof account?.synk_user_id!=='string'||result.accountId!==account.synk_user_id)return null;const google=(result.identities||[]).find(row=>row?.provider==='google'&&typeof row.email==='string');return google?.email||null;}
+// 솔리오 「사무실」(11-20, docs/디자인/솔리오_사무실_20261119/구현설계.md 11.1 · 13절, 15절 6단계): 플랫폼 창에서 로그인한 계정만 묻는다. 볼 계정인지는 office.cjs가 채널마다 viewers.json으로 본다.
+// 처음 부를 때 office-model.mjs를 불러 한 번 만든다. 훅 서버(5단계)는 아직 없어 화면에는 hooks를 늘 꺼짐으로 준다. 로그인이 바뀌면 publishAuthState가 accountChanged를 부른다.
+// 같은 계정의 토큰 갱신은 잠깐 restoring(계정 없음)으로 보이므로 그동안은 그 계정 그대로 본다(PULSE의 renewingAccount와 같다). 그래야 갱신마다 세션 기억과 기록 살피기가 끊기지 않는다.
+let officeService=null,officeLoading=null;
+const officeAccountOf=state=>{if(state?.signedIn===true&&state.account)return state.account;const renewing=renewingAccount();return renewing?{synk_user_id:renewing}:null;};
+function office(){if(officeService)return Promise.resolve(officeService);if(!officeLoading)officeLoading=loadOfficeModel().then(model=>{officeService=createOffice({userData:app.getPath('userData'),model,onChange:()=>sendDesktop('synk:office-changed')});return officeService;}).finally(()=>{officeLoading=null;});return officeLoading;}
+async function officeCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};const service=await office();const now=accountStatus();if(now?.signedIn!==true||now.account?.synk_user_id!==status.account.synk_user_id)return {ok:false,code:'AUTH_CHANGED'};return work(service,now.account);}
+// 폴더는 화면이 경로 글자로 보내지 않는다(13절). 고르기 창은 볼 계정에만 띄우고, 고르는 사이에 로그인이 바뀌었으면 고른 폴더를 버린다(백업 시작과 같은 확인)
+async function officeChooseFolder(service,account){
+  if(!await service.allowed(account))return {ok:false,code:'NOT_ALLOWED'};
+  if(!window||window.isDestroyed())return {ok:false,code:'CANCELLED'};
+  const generation=accountStatus()?.sessionGeneration;
+  const result=await dialog.showOpenDialog(window,{properties:['openDirectory']});
+  const folder=result&&!result.canceled&&Array.isArray(result.filePaths)&&typeof result.filePaths[0]==='string'?result.filePaths[0]:null;
+  if(!folder)return {ok:false,code:'CANCELLED'};
+  const now=accountStatus();
+  if(now?.signedIn!==true||now.account?.synk_user_id!==account.synk_user_id||now.sessionGeneration!==generation)return {ok:false,code:'AUTH_CHANGED'};
+  return {ok:true,folder};
+}
+// 부서 더하기 · 고치기. folder는 'choose'(고르기 창), {fromSession}(지금 선 세션의 작업 폴더), 없음(번호가 있는 부서의 이름만 고칠 때 저장된 폴더 그대로) 셋뿐이다
+async function officeSaveDepartment(service,account,input){
+  if(!input||typeof input!=='object'||(input.id!==undefined&&typeof input.id!=='string'))return {ok:false,code:'VALUE'};
+  const id=input.id??null,given=input.folder;let folder;
+  if(given==='choose'){const chosen=await officeChooseFolder(service,account);if(!chosen.ok)return chosen;folder=chosen.folder;}
+  else{
+    const snap=await service.snapshot(account);
+    if(!snap?.ok||!snap.available)return {ok:false,code:'NOT_ALLOWED'};
+    if(given&&typeof given==='object'&&typeof given.fromSession==='string'){const session=Object.hasOwn(snap.state.sessions,given.fromSession)?snap.state.sessions[given.fromSession]:null;if(typeof session?.cwd!=='string'||!path.isAbsolute(session.cwd))return {ok:false,code:'NOT_FOUND'};folder=session.cwd;}
+    else if(given===undefined&&id!==null){const department=snap.departments.find(d=>d.id===id);if(!department)return {ok:false,code:'NOT_FOUND'};folder=department.folder;}
+    else return {ok:false,code:'VALUE'};
+  }
+  return service.saveDepartment({...(id!==null?{id}:{}),name:input.name,folder},account);
+}
+// 보는 폴더: 더하기는 고르기 창으로만, 빼기는 손님이 더한 폴더(roots.added) 가운데 하나일 때만이다(큰 · 작은 글자는 가리지 않는다)
+async function officeAddRoot(service,account){const chosen=await officeChooseFolder(service,account);if(!chosen.ok)return chosen;const snap=await service.snapshot(account);if(!snap?.ok||!snap.available)return {ok:false,code:'NOT_ALLOWED'};return service.saveRoots([...snap.roots.added,chosen.folder],account);}
+async function officeRemoveRoot(service,account,dir){if(typeof dir!=='string')return {ok:false,code:'VALUE'};const snap=await service.snapshot(account);if(!snap?.ok||!snap.available)return {ok:false,code:'NOT_ALLOWED'};const added=snap.roots.added,kept=added.filter(d=>d.toLowerCase()!==dir.toLowerCase());if(kept.length===added.length)return {ok:false,code:'NOT_FOUND'};return service.saveRoots(kept,account);}
 function subscriptionCall(operation){const service=subscriptions();if(!service)return {ok:false,code:'LAUNCHER_ONLY'};if(accountStatus()?.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return operation(service);}
 // 계정판 자동 읽기(지난 7일 사용량 기록용): 로그인한 회원이 계정판을 써 본 PC에서만, 앱이 켜 있는 동안 2분마다 읽을 때인지 본다.
 // 읽을 때는 ai-subscriptions.cjs의 autoDue가 정한다(마지막 확인 6시간 뒤 · 계정마다 주간 초기화 10분 전 · 결제일 아침). 끄는 중에는 새로 읽지 않는다.
@@ -264,6 +301,7 @@ const subscriptionBoardFile=()=>path.join(app.getPath('userData'),'AiSubscriptio
 require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=='platform'||smoke||accountStatus()?.signedIn!==true||(!aiSubscriptions&&!fs.existsSync(subscriptionBoardFile())&&!fs.existsSync(path.join(app.getPath('userData'),'AiSubscriptions','token-usage.json'))))return;void Promise.resolve(subscriptions()?.autoTick()).catch(()=>{});void Promise.resolve(subscriptions()?.tokensAuto?.()).catch(()=>{});},2*60*1000).unref?.();
 app.on('before-quit',()=>{quittingRequested=true;startupWindow?.prepareForQuit();handoffCover?.prepareForQuit();});
 app.on('before-quit',()=>aiSubscriptions?.dispose());
+app.on('before-quit',()=>officeService?.close());
 app.on('will-quit',event=>{
   if(platformUpdate?.needsInstallHandoff()){
     // will-quit runs only after the normal window/draft guards accepted. Hold
@@ -755,6 +793,16 @@ function createWindow(){
     'synk:solio-backup-start':mode=>solioBackupCall((service,account)=>{const generation=accountStatus()?.sessionGeneration;return service.start(account,mode,{getHint:solioBackupHint,isCurrent:()=>{const now=accountStatus();return now?.signedIn===true&&now.account?.synk_user_id===account.synk_user_id&&now.sessionGeneration===generation;}});}),
     'synk:solio-backup-open':topic=>solioBackupCall((service,account)=>service.open(account,topic)),
     'synk:solio-backup-dismiss':()=>solioBackupCall((service,account)=>service.dismiss(account)),
+    // 솔리오 「사무실」(구현설계.md 13절): 모두 officeCall을 거친다. 폴더는 본체가 고르기 창이나 지금 선 세션에서 받는다
+    'synk:office-snapshot':()=>officeCall(async(service,account)=>{const result=await service.snapshot(account);return result?.ok?{...result,hooks:{on:false,available:false}}:result;}),
+    'synk:office-watch':on=>officeCall((service,account)=>service.watch(on===true,account)),
+    'synk:office-department-save':input=>officeCall((service,account)=>officeSaveDepartment(service,account,input)),
+    'synk:office-department-remove':id=>officeCall((service,account)=>service.removeDepartment(id,account)),
+    'synk:office-session-assign':(sessionId,departmentId)=>officeCall((service,account)=>service.assign(sessionId,departmentId??null,account)),
+    'synk:office-settings-save':input=>officeCall((service,account)=>service.saveSettings(input,account)),
+    'synk:office-roots-add':()=>officeCall((service,account)=>officeAddRoot(service,account)),
+    'synk:office-roots-remove':dir=>officeCall((service,account)=>officeRemoveRoot(service,account,dir)),
+    'synk:office-seen':departmentId=>officeCall((service,account)=>service.seen(departmentId,account)),
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});
