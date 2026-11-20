@@ -1,5 +1,21 @@
 # 회사 워크스페이스와 고객 상담의 상시 서버 운영
 
+<a id="batch77-20261120"></a>
+## 앞당긴 묶음 20261120-1010 — 회사 이미지 판 77: 페북 게시물 번호 칸 · 첨부 주소 표시 · Workspace 초대 칸의 고객 초대 넘김 (2026-11-20 17:46 KST 운영 반영)
+
+- **어떤 회차인가:** 유호님 11-20 「묶음 지금 진행해도 돼. 지금 시간 땡겨서 17시꺼 지금 전부 하자」로 17:00 정기 묶음을 앞당겼다. 06:00 묶음(판 76)이 닫힌 뒤 페북 수집기 세션(silly-kapitsa-9cbb73)이 원격 차례를 잡고 처음부터 끝까지 맡았다. 공용 도구는 `832c083`이다.
+- **실은 건 둘:** `20261120-010448-facebook-page-post-id-fields-and-attachm`(페북 posts의 `pagePostId` · `videoId` 칸과 첨부 주소 표시 `urlFromAttachment`, 회사 수집기 pagePostId 세션, 곁가지 `33d5055c7`, 6파일, 시험 +28)과 `20261119-220343-workspace-invite-box-routes-customer-inv`(Workspace 첫 화면 초대 칸에 넣은 PULSE 고객 초대를 고객 방으로 넘김, 「Pulse 클라이언트 온보딩 준비」, `bfc3945a11`, 2파일, 시험 +1).
+- **페북 건을 다시 남긴 까닭:** 그 건은 PULSE 메인 네 편 건에 기대 master 판 `server.mjs`(서울로 공개 목록 한 줄 포함) 위에 있었다. 판 76에서 메인 네 편 건이 되돌려져, 판 76 `server.mjs` 위에 페북 기능만 얹은 곁가지로 다시 남겼다(검수 `company-fb-pagepostid-20261119-p` · `company-fb-pagepostid-perf-20261119-r-j`, GPT 0건). 서울로 한 줄은 이 판에 들어가지 않았다.
+- **후보와 시험:** manifest는 `53c9ae6f12b42e780f98bb0cdb928421692b508153c3d9eb124b3e15771f7108`이고 실행 이미지는 `sha256:7b5a0c43e6a2bcd19ed30ca9d02e3a4f06b876dea750e93a92364d8d36ebe8ff`다. 원천 1,664개, 이미지 목록 1,352개, 선택 시험 328개, 델타 8개다. 격리 QA 4,787/4,787, 실제 Linux 4,787/4,787과 호환 2/2로 통과했다. 바뀐 공개 파일은 `/workspace-access.js` 하나이고 셸과 공개 목록에 더해지거나 빠진 파일은 없다.
+- **교체:** 배포 전 백업 1,098,998,536B(17:22 KST)를 마친 뒤 17:38:18 KST에 교체를 시작했다. 배포 491초, 공개 전체 대조 126초가 걸렸다. 공개 전체 대조는 497/497, 메신저 공개 확인은 19/19다.
+- **공개 끊김:** 17:41:07부터 17:44:40까지 212.6초 동안 공개 화면이 응답하지 않았다(76은 200.2초). 그 뒤 표본 320개에서 실패는 없었다.
+- **반영 뒤 확인(로그인 없이):** `GET /api/health` 200, `GET /api/tip-shares` 401과 `SYNK_TIP_LOGIN`, `GET /pulse/api/marketing` 401, `GET /api/social/simple` 401, `GET /pulse/api/features`에 `marketing` 칸 없음, `/workspace-access.js` 200 · 후보 바이트와 같음, PULSE 셸 `synk-pulse-shell-v68-marketing-20261116` 그대로다.
+- **페북 칸 확인(운영 DB 읽기 전용, 반영 뒤 첫 최근 수집 17:57 KST 기준):** 페북 줄 79개(반영 전 75개)에서 줄 id 바뀜 · 사라진 줄 · 새로 내려간 줄 · 주소 바뀜이 모두 0이다. 새 줄 넷은 오늘 올린 릴스의 게시물 줄이고 영상 목록만의 줄은 없다. 22줄에 `pagePostId` · `videoId`가 있고 모두 `pagePostId`가 자기 `externalId`와 같다. `urlFromAttachment` 줄은 없다(자기 주소 없는 게시물 줄이 없었다).
+- **확인 안 함:** 채널 수집 기록의 `coverage.videoPostIds`와 수집 경고는 전체 수집에서만 적혀 다음 전체 수집 뒤에 본다. Workspace 초대 칸의 고객 초대 넘김은 초대 코드가 필요해 보지 않았다(맡은 세션이 본다).
+- **HA 쉬기 유지:** 감시기는 14:07 KST에 켰다가 교체 뒤 멈췄다. 새 판 서빙 확인, 무장 해제 확인, 감시기 끄기와 5분 관측(실패 0)을 마쳤다. 재무장, 승인 봉인, 부하분산 변경은 없다. 완료 폴더는 `.tmp/company-completed-53c9ae6f-20261120`이고 봉인 SHA는 `7a23a3306dce5fd199cab1a7ef6b0d2081708d43a3f2e10cf4018caf89e50f92`다. 부모 쉬기 봉인은 76이고 마지막 무장 쌍은 64 그대로다. 다음 판은 78이다.
+- **멈칫한 곳 셋:** 첫 감시기 켜기가 결과 파일 없이 끝났지만 감시기는 켜져 있었고, 같은 명령 한 번으로 통과했다. inert 결과 읽기는 Git Bash에서 Git의 ssh를 집어 멈춰 PowerShell(Windows OpenSSH)로 읽었다. 첫 중계는 Windows 업데이트 내려받기와 겹쳐 900초 한도에 걸렸고(서비스 조작 0), 받기가 가라앉은 뒤 다음 칸에서 372초에 통과했다. 현장 노트 「배포 · 공개」에 남겼다.
+- **원본:** 판 폴더는 `.tmp/company-batch77-release-20261120-1010`이다. 운영 증거는 그 `deployment`의 `runtime-live-postcheck-1795164391292.json`과 `public-verification-1795164529679.json`에 있다. HA 증거와 공개 감시 기록은 `.tmp/company-batch77-carry-20261120-1010`(HA는 `ha77`), 영수증은 `.tmp/company-batch77-prep-20261120-1010`, 실행 기록은 `.tmp/company-batch77-work-20261120-1010`에 있다. 차례와 경과는 `.tmp/company-ha-release-order-20261020.md`의 「묶음 20261120-1010」 절들에 있다.
+
 <a id="batch76-20261120"></a>
 ## 정기 묶음 20261120-0600 — 회사 이미지 판 76: 영상 버킷 오류 본문 · PULSE 의뢰 기록 90일 시계 · 공유한 게시물 날짜 시험 · 회원 명부 SQLite 호환 · VK 클립 누적값 (2026-11-20 09:28 KST 운영 반영)
 
