@@ -327,7 +327,7 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   return `<div class="reminder-exam" data-reminder-exam="${examDrawn}"><div class="world-notice" data-tone="info" data-label="CHECK"><strong>${escape(t('reminder.exam.title'))}</strong><span>${escape(t('reminder.exam.body'))}</span></div><div class="world-actions">${lead}${examButton('reminder-exam-plan','reminder.exam.plan',false)}</div></div>`;
  }
  // 판정이 바뀌었을 수 있을 때(셸이 홈을 다시 그릴 때마다 앱이 부른다): 열린 판이 판정이 거짓일 때 그린 시험 점검 카드이고 지금 판정이 참이면,
- // 판을 다시 열지 않고 짧은 진단 단추 곁에 시험 형식 단추를 끼워 넣는다 — 학생이 읽던 단추의 자리와 대상은 그대로다(둘째 다시 검수 -c Opus
+ // 판을 다시 열지 않고 짧은 진단 단추 곁에 시험 형식 단추를 끼워 넣는다 — 학생이 읽던 단추의 자리와 대상은 그대로다(둘째 다시 검수 -c
  // 대체 FA1). 판정이 참에서 거짓이 되면 바꾸지 않는다(그 단추를 누르면 openMock이 알리고 내 위치로 간다). 닫히며 흐려지는 판은 열린 판이 아니다
  // (panel()이 빈 값 — 내 위치 판의 설계 검토 D1과 같은 막이). 끼워 넣었으면 참.
  function examChanged(){

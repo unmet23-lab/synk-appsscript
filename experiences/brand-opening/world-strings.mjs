@@ -137,7 +137,7 @@ export default {
  'home.short.schedule':{ko:'일정',en:'Schedule',mn:'Хуваарь'},
  'home.short.count':{ko:'{n}개',en:'{n}',mn:'{n}'},
  // 새 길 홈의 세 줄(Atlas 재설계 단계 4-3 — 단계4_계획 §20-8): 부품 이름, 칸 이름(복습은 home.short.review), 연 칸 표시, 빈 줄 문장, 확인 중
- // (잠근 단추 · 빈 줄 · 알림이 같은 말). 영어 · 몽골어는 세 겹 대조(현지어대조 · 몽골어대조 · 원문을 안 본 Opus 직역)를 지난 판이다.
+ // (잠근 단추 · 빈 줄 · 알림이 같은 말). 영어 · 몽골어는 세 겹 대조(현지어대조 · 몽골어대조 · 원문을 안 본 직역)를 지난 판이다.
  'home.today.label':{ko:'오늘 할 공부',en:'Today’s study plan',mn:'Өнөөдрийн хичээл'},
  'home.today.kind.new':{ko:'오늘 공부',en:'Learn',mn:'Суралцах'},
  'home.today.kind.check':{ko:'점검',en:'Skill check',mn:'Шалгах'},
@@ -691,7 +691,7 @@ export default {
  'practice.again':{ko:'새 문항 {n}개 더 하기',en:{one:'Try 1 more new question',other:'Try {n} more new questions'},mn:'Дахиад {n} шинэ асуулт хийх'},
  'practice.shortage':{ko:'이 항목의 새 문항은 여기까지예요. 다른 항목을 연습하거나, 새 문항이 생기면 다시 열려요.',en:'That’s all the new questions for this skill for now. Practice another skill, or come back when new ones arrive.',mn:'Энэ чадварын шинэ асуулт одоогоор ингээд дууслаа. Өөр чадвараа давтаж болно, шинэ асуулт нэмэгдвэл дахин нээгдэнэ.'},
  // 짧은 연습의 새 판(Atlas 재설계 단계 4-1, 기능 atlasNext — 리허설에서만 켠다). 이유 한 줄 · 끝난 까닭은 엔진 문장 표(Vellum)가 내고, 여기는 화면의 조작 글만.
- // 몽골어는 11-12 검문(tools/몽골어대조.js --구독 — 카본 문법 정상 · 맞춤법 의심 0 · flash와 Opus 직역이 원문 뜻과 같음)을 거쳤다.
+ // 몽골어는 11-12 검문(tools/몽골어대조.js --구독 — 카본 문법 정상 · 맞춤법 의심 0 · 두 직역이 원문 뜻과 같음)을 거쳤다.
  // Vellum 몽골어와 같이 이름에는 격 어미를 붙이지 않고 「…: «이름».」 꼴, 「말」은 「үг хэллэг」로 맞췄다. 마지막 겹(교정)은 4-1 화면 검수.
  'practice.unknown':{ko:'모르겠어요',en:'I don’t know',mn:'Мэдэхгүй байна'},
  // 끈질긴 단위 힌트 — 읽기 꼴과 듣기 꼴(듣기 문항은 듣기 전 화면에 찾아볼 글이 없다, 11-12 화면 최종 F2). 이름(한국어 학습 대상)은
@@ -700,7 +700,7 @@ export default {
  'practice.next.cue.listen':{ko:'자꾸 놓치는 말 「{name}」 — 들으면서 먼저 찾아보세요.',en:'You keep missing ‘{name}’ — listen out for it first.',mn:'Байнга алддаг үг хэллэг: «{name}». Анхааралтай сонсож олоорой.'},
  'practice.next.limited':{ko:'이번 판의 새 말은 여기까지예요.',en:'That’s all the new expressions for this round.',mn:'Энэ удаагийн шинэ үг хэллэг үүгээр дууслаа.'},
  // 연습 도중 학습 기록의 판을 다시 정해(동의를 끄고 켬 · 다른 기기에서 비움 · 새 길을 잠시 닫음) 연습을 닫을 때(단계 4 계정 길 — 단계4_계획 §18-5-5).
- // 몽골어 11-13 검문(tools/몽골어대조.js --구독 — 카본 문법 정상 · 맞춤법 의심 0 · flash 직역 「학습 등록 설정이 변경되어 이 연습을 닫았다」가 원문 뜻과 같음, Opus 확인).
+ // 몽골어 11-13 검문(tools/몽골어대조.js --구독 — 카본 문법 정상 · 맞춤법 의심 0 · 직역 「학습 등록 설정이 변경되어 이 연습을 닫았다」가 원문 뜻과 같음).
  'practice.next.changed':{ko:'학습 기록 설정이 바뀌어서 이번 연습을 닫았어요. 다시 시작해 주세요.',en:'Your learning record settings changed, so this practice was closed. Please start again.',mn:'Таны сургалтын бүртгэлийн тохиргоо өөрчлөгдсөн тул энэ дасгалыг хаалаа. Дахин эхлүүлнэ үү.'},
  // 새 길 생활 화면(4-2 — 단계4_계획 §19-1 ①): 판이 바뀌어 생활 코치가 닫히면 열린 레슨 · 복습 화면을 이 한 줄과 함께 닫는다(진도는 남아 다시 열면 이어진다).
  'life.next.changed':{ko:'학습 기록 설정이 바뀌어서 이 화면을 닫았어요. 하던 자리는 그대로 남아요.',en:'Your learning record settings changed, so this screen was closed. Your place is saved.',mn:'Таны сургалтын бүртгэлийн тохиргоо өөрчлөгдсөн тул энэ дэлгэцийг хаалаа. Зогссон хэсэг тань хадгалагдсан.'},

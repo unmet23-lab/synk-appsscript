@@ -2,7 +2,7 @@
 // 새 길 입구를 만들 때 넘기고, 연습 기록 비우기만 부른다.
 //   flush() — 계정의 옛 올리기 대기열을 다 올린다. 옛 학습 호스트(window.SYNKLearningHost — account/world-learning-host.js)의 retry로 다시 보내고, 그
 //     답의 대기열이 비었고 동기화가 막힘 · 쉼 · 오류 없이 섰을 때만 참이다. 서버가 사건을 받지 않아 옛 동기화가 막혔으면 { ok: false, code:
-//     'UNSENT_SKIPPED', skipped }다 — 그 사건은 지금 보낼 수 없어, 입구가 수를 알려 한 번 더 묻는다(4-5 Opus 대체 설계 검토 F4). 수는 호스트가
+//     'UNSENT_SKIPPED', skipped }다 — 그 사건은 지금 보낼 수 없어, 입구가 수를 알려 한 번 더 묻는다(4-5 대체 설계 검토 F4). 수는 호스트가
 //     기록부에서 다시 센 것이다(막힌 뒤에 든 답까지 — GC1), 다시 세지 못하면 거짓이다. 호스트가
 //     없거나, 남았거나, 다른 탭이 임대를 쥐었거나, 던지면 거짓이다 — 입구가 아무것도 지우지 않는다(「아직 보내지 못한 기록」).
 //   clear({ check, read, wait }?) — 옛 엔진의 손님 기록을 비운다. 옛 손님 코치를 열어 그 기록의 쓰기 임대를 기다린다(다른 창이 쥐고 있으면
@@ -47,7 +47,7 @@ function leased(game, wait) {
 
 // 옛 동기화가 대기열을 실제로 다 올린 상태인가 — 대기열 0만으로는 모른다. 쓰기 임대가 없는 탭의 retry는 공유 대기열을 다시 읽지 않고 이 탭이
 // 마지막으로 읽은 수를 offline · STORAGE_BUSY와 함께 돌려준다. 그래서 막힘 · 쉼 · 오류가 없는 상태(synced · idle, code 없음)일 때만 0을 믿는다
-// (4-5 Opus 대체 설계 검토 F1 — 다른 탭이 임대를 쥔 채 못 올린 숙제 답이 판이 오르며 버려지던 것). 셸의 다른 기다림(quietTownCheck)과 같은 꼴이다.
+// (4-5 대체 설계 검토 F1 — 다른 탭이 임대를 쥔 채 못 올린 숙제 답이 판이 오르며 버려지던 것). 셸의 다른 기다림(quietTownCheck)과 같은 꼴이다.
 const drained = state =>
   state?.queued === 0 && (state.phase === 'synced' || state.phase === 'idle') && !state.code;
 
@@ -82,7 +82,7 @@ export function oldEngineDoors({ openGame, host, leaseWaitMs = LEASE_WAIT_MS }) 
         if (typeof check === 'function' && !check(typeof read === 'function' ? read() : null))
           return 'kept';
         // 손님이 고른 화면 값은 남긴다(설계 주인 답 5) — 옛 reset은 .flow · .today와 함께 .presentation도 지우므로, 임대를 쥔 같은 동기 구간에서
-        // 읽어 두었다가 다시 쓴다(4-5 Opus 대체 설계 검토 F2). 다시 쓰지 못해도 비우기는 된 것이다.
+        // 읽어 두었다가 다시 쓴다(4-5 대체 설계 검토 F2). 다시 쓰지 못해도 비우기는 된 것이다.
         let kept = null;
         try {
           kept = game.presentation?.() ?? null;

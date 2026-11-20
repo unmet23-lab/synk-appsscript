@@ -1404,7 +1404,7 @@ export function createAtlasNext({
   // 판 견줌과 남은 걸음(22-4 「실패와 다시 누르기」) — 판을 다시 정할 때(planNow) 새 판의 코치를 열기 전에. 세대마다 한 번만 돈다(면 여럿이
   // 함께 물어도). 못 읽으면 수를 올리지 않아 다음 다시 정하기가 또 묻는다. 판 정하기가 기다리는 것은 이 기기의 몫(본인 값 옮기기 · 앞 판
   // 쓸기)뿐이다 — 손님 저장소의 남은 걸음(넷째 걸음 · 4b)은 계정의 새 판 코치가 보는 값을 바꾸지 않아 뒤에서 하고(slot.guest), 옛 쓰기 임대도
-  // 기다리지 않는다(4-5 Opus 대체 설계 검토 F7 · 설계 주인 11-18). 로그아웃한 기기의 손님 입구는 남은 걸음 표지가 있는 계정의 걸음을 마저 한다.
+  // 기다리지 않는다(4-5 대체 설계 검토 F7 · 설계 주인 11-18). 로그아웃한 기기의 손님 입구는 남은 걸음 표지가 있는 계정의 걸음을 마저 한다.
   let settling = null;
   function settleClearing(plan, at, line = null) {
     if (!store || !(account ? NEXT_PATHS.has(plan.path) : plan.path === 'guest')) return null;
@@ -1422,7 +1422,7 @@ export function createAtlasNext({
     if (mark.left === 'sweep') return stepsDone(at, whose, mark, null);
     const made = await coachFor(plan, MOVE_BANKS, 'world-practice', at);
     if (!made || disposed || at !== generation) return;
-    // 넷째 걸음은 그 비우기가 올린 새 판(표지의 판)보다 앞선 판의 옮김 표지만 센다 — 비운 뒤 그 계정으로 새로 옮긴 사건은 둔다(4-5 Opus 대체
+    // 넷째 걸음은 그 비우기가 올린 새 판(표지의 판)보다 앞선 판의 옮김 표지만 센다 — 비운 뒤 그 계정으로 새로 옮긴 사건은 둔다(4-5 대체
     // 설계 검토 F5). 손님 코치는 어느 계정의 걸음인지 받는다.
     const done = await made.reset({
       legacy: legacyPort({ wait: 0 }),
@@ -1580,9 +1580,9 @@ export function createAtlasNext({
     if (disposed) return stopped(path);
     if (!made) return { ok: false, path, code: 'OPEN_FAILED', known: true };
     // 0 — 옛 엔진의 올리기 대기열을 다 올린다(올리는 계정 — 기기 길은 올리지 않는다). 못 올리면 아무것도 지우지 않는다. 코치를 연 뒤 표지를 적기
-    // 바로 전에 올려 서버 비우기와의 틈을 줄인다(4-5 Opus 대체 설계 검토 F1). 새 길의 대기열은 엔진 reset이 서버 비우기 앞에서 올린다.
+    // 바로 전에 올려 서버 비우기와의 틈을 줄인다(4-5 대체 설계 검토 F1). 새 길의 대기열은 엔진 reset이 서버 비우기 앞에서 올린다.
     // 서버가 받지 않아 지금 보낼 수 없는 옛 사건은 막지도 버리지도 않는다 — 그 수를 엔진 reset에 넘겨 새 길의 몫과 더해 한 번에 알린다
-    // (UNSENT_SKIPPED — 4-5 Opus 대체 설계 검토 F4 · 설계 주인 11-18). 학생이 그 수를 보고 한 번 더 확인하면 셸이 allowSkipped로 다시 부른다.
+    // (UNSENT_SKIPPED — 4-5 대체 설계 검토 F4 · 설계 주인 11-18). 학생이 그 수를 보고 한 번 더 확인하면 셸이 allowSkipped로 다시 부른다.
     let elsewhere = 0;
     if (path === 'upload' && typeof oldEngine?.flush === 'function') {
       let flushed;
@@ -1656,7 +1656,7 @@ export function createAtlasNext({
   // 비운 뒤(22-4 올리는 계정 2 · 3 · 5) — 이 기기의 몫을 하고 남은 걸음을 적은 뒤 이 문서의 코치를 은퇴시킨다(새 판으로 다시 연다).
   async function cleared(path, revision, left) {
     // 「새 길 간 적 있음」 표지를 비운 뒤의 새 판으로 옮긴다 — 계정을 못 읽은 채 다시 열면 이 표지의 판으로 새 길을 연다(keptPath). 앞 판을
-    // 가리키면 새 판 코치가 서기 전까지 남은 앞 판 저장소가 열려, 비운 기록이 다시 보이고 그 사이의 답은 버려졌다(4-5 Opus 대체 설계 검토 F3).
+    // 가리키면 새 판 코치가 서기 전까지 남은 앞 판 저장소가 열려, 비운 기록이 다시 보이고 그 사이의 답은 버려졌다(4-5 대체 설계 검토 F3).
     // 그사이 다른 탭이 더 새 판을 적었으면 writeMark가 내리지 않는다(4-5 코드 다시 검수 -c GA2). 기다리기 전에 적는다 — 기다리는 사이
     // 문서를 닫아도 앞 판에 머물지 않게(4-5 끝 판 GC3).
     writeMark(store, owner, { went: true, path, revision });

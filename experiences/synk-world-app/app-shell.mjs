@@ -906,14 +906,14 @@ async function clearPracticeNow(){
  // 다시 묻고 다시 부르는 것은 처음 누른 로그인의 학습 화면에만 한다 — 기다리는 사이 계정이 바뀌었으면 묻지 않고 멈춘다(4-5 코드 다시 검수 -c GA1).
  const education=life.education,owner=client.snapshot?.accountId||'guest',same=()=>life.education===education&&(client.snapshot?.accountId||'guest')===owner;
  let result=null;try{result=await education?.clearPractice?.();}catch{result=null;}
- // 서버가 받지 않아 지금 보낼 수 없는 기록이 있으면 그 수를 알리고 한 번 더 묻는다 — 비우면 그 기록도 지워진다(4-5 Opus 대체 설계 검토 F4). 그사이 수가
+ // 서버가 받지 않아 지금 보낼 수 없는 기록이 있으면 그 수를 알리고 한 번 더 묻는다 — 비우면 그 기록도 지워진다(4-5 대체 설계 검토 F4). 그사이 수가
  // 늘었으면 새 수로 다시 묻는다(GA4).
  for(let asks=0;asks<3&&result?.code==='UNSENT_SKIPPED'&&Number.isSafeInteger(result.skipped)&&result.skipped>0;asks+=1){
   if(!same()||!window.confirm(meText('me.clearSkippedAsk',{n:result.skipped}))||!same())return;
   try{result=await education.clearPractice({allowSkipped:result.skipped});}catch{result=null;}
  }
  home.toast(meText(result?.ok?(result.partial?'me.clearPartial':'me.clearDone'):result?.code==='UNSENT'?'me.clearUnsent':'me.clearFailed'));
- // 결과와 상관없이 계정 설정 스냅샷을 새로 받아 그린다 — 결과를 모르는 실패도 서버에서는 비워졌을 수 있다(동의 체크박스의 판 번호 — §22-4 · 4-5 Opus 대체 설계 검토 F8).
+ // 결과와 상관없이 계정 설정 스냅샷을 새로 받아 그린다 — 결과를 모르는 실패도 서버에서는 비워졌을 수 있다(동의 체크박스의 판 번호 — §22-4 · 4-5 대체 설계 검토 F8).
  if(operating)try{await account.restore();}catch{/* 앞 스냅샷으로 다시 그린다 */}
  // 누른 시트가 아직 열려 있을 때만 그린다 — 닫는 중(닫기 전환)이거나 다른 시트로 바꿨으면 다시 열지 않는다. 쓰던 반 과제 원고가 있으면 시트
  // 전체를 다시 그리지 않고 동의 판 번호 · 응답 · 「나」 칸만 고친다 — 다시 그리면 원고를 버렸다(4-5 끝 판 GB1).
