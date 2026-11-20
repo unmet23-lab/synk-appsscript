@@ -419,7 +419,8 @@ test('a changed address, a hashchange or the old DOM receipt event is no receipt
   assert.equal(w.sent.length,1);assert.equal(w.page.commits.length,1);
 });
 test('a ready document that never binds is handed no token, and a new document that binds takes the next invite',async()=>{
-  const f=fixture({page:{bind:false}});await f.service.open();const w=f.windows[0];
+  // The refusal waits out the invite time limit; at 250ms a loaded test run timed out before the page's own bind (11-20).
+  const f=fixture({page:{bind:false},inviteTimeoutMs:2000});await f.service.open();const w=f.windows[0];
   refused(await f.service.openInvite(f.request()),'PULSE_APP_INVITE_FAILED',{retryable:true});
   assert.equal(w.page.binds.length,1);assert.deepEqual(w.page.commits,[]);assert.deepEqual(w.page.received,[]);
   assert.doesNotMatch(JSON.stringify(w.page.posted),new RegExp(TOKEN));assert.equal(w.page.href,ENTRY);
