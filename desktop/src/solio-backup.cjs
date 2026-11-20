@@ -631,7 +631,9 @@ function createSolioBackup({
     // 「없다」고 본다(GPT 취소 표식 검수 GA3). 시계가 거꾸로 가 요청 시각이 앞이면 만료가 아니다. 보통 파일만 지우고, 지우지 못해도
     // 다시 서두르지 않는다(급한 것은 만들기 쪽이다)
     const present = new Set([...names, ...claimed]);
-    if (listed) for (const [name, marked] of written) if (marked && !present.has(name)) written.delete(name);
+    // 두 폴더를 모두 읽어 그 이름이 어디에도 없으면 잊는다. 요청이 사라진 뒤에는 엔진이 가져갈 것이 없으므로 표식을 세우지 못했어도
+    // 다시 시도하지 않는다(GPT 취소 표식 r3 GA1). 요청은 requests → claimed로만 옮겨지고, 앞을 먼저 읽으므로 옮기는 중에도 놓치지 않는다
+    if (listed) for (const name of written.keys()) if (!present.has(name) && !(live && path.basename(live.file) === name)) written.delete(name);
     for (const mark of listed ? marks : []) {
       const request = mark.slice(0, -'.cancel'.length);
       if (present.has(request) || !(now() - Number(mark.slice(0, 13)) >= MARK_AGE)) continue;

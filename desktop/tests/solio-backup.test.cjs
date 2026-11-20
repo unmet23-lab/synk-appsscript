@@ -1169,3 +1169,23 @@ test('cancel mark (GPT re-check GA2): a claimed folder that could not be checked
   for (let i = 0; i < 30 && marksIn(env).length; i++) await new Promise(r => setTimeout(r, 50));
   assert.deepEqual(marksIn(env), [], 'the timed retry removes it');
 });
+
+test('cancel mark (GPT r3 GA1): a request already gone from both folders is forgotten even if its mark cannot be written, so the sweep stops retrying', async () => {
+  let full = false, writes = 0;
+  const fsImpl = { ...fs, promises: fs.promises,
+    writeFileSync: (file, ...a) => { if (String(file).endsWith('.cancel')) { writes++; if (full) throw Object.assign(Error('full'), { code: 'ENOSPC' }); } return fs.writeFileSync(file, ...a); } };
+  const env = appdata(temp(), { status: { ...sample(), state: 'not-set-up' } });
+  let current = true, letOpen;
+  const opening = new Promise(r => { letOpen = r; });
+  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current });
+  for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
+  const [name] = requestsIn(env);
+  fs.unlinkSync(path.join(requestsDir(env), name));
+  full = true; current = false;
+  service.accountChanged();
+  const after = writes;
+  await new Promise(r => setTimeout(r, 400));
+  assert.equal(writes, after, 'no retry once the request is gone from both folders');
+  letOpen(); await service.whenIdle();
+});
