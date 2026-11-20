@@ -210,7 +210,7 @@
   // voice가 참이면 그 말을 소리로도 한다(처음 떨어질 때는 셋이 겹치므로 몸짓만).
   const sayCap = (c, delay) => {
     const t = pronOf(c.text); if (!t || !c.cap) return;
-    c.cap.textContent = t; c.cap.lang = hl; gsap.killTweensOf(c.cap);
+    c.cap.textContent = t; c.cap.lang = hl; c.cap.classList.toggle('is-long', Math.max(0, ...t.split(/[\s-]+/).map((w) => [...w].length)) > 10); gsap.killTweensOf(c.cap);
     gsap.timeline({ delay }).fromTo(c.cap, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: reduce ? 0 : 0.2 }).to(c.cap, { opacity: 0, duration: reduce ? 0 : 0.35, delay: 1.7 });
   };
   const act = (c, again = false, voice = false) => {
@@ -698,12 +698,13 @@
     // 말풍선이 장면 밑 설명 글 위에 서면 그 글을 잠깐 흐린다(글이 반쯤 가려져 잘린 것처럼 보이지 않게)
     const hit = (el) => { if (!el.textContent.trim()) return false; const r = rel(el); return cx < r.x + r.w && cx + gw > r.x && y < r.y + r.h && y + gh > r.y; };
     after.classList.toggle('is-tipped', hit(say) || hit(sub));
+    ctxEl.classList.toggle('is-tipped', hit(ctxEl)); promptEl.classList.toggle('is-tipped', hit(promptEl));
     play('pop', { g: 0.55, rate: 1.15 });
     gsap.killTweensOf(guide);
     if (reduce) { gsap.set(guide, { x: cx, y, opacity: 1, scale: 1 }); return; }
     gsap.fromTo(guide, { x: cx, y: y + (side === 'top' ? 8 : side === 'bottom' ? -8 : 0), opacity: 0, scale: 0.92 }, { x: cx, y, opacity: 1, scale: 1, duration: 0.42, ease: 'back.out(2.2)' });
   };
-  const untip = () => { qtrOn = false; guide.removeAttribute('lang'); guide.classList.remove('is-qtr'); guide.classList.remove('is-on'); guideX.inert = true; after.classList.remove('is-tipped');
+  const untip = () => { qtrOn = false; guide.removeAttribute('lang'); guide.classList.remove('is-qtr'); guide.classList.remove('is-on'); guideX.inert = true; after.classList.remove('is-tipped'); ctxEl.classList.remove('is-tipped'); promptEl.classList.remove('is-tipped');
     gsap.killTweensOf(guide); gsap.to(guide, { opacity: 0, duration: reduce ? 0 : 0.2, onComplete: () => { if (!guide.classList.contains('is-on')) { $('.sc-guide-t', guide).textContent = ''; $('.sc-guide-s', guide).textContent = ''; } } });   // 숨은 말풍선 글이 화면 읽기에 남지 않게
   };
   const stopHand = () => { handTL?.kill(); handTL = null; handBob?.kill(); handBob = null; gsap.killTweensOf(hand); gsap.to(hand, { opacity: 0, duration: reduce ? 0 : 0.2 }); };
@@ -735,13 +736,13 @@
   // 지금 할 일 — 장면마다 부른다
   // 좁은 화면: 고를 때는 카드 밑(묻는 말을 가리지 않는다), 답한 뒤에는 카드 위(결과 글을 가리지 않는다). 단추는 손가락만 가리킨다
   // 보기 묶음 옆 말풍선 자리: 넓은 화면에서 보기 오른쪽에 같은 높이의 다른 카드(30일 문제의 기록 카드)가 있으면 그 앞에서 멈추고, 남는 폭이 모자라면 보기 밑에 세운다
-  // pad: 답한 뒤에는 카드가 줄에 매달려 흔들려 아래 모서리가 옆으로 나온다 — 그만큼 띄운다
-  const pickSpot = (cs, pad = 0) => {
-    const u = union(cs.map((c) => c.el)), b = { x: u.x - pad, y: u.y, w: u.w + pad * 2, h: u.h + pad };
+  // swing: 답한 뒤에는 카드가 줄에 매달려 15도까지 흔들려 옆 모서리가 나온다 — 카드 높이 × sin 15도만큼 옆으로 띄우고, 밑으로는 16px 띄운다(움직임 줄이기면 흔들리지 않으니 띄우지 않는다)
+  const pickSpot = (cs, swing = false) => {
+    const u = union(cs.map((c) => c.el)), sw = swing && !reduce, px = sw ? Math.round(u.h * 0.27) : 0, b = { x: u.x - px, y: u.y, w: u.w + px * 2, h: u.h + (sw ? 16 : 0) };
     const edge = Math.min(root.clientWidth, ...[...cards].filter((k) => !cs.includes(k) && k.op > 0.5).map((k) => rel(k.el)).filter((o) => o.x > b.x + b.w && o.y < b.y + b.h && o.y + o.h > b.y).map((o) => o.x));   // tip이 이 끝에서 12px 앞에 멈춘다
     return { b, edge, side: narrow || edge - (b.x + b.w + 16) < 150 + 12 ? 'bottom' : 'right' };
   };
-  const tipBy = (cs, t, s, pad = 0) => { const p = pickSpot(cs, pad); tip(t, s, p.b, p.side, false, p.edge); };
+  const tipBy = (cs, t, s, swing = false) => { const p = pickSpot(cs, swing); tip(t, s, p.b, p.side, false, p.edge); };
   const guidePick = (cs, demo, t = G.pick, s = G.pickSub) => { tipBy(cs, t, s); if (demo) demoCards(cs); };
   // 카드 옆에 빈자리가 있으면 옆에, 없으면 위에(좁은 화면에서 결과 글을 가리지 않는다)
   const guideCard = (c, t, s) => { const b = rel(c.el), RW = root.clientWidth; tip(t, s, b, RW - (b.x + b.w) >= 190 ? 'right' : b.x >= 190 ? 'left' : 'top'); };
@@ -898,8 +899,8 @@
       const helped = endHint(picked.el);   // 번역 질문 글을 먼저 걷고 말풍선 자리를 잰다(좁은 화면은 그 글이 카드를 밀어 내렸다)
       cs.forEach((c) => { c.answerable = false; c.el.setAttribute('aria-disabled', 'true'); });
       const correct = cs.find((c) => c.id === q.answer), right = picked === correct;
-      if (right) tipBy(cs, G.right, fb.right, 16);
-      else setTimeout(() => tipBy(cs, fillT(G.wrong, { n: cs.indexOf(correct) + 1 }), fb.wrong, 16), 640);
+      if (right) tipBy(cs, G.right, fb.right, true);
+      else setTimeout(() => tipBy(cs, fillT(G.wrong, { n: cs.indexOf(correct) + 1 }), fb.wrong, true), 640);
       if (right) {
         picked.el.classList.add('is-right'); mark(picked.wordEl, 'under'); play('underline'); play('chime', { delay: 0.18 }); picked.w += sign() * 1.4; picked.pv += sign() * 2; act(picked, true, true);
       } else {
