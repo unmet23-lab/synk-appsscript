@@ -24,6 +24,8 @@ const CLI_ONLY = Object.freeze({ gpt: { tool: 'Codex', web: 'ChatGPT 웹과 앱'
 const pad = n => String(n).padStart(2, '0');
 const fmt = n => Math.round(Number(n) || 0).toLocaleString('ko-KR');
 const ga = w => josa(w, ['이', '가']), neun = w => josa(w, ['은', '는']);
+/* 「a가 (먼저) 다시 열립니다」의 주어. 「먼저」는 막힌 계정이 둘 이상일 때만 붙인다(카본 solio-pub-p2-20261120 A1, 최종 검수 F2) */
+const reopensFirst = (g, a) => ga(a.name) + (g.out.length > 1 ? ' 먼저 ' : ' ');
 const here = g => g.accounts.filter(a => !a.away);
 const svcName = g => (g.service && SOLIO_TODAY_NAMES[g.service]) || String(g.label || '').trim() || '직접 넣은 구독';
 const dayStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
@@ -66,14 +68,14 @@ export function poolSay(snapshot, g, now) {
   if (f.kind === 'allOut') {
     const first = g.out[0];
     return (one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : allOutSay(name, g.out))
-      + (first.unblock ? ' ' + spoken(first.unblock, now) + '에 ' + (one ? '' : ga(first.name) + ' 먼저 ') + '다시 열립니다.' : '');
+      + (first.unblock ? ' ' + spoken(first.unblock, now) + '에 ' + (one ? '' : reopensFirst(g, first)) + '다시 열립니다.' : '');
   }
   const fc = p?.forecast;
   const runWords = fc ? '지금 속도면 ' + whenWords(fc.sayAt, now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.') : '';
   if (g.out.length && !one) {
     const first = g.out[0];
     return name + ' ' + outCount(list.length, g.out) + ' '
-      + (runWords || (p ? '지금 속도면 이번 주는 모두 막히지는 않습니다.' : first.unblock ? spoken(first.unblock, now) + '에 ' + ga(first.name) + ' 먼저 다시 열립니다.' : ''));
+      + (runWords || (p ? '지금 속도면 이번 주는 모두 막히지는 않습니다.' : first.unblock ? spoken(first.unblock, now) + '에 ' + reopensFirst(g, first) + '다시 열립니다.' : ''));
   }
   return runWords;
 }
@@ -99,12 +101,13 @@ export function briefHead(snapshot, groups, now, fallback = null) {
   if (fixable) { const f = facts.get(fixable); return { say: fixSay(fixable, f), then: f.login.length ? '계정 관리에서 다시 로그인합니다.' : '계정 관리에서 연결을 확인합니다.', covers: [], service: fixable.service }; }
   // 1. 한 서비스의 이 PC 계정이 모두 막힘. 다시 열리는 때가 가장 늦은 것부터. 아직 읽지 않은 계정만 남은 서비스도 사람이 할 일이 없으니 여기서
   //    다시 열리는 때를 둘째 줄에 쓴다. 0번에 두면 둘째 줄이 비고 다시 열리는 때가 첫 화면 어디에도 없었다(최종 검수 solio-struct-20261120 F2)
-  const allOut = weekly.filter(g => ['allOut', 'fixable'].includes(facts.get(g).kind)).sort((a, b) => (b.out[0].unblock ?? Infinity) - (a.out[0].unblock ?? Infinity));
+  //    모든 계정이 막힌 서비스를 아직 읽지 않은 계정이 남은 서비스보다 먼저 세운다. 읽기 전 계정은 쓸 수 있을지도 모른다(최종 검수 solio-pub-p2-20261120 F4)
+  const shutFirst = g => (facts.get(g).kind === 'allOut' ? 0 : 1);
+  const allOut = weekly.filter(g => ['allOut', 'fixable'].includes(facts.get(g).kind)).sort((a, b) => shutFirst(a) - shutFirst(b) || (b.out[0].unblock ?? Infinity) - (a.out[0].unblock ?? Infinity));
   if (allOut.length) {
     const g = allOut[0], first = g.out[0], name = svcName(g), one = here(g).length === 1;
     const say = facts.get(g).kind === 'fixable' ? fixSay(g, facts.get(g)) : one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : allOutSay(name, g.out);
-    // 「먼저」는 막힌 계정이 둘 이상일 때만이다. 다 쓴 계정 하나와 아직 읽지 않은 계정만 남은 서비스에 붙이지 않는다(카본 solio-pub-p2-20261120 A1)
-    const then = first.unblock ? spoken(first.unblock, now) + '에 ' + (one ? '' : ga(first.name) + (g.out.length > 1 ? ' 먼저 ' : ' ')) + '다시 열립니다.' : '';
+    const then = first.unblock ? spoken(first.unblock, now) + '에 ' + (one ? '' : reopensFirst(g, first)) + '다시 열립니다.' : '';
     return { say, then, covers: first.unblock ? ['unblock:' + first.row.id] : [], service: g.service };
   }
   // 2. 지금 속도면 48시간 안에 모두 막힘. 막히는 때가 가장 이른 것부터. 30분 안에 다시 열리면 말하지 않는다
@@ -112,10 +115,12 @@ export function briefHead(snapshot, groups, now, fallback = null) {
   if (soonRun) {
     const { g, fc } = soonRun, name = svcName(g), one = here(g).length === 1, nx = fc.next;
     const say = '지금 속도면 ' + neun(name) + ' ' + whenWords(fc.sayAt, now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.');
-    const then = nx && nx.t <= now + 7 * DAY_MS
+    // 둘째 줄이 그 사건을 말할 때만 다가오는 일에서 덮는다. 일주일 너머의 다음 주 초기화를 덮으면 같은 계정의 이번 주 초기화 줄이 지워졌다(최종 검수 solio-pub-p2-20261120 F1)
+    const said = nx && nx.t <= now + 7 * DAY_MS;
+    const then = said
       ? spoken(nx.t, now) + '에 ' + (one ? '' : ga(nx.a.name) + ' ') + (nx.type === 'reopen' ? '다시 열릴' : '초기화될') + ' 때까지 ' + spanWords(nx.t - fc.at) + '쯤 막힙니다.'
       : '일주일 안에는 다시 열리는 계정이 없습니다.';
-    return { say, then, covers: ['runout:' + g.service, ...(nx ? [(nx.type === 'reopen' ? 'unblock:' : 'reset:') + nx.a.row.id] : [])], service: g.service };
+    return { say, then, covers: ['runout:' + g.service, ...(said ? [(nx.type === 'reopen' ? 'unblock:' : 'reset:') + nx.a.row.id] : [])], service: g.service };
   }
   // 3. 계정 둘 이상인 서비스에서 절반 이상이 막힘. 막힌 몫이 큰 것부터
   const many = weekly.filter(g => here(g).length >= 2 && g.out.length * 2 >= here(g).length).sort((a, b) => b.out.length / here(b).length - a.out.length / here(a).length)[0];
@@ -124,7 +129,7 @@ export function briefHead(snapshot, groups, now, fallback = null) {
     const say = name + ' ' + outCount(here(many).length, many.out);
     let then = '', covers = [];
     if (p) then = p.forecast ? '지금 속도면 ' + whenWords(p.forecast.untilAt, now, { withTime: true }) + '까지는 막히지 않습니다.' : '지금 속도면 이번 주는 모두 막히지는 않습니다.';
-    else if (first.unblock) { then = spoken(first.unblock, now) + '에 ' + ga(first.name) + ' 먼저 다시 열립니다.'; covers = ['unblock:' + first.row.id]; }
+    else if (first.unblock) { then = spoken(first.unblock, now) + '에 ' + reopensFirst(many, first) + '다시 열립니다.'; covers = ['unblock:' + first.row.id]; }
     return { say, then, covers, service: many.service };
   }
   // 4. 다시 로그인하거나 읽지 못한 계정. 할 일을 그대로 말한다
@@ -294,8 +299,9 @@ function creditVerdict(snapshot, g) {
   if (!counted || counted < list.length || !(allot > 0)) return { verdict: 'young', say: '모든 계정의 4주 기록과 한 달 크레딧을 알면 진단합니다.', more: '', scope: '' };
   // 4주 동안 쓴 양을 한 달로 늘려 한 달 크레딧과 견준다. 「지난 4주 동안 n%를 썼다」가 아니라 「지금 속도면 한 달에 n%」다(GPT 검수 GA9)
   const pct = Math.round((spent / allot) * 100), pace = '지금 속도면 한 달에 크레딧의 ' + pct + '%를 씁니다.';
-  // 할 일은 속도 문장 뒤에 붙여 첫 화면 한 줄에 함께 낸다. 「모자람」 옆에 「크레딧이 모자랍니다」만 되풀이하거나 「남음」 옆에서 할 일이 빠졌다(0.5.0 공개 후보 카본 E6)
-  if (spent / allot >= DIAG.creditShort) return { verdict: 'short', say: pace + ' 크레딧을 더 사거나 요금제를 올릴 때입니다.', more: '', scope: '' };
+  // 첫 화면 한 줄은 속도 문장이다. 「모자람」 옆에 「크레딧이 모자랍니다」만 되풀이하거나 「남음」 옆에서 할 일이 빠졌다(0.5.0 공개 후보 카본 E6)
+  // 모자람에는 더 사라고 하지 않는다(업셀, subscriptions-model 머리 원칙). 한 달 크레딧을 넘는 속도일 때만 그 결과를 덧붙인다(최종 검수 solio-pub-p2-20261120 F3)
+  if (spent / allot >= DIAG.creditShort) return { verdict: 'short', say: pace + (spent > allot ? ' 이대로면 다음 충전 전에 크레딧이 바닥납니다.' : ''), more: '', scope: '' };
   if (spent / allot <= DIAG.creditSpare) return { verdict: 'spare', say: pace + ' 끊거나 낮은 요금제로 바꿔도 됩니다.', more: '', scope: '' };
   return { verdict: 'fit', say: pace + ' 지금 요금제가 알맞습니다.', more: '', scope: '' };
 }

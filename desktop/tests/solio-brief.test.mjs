@@ -190,7 +190,8 @@ test('credits: the 4-week pace is said as a month, and only with every account c
   const one = cr('c1', 'plus');
   const used = n => ({ cover: true, known: true, weeks: [0, 1, 2, 3].map(() => ({ used: n / 4, peak: null, reads: 4 })) });
   let d = briefDiag(snap([one], { c1: { weeks4: used(850) } }), briefGroups(snap([one], { c1: { weeks4: used(850) } }), NOW), NOW).items[0];
-  assert.equal(d.say, '지금 속도면 한 달에 크레딧의 92%를 씁니다. 크레딧을 더 사거나 요금제를 올릴 때입니다.');
+  // 한 달 크레딧 안에 드는 모자람은 속도만 말하고, 더 사라고 하지 않는다(최종 검수 solio-pub-p2-20261120 F3)
+  assert.equal(d.say, '지금 속도면 한 달에 크레딧의 92%를 씁니다.');
   // 첫 화면 한 줄은 판정 낱말을 되풀이하지 않고 속도와 할 일을 함께 말한다(0.5.0 공개 후보 카본 E6)
   assert.equal(d.word, '모자람');
   assert.equal(d.line, d.say);
@@ -198,6 +199,10 @@ test('credits: the 4-week pace is said as a month, and only with every account c
   d = briefDiag(spare, briefGroups(spare, NOW), NOW).items[0];
   assert.equal(d.word, '남음');
   assert.equal(d.line, '지금 속도면 한 달에 크레딧의 5%를 씁니다. 끊거나 낮은 요금제로 바꿔도 됩니다.');
+  const over = snap([one], { c1: { weeks4: used(1200) } });
+  d = briefDiag(over, briefGroups(over, NOW), NOW).items[0];
+  assert.equal(d.line, '지금 속도면 한 달에 크레딧의 130%를 씁니다. 이대로면 다음 충전 전에 크레딧이 바닥납니다.');
+  assert.doesNotMatch(d.say + d.more, /사거나|올리/);
   const two = cr('c2', 'plus');
   const s = snap([one, two], { c1: { weeks4: used(40) } });
   d = briefDiag(s, briefGroups(s, NOW), NOW).items[0];
@@ -755,7 +760,7 @@ test('a 5-hour block beside a login is 「막혀 있고」, never 「다 썼고�
   assert.equal(b.head.then, '계정 관리에서 다시 로그인합니다.');
 });
 
-test('used up with only an unread account left: the second line says when it reopens, after a service that is truly shut (최종 검수 solio-struct-20261120 F2 · F3)', () => {
+test('used up with only an unread account left: the second line says when it reopens; a service with a login still comes first (최종 검수 solio-struct-20261120 F2 · F3)', () => {
   const used = weekly('claude', 100, NOW + 4 * D, { email: 'used@example.com' }), fresh = row({ email: 'fresh@example.com', live: null });
   const s = snap([used, fresh], { [used.id]: 10 }), b = brief(s);
   assert.equal(b.head.say, 'Claude 2개 가운데 1개를 다 썼고 1개는 아직 읽지 않았습니다.');
@@ -789,4 +794,32 @@ test('a block that runs past the week after a reset still knows the next reset (
   // 처음부터 일주일 넘게 막힌 계정은 전부터 끝 너머의 다시 열림을 알았다. 그 길이 그대로인지 본다(poolRunout().next)
   const out = weekly('claude', 100, NOW + 8 * D, { plan: 'pro' }), s2 = snap([out], { [out.id]: 10 });
   assert.deepEqual([poolRunout(s2, briefGroups(s2, NOW)[0], NOW).next?.t], [NOW + 8 * D]);
+});
+
+test('a block past the week does not hide this week’s reset from coming up (최종 검수 solio-pub-p2-20261120 F1)', () => {
+  // 64% 남고 하루 100%p: 5시간 뒤 초기화로 다시 차고 하루 뒤 바닥, 다음 초기화는 일주일 너머
+  const a = weekly('claude', 36, NOW + 5 * H, { plan: 'pro', email: 'solo@example.com' });
+  const s = snap([a], { [a.id]: 100 }), head = briefHead(s, briefGroups(s, NOW), NOW), b = brief(s);
+  assert.equal(head.then, '일주일 안에는 다시 열리는 계정이 없습니다.');
+  assert.deepEqual(head.covers, ['runout:claude']);
+  assert.ok(b.soon.all.some(i => i.key === 'reset:' + a.id), JSON.stringify(b.soon.all));
+});
+
+test('「먼저」 only when two or more accounts are blocked, in every place that says it (최종 검수 solio-pub-p2-20261120 F2)', () => {
+  // 한 계정은 다 썼고 다른 계정은 기록이 짧아 풀 셈이 없다 → 3번 갈래와 줄 안쪽 결론
+  const used = weekly('claude', 100, NOW + 30 * H, { email: 'used@example.com' }), young = weekly('claude', 20, NOW + 5 * D, { email: 'young@example.com' });
+  const s = snap([used, young], { [used.id]: 10 }), b = brief(s);
+  assert.equal(b.head.say, 'Claude 2개 가운데 1개를 다 썼습니다.');
+  assert.equal(b.head.then, '내일 오전 9시에 used가 다시 열립니다.');
+  assert.match(b.says.claude, /used가 다시 열립니다\.$/);
+  assert.doesNotMatch(b.head.then + b.says.claude, /먼저/);
+});
+
+test('a service with every account shut comes before one that still has an unread account (최종 검수 solio-pub-p2-20261120 F4)', () => {
+  const used = weekly('claude', 100, NOW + 4 * D, { email: 'used@example.com' }), fresh = row({ email: 'fresh@example.com', live: null });
+  const c1 = weekly('gpt', 100, NOW + D, { plan: 'plus', email: 'c1@example.com' }), c2 = weekly('gpt', 100, NOW + 2 * D, { plan: 'plus', email: 'c2@example.com' });
+  const s = snap([used, fresh, c1, c2], { [used.id]: 10, [c1.id]: 10, [c2.id]: 10 }), head = briefHead(s, briefGroups(s, NOW), NOW);
+  assert.equal(head.service, 'gpt');
+  assert.equal(head.say, 'Codex는 지금 모든 계정을 다 썼습니다.');
+  assert.equal(head.then, '내일 새벽 3시에 c1이 먼저 다시 열립니다.');
 });
