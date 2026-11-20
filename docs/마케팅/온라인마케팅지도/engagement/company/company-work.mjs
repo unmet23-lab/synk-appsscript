@@ -2,6 +2,7 @@ import {randomUUID,createHash} from 'node:crypto';
 import {hasWorkspaceFeature,requireWorkspaceFeature,workspaceAccess} from './workspace-access.mjs';
 
 const definitions={PATH:{feature:'path',title:'상담·정착 업무'},SHIFT:{feature:'lectures',title:'강의'}};
+const koreanDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'});
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 export function createCompanyWork({store,clock=()=>new Date().toISOString()}){
   function current(actor,company,write=false){
@@ -15,15 +16,24 @@ export function createCompanyWork({store,clock=()=>new Date().toISOString()}){
   const allowed=(user,row)=>row.ownerId===user.id||manager(user,row.company);
   function workspace(actor,company){
     const user=current(actor,company);
-    return {company,title:definitions[company].title,canWrite:user.role!=='viewer',items:store.all('companyWork').filter(row=>row.company===company&&allowed(user,row)).sort((a,b)=>Number(a.status==='done')-Number(b.status==='done')||(a.date||'9999').localeCompare(b.date||'9999')||b.updatedAt.localeCompare(a.updatedAt)).map(row=>({...row,ownerName:store.get('users',row.ownerId)?.name||'담당자'}))};
+    const rows=manager(user,company)
+      ? store.allWhere('companyWork','company',company)
+      : store.allWhere('companyWork','ownerId',user.id).filter(row=>row.company===company);
+    const names=new Map([[user.id,user.name||'담당자']]);
+    const items=rows.sort((a,b)=>Number(a.status==='done')-Number(b.status==='done')||(a.date||'9999').localeCompare(b.date||'9999')||b.updatedAt.localeCompare(a.updatedAt))
+      .map(row=>{
+        if(!names.has(row.ownerId))names.set(row.ownerId,store.get('users',row.ownerId)?.name||'담당자');
+        return {...row,ownerName:names.get(row.ownerId)};
+      });
+    return {company,title:definitions[company].title,canWrite:user.role!=='viewer',items};
   }
   function mine(actor, { includeNote = false } = {}) {
     const user = actor && store.get('users', actor.id);
     if (!user || user.active === false) throw fail('먼저 회사 계정으로 로그인해 주세요.', 401);
     const companies = ['SHIFT', 'PATH'].filter(company => hasWorkspaceFeature(user, definitions[company].feature));
-    const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(clock()));
-    const items = companies.length ? store.all('companyWork')
-      .filter(row => row.ownerId === user.id && row.status === 'open' && companies.includes(row.company))
+    const date = koreanDate.format(new Date(clock()));
+    const items = companies.length ? store.allWhere('companyWork','ownerId',user.id)
+      .filter(row => row.status === 'open' && companies.includes(row.company))
       .sort((a, b) => (a.date || '9999-99-99').localeCompare(b.date || '9999-99-99') || a.id.localeCompare(b.id))
       .map(row => ({
         id: row.id, company: row.company, title: row.title, date: row.date || '', revision: row.revision,

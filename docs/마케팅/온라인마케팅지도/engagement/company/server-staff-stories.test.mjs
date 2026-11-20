@@ -199,7 +199,7 @@ test('HTTP: the share URL follows the registered production origin, not the requ
 test('HTTP: installing the optional screens enables only live stories, with strict CSP and noindex',{timeout:90000},async()=>{
   const run=async function(){
     const {mock}=await import('node:test'),{default:assert}=await import('node:assert/strict');
-    const {mkdtemp,rm,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join,dirname,resolve}=await import('node:path');
+    const {mkdtemp,rm,readFile,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join,dirname,resolve}=await import('node:path');
     const serverUrl=process.argv[1],optionalUrl=new URL('./optional-feature-modules.mjs',serverUrl).href;
     const real=await import(optionalUrl+'?real'),{createStaticSet}=await import(new URL('./static-set.mjs',serverUrl).href);
     const installed=process.argv[2]==='installed';
@@ -215,6 +215,14 @@ test('HTTP: installing the optional screens enables only live stories, with stri
     try{
       app=createCompanyApp({dataDir:join(directory,'data'),port:0,allowTestHost:true,schedule:false,backgroundJobsEnabled:false,automationHealthSchedule:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null,teachingConfig:null,staticSet});
       await app.start();const base='http://127.0.0.1:'+app.server.address().port;
+      const entry=await fetch(base+'/');
+      assert.equal(entry.status,200);
+      const homeHtml=await entry.text();
+      assert.match(homeHtml,/<script src="\/app\.js\?v=/);
+      const originalEntry=await readFile(staticSet.file(join(here,'public/index.html')),'utf8');
+      assert.equal(homeHtml.replace(/\?v=[A-Za-z0-9_-]{43}/g,''),originalEntry);
+      assert.equal(/src="\/staff-stories\.js\?v=[A-Za-z0-9_-]{43}"/.test(homeHtml),installed);
+      assert.equal(/href="\/staff-stories\.css\?v=[A-Za-z0-9_-]{43}"/.test(homeHtml),installed);
       const user=app.store.createUser({name:'합성 직원',email:'page@staff-story.test',role:'member'});
       const created=app.staffStories.create(user,{action:'create',requestId:'00000000-0000-4000-8000-000000000001',draft:{title:'제목',body:'',displayName:'이름',note:'PRIVATE'}}).story;
       const publish={action:'publish',requestId:'00000000-0000-4000-8000-000000000002',expectedRevision:1,confirmations:{peopleConsent:true,noPromise:true}};

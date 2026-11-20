@@ -1,11 +1,13 @@
 // Disposable company SQLite and synthetic employees only; no invitations are sent.
 import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
 import {createRequire} from 'node:module';
-import {mkdtemp,mkdir,writeFile,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,readFile,writeFile,rm} from 'node:fs/promises';
 import {tmpdir,homedir} from 'node:os';
 import {join,resolve,sep} from 'node:path';
 import {createServer} from 'node:net';
 import {createCompanyApp} from '../server.mjs';
+import {createStaffStories} from '../staff-stories.mjs';
 import {크롬환경} from '../../../../../../tools/lib/크롬조종.js';
 import {launchOwnedBrowser,closeOwnedBrowser} from './owned-browser.mjs';
 
@@ -39,6 +41,8 @@ const releases=[];
 const consoleMessages=[],issuedCodes=[],invitePosts=[];
 let expectedAbortedInvite=false;
 const check=(name,condition=true)=>{assert.ok(condition,name);report.checks.push(name);};
+const staffStoryFiles=page=>page.evaluate(()=>performance.getEntriesByType('resource')
+  .map(entry=>new URL(entry.name).pathname).filter(path=>path==='/staff-stories.js'||path==='/staff-stories.css'));
 async function bounded(promise,label){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Timed out: '+label)),15000);})]);}finally{clearTimeout(timer);}}
 async function session(user,viewport={width:1440,height:900}){
   const context=await browser.newContext({viewport,locale:'tr-TR'});
@@ -99,15 +103,50 @@ try{
     return {key,user,tabs};
   });
   const address=await app.start();base=`http://127.0.0.1:${address.port}`;
+  const homeBytes=Buffer.from(await (await fetch(base+'/')).arrayBuffer());
+  const homeSource=await readFile(new URL('../public/index.html',import.meta.url));
+  // Strip one version immediately before the closing quote. A second suffix or an added BOM must remain detectable.
+  const decodedHome=Buffer.from(homeBytes.toString('utf8').replace(/\?v=[A-Za-z0-9_-]{43}(?=["'])/g,''));
+  check('public home preserves the source bytes with one version per asset',decodedHome.equals(homeSource));
   browser=await launchOwnedBrowser(chromium,{headless:true,executablePath:process.env.MESSENGER_CHROME||'C:/Program Files/Google/Chrome/Application/chrome.exe',env:크롬환경()});
+  {
+    const {context,page}=await session(null);
+    await page.goto(base+'/');
+    await page.getByText('초대 코드로 합류하기',{exact:true}).click();
+    await page.locator('form[data-form="wa-code"]').waitFor();
+    check('customer invite entry does not load employee writing assets',(await staffStoryFiles(page)).length===0);
+    await context.close();
+  }
   // Bare entry opens the sole assigned company; explicit query/hash navigation stays intact.
   for(const [key,expectedTab,expectedSection] of [['path','path',''],['shift','lectures',''],['pulse','workroom','clients'],['dual','home',''],['common','home','']]){
     const {context,page}=await session(people.find(row=>row.key===key).user);
     await page.goto(base+'/');await page.locator('.synk-workspace[data-view="'+expectedTab+'"]').waitFor();
     check(key+' bare entry opens the assigned workspace',await page.locator('.synk-workspace').getAttribute('data-view')===expectedTab);
+    if(expectedTab!=='home')check(key+' only loads writing assets on the employee home',(await staffStoryFiles(page)).length===0);
     if(expectedSection)check(key+' starts with customer assignments',await page.evaluate(()=>wr.view)===expectedSection);
     await page.locator('.ws-brand[data-tab="home"]').click();await page.locator('#next-heading').waitFor();
     check(key+' explicit return stays on the assignment board',await page.locator('.synk-workspace').getAttribute('data-view')==='home');
+    if(key==='shift'){
+      const create=page.locator('#staff-stories-root [data-action="ss-new"]:enabled');
+      await create.waitFor();
+      assert.deepEqual((await staffStoryFiles(page)).sort(),['/staff-stories.css','/staff-stories.js']);
+      await create.click();
+      const note=page.locator('form[data-form="ss-editor"] [name="note"]');
+      await note.fill('아직 저장하지 않은 강의 경험');
+      await page.keyboard.press('Escape');
+      const choices=page.locator('[data-ss-discard-prompt]:not([hidden]) button');
+      const canPressBoth=await choices.evaluateAll(buttons=>buttons.length===2&&buttons.every(button=>{
+        const bounds=button.getBoundingClientRect();
+        const hit=document.elementFromPoint(bounds.x+bounds.width/2,bounds.y+bounds.height/2);
+        return bounds.width>0&&bounds.height>0&&button.contains(hit);
+      }));
+      check('both discard choices can be pressed without scrolling',canPressBoth);
+      await page.locator('[data-action="ss-discard-keep"]').click();
+      check('an employee can continue writing after closing by mistake',await note.inputValue()==='아직 저장하지 않은 강의 경험');
+      await page.keyboard.press('Escape');
+      await page.locator('[data-action="ss-discard-confirm"]').click();
+      await note.waitFor({state:'hidden'});
+    }
     await context.close();
   }
   {
@@ -220,6 +259,39 @@ try{
   const persisted=await adminPage.evaluate(()=>JSON.stringify({local:{...localStorage},session:{...sessionStorage}}));
   check('issued raw codes stay out of browser persistence and console logs',issuedCodes.every(code=>!persisted.includes(code)&&!consoleMessages.some(message=>message.includes(code))));
   await adminSession.context.close();await joined.context.close();
+  {
+    const stories=createStaffStories({store:app.store,origin:base});
+    const employees=['shift','path'].map(key=>people.find(person=>person.key===key).user);
+    const titles=['복직한 직원의 글','새로 인계된 글'];
+    for(const [index,user] of employees.entries()){
+      const saved=stories.create(user,{
+        action:'create',requestId:randomUUID(),
+        draft:{title:titles[index],displayName:'담당자',body:'수업에서 겪은 경험'}
+      }).story;
+      const posted=stories.mutate(user,saved.id,{
+        action:'publish',requestId:randomUUID(),expectedRevision:saved.revision,
+        confirmations:{peopleConsent:true,noPromise:true}
+      }).story;
+      stories.submit(posted.public.publicId,{
+        requestId:randomUUID(),email:'visitor@example.test',message:'수업 문의입니다.',consent:true
+      },{client:user.id});
+    }
+    const setActive=(user,active)=>app.store.put('users',user.id,{...app.store.get('users',user.id),active});
+    setActive(employees[0],false);
+    const {context,page}=await session(admin);
+    await page.goto(base+'/?tab=home');
+    const held=page.locator('[data-ss-held]');
+    await held.locator('summary').click();
+    await held.getByText(titles[0],{exact:false}).first().waitFor();
+    setActive(employees[0],true);
+    setActive(employees[1],false);
+    // Return to the open handoff list after its normal one-minute refresh interval.
+    await page.clock.setFixedTime(new Date(Date.now()+65000));
+    await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+    await held.getByText(titles[1],{exact:false}).first().waitFor();
+    check('open handoffs follow the current employee even if the total stays the same',await held.getByText(titles[0],{exact:false}).count()===0);
+    await context.close();
+  }
   check('no browser runtime, console or asset failures',report.errors.length===0&&report.consoleErrors.length===0&&report.assets.length===0);
 }catch(error){originalFailure=error;report.failure={message:error.message};throw error;}
 finally{

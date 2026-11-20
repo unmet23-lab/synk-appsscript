@@ -529,11 +529,20 @@ h2:focus-visible {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .copy-row input {
+  flex: 1 1 auto;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12.5px;
+}
+
+.copy-row .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 
 .confirm-box {
@@ -545,6 +554,73 @@ h2:focus-visible {
   font-size: 13px;
   line-height: 1.55;
   color: var(--ink-primary);
+}
+
+#lookup-fieldset {
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.inquiry-card,
+.form-field,
+.receipt-credentials,
+.receipt-guide,
+.receipt-field,
+.confirm-box,
+.lookup-wrap,
+#lookup-details,
+#lookup-details .lookup-body,
+#lookup-form {
+  min-width: 0;
+}
+
+.section-title,
+.section-sub,
+.privacy-note,
+.receipt-guide,
+.confirm-box,
+#receipt-feedback,
+#lookup-details summary,
+#lookup-details .lookup-help {
+  overflow-wrap: anywhere;
+}
+
+#lookup-details summary {
+  max-width: 100%;
+  white-space: normal;
+}
+
+#story-receipt-section .action-row,
+#lookup-form .action-row,
+.lookup-body .action-row {
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 480px) {
+  .inquiry-card,
+  .lookup-wrap,
+  #lookup-details {
+    max-width: 100%;
+  }
+
+  #story-receipt-section .action-row,
+  #lookup-form .action-row,
+  .lookup-body .action-row {
+    width: 100%;
+  }
+
+  #story-receipt-section .action-row .btn,
+  #lookup-form .action-row .btn,
+  .lookup-body .action-row .btn {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .confirm-box p {

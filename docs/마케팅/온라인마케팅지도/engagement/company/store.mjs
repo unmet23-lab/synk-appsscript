@@ -35,6 +35,13 @@ export function publicUser(user) {
 }
 // Kinds read by one field far more often than in full get a partial expression index per field (allWhere below).
 const INDEXED={socialPublishJobs:['postId','status','channelId']};
+// 직원 자료는 기존 kind 색인 안에서 SQLite가 소유자와 회사를 가른다. 운영 DB에 새 색인을 만들지 않는다.
+const FILTERABLE={
+  ...INDEXED,
+  companyWork:['ownerId','company'],
+  staffStories:['ownerId'],
+  staffStoryInquiries:['ownerId','storyId'],
+};
 export class Store {
   #statements=new Map();
   #statement(sql){let prepared=this.#statements.get(sql);if(!prepared){prepared=this.db.prepare(sql);this.#statements.set(sql,prepared);}return prepared;}
@@ -69,14 +76,21 @@ export class Store {
   get(kind,id) { if(id==null)return null;const scope=this.#scope,key=scope&&kind+'\u0000'+id;if(scope?.get.has(key)){const body=scope.get.get(key);return body==null?null:JSON.parse(body);}const row=this.#statement('SELECT body FROM documents WHERE kind=? AND id=?').get(kind,id);if(scope)scope.get.set(key,row?row.body:null);return row?JSON.parse(row.body):null; }
   all(kind) { const scope=this.#scope;if(scope?.all.has(kind))return scope.all.get(kind).map(body=>JSON.parse(body));const rows=this.#statement('SELECT body FROM documents WHERE kind=? ORDER BY rowid').all(kind);if(scope)scope.all.set(kind,rows.map(x=>x.body));return rows.map(x=>JSON.parse(x.body)); }
   put(kind,id,body) { this.#forget();this.#bump(kind);this.#statement('INSERT INTO documents(kind,id,body) VALUES (?,?,?) ON CONFLICT(kind,id) DO UPDATE SET body=excluded.body').run(kind,id,JSON.stringify(body));return body; }
-  // Documents of an indexed kind whose field equals one of the values, in insertion order like all(). present names a field that
-  // must also be set; SQLite checks it, so rows that fail are never parsed here.
-  allWhere(kind,field,values,{present}={}) {if(!INDEXED[kind]?.includes(field))throw new Error('색인이 없는 조회예요: '+kind+'.'+field);if(present!==undefined&&!/^[A-Za-z][A-Za-z0-9]*$/.test(present))throw new Error('조회 항목 이름을 확인해 주세요.');
+  // Filter in SQLite and keep insertion order. Only the matched document bodies are parsed here.
+  allWhere(kind,field,values,{present}={}) {if(!FILTERABLE[kind]?.includes(field))throw new Error('색인 또는 필터 조회에 등록되지 않은 항목이에요: '+kind+'.'+field);if(present!==undefined&&!/^[A-Za-z][A-Za-z0-9]*$/.test(present))throw new Error('조회 항목 이름을 확인해 주세요.');
     const list=[...new Set((Array.isArray(values)?values:[values]).filter(v=>v!=null).map(String))];if(!list.length)return [];
-    // One indexed equality per value, merged in rowid order: SQLite plans IN (?,?) with ORDER BY rowid as a scan of the kind.
-    const sql=`SELECT rowid AS r,body FROM documents WHERE kind='${kind}' AND json_extract(body,'$.${field}') = ?${present?` AND json_extract(body,'$.${present}') IS NOT NULL`:''} ORDER BY rowid`;
-    const scope=this.#scope,key=scope&&sql+'\u0000'+list.join('\u0000');if(scope?.where.has(key))return scope.where.get(key).map(body=>JSON.parse(body));
-    const statement=this.#statement(sql),rows=list.length===1?statement.all(list[0]):list.flatMap(value=>statement.all(value)).sort((a,b)=>a.r-b.r);if(scope)scope.where.set(key,rows.map(x=>x.body));return rows.map(x=>JSON.parse(x.body));}
+    // Indexed fields use individual seeks. For other fields, test all requested values in one pass over the kind.
+    const onePass=list.length>1&&!INDEXED[kind]?.includes(field);
+    const condition=onePass?'IN (SELECT value FROM json_each(?))':'= ?';
+    const sql=`SELECT rowid AS r,body FROM documents WHERE kind='${kind}' AND json_extract(body,'$.${field}') ${condition}${present?` AND json_extract(body,'$.${present}') IS NOT NULL`:''} ORDER BY rowid`;
+    const scope=this.#scope,key=scope&&sql+'\u0000'+JSON.stringify(list);if(scope?.where.has(key))return scope.where.get(key).map(body=>JSON.parse(body));
+    const statement=this.#statement(sql);
+    let rows;
+    if(onePass)rows=statement.all(JSON.stringify(list));
+    else if(list.length===1)rows=statement.all(list[0]);
+    else rows=list.flatMap(value=>statement.all(value)).sort((a,b)=>a.r-b.r);
+    if(scope)scope.where.set(key,rows.map(x=>x.body));
+    return rows.map(x=>JSON.parse(x.body));}
   // How many times this process wrote a kind: a cheap way to tell whether anything of that kind changed.
   #generation=new Map();
   #bump(kind){this.#generation.set(kind,(this.#generation.get(kind)||0)+1);}

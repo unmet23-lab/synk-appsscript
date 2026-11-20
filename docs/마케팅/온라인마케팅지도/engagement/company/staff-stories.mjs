@@ -66,32 +66,36 @@ export function createStaffStories({store,origin,clock=()=>new Date().toISOStrin
     if(!row||row.ownerId!==user.id||row.id!==id||row.status==='deleted')throw notFound();
     return row;
   }
-  function openCounts(){
-    const cutoff=retention(),result=new Map();
-    for(const item of store.all(K.inquiry))if(!item.deletedAt&&Date.parse(item.createdAt)>=cutoff)result.set(item.storyId,(result.get(item.storyId)||0)+1);
-    return result;
+  function retained(rows){
+    const cutoff=retention();
+    return rows.filter(row=>!row.deletedAt&&Date.parse(row.createdAt)>=cutoff);
   }
-  function counts(row,open=openCounts()){
+  function counts(row,open=retained(store.allWhere(K.inquiry,'storyId',row.id)).length){
     const counter=store.get(K.count,row.id);
-    return {received:counter?.received||0,open:open.get(row.id)||0,firstAt:counter?.firstAt||null,lastAt:counter?.lastAt||null};
+    return {received:counter?.received||0,open,firstAt:counter?.firstAt||null,lastAt:counter?.lastAt||null};
   }
-  function view(row,open){
+  function view(row,open,canReceive){
     const draft=decrypt(row.draftCipher,row),published=row.publicCipher?decrypt(row.publicCipher,row):null;
     return {id:row.id,revision:row.revision,status:row.status,
       draft:{title:draft.title,body:draft.body,displayName:draft.displayName,note:draft.note},
-      public:published?{publicId:row.publicId,url:pages?origin+'/story/'+row.publicId:null,title:published.title,body:published.body,displayName:published.displayName,publishedAt:row.publishedAt,open:pages&&row.status==='live'&&ownerOpen(row.ownerId)}:null,
+      public:published?{publicId:row.publicId,url:pages?origin+'/story/'+row.publicId:null,title:published.title,body:published.body,displayName:published.displayName,publishedAt:row.publishedAt,open:pages&&row.status==='live'&&(canReceive??ownerOpen(row.ownerId))}:null,
       changedSincePublish:!!published&&(published.title!==draft.title||published.body!==draft.body||published.displayName!==draft.displayName),
       external:row.external?{url:row.external.url,registeredAt:row.external.registeredAt,source:'self'}:null,
       inquiries:counts(row,open),createdAt:row.createdAt,updatedAt:row.updatedAt};
   }
   function inquirySummary(row){return {id:row.id,storyId:row.storyId,storyTitle:row.storyTitle,createdAt:row.createdAt,status:row.status};}
-  function liveInquiries(filter){const cutoff=retention();return store.all(K.inquiry).filter(row=>!row.deletedAt&&Date.parse(row.createdAt)>=cutoff&&filter(row)).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||a.id.localeCompare(b.id));}
+  const newestInquiry=(a,b)=>b.createdAt.localeCompare(a.createdAt)||a.id.localeCompare(b.id);
+  const ownedStories=ownerId=>store.allWhere(K.story,'ownerId',ownerId).filter(row=>row.status!=='deleted');
 
   function workspace(user){
     user=account(user);
-    const open=openCounts(),stories=store.all(K.story).filter(row=>row.ownerId===user.id&&row.status!=='deleted').map(row=>view(row,open)).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)||a.id.localeCompare(b.id));
-    const inquiries=liveInquiries(row=>row.ownerId===user.id).map(inquirySummary);
+    const inquiries=retained(store.allWhere(K.inquiry,'ownerId',user.id)).sort(newestInquiry).map(inquirySummary);
+    const open=new Map();
+    for(const item of inquiries)open.set(item.storyId,(open.get(item.storyId)||0)+1);
+    const stories=ownedStories(user.id).map(row=>view(row,open.get(row.id)||0,WRITERS.includes(user.role)))
+      .sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)||a.id.localeCompare(b.id));
     return {stories,inquiries,
+      ...(user.role==='admin'?{heldInquiryCounts:heldInquiryCounts()}:{}),
       totals:{stories:stories.length,live:stories.filter(row=>row.status==='live').length,received:stories.reduce((sum,row)=>sum+row.inquiries.received,0),open:inquiries.length},
       limits:{stories:L.stories,title:L.title,body:L.body,displayName:L.displayName,note:L.note,url:L.url},retentionDays:L.retentionDays,canWrite:user.role!=='viewer',canPublish:pages&&user.role!=='viewer'};
   }
@@ -107,7 +111,7 @@ export function createStaffStories({store,origin,clock=()=>new Date().toISOStrin
         if(existing.ownerId!==live.id||existing.createRequestId!==requestId||existing.createFingerprint!==fingerprint||existing.status==='deleted')throw staffStoryError('같은 요청 번호로 다른 글감이 이미 있어요. 새로 만들어 주세요.',409,'SYNK_STORY_REQUEST_CONFLICT');
         return {status:200,story:view(existing),duplicate:true};
       }
-      if(store.all(K.story).filter(row=>row.ownerId===live.id&&row.status!=='deleted').length>=L.stories)throw staffStoryError(`글감은 ${L.stories}개까지 둘 수 있어요.`,409,'SYNK_STORY_LIMIT');
+      if(ownedStories(live.id).length>=L.stories)throw staffStoryError(`글감은 ${L.stories}개까지 둘 수 있어요.`,409,'SYNK_STORY_LIMIT');
       const at=now(),row={schema:1,id,ownerId:live.id,revision:1,status:'draft',publicId:null,publicCipher:null,publishedAt:null,external:null,createRequestId:requestId,createFingerprint:fingerprint,mutations:[],createdAt:at,updatedAt:at};
       row.draftCipher=sealDraft(row,draft);
       store.put(K.story,id,row);
@@ -193,15 +197,28 @@ export function createStaffStories({store,origin,clock=()=>new Date().toISOStrin
   const receipt=row=>({ok:true,accepted:!row.deletedAt,deleted:!!row.deletedAt,receiptId:row.id,deleteToken:deletionToken(row.id),retentionDays:L.retentionDays});
   // 지우거나 기한이 지난 문의는 연락처 · 내용 · 글 연결을 버리고 접수 번호와 닫은 시각만 남긴다. 같은 요청이 다시 와도 되살아나지 않는다.
   const record=id=>store.get(K.inquiry,id)||store.get(K.closed,id);
-  function erase(id){
-    const row=store.get(K.inquiry,id);if(!row)return;
+  function erase(id,row=store.get(K.inquiry,id)){
+    if(!row)return;
     store.deleteSecret(secretId(id));store.remove(K.inquiry,id);
     store.put(K.closed,id,{id,deletedAt:row.deletedAt||now()});
   }
   // 예전 꼴로 지운 기록(deletedAt만 붙은 문의 줄)도 여기서 같은 최소 기록으로 바꾼다.
+  // 표준 UTC 시각은 문자열 순서대로 걸러진다. 예전 표기의 시각은 기존 Date.parse 기준으로 판정한다.
+  const pruneCandidates=store.db.prepare(`
+    SELECT id,createdAt,deletedAt FROM (
+      SELECT id,json_extract(body,'$.createdAt') AS createdAt,json_extract(body,'$.deletedAt') AS deletedAt
+      FROM documents WHERE kind='${K.inquiry}'
+    ) WHERE deletedAt IS NOT NULL OR createdAt < ? OR createdAt NOT GLOB '????-??-??T??:??:??.???Z'`);
   function prune(){
     const cutoff=retention();
-    for(const row of store.all(K.inquiry))if(row.deletedAt||Date.parse(row.createdAt)<cutoff)store.transaction(()=>erase(row.id));
+    const expired=row=>row.deletedAt||Date.parse(row.createdAt)<cutoff;
+    for(const candidate of pruneCandidates.all(new Date(cutoff).toISOString())){
+      if(!expired(candidate))continue;
+      store.transaction(()=>{
+        const current=store.get(K.inquiry,candidate.id);
+        if(current&&expired(current))erase(candidate.id,current);
+      });
+    }
   }
   function inquiryValue(input){
     keys(input,['requestId','name','email','message','consent','website']);
@@ -280,7 +297,25 @@ export function createStaffStories({store,origin,clock=()=>new Date().toISOStrin
   function admin(user){const live=account(user);if(live.role!=='admin')throw staffStoryError('관리자만 볼 수 있어요.',403,'SYNK_STORY_ADMIN');return live;}
   const held=row=>{const owner=store.get('users',row.ownerId);return !owner?.active;};
   const ownerName=row=>store.get('users',row.ownerId)?.name||'';
-  function heldInquiries(user){admin(user);return {inquiries:liveInquiries(held).map(row=>({...inquirySummary(row),ownerName:ownerName(row)}))};}
+  // 인계 대상은 조회할 때 현재 계정 상태로 정한다. 중지 후 복구된 직원의 문의도 즉시 본인에게 돌아간다.
+  const inquiryOwners=store.db.prepare(`SELECT DISTINCT json_extract(body,'$.ownerId') AS id FROM documents WHERE kind='${K.inquiry}'`);
+  function heldRows(){
+    const names=new Map();
+    for(const {id} of inquiryOwners.all()){
+      const owner=store.get('users',id);
+      if(!owner?.active)names.set(id,owner?.name||'');
+    }
+    return {names,rows:retained(store.allWhere(K.inquiry,'ownerId',[...names.keys()]))};
+  }
+  function heldInquiryCounts(){
+    const {rows}=heldRows();
+    return {total:rows.length,new:rows.reduce((sum,row)=>sum+Number(row.status==='new'),0)};
+  }
+  function heldInquiries(user){
+    admin(user);
+    const {rows,names}=heldRows();
+    return {inquiries:rows.sort(newestInquiry).map(row=>({...inquirySummary(row),ownerName:names.get(row.ownerId)}))};
+  }
   function heldInquiry(user,id){admin(user);const row=inquiryRow(id,held);return detail(row,{ownerName:ownerName(row)});}
   function heldAction(user,id,input){
     admin(user);keys(input,['action']);if(input.action!=='delete')throw invalid('action');

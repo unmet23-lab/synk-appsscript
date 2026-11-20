@@ -28,6 +28,63 @@ function fixture(t){
 }
 const code=expected=>error=>{assert.equal(error.code,expected);return true;};
 
+test('문의 접수와 보관 정리는 다른 문의 본문을 읽지 않고 옛 시각 표기와 정확한 만료 경계를 처리한다',t=>{
+  const f=fixture(t),story=f.publish(f.users.a,f.create());
+  const {store,stories}=f,all=store.all.bind(store);
+  store.all=kind=>{assert.notEqual(kind,K.inquiry,'접수와 보관 정리에서 모든 문의를 읽었다');return all(kind);};
+  const seed=()=>f.ask(story.public.publicId).result.receiptId;
+  const older=seed(),boundary=seed(),removed=seed(),current=seed();
+  store.put(K.inquiry,older,{...store.get(K.inquiry,older),createdAt:'2026-11-20T08:59:59.999+09:00'});
+  store.put(K.inquiry,boundary,{...store.get(K.inquiry,boundary),createdAt:'2026-11-20T09:00:00+09:00'});
+  store.put(K.inquiry,removed,{...store.get(K.inquiry,removed),deletedAt:'2026-11-20T00:00:00.000Z'});
+  f.advance(90);
+  stories.maintain();
+  for(const id of [older,removed]){
+    assert.equal(store.get(K.inquiry,id),null);
+    assert.equal(store.secret('staff-story-inquiry:'+id),null);
+    assert.ok(store.get(K.closed,id)?.deletedAt);
+  }
+  for(const id of [boundary,current])assert.ok(store.secret('staff-story-inquiry:'+id));
+  f.advance(1);
+  stories.maintain();
+  assert.equal(store.count(K.inquiry),0);
+});
+
+test('직원 홈과 글 저장은 본인 자료만 조회하고, 인계 건수는 계정 상태와 보관 기한을 따른다',t=>{
+  const f=fixture(t),{a,b,admin,manager}=f.users;
+  const aStory=f.publish(a,f.create(a)),bStory=f.publish(b,f.create(b));
+  const first=f.ask(aStory.public.publicId).result, second=f.ask(aStory.public.publicId).result;
+  f.ask(bStory.public.publicId);
+  f.stories.inquiryAction(a,first.receiptId,{action:'done'});
+  const getAll=f.store.all.bind(f.store);
+  f.store.all=kind=>{
+    assert.ok(![K.story,K.inquiry].includes(kind),'홈·저장은 회사 전체 글이나 문의를 가져오지 않는다');
+    return getAll(kind);
+  };
+  for(const [author,expectedStories] of [[a,[aStory.id]],[b,[bStory.id]],[manager,[]]]){
+    const board=f.stories.workspace(author);
+    assert.ok(!Object.hasOwn(board,'heldInquiryCounts'));
+    assert.deepEqual(board.stories.map(story=>story.id),expectedStories);
+  }
+  assert.equal(f.create(manager).status,'draft');
+  assert.equal(f.stories.workspace(a).stories[0].inquiries.open,2);
+  assert.equal(f.act(b,bStory,'save',{draft:draft({title:'고친 글'})}).story.inquiries.open,1);
+  assert.deepEqual(f.stories.workspace(admin).heldInquiryCounts,{total:0,new:0});
+  f.deactivate(a);
+  assert.deepEqual(f.stories.workspace(admin).heldInquiryCounts,{total:2,new:1});
+  assert.deepEqual(f.stories.heldInquiries(admin).inquiries.map(i=>i.id).sort(),[first.receiptId,second.receiptId].sort());
+  assert.deepEqual(f.stories.workspace(admin).inquiries,[]);
+  f.store.put('users',a.id,{...f.store.get('users',a.id),active:true});
+  assert.deepEqual(f.stories.workspace(admin).heldInquiryCounts,{total:0,new:0});
+  f.deactivate(a);
+  f.stories.heldAction(admin,second.receiptId,{action:'delete'});
+  f.advance(90);
+  assert.deepEqual(f.stories.workspace(admin).heldInquiryCounts,{total:1,new:0});
+  f.advance(1);
+  assert.deepEqual(f.stories.workspace(admin).heldInquiryCounts,{total:0,new:0});
+  assert.equal(f.stories.heldInquiries(admin).inquiries.length,0);
+});
+
 test('an ordinary member with no SNS duty saves, publishes and gets a real share link built from the registered origin',t=>{
   const f=fixture(t),empty=f.stories.workspace(f.users.a);
   assert.deepEqual(empty.stories,[]);assert.deepEqual(empty.inquiries,[]);assert.deepEqual(empty.totals,{stories:0,live:0,received:0,open:0});assert.equal(empty.canWrite,true);

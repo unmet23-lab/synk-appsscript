@@ -106,13 +106,159 @@ function marinNextHtml(){
   if(data?.generatedAt&&Number.isFinite(Date.parse(data.generatedAt)))html+=`<p class="next-asof">${escape(new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'}).format(new Date(data.generatedAt)))} 확인 · 처리와 완료는 각 원본 화면에서 직접 진행해요.</p>`;
   return html;
 }
+const staffStoriesAssets={css:null,js:null,pending:null,error:false};
+function sameOriginStaffAssetUrl(raw){
+  if(!raw||typeof location==='undefined'||!location.origin||location.origin==='null')return '';
+  try{
+    const url=new URL(raw,location.href||location.origin);
+    return (url.protocol==='http:'||url.protocol==='https:')&&url.origin===location.origin?url.pathname+url.search:'';
+  }catch{return '';}
+}
+function getStaffStoriesTemplate(){
+  if(typeof document==='undefined'||typeof document.getElementById!=='function')return null;
+  const tpl=document.getElementById('staff-stories-assets');
+  return tpl?.content&&typeof tpl.content.querySelector==='function'?tpl:null;
+}
+function readStaffStoriesUrls(tpl){
+  const link=tpl.content.querySelector('link[rel="stylesheet"][href], link[href]');
+  const script=tpl.content.querySelector('script[src]');
+  const rawCss=typeof link?.getAttribute==='function'?link.getAttribute('href'):link?.href;
+  const rawJs=typeof script?.getAttribute==='function'?script.getAttribute('src'):script?.src;
+  const css=sameOriginStaffAssetUrl(rawCss),js=sameOriginStaffAssetUrl(rawJs);
+  return css&&js?{css,js}:null;
+}
+let omittedStaffTpl=null;
+function isOmittedStaffStories(urls){
+  const hasV=/^[^?]*\?(?:[^&]*&)*v(?:[=&]|$)/;
+  if(!urls||hasV.test(urls.css)||hasV.test(urls.js))return false;
+  const app=typeof document!=='undefined'?document.querySelector?.('script[src^="/app.js?v="]'):null;
+  const src=typeof app?.getAttribute==='function'?app.getAttribute('src'):app?.src;
+  return typeof src==='string'&&/^\/app\.js\?v=[A-Za-z0-9_-]{43}$/.test(src);
+}
+let staffStoriesRetrySlot=null;
+function staffStoriesPlaceholderHtml(){
+  if(staffStoriesAssets.error)return '<section id="staff-stories-placeholder" class="next-card" data-staff-stories-placeholder="1" aria-live="polite"><p class="next-warning">내 글감을 불러오지 못했어요.</p><div class="next-actions"><button type="button" class="next-button" data-action="staff-stories-retry">다시 시도</button></div></section>';
+  return '<section id="staff-stories-placeholder" data-staff-stories-placeholder="1" aria-busy="true" aria-live="polite"><p class="next-asof">내 글감을 불러오는 중이에요.</p></section>';
+}
+function getStaffStoriesPlaceholder(){
+  if(typeof state==='undefined'||!state.user||state.tab!=='home')return null;
+  if(typeof document==='undefined'||typeof document.getElementById!=='function')return null;
+  const slot=document.getElementById('staff-stories-placeholder');
+  if(!slot||!slot.parentNode)return null;
+  const marker=typeof slot.getAttribute==='function'?slot.getAttribute('data-staff-stories-placeholder'):slot.dataset?.staffStoriesPlaceholder;
+  return marker==='1'?slot:null;
+}
+function syncStaffStoriesPlaceholder(){
+  const slot=getStaffStoriesPlaceholder();
+  if(slot)slot.outerHTML=staffStoriesPlaceholderHtml();
+}
+function loadStaffStoriesAssets(urls){
+  if(staffStoriesAssets.pending)return staffStoriesAssets.pending;
+  const parent=typeof document!=='undefined'?(document.head||document.documentElement||document.body):null;
+  if(!urls||!parent||typeof parent.appendChild!=='function'||typeof document.createElement!=='function'){
+    staffStoriesAssets.error=true;
+    return null;
+  }
+  if(!staffStoriesAssets.css){
+    staffStoriesAssets.css=new Promise((resolve,reject)=>{
+      const link=document.createElement('link');
+      link.rel='stylesheet';
+      link.onload=()=>resolve();
+      link.onerror=()=>{link.remove?.();staffStoriesAssets.css=null;reject(new Error('staff-stories css failed'));};
+      link.href=urls.css;
+      parent.appendChild(link);
+    });
+  }
+  if(!staffStoriesAssets.js){
+    staffStoriesAssets.js=typeof globalThis.staffStoriesSection==='function'
+      ?Promise.resolve()
+      :new Promise((resolve,reject)=>{
+        const script=document.createElement('script');
+        script.onload=()=>{
+          if(typeof globalThis.staffStoriesSection==='function')resolve();
+          else{script.remove?.();staffStoriesAssets.js=null;reject(new Error('staff-stories js invalid'));}
+        };
+        script.onerror=()=>{script.remove?.();staffStoriesAssets.js=null;reject(new Error('staff-stories js failed'));};
+        script.src=urls.js;
+        parent.appendChild(script);
+      });
+  }
+  const settle=ready=>{
+    if(staffStoriesAssets.pending===pending)staffStoriesAssets.pending=null;
+    staffStoriesAssets.error=!ready;
+    const slot=getStaffStoriesPlaceholder();
+    const restoreFocus=Boolean(slot&&slot===staffStoriesRetrySlot&&typeof document!=='undefined'&&document.activeElement===slot);
+    staffStoriesRetrySlot=null;
+    if(!slot)return;
+    slot.outerHTML=ready?globalThis.staffStoriesSection():staffStoriesPlaceholderHtml();
+    if(!restoreFocus)return;
+    if(!ready){
+      getStaffStoriesPlaceholder()?.querySelector?.('[data-action="staff-stories-retry"]')?.focus?.({preventScroll:true});
+      return;
+    }
+    const heading=document.getElementById('ss-heading');
+    if(heading){
+      if(!heading.hasAttribute?.('tabindex'))heading.setAttribute?.('tabindex','-1');
+      heading.focus?.({preventScroll:true});
+    }
+  };
+  const pending=Promise.all([staffStoriesAssets.css,staffStoriesAssets.js]).then(
+    ()=>{
+      const ready=typeof globalThis.staffStoriesSection==='function';
+      if(!ready)staffStoriesAssets.js=null;
+      settle(ready);
+    },
+    ()=>settle(false)
+  );
+  staffStoriesAssets.pending=pending;
+  return pending;
+}
+function retryStaffStoriesAssets(){
+  if(typeof state==='undefined'||!state.user||state.tab!=='home'||staffStoriesAssets.pending)return;
+  const tpl=getStaffStoriesTemplate();
+  if(!tpl)return;
+  const slot=getStaffStoriesPlaceholder();
+  const retryBtn=slot?.querySelector?.('[data-action="staff-stories-retry"]');
+  const shouldFocus=Boolean(retryBtn&&typeof document!=='undefined'&&document.activeElement===retryBtn);
+  staffStoriesRetrySlot=null;
+  const urls=readStaffStoriesUrls(tpl);
+  staffStoriesAssets.error=!urls;
+  syncStaffStoriesPlaceholder();
+  if(urls&&shouldFocus){
+    const loadingSlot=getStaffStoriesPlaceholder();
+    if(loadingSlot){
+      loadingSlot.setAttribute?.('tabindex','-1');
+      loadingSlot.focus?.({preventScroll:true});
+      staffStoriesRetrySlot=loadingSlot;
+    }
+  }
+  if(!urls||!loadStaffStoriesAssets(urls)){
+    staffStoriesRetrySlot=null;
+    if(urls)syncStaffStoriesPlaceholder();
+    if(shouldFocus)getStaffStoriesPlaceholder()?.querySelector?.('[data-action="staff-stories-retry"]')?.focus?.({preventScroll:true});
+  }
+}
+function staffStoriesHomeHtml(){
+  if(typeof state==='undefined'||!state.user)return '';
+  if(typeof globalThis.staffStoriesSection==='function'&&!staffStoriesAssets.pending&&!staffStoriesAssets.error)return globalThis.staffStoriesSection();
+  const tpl=getStaffStoriesTemplate();
+  if(!tpl){omittedStaffTpl=null;return '';}
+  if(!staffStoriesAssets.error&&!staffStoriesAssets.pending){
+    if(tpl===omittedStaffTpl)return '';
+    const urls=readStaffStoriesUrls(tpl);
+    if(isOmittedStaffStories(urls)){omittedStaffTpl=tpl;return '';}
+    omittedStaffTpl=null;
+    loadStaffStoriesAssets(urls);
+  }
+  return staffStoriesPlaceholderHtml();
+}
 function marinHomePage(){
   ensureMarinSession();ensureMarinNextSession();
   const scopeTop=typeof waScopeBar==='function'?waScopeBar():'';
   const targetNotice=typeof waWorkTargetNoticeHtml==='function'?waWorkTargetNoticeHtml():'';
   const quickTools=typeof waHomeTools==='function'?waHomeTools():'';
   const mineWork=typeof waMineHomeHtml==='function'?waMineHomeHtml():'';
-  return `<section class="next-home" aria-labelledby="next-heading"><header class="next-heading"><h1 id="next-heading">내 업무</h1></header>${scopeTop}${targetNotice}${quickTools}${mineWork}<div class="next-support"><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div>${typeof staffStoriesSection==='function'?staffStoriesSection():''}<details class="next-assistant" ${marinNext.asking?'open':''}><summary><span class="next-assistant-title"><span class="marin-assistant-avatar" aria-hidden="true">${icon('chat')}</span><span>마린에게 직접 묻기</span></span>${icon('right')}</summary>${marinConversationPage()}</details></div></section>`;
+  return `<section class="next-home" aria-labelledby="next-heading"><header class="next-heading"><h1 id="next-heading">내 업무</h1></header>${scopeTop}${targetNotice}${quickTools}${mineWork}<div class="next-support"><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div>${staffStoriesHomeHtml()}<details class="next-assistant" ${marinNext.asking?'open':''}><summary><span class="next-assistant-title"><span class="marin-assistant-avatar" aria-hidden="true">${icon('chat')}</span><span>마린에게 직접 묻기</span></span>${icon('right')}</summary>${marinConversationPage()}</details></div></section>`;
 }
 function captureMarinNextView(){
   const root=document.getElementById('next-action');if(!root)return null;
@@ -188,6 +334,7 @@ function resetMarinHome({clearStorage=true,clearRecommendation=true}={}){
   if(typeof waResetMine==='function'&&(clearStorage||typeof wa!=='undefined'&&wa.mineUserId&&wa.mineUserId!==state.user?.id))waResetMine();
   if(typeof resetAdminWorkspace==='function')resetAdminWorkspace();
   if(typeof resetStaffStories==='function')resetStaffStories({clearStorage});
+  staffStoriesRetrySlot=null;
   if(clearStorage&&marinHome.userId)try{sessionStorage.removeItem(marinSessionKey(marinHome.userId));}catch{}
   Object.assign(marinHome,{userId:null,entries:[],draft:'',pending:false,error:'',request:marinHome.request+1,composing:false});
 }
@@ -279,6 +426,6 @@ document.addEventListener('click',event=>{
 document.addEventListener('toggle',event=>{if(event.target.matches?.('.next-assistant')){marinNext.asking=event.target.open;if(event.target.open)resizeMarinInput();}},true);
 window.addEventListener('focus',()=>{if(state.user&&state.tab==='home'){if(typeof waSyncMine==='function')waSyncMine();if(marinNext.started)syncMarinNext();}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.user&&state.tab==='home'){if(typeof waSyncMine==='function')waSyncMine();if(marinNext.started)syncMarinNext();}});
-document.addEventListener('click',event=>{const target=event.target.closest?.('[data-action]');if(!target||target.disabled)return;const action=target.dataset.action;if((action==='marin-workroom-panel'||action==='marin-profile')&&target.closest?.('#ws-tools-drawer')&&typeof setWorkspaceToolsOpen==='function'&&typeof workspaceToolsOpen==='function'&&workspaceToolsOpen())setWorkspaceToolsOpen(false,{restoreFocus:false});if(action==='marin-retry')void submitMarinMessage(true);if(action==='marin-action')void dispatchMarinAction(target.dataset.entry,target.dataset.index).catch(error=>notify(error.message));if(action==='marin-account')marinAccountDialog();if(action==='marin-workroom-panel'&&['tasks','saved'].includes(target.dataset.panel))openWorkspaceDestination({type:'messenger',label:target.dataset.panel==='tasks'?'내 할 일':'저장한 메시지',panel:target.dataset.panel});if(action==='marin-profile'&&typeof openMarinProfile==='function')void openMarinProfile();if(action==='marin-clear'){Object.assign(marinHome,{entries:[],draft:'',error:'',pending:false,request:marinHome.request+1});saveMarinSession();render();document.getElementById('marin-input')?.focus();}});
+document.addEventListener('click',event=>{const target=event.target.closest?.('[data-action]');if(!target||target.disabled)return;const action=target.dataset.action;if((action==='marin-workroom-panel'||action==='marin-profile')&&target.closest?.('#ws-tools-drawer')&&typeof setWorkspaceToolsOpen==='function'&&typeof workspaceToolsOpen==='function'&&workspaceToolsOpen())setWorkspaceToolsOpen(false,{restoreFocus:false});if(action==='marin-retry')void submitMarinMessage(true);if(action==='staff-stories-retry')retryStaffStoriesAssets();if(action==='marin-action')void dispatchMarinAction(target.dataset.entry,target.dataset.index).catch(error=>notify(error.message));if(action==='marin-account')marinAccountDialog();if(action==='marin-workroom-panel'&&['tasks','saved'].includes(target.dataset.panel))openWorkspaceDestination({type:'messenger',label:target.dataset.panel==='tasks'?'내 할 일':'저장한 메시지',panel:target.dataset.panel});if(action==='marin-profile'&&typeof openMarinProfile==='function')void openMarinProfile();if(action==='marin-clear'){Object.assign(marinHome,{entries:[],draft:'',error:'',pending:false,request:marinHome.request+1});saveMarinSession();render();document.getElementById('marin-input')?.focus();}});
 
 document.addEventListener('click',event=>{const target=event.target.closest?.('[data-action="marin-suggest"]');if(!target||!state.user)return;ensureMarinSession();marinHome.draft=target.dataset.prompt||'';saveMarinSession();const input=document.getElementById('marin-input');if(input){input.value=marinHome.draft;input.focus();}syncMarinHome();});

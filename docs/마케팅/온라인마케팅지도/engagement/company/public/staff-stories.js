@@ -2,6 +2,7 @@
 
 (() => {
   const DEFAULT_LIMITS = { stories: 200, title: 120, body: 4000, displayName: 40, note: 4000, url: 2000 };
+  const SS_PAGE_SIZE = 5;
   const ss = {
     userId: null,
     data: null,
@@ -12,7 +13,10 @@
     loadSeq: 0,
     loadedAt: 0,
     storyFilter: 'all',
+    storyLimit: SS_PAGE_SIZE,
     inquiryStoryId: '',
+    inquiryLimit: SS_PAGE_SIZE,
+    heldLimit: SS_PAGE_SIZE,
     held: { open: false, loaded: false, loading: false, error: '', inquiries: [], seq: 0 },
     modalCtx: null,
     csrfCache: ''
@@ -197,10 +201,21 @@
     ss.loadSeq += 1;
     ss.loadedAt = 0;
     ss.storyFilter = 'all';
+    ss.storyLimit = SS_PAGE_SIZE;
     ss.inquiryStoryId = '';
+    ss.inquiryLimit = SS_PAGE_SIZE;
+    ss.heldLimit = SS_PAGE_SIZE;
     ss.held = { open: false, loaded: false, loading: false, error: '', inquiries: [], seq: ss.held.seq + 1 };
+    ss.heldFocus = null;
     ss.modalCtx = null;
     ss.csrfCache = '';
+  }
+
+  function ssClearHeld({ bumpSeq = true } = {}) {
+    ss.heldFocus = null;
+    if (ss.data) ss.data.heldInquiryCounts = null;
+    if (!ss.held.open && !ss.held.loaded && !ss.held.loading && !ss.held.error && !ss.held.inquiries.length) return;
+    ss.held = { open: false, loaded: false, loading: false, error: '', inquiries: [], seq: ss.held.seq + (bumpSeq ? 1 : 0) };
   }
 
   function ssEnsureUser() {
@@ -212,6 +227,8 @@
     if (ss.userId !== userId) {
       resetStaffStories({ clearStorage: false });
       ss.userId = userId;
+    } else if (!ssIsAdmin()) {
+      ssClearHeld();
     }
     return true;
   }
@@ -270,19 +287,104 @@
     }
   }
 
-  function syncStaffStories() {
-    if (typeof state === 'undefined' || state.tab !== 'home' || !state.user) return;
+  function ssCaptureHeldReloadFocus() {
+    if (typeof state === 'undefined' || state.tab !== 'home' || !state.user || !ss.held.open) {
+      ss.heldFocus = null;
+      return;
+    }
     const root = document.getElementById('staff-stories-root');
-    if (!root) return;
-    const focusState = ssCaptureSectionFocus();
-    root.setAttribute('aria-busy', String(ss.loading));
-    root.innerHTML = ssInnerHtml();
-    ssRestoreSectionFocus(focusState);
+    const active = typeof document !== 'undefined' ? document.activeElement : null;
+    if (!root || !active || !root.contains(active)) {
+      ss.heldFocus = null;
+      return;
+    }
+    if (ss.heldFocus?.anchor && active === ss.heldFocus.anchor && ss.heldFocus.userId === ss.userId) {
+      return;
+    }
+    const heldEl = active.closest?.('[data-ss-held]');
+    const btn = heldEl ? active.closest?.('[data-action]') : null;
+    const action = btn?.dataset?.action || '';
+    if (btn && (action === 'ss-held-refresh' || action === 'ss-held-open' || action === 'ss-held-more')) {
+      ss.heldFocus = {
+        action,
+        id: btn.dataset.id || '',
+        filter: btn.dataset.filter || '',
+        userId: ss.userId,
+        anchor: null
+      };
+    } else {
+      ss.heldFocus = null;
+    }
   }
 
-  async function ssLoad({ silent = false } = {}) {
+  function syncStaffStories() {
+    if (typeof state === 'undefined' || state.tab !== 'home' || !state.user) {
+      ss.heldFocus = null;
+      return;
+    }
+    const root = document.getElementById('staff-stories-root');
+    if (!root) {
+      ss.heldFocus = null;
+      return;
+    }
+    const activeBefore = typeof document !== 'undefined' ? document.activeElement : null;
+    const pendingHeld = ss.heldFocus;
+    const canRestoreHeld = Boolean(
+      pendingHeld &&
+      pendingHeld.userId === ss.userId &&
+      ss.held.open &&
+      ssIsAdmin() &&
+      !ssIsDemo() &&
+      (!pendingHeld.anchor || activeBefore === pendingHeld.anchor)
+    );
+    if (pendingHeld && !canRestoreHeld) {
+      ss.heldFocus = null;
+    }
+    const focusHeading = activeBefore?.id === 'ss-heading' && root.contains?.(activeBefore);
+    const focusState = canRestoreHeld ? null : ssCaptureSectionFocus();
+    root.setAttribute('aria-busy', String(ss.loading));
+    root.innerHTML = ssInnerHtml();
+    if (canRestoreHeld && ss.heldFocus) {
+      const heldDetails = root.querySelector('[data-ss-held]');
+      if (!heldDetails || !heldDetails.open) {
+        ss.heldFocus = null;
+      } else if (ss.held.loading) {
+        const summary = heldDetails.querySelector('summary');
+        if (summary) {
+          summary.focus({ preventScroll: true });
+          ss.heldFocus.anchor = summary;
+        } else {
+          ss.heldFocus = null;
+        }
+      } else {
+        const target = ss.heldFocus;
+        ss.heldFocus = null;
+        const candidates = [...heldDetails.querySelectorAll('[data-action]')];
+        const match = candidates.find(el =>
+          el.dataset.action === target.action &&
+          (el.dataset.id || '') === target.id &&
+          (el.dataset.filter || '') === target.filter &&
+          !el.disabled
+        );
+        const fallback = heldDetails.querySelector('summary');
+        (match || fallback)?.focus({ preventScroll: true });
+      }
+    } else {
+      ssRestoreSectionFocus(focusState);
+    }
+    if (focusHeading && !root.contains?.(document.activeElement)) {
+      const heading = document.getElementById('ss-heading');
+      if (heading && root.contains?.(heading)) {
+        if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+        heading.focus({ preventScroll: true });
+      }
+    }
+  }
+
+  async function ssLoad({ silent = false, authRetry = false, syncHeld = true } = {}) {
     if (!ssEnsureUser() || ssIsDemo()) return null;
     const stamp = ssAuthSnapshot();
+    const heldSeq = ss.held.seq;
     const seq = ++ss.loadSeq;
     ss.loading = true;
     if (!silent) {
@@ -293,6 +395,17 @@
     try {
       const result = await ssApi('/api/my-stories');
       if (seq !== ss.loadSeq || !ssAuthCurrent(stamp)) return null;
+      const hadHeldCounts = Boolean(ss.data?.heldInquiryCounts);
+      const rawHeld = ssIsAdmin() && result?.heldInquiryCounts && typeof result.heldInquiryCounts === 'object'
+        ? result.heldInquiryCounts
+        : null;
+      const heldInquiryCounts =
+        rawHeld && rawHeld.total != null && rawHeld.new != null && Number.isFinite(Number(rawHeld.total)) && Number.isFinite(Number(rawHeld.new))
+          ? {
+              total: Math.max(0, Math.trunc(Number(rawHeld.total))),
+              new: Math.max(0, Math.trunc(Number(rawHeld.new)))
+            }
+          : null;
       ss.data = {
         stories: Array.isArray(result?.stories) ? result.stories : [],
         inquiries: Array.isArray(result?.inquiries) ? result.inquiries : [],
@@ -302,10 +415,32 @@
           received: Number(result?.totals?.received) || 0,
           open: Number(result?.totals?.open) || 0
         },
+        heldInquiryCounts,
         limits: { ...DEFAULT_LIMITS, ...(result?.limits || {}) },
         retentionDays: Number(result?.retentionDays) || 90,
         canWrite: result?.canWrite !== false
       };
+      if (!ssIsAdmin() || (!heldInquiryCounts && hadHeldCounts)) {
+        ssClearHeld();
+      } else if (!ss.held.open && !ss.held.loading) {
+        ss.held.loaded = false;
+        ss.held.inquiries = [];
+        ss.held.error = '';
+      } else if (
+        syncHeld &&
+        ss.held.open &&
+        ss.held.loaded &&
+        !ss.held.loading &&
+        !ss.held.error &&
+        ss.held.seq === heldSeq
+      ) {
+        if (typeof state !== 'undefined' && state.tab === 'home') {
+          void ssLoadHeld();
+        } else {
+          ss.held.loaded = false;
+          ss.held.inquiries = [];
+        }
+      }
       ss.error = '';
       ss.errorCode = '';
       ss.loadedAt = Date.now();
@@ -315,42 +450,110 @@
       return ss.data;
     } catch (error) {
       if (error?.code === 'SESSION_CHANGED' || seq !== ss.loadSeq || !ssAuthCurrent(stamp)) return null;
+      if (!ssIsAdmin() || error?.status === 401 || error?.status === 403 || error?.code === 'SYNK_STORY_ADMIN') {
+        ssClearHeld();
+      }
       ss.error = error?.message || '내 글감을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
       ss.errorCode = error?.code || '';
       return null;
     } finally {
-      if (seq === ss.loadSeq && ssAuthCurrent(stamp)) {
-        ss.loading = false;
-        syncStaffStories();
+      if (seq === ss.loadSeq) {
+        if (ssAuthCurrent(stamp)) {
+          ss.loading = false;
+          syncStaffStories();
+        } else {
+          const nextStamp = ssAuthSnapshot();
+          if (stamp?.userId && nextStamp.userId === stamp.userId && ss.userId === stamp.userId && nextStamp.generation !== stamp.generation) {
+            ss.loading = false;
+            ss.csrfCache = '';
+            if (!authRetry && typeof state !== 'undefined' && state.tab === 'home' && !ssIsDemo()) {
+              void ssLoad({ silent, authRetry: true, syncHeld });
+            } else {
+              syncStaffStories();
+            }
+          }
+        }
       }
     }
   }
 
-  async function ssLoadHeld() {
-    if (!ssEnsureUser() || ssIsDemo() || !ssIsAdmin()) return;
+  async function ssLoadHeld({ authRetry = false } = {}) {
+    if (!ssEnsureUser() || ssIsDemo()) {
+      ss.heldFocus = null;
+      return;
+    }
+    if (!ssIsAdmin()) {
+      ssClearHeld();
+      syncStaffStories();
+      return;
+    }
+    if (!ss.held.open) {
+      ss.heldFocus = null;
+      ss.held.loading = false;
+      ss.held.loaded = false;
+      ss.held.inquiries = [];
+      syncStaffStories();
+      return;
+    }
+    ssCaptureHeldReloadFocus();
     const stamp = ssAuthSnapshot();
     const seq = ++ss.held.seq;
     ss.held.loading = true;
+    ss.held.loaded = false;
+    ss.held.inquiries = [];
     ss.held.error = '';
     syncStaffStories();
     try {
       const result = await ssApi('/api/my-stories/held-inquiries');
       if (seq !== ss.held.seq || !ssAuthCurrent(stamp)) return;
-      ss.held.inquiries = Array.isArray(result?.inquiries) ? result.inquiries : [];
+      if (!ssIsAdmin()) {
+        ssClearHeld({ bumpSeq: false });
+        return;
+      }
+      const rows = Array.isArray(result?.inquiries) ? result.inquiries : [];
+      if (ss.data) {
+        ss.data.heldInquiryCounts = {
+          total: rows.length,
+          new: rows.filter(row => row?.status === 'new').length
+        };
+      }
+      if (!ss.held.open) {
+        ss.heldFocus = null;
+        ss.held.loaded = false;
+        ss.held.inquiries = [];
+        return;
+      }
+      ss.held.inquiries = rows;
       ss.held.loaded = true;
       ss.held.error = '';
     } catch (error) {
       if (error?.code === 'SESSION_CHANGED' || seq !== ss.held.seq || !ssAuthCurrent(stamp)) return;
-      if (error?.status === 403 || error?.code === 'SYNK_STORY_ADMIN') {
-        ss.held.loaded = false;
-        ss.held.open = false;
+      if (!ssIsAdmin() || error?.status === 401 || error?.status === 403 || error?.code === 'SYNK_STORY_ADMIN') {
+        ssClearHeld({ bumpSeq: false });
       } else {
         ss.held.error = error?.message || '중지된 직원의 문의 목록을 불러오지 못했어요.';
       }
     } finally {
-      if (seq === ss.held.seq && ssAuthCurrent(stamp)) {
-        ss.held.loading = false;
-        syncStaffStories();
+      if (seq === ss.held.seq) {
+        if (ssAuthCurrent(stamp)) {
+          ss.held.loading = false;
+          syncStaffStories();
+        } else {
+          const nextStamp = ssAuthSnapshot();
+          if (stamp?.userId && nextStamp.userId === stamp.userId && ss.userId === stamp.userId && nextStamp.generation !== stamp.generation) {
+            ss.held.loading = false;
+            ss.csrfCache = '';
+            if (!authRetry && typeof state !== 'undefined' && state.tab === 'home' && !ssIsDemo() && ss.held.open && ssIsAdmin()) {
+              void ssLoadHeld({ authRetry: true });
+            } else {
+              ss.heldFocus = null;
+              if (!ssIsAdmin()) ssClearHeld({ bumpSeq: false });
+              syncStaffStories();
+            }
+          } else {
+            ss.heldFocus = null;
+          }
+        }
       }
     }
   }
@@ -401,13 +604,22 @@
       publicLinkRow = `<div class="ss-link-row"><div class="ss-link-info"><span class="ss-link-label">고유 문의 링크 · ${pub.open === false ? '접수 닫힘' : '접수 열림'}</span><span class="ss-url-code">${ssEsc(pub.url)}</span></div><div class="ss-card-actions"><button type="button" class="ss-btn is-quiet" data-action="ss-copy-link" data-id="${id}">문의 링크 복사</button><button type="button" class="ss-btn is-quiet" data-action="ss-share" data-id="${id}">링크·원문 안내</button></div></div>`;
     } else if (status === 'unpublished' && pub?.url) {
       publicLinkRow = `<div class="ss-link-row"><div class="ss-link-info"><span class="ss-link-label">고유 문의 링크 · 내린 상태</span><span class="ss-card-sub">다시 공개하면 기존 주소 ${ssEsc(pub.url)}로 다시 열려요.</span></div></div>`;
-    } else {
+    } else if (!(status === 'draft' && received === 0 && openCount === 0 && listItems.length === 0)) {
       publicLinkRow = `<div class="ss-link-row"><div class="ss-link-info"><span class="ss-link-label">고유 문의 링크</span><span class="ss-card-sub">글감을 공개하면 개인 채널에 붙일 문의 링크가 만들어져요.</span></div></div>`;
     }
 
+    const isQuietDraft = status === 'draft' && !pub?.url && received === 0 && openCount === 0 && listItems.length === 0;
     const extRow = extUrl
       ? `<div class="ss-link-row"><div class="ss-link-info"><span class="ss-link-label"><span class="ss-self-tag">본인 등록</span>개인 채널 원문 주소</span><a class="ss-ext-anchor" href="${ssEsc(extUrl)}" target="_blank" rel="noopener noreferrer">${ssEsc(story.external.url)}</a></div>${canWrite ? `<button type="button" class="ss-btn is-quiet" data-action="ss-link-modal" data-id="${id}">원문 주소 변경</button>` : ''}</div>`
-      : `<div class="ss-link-row"><div class="ss-link-info"><span class="ss-link-label">개인 채널 원문 주소 · 미등록</span><span class="ss-card-sub">글을 올린 개인 채널 주소가 있으면 남겨 두세요. 비워 두어도 괜찮아요.</span></div>${canWrite ? `<button type="button" class="ss-btn is-quiet" data-action="ss-link-modal" data-id="${id}">원문 주소 본인 등록</button>` : ''}</div>`;
+      : isQuietDraft
+        ? ''
+        : `<div class="ss-link-row"><div class="ss-link-info"><span class="ss-link-label">개인 채널 원문 주소 · 미등록</span><span class="ss-card-sub">글을 올린 개인 채널 주소가 있으면 남겨 두세요. 비워 두어도 괜찮아요.</span></div>${canWrite ? `<button type="button" class="ss-btn is-quiet" data-action="ss-link-modal" data-id="${id}">원문 주소 본인 등록</button>` : ''}</div>`;
+    const linksPanel = publicLinkRow || extRow
+      ? `<div class="ss-links-panel">${publicLinkRow}${extRow}</div>`
+      : '';
+    const extLinkBtn = canWrite && isQuietDraft && !extUrl
+      ? `<button type="button" class="ss-btn is-quiet" data-action="ss-link-modal" data-id="${id}">원문 주소 본인 등록</button>`
+      : '';
 
     let primaryPublishBtn = '';
     if (canWrite) {
@@ -440,12 +652,20 @@
       <h3 class="ss-card-title">${ssEsc(headingTitle)}</h3>
       <p class="ss-card-sub">${displayName ? `표시 이름: ${ssEsc(displayName)} · ` : ''}수정 ${ssEsc(ssFormatDateTime(story.updatedAt) || '-')}${ssEsc(bodyMode)}</p>
       ${diffHint}
-      <div class="ss-links-panel">${publicLinkRow}${extRow}</div>
+      ${linksPanel}
       <div class="ss-card-foot">
         <div class="ss-card-counts">실제 접수 누적 <strong>${received}건</strong> · 열람 가능 <strong>${openCount}건</strong>${received > 0 ? firstAtText : ''}${newCount > 0 ? `<span class="ss-new-pill">새 문의 ${newCount}건</span>` : ''}</div>
-        <div class="ss-card-actions">${editBtn}${primaryPublishBtn}${inquiryFilterBtn}${unpublishBtn}${deleteBtn}</div>
+        <div class="ss-card-actions">${editBtn}${primaryPublishBtn}${extLinkBtn}${inquiryFilterBtn}${unpublishBtn}${deleteBtn}</div>
       </div>
     </article>`;
+  }
+
+  function ssPagerHtml(shown, total, unit, action) {
+    if (total <= SS_PAGE_SIZE) return '';
+    const moreBtn = shown < total
+      ? `<button type="button" class="ss-btn is-quiet" data-action="${action}">5개씩 더 보기</button>`
+      : '';
+    return `<div class="ss-card-actions" data-ss-pager="${action}"><span class="ss-card-sub">현재 ${shown} / ${total}${unit}</span>${moreBtn}</div>`;
   }
 
   function ssInquiriesHtml(data) {
@@ -460,8 +680,9 @@
       ? `<div class="ss-filter-notice"><span>선택한 글 문의만 보는 중: <strong>${ssEsc(filterLabel)}</strong> · ${filtered.length}건</span><button type="button" class="ss-btn is-quiet" data-action="ss-clear-inquiry-filter">전체 문의 보기</button></div>`
       : '';
 
+    const pagedInquiries = filtered.slice(0, ss.inquiryLimit);
     const listHtml = filtered.length
-      ? `<ul class="ss-inquiry-list">${filtered.map(row => {
+      ? `<ul class="ss-inquiry-list">${pagedInquiries.map(row => {
           const isNew = row.status === 'new';
           return `<li class="ss-inquiry-row">
             <div class="ss-inquiry-main">
@@ -473,7 +694,7 @@
             </div>
             <button type="button" class="ss-btn ${isNew ? 'is-primary' : ''}" data-action="ss-inquiry-open" data-id="${ssEsc(row.id)}">문의 열기</button>
           </li>`;
-        }).join('')}</ul>`
+        }).join('')}</ul>${ssPagerHtml(pagedInquiries.length, filtered.length, '건', 'ss-inquiries-more')}`
       : `<div class="ss-empty"><p>${ss.inquiryStoryId
           ? '이 글에 현재 열람 가능한 문의가 없어요.'
           : '현재 열람 가능한 문의가 없어요. 공개 링크로 방문자가 문의를 남기면 여기에 표시돼요.'}</p></div>`;
@@ -489,15 +710,29 @@
   }
 
   function ssHeldAdminHtml() {
-    if (!ssIsAdmin() || ssIsDemo()) return '';
+    if (!ssIsAdmin() || ssIsDemo()) {
+      ssClearHeld();
+      return '';
+    }
+    const counts = ss.held.loaded
+      ? {
+          total: ss.held.inquiries.length,
+          new: ss.held.inquiries.filter(row => row?.status === 'new').length
+        }
+      : ss.data?.heldInquiryCounts || null;
+    if (ss.held.loaded && ss.data) {
+      ss.data.heldInquiryCounts = counts;
+    }
     let body = '';
     if (ss.held.loading && !ss.held.loaded) {
       body = '<p class="ss-status" role="status">이용 중지된 직원의 남은 문의를 확인하고 있어요…</p>';
     } else if (ss.held.error) {
-      body = `<div class="ss-banner is-error" role="alert"><div>${ssEsc(ss.held.error)}</div><div class="ss-banner-actions"><button type="button" class="ss-btn is-quiet" data-action="ss-held-refresh">다시 확인</button></div></div>`;
+      body = `<div class="ss-banner is-error" role="alert"><div>${ssEsc(ss.held.error)}</div><div class="ss-banner-actions"><button type="button" class="ss-btn is-quiet" data-action="ss-held-refresh" ${ss.held.loading ? 'disabled' : ''}>다시 확인</button></div></div>`;
     } else if (ss.held.loaded) {
-      body = ss.held.inquiries.length
-        ? `<ul class="ss-inquiry-list">${ss.held.inquiries.map(row => `<li class="ss-inquiry-row">
+      const heldTotal = ss.held.inquiries.length;
+      const pagedHeld = ss.held.inquiries.slice(0, ss.heldLimit);
+      body = heldTotal
+        ? `<ul class="ss-inquiry-list">${pagedHeld.map(row => `<li class="ss-inquiry-row">
             <div class="ss-inquiry-main">
               <div class="ss-card-meta">
                 <span class="ss-badge ${row.status === 'new' ? 'is-warn' : 'is-draft'}">${row.status === 'new' ? '미처리' : '확인 완료'}</span>
@@ -507,7 +742,7 @@
               <span class="ss-inquiry-title">${ssEsc(row.storyTitle || '공개 글 문의')}</span>
             </div>
             <button type="button" class="ss-btn" data-action="ss-held-open" data-id="${ssEsc(row.id)}">상세 · 정리</button>
-          </li>`).join('')}</ul>`
+          </li>`).join('')}</ul>${ssPagerHtml(pagedHeld.length, heldTotal, '건', 'ss-held-more')}`
         : '<p class="ss-status">현재 이용 중지된 직원의 미정리 문의가 없어요.</p>';
     } else {
       body = '<p class="ss-status">펼치면 이용 중지된 직원의 남은 문의 목록을 불러와요.</p>';
@@ -516,7 +751,7 @@
     return `<details class="ss-held-details" data-ss-held ${ss.held.open ? 'open' : ''}>
       <summary>
         <span>이용 중지된 직원의 남은 문의 관리 · 관리자 전용</span>
-        <span class="ss-chip">${ss.held.loaded ? `${ss.held.inquiries.length}건` : '조회'}</span>
+        <span class="ss-chip">${counts ? `보관 중 ${counts.total}건 · 미처리 ${counts.new}건` : '조회'}</span>
       </summary>
       <div class="ss-held-body">
         <p class="ss-held-help">계정이 중지된 직원의 문의만 접수일부터 ${ssEsc(String(ss.data?.retentionDays || 90))}일간의 보관 기간 중 남은 기간 동안 관리자가 확인·삭제할 수 있어요. 활동 중인 직원의 초안과 문의는 표시되지 않아요.</p>
@@ -612,28 +847,40 @@
       const visibleStories = ss.storyFilter === 'all'
         ? stories
         : stories.filter(s => s.status === ss.storyFilter);
+      const pagedStories = visibleStories.slice(0, ss.storyLimit);
 
       storiesHtml = filterBar + (visibleStories.length
-        ? `<div class="ss-story-list">${visibleStories.map(story => ssStoryCardHtml(story, inquiriesByStory, data.canWrite)).join('')}</div>`
+        ? `<div class="ss-story-list">${pagedStories.map(story => ssStoryCardHtml(story, inquiriesByStory, data.canWrite)).join('')}</div>${ssPagerHtml(pagedStories.length, visibleStories.length, '개', 'ss-stories-more')}`
         : '<div class="ss-empty"><p>선택한 상태에 해당하는 글감이 없어요.</p></div>');
     }
 
     const inquiriesHtml = stories.length || inquiries.length || receivedTotal > 0 || ss.inquiryStoryId
       ? ssInquiriesHtml(data)
       : '';
+    const inquiriesFirst = inquiries.length > 0;
 
-    return `${header}${refreshError}${readonlyBanner}${totalsHtml}${storiesHtml}${inquiriesHtml}${ssHeldAdminHtml()}`;
+    return `${header}${refreshError}${readonlyBanner}${totalsHtml}${inquiriesFirst ? inquiriesHtml : ''}${storiesHtml}${inquiriesFirst ? '' : inquiriesHtml}${ssHeldAdminHtml()}`;
   }
 
   function staffStoriesSection() {
     if (typeof state === 'undefined' || !state.user) return '';
     ssEnsureUser();
-    if (!ssIsDemo() && !ss.data && !ss.loading && !ss.error && !ss.queued) {
-      ss.queued = true;
-      queueMicrotask(() => {
-        ss.queued = false;
-        void ssLoad();
-      });
+    if (!ssIsDemo() && !ss.queued) {
+      if (!ss.data && !ss.loading && !ss.error) {
+        ss.queued = true;
+        queueMicrotask(() => {
+          ss.queued = false;
+          void ssLoad();
+        });
+      } else if (ssIsAdmin() && ss.held.open && !ss.held.loaded && !ss.held.loading && !ss.held.error) {
+        ss.queued = true;
+        queueMicrotask(() => {
+          ss.queued = false;
+          if (typeof state !== 'undefined' && state.tab === 'home' && ssIsAdmin() && ss.held.open && !ss.held.loaded && !ss.held.loading && !ss.held.error) {
+            void ssLoadHeld();
+          }
+        });
+      }
     }
     return `<section id="staff-stories-root" class="ss-section" aria-labelledby="ss-heading" aria-busy="${ss.loading}">${ssInnerHtml()}</section>`;
   }
@@ -652,6 +899,179 @@
   function ssCloseModal() {
     ss.modalCtx = null;
     if (typeof closeModal === 'function') closeModal();
+  }
+
+  function ssDiscardPromptHtml() {
+    return `<div class="ss-zone" data-ss-discard-prompt role="group" aria-labelledby="ss-discard-heading" aria-describedby="ss-discard-desc" hidden>
+          <div class="ss-zone-head">
+            <strong id="ss-discard-heading">작성 중인 내용을 버리고 닫을까요?</strong>
+          </div>
+          <p class="ss-zone-desc" id="ss-discard-desc">아직 저장하거나 공개에 반영하지 않은 변경 내용이 있어요. 그대로 쓰거나 변경 내용을 버리고 닫을 수 있어요.</p>
+          <div class="ss-confirm-actions">
+            <button type="button" class="btn primary" data-action="ss-discard-keep">그대로 쓰기</button>
+            <button type="button" class="btn quiet" data-action="ss-discard-confirm">작성 내용 버리기</button>
+          </div>
+        </div>`;
+  }
+
+  function ssNormFieldText(value) {
+    return String(value ?? '').replace(/\r\n?/g, '\n');
+  }
+
+  function ssNormDraftEquals(a, b) {
+    return ssNormFieldText(a?.title) === ssNormFieldText(b?.title) &&
+      ssNormFieldText(a?.displayName) === ssNormFieldText(b?.displayName) &&
+      ssNormFieldText(a?.body) === ssNormFieldText(b?.body) &&
+      ssNormFieldText(a?.note) === ssNormFieldText(b?.note);
+  }
+
+  function ssReadModalEditorDraft(form) {
+    return {
+      title: String(form?.querySelector?.('[name="title"]')?.value ?? ''),
+      displayName: String(form?.querySelector?.('[name="displayName"]')?.value ?? ''),
+      body: String(form?.querySelector?.('[name="body"]')?.value ?? ''),
+      note: String(form?.querySelector?.('[name="note"]')?.value ?? '')
+    };
+  }
+
+  function ssActiveModalCtx() {
+    if (!ss.modalCtx) return null;
+    if (typeof state !== 'undefined' && ss.modalCtx.modalReq !== state.modalRequest) return null;
+    return ss.modalCtx;
+  }
+
+  function ssActiveProtectedForm() {
+    if (typeof overlay === 'undefined' || !overlay?.children?.length) return null;
+    return overlay.querySelector?.('form[data-form="ss-editor"], form[data-form="ss-publish"]') || null;
+  }
+
+  function ssShouldBypassCloseGuard() {
+    if (!ssCanWrite()) return true;
+    const ctx = ssActiveModalCtx();
+    if (ctx?.authStamp && !ssAuthCurrent(ctx.authStamp)) return true;
+    return false;
+  }
+
+  function ssIsModalFormDirty(form) {
+    if (!form || form.isConnected === false) return false;
+    const ctx = ssActiveModalCtx();
+    const storyId = form.dataset.id || '';
+    const savedDraft = (storyId ? ssFindStory(storyId)?.draft : null) || {};
+    if (form.dataset.form === 'ss-editor') {
+      const clean = ctx?.kind === 'editor' && ctx.cleanDraft ? ctx.cleanDraft : savedDraft;
+      return !ssNormDraftEquals(ssReadModalEditorDraft(form), clean);
+    }
+    if (form.dataset.form === 'ss-publish') {
+      const clean = ctx?.kind === 'publish' && ctx.baseDraft ? ctx.baseDraft : savedDraft;
+      const titleVal = form.querySelector('[name="title"]')?.value ?? '';
+      const nameVal = form.querySelector('[name="displayName"]')?.value ?? '';
+      return ssNormFieldText(titleVal) !== ssNormFieldText(clean.title) ||
+        ssNormFieldText(nameVal) !== ssNormFieldText(clean.displayName);
+    }
+    return false;
+  }
+
+  function ssSnapshotFieldSelection(el) {
+    if (!el || typeof el.selectionStart !== 'number' || typeof el.selectionEnd !== 'number') return null;
+    return { start: el.selectionStart, end: el.selectionEnd };
+  }
+
+  function ssFormActionsEl(form) {
+    return form?.querySelector?.('[data-ss-form-actions]') ||
+      [...(form?.children || [])].find(el => el.classList?.contains('modal-actions')) ||
+      null;
+  }
+
+  function ssHideDiscardPrompt(form) {
+    const promptEl = form?.querySelector?.('[data-ss-discard-prompt]');
+    if (promptEl && !promptEl.hidden) promptEl.hidden = true;
+    const actionsEl = ssFormActionsEl(form);
+    if (actionsEl && actionsEl.hidden) actionsEl.hidden = false;
+  }
+
+  function ssRequestCloseConfirmation(form) {
+    const promptEl = form?.querySelector?.('[data-ss-discard-prompt]');
+    if (!promptEl) return;
+    const ctx = ssActiveModalCtx();
+    const modalBody = ssModalBody();
+    if (promptEl.hidden && ctx) {
+      const active = document.activeElement;
+      const activeInFormField = active && form.contains(active) &&
+        !active.closest?.('[data-action="close-modal"]') &&
+        !active.closest?.('[data-ss-discard-prompt]') &&
+        active.matches?.('input, textarea, select');
+      const target = activeInFormField
+        ? active
+        : (ctx.lastField && form.contains(ctx.lastField) ? ctx.lastField : null);
+      ctx.restoreTarget = target;
+      ctx.restoreSelection = target ? (ssSnapshotFieldSelection(target) || ctx.lastSelection || null) : null;
+      ctx.restoreScrollTop = modalBody ? modalBody.scrollTop : null;
+    }
+    const actionsEl = ssFormActionsEl(form);
+    if (actionsEl) actionsEl.hidden = true;
+    promptEl.hidden = false;
+    try {
+      promptEl.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+    } catch {
+      promptEl.scrollIntoView?.({ block: 'nearest' });
+    }
+    if (modalBody && modalBody.contains(promptEl) && typeof modalBody.getBoundingClientRect === 'function') {
+      const bodyRect = modalBody.getBoundingClientRect();
+      const promptRect = promptEl.getBoundingClientRect();
+      if (bodyRect.height > 0 && promptRect.height > 0) {
+        if (promptRect.bottom > bodyRect.bottom - 16) {
+          modalBody.scrollTop += promptRect.bottom - (bodyRect.bottom - 16);
+        }
+        const nextRect = promptEl.getBoundingClientRect();
+        if (nextRect.top < bodyRect.top + 16) {
+          modalBody.scrollTop -= (bodyRect.top + 16) - nextRect.top;
+        }
+      }
+    }
+    promptEl.querySelector('[data-action="ss-discard-keep"]')?.focus({ preventScroll: true });
+  }
+
+  function ssCancelCloseConfirmation(form) {
+    if (!form) return;
+    ssHideDiscardPrompt(form);
+    const ctx = ssActiveModalCtx();
+    const modalBody = ssModalBody();
+    if (modalBody && typeof ctx?.restoreScrollTop === 'number') {
+      modalBody.scrollTop = ctx.restoreScrollTop;
+    }
+    const candidate = (ctx?.restoreTarget && form.contains(ctx.restoreTarget) && !ctx.restoreTarget.disabled)
+      ? ctx.restoreTarget
+      : (ctx?.lastField && form.contains(ctx.lastField) && !ctx.lastField.disabled)
+        ? ctx.lastField
+        : form.querySelector('input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled])');
+    if (candidate) {
+      candidate.focus({ preventScroll: true });
+      if (modalBody && modalBody.contains(candidate) && typeof modalBody.getBoundingClientRect === 'function') {
+        const bodyRect = modalBody.getBoundingClientRect();
+        const actionsEl = ssFormActionsEl(form);
+        const actionsRect = actionsEl && !actionsEl.hidden ? actionsEl.getBoundingClientRect() : null;
+        const visibleBottom = actionsRect && actionsRect.height > 0 ? Math.min(bodyRect.bottom, actionsRect.top) : bodyRect.bottom;
+        const candRect = candidate.getBoundingClientRect();
+        if (bodyRect.height > 0 && candRect.height > 0) {
+          if (candRect.top < bodyRect.top + 8) {
+            modalBody.scrollTop -= (bodyRect.top + 8) - candRect.top;
+          } else if (candRect.bottom > visibleBottom - 8 && candRect.height < visibleBottom - bodyRect.top) {
+            modalBody.scrollTop += candRect.bottom - (visibleBottom - 8);
+          }
+        }
+      }
+      const sel = ctx?.restoreSelection;
+      if (sel && typeof candidate.setSelectionRange === 'function') {
+        try {
+          candidate.setSelectionRange(sel.start, sel.end);
+        } catch {}
+      }
+    }
+    if (ctx) {
+      ctx.restoreScrollTop = null;
+      ctx.restoreTarget = null;
+      ctx.restoreSelection = null;
+    }
   }
 
   async function ssCopyText(text, fallbackInputSelector = '') {
@@ -766,7 +1186,8 @@
             <textarea name="body" rows="6" maxlength="${limits.body}" placeholder="방문자가 읽을 경험 이야기를 적어 주세요. 외부 블로그·SNS에 본문을 올리고 문의 창구로만 쓰려면 비워 두어도 괜찮아요.">${ssEsc(baseDraft.body)}</textarea>
           </label>
         </div>
-        <div class="modal-actions">
+        ${ssDiscardPromptHtml()}
+        <div class="modal-actions" data-ss-form-actions>
           <button type="button" class="btn quiet" data-action="close-modal">취소</button>
           <button type="submit" class="btn">비공개 초안 저장</button>
           <button type="button" class="btn primary" data-action="ss-go-publish">공개 확인 · 발행 준비</button>
@@ -775,11 +1196,23 @@
       true
     );
 
+    const savedSource = (conflictStory || story)?.draft || {};
     ss.modalCtx = {
       kind: 'editor',
       modalReq,
+      authStamp: ssAuthSnapshot(),
       storyId: story?.id || '',
       expectedRevision: revision,
+      cleanDraft: {
+        title: String(savedSource.title ?? ''),
+        displayName: String(savedSource.displayName ?? ''),
+        body: String(savedSource.body ?? ''),
+        note: String(savedSource.note ?? '')
+      },
+      lastField: null,
+      lastSelection: null,
+      restoreTarget: null,
+      restoreSelection: null,
       latestConflictStory: conflictStory || null,
       reqHolder: { requestId: '', signature: '' }
     };
@@ -856,7 +1289,8 @@
             <span>합격·비자·급수를 약속하는 표현이 없어요.</span>
           </label>
         </div>
-        <div class="modal-actions">
+        ${ssDiscardPromptHtml()}
+        <div class="modal-actions" data-ss-form-actions>
           <button type="button" class="btn quiet" data-action="ss-edit" data-id="${ssEsc(story.id)}">초안 편집으로 돌아가기</button>
           <button type="button" class="btn quiet" data-action="close-modal">취소</button>
           <button type="submit" class="btn primary">${isRepublish ? '확인 완료 · 공개 반영하기' : '확인 완료 · 공개하고 링크 받기'}</button>
@@ -868,6 +1302,7 @@
     ss.modalCtx = {
       kind: 'publish',
       modalReq,
+      authStamp: ssAuthSnapshot(),
       storyId: story.id,
       expectedRevision: story.revision,
       baseDraft: {
@@ -876,6 +1311,10 @@
         body: String(draft.body ?? ''),
         note: String(draft.note ?? '')
       },
+      lastField: null,
+      lastSelection: null,
+      restoreTarget: null,
+      restoreSelection: null,
       saveHolder: { requestId: '', signature: '' },
       pubHolder: { requestId: '', signature: '' }
     };
@@ -1103,6 +1542,7 @@
 
   async function ssSaveEditorForm(form, { goToPublish = false } = {}) {
     if (!ssCanWrite() || !form) return;
+    ssHideDiscardPrompt(form);
     const errorEl = form.querySelector('.form-error');
     const submitBtns = [...form.querySelectorAll('button[type="submit"], [data-action="ss-go-publish"]')];
     if (submitBtns.some(btn => btn.disabled)) return;
@@ -1164,6 +1604,14 @@
         if (!ownsModal()) return;
         if (latest) {
           ctx.latestConflictStory = latest;
+          if (ctx.cleanDraft && latest.draft) {
+            ctx.cleanDraft = {
+              title: String(latest.draft.title ?? ''),
+              displayName: String(latest.draft.displayName ?? ''),
+              body: String(latest.draft.body ?? ''),
+              note: String(latest.draft.note ?? '')
+            };
+          }
           const conflictHost = form.querySelector('#ss-editor-conflict');
           if (conflictHost) conflictHost.innerHTML = ssConflictHtml(draft, latest);
           if (errorEl) errorEl.textContent = '다른 화면에서 먼저 수정된 내용이 있어요. 작성 중이던 글은 지우지 않았으니 위 비교 내용을 확인해 주세요.';
@@ -1457,8 +1905,97 @@
     }
   }
 
+  document.addEventListener('focusin', event => {
+    const target = typeof event.target?.closest === 'function' ? event.target : null;
+    if (!target) return;
+    const form = ssActiveProtectedForm();
+    if (!form || !form.contains(target)) return;
+    if (target.closest('[data-action="close-modal"], [data-ss-discard-prompt]')) return;
+    if (target.matches?.('input, textarea, select')) {
+      const ctx = ssActiveModalCtx();
+      if (ctx) {
+        ctx.lastField = target;
+        ctx.lastSelection = ssSnapshotFieldSelection(target);
+      }
+    }
+  });
+
+  document.addEventListener('focusout', event => {
+    const target = event.target;
+    const ctx = ssActiveModalCtx();
+    if (ctx && target && ctx.lastField === target) {
+      ctx.lastSelection = ssSnapshotFieldSelection(target);
+    }
+  });
+
+  document.addEventListener('submit', event => {
+    const form = event.target;
+    if (form?.matches?.('form[data-form="ss-editor"], form[data-form="ss-publish"]')) {
+      ssHideDiscardPrompt(form);
+    }
+  }, true);
+
+  document.addEventListener('click', event => {
+    const form = ssActiveProtectedForm();
+    if (!form) return;
+    const targetEl = typeof event.target?.closest === 'function' ? event.target : null;
+    if (!targetEl || !overlay.contains(targetEl)) return;
+    const isBackdrop = targetEl.classList?.contains('modal-backdrop');
+    const closeBtn = isBackdrop ? null : targetEl.closest('[data-action="close-modal"]');
+    if (!isBackdrop && (!closeBtn || closeBtn.disabled)) return;
+    if (ssShouldBypassCloseGuard()) {
+      ss.modalCtx = null;
+      return;
+    }
+    if (!ssIsModalFormDirty(form)) {
+      ss.modalCtx = null;
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    ssRequestCloseConfirmation(form);
+  }, true);
+
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || event.defaultPrevented) return;
+    const form = ssActiveProtectedForm();
+    if (!form) return;
+    if (ssShouldBypassCloseGuard()) {
+      ss.modalCtx = null;
+      return;
+    }
+    const promptEl = form.querySelector('[data-ss-discard-prompt]');
+    if (promptEl && !promptEl.hidden) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      ssCancelCloseConfirmation(form);
+      return;
+    }
+    if (!ssIsModalFormDirty(form)) {
+      ss.modalCtx = null;
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    ssRequestCloseConfirmation(form);
+  }, true);
+
   document.addEventListener('input', event => {
     const target = event.target;
+    const protectedForm = typeof target?.closest === 'function'
+      ? target.closest('form[data-form="ss-editor"], form[data-form="ss-publish"]')
+      : null;
+    if (protectedForm) {
+      ssHideDiscardPrompt(protectedForm);
+      const ctx = ssActiveModalCtx();
+      if (ctx && target.matches?.('input, textarea, select')) {
+        ctx.lastField = target;
+        ctx.lastSelection = ssSnapshotFieldSelection(target);
+      }
+    }
     if (!target?.dataset?.ssPublishPreview) return;
     const field = target.dataset.ssPublishPreview;
     if (field === 'title') {
@@ -1473,8 +2010,21 @@
   document.addEventListener('toggle', event => {
     const details = event.target;
     if (!details?.matches?.('[data-ss-held]')) return;
+    const wasOpen = ss.held.open;
     ss.held.open = details.open;
-    if (details.open && !ss.held.loaded && !ss.held.loading) {
+    if (!details.open) {
+      ss.heldFocus = null;
+      const hadSensitiveOrLoading = ss.held.loading || ss.held.loaded || ss.held.inquiries.length > 0;
+      if (ss.held.loading) ss.held.seq += 1;
+      ss.held.loading = false;
+      ss.held.loaded = false;
+      ss.held.inquiries = [];
+      if (wasOpen && hadSensitiveOrLoading) {
+        syncStaffStories();
+      }
+      return;
+    }
+    if (!wasOpen && !ss.held.loaded && !ss.held.loading && !ss.held.error) {
       void ssLoadHeld();
     }
   }, true);
@@ -1488,17 +2038,50 @@
 
     const id = target.dataset.id || '';
     if (action === 'ss-refresh') {
-      void ssLoad();
-      if (ss.held.open && ssIsAdmin()) void ssLoadHeld();
+      const refreshHeld = ss.held.open && ssIsAdmin();
+      void ssLoad({ syncHeld: !refreshHeld });
+      if (refreshHeld) {
+        if (!ss.held.loading) void ssLoadHeld();
+      } else if (!ssIsAdmin()) {
+        ssClearHeld();
+      }
       return;
     }
     if (action === 'ss-held-refresh') {
-      void ssLoadHeld();
+      if (!ss.held.loading) void ssLoadHeld();
+      return;
+    }
+    if (action === 'ss-stories-more' || action === 'ss-inquiries-more' || action === 'ss-held-more') {
+      const rowSelector = action === 'ss-stories-more'
+        ? '#staff-stories-root .ss-story-list > [data-story-id]'
+        : action === 'ss-inquiries-more'
+          ? '#ss-inquiries-panel .ss-inquiry-row'
+          : '#staff-stories-root [data-ss-held] .ss-inquiry-row';
+      const prevCount = document.querySelectorAll(rowSelector).length;
+      if (action === 'ss-stories-more') ss.storyLimit += SS_PAGE_SIZE;
+      else if (action === 'ss-inquiries-more') ss.inquiryLimit += SS_PAGE_SIZE;
+      else ss.heldLimit += SS_PAGE_SIZE;
+      syncStaffStories();
+      const moreBtn = document.querySelector(`#staff-stories-root [data-action="${action}"]`);
+      if (moreBtn) {
+        moreBtn.focus({ preventScroll: true });
+      } else {
+        const rows = document.querySelectorAll(rowSelector);
+        const newRow = rows[prevCount] || rows[rows.length - 1];
+        const focusEl = newRow?.querySelector('button:not([disabled]), a[href]');
+        if (focusEl) {
+          focusEl.focus({ preventScroll: true });
+        } else if (newRow) {
+          newRow.tabIndex = -1;
+          newRow.focus({ preventScroll: true });
+        }
+      }
       return;
     }
     if (action === 'ss-story-filter') {
       const nextFilter = target.dataset.filter || 'all';
       ss.storyFilter = nextFilter;
+      ss.storyLimit = SS_PAGE_SIZE;
       syncStaffStories();
       const restored = Array.from(document.querySelectorAll('#staff-stories-root [data-action="ss-story-filter"]'))
         .find(btn => (btn.dataset.filter || 'all') === nextFilter);
@@ -1507,6 +2090,7 @@
     }
     if (action === 'ss-filter-inquiries') {
       ss.inquiryStoryId = id;
+      ss.inquiryLimit = SS_PAGE_SIZE;
       syncStaffStories();
       const panel = document.getElementById('ss-inquiries-panel');
       panel?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
@@ -1516,6 +2100,7 @@
     if (action === 'ss-clear-inquiry-filter') {
       const prevStoryId = ss.inquiryStoryId;
       ss.inquiryStoryId = '';
+      ss.inquiryLimit = SS_PAGE_SIZE;
       syncStaffStories();
       const panel = document.getElementById('ss-inquiries-panel');
       const prevCard = prevStoryId
@@ -1559,11 +2144,22 @@
     }
     if (action === 'ss-fill-my-name') {
       const form = target.closest('form');
+      if (form) ssHideDiscardPrompt(form);
       const input = form?.elements?.namedItem('displayName');
       if (input) {
         input.value = target.dataset.name || '';
         input.focus();
       }
+      return;
+    }
+    if (action === 'ss-discard-keep') {
+      const form = target.closest('form[data-form="ss-editor"], form[data-form="ss-publish"]');
+      if (form) ssCancelCloseConfirmation(form);
+      return;
+    }
+    if (action === 'ss-discard-confirm') {
+      const form = target.closest('form[data-form="ss-editor"], form[data-form="ss-publish"]');
+      if (form) ssCloseModal();
       return;
     }
     if (action === 'ss-go-publish') {

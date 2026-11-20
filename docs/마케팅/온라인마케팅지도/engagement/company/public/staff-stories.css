@@ -1,5 +1,12 @@
 /* Staff Stories & Direct Inquiries ("내 글감 · 직접 문의") — SYNK Carbon */
 
+.ss-section,
+.ss-modal {
+  min-width: 0;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 .ss-section {
   padding: 18px 20px;
   border: 1px solid var(--ws-line, #1e2430);
@@ -7,13 +14,6 @@
   background: var(--ws-surface, #0b0e14);
   color: var(--ws-ink, #f3f5f8);
   font-family: var(--ws-sans, system-ui, -apple-system, sans-serif);
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.ss-section [hidden],
-.ss-modal [hidden] {
-  display: none !important;
 }
 
 .ss-section button:focus-visible,
@@ -56,7 +56,6 @@
   line-height: 1.35;
   letter-spacing: -0.02em;
   color: var(--ws-ink, #f3f5f8);
-  word-break: keep-all;
 }
 
 .ss-sub {
@@ -64,7 +63,6 @@
   font-size: 13px;
   line-height: 1.58;
   color: var(--ws-ink-muted, #8a94a6);
-  word-break: keep-all;
 }
 
 .ss-head-actions {
@@ -89,8 +87,12 @@
   font: 580 13px/1.4 var(--ws-sans, inherit);
   cursor: pointer;
   white-space: normal;
-  overflow-wrap: anywhere;
   transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.ss-btn > *,
+.ss-chip > * {
+  min-width: 0;
 }
 
 .ss-btn:hover:not(:disabled) {
@@ -303,6 +305,7 @@
 .ss-badge {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   padding: 2px 8px;
   border-radius: 999px;
   border: 1px solid var(--ws-line-muted, #283040);
@@ -343,6 +346,7 @@
 .ss-chip {
   display: inline-flex;
   align-items: center;
+  max-width: 100%;
   padding: 2px 8px;
   border-radius: 999px;
   border: 1px solid var(--ws-line, #1e2430);
@@ -357,8 +361,6 @@
   font-weight: 640;
   line-height: 1.42;
   color: var(--ws-ink, #f3f5f8);
-  word-break: keep-all;
-  overflow-wrap: anywhere;
 }
 
 .ss-card-sub {
@@ -536,6 +538,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
   padding: 10px 12px;
   min-width: 0;
@@ -546,7 +549,7 @@
 }
 
 .ss-inquiry-main {
-  flex: 1 1 200px;
+  flex: 1 1 170px;
   min-width: 0;
 }
 
@@ -556,12 +559,16 @@
   font-size: 13.5px;
   font-weight: 600;
   color: var(--ws-ink, #f3f5f8);
-  overflow-wrap: anywhere;
 }
 
 .ss-inquiry-time {
   font-size: 12px;
   color: var(--ws-ink-muted, #8a94a6);
+}
+
+.ss-inquiry-row > .ss-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 /* Held Inquiries (Admin Only) */
@@ -578,11 +585,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px 8px;
   padding: 10px 12px;
   font-size: 13px;
   font-weight: 600;
   color: var(--ws-ink-secondary, #c4cbd6);
+}
+
+.ss-held-details > summary > span:first-child {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.ss-held-details > summary > .ss-chip {
+  flex: 0 0 auto;
 }
 
 .ss-held-details > summary::-webkit-details-marker {
@@ -602,11 +619,6 @@
 }
 
 /* Modal Content Helpers */
-.ss-modal {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
 .ss-zone {
   padding: 13px 14px;
   border: 1px solid var(--ws-line, #1e2430);
@@ -664,7 +676,6 @@
   font-weight: 660;
   line-height: 1.38;
   color: var(--ws-ink, #f3f5f8);
-  word-break: keep-all;
 }
 
 .ss-preview-body {
@@ -735,6 +746,10 @@
   color: var(--ws-ink-secondary, #c4cbd6);
 }
 
+[data-form="ss-editor"]:has([data-ss-discard-prompt]:not([hidden])) .ss-conflict-box .ss-confirm-actions {
+  display: none;
+}
+
 .ss-conflict-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -800,7 +815,6 @@
   margin: 2px 0 0;
   color: var(--ws-ink, #f3f5f8);
   font-weight: 560;
-  overflow-wrap: anywhere;
 }
 
 .ss-message-box {
@@ -813,7 +827,6 @@
   line-height: 1.7;
   color: var(--ws-ink, #f3f5f8);
   white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 
 .ss-copy-input-row {
