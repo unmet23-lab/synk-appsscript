@@ -6,7 +6,7 @@ import {FRONT_AUTO,frontMode,frontEligible,dayKey,dayIndex,firstOf,frontView,rec
 const left={version:1,stage:'left',dream:'idol',name:'볼로르',nameEn:'Bolor',call:'언니',from:'몽골',look:'mn_f',best:{s1e01:{n:3,t2:true,tr:false}},
  scenes:[{id:'s1e01.wrap',at:Date.parse('2026-11-19T13:00:00Z'),lines:4}],momAnswer:'fix',updatedAt:Date.parse('2026-11-19T13:05:00Z')};
 
-test('스위치는 공개 전까지 꺼져 있다', () => { assert.equal(FRONT_AUTO, false); });
+test('스위치는 켜져 있다(11-20 공개)', () => { assert.equal(FRONT_AUTO, true); });
 
 test('바로가기 주소는 지금 길로 간다', () => {
   for (const q of ['?drama=1', '?seoul=1', '?me2=1', '?cafe=1', '?wardrobe=1', '?exam=topik1', '?tutor=choose', '?opening=off']) assert.equal(frontMode(q), 'bypass', q);

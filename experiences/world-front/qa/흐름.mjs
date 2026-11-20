@@ -5,7 +5,7 @@
 // --로그인: 손님으로 서울행을 끝낸 뒤 리허설 계정(player-a)으로 로그인한다 — 서울행이 묻는 「계정으로 옮기기」를 지나 계정 기록으로 앞면이 뜨고,
 //   첫날 끝 → 「지금 더 연습하기」 → 레슨을 열고 닫은 뒤 「나」에서 로그아웃하면 앞면이 내려가 타이틀로 가는지까지 본다.
 // --며칠 N: 첫날이 N일 전인 학생(셋째 날부터는 「어제 · 둘째 날」 글 없이 질문부터). --1화안봄: 내 길에서 「오늘은 여기까지」로 나와 1화를 안 본 학생(--로그인과 함께).
-// --꺼짐: 주소에 frontAuto를 붙이지 않는다(스위치 FRONT_AUTO=false 그대로) — 같은 기록이어도 앞면이 안 뜨고 지금 길로 가는지 본다.
+// --꺼짐: 스위치를 끈 판(world-front-entry.mjs의 FRONT_AUTO만 false로 바꿔 내줌)에서 같은 기록이어도 앞면이 안 뜨고 지금 길로 가는지 본다.
 // --후보 <폴더>: synk.im/world를 열되 공개.js --후보폴더의 파일만 그 폴더에서 내준다(공개본은 안 바꾼다, 서울행 qa/흐름.mjs와 같은 꼴). 손님 길만 — 후보는 스위치가 켜진 판이라 frontAuto를 붙이지 않는다.
 // 기록: .tmp/world-front-qa/<폭>-<언어>/ (찍기와 결과.json)
 import fs from 'node:fs';
@@ -52,6 +52,7 @@ if (CAND) {
   });
   process.on('exit', () => console.log('후보에서 내준 파일', served));
 }
+if (OFF) await page.route(/\/world-front-entry\.mjs(\?|$)/,async route => { const r = await route.fetch(); return route.fulfill({response: r, body: (await r.text()).replace(/export const FRONT_AUTO=(true|false);/, 'export const FRONT_AUTO=false;')}); });
 const frontAsked = []; page.on('request', q => { if (/\/world-front\//.test(q.url())) frontAsked.push(q.url()); });
 const shot = async name => { if (SHOTS) await page.screenshot({path: path.join(OUT, name + '.png')}); };
 const F = () => page.frames().find(f => f.url().includes('/world-front/'));

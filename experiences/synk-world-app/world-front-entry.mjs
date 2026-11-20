@@ -7,7 +7,8 @@ import {LOOK_FACES} from '../seoul-arrival/data.mjs';
 import {lessonById} from './life-content.mjs';
 
 // 스위치: 참이면 서울행을 끝낸 학생에게 앞면을 연다. 거짓이면 지금 길 그대로(로컬 확인은 ?frontAuto=1). 켜는 것도 끄는 것도 공개 한 번이다.
-export const FRONT_AUTO=false;
+// 11-20 켬(유호님 11-19 「심사 전으로 당겨」 · 11-20 「지금 해봐」 — synk.im 선택 공개 f50ef5c7, 검수 world-front-공개2-20261120).
+export const FRONT_AUTO=true;
 const autoOn=(search=location.search)=>FRONT_AUTO||(['127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(search).get('frontAuto')==='1');
 export const FRONT_MARK_KEY='synk.world.front.v1:';
 const FRAME_WAIT_MS=15000;

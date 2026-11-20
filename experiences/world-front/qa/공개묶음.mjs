@@ -52,6 +52,9 @@ function merge3(liveText, baseText, mineText, tag) {
 }
 // 고친 파일 넷(서울행 · 홈)은 공개본과 겹치지 않는다. 겹치면 손으로 풀어야 하니 멈춘다(app-shell은 아래 shellRecipe가 맡는다).
 function resolve(text, tag) {
+  // 공개 뒤 다시 돌릴 때: 공개본 쪽에서 공개 때 덧붙인 글(homeExtra의 planLabel 한 토막)만 빼면 내 쪽과 같을 때만 공개본 쪽을 쓴다. 내 쪽이 비었으면(줄 삭제) 그대로 멈춘다.
+  const ADDED = 'planLabel:next=>planLabel(next), ';
+  text = text.replace(/<<<<<<< [^\n]*\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> [^\n]*\n/g, (all, liveSide, mineSide) => mineSide.trim() && liveSide.replace(ADDED, '') === mineSide ? liveSide : all);
   if (/^<<<<<<< /m.test(text)) throw Error(`${tag}: 공개본과 겹친다 — 합침-${tag.replaceAll('/', '_')}.txt를 보고 갈고리 표로 옮긴다`);
   return text;
 }
@@ -98,6 +101,12 @@ function shellRecipe(pub) {
     [onEnter, onEnter + enterHook, onEnter]
   ];
   for (const [, to, mark] of steps) { const need = mark ?? to; if (!endText.includes(need)) throw Error(`app-shell.mjs: 끝 판(master)에 「${need.slice(0, 60)}」가 없다 — master 갈고리가 바뀌었으면 표를 맞춘다`); }
+  // 이미 앞면을 공개한 뒤(11-20 f50ef5c7)에 다시 돌리면: 갈고리를 또 얹지 않고, 공개본 갈고리가 master 글과 같은지만 본다.
+  if (pub.includes("import {createFrontEntry} from './world-front-entry.mjs';")) {
+    for (const [, to, mark] of steps) { const need = typeof to === 'string' ? to : mark; if (!pub.includes(need)) throw Error(`app-shell.mjs: 공개본의 앞면 갈고리가 master와 다르다 — 「${need.slice(0, 60)}」`); }
+    if (!pub.includes(block)) throw Error('app-shell.mjs: 공개본의 앞면 다리 묶음이 master와 다르다');
+    return pub;
+  }
   let text = pub;
   for (const [from, to] of steps) {
     const n = typeof from === 'string' ? text.split(from).length - 1 : (text.match(new RegExp(from.source, from.flags + 'g')) || []).length;
@@ -134,18 +143,36 @@ for (const [src, rel] of MOD) {
   if (cand === pub) continue;
   write('base', rel, pub); write('new', rel, cand); items.push('world/' + rel);
 }
-// 새 파일: 다리 + 틀 폴더(시험 · 설계 문서 · 견줌 자료는 빼고 — 빌드의 거름과 같다)
+// 다리가 레슨 글을 읽는 world/life-content.mjs를 이미 공개된 생활 묶음(brand-opening/content/life-standalone.mjs)과 같은 원천으로 맞춘다.
+// 11-20 LAB 공개(사이트 f6a4872e)가 인사 레슨 고침(af2247630 · f646d63e1)을 생활 묶음에만 실어, 공개본 life-content.mjs에는 「저는 몽글이에요.」가
+// 남았고 앞면이 첫 레슨의 세 문장을 숨겼다(마스코트 이름이 든 문장은 보이지 않는다). 그 뒤 원천이 또 바뀌었으면(공개되지 않은 다른 일일 수 있다) 멈춘다.
+// 앱의 레슨 화면(world/life-ui.mjs)은 이 파일과 번역 표 life-content-lang.mjs를 함께 읽고, 번역은 표의 한국어 사본이 원문과 같을 때만 나온다 —
+// 둘을 같은 판으로 함께 맞춘다(한쪽만 올리면 몽골어 · 영어 화면이 한국어로 떨어진다, Fable 11-20).
+const SYNCED = 'f646d63e10';
+for (const rel of ['life-content.mjs', 'life-content-lang.mjs']) {
+  const src = `experiences/synk-world-app/${rel}`;
+  const after = git('log', '--format=%h', `${SYNCED}..${END}`, '--', src).toString().trim();
+  if (after) throw Error(`${rel}가 ${SYNCED} 뒤에 바뀌었다(${after.split('\n').join(' ')}) — 공개된 생활 묶음과 같은 내용인지 다시 본다`);
+  const pub = await live(rel), cand = rw(lf(git('show', `${END}:${src}`).toString()), rel);
+  if (cand !== pub) { write('base', rel, pub); write('new', rel, cand); items.push('world/' + rel); }
+}
+// 새 파일: 다리 + 틀 폴더(시험 · 설계 문서 · 견줌 자료는 빼고 — 빌드의 거름과 같다). 공개본에 이미 같은 바이트로 있으면 뺀다(공개 뒤 다시 돌릴 때).
+const liveBytes = async rel => { const r = await fetch(`https://synk.im/world/${rel}?probe=${Date.now()}`, {cache: 'no-store'}); return r.ok ? Buffer.from(await r.arrayBuffer()) : null; };
+async function addNew(rel, data) {
+  const buf = Buffer.isBuffer(data) ? data : Buffer.from(data, 'utf8'), pubBuf = await liveBytes(rel);
+  if (pubBuf && pubBuf.equals(buf)) return;
+  const f = path.join(OUT, 'new', 'world', rel); fs.mkdirSync(path.dirname(f), {recursive: true}); fs.writeFileSync(f, buf);
+  if (pubBuf) { const b = path.join(OUT, 'base', 'world', rel); fs.mkdirSync(path.dirname(b), {recursive: true}); fs.writeFileSync(b, pubBuf); }
+  items.push('world/' + rel);
+}
 const entry = rw(lf(git('show', `${END}:experiences/synk-world-app/world-front-entry.mjs`).toString()), 'world-front-entry.mjs');
 if (!/export const FRONT_AUTO=(true|false);/.test(entry)) throw Error('스위치 줄을 못 찾음');   // 공개 뒤 master가 켜져 있어도 같은 재료
-write('new', 'world-front-entry.mjs', entry.replace(/export const FRONT_AUTO=(true|false);/, 'export const FRONT_AUTO=true;'));
-items.push('world/world-front-entry.mjs');
+await addNew('world-front-entry.mjs', entry.replace(/export const FRONT_AUTO=(true|false);/, 'export const FRONT_AUTO=true;'));
 for (const f of git('ls-tree', '-r', '--name-only', END, 'experiences/world-front/').toString().trim().split('\n')) {
   const rel = f.slice('experiences/'.length);
   if (/^world-front\/(?:qa\/|.*\.test\.mjs$|.*\.md$|assets\/.*\.(?:txt|json)$)/.test(rel)) continue;
   const bytes = git('show', `${END}:${f}`);
-  const fileOut = path.join(OUT, 'new', 'world', rel); fs.mkdirSync(path.dirname(fileOut), {recursive: true});
-  fs.writeFileSync(fileOut, /\.(mjs|js|css|html)$/.test(rel) ? rw(lf(bytes.toString('utf8')), rel) : bytes);
-  items.push('world/' + rel);
+  await addNew(rel, /\.(mjs|js|css|html)$/.test(rel) ? rw(lf(bytes.toString('utf8')), rel) : bytes);
 }
 fs.writeFileSync(path.join(OUT, '항목.txt'), items.join('\n') + '\n');
 let cand = path.join(OUT, '후보'); for (let n = 2; fs.existsSync(cand); n++) cand = path.join(OUT, '후보' + n);
