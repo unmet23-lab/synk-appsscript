@@ -80,6 +80,12 @@ LAB 운영 담당에게는 교사 수업 화면을, SHIFT 자동화 담당에게
 
 구현 검증: 신규 초대·수락·취소·만료·재사용, 회사별 메뉴·직접 주소/API 거절, SHIFT·PULSE 겸임, 역할 변경·세션 철회, 관리자 유지, 기존 계정 보존, PC·모바일·낮은 창 화면. 외부 발송이나 실운영 직원 정보 변경은 시험에 사용하지 않는다.
 
+## 직원 글감과 문의
+
+직원은 **내 업무 → 내 글감**에서 수업이나 상담에서 겪은 일을 비공개로 적는다. 공개할 제목, 본문과 표시 이름을 확인하고 게시하면 글마다 공유 주소가 생긴다. 개인 채널에서 이 주소를 안내하면 해당 글에서 접수된 문의를 작성자가 확인할 수 있다. 개인 메모는 작성자만 읽는다.
+
+직원 계정이 중지되면 그 글의 공개 화면과 새 문의 접수가 닫힌다. 관리자는 중지 전에 들어온 문의를 인계받는다. 연락처와 문의 내용은 접수일부터 90일간 보관한다. 방문자는 글이 내려간 뒤에도 접수 번호와 삭제 코드로 자기 문의를 확인하거나 지울 수 있다. [문의 접수증](https://workspace.synk.im/story/receipt)
+
 ## 데이터와 사용 흐름
 
 - 직원의 `workspaceProfile`: `version:1`, `memberships:[{company,role}]`, `duties:[]`, `revision`, 수정 시각·관리자 ID. 회사 ID는 LAB/PATH/SHIFT/PULSE이며 직무와 담당 목록의 정본은 `workspace-access.mjs`다.
@@ -182,6 +188,7 @@ PATH와 SHIFT의 진행·완료 건수와 PULSE의 담당·검토 단계는 조�
 | LAB 수업 | `/?tab=teaching`. 별도 교사 인증과 반별 접근 확인을 유지한다. |
 | PATH 상담·정착 | `/?tab=path` |
 | SHIFT 강의 | `/?tab=lectures` |
+| 내 강의·상담의 개별 일정 | `/?tab=lectures&workId=<업무 UUID>` 또는 `/?tab=path&workId=<업무 UUID>` |
 | PULSE 직원 고객 업무 | `/?tab=workroom&section=clients`. 현재 계정에 허용된 프로젝트를 표시한다. |
 | 전사 메신저 | `/?tab=messenger` |
 | 직원 초대 | 발급 API가 반환한 `/#invite=<code>`를 그대로 사용한다. 확인은 `POST /api/workspace-invite/inspect`의 `{token}`이며 초대를 소비하지 않는다. 수락은 `/api/join`에서만 한다. |

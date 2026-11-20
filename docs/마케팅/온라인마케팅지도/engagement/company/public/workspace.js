@@ -164,6 +164,7 @@ function normalizeMarketingScope(){
 const WORKSPACE_MARKETING_MOVED={marketing:'results',mine:'results',team:'results',all:'results',overview:'results',analysis:'results',history:'results',summary:'results',channels:'accounts',collection:'accounts'};
 function selectWorkspaceView(view,section='',teamId=undefined,draftId=undefined){
   state.workspaceToolsOpen=false;state.workspaceMobileMenuOpen=false;state.workspaceSidebarOpen=false;
+  if(typeof waClearWorkTarget==='function')waClearWorkTarget();
   if(state.user&&!waNavigationAllowed(view,section)){state.tab='home';if(typeof wr!=='undefined'&&typeof waWorkroomViews==='function'&&!waWorkroomViews().includes(wr.view))wr.view=waWorkroomViews()[0]||'desk';return;}
   if(WORKSPACE_MARKETING_MOVED[view]&&!(typeof isDemoMode==='function'&&isDemoMode()))return selectWorkspaceView('social',section==='channels'?'accounts':WORKSPACE_MARKETING_MOVED[view]);
   if(isMarketingWorkspace()){
@@ -227,6 +228,8 @@ function syncWorkspaceLocation(){
   if(url.searchParams.has('publicationAction')&&!(state.tab==='workroom'&&section==='tools'&&typeof makerTools!=='undefined'&&makerTools.view==='publication'))for(const key of ['publicationAction','inboxId','productionId','versionId','packageId','publicationFormat','entryId','checkpoint'])url.searchParams.delete(key);
   if(['overview','analysis','history'].includes(state.tab)&&section==='team'&&state.teamId)url.searchParams.set('teamId',state.teamId);else url.searchParams.delete('teamId');
   if(state.tab==='content'&&section==='plan'&&cp.draftId)url.searchParams.set('draftId',cp.draftId);else url.searchParams.delete('draftId');
+  const activeWorkId=typeof wa!=='undefined'&&['lectures','path'].includes(state.tab)&&wa.workTarget&&!wa.workTarget.invalid&&wa.workTarget.userId===state.user.id&&wa.workTarget.tab===state.tab?wa.workTarget.workId:'';
+  if(activeWorkId)url.searchParams.set('workId',activeWorkId);else url.searchParams.delete('workId');
   if(hash.has('view'))url.hash='';
   if(url.href!==location.href)history.replaceState(null,'',url.pathname+url.search+url.hash);
 }

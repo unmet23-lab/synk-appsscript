@@ -18,21 +18,51 @@ function ensureMarinNextSession(){
   if(marinNext.date!==date){marinNext.date=date;marinNext.excluded=[];marinNext.data=null;marinNext.needsRefresh=marinNext.started;saveMarinNext();}
 }
 function saveMarinNext(){if(marinNext.userId)try{sessionStorage.setItem(marinNextSessionKey(marinNext.userId),JSON.stringify({date:marinNext.date,started:marinNext.started,excluded:marinNext.excluded}));}catch{}}
+const NEXT_SOURCE_LABELS={messenger:'대화 업무',client:'고객 업무',publication:'게시 · SNS',lectures:'강의 일정',path:'상담·정착 지원 일정',company:'강의·상담 일정'};
+const nextSourceLabel=key=>NEXT_SOURCE_LABELS[key]||key;
+const NEXT_WORK_ID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function safeNextAction(value){
   if(value?.type==='messenger')return safeMarinAction(value);
   if(value?.type!=='workspace'||typeof value.label!=='string'||!value.label.trim()||typeof value.href!=='string'||!value.href.startsWith('/?')||/[\\\u0000-\u0020]/.test(value.href))return null;
   try{
-    const url=new URL(value.href,location.origin),q=url.searchParams;
+    const url=new URL(value.href,location.origin),q=url.searchParams,tab=q.get('tab'),workId=q.get('workId');
     if(url.origin!==location.origin||url.pathname!=='/'||url.hash)return null;
-    const valid=q.get('tab')==='workroom'&&(q.get('section')==='clients'&&q.has('project')||q.get('section')==='tools'&&q.get('tool')==='publication')||q.get('tab')==='social'&&['today','fix'].includes(q.get('section'));
+    const companyWork=['lectures','path'].includes(tab)&&[...q.keys()].length===2&&q.getAll('tab').length===1&&q.getAll('workId').length===1&&NEXT_WORK_ID_RE.test(workId||'')&&url.search===`?tab=${tab}&workId=${workId}`;
+    const valid=companyWork||tab==='workroom'&&(q.get('section')==='clients'&&q.has('project')||q.get('section')==='tools'&&q.get('tool')==='publication')||tab==='social'&&['today','fix'].includes(q.get('section'));
     return valid?{type:'workspace',label:value.label.trim().slice(0,100),href:url.pathname+url.search}:null;
   }catch{return null;}
 }
 function nextActionButton(label,action,extra='',primary=false){return `<button type="button" class="next-button${primary?' next-primary':''}" data-action="${action}" ${extra} ${marinNext.pending?'disabled':''}>${escape(label)}${primary?icon('arrow'):''}</button>`;}
-function nextDueText(due){if(!due)return '';const value=due.precision==='instant'&&Number.isFinite(Date.parse(due.value))?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(due.value))+' (한국 시간)':due.value;return [due.label,value].filter(Boolean).join(' · ');}
+const NEXT_COMPANY_KIND_RE=/^(?:SYNK\s+)?(?:SHIFT\s*|PATH\s*)?(?:유학·정착\s*)?(?:강의|상담|정착)(?:[·/\s]*(?:강의|상담|정착|지원|일정|일|업무))*$/i;
+function nextDueValue(due){return !due?'':due.precision==='instant'&&Number.isFinite(Date.parse(due.value))?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(due.value))+' (한국 시간)':due.value||'';}
+function nextDueText(due,sourceKey=''){
+  if(!due)return '';
+  const value=nextDueValue(due),rawLabel=(due.label||'').trim();
+  const label=rawLabel==='상담 일정'||rawLabel==='PATH 상담'?'상담·정착 지원 일정':rawLabel;
+  const skipLabel=Boolean(sourceKey)&&label&&(label===nextSourceLabel(sourceKey)||['lectures','path','company'].includes(sourceKey)&&NEXT_COMPANY_KIND_RE.test(label));
+  return [skipLabel?'':label,value].filter(Boolean).join(' · ');
+}
+function nextContextText(row){
+  const raw=typeof row?.context==='string'?row.context.trim():'';
+  if(!raw)return '';
+  const sourceKey=row.source||'',sourceLabel=nextSourceLabel(sourceKey),isCompany=['lectures','path','company'].includes(sourceKey);
+  const dueRaw=(row.due?.value||'').trim(),dueFmt=nextDueValue(row.due).trim(),dueLabel=(row.due?.label||'').trim();
+  const dueDates=[dueRaw,dueFmt,/^\d{4}-\d{2}-\d{2}/.test(dueRaw)?dueRaw.slice(0,10):''].filter(Boolean);
+  const isDupPart=part=>{
+    if(!part||part===sourceLabel||dueDates.includes(part))return true;
+    if(!isCompany)return false;
+    if(dueLabel&&part===dueLabel)return true;
+    const hasDate=dueDates.some(d=>part.includes(d));
+    let rest=part;
+    for(const d of dueDates)rest=rest.split(d).join(' ');
+    rest=rest.replace(/[()[\]·,/:|-]+/g,' ').trim();
+    return NEXT_COMPANY_KIND_RE.test(rest)||hasDate&&(!rest||/^(?:일정|날짜|예정|예정일|당일|오늘)$/.test(rest));
+  };
+  return raw.split(/\s*·\s*/).map(s=>s.trim()).filter(part=>!isDupPart(part)).join(' · ');
+}
 function nextActionCard(row){
-  const action=safeNextAction(row.action),source={messenger:'대화 업무',client:'고객 업무',publication:'게시 · SNS'}[row.source]||'내 업무';
-  return `<article class="next-card" aria-labelledby="next-task-title"><div class="next-meta"><span class="next-source-chip">${escape(source)}</span>${row.due?`<span class="next-due">${escape(nextDueText(row.due))}</span>`:''}</div><h2 id="next-task-title">${escape(row.title)}</h2>${row.context?`<p class="next-context">${escape(row.context)}</p>`:''}<div class="next-reasons"><h3>이 일을 먼저 추천하는 이유</h3>${(row.reasons||[]).map(reason=>`<p>${escape(reason.text)}</p>`).join('')}</div>${row.checks?.length?`<div class="next-checks"><h3>열어서 확인할 것</h3><ul>${row.checks.map(check=>`<li>${escape(check)}</li>`).join('')}</ul></div>`:''}<div class="next-actions">${action?nextActionButton(action.label,'next-open',`data-key="${escape(row.key)}"`,true):'<p class="muted">원본 연결을 확인하지 못했어요.</p>'}${nextActionButton('다른 일 보기','next-skip')}${nextActionButton('도움받기','next-help',`aria-expanded="${marinNext.help}" aria-controls="next-help"`)}</div>${marinNext.help?`<div id="next-help" class="next-help"><p>막힌 부분과 필요한 자료를 원본 화면에서 확인하고 담당 동료에게 알려 주세요. 기존 대화와 검토 흐름에서 함께 해결할 수 있어요.</p>${action?nextActionButton('원본에서 함께 확인하기','next-open',`data-key="${escape(row.key)}"`):''}</div>`:''}</article>`;
+  const action=safeNextAction(row.action),source=NEXT_SOURCE_LABELS[row.source]||'내 업무',dueText=nextDueText(row.due,row.source),contextText=nextContextText(row);
+  return `<article class="next-card" aria-labelledby="next-task-title"><div class="next-meta"><span class="next-source-chip">${escape(source)}</span>${dueText?`<span class="next-due">${escape(dueText)}</span>`:''}</div><h2 id="next-task-title">${escape(row.title)}</h2>${contextText?`<p class="next-context">${escape(contextText)}</p>`:''}<div class="next-reasons"><h3>이 일을 먼저 추천하는 이유</h3>${(row.reasons||[]).map(reason=>`<p>${escape(reason.text)}</p>`).join('')}</div>${row.checks?.length?`<div class="next-checks"><h3>열어서 확인할 것</h3><ul>${row.checks.map(check=>`<li>${escape(check)}</li>`).join('')}</ul></div>`:''}<div class="next-actions">${action?nextActionButton(action.label,'next-open',`data-key="${escape(row.key)}"`,true):'<p class="muted">원본 연결을 확인하지 못했어요.</p>'}${nextActionButton('다른 일 보기','next-skip')}${nextActionButton('도움받기','next-help',`aria-expanded="${marinNext.help}" aria-controls="next-help"`)}</div>${marinNext.help?`<div id="next-help" class="next-help"><p>막힌 부분과 필요한 자료를 원본 화면에서 확인하고 담당 동료에게 알려 주세요. 기존 대화와 검토 흐름에서 함께 해결할 수 있어요.</p>${action?nextActionButton('원본에서 함께 확인하기','next-open',`data-key="${escape(row.key)}"`):''}</div>`:''}</article>`;
 }
 function marinNextHtml(){
   const data=marinNext.data;
@@ -41,25 +71,48 @@ function marinNextHtml(){
   if(marinNext.error)html+=`<p class="next-warning is-error" role="alert">${escape(marinNext.error)}</p>`;
   if(marinNext.note)html+=`<p class="next-status" role="status">${escape(marinNext.note)}</p>`;
   if(data?.status==='partial'||data?.status==='unknown'){
-    const missing=Object.entries(data.coverage||{}).filter(([,value])=>value?.status!=='ok').map(([key])=>({messenger:'대화 업무',client:'고객 업무',publication:'게시 · SNS'}[key]||key));
-    html+=`<p class="next-warning">${data.status==='partial'?'일부 업무를 확인하지 못했어요. 확인된 범위에서 먼저 추천해요.':'업무를 불러오지 못했어요. 잠시 뒤 다시 확인해 주세요.'}${missing.length?` <span>미확인: ${escape(missing.join(', '))}</span>`:''}</p>`;
+    const entries=Object.entries(data.coverage||{});
+    const checked=entries.filter(([,value])=>value?.status==='ok').map(([key])=>nextSourceLabel(key));
+    const missing=entries.filter(([,value])=>value?.status!=='ok').map(([key])=>nextSourceLabel(key));
+    const scopeNote=[data.status==='partial'&&checked.length?`확인: ${checked.join(', ')}`:'',missing.length?`미확인: ${missing.join(', ')}`:''].filter(Boolean).join(' · ');
+    html+=`<p class="next-warning">${data.status==='partial'?'일부 업무를 확인하지 못했어요. 확인된 범위에서 먼저 추천해요.':'업무를 불러오지 못했어요. 잠시 뒤 다시 확인해 주세요.'}${scopeNote?` <span>${escape(scopeNote)}</span>`:''}</p>`;
   }
   if(data?.next)html+=nextActionCard(data.next);
   else if(data&&data.status!=='unknown'&&!marinNext.pending){
     const skipped=data.totalCount>0&&data.excludedCount===data.totalCount;
-    html+=`<div class="next-empty"><h2>${skipped?'지금 보여 드릴 추천을 모두 확인했어요':data.status==='empty'?'확인한 업무 중 지금 내 차례인 일이 없어요':'확인된 범위에 추천할 일이 없어요'}</h2><p>${skipped?'넘긴 업무는 원본에 그대로 남아 있어요. 다시 보거나 전체 업무 목록에서 골라 주세요.':'대화 업무, 고객 프로젝트, 게시·SNS에서 확인했어요. 다른 동료를 기다리는 일은 추천에서 빼 두었어요.'}</p></div>`;
+    const checked=Object.entries(data.coverage||{}).filter(([,value])=>value?.status==='ok').map(([key])=>nextSourceLabel(key));
+    const emptyDetail=skipped
+      ?'넘긴 업무는 원본에 그대로 남아 있어요. 다시 보거나 각 업무 화면에서 골라 주세요.'
+      :checked.length
+        ?`${checked.join(', ')}에서 확인했어요. 다른 동료를 기다리는 일은 추천에서 빼 두었어요.`
+        :'현재 확인된 업무 범위에서 바로 내 차례인 일이 없어요.';
+    html+=`<div class="next-empty"><h2>${skipped?'지금 보여 드릴 추천을 모두 확인했어요':data.status==='empty'?'확인한 업무 중 지금 내 차례인 일이 없어요':'확인된 범위에 추천할 일이 없어요'}</h2><p>${escape(emptyDetail)}</p></div>`;
   }
-  if(data?.unavailableCount)html+=`<p class="next-warning">담당·검토자를 확인해야 하는 업무 ${escape(String(data.unavailableCount))}건이 있어요. 전체 업무에서 확인해 주세요.</p>`;
+  const domainSpecs=[
+    (typeof waFeature==='function'&&waFeature('lectures')||data?.coverage?.lectures)?{label:'강의 일정 보기',tab:'lectures'}:null,
+    (typeof waFeature==='function'&&waFeature('path')||data?.coverage?.path)?{label:'상담·정착 지원 일정 보기',tab:'path'}:null,
+  ].filter(Boolean);
+  if(data?.unavailableCount){
+    const viewLabels=[...domainSpecs.map(item=>item.label),'대화 업무 보기'];
+    html+=`<p class="next-warning">읽기 전용이거나 담당·검토자를 확인해야 하는 업무 ${escape(String(data.unavailableCount))}건이 있어요. ${escape(viewLabels.join(', '))}에서 확인해 주세요.</p>`;
+  }
+  if(Array.isArray(data?.today)&&data.today.length){
+    const extraToday=data.today.filter(row=>row&&typeof row.key==='string'&&row.key!==data.next?.key);
+    if(extraToday.length)html+=`<div class="next-today-list"><h3>오늘 내 일정</h3><ul>${extraToday.map(row=>`<li><button type="button" data-action="next-open" data-key="${escape(row.key)}" ${marinNext.pending?'disabled':''}><span><strong>${escape(row.title)}</strong><small>${escape([nextSourceLabel(row.source),nextDueText(row.due,row.source)||nextContextText(row)].filter(Boolean).join(' · ')||'원본에서 확인')}</small></span>${icon('arrow')}</button></li>`).join('')}</ul></div>`;
+  }
   if(data?.alternatives?.length)html+=`<details class="next-alternatives"><summary>다음 후보 ${escape(String(data.alternatives.length))}건 보기</summary><ul>${data.alternatives.map(row=>`<li><button type="button" data-action="next-open" data-key="${escape(row.key)}" ${marinNext.pending?'disabled':''}><span><strong>${escape(row.title)}</strong><small>${escape(nextDueText(row.due)||row.reasons?.[0]?.text||'원본에서 확인')}</small></span>${icon('arrow')}</button></li>`).join('')}</ul></details>`;
-  html+=`<div class="next-footer">${nextActionButton('새로 확인','next-recommend')}${marinNext.excluded.length?nextActionButton('넘긴 추천 다시 보기','next-restore'):''}${nextActionButton('전체 업무 보기','next-all')}</div>`;
+  const domainLinks=domainSpecs.map(item=>nextActionButton(item.label,'next-domain',`data-tab="${item.tab}"`)).join('');
+  html+=`<div class="next-footer">${nextActionButton('새로 확인','next-recommend')}${marinNext.excluded.length?nextActionButton('넘긴 추천 다시 보기','next-restore'):''}${domainLinks}${nextActionButton('대화 업무 보기','next-all')}</div>`;
   if(data?.generatedAt&&Number.isFinite(Date.parse(data.generatedAt)))html+=`<p class="next-asof">${escape(new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit'}).format(new Date(data.generatedAt)))} 확인 · 처리와 완료는 각 원본 화면에서 직접 진행해요.</p>`;
   return html;
 }
 function marinHomePage(){
   ensureMarinSession();ensureMarinNextSession();
   const scopeTop=typeof waScopeBar==='function'?waScopeBar():'';
+  const targetNotice=typeof waWorkTargetNoticeHtml==='function'?waWorkTargetNoticeHtml():'';
   const quickTools=typeof waHomeTools==='function'?waHomeTools():'';
-  return `<section class="next-home" aria-labelledby="next-heading"><header class="next-heading"><h1 id="next-heading">내 업무</h1></header>${scopeTop}${quickTools}<div class="next-support"><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div><details class="next-assistant" ${marinNext.asking?'open':''}><summary><span class="next-assistant-title"><span class="marin-assistant-avatar" aria-hidden="true">${icon('chat')}</span><span>마린에게 직접 묻기</span></span>${icon('right')}</summary>${marinConversationPage()}</details></div></section>`;
+  const mineWork=typeof waMineHomeHtml==='function'?waMineHomeHtml():'';
+  return `<section class="next-home" aria-labelledby="next-heading"><header class="next-heading"><h1 id="next-heading">내 업무</h1></header>${scopeTop}${targetNotice}${quickTools}${mineWork}<div class="next-support"><div id="next-action" aria-busy="${marinNext.pending}">${marinNextHtml()}</div>${typeof staffStoriesSection==='function'?staffStoriesSection():''}<details class="next-assistant" ${marinNext.asking?'open':''}><summary><span class="next-assistant-title"><span class="marin-assistant-avatar" aria-hidden="true">${icon('chat')}</span><span>마린에게 직접 묻기</span></span>${icon('right')}</summary>${marinConversationPage()}</details></div></section>`;
 }
 function captureMarinNextView(){
   const root=document.getElementById('next-action');if(!root)return null;
@@ -78,7 +131,7 @@ function syncMarinNext({refresh=true}={}){
   if(state.tab!=='home'||!state.user)return;ensureMarinNextSession();
   const root=document.getElementById('next-action');if(!root)return;const view=captureMarinNextView();
   root.innerHTML=marinNextHtml();root.setAttribute('aria-busy',String(marinNext.pending));restoreMarinNextView(view);
-  if(refresh&&marinNext.started&&!marinNext.pending&&(!marinNext.data&&!marinNext.error||marinNext.needsRefresh||Date.now()-marinNext.checkedAt>60000))void requestMarinNext();
+  if(refresh&&!(typeof isDemoMode==='function'&&isDemoMode())&&marinNext.started&&!marinNext.pending&&(!marinNext.data&&!marinNext.error||marinNext.needsRefresh||Date.now()-marinNext.checkedAt>60000))void requestMarinNext();
 }
 async function requestMarinNext(candidateKey=null){
   if(!state.user||marinNext.pending)return null;ensureMarinNextSession();
@@ -132,7 +185,9 @@ function resetMarinHome({clearStorage=true,clearRecommendation=true}={}){
   if(typeof resetCompanyGuide==='function')resetCompanyGuide();
   if(typeof resetWorkroom==='function')resetWorkroom({clearStorage});
   if(typeof resetMarinWork==='function')resetMarinWork();
+  if(typeof waResetMine==='function'&&(clearStorage||typeof wa!=='undefined'&&wa.mineUserId&&wa.mineUserId!==state.user?.id))waResetMine();
   if(typeof resetAdminWorkspace==='function')resetAdminWorkspace();
+  if(typeof resetStaffStories==='function')resetStaffStories({clearStorage});
   if(clearStorage&&marinHome.userId)try{sessionStorage.removeItem(marinSessionKey(marinHome.userId));}catch{}
   Object.assign(marinHome,{userId:null,entries:[],draft:'',pending:false,error:'',request:marinHome.request+1,composing:false});
 }
@@ -164,6 +219,7 @@ function resizeMarinInput(input=document.getElementById('marin-input')){
 }
 function syncMarinHome({scroll=false}={}){
   if(state.tab!=='home'||!state.user)return;
+  if(typeof waSyncMine==='function')waSyncMine();
   syncMarinNext();
   const section=document.getElementById('marin-home'),log=document.getElementById('marin-conversation'),input=document.getElementById('marin-input'),send=document.getElementById('marin-send'),error=document.getElementById('marin-error');
   section?.classList.toggle('has-conversation',Boolean(marinHome.entries.length));
@@ -217,11 +273,12 @@ document.addEventListener('click',event=>{
   if(action==='next-skip'&&!marinNext.pending){if(marinNext.data?.next)marinNext.excluded=[...new Set([...marinNext.excluded,marinNext.data.next.key])].slice(-100);marinNext.help=false;saveMarinNext();void requestMarinNext();}
   if(action==='next-restore'&&!marinNext.pending){marinNext.excluded=[];marinNext.help=false;saveMarinNext();void requestMarinNext();}
   if(action==='next-help'){marinNext.help=!marinNext.help;syncMarinNext();}
-  if(action==='next-all')openWorkspaceDestination({type:'messenger',label:'전체 업무 보기',panel:'workday'});
+  if(action==='next-all')openWorkspaceDestination({type:'messenger',label:'대화 업무 보기',panel:'workday'});
+  if(action==='next-domain'&&['lectures','path'].includes(target.dataset.tab)&&(typeof waNavigationAllowed!=='function'||waNavigationAllowed(target.dataset.tab))){if(typeof waClearWorkTarget==='function')waClearWorkTarget();selectWorkspaceView(target.dataset.tab);if(typeof syncWorkspaceLocation==='function')syncWorkspaceLocation();render();if(typeof window!=='undefined')window.scrollTo?.(0,0);}
 });
 document.addEventListener('toggle',event=>{if(event.target.matches?.('.next-assistant')){marinNext.asking=event.target.open;if(event.target.open)resizeMarinInput();}},true);
-window.addEventListener('focus',()=>{if(state.user&&state.tab==='home'&&marinNext.started)syncMarinNext();});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.user&&state.tab==='home'&&marinNext.started)syncMarinNext();});
+window.addEventListener('focus',()=>{if(state.user&&state.tab==='home'){if(typeof waSyncMine==='function')waSyncMine();if(marinNext.started)syncMarinNext();}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.user&&state.tab==='home'){if(typeof waSyncMine==='function')waSyncMine();if(marinNext.started)syncMarinNext();}});
 document.addEventListener('click',event=>{const target=event.target.closest?.('[data-action]');if(!target||target.disabled)return;const action=target.dataset.action;if((action==='marin-workroom-panel'||action==='marin-profile')&&target.closest?.('#ws-tools-drawer')&&typeof setWorkspaceToolsOpen==='function'&&typeof workspaceToolsOpen==='function'&&workspaceToolsOpen())setWorkspaceToolsOpen(false,{restoreFocus:false});if(action==='marin-retry')void submitMarinMessage(true);if(action==='marin-action')void dispatchMarinAction(target.dataset.entry,target.dataset.index).catch(error=>notify(error.message));if(action==='marin-account')marinAccountDialog();if(action==='marin-workroom-panel'&&['tasks','saved'].includes(target.dataset.panel))openWorkspaceDestination({type:'messenger',label:target.dataset.panel==='tasks'?'내 할 일':'저장한 메시지',panel:target.dataset.panel});if(action==='marin-profile'&&typeof openMarinProfile==='function')void openMarinProfile();if(action==='marin-clear'){Object.assign(marinHome,{entries:[],draft:'',error:'',pending:false,request:marinHome.request+1});saveMarinSession();render();document.getElementById('marin-input')?.focus();}});
 
 document.addEventListener('click',event=>{const target=event.target.closest?.('[data-action="marin-suggest"]');if(!target||!state.user)return;ensureMarinSession();marinHome.draft=target.dataset.prompt||'';saveMarinSession();const input=document.getElementById('marin-input');if(input){input.value=marinHome.draft;input.focus();}syncMarinHome();});

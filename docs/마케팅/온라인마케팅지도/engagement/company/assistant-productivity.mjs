@@ -6,7 +6,7 @@ const response = (intent, text, actions, data) => ({ mode: 'workspace-guide', in
 
 // Summaries are composed from authorized records, not inferred from arbitrary chat.
 // Asking never confirms a request, completes work, or advances the catch-up cursor.
-export function answerProductivity({ message, request, user, productivity, clientWorkday, publicationWorkday }) {
+export function answerProductivity({ message, request, user, productivity, clientWorkday, publicationWorkday, companyWorkday }) {
   if (!productivity) return null;
   if (/바뀐\s*(?:것|점|내용)|변경\s*(?:요약|사항|내용)|놓친\s*(?:내용|대화|업무)|자리\s*비운|따라잡기/.test(message)) {
     const data = productivity(request, 'catchUp'), events = data.events || [];
@@ -40,11 +40,22 @@ export function answerProductivity({ message, request, user, productivity, clien
     try { const result=publicationWorkday?.(user); if(publicationWorkday&&!Array.isArray(result?.items))publicationError=true;else publications=result?.items||[]; } catch { publicationError=true; }
     const actions=[panel('오늘 처리할 일 열기','workday')], group=/기다리|대기/.test(message)?'waiting':/검토/.test(message)?'review':/답할/.test(message)?'reply':null;
     if(!classified)return response('workday','오늘 할 일을 정확히 확인하지 못했습니다. 할 일이 없다는 뜻은 아니에요. 오늘 할 일 화면에서 다시 확인해 주세요.',actions,{date:data?.date,group,verified:false});
+    let dueCompany=[], laterCompany=[], companyError=false;
+    if(companyWorkday&&!group){
+      try{
+        const work=companyWorkday(user);
+        if(!Array.isArray(work.items)||typeof work.date!=='string'||typeof work.canAct!=='boolean')throw Error('Invalid company workday');
+        if(work.canAct)for(const row of work.items){
+          (row.date&&row.date<=work.date?dueCompany:laterCompany).push(row);
+        }
+      }catch{companyError=true;}
+    }
     const unique=rows=>[...new Map(rows.map(row=>[row.id,row])).values()];
     const todayGroups=data.today.groups,remaining=data.remaining.groups,todayRows=unique(['reply','due','review','recovery'].flatMap(key=>todayGroups[key])),pending=unique([...remaining.upcoming,...remaining.undated]),waiting=unique(remaining.waiting);
     customers=unique(customers);const activeCustomers=customers.filter(row=>['reply','review','next'].includes(row.group)),waitingCustomers=customers.filter(row=>row.group==='waiting');
     publications=unique(publications);const activePublications=publications.filter(row=>['reply','review','next'].includes(row.group)),selectedPublications=group?publications.filter(row=>row.group===group):activePublications;
-    const incomplete=customerError||publicationError,count=todayRows.length+activeCustomers.length+activePublications.length, selectedCustomers=group?customers.filter(row=>row.group===group):customers;
+    const incomplete=customerError||publicationError||companyError,count=todayRows.length+activeCustomers.length+activePublications.length+dueCompany.length, selectedCustomers=group?customers.filter(row=>row.group===group):customers;
+    const pendingCount=pending.length+laterCompany.length;
     const rowLine=row=>`· ${String(row.title).slice(0,180)} · ${row.canManage===false?'상태 변경 권한 확인':row.assigneeUnavailable?'담당 크루 확인 필요':row.reviewerUnavailable?'검토 크루 지정 필요':stageNames[row.stage]||'업무'}${row.dueDate?` · ${row.dueDate}까지`:' · 기한 미정'}`;
     let rows,lines;
     if(group){
@@ -53,17 +64,20 @@ export function answerProductivity({ message, request, user, productivity, clien
       if(!rows.length&&!selectedCustomers.length&&!selectedPublications.length&&!incomplete)lines.push(`현재 등록된 ${label} 항목은 없습니다.`);
     }else{
       rows=count?todayRows:pending;
-      const heading=incomplete?(count?`확인된 오늘 할 일 ${count}개`:'오늘 할 일 확인이 완료되지 않았습니다'):count?`오늘 처리할 일 ${count}개`:pending.length?`남아 있는 내 업무 ${pending.length}개`:'오늘 처리할 일이 없습니다';
+      const heading=incomplete?(count?`확인된 오늘 할 일 ${count}개`:'오늘 할 일 확인이 완료되지 않았습니다'):count?`오늘 처리할 일 ${count}개`:pendingCount?`남아 있는 내 업무 ${pendingCount}개`:'오늘 처리할 일이 없습니다';
       lines=[heading,...rows.slice(0,3).map(rowLine)];
+      for(const row of (count?dueCompany:laterCompany).slice(0,3))lines.push(`· ${row.company==='SHIFT'?'강의':'상담'} · ${row.title} · ${row.date||'날짜 미정'}`);
+      if(count&&laterCompany.length)lines.push(`이후에 진행하거나 날짜를 정할 강의·상담이 ${laterCompany.length}건 있어요.`);
       if(pending.length)lines.push(`이후 마감 ${remaining.upcoming.length}개 · 기한 미정 ${remaining.undated.length}개가 남아 있어요.${!count?' 남은 업무의 기한과 오늘 진행할 내용을 확인해 주세요.':''}`);
       if(waiting.length||waitingCustomers.length)lines.push(`대기 중 ${waiting.length+waitingCustomers.length}개는 다른 사람의 작업이나 답변을 기다리는 업무예요.`);
-      if(!count&&!pending.length&&!waiting.length&&!waitingCustomers.length&&!incomplete)lines.push('내게 배정된 미완료 업무와 내가 처리할 고객·게시 업무도 없습니다.');
+      if(!count&&!pendingCount&&!waiting.length&&!waitingCustomers.length&&!incomplete)lines.push('내게 배정된 미완료 업무와 내가 처리할 고객·게시 업무도 없습니다.');
     }
     lines.push(...(group?selectedCustomers:activeCustomers).slice(0,Math.max(0,3-rows.length)).map(row=>`· ${row.projectTitle||'고객 업무'} · ${row.title} · ${row.statusLabel||'확인 필요'}`));
     lines.push(...selectedPublications.slice(0,Math.max(0,3-rows.length-(group?selectedCustomers:activeCustomers).length)).map(row=>`· ${String(row.title||'게시 업무').slice(0,180)} · ${row.actionLabel||row.statusLabel||'게시 준비에서 확인'}`));
     if(customerError)lines.push('고객 업무를 확인하지 못했습니다. 전체 할 일이 없다고 판단할 수 없습니다.');
     if(publicationError)lines.push('게시 업무를 확인하지 못했습니다. 전체 할 일이 없다고 판단할 수 없습니다.');
-    return response('workday',lines.join('\n'),[...actions,...rows.slice(0,4).map(row=>source(row.title,row))],{date:data.date,counts:data.counts,todayCount:count,pendingCount:pending.length,waitingCount:waiting.length+waitingCustomers.length,customerCount:selectedCustomers.length,actionableCustomerCount:activeCustomers.length,publicationCount:selectedPublications.length,actionablePublicationCount:activePublications.length,group,verified:!incomplete});
+    if(companyError)lines.push('강의·상담 일정을 불러오지 못했어요.');
+    return response('workday',lines.join('\n'),[...actions,...rows.slice(0,4).map(row=>source(row.title,row))],{date:data.date,counts:data.counts,todayCount:count,pendingCount,waitingCount:waiting.length+waitingCustomers.length,customerCount:selectedCustomers.length,actionableCustomerCount:activeCustomers.length,publicationCount:selectedPublications.length,actionablePublicationCount:activePublications.length,group,verified:!incomplete});
   }
   return null;
 }

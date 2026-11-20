@@ -1,7 +1,67 @@
 'use strict';
-const wa={company:'all',userId:null,inviteToken:'',invite:null,inviteError:'',inviteLoading:false,inviteRequest:0,inviteHandoff:null,work:null,workKey:'',workLoading:false,workError:'',workQueued:false,workConflictKey:'',workModal:null,request:0};
+const WA_WORK_ID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const waLocationHref=()=>typeof location!=='undefined'&&location?(location.pathname||'/')+(location.search||'')+(location.hash||''):'';
+const wa={company:'all',userId:null,inviteToken:'',invite:null,inviteError:'',inviteLoading:false,inviteRequest:0,inviteHandoff:null,work:null,workKey:'',workLoading:false,workError:'',workQueued:false,workConflictKey:'',workModal:null,request:0,mine:null,mineUserId:null,mineLoading:false,mineQueued:false,mineError:'',mineCheckedAt:0,mineNeedsRefresh:false,mineExpanded:false,mineRequest:0,workTarget:null,workTargetNotice:'',workFocusQueued:false,pendingHref:waLocationHref()};
 function waResetInvite(){wa.inviteRequest++;wa.inviteToken='';wa.invite=null;wa.inviteError='';wa.inviteLoading=false;wa.inviteHandoff=null;}
-function waResetWork(){wa.work=null;wa.workKey='';wa.workLoading=false;wa.workError='';wa.workConflictKey='';wa.workModal=null;wa.request++;}
+function waResetWork(){wa.work=null;wa.workKey='';wa.workLoading=false;wa.workError='';wa.workConflictKey='';wa.workModal=null;wa.workTarget=null;wa.workTargetNotice='';wa.workFocusQueued=false;wa.request++;}
+function waResetMine(){wa.mineRequest++;wa.mine=null;wa.mineUserId=null;wa.mineLoading=false;wa.mineQueued=false;wa.mineError='';wa.mineCheckedAt=0;wa.mineNeedsRefresh=false;wa.mineExpanded=false;}
+function waClearWorkTarget(){wa.workTarget=null;}
+const waKstDate=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+function waParseWorkHref(href){
+  if(typeof href!=='string'||!href.startsWith('/?')||/[\\\u0000-\u0020]/.test(href))return null;
+  try{
+    const origin=typeof location!=='undefined'&&location?.origin?location.origin:'http://localhost';
+    const url=new URL(href,origin),q=url.searchParams,tab=q.get('tab'),workId=q.get('workId');
+    if(url.origin!==origin||url.pathname!=='/'||url.hash)return null;
+    if(!['lectures','path'].includes(tab)||[...q.keys()].length!==2||q.getAll('tab').length!==1||q.getAll('workId').length!==1||!WA_WORK_ID_RE.test(workId||''))return null;
+    const canonical=`/?tab=${tab}&workId=${workId}`;
+    return url.pathname+url.search===canonical?{tab,company:tab==='path'?'PATH':'SHIFT',workId,href:canonical}:null;
+  }catch{return null;}
+}
+function waInspectWorkLocation(href){
+  if(typeof href!=='string'||!href)return{kind:'none'};
+  try{
+    const origin=typeof location!=='undefined'&&location?.origin?location.origin:'http://localhost';
+    const url=new URL(href,origin),q=url.searchParams,tab=q.get('tab');
+    if(url.origin!==origin||url.pathname!=='/'||!['lectures','path'].includes(tab))return{kind:'none'};
+    if(!q.has('workId'))return{kind:'plain',tab,company:tab==='path'?'PATH':'SHIFT'};
+    const parsed=waParseWorkHref(url.pathname+url.search+url.hash);
+    return parsed?{kind:'target',...parsed}:{kind:'invalid',tab,company:tab==='path'?'PATH':'SHIFT'};
+  }catch{return{kind:'none'};}
+}
+function waReplaceHref(href){
+  if(typeof history!=='undefined'&&typeof history.replaceState==='function')history.replaceState(null,'',href);
+}
+function waActivateWorkTarget({tab,company,workId,invalid=false}){
+  const userId=state.user?.id||null;
+  const same=wa.workTarget&&wa.workTarget.userId===userId&&wa.workTarget.tab===tab&&wa.workTarget.company===company&&wa.workTarget.workId===(workId||'')&&Boolean(wa.workTarget.invalid)===Boolean(invalid);
+  if(same)return;
+  wa.workTarget={userId,tab,company,workId:workId||'',invalid:Boolean(invalid),focused:Boolean(invalid)};
+  wa.workTargetNotice='';
+  wa.workFocusQueued=false;
+  if(!invalid){wa.work=null;wa.workError='';wa.workLoading=false;wa.request++;}
+}
+function waApplyWorkLocation(info){
+  if(!state.user||info.kind==='none'||info.kind==='plain')return false;
+  if(!waNavigationAllowed(info.tab)){
+    wa.workTarget=null;
+    wa.workTargetNotice=info.company==='PATH'
+      ?'PATH 상담·정착 업무 열람 권한이 없거나 다른 회사의 업무예요.'
+      :'SHIFT 강의 일정 열람 권한이 없거나 다른 회사의 업무예요.';
+    state.tab='home';
+    waReplaceHref('/?tab=home');
+    return true;
+  }
+  state.tab=info.tab;
+  if(info.kind==='invalid'){
+    waActivateWorkTarget({tab:info.tab,company:info.company,workId:'',invalid:true});
+    waReplaceHref(`/?tab=${info.tab}`);
+    return true;
+  }
+  waActivateWorkTarget(info);
+  if(waLocationHref()!==info.href)waReplaceHref(info.href);
+  return true;
+}
 function waAccess(){return state.user?.workspaceAccess||{legacy:true,features:[],memberships:[],duties:[],companies:[]};}
 function waCatalog(){return state.data?.workspaceCatalog||{companies:[],duties:[],classification:[]};}
 function waFeature(feature){
@@ -57,11 +117,22 @@ function waApplyBareLanding(){
   return true;
 }
 function waNormalizeView(){
-  if(!state.user){wa.userId=null;wa.company='all';waResetInvite();waResetWork();return;}
-  if(wa.userId!==state.user.id){wa.userId=state.user.id;wa.company='all';waResetInvite();waResetWork();}
+  if(!state.user){if(wa.userId)wa.pendingHref='';wa.userId=null;wa.company='all';waResetInvite();waResetWork();waResetMine();return;}
+  const firstEntry=wa.userId!==state.user.id;
+  if(firstEntry){wa.userId=state.user.id;wa.company='all';waResetInvite();waResetWork();waResetMine();}
   if(wa.company!=='all'&&!waAccess().companies.includes(wa.company))wa.company='all';
   if(typeof wrClearProduction==='function'&&!waFeature('production'))wrClearProduction();
-  if(!waViewAllowed(state.tab))state.tab='home';
+  const liveInfo=firstEntry?waInspectWorkLocation(waLocationHref()):{kind:'none'};
+  const pendingInfo=wa.pendingHref?waInspectWorkLocation(wa.pendingHref):{kind:'none'};
+  wa.pendingHref='';
+  const chosen=liveInfo.kind==='target'||liveInfo.kind==='invalid'?liveInfo:pendingInfo.kind==='target'||pendingInfo.kind==='invalid'?pendingInfo:liveInfo;
+  if(chosen.kind==='target'||chosen.kind==='invalid')waApplyWorkLocation(chosen);
+  else{
+    if(!waViewAllowed(state.tab))state.tab='home';
+    if(wa.workTarget&&state.tab!==wa.workTarget.tab)wa.workTarget=null;
+    if(!wa.workTarget&&typeof syncWorkspaceLocation==='function'&&typeof location!=='undefined'&&new URLSearchParams(location.search).has('workId'))syncWorkspaceLocation();
+  }
+  if(state.tab!=='home'&&wa.workTargetNotice)wa.workTargetNotice='';
   if(typeof wr!=='undefined'&&!waWorkroomViews().includes(wr.view))wr.view=waWorkroomViews()[0]||'desk';
 }
 function waMembershipText(access){
@@ -222,6 +293,203 @@ function waOwnsCompanyWork(company){
   if(['path','lectures'].includes(state.tab))return waWorkCompany()===company;
   return wa.workKey===userId+':'+company;
 }
+function waWorkTargetNoticeHtml(){
+  if(!wa.workTargetNotice||state.tab!=='home')return '';
+  return `<div class="note-box warn wa-work-target-banner" role="status"><span>${escape(wa.workTargetNotice)}</span><button type="button" class="btn small quiet" data-action="wa-dismiss-notice">확인</button></div>`;
+}
+function waMineCompanies(){
+  const access=waAccess();
+  if(!state.user||typeof isDemoMode==='function'&&isDemoMode())return [];
+  if(isAdmin()||access.admin){
+    return ['SHIFT','PATH'].filter(company=>access.memberships?.some(row=>row.company===company&&(company!=='SHIFT'||row.role!=='automation')));
+  }
+  const list=[];
+  if(access.features?.includes('lectures')||access.memberships?.some(row=>row.company==='SHIFT'&&row.role!=='automation'))list.push('SHIFT');
+  if(access.features?.includes('path')||access.memberships?.some(row=>row.company==='PATH'))list.push('PATH');
+  return list;
+}
+function waMineVisibleCompanies(){
+  if(!state.user||typeof isDemoMode==='function'&&isDemoMode())return [];
+  const base=wa.mine&&Array.isArray(wa.mine.companies)?wa.mine.companies.filter(c=>c==='SHIFT'||c==='PATH'):waMineCompanies();
+  return base.filter(company=>wa.company==='all'||wa.company===company);
+}
+function waMineDateInfo(date,today){
+  if(!date||!/^\d{4}-\d{2}-\d{2}$/.test(date))return{bucket:'undated',urgent:false,badge:'일정 미정',dateText:''};
+  if(date<today)return{bucket:'overdue',urgent:true,badge:'지난 일정',dateText:date};
+  if(date===today)return{bucket:'today',urgent:true,badge:'오늘',dateText:date};
+  return{bucket:'upcoming',urgent:false,badge:'예정',dateText:date};
+}
+function waMineItemHtml(row,today){
+  const info=waMineDateInfo(row.date,today);
+  const kind=row.company==='PATH'?'PATH 상담·정착 지원':'SHIFT 강의';
+  const parsed=waParseWorkHref(row.href);
+  const validTarget=parsed&&parsed.company===row.company&&parsed.workId===row.id?parsed:null;
+  const arrow=typeof icon==='function'?icon('arrow'):'';
+  const meta=`<span class="wa-mine-item-meta"><span class="wa-mine-badge is-${info.bucket}">${escape(info.badge)}</span>${info.dateText?`<span class="wa-mine-date">${escape(info.dateText)}</span>`:''}<span class="wa-mine-kind">${escape(kind)}</span></span>`;
+  const body=`<span class="wa-mine-item-copy">${meta}<strong class="wa-mine-title">${escape(row.title||'제목 없음')}</strong></span>`;
+  if(!validTarget)return `<li class="wa-mine-row${info.urgent?' is-urgent':''}"><div class="wa-mine-item is-static">${body}</div></li>`;
+  return `<li class="wa-mine-row${info.urgent?' is-urgent':''}"><button type="button" class="wa-mine-item" data-action="wa-mine-open" data-company="${validTarget.company}" data-work-id="${validTarget.workId}">${body}${arrow}</button></li>`;
+}
+function waMineInnerHtml(){
+  const companies=waMineVisibleCompanies();
+  if(!companies.length)return '';
+  const heading=companies.length===1?(companies[0]==='PATH'?'내 상담·정착 지원 일정':'내 강의 일정'):'내 강의·상담 일정';
+  const today=wa.mine?.date||waKstDate();
+  const data=wa.mine;
+  const items=(data?.items||[]).filter(row=>row&&companies.includes(row.company)).slice().sort((a,b)=>(a.date?0:1)-(b.date?0:1)||(a.date||'').localeCompare(b.date||''));
+  const counts={today:0,overdue:0,upcoming:0,undated:0};
+  for(const row of items)counts[waMineDateInfo(row.date,today).bucket]++;
+  const summaryParts=data?[
+    `미완료 ${items.length}건`,
+    counts.today?`오늘 ${counts.today}`:'',
+    counts.overdue?`지난 일정 ${counts.overdue}`:'',
+    counts.upcoming?`예정 ${counts.upcoming}`:'',
+    counts.undated?`일정 미정 ${counts.undated}`:'',
+  ].filter(Boolean):[];
+  const header=`<div class="wa-mine-head"><div class="wa-mine-head-copy"><h2 id="wa-mine-heading">${escape(heading)}</h2>${summaryParts.length?`<span class="wa-mine-summary">${escape(summaryParts.join(' · '))}</span>`:''}</div><button type="button" class="wa-mine-refresh" data-action="wa-mine-refresh" ${wa.mineLoading?'aria-disabled="true"':''}>새로 확인</button></div>`;
+  const readonlyNote=data&&(data.canAct===false||isViewer())?'<p class="wa-mine-readonly">보기 전용 권한이에요. 일정을 열어 내용을 확인할 수 있어요.</p>':'';
+  if(wa.mineError&&!data){
+    return `${header}<div class="wa-mine-error" role="alert"><p>${escape(wa.mineError)}</p><button type="button" class="next-button" data-action="wa-mine-refresh" ${wa.mineLoading?'aria-disabled="true"':''}>다시 불러오기</button></div>`;
+  }
+  if(!data){
+    return `${header}<p class="wa-mine-status" role="status">미완료 일정을 불러오고 있어요…</p>`;
+  }
+  const errBanner=wa.mineError?`<div class="wa-mine-error" role="alert"><p>${escape(wa.mineError)}</p></div>`:'';
+  if(!items.length){
+    const emptyCopy=companies.length===1?(companies[0]==='PATH'?'남은 미완료 상담 일정이 없어요.':'남은 미완료 강의 일정이 없어요.'):'남은 미완료 강의·상담 일정이 없어요.';
+    return `${header}${errBanner}${readonlyNote}<p class="wa-mine-empty">${escape(emptyCopy)}</p>`;
+  }
+  const urgentCount=counts.today+counts.overdue;
+  const limit=Math.max(5,urgentCount);
+  const visible=items.slice(0,limit),extra=items.slice(limit);
+  const list=`<ul class="wa-mine-list">${visible.map(row=>waMineItemHtml(row,today)).join('')}</ul>`;
+  const more=extra.length?`<details class="wa-mine-more" ${wa.mineExpanded?'open':''}><summary>이후·미정 일정 ${escape(String(extra.length))}건 더 보기</summary><ul class="wa-mine-list is-more">${extra.map(row=>waMineItemHtml(row,today)).join('')}</ul></details>`:'';
+  return `${header}${errBanner}${readonlyNote}${list}${more}`;
+}
+function waQueueMineLoad(){
+  if(state.tab!=='home'||!state.user||!waMineCompanies().length)return;
+  if(wa.mineUserId&&wa.mineUserId!==state.user.id)waResetMine();
+  const shouldLoad=(!wa.mine&&!wa.mineError)||wa.mineNeedsRefresh;
+  if(shouldLoad&&!wa.mineLoading&&!wa.mineQueued){
+    wa.mineQueued=true;
+    queueMicrotask(()=>{wa.mineQueued=false;if(state.tab==='home'&&state.user&&waMineVisibleCompanies().length)void waLoadMine();});
+  }
+}
+function waMineHomeHtml(){
+  if(wa.mineUserId&&wa.mineUserId!==state.user?.id)waResetMine();
+  const companies=waMineVisibleCompanies();
+  if(!companies.length)return '';
+  waQueueMineLoad();
+  return `<section id="wa-mine-work" class="wa-mine-work" aria-labelledby="wa-mine-heading" aria-busy="${wa.mineLoading}">${waMineInnerHtml()}</section>`;
+}
+function waCaptureMineView(){
+  const root=typeof document!=='undefined'?document.getElementById('wa-mine-work'):null;if(!root)return null;
+  const active=document.activeElement,inside=Boolean(active&&root.contains(active));
+  const focused=inside?(active.closest?.('[data-action]')||(active.dataset?.action?active:null)):null;
+  const focusRetry=Boolean(focused&&(focused.closest?.('.wa-mine-error')||focused.classList?.contains?.('next-button')));
+  return{expanded:Boolean(root.querySelector('.wa-mine-more')?.open),focusAction:focused?.dataset.action,focusCompany:focused?.dataset.company,focusWorkId:focused?.dataset.workId,focusRetry,summary:Boolean(inside&&active.matches?.('.wa-mine-more>summary'))};
+}
+function waRestoreMineView(view){
+  const root=typeof document!=='undefined'?document.getElementById('wa-mine-work'):null;if(!root||!view)return;
+  const more=root.querySelector('.wa-mine-more');if(more&&(view.expanded||wa.mineExpanded))more.open=true;
+  const actions=[...root.querySelectorAll('[data-action]')].filter(el=>!el.disabled);
+  const refreshFallback=actions.find(el=>el.dataset.action==='wa-mine-refresh')||root.querySelector('[data-action="wa-mine-refresh"]:not(:disabled)');
+  if(view.focusAction){
+    const match=actions.find(el=>el.dataset.action===view.focusAction&&(el.dataset.company||'')===(view.focusCompany||'')&&(el.dataset.workId||'')===(view.focusWorkId||'')&&(!view.focusRetry||Boolean(el.closest?.('.wa-mine-error'))||el.classList?.contains?.('next-button')));
+    (match||refreshFallback)?.focus({preventScroll:true});
+  }else if(view.summary)(root.querySelector('.wa-mine-more>summary')||refreshFallback)?.focus({preventScroll:true});
+}
+function waSyncMine({refresh=true}={}){
+  if(state.tab!=='home'||!state.user)return;
+  if(wa.mineUserId&&wa.mineUserId!==state.user.id)waResetMine();
+  const companies=waMineVisibleCompanies(),root=typeof document!=='undefined'?document.getElementById('wa-mine-work'):null;
+  if(!companies.length){if(root)root.remove();return;}
+  if(root){
+    const view=waCaptureMineView();
+    root.innerHTML=waMineInnerHtml();
+    root.setAttribute('aria-busy',String(wa.mineLoading));
+    waRestoreMineView(view);
+  }
+  if(refresh&&!wa.mineLoading&&((!wa.mine&&!wa.mineError)||wa.mineNeedsRefresh||(wa.mineCheckedAt>0&&Date.now()-wa.mineCheckedAt>60000)))void waLoadMine();
+}
+async function waLoadMine({force=false}={}){
+  if(!state.user||state.tab!=='home'||!waMineCompanies().length)return null;
+  if(wa.mineUserId&&wa.mineUserId!==state.user.id)waResetMine();
+  if(wa.mineLoading&&!force)return null;
+  const userId=state.user.id,stamp=typeof companyAuthSnapshot==='function'?companyAuthSnapshot():{userId};
+  const sameSession=()=>(typeof companyAuthCurrent==='function'?companyAuthCurrent(stamp):state.user?.id===userId)&&wa.mineUserId===userId;
+  wa.mineUserId=userId;
+  const request=++wa.mineRequest;
+  wa.mineLoading=true;wa.mineError='';wa.mineNeedsRefresh=false;
+  waSyncMine({refresh:false});
+  try{
+    const result=await api('/api/company-work/mine');
+    if(request!==wa.mineRequest||!sameSession())return null;
+    if(!result||!Array.isArray(result.items)||!Array.isArray(result.companies))throw new Error('내 일정을 확인하지 못했어요. 잠시 후 다시 시도해 주세요.');
+    wa.mine={
+      companies:result.companies.filter(c=>c==='SHIFT'||c==='PATH'),
+      date:typeof result.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(result.date)?result.date:waKstDate(),
+      items:result.items.filter(row=>row&&typeof row==='object'&&(row.company==='SHIFT'||row.company==='PATH')&&WA_WORK_ID_RE.test(row.id||'')).map(row=>({
+        id:row.id,
+        company:row.company,
+        title:typeof row.title==='string'?row.title:'',
+        date:typeof row.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(row.date)?row.date:'',
+        revision:typeof row.revision==='number'?row.revision:0,
+        href:typeof row.href==='string'?row.href:'',
+      })),
+      canAct:result.canAct!==false,
+    };
+    wa.mineCheckedAt=Date.now();
+    return wa.mine;
+  }catch(error){
+    if(error?.code==='SESSION_CHANGED'||request!==wa.mineRequest||!sameSession())return null;
+    wa.mine=null;
+    wa.mineError=error.message||'내 일정을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+    wa.mineCheckedAt=Date.now();
+    return null;
+  }finally{
+    if(request===wa.mineRequest){
+      wa.mineLoading=false;
+      if(sameSession()){
+        if(state.tab==='home')waSyncMine({refresh:false});
+      }else if(state.user?.id===userId){
+        wa.mine=null;wa.mineError='';wa.mineCheckedAt=0;wa.mineNeedsRefresh=true;
+        if(state.tab==='home')waSyncMine({refresh:true});
+      }
+    }
+  }
+}
+function waOpenMineWork(company,workId){
+  if(!state.user||!['SHIFT','PATH'].includes(company)||!WA_WORK_ID_RE.test(workId||''))return false;
+  const tab=company==='PATH'?'path':'lectures',href=`/?tab=${tab}&workId=${workId}`;
+  if(!waNavigationAllowed(tab)){
+    const msg=company==='PATH'?'PATH 상담·정착 업무 열람 권한이 없어요.':'SHIFT 강의 일정 열람 권한이 없어요.';
+    wa.workTargetNotice=msg;if(typeof notify==='function')notify(msg);if(state.tab==='home')render();
+    return false;
+  }
+  wa.mineNeedsRefresh=true;
+  selectWorkspaceView(tab);
+  waActivateWorkTarget({tab,company,workId});
+  if(typeof history!=='undefined'){
+    if(typeof history.pushState==='function')history.pushState(null,'',href);
+    else if(typeof history.replaceState==='function')history.replaceState(null,'',href);
+  }
+  render();if(typeof window!=='undefined')window.scrollTo?.(0,0);
+  return true;
+}
+function waQueueTargetWorkFocus(target){
+  if(!target||target.focused||!target.workId||wa.workFocusQueued)return;
+  wa.workFocusQueued=true;
+  queueMicrotask(()=>{
+    wa.workFocusQueued=false;
+    if(!state.user||wa.workTarget!==target||target.focused||state.tab!==target.tab||typeof document==='undefined')return;
+    const heading=document.getElementById('wa-work-heading-'+target.workId);
+    if(!heading)return;
+    target.focused=true;
+    heading.scrollIntoView?.({block:'nearest'});
+    heading.focus?.({preventScroll:true});
+  });
+}
 function waWorkPage(){
   const company=waWorkCompany(),isPath=company==='PATH';
   const title=isPath?'상담·정착 업무':'강의 일정';
@@ -230,10 +498,21 @@ function waWorkPage(){
     :'SHIFT 강의 일정과 준비 내용을 관리해요. 어학당 학급 수업은 LAB 내 수업에서 다뤄요.';
   const key=state.user.id+':'+company;
   if(wa.workKey!==key||wa.workConflictKey===key){wa.workConflictKey='';wa.workKey=key;wa.work=null;wa.workError='';wa.workLoading=false;wa.request++;}
+  const activeTarget=wa.workTarget&&wa.workTarget.userId===state.user.id&&wa.workTarget.company===company&&wa.workTarget.tab===state.tab?wa.workTarget:null;
+  if(activeTarget&&!activeTarget.invalid&&activeTarget.workId){
+    const expectedHref=`/?tab=${activeTarget.tab}&workId=${activeTarget.workId}`;
+    if(waLocationHref()!==expectedHref)waReplaceHref(expectedHref);
+  }
   if(!wa.work&&!wa.workLoading&&!wa.workError&&!wa.workQueued){wa.workQueued=true;queueMicrotask(()=>{wa.workQueued=false;void waLoadWork();});}
   const data=wa.work,items=data?.items||[];
   const openCount=items.filter(row=>row.status!=='done').length,doneCount=items.filter(row=>row.status==='done').length;
-  return `<section class="wa-work">${pageHeading(company==='PATH'?'SYNK PATH':'SYNK SHIFT',title,subtitle,!isViewer()?button(isPath?'업무 추가':'강의 추가','wa-work-edit','plus','primary'):'')}<div class="wa-work-meta-bar"><span>내 기록과 ${company} 책임자·관리자만 열람할 수 있어요.</span>${data?`<div class="wa-work-counts"><span>진행 중 <strong>${openCount}</strong></span><span>완료 <strong>${doneCount}</strong></span></div>`:''}</div>${wa.workError?`<div class="form-error" role="alert">${escape(wa.workError)}</div><div class="mt-10">${button('다시 불러오기','wa-work-refresh','refresh','small')}</div>`:''}${!data?(wa.workError&&!wa.workLoading?'':`<p class="muted" role="status">${wa.workLoading?'목록을 불러오고 있어요.':'목록을 준비하고 있어요.'}</p>`):items.length?`<div class="wa-work-list">${items.map(row=>`<article class="wa-work-item"><div class="wa-work-item-body"><div class="wa-work-meta"><span class="status-badge ${row.status==='done'?'good':'running'}"><i class="dot"></i>${row.status==='done'?'완료':'진행 중'}</span><span>${escape(row.date||'일정 미정')}</span><span>담당: ${escape(row.ownerName||'담당자')}</span></div><h2>${escape(row.title)}</h2>${row.note?`<p>${escape(row.note)}</p>`:''}</div>${data.canWrite?button('수정','wa-work-edit','','small',`data-id="${escape(row.id)}"`):''}</article>`).join('')}</div>`:empty(`아직 등록한 ${isPath?'업무가':'강의가'} 없어요`,isViewer()?'등록된 기록이 생기면 여기에 차례로 표시돼요.':'제목과 일정을 적어 첫 기록을 남겨 보세요.',!isViewer()?button(isPath?'첫 업무 추가':'첫 강의 추가','wa-work-edit','plus','primary'):'',false,isPath?'compass':'presentation')}</section>`;
+  const matched=activeTarget&&!activeTarget.invalid&&activeTarget.workId&&data?items.find(row=>row.id===activeTarget.workId)||null:null;
+  let targetBanner='';
+  if(activeTarget?.invalid)targetBanner='<div class="note-box warn wa-work-target-banner" role="status">유효하지 않은 업무 연결이에요. 아래 목록에서 항목을 선택해 주세요.</div>';
+  else if(activeTarget&&data&&!matched)targetBanner='<div class="note-box warn wa-work-target-banner" role="status">찾으시는 일정이 없거나 삭제·권한 변경으로 열람할 수 없어요. 다른 회사의 업무이거나 담당이 바뀌었는지 확인해 주세요.</div>';
+  else if(matched&&matched.status==='done')targetBanner='<div class="note-box wa-work-target-banner" role="status">선택한 일정은 이미 완료된 기록이에요. 아래 카드에서 내용을 확인할 수 있어요.</div>';
+  if(matched&&!activeTarget.focused)waQueueTargetWorkFocus(activeTarget);
+  return `<section class="wa-work">${pageHeading(company==='PATH'?'SYNK PATH':'SYNK SHIFT',title,subtitle,!isViewer()?button(isPath?'업무 추가':'강의 추가','wa-work-edit','plus','primary'):'')}<div class="wa-work-meta-bar"><span>내 기록과 ${company} 책임자·관리자만 열람할 수 있어요.</span>${data?`<div class="wa-work-counts"><span>진행 중 <strong>${openCount}</strong></span><span>완료 <strong>${doneCount}</strong></span></div>`:''}</div>${targetBanner}${wa.workError?`<div class="form-error" role="alert">${escape(wa.workError)}</div><div class="mt-10">${button('다시 불러오기','wa-work-refresh','refresh','small')}</div>`:''}${!data?(wa.workError&&!wa.workLoading?'':`<p class="muted" role="status">${wa.workLoading?'목록을 불러오고 있어요.':'목록을 준비하고 있어요.'}</p>`):items.length?`<div class="wa-work-list">${items.map(row=>{const isTarget=Boolean(matched&&row.id===matched.id);return `<article class="wa-work-item${isTarget?' is-target':''}"${isTarget?` id="wa-work-item-${escape(row.id)}"`:''}><div class="wa-work-item-body"><div class="wa-work-meta">${isTarget?'<span class="wa-work-target-chip">선택한 일정</span>':''}<span class="status-badge ${row.status==='done'?'good':'running'}"><i class="dot"></i>${row.status==='done'?'완료':'진행 중'}</span><span>${isPath?'PATH 상담·정착 지원':'SHIFT 강의'}</span><span>${escape(row.date||'일정 미정')}</span><span>담당: ${escape(row.ownerName||'담당자')}</span></div><h2${isTarget?` id="wa-work-heading-${escape(row.id)}" tabindex="-1"`:''}>${escape(row.title)}</h2>${row.note?`<p>${escape(row.note)}</p>`:''}</div>${data.canWrite?button('수정','wa-work-edit','','small',`data-id="${escape(row.id)}"`):''}</article>`;}).join('')}</div>`:empty(`아직 등록한 ${isPath?'업무가':'강의가'} 없어요`,isViewer()?'등록된 기록이 생기면 여기에 차례로 표시돼요.':'제목과 일정을 적어 첫 기록을 남겨 보세요.',!isViewer()?button(isPath?'첫 업무 추가':'첫 강의 추가','wa-work-edit','plus','primary'):'',false,isPath?'compass':'presentation')}</section>`;
 }
 async function waLoadWork({force=false,company}={}){
   if(!state.user||(!force&&!['path','lectures'].includes(state.tab))){if(!wa.work&&!wa.workLoading)wa.workKey='';return;}
@@ -292,11 +571,12 @@ document.addEventListener('change',event=>{
   if(event.target.matches('[data-wa-company]')){const inDrawer=Boolean(event.target.closest('#ws-tools-drawer'));wa.company=event.target.value;waNormalizeView();render();(document.querySelector(inDrawer?'#ws-tools-drawer [data-wa-company]':'[data-wa-company]'))?.focus();}
 });
 document.addEventListener('click',event=>{
-  const target=event.target.closest('[data-action]'),action=target?.dataset.action;
+  const target=event.target?.closest?.('[data-action]'),action=target?.dataset.action;
+  if(action==='tab'&&!target.disabled){waClearWorkTarget();wa.workTargetNotice='';return;}
   if(!action?.startsWith('wa-')||target.disabled)return;event.preventDefault();event.stopImmediatePropagation();
   const run=async()=>{
     if(target.closest('#ws-tools-drawer')&&typeof setWorkspaceToolsOpen==='function'){document.getElementById('ws-tools-toggle')?.focus({preventScroll:true});setWorkspaceToolsOpen(false,{restoreFocus:false});}
-    if(action==='wa-open'){selectWorkspaceView(target.dataset.tab,target.dataset.section);render();window.scrollTo?.(0,0);}
+    if(action==='wa-open'){waClearWorkTarget();selectWorkspaceView(target.dataset.tab,target.dataset.section);if(typeof syncWorkspaceLocation==='function')syncWorkspaceLocation();render();if(typeof window!=='undefined')window.scrollTo?.(0,0);}
     if(action==='wa-member')waMemberModal(target.dataset.id);
     if(action==='wa-invites')await waInvites();
     if(action==='wa-invite-retry'){target.disabled=true;await waInspectInvite();if(target.isConnected!==false)target.disabled=false;}
@@ -315,6 +595,12 @@ document.addEventListener('click',event=>{
     }
     if(action==='wa-work-reload'){target.disabled=true;await waReloadWorkModal(target,false);if(target.isConnected!==false)target.disabled=false;}
     if(action==='wa-work-refresh')await waLoadWork({force:true});
+    if(action==='wa-mine-open')waOpenMineWork(target.dataset.company,target.dataset.workId);
+    if(action==='wa-mine-refresh'){
+      if(wa.mineLoading&&wa.mineUserId===state.user?.id)return;
+      await waLoadMine({force:true});
+    }
+    if(action==='wa-dismiss-notice'){wa.workTargetNotice='';render();}
   };
   void run().catch(error=>{if(target.isConnected!==false)target.disabled=false;if(error?.code!=='SESSION_CHANGED')notify(error.message);});
 },true);
@@ -353,6 +639,7 @@ document.addEventListener('submit',event=>{
       if(!sameSession())return;
       if(wa.workConflictKey===startUserId+':'+targetCompany)wa.workConflictKey='';
       if(ownsModal())closeModal();
+      wa.mineNeedsRefresh=true;
       if(waOwnsCompanyWork(targetCompany)){
         wa.request++;wa.work=null;wa.workError='';wa.workLoading=false;wa.workKey=startUserId+':'+targetCompany;
         try{await waLoadWork({force:true,company:targetCompany});}catch{}
@@ -379,3 +666,35 @@ document.addEventListener('submit',event=>{
     }
   }).finally(()=>{if(ownsModal())submit.disabled=false;});
 },true);
+document.addEventListener('toggle',event=>{if(event.target?.matches?.('.wa-mine-more'))wa.mineExpanded=event.target.open;},true);
+if(typeof window!=='undefined'&&typeof window.addEventListener==='function'){
+  window.addEventListener('popstate',()=>{
+    const href=waLocationHref();
+    if(!state.user){wa.pendingHref=href;return;}
+    wa.pendingHref='';
+    const info=waInspectWorkLocation(href);
+    if(info.kind==='target'||info.kind==='invalid'){
+      if(waNavigationAllowed(info.tab)&&typeof selectWorkspaceView==='function')selectWorkspaceView(info.tab);
+      wa.workTarget=null;
+      waApplyWorkLocation(info);
+    }else if(info.kind==='plain'){
+      waClearWorkTarget();
+      wa.workTargetNotice='';
+      if(typeof selectWorkspaceView==='function')selectWorkspaceView(info.tab);else state.tab=info.tab;
+    }else{
+      waClearWorkTarget();
+      try{
+        const origin=typeof location!=='undefined'&&location?.origin?location.origin:'http://localhost';
+        const url=new URL(href,origin),q=url.searchParams,hash=new URLSearchParams(url.hash.slice(1));
+        if(['launch','invite','setup'].some(key=>hash.has(key)))return;
+        if(url.origin===origin&&url.pathname==='/'){
+          const tab=q.get('tab')||'home';
+          if(tab!=='home')wa.workTargetNotice='';
+          if(typeof selectWorkspaceView==='function')selectWorkspaceView(tab,q.get('section')||'',q.has('teamId')?q.get('teamId')||'':undefined,q.has('draftId')?q.get('draftId')||'':undefined);
+          else state.tab=tab;
+        }
+      }catch{}
+    }
+    if(typeof render==='function')render();
+  },true);
+}

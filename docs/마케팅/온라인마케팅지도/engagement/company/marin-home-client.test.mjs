@@ -11,7 +11,7 @@ const demoSource=readFileSync(new URL('./public/demo-ui.js',import.meta.url),'ut
 const helpers=['const escape =','const number =','const validNumber ='].map(prefix=>appSource.split('\n').find(line=>line.startsWith(prefix))).join('\n');
 const tick=()=>new Promise(setImmediate);
 
-function fixture({url='http://localhost:4191/',storage=new Map()}={}){
+function fixture({url='http://localhost:4191/',storage=new Map(),withAccessEvents=false}={}){
   const location=new URL(url),nodes=new Map(),handlers=[],windowHandlers=[],requests=[],renders=[],notifications=[],posted=[],created=[];
   const timers=new Map();let nextTimer=1;
   const state={user:{id:'crew-a',name:'크루 가',role:'member',teamId:'team-a'},data:{channels:[],teams:[{id:'team-a',active:true}]},tab:'home',marketingView:'summary',scope:'mine',teamId:'',report:null,reportRequest:0,modalRequest:0,authMode:'login',csrf:'test-csrf',error:''};
@@ -24,14 +24,33 @@ function fixture({url='http://localhost:4191/',storage=new Map()}={}){
   document.createElement=tag=>{const row=element(tag);created.push(row);return row;};document.body=element('body');
   for(const id of ['marin-input','marin-form','marin-conversation','messenger-module-slot']){const row=element(id==='marin-input'?'textarea':'section');row.id=id;nodes.set(id,row);}
   const sessionStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
-  const context=workspaceClientContext({state,document,location,URL,URLSearchParams,Intl,Date,sessionStorage,localStorage:sessionStorage,cp:{view:'library'},
-    window:{addEventListener:(type,handler)=>windowHandlers.push({type,handler}),scrollTo(){},matchMedia:()=>({matches:false})},history:{replaceState(_a,_b,url){location.href=new URL(url,location).href;}},MutationObserver:class{observe(){}},ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:callback=>callback(),clearInterval(){},clearTimeout:id=>timers.delete(id),setTimeout:(callback,delay=0)=>{const id=nextTimer++;timers.set(id,{callback,delay});return id;},crypto:{randomUUID:()=> 'test-id'},
+  let historyIndex=0;
+  const entries=[location.href];
+  function traverseHistory(offset){
+    const index=historyIndex+offset;
+    if(index<0||index>=entries.length)return;
+    historyIndex=index;
+    location.href=entries[index];
+    for(const {handler} of windowHandlers.filter(row=>row.type==='popstate'))handler({type:'popstate'});
+  }
+  const history={
+    replaceState(_data,_title,url){location.href=new URL(url,location).href;entries[historyIndex]=location.href;},
+    pushState(_data,_title,url){location.href=new URL(url,location).href;entries.splice(++historyIndex,entries.length,location.href);},
+    back:()=>traverseHistory(-1),
+    forward:()=>traverseHistory(1),
+  };
+  const context=workspaceClientContext({state,document,location,URL,URLSearchParams,Intl,Date,queueMicrotask,sessionStorage,localStorage:sessionStorage,cp:{view:'library'},
+    window:{addEventListener:(type,handler)=>windowHandlers.push({type,handler}),scrollTo(){},matchMedia:()=>({matches:false})},history,MutationObserver:class{observe(){}},ResizeObserver:class{observe(){}disconnect(){}},requestAnimationFrame:callback=>callback(),clearInterval(){},clearTimeout:id=>timers.delete(id),setTimeout:(callback,delay=0)=>{const id=nextTimer++;timers.set(id,{callback,delay});return id;},crypto:{randomUUID:()=> 'test-id'},
     isAdmin:()=>state.user?.role==='admin',isViewer:()=>state.user?.role==='viewer',canManageTeam:()=>['admin','manager'].includes(state.user?.role),icon:()=>'',button:()=>'',dateToday:()=> '2026-09-30',shiftDate:(date,days)=>new Date(Date.parse(date)+days*86400000).toISOString().slice(0,10),
     render:()=>renders.push({tab:state.tab,userId:state.user?.id}),notify:message=>notifications.push(message),api(path,body,method){return new Promise((resolve,reject)=>requests.push({path,body,method,resolve,reject}));},
-  });
+  },{withEvents:withAccessEvents});
   const run=source=>vm.runInContext(source,context);run(helpers+'\n'+workspaceSource+'\n'+demoSource+'\n'+homeSource);
   run(appSource.slice(appSource.indexOf('let companyAuthGeneration='),appSource.indexOf('function inviteResultMarkup(')));
-  const dispatch=(type,target,props={})=>{const event={target,prevented:false,preventDefault(){this.prevented=true;},...props};for(const row of handlers.filter(row=>row.type===type))row.handler(event);return event;};
+  const dispatch=(type,target,props={})=>{
+    const event={target,prevented:false,preventDefault(){this.prevented=true;},stopImmediatePropagation(){this.stopped=true;},...props};
+    for(const row of handlers.filter(row=>row.type===type)){row.handler(event);if(event.stopped)break;}
+    return event;
+  };
   return{state,context,location,document,nodes,handlers,windowHandlers,requests,renders,notifications,posted,created,storage,timers,run,dispatch,element,home:run('marinHome')};
 }
 
@@ -234,7 +253,7 @@ test('partial, unknown, unavailable, empty and skipped results keep their distin
     {data:nextResponse({status:'partial',coverage:{messenger:{status:'ok'},client:{status:'error'},publication:{status:'ok'}}}).data,matches:[/일부 업무를 확인하지 못했어요/,/확인된 범위에서 먼저 추천해요/,/미확인: 고객 업무/,/합성 원본 제목/],absent:/지금 내 차례인 일이 없어요/},
     {data:nextResponse({status:'unknown',next:null,totalCount:0,coverage:{messenger:{status:'error'},client:{status:'error'},publication:{status:'error'}}}).data,matches:[/업무를 불러오지 못했어요/,/새로 확인/],absent:/지금 내 차례인 일이 없어요|추천을 모두 확인했어요/},
     {data:nextResponse({status:'empty',next:null,totalCount:0}).data,matches:[/확인한 업무 중 지금 내 차례인 일이 없어요/],absent:/업무를 불러오지 못했어요|추천을 모두 확인했어요/},
-    {data:nextResponse({status:'empty',next:null,totalCount:0,unavailableCount:2}).data,matches:[/담당·검토자를 확인해야 하는 업무 2건/,/전체 업무에서 확인/],absent:/추천을 모두 확인했어요/},
+    {data:nextResponse({status:'empty',next:null,totalCount:0,unavailableCount:2}).data,matches:[/읽기 전용이거나 담당·검토자를 확인해야 하는 업무 2건/,/대화 업무 보기에서 확인/],absent:/추천을 모두 확인했어요|전체 업무에서 확인/},
     {data:nextResponse({status:'empty',next:null,totalCount:2,excludedCount:2}).data,matches:[/추천을 모두 확인했어요/,/넘긴 업무는 원본에 그대로/],absent:/지금 내 차례인 일이 없어요/},
   ];
   for(const {data,matches,absent}of cases){const f=nextFixture(),pending=f.run('requestMarinNext()');f.requests[0].resolve({data});await pending;for(const pattern of matches)assert.match(f.root.innerHTML,pattern);assert.doesNotMatch(f.root.innerHTML,absent);}
@@ -269,4 +288,387 @@ test('a background home repaint preserves focus on the direct Marin conversation
   const app={get innerHTML(){return markup;},set innerHTML(value){markup=value;replacement=f.element('summary');replacement.matches=summary.matches;f.document.activeElement=f.document.body;},querySelectorAll:()=>[],contains:()=>true,querySelector:()=>replacement};
   Object.assign(f.context,{app,renderedTab:'home'});f.run(appSource.slice(appSource.indexOf('function shell('),appSource.indexOf('function render()')));f.run('workspaceRepaint.background=true;shell(marinHomePage())');
   assert.equal(f.document.activeElement,replacement,'polling must keep the keyboard user at the direct conversation entry');assert.equal(f.requests.length,0);
+});
+
+const WORK_UUID_1='11111111-1111-4111-8111-111111111111';
+const WORK_UUID_2='22222222-2222-4222-8222-222222222222';
+const WORK_UUID_3='33333333-3333-4333-8333-333333333333';
+const companyWorkCatalog={companies:[{id:'SHIFT',name:'SYNK SHIFT',features:['lectures'],roles:[['instructor','강사'],['lead','책임자'],['automation','자동화']]},{id:'PATH',name:'SYNK PATH',features:['path'],roles:[['counselor','상담 담당'],['lead','책임자']]},{id:'PULSE',name:'SYNK PULSE',features:['clients','production'],roles:[['pm','PM']]}],duties:[],classification:[]};
+
+test('SHIFT and PATH staff load personal open schedules immediately on home without hiding today items behind 5 overdue items or unsafe hrefs',async()=>{
+  const f=nextFixture({now:'2026-11-20T01:00:00.000Z'});
+  f.state.data.workspaceCatalog=companyWorkCatalog;
+  f.state.user={id:'staff-dual',name:'겸임 담당',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['lectures','path'],companies:['SHIFT','PATH'],memberships:[{company:'SHIFT',role:'instructor'},{company:'PATH',role:'counselor'}],duties:[]}};
+  const slot=f.element('section');slot.id='wa-mine-work';f.nodes.set('wa-mine-work',slot);
+  const initialHtml=f.run('marinHomePage()');
+  assert.match(initialHtml,/내 강의·상담 일정/);
+  assert.match(initialHtml,/미완료 일정을 불러오고 있어요/);
+  await tick();
+  assert.equal(f.requests.length,1);
+  assert.equal(f.requests[0].path,'/api/company-work/mine');
+  assert.equal(f.requests[0].body,undefined);
+  f.run('waSyncMine();void waLoadMine()');
+  assert.equal(f.requests.length,1,'in-flight personal schedule lookup is deduplicated');
+  const overdue=Array.from({length:6},(_,i)=>({id:`00000000-0000-4000-8000-00000000000${i+1}`,company:'SHIFT',title:`지난 강의 ${i+1}`,date:`2026-11-1${i}`,revision:1,href:`/?tab=lectures&workId=00000000-0000-4000-8000-00000000000${i+1}`}));
+  f.requests[0].resolve({
+    companies:['SHIFT','PATH'],
+    date:'2026-11-20',
+    canAct:false,
+    items:[
+      ...overdue,
+      {id:WORK_UUID_1,company:'SHIFT',title:'오늘 자동화 실습 강의',date:'2026-11-20',revision:2,href:`/?tab=lectures&workId=${WORK_UUID_1}`},
+      {id:WORK_UUID_2,company:'PATH',title:'다음 주 정착 상담',date:'2026-11-25',revision:1,href:`/?tab=path&workId=${WORK_UUID_2}`},
+      {id:WORK_UUID_3,company:'PATH',title:'날짜 미정 상담',date:'',revision:1,href:'javascript:alert(1)'},
+    ],
+  });
+  await tick();
+  assert.equal(slot.getAttribute('aria-busy'),'false');
+  assert.match(slot.innerHTML,/미완료 9건 · 오늘 1 · 지난 일정 6 · 예정 1 · 일정 미정 1/);
+  assert.match(slot.innerHTML,/보기 전용 권한이에요/);
+  const [beforeMore,moreMarkup='']=slot.innerHTML.split('<details');
+  assert.match(beforeMore,/오늘 자동화 실습 강의/,'today schedule is never hidden behind 6 overdue items');
+  assert.match(moreMarkup,/이후·미정 일정 2건 더 보기/);
+  assert.match(moreMarkup,/다음 주 정착 상담/);
+  assert.match(moreMarkup,/날짜 미정 상담/);
+  assert.doesNotMatch(slot.innerHTML,/javascript:alert/);
+  assert.doesNotMatch(slot.innerHTML,new RegExp(`data-work-id="${WORK_UUID_3}"`));
+  f.run("wa.company='SHIFT'");assert.match(f.run('marinHomePage()'),/내 강의 일정/);assert.doesNotMatch(f.run('marinHomePage()'),/다음 주 정착 상담/);
+  f.run("wa.company='PATH'");assert.match(f.run('marinHomePage()'),/내 상담·정착 지원 일정/);assert.doesNotMatch(f.run('marinHomePage()'),/오늘 자동화 실습 강의/);
+  assert.equal(f.requests.length,1,'switching scope reuses stamped personal schedule without extra GETs');
+});
+
+test('admin home, unassigned roles and public demo send 0 company-work requests, while errors stay distinct from empty lists and stale responses are dropped',async()=>{
+  const admin=nextFixture();
+  admin.state.data.workspaceCatalog=companyWorkCatalog;
+  admin.state.user={id:'admin-1',name:'관리자',role:'admin',workspaceAccess:{configured:true,legacy:false,admin:true,features:['lectures','path','clients'],companies:['SHIFT','PATH','PULSE'],memberships:[],duties:[]}};
+  const adminHtml=admin.run('marinHomePage()');await tick();
+  assert.equal(admin.requests.length,0);
+  assert.doesNotMatch(adminHtml,/wa-mine-work/);
+  assert.match(adminHtml,/wa-primary-entry[\s\S]*관리자/);
+
+  const demo=nextFixture();
+  demo.state.data.workspaceCatalog=companyWorkCatalog;
+  demo.state.user={id:'demo-instructor',name:'데모 강사',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['lectures'],companies:['SHIFT'],memberships:[{company:'SHIFT',role:'instructor'}],duties:[]}};
+  demo.context.isDemoMode=()=>true;demo.next.started=true;
+  const demoHtml=demo.run('marinHomePage()');demo.run('syncMarinNext()');await tick();
+  assert.equal(demo.requests.length,0,'public demo sends 0 authenticated requests');
+  assert.doesNotMatch(demoHtml,/wa-mine-work/);
+
+  const f=nextFixture();
+  f.state.data.workspaceCatalog=companyWorkCatalog;
+  f.state.user={id:'inst-a',name:'강사 가',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['lectures'],companies:['SHIFT'],memberships:[{company:'SHIFT',role:'instructor'}],duties:[]}};
+  const slot=f.element('section');slot.id='wa-mine-work';f.nodes.set('wa-mine-work',slot);
+  const stale=f.run('waLoadMine()');
+  f.state.user={id:'inst-b',name:'강사 나',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['lectures'],companies:['SHIFT'],memberships:[{company:'SHIFT',role:'instructor'}],duties:[]}};
+  f.run('waNormalizeView()');
+  const failed=f.run('waLoadMine()');
+  f.requests[0].resolve({companies:['SHIFT'],date:'2026-11-20',canAct:true,items:[{id:WORK_UUID_1,company:'SHIFT',title:'이전 계정 강의',date:'2026-11-20',revision:1,href:`/?tab=lectures&workId=${WORK_UUID_1}`}]});
+  await stale;
+  assert.doesNotMatch(slot.innerHTML,/이전 계정 강의/);
+  f.requests[1].reject(new Error('일시 조회 실패'));
+  await failed;
+  assert.match(slot.innerHTML,/role="alert"/);
+  assert.match(slot.innerHTML,/일시 조회 실패/);
+  assert.doesNotMatch(slot.innerHTML,/남은 미완료 강의 일정이 없어요/);
+  const recovered=f.run('waLoadMine({force:true})');
+  f.requests[2].resolve({companies:['SHIFT'],date:'2026-11-20',canAct:true,items:[]});
+  await recovered;
+  assert.doesNotMatch(slot.innerHTML,/일시 조회 실패/);
+  assert.match(slot.innerHTML,/남은 미완료 강의 일정이 없어요/);
+});
+
+test('personal schedule refresh keeps keyboard focus during and after delayed responses, ignores duplicate activation, supports repeat and error retry, and never steals external focus',async()=>{
+  const f=fixture({withAccessEvents:true});
+  f.state.data.workspaceCatalog=companyWorkCatalog;
+  f.state.user={id:'inst-focus',name:'강사 포커스',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['lectures'],companies:['SHIFT'],memberships:[{company:'SHIFT',role:'instructor'}],duties:[]}};
+  const slot=f.element('section');slot.id='wa-mine-work';
+  let html='',buttons=[];
+  Object.defineProperty(slot,'innerHTML',{
+    get:()=>html,
+    set(value){
+      html=String(value);
+      if(buttons.includes(f.document.activeElement))f.document.activeElement=f.document.body;
+      for(const prev of buttons)prev.isConnected=false;
+      buttons=[...html.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)].map(([,attrs,label])=>{
+        const btn=f.element('button');
+        btn.parentElement=slot;
+        btn.textContent=label.replace(/<[^>]+>/g,'');
+        const action=attrs.match(/data-action="([^"]+)"/)?.[1];
+        const company=attrs.match(/data-company="([^"]+)"/)?.[1];
+        const workId=attrs.match(/data-work-id="([^"]+)"/)?.[1];
+        const cls=attrs.match(/class="([^"]+)"/)?.[1]||'';
+        const ariaDisabled=attrs.match(/aria-disabled="([^"]+)"/)?.[1];
+        for(const c of cls.split(/\s+/).filter(Boolean))btn.classList.add(c);
+        if(action)btn.dataset.action=action;
+        if(company)btn.dataset.company=company;
+        if(workId)btn.dataset.workId=workId;
+        if(ariaDisabled)btn.setAttribute('aria-disabled',ariaDisabled);
+        btn.disabled=/\sdisabled(?=[>\s]|$)/.test(attrs);
+        const inError=btn.classList.contains('next-button')&&html.includes('class="wa-mine-error"');
+        btn.focus=()=>{if(!btn.disabled&&btn.isConnected)f.document.activeElement=btn;};
+        btn.closest=sel=>sel==='[data-action]'&&action?btn:sel==='.wa-mine-error'&&inError?slot:null;
+        return btn;
+      });
+      slot.children=buttons;
+    },
+  });
+  slot.contains=target=>target===slot||buttons.includes(target);
+  slot.querySelectorAll=sel=>sel==='[data-action]'?buttons.filter(b=>b.dataset.action):[];
+  slot.querySelector=sel=>{
+    if(sel==='[data-action="wa-mine-refresh"]:not(:disabled)')return buttons.find(b=>b.dataset.action==='wa-mine-refresh'&&!b.disabled)||null;
+    if(sel==='[data-action="wa-mine-refresh"]')return buttons.find(b=>b.dataset.action==='wa-mine-refresh')||null;
+    return null;
+  };
+  f.nodes.set('wa-mine-work',slot);
+  const click=target=>f.dispatch('click',target,{button:0,defaultPrevented:false,stopImmediatePropagation(){},stopPropagation(){}});
+  const input=f.nodes.get('marin-input');
+  input.focus();
+
+  slot.innerHTML=f.run('waMineInnerHtml()');
+  f.run('waQueueMineLoad()');
+  await tick();
+  assert.equal(f.requests.length,1);
+  assert.equal(f.document.activeElement,input,'initial load does not steal external focus');
+  f.requests[0].resolve({companies:['SHIFT'],date:'2026-11-20',canAct:true,items:[{id:WORK_UUID_1,company:'SHIFT',title:'오전 강의',date:'2026-11-20',revision:1,href:`/?tab=lectures&workId=${WORK_UUID_1}`}]});
+  await tick();
+  assert.equal(f.document.activeElement,input,'resolving initial load keeps external focus');
+
+  f.run('wa.mineCheckedAt=1;waSyncMine()');
+  assert.equal(f.requests.length,2);
+  assert.equal(f.document.activeElement,input,'stale auto-refresh does not steal external focus');
+  f.requests[1].resolve({companies:['SHIFT'],date:'2026-11-20',canAct:true,items:[{id:WORK_UUID_1,company:'SHIFT',title:'오전 강의',date:'2026-11-20',revision:1,href:`/?tab=lectures&workId=${WORK_UUID_1}`}]});
+  await tick();
+  assert.equal(f.document.activeElement,input);
+
+  const refreshBtn=buttons.find(b=>b.dataset.action==='wa-mine-refresh');
+  refreshBtn.focus();
+  click(f.document.activeElement);
+  assert.equal(f.requests.length,3);
+  assert.notEqual(f.document.activeElement,f.document.body,'focus stays off document.body during pending refresh');
+  assert.equal(f.document.activeElement.dataset.action,'wa-mine-refresh');
+  assert.equal(f.document.activeElement.getAttribute('aria-disabled'),'true');
+
+  click(f.document.activeElement);
+  assert.equal(f.requests.length,3,'duplicate activation while aria-disabled is ignored');
+
+  await tick();
+  f.requests[2].resolve({companies:['SHIFT'],date:'2026-11-20',canAct:true,items:[{id:WORK_UUID_1,company:'SHIFT',title:'오전 강의 갱신',date:'2026-11-20',revision:2,href:`/?tab=lectures&workId=${WORK_UUID_1}`}]});
+  await tick();
+  assert.equal(f.document.activeElement.dataset.action,'wa-mine-refresh','focus remains on refresh button after delayed response');
+  assert.equal(f.document.activeElement.getAttribute('aria-disabled'),null);
+
+  click(f.document.activeElement);
+  assert.equal(f.requests.length,4,'repeated activation in place triggers another refresh');
+  assert.equal(f.document.activeElement.dataset.action,'wa-mine-refresh');
+  assert.equal(f.document.activeElement.getAttribute('aria-disabled'),'true');
+  f.requests[3].reject(new Error('일시 네트워크 오류'));
+  await tick();
+  assert.match(slot.innerHTML,/일시 네트워크 오류/);
+  assert.equal(f.document.activeElement.dataset.action,'wa-mine-refresh','focus stays on refresh button when refresh fails');
+  assert.equal(f.document.activeElement.getAttribute('aria-disabled'),null);
+
+  const retryBtn=buttons.find(b=>b.classList.contains('next-button'));
+  assert.ok(retryBtn);
+  retryBtn.focus();
+  click(f.document.activeElement);
+  assert.equal(f.requests.length,5);
+  assert.equal(f.document.activeElement.dataset.action,'wa-mine-refresh','focus stays on refresh control during error retry');
+  assert.equal(f.document.activeElement.getAttribute('aria-disabled'),'true');
+  f.requests[4].resolve({companies:['SHIFT'],date:'2026-11-20',canAct:true,items:[]});
+  await tick();
+  assert.match(slot.innerHTML,/남은 미완료 강의 일정이 없어요/);
+  assert.equal(f.document.activeElement.dataset.action,'wa-mine-refresh','focus stays on refresh button after error recovery');
+  assert.equal(f.document.activeElement.getAttribute('aria-disabled'),null);
+
+  click(f.document.activeElement);
+  assert.equal(f.requests.length,6);
+  input.focus();
+  f.requests[5].resolve({companies:['SHIFT'],date:'2026-11-20',canAct:true,items:[]});
+  await tick();
+  assert.equal(f.document.activeElement,input,'moving focus outside while pending is respected on completion');
+});
+
+test('recommendations accept only strict workId links, match actual coverage in partial and empty states, and rename messenger-only all-work link',async()=>{
+  const f=nextFixture();
+  f.state.data.workspaceCatalog=companyWorkCatalog;
+  f.state.user={id:'inst-a',name:'강사',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['lectures'],companies:['SHIFT'],memberships:[{company:'SHIFT',role:'instructor'}],duties:[]}};
+  for(const valid of [`/?tab=lectures&workId=${WORK_UUID_1}`,`/?tab=path&workId=${WORK_UUID_2}`]){
+    f.context.candidate={type:'workspace',label:'일정 열기',href:valid};
+    assert.equal(f.run('safeNextAction(candidate)?.href'),valid);
+  }
+  for(const rejected of [
+    '/?tab=lectures',
+    `/?tab=lectures&item=${WORK_UUID_1}`,
+    '/?tab=lectures&workId=not-a-uuid',
+    `/?tab=lectures&workId=${WORK_UUID_1}&workId=${WORK_UUID_2}`,
+    `/?tab=lectures&workId=${WORK_UUID_1}&extra=1`,
+    `/?tab=lectures&workId=${WORK_UUID_1}#card`,
+    `/?workId=${WORK_UUID_1}&tab=lectures`,
+    '/?tab=lectures&workId=%311111111-1111-4111-8111-111111111111',
+  ]){
+    f.context.candidate={type:'workspace',label:'일정 열기',href:rejected};
+    assert.equal(f.run('safeNextAction(candidate)'),null,rejected);
+  }
+  const emptyPending=f.run('requestMarinNext()');
+  f.requests[0].resolve({data:{status:'empty',generatedAt:'2026-11-20T03:00:00.000Z',coverage:{messenger:{status:'ok'},lectures:{status:'ok'}},totalCount:0,excludedCount:0,unavailableCount:0,next:null,alternatives:[]}});
+  await emptyPending;
+  assert.match(f.root.innerHTML,/대화 업무, 강의 일정에서 확인했어요/);
+  assert.doesNotMatch(f.root.innerHTML,/고객 프로젝트|게시·SNS|전체 업무 보기/);
+  assert.match(f.root.innerHTML,/대화 업무 보기/);
+  assert.match(f.root.innerHTML,/강의 일정 보기/);
+
+  const partialPending=f.run('requestMarinNext()');
+  f.requests[1].resolve({data:{
+    status:'partial',
+    generatedAt:'2026-11-20T03:05:00.000Z',
+    coverage:{messenger:{status:'ok'},lectures:{status:'error'}},
+    totalCount:1,
+    excludedCount:0,
+    unavailableCount:0,
+    next:nextCandidate(),
+    today:[{key:`lectures:${WORK_UUID_1}:rev-1`,source:'lectures',title:'오늘 필수 강의',context:'SHIFT 강의',due:{label:'강의 일정',precision:'date',value:'2026-11-20'},action:{type:'workspace',label:'강의 열기',href:`/?tab=lectures&workId=${WORK_UUID_1}`}}],
+    alternatives:[],
+  }});
+  await partialPending;
+  assert.match(f.root.innerHTML,/확인: 대화 업무 · 미확인: 강의 일정/);
+  assert.match(f.root.innerHTML,/오늘 내 일정[\s\S]*오늘 필수 강의/);
+  assert.match(f.root.innerHTML,/강의 일정 · 2026-11-20/);
+  assert.doesNotMatch(f.root.innerHTML,/강의 일정 · 강의 일정/);
+
+  f.click('next-open',`lectures:${WORK_UUID_1}:rev-1`);
+  f.requests[2].resolve(nextResponse({candidateCheck:{status:'confirmed',candidate:{key:`lectures:${WORK_UUID_1}:rev-1`,source:'lectures',title:'오늘 필수 강의',action:{type:'workspace',label:'강의 열기',href:`/?tab=lectures&workId=${WORK_UUID_1}`}}}}));
+  await tick();
+  assert.deepEqual(f.navigated,[`/?tab=lectures&workId=${WORK_UUID_1}`]);
+});
+
+test('direct workId routes, home clicks and popstate verify fresh company records, focus the card heading once, and explain done, missing or unauthorized targets',async()=>{
+  const setupWorkEnv=url=>{
+    const f=nextFixture({url,withAccessEvents:true});
+    let markup='';
+    f.state.data.workspaceCatalog=companyWorkCatalog;
+    f.context.pageHeading=(_e,title,_s,action='')=>`<header><h1>${title}</h1>${action}</header>`;
+    f.context.empty=(title,copy,action='')=>`<div class="empty"><h2>${title}</h2><p>${copy}</p>${action}</div>`;
+    f.context.render=()=>{if(['lectures','path'].includes(f.state.tab))markup=f.run('waWorkPage()');else if(f.state.tab==='home')markup=f.run('marinHomePage()');f.renders.push({tab:f.state.tab});};
+    f.context.renderBackground=()=>f.context.render();
+    return{f,getMarkup:()=>markup,setMarkup:v=>{markup=v;}};
+  };
+
+  // 1. Direct open -> fresh GET, focus once, no re-scroll on background repaint, no auto-save
+  const openCase=setupWorkEnv(`http://localhost:4191/?tab=lectures&workId=${WORK_UUID_1}`);
+  openCase.f.state.user={id:'inst-1',name:'강사',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['lectures'],companies:['SHIFT'],memberships:[{company:'SHIFT',role:'instructor'}],duties:[]}};
+  const heading=openCase.f.element('h2');heading.id=`wa-work-heading-${WORK_UUID_1}`;openCase.f.nodes.set(heading.id,heading);
+  let focusCount=0;const origFocus=heading.focus;heading.focus=opts=>{focusCount++;origFocus(opts);};
+  openCase.f.run('waNormalizeView()');assert.equal(openCase.f.state.tab,'lectures');
+  openCase.f.context.render();await tick();
+  assert.equal(openCase.f.requests.length,1);assert.equal(openCase.f.requests[0].path,'/api/company-work/SHIFT');
+  openCase.f.requests[0].resolve({company:'SHIFT',canWrite:true,items:[{id:WORK_UUID_1,title:'직무 자동화 실습',date:'2026-11-20',status:'open',ownerName:'강사',note:'자료 점검',revision:3}]});
+  await tick();
+  assert.match(openCase.getMarkup(),/wa-work-item is-target/);
+  assert.match(openCase.getMarkup(),/선택한 일정/);
+  assert.equal(focusCount,1);assert.equal(openCase.f.document.activeElement,heading);
+  const otherControl=openCase.f.element('button');otherControl.focus();
+  openCase.f.context.renderBackground();await tick();
+  assert.equal(focusCount,1,'background repaint must not steal focus or scroll again');
+  assert.equal(openCase.f.document.activeElement,otherControl);
+  assert.equal(openCase.f.requests.length,1,'opening a card never auto-edits or saves');
+
+  // 2. Completed item & popstate navigation on PATH
+  const pathCase=setupWorkEnv('http://localhost:4191/?tab=home');
+  pathCase.f.state.user={id:'path-1',name:'상담사',role:'member',workspaceAccess:{configured:true,legacy:false,admin:false,features:['path'],companies:['PATH'],memberships:[{company:'PATH',role:'counselor'}],duties:[]}};
+  const pathHeading=pathCase.f.element('h2');pathHeading.id=`wa-work-heading-${WORK_UUID_2}`;pathCase.f.nodes.set(pathHeading.id,pathHeading);
+  pathCase.f.run('waNormalizeView()');
+  pathCase.f.location.href=`http://localhost:4191/?tab=path&workId=${WORK_UUID_2}`;
+  for(const row of pathCase.f.windowHandlers.filter(r=>r.type==='popstate'))row.handler({});
+  assert.equal(pathCase.f.state.tab,'path');
+  assert.equal(pathCase.f.renders.at(-1)?.tab,'path','popstate itself renders the destination');
+  await tick();
+  const pathReq=pathCase.f.requests.find(r=>r.path==='/api/company-work/PATH');
+  assert.ok(pathReq);
+  pathReq.resolve({company:'PATH',canWrite:true,items:[{id:WORK_UUID_2,title:'완료된 체류 상담',date:'2026-11-18',status:'done',ownerName:'상담사',note:'',revision:4}]});
+  await tick();
+  assert.match(pathCase.getMarkup(),/이미 완료된 기록이에요/);
+  assert.match(pathCase.getMarkup(),/status-badge good[\s\S]*완료/);
+  assert.equal(pathCase.f.document.activeElement,pathHeading);
+
+  // 3. Missing item & invalid query
+  const missingCase=setupWorkEnv(`http://localhost:4191/?tab=lectures&workId=${WORK_UUID_3}`);
+  missingCase.f.state.user=openCase.f.state.user;
+  missingCase.f.run('waNormalizeView()');missingCase.f.context.render();await tick();
+  missingCase.f.requests[0].resolve({company:'SHIFT',canWrite:true,items:[{id:WORK_UUID_1,title:'남아 있는 강의',date:'2026-11-22',status:'open',ownerName:'강사',note:'',revision:1}]});
+  await tick();
+  assert.match(missingCase.getMarkup(),/찾으시는 일정이 없거나 삭제·권한 변경으로 열람할 수 없어요/);
+  assert.match(missingCase.getMarkup(),/남아 있는 강의/);
+
+  const invalidCase=setupWorkEnv('http://localhost:4191/?tab=lectures&workId=invalid');
+  invalidCase.f.state.user=openCase.f.state.user;
+  invalidCase.f.run('waNormalizeView()');invalidCase.f.context.render();
+  assert.match(invalidCase.getMarkup(),/유효하지 않은 업무 연결이에요/);
+  assert.equal(invalidCase.f.location.search,'?tab=lectures');
+
+  // 4. Unauthorized / other company deep link redirects to home with clear notice
+  const denied=setupWorkEnv(`http://localhost:4191/?tab=lectures&workId=${WORK_UUID_1}`);
+  denied.f.state.user=pathCase.f.state.user;
+  denied.f.run('waNormalizeView()');
+  assert.equal(denied.f.state.tab,'home');
+  denied.f.context.render();
+  assert.match(denied.getMarkup(),/SHIFT 강의 일정 열람 권한이 없거나 다른 회사의 업무예요/);
+});
+
+test('an owned schedule opens from home, header exits it, and browser history restores the displayed tab',()=>{
+  const f=fixture({url:'http://localhost:4191/?tab=home',withAccessEvents:true});
+  f.state.user.workspaceAccess={configured:true,features:['lectures'],companies:['SHIFT'],memberships:[{company:'SHIFT',role:'instructor'}],duties:[]};
+  f.state.data.workspaceCatalog=companyWorkCatalog;
+  f.context.reportTabs=()=>false;
+  f.context.render=()=>{
+    f.run('waNormalizeView();syncWorkspaceLocation()');
+    f.renders.push({tab:f.state.tab,workId:f.run('wa.workTarget?.workId')});
+  };
+  const clickListener=appSource.indexOf("document.addEventListener('click', async event =>");
+  const changeListener=appSource.indexOf("document.addEventListener('change', async event =>",clickListener);
+  f.run(appSource.slice(clickListener,changeListener));
+  function clickControl(dataset){
+    const control=f.element('button');
+    control.dataset=dataset;
+    control.closest=selector=>selector==='[data-action]'?control:null;
+    f.dispatch('click',control);
+  }
+  f.context.render();
+  clickControl({action:'wa-mine-open',company:'SHIFT',workId:WORK_UUID_1});
+  assert.deepEqual(f.renders.at(-1),{tab:'lectures',workId:WORK_UUID_1});
+  assert.equal(f.location.searchParams.get('workId'),WORK_UUID_1);
+  f.context.history.back();
+  assert.deepEqual(f.renders.at(-1),{tab:'home',workId:undefined});
+  f.context.history.forward();
+  assert.deepEqual(f.renders.at(-1),{tab:'lectures',workId:WORK_UUID_1});
+  clickControl({action:'tab',tab:'home'});
+  assert.deepEqual(f.renders.at(-1),{tab:'home',workId:undefined});
+  assert.equal(f.location.search,'?tab=home');
+
+  const project=fixture({url:'http://localhost:4191/?tab=lectures&project=qa-project',withAccessEvents:true});
+  project.state.user.workspaceAccess=f.state.user.workspaceAccess;
+  project.state.data.workspaceCatalog=companyWorkCatalog;
+  project.run("selectWorkspaceView('lectures');waNormalizeView();syncWorkspaceLocation()");
+  assert.equal(project.state.tab,'lectures');
+  assert.equal(project.run('wa.workTarget'),null);
+  assert.equal(project.run('wa.workTargetNotice'),'');
+  assert.equal(project.location.searchParams.get('project'),'qa-project');
+});
+
+test('a session refresh for the same employee starts a fresh schedule lookup after the stale response',async()=>{
+  const f=fixture({url:'http://localhost:4191/?tab=home'});
+  f.state.user.workspaceAccess={configured:true,features:['lectures'],companies:['SHIFT'],memberships:[{company:'SHIFT',role:'instructor'}],duties:[]};
+  f.state.data.workspaceCatalog=companyWorkCatalog;
+  const slot=f.element('section');slot.id='wa-mine-work';f.nodes.set(slot.id,slot);
+  f.context.companyAuthSnapshot=()=>({userId:f.state.user.id,csrf:f.state.csrf});
+  f.context.companyAuthCurrent=snapshot=>snapshot.userId===f.state.user.id&&snapshot.csrf===f.state.csrf;
+  f.run('waNormalizeView()');
+  const first=f.run('waLoadMine()');
+  f.state.csrf='updated-test-csrf';
+  f.requests[0].resolve({companies:['SHIFT'],canAct:true,date:'2026-11-20',items:[]});
+  await first;
+  assert.deepEqual(f.requests.map(request=>request.path),['/api/company-work/mine','/api/company-work/mine']);
+  f.requests[1].resolve({companies:['SHIFT'],canAct:true,date:'2026-11-20',items:[]});
+  await tick();
+  assert.equal(f.run('wa.mineLoading'),false);
+  assert.match(slot.innerHTML,/남은 미완료 강의 일정이 없어요/);
 });

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#05070B">
+  <title>SYNK 직접 문의</title>
+  <link rel="icon" href="/brand-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/staff-story.css">
+</head>
+<body>
+  <header class="story-topbar">
+    <div class="story-topbar-inner">
+      <img src="/brand-logo.svg" alt="SYNK" class="brand-logo" width="66" height="27">
+      <span id="topbar-label" class="topbar-label">직접 문의</span>
+    </div>
+  </header>
+
+  <main id="main-content" class="story-shell">
+    <div id="story-loading" class="state-card" role="status" aria-live="polite">
+      <p class="state-lead">글과 문의 창구를 불러오고 있어요…</p>
+    </div>
+
+    <section id="story-error-state" class="state-card" aria-labelledby="story-error-title" hidden>
+      <h1 id="story-error-title" class="state-title" tabindex="-1">지금 열 수 없는 글이에요</h1>
+      <p id="story-error-desc" class="state-desc">주소가 바뀌었거나 현재 공개가 종료된 링크일 수 있어요.</p>
+      <div id="story-error-actions" class="action-row" hidden>
+        <button type="button" id="story-reload-btn" class="btn btn-primary">다시 불러오기</button>
+      </div>
+    </section>
+
+    <div id="story-content-wrap" hidden>
+      <article class="story-card" aria-labelledby="story-title">
+        <div class="story-meta">
+          <span id="story-display-name" class="story-author"></span>
+          <span id="story-date-sep" class="meta-dot" aria-hidden="true">·</span>
+          <time id="story-published-at" class="story-date"></time>
+        </div>
+        <h1 id="story-title" class="story-title"></h1>
+        <div id="story-body" class="story-body" hidden></div>
+        <p id="story-body-empty" class="story-inquiry-only" hidden>별도 본문 없이 바로 문의를 남길 수 있는 글이에요.</p>
+      </article>
+
+      <section id="story-closed-card" class="inquiry-card" aria-labelledby="closed-heading" hidden>
+        <h2 id="closed-heading" class="section-title">현재 새로운 문의를 받지 않고 있어요</h2>
+        <p class="section-sub">이전에 보낸 문의가 있다면 아래 접수증 조회에서 보관 상태를 확인하거나 삭제할 수 있어요.</p>
+      </section>
+
+      <section id="story-form-section" class="inquiry-card" aria-labelledby="inquiry-heading" hidden>
+        <h2 id="inquiry-heading" class="section-title">문의 남기기</h2>
+        <p class="section-sub">담당 직원이 내용을 확인하고 입력하신 이메일로 답장할 수 있어요.</p>
+
+        <form id="story-inquiry-form" novalidate>
+          <div id="inquiry-alert" class="alert-box is-error" role="alert" hidden>
+            <p id="inquiry-alert-text"></p>
+            <div id="inquiry-recovery-actions" class="action-row" hidden>
+              <button type="button" id="inquiry-retry-btn" class="btn btn-primary btn-sm">같은 내용으로 다시 보내기</button>
+              <button type="button" id="inquiry-check-pending-btn" class="btn btn-secondary btn-sm">접수 여부 확인하기</button>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="inquiry-name">이름 <span class="opt-tag">(선택)</span></label>
+            <input id="inquiry-name" name="name" type="text" maxlength="120" autocomplete="name" placeholder="성함 또는 소속을 입력해 주세요" aria-describedby="inquiry-name-err">
+            <p id="inquiry-name-err" class="field-err" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="inquiry-email">답장받을 이메일 <span class="req-tag" aria-hidden="true">*</span><span class="sr-only">(필수)</span></label>
+            <input id="inquiry-email" name="email" type="email" inputmode="email" required maxlength="254" autocomplete="email" placeholder="example@domain.com" aria-describedby="inquiry-email-err">
+            <p id="inquiry-email-err" class="field-err" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <div class="label-row">
+              <label for="inquiry-message">문의 내용 <span class="req-tag" aria-hidden="true">*</span><span class="sr-only">(필수)</span></label>
+              <span id="inquiry-count" class="char-count">0 / 4,000자</span>
+            </div>
+            <textarea id="inquiry-message" name="message" rows="6" required maxlength="4000" placeholder="궁금한 점이나 상담·강의 관련 문의 내용을 적어 주세요" aria-describedby="inquiry-message-err inquiry-count"></textarea>
+            <p id="inquiry-message-err" class="field-err" hidden></p>
+          </div>
+
+          <div class="hp-trap" aria-hidden="true">
+            <label for="inquiry-website">Website</label>
+            <input id="inquiry-website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <div class="consent-box">
+            <h3 class="consent-title">개인정보 수집·이용 안내</h3>
+            <dl class="consent-dl">
+              <div>
+                <dt>수집 및 목적</dt>
+                <dd>문의 확인과 답장을 위해 이메일·문의 내용 및 선택 입력한 이름을 수집합니다.</dd>
+              </div>
+              <div>
+                <dt>보관 및 삭제</dt>
+                <dd>접수일로부터 <strong id="consent-days">90</strong>일간 보관 후 파기하며, 발급된 접수증으로 언제든 직접 조회·삭제할 수 있습니다.</dd>
+              </div>
+              <div>
+                <dt>전달 및 인계</dt>
+                <dd>작성 직원에게 전달되며, 해당 직원의 계정이 중지되면 기존 문의는 남은 보관 기간 동안 회사 관리자에게 인계됩니다.</dd>
+              </div>
+              <div>
+                <dt>개인정보처리방침</dt>
+                <dd>자세한 기준은 공식 <a href="https://synk.im/privacy/" target="_blank" rel="noreferrer">개인정보처리방침</a>에서 확인할 수 있습니다.</dd>
+              </div>
+            </dl>
+            <label class="consent-check" for="inquiry-consent">
+              <input id="inquiry-consent" name="consent" type="checkbox" required aria-describedby="inquiry-consent-err">
+              <span><strong>[필수]</strong> 개인정보 수집·이용 안내에 동의합니다.</span>
+            </label>
+            <p id="inquiry-consent-err" class="field-err" hidden></p>
+          </div>
+
+          <div class="submit-area">
+            <button type="submit" id="inquiry-submit" class="btn btn-primary btn-block" disabled>문의 보내기</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="story-receipt-section" class="inquiry-card receipt-card" aria-labelledby="receipt-title" hidden>
+        <span id="receipt-badge" class="receipt-badge">접수 완료</span>
+        <h2 id="receipt-title" class="section-title" tabindex="-1">문의가 정상적으로 접수되었어요</h2>
+        <p id="receipt-desc" class="section-sub">작성한 직원이 내용을 확인한 뒤 입력하신 이메일로 답장할 수 있어요.</p>
+
+        <div id="receipt-credentials-wrap" class="receipt-credentials">
+          <div id="receipt-guide" class="receipt-guide">
+            <strong id="receipt-guide-title">접수 번호와 삭제 코드를 안전한 곳에 복사해 보관해 주세요.</strong>
+            <span id="receipt-guide-desc">개인정보 보호를 위해 이 브라우저에 자동 저장하지 않아요. 문의는 접수일부터 90일간 보관 후 파기되며(작성 직원 계정 중지 시 남은 기간 회사 관리자에게 인계), 나중에 접수 상태를 확인하거나 직접 삭제할 때 아래 두 값이 필요해요.</span>
+            <span id="receipt-portal-note"><span id="receipt-portal-prefix">원래 글이 내려간 뒤에도 고정 주소 </span><a id="receipt-portal-link" href="/story/receipt">/story/receipt</a><span id="receipt-portal-suffix">에서 언제든 조회·삭제할 수 있어요.</span></span>
+          </div>
+
+          <div class="receipt-field">
+            <label for="receipt-id-out">접수 번호</label>
+            <div class="copy-row">
+              <input id="receipt-id-out" type="text" readonly spellcheck="false">
+              <button type="button" id="copy-receipt-id" class="btn btn-secondary btn-sm">복사</button>
+            </div>
+          </div>
+
+          <div class="receipt-field">
+            <label for="receipt-token-out">삭제 코드</label>
+            <div class="copy-row">
+              <input id="receipt-token-out" type="text" readonly spellcheck="false">
+              <button type="button" id="copy-delete-token" class="btn btn-secondary btn-sm">복사</button>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button type="button" id="copy-receipt-both" class="btn btn-primary">접수증 전체 복사</button>
+            <button type="button" id="receipt-check-btn" class="btn btn-secondary">접수 상태 확인</button>
+            <button type="button" id="receipt-delete-ask-btn" class="btn btn-danger-outline">보낸 문의 삭제하기</button>
+          </div>
+
+          <div id="receipt-delete-confirm" class="confirm-box" hidden>
+            <p>지금 보낸 문의의 연락처와 원문을 즉시 삭제할까요? 삭제한 뒤에는 되살릴 수 없어요.</p>
+            <div class="action-row">
+              <button type="button" id="receipt-delete-confirm-btn" class="btn btn-danger btn-sm">영구 삭제 확정</button>
+              <button type="button" id="receipt-delete-cancel-btn" class="btn btn-secondary btn-sm">취소</button>
+            </div>
+          </div>
+        </div>
+
+        <p id="receipt-feedback" class="status-note" role="status" aria-live="polite" hidden></p>
+
+        <div class="receipt-foot">
+          <button type="button" id="receipt-new-btn" class="link-btn">새 문의 작성하기</button>
+        </div>
+      </section>
+    </div>
+
+    <section id="receipt-portal-card" class="inquiry-card" aria-labelledby="receipt-portal-title" hidden>
+      <h1 id="receipt-portal-title" class="section-title">접수증 조회 · 문의 삭제</h1>
+      <p class="section-sub">원래 공개 글이 내려갔거나 작성 직원이 퇴사한 뒤에도 보관해 둔 접수 번호와 삭제 코드로 문의 상태를 확인하거나 직접 삭제할 수 있어요.</p>
+      <p class="section-sub">접수된 문의는 접수일부터 90일간 보관 후 파기되며, 담당 직원의 계정이 중지되면 남은 보관 기간 동안 회사 관리자에게 인계돼요.</p>
+    </section>
+
+    <section class="lookup-wrap" aria-label="접수증 조회 및 문의 삭제">
+      <details id="lookup-details" class="lookup-details">
+        <summary>보관해 둔 접수증으로 문의 확인 · 직접 삭제</summary>
+        <div class="lookup-body">
+          <p class="lookup-help">문의 접수 때 안내받은 접수 번호와 삭제 코드를 입력하면 현재 접수 상태를 확인하거나 연락처·내용을 즉시 지울 수 있어요.</p>
+          <form id="lookup-form" novalidate>
+            <fieldset id="lookup-fieldset" disabled>
+              <div class="form-field">
+                <label for="lookup-id">접수 번호</label>
+                <input id="lookup-id" type="text" maxlength="120" autocomplete="off" spellcheck="false" placeholder="story-...">
+              </div>
+              <div class="form-field">
+                <label for="lookup-token">삭제 코드</label>
+                <input id="lookup-token" type="text" maxlength="120" autocomplete="off" spellcheck="false" placeholder="64자리 삭제 코드">
+              </div>
+              <div class="action-row">
+                <button type="submit" id="lookup-check-submit" class="btn btn-secondary btn-sm" disabled>접수 상태 확인</button>
+                <button type="button" id="lookup-delete-ask" class="btn btn-danger-outline btn-sm" disabled>이 문의 삭제하기</button>
+              </div>
+            </fieldset>
+          </form>
+
+          <div id="lookup-delete-confirm" class="confirm-box" hidden>
+            <p>입력한 접수증의 문의 내용과 연락처를 즉시 삭제할까요? 삭제 후에는 복구할 수 없어요.</p>
+            <div class="action-row">
+              <button type="button" id="lookup-delete-confirm-btn" class="btn btn-danger btn-sm">영구 삭제 확정</button>
+              <button type="button" id="lookup-delete-cancel-btn" class="btn btn-secondary btn-sm">취소</button>
+            </div>
+          </div>
+
+          <p id="lookup-result" class="status-note" role="status" aria-live="polite" tabindex="-1" hidden></p>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <script src="/staff-story.js"></script>
+</body>
+</html>

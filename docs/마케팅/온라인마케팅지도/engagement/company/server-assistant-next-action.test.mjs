@@ -35,6 +35,59 @@ const snapshot = f => JSON.stringify({
   company: Object.fromEntries(['clientProjects', 'clientTaskRechecks', 'socialPosts', 'socialPublishJobs'].map(kind => [kind, f.app.store.all(kind)])),
 });
 
+test('my next action includes my SHIFT and PATH work and opens the exact current record', async t => {
+  const f = await fixture(t);
+  const memberships = [{ company: 'SHIFT', role: 'manager' }, { company: 'PATH', role: 'counselor' }];
+  function assign(actor, roles) {
+    const user = f.users[actor];
+    f.app.store.put('users', user.id, { ...user, workspaceProfile: { version: 1, revision: 1, memberships: roles, duties: [] } });
+  }
+  assign('member', memberships);
+  assign('peer', [{ company: 'SHIFT', role: 'instructor' }]);
+  const add = async (actor, company, title, date) =>
+    (await f.json(actor, '/api/company-work/' + company, { title, date, status: 'open' }, 201)).item;
+  const lecture = await add('member', 'SHIFT', '다음 수업 준비', '2026-11-09');
+  const consultation = await add('member', 'PATH', '정착 상담', '2026-11-10');
+  const other = await add('peer', 'SHIFT', '동료의 강의', '2026-11-08');
+  const mine = await f.json('member', '/api/company-work/mine');
+  assert.deepEqual(mine.items.map(row => row.id), [lecture.id, consultation.id]);
+  assert.deepEqual(mine.items.map(row => row.date), ['2026-11-09', '2026-11-10']);
+  assert.equal(mine.items.some(row => Object.hasOwn(row, 'note')), false);
+  assert.equal((await f.raw('anonymous', '/api/company-work/mine')).status, 401);
+  assert.deepEqual((await f.json('admin', '/api/company-work/mine')).items, []);
+  const spoken = await f.json('member', '/api/assistant', { message: '오늘 처리할 업무가 뭐야?' });
+  assert.equal(spoken.data.todayCount, 1);
+  assert.equal(spoken.data.pendingCount, 1);
+  assert.match(spoken.text, /다음 수업 준비/);
+  assert.doesNotMatch(spoken.text, /동료의 강의/);
+  const data = (await f.ask('member')).data;
+  assert.equal(data.status, 'ready');
+  assert.deepEqual(Object.keys(data.coverage).sort(), ['lectures', 'messenger', 'path']);
+  assert.deepEqual(data.today.map(row => row.sourceId), [lecture.id]);
+  assert.equal(data.next.sourceId, lecture.id);
+  assert.equal(data.next.due.value, '2026-11-09');
+  assert.equal(data.next.action.href, '/?tab=lectures&workId=' + lecture.id);
+  const otherSchedule = data.alternatives.find(row => row.sourceId === consultation.id);
+  assert.equal(otherSchedule.due.value, '2026-11-10');
+  assert.equal(otherSchedule.action.href, '/?tab=path&workId=' + consultation.id);
+  assert.equal(data.totalCount, 2);
+  assert.doesNotMatch(JSON.stringify(data), new RegExp(other.id));
+  assert.equal((await f.ask('member', { exclusions: [data.next.key] })).data.next.sourceId, consultation.id);
+  await f.json('member', '/api/company-work/SHIFT/' + lecture.id, { title: lecture.title, date: lecture.date, status: 'done', revision: lecture.revision });
+  assert.equal((await f.ask('member', { candidateKey: data.next.key })).data.candidateCheck.status, 'missing');
+  const remaining = (await f.ask('member')).data.next;
+  assign('member', memberships.slice(0, 1));
+  const afterReassignment = (await f.ask('member', { candidateKey: remaining.key })).data;
+  assert.equal(afterReassignment.candidateCheck.status, 'missing');
+  assert.doesNotMatch(JSON.stringify(afterReassignment), new RegExp(consultation.id));
+  assert.deepEqual((await f.json('member', '/api/company-work/mine')).items, []);
+  assign('member', [{ company: 'SHIFT', role: 'automation' }]);
+  const withoutSchedules = (await f.ask('member')).data;
+  assert.equal(withoutSchedules.status, 'empty');
+  assert.deepEqual(Object.keys(withoutSchedules.coverage), ['messenger']);
+  assert.deepEqual((await f.json('member', '/api/company-work/mine')).companies, []);
+});
+
 test('real assistant endpoint recommends authorized work, confirms skipped candidates and leaves workflow and notifications unchanged', async t => {
   const f = await fixture(t), { task } = await makeTask(f);
   await makeTask(f, { privateRoom: true, assignee: 'admin', title: 'PRIVATE-SOURCE-NOT-FOR-MEMBER' });

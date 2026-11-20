@@ -1,7 +1,10 @@
 import { createHash } from 'node:crypto';
 
 export const NEXT_ACTION_POLICY = 'next-action-v1';
-const SOURCES = ['messenger', 'client', 'publication'];
+const CORE_SOURCES = ['messenger', 'client', 'publication'];
+const COMPANY_SOURCES = { lectures: 'SHIFT', path: 'PATH' };
+const SOURCES = [...CORE_SOURCES, ...Object.keys(COMPANY_SOURCES)];
+const workId = /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i;
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const fail = message => Object.assign(new Error(message), { status: 400 });
 const demand = (condition, message = '추천할 업무 자료를 확인하지 못했어요.') => { if (!condition) throw new Error(message); };
@@ -37,7 +40,12 @@ export function safeNextActionHref(value) {
   const query = url.searchParams, keys = [...query.keys()];
   if (new Set(keys).size !== keys.length) return null;
   const allowed = new Set(['tab', 'section']);
-  if (query.get('tab') === 'social') {
+  if (Object.hasOwn(COMPANY_SOURCES, query.get('tab'))) {
+    const id = query.get('workId');
+    if (!workId.test(id || '')) return null;
+    const href = '/?tab=' + query.get('tab') + '&workId=' + id;
+    return value === href ? href : null;
+  } else if (query.get('tab') === 'social') {
     if (!['today', 'fix'].includes(query.get('section'))) return null;
   } else if (query.get('tab') === 'workroom' && query.get('section') === 'clients') {
     for (const key of ['project', 'version', 'message', 'seconds', 'rights', 'rightsTarget', 'followUp', 'delivery', 'schedule', 'requests', 'changes', 'kickoff', 'closeout']) allowed.add(key);
@@ -166,6 +174,26 @@ function publicationCandidates(data) {
   return { items, unavailableCount: 0 };
 }
 
+function companyCandidates(data, source) {
+  const company = COMPANY_SOURCES[source];
+  demand(object(data) && Array.isArray(data.items) && data.companies?.includes(company) && typeof data.canAct === 'boolean');
+  const records = data.items.filter(row => row.company === company);
+  if (!data.canAct) return { items: [], unavailableCount: records.length };
+  const label = source === 'lectures' ? '강의 일정' : '상담 일정';
+  const items = records.map(row => {
+    const href = safeNextActionHref(row.href);
+    demand(href && href === '/?tab=' + source + '&workId=' + row.id);
+    return candidate(source, row, {
+      context: company + (source === 'lectures' ? ' 강의' : ' 상담'),
+      action: { type: 'workspace', label: label + ' 열기', href },
+      reason: { code: 'assigned_company_work', text: '내가 맡은 ' + label + '이에요.' },
+      checks: ['일정과 준비할 내용을 확인해 주세요.'],
+      due: dueDate(row.date, label), version: row.note || '',
+    });
+  });
+  return { items, unavailableCount: 0 };
+}
+
 function ranked(item, at, date) {
   let bucket = 5, order = Number.MAX_SAFE_INTEGER, duePhase = 'undated';
   const reasons = [...item.reasons];
@@ -188,16 +216,16 @@ function ranked(item, at, date) {
 
 // Authorized source projections are inputs; this function never reads or writes
 // storage. Missing/malformed sources cannot turn into an empty workload.
-export function buildNextAction({ now, sources, exclusions = [], candidateKey } = {}) {
+export function buildNextAction({ now, sources, activeSources = [...CORE_SOURCES, ...Object.keys(COMPANY_SOURCES).filter(key => Object.hasOwn(sources || {}, key))], exclusions = [], candidateKey } = {}) {
   const options = validateNextActionInput({ intent: 'next-action', exclusions, ...(candidateKey === undefined ? {} : { candidateKey }) });
   demand(instantValue(now), '서버 시계를 확인하지 못했어요.');
   const at = Date.parse(now), generatedAt = new Date(at).toISOString(), date = kstDate(at), coverage = {}, items = [];
   let unavailableCount = 0;
-  const adapters = { messenger: messengerCandidates, client: clientCandidates, publication: publicationCandidates };
-  for (const source of SOURCES) {
+  const adapters = { messenger: messengerCandidates, client: clientCandidates, publication: publicationCandidates, lectures: companyCandidates, path: companyCandidates };
+  for (const source of activeSources) {
     try {
       demand(sources?.[source]?.ok === true);
-      const normalized = adapters[source](sources[source].value), unique = new Map();
+      const normalized = adapters[source](sources[source].value, source), unique = new Map();
       for (const item of normalized.items) { const prior = unique.get(item.id); demand(!prior || prior.key === item.key); unique.set(item.id, item); }
       const result = [...unique.values()]; items.push(...result); unavailableCount += normalized.unavailableCount;
       coverage[source] = { status: 'ok', count: result.length, unavailableCount: normalized.unavailableCount };
@@ -205,12 +233,13 @@ export function buildNextAction({ now, sources, exclusions = [], candidateKey } 
   }
   const rankedItems = items.map(item => ranked(item, at, date)).sort((a, b) => a.bucket - b.bucket || a.order - b.order || a.value.id.localeCompare(b.value.id));
   const all = rankedItems.map(row => row.value), hidden = new Set(options.exclusions), visible = all.filter(row => !hidden.has(row.key));
-  const failed = SOURCES.filter(source => coverage[source].status === 'error').length;
+  const failed = activeSources.filter(source => coverage[source].status === 'error').length;
   let candidateCheck = null;
   if (candidateKey !== undefined) {
     const [source, sourceId] = parseKey(candidateKey), current = all.find(row => row.source === source && row.sourceId === sourceId);
-    candidateCheck = coverage[source].status !== 'ok' ? { status: 'unverified', candidate: null } : current ? { status: current.key === candidateKey ? 'confirmed' : 'changed', candidate: current } : { status: 'missing', candidate: null };
+    candidateCheck = coverage[source]?.status === 'error' ? { status: 'unverified', candidate: null } : current ? { status: current.key === candidateKey ? 'confirmed' : 'changed', candidate: current } : { status: 'missing', candidate: null };
   }
-  return { status: failed === SOURCES.length ? 'unknown' : failed ? 'partial' : visible.length ? 'ready' : 'empty', generatedAt, date, policyVersion: NEXT_ACTION_POLICY, coverage,
+  const today = all.filter(row => Object.hasOwn(COMPANY_SOURCES, row.source) && row.due?.value === date);
+  return { status: failed === activeSources.length ? 'unknown' : failed ? 'partial' : visible.length ? 'ready' : 'empty', generatedAt, date, policyVersion: NEXT_ACTION_POLICY, coverage, today,
     next: visible[0] || null, alternatives: visible.slice(1, 6), excludedCount: all.length - visible.length, unavailableCount, totalCount: all.length, candidateCheck };
 }

@@ -60,16 +60,20 @@ export function declaredWorkDraft(message, otherNames=[]) {
 }
 
 // Deterministic intent routing over current authorized records. No prompts, logs, model calls or inferred facts are persisted.
-export function createAssistantService({ today, performance, directory, productivity, clientWorkday, publicationWorkday, weeklySummary, automationHealth, clock = () => new Date().toISOString() }) {
+export function createAssistantService({ today, performance, directory, productivity, clientWorkday, publicationWorkday, companyWorkday, canReadFeature = () => true, weeklySummary, automationHealth, clock = () => new Date().toISOString() }) {
   function answer(user, input, request) {
     if (input?.intent === 'next-action') {
       const options = validateNextActionInput(input), now = clock();
       const read = callback => { try { return { ok: true, value: callback() }; } catch { return { ok: false }; } };
-      const data = buildNextAction({ now, ...options, sources: {
-        messenger: read(() => productivity(request, 'workday')),
-        client: read(() => clientWorkday(user)),
-        publication: read(() => publicationWorkday(user)),
-      } });
+      const sources = { messenger: read(() => productivity(request, 'workday')) };
+      if (canReadFeature(user, 'clients')) sources.client = read(() => clientWorkday(user));
+      if (canReadFeature(user, 'social')) sources.publication = read(() => publicationWorkday(user));
+      const companySources = companyWorkday ? ['lectures', 'path'].filter(key => canReadFeature(user, key)) : [];
+      if (companySources.length) {
+        const work = read(() => companyWorkday(user));
+        for (const key of companySources) sources[key] = work;
+      }
+      const data = buildNextAction({ now, ...options, sources, activeSources: Object.keys(sources) });
       const notice = data.status === 'unknown' ? '업무를 확인하지 못했어요. 잠시 뒤 다시 눌러 주세요.' : data.status === 'partial' ? '일부 업무를 확인하지 못했어요. 확인된 범위에서 안내할게요.' : data.next ? '지금 할 일을 하나 골랐어요. 이유를 보고 이어서 해 보세요.' : data.excludedCount ? '지금 보여 드릴 추천을 모두 봤어요. 넘긴 항목을 다시 볼 수 있어요.' : data.unavailableCount ? '지금 바로 처리할 추천은 없어요. 담당이나 검토 권한을 확인할 업무가 남아 있어요.' : '현재 확인한 범위에는 바로 처리할 추천이 없어요.';
       return result('next-action', notice, [], data);
     }
@@ -95,7 +99,7 @@ export function createAssistantService({ today, performance, directory, producti
         return result('weekly-summary',[`내 주간 정리 · ${summary.period.startDate}~${summary.period.endDate}`, ...sections.map(row=>`${row.title} ${row.total}건${row.status==='partial'||row.status==='error'?' · 일부 확인 필요':''}`),partial?'일부 기록은 확인하지 못했어요. 주간 정리에서 다시 확인해 주세요.':'각 항목에서 현재 상태와 원문을 확인할 수 있어요.'].join('\n'),actions,{period:summary.period,counts:summary.counts,incomplete:partial});
       } catch { return result('weekly-summary','주간 기록을 확인하지 못했어요. 주간 정리에서 다시 시도해 주세요.',actions,{incomplete:true}); }
     }
-    const productivityResult = answerProductivity({ message, request, user, productivity, clientWorkday, publicationWorkday });
+    const productivityResult = answerProductivity({ message, request, user, productivity, clientWorkday, publicationWorkday, companyWorkday });
     if (productivityResult) return productivityResult;
     if (/파일|첨부|문서/.test(message)) {
       const query = keyword(message, /파일|첨부(?:파일)?|문서|검색/g), found = directory(request, { include: 'files', query });

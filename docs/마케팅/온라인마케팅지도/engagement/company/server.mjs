@@ -146,6 +146,13 @@ const createAiMarketRoutes=aiMarketModules?.[1].createAiMarketRoutes;
 const pulseMarketingModules=await loadOptionalFeature('pulseMarketingModules',[{file:'./pulse-marketing.mjs',exports:['createPulseMarketing']},{file:'./pulse-marketing-routes.mjs',exports:['createPulseMarketingRoutes']},{file:'./public/pulse-app/marketing-view.mjs',kind:'asset'}]);
 const createPulseMarketing=pulseMarketingModules?.[0].createPulseMarketing;
 const createPulseMarketingRoutes=pulseMarketingModules?.[1].createPulseMarketingRoutes;
+// 내 글감(11-20): 서버 둘과 화면 다섯은 따로 싣는다. 화면이 없으면 API만 돌고, 서버 없이 화면만 있거나 어느 쪽이든 일부만 있으면 시작하지 않는다.
+const staffStoryModules=await loadOptionalFeature('staffStoryModules',[{file:'./staff-stories.mjs',exports:['createStaffStories']},{file:'./staff-story-routes.mjs',exports:['createStaffStoryRoutes']}]);
+const staffStoryScreens=await loadOptionalFeature('staffStoryScreens',['staff-story.html','staff-story.js','staff-story.css','staff-stories.js','staff-stories.css'].map(file=>({file:'./public/'+file,kind:'asset'})));
+if(staffStoryScreens&&!staffStoryModules)throw new Error('Incomplete optional feature: staffStoryScreens');
+const createStaffStories=staffStoryModules?.[0].createStaffStories;
+const createStaffStoryRoutes=staffStoryModules?.[1].createStaffStoryRoutes;
+const STAFF_STORY_CSP="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'; img-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'";
 
 const here=dirname(fileURLToPath(import.meta.url));
 const metricKeys=['views','likes','comments','shares','saves','reach'];
@@ -513,6 +520,8 @@ export function createCompanyApp(options={}) {
   const socialRoutes=createSocialRoutes({store,dmRegistration,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,inquiries:socialInquiries,workflows:socialWorkflows,review:socialReview,publicationLinks,simple:socialSimple,simpleSources:socialSimpleSources,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,inquiries:socialInquiries,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const trialFeedbackRoutes=createTrialFeedbackRoutes({service:trialFeedback,body,send,session,clientAddress,isStopped:()=>stopRequested});
+  const staffStories=staffStoryModules?createStaffStories({store,origin,clock,pages:!!staffStoryScreens}):null;
+  const staffStoryRoutes=staffStories?createStaffStoryRoutes({service:staffStories,body,send,session,origin,clientAddress,isStopped:()=>stopRequested}):null;
   // 공유한 게시물(11-16, TIP-SHARES.md): 관리자 화면과 PC 팁 장부 동기 도구가 쓰는 줄 묶음 · 단추 요청.
   const tipShareRoutes=tipShareModules?createTipShareRoutes({service:createTipSharesService({store,clock}),body,send,session,origin,isStopped:()=>stopRequested}):null;
   const pulseMarketingRoutes=pulseMarketing?createPulseMarketingRoutes({service:pulseMarketing,body,send,session,origin,audit,isStopped:()=>stopRequested}):null;
@@ -589,7 +598,14 @@ export function createCompanyApp(options={}) {
   // PULSE 내 모델 회원 경로(판 4, /api/customer/pulse/*): 고객 SYNK ID 세션만, 스위치 myModels가 꺼져 있으면 모두 404.
   const pulseMemberRoutes=createPulseMemberRoutes({identity:customerIdentity,workspaces:pulseWorkspaces,origin,send,body,stopping:()=>stopRequested,clientAddress,enabled:()=>pulseFeatures.read().myModels,serveMedia:(req,res,media,authorize)=>serveStudioMedia(req,res,store.directory,media,authorize)});
   const demo=createDemoService({directory:options.demoDataDir??join(store.directory,'demo')});
-  const assistant=createAssistantService({clock,today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query),productivity:(req,kind,query)=>messenger.productivityOverview(req,kind,query),clientWorkday:user=>hasWorkspaceFeature(user,'clients')?clientWorkflow.workspace(user):{items:[],projectGroups:[]},publicationWorkday:user=>readPublicationWorkday(user),weeklySummary:user=>{requireWorkspaceFeature(user,'social');return readWeeklySummary(user);},automationHealth:user=>{requireWorkspaceFeature(user,'production');return readAutomationHealth(user);}});
+  const assistant=createAssistantService({
+    clock,today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),
+    performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query),productivity:(req,kind,query)=>messenger.productivityOverview(req,kind,query),
+    canReadFeature:hasWorkspaceFeature,companyWorkday:user=>companyWork.mine(user,{includeNote:true}),
+    clientWorkday:user=>hasWorkspaceFeature(user,'clients')?clientWorkflow.workspace(user):{items:[],projectGroups:[],todayItems:[],deferredItems:[],rechecks:{}},
+    publicationWorkday:readPublicationWorkday,weeklySummary:user=>{requireWorkspaceFeature(user,'social');return readWeeklySummary(user);},
+    automationHealth:user=>{requireWorkspaceFeature(user,'production');return readAutomationHealth(user);},
+  });
   const migrationAt=clock();
   store.transaction(()=>{for(const c of store.all('channels'))seedOwnership(store,c,migrationAt);});
   for(const run of store.all('runs').filter(x=>['queued','running'].includes(x.status)))store.put('runs',run.id,{...run,status:'interrupted',finishedAt:now(),message:'서버가 다시 켜져 수집이 멈췄어요. 자동으로 다시 시도해요.'});
@@ -1208,6 +1224,7 @@ export function createCompanyApp(options={}) {
     if(await socialPublicRoutes(req,res,{url}))return;
     // Keep unrelated requests on their existing shutdown admission order.
     if(path.startsWith('/trial-feedback/')&&await trialFeedbackRoutes.publicRoutes(req,res,{url}))return;
+    if(staffStoryRoutes&&path.startsWith('/story/')&&await staffStoryRoutes.publicRoutes(req,res,{url}))return;
     if(aiMarketRoutes&&(path==='/api/customer/ai-market'||path.startsWith('/api/customer/ai-market/'))&&await aiMarketRoutes(req,res,url))return;
     if((path==='/api/customer/pulse'||path.startsWith('/api/customer/pulse/'))&&await pulseMemberRoutes(req,res,url))return;
     if(await customerRoutes(req,res,url))return;
@@ -1227,6 +1244,7 @@ export function createCompanyApp(options={}) {
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
     if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,passwordSet:Boolean(user?.passwordHash),needsSetup:store.count('users')===0,platformUrl});
+    if(method==='GET'&&path==='/api/company-work/mine')return send(res,200,companyWork.mine(user));
     const companyWorkRoute=path.match(/^\/api\/company-work\/(PATH|SHIFT)(?:\/([a-f0-9-]{36}))?$/);
     if(method==='GET'&&companyWorkRoute&&!companyWorkRoute[2])return send(res,200,companyWork.workspace(user,companyWorkRoute[1]));
     if(method==='GET'&&path==='/api/workspace-access'){if(!user)throw httpError('먼저 로그인해 주세요.',401);return send(res,200,workspaceProfiles.catalog(user));}
@@ -1235,6 +1253,7 @@ export function createCompanyApp(options={}) {
     if(path.startsWith('/api/social/')){await socialRoutes(req,res,{url,demoRequest});return;}
     if(path.startsWith('/api/trial-feedback/')&&await trialFeedbackRoutes.staffRoutes(req,res,{url,demoRequest}))return;
     if(tipShareRoutes&&(path==='/api/tip-shares'||path.startsWith('/api/tip-shares/'))&&await tipShareRoutes(req,res,{url,demoRequest}))return;
+    if(staffStoryRoutes&&(path==='/api/my-stories'||path.startsWith('/api/my-stories/'))&&await staffStoryRoutes.staffRoutes(req,res,{url,demoRequest}))return;
     if(pulseMarketingRoutes&&path.startsWith('/api/client-projects/')&&/\/marketing(?:\/|$)/.test(path)&&await pulseMarketingRoutes(req,res,{url,demoRequest}))return;
     if(path==='/trial-feedback'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/trial-feedback/','Cache-Control':'no-store'});res.end();return;}
     if(path==='/api/client-search'){
@@ -2322,6 +2341,24 @@ export function createCompanyApp(options={}) {
     files['/device-notifications.js']=['public/device-notifications.js','text/javascript; charset=utf-8'];
     files['/device-notifications.css']=['public/device-notifications.css','text/css; charset=utf-8'];
     files['/notification-sw.js']=['public/notification-sw.js','text/javascript; charset=utf-8'];
+    if(staffStoryScreens){
+      for(const file of ['staff-story.js','staff-stories.js'])files['/'+file]=['public/'+file,'text/javascript; charset=utf-8'];
+      for(const file of ['staff-story.css','staff-stories.css'])files['/'+file]=['public/'+file,'text/css; charset=utf-8'];
+      // 공개 글 화면: 공개 중인 글만 연다. 없는 · 내린 · 주인이 닫힌 글은 모두 같은 404이고 어느 쪽인지 알리지 않는다.
+      // 접수증 화면(/story/receipt)은 글 · 계정 상태와 무관하게 같은 HTML을 준다. 저장된 값을 싣지 않고 쿼리는 받지 않는다(번호 · 코드는 POST 본문으로만).
+      const storyPage=staffStoryRoutes.pagePublicId(path),receiptPage=staffStoryRoutes.isReceiptPage(path);
+      if(storyPage||receiptPage){
+        if(!['GET','HEAD'].includes(method))throw httpError('주소를 확인해 주세요.',405);
+        if((receiptPage&&url.search)||(storyPage&&!staffStories.exists(storyPage))){res.writeHead(404,{...responseHeaders('text/plain; charset=utf-8'),'X-Robots-Tag':'noindex, nofollow'});return res.end(method==='HEAD'?undefined:receiptPage?'주소를 확인해 주세요.':'이 글은 지금 볼 수 없어요.');}
+        if(storyPage&&url.search){
+          res.writeHead(302,{...responseHeaders('text/plain; charset=utf-8'),Location:'/story/'+storyPage,'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow'});
+          return res.end();
+        }
+        messenger.disconnectRevoked();
+        const headers={...responseHeaders('text/html; charset=utf-8'),'X-Robots-Tag':'noindex, nofollow','Content-Security-Policy':STAFF_STORY_CSP};
+        return await respondStatic(req,res,{path:staticSet.file(join(here,'public/staff-story.html')),type:'text/html; charset=utf-8',headers,versioned:false});
+      }
+    }
     if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(['/social-review','/social-review.js','/social-review.css'].includes(path))headers['Content-Security-Policy']="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'; img-src 'self' blob:; media-src 'self' blob:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:staticSet.file(join(here,file)),type,headers,versioned:companyVersionedAssets().has(path),...(path==='/'?{transformHTML:content=>respondStatic.versionHTML(content,{documentPath:'/',resolveAsset:urlPath=>companyVersionedAssets().has(urlPath)&&files[urlPath]?staticSet.file(join(here,files[urlPath][0])):null})}:{})});}
     throw httpError('페이지를 찾을 수 없습니다.',404);
   }catch(e){const failure=publicRequestError(e,{production});if(res.headersSent){res.destroy();return;}writeResponse(res,failure.status,{error:safeError(failure.message),...(typeof e.code==='string'&&(/^(?:SYNK|TEACHING)_[A-Z0-9_]{1,80}$/.test(e.code)||e.replySafe&&['EXISTING_REPLY_REQUIRES_CONFIRMATION','REPLY_HISTORY_CHANGED'].includes(e.code))?{code:e.code}:{})});}});
@@ -2355,7 +2392,7 @@ export function createCompanyApp(options={}) {
         await listen(server,port,host);
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
         if(channelCollectionEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
-        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>{socialInquiries?.maintain();trialFeedback.maintain();return creativeResearchSync.tick(clock());}).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
+        if(options.schedule!==false&&!stopRequested){const checkResearch=()=>Promise.resolve().then(()=>{socialInquiries?.maintain();staffStories?.maintain();trialFeedback.maintain();return creativeResearchSync.tick(clock());}).catch(()=>{});researchSyncTimer=setInterval(checkResearch,30000);researchSyncTimer.unref();void checkResearch();}
         // Registered-post observation follows the workroom opt-in while broad
         // background collection can remain paused.
         if(publicationPerformanceSchedule&&!stopRequested){publicationTimer=setInterval(collectPublicationPerformance,60000);publicationTimer.unref();void collectPublicationPerformance();}
@@ -2375,7 +2412,7 @@ export function createCompanyApp(options={}) {
     return startTask;
   }
   async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);clearInterval(pulseAutoReplyTimer);clearInterval(pulseRequestTimer);clearInterval(pulseMailTimer);clearInterval(pulseWaitlistTimer);clearTimeout(pulseAutoReplySoonTimer);pulseAutoReplyTimer=null;socialAbort.abort();publicationAbort.abort();mediaCloud?.stop();if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,mediaCloud,pulseRequests,sweepPulseMessageUploads,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
+  return {server,store,mediaCloud,pulseRequests,sweepPulseMessageUploads,pulseMail,pulseMailOpen,pulseWaitlist,dmRegistration,researchProduction,websiteInquiries,collectWebsiteInquiries,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialInquiries,staffStories,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,pulseAutoReply,scanPulseAutoReplies,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([websiteInquiryTick,socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

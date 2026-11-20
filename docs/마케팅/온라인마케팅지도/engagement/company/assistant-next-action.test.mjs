@@ -13,6 +13,56 @@ function sources({ workday = day(), clients = [], deferred = [], publications = 
 }
 const build = (data, extra = {}) => buildNextAction({ now, sources: data, ...extra });
 
+test('today retains every personal schedule across ranking and skips, and a real edit revives it', () => {
+  const id='81e4d066-60f9-4b50-96cd-564c61da7deb';
+  const item={id,company:'SHIFT',title:'강의 준비',date:'2026-11-09',revision:1,note:'교안 첫 장',href:'/?tab=lectures&workId='+id};
+  const data=sources({clients:Array.from({length:7},(_,i)=>customer(String(i),{dueDate:'2026-11-08'}))});
+  const work={companies:['SHIFT'],canAct:true,items:[item]};
+  data.lectures={ok:true,value:work};
+  const first=build(data);
+  assert.equal(first.next.source,'client');
+  assert.equal(first.alternatives.some(row=>row.source==='lectures'),false);
+  assert.equal(first.today.length,1);
+  const key=first.today[0].key;
+  item.revision++;
+  const same=build(data,{candidateKey:key,exclusions:[key]});
+  assert.equal(same.candidateCheck.status,'confirmed');
+  assert.equal(same.excludedCount,1);
+  assert.equal(same.today[0].sourceId,id);
+  item.note='바뀐 교안';
+  const edited=build(data,{candidateKey:key,exclusions:[key]});
+  assert.equal(edited.candidateCheck.status,'changed');
+  assert.equal(edited.excludedCount,0);
+  assert.doesNotMatch(JSON.stringify(edited),/바뀐 교안|교안 첫 장/);
+  assert.deepEqual(build(data,{now:'2026-11-09T15:00:00Z'}).today,[]);
+  item.date='';
+  assert.equal(build(data,{candidateKey:key}).candidateCheck.candidate.due,null);
+  work.canAct=false;
+  assert.equal(build(data).unavailableCount,1);
+});
+
+test('a schedule link identifies one company tab and one exact work record', () => {
+  const uuid='81e4d066-60f9-4b50-96cd-564c61da7deb';
+  for(const tab of ['lectures','path']){
+    const href='/?tab='+tab+'&workId='+uuid;
+    assert.equal(safeNextActionHref(href),href);
+    for(const invalid of ['/?tab='+tab,href+'&workId='+uuid,href+'&section=tools',href+'#other',href.replace(uuid,'not-an-id'),'/?workId='+uuid+'&tab='+tab,'/?tab='+tab+'&work%49d='+uuid])assert.equal(safeNextActionHref(invalid),null);
+  }
+});
+
+test('skipping a lecture keeps both it and the same-day consultation on the daily list', () => {
+  const data=sources(), records=[
+    ['lectures','SHIFT','81e4d066-60f9-4b50-96cd-564c61da7deb'],
+    ['path','PATH','e3330c3d-2f97-43c1-b221-a6fb9fddfb34'],
+  ];
+  const items=records.map(([tab,company,id])=>({id,company,title:company,date:'2026-11-09',href:'/?tab='+tab+'&workId='+id}));
+  const work={ok:true,value:{companies:['SHIFT','PATH'],canAct:true,items}};
+  data.lectures=work;data.path=work;
+  const first=build(data), skipped=build(data,{exclusions:[first.next.key]});
+  assert.equal(skipped.next.source,'path');
+  assert.deepEqual(skipped.today.map(row=>row.sourceId),items.map(row=>row.id));
+});
+
 test('source order cannot hide overdue customer work behind messenger rows; alternatives are bounded', () => {
   const workday = day(); workday.today.groups.reply = Array.from({ length: 8 }, (_, i) => task('t' + i, { stage: 'requested', allowedStages: ['accepted'] }));
   const result = build(sources({ workday, clients: [customer('late', { dueDate: '2026-11-08' })], publications: [publication('broken')] }));
