@@ -914,9 +914,11 @@
       "language": "uz",
       "timeZone": "Asia/Tashkent",
       "dailyTimes": [
+        "13:00",
         "21:00"
       ],
       "dailyFormats": [
+        "이야기",
         "노래"
       ],
       "dailyLine": "LAB 나라별",
