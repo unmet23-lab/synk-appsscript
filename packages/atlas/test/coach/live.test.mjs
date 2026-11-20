@@ -186,6 +186,36 @@ test('내용 기억은 이 저장소에 남아 다음 판이 이어 받는다', 
   two.coach.dispose();
 });
 
+test('코치가 순간 맞춤 기억에 기록부의 비움 세대를 넘긴다 — 손님 비우기 뒤 새 판은 처음 손잡이로 열고, 그 판의 기억은 비운 세대의 열쇠에 선다', async () => {
+  const storage = fakeStorage();
+  const key = `synk-atlas:live-${process.pid}-cleared`;
+  const base = `synk.atlas.next.flow.${key}`;
+  const one = await open({ storage, key });
+  const play = live => {
+    for (let i = 0; i < 40 && !live.trace().some(row => row.change); i += 1) {
+      const pid = live.present(items[i % items.length]);
+      one.time.advance(3_000);
+      live.answer(pid, { correct: true, assessable: true }, { pressure: 0.2 });
+    }
+    return live.end();
+  };
+  const first = one.coach.live(RUSH());
+  const start = first.settings().values;
+  assert.notDeepEqual(play(first).settings.values, start, '판 안에서 손잡이가 움직였다');
+  assert.equal(JSON.parse(storage.getItem(base)).gen, 0, '세대 0의 기억이 기본 열쇠에 서지 않았다');
+  const done = await one.coach.reset({});
+  assert.equal(done.gen, 1);
+  const again = one.coach.live(RUSH());
+  assert.deepEqual(again.settings().values, start, '비운 뒤에 비우기 전 손잡이로 열었다');
+  assert.notDeepEqual(play(again).settings.values, start);
+  assert.equal(
+    JSON.parse(storage.getItem(`${base}@1`)).gen,
+    1,
+    '비운 뒤의 기억이 그 세대의 열쇠에 서지 않았다',
+  );
+  one.coach.dispose();
+});
+
 test('표시 설정이 선언 손잡이를 잡는다 — 게임이 값을 주지 않으면 셸의 표시 설정', async () => {
   const { coach } = await open({ prefs: { presentation: () => ({ support: 'step' }) } });
   const spec = {

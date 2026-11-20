@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { rng } from '../support/seeds.mjs';
 import { subject } from '../support/subject.mjs';
-import { bankOf, clock, createCoach, fakeMap, memoryPort, STEP } from './support.mjs';
+import { bankOf, clock, createCoach, fakeLocks, fakeMap, memoryPort, STEP } from './support.mjs';
 
 const { installHostMaker } = await subject('coach/host.mjs');
 const { storeName } = await subject('record/port.mjs');
@@ -138,35 +138,49 @@ test('손님 — 손님 저장소를 비우고 옛 엔진 기록도 비운다. �
   coach.dispose();
 });
 
-test('손님 — 비우면 순간 맞춤 내용 기억도 비운 뒤의 세대로 비운다. 표지는 record.clear() 바로 뒤, 옛 엔진 비우기보다 먼저 선다(§23-13 · 설계 관문 검토 M1)', async () => {
+test('손님 — 비우면 순간 맞춤 내용 기억도 비운 뒤의 세대로 비운다. 표지는 기본 열쇠에, record.clear() 바로 뒤 그 저장소의 차례를 쥔 채, 옛 엔진 비우기보다 먼저 선다(§23-13 · 설계 관문 검토 M1 · Fable 설계 검토 3)', async () => {
   const w = world(47);
   const map = new Map();
+  const store = storeName({});
+  const base = `${FLOW_MEMORY_PREFIX}${store}`;
+  // 차례의 자물쇠 — 표지를 쓰는 순간 그 저장소의 차례를 쥐고 있었는지 쓰기 자리에서 직접 본다(차례 밖 바로 뒤로 옮기면 마이크로태스크
+  // 순서로는 가리지 못한다 — Fable 설계 검토 3).
+  const locks = fakeLocks();
+  const held = [];
   const storage = {
     getItem: name => (map.has(name) ? map.get(name) : null),
-    setItem: (name, value) => map.set(name, String(value)),
+    setItem: (name, value) => {
+      if (name === base) held.push(locks.held(`synk-atlas:${store}`));
+      map.set(name, String(value));
+    },
     removeItem: name => map.delete(name),
   };
-  const store = storeName({});
-  const coach = open(w, { guest: true, key: store, port: w.guestPort, prefs: { storage } });
+  const coach = open(w, { guest: true, key: store, port: w.guestPort, prefs: { storage }, locks });
   await coach.ready;
-  const base = `${FLOW_MEMORY_PREFIX}${store}`;
   storage.setItem(
     base,
     JSON.stringify({ v: 1, gen: 0, seeded: true, contents: { a: { at: 'x' } }, declined: {} }),
   );
+  held.length = 0;
   let marked = null;
   const done = await coach.reset({
     legacy: {
       read: () => ({ log: [], ledger: null, epoch: marked === null ? 'e1' : 'e2' }),
       // 옛 엔진 비우기(기다리는 걸음) 때는 표지가 이미 서 있다.
       clear: async () => {
-        marked = storage.getItem(`${base}@1`);
+        marked = storage.getItem(base);
       },
     },
   });
   assert.deepEqual(done, { ok: true, path: 'guest', gen: 1, legacy: 'cleared' });
-  assert.ok(marked, '옛 엔진 비우기 전에 순간 맞춤 표지가 서지 않았다');
+  assert.ok(
+    locks.requests.some(request => request.name === `synk-atlas:${store}`),
+    '이 시험의 자물쇠 이름이 코치의 차례와 다르다',
+  );
+  assert.equal(JSON.parse(marked).gen, 1, '옛 엔진 비우기 전에 순간 맞춤 표지가 서지 않았다');
   assert.equal(JSON.parse(marked).seeded, true);
+  assert.ok(held.length > 0 && held.every(Boolean), '표지를 그 저장소의 차례 밖에서 썼다');
+  assert.equal(map.has(`${base}@1`), false, '비우기가 그 세대의 열쇠에 썼다');
   const after = createFlowMemory({ storage, store, generation: () => 1 });
   assert.equal(after.memory('a'), null, '비운 뒤에 비우기 전 기억을 읽었다');
   const stale = createFlowMemory({ storage, store, generation: () => 0 });

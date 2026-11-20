@@ -213,7 +213,9 @@ export function createCoach(options = {}) {
     state.flow = createFlowMemory({
       storage: flowStorage(host.prefs),
       store: opened.key,
-      generation: () => opened.trail?.generation() ?? 0,
+      // 기록부의 비움 세대 — 세대는 trail이 아니라 그 안의 record가 든다(trail에는 generation이 없어 늘 던졌고, 세대를 모르는 채로 한 열쇠에
+      // 썼다 — 세대별 열쇠 · 비우기 표지가 한 번도 돌지 않았다. 11-20 순간 맞춤 재설계 때 coach 시험이 찾음).
+      generation: () => opened.trail?.record.generation() ?? 0,
       seed: host.prefs?.seed ?? null,
     });
   })();
