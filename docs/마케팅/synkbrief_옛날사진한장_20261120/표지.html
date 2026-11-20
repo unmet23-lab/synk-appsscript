@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>synkbrief · 엄마 옛날 사진 살릴 때 붙이는 두 줄 · 릴스 표지(2026-11-20)</title>
+<!--
+  계정 개편 시험 편 「옛날 사진 한 장」 표지. 굽기: node tools/SNS키트굽기.js docs/마케팅/synkbrief_옛날사진한장_20261120/표지.html --webp
+  짜임은 ../계정개편_시안_20261120/표지.html의 brief_A_결과사진 그대로다(검정 위 큰 글 석 줄 · 셋째 줄 버터 · 아래 결과 사진 · 보낸 사진 작게).
+  아래 결과 사진은 제미나이 앱에 「이 사진 깨끗하게 복원해 줘」 한 줄로 받은 판(10-30, 흰 바탕 · 둥근 모서리는 판 밖으로 밀어 감춤),
+  작게 놓인 사진은 보낸 원래 사진이다. 사진 속 인물은 AI로 만든 예시라 작은 줄에 적는다.
+  영상 첫 화면(remotion/src/Film.tsx Hook)은 이 원고와 같은 자리 · 같은 크기다 — 여기 숫자를 바꾸면 timeline.ts COVER도 바꾼다.
+-->
+<link rel="stylesheet" href="../../디자인/SNS키트/kit.css">
+<style>
+  body{margin:0;background:#1b1b1b;display:flex;flex-wrap:wrap;gap:24px;padding:24px}
+  .cv{--ink:#0A0A0A;--butter:#F5C445;background:var(--ink)!important;color:#fff;font-family:var(--k-sans)}
+  .cv::before{display:none}
+  .cv .heroBox{position:absolute;left:0;top:660px;width:1080px;height:1260px;overflow:hidden}
+  .cv .heroBox img{position:absolute;left:-54.4px;top:-261.5px;width:1193.5px;height:2121.2px;display:block}
+  .cv .shade{position:absolute;inset:0;pointer-events:none}
+  .cv .tag{position:absolute;left:84px;top:292px;margin:0;font-size:34px;font-weight:700;letter-spacing:.01em;line-height:1.2;white-space:nowrap}
+  .cv .tag i{font-style:normal;font-weight:500;opacity:.7;margin-left:16px}
+  .cv .ttl{position:absolute;left:79px;top:352px;margin:0;font-weight:800;letter-spacing:-.045em;line-height:1.1;white-space:nowrap}
+  .cv .ttl span{display:block}
+  .cv .ttl em{font-style:normal;color:var(--butter)}
+  .cv .note{position:absolute;left:84px;margin:0;font-size:30px;font-weight:500;line-height:1.4;opacity:.8;white-space:nowrap}
+  .cv .inset{position:absolute;display:block;object-fit:cover;border:9px solid #fff;border-radius:10px;box-shadow:0 22px 50px rgba(0,0,0,.5);transform:rotate(-4deg)}
+</style>
+</head>
+<body>
+
+<section class="k-slide k-field cv" data-fmt="cover916" data-acc="brief" data-name="표지_옛날사진">
+  <div class="heroBox"><img src="../synkbrief_옛사진복원_20261030/그림/후1_깨끗하게만.jpg" alt="제미나이 앱이 깨끗하게 복원한 사진"></div>
+  <div class="shade" style="background:linear-gradient(180deg,rgba(10,10,10,1) 0,rgba(10,10,10,1) 770px,rgba(10,10,10,0) 1050px)"></div>
+  <p class="tag">SYNK 브리핑<i>제미나이 앱</i></p>
+  <h1 class="ttl" style="font-size:124px"><span>엄마 옛날 사진</span><span>살릴 때 붙이는</span><span><em>두 줄</em></span></h1>
+  <p class="note" style="top:796px">사진 속 인물은 AI로 만든 예시예요</p>
+  <img class="inset" style="left:70px;top:1196px;width:270px;height:405px;object-position:50% 45%" src="../synkbrief_옛사진복원_20261030/그림/전_옛사진.png" alt="보낸 원래 사진(AI로 만든 예시)">
+</section>
+
+</body>
+</html>

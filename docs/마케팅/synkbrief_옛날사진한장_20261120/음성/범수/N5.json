@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N5",
+ "text": "그랬더니 얼굴 그대로, 살짝만 웃어요.",
+ "dur": 2.237,
+ "words": [
+  {
+   "text": "그랬더니",
+   "start": 0.02,
+   "end": 0.363
+  },
+  {
+   "text": "얼굴",
+   "start": 0.425,
+   "end": 0.659
+  },
+  {
+   "text": "그대로,",
+   "start": 0.706,
+   "end": 0.986
+  },
+  {
+   "text": "살짝만",
+   "start": 1.298,
+   "end": 1.687
+  },
+  {
+   "text": "웃어요.",
+   "start": 1.734,
+   "end": 2.237
+  }
+ ],
+ "source": {
+  "key": "23fb940c6f03a62d5d32a68ac308eaf5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 178
+ }
+}

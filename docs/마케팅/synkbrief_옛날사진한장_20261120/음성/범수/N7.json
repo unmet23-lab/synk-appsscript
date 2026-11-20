@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N7",
+ "text": "두 줄 전부와 얼굴 확인하는 법, 댓글에 사진 남기면 보내 드려요.",
+ "dur": 3.702,
+ "words": [
+  {
+   "text": "두",
+   "start": 0.01,
+   "end": 0.054
+  },
+  {
+   "text": "줄",
+   "start": 0.112,
+   "end": 0.228
+  },
+  {
+   "text": "전부와",
+   "start": 0.271,
+   "end": 0.619
+  },
+  {
+   "text": "얼굴",
+   "start": 0.691,
+   "end": 0.908
+  },
+  {
+   "text": "확인하는",
+   "start": 0.952,
+   "end": 1.343
+  },
+  {
+   "text": "법,",
+   "start": 1.386,
+   "end": 1.516
+  },
+  {
+   "text": "댓글에",
+   "start": 1.864,
+   "end": 2.153
+  },
+  {
+   "text": "사진",
+   "start": 2.197,
+   "end": 2.414
+  },
+  {
+   "text": "남기면",
+   "start": 2.457,
+   "end": 2.848
+  },
+  {
+   "text": "보내",
+   "start": 2.906,
+   "end": 3.08
+  },
+  {
+   "text": "드려요.",
+   "start": 3.123,
+   "end": 3.702
+  }
+ ],
+ "source": {
+  "key": "3f9244a685a30c0423b119b1a91ea946",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 174
+ }
+}

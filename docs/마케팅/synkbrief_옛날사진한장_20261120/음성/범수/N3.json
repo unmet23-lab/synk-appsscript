@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N3",
+ "text": "지어낸 목소리로 말까지 했어요.",
+ "dur": 1.716,
+ "words": [
+  {
+   "text": "지어낸",
+   "start": 0.02,
+   "end": 0.347
+  },
+  {
+   "text": "목소리로",
+   "start": 0.397,
+   "end": 0.789
+  },
+  {
+   "text": "말까지",
+   "start": 0.839,
+   "end": 1.182
+  },
+  {
+   "text": "했어요.",
+   "start": 1.231,
+   "end": 1.716
+  }
+ ],
+ "source": {
+  "key": "6ee816d4c25dbdf7dea90cd6a0f3ccd5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 139
+ }
+}

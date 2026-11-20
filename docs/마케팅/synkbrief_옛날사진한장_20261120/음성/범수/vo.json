@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1120,
+  "lufs": -17
+ },
+ "made": "2026-11-20T15:26:03.425Z",
+ "lines": [
+  {
+   "id": "N1",
+   "text": "엄마 옛날 사진을 제미나이에 올리고,",
+   "dur": 2.033,
+   "syllablesPerSec": 7.38,
+   "src": "N1.wav",
+   "key": "12439cfaa13ad29dfdfc86cd3fef6d66",
+   "words": 5
+  },
+  {
+   "id": "N2",
+   "text": "살아 움직이게 해 줘, 이렇게만 보냈더니,",
+   "dur": 2.188,
+   "syllablesPerSec": 7.31,
+   "src": "N2.wav",
+   "key": "e23b0c524d4537d5fbae3d64b5fac021",
+   "words": 6
+  },
+  {
+   "id": "N3",
+   "text": "지어낸 목소리로 말까지 했어요.",
+   "dur": 1.716,
+   "syllablesPerSec": 7.58,
+   "src": "N3.wav",
+   "key": "6ee816d4c25dbdf7dea90cd6a0f3ccd5",
+   "words": 4
+  },
+  {
+   "id": "N4",
+   "text": "움직이는 줄은, 얼굴은 그대로 두고, 입은 다문 채 살짝 웃으며.",
+   "dur": 3.643,
+   "syllablesPerSec": 6.59,
+   "src": "N4.wav",
+   "key": "c5119d8c5557965f01bdf4901b377769",
+   "words": 10
+  },
+  {
+   "id": "N5",
+   "text": "그랬더니 얼굴 그대로, 살짝만 웃어요.",
+   "dur": 2.237,
+   "syllablesPerSec": 6.71,
+   "src": "N5.wav",
+   "key": "23fb940c6f03a62d5d32a68ac308eaf5",
+   "words": 5
+  },
+  {
+   "id": "N6",
+   "text": "깨끗하게 하는 줄은, 이 사진 깨끗하게 복원해 줘.",
+   "dur": 2.684,
+   "syllablesPerSec": 7.08,
+   "src": "N6.wav",
+   "key": "44d5badf74675014c31d3daf6a6b39e0",
+   "words": 8
+  },
+  {
+   "id": "N7",
+   "text": "두 줄 전부와 얼굴 확인하는 법, 댓글에 사진 남기면 보내 드려요.",
+   "dur": 3.702,
+   "syllablesPerSec": 6.75,
+   "src": "N7.wav",
+   "key": "3f9244a685a30c0423b119b1a91ea946",
+   "words": 11
+  }
+ ]
+}

@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N6",
+ "text": "깨끗하게 하는 줄은, 이 사진 깨끗하게 복원해 줘.",
+ "dur": 2.684,
+ "words": [
+  {
+   "text": "깨끗하게",
+   "start": 0.01,
+   "end": 0.37
+  },
+  {
+   "text": "하는",
+   "start": 0.41,
+   "end": 0.556
+  },
+  {
+   "text": "줄은,",
+   "start": 0.596,
+   "end": 0.875
+  },
+  {
+   "text": "이",
+   "start": 1.288,
+   "end": 1.301
+  },
+  {
+   "text": "사진",
+   "start": 1.368,
+   "end": 1.594
+  },
+  {
+   "text": "깨끗하게",
+   "start": 1.634,
+   "end": 2.06
+  },
+  {
+   "text": "복원해",
+   "start": 2.113,
+   "end": 2.366
+  },
+  {
+   "text": "줘.",
+   "start": 2.406,
+   "end": 2.684
+  }
+ ],
+ "source": {
+  "key": "44d5badf74675014c31d3daf6a6b39e0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 149
+ }
+}

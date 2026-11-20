@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N2",
+ "text": "살아 움직이게 해 줘, 이렇게만 보냈더니,",
+ "dur": 2.188,
+ "words": [
+  {
+   "text": "살아",
+   "start": 0.02,
+   "end": 0.23
+  },
+  {
+   "text": "움직이게",
+   "start": 0.29,
+   "end": 0.619
+  },
+  {
+   "text": "해",
+   "start": 0.664,
+   "end": 0.709
+  },
+  {
+   "text": "줘,",
+   "start": 0.754,
+   "end": 0.829
+  },
+  {
+   "text": "이렇게만",
+   "start": 1.144,
+   "end": 1.488
+  },
+  {
+   "text": "보냈더니,",
+   "start": 1.533,
+   "end": 2.188
+  }
+ ],
+ "source": {
+  "key": "e23b0c524d4537d5fbae3d64b5fac021",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 180
+ }
+}

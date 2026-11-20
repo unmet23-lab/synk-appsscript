@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N1",
+ "text": "엄마 옛날 사진을 제미나이에 올리고,",
+ "dur": 2.033,
+ "words": [
+  {
+   "text": "엄마",
+   "start": 0.02,
+   "end": 0.202
+  },
+  {
+   "text": "옛날",
+   "start": 0.262,
+   "end": 0.484
+  },
+  {
+   "text": "사진을",
+   "start": 0.545,
+   "end": 0.868
+  },
+  {
+   "text": "제미나이에",
+   "start": 0.928,
+   "end": 1.372
+  },
+  {
+   "text": "올리고,",
+   "start": 1.453,
+   "end": 2.033
+  }
+ ],
+ "source": {
+  "key": "12439cfaa13ad29dfdfc86cd3fef6d66",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 144
+ }
+}
