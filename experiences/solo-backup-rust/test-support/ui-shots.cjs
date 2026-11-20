@@ -109,6 +109,13 @@ const CASES = [
   ['home-restore-error', 'home'], ['home-restore-unsafe', 'home'],
   // 도는 되살리기 그만두기(요청 16, 조율 세션 60a9de51e): 도는 중 · 그만두는 중 · 그만둔 뒤
   ['home-restoring', 'home'], ['home-restore-stopping', 'home'], ['home-restore-stopped', 'home'],
+  // 한꺼번에 지워짐(설계 4.4 — 엔진 massHold, 조율 세션 9ddcbeb40): 바뀜 · 큰 파일 · 폴더를 가르지 못한 판 · 되살린 뒤 · 실패, 한 번 더 묻기 둘, 고르는 자리, 목록 셋
+  ['home-mass-changed', 'home'], ['home-mass-bytes', 'home'], ['home-mass-nofolder', 'home'], ['home-mass-restored', 'home'], ['home-mass-failed', 'home'],
+  ['home-mass', 'home', { name: 'home-mass-ask', ui: { massAsk: { folder: null } } }], ['home-mass', 'home', { name: 'home-mass-ok', ui: { massAsk: 'ok' } }],
+  ['home-mass', 'home', { name: 'home-mass-pick', ui: { place: 'pick' } }],
+  ['home-mass', 'mass-list', { name: 'mass-list-one', ui: { massAsk: { folder: 'C:\\Users\\studio\\Pictures' } } }], ['home-mass-nofolder', 'mass-list', { name: 'mass-list-nofolder' }],
+  ['home-mass-bytes', 'mass-list', { name: 'mass-list-bytes' }],
+  ['home-mass-restored-one', 'home'], ['home-mass-restored-unknown', 'home'], ['home-mass-four', 'home'], ['home-mass-four', 'mass-list', { name: 'mass-list-four' }],
   // 범위를 통째로 받기 · 옛 PC 판의 실패 · 만들다 만 폴더 열기 · 끊은 뒤 안내(E27 · E26 알림 · E29 · E28, 조율 세션 ced52da00)
   ['home-scope-done', 'home'], ['home-scope-big', 'home'], ['home-scope-unsafe-sel', 'home'], ['home-scope-failed', 'home'],
   ['home', 'restore', { name: 'restore-pick', ui: { place: 'pick' } }], ['home', 'restore', { name: 'restore-confirm', ui: { confirmAll: true } }], ['home-downloads', 'restore', { name: 'restore-guarded' }],

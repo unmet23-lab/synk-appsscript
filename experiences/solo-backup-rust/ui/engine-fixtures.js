@@ -11,6 +11,27 @@ const GB = 1024 ** 3;
 const SOLIO = { setup: null, restNetworks: [], aiTools: { tools: { space_report: false, find_restorable: false }, masks: [], clients: [] } };
 const SOLIO_SET = { setup: null, restNetworks: ['휴대폰 핫스팟', 'Cafe_Free', '사무실 손님'], aiTools: { tools: { space_report: false, find_restorable: true }, masks: ['건강', '계약'],
   clients: [{ name: 'claude-code', version: '2.1.0', exe: 'C:\\Users\\studio\\AppData\\Local\\AnthropicClaude\\claude.exe', firstSeen: '2026-11-10T01:00:00Z', lastSeen: '2026-11-13T04:40:00Z' }] } };
+// 한꺼번에 지워짐 · 바뀜(설계 4.4 — 엔진 massHold, 조율 세션 9ddcbeb40). 어제 오전 판과 오늘 오후 2시 판 사이에 「문서」에서 3,980개가 사라지고
+// 「사진」에서 12개가 바뀌었다. 목록은 엔진처럼 500개까지다
+const massItems = [];
+for (const [dir, stem, ext] of [['계약/2026', '계약서', 'docx'], ['견적', '견적', 'xlsx'], ['회계/세금계산서', '세금계산서', 'pdf'], ['회의록', '회의록', 'hwp']]) {
+  for (let i = 1; i <= 122; i++) massItems.push({ folder: SOURCES[0], name: `${dir}/${stem} ${String(i).padStart(3, '0')}.${ext}`, kind: 'removed' });
+}
+for (let i = 1; i <= 12; i++) massItems.push({ folder: SOURCES[2], name: `2026 송년회/IMG_${4100 + i}.jpg`, kind: 'changed' });
+const MASS = { since: at('2026-11-13T14:05:00+09:00'), at: at('2026-11-13T14:02:00+09:00'), kind: 'removed', path: SOURCES[0], removed: 3980, changed: 12,
+  removedBytes: Math.round(3.1 * GB), left: 1330, totalNow: 8500, bytesNow: Math.round(12.3 * GB), before: 12480, beforeId: 'c'.repeat(64),
+  beforeAt: at('2026-11-12T11:02:00+09:00'), afterId: 'a'.repeat(64), folders: [{ path: SOURCES[0], removed: 3980, changed: 0 }, { path: SOURCES[2], removed: 0, changed: 12 }],
+  list: massItems, compared: [{ path: SOURCES[0], at: at('2026-11-13T14:02:00+09:00') }, { path: SOURCES[2], at: at('2026-11-13T14:02:00+09:00') }] };
+const MASS_CHANGED = { ...MASS, kind: 'changed', path: SOURCES[2], removed: 0, changed: 2412, removedBytes: 0, left: 4880, totalNow: 12480, bytesNow: Math.round(18.9 * GB),
+  folders: [{ path: SOURCES[2], removed: 0, changed: 2400 }, { path: SOURCES[3], removed: 0, changed: 12 }],
+  list: Array.from({ length: 500 }, (_, i) => ({ folder: i < 488 ? SOURCES[2] : SOURCES[3], name: i < 488 ? `2026 송년회/IMG_${4000 + i}.jpg` : `견적서/견적 ${i}.xlsx`, kind: 'changed' })) };
+const MASS_BYTES = { ...MASS, kind: 'bytes', path: SOURCES[3], removed: 3, changed: 0, removedBytes: Math.round(4.1 * GB), left: 1867, totalNow: 12477, bytesNow: Math.round(14.3 * GB),
+  folders: [{ path: SOURCES[3], removed: 3, changed: 0 }], list: ['촬영 원본/1일차.mp4', '촬영 원본/2일차.mp4', '편집본/최종.mov'].map((name) => ({ folder: SOURCES[3], name, kind: 'removed' })) };
+// 판의 폴더를 가르지 못한 판 — path · folder가 null이고 이름이 판 안의 경로다
+const MASS_NOFOLDER = { ...MASS, path: null, left: null, folders: [],
+  list: [{ folder: null, name: '/C/Users/studio/Documents/계약/2026/계약서 001.docx', kind: 'removed' }, { folder: null, name: '/C/Users/studio/Documents/견적/견적 001.xlsx', kind: 'removed' }] };
+const MASS_DONE = { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)', at: at('2026-11-13T14:30:00+09:00'), fromEarlier: 0, inNone: 0, mass: { beforeId: MASS.beforeId, beforeAt: MASS.beforeAt, folder: null } };
+const MASS_P = { level: 'attention', reason: 'mass', nextAction: 'mass' };
 const base = {
   version: '0.7.0', configured: true, mode: 'backup', readOnly: false, automatic: true, providerType: 'b2', profile: 'b2',
   device: '작업 노트북', sources: SOURCES, missingSources: [], intervalMinutes: 60, recoverySaved: true, credentialRequired: false,
@@ -39,7 +60,19 @@ export const STATES = {
   'home-run': { ...base, job: { kind: 'backup', stage: '예약 백업 · 작업 파일 백업 중', percent: 62, scheduled: true }, nextBackupAt: at('2026-11-13T16:02:00+09:00'), protection: { level: 'running', reason: 'job', nextAction: 'none' } },
   'home-partial': { ...base, lastBackup: { ...base.lastBackup, at: at('2026-11-13T13:02:00+09:00') }, lastPartial: { id: 'b'.repeat(64), at: at('2026-11-13T14:02:00+09:00'), unreadable: 2, cut: false, files: 12480, bytes: Math.round(18.4 * GB), program: 'Outlook' }, admin: true },
   'home-missing': { ...base, missingSources: [SOURCES[3]], lastBackup: { ...base.lastBackup, files: 10610, bytes: Math.round(16.2 * GB) } },
-  'home-mass': { ...base, massHold: { at: at('2026-11-13T11:00:00+09:00'), path: SOURCES[0], removed: 3980, left: 1330, totalNow: 8500, bytesNow: Math.round(12.3 * GB), before: 12480 } },
+  'home-mass': { ...base, massHold: MASS, protection: MASS_P },
+  'home-mass-changed': { ...base, massHold: MASS_CHANGED, protection: MASS_P },
+  'home-mass-bytes': { ...base, massHold: MASS_BYTES, protection: MASS_P },
+  'home-mass-nofolder': { ...base, massHold: MASS_NOFOLDER, protection: MASS_P },
+  // 지워지기 전 판에서 되살린 뒤(lastRestore.mass) — 멈춤은 「확인을 마침」까지 남는다
+  'home-mass-restored': { ...base, massHold: MASS, protection: MASS_P, lastRestore: MASS_DONE },
+  // 받은 범위(E31 — FUTURE 'lastRestore.mass.folder'): 「사진」 하나만 받음 · 범위를 모름(지금 엔진, 창을 다시 연 뒤)
+  'home-mass-restored-one': { ...base, massHold: MASS, protection: MASS_P, lastRestore: { ...MASS_DONE, mass: { ...MASS_DONE.mass, folder: SOURCES[2] } } },
+  'home-mass-restored-unknown': { ...base, massHold: MASS, protection: MASS_P, lastRestore: { ...MASS_DONE, mass: { beforeId: MASS.beforeId, beforeAt: MASS.beforeAt } } },
+  // 지키는 네 폴더가 모두 바뀐 멈춤(랜섬웨어 꼴) — 확인서에는 많이 바뀐 두 곳만 줄로 둔다
+  'home-mass-four': { ...base, massHold: { ...MASS, kind: 'changed', removed: 0, changed: 12470, folders: SOURCES.map((path, i) => ({ path, removed: 0, changed: [5310, 420, 4870, 1870][i] })), list: massItems.map((x) => ({ ...x, kind: 'changed' })) }, protection: MASS_P },
+  // 멈춤이 있는 동안 끝난 되살리기의 실패 — 100만 개를 넘는 폴더
+  'home-mass-failed': { ...base, massHold: MASS, protection: MASS_P, lastRestoreError: { code: 'CATALOG_TOO_LARGE', at: at('2026-11-13T14:20:00+09:00') } },
   'home-moved': { ...base, movedTo: { device: '새 데스크톱', at: at('2026-11-13T15:40:00+09:00') }, nextBackupAt: null },
   'home-overdue': { ...base, lastBackup: { ...base.lastBackup, at: at('2026-11-10T18:02:00+09:00') }, protection: { level: 'attention', reason: 'overdue', nextAction: 'protect' } },
   'home-credential': { ...base, credentialRequired: true, protection: { level: 'attention', reason: 'credential', nextAction: 'credentials' } },

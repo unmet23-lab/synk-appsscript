@@ -71,7 +71,7 @@ const state = () => (fixture ? fixture.state : store.state);
 const now = () => (fixture ? fixture.now : Date.now());
 
 /** 엔진에 아직 없는 기능의 화면 — 실제 상태에서는 열지 않고 「준비 중」 한 줄만 띄운다 */
-const SOON = { code: '복구 코드 만들기', 'mass-list': '지워진 파일 목록' };
+const SOON = { code: '복구 코드 만들기' };
 const soon = (what) => note(what.startsWith('!') ? what.slice(1) : `${josa(what, '은/는')} 아직 준비 중입니다. 다음 업데이트에서 열립니다.`);
 
 /** 실제 상태에서 아직 열 수 없는 화면이면 그 이름, 열 수 있으면 null — 되돌리기 미리 보기는 계정에 이은 PC에서만 연다 */
@@ -101,6 +101,8 @@ function note(text, holdMs = 4200) {
 function resolve(id, s, model) {
   // 옮겨 오기가 도는 동안의 「어디에 놓을까요」는 진행 화면이다 — 도는 동안에는 미리 보기를 읽지 않는다
   if (id === 'move-1' && !fixture && moveJob(s)) return 'move-2';
+  // 한꺼번에 지워짐 목록은 멈춤이 있는 동안만 — 「확인을 마침」 뒤나 다른 곳에서 풀렸으면 기본 화면으로
+  if (id === 'mass-list' && !s?.massHold) return 'home';
   if (id !== 'home') return id;
   if (s?.job?.kind === 'protect') return 'start-3';
   if (model.id === 'start') return startStep(s) === 'signin' ? 'start-1' : 'start-2';
@@ -115,6 +117,21 @@ function fillBars(root, animate) {
   }
 }
 
+/**
+ * 한꺼번에 지워지기 전 판에서 받은 폴더를 모은다(다시 검수 -b 2) — 결과(lastRestore.mass)가 새로 올 때마다 그 결과의 범위를 더한다.
+ * 범위는 엔진이 적었으면(E31 folder · sub) 그것, 아니면 이 창이 그 결과보다 먼저 보낸 마지막 호출(massSent)이다. 되살리기는 한 번에 하나만 돈다
+ */
+function noteMassGot(s) {
+  const mh = s?.massHold, lr = s?.lastRestore;
+  if (!mh || !lr?.mass || lr.mass.beforeId !== mh.beforeId) return;
+  const at = Date.parse(lr.at), sent = acct.massSent, eng = Object.prototype.hasOwnProperty.call(lr.mass, 'folder');
+  if (!Number.isFinite(at) || (!eng && (!sent || sent.beforeId !== mh.beforeId || at < sent.at))) return;
+  const g = acct.massGot?.beforeId === mh.beforeId ? acct.massGot : { beforeId: mh.beforeId, all: false, folders: [], seen: null };
+  if (g.seen === lr.at) return;
+  if (eng && typeof lr.mass.sub === 'string' && lr.mass.sub) { acct = { ...acct, massGot: { ...g, seen: lr.at } }; return; }
+  const folder = eng ? (typeof lr.mass.folder === 'string' && lr.mass.folder ? lr.mass.folder : null) : sent.folder || null;
+  acct = { ...acct, massGot: { ...g, seen: lr.at, all: g.all || folder === null, folders: folder && !g.folders.includes(folder) ? [...g.folders, folder] : g.folders } };
+}
 function paint() {
   const s = state();
   if (!s) {
@@ -124,8 +141,13 @@ function paint() {
     return;
   }
   if (screen === 'undo-3' && s?.account?.restore?.state === 'failed' && s.account.restore.jobId) acct.undoSeen = s.account.restore.jobId;
-  const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null, move: mv?.state || null, result: mv?.result || null, checks: mv?.apps?.checks });
+  if (!fixture) noteMassGot(s);
+  const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null, move: mv?.state || null, result: mv?.result || null, checks: mv?.apps?.checks,
+    place: ui.place, sentDefaultAt: ui.sentDefaultAt, massAsk: ui.massAsk || null, massSent: acct.massSent || null, massGot: acct.massGot || null });
+  // 한 번 더 묻던 것은 그 화면(한꺼번에 지워짐)이 보일 때만 산다 — 백업이 도는 사이 사라졌다가 끝난 뒤 저절로 다시 뜨지 않게
+  if (ui.massAsk && model.id !== 'home-mass') ui = { ...ui, massAsk: null };
   const id = resolve(screen, s, model);
+  if (screen === 'mass-list' && id === 'home') screen = 'home';
   if (!fixture) prepare(id, s);
   out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, mv, old, fake: !!fixture });
   stage.dataset.tone = out.tone; stage.dataset.kind = out.kind; stage.dataset.screen = id;
@@ -196,6 +218,7 @@ function focusKey(el) {
 
 function go(id, scope = null) {
   if (id !== 'restore' && screen === 'restore') { closeCatalog(); ui = { ...ui, confirmAll: false }; }
+  if (ui.massAsk && id !== screen) ui = { ...ui, massAsk: null };
   // 목록을 옛 PC 판의 범위로 여는 것은 「이 폴더 열기」로 들어올 때뿐이다 — 다른 길로 「파일 되살리기」에 오면 이 PC의 판을 연다
   if (id !== 'restore' || screen !== 'restore') catalogScope = id === 'restore' ? scope : null;
   // 옛 PC 판의 고름은 그 두 화면 사이에서만 지킨다
@@ -845,6 +868,18 @@ async function run(a, el) {
     room.querySelector('[data-act="restore-all-go"]')?.focus({ preventScroll: true }); return;
   }
   if (a.call === 'restoreLatest' && ui.confirmAll) ui = { ...ui, confirmAll: false };
+  // 한꺼번에 지워짐(설계 4.4) — 기본 자리로 되살리기와 「확인을 마침」은 상자로 한 번 더 묻는다. 폴더 하나만이면 그 줄의 경로를 둔다
+  if (a.massAsk) {
+    ui = { ...ui, massAsk: a.massAsk === 'ok' ? 'ok' : { folder: a.massAsk === 'one' ? el?.dataset?.path || null : null } }; paint();
+    // 기본 화면이 다른 일을 먼저 보이면 상자가 열리지 않는다 — 말없이 지나가지 않게 알린다(FA2)
+    if (!ui.massAsk) return note(failureText('JOB_BUSY'));
+    const b = room.querySelector('.box');
+    if (b) $('#live').textContent = [...b.childNodes].map((n) => n.textContent.trim()).filter(Boolean).join(' ');
+    // 좁은 창(한 단)에서 아래쪽 폴더의 단추를 눌렀으면 상자가 위에 생긴다 — 상자를 보이게 굴린다(FA4)
+    const r0 = b?.getBoundingClientRect();
+    if (r0 && (r0.top < 96 || r0.bottom > innerHeight - 24)) b.scrollIntoView({ block: 'center' });
+    room.querySelector('[data-act="mass-restore-go"], [data-act="mass-ok-go"]')?.focus({ preventScroll: true }); return;
+  }
   if (a.pending) return soon(a.pending);
   if (a.drawer) return openDrawer(el);
   if (a.to && notYet(a.to)) return soon(notYet(a.to));
@@ -889,7 +924,7 @@ async function send(a, el) {
   if (a.flow && MOVE_FLOWS[a.flow]) return MOVE_FLOWS[a.flow]();
   if (a.call === 'closeWindow') { const w = window.__TAURI__?.window?.getCurrentWindow?.(); return w ? w.close() : window.close(); }
   let r;
-  const where = a.call === 'restoreSelected' || a.call === 'restoreLatest' || a.call === 'restoreScope' ? restorePlace(state(), ui.place, now(), ui.sentDefaultAt) : null;
+  const where = ['restoreSelected', 'restoreLatest', 'restoreScope', 'restoreMassBefore'].includes(a.call) ? restorePlace(state(), ui.place, now(), ui.sentDefaultAt) : null;
   const place = where?.mode ?? null;
   // 기본 자리로 보낸 때를 적어 둔다 — 그 뒤의 겹침 거절만 「다운로드에는 놓을 수 없다」로 읽는다(Fable 셋째 -b FA1).
   // 그렇게 거절된 뒤 고른 자리로 보내면 이 창에서는 고르기를 굳힌다 — 다음에 다운로드로 돌아가 같은 실패를 되풀이하지 않게(-c FA1)
@@ -906,6 +941,19 @@ async function send(a, el) {
     r = await store.call('restoreScope', { profile: state()?.profile, folder: old.folder, ...(old.from ? { from: old.from } : {}), ...(old.sub ? { sub: old.sub } : {}), place });
     if (r.ok) { catalog = null; return go('home'); }
     if (!(r.code === 'OUTPUT_UNSAFE' && place === 'default') && scopeFailText(r.code)) return note(scopeFailText(r.code), 9000);
+  }
+  // 한꺼번에 지워지기 전 판에서 바뀐 폴더들(또는 그 가운데 한 폴더)을 새 폴더로 받는다(restoreMassBefore, 9ddcbeb40) — 뒤에서 도는 되살리기다
+  else if (a.call === 'restoreMassBefore') {
+    const folder = a.perFolder ? el?.dataset?.path : a.folder, held = state()?.massHold?.beforeId || null, sentAt = Date.now();
+    r = await store.call('restoreMassBefore', { place, ...(typeof folder === 'string' && folder ? { folder } : {}) });
+    if (r.ok) { ui = { ...ui, massAsk: null }; acct = { ...acct, massSent: { beforeId: held, folder: typeof folder === 'string' && folder ? folder : null, at: sentAt } }; return go('home'); }
+    // 다른 창이나 다른 길로 이미 확인을 마쳐 붙들어 둔 판이 없다
+    if (r.code === 'NOT_FOUND') { ui = { ...ui, massAsk: null }; await store.refresh(); paint(); return note('붙들어 둔 판이 이제 없습니다. 이미 확인을 마쳤을 수 있습니다. 필요한 파일은 「파일 되살리기」에서 꺼내 주세요.', 9000); }
+  }
+  // 「확인을 마침」 — 멈춤을 풀고, 그 뒤 정리가 그 전의 판을 지우기 시작한다(massConfirm)
+  else if (a.call === 'massConfirm') {
+    r = await store.call('massConfirm');
+    if (r.ok) { ui = { ...ui, massAsk: null }; note('확인을 마쳤습니다. 이제 정리가 보관 기간이 지난 판을 지웁니다.', 9000); return go('home'); }
   }
   else if (a.call === 'removeSource') r = await store.call('removeSource', el?.dataset.path ?? a.arg);
   // 분실 신고 뒤에는 Google 걸음을 확인받아야 봉투를 올린다(설계 2.4 (5)(나)) — 확인했을 때만 googleStepDone
@@ -928,7 +976,7 @@ async function send(a, el) {
   // 만들다 만 폴더(E29 — unfinished)는 지우러 여는 것이라, 없으면 이미 지운 것이다
   const unfinished = a.arg?.unfinished === true || a.extra?.unfinished === true;
   if (!r.ok && (a.call === 'openSelectedRestoreFolder' || a.call === 'openRestoreFolder') && !['BUSY', 'JOB_BUSY', 'CANCELED'].includes(r.code)) return note(unfinished ? '만들다 만 폴더를 찾을 수 없습니다. 이미 지웠다면 더 할 일은 없습니다.' : '되살린 폴더를 찾을 수 없습니다. 옮기거나 지웠다면 「파일 되살리기」로 다시 꺼내 주세요.');
-  if (!r.ok && r.code === 'OUTPUT_UNSAFE' && place === 'default') { ui = { ...ui, place: 'pick' }; note('다운로드가 지키는 폴더와 겹쳐 그 안에는 되살릴 수 없습니다. 놓을 자리를 고르도록 바꿨으니 다시 눌러 주세요.'); return paint(); }
+  if (!r.ok && r.code === 'OUTPUT_UNSAFE' && place === 'default') { ui = { ...ui, place: 'pick', massAsk: null }; note('다운로드가 지키는 폴더와 겹쳐 그 안에는 되살릴 수 없습니다. 놓을 자리를 고르도록 바꿨으니 다시 눌러 주세요.'); return paint(); }
   if (!r.ok && r.code === 'REPO_EXISTS') { acct = { ...acct, repoExists: true }; return paint(); }
   if (!r.ok && r.code === 'GOOGLE_STEP') acct = { ...acct, googleAck: false };
   if (!r.ok) return r.code === 'CANCELED' ? undefined : note(failureText(r.code));
@@ -1003,7 +1051,13 @@ stage.addEventListener('click', (e) => {
     go('restore-old'); if (old?.folder && old.level === undefined) void oldLoad(); return;
   }
   if (id === 'google-ack') { acct = { ...acct, googleAck: !acct.googleAck }; return paint(); }
-  if (id === 'place-pick' || id === 'place-default') { ui = { ...ui, place: id === 'place-pick' ? 'pick' : 'default', confirmAll: false }; return paint(); }
+  if (id === 'place-pick' || id === 'place-default') { ui = { ...ui, place: id === 'place-pick' ? 'pick' : 'default', confirmAll: false, massAsk: null }; return paint(); }
+  // 한 번 더 묻던 것을 그만두면 그 물음을 연 단추로 포커스를 돌린다
+  if (id === 'mass-no') {
+    const ask = ui.massAsk; ui = { ...ui, massAsk: null }; paint();
+    const back = ask === 'ok' ? '[data-act="mass-ok"], [data-act="mass-done"]' : ask?.folder ? `[data-act="mass-one"][data-path="${CSS.escape(ask.folder)}"]` : '[data-act="mass-restore"]';
+    room.querySelector(back)?.focus({ preventScroll: true }); return;
+  }
   // 분실 신고 뒤의 「연결된 앱」은 신고가 준 정리 페이지(removal), 되돌리기 화면의 「연결된 앱」은 연결된 앱 페이지(apps)다(Fable 셋째 F5)
   if (id === 'g-dev' || id === 'g-app' || id === 'g-apps') return void openGoogle(id === 'g-dev' ? 'devices' : id === 'g-app' ? 'removal' : 'apps');
   if (id === 'restore-all-no') { ui = { ...ui, confirmAll: false }; paint(); room.querySelector('[data-act="restore-all"]')?.focus({ preventScroll: true }); return; }

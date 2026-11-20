@@ -7,7 +7,7 @@ import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.
 import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo,
   moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo,
   moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, tooBigKept, oldWho, oldFolders, oldWhere, oldFailText, OLD_NO_SPLIT_THEN, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
-  appsJob, appsSettings, appsUnrestored, movedHere, AI_TOOL_ROWS, REST_MAX, MASK_MAX, MASK_LEN } from './screen-model.js';
+  appsJob, appsSettings, appsUnrestored, movedHere, AI_TOOL_ROWS, REST_MAX, MASK_MAX, MASK_LEN, massOf, massModel } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 import { failureText } from './state-store.js';
 
@@ -53,9 +53,11 @@ function homeRows(m) {
   const present = ev.folders.rows.filter((r) => !r.x || r.v !== '찾을 수 없음').length;
   // 지킬 폴더를 아직 모르는 연결(복구 전용, 첫 판 전)에는 「0곳」을 쓰지 않는다(Fable F4)
   if (present || ev.folders.rows.length) out.push(row('지키는 폴더', `${h(placesKo(present))}${files ? ` · ${h(files)}` : ''}`, h(bytes || '')));
-  for (const r of ev.folders.rows.filter((x) => x.x)) out.push(r.gone ? row(h(r.k), h(r.path || ''), '<span class="x">찾을 수 없음</span>', 'sub') : row(h(r.k), h(r.v.replace(/ · −.*/, '')), `<span class="x">${h(r.v.replace(/.* · /, ''))}</span>`, 'sub'));
+  for (const r of ev.folders.rows.filter((x) => x.x)) out.push(r.gone ? row(h(r.k), h(r.path || ''), '<span class="x">찾을 수 없음</span>', 'sub') : row(h(r.k), h(r.main || ''), `<span class="x">${h(r.mark || '')}</span>`, 'sub'));
+  if (ev.folders.more) out.push(row('그 밖의 폴더', `${h(count(ev.folders.more))}곳 더 바뀜`, '', 'sub'));
   for (const e of ev.extra) out.push(row(h(e.k), h(e.v)));
-  if (m.id !== 'home-run') out.push(row(h(ev.proof.k), h(ev.proof.day), ev.proof.bad ? `<span class="x">${h(ev.proof.short)}</span>` : h(ev.proof.short || '')));
+  // 한꺼번에 지워짐 화면은 그 일의 줄만 둔다 — 작은 창에서도 두 단추가 첫 화면에 남게(되살려 본 날은 그 일과 상관없다)
+  if (m.id !== 'home-run' && m.id !== 'home-mass') out.push(row(h(ev.proof.k), h(ev.proof.day), ev.proof.bad ? `<span class="x">${h(ev.proof.short)}</span>` : h(ev.proof.short || '')));
   return `<div class="rows rise i4">${out.join('')}</div>`;
 }
 
@@ -77,6 +79,8 @@ function solioBoxOf(sb, s, m) {
     take ? `같은 Google 계정으로 이 PC에서 백업하려면 아래 「${take.label}」${josa(take.label, '을/를').slice(take.label.length)} 누르세요.` : '',
     '다른 Google 계정으로 새로 지키는 길은 다음 업데이트에서 엽니다.'].filter(Boolean).join(' ') };
 }
+/** 단추 줄의 힌트와 그 옆의 밑줄 단추(hintAct — 한꺼번에 지워짐의 놓을 자리 바꾸기). 도는 호출이 있으면 막는다 */
+const hintOf = (m, acct) => (m.hint || m.hintAct ? `<span class="hint">${m.hint ? h(m.hint) : ''}${m.hintAct ? `${m.hint ? ' ' : ''}<button class="lnk sm" type="button" data-act="${h(m.hintAct.id)}"${acct?.running ? ' aria-disabled="true"' : ''}>${h(m.hintAct.label)}</button>` : ''}</span>` : '');
 export function homeScreen(m, acct = null, s = null) {
   const link = m.link ? `<div class="act rise i3"><button class="lnk" type="button" data-act="${h(m.link.to)}">${h(m.link.label)} ${I.rarr}</button></div>` : '';
   const r = m.restored;
@@ -85,8 +89,9 @@ export function homeScreen(m, acct = null, s = null) {
   const ack = !!acct?.googleAck, stepAck = m.googleStep ? stepAckOf(ack) : '';
   // 도는 중인 단추(acct.running)와, Google 걸음을 확인하기 전의 계정 단추는 막는다
   const actions = m.actions.map((a) => (acct?.running === a.id || (m.googleStep && !ack && a.account) ? { ...a, disabled: true } : a));
-  const html = `<div class="in">${kick(h(m.kick))}${say(h(m.title))}${then(h(m.sub))}${box(m.box)}${box(solioBoxOf(acct?.solioBox, s, m))}${stepAck}${notes((m.notes || []).map(h))}${link}${done}${homeRows(m)}${acts(actions.map((a) => ({ ...a })), `${m.hint ? `<span class="hint">${h(m.hint)}</span>` : ''}${gcancel(acct)}`)}</div>`;
+  const html = `<div class="in">${kick(h(m.kick))}${say(h(m.title))}${then(h(m.sub))}${box(m.box)}${box(solioBoxOf(acct?.solioBox, s, m))}${stepAck}${notes((m.notes || []).map(h))}${link}${done}${homeRows(m)}${acts(actions.map((a) => ({ ...a })), `${hintOf(m, acct)}${gcancel(acct)}`)}</div>`;
   const map = {}; for (const a of m.actions) map[a.id] = a; if (m.googleStep) map['google-ack'] = { id: 'google-ack' }; if (m.link) map[m.link.to] = { id: m.link.to, to: m.link.to }; if (r?.act) map[r.act.id] = r.act;
+  if (m.hintAct) map[m.hintAct.id] = { id: m.hintAct.id };
   return { kind: 'home', tone: m.tone, here: '백업·복구', top: [{ id: 'drawer', label: '설정' }], html, acts: map };
 }
 
@@ -262,7 +267,11 @@ function restore(s, now, cat, ui, mv, acct) {
   const confirmAll = place.mode === 'default' && !!ui?.confirmAll;
   const allSize = s?.lastBackup?.bytes ? ` · ${size(s.lastBackup.bytes)}` : '';
   const confirmBox = confirmAll ? `<div class="box rise i3" id="confirm-all"><b>전체 ${total ? `${count(total)}개` : ''}${h(allSize)}를 되살릴까요?</b>다운로드 안의 「${h(place.name)}」 폴더에 놓습니다. 끝날 때까지 다른 일은 기다립니다. 원래 파일은 그대로 둡니다.</div>` : '';
-  const held = (s?.missingSources?.length || s?.massHold) ? notes(['찾을 수 없는 폴더나 한꺼번에 지워지기 전의 판은 지우지 않고 붙들어 두었습니다. 그 판에서 꺼내는 길은 아직 준비 중이라, 이 목록은 가장 최근 판입니다.']) : '';
+  // 한꺼번에 지워지기 전의 판은 기본 화면에서 꺼낸다(restoreMassBefore — 되살린 뒤에는 단추 이름이 바뀌어 이름으로 부르지 않는다, FA6). 찾을 수 없는 폴더의 판에서 꺼내는 길은 아직 없다
+  const mh = massOf(s);
+  const heldText = [s?.missingSources?.length ? '찾을 수 없는 폴더의 판은 지우지 않고 붙들어 두었습니다. 그 판에서 꺼내는 길은 아직 준비 중입니다.' : '',
+    mh ? `한꺼번에 ${mh.word} 전의 판은 기본 화면에서 꺼냅니다.` : ''].filter(Boolean);
+  const held = heldText.length ? notes([`${heldText.join(' ')} 이 목록은 가장 최근 판입니다.`]) : '';
   // 옮겨 온 PC — 옛 PC의 판에서 꺼내는 길(조율 세션 793e0d6dc). 이 목록은 이 PC의 판이다
   const oldLink = mv?.state?.from ? `<div class="act rise i3"><button class="lnk sm" type="button" data-act="old-start">옛 PC 백업에서 꺼내기 ${I.rarr}</button></div>` : '';
   const l = `${kick(last ? `가장 최근 판 · ${h(whenKo(last, now).replace(/^(오전|오후)/, '오늘 $1'))}` : '아직 백업이 없습니다')}${say('무엇을 되살릴까요?')}
@@ -1095,12 +1104,39 @@ function code(s) {
   return { kind: 'flow', tone: 'ok', here: '복구 코드', top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: { print: { id: 'print', pending: '복구 코드 인쇄' }, usb: { id: 'usb', pending: '복구 코드 저장' }, home: { id: 'home', to: 'home' }, reveal: { id: 'reveal' } } };
 }
 
-/* ── 한꺼번에 지워진 파일 ─────────────────── */
-function massList() {
-  const l = `${kick('작업 노트북 · 확인이 필요합니다')}${say('지워진 3,980개', '「문서」의 네 폴더입니다.')}${then('오늘 오전 11시 무렵 사라졌습니다. 확인하기 전까지 이전 판을 지우지 않습니다.')}
-    ${acts([{ id: 'restore', label: '지워지기 전으로 되살리기', kind: 'main' }, { id: 'home', label: '돌아가기', kind: 'line' }])}`;
-  const r = panel('지워진 파일', '폴더마다 · 지우기 전 판에 있던 수', `<div class="rows">${EX.massFiles.map(([n, w, c]) => row(`${h(n)}<br><span class="meta">${h(w)}</span>`, '', h(c))).join('')}${row('합계', '3,980개')}</div>`);
-  return { kind: 'flow', tone: 'bad', here: '한꺼번에 지워짐', top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: { restore: { id: 'restore', pending: '지워지기 전 판에서 되살리기' }, home: { id: 'home', to: 'home' } } };
+/* ── 한꺼번에 지워지거나 바뀐 파일(설계 4.4 — 엔진 massHold) ─────────────────── */
+/** 목록의 이름은 그 폴더 안의 상대 경로(a/b/c.docx)다. 폴더를 가르지 못한 판이면 판 안의 경로(/C/…)라 폴더 이름 없이 쓴다 */
+function massItem(x) {
+  const parts = String(x.name).split('/').filter(Boolean), file = parts.pop() || x.name;
+  const where = [x.folder ? folderName(x.folder) : '', ...parts].filter(Boolean).join(' › ');
+  return `<div class="fl plain" role="listitem"><span class="nm">${h(file)}</span><span class="vl">${x.kind === 'changed' ? '<span class="x">바뀜</span>' : '지워짐'}</span>${where ? `<span class="ds">${h(where)}</span>` : ''}</div>`;
+}
+function massList(s, now, ui, acct, home) {
+  const mh = massOf(s), mm = massModel(s, now, { place: ui?.place, sentDefaultAt: ui?.sentDefaultAt, massAsk: ui?.massAsk, massSent: acct?.massSent, massGot: acct?.massGot });
+  // 기본 화면이 다른 일(도는 백업 · 다시 로그인 등)을 먼저 보이면 그 일이 끝날 때까지 막는다(Opus 대체 검수 FA2)
+  const first = !!home && home.id !== 'home-mass', run = acct?.running || (first ? 'first' : null);
+  const actions = mm.actions.map((a) => (run === a.id || first ? { ...a, disabled: true } : a));
+  const wait = first ? notes([h(home.id === 'home-run' ? '지금 다른 일이 도는 중입니다. 끝나면 누를 수 있습니다.' : '기본 화면에 먼저 할 일이 있습니다. 그 일을 마치면 누를 수 있습니다.')]) : '';
+  const l = `${kick(h(mm.kick))}${say(h(mm.title))}${then(h(mm.sub))}${box(mm.box)}${wait}${notes(mm.notes.map(h))}${acts(actions, hintOf(mm, run ? { running: run } : acct))}`;
+  // 바뀐 폴더가 여럿이면 폴더마다 되살릴 수 있다 — 한 번에 받다 100만 개를 넘어 거절될 때도 이 길이다
+  const many = mh.folders.length > 1;
+  const fRows = mh.folders.map((f) => {
+    const n = folderName(f.path), counts = [f.removed ? `지워짐 ${count(f.removed)}` : '', f.changed ? `바뀜 ${count(f.changed)}` : ''].filter(Boolean).join(' · ');
+    const btn = many ? `<button class="lnk sm" type="button" data-act="mass-one" data-path="${h(f.path)}" aria-label="${h(`「${n}」 폴더만 ${mh.word} 전으로 되살리기`)}"${run ? ' aria-disabled="true"' : ''}>이 폴더만 되살리기</button>` : '';
+    return row(h(n), `${h(counts)}<br><span class="meta">${h(f.path)}</span>`, btn);
+  }).join('');
+  const total = mh.removed + mh.changed;
+  const files = mh.list.length ? `<div class="files" role="list" aria-label="${h(mh.listLabel.replace(/ 보기$/, ''))}">${mh.list.map(massItem).join('')}</div>`
+    : '<p class="empty">파일 이름을 읽지 못했습니다. 바뀐 폴더와 수는 맞습니다.</p>';
+  const r = (mh.folders.length ? panel('바뀐 폴더', `${count(mh.folders.length)}곳`, `<div class="rows">${fRows}</div>`) : '')
+    + panel('파일', mh.list.length && total > mh.list.length ? `${count(total)}개 가운데 ${count(mh.list.length)}개` : mh.list.length ? `${count(mh.list.length)}개` : '', `${files}
+    ${total > mh.list.length ? `<p class="foot">목록은 500개까지만 보입니다. 되살리기는 ${mh.folders.length ? '바뀐' : '백업한'} 폴더를 통째로 받으므로 목록에 없는 파일도 함께 되살립니다.</p>` : ''}`);
+  const map = { home: { id: 'home', to: 'home' } };
+  for (const a of mm.actions) map[a.id] = a;
+  if (mm.hintAct) map[mm.hintAct.id] = { id: mm.hintAct.id };
+  // 기본 자리면 한 번 더 묻고, 고르는 자리면 그 창이 묻는다(모델의 「되살리기」 단추와 같은 갈래)
+  if (many) map['mass-one'] = mm.go.call ? { id: 'mass-one', call: 'restoreMassBefore', perFolder: true } : { id: 'mass-one', massAsk: 'one' };
+  return { kind: 'flow', tone: 'bad', here: mm.here, back: 'home', top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: map };
 }
 
 /* ── 설정 서랍 ─────────────────────────────── */
@@ -1252,7 +1288,8 @@ export function renderScreen(id, ctx) {
     case 'code': return code(s);
     case 'rest-net': return restNet(s, ctx.ui, ctx.acct);
     case 'ai-tools': return aiToolsScreen(s, ctx.ui, ctx.acct, now);
-    case 'mass-list': return massList();
+    // 멈춤이 풀렸으면(확인을 마침) 기본 화면을 그린다 — 창은 기본 화면으로 돌린다(app.js resolve)
+    case 'mass-list': return massOf(s) ? massList(s, now, ctx.ui, ctx.acct, ctx.model) : homeScreen(ctx.model, ctx.acct, s);
     default: return homeScreen(ctx.model, ctx.acct, s);
   }
 }

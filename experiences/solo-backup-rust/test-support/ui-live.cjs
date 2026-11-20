@@ -47,15 +47,22 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
    *  'stopdone'(같은 PC, 누르는 사이 되살리기가 끝나 cancelRestore가 stopping: false로 답한다) ·
    *  'denied'(계정에 잇지 않은 PC, Google 화면의 Drive 칸을 켜지 않아 「Google로 시작」이 DENIED로 끝남) ·
    *  'solio'(솔리오의 「보호 시작」으로 온 창 — state.solio.setup, 로그인은 __finishSignIn까지 기다리다 REAUTH) ·
-   *  'solio-move'(솔리오의 「이 PC로 옮겨 오기」로 온 창 — 로그인하면 다른 PC가 백업하는 계정) · 'settings'(넘긴 PC, 설정 서랍의 쉬는 Wi-Fi · AI 도구) */
+   *  'solio-move'(솔리오의 「이 PC로 옮겨 오기」로 온 창 — 로그인하면 다른 PC가 백업하는 계정) · 'settings'(넘긴 PC, 설정 서랍의 쉬는 Wi-Fi · AI 도구) ·
+   *  'mass'(한꺼번에 지워짐 멈춤이 있는 PC — 설계 4.4, 엔진 massHold 9ddcbeb40) */
   async function scenario(start) {
     const ctx = await browser.newContext({ viewport: { width: 1080, height: 820 }, locale: 'ko-KR', timezoneId: 'Asia/Seoul', reducedMotion: 'reduce' });
-    await ctx.addInitScript(({ solioStart, solioMoveStart, readConn, handedHome, readState, signinState, restoring, stopping, stopped, handed, ended, result, bigResult, list, checklist, start }) => {
+    await ctx.addInitScript(({ solioStart, solioMoveStart, readConn, handedHome, readState, signinState, restoring, stopping, stopped, handed, ended, result, bigResult, list, checklist, massState, start }) => {
       const calls = []; window.__calls = calls; window.__args = [];
-      let cur = start === 'solio-restore' ? { ...readState, solio: { ...readState.solio, setup: { mode: 'protect', hint: null, at: '2026-11-17T04:00:00.000Z' } } } : start === 'solio' ? solioStart : start === 'solio-move' ? solioMoveStart : start === 'stop' || start === 'stopdone' ? restoring : start === 'limit' || start === 'denied' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
+      let cur = start === 'mass' ? massState : start === 'solio-restore' ? { ...readState, solio: { ...readState.solio, setup: { mode: 'protect', hint: null, at: '2026-11-17T04:00:00.000Z' } } } : start === 'solio' ? solioStart : start === 'solio-move' ? solioMoveStart : start === 'stop' || start === 'stopdone' ? restoring : start === 'limit' || start === 'denied' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
       // 솔리오 잇기 — 같은(또는 새) 요청이 다시 실린 상태를 보낸다
       window.__handover = () => { cur = { ...handedHome, solio: cur.solio }; window.__push?.(); };
       window.__setRest = (names) => { cur = { ...cur, solio: { ...cur.solio, restNetworks: names } }; window.__push?.(); };
+      // 한꺼번에 지워짐 — 되살리기가 끝남 · 다른 길로 멈춤이 풀림
+      const calm = { level: 'active', reason: 'active', nextAction: 'backup' };
+      window.__massDone = () => { cur = { ...cur, job: null, lastRestore: { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 20일)', at: new Date().toISOString(), fromEarlier: 0, inNone: 0, mass: { beforeId: cur.massHold.beforeId, beforeAt: cur.massHold.beforeAt } } }; window.__push?.(); };
+      window.__massLift = () => { cur = { ...cur, massHold: null, protection: calm }; window.__push?.(); };
+      window.__massBack = () => { cur = { ...cur, massHold: massState.massHold, protection: massState.protection }; window.__push?.(); };
+      window.__massJob = (on) => { cur = { ...cur, job: on ? { kind: 'backup', stage: '백업 중', percent: 10, scheduled: true } : null }; window.__push?.(); };
       window.__resetup = (at) => { cur = { ...cur, solio: { ...cur.solio, setup: { mode: 'protect', hint: 'studio@example.com', at: at || '2026-11-17T04:00:00.000Z' } } }; window.__push?.(); };
       window.__TAURI__ = { core: { invoke: async (_n, { method, args }) => {
         calls.push(method); window.__args.push({ method, input: args?.[0] ?? null });
@@ -94,6 +101,13 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'cancelRestore') { const was = cur; cur = stopping; window.__finishStop = () => { if (cur === stopping) { cur = { ...stopped, lastRestoreError: { ...stopped.lastRestoreError, at: new Date().toISOString() } }; window.__push?.(); } }; return { ok: true, value: { stopping: was === restoring } }; }
         if (method === 'revokeDevice') return args?.[0] === 'e'.repeat(12) ? { ok: false, error: 'x', code: 'NOT_FOUND' } : { ok: true, value: { suggestReadKeyRotation: true } };
         if (method === 'setFileSelection') return { ok: true, value: { profile: 'b2', token: 'tk', selection: { revision: 2, count: 1, bytes: 10 } } };
+        // 한꺼번에 지워짐(설계 4.4) — 지워지기 전 판에서 받기는 뒤에서 도는 되살리기다. __massGone: 그사이 확인을 마침 · __massUnsafe: 다운로드가 지키는 폴더와 겹침
+        if (method === 'restoreMassBefore') {
+          if (window.__massGone) { cur = { ...cur, massHold: null, protection: calm }; return { ok: false, error: 'x', code: 'NOT_FOUND' }; }
+          if (window.__massUnsafe && args?.[0]?.place === 'default') return { ok: false, error: 'x', code: 'OUTPUT_UNSAFE' };
+          cur = { ...cur, job: { kind: 'restore', stage: '복구 중', percent: 5 } }; return { ok: true, value: cur };
+        }
+        if (method === 'massConfirm') { cur = { ...cur, massHold: null, protection: calm }; return { ok: true, value: cur }; }
         if (method === 'getState') return { ok: true, value: cur };
         // 넘기기 전에는 옮겨 온 결과가 있는 상태, 넘긴 뒤에는 넘긴 PC의 상태(다시 로그인할 곳 7곳 남음)
         if (method === 'moveState' && failOnce) { failOnce = false; return { ok: false, error: 'x', code: 'NETWORK' }; }
@@ -112,7 +126,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'continueBackup') { cur = handedHome; return { ok: true, value: cur }; }
         return { ok: false, error: 'x', code: 'FIXTURE' };
       } }, event: { listen: async (n, fn) => { if (n === 'backup:state') window.__push = () => fn({ payload: { ...cur } }); return () => {}; } } };
-    }, { solioStart: STATES['start-solio'], solioMoveStart: STATES['start-solio-move'], readConn: STATES['start-read'], handedHome, readState, signinState: STATES['start-signin'], restoring: STATES['home-restoring'], stopping: STATES['home-restore-stopping'], stopped: STATES['home-restore-stopped'], handed: MOVE_MV.handed.state, ended: MOVE_MV.result.state, result: MOVE_MV.result.result, bigResult: MOVE_MV.toobigResult.result, list: MOVE_APPS.list, checklist: MOVE_APPS.checklist, start });
+    }, { solioStart: STATES['start-solio'], solioMoveStart: STATES['start-solio-move'], readConn: STATES['start-read'], handedHome, readState, signinState: STATES['start-signin'], restoring: STATES['home-restoring'], stopping: STATES['home-restore-stopping'], stopped: STATES['home-restore-stopped'], handed: MOVE_MV.handed.state, ended: MOVE_MV.result.state, result: MOVE_MV.result.result, bigResult: MOVE_MV.toobigResult.result, list: MOVE_APPS.list, checklist: MOVE_APPS.checklist, massState: STATES['home-mass'], start });
     const pg = await ctx.newPage(), errors = [];
     pg.on('pageerror', (e) => errors.push(e.message));
     await pg.goto(base);
@@ -392,6 +406,118 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
     check('그 사이 끝난 되살리기는(stopping: false) 상태를 다시 읽어 「이미 끝났습니다」로 쓰고 단추를 거둔다', /되살리기가 이미 끝났습니다/.test(x.note) && !x.stop, JSON.stringify(x));
     check('쪽 오류 없음(그 사이 끝난 되살리기)', !errors.length, errors.join(' | '));
     await ctx.close();
+  }
+  // 13. 한꺼번에 지워짐(설계 4.4 — 엔진 massHold, 조율 세션 9ddcbeb40) — 기본 자리로 되살리기와 「확인을 마침」은 상자로 한 번 더 묻는다
+  {
+    const { pg, ctx, errors } = await scenario('mass');
+    const lastArgs = (m) => pg.evaluate((m) => window.__args.filter((a) => a.method === m).map((a) => a.input), m);
+    const look = () => pg.evaluate(() => ({ screen: document.getElementById('stage').dataset.screen, text: document.getElementById('room').innerText, note: document.getElementById('note')?.textContent || '',
+      box: [...document.querySelectorAll('#room .box')].map((b) => b.innerText).join(' | '), focus: document.activeElement?.dataset?.act || '', live: document.getElementById('live').textContent,
+      acts: [...document.querySelectorAll('#room [data-act]')].map((b) => b.dataset.act) }));
+    let x = await look();
+    check('멈춤이 있으면 기본 화면이 「많은 파일이 한꺼번에 지워졌습니다」와 두 단추, 목록 보기, 놓을 자리 바꾸기를 보인다', /많은 파일이 한꺼번에 지워졌습니다/.test(x.text) && ['mass-restore', 'mass-ok', 'mass-list', 'place-pick'].every((a) => x.acts.includes(a)), JSON.stringify(x.acts));
+    await click(pg, '#room [data-act="mass-restore"]');
+    x = await look();
+    check('「지워지기 전으로 되살리기」는 기본 자리면 부르지 않고 범위와 자리를 상자로 묻는다(포커스는 「되살리기 시작」, 읽어 주는 칸에 상자 글)', !(await lastArgs('restoreMassBefore')).length && /바뀐 폴더 2곳을 지워지기 전 판으로 되살릴까요\?/.test(x.box) && x.focus === 'mass-restore-go' && /되살릴까요/.test(x.live), JSON.stringify({ box: x.box, focus: x.focus, live: x.live }));
+    await click(pg, '#room [data-act="mass-no"]');
+    x = await look();
+    check('「그만두기」는 상자를 닫고 포커스를 「지워지기 전으로 되살리기」로 돌린다', !x.box && x.focus === 'mass-restore', JSON.stringify({ box: x.box, focus: x.focus }));
+    await click(pg, '#room [data-act="mass-restore"]'); await click(pg, '#room [data-act="mass-restore-go"]');
+    let a = await lastArgs('restoreMassBefore'); x = await look();
+    check('「되살리기 시작」은 restoreMassBefore({ place: default })를 한 번 부르고 기본 화면에서 진행을 본다', a.length === 1 && JSON.stringify(a[0]) === '{"place":"default"}' && x.screen === 'home' && /파일을 되살리고 있습니다/.test(x.text), JSON.stringify(a));
+    await pg.evaluate(() => window.__massDone()); await pg.waitForTimeout(600);
+    x = await look();
+    check('되살린 뒤에는 그 판에서 되살렸다는 줄과 「되살린 폴더 열기」, 주 단추 「확인을 마침」을 보인다', /판에서 바뀐 폴더를 「되살린 파일 \(\d+월 \d+일\)」에 통째로 되살렸습니다/.test(x.text) && x.acts.includes('open-full') && x.acts.includes('mass-done') && !x.acts.includes('mass-ok'), JSON.stringify(x.acts));
+    await click(pg, '#room [data-act="mass-done"]');
+    x = await look();
+    check('「확인을 마침」도 상자로 한 번 더 묻는다(이전 판을 다시 정리한다는 글, 포커스는 「확인을 마침」)', /확인을 마치면 이전 판을 다시 정리합니다/.test(x.box) && x.focus === 'mass-ok-go' && !(await pg.evaluate(() => window.__calls.includes('massConfirm'))), JSON.stringify({ box: x.box, focus: x.focus }));
+    await click(pg, '#room [data-act="mass-ok-go"]');
+    x = await look();
+    const n = await pg.evaluate(() => window.__calls.filter((c) => c === 'massConfirm').length);
+    check('상자의 「확인을 마침」은 massConfirm을 한 번 부르고, 알림을 남긴 뒤 멈춤이 없는 기본 화면이 된다', n === 1 && /확인을 마쳤습니다/.test(x.note) && !/한꺼번에/.test(x.text) && x.screen === 'home', JSON.stringify({ n, note: x.note }));
+    check('쪽 오류 없음(한꺼번에 지워짐 · 되살린 뒤 확인을 마침)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  {
+    const { pg, ctx, errors } = await scenario('mass');
+    const look = () => pg.evaluate(() => ({ screen: document.getElementById('stage').dataset.screen, box: [...document.querySelectorAll('#room .box')].map((b) => b.innerText).join(' | '), focus: document.activeElement,
+      items: document.querySelectorAll('#room .files .fl').length, ones: [...document.querySelectorAll('#room [data-act="mass-one"]')].map((b) => b.dataset.path) }));
+    await click(pg, '#room [data-act="mass-list"]');
+    let x = await look();
+    check('「지워지거나 바뀐 파일 … 보기」는 목록 화면을 열고 이름 500개와 바뀐 폴더마다의 「이 폴더만 되살리기」를 보인다', x.screen === 'mass-list' && x.items === 500 && x.ones.length === 2, JSON.stringify({ screen: x.screen, items: x.items, ones: x.ones }));
+    const pics = '#room [data-act="mass-one"][data-path$="Pictures"]';
+    await click(pg, pics);
+    x = await pg.evaluate(() => ({ box: [...document.querySelectorAll('#room .box')].map((b) => b.innerText).join(' | '), focus: document.activeElement?.dataset?.act || '' }));
+    check('「이 폴더만 되살리기」는 그 폴더 이름으로 한 번 더 묻는다', /「사진」 폴더를 지워지기 전 판으로 되살릴까요\?/.test(x.box) && x.focus === 'mass-restore-go', JSON.stringify(x));
+    await click(pg, '#room [data-act="mass-no"]');
+    x = await pg.evaluate(() => ({ act: document.activeElement?.dataset?.act || '', path: document.activeElement?.dataset?.path || '' }));
+    check('그만두면 포커스가 그 폴더의 단추로 돌아온다', x.act === 'mass-one' && /Pictures$/.test(x.path), JSON.stringify(x));
+    await click(pg, pics); await click(pg, '#room [data-act="mass-restore-go"]');
+    const a = await pg.evaluate(() => window.__args.filter((c) => c.method === 'restoreMassBefore').map((c) => c.input));
+    const s = await pg.evaluate(() => document.getElementById('stage').dataset.screen);
+    check('그 폴더만 restoreMassBefore({ place, folder })로 받고 기본 화면으로 간다', a.length === 1 && a[0].place === 'default' && /Pictures$/.test(a[0].folder) && Object.keys(a[0]).length === 2 && s === 'home', JSON.stringify(a));
+    // Opus 대체 검수 FA1 — 엔진 결과에 범위가 없어도 이 창이 보낸 한 폴더로 가려, 「확인을 마침」을 앞세우지 않는다
+    await pg.evaluate(() => window.__massDone()); await pg.waitForTimeout(600);
+    const y = await pg.evaluate(() => ({ text: document.getElementById('room').innerText, main: document.querySelector('#room .pill.main')?.dataset.act || '' }));
+    check('한 폴더만 받은 뒤에는 받은 폴더와 남은 폴더를 말하고 「지워지기 전으로 되살리기」를 주 단추로 둔다', y.main === 'mass-restore' && /아직 「문서」 폴더는 되살리지 않았습니다/.test(y.text) && /「사진」 폴더를 「되살린 파일/.test(y.text), JSON.stringify({ main: y.main }));
+    // 다시 검수 -b 2 — 남은 「문서」도 받으면 바뀐 폴더를 다 받은 것이라 「확인을 마침」이 주 단추가 된다
+    await click(pg, '#room [data-act="mass-list"]'); await click(pg, '#room [data-act="mass-one"][data-path$="Documents"]'); await click(pg, '#room [data-act="mass-restore-go"]');
+    await pg.evaluate(() => window.__massDone()); await pg.waitForTimeout(600);
+    const y2 = await pg.evaluate(() => ({ main: document.querySelector('#room .pill.main')?.dataset.act || '', n: window.__args.filter((c) => c.method === 'restoreMassBefore').length }));
+    check('바뀐 폴더를 하나씩 다 받으면 「확인을 마침」이 주 단추가 된다', y2.main === 'mass-done' && y2.n === 2, JSON.stringify(y2));
+    check('쪽 오류 없음(지워진 파일 목록)', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+  {
+    const { pg, ctx, errors } = await scenario('mass');
+    // 놓을 자리를 고르기로 바꾸면 상자 없이 바로 부른다(고르는 창이 묻는다)
+    await click(pg, '#room [data-act="place-pick"]');
+    let x = await pg.evaluate(() => ({ text: document.getElementById('room').innerText, acts: [...document.querySelectorAll('#room [data-act]')].map((b) => b.dataset.act) }));
+    check('「자리 바꾸기」 뒤에는 고르는 창이 뜬다고 쓰고 「다운로드에 놓기」를 둔다', /누르면 놓을 폴더를 고르는 창이 뜹니다/.test(x.text) && x.acts.includes('place-default'), JSON.stringify(x.acts));
+    await click(pg, '#room [data-act="mass-restore"]');
+    let a = await pg.evaluate(() => window.__args.filter((c) => c.method === 'restoreMassBefore').map((c) => c.input));
+    check('고르는 자리면 「지워지기 전으로 되살리기」가 상자 없이 restoreMassBefore({ place: pick })를 부른다', a.length === 1 && JSON.stringify(a[0]) === '{"place":"pick"}', JSON.stringify(a));
+    await ctx.close();
+    const two = await scenario('mass');
+    // 다운로드가 지키는 폴더와 겹치면(OUTPUT_UNSAFE) 고르기로 바꾸고 상자를 닫는다. 그사이 멈춤이 풀렸으면(NOT_FOUND) 알리고 기본 화면을 다시 읽는다
+    await two.pg.evaluate(() => { window.__massUnsafe = true; });
+    await click(two.pg, '#room [data-act="mass-restore"]'); await click(two.pg, '#room [data-act="mass-restore-go"]');
+    x = await two.pg.evaluate(() => ({ note: document.getElementById('note')?.textContent || '', box: document.querySelectorAll('#room .box').length, text: document.getElementById('room').innerText }));
+    check('기본 자리가 거절되면(OUTPUT_UNSAFE) 고르기로 바꾸고 상자를 닫는다', /놓을 자리를 고르도록 바꿨으니/.test(x.note) && !x.box && /누르면 놓을 폴더를 고르는 창이 뜹니다/.test(x.text), JSON.stringify({ note: x.note, box: x.box }));
+    await two.pg.evaluate(() => { window.__massGone = true; });
+    await click(two.pg, '#room [data-act="mass-restore"]');
+    x = await two.pg.evaluate(() => ({ note: document.getElementById('note')?.textContent || '', text: document.getElementById('room').innerText }));
+    check('그사이 멈춤이 풀렸으면(NOT_FOUND) 그렇다고 알리고 기본 화면을 다시 읽는다', /붙들어 둔 판이 이제 없습니다/.test(x.note) && !/한꺼번에/.test(x.text), JSON.stringify({ note: x.note }));
+    check('쪽 오류 없음(놓을 자리 · 거절)', !errors.length && !two.errors.length, [...errors, ...two.errors].join(' | '));
+    await two.ctx.close();
+    const three = await scenario('mass');
+    await click(three.pg, '#room [data-act="mass-list"]');
+    await three.pg.evaluate(() => window.__massLift()); await three.pg.waitForTimeout(600);
+    const sc = await three.pg.evaluate(() => document.getElementById('stage').dataset.screen);
+    check('목록 화면에 있는 동안 멈춤이 풀리면 기본 화면으로 돌아간다', sc === 'home', sc);
+    // 카본 A5 — 그 뒤 새 멈춤이 생겨도 목록 화면이 저절로 열리지 않는다
+    await three.pg.evaluate(() => window.__massBack()); await three.pg.waitForTimeout(600);
+    const sc2 = await three.pg.evaluate(() => ({ screen: document.getElementById('stage').dataset.screen, mass: /한꺼번에/.test(document.getElementById('room').innerText) }));
+    check('그 뒤 새 멈춤이 생기면 기본 화면에 멈춤을 그리고, 목록 화면으로 저절로 가지 않는다', sc2.screen === 'home' && sc2.mass, JSON.stringify(sc2));
+    await three.ctx.close();
+    const four = await scenario('mass');
+    await click(four.pg, '#room [data-act="mass-ok"]');
+    const open = await four.pg.evaluate(() => document.querySelectorAll('#room .box').length);
+    await four.pg.evaluate(() => window.__massJob(true)); await four.pg.waitForTimeout(500);
+    await four.pg.evaluate(() => window.__massJob(false)); await four.pg.waitForTimeout(500);
+    const after = await four.pg.evaluate(() => document.querySelectorAll('#room .box').length);
+    check('한 번 더 묻던 상자는 백업이 도는 사이 닫히고, 끝난 뒤 저절로 다시 뜨지 않는다', open === 1 && after === 0, JSON.stringify({ open, after }));
+    check('쪽 오류 없음(목록 · 묵은 물음)', !three.errors.length && !four.errors.length, [...three.errors, ...four.errors].join(' | '));
+    await four.ctx.close();
+    // Opus 대체 검수 FA2 — 목록 화면에 있는 동안 백업이 돌면 멈춤 단추를 막고 까닭을 쓴다
+    const five = await scenario('mass');
+    await click(five.pg, '#room [data-act="mass-list"]');
+    await five.pg.evaluate(() => window.__massJob(true)); await five.pg.waitForTimeout(500);
+    await five.pg.click('#room [data-act="mass-restore"]', { force: true }).catch(() => {}); await five.pg.waitForTimeout(400);
+    const z = await five.pg.evaluate(() => ({ text: document.getElementById('room').innerText, off: document.querySelectorAll('#room [data-act^="mass-"][aria-disabled="true"]').length, box: document.querySelectorAll('#room .box').length, n: window.__calls.filter((c) => c === 'restoreMassBefore').length }));
+    check('목록 화면에 있는 동안 백업이 돌면 멈춤 단추를 막고 「지금 다른 일이 도는 중입니다」를 쓴다', /지금 다른 일이 도는 중입니다/.test(z.text) && z.off >= 4 && !z.box && z.n === 0, JSON.stringify({ off: z.off, box: z.box, n: z.n }));
+    check('쪽 오류 없음(목록 · 도는 백업)', !five.errors.length, five.errors.join(' | '));
+    await five.ctx.close();
   }
   await browser.close(); server.close();
   const bad = results.filter((r) => !r.ok).length;

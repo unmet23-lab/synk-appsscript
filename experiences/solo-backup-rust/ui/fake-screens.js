@@ -14,7 +14,6 @@ export const FAKE = Object.freeze({
   lost: '분실 신고 1',
   'lost-2': '분실 신고 2 — 남은 Google 걸음',
   code: '복구 코드 인쇄(복구 코드 형식 전)',
-  'mass-list': '한꺼번에 지워진 파일 목록(대량 변경 멈춤 전)',
 });
 
 export const EX = {
@@ -56,8 +55,5 @@ export const EX = {
   codeGroups: ['SWBK', '7KQ9', 'XRM4', 'T2HW', 'V8NB', '3PDE', 'Q6ZF', 'C9JA', 'HM2E', '5RWT', 'K8YN', 'N4GB', '2VXS', 'Q7DC', 'P3FZ', '6MTA',
     'W9KD', 'B4RQ', 'J7XH', 'E2NC', 'Y5PV', 'G8SK', 'R3TM', 'D6WQ', 'Z9FB', 'H4YJ', 'C7EN', 'S2GX', 'M5KR', 'A8VD', 'T3QP', 'F6HZ', 'K9WE', 'N2BS', 'X7MC', 'P4JG'],
   partialFiles: [{ name: '메일 보관함.pst', where: '문서 › Outlook 파일', size: '2.1GB' }, { name: '보관 폴더.pst', where: '문서 › Outlook 파일', size: '860MB' }],
-  massFiles: [
-    ['2026 계약서', '문서 › 계약', '1,204개'], ['견적', '문서 › 견적', '981개'], ['세금계산서', '문서 › 회계', '1,410개'], ['회의록', '문서 › 회의', '385개'],
-  ],
   telemetry: '시범 동안 백업, 알림, 설치 결과 숫자를 SYNK로 보냅니다. 파일 이름, 경로, 내용은 보내지 않습니다.',
 };

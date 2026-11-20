@@ -12,8 +12,8 @@ import { failureText } from './state-store.js';
 export const FUTURE = Object.freeze({
   'lastBackup.folders': '폴더마다 담은 파일 수 · 크기([{path, files, bytes}])',
   'lastProbe.v2': '되살리기 증명 v2 — 폴더마다 무작위 파일 합 64MiB 안(files · bytes · nextAt)',
-  massHold: '한꺼번에 지워짐 멈춤(설계 4.4) — {at, path, removed, left, totalNow, bytesNow, before}',
   'lastPartial.program': '쓰는 중이라 못 읽은 파일을 쥔 프로그램 이름과 파일 목록',
+  'lastRestore.mass.folder': '지워지기 전 판에서 받은 범위(E31 — 바뀐 폴더 모두면 null, 한 폴더면 그 경로). 없으면 이 창이 보낸 것으로 가린다',
   admin: '관리자 계정인지(쓰는 중이라 못 읽은 파일을 따로 읽어 채우는지)',
 });
 
@@ -109,27 +109,163 @@ function evidence(s, now, { state = 'ok', next } = {}) {
   ];
   const nextAt = next === undefined ? s.nextBackupAt : next;
   if (nextAt && state !== 'moved') head.push({ k: '다음 확인', v: aroundKo(nextAt, now) });
+  const mh = massOf(s);
+  // 한꺼번에 지워지거나 바뀐 폴더는 많이 바뀐 두 곳까지 줄로 두고, 나머지는 수만 센다 — 작은 창에서도 두 단추가 첫 화면에 남게(Opus 대체 검수 FA3)
+  // 엔진이 둘째 줄의 폴더(path)를 고르는 기준과 같다 — 지워짐 · 큰 파일이면 지운 수, 바뀜이면 바뀐 수, 같으면 합(다시 검수 -b 1)
+  const weight = (f) => (mh.kind === 'changed' ? f.changed : f.removed);
+  const top = mh ? [...mh.folders].sort((a, b) => weight(b) - weight(a) || (b.removed + b.changed) - (a.removed + a.changed)).slice(0, 2) : [];
+  const more = mh ? mh.folders.filter((f) => sources.some((p) => samePath(p, f.path)) && !top.includes(f)).length : 0;
   const rows = sources.map((p) => {
     const gone = missing.some((m) => samePath(m, p));
     const f = per.find((x) => samePath(x.path, p));
-    const mass = s.massHold && samePath(s.massHold.path, p);
-    return { k: folderName(p), path: p, gone, v: gone ? '찾을 수 없음' : mass ? `${count(s.massHold.left)}개 · −${count(s.massHold.removed)}` : f ? `${count(f.files)}개` : '', x: gone || mass };
+    // 지금 수(멈춤이 가장 많이 바뀐 폴더에서 센 것, 없으면 마지막 판의 수) 옆에 사라진 수와 바뀐 수를 붙인다
+    const mf = !gone && mh ? top.find((x) => samePath(x.path, p)) : null;
+    if (mf) {
+      const has = samePath(mh.path, p) && mh.left !== null ? mh.left : Number.isSafeInteger(f?.files) ? f.files : null;
+      const main = has === null ? '' : `${count(has)}개`, mark = [mf.removed ? `−${count(mf.removed)}` : '', mf.changed ? `바뀜 ${count(mf.changed)}` : ''].filter(Boolean).join(' · ');
+      return { k: folderName(p), path: p, gone, v: [main, mark].filter(Boolean).join(' · '), main, mark, x: true };
+    }
+    return { k: folderName(p), path: p, gone, v: gone ? '찾을 수 없음' : f ? `${count(f.files)}개` : '', x: gone };
   });
-  const files = s.massHold ? s.massHold.totalNow : s.lastBackup?.files;
-  const bytes = s.massHold ? s.massHold.bytesNow : s.lastBackup?.bytes;
+  const files = mh?.totalNow ?? s.lastBackup?.files;
+  const bytes = mh?.bytesNow ?? s.lastBackup?.bytes;
   const total = s.lastBackup ? `${count(files)}개 · ${size(bytes)}` : '';
   const extra = [];
   if (s.lastPartial && state === 'partial') extra.push({ k: '쓰는 중이라 앞 판으로', v: `${count(s.lastPartial.unreadable)}개${s.lastBackup?.at ? ` · ${whenKo(s.lastBackup.at, now)}` : ''}` });
   if (missing.length && state === 'missing' && s.lastBackup?.at) extra.push({ k: '붙들어 둔 판', v: whenKo(s.lastBackup.at, now) });
-  if (s.massHold && state === 'mass') extra.push({ k: '지우기 전 판', v: `${count(s.massHold.before)}개 · 붙들어 둠` });
   return {
     head,
-    folders: { k: '지키는 폴더', v: `${count(present.length)}곳`, rows },
+    folders: { k: '지키는 폴더', v: `${count(present.length)}곳`, rows, more },
     total: { k: `${placesKo(missing.length ? present.length : sources.length)} 합계`, v: total },
     extra,
     proof: proofOf(s, now),
     end: state === 'moved' ? '이 PC의 마지막 확인서' : '매시간 새로 찍힙니다',
   };
+}
+
+/**
+ * 한꺼번에 지워지거나 바뀐 멈춤(설계 4.4 — 엔진 massHold, 조율 세션 9ddcbeb40). 정리가 지울 판을 남는 판과 견줘 문턱을 넘으면 지울 판을
+ * 번호로 붙들어 둔다(beforeId). kind: removed 지워짐 · changed 내용이 바뀜 · bytes 큰 파일이 지워짐. path가 null이면 판의 폴더를 가르지 못한 것이다.
+ * 되살린 결과(lastRestore.mass)는 같은 판(beforeId)에서, 멈춘 뒤(since)에 받은 것만 이 멈춤의 것으로 본다
+ */
+/**
+ * 지워지기 전 판에서 받은 범위(FA1) — 엔진이 적었으면(E31 lastRestore.mass.folder · sub) 그것, 아니면 이 창이 보낸 것(sent = { beforeId, folder, at },
+ * 그 뒤에 끝난 결과만). 바뀐 폴더 모두면 null, 한 폴더면 그 경로, 모르면 undefined
+ */
+export function massGot(mass, at, sent) {
+  if (!mass) return undefined;
+  if (Object.prototype.hasOwnProperty.call(mass, 'folder')) return typeof mass.folder === 'string' && mass.folder ? mass.folder : null;
+  if (sent && sent.beforeId === mass.beforeId && Number.isFinite(sent.at) && ms(at) !== null && ms(at) >= sent.at) return typeof sent.folder === 'string' && sent.folder ? sent.folder : null;
+  return undefined;
+}
+export function massOf(s, sent = null, gotMem = null) {
+  const m = s?.massHold;
+  if (!m || typeof m !== 'object') return null;
+  const kind = m.kind === 'changed' ? 'changed' : m.kind === 'bytes' ? 'bytes' : 'removed';
+  const n = (v) => (Number.isSafeInteger(v) && v >= 0 ? v : 0), opt = (v) => (Number.isSafeInteger(v) && v >= 0 ? v : null);
+  const folders = (Array.isArray(m.folders) ? m.folders : []).filter((f) => f && typeof f.path === 'string' && f.path && (n(f.removed) || n(f.changed)))
+    .map((f) => ({ path: f.path, removed: n(f.removed), changed: n(f.changed) }));
+  const list = (Array.isArray(m.list) ? m.list : []).filter((x) => x && typeof x.name === 'string' && x.name)
+    .map((x) => ({ folder: typeof x.folder === 'string' && x.folder ? x.folder : null, name: x.name, kind: x.kind === 'changed' ? 'changed' : 'removed' }));
+  const last = s.lastRestore, since = ms(m.since);
+  const mine = last?.mass && typeof m.beforeId === 'string' && last.mass.beforeId === m.beforeId && ms(last.at) !== null && (since === null || ms(last.at) >= since);
+  const removed = n(m.removed), changed = n(m.changed);
+  // 「지워진 파일 보기」 — 목록에는 지워진 것과 바뀐 것이 함께 있다
+  const listLabel = removed && changed ? `지워지거나 바뀐 파일 ${count(removed + changed)}개 보기` : kind === 'changed' ? `바뀐 파일 ${count(changed)}개 보기` : `지워진 파일 ${count(removed)}개 보기`;
+  // 받은 범위 — all(바뀐 폴더 모두) · one(한 폴더나 그 안쪽만) · unknown(엔진도 이 창도 모름)
+  const got = mine ? massGot(last.mass, last.at, sent) : undefined, sub = mine && typeof last.mass.sub === 'string' && last.mass.sub;
+  // 이 멈춤에서 지금까지 받은 폴더 — 창이 결과마다 모아 둔 것(gotMem)과 이번 결과. 바뀐 폴더를 하나씩 다 받아도 「다 받음」이 된다(다시 검수 -b 2)
+  const mem = gotMem && gotMem.beforeId === m.beforeId ? gotMem : null;
+  const have = [...(Array.isArray(mem?.folders) ? mem.folders : []), ...(typeof got === 'string' && !sub ? [got] : [])];
+  const all = (got === null && !sub) || mem?.all === true || (folders.length > 0 && folders.every((f) => have.some((p) => samePath(p, f.path))));
+  const scope = !mine ? null : all ? 'all' : have.length || typeof got === 'string' ? 'one' : 'unknown';
+  const missing = scope === 'one' ? folders.filter((f) => !have.some((p) => samePath(p, f.path))).map((f) => f.path) : [];
+  const restored = mine ? { ...last, got, scope, missing } : null;
+  return { kind, word: kind === 'changed' ? '바뀌기' : '지워지기', path: typeof m.path === 'string' && m.path ? m.path : null, folders, list, restored, listLabel,
+    at: m.at, beforeAt: m.beforeAt, removed, changed, removedBytes: n(m.removedBytes), left: opt(m.left), totalNow: opt(m.totalNow), bytesNow: opt(m.bytesNow) };
+}
+const MASS_TITLE = { removed: '많은 파일이 한꺼번에 지워졌습니다.', changed: '많은 파일의 내용이 한꺼번에 바뀌었습니다.', bytes: '큰 파일이 한꺼번에 지워졌습니다.' };
+/** 되살릴 자리 글 — 기본 자리(다운로드 아래)면 그 이름, 고르는 자리면 고르는 창이 뜬다는 글. 바꾸는 단추는 hintAct */
+function placeHintOf(place) {
+  if (place.mode === 'default') return { hint: `되살린 파일은 다운로드 안의 「${place.name}」 폴더에 놓습니다.`, hintAct: { id: 'place-pick', label: '자리 바꾸기' } };
+  return { hint: place.unsafe ? '다운로드에는 놓을 수 없어, 누르면 놓을 폴더를 고르는 창이 뜹니다.' : place.guarded ? '다운로드도 지키는 폴더라, 누르면 놓을 폴더를 고르는 창이 뜹니다.' : '누르면 놓을 폴더를 고르는 창이 뜹니다.',
+    hintAct: place.guarded ? null : { id: 'place-default', label: '다운로드에 놓기' } };
+}
+/**
+ * 멈춤의 화면 글과 단추 — 기본 화면(home-mass)과 「지워진 파일 보기」(mass-list)가 같이 쓴다. 엔진 메서드는 restoreMassBefore({ place, folder? })와
+ * massConfirm()이다. opts.massAsk: 'ok'(「확인을 마침」을 한 번 더 묻는 중) · { folder }(기본 자리로 되살리기를 한 번 더 묻는 중 — folder가 있으면
+ * 그 폴더만). 기본 자리에는 폴더 고르는 창이 없어 크기 대신 자리와 범위를 적고 한 번 더 누르게 한다. 고르는 자리면 그 창이 묻는다
+ */
+export function massModel(s, now = Date.now(), opts = {}) {
+  const mh = massOf(s, opts.massSent, opts.massGot);
+  if (!mh) return null;
+  const device = typeof s.device === 'string' && s.device.trim() ? s.device.trim() : '이 PC';
+  const day = (t) => whenKo(t, now).replace(/^(오전|오후)/, '오늘 $1');
+  // 「등 N곳」은 이 갈래(지워짐 · 바뀜)의 수가 있는 폴더만 센다 — 되살리기는 둘 다 있는 폴더를 모두 받는다(바뀐 폴더)
+  const name = mh.path ? folderName(mh.path) : '', same = mh.folders.filter((f) => (mh.kind === 'changed' ? f.changed : f.removed) > 0).length;
+  const where = name ? `「${name}」${same > 1 ? ` 등 ${count(same)}곳` : ''}에서` : '백업한 폴더에서';
+  const what = mh.kind === 'changed' ? `${where} 파일 ${count(mh.changed)}개의 내용이 바뀌었습니다.`
+    : mh.kind === 'bytes' ? `${where} 파일 ${count(mh.removed)}개가 사라졌습니다. 모두 ${size(mh.removedBytes)}입니다.` : `${where} 파일 ${count(mh.removed)}개가 사라졌습니다.`;
+  const between = ms(mh.beforeAt) !== null && ms(mh.at) !== null ? `${day(mh.beforeAt)}부터 ${day(mh.at)} 사이에 ` : '';
+  const label = `${mh.word} 전으로 되살리기`;
+  const place = restorePlace(s, opts.place, now, opts.sentDefaultAt);
+  // 되살리기 단추의 갈래 — 기본 자리는 한 번 더 묻고(massAsk), 고르는 자리는 바로 부른다. 목록 화면의 폴더마다 단추도 이것을 따른다(카본 A2)
+  const go = place.mode === 'default' ? { massAsk: 'restore' } : { call: 'restoreMassBefore' };
+  const out = { id: 'home-mass', tone: 'bad', stamp: '경고', kick: `${device} · 확인이 필요합니다`, title: MASS_TITLE[mh.kind], here: mh.kind === 'changed' ? '한꺼번에 바뀜' : '한꺼번에 지워짐',
+    sub: `${between}${what} 확인하기 전까지 그 전의 판을 지우지 않습니다.`, link: { label: mh.listLabel, to: 'mass-list' }, box: null, notes: [], hint: null, hintAct: null, word: mh.word, label, go };
+  const ask = opts.massAsk;
+  if (ask === 'ok') {
+    // 되살린 뒤의 「확인을 마침」은 「내가 한 일」이 아니어도 누르는 단추다 — 필요한 파일을 옮긴 뒤 누르라고 쓴다(카본 A3)
+    const when = mh.restored ? '되살린 파일에서 필요한 것을 다 옮겼을 때 누르세요.' : '내가 한 일이 맞을 때만 누르세요.';
+    return { ...out, link: null, box: { title: '확인을 마치면 이전 판을 다시 정리합니다', text: `정리가 다시 돌아 보관 기간이 지난 판부터 지웁니다. 붙들어 둔 ${day(mh.beforeAt)} 판도 그때 지워질 수 있습니다. ${when}` },
+      actions: [{ id: 'mass-ok-go', label: '확인을 마침', kind: 'main', call: 'massConfirm' }, { id: 'mass-no', label: '그만두기', kind: 'link' }] };
+  }
+  const one = ask && typeof ask === 'object' && typeof ask.folder === 'string' ? mh.folders.find((f) => samePath(f.path, ask.folder)) : null;
+  if (ask && typeof ask === 'object' && place.mode === 'default' && (one || !ask.folder)) {
+    const target = one ? `「${folderName(one.path)}」 폴더를` : mh.folders.length ? `바뀐 폴더 ${count(mh.folders.length)}곳을` : '백업한 폴더를';
+    return { ...out, link: null, box: { title: `${target} ${mh.word} 전 판으로 되살릴까요?`, text: `${day(mh.beforeAt)} 판에서 통째로 꺼내 다운로드 안의 「${place.name}」 폴더에 놓습니다. 원래 파일은 그대로 둡니다. 끝날 때까지 다른 일은 기다립니다.` },
+      actions: [{ id: 'mass-restore-go', label: '되살리기 시작', kind: 'main', call: 'restoreMassBefore', folder: one ? one.path : null }, { id: 'mass-no', label: '그만두기', kind: 'link' }],
+      hintAct: { id: 'place-pick', label: '자리 바꾸기' } };
+  }
+  // 되살린 뒤 — 결과 줄(되살린 폴더 열기)은 기본 화면의 되살리기 결과 줄이 쓴다. 바뀐 폴더를 다 받은 것을 알 때만 「확인을 마침」이 주 단추다(FA1).
+  // 한 폴더만 받았거나 범위를 모르면 되살리기를 주 단추로 두고, 다 받은 뒤 「확인을 마침」을 누르라고 쓴다
+  if (mh.restored && mh.restored.scope !== 'all') {
+    // 남은 폴더는 두 곳까지 이름으로, 나머지는 「등 N곳」(다시 검수 -c 1). 100만 개를 넘어 지금 받을 수 없는 폴더는 「다 받은 뒤」에서 뺀다(-c 2)
+    const big = massTooBig(s, opts.massSent), left = mh.restored.missing.filter((p) => !big || !samePath(p, big)).map(folderName);
+    const names = left.length <= 2 ? `「${left.join('」 · 「')}」 폴더는` : `「${left[0]}」 · 「${left[1]}」 등 ${count(left.length)}곳은`;
+    const note = left.length ? `아직 ${names} 되살리지 않았습니다. 다 받은 뒤 「확인을 마침」을 누르세요.`
+      : big && mh.restored.scope === 'one' ? `「${folderName(big)}」 폴더 말고는 다 되살렸습니다. 그 폴더가 필요 없으면 「확인을 마침」을 누르세요.`
+      : '바뀐 폴더가 다 왔는지 되살린 폴더에서 확인한 뒤 「확인을 마침」을 누르세요.';
+    return { ...out, notes: [note],
+      actions: [{ id: 'mass-restore', label, kind: 'main', ...go }, { id: 'mass-done', label: '확인을 마침', kind: 'line', massAsk: 'ok' }], ...placeHintOf(place) };
+  }
+  if (mh.restored) {
+    return { ...out, notes: ['되살린 파일은 새 폴더에 있습니다. 필요한 파일을 원래 자리로 옮긴 뒤 「확인을 마침」을 누르세요.'],
+      actions: [{ id: 'mass-done', label: '확인을 마침', kind: 'main', massAsk: 'ok' }, { id: 'mass-restore', label: '다시 되살리기', kind: 'line', ...go }], ...placeHintOf(place) };
+  }
+  const notes = mh.kind === 'changed'
+    ? ['직접 고쳤거나 프로그램으로 한꺼번에 바꿨다면 「내가 한 일이 맞음」을 누르세요.', '모르는 일이면 바뀌기 전 판으로 되살리세요. 원래 파일은 건드리지 않고 새 폴더에 놓습니다.']
+    : ['직접 지웠거나, 폴더를 옮기거나 이름을 바꿨다면 「내가 한 일이 맞음」을 누르세요.', '모르는 일이면 지워지기 전 판으로 되살리세요. 원래 파일은 건드리지 않고 새 폴더에 놓습니다.'];
+  return { ...out, notes, actions: [{ id: 'mass-restore', label, kind: 'main', ...go }, { id: 'mass-ok', label: '내가 한 일이 맞음', kind: 'line', massAsk: 'ok' }], ...placeHintOf(place) };
+}
+/**
+ * 멈춘 뒤 100만 개를 넘어 받지 못한 한 폴더 — 실패 칸에 범위가 있으면(E31) 그것, 없으면 이 창이 그 실패보다 먼저 보낸 한 폴더(sent). 모르면 null
+ */
+export function massTooBig(s, sent) {
+  const mh = s?.massHold, e = s?.lastRestoreError;
+  if (!mh || e?.code !== 'CATALOG_TOO_LARGE' || ms(e.at) === null) return null;
+  const since = ms(mh.since);
+  if (since !== null && ms(e.at) < since) return null;
+  if (typeof e.mass?.folder === 'string' && e.mass.folder) return e.mass.folder;
+  return sent && sent.beforeId === mh.beforeId && Number.isFinite(sent.at) && ms(e.at) >= sent.at && typeof sent.folder === 'string' && sent.folder ? sent.folder : null;
+}
+/** 멈춤이 있는 동안 끝난 되살리기의 실패 글 — 실패 칸에는 어느 되살리기였는지가 없어(lastRestoreError) 멈춤의 말로 쓴다 */
+export function massFailText(code, mh, folder = null) {
+  if (code === 'CATALOG_TOO_LARGE' && typeof folder === 'string' && folder) return `「${folderName(folder)}」 폴더는 파일과 폴더가 100만 개를 넘어 통째로 받을 수 없습니다. 안쪽 폴더만 꺼내는 길은 다음 업데이트에서 엽니다.`;
+  if (code === 'CATALOG_TOO_LARGE') return mh?.folders?.length > 1 ? `100만 개가 넘는 폴더가 있습니다. 「${mh.listLabel}」에서 폴더마다 되살려 주세요.`
+    : '파일과 폴더가 100만 개를 넘습니다. 안쪽 폴더만 꺼내는 길은 다음 업데이트에서 엽니다.';
+  if (code === 'NO_SNAPSHOT') return '붙들어 둔 판을 찾지 못했습니다. 「파일 되살리기」에서 남은 판을 확인해 주세요.';
+  return null;
 }
 
 const RESTORE = { id: 'restore', label: '파일 되살리기', kind: 'main', to: 'restore' };
@@ -213,9 +349,11 @@ export function homeModel(state, opts = {}) {
   const apps = movedAppsNote(state, opts.move, opts.checks, now);
   if (m.id === 'home-run') return apps ? { ...m, restored: apps } : m;
   const st = state && typeof state === 'object' ? state : {};
-  const note = restoreNote(st, now, m.id === 'home-restore-error'), ended = endedNote(st, now, m.id === 'home' || m.id === 'home-partial');
+  const note = restoreNote(st, now, m.id === 'home-restore-error', opts.massSent), ended = endedNote(st, now, m.id === 'home' || m.id === 'home-partial');
   // 되살리기 결과 줄과 끝난 되돌리기 줄이 함께 있으면 더 새것을 쓴다
   const restored = (note && ended ? (ended.at >= note.at ? ended : note) : note || ended) || undoNote(state, m.id === 'home', opts.undoSeen);
+  // 한꺼번에 지워짐에서 되살리기가 실패했으면 그 줄이 할 일을 말한다 — 되살리기 안내 줄(둘째)은 빼서 두 단추를 첫 화면에 남긴다
+  if (restored && m.id === 'home-mass' && restored.mass && m.notes.length > 1) return { ...m, notes: m.notes.slice(0, 1), restored };
   return restored ? { ...m, restored } : apps ? { ...m, restored: apps } : m;
 }
 
@@ -281,7 +419,7 @@ function fullRestoreError(s, now) {
   const e = s.lastRestoreError, full = s.lastRestore;
   return recentOf(e, now) && typeof e.code === 'string' && (!full || !(ms(full.at) > ms(e.at))) ? e : null;
 }
-function restoreNote(s, now, skipFull = false) {
+function restoreNote(s, now, skipFull = false, sent = null) {
   const recent = (x) => recentOf(x, now);
   const sel = s.lastSelectedRestore, full = s.lastRestore, err = s.lastSelectedRestoreError;
   const items = [];
@@ -289,8 +427,14 @@ function restoreNote(s, now, skipFull = false) {
   // 옛 PC 판을 받다 멈추거나 실패했으면 실패 칸에 from이 실린다(E26 알림 · restoreScope). 만들다 만 폴더는 열어 지울 수 있다(E29)
   if (fullErr && !skipFull) {
     const when = whenKo(fullErr.at, now), old = typeof fullErr.from === 'string' && fullErr.from, act = leftOpen(fullErr, false) || (old ? OLD_AGAIN : undefined);
-    items.push(fullErr.code === 'CANCELED' ? { at: ms(fullErr.at), text: `${when}에 ${old ? '옛 PC 백업 꺼내기' : '전체 되살리기'}를 그만두었습니다.${keptOf(fullErr)}`, act }
+    // 멈춤이 있는 동안에는 지워지기 전 판에서 받다 멈춘 것일 수 있다 — 실패 칸에 어느 되살리기였는지가 없어 「전체」라 하지 않는다
+    const mh0 = old ? null : massOf(s), since = mh0 ? ms(s.massHold.since) : null;
+    const mh = mh0 && (since === null || ms(fullErr.at) >= since) ? mh0 : null;
+    // 실패 칸에 범위가 있으면(E31) 그것, 없으면 이 창이 그 뒤에 보낸 한 폴더(FA5)
+    const failFolder = mh && fullErr.code === 'CATALOG_TOO_LARGE' ? massTooBig(s, sent) : null;
+    items.push(fullErr.code === 'CANCELED' ? { at: ms(fullErr.at), text: `${when}에 ${old ? '옛 PC 백업 꺼내기' : mh ? '되살리기' : '전체 되살리기'}를 그만두었습니다.${keptOf(fullErr)}`, act }
       : old ? { at: ms(fullErr.at), bad: true, text: `${when}에 옛 PC 백업에서 폴더를 꺼내지 못했습니다. ${scopeFailText(fullErr.code) || failureText(fullErr.code)}${leftover(fullErr)}`, act }
+      : mh ? { at: ms(fullErr.at), bad: true, mass: true, text: `${when}에 되살리기를 마치지 못했습니다. ${massFailText(fullErr.code, mh, failFolder) || failureText(fullErr.code)}${leftover(fullErr)}`, act }
       : { at: ms(fullErr.at), bad: true, text: `${when}에 전체를 되살리지 못했습니다. ${failureText(fullErr.code)}${leftover(fullErr)}`, act });
   }
   if (recent(err) && (!sel || ms(err.at) > ms(sel.at))) {
@@ -303,7 +447,14 @@ function restoreNote(s, now, skipFull = false) {
   const skipped = Number(full?.skipped) > 0 ? Number(full.skipped) : 0;
   // 범위를 통째로 받은 것(restoreScope — lastRestore.scope { from, folder, sub })은 그 범위를 말한다
   const scope = full?.scope && typeof full.scope.folder === 'string' ? full.scope : null;
-  const what = scope ? `${scope.from ? '옛 PC 백업의 ' : ''}${oldWhere(folderName(scope.folder), scope.sub)} 폴더를 ${madeIn(full)}통째로 꺼냈습니다.` : `가장 최근 판 전체를 ${madeIn(full)}되살렸습니다.`;
+  // 지워지기 전 판에서 받은 것(restoreMassBefore — lastRestore.mass { beforeId, beforeAt })은 그 판을 말한다
+  // 받은 범위를 알면 그 범위를(FA1), 모르면 범위 없이 쓴다. 판의 폴더를 가르지 못한 멈춤은 모든 폴더를 받는다
+  const massAt = full?.mass && ms(full.mass.beforeAt) !== null ? full.mass.beforeAt : null;
+  const got = massAt ? massGot(full.mass, full.at, sent) : undefined, held = massAt ? massOf(s) : null;
+  const massWhat = typeof got === 'string' ? `「${folderName(got)}」 폴더를 ${madeIn(full)}통째로 되살렸습니다.`
+    : got === null ? `${held && !held.folders.length ? '백업한' : '바뀐'} 폴더를 ${madeIn(full)}통째로 되살렸습니다.` : `${madeIn(full)}되살렸습니다.`;
+  const what = massAt ? `${whenKo(massAt, now)} 판에서 ${massWhat}`
+    : scope ? `${scope.from ? '옛 PC 백업의 ' : ''}${oldWhere(folderName(scope.folder), scope.sub)} 폴더를 ${madeIn(full)}통째로 꺼냈습니다.` : `가장 최근 판 전체를 ${madeIn(full)}되살렸습니다.`;
   if (recent(full)) items.push({ at: ms(full.at), text: `${whenKo(full.at, now)}에 ${what}${skipped ? ` ${count(skipped)}개는 만들지 않고 건너뛰었습니다. 다른 곳을 가리키는 연결, 특수 파일, Windows에서 쓸 수 없는 이름입니다.` : ''}`, act: { id: 'open-full', label: '되살린 폴더 열기', kind: 'link', call: 'openRestoreFolder' } });
   // 실패가 기본 화면의 제목이면, 그보다 앞선 결과 줄(같은 날 먼저 성공한 되살리기)은 띄우지 않는다 — 방금 된 것으로 읽힌다(카본 A1)
   const after = skipFull && fullErr ? items.filter((x) => x.at > ms(fullErr.at)) : items;
@@ -456,16 +607,9 @@ function baseModel(state, now, opts) {
       evidence: evidence(s, now, { next: null }) };
   }
 
-  // 한꺼번에 지워짐(설계 4.4) — 엔진에 아직 없다(FUTURE.massHold)
-  if (s.massHold) {
-    const m = s.massHold, folder = folderName(m.path);
-    return { ...base, id: 'home-mass', tone: 'bad', stamp: '경고', kick: `${device} · 확인이 필요합니다`, title: '많은 파일이 한꺼번에 지워졌습니다.',
-      sub: `${aroundKo(m.at, now)} 「${folder}」에서 ${count(m.removed)}개가 사라졌습니다. 확인하기 전까지 이전 판을 지우지 않습니다.`,
-      notes: ['직접 지웠거나, 폴더를 옮기거나 이름을 바꿨다면 「내가 한 일이 맞음」을 누르세요.', '모르는 일이면 지워지기 전 판으로 되살리세요. 원래 파일은 건드리지 않고 새 폴더에 놓습니다.'],
-      link: { label: `지워진 ${count(m.removed)}개 보기`, to: 'mass-list' },
-      actions: [{ id: 'mass-restore', label: '지워지기 전으로 되살리기', kind: 'main', pending: '지워지기 전 판에서 되살리기' }, { id: 'mass-ok', label: '내가 한 일이 맞음', kind: 'line', pending: '「내가 한 일이 맞음」 알리기' }],
-      evidence: evidence(s, now, { state: 'mass' }) };
-  }
+  // 한꺼번에 지워지거나 바뀜(설계 4.4 — 엔진 massHold, 조율 세션 9ddcbeb40). 붙들어 둔 판은 사람이 「확인을 마침」을 누를 때까지 남는다
+  const mass = massModel(s, now, opts);
+  if (mass) return { ...base, ...mass, evidence: evidence(s, now, { state: 'mass' }) };
 
   // 되살려 보기에서 다름(설계 4.7) — 손상은 그날 알린다
   if (s.probeHold || s.lastProbe?.result === 'failed') {

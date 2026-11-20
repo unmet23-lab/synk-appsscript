@@ -1822,3 +1822,179 @@ test('솔리오 잇기(엔진 305e380fe · 설계 4.13 · 4.14 · 4.16): 처음 
     if (named) assert.ok(mm.actions.some((x) => x.take && x.label === named), `${name}: 「${named}」`);
   }
 });
+
+test('한꺼번에 지워짐(설계 4.4 — 엔진 massHold, 조율 세션 9ddcbeb40): 갈래마다 글, 한 번 더 묻기, 되살린 뒤, 목록 화면', async () => {
+  const m = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const strip = (x) => x.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  const draw = (s, opts = {}, ui = {}) => { const mm = m.homeModel(s, { now: NOW, ...opts }); return { mm, html: strip(renderScreen('home', { state: s, model: mm, now: NOW, ui, acct: {}, fake: true }).html) }; };
+  const home = (name, opts) => draw(STATES[name], opts);
+  const PICS = 'C:\\Users\\studio\\Pictures';
+
+  // 지워짐 — 그 갈래(지워짐)의 수가 있는 폴더만 「등 N곳」으로 센다. 견준 두 판의 시각을 쓴다
+  const a = home('home-mass');
+  assert.equal(a.mm.id, 'home-mass'); assert.equal(a.mm.tone, 'bad');
+  assert.equal(a.mm.sub, '어제 오전 11:02부터 오늘 오후 2:02 사이에 「문서」에서 파일 3,980개가 사라졌습니다. 확인하기 전까지 그 전의 판을 지우지 않습니다.');
+  assert.deepEqual(a.mm.actions.map((x) => [x.id, x.label, x.massAsk || x.call]), [['mass-restore', '지워지기 전으로 되살리기', 'restore'], ['mass-ok', '내가 한 일이 맞음', 'ok']]);
+  assert.equal(a.mm.link.label, '지워지거나 바뀐 파일 3,992개 보기'); assert.equal(a.mm.link.to, 'mass-list');
+  assert.deepEqual(a.mm.evidence.folders.rows.filter((r) => r.x).map((r) => [r.k, r.main, r.mark]), [['문서', '1,330개', '−3,980'], ['사진', '4,880개', '바뀜 12']]);
+  assert.deepEqual(a.mm.evidence.extra, []); assert.equal(a.mm.evidence.folders.more, 0);
+  // Opus 대체 검수 FA3 — 네 폴더가 모두 바뀌면 많이 바뀐 두 곳만 줄로, 나머지는 「그 밖의 폴더」 한 줄
+  const four = home('home-mass-four');
+  assert.deepEqual(four.mm.evidence.folders.rows.filter((r) => r.x).map((r) => r.k), ['문서', '사진']); assert.equal(four.mm.evidence.folders.more, 2);
+  // -b 1 — 큰 파일이 지워진 멈춤은 지운 수로 고른다(둘째 줄이 말하는 폴더가 확인서에 남는다)
+  const bigSmall = draw({ ...STATES['home-mass-bytes'], massHold: { ...STATES['home-mass-bytes'].massHold, folders: [{ path: 'C:\\Users\\studio\\Documents', removed: 0, changed: 40 }, { path: 'C:\\Users\\studio\\Pictures', removed: 0, changed: 30 }, { path: 'D:\\Projects', removed: 3, changed: 0 }] } });
+  assert.deepEqual(bigSmall.mm.evidence.folders.rows.filter((r) => r.x).map((r) => r.k), ['문서', 'Projects']);
+  assert.match(four.html, /그 밖의 폴더 2곳 더 바뀜/);
+  assert.equal(a.mm.evidence.total.v, '8,500개 · 12.3GB');
+  assert.match(a.html, /되살린 파일은 다운로드 안의 「되살린 파일 \(11월 13일\)」 폴더에 놓습니다\. 자리 바꾸기/);
+  assert.match(a.html, /문서 1,330개 −3,980 사진 4,880개 바뀜 12/); assert.doesNotMatch(a.html, /되살려 본 날/);
+  // 내용이 바뀜 · 큰 파일 · 폴더를 가르지 못한 판
+  const c = home('home-mass-changed');
+  assert.equal(c.mm.title, '많은 파일의 내용이 한꺼번에 바뀌었습니다.');
+  assert.match(c.mm.sub, /「사진」 등 2곳에서 파일 2,412개의 내용이 바뀌었습니다\./);
+  assert.equal(c.mm.actions[0].label, '바뀌기 전으로 되살리기'); assert.equal(c.mm.link.label, '바뀐 파일 2,412개 보기');
+  assert.match(c.mm.notes[0], /직접 고쳤거나/);
+  const b = home('home-mass-bytes');
+  assert.equal(b.mm.title, '큰 파일이 한꺼번에 지워졌습니다.');
+  assert.match(b.mm.sub, /「Projects」에서 파일 3개가 사라졌습니다\. 모두 4\.1GB입니다\./);
+  const nf = home('home-mass-nofolder');
+  assert.match(nf.mm.sub, /사이에 백업한 폴더에서 파일 3,980개가 사라졌습니다/); assert.equal(nf.mm.evidence.folders.rows.filter((r) => r.x).length, 0);
+
+  // 놓을 자리 — 기본 자리는 한 번 더 묻고, 고르는 자리는 바로 부른다(그 창이 묻는다). 다운로드를 지키면 다운로드에 놓기가 없다
+  const pick = home('home-mass', { place: 'pick' });
+  assert.equal(pick.mm.actions[0].call, 'restoreMassBefore'); assert.equal(pick.mm.actions[0].massAsk, undefined);
+  assert.equal(pick.mm.hint, '누르면 놓을 폴더를 고르는 창이 뜹니다.'); assert.equal(pick.mm.hintAct.id, 'place-default');
+  const guarded = draw({ ...STATES['home-mass'], sources: [...STATES['home-mass'].sources, 'C:\\Users\\studio\\Downloads'] });
+  assert.equal(guarded.mm.actions[0].call, 'restoreMassBefore'); assert.equal(guarded.mm.hintAct, null);
+  assert.match(guarded.mm.hint, /다운로드도 지키는 폴더라/);
+
+  // 한 번 더 묻기 — 확인을 마침 · 바뀐 폴더 모두 · 한 폴더
+  const ok = home('home-mass', { massAsk: 'ok' });
+  assert.equal(ok.mm.box.title, '확인을 마치면 이전 판을 다시 정리합니다');
+  assert.match(ok.mm.box.text, /붙들어 둔 어제 오전 11:02 판도 그때 지워질 수 있습니다/);
+  assert.deepEqual(ok.mm.actions.map((x) => [x.id, x.call]), [['mass-ok-go', 'massConfirm'], ['mass-no', undefined]]); assert.equal(ok.mm.link, null);
+  const all = home('home-mass', { massAsk: { folder: null } });
+  assert.equal(all.mm.box.title, '바뀐 폴더 2곳을 지워지기 전 판으로 되살릴까요?');
+  assert.match(all.mm.box.text, /어제 오전 11:02 판에서 통째로 꺼내 다운로드 안의 「되살린 파일 \(11월 13일\)」 폴더에 놓습니다/);
+  assert.deepEqual([all.mm.actions[0].id, all.mm.actions[0].call, all.mm.actions[0].folder], ['mass-restore-go', 'restoreMassBefore', null]);
+  const one = home('home-mass', { massAsk: { folder: PICS.toUpperCase() } });
+  assert.equal(one.mm.box.title, '「사진」 폴더를 지워지기 전 판으로 되살릴까요?'); assert.equal(one.mm.actions[0].folder, PICS);
+  // 바뀐 폴더가 아닌 것을 물으면, 그리고 고르는 자리로 바꾸면 묻지 않는다
+  assert.equal(home('home-mass', { massAsk: { folder: 'C:\\Elsewhere' } }).mm.box, null);
+  assert.equal(home('home-mass', { massAsk: { folder: null }, place: 'pick' }).mm.box, null);
+
+  // 되살린 뒤 — 결과 줄이 그 판을 말하고, 주 단추는 「확인을 마침」이다
+  const done = home('home-mass-restored');
+  assert.deepEqual(done.mm.actions.map((x) => [x.id, x.label, x.massAsk || x.call]), [['mass-done', '확인을 마침', 'ok'], ['mass-restore', '다시 되살리기', 'restore']]);
+  assert.equal(done.mm.restored.text, '오후 2:30에 어제 오전 11:02 판에서 바뀐 폴더를 「되살린 파일 (11월 13일)」에 통째로 되살렸습니다.');
+  assert.equal(done.mm.restored.act.call, 'openRestoreFolder');
+  // 카본 A3 — 되살린 뒤의 「확인을 마침」 상자는 「내가 한 일이 맞을 때만」이라 하지 않는다
+  const doneOk = home('home-mass-restored', { massAsk: 'ok' }).mm.box.text;
+  assert.match(doneOk, /되살린 파일에서 필요한 것을 다 옮겼을 때 누르세요\./); assert.doesNotMatch(doneOk, /내가 한 일이 맞을 때만/);
+  assert.match(ok.mm.box.text, /내가 한 일이 맞을 때만 누르세요\./);
+  // FA1 — 한 폴더만 받았거나 범위를 모르면 「확인을 마침」을 앞세우지 않는다
+  const got1 = home('home-mass-restored-one');
+  assert.deepEqual(got1.mm.actions.map((x) => [x.id, x.kind]), [['mass-restore', 'main'], ['mass-done', 'line']]);
+  assert.equal(got1.mm.notes[0], '아직 「문서」 폴더는 되살리지 않았습니다. 다 받은 뒤 「확인을 마침」을 누르세요.');
+  // -b 2 — 창이 모아 둔 받은 폴더와 합쳐, 하나씩 다 받았으면 「확인을 마침」이 주 단추다
+  const got1s = STATES['home-mass-restored-one'];
+  assert.equal(draw(got1s, { massGot: { beforeId: got1s.massHold.beforeId, all: false, folders: ['C:\\Users\\studio\\Documents'] } }).mm.actions[0].id, 'mass-done');
+  assert.equal(draw(got1s, { massGot: { beforeId: 'd'.repeat(64), all: false, folders: ['C:\\Users\\studio\\Documents'] } }).mm.actions[0].id, 'mass-restore');
+  assert.equal(got1.mm.restored.text, '오후 2:30에 어제 오전 11:02 판에서 「사진」 폴더를 「되살린 파일 (11월 13일)」에 통째로 되살렸습니다.');
+  const unk = home('home-mass-restored-unknown');
+  assert.equal(unk.mm.actions[0].id, 'mass-restore'); assert.match(unk.mm.notes[0], /바뀐 폴더가 다 왔는지/);
+  assert.equal(unk.mm.restored.text, '오후 2:30에 어제 오전 11:02 판에서 「되살린 파일 (11월 13일)」에 되살렸습니다.');
+  // 엔진이 범위를 적지 않아도 이 창이 보낸 것(massSent)으로 가린다 — 보낸 뒤에 끝난 결과만
+  const u0 = STATES['home-mass-restored-unknown'], sentAt = Date.parse('2026-11-13T14:10:00+09:00');
+  assert.equal(draw(u0, { massSent: { beforeId: u0.massHold.beforeId, folder: null, at: sentAt } }).mm.actions[0].id, 'mass-done');
+  const sentOne = draw(u0, { massSent: { beforeId: u0.massHold.beforeId, folder: PICS, at: sentAt } });
+  assert.equal(sentOne.mm.actions[0].id, 'mass-restore'); assert.match(sentOne.mm.restored.text, /「사진」 폴더를/); assert.match(sentOne.mm.notes[0], /아직 「문서」 폴더는/);
+  assert.equal(draw(u0, { massSent: { beforeId: u0.massHold.beforeId, folder: null, at: Date.parse('2026-11-13T14:35:00+09:00') } }).mm.actions[0].id, 'mass-restore');
+  assert.equal(draw(u0, { massSent: { beforeId: 'd'.repeat(64), folder: null, at: sentAt } }).mm.actions[0].id, 'mass-restore');
+  // 다시 검수 -c 1 — 남은 폴더는 두 곳까지 이름으로, 나머지는 「등 N곳」
+  const f4 = STATES['home-mass-four'], DOCS = 'C:\\Users\\studio\\Documents', DESK = 'C:\\Users\\studio\\Desktop';
+  const f4got = { ...f4, lastRestore: { ...r0Done(), mass: { beforeId: f4.massHold.beforeId, beforeAt: f4.massHold.beforeAt } } };
+  assert.equal(draw(f4got, { massSent: { beforeId: f4.massHold.beforeId, folder: DOCS, at: sentAt } }).mm.notes[0], '아직 「바탕화면」 · 「사진」 등 3곳은 되살리지 않았습니다. 다 받은 뒤 「확인을 마침」을 누르세요.');
+  // -c 2 — 100만 개를 넘어 지금 받을 수 없는 폴더는 「다 받은 뒤」에서 뺀다
+  const bigErr = { ...f4got, lastRestoreError: { code: 'CATALOG_TOO_LARGE', at: '2026-11-13T05:38:00.000Z' } };
+  const bigOpts = { massGot: { beforeId: f4.massHold.beforeId, all: false, folders: [DOCS] }, massSent: { beforeId: f4.massHold.beforeId, folder: DESK, at: Date.parse('2026-11-13T14:35:00+09:00') } };
+  const bigNote = draw(bigErr, bigOpts).mm;
+  assert.equal(bigNote.notes[0], '아직 「사진」 · 「Projects」 폴더는 되살리지 않았습니다. 다 받은 뒤 「확인을 마침」을 누르세요.');
+  assert.match(bigNote.restored.text, /「바탕화면」 폴더는 파일과 폴더가 100만 개를 넘어 통째로 받을 수 없습니다/);
+  const bigRest = draw(bigErr, { ...bigOpts, massGot: { ...bigOpts.massGot, folders: [DOCS, 'C:\\Users\\studio\\Pictures', 'D:\\Projects'] } }).mm;
+  assert.equal(bigRest.notes[0], '「바탕화면」 폴더 말고는 다 되살렸습니다. 그 폴더가 필요 없으면 「확인을 마침」을 누르세요.');
+  // 바뀐 폴더가 하나뿐이면 그 폴더를 받은 것이 모두다
+  const b0 = STATES['home-mass-bytes'];
+  assert.equal(draw({ ...b0, lastRestore: { ...r0Done(), mass: { beforeId: b0.massHold.beforeId, beforeAt: b0.massHold.beforeAt, folder: b0.massHold.path } } }).mm.actions[0].id, 'mass-done');
+  // 다른 판(beforeId)에서 받았거나 멈추기 전에 받은 것은 이 멈춤의 것이 아니다
+  const r0 = STATES['home-mass-restored'];
+  function r0Done() { return STATES['home-mass-restored'].lastRestore; }
+  assert.equal(draw({ ...r0, lastRestore: { ...r0.lastRestore, mass: { ...r0.lastRestore.mass, beforeId: 'd'.repeat(64) } } }).mm.actions[0].id, 'mass-restore');
+  assert.equal(draw({ ...r0, lastRestore: { ...r0.lastRestore, at: '2026-11-13T05:00:00.000Z' } }).mm.actions[0].id, 'mass-restore');
+  // 멈춤이 풀린 뒤에도 하루는 그 결과 줄을 둔다
+  assert.match(draw({ ...r0, massHold: null, protection: STATES.home.protection }).mm.restored.text, /어제 오전 11:02 판에서 바뀐 폴더를/);
+
+  // 멈춤이 있는 동안 끝난 되살리기의 실패 — 「전체」라 하지 않는다
+  assert.equal(home('home-mass-failed').mm.restored.text, '오후 2:20에 되살리기를 마치지 못했습니다. 100만 개가 넘는 폴더가 있습니다. 「지워지거나 바뀐 파일 3,992개 보기」에서 폴더마다 되살려 주세요.');
+  assert.equal(home('home-mass-failed').mm.notes.length, 1);
+  // 카본 A4 — 멈추기 전의 실패는 멈춤의 실패가 아니다(「전체를」 글 그대로, 안내 줄도 둘 다)
+  const preErr = draw({ ...STATES['home-mass-failed'], lastRestoreError: { code: 'NO_SPACE', at: '2026-11-13T05:00:00.000Z' } });
+  assert.match(preErr.mm.restored.text, /전체를 되살리지 못했습니다/); assert.equal(preErr.mm.notes.length, 2);
+  const f0 = STATES['home-mass-failed'];
+  assert.match(draw({ ...f0, massHold: STATES['home-mass-bytes'].massHold }).mm.restored.text, /파일과 폴더가 100만 개를 넘습니다\. 안쪽 폴더만 꺼내는 길은 다음 업데이트에서 엽니다\./);
+  assert.equal(draw({ ...f0, lastRestoreError: { code: 'CANCELED', at: f0.lastRestoreError.at } }).mm.restored.text, '오후 2:20에 되살리기를 그만두었습니다.');
+  // FA5 — 한 폴더만 받다 100만 개를 넘었으면 그 폴더를 말하고 폴더마다 받으라고 하지 않는다
+  const tooOne = draw(f0, { massSent: { beforeId: f0.massHold.beforeId, folder: PICS, at: Date.parse('2026-11-13T14:10:00+09:00') } }).mm.restored.text;
+  assert.match(tooOne, /「사진」 폴더는 파일과 폴더가 100만 개를 넘어 통째로 받을 수 없습니다\. 안쪽 폴더만 꺼내는 길은 다음 업데이트에서 엽니다\./); assert.doesNotMatch(tooOne, /폴더마다/);
+  assert.match(draw({ ...f0, lastRestoreError: { code: 'NO_SPACE', at: f0.lastRestoreError.at } }).mm.restored.text, /되살리기를 마치지 못했습니다\. 놓을 드라이브에 빈 공간이 모자랍니다/);
+
+  // 목록 화면 — 바뀐 폴더(폴더마다 되살리기)와 이름 500개
+  const s = STATES['home-mass'], list = renderScreen('mass-list', { state: s, model: m.homeModel(s, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true });
+  assert.equal(list.here, '한꺼번에 지워짐'); assert.equal(list.back, 'home');
+  assert.equal((list.html.match(/class="fl plain"/g) || []).length, 500);
+  assert.match(strip(list.html), /파일 3,992개 가운데 500개/); assert.match(strip(list.html), /목록은 500개까지만 보입니다/);
+  assert.match(list.html, /<span class="nm">계약서 001\.docx<\/span><span class="vl">지워짐<\/span><span class="ds">문서 › 계약 › 2026<\/span>/);
+  assert.match(list.html, /<span class="nm">IMG_4101\.jpg<\/span><span class="vl"><span class="x">바뀜<\/span><\/span><span class="ds">사진 › 2026 송년회<\/span>/);
+  assert.deepEqual([...list.html.matchAll(/data-act="mass-one" data-path="([^"]+)"/g)].map((x) => x[1].replace(/\\/g, '/')), ['C:/Users/studio/Documents', 'C:/Users/studio/Pictures']);
+  assert.deepEqual(list.acts['mass-one'], { id: 'mass-one', massAsk: 'one' });
+  const listPick = renderScreen('mass-list', { state: s, model: m.homeModel(s, { now: NOW }), now: NOW, ui: { place: 'pick' }, acct: {}, fake: true });
+  assert.deepEqual(listPick.acts['mass-one'], { id: 'mass-one', call: 'restoreMassBefore', perFolder: true });
+  // 카본 A2 — 고르는 자리에서 「확인을 마침」 상자를 연 채로도 폴더마다 단추는 바로 부른다
+  const pickOk = renderScreen('mass-list', { state: s, model: m.homeModel(s, { now: NOW, massAsk: 'ok', place: 'pick' }), now: NOW, ui: { place: 'pick', massAsk: 'ok' }, acct: {}, fake: true });
+  assert.deepEqual(pickOk.acts['mass-one'], { id: 'mass-one', call: 'restoreMassBefore', perFolder: true });
+  // 목록 화면에서 한 번 더 묻는 동안(링크가 없는 모델)에도 그린다 — 앞 판은 여기서 멈췄다
+  for (const ask of [{ folder: PICS }, { folder: null }, 'ok']) {
+    const asked = renderScreen('mass-list', { state: s, model: m.homeModel(s, { now: NOW, massAsk: ask }), now: NOW, ui: { massAsk: ask }, acct: {}, fake: true });
+    assert.match(asked.html, /class="box/); assert.equal((asked.html.match(/class="fl plain"/g) || []).length, 500);
+  }
+  // FA2 — 목록 화면에 있는 동안 기본 화면이 다른 일(도는 백업)을 먼저 보이면 멈춤 단추를 다 막고 까닭을 쓴다
+  const runSt = { ...s, job: { kind: 'backup', stage: '백업 중', percent: 10, scheduled: true } };
+  const listRun = renderScreen('mass-list', { state: runSt, model: m.homeModel(runSt, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html;
+  assert.match(listRun, /지금 다른 일이 도는 중입니다\. 끝나면 누를 수 있습니다\./);
+  assert.equal((listRun.match(/data-act="mass-(restore|ok|one)"[^>]*aria-disabled="true"/g) || []).length, 4);
+  // 도는 호출이 있으면 폴더마다의 단추와 자리 바꾸기를 막는다
+  const busy = renderScreen('mass-list', { state: s, model: m.homeModel(s, { now: NOW }), now: NOW, ui: {}, acct: { running: 'mass-restore-go' }, fake: true }).html;
+  assert.equal((busy.match(/data-act="mass-one"[^>]*aria-disabled="true"/g) || []).length, 2); assert.match(busy, /data-act="place-pick" aria-disabled="true"/);
+  // 바뀐 폴더가 하나면 폴더마다의 단추가 없다. 폴더를 가르지 못한 판은 판 안의 경로로 쓴다
+  const sb = STATES['home-mass-bytes'], lb = renderScreen('mass-list', { state: sb, model: m.homeModel(sb, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true });
+  assert.doesNotMatch(lb.html, /data-act="mass-one"/); assert.equal(lb.acts['mass-one'], undefined); assert.doesNotMatch(lb.html, /500개까지만/);
+  const sn = STATES['home-mass-nofolder'], ln = renderScreen('mass-list', { state: sn, model: m.homeModel(sn, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html;
+  assert.match(ln, /<span class="nm">계약서 001\.docx<\/span><span class="vl">지워짐<\/span><span class="ds">C › Users › studio › Documents › 계약 › 2026<\/span>/); assert.doesNotMatch(ln, /<h2>바뀐 폴더/);
+  assert.match(ln, /되살리기는 백업한 폴더를 통째로 받으므로/);
+  // 이름은 h()로 막는다
+  const evil = { ...s, massHold: { ...s.massHold, list: [{ folder: s.massHold.path, name: '<img src=x onerror=alert(1)>.txt', kind: 'removed' }] } };
+  assert.doesNotMatch(renderScreen('mass-list', { state: evil, model: m.homeModel(evil, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html, /<img/);
+  // 멈춤이 없으면 목록 화면은 기본 화면을 그린다
+  assert.equal(renderScreen('mass-list', { state: STATES.home, model: m.homeModel(STATES.home, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).kind, 'home');
+  // 빠지거나 이상한 칸을 견딘다
+  const odd = draw({ ...STATES.home, massHold: { kind: 'changed', removed: 'x', changed: -3, folders: null, list: [{}, { name: 5 }, null], path: 7 } });
+  assert.equal(odd.mm.title, '많은 파일의 내용이 한꺼번에 바뀌었습니다.'); assert.match(odd.mm.sub, /^백업한 폴더에서 파일 0개의 내용이 바뀌었습니다/);
+  assert.equal(m.massOf({ massHold: { list: [{}, { name: 5 }, null, { name: 'a', folder: '' }] } }).list.length, 1);
+
+  // 「파일 되살리기」 화면 — 지워지기 전 판은 기본 화면의 단추로 꺼낸다
+  const rs = strip(renderScreen('restore', { state: s, model: m.homeModel(s, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html);
+  assert.match(rs, /한꺼번에 지워지기 전의 판은 기본 화면에서 꺼냅니다\. 이 목록은 가장 최근 판입니다\./);
+  assert.doesNotMatch(rs, /준비 중/);
+});
