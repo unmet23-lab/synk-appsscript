@@ -160,6 +160,110 @@ test('requests: claimed by one side only, setup left to the window, leftovers an
   assert.ok(!fs.existsSync(old));
 });
 
+test('requests: a cancel mark, seen after claiming and before handling, refuses it; the engine removes it once answered (4.13)', async t => {
+  const root = temp(t);
+  const a = new solio.SolioFiles({ root, now: () => NOW });
+  await a.ready();
+  const handled = [], wants = c => !c.ok || c.value.kind === 'setup';
+  const handle = async v => { handled.push(v.hint); return { result: 'done' }; };
+  // Marked before the engine looks: refused, never handed on; the mark goes with the answer.
+  put(a, name(NOW, 'setupcan'), { v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' });
+  fs.writeFileSync(a.mark(name(NOW, 'setupcan')), '');
+  assert.deepEqual(await a.process({ wants, handle }), [{ kind: 'setup', result: 'rejected', reason: 'cancelled' }]);
+  assert.deepEqual([handled, result(a, name(NOW, 'setupcan')).reason, fs.existsSync(a.mark(name(NOW, 'setupcan')))], [[], 'cancelled', false]);
+  // Marked right after the engine claimed it: still refused — the check after claiming is the one that counts (GA3).
+  put(a, name(NOW, 'setuplat'), { v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' });
+  const fsp = require('node:fs/promises'), link = fsp.link;
+  fsp.link = async (from, to, ...rest) => { await link(from, to, ...rest); fs.writeFileSync(a.mark(path.basename(to)), 'x'); };
+  try { assert.deepEqual(await a.process({ wants, handle }), [{ kind: 'setup', result: 'rejected', reason: 'cancelled' }]); } finally { fsp.link = link; }
+  assert.deepEqual(handled, []);
+  // Anything under that name is a mark, a folder too; one that cannot be removed stays for 솔리오, and the answer stands.
+  put(a, name(NOW, 'setupdir'), { v: 1, kind: 'setup', mode: 'move' });
+  fs.mkdirSync(a.mark(name(NOW, 'setupdir')));
+  assert.deepEqual(await a.process({ wants, handle }), [{ kind: 'setup', result: 'rejected', reason: 'cancelled' }]);
+  assert.ok(fs.existsSync(a.mark(name(NOW, 'setupdir'))) && !fs.existsSync(path.join(a.claimed, name(NOW, 'setupdir'))));
+  fs.rmdirSync(a.mark(name(NOW, 'setupdir')));
+  // A mark that cannot be looked at counts as one: refused rather than handed on.
+  const lstat = fsp.lstat;
+  fsp.lstat = async (p, ...rest) => { if (String(p).endsWith('.cancel')) throw Object.assign(new Error('denied'), { code: 'EACCES' }); return lstat(p, ...rest); };
+  try {
+    put(a, name(NOW, 'setupacc'), { v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' });
+    assert.deepEqual(await a.process({ wants, handle }), [{ kind: 'setup', result: 'rejected', reason: 'cancelled' }]);
+    assert.deepEqual(handled, []);
+  } finally { fsp.lstat = lstat; }
+  // A mark is not a request — one with no request beside it is neither read nor removed — and with none, the request is
+  // handled as before (GA4).
+  fs.writeFileSync(a.mark(name(NOW, 'lonemark')), '');
+  assert.deepEqual(await a.names(a.requests), []);
+  put(a, name(NOW, 'setupok0'), { v: 1, kind: 'setup', mode: 'protect', hint: 'new@example.com' });
+  assert.deepEqual(await a.process({ wants, handle }), [{ kind: 'setup', result: 'done' }]);
+  assert.deepEqual(handled, ['new@example.com']);
+  assert.ok(fs.existsSync(a.mark(name(NOW, 'lonemark'))), 'a mark with no request is left to 솔리오'); fs.rmSync(a.mark(name(NOW, 'lonemark')));
+  // A claimed request left by a side that died: answered failed, and its mark goes too.
+  fs.writeFileSync(path.join(a.claimed, name(NOW, 'crashcan')), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect' }));
+  fs.writeFileSync(a.mark(name(NOW, 'crashcan')), '');
+  await a.sweep();
+  assert.deepEqual([result(a, name(NOW, 'crashcan')).reason, fs.existsSync(a.mark(name(NOW, 'crashcan')))], ['interrupted', false]);
+  // Died between linking and removing the original: both are there. The sweep removes both and the mark; once 솔리오 has
+  // read and removed the answer, nothing is left to claim again without the mark (GA1).
+  put(a, name(NOW, 'halfcl00'), { v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' });
+  fs.linkSync(path.join(a.requests, name(NOW, 'halfcl00')), path.join(a.claimed, name(NOW, 'halfcl00')));
+  fs.writeFileSync(a.mark(name(NOW, 'halfcl00')), '');
+  await a.sweep();
+  assert.equal(result(a, name(NOW, 'halfcl00')).reason, 'interrupted');
+  fs.rmSync(path.join(a.results, name(NOW, 'halfcl00')));
+  assert.deepEqual([fs.existsSync(path.join(a.requests, name(NOW, 'halfcl00'))), await a.process({ wants, handle }), handled], [false, [], ['new@example.com']]);
+  // The original another program holds and will not let go: the answer is still written, and the mark stays, so the original —
+  // claimed again once 솔리오 has removed the answer — is refused (r2 GA1).
+  put(a, name(NOW, 'heldorig'), { v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' });
+  fs.linkSync(path.join(a.requests, name(NOW, 'heldorig')), path.join(a.claimed, name(NOW, 'heldorig')));
+  fs.writeFileSync(a.mark(name(NOW, 'heldorig')), '');
+  const rm = fsp.rm, held = path.join(a.requests, name(NOW, 'heldorig'));
+  fsp.rm = async (p, ...rest) => { if (p === held) throw Object.assign(new Error('held'), { code: 'EPERM' }); return rm(p, ...rest); };
+  const claimedHeld = path.join(a.claimed, name(NOW, 'heldorig'));
+  try {
+    assert.deepEqual(await a.sweep(), [name(NOW, 'heldorig')]);
+    assert.deepEqual([result(a, name(NOW, 'heldorig')).reason, fs.existsSync(held), fs.existsSync(claimedHeld), fs.existsSync(a.mark(name(NOW, 'heldorig')))], ['interrupted', true, true, true]);
+    // 솔리오가 답을 읽고 지운 뒤에도 그 원래 이름은 다시 차지되지 않고(같은 이름의 차지가 남았다), 답도 되풀이해 쓰지 않는다(F1).
+    fs.rmSync(path.join(a.results, name(NOW, 'heldorig')));
+    assert.deepEqual([await a.process({ wants, handle }), await a.sweep(), handled], [[], [name(NOW, 'heldorig')], ['new@example.com']]);
+    assert.ok(!fs.existsSync(path.join(a.results, name(NOW, 'heldorig'))));
+  } finally { fsp.rm = rm; }
+  // Let go: the next sweep removes the original, the claim and the mark, and writes no second answer.
+  await a.sweep();
+  assert.deepEqual([fs.existsSync(held), fs.existsSync(claimedHeld), fs.existsSync(a.mark(name(NOW, 'heldorig'))), fs.existsSync(path.join(a.results, name(NOW, 'heldorig'))), handled], [false, false, false, false, ['new@example.com']]);
+  // Without the mark too, nothing answered 「실패」 is done later (F1): a held original claimed in a pass is left to the sweep.
+  put(a, name(NOW, 'heldnomk'), { v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' });
+  const held2 = path.join(a.requests, name(NOW, 'heldnomk'));
+  put(a, name(NOW + 1, 'afterhld'), { v: 1, kind: 'setup', mode: 'protect', hint: 'next@example.com' });
+  fsp.rm = async (p, ...rest) => { if (p === held2) throw Object.assign(new Error('held'), { code: 'EBUSY' }); return rm(p, ...rest); };
+  try {
+    assert.deepEqual(await a.process({ wants, handle }), [{ kind: 'setup', result: 'done' }], 'the pass goes on to the next request (F2)');
+    assert.deepEqual(await a.sweep(), [name(NOW, 'heldnomk')]);
+    fs.rmSync(path.join(a.results, name(NOW, 'heldnomk')));
+    assert.deepEqual(await a.process({ wants, handle }), []);
+  } finally { fsp.rm = rm; }
+  await a.sweep();
+  assert.deepEqual([await a.process({ wants, handle }), handled], [[], ['new@example.com', 'next@example.com']]);
+  fs.rmSync(path.join(a.results, name(NOW + 1, 'afterhld')));
+  // Under the claimed name in requests, something that is not a request — a folder, a link — is left alone, and the sweep goes on (r2 GA2).
+  for (const [tag, make] of [['adirectr', p => fs.mkdirSync(p)], ['alinkreq', p => junction(p, temp(t))]]) {
+    fs.writeFileSync(path.join(a.claimed, name(NOW, tag)), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect' }));
+    make(path.join(a.requests, name(NOW, tag))); fs.writeFileSync(a.mark(name(NOW, tag)), '');
+  }
+  assert.deepEqual((await a.sweep()).sort(), [name(NOW, 'adirectr'), name(NOW, 'alinkreq')]);
+  assert.ok(fs.lstatSync(path.join(a.requests, name(NOW, 'adirectr'))).isDirectory() && fs.lstatSync(path.join(a.requests, name(NOW, 'alinkreq'))).isSymbolicLink());
+  assert.deepEqual([result(a, name(NOW, 'adirectr')).reason, result(a, name(NOW, 'alinkreq')).reason], ['interrupted', 'interrupted']);
+  assert.ok(!fs.existsSync(a.mark(name(NOW, 'adirectr'))) && !fs.existsSync(a.mark(name(NOW, 'alinkreq'))), 'nothing there can be claimed again, so the marks go');
+  fs.rmdirSync(path.join(a.requests, name(NOW, 'adirectr'))); fs.rmSync(path.join(a.requests, name(NOW, 'alinkreq')));
+  // A request already answered (the side died before removing it) is not done again, and its mark goes.
+  put(a, name(NOW, 'answerdc'), { v: 1, kind: 'setup', mode: 'protect' });
+  fs.writeFileSync(path.join(a.results, name(NOW, 'answerdc')), JSON.stringify({ v: 1, result: 'done', at: 'x' }));
+  fs.writeFileSync(a.mark(name(NOW, 'answerdc')), '');
+  assert.deepEqual(await a.process({ wants, handle }), []);
+  assert.deepEqual([fs.existsSync(path.join(a.requests, name(NOW, 'answerdc'))), fs.existsSync(a.mark(name(NOW, 'answerdc')))], [false, false]);
+});
+
 test('requests: a folder that is a junction is refused, so nothing is read or removed elsewhere', async t => {
   const root = temp(t), elsewhere = temp(t);
   fs.mkdirSync(path.join(root, 'solio'), { recursive: true });

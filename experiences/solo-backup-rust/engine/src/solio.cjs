@@ -7,6 +7,8 @@
 //   옮기기에 성공한 쪽만 처리한다. 모르는 칸이 하나라도 있으면 통째로 버리고(거절), 8KB를 넘거나 연결점이면 읽지 않는다.
 //   요청으로 되는 일은 되돌릴 수 있는 것뿐이다(처음 시작 이어 하기, 삭제를 줄이는 설정, 쉼을 지키는 지금 백업).
 // - 결과 파일 `solio/results/<같은 이름>`: 낱말 하나(와 까닭 낱말)뿐이다. 하루가 지난 것은 엔진이 치운다.
+// - 취소 표식 `solio/requests/<요청 이름>.cancel`: 솔리오가 요청을 거둘 때 만든다. 그 이름에 무엇이 있든 표식이고 내용은 읽지
+//   않는다. 엔진은 차지한 뒤 처리하기 전에 보고, 있거나 확인하지 못하면 거절(cancelled)한다. 답을 쓴 뒤 지운다(0.7.0부터).
 //
 // 요청은 엔진 잠금을 쥔 쪽만 차지한다. 그래서 잠금을 쥔 쪽이 처음 보는 `claimed/`의 파일은 처리하던 쪽이 죽고 남긴
 // 것이고, 다시 하지 않고 「실패」로 치운다(한 요청이 회차마다 엔진을 되풀이해 죽이지 못하게).
@@ -35,7 +37,7 @@ const KINDS = ['setup', 'pick', 'space-setting', 'run-now'];
 const RESULTS = ['done', 'rejected', 'confirm-in-engine', 'rested', 'failed'];
 /** 거절 · 실패의 까닭 낱말. 결과 파일에는 이 목록 밖의 낱말이 나가지 않는다. */
 const REASONS = ['invalid', 'version', 'expired', 'set-up', 'moved', 'restore-only', 'not-set-up', 'no-report', 'old-report', 'not-available',
-  'not-yet', 'no-drive', 'paused', 'clock', 'busy', 'interrupted', 'battery', 'saver', 'metered', 'network', 'error'];
+  'not-yet', 'no-drive', 'paused', 'clock', 'busy', 'interrupted', 'battery', 'saver', 'metered', 'network', 'error', 'cancelled'];
 const SPACE_SETTINGS = ['start-line', 'auto-free', 'cloud-only-auto', 'empty-trash'];
 const GB = 1024 ** 3;
 
@@ -157,6 +159,8 @@ class SolioFiles {
     this.claimed = path.join(this.requests, 'claimed');
     this.results = path.join(this.dir, 'results');
     this.last = null; this.lastAt = 0;
+    // 원래 이름이 남아 차지를 남겨 둔 요청 가운데 이 실행이 이미 「실패」로 답한 것(sweep이 답을 되풀이해 쓰지 않게).
+    this.kept = new Set();
   }
   // 우리 폴더가 실제 폴더이고 연결점이 아니며, 실제로도 상태 폴더 안 그 자리인지. 정션으로 다른 곳을 가리키게 해 두면
   // 치우기가 남의 폴더에서 일하게 되므로, 하나라도 어긋나면 이번 차례는 아무것도 하지 않는다.
@@ -225,8 +229,19 @@ class SolioFiles {
     // 보통 파일만(정션과 링크는 Dirent에서 디렉터리로 보이지 않으므로 「디렉터리가 아님」으로 거르면 지나간다 — 카본 끝판 CA2).
     return list.filter(d => d.isFile() && !d.isSymbolicLink() && NAME.test(d.name)).map(d => d.name).sort();
   }
-  /** 결과 하나를 쓰고 차지한 요청을 지운다. 이미 같은 이름의 결과가 있으면(앞서 쓴 뒤 죽음) 덮지 않는다. */
-  async answer(name, r) {
+  /** 요청 `name`의 취소 표식 자리. */
+  mark(name) { return path.join(this.requests, `${name}.cancel`); }
+  /** 솔리오가 이 요청을 거뒀는지: 표식 자리에 무엇이든 있으면 참이다. 있는지 확인하지 못해도 참으로 본다(GPT r9 GA7 —
+   *  로그인이 바뀐 뒤 앞 로그인의 주소가 넘어가지 않게). */
+  async cancelled(name) {
+    try { await fs.lstat(this.mark(name)); return true; } catch (e) { return e?.code !== 'ENOENT'; }
+  }
+  /** 표식을 지운다. 표식이 아닌 것(폴더)이거나 지우지 못해도 넘어간다 — 솔리오가 35분 뒤 지운다. */
+  async unmark(name) { await fs.rm(this.mark(name), { force: true }).catch(() => {}); }
+  /** 결과 하나를 쓰고 차지한 요청과 그 취소 표식을 지운다. */
+  async answer(name, r) { await this.writeResult(name, r); await this.release(name); }
+  /** 결과 하나를 쓴다. 이미 같은 이름의 결과가 있으면(앞서 쓴 뒤 죽음) 덮지 않는다. */
+  async writeResult(name, r) {
     const file = path.join(this.results, name);
     const exists = await fs.lstat(file).then(() => true, () => false);
     if (!exists) {
@@ -234,12 +249,38 @@ class SolioFiles {
       await fs.writeFile(temp, JSON.stringify(resultOf(r, this.now())), { flag: 'wx' });
       try { await replace(temp, file); } catch (e) { await fs.rm(temp, { force: true }); throw e; }
     }
+  }
+  /** 차지한 요청과 그 취소 표식을 지운다. */
+  async release(name) {
     await fs.rm(path.join(this.claimed, name), { force: true });
+    await this.unmark(name);
+  }
+  /**
+   * 차지하다 끊겨 `requests`에도 남은 같은 요청(차지한 파일과 같은 파일의 원래 이름)을 지운다. 돌려주는 것은 그 이름으로 다시
+   * 차지될 요청이 남지 않았는지다. 지우지 못했거나(다른 프로그램이 쥠) 다른 파일이거나 확인하지 못하면 거짓이다 — 그때는 차지와
+   * 표식을 남긴다(GPT 취소 표식 r1 GA1 · r2 GA1, Opus 대체 설계 검토 F1). 보통 파일이 아닌 것(폴더 · 링크)은 요청이 아니어서 엔진이
+   * 읽지도 지우지도 않는다(r2 GA2) — 다시 차지될 일도 없으니 참이다.
+   */
+  async dropLeft(name) {
+    const left = path.join(this.requests, name);
+    let st; try { st = await fs.lstat(left, { bigint: true }); } catch (e) { return e?.code === 'ENOENT'; }
+    if (st.isSymbolicLink() || !st.isFile()) return true;
+    const mine = await fs.lstat(path.join(this.claimed, name), { bigint: true }).catch(() => null);
+    if (!mine || mine.ino !== st.ino || mine.dev !== st.dev) return false;
+    try { await fs.rm(left); return true; } catch { return false; }
   }
   /** 남은 차지와 하루 지난 결과를 치운다. 엔진 잠금을 쥔 쪽만 부른다. */
   async sweep() {
     const cleared = [];
-    for (const name of await this.names(this.claimed)) { await this.answer(name, { result: 'failed', reason: 'interrupted' }); cleared.push(name); }
+    for (const name of await this.names(this.claimed)) {
+      // 링크를 만든 뒤 원래 이름을 지우기 전에 끊겼으면 같은 요청이 requests에도 있다. 지우지 못해도 「실패」 답은 쓴다(GPT r2 GA1).
+      // 그때는 차지와 표식을 남긴다. 같은 이름의 차지가 있으면 링크가 실패하므로, 답이 지워진 뒤에도 그 원래 이름은 다시
+      // 차지되지 않는다(Opus 대체 설계 검토 F1). 원래 이름이 사라진 차례에 차지와 표식을 지운다.
+      const gone = await this.dropLeft(name).catch(() => false);
+      if (!this.kept.has(name)) await this.writeResult(name, { result: 'failed', reason: 'interrupted' });
+      if (gone) { await this.release(name); this.kept.delete(name); } else this.kept.add(name);
+      cleared.push(name);
+    }
     const now = this.now();
     for (const name of await this.names(this.results)) {
       const file = path.join(this.results, name);
@@ -284,16 +325,21 @@ class SolioFiles {
       if (!wants(checked)) continue;
       const from = path.join(this.requests, name), to = path.join(this.claimed, name);
       // 이미 답한 요청(답을 쓴 뒤 요청을 지우기 전에 죽었다)은 다시 하지 않는다.
-      if (await fs.lstat(path.join(this.results, name)).then(() => true, () => false)) { await fs.rm(from, { force: true }); continue; }
+      if (await fs.lstat(path.join(this.results, name)).then(() => true, () => false)) { if (await fs.rm(from, { force: true }).then(() => true, () => false)) await this.unmark(name); continue; }
       // 덮지 않는 옮기기: 같은 이름이 claimed에 있으면 실패하는 하드 링크를 만든 쪽만 차지한다. Node의 이름 바꾸기(fs.rename)로
       // 두 쪽이 거의 함께 옮기면 Windows에서 둘 다 성공으로 끝날 수 있었다(11-17 이 PC에서 10번 중 7번 재현).
       try { await fs.link(from, to); } catch { continue; } // 다른 쪽이 먼저, 또는 이미 없다
-      await fs.rm(from, { force: true });
+      // 원래 이름을 지우지 못하면(다른 프로그램이 쥠) 이 요청은 처리하지 않고 다음 sweep에 맡긴다. 이번 차례의 다른 요청은 그대로
+      // 한다(Opus 대체 설계 검토 F2).
+      if (!await fs.rm(from, { force: true }).then(() => true, () => false)) continue;
       // 차지한 뒤 다시 읽어 확인한다(읽어 본 것과 옮긴 것이 다를 수 있다).
       const read = await this.readSmall(path.join(this.claimed, name));
       const value = !read || read.bad ? { ok: false, reason: 'invalid' } : validate(read.value, { at, now: this.now() });
       let r;
-      if (!value.ok) r = { result: 'rejected', reason: value.reason };
+      // 취소 표식은 차지한 뒤, 처리하기 전에 본다. 옮기기 전에 본 것은 이것을 대신하지 못한다(그사이 솔리오가 거둘 수 있다).
+      // 창에 hint를 넘기는 일도 처리다.
+      if (await this.cancelled(name)) r = { result: 'rejected', reason: 'cancelled' };
+      else if (!value.ok) r = { result: 'rejected', reason: value.reason };
       else { try { r = await handle(value.value); } catch { r = { result: 'failed', reason: 'error' }; } }
       await this.answer(name, r);
       done.push({ kind: value.ok ? value.value.kind : 'invalid', result: RESULTS.includes(r?.result) ? r.result : 'failed', ...(r?.reason && REASONS.includes(r.reason) ? { reason: r.reason } : {}) });
