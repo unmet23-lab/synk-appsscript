@@ -228,12 +228,14 @@ function createOfficeHooks({
     if (state.enabled && (!state.port || !state.token)) state.enabled = false;
   }
   async function stamp() { try { const s = await fsp.stat(stateFile); return s.mtimeMs + ':' + s.size; } catch { return null; } }
+  /* 고친 때와 크기는 읽기 전에 잡는다. 읽는 사이에 다른 실행이 고쳤으면 다음 refresh가 다시 읽는다(GPT 검수 r9 GA6) */
   async function load() {
     if (!stateFile) return;
+    const mark = await stamp();
     let v = null;
     try { v = JSON.parse(await fsp.readFile(stateFile, 'utf8')); } catch { v = null; }
     take(v);
-    fileMark = await stamp();
+    fileMark = mark;
     loaded = true;
   }
   async function save() {
@@ -246,7 +248,7 @@ function createOfficeHooks({
       await fsp.rename(tmp, stateFile);
       raw = out;
     } catch { try { await fsp.unlink(tmp); } catch { /* 없을 수 있다 */ } }
-    fileMark = await stamp();
+    fileMark = null; // 쓴 뒤에 다른 실행이 고쳤을 수 있다. 다음 refresh가 한 번 다시 읽는다
   }
   /* 다른 실행(--office-unhook)이 상태 파일을 고쳤으면 다시 읽는다. 꺼졌으면 서버를 닫는다 */
   async function refresh() {
@@ -258,11 +260,20 @@ function createOfficeHooks({
   }
 
   /* ── 서버(12.2) ── */
-  const tokenOk = url => {
-    if (!state.token || typeof url !== 'string') return false;
-    const want = Buffer.from(PATH_PREFIX + state.token), got = Buffer.from(url);
+  const tokenIs = (url, token) => {
+    if (typeof token !== 'string' || !token || typeof url !== 'string') return false;
+    const want = Buffer.from(PATH_PREFIX + token), got = Buffer.from(url);
     return want.length === got.length && crypto.timingSafeEqual(want, got);
   };
+  const tokenOk = url => tokenIs(url, state.token);
+  /* 훅을 받을지는 소식마다 상태 파일을 새로 읽어 정한다. 기억해 둔 값이나 고친 때로 정하지 않는다(GPT 검수 r8 GA2 · r9 GA6, 12.2 「받을지 정하는 때」).
+     켜져 있고 확인 값이 있으면 그 값을, 아니면 null. 다른 실행(--office-unhook)이 끈 뒤에 정하는 소식은 모두 받지 않는다 */
+  async function liveToken() {
+    if (!stateFile) return null;
+    try { const v = JSON.parse(await fsp.readFile(stateFile, 'utf8')); return isObject(v) && v.enabled === true && typeof v.token === 'string' && v.token ? v.token : null; } catch { return null; }
+  }
+  /* 꺼진 것을 본 요청은 메모리의 상태도 맞추고 서버를 닫게 한다 */
+  const resync = () => { void serial(refresh).catch(() => {}); };
   /* 버리는 답: 연결을 닫고 남은 몸은 읽지 않는다 */
   function refuse(res, req, status) {
     res.writeHead(status, { 'Content-Length': '0', Connection: 'close' });
@@ -278,15 +289,15 @@ function createOfficeHooks({
     const declared = Number(req.headers['content-length']);
     if (Number.isFinite(declared) && declared > BODY_MAX) { tooBig(); return; }
     req.pause();
-    // 다른 실행(--office-unhook)이 상태 파일을 고쳤을 수 있다. 받기 전에 다시 읽고, 꺼졌거나 확인 값이 바뀌었으면 받지 않는다(GPT 검수 r8 GA2)
-    serial(refresh).catch(() => {}).then(() => {
-      if (!state.enabled || !tokenOk(req.url)) { refuse(res, req, 404); return; }
+    // 받기 전에 상태 파일을 새로 읽는다. 꺼졌거나 확인 값이 바뀌었으면 받지 않는다
+    liveToken().then(token => {
+      if (!tokenIs(req.url, token)) { refuse(res, req, 404); resync(); return; }
       if (!heard) { heard = true; notify(); }
-      return receive(req, res, at, tooBig);
+      return receive(req, res, at, tooBig, token);
     });
   }
   /* accepts가 돌려준 값(볼 계정)을 그대로 deliver에 넘긴다. 받는 사이에 계정이 바뀌어도 받기를 허락한 계정으로만 접는다(GPT 검수 r8 GA1) */
-  function receive(req, res, at, tooBig) {
+  function receive(req, res, at, tooBig, token) {
     return Promise.resolve().then(() => accepts()).catch(() => false).then(ok => {
       let size = 0, chunks = ok ? [] : null, over = false;
       req.on('data', chunk => {
@@ -297,12 +308,14 @@ function createOfficeHooks({
       });
       req.on('end', () => {
         if (over) return;
-        res.writeHead(204);
-        res.end(); // 접기를 기다리지 않고 답한다
-        if (!chunks) return; // 볼 계정이 없으면 읽지 않고 버린다(11.1)
+        if (!chunks) { res.writeHead(204); res.end(); return; } // 볼 계정이 없으면 읽지 않고 버린다(11.1)
         const body = Buffer.concat(chunks);
         chunks = null;
-        setImmediate(() => {
+        // 몸을 다 받은 뒤, 넘기기 바로 앞에서 상태 파일을 한 번 더 새로 읽는다. 받는 사이에 꺼졌거나 확인 값이 바뀌었으면 넘기지 않는다(r9 GA6)
+        liveToken().then(now => {
+          if (now !== token) { refuse(res, req, 404); resync(); return; }
+          res.writeHead(204);
+          res.end(); // 접기를 기다리지 않고 답한다
           let value = null;
           try { value = JSON.parse(body.toString('utf8')); } catch { value = null; }
           const event = hookEvent(value, at);
@@ -506,6 +519,8 @@ function createOfficeHooks({
   function disable() {
     return serial(async () => {
       await refresh();
+      // 끔을 상태 파일에 먼저 적고 줄을 지운다. 켜져 있던 다른 실행은 이때부터 소식을 받지 않는다(r9 GA6). 지우지 못한 폴더가 남으면 아래에서 다시 켬으로 적는다
+      if (state.enabled) { state.enabled = false; await save(); }
       const { results, stuck } = await removeAll();
       state.dirs = stuck.map(x => x.dir);
       state.enabled = state.dirs.length > 0;

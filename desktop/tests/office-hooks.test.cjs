@@ -12,26 +12,22 @@ const {
   createOfficeHooks, isMarked, stripMarked, hookEvent, toolDetailOf, overrideDirs, hookUrl, EVENTS, OVERRIDE_ENV, BODY_MAX, SILENT_MS, PATH_PREFIX,
 } = require('../src/office-hooks.cjs');
 
-const REAL_SETTINGS = path.join(os.homedir(), '.claude', 'settings.json');
-const realStamp = () => { try { const s = fs.statSync(REAL_SETTINGS); return s.mtimeMs + ':' + s.size; } catch { return 'missing'; } };
-const REAL_BEFORE = realStamp();
 const APPDATA_SYNK = process.env.APPDATA ? path.join(process.env.APPDATA, 'SYNK Desktop') : null;
-/* 이 PC의 SYNK 앱 폴더마다 Office 폴더의 파일과 고친 때(시험 앞뒤로 견준다) */
-function appStamps() {
-  const out = {};
-  if (!APPDATA_SYNK || !fs.existsSync(APPDATA_SYNK)) return out;
-  for (const scope of fs.readdirSync(APPDATA_SYNK)) {
-    const office = path.join(APPDATA_SYNK, scope, 'Office');
-    let names = [];
-    try { names = fs.readdirSync(office); } catch { continue; }
-    for (const n of names) { try { const s = fs.statSync(path.join(office, n)); out[path.join(scope, n)] = s.mtimeMs + ':' + s.size; } catch { /* 지워졌다 */ } }
-  }
-  return out;
+/* 시험이 만든 임시 폴더. 끝나면 지운다(GPT 검수 r9 GA5) */
+const made = [];
+test.after(() => { for (const d of made) { try { fs.rmSync(d, { recursive: true, force: true }); } catch { /* 이미 없다 */ } } });
+/* 모듈이 파일을 쓰는 자리를 모두 적는 fs(GPT 검수 r9 GA4). 이 PC의 실제 설정과 앱 폴더를 앞뒤 시각으로 견주면, 시험 도중 실제 앱이 쓴 것까지 실패로 센다.
+   대신 모듈이 쓴 자리가 모두 시험의 임시 폴더 안인지 맨 끝 시험이 본다 */
+const writes = [];
+const WRITERS = ['writeFile', 'appendFile', 'rename', 'unlink', 'mkdir', 'rm', 'rmdir', 'copyFile'];
+const guardedFs = { ...fs, promises: { ...fs.promises } };
+for (const name of WRITERS) {
+  const real = fs.promises[name].bind(fs.promises);
+  guardedFs.promises[name] = (...args) => { writes.push(String(name === 'rename' || name === 'copyFile' ? args[1] : args[0])); return real(...args); };
 }
-const APP_BEFORE = appStamps();
 
 const S1 = '00000001-0000-4000-8000-000000000001';
-const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'office-hooks-'));
+const tmp = () => { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'office-hooks-')); made.push(d); return d; };
 const read = f => fs.readFileSync(f, 'utf8');
 const json = f => JSON.parse(read(f));
 const settingsOf = dir => path.join(dir, 'settings.json');
@@ -47,7 +43,7 @@ function setup({ dirs = 1, installed = false, override = true, accepts = () => t
   for (const [i, text] of Object.entries(files)) fs.writeFileSync(settingsOf(list[i]), text);
   const delivered = [], changes = { n: 0 };
   const env = override ? { [OVERRIDE_ENV]: list.join(path.delimiter) } : {};
-  const hooks = createOfficeHooks({ userData, installed, env, accepts, deliver: e => delivered.push(e), onChange: () => { changes.n += 1; }, baseDirs: () => [], listenRetries: 0, ...rest });
+  const hooks = createOfficeHooks({ fsImpl: guardedFs, userData, installed, env, accepts, deliver: e => delivered.push(e), onChange: () => { changes.n += 1; }, baseDirs: () => [], listenRetries: 0, fsImpl: guardedFs, ...rest });
   return { top, userData, dirs: list, hooks, delivered, changes, state: () => json(path.join(userData, 'Office', 'hooks.json')) };
 }
 function post(port, urlPath, body, { headers = {}, method = 'POST' } = {}) {
@@ -337,7 +333,7 @@ test('at start, a saved port held by another program removes Solio\'s lines at o
   const other = net.createServer();
   await new Promise(r => other.listen({ host: '127.0.0.1', port: st.port }, r));
   try {
-    const again = createOfficeHooks({ userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: f.dirs.join(path.delimiter) }, accepts: () => true, baseDirs: () => [], listenRetries: 0 });
+    const again = createOfficeHooks({ fsImpl: guardedFs, userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: f.dirs.join(path.delimiter) }, accepts: () => true, baseDirs: () => [], listenRetries: 0 });
     const r = await again.start();
     assert.deepEqual([r.ok, r.code], [false, 'PORT']);
     assert.deepEqual(marked(json(settingsOf(f.dirs[0]))), [], 'the lines that pointed at another program are gone');
@@ -360,7 +356,7 @@ test('a folder added after hooks are on is not written by itself; it shows as no
   const a = path.join(top, 'a'), b = path.join(top, 'b');
   fs.mkdirSync(a); fs.mkdirSync(b);
   fs.writeFileSync(path.join(b, 'settings.json'), '{"env":{"B":"1"}}');
-  const hooks = createOfficeHooks({ userData: path.join(top, 'ud'), installed: true, accepts: () => true, baseDirs: () => [], listenRetries: 0 });
+  const hooks = createOfficeHooks({ fsImpl: guardedFs, userData: path.join(top, 'ud'), installed: true, accepts: () => true, baseDirs: () => [], listenRetries: 0 });
   assert.equal((await hooks.enable([a])).ok, true);
   const status = await hooks.status([a, b]);
   assert.deepEqual(status.dirs.map(d => [path.basename(d.dir), d.on, d.file]), [['a', true, true], ['b', false, true]]);
@@ -379,7 +375,7 @@ test('runs that are not the installed build never touch real settings: without t
   const looksReal = path.join(top, 'Users', 'someone', '.claude');
   fs.mkdirSync(looksReal, { recursive: true });
   fs.writeFileSync(path.join(looksReal, 'settings.json'), '{}');
-  const none = createOfficeHooks({ userData: path.join(top, 'ud'), installed: false, env: {}, accepts: () => true });
+  const none = createOfficeHooks({ fsImpl: guardedFs, userData: path.join(top, 'ud'), installed: false, env: {}, accepts: () => true });
   assert.equal(none.available(), false);
   assert.deepEqual(await none.enable([looksReal]), { ok: false, code: 'NOT_HERE' });
   assert.equal(none.listening(), false);
@@ -388,14 +384,14 @@ test('runs that are not the installed build never touch real settings: without t
   assert.deepEqual((await none.status([looksReal])).dirs, [], 'the roots are not even listed');
   const test1 = path.join(top, 'test-claude');
   fs.mkdirSync(test1);
-  const given = createOfficeHooks({ userData: path.join(top, 'ud2'), installed: false, env: { [OVERRIDE_ENV]: test1 + path.delimiter + 'relative\\dir' }, accepts: () => true });
+  const given = createOfficeHooks({ fsImpl: guardedFs, userData: path.join(top, 'ud2'), installed: false, env: { [OVERRIDE_ENV]: test1 + path.delimiter + 'relative\\dir' }, accepts: () => true });
   assert.deepEqual(given.override, [test1], 'only absolute folders are taken from the override');
   assert.equal((await given.enable([looksReal])).ok, true);
   assert.equal(read(path.join(looksReal, 'settings.json')), '{}', 'the roots are ignored in such a run');
   assert.equal(marked(json(path.join(test1, 'settings.json'))).length, 6);
   await given.disable();
   // 설치본에서는 넘겨받은 값을 쓰지 않는다
-  assert.deepEqual(createOfficeHooks({ userData: path.join(top, 'ud3'), installed: true, env: { [OVERRIDE_ENV]: test1 } }).override, []);
+  assert.deepEqual(createOfficeHooks({ fsImpl: guardedFs, userData: path.join(top, 'ud3'), installed: true, env: { [OVERRIDE_ENV]: test1 } }).override, []);
   assert.deepEqual(overrideDirs({}), []);
 });
 
@@ -404,12 +400,12 @@ test('the unhook path removes marked lines from recorded folders without a serve
   const recorded = path.join(top, 'recorded'), base = path.join(top, 'base');
   fs.mkdirSync(recorded); fs.mkdirSync(base);
   const ud = path.join(top, 'ud');
-  const first = createOfficeHooks({ userData: ud, installed: true, accepts: () => true, baseDirs: () => [] });
+  const first = createOfficeHooks({ fsImpl: guardedFs, userData: ud, installed: true, accepts: () => true, baseDirs: () => [] });
   await first.enable([recorded]);
   await first.close();
   // 상태 파일에 없는 기본 폴더에도 솔리오의 줄이 남아 있다(다른 실행이 적었다)
   fs.writeFileSync(path.join(base, 'settings.json'), JSON.stringify({ env: { K: 'v' }, hooks: { Stop: [{ hooks: [{ type: 'http', url: 'http://127.0.0.1:40001/synk-office/' + 'z'.repeat(43), timeout: 2 }] }] } }));
-  const unhook = createOfficeHooks({ userData: ud, installed: true, baseDirs: () => [base] });
+  const unhook = createOfficeHooks({ fsImpl: guardedFs, userData: ud, installed: true, baseDirs: () => [base] });
   const r = await unhook.unhook();
   assert.equal(r.ok, true);
   assert.equal(unhook.listening(), false, 'no server is opened to unhook');
@@ -417,7 +413,7 @@ test('the unhook path removes marked lines from recorded folders without a serve
   assert.deepEqual(json(path.join(base, 'settings.json')), { env: { K: 'v' } });
   assert.equal(json(path.join(ud, 'Office', 'hooks.json')).enabled, false);
   // 기본 폴더의 파일이 깨져 있어도(솔리오가 적어 두지 않은 폴더) 끄기는 된다
-  const third = createOfficeHooks({ userData: path.join(top, 'ud4'), installed: true, accepts: () => true, baseDirs: () => [base] });
+  const third = createOfficeHooks({ fsImpl: guardedFs, userData: path.join(top, 'ud4'), installed: true, accepts: () => true, baseDirs: () => [base] });
   await third.enable([recorded]);
   fs.writeFileSync(path.join(base, 'settings.json'), '{ broken');
   assert.equal((await third.disable()).ok, true);
@@ -429,7 +425,7 @@ test('r8 GA2: after an unhook run, a hook from an old session is refused at once
   const f = setup({ setInterval: fn => { tick = fn; return { unref() {} }; }, clearInterval: () => { tick = null; } });
   await f.hooks.enable([]);
   const { port, path: p } = where(f);
-  const other = createOfficeHooks({ userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: f.dirs.join(path.delimiter) }, baseDirs: () => [] });
+  const other = createOfficeHooks({ fsImpl: guardedFs, userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: f.dirs.join(path.delimiter) }, baseDirs: () => [] });
   await other.unhook();
   // 이미 돌던 Claude Code 세션은 옛 설정을 쥐고 있어 같은 주소로 보낸다. 받지 않는다
   const answer = await post(port, p, toolUse({ tool_name: 'Read', tool_input: { file_path: 'C:\\a\\b.ts' } }));
@@ -441,7 +437,7 @@ test('r8 GA2: after an unhook run, a hook from an old session is refused at once
   const g = setup({ setInterval: fn => { tick = fn; return { unref() {} }; }, clearInterval: () => { tick = null; } });
   await g.hooks.enable([]);
   assert.equal(typeof tick, 'function', 'the server starts a minute check');
-  await createOfficeHooks({ userData: g.userData, installed: false, env: { [OVERRIDE_ENV]: g.dirs.join(path.delimiter) }, baseDirs: () => [] }).unhook();
+  await createOfficeHooks({ fsImpl: guardedFs, userData: g.userData, installed: false, env: { [OVERRIDE_ENV]: g.dirs.join(path.delimiter) }, baseDirs: () => [] }).unhook();
   tick();
   for (let i = 0; i < 20 && g.hooks.listening(); i++) await settle();
   assert.equal(g.hooks.listening(), false);
@@ -471,7 +467,7 @@ test('a running app notices that the unhook run turned hooks off and closes its 
   const f = setup();
   await f.hooks.enable([]);
   assert.equal(f.hooks.listening(), true);
-  const other = createOfficeHooks({ userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: f.dirs.join(path.delimiter) }, baseDirs: () => [] });
+  const other = createOfficeHooks({ fsImpl: guardedFs, userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: f.dirs.join(path.delimiter) }, baseDirs: () => [] });
   await other.unhook();
   const status = await f.hooks.status([]);
   assert.equal(status.on, false);
@@ -520,8 +516,54 @@ test('stripMarked and isMarked follow the three-part mark exactly', () => {
   assert.deepEqual(v, { hooks: { Stop: 'odd' } }, 'an odd value is left alone');
 });
 
-test('the real Claude settings file and the app\'s own folders were not touched by these tests', () => {
-  assert.equal(realStamp(), REAL_BEFORE, 'the real ~/.claude/settings.json is as it was');
-  assert.deepEqual(appStamps(), APP_BEFORE, 'nothing under the app folders\' Office changed');
+/* GPT 검수 r9 GA6: 받을지는 소식마다 상태 파일을 새로 읽어 정한다(12.2 「받을지 정하는 때」) */
+test('r9 GA6: a hook allowed before an unhook run is not delivered when its body ends after the run finished', async () => {
+  let allowedNow;
+  const allowedSeen = new Promise(r => { allowedNow = r; });
+  const f = setup({ accepts: () => { allowedNow(); return true; } });
+  await f.hooks.enable([]);
+  const { port, path: p } = where(f);
+  const body = Buffer.from(JSON.stringify(toolUse({ tool_name: 'Read', tool_input: { file_path: 'C:\\a\\b.ts' } })));
+  let status = null;
+  const done = new Promise(resolve => {
+    const req = http.request({ host: '127.0.0.1', port, path: p, method: 'POST', headers: { 'content-length': body.length, 'content-type': 'application/json' } }, res => { status = res.statusCode; res.resume(); res.on('end', resolve); });
+    req.on('error', () => resolve());
+    req.write(body.subarray(0, 10));
+    // 받기를 허락한 뒤, 몸이 끝나기 전에 다른 실행이 끄기를 마친다
+    allowedSeen.then(async () => {
+      await createOfficeHooks({ fsImpl: guardedFs, userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: f.dirs.join(path.delimiter) }, baseDirs: () => [] }).unhook();
+      req.end(body.subarray(10));
+    });
+  });
+  await done;
+  await settle();
+  assert.deepEqual(f.delivered, [], 'the news is not delivered');
+  assert.notEqual(status, 204);
+  for (let i = 0; i < 20 && f.hooks.listening(); i++) await settle();
+  assert.equal(f.hooks.listening(), false, 'the server closes after seeing the change');
+});
+
+test('r9 GA6: a change made while the app reads its state file is not lost; the next look rereads it', async () => {
+  let armed = false;
+  const f = setup({
+    fsImpl: { ...guardedFs, promises: { ...guardedFs.promises, readFile: async (file, enc) => {
+      const out = await guardedFs.promises.readFile(file, enc);
+      // 앱이 상태 파일을 읽은 바로 뒤에 다른 실행이 끔을 적는다
+      if (armed && String(file).endsWith('hooks.json')) { armed = false; const v = JSON.parse(out); fs.writeFileSync(file, JSON.stringify({ ...v, enabled: false, dirs: [] }, null, 2) + '\n'); }
+      return out;
+    } } },
+  });
+  await f.hooks.enable([]);
+  armed = true;
+  await f.hooks.status([]); // 읽는 사이에 바뀌었다
+  const later = await f.hooks.status([]);
+  assert.equal(later.on, false, 'the change made during the read is seen on the next look');
+  assert.equal(f.hooks.listening(), false);
+});
+
+test('the module writes only inside the test folders (never the real Claude settings or the app folders)', () => {
+  const under = (p, root) => { const a = path.resolve(p).toLowerCase(), b = path.resolve(root).toLowerCase(); return a === b || a.startsWith(b + path.sep); };
+  assert.ok(writes.length > 0, 'the guard saw the module write');
+  assert.deepEqual(writes.filter(p => !made.some(root => under(p, root))), [], 'every write of the module is inside a test folder');
   if (APPDATA_SYNK) assert.ok(!path.resolve(os.tmpdir()).toLowerCase().startsWith(APPDATA_SYNK.toLowerCase()), 'the test folders are not inside the app folder');
 });
