@@ -518,6 +518,9 @@ function createSolioBackup({
      그래서 앱을 다시 켠 뒤의 첫 표시도 앞 실행이 남긴 요청을 치운다. setup 요청은 솔리오만 쓰므로(계약 README) 다른 종류의 요청은 건드리지 않는다.
      거두는 요청에는 지우기 전에 취소 표식을 만든다. 지우지 못해도, 엔진이 먼저 claimed로 옮겼어도 엔진이 처리 전에 보고 거절한다(계약 「취소 표식」) */
   let live = null, retrying = null, failures = 0;
+  /* 이 실행이 쓴 요청 이름과 표식을 세웠는지. 이름은 이 실행만 아는 사실이라 폴더를 읽지 못해도 표식을 만들 수 있다.
+     표식을 세우고 그 이름이 requests와 claimed에서 사라지면 잊는다(GPT 취소 표식 다시 검수 GA1 · GA3) */
+  const written = new Map();
   const me = tag;
   let ownerFd = null;
   const ownerFile = t => path.join(paths.requests, `.owner-${t}`);
@@ -563,17 +566,17 @@ function createSolioBackup({
     catch (error) { return error?.code === 'EEXIST'; }
   }
   const claimedDir = () => path.join(paths.requests, 'claimed');
-  /* 'dir' · 'none'(없음) · 'unknown'(연결점이거나 확인하지 못함) */
+  /* 'dir' · 'none'(없음) · 'link'(연결점이나 폴더가 아님) · 'unknown'(확인하지 못함) */
   function claimedState() {
-    try { const stat = fsImpl.lstatSync(claimedDir()); return stat.isDirectory() && !stat.isSymbolicLink() ? 'dir' : 'unknown'; }
+    try { const stat = fsImpl.lstatSync(claimedDir()); return stat.isDirectory() && !stat.isSymbolicLink() ? 'dir' : 'link'; }
     catch (error) { return error?.code === 'ENOENT' ? 'none' : 'unknown'; }
   }
   /* 거둘 setup 요청인가: live가 아니고, 살아 있는 다른 실행의 것이 아니고, setup인 요청. 'yes' · 'no' · 'unknown' */
   function toWithdraw(dir, name) {
     const file = path.join(dir, name);
     if (live && path.basename(live.file) === name) return 'no';
-    // 이 실행의 표가 든 요청은 이 실행이 쓴 setup 요청이다. 본문을 읽지 못해도 바로 거둔다(GPT 취소 표식 검수 GA1)
-    if (name.match(/^[0-9]{13}-([0-9a-z]{8})[0-9a-f]{16}\.json$/)?.[1] === me) return 'yes';
+    // 이 실행이 쓴 이름이면 본문을 읽지 않고 거둔다. 표만 같은 남의 요청은 본문으로 가린다(GPT 취소 표식 검수 GA1, 다시 검수 GA1)
+    if (written.has(name)) return 'yes';
     const others = othersLive(name);
     if (others !== 'no') return others === 'yes' ? 'no' : 'unknown';
     return setupKind(file);
@@ -581,10 +584,12 @@ function createSolioBackup({
   function sweepRequests() {
     if (platform !== 'win32' || !paths) return;
     let names, failed = false, listed = true;
-    if (live) {
-      let keep = false; try { keep = live.same() === true; } catch { keep = false; }
-      // 로그인이 바뀌면 그 요청에 표식부터 만든다. 폴더를 다시 읽거나 본문을 읽지 못해도 표식은 선다(GPT 취소 표식 검수 GA1)
-      if (!keep) { const dropped = path.basename(live.file); live = null; if (!realFolders() || !markCancel(dropped)) failed = true; }
+    if (live) { let keep = false; try { keep = live.same() === true; } catch { keep = false; } if (!keep) live = null; }
+    // 이 실행이 쓴 요청 가운데 live가 아닌 것에는 표식부터 만든다. 폴더를 읽거나 본문을 읽지 못해도, 앞 시도가 실패했어도
+    // 이름을 잊지 않으므로 다음 치우기가 다시 만든다(GPT 취소 표식 검수 GA1, 다시 검수 GA3)
+    for (const [name, marked] of written) {
+      if (marked || (live && path.basename(live.file) === name)) continue;
+      if (realFolders() && markCancel(name)) written.set(name, true); else failed = true;
     }
     try { names = fsImpl.readdirSync(paths.requests); } catch (error) { names = []; listed = false; if (error?.code !== 'ENOENT') failed = true; }
     if (names.length && !realFolders()) { names = []; listed = false; }
@@ -610,7 +615,9 @@ function createSolioBackup({
     // 앞에서 이름으로 표식을 받았거나 여기서 보인다. claimed의 파일은 엔진의 것이어서 지우지 않는다
     let claimed = [];
     const where = names.length ? claimedState() : 'none';
-    if (where === 'unknown') listed = false;
+    if (where === 'link') listed = false;
+    // 확인하지 못했으면 곧 다시 본다(GPT 취소 표식 다시 검수 GA2). 연결점은 바뀌지 않으므로 다시 서두르지 않는다
+    if (where === 'unknown') { listed = false; failed = true; }
     if (where === 'dir') {
       try { claimed = fsImpl.readdirSync(claimedDir()); } catch (error) { if (error?.code !== 'ENOENT') { failed = true; listed = false; } }
     }
@@ -624,6 +631,7 @@ function createSolioBackup({
     // 「없다」고 본다(GPT 취소 표식 검수 GA3). 시계가 거꾸로 가 요청 시각이 앞이면 만료가 아니다. 보통 파일만 지우고, 지우지 못해도
     // 다시 서두르지 않는다(급한 것은 만들기 쪽이다)
     const present = new Set([...names, ...claimed]);
+    if (listed) for (const [name, marked] of written) if (marked && !present.has(name)) written.delete(name);
     for (const mark of listed ? marks : []) {
       const request = mark.slice(0, -'.cancel'.length);
       if (present.has(request) || !(now() - Number(mark.slice(0, 13)) >= MARK_AGE)) continue;
@@ -642,7 +650,7 @@ function createSolioBackup({
     // 폴더가 연결점이 아닌지 먼저 보고 표 파일을 연다(GPT 열한째 GA1). 표 파일을 쥐지 못하면 요청을 쓰지 않는다.
     // 쥐지 않은 요청은 다른 실행이 끝난 실행의 것으로 보고 지운다(GPT 열한째 GA4)
     if (!realFolders() || !holdOwner()) throw fault('STORAGE');
-    return writeSetupRequest({ paths, mode, hint, now: now(), owner: me, fsImpl: fsImpl.promises, fsSync: fsImpl, stillCurrent, onPlaced: file => { live = { file, same }; } });
+    return writeSetupRequest({ paths, mode, hint, now: now(), owner: me, fsImpl: fsImpl.promises, fsSync: fsImpl, stillCurrent, onPlaced: file => { written.set(path.basename(file), false); live = { file, same }; } });
   }
   /* 이번 요청을 내려놓고 그 자리에서 치운다 */
   function dropRequest(name) {

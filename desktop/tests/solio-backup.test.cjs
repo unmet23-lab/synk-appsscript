@@ -1113,3 +1113,59 @@ test('cancel mark (GPT GA3): an expired mark stays when the claimed folder could
     assert.deepEqual(marksIn(env), [`${name}.cancel`], `${fault} failure: the mark stays`);
   }
 });
+
+test('cancel mark (GPT re-check GA1): another writer\'s run-now that only shares this run\'s tag is read, not withdrawn', async () => {
+  const env = appdata(temp()), dir = requestsDir(env);
+  fs.mkdirSync(dir, { recursive: true });
+  const name = `${Date.now()}-abcd1234ffffffffffffffff.json`;
+  fs.writeFileSync(path.join(dir, name), JSON.stringify({ v: 1, kind: 'run-now' }));
+  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, tag: 'abcd1234' });
+  service.accountChanged();
+  assert.deepEqual(requestsIn(env), [name], 'kept');
+  assert.deepEqual(marksIn(env), [], 'not marked');
+});
+
+test('cancel mark (GPT re-check GA3): when the first mark and the folder reads fail, the next sweep still marks the request by name', async () => {
+  let markLocked = false, listLocked = false;
+  const busy = () => Object.assign(Error('busy'), { code: 'EBUSY' });
+  const isRequest = file => /^[0-9]{13}-.*\.json$/.test(path.basename(String(file)));
+  const fsImpl = { ...fs, promises: fs.promises,
+    writeFileSync: (file, ...a) => { if (markLocked && String(file).endsWith('.cancel')) throw busy(); return fs.writeFileSync(file, ...a); },
+    readFileSync: (file, ...a) => { if (listLocked && isRequest(file)) throw busy(); return fs.readFileSync(file, ...a); },
+    readdirSync: (file, ...a) => { if (listLocked && path.basename(String(file)) === 'requests') throw busy(); return fs.readdirSync(file, ...a); },
+    unlinkSync: file => { if (listLocked && isRequest(file)) throw busy(); return fs.unlinkSync(file); } };
+  const env = appdata(temp(), { status: { ...sample(), state: 'not-set-up' } });
+  let current = true, letOpen;
+  const opening = new Promise(r => { letOpen = r; });
+  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current });
+  for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
+  const [name] = requestsIn(env);
+  markLocked = true; listLocked = true; current = false;
+  service.accountChanged();
+  assert.deepEqual(marksIn(env), [], 'the first mark could not be written');
+  markLocked = false;
+  for (let i = 0; i < 30 && !marksIn(env).length; i++) await new Promise(r => setTimeout(r, 50));
+  assert.deepEqual(marksIn(env), [`${name}.cancel`], 'the timed retry marks it while the folder still cannot be listed');
+  listLocked = false; letOpen();
+  await service.whenIdle();
+  for (let i = 0; i < 30 && requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 50));
+  assert.deepEqual(requestsIn(env), [], 'then deleted');
+});
+
+test('cancel mark (GPT re-check GA2): a claimed folder that could not be checked is checked again soon, and the expired mark then goes', async () => {
+  const t = 1794880000000, now = t + 24 * 3600000 + 5 * 60000;
+  const env = appdata(temp()), dir = requestsDir(env);
+  fs.mkdirSync(path.join(dir, 'claimed'), { recursive: true });
+  const name = `${t}-deadbeef00000000000000c1.json`;
+  fs.writeFileSync(path.join(dir, `${name}.cancel`), '');
+  let locked = true;
+  const fsImpl = { ...fs, promises: fs.promises,
+    lstatSync: (file, ...a) => { if (locked && path.basename(String(file)) === 'claimed') throw Object.assign(Error('busy'), { code: 'EBUSY' }); return fs.lstatSync(file, ...a); } };
+  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
+  service.accountChanged();
+  assert.deepEqual(marksIn(env), [`${name}.cancel`], 'kept while claimed is unknown');
+  locked = false;
+  for (let i = 0; i < 30 && marksIn(env).length; i++) await new Promise(r => setTimeout(r, 50));
+  assert.deepEqual(marksIn(env), [], 'the timed retry removes it');
+});
