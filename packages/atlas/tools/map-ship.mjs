@@ -59,12 +59,48 @@ export function sliceOf(index, bank, words = null) {
   };
 }
 
+// 은행 이름 규칙 — 코치가 주소 `items/<은행>.json`으로 받는다. 경로 · 주소 문자(/ # ? %)나 대문자가 들면 다른 주소를 받거나 Windows
+// 나무에서 두 조각이 한 파일로 겹친다(Fable 5.2 설계 검토 11-20 — 6).
+export const BANK_NAME = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+// 빌드가 은행 조각 밖에 늘 내는 지도 파일.
+export const MAP_ALWAYS = Object.freeze(['index.json', 'units.json', 'words.json']);
+
+// 조각을 받는 은행 — 문항 줄 · 틀 줄의 bank 칸과, 문항을 함께 쓰는 은행(shared — sliceOf · openMap이 그 은행의 문항으로 친다). 색인의
+// 꼴이 틀리거나 은행 이름이 규칙에 맞지 않으면 던진다 — 빌드도 멈추고, 공개 전 확인은 그 까닭을 문제로 알린다(설계 검토 5 · 7).
 export function banksOf(index) {
+  const table = name => Array.isArray(index?.[name]);
+  if (!table('fields') || !table('items') || !table('templateFields') || !table('templates'))
+    throw new Error(
+      '지도 색인의 꼴이 아니다(fields · items · templateFields · templates가 배열이어야 한다)',
+    );
+  if (index.shared != null && !Array.isArray(index.shared))
+    throw new Error('지도 색인의 shared가 배열이 아니다');
   const at = index.fields.indexOf('bank');
   const tAt = index.templateFields.indexOf('bank');
-  return [
-    ...new Set([...index.items.map(row => row[at]), ...index.templates.map(row => row[tAt])]),
-  ].sort();
+  if (at < 0 || tAt < 0) throw new Error('지도 색인의 문항 줄 · 틀 줄에 bank 칸이 없다');
+  const shared = (index.shared ?? []).flatMap(row => (Array.isArray(row?.[1]) ? row[1] : []));
+  const banks = [
+    ...new Set([
+      ...index.items.map(row => row?.[at]),
+      ...index.templates.map(row => row?.[tAt]),
+      ...shared,
+    ]),
+  ];
+  const bad = banks.filter(bank => typeof bank !== 'string' || !BANK_NAME.test(bank));
+  if (bad.length)
+    throw new Error(
+      `은행 이름이 규칙(${BANK_NAME.source})에 맞지 않는다: ${bad
+        .slice(0, 5)
+        .map(bank => JSON.stringify(bank) ?? String(bank))
+        .join(', ')}`,
+    );
+  return banks.sort();
+}
+
+// 빌드가 판 폴더의 map/ 아래로 내는 파일 이름 — 늘 내는 셋과 은행마다 조각. 규칙은 여기 한 곳이다: mapFiles가 자기 출력을 이것과
+// 견주고, 공개 전 확인(tools/publish.mjs)도 나무의 index.json에 이것을 적용해 기대 집합을 세운다(설계 검토 4).
+export function mapFileNames(index) {
+  return [...MAP_ALWAYS, ...banksOf(index).map(bank => `items/${bank}.json`)];
 }
 
 // 판 폴더의 map/ 아래로 나갈 파일 이름 → 바이트. 지도가 없는 뿌리(빌드 시험의 가짜 패키지)면 null — 진짜 패키지는 map/을
@@ -80,5 +116,9 @@ export function mapFiles(dir = MAP_DIR) {
   const words = read(dir, 'words.json');
   for (const bank of banksOf(index))
     files[`items/${bank}.json`] = compact(sliceOf(index, bank, words));
+  const made = Object.keys(files).sort();
+  const expected = mapFileNames(index).sort();
+  if (made.length !== expected.length || made.some((name, i) => name !== expected[i]))
+    throw new Error('지도 파일 이름이 mapFileNames와 다르다 — 규칙이 두 곳으로 갈라졌다');
   return { files, edition: index.edition, skillsEdition: index.skillsEdition, hash: index.hash };
 }

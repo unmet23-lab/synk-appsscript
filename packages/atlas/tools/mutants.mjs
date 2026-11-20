@@ -38,7 +38,9 @@ export const MUTANTS = [
 ];
 
 // 사본에 함께 넣는 도구 파일(패키지 기준) — 변형이 바꿀 수 있고, 시험은 subjectTool로 사본의 것을 부른다.
-export const TOOL_SUBJECTS = ['tools/publish.mjs'];
+// publish.mjs는 map-ship.mjs(빌드의 지도 규칙)를 부르므로 둘을 함께 넣는다(Fable 5.2 설계 검토 11-20 — 1). 도구끼리 부르는 파일이 모두 든 것은
+// test/build/mutants.test.mjs가 본다.
+export const TOOL_SUBJECTS = ['tools/publish.mjs', 'tools/map-ship.mjs'];
 
 export const SELF_TEST = [
   [
@@ -57,8 +59,8 @@ function prepare(label, change = null) {
   fs.rmSync(dir, { recursive: true, force: true });
   for (const part of ['src', 'loader'])
     fs.cpSync(path.join(ROOT, part), path.join(dir, part), { recursive: true });
-  // 공개 전 확인(tools/publish.mjs)도 사본으로 시험한다 — 지도를 올리기 목록에서 빼는 변형(설계 주인 11-20). node 내장만 부르는 파일이라
-  // 사본 하나로 돈다. 시험은 test/support/subject.mjs의 subjectTool로 부른다.
+  // 공개 전 확인(tools/publish.mjs)도 사본으로 시험한다 — 지도를 올리기 목록에서 빼는 변형(설계 주인 11-20). publish.mjs는 node 내장과
+  // map-ship.mjs(역시 node 내장만)를 부르므로 둘을 함께 베낀다. 시험은 test/support/subject.mjs의 subjectTool로 부른다.
   for (const file of TOOL_SUBJECTS) {
     fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
     fs.copyFileSync(path.join(ROOT, file), path.join(dir, file));

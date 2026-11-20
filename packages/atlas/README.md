@@ -113,7 +113,7 @@ node packages/atlas/tools/build.mjs --release --out <밖>
 node packages/atlas/tools/publish.mjs <밖>
 ```
 
-`publish.mjs`는 공개 판인지, 나무가 manifest와 같은지(판 폴더의 지도 `map/`까지 — 지도가 빠지면 켜진 길의 코치가 `MAP_FAILED`로 지금 판에 돌아간다), manifest가 켜진 길의 코치가 받는 지도 파일(`index.json` · `units.json` · `words.json`과 `index.json`에 든 은행마다 `items/<은행>.json`)을 모두 싣는지, 공개본에 같은 판 폴더가 다른 바이트로 있지 않은지(판 폴더는 덮지 않는다) 기계로 보고, 맞으면 `tools/공개.js 올리기 --원본 <밖> atlas/<판>/… atlas/loader.js atlas/loader.mjs` 명령을 찍는다. 그 뒤는 `tools/공개.js`의 절차 그대로다(검수 · 계획 해시 · 바이트 대조). synk.im에는 이미 `/atlas/index.html`(Atlas 소개 쪽)이 있고, 판 폴더 이름은 숫자로 시작해 겹치지 않는다. GitHub Pages라 입구가 바뀌면 10분 동안 옛 판 · 새 판이 섞일 수 있다(설계 §9).
+`publish.mjs`는 공개 판인지, 나무가 manifest와 같은지(판 폴더의 지도 `map/`까지 — 지도가 빠지면 켜진 길의 코치가 `MAP_FAILED`로 지금 판에 돌아간다), 지도 파일 이름이 나무의 `index.json`에 빌드 규칙(`tools/map-ship.mjs`의 `mapFileNames` — 늘 내는 `index.json` · `units.json` · `words.json`과 문항 줄 · 틀 줄 · 함께 쓰는 은행마다 `items/<은행>.json`)을 적용한 집합과 꼭 같은지, 은행 조각이 그 `index.json` · `words.json`에서 나온 바이트인지(`sliceOf`로 다시 세워 견준다 — `index.json` · `units.json` · `words.json`의 내용이 원천과 같은지는 빌드 시험이 본다), 공개본에 같은 판 폴더가 다른 바이트로 있지 않은지(판 폴더는 덮지 않는다) 기계로 보고, 맞으면 `tools/공개.js 올리기 --원본 <밖> atlas/<판>/… atlas/loader.js atlas/loader.mjs` 명령을 찍는다. 그 뒤는 `tools/공개.js`의 절차 그대로다(검수 · 계획 해시 · 바이트 대조). synk.im에는 이미 `/atlas/index.html`(Atlas 소개 쪽)이 있고, 판 폴더 이름은 숫자로 시작해 겹치지 않는다. GitHub Pages라 입구가 바뀌면 10분 동안 옛 판 · 새 판이 섞일 수 있다(설계 §9).
 
 ## 브라우저 밖 — 판을 동봉하는 자리(정해 두기만, 단계 4에서 짓는다)
 

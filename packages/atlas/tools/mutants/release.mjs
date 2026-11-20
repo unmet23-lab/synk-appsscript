@@ -1,6 +1,8 @@
-// 공개 길(단계 4 · 선택 공개 2단계)의 변형 — 공개 전 확인(tools/publish.mjs)의 규칙을 하나씩 깬 사본을 unit 묶음이 잡아야 한다.
-// 변형 하나 = [잡을 묶음, 갈래, 이름, 바꿀 파일, 바꿀 글, 바꾼 글]. 바꿀 파일이 도구면 tools/mutants.mjs의 TOOL_SUBJECTS에 들어야 사본에 있다.
+// 공개 길(단계 4 · 선택 공개 2단계)의 변형 — 공개 전 확인(tools/publish.mjs)과 빌드의 지도 규칙(tools/map-ship.mjs)을 하나씩 깬 사본을
+// unit 묶음이 잡아야 한다. 변형 하나 = [잡을 묶음, 갈래, 이름, 바꿀 파일, 바꿀 글, 바꾼 글]. 바꿀 파일이 도구면 tools/mutants.mjs의
+// TOOL_SUBJECTS에 들어야 사본에 있다.
 const PUBLISH = 'tools/publish.mjs';
+const MAP_SHIP = 'tools/map-ship.mjs';
 
 export const RELEASE_MUTANTS = [
   [
@@ -38,25 +40,81 @@ export const RELEASE_MUTANTS = [
   [
     'unit',
     '공개',
-    '코치가 늘 받는 지도 파일(units · words)을 보지 않는다 — units.json이 빠진 판이 지나가 MAP_FAILED(GPT GA2)',
-    PUBLISH,
-    "const MAP_ALWAYS = ['index.json', 'units.json', 'words.json'];\n",
-    "const MAP_ALWAYS = ['index.json'];\n",
+    '빌드가 늘 내는 지도 파일(units · words)을 규칙에서 뺀다 — units.json이 빠진 판이 지나가 MAP_FAILED(GPT GA2)',
+    MAP_SHIP,
+    "export const MAP_ALWAYS = Object.freeze(['index.json', 'units.json', 'words.json']);\n",
+    "export const MAP_ALWAYS = Object.freeze(['index.json']);\n",
   ],
   [
     'unit',
     '공개',
-    'index의 은행 조각을 보지 않는다 — 조각이 빠진 판이 지나가 그 은행을 여는 코치가 MAP_FAILED(GPT GA2)',
+    '은행 조각을 규칙에서 뺀다 — 조각이 빠진 판이 지나가 그 은행을 여는 게임이 MAP_FAILED(GPT GA2)',
+    MAP_SHIP,
+    '  return [...MAP_ALWAYS, ...banksOf(index).map(bank => `items/${bank}.json`)];\n',
+    '  return [...MAP_ALWAYS];\n',
+  ],
+  [
+    'unit',
+    '공개',
+    '틀 줄의 은행을 보지 않는다 — 틀 줄에만 있는 은행(드라마 시범 · 한글 무대)의 조각이 빠져도 지나간다(GPT GA3)',
+    MAP_SHIP,
+    '      ...index.templates.map(row => row?.[tAt]),\n',
+    '',
+  ],
+  [
+    'unit',
+    '공개',
+    '문항을 함께 쓰는 은행(shared)을 보지 않는다 — 그 은행의 조각이 규칙 밖이 된다(Fable 설계 검토 7)',
+    MAP_SHIP,
+    '      ...shared,\n',
+    '',
+  ],
+  [
+    'unit',
+    '공개',
+    '은행 이름 규칙을 보지 않는다 — 경로 · 주소 문자가 든 은행 이름이 지나간다(Fable 설계 검토 6)',
+    MAP_SHIP,
+    "  const bad = banks.filter(bank => typeof bank !== 'string' || !BANK_NAME.test(bank));\n",
+    '  const bad = [];\n',
+  ],
+  [
+    'unit',
+    '공개',
+    '「꼭 같다」를 「모두 싣는다」로 되돌린다 — 규칙 밖 지도 파일이 manifest와 나무에 함께 있으면 공개 사이트로 나간다(Fable 설계 검토 3)',
     PUBLISH,
-    '  const names = [...MAP_ALWAYS, ...banks.map(bank => `items/${bank}.json`)];\n',
-    '  const names = [...MAP_ALWAYS];\n',
+    '  return [...problems, ...missing, ...extra, ...sliceProblems(mapDir, index, names)];\n',
+    '  return [...problems, ...missing, ...sliceProblems(mapDir, index, names)];\n',
+  ],
+  [
+    'unit',
+    '공개',
+    '조각 바이트를 다시 세워 견주지 않는다 — manifest 해시까지 맞춘 빈 조각이 지나간다(Fable 설계 검토 2)',
+    PUBLISH,
+    '      const same = fs.readFileSync(path.join(mapDir, name)).equals(rebuilt);\n',
+    '      const same = true;\n',
+  ],
+  [
+    'unit',
+    '공개',
+    '까닭 표를 뒤섞는다 — words.json이 빠진 안내에 units.json의 까닭을 쓴다(Fable 설계 검토 8)',
+    PUBLISH,
+    "    '낱말 줄을 싣지 않은 조각을 낱말과 함께 여는 게임이 받는다 — 없으면 그 게임이 MAP_FAILED',\n",
+    "    '코치가 늘 받는다 — 없으면 MAP_FAILED',\n",
+  ],
+  [
+    'unit',
+    '공개',
+    "빈 실패 이유를 그대로 둔다 — throw ''이면 「확인하지 못했다()」로 까닭이 사라진다(GPT GA1 · Fable 설계 검토 9)",
+    PUBLISH,
+    "const reasonText = error => error?.message || String(error) || '이유 없음';\n",
+    'const reasonText = error => error?.message || String(error);\n',
   ],
   [
     'unit',
     '공개',
     '공개본 받기가 던지면 확인이 예외로 끝난다 — 앞서 찾은 문제와 끊긴 파일이 남지 않는다(GPT GA1)',
     PUBLISH,
-    '      return { failed: error?.message || String(error) };\n',
+    '      return { failed: reasonText(error) };\n',
     '      throw error;\n',
   ],
 ];

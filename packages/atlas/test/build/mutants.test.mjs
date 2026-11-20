@@ -48,3 +48,24 @@ test('변형 목록: 바꿀 글이 그 파일에 꼭 한 번 있고, 이름이 �
     assert.notEqual(from, to, name);
   }
 });
+
+test('변형 사본의 도구: TOOL_SUBJECTS의 도구가 부르는 패키지 안 파일이 모두 사본에 든다(Fable 5.2 설계 검토 11-20 — 1)', async () => {
+  const { TOOL_SUBJECTS } = await import(
+    pathToFileURL(path.join(PACKAGE_ROOT, 'tools', 'mutants.mjs')).href
+  );
+  // 사본에는 src · loader와 TOOL_SUBJECTS만 든다 — 도구가 그 밖의 패키지 파일을 부르면 사본의 시험이 불러오기에서 죽어 변형이 모두
+  // 거짓으로 「잡음」이 된다.
+  const copied = file =>
+    file.startsWith('src/') || file.startsWith('loader/') || TOOL_SUBJECTS.includes(file);
+  for (const tool of TOOL_SUBJECTS) {
+    const text = fs.readFileSync(path.join(PACKAGE_ROOT, tool), 'utf8');
+    for (const [, spec] of text.matchAll(/^import\s[^'"]*['"](\.{1,2}\/[^'"]+)['"]/gm)) {
+      const target = path.posix.normalize(path.posix.join(path.posix.dirname(tool), spec));
+      assert.ok(
+        copied(target),
+        `${tool}이 부르는 ${target}이 사본에 없다 — TOOL_SUBJECTS에 더한다`,
+      );
+    }
+  }
+  assert.ok(TOOL_SUBJECTS.includes('tools/map-ship.mjs'));
+});

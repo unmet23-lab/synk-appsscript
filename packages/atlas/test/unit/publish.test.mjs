@@ -9,23 +9,74 @@ import { tempDir } from '../support/temp.mjs';
 
 // 변형 실행기가 고친 사본(ATLAS_SUBJECT_ROOT)의 공개 전 확인을 시험한다 — 기본은 이 패키지의 것.
 const { checkPublish } = await subjectTool('publish.mjs');
+const { sliceOf } = await subjectTool('map-ship.mjs');
 
 const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
-// 켜진 길의 코치가 받는 지도 꼴 그대로 — index.json의 문항 줄(bank 칸)이 말하는 은행마다 조각이 있다(GPT GA2).
-const indexOf = banks =>
-  JSON.stringify({
-    format: 'atlas-map-index/1',
-    fields: ['n', 'bank'],
-    items: banks.map((bank, i) => [i + 1, bank]),
-  });
-const MAP = {
-  'index.json': indexOf(['talk-rally']),
-  'units.json': '[]',
-  'words.json': '{}',
-  'items/talk-rally.json': '[1]',
+// 빌드(tools/map-ship.mjs)와 같은 꼴의 색인 — 문항 줄 · 틀 줄 · 계열 · 함께 쓰는 은행(shared: [문항 번호, 은행들]). 조각은 sliceOf로 짓는다
+// (공개 전 확인이 나무의 색인 · 낱말 표로 다시 세워 견준다). 기대 파일 목록은 여기서 손으로 적는다 — 검사의 규칙(mapFileNames)을 시험이
+// 빌려 쓰면 그 규칙을 깬 변형을 시험도 함께 따라가 잡지 못한다.
+const WORDS = { prefix: 'ko.word.', fields: ['s'], units: [] };
+const indexOf = ({ items = ['talk-rally'], templates = [], shared = [] } = {}) => ({
+  format: 'atlas-map-index/1',
+  edition: 1,
+  skillsEdition: 1,
+  hash: 'h',
+  fields: [
+    'n',
+    'itemKey',
+    'f',
+    'skillId',
+    'difficulty',
+    'responseFormat',
+    'units',
+    'order',
+    'bank',
+  ],
+  items: items.map((bank, i) => [
+    i + 1,
+    `${bank}.i${i}.v1`,
+    i + 1,
+    'ko.reading.detail',
+    1,
+    'single-choice',
+    [],
+    i,
+    bank,
+  ]),
+  templateFields: ['f', 'skillId', 'units', 'order', 'bank'],
+  templates: templates.map((bank, i) => [100 + i, 'ko.reading.detail', [], i, bank]),
+  families: [
+    ...items.map((_, i) => [i + 1, `fam${i}`]),
+    ...templates.map((_, i) => [100 + i, `tfam${i}`]),
+  ],
+  shared,
+  retired: [],
+  renames: [],
+});
+// 지도 파일(map/ 뒤 경로 → 내용): 늘 내는 셋과 banks의 조각.
+function mapOf(index, banks) {
+  const files = {
+    'index.json': JSON.stringify(index),
+    'units.json': '[]',
+    'words.json': JSON.stringify(WORDS),
+  };
+  for (const bank of banks)
+    files[`items/${bank}.json`] = JSON.stringify(sliceOf(index, bank, WORDS));
+  return files;
+}
+const MAP = mapOf(indexOf(), ['talk-rally']);
+const without = (map, name) =>
+  Object.fromEntries(Object.entries(map).filter(([key]) => key !== name));
+const REASON = {
+  'index.json':
+    '빌드가 늘 내는 전체 색인이다 — 서버 접기 · 도구가 읽고, 이 검사가 은행 목록을 여기서 읽는다',
+  'units.json': '코치가 늘 받는다 — 없으면 MAP_FAILED',
+  'words.json':
+    '낱말 줄을 싣지 않은 조각을 낱말과 함께 여는 게임이 받는다 — 없으면 그 게임이 MAP_FAILED',
+  item: '그 은행을 여는 게임이 받는다 — 없으면 그 게임이 MAP_FAILED',
 };
-const without = name => Object.fromEntries(Object.entries(MAP).filter(([key]) => key !== name));
+const missingLine = name => `manifest에 지도 ${name}이 없다(${REASON[name] ?? REASON.item})`;
 
 // tools/build.mjs가 내는 나무와 같은 꼴을 손으로 만든다(이 묶음은 esbuild 없이 돈다).
 // map: 지도 파일(map/ 뒤 경로 → 내용) — 판 폴더의 map/ 아래에 쓰고 manifest의 map 칸에 적는다(tools/build.mjs와 같은 꼴).
@@ -122,7 +173,10 @@ test('지도 파일 하나의 해시가 다르거나, 빠지거나, 적히지 �
   const result = await checkPublish({ out: changed.out, fetcher });
   assert.equal(result.ok, false);
   assert.equal(result.command, null);
-  assert.deepEqual(result.problems, ['map/items/talk-rally.json이 manifest와 다르다']);
+  assert.deepEqual(result.problems, [
+    'map/items/talk-rally.json이 map/index.json · words.json에서 나온 조각과 다르다',
+    'map/items/talk-rally.json이 manifest와 다르다',
+  ]);
 
   const missing = tree('1.0.0', { map: MAP });
   fs.rmSync(path.join(missing.out, 'atlas', '1.0.0', 'map', 'units.json'));
@@ -184,32 +238,106 @@ test('공개 판은 지도와 함께 낸다 — manifest에 지도 칸이 없거
   }
 });
 
-test('공개 판의 지도는 켜진 길의 코치가 받는 파일을 모두 싣는다 — index · units · words와 index의 은행마다 조각(GPT GA2)', async () => {
+test('지도 파일 이름은 빌드 규칙과 꼭 같아야 한다 — 늘 내는 셋 · 은행 조각이 빠지거나 규칙 밖 파일이 더 실리면 막는다(GPT GA2 · GA3 · Fable 설계 검토 3)', async () => {
   const fetcher = answer(404);
-  // manifest의 파일표와 나무에서 함께 빼도(올리기 목록에서도 빠진다) 막는다
+  // manifest의 파일표와 나무에서 함께 빼도(올리기 목록에서도 빠진다) 막는다 — 파일마다 그 까닭을 글자 그대로 본다
   for (const name of Object.keys(MAP)) {
-    const { out } = tree('1.0.0', { map: without(name) });
+    const { out } = tree('1.0.0', { map: without(MAP, name) });
     const result = await checkPublish({ out, fetcher });
     assert.equal(result.ok, false, name);
     assert.equal(result.command, null, name);
-    assert.ok(
-      result.problems.includes(
-        `manifest에 지도 ${name}이 없다(켜진 길의 코치가 받는다 — 없으면 MAP_FAILED)`,
-      ),
-      `${name}: ${result.problems.join()}`,
+    assert.ok(result.problems.includes(missingLine(name)), `${name}: ${result.problems.join()}`);
+  }
+  assert.ok(
+    !missingLine('index.json').includes('MAP_FAILED'),
+    'index.json 안내가 MAP_FAILED를 지어냈다',
+  );
+  // 틀 줄에만 · 문항 줄에만 · 함께 쓰는 은행(shared)으로만 든 은행도 조각을 받는다
+  const index = indexOf({
+    items: ['talk-rally', 'order-rush'],
+    templates: ['hangul-stage'],
+    shared: [[1, ['story-classroom']]],
+  });
+  const banks = ['talk-rally', 'order-rush', 'hangul-stage', 'story-classroom'];
+  const full = mapOf(index, banks);
+  const whole = await checkPublish({ out: tree('1.0.0', { map: full }).out, fetcher });
+  assert.deepEqual(whole.problems, []);
+  for (const bank of banks) {
+    const name = `items/${bank}.json`;
+    const result = await checkPublish({
+      out: tree('1.0.0', { map: without(full, name) }).out,
+      fetcher,
+    });
+    assert.deepEqual(result.problems, [missingLine(name)], bank);
+  }
+  // 규칙 밖 파일이 manifest와 나무에 함께 있으면 막는다(낡은 은행 조각 · 뿌리의 다른 파일)
+  for (const name of ['items/old.json', 'extra.json']) {
+    const result = await checkPublish({
+      out: tree('1.0.0', { map: { ...MAP, [name]: '{}' } }).out,
+      fetcher,
+    });
+    assert.deepEqual(
+      result.problems,
+      [
+        `manifest에 빌드 규칙 밖의 지도 파일 ${name}이 있다(낡은 조각이나 잘못 든 파일 — 올리지 않는다)`,
+      ],
+      name,
     );
   }
-  const other = tree('1.0.0', {
-    map: { ...MAP, 'index.json': indexOf(['talk-rally', 'order-rush']) },
+});
+
+test('은행 조각은 나무의 index.json · words.json으로 다시 세운 바이트와 같아야 한다 — manifest 해시까지 맞춘 빈 조각 · 다른 은행 · 줄이 빠진 조각도 막는다(Fable 설계 검토 2)', async () => {
+  const fetcher = answer(404);
+  const index = indexOf({ items: ['talk-rally', 'talk-rally', 'order-rush'] });
+  const full = mapOf(index, ['talk-rally', 'order-rush']);
+  const dropped = JSON.parse(full['items/talk-rally.json']);
+  dropped.items = dropped.items.slice(1);
+  for (const [label, text] of [
+    ['빈 조각', '{}'],
+    ['다른 은행', full['items/order-rush.json']],
+    ['줄 빠짐', JSON.stringify(dropped)],
+  ]) {
+    const result = await checkPublish({
+      out: tree('1.0.0', { map: { ...full, 'items/talk-rally.json': text } }).out,
+      fetcher,
+    });
+    assert.deepEqual(
+      result.problems,
+      ['map/items/talk-rally.json이 map/index.json · words.json에서 나온 조각과 다르다'],
+      label,
+    );
+  }
+  const words = await checkPublish({
+    out: tree('1.0.0', { map: { ...MAP, 'words.json': 'not json' } }).out,
+    fetcher,
   });
-  assert.deepEqual((await checkPublish({ out: other.out, fetcher })).problems, [
-    'manifest에 지도 items/order-rush.json이 없다(켜진 길의 코치가 받는다 — 없으면 MAP_FAILED)',
-  ]);
-  for (const text of ['{"edition":1}', 'not json', indexOf([''])]) {
-    const broken = tree('1.0.0', { map: { ...MAP, 'index.json': text } });
-    const result = await checkPublish({ out: broken.out, fetcher });
-    assert.equal(result.ok, false, text);
-    assert.match(result.problems.join(), /map\/index\.json을 읽지 못했다/, text);
+  assert.equal(words.ok, false);
+  assert.match(words.problems.join(), /map\/words\.json을 읽지 못했다/);
+});
+
+test('색인 꼴이 틀리거나 은행 이름이 규칙에 맞지 않으면 던지지 않고 문제 한 줄로 막는다(Fable 설계 검토 5 · 6)', async () => {
+  const fetcher = answer(404);
+  const base = indexOf();
+  const cases = [
+    ['JSON이 아님', 'not json'],
+    ['templateFields 없음', JSON.stringify({ ...base, templateFields: undefined })],
+    ['templates 없음', JSON.stringify({ ...base, templates: undefined })],
+    [
+      '틀 줄에 bank 칸 없음',
+      JSON.stringify({ ...base, templateFields: ['f', 'skillId', 'units', 'order'] }),
+    ],
+    ...[7, '', 'a/b', 'a#b', 'Talk-Rally'].map(bank => [
+      `은행 이름 ${JSON.stringify(bank)}`,
+      JSON.stringify(indexOf({ items: [bank] })),
+    ]),
+  ];
+  for (const [label, text] of cases) {
+    const result = await checkPublish({
+      out: tree('1.0.0', { map: { ...MAP, 'index.json': text } }).out,
+      fetcher,
+    });
+    assert.equal(result.ok, false, label);
+    assert.match(result.problems.join('\n'), /map\/index\.json을 읽지 못했다/, label);
   }
 });
 
@@ -247,6 +375,44 @@ test('공개본의 판 폴더 파일을 받다가 끊기거나 본문을 못 읽
   assert.deepEqual(offline.problems, [
     '공개본을 확인하지 못했다(offline) — 확인하기 전에는 올리지 않는다',
   ]);
+  // 빈 이유(throw '' 등)도 이유 글이 남고, 앞서 찾은 해시 불일치도 함께 남는다(GPT GA1 다시 · Fable 설계 검토 9)
+  for (const [thrown, reason] of [
+    ['', '이유 없음'],
+    [undefined, 'undefined'],
+    [{ message: '' }, '[object Object]'],
+  ]) {
+    const blank = async (url, init) => {
+      if (ends(url, '/map/units.json')) throw thrown;
+      if (ends(url, '/map/words.json'))
+        return {
+          status: 200,
+          ok: true,
+          arrayBuffer: async () => {
+            throw thrown;
+          },
+        };
+      return base(url, init);
+    };
+    const files = await checkPublish({ out, fetcher: blank });
+    assert.deepEqual(
+      files.problems,
+      [
+        '공개본의 map/index.json이 manifest와 다르다 — 판 폴더는 덮지 않는다(판을 올린다)',
+        `공개본의 map/units.json을 확인하지 못했다(${reason}) — 확인하기 전에는 올리지 않는다`,
+        `공개본의 map/words.json을 확인하지 못했다(${reason}) — 확인하기 전에는 올리지 않는다`,
+      ],
+      reason,
+    );
+    const head = await checkPublish({
+      out,
+      fetcher: async () => {
+        throw thrown;
+      },
+    });
+    assert.deepEqual(head.problems, [
+      `공개본을 확인하지 못했다(${reason}) — 확인하기 전에는 올리지 않는다`,
+    ]);
+  }
 });
 
 test('지도 자리가 폴더가 아니거나 적힌 지도 파일 자리가 폴더여도 던지지 않고 문제로 알린다(GPT GA3)', async () => {

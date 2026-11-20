@@ -3,8 +3,10 @@
 //   ② 꼭 있어야 할 파일(엔진 묶음 atlas.mjs · 입구 loader.js · loader.mjs)이 manifest에 있고, 나무의 파일 목록이 manifest에 적힌 것과
 //      꼭 같으며(적히지 않은 파일 · 빠진 파일 없음), 파일마다 sha256이 같다. 지도(판 폴더의 map/ — manifest의 map 칸)도 같다:
 //      지도가 빠지거나 다르면 켜진 길의 코치가 지도를 못 받아(MAP_FAILED) 목록의 계정이 모두 지금 판으로 돌아간다(설계 주인 11-20).
-//      그래서 공개 판의 manifest는 켜진 길의 코치가 받는 지도 파일을 모두 싣는다 — index.json · units.json · words.json과
-//      index.json에 든 은행마다 items/<은행>.json(GPT GA2). 폴더 · 파일 자리가 뒤바뀌면 던지지 않고 문제로 알린다(GA3)
+//      지도 검사의 경계(Fable 5.2 설계 검토 11-20): 나무가 manifest와 같고, 지도 파일 이름이 나무의 index.json에 빌드 규칙
+//      (map-ship.mjs mapFileNames)을 적용한 집합과 꼭 같고, 은행 조각이 그 index.json · words.json에서 나온 바이트(sliceOf)임을 본다.
+//      index.json · units.json · words.json의 내용이 원천과 같은지는 빌드 시험이 본다. 폴더 · 파일 자리가 뒤바뀌면 던지지 않고
+//      문제로 알린다(GA3)
 //   ③ 판 폴더를 덮지 않는다 — 공개본에 같은 판의 manifest가 있으면 바이트가 같을 때만 지나가고, 판 폴더의 파일(엔진 묶음 · 지도)은
 //      하나씩 본다: 공개본에 없으면(404) 이번에 더하고(선택 공개 2단계의 지도처럼), 있으면 sha256이 같아야 한다(GPT GA1).
 //      받기나 본문 읽기가 던지면 그 파일을 「확인하지 못했다」로 남기고 다음 파일을 본다(앞서 찾은 문제도 남는다)
@@ -15,6 +17,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { mapFileNames, MAP_ALWAYS, sliceOf } from './map-ship.mjs';
 
 const RELEASE_EDITION = /^\d+\.\d+\.\d+$/;
 // 판 폴더(files)와 atlas/ 바로 아래(entry)에 꼭 있어야 하는 파일 — 없으면 엔진 없이 입구만 올라갈 수 있다.
@@ -60,34 +63,84 @@ function hashProblems(dir, table, label = '') {
     .map(([name]) => `${label}${name}이 manifest와 다르다`);
 }
 
-// 켜진 길의 코치가 받는 지도 파일(src/coach/index.mjs loadMap): units.json은 늘 받고, items/<은행>.json은 그 은행을 열 때,
-// words.json은 낱말 이름을 싣지 않은 조각을 열 때 받는다. 은행은 index.json의 문항 줄(bank 칸)에서 읽는다. 하나라도 manifest에서
-// 빠지면 올리기 목록에서도 빠져 공개본에서 404 → MAP_FAILED다(GPT GA2 — 지도 파일이 하나 이상인지만 보던 것을 고친다).
-const MAP_ALWAYS = ['index.json', 'units.json', 'words.json'];
-function indexBanks(mapDir) {
-  const file = path.join(mapDir, 'index.json');
-  if (!isFile(file)) return { banks: [], problems: [] }; // 빠진 index.json은 아래 MAP_ALWAYS · 목록 대조가 알린다
+// 빈 실패 이유(throw '' 등)도 글이 남게 한다(GPT GA1 · 설계 검토 9).
+const reasonText = error => error?.message || String(error) || '이유 없음';
+// 지도 파일마다 manifest에 있어야 하는 까닭 — 빠졌을 때의 안내다. 코치가 받지 않는 파일에 MAP_FAILED를 말하지 않는다(GPT GA2 · 설계 검토 8).
+const MAP_REASONS = Object.freeze({
+  'index.json':
+    '빌드가 늘 내는 전체 색인이다 — 서버 접기 · 도구가 읽고, 이 검사가 은행 목록을 여기서 읽는다',
+  'units.json': '코치가 늘 받는다 — 없으면 MAP_FAILED',
+  'words.json':
+    '낱말 줄을 싣지 않은 조각을 낱말과 함께 여는 게임이 받는다 — 없으면 그 게임이 MAP_FAILED',
+});
+const mapReason = name =>
+  MAP_REASONS[name] ??
+  (name.startsWith('items/')
+    ? '그 은행을 여는 게임이 받는다 — 없으면 그 게임이 MAP_FAILED'
+    : '빌드가 늘 내는 파일이다');
+function readJson(file, label) {
   try {
-    const index = JSON.parse(fs.readFileSync(file, 'utf8'));
-    const at = Array.isArray(index?.fields) ? index.fields.indexOf('bank') : -1;
-    if (at < 0 || !Array.isArray(index.items)) throw new Error('문항 줄의 bank 칸이 없다');
-    const banks = [...new Set(index.items.map(row => row?.[at]))];
-    if (banks.some(bank => typeof bank !== 'string' || !bank))
-      throw new Error('은행 이름이 빈 줄이 있다');
-    return { banks, problems: [] };
+    return { value: JSON.parse(fs.readFileSync(file, 'utf8')) };
   } catch (error) {
-    return { banks: [], problems: [`map/index.json을 읽지 못했다(${error.message})`] };
+    return { problem: `${label}을 읽지 못했다(${reasonText(error)})` };
   }
 }
-export function mapRequiredProblems(mapDir, mapTable) {
-  const { banks, problems } = indexBanks(mapDir);
-  const names = [...MAP_ALWAYS, ...banks.map(bank => `items/${bank}.json`)];
-  return [
-    ...problems,
-    ...names
-      .filter(name => !Object.hasOwn(mapTable, name))
-      .map(name => `manifest에 지도 ${name}이 없다(켜진 길의 코치가 받는다 — 없으면 MAP_FAILED)`),
-  ];
+
+// 나무의 index.json에 빌드 규칙(map-ship.mjs mapFileNames)을 적용해 빌드가 냈어야 할 지도 파일 이름을 세운다. 색인이 없거나 못 읽으면
+// 늘 내는 셋만 기대하고 index는 null이다(은행 조각을 셀 수 없다).
+function expectedMap(mapDir) {
+  const indexFile = path.join(mapDir, 'index.json');
+  const read = isFile(indexFile) ? readJson(indexFile, 'map/index.json') : { value: null };
+  const fallback = { index: null, names: [...MAP_ALWAYS] };
+  if (read.problem) return { ...fallback, problems: [read.problem] };
+  if (!read.value) return { ...fallback, problems: [] };
+  try {
+    return { index: read.value, names: mapFileNames(read.value), problems: [] };
+  } catch (error) {
+    return { ...fallback, problems: [`map/index.json을 읽지 못했다(${reasonText(error)})`] };
+  }
+}
+
+// 은행 조각을 나무의 색인 · 낱말 표로 다시 세워 견준다 — 빈 조각 · 다른 은행의 조각 · 낡은 조각을 manifest 해시까지 맞춘 나무도 막는다.
+// 나무에 없는 조각은 목록 대조가 알린다.
+function sliceProblems(mapDir, index, names) {
+  const wordsFile = path.join(mapDir, 'words.json');
+  const words = isFile(wordsFile) ? readJson(wordsFile, 'map/words.json') : { value: null };
+  if (words.problem) return [words.problem];
+  return names
+    .filter(name => name.startsWith('items/') && isFile(path.join(mapDir, name)))
+    .flatMap(name => {
+      let rebuilt;
+      try {
+        rebuilt = Buffer.from(
+          JSON.stringify(sliceOf(index, name.slice('items/'.length, -'.json'.length), words.value)),
+        );
+      } catch (error) {
+        return [`map/${name}을 다시 세우지 못했다(${reasonText(error)})`];
+      }
+      const same = fs.readFileSync(path.join(mapDir, name)).equals(rebuilt);
+      return same ? [] : [`map/${name}이 map/index.json · words.json에서 나온 조각과 다르다`];
+    });
+}
+
+// 지도 파일 이름 집합이 빌드 규칙을 나무의 index.json에 적용한 것과 꼭 같은지(빠진 것 · 더 실린 것), 은행 조각이 그 index.json ·
+// words.json에서 나온 바이트인지 본다(설계 검토 2 · 3). 규칙을 여기서 다시 적지 않는다 — 세 회차 연달아 P1이 났던 뿌리가 규칙을 손으로
+// 옮겨 적은 것이었다(지도 파일 하나 이상 → 코치가 받는 파일 → 틀 줄의 은행).
+export function mapProblems(mapDir, mapTable) {
+  const { index, names, problems } = expectedMap(mapDir);
+  const table = new Set(Object.keys(mapTable));
+  const want = new Set(names);
+  const missing = names
+    .filter(name => !table.has(name))
+    .map(name => `manifest에 지도 ${name}이 없다(${mapReason(name)})`);
+  if (!index) return [...problems, ...missing];
+  const extra = [...table]
+    .filter(name => !want.has(name))
+    .map(
+      name =>
+        `manifest에 빌드 규칙 밖의 지도 파일 ${name}이 있다(낡은 조각이나 잘못 든 파일 — 올리지 않는다)`,
+    );
+  return [...problems, ...missing, ...extra, ...sliceProblems(mapDir, index, names)];
 }
 
 function contentProblems({ atlas, edition, manifest }) {
@@ -99,7 +152,7 @@ function contentProblems({ atlas, edition, manifest }) {
   const mapTable = manifest.map?.files ?? {};
   const mapShape = [
     ...(Object.keys(mapTable).length
-      ? mapRequiredProblems(mapDir, mapTable)
+      ? mapProblems(mapDir, mapTable)
       : [
           'manifest에 지도 파일이 없다(공개 판은 지도와 함께 낸다 — 없으면 켜진 길의 코치가 MAP_FAILED)',
         ]),
@@ -163,12 +216,13 @@ async function publicProblems({ edition, manifest, manifestBytes }, site, fetche
       if (!response.ok) return { failed: String(response.status) };
       return { bytes: Buffer.from(await response.arrayBuffer()) };
     } catch (error) {
-      return { failed: error?.message || String(error) };
+      return { failed: reasonText(error) };
     }
   };
+  // 받은 바이트가 있을 때만 받은 것이다 — 실패 여부를 이유 글의 참 · 거짓으로 가르지 않는다(설계 검토 9).
   const head = await read('manifest.json');
   if (head.missing) return [];
-  if (head.failed)
+  if (!head.bytes)
     return [`공개본을 확인하지 못했다(${head.failed}) — 확인하기 전에는 올리지 않는다`];
   if (sha256(head.bytes) !== sha256(manifestBytes))
     return [`공개본에 다른 ${edition} 판이 있다 — 판 폴더는 덮지 않는다(판을 올린다)`];
@@ -178,7 +232,7 @@ async function publicProblems({ edition, manifest, manifestBytes }, site, fetche
   for (const [name, info] of editionFiles(manifest)) {
     const file = await read(name);
     if (file.missing) continue;
-    if (file.failed)
+    if (!file.bytes)
       problems.push(
         `공개본의 ${name}을 확인하지 못했다(${file.failed}) — 확인하기 전에는 올리지 않는다`,
       );
