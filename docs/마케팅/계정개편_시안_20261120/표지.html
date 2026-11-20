@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>계정 개편 시안 · 릴스 표지 틀(2026-11-20)</title>
+<!--
+  synkbrief · yuhobuilds 첫 편 표지 틀 시안. 굽기: node tools/SNS키트굽기.js docs/마케팅/계정개편_시안_20261120/표지.html --webp --sheet
+  겉은 장부 머리말 「화면 결」(11-03)을 따른다: 원래 장면 그대로 · 위 그늘 위 큰 글자 · 검정과 흰색에 강조 한 곳 · SUIT 하나.
+  색 꼬리표 · 스티커 · 번호 동그라미 · 색 띠 · 말풍선은 쓰지 않는다. 제목은 릴스 안전 영역(y 269~1248, x 65~920) 안에 둔다.
+  예외 둘: 종이 판(brief B)은 견주기용이라 바탕만 아이보리로 바꿨다. builds B의 둘째 · 셋째 쪽지는 재생 중 단추에 가려도 되는 자리라
+  안전 영역 검사를 건너뛴다(data-safe-skip) — 표지와 프로필 격자에서는 보인다.
+  yuhobuilds 얼굴 사진은 11-02 승인 얼굴 C의 정지 사진이다(git 밖 synk-vendor/yuho-motion-20261101/selected).
+-->
+<link rel="stylesheet" href="../../디자인/SNS키트/kit.css">
+<style>
+  body{margin:0;background:#1b1b1b;display:flex;flex-wrap:wrap;gap:24px;padding:24px}
+  .cv{--ink:#0A0A0A;--butter:#F5C445;--lapis:#2F58B8;background:var(--ink)!important;color:#fff;font-family:var(--k-sans)}
+  .cv::before{display:none}
+  .cv .hero{position:absolute;left:0;width:1080px;object-fit:cover;display:block}
+  .cv .shade{position:absolute;inset:0;pointer-events:none}
+  .cv .tag{position:absolute;left:84px;top:292px;margin:0;font-size:34px;font-weight:700;letter-spacing:.01em;line-height:1.2;white-space:nowrap}
+  .cv .tag i{font-style:normal;font-weight:500;opacity:.7;margin-left:16px}
+  .cv .ttl{position:absolute;left:79px;top:352px;margin:0;font-weight:800;letter-spacing:-.045em;line-height:1.1;white-space:nowrap}
+  .cv .ttl span{display:block}
+  .cv .ttl em{font-style:normal;color:var(--butter)}
+  .cv .note{position:absolute;left:84px;margin:0;font-size:30px;font-weight:500;line-height:1.4;opacity:.8;white-space:nowrap}
+  .cv .inset{position:absolute;display:block;object-fit:cover;border:9px solid #fff;border-radius:10px;box-shadow:0 22px 50px rgba(0,0,0,.5);transform:rotate(-4deg)}
+
+  /* 종이 판(brief B) */
+  .cv.paper{background:#F3EFE6!important;color:#111}
+  .cv.paper .ttl em{color:var(--lapis)}
+  .cv.paper .card{position:absolute;left:84px;width:912px;border-radius:34px;overflow:hidden;box-shadow:0 30px 70px rgba(40,30,10,.22)}
+  .cv.paper .card img{display:block;width:100%;height:100%;object-fit:cover}
+  .cv.paper .inset{box-shadow:0 18px 40px rgba(40,30,10,.35)}
+
+  /* 붙이는 말 판(builds B) */
+  .cv .slip{position:absolute;left:84px;width:836px;height:252px;background:#F6F3EC;color:#111;border-radius:20px;box-shadow:0 14px 34px rgba(0,0,0,.5)}
+  .cv .slip p{margin:0;padding:40px 52px 0;font-size:52px;font-weight:700;line-height:1.34;letter-spacing:-.03em;white-space:nowrap}
+  .cv .slip small{display:block;margin-bottom:12px;font-size:28px;font-weight:600;letter-spacing:0;color:#857f72}
+</style>
+</head>
+<body>
+
+<!-- ───────── synkbrief A · 결과 사진이 주인공 ───────── -->
+<section class="k-slide k-field cv" data-fmt="cover916" data-acc="brief" data-name="brief_A_결과사진">
+  <img class="hero" style="top:660px;height:1260px;object-position:50% 100%" src="../synkbrief_빈방채우기_20261027/시안/후_채워진방.jpg" alt="ChatGPT가 채운 방">
+  <div class="shade" style="background:linear-gradient(180deg,rgba(10,10,10,1) 0,rgba(10,10,10,1) 770px,rgba(10,10,10,0) 1050px)"></div>
+  <p class="tag">SYNK 브리핑<i>따라 하는 AI</i></p>
+  <h1 class="ttl" style="font-size:128px"><span>사진 한 장에</span><span>붙여 넣는</span><span><em>요청문 3개</em></span></h1>
+  <p class="note" style="top:796px">작은 사진을 보냈더니, 큰 사진이 왔어요</p>
+  <img class="inset" style="left:70px;top:1196px;width:270px;height:405px" src="../synkbrief_빈방채우기_20261027/시안/전_빈방.jpg" alt="보낸 빈 방 사진(AI 예시 그림)">
+</section>
+
+<!-- ───────── synkbrief B · 종이 위 글자가 주인공 ───────── -->
+<section class="k-slide k-field cv paper" data-fmt="cover916" data-acc="brief" data-name="brief_B_종이">
+  <p class="tag">SYNK 브리핑<i>따라 하는 AI</i></p>
+  <h1 class="ttl" style="font-size:128px"><span>사진 한 장에</span><span>붙여 넣는</span><span><em>요청문 3개</em></span></h1>
+  <p class="note" style="top:796px">작은 사진을 보냈더니, 큰 사진이 왔어요</p>
+  <div class="card" style="top:880px;height:840px"><img style="object-position:50% 78%" src="../synkbrief_빈방채우기_20261027/시안/후_채워진방.jpg" alt="ChatGPT가 채운 방"></div>
+  <img class="inset" style="left:58px;top:1250px;width:270px;height:405px" src="../synkbrief_빈방채우기_20261027/시안/전_빈방.jpg" alt="보낸 빈 방 사진(AI 예시 그림)">
+</section>
+
+<!-- ───────── yuhobuilds A · 얼굴이 주인공 ───────── -->
+<section class="k-slide k-field cv" data-fmt="cover916" data-acc="builds" data-name="builds_A_얼굴">
+  <img class="hero" style="top:500px;height:1936px" src="file:///C:/Users/q1212/Documents/synk-vendor/yuho-motion-20261101/selected/yuho-short-C-smile2.jpg" alt="유호">
+  <div class="shade" style="background:linear-gradient(180deg,rgba(10,10,10,1) 0,rgba(10,10,10,1) 660px,rgba(10,10,10,0) 940px)"></div>
+  <p class="tag">yuhobuilds<i>AI와 회사 만들기</i></p>
+  <h1 class="ttl" style="font-size:116px"><span>AI한테 일 맡길 때</span><span>끝에 붙이는</span><span><em>말 5개</em></span></h1>
+</section>
+
+<!-- ───────── yuhobuilds B · 붙이는 말이 주인공 ───────── -->
+<section class="k-slide k-field cv" data-fmt="cover916" data-acc="builds" data-name="builds_B_붙이는말">
+  <p class="tag">yuhobuilds<i>AI와 회사 만들기</i></p>
+  <h1 class="ttl" style="font-size:116px"><span>AI한테 일 맡길 때</span><span>끝에 붙이는</span><span><em>말 5개</em></span></h1>
+  <div class="slip" style="top:820px"><p><small>올리기를 맡길 때</small>단, 내가 「승인」이라고<br>하기 전엔 올리지 마.</p></div>
+  <div class="slip" style="top:1098px" data-safe-skip><p><small>글을 맡길 때</small>단, 모르는 숫자 · 후기 · 이름은<br>지어내지 말고 [빈칸]으로 남겨 줘.</p></div>
+  <div class="slip" style="top:1376px" data-safe-skip><p><small>정리를 맡길 때</small>단, 아무것도 지우지 마.<br>「정리대기」 폴더로 옮겨.</p></div>
+</section>
+
+<!-- ───────── 격자 예시: 같은 틀로 다음 편(제목은 예시) ───────── -->
+<section class="k-slide k-field cv" data-fmt="cover916" data-acc="brief" data-name="brief_예시2_메뉴판">
+  <img class="hero" style="top:660px;height:1260px;object-position:50% 34%" src="../synkbrief_메뉴판정리_20261030/그림/후_벽.png" alt="ChatGPT가 새로 만든 메뉴판(벽 사진에 합성)">
+  <div class="shade" style="background:linear-gradient(180deg,rgba(10,10,10,1) 0,rgba(10,10,10,1) 770px,rgba(10,10,10,0) 1050px)"></div>
+  <p class="tag">SYNK 브리핑<i>따라 하는 AI</i></p>
+  <h1 class="ttl" style="font-size:128px"><span>메뉴판 사진엔</span><span>이 말을 꼭</span><span><em>세 마디 더</em></span></h1>
+  <p class="note" style="top:796px">작은 사진을 보냈더니, 큰 사진이 왔어요</p>
+  <img class="inset" style="left:70px;top:1196px;width:270px;height:405px;object-position:50% 40%" src="../synkbrief_메뉴판정리_20261030/그림/전_메뉴판.png" alt="보낸 손글씨 메뉴판(예시 사진)">
+</section>
+
+<section class="k-slide k-field cv" data-fmt="cover916" data-acc="brief" data-name="brief_예시3_옛사진">
+  <img class="hero" style="top:660px;height:1260px;object-position:50% 22%" src="../synkbrief_옛사진복원_20261030/그림/전_옛사진.png" alt="옛날 사진(AI로 만든 예시)">
+  <div class="shade" style="background:linear-gradient(180deg,rgba(10,10,10,1) 0,rgba(10,10,10,1) 770px,rgba(10,10,10,0) 1050px)"></div>
+  <p class="tag">SYNK 브리핑<i>따라 하는 AI</i></p>
+  <h1 class="ttl" style="font-size:128px"><span>옛날 사진을</span><span>움직일 땐</span><span><em>이 한 줄만</em></span></h1>
+  <p class="note" style="top:796px">사진 속 인물은 AI로 만든 예시예요</p>
+</section>
+
+<section class="k-slide k-field cv" data-fmt="cover916" data-acc="builds" data-name="builds_예시2_완료0개">
+  <img class="hero" style="top:500px;height:1936px" src="file:///C:/Users/q1212/Documents/synk-vendor/yuho-motion-20261101/selected/yuho-short-C-talk.jpg" alt="유호">
+  <div class="shade" style="background:linear-gradient(180deg,rgba(10,10,10,1) 0,rgba(10,10,10,1) 660px,rgba(10,10,10,0) 940px)"></div>
+  <p class="tag">yuhobuilds<i>AI와 회사 만들기</i></p>
+  <h1 class="ttl" style="font-size:116px"><span>AI가 3주 내내</span><span>「완료」라더니</span><span><em>새 자료 0개</em></span></h1>
+</section>
+
+<section class="k-slide k-field cv" data-fmt="cover916" data-acc="builds" data-name="builds_예시3_없는후기">
+  <img class="hero" style="top:500px;height:1936px" src="file:///C:/Users/q1212/Documents/synk-vendor/yuho-motion-20261101/selected/yuho-short-C.jpg" alt="유호">
+  <div class="shade" style="background:linear-gradient(180deg,rgba(10,10,10,1) 0,rgba(10,10,10,1) 660px,rgba(10,10,10,0) 940px)"></div>
+  <p class="tag">yuhobuilds<i>AI와 회사 만들기</i></p>
+  <h1 class="ttl" style="font-size:116px"><span>AI가 쓴 소개 글에</span><span>없는 손님 후기</span><span><em>세 개</em></span></h1>
+</section>
+
+</body>
+</html>
