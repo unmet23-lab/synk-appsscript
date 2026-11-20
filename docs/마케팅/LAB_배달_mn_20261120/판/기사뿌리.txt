@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Subject: a needle-felted wool doll of a Korean food-delivery rider in his thirties, the "rider" character of a short series. He stands alone in an apartment corridor, facing the camera straight on, framed from the knees up, his face large and fully visible in the upper-middle of the image. Kind, focused expression, small closed-mouth smile.
+
+His look (keep every detail exactly like this — this picture will be the face and outfit reference for every other picture of him):
+- a round glossy white felt motorcycle helmet with its clear visor flipped all the way up, so his whole face is visible
+- warm tan felt skin, two glossy round black bead eyes, thick short black felt eyebrows, a small rounded felt nose
+- a dark-navy padded winter jacket with one thin silver reflective stripe across the chest, black felt gloves, dark-grey trousers, black sneakers
+- in one hand a white paper food bag with folded top (plain, no printing)
+- no logos, no name tags, no numbers anywhere
+
+Background: a quiet Korean apartment-building corridor at night, softly out of focus — grey metal doors, warm ceiling light, a tiled floor.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, gentle depth of field. Absolutely no text, letters, numbers, logos or symbols anywhere.

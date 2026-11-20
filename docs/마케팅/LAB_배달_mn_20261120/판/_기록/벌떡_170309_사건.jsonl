@@ -1,0 +1,6 @@
+{"type":"thread.started","thread_id":"01a1f7fb-2710-7263-b138-6c9304bb1ab6"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to create one 9:16 image, keeping the room and characters consistent with your references.\n"}}
+{"type":"error","message":"Reconnecting... 2/5 (Selected model is at capacity. Please try a different model.)"}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The roommate springs upright toward steaming tteokbokki as Mongle freezes in surprise."}}
+{"type":"turn.completed","usage":{"input_tokens":107600,"cached_input_tokens":93312,"cache_write_input_tokens":0,"output_tokens":1800,"reasoning_output_tokens":311}}

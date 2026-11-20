@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f7fb-27db-7772-bf05-be2de593d11f"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one close, low-angle entryway scene, keeping Mongle’s features and the roommate’s face consistent with the references.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle watches the door beside a glowing floating phone while the roommate sleeps nearby."}}
+{"type":"turn.completed","usage":{"input_tokens":126640,"cached_input_tokens":103808,"cache_write_input_tokens":0,"output_tokens":1893,"reasoning_output_tokens":266}}

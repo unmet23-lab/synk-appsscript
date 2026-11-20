@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+The rider: the needle-felted doll in the rider reference. Keep his round glossy white helmet with the clear visor flipped all the way up, his face (warm tan felt skin, bead eyes, thick short black eyebrows, small nose), the dark-navy padded jacket with one thin silver reflective stripe, black gloves, dark-grey trousers and black sneakers EXACTLY the same. His face stays clearly visible.
+
+Place: the quiet apartment-building corridor at night, outside the same grey metal front door. A small round doorbell button panel on the wall right next to the door, warm ceiling light, tiled floor. No numbers on the door.
+
+Layout: keep the TOP 26% of the picture calm (corridor ceiling, soft out of focus).
+
+Scene:
+Medium shot. The rider stands on his tiptoes in front of the door, moving very carefully. The plain white paper food bag already sits on the floor right in front of the door. He has clearly pulled his gloved hand AWAY from the doorbell: his hand is drawn back near his own chest, index finger raised to his pressed lips in a "shh" gesture, a clear gap of a whole hand's width between his hand and the doorbell button. He glances at the doorbell with raised eyebrows, careful and quiet, and is about to turn away. A thin line of warm light shows under the door.
+Images: Image 1 = the rider reference, Image 2 = the previous picture of this corridor (keep the same corridor, door, doorbell, bag and lighting).
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, gentle depth of field, cute but not babyish (for university students and young workers living in Korea). Absolutely no text, letters, numbers, logos, brand marks or symbols anywhere (phone screens, signs, packaging and walls stay blank or show only abstract felt shapes); no speech bubbles.

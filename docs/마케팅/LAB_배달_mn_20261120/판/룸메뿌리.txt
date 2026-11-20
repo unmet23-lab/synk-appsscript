@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Subject: a needle-felted wool doll of a young Korean man in his twenties, the "roommate" character of a short series. He stands alone, facing the camera straight on, framed from the knees up, his face large and fully visible in the upper-middle of the image. He looks sleepy but friendly, a small closed-mouth smile.
+
+His look (keep every detail exactly like this — this picture will be the face and outfit reference for every other picture of him):
+- short, straight black wool hair with one small tuft sticking up at the crown (nothing covers the eyes)
+- warm peach felt skin, two glossy round black bead eyes, short straight black felt eyebrows, a small rounded felt nose, soft pink felt cheeks
+- loose mint-green felt pajamas with thin cream piping on the collar and cuffs and cream buttons down the front
+- bare felt feet, no hat, no glasses, no jewelry
+
+Background: a small Seoul studio apartment at night, softly out of focus — a single bed with a mustard-yellow felt blanket, a white wall, faint blue city light through window blinds.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, soft night light, gentle depth of field. Absolutely no text, letters, numbers, logos or symbols anywhere.

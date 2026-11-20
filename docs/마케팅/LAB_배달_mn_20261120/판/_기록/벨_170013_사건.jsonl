@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1f7f8-730c-7653-8730-7cf6fbd5be4e"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one close-up with the intercom just above the sleeping roommate and Mongle hovering beside it.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle nervously watches the intercom above his sleeping roommate in the softly lit felt apartment."}}
+{"type":"turn.completed","usage":{"input_tokens":110089,"cached_input_tokens":97152,"cache_write_input_tokens":0,"output_tokens":1820,"reasoning_output_tokens":368}}
