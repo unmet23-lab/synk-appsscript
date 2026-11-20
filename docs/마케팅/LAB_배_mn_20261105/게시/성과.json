@@ -349,6 +349,17 @@
         }
       },
       {
+        "계정": "lab-lk-youtube",
+        "채널": "유튜브 @synklabsrilanka",
+        "주소": "https://www.youtube.com/watch?v=HosVTvw3QyI",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-20T07:30:07.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-tw-youtube",
         "채널": "유튜브 @synklabtaiwan",
         "주소": "https://www.youtube.com/watch?v=lakx-9_4Si8",
