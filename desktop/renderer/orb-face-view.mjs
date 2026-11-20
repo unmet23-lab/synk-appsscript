@@ -92,7 +92,7 @@ function markup() {
     <div class="fan" role="group" aria-label="갈 수 있는 공간과 계정" data-orb-fan><p class="fan-error" role="alert" data-fan-error></p></div>
     <div class="room room-top" data-room="solio">
       <p class="sr" role="status" aria-live="polite" data-solio-status></p>
-      <div class="dial rise" style="--i:1" data-dial hidden><svg viewBox="-360 -360 720 720" role="img" data-dial-svg></svg><span class="dial-orb" aria-hidden="true"></span><p class="dial-hero" aria-hidden="true"><b data-dial-value></b><small data-dial-unit></small><span data-dial-label></span></p></div>
+      <div class="dial rise" style="--i:1" data-dial hidden><svg class="dial-sweep" viewBox="-360 -360 720 720" aria-hidden="true"><defs><linearGradient id="orb-dial-sweep" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F3F1EC" stop-opacity="0"/><stop offset=".5" stop-color="#F3F1EC" stop-opacity=".5"/><stop offset="1" stop-color="#F3F1EC" stop-opacity="0"/></linearGradient></defs><g class="d-sweep"><circle r="318" class="d-sweep-c" stroke="url(#orb-dial-sweep)"/></g></svg><svg viewBox="-360 -360 720 720" role="img" data-dial-svg></svg><span class="dial-orb" aria-hidden="true"></span><p class="dial-hero" aria-hidden="true"><b data-dial-value></b><small data-dial-unit></small><span data-dial-label></span></p></div>
       <p class="say rise" style="--i:1"><span data-say></span><span class="then" data-then></span></p>
       <div class="brief rise" style="--i:2" data-brief hidden>
         <ol class="soon" aria-label="다가오는 일" data-soon></ol>
@@ -493,12 +493,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const ang = off => (off / d.span) * 2 * Math.PI - Math.PI / 2, pt = (off, r) => [Math.cos(ang(off)) * r, Math.sin(ang(off)) * r];
     const arc = (a, b, r) => { const [x0, y0] = pt(a, r), [x1, y1] = pt(b, r); return 'M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' A' + r + ' ' + r + ' 0 ' + (b - a > d.span / 2 ? 1 : 0) + ' 1 ' + x1.toFixed(1) + ' ' + y1.toFixed(1); };
     const parts = [];
-    const defs = sv('defs', {});
-    const lg = sv('linearGradient', { id: 'orb-dial-sweep', x1: '0', y1: '0', x2: '1', y2: '1' });
-    lg.append(sv('stop', { offset: '0', 'stop-color': '#F3F1EC', 'stop-opacity': '0' }), sv('stop', { offset: '.5', 'stop-color': '#F3F1EC', 'stop-opacity': '.5' }), sv('stop', { offset: '1', 'stop-color': '#F3F1EC', 'stop-opacity': '0' }));
-    defs.append(lg); parts.push(defs);
+    const defs = sv('defs', {}); parts.push(defs);
     parts.push(sv('circle', { r: 318, class: 'd-rim' }), sv('circle', { r: 262, class: 'd-inner' }));
-    const sweep = sv('g', { class: 'd-sweep' }); sweep.append(sv('circle', { r: 318, class: 'd-sweep-c', stroke: 'url(#orb-dial-sweep)' })); parts.push(sweep);
     // 바깥 눈금: 한 시간마다 짧게, 여섯 시간마다 길게, 자정은 가장 길게
     for (const t of d.ticks) { const [x0, y0] = pt(t.off, 314), [x1, y1] = pt(t.off, t.k === 'day' ? 290 : t.k === 'six' ? 298 : 306); parts.push(sv('line', { x1: x0.toFixed(1), y1: y0.toFixed(1), x2: x1.toFixed(1), y2: y1.toFixed(1), class: 'd-t d-t-' + t.k })); }
     for (const x of d.days) { const [tx, ty] = pt(x.off, 342); parts.push(sv('text', { x: tx.toFixed(1), y: ty.toFixed(1), class: 'd-day' + (x.off === 0 ? ' d-now' : '') }, x.label)); }
@@ -525,17 +521,29 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       const start = cur;
       for (const a of ring.accounts) {
         const a0 = cur + cg / 2, a1 = cur + per - cg / 2, [x0, y0] = P(a0), [x1, y1] = P(a1);
-        const cell = sv('path', { d: 'M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' A' + R + ' ' + R + ' 0 ' + (a1 - a0 > 180 ? 1 : 0) + ' 1 ' + x1.toFixed(1) + ' ' + y1.toFixed(1), class: 'd-cell' + (a.left === null ? ' d-cell-unknown' : a.left === 0 ? ' d-cell-out' : '') + (ring.focus ? '' : ' d-cell-side') });
-        if (a.left > 0) cell.style.setProperty('--l', String(a.left / 100));
-        cell.append(sv('title', {}, [ring.name, a.name, a.left === null ? '읽지 못함' : a.left + '% 남음'].filter(Boolean).join(' · ')));
+        const cell = sv('path', { d: 'M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' A' + R + ' ' + R + ' 0 ' + (a1 - a0 > 180 ? 1 : 0) + ' 1 ' + x1.toFixed(1) + ' ' + y1.toFixed(1), class: 'd-cell' + (a.blocked || a.left === 0 ? ' d-cell-out' : a.left === null ? ' d-cell-unknown' : '') + (ring.focus ? '' : ' d-cell-side') });
+        if (!a.blocked && a.left > 0) cell.style.setProperty('--l', String(a.left / 100));
+        cell.append(sv('title', {}, [ring.name, a.name, a.note].filter(Boolean).join(' · ')));
         parts.push(cell);
         cur += per;
       }
-      if (groups > 1 && ring.accounts.length) { const mid = (start + cur) / 2, r2 = 246; parts.push(sv('text', { x: (Math.cos(mid * Math.PI / 180) * r2).toFixed(1), y: (Math.sin(mid * Math.PI / 180) * r2).toFixed(1), class: 'd-svc' + (ring.focus ? ' d-svc-focus' : '') }, ring.name)); }
+      // 구독 이름은 칸 고리와 바깥 궤도 사이를 따라 굽혀 쓴다. 가로로 쓰면 3시와 9시 쪽에서 칸이나 궤도에 닿았다(Fable 최종 P2).
+      // 아래 반은 글자가 거꾸로 서지 않게 반대로 돈다
+      if (groups > 1 && ring.accounts.length) {
+        const mid = (start + cur) / 2, half = (cur - start) / 2 + 26, r2 = 247, low = Math.sin(mid * Math.PI / 180) > 0;
+        const Q = deg => [(Math.cos(deg * Math.PI / 180) * r2).toFixed(1), (Math.sin(deg * Math.PI / 180) * r2).toFixed(1)];
+        const [sx, sy] = Q(low ? mid + half : mid - half), [ex, ey] = Q(low ? mid - half : mid + half), id = 'orb-dial-svc-' + parts.length;
+        defs.append(sv('path', { id, d: 'M' + sx + ' ' + sy + ' A' + r2 + ' ' + r2 + ' 0 ' + (half * 2 > 180 ? 1 : 0) + ' ' + (low ? 0 : 1) + ' ' + ex + ' ' + ey }));
+        const t = sv('text', { class: 'd-svc' + (ring.focus ? ' d-svc-focus' : '') });
+        t.append(sv('textPath', { href: '#' + id, startOffset: '50%' }, ring.name));
+        parts.push(t);
+      }
       cur += gg;
     }
     return parts;
   }
+  // 문자판의 날 이름과 구독 이름은 SVG 단위라 문자판과 함께 줄어든다. 화면에서 10px 아래로 내려가지 않게 지름에 맞춘 배율(--u)을 둔다(Fable 최종 P2)
+  if (typeof ResizeObserver === 'function') new ResizeObserver(es => { const w = es[0]?.contentRect?.width || 0; if (w > 0) app.dialSvg.style.setProperty('--u', (720 / w).toFixed(3)); }).observe(app.dial);
   function renderDial(d, live = null) {
     app.dial.hidden = !d;
     app.solio.classList.toggle('dialed', Boolean(d));

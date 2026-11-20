@@ -444,10 +444,12 @@ test('the pace in accounts is said only when the rounded number is more than the
 });
 
 test('a refill date for credits comes from the last refill, as in the row (화면 검수 r2 A4)', () => {
-  const h = row({ service: 'higgsfield', label: 'Higgsfield', kind: 'credit', plan: 'ultra', billDay: 25, live: { readAt: NOW - 5 * 60e3, credits: { remaining: 30, total: 3000 } } });
+  // 잔액은 숫자로, 부족 기준(lowAt)을 넣어 부족 상태를 만든다. 조건 없이 단언한다(Fable 최종 P2)
+  const h = row({ service: 'higgsfield', label: 'Higgsfield', kind: 'credit', plan: 'ultra', billDay: 25, lowAt: 50, live: { readAt: NOW - 5 * 60e3, credits: 30 } });
   const s = snap([h], { [h.id]: { refillAt: new Date(2026, 10, 10).getTime() } });
   const b = briefHead(s, briefGroups(s, NOW), NOW);
-  if (b.say.includes('크레딧이 얼마 남지 않았습니다')) assert.equal(b.then, '12월 10일에 다시 찹니다.');
+  assert.equal(b.say, 'Higgsfield 크레딧이 얼마 남지 않았습니다.');
+  assert.equal(b.then, '12월 10일에 다시 찹니다.');
 });
 
 test('an empty second line is filled from coming-up only when nothing is urgent (화면 검수 r2 A7)', () => {
@@ -551,4 +553,41 @@ test('the dial centres the service whose bill or credits the top speaks of (화�
   const s = snap([c1, c2, g], { [c1.id]: 1, [c2.id]: 1, [g.id]: 1 }), b = brief(s);
   assert.equal(b.head.say, '내일 Codex 결제가 있습니다.');
   assert.equal(b.dial.focus, 'gpt');
+});
+
+/* ── Fable 최종(solio-dial-20261120) ── */
+test('the dial fills a credit cell by credits left over the month, as the row does; unknown monthly credits stay unknown (Fable 최종 P1)', () => {
+  const h = row({ service: 'higgsfield', label: 'Higgsfield', kind: 'credit', plan: 'plus', billDay: 21, live: { readAt: NOW - 5 * 60e3, credits: 1240, planCredits: 3000 } });
+  const c = weekly('claude', 50, NOW + 5 * D);
+  const s = snap([h, c], { [c.id]: 1 }), g = briefGroups(s, NOW);
+  const d = briefDial(s, g, NOW, 'higgsfield');
+  assert.deepEqual(d.hero, { value: '41', unit: '%', label: 'Higgsfield 남은 양' });
+  const cell = d.rings.find(r => r.key === 'higgsfield').accounts[0];
+  assert.deepEqual([cell.left, cell.blocked, cell.note], [41, false, '41% 남음']);
+  const bare = row({ service: 'higgsfield', label: 'Higgsfield', kind: 'credit', plan: 'mystery', live: { readAt: NOW - 5 * 60e3, credits: 1240 } });
+  const s2 = snap([bare], {}), d2 = briefDial(s2, briefGroups(s2, NOW), NOW, 'higgsfield');
+  assert.deepEqual(d2.hero, { value: '1,240', unit: '', label: 'Higgsfield 남은 크레딧' });
+  assert.deepEqual([d2.rings[0].accounts[0].left, d2.rings[0].accounts[0].note], [null, '1,240 크레딧']);
+});
+
+test('the dial says login or unreadable instead of 「읽는 중」, and does not count them as shut (Fable 최종 P1 · P2)', () => {
+  const gone = row({ email: 'gone@example.com', state: 'needs-login' }), ok = weekly('gpt', 10, NOW + 5 * D, { plan: 'plus' });
+  let s = snap([gone, ok], { [ok.id]: 1 }), d = briefDial(s, briefGroups(s, NOW), NOW, 'claude');
+  assert.equal(d.hero.label, 'Claude 다시 로그인 필요');
+  assert.equal(d.label, 'Claude 계정은 다시 로그인해야 합니다.');
+  const lab = row({ email: 'lab@example.com', state: 'error' });
+  s = snap([lab, ok], { [ok.id]: 1 }); d = briefDial(s, briefGroups(s, NOW), NOW, 'claude');
+  assert.equal(d.hero.label, 'Claude 읽지 못함');
+  const u1 = weekly('claude', 100, NOW + 30 * H, { email: 'u1@example.com' }), u2 = weekly('claude', 100, NOW + 40 * H, { email: 'u2@example.com' });
+  s = snap([u1, u2, gone], { [u1.id]: 10, [u2.id]: 10 }); d = briefDial(s, briefGroups(s, NOW), NOW, 'claude');
+  assert.match(d.label, /^Claude 3개 가운데 2개를 다 썼고 1개는 다시 로그인해야 합니다\. .+에 처음 다시 열립니다\.$/);
+});
+
+test('a 5-hour block keeps its weekly share in the pooled number; its cell says so (Fable 최종 P2)', () => {
+  const a = row({ plan: 'pro', email: 'a@example.com', live: { readAt: NOW - 5 * 60e3, session: { usedPercent: 100, resetsAt: NOW + 2 * H }, weekly: { usedPercent: 40, resetsAt: NOW + 4 * D } } });
+  const b = weekly('claude', 20, NOW + 5 * D, { plan: 'pro', email: 'b@example.com' });
+  const s = snap([a, b], { [a.id]: 10, [b.id]: 10 }), d = briefDial(s, briefGroups(s, NOW), NOW, 'claude');
+  assert.deepEqual(d.hero, { value: '70', unit: '%', label: 'Claude 남은 몫' });
+  const cell = d.rings[0].accounts.find(x => x.id === a.id);
+  assert.deepEqual([cell.blocked, cell.note], [true, '5시간 한도로 막힘 · 주간 60% 남음']);
 });

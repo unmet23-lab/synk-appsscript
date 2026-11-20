@@ -220,6 +220,7 @@
 #portal-entry .dial{position:relative;width:var(--dial);aspect-ratio:1;margin:0;container-type:inline-size}
 #portal-entry .dial[hidden]{display:none}
 #portal-entry .dial svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;font-family:var(--orb-sans)}
+#portal-entry .dial .dial-sweep{pointer-events:none}
 #portal-entry .dial .d-rim{fill:none;stroke:rgba(243,241,236,.12);stroke-width:1}
 #portal-entry .dial .d-inner{fill:none;stroke:rgba(243,241,236,.05);stroke-width:1}
 #portal-entry .dial .d-sweep{transform-box:view-box;transform-origin:50% 50%;animation:orb-dial-spin 72s linear infinite}
@@ -228,7 +229,7 @@
 #portal-entry .dial .d-t{stroke:rgba(243,241,236,.16);stroke-width:1}
 #portal-entry .dial .d-t-six{stroke:rgba(243,241,236,.38)}
 #portal-entry .dial .d-t-day{stroke:rgba(243,241,236,.72);stroke-width:1.4}
-#portal-entry .dial .d-day{fill:rgba(243,241,236,.6);font-size:17px;letter-spacing:.06em;text-anchor:middle;dominant-baseline:middle}
+#portal-entry .dial .d-day{fill:rgba(243,241,236,.6);font-size:max(17px,calc(11px * var(--u,1)));letter-spacing:.06em;text-anchor:middle;dominant-baseline:middle}
 #portal-entry .dial .d-now{fill:var(--paper)}
 #portal-entry .dial .d-safe{fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round}
 #portal-entry .dial .d-gap{fill:none;stroke:var(--block);stroke-width:1.8;stroke-linecap:round}
@@ -242,7 +243,7 @@
 #portal-entry .dial .d-cell-out{stroke:rgba(243,241,236,.09)}
 #portal-entry .dial .d-cell-unknown{stroke:rgba(243,241,236,.3);stroke-width:1.2;stroke-dasharray:3 4}
 #portal-entry .dial .d-cell-side{opacity:.62}
-#portal-entry .dial .d-svc{fill:rgba(243,241,236,.5);font-size:15px;letter-spacing:.04em;text-anchor:middle;dominant-baseline:middle}
+#portal-entry .dial .d-svc{fill:rgba(243,241,236,.5);font-size:max(15px,calc(10.5px * var(--u,1)));letter-spacing:.04em;text-anchor:middle;dominant-baseline:central}
 #portal-entry .dial .d-svc-focus{fill:rgba(243,241,236,.8)}
 #portal-entry .dial-orb{position:absolute;left:50%;top:50%;width:25.5%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
   background:radial-gradient(circle at 50% 30%,#232321 0%,#0c0c0b 46%,#020202 72%);box-shadow:inset 0 0 0 1px rgba(243,241,236,.16),inset 0 -18px 40px rgba(243,241,236,.05),0 0 120px rgba(217,194,154,.06)}
