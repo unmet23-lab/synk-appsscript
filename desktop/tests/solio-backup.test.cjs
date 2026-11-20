@@ -857,7 +857,7 @@ test('r8 request lifetime: the folder on disk is the record — leftovers from a
   assert.deepEqual(fs.readdirSync(dir).sort(), ['1794880000001-bbbbbbbbbbbbbbbb.json', 'claimed'], "the earlier run's setup request and the temp file are gone; run-now and the engine's claimed folder are untouched");
   assert.equal(fs.readdirSync(path.join(dir, 'claimed')).length, 1);
   const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
-  assert.doesNotMatch(src, /pending/, 'no in-memory list of requests to fall out of step with the disk');
+  assert.doesNotMatch(src, /\bpending\b/, 'no in-memory list of requests to fall out of step with the disk');
   assert.match(src, /fsSync\.renameSync\(temp, file\);\s*onPlaced\(file\);/, 'the live request is recorded in the same synchronous step as the rename');
 });
 
@@ -873,4 +873,51 @@ test('Fable request-lifetime P1: a request the sweep cannot read is retried, not
   locked = false;
   await new Promise(r => setTimeout(r, 1100));
   assert.deepEqual(requestsIn(env), [], 'the timed retry reads it and deletes it with no other call');
+});
+
+/* ── GPT 열째 회차(r9): 다른 실행의 요청 · 연결점 · 잠금이 풀린 뒤 빨리 다시 지우기(11-20) ── */
+test('GPT r9 GA1: a second app run sharing the folder keeps the first run\'s live request and clears a finished run\'s', async () => {
+  const env = appdata(temp()), dir = path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests');
+  let letOpen;
+  const opening = new Promise(r => { letOpen = r; });
+  const alive = pid => pid === 1111 || pid === 2222;
+  const first = B.createSolioBackup({ platform: 'win32', env, pid: 1111, alive, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  await first.start(ME, 'move', { getHint: async () => 'owner@example.com' });
+  for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
+  assert.equal(requestsIn(env).length, 1);
+  assert.match(requestsIn(env)[0], new RegExp(`^[0-9]{13}-${(1111).toString(36).padStart(8, '0')}[0-9a-f]{16}\.json$`));
+  // 끝난 실행(3333)이 남긴 요청
+  const dead = `${String(Date.now()).padStart(13, '0')}-${(3333).toString(36).padStart(8, '0')}0123456789abcdef.json`;
+  fs.writeFileSync(path.join(dir, dead), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' }));
+  const second = B.createSolioBackup({ platform: 'win32', env, pid: 2222, alive, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  second.accountChanged();
+  assert.equal(requestsIn(env).length, 1, 'the live run\'s request stays; the finished run\'s is gone');
+  assert.ok(!requestsIn(env).includes(dead));
+  letOpen(); await first.whenIdle();
+});
+
+test('GPT r9 GA2: the sweep does not follow a junction in place of the requests folder', async () => {
+  const env = appdata(temp()), solio = path.join(env.APPDATA, 'SynkWorkBackup', 'solio'), elsewhere = temp();
+  fs.mkdirSync(solio, { recursive: true });
+  const kept = path.join(elsewhere, '1794880000000-aaaaaaaaaaaaaaaa.json');
+  fs.writeFileSync(kept, JSON.stringify({ v: 1, kind: 'setup', mode: 'protect' }));
+  fs.symlinkSync(elsewhere, path.join(solio, 'requests'), 'junction');
+  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  service.accountChanged();
+  assert.ok(fs.existsSync(kept), 'a file behind the junction is left alone');
+});
+
+test('GPT r9 GA7: once a lock lifts, the request goes within a few tenths of a second, well inside the engine\'s 2-second look', async () => {
+  let locked = true;
+  const fsImpl = { ...fs, promises: fs.promises, unlinkSync: file => { if (locked && /\.json$/.test(String(file))) throw Object.assign(Error('busy'), { code: 'EBUSY' }); return fs.unlinkSync(file); } };
+  const env = appdata(temp()), dir = path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, '1794880000000-aaaaaaaaaaaaaaaa.json'), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' }));
+  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  service.accountChanged();
+  await new Promise(r => setTimeout(r, 350));
+  assert.equal(requestsIn(env).length, 1);
+  locked = false;
+  await new Promise(r => setTimeout(r, 300));
+  assert.deepEqual(requestsIn(env), []);
 });

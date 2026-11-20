@@ -37,6 +37,14 @@ const UNINSTALL_KEY = 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\
 const VERSION = /^(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})$/;
 const HEX64 = /^[a-f0-9]{64}$/;
 const REQUEST_NAME = /^[0-9]{13}-[a-z0-9]{8,32}\.json$/;
+/* 요청 · 임시 파일 이름에 넣는 쓴 프로세스 표. 프로세스 번호를 36진 8자로 */
+const ownerTag = (pid = process.pid) => pid.toString(36).padStart(8, '0').slice(-8);
+const SETUP_AGE = 30 * 60000;
+/* 그 번호의 프로세스가 살아 있는가. 권한이 없어 못 보는 것(EPERM)도 살아 있다 */
+function processAlive(pid) {
+  if (!Number.isSafeInteger(pid) || pid <= 0) return false;
+  try { process.kill(pid, 0); return true; } catch (error) { return error?.code === 'EPERM'; }
+}
 
 // 엔진에 박힌 업데이트 공개 열쇠 둘(엔진 src-tauri/tauri.conf.json의 plugins.updater.pubkey · plugins.synkUpdate.recoveryPubkey).
 // 시험이 엔진 설정과 같은지 본다.
@@ -260,16 +268,17 @@ async function realDirectory(dir, fsImpl) {
   const stat = await fsImpl.lstat(dir);
   if (!stat.isDirectory() || stat.isSymbolicLink()) throw fault('STORAGE');
 }
-async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), random = () => crypto.randomBytes(8).toString('hex'), fsImpl = fsp, fsSync = fs, stillCurrent = () => true, onPlaced = () => {} }) {
+async function writeSetupRequest({ paths, mode, hint = null, now = Date.now(), random = () => crypto.randomBytes(8).toString('hex'), owner = ownerTag(), fsImpl = fsp, fsSync = fs, stillCurrent = () => true, onPlaced = () => {} }) {
   if (!paths || !MODES.includes(mode)) throw fault('INVALID');
   await fsImpl.mkdir(paths.requests, { recursive: true });
   for (const dir of [paths.root, paths.solio, paths.requests]) await realDirectory(dir, fsImpl);
   const body = { v: FORMAT, kind: 'setup', mode };
   // 엔진은 254자 이하 · @ 하나인 주소 꼴만 받는다. 다른 값은 넣지 않는다
   if (typeof hint === 'string' && hint.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hint)) body.hint = hint;
-  const name = `${String(Math.trunc(now)).padStart(13, '0')}-${random()}.json`;
+  // 이름에 쓴 프로세스 표(8자)를 넣는다. 같은 요청 폴더를 쓰는 다른 실행(설치본과 소스 실행)의 치우기가 살아 있는 실행의 요청을 지우지 않게 한다(GPT 열째 GA1)
+  const name = `${String(Math.trunc(now)).padStart(13, '0')}-${owner}${random()}.json`;
   if (!REQUEST_NAME.test(name)) throw fault('INVALID');
-  const temp = path.join(paths.requests, `.${random()}.tmp`), file = path.join(paths.requests, name);
+  const temp = path.join(paths.requests, `.${owner}${random()}.tmp`), file = path.join(paths.requests, name);
   // 임시 이름에 쓰고, 로그인 확인과 엔진이 읽는 이름으로 바꾸기를 한 번에 동기로 한다. 본체의 로그인 상태는 같은 스레드에서만 바뀌므로
   // 그 사이에 로그인이 바뀔 수 없다(GPT 다섯째 · 여섯째 · 일곱째 검수의 로그인 바뀜). 임시 이름(점으로 시작)은 엔진이 읽지 않는다
   try {
@@ -411,6 +420,7 @@ function createSolioBackup({
   platform = process.platform, env = process.env, cacheRoot, now = Date.now,
   run = runPowerShell, request = requestHttps, hold = holdSetup, openExternal = async () => {},
   fsImpl = fs, keys = ENGINE_KEYS, previewAccounts = PREVIEW_ACCOUNTS, wait = ms => new Promise(resolve => setTimeout(resolve, ms)),
+  pid = process.pid, alive = processAlive,
 } = {}) {
   const paths = statusPaths(env);
   // 엔진이 있는지는 어디에도 기억해 두지 않는다. 방의 표시 · 누르기 · 열기 · 설치기 띄우기가 모두 그때마다 새로 확인하고 제 답만 쓴다.
@@ -497,8 +507,9 @@ function createSolioBackup({
      지우기가 실패해도 기억할 것이 없다. 다음 치우기가 폴더를 다시 읽어 같은 파일을 또 찾는다.
      치우는 때: 로그인 알림마다(main publishAuthState, 동기) · 방 표시 · 누르기 · 열기 · 누름이 끝날 때, 지우지 못한 파일이 있으면 1초 뒤 다시.
      그래서 앱을 다시 켠 뒤의 첫 표시도 앞 실행이 남긴 요청을 치운다. setup 요청은 솔리오만 쓰므로(계약 README) 다른 종류의 요청은 건드리지 않는다 */
-  let live = null, retrying = null;
-  const TEMP_NAME = /^\.[0-9a-f]{16}\.tmp$/;
+  let live = null, retrying = null, failures = 0;
+  const me = ownerTag(pid);
+  const TEMP_NAME = /^\.([0-9a-z]{8})?[0-9a-f]{16}\.tmp$/;
   /* 'yes' · 'no' · 'unknown'. 백신 따위가 쥐어 읽지 못하면 「모름」이다. 「아님」으로 넘기면 다시 보지 않게 된다(Fable 요청 수명 확인 P1) */
   function setupKind(file) {
     let text;
@@ -509,30 +520,50 @@ function createSolioBackup({
     } catch (error) { return error?.code === 'ENOENT' ? 'no' : 'unknown'; }
     try { return JSON.parse(text)?.kind === 'setup' ? 'yes' : 'no'; } catch { return 'no'; }
   }
+  /* 요청 폴더와 두 조상이 연결점(정션 · 링크)이 아닌 진짜 폴더인가. 아니면 치우지 않는다. 연결점을 따라가 다른 폴더의 파일을 지우지 않게 한다(GPT 열째 GA2).
+     쓰기(writeSetupRequest)도 같은 셋을 본다 */
+  function realFolders() {
+    try {
+      for (const dir of [paths.root, paths.solio, paths.requests]) { const stat = fsImpl.lstatSync(dir); if (!stat.isDirectory() || stat.isSymbolicLink()) return false; }
+      return true;
+    } catch { return false; }
+  }
+  /* 이름의 프로세스 표로 다른 실행이 아직 쓰고 있는 요청인지 본다. 표가 없는 옛 이름, 30분이 지난 것(엔진도 거절한다), 끝난 실행의 것은 치운다 */
+  function othersLive(name) {
+    const tag = name.startsWith('.') ? name.slice(1).match(/^([0-9a-z]{8})[0-9a-f]{16}\.tmp$/)?.[1] : name.match(/^([0-9]{13})-([0-9a-z]{8})[0-9a-f]{16}\.json$/)?.[2];
+    if (!tag || tag === me) return false;
+    const at = name.startsWith('.') ? null : Number(name.slice(0, 13));
+    if (at !== null && !(now() - at < SETUP_AGE)) return false;
+    try { return alive(parseInt(tag, 36)) === true; } catch { return false; }
+  }
   function sweepRequests() {
     if (platform !== 'win32' || !paths) return;
     if (live) { let keep = false; try { keep = live.same() === true; } catch { keep = false; } if (!keep) live = null; }
     let names, failed = false;
     try { names = fsImpl.readdirSync(paths.requests); } catch (error) { names = []; if (error?.code !== 'ENOENT') failed = true; }
+    if (names.length && !realFolders()) names = [];
     for (const name of names) {
       const file = path.join(paths.requests, name);
       if (live && samePath(file, live.file)) continue;
       if (!TEMP_NAME.test(name)) {
         if (!REQUEST_NAME.test(name)) continue;
+        if (othersLive(name)) continue;
         const kind = setupKind(file);
         if (kind === 'unknown') { failed = true; continue; }
         if (kind === 'no') continue;
-      }
+      } else if (othersLive(name)) continue;
       try { fsImpl.unlinkSync(file); } catch (error) { if (error?.code !== 'ENOENT') failed = true; }
     }
-    // 지우거나 읽지 못한 파일이 있으면 1초 뒤 다시 치운다. 실패가 이어지면 1초마다 다시 건다
-    if (failed && !retrying) { retrying = setTimeout(() => { retrying = null; sweepRequests(); }, 1000); retrying.unref?.(); }
+    // 지우거나 읽지 못한 파일이 있으면 곧 다시 치운다. 엔진 창은 2초마다 요청을 보므로, 처음 5초는 0.1초 간격으로 다시 본다.
+    // 그 뒤로는 1초마다(GPT 열째 GA7). 잠금이 풀린 뒤 엔진보다 먼저 지울 가능성을 높인다
+    failures = failed ? failures + 1 : 0;
+    if (failed && !retrying) { retrying = setTimeout(() => { retrying = null; sweepRequests(); }, failures <= 50 ? 100 : 1000); retrying.unref?.(); }
   }
   const accountChanged = sweepRequests;
   /* 요청을 쓰는 같은 동기 구간에서 live로 적는다. 이름 바꾸기와 live 사이에 치우기가 끼지 못한다 */
   async function writeRequest(mode, hint) {
     const same = sameLogin;
-    return writeSetupRequest({ paths, mode, hint, now: now(), fsImpl: fsImpl.promises, fsSync: fsImpl, stillCurrent, onPlaced: file => { live = { file, same }; } });
+    return writeSetupRequest({ paths, mode, hint, now: now(), owner: me, fsImpl: fsImpl.promises, fsSync: fsImpl, stillCurrent, onPlaced: file => { live = { file, same }; } });
   }
   /* 이번 요청을 내려놓고 그 자리에서 치운다 */
   function dropRequest(name) {
