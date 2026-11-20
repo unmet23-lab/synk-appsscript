@@ -402,6 +402,17 @@
         }
       },
       {
+        "계정": "lab-nz-youtube",
+        "채널": "유튜브 @synklabnewzealand",
+        "주소": "https://www.youtube.com/watch?v=PcsbB4l4BRI",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-20T00:00:33.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-py-youtube",
         "채널": "유튜브 @synklabparaguay",
         "주소": "https://www.youtube.com/watch?v=sRVQLoRicwk",
