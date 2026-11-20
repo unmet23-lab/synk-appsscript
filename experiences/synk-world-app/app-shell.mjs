@@ -38,7 +38,7 @@ const atlasNextOn=connection.features?.atlasNext===true;
 // 손님 깃발(atlasNextGuest — operating-mode.mjs): 꺼져 있으면 손님 주인에게는 새 길 입구를 주지 않는다(손님은 지금 판 — 계정만 새 길).
 const atlasNextGuestOn=atlasNextOn&&connection.features?.atlasNextGuest===true;
 // 받기는 한 번(동시에 불러도 같은 약속), 받는 사이에 닫히면 받은 것을 바로 닫는다 — 주인이 바뀌어 생활 기록을 버릴 때(keep) 떠난 주인의
-// 새 길 코치 · 호스트가 남지 않게(11-12 화면 검수 카본 A6). 받기가 실패하면 다음에 다시 받는다.
+// 새 길 코치 · 호스트가 남지 않게(11-12 화면 검수 A6). 받기가 실패하면 다음에 다시 받는다.
 // 계정 길(단계 4 ④ — 단계4_계획 §18-2 · §18-5): 운영은 계정을 다시 읽는 world-account의 prepareAtlasTrail, 리허설은 리허설 서버의 trail
 // (rehearsal-trail.mjs — WorldClient와 같은 세션 머리말). 판 정하기 · 옮기기 물음 · 로그아웃 표지는 입구(world-atlas-next.mjs)가 한다.
 function lazyAtlasNext(owner){
@@ -528,7 +528,7 @@ function studyTimes(snapshot){
 }
 // 알림을 누르면 그 알림이 가리키는 자리로: 돌아온 복습은 나의 복습 화면, 이번 주 연습은 이번 주 계획, 시험 점검 카드의 주 단추는
 // 시험 형식 연습(미니 모의, ④ education.mock — 열 수 없으면 그쪽이 알리고 내 위치로 간다), 짧은 진단 단추는 짧은 진단. 두 단추는 그린 때 고른 대상을
-// 그대로 연다 — 누른 때 「education.mock이 있는가」로 다시 고르지 않는다(4-4d §21-23의 5 · 설계 다시 검수 카본 A1 · A2).
+// 그대로 연다 — 누른 때 「education.mock이 있는가」로 다시 고르지 않는다(4-4d §21-23의 5 · 설계 다시 검수 A1 · A2).
 // (추천 「다음 연습」으로 바로 보내면 목표를 아직 정하지 않은 학생에게 목표 창이 먼저 떠서, 알림이 말한 자리와 달라진다.)
 function openReminder(kind){
  const run=task=>void Promise.resolve().then(task).catch(e=>home.toast(errorText(e)));
@@ -776,7 +776,7 @@ function responsesSection(){
  return `<section class="ws-responses" data-world-responses data-label="RESPONSES" aria-labelledby="ws-responses-title"><h3 id="ws-responses-title" tabindex="-1">${escape(t('response.mine'))}</h3><p class="ws-responses-note">${escape(t('response.note30'))}</p><ul>${rows.map(item).join('')}</ul>${rows.length>RESPONSE_PAGE?`<button class="quiet-button ws-responses-more" type="button" data-responses-more>${escape(t('life.more'))}</button>`:''}<p class="ws-responses-note">${escape(t(local?'response.removeNoteDevice':'response.removeNote'))}</p></section>`;
 }
 // 「더 보기」를 펼쳤는가 — 학생이 누른 때만 참이다. 단추가 처음부터 없던 짧은 목록을 펼친 것으로 보면, 서버 읽기 뒤 길어진 목록이 처음부터
-// 다 펼쳐지고 「더 보기」가 사라졌다(4-5 끝 판 GB6 · 카본 B1). 칸을 다시 그리면 새 칸에 이어 둔다.
+// 다 펼쳐지고 「더 보기」가 사라졌다(4-5 끝 판 GB6 · B1). 칸을 다시 그리면 새 칸에 이어 둔다.
 const responsesOpened=box=>box?.dataset.responsesOpen==='1';
 function openResponses(box){for(const row of box.querySelectorAll('[data-response-later]'))row.hidden=false;box.querySelector('[data-responses-more]')?.remove();box.dataset.responsesOpen='1';}
 function mountResponses(){
@@ -836,7 +836,7 @@ function meSection(fresh=false){
  if(meUndo&&all.some(row=>row.unit===meUndo.unit&&Number.isFinite(row.lastAt)&&row.lastAt>meUndo.at))meUndo=null;
  const button=(kind,row)=>`<button class="quiet-button" type="button" data-me-tell="${kind}" data-me-unit="${escape(row.unit)}" aria-label="${escape(meText(`me.${kind}Label`,{label:row.label}))}">${escape(meText(`me.${kind}`))}</button>`;
  const undo=()=>`<li><span>${escape(meUndo.label)}</span><button class="quiet-button" type="button" data-me-undo="${escape(meUndo.eventId)}" aria-label="${escape(meText('me.undoLabel',{label:meUndo.label}))}">${escape(meText('me.undo'))}</button></li>`;
- // 제목의 수는 보이는 줄(되돌리기 줄 포함), 「더 보기」는 되돌리기로 가린 단위를 뺀 줄로 센다 — 걸러내기 전 수를 쓰면 0개 제목이나 빈 「더 보기」가 섰다(4-5 끝 판 카본 B2).
+ // 제목의 수는 보이는 줄(되돌리기 줄 포함), 「더 보기」는 되돌리기로 가린 단위를 뺀 줄로 센다 — 걸러내기 전 수를 쓰면 0개 제목이나 빈 「더 보기」가 섰다(4-5 끝 판 B2).
  const list=(state,kind)=>{
   const shown=me[state].filter(row=>row.unit!==meUndo?.unit);
   const rows=shown.map((row,index)=>`<li${index>=ME_PAGE?' data-me-later hidden':''}><span>${escape(row.label)}</span>${button(kind,row)}</li>`);
@@ -895,7 +895,7 @@ function mountMe(){
 }
 // 연습 기록 비우기(§22-4 셸): 정해진 글로 한 번 더 묻고, 확인하면 입구의 clearPractice를 부른다. 결과를 알린 뒤 계정 설정 스냅샷을 새로 받아 「내 계정」
 // 시트 전체를 다시 그린다(22-4의 5 — 동의 체크박스의 판 번호와 응답 목록). 아무것도 비우지 못했으면 「지금은 비우지 못했어요」 쪽으로 알린다.
-// 비우는 사이 단추를 다시 누르면 묻지 않는다 — 두 번째 확인이 첫 비우기가 연 새 판을 또 비웠다(4-5 끝 판 카본 B3).
+// 비우는 사이 단추를 다시 누르면 묻지 않는다 — 두 번째 확인이 첫 비우기가 연 새 판을 또 비웠다(4-5 끝 판 B3).
 let clearingPractice=false;
 async function clearPracticeNow(){
  if(clearingPractice)return;
@@ -1151,7 +1151,7 @@ document.addEventListener('change',event=>{const control=event.target;if(control
  // 학습일 답은 실패한 갈래에서도 지운다 — 서버의 동의 판은 바뀌었을 수 있다(세대 수만 오르고 해가 없다 — 4-4c 끝 판 F3).
  // 서버는 바뀌었는데 뒤 확인만 실패했거나 · 다른 기기가 먼저 바꿨으면(REVISION_CONFLICT) 체크 · 판 번호가 서버와 어긋난 채 남아 다시 눌러도 계속 실패했다 —
  // 계정을 한 번 다시 읽어 시트를 서버 값으로 다시 그린다(합친 끝 판 넘친 #12). 다시 읽기도 못 하면 되돌린 값 그대로. 다시 읽기가 끝날 때까지
- // 토글은 잠근다 — 먼저 풀면 옛 체크 · 판 번호로 다시 눌러 또 실패했다(카본 처리 다시 검수 A1).
+ // 토글은 잠근다 — 먼저 풀면 옛 체크 · 판 번호로 다시 눌러 또 실패했다(처리 다시 검수 A1).
  return account.refreshLearning?.().then(()=>{if(screen==='world-profile')profile();},()=>{});}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
 // pagehide: 생활 세션을 닫고(그 뒤 계정 정리·늦은 준비가 생활 화면을 다시 세우지 않는다) 지금 시트의 자원을 버린 다음 계정을 멈춘다.
 window.addEventListener('pagehide',()=>{authBoundary++;worldPush?.flush();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});

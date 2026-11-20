@@ -5,7 +5,7 @@
 // 않는다(§21-6). 이 파일은 능력 읽개 · 시작점 · 기기의 판 기록만 짓는다.
 import { buildPositionNext, examSkills } from './world-position-next.mjs';
 
-// 기록이 다 왔는가(§21-3 — 내 위치와 같은 판정). 셸이 묶음 만남을 다시 물을 때를 가리는 열쇠에 쓴다(첫 받기가 오면 시작점을 다시 센다 — 카본 A8).
+// 기록이 다 왔는가(§21-3 — 내 위치와 같은 판정). 셸이 묶음 만남을 다시 물을 때를 가리는 열쇠에 쓴다(첫 받기가 오면 시작점을 다시 센다 — A8).
 export { recordsComplete } from './world-position-next.mjs';
 
 export const PLAN_NEXT_POLICY = Object.freeze({
@@ -42,7 +42,7 @@ export function planBoard({ nodes = [], summary, prefer = null, synced = null, u
 }
 
 // 능력 읽개(§21-6 표 · 검토 D1) — buildExamPlan이 옛 요약을 읽는 여덟 자리를 새 칸으로 덮는다. 능력 목록과 영역은 열린 지도(Strata)의 것이다 —
-// 새 요약은 만난 능력만 내므로 「TOPIK II 능력이 있는가」를 요약으로 읽지 않는다(카본 설계 검토 A2). 듣기 · 읽기 칸은 planBoard에서, 쓰기
+// 새 요약은 만난 능력만 내므로 「TOPIK II 능력이 있는가」를 요약으로 읽지 않는다(설계 검토 A2). 듣기 · 읽기 칸은 planBoard에서, 쓰기
 // (ko2.writing.*)는 자동 판정이 없어 늘 아직이다.
 //   board — planBoard, nodes — 열린 지도의 능력 목록(engine.SKILLS), start(ids) — 시작점 판정(planStart를 감싼 것)
 export function planReader({ board, nodes = [], start = null } = {}) {

@@ -316,7 +316,7 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   if(name==='reminder-exam-plan')return open('plan');
  }
  // 시험일 점검을 누르면 여는 카드: 잠금 화면에는 일의 종류를 쓰지 않았으므로 여기서 무엇을 권하는지 말한다.
- // 주 단추는 그린 때의 판정(canMock)에 묶는다(4-4d §21-23의 5 · 설계 다시 검수 카본 A1 · A2): 열 수 있으면 시험 형식 연습(reminder-exam-mock),
+ // 주 단추는 그린 때의 판정(canMock)에 묶는다(4-4d §21-23의 5 · 설계 다시 검수 A1 · A2): 열 수 있으면 시험 형식 연습(reminder-exam-mock),
  // 아니면 짧은 진단(reminder-exam-start)이고, 누른 때 다시 고르지 않는다. added: 판정이 거짓이던 카드를 연 뒤 참이 된 꼴 — 짧은 진단 단추는 그
  // 자리에 두고 시험 형식 단추를 곁에 둔다(examChanged가 열린 카드에 같은 꼴로 끼워 넣는다).
  const examButton=(name,key,primary)=>`<button type="button" class="${primary?'felt-button':'plain-button'}" data-world="${name}">${escape(t(key))}${primary?' <span aria-hidden="true">→</span>':''}</button>`;

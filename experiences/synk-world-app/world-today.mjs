@@ -36,7 +36,7 @@ const quiet = fn => {
 };
 
 // 학습일 열쇠 — 차례 표시(§20-8)를 비우는 때. 기기 현지 새벽 4시가 경계다. 다시 그리는 때(nextDayStart)와 같은 달력 현지 시각으로 센다 —
-// 4시간을 빼서 세면 서머타임이 바뀌는 날 열쇠가 현지 5시(봄)나 3시(가을)에 바뀌어 다시 그리는 때와 어긋난다(카본 엔진급 끝 판 B5).
+// 4시간을 빼서 세면 서머타임이 바뀌는 날 열쇠가 현지 5시(봄)나 3시(가을)에 바뀌어 다시 그리는 때와 어긋난다(엔진급 끝 판 B5).
 export function todayKey(now = Date.now()) {
   const at = new Date(now);
   if (at.getHours() < DAY_START_HOUR) at.setDate(at.getDate() - 1);
@@ -114,7 +114,7 @@ export function reviewFact(items = []) {
 // 문항은 단위를 여럿이 나눠 가져 돌아온 단위가 든 문항만 추려도 수가 커진다 — 그래서 단위마다 하나다. 그러면 할 것의 수가 돌아온 단위의 수가
 // 되어 생활 복습(lifeDue ③ — 단위마다 복습 하나)과 같은 셈이다. 연습 화면이 실제로 내는 문항은 연습 코치가 고른다. 소리를 끈 날 듣기 짧은 연습은
 // 빼지 않고 잠근다(activity → blockedBy의 소리 거름 — 사실 locked). 빼면 듣기 연습에만 돌아온 단위가 있는 날이 조건에 걸린 날(blocked)이 아니라
-// 다 한 날로 보인다(카본 엔진급 끝 판 B1).
+// 다 한 날로 보인다(엔진급 끝 판 B1).
 function practiceActivities({ pool, dueUnits, itemUnits, settings, labels, length }) {
   if (!Array.isArray(pool) || !dueUnits?.size || typeof itemUnits !== 'function') return [];
   const bySkill = new Map();
@@ -512,7 +512,7 @@ function rowWhy(entry, act, { capped, say }) {
   if (open.resume || open.id === HANGUL_ID) return entry.why;
   // 점검 칸의 짧은 진단은 제품이 차례를 정한다 — 후보 없이 넘겨 none이어도 줄이다(다음 레슨과 같다). 이유는 설명 사실의 문장이다.
   if (act.role === 'check') return entry.why;
-  // 숙제 연습은 낼 후보가 있을 때만 줄이다(none도 locked도 아님 — 층이나 숙제 문장으로 가르지 않는다, 카본 설계 검토 A9). 상한 날에도 줄이다 —
+  // 숙제 연습은 낼 후보가 있을 때만 줄이다(none도 locked도 아님 — 층이나 숙제 문장으로 가르지 않는다, 설계 검토 A9). 상한 날에도 줄이다 —
   // 상한은 복습만 미룬다(20-3). 맨 앞 층이 9인데 두뇌가 숙제 문장을 내는 날(진단 직후 새 단위 한도 — 21-5)은 줄이 서지 않는다.
   if (act.role === 'homework') return entry.none ? null : entry.why;
   if (open.route === 'lesson') {
@@ -675,7 +675,7 @@ export function createWorldTodayPlan({
   const cappedText = capped ? quiet(() => say({ code: 'day.capped', slots: {} })) : null;
   // 조건에 걸린 날(blocked)은 걸린 활동이 풀리면 줄이 되는 때다. 상한 날의 복습 칸 활동(하던 것 밖)은 풀려도 줄이 아니라 그날의 까닭은 상한이다.
   // 판(status) · 이유 · 빈 날 코드는 한 차례(확인 중 → 조건 → 상한 → 다 한 날)로 정한다(엔진급 끝 판 F5).
-  // 조건에 걸린 숙제 연습(카본 설계 검토 A10 · 4-4b 끝 판 F2): 두뇌는 잠근 활동에 층을 셈하지 않으므로, 조건에 걸린 날로 세기 전에 그
+  // 조건에 걸린 숙제 연습(설계 검토 A10 · 4-4b 끝 판 F2): 두뇌는 잠근 활동에 층을 셈하지 않으므로, 조건에 걸린 날로 세기 전에 그
   // 활동만 풀어 한 번 더 셈한다(plan은 보기만 읽는다). 조건을 풀어도 낼 것이 없으면(처음 보는 문항이 없음 · 새 단위 한도에 막힘) 조건에 걸린 날이
   // 아니라 낼 것이 없는 날이다. 소리만이 아니라 시간 · 도움 방식 조건도 같다 — 소리만 보던 판은 3 · 5분 설정에서 낼 문항이 없는 숙제를 「시간이나
   // 소리 설정을 바꿔 볼 수 있어요」로 셌는데, 시간을 바꿔도 줄은 서지 않았다.

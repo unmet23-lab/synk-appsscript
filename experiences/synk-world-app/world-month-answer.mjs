@@ -41,7 +41,7 @@ export const samePosition = (a, b) =>
 // 머리 차례 — 엔진 record/summary.mjs headOrder와 같은 규칙(gen에 든 머리 만든 서버 시각이 큰 쪽이 새 머리, gen이 없거나 꼴이 아니면 가장 작다).
 // 시각이 같고 gen이 다르면(같은 밀리초에 지은 머리 · 꼴이 아닌 gen끼리) 앞에 준 쪽(next)을 새 머리로 본다 — 엔진도 받은 머리를 새것으로
 // 얹으므로(log.mjs newer · summary.mjs fitOf), 셸이 그 답을 뒤처짐으로 보고 한 번 받으면 기기가 그 머리로 와 같은 자리가 된다. 셸만 다르게
-// 가리면 기기는 새 머리를 얹는데 셸은 다시 묻는 어긋남이 생긴다(4-4c 끝 판 카본 B2 — 안함의 까닭).
+// 가리면 기기는 새 머리를 얹는데 셸은 다시 묻는 어긋남이 생긴다(4-4c 끝 판 B2 — 안함의 까닭).
 const genTime = gen => {
   const match = typeof gen === 'string' ? GEN.exec(gen) : null;
   return match ? Number(match[1]) : Number.NEGATIVE_INFINITY;
@@ -301,7 +301,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     state.missed = null;
   };
   // 계정이 바뀌었거나 지우는 길(로그아웃 · 동의 바꿈 · 비우기)이 세대 수를 올렸으면 상자를 비운다 — 앞 계정 · 앞 세대의 상한과 받은 자리가 다시
-  // 들어온 같은 계정의 물음과 받기를 막지 않게(카본 다시 보기 A1).
+  // 들어온 같은 계정의 물음과 받기를 막지 않게(다시 보기 A1).
   const follow = owner => {
     const now = answers.generation();
     if (state.owner === owner && state.generation === now) return;
@@ -321,7 +321,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
   };
   // 답을 들일 코치 — 물은 코치가 열려 있으면 그 코치다. 닫혔으면(물은 사이 판을 다시 정해 같은 판의 새 코치가 열렸다) 이 상자가 마지막으로 그린
   // 코치가 같은 동의 판으로 열려 있을 때 그 코치다. 받기 · 다시 묻기 · 다시 그리기가 닫힌 코치로 가면 열린 판이 문장을 잃고, 같은 자리에서 다시
-  // 묻는다(4-4c 끝 판 카본 -c B1). 둘 다 아니면 열린 코치가 없다(storage null).
+  // 묻는다(4-4c 끝 판 -c B1). 둘 다 아니면 열린 코치가 없다(storage null).
   const holderOf = (asked, askedLine) => {
     const own = storageOf(asked);
     const last = state.coach;
@@ -357,7 +357,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     if (state.tried?.key === key && samePosition(state.tried.from, device)) return;
     // 물음마다 표지 — 이 물음이 아직 지금 물음인지 가린다. 상자를 비웠거나(reset) 다른 열쇠의 물음(학습일 04:00 경계 · 동의 판이 바뀐 새 코치)이
     // 이 물음을 밀어냈으면, 늦은 답과 실패는 「묻는 중」도, 이 문서의 답 · 저장소 · 상한 · 받은 자리도 건드리지 않는다. 밀려난 어제 물음의 답이
-    // 오늘 답을 덮으면 다시 그리기에서 오늘 답이 사라져 같은 자리에서 다시 묻고, 옛 판 물음의 실패가 새 코치의 상한을 덮는다(4-4c 끝 판 카본 B2).
+    // 오늘 답을 덮으면 다시 그리기에서 오늘 답이 사라져 같은 자리에서 다시 묻고, 옛 판 물음의 실패가 새 코치의 상한을 덮는다(4-4c 끝 판 B2).
     const token = {};
     state.asking = { key, token };
     const since = answers.generation();
@@ -368,7 +368,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       return true;
     };
     // 답이 왔을 때 아직 그 계정 · 문서 · 세대 · 학습일인가. 물은 사이 학습일이 넘어갔으면 어제 열쇠의 답은 쓸 데가 없고, 적으면 다른 탭이 적은
-    // 오늘 답을 덮는다(카본 B2). 동의 판은 코치마다 하나라(판이 바뀌면 새 코치가 새 열쇠로 묻는다) 표지가 가린다.
+    // 오늘 답을 덮는다(B2). 동의 판은 코치마다 하나라(판이 바뀌면 새 코치가 새 열쇠로 묻는다) 표지가 가린다.
     const still = () => {
       if (!alive(owner) || since !== answers.generation()) return false;
       try {
@@ -398,7 +398,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
     const reply = got => {
       // 밀려난 물음이거나, 그 계정 · 문서가 아니거나, 물은 사이 지우는 길(로그아웃 · 동의 바꿈 · 비우기)이 돌았거나 학습일이 넘어갔으면, 늦은 답은
       // 완결이든 아니든 들지도 적지도 다시 그리지도 않고 상한 · 받은 자리도 건드리지 않는다 — 앞 세대 답이 새 세대의 tried · pulled를 채우면 지금
-      // 코치가 꼭 해야 할 받기를 건너뛴다(카본 다시 보기 A1 · 4-4c 끝 판 GB2 · 카본 B2).
+      // 코치가 꼭 해야 할 받기를 건너뛴다(다시 보기 A1 · 4-4c 끝 판 GB2 · B2).
       if (!settle() || !still()) return;
       const at = positionOf(got?.summaryAt);
       if (state.ahead?.key === key) state.ahead = null;
@@ -407,13 +407,13 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       if (got?.complete !== true) {
         missed(kind.code(got?.reason));
         // 열린 코치가 없다(물은 코치가 닫혔고 같은 판의 새 코치를 아직 그리지 않았다) — 닫힌 코치로 받지 않는다(받은 자리를 먼저 채우면 뒤 코치의
-        // 받기를 막는다 — 4-4c 끝 판 카본 B1). 서버의 자리는 남겨, 다음 그리기의 코치가 그 자리로 한 번 받게 한다(카본 -c B1).
+        // 받기를 막는다 — 4-4c 끝 판 B1). 서버의 자리는 남겨, 다음 그리기의 코치가 그 자리로 한 번 받게 한다(-c B1).
         if (!storage) {
           if (at) state.ahead = { key, at };
           return;
         }
         // 물을 때의 자리가 아니라 지금 기기 자리와 견준다 — 묻는 사이 받기 알림이 기기를 올렸어도 그 다시 그리기는 「묻는 중」에 막혔다. 접혀
-        // 돌아오지 않은 내 사건이 있으면 멈춘다(4-4c 끝 판 카본 B1 · 설계 주인 11-17).
+        // 돌아오지 않은 내 사건이 있으면 멈춘다(4-4c 끝 판 B1 · 설계 주인 11-17).
         if (heldBack(storage)) return;
         const current = positionOf(storage.sync?.received);
         if (!current) return;
@@ -435,7 +435,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       const answer = kind.shape({ askedFrom: device, at, ...body });
       state.kept = { key, answer };
       answers.write(owner, { revision, day, ...answer, since }); // 막힌 저장소면 이 문서의 답(kept)만 남는다
-      // 열린 코치가 없으면 적기만 한다 — 다음 그리기의 코치가 이 답으로 견준다(버리면 같은 자리에서 다시 묻는다 — 카본 -c B1). 접혀 돌아오지
+      // 열린 코치가 없으면 적기만 한다 — 다음 그리기의 코치가 이 답으로 견준다(버리면 같은 자리에서 다시 묻는다 — -c B1). 접혀 돌아오지
       // 않은 내 사건이 있었는지는 다음 그리기가 본다(month는 heldBack이면 이 답을 쓰지 않는다).
       if (!storage) return;
       const current = positionOf(storage.sync?.received);
@@ -451,7 +451,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       .then(() => kind.query(line, offsetOf))
       .then(reply, () => {
         // 로그아웃 · 계정 바꿈으로 끊긴 물음(감싸개의 ACCOUNT_CHANGED), 물은 사이 지우는 길이 돈 물음, 밀려난 물음 · 학습일이 넘어간 물음은 실패로
-        // 적지 않는다 — 다른 계정 · 새 세대 · 새 열쇠의 계기와 상한을 덮지 않게(카본 다시 보기 A1 · 4-4c 끝 판 GB2 · 카본 B2).
+        // 적지 않는다 — 다른 계정 · 새 세대 · 새 열쇠의 계기와 상한을 덮지 않게(다시 보기 A1 · 4-4c 끝 판 GB2 · B2).
         if (settle() && still()) {
           missed(kind.failed);
           drawMissed();
@@ -468,7 +468,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       const owner = account();
       if (!owner) return null;
       follow(owner);
-      state.coach = coach; // 답이 왔을 때 물은 코치가 닫혔으면 이 코치로 들인다(holderOf — 카본 -c B1)
+      state.coach = coach; // 답이 왔을 때 물은 코치가 닫혔으면 이 코치로 들인다(holderOf — -c B1)
       let line = null;
       try {
         line = lineOf(coach) || null;
@@ -494,7 +494,7 @@ export function createMonthAsker({ answers, account, lineOf, dayOf, offsetOf, re
       if (verdict === 'use') return kind.use(stored);
       if (verdict === 'behind') pullOnce(coach, stored.at);
       else {
-        // 닫힌 코치에 온 완결되지 않은 답의 앞선 자리 — 그때 받지 못했으면 이 코치로 한 번 받는다(4-4c 끝 판 카본 -c B1).
+        // 닫힌 코치에 온 완결되지 않은 답의 앞선 자리 — 그때 받지 못했으면 이 코치로 한 번 받는다(4-4c 끝 판 -c B1).
         if (state.ahead?.key === key && aheadOf(state.ahead.at, device)) pullOnce(coach, state.ahead.at);
         ask(coach, line, { owner, revision, day, device });
         // 묻지 않았고 묻는 중도 아니다 — 이 자리에서 묻기를 그만두었다(실패하거나 완결되지 않은 답 뒤의 상한). 셸은 「확인 중」 대신 읽지 못함으로 그린다.

@@ -4,7 +4,7 @@
 // 규칙(§23-2 · 설계 주인 조건 넷 · 설계 검토 두 차례):
 //   - 문은 그 게임 하나만 받는다 — gameId는 launchGame이 연 게임, banks는 GAME_BANKS에 있는 것만.
 //   - open은 지금 판이면 null(게임은 옛 길로), 새 길이면 겉. 패널이 닫히거나 틀 문서가 바뀌어 취소된 open은 null이 아니라 RUN_ENDED로
-//     거절한다 — 게임은 옛 길을 열지 않고 멈춘다(카본 다시 검토 A2).
+//     거절한다 — 게임은 옛 길을 열지 않고 멈춘다(다시 검토 A2).
 //   - 겉은 틀 문서의 실행 번호에 묶인다. 같은 패널에서 open이 다시 오면(틀 다시 싣기) 앞 겉을 닫고 그 판을 finishSet({ record: false })로
 //     닫은 뒤 새 겉을 준다. 앞 문서의 늦은 호출 · 늦게 끝난 open은 새 판을 건드리지 않는다(GA6).
 //   - 틀의 pagehide(키트가 겉의 leave를 부른다)는 셸 창의 다음 차례에 겉과 판을 닫는다 — 같은 pagehide에서 게임이 떠나며 내는 마지막 답이
@@ -220,7 +220,7 @@ export function createGameDoor({ entry, gameId, later = fn => setTimeout(fn, 0) 
     const run = runs;
     retireCurrent(); // 같은 패널의 다시 open — 앞 문서의 겉을 닫고 그 판을 닫는다
     const coach = await entry.gameCoach(gameId, [...banks].sort());
-    // 기다리는 사이 패널이 닫혔거나 틀 문서가 바뀌었다 — 겉을 주지 않고 RUN_ENDED(카본 다시 검토 A2). 받은 코치의 판은 닫는다 — 같은
+    // 기다리는 사이 패널이 닫혔거나 틀 문서가 바뀌었다 — 겉을 주지 않고 RUN_ENDED(다시 검토 A2). 받은 코치의 판은 닫는다 — 같은
     // 코치를 새 문서가 이미 받아 판을 열었으면 건드리지 않는다(셸은 판 · 은행 조합마다 코치를 다시 쓴다).
     if (closed || run !== runs) {
       if (coach && current?.coach !== coach) endSet(coach);

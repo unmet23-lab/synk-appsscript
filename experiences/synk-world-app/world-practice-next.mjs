@@ -8,7 +8,7 @@
 //      기회다(그 항목의 새 문항으로 확인하는 연습의 약속). 엔진의 채우기 차례는 「한 번도 안 본 문항」을 앞세우지 않으므로, 맨 앞 채우기가
 // 이미 본 문항이면 후보를 처음 보는 문항으로 좁혀 한 번 더 묻고(엔진이 그 안에서 고른다), 그것도 없을 때만 끝낸다(설계 P1-1).
 //      끝난 까닭(ending)은 그 판의 사실에서 고르고, 끝 문장에 엔진 문장을 쓰는 것은 그 까닭이 엔진의 것(capped · stubborn)일 때뿐이다
-//      — 돌아온 것을 안 낸 판에 「오늘 돌아온 것은 다 만났어요」를 쓰지 않고, idle로 끝난 판도 제품 문장을 쓴다(카본 A1).
+//      — 돌아온 것을 안 낸 판에 「오늘 돌아온 것은 다 만났어요」를 쓰지 않고, idle로 끝난 판도 제품 문장을 쓴다(A1).
 //   ⑥ 판이 끝나거나 그만두면 코치의 판을 닫는다(finishSet record: false — 판 기록은 셸이 응답과 함께 남긴다). 닫지 않으면 다음 판의
 //      같은 뜻 set이 「이미 열린 판」으로 이어진다(코치는 문항이 나간 판에 같은 set이 또 오면 다시 열지 않는다).
 //   ④ 문항마다 이유(why) · 끈질긴 단위 표시(stubborn) · 「모르겠어요」(unknown)를 보기에 싣고, 문항 앞 해설(preHelp)을 받는다.
@@ -25,7 +25,7 @@ const listeningOf = item => item.audioRequired ?? item.modality === 'listening';
 
 // 엔진 문장이 그 끝 까닭을 말하는 이유 종류 — 이 둘일 때만 엔진의 문장을 판 끝 줄에 쓴다. idle(「오늘 돌아온 것은 다 만났어요. 가볍게
 // 이어가요.」)은 채우기로 이어 가는 판의 말이라, 판이 idle로 끝나는 때(돌아온 것을 냈고 처음 보는 문항도 다 쓴 때)에는 제품 문장을 쓴다
-// (11-12 화면 검수 카본 A1 — 「가볍게 이어가요」와 「N문항 더 하기」가 0문항 판으로 이어졌다).
+// (11-12 화면 검수 A1 — 「가볍게 이어가요」와 「N문항 더 하기」가 0문항 판으로 이어졌다).
 const IDLE = 'idle';
 export const ENGINE_ENDINGS = Object.freeze({
   capped: 'day.capped',
@@ -129,7 +129,7 @@ export function createPracticeNextSession({
     };
     results.push(row);
     // 근거 약속이 거부되면 저장 실패로 센다 — 거부를 그대로 두면 미처리 거부가 나고, 판 끝 Promise.all이 다른 답의 저장을
-    // 기다리지 않고 끊기며, 그 행이 「다시 만나 맞힘」에 들었다(11-12 화면 검수 카본 A5).
+    // 기다리지 않고 끊기며, 그 행이 「다시 만나 맞힘」에 들었다(11-12 화면 검수 A5).
     pending.push(
       Promise.resolve(out.evidence).then(
         evidence => {
@@ -180,7 +180,7 @@ export function createPracticeNextSession({
     }
   }
   // 끝 까닭의 사실은 전체 풀의 답과 처음 보는 문항으로 좁힌 답을 합친다 — 이미 본 문항이 채우기(idle)로 남아 있어도 처음 보는 문항이
-  // 하루 상한 · 끈질긴 보류에 걸렸으면 그 사실이 끝 까닭이고 그 문장이 끝 줄이다(11-12 화면 검수 카본 A2 — 좁힌 답의 held · why를 버려
+  // 하루 상한 · 끈질긴 보류에 걸렸으면 그 사실이 끝 까닭이고 그 문장이 끝 줄이다(11-12 화면 검수 A2 — 좁힌 답의 held · why를 버려
   // 새 문항이 남았는데 「새 문항은 여기까지」라고 하거나 끝 줄이 비었다).
   function end(picked, narrowed = null) {
     const facts = {
@@ -204,7 +204,7 @@ export function createPracticeNextSession({
       return ending;
     },
     results: () => results.map(row => ({ ...row })),
-    // 이 항목에 남은 처음 보는 문항 수 — 판 끝의 「N문항 더 하기」는 이것이 있을 때만(다음 판이 0문항으로 끝나지 않게, 카본 A1).
+    // 이 항목에 남은 처음 보는 문항 수 — 판 끝의 「N문항 더 하기」는 이것이 있을 때만(다음 판이 0문항으로 끝나지 않게, A1).
     freshLeft: () => pool.filter(fresh).length,
     // 판의 답이 모두 저장된 뒤 풀린다 — 혼자 맞힘은 그때의 값이다.
     settled: () => Promise.all(pending).then(() => results.map(row => ({ ...row }))),

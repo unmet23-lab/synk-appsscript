@@ -101,7 +101,7 @@ export function legacyReader(storage) {
   };
 }
 // 옮기기 물음을 지금 판 물음(null)으로 보내는 지금 판의 까닭 — 스위치 꺼짐 · 길(trail)을 받지 않은 셸 · 기기 길 계정의 스위치 모름 · 기기
-// 길로 확인된 계정이 엔진만 못 받음(기기 길은 손님 기록을 올리지 않는다 — 카본 다시 A2, 그 판은 붙들지 않아 다음 연습에서 다시 정한다).
+// 길로 확인된 계정이 엔진만 못 받음(기기 길은 손님 기록을 올리지 않는다 — 다시 A2, 그 판은 붙들지 않아 다음 연습에서 다시 정한다).
 // 그 밖의 지금 판(계정을 못 읽음 · 첫 받기 실패 등)은 「못 셈」이다.
 const SETTLED_OLD = new Set(['SWITCH_OFF', 'NO_TRAIL', 'SWITCH_UNKNOWN', 'DEVICE_UNLOADED']);
 // 옮길 것이 없다는 답(손님 저장소도 고를 옛 기록도 없다) — 물음에 학습 줄을 넣지 않고 다녀감 표지도 쓰지 않는다.
@@ -239,7 +239,7 @@ function writeMark(storage, owner, patch) {
 
 // 「새 길 간 적 있음」을 더 새 판으로만 옮긴다 — 표지가 이미 이 판이나 더 새 판이면 그대로 둔다. 같은 판의 길은 확인된 쪽만 바꾼다: 기기 길은
 // 판 정하기가 스위치를 물은 뒤, 올리는 길은 첫 받기(markWent)가. 판을 올리지 않고 길만 바꾸는 서버 쓰기 깃발(capabilities.learningSync)이나
-// 늦게 온 읽기가 확인 전에 같은 판의 길을 덮지 않게(입구 다시 검수 -d 카본 A1). 판 정하기 끝 · 판 견줌이 쓴다.
+// 늦게 온 읽기가 확인 전에 같은 판의 길을 덮지 않게(입구 다시 검수 -d A1). 판 정하기 끝 · 판 견줌이 쓴다.
 function advanceMark(storage, owner, path, revision) {
   const was = markOf(storage, owner);
   if (was.revision != null && was.revision >= revision) return true;
@@ -597,12 +597,12 @@ export async function postLegacyBatches(events, post, { limit = 256, bytes = 200
 // headers(): 리허설 세션의 머리말(Authorization · X-Synk-Rehearsal-Tab — WorldClient와 같은 것). 운영은 world-account.mjs prepareAtlasTrail.
 // owner(): 지금 세션의 주인 — 나르개를 받은 때의 주인과 다르면 요청 앞뒤에서 ACCOUNT_CHANGED로 던진다(운영 prepareAtlasTrail의 check와 같은
 // 꼴 — 연습을 여는 사이 다른 합성 계정으로 들어오면 앞 계정의 코치가 새 토큰으로 받은 요약을 앞 계정 저장소에 받던 것, 넘친 #19).
-// 손님 세션(로그아웃한 뒤)이면 계정 줄을 묻지 않고, 받은 줄에는 그때의 주인(account)을 싣는다 — 입구가 제 주인과 견준다(카본 끝 판 둘째 C).
+// 손님 세션(로그아웃한 뒤)이면 계정 줄을 묻지 않고, 받은 줄에는 그때의 주인(account)을 싣는다 — 입구가 제 주인과 견준다(끝 판 둘째 C).
 // onAuth(): 401을 받으면 부른다 — 셸이 WorldClient의 401과 같은 일(로그인으로)을 한다. 운영 나르개는 401에서 세션을 닫는데 리허설 나르개는
 // 클라이언트를 지나지 않아 아무도 받지 않았다 — 세션이 끝난 뒤 안내 없이 기기에만 쌓였다(끝 판 둘째 넘친 #9).
 export function rehearsalTrail({ fetcher = (...args) => globalThis.fetch(...args), headers = () => ({}), owner = () => null, onAuth = null } = {}) {
   const changed = () => Object.assign(new Error('ACCOUNT_CHANGED'), { code: 'ACCOUNT_CHANGED' });
-  // 401은 주인이 그대로일 때만 셸에 알린다(로그인으로) — 앞 계정의 늦은 요청이 새 세션까지 로그인 화면으로 돌리지 않게(카본 합친 끝 판
+  // 401은 주인이 그대로일 때만 셸에 알린다(로그인으로) — 앞 계정의 늦은 요청이 새 세션까지 로그인 화면으로 돌리지 않게(합친 끝 판
   // GC1 · C5). 주인이 바뀌었으면 그 답은 ACCOUNT_CHANGED로 버린다.
   async function call(path, { method = 'GET', body } = {}, from = undefined) {
     if (from !== undefined && owner() !== from) throw changed();
@@ -789,7 +789,7 @@ export function createAtlasNext({
   let gave = null; // 면에 마지막으로 준 판 — 'old'(지금 판) · 'next'(새 길 코치)
   let told = false; // 지금 판을 준 뒤 이미 알렸다
   // 판이 풀린 횟수(알렸든 안 알렸든) — 면이 판을 묻는 사이에 풀렸는데(아직 지금 판을 주기 전이라 알림이 버려짐) 그 면이 낡은 지금 판을
-  // 주면, 준 직후 알린다(카본 합친 끝 판 C3 ②).
+  // 주면, 준 직후 알린다(합친 끝 판 C3 ②).
   let loosened = 0;
   function reopen(reason) {
     loosened += 1;
@@ -815,7 +815,7 @@ export function createAtlasNext({
     }
     if (was === 'old') reopen('opened');
     // 지금 판 앞(문서 시작의 처음 정하기 · 새 길 그대로)에 준 새 길 코치도 센다 — 다른 면이 묻는 사이 이 면이 새 길을 받았으면 그 면이 지금
-    // 판을 준 직후 알린다(짧은 연습만 새 길로 가고 생활 판정이 알림 없이 지금 판에 남던 것 — 카본 처리 판 A2). 지금 판 뒤면 reopen이 센다.
+    // 판을 준 직후 알린다(짧은 연습만 새 길로 가고 생활 판정이 알림 없이 지금 판에 남던 것 — 처리 판 A2). 지금 판 뒤면 reopen이 센다.
     else loosened += 1;
     gave = 'next';
     told = false;
@@ -838,7 +838,7 @@ export function createAtlasNext({
           health = engine.createHealth();
           for (const [kind, outcome] of early.splice(0)) health.note(kind, outcome);
         }
-        // 엔진을 못 받았으면(한 번의 네트워크 실패 등) 이 결과를 붙들지 않는다 — 문서 내내 엔진 없이 정하지 않게(카본 끝 판 B).
+        // 엔진을 못 받았으면(한 번의 네트워크 실패 등) 이 결과를 붙들지 않는다 — 문서 내내 엔진 없이 정하지 않게(끝 판 B).
         if (!engine) loaded = null;
         return { coach: module.coach, engine };
       });
@@ -858,7 +858,7 @@ export function createAtlasNext({
     (error?.status === 409 && error?.code === 'REVISION_CONFLICT') ||
     (error?.status === 403 && error?.code === 'LEARNING_DISABLED');
   // 계정 줄을 읽는다 — 줄이 주인을 실으면(운영 prepareAtlasTrail · 리허설 rehearsalTrail) 이 입구의 주인과 같을 때만 쓴다. 입구를 만든 뒤
-  // 세션이 다른 계정 · 손님으로 바뀌었는데 입구가 닫히기 전에 읽으면 새 계정의 판 · 나르개가 앞 계정의 저장소 · 표지에 붙었다(카본 끝 판 둘째 C).
+  // 세션이 다른 계정 · 손님으로 바뀌었는데 입구가 닫히기 전에 읽으면 새 계정의 판 · 나르개가 앞 계정의 저장소 · 표지에 붙었다(끝 판 둘째 C).
   async function readLine() {
     const line = await trail();
     if (line?.account !== undefined && line.account !== owner)
@@ -933,7 +933,7 @@ export function createAtlasNext({
     } catch {
       engine = null;
     }
-    // 엔진을 못 받은 것은 일시 실패다 — 붙들지 않고 다음 연습에서 다시 정한다(카본 끝 판 B). 기기 길인 것은 이미 알았다(DEVICE_UNLOADED).
+    // 엔진을 못 받은 것은 일시 실패다 — 붙들지 않고 다음 연습에서 다시 정한다(끝 판 B). 기기 길인 것은 이미 알았다(DEVICE_UNLOADED).
     if (typeof engine?.storeName !== 'function')
       throw Object.assign(new Error('Atlas engine not loaded'), { code: 'DEVICE_UNLOADED' });
     const asked = await askSwitch(line.transport(revision), switchAskMs);
@@ -952,7 +952,7 @@ export function createAtlasNext({
   // onAccount가 다시 정한다(이미 있는 길). 인증 실패 · 주인 바뀜 · 그 밖은 그 값으로 열지 않는다 — 표지는 계정마다라 남의 저장소를 열지
   // 않게(끝 판 F1 — 계획 §6 「켠 계정이 오프라인으로 다시 열어도 새 길이고 어제 놓친 것이 맨 앞」, 설계 주인 11-13).
   // 두 길 모두 「미확인」(unread)이다 — 계정 판을 확인하지 못했으니 옮기기 물음은 세지 않고(「못 셈」), 다음 연습 · 물음이 계정을 다시 읽어
-  // 그대로면 푼다(planNow · 올리는 길은 나르개도 — 카본 끝 판 둘째 C).
+  // 그대로면 푼다(planNow · 올리는 길은 나르개도 — 끝 판 둘째 C).
   async function keptPath(mark, error, at) {
     if (!mark.went || !mark.path || !transientError(error) || error?.status === 401 || error?.code === 'ACCOUNT_CHANGED') return null;
     // 표지의 판이 이 기기가 아는 비우기(몫을 마친 판 · 남은 걸음 표지의 판)보다 앞서면 그 판으로 열지 않는다 — 비운 판의 저장소다. 그 뒤 판의
@@ -979,7 +979,7 @@ export function createAtlasNext({
   }
   // 계정을 못 읽은 채 연 올리는 길의 나르개 — 부를 때 계정을 다시 읽어 그 판의 나르개로 잇는다(아직 못 닿으면 그 실패를 그대로 던져 호스트가
   // 물러서며 다시 한다). 읽혔고 아직 이 판이면 판 · 동의 · 쓰기 문이 그대로일 때 줄을 채워 미확인을 풀고(옮기기 물음이 센다), 달라졌으면
-  // 판을 다시 정한다 — 쓰기 문만 닫혀도 받기는 200으로 지나가 올리기가 실패할 때까지 이 코치에 머물던 것(카본 끝 판 둘째 C). 앞 세대의
+  // 판을 다시 정한다 — 쓰기 문만 닫혀도 받기는 200으로 지나가 올리기가 실패할 때까지 이 코치에 머물던 것(끝 판 둘째 C). 앞 세대의
   // 판이면 표지의 판으로 부른다 — 서버가 판 울타리(409 REVISION_CONFLICT)로 답하면 호스트가 알린다.
   function unreadTransport(plan, at) {
     let real = null;
@@ -1062,7 +1062,7 @@ export function createAtlasNext({
   }
 
   // 호스트가 셸에 알림(§18-5-2 표 — 판 · 동의 · 스위치 · 인증 · 그 밖). 판을 다시 정할 일이면 열린 코치를 닫는다.
-  // at: 알린 코치를 연 판(세대) — 이미 다시 정한 뒤에 온 앞 판의 알림 · 늦게 끝난 다시 확인은 새 판의 코치를 닫지 않는다(카본 끝 판 B).
+  // at: 알린 코치를 연 판(세대) — 이미 다시 정한 뒤에 온 앞 판의 알림 · 늦게 끝난 다시 확인은 새 판의 코치를 닫지 않는다(끝 판 B).
   // plan: 알린 코치를 연 판 — 다시 확인은 그 판과 견준다(그사이 같은 세대에서 decided를 비웠어도 — 넘친 #21).
   function changed(detail = {}, at = generation, plan = null) {
     if (disposed || at !== generation) return;
@@ -1094,7 +1094,7 @@ export function createAtlasNext({
       else if (plan.unread) adopt(plan, line);
     } catch (error) {
       // 계정을 못 읽었다 — 일시 실패면 지금 코치는 두고 다음 연습 · 물음이 다시 읽어 정하게 표시하고, 그 밖(인증 · 주인 바뀜 · 꼴)이면 판을
-      // 다시 정한다(못 읽은 채 멈춘 코치를 문서 내내 다시 쓰던 것 — 카본 끝 판 둘째 C).
+      // 다시 정한다(못 읽은 채 멈춘 코치를 문서 내내 다시 쓰던 것 — 끝 판 둘째 C).
       if (disposed || at !== generation) return;
       if (transientError(error)) unsure = at;
       else retire(reason);
@@ -1111,7 +1111,7 @@ export function createAtlasNext({
     for (const opening of open)
       void opening.then(made => {
         if (!made) return;
-        gone.set(made, reason); // 닫은 뒤에 건 retired도 울린다 — 닫히기 직전에 그 코치를 받은 면이 영영 모르지 않게(카본 합친 끝 판 C2)
+        gone.set(made, reason); // 닫은 뒤에 건 retired도 울린다 — 닫히기 직전에 그 코치를 받은 면이 영영 모르지 않게(합친 끝 판 C2)
         for (const fn of [...(watchers.get(made) ?? [])])
           try {
             fn({ reason });
@@ -1154,7 +1154,7 @@ export function createAtlasNext({
     // 같은 판의 다른 코치(옮기기 물음 · 다른 은행)가 그사이 새 길을 확인했으면 그대로 새 길이다.
     if ((first.ok && first.base) || plan.went || markOf(store, owner).went) return markWent(plan, at);
     // 스위치 꺼짐(받기의 403 FEATURE_DISABLED)은 지금 판으로 정해진 것이다 — 꺼짐 표지로 정할 때와 같은 까닭으로 낮춰 옮기기 물음도 지금 판
-    // 물음으로 간다(「못 셈」으로 남아 손님 기록을 옮길 수 없던 것 — 카본 끝 판 둘째 C).
+    // 물음으로 간다(「못 셈」으로 남아 손님 기록을 옮길 수 없던 것 — 끝 판 둘째 C).
     const code = first.kind === 'switch' ? 'SWITCH_OFF' : (first.code ?? 'FIRST_SYNC');
     if (first.kind === 'switch') writeMark(store, owner, { off: true });
     // 이번 문서에서는 지금 판으로 — 연습마다 첫 받기를 다시 기다리지 않게(다시 열면 · 주인이 바뀌면 다시 정한다).
@@ -1222,7 +1222,7 @@ export function createAtlasNext({
         code: error?.reason ? `LOAD_${error.reason}` : (error?.code ?? 'LOAD_FAILED'),
       });
       // 계정이 새 길로 정해졌는데 엔진 · 지도 · 저장소를 못 받아 이번 연습이 지금 판으로 가는 것 — 따로 세어 4-8에서 얼마나 밟는지 본다
-      // (끝 판 F1 · 설계 주인 11-13). 판은 붙들지 않는다 — 다음 연습에서 다시 연다(카본 끝 판 B · 다시 A2).
+      // (끝 판 F1 · 설계 주인 11-13). 판은 붙들지 않는다 — 다음 연습에서 다시 연다(끝 판 B · 다시 A2).
       if (plan.path !== 'guest') note('load', { ok: false, code: 'PATH_ENGINE' });
       made?.dispose();
       return null;
@@ -1250,7 +1250,7 @@ export function createAtlasNext({
       coaches.set(key, opening);
     }
     // 준비되는 사이에 닫혔으면 돌려주지 않는다 — 그 코치는 dispose()가 닫는다(떠난 화면의 코치 · 호스트가 남지 않게). 받는 사이에 판을 다시
-    // 정했으면(앞 세대 — 이미 연 코치를 다시 쓰는 길도) 그 코치는 retire가 닫으니 돌려주지 않는다(카본 합친 끝 판 GC2 · C1 · C2).
+    // 정했으면(앞 세대 — 이미 연 코치를 다시 쓰는 길도) 그 코치는 retire가 닫으니 돌려주지 않는다(합친 끝 판 GC2 · C1 · C2).
     return coaches.get(key).then(made => (disposed || at !== generation ? null : made));
   }
   // 면(짧은 연습 · 생활)의 계정 코치 — 판을 정해 그 판의 코치를 연다. 여는 사이에 판을 다시 정했으면(그 판의 코치는 닫혔다 — 여는 길 자신이
@@ -1310,7 +1310,7 @@ export function createAtlasNext({
       }
       // 새 길에 간 적 있는 계정의 올리는 길은 방금 읽은 이 판으로 「새 길 간 적 있음」을 옮긴다 — 다시 정한 판의 첫 받기 전에 문서를 닫아도
       // 다음 오프라인 시작이 비운 판을 열지 않게(GC3). 판 견줌이 앞선 판의 길로 적던 자리를 걷고 여기로 옮겼다(입구 다시 검수 -c GA4).
-      // 기기 길은 판 정하기가 이미 적었다. 더 새 판으로만 옮긴다 — 같은 판의 길은 첫 받기가 확인한 뒤에 바꾼다(advanceMark — -d 카본 A1).
+      // 기기 길은 판 정하기가 이미 적었다. 더 새 판으로만 옮긴다 — 같은 판의 길은 첫 받기가 확인한 뒤에 바꾼다(advanceMark — -d A1).
       if (account && plan.path === 'upload' && plan.went && !plan.unread) advanceMark(store, owner, 'upload', plan.revision);
       return { plan, at };
     }
@@ -1755,7 +1755,7 @@ export function createAtlasNext({
       return faceCoach(banks, gameId, since);
     },
     // 게임 틀을 열 때의 문(4-6c — 단계4_계획 §23-2). 이 문서에서 계정이 이미 지금 판으로 정해졌으면(서버 스위치 꺼짐 · 낮춘 판) 문을 두지 않는다
-    // (카본 A9). 문이 서도 open이 null을 줄 수 있다 — 게임은 기다린 뒤 옛 길로 연다. 게임 은행 표에 없는 게임도 문이 없다.
+    // (A9). 문이 서도 open이 null을 줄 수 있다 — 게임은 기다린 뒤 옛 길로 연다. 게임 은행 표에 없는 게임도 문이 없다.
     gameDoor(gameId) {
       if (disposed || !Object.hasOwn(GAME_BANKS, gameId) || (account && gave === 'old')) return null;
       const self = this;
@@ -1846,7 +1846,7 @@ export function createAtlasNext({
     // 판을 다시 정해 그 코치를 닫을 때 부를 함수(연습 화면이 안내 한 줄과 함께 닫히게). 돌려준 함수로 끊는다.
     retired(made, fn) {
       if (!made || typeof fn !== 'function' || disposed) return () => {};
-      // 이미 판을 다시 정해 닫은 코치 — 곧바로(다음 차례에) 알린다. 닫히기 직전에 그 코치를 받은 면이 닫힌 코치를 붙들고 남지 않게(카본 C2).
+      // 이미 판을 다시 정해 닫은 코치 — 곧바로(다음 차례에) 알린다. 닫히기 직전에 그 코치를 받은 면이 닫힌 코치를 붙들고 남지 않게(C2).
       if (gone.has(made)) {
         const reason = gone.get(made);
         let live = true;
@@ -1898,7 +1898,7 @@ export function createAtlasNext({
           if (typeof engine?.storeName === 'function' && !(await storeMaybe(engine.storeName({})))) return NOTHING_TO_MOVE();
         }
         const made = await coachFor(plan, MOVE_BANKS, 'world-practice', at);
-        // 못 열었다 — 첫 받기가 스위치 꺼짐을 알렸으면(꺼짐 표지) 지금 판으로 정해진 것이라 지금 판 물음, 그 밖은 「못 셈」(카본 끝 판 둘째 C).
+        // 못 열었다 — 첫 받기가 스위치 꺼짐을 알렸으면(꺼짐 표지) 지금 판으로 정해진 것이라 지금 판 물음, 그 밖은 「못 셈」(끝 판 둘째 C).
         if (!made) return disposed ? null : markOf(store, owner).off ? null : { failed: true };
         aside = await made.guestRecords({ legacy: reader, create: before });
         if (!aside) return NOTHING_TO_MOVE();

@@ -95,7 +95,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  // 새 길(atlasNext — 4-2, 단계 4 §19-1 ①): 셸이 learning.next를 넘긴 문서는 새 판 겉(world-life-next.mjs)이 새 코치(은행 world-life)로 적는다.
  // 판이 바뀌어 코치가 닫히면 이 화면도 안내 한 줄과 함께 닫는다. 입구가 있어도 판은 문서 동안 바뀐다(엔진 · 확인 중 · 지금 판 — 서버 스위치가
  // 꺼진 계정 · 엔진을 못 받은 연습은 지금 판) — 레슨 · 복습 · 안내 연습을 열 때마다 그때의 판으로 이번 시도의 기록부를 고른다: 새 길 · 확인 중이면
- // 새 판 겉(확인 중에는 쌓아 두었다가 코치가 서면 흘려보낸다), 지금 판이면 옛 거울과 옛 코치 준비(카본 합친 끝 판 GB2 · B1). 한 시도의
+ // 새 판 겉(확인 중에는 쌓아 두었다가 코치가 서면 흘려보낸다), 지금 판이면 옛 거울과 옛 코치 준비(합친 끝 판 GB2 · B1). 한 시도의
  // 보임 · 답은 한 기록부에만 간다(한 답을 두 기록부에 쓰지 않는다).
  const nextPath=learning?.next&&typeof life?.createLifeNext==='function'?learning.next:null;
  const pathNow=()=>{if(!nextPath)return 'old';let value=null;try{value=nextPath.state?.()??null;}catch{value=null;}return value==='engine'?'engine':value==='old'||value==='disposed'?'old':'checking';};
@@ -175,7 +175,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    if(!record||record.lapses<=0||record.streak!==0)return false;
    exposedTransfers.set(record.id,Date.now());guideTransfer(record.questionId);
    // 새 길(엔진 판정)은 그 표현 하나만 연다(간격 · 판정을 건너뜀 — 제품 간격표로 고른 복습 판을 만들지 않는다, §19-1 ⑤ M5). 확인 중 · 지금 판이면
-   // 지금 판 규칙 그대로(돌아올 때가 안 된 표현의 복습을 만들지 않는다 — 카본 합친 끝 판 B2). 가르는 것은 진도의 판정(요약의 dueState)이다 —
+   // 지금 판 규칙 그대로(돌아올 때가 안 된 표현의 복습을 만들지 않는다 — 합친 끝 판 B2). 가르는 것은 진도의 판정(요약의 dueState)이다 —
    // 입구(감시)가 엔진이어도 저장소가 아직 얹지 못한 동안 판정은 확인 중이다(처리 판 GA2).
    const run=summary().dueState==='engine'?p.startReview(1,record.id,null,{ids:[record.id]}):record.dueAt<=Date.now()?p.startReview(6,record.id):snapshot.activeReview;
    // Seeing this same transfer before finishing an active review is assistance.
@@ -216,7 +216,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  }
  const retryButton=q=>home.mountLifeTutor&&home.tutor?.().tutor?`<button class="life-tutor-retry" data-life-tutor-retry="${escape(q.id)}">${t('life.tutorRetry')}</button>`:'';
  // 다시 그리기(again) 전 초점이 있던 생활 단추 — 판을 다시 열면 닫기 단추로 초점이 옮겨 가 엔터가 화면을 닫았다(넘친 #6). 같은 data-life-* 단추로 되돌린다:
- // 속성 이름 · 값을 들고, 다시 그린 판에서 그 이름의 단추 가운데 값이 같은 것 먼저(레슨 · 팩 목록처럼 이름이 같은 단추가 여럿 — 카본 처리 다시
+ // 속성 이름 · 값을 들고, 다시 그린 판에서 그 이름의 단추 가운데 값이 같은 것 먼저(레슨 · 팩 목록처럼 이름이 같은 단추가 여럿 — 처리 다시
  // 검수 A2), 없으면 그 이름의 첫 단추. 값은 선택자에 넣지 않고 견준다(따옴표 · 역슬래시를 거르지 않아도 된다).
  const focusedKey=()=>{try{const el=document.activeElement;if(!el||el===document.body||!content.contains?.(el))return null;const attr=[...(el.attributes||[])].find(a=>a.name.startsWith('data-life-'));return attr?{name:attr.name,value:attr.value??''}:null;}catch{return null;}};
  const refocus=key=>{try{const list=[...(content.querySelectorAll?.(`[${key.name}]`)||[])];const target=(key.value?list.find(el=>el.getAttribute?.(key.name)===key.value):null)||list[0];target?.focus({preventScroll:true});}catch{/* 초점은 덤이다 */}};

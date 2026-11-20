@@ -216,7 +216,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
  let dueSource=null;
  // 판정이 null이면 지금 판(이 문서는 지금 판으로 정해짐 · 판정을 거둠), 던지거나 엔진 꼴이 아니면 확인 중.
  function judged(){if(!dueSource)return null;let value;try{value=dueSource(state,now());}catch{value=undefined;}if(value===null)return null;if(value?.state==='engine'&&Array.isArray(value.ids))return {...value,ids:value.ids.filter(id=>state.reviews[id])};return {state:'checking',ids:[],nextAt:null,times:[],upcoming:[]};}
- // given: 이미 잰 판정(summary — 한 요약 안에서 판정을 한 번만 잰다, 두 번 재면 그 사이 경계 · 상태가 바뀌어 수와 목록이 갈렸다, 카본 합친 끝 판 B4).
+ // given: 이미 잰 판정(summary — 한 요약 안에서 판정을 한 번만 잰다, 두 번 재면 그 사이 경계 · 상태가 바뀌어 수와 목록이 갈렸다, 합친 끝 판 B4).
  function dueReviews(limit=100,horizon=now(),given=undefined){check();const engine=given===undefined?judged():given;if(engine)return engine.ids.slice(0,Math.max(0,Math.min(100,limit))).map(id=>clone(state.reviews[id]));return Object.values(state.reviews).filter(v=>v.dueAt<=horizon).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
  // 복습 판의 도움 표시(pendingHelp)가 지금 답의 도움인가. 판정이 없거나 null이면 표시가 있으면 도움이다(4-2 앞). 새 길은 표시마다 든 때(pendingHelpAt)가
  // 같은 학습일이거나 30분 안일 때만 도움이고, 때가 없는 표시(판정 없이 단 것)는 도움으로 친다 — 판의 날 하나로 가르면 하던 판을 버리거나 오늘 본
