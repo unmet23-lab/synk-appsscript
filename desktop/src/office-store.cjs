@@ -5,7 +5,10 @@
 //    밖을 보는 것은 손님이 고른 부서 폴더와 설정 폴더가 있는 폴더인지 stat하는 것뿐이다.
 //  · 모르는 칸은 지우지 않고 그대로 쓴다(다음 판이 칸을 더해도 옛 판이 지우지 않는다). 부서 하나의 모르는 칸도 그대로 둔다.
 //  · 깨진 파일은 기본값으로 읽고, 처음으로 무엇을 저장할 때까지 덮지 않는다. 덮기 전에 깨진 내용을 office.json.bad에 한 벌 둔다.
-//  · 쓰기는 같은 폴더의 임시 파일에 쓰고 이름을 바꿔 넣는다. 같은 계정의 고치기는 차례로 한다.
+//  · 쓰기는 같은 폴더의 임시 파일에 쓰고 이름을 바꿔 넣는다. 같은 계정의 고치기는 한 줄 차례(mutate)로 한다.
+//    읽고 고치고 쓰기와 새 폴더가 있는지 보는 일은 모두 그 차례 안에서 한다. 그래서 부른 차례대로 적히고 서로 덮지 않는다(GPT 검수 GA3).
+//  · 폴더가 있는지는 새로 더하거나 바꾸는 폴더만 본다. 이미 저장된 폴더는 다시 보지 않는다. 옮겼거나 외장 드라이브를 뺀 폴더도
+//    빼거나 이름을 고칠 수 있어야 하기 때문이다(GA4).
 //  · 고치는 함수는 모두 { ok:true, data } 또는 { ok:false, code }를 돌려준다. code: ACCOUNT, VALUE, NAME, NAME_TAKEN, FOLDER, LIMIT, NOT_FOUND, READ, WRITE.
 const fs = require('node:fs');
 const os = require('node:os');
@@ -154,25 +157,34 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
     return { ok: true, data: publicData((await load(accountId)).data) };
   }
 
-  /** 부서 더하기(id 없음)와 고치기(id). input: { id?, name, folder, role?, tool? } — role · tool을 빼면 그대로, null이면 지운다 */
+  /** 부서 더하기(id 없음)와 고치기(id). input: { id?, name?, folder?, role?, tool? } — role · tool을 빼면 그대로, null이면 지운다.
+      name과 folder는 새 부서에는 꼭 있어야 한다. 번호가 있는 부서에서 빼면 차례 안에서 읽은 저장된 값 그대로다(이름만 · 폴더만 고칠 때, GA3).
+      저장된 폴더는 지금 없어도 된다(GA4) */
   async function saveDepartment(accountId, input) {
     if (!goodAccount(accountId)) return { ok: false, code: 'ACCOUNT' };
     if (!isObject(input)) return { ok: false, code: 'VALUE' };
-    const name = cleanName(input.name);
-    if (!goodName(name)) return { ok: false, code: 'NAME' };
-    const folder = cleanFolder(input.folder);
-    if (!folder) return { ok: false, code: 'FOLDER' };
-    if (input.role !== undefined && input.role !== null && !(typeof input.role === 'string' && input.role.length <= ROLE_MAX)) return { ok: false, code: 'VALUE' };
-    if (input.tool !== undefined && input.tool !== null && !TOOLS.includes(input.tool)) return { ok: false, code: 'VALUE' };
     const id = input.id ?? null;
     if (id !== null && typeof id !== 'string') return { ok: false, code: 'VALUE' };
-    if (!(await isDirectory(folder))) return { ok: false, code: 'FOLDER' };
+    const keepName = input.name === undefined && id !== null;
+    const name = keepName ? null : cleanName(input.name);
+    if (!keepName && !goodName(name)) return { ok: false, code: 'NAME' };
+    const keepFolder = input.folder === undefined && id !== null;
+    if (keepName && keepFolder && input.role === undefined && input.tool === undefined) return { ok: false, code: 'VALUE' }; // 고칠 것이 없다
+    const folder = keepFolder ? null : cleanFolder(input.folder);
+    if (!keepFolder && !folder) return { ok: false, code: 'FOLDER' };
+    if (input.role !== undefined && input.role !== null && !(typeof input.role === 'string' && input.role.length <= ROLE_MAX)) return { ok: false, code: 'VALUE' };
+    if (input.tool !== undefined && input.tool !== null && !TOOLS.includes(input.tool)) return { ok: false, code: 'VALUE' };
     return mutate(accountId, async data => {
       const at = id === null ? -1 : data.departments.findIndex(d => d.id === id);
       if (id !== null && at < 0) return { ok: false, code: 'NOT_FOUND' };
       if (id === null && data.departments.length >= MAX_DEPARTMENTS) return { ok: false, code: 'LIMIT' };
-      if (data.departments.some(d => d.id !== id && nameKey(d.name) === nameKey(name))) return { ok: false, code: 'NAME_TAKEN' };
-      const dept = at >= 0 ? { ...data.departments[at], name, folder } : { id: newId(data), name, folder };
+      if (!keepName && data.departments.some(d => d.id !== id && nameKey(d.name) === nameKey(name))) return { ok: false, code: 'NAME_TAKEN' };
+      const before = at >= 0 ? data.departments[at] : null;
+      const nextName = keepName ? before.name : name;
+      const nextFolder = keepFolder ? before.folder : folder;
+      // 새로 고른 폴더만 있는지 본다. 저장된 폴더와 같으면 다시 보지 않는다
+      if (!keepFolder && !(before && folderKey(before.folder) === folderKey(folder)) && !(await isDirectory(folder))) return { ok: false, code: 'FOLDER' };
+      const dept = at >= 0 ? { ...before, name: nextName, folder: nextFolder } : { id: newId(data), name: nextName, folder: nextFolder };
       for (const key of ['role', 'tool']) {
         if (input[key] === null) delete dept[key];
         else if (input[key] !== undefined) dept[key] = input[key];
@@ -259,14 +271,41 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
       seen.add(folderKey(f)); claude.push(f);
     }
     if (claude.length > MAX_ROOTS) return { ok: false, code: 'LIMIT' };
-    for (const f of claude) if (!(await isDirectory(f))) return { ok: false, code: 'FOLDER' };
     return mutate(accountId, async data => {
+      const known = new Set(data.roots.claude.map(folderKey));
+      for (const f of claude) if (!known.has(folderKey(f)) && !(await isDirectory(f))) return { ok: false, code: 'FOLDER' };
       data.roots = { ...data.roots, claude };
       return { ok: true };
     });
   }
 
-  return { read, saveDepartment, removeDepartment, assign, forgetSessions, saveSettings, saveRoots, base, fileOf: id => (goodAccount(id) ? fileOf(id) : null) };
+  /** 보는 폴더 하나 더하기(GA3). 저장된 목록을 차례 안에서 읽어 끝에 붙인다. 있는지는 이 폴더만 본다. 이미 있으면 그대로 */
+  function addRoot(accountId, dir) {
+    if (!goodAccount(accountId)) return Promise.resolve({ ok: false, code: 'ACCOUNT' });
+    const f = cleanFolder(dir);
+    if (!f || SUBSCRIPTION_ACCOUNTS.test(f)) return Promise.resolve({ ok: false, code: 'FOLDER' });
+    return mutate(accountId, async data => {
+      if (data.roots.claude.some(x => folderKey(x) === folderKey(f))) return { ok: true, unchanged: true };
+      if (data.roots.claude.length >= MAX_ROOTS) return { ok: false, code: 'LIMIT' };
+      if (!(await isDirectory(f))) return { ok: false, code: 'FOLDER' };
+      data.roots = { ...data.roots, claude: [...data.roots.claude, f] };
+      return { ok: true };
+    });
+  }
+  /** 보는 폴더 하나 빼기(GA3 · GA4). 손님이 더한 목록에 있을 때만(큰 · 작은 글자와 끝 빗금은 가리지 않는다). 폴더가 지금 없어도 뺀다 */
+  function removeRoot(accountId, dir) {
+    if (!goodAccount(accountId)) return Promise.resolve({ ok: false, code: 'ACCOUNT' });
+    if (typeof dir !== 'string' || !dir.trim() || dir.length > PATH_MAX) return Promise.resolve({ ok: false, code: 'VALUE' });
+    const key = folderKey(cleanFolder(dir) || dir.trim());
+    return mutate(accountId, async data => {
+      const kept = data.roots.claude.filter(x => folderKey(x) !== key);
+      if (kept.length === data.roots.claude.length) return { ok: false, code: 'NOT_FOUND' };
+      data.roots = { ...data.roots, claude: kept };
+      return { ok: true };
+    });
+  }
+
+  return { read, saveDepartment, removeDepartment, assign, forgetSessions, saveSettings, saveRoots, addRoot, removeRoot, base, fileOf: id => (goodAccount(id) ? fileOf(id) : null) };
 }
 
 module.exports = { createOfficeStore, VIEWS, NAME_MAX, MAX_DEPARTMENTS, MAX_ROOTS, MAX_ASSIGNMENTS, SESSION_ID };

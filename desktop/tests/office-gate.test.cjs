@@ -18,7 +18,7 @@ const ROOTS = { claude: ['C:\\Users\\a\\.claude'], codex: ['C:\\Users\\a\\.codex
 let model;
 test.before(async () => { model = await loadOfficeModel(); });
 
-const settle = async (turns = 40) => { for (let i = 0; i < turns; i++) await new Promise(resolve => setImmediate(resolve)); };
+const settle = async (turns = 40) => { for (let i = 0; i < turns; i++) { await new Promise(resolve => setImmediate(resolve)); if (i % 10 === 9) await new Promise(resolve => setTimeout(resolve, 1)); } };
 function fakeClock(start) {
   let t = start;
   const timers = new Map();
@@ -171,7 +171,9 @@ test('an account change clears the sessions and stops the scan timer; a scan fin
   assert.deepEqual(Object.keys((await f.office.snapshot(YUHO)).state.sessions), [S1]);
   assert.deepEqual(f.office.accountChanged(null), { ok: true, cleared: true });
   assert.deepEqual(f.clock.intervals(), [], 'scan and prune timers stopped');
-  assert.deepEqual((await f.office.snapshot(YUHO)).state.sessions, {});
+  assert.deepEqual(await f.office.snapshot(YUHO), { ok: false, code: 'AUTH_CHANGED' }, 'after the sign-out a call for the old account is refused');
+  assert.deepEqual(f.office.accountChanged(YUHO), { ok: true, cleared: true }, 'signing in again opens a fresh memory');
+  assert.deepEqual((await f.office.snapshot(YUHO)).state.sessions, {}, 'signed in again: the sessions start empty');
   // 살피는 사이에 계정이 바뀐다
   await f.office.watch(true, YUHO);
   let release;
@@ -299,4 +301,201 @@ test('sessions quiet for 30 minutes are pruned by the timer, and their departmen
   assert.deepEqual(snap.assignments, {});
   assert.ok(f.changes.n > n);
   assert.ok(!f.clock.intervals().includes(OFFICE_TICKS.prune), 'the prune timer stops when nobody is left');
+});
+
+/* ── 「승인 물음도 보기」의 관문(구현설계.md 11.1 · 14.1의 office-gate, 15절 5단계) ──
+   훅 서버는 실제 office-hooks를 임시 폴더로 돌린다. 설정 폴더는 넘겨받은 임시 폴더나 임시 보는 폴더뿐이다 */
+const http = require('node:http');
+const { createOfficeHooks, OVERRIDE_ENV, PATH_PREFIX } = require('../src/office-hooks.cjs');
+function hookSetup({ installed = false, viewers = [YUHO.synk_user_id] } = {}) {
+  const f = setup({ viewers });
+  const claude = path.join(f.top, 'claude-home'), added = path.join(f.top, 'claude-added');
+  fs.mkdirSync(claude); fs.mkdirSync(added);
+  let account = null;
+  const hooks = createOfficeHooks({
+    userData: f.userData, installed, env: installed ? {} : { [OVERRIDE_ENV]: claude }, baseDirs: () => [],
+    accepts: () => (account ? office.accepts(account) : false), deliver: e => { if (account) void office.ingest(e, account); }, listenRetries: 0,
+  });
+  const office = createOffice({ userData: f.userData, viewersFile: f.viewersFile, model, records: f.records, capacity: f.capacity, roots: { claude: [claude], codex: [] }, hooks, now: () => Date.now() });
+  return { ...f, claude, added, hooks, office, setAccount: a => { account = a; } };
+}
+const post = (port, p, body) => new Promise(resolve => {
+  const data = Buffer.from(JSON.stringify(body));
+  const req = http.request({ host: '127.0.0.1', port, path: p, method: 'POST', headers: { 'content-length': data.length } }, res => { res.resume(); res.on('end', () => resolve(res.statusCode)); });
+  req.on('error', e => resolve(e.code));
+  req.end(data);
+});
+const hookState = f => JSON.parse(fs.readFileSync(path.join(f.userData, 'Office', 'hooks.json'), 'utf8'));
+const pause = () => new Promise(r => setTimeout(r, 40));
+
+test('hooks-set is refused for a non-viewer, a signed-out window and a missing viewers file, and no file is touched', async () => {
+  for (const [label, account, viewers] of [['another account', OTHER, undefined], ['signed out', null, undefined], ['no viewers.json', YUHO, null]]) {
+    const f = hookSetup({ viewers: viewers === null ? null : undefined });
+    assert.deepEqual(await f.office.setHooks(true, account), { ok: false, code: 'NOT_ALLOWED' }, label);
+    assert.deepEqual(await f.office.setHooks(false, account), { ok: false, code: 'NOT_ALLOWED' }, label);
+    assert.deepEqual(fs.readdirSync(f.claude), [], `${label}: no settings.json was made`);
+    assert.equal(f.hooks.listening(), false, `${label}: no server`);
+    assert.equal(fs.existsSync(path.join(f.userData, 'Office', 'hooks.json')), false, `${label}: no state file`);
+  }
+});
+
+test('a viewer turns hooks on for the account\'s Claude folders; the snapshot carries the real state without the port or token', async () => {
+  const f = hookSetup({ installed: true });
+  assert.equal((await f.office.saveRoots([f.added], YUHO)).ok, true);
+  let snap = await f.office.snapshot(YUHO);
+  assert.deepEqual([snap.hooks.on, snap.hooks.available, snap.hooks.message], [false, true, null]);
+  assert.deepEqual(snap.hooks.dirs.map(d => [path.basename(d.dir), d.on, d.folder, d.file]), [['claude-home', false, true, false], ['claude-added', false, true, false]], 'the default folder and the added one are the plan');
+  const r = await f.office.setHooks(true, YUHO);
+  assert.deepEqual(r, { ok: true, written: 2, created: 2, refused: 0 }, 'the answer has no folder paths');
+  snap = await f.office.snapshot(YUHO);
+  assert.equal(snap.hooks.on, true);
+  assert.deepEqual(snap.hooks.dirs.map(d => d.on), [true, true]);
+  const text = JSON.stringify(snap.hooks);
+  const st = hookState(f);
+  assert.ok(!text.includes(st.token) && !text.includes(String(st.port)), 'the port and the token stay in the main process');
+  assert.equal((await f.office.setHooks(false, YUHO)).ok, true);
+  assert.equal((await f.office.snapshot(YUHO)).hooks.on, false);
+  assert.ok(!fs.readFileSync(path.join(f.claude, 'settings.json'), 'utf8').includes('synk-office'));
+});
+
+test('turning off and the unhook run need no viewer: they work while signed out and with a non-viewer, while hooks-set stays refused', async () => {
+  const f = hookSetup();
+  assert.equal((await f.office.setHooks(true, YUHO)).ok, true);
+  assert.ok(fs.readFileSync(path.join(f.claude, 'settings.json'), 'utf8').includes('synk-office'));
+  f.office.accountChanged(null);
+  assert.deepEqual(await f.office.setHooks(true, OTHER), { ok: false, code: 'NOT_ALLOWED' });
+  const off = await f.hooks.disable(); // main의 synk:office-hooks-off가 부르는 것. 계정을 받지 않는다
+  assert.equal(off.ok, true);
+  assert.ok(!fs.readFileSync(path.join(f.claude, 'settings.json'), 'utf8').includes('synk-office'));
+  assert.equal(f.hooks.listening(), false);
+  // --office-unhook: 새 실행이 서버 없이 지운다
+  f.office.accountChanged(YUHO);
+  assert.equal((await f.office.setHooks(true, YUHO)).ok, true);
+  await f.hooks.close();
+  const unhook = createOfficeHooks({ userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: f.claude }, baseDirs: () => [] });
+  assert.equal((await unhook.unhook()).ok, true);
+  assert.ok(!fs.readFileSync(path.join(f.claude, 'settings.json'), 'utf8').includes('synk-office'));
+});
+
+test('the server stays open across account changes; without a signed-in viewer its news is dropped unread, and the viewer\'s news is folded', async () => {
+  const f = hookSetup();
+  await f.office.setHooks(true, YUHO);
+  const st = hookState(f), p = PATH_PREFIX + st.token;
+  const news = { hook_event_name: 'PostToolUse', session_id: S1, cwd: f.shop, tool_name: 'Read', tool_input: { file_path: path.join(f.shop, 'a.ts') }, tool_response: '파일 내용' };
+  f.setAccount(null);
+  assert.equal(await post(st.port, p, news), 204);
+  f.setAccount(OTHER);
+  assert.equal(await post(st.port, p, news), 204);
+  await pause();
+  assert.equal(await f.office.accepts(OTHER), false);
+  assert.deepEqual((await f.office.snapshot(YUHO)).state.sessions, {}, 'nothing folded for a non-viewer or a signed-out window');
+  assert.ok(!fs.existsSync(path.join(path.dirname(f.viewersFile), 'viewer-pending.json')) || !fs.readFileSync(path.join(path.dirname(f.viewersFile), 'viewer-pending.json'), 'utf8').includes(OTHER.synk_user_id), 'hook news never notes an account');
+  f.office.accountChanged(OTHER);
+  assert.equal(f.hooks.listening(), true, 'an account change does not close the server');
+  f.setAccount(YUHO);
+  f.office.accountChanged(YUHO);
+  assert.equal(await post(st.port, p, news), 204);
+  await pause();
+  const snap = await f.office.snapshot(YUHO);
+  assert.deepEqual(Object.keys(snap.state.sessions), [S1]);
+  assert.deepEqual(snap.state.sessions[S1].lastTool, { name: 'Read', detail: 'a.ts' });
+  assert.ok(!JSON.stringify(snap).includes('파일 내용'));
+  f.office.accountChanged(null);
+  assert.deepEqual(await f.office.snapshot(YUHO), { ok: false, code: 'AUTH_CHANGED' });
+  f.office.accountChanged(YUHO);
+  assert.deepEqual((await f.office.snapshot(YUHO)).state.sessions, {}, 'signing out still clears the sessions');
+  assert.equal(f.hooks.listening(), true);
+  await f.hooks.close();
+});
+
+test('an office made without the hooks service keeps saying hooks are off and refuses to turn them on', async () => {
+  const f = setup();
+  assert.deepEqual((await f.office.snapshot(YUHO)).hooks, { on: false });
+  assert.deepEqual(await f.office.setHooks(true, YUHO), { ok: false, code: 'NOT_HERE' });
+});
+
+/* ── GPT 검수 GA1 · GA3(11-20) ── 기다리는 사이에 계정이 바뀌면 옛 계정으로 기억을 다시 열지 않는다. 보는 폴더 고치기는 차례 안에서 */
+/* 볼 계정 파일(viewers.json)을 읽는 것을 붙잡아 두는 fs. release()를 부를 때까지 그 stat이 끝나지 않는다 */
+function holdingFs(viewersFile) {
+  let hold = null, release = () => {};
+  const p = fs.promises;
+  return {
+    arm() { hold = new Promise(r => { release = r; }); },
+    release: () => { const r = release; hold = null; release = () => {}; r(); },
+    fsImpl: { promises: { ...p, stat: async (file, ...a) => { if (hold && String(file) === viewersFile) await hold; return p.stat(file, ...a); } } },
+  };
+}
+function holdSetup() {
+  const f = setup();
+  const h = holdingFs(f.viewersFile);
+  const office = createOffice({
+    userData: f.userData, viewersFile: f.viewersFile, model, records: f.records, capacity: f.capacity, roots: ROOTS, fsImpl: h.fsImpl, now: f.clock.now,
+    setInterval: f.clock.setInterval, clearInterval: f.clock.clearInterval, setTimeout: f.clock.setTimeout, clearTimeout: f.clock.clearTimeout,
+  });
+  return { ...f, office, h };
+}
+
+test('GA1: a snapshot waiting on the viewers file when the user signs out returns AUTH_CHANGED, not the old account\'s departments, and reopens nothing', async () => {
+  const f = holdSetup();
+  f.office.accountChanged(YUHO);
+  assert.equal((await f.office.saveDepartment({ name: '쇼핑몰', folder: f.shop }, YUHO)).ok, true);
+  assert.deepEqual(await f.office.ingest(hook('PostToolUse', T0), YUHO), { ok: true });
+  const reads = f.capacity.reads;
+  f.h.arm();
+  const late = f.office.snapshot(YUHO);
+  await settle();
+  f.office.accountChanged(null); // 로그아웃: 세션 기억을 비운다
+  f.h.release();
+  const answer = await late;
+  assert.deepEqual(answer, { ok: false, code: 'AUTH_CHANGED' }, 'no available:true and no departments for the signed-out account');
+  assert.ok(!JSON.stringify(answer).includes('쇼핑몰'));
+  assert.equal(f.capacity.reads, reads, 'the PC is not read for it either');
+  // 기억을 다시 열지 않았다: 같은 계정으로 다시 로그인하면 세션이 빈 채로 시작한다
+  f.office.accountChanged(YUHO);
+  const again = await f.office.snapshot(YUHO);
+  assert.equal(again.available, true);
+  assert.deepEqual(again.state.sessions, {}, 'the late call did not bring the old sessions back');
+  assert.deepEqual(again.departments.map(d => d.name), ['쇼핑몰'], 'the departments are the account\'s file, read for the new turn');
+});
+
+test('GA1: a watch or an ingest that waited across an account change starts nothing for the old account; allowed and accepts say no', async () => {
+  const f = holdSetup();
+  f.office.accountChanged(YUHO);
+  f.h.arm();
+  const watch = f.office.watch(true, YUHO);
+  const ingest = f.office.ingest(hook('PostToolUse', T0), YUHO);
+  const allowed = f.office.allowed(YUHO);
+  const accepts = f.office.accepts(YUHO);
+  await settle();
+  f.office.accountChanged(SECOND);
+  f.h.release();
+  assert.deepEqual(await watch, { ok: false, code: 'AUTH_CHANGED' });
+  assert.deepEqual(await ingest, { ok: false, code: 'AUTH_CHANGED' });
+  assert.equal(await allowed, false);
+  assert.equal(await accepts, false);
+  assert.deepEqual(f.clock.intervals(), [], 'no scan timer and no prune timer for the old account');
+  assert.equal(f.records.calls.length, 0, 'no record was read');
+  assert.deepEqual((await f.office.snapshot(SECOND)).state.sessions, {}, 'the old account\'s news did not land in the new account\'s office');
+  // 저장이 기다리는 사이에 바뀌어도 옛 계정의 판을 새 계정의 기억으로 남기지 않는다
+  f.h.arm();
+  const save = f.office.saveSettings({ view: 'top' }, SECOND);
+  await settle();
+  f.office.accountChanged(YUHO);
+  f.h.release();
+  assert.deepEqual(await save, { ok: false, code: 'AUTH_CHANGED' });
+  assert.equal((await f.office.snapshot(YUHO)).settings.view, 'tilted', 'nothing was written for the account that left');
+});
+
+test('GA3 · GA4: two overlapping folder removals through the office both stick, and missing folders can be removed', async () => {
+  const f = setup();
+  const a = path.join(f.work, 'claude-a'), b = path.join(f.work, 'claude-b'), c = path.join(f.work, 'claude-c');
+  for (const d of [a, b, c]) fs.mkdirSync(d);
+  for (const d of [a, b, c]) assert.equal((await f.office.addRoot(d, YUHO)).ok, true);
+  fs.rmSync(a, { recursive: true }); fs.rmSync(b, { recursive: true }); // 옮겼거나 외장 드라이브를 뺐다
+  const both = await Promise.all([f.office.removeRoot(a, YUHO), f.office.removeRoot(b.toUpperCase(), YUHO)]);
+  assert.deepEqual(both.map(r => r.ok), [true, true]);
+  assert.deepEqual((await f.office.snapshot(YUHO)).roots.added, [c], 'neither removed folder comes back');
+  assert.deepEqual(await f.office.removeRoot(a, YUHO), { ok: false, code: 'NOT_FOUND' });
+  assert.deepEqual(await f.office.addRoot(a, YUHO), { ok: false, code: 'FOLDER' }, 'only an added folder must exist');
+  assert.deepEqual(await f.office.removeRoot(c, OTHER), { ok: false, code: 'NOT_ALLOWED' });
 });

@@ -223,8 +223,8 @@ test('the store never touches a path outside userData/Office/ (nothing goes into
   await store.removeDepartment(A, d.data.departments[0].id);
   await store.read(B);
   const outside = seen.filter(([, p]) => !p.startsWith(office));
-  assert.deepEqual(outside.map(([op]) => op), ['stat', 'stat', 'stat'], 'outside userData/Office only the chosen folders are checked with stat');
-  assert.deepEqual(outside.map(([, p]) => p).sort(), [w('law'), w('shop'), w('shop')].sort());
+  assert.deepEqual(outside.map(([op]) => op), ['stat', 'stat'], 'outside userData/Office only newly chosen folders are checked with stat (the same stored folder is not checked again, GA4)');
+  assert.deepEqual(outside.map(([, p]) => p).sort(), [w('law'), w('shop')].sort());
   for (const [, p, q] of seen) for (const x of [p, q]) if (x) assert.ok(!/desktop-preferences/i.test(x));
   assert.equal(fs.readFileSync(path.join(userData, 'desktop-preferences.json'), 'utf8'), '{"keep":true}');
   assert.ok(top);
@@ -240,4 +240,49 @@ test('overlapping department folders: the deepest department wins (with office-m
   assert.equal(model.officeDepartmentOf({ cwd: path.join(w('shop\\api'), 'src') }, departments, assignments), api);
   assert.equal(model.officeDepartmentOf({ cwd: w('shop') }, departments, assignments), shop);
   assert.equal(model.officeDepartmentOf({ cwd: w('shop') + '2' }, departments, assignments), null);
+});
+
+/* ── GPT 검수 GA3 · GA4(11-20): 보는 폴더 더하기 · 빼기는 차례 안에서 읽고 고치고, 있는지는 더하는 폴더만 본다 ── */
+test('GA3: overlapping root removals and an add+remove each read the latest list inside the queue, so none comes back', async () => {
+  const { store, w } = setup();
+  for (const d of ['r1', 'r2', 'r3']) fs.mkdirSync(w(d));
+  assert.equal((await store.saveRoots(A, [w('r1'), w('r2')])).ok, true);
+  const both = await Promise.all([store.removeRoot(A, w('r1')), store.removeRoot(A, w('r2'))]);
+  assert.ok(both.every(r => r.ok), 'both report success');
+  assert.deepEqual((await store.read(A)).data.roots.claude, [], 'and both are really gone');
+  const mixed = await Promise.all([store.addRoot(A, w('r3')), store.addRoot(A, w('r1')), store.removeRoot(A, w('r3'))]);
+  assert.ok(mixed.every(r => r.ok));
+  assert.deepEqual((await store.read(A)).data.roots.claude, [w('r1')], 'applied in call order: add r3, add r1, remove r3');
+  assert.deepEqual(await store.removeRoot(A, w('r3')), { ok: false, code: 'NOT_FOUND' });
+  assert.equal((await store.removeRoot(A, w('r1').toUpperCase() + '\\')).ok, true, 'case and a trailing separator do not matter');
+  assert.equal((await store.addRoot(A, 'relative')).code, 'FOLDER');
+  assert.equal((await store.removeRoot(A, '')).code, 'VALUE');
+  // 부서 고치기도 같은 차례다: 폴더 바꾸기와 이름 고치기가 겹쳐도 서로 덮지 않는다
+  const id = (await store.saveDepartment(A, { name: '법무', folder: w('law') })).data.departments[0].id;
+  await Promise.all([store.saveDepartment(A, { id, name: '법무', folder: w('blog') }), store.saveDepartment(A, { id, name: '법무팀' })]);
+  assert.deepEqual((await store.read(A)).data.departments.map(d => [d.name, d.folder]), [['법무팀', w('blog')]], 'the rename keeps the folder that was stored when its turn came');
+});
+
+test('GA4: folders that went missing can still be removed one by one; only an added folder must exist', async () => {
+  const { store, w } = setup();
+  for (const d of ['gone1', 'gone2', 'here']) fs.mkdirSync(w(d));
+  assert.equal((await store.saveRoots(A, [w('gone1'), w('gone2'), w('here')])).ok, true);
+  fs.rmSync(w('gone1'), { recursive: true });
+  fs.rmSync(w('gone2'), { recursive: true });
+  assert.deepEqual(await store.removeRoot(A, w('gone1')).then(r => [r.ok, r.data.roots.claude]), [true, [w('gone2'), w('here')]]);
+  assert.deepEqual(await store.removeRoot(A, w('gone2')).then(r => [r.ok, r.data.roots.claude]), [true, [w('here')]]);
+  // 통째 저장도 이미 있던 폴더는 다시 보지 않는다. 새 폴더는 있어야 한다
+  fs.mkdirSync(w('gone1'));
+  assert.equal((await store.saveRoots(A, [w('here'), w('gone1')])).ok, true);
+  fs.rmSync(w('gone1'), { recursive: true });
+  assert.equal((await store.saveRoots(A, [w('gone1')])).ok, true, 'a stored folder that went missing is kept without a check');
+  assert.equal((await store.saveRoots(A, [w('gone1'), w('gone2')])).code, 'FOLDER', 'a new folder that does not exist is refused');
+  assert.equal((await store.addRoot(A, w('gone2'))).code, 'FOLDER');
+  assert.equal((await store.addRoot(A, w('here'))).ok, true);
+  // 부서도 같다: 저장된 폴더가 없어져도 이름은 고칠 수 있고, 새로 고른 폴더만 본다
+  const id = (await store.saveDepartment(A, { name: '외장', folder: w('blog') })).data.departments[0].id;
+  fs.rmSync(w('blog'), { recursive: true });
+  assert.equal((await store.saveDepartment(A, { id, name: '외장 드라이브' })).ok, true);
+  assert.equal((await store.saveDepartment(A, { id, name: '외장 드라이브 2', folder: w('blog') })).ok, true, 'the same stored folder is not checked again');
+  assert.equal((await store.saveDepartment(A, { id, name: '외장', folder: w('gone2') })).code, 'FOLDER');
 });

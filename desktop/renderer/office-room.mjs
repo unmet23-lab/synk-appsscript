@@ -31,6 +31,48 @@ export const OFFICE_CODE_SAY = Object.freeze({
 const DEFAULT_SAY = '저장하지 못했습니다. 잠시 뒤 다시 해 주세요.';
 export const officeCodeSay = code => (code && Object.hasOwn(OFFICE_CODE_SAY, code) ? OFFICE_CODE_SAY[code] : DEFAULT_SAY);
 
+/* ── 「승인 물음도 보기」(12.3) ── 켜기는 두 번 확인한다. 안내문은 12.3의 글을 알림 여섯 가지에 맞춘 것이다.
+   솔리오가 받아 쓰는 값(작업 폴더, 도구 이름, 파일 이름이나 명령의 첫 낱말)을 빠짐없이 적는다 */
+export const OFFICE_HOOKS_NAME = '승인 물음도 보기';
+export const OFFICE_HOOKS_ASK = 'Claude Code 설정 파일에 알림을 더할까요?';
+export const OFFICE_HOOKS_NOTICE = 'Claude Code의 설정 파일(목록의 폴더마다 settings.json)에 알림 여섯 가지를 더합니다. 승인을 물은 때, 일이 끝난 때, 도구의 이름과 입력, 결과를 이 PC 안의 솔리오로 보냅니다. 솔리오는 그 가운데 작업 폴더, 도구 이름, 파일 이름이나 명령의 첫 낱말만 쓰고 나머지는 버립니다. 솔리오가 꺼져 있는 동안 다른 프로그램이 같은 포트를 열면 그 프로그램이 받을 수 있습니다. 끄면 솔리오가 더한 것만 지웁니다.';
+export const OFFICE_HOOKS_NEW_FILE = '설정 파일이 없어 새로 만듭니다';
+export const OFFICE_HOOKS_NO_FOLDER = '폴더가 없어 건너뜁니다';
+/* 본체가 판에 싣는 알림 까닭(hooks.message) */
+export const OFFICE_HOOKS_SAY = Object.freeze({
+  port: '받는 자리가 바뀌어 알림을 껐습니다. 다시 켜려면 설정 파일을 고쳐야 합니다.',
+  silent: '알림이 오지 않습니다. Claude Code 설정에서 이 주소가 막혀 있을 수 있습니다.',
+});
+/* 켜기 · 끄기가 거절된 까닭(office-hooks의 code) */
+export const OFFICE_HOOKS_ON_SAY = Object.freeze({
+  READ: '설정 파일을 읽지 못해 켜지 않았습니다.',
+  BUSY: '설정 파일이 바뀌는 중이라 켜지 않았습니다.',
+  WRITE: '설정 파일에 쓰지 못해 켜지 않았습니다.',
+  NOT_HERE: '이 실행에서는 켤 수 없습니다.',
+  NO_DIRS: '알림을 더할 설정 폴더가 없습니다.',
+  PORT: '알림을 받을 자리를 열지 못해 켜지 않았습니다.',
+});
+export const OFFICE_HOOKS_OFF_SAY = Object.freeze({
+  READ: '설정 파일을 읽지 못해 끄지 못했습니다.',
+  BUSY: '설정 파일이 바뀌는 중이라 끄지 못했습니다.',
+  WRITE: '설정 파일에 쓰지 못해 끄지 못했습니다.',
+});
+/* 보는 폴더 줄의 짧은 상태(훅이 켜져 있을 때) */
+const HOOK_DIR_SAY = Object.freeze({ READ: '설정 파일을 읽지 못함', BUSY: '설정 파일이 바뀌는 중', WRITE: '설정 파일에 쓰지 못함' });
+export const OFFICE_HOOKS_ON_DONE = '알림을 더했습니다. 새로 켜는 Claude Code 세션부터 승인 물음을 봅니다.';
+export const OFFICE_HOOKS_OFF_DONE = '알림을 껐습니다. 솔리오가 더한 줄만 지웠습니다.';
+/* 구 곁의 설정 방에 서는 줄(11.1). 볼 계정이 아니어도 훅이 켜져 있으면 보이고 끌 수 있다 */
+export const OFFICE_HOOKS_LINE = 'Claude Code의 알림이 솔리오로 오고 있습니다';
+const hookOnSay = code => OFFICE_HOOKS_ON_SAY[code] || OFFICE_CODE_SAY[code] || '알림을 더하지 못했습니다. 잠시 뒤 다시 해 주세요.';
+const hookOffSay = code => OFFICE_HOOKS_OFF_SAY[code] || OFFICE_CODE_SAY[code] || '알림을 끄지 못했습니다. 잠시 뒤 다시 해 주세요.';
+/** 켜기의 답을 한두 문장으로. 몇 폴더가 거절되면 그 수와 까닭을 붙인다 */
+export function officeHooksOnWords(res) {
+  if (!res || res.ok === false) return hookOnSay(res?.code);
+  const n = Number(res.refused) || 0;
+  return n > 0 && res.code ? `${OFFICE_HOOKS_ON_DONE} 폴더 ${josa(countWord(n), ['은', '는'])} ${hookOnSay(res.code)}` : OFFICE_HOOKS_ON_DONE;
+}
+export const officeHooksOffWords = res => (!res || res.ok === false ? hookOffSay(res?.code) : OFFICE_HOOKS_OFF_DONE);
+
 const eul = w => josa(w, ['을', '를']), ga = w => josa(w, ['이', '가']), wa = w => josa(w, ['과', '와']);
 /* 「로 · 으로」: 받침이 없거나 ㄹ이면 「로」다 */
 const ro = w => { const c = String(w).charCodeAt(String(w).length - 1), j = c >= 0xAC00 && c <= 0xD7A3 ? (c - 0xAC00) % 28 : 0; return w + (j === 0 || j === 8 ? '로' : '으로'); };
@@ -131,24 +173,64 @@ export function officeCapacityRow({ pc = null, subscriptions = {}, manualCap = n
   return { key: 'cap', gap: true, nm: '수용 인원', mid, val, when: '', label: rowLabel(['수용 인원', mid, val]), more };
 }
 
-/* ── 설정 줄(11.4) ── 보기 두 가지와 보는 폴더. 「승인 물음도 보기」는 훅을 받는 본체가 생기는 다음 판에서 더한다(hooks.available) */
-export function officeSettingsRow({ view = 'tilted', roots = {}, ui = {} } = {}) {
+/* ── 설정 줄(11.4) ── 보기 두 가지, 「승인 물음도 보기」, 보는 폴더. 「승인 물음도 보기」는 이 실행에서 켤 수 있거나(hooks.available) 켜져 있을 때만 선다.
+   hooks: 본체의 { on, available, dirs:[{ dir, on, folder, file, code }], message }. 켜기는 줄 안의 「켜기」가 안내문을 펼치고, 그 안의 「설정 파일에 더하기」가 고친다 */
+const sameDir = (a, b) => String(a).replace(/[\\/]+$/, '').toLowerCase() === String(b).replace(/[\\/]+$/, '').toLowerCase();
+const settingsFile = dir => String(dir).replace(/[\\/]+$/, '') + '\\settings.json';
+function hooksItems(hooks, ui) {
+  const on = hooks.on === true, dirs = Array.isArray(hooks.dirs) ? hooks.dirs.filter(d => d && typeof d.dir === 'string') : [];
+  const asking = ui.hooksAsk === true, busy = !!ui.busy;
+  // 더할 폴더: 꺼져 있으면 목록의 모든 폴더, 켜져 있으면 아직 잇지 않은 폴더
+  const todo = dirs.filter(d => !d.on);
+  const canAdd = hooks.available === true && todo.some(d => d.folder);
+  const out = [on
+    ? ['row', OFFICE_HOOKS_NAME, '켜져 있습니다', ['끄기', 'hooks-off', '', busy ? 'off' : ''], '']
+    : ['row', OFFICE_HOOKS_NAME, '꺼져 있습니다', hooks.available === true ? ['켜기', 'hooks-ask', '', flags('toggle', asking && 'on', busy && 'off')] : '', '']];
+  if (hooks.message && Object.hasOwn(OFFICE_HOOKS_SAY, hooks.message)) out.push(['note', OFFICE_HOOKS_SAY[hooks.message]]);
+  if (on && canAdd) out.push(['acts', [[todo.filter(d => d.folder).length > 1 ? '나머지 폴더에도 더하기' : '이 폴더에도 더하기', 'hooks-ask', '', flags('toggle', asking && 'on', busy && 'off')]], '알림이 없는 폴더']);
+  if (asking && canAdd) {
+    const lines = [OFFICE_HOOKS_NOTICE, ...todo.map(d => (!d.folder ? `${d.dir} · ${OFFICE_HOOKS_NO_FOLDER}` : d.file ? settingsFile(d.dir) : `${settingsFile(d.dir)} · ${OFFICE_HOOKS_NEW_FILE}`))];
+    out.push(['confirm', OFFICE_HOOKS_ASK, lines, [['설정 파일에 더하기', 'hooks-on', '', busy ? 'off' : ''], ['그만두기', 'hooks-keep', '']]]);
+  }
+  return out;
+}
+/* 보는 폴더 줄의 경로 뒤에 붙는 말: 훅이 켜져 있으면 그 폴더가 알림을 보내는지, 고치지 못했으면 그 까닭(오른쪽 칸에는 「빼기」가 설 수 있어 경로 칸에 잇는다) */
+function hookDirWhen(hooks, dir) {
+  if (!hooks || (hooks.on !== true && hooks.available !== true)) return '';
+  const d = (Array.isArray(hooks.dirs) ? hooks.dirs : []).find(x => x && sameDir(x.dir, dir));
+  if (!d) return '';
+  if (d.code && HOOK_DIR_SAY[d.code]) return HOOK_DIR_SAY[d.code];
+  return hooks.on === true ? (d.on ? '알림 받음' : '알림 없음') : '';
+}
+export function officeSettingsRow({ view = 'tilted', roots = {}, hooks = null, ui = {} } = {}) {
   const note = ui.notes?.get?.('cfg') || '';
   const claude = Array.isArray(roots.claude) ? roots.claude : [], codex = Array.isArray(roots.codex) ? roots.codex : [], added = Array.isArray(roots.added) ? roots.added : [];
   const mine = dir => added.some(a => String(a).toLowerCase() === String(dir).toLowerCase());
   const shown = view === 'top' ? '위에서' : '비스듬히';
   const count = claude.length + codex.length;
+  const h = hooks && typeof hooks === 'object' && (hooks.available === true || hooks.on === true) ? hooks : null;
   const more = [
     ['pick', '보기', [['비스듬히', 'tilted'], ['위에서', 'top']], view === 'top' ? 'top' : 'tilted', '', 'view'],
     ['note', '같은 사무실을 보는 각도입니다. 고른 보기는 다음에 열 때도 그대로입니다.'],
-    ...claude.map(dir => ['row', 'Claude Code', String(dir), mine(dir) ? ['빼기', 'root-remove', String(dir), ui.busy ? 'off' : ''] : '', '']),
+    ...(h ? hooksItems(h, ui) : []),
+    ...claude.map(dir => { const w = hookDirWhen(h, dir); return ['row', 'Claude Code', String(dir) + (w ? ' · ' + w : ''), mine(dir) ? ['빼기', 'root-remove', String(dir), ui.busy ? 'off' : ''] : '', '']; }),
     ...codex.map(dir => ['row', 'Codex', String(dir), '', '']),
     ['acts', [['폴더 더하기', 'root-add', '', ui.busy ? 'off' : '']], '보는 폴더'],
     ['note', 'Claude Code의 기본 설정 폴더와 Codex의 기록 폴더는 늘 봅니다. 다른 설정 폴더를 쓰면 더해 주세요.'],
     ['live', note],
   ];
-  const mid = `보기 · ${shown} · 보는 폴더 ${countWord(count)}`;
+  const mid = `보기 · ${shown}${h ? ' · 승인 물음 ' + (h.on === true ? '켜짐' : '꺼짐') : ''} · 보는 폴더 ${countWord(count)}`;
   return { key: 'cfg', nm: '설정', mid, val: '', when: '', label: rowLabel(['설정', mid]), more };
+}
+
+/* 구 곁의 설정 방(orb-rooms.mjs)에 서는 줄: 훅이 켜져 있을 때만. status: 본체의 { ok, on }. ui: { busy, note } */
+export function officeHooksAsideRow(status, ui = {}) {
+  if (!status || status.on !== true) return null;
+  return { key: 'office-hooks', nm: 'Claude Code 알림', mid: OFFICE_HOOKS_LINE, val: '', when: '', label: rowLabel(['Claude Code 알림', OFFICE_HOOKS_LINE]), more: [
+    ['note', '사무실의 「승인 물음도 보기」가 Claude Code 설정 파일에 더한 알림입니다. 끄면 솔리오가 더한 줄만 지웁니다.'],
+    ['acts', [['끄기', 'office-hooks-off', '', ui.busy ? 'off' : '']]],
+    ['live', ui.note || ''],
+  ] };
 }
 
 /* ── 부서 더하기 줄(5절) ── 이름을 적고 폴더를 고른다. 폴더 고르기 창은 본체가 띄운다(13절) */
@@ -244,7 +326,7 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
   // 종류가 다른 줄 앞의 틈은 위에 부서 줄이 있을 때만 둔다(세션도 부서도 없으면 수용 인원이 첫 줄이다)
   const capRow = officeCapacityRow({ pc, subscriptions, manualCap: settings.manualCap ?? null, active: head.active, ui, now });
   rows.push({ ...capRow, gap: rows.length > 0 });
-  rows.push(officeSettingsRow({ view, roots: snap.roots || {}, ui }));
+  rows.push(officeSettingsRow({ view, roots: snap.roots || {}, hooks, ui }));
   rows.push(officeAddRow({ ui }));
   const readAt = Number(snap.readAt);
   const foot = [Number.isFinite(readAt) ? (now - readAt < 2 * 60e3 ? '방금 읽었습니다.' : hm(readAt) + '에 읽었습니다.') : '', '이 방이 열려 있는 동안 15초마다 기록을 살핍니다.', ui.roomNote || ''].filter(Boolean).join(' ');
@@ -256,11 +338,12 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
 }
 
 /* ── 이 방의 상태와 동작 ──
-   api: window.synkDesktop.office({ snapshot, watch, saveDepartment, removeDepartment, assign, saveSettings, addRoot, removeRoot, seen, onChanged }).
+   api: window.synkDesktop.office({ snapshot, watch, saveDepartment, removeDepartment, assign, saveSettings, addRoot, removeRoot, seen, hooksSet, hooksOff, onChanged }).
    snapshot(): 지금 가진 사무실 판. reread(): 판을 다시 읽게 한다. changed(): 다시 그린다.
    한 번에 한 일만 보낸다(orb-rooms.mjs의 run과 같다). 계정이 바뀌면(reset) 늦게 온 답을 버린다 */
 export function createOfficeRoom({ api = null, snapshot = () => null, reread = () => {}, changed = () => {} } = {}) {
-  const fresh = () => ({ grps: new Set(), asking: null, notes: new Map(), busy: null, addName: '', addSeq: 0, view: null, viewSeq: 0, roomNote: '' });
+  // hooksAsk: 「승인 물음도 보기」의 안내문을 펼친 첫 누름(두 번 확인의 첫째). 설정 줄이 접히거나 방을 떠나면 거둔다
+  const fresh = () => ({ grps: new Set(), asking: null, hooksAsk: false, notes: new Map(), busy: null, addName: '', addSeq: 0, view: null, viewSeq: 0, roomNote: '' });
   let st = fresh(), gen = 0, seq = 0, focusReq = null, openReq = null;
   const ask = req => ({ ...req, seq: ++seq });
   const note = (key, text) => { if (text) st.notes.set(key, text); else st.notes.delete(key); };
@@ -302,6 +385,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
     // 부서 줄을 열었다 닫으면 그 부서의 끝냄 느낌표를 지운다(4.1). 닫힌 부서는 다음에 열 때 기능이 접힌 채로 열린다(시안 sync)
     if (act === 'row-open') return true;
     if (act === 'row-fold') {
+      if (key === 'cfg' && st.hooksAsk) { st.hooksAsk = false; changed(); }
       if (key.startsWith('d:') || key === 'lobby') {
         foldRow(key);
         const id = key === 'lobby' ? null : key.slice(2);
@@ -345,7 +429,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
       case 'dept-folder': {
         const d = deptOf(arg);
         if (!d) { note(key, officeCodeSay('NOT_FOUND')); reread(); changed(); return true; }
-        const res = await run(key, () => call('saveDepartment', { id: d.id, name: d.name, folder: 'choose' }));
+        const res = await run(key, () => call('saveDepartment', { id: d.id, folder: 'choose' })); // 이름은 싣지 않는다. 본체가 저장된 이름 그대로 둔다(GA3)
         return after(key, res, '폴더를 바꿨습니다.');
       }
       // 부서 빼기는 그 자리에서 한 번 더 묻는다(2단계 둘째 조각 설계 8.3의 확인 묶음). 줄이 접히면 물음도 거둔다
@@ -391,6 +475,29 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
         const res = await run(key, () => call('saveSettings', { manualCap: n }));
         return after(key, res, `동시에 ${countWord(n)}까지로 정했습니다.`);
       }
+      // 「승인 물음도 보기」(12.3): 「켜기」가 안내문을 펼치고, 그 안의 「설정 파일에 더하기」를 눌러야 설정 파일을 고친다. 끄기는 묻지 않는다
+      case 'hooks-ask':
+        st.hooksAsk = !st.hooksAsk;
+        focusReq = st.hooksAsk ? ask({ key, ask: true }) : ask({ key, act, arg });
+        changed(); return true;
+      case 'hooks-keep': st.hooksAsk = false; focusReq = ask({ key, act: 'hooks-ask', arg: '' }); changed(); return true;
+      case 'hooks-on': {
+        if (!st.hooksAsk) { changed(); return true; }
+        const res = await run(key, () => call('hooksSet', true));
+        if (res === null) return true;
+        st.hooksAsk = false;
+        note(key, officeHooksOnWords(res));
+        focusReq = ask({ key, act: res.ok === false ? 'hooks-ask' : 'hooks-off', arg: '' });
+        reread(); changed(); return true;
+      }
+      case 'hooks-off': {
+        st.hooksAsk = false;
+        const res = await run(key, () => call('hooksOff'));
+        if (res === null) return true;
+        note(key, officeHooksOffWords(res));
+        focusReq = ask({ key, act: res.ok === false ? 'hooks-off' : 'hooks-ask', arg: '' });
+        reread(); changed(); return true;
+      }
       case 'root-add': { const res = await run(key, () => call('addRoot')); return after(key, res, '폴더를 더했습니다.'); }
       case 'root-remove': { const res = await run(key, () => call('removeRoot', arg)); return after(key, res, '폴더를 뺐습니다.'); }
       default: return false;
@@ -405,7 +512,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
       return room.visible ? { ...room, focus: focusReq, opening: openReq } : room;
     },
     /* 방을 떠날 때: 열어 둔 묶음과 물음, 알림 줄을 지운다(보기 고른 것은 남긴다) */
-    close() { st.grps.clear(); st.asking = null; st.notes.clear(); st.roomNote = ''; focusReq = null; openReq = null; },
+    close() { st.grps.clear(); st.asking = null; st.hooksAsk = false; st.notes.clear(); st.roomNote = ''; focusReq = null; openReq = null; },
     /* 계정이 바뀌면 다 비운다 */
     reset() { gen += 1; st = fresh(); focusReq = null; openReq = null; },
     busy: () => st.busy,

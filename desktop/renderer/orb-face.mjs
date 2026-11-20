@@ -240,6 +240,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       updates: roomPart('updates', ['status', 'check', 'download', 'install']),
       environment: typeof roomOptions.environment === 'function' ? () => roomOptions.environment() : null,
       copyDiagnostics: typeof roomOptions.copyDiagnostics === 'function' ? () => roomOptions.copyDiagnostics() : null,
+      // 사무실의 「승인 물음도 보기」가 켜져 있으면 설정 방에 끄는 줄을 세운다. 볼 계정이 아니어도 된다(사무실 구현설계 11.1)
+      officeHooks: readApi.office && ['hooksStatus', 'hooksOff'].every(k => typeof readApi.office[k] === 'function') ? readApi.office : null,
     },
     now,
     setTimer,

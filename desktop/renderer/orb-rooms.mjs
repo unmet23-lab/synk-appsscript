@@ -9,6 +9,7 @@ import { isUsedUp, num, nameOf } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, josa } from './solio-today.mjs';
 import { profileChange, pendingDeletion } from './account-page.mjs';
 import { briefLive, tokSample } from './solio-brief.mjs';
+import { officeHooksAsideRow, officeHooksOffWords } from './office-room.mjs';
 
 /* 두 번 누르기의 막이(설계 8.2, 설계 검토 D1). 묻고 0.6초 안의 두 번째 누름은 받지 않고(더블클릭 · Enter 되풀이), 10초가 지나면 물음을 거둔다.
    account는 계정 요청 하나를 기다리는 한도(옛 내 계정과 같다), tokLive는 모델별 토큰 줄이 열린 동안 실시간을 다시 부탁하는 사이다(옛 구독 판과 같다) */
@@ -39,7 +40,8 @@ const hasRows = res => !!res && res.ok !== false && Array.isArray(res.rows);
 
 /* account: 내 계정 어댑터 { request(op, params), identity(), security(section), securityOpened(), changed() }. 없으면 내 계정 방을 열지 않는다.
    confirmLeave: 모든 곳에서 로그아웃 전 쓰던 글 확인(런처의 confirmDraftExit). signOut: 이 PC 로그아웃. openOld: 옛 내 계정 화면을 연다(마을 기록 · 내려받기)
-   pc: 설정 방의 어댑터 { desktop{get, update, onChange}, drafts{status, set, onChange}, notices{get, set}, care{status, configure, onChange}, updates{status, check, download, install, confirmInstall, onChange}, environment(), copyDiagnostics() }.
+   pc: 설정 방의 어댑터 { desktop{get, update, onChange}, drafts{status, set, onChange}, notices{get, set}, care{status, configure, onChange}, updates{status, check, download, install, confirmInstall, onChange}, environment(), copyDiagnostics(),
+       officeHooks{hooksStatus, hooksOff, onChanged}(사무실의 「승인 물음도 보기」가 켜져 있을 때 끄는 줄, 사무실 구현설계 11.1) }.
        없는 칸은 그 줄을 세우지 않는다 */
 export function createOrbRooms({ subs = null, account = null, pc = {}, now = () => Date.now(), setTimer = globalThis.setTimeout, clearTimer = globalThis.clearTimeout, setTick = globalThis.setInterval, clearTick = globalThis.clearInterval, snapshot = () => null, accept = () => {}, reread = () => {}, copyText = null, changed = () => {}, sentence = s => s, confirmLeave = null, signOut = null, openOld = null, randomId = () => globalThis.crypto?.randomUUID?.() || Date.now().toString(16) + Math.random().toString(16).slice(2) } = {}) {
   const st = { armed: null, grps: new Set(), add: { svc: '' }, relogin: null, kinds: {}, installing: new Set(), busy: null, notes: new Map(), ended: null, roomNote: '', tokRange: 'week', tokAll: false, tipDone: new Map(), restChoice: '' };
@@ -56,7 +58,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
   /* 설정(설계 6.4). 방이 열릴 때 데스크톱 설정 · 쓰던 글 되살리기 · 업데이트 상태를 읽고, 열린 동안 바뀜 알림을 듣고, 닫으면 듣기를 뗀다.
      rev는 업데이트 판이 들어온 차례다. 동작을 보낸 뒤 알림으로 새 판이 먼저 오면 늦게 온 답으로 덮지 않는다(update-view.mjs와 같다).
      member는 방을 그릴 때 받은 「회원으로 보이는가」다. 손님에게 잠긴 칸(쓰던 글 되살리기, 구독 팁)은 동작도 받지 않는다 */
-  const freshSet = () => ({ desktop: null, drafts: null, care: null, update: null, rev: 0, unsubs: [], member: false });
+  // hooks: 사무실의 훅이 켜졌는지({ ok, on }). 볼 계정이 아니어도 켜져 있으면 끄는 줄을 세운다(사무실 구현설계 11.1)
+  const freshSet = () => ({ desktop: null, drafts: null, care: null, update: null, hooks: null, rev: 0, unsubs: [], member: false });
   let sets = freshSet();
 
   const note = (key, text) => { if (text) st.notes.set(key, text); else st.notes.delete(key); };
@@ -279,11 +282,18 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     const my = gen, a = accGen, s = sets;
     Promise.resolve().then(() => dev.care.status()).then(v => { if (my === gen && a === accGen && s === sets) { s.care = v && typeof v === 'object' ? v : { ok: false }; changed(); } }, () => { if (my === gen && a === accGen && s === sets) { s.care = { ok: false }; changed(); } });
   }
+  /* 사무실의 훅이 켜졌는지. 본체가 계정 확인 없이 켜짐 여부만 준다 */
+  function readHooks() {
+    if (typeof dev.officeHooks?.hooksStatus !== 'function') return;
+    const my = gen, s = sets;
+    Promise.resolve().then(() => dev.officeHooks.hooksStatus()).then(v => { if (my === gen && s === sets) { s.hooks = v && typeof v === 'object' && v.ok !== false ? v : null; changed(); } }, () => {});
+  }
   function setStart() {
     const my = gen, s = sets;
     if (typeof dev.desktop?.get === 'function') Promise.resolve().then(() => dev.desktop.get()).then(v => { if (my === gen && s === sets && v?.ok === true) { s.desktop = v; changed(); } }, () => {});
     readDrafts();
     readCare();
+    readHooks();
     if (typeof dev.updates?.status === 'function') {
       const start = s.rev;
       Promise.resolve().then(() => dev.updates.status()).then(v => { if (my === gen && s === sets && s.rev === start && !takeUpdate(v, s)) takeUpdate({ ...(s.update || {}), state: 'error', code: 'UPDATE_UNAVAILABLE' }, s); },
@@ -294,6 +304,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
     if (typeof dev.drafts?.onChange === 'function') listen(dev.drafts.onChange, () => { if (s === sets) readDrafts(); });
     if (typeof dev.care?.onChange === 'function') listen(dev.care.onChange, () => { if (s === sets) readCare(); });
     if (typeof dev.updates?.onChange === 'function') listen(dev.updates.onChange, v => { takeUpdate(v, s); });
+    if (typeof dev.officeHooks?.onChanged === 'function') listen(dev.officeHooks.onChanged, () => { if (s === sets) readHooks(); });
   }
   function setStop() { for (const off of sets.unsubs) { try { off(); } catch { /* 무시 */ } } sets = freshSet(); }
   /* 업데이트 동작(update-view.mjs run과 같은 규칙). 설치는 쓰던 글 확인(런처의 confirmUpdateInstall)을 먼저 거치고, 그사이 판이 바뀌었으면 보내지 않는다 */
@@ -633,6 +644,22 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         else { careNote = CARE_SAY[res?.code] || CARE_SAY.no; note(key, careNote); readCare(); }
         changed(); return true;
       }
+      // 사무실의 「승인 물음도 보기」 끄기(사무실 구현설계 11.1). 묻지 않는다. 다 지우면 줄이 사라지므로 결과는 맨 아래 작은 줄에 쓴다
+      case 'office-hooks-off': {
+        if (typeof dev.officeHooks?.hooksOff !== 'function' || sets.hooks?.on !== true) return true;
+        if (st.busy) { refuseBusy(key); return true; }
+        const my = gen, s = sets;
+        st.busy = 'office-hooks:off';
+        changed();
+        let res;
+        try { res = await dev.officeHooks.hooksOff(); } catch { res = { ok: false }; }
+        if (my !== gen) return true;
+        if (st.busy === 'office-hooks:off') st.busy = null;
+        if (s !== sets) { changed(); return true; }
+        if (res?.ok === true) { s.hooks = { ok: true, on: false }; if (current === 'settings') { st.roomNote = officeHooksOffWords(res); focusReq = ask({ say: true }); } }
+        else { note(key, officeHooksOffWords(res)); readHooks(); }
+        changed(); return true;
+      }
       // 문제 알리기용 정보: 편의와 같은 셈(safeDiagnostics)으로 버전과 연결 상태만 복사한다. 결과는 맨 아래 작은 줄에 쓴다
       case 'diag-copy': {
         if (st.busy) return true;
@@ -870,7 +897,10 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         // 구독 팁 켜고 끄기는 회원의 구독 자료가 있을 때만 둔다(저장 자리가 구독 판의 settings.tipsOff다, 설계 검토 D7)
         const snap = snapshot(), tipsOff = member && snap && snap.ok !== false && snap.settings ? snap.settings.tipsOff === true : null;
         sets.member = !!member;
-        return { settings: { ...settingsRoom({ update: sets.update, loading: typeof dev.updates?.status === 'function', desktop: sets.desktop, drafts: sets.drafts, care: sets.care, notices: noticesNow(), env: envNow(), member: !!member, tipsOff }, view(), now()), ...req } };
+        const room = settingsRoom({ update: sets.update, loading: typeof dev.updates?.status === 'function', desktop: sets.desktop, drafts: sets.drafts, care: sets.care, notices: noticesNow(), env: envNow(), member: !!member, tipsOff }, view(), now());
+        // 사무실의 훅이 켜져 있으면 「Claude Code의 알림이 솔리오로 오고 있습니다」 줄과 「끄기」(사무실 구현설계 11.1)
+        const hooksRow = officeHooksAsideRow(sets.hooks, { busy: st.busy === 'office-hooks:off', note: st.notes.get('office-hooks') || '' });
+        return { settings: { ...room, rows: hooksRow ? [...room.rows, hooksRow] : room.rows, ...req } };
       }
       return null;
     },
