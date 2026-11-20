@@ -4,7 +4,7 @@
  * 올리고 슬롯 시각에 예약한 뒤, 유호님이 휴대폰에서 누를 검토 링크를 만든다. 서버는 그 링크 승인 전에는 보내지 않는다.
  *
  *   node tools/작업실예약.js <편 폴더>                     미리 보기 — 어느 판을 어느 계정으로 무엇을 보낼지(서버는 읽기만)
- *   node tools/작업실예약.js <편 폴더> --실행 [--텔레그램]   등록하고, --텔레그램이면 검토 링크를 유호님께 보낸다
+ *   node tools/작업실예약.js <편 폴더> --실행 [--텔레그램]   등록하고, --텔레그램이면 검토 링크를 유호님께 보낸다(앞선 등록이 끝난 편이면 남은 판을 새 등록으로)
  *   node tools/작업실예약.js --대기열 [--실행] [--텔레그램]   docs/마케팅 아래 준비.json에 「작업실등록」: true를 단 「올릴 준비」·「완성」 편 가운데 아직 안 한 것
  *                                                        (사람 없는 정기 작업 「SYNK 예약큐」가 30분마다 부른다 — tools/예약큐예약/)
  *   node tools/작업실예약.js 상태 <편 폴더> --캐시           예약큐 서버 캐시로 게시결과.json을 맞춘다(서버에 묻지 않는다 — Claude 세션은 이것)
@@ -30,6 +30,12 @@
  * 서버가 아직 못 보내는 칸이 있으면 그 판은 등록하지 않는다: 유튜브 언어 칸(서버 옵션 language — 다음 회사 릴리스), 인스타 AI 정보 표시(madeWithAi),
  * 인스타 첫 댓글(서버가 못 단다 — 캡션에 넣는다). 각각 --언어없이 · --AI표시없이 · --첫댓글빼고로 알고 넘길 수 있다.
  * 유튜브 고정 댓글과 표지 그림은 서버가 못 한다 — 게시결과.json 「후속」에 남긴다. 고정 댓글은 그날 20:52 스레드 예약 작업이 ego로 달고(11-03), 표지는 첫 화면. 인스타 표지는 판의 「표지시각」(초)이 있으면 그 장면.
+ *
+ * 기록(11-20부터 편 하나에 등록 여럿): 게시/작업실.json은 늘 「지금 등록」 하나다 — 상태 · 취소 · 대기열 · 다른 자리 확인은 이 파일만 읽는다.
+ * 앞선 등록이 끝났으면(완료 기록이고 서버의 그 원고 작업이 모두 게시됨 · 취소됨) 편 경로를 준 새 등록이 그 기록을 게시/작업실_끝_<시각>.json으로
+ * 옮기고 새 작업실.json을 쓴다. 취소가 작업실_취소_<시각>.json으로 옮기는 것과 같은 꼴이다. 다른 자리(공용 작업본 · origin)에 남은 옛 작업실.json은
+ * 이 편 폴더의 끝 · 취소 기록과 원고 번호가 같으면 거둔 것으로 본다. 게시결과에 이미 걸렸거나 거둔 계정 판은 보내지 않는다. 대기열은 다시 등록하지 않는다.
+ * 게시결과 줄에는 올린 영상의 SHA-256을 「지문」으로 적는다 — 걸린 뒤 판본을 다시 구우면 예약큐가 「걸린 뒤 바뀜」으로 알린다(tools/돌림표.js bookedVersionProblem).
  */
 const fs = require('node:fs');
 const os = require('node:os');
@@ -195,6 +201,24 @@ function checkedFile(prep, rel, file) {
   return probeUploadProblemSync(file);
 }
 
+// 게시결과.json의 「판」 줄(파일이 없으면 빈 줄). 읽지 못하면 이미 걸린 판을 가릴 수 없으니 던진다.
+function resultRows(bundle) {
+  const file = path.join(bundle.dir, '게시', '게시결과.json');
+  if (!fs.existsSync(file)) return [];
+  let result;
+  try { result = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, '')); } catch (error) {
+    throw new Error(`게시결과.json을 읽지 못해 이미 걸린 판인지 가릴 수 없다(${String(error.message).slice(0, 120)})`);
+  }
+  return Array.isArray(result?.판) ? result.판 : [];
+}
+
+// 그 계정 판이 게시결과에서 이미 걸렸거나(예약됨 · 게시됨 · 거는 중 · 작업이 있는 승인 대기) 거둔(보류 · 지움) 줄이면 그 줄 — 게시 장부와 같은 읽기
+function takenRow(results, account) {
+  const 장부 = require('./게시장부.js');
+  const row = 장부.rowOf(results, account);
+  return row && (장부.held(row) || 장부.WITHDRAWN.has(row.상태)) ? row : null;
+}
+
 function planBundle(bundle, workspace, opts = {}) {
   const prep = bundle.prep;
   const channels = workspace.channels || [];
@@ -202,10 +226,16 @@ function planBundle(bundle, workspace, opts = {}) {
   const fileChecks = new Map();
   // 11-13 최종 확인(컷 전수) 관문 — SNS 두 브랜드 편은 통과 기록이 있고 그 뒤 영상이 그대로여야 등록한다(tools/lib/최종확인.js)
   const finalProblem = 최종확인.problem(bundle);
+  let results = [], resultsProblem = null;
+  try { results = resultRows(bundle); } catch (error) { resultsProblem = error.message; }
   for (const plate of 묶음.plates(bundle)) {
     const row = { account: plate.account, platform: plate.platform, time: plate.time, eligible: false, reasons: [], notes: [], plate };
     rows.push(row);
     if (!FORMAT[plate.platform]) { row.reasons.push('서버가 받지 않는 판 — 크롬'); continue; }
+    // 앞선 등록이 끝난 편에 판을 더 걸 때(11-20) 이미 나간 판 · 다른 길로 걸린 판을 다시 보내지 않는다
+    if (resultsProblem) row.reasons.push(resultsProblem);
+    const taken = resultsProblem ? null : takenRow(results, plate.account);
+    if (taken) { row.taken = true; row.reasons.push(`게시결과에 이미 「${taken.상태}」 줄이 있다(${taken.방법 === '작업실' ? '작업실' : '다른 길'}) — 다시 보내지 않는다`); continue; }
     const { channel, reason } = matchChannel(bundle.accounts[plate.account], plate.platform, channels);
     if (!channel) { row.reasons.push(reason); continue; }
     row.channel = { id: channel.id, name: channel.name };
@@ -411,28 +441,64 @@ async function register(bundle, ws, rows, opts = {}) {
   return withBundleLock(bundle, () => registerLocked(bundle, ws, rows, opts));
 }
 
+// 앞선 등록이 끝났나(11-20 — 편 하나에 등록 여럿) → { ok, why }. 실패 · 등록 중이 아닌 완료 기록이고, 서버의 그 원고 작업이 모두 게시됨 · 취소됨이며
+// 기록의 판마다 서버에 작업이 있어야 끝난 것이다. 서버를 못 읽으면 던진다(끝났다고 치지 않는다).
+const FINISHED = new Set(['게시됨', '취소됨']);
+async function finishedRegistration(ws, old) {
+  if (old.실패) return { ok: false, why: `실패한 등록이다(${old.실패.이유}) — \`취소\`로 기록을 옮긴 뒤에` };
+  if (old.등록중 || !old.끝) return { ok: false, why: '등록을 마치지 못한 기록이다 — 작업실 원고와 기록을 확인한다' };
+  if (!Array.isArray(old.판) || !old.판.length) return { ok: false, why: '기록에 판이 없다' };
+  const detail = await ws.get(`/api/social/posts/${old.postId}`);
+  const jobs = detail.jobs || [];
+  const who = (j) => old.판.find((p) => p.작업 === j.id || p.채널 === j.channelId)?.계정 || j.channelId;
+  const live = jobs.filter((j) => !FINISHED.has(STATUS(j)));
+  if (live.length) return { ok: false, why: `끝나지 않은 작업이 있다(${live.map((j) => `${who(j)} ${STATUS(j)}`).join(' · ')})` };
+  const missing = old.판.filter((p) => !jobs.some((j) => (p.작업 ? j.id === p.작업 : j.channelId === p.채널)));
+  if (missing.length) return { ok: false, why: `서버에 작업이 없는 판이 있다(${missing.map((p) => p.계정).join(' · ')})` };
+  return { ok: true, why: null };
+}
+
 async function registerLocked(bundle, ws, rows, opts = {}) {
   const prep = bundle.prep;
   const eligible = rows.filter((r) => r.eligible);
   if (!eligible.length) throw new Error('서버로 보낼 판이 없다');
-  // 기록이 있으면(성공·실패 모두) 다시 만들지 않는다 — 다시 올리려면 `취소`가 서버 원고를 거두고 기록을 옮긴 뒤에.
+  // 기록이 있으면 다시 만들지 않는다 — 다시 올리려면 `취소`가 서버 원고를 거두고 기록을 옮긴 뒤에. 끝난 등록(모든 작업이 게시됨 · 취소됨)만 새 등록이 옮긴다.
+  const oldRaw = fs.existsSync(stateFile(bundle)) ? fs.readFileSync(stateFile(bundle), 'utf8') : null;
   const old = readState(bundle);
-  if (fs.existsSync(stateFile(bundle)) && !old?.postId) throw Object.assign(new Error('이전 등록의 결과가 불확실하다 — 작업실 원고와 기록을 확인하기 전에는 다시 등록하지 않는다'), { code: 'UNCERTAIN' });
-  if (old?.postId) throw Object.assign(new Error(`이미 작업실에 등록한 편이다(원고 ${old.postId}${old.실패 ? ` · 실패: ${old.실패.이유}` : ''}) — 상태는 \`상태\`, 다시 올리려면 \`취소\` 뒤에`), { code: 'ALREADY' });
-  const 곁기록 = 다른자리등록(bundle);
+  if (oldRaw !== null && !old?.postId) throw Object.assign(new Error('이전 등록의 결과가 불확실하다 — 작업실 원고와 기록을 확인하기 전에는 다시 등록하지 않는다'), { code: 'UNCERTAIN' });
+  // 게시결과에 이미 걸렸거나 거둔 계정 판은 보내지 않는다 — 계획을 짠 뒤 다른 길로 걸렸거나, 끝난 등록의 판을 그대로 다시 넘겨도 두 번 나가지 않게
+  const results = resultRows(bundle);
+  const taken = eligible.map((r) => [r.account, takenRow(results, r.account)]).filter(([, t]) => t);
+  if (taken.length) throw Object.assign(new Error(`게시결과에 이미 걸렸거나 거둔 판이 있다(${taken.map(([a, t]) => `${a} ${t.상태}`).join(' · ')}) — 다시 보내지 않는다`), { code: 'ALREADY' });
+  if (old?.postId) {
+    const already = (why) => Object.assign(new Error(`이미 작업실에 등록한 편이다(원고 ${old.postId}${why ? ` · ${why}` : ''}) — 상태는 \`상태\`, 다시 올리려면 \`취소\` 뒤에`), { code: 'ALREADY' });
+    if (opts.queue) throw already(old.실패 ? `실패: ${old.실패.이유}` : null); // 대기열은 첫 등록만 한다 — 판을 더 거는 것은 편 경로를 준 손 등록
+    const finished = await finishedRegistration(ws, old);
+    if (!finished.ok) throw already(finished.why);
+  }
+  const 곁기록 = 다른자리등록(bundle, { 끝난: old?.postId || null });
   if (곁기록) throw Object.assign(new Error(`${곁기록.이름}에 이 편의 작업실 기록이 있다(${곁기록.경로}) — 두 번 등록하지 않는다. 상태 · 취소는 운영 사본의 도구와 편 경로로 부른다`), { code: 'ALREADY' });
   const state = { 도구: 'tools/작업실예약.js', 작업실: ws.origin, 시작: new Date().toISOString(), 자산: {}, 판: [] };
   if (opts.queue && fs.existsSync(cancelMarker(bundle))) throw Object.assign(new Error('취소한 편의 자동 등록이 중지되어 있다'), { code: 'CANCELLED' });
+  // 끝난 앞 등록은 작업실_끝_<시각>.json으로 옮긴다(취소 기록과 같은 꼴). 확인한 뒤 기록이 바뀌었으면 옮기지 않는다.
+  let archived = null;
+  if (old?.postId) {
+    if (fs.readFileSync(stateFile(bundle), 'utf8') !== oldRaw) throw Object.assign(new Error('앞선 등록 기록이 확인하는 사이 바뀌었다 — 다시 부른다'), { code: 'UNCERTAIN' });
+    archived = `작업실_끝_${state.시작.replace(/[:.]/g, '')}.json`;
+    fs.renameSync(stateFile(bundle), path.join(bundle.dir, '게시', archived));
+  }
   // 첫 외부 요청 전에 독점 기록을 남긴다. 응답을 잃거나 프로세스가 죽어도 자동 재등록하지 않는다.
   const claim = JSON.stringify({ ...state, 등록중: true }, null, 2) + '\n';
   fs.writeFileSync(stateFile(bundle), claim, { flag: 'wx' });
-  // ① 원본 영상(같은 파일은 한 번)
+  // ① 원본 영상(같은 파일은 한 번). 작업실이 받은 영상의 SHA-256을 게시결과 줄 「지문」으로 적는다(걸린 뒤 바뀜을 예약큐가 견준다)
+  const shas = {};
   try {
     for (const row of eligible) {
       if (!state.자산[row.video.rel]) {
         const inspected = prep.검사?.파일?.find(f => f.경로 === row.video.rel);
         const { asset } = await ws.upload(row.video.path, `${bundle.name} · ${path.basename(row.video.path)}`, inspected?.sha256);
         state.자산[row.video.rel] = asset.id;
+        shas[row.video.rel] = String(asset.sha256 || inspected?.sha256 || '').toLowerCase() || null;
       }
       row.variant.media = [{ assetId: state.자산[row.video.rel] }];
     }
@@ -494,7 +560,7 @@ async function registerLocked(bundle, ws, rows, opts = {}) {
   state.링크 = { id: review.link.id, 만료: review.link.expiresAt };
   state.판 = eligible.map((row) => {
     const job = jobs.find((j) => j.channelId === row.channel.id);
-    return { 계정: row.account, 채널: row.channel.id, 작업: job?.id || null, 시각: row.time, 영상: row.video.rel };
+    return { 계정: row.account, 채널: row.channel.id, 작업: job?.id || null, 시각: row.time, 영상: row.video.rel, ...(shas[row.video.rel] ? { 지문: shas[row.video.rel] } : {}) };
   });
   state.끝 = new Date().toISOString();
   writeJson(stateFile(bundle), state);
@@ -502,8 +568,8 @@ async function registerLocked(bundle, ws, rows, opts = {}) {
   writeJson(localLinkFile(bundle), { 편: bundle.name, 제목: prep.제목 || bundle.name, 원고: post.id, 링크: review.url, 만료: review.link.expiresAt, 만듦: state.끝, 보냄: false,
     판: eligible.map((row) => ({ 계정: row.account, 시각: row.time })), ...companions(rows) });
   mergeResults(bundle, eligible.map((row) => ({ 계정: row.account, 상태: '승인 대기', 시각: row.time, 방법: '작업실', 작업: state.판.find((p) => p.계정 === row.account)?.작업 || null,
-    ...(row.notes.length ? { 후속: row.notes } : {}) })));
-  return { post, jobs, url: review.url, expiresAt: review.link.expiresAt, rows: eligible };
+    ...(shas[row.video.rel] ? { 지문: shas[row.video.rel] } : {}), ...(row.notes.length ? { 후속: row.notes } : {}) })));
+  return { post, jobs, url: review.url, expiresAt: review.link.expiresAt, rows: eligible, archived };
 }
 
 // ws 대신 jobs(예약큐 캐시의 서버 작업 목록)를 주면 서버에 묻지 않고 그것으로 옮긴다 — Claude 세션은 운영 서버를 직접 읽지 않는다.
@@ -606,13 +672,14 @@ function 공용쪽기록(bundleName, main) {
 }
 
 // 이 편이 다른 자리에 이미 등록돼 있나 — 공용 작업본 · 운영 사본 · origin 가운데 어디든 살아 있는 작업실.json이 있으면 그 자리 이름을 준다.
-// 등록은 어느 작업본 경로로 불러도 한 번이어야 한다(두 번이면 같은 계정에 두 번 나간다). 이 편 폴더의 취소 기록과 같은 원고는 이미 거둔 것으로 본다.
-function 다른자리등록(bundle) {
+// 등록은 어느 작업본 경로로 불러도 한 번이어야 한다(두 번이면 같은 계정에 두 번 나간다). 이 편 폴더의 취소 · 끝 기록과 같은 원고는 이미 거둔 것으로 본다.
+// 끝난 = 새 등록이 곧 작업실_끝_으로 옮길 앞 등록의 원고 번호(11-20 — 다른 자리에 남은 그 옛 기록이 새 등록을 막지 않게).
+function 다른자리등록(bundle, { 끝난 = null } = {}) {
   if (!bundle.repo) return null;
   const rel = `docs/마케팅/${bundle.name}/게시/작업실.json`;
-  const 거둠 = new Set();
+  const 거둠 = new Set(끝난 ? [끝난] : []);
   let 이름들 = [];
-  try { 이름들 = fs.readdirSync(path.join(bundle.dir, '게시')).filter((f) => /^작업실_취소_.*\.json$/.test(f)); } catch { /* 게시 폴더 없음 */ }
+  try { 이름들 = fs.readdirSync(path.join(bundle.dir, '게시')).filter((f) => /^작업실_(취소|끝)_.*\.json$/.test(f)); } catch { /* 게시 폴더 없음 */ }
   for (const f of 이름들) { try { const id = 묶음.readJson(path.join(bundle.dir, '게시', f)).postId; if (id) 거둠.add(id); } catch { /* 깨진 취소 기록은 세지 않는다 */ } }
   // 원고 번호가 없는 기록(등록 중 독점 기록 · 깨진 파일)은 산 것으로 본다 — 등록 결과가 불확실하면 두 번 등록하지 않는다
   const 살아있나 = (글) => { try { const id = JSON.parse(String(글).trimStart()).postId; return !id || !거둠.has(id); } catch { return true; } };
@@ -690,12 +757,12 @@ async function handleOne(dir, ws, o) {
   const done = await register(bundle, ws, rows, o);
   // 알림 표식 정리 실패는 이미 성공한 등록을 실패로 바꾸지 않는다.
   try { await clearFailureNotice(bundle.dir); } catch (error) { console.error(`  ! 등록 실패 알림 표식을 정리하지 못했다: ${error.message}`); }
-  console.log(`  등록 끝 · 원고 ${done.post.id} · 예약 ${done.jobs.length}개 모두 검토 대기 · 링크 만료 ${kst(done.expiresAt)}`);
+  console.log(`  등록 끝 · 원고 ${done.post.id} · 예약 ${done.jobs.length}개 모두 검토 대기 · 링크 만료 ${kst(done.expiresAt)}${done.archived ? ` · 끝난 앞 등록은 게시/${done.archived}로 옮김` : ''}`);
   // 등록 뒤 일(텔레그램·기록 올리기)이 막혀도 등록은 된 것이다 — 따로 잡아 다음 회차가 이어 하게 한다.
   if (o.telegram) await sendLink(localLinkFile(bundle));
   else console.log(`  검토 링크는 ${localLinkFile(bundle)}에 있다(저장소에 넣지 않는다)`);
   // 공용 작업본에서 정기 작업이 돌았으면 그 편 기록(작업실.json·게시결과.json, 링크 열쇠 없음)만 곧바로 올린다. 워크트리에서는 하지 않는다.
-  await 편기록올리기(bundle, ['작업실.json', '게시결과.json', '작업실_자동등록중지.json'], `chore(작업실 예약): ${bundle.name} 등록 — 유호님 검토 링크 승인 대기`);
+  await 편기록올리기(bundle, ['작업실.json', '게시결과.json', '작업실_자동등록중지.json', ...(done.archived ? [done.archived] : [])], `chore(작업실 예약): ${bundle.name} 등록 — 유호님 검토 링크 승인 대기`);
   return { bundle: bundle.name, registered: true, postId: done.post.id };
 }
 
@@ -725,7 +792,7 @@ function companions(rows) {
   const sent = new Set(rows.filter((r) => r.eligible && r.video).map((r) => path.resolve(r.video.path)));
   const out = { 함께: [], 따로: [] };
   for (const r of rows) {
-    if (r.eligible) continue;
+    if (r.eligible || r.taken) continue; // 이미 걸렸거나 나간 판은 승인 요청에 적지 않는다
     const file = r.plate?.video?.path ? path.resolve(r.plate.video.path) : null;
     (CARRIED.has(r.platform) && file && sent.has(file) ? out.함께 : out.따로).push({ 계정: r.account, 시각: r.time || null });
   }

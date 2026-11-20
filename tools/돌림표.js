@@ -171,7 +171,7 @@ function localCheckState(dir, v) {
 
 // 이미 걸린(공개 전) 돌림 판의 판본이 걸린 뒤 무효가 됐거나 다시 구워졌는가(11-11 — 시험관 넷으로 다시 받은 뜻 검사에서 걸린 판 셋이 떨어졌는데
 // 아무 도구도 알리지 않았다: 올리기 전 검사 ⑩의 고칠 것은 다 걸린 편이라 예약큐가 안 보고, 걸기의 지문 대조는 걸 때 한 번뿐이다).
-// 그대로 두면 검수 안 된 영상이 예약대로 공개된다. row = 그 계정의 게시결과 줄(「지문」 = 걸 때의 판 영상 SHA-256).
+// 그대로 두면 검수 안 된 영상이 예약대로 공개된다. row = 그 계정의 게시결과 줄(「지문」 = 걸 때의 판 영상 SHA-256 — bookedSha).
 // → null(문제 없음 · 판본을 모름) 또는 { key, why, changed(걸린 영상이 지금 판본 영상과 다름), text?(걸린 뒤 게시글이 바뀜) }. 예약큐 경고 · 올리기 전 검사 ⑩이 쓴다.
 // 게시글(11-11 밤 Fable 5.2 다시 검수 P1-팔1): 걸린 뒤 제목 · 본문 · 댓글만 고치고 뜻 검사를 다시 통과하면 판본 상태는 「든다」로 돌아오고 영상 지문도
 // 그대로라 위 둘이 다 조용한데, 플랫폼 예약에는 떨어졌던 옛 글이 걸려 있다. 걸 때 줄에 적은 「게시글지문」(tools/게시장부.js postTextSha)과 지금 글을 견준다.
@@ -182,13 +182,21 @@ function bookedVersionProblem(dir, prep, plate, row, { required = ['뜻', '글�
   const v = key ? prep?.돌림?.판본?.[key] : null;
   if (!v) return null;
   const st = versionState(dir, v, required, key, { accounts });
-  const changed = Boolean(row.지문 && st.sha && row.지문 !== st.sha);
+  const booked = bookedSha(plate, row);
+  const changed = Boolean(booked && st.sha && booked !== st.sha);
   // 판본 상태를 못 읽은 것(unreadable — 깨진 파일)은 「걸린 뒤 바뀜」이 아니다(11-12 P1-지1): 걸린 영상이 달라진 것이 보이면(changed) 그쪽이 먼저다
   if (!st.ready) return { key, why: st.why, changed, ...(st.unreadable && !changed ? { unreadable: true, file: null } : {}) };
   if (changed) return { key, why: '건 뒤에 판본 영상을 다시 구웠다(걸린 영상은 옛 판)', changed };
   const text = bookedTextProblem(dir, plate, row);
   if (text) return { key, why: text.why, changed: false, text: true, ...(text.unreadable ? { unreadable: true, file: text.file } : {}) };
   return null;
+}
+
+// 걸린 영상의 SHA-256 — 게시결과 줄의 「지문」, 없으면 준비.json 판의 「지문」(돌림표가 판을 단 때의 판본 영상). 11-20까지 작업실 길(tools/작업실예약.js)은
+// 줄에 지문을 안 적어, 작업실로 건 판은 판본을 다시 구워도 「걸린 뒤 바뀜」이 뜨지 않았다(우즈베키스탄 인스타 — 현장노트 브라우저_게시#rebook-root-cause).
+function bookedSha(plate, row) {
+  const sha = (row && row.지문) || (plate && plate.지문) || null;
+  return sha ? String(sha).toLowerCase() : null;
 }
 
 // 걸린 판의 게시글이 걸 때와 다른가 → null(같음 · 걸 때 지문을 안 적은 옛 줄) 또는 { why, unreadable?, file? }.
@@ -804,5 +812,5 @@ function main() {
   }
 }
 
-module.exports = { rotationAccounts, versionState, bookedVersionProblem, bookedTextProblem, localCheckState, loadPieces, existingPlates, staleWhy, cellOwners, ledgerRows, plateFor, checkStops, holdsOf, sameLanguageReport, 뜻기록들, 뜻기록비우기 };
+module.exports = { rotationAccounts, versionState, bookedVersionProblem, bookedTextProblem, bookedSha, localCheckState, loadPieces, existingPlates, staleWhy, cellOwners, ledgerRows, plateFor, checkStops, holdsOf, sameLanguageReport, 뜻기록들, 뜻기록비우기 };
 if (require.main === module) main();

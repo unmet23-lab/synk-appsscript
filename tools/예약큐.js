@@ -332,11 +332,15 @@ function collect(server, accounts, now) {
         }
         // 걸린(공개 전) 돌림 판의 판본이 걸린 뒤 무효가 됐거나 다시 구워졌으면 알린다(11-11) — 걸 때는 통과였어도 그 뒤 판본 글 · 영상을 고쳤거나
         // 다시 받은 검수에서 떨어지면, 그대로 둔 예약이 검수 안 된 영상을 공개한다. 다 걸린 편은 「검사 고칠 것」에 안 잡혀 이 줄이 유일한 알림이다.
-        if (p.돌림 && ['예약됨', '거는 중'].includes(local.상태) && Number.isFinite(at) && at > now) {
+        // 작업실 판은 서버 상태로 본다 — 「승인 대기」도 걸린 판이다(검토 링크를 승인하면 옛 영상이 나간다). 서버가 게시 · 취소로 본 판은 넘긴다.
+        const viaWorkspace = local.방법 === '작업실' && Boolean(local.작업);
+        const bookedState = viaWorkspace ? state : local.상태;
+        if (p.돌림 && ['예약됨', '거는 중', ...(viaWorkspace ? ['승인 대기'] : [])].includes(bookedState) && Number.isFinite(at) && at > now) {
           let stale = null;
           try { stale = bookedVersionProblem(path.join(ROOT, dir.name), prep, p, local, { required, accounts }); } catch { /* 판본을 못 읽으면 넘긴다 */ }
           // 게시글 · 판본 상태를 못 읽어 견줄 수 없는 것은 「바뀜」이 아니다(11-12 P1-지1) — 다른 줄로 보이고 「내려라」를 말하지 않는다(걸린 뒤 바뀜은 묻지 않고 내리는 걸음이다)
           if (stale && stale.unreadable) warnings.push(`걸린 돌림 판의 ${stale.text ? '게시글을' : '판본 상태를'} 읽지 못함: ${p.계정} · ${dir.name} · 공개 ${whenText(at, accounts[p.계정])} — 판본 ${stale.key}: ${stale.why}. 예약은 내리지 않는다 — ${stale.file ? `${stale.file}을(를)` : '그 파일을'} 읽히게 고친 뒤 예약 큐를 다시 본다(읽힌 뒤에 「걸린 뒤 바뀜」이 뜨면 그때 내린다)`);
+          else if (stale && viaWorkspace) warnings.push(`걸린 돌림 판의 판본이 걸린 뒤 바뀜: ${p.계정} · ${dir.name} · 공개 ${whenText(at, accounts[p.계정])} — 판본 ${stale.key}: ${stale.why}. 작업실 판이다 — 공개 전에 운영 사본의 「작업실예약.js 취소 <편>」로 거두고, 판의 「지문」을 새 영상 값으로 고쳐 올리기 전 검사를 받은 뒤 다시 등록한다(현장노트 브라우저_게시#rebook-root-cause)`);
           else if (stale) warnings.push(`걸린 돌림 판의 판본이 걸린 뒤 바뀜: ${p.계정} · ${dir.name} · 공개 ${whenText(at, accounts[p.계정])} — 판본 ${stale.key}: ${stale.why}. 공개 전에 그 플랫폼 예약을 내리고 「게시장부 끝 --상태 실패 --확인」 → 「돌림표 --다시 --쓰기」 → 고친 판으로 다시 건다`);
         }
         // 게시 장부 잠금(11-10, tools/게시장부.js) — 2시간 넘은 「거는 중」은 끊긴 회차다: 그 플랫폼 예약 목록부터 읽고 닫는다

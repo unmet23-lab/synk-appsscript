@@ -881,13 +881,14 @@ function rotationFindings(bundle, plates, { ledger = null, results = undefined }
     if (String(v.파일 || '').replace(/\\/g, '/') !== String(p.raw.파일 || '').replace(/\\/g, '/')) add(FIX, 'rotation-version-file', p.account, `판 파일(${p.raw.파일})이 판본 ${key}의 파일(${v.파일})과 다르다`);
     if (!states.has(key)) states.set(key, 돌림표.versionState(bundle.dir, v, required, key, { accounts: bundle.accounts }));
     const st = states.get(key);
-    if (!st.ready && booked && st.unreadable && !(row.지문 && st.sha && row.지문 !== st.sha)) {
+    const bookedSha = booked ? 돌림표.bookedSha(p.raw, row) : null; // 줄에 지문이 없는 작업실 판은 판의 지문으로 견준다
+    if (!st.ready && booked && st.unreadable && !(bookedSha && st.sha && bookedSha !== st.sha)) {
       // 판본 상태를 못 읽은 것(깨진 원고 · 지도 · 렌더 기록)은 「걸린 뒤 바뀜」과 다른 코드다(11-12 P1-지1) — 내리라고 하지 않는다
       add(LOOK, 'rotation-booked-unreadable', p.account, `판본 ${key}: ${st.why} — 이 판은 이미 「${row.상태}」 상태다. 예약은 내리지 않는다 — 그 파일을 읽히게 고친 뒤 다시 검사한다(읽힌 뒤에도 판본이 못 들면 그때 내린다)`);
     } else if (!st.ready && booked) {
       add(LOOK, 'rotation-version-booked', p.account, `판본 ${key}: ${st.why} — 그런데 이 판은 이미 「${row.상태}」 상태다(걸린 뒤 판본 검수가 무효가 됐다). 그대로 두면 검수 안 된 영상이 예약대로 공개된다 — 공개 전이면 그 플랫폼 예약을 내리고(node tools/게시장부.js 끝 … --상태 실패 --확인 …) node tools/돌림표.js --다시 --쓰기 뒤 고친 판으로 다시 건다`);
     } else if (!st.ready) add(FIX, 'rotation-version-check', p.account, `판본 ${key}: ${st.why} — 그 판본 검수를 다시 받는다(설계 22)`);
-    else if (booked && row.지문 && st.sha && row.지문 !== st.sha) {
+    else if (booked && bookedSha && st.sha && bookedSha !== st.sha) {
       add(LOOK, 'rotation-version-booked', p.account, `판본 ${key}: 건 뒤에 판본 영상을 다시 구웠다(걸린 영상은 옛 판) — 공개 전이면 그 플랫폼 예약을 내리고 새 판으로 다시 건다(node tools/게시장부.js 끝 … --상태 실패 --확인 … → node tools/돌림표.js --다시 --쓰기)`);
     } else if (booked) {
       // 걸린 뒤 게시글만 고친 판(11-11 밤 P1-팔1) — 판본 검수가 다시 서고 영상도 그대로라 위 둘이 조용한데, 예약에는 걸 때의 옛 글이 걸려 있다

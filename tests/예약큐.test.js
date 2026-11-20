@@ -993,6 +993,47 @@ test('걸린(공개 전) 돌림 판의 판본이 걸린 뒤 검수 무효가 되
   assert.match(큐().out, /판본 MX: 글자 검수 뒤 영상이 바뀜/);
 });
 
+test('작업실로 건 돌림 판도 판본을 다시 구우면 「걸린 뒤 바뀜」이 뜬다 — 줄에 지문이 없으면 준비.json 판의 지문으로 견주고, 승인 대기도 걸린 판이며, 서버가 게시로 본 판은 조용하다(11-20 우즈베키스탄 인스타)', (t) => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-작업실판-'));
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+  const base = path.join(repo, 'docs', '마케팅');
+  const dir = path.join(base, 'LAB_작업실판', '게시');
+  fs.mkdirSync(path.join(dir, '판본', 'MX'), { recursive: true });
+  fs.mkdirSync(path.join(repo, 'tools'), { recursive: true });
+  const video = path.join(dir, '판본', 'MX', 'video.mp4'), text = path.join(dir, '판본', 'MX', '글.json');
+  fs.writeFileSync(video, 'mx-1');
+  fs.writeFileSync(text, '{"줄":[]}');
+  const sha = (f) => require('node:crypto').createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+  fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: { 'lab-mx-youtube': 나라계정('America/Mexico_City', { countryCode: 'MX' }) } }));
+  const booked = sha(video);
+  const 통과 = () => ({ 뜻: { 결과: '통과', 지문: sha(text) }, 글자: { 결과: '통과', 지문: sha(video) } });
+  const 쓰기 = (줄) => 편('LAB_작업실판', { 브랜드: 'LAB', 슬롯: '2026-11-02', 성격: '상시', 제목: '작업실 판',
+    돌림: { 형식: '이야기', 판본: { MX: { 언어: 'es', 파일: '게시/판본/MX/video.mp4', 글: '게시/판본/MX/글.json', 검수: 통과() } } },
+    판: [{ 계정: 'lab-mx-youtube', 시각: '2026-11-12T13:00:00-06:00', 파일: '판본/MX/video.mp4', 돌림: true, 지문: booked }] },
+  { 판: [{ 계정: 'lab-mx-youtube', 상태: '승인 대기', 방법: '작업실', 작업: 'job-mx', 시각: '2026-11-12T19:00:00.000Z', ...줄 }] }, base);
+  const cache = path.join(repo, '서버.json');
+  const 서버 = (job) => fs.writeFileSync(cache, JSON.stringify({ checkedAt: '2026-11-11T02:00:00Z', channels: [{ id: 'x', platform: 'youtube' }], posts: [],
+    jobs: [{ id: 'job-mx', channelId: 'x', scheduledAt: '2026-11-12T19:00:00Z', ...job }] }));
+  const 큐 = (...more) => 돌림큐(base, ['--오늘', '2026-11-11', '--일수', '6', '--알림', ...more]);
+  // 가) 판본 그대로 — 조용하다
+  쓰기({});
+  assert.doesNotMatch(큐().out, /걸린 돌림 판/);
+  // 나) 등록 뒤 판본 영상을 다시 굽고 검수를 다시 받았다 — 줄에 지문이 없어도 판의 지문으로 견주어 알리고, 작업실로 거두는 길을 말한다
+  fs.writeFileSync(video, 'mx-2');
+  쓰기({});
+  const b = 큐();
+  assert.match(b.out, /! 걸린 돌림 판의 판본이 걸린 뒤 바뀜: lab-mx-youtube · LAB_작업실판 · 공개 2026-11-12\(현지 날짜, 한국 11-13 04:00\) — 판본 MX: 건 뒤에 판본 영상을 다시 구웠다\(걸린 영상은 옛 판\)\. 작업실 판이다 — 공개 전에 운영 사본의 「작업실예약\.js 취소 <편>」로 거두고/);
+  assert.doesNotMatch(b.out, /게시장부 끝 --상태 실패/, '작업실 판에는 플랫폼 예약을 내리는 길을 말하지 않는다');
+  // 다) 서버가 검토 대기 예약으로 본다 — 그대로 알린다. 서버가 이미 게시로 본 판은 조용하다
+  서버({ status: 'scheduled', reviewWaiting: true });
+  assert.match(큐('--서버캐시', cache).out, /걸린 돌림 판의 판본이 걸린 뒤 바뀜: lab-mx-youtube/);
+  서버({ status: 'published', publicationUrl: 'https://www.youtube.com/shorts/abc' });
+  assert.doesNotMatch(큐('--서버캐시', cache).out, /걸린 돌림 판/);
+  // 라) 새 등록이 줄에 올린 영상 지문을 적었으면 그것이 먼저다 — 지금 판본과 같으면 조용하다(판의 옛 지문은 보지 않는다)
+  쓰기({ 지문: sha(video) });
+  assert.doesNotMatch(큐().out, /걸린 돌림 판/);
+});
+
 test('걸린(공개 전) 돌림 판의 게시글만 건 뒤에 고쳤으면 판본 검수가 다시 서도 경고가 남는다 — 걸 때 줄에 적은 게시글 지문과 견준다(11-11 밤 P1-팔1)', (t) => {
   const 장부 = require('../tools/게시장부.js');
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-걸린글-'));

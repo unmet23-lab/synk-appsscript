@@ -149,6 +149,57 @@ test('작업실 등록 → 예약은 모두 검토 대기, 유호님 링크 승�
   assert.deepEqual(cached.rows.map((r) => r.상태), ['게시됨', '게시됨']);
 });
 
+test('앞선 등록이 끝난 편은 남은 판을 새 등록으로 받는다 — 끝나기 전에는 막고, 끝난 기록은 작업실_끝_으로 옮기며, 나간 판은 다시 보내지 않고, 줄에 영상 지문을 적는다(11-20)', async (t) => {
+  const f = await fixture(t);
+  const video = path.join(f.dir, 'remotion', 'out', 'a_final.mp4');
+  const sha = createHash('sha256').update(fs.readFileSync(video)).digest('hex');
+  const resultFile = path.join(f.dir, '게시', '게시결과.json'), stateFile = path.join(f.dir, '게시', '작업실.json');
+  const read = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
+  // 첫 등록은 인스타 판만(유튜브 판은 그때 아직 못 건 판이라 치고 뺀다 — 화날때 편의 우즈베키스탄 인스타 판처럼 뒤에 더한다)
+  const first = f.예약.planBundle(묶음.load(f.dir), await f.ws.get('/api/social/workspace'), {}).map((r) => (r.account === 'yuhobuilds-youtube' ? { ...r, eligible: false } : r));
+  const done = await f.예약.register(묶음.load(f.dir), f.ws, first, {});
+  assert.equal(done.archived, null);
+  assert.deepEqual(read(resultFile).판.map((p) => [p.계정, p.상태, p.지문]), [['yuhobuilds-instagram', '승인 대기', sha]], '게시결과 줄에 올린 영상 SHA-256');
+  assert.equal(read(stateFile).판[0].지문, sha);
+  // 아직 승인 대기 — 끝나지 않은 등록이라 새 판을 받지 않는다
+  const before = f.app.store.all('socialPublishJobs').length;
+  let rows = f.예약.planBundle(묶음.load(f.dir), await f.ws.get('/api/social/workspace'), {});
+  assert.deepEqual(rows.filter((r) => r.eligible).map((r) => r.account), ['yuhobuilds-youtube'], '걸린 인스타 판은 계획에서 빠진다');
+  assert.ok(rows.find((r) => r.account === 'yuhobuilds-instagram').reasons.some((w) => /이미 「승인 대기」/.test(w)));
+  await assert.rejects(() => f.예약.register(묶음.load(f.dir), f.ws, rows, {}), (e) => e.code === 'ALREADY' && /끝나지 않은 작업이 있다\(yuhobuilds-instagram 승인 대기\)/.test(e.message));
+  await assert.rejects(() => f.예약.register(묶음.load(f.dir), f.ws, rows, { queue: true }), (e) => e.code === 'ALREADY', '대기열은 다시 등록하지 않는다');
+  assert.equal(f.app.store.all('socialPublishJobs').length, before);
+  assert.equal(read(stateFile).postId, done.post.id);
+  // 유호님 승인 → 나감 → 상태 맞춤(게시됨). 이제 끝난 등록이다
+  const token = new URL(done.url).hash.split('=')[1];
+  const headers = { 'content-type': 'application/json', origin: f.origin, authorization: 'Bearer ' + token };
+  const opened = await (await fetch(f.origin + '/api/social-review/open', { method: 'POST', headers, body: '{}' })).json();
+  assert.equal((await fetch(f.origin + '/api/social-review/respond', { method: 'POST', headers, body: JSON.stringify({ revision: opened.review.revision, requestId: 'yuho-approve-re', decision: 'approve', name: '유호' }) })).status, 200);
+  f.setTime(new Date(Date.parse(f.app.store.all('socialPublishJobs')[0].scheduledAt) + 60000).toISOString());
+  await f.app.scanSocialPublishing();
+  assert.equal(f.sent.length, 1);
+  await f.예약.status(묶음.load(f.dir), f.ws);
+  assert.equal(read(resultFile).판[0].상태, '게시됨');
+  assert.equal(read(resultFile).판[0].지문, sha, '상태 맞춤이 지문을 지우지 않는다');
+  f.setTime(new Date().toISOString());
+  // 나간 인스타 판을 그대로 다시 넘겨도 보내지 않는다(계획을 짠 뒤 게시결과가 바뀐 것과 같다)
+  await assert.rejects(() => f.예약.register(묶음.load(f.dir), f.ws, first.map((r) => ({ ...r, variant: { ...r.variant } })), {}), (e) => e.code === 'ALREADY' && /yuhobuilds-instagram 게시됨/.test(e.message));
+  // 남은 유튜브 판을 새로 등록한다 — 끝난 앞 등록은 작업실_끝_으로 옮기고 새 작업실.json을 쓴다
+  rows = f.예약.planBundle(묶음.load(f.dir), await f.ws.get('/api/social/workspace'), {});
+  assert.deepEqual(rows.filter((r) => r.eligible).map((r) => r.account), ['yuhobuilds-youtube']);
+  const again = await f.예약.register(묶음.load(f.dir), f.ws, rows, {});
+  assert.match(again.archived, /^작업실_끝_\d{4}-\d{2}-\d{2}T\d{9}Z\.json$/, '취소 기록(작업실_취소_<시각>)과 같은 꼴');
+  assert.equal(read(path.join(f.dir, '게시', again.archived)).postId, done.post.id, '앞 등록 기록은 그대로 옮긴다');
+  const now = read(stateFile);
+  assert.notEqual(now.postId, done.post.id);
+  assert.deepEqual(now.판.map((p) => [p.계정, p.지문]), [['yuhobuilds-youtube', sha]]);
+  assert.deepEqual(read(resultFile).판.map((p) => [p.계정, p.상태, p.지문]), [['yuhobuilds-instagram', '게시됨', sha], ['yuhobuilds-youtube', '승인 대기', sha]]);
+  const jobs = f.app.store.all('socialPublishJobs').filter((j) => j.postId === again.post.id);
+  assert.deepEqual(jobs.map((j) => [j.channelId, j.status, j.reviewWaiting]), [['yt', 'scheduled', true]], '새 원고에는 유튜브 판 하나 — 승인 전에는 보내지 않는다');
+  // 상태 · 취소는 새 등록을 본다
+  assert.deepEqual((await f.예약.status(묶음.load(f.dir), f.ws, { save: false })).rows.map((r) => [r.계정, r.상태]), [['yuhobuilds-youtube', '승인 대기']]);
+});
+
 test('상태 맞추기는 「승인」을 적은 예약됨을 승인 대기로, 게시물 ID까지 적은 게시됨을 확인 필요로 내리지 않는다(10-28 B8)', async (t) => {
   const f = await fixture(t);
   const bundle = 묶음.load(f.dir);

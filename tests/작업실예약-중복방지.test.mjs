@@ -70,6 +70,52 @@ test('취소한 편은 대기열에 다시 잡히지 않고, 명시적으로 등
   assert.equal(uploads, 1);
 });
 
+test('앞선 등록이 있으면 끝난 등록(모든 작업이 게시됨 · 취소됨)만 작업실_끝_으로 옮기고 새 등록을 받는다 — 실패 · 끝나지 않음 · 서버 못 읽음 · 대기열은 그대로 막는다(11-20)', async t => {
+  const f = fixture(t);
+  const 끝기록 = () => fs.readdirSync(path.dirname(f.state)).filter((n) => /^작업실_끝_/.test(n));
+  const 앞 = { postId: 'old-post', 끝: '2026-11-06T00:00:00Z', 판: [{ 계정: 'lab-youtube', 채널: 'c1', 작업: 'j1' }, { 계정: 'lab-instagram', 채널: 'c2', 작업: 'j2' }] };
+  let gets = 0, uploads = 0, jobs = [];
+  const ws = { origin: 'fixture', get: async (u) => { gets++; assert.equal(u, '/api/social/posts/old-post'); if (jobs === null) throw Error('server offline'); return { post: { id: 'old-post' }, jobs }; },
+    upload: async () => { uploads++; throw Error('upload stopped'); } };
+  const 막힘 = async (why, opts = {}) => {
+    await assert.rejects(booking.register(f.bundle, ws, rows(), opts), (e) => e.code === 'ALREADY' && why.test(e.message));
+    assert.equal(uploads, 0); assert.deepEqual(끝기록(), []);
+    assert.equal(JSON.parse(fs.readFileSync(f.state, 'utf8')).postId, 'old-post', '앞 기록을 그대로 둔다');
+  };
+  fs.writeFileSync(f.state, JSON.stringify({ ...앞, 실패: { 이유: '검토 대기가 아닌 예약' } }));
+  await 막힘(/실패한 등록이다\(검토 대기가 아닌 예약\)/);
+  fs.writeFileSync(f.state, JSON.stringify({ postId: 'old-post', 판: [] }));
+  await 막힘(/등록을 마치지 못한 기록/);
+  assert.equal(gets, 0, '실패 · 미완료 기록은 서버에 묻지 않는다');
+  fs.writeFileSync(f.state, JSON.stringify(앞));
+  jobs = [{ id: 'j1', channelId: 'c1', status: 'published' }, { id: 'j2', channelId: 'c2', status: 'scheduled', reviewWaiting: false }];
+  await 막힘(/끝나지 않은 작업이 있다\(lab-instagram 예약됨\)/);
+  jobs = [{ id: 'j1', channelId: 'c1', status: 'published' }, { id: 'j2', channelId: 'c2', status: 'failed' }];
+  await 막힘(/lab-instagram 실패/);
+  jobs = [{ id: 'j1', channelId: 'c1', status: 'published' }];
+  await 막힘(/서버에 작업이 없는 판이 있다\(lab-instagram\)/);
+  jobs = [{ id: 'j1', channelId: 'c1', status: 'published' }, { id: 'j2', channelId: 'c2', status: 'cancelled' }];
+  const 묻기 = gets;
+  await 막힘(/이미 작업실에 등록한 편/, { queue: true });
+  assert.equal(gets, 묻기, '대기열은 다시 등록하지 않는다 — 서버에 묻기 전에 막는다');
+  jobs = null;
+  await assert.rejects(booking.register(f.bundle, ws, rows(), {}), /server offline/);
+  assert.equal(uploads, 0); assert.deepEqual(끝기록(), [], '서버를 못 읽으면 끝났다고 치지 않는다');
+  // 끝난 등록 — 옮기고 새 등록으로 간다. 업로드가 원고 요청 전에 실패하면 독점 기록만 거두고, 옮긴 기록은 남는다
+  jobs = [{ id: 'j1', channelId: 'c1', status: 'published' }, { id: 'j2', channelId: 'c2', status: 'cancelled' }];
+  await assert.rejects(booking.register(f.bundle, ws, rows(), {}), /upload stopped/);
+  assert.equal(uploads, 1);
+  assert.equal(끝기록().length, 1);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(path.dirname(f.state), 끝기록()[0]), 'utf8')).postId, 'old-post');
+  assert.equal(fs.existsSync(f.state), false);
+  await assert.rejects(booking.register(f.bundle, ws, rows(), {}), /upload stopped/);
+  assert.equal(uploads, 2, '다시 부르면 첫 등록처럼 간다');
+  // 게시결과에 이미 걸린 계정 판은 서버에 묻기 전에 막는다
+  fs.writeFileSync(path.join(path.dirname(f.state), '게시결과.json'), JSON.stringify({ 판: [{ 계정: 'lab-youtube', 상태: '예약됨', 방법: 'ego' }] }));
+  await assert.rejects(booking.register(f.bundle, ws, [{ ...rows()[0], account: 'lab-youtube' }], {}), (e) => e.code === 'ALREADY' && /lab-youtube 예약됨/.test(e.message));
+  assert.equal(uploads, 2);
+});
+
 test('취소 서버 요청이 실패해도 자동 등록 중지 표식과 기존 원고 기록을 보존한다', async t => {
   const f = fixture(t); fs.writeFileSync(f.state, JSON.stringify({ postId: 'test-post', 판: [] }));
   await assert.rejects(booking.cancel(f.bundle, { get: async () => { throw Error('offline'); } }), /offline/);
@@ -209,6 +255,22 @@ test('운영 사본 대기열 — origin 판의 편을 보고, 공용 작업본�
   fs.writeFileSync(path.join(ops, 'docs', '마케팅', '공용등록', '게시', '작업실_취소_20261103.json'), JSON.stringify({ postId: '공용' }));
   await assert.rejects(booking.register(booking.sharedBundle(운영편), ws, rows(), {}), /unexpected/);
   assert.equal(sent, 1, '거둔 원고만 남았으면 등록으로 간다');
+  // 끝난 등록을 옮긴 기록(작업실_끝_)도 같다 — origin에 남은 옛 작업실.json이 그 원고면 새 등록을 막지 않는다(11-20)
+  const 이미편 = path.join(ops, 'docs', '마케팅', '이미등록');
+  fs.writeFileSync(path.join(이미편, '게시', '작업실_끝_20261120.json'), JSON.stringify({ postId: '이미' }));
+  await assert.rejects(booking.register(booking.sharedBundle(이미편), ws, rows(), {}), /unexpected/);
+  assert.equal(sent, 2);
+  // 운영 사본의 끝난 앞 등록(origin에도 같은 원고)을 새 등록이 옮긴다 — origin의 옛 기록이 막지 않고, 다른 원고의 기록이면 여전히 막는다
+  fs.rmSync(path.join(이미편, '게시', '작업실_끝_20261120.json'));
+  fs.writeFileSync(path.join(이미편, '게시', '작업실.json'), JSON.stringify({ postId: '이미', 끝: '2026-11-06T00:00:00Z', 판: [{ 계정: 'a', 채널: 'c', 작업: 'j1' }] }));
+  const 끝남 = { ...ws, get: async () => ({ jobs: [{ id: 'j1', channelId: 'c', status: 'published' }] }) };
+  fs.writeFileSync(path.join(main, 'docs', '마케팅', '이미등록', '게시', '작업실.json'), JSON.stringify({ postId: '공용에서-다른-원고' }));
+  await assert.rejects(booking.register(booking.sharedBundle(이미편), 끝남, rows(), {}), (e) => e.code === 'ALREADY' && /공용 작업본/.test(e.message));
+  assert.equal(JSON.parse(fs.readFileSync(path.join(이미편, '게시', '작업실.json'), 'utf8')).postId, '이미', '막히면 앞 기록을 옮기지 않는다');
+  fs.rmSync(path.join(main, 'docs', '마케팅', '이미등록', '게시', '작업실.json'));
+  await assert.rejects(booking.register(booking.sharedBundle(이미편), 끝남, rows(), {}), /unexpected/);
+  assert.equal(sent, 3);
+  assert.ok(fs.readdirSync(path.join(이미편, '게시')).some((n) => /^작업실_끝_/.test(n)));
 });
 
 test('연속 등록 실패는 한 번만 알리고, 전송을 시작하지 못했거나 복구 뒤 새 실패면 다시 알린다', async t => {
