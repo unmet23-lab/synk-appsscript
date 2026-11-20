@@ -57,6 +57,7 @@
 #                  "이어찍기": true — 앞 컷과 장면 · 인물 · 구도가 같아도 되는 컷 · "시간건너뜀": true — 앞 컷과 시간대가 달라도 되는 컷
 #                  "시작그림": "정지/C1.png" — 그 컷의 영상을 뽑을 시작 그림(편 폴더 기준). 서로 다른 두 컷이 같은 시작 그림 · 같은 「판」을 쓰면 걸림(50) —
 #                  "같은판": "<까닭>" — 한 판을 일부러 이어 쓰는 컷(한 방을 둘로 자른 컷 · 한 판에 두 샷)
+#                  "시늉까닭": "<말 · 소품 없이도 뜻이 읽히는 까닭>" — 연기 박자가 시늉 · 흉내 · 손짓에 뜻을 맡겼는데 같은 컷에 대사 · 화면 소품이 없는 걸림(T30 · 29)을 주의로 낮춘다
 #   맨 위 "소품": {이름: {"종류": 탈것|소품, "낱말": ["bus"](지시문에서 부르는 영어 이름씨), "색", "생김새"(이미지 지시문에 글자 그대로 들어가는 영어 문장), "기준그림"}} —
 #          컷의 「소품」 칸에서 두 컷(탈것) · 세 컷(그 밖의 소품) 넘게 나오는 것은 이 줄이 있어야 한다(51). 이어 볼 소품이 없는 편은 전처럼 "소품": []
 # 소품 지도.json: {"src", "size": [w, h], "notes": [{"id", "color", "box": [x0, y0, x1, y1], "cx", "cy"}], "상태": {"이름": ["Y1", …]},
@@ -2130,6 +2131,120 @@ def 감정자리판정(잰, 세로, 새편, 사람수=None):
     return "통과", f"감정 자리 얼굴 폭 {적음} — {쪽} 그림의 아래선 {선:g}% 이상"
 
 
+# ───────── T30 시늉 박자(29) — 11-20 경산 공모전 편 ─────────
+# 왜: 인물의 물음 하나를 빈손 숟가락 시늉에만 맡겼다. 그 컷에는 대사도 숟가락도 없었고, 영상 모델은 그 손을 입 가리기로 그렸다.
+#   유호님 「처음에 할머니가 왜 입 막고 호호 부는지 이해도 안가」. 시늉 · 흉내 · 손짓은 그 몸짓을 아는 사람만 읽고, 영상 모델은 비슷한 다른 손동작으로 바꿔 그리기 쉽다.
+#   그래서 시늉에 맡긴 뜻은 같은 컷의 말이나 손에 든 진짜 소품이 함께 받쳐야 한다.
+# 걸림: 사람 컷의 「연기」 박자(표)나 영상 지시문의 ACTION 글(--지시문 · 크레딧내기의 굽기전)에 시늉 낱말이 있는데 같은 컷에 받침이 없다.
+#   받침 ① 말: 맨 위 「소리.원고」에 그 컷 줄이 있다 · 컷 「소리」 칸이나 그 박자의 따옴표 속에 말이 있다. 「허」 · 「호호」처럼 감탄 소리 음절만 있으면 말이 아니다.
+#           지시문은 SOUND · VOICE · DIALOGUE 칸과 ACTION 속 따옴표의 말도 본다. 「as if to say "this"」처럼 시늉이 대신 말하는 따옴표는 말이 아니다.
+#        ② 소품: 시늉 박자(문장)에 이름이 나오고, 그 컷 「소품」 칸에서 화면에 있는 소품(화면밖 · 없음이 아님). 소품 표의 「낱말」(영어 이름)도 이름으로 친다.
+#           「숟가락처럼」 · 「like a spoon」처럼 흉내 내는 대상으로만 나온 이름은 받침이 아니다.
+# 낱말: 기존 지시문 523개를 재 보니 「as if」는 「as if reading」 · 「as if deciding」처럼 몸짓을 꾸미는 데 흔히 쓴다. 그래서 「as if to say」만 시늉으로 본다.
+# 풀어 주는 칸: 컷의 "시늉까닭": "<말 · 소품 없이도 뜻이 읽히는 까닭>" — 걸림을 주의로 낮춘다(누구나 아는 손 흔들기 · 쉿 손가락처럼).
+# 손 모양 시늉은 손을 무엇처럼 만드는 말만 — 「손을 숟가락처럼 오므려」 · 「cups her hand like a spoon」. 「손이 떨리는 것처럼」 · 「hands shake like a leaf」 같은 비유는 아니다
+_시늉_한 = re.compile(r"시늉|흉내|손짓|(?:손|손가락|손바닥|주먹)[을를]\s+(?:\S+\s+)?\S+처럼\s*(?:오므|모아|모으|펴|펼|만들|쥐|구부|말아)")
+_시늉_영 = re.compile(r"\b(?:panto)?mim(?:e|es|ed|ing)\b|\bpretend(?:s|ed|ing)?\b|\bimitat(?:e|es|ed|ing)\b|\bas (?:if|though) (?:to say|saying)\b"
+                    r"|\b(?:cup|cups|cupped|cupping|shape|shapes|shaped|shaping|curl|curls|curled|curling|form|forms|formed|forming|make|makes|making|hold|holds|held|holding)\b"
+                    r"[^.;:\n]{0,25}?\b(?:hand|hands|fingers?|fist|palm)\b[^.;:\n]{0,20}?\b(?:like|into) an?\b", re.I)
+_흉내대상 = re.compile(r"\S+처럼|\blike an? [\w-]+(?: [\w-]+)?", re.I)
+_따옴표 = re.compile(r"[「『“\"]([^」』”\"\n]{1,80})[」』”\"]")
+_대신말 = re.compile(r"(?:as (?:if|though) (?:to say|saying)|like saying)\W{0,3}$", re.I)
+_감탄음절 = set("허흠음아어오응헉휴하호히후에으엇앗쯧쳇흥핫헤읏윽악와엉잉")
+_말칸 = ("SOUND", "VOICE", "DIALOGUE", "LINE", "LINES", "SPEECH", "NARRATION", "VO")
+
+
+def _말인가(s):
+    """따옴표 속 글이 말인가 — 글자(한글 · 로마자)가 둘 이상이고, 한글만이면 감탄 소리 음절로만 되지 않았다(「허」 · 「호호」 · 「아아」는 말이 아니다)."""
+    글자 = re.sub(r"[^가-힣A-Za-zÀ-ỹ]", "", str(s))
+    if len(글자) < 2: return False
+    return not (re.fullmatch(r"[가-힣]+", 글자) and set(글자) <= _감탄음절)
+
+
+def _따옴말(글):
+    """글 속 따옴표의 말 하나(없으면 None). 시늉이 대신 말하는 따옴표(「as if to say "this"」)는 뺀다."""
+    글 = str(글 or "")
+    for m in _따옴표.finditer(글):
+        if _대신말.search(글[max(0, m.start() - 24):m.start()]): continue
+        if _말인가(m.group(1)): return m.group(1)
+    return None
+
+
+def _원고줄(seq, 컷):
+    소리 = seq.get("소리") if isinstance(seq.get("소리"), dict) else {}
+    for x in 소리.get("원고") if isinstance(소리.get("원고"), list) else []:
+        c, 글 = (x[0], x[-1]) if isinstance(x, (list, tuple)) and len(x) >= 2 else ((x.get("컷"), x.get("글")) if isinstance(x, dict) else (None, None))
+        if c == 컷 and isinstance(글, str) and _말인가(글): return 글
+    return None
+
+
+def _소품받침(seq, d, 글):
+    """그 컷에서 화면에 있는 소품 가운데 시늉 글에 이름이 나오는 것(흉내 대상으로만 나온 이름은 뺀다) — 없으면 None"""
+    상태 = d.get("소품") if isinstance(d.get("소품"), dict) else {}
+    표 = seq.get("소품") if isinstance(seq.get("소품"), dict) else {}
+    본글 = _흉내대상.sub(" ", str(글 or ""))
+    for 이름, s in 상태.items():
+        if not (isinstance(이름, str) and isinstance(s, str) and s.strip()) or 한칸(s) in ("화면밖", "없음"): continue
+        줄 = 표.get(이름) if isinstance(표.get(이름), dict) else {}
+        # 「로지휴지」 · 「찜쪽지」처럼 임자를 앞에 붙인 이름은 연기 글에 뒷부분(「휴지」)만 쓴다 — 두 글자 이상의 꼬리도 이름으로 친다
+        꼬리 = [이름[i:] for i in range(1, len(이름) - 1)] if re.fullmatch(r"[가-힣]{3,}", 이름) else []
+        for w in [이름, *꼬리, *[x for x in (줄.get("낱말") or []) if isinstance(x, str) and x.strip()]]:
+            if (re.search(r"[가-힣]", w) and w in 본글) or re.search(r"\b" + re.escape(w) + r"\b", 본글, re.I): return 이름
+    return None
+
+
+def 시늉받침(seq, d, 글=""):
+    """컷 d에서 시늉 글의 뜻을 받치는 것 — 「원고 …」 · 「소리 칸 …」 · 「따옴표 …」 · 「소품 …」 글 하나, 없으면 None"""
+    if not isinstance(d, dict): return None
+    줄 = _원고줄(seq, d.get("cut"))
+    if 줄: return f"원고 「{줄}」"
+    for 어디, 값 in (("소리 칸", d.get("소리")), ("박자 속 말", 글)):
+        말 = _따옴말(값)
+        if 말: return f"{어디} 「{말}」"
+    소품 = _소품받침(seq, d, 글)
+    return f"소품 「{소품}」" if 소품 else None
+
+
+def _시늉글(무엇, 까닭=None):
+    if not 빈칸(까닭):
+        return "주의", f"시늉에 뜻을 맡긴 박자 {무엇} — 말 · 소품 받침은 없고 「시늉까닭」: {한칸(까닭)[:60]}(29 · T30)"
+    return "걸림", (f"시늉에 뜻을 맡긴 박자 {무엇} — 같은 컷에 그 뜻을 받치는 말(소리.원고 · 「소리」 칸의 대사)도, 화면에 든 진짜 소품도 없다(29 · T30). "
+                  "영상 모델은 시늉을 다른 손동작으로 그리기 쉽다(11-20 숟가락 시늉이 입 가리기로 나옴). 대사 한 줄을 넣거나 진짜 소품을 쥐여 주고, "
+                  "말 · 소품 없이도 누구나 읽는 몸짓이면 컷에 「시늉까닭」을 적는다")
+
+
+def 시늉검사(seq, 폴더=None):
+    """T30 — 사람 컷의 「연기」 박자가 시늉 · 흉내 · 손짓에 뜻을 맡겼는데 같은 컷에 말 · 소품 받침이 없으면 걸림(29) → [(등급, 어디, 글)]. 까닭과 낱말은 위 머리말."""
+    out = []
+    for d in seq.get("detail") or []:
+        if not isinstance(d, dict) or not (isinstance(d.get("인물"), list) and d["인물"]): continue
+        for b in d.get("연기") if isinstance(d.get("연기"), list) else []:
+            무엇 = str(b.get("무엇") or "") if isinstance(b, dict) else ""
+            if not (_시늉_한.search(무엇) or _시늉_영.search(무엇)) or 시늉받침(seq, d, 무엇): continue
+            t = 숫자(b.get("t"))
+            등급, 말 = _시늉글(f"{'' if t is None else f'{t:g}초 '}「{한칸(무엇)[:50]}」", d.get("시늉까닭"))
+            out.append((등급, d.get("cut", "?"), 말))
+            break   # 컷마다 한 줄
+    return out
+
+
+def 시늉대조(seq, 컷들, 글):
+    """T30 — 영상 지시문의 연기 글(ACTION, 없으면 카메라 · 빛 · 소리 칸 밖의 글)이 시늉에 뜻을 맡겼는데, 지시문의 말(SOUND · VOICE 칸 · 따옴표 속 대사)에도
+    컷표 그 컷의 원고 · 소리 칸 · 화면 소품에도 받침이 없으면 걸림(29) → [(등급, 글)]. --지시문(지시문항목)과 크레딧내기.py의 굽기전이 같은 함수를 부른다."""
+    칸 = 칸들(글)
+    연기 = 연기글(글, 칸) or " ".join(t for l, t in 칸 if l not in ("CAMERA", "FRAME", "LOOK", "LIGHT", "PHYSICS", "NOTE", "PROPS", "INDOORS", "OUTDOORS", "SETTING", "PLACE", *_말칸))
+    시늉문장 = [s for s in 문장들(연기) if _시늉_영.search(s) or _시늉_한.search(s)]
+    if not 시늉문장: return []
+    for l, t in 칸:
+        if l in _말칸 and _따옴말(t): return []
+    if _따옴말(연기): return []
+    det = [d for d in (seq or {}).get("detail") or [] if isinstance(d, dict) and d.get("cut") in (컷들 or [])]
+    if any(시늉받침(seq, d, " ".join(시늉문장)) for d in det): return []
+    까닭 = next((d.get("시늉까닭") for d in det if not 빈칸(d.get("시늉까닭"))), None)
+    등급, 말 = _시늉글(f"「{한칸(시늉문장[0])[:70]}」", 까닭)
+    return [(등급, 말.replace("시늉에 뜻을 맡긴 박자", "ACTION이 시늉에 뜻을 맡겼다", 1))]
+
+
 간격부터 = "20261119"   # T25 · T26 — 이 날 이후 편(편 날짜)은 걸림, 앞선 편 · 날짜를 못 읽는 편은 주의(진행 중인 다른 편의 판을 막지 않으려고)
 
 
@@ -2428,7 +2543,8 @@ def 틀검사(seq, r, 폴더=None, 그림폴더=None, 영상=None):
     빠진띠 = [k for k in "기승전결" if not any(b.startswith(k) for b in 띠)]
     if 빠진띠: 걸림("표", f"seq의 띠에 {' · '.join(빠진띠)}이(가) 없다 — 기 · 승 · 전 · 결을 모두 채운다(14)")
     # T28 감정 자리가 있나(33 — 얼굴 폭은 항목 「얼굴」이 그림에서 잰다) · T29 컷마다 앵글 세 칸과 까닭, 이웃 컷과 모두 같으면 걸림(50)
-    for 등급, 어디, 글 in 감정자리검사(seq, 폴더) + 앵글검사(seq, 폴더): (걸림 if 등급 == "걸림" else 주의)(어디, 글)
+    # T30 시늉에 맡긴 뜻은 같은 컷의 말이나 진짜 소품이 받친다(29 · 11-20)
+    for 등급, 어디, 글 in 감정자리검사(seq, 폴더) + 앵글검사(seq, 폴더) + 시늉검사(seq, 폴더): (걸림 if 등급 == "걸림" else 주의)(어디, 글)
     # T8 끝
     끝 = seq.get("끝")
     if not isinstance(끝, dict): 걸림("끝", "「끝」 표가 없다 — 끝 컷 · 가장 센 그림 · 제품(브랜드)이 보이는지 · 로고 멈춤 초를 적는다(2 · 45 · 53)")
@@ -2581,6 +2697,7 @@ def 지시문항목(seq, r, 경로들, 실내목록=None):
         elif 틀2 and not 컷들: r.더함("지시문", 이름, "걸림", f"(컷표) 컷표에 없는 판 — {컷표에없는판}")
         elif 틀2:
             for 등급, 말 in 빛대조(seq, 컷들, 글): r.더함("지시문", 이름, 등급, f"(빛) {말}")
+            for 등급, 말 in 시늉대조(seq, 컷들, 글): r.더함("지시문", 이름, 등급, f"(시늉) {말}")   # T30(29) — 크레딧내기.py의 굽기전도 같은 함수
         if not hits: r.더함("지시문", 이름, "통과", "물건 · 실내 낱말 없음")
     if 틀2:   # (50) 서로 다른 컷의 판이 같은 시작 그림 파일을 쓴다
         for 등급, 이름, 말 in 꾸러미시작그림(seq, 판들): r.더함("지시문", 이름, 등급, 말)

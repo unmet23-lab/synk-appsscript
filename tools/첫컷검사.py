@@ -414,6 +414,28 @@ def 공간구간들(표, 컷들, 시작, 끝, 편집됨, fps, 고름, 반박=Fal
             for i, (a, b) in 구간.items()]
 
 
+def _화면소품(줄):
+    v = 줄.get("소품")
+    return {k for k, s in v.items() if isinstance(k, str) and isinstance(s, str) and s.strip() and s.strip() not in ("화면밖", "없음")} if isinstance(v, dict) else set()
+
+
+def 이어지는순간(표, 앞, 현재):
+    """편집 순서로 붙은 두 컷이 같은 순간을 잇는가 — 앞 컷의 마지막 장과 견줄 컷인가.
+    같은 장면이면 잇는다. 장면 이름이 달라도(맞은편에서 본 맞수 컷) 장면 표의 시간대가 같고 사람이나 화면 속 소품을 함께 쓰면 잇는다.
+    11-20 경산 공모전 편: 귀에 댄 휴대폰(대문 쪽 장면) → 다음 컷(맞은편 장면) 두 손의 휴대폰이 장면 이름이 달라 견주지 않고 지나갔다."""
+    if 현재.get("시간건너뜀"):
+        return False
+    a, b = 앞.get("장면"), 현재.get("장면")
+    if not (a and b) or a == b:
+        return True
+    장면표 = 표.get("장면") if isinstance(표.get("장면"), dict) else {}
+    때 = [(장면표.get(x) or {}).get("시간대") if isinstance(장면표.get(x), dict) else None for x in (a, b)]
+    if not all(isinstance(x, str) and x.strip() for x in 때) or 때[0].strip() != 때[1].strip():
+        return False
+    사람 = lambda 줄: {n for n in 줄.get("인물") or [] if isinstance(n, str)} if isinstance(줄.get("인물"), list) else set()
+    return bool(사람(앞) & 사람(현재) or _화면소품(앞) & _화면소품(현재))
+
+
 def 앞컷찾기(편, 표, 컷들, 시작, 끝, 앞편집본, 요청, 고름, 같은영상앞=None, 선택줄=None):
     줄, 고른, _ = 검사할줄(표, 컷들, 시작, 끝)
     if 선택줄 is not None:
@@ -434,8 +456,7 @@ def 앞컷찾기(편, 표, 컷들, 시작, 끝, 앞편집본, 요청, 고름, �
         if 조건 or 앞편집본 or any(줄[n].get("공간연결") for n in 고른):
             raise ValueError("서로 떨어진 컷 줄이 함께 선택됐다. 검사할 한 구간을 --컷들, --시작, --끝으로 지정한다")
         return 조건, None
-    if not 조건 and not 앞편집본 and (현재.get("시간건너뜀") or
-            (앞.get("장면") and 현재.get("장면") and 앞["장면"] != 현재["장면"])):
+    if not 조건 and not 앞편집본 and not 이어지는순간(표, 앞, 현재):
         return 조건, None
     if 앞편집본:
         a, b = 앞.get("t"), 현재.get("t")
@@ -610,8 +631,10 @@ def 판정뽑기(글, 열쇠들, 장=None):
                     if 가까운 is None:
                         raise ValueError("공간연결 관찰에 비교판에 적힌 네 시각을 각각 초 단위로 인용하고 그때 보이는 근거를 적는다")
                     쓴초.remove(가까운)
-        if k in 보는것만 and v["결과"] == "무관":
+        if (k in 보는것만 or k == "이음") and v["결과"] == "무관":   # 이음은 판정 기준 글(판정자 지문)을 바꾸지 않으려고 질문 글에 같은 규칙을 적었다
             raise ValueError(f"{k}에 무관을 썼다")
+        if k == "이음" and v["결과"] == "흠" and re.search(못봄말, v["관찰"]):
+            raise ValueError("이음을 확인하지 못했는데 흠으로 썼다. 확인 못 한 이음은 다시다")
         if k in 흠없음 and v["결과"] == "흠":
             raise ValueError(f"{k}에는 흠을 쓰지 않는다. 충족 아니면 다시다")
         if k in 보는것만 and v["결과"] == "흠" and re.search(못봄말, v["관찰"]):
@@ -945,6 +968,12 @@ def 검사(편, 영상, 시작=0, 끝=None, 종류=None, 묶음="", 사람=False
                         "앞구간": [a, b], "장": 번호, "비교판지문": hashlib.sha256(연결판).hexdigest()}
     질문 = {"컷": "주문에 적힌 이 구간의 장면(인물 · 동작 · 소품 상태 · 화면 글)이 칸에 실제로 보이는지 초와 함께 대조한다. "
                   "주문에만 있고 칸에 없는 동작은 없는 것이다."}
+    if 연결판 is not None:   # 11-20 경산 — 받은 뒤 검사가 판마다 이 질문으로 앞 컷과의 이음을 본다(점검표 29 · 41)
+        질문["이음"] = (f"컷연결.jpg 맨 왼쪽은 바로 앞 컷 {연결정보['앞컷']}의 실제 마지막 장이다. 그 장과 이 컷 첫 칸 사이에 소품의 자리 · 상태"
+                      "(누구의 어느 손에 있나, 몸 어디에 닿았나, 열림 · 닫힘)와 사람의 자세가 이어지는지 본다. 맞은편에서 본 같은 순간이어도 같은 소품은 "
+                      "같은 사람 · 같은 손 · 같은 자리여야 한다. 앞 컷 끝 장의 소품이 이 컷 첫 칸에서 다른 사람의 손이나 다른 자리로 건너뛰었고 "
+                      "그 사이의 움직임이 어느 칸에도 없으면 '다시'다(예: 귀에 댄 휴대폰 → 가슴 앞 두 손의 휴대폰). "
+                      "이 질문에는 '무관'을 쓰지 않는다. 비교판으로 확인하지 못했으면 「확인 못 함 —」으로 시작하고 '다시'로 한다.")
     if 연결판 is not None and 조건:
         질문["공간연결"] = (f"두 시점에서 확인할 관계: {조건}\n"
             "컷연결.jpg의 네 칸과 초 단위 그림에서 고정된 경계와 각 물체가 바닥에 닿는 자리를 따라가라. 원근, 화면 좌우나 겉보기 크기만으로 추정하지 마라. "

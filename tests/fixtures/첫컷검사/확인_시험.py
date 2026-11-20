@@ -197,6 +197,44 @@ class 확인시험(unittest.TestCase):
                 _, 묶음앞 = 첫컷검사.앞컷찾기(편, 표, ["B"], 1, 2, None, "", 고름, ("A", 영상))
                 self.assertEqual(묶음앞[2:4], 앞[2:4])
 
+    def test_맞수_컷도_같은_때_같은_소품이면_앞_컷_마지막_장과_이음을_본다(self):
+        # 11-20 경산 공모전 편: 귀에 댄 휴대폰(대문 쪽) → 다음 컷(맞은편) 두 손의 휴대폰이 장면 이름이 달라 앞 컷과 견주지 않고 지나갔다
+        장면 = {"대문": {"시간대": "아침"}, "맞은편": {"시간대": "아침"}, "부엌": {"시간대": "낮"}}
+        앞 = {"cut": "A", "장면": "대문", "인물": ["린"], "소품": {"폰": "손에", "가방": "화면밖"}}
+        현재 = {"cut": "B", "장면": "맞은편", "인물": ["할매"], "소품": {"폰": "주머니에", "가방": "화면밖"}}
+        표 = {"장면": 장면}
+        self.assertTrue(첫컷검사.이어지는순간(표, 앞, 현재), "같은 아침 · 같은 폰이 화면에 있다")
+        self.assertFalse(첫컷검사.이어지는순간(표, 앞, {**현재, "소품": {"폰": "화면밖"}}), "함께 쓰는 사람도 화면 소품도 없으면 다른 순간")
+        self.assertTrue(첫컷검사.이어지는순간(표, 앞, {**현재, "소품": {}, "인물": ["린"]}), "같은 사람이면 잇는다")
+        self.assertFalse(첫컷검사.이어지는순간(표, 앞, {**현재, "장면": "부엌"}), "때가 다른 장면은 잇지 않는다")
+        self.assertFalse(첫컷검사.이어지는순간(표, 앞, {**현재, "장면": "대문", "시간건너뜀": True}))
+        self.assertTrue(첫컷검사.이어지는순간(표, 앞, {**현재, "장면": "대문", "소품": {}}), "같은 장면은 전처럼 잇는다")
+        with self.assertRaisesRegex(ValueError, "이음에 무관"):
+            첫컷검사.판정뽑기(json.dumps({"판정": {"이음": {"결과": "무관", "관찰": "판정 못 함 — 다른 장면이다"}}}), ["이음"])
+        with self.assertRaisesRegex(ValueError, "이음을 확인하지 못했는데"):
+            첫컷검사.판정뽑기(json.dumps({"판정": {"이음": {"결과": "흠", "관찰": "확인 못 함 — 손이 잘렸다"}}}), ["이음"])
+        with tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
+            편 = Path(tmp)
+            stack.enter_context(patch.object(첫컷검사, "편위치", return_value=[tmp]))
+            stack.enter_context(patch.object(첫컷검사, "공용자리", return_value=편))
+            받음 = 편 / "받음"
+            받음.mkdir()
+            컷표 = {"틀": 2, "장면": 장면, "detail": [{**앞, "t": 0, "dur": 1, "in": 0, "out": 1}, {**현재, "t": 1, "dur": 1, "in": 0, "out": 1}]}
+            (편 / "컷표.json").write_text(json.dumps(컷표, ensure_ascii=False), encoding="utf-8")
+            for 이름 in ("A", "A__2", "B"):
+                (받음 / f"{이름}.mp4").write_bytes(이름.encode())
+            로그 = 눈붙이기(stack, {"이음": {"결과": "다시", "관찰": "0.958초 앞 컷 끝에 귀에 댄 폰이 0초 첫 칸에서는 두 손에 있다"}})
+            stack.enter_context(patch.object(첫컷검사, "기준읽기", return_value={"기준판": "1" * 64, "최근지적": [], "만족사례": {"선택": []}}))
+            stack.enter_context(patch.object(첫컷검사.받은뒤검사, "살피기", return_value={"초": 1, "fps": 24}))
+            stack.enter_context(patch.object(첫컷검사, "프레임시트", return_value=b"B"))
+            비교 = stack.enter_context(patch("컷연결프레임.비교판", return_value=(b"AB", {"앞": [23, .9583], "현재": [[0, 0], [12, .5], [23, .9583]]})))
+            stack.enter_context(redirect_stdout(io.StringIO()))
+            self.assertEqual(첫컷검사.검사(편, 받음 / "B.mp4", 0, 1, 컷들=["B"], 앞받은영상=받음 / "A__2.mp4"), 1)
+            self.assertEqual(비교.call_args.args[0], 받음 / "A__2.mp4", "장면 이름이 달라도 받은 뒤 검사가 넘긴 앞 판의 마지막 장과 견준다")
+            받은 = 부른것(로그)[-1]
+            self.assertIn("컷연결.jpg", 받은["파일"])
+            self.assertIn('"이음"', 받은["글"])
+
     def test_컷_선택은_반_장과_묶음의_양끝을_구별한다(self):
         for n in (0, 1, 149, 150, 333, 800, 1000, 1020, 2050):
             for m in (50, 150, 250, 350, 450, 550, 650, 1020, 1950):

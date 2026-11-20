@@ -11,7 +11,10 @@
  * 옛 묶음은 칸을 300px로 줄여 40px 글자가 11px로 보였고(실제 폰에선 14px 남짓), 0~3초도 2초 간격이라 첫 장면을 거의 못 봤다.
  *
  *   node tools/낯선이시험.js <영상.mp4> --말 <말.txt|.srt> --브랜드 <lab-en|lab-mn|lab-cn|lab-mm|synkbrief|yuhobuilds|pulse|공모전>
- *       [--밖 <폴더>] [--컷 <초,초,…>|끔] [--지난 자동|없음|<편 폴더 또는 영상>,<…>] [--틀 퀴즈]
+ *       [--밖 <폴더>] [--컷 <초,초,…>|끔] [--지난 자동|없음|<편 폴더 또는 영상>,<…>] [--틀 퀴즈] [--중간]
+ *   --중간(11-20): 30초 시험 판처럼 유호님께 보내기 전의 중간 편집본 — 칸마다 누가 · 무엇을 · 왜를 적게 하고(15번), 끝 · 브랜드 회상(11 · 12번)은 묻지 않는다.
+ *     11-20 경산 공모전 편 앞 30초를 이 시험 없이 보냈다가 유호님이 「연계도 안되고 처음에 할머니가 왜 입 막고 호호 부는지 이해도 안가」라고 하셨다.
+ *     시험관 둘이 같은 칸을 「왜 모름」 · 「끊김」이라 하면 보내지 않고 그 컷을 고친다(점검표 29 — 제작절차 · synk-video 7단계).
  *   --컷을 안 주면(11-17 자동 칸) ffmpeg 장면 바뀜으로 칸을 찾아, 아래 기본 장면이 빠뜨린 짧은 칸마다 그 칸 가운데 한 장을 더 찍는다.
  *   --컷 끔은 기본 장면만(11-16까지의 꼴). 자세한 까닭은 아래 addCutShots 머리.
  *   --틀 퀴즈(11-10): 퀴즈 칸 편 — 9번을 지난 퀴즈끼리 무대 · 주제 · 표정 · 색 · 구도로만 묻는다(--지난에 그 계정의 지난 퀴즈 영상 둘을 준다).
@@ -96,6 +99,9 @@ const 사람10 = '10. 같은 사람인데 장면마다 다른 사람처럼 보�
 // 윈도우깨짐다시(끝 글 42px · 핵심 숫자가 끝에 안 남음)가 끝소리 · 끝화소 검사를 지나 최종 확인에서 걸렸고, 끝 글 크기 · 끝 조용함으로는 걸릴 편과
 // 지나갈 편을 가르는 문턱이 없어 기계 검사 대신 묻는다(docs/마케팅/제작양식/흠장부_설계_20261115.md 「멈춘 화면과 끝 3초를 올리며 본 것」).
 // 「가장 센 장면이나 핵심 숫자로 닫히나」로 물으면 시험관이 넷 모두 「약함」이라 해서(통과한 영상통화연인 · 지적147까지), 고르는 말을 일러 주지 않는다.
+// 15번(11-20 · --중간): 중간 편집본은 유호님께 보내기 전에 칸마다 이야기가 이어지는지 본다. 왜를 모르는 칸 · 앞 칸과 안 이어지는 칸을 시험관이 직접 짚게 한다.
+const 칸15 = '15. 칸마다(칸 왼쪽 위 숫자 초) 누가 · 무엇을 · 왜 하는지 한 줄씩 — 「6.0s 여자 / 문을 두드린다 / 택배가 왔다고 알리려고」 꼴. 왜 그러는지 모르겠으면 「왜 모름」, 바로 앞 칸과 이어지지 않으면(사람 · 물건이 갑자기 다른 자리에 있다, 무슨 일이 있었는지 빠졌다) 「끊김 — 무엇이 안 이어지나」를 쓴다.';
+const 중간빼기 = (줄) => `${줄.split('.')[0]}. (편집 중인 앞부분이라 묻지 않는다 — 「중간 판」이라고만 쓴다)`;
 const 끝11 = '11. 끝 3초(마지막 칸과 마지막 말)를 보고 영상이 힘 있게 끝났나, 앞보다 맥이 빠져 흐지부지 끝났나 — 「힘 있게」 또는 「흐지부지」와 한 줄 까닭.';
 // 회상 셋(11-18 유호님 「브랜드 회상 이거 필요할것같아. 고정 질문 셋으로 넣자」 · 점검표 45): 광고 · 공모전 · 포트폴리오(시청자 표의 회상)에는
 // 1번(남은 말 한 문장)과 함께 12 · 13번을 늘 묻는다 — 한 번 본 사람에게 브랜드 이름이 이야기에 붙어 남는지, 어떤 기분과 장면이 남는지.
@@ -108,7 +114,7 @@ const 회상13 = '13. 보고 난 기분 한 낱말과, 이 영상을 떠올리�
 const 흐름14 = '14. 보는 동안 기분이 어떻게 바뀌었나 — 처음 · 가운데 · 끝을 한 낱말씩, 가장 크게 바뀐 초. 바뀌지 않았으면 「안 바뀜」.';
 const 퀴즈9 = (who) => `9. 비교용 묶음(같은 계정의 지난 퀴즈 편)과 견주어 같은 퀴즈를 또 찍어 낸 것처럼 보이나 — 「같아 보임」 또는 「달라 보임」과, 같아 보이면 어디가 같은지(무대 · 주제 · 마스코트 표정 · 색 · 구도 가운데). 이 계정의 퀴즈 칸에 늘 있는 짜임(${퀴즈고정})과 ${who.고정 ? `이 계정에 늘 나오는 것(${who.고정})` : '이 계정에 늘 나오는 캐릭터'}은 같아도 같은 퀴즈로 치지 않는다 — 장면의 무대 · 다루는 주제 · 마스코트의 표정 · 색 · 구도가 겹치는지로만 판단한다.`;
 
-function buildPrompt({ brand, sheets, sheet, speech, cuts = false, previous = [], 틀 = null }) {
+function buildPrompt({ brand, sheets, sheet, speech, cuts = false, previous = [], 틀 = null, 중간 = false }) {
   const who = 시청자[brand];
   if (!who) throw new Error(`브랜드는 ${Object.keys(시청자).join(' · ')} 가운데 하나다: ${brand}`);
   const list = [].concat(sheets || sheet || []);
@@ -122,8 +128,9 @@ function buildPrompt({ brand, sheets, sheet, speech, cuts = false, previous = []
     `- 장면 묶음(그림 ${list.length}장, 이 순서로 다 연다): ${list.join(' · ')} — 휴대폰에서 보는 크기 그대로다. ${every} 한 장 안은 왼쪽에서 오른쪽, 위에서 아래 순서.`,
     `- 들리는 말: ${speech} — 줄 앞 숫자는 그 말이 시작하는 초. 배경음악은 따로 깔려 있다.`,
     ...prev,
+    ...(중간 ? ['- 이 영상은 편집 중인 앞부분이다. 끝까지 다 만든 영상이 아니다.'] : []),
     '',
-    '한국어로, 아래 양식 그대로 답해라(전체 700자 안팎). 겉치레 칭찬은 하지 말고, 모르는 것은 모른다고 써라. 휴대폰에서 작아 못 읽은 글자는 못 읽었다고 써라.',
+    `한국어로, 아래 양식 그대로 답해라(전체 ${중간 ? '1500자 안팎 — 15번은 칸마다 한 줄' : '700자 안팎'}). 겉치레 칭찬은 하지 말고, 모르는 것은 모른다고 써라. 휴대폰에서 작아 못 읽은 글자는 못 읽었다고 써라.`,
     '1. 이 영상이 말하려는 것 — 친구에게 전하듯 한 문장.',
     '2. 보고 나서 내가 바로 할 수 있게 된 것 — 없으면 「없음」.',
     '3. 무슨 말인지 모르겠던 낱말·장면 — 초와 함께 전부. 없으면 「없음」.',
@@ -137,8 +144,9 @@ function buildPrompt({ brand, sheets, sheet, speech, cuts = false, previous = []
       : previous.length
       ? `9. 비교용 묶음과 견주어 같은 틀을 또 찍어 낸 것처럼 보이나 — 「같아 보임」 또는 「달라 보임」과, 같아 보이면 어디가 같은지(무대 구성 · 말 순서 · 머리 글 · 끝 카드 가운데). ${who.고정 ? `이 계정에 늘 나오는 것(${who.고정})은 같아도 같은 틀로 치지 않는다 — ` : ''}화면에 무엇이 어떻게 놓이고 어떤 순서로 말하고 무엇으로 끝나는지로만 판단한다.`
       : '9. (비교용 묶음 없음 — 「비교 못 함」이라고만 쓴다)',
-    ...(who.사람편 ? [사람10, 끝11] : []),
-    ...(who.회상 ? [회상12, 회상13, 흐름14] : []),
+    ...(who.사람편 ? [사람10, 중간 ? 중간빼기(끝11) : 끝11] : []),
+    ...(who.회상 ? [중간 ? 중간빼기(회상12) : 회상12, 회상13, 흐름14] : []),
+    ...(중간 ? [칸15] : []),
     '',
   ].join('\n');
 }
@@ -371,7 +379,8 @@ function 첫컷인자(video, options, duration) {
 function main(argv) {
   const args = { _: [] };
   for (let i = 0; i < argv.length; i += 1) {
-    if (argv[i].startsWith('--')) args[argv[i].slice(2)] = argv[i + 1], i += 1;
+    if (argv[i] === '--중간') args['중간'] = true;   // 값 없는 선택
+    else if (argv[i].startsWith('--')) args[argv[i].slice(2)] = argv[i + 1], i += 1;
     else args._.push(argv[i]);
   }
   const video = args._[0];
@@ -445,12 +454,13 @@ function main(argv) {
   fs.writeFileSync(speech, readSpeech(path.resolve(args['말'])));
   if (args['틀'] !== undefined && args['틀'] !== '퀴즈') throw new Error(`--틀은 퀴즈만 있다: ${args['틀']}`);
   if (args['틀'] === '퀴즈' && want === '자동') console.log('  --틀 퀴즈: 지난 편 자동 고르기는 이야기 편을 넣는다 — --지난 <그 계정의 지난 퀴즈 편 영상 둘>을 준다(제작절차 「LAB 하루 두 편」 7)');
-  fs.writeFileSync(path.join(out, '질문.md'), buildPrompt({ brand: args['브랜드'], sheets, speech, cuts, previous, 틀: args['틀'] || null }));
+  fs.writeFileSync(path.join(out, '질문.md'), buildPrompt({ brand: args['브랜드'], sheets, speech, cuts, previous, 틀: args['틀'] || null, 중간: args['중간'] === true }));
   fs.writeFileSync(path.join(out, '볼이유_질문.md'), buildWorthPrompt({ brand: args['브랜드'], sheets, speech, cuts }));
   console.log(`재료: ${out} · 장면 ${shots.length}칸 / 그림 ${sheets.length}장 · 지난 편 ${previous.length ? previous.map((p) => p.name).join(' · ') : '없음'}`);
   if (자동글) console.log(자동글);
   if (want === '자동' && who.계정 && previous.length < 2) console.log(`  지난 편을 ${previous.length}편만 찾았다(${who.계정} 판에 영상이 있는 편) — 9번은 그만큼만 본다`);
   for (const 줄 of 다음글(args['브랜드'])) console.log(줄);
+  if (args['중간'] === true) console.log(중간관문);
   if (firstCut) {
     // 시험용 눈 바꿔치기 변수는 실제 첫 컷 검사에 넘기지 않는다(첫컷검사.py 눈변수와 같다).
     // Windows는 환경 변수 이름의 대소문자를 가리지 않으므로 대문자로 견준다.
@@ -465,6 +475,7 @@ function main(argv) {
 
 // 재료를 다 만든 뒤 찍는 「다음:」 줄과, 사람이 나오는 브랜드면 그 아래 답 처리 줄(11-16 흠 장부). 파일을 쓰지 않고 던지지 않는다
 const 다음줄 = '다음: 질문.md를 이 대화 맥락이 없는 새 시험관 넷(Agent model sonnet · model haiku, 그리고 `node tools/GPT시험관.mjs <이 폴더>` · `node tools/그록시험관.mjs <이 폴더>`, 서로 따로)에게 그대로 주고, 볼이유_질문.md는 새 심사관(Agent model opus)에게 준다 — 답을 한 장 기획의 「한 문장」 · 「무엇으로 이기나」와 견준다(제작절차 「시험」).';
+const 중간관문 = '  → 중간 판 관문(11-20 · 점검표 29): 15번에서 시험관 둘이 같은 칸을 「왜 모름」 · 「끊김」이라 하면 유호님께 보내지 않는다 — 그 컷의 연기 · 소리 · 앞 컷 이음을 고친 뒤 다시 시험한다.';
 function 다음글(brand, 갈래경로 = 흠갈래) {
   return [다음줄, ...답처리줄(brand, 갈래경로).map((x) => `  → 할 것: ${x}`)];
 }
@@ -492,4 +503,4 @@ if (require.main === module) {
   try { process.exitCode = main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
 
-module.exports = { 첫컷인자, srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, sceneTimes, addCutShots, detectCuts, 자동칸, pickPrevious, episodeOf, 시청자, 답처리줄, 다음글 };
+module.exports = { 중간관문, 첫컷인자, srtToLines, readSpeech, buildPrompt, buildWorthPrompt, parseCuts, cutShots, shotTimes, sceneTimes, addCutShots, detectCuts, 자동칸, pickPrevious, episodeOf, 시청자, 답처리줄, 다음글 };

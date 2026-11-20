@@ -304,3 +304,19 @@ test('자동 칸 — 실제 ffmpeg로 0.5초 칸이 있는 영상을 만들면 �
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+// 중간 편집본(11-20) — 30초 시험 판처럼 유호님께 보내기 전의 판은 칸마다 누가 · 무엇을 · 왜를 묻고(15번), 끝 · 브랜드 회상은 묻지 않는다.
+//   11-20 경산 공모전 편 앞 30초를 이 시험 없이 보냈다가 「연계도 안되고 처음에 할머니가 왜 입 막고 호호 부는지 이해도 안가」를 들었다.
+test('--중간: 15번(칸마다 누가 · 무엇을 · 왜 · 끊김)을 묻고 11 · 12번은 「중간 판」으로 비운다 — 기본 질문은 그대로다', () => {
+  const 중간 = buildPrompt({ brand: '공모전', sheets: ['s1.jpg'], speech: 'm.txt', 중간: true });
+  assert.match(중간, /^15\. 칸마다\(칸 왼쪽 위 숫자 초\) 누가 · 무엇을 · 왜 하는지 한 줄씩.*「왜 모름」.*「끊김 — 무엇이 안 이어지나」/m);
+  assert.match(중간, /^11\. \(편집 중인 앞부분이라 묻지 않는다/m);
+  assert.match(중간, /^12\. \(편집 중인 앞부분이라 묻지 않는다/m);
+  assert.match(중간, /^13\. 보고 난 기분/m);
+  assert.match(중간, /편집 중인 앞부분이다/);
+  const 기본 = buildPrompt({ brand: '공모전', sheets: ['s1.jpg'], speech: 'm.txt' });
+  assert.doesNotMatch(기본, /^15\. /m);
+  assert.match(기본, /^11\. 끝 3초/m);
+  assert.match(기본, /전체 700자 안팎/);
+  assert.match(require('../tools/낯선이시험.js').중간관문, /시험관 둘이 같은 칸을 「왜 모름」 · 「끊김」이라 하면 유호님께 보내지 않는다/);
+});

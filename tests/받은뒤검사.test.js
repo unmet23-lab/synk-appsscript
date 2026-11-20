@@ -65,8 +65,9 @@ function 편만들기(t, 판들, { 순서 = null, 고침 = null } = {}) {
   return 편;
 }
 // 흐름(컷 안 탈것 · 배경 움직임)은 판 하나에 몇 초 드는 실제 측정이라 흐름 시험(맨 아래)에서만 켠다 — 나머지는 --흐름안함으로 차례와 판정만 본다
-function 돌리기(편, 더 = [], env = {}, { 흐름 = false } = {}) {
-  const r = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', ...(흐름 ? [] : ['--흐름안함']), ...더, '--json'], { encoding: 'utf8', maxBuffer: 1 << 24, timeout: 300000,
+// 주문 대조(첫컷검사 — 다른 눈)는 판마다 몇 분 드는 실제 판정이라 눈 시험(아래)에서만 가짜 첫컷검사로 켠다 — 나머지는 --눈안함
+function 돌리기(편, 더 = [], env = {}, { 흐름 = false, 눈 = false } = {}) {
+  const r = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', ...(흐름 ? [] : ['--흐름안함']), ...(눈 ? [] : ['--눈안함']), ...더, '--json'], { encoding: 'utf8', maxBuffer: 1 << 24, timeout: 300000,
     env: { ...process.env, SYNK_MOTION_PY: path.join(편, '가짜_사람움직임.py'), SYNK_MOTION_LOG: path.join(편, '부른것.jsonl'), ...env } });
   let 결과 = null;
   try { 결과 = JSON.parse(r.stdout); } catch (e) { /* 멈춤 글은 stderr */ }
@@ -179,7 +180,7 @@ sys.path.insert(0, sys.argv[1])
 import 크레딧내기, 드리미나내기
 assert 드리미나내기.받은뒤 is 크레딧내기.받은뒤
 편 = sys.argv[2]
-r = 크레딧내기.받은뒤(os.path.join(편, "꾸러미"), os.path.join(편, "받음"), None, ["C1"], 더=["--연속성안함", "--흐름안함"])
+r = 크레딧내기.받은뒤(os.path.join(편, "꾸러미"), os.path.join(편, "받음"), None, ["C1"], 더=["--연속성안함", "--흐름안함", "--눈안함"])
 print("끝코드", r)
 print("없는컷표", 크레딧내기.받은뒤(os.path.join(편, "받음", "없는", "꾸러미"), os.path.join(편, "받음"), None, ["C1"]))
 `;
@@ -257,7 +258,7 @@ test('일부만 잰 회차(--판)도 끝 코드 · 다시 낼 판 · 걸림 수�
   const 일부 = 돌리기(편, ['--판', 'C2']);
   assert.equal(일부.코드, 1, '앞 회차의 다시 낼 판이 남았는데 통과로 끝났다');
   assert.deepEqual([일부.결과.다시낼판, 일부.결과.걸림수, 일부.결과.끝코드, 일부.결과.이번에잰판], [['굳음'], 1, 1, ['C2']]);
-  const 글 = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--흐름안함', '--판', 'C2'], { encoding: 'utf8',
+  const 글 = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--흐름안함', '--눈안함', '--판', 'C2'], { encoding: 'utf8',
     env: { ...process.env, SYNK_MOTION_PY: path.join(편, '가짜_사람움직임.py'), SYNK_MOTION_LOG: path.join(편, '부른것.jsonl') } });
   assert.equal(글.status, 1);
   assert.match(글.stdout, /앞 회차 기록 그대로 1개/);
@@ -333,7 +334,7 @@ test('잰 판이 하나도 없는 회차도 앞 기록을 고쳐 쓴다 — 무�
   const 기록 = () => JSON.parse(fs.readFileSync(path.join(편, '받음', '_받은뒤검사.json'), 'utf8'));
   assert.deepEqual([기록().쓸판, 기록().끝코드], [{ C1: 'C1.mp4' }, 0]);
   영상(path.join(편, '받음', 'C1.mp4'), { 초: 6 });   // 다시 받아 파일이 바뀌었다
-  const r = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--흐름안함', '--판', 'C2'], { encoding: 'utf8',
+  const r = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--흐름안함', '--눈안함', '--판', 'C2'], { encoding: 'utf8',
     env: { ...process.env, SYNK_MOTION_PY: path.join(편, '가짜_사람움직임.py'), SYNK_MOTION_LOG: path.join(편, '부른것.jsonl') } });
   assert.equal(r.status, 2, r.stdout + r.stderr);
   assert.match(r.stdout, /받은 파일은 있는데 잰 값이 없는 판 1: C1/);
@@ -348,7 +349,7 @@ test('꾸러미 _순서.json의 id 없는 줄 · 겹친 id · 꾸러미에 없�
   assert.equal(r.코드, 2, r.stdout + r.stderr);
   assert.match(r.결과.꾸러미탈.join('\n'), /_순서\.json 1번째 줄에 판 id가 없다/);
   assert.deepEqual([r.결과.남는파일, r.결과.쓸판], [['C1.mp4'], {}]);
-  const 글 = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--흐름안함'], { encoding: 'utf8',
+  const 글 = spawnSync('python', ['-X', 'utf8', 도구, 편, '--연속성안함', '--흐름안함', '--눈안함'], { encoding: 'utf8',
     env: { ...process.env, SYNK_MOTION_PY: path.join(편, '가짜_사람움직임.py'), SYNK_MOTION_LOG: path.join(편, '부른것.jsonl') } });
   assert.equal(글.status, 2);
   assert.match(글.stdout, /어느 판에도 안 맞는 영상 1개는 재지 않았다: C1\.mp4/);
@@ -544,4 +545,89 @@ test('시작잔상 — 쓰는 구간이 시작하는 자리에서 제자리에 �
   const r2 = 돌리기(맞는, ['--판', 'C1'], {}, { 흐름: true });
   const f2 = r2.결과.판.C1.파일[0];
   assert.deepEqual([f2.잔상.걸림, f2.확인.filter(글 => 글.startsWith('시작잔상:'))], [[], []], r2.stdout + r2.stderr);
+});
+
+// 주문 대조 · 앞 컷 이음(11-20) — 받은 판마다 첫컷검사(다른 눈)를 부른다. 실제 눈은 판마다 5~10분이라, 부른 인자를 적고 답을 정해 주는 가짜 첫컷검사로 차례와 판정만 본다.
+//   왜: 11-20 경산 공모전 편에서 주문한 숟가락 시늉이 입 가리기로 나온 판과, 귀에 댄 휴대폰이 다음 컷 두 손의 휴대폰으로 건너뛴 이음이 사람 움직임 숫자로는 둘 다 통과였다.
+const 가짜첫컷 = String.raw`
+import json, os, sys
+a = sys.argv[1:]
+영상, 옵션, i = a[1], {}, 2
+while i < len(a):
+    if a[i] == "--사람":
+        옵션["사람"] = True; i += 1
+    else:
+        옵션[a[i][2:]] = a[i + 1]; i += 2
+if "앞받은영상" in 옵션:
+    옵션["앞받은영상"] = os.path.basename(옵션["앞받은영상"])
+# 함께 도는 여럿이 한 파일에 덧붙이면 줄을 잃는다(Windows) — 부를 때마다 따로 쓴다
+with open(os.path.join(os.environ["SYNK_FAKE_FIRSTCUT_LOG"], f"{os.path.basename(영상)}-{os.getpid()}.json"), "w", encoding="utf-8") as f:
+    f.write(json.dumps({"영상": os.path.basename(영상), **{k: 옵션.get(k) for k in ("시작", "끝", "컷들", "앞받은영상", "사람")}}, ensure_ascii=False))
+답 = json.loads(os.environ.get("SYNK_FAKE_FIRSTCUT_ANSWER") or "{}").get(os.path.basename(영상))
+if 답 == "못함":
+    print("첫 컷 확인을 마치지 못했다: 다른 눈의 판정을 받지 못했다", file=sys.stderr); sys.exit(2)
+다시 = {k: v for k, v in (답 or {}).items() if k != "흠"}
+print(f"첫 컷 {'재제작' if 다시 else '확인 완료'}(다른 눈 판정): {os.path.basename(영상)}")
+for k, v in 다시.items():
+    print(f"  다시 · {k}: {v}")
+for k, v in ((답 or {}).get("흠") or {}).items():
+    print(f"  흠(막지 않음, 고치면 좋음) · {k}: {v}")
+if "앞받은영상" in 옵션:
+    print("직전 컷과 비교한 화면: 첫컷검사/x/컷연결.jpg")
+sys.exit(1 if 다시 else 0)
+`;
+function 눈돌리기(편, 답 = {}, 더 = []) {
+  const 첫컷 = path.join(편, '가짜_첫컷검사.py');
+  fs.writeFileSync(첫컷, 가짜첫컷, 'utf8');
+  const 로그 = path.join(편, '첫컷부름');
+  fs.rmSync(로그, { recursive: true, force: true });
+  fs.mkdirSync(로그);
+  const r = 돌리기(편, 더, { SYNK_FIRSTCUT_PY: 첫컷, SYNK_FAKE_FIRSTCUT_LOG: 로그, SYNK_FAKE_FIRSTCUT_ANSWER: JSON.stringify(답) }, { 눈: true });
+  const 부름 = fs.readdirSync(로그).map(f => JSON.parse(fs.readFileSync(path.join(로그, f), 'utf8')));
+  return { ...r, 부름: Object.fromEntries(부름.map(x => [x.영상, x])) };
+}
+
+test('주문 대조 — 받은 판마다 첫컷검사를 그 컷의 쓰는 구간으로 부르고, 바로 앞 컷의 받은 판을 넘긴다 · 「다시」는 그 파일의 걸림', 건너뜀, (t) => {
+  const 편 = 편만들기(t, { C1: {}, C2: {}, C3: {}, C4: { 초: 6 } });   // C4는 0.5~5.5초를 쓴다
+  const r = 눈돌리기(편, { 'C2.mp4': { 이음: '0.9초 앞 컷 끝에는 귀에 댄 휴대폰이 이 컷 첫 칸에서 두 손에 있다' } });
+  assert.equal(r.코드, 1, r.stdout + r.stderr);
+  assert.deepEqual(Object.keys(r.부름).sort(), ['C1.mp4', 'C2.mp4', 'C3.mp4', 'C4.mp4'], '받은 판마다 부른다');
+  assert.deepEqual(r.부름['C1.mp4'], { 영상: 'C1.mp4', 시작: '0.5', 끝: '4', 컷들: 'C1', 앞받은영상: null, 사람: true }, '첫 컷에는 앞 판이 없다');
+  assert.equal(r.부름['C2.mp4'].앞받은영상, 'C1.mp4', '같은 장면의 바로 앞 컷 판');
+  assert.equal(r.부름['C4.mp4'].사람, null, '사람 없는 컷은 --사람 없이');
+  assert.deepEqual(r.결과.다시낼판, ['C2']);
+  const f = r.결과.판.C2.파일[0];
+  assert.match(f.걸림[0], /^앞 컷 C1 이음\(C2 0\.5~3\.5초\): 다른 눈이 「다시」 — 0\.9초 앞 컷 끝에는 귀에 댄 휴대폰이/);
+  assert.deepEqual(f.주문대조.map(x => [x.컷, x.앞컷, x.앞영상, x.끝코드]), [['C2', 'C1', 'C1.mp4', 1]]);
+  const 기록 = JSON.parse(fs.readFileSync(path.join(편, '받음', '_받은뒤검사.json'), 'utf8'));
+  assert.deepEqual([기록.주문대조.켬, 기록.주문대조.부른구간, 기록.판.C2.파일[0].주문대조[0].다시], [true, 4, { 이음: '0.9초 앞 컷 끝에는 귀에 댄 휴대폰이 이 컷 첫 칸에서 두 손에 있다' }]);
+  assert.deepEqual(r.결과.쓸판, { C1: 'C1.mp4', C3: 'C3.mp4', C4: 'C4.mp4' });
+});
+
+test('주문 대조 — 앞 판은 걸림 없는 파일을 넘기고, 장면 이름이 달라도 같은 때 · 같은 사람이면 잇는다(맞수 컷) · 시간 건너뜀은 넘기지 않는다', 건너뜀, (t) => {
+  const 편 = 편만들기(t, { C2: {}, C3: {} }, { 고침: (s) => {
+    s.장면.부엌맞은편 = { ...s.장면.부엌밤 };   // 같은 밤 · 맞은편에서 본 장면
+    s.detail.find(d => d.cut === 'C2').장면 = '부엌맞은편';
+    s.detail.find(d => d.cut === 'C4').시간건너뜀 = true;
+  } });
+  영상(path.join(편, '받음', 'C1__2.mp4'));
+  영상(path.join(편, '받음', '굳음.mp4'));
+  fs.renameSync(path.join(편, '받음', '굳음.mp4'), path.join(편, '받음', 'C1굳음.mp4'));
+  영상(path.join(편, '받음', 'C4.mp4'), { 초: 6 });
+  fs.mkdirSync(path.join(편, '꾸러미'));
+  fs.writeFileSync(path.join(편, '꾸러미', '_순서.json'), JSON.stringify([줄('C1', 1), 줄('C1굳음', 2, { 컷: ['C1'] }), 줄('C2', 3), 줄('C3', 4), 줄('C4', 5)]), 'utf8');
+  const r = 눈돌리기(편, { 'C3.mp4': '못함' });
+  assert.equal(r.부름['C2.mp4'].앞받은영상, 'C1__2.mp4', '굳은 앞 판(C1굳음)이 아니라 걸림 없는 C1__2 — 장면 이름이 달라도 같은 밤 · 같은 수아');
+  assert.ok(!('C1굳음.mp4' in r.부름), '이미 걸린 파일(사람 굳음)은 눈에게 보이지 않는다');
+  assert.equal(r.부름['C4.mp4'].앞받은영상, null, '시간 건너뜀 컷은 앞 판과 견주지 않는다');
+  assert.equal(r.코드, 1, r.stdout + r.stderr);
+  assert.deepEqual(r.결과.다시낼판, ['C1굳음']);
+  // 눈이 막힌 판은 통과가 아니라 확인이다
+  assert.match(r.결과.판.C3.파일[0].확인[0], /^주문 대조를 못 했다\(C3 0\.4~3\.9초\) — 첫 컷 확인을 마치지 못했다/);
+  assert.ok(r.결과.확인수 >= 1);
+  // --눈안함으로 남긴 기록은 눈을 켠 --판 회차에서 그대로 쓰지 않는다(안잰판)
+  const 끈 = 돌리기(편);
+  assert.equal(끈.결과.주문대조.켬, false);
+  const 일부 = 눈돌리기(편, {}, ['--판', 'C2']);
+  assert.ok(일부.결과.안잰판.includes('C3'), JSON.stringify(일부.결과.안잰판));
 });

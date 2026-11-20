@@ -5,7 +5,7 @@
 #   컷표의 받음 검사(tools/컷연속성검사.py --받음 — 소품 자리 · 고요 · 소리 사건 · 점 · 얼굴 빛)를 이어 돌린다. 내기 도구(크레딧내기.py · 드리미나내기.py)가
 #   받은 직후 스스로 부른다 — 손으로는 아래처럼.
 #
-#   python -X utf8 tools/받은뒤검사.py <편 폴더> [--받음 <폴더>] [--꾸러미 <폴더>] [--컷표 <파일>] [--판 C1,C2b] [--연속성안함] [--흐름안함] [--json]
+#   python -X utf8 tools/받은뒤검사.py <편 폴더> [--받음 <폴더>] [--꾸러미 <폴더>] [--컷표 <파일>] [--판 C1,C2b] [--연속성안함] [--흐름안함] [--눈안함] [--눈동시 3] [--json]
 #     끝 코드: 0 통과 · 1 걸림(다시 낼 판이 있다) · 2 확인(눈으로 볼 것 — 얼굴 극접사 · 컷 안 움직임 흠(흐름) · 못 잰 판 · 어느 컷인지 모르는 판 · 아직 안 받은 판).
 #     통과(0)는 「받음 폴더의 영상을 모두 쟀고 걸린 것이 없다」는 뜻이다 — 하나라도 재지 않았으면(어느 판에도 안 맞는 영상 · 꾸러미의 깨진 줄) 확인이다.
 #     끝 코드 · 다시 낼 판 · 쓸 판 · 걸림 수 · 확인 수는 늘 **받은 판 전체**에서 셈한다 — --판으로 일부만 잰 회차도 앞 회차에 남은 다시 낼 판이 있으면 1이다.
@@ -48,6 +48,17 @@
 #          덩어리(5×5 이웃의 6할 넘음)로만 남겨 화면의 몇 %인지 센다. 1% 넘으면 「확인」(걸림으로 올리지 않는다 — 맞춘 자료가 한 편뿐이다). 전체 화면으로 잰다.
 #          서울로 받은 판 263개 실측(11-16): 1%를 넘은 것은 넷이고, 그 가운데 E03n a(4.09%)가 유호님이 짚으신 그 판이다. 나머지 셋(S02 b 4.44% · E06s a · b 1.0~1.1%)은
 #          카메라가 밀며 흐린 배경이 고르게 어두워진 것으로, 눈으로 보면 바로 갈린다. 0.25초보다 짧은 구간 · 6장보다 적은 구간은 재지 않는다. numpy가 없으면 「못 잼」.
+#   눈     (11-20) 주문 대조와 앞 컷 이음 — 이번에 잰 판의 파일마다, 그 판을 쓰는 줄마다 tools/첫컷검사.py를 부른다(맥락 없는 다른 눈이 프레임으로 본다).
+#          ① 주문 대조: 컷표 줄(연기 · 소품 상태 · 화면 글)이 쓰는 구간의 칸에 실제로 보이나 ② 앞 컷 이음: 편집 순서로 바로 앞 컷의 받은 판 마지막 장과
+#          이 판 첫 칸 사이에 소품 자리 · 상태와 자세가 이어지나(첫컷검사의 「이음」 질문 · 컷연결.jpg).
+#          왜: 11-20 경산 공모전 편 앞 30초 시험 판에서 유호님이 「지금 보면 너무 어색해. 연계도 안되고 처음에 할머니가 왜 입 막고 호호 부는지 이해도 안가」라고
+#          하셨다. 주문한 숟가락 시늉이 입 가리기로 나온 판과, 귀에 댄 휴대폰이 다음 컷에서 두 손의 휴대폰으로 건너뛴 이음이 사람 움직임 숫자로는 둘 다 통과였다.
+#          첫컷검사는 그때까지 묶음의 대표 한 판만 봤다. 그래서 받은 판마다 같은 눈을 부른다.
+#          앞 판 고르기: 고른판.json · 컷표 「판」이 정한 앞 판이 있으면 첫컷검사가 그 파일을 찾는다. 없으면 이 회차에서 걸림 없는 앞 판 파일(쓸 판과 같은 셈),
+#          그것도 없으면 그 앞 판의 가장 늦게 받은 파일을 넘긴다. 앞 컷과 같은 순간이 아니면(첫컷검사.이어지는순간 — 시간 건너뜀 · 다른 때의 장면) 넘기지 않는다.
+#          판정: 「다시」는 그 파일의 걸림이다(쓸 판에서 빠진다). 눈이 막혀 판정을 못 받으면 확인이다(통과로 치지 않는다). 「흠」은 주의다.
+#          길이 · 비율 · 소리 · 사람이 이미 걸린 파일은 부르지 않는다(다시 낸다). 첫컷검사가 같은 영상 · 구간 · 주문의 기록을 다시 쓰니 같은 판을 또 재도 눈을 또 부르지 않는다.
+#          판마다 5~10분이라 --눈동시(기본 3)만큼 함께 돌린다. --눈안함이면 부르지 않는다. 앞 기록의 「조건」에 눈판이 들어, 눈을 부르기 전의 기록은 --판 회차에서 그대로 쓰지 않는다.
 #   꾸러미 _순서.json의 잘못된 줄(id 없음) · 겹친 id · 어느 판에도 안 맞는 받은 영상도 확인이다 — 조용히 버리면 아무것도 재지 않고 통과로 끝난다.
 #   컷표 「인물」 칸이 목록이 아닌 줄(깨진 칸)은 사람이 있는 것으로 보고 잰다.
 #   못 재는 판은 통과로 두지 않는다 — 어느 컷의 판인지 모르는 판(꾸러미의 판 이름 · "컷"이 컷표와 안 맞음) · in · out이 없는 컷의 판은 확인이고 「쓸판」에 넣지 않는다.
@@ -77,6 +88,9 @@ FLOW_PY = os.environ.get("SYNK_FLOW_PY") or str(HERE / "최종본검사.py")   #
 흐름항목 = ("흐름갈림", "멈췄다감", "제자리바퀴")
 흐름판 = 2         # 흐름 · 잔상 측정의 판 — 문턱이나 재는 법을 바꾸면 올린다. 앞 기록의 「조건」이 이 값과 다르면 그 판을 다시 잰다(2: 시작 잔상을 더했다)
 잔상문턱 = 1.0     # 구간이 시작하는 자리에서 제자리에 선 채 옅어지는 덩어리가 화면의 몇 % 넘으면 확인인가
+FIRSTCUT_PY = os.environ.get("SYNK_FIRSTCUT_PY") or str(HERE / "첫컷검사.py")   # 주문 대조 · 앞 컷 이음을 맡는 눈(시험은 가짜 도구를 준다)
+눈판 = 1           # 주문 대조의 판 — 부르는 법을 바꾸면 올린다. 앞 기록의 「조건」이 이 값과 다르면 그 판을 다시 잰다
+눈동시기본 = 3     # 한 번에 함께 부르는 첫컷검사 수(판마다 5~10분)
 # 흐름이 걸렸을 때 다시 낼 길 — 11-15 서울로에서 실제로 고친 방법(그 편 영상/편집_감동.py의 판 바꿈 줄에 까닭과 함께 적혀 있다)
 흐름고칠길 = {
     "흐름갈림": "그 흠이면 영상 글에 모든 탈것이 가는 쪽과 컷이 끝날 때까지 갈 거리(화면 너비의 몇 분의 1)를 적어 다시 낸다(서울로 C08n → C08r)",
@@ -86,15 +100,19 @@ FLOW_PY = os.environ.get("SYNK_FLOW_PY") or str(HERE / "최종본검사.py")   #
 
 
 def 인자풀기(argv):
-    o = {"편": None, "받음": None, "꾸러미": None, "컷표": None, "판": None, "연속성안함": False, "흐름안함": False, "json": False}
+    o = {"편": None, "받음": None, "꾸러미": None, "컷표": None, "판": None, "연속성안함": False, "흐름안함": False, "눈안함": False, "눈동시": 눈동시기본, "json": False}
     i = 0
     while i < len(argv):
         a = argv[i]
-        if a in ("--받음", "--꾸러미", "--컷표", "--판"):
+        if a in ("--받음", "--꾸러미", "--컷표", "--판", "--눈동시"):
             if i + 1 >= len(argv) or argv[i + 1].startswith("--"):
                 raise SystemExit(f"{a} 뒤에 값이 없다")
             o[a[2:]] = argv[i + 1]; i += 2
-        elif a in ("--연속성안함", "--흐름안함", "--json"):
+            if a == "--눈동시":
+                if not re.fullmatch(r"[1-9]\d*", o["눈동시"]):
+                    raise SystemExit("--눈동시는 1 이상의 정수다")
+                o["눈동시"] = int(o["눈동시"])
+        elif a in ("--연속성안함", "--흐름안함", "--눈안함", "--json"):
             o[a[2:]] = True; i += 1
         elif a.startswith("--"):
             raise SystemExit(f"모르는 선택: {a}")
@@ -103,7 +121,7 @@ def 인자풀기(argv):
         else:
             raise SystemExit(f"편 폴더는 하나만 준다(남는 인자: {a})")
     if not o["편"]:
-        raise SystemExit("쓰는 법: python -X utf8 tools/받은뒤검사.py <편 폴더> [--받음 <폴더>] [--꾸러미 <폴더>] [--컷표 <파일>] [--판 C1,C2b] [--연속성안함] [--흐름안함] [--json]")
+        raise SystemExit("쓰는 법: python -X utf8 tools/받은뒤검사.py <편 폴더> [--받음 <폴더>] [--꾸러미 <폴더>] [--컷표 <파일>] [--판 C1,C2b] [--연속성안함] [--흐름안함] [--눈안함] [--눈동시 3] [--json]")
     if o["판"] is not None:
         o["판"] = [s.strip() for s in o["판"].split(",") if s.strip()]
         if not o["판"]:
@@ -454,20 +472,130 @@ def 구간모으기(rows):
     return [[a, b, 사람] for (a, b), 사람 in sorted(구간.items())], 못읽은
 
 
-def 재는조건(판, rows, 편비율, 흐름=True):
+def 재는조건(판, rows, 편비율, 흐름=True, 눈=True):
     """판을 무엇으로 쟀는가 — 일부 회차에서 앞 기록을 그대로 써도 되는지 견줄 때 쓴다(조건맞음)"""
     구간, 못읽은 = 구간모으기(rows)
     창 = [[d.get("in"), d.get("out"), d["창"]] for d in rows if "창" in d]   # 창은 흐름과 비율 판정을 바꾼다 — 고치면 그 판을 다시 잰다
     return json.loads(json.dumps({"컷": 판["컷"], "모르는컷": 판["모르는컷"], "구간": 구간, "못읽은컷": 못읽은, "비율": 편비율, "소리": 판["소리"],
-                                  "흐름": 흐름판 if 흐름 else "끔", **({"창": 창} if 창 else {})}, ensure_ascii=False))
+                                  "흐름": 흐름판 if 흐름 else "끔", "눈": 눈판 if 눈 else "끔", **({"창": 창} if 창 else {})}, ensure_ascii=False))
 
 
 def 조건맞음(옛, 지금):
-    """앞 기록의 조건으로 이번 회차를 갈음해도 되나 — 흐름 밖의 조건은 같아야 한다. 이번에 흐름을 재면 앞 기록도 같은 흐름판으로 쟀어야 한다
-    (흐름을 재기 전의 기록 · 「--흐름안함」으로 남긴 기록은 다시 잰다). 이번에 흐름을 안 재면 앞 기록의 흐름 값은 그대로 둔다."""
+    """앞 기록의 조건으로 이번 회차를 갈음해도 되나 — 흐름 · 눈 밖의 조건은 같아야 한다. 이번에 흐름(눈)을 재면 앞 기록도 같은 흐름판(눈판)으로 쟀어야 한다
+    (흐름 · 눈을 재기 전의 기록 · 「--흐름안함」 · 「--눈안함」으로 남긴 기록은 다시 잰다). 이번에 재지 않으면 앞 기록의 값은 그대로 둔다."""
     a, b = dict(옛), dict(지금)
-    옛흐름, 지금흐름 = a.pop("흐름", None), b.pop("흐름", None)
-    return a == b and (지금흐름 == "끔" or 옛흐름 == 지금흐름)
+    맞음 = True
+    for k in ("흐름", "눈"):
+        옛값, 지금값 = a.pop(k, None), b.pop(k, None)
+        맞음 = 맞음 and (지금값 in ("끔", None) or 옛값 == 지금값)
+    return a == b and 맞음
+
+
+def 고른판읽기(편):
+    """<편>/편집/고른판.json → {컷: {"판", "in", "out", "좌우"}} — 없거나 깨졌으면 {}"""
+    try:
+        j = json.loads((편 / "편집" / "고른판.json").read_text(encoding="utf-8-sig"))
+    except Exception:   # noqa: BLE001
+        return {}
+    return j if isinstance(j, dict) else {}
+
+
+def 고를파일(파일들):
+    """걸림 없는 파일 가운데 쓸 판으로 고를 것 — 흐름이 안 걸린 파일을 먼저, 그 안에서 사람 값이 큰 것. 없으면 None"""
+    좋은 = [f for f in 파일들 if not f["걸림"] and not f.get("못잰판")]
+    return max(좋은, key=lambda f: (not (f.get("흐름") or {}).get("걸림"), (f.get("사람") or {}).get("사람", 0)))["파일"] if 좋은 else None
+
+
+def _초(v):
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+
+
+def 눈일감(편, seq, 받음, 결과판, 잰판, 판찾기):
+    """이번에 잰 판의 걸림 없는 파일마다, 그 판을 쓰는 줄마다 첫컷검사에 넘길 일 → [{판, 파일, 줄, 앞컷, 앞영상}]"""
+    import 첫컷검사   # 첫컷검사도 이 모듈을 부른다 — 눈을 부를 때만 불러 서로 부르는 차례를 피한다
+    줄들 = 컷줄모음(seq)
+    고름 = 고른판읽기(편)
+    미리쓸 = {판id: 고를파일(v["파일"]) for 판id, v in 결과판.items()}
+    def 늦은파일(판id):
+        내것 = [f for f in 받음.glob("*.mp4") if re.fullmatch(re.escape(판id) + r"(?:__\d+)?\.mp4", f.name)]
+        return max(내것, key=lambda f: int((re.search(r"__(\d+)\.mp4$", f.name) or [0, 1])[1]), default=None)
+    일, 본 = [], set()
+    for 판id in 잰판:
+        for f in 결과판[판id]["파일"]:
+            if f["걸림"] or f.get("못잰판"):
+                continue
+            for d in 판의줄(seq, 판찾기[판id]):
+                a, b = _초(d.get("in")), _초(d.get("out"))
+                if a is None or b is None or not b > a >= 0 or (f["파일"], d["cut"], a, b) in 본:   # 같은 파일 · 같은 구간은 한 번만(첫컷검사가 그 구간을 잠근다)
+                    continue
+                본.add((f["파일"], d["cut"], a, b))
+                i = next(n for n, x in enumerate(줄들) if x is d)
+                앞 = 줄들[i - 1] if i > 0 else None
+                앞영상 = None
+                if 앞 is not None and _초(앞.get("in")) is not None and _초(앞.get("out")) is not None and 첫컷검사.이어지는순간(seq, 앞, d):
+                    지정 = (isinstance(고름.get(앞["cut"]), dict) and 고름[앞["cut"]].get("판")) or (isinstance(앞.get("판"), str) and 앞["판"].strip())
+                    if not 지정:   # 정한 앞 판이 있으면 첫컷검사가 그 파일을 찾는다 — 여기서 고른 파일을 넘기면 서로 다를 때 멈춘다
+                        앞판 = 판기준이름(줄의판(앞))
+                        if 앞판 == 판id:
+                            앞영상 = 받음 / f["파일"]   # 한 판을 두 컷이 나눠 쓴다 — 같은 파일의 앞 구간이 앞 컷이다
+                        else:
+                            이름 = 미리쓸.get(앞판)
+                            앞영상 = 받음 / 이름 if 이름 else 늦은파일(앞판)
+                일.append({"판": 판id, "파일": f, "줄": d, "앞컷": 앞["cut"] if 앞 else None, "앞영상": 앞영상})
+    return 일
+
+
+def 눈하나(편, 컷표, 받음, 일):
+    """첫컷검사 하나를 부른다 → {컷, 구간, 앞컷, 앞영상, 끝코드, 다시, 흠, 비교판, 못함}"""
+    d, f = 일["줄"], 일["파일"]
+    a, b = _초(d["in"]), _초(d["out"])
+    명령 = [sys.executable, "-X", "utf8", FIRSTCUT_PY, str(편), str(받음 / f["파일"]), "--시작", f"{a:g}", "--끝", f"{b:g}",
+          "--컷표", str(컷표), "--컷들", d["cut"]]
+    if 일["앞영상"]:
+        명령 += ["--앞받은영상", str(일["앞영상"])]
+    if 글목록(d.get("인물")):
+        명령.append("--사람")
+    r = {"컷": d["cut"], "구간": [a, b], "앞컷": 일["앞컷"], "앞영상": 일["앞영상"].name if 일["앞영상"] else None, "다시": {}, "흠": {}}
+    try:
+        p = subprocess.run(명령, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60 * 60)
+    except (OSError, subprocess.SubprocessError) as e:
+        return {**r, "끝코드": None, "못함": f"첫컷검사를 부르지 못했다({type(e).__name__}: {e})"}
+    for 줄 in (p.stdout or "").splitlines():
+        m = re.match(r"^\s+(다시|흠)[^·]*· (.+?): (.*)$", 줄)
+        if m:
+            r["다시" if m.group(1) == "다시" else "흠"][m.group(2)] = m.group(3).strip()
+        m = re.match(r"^직전 컷과 비교한 화면: (.+)$", 줄)
+        if m:
+            r["비교판"] = m.group(1).strip()
+    r["끝코드"] = p.returncode
+    if p.returncode not in (0, 1) or (p.returncode == 1 and not r["다시"]):
+        r["못함"] = ((p.stderr or "").strip().splitlines() or (p.stdout or "").strip().splitlines() or [f"끝 코드 {p.returncode}"])[-1][:300]
+    return r
+
+
+def 주문대조(편, 컷표, seq, 받음, 결과판, 잰판, 판찾기, 동시=눈동시기본, 알림=None):
+    """이번에 잰 판의 파일마다 첫컷검사(주문 대조 · 앞 컷 이음)를 함께 돌려 파일 기록에 「주문대조」와 걸림 · 확인 · 주의를 더한다 → 부른 수"""
+    from concurrent.futures import ThreadPoolExecutor
+    일 = 눈일감(편, seq, 받음, 결과판, 잰판, 판찾기)
+    if not 일:
+        return 0
+    if 알림:
+        알림(f"주문 대조 · 앞 컷 이음: 판 파일 {len({id(x['파일']) for x in 일})}개 · 구간 {len(일)}개를 다른 눈에게 보인다(한 번에 {동시}개 · 판마다 5~10분, 앞서 본 같은 판은 기록을 다시 쓴다)")
+    with ThreadPoolExecutor(max_workers=max(1, 동시)) as 풀:
+        결과 = list(풀.map(lambda x: 눈하나(편, 컷표, 받음, x), 일))
+    for x, r in zip(일, 결과):
+        f = x["파일"]
+        f.setdefault("주문대조", []).append(r)
+        어디 = f"{r['컷']} {r['구간'][0]:g}~{r['구간'][1]:g}초"
+        if r.get("못함"):
+            f["확인"].append(f"주문 대조를 못 했다({어디}) — {r['못함']}. 눈이 풀린 뒤 같은 명령을 다시 돌린다(통과로 치지 않는다)")
+            continue
+        for k, 관찰 in r["다시"].items():
+            무엇 = f"앞 컷 {r['앞컷']} 이음" if k == "이음" else ("주문 대조" if k in ("컷", "연기", "멈춤") else f"주문 대조 · {k}")
+            f["걸림"].append(f"{무엇}({어디}): 다른 눈이 「다시」 — {관찰[:220]} — 지시문을 고쳐 다시 낸다(29 · 41)")
+        for k, 관찰 in r["흠"].items():
+            f["주의"].append(f"주문 대조 흠({어디} · {k}): {관찰[:160]}")
+    return len(일)
 
 
 def 흐름글(h):
@@ -636,7 +764,7 @@ def main(argv=None):
             없는판.append(p["id"])
             continue
         rows = 판의줄(seq, p)
-        조건 = 재는조건(p, rows, 편비율, not o["흐름안함"])
+        조건 = 재는조건(p, rows, 편비율, not o["흐름안함"], not o["눈안함"])
         if o["판"] is None or p["id"] in o["판"]:
             결과판[p["id"]] = {"컷": p["컷"], "조건": 조건, "파일": [한파일(f, p, rows, 편비율, not o["흐름안함"]) for f in 내것]}
             잰판.append(p["id"])
@@ -651,6 +779,12 @@ def main(argv=None):
         if p["소리만"]:
             맞은파일.update(f.name for f in 파일들 if re.fullmatch(re.escape(p["id"]) + r"(?:__\d+)?\.mp4", f.name))
     남는파일 = [f.name for f in 파일들 if f.name not in 맞은파일]
+    판찾기 = {p["id"]: p for p in 전체판}
+    # 주문 대조 · 앞 컷 이음(11-20) — 이번에 잰 판의 걸림 없는 파일마다 첫컷검사를 함께 돌린다. 「다시」는 그 파일의 걸림이라 아래 다시 낼 판 · 쓸 판 셈에 든다
+    눈수 = 0
+    if not o["눈안함"] and 잰판:
+        눈수 = 주문대조(편, 컷표, seq, 받음, 결과판, 잰판, 판찾기, o["눈동시"],
+                    알림=lambda s: print(s, file=sys.stderr if o["json"] else sys.stdout, flush=True))
     # 어느 판에도 안 맞는 영상은 재지 않았다 — 꾸러미에서 그 판이 빠졌거나 줄이 깨졌거나 이름이 틀렸다. 재지 않은 것이 있으면 통과로 두지 않는다(확인)
     다시낼판, 쓸판, 못잰판 = [], {}, []
     for 판id, v in 결과판.items():
@@ -662,7 +796,6 @@ def main(argv=None):
         else:   # 흐름이 안 걸린 파일을 먼저, 그 안에서 사람 값이 큰 것 — 다시 낸 파일(__2)이 흐름 흠을 고쳤으면 첫 파일의 사람 값이 커도 다시 낸 파일
             쓸판[판id] = max(좋은, key=lambda f: (not (f.get("흐름") or {}).get("걸림"), (f.get("사람") or {}).get("사람", 0)))["파일"]
     이을것 = []   # 컷 이름과 다른 파일(대안 판 · 다시 낸 __2)을 쓸 컷 — 편집 · 컷표의 받음 검사가 그 파일을 읽게 컷표에 적는다
-    판찾기 = {p["id"]: p for p in 전체판}
     for 판id, 파일 in 쓸판.items():
         이름 = 파일[:-4]
         for c in dict.fromkeys(d["cut"] for d in 판의줄(seq, 판찾기[판id])):   # 이 판에 이어진 컷 + 「판」으로 이 판을 가리킨 컷
@@ -684,7 +817,7 @@ def main(argv=None):
     끝 = 1 if 다시낼판 or any(x["등급"] == "걸림" for x in 연속줄) else (2 if 확인수 or 물은없는판 or 못잰판 else 0)
     기록 = {"때": datetime.now(timezone.utc).isoformat(timespec="seconds"), "컷표": 컷표.name, "판": 결과판, "다시낼판": 다시낼판, "쓸판": 쓸판,
             "못잰판": 못잰판, "아직없는판": 없는판, "안잰판": 안잰판, "이번에잰판": 잰판, "남는파일": 남는파일,
-            "꾸러미탈": 꾸러미탈, "이을것": 이을것,
+            "꾸러미탈": 꾸러미탈, "이을것": 이을것, "주문대조": {"켬": not o["눈안함"], "부른구간": 눈수, "동시": o["눈동시"]},
             "연속성": {"끝코드": 연속코드, "줄": 연속줄}, "걸림수": 걸림수, "확인수": 확인수, "끝코드": 끝}
     if 받음.is_dir() and (결과판 or 자리.is_file()):   # 잰 판이 없어도 앞 기록이 있으면 고쳐 쓴다 — 무효가 된 옛 통과 기록(쓸판 · 끝코드 0)을 남기지 않는다
         자리.write_text(json.dumps(기록, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
@@ -743,6 +876,12 @@ def _판글규칙(글):
         return "흐름못잼"
     if s.startswith("시작 잔상을 못 쟀다"):
         return "잔상못잼"
+    if s.startswith("주문 대조를 못 했다"):
+        return "주문대조못함"
+    if s.startswith("앞 컷 ") and " 이음(" in s.split(":")[0]:
+        return "이음"
+    if s.startswith("주문 대조"):
+        return "주문대조"
     if "「창」을 읽지 못해" in s or "「창」으로 자르지 못하고" in s:
         return "창읽기"
     for 낱말, 규칙 in (("사람 움직임을 못 쟀다", "사람못잼"), ("얼굴 극접사", "사람가까움"), ("(26)", "사람"), ("쓰는 구간이", "길이"),
