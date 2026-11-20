@@ -112,6 +112,14 @@ export const RELEASE_MUTANTS = [
   [
     'unit',
     '공개',
+    '색인 파일의 null · 거짓 값을 없는 파일처럼 넘긴다 — 꼴 검사와 은행 조각 검사를 건너뛰어 조각이 빠진 판이 지나간다(GPT -d GA1)',
+    PUBLISH,
+    '  if (read.problem) return { ...fallback, problems: [read.problem] };\n',
+    '  if (read.problem) return { ...fallback, problems: [read.problem] };\n  if (!read.value) return { ...fallback, problems: [] };\n',
+  ],
+  [
+    'unit',
+    '공개',
     '공개본 받기가 던지면 확인이 예외로 끝난다 — 앞서 찾은 문제와 끊긴 파일이 남지 않는다(GPT GA1)',
     PUBLISH,
     '      return { failed: reasonText(error) };\n',

@@ -87,13 +87,15 @@ function readJson(file, label) {
 }
 
 // 나무의 index.json에 빌드 규칙(map-ship.mjs mapFileNames)을 적용해 빌드가 냈어야 할 지도 파일 이름을 세운다. 색인이 없거나 못 읽으면
-// 늘 내는 셋만 기대하고 index는 null이다(은행 조각을 셀 수 없다).
+// 늘 내는 셋만 기대하고 index는 null이다(은행 조각을 셀 수 없다). 색인이 없을 때만 문제 없이 넘긴다 — 목록 대조가 「manifest에 지도
+// index.json이 없다」를 알린다. 있으면 그 값이 null · 거짓 값이어도 규칙에 넣어 꼴을 본다(GPT -d GA1 — null을 없는 파일처럼 넘겨
+// 은행 조각 검사를 건너뛰었다).
 function expectedMap(mapDir) {
   const indexFile = path.join(mapDir, 'index.json');
-  const read = isFile(indexFile) ? readJson(indexFile, 'map/index.json') : { value: null };
   const fallback = { index: null, names: [...MAP_ALWAYS] };
+  if (!isFile(indexFile)) return { ...fallback, problems: [] };
+  const read = readJson(indexFile, 'map/index.json');
   if (read.problem) return { ...fallback, problems: [read.problem] };
-  if (!read.value) return { ...fallback, problems: [] };
   try {
     return { index: read.value, names: mapFileNames(read.value), problems: [] };
   } catch (error) {

@@ -315,11 +315,12 @@ test('은행 조각은 나무의 index.json · words.json으로 다시 세운 �
   assert.match(words.problems.join(), /map\/words\.json을 읽지 못했다/);
 });
 
-test('색인 꼴이 틀리거나 은행 이름이 규칙에 맞지 않으면 던지지 않고 문제 한 줄로 막는다(Fable 설계 검토 5 · 6)', async () => {
+test('색인 꼴이 틀리거나 은행 이름이 규칙에 맞지 않으면 던지지 않고 문제 한 줄로 막는다 — null · 거짓 값도 없는 파일로 넘기지 않는다(Fable 설계 검토 5 · 6 · GPT -d GA1)', async () => {
   const fetcher = answer(404);
   const base = indexOf();
   const cases = [
     ['JSON이 아님', 'not json'],
+    ...['null', 'false', '0', '""', '[]'].map(text => [`색인 값 ${text}`, text]),
     ['templateFields 없음', JSON.stringify({ ...base, templateFields: undefined })],
     ['templates 없음', JSON.stringify({ ...base, templates: undefined })],
     [
