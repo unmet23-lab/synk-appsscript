@@ -354,8 +354,8 @@ test('네이버 페이지 함수: 쪽을 넘겨 끝까지 읽고 \\\' 이스케�
   assert.deepEqual(await naverBlogPostsPage(p,{entry:'https://blog.naver.com/synkshift',handle:'synkshift'}),{reason:'need_owner'});
 });
 
-test('postLifetime: VK · 네이버 길은 서버 판 전이라 꺼져 있고, 켜면 VK는 ego와 커뮤니티 번호, 네이버는 Aside 계정에서만 돈다',async()=>{
-  assert.deepEqual([ROUTES.vk.live,ROUTES['naver-blog'].live,ROUTES.douyin.live,ROUTES.threads.live],[false,false,true,true]);
+test('postLifetime: VK 길은 회사 판 76부터 켜져 ego와 커뮤니티 번호에서 돌고, 네이버 길은 서버 규칙 전이라 꺼져 있다(켜면 Aside 계정에서만 돈다)',async()=>{
+  assert.deepEqual([ROUTES.vk.live,ROUTES['naver-blog'].live,ROUTES.douyin.live,ROUTES.threads.live],[true,false,true,true]);
   const stages=[];
   const ctx=(id,platform,handle,profile,publicUrl)=>({account:{id,platform,handle,publicUrl},profile,setStage:async s=>{stages.push(s);}});
   const vkCtx=(profile={browser:'ego',profileId:'Profile 5',communityId:'243082040'},url='https://vk.ru/synklab_ru')=>ctx('lab-ru-vk','vk','synklab_ru',profile,url);
@@ -363,14 +363,15 @@ test('postLifetime: VK · 네이버 길은 서버 판 전이라 꺼져 있고, �
   const at=sec('2026-11-17T10:00:56Z');let saved=null;const args=[];
   const helpers={pageJob:async(c,name,fn,a)=>{args.push([name,a]);return name==='vk-clips'?vk(['456239018'],[clip('456239018',at)]):naver([blog('224478068429','1')],{'224478068429':'2026-11-18T12:10:00.000Z'});},
     storeBatch:async(c,name,raw,envelope)=>{saved={name,envelope};}};
-  assert.equal(await postLifetime(vkCtx(),helpers),null);assert.equal(await postLifetime(nbCtx(),helpers),null);assert.equal(saved,null);
+  assert.equal(await postLifetime(nbCtx(),helpers),null);assert.equal(saved,null);
+  assert.equal(await postLifetime(vkCtx(),helpers),'limited');assert.equal(saved.name,'vk-clips-posts');saved=null;
   const on=Object.fromEntries(Object.entries(ROUTES).map(([k,r])=>[k,{...r,live:true}]));
   assert.equal(await postLifetime(vkCtx(),helpers,on),'limited');
   assert.equal(saved.name,'vk-clips-posts');assert.equal(saved.envelope.sourceType,'public-page');
   assert.deepEqual(args.at(-1),['vk-clips',{entry:'https://vk.ru/clips/synklab_ru',handle:'synklab_ru',limit:0,days:0,communityId:'243082040'}]);
   assert.equal(await postLifetime(nbCtx(),helpers,on),'limited');
   assert.equal(saved.name,'naver-blog-list-posts');assert.equal(saved.envelope.sourceType,'creator-screen');
-  assert.deepEqual(stages,['public-page','creator-screen']);
+  assert.deepEqual(stages,['public-page','public-page','creator-screen']);
   saved=null;
   assert.equal(await postLifetime(vkCtx({browser:'ego',profileId:'Profile 5'}),helpers,on),'need_owner');
   assert.equal(await postLifetime(vkCtx(undefined,'https://vk.ru/other'),helpers,on),'need_owner');
