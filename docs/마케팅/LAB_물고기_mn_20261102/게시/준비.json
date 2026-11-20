@@ -346,6 +346,17 @@
       "원고": "게시/판본/ID/원고_tiktok.json",
       "AI표시": false,
       "지문": "3eecf73e3703200e25e7bbc39a2779fb58d245fcbc92fcd416bd0a0370013342"
+    },
+    {
+      "계정": "lab-kh-facebook",
+      "파일": "게시/판본/KH/video.mp4",
+      "시각": "2026-11-22T13:00:00+07:00",
+      "언어": "km",
+      "돌림": true,
+      "표지": "게시/판본/KH/cover.png",
+      "원고": "게시/판본/KH/원고_facebook.json",
+      "AI표시": false,
+      "지문": "aa2565d4fd65b8e3eb4b68044f00a7e9abe498ecd8f4ed02292cafac02294c39"
     }
   ],
   "미룰편": [],
