@@ -2229,3 +2229,219 @@ test('the view draws the office room with the house row rules and the floor keep
   assert.doesNotMatch(floor, /\bsmx\b|\bsmy\b|\bbob\b/, 'no pointer-following camera and no bobbing body');
   assert.match(floor, /Math\.min\(2, Number\(win\.devicePixelRatio\) \|\| 1\)/);
 });
+
+/* ── 창 안의 PULSE(3단계 구현 설계 4절) ── */
+function pulseEmbed() {
+  const sent = [], focused = [];
+  let changed = null, evented = null, open = false;
+  const embed = {
+    place(value) { sent.push({ ...value }); return Promise.resolve({ ok: true, open }); },
+    state: () => Promise.resolve({ open }),
+    focus() { focused.push(1); return Promise.resolve({ ok: true }); },
+    open() { api.direct.push(1); if (!open) api.setOpen(true); return Promise.resolve({ ok: true, id: 'pulse', reused: true }); },
+    close() { const outcome = api.closeAnswer; if (outcome === 'closed') api.setOpen(false); return Promise.resolve({ ok: true, outcome }); },
+    onChanged(fn) { changed = fn; return () => { changed = null; }; },
+    onEvent(fn) { evented = fn; return () => { evented = null; }; },
+  };
+  const api = { embed, sent, focused, opens: [], direct: [], closeAnswer: 'closed', setOpen(v) { open = v; changed?.({ open: v }); }, event(v) { evented?.(v); }, last: () => sent.at(-1) };
+  return api;
+}
+async function enteredWithPulse(t, extra = {}) {
+  const e = pulseEmbed();
+  const workspace = { status: 'resolved', destinations: ['/pulse-app/'], unavailable: [] };
+  // 본체는 PULSE를 열면서 뷰를 만들고 열림을 알린다(pulse-view.cjs onChange). 그 뒤에 열기의 답이 온다
+  const h = harness(t, { options: { embed: e.embed, onEnter: () => ({ ok: true, action: 'workspace', workspace }), onOpenSpace: dest => { e.opens.push(dest); if (dest === '/pulse-app/') e.setOpen(true); return { ok: true, destination: dest }; }, ...extra } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  h.face.handle('continue-personal');
+  await settle();
+  return { h, e };
+}
+
+test('PULSE opens inside the window: the band shows once the orb has arrived, never while it moves', async t => {
+  const { h, e } = await enteredWithPulse(t);
+  assert.equal(h.view.last().band, null, 'Solio has no band');
+  assert.ok(e.sent.every(v => v.visible === false), 'nothing is shown in Solio');
+  h.face.handle('open-switch');
+  await settle();
+  h.face.handle('go', 'pulse');
+  await settle();
+  const last = h.view.last();
+  assert.equal(last.space, 'pulse');
+  assert.equal(last.band, 'pulse');
+  assert.deepEqual(last.room, { space: 'pulse', say: '', then: '', action: null, error: '', embedded: true });
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+  // 구가 PULSE 별로 들어가는 동안(dive)에는 숨긴 채였다
+  const diveAt = h.view.log.findIndex(x => x[0] === 'dive' && x[1] === 'pulse');
+  assert.ok(diveAt >= 0);
+  assert.ok(h.view.scenes.some(s => s.band === 'pulse') && e.sent.filter(v => v.visible).length === 1, 'shown once, after arriving');
+});
+
+test('opening the fan in the band hides PULSE; closing it or choosing PULSE again shows it; Solio keeps it hidden and alive', async t => {
+  const { h, e } = await enteredWithPulse(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  h.face.handle('open-switch'); await settle();
+  assert.equal(h.view.last().fan.open, true);
+  assert.equal(h.view.last().band, 'pulse', 'the band stays so the orb does not move when the fan opens');
+  assert.deepEqual(e.last(), { visible: false, top: 56 });
+  h.face.handle('escape'); await settle();
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  assert.deepEqual(e.last(), { visible: true, top: 56 }, 'choosing the current space closes the fan and shows PULSE');
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'solio'); await settle();
+  assert.equal(h.view.last().space, 'solio');
+  assert.equal(h.view.last().band, null);
+  assert.deepEqual(e.last(), { visible: false, top: 56 });
+  const opens = e.opens.length;
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  assert.equal(e.opens.length, opens, 'a live PULSE is not looked up again (설계 검토 R7)');
+  assert.equal(e.direct.length, 1, 'going back asks main to open PULSE, which reuses the view');
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+});
+
+test('a closed PULSE view leaves the room with a way to reopen it and no band', async t => {
+  const { h, e } = await enteredWithPulse(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  e.setOpen(false); await settle();
+  const last = h.view.last();
+  assert.equal(last.band, 'pulse', 'the small orb keeps its band place, nobody moved it (설계 검토 R12)');
+  assert.equal(last.bandClose, false);
+  assert.deepEqual(e.last(), { visible: false, top: 56 });
+  assert.equal(last.room.say, 'PULSE가 닫혔습니다.');
+  assert.equal(last.room.then, '저장하지 않은 내용은 남지 않았을 수 있습니다. 다시 열면 첫 화면부터 엽니다.');
+  assert.deepEqual(last.room.action, { action: 'reopen-space', label: '다시 열기' });
+  h.face.handle('reopen-space'); await settle();
+  assert.equal(h.view.last().band, 'pulse');
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+});
+
+test('main can bring the face back into PULSE (「돌아가서 저장」) and send F6 focus to the small orb; F6 in the band goes back to PULSE', async t => {
+  const { h, e } = await enteredWithPulse(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'solio'); await settle();
+  assert.equal(h.view.last().space, 'solio');
+  e.event({ type: 'reveal' }); await settle();
+  assert.equal(h.view.last().space, 'pulse');
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+  e.event({ type: 'focus-band' }); await settle();
+  assert.equal(h.view.last().focus, 'here');
+  const before = e.focused.length;
+  assert.equal(h.face.handle('band-f6'), true);
+  await settle();
+  assert.equal(e.focused.length, before + 1);
+  // 펼침이 열린 동안의 F6은 뷰가 숨어 있어 아무것도 하지 않는다
+  h.face.handle('open-switch'); await settle();
+  assert.equal(h.face.handle('band-f6'), false);
+  // 뷰가 없으면 reveal도 아무것도 열지 않는다
+  h.face.handle('escape'); await settle(); e.setOpen(false); await settle();
+  e.event({ type: 'reveal' }); await settle();
+  assert.deepEqual(e.last(), { visible: false, top: 56 }, 'nothing to reveal without a view');
+});
+
+test('without an embed bridge the face behaves as before and sends nothing', async t => {
+  const workspace = { status: 'resolved', destinations: ['/pulse-app/'], unavailable: [] };
+  const h = harness(t, { options: { onEnter: () => ({ ok: true, action: 'workspace', workspace }) } });
+  await settle(); h.face.setState(signedIn()); await settle(); h.face.handle('continue-personal'); await settle();
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  assert.equal(h.view.last().band, null);
+  assert.equal(h.view.last().room.say, 'PULSE가 닫혔습니다.');
+});
+
+test('reveal brings the face into PULSE without a dive, and the view takes the keyboard focus (설계 검토 R12 · R3)', async t => {
+  const { h, e } = await enteredWithPulse(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'solio'); await settle();
+  const dives = h.view.log.filter(x => x[0] === 'dive').length, focused = e.focused.length;
+  e.event({ type: 'reveal' }); await settle();
+  assert.equal(h.view.last().space, 'pulse');
+  assert.equal(h.view.log.filter(x => x[0] === 'dive').length, dives, 'no dive for something the person did not do');
+  assert.equal(e.focused.length, focused + 1);
+});
+
+test('the keyboard focus goes to PULSE on arrival and after a mouse close of the fan, but stays on the orb after Esc (설계 검토 R3)', async t => {
+  const { h, e } = await enteredWithPulse(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  assert.equal(e.focused.length, 1, 'arrival sends the focus into PULSE');
+  h.face.handle('open-switch'); await settle(); h.face.handle('escape'); await settle();
+  assert.equal(e.focused.length, 1, 'Esc leaves the focus on the small orb');
+  assert.equal(h.view.last().focus, 'here');
+  h.face.handle('open-switch'); await settle(); h.face.handle('close-switch'); await settle();
+  assert.equal(e.focused.length, 2, 'a press outside closes the fan and the focus goes back to PULSE');
+});
+
+test('while the sign-out question is open PULSE stays hidden, and comes back if the person stays (설계 검토 R11)', async t => {
+  let answer;
+  const { h, e } = await enteredWithPulse(t, { onSignOut: () => new Promise(resolve => { answer = resolve; }) });
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  h.face.handle('open-switch'); await settle(); h.face.handle('foot', 'logout'); await settle();
+  assert.equal(h.view.last().fan.open, false);
+  assert.deepEqual(e.last(), { visible: false, top: 56 });
+  answer({ ok: false }); await settle();
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+});
+
+test('「PULSE 닫기」 in the band closes PULSE and goes to Solio; keeping a draft stays in PULSE (설계 검토 R6)', async t => {
+  const { h, e } = await enteredWithPulse(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  assert.equal(h.view.last().bandClose, true);
+  e.closeAnswer = 'kept';
+  h.face.handle('pulse-close'); await settle();
+  assert.equal(h.view.last().space, 'pulse');
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+  e.closeAnswer = 'closed';
+  h.face.handle('pulse-close'); await settle();
+  assert.equal(h.view.last().space, 'solio');
+  assert.ok(!h.view.scenes.some(s => s.room?.say === 'PULSE가 닫혔습니다.'), 'no closed-room line flashes on the way out');
+  assert.deepEqual(h.view.log.filter(x => x[0] === 'arrive').at(-1), ['arrive', 'solio', 'quick']);
+});
+
+test('a hidden view that main hid by itself is placed again (설계 검토 R13)', async t => {
+  const { h, e } = await enteredWithPulse(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  const n = e.sent.length;
+  e.event({ type: 'hidden' }); await settle();
+  assert.equal(e.sent.length, n + 1);
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+});
+
+test('a signed-out guest whose PULSE invite is received goes into PULSE in the window; the fan has only PULSE and 「로그인」 (설계 검토 R1)', async t => {
+  const e = pulseEmbed();
+  const h = harness(t, { initial: { status: 'signed-out' }, options: { embed: e.embed, onInvite: () => { e.setOpen(true); return { ok: true, state: 'received', destination: '/pulse-app/' }; } } });
+  await settle();
+  h.view.type('https://workspace.synk.im/pulse-app/#invite=SyntheticInvite_1234567890');
+  h.face.handle('invite-submit');
+  await settle();
+  assert.equal(h.face.getState().phase, 'entered');
+  assert.equal(h.face.clientMode(), 'app');
+  assert.equal(h.view.last().space, 'pulse');
+  assert.equal(h.view.last().band, 'pulse');
+  assert.deepEqual(e.last(), { visible: true, top: 56 });
+  h.face.handle('open-switch'); await settle();
+  const fan = h.view.last().fan;
+  assert.deepEqual(fan.names.map(n => n.space), ['pulse']);
+  assert.deepEqual(fan.foot.map(f => f.action), ['signin']);
+  h.face.handle('foot', 'signin'); await settle();
+  assert.equal(h.face.getState().phase, 'auth');
+  assert.deepEqual(e.last(), { visible: false, top: 56 });
+});
+
+test('a guest Workspace invite still stays on the ask scene with its line (the company window is outside)', async t => {
+  const e = pulseEmbed();
+  const h = harness(t, { initial: { status: 'signed-out' }, options: { embed: e.embed, onInvite: () => ({ ok: true, state: 'received', destination: '/' }) } });
+  await settle();
+  h.view.type('SyntheticInvite_1234567890');
+  h.face.handle('invite-submit');
+  await settle();
+  assert.equal(h.face.getState().phase, 'invite');
+  assert.equal(h.view.last().ask.status, '초대받은 공간을 열었습니다. 열린 창에서 이어 가 주세요.');
+});
+
+test('disposing the face hides the PULSE view and drops its listeners', async t => {
+  const { h, e } = await enteredWithPulse(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  h.face.dispose();
+  assert.deepEqual(e.last(), { visible: false, top: 56 });
+  const n = e.sent.length; e.setOpen(false); e.event({ type: 'reveal' }); await settle();
+  assert.equal(e.sent.length, n);
+});

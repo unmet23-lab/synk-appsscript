@@ -1,5 +1,5 @@
 'use strict';
-const {app,BrowserWindow,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard,Notification,systemPreferences}=require('electron');
+const {app,BrowserWindow,WebContentsView,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard,Notification,systemPreferences}=require('electron');
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
 const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,identity,sourceScope}=require('./catalog.cjs');
 const {safeEntry,assertSender,trustedEntry,worldNotificationAllowed,preferences,allowedNavigation,externalDestination,contentSecurityPolicy,nativeContentSecurityPolicy}=require('./security.cjs');
@@ -34,6 +34,7 @@ const {createDraftRecovery}=require('./draft-recovery.cjs');
 const {createDraftRecoveryRequests}=require('./draft-recovery-ipc.cjs');
 const {copyDiagnostics}=require('./diagnostics-clipboard.cjs');
 const {createPulseApp,pulseInviteRefusal}=require('./pulse-app.cjs');
+const {createPulseViewHost}=require('./pulse-view.cjs');
 const {createCompanyEntryManager,createCompanyEntryPartitions,companyAnswerFromPulse,entryRefusal,bindingFromAuth}=require('./company-entry.cjs');
 const {createCompanyEntryDestinations}=require('./company-entry-destinations.cjs');
 const {createPlatformUpdater}=require('./platform-update.cjs');
@@ -79,7 +80,7 @@ app.setName(current.productName);
 app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.sessionScope+(smoke?'.smoke':'')));
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
-let window,platformTray,trayMemory,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
+let window,platformTray,trayMemory,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,pulseView,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
 // 켜짐부터 열림까지(1-가 구현 설계 2절). orbBoot는 구가 드러나기 시작한 시각과 움직임 종류다. 본체가 정해 시작 창과 앱 창에 같은 값을 준다.
 // startupHandoff는 시작 창에서 앱 창으로 겹쳐 넘기는 동안의 상태, unseenFailure는 숨은 채 시작한 길에서 아직 보이지 않은 실패다.
 let orbBoot=null,startupHandoff=null,unseenFailure=null;
@@ -514,7 +515,8 @@ async function prepareUpdateHandoff({token,version,file}={}){
       // 다만 시작 창이 있는데 보이지도 최소화되지도 않았으면 사람이 켠 실행에서 아직 그려지기 전이다(숨은 채 시작한 길에는 시작 창이 없다).
       // 그때는 조용히 가지 않는다. 설치기 창과 새 앱이 앞으로 뜬다(0.4.96 공개 후보 검수 D1 2차)
       const asked=!!startupWin&&!startupWin.isMinimized();
-      const quiet=!asked&&others.length===0&&(!main||!(await draftsUnsaved(main)));
+      // 창 안의 PULSE가 살아 있으면 조용히 가지 않는다. PULSE에 쓰던 글이 있는지 미리 물을 길이 없다(3단계 구현 설계 2.3, 바깥 창일 때와 같은 결과)
+      const quiet=!asked&&others.length===0&&!pulseView?.hasSurface()&&(!main||!(await draftsUnsaved(main)));
       const minimized=!!(main?.isMinimized()||startupWin?.isMinimized()||!main&&!startupWin&&arrivalShow==='minimized');
       if(gen!==handoffGen)return;
       // 초안을 묻는 사이(0.7초까지) 사람이 창을 열었으면 조용히 가지 않고 보이는 넘김으로 간다(0.4.96 검수 C5)
@@ -595,7 +597,7 @@ function initializeMain(){
   if(runtime.clientId==='platform'){
     // 「승인 물음도 보기」가 켜져 있으면 훅을 받는 서버를 연다. 저장한 포트를 다른 프로그램이 쓰면 솔리오의 줄을 지운다(구현설계.md 12.3)
     if(!smoke)void officeHooksService().start().catch(()=>{});
-    desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>sendDesktop('synk:desktop-preferences',desktopSnapshot()),enabled:!smoke,packaged,name:current.appId});
+    desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>{sendDesktop('synk:desktop-preferences',desktopSnapshot());pulseView?.relayout();},enabled:!smoke,packaged,name:current.appId});
     desktopPreferences.initialize();
     windowPlacement=windowPlacement||createWindowPlacement({directory:app.getPath('userData'),screen,enabled:!smoke});
     // 쓰던 글을 지키던 편집기는 PC 0.5.0에서 옛 화면과 함께 거뒀다. 남은 보관은 켤 때마다 지우고, 지우지 못하면 다음에 켤 때 다시 지운다(PC 0.5.0 설계 4.5 R4)
@@ -606,7 +608,8 @@ function initializeMain(){
   if(runtime.clientId==='platform'&&process.platform==='win32'&&process.arch==='x64'&&packaged&&!smoke){
     const reported=new Set();
     trayMemory=createTrayMemoryReclaimer({getWindows:()=>BrowserWindow.getAllWindows(),getMetrics:()=>app.getAppMetrics(),
-      busy:()=>quittingRequested||!platformTray?.isActive()||['downloading','opening'].includes(platformUpdate?.snapshot().state),
+      // 숨은 창 안의 PULSE가 소리를 내거나 캡처되는 동안에도 줄이지 않는다(3단계 구현 설계 2.3). 뷰는 창 목록에 없다
+      busy:()=>quittingRequested||!platformTray?.isActive()||['downloading','opening'].includes(platformUpdate?.snapshot().state)||!!pulseView?.busy(),
       reportError:code=>{
         if(reported.has(code))return;reported.add(code);
         void fs.promises.appendFile(path.join(app.getPath('userData'),'tray-memory.log'),new Date().toISOString()+' '+code+'\n').catch(()=>process.emitWarning(code));
@@ -650,9 +653,11 @@ function createWindow(){
   initializeAccountServices();
   // Keeping an unsaved PULSE draft while quitting cancels the quit and a pending
   // update install, as the platform window's own will-prevent-unload handler
-  // below does. The PULSE window is not attached to the tray, so its quit state
+  // below does. PULSE's view is not attached to the tray, so its quit state
   // is reset here; leaving the page without quitting changes nothing.
-  if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,getRenewingAccount:renewingAccount,getAccountGeneration:pulseAccountGeneration,BrowserWindow,session,dialog,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads'),onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
+  // PULSE는 플랫폼 창 안의 뷰로 연다(3단계 구현 설계 2절). 뷰를 보일지는 화면이 정하고, 뷰의 상태와 띠로 가는 F6은 화면에 알린다
+  if(runtime.clientId==='platform'&&!pulseView)pulseView=createPulseViewHost({WebContentsView,getWindow:()=>window,onChange:value=>sendDesktop('synk:pulse-view-changed',value),onFocusBand:()=>sendDesktop('synk:pulse-view-event',{type:'focus-band'}),onHidden:()=>sendDesktop('synk:pulse-view-event',{type:'hidden'})});
+  if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,getRenewingAccount:renewingAccount,getAccountGeneration:pulseAccountGeneration,createSurface:options=>pulseView.createSurface(options),session,dialog,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads'),onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
   // The company entry: one fixed company window at a time in an in-memory partition bound to the verified account and
   // its generation (company-entry.cjs), and main's own lookup of the member's company destinations
   // (company-entry-destinations.cjs). A customer invite the company receiver classified goes once to the PULSE manager
@@ -709,6 +714,10 @@ function createWindow(){
   // The Workspace page keeps unsaved drafts with beforeunload; without this prompt closing, reopening or quitting is cancelled with no word (10-22).
   if(isPlatform)installDraftExitGuard({contents,window,dialog,getRecoveryAvailable:()=>!!draftRecovery?.available()});else if(runtime.clientId==='messenger')installDraftExitGuard({contents,window,dialog,text:WORKSPACE_EXIT_TEXT});
   platformTray?.attachWindow(window);
+  // 창이 정말 닫히기 전에 창 안의 PULSE를 먼저 닫으며 쓰던 글을 묻는다. 트레이가 숨기는 닫기와 세션 끝은 지나간다(3단계 구현 설계 3절).
+  // 「돌아가서 저장」이나 PULSE가 답하지 않으면 끝내기와 업데이트 설치를 되돌리고(PULSE 관리자의 onUnloadKept와 같은 일, 답이 없을 때는 그쪽이 불리지 않는다 · 설계 검토 R4),
+  // 창을 보이고 화면을 PULSE로 데려간다. 트레이를 끈 사람의 창 닫기도 같다(설계 검토 R10). 다시 끝낼 때는 setImmediate로 미룬다
+  if(isPlatform&&pulseView)pulseView.installCloseGate(window,{quitting:()=>quittingRequested,quit:()=>setImmediate(()=>app.quit()),onKept:()=>{if(quittingRequested){quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}if(!window||window.isDestroyed())return;if(window.isMinimized())window.restore();window.show();window.focus();sendDesktop('synk:pulse-view-event',{type:'reveal'});}});
   // 쓰던 글을 지키려고 끝내기를 그만두면 끝내는 중 표시를 되돌린다. Workspace도 같다. 되돌리지 않으면 화면 프로세스 되살리기가 끝내는 중으로 보고 멈춘다(엔진 검수 GA1)
   contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented){quittingRequested=false;if(isPlatform){startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}}});
   if(smoke)contents.on('console-message',details=>{if(details.level==='error')smokeConsoleErrors.push({message:details.message.slice(0,300),source:details.sourceId.split('?')[0],line:details.lineNumber});});
@@ -780,6 +789,12 @@ function createWindow(){
     'synk:auth-status':accountStatus,'synk:auth-sign-in':async()=>{if(suitePublisher&&!suitePublisher.beginSignIn())return accountStatus();await auth.signIn();return accountStatus();},'synk:auth-sign-up':openAccountSignUp,'synk:auth-cancel':()=>auth.cancel(),'synk:auth-sign-out':signOutAccount,
     'synk:account-request':(operation,params)=>requireSuite(()=>auth.accountRequest(operation,params)),'synk:company-request':companyRequest,
     'synk:account-identity':()=>isPlatform?requireSuite(()=>auth.identity()):{ok:false,code:'LAUNCHER_ONLY'},'synk:auth-security':section=>openAccountSecurity(section),'synk:auth-recover':openAccountRecover,
+    // 창 안의 PULSE 뷰(3단계 구현 설계 2.3). 자리와 보이기는 꼭 {visible, top}만 받는다(pulse-view.cjs pulseViewPlacement)
+    'synk:pulse-view-place':input=>isPlatform&&pulseView?pulseView.place(input):{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:pulse-view-state':()=>isPlatform&&pulseView?pulseView.state():{open:false},
+    'synk:pulse-view-focus':()=>isPlatform&&pulseView?pulseView.focusView():{ok:false,code:'LAUNCHER_ONLY'},
+    // 띠의 「PULSE 닫기」. 쓰던 글이 있으면 PULSE 관리자의 쓰던 글 확인이 묻는다(설계 검토 R6)
+    'synk:pulse-view-close':()=>isPlatform&&pulseView?pulseView.closeByPerson():{ok:false,code:'LAUNCHER_ONLY'},
     'synk:pulse-app-open':()=>isPlatform&&!smoke?requireSuite(()=>pulseApp.open()):{ok:false,code:'PULSE_APP_UNAVAILABLE'},
     // A customer invite with its request, exactly {token,requestId,accountGeneration}; any other form, a lone {token}
     // included, is refused. pulse-app.cjs checks it again, binds it to auth's current generation, waits for the

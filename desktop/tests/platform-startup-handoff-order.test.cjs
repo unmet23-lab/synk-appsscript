@@ -223,7 +223,7 @@ test('only an accessible hidden platform cold start initializes the tray without
     const app=Object.assign(new EventEmitter(),{getPath:()=>'/profile',getAppPath:()=>'/app'});
     const memory={schedule(){},cancel(){}};
     let services,options;
-    const context={mainInitialized:false,startupAllowed:true,appLocationReady:true,waitingForFirstWindow:false,trayMemory:null,
+    const context={mainInitialized:false,startupAllowed:true,appLocationReady:true,waitingForFirstWindow:false,trayMemory:null,pulseView:null,
       runtime:{clientId:'platform'},app,current:{appId:'platform',productName:'SYNK'},
       process:{platform:'win32',arch:'x64'},path,smoke:false,authConfig:null,windowPlacement:{},packaged:true,
       quittingRequested:false,platformUpdate:{snapshot:()=>({state:'current'})},

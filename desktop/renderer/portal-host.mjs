@@ -289,17 +289,17 @@ function isPlainObject(value) {
 function pulseInviteErrorMessage(code) {
   switch (code) {
     case 'PULSE_APP_INVITE_UNCONFIRMED':
-      return '초대 전달 완료 여부를 아직 확인하지 못했어요. 이미 열린 PULSE 작업 공간 창에 초대가 반영되었는지 먼저 확인해 주세요.';
+      return '초대 전달 완료 여부를 아직 확인하지 못했어요. 이미 열린 PULSE에 초대가 반영되었는지 먼저 확인해 주세요.';
     case 'PULSE_APP_DEMO_ACTIVE':
-      return '열려 있는 PULSE 창에서 예시 화면을 보는 중이에요. 예시 화면을 닫은 뒤 다시 시도해 주세요.';
+      return '열려 있는 PULSE에서 예시 화면을 보는 중이에요. 예시 화면을 닫은 뒤 다시 시도해 주세요.';
     case 'PULSE_APP_BUSY':
-      return 'PULSE 창이 다른 작업을 처리하고 있어요. 잠시 뒤 다시 시도해 주세요.';
+      return 'PULSE가 다른 작업을 처리하고 있어요. 잠시 뒤 다시 시도해 주세요.';
     case 'PULSE_APP_ACCOUNT_PENDING':
       return '로그인 상태를 확인하고 있어요. 잠시 뒤 다시 시도해 주세요.';
     case 'PULSE_APP_ACCOUNT_CHANGED':
       return '계정 연결이 바뀌었어요. 로그인 상태를 확인한 뒤 다시 시도해 주세요.';
     case 'PULSE_APP_STORAGE_UNAVAILABLE':
-      return '이전 계정의 PULSE 창 정리가 아직 끝나지 않았어요. 앱을 다시 연 뒤 시도해 주세요.';
+      return '이전 계정의 PULSE 정리가 아직 끝나지 않았어요. 앱을 다시 연 뒤 시도해 주세요.';
     case 'SUITE_UNAVAILABLE':
       return '이 PC의 로그인 보관함을 확인하지 못했어요. 저장 공간을 확인한 뒤 다시 시도해 주세요.';
     case 'PULSE_APP_UNAVAILABLE':
@@ -309,7 +309,7 @@ function pulseInviteErrorMessage(code) {
     case 'PULSE_APP_OPEN_FAILED':
     case 'PULSE_APP_INVITE_FAILED':
     default:
-      return 'PULSE 초대 화면을 열지 못했어요. 인터넷 연결과 열린 PULSE 창을 확인한 뒤 다시 시도해 주세요.';
+      return 'PULSE 초대 화면을 열지 못했어요. 인터넷 연결과 열린 PULSE를 확인한 뒤 다시 시도해 주세요.';
   }
 }
 
@@ -365,7 +365,7 @@ function companyInviteErrorMessage(code, { isPulseLink = false } = {}) {
 function desktopOpenDestinationErrorMessage(code) {
   switch (code) {
     case 'PULSE_APP_DEMO_ACTIVE':
-      return '열려 있는 PULSE 창에서 예시 화면을 보는 중이에요. 예시 화면을 닫은 뒤 다시 열어 주세요.';
+      return '열려 있는 PULSE에서 예시 화면을 보는 중이에요. 예시 화면을 닫은 뒤 다시 열어 주세요.';
     case 'PULSE_APP_BUSY':
     case 'BUSY':
       return '작업 공간 창이 다른 작업을 처리하고 있어요. 잠시 뒤 다시 눌러 주세요.';

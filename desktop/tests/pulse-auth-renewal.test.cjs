@@ -18,7 +18,7 @@ function electron(){
     constructor(options){super();this.options=options;this.destroyed=false;this.loads=[];this.sent=[];this.webContents=pulseContents(this);windows.push(this);}
     get page(){return this.document;}set page(value){this.document=value;value.attach(this.webContents);}
     async loadURL(url){this.url=url;this.loads.push(url);this.page=fakePage(url);}
-    isDestroyed(){return this.destroyed;}isMinimized(){return false;}restore(){}show(){}focus(){}destroy(){this.destroyed=true;this.emit('closed');}
+    isDestroyed(){return this.destroyed;}isMinimized(){return false;}restore(){}show(){}focus(){}destroy(){this.destroyed=true;this.emit('closed');}dialogParent(){return this;}
   }
   const session={fromPartition(partition){if(!jars.has(partition)){const jar=new EventEmitter();Object.assign(jar,{partition,cleared:0,cacheCleared:0,setPermissionRequestHandler(){},setPermissionCheckHandler(){},webRequest:{onBeforeRequest(){}},async clearStorageData(){this.cleared++;},async clearCache(){this.cacheCleared++;}});jars.set(partition,jar);}return jars.get(partition);}};
   return {Window,session,windows,dialogs,dialog:{showMessageBoxSync:(_window,options)=>{dialogs.push(options);return 0;}},jar:scope=>session.fromPartition(pulseAppPartition(scope))};
@@ -28,7 +28,7 @@ async function fixture(t){
   let pulse;const e=electron();
   const auth=await createPlatformAuth(t,{onChange:state=>pulse?.syncContext(state)});
   assert.equal((await auth.service.initialize()).signedIn,true);
-  pulse=createPulseApp({clientId:'platform',getAccount:()=>auth.service.status(),getRenewingAccount:()=>auth.service.renewingAccountId(),getAccountGeneration:()=>auth.service.accountGeneration(),BrowserWindow:e.Window,session:e.session,dialog:e.dialog,openExternal:async()=>{},getDownloads:()=>'/synthetic/downloads',loadTimeoutMs:1000,inviteTimeoutMs:1000});
+  pulse=createPulseApp({clientId:'platform',getAccount:()=>auth.service.status(),getRenewingAccount:()=>auth.service.renewingAccountId(),getAccountGeneration:()=>auth.service.accountGeneration(),createSurface:options=>new e.Window(options),session:e.session,dialog:e.dialog,openExternal:async()=>{},getDownloads:()=>'/synthetic/downloads',loadTimeoutMs:1000,inviteTimeoutMs:1000});
   t.after(()=>pulse.dispose());
   assert.equal((await pulse.open()).ok,true);const window=e.windows[0];window.draft=DRAFT;
   return {auth,pulse,e,window,jarA:e.jar('account:'+A.id)};
@@ -57,7 +57,7 @@ test('a same-account token renewal keeps the PULSE window, its draft and its sto
   verifying.release();assert.match(await renewal,/^synthetic-access-a-/);
   assert.equal(f.auth.service.status().signedIn,true);assert.equal(f.auth.service.renewingAccountId(),null);assert.match(f.auth.vault.refreshToken,/^synthetic-refresh-a-/);
   kept(f,'after the renewal');
-  assert.deepEqual(await f.pulse.open(),{ok:true,id:'pulse',independentWindow:true,reused:true});
+  assert.deepEqual(await f.pulse.open(),{ok:true,id:'pulse',reused:true});
   // A request the renderer made before the renewal is still this account's, and reaches the open document in memory.
   const requestId=randomUUID();
   assert.deepEqual(await f.pulse.openInvite({token:TOKEN,requestId,accountGeneration:generation}),{ok:true,requestId,accountGeneration:generation,state:'received',destination:'/pulse-app/'});
@@ -134,7 +134,7 @@ test('quitting during a same-account renewal closes the window with the app, and
   assert.equal(f.jarA.cleared,0);assert.equal(f.jarA.cacheCleared,0);
   assert.match(f.auth.vault.refreshToken,/^synthetic-refresh-a-/);assert.equal(f.auth.vault.subject,A.subject);
   const next=f.auth.relaunch();assert.equal((await next.initialize()).account.synk_user_id,A.id);
-  const pulse=createPulseApp({clientId:'platform',getAccount:()=>next.status(),getRenewingAccount:()=>next.renewingAccountId(),getAccountGeneration:()=>next.accountGeneration(),BrowserWindow:f.e.Window,session:f.e.session,dialog:f.e.dialog,openExternal:async()=>{},getDownloads:()=>'/synthetic/downloads'});
+  const pulse=createPulseApp({clientId:'platform',getAccount:()=>next.status(),getRenewingAccount:()=>next.renewingAccountId(),getAccountGeneration:()=>next.accountGeneration(),createSurface:options=>new f.e.Window(options),session:f.e.session,dialog:f.e.dialog,openExternal:async()=>{},getDownloads:()=>'/synthetic/downloads'});
   t.after(()=>pulse.dispose());
   assert.equal((await pulse.open()).ok,true);assert.equal(f.e.windows.length,2);assert.equal(f.e.windows[1].options.webPreferences.session,f.jarA);
   assert.equal(f.jarA.cleared,0);assert.equal(f.jarA.cacheCleared,0);

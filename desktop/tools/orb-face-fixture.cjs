@@ -76,7 +76,27 @@ let configured=null;const ready=new Promise(resolve=>{configured=resolve;});
 const emit=()=>{for(const fn of listeners){try{fn(auth);}catch{}}};
 const echo=(req,extra)=>({ok:true,requestId:req.requestId,accountGeneration:req.accountGeneration,...extra});
 const invite=(req,destination)=>inviteMode==='fail'?{ok:false,code:'INVALID_INPUT',requestId:req.requestId,accountGeneration:req.accountGeneration}:echo(req,{state:'received',destination,keepOpen:true});
+// 창 안의 PULSE 뷰(3단계 구현 설계 4절)의 대역. 본체가 붙이는 뷰 대신 같은 자리에 어두운 덮개를 깔아, 캡처에서 띠 아래가 뷰로 덮인 모습을 본다.
+// 덮개는 뷰처럼 그 아래의 누름을 막는다. PULSE를 열면(배정 열기 '/pulse-app/', pulseView.open) 뷰가 생긴 것으로 알린다
+let pulseOpen=false;const pulseChanged=new Set(),pulseEvents=new Set(),pulsePlaced=[];
+const tellPulse=()=>{for(const fn of pulseChanged){try{fn({open:pulseOpen});}catch{}}};
+function pulseCover(value){
+  let el=document.getElementById('qa-pulse-view');
+  if(!value?.visible||!pulseOpen){if(el)el.remove();return;}
+  if(!el){el=document.createElement('div');el.id='qa-pulse-view';el.textContent='PULSE 고객 화면 자리(본체가 붙이는 뷰)';document.body.append(el);}
+  el.style.cssText='position:fixed;left:0;right:0;bottom:0;top:'+value.top+'px;z-index:2147483646;background:#141414;color:#6d6d6d;display:flex;align-items:center;justify-content:center;font:400 13px system-ui,sans-serif';
+}
+const openPulse=()=>{if(!pulseOpen){pulseOpen=true;tellPulse();}};
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
+  pulseView:Object.freeze({
+    place:async value=>{pulsePlaced.push({visible:value?.visible===true,top:value?.top});pulseCover(value);return {ok:true,open:pulseOpen};},
+    state:async()=>({open:pulseOpen}),
+    focus:async()=>{calls.push('pulse-focus');return {ok:true};},
+    close:async()=>{calls.push('pulse-close');pulseOpen=false;pulseCover(null);tellPulse();return {ok:true,outcome:'closed'};},
+    open:async()=>{calls.push('pulse-open');openPulse();return {ok:true,id:'pulse'};},
+    onChanged:fn=>{pulseChanged.add(fn);return ()=>pulseChanged.delete(fn);},
+    onEvent:fn=>{pulseEvents.add(fn);return ()=>pulseEvents.delete(fn);},
+  }),
   getEnvironment:async()=>{await ready;return {...env};},
   getClients:async()=>[],
   authStatus:async()=>{await restoring;return auth;},
@@ -94,7 +114,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   accountIdentity:async()=>{calls.push('identity');if(auth.signedIn!==true)return {ok:false,error:{code:'AUTH_REQUIRED'}};return {ok:true,email:'member@example.com',newEmail:null,createdAt:'2026-03-02T00:00:00Z',identities:[{provider:'email'},{provider:'google'}]};},
   authSecurity:async section=>{calls.push('security:'+section);return {ok:true};},
   resolveCompanyEntryDestinations:async req=>{calls.push('resolve');return echo(req,{result:assignment});},
-  openAssignedCompanyDestination:async req=>{calls.push('open:'+req.destination);return echo(req,{destination:req.destination});},
+  openAssignedCompanyDestination:async req=>{calls.push('open:'+req.destination);if(req.destination==='/pulse-app/')openPulse();return echo(req,{destination:req.destination});},
   cancelCompanyEntry:async()=>null,
   inspectCompanyInviteCode:async req=>{calls.push('invite-code');return invite(req,'/');},
   handoffCompanyInviteLink:async req=>{calls.push('invite-link');return invite(req,'/');},
@@ -220,5 +240,10 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   drafts:()=>({...drafts}),
   diag:()=>(diag?JSON.parse(JSON.stringify(diag)):null),
   calls:()=>[...calls],
+  // 창 안의 PULSE 뷰 대역: 화면이 보낸 자리, 열림, 본체 알림 흉내
+  pulsePlaced:()=>pulsePlaced.map(v=>({...v})),
+  pulseOpen:()=>pulseOpen,
+  pulseEvent:value=>{for(const fn of pulseEvents){try{fn(value);}catch{}}},
+  setPulseOpen:value=>{pulseOpen=value===true;if(!pulseOpen)pulseCover(null);tellPulse();},
   tray:()=>JSON.parse(JSON.stringify(tray)),
 }));

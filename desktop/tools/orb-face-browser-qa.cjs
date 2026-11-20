@@ -1301,12 +1301,42 @@ if(!process.versions.electron){
           check('18-12 Esc closes the settings room back to Solio, and with 구독 팁 off the subscription row has no tip',e1.settings&&e1.solio&&!e1.tip&&e1.mode==='app',e1);
           w.win.destroy();
         }
-        if(only('4'))for(const [dest,name,say] of [['/','workspace','Workspace를 열었습니다.'],['/pulse-app/','pulse','PULSE를 열었습니다.']]){
+        if(only('4'))for(const [dest,name,say] of [['/','workspace','Workspace를 열었습니다.']]){
           const w=await open();await boot(w,{assignment:{status:'resolved',destinations:[dest],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
           const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});const c=await calls(w);
           check('4 one assignment opens once: '+name,r.ok&&c.filter(x=>x==='open:'+dest).length===1&&(await text(w,'[data-space-say]'))===say,{...r.state,calls:c});
           await capture(w,'room-'+name);
           await click(w,'[data-orb-act="reopen-space"]');await wait(600);check('4 「다시 열기」 opens again: '+name,(await calls(w)).filter(x=>x==='open:'+dest).length===2);
+          w.win.destroy();
+        }
+        // 4-PULSE. 창 안의 PULSE(3단계 구현 설계 4절): 바깥 창 없이 띠 아래를 뷰가 덮고, 작은 구가 왼쪽 위 띠에 남는다
+        if(only('4')){
+          const w=await open();await boot(w,{assignment:{status:'resolved',destinations:['/pulse-app/'],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
+          const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(900);
+          const look=()=>w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s),here=q('.here').getBoundingClientRect(),cover=document.getElementById('qa-pulse-view');return {band:document.documentElement.dataset.orbBand||'',hereTop:Math.round(here.top),hereBottom:Math.round(here.bottom),close:!q('.band-close').hidden,closeRight:Math.round(q('.band-close').getBoundingClientRect().right),cover:cover?Math.round(cover.getBoundingClientRect().top):null,say:(q('[data-space-say]')||{}).textContent||'',name:(q('[data-here-text]')||{}).textContent||''};})()");
+          const p1=await look(),placed=await w.js('window.__orbFixture.pulsePlaced()'),c=await calls(w);
+          check('4 PULSE opens once inside the window: the band, the small orb in it, the view under it and no room line',r.ok&&c.filter(x=>x==='open:/pulse-app/').length===1&&p1.band==='pulse'&&p1.hereTop===6&&p1.hereBottom<=56&&p1.cover===56&&p1.close&&p1.say===''&&p1.name==='PULSE'&&JSON.stringify(placed.at(-1))==='{"visible":true,"top":56}',{p1,placed,calls:c});
+          check('4 the view takes the keyboard focus after arriving',c.includes('pulse-focus'),{calls:c});
+          await captureSizes(w,'pulse-band');w.win.setContentSize(390,844);await wait(500);await capture(w,'pulse-band-390');w.win.setContentSize(1440,900);await wait(400);
+          // 띠의 작은 구를 누르면 뷰가 숨고 펼침이 선다. 펼침에서 PULSE를 다시 고르면 펼침이 닫히고 뷰가 다시 보인다
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(600);
+          const p2=await look();check('4 opening the fan from the band hides the view, the band line and 「PULSE 닫기」, and keeps the orb where it was',!p2.cover&&p2.hereTop===6&&!p2.close&&(await w.js("getComputedStyle(document.getElementById('portal-entry'),'::after').display"))==='none'&&JSON.stringify((await w.js('window.__orbFixture.pulsePlaced()')).at(-1))==='{"visible":false,"top":56}',p2);
+          await capture(w,'pulse-fan');
+          // 뷰는 구가 띠 자리로 돌아온 뒤에 보인다(펼침이 접히는 0.38초)
+          await click(w,'.fan-go[data-go="pulse"]');await until(w,s=>!s.fan);let shown=null;for(let i=0;i<60&&shown!==56;i++){shown=(await look()).cover;if(shown!==56)await wait(40);}
+          check('4 choosing PULSE again closes the fan and shows the view once the orb is back in the band',shown===56,{shown});
+          // 띠에서 다가가기만으로는 펼침이 열리지 않는다(3단계 구현 설계 4.3)
+          await w.js("(()=>{const r=document.querySelector('#portal-entry .here-orb').getBoundingClientRect(),root=document.getElementById('portal-entry');for(let i=0;i<6;i++)root.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,pointerType:'mouse',clientX:r.left+r.width/2,clientY:r.top+r.height/2}));return true;})()");await wait(700);
+          check('4 coming near the orb in the band does not open the fan',(await w.js("document.querySelector('#portal-entry .orb-stage').dataset.fan==='1'"))===false);
+          // 본체가 PULSE 뷰를 닫으면 띠 자리를 지킨 채 「다시 열기」를 보인다
+          await w.js('window.__orbFixture.setPulseOpen(false)');await wait(400);
+          const p3=await look();check('4 a closed PULSE keeps the band place and offers 「다시 열기」',p3.band==='pulse'&&p3.hereTop===6&&!p3.cover&&!p3.close&&p3.say==='PULSE가 닫혔습니다.',p3);
+          await capture(w,'pulse-closed');
+          await click(w,'[data-orb-act="reopen-space"]');await wait(900);
+          check('4 「다시 열기」 opens PULSE again',(await look()).cover===56,await calls(w));
+          // 「PULSE 닫기」: 본체가 닫으면 솔리오로 간다
+          await click(w,'.band-close');let back=null;for(let i=0;i<150&&!back;i++){if(await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio]');return !!r&&!r.hidden&&!document.documentElement.dataset.orbBand;})()"))back={ok:true};else await wait(40);}back=back||{ok:false};await wait(500);
+          const p4=await look();check('4 「PULSE 닫기」 closes PULSE and goes to Solio, the band goes',back.ok&&(await calls(w)).includes('pulse-close')&&p4.band===''&&!p4.cover&&p4.hereTop>6,{p4});
           w.win.destroy();
         }
         // 5. 배정 여럿: 공간 고르기 → 화살표와 Enter로 PULSE

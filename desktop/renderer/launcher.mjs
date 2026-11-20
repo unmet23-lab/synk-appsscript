@@ -263,8 +263,8 @@ try{
   portalHost=mountDesktopPortalHost({
     root:$('portal-entry'),
     mountFace:mountOrbFace,
-    // PC 쪽 옵션(설계 4절). 검사 실행 길은 본체가 열어 준 때만 열린다(설계 11절)
-    faceOptions:{orbBoot:typeof bridge?.orbBoot==='function'?()=>bridge.orbBoot():null,onFirstFrame:typeof bridge?.orbFirstFrame==='function'?()=>bridge.orbFirstFrame():null,onOpenLegacy:openOrbLegacy,onCloseLegacy:()=>hideAccount(),onSignOut:()=>signOut(),subscriptions:bridge?.subscriptions||null,solioBackup:bridge?.solioBackup||null,rooms:orbRoomOptions(),siteVisits:bridge?.siteVisits||null,snsHealth:bridge?.snsHealth||null,office:bridge?.office||null,allowGuestEntry:()=>environment?.qaGuestEntry===true,look:ORB_LOOK},
+    // PC 쪽 옵션(설계 4절). 검사 실행 길은 본체가 열어 준 때만 열린다(설계 11절). embed는 창 안의 PULSE 뷰다(3단계 구현 설계 4절)
+    faceOptions:{orbBoot:typeof bridge?.orbBoot==='function'?()=>bridge.orbBoot():null,onFirstFrame:typeof bridge?.orbFirstFrame==='function'?()=>bridge.orbFirstFrame():null,onOpenLegacy:openOrbLegacy,onCloseLegacy:()=>hideAccount(),onSignOut:()=>signOut(),subscriptions:bridge?.subscriptions||null,solioBackup:bridge?.solioBackup||null,rooms:orbRoomOptions(),siteVisits:bridge?.siteVisits||null,snsHealth:bridge?.snsHealth||null,office:bridge?.office||null,embed:bridge?.pulseView||null,allowGuestEntry:()=>environment?.qaGuestEntry===true,look:ORB_LOOK},
     hostElements:[document.querySelector('.launcher')].filter(Boolean),
     bridge,
     getAuth:()=>auth,

@@ -37,11 +37,11 @@ function fixture({state=member('synthetic-owner-a'),clientId='platform',load=()=
     constructor(options){super();this.options=options;this.destroyed=false;this.shown=0;this.focused=0;this.loads=[];this.sent=[];this.webContents=pulseContents(this,{renderer});windows.push(this);}
     get page(){return this.document;}set page(value){this.document=value;value.attach(this.webContents);}
     loadURL(url){this.url=url;this.loads.push(url);this.page=fakePage(url,page);return load(this);}
-    isDestroyed(){return this.destroyed;}isMinimized(){return !!this.minimized;}restore(){this.minimized=false;this.restored=true;}show(){this.shown++;}focus(){this.focused++;}destroy(){this.destroyed=true;this.emit('closed');}
+    isDestroyed(){return this.destroyed;}isMinimized(){return !!this.minimized;}restore(){this.minimized=false;this.restored=true;}show(){this.shown++;}focus(){this.focused++;}destroy(){this.destroyed=true;this.emit('closed');}dialogParent(){return this;}
   }
   const session={fromPartition(partition){partitions.push(partition);if(!sessions.has(partition)){const value=new EventEmitter();Object.assign(value,{partition,cleared:0,cacheCleared:0,setPermissionRequestHandler(fn){this.permission=fn;},setPermissionCheckHandler(fn){this.permissionCheck=fn;},webRequest:{onBeforeRequest(_filter,handler){value.request=handler;}},async clearStorageData(){this.cleared++;},async clearCache(){this.cacheCleared++;}});sessions.set(partition,value);}return sessions.get(partition);}};
   const dialog={showMessageBoxSync(window,options){dialogs.push({window,options});return answers.length?answers.shift():0;}};
-  const service=createPulseApp({clientId,getAccount:()=>current,getRenewingAccount:()=>renewing,getAccountGeneration:()=>generation,BrowserWindow:Window,session,dialog,openExternal:async url=>external.push(url),getDownloads:()=>'/synthetic/downloads',onUnloadKept:()=>{kept++;},loadTimeoutMs:250,inviteTimeoutMs});
+  const service=createPulseApp({clientId,getAccount:()=>current,getRenewingAccount:()=>renewing,getAccountGeneration:()=>generation,createSurface:options=>new Window(options),session,dialog,openExternal:async url=>external.push(url),getDownloads:()=>'/synthetic/downloads',onUnloadKept:()=>{kept++;},loadTimeoutMs:250,inviteTimeoutMs});
   return {service,windows,external,partitions,sessions,dialogs,answers,get kept(){return kept;},get generation(){return generation;},
     setAccount(value,{notify=true,epoch=true}={}){current=value;if(epoch)generation=randomUUID();if(notify)service.syncContext(value);},
     renew(id,options){renewing=id;this.setAccount(restoring,{...options,epoch:false});},verified(value){renewing=null;this.setAccount(value,{epoch:false});},
@@ -185,7 +185,7 @@ test('once auth confirms a sign-out for an expired session or a cancelled sign-i
   // An expired session: the account's window closes and its jar is cleared as at any sign-out, and the guest opens its own window.
   const f=fixture();await f.service.open();const a=f.windows[0],aJar=f.latestSession;
   f.setAccount(discarded('AUTH_REQUIRED'));assert.equal(a.destroyed,true);
-  assert.deepEqual(await f.service.open(),{ok:true,id:'pulse',independentWindow:true});assert.equal(aJar.cleared,1);assert.equal(aJar.cacheCleared,1);
+  assert.deepEqual(await f.service.open(),{ok:true,id:'pulse'});assert.equal(aJar.cleared,1);assert.equal(aJar.cacheCleared,1);
   const w=f.windows[1];assert.equal(f.partitions.at(-1),guestJar);assert.equal(w.options.webPreferences.session,f.sessions.get(guestJar));assert.notEqual(f.sessions.get(guestJar),aJar);
   const request=f.request();delivered(await f.service.openInvite(request),{requestId:request.requestId,accountGeneration:f.generation});
   assert.deepEqual(w.page.received,[TOKEN]);assert.deepEqual(w.loads,[ENTRY]);assert.equal(f.windows.length,2);
@@ -198,10 +198,10 @@ test('once auth confirms a sign-out for an expired session or a cancelled sign-i
   const invite=g.request();delivered(await g.service.openInvite(invite),{requestId:invite.requestId,accountGeneration:g.generation});
   const v=g.windows[0];assert.equal(g.windows.length,1);assert.equal(v.options.webPreferences.session,g.sessions.get(guestJar));assert.ok(g.partitions.every(partition=>partition===guestJar),JSON.stringify(g.partitions));
   assert.deepEqual(v.loads,[ENTRY]);assert.deepEqual(v.page.received,[TOKEN]);assert.equal(v.sent[0][1].expectedAccountId,null);
-  assert.deepEqual(await g.service.open(),{ok:true,id:'pulse',independentWindow:true,reused:true});
+  assert.deepEqual(await g.service.open(),{ok:true,id:'pulse',reused:true});
   // Either reason alike from launch, by either door.
   for(const code of ['AUTH_REQUIRED','AUTH_CANCELLED']){
-    const opened=fixture({state:discarded(code)});assert.deepEqual(await opened.service.open(),{ok:true,id:'pulse',independentWindow:true},code);
+    const opened=fixture({state:discarded(code)});assert.deepEqual(await opened.service.open(),{ok:true,id:'pulse'},code);
     delivered(await opened.service.openInvite(opened.request()));assert.deepEqual(opened.partitions,[guestJar],code);assert.deepEqual(opened.windows[0].page.received,[TOKEN],code);
     const invited=fixture({state:discarded(code)});delivered(await invited.service.openInvite(invited.request()));
     assert.deepEqual(invited.partitions,[guestJar],code);assert.equal(invited.windows.length,1,code);assert.deepEqual(invited.windows[0].loads,[ENTRY],code);assert.deepEqual(invited.windows[0].page.received,[TOKEN],code);
@@ -291,7 +291,7 @@ test('the platform passes its dialog and cancels only a quit in progress when PU
 // forms (pulse-auth-renewal.test.cjs runs the wiring against main itself).
 test('main binds PULSE invites to auth\'s generation and refuses them in the same form before the service sees them',()=>{
   const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8'),lines=main.split(/\r?\n/);
-  assert.match(lines.find(value=>value.includes('pulseApp=createPulseApp(')),/getRenewingAccount:renewingAccount,getAccountGeneration:pulseAccountGeneration,BrowserWindow,/);
+  assert.match(lines.find(value=>value.includes('pulseApp=createPulseApp(')),/getRenewingAccount:renewingAccount,getAccountGeneration:pulseAccountGeneration,createSurface:options=>pulseView\.createSurface\(options\),/);
   assert.ok(lines.includes('const pulseAccountGeneration=()=>suitePublisher&&!suitePublisher.available()?null:auth?.accountGeneration?.()??null;'));
   assert.match(main,/'synk:pulse-app-open-invite':input=>isPlatform&&!smoke\?requireSuite\(\(\)=>pulseApp\.openInvite\(input\)\)\.then\(result=>result\?\.code==='SUITE_UNAVAILABLE'\?pulseInviteRefusal\(input,'SUITE_UNAVAILABLE'\):result\):pulseInviteRefusal\(input,'PULSE_APP_UNAVAILABLE'\),/);
   const request={token:TOKEN,requestId:randomUUID(),accountGeneration:randomUUID()};
@@ -307,7 +307,7 @@ test('the window keeps the Electron user agent that the PULSE web app reads to r
 test('preload keeps the zero-argument PULSE opening and passes an invite only as a fresh exact {token,requestId,accountGeneration}, never a lone {token}',async()=>{
   let bridge;const calls=[];vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../src/preload.cjs'),'utf8'),{require:()=>({contextBridge:{exposeInMainWorld:(_name,value)=>{bridge=value;}},ipcRenderer:{invoke:async(...args)=>{calls.push(args);return {ok:true};}}})});
   await bridge.openPulseApp('https://evil.invalid/',{token:'SYNTHETIC'});assert.deepEqual(calls,[['synk:pulse-app-open']]);
-  assert.deepEqual(Object.keys(bridge).filter(key=>/pulse/i.test(key)),['openPulseApp','openPulseAppInvite']);
+  assert.deepEqual(Object.keys(bridge).filter(key=>/pulse/i.test(key)),['openPulseApp','pulseView','openPulseAppInvite']);
   const requestId=randomUUID(),accountGeneration=randomUUID(),input={token:TOKEN,requestId,accountGeneration};
   assert.equal((await bridge.openPulseAppInvite(input,'https://evil.invalid/')).ok,true);
   assert.equal(calls.length,2);assert.equal(calls[1].length,2);assert.equal(calls[1][0],'synk:pulse-app-open-invite');
@@ -382,7 +382,7 @@ test('a first invite opens only the fixed shell and succeeds on the ready docume
   for(const key of ['sandbox','contextIsolation','webSecurity'])assert.equal(w.options.webPreferences[key],true);assert.equal(w.options.webPreferences.preload,PRELOAD_FILE);
   assert.equal(f.latestSession.permissionCheck(),false);let answer;f.latestSession.request({url:ORIGIN+'/api/login',resourceType:'xhr'},value=>{answer=value;});assert.equal(answer.cancel,true);
   // The zero-argument opening afterwards only brings this window forward.
-  assert.deepEqual(await f.service.open(),{ok:true,id:'pulse',independentWindow:true,reused:true});assert.deepEqual(w.loads,[ENTRY]);
+  assert.deepEqual(await f.service.open(),{ok:true,id:'pulse',reused:true});assert.deepEqual(w.loads,[ENTRY]);
 });
 test('an open customer window takes the invite in memory, a delivery only on its document\'s queued receipt: no address, no reload, no second window',async()=>{
   const f=fixture();await f.service.open();const w=f.windows[0];w.minimized=true;
@@ -486,7 +486,7 @@ test('an invite while the window opens or takes another invite is busy, never fo
   const first=f.service.openInvite(f.request());await tick();
   refused(await f.service.openInvite(f.request(OTHER)),'PULSE_APP_BUSY',{retryable:true});
   const joined=f.service.open();loaded();
-  delivered(await first);assert.deepEqual(await joined,{ok:true,id:'pulse',independentWindow:true});
+  delivered(await first);assert.deepEqual(await joined,{ok:true,id:'pulse'});
   assert.equal(f.windows.length,1);assert.deepEqual(f.windows[0].loads,[ENTRY]);assert.deepEqual(f.windows[0].page.received,[TOKEN]);
   // A plain opening still loading is not an invite's success either.
   let opened;const g=fixture({load:()=>new Promise(resolve=>{opened=resolve;})});const opening=g.service.open();await tick();
@@ -771,7 +771,7 @@ test('a cancel while the shell is still opening answers CANCELLED at once: the w
   // The shell is still opening: another invite is busy, and a plain opening joins it.
   refused(await f.service.openInvite(f.request(OTHER)),'PULSE_APP_BUSY');
   const joined=f.service.open();loaded();
-  assert.deepEqual(await joined,{ok:true,id:'pulse',independentWindow:true});await settle();
+  assert.deepEqual(await joined,{ok:true,id:'pulse'});await settle();
   const w=f.windows[0];assert.equal(f.windows.length,1);assert.deepEqual(w.loads,[ENTRY]);assert.deepEqual(w.sent,[]);assert.deepEqual(w.page.commits,[]);assert.deepEqual(w.page.received,[]);assert.equal(w.destroyed,false);
   // The next invite goes to the open window.
   delivered(await f.service.openInvite(f.request(OTHER)));assert.deepEqual(w.page.received,[OTHER]);assert.deepEqual(w.loads,[ENTRY]);

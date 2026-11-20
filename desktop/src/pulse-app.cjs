@@ -118,7 +118,11 @@ function pulseAppPartition(scope){return 'persist:synk-pulse-app-'+createHash('s
 // (auth-service.cjs renewingAccountId, through main). getAccountGeneration is
 // auth's UUID for its current epoch (auth-service.cjs accountGeneration,
 // through main). Neither is ever read from the account state a renderer sees.
-function createPulseApp({clientId,getAccount,getRenewingAccount=()=>null,getAccountGeneration=()=>null,BrowserWindow,session,dialog,openExternal,getDownloads,onUnloadKept=()=>{},loadTimeoutMs=25000,inviteTimeoutMs=5000}){
+// createSurface makes the one place the customer shell is shown in: today a WebContentsView inside the platform
+// window (pulse-view.cjs, 3단계 구현 설계 2.1), with the names the former window had. Its show() and focus() only bring
+// the platform window forward; the platform screen decides when the view is shown. dialogParent() is the window the
+// unsaved-draft question belongs to.
+function createPulseApp({clientId,getAccount,getRenewingAccount=()=>null,getAccountGeneration=()=>null,createSurface,session,dialog,openExternal,getDownloads,onUnloadKept=()=>{},loadTimeoutMs=25000,inviteTimeoutMs=5000}){
   // inviting is the invite openInvite is answering (one at a time; cancelInvite names it by its two IDs), and handoff
   // the window hand-off it began, if any.
   let owner=scopeOf(getAccount?.()),epoch=0,activeWindow=null,activeSession=null,pending=null,delivering=null,inviting=null,handoff=null,disposed=false,cleanup=Promise.resolve();
@@ -163,7 +167,7 @@ function createPulseApp({clientId,getAccount,getRenewingAccount=()=>null,getAcco
   function createWindow(isolated){
     // Black like the customer app's page (html.sx background, theme-color), so
     // a resize or a slow paint never flashes the old light frame.
-    const window=new BrowserWindow({width:1240,height:880,minWidth:720,minHeight:560,title:'SYNK PULSE',show:false,autoHideMenuBar:true,backgroundColor:PULSE_WINDOW_BACKGROUND,webPreferences:{session:isolated,preload:PULSE_INVITE_PRELOAD,sandbox:true,contextIsolation:true,nodeIntegration:false,nodeIntegrationInWorker:false,nodeIntegrationInSubFrames:false,webviewTag:false,webSecurity:true,allowRunningInsecureContent:false,experimentalFeatures:false,devTools:false}});
+    const window=createSurface({backgroundColor:PULSE_WINDOW_BACKGROUND,webPreferences:{session:isolated,preload:PULSE_INVITE_PRELOAD,sandbox:true,contextIsolation:true,nodeIntegration:false,nodeIntegrationInWorker:false,nodeIntegrationInSubFrames:false,webviewTag:false,webSecurity:true,allowRunningInsecureContent:false,experimentalFeatures:false,devTools:false}});
     const contents=window.webContents;
     // Only this window's preload speaks here, and only about the hand-off main
     // offered it. A synchronous request always gets an answer, null when refused.
@@ -175,8 +179,8 @@ function createPulseApp({clientId,getAccount,getRenewingAccount=()=>null,getAcco
     contents.on('will-navigate',(event,url)=>{if(!pulseAppNavigationAllowed(url)){event.preventDefault();openReference(url);}});
     contents.on('will-redirect',(event,url)=>{if(!pulseAppNavigationAllowed(url))event.preventDefault();});
     // The page's beforeunload keeps unsaved text, which Electron would cancel
-    // silently. Ask like the platform window; keeping it also cancels app quit.
-    installDraftExitGuard({contents,window,dialog,text:PULSE_EXIT_TEXT});
+    // silently. Ask like the platform window, over it; keeping it also cancels app quit.
+    installDraftExitGuard({contents,window:window.dialogParent(),dialog,text:PULSE_EXIT_TEXT});
     contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented&&!window.isDestroyed())onUnloadKept();});
     const download=(event,item,source)=>{
       const max=100*1024*1024,types=pulseAppMediaTypes(item.getURL());
@@ -211,7 +215,7 @@ function createPulseApp({clientId,getAccount,getRenewingAccount=()=>null,getAcco
         finally{clearTimeout(timer);window.webContents.removeListener('did-navigate',navigated);}
         if(!sameContext(expected,isolated)){if(!window.isDestroyed())window.destroy();return {ok:false,code:'PULSE_APP_ACCOUNT_CHANGED'};}
         if(window.isDestroyed()||httpFailure)throw Error('PULSE_LOAD_FAILED');
-        window.show();window.focus();return {ok:true,id:'pulse',independentWindow:true};
+        window.show();window.focus();return {ok:true,id:'pulse'};
       }catch{clearTimeout(timer);if(window&&!window.isDestroyed())window.destroy();return {ok:false,code:expected===epoch?'PULSE_APP_OPEN_FAILED':'PULSE_APP_ACCOUNT_CHANGED'};}
     })();
     pending=operation;void operation.finally(()=>{if(pending===operation)pending=null;});return operation;
@@ -220,7 +224,7 @@ function createPulseApp({clientId,getAccount,getRenewingAccount=()=>null,getAcco
     if(clientId!=='platform'||disposed)return Promise.resolve({ok:false,code:'PULSE_APP_UNAVAILABLE'});
     if(!syncContext())return Promise.resolve({ok:false,code:'PULSE_APP_ACCOUNT_PENDING'});
     if(pending)return pending;
-    if(activeWindow&&!activeWindow.isDestroyed()){if(activeWindow.isMinimized())activeWindow.restore();activeWindow.show();activeWindow.focus();return Promise.resolve({ok:true,id:'pulse',independentWindow:true,reused:true});}
+    if(activeWindow&&!activeWindow.isDestroyed()){if(activeWindow.isMinimized())activeWindow.restore();activeWindow.show();activeWindow.focus();return Promise.resolve({ok:true,id:'pulse',reused:true});}
     return launch();
   }
   function waitForShell(window,expected){

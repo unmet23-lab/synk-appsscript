@@ -92,6 +92,7 @@ function markup() {
         <button class="obj" type="button" data-orb-prog="office" aria-current="false" style="--k:4">${PROGRAM_ICON.office}<span class="obj-n"></span></button>
       </nav>
       <button class="quiet legacy-back" type="button" data-orb-act="legacy-back">돌아가기</button>
+      <button class="quiet band-close" type="button" data-orb-act="pulse-close" hidden>PULSE 닫기</button>
     </div>
     <div class="fan" role="group" aria-label="갈 수 있는 공간과 계정" data-orb-fan><p class="fan-error" role="alert" data-fan-error></p></div>
     <div class="room room-top" data-room="solio">
@@ -173,7 +174,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   };
   const sw = { lead: $('[data-sw-lead]'), error: $('[data-sw-error]'), names: $('[data-sw-names]'), foot: $('[data-sw-foot]'), close: $('[data-orb-act="close-switch"]') };
   const app = {
-    orbBtn: $('.here-orb'), nameBtn: $('.here-name'), name: $('[data-here-text]'), legacyBack: $('.legacy-back'),
+    orbBtn: $('.here-orb'), nameBtn: $('.here-name'), name: $('[data-here-text]'), legacyBack: $('.legacy-back'), bandClose: $('.band-close'),
     solio: $('[data-room="solio"]'), say: $('[data-say]'), then: $('[data-then]'), rows: $('[data-rows]'), read: $('[data-read]'),
     brief: $('[data-brief]'), soon: $('[data-soon]'), soonMore: $('[data-soon-more]'), live: $('[data-live]'), liveBig: $('[data-live-big]'), liveUnit: $('[data-live-unit]'), liveSmall: $('[data-live-small]'), tokOn: $('[data-orb-act="tok-on"]'),
     dial: $('[data-dial]'), dialSvg: $('[data-dial-svg]'), dialValue: $('[data-dial-value]'), dialUnit: $('[data-dial-unit]'), dialLabel: $('[data-dial-label]'),
@@ -657,6 +658,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (app.nameBtn?.getAttribute?.('aria-label') !== nameLabel) app.nameBtn?.setAttribute?.('aria-label', nameLabel);
     app.orbBtn.setAttribute('aria-label', `지금 ${s.spaceLabel}. 다른 공간으로 가기`);
     app.legacyBack.hidden = s.mode !== 'legacy';
+    // 창 안의 PULSE를 닫는 자리(3단계 설계 검토 R6). 쓰던 글이 있으면 본체가 묻는다
+    if (app.bandClose) app.bandClose.hidden = !s.bandClose;
     if (!room) { renderRail(s, [], null); lastProg = null; renderAsides(null, null); return; }
     const solio = room.space === 'solio';
     const prog = solio ? (room.prog || 'subs') : null;
@@ -1125,7 +1128,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     }, ms);
   }
   function fanStep(x, y) {
-    if (!scene || scene.layer !== 'app' || scene.mode !== 'app' || scene.busy || !canHover() || stageEl.classList.contains('still')) { clearTimeout(fanTimer); fanTimer = 0; return; }
+    // 띠에 있을 때도(창 안의 PULSE) 다가가서 열지 않는다. 띠를 지날 때마다 PULSE가 숨었다 나타나지 않게 한다(3단계 구현 설계 4.3)
+    if (!scene || scene.layer !== 'app' || scene.mode !== 'app' || scene.band || scene.busy || !canHover() || stageEl.classList.contains('still')) { clearTimeout(fanTimer); fanTimer = 0; return; }
     if (!scene.fan?.open) {
       if (!nearOrb(x, y)) { clearTimeout(fanTimer); fanTimer = 0; }
       else if (!fanTimer) armFan(ptrPx.v > 1.4 ? NEAR.fast : NEAR.open);
@@ -1592,9 +1596,12 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     root.dataset.portalAuthStatus = s.authStatus;
     if (s.workspaceStatus) root.dataset.portalWorkspaceStatus = s.workspaceStatus; else delete root.dataset.portalWorkspaceStatus;
     root.dataset.orbClient = s.mode;
+    // 창 안의 PULSE가 열린 동안은 맨 위 56px 띠만 얼굴이다(3단계 구현 설계 4.1). 그 아래는 본체가 붙인 PULSE 뷰다
+    if (s.band) root.dataset.orbBand = s.band; else delete root.dataset.orbBand;
     if (doc?.documentElement?.dataset) {
       doc.documentElement.dataset.portalActive = String(Boolean(s.active));
       doc.documentElement.dataset.orbClient = s.mode;
+      if (s.band) doc.documentElement.dataset.orbBand = s.band; else delete doc.documentElement.dataset.orbBand;
     }
     if (s.orbBusy) root.setAttribute('aria-busy', 'true'); else root.removeAttribute('aria-busy');
     setHostLocked(s.mode === 'portal' || s.mode === 'app');
@@ -1619,7 +1626,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     stage.setAutoFace(layer === 'switch' || fanOpen);
     if (layer !== 'switch' && !fanOpen) stage.setHot(null);
     // 손이 다가오면 작은 구가 커지는 것은 들어온 뒤 방에 있고 옛 화면과 펼침이 닫혀 있을 때만이다(설계 검토 1차 2 · 15)
-    stage.setNear(s.mode === 'app' && layer === 'app' && !fanOpen && canHover());
+    stage.setNear(s.mode === 'app' && layer === 'app' && !fanOpen && !s.band && canHover());
 
     renderAsk(s);
     renderSwitch(s);
@@ -1929,6 +1936,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       return;
     }
     if (mode === 'legacy' || typing || event.ctrlKey || event.metaKey || event.altKey) return;
+    // 띠(창 안의 PULSE)에서 F6은 PULSE로 돌아간다. PULSE 안의 F6은 본체가 띠로 데려온다(3단계 구현 설계 2.2)
+    if (event.key === 'F6' && !event.shiftKey && scene?.band && mode === 'app') { event.preventDefault(); onAction('band-f6'); return; }
     if ((event.key === 'Enter' || event.key === ' ') && scene?.boot) { event.preventDefault(); onAction('wake'); return; }
     if (event.key === 'Enter' && scene?.layer === 'ask' && !scene.ask.wait && !(t?.closest?.('button')) && scene.ask.showSignIn) { event.preventDefault(); onAction('signin'); return; }
     // 구 곁의 펼침: 구나 이름에서 아래 화살표를 누르면 고정해 연다. 초점만으로는 열지 않는다(설계 검토 1차 1). 열린 동안 위아래 화살표로 돈다
@@ -2066,6 +2075,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     move,
     dive,
     arrive,
+    /* 움직임 없이 공간만 바꾼다. 「돌아가서 저장」으로 PULSE에 데려갈 때 쓴다(3단계 설계 검토 R12) */
+    settle(space) { if (disposed) return; motionGen += 1; sig.stop(); stage.setHot(null); stage.setSpace(space); },
     getInviteValue: () => ask.input?.value ?? '',
     setInviteValue(value) { if (ask.input && ask.input.value !== value) ask.input.value = value; },
     isHidden: () => doc?.hidden === true,
@@ -2135,7 +2146,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       root.dataset.orbClient = 'off';
       delete root.dataset.portalAuthStatus;
       delete root.dataset.portalWorkspaceStatus;
-      if (doc?.documentElement?.dataset) { delete doc.documentElement.dataset.portalActive; delete doc.documentElement.dataset.orbClient; }
+      delete root.dataset.orbBand;
+      if (doc?.documentElement?.dataset) { delete doc.documentElement.dataset.portalActive; delete doc.documentElement.dataset.orbClient; delete doc.documentElement.dataset.orbBand; }
       root.innerHTML = '';
     },
   };
