@@ -484,6 +484,14 @@ test('old Solio usage logs expire without reading their contents or following li
   const nested = writeLog(folder,'agy-sub12345.log');
   const link = path.join(dir,'agy-lnk12345.log');
   fs.symlinkSync(outside,link,process.platform === 'win32' ? 'junction' : 'dir');
+  const followedLinks=[];
+  for (const [api,method] of [[fs,'statSync'],[fs,'stat'],[fs.promises,'stat'],[fs,'realpathSync'],[fs,'realpath'],[fs.promises,'realpath']]) {
+    const original=api[method];
+    t.mock.method(api,method,function(file,...args) {
+      if (file === link) followedLinks.push(method);
+      return original.call(this,file,...args);
+    });
+  }
   const accesses=[];
   for (const [api,method] of [[fs,'readFileSync'],[fs,'openSync'],[fs,'createReadStream'],[fs.promises,'readFile'],[fs.promises,'open']]) {
     const original=api[method];
@@ -503,6 +511,7 @@ test('old Solio usage logs expire without reading their contents or following li
   assert.equal(fs.existsSync(recent),false);
   for (const kept of [unrelated,external,folder,nested,link]) assert.ok(fs.existsSync(kept),kept);
   assert.ok(fs.lstatSync(link).isSymbolicLink());
+  assert.deepEqual(followedLinks,[]);
   assert.deepEqual(accesses,[]);
   assert.ok(f.calls.every(c=>!c.command.endsWith('agy.exe')));
 });
