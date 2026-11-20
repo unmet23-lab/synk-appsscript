@@ -18,6 +18,21 @@ test('다른 시 거주자만 내는 공모는 안 됨, 사는 도 · 시와 전
   assert.strictEqual(자격.판정하기({ ...빈제한, 지역: ['춘천시'] }, 조건).status, '됨');
   assert.strictEqual(자격.판정하기({ ...빈제한, 지역: ['전국'] }, 조건).status, '됨');
   assert.strictEqual(자격.판정하기({ ...빈제한, 누구나: true }, 조건).status, '됨');
+  assert.strictEqual(자격.판정하기({ ...빈제한, 지역: ['한국', '일본', '미국'] }, 조건).status, '됨', '나라 이름 한국은 전국이다');
+  assert.strictEqual(자격.판정하기({ ...빈제한, 지역: ['South Korea'] }, 조건).status, '됨');
+  assert.strictEqual(자격.판정하기({ ...빈제한, 지역: ['일본', '대만'] }, 조건).status, '안 됨');
+});
+
+test('쌓인 카본 판정은 지금 규칙으로 다시 맞대고, 사람이 넣은 판정은 건드리지 않는다', () => {
+  const 판정 = { items: {
+    a: { title: 'a', status: '안 됨', reason: '옛 규칙', by: '카본', 제한: { ...빈제한, 지역: ['한국', '일본'] } },
+    b: { title: 'b', status: '안 됨', reason: '사람이 확인', by: '수동' },
+    c: { title: 'c', status: '확인 필요', reason: '못 읽음', by: '카본' },
+  } };
+  assert.strictEqual(자격.다시판정(판정, 조건), 1);
+  assert.strictEqual(판정.items.a.status, '됨');
+  assert.strictEqual(판정.items.b.status, '안 됨');
+  assert.strictEqual(판정.items.c.status, '확인 필요');
 });
 
 test('학생만 · 단체만 · 나이 · 대전 현장은 안 됨', () => {

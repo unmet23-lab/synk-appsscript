@@ -67,7 +67,8 @@ function 판정찾기(판정, 제목) {
   return null;
 }
 
-const 전국 = /^(전국|대한민국|국내|국민|누구나|제한없음|제한 없음|전 국민)$/;
+// 나라 이름(한국 · 대한민국 · Korea)도 전국이다. 11-20 「한국 · 일본 · 미국 · 홍콩 · 대만 거주자」 공모가 전북 거주자에게 「안 됨」으로 나왔다.
+const 전국 = /^(전국|대한민국|한국|국내|국민|누구나|제한없음|제한 없음|전 국민|대한민국 국민|한국 거주|국내 거주|korea|south korea|republic of korea)$/i;
 
 /** 지역 이름이 신청자가 사는 곳과 겹치는가 — 「강원특별자치도」와 「강원」, 「춘천시」와 「춘천」처럼 한쪽이 다른 쪽을 품으면 겹친다. */
 function 지역맞음(지역, 사는곳) {
@@ -238,6 +239,20 @@ async function 자격확인(folder, 후보, 선택 = {}) {
   try { return await 자격확인본(folder, 후보, 선택); } finally { fs.rmSync(잠금, { force: true }); }
 }
 
+/**
+ * 쌓인 카본 판정의 제한값을 지금 규칙과 신청자 조건으로 다시 맞댄다(카본에 다시 묻지 않는다).
+ * 판정 규칙을 고치거나 신청자 조건(나이 · 사는 곳)이 바뀌면 다음 확인 회차부터 바로 맞는 판정이 된다.
+ */
+function 다시판정(판정, 조건) {
+  let 바뀜 = 0;
+  for (const v of Object.values(판정.items)) {
+    if (v.by === '수동' || !v.제한 || (v.status !== '됨' && v.status !== '안 됨')) continue;
+    const r = 판정하기(v.제한, 조건);
+    if (r.status !== v.status || r.reason !== v.reason) { v.status = r.status; v.reason = r.reason; 바뀜++; }
+  }
+  return 바뀜;
+}
+
 async function 자격확인본(folder, 후보, { fetchPage, carbon, budgetMs = 600000, 지금 = new Date(), batchSize = 2, 확인필요다시 = false, 첨부읽기 } = {}) {
   // 여섯 건씩 묶으면 구독 통로가 빈 답을 자주 냈다(11-20 첫 확인 23건 실패). 두 건씩이면 대부분 답한다.
   const 조건 = 조건읽기(folder);
@@ -247,6 +262,8 @@ async function 자격확인본(folder, 후보, { fetchPage, carbon, budgetMs = 6
   if (!첨부읽기) 첨부읽기 = require('./공고첨부.cjs').첨부글읽기;
   const until = Date.now() + budgetMs;
   const 판정 = 판정읽기(folder);
+  const 다시맞춤 = 다시판정(판정, 조건);
+  if (다시맞춤) 판정저장(folder, 판정);
   const 할것 = [];
   const 본것 = new Set();
   const 남은날 = (마감) => { const t = Date.parse(String(마감 || '').slice(0, 10) + 'T23:59:00+09:00'); return Number.isFinite(t) ? (t - +지금) / 864e5 : 999; };
@@ -363,7 +380,7 @@ async function 자격확인본(folder, 후보, { fetchPage, carbon, budgetMs = 6
     if (v.status === '확인 필요' && v.by !== '수동' && v.retry) v.checkedAt = new Date(+new Date(v.checkedAt) - 다시확인일 * 864e5 - 1000).toISOString();
   }
   판정저장(folder, 판정);
-  return { due: 할것.length, checked: 본수, asked: 물음 };
+  return { due: 할것.length, checked: 본수, asked: 물음, ...(다시맞춤 && { rejudged: 다시맞춤 }) };
 }
 
 /** 사람이 직접 「안 됨」을 넣는다. 제목 조각(정규화한 4자 이상)으로 맞춘다. */
@@ -377,4 +394,4 @@ function 수동제외(folder, 제목조각, 까닭, 지금 = new Date()) {
   return 판정.items[k];
 }
 
-module.exports = { 열쇠, 조건읽기, 판정읽기, 판정찾기, 판정하기, 자격문장, 공고문장, 답읽기, 자격확인, 수동제외, 지역맞음, 첫주소 };
+module.exports = { 열쇠, 조건읽기, 판정읽기, 판정찾기, 판정하기, 다시판정, 자격문장, 공고문장, 답읽기, 자격확인, 수동제외, 지역맞음, 첫주소 };
