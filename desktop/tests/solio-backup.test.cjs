@@ -966,5 +966,7 @@ test('PC 0.5.2: in a packaged build the room is hidden and the calls say NOT_AVA
   const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
   assert.match(src, /^const IN_RELEASE = false;$/m, 'PC 0.5.2 ships with the room off');
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
-  assert.match(main, /createSolioBackup\(\{packaged,/);
+  const call = main.match(/createSolioBackup\(\{[^}]*\}\)/g) || [];
+  assert.deepEqual(call, ["createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url)})"], 'main makes the service once, with the packaged flag and nothing that turns it back on');
+  assert.doesNotMatch(main, /inRelease/, 'only the IN_RELEASE line in solio-backup.cjs turns the room on');
 });
