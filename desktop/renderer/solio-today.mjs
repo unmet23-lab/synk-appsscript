@@ -1,7 +1,7 @@
 // 솔리오 첫 화면(PC 클라이언트 1단계, 2026-11-16)의 맨 위 문장과 구독별 줄을 구독 스냅숏에서 만든다. DOM이 없다.
 // 규칙의 원문은 docs/디자인/플랫폼_클라이언트_검정구_20261116/1단계_구현설계.md 8절이다. 셈은 subscriptions-model.mjs를 그대로 쓰고,
 // 새로 세는 것은 「쓰는 속도를 셀 기록이 사흘 안 됐는지」(rate3가 없는 계정이 있는지) 하나뿐이다.
-import { serviceGroups, poolTimeline, serviceFacts, balance, monthCredits, nextBill, freshness, DAY_MS, usageDays, monthPrice, monthlyBill, nextRefill, planKey } from './subscriptions-model.mjs';
+import { serviceGroups, poolTimeline, serviceFacts, balance, monthCredits, nextBill, freshness, DAY_MS, usageDays, monthPrice, monthlyBill, nextRefill, planKey, weightOf } from './subscriptions-model.mjs';
 
 /* 서비스의 짧은 이름은 이 표 한 곳에서만 읽는다(문장 · 줄 · 화면 읽기 프로그램의 글). gpt 줄의 남은 양은 Codex가 알려 주는 한도다 */
 export const SOLIO_TODAY_NAMES = Object.freeze({ claude: 'Claude', gpt: 'Codex', gemini: 'Gemini', higgsfield: 'Higgsfield', typecast: 'Typecast' });
@@ -101,7 +101,9 @@ function weeklyFact(snapshot, g, now) {
   if (young) return { kind: 'young' };
   // 풀 모의가 없으면(아직 읽지 않은 계정, 합칠 수 없는 요금제 등) 읽힌 계정마다 자기 속도로 초기화까지 가는지만 본다.
   // 하나라도 못 가면 넉넉하다고도, 언제 바닥난다고도 하지 않는다(구조 다시 보기 P1-3, Opus 재현 2)
-  if (!p && !usable.every(a => { const r = stats[a.row.id].rate3, rs = a.g.weekly.resetsAt; return r <= 0 || (rs && now + (a.g.weekly.left / r) * DAY_MS >= rs); })) return { kind: 'unknown' };
+  // 속도는 풀 모의와 같이 그때의 요금제 무게로 센 값(rate3w)을 먼저 쓰고 지금 요금제의 %로 바꾼다. 요금제를 낮춘 계정의 rate3만 보면 넉넉하다고 했다(카본 solio-struct-20261120 A2)
+  const ownRate = a => { const st = stats[a.row.id]; return Number.isFinite(st.rate3w) ? st.rate3w / weightOf(a.row) : st.rate3; };
+  if (!p && !usable.every(a => { const r = ownRate(a), rs = a.g.weekly.resetsAt; return r <= 0 || (rs && now + (a.g.weekly.left / r) * DAY_MS >= rs); })) return { kind: 'unknown' };
   return { kind: 'fine', reset: Math.min(...usable.map(a => a.g.weekly.resetsAt).filter(Boolean)) };
 }
 

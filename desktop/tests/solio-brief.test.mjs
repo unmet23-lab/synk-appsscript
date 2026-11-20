@@ -718,3 +718,23 @@ test('a credit service with no known monthly credits says its credits left aloud
   assert.deepEqual(d.hero, { value: '1,240', unit: '', label: 'Higgsfield 남은 크레딧' });
   assert.equal(d.label, 'Higgsfield는 열려 있습니다. Higgsfield 남은 크레딧 1,240.');
 });
+
+test('a pool that runs dry within a minute is a forecast, not 「now」, so the top still says it (카본 solio-struct-20261120 A1)', () => {
+  // Max 20x는 다 썼고(이틀 뒤 열림) Pro는 1%: 하루 2,880(무게) 속도면 30초 뒤 모두 막힌다
+  const big = weekly('claude', 100, NOW + 2 * D, { email: 'big@example.com' }), small = weekly('claude', 99, NOW + 5 * D, { plan: 'pro', email: 'small@example.com' });
+  const s = snap([big, small], { [big.id]: 144, [small.id]: 0 }), g = briefGroups(s, NOW), p = poolTimeline(s, g[0], NOW);
+  assert.equal(p.now, null);
+  assert.equal(p.forecast.at, NOW + 30e3);
+  const b = brief(s);
+  assert.equal(b.head.say, '지금 속도면 Claude는 10분 뒤쯤 모두 막힙니다.');
+  assert.match(b.dial.label, / 지금 속도면 10분 뒤쯤 모두 막힙니다\.$/);
+});
+
+test('without a pool count, an account that moved to a smaller plan is judged by its weighted pace (카본 solio-struct-20261120 A2)', () => {
+  // Max 20x에서 Pro로 낮춘 계정: rate3 20이면 넉넉해 보이지만 무게로 센 속도 400은 Pro로 하루 400%다. 다른 계정은 아직 읽지 않아 풀 셈이 없다
+  const a = weekly('claude', 20, NOW + 3 * D, { plan: 'pro' }), b = row({ plan: 'pro', live: null });
+  const s = snap([a, b], { [a.id]: { rate3: 20, rate3w: 400 } }), today = solioToday({ snapshot: s }, NOW);
+  assert.equal(poolTimeline(s, briefGroups(s, NOW)[0], NOW), null);
+  assert.equal(today.state, 'first');
+  assert.doesNotMatch(today.say + ' ' + today.then, /넉넉/);
+});

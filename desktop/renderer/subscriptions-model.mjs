@@ -751,7 +751,8 @@ function sweepPool(snapshot, g, now) {
     cur.by = later; blocks.push(cur);
   }
   const long = b => b.to - b.from >= POOL_SHORT;
-  const nowBlock = blocks.find(b => b.from <= now + 60e3) || null, first = blocks.find(long) || null, fut = blocks.find(b => long(b) && b.from > now + 60e3) || null;
+  // 지금 막힘은 정말 지금(남은 몫 0)일 때만이다. 1분 안에 바닥나는 막힘을 지금으로 치면 앞날의 막힘(forecast)에서도 빠져 아무 글도 말하지 않았다(카본 solio-struct-20261120 A1)
+  const nowBlock = blocks.find(b => b.from <= now) || null, first = blocks.find(long) || null, fut = blocks.find(b => long(b) && b.from > now) || null;
   const forecast = fut ? { at: fut.from, sayAt: poolSayAt(fut.from, now), untilAt: poolUntilAt(fut.from, now), next: fut.by } : null;
   // 30분 문턱은 여기서만 건다. 문자판이 따로 걸면 문턱을 바꿀 때 글과 궤도가 갈라진다(다시 검수 solio-dial-20261120-3 FA1)
   const shown = blocks.filter(b => b === nowBlock || long(b));
