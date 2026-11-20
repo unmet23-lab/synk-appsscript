@@ -41,8 +41,11 @@ for (const item of BANK) {
   if (!bySkill.has(item.skillId)) bySkill.set(item.skillId, []);
   bySkill.get(item.skillId).push(item);
 }
+// TOPIK I 읽기 항목 가운데 문항이 가장 많은 것이다. 4급 문형 묶음(tii-g4-a, 11-21)이 들어온 뒤로 가장 큰 읽기 항목은 TOPIK II 읽기
+// 문법인데, 그 항목은 문항마다 새 문형 단위가 있어 하루 새 단위 한도에 먼저 닿는다(넷째 판이 두 문항에서 limited로 끝난다).
+// 아래 시험은 놓친 단위의 「다시」와 idle 뒤 처음 보는 문항으로 잇는 길을 보므로, 그 길이 서는 TOPIK I 항목에 고정한다.
 const readingSkill = [...bySkill]
-  .filter(([id, items]) => id.includes('.reading.') && items.length >= 8)
+  .filter(([id, items]) => id.startsWith('ko.reading.') && items.length >= 8)
   .sort((a, b) => b[1].length - a[1].length)[0];
 
 let stores = 0;

@@ -225,7 +225,7 @@
     ["ko.grammar.S467","grammar","-는 통에",4],
     ["ko.life.greet-hello","life","안녕하세요.",null],
     ["ko.life.greet-thanks","life","감사합니다.",null],
-    ["ko.life.greet-name","life","저는 몽글이에요.",null],
+    ["ko.life.greet-name","life","저는 수진이에요.",null],
     ["ko.life.cafe-order","life","따뜻한 차 한 잔 주세요.",null],
     ["ko.life.cafe-here","life","여기서 마실게요.",null],
     ["ko.life.cafe-takeout","life","포장해 주세요.",null],
@@ -296,5 +296,5 @@
     ["ko.hangul.v-ye","hangul","ㅖ",null],
     ["ko.hangul.v-yae","hangul","ㅒ",null]
   ],
-  "hash": "059c03f151938952"
+  "hash": "ca9523572702b789"
 }

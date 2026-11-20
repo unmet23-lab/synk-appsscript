@@ -2379,6 +2379,1302 @@
         "at": "2026-11-10"
       }
     },
+    "topik-items.tii-g4-a-001.v2": {
+      "units": [
+        "ko.grammar.S414"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-002.v1": {
+      "units": [
+        "ko.grammar.S414",
+        "ko.word.w0940"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "주 단위는 밑줄의 「-거니와」이고, 정답 「새로울 뿐만 아니라」를 알아보는 데 「뿐」이 필요하다. 「아니라」는 굳은 표현의 일부라 따로 적지 않는다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-003.v1": {
+      "units": [
+        "ko.grammar.S415",
+        "ko.grammar.G313"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-004.v1": {
+      "units": [
+        "ko.grammar.S415",
+        "ko.grammar.G610"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "주 단위는 밑줄의 「-고도」이고, 정답 「읽었는데도」를 알아보려면 「-(으)ㄴ/는데」가 필요하다(3). 보조사 「도」는 따로 적지 않는다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-005.v2": {
+      "units": [
+        "ko.grammar.S416"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-006.v1": {
+      "units": [
+        "ko.grammar.S416",
+        "ko.grammar.S346"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-007.v2": {
+      "units": [
+        "ko.grammar.S417"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "까닭을 나타내는 「-기에」만 알아보면 오답 셋과 갈린다. 네 보기에 다 있는 「이상하다」는 답을 가르지 않는다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-008.v2": {
+      "units": [
+        "ko.grammar.S417",
+        "ko.grammar.G308"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-009.v2": {
+      "units": [
+        "ko.grammar.S418"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "주 단위 「-는지」가 답을 가른다. 「언제」와 「궁금하다」는 어느 하나를 몰라도 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-010.v2": {
+      "units": [
+        "ko.grammar.S418",
+        "ko.grammar.G308"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-011.v2": {
+      "units": [
+        "ko.grammar.S419"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "「-다시피」만 알아보면 오답 셋과 갈린다. 「여러분」은 몰라도 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-012.v2": {
+      "units": [
+        "ko.grammar.S419",
+        "ko.word.w0240"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "주 단위는 밑줄의 「-다시피」이고, 정답 「보시는 바와 같이」를 알아보려면 「같이」가 필요하다(3).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-013.v1": {
+      "units": [
+        "ko.grammar.S420",
+        "ko.grammar.S303",
+        "ko.word.w1250",
+        "ko.word.w0051"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-014.v1": {
+      "units": [
+        "ko.grammar.S420",
+        "ko.grammar.S319"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "주 단위는 밑줄의 「-더라도」이고, 정답 「틀린다고 해도」를 알아보려면 「-어도」가 필요하다(3).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-015.v2": {
+      "units": [
+        "ko.grammar.S421"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-016.v2": {
+      "units": [
+        "ko.grammar.S421",
+        "ko.grammar.S319"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "주 단위는 밑줄의 「-든지」이고, 정답 「맡아도」를 알아보려면 「-어도」가 필요하다. 「어떤」은 몰라도 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-017.v1": {
+      "units": [
+        "ko.grammar.S422",
+        "ko.word.w1043"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "주 단위 「-으므로」가 정답을 가르고, 앞 절이 까닭임을 알려면 「넘다」가 필요하다. 「뽑다」는 몰라도 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-018.v3": {
+      "units": [
+        "ko.grammar.S422",
+        "ko.grammar.S219"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-019.v2": {
+      "units": [
+        "ko.grammar.S423",
+        "ko.grammar.G402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "문항의 「-(으)려야」는 목록 표기 「-을래야」의 표준 표기라 같은 단위 S423이다(같은 문형의 020도 S423으로 통과했다). 뒤의 「할 수가 없었다」와 짝이 되는지 알아봐야 답이 나온다(2).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-020.v1": {
+      "units": [
+        "ko.grammar.S423",
+        "ko.grammar.G405",
+        "ko.grammar.S319"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-021.v2": {
+      "units": [
+        "ko.grammar.S424"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-022.v1": {
+      "units": [
+        "ko.grammar.S424",
+        "ko.grammar.G406"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-023.v2": {
+      "units": [
+        "ko.grammar.S425"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "가정의 「-ㄴ다면」만 알아보면 오답 셋과 갈린다. 「만약」은 몰라도 뒤 절의 바람과 이어지는 조건으로 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-024.v3": {
+      "units": [
+        "ko.grammar.S425",
+        "ko.word.w0914"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-025.v2": {
+      "units": [
+        "ko.grammar.S426"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-026.v2": {
+      "units": [
+        "ko.grammar.S426",
+        "ko.grammar.G610"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-027.v2": {
+      "units": [
+        "ko.grammar.S427"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "「-던데」만 알아보면 오답 셋과 갈린다. 「어제」는 몰라도 「가 보니까」로 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-028.v3": {
+      "units": [
+        "ko.grammar.S427",
+        "ko.grammar.G610"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-029.v3": {
+      "units": [
+        "ko.grammar.S428"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-030.v1": {
+      "units": [
+        "ko.grammar.S428",
+        "ko.grammar.S204"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-031.v3": {
+      "units": [
+        "ko.grammar.S429",
+        "ko.word.w1223"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-032.v2": {
+      "units": [
+        "ko.grammar.S429",
+        "ko.grammar.S460"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-033.v2": {
+      "units": [
+        "ko.grammar.S430"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-034.v2": {
+      "units": [
+        "ko.grammar.S430",
+        "ko.grammar.G306"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-035.v1": {
+      "units": [
+        "ko.grammar.S442"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-036.v1": {
+      "units": [
+        "ko.grammar.S442",
+        "ko.word.w0940"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-037.v1": {
+      "units": [
+        "ko.grammar.S443"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-038.v1": {
+      "units": [
+        "ko.grammar.S443",
+        "ko.grammar.G405"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-039.v1": {
+      "units": [
+        "ko.grammar.S444"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-040.v1": {
+      "units": [
+        "ko.grammar.S444",
+        "ko.grammar.S336"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-041.v1": {
+      "units": [
+        "ko.grammar.S445"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "오답이 나쁜 결과의 원인 · 양보 · 대체라서 「-고 해서」만 알아보면 답이 나온다. 조사 「도」는 꼭 필요하지 않다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-042.v3": {
+      "units": [
+        "ko.grammar.S445",
+        "ko.grammar.G308"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-043.v1": {
+      "units": [
+        "ko.grammar.S446"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-044.v1": {
+      "units": [
+        "ko.grammar.S446",
+        "ko.word.w0225"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-045.v1": {
+      "units": [
+        "ko.grammar.S447",
+        "ko.grammar.G403"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-046.v1": {
+      "units": [
+        "ko.grammar.S447",
+        "ko.word.w0240"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-047.v2": {
+      "units": [
+        "ko.grammar.S448"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-048.v2": {
+      "units": [
+        "ko.grammar.S448",
+        "ko.grammar.S222"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-049.v1": {
+      "units": [
+        "ko.grammar.S449",
+        "ko.word.w1497"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-050.v1": {
+      "units": [
+        "ko.grammar.S449",
+        "ko.grammar.S204"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-051.v2": {
+      "units": [
+        "ko.grammar.S450",
+        "ko.grammar.S444"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-052.v6": {
+      "units": [
+        "ko.grammar.S450",
+        "ko.word.w0158"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t3",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "주 단위는 밑줄의 「-는 줄」이고 정답을 알아보는 데 「모르다」가 필요하다. 「알다」는 오답에만 쓰여 몰라도 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-053.v1": {
+      "units": [
+        "ko.grammar.S451",
+        "ko.grammar.G304",
+        "ko.word.w1198"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-054.v1": {
+      "units": [
+        "ko.grammar.S451",
+        "ko.grammar.S219"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-055.v5": {
+      "units": [
+        "ko.grammar.S452",
+        "ko.word.w0363",
+        "ko.word.w0252"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t3",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "이 글의 「-ㄴ/는다거나」는 둘 가운데 하나를 고르는 뜻이다. 문형 자료(strata/topik-ii.grammar.json)의 뜻 칸은 S313 「-는다거나1」이 나열, S452 「-는다거나2」가 선택이고, 한국어기초사전도 「둘 이상의 동작 … 중 하나를 선택함」을 둘째 뜻으로 싣는다. 두 검수자가 받은 단위 목록에는 이름만 있고 뜻 칸이 없어 S313으로 적었으므로 주 단위만 S452로 바로잡는다(2). 「둘」과 「어렵다」는 두 검수 그대로 둔다.",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-056.v5": {
+      "units": [
+        "ko.grammar.S452",
+        "ko.grammar.S421"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t3",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "이 글의 「-ㄴ/는다거나」는 둘 가운데 하나를 고르는 뜻이다. 문형 자료(strata/topik-ii.grammar.json)의 뜻 칸은 S313 「-는다거나1」이 나열, S452 「-는다거나2」가 선택이고, 한국어기초사전도 「둘 이상의 동작 … 중 하나를 선택함」을 둘째 뜻으로 싣는다. 두 검수자가 받은 단위 목록에는 이름만 있고 뜻 칸이 없어 S313으로 적었으므로 주 단위만 S452로 바로잡는다(2). 정답 「찍든지」를 알아보는 데 「-든지」가 필요하다(1차 검수 그대로).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-057.v2": {
+      "units": [
+        "ko.grammar.S453",
+        "ko.word.w0508"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-058.v1": {
+      "units": [
+        "ko.grammar.S453",
+        "ko.grammar.G608"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "주 단위는 밑줄의 「-나 싶다」이고, 정답 「잊어버린 것 같다」를 알아보려면 「-(으)ㄹ 것 같다」가 필요하다(3). 오답의 「-고 싶다」는 몰라도 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-059.v1": {
+      "units": [
+        "ko.grammar.S454",
+        "ko.word.w0466"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-060.v1": {
+      "units": [
+        "ko.grammar.S454",
+        "ko.grammar.S451"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-061.v1": {
+      "units": [
+        "ko.grammar.S455",
+        "ko.grammar.G403"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-062.v2": {
+      "units": [
+        "ko.grammar.S455",
+        "ko.grammar.G401"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-063.v1": {
+      "units": [
+        "ko.grammar.S456"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "원인을 나타내는 「으로 인해」만 알아보면 오답 셋과 갈린다. 「늦다」는 몰라도 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-064.v1": {
+      "units": [
+        "ko.grammar.S456",
+        "ko.word.w0141"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-065.v1": {
+      "units": [
+        "ko.grammar.S457",
+        "ko.grammar.S345"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-066.v2": {
+      "units": [
+        "ko.grammar.S457",
+        "ko.grammar.S425"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-067.v1": {
+      "units": [
+        "ko.grammar.S458"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-068.v1": {
+      "units": [
+        "ko.grammar.S458",
+        "ko.word.w0323"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-069.v2": {
+      "units": [
+        "ko.grammar.S459",
+        "ko.grammar.G305",
+        "ko.word.w1616"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-070.v1": {
+      "units": [
+        "ko.grammar.S459",
+        "ko.grammar.S451"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-071.v1": {
+      "units": [
+        "ko.grammar.S460"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-072.v1": {
+      "units": [
+        "ko.grammar.S460",
+        "ko.grammar.S462"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "묻는 대상은 밑줄의 「에 따르면」이라 이것이 주 단위다(2). 정답 「에 의하면」을 알아보는 데 「에 의하여」도 필요하다.",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-073.v1": {
+      "units": [
+        "ko.grammar.S461"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "견주는 뜻의 「에 비해」만 알아보면 오답 셋과 갈린다. 「넓다」·「적다」는 어느 하나를 몰라도 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-074.v2": {
+      "units": [
+        "ko.grammar.S461",
+        "ko.grammar.G312"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-075.v2": {
+      "units": [
+        "ko.grammar.S462"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "두 검수 모두 단위는 「에 의하여」 하나다. 「추첨」은 지도 밖 말이라 단위가 되지 않는다(3).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-076.v1": {
+      "units": [
+        "ko.grammar.S462",
+        "ko.word.w0918"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-077.v2": {
+      "units": [
+        "ko.grammar.S463"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "「-어 버리다」만 알아보면 답이 나온다. 오답의 「-을 뻔하다」와 뒤 절의 「-아야 하다」는 꼭 필요하지 않다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-078.v2": {
+      "units": [
+        "ko.grammar.S463",
+        "ko.grammar.S337"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-079.v2": {
+      "units": [
+        "ko.grammar.S464"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "「-는 것을 보니」 뒤의 짐작 「-을 모양이다」만 알아보면 답이 나온다. 「곧」은 몰라도 답이 나온다(1).",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-080.v1": {
+      "units": [
+        "ko.grammar.S464",
+        "ko.grammar.G608"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-081.v1": {
+      "units": [
+        "ko.grammar.S465",
+        "ko.word.w1722",
+        "ko.grammar.G304"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-082.v2": {
+      "units": [
+        "ko.grammar.S465",
+        "ko.grammar.G402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-083.v2": {
+      "units": [
+        "ko.grammar.S466",
+        "ko.word.w0567"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-084.v2": {
+      "units": [
+        "ko.grammar.S466",
+        "ko.word.w0174",
+        "ko.grammar.S314"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-085.v1": {
+      "units": [
+        "ko.grammar.S467",
+        "ko.grammar.G402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
+    "topik-items.tii-g4-a-086.v1": {
+      "units": [
+        "ko.grammar.S467",
+        "ko.grammar.S454"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-a-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-20"
+      }
+    },
     "topik-items.tii-l-a-001.v1": {
       "units": [
         "ko.grammar.G305",
