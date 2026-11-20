@@ -9,6 +9,11 @@ const STUDY_FORM_URL =
 const COPY_FIELDS = [
   'title',
   'intro',
+  'schedule',
+  'join',
+  'emailHelp',
+  'mailSubject',
+  'mailBody',
   'start',
   'soon',
   'study',
@@ -44,6 +49,20 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+}
+
+function renderWaitlist(t) {
+  const WAITLIST_EMAIL = 'hello@synk.im';
+  const href = `mailto:${WAITLIST_EMAIL}?subject=${encodeURIComponent(t.mailSubject)}&body=${encodeURIComponent(t.mailBody)}`;
+  const emailHelp = t.emailHelp.replace(
+    /\{email\}|\{subject\}/g,
+    (match) => (match === '{email}' ? WAITLIST_EMAIL : t.mailSubject)
+  );
+  return [
+    `<p class="invite-soon">${escapeHtml(t.schedule)}</p>`,
+    `<a class="invite-cta" href="${escapeHtml(href)}">${escapeHtml(t.join)}</a>`,
+    `<p class="invite-browser">${escapeHtml(emailHelp)}</p>`,
+  ].join('\n');
 }
 
 function formatAccountHelp(value) {
@@ -137,13 +156,15 @@ function renderNeutralPage(en, mn) {
       <div class="invite-bilingual">
         <section class="invite-locale-card" lang="en">
           <h2 class="invite-card-title">${escapeHtml(en.title)}</h2>
+          ${renderWaitlist(en)}
           <p class="invite-intro">${escapeHtml(en.intro)}</p>
-          <p class="invite-soon">${escapeHtml(en.soon)}</p>
+          <p class="invite-browser">${escapeHtml(en.soon)}</p>
         </section>
         <section class="invite-locale-card" lang="mn">
           <h2 class="invite-card-title">${escapeHtml(mn.title)}</h2>
+          ${renderWaitlist(mn)}
           <p class="invite-intro">${escapeHtml(mn.intro)}</p>
-          <p class="invite-soon">${escapeHtml(mn.soon)}</p>
+          <p class="invite-browser">${escapeHtml(mn.soon)}</p>
         </section>
       </div>
     </main>
@@ -153,7 +174,7 @@ function renderNeutralPage(en, mn) {
     lang: 'en',
     pathname: NEUTRAL_PATH,
     title: formatBilingualTitle(en.title, mn.title),
-    description: formatBilingualDescription(en.intro, mn.intro),
+    description: formatBilingualDescription(en.schedule, mn.schedule),
     ogLocale: LOCALES.en.ogLocale,
     altOgLocale: LOCALES.mn.ogLocale,
     bodyClass: 'invite-page invite-page-neutral',
@@ -183,9 +204,10 @@ function renderLocalizedPage(localeMeta, t) {
       </figure>
       <div class="invite-panel">
         <h1 class="invite-title">${escapeHtml(t.title)}</h1>
+        ${renderWaitlist(t)}
+        <p class="invite-browser">${escapeHtml(t.soon)}</p>
         <p class="invite-intro">${escapeHtml(t.intro)}</p>
-        <p class="invite-soon">${escapeHtml(t.soon)}</p>
-        <a class="invite-cta" href="${localeMeta.startHref}">${escapeHtml(t.start)}</a>
+        <p class="invite-study"><a class="invite-study-link" href="${escapeHtml(localeMeta.startHref)}">${escapeHtml(t.start)}</a></p>
         <div class="invite-meta">
           <p class="invite-browser">${escapeHtml(t.browser)}</p>
           <details class="invite-guide">
@@ -201,7 +223,7 @@ function renderLocalizedPage(localeMeta, t) {
     lang: localeMeta.code,
     pathname: localeMeta.pathname,
     title: formatBrandTitle(t.title),
-    description: t.intro,
+    description: `${t.schedule} ${t.intro}`,
     ogLocale: localeMeta.ogLocale,
     altOgLocale: localeMeta.altOgLocale,
     bodyClass: 'invite-page invite-page-localized',

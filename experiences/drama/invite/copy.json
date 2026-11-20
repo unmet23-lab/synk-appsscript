@@ -2,23 +2,33 @@
   "en": {
     "title": "Step into a Korean drama scene and ask for directions",
     "intro": "As an exchange student, ask a senior student in Korean how to get to the main gate. You’ll get guidance and feedback in English, and then you can try again.",
-    "start": "Start the scene",
+    "start": "Try a preview scene",
     "soon": "We’re working to add more languages and will make them available as soon as possible.",
     "study": "Join the pilot for Mongolian learners of Korean (optional)",
     "language": "Choose language",
     "browser": "Open this link in Chrome or Safari on your phone to use your microphone.",
     "guide": "SYNK ID sign-up guide",
-    "authhelp": "The account buttons are in Korean. New here? Tap “가입하기” (Sign up). Already have an account? Tap “Google로 로그인” (Sign in with Google) or “이메일로 로그인” (Sign in with email)."
+    "authhelp": "The account buttons are in Korean. New here? Tap “가입하기” (Sign up). Already have an account? Tap “Google로 로그인” (Sign in with Google) or “이메일로 로그인” (Sign in with email).",
+    "schedule": "Korean speaking practice with K-drama scenes officially launches in SYNK WORLD in February 2027. We’re accepting early access waitlist signups now. In late December 2026, we’ll email an invitation to everyone on the waitlist.",
+    "join": "Join the waitlist by email",
+    "emailHelp": "Send the pre-filled email to join the waitlist. If your email app doesn’t open, email {email} with the subject “{subject}”.",
+    "mailSubject": "SYNK WORLD K-drama speaking waitlist",
+    "mailBody": "Please add me to the early access waitlist for K-drama speaking practice in SYNK WORLD."
   },
   "mn": {
     "title": "Солонгос драмын үзэгдэлд орж зам асуугаарай",
     "intro": "Солилцооны оюутны хувиар ахлах курсийн оюутнаас гол хаалга руу очих замыг солонгосоор асуугаарай. Заавар, зөвлөгөөг монголоор авч, дараа нь дахин оролдож болно.",
-    "start": "Үзэгдлийг эхлүүлэх",
+    "start": "Жишээ үзэгдэл туршиж үзэх",
     "soon": "Бид бусад хэлийг нэмэхээр бэлтгэж байгаа бөгөөд аль болох хурдан ашиглах боломжтой болгоно.",
-    "study": "Монгол суралцагчдад зориулсан туршилтад бүртгүүлэх (сайн дурын)",
+    "study": "Монгол суралцагчдад зориулсан судалгаанд бүртгүүлэх (тусдаа, сайн дурын)",
     "language": "Хэл сонгох",
     "browser": "Микрофоноо ашиглахын тулд энэ холбоосыг утасныхаа Chrome эсвэл Safari дээр нээнэ үү.",
     "guide": "SYNK ID бүртгэлийн заавар",
-    "authhelp": "Нэвтрэх хуудасны товчнууд солонгос хэл дээр байна. Шинээр бүртгүүлэх бол “가입하기”, бүртгэлтэй бол “Google로 로그인” (Google-ээр нэвтрэх) эсвэл “이메일로 로그인” (имэйлээр нэвтрэх) дээр дарна уу."
+    "authhelp": "Нэвтрэх хуудасны товчнууд солонгос хэл дээр байна. Шинээр бүртгүүлэх бол “가입하기”, бүртгэлтэй бол “Google로 로그인” (Google-ээр нэвтрэх) эсвэл “이메일로 로그인” (имэйлээр нэвтрэх) дээр дарна уу.",
+    "schedule": "SYNK WORLD дээр солонгос хэл сурах үйлчилгээ 2027 оны 2-р сард албан ёсоор нээгдэнэ. Энэ үйлчилгээгээр та солонгос драмын үзэгдэл ашиглан солонгос хэлээр ярьж дадлага хийх боломжтой. Одоо урьдчилан турших хүмүүсийг хүлээлгийн жагсаалтад бүртгэж байна. Жагсаалтад бүртгүүлсэн бүх хүнд 2026 оны 12-р сарын сүүлээр цахим шуудангаар урилга илгээнэ.",
+    "join": "Цахим шуудангаар урьдчилан турших хүсэлт илгээх",
+    "emailHelp": "Товчийг дарахад хүсэлтийн ноорогтой цахим шуудан бичих цонх нээгдэнэ. Жагсаалтад бүртгүүлэхийн тулд тэр цахим шууданг заавал илгээнэ үү. Цахим шуудан бичих цонх нээгдэхгүй бол {email} хаяг руу «{subject}» гэсэн гарчигтай цахим шуудан илгээнэ үү.",
+    "mailSubject": "SYNK WORLD – солонгос хэлээр ярих дадлагыг урьдчилан турших хүсэлт",
+    "mailBody": "Намайг урьдчилан турших хүмүүсийн жагсаалтад бүртгэнэ үү."
   }
 }

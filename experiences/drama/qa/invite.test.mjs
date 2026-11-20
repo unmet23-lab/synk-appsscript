@@ -53,6 +53,38 @@ test('both languages share a named navigation landmark with one link per languag
   }
 });
 
+test('every invitation publishes the launch schedule and opens the right waitlist email draft', () => {
+  const dates = {
+    en: [/February 2027/i, /late December 2026/i],
+    mn: [/2027 оны 2(?:-р| дугаар) сар/, /бүх хүнд 2026 оны 12(?:-р| дугаар) сарын сүүлээр [^.]*урилга илгээнэ/],
+  };
+  for (const [page, languages] of [
+    ['invite/index.html', locales],
+    ...locales.map(lang => [`invite/${lang}/index.html`, [lang]]),
+  ]) {
+    const doc = parse(pages[page]);
+    const body = textOf(findAll(doc, 'body')[0]);
+    const shareDescription = findAll(doc, 'meta').find(node => attr(node, 'property') === 'og:description');
+    const mailLinks = links(doc, 'https://synk.im').filter(({url}) => url.protocol === 'mailto:');
+    assert.equal(mailLinks.length, languages.length, page);
+    for (const lang of languages) {
+      const t = copy[lang];
+      for (const date of dates[lang]) assert.match(t.schedule, date);
+      assert.ok(body.includes(t.schedule), page);
+      assert.ok(attr(shareDescription, 'content').includes(t.schedule), page);
+      const manualHelp = t.emailHelp.replace('{email}', 'hello@synk.im').replace('{subject}', () => t.mailSubject);
+      assert.ok(t.emailHelp.includes('{subject}'), page);
+      assert.ok(body.includes(manualHelp), page);
+      const draft = mailLinks.find(({ label }) => label === t.join);
+      assert.ok(draft, page);
+      assert.equal(draft.url.pathname, 'hello@synk.im');
+      assert.equal(draft.url.searchParams.get('subject'), t.mailSubject);
+      assert.equal(draft.url.searchParams.get('body'), t.mailBody);
+      assert.ok(t.mailSubject && t.mailBody);
+    }
+  }
+});
+
 test('account help keeps punctuation and markup-like examples as plain text', () => {
   const help = 'Read <example>가입하기</example> & continue.';
   const sample = renderDramaInvites({ ...copy, en: { ...copy.en, authhelp: help } });
