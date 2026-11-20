@@ -759,6 +759,9 @@ test('되돌리기 셋(조율 세션 57c3d17e6): 복구 전용 PC의 되돌리�
   assert.deepEqual([ended.restored.act.call, ended.restored.act.arg], ['restoreSeen', 'job-1']);
   const undone = { ...STATES['home-restore-ended'], account: { ...STATES['home-restore-ended'].account, restoreEnded: { jobId: 'job-2', result: 'undone', at: NOW - 60000 } } };
   assert.match(homeModel(undone, { now: NOW }).restored.text, /되돌리기 취소를 마쳤습니다/);
+  // 카본 A1(workbackup-ui-leftout) — 담지 못한 이름이 있어도 매시간 도는 PC면 「다시 매시간 백업합니다」를 붙인다
+  const endedLeft = homeModel({ ...STATES['home-restore-ended'], leftOutNames: STATES['home-leftout'].leftOutNames }, { now: NOW });
+  assert.equal(endedLeft.id, 'home-leftout'); assert.match(endedLeft.restored.text, /사고 되돌리기를 마쳤습니다\. 이 PC는 다시 매시간 백업합니다\./);
   const endPage = draw('undo-3', STATES['home-restore-ended']);
   assert.match(endPage.html, /되돌리기를[\s\S]*마쳤습니다/); assert.deepEqual([endPage.acts.home.call, endPage.acts.home.arg, endPage.acts.home.then], ['restoreSeen', 'job-1', 'home']);
   // 카본 A2 — 되살리기만 하는 PC는 쓰는 자리를 쥐었을 때만 「어느 PC도 백업하지 않습니다」. 다른 PC가 가져갔으면 그 말을 하지 않는다
@@ -1925,6 +1928,15 @@ test('한꺼번에 지워짐(설계 4.4 — 엔진 massHold, 조율 세션 9ddcb
   assert.match(bigNote.restored.text, /「바탕화면」 폴더는 파일과 폴더가 100만 개를 넘어 통째로 받을 수 없습니다/);
   const bigRest = draw(bigErr, { ...bigOpts, massGot: { ...bigOpts.massGot, folders: [DOCS, 'C:\\Users\\studio\\Pictures', 'D:\\Projects'] } }).mm;
   assert.equal(bigRest.notes[0], '「바탕화면」 폴더 말고는 다 되살렸습니다. 그 폴더가 필요 없으면 「확인을 마침」을 누르세요.');
+  // -d FA2 — 남은 것이 받을 수 없는 큰 폴더뿐이면 반드시 실패할 전체 되살리기를 단추로 두지 않는다
+  assert.deepEqual(bigRest.actions.map((a) => [a.id, a.kind]), [['mass-done', 'line']]);
+  // -d FA1 — 다음 되살리기가 실패 칸을 지운 뒤에도 창이 모은 큰 폴더(massBig)는 「다 받은 뒤」에서 빠진다
+  const cleared = draw(f4got, { ...bigOpts, massBig: { beforeId: f4.massHold.beforeId, folders: [DESK] } }).mm;
+  assert.equal(cleared.notes[0], '아직 「사진」 · 「Projects」 폴더는 되살리지 않았습니다. 다 받은 뒤 「확인을 마침」을 누르세요.');
+  assert.match(draw(f4got, { ...bigOpts, massBig: { beforeId: 'e'.repeat(64), folders: [DESK] } }).mm.notes[0], /「바탕화면」 · 「사진」 등 3곳은/);
+  // -d FA3 — 옛 PC 백업 꺼내기의 실패(from)는 멈춤의 100만 개 실패가 아니다
+  assert.equal(m.massTooBig({ ...bigErr, lastRestoreError: { ...bigErr.lastRestoreError, from: 'ffffffffffff' } }, bigOpts.massSent), null);
+  assert.equal(m.massTooBig(bigErr, bigOpts.massSent), DESK);
   // 바뀐 폴더가 하나뿐이면 그 폴더를 받은 것이 모두다
   const b0 = STATES['home-mass-bytes'];
   assert.equal(draw({ ...b0, lastRestore: { ...r0Done(), mass: { beforeId: b0.massHold.beforeId, beforeAt: b0.massHold.beforeAt, folder: b0.massHold.path } } }).mm.actions[0].id, 'mass-done');
@@ -1997,4 +2009,74 @@ test('한꺼번에 지워짐(설계 4.4 — 엔진 massHold, 조율 세션 9ddcb
   const rs = strip(renderScreen('restore', { state: s, model: m.homeModel(s, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html);
   assert.match(rs, /한꺼번에 지워지기 전의 판은 기본 화면에서 꺼냅니다\. 이 목록은 가장 최근 판입니다\./);
   assert.doesNotMatch(rs, /준비 중/);
+});
+
+test('이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 조율 세션 부탁 · GPT 검수 workbackup-oddnames-20261120 GA1): 주의 · 목록', async () => {
+  const m = await load('screen-model.js');
+  const { renderScreen } = await load('screen-view.js');
+  const { STATES, NOW } = await load('engine-fixtures.js');
+  const strip = (x) => x.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  const draw = (s, opts = {}) => { const mm = m.homeModel(s, { now: NOW, ...opts }); return { mm, html: strip(renderScreen('home', { state: s, model: mm, now: NOW, ui: {}, acct: {}, fake: true }).html), out: renderScreen('home', { state: s, model: mm, now: NOW, ui: {}, acct: {}, fake: true }) }; };
+
+  // 「안전합니다」 대신 주의 — 수와 이름 둘, 나머지 수, 목록 고리
+  const a = draw(STATES['home-leftout']);
+  assert.equal(a.mm.id, 'home-leftout'); assert.equal(a.mm.tone, 'warn'); assert.equal(a.mm.title, '이름 때문에 담지 못한 파일이 있습니다.');
+  assert.equal(a.mm.sub, '이름 끝에 점(.)이나 빈칸이 있는 파일이나 폴더 3개는 Windows에서 백업할 수 없습니다. 이름을 바꾸면 다음 백업에 담깁니다.');
+  assert.deepEqual(a.mm.notes, ['「2026 견적서.」 · C: › Users › studio › Documents › 견적', '「회의록 」 · C: › Users › studio › Desktop', '외 1개']);
+  assert.deepEqual(a.mm.links.map((l) => [l.label, l.to]), [['어떤 파일인지 보기', 'left-out']]); assert.equal(a.out.acts['left-out'].to, 'left-out');
+  assert.equal(a.mm.actions[0].label, '파일 되살리기'); assert.ok(a.mm.actions.filter((x) => x.kind === 'main').length <= 1);
+  // 쓰는 중인 파일과 함께 — 둘 다 쓰고 고리도 둘
+  const p = draw(STATES['home-leftout-partial']);
+  assert.equal(p.mm.id, 'home-leftout'); assert.match(p.mm.notes.at(-1), /Outlook이 쓰는 중인 파일 2개는 앞 판으로 지킵니다\./);
+  assert.deepEqual(p.mm.links.map((l) => l.to), ['left-out', 'partial']); assert.ok(p.out.acts.partial && p.out.acts['left-out']);
+  assert.match(p.html, /어떤 파일인지 보기.*쓰는 중인 파일 보기/);
+  // 많음(cut) — 「1,000개 이상은」
+  const many = draw(STATES['home-leftout-many']);
+  assert.match(many.mm.sub, /폴더 1,000개 이상은 Windows에서/); assert.equal(many.mm.notes.at(-1), '외 998개 이상');
+  // 자동 백업이 꺼진 PC에도 한 줄과 고리(알림이 뜨지 않는다)
+  const off = draw(STATES['home-leftout-off']);
+  assert.equal(off.mm.id, 'home-off'); assert.equal(off.mm.link.to, 'left-out'); assert.equal(off.mm.link.label, '백업에 담지 못한 이름 3개 보기');
+  // Opus 대체 검수 F1 — 백업이 도는 다른 주의 화면에도 무엇인지 말하는 고리. 한 번 더 묻는 동안은 두지 않는다
+  for (const k of ['home-lost-step', 'home-writekey', 'home-missing', 'home-probe', 'home-restore-error', 'home-health', 'home-error', 'home-overdue', 'home-credential', 'home-startup', 'home-paused']) {
+    const w = draw(STATES[`${k}-leftout`]);
+    assert.notEqual(w.mm.id, 'home-leftout', k); assert.deepEqual(w.mm.notes, draw(STATES[k]).mm.notes, `${k} — 줄은 더하지 않는다`);
+    assert.ok(w.mm.links.at(-1).to === 'left-out' && w.mm.links.at(-1).label === '백업에 담지 못한 이름 3개 보기' && w.out.acts['left-out'], k);
+    if (draw(STATES[k]).mm.link) assert.ok(w.mm.links.length === 2 && w.mm.links[0].to !== 'left-out', `${k} — 원래 고리를 지킨다`);
+  }
+  const mw = draw(STATES['home-mass-leftout']);
+  assert.deepEqual(mw.mm.links.map((l) => l.to), ['mass-list', 'left-out']); assert.match(draw({ ...STATES['home-mass'], leftOutNames: STATES['home-leftout-many'].leftOutNames }).mm.links[1].label, /백업에 담지 못한 이름 1,000개 이상 보기/);
+  assert.equal(draw(STATES['home-mass-leftout'], { massAsk: 'ok' }).mm.links, undefined);
+  // 다시 검수 -b 2 — 한꺼번에 지워짐에서 되살리기가 실패한 날에도 고리를 둔다(멈춘 동안에도 백업은 돈다)
+  const mf = draw(STATES['home-mass-failed-leftout']);
+  assert.ok(mf.mm.restored && mf.mm.notes.length === 1 && mf.mm.links.map((l) => l.to).join() === 'mass-list,left-out' && mf.out.acts['left-out'], JSON.stringify(mf.mm.links));
+  // 넘긴 PC · 되살리기만 하는 PC에는 두지 않는다
+  assert.ok(!draw({ ...STATES['home-moved'], leftOutNames: STATES['home-leftout'].leftOutNames }).mm.links);
+  // F3 — 쓰는 중인 파일 줄이 있으니 확인서에 「쓰는 중이라 앞 판으로」 줄을 또 두지 않는다
+  assert.ok(!p.mm.evidence.rows?.some?.((r) => r.k === '쓰는 중이라 앞 판으로') && !JSON.stringify(p.mm.evidence).includes('쓰는 중이라 앞 판으로'));
+  // F2 — 목록의 이름 줄은 줄을 바꾸는 꼴(lo)이다
+  assert.match(renderScreen('left-out', { state: STATES['home-leftout'], model: m.homeModel(STATES['home-leftout'], { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html, /class="fl plain lo"/);
+  // 찾은 것이 없으면(다 보지 못했어도) 그대로 안전
+  assert.equal(draw(STATES['home-leftout-none']).mm.id, 'home');
+  // 다른 주의(한꺼번에 지워짐 등)가 먼저다
+  assert.equal(draw({ ...STATES['home-mass'], leftOutNames: STATES['home-leftout'].leftOutNames }).mm.id, 'home-mass');
+
+  // 목록 — 이름은 끝의 점이나 빈칸이 보이게 「」로, 위 폴더 경로, 다 보지 못한 날의 한 줄, 「외 N개」
+  const s = STATES['home-leftout'], list = renderScreen('left-out', { state: s, model: m.homeModel(s, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true });
+  assert.equal(list.here, '담지 못한 이름'); assert.equal(list.back, 'home');
+  assert.match(list.html, /<span class="nm">「회의록 」<\/span><span class="vl"><\/span><span class="ds">C: › Users › studio › Desktop<\/span>/);
+  assert.equal((list.html.match(/class="fl plain lo"/g) || []).length, 3); assert.doesNotMatch(strip(list.html), /다 보지 못했습니다/);
+  assert.match(strip(list.html), /파일이나 폴더 3개는 이름 때문에 백업에 담지 못했습니다\./); assert.match(strip(list.html), /3개 · 오후 2:02에 찾음/);
+  const un = STATES['home-leftout-unchecked'];
+  assert.match(strip(renderScreen('left-out', { state: un, model: m.homeModel(un, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html), /오늘은 폴더를 다 보지 못했습니다\./);
+  const mn = STATES['home-leftout-many'], lm = renderScreen('left-out', { state: mn, model: m.homeModel(mn, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html;
+  assert.equal((lm.match(/class="fl plain lo"/g) || []).length, 1000); assert.doesNotMatch(lm, /외 0개/);
+  const more = { ...s, leftOutNames: { ...s.leftOutNames, count: 1500, cut: false } };
+  assert.match(strip(renderScreen('left-out', { state: more, model: m.homeModel(more, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html), /외 1,497개/);
+  // 이름은 h()로 막는다 · 없으면 기본 화면 · 이상한 칸을 견딘다
+  const evil = { ...s, leftOutNames: { ...s.leftOutNames, names: ['C:\\x\\<img src=x onerror=alert(1)>.'] } };
+  assert.doesNotMatch(renderScreen('left-out', { state: evil, model: m.homeModel(evil, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html, /<img/);
+  assert.equal(renderScreen('left-out', { state: STATES.home, model: m.homeModel(STATES.home, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).kind, 'home');
+  const odd = m.leftOutOf({ leftOutNames: { count: 'x', names: [null, 5, 'C:\\a.'], checked: 0 } });
+  assert.deepEqual([odd.count, odd.names.length, odd.checked, odd.cut], [1, 1, true, false]);
+  assert.equal(m.leftOutOf({ leftOutNames: null }), null);
 });

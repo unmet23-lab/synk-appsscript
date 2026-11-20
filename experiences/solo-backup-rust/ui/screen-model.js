@@ -13,6 +13,7 @@ export const FUTURE = Object.freeze({
   'lastBackup.folders': '폴더마다 담은 파일 수 · 크기([{path, files, bytes}])',
   'lastProbe.v2': '되살리기 증명 v2 — 폴더마다 무작위 파일 합 64MiB 안(files · bytes · nextAt)',
   'lastPartial.program': '쓰는 중이라 못 읽은 파일을 쥔 프로그램 이름과 파일 목록',
+  leftOutNames: '이 백업에 담지 못하는 이름(설계 4.2 — 조율 세션이 검수 중) — {at, count, names, cut, checked?}',
   'lastRestore.mass.folder': '지워지기 전 판에서 받은 범위(E31 — 바뀐 폴더 모두면 null, 한 폴더면 그 경로). 없으면 이 창이 보낸 것으로 가린다',
   admin: '관리자 계정인지(쓰는 중이라 못 읽은 파일을 따로 읽어 채우는지)',
 });
@@ -231,11 +232,17 @@ export function massModel(s, now = Date.now(), opts = {}) {
   // 한 폴더만 받았거나 범위를 모르면 되살리기를 주 단추로 두고, 다 받은 뒤 「확인을 마침」을 누르라고 쓴다
   if (mh.restored && mh.restored.scope !== 'all') {
     // 남은 폴더는 두 곳까지 이름으로, 나머지는 「등 N곳」(다시 검수 -c 1). 100만 개를 넘어 지금 받을 수 없는 폴더는 「다 받은 뒤」에서 뺀다(-c 2)
-    const big = massTooBig(s, opts.massSent), left = mh.restored.missing.filter((p) => !big || !samePath(p, big)).map(folderName);
+    // 받지 못한 큰 폴더는 지금 실패 칸과, 실패가 지워진 뒤에도 남게 창이 모아 둔 것(massBig)을 합친다(mass -d FA1)
+    const now0 = massTooBig(s, opts.massSent), mem = opts.massBig?.beforeId === s.massHold.beforeId && Array.isArray(opts.massBig.folders) ? opts.massBig.folders : [];
+    const bigs = [...mem, ...(now0 ? [now0] : [])], isBig = (p) => bigs.some((b) => samePath(b, p));
+    const left = mh.restored.missing.filter((p) => !isBig(p)).map(folderName), bigLeft = mh.restored.missing.filter(isBig).map(folderName);
     const names = left.length <= 2 ? `「${left.join('」 · 「')}」 폴더는` : `「${left[0]}」 · 「${left[1]}」 등 ${count(left.length)}곳은`;
-    const note = left.length ? `아직 ${names} 되살리지 않았습니다. 다 받은 뒤 「확인을 마침」을 누르세요.`
-      : big && mh.restored.scope === 'one' ? `「${folderName(big)}」 폴더 말고는 다 되살렸습니다. 그 폴더가 필요 없으면 「확인을 마침」을 누르세요.`
-      : '바뀐 폴더가 다 왔는지 되살린 폴더에서 확인한 뒤 「확인을 마침」을 누르세요.';
+    // 남은 것이 큰 폴더뿐이면 전체 되살리기는 그 폴더 때문에 반드시 실패한다 — 그 단추를 두지 않고 「확인을 마침」만 둔다(mass -d FA2)
+    if (!left.length && bigLeft.length && mh.restored.scope === 'one') {
+      return { ...out, notes: [`「${bigLeft.join('」 · 「')}」 폴더 말고는 다 되살렸습니다. 그 폴더가 필요 없으면 「확인을 마침」을 누르세요.`],
+        actions: [{ id: 'mass-done', label: '확인을 마침', kind: 'line', massAsk: 'ok' }] };
+    }
+    const note = left.length ? `아직 ${names} 되살리지 않았습니다. 다 받은 뒤 「확인을 마침」을 누르세요.` : '바뀐 폴더가 다 왔는지 되살린 폴더에서 확인한 뒤 「확인을 마침」을 누르세요.';
     return { ...out, notes: [note],
       actions: [{ id: 'mass-restore', label, kind: 'main', ...go }, { id: 'mass-done', label: '확인을 마침', kind: 'line', massAsk: 'ok' }], ...placeHintOf(place) };
   }
@@ -256,6 +263,8 @@ export function massTooBig(s, sent) {
   if (!mh || e?.code !== 'CATALOG_TOO_LARGE' || ms(e.at) === null) return null;
   const since = ms(mh.since);
   if (since !== null && ms(e.at) < since) return null;
+  // 옛 PC 백업 꺼내기의 실패(from)는 멈춤의 실패가 아니다(restoreNote의 old와 같다, mass -d FA3)
+  if (typeof e.from === 'string' && e.from) return null;
   if (typeof e.mass?.folder === 'string' && e.mass.folder) return e.mass.folder;
   return sent && sent.beforeId === mh.beforeId && Number.isFinite(sent.at) && ms(e.at) >= sent.at && typeof sent.folder === 'string' && sent.folder ? sent.folder : null;
 }
@@ -267,6 +276,31 @@ export function massFailText(code, mh, folder = null) {
   if (code === 'NO_SNAPSHOT') return '붙들어 둔 판을 찾지 못했습니다. 「파일 되살리기」에서 남은 판을 확인해 주세요.';
   return null;
 }
+
+/**
+ * 이 백업에 담지 못하는 이름(설계 4.2 — 엔진 leftOutNames, 조율 세션이 검수 중). 이름 끝이 점(.)이나 빈칸인 파일과 폴더는 Windows에서
+ * 백업할 수 없어 판에서 빠진다. names는 Windows 경로 1,000개까지, count는 전체 수(cut이면 그 이상), checked가 false면 그날 폴더를 다 보지 못했다
+ */
+export function leftOutOf(s) {
+  const x = s?.leftOutNames;
+  if (!x || typeof x !== 'object') return null;
+  const names = (Array.isArray(x.names) ? x.names : []).filter((p) => typeof p === 'string' && p).slice(0, 1000);
+  const n = Number.isSafeInteger(x.count) && x.count >= 0 ? Math.max(x.count, names.length) : names.length;
+  return { at: x.at, count: n, names, cut: x.cut === true, checked: x.checked !== false };
+}
+/** 「3개는」 · 「1,000개 이상은」 */
+export function leftOutCountKo(lo, pair = '은/는') { const w = `${count(lo.count)}개${lo.cut ? ' 이상' : ''}`; return `${w}${josa(w, pair).slice(w.length)}`; }
+/** 경로의 마지막 이름과 그 위 폴더 — 끝의 점이나 빈칸이 보이게 이름은 「」로 감싼다 */
+export function leftOutName(p) {
+  const parts = String(p).split('\\'), name = parts.pop() || String(p);
+  return { name, where: parts.join(' › ') };
+}
+const LEFT_LINK = { label: '어떤 파일인지 보기', to: 'left-out' };
+/**
+ * 담지 못한 이름보다 먼저 서는 주의 화면 가운데 이 PC가 백업을 맡는 것 — 회차의 하루 한 번 알림(주제 status)이 기본 화면을 여니,
+ * 그 화면에도 한 줄과 「어떤 파일인지 보기」를 둔다(Opus 대체 검수 F1). 넘긴 PC · 되살리기만 하는 PC · 되돌리기 중은 뺀다
+ */
+const LEFT_ALSO = new Set(['home-off', 'home-paused', 'home-readkey', 'home-writekey', 'home-missing', 'home-probe', 'home-mass', 'home-restore-error', 'home-health', 'home-error', 'home-overdue', 'home-credential', 'home-startup']);
 
 const RESTORE = { id: 'restore', label: '파일 되살리기', kind: 'main', to: 'restore' };
 const MOVE = { id: 'move', label: '새 PC로 옮겨 오기', kind: 'link', to: 'move-0' };
@@ -349,12 +383,24 @@ export function homeModel(state, opts = {}) {
   const apps = movedAppsNote(state, opts.move, opts.checks, now);
   if (m.id === 'home-run') return apps ? { ...m, restored: apps } : m;
   const st = state && typeof state === 'object' ? state : {};
-  const note = restoreNote(st, now, m.id === 'home-restore-error', opts.massSent), ended = endedNote(st, now, m.id === 'home' || m.id === 'home-partial');
+  // 담지 못한 이름(home-leftout)도 매시간 도는 안전 갈래다 — 되돌리기 뒤 줄에서 안전 · 부분 판과 같게 다룬다(카본 A1)
+  const running = m.id === 'home' || m.id === 'home-partial' || m.id === 'home-leftout';
+  const note = restoreNote(st, now, m.id === 'home-restore-error', opts.massSent), ended = endedNote(st, now, running);
   // 되살리기 결과 줄과 끝난 되돌리기 줄이 함께 있으면 더 새것을 쓴다
-  const restored = (note && ended ? (ended.at >= note.at ? ended : note) : note || ended) || undoNote(state, m.id === 'home', opts.undoSeen);
+  const restored = (note && ended ? (ended.at >= note.at ? ended : note) : note || ended) || undoNote(state, m.id === 'home' || m.id === 'home-leftout', opts.undoSeen);
   // 한꺼번에 지워짐에서 되살리기가 실패했으면 그 줄이 할 일을 말한다 — 되살리기 안내 줄(둘째)은 빼서 두 단추를 첫 화면에 남긴다
-  if (restored && m.id === 'home-mass' && restored.mass && m.notes.length > 1) return { ...m, notes: m.notes.slice(0, 1), restored };
-  return restored ? { ...m, restored } : apps ? { ...m, restored: apps } : m;
+  // (이 갈래도 아래 담지 못한 이름의 고리를 거친다 — 다시 검수 -b 2)
+  const out = restored && m.id === 'home-mass' && restored.mass && m.notes.length > 1 ? { ...m, notes: m.notes.slice(0, 1), restored }
+    : restored ? { ...m, restored } : apps ? { ...m, restored: apps } : m;
+  // 담지 못한 이름이 있는데 다른 주의가 먼저 서면 그 화면에도 고리를 둔다(LEFT_ALSO). 고리 이름이 무엇인지 말하게 해 줄을 따로 두지 않는다 —
+  // 상자가 있는 주의 화면도 760×640에서 주 단추가 첫 화면에 남는다. 원래 고리가 있으면 같은 줄에 잇고, 한 번 더 묻는 상자가 열린 동안은 두지 않는다
+  const lo = leftOutOf(st);
+  if (lo && lo.count > 0 && LEFT_ALSO.has(out.id) && !(out.id === 'home-mass' && out.box)) {
+    // 수는 파일과 폴더를 함께 센 이름 수다 — 목록 화면(「이 백업에 담지 못한 이름」)과 같은 말로 부른다(다시 검수 -b 1)
+    const mine = { label: `백업에 담지 못한 이름 ${count(lo.count)}개${lo.cut ? ' 이상' : ''} 보기`, to: 'left-out' };
+    return { ...out, link: out.link || mine, links: [...(out.links || (out.link ? [out.link] : [])), mine] };
+  }
+  return out;
 }
 
 /**
@@ -696,6 +742,24 @@ function baseModel(state, now, opts) {
 
   // 안전함 — 쓰는 중인 파일 몇 개만 앞 판(부분 판)이면 그 사실을 한 줄로
   const partial = s.lastPartial && ms(s.lastPartial.at) && (!s.lastBackup || ms(s.lastPartial.at) >= ms(s.lastBackup.at) - MINUTE) ? s.lastPartial : null;
+  // 이름 때문에 담지 못한 파일(설계 4.2 — leftOutNames)이 있으면 「안전합니다」 대신 주의로 쓴다. 판은 온전하고 보호 수준도 그대로다.
+  // 쓰는 중인 파일과 함께 있으면 둘 다 쓴다(조율 세션 부탁 · GPT 검수 workbackup-oddnames-20261120 GA1)
+  const lo = leftOutOf(s);
+  if (lo && lo.count > 0) {
+    const notes = lo.names.slice(0, 2).map((p) => { const x = leftOutName(p); return `「${x.name}」${x.where ? ` · ${x.where}` : ''}`; });
+    if (lo.count > notes.length) notes.push(`외 ${count(lo.count - notes.length)}개${lo.cut ? ' 이상' : ''}`);
+    const links = [LEFT_LINK];
+    if (partial) {
+      const pn = count(partial.unreadable) + (partial.cut ? '개 넘게' : '개'), who = typeof partial.program === 'string' && partial.program ? partial.program : null;
+      const holder = who ? `${josa(who, '이/가')} 쓰는 중인` : '다른 프로그램이 쓰는 중인', firstOnly = !s.lastBackup || s.lastBackup.id === partial.id;
+      notes.push(firstOnly ? `${holder} 파일 ${pn}는 아직 어느 판에도 없습니다. 그 프로그램을 닫으면 다음 확인 때 담깁니다.` : `${holder} 파일 ${pn}는 앞 판으로 지킵니다.`);
+      links.push({ label: '쓰는 중인 파일 보기', to: s.admin === false ? 'partial-std' : 'partial' });
+    }
+    return { ...base, id: 'home-leftout', tone: 'warn', stamp: '주의', kick: `${device} · 매시간 저절로 지키는 중`, title: '이름 때문에 담지 못한 파일이 있습니다.',
+      sub: `이름 끝에 점(.)이나 빈칸이 있는 파일이나 폴더 ${leftOutCountKo(lo)} Windows에서 백업할 수 없습니다. 이름을 바꾸면 다음 백업에 담깁니다.`,
+      // 쓰는 중인 파일은 위 줄에 있으니 확인서의 「쓰는 중이라 앞 판으로」 줄은 두지 않는다 — 760×640에서 주 단추를 첫 화면에 남긴다(Opus 대체 검수 F3)
+      notes, link: LEFT_LINK, links, actions: [RESTORE, MOVE], evidence: evidence(s, now, { state: 'ok' }) };
+  }
   if (partial) {
     const n = count(partial.unreadable) + (partial.cut ? '개 넘게' : '개');
     const who = typeof partial.program === 'string' && partial.program ? partial.program : null;

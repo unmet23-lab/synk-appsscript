@@ -121,7 +121,7 @@ async function wd(method, url, body) {
     const { STATES, NOW, MOVE_MV, MOVE_ACCT } = await import(pathToFileURL(path.join(APP, 'ui/engine-fixtures.js')).href);
     const { findBanned } = await import(pathToFileURL(path.join(APP, 'ui/banned-words.js')).href);
     const names = await run('return window.__wb.screens');
-    const cases = [...Object.keys(STATES).map((k) => ['home', k]), ...names.filter((n) => n !== 'home').map((n) => [n, n.startsWith('partial') ? 'home-partial' : n === 'start-1' ? 'start' : 'home'])];
+    const cases = [...Object.keys(STATES).map((k) => ['home', k]), ...names.filter((n) => n !== 'home').map((n) => [n, n.startsWith('partial') ? 'home-partial' : n === 'start-1' ? 'start' : n === 'mass-list' ? 'home-mass' : n === 'left-out' ? 'home-leftout' : 'home'])];
     for (const [screen, st] of cases) {
       const r = await run('const [id,state,now]=arguments;window.__wb.show(id,{state,now,still:true});return {screen:document.getElementById("stage").dataset.screen,text:window.__wb.text()}', [screen, STATES[st], NOW]);
       const banned = findBanned(r.text);
@@ -139,6 +139,9 @@ async function wd(method, url, body) {
       if (banned.length) check(`화면 글 검사 ${screen}:${key}`, false, banned.join(', '));
     }
     check(`화면 글 검사 ${report.screens.length}장`, report.screens.every((x) => !x.banned.length), `걸림 ${report.screens.filter((x) => x.banned.length).length}장`);
+    // 목록 화면 둘은 그 상태일 때만 제 화면으로 그린다(아니면 기본 화면) — 글 검사가 실제로 그 화면을 본다
+    const own = ['mass-list', 'left-out'].map((n) => report.screens.find((x) => x.screen === n)?.shown);
+    check('「지워진 파일 목록」 · 「담지 못한 이름」 화면은 그 예시 상태에서 제 화면으로 그린다', own[0] === 'mass-list' && own[1] === 'left-out', JSON.stringify(own));
     // ⑥ 단추: 예시 상태에서 「파일 되살리기」로 넘어갔다 돌아오기
     await run('const [state,now]=arguments;window.__wb.show("home",{state,now,still:true})', [STATES.home, NOW]);
     await run('document.querySelector(\'#room [data-act="restore"]\').click()');

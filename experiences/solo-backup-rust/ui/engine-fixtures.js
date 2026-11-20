@@ -32,6 +32,11 @@ const MASS_NOFOLDER = { ...MASS, path: null, left: null, folders: [],
   list: [{ folder: null, name: '/C/Users/studio/Documents/계약/2026/계약서 001.docx', kind: 'removed' }, { folder: null, name: '/C/Users/studio/Documents/견적/견적 001.xlsx', kind: 'removed' }] };
 const MASS_DONE = { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)', at: at('2026-11-13T14:30:00+09:00'), fromEarlier: 0, inNone: 0, mass: { beforeId: MASS.beforeId, beforeAt: MASS.beforeAt, folder: null } };
 const MASS_P = { level: 'attention', reason: 'mass', nextAction: 'mass' };
+// 이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 조율 세션이 검수 중). 이름 끝이 점(.)이나 빈칸이라 Windows에서 백업하지 못한다
+const LEFT = { at: at('2026-11-13T14:02:00+09:00'), count: 3, cut: false, checked: true,
+  names: ['C:\\Users\\studio\\Documents\\견적\\2026 견적서.', 'C:\\Users\\studio\\Desktop\\회의록 ', 'D:\\Projects\\맥에서 옮김.'] };
+const LEFT_MANY = { ...LEFT, count: 1000, cut: true, names: Array.from({ length: 1000 }, (_, i) => `D:\\Projects\\내려받은 자료\\묶음 ${String(i + 1).padStart(4, '0')}.`) };
+const LEFT_UNCHECKED = { ...LEFT, count: 2, names: LEFT.names.slice(0, 2), checked: false };
 const base = {
   version: '0.7.0', configured: true, mode: 'backup', readOnly: false, automatic: true, providerType: 'b2', profile: 'b2',
   device: '작업 노트북', sources: SOURCES, missingSources: [], intervalMinutes: 60, recoverySaved: true, credentialRequired: false,
@@ -127,6 +132,11 @@ export const STATES = {
   'home-restore-undofail': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, restore: restoreOf({ state: 'done', awaitingChoice: true, undoError: 'FAILED' }) }) },
   'home-restore-read-hold': { ...base, device: '새 데스크톱', mode: 'restore', automatic: false, nextBackupAt: null, sources: [], lastBackup: null, lastProbe: null, protection: { level: 'restoreOnly', reason: 'restoreOnly', nextAction: 'restore' },
     account: acct({ ...signed('write'), device: '새 데스크톱', restore: restoreOf({ state: 'done', awaitingChoice: true }) }) },
+  'home-leftout': { ...base, leftOutNames: LEFT },
+  'home-leftout-many': { ...base, leftOutNames: LEFT_MANY },
+  'home-leftout-unchecked': { ...base, leftOutNames: LEFT_UNCHECKED },
+  // 이름을 다 보지 못했지만 찾은 것이 없음 — 기본 화면은 그대로 「안전합니다」
+  'home-leftout-none': { ...base, leftOutNames: { at: LEFT.at, count: 0, names: [], cut: false, checked: false } },
   'home-restore-wait': { ...base, nextBackupAt: null, account: acct({ ...signed('write'), device: base.device, needs: ['restore'] }) },
 };
 
@@ -393,3 +403,14 @@ export const MOVE_APPS = (() => {
   });
   return { list, notReady, empty, job, results, ok, declined, late, settings, okSettings, checklist, always };
 })();
+
+// 쓰는 중인 파일 · 자동 백업 꺼짐과 함께
+STATES['home-leftout-partial'] = { ...STATES['home-partial'], leftOutNames: LEFT };
+STATES['home-leftout-off'] = { ...STATES['home-off'], leftOutNames: LEFT };
+// 담지 못한 이름보다 먼저 서는 주의 화면에도 한 줄과 고리(Opus 대체 검수 F1) — 760×640에서 주 단추가 첫 화면에 남는지 캡처가 잰다
+for (const k of ['home-lost-step', 'home-writekey', 'home-missing', 'home-probe', 'home-mass', 'home-mass-failed', 'home-restore-error', 'home-health', 'home-error', 'home-overdue', 'home-credential', 'home-startup', 'home-paused']) {
+  STATES[`${k}-leftout`] = { ...STATES[k], leftOutNames: LEFT };
+}
+// 쓰는 중인 파일 · 하루 안의 되살리기 결과 · 긴 이름이 한꺼번에(F3)
+STATES['home-leftout-busy'] = { ...STATES['home-restored'], lastPartial: STATES['home-partial'].lastPartial, lastBackup: STATES['home-partial'].lastBackup,
+  leftOutNames: { ...LEFT, names: ['C:\\Users\\studio\\Documents\\견적\\2026년 11월 거래처별 견적서 최종 수정본 (부가세 포함) v3 - 김대리 검토 반영본 회신용.', ...LEFT.names.slice(1)] } };

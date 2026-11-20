@@ -4,7 +4,7 @@
 
 import { createStore, failureText } from './state-store.js';
 import { homeModel, startStep, restorePlace, afterUndo, moveJob, moveOpen, moveFrom, moveTakeList, moveVolumes, pickedSources, pathKey, moveLeft, moveRows,
-  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps, moveBigFolders, oldFolders, oldUp, scopeFailText, restNameProblem, maskProblem, AI_TOOL_ROWS } from './screen-model.js';
+  appsRows, appsOutcome, APPS_MAX, movedHere, movedApps, moveBigFolders, oldFolders, oldUp, scopeFailText, restNameProblem, maskProblem, AI_TOOL_ROWS, massTooBig, leftOutOf } from './screen-model.js';
 import { renderScreen, drawer, SCREENS, FAKE } from './screen-view.js';
 import { createOrb } from './orb.js';
 import { visibleText } from './banned-words.js';
@@ -103,6 +103,8 @@ function resolve(id, s, model) {
   if (id === 'move-1' && !fixture && moveJob(s)) return 'move-2';
   // 한꺼번에 지워짐 목록은 멈춤이 있는 동안만 — 「확인을 마침」 뒤나 다른 곳에서 풀렸으면 기본 화면으로
   if (id === 'mass-list' && !s?.massHold) return 'home';
+  // 담지 못한 이름 목록도 그 이름이 있는 동안만
+  if (id === 'left-out' && !(leftOutOf(s)?.count > 0)) return 'home';
   if (id !== 'home') return id;
   if (s?.job?.kind === 'protect') return 'start-3';
   if (model.id === 'start') return startStep(s) === 'signin' ? 'start-1' : 'start-2';
@@ -121,6 +123,13 @@ function fillBars(root, animate) {
  * 한꺼번에 지워지기 전 판에서 받은 폴더를 모은다(다시 검수 -b 2) — 결과(lastRestore.mass)가 새로 올 때마다 그 결과의 범위를 더한다.
  * 범위는 엔진이 적었으면(E31 folder · sub) 그것, 아니면 이 창이 그 결과보다 먼저 보낸 마지막 호출(massSent)이다. 되살리기는 한 번에 하나만 돈다
  */
+/** 멈춘 뒤 100만 개를 넘어 받지 못한 한 폴더를 모은다(mass -d FA1) — 엔진은 다음 되살리기가 끝나면 실패 칸을 지운다 */
+function noteMassBig(s) {
+  const mh = s?.massHold, big = massTooBig(s, acct.massSent);
+  if (!mh || !big) return;
+  const b = acct.massBig?.beforeId === mh.beforeId ? acct.massBig : { beforeId: mh.beforeId, folders: [] };
+  if (!b.folders.includes(big)) acct = { ...acct, massBig: { ...b, folders: [...b.folders, big] } };
+}
 function noteMassGot(s) {
   const mh = s?.massHold, lr = s?.lastRestore;
   if (!mh || !lr?.mass || lr.mass.beforeId !== mh.beforeId) return;
@@ -141,13 +150,13 @@ function paint() {
     return;
   }
   if (screen === 'undo-3' && s?.account?.restore?.state === 'failed' && s.account.restore.jobId) acct.undoSeen = s.account.restore.jobId;
-  if (!fixture) noteMassGot(s);
+  if (!fixture) { noteMassBig(s); noteMassGot(s); }
   const model = homeModel(s, { now: now(), undoSeen: acct.undoSeen || null, move: mv?.state || null, result: mv?.result || null, checks: mv?.apps?.checks,
-    place: ui.place, sentDefaultAt: ui.sentDefaultAt, massAsk: ui.massAsk || null, massSent: acct.massSent || null, massGot: acct.massGot || null });
+    place: ui.place, sentDefaultAt: ui.sentDefaultAt, massAsk: ui.massAsk || null, massSent: acct.massSent || null, massGot: acct.massGot || null, massBig: acct.massBig || null });
   // 한 번 더 묻던 것은 그 화면(한꺼번에 지워짐)이 보일 때만 산다 — 백업이 도는 사이 사라졌다가 끝난 뒤 저절로 다시 뜨지 않게
   if (ui.massAsk && model.id !== 'home-mass') ui = { ...ui, massAsk: null };
   const id = resolve(screen, s, model);
-  if (screen === 'mass-list' && id === 'home') screen = 'home';
+  if ((screen === 'mass-list' || screen === 'left-out') && id === 'home') screen = 'home';
   if (!fixture) prepare(id, s);
   out = renderScreen(id, { state: s, model, now: now(), catalog, ui, acct, undo, mv, old, fake: !!fixture });
   stage.dataset.tone = out.tone; stage.dataset.kind = out.kind; stage.dataset.screen = id;
@@ -1007,7 +1016,7 @@ async function send(a, el) {
 const GLOBAL = {
   home: { to: 'home' }, drawer: { drawer: true }, 'drawer-close': {}, restore: { to: 'restore' },
   add: { call: 'addSources' }, drop: { call: 'removeSource' }, 'auto-on': { call: 'setAutomatic', arg: true }, 'auto-off': { call: 'setAutomatic', arg: false },
-  code: { to: 'code' }, lost: { to: 'lost' }, 'undo-1': { to: 'undo-1' }, 'move-apps': { to: 'move-apps' }, partial: { to: 'partial' }, 'partial-std': { to: 'partial-std' }, 'move-0': { to: 'move-0' }, 'mass-list': { to: 'mass-list' },
+  code: { to: 'code' }, lost: { to: 'lost' }, 'undo-1': { to: 'undo-1' }, 'move-apps': { to: 'move-apps' }, partial: { to: 'partial' }, 'partial-std': { to: 'partial-std' }, 'move-0': { to: 'move-0' }, 'mass-list': { to: 'mass-list' }, 'left-out': { to: 'left-out' },
   'move-count': { flow: 'moveCount' }, 'move-add': { flow: 'moveAdd' },
   'rest-net': { to: 'rest-net' }, 'ai-tools': { to: 'ai-tools' },
   external: { pending: '외장 드라이브 사본' }, tray: { pending: '트레이 아이콘' }, telemetry: { pending: '시범 측정 내용 보기' }, help: { pending: '도움 요청' },

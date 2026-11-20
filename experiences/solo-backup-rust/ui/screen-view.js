@@ -7,7 +7,7 @@ import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.
 import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo,
   moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo,
   moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, tooBigKept, oldWho, oldFolders, oldWhere, oldFailText, OLD_NO_SPLIT_THEN, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
-  appsJob, appsSettings, appsUnrestored, movedHere, AI_TOOL_ROWS, REST_MAX, MASK_MAX, MASK_LEN, massOf, massModel } from './screen-model.js';
+  appsJob, appsSettings, appsUnrestored, movedHere, AI_TOOL_ROWS, REST_MAX, MASK_MAX, MASK_LEN, massOf, massModel, leftOutOf, leftOutCountKo, leftOutName } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 import { failureText } from './state-store.js';
 
@@ -82,7 +82,9 @@ function solioBoxOf(sb, s, m) {
 /** 단추 줄의 힌트와 그 옆의 밑줄 단추(hintAct — 한꺼번에 지워짐의 놓을 자리 바꾸기). 도는 호출이 있으면 막는다 */
 const hintOf = (m, acct) => (m.hint || m.hintAct ? `<span class="hint">${m.hint ? h(m.hint) : ''}${m.hintAct ? `${m.hint ? ' ' : ''}<button class="lnk sm" type="button" data-act="${h(m.hintAct.id)}"${acct?.running ? ' aria-disabled="true"' : ''}>${h(m.hintAct.label)}</button>` : ''}</span>` : '');
 export function homeScreen(m, acct = null, s = null) {
-  const link = m.link ? `<div class="act rise i3"><button class="lnk" type="button" data-act="${h(m.link.to)}">${h(m.link.label)} ${I.rarr}</button></div>` : '';
+  // 고리는 여럿일 수 있다(담지 못한 이름과 쓰는 중인 파일이 함께 있을 때)
+  const links = m.links || (m.link ? [m.link] : []);
+  const link = links.length ? `<div class="act rise i3">${links.map((x) => `<button class="lnk" type="button" data-act="${h(x.to)}">${h(x.label)} ${I.rarr}</button>`).join('')}</div>` : '';
   const r = m.restored;
   const done = r ? `<p class="done${r.bad ? ' bad' : ''} rise i3"><i class="dot" aria-hidden="true"></i><span>${h(r.text)}</span>${r.act ? `<button class="lnk sm" type="button" data-act="${h(r.act.id)}">${h(r.act.label)}</button>` : ''}</p>` : '';
   // 분실 신고 뒤 Google 걸음 — 확인을 받아야 그 화면의 계정 단추(continueBackup · rotateReadKey)가 열린다
@@ -90,7 +92,7 @@ export function homeScreen(m, acct = null, s = null) {
   // 도는 중인 단추(acct.running)와, Google 걸음을 확인하기 전의 계정 단추는 막는다
   const actions = m.actions.map((a) => (acct?.running === a.id || (m.googleStep && !ack && a.account) ? { ...a, disabled: true } : a));
   const html = `<div class="in">${kick(h(m.kick))}${say(h(m.title))}${then(h(m.sub))}${box(m.box)}${box(solioBoxOf(acct?.solioBox, s, m))}${stepAck}${notes((m.notes || []).map(h))}${link}${done}${homeRows(m)}${acts(actions.map((a) => ({ ...a })), `${hintOf(m, acct)}${gcancel(acct)}`)}</div>`;
-  const map = {}; for (const a of m.actions) map[a.id] = a; if (m.googleStep) map['google-ack'] = { id: 'google-ack' }; if (m.link) map[m.link.to] = { id: m.link.to, to: m.link.to }; if (r?.act) map[r.act.id] = r.act;
+  const map = {}; for (const a of m.actions) map[a.id] = a; if (m.googleStep) map['google-ack'] = { id: 'google-ack' }; for (const x of links) map[x.to] = { id: x.to, to: x.to }; if (r?.act) map[r.act.id] = r.act;
   if (m.hintAct) map[m.hintAct.id] = { id: m.hintAct.id };
   return { kind: 'home', tone: m.tone, here: '백업·복구', top: [{ id: 'drawer', label: '설정' }], html, acts: map };
 }
@@ -1139,6 +1141,21 @@ function massList(s, now, ui, acct, home) {
   return { kind: 'flow', tone: 'bad', here: mm.here, back: 'home', top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: map };
 }
 
+/* ── 이 백업에 담지 못하는 이름(설계 4.2 — 엔진 leftOutNames) ─────────────────── */
+function leftOut(s, now) {
+  const lo = leftOutOf(s), device = typeof s?.device === 'string' && s.device.trim() ? s.device.trim() : '이 PC';
+  const l = `${kick(`${h(device)} · 이 백업에 담지 못한 이름`)}${say(`파일이나 폴더 ${h(leftOutCountKo(lo))}`, '이름 때문에 백업에 담지 못했습니다.')}
+    ${then('Windows는 이름 끝의 점(.)이나 빈칸을 다루지 못해, 이런 파일과 폴더는 백업할 수 없습니다. 폴더 이름이 그렇다면 그 안의 파일도 함께 빠집니다.')}
+    ${notes([...(lo.checked ? [] : ['오늘은 폴더를 다 보지 못했습니다. 아직 보지 못한 폴더에 이런 이름이 더 있을 수 있습니다.']),
+      '이름 끝의 점이나 빈칸을 지우면 다음 백업에 담깁니다.', '탐색기에서 이름이 바뀌지 않으면 그 파일을 만든 프로그램에서 바꿔 주세요.'])}
+    ${acts([{ id: 'home', label: '돌아가기', kind: 'line' }])}`;
+  const items = lo.names.map((p) => { const x = leftOutName(p); return `<div class="fl plain lo" role="listitem"><span class="nm">「${h(x.name)}」</span><span class="vl"></span>${x.where ? `<span class="ds">${h(x.where)}</span>` : ''}</div>`; }).join('');
+  const more = lo.count > lo.names.length ? `<p class="foot">외 ${h(count(lo.count - lo.names.length))}개${lo.cut ? ' 이상' : ''}</p>` : '';
+  const body = lo.names.length ? `<div class="files" role="list" aria-label="담지 못한 이름">${items}</div>${more}` : `<p class="empty">찾은 이름이 없습니다.</p>${more}`;
+  const r = panel('담지 못한 이름', `${h(`${count(lo.count)}개${lo.cut ? ' 이상' : ''}`)}${lo.at ? ` · ${h(whenKo(lo.at, now))}에 찾음` : ''}`, body);
+  return { kind: 'flow', tone: 'warn', here: '담지 못한 이름', back: 'home', top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: { home: { id: 'home', to: 'home' } } };
+}
+
 /* ── 설정 서랍 ─────────────────────────────── */
 export function drawer(s, extra = {}) {
   const st = s || {};
@@ -1290,10 +1307,12 @@ export function renderScreen(id, ctx) {
     case 'ai-tools': return aiToolsScreen(s, ctx.ui, ctx.acct, now);
     // 멈춤이 풀렸으면(확인을 마침) 기본 화면을 그린다 — 창은 기본 화면으로 돌린다(app.js resolve)
     case 'mass-list': return massOf(s) ? massList(s, now, ctx.ui, ctx.acct, ctx.model) : homeScreen(ctx.model, ctx.acct, s);
+    // 담지 못한 이름이 없으면 기본 화면을 그린다 — 창은 기본 화면으로 돌린다(app.js resolve)
+    case 'left-out': return leftOutOf(s)?.count > 0 ? leftOut(s, now) : homeScreen(ctx.model, ctx.acct, s);
     default: return homeScreen(ctx.model, ctx.acct, s);
   }
 }
 
 /** 앱이 그리는 화면 이름 전부(시험 · tauri-driver · 캡처가 돈다) */
-export const SCREENS = ['home', 'start-1', 'start-2', 'start-3', 'restore', 'restore-old', 'partial', 'partial-std', 'move-0', 'move-1', 'move-2', 'move-3', 'move-apps', 'move-4', 'undo-1', 'undo-2', 'undo-3', 'lost', 'lost-2', 'code', 'mass-list', 'rest-net', 'ai-tools'];
+export const SCREENS = ['home', 'start-1', 'start-2', 'start-3', 'restore', 'restore-old', 'partial', 'partial-std', 'move-0', 'move-1', 'move-2', 'move-3', 'move-apps', 'move-4', 'undo-1', 'undo-2', 'undo-3', 'lost', 'lost-2', 'code', 'mass-list', 'left-out', 'rest-net', 'ai-tools'];
 export { FAKE };

@@ -48,12 +48,13 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
    *  'denied'(계정에 잇지 않은 PC, Google 화면의 Drive 칸을 켜지 않아 「Google로 시작」이 DENIED로 끝남) ·
    *  'solio'(솔리오의 「보호 시작」으로 온 창 — state.solio.setup, 로그인은 __finishSignIn까지 기다리다 REAUTH) ·
    *  'solio-move'(솔리오의 「이 PC로 옮겨 오기」로 온 창 — 로그인하면 다른 PC가 백업하는 계정) · 'settings'(넘긴 PC, 설정 서랍의 쉬는 Wi-Fi · AI 도구) ·
-   *  'mass'(한꺼번에 지워짐 멈춤이 있는 PC — 설계 4.4, 엔진 massHold 9ddcbeb40) */
+   *  'mass'(한꺼번에 지워짐 멈춤이 있는 PC — 설계 4.4, 엔진 massHold 9ddcbeb40) ·
+   *  'leftout'(이름 끝이 점이나 빈칸이라 담지 못한 파일과 쓰는 중인 파일이 함께 있는 PC — 설계 4.2, 엔진 leftOutNames) */
   async function scenario(start) {
     const ctx = await browser.newContext({ viewport: { width: 1080, height: 820 }, locale: 'ko-KR', timezoneId: 'Asia/Seoul', reducedMotion: 'reduce' });
-    await ctx.addInitScript(({ solioStart, solioMoveStart, readConn, handedHome, readState, signinState, restoring, stopping, stopped, handed, ended, result, bigResult, list, checklist, massState, start }) => {
+    await ctx.addInitScript(({ solioStart, solioMoveStart, readConn, handedHome, readState, signinState, restoring, stopping, stopped, handed, ended, result, bigResult, list, checklist, massState, leftState, start }) => {
       const calls = []; window.__calls = calls; window.__args = [];
-      let cur = start === 'mass' ? massState : start === 'solio-restore' ? { ...readState, solio: { ...readState.solio, setup: { mode: 'protect', hint: null, at: '2026-11-17T04:00:00.000Z' } } } : start === 'solio' ? solioStart : start === 'solio-move' ? solioMoveStart : start === 'stop' || start === 'stopdone' ? restoring : start === 'limit' || start === 'denied' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
+      let cur = start === 'leftout' ? leftState : start === 'mass' ? massState : start === 'solio-restore' ? { ...readState, solio: { ...readState.solio, setup: { mode: 'protect', hint: null, at: '2026-11-17T04:00:00.000Z' } } } : start === 'solio' ? solioStart : start === 'solio-move' ? solioMoveStart : start === 'stop' || start === 'stopdone' ? restoring : start === 'limit' || start === 'denied' ? signinState : start === 'read' || start === 'old' ? readState : handedHome, failOnce = start === 'flaky', stateN = 0, rootN = 0;
       // 솔리오 잇기 — 같은(또는 새) 요청이 다시 실린 상태를 보낸다
       window.__handover = () => { cur = { ...handedHome, solio: cur.solio }; window.__push?.(); };
       window.__setRest = (names) => { cur = { ...cur, solio: { ...cur.solio, restNetworks: names } }; window.__push?.(); };
@@ -62,6 +63,8 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
       window.__massDone = () => { cur = { ...cur, job: null, lastRestore: { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 20일)', at: new Date().toISOString(), fromEarlier: 0, inNone: 0, mass: { beforeId: cur.massHold.beforeId, beforeAt: cur.massHold.beforeAt } } }; window.__push?.(); };
       window.__massLift = () => { cur = { ...cur, massHold: null, protection: calm }; window.__push?.(); };
       window.__massBack = () => { cur = { ...cur, massHold: massState.massHold, protection: massState.protection }; window.__push?.(); };
+      // 담지 못한 이름 — 이름을 바꿔 다음 백업에 담김
+      window.__leftClear = () => { cur = { ...cur, leftOutNames: null }; window.__push?.(); };
       window.__massJob = (on) => { cur = { ...cur, job: on ? { kind: 'backup', stage: '백업 중', percent: 10, scheduled: true } : null }; window.__push?.(); };
       window.__resetup = (at) => { cur = { ...cur, solio: { ...cur.solio, setup: { mode: 'protect', hint: 'studio@example.com', at: at || '2026-11-17T04:00:00.000Z' } } }; window.__push?.(); };
       window.__TAURI__ = { core: { invoke: async (_n, { method, args }) => {
@@ -125,8 +128,8 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
         if (method === 'takeWriteSeat') { cur = handedHome; return { ok: true, value: { state: cur } }; }
         if (method === 'continueBackup') { cur = handedHome; return { ok: true, value: cur }; }
         return { ok: false, error: 'x', code: 'FIXTURE' };
-      } }, event: { listen: async (n, fn) => { if (n === 'backup:state') window.__push = () => fn({ payload: { ...cur } }); return () => {}; } } };
-    }, { solioStart: STATES['start-solio'], solioMoveStart: STATES['start-solio-move'], readConn: STATES['start-read'], handedHome, readState, signinState: STATES['start-signin'], restoring: STATES['home-restoring'], stopping: STATES['home-restore-stopping'], stopped: STATES['home-restore-stopped'], handed: MOVE_MV.handed.state, ended: MOVE_MV.result.state, result: MOVE_MV.result.result, bigResult: MOVE_MV.toobigResult.result, list: MOVE_APPS.list, checklist: MOVE_APPS.checklist, massState: STATES['home-mass'], start });
+      } }, event: { listen: async (n, fn) => { if (n === 'backup:state') window.__push = () => fn({ payload: { ...cur } }); if (n === 'backup:open') window.__open = (topic) => fn({ payload: { topic } }); return () => {}; } } };
+    }, { solioStart: STATES['start-solio'], solioMoveStart: STATES['start-solio-move'], readConn: STATES['start-read'], handedHome, readState, signinState: STATES['start-signin'], restoring: STATES['home-restoring'], stopping: STATES['home-restore-stopping'], stopped: STATES['home-restore-stopped'], handed: MOVE_MV.handed.state, ended: MOVE_MV.result.state, result: MOVE_MV.result.result, bigResult: MOVE_MV.toobigResult.result, list: MOVE_APPS.list, checklist: MOVE_APPS.checklist, massState: STATES['home-mass'], leftState: STATES['home-leftout-partial'], start });
     const pg = await ctx.newPage(), errors = [];
     pg.on('pageerror', (e) => errors.push(e.message));
     await pg.goto(base);
@@ -518,6 +521,33 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
     check('목록 화면에 있는 동안 백업이 돌면 멈춤 단추를 막고 「지금 다른 일이 도는 중입니다」를 쓴다', /지금 다른 일이 도는 중입니다/.test(z.text) && z.off >= 4 && !z.box && z.n === 0, JSON.stringify({ off: z.off, box: z.box, n: z.n }));
     check('쪽 오류 없음(목록 · 도는 백업)', !five.errors.length, five.errors.join(' | '));
     await five.ctx.close();
+  }
+  // 14. 이 백업에 담지 못하는 이름(설계 4.2 — 엔진 leftOutNames, 조율 세션 부탁 · GPT 검수 workbackup-oddnames-20261120 GA1)
+  {
+    const { pg, ctx, errors } = await scenario('leftout');
+    const look = () => pg.evaluate(() => ({ screen: document.getElementById('stage').dataset.screen, text: document.getElementById('room').innerText,
+      acts: [...document.querySelectorAll('#room [data-act]')].map((b) => b.dataset.act), items: [...document.querySelectorAll('#room .files .fl .nm')].map((n) => n.textContent) }));
+    let x = await look();
+    check('담지 못한 이름이 있으면 기본 화면이 「안전합니다」 대신 주의와 이름 둘, 「외 1개」, 쓰는 중인 파일 줄과 고리 둘을 보인다',
+      /이름 때문에 담지 못한 파일이 있습니다/.test(x.text) && !/안전합니다/.test(x.text) && /「회의록 」/.test(x.text) && /외 1개/.test(x.text) && /Outlook이 쓰는 중인 파일 2개/.test(x.text) && x.acts.includes('left-out') && x.acts.includes('partial'), JSON.stringify(x.acts));
+    await click(pg, '#room [data-act="left-out"]');
+    x = await look();
+    check('「어떤 파일인지 보기」는 목록 화면을 열고 이름 셋을 끝의 점과 빈칸이 보이게 「」로 보인다', x.screen === 'left-out' && x.items.length === 3 && x.items.includes('「회의록 」') && x.items.includes('「2026 견적서.」'), JSON.stringify({ screen: x.screen, items: x.items }));
+    await click(pg, '#room [data-act="home"]');
+    x = await look();
+    check('「돌아가기」는 기본 화면으로 간다', x.screen === 'home', x.screen);
+    // 회차 실행기의 하루 한 번 알림(주제 status)을 누르면 다른 화면에 있어도 이름이 보이는 기본 화면으로 온다
+    await click(pg, '#room [data-act="restore"]');
+    await pg.evaluate(() => window.__open('status')); await pg.waitForTimeout(600);
+    x = await look();
+    check('알림(주제 status)을 누르면 다른 화면에 있어도 이름과 고리가 보이는 기본 화면으로 온다', x.screen === 'home' && /「2026 견적서\.」/.test(x.text) && x.acts.includes('left-out'), JSON.stringify({ screen: x.screen }));
+    // 목록을 보는 사이 이름을 바꿔 다음 백업에 담기면 기본 화면으로 돌아가고 「안전합니다」를 쓴다
+    await click(pg, '#room [data-act="left-out"]');
+    await pg.evaluate(() => window.__leftClear()); await pg.waitForTimeout(600);
+    x = await look();
+    check('목록을 보는 사이 담지 못한 이름이 없어지면 기본 화면으로 돌아가 주의를 거둔다', x.screen === 'home' && !/이름 때문에/.test(x.text) && !x.acts.includes('left-out'), JSON.stringify({ screen: x.screen }));
+    check('쪽 오류 없음(담지 못한 이름)', !errors.length, errors.join(' | '));
+    await ctx.close();
   }
   await browser.close(); server.close();
   const bad = results.filter((r) => !r.ok).length;

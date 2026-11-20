@@ -191,6 +191,8 @@ a { color: inherit; }
 .mvopt button[aria-disabled="true"] { opacity: .5; cursor: default; }
 /* 옮겨 오기 4b — 프로그램 줄(고르는 단추는 이름 칸, 주소와 명령은 골라 복사하는 글) · 다시 로그인할 곳(긴 글은 줄을 바꾼다) */
 .fl.mv .nm { white-space: normal; overflow-wrap: anywhere; }
+/* 담지 못한 이름 — 끝의 점이나 빈칸과 닫는 」가 말줄임표에 가려지지 않게 줄을 바꾼다 */
+.fl.lo .nm { white-space: normal; overflow-wrap: anywhere; }
 .fl:not(.plain) .why { grid-column: 2 / -1; }
 .pickb { appearance: none; display: flex; align-items: center; gap: 12px; min-width: 0; margin: 0; padding: 0; background: none; border: 0; color: inherit; text-align: left; cursor: pointer; }
 .pickb .cb { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--hair-2); }

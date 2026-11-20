@@ -115,6 +115,10 @@ const CASES = [
   ['home-mass', 'home', { name: 'home-mass-pick', ui: { place: 'pick' } }],
   ['home-mass', 'mass-list', { name: 'mass-list-one', ui: { massAsk: { folder: 'C:\\Users\\studio\\Pictures' } } }], ['home-mass-nofolder', 'mass-list', { name: 'mass-list-nofolder' }],
   ['home-mass-bytes', 'mass-list', { name: 'mass-list-bytes' }],
+  // 이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames): 기본 화면 넷과 목록 셋
+  ['home-leftout', 'home'], ['home-leftout-partial', 'home'], ['home-leftout-many', 'home'], ['home-leftout-off', 'home'],
+  ['home-leftout', 'left-out'], ['home-leftout-many', 'left-out', { name: 'left-out-many' }], ['home-leftout-busy', 'home'], ['home-leftout-busy', 'left-out', { name: 'left-out-long' }],
+  ...['home-lost-step', 'home-writekey', 'home-missing', 'home-probe', 'home-mass', 'home-mass-failed', 'home-restore-error', 'home-health', 'home-error', 'home-overdue', 'home-credential', 'home-startup', 'home-paused'].map((k) => [`${k}-leftout`, 'home']), ['home-leftout-unchecked', 'left-out', { name: 'left-out-unchecked' }],
   ['home-mass-restored-one', 'home'], ['home-mass-restored-unknown', 'home'], ['home-mass-four', 'home'], ['home-mass-four', 'mass-list', { name: 'mass-list-four' }],
   // 범위를 통째로 받기 · 옛 PC 판의 실패 · 만들다 만 폴더 열기 · 끊은 뒤 안내(E27 · E26 알림 · E29 · E28, 조율 세션 ced52da00)
   ['home-scope-done', 'home'], ['home-scope-big', 'home'], ['home-scope-unsafe-sel', 'home'], ['home-scope-failed', 'home'],
