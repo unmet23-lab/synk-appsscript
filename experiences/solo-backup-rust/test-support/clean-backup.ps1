@@ -57,7 +57,7 @@ $made = & node (Join-Path $tools 'clean-data.cjs') make $data $DataMB
 $script:results['adminData'] = $made | ConvertFrom-Json
 # The special entries of 7장 D0 (a junction, two symbolic links, a name ending in a dot): every run below must stay
 # complete with them, and runner 2 checks the restore leaves them out and counts the links. The name ending in a dot
-# never reaches the backup (restic 0.19.1, run 44152169842 — a known gap; clean-data.cjs leftOutSaid).
+# never reaches the backup (restic 0.19.1, run 44152169842; clean-data.cjs leftOutSaid); the first backup tells it.
 $specials = & node (Join-Path $tools 'clean-data.cjs') specials $data
 Expect ($LASTEXITCODE -eq 0) "the special entries made in the administrator's data ($specials)"
 $setup = & node (Join-Path $tools 'clean-app.cjs') setup $data (Join-Path $Work 'admin-repo') (Join-Path $kits 'admin-kit.json')
@@ -75,6 +75,19 @@ $r = AdminRun 'adminFirst'
 $space = $r.Run.space
 Expect ($null -ne $space -and $null -ne $space.ms -and $space.ms -le 330000) "the day's first run scanned the disks after it, within five minutes (space: $($space | ConvertTo-Json -Compress -Depth 3))"
 Expect ($r.Code -eq 0 -and $r.Run.outcome -eq 'complete' -and $r.Run.profiles.local.newSnapshot -eq $true) "first backup by the installed run executable ($(Short $r.Run))"
+# 「이 백업에 담지 못하는 이름」 (4.2, b18e0775b): the backup stays complete without the name ending in a dot and says so —
+# the run counts it, and the settings the window reads name it. The one such name in D0 is that one.
+# Read as a hashtable so a missing key stays missing (a missing `count` would read as 1 on an object — GPT GA1 · GA3).
+$settings = Get-Content -LiteralPath (Join-Path $adminState 'vault\settings.json') -Raw -ErrorAction SilentlyContinue | ConvertFrom-Json -AsHashtable
+$odd = if ($settings -is [Collections.IDictionary]) { $settings['leftOutNames'] }
+$script:results['adminLeftOutNames'] = $odd
+# Exactly that name and no other (GPT GA2): one entry, whose last part is the whole name, to the very end (\z, not $,
+# which also matches before a last line break — GPT -b GA1). The array is made outside
+# the `if`, whose output would unroll a one-entry array into its string.
+$oddNames = @(if ($odd -is [Collections.IDictionary] -and $odd['names'] -is [Collections.IList]) { $odd['names'] })
+$oddRight = $odd -is [Collections.IDictionary] -and $odd.Contains('count') -and $odd['count'] -eq 1 -and $odd['cut'] -is [bool] -and -not $odd['cut'] -and -not $odd.Contains('checked') -and
+  $oddNames.Count -eq 1 -and $oddNames[0] -is [string] -and $oddNames[0] -match '(^|[\\/])끝이 점인 이름\.\z'
+Expect ($r.Run.profiles.local.odd -eq 1 -and $oddRight) "the first backup tells the one name ending in a dot it could not hold (run odd: $($r.Run.profiles.local.odd), leftOutNames: $($odd | ConvertTo-Json -Compress))"
 $locked = Join-Path $data '잠글 문서\계약서.docx'
 Change $locked
 $held = Hold $locked

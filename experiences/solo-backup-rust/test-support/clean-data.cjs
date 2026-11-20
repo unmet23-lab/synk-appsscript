@@ -13,7 +13,8 @@
 // a name with the telemetry-leak marker, small notes, medium pictures and one large incompressible file, and (specials)
 // a folder junction, a file and a folder symbolic link and a name ending in a dot. The backup keeps the three links; a
 // restore leaves them out and counts them (4.6, restore-tar readManifest — 74a22589a). The name ending in a dot never
-// reaches the backup on Windows (see leftOutSaid — a known gap). A file nobody may read is made
+// reaches the backup on Windows (see leftOutSaid); the backup tells it (4.2 「이 백업에 담지 못하는 이름」, checked by
+// clean-backup.ps1). A file nobody may read is made
 // by clean-backup.ps1 for one run only (icacls), since every run would be partial while it stays.
 // Synthetic only — the lists may be public; the sealed kits may not be opened without the seed.
 const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
@@ -104,8 +105,9 @@ function compare(expected, actual) {
 /** What 복구경로.json says it left out (each folder's `skipped`) against the links and odd names of the list. A link is
  *  in the backup, so the restore must count it. A name Windows cannot hold never reaches the backup there: restic 0.19.1
  *  left the name ending in a dot out of every snapshot with no error, and the runs were still complete (run 44152169842,
- *  11-18 — counts and the restore listing; how restic loses it is not measured). Until the backup keeps it or tells the
- *  person (트랙, the 업무 백업 sessions), the restore must not count one either; a count of one means that changed. */
+ *  11-18 — counts and the restore listing; how restic loses it is not measured). The backup tells the person instead
+ *  (4.2, b18e0775b) and the snapshot still lacks it, so the restore must not count one either; a count of one means
+ *  the backup came to keep it. */
 function leftOutSaid(leftOut, mapping) {
   const entries = Array.isArray(mapping) ? mapping : [], said = entries.flatMap(e => e?.skipped?.items || []);
   const count = entries.reduce((n, e) => n + (e?.skipped?.count || 0), 0);
