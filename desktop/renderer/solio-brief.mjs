@@ -1,7 +1,7 @@
 // 솔리오 구독 방의 비서 판(2026-11-20, docs/디자인/솔리오_구독비서_20261120/설계.md 3절과 7절 설계 검토 반영). DOM이 없다.
 // 유호님 11-20 「딱 하나만 봤으면 좋겠어」, 「급한것 중요한것 위주로 맨 위로」, 「토큰 출력량이 실시간으로」, 「하루에 한번씩 총 사용량 진단」.
 // 맨 위 한 가지(briefHead), 다가오는 일(briefSoon), 지금 출력(briefLive), 오늘 진단(briefDiag), 줄 안쪽 결론(poolSay)을 만든다.
-import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, nextRefill, balance, poolTimeline, poolRunout, serviceFacts, shareOf, DAY_MS } from './subscriptions-model.mjs';
+import { serviceGroups, upcoming, costOf, monthPrice, monthCredits, ultraGuess, weightOf, planKey, nextRefill, balance, poolTimeline, poolRunout, serviceFacts, shareOf, POOL_SHORT, DAY_MS } from './subscriptions-model.mjs';
 import { SOLIO_TODAY_NAMES, whenWords, josa, joinNames } from './solio-today.mjs';
 import { tokenDay, tokenText } from './subscriptions-tokens.mjs';
 /* 풀 모의와 계정 사실은 subscriptions-model.mjs 한 곳에 있다(구조 다시 보기 5절). 시험과 옛 호출을 위해 이름을 그대로 내보낸다 */
@@ -417,7 +417,8 @@ export function briefDial(snapshot, groups, now, focusService = null) {
   const rings = auto.map(g => ({ key: g.service, name: svcName(g), focus: g === focus, accounts: here(g).filter(a => a.row.source === 'auto').map(a => { const left = shareOf(a, prices); return { id: a.row.id, name: a.name || '', state: a.state, left, blocked: a.state === 'out', note: cellNote(a, left) }; }) }));
   // 큰 숫자와 낭독은 서비스 판정(serviceFacts) 하나를 읽는다(구조 다시 보기 P1-3). 합칠 수 있으면 합친 몫, 크레딧형은 남은 양 또는 남은 크레딧 수,
   // 합칠 수 없는 요금제(Codex Pro와 Plus)는 열린 계정 수다. 읽힌 계정이 없으면 그 까닭을 말한다(Fable 최종 P1)
-  const f = serviceFacts(focus, prices), name = svcName(focus), one = f.list.length === 1, openN = f.open.length + f.projected.length;
+  // 다시 찼을 계정(projected)은 open 안에 이미 있다. 더하면 「2개 가운데 3개」가 된다(다시 검수 solio-dial-20261120-2 FA1)
+  const f = serviceFacts(focus, prices), name = svcName(focus), one = f.list.length === 1, openN = f.open.length;
   let hero;
   if (!f.read.length) hero = { value: '–', unit: '', label: name + (f.login.length ? ' 다시 로그인 필요' : f.error.length ? ' 읽지 못함' : ' 읽는 중') };
   else if (focus.kind === 'credit' && f.share === null) hero = { value: fmt(f.read.reduce((n, a) => n + (balance(a.row)?.value || 0), 0)), unit: '', label: name + ' 남은 크레딧' };
@@ -430,14 +431,22 @@ export function briefDial(snapshot, groups, now, focusService = null) {
   const days = [{ off: 0, label: '지금' }, ...ticks.filter(k => k.k === 'day' && k.off > NEAR && k.off < DIAL_MS - NEAR).map(k => ({ off: k.off, label: soonWhen(now + k.off, now, true) }))];
   const p = focus.kind === 'weekly' ? poolTimeline(snapshot, focus, now) : null, fc = p?.forecast || null;
   // 맨 위 구독의 막힘 표식은 궤도와 같은 때(반올림 전)에 찍는다. 글(title)은 반올림한 때 그대로다(화면 검수 dial A5)
-  const events = briefSoon(snapshot, groups, now, [], DIAL_MS).all.filter(i => i.at > now && i.at <= end)
-    .map(i => ({ off: i.key === 'runout:' + focus.service && fc ? fc.at - now : i.at - now, kind: KIND[i.key.split(':')[0]] || 'other', text: i.when + ' ' + i.text }));
-  // 바깥 궤도: 풀 모의의 막힌 구간을 모두 붉게, 그 사이를 금색으로 그린다. 지금 막힌 것은 짧아도 그린다(화면 검수 dial A2).
+  // 표식은 찍는 때로 사흘 안만 남긴다. 반올림한 때는 사흘 안인데 실제 때가 사흘 끝 뒤면 표식이 한 바퀴를 넘어 「지금」 옆에 찍혔다(다시 검수 FA5)
+  const events = briefSoon(snapshot, groups, now, [], DIAL_MS + HOUR).all
+    .map(i => ({ off: i.key === 'runout:' + focus.service && fc ? fc.at - now : i.at - now, kind: KIND[i.key.split(':')[0]] || 'other', text: i.when + ' ' + i.text }))
+    .filter(e => e.off > 0 && e.off <= DIAL_MS);
+  // 바깥 궤도: 풀 모의의 막힌 구간을 붉게, 그 사이를 금색으로 그린다. 지금 막힌 것은 짧아도 그린다(화면 검수 dial A2).
+  // 앞날의 막힘은 글과 같은 문턱(30분)을 넘는 것만 그린다. 낭독이 「막히지 않습니다」인데 궤도가 붉었다(다시 검수 FA4)
   // 풀 모의가 없으면(합칠 수 없는 요금제, 읽지 않은 계정) 지금 모두 막혔을 때 첫 다시 열림까지만 붉게 그리고 그 뒤는 모름(점선)이다
   const arcs = [], add = (from, to, k) => { const x = Math.max(0, from), y = Math.min(DIAL_MS, to); if (y > x) arcs.push({ from: x, to: y, k }); };
   if (p) {
     let t0 = 0;
-    for (const b of p.blocks) { const s0 = b.from - now, e0 = b.to - now; if (s0 >= DIAL_MS) break; add(t0, s0, 'safe'); add(s0, e0, 'gap'); t0 = Math.max(t0, Math.min(DIAL_MS, e0)); }
+    for (const b of p.blocks) {
+      if (b !== p.now && b.to - b.from < POOL_SHORT) continue;
+      const s0 = b.from - now, e0 = b.to - now;
+      if (s0 >= DIAL_MS) break;
+      add(t0, s0, 'safe'); add(s0, e0, 'gap'); t0 = Math.max(t0, Math.min(DIAL_MS, e0));
+    }
     add(t0, DIAL_MS, 'safe');
   } else {
     let start = 0;
@@ -449,7 +458,7 @@ export function briefDial(snapshot, groups, now, focusService = null) {
   const unread = [f.login.length ? f.login.length + '개는 다시 로그인해야 합니다.' : '', f.error.length ? f.error.length + '개는 읽지 못했습니다.' : '', f.pending.length ? f.pending.length + '개는 아직 읽는 중입니다.' : ''].filter(Boolean).join(' ');
   const label = !f.read.length ? (f.login.length ? name + ' 계정은 다시 로그인해야 합니다.' : f.error.length ? name + ' 계정을 읽지 못했습니다.' : name + ' 계정을 읽는 중입니다.')
     : !openN ? (f.kind === 'fixable' ? fixSay(focus, f) : one ? neun(name) + ' 막혀 있습니다.' : name + ' 계정 ' + f.read.length + '개가 모두 막혀 있습니다.') + reopenWords
-    : [one ? neun(name) + ' 열려 있습니다.' : name + ' 계정 ' + f.list.length + '개 가운데 ' + openN + '개가 열려 있습니다.', unread, hero.unit === '%' ? hero.label + ' ' + hero.value + '%.' : '',
+    : [one ? neun(name) + ' 열려 있습니다.' : name + ' 계정 ' + f.list.length + '개 가운데 ' + openN + '개가 열려 있습니다.', unread, hero.unit === '%' ? hero.label + ' ' + hero.value + '%.' : / 남은 크레딧$/.test(hero.label) ? hero.label + ' ' + hero.value + '.' : '',
       fc && fc.at < end ? '지금 속도면 ' + whenWords(fc.sayAt, now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.') : p ? '지금 속도면 사흘 안에는 막히지 않습니다.' : ''].filter(Boolean).join(' ');
   return { span: DIAL_MS, focus: focus.service, hero, rings, arcs, ticks, days, events, label };
 }

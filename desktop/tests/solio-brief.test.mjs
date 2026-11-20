@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { solioBrief, briefHead, briefSoon, briefDiag, briefDial, briefGroups, poolRunout, poolSay, dailyDiag, diagWhen, briefLive, tokSample, recentOut, soonWhen, SOON_SHOWN, RECENT_MS, DIAL_MS } from '../renderer/solio-brief.mjs';
 import { solioToday } from '../renderer/solio-today.mjs';
-import { serviceFacts, poolTimeline } from '../renderer/subscriptions-model.mjs';
+import { serviceFacts, poolTimeline, POOL_SHORT } from '../renderer/subscriptions-model.mjs';
 
 const D = 864e5, H = 3600e3, W = 7 * D;
 const NOW = new Date(2026, 10, 20, 3, 0).getTime(); // 2026-11-20(금) 03:00
@@ -631,7 +631,7 @@ test('cross-check: an account not read yet is neither shut nor a reason to forec
 test('cross-check on 400 random Claude pools: row, dial, top and coming-up agree, and every branch is hit', () => {
   let seed = 20261120;
   const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648, pick = a => a[Math.floor(rnd() * a.length)];
-  const hits = { pooledRow: 0, shareRange: 0, speaks: 0, silent: 0, gaps: 0, noPool: 0, login: 0, pending: 0, fixable: 0 };
+  const hits = { pooledRow: 0, shareRange: 0, speaks: 0, silent: 0, gaps: 0, shortSkipped: 0, noPool: 0, login: 0, pending: 0, fixable: 0 };
   for (let k = 0; k < 400; k++) {
     const rows = [], stats = {}, n = 1 + Math.floor(rnd() * 5);
     for (let i = 0; i < n; i++) {
@@ -662,14 +662,16 @@ test('cross-check on 400 random Claude pools: row, dial, top and coming-up agree
     assert.ok(!speaks || fc, tag + ' speaks a runout the pool does not have: ' + texts);
     assert.ok(!(fc && f.open.length) || speaks, tag + ' the pool runs out but nothing says so');
     hits[speaks ? 'speaks' : 'silent']++;
-    // 문자판 막힘 표식은 풀 모의의 때(반올림 전)에, 말하는 때(반올림)가 사흘 안일 때 하나만 찍힌다
-    assert.deepEqual(d.events.filter(e => e.kind === 'runout').map(e => e.off), fc && fc.sayAt <= NOW + DIAL_MS ? [fc.at - NOW] : [], tag);
-    // 붉은 호는 풀 모의의 막힌 구간 그대로다. 풀 모의가 없으면 금색 호를 그리지 않는다
+    // 문자판 막힘 표식은 풀 모의의 때(반올림 전)에, 그때가 사흘 안일 때만 하나 찍힌다(다시 검수 FA5: 사흘 끝 바로 뒤가 「지금」 옆에 찍혔다)
+    assert.deepEqual(d.events.filter(e => e.kind === 'runout').map(e => e.off), fc && fc.at - NOW <= DIAL_MS ? [fc.at - NOW] : [], tag);
+    // 붉은 호는 지금 막힌 구간(짧아도)과 30분 넘는 앞날의 막힌 구간 그대로다(다시 검수 FA4). 풀 모의가 없으면 금색 호를 그리지 않는다
     const gaps = d.arcs.filter(a => a.k === 'gap').map(a => [a.from, a.to]);
     if (p) {
-      const want = p.blocks.map(x => [Math.max(0, x.from - NOW), Math.min(DIAL_MS, x.to - NOW)]).filter(([x, y]) => y > x);
+      const clip = list => list.map(x => [Math.max(0, x.from - NOW), Math.min(DIAL_MS, x.to - NOW)]).filter(([x, y]) => y > x);
+      const want = clip(p.blocks.filter(x => x === p.now || x.to - x.from >= POOL_SHORT));
       assert.deepEqual(gaps, want, tag);
       if (want.length) hits.gaps++;
+      if (clip(p.blocks).length > want.length) hits.shortSkipped++;
     } else { hits.noPool++; assert.ok(!d.arcs.some(a => a.k === 'safe'), tag); }
     // 다시 로그인할 계정은 「다시 로그인」으로, 「읽는 중」은 아직 읽지 않은 계정이 있을 때만이다
     if (f.login.length) { hits.login++; assert.match(d.label, /다시 로그인/, tag); }
@@ -678,4 +680,41 @@ test('cross-check on 400 random Claude pools: row, dial, top and coming-up agree
     if (f.kind === 'fixable') { hits.fixable++; assert.doesNotMatch(texts, /모든 계정/, tag); }
   }
   for (const [k, v] of Object.entries(hits)) assert.ok(v >= 5, k + ' was hit ' + v + ' times');
+});
+
+test('the dial counts an account that has refilled once, not twice (다시 검수 FA1)', () => {
+  // 읽은 뒤 5시간 한도 초기화 시각이 지나 「다시 찼을 것」인 Codex Pro와 정상인 Codex Plus
+  const proj = row({ service: 'gpt', label: 'gpt', plan: 'pro', email: 'p@example.com', live: { readAt: NOW - 40 * 60e3, session: { usedPercent: 30, resetsAt: NOW - 10 * 60e3 }, weekly: { usedPercent: 20, resetsAt: NOW + 4 * D } } });
+  const ok = row({ service: 'gpt', label: 'gpt', plan: 'plus', email: 'q@example.com', live: { readAt: NOW - 5 * 60e3, weekly: { usedPercent: 10, resetsAt: NOW + 5 * D } } });
+  const s = snap([proj, ok], { [proj.id]: 1, [ok.id]: 1 }), g = briefGroups(s, NOW);
+  assert.equal(g[0].projected.length, 1);
+  const d = briefDial(s, g, NOW, 'gpt');
+  assert.deepEqual(d.hero, { value: '2', unit: '/2', label: 'Codex 열린 계정' });
+  assert.equal(d.label, 'Codex 계정 2개 가운데 2개가 열려 있습니다.');
+});
+
+test('a block under 30 minutes ahead is not drawn red while the label says nothing shuts (다시 검수 FA4)', () => {
+  // 10%p 남고 하루 24%p: 10시간 뒤 바닥, 20분 뒤 주간 초기화
+  const a = weekly('claude', 90, NOW + 10 * H + 20 * 60e3, { plan: 'pro' });
+  const s = snap([a], { [a.id]: 24 }), g = briefGroups(s, NOW), d = briefDial(s, g, NOW, 'claude');
+  assert.deepEqual(poolTimeline(s, g[0], NOW).blocks[0].from, NOW + 10 * H);
+  assert.deepEqual(d.arcs, [{ from: 0, to: DIAL_MS, k: 'safe' }]);
+  assert.equal(d.label, 'Claude는 열려 있습니다. Claude 남은 양 10%. 지금 속도면 사흘 안에는 막히지 않습니다.');
+});
+
+test('a runout just past the three days puts no marker beside 「지금」 (다시 검수 FA5)', () => {
+  const a = weekly('claude', 70, NOW + 5 * D, { plan: 'pro' });
+  const s = snap([a], { [a.id]: 30 / ((72 * H + 20 * 60e3) / D) }), g = briefGroups(s, NOW);
+  assert.equal(poolTimeline(s, g[0], NOW).forecast.at, NOW + 72 * H + 20 * 60e3);
+  const d = briefDial(s, g, NOW, 'claude');
+  assert.deepEqual(d.events.filter(e => e.kind === 'runout'), []);
+  assert.ok(d.events.every(e => e.off > 0 && e.off <= DIAL_MS));
+});
+
+test('a credit service with no known monthly credits says its credits left aloud (다시 검수 Q1)', () => {
+  const tomorrow = new Date(NOW + D).getDate();
+  const h = row({ service: 'higgsfield', label: 'Higgsfield', kind: 'credit', plan: 'mystery', billDay: tomorrow, live: { readAt: NOW - 5 * 60e3, credits: 1240 } });
+  const s = snap([h]), d = briefDial(s, briefGroups(s, NOW), NOW, 'higgsfield');
+  assert.deepEqual(d.hero, { value: '1,240', unit: '', label: 'Higgsfield 남은 크레딧' });
+  assert.equal(d.label, 'Higgsfield는 열려 있습니다. Higgsfield 남은 크레딧 1,240.');
 });

@@ -534,7 +534,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       // 구독 이름은 칸 고리와 바깥 궤도 사이를 따라 굽혀 쓴다. 가로로 쓰면 3시와 9시 쪽에서 칸이나 궤도에 닿았다(Fable 최종 P2).
       // 아래 반은 글자가 거꾸로 서지 않게 반대로 돈다
       if (groups > 1 && ring.accounts.length) {
-        const mid = (start + cur) / 2, half = (cur - start) / 2 + 26, r2 = 247, low = Math.sin(mid * Math.PI / 180) > 0;
+        // 이름 길은 300°를 넘기지 않는다. 한 구독이 칸의 대부분이면 길이 한 바퀴를 넘어 이름이 문자판 밖으로 나갔다(다시 검수 FA3)
+        const mid = (start + cur) / 2, half = Math.min(150, (cur - start) / 2 + 26), r2 = 247, low = Math.sin(mid * Math.PI / 180) > 0;
         const Q = deg => [(Math.cos(deg * Math.PI / 180) * r2).toFixed(1), (Math.sin(deg * Math.PI / 180) * r2).toFixed(1)];
         const [sx, sy] = Q(low ? mid + half : mid - half), [ex, ey] = Q(low ? mid - half : mid + half), id = 'orb-dial-svc-' + parts.length;
         defs.append(sv('path', { id, d: 'M' + sx + ' ' + sy + ' A' + r2 + ' ' + r2 + ' 0 ' + (half * 2 > 180 ? 1 : 0) + ' ' + (low ? 0 : 1) + ' ' + ex + ' ' + ey }));
