@@ -105,6 +105,10 @@ async function wd(method, url, body) {
     const aiNow = await callOf('aiToolsState', ''), aiBad = await callOf('setAiTools', '{tools:{protection_status:true}}'), aiMask = await callOf('setAiTools', '{tools:{},masks:["시험"]}'), aiBack = await callOf('setAiTools', '{tools:{},masks:[]}');
     check('aiToolsState · setAiTools가 엔진에 닿는다(켜고 끄는 칸이 없는 상태 도구는 거절)', aiNow?.ok === true && Array.isArray(aiNow.value?.clients) && aiNow.value?.tools && 'find_restorable' in aiNow.value.tools
       && aiBad?.code === 'BAD_INPUT' && aiMask?.ok === true && JSON.stringify(aiMask.value?.solio?.aiTools?.masks) === '["시험"]' && aiBack?.ok === true, JSON.stringify({ aiNow: aiNow?.value, aiBad, aiMask: aiMask?.value?.solio?.aiTools }));
+    // 이 백업에 담지 못하는 이름(설계 4.2 — 엔진 b18e0775b) — 창 상태 맨 위의 leftOutNames 칸(없으면 null, 있으면 화면이 읽는 꼴)
+    const loState = await callOf('getState', ''), lo = loState?.value?.leftOutNames;
+    check('창 상태에 leftOutNames 칸이 있고 null이거나 { at, count, names, cut } 꼴이다', loState?.ok === true && !!loState.value && 'leftOutNames' in loState.value
+      && (lo === null || (typeof lo === 'object' && typeof lo.at === 'string' && Number.isSafeInteger(lo.count) && Array.isArray(lo.names) && typeof lo.cut === 'boolean')), JSON.stringify(lo ?? null).slice(0, 200));
     // 한꺼번에 지워짐(설계 4.4 — 엔진 9ddcbeb40) — 창 상태의 massHold 칸. 멈춤이 없으면 restoreMassBefore는 NOT_FOUND, 모르는 칸은 BAD_INPUT, massConfirm은 상태를 그대로 돌려준다
     const mhState = await callOf('getState', ''), mhNo = await callOf('restoreMassBefore', "{place:'default'}"), mhBad = await callOf('restoreMassBefore', "{place:'default',x:1}"), mhOk = await callOf('massConfirm', '');
     check('창 상태에 massHold 칸이 있고(멈춤이 없으면 null), restoreMassBefore · massConfirm이 엔진에 닿는다', mhState?.ok === true && !!mhState.value && 'massHold' in mhState.value && mhState.value.massHold === null

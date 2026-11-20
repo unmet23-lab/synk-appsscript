@@ -30,10 +30,10 @@ const MASS_BYTES = { ...MASS, kind: 'bytes', path: SOURCES[3], removed: 3, chang
 // 판의 폴더를 가르지 못한 판 — path · folder가 null이고 이름이 판 안의 경로다
 const MASS_NOFOLDER = { ...MASS, path: null, left: null, folders: [],
   list: [{ folder: null, name: '/C/Users/studio/Documents/계약/2026/계약서 001.docx', kind: 'removed' }, { folder: null, name: '/C/Users/studio/Documents/견적/견적 001.xlsx', kind: 'removed' }] };
-const MASS_DONE = { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)', at: at('2026-11-13T14:30:00+09:00'), fromEarlier: 0, inNone: 0, mass: { beforeId: MASS.beforeId, beforeAt: MASS.beforeAt, folder: null } };
+const MASS_DONE = { path: 'C:\\Users\\studio\\Downloads\\되살린 파일 (11월 13일)', at: at('2026-11-13T14:30:00+09:00'), fromEarlier: 0, inNone: 0, mass: { beforeId: MASS.beforeId, beforeAt: MASS.beforeAt, folder: null, sub: '' } };
 const MASS_P = { level: 'attention', reason: 'mass', nextAction: 'mass' };
-// 이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 조율 세션이 검수 중). 이름 끝이 점(.)이나 빈칸이라 Windows에서 백업하지 못한다
-const LEFT = { at: at('2026-11-13T14:02:00+09:00'), count: 3, cut: false, checked: true,
+// 이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 엔진 b18e0775b — 다 본 걷기면 checked 칸이 없다). 이름 끝이 점(.)이나 빈칸이라 Windows에서 백업하지 못한다
+const LEFT = { at: at('2026-11-13T14:02:00+09:00'), count: 3, cut: false,
   names: ['C:\\Users\\studio\\Documents\\견적\\2026 견적서.', 'C:\\Users\\studio\\Desktop\\회의록 ', 'D:\\Projects\\맥에서 옮김.'] };
 const LEFT_MANY = { ...LEFT, count: 1000, cut: true, names: Array.from({ length: 1000 }, (_, i) => `D:\\Projects\\내려받은 자료\\묶음 ${String(i + 1).padStart(4, '0')}.`) };
 const LEFT_UNCHECKED = { ...LEFT, count: 2, names: LEFT.names.slice(0, 2), checked: false };
@@ -71,8 +71,8 @@ export const STATES = {
   'home-mass-nofolder': { ...base, massHold: MASS_NOFOLDER, protection: MASS_P },
   // 지워지기 전 판에서 되살린 뒤(lastRestore.mass) — 멈춤은 「확인을 마침」까지 남는다
   'home-mass-restored': { ...base, massHold: MASS, protection: MASS_P, lastRestore: MASS_DONE },
-  // 받은 범위(E31 — FUTURE 'lastRestore.mass.folder'): 「사진」 하나만 받음 · 범위를 모름(지금 엔진, 창을 다시 연 뒤)
-  'home-mass-restored-one': { ...base, massHold: MASS, protection: MASS_P, lastRestore: { ...MASS_DONE, mass: { ...MASS_DONE.mass, folder: SOURCES[2] } } },
+  // 받은 범위(E31, 엔진 b18e0775b — { folder, sub }): 「사진」 하나만 받음 · 범위를 모름(범위를 적기 전 엔진, 창을 다시 연 뒤)
+  'home-mass-restored-one': { ...base, massHold: MASS, protection: MASS_P, lastRestore: { ...MASS_DONE, mass: { ...MASS_DONE.mass, folder: SOURCES[2], sub: '' } } },
   'home-mass-restored-unknown': { ...base, massHold: MASS, protection: MASS_P, lastRestore: { ...MASS_DONE, mass: { beforeId: MASS.beforeId, beforeAt: MASS.beforeAt } } },
   // 지키는 네 폴더가 모두 바뀐 멈춤(랜섬웨어 꼴) — 확인서에는 많이 바뀐 두 곳만 줄로 둔다
   'home-mass-four': { ...base, massHold: { ...MASS, kind: 'changed', removed: 0, changed: 12470, folders: SOURCES.map((path, i) => ({ path, removed: 0, changed: [5310, 420, 4870, 1870][i] })), list: massItems.map((x) => ({ ...x, kind: 'changed' })) }, protection: MASS_P },

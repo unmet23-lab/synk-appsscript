@@ -1937,6 +1937,9 @@ test('한꺼번에 지워짐(설계 4.4 — 엔진 massHold, 조율 세션 9ddcb
   // -d FA3 — 옛 PC 백업 꺼내기의 실패(from)는 멈춤의 100만 개 실패가 아니다
   assert.equal(m.massTooBig({ ...bigErr, lastRestoreError: { ...bigErr.lastRestoreError, from: 'ffffffffffff' } }, bigOpts.massSent), null);
   assert.equal(m.massTooBig(bigErr, bigOpts.massSent), DESK);
+  // E31(엔진 b18e0775b) — 실패 칸에 범위가 있으면 그것만 믿는다. 바뀐 폴더 모두(null)면 이 창이 앞서 보낸 한 폴더로 가리지 않는다
+  assert.equal(m.massTooBig({ ...bigErr, lastRestoreError: { ...bigErr.lastRestoreError, mass: { folder: DOCS, sub: '' } } }, bigOpts.massSent), DOCS);
+  assert.equal(m.massTooBig({ ...bigErr, lastRestoreError: { ...bigErr.lastRestoreError, mass: { folder: null, sub: '' } } }, bigOpts.massSent), null);
   // 바뀐 폴더가 하나뿐이면 그 폴더를 받은 것이 모두다
   const b0 = STATES['home-mass-bytes'];
   assert.equal(draw({ ...b0, lastRestore: { ...r0Done(), mass: { beforeId: b0.massHold.beforeId, beforeAt: b0.massHold.beforeAt, folder: b0.massHold.path } } }).mm.actions[0].id, 'mass-done');
@@ -2067,7 +2070,7 @@ test('이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 조율 
   assert.equal((list.html.match(/class="fl plain lo"/g) || []).length, 3); assert.doesNotMatch(strip(list.html), /다 보지 못했습니다/);
   assert.match(strip(list.html), /파일이나 폴더 3개는 이름 때문에 백업에 담지 못했습니다\./); assert.match(strip(list.html), /3개 · 오후 2:02에 찾음/);
   const un = STATES['home-leftout-unchecked'];
-  assert.match(strip(renderScreen('left-out', { state: un, model: m.homeModel(un, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html), /오늘은 폴더를 다 보지 못했습니다\./);
+  assert.match(strip(renderScreen('left-out', { state: un, model: m.homeModel(un, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html), /이번 백업은 폴더를 다 보지 못했습니다\./);
   const mn = STATES['home-leftout-many'], lm = renderScreen('left-out', { state: mn, model: m.homeModel(mn, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html;
   assert.equal((lm.match(/class="fl plain lo"/g) || []).length, 1000); assert.doesNotMatch(lm, /외 0개/);
   const more = { ...s, leftOutNames: { ...s.leftOutNames, count: 1500, cut: false } };
@@ -2076,6 +2079,12 @@ test('이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 조율 
   const evil = { ...s, leftOutNames: { ...s.leftOutNames, names: ['C:\\x\\<img src=x onerror=alert(1)>.'] } };
   assert.doesNotMatch(renderScreen('left-out', { state: evil, model: m.homeModel(evil, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html, /<img/);
   assert.equal(renderScreen('left-out', { state: STATES.home, model: m.homeModel(STATES.home, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).kind, 'home');
+  // Opus 대체 검수(leftout-engine) F1 — 수는 알지만 이름을 모르는 몫(names 빈 목록)이면 「외」 대신 그렇다고 쓴다
+  const unnamed = { ...STATES.home, leftOutNames: { at: s.leftOutNames.at, count: 5, names: [], cut: true, checked: false } };
+  assert.deepEqual(m.homeModel(unnamed, { now: NOW }).notes, [m.UNNAMED]);
+  assert.deepEqual(m.homeModel(unnamed, { now: NOW }).links.map((l) => [l.label, l.to]), [['자세히 보기', 'left-out']]);
+  const ul = strip(renderScreen('left-out', { state: unnamed, model: m.homeModel(unnamed, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html);
+  assert.match(ul, /이름은 아직 알아내지 못했습니다/); assert.doesNotMatch(ul, /외 5개|찾은 이름이 없습니다/);
   const odd = m.leftOutOf({ leftOutNames: { count: 'x', names: [null, 5, 'C:\\a.'], checked: 0 } });
   assert.deepEqual([odd.count, odd.names.length, odd.checked, odd.cut], [1, 1, true, false]);
   assert.equal(m.leftOutOf({ leftOutNames: null }), null);

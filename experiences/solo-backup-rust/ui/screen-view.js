@@ -7,7 +7,7 @@ import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.
 import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo,
   moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo,
   moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, tooBigKept, oldWho, oldFolders, oldWhere, oldFailText, OLD_NO_SPLIT_THEN, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
-  appsJob, appsSettings, appsUnrestored, movedHere, AI_TOOL_ROWS, REST_MAX, MASK_MAX, MASK_LEN, massOf, massModel, leftOutOf, leftOutCountKo, leftOutName } from './screen-model.js';
+  appsJob, appsSettings, appsUnrestored, movedHere, AI_TOOL_ROWS, REST_MAX, MASK_MAX, MASK_LEN, massOf, massModel, leftOutOf, leftOutCountKo, leftOutName, UNNAMED } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 import { failureText } from './state-store.js';
 
@@ -1146,12 +1146,12 @@ function leftOut(s, now) {
   const lo = leftOutOf(s), device = typeof s?.device === 'string' && s.device.trim() ? s.device.trim() : '이 PC';
   const l = `${kick(`${h(device)} · 이 백업에 담지 못한 이름`)}${say(`파일이나 폴더 ${h(leftOutCountKo(lo))}`, '이름 때문에 백업에 담지 못했습니다.')}
     ${then('Windows는 이름 끝의 점(.)이나 빈칸을 다루지 못해, 이런 파일과 폴더는 백업할 수 없습니다. 폴더 이름이 그렇다면 그 안의 파일도 함께 빠집니다.')}
-    ${notes([...(lo.checked ? [] : ['오늘은 폴더를 다 보지 못했습니다. 아직 보지 못한 폴더에 이런 이름이 더 있을 수 있습니다.']),
+    ${notes([...(lo.checked ? [] : ['이번 백업은 폴더를 다 보지 못했습니다. 아직 보지 못한 폴더에 이런 이름이 더 있을 수 있습니다.']),
       '이름 끝의 점이나 빈칸을 지우면 다음 백업에 담깁니다.', '탐색기에서 이름이 바뀌지 않으면 그 파일을 만든 프로그램에서 바꿔 주세요.'])}
     ${acts([{ id: 'home', label: '돌아가기', kind: 'line' }])}`;
   const items = lo.names.map((p) => { const x = leftOutName(p); return `<div class="fl plain lo" role="listitem"><span class="nm">「${h(x.name)}」</span><span class="vl"></span>${x.where ? `<span class="ds">${h(x.where)}</span>` : ''}</div>`; }).join('');
   const more = lo.count > lo.names.length ? `<p class="foot">외 ${h(count(lo.count - lo.names.length))}개${lo.cut ? ' 이상' : ''}</p>` : '';
-  const body = lo.names.length ? `<div class="files" role="list" aria-label="담지 못한 이름">${items}</div>${more}` : `<p class="empty">찾은 이름이 없습니다.</p>${more}`;
+  const body = lo.names.length ? `<div class="files" role="list" aria-label="담지 못한 이름">${items}</div>${more}` : `<p class="empty">${h(UNNAMED)}</p>`;
   const r = panel('담지 못한 이름', `${h(`${count(lo.count)}개${lo.cut ? ' 이상' : ''}`)}${lo.at ? ` · ${h(whenKo(lo.at, now))}에 찾음` : ''}`, body);
   return { kind: 'flow', tone: 'warn', here: '담지 못한 이름', back: 'home', top: [{ id: 'home', label: '닫기' }], html: flow(l, r), acts: { home: { id: 'home', to: 'home' } } };
 }

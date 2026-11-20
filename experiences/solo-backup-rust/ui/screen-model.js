@@ -13,8 +13,6 @@ export const FUTURE = Object.freeze({
   'lastBackup.folders': '폴더마다 담은 파일 수 · 크기([{path, files, bytes}])',
   'lastProbe.v2': '되살리기 증명 v2 — 폴더마다 무작위 파일 합 64MiB 안(files · bytes · nextAt)',
   'lastPartial.program': '쓰는 중이라 못 읽은 파일을 쥔 프로그램 이름과 파일 목록',
-  leftOutNames: '이 백업에 담지 못하는 이름(설계 4.2 — 조율 세션이 검수 중) — {at, count, names, cut, checked?}',
-  'lastRestore.mass.folder': '지워지기 전 판에서 받은 범위(E31 — 바뀐 폴더 모두면 null, 한 폴더면 그 경로). 없으면 이 창이 보낸 것으로 가린다',
   admin: '관리자 계정인지(쓰는 중이라 못 읽은 파일을 따로 읽어 채우는지)',
 });
 
@@ -265,7 +263,8 @@ export function massTooBig(s, sent) {
   if (since !== null && ms(e.at) < since) return null;
   // 옛 PC 백업 꺼내기의 실패(from)는 멈춤의 실패가 아니다(restoreNote의 old와 같다, mass -d FA3)
   if (typeof e.from === 'string' && e.from) return null;
-  if (typeof e.mass?.folder === 'string' && e.mass.folder) return e.mass.folder;
+  // 엔진이 범위를 적었으면(E31, b18e0775b) 그것만 믿는다 — 바뀐 폴더 모두(null)면 어느 폴더가 큰지 모른다. 범위가 없는 옛 엔진만 이 창이 보낸 것으로 가린다
+  if (e.mass && typeof e.mass === 'object' && Object.prototype.hasOwnProperty.call(e.mass, 'folder')) return typeof e.mass.folder === 'string' && e.mass.folder ? e.mass.folder : null;
   return sent && sent.beforeId === mh.beforeId && Number.isFinite(sent.at) && ms(e.at) >= sent.at && typeof sent.folder === 'string' && sent.folder ? sent.folder : null;
 }
 /** 멈춤이 있는 동안 끝난 되살리기의 실패 글 — 실패 칸에는 어느 되살리기였는지가 없어(lastRestoreError) 멈춤의 말로 쓴다 */
@@ -278,8 +277,8 @@ export function massFailText(code, mh, folder = null) {
 }
 
 /**
- * 이 백업에 담지 못하는 이름(설계 4.2 — 엔진 leftOutNames, 조율 세션이 검수 중). 이름 끝이 점(.)이나 빈칸인 파일과 폴더는 Windows에서
- * 백업할 수 없어 판에서 빠진다. names는 Windows 경로 1,000개까지, count는 전체 수(cut이면 그 이상), checked가 false면 그날 폴더를 다 보지 못했다
+ * 이 백업에 담지 못하는 이름(설계 4.2 — 엔진 leftOutNames, b18e0775b). 이름 끝이 점(.)이나 빈칸인 파일과 폴더는 Windows에서
+ * 백업할 수 없어 판에서 빠진다. names는 Windows 경로 1,000개(모두 32,768자)까지, count는 전체 수(cut이면 그 이상), checked가 false면 그 백업의 걷기가 폴더를 다 보지 못했다
  */
 export function leftOutOf(s) {
   const x = s?.leftOutNames;
@@ -296,6 +295,8 @@ export function leftOutName(p) {
   return { name, where: parts.join(' › ') };
 }
 const LEFT_LINK = { label: '어떤 파일인지 보기', to: 'left-out' };
+/** 수는 알지만 이름을 아직 알아내지 못한 몫 — 기본 화면 줄과 목록이 같은 말을 쓴다 */
+export const UNNAMED = '이름은 아직 알아내지 못했습니다. 폴더를 다 보는 다음 백업에서 이름이 나옵니다.';
 /**
  * 담지 못한 이름보다 먼저 서는 주의 화면 가운데 이 PC가 백업을 맡는 것 — 회차의 하루 한 번 알림(주제 status)이 기본 화면을 여니,
  * 그 화면에도 한 줄과 「어떤 파일인지 보기」를 둔다(Opus 대체 검수 F1). 넘긴 PC · 되살리기만 하는 PC · 되돌리기 중은 뺀다
@@ -747,8 +748,11 @@ function baseModel(state, now, opts) {
   const lo = leftOutOf(s);
   if (lo && lo.count > 0) {
     const notes = lo.names.slice(0, 2).map((p) => { const x = leftOutName(p); return `「${x.name}」${x.where ? ` · ${x.where}` : ''}`; });
-    if (lo.count > notes.length) notes.push(`외 ${count(lo.count - notes.length)}개${lo.cut ? ' 이상' : ''}`);
-    const links = [LEFT_LINK];
+    // 엔진이 수는 세었지만 이름은 모를 수 있다(이름 보관을 못 읽은 뒤 걷기가 덜 끝남 — names 빈 목록). 그때는 「외」가 아니라 그렇다고 쓴다(Opus 대체 검수 F1)
+    if (!notes.length) notes.push(UNNAMED);
+    else if (lo.count > notes.length) notes.push(`외 ${count(lo.count - notes.length)}개${lo.cut ? ' 이상' : ''}`);
+    // 이름을 모르면 목록 화면에는 까닭과 고치는 법만 있다 — 고리도 그 말로 부른다(다시 검수 -b)
+    const own = lo.names.length ? LEFT_LINK : { label: '자세히 보기', to: 'left-out' }, links = [own];
     if (partial) {
       const pn = count(partial.unreadable) + (partial.cut ? '개 넘게' : '개'), who = typeof partial.program === 'string' && partial.program ? partial.program : null;
       const holder = who ? `${josa(who, '이/가')} 쓰는 중인` : '다른 프로그램이 쓰는 중인', firstOnly = !s.lastBackup || s.lastBackup.id === partial.id;
@@ -758,7 +762,7 @@ function baseModel(state, now, opts) {
     return { ...base, id: 'home-leftout', tone: 'warn', stamp: '주의', kick: `${device} · 매시간 저절로 지키는 중`, title: '이름 때문에 담지 못한 파일이 있습니다.',
       sub: `이름 끝에 점(.)이나 빈칸이 있는 파일이나 폴더 ${leftOutCountKo(lo)} Windows에서 백업할 수 없습니다. 이름을 바꾸면 다음 백업에 담깁니다.`,
       // 쓰는 중인 파일은 위 줄에 있으니 확인서의 「쓰는 중이라 앞 판으로」 줄은 두지 않는다 — 760×640에서 주 단추를 첫 화면에 남긴다(Opus 대체 검수 F3)
-      notes, link: LEFT_LINK, links, actions: [RESTORE, MOVE], evidence: evidence(s, now, { state: 'ok' }) };
+      notes, link: own, links, actions: [RESTORE, MOVE], evidence: evidence(s, now, { state: 'ok' }) };
   }
   if (partial) {
     const n = count(partial.unreadable) + (partial.cut ? '개 넘게' : '개');
