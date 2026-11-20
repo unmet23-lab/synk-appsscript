@@ -18800,7 +18800,7 @@ function createLifeTrail({ coach = () => null, snapshot = () => null, onError = 
   const slotOf = (key) => typeof key === "string" ? slots.get(key) || null : null;
   return Object.freeze({
     // 문항이 보였다 — 판을 열고 그 자리에서 코치에 보인다(그 순간의 제품 이력 대조와 도움 상태를 잰다). item: lifeItem(...) 결과.
-    // 보인 순간에 적는다(설계 §4-2 ② 4판 — 끝 판 검수 GPT GB1 · Fable F1): 엔진 노출 계약을 따른다. 코치 노출(atlas/game-learning.js exposure)은
+    // 보인 순간에 적는다(설계 §4-2 ② 4판): 엔진 노출 계약을 따른다. 코치 노출(atlas/game-learning.js exposure)은
     // 답하지 않고 보인 문항도 처음 보는 문항이 아니라고 보고, Temper 짝(temper.js fresh)은 그 문항 · 계열의 첫 보임 판의 답만 고른다 — 그래서 흘끗 본 문항은
     // 재확인 공급(life-followups.mjs)에서 빠지고, 흘끗 보고 새로고침한 뒤의 첫 답은 Temper 짝이 못 된다(2판이 늦은 보임으로 지키려던 것을 버린다).
     // Trail 근거의 「처음」(trail.js firstExposure)은 답 · 정답 보임으로만 깨지므로 그 답도 근거 · 앵커로는 남는다. 같은 판을 다시 그려도 보임은 하나다.

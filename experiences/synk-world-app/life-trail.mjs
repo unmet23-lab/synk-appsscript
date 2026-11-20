@@ -25,7 +25,7 @@ export function productMet(item,snapshot){
   if(guided(member.questionId))return true;
   if(!record)continue;
   // 새 상황 복습: 맞힌 적 있음 · 본문항 답보다 뒤에 갱신됨 · 본문항 답 기록 없이 복습 기록만 남음 · 다시 하기 판(본문항을 다시 풀면
-  // 제품이 복습의 마지막 시각을 그 답 시각으로 덮어 그 앞의 복습 풀이가 안 보인다 — 다시 검수 GPT Q4) — 하나라도 맞으면 만났다.
+  // 제품이 복습의 마지막 시각을 그 답 시각으로 덮어 그 앞의 복습 풀이가 안 보인다) — 하나라도 맞으면 만났다.
   if(record.streak>0||!main||replay||Number.isFinite(record.lastAt)&&record.lastAt>main.at)return true;
  }
  return false;
@@ -42,7 +42,7 @@ export function createLifeTrail({coach=()=>null,snapshot=()=>null,onError=null,a
   const c=quiet(()=>coach());
   if(!c||typeof c.present!=='function')return null;
   // 코치가 없을 때 연 튜터 안내 연습(guided)은 코치가 생긴 첫 자리에서 먼저 보인다 — 그 복습 원고 · 해설을 본 일이
-  // 뒤의 보임 · 답보다 앞에 남게(끝 판 검수 Fable F2 — 안내 연습을 끝내지 않으면 제품에도 guidedAt이 없다).
+  // 뒤의 보임 · 답보다 앞에 남게(안내 연습을 끝내지 않으면 제품에도 guidedAt이 없다).
   if(!slot.guided)for(const other of slots.values())if(other.guided&&!other.pid)present(other,c);
   return present(slot,c);
  }
@@ -50,7 +50,7 @@ export function createLifeTrail({coach=()=>null,snapshot=()=>null,onError=null,a
   // 제품 이력 대조는 문항이 보인 순간(shown · guided)에 잰 값을 쓴다 — 늦게 준비된 코치로 답할 때 이어 적으면
   // 그때의 진도에는 방금 낸 답이 들어 있어 「이미 만남」으로 잘못 읽힌다.
   // 대조는 Trail이 이 문항 · 계열을 처음으로 볼 때만 건다 — Trail이 이미 그 계열을 봤으면 Trail 판정(반복)이 맞고,
-  // 같은 표현 계열의 다른 문항까지 근거에서 빼면 안 된다(다시 검수 그록 KA1). 노출을 모르면(null) 대조를 그대로 건다.
+  // 같은 표현 계열의 다른 문항까지 근거에서 빼면 안 된다. 노출을 모르면(null) 대조를 그대로 건다.
   const trailSeen=quiet(()=>c.exposure?.({itemKey:slot.item.itemKey,familyKey:slot.item.familyKey})?.seen);
   slot.assessable=quiet(()=>assessable(slot.item))===true&&(slot.met===false||trailSeen===true);
   const pid=quiet(()=>c.present(lifeMeasureItem(slot.item)));
@@ -66,7 +66,7 @@ export function createLifeTrail({coach=()=>null,snapshot=()=>null,onError=null,a
  const slotOf=key=>typeof key==='string'?slots.get(key)||null:null;
  return Object.freeze({
   // 문항이 보였다 — 판을 열고 그 자리에서 코치에 보인다(그 순간의 제품 이력 대조와 도움 상태를 잰다). item: lifeItem(...) 결과.
-  // 보인 순간에 적는다(설계 §4-2 ② 4판 — 끝 판 검수 GPT GB1 · Fable F1): 엔진 노출 계약을 따른다. 코치 노출(atlas/game-learning.js exposure)은
+  // 보인 순간에 적는다(설계 §4-2 ② 4판): 엔진 노출 계약을 따른다. 코치 노출(atlas/game-learning.js exposure)은
   // 답하지 않고 보인 문항도 처음 보는 문항이 아니라고 보고, Temper 짝(temper.js fresh)은 그 문항 · 계열의 첫 보임 판의 답만 고른다 — 그래서 흘끗 본 문항은
   // 재확인 공급(life-followups.mjs)에서 빠지고, 흘끗 보고 새로고침한 뒤의 첫 답은 Temper 짝이 못 된다(2판이 늦은 보임으로 지키려던 것을 버린다).
   // Trail 근거의 「처음」(trail.js firstExposure)은 답 · 정답 보임으로만 깨지므로 그 답도 근거 · 앵커로는 남는다. 같은 판을 다시 그려도 보임은 하나다.
