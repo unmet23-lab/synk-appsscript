@@ -1463,10 +1463,10 @@ def 시안목록(g):
 def 장면실내채움(seq):
     """틀 2 — 장면 표의 「실내」를 그 장면을 쓰는 컷에 옮겨 적는다(컷에 실내 · 실외를 따로 적었으면 그것을 따른다).
     기존 실내 검사(점 시트 · 지시문의 실내 눈 걸림 · 표빈칸)가 컷의 실내 칸을 보기 때문이다. 옛 틀 표는 건드리지 않는다."""
-    if not 틀둘(seq): return seq
+    if not 틀둘(seq) or not isinstance(seq.get("detail"), list): return seq
     장면표 = seq.get("장면") if isinstance(seq.get("장면"), dict) else {}
-    for d in seq.get("detail") or []:
-        if "실내" in d or "실외" in d: continue
+    for d in seq["detail"]:
+        if not isinstance(d, dict) or "실내" in d or "실외" in d: continue   # 객체가 아닌 줄은 표 검사의 뼈대 검사가 건다
         s = 장면표.get(d.get("장면")) if isinstance(d.get("장면"), str) else None
         if isinstance(s, dict) and s.get("실내") is True: d["실내"] = True
         elif isinstance(s, dict) and s.get("실내") is False: d["실외"] = True
@@ -2446,7 +2446,7 @@ def 꾸러미시작그림(seq, 판들):
 
 def 틀검사(seq, r, 폴더=None, 그림폴더=None, 영상=None):
     """컷표 틀 2의 칸 검사(T1~T24) — 걸림은 끝 코드 1, 주의는 알리기만 한다(끝 코드를 바꾸지 않는다 — 기존 규약).
-    폴더: 컷표가 있는 편 폴더(시작 그림 · 글자 시안 파일을 읽어 견줄 때) · 그림폴더: --그림 폴더 — 둘 다 없어도 돈다(내기 도구의 굽기전은 표만 넘긴다).
+    폴더: 컷표가 있는 편 폴더(시작 그림 · 글자 시안 파일을 읽어 견줄 때) · 그림폴더: --그림 폴더 — 둘 다 없어도 돈다(폴더를 안 넘기면 편 날짜를 「편.만든날」로만 읽는다 — 내기 도구의 굽기전은 11-20부터 편 폴더를 넘긴다).
     영상: --영상(편집 · 마감 관문판) — 글자 시안(T19)이 없으면 주의가 아니라 걸림이다."""
     def 걸림(컷, 글): r.더함("틀", 컷, "걸림", 글)
     def 주의(컷, 글): r.더함("틀", 컷, "주의", 글)
@@ -2588,7 +2588,7 @@ def 틀검사(seq, r, 폴더=None, 그림폴더=None, 영상=None):
                         except OSError: 없는것.append(x); continue
                         if 열쇠 in 본내용: 겹침 += 1; continue
                         본내용.add(열쇠); 있음.append(x)
-                else:   # 내기 도구의 굽기전은 표만 넘긴다 — 파일은 못 보고 적힌 수만 센다
+                else:   # 편 폴더를 안 넘긴 실행 — 파일은 못 보고 적힌 수만 센다
                     있음, 없는것, 겹침 = 목록, [], 0
                 if len(있음) >= 2: continue
                 뺌 = g.get("시안없음")
@@ -2614,12 +2614,37 @@ def 틀검사(seq, r, 폴더=None, 그림폴더=None, 영상=None):
         r.더함("틀", "표", "통과", f"틀 2 — 컷 {len(det)} · 장면 {len(쓰는장면)} · 인물 {len(쓰는인물)} · 빈 칸 없음")
 
 
+_컷표읽기 = None
+
+
+def 컷표읽기():
+    """tools/lib/컷표읽기.py — 칸 사전과 꼴 관문. -I로 돌 때는 import가 안 돼 경로로 불러온다(검사이력과 같은 방식)."""
+    global _컷표읽기
+    if _컷표읽기 is None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("컷표읽기", str(Path(__file__).resolve().parent / "lib" / "컷표읽기.py"))
+        m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); _컷표읽기 = m
+    return _컷표읽기
+
+
 def 표검사(seq, r, 항목=기본항목, 간격=(0.6, 1.0), 영상=None, 폴더=None, 그림폴더=None):
     """표만으로 도는 검사(콘티 단계) — main과 내기 도구(크레딧내기.py의 굽기전)가 같은 함수를 쓴다.
-    폴더(컷표가 있는 편 폴더) · 그림폴더(--그림)는 시작 그림 파일을 읽어 견줄 때만 쓴다(T17) — 없으면 칸에 적힌 이름으로만 견준다."""
+    폴더(컷표가 있는 편 폴더)는 편 날짜를 읽고 시작 그림 · 글자 시안 파일을 견줄 때 쓴다 — 내기 도구도 넘긴다(안 넘기면 날짜 문이 달린 검사가 모두 주의가 된다).
+    그림폴더(--그림)는 시작 그림 파일을 읽어 견줄 때만 쓴다(T17) — 없으면 칸에 적힌 이름으로만 견준다.
+    값 검사보다 먼저 꼴을 본다(tools/lib/컷표읽기.py — 11-20 설계 검토): 뼈대가 깨진 표(컷 줄을 읽을 수 없다)는 걸림만 내고 값 검사를 돌리지 않는다(항목과 상관없이).
+    틀 2 표의 꼴이 틀린 칸(글 칸의 배열 · 객체 · 수 · 참거짓 …)은 「틀」 항목의 걸림이고, 그 칸은 seq에서 지워 값 검사가 빈칸으로 읽게 한다(면제 칸도 꼴이 틀리면 면제하지 않는다)."""
+    읽기 = 컷표읽기()
+    뼈대 = 읽기.뼈대검사(seq)
+    if 뼈대:
+        for 어디, 글 in 뼈대: r.더함("틀", 어디, "걸림", 글)
+        return
+    꼴줄 = 읽기.꼴검사(seq, 비움=True) if "틀" in 항목 and 틀둘(seq) else []
     표빈칸(seq, r)
     if "틀" in 항목:
-        if 틀둘(seq): 틀검사(seq, r, 폴더, 그림폴더, 영상)
+        if 틀둘(seq):
+            for 어디, 글 in 꼴줄: r.더함("틀", 어디, "걸림", 글)
+            틀검사(seq, r, 폴더, 그림폴더, 영상)
+            if 꼴줄 and r.항목들[-1]["항목"] == "틀" and r.항목들[-1]["등급"] == "통과": r.항목들.pop()   # 꼴이 틀린 칸이 있으면 「빈 칸 없음」 통과 줄을 내지 않는다
         # 알림은 끝 코드를 바꾸지 않는다. 항목 이름은 표빈칸과 같은 자리(소품 · 표)에 둔다 — 표가 빈 컷순서의 항목 묶음(소품 · 사건 · 소리)을 고정한 기존 시험을 깨지 않으려고
         else:
             r.더함("소품", "표", "알림", "옛 틀 — 장면 · 구도 · 연기 · 끝 칸 검사 없음(틀 2로 옮기면 돈다)")
@@ -3470,13 +3495,14 @@ def main(argv):
     seq_path = Path(o["_"][0]); seq = 장면실내채움(json.loads(seq_path.read_text(encoding="utf-8")))
     출력 = Path(o.get("출력") or seq_path.parent / "검사_연속성"); 출력.mkdir(parents=True, exist_ok=True)
     지도 = None
-    지도경로 = o.get("지도") or seq.get("지도")
+    지도경로 = o.get("지도") or (seq.get("지도") if isinstance(seq, dict) else None)
     if 지도경로:
         p = Path(지도경로); p = p if p.is_absolute() or p.exists() else seq_path.parent / p
         지도 = json.loads(p.read_text(encoding="utf-8"))
     항목 = set(o["항목"] or 기본항목)
     영상 = o.get("영상"); 받음 = o.get("받음"); 그림 = o.get("그림")
     표검사(seq, r, 항목, o["간격"], 영상, 폴더=seq_path.parent, 그림폴더=그림)
+    if 컷표읽기().뼈대검사(seq): 항목 = set()   # 뼈대가 깨진 표 — 표 검사가 걸림을 냈다. 컷 줄을 읽는 나머지 항목은 돌지 않는다
     if "지시문" in 항목 and o.get("지시문"): 지시문항목(seq, r, o["지시문"], o["실내"])
     elif "지시문" in 항목:
         for d in seq.get("detail", []):
