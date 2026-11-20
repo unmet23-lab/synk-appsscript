@@ -486,6 +486,29 @@ test('GA1: a watch or an ingest that waited across an account change starts noth
   assert.equal((await f.office.snapshot(YUHO)).settings.view, 'tilted', 'nothing was written for the account that left');
 });
 
+/* GPT 검수 r8 GA1 뒤의 설계 고침(구현설계 11.1 「계정 묶기」): 계정과 로그인 회차를 한 묶음으로 견준다 */
+test('login stamp: news and answers bound to an earlier sign-in of the same account are refused; a same-round token renewal keeps them', async () => {
+  const f = holdSetup();
+  const first = { ...YUHO, sessionGeneration: 1 }, again = { ...YUHO, sessionGeneration: 2 };
+  f.office.accountChanged(first);
+  // 같은 회차의 토큰 갱신(main이 같은 계정 번호와 같은 회차로 다시 알린다)은 같은 묶음이다
+  f.office.accountChanged({ synk_user_id: YUHO.synk_user_id, sessionGeneration: 1 });
+  assert.equal((await f.office.ingest(hook('PostToolUse', T0), first)).ok, true);
+  assert.equal(await f.office.accepts(first), true);
+  // 몸을 받는 사이에 로그아웃했다가 같은 계정으로 다시 로그인했다. 앞 회차에 허락한 소식은 접지 않는다
+  f.h.arm();
+  const late = f.office.ingest(hook('Stop', T0 + 1000), first);
+  await settle();
+  f.office.accountChanged(null);
+  f.office.accountChanged(again);
+  f.h.release();
+  assert.deepEqual(await late, { ok: false, code: 'AUTH_CHANGED' });
+  assert.equal(await f.office.accepts(first), false, 'the earlier round is no longer allowed');
+  assert.equal(await f.office.accepts(again), true);
+  assert.deepEqual((await f.office.snapshot(first)), { ok: false, code: 'AUTH_CHANGED' });
+  assert.deepEqual((await f.office.snapshot(again)).state.sessions, {}, 'signing out cleared the sessions and the late news did not come back');
+});
+
 test('GA3 · GA4: two overlapping folder removals through the office both stick, and missing folders can be removed', async () => {
   const f = setup();
   const a = path.join(f.work, 'claude-a'), b = path.join(f.work, 'claude-b'), c = path.join(f.work, 'claude-c');

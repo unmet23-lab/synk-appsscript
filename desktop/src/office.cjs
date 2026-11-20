@@ -34,6 +34,8 @@ const HOOK_FIELDS = Object.freeze({ event: 40, sessionId: 128, cwd: 1024, toolNa
 const isObject = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 const hasOwn = (o, k) => isObject(o) && Object.prototype.hasOwnProperty.call(o, k);
 const accountIdOf = account => (isObject(account) && typeof account.synk_user_id === 'string' && ID.test(account.synk_user_id) ? account.synk_user_id : null);
+/* 로그인 회차(main이 계정에 실어 넘기는 sessionGeneration). 없으면 null */
+const roundOf = account => (isObject(account) && (typeof account.sessionGeneration === 'number' || typeof account.sessionGeneration === 'string') ? account.sessionGeneration : null);
 const emptyData = () => ({ view: 'tilted', manualCap: null, departments: [], assignments: {}, roots: { claude: [] } });
 
 function defaultViewersFile(env = process.env, platform = process.platform) {
@@ -96,8 +98,15 @@ function createOffice({
   let state = model.officeState();
   let owner = null; // state의 세션을 가진 계정 번호
   let generation = 0; // 계정이 바뀔 때마다 하나씩. 그 전에 시작한 살피기의 결과는 버린다
-  let current; // main이 accountChanged로 알린 지금 계정. undefined는 아직 알리지 않음(그때는 견주지 않는다), null은 로그아웃
-  const isCurrent = id => current === undefined || current === id;
+  /* 로그인 묶음(GPT 검수 r7 · r8 GA1, 구현설계 11.1 「계정 묶기」): 본체로 들어오는 길(화면 채널, 훅)은 들어온 순간의 계정과 로그인 회차
+     (sessionGeneration)를 한 묶음으로 잡아 끝까지 들고 온다. 그 묶음이 main이 accountChanged로 알린 지금 묶음과 같을 때만 기억을 바꾸고 답한다.
+     같은 계정의 토큰 갱신은 회차가 그대로라 같은 묶음이다. current: undefined는 아직 알리지 않음(견주지 않는다), null은 로그아웃 */
+  let current;
+  const isCurrent = account => {
+    if (current === undefined) return true;
+    if (current === null) return false;
+    return accountIdOf(account) === current.id && roundOf(account) === current.round;
+  };
   const CHANGED = Object.freeze({ ok: false, code: 'AUTH_CHANGED' });
   let watching = null; // { timer, accountId, account }
   let scanning = null;
@@ -250,17 +259,17 @@ function createOffice({
   }
 
   /* ── 공개 함수: 모두 지금 계정을 받는다 ── */
-  async function allowed(account) { const id = await gate(account); return id !== null && isCurrent(id); }
+  async function allowed(account) { const id = await gate(account); return id !== null && isCurrent(account); }
   /** 훅 서버가 몸을 읽기 전에 묻는다. 볼 계정이 로그인해 있을 때만 참이다. 대기 명단에는 적지 않는다 */
-  async function accepts(account) { const id = await gate(account, { note: false }); return id !== null && isCurrent(id); }
-  /* 기다린 뒤에도 그 계정이 지금 계정이고 세대가 그대로인지 */
-  const still = (id, gen) => gen === generation && owner === id && isCurrent(id);
+  async function accepts(account) { const id = await gate(account, { note: false }); return id !== null && isCurrent(account); }
+  /* 기다린 뒤에도 그 묶음이 지금 묶음이고 세대가 그대로인지 */
+  const still = (account, id, gen) => gen === generation && owner === id && isCurrent(account);
 
   /** 훅 소식 하나(5단계의 서버가 고른 칸만)를 접는다. 볼 계정이 로그인해 있지 않으면 읽지 않고 버린다 */
   async function ingest(event, account) {
     const id = await gate(account, { note: false });
     if (!id) return { ok: false, code: 'NOT_ALLOWED' };
-    if (!isCurrent(id)) return CHANGED;
+    if (!isCurrent(account)) return CHANGED;
     const e = pickHook(event, now());
     if (!e) return { ok: false, code: 'VALUE' };
     useAccount(id);
@@ -272,7 +281,7 @@ function createOffice({
   async function watch(on, account) {
     const id = await gate(account);
     if (!id) { stopWatch(); return { ok: false, code: 'NOT_ALLOWED' }; }
-    if (!isCurrent(id)) return CHANGED;
+    if (!isCurrent(account)) return CHANGED;
     useAccount(id);
     if (!on) { stopWatch(); return { ok: true, watching: false }; }
     if (!watching) {
@@ -289,19 +298,19 @@ function createOffice({
   async function snapshot(account) {
     const id = await gate(account);
     if (!id) return { ok: true, available: false };
-    if (!isCurrent(id)) return CHANGED; // 볼 계정 파일을 읽는 사이에 로그아웃하거나 계정이 바뀌었다
+    if (!isCurrent(account)) return CHANGED; // 볼 계정 파일을 읽는 사이에 로그아웃하거나 계정이 바뀌었다
     useAccount(id);
     const gen = generation;
     const r = await st.read(id);
-    if (!still(id, gen)) return CHANGED;
+    if (!still(account, id, gen)) return CHANGED;
     const data = r && r.ok ? r.data : emptyData();
     storeCache = { accountId: id, data };
     const pcValue = await pcNow();
-    if (!still(id, gen)) return CHANGED;
+    if (!still(account, id, gen)) return CHANGED;
     const watched = rootsFor(data);
     let hookState = { on: false };
     if (hooks) { try { hookState = await hooks.status(watched.claude); } catch { hookState = { on: false, available: false, dirs: [], message: null }; } }
-    if (!still(id, gen)) return CHANGED;
+    if (!still(account, id, gen)) return CHANGED;
     return {
       ok: true, available: true,
       state: { sessions: structuredClone(state.sessions), ignored: {} }, // 앱이 스스로 돌린 세션의 번호는 화면에 넘기지 않는다
@@ -316,11 +325,11 @@ function createOffice({
   async function mutation(account, run) {
     const id = await gate(account);
     if (!id) return { ok: false, code: 'NOT_ALLOWED' };
-    if (!isCurrent(id)) return CHANGED;
+    if (!isCurrent(account)) return CHANGED;
     useAccount(id);
     const gen = generation;
     const r = await run(id);
-    if (!still(id, gen)) return CHANGED; // 저장하는 사이에 계정이 바뀌었으면 옛 계정의 판을 기억하지 않는다
+    if (!still(account, id, gen)) return CHANGED; // 저장하는 사이에 계정이 바뀌었으면 옛 계정의 판을 기억하지 않는다
     if (!r || !r.ok) return r || { ok: false, code: 'WRITE' };
     if (!r.unchanged) { storeCache = { accountId: id, data: r.data }; changed(); }
     return { ok: true, data: r.data };
@@ -352,11 +361,11 @@ function createOffice({
     const id = await gate(account);
     if (!id) return { ok: false, code: 'NOT_ALLOWED' };
     if (!hooks) return { ok: false, code: 'NOT_HERE' };
-    if (!isCurrent(id)) return CHANGED;
+    if (!isCurrent(account)) return CHANGED;
     useAccount(id);
     const gen = generation;
     let roots = [];
-    if (on === true) { const data = await storeData(id); if (!still(id, gen)) return CHANGED; roots = rootsFor(data).claude; }
+    if (on === true) { const data = await storeData(id); if (!still(account, id, gen)) return CHANGED; roots = rootsFor(data).claude; }
     const r = on === true ? await hooks.enable(roots) : await hooks.disable();
     changed();
     return hookAnswer(r);
@@ -367,11 +376,11 @@ function createOffice({
     const id = await gate(account);
     if (!id) return { ok: false, code: 'NOT_ALLOWED' };
     if (departmentId !== null && typeof departmentId !== 'string') return { ok: false, code: 'VALUE' };
-    if (!isCurrent(id)) return CHANGED;
+    if (!isCurrent(account)) return CHANGED;
     useAccount(id);
     const gen = generation;
     const data = await storeData(id);
-    if (!still(id, gen)) return CHANGED;
+    if (!still(account, id, gen)) return CHANGED;
     commit(model.officeReduce(state, { kind: 'seen', departmentId, at: now() }, { departments: data.departments, assignments: data.assignments }));
     return { ok: true };
   }
@@ -379,7 +388,7 @@ function createOffice({
   /** 로그아웃하거나 계정이 바뀌었을 때(main이 부른다). 세션 기억을 비우고 기록 살피기를 멈춘다. 같은 계정이면 그대로 둔다 */
   function accountChanged(account) {
     const id = accountIdOf(account);
-    current = id;
+    current = id === null ? null : { id, round: roundOf(account) };
     const cleared = useAccount(id);
     if (id === null) stopWatch();
     return { ok: true, cleared };

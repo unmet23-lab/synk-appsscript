@@ -63,7 +63,7 @@ function gate({ runtime = { clientId: 'platform' }, smoke = false, status, load 
     createOffice: options => { ctx.created.push(options); return { ...SERVICE, accountChanged: a => ctx.told.push(a === null ? null : a.synk_user_id) }; },
     officeHooksService: () => HOOKS,
   };
-  vm.runInNewContext([source('let officeService=null,officeLoading=null;'), source('const officeAccountOf='), source('function office(){'), source('async function officeCall(work){')].join('\n'), ctx);
+  vm.runInNewContext([source('let officeService=null,officeLoading=null;'), source('const officeAccountOf='), source('const officeLoginOf='), source('function office(){'), source('async function officeCall(work){')].join('\n'), ctx);
   return ctx;
 }
 const MODEL = { officeReduce() {} };
@@ -259,18 +259,21 @@ test('an account change or sign-out reaches the office, a same-account renewal d
     renewing: null, renewingAccount: () => ctx.renewing,
     officeService: null, solioBackupService: null, solioBackupSweep: () => {},
   };
-  vm.runInNewContext([source('const officeAccountOf='), source('function publishAuthState(state){')].join('\n'), ctx);
+  vm.runInNewContext([source('const officeAccountOf='), source('const officeLoginOf='), source('function publishAuthState(state){')].join('\n'), ctx);
   ctx.publishAuthState(signedIn(YUHO));
   assert.deepEqual(changed, [], 'nothing to tell before the office exists');
   ctx.officeService = { accountChanged: a => changed.push(a === null ? null : plain(a)) };
   ctx.publishAuthState(signedIn(YUHO));
   ctx.publishAuthState(signedIn(OTHER));
   ctx.renewing = OTHER.synk_user_id;
-  ctx.publishAuthState({ signedIn: false, status: 'restoring', account: null });
+  ctx.publishAuthState({ signedIn: false, status: 'restoring', sessionGeneration: 1, account: null });
   ctx.renewing = null;
   ctx.publishAuthState({ signedIn: false, status: 'signed-out', account: null });
   ctx.publishAuthState({ signedIn: true, account: null });
-  assert.deepEqual(changed, [YUHO, OTHER, { synk_user_id: OTHER.synk_user_id }, null, null]);
+  // 다시 로그인하면 같은 계정이어도 회차가 바뀌어 다른 묶음이다(구현설계 11.1 「계정 묶기」)
+  ctx.publishAuthState({ signedIn: true, sessionGeneration: 2, account: YUHO });
+  // 계정에 로그인 회차를 실어 알린다. 같은 계정의 토큰 갱신은 회차가 그대로다
+  assert.deepEqual(changed, [{ ...YUHO, sessionGeneration: 1 }, { ...OTHER, sessionGeneration: 1 }, { synk_user_id: OTHER.synk_user_id, sessionGeneration: 1 }, null, null, { ...YUHO, sessionGeneration: 2 }]);
 
   const quit = [];
   const closed = [];
@@ -384,7 +387,7 @@ function hooksMain({ packaged = true, mode = 'release', clientId = 'platform', s
     office: async () => ({ accepts: async a => a.synk_user_id === YUHO.synk_user_id, ingest: async (e, a) => { ctx.ingested.push([e.event, a.synk_user_id]); return { ok: true }; } }),
     createOfficeHooks: options => { ctx.made.push(options); return { disable: async () => ({ ok: true, written: 0, refused: 0, dirs: ['C:\\x'] }), unhook: async () => { ctx.made.at(-1).unhooked = true; return { ok: true }; }, status: async () => ({ on: true, available: true, dirs: [{ dir: 'C:\\x' }] }) }; },
   };
-  vm.runInNewContext([source('const officeAccountOf='), 'let officeHooks=null;', source('const officeHooksInstalled='), source('function officeHooksService(){'), source('async function officeHooksOff(){'), source('async function officeHooksStatus(){')].join('\n'), ctx);
+  vm.runInNewContext([source('const officeAccountOf='), source('const officeLoginOf='), 'let officeHooks=null;', source('const officeHooksInstalled='), source('function officeHooksService(){'), source('async function officeHooksOff(){'), source('async function officeHooksStatus(){')].join('\n'), ctx);
   return ctx;
 }
 

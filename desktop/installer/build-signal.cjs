@@ -30,6 +30,9 @@ const PRODUCTS = {
     pin:{url:null,source:'resources/clients/messenger.exe in SYNK-Platform-Preview-0.4.3-win-x64.exe',bytes:132289127,sha256:'ec84d50e4c48b8834434a60f941fa703ad96d63c85922d3f82fcb06d758b2cff',
       asarSHA256:'dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a',executableSHA256:'f78fbae7d2457c0994207d18a8e6c037d0120edd3f368ad29ff9fed84cb10481'}},
 };
+// 지우는 프로그램(NSIS)에 끼우는 스크립트. 셋 다 실행 중 확인(signal-safety.nsh)을 쓰고, 플랫폼은 그것을 가져와 앱을 지울 때
+// 솔리오 「사무실」의 훅 줄을 지우는 일을 더한다(office-unhook.nsh). WORLD와 워크스페이스 앱은 --office-unhook을 받지 않아 그 인자로도 창을 연다
+const nsisInclude=id=>id==='platform'?'office-unhook.nsh':'signal-safety.nsh';
 // 설치기 원천 파일과 글꼴. 설치기 시험(tests/test.cjs)도 이 목록을 그대로 쓴다(공개 흐름의 창 검사 목록은 platform-release.workflow.yml에 같은 차례로 적는다).
 // OrbStage.cs와 OrbWindow.cs는 Platform 새 창(검정 구 1-가 ③)이고, Handoff.cs는 넘김 쪽지와 도착 쪽지, 가림막 캐시다. WORLD와 Workspace도 같이 컴파일하지만 쓰지 않는다.
 const SOURCES=['Program.cs','InstallerEngine.cs','AutoUpdateEngine.cs','BackendProcess.cs','InstallTransaction.cs','SignalWindow.cs','OrbStage.cs','OrbWindow.cs','Handoff.cs'];
@@ -114,7 +117,7 @@ async function main() {
   const config={appId:product.appId,productName:product.productName,executableName:product.executableName,electronVersion:'44.10.0',npmRebuild:false,forceCodeSigning:false,
     directories:{app:project,output:path.join(output,'backend')},artifactName:'signal-backend.exe',
     win:{target:[{target:'nsis',arch:['x64']}],signExecutable:false,icon},
-    nsis:{guid,include:path.join(ROOT,'signal-safety.nsh'),oneClick:false,perMachine:false,allowElevation:false,packElevateHelper:false,allowToChangeInstallationDirectory:false,runAfterFinish:false,deleteAppDataOnUninstall:false,createDesktopShortcut:true,createStartMenuShortcut:true},publish:null};
+    nsis:{guid,include:path.join(ROOT,nsisInclude(id)),oneClick:false,perMachine:false,allowElevation:false,packElevateHelper:false,allowToChangeInstallationDirectory:false,runAfterFinish:false,deleteAppDataOnUninstall:false,createDesktopShortcut:true,createStartMenuShortcut:true},publish:null};
   let backend=path.resolve(get('backend')||path.join(output,'backend/signal-backend.exe'));
   if(!process.argv.includes('--reuse-backend')) { const {build,Platform,Arch}=dependencies('electron-builder'); const artifacts=await build({projectDir:project,prepackaged:payload,targets:Platform.WINDOWS.createTarget('nsis',Arch.x64),config,publish:'never'}); backend=artifacts.find(file=>file.endsWith('.exe')); }
   assert(backend&&fs.existsSync(backend),'Missing NSIS engine');
@@ -142,4 +145,4 @@ async function main() {
   console.log(JSON.stringify({...report,sources:report.sources.length}));
 }
 if(require.main===module) main().catch(error=>{console.error(error.stack||error);process.exitCode=1;});
-module.exports={inventory,sha,PRODUCTS,pin:PRODUCTS.platform.pin,SOURCES,FONTS,SHADER,checkShader};
+module.exports={inventory,sha,PRODUCTS,pin:PRODUCTS.platform.pin,SOURCES,FONTS,SHADER,checkShader,nsisInclude};

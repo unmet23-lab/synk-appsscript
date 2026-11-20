@@ -39,8 +39,24 @@ async function prepare() {
   json(path.join(project, 'package.json'), { name: name.toLowerCase(), version: '0.0.1', private: true, author: 'SYNK', description: 'Isolated signal installer acceptance fixture', main: 'index.js' });
   fs.writeFileSync(path.join(project, 'index.js'), '// Fixture; no Electron runtime is executed.\n');
   const fixtureSource = path.join(directory, 'Fixture.cs');
-  fs.writeFileSync(fixtureSource, `using System; using System.IO; using System.Threading;
-class Fixture { [STAThread] static int Main(string[] args) {
+  // 지우는 프로그램이 --office-unhook으로 부른 기록은 설치 폴더 밖(시험 폴더)에 남긴다. 지우기가 설치 폴더를 지우기 때문이다.
+  // 줄마다 인자와 창 보이기(STARTUPINFO의 STARTF_USESHOWWINDOW, wShowWindow)를 적는다. 멈춤 표식이 있으면 하위 프로세스까지 띄우고 끝나지 않는다(60초 뒤 스스로 끝난다)
+  const officeLog = path.join(directory, 'office-unhook.log'), officeHang = path.join(directory, 'office-unhook-hang');
+  fs.writeFileSync(fixtureSource, `using System; using System.IO; using System.Threading; using System.Diagnostics; using System.Runtime.InteropServices;
+class Fixture {
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)] struct StartupInfo { public int cb; public IntPtr reserved, desktop, title; public int x, y, width, height, columns, rows, fill, flags; public short show, reserved2; public IntPtr reserved3, input, output, error; }
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern void GetStartupInfoW(out StartupInfo info);
+  [STAThread] static int Main(string[] args) {
+  if (args.Length >= 1 && args[0] == "--office-unhook") {
+    StartupInfo startup; GetStartupInfoW(out startup);
+    string log = ${JSON.stringify(officeLog)}, hang = ${JSON.stringify(officeHang)};
+    File.AppendAllText(log, "start " + String.Join(" ", args) + " flags=" + (startup.flags & 1) + " show=" + startup.show + "\\n");
+    if (File.Exists(hang)) {
+      if (args.Length == 1) Process.Start(new ProcessStartInfo(System.Reflection.Assembly.GetExecutingAssembly().Location, "--office-unhook child") { UseShellExecute = false, CreateNoWindow = true });
+      Thread.Sleep(60000); return 0;
+    }
+    Thread.Sleep(800); File.AppendAllText(log, "done\\n"); return 0;
+  }
   if (args.Length == 2 && args[0] == "--hold") {
     Directory.CreateDirectory(args[1]); File.WriteAllText(Path.Combine(args[1], "ready"), "fixture ready");
     while (!File.Exists(Path.Combine(args[1], "stop"))) Thread.Sleep(40);
@@ -56,8 +72,10 @@ class Fixture { [STAThread] static int Main(string[] args) {
   const metadata = { clientId: 'platform', mode: 'development', appId: 'im.synk.signal.fixture.' + token, version: '0.0.1', arch: 'x64', platform: 'win32', sourceHash: 'fixture-' + token };
   json(path.join(payload, 'resources/synk-install.json'), metadata);
   fs.writeFileSync(path.join(payload, 'LICENSE.fixture.txt'), 'Disposable test payload; no account or application data.\n');
-  const safetyInclude = path.resolve(get('safety-include') || path.join(installerRoot, 'signal-safety.nsh'));
+  // 가짜 앱은 플랫폼 자리다(자동 업데이트 판의 product가 platform). 그래서 플랫폼 설치기가 끼우는 스크립트(훅 지우기 포함)를 쓴다
+  const safetyInclude = path.resolve(get('safety-include') || path.join(installerRoot, require('../build-signal.cjs').nsisInclude('platform')));
   assert(fs.existsSync(safetyInclude), 'Production NSIS safety include missing: ' + safetyInclude);
+  const officeLimit = /^!define\s+SYNK_OFFICE_UNHOOK_LIMIT_MS\s+(\d+)\s*$/m.exec(fs.readFileSync(safetyInclude, 'utf8'));
   const { build, Platform, Arch } = dependencies('electron-builder');
   const config = {
     appId: metadata.appId, productName: name, executableName: name,
@@ -79,6 +97,8 @@ class Fixture { [STAThread] static int Main(string[] args) {
     installDirectory: path.join(directory, 'installed'), executableName: name + '.exe',
     registryKey: 'Software\\' + guid, uninstallRegistryKey: 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\' + guid,
     shortcutName: name, csc, minFreeBytes: 16 * 1024 * 1024, files };
+  // 훅 지우기를 끼운 스크립트일 때만 지우기 시험이 그 상한으로 돈다(옛 스크립트를 --safety-include로 주면 건너뛴다)
+  if (officeLimit) Object.assign(manifest, { officeUnhookLimitMs: Number(officeLimit[1]), officeUnhookLog: officeLog, officeUnhookHang: officeHang });
   json(path.join(directory, 'fixture.json'), manifest);
   json(path.join(directory, 'build-config.json'), config);
   const timeoutSource=path.join(directory,'TimeoutBackend.cs'),timeoutBackend=path.join(directory,'timeout-backend.exe');

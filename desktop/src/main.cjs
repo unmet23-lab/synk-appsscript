@@ -102,7 +102,7 @@ let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeAccountOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
   if(installations)return installations;
@@ -265,19 +265,21 @@ async function solioBackupHint(account){const result=await auth.identity();if(!r
 // 같은 계정의 토큰 갱신은 잠깐 restoring(계정 없음)으로 보이므로 그동안은 그 계정 그대로 본다(PULSE의 renewingAccount와 같다). 그래야 갱신마다 세션 기억과 기록 살피기가 끊기지 않는다.
 let officeService=null,officeLoading=null;
 const officeAccountOf=state=>{if(state?.signedIn===true&&state.account)return state.account;const renewing=renewingAccount();return renewing?{synk_user_id:renewing}:null;};
-function office(){if(officeService)return Promise.resolve(officeService);if(!officeLoading)officeLoading=loadOfficeModel().then(model=>{officeService=createOffice({userData:app.getPath('userData'),model,hooks:officeHooksService(),onChange:()=>sendDesktop('synk:office-changed')});officeService.accountChanged(officeAccountOf(accountStatus()));return officeService;}).finally(()=>{officeLoading=null;});return officeLoading;}
+// 로그인 묶음(구현설계 11.1 「계정 묶기」, GPT 검수 r7 · r8 GA1): 계정에 로그인 회차(sessionGeneration)를 실어 넘긴다. 사무실은 들어온 순간의 묶음이 지금 묶음과 같을 때만 기억을 바꾸고 답한다
+const officeLoginOf=state=>{const account=officeAccountOf(state);return account?{...account,sessionGeneration:state?.sessionGeneration}:null;};
+function office(){if(officeService)return Promise.resolve(officeService);if(!officeLoading)officeLoading=loadOfficeModel().then(model=>{officeService=createOffice({userData:app.getPath('userData'),model,hooks:officeHooksService(),onChange:()=>sendDesktop('synk:office-changed')});officeService.accountChanged(officeLoginOf(accountStatus()));return officeService;}).finally(()=>{officeLoading=null;});return officeLoading;}
 // 훅 서버(구현설계.md 11.1 · 12.2 · 12.3, 15절 5단계): 손님의 Claude Code 설정 파일은 설치본(release 판)만 고친다. 미리보기 · 소스 실행 · 스모크는 SYNK_OFFICE_HOOK_DIRS로 넘겨받은 폴더만 고친다.
 // 서버는 앱을 켤 때 훅이 켜져 있으면 연다(initializeMain). 받은 소식은 볼 계정이 로그인해 있을 때만 읽어 사무실에 넘긴다. 계정이 바뀌어도 서버는 닫지 않는다.
 // 접는 계정은 받기를 허락한 그 계정이다(accepts가 돌려준 값). 몸을 받는 사이에 다른 볼 계정으로 바뀌면 사무실의 ingest가 지금 계정이 아니라며 버린다(GPT 검수 r8 GA1).
 let officeHooks=null;
 const officeHooksInstalled=()=>packaged&&runtime.mode==='release'&&!smoke;
-function officeHooksService(){if(!officeHooks)officeHooks=createOfficeHooks({userData:app.getPath('userData'),installed:officeHooksInstalled(),accepts:async()=>{const account=officeAccountOf(accountStatus());return account&&await (await office()).accepts(account)?account:false;},deliver:(event,account)=>{if(account&&typeof account==='object')void office().then(service=>service.ingest(event,account)).catch(()=>{});},onChange:()=>sendDesktop('synk:office-changed')});return officeHooks;}
+function officeHooksService(){if(!officeHooks)officeHooks=createOfficeHooks({userData:app.getPath('userData'),installed:officeHooksInstalled(),accepts:async()=>{const login=officeLoginOf(accountStatus());return login&&await (await office()).accepts(login)?login:false;},deliver:(event,account)=>{if(account&&typeof account==='object')void office().then(service=>service.ingest(event,account)).catch(()=>{});},onChange:()=>sendDesktop('synk:office-changed')});return officeHooks;}
 // 끄기는 볼 계정이 아니어도 된다(11.1, 13절). 플랫폼 창인지와 보낸 창(handlers의 assertSender)만 본다. 구 곁의 설정 방이 켜졌는지만 묻는 길도 같다. 답에 폴더 경로를 싣지 않는다
 async function officeHooksOff(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const result=await officeHooksService().disable();return {ok:result?.ok===true,...(typeof result?.code==='string'?{code:result.code}:{})};}
 async function officeHooksStatus(){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=await officeHooksService().status([]);return {ok:true,on:status?.on===true};}
 // 부를 때의 계정과 로그인 회차(sessionGeneration)를 잡아 두고, 모델을 싣거나 일을 마친 뒤에도 같을 때만 답을 넘긴다. 로그아웃하거나 다시 로그인했으면 답을 버린다.
 // 같은 계정의 토큰 갱신은 회차가 그대로이고 officeAccountOf가 그 계정으로 보므로 같은 계정이다(GPT 검수 GA1)
-async function officeCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};const held=status.account.synk_user_id,generation=status.sessionGeneration;const same=()=>{const now=accountStatus();return officeAccountOf(now)?.synk_user_id===held&&now?.sessionGeneration===generation;};const service=await office();if(!same())return {ok:false,code:'AUTH_CHANGED'};const result=await work(service,status.account);return same()?result:{ok:false,code:'AUTH_CHANGED'};}
+async function officeCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};const held=status.account.synk_user_id,generation=status.sessionGeneration;const same=()=>{const now=accountStatus();return officeAccountOf(now)?.synk_user_id===held&&now?.sessionGeneration===generation;};const service=await office();if(!same())return {ok:false,code:'AUTH_CHANGED'};const result=await work(service,{...status.account,sessionGeneration:generation});return same()?result:{ok:false,code:'AUTH_CHANGED'};}
 // 폴더는 화면이 경로 글자로 보내지 않는다(13절). 고르기 창은 볼 계정에만 띄우고, 고르는 사이에 로그인이 바뀌었으면 고른 폴더를 버린다(백업 시작과 같은 확인)
 async function officeChooseFolder(service,account){
   if(!await service.allowed(account))return {ok:false,code:'NOT_ALLOWED'};
