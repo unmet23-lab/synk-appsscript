@@ -581,6 +581,8 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   }
   function renderBrief(b, fold) {
     app.brief.hidden = !b;
+    // 지금 출력을 문자판으로 옮기면(append) 그 안의 「켜기」가 초점을 잃는다. 옮기기 전에 초점이 거기 있었는지 적어 둔다(0.5.0 공개 후보 카본 D1)
+    const tokFocus = doc.activeElement === app.tokOn;
     renderDial(b && fold ? b.dial || null : null, b?.live || null);
     if (!b) { app.detailsTop.hidden = true; return; }
     const soon = b.soon?.shown || [], key = JSON.stringify(soon);
@@ -595,7 +597,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       setText(app.liveBig, l.big); setText(app.liveUnit, l.unit); setText(app.liveSmall, l.small);
       if (app.live.dataset.state !== l.state) app.live.dataset.state = l.state;
       // 「켜기」를 누르면 단추가 사라진다. 초점이 그 단추에 있었으면 상세내역 단추(없으면 다시 읽기)로 옮긴다(화면 검수 A8)
-      const hideOn = l.state !== 'off', hadFocus = hideOn && !app.tokOn.hidden && doc.activeElement === app.tokOn;
+      const hideOn = l.state !== 'off', hadFocus = hideOn && !app.tokOn.hidden && tokFocus;
       app.tokOn.hidden = hideOn;
       if (hadFocus) { const to = !app.details.hidden ? app.details : app.reread; try { to.focus({ preventScroll: true }); } catch {} }
       const label = l.state === 'on' ? ['지금 출력', l.unit, l.big + ' 토큰', l.small].filter(Boolean).join(', ') : l.small;

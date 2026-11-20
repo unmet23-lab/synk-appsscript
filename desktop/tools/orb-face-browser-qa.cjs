@@ -532,6 +532,13 @@ if(!process.versions.electron){
           await w.js("document.querySelector('#portal-entry [data-details]').click()");await wait(200);
           const f2=await look();
           check('20 folding with the focus inside moves it to 상세내역, not to the page',f2.det==='false'&&!f2.rows&&f2.active==='details',f2);
+          // 「켜기」 뒤 곧바로 숫자가 서면(이미 센 기록) 지금 출력이 문자판으로 옮겨 가고 단추가 사라진다. 초점은 상세내역으로 간다(0.5.0 공개 후보 카본 D1)
+          const TOKON='#portal-entry [data-live] [data-orb-act="tok-on"]';
+          const tk0=await w.js(`(()=>{const b=document.querySelector(${JSON.stringify(TOKON)});if(!b||b.hidden)return null;b.focus();return document.activeElement===b;})()`);
+          const tdy=(d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'))(new Date(now));
+          await w.js('window.__orbFixture.setTokens('+JSON.stringify({enabled:true,scanning:false,progress:null,scannedAt:now,since:tdy,sinceBy:{claude:tdy},tools:{claude:1},failed:0,error:null,cells:[[tdy,'claude','claude-opus-5-5',900,61000,0,0,0,40]]})+')');await wait(1400);
+          const tk1=await w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s),a=document.activeElement;return {state:q('[data-live]').dataset.state||'',inDial:q('[data-live]').parentElement===q('[data-dial]'),active:a?.dataset?.details!==undefined?'details':a===document.body?'body':(a?.className||a?.tagName||'')};})()");
+          check('20 switching on from the brief, when the count is already there, moves live output into the dial and focus to 상세내역',tk0===true&&tk1.state==='on'&&tk1.inDial&&tk1.active==='details',{tk0,tk1});
           w.win.destroy();
           // ORB_QA_REAL=<스냅숏 JSON>: 이 PC의 실제 구독 자료({subs, tokens})로 같은 화면을 찍는다. 자료와 캡처는 git 밖에 둔다(공개 저장소)
           const real=process.env.ORB_QA_REAL?JSON.parse(fs.readFileSync(process.env.ORB_QA_REAL,'utf8')):null;

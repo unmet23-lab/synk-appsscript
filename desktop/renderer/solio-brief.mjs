@@ -78,11 +78,13 @@ export function poolSay(snapshot, g, now) {
   return runWords;
 }
 
-/* 다 쓴 계정과 손볼 계정만 있는 서비스: 「Claude 3개 가운데 2개를 다 썼고 1개는 다시 로그인해야 합니다.」 아직 읽지 않은 계정도 막힌 쪽으로 세지 않는다(구조 다시 보기 P1-3) */
+/* 다 쓴 계정과 손볼 계정만 있는 서비스: 「Claude 3개 가운데 2개를 다 썼고 1개는 다시 로그인해야 합니다.」 아직 읽지 않은 계정도 막힌 쪽으로 세지 않는다(구조 다시 보기 P1-3).
+   5시간 한도로 막힌 계정이 섞이면 outCount처럼 「막혀 있고」다(설계 검토 D5, 최종 검수 solio-struct-20261120 F1).
+   아직 읽지 않은 계정은 상세내역 줄의 「읽기 전」과 같은 뜻으로 「아직 읽지 않았습니다」다. 지금 읽고 있지 않을 때도 「읽는 중」이라 했다(같은 검수 F3) */
 function fixSay(g, f = serviceFacts(g)) {
   const n = here(g).length, login = f.login.length, error = f.error.length, pending = f.pending.length;
   const rest = login && error ? login + '개는 다시 로그인해야 하고 ' + error + '개는 읽지 못했습니다.' : login ? login + '개는 다시 로그인해야 합니다.' : error ? error + '개는 읽지 못했습니다.' : '';
-  return svcName(g) + ' ' + n + '개 가운데 ' + g.out.length + '개를 다 썼고 ' + rest + (pending ? (rest ? ' ' : '') + pending + '개는 아직 읽는 중입니다.' : '');
+  return svcName(g) + ' ' + n + '개 가운데 ' + g.out.length + (blocked(g.out) ? '개가 막혀 있고 ' : '개를 다 썼고 ') + rest + (pending ? (rest ? ' ' : '') + pending + '개는 아직 읽지 않았습니다.' : '');
 }
 
 /* 맨 위 한 가지(설계 3.1, 설계 검토 D5). 자료를 다 읽은 상태에서만 부른다.
@@ -92,14 +94,15 @@ export function briefHead(snapshot, groups, now, fallback = null) {
   const weekly = groups.filter(g => g.kind === 'weekly' && g.service);
   // 서비스 판정과 풀 모의는 서비스마다 한 번 센다(구조 다시 보기 P1-3 · P3-3)
   const runs = new Map(weekly.map(g => [g, poolTimeline(snapshot, g, now)])), facts = new Map(weekly.map(g => [g, serviceFacts(g, snapshot?.prices)]));
-  // 0. 쓸 계정은 없고 손볼 계정이 남은 서비스: 로그인하면 바로 쓸 수 있으니 그 할 일이 맨 위다(Fable 최종 F1)
-  const fixable = weekly.find(g => facts.get(g).kind === 'fixable');
-  if (fixable) { const f = facts.get(fixable); return { say: fixSay(fixable, f), then: f.login.length ? '계정 관리에서 다시 로그인합니다.' : f.error.length ? '계정 관리에서 연결을 확인합니다.' : '', covers: [], service: fixable.service }; }
-  // 1. 한 서비스의 이 PC 계정이 모두 막힘. 다시 열리는 때가 가장 늦은 것부터
-  const allOut = weekly.filter(g => facts.get(g).kind === 'allOut').sort((a, b) => (b.out[0].unblock ?? Infinity) - (a.out[0].unblock ?? Infinity));
+  // 0. 쓸 계정은 없고 다시 로그인하거나 연결을 볼 계정이 남은 서비스: 로그인하면 바로 쓸 수 있으니 그 할 일이 맨 위다(Fable 최종 F1)
+  const fixable = weekly.find(g => facts.get(g).kind === 'fixable' && (facts.get(g).login.length || facts.get(g).error.length));
+  if (fixable) { const f = facts.get(fixable); return { say: fixSay(fixable, f), then: f.login.length ? '계정 관리에서 다시 로그인합니다.' : '계정 관리에서 연결을 확인합니다.', covers: [], service: fixable.service }; }
+  // 1. 한 서비스의 이 PC 계정이 모두 막힘. 다시 열리는 때가 가장 늦은 것부터. 아직 읽지 않은 계정만 남은 서비스도 사람이 할 일이 없으니 여기서
+  //    다시 열리는 때를 둘째 줄에 쓴다. 0번에 두면 둘째 줄이 비고 다시 열리는 때가 첫 화면 어디에도 없었다(최종 검수 solio-struct-20261120 F2)
+  const allOut = weekly.filter(g => ['allOut', 'fixable'].includes(facts.get(g).kind)).sort((a, b) => (b.out[0].unblock ?? Infinity) - (a.out[0].unblock ?? Infinity));
   if (allOut.length) {
     const g = allOut[0], first = g.out[0], name = svcName(g), one = here(g).length === 1;
-    const say = one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : allOutSay(name, g.out);
+    const say = facts.get(g).kind === 'fixable' ? fixSay(g, facts.get(g)) : one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : allOutSay(name, g.out);
     const then = first.unblock ? spoken(first.unblock, now) + '에 ' + (one ? '' : ga(first.name) + ' 먼저 ') + '다시 열립니다.' : '';
     return { say, then, covers: first.unblock ? ['unblock:' + first.row.id] : [], service: g.service };
   }
@@ -290,8 +293,9 @@ function creditVerdict(snapshot, g) {
   if (!counted || counted < list.length || !(allot > 0)) return { verdict: 'young', say: '모든 계정의 4주 기록과 한 달 크레딧을 알면 진단합니다.', more: '', scope: '' };
   // 4주 동안 쓴 양을 한 달로 늘려 한 달 크레딧과 견준다. 「지난 4주 동안 n%를 썼다」가 아니라 「지금 속도면 한 달에 n%」다(GPT 검수 GA9)
   const pct = Math.round((spent / allot) * 100), pace = '지금 속도면 한 달에 크레딧의 ' + pct + '%를 씁니다.';
-  if (spent / allot >= DIAG.creditShort) return { verdict: 'short', say: pace, more: '크레딧이 모자랍니다.', scope: '' };
-  if (spent / allot <= DIAG.creditSpare) return { verdict: 'spare', say: pace, more: '끊거나 낮은 요금제로 바꿔도 됩니다.', scope: '' };
+  // 할 일은 속도 문장 뒤에 붙여 첫 화면 한 줄에 함께 낸다. 「모자람」 옆에 「크레딧이 모자랍니다」만 되풀이하거나 「남음」 옆에서 할 일이 빠졌다(0.5.0 공개 후보 카본 E6)
+  if (spent / allot >= DIAG.creditShort) return { verdict: 'short', say: pace + ' 크레딧을 더 사거나 요금제를 올릴 때입니다.', more: '', scope: '' };
+  if (spent / allot <= DIAG.creditSpare) return { verdict: 'spare', say: pace + ' 끊거나 낮은 요금제로 바꿔도 됩니다.', more: '', scope: '' };
   return { verdict: 'fit', say: pace + ' 지금 요금제가 알맞습니다.', more: '', scope: '' };
 }
 
@@ -403,7 +407,7 @@ function cellNote(a, left) {
   if (a.state === 'out') return a.focus === 'session' ? '5시간 한도로 막힘' + (left > 0 ? ' · 주간 ' + left + '% 남음' : '') : '다 씀';
   if (a.state === 'needs-login' || a.state === 'login') return '다시 로그인';
   if (a.state === 'error') return '못 읽음';
-  if (left === null) { const b = a.row.kind === 'credit' ? balance(a.row) : null; return b ? fmt(b.value) + ' 크레딧' : '읽는 중'; }
+  if (left === null) { const b = a.row.kind === 'credit' ? balance(a.row) : null; return b ? fmt(b.value) + ' 크레딧' : '읽기 전'; }
   return left + '% 남음';
 }
 const KIND = Object.freeze({ unblock: 'open', reset: 'reset', bill: 'bill', runout: 'runout' });
@@ -420,7 +424,7 @@ export function briefDial(snapshot, groups, now, focusService = null) {
   // 다시 찼을 계정(projected)은 open 안에 이미 있다. 더하면 「2개 가운데 3개」가 된다(다시 검수 solio-dial-20261120-2 FA1)
   const f = serviceFacts(focus, prices), name = svcName(focus), one = f.list.length === 1, openN = f.open.length;
   let hero;
-  if (!f.read.length) hero = { value: '–', unit: '', label: name + (f.login.length ? ' 다시 로그인 필요' : f.error.length ? ' 읽지 못함' : ' 읽는 중') };
+  if (!f.read.length) hero = { value: '–', unit: '', label: name + (f.login.length ? ' 다시 로그인 필요' : f.error.length ? ' 읽지 못함' : ' 읽기 전') };
   else if (focus.kind === 'credit' && f.share === null) hero = { value: fmt(f.read.reduce((n, a) => n + (balance(a.row)?.value || 0), 0)), unit: '', label: name + ' 남은 크레딧' };
   else if (f.share !== null) hero = { value: String(f.share), unit: '%', label: name + (one || focus.kind === 'credit' ? ' 남은 양' : ' 남은 몫') };
   else hero = { value: String(openN), unit: '/' + f.list.length, label: name + ' 열린 계정' };
@@ -454,8 +458,8 @@ export function briefDial(snapshot, groups, now, focusService = null) {
   }
   // 낭독 이름. 읽지 않은 계정을 막힌 계정으로 세지 않고 따로 말한다. 지금 모두 막혔으면 예측 대신 첫 다시 열림을 말한다(화면 검수 dial A2, 구조 다시 보기 P1-3)
   const reopenWords = f.firstOpen ? ' ' + spoken(f.firstOpen.unblock, now) + '에 처음 다시 열립니다.' : '';
-  const unread = [f.login.length ? f.login.length + '개는 다시 로그인해야 합니다.' : '', f.error.length ? f.error.length + '개는 읽지 못했습니다.' : '', f.pending.length ? f.pending.length + '개는 아직 읽는 중입니다.' : ''].filter(Boolean).join(' ');
-  const label = !f.read.length ? (f.login.length ? name + ' 계정은 다시 로그인해야 합니다.' : f.error.length ? name + ' 계정을 읽지 못했습니다.' : name + ' 계정을 읽는 중입니다.')
+  const unread = [f.login.length ? f.login.length + '개는 다시 로그인해야 합니다.' : '', f.error.length ? f.error.length + '개는 읽지 못했습니다.' : '', f.pending.length ? f.pending.length + '개는 아직 읽지 않았습니다.' : ''].filter(Boolean).join(' ');
+  const label = !f.read.length ? (f.login.length ? name + ' 계정은 다시 로그인해야 합니다.' : f.error.length ? name + ' 계정을 읽지 못했습니다.' : name + ' 계정을 아직 읽지 않았습니다.')
     : !openN ? (f.kind === 'fixable' ? fixSay(focus, f) : one ? neun(name) + ' 막혀 있습니다.' : name + ' 계정 ' + f.read.length + '개가 모두 막혀 있습니다.') + reopenWords
     : [one ? neun(name) + ' 열려 있습니다.' : name + ' 계정 ' + f.list.length + '개 가운데 ' + openN + '개가 열려 있습니다.', unread, hero.unit === '%' ? hero.label + ' ' + hero.value + '%.' : / 남은 크레딧$/.test(hero.label) ? hero.label + ' ' + hero.value + '.' : '',
       fc && fc.at < end ? '지금 속도면 ' + whenWords(fc.sayAt, now, { withTime: true }) + '쯤 ' + (one ? '바닥납니다.' : '모두 막힙니다.') : p ? '지금 속도면 사흘 안에는 막히지 않습니다.' : ''].filter(Boolean).join(' ');

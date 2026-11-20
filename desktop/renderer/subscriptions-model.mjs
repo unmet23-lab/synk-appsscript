@@ -710,7 +710,8 @@ function sweepPool(snapshot, g, now) {
   const end = now + POOL_LOOK, accts = [];
   for (const a of known) {
     const w = weightOf(a.row), wk = weekOfAcct(a), fills = [];
-    const every = t0 => { for (let t = t0; t && t <= end; t += POOL_W) fills.push({ t, to: 100 * w, type: 'reset' }); };
+    // 일주일 끝을 막 넘는 초기화 하나까지 적는다. 끝을 넘는 막힘의 다음 열림(cur.by)과 마지막 구간에서 먼저 다시 차는 계정의 순서가 그 사건을 본다(0.5.0 공개 후보 카본 F2)
+    const every = t0 => { for (let t = t0; t; t += POOL_W) { fills.push({ t, to: 100 * w, type: 'reset' }); if (t > end) break; } };
     if (a.state === 'out') {
       if (a.focus === 'session') {
         // 5시간 한도로 막힌 계정: 주간 몫이나 풀리는 때를 모르면 셀 수 없다. 주간 초기화가 먼저 오면 풀릴 때 100%로 열린다(화면 검수 r2 A2)

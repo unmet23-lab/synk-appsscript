@@ -190,7 +190,14 @@ test('credits: the 4-week pace is said as a month, and only with every account c
   const one = cr('c1', 'plus');
   const used = n => ({ cover: true, known: true, weeks: [0, 1, 2, 3].map(() => ({ used: n / 4, peak: null, reads: 4 })) });
   let d = briefDiag(snap([one], { c1: { weeks4: used(850) } }), briefGroups(snap([one], { c1: { weeks4: used(850) } }), NOW), NOW).items[0];
-  assert.equal(d.say, '지금 속도면 한 달에 크레딧의 92%를 씁니다.');
+  assert.equal(d.say, '지금 속도면 한 달에 크레딧의 92%를 씁니다. 크레딧을 더 사거나 요금제를 올릴 때입니다.');
+  // 첫 화면 한 줄은 판정 낱말을 되풀이하지 않고 속도와 할 일을 함께 말한다(0.5.0 공개 후보 카본 E6)
+  assert.equal(d.word, '모자람');
+  assert.equal(d.line, d.say);
+  const spare = snap([one], { c1: { weeks4: used(50) } });
+  d = briefDiag(spare, briefGroups(spare, NOW), NOW).items[0];
+  assert.equal(d.word, '남음');
+  assert.equal(d.line, '지금 속도면 한 달에 크레딧의 5%를 씁니다. 끊거나 낮은 요금제로 바꿔도 됩니다.');
   const two = cr('c2', 'plus');
   const s = snap([one, two], { c1: { weeks4: used(40) } });
   d = briefDiag(s, briefGroups(s, NOW), NOW).items[0];
@@ -625,7 +632,7 @@ test('cross-check: an account not read yet is neither shut nor a reason to forec
   assert.equal(poolTimeline(s, g[0], NOW), null);
   assert.equal(today.state, 'first');
   assert.doesNotMatch(today.say + ' ' + today.then + ' ' + today.rows[0].more.say, /바닥/);
-  assert.equal(briefDial(s, g, NOW, 'claude').label, 'Claude 계정 2개 가운데 1개가 열려 있습니다. 1개는 아직 읽는 중입니다. Claude 남은 몫 30%.');
+  assert.equal(briefDial(s, g, NOW, 'claude').label, 'Claude 계정 2개 가운데 1개가 열려 있습니다. 1개는 아직 읽지 않았습니다. Claude 남은 몫 30%.');
 });
 
 test('cross-check on 400 random Claude pools: row, dial, top and coming-up agree, and every branch is hit', () => {
@@ -673,9 +680,10 @@ test('cross-check on 400 random Claude pools: row, dial, top and coming-up agree
       if (want.length) hits.gaps++;
       if (clip(p.blocks).length > want.length) hits.shortSkipped++;
     } else { hits.noPool++; assert.ok(!d.arcs.some(a => a.k === 'safe'), tag); }
-    // 다시 로그인할 계정은 「다시 로그인」으로, 「읽는 중」은 아직 읽지 않은 계정이 있을 때만이다
+    // 다시 로그인할 계정은 「다시 로그인」으로, 「아직 읽지 않았습니다」는 아직 읽지 않은 계정이 있을 때만이다. 「읽는 중」은 쓰지 않는다(최종 검수 F3)
     if (f.login.length) { hits.login++; assert.match(d.label, /다시 로그인/, tag); }
-    if (/읽는 중/.test(d.label)) { hits.pending++; assert.ok(f.pending.length > 0, tag); }
+    if (/아직 읽지 않았습니다/.test(d.label)) { hits.pending++; assert.ok(f.pending.length > 0, tag); }
+    assert.doesNotMatch(texts, /읽는 중/, tag);
     // 쓸 계정은 없고 손볼 계정이 있으면 어느 글도 「모든 계정」이라 하지 않는다(Fable 최종 F1)
     if (f.kind === 'fixable') { hits.fixable++; assert.doesNotMatch(texts, /모든 계정/, tag); }
   }
@@ -737,4 +745,47 @@ test('without a pool count, an account that moved to a smaller plan is judged by
   assert.equal(poolTimeline(s, briefGroups(s, NOW)[0], NOW), null);
   assert.equal(today.state, 'first');
   assert.doesNotMatch(today.say + ' ' + today.then, /넉넉/);
+});
+
+test('a 5-hour block beside a login is 「막혀 있고」, never 「다 썼고」 (최종 검수 solio-struct-20261120 F1)', () => {
+  const a = row({ plan: 'pro', email: 'a@example.com', live: { readAt: NOW - 5 * 60e3, session: { usedPercent: 100, resetsAt: NOW + 2 * H }, weekly: { usedPercent: 40, resetsAt: NOW + 4 * D } } });
+  const gone = row({ plan: 'pro', email: 'gone@example.com', state: 'needs-login' });
+  const s = snap([a, gone], { [a.id]: 10 }), b = brief(s);
+  assert.equal(b.head.say, 'Claude 2개 가운데 1개가 막혀 있고 1개는 다시 로그인해야 합니다.');
+  assert.equal(b.head.then, '계정 관리에서 다시 로그인합니다.');
+});
+
+test('used up with only an unread account left: the second line says when it reopens, after a service that is truly shut (최종 검수 solio-struct-20261120 F2 · F3)', () => {
+  const used = weekly('claude', 100, NOW + 4 * D, { email: 'used@example.com' }), fresh = row({ email: 'fresh@example.com', live: null });
+  const s = snap([used, fresh], { [used.id]: 10 }), b = brief(s);
+  assert.equal(b.head.say, 'Claude 2개 가운데 1개를 다 썼고 1개는 아직 읽지 않았습니다.');
+  assert.equal(b.head.then, '화요일 새벽 3시에 used가 먼저 다시 열립니다.');
+  assert.deepEqual(briefHead(s, briefGroups(s, NOW), NOW).covers, ['unblock:' + used.id]);
+  // 다시 로그인할 계정이 있는 다른 서비스는 여전히 그 할 일이 먼저다
+  const gone = row({ service: 'gpt', label: 'gpt', plan: 'plus', email: 'gone@example.com', state: 'needs-login' }), shut = weekly('gpt', 100, NOW + 2 * D, { plan: 'plus', email: 'shut@example.com' });
+  const s2 = snap([used, fresh, gone, shut], { [used.id]: 10, [shut.id]: 10 });
+  assert.equal(brief(s2).head.say, 'Codex 2개 가운데 1개를 다 썼고 1개는 다시 로그인해야 합니다.');
+});
+
+test('an unread account reads 「읽기 전」 in its cell and on the hero, as in the row (최종 검수 solio-struct-20261120 F3)', () => {
+  const fresh = row({ email: 'fresh@example.com', live: null });
+  const s = snap([fresh]), d = briefDial(s, briefGroups(s, NOW), NOW, 'claude');
+  assert.deepEqual(d.hero, { value: '–', unit: '', label: 'Claude 읽기 전' });
+  assert.equal(d.rings[0].accounts[0].note, '읽기 전');
+  assert.equal(d.label, 'Claude 계정을 아직 읽지 않았습니다.');
+  assert.equal(solioToday({ snapshot: s }, NOW).rows[0].val, '읽기 전');
+});
+
+test('a block that runs past the week after a reset still knows the next reset (0.5.0 공개 후보 카본 F2)', () => {
+  // 10%p 남고 하루 100%p: 2.4시간 뒤 바닥, 이틀 뒤 초기화로 열렸다가 사흘째 다시 바닥, 다음 초기화는 아흐레 뒤(일주일 끝 너머)
+  const a = weekly('claude', 90, NOW + 2 * D, { plan: 'pro' });
+  const s = snap([a], { [a.id]: 100 }), g = briefGroups(s, NOW)[0], p = poolTimeline(s, g, NOW);
+  assert.equal(p.blocks.length, 2);
+  assert.deepEqual([Math.round(p.blocks[0].from), p.blocks[0].to, p.blocks[0].by.t], [NOW + 0.1 * D, NOW + 2 * D, NOW + 2 * D]);
+  assert.equal(Math.round(p.blocks[1].from), NOW + 3 * D);
+  assert.equal(p.blocks[1].to, Infinity);
+  assert.deepEqual([p.blocks[1].by.t, p.blocks[1].by.type, p.blocks[1].by.a.row.id], [NOW + 9 * D, 'reset', a.id]);
+  // 처음부터 일주일 넘게 막힌 계정은 전부터 끝 너머의 다시 열림을 알았다. 그 길이 그대로인지 본다(poolRunout().next)
+  const out = weekly('claude', 100, NOW + 8 * D, { plan: 'pro' }), s2 = snap([out], { [out.id]: 10 });
+  assert.deepEqual([poolRunout(s2, briefGroups(s2, NOW)[0], NOW).next?.t], [NOW + 8 * D]);
 });
