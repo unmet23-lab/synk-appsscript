@@ -384,7 +384,8 @@ test('P2: a failed engine check is not 「no engine」 and does not reinstall', 
   const dir = engineDir();
   const kept = B.createSolioBackup({ platform: 'win32', env, run: async () => (++calls === 1 ? JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }) : null), previewAccounts: MINE, now: () => (t += 120000) });
   assert.equal((await kept.snapshot(ME)).engine.installed, true);
-  assert.equal((await kept.snapshot(ME)).engine.installed, true, 'a later failed check keeps the earlier answer');
+  // 앞의 답을 기억하지 않는다. 뒤의 확인이 실패하면 옛 답이 아니라 「확인하지 못함」이다(GPT 여덟째 검수 GA6 · GA7)
+  assert.equal((await kept.snapshot(ME)).view, 'engine-unknown', 'a later failed check shows 「not known」, never an older answer');
   assert.equal(calls, 2);
 });
 
@@ -751,4 +752,61 @@ test('the engine feed tool writes the size and sha256 this room checks, and its 
   assert.equal(checked.size, data.length);
   assert.equal(checked.sha256, crypto.createHash('sha256').update(data).digest('hex'));
   assert.equal(B.verifySignature(crypto.createHash('blake2b512').update(data).digest(), B.parseSignature(checked.signature), [{ role: 'operating', pub: key.pub }]), 'operating');
+});
+
+/* ── GPT 여덟째 회차(r7): 엔진 답을 어디에도 남기지 않고, 남은 요청을 모두 기억하고, 토큰 갱신은 같은 로그인으로 본다(11-20) ── */
+test('GPT r7 GA6 · GA7: no check result outlives its own read, during an install or after a failed check', async () => {
+  const dir = engineDir(), env = appdata(temp(), { status: sample() });
+  let answer = 'yes';
+  const run = async () => (answer === 'yes' ? JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }) : answer === 'no' ? '{}' : null);
+  let letFeed;
+  const feedWait = new Promise(r => { letFeed = r; });
+  const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), run, request: async () => { await feedWait; return { status: 404, headers: {}, body: Readable.from([]) }; }, previewAccounts: MINE, ...quiet });
+  answer = 'no';
+  await service.start(ME, 'protect');
+  answer = 'yes';
+  assert.equal((await service.open(ME, 'status')).ok, true);
+  answer = 'no';
+  assert.equal((await service.snapshot(ME)).engine.installed, false, 'while the install waits, the room shows this read, not the open check before it');
+  answer = 'fail';
+  assert.equal((await service.snapshot(ME)).view, 'engine-unknown');
+  letFeed(); await service.whenIdle();
+  const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
+  assert.doesNotMatch(src, /lastEngine|engineNow|keepEngine/, 'no remembered engine answer is left in the module');
+  void env;
+});
+
+test('GPT r7 GA5: a failed check when opening the engine window says 「not known」, not 「no engine」', async () => {
+  let n = 0;
+  const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), run: async () => (++n === 1 ? null : '{}'), previewAccounts: MINE });
+  assert.deepEqual(await service.open(ME, 'status'), { ok: false, code: 'ENGINE_UNKNOWN' });
+  assert.deepEqual(await service.open(ME, 'status'), { ok: false, code: 'NO_ENGINE' });
+  const { backupActionNotice } = await import('../renderer/solio-backup-model.mjs');
+  assert.match(backupActionNotice({ ok: false, code: 'ENGINE_UNKNOWN' }), /확인하지 못했습니다/);
+});
+
+test('GPT r7 GA8: every request still waiting is removed when the sign-in changes, not only the last', async () => {
+  const env = appdata(temp());
+  let current = true;
+  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  for (const asked of ['protect', 'move']) { await service.start(ME, asked, { getHint: async () => 'owner@example.com', isCurrent: () => current }); await service.whenIdle(); }
+  assert.equal(requestsIn(env).length, 2);
+  current = false;
+  service.accountChanged();
+  assert.deepEqual(requestsIn(env), []);
+});
+
+test('GPT r7 GA2: a same-generation token renewal keeps the request; main tells the two apart', async () => {
+  const env = appdata(temp());
+  let state = 'signed-in';
+  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  await service.start(ME, 'move', { isCurrent: () => state === 'signed-in', isSameLogin: () => state !== 'other' }); await service.whenIdle();
+  state = 'renewing';
+  service.accountChanged();
+  assert.equal(requestsIn(env).length, 1, 'renewing the same login keeps it');
+  state = 'other';
+  service.accountChanged();
+  assert.deepEqual(requestsIn(env), []);
+  const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
+  assert.match(main, /isSameLogin:\(\)=>\{const now=accountStatus\(\);if\(now\?\.sessionGeneration!==generation\)return false;return now\?\.signedIn===true\?now\.account\?\.synk_user_id===account\.synk_user_id:renewingAccount\(\)===account\.synk_user_id;\}/);
 });
