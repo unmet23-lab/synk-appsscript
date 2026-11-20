@@ -1,0 +1,66 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1120,
+  "lufs": -17
+ },
+ "made": "2026-11-20T09:43:22.213Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "평소 쓰던 챗지피티에, 빈 방 사진이랑 이 한 줄을 보냈어요.",
+   "dur": 3.41,
+   "syllablesPerSec": 6.74,
+   "src": "V1.wav",
+   "key": "cb3ec6fd626fe9b92d9fd0460360af33",
+   "words": 10
+  },
+  {
+   "id": "V2",
+   "text": "네가 아는 나를 바탕으로, 내가 좋아할 만한 물건들로, 이 방을 채워 줘.",
+   "dur": 4.428,
+   "syllablesPerSec": 6.1,
+   "src": "V2.wav",
+   "key": "0eda2ff94e9460cf5888dbcb4561693b",
+   "words": 12
+  },
+  {
+   "id": "V3",
+   "text": "손글씨 메뉴판 사진엔, 인쇄해서 붙일 깔끔한 메뉴판을 새로 만들어 줘.",
+   "dur": 3.946,
+   "syllablesPerSec": 7.1,
+   "src": "V3.wav",
+   "key": "893ebd0da697eb29a76ca32c2d3fdd46",
+   "words": 10
+  },
+  {
+   "id": "V4",
+   "text": "옛날 사진은 제미나이에, 살짝 웃으며 눈을 한 번 깜빡이는 정도로만 움직여 줘.",
+   "dur": 4.546,
+   "syllablesPerSec": 6.82,
+   "src": "V4.wav",
+   "key": "f6d0d920aa26f2d07ccb848629bf44fb",
+   "words": 12
+  },
+  {
+   "id": "V5",
+   "text": "요청문 세 개, 댓글에 사진이라고 남기면 보내 드려요.",
+   "dur": 2.829,
+   "syllablesPerSec": 7.42,
+   "src": "V5.wav",
+   "key": "732f86c20f2ab65fdb2916bad9d1e7be",
+   "words": 8
+  }
+ ]
+}

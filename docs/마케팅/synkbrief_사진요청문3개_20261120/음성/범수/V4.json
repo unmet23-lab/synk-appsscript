@@ -1,0 +1,95 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "옛날 사진은 제미나이에, 살짝 웃으며 눈을 한 번 깜빡이는 정도로만 움직여 줘.",
+ "dur": 4.546,
+ "words": [
+  {
+   "text": "옛날",
+   "start": 0.02,
+   "end": 0.218
+  },
+  {
+   "text": "사진은",
+   "start": 0.264,
+   "end": 0.568
+  },
+  {
+   "text": "제미나이에,",
+   "start": 0.613,
+   "end": 1.131
+  },
+  {
+   "text": "살짝",
+   "start": 1.557,
+   "end": 1.876
+  },
+  {
+   "text": "웃으며",
+   "start": 1.922,
+   "end": 2.226
+  },
+  {
+   "text": "눈을",
+   "start": 2.454,
+   "end": 2.667
+  },
+  {
+   "text": "한",
+   "start": 2.713,
+   "end": 2.789
+  },
+  {
+   "text": "번",
+   "start": 2.834,
+   "end": 2.911
+  },
+  {
+   "text": "깜빡이는",
+   "start": 2.956,
+   "end": 3.443
+  },
+  {
+   "text": "정도로만",
+   "start": 3.489,
+   "end": 3.869
+  },
+  {
+   "text": "움직여",
+   "start": 3.915,
+   "end": 4.173
+  },
+  {
+   "text": "줘.",
+   "start": 4.219,
+   "end": 4.546
+  }
+ ],
+ "source": {
+  "key": "f6d0d920aa26f2d07ccb848629bf44fb",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 146
+ }
+}

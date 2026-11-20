@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "요청문 세 개, 댓글에 사진이라고 남기면 보내 드려요.",
+ "dur": 2.829,
+ "words": [
+  {
+   "text": "요청문",
+   "start": 0.03,
+   "end": 0.405
+  },
+  {
+   "text": "세",
+   "start": 0.449,
+   "end": 0.535
+  },
+  {
+   "text": "개,",
+   "start": 0.608,
+   "end": 0.68
+  },
+  {
+   "text": "댓글에",
+   "start": 0.911,
+   "end": 1.171
+  },
+  {
+   "text": "사진이라고",
+   "start": 1.214,
+   "end": 1.662
+  },
+  {
+   "text": "남기면",
+   "start": 1.705,
+   "end": 2.153
+  },
+  {
+   "text": "보내",
+   "start": 2.225,
+   "end": 2.398
+  },
+  {
+   "text": "드려요.",
+   "start": 2.442,
+   "end": 2.829
+  }
+ ],
+ "source": {
+  "key": "732f86c20f2ab65fdb2916bad9d1e7be",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 152
+ }
+}

@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1123,
+  "lufs": -17
+ },
+ "made": "2026-11-20T12:52:00.378Z",
+ "lines": [
+  {
+   "id": "P1",
+   "text": "AI한테 PC 정리를 맡겼더니, 오십삼 기가를 치워도 된다고 했어요.",
+   "dur": 4.132,
+   "syllablesPerSec": 5.81,
+   "src": "P1.wav",
+   "key": "3c57e1cafd0343b1a98957928c37b824",
+   "words": 9
+  },
+  {
+   "id": "V2",
+   "text": "끝까지 따라가 보니, 진짜 지워도 되는 건 육 점 칠 기가뿐이었어요.",
+   "dur": 3.439,
+   "syllablesPerSec": 7.56,
+   "src": "V2.wav",
+   "key": "8d0f583efeb3879d7870dbc84e2aa038",
+   "words": 11
+  },
+  {
+   "id": "V3",
+   "text": "이제 일을 맡길 땐, 끝에 한마디를 꼭 붙여요.",
+   "dur": 2.297,
+   "syllablesPerSec": 7.4,
+   "src": "V3.wav",
+   "key": "0f6836f59ea6fb66ecd89ce92851774e",
+   "words": 8
+  },
+  {
+   "id": "V4",
+   "text": "정리를 맡길 땐, 지우지 말고 옮겨.",
+   "dur": 1.801,
+   "syllablesPerSec": 7.22,
+   "src": "V4.wav",
+   "key": "6b1480b2411826783eec7b65940b2f6d",
+   "words": 6
+  },
+  {
+   "id": "V5",
+   "text": "올리기를 맡길 땐, 승인 전엔 올리지 마.",
+   "dur": 2.062,
+   "syllablesPerSec": 7.27,
+   "src": "V5.wav",
+   "key": "e85f702941b8d259af6df84fd0506f44",
+   "words": 7
+  },
+  {
+   "id": "V6",
+   "text": "글을 맡길 땐, 모르는 건 지어내지 말고 빈칸으로.",
+   "dur": 2.592,
+   "syllablesPerSec": 7.33,
+   "src": "V6.wav",
+   "key": "34ac963e529068e032171fcff293d6a1",
+   "words": 8
+  },
+  {
+   "id": "V7",
+   "text": "자동화를 맡길 땐, 완료 말고 몇 개 했는지 적어.",
+   "dur": 2.998,
+   "syllablesPerSec": 6,
+   "src": "V7.wav",
+   "key": "545f1eaa6ca6750eed00adc302ce47a0",
+   "words": 9
+  },
+  {
+   "id": "V8",
+   "text": "홈페이지를 맡길 땐, 우리 가게 포장지 색과 글씨로.",
+   "dur": 2.704,
+   "syllablesPerSec": 7.4,
+   "src": "V8.wav",
+   "key": "a41d7288753cd50058cbe66ed57bc5e8",
+   "words": 8
+  },
+  {
+   "id": "P2",
+   "text": "붙여 넣을 전체 문장은, 댓글에 한마디라고 남기면, 보내 드려요.",
+   "dur": 3.532,
+   "syllablesPerSec": 7.08,
+   "src": "P2.wav",
+   "key": "5db3d694758a425fc7410a8cd912d6ea",
+   "words": 9
+  }
+ ]
+}

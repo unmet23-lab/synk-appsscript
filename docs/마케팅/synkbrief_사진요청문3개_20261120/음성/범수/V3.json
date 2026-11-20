@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "손글씨 메뉴판 사진엔, 인쇄해서 붙일 깔끔한 메뉴판을 새로 만들어 줘.",
+ "dur": 3.946,
+ "words": [
+  {
+   "text": "손글씨",
+   "start": 0.02,
+   "end": 0.406
+  },
+  {
+   "text": "메뉴판",
+   "start": 0.464,
+   "end": 0.807
+  },
+  {
+   "text": "사진엔,",
+   "start": 0.85,
+   "end": 1.222
+  },
+  {
+   "text": "인쇄해서",
+   "start": 1.638,
+   "end": 1.967
+  },
+  {
+   "text": "붙일",
+   "start": 2.01,
+   "end": 2.239
+  },
+  {
+   "text": "깔끔한",
+   "start": 2.282,
+   "end": 2.668
+  },
+  {
+   "text": "메뉴판을",
+   "start": 2.711,
+   "end": 3.155
+  },
+  {
+   "text": "새로",
+   "start": 3.198,
+   "end": 3.341
+  },
+  {
+   "text": "만들어",
+   "start": 3.384,
+   "end": 3.656
+  },
+  {
+   "text": "줘.",
+   "start": 3.699,
+   "end": 3.946
+  }
+ ],
+ "source": {
+  "key": "893ebd0da697eb29a76ca32c2d3fdd46",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}

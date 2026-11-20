@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "끝까지 따라가 보니, 진짜 지워도 되는 건 육 점 칠 기가뿐이었어요.",
+ "dur": 3.439,
+ "words": [
+  {
+   "text": "끝까지",
+   "start": 0.05,
+   "end": 0.323
+  },
+  {
+   "text": "따라가",
+   "start": 0.362,
+   "end": 0.608
+  },
+  {
+   "text": "보니,",
+   "start": 0.647,
+   "end": 0.829
+  },
+  {
+   "text": "진짜",
+   "start": 1.127,
+   "end": 1.361
+  },
+  {
+   "text": "지워도",
+   "start": 1.414,
+   "end": 1.685
+  },
+  {
+   "text": "되는",
+   "start": 1.725,
+   "end": 1.906
+  },
+  {
+   "text": "건",
+   "start": 1.945,
+   "end": 2.115
+  },
+  {
+   "text": "육",
+   "start": 2.348,
+   "end": 2.413
+  },
+  {
+   "text": "점",
+   "start": 2.452,
+   "end": 2.555
+  },
+  {
+   "text": "칠",
+   "start": 2.595,
+   "end": 2.685
+  },
+  {
+   "text": "기가뿐이었어요.",
+   "start": 2.725,
+   "end": 3.439
+  }
+ ],
+ "source": {
+  "key": "8d0f583efeb3879d7870dbc84e2aa038",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 157
+ }
+}

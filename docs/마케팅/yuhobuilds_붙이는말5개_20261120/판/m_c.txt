@@ -1,0 +1,12 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Attached images in order: (1) the scene to edit, (2) mascot reference.
+
+EDIT image 1. Keep the framing, the dark wall, the warm light from the left, the desk surface, the tiny laptop, the colours and the needle-felt craft style exactly as they are. Portrait 2:3, same crop. Mongle stays at the same place and the same size, with the same coral wool body.
+
+CHANGES:
+- The tall tower of folders is GONE. In its place, at the same spot on the desk to Mongle's right, there is only a SHORT neat pile of exactly three manila-yellow felt file folders lying flat — the pile is lower than Mongle's eyes.
+- Leaning upright against the front of that short pile: one small cream-white felt envelope, closed, with a tiny coral felt heart as its seal. No writing on it.
+- Mongle now looks a little EMBARRASSED and sheepish: its eyes are open — two round glossy black bead eyes (no white sclera) glancing sideways toward the short pile — with a faint darker-pink blush patch under each eye, and its body is squashed down slightly, a little shorter and wider than before.
+
+Mongle has NO arms, NO legs, NO hands, NO mouth. Exactly ONE Mongle, nobody else. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No mesh, no grids of dots, no rings or holes patterns.

@@ -1,0 +1,9 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Attached images in order: (1) the scene to edit, (2) mascot reference.
+
+EDIT image 1. Keep EVERYTHING exactly as it is — the framing, the dark wall, the warm light from the left, the desk, the tiny laptop, the short pile of three manila felt folders, the small cream envelope with the coral heart seal, the colours, and Mongle's position, size, wool texture and blush. Portrait 2:3, same crop.
+
+Change ONLY Mongle's eyes: instead of the two open bead eyes, Mongle's eyes are now CLOSED in happy upward curves — two short curved dark stitched lines at the same place on its face — a relieved, happy smile-with-the-eyes look, facing the camera.
+
+Mongle still has NO arms, NO legs, NO hands, NO mouth. Exactly ONE Mongle. Absolutely no text, letters, numbers, symbols or watermarks anywhere.

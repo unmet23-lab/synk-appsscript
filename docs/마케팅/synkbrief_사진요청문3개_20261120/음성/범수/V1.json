@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V1",
+ "text": "평소 쓰던 챗지피티에, 빈 방 사진이랑 이 한 줄을 보냈어요.",
+ "dur": 3.41,
+ "words": [
+  {
+   "text": "평소",
+   "start": 0.12,
+   "end": 0.37
+  },
+  {
+   "text": "쓰던",
+   "start": 0.414,
+   "end": 0.634
+  },
+  {
+   "text": "챗지피티에,",
+   "start": 0.678,
+   "end": 1.281
+  },
+  {
+   "text": "빈",
+   "start": 1.619,
+   "end": 1.751
+  },
+  {
+   "text": "방",
+   "start": 1.795,
+   "end": 1.912
+  },
+  {
+   "text": "사진이랑",
+   "start": 1.956,
+   "end": 2.412
+  },
+  {
+   "text": "이",
+   "start": 2.456,
+   "end": 2.471
+  },
+  {
+   "text": "한",
+   "start": 2.515,
+   "end": 2.588
+  },
+  {
+   "text": "줄을",
+   "start": 2.632,
+   "end": 2.779
+  },
+  {
+   "text": "보냈어요.",
+   "start": 2.823,
+   "end": 3.41
+  }
+ ],
+ "source": {
+  "key": "cb3ec6fd626fe9b92d9fd0460360af33",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1120,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 175
+ }
+}

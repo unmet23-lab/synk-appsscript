@@ -1,0 +1,65 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "정리를 맡길 땐, 지우지 말고 옮겨.",
+ "dur": 1.801,
+ "words": [
+  {
+   "text": "정리를",
+   "start": 0.02,
+   "end": 0.331
+  },
+  {
+   "text": "맡길",
+   "start": 0.374,
+   "end": 0.558
+  },
+  {
+   "text": "땐,",
+   "start": 0.601,
+   "end": 0.813
+  },
+  {
+   "text": "지우지",
+   "start": 0.97,
+   "end": 1.225
+  },
+  {
+   "text": "말고",
+   "start": 1.267,
+   "end": 1.437
+  },
+  {
+   "text": "옮겨.",
+   "start": 1.479,
+   "end": 1.801
+  }
+ ],
+ "source": {
+  "key": "6b1480b2411826783eec7b65940b2f6d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 127
+ }
+}

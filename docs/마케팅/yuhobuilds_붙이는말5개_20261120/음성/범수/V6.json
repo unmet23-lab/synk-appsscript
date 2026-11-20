@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6",
+ "text": "글을 맡길 땐, 모르는 건 지어내지 말고 빈칸으로.",
+ "dur": 2.592,
+ "words": [
+  {
+   "text": "글을",
+   "start": 0.02,
+   "end": 0.188
+  },
+  {
+   "text": "맡길",
+   "start": 0.23,
+   "end": 0.412
+  },
+  {
+   "text": "땐,",
+   "start": 0.468,
+   "end": 0.691
+  },
+  {
+   "text": "모르는",
+   "start": 0.776,
+   "end": 1.041
+  },
+  {
+   "text": "건",
+   "start": 1.083,
+   "end": 1.167
+  },
+  {
+   "text": "지어내지",
+   "start": 1.209,
+   "end": 1.517
+  },
+  {
+   "text": "말고",
+   "start": 1.559,
+   "end": 1.783
+  },
+  {
+   "text": "빈칸으로.",
+   "start": 2.063,
+   "end": 2.592
+  }
+ ],
+ "source": {
+  "key": "34ac963e529068e032171fcff293d6a1",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 145
+ }
+}

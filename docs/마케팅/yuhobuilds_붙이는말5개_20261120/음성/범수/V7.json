@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V7",
+ "text": "자동화를 맡길 땐, 완료 말고 몇 개 했는지 적어.",
+ "dur": 2.998,
+ "words": [
+  {
+   "text": "자동화를",
+   "start": 0.05,
+   "end": 0.439
+  },
+  {
+   "text": "맡길",
+   "start": 0.481,
+   "end": 0.683
+  },
+  {
+   "text": "땐,",
+   "start": 0.741,
+   "end": 1.013
+  },
+  {
+   "text": "완료",
+   "start": 1.344,
+   "end": 1.559
+  },
+  {
+   "text": "말고",
+   "start": 1.603,
+   "end": 1.818
+  },
+  {
+   "text": "몇",
+   "start": 2.12,
+   "end": 2.221
+  },
+  {
+   "text": "개",
+   "start": 2.263,
+   "end": 2.307
+  },
+  {
+   "text": "했는지",
+   "start": 2.35,
+   "end": 2.58
+  },
+  {
+   "text": "적어.",
+   "start": 2.623,
+   "end": 2.998
+  }
+ ],
+ "source": {
+  "key": "545f1eaa6ca6750eed00adc302ce47a0",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 157
+ }
+}

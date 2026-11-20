@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V8",
+ "text": "홈페이지를 맡길 땐, 우리 가게 포장지 색과 글씨로.",
+ "dur": 2.704,
+ "words": [
+  {
+   "text": "홈페이지를",
+   "start": 0.05,
+   "end": 0.502
+  },
+  {
+   "text": "맡길",
+   "start": 0.543,
+   "end": 0.756
+  },
+  {
+   "text": "땐,",
+   "start": 0.812,
+   "end": 1.038
+  },
+  {
+   "text": "우리",
+   "start": 1.235,
+   "end": 1.334
+  },
+  {
+   "text": "가게",
+   "start": 1.376,
+   "end": 1.545
+  },
+  {
+   "text": "포장지",
+   "start": 1.616,
+   "end": 1.912
+  },
+  {
+   "text": "색과",
+   "start": 1.969,
+   "end": 2.166
+  },
+  {
+   "text": "글씨로.",
+   "start": 2.223,
+   "end": 2.704
+  }
+ ],
+ "source": {
+  "key": "a41d7288753cd50058cbe66ed57bc5e8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

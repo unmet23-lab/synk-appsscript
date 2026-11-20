@@ -1,0 +1,15 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 2:3, quiet night-time home-office mood, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a tiny desk at night. The background is a plain, very dark charcoal felt wall, almost black, with nothing on it. One small warm desk lamp, out of frame on the left, lights the desk softly from the left; everything else falls off into darkness.
+- The TOP 36% of the image is plain near-black wall with nothing in it — keep it empty and dark for titles.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle sits on the desk, centred at 38% of the image width, its body between 44% and 66% of the image height, about 30% of the image width wide. Mongle looks PROUD and pleased with itself: both eyes closed in happy upward curves (two short curved dark stitched lines), body puffed up and leaning back a little toward the tower beside it.
+- THE TOWER: directly to Mongle's right, centred at 68% of the image width, a tall, slightly leaning tower of small manila-yellow felt file folders stacked flat on top of each other, about twenty folders, rising from the desk up to about 39% of the image height — clearly much taller than Mongle. The folders are plain felt with small tabs: no labels, no writing.
+- On the desk in front of Mongle, slightly left, a tiny dark-grey felt laptop, half open, its screen dark.
+- The BOTTOM 30% of the image is the dark walnut-brown felt desk surface in soft focus, with nothing on it.
+- Keep Mongle, the tower and the laptop between 8% and 86% of the image width.
+
+Exactly ONE Mongle, nobody else. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns.

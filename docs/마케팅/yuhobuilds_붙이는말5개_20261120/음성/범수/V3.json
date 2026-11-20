@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "이제 일을 맡길 땐, 끝에 한마디를 꼭 붙여요.",
+ "dur": 2.297,
+ "words": [
+  {
+   "text": "이제",
+   "start": 0.03,
+   "end": 0.174
+  },
+  {
+   "text": "일을",
+   "start": 0.253,
+   "end": 0.372
+  },
+  {
+   "text": "맡길",
+   "start": 0.411,
+   "end": 0.609
+  },
+  {
+   "text": "땐,",
+   "start": 0.649,
+   "end": 0.899
+  },
+  {
+   "text": "끝에",
+   "start": 1.03,
+   "end": 1.267
+  },
+  {
+   "text": "한마디를",
+   "start": 1.333,
+   "end": 1.675
+  },
+  {
+   "text": "꼭",
+   "start": 1.714,
+   "end": 1.78
+  },
+  {
+   "text": "붙여요.",
+   "start": 1.82,
+   "end": 2.297
+  }
+ ],
+ "source": {
+  "key": "0f6836f59ea6fb66ecd89ce92851774e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}

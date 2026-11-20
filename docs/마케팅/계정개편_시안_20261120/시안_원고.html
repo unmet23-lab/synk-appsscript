@@ -59,6 +59,7 @@ figcaption b{font-weight:800}
 .item .did{font-size:15px;color:var(--muted)}
 ul.plain{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px;max-width:40em}
 a{color:var(--lapis)}
+video.reel{display:block;width:100%;max-width:300px;aspect-ratio:9/16;border-radius:14px;background:#0A0A0A}
 @media (max-width:480px){ h1{font-size:28px} h2{font-size:22px} main{padding:28px 16px 64px;gap:44px} .covers{gap:12px} .covers figure{flex:1 1 44%} }
 </style>
 </head>
@@ -67,11 +68,11 @@ a{color:var(--lapis)}
 
 <header>
   <h1>계정 개편 첫 편 시안</h1>
-  <p>두 계정의 첫 편을 한 편씩 만들었습니다. 표지 틀, 캡션, 댓글 단 분께 보낼 자료가 들어 있습니다. 아직 올린 것은 없고 장부도 바꾸지 않았습니다.</p>
+  <p>두 계정의 첫 편 릴스를 표지 A로 만들었습니다. 릴스, 캡션, 댓글 단 분께 보낼 자료가 들어 있습니다. 아직 올린 것은 없고 장부도 바꾸지 않았습니다.</p>
   <ul class="picks">
-    <li><b>1</b><span>synkbrief 표지는 A와 B 가운데 어느 쪽으로 할까요? <span class="rec">추천 A</span></span></li>
-    <li><b>2</b><span>yuhobuilds 표지는 A와 B 가운데 어느 쪽으로 할까요? <span class="rec">추천 A</span></span></li>
-    <li><b>3</b><span>댓글 안내는 「댓글에 남겨 주세요」와 「팔로우하고 댓글에 남겨 주세요」 가운데 어느 쪽으로 할까요? 시안은 앞의 것으로 썼습니다.</span></li>
+    <li><b>1</b><span>두 릴스를 이대로 올려도 될까요? 고칠 곳이 있으면 초와 함께 말씀해 주세요.</span></li>
+    <li><b>2</b><span>댓글 안내는 「댓글에 남겨 주세요」와 「팔로우하고 댓글에 남겨 주세요」 가운데 어느 쪽으로 할까요? 시안은 앞의 것으로 썼습니다.</span></li>
+    <li><b>3</b><span>이 방식으로 4주 동안 시험할까요?</span></li>
   </ul>
 </header>
 
@@ -104,7 +105,9 @@ a{color:var(--lapis)}
 
   <div class="block">
     <h3>릴스</h3>
-    <p>빈 방이 채워진 방으로 바뀌는 장면으로 시작합니다. 이어서 메뉴판과 옛날 사진의 전후를 2~3초씩 보입니다. 세 편에서 이미 찍어 둔 실제 화면을 쓰고, 길이는 20초 안팎입니다.</p>
+    <video class="reel" controls playsinline preload="metadata" poster="img/brief-a.webp" src="img/brief-reel.mp4"></video>
+    <p>24초입니다. 표지와 같은 화면으로 시작해 빈 방, 손글씨 메뉴판, 옛날 사진을 차례로 보이고 「댓글에 「사진」」으로 끝납니다. 결과 그림과 영상은 10월에 실제로 받은 것입니다.</p>
+    <p class="small muted">옛날 사진의 결과 영상은 받은 10초 가운데 살짝 웃고 한 번 깜빡이는 4초를 썼습니다. 앞쪽에는 활짝 웃는 구간이 있습니다.</p>
   </div>
 
   <div class="block">
@@ -117,7 +120,7 @@ a{color:var(--lapis)}
 3. 옛날 사진 → 살짝 웃으며 움직이는 영상
 
 댓글에 「사진」이라고 남겨 주세요. 요청문 3개와 쓰는 법을 DM으로 보내 드려요.
-팔로우해 두시면 다음 자료도 바로 받아요.
+팔로우해 두시면 다음 자료가 올라올 때 놓치지 않아요.
 
 · 1번과 2번은 ChatGPT, 3번은 제미나이 앱에서 했어요. 3번은 Google AI 요금제가 있어야 하고 만 18세 이상만 써요.
 · 결과는 사람마다, 할 때마다 달라요.
@@ -166,7 +169,7 @@ a{color:var(--lapis)}
 <section>
   <div class="block">
     <h2>yuhobuilds · AI와 회사 만들기</h2>
-    <p>유호님이 AI한테 일을 맡기다 막히거나 사고가 난 뒤에 만든 말 다섯 개를 묶은 편입니다. 다섯 개 모두 synk.im/prompts에 이미 공개돼 있습니다.</p>
+    <p>유호님이 AI한테 일을 맡기다 실제로 사고가 났거나 직접 시험해 보고 남긴 말 다섯 개를 묶은 편입니다. 다섯 개 모두 synk.im/prompts에 이미 공개돼 있습니다.</p>
   </div>
 
   <div class="block">
@@ -189,32 +192,34 @@ a{color:var(--lapis)}
 
   <div class="block">
     <h3>릴스</h3>
-    <p>진행자가 「53기가를 지우라던 AI, 진짜는 6.7기가였어요」로 시작합니다. 이어서 붙이는 말 다섯 개가 한 줄씩 큰 글자로 나옵니다. 길이는 25초 안팎입니다.</p>
+    <video class="reel" controls playsinline preload="metadata" poster="img/builds-a.webp" src="img/builds-reel.mp4"></video>
+    <p>30초입니다. 진행자가 「PC 정리를 맡겼더니 53기가를 치워도 된다고 했어요」로 시작하고, 붙이는 말 다섯 개가 한 줄씩 나온 뒤 진행자가 「댓글에 「한마디」」로 끝냅니다.</p>
+    <p class="small muted">가운데 16초는 검정 바탕에 글과 그림으로 이어집니다. 이 구간에서 넘길 수 있다는 지적이 남아 있습니다.</p>
   </div>
 
   <div class="block">
     <h3>캡션</h3>
     <div class="copy"><button type="button" data-copy="cap-builds">복사</button><pre id="cap-builds">AI한테 PC 정리를 맡겼더니 53기가를 치워도 된다고 했어요. 끝까지 따라가 보니 정말 지워도 되는 건 6.7기가뿐이었어요.
-그 뒤로 AI한테 일을 맡길 때 끝에 꼭 붙이는 말이 생겼어요. 막히거나 사고가 난 뒤에 하나씩 만든 다섯 개예요.
+저는 AI한테 일을 맡길 때 끝에 한마디를 꼭 붙여요. 실제로 사고가 났거나, 직접 시험해 보고 남긴 다섯 개예요.
 
-1. 글을 맡길 때 — 없는 후기와 숫자를 지어내지 않게
+1. 정리를 맡길 때 — 지우지 말고 옮겨 두게
 2. 올리기를 맡길 때 — 내가 승인하기 전엔 안 올리게
-3. 정리를 맡길 때 — 지우지 말고 옮겨 두게
-4. 홈페이지를 맡길 때 — 다 똑같은 화면이 안 나오게
-5. 자동화를 맡길 때 — 「완료」 대신 실제로 늘어난 개수를 적게
+3. 글을 맡길 때 — 없는 후기와 숫자를 지어내지 않게
+4. 자동화를 맡길 때 — 「완료」 대신 실제로 늘어난 개수를 적게
+5. 홈페이지를 맡길 때 — 다 똑같은 화면이 안 나오게
 
 댓글에 「한마디」라고 남겨 주세요. 다섯 개 전문과 제가 돌려 본 결과를 DM으로 보내 드려요.
-팔로우해 두시면 다음 자료도 바로 받아요.
+팔로우해 두시면 다음 자료가 올라올 때 놓치지 않아요.
 
 · 다섯 개 모두 새 대화에 직접 붙여 넣어 돌려 봤어요. AI마다, 할 때마다 결과는 달라요.
 
-#AI활용 #챗GPT #AI자동화 #1인창업 #프롬프트</pre></div>
+#AI활용 #AI자동화 #1인창업 #프롬프트 #AI꿀팁</pre></div>
   </div>
 
   <div class="block">
     <h3>댓글 단 분께 가는 첫 DM</h3>
     <div class="copy"><button type="button" data-copy="dm-builds">복사</button><pre id="dm-builds">「한마디」 남겨 주셔서 고마워요! AI한테 일 맡길 때 끝에 붙이는 말 5개예요.
-맡기는 글 맨 끝에 그대로 붙여 넣으면 돼요. 빈칸 채우기와 제가 돌려 본 결과도 같이 있어요.
+올리기 · 글 · 홈페이지용은 맡기는 글 끝에 그대로 붙이고, 정리 · 자동화용은 글 전체를 보내면 돼요. 빈칸 채우기와 제가 돌려 본 결과도 같이 있어요.
 (자료 주소)
 자동으로 보낸 메시지예요. 그만 받으려면 '중단'이라고 보내 주세요.</pre></div>
   </div>
@@ -265,8 +270,8 @@ a{color:var(--lapis)}
   <div class="block">
     <h2>올리기 전에 남은 일</h2>
     <ul class="plain">
-      <li>릴스 영상은 아직 만들지 않았습니다.</li>
-      <li>synkbrief 3번의 제미나이 요금제와 나이 조건은 10월 30일에 확인한 내용입니다. 올리기 전에 다시 봅니다.</li>
+      <li>synkbrief 3번의 제미나이 요금제와 나이 조건은 11월 20일에 구글 도움말에서 다시 확인했습니다.</li>
+      <li>올릴 날과 시각을 정하고, 댓글 낱말에 자료를 보내는 DM을 등록해야 합니다. 영상 끝 말이 그 DM을 가리킵니다.</li>
       <li>자료 주소가 아직 없습니다. synkbrief 자료는 synk.im에 새 쪽이 필요하고, yuhobuilds는 synk.im/prompts에 다섯 개만 모은 자리를 만들면 됩니다.</li>
       <li>「팔로우하고 댓글」처럼 팔로우를 조건으로 거는 문구가 인스타 정책에 맞는지는 확인하지 않았습니다.</li>
     </ul>
