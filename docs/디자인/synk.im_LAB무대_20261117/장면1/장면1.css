@@ -364,3 +364,5 @@ a.sc-btn{text-decoration:none}
   .sc-pline .sc-hl{margin-top:8px}
   .sc-pline .sc-hl select{height:30px;font-size:12.5px}
 }
+/* 움직임 줄이기면 움직일 일이 없으니 합성 층을 따로 만들지 않는다 — 층마다 그릴 때 화소가 조금씩 달라 배포 점검의 「흔들림」을 냈다(위 규칙들보다 뒤에 둔다) */
+@media (prefers-reduced-motion:reduce){.sc-w,.sc-card,.sc-guide,.sc-cal-page{will-change:auto}}

@@ -734,12 +734,15 @@
   });
   // 지금 할 일 — 장면마다 부른다
   // 좁은 화면: 고를 때는 카드 밑(묻는 말을 가리지 않는다), 답한 뒤에는 카드 위(결과 글을 가리지 않는다). 단추는 손가락만 가리킨다
-  const guidePick = (cs, demo, t = G.pick, s = G.pickSub) => {
-    const b = union(cs.map((c) => c.el));
+  // 보기 묶음 옆 말풍선 자리: 넓은 화면에서 보기 오른쪽에 같은 높이의 다른 카드(30일 문제의 기록 카드)가 있으면 그 앞에서 멈추고, 남는 폭이 모자라면 보기 밑에 세운다
+  // pad: 답한 뒤에는 카드가 줄에 매달려 흔들려 아래 모서리가 옆으로 나온다 — 그만큼 띄운다
+  const pickSpot = (cs, pad = 0) => {
+    const u = union(cs.map((c) => c.el)), b = { x: u.x - pad, y: u.y, w: u.w + pad * 2, h: u.h + pad };
     const edge = Math.min(root.clientWidth, ...[...cards].filter((k) => !cs.includes(k) && k.op > 0.5).map((k) => rel(k.el)).filter((o) => o.x > b.x + b.w && o.y < b.y + b.h && o.y + o.h > b.y).map((o) => o.x));   // tip이 이 끝에서 12px 앞에 멈춘다
-    const side = narrow || edge - (b.x + b.w + 16) < 150 + 12 ? 'bottom' : 'right';
-    tip(t, s, b, side, false, edge); if (demo) demoCards(cs);
+    return { b, edge, side: narrow || edge - (b.x + b.w + 16) < 150 + 12 ? 'bottom' : 'right' };
   };
+  const tipBy = (cs, t, s, pad = 0) => { const p = pickSpot(cs, pad); tip(t, s, p.b, p.side, false, p.edge); };
+  const guidePick = (cs, demo, t = G.pick, s = G.pickSub) => { tipBy(cs, t, s); if (demo) demoCards(cs); };
   // 카드 옆에 빈자리가 있으면 옆에, 없으면 위에(좁은 화면에서 결과 글을 가리지 않는다)
   const guideCard = (c, t, s) => { const b = rel(c.el), RW = root.clientWidth; tip(t, s, b, RW - (b.x + b.w) >= 190 ? 'right' : b.x >= 190 ? 'left' : 'top'); };
   // 「이 줄이 30일」: 좁은 화면에서는 날 이름(1분 뒤 · 내일 · 7일 뒤 · 30일 뒤)을 가리키며 그 위에 선다
@@ -895,9 +898,8 @@
       const helped = endHint(picked.el);   // 번역 질문 글을 먼저 걷고 말풍선 자리를 잰다(좁은 화면은 그 글이 카드를 밀어 내렸다)
       cs.forEach((c) => { c.answerable = false; c.el.setAttribute('aria-disabled', 'true'); });
       const correct = cs.find((c) => c.id === q.answer), right = picked === correct;
-      const said = () => union(cs.map((k) => k.el)), side = narrow ? 'bottom' : 'right';
-      if (right) tip(G.right, fb.right, said(), side);
-      else setTimeout(() => tip(fillT(G.wrong, { n: cs.indexOf(correct) + 1 }), fb.wrong, said(), side), 640);
+      if (right) tipBy(cs, G.right, fb.right, 16);
+      else setTimeout(() => tipBy(cs, fillT(G.wrong, { n: cs.indexOf(correct) + 1 }), fb.wrong, 16), 640);
       if (right) {
         picked.el.classList.add('is-right'); mark(picked.wordEl, 'under'); play('underline'); play('chime', { delay: 0.18 }); picked.w += sign() * 1.4; picked.pv += sign() * 2; act(picked, true, true);
       } else {
