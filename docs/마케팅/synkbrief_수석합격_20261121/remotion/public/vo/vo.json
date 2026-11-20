@@ -1,0 +1,87 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../소리/나레이션.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1121,
+  "lufs": -17
+ },
+ "made": "2026-11-20T23:05:00.909Z",
+ "lines": [
+  {
+   "id": "n1",
+   "text": "평균 30점 과목에서 혼자 100점, 세무사 시험 수석이에요.",
+   "show": "평균 30점 과목에서 혼자 100점, 세무사 시험 수석이에요.",
+   "scene": "훅",
+   "dur": 3.659,
+   "syllablesPerSec": 5.47,
+   "src": "n1.wav",
+   "key": "ce515301901abcab314def90ef32a430",
+   "words": 8
+  },
+  {
+   "id": "n2",
+   "text": "그런데 너무 완벽한 점수에, 의심이 쏟아졌어요.",
+   "show": "그런데 너무 완벽한 점수에, 의심이 쏟아졌어요.",
+   "scene": "의심",
+   "dur": 2.71,
+   "syllablesPerSec": 7.01,
+   "src": "n2.wav",
+   "key": "65496945844129efd9ba3802f5325fc4",
+   "words": 6
+  },
+  {
+   "id": "n3",
+   "text": "며칠 뒤, 본인이 직접 유튜브 영상에 나와 털어놨어요.",
+   "show": "며칠 뒤, 본인이 직접 유튜브 영상에 나와 털어놨어요.",
+   "scene": "고백 앞",
+   "dur": 2.964,
+   "syllablesPerSec": 7.09,
+   "src": "n3.wav",
+   "key": "64a08d02139349afd103eb3aa6c42cac",
+   "words": 8
+  },
+  {
+   "id": "n4",
+   "text": "경찰에 자수서를 냈고, 시험을 맡은 공단은 업무방해로 고소했어요.",
+   "show": "경찰에 자수서를 냈고, 시험을 맡은 공단은 업무방해로 고소했어요.",
+   "scene": "대가",
+   "dur": 3.702,
+   "syllablesPerSec": 7.29,
+   "src": "n4.wav",
+   "key": "cce2639077c8e49872f07dd9f0985e32",
+   "words": 8
+  },
+  {
+   "id": "n5",
+   "text": "정부는 시험 무효 절차에 들어갔고, 올해 국가자격시험을 전부 다시 조사해요.",
+   "show": "정부는 시험 무효 절차에 들어갔고, 올해 국가자격시험을 전부 다시 조사해요.",
+   "scene": "정부",
+   "dur": 4.054,
+   "syllablesPerSec": 7.65,
+   "src": "n5.wav",
+   "key": "6f65fecd91b9ba2541c121ae83b89622",
+   "words": 10
+  },
+  {
+   "id": "n6",
+   "text": "AI로 딴 100점, 남은 건 무효 절차와 경찰 수사예요.",
+   "show": "AI로 딴 100점, 남은 건 무효 절차와 경찰 수사예요.",
+   "scene": "끝 줄",
+   "dur": 3.166,
+   "syllablesPerSec": 5.37,
+   "src": "n6.wav",
+   "key": "07af32f0f965c560731d188728702ee1",
+   "words": 9
+  }
+ ]
+}
