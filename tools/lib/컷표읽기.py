@@ -75,11 +75,11 @@ _객체 = (객체,)
 def _수인가(v):
     if isinstance(v, bool): return False
     if isinstance(v, (int, float)):
-        try: return math.isfinite(v)
-        except OverflowError: return True          # 아주 큰 정수
+        try: return math.isfinite(float(v))
+        except OverflowError: return False         # 실수로 옮기지 못하는 아주 큰 정수 — 값 검사의 숫자()가 읽지 못한다
     if isinstance(v, str):
         try: return math.isfinite(float(v.strip()))
-        except ValueError: return False
+        except (ValueError, OverflowError): return False
     return False
 
 

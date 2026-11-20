@@ -1401,11 +1401,22 @@ test('명령줄 — 「detail」: null · 꼴이 틀린 시각 칸으로도 죽�
   assert.ok(걸림글(b).some((x) => /^C1: 「t」 칸은 수 꼴로 적는다 — 지금은 false이다/.test(x)), JSON.stringify(걸림글(b)));
   assert.ok(걸림글(b, '사건').some((x) => /넓게=C1 — 이 컷의 「t」\(시작 시각\)를 읽을 수 없어/.test(x)), JSON.stringify(걸림글(b, '사건')));
   assert.ok(걸림글(b, '소리').some((x) => /^초인종: 소리 사건의 「t」\(소리가 나는 시각\)를 읽을 수 없다/.test(x)), JSON.stringify(걸림글(b, '소리')));
+  // 받은 판을 재는 실행에서도 죽지 않는다 — 꼴 걸림은 그대로 나고, 매체 항목은 재는 자리마다 시각을 읽는다(미리 훑어 막지 않는다 — 11-21 GPT 다시 검수 GA1 · GA4)
   const 받음 = path.join(임시(), '받음'); fs.mkdirSync(받음);
   const c = 틀돌리기((s) => { 컷(s, 'C1').dur = false; }, ['--받음', 받음]);
   assert.equal(c.코드, 1);
-  assert.ok(걸림글(c).some((x) => /^표: 컷 줄의 「t」 · 「dur」를 읽을 수 없어 영상 · 받은 판을 재는 항목을 돌리지 않았다\(C1\)/.test(x)), JSON.stringify(걸림글(c)));
-  assert.deepEqual(c.항목들.filter((x) => ['점', '고요', '빛', '색감', '지도'].includes(x.항목)), [], '영상 · 받은 판을 재는 항목은 돌지 않았다');
+  assert.ok(걸림글(c).some((x) => /^C1: 「dur」 칸은 수 꼴로 적는다 — 지금은 false이다/.test(x)), JSON.stringify(걸림글(c)));
+  assert.ok(!걸림글(c).some((x) => /항목을 돌리지 않았다/.test(x)), '시각을 미리 훑어 막는 줄은 없다');
+  // 뼈대가 깨진 표 · 맨 위가 목록인 표를 --받음과 함께 줘도 뼈대 걸림을 JSON으로 낸다
+  const 뼈대 = (글) => { const dir = 임시(); return 돌리기([쓰기(dir, '컷표.json', 글), '--출력', path.join(dir, '검사'), '--받음', 받음]); };
+  const d1 = 뼈대(JSON.stringify({ 틀: 2, detail: true }));
+  assert.equal(d1.코드, 1); assert.ok(걸림글(d1).some((x) => /「detail」은 컷을 한 줄씩 적는 목록이다 — 지금은 true이다/.test(x)), JSON.stringify(d1.항목들));
+  const d2 = 뼈대('[]');
+  assert.equal(d2.코드, 1); assert.ok(걸림글(d2).some((x) => /컷표가 객체\(\{ … \}\)가 아니다 — 지금은 목록이다/.test(x)), JSON.stringify(d2.항목들));
+  // 「dur」가 없는 표에 --항목 소리만 돌리면 소리 판정만 낸다(길이를 읽지 않는 항목에 새 걸림을 더하지 않는다)
+  const e = 틀돌리기((s) => { for (const x of s.detail) delete x.dur; }, ['--받음', 받음, '--항목', '소리']);
+  assert.deepEqual(e.항목들.filter((x) => x.등급 === '걸림'), [], JSON.stringify(e.항목들));
+  assert.ok(e.항목들.some((x) => x.항목 === '소리' && x.등급 === '통과'));
 });
 
 test('내기 도구 — 크레딧내기 · 드리미나내기 main()(미리 보기 · 가짜 계정): 견적 뒤에 지시문 검사를 찍고 걸림이면 멈춘다, --걸림무시 "<판 id>: <까닭>"이면 지나가고 값 없는 --걸림무시 · 판 이름 없는 까닭은 거절', { skip: !파이썬 && '파이썬 없음' }, () => {

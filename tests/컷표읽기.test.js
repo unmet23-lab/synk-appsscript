@@ -483,3 +483,69 @@ print(json.dumps(out, ensure_ascii=False))
 `);
   assert.deepEqual(값, { 그림인물: ['인물 옆집'], 끝그림인물: ['인물 옆집'], 공백: ['인물 수아'], '안 나오는 사람': [], 그대로: [] });
 });
+
+// ───────── 11-21 GPT 다시 검수(영상컷표꼴관문-20261120-다시1)가 낸 자리 — 꼴 관문 없이 도는 실행(--항목 사건 · 소리)과 가장자리 값 ─────────
+
+// GA2 · GA3 · GA5 — 틀린 줄을 말없이 건너뛰거나 범위를 벗어난 토막 번호를 첫 토막으로 바꿔 읽으면, 앞 판에서 멈추던 입력이 통과가 된다
+test('사건 · 소리 표 — 꼴 관문 없이 돌려도 줄 · 목록의 꼴이 틀리면 걸림이고, 적어 둔 토막 번호 · 반응 시각은 읽을 수 없으면 걸림이다(말없이 건너뛰거나 첫 토막으로 바꾸지 않는다)', 건너뜀, () => {
+  const 값 = 파(String.raw`
+def 소리(고침):
+    s = copy.deepcopy(틀); 고침(s); r = m.결과(); m.소리표검사(s, r)
+    return [[x["등급"], x["글"][:44]] for x in r.항목들]
+def 사건(고침):
+    s = copy.deepcopy(틀); 고침(s); r = m.결과(); m.사건표검사(s, r)
+    return [[x["등급"], x["글"][:44]] for x in r.항목들]
+ev = lambda s: s["소리사건"][0]
+out = {
+    "소리 그대로": 소리(lambda s: None),
+    "소리 줄 null": 소리(lambda s: s.__setitem__("소리사건", [None])),
+    "소리 줄 null + 좋은 줄": 소리(lambda s: s["소리사건"].insert(0, None)),
+    "소리사건이 객체": 소리(lambda s: s.__setitem__("소리사건", {"이름": "초인종"})),
+    "반응번째 백만": 소리(lambda s: ev(s).__setitem__("반응번째", 1000000)),
+    "반응번째 0": 소리(lambda s: ev(s).__setitem__("반응번째", 0)),
+    "반응번째 1.5": 소리(lambda s: ev(s).__setitem__("반응번째", 1.5)),
+    "반응번째 글": 소리(lambda s: ev(s).__setitem__("반응번째", "둘째")),
+    "반응번째 1": 소리(lambda s: ev(s).__setitem__("반응번째", 1)),
+    "반응번째 글 1": 소리(lambda s: ev(s).__setitem__("반응번째", "1")),
+    "반응t 글": 소리(lambda s: ev(s).__setitem__("반응t", "곧")),
+    "반응t 3.5": 소리(lambda s: ev(s).__setitem__("반응t", 3.5)),
+    "t 큰 정수": 소리(lambda s: ev(s).__setitem__("t", 10 ** 309)),
+    "사건 그대로": 사건(lambda s: None),
+    "사건 줄 null": 사건(lambda s: s.__setitem__("사건", [None])),
+    "사건 줄 null + 좋은 줄": 사건(lambda s: s["사건"].insert(0, None)),
+    "사건이 글": 사건(lambda s: s.__setitem__("사건", "혼자 끓이던 라면")),
+    "컷 t 큰 정수": 사건(lambda s: s["detail"][3].__setitem__("t", 10 ** 309)),
+}
+print(json.dumps(out, ensure_ascii=False))
+`);
+  const 등급들 = (이름) => 값[이름].map((x) => x[0]);
+  assert.deepEqual(등급들('소리 그대로'), ['통과']); assert.deepEqual(등급들('사건 그대로'), ['통과']);
+  assert.deepEqual(등급들('소리 줄 null'), ['걸림']); assert.match(값['소리 줄 null'][0][1], /소리사건 1번째 줄이 객체/);
+  assert.deepEqual(등급들('소리 줄 null + 좋은 줄'), ['걸림', '통과'], '읽을 수 있는 줄은 그대로 본다');
+  assert.deepEqual(등급들('소리사건이 객체'), ['걸림']); assert.match(값['소리사건이 객체'][0][1], /「소리사건」은 목록으로 적는다/);
+  for (const 이름 of ['반응번째 백만', '반응번째 0', '반응번째 1.5', '반응번째 글', '반응t 글', 't 큰 정수']) assert.deepEqual(등급들(이름), ['걸림'], `${이름}: ${JSON.stringify(값[이름])}`);
+  for (const 이름 of ['반응번째 1', '반응번째 글 1', '반응t 3.5']) assert.deepEqual(등급들(이름), ['통과'], `${이름}: ${JSON.stringify(값[이름])}`);
+  assert.deepEqual(등급들('사건 줄 null'), ['걸림']); assert.match(값['사건 줄 null'][0][1], /사건 1번째 줄이 객체/);
+  assert.deepEqual(등급들('사건 줄 null + 좋은 줄'), ['걸림', '통과']);
+  assert.deepEqual(등급들('사건이 글'), ['걸림']); assert.match(값['사건이 글'][0][1], /「사건」은 목록으로 적는다/);
+  assert.deepEqual(등급들('컷 t 큰 정수'), ['걸림']);
+});
+
+// GA1 · GA4 — 컷 줄의 시각을 미리 훑어 막던 줄을 뺐다(뼈대가 깨진 표에서 죽고, 그 칸을 읽지 않는 항목까지 막았다). 시각을 읽는 자리마다 못 읽으면 그 컷만 못 쟀다고 낸다
+test('고요 항목 — 컷 줄의 「t」 · 「dur」를 읽을 수 없으면 그 컷은 못 쟀다고 내고 죽지 않는다', 건너뜀, () => {
+  const 값 = 파(String.raw`
+import tempfile, os
+def 본(고침, 받음=False):
+    s = copy.deepcopy(틀); c = {d["cut"]: d for d in s["detail"]}; c["C1"]["고정"] = [0.1, 0.1, 0.5, 0.5]; 고침(c)
+    r = m.결과()
+    if 받음:
+        d = tempfile.mkdtemp(); open(os.path.join(d, "C1.mp4"), "wb").close()
+        m.고요항목(s, r, None, 받음=d)
+    else: m.고요항목(s, r, None, 영상="없는.mp4")
+    return [[x["컷"], x["등급"], x["글"][:30]] for x in r.항목들 if x["컷"] == "C1"]
+out = {"영상 dur 없음": 본(lambda c: c["C1"].pop("dur")), "영상 t 글": 본(lambda c: c["C1"].__setitem__("t", "곧")),
+       "받음 out · dur 없음": 본(lambda c: (c["C1"].pop("dur"), c["C1"].pop("out")), True), "받음 in 글": 본(lambda c: c["C1"].__setitem__("in", "곧"), True)}
+print(json.dumps(out, ensure_ascii=False))
+`);
+  for (const [이름, 줄] of Object.entries(값)) { assert.equal(줄.length, 1, `${이름}: ${JSON.stringify(줄)}`); assert.equal(줄[0][1], '확인', 이름); assert.match(줄[0][2], /시각을 읽을 수 없어 못 쟀다/, 이름); }
+});

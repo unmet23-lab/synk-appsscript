@@ -1255,6 +1255,8 @@ def 사건표검사(seq, r):
     if not 사건들:
         if 사건들 == []: r.더함("사건", "표", "통과", "이 편에는 쪼갤 사건이 없다고 표에 밝혔다(사건: [])"); return
         r.더함("사건", "표", "확인", "사건 표가 없다 — 사건(처음 하는 일 · 망설임 · 놀람 · 건넴 · 발견)마다 넓게 · 감정 · 행동 · 결과 컷을 적는다(없으면 사건: [] · 점검표 33)"); return
+    if not isinstance(사건들, list):   # 꼴 관문 없이 도는 실행(--항목 사건)에서도 말없이 지나가지 않는다(11-21 GPT 다시 검수 GA3)
+        r.더함("사건", "표", "걸림", f"「사건」은 목록으로 적는다 — 지금은 {컷표읽기().꼴이름(사건들)}이다(없으면 사건: [])"); return
     시각, 적힌 = {}, {}   # 「A11」은 첫 토막, 「A11#2」는 둘째 토막. 시각은 수로 읽은 값(못 읽으면 None), 적힌은 표에 적힌 그대로(보이는 글)
     for d in det:
         if not isinstance(d, dict) or not isinstance(d.get("cut"), str): continue
@@ -1262,8 +1264,9 @@ def 사건표검사(seq, r):
         t = 유한수(d.get("t"))   # 숫자를 적은 글도 수로 견준다 — 날것을 견주면 글 순서로 정렬하거나 죽는다(11-21 GPT 검수 GA4 · GA5)
         for k in (d["cut"], f"{d['cut']}#{n}"):
             if k not in 시각: 시각[k] = t; 적힌[k] = d.get("t")
-    for ev in 사건들 if isinstance(사건들, list) else []:
-        if not isinstance(ev, dict): continue
+    for i, ev in enumerate(사건들):
+        if not isinstance(ev, dict):   # 틀린 줄은 걸림으로 남기고 읽을 수 있는 줄은 계속 본다
+            r.더함("사건", "표", "걸림", f"사건 {i + 1}번째 줄이 객체({{\"이름\": …}})가 아니다 — 지금은 {컷표읽기().꼴이름(ev)}이다"); continue
         이름 = ev.get("이름", "?")
         if ev.get("압축"):
             r.더함("사건", 이름, "통과", "압축 몽타주 — 네 박을 묻지 않는다"); continue
@@ -1287,11 +1290,16 @@ def 유한수(v):
 
 
 def 반응시각(seq, ev):
-    rt = 유한수(ev.get("반응t"))
-    if rt is not None: return rt, f"{ev['반응t']}s"
-    cut = ev.get("반응"); n = 유한수(ev.get("반응번째")); n = int(n) if n is not None and 1 <= n < 1e6 else 1
+    if ev.get("반응t") is not None:   # 적어 둔 값은 그대로 읽는다 — 읽을 수 없으면 반응 컷으로 바꿔 읽지 않고 걸림이다(11-21 GPT 다시 검수 GA2)
+        rt = 유한수(ev.get("반응t"))
+        return (rt, f"{ev['반응t']}s") if rt is not None else (None, "「반응t」를 읽을 수 없다 — 초(수)로 적는다")
+    cut = ev.get("반응"); n = 1
+    if ev.get("반응번째") is not None:   # 안 적었을 때만 첫 토막이다. 적었으면 1부터 세는 정수이고 그 토막이 있어야 한다
+        x = 유한수(ev.get("반응번째"))
+        if x is None or x < 1 or x != int(x): return None, f"「반응번째」는 1부터 세는 정수로 적는다 — 지금은 {ev.get('반응번째')!r}"
+        n = int(x)
     tokes = [d for d in seq.get("detail") or [] if isinstance(d, dict) and d.get("cut") == cut]
-    if not tokes or n > len(tokes): return None, f"컷 {cut} 없음"
+    if not tokes or n > len(tokes): return None, f"컷 {cut} 없음" + (f"(토막 {len(tokes)}개 — {n}번째 토막이 없다)" if tokes else "")
     t = 유한수(tokes[n - 1].get("t"))
     if t is None: return None, f"컷 {cut}의 「t」(시작 시각)를 읽을 수 없다"
     return t, f"{cut} 시작 {tokes[n - 1]['t']}s"
@@ -1302,14 +1310,17 @@ def 소리표검사(seq, r, 간격=(0.6, 1.0), 영상=None):
     if not 사건들:
         if 사건들 == []: r.더함("소리", "표", "통과", "이 편에는 반응을 부르는 소리 사건이 없다고 표에 밝혔다(소리사건: [])"); return
         r.더함("소리", "표", "확인", "소리 사건 표가 없다 — 노크 · 초인종 · 전화처럼 반응을 부르는 소리마다 t와 반응 컷을 적는다(없으면 소리사건: [] · 점검표 42)"); return
+    if not isinstance(사건들, list):   # 꼴 관문 없이 도는 실행(--항목 소리)에서도 말없이 지나가지 않는다(11-21 GPT 다시 검수 GA3)
+        r.더함("소리", "표", "걸림", f"「소리사건」은 목록으로 적는다 — 지금은 {컷표읽기().꼴이름(사건들)}이다(없으면 소리사건: [])"); return
     def 간격판정(이름, t, rt, 어디, 출처):
         d = round(rt - t, 3)   # 0.6 − 1e-16 같은 소수 오차로 정상 간격이 걸리지 않게(11-09 Astra)
         if d < 0: r.더함("소리", 이름, "걸림", f"{출처}반응({어디})이 소리({t:.2f}s)보다 {-d:.2f}초 먼저다 — 소리를 반응보다 {간격[0]}~{간격[1]}초 먼저 둔다(점검표 42)")
         elif d < 간격[0]: r.더함("소리", 이름, "걸림", f"{출처}소리({t:.2f}s) → 반응({어디}) 간격 {d:.2f}초 — {간격[0]}초보다 짧다, 소리를 앞당긴다(점검표 42)")
         elif d > 간격[1]: r.더함("소리", 이름, "확인", f"{출처}소리({t:.2f}s) → 반응({어디}) 간격 {d:.2f}초 — {간격[1]}초보다 길다, 반응이 늦어 보이지 않는지 본다")
         else: r.더함("소리", 이름, "통과", f"{출처}소리 {t:.2f}s → 반응 {어디} 간격 {d:.2f}초")
-    for ev in 사건들 if isinstance(사건들, list) else []:
-        if not isinstance(ev, dict): continue
+    for i, ev in enumerate(사건들):
+        if not isinstance(ev, dict):   # 틀린 줄은 걸림으로 남기고 읽을 수 있는 줄은 계속 본다
+            r.더함("소리", "표", "걸림", f"소리사건 {i + 1}번째 줄이 객체({{\"이름\": …}})가 아니다 — 지금은 {컷표읽기().꼴이름(ev)}이다"); continue
         이름 = ev.get("이름", "?"); t = 유한수(ev.get("t"))
         if t is None:   # 꼴이 틀려 지워졌거나 안 적은 시각 — 대괄호로 읽다 죽지 않고 그 줄의 걸림으로 낸다(11-21 GPT 검수 GA5)
             r.더함("소리", 이름, "걸림", "소리 사건의 「t」(소리가 나는 시각)를 읽을 수 없다 — 초(수)로 적는다(점검표 42)"); continue
@@ -1387,10 +1398,12 @@ def 빈칸(v):
 def 숫자(v):
     """표의 초 칸 — 숫자(참 · 거짓은 아님)나 숫자 글이면 float, 아니면 None"""
     if isinstance(v, bool): return None
-    if isinstance(v, (int, float)): return float(v)
+    if isinstance(v, (int, float)):
+        try: return float(v)
+        except OverflowError: return None   # 실수로 옮기지 못하는 아주 큰 정수 — 읽을 수 없는 값으로 본다(11-21 GPT 다시 검수 GA5)
     if isinstance(v, str):
         try: return float(v.strip())
-        except ValueError: return None
+        except (ValueError, OverflowError): return None
     return None
 
 
@@ -3126,11 +3139,17 @@ def 고요항목(seq, r, 지도, 영상=None, 받음=None, 앞=""):
         if not (st and 지도) and not 고정: continue
         if 영상 is not None:
             # 컷 경계 안쪽으로 두 장쯤 여백 — -ss 찾기가 한두 장 밀려 앞 · 뒤 컷 장이 섞이면 장면 전환 차이가 거짓 걸림이 된다(11-09 아르곤)
-            src, t0, t1, 어디 = 영상, d["t"] + 0.08, d["t"] + d["dur"] - 0.08, f"최종 {d['t'] + 0.08:.2f}~{d['t'] + d['dur'] - 0.08:.2f}s"
+            t, dur = 유한수(d.get("t")), 유한수(d.get("dur"))
+            if t is None or dur is None: r.더함("고요", cut, "확인", "컷 줄의 시각을 읽을 수 없어 못 쟀다(「t」 · 「dur」를 초로 적는다)"); continue
+            src, t0, t1, 어디 = 영상, t + 0.08, t + dur - 0.08, f"최종 {t + 0.08:.2f}~{t + dur - 0.08:.2f}s"
         elif 받음 is not None:
             src = Path(받음) / f"{앞}{d.get('판', cut)}.mp4"
             if not src.exists(): r.더함("고요", cut, "확인", f"받은 판 없음: {src.name}"); continue
-            t0, t1 = float(d.get("in", 0)), float(d.get("out", d.get("in", 0) + d["dur"])); 어디 = f"{src.name} {t0:.1f}~{t1:.1f}s"
+            t0 = 유한수(d.get("in")) if d.get("in") is not None else 0.0
+            dur = 유한수(d.get("dur"))
+            t1 = 유한수(d.get("out")) if d.get("out") is not None else (t0 + dur if t0 is not None and dur is not None else None)
+            if t0 is None or t1 is None: r.더함("고요", cut, "확인", "컷 줄의 시각을 읽을 수 없어 못 쟀다(「in」 · 「out」 · 「dur」를 초로 적는다)"); continue
+            어디 = f"{src.name} {t0:.1f}~{t1:.1f}s"
         else:
             continue
         본것 += 1
@@ -3534,12 +3553,7 @@ def main(argv):
             for 등급, 항, 말 in 남길것검사(" ".join(str(d.get(k, "")) for k in ("keep", "남길 것", "line"))): r.더함("지시문", d["cut"], 등급, f"({항}) {말}")
     if "그림지시문" in 항목 and o.get("그림지시문"): 그림지시문항목(seq, r, o["그림지시문"])
     매체 = 영상 or 받음 or 그림
-    # 영상 · 받은 판을 재는 항목은 컷 줄의 「dur」(--영상은 「t」도)를 수로 읽는다 — 못 읽는 줄이 있으면 걸림만 내고 재지 않는다(꼴이 틀려 지워진 시각을 읽다 죽지 않게, 11-21)
-    시각못읽음 = [str(d.get("cut")) for d in seq.get("detail") or [] if isinstance(d, dict) and (유한수(d.get("dur")) is None or (영상 and 유한수(d.get("t")) is None))] if (영상 or 받음) else []
-    if 매체 and 시각못읽음:
-        r.더함("틀", "표", "걸림", f"컷 줄의 「t」 · 「dur」를 읽을 수 없어 영상 · 받은 판을 재는 항목을 돌리지 않았다({' · '.join(dict.fromkeys(시각못읽음))}) — 초(수)로 적은 뒤 다시 돌린다")
-        매체 = None
-    if 매체:
+    if 매체:   # 컷 줄의 시각(t · dur · in · out)은 재는 자리마다 읽는다 — 못 읽으면 그 컷만 「못 쟀다」고 낸다(지도 · 점 · 빛 · 색감은 try로, 고요는 유한수()로)
         if "점" in 항목: 점항목(seq, r, 출력, 그림, 영상, 받음, o["앞"])
         if "지도" in 항목:
             if 지도: 지도항목(seq, r, 지도, 출력, 그림, 영상, 받음, o["앞"])
