@@ -2,16 +2,16 @@
   "판": [
     {
       "계정": "pulse-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T08:00+09:00",
       "지문": "d7ff6434f4e242ac050a27f86067f21318dffb36e7aebe62a4a7f636d02d0a25",
       "게시글지문": "df6c41b04e4d11f5f5939288d23a8793043800a24d6fc4c03aaead6a59f02d7c",
       "방법": "ego",
       "게시물ID": "FLg6Lcmx3y0",
       "주소": "https://youtu.be/FLg6Lcmx3y0",
-      "확인": "스튜디오 예약 창 「2026. 11. 20. 오전 8:00 현지 시간(GMT+0900)」 · 「동영상 예약됨 — 2026년 11월 20일 8:00에 동영상이 공개 상태로 설정됩니다」 창 · 채널 「SYNK PULSE」 목록 「예약됨 2026. 11. 20.」 · 제목 · 설명 원고와 일치 · 표지 넣음 · 동영상 언어 영어 · 아동용 아님 · 변경/합성 콘텐츠 예",
+      "확인": "로그아웃 조회 isPrivate:false · isUnlisted:false · playability OK · publishDate 11-20 08:00:29 KST · 65초",
       "승인": "유호님 11-19 「네, 예약해」(게시 글 네 곳 · 11-20 08:00)",
-      "기록시각": "2026-11-18T18:20:48.041Z"
+      "기록시각": "2026-11-20T01:09:03.013Z"
     },
     {
       "계정": "yuho-linkedin-primary",
@@ -26,20 +26,35 @@
     },
     {
       "계정": "yuhobuilds-x",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T08:00+09:00",
       "지문": "d7ff6434f4e242ac050a27f86067f21318dffb36e7aebe62a4a7f636d02d0a25",
       "게시글지문": "72b96d92daf20de61d31e68e570541b465f8de1fa021ee0ff99274edf327ae08",
       "방법": "ego",
-      "확인": "계정 /synk_pulse 확인 · 영상 Ready · 글 원고 첫 글과 일치 · Content disclosure Made with AI 켬 · 예약 창 「Will send on Fri, Nov 20, 2026 at 8:00 AM」 · Schedule 뒤 예약 목록 「Will send on Fri, Nov 20, 2026 at 8:00 AM A heavy-industry company that doesn't exist…」 · 타래 2~4번째 글은 X 웹이 예약을 못 해 아직 안 걺",
-      "승인": "유호님 11-19 「네, 예약해」(게시 글 네 곳 · 11-20 08:00)",
-      "기록시각": "2026-11-18T18:26:59.285Z"
+      "확인": "첫 글 공개 · 타래 둘째~넷째 답글 /status/2123584788636500184 · /status/2123584923147899086 · /status/2123585941566853542(11-20 10:11~10:15 KST, with_replies에서 글마다 하나씩 확인)",
+      "승인": "유호님 11-19 「네, 예약해」 · 「08시에 올려줘」 · 11-20 「게시물 안 올라가고 있는 거 있으면 체크해서 올려」",
+      "기록시각": "2026-11-20T01:16:04.584Z",
+      "게시물ID": "2123551900637294890",
+      "주소": "https://x.com/synk_pulse/status/2123551900637294890"
     },
     {
       "계정": "pulse-instagram",
+      "상태": "게시됨",
       "시각": "2026-11-20T08:00+09:00",
+      "지문": "d7ff6434f4e242ac050a27f86067f21318dffb36e7aebe62a4a7f636d02d0a25",
+      "게시글지문": "fdebfb9926bb74ea72cf15dfc907acf1ef76db6c3f31edaa85ee9643e7c78244",
       "방법": "ego",
-      "풀림": "11-19 03:3x 인스타 웹 공유 단계에 Schedule content 스위치가 없고 instagram.com/scheduled_content/가 「Sorry, this page isn't available」 — 예약할 길이 없어 만들던 릴스를 Discard로 버렸다(올라간 것 없음). 08:00에 바로 올리는 길은 유호님께 여쭘"
+      "앞시도": [
+        {
+          "시각": "2026-11-20T08:00+09:00",
+          "방법": "ego",
+          "풀림": "11-19 03:3x 인스타 웹 공유 단계에 Schedule content 스위치가 없고 instagram.com/scheduled_content/가 「Sorry, this page isn't available」 — 예약할 길이 없어 만들던 릴스를 Discard로 버렸다(올라간 것 없음). 08:00에 바로 올리는 길은 유호님께 여쭘"
+        }
+      ],
+      "주소": "https://www.instagram.com/synkpulse/reel/Df8cUm8BabI/",
+      "확인": "11-20 10:10 KST 게시 · 창 「Your reel has been shared.」 · 프로필 게시물 1 · AI 라벨 켬 · 페북 공유 끔 · 로그아웃 og:title SYNK PULSE on Instagram",
+      "승인": "유호님 11-19 「08시에 올려줘」 · 11-20 「게시물 안 올라가고 있는 거 있으면 체크해서 올려」",
+      "기록시각": "2026-11-20T01:11:33.142Z"
     }
   ]
 }
