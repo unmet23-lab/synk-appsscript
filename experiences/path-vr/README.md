@@ -110,7 +110,7 @@ LAN 서버는 기기가 이미 신뢰하는 인증서를 사용할 때만 `--hos
 
 기존3D 시제품의 검증 이력: 당시 Node38개, Chrome 화면·WebAudio 흐름27개, 독립 정적 패키지의 합성 마이크18개를 통과했다. 결과는 `qa/interview-flow/`, `qa/interview-microphone/verification.json`, `qa/interview-actors/`, `models/fixtures/verification.json`에 있다. 생성한5개 마이크 트랙은 종료 때 모두 ended였으며 외부 요청·브라우저 오류·누락 자산은0이었다. 이 합성 음성·데스크톱 결과를 실제 사용자 발화나 Quest 검증으로 간주하지 않는다. 최신 실사 면접 검증은 위의 현재 상태와 해당 QA 기록을 따른다.
 
-출처·라이선스·한계: [`interview/credits.json`](interview/credits.json). 자산 재현 도구는 저장소 `tools/prepare-interview-{actors,audio,room,speech}.*`. 조사와 후속 직업체험/비자 설계는 [기존 설계](../../docs/SHIFT/VR직업체험_설계_v1.md#path-vr-mvp-20261011)에 이어 쓴다.
+출처·라이선스·한계: [`interview/credits.json`](interview/credits.json). 자산 재현 도구는 저장소 `tools/prepare-interview-{actors,audio,room,speech}.*`. 면접실 조사는 [기존 설계](../../docs/SHIFT/VR직업체험_설계_v1.md#path-vr-mvp-20261011)에, 직업 체험으로 넓히는 설계는 [PATH 일터 체험 설계](../../docs/PATH_일터체험_설계.md)에 이어 쓴다.
 
 ## 기존 캠퍼스 MVP
 
