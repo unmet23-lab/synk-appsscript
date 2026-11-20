@@ -401,16 +401,19 @@ test('the hooks service edits real settings only in the installed release build,
     assert.equal(c.made[0].installed, false, `${label} takes the folders only from the override`);
   }
   const o = installed.made[0];
-  assert.equal(await o.accepts(), true);
+  // accepts는 받기를 허락한 볼 계정을 돌려주고, deliver는 그 계정으로만 접는다(GPT 검수 r8 GA1)
+  const allowed = await o.accepts();
+  assert.equal(allowed?.synk_user_id, YUHO.synk_user_id);
   installed.status = signedIn(OTHER);
   assert.equal(await o.accepts(), false, 'another account is not a viewer');
   installed.status = { signedIn: false, account: null };
   assert.equal(await o.accepts(), false, 'signed out');
-  o.deliver({ kind: 'hook', event: 'Stop' });
-  installed.status = signedIn(YUHO);
-  o.deliver({ kind: 'hook', event: 'PostToolUse' });
+  o.deliver({ kind: 'hook', event: 'Stop' }, false);
+  // 몸을 받는 사이에 다른 계정으로 바뀌어도 허락한 계정으로 넘긴다. 지금 계정이 아니면 사무실의 ingest가 버린다
+  installed.status = signedIn(OTHER);
+  o.deliver({ kind: 'hook', event: 'PostToolUse' }, allowed);
   await new Promise(r => setTimeout(r, 0));
-  assert.deepEqual(installed.ingested, [['PostToolUse', YUHO.synk_user_id]], 'news is folded for the signed-in account only');
+  assert.deepEqual(installed.ingested, [['PostToolUse', YUHO.synk_user_id]], 'news is folded for the account that allowed it, never the account signed in later');
   o.onChange();
   assert.deepEqual(plain(installed.sent), [['synk:office-changed']]);
 });

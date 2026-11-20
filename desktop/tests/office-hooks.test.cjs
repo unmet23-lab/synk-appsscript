@@ -424,6 +424,49 @@ test('the unhook path removes marked lines from recorded folders without a serve
   assert.equal(read(path.join(base, 'settings.json')), '{ broken');
 });
 
+test('r8 GA2: after an unhook run, a hook from an old session is refused at once and the minute check closes the server with no request', async () => {
+  let tick = null;
+  const f = setup({ setInterval: fn => { tick = fn; return { unref() {} }; }, clearInterval: () => { tick = null; } });
+  await f.hooks.enable([]);
+  const { port, path: p } = where(f);
+  const other = createOfficeHooks({ userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: f.dirs.join(path.delimiter) }, baseDirs: () => [] });
+  await other.unhook();
+  // 이미 돌던 Claude Code 세션은 옛 설정을 쥐고 있어 같은 주소로 보낸다. 받지 않는다
+  const answer = await post(port, p, toolUse({ tool_name: 'Read', tool_input: { file_path: 'C:\\a\\b.ts' } }));
+  assert.notEqual(answer, 204);
+  await settle();
+  assert.deepEqual(f.delivered, []);
+  assert.equal(f.hooks.listening(), false, 'the refused request also closes the server');
+  // 요청이 없어도 1분 확인이 닫는다
+  const g = setup({ setInterval: fn => { tick = fn; return { unref() {} }; }, clearInterval: () => { tick = null; } });
+  await g.hooks.enable([]);
+  assert.equal(typeof tick, 'function', 'the server starts a minute check');
+  await createOfficeHooks({ userData: g.userData, installed: false, env: { [OVERRIDE_ENV]: g.dirs.join(path.delimiter) }, baseDirs: () => [] }).unhook();
+  tick();
+  for (let i = 0; i < 20 && g.hooks.listening(); i++) await settle();
+  assert.equal(g.hooks.listening(), false);
+  assert.equal(tick, null, 'the check stops with the server');
+});
+
+test('r8 GA1: the account that allowed a hook is the one it is delivered for, even if the account changes while the body arrives', async () => {
+  let who = { synk_user_id: 'account-a' };
+  const seen = [];
+  const f = setup({ accepts: () => who, deliver: (e, account) => seen.push([e.event, account?.synk_user_id]) });
+  await f.hooks.enable([]);
+  const { port, path: p } = where(f);
+  const body = Buffer.from(JSON.stringify(toolUse({ tool_name: 'Read', tool_input: { file_path: 'C:\\a\\b.ts' } })));
+  await new Promise(resolve => {
+    const req = http.request({ host: '127.0.0.1', port, path: p, method: 'POST', headers: { 'content-length': body.length, 'content-type': 'application/json' } }, res => { res.resume(); res.on('end', resolve); });
+    req.on('error', resolve);
+    req.write(body.subarray(0, 10));
+    // 몸의 앞만 보낸 사이에 계정이 바뀐다
+    setTimeout(() => { who = { synk_user_id: 'account-b' }; req.end(body.subarray(10)); }, 60);
+  });
+  await settle();
+  assert.deepEqual(seen, [['PostToolUse', 'account-a']]);
+  await f.hooks.close();
+});
+
 test('a running app notices that the unhook run turned hooks off and closes its server', async () => {
   const f = setup();
   await f.hooks.enable([]);

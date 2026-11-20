@@ -24,6 +24,7 @@ const HOOK_TIMEOUT = 2; // 초. 포트가 열려 있는데 답이 없을 때 기
 const BODY_MAX = 2 * 1024 * 1024;
 const SETTINGS_MAX = 4 * 1024 * 1024;
 const SILENT_MS = 30 * 60e3; // 켠 뒤 이만큼 소식이 하나도 없으면 「알림이 오지 않습니다」(12.2)
+const REFRESH_MS = 60e3; // 서버가 열려 있는 동안 상태 파일을 다시 보는 사이(다른 실행의 끄기를 알아채려고)
 const STATE_FILE = 'hooks.json';
 const SETTINGS = 'settings.json';
 const BACKUP = 'settings.json.synk-backup';
@@ -196,7 +197,8 @@ function createOfficeHooks({
   randomBytes = n => crypto.randomBytes(n), randomInt = (a, b) => crypto.randomInt(a, b + 1),
   baseDirs = () => defaultRoots().claude, // 설치본이 끌 때 함께 보는 기본 설정 폴더
   accepts = () => false, deliver = () => {}, onChange = () => {},
-  setTimeout: after = setTimeout, portRange = PORT_RANGE, listenRetries = 2, listenRetryMs = 1000,
+  setTimeout: after = setTimeout, setInterval: every = setInterval, clearInterval: stopEvery = clearInterval,
+  portRange = PORT_RANGE, listenRetries = 2, listenRetryMs = 1000,
 } = {}) {
   const fsp = fsImpl.promises;
   const stateFile = typeof userData === 'string' && userData ? path.join(userData, 'Office', STATE_FILE) : null;
@@ -205,7 +207,7 @@ function createOfficeHooks({
   let state = { enabled: false, port: null, token: null, dirs: [], enabledAt: null, notice: null };
   let raw = null; // 파일의 모르는 칸은 그대로 둔다
   let loaded = null, fileMark = null; // 마지막으로 읽거나 쓴 상태 파일의 고친 때와 크기
-  let server = null, listenAt = null, heard = false;
+  let server = null, listenAt = null, heard = false, watchTimer = null;
   const lastCodes = new Map(); // 설정 폴더 → 마지막 고치기의 거절 까닭(메모리에만)
   let queue = Promise.resolve();
   const serial = job => { const p = queue.then(job, job); queue = p.catch(() => {}); return p; };
@@ -275,9 +277,17 @@ function createOfficeHooks({
     const tooBig = () => refuse(res, req, 413);
     const declared = Number(req.headers['content-length']);
     if (Number.isFinite(declared) && declared > BODY_MAX) { tooBig(); return; }
-    if (!heard) { heard = true; notify(); }
     req.pause();
-    Promise.resolve().then(() => accepts()).catch(() => false).then(ok => {
+    // 다른 실행(--office-unhook)이 상태 파일을 고쳤을 수 있다. 받기 전에 다시 읽고, 꺼졌거나 확인 값이 바뀌었으면 받지 않는다(GPT 검수 r8 GA2)
+    serial(refresh).catch(() => {}).then(() => {
+      if (!state.enabled || !tokenOk(req.url)) { refuse(res, req, 404); return; }
+      if (!heard) { heard = true; notify(); }
+      return receive(req, res, at, tooBig);
+    });
+  }
+  /* accepts가 돌려준 값(볼 계정)을 그대로 deliver에 넘긴다. 받는 사이에 계정이 바뀌어도 받기를 허락한 계정으로만 접는다(GPT 검수 r8 GA1) */
+  function receive(req, res, at, tooBig) {
+    return Promise.resolve().then(() => accepts()).catch(() => false).then(ok => {
       let size = 0, chunks = ok ? [] : null, over = false;
       req.on('data', chunk => {
         if (over) return;
@@ -298,7 +308,7 @@ function createOfficeHooks({
           const event = hookEvent(value, at);
           value = null;
           if (!event) return;
-          try { deliver(event); } catch { /* 접지 못해도 받기는 그대로 */ }
+          try { deliver(event, ok); } catch { /* 접지 못해도 받기는 그대로 */ }
         });
       });
       req.resume();
@@ -333,10 +343,15 @@ function createOfficeHooks({
     }
     return listenOn(0);
   }
-  function serve(r) { server = r.server; listenAt = now(); heard = false; }
+  /* 서버가 열려 있는 동안 1분마다 상태 파일을 본다. 다른 실행이 훅을 껐으면 소식이 오지 않아도 서버를 닫는다(GPT 검수 r8 GA2) */
+  function serve(r) {
+    server = r.server; listenAt = now(); heard = false;
+    if (!watchTimer) { watchTimer = every(() => { void serial(refresh).catch(() => {}); }, REFRESH_MS); watchTimer?.unref?.(); }
+  }
   async function stop() {
     const s = server;
     server = null; listenAt = null;
+    if (watchTimer) { stopEvery(watchTimer); watchTimer = null; }
     if (s) await new Promise(resolve => { try { s.close(() => resolve()); s.closeAllConnections?.(); } catch { resolve(); } });
   }
   const newToken = () => Buffer.from(randomBytes(32)).toString('base64url');
