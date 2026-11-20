@@ -223,7 +223,22 @@ function 오래됨(v, 지금, 후보마감 = '') {
  * 후보: [{ 제목, 주소, 주소들?, 마감? }] — 공모 지도의 열린 공모 목록에서 넘긴다(마감은 지도의 「YYYY-MM-DD」). 공식 원문을 먼저 읽고,
  *   거기서 자격 문장을 못 찾으면 공모 모음 사이트의 같은 공고 글을 읽고, 그래도 없으면 첨부 · 본문 그림을 이 PC에서 읽는다(./공고첨부.cjs).
  */
-async function 자격확인(folder, 후보, { fetchPage, carbon, budgetMs = 600000, 지금 = new Date(), batchSize = 2, 확인필요다시 = false, 첨부읽기 } = {}) {
+async function 자격확인(folder, 후보, 선택 = {}) {
+  // 한 번에 하나만 돈다. 둘이 같이 돌면 각자 판정 파일 전체를 다시 써서 한쪽 결과가 사라진다(따로 도는 자격 확인 예약과 지도 갱신 회차).
+  if (!조건읽기(folder)) return { checked: 0, skipped: '신청자조건.json이 없습니다.' };
+  const 잠금 = path.join(folder, '자격판정.lock');
+  const 쓰기 = (flag) => fs.writeFileSync(잠금, JSON.stringify({ pid: process.pid, at: new Date().toISOString() }), { flag });
+  try { 쓰기('wx'); } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+    let at = 0;
+    try { at = Date.parse(JSON.parse(fs.readFileSync(잠금, 'utf8')).at) || 0; } catch { /* 깨진 잠금은 오래된 것으로 본다 */ }
+    if (Date.now() - at < 60 * 6e4) return { checked: 0, skipped: '다른 자격 확인이 돌고 있습니다.' };
+    쓰기('w');
+  }
+  try { return await 자격확인본(folder, 후보, 선택); } finally { fs.rmSync(잠금, { force: true }); }
+}
+
+async function 자격확인본(folder, 후보, { fetchPage, carbon, budgetMs = 600000, 지금 = new Date(), batchSize = 2, 확인필요다시 = false, 첨부읽기 } = {}) {
   // 여섯 건씩 묶으면 구독 통로가 빈 답을 자주 냈다(11-20 첫 확인 23건 실패). 두 건씩이면 대부분 답한다.
   const 조건 = 조건읽기(folder);
   if (!조건) return { checked: 0, skipped: '신청자조건.json이 없습니다.' };
@@ -234,6 +249,7 @@ async function 자격확인(folder, 후보, { fetchPage, carbon, budgetMs = 6000
   const 판정 = 판정읽기(folder);
   const 할것 = [];
   const 본것 = new Set();
+  const 남은날 = (마감) => { const t = Date.parse(String(마감 || '').slice(0, 10) + 'T23:59:00+09:00'); return Number.isFinite(t) ? (t - +지금) / 864e5 : 999; };
   for (const c of 후보) {
     const k = 열쇠(c.제목);
     if (!k || 본것.has(k)) continue;
@@ -243,16 +259,24 @@ async function 자격확인(folder, 후보, { fetchPage, carbon, budgetMs = 6000
     const 주소들 = [...new Set([첫주소(c.주소), ...(c.주소들 || []).map(첫주소)].filter(Boolean))];
     // 공식 원문을 앞에, 모음 사이트를 뒤에 둔다.
     주소들.sort((a, b) => Number(모음사이트.test(사이트(a))) - Number(모음사이트.test(사이트(b))));
-    할것.push({ key: k, 제목: c.제목, url: 주소들[0] || '', 주소들 });
+    const 날 = 남은날(v?.공고?.마감 || c.마감);
+    // 차례: 처음 보는 공고 → 마감 7일 안쪽 → 다시 볼 「확인 필요」 → 운영 조건만 채울 옛 판정. 같은 차례 안에서는 마감이 이른 것부터.
+    const 차례 = !v ? 0 : 날 < 7 ? 1 : v.status === '확인 필요' ? 2 : 3;
+    할것.push({ key: k, 제목: c.제목, url: 주소들[0] || '', 주소들, 차례, 날 });
   }
+  할것.sort((a, b) => a.차례 - b.차례 || a.날 - b.날);
   const 기록 = (key, 제목, value) => { 판정.items[key] = { title: 제목, ...value, by: value.by || '카본', checkedAt: new Date(지금).toISOString() }; };
-  const 읽은것 = [];
-  for (const job of 할것) {
-    if (Date.now() > until - 60000) break;
-    if (!job.주소들.length) {
-      기록(job.key, job.제목, { status: '확인 필요', reason: '공고 주소가 없다', url: '' });
-      continue;
-    }
+  // 앞서 정한 「됨 · 안 됨」은 이번에 못 읽었다고 「확인 필요」로 내리지 않는다. 확인 시각을 그대로 두어 다음 회차에 다시 본다(11-20 채우기에서 됨 14건이 확인 필요로 덮였다).
+  const 정해짐 = (key) => { const 앞 = 판정.items[key]; return 앞 && (앞.status === '됨' || 앞.status === '안 됨') ? 앞 : null; };
+  const 못봄 = (job, reason, 더 = {}) => {
+    const 앞 = 정해짐(job.key);
+    if (앞) { 앞.retryReason = reason; if (더.공고 && !앞.공고) 앞.공고 = 더.공고; return; }
+    기록(job.key, job.제목, { status: '확인 필요', reason, url: job.url, ...더 });
+  };
+
+  /** 공고 하나를 읽어 카본에 보낼 글을 만든다. 글이 없으면 기록하고 null. */
+  async function 읽기(job) {
+    if (!job.주소들.length) { 못봄(job, '공고 주소가 없다'); return null; }
     let text = '', url = '', 첨부출처 = null, 본글 = '';
     const 읽은쪽 = [];
     for (const u of job.주소들.slice(0, 4)) {
@@ -264,10 +288,11 @@ async function 자격확인(folder, 후보, { fetchPage, carbon, budgetMs = 6000
       if (text) { url = u; break; }
     }
     // 글에 자격 문장이 없으면 그 쪽의 첨부(PDF · HWP)와 본문 그림을 이 PC에서 읽는다(공식 원문 먼저, 두 쪽까지).
+    // 글자 인식은 몇 분 걸릴 수 있어 남은 시간이 넉넉할 때만 한다(지도 갱신 회차의 짧은 몫에서는 건너뛴다).
     let 첨부본 = [];
     for (const { u, page } of text ? [] : 읽은쪽.slice(0, 2)) {
-      if (Date.now() > until - 120000) break;
-      const r = await 첨부읽기(page, u, { fetchPage, 고르기: t => !!자격문장(t), until: until - 120000 }).catch(e => ({ 글: '', 본: [{ 까닭: e.message }] }));
+      if (Date.now() > until - 240000) { 첨부본.push({ 까닭: '시간이 모자라 첨부를 건너뜀' }); break; }
+      const r = await 첨부읽기(page, u, { fetchPage, 고르기: t => !!자격문장(t), until: until - 180000 }).catch(e => ({ 글: '', 본: [{ 까닭: e.message }] }));
       첨부본 = 첨부본.concat(r.본 || []);
       if (r.글) { 본글 = r.글; text = 자격문장(r.글); url = u; 첨부출처 = r.출처; break; }
     }
@@ -282,22 +307,17 @@ async function 자격확인(folder, 후보, { fetchPage, carbon, budgetMs = 6000
       const reason = !읽은쪽.length ? '공고를 읽지 못했다'
         : 첨부본.length ? `공고 글과 첨부 ${첨부본.length}개에서 자격 문장을 찾지 못했다`
           : '공고 글에서 자격 문장을 찾지 못했고 읽을 첨부 · 그림도 없다';
-      기록(job.key, job.제목, { status: '확인 필요', reason, url: job.url });
-      continue;
+      못봄(job, reason);
+      return null;
     }
-    읽은것.push({ ...job, url, 모음: 모음사이트.test(사이트(url)), 첨부출처, id: job.key, text });
+    return { ...job, url, 모음: 모음사이트.test(사이트(url)), 첨부출처, id: job.key, text };
   }
+
+  /** 읽은 공고 묶음을 카본에 묻고 기록한다. 시간이 모자라면 false. */
   let 물음 = 0;
-  // 묶음은 batchSize 건까지, 글이 길면(합 7,000자 넘음) 한 건씩 묻는다. 길게 두 건을 묶으면 구독 통로가 빈 답을 자주 냈다(11-20 채우기 7묶음 실패).
-  const 묶음들 = [];
-  for (const job of 읽은것) {
-    const 끝 = 묶음들[묶음들.length - 1];
-    if (끝 && 끝.length < batchSize && 끝.reduce((n, x) => n + x.text.length, 0) + job.text.length <= 7000) 끝.push(job);
-    else 묶음들.push([job]);
-  }
-  for (const batch of 묶음들) {
+  async function 묻기(batch) {
     const timeoutMs = Math.min(300000, until - Date.now() - 40000);
-    if (timeoutMs < 30000) break;
+    if (timeoutMs < 30000) return false;
     let cases = [];
     try {
       const record = await carbon({ model, thinking: 'high', prompt: 프롬프트(batch), schema, timeoutMs });
@@ -305,20 +325,15 @@ async function 자격확인(folder, 후보, { fetchPage, carbon, budgetMs = 6000
       cases = JSON.parse(record.text)?.cases || [];
     } catch (error) {
       const 까닭 = '카본 확인 실패: ' + String(error.message || error).slice(0, 120);
-      for (const job of batch) {
-        // 다시 보다가 실패하면 앞서 정한 「됨 · 안 됨」을 지우지 않는다(11-20 채우기에서 됨 14건이 확인 필요로 덮였다). 확인 시각을 그대로 두어 다음 회차에 다시 본다.
-        const 앞 = 판정.items[job.key];
-        if (앞 && (앞.status === '됨' || 앞.status === '안 됨')) { 앞.retryReason = 까닭; continue; }
-        기록(job.key, job.제목, { status: '확인 필요', reason: 까닭, url: job.url, retry: true });
-      }
+      for (const job of batch) 못봄(job, 까닭, { retry: true });
       판정저장(folder, 판정);
-      continue;
+      return true;
     }
     물음++;
     for (const job of batch) {
       const 답 = 답읽기(cases.find(x => x?.id === job.id), job.text);
       if (!답 || !답.quote) {
-        기록(job.key, job.제목, { status: '확인 필요', reason: 답 ? '원문에서 자격 문장을 찾지 못했다' : '카본 답이 원문과 맞지 않았다', url: job.url, ...(답 && { 공고: 답.공고 }) });
+        못봄(job, 답 ? '원문에서 자격 문장을 찾지 못했다' : '카본 답이 원문과 맞지 않았다', 답 ? { 공고: 답.공고 } : {});
         continue;
       }
       const 출처 = [job.모음 && '공모 모음 사이트', job.첨부출처 && `${job.첨부출처.종류}(${job.첨부출처.이름})`].filter(Boolean).join(' · ');
@@ -326,13 +341,29 @@ async function 자격확인(folder, 후보, { fetchPage, carbon, budgetMs = 6000
     }
     // 묶음마다 저장한다. 한 시간 넘게 도는 회차가 도중에 끊겨도 받은 판정은 남는다.
     판정저장(folder, 판정);
+    return true;
   }
+
+  // 읽기와 묻기를 번갈아 한다. 다 읽고 나서 물으면 짧은 몫(지도 갱신 회차 4분)을 읽기에 다 써서 한 건도 못 묻는다(11-20 09:30 회차 32건 읽고 0번 물음).
+  // 묶음은 batchSize 건까지, 글이 길면(합 7,000자 넘음) 한 건씩 묻는다. 길게 두 건을 묶으면 구독 통로가 빈 답을 자주 냈다(11-20 채우기 7묶음 실패).
+  let 대기 = [], 본수 = 0;
+  for (const job of 할것) {
+    if (Date.now() > until - 90000) break;
+    본수++;
+    const r = await 읽기(job);
+    if (!r) continue;
+    if (대기.length && (대기.length >= batchSize || 대기.reduce((n, x) => n + x.text.length, 0) + r.text.length > 7000)) {
+      if (!(await 묻기(대기.splice(0)))) break;
+    }
+    대기.push(r);
+  }
+  if (대기.length) await 묻기(대기.splice(0));
   // 카본이 실패한 공고는 다음 회차에 바로 다시 본다.
   for (const v of Object.values(판정.items)) {
     if (v.status === '확인 필요' && v.by !== '수동' && v.retry) v.checkedAt = new Date(+new Date(v.checkedAt) - 다시확인일 * 864e5 - 1000).toISOString();
   }
   판정저장(folder, 판정);
-  return { checked: 할것.length, asked: 물음 };
+  return { due: 할것.length, checked: 본수, asked: 물음 };
 }
 
 /** 사람이 직접 「안 됨」을 넣는다. 제목 조각(정규화한 4자 이상)으로 맞춘다. */

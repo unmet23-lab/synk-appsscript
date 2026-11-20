@@ -121,6 +121,37 @@ test('다시 보다가 카본이 실패하면 앞서 정한 「됨」을 지우�
   assert.strictEqual(v.checkedAt, '2026-11-01T00:00:00.000Z', '다음 회차에 다시 보도록 확인 시각을 그대로 둔다');
 });
 
+test('읽기와 묻기를 번갈아 하고, 처음 보는 공고를 옛 판정 채우기보다 먼저 본다', async () => {
+  const dir = 폴더();
+  const 옛 = '운영 조건 없는 옛 공모';
+  fs.writeFileSync(path.join(dir, '자격판정.json'), JSON.stringify({ schema: 'synk-contest-eligibility-v1', items: {
+    [자격.열쇠(옛)]: { title: 옛, status: '됨', reason: '누구나', by: '카본', checkedAt: new Date().toISOString() },
+  } }));
+  const 차례 = [];
+  const fetchPage = async (u) => { 차례.push('읽기 ' + u.split('/').pop()); return { 됨: true, 글: '<p>응모자격: 전국 누구나</p>' }; };
+  const carbon = async ({ prompt }) => {
+    const ids = [...prompt.matchAll(/"id":"([^"]+)"/g)].map(m => m[1]);
+    차례.push('묻기 ' + ids.length);
+    return { selectedModel: 'gemini-4-carbon-high', text: JSON.stringify({ cases: ids.map(id => ({ id, quote: '응모자격: 전국 누구나', 누구나: true, 지역: [], 학생만: false, 직장인만: false, 단체만: false, 최소나이: -1, 최대나이: -1, 현장지역: [] })) }) };
+  };
+  const 후보 = [{ 제목: 옛, 주소: 'https://ex.kr/old' }, ...['a', 'b', 'c'].map(x => ({ 제목: `새 공모 ${x}`, 주소: `https://ex.kr/${x}` }))];
+  const r = await 자격.자격확인(dir, 후보, { fetchPage, carbon, budgetMs: 600000 });
+  assert.deepStrictEqual(차례, ['읽기 a', '읽기 b', '읽기 c', '묻기 2', '읽기 old', '묻기 2']);
+  assert.deepStrictEqual([r.due, r.checked, r.asked], [4, 4, 2]);
+});
+
+test('앞서 「됨」인 공고는 이번에 못 읽어도 「확인 필요」로 내리지 않는다', async () => {
+  const dir = 폴더();
+  const 제목 = '전국 누구나 AI 영상 공모전';
+  fs.writeFileSync(path.join(dir, '자격판정.json'), JSON.stringify({ schema: 'synk-contest-eligibility-v1', items: {
+    [자격.열쇠(제목)]: { title: 제목, status: '됨', reason: '누구나', by: '카본', checkedAt: '2026-11-01T00:00:00.000Z' },
+  } }));
+  await 자격.자격확인(dir, [{ 제목, 주소: 'https://example.kr/n' }], { fetchPage: async () => ({ 됨: false, 까닭: '연결하지 못했다' }), carbon: async () => assert.fail('묻지 않는다'), budgetMs: 600000, 지금: new Date('2026-11-20T00:00:00Z') });
+  const v = 자격.판정찾기(자격.판정읽기(dir), 제목);
+  assert.strictEqual(v.status, '됨');
+  assert.strictEqual(v.retryReason, '공고를 읽지 못했다');
+});
+
 test('수동 제외는 제목 조각으로 맞고, 지도의 열린 공모에서 빠진다', () => {
   const dir = 폴더();
   자격.수동제외(dir, '응답하라, 제천', '만 14세 이상 제천시민만 응모(공고 원문)');
@@ -133,4 +164,16 @@ test('수동 제외는 제목 조각으로 맞고, 지도의 열린 공모에서
   assert.deepStrictEqual(열린.map(o => o.id), ['b']);
   assert.strictEqual(열린[0].자격, '확인 전');
   assert.throws(() => 자격.수동제외(dir, '제천', '짧음'), /네 글자/);
+});
+
+test('다른 자격 확인이 돌고 있으면 건너뛰고, 한 시간 넘은 잠금은 덮는다', async () => {
+  const dir = 폴더();
+  const 잠금 = path.join(dir, '자격판정.lock');
+  fs.writeFileSync(잠금, JSON.stringify({ pid: 1, at: new Date().toISOString() }));
+  const r = await 자격.자격확인(dir, [{ 제목: '어느 공모', 주소: '' }], { budgetMs: 600000 });
+  assert.match(r.skipped, /돌고 있습니다/);
+  fs.writeFileSync(잠금, JSON.stringify({ pid: 1, at: new Date(Date.now() - 61 * 6e4).toISOString() }));
+  const r2 = await 자격.자격확인(dir, [{ 제목: '어느 공모', 주소: '' }], { fetchPage: async () => ({}), carbon: async () => ({}), budgetMs: 600000 });
+  assert.strictEqual(r2.checked, 1);
+  assert.ok(!fs.existsSync(잠금), '끝나면 잠금을 지운다');
 });
