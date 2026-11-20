@@ -294,7 +294,7 @@
     cordPath.setAttribute('d', d); cordShadow.setAttribute('d', ds);
     if (visible) requestAnimationFrame(tick); else ticking = false;
   };
-  new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !visible) { visible = true; startTick(); if (skyKind && !skyRaf) { skyLast = 0; skyRaf = requestAnimationFrame(skyTick); } } visible = v; }, { rootMargin: '200px 0px' }).observe(root);
+  new IntersectionObserver((es) => { const v = es[es.length - 1].isIntersecting; if (v && !visible) { visible = true; startTick(); if (skyKind && !skyRaf) { skyLast = 0; skyRaf = requestAnimationFrame(skyTick); } } visible = v; }, { rootMargin: '200px 0px' }).observe(root);
 
   /* ── 손: 지나가면 살짝 밀리고, 짧게 누르면 답, 잡아 끌면 따라 흔들린다 ── */
   let answering = null, hinted = false;
@@ -394,7 +394,8 @@
   });
   // 집게가 열리면 카드는 떨어지고, 빈 집게는 줄에 남아 닫혔다가 사라진다
   const leavePin = (c) => {
-    const p = c.pin, ox = p.offsetLeft, oy = p.offsetTop;
+    const p = c.pin; if (p.style.visibility === 'hidden') return;
+    const ox = p.offsetLeft, oy = p.offsetTop;
     const k = p.cloneNode(true);
     k.style.cssText = `left:${c.x - CW / 2 + ox}px;top:${c.y + oy}px;margin-left:0`;
     layer.insertBefore(k, probe); p.style.visibility = 'hidden';
@@ -677,13 +678,13 @@
   const rel = (el) => { const r = el.getBoundingClientRect(), R = root.getBoundingClientRect(); return { x: r.left - R.left, y: r.top - R.top, w: r.width, h: r.height }; };
   const union = (els) => { const bs = els.map(rel); const x = Math.min(...bs.map((b) => b.x)), y = Math.min(...bs.map((b) => b.y)); return { x, y, w: Math.max(...bs.map((b) => b.x + b.w)) - x, h: Math.max(...bs.map((b) => b.y + b.h)) - y }; };
   // side: right · left · top · bottom. 말풍선 꼬리는 대상 쪽을 가리킨다
-  const tip = (t, s, box, side, always = false) => {   // always: 안내를 닫은 방문자에게도 보인다(힌트의 번역 질문)
+  const tip = (t, s, box, side, always = false, edge = 0) => {   // edge: 오른쪽에 설 때 넘지 않을 오른쪽 끝(0이면 무대 끝)   // always: 안내를 닫은 방문자에게도 보인다(힌트의 번역 질문)
     if (!guideOn && !always) return;
     guideX.inert = false; guide.dataset.side = side; guide.classList.add('is-on');
     $('.sc-guide-t', guide).textContent = t; $('.sc-guide-s', guide).textContent = s || '';
     const RW = root.clientWidth, m = 16;
     // 옆에 설 때는 남은 폭에 맞춰 줄을 바꾼다(대상을 덮지 않게)
-    const cap = narrow ? 270 : 340, room = side === 'right' ? RW - (box.x + box.w + m) - 12 : side === 'left' ? box.x - m - 12 : cap;
+    const cap = narrow ? 270 : 340, room = side === 'right' ? (edge || RW) - (box.x + box.w + m) - 12 : side === 'left' ? box.x - m - 12 : cap;
     guide.style.maxWidth = Math.min(cap, Math.max(150, room)) + 'px';
     const gw = guide.offsetWidth, gh = guide.offsetHeight;
     let x, y;
@@ -733,7 +734,12 @@
   });
   // 지금 할 일 — 장면마다 부른다
   // 좁은 화면: 고를 때는 카드 밑(묻는 말을 가리지 않는다), 답한 뒤에는 카드 위(결과 글을 가리지 않는다). 단추는 손가락만 가리킨다
-  const guidePick = (cs, demo, t = G.pick, s = G.pickSub) => { tip(t, s, union(cs.map((c) => c.el)), narrow ? 'bottom' : 'right'); if (demo) demoCards(cs); };
+  const guidePick = (cs, demo, t = G.pick, s = G.pickSub) => {
+    const b = union(cs.map((c) => c.el));
+    const edge = Math.min(root.clientWidth, ...[...cards].filter((k) => !cs.includes(k) && k.op > 0.5).map((k) => rel(k.el)).filter((o) => o.x > b.x + b.w && o.y < b.y + b.h && o.y + o.h > b.y).map((o) => o.x - 12));
+    const side = narrow || edge - (b.x + b.w + 16) < 150 + 12 ? 'bottom' : 'right';
+    tip(t, s, b, side, false, edge); if (demo) demoCards(cs);
+  };
   // 카드 옆에 빈자리가 있으면 옆에, 없으면 위에(좁은 화면에서 결과 글을 가리지 않는다)
   const guideCard = (c, t, s) => { const b = rel(c.el), RW = root.clientWidth; tip(t, s, b, RW - (b.x + b.w) >= 190 ? 'right' : b.x >= 190 ? 'left' : 'top'); };
   // 「이 줄이 30일」: 좁은 화면에서는 날 이름(1분 뒤 · 내일 · 7일 뒤 · 30일 뒤)을 가리키며 그 위에 선다
