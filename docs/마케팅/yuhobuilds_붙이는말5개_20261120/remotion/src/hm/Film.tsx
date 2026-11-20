@@ -67,11 +67,13 @@ const Presenter: React.FC<{ src: string; top: number; s: number; ox: number; oy:
 /** 몽글이 장면 — 구운 그림(2:3)을 폭 1080 · 높이 1620으로 깔고 위는 검정 그늘. 눈만 다른 두 장(a → b)을 mix만큼 겹쳐 넘긴다. (ox, oy)는 그림 안 한 점. */
 const Mong: React.FC<{ a: string; b?: string; mix?: number; top: number; s: number; ox: number; oy: number; solid: number; fade: number }> = ({ a, b, mix = 0, top, s, ox, oy, solid, fade }) => (
   <AbsoluteFill style={{ overflow: 'hidden', backgroundColor: INK }}>
-    <div style={{ position: 'absolute', left: 0, top, width: 1080, height: 1620, transform: , transformOrigin:  }}>
+    <div style={{ position: 'absolute', left: 0, top, width: 1080, height: 1620, transform: `scale(${s})`, transformOrigin: `${ox}px ${oy}px` }}>
       <Img src={staticFile(a)} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1620 }} />
       {b && mix > 0 && <Img src={staticFile(b)} style={{ position: 'absolute', left: 0, top: 0, width: 1080, height: 1620, opacity: mix }} />}
     </div>
-    <div style={{ position: 'absolute', inset: 0, background:  }} />
+    <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, rgba(10,10,10,1) 0, rgba(10,10,10,1) ${solid}px, rgba(10,10,10,0) ${fade}px)` }} />
+    {/* 그림이 화면 아래 끝에 못 미치는 자리 — 책상이 검정으로 스며들게(릴스 글 · 단추 자리) */}
+    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 540, background: 'linear-gradient(0deg, rgba(10,10,10,1) 0, rgba(10,10,10,1) 175px, rgba(10,10,10,0) 540px)' }} />
   </AbsoluteFill>
 );
 
