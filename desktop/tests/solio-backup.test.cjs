@@ -537,7 +537,9 @@ test('GPT GA3 (again) · third GA4: a changed sign-in stops before any request o
   assert.equal((await service.snapshot(ME)).install.code, 'ACCOUNT_CHANGED');
 });
 
-test('GPT GA4 (again): a lost exit code is 「not confirmed」, never 「done」, and the request stays', async () => {
+// 표 파일 잠금(남과 나누지 않고 열기)은 Windows에서만 지켜진다. 다른 운영체제의 시험 묶음에서는 이 둘을 건너뛴다(GPT 열한째 GA2)
+const WINDOWS_LOCK = process.platform === 'win32' ? false : 'the owner-file lock only holds on Windows';
+test('GPT GA4 (again): a lost exit code is 「not confirmed」, never 「done」, and the request stays', { skip: WINDOWS_LOCK }, async () => {
   const key = minisignKey(), data = crypto.randomBytes(500), env = appdata(temp()), engineState = {};
   for (const ran of [{ outcome: 'gone' }, { outcome: 'exited', code: null }]) {
     engineState.dir = null;
@@ -877,7 +879,7 @@ test('Fable request-lifetime P1: a request the sweep cannot read is retried, not
 });
 
 /* ── GPT 열째 회차(r9): 다른 실행의 요청 · 연결점 · 잠금이 풀린 뒤 빨리 다시 지우기(11-20) ── */
-test('GPT r9 GA1 · Opus design: a second app run sharing the folder keeps a live run\'s request and clears a finished run\'s, by the run\'s held owner file', async () => {
+test('GPT r9 GA1 · Opus design: a second app run sharing the folder keeps a live run\'s request and clears a finished run\'s, by the run\'s held owner file', { skip: WINDOWS_LOCK }, async () => {
   const env = appdata(temp()), dir = path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests');
   let letOpen;
   const opening = new Promise(r => { letOpen = r; });
@@ -926,4 +928,23 @@ test('GPT r9 GA7: once a lock lifts, the request goes within a few tenths of a s
   locked = false;
   await new Promise(r => setTimeout(r, 300));
   assert.deepEqual(requestsIn(env), []);
+});
+
+/* ── GPT 열한째 회차(r10): 표 파일은 폴더를 확인한 뒤 열고, 못 쥐면 요청을 쓰지 않는다(11-20) ── */
+test('GPT r10 GA1 · GA4: no owner file behind a junction, and no request when the owner file cannot be held', async () => {
+  // 연결점이면 표 파일도 요청도 만들지 않는다
+  const env = appdata(temp()), solio = path.join(env.APPDATA, 'SynkWorkBackup', 'solio'), elsewhere = temp();
+  fs.mkdirSync(solio, { recursive: true });
+  fs.symlinkSync(elsewhere, path.join(solio, 'requests'), 'junction');
+  const junction = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  await junction.start(ME, 'protect', { getHint: async () => 'owner@example.com' }); await junction.whenIdle();
+  assert.deepEqual(fs.readdirSync(elsewhere), [], 'nothing written behind the junction');
+  assert.equal((await junction.snapshot(ME)).install.code, 'REQUEST_FAILED');
+  // 표 파일을 열지 못하면 요청을 쓰지 않는다
+  const env2 = appdata(temp());
+  const fsImpl = { ...fs, promises: fs.promises, openSync: (file, ...a) => { if (/\.owner-/.test(String(file))) throw Object.assign(Error('denied'), { code: 'EACCES' }); return fs.openSync(file, ...a); } };
+  const noOwner = B.createSolioBackup({ platform: 'win32', env: env2, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  await noOwner.start(ME, 'protect', { getHint: async () => 'owner@example.com' }); await noOwner.whenIdle();
+  assert.deepEqual(requestsIn(env2), []);
+  assert.equal((await noOwner.snapshot(ME)).install.code, 'REQUEST_FAILED');
 });

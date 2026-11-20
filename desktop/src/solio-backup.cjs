@@ -41,7 +41,7 @@ const REQUEST_NAME = /^[0-9]{13}-[a-z0-9]{8,32}\.json$/;
 const runTag = () => crypto.randomBytes(4).toString('hex');
 const SETUP_AGE = 30 * 60000;
 /* 남과 나누지 않고 여는 깃발(libuv UV_FS_O_EXLOCK). 쥔 동안 다른 실행은 그 파일을 지우지 못한다 */
-const EXLOCK = fs.constants.UV_FS_O_EXLOCK ?? 0x10000000;
+const EXLOCK = process.platform === 'win32' ? (fs.constants.UV_FS_O_EXLOCK ?? 0x10000000) : 0;
 
 // 엔진에 박힌 업데이트 공개 열쇠 둘(엔진 src-tauri/tauri.conf.json의 plugins.updater.pubkey · plugins.synkUpdate.recoveryPubkey).
 // 시험이 엔진 설정과 같은지 본다.
@@ -512,8 +512,9 @@ function createSolioBackup({
   const ownerFile = t => path.join(paths.requests, `.owner-${t}`);
   /* 이 실행이 살아 있다는 표. 요청을 처음 쓸 때 열어 앱이 끝날 때까지 남과 나누지 않고 쥔다. 실행이 끝나면 운영체제가 놓는다 */
   function holdOwner() {
-    if (ownerFd !== null || platform !== 'win32') return;
+    if (ownerFd !== null) return true;
     try { ownerFd = fsImpl.openSync(ownerFile(me), fs.constants.O_CREAT | fs.constants.O_RDWR | EXLOCK); } catch { ownerFd = null; }
+    return ownerFd !== null;
   }
   const TEMP_NAME = /^\.([0-9a-z]{8})?[0-9a-f]{16}\.tmp$/;
   /* 'yes' · 'no' · 'unknown'. 백신 따위가 쥐어 읽지 못하면 「모름」이다. 「아님」으로 넘기면 다시 보지 않게 된다(Fable 요청 수명 확인 P1) */
@@ -577,7 +578,9 @@ function createSolioBackup({
   async function writeRequest(mode, hint) {
     const same = sameLogin;
     try { await fsImpl.promises.mkdir(paths.requests, { recursive: true }); } catch {}
-    holdOwner();
+    // 폴더가 연결점이 아닌지 먼저 보고 표 파일을 연다(GPT 열한째 GA1). 표 파일을 쥐지 못하면 요청을 쓰지 않는다.
+    // 쥐지 않은 요청은 다른 실행이 끝난 실행의 것으로 보고 지운다(GPT 열한째 GA4)
+    if (!realFolders() || !holdOwner()) throw fault('STORAGE');
     return writeSetupRequest({ paths, mode, hint, now: now(), owner: me, fsImpl: fsImpl.promises, fsSync: fsImpl, stillCurrent, onPlaced: file => { live = { file, same }; } });
   }
   /* 이번 요청을 내려놓고 그 자리에서 치운다 */
