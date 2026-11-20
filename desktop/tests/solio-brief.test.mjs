@@ -759,7 +759,8 @@ test('used up with only an unread account left: the second line says when it reo
   const used = weekly('claude', 100, NOW + 4 * D, { email: 'used@example.com' }), fresh = row({ email: 'fresh@example.com', live: null });
   const s = snap([used, fresh], { [used.id]: 10 }), b = brief(s);
   assert.equal(b.head.say, 'Claude 2개 가운데 1개를 다 썼고 1개는 아직 읽지 않았습니다.');
-  assert.equal(b.head.then, '화요일 새벽 3시에 used가 먼저 다시 열립니다.');
+  // 막힌 계정이 하나뿐이라 「먼저」를 붙이지 않는다(카본 solio-pub-p2-20261120 A1)
+  assert.equal(b.head.then, '화요일 새벽 3시에 used가 다시 열립니다.');
   assert.deepEqual(briefHead(s, briefGroups(s, NOW), NOW).covers, ['unblock:' + used.id]);
   // 다시 로그인할 계정이 있는 다른 서비스는 여전히 그 할 일이 먼저다
   const gone = row({ service: 'gpt', label: 'gpt', plan: 'plus', email: 'gone@example.com', state: 'needs-login' }), shut = weekly('gpt', 100, NOW + 2 * D, { plan: 'plus', email: 'shut@example.com' });

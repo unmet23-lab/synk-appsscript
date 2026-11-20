@@ -103,7 +103,8 @@ export function briefHead(snapshot, groups, now, fallback = null) {
   if (allOut.length) {
     const g = allOut[0], first = g.out[0], name = svcName(g), one = here(g).length === 1;
     const say = facts.get(g).kind === 'fixable' ? fixSay(g, facts.get(g)) : one ? neun(name) + ' ' + (first.focus === 'session' ? '5시간 한도' : '이번 주 한도') + '를 다 썼습니다.' : allOutSay(name, g.out);
-    const then = first.unblock ? spoken(first.unblock, now) + '에 ' + (one ? '' : ga(first.name) + ' 먼저 ') + '다시 열립니다.' : '';
+    // 「먼저」는 막힌 계정이 둘 이상일 때만이다. 다 쓴 계정 하나와 아직 읽지 않은 계정만 남은 서비스에 붙이지 않는다(카본 solio-pub-p2-20261120 A1)
+    const then = first.unblock ? spoken(first.unblock, now) + '에 ' + (one ? '' : ga(first.name) + (g.out.length > 1 ? ' 먼저 ' : ' ')) + '다시 열립니다.' : '';
     return { say, then, covers: first.unblock ? ['unblock:' + first.row.id] : [], service: g.service };
   }
   // 2. 지금 속도면 48시간 안에 모두 막힘. 막히는 때가 가장 이른 것부터. 30분 안에 다시 열리면 말하지 않는다
