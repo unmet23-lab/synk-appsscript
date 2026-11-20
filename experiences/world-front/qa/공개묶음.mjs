@@ -68,7 +68,7 @@ fs.mkdirSync(OUT, {recursive: true});
 const items = [];
 const write = (dir, rel, text) => { const f = path.join(OUT, dir, 'world', rel); fs.mkdirSync(path.dirname(f), {recursive: true}); fs.writeFileSync(f, text); };
 // app-shell.mjs는 공개본과 master의 머리(import 묶음 · Atlas 줄)가 많이 달라 3방향 합침이 갈고리를 큰 겹침에 묻는다.
-// 그래서 앞면 갈고리 열 군데를 「공개본의 이 글 → 이렇게」 표로 하나씩 얹는다. 글마다 공개본에 꼭 한 번 있어야 하고, 아니면 멈춘다.
+// 그래서 앞면 갈고리 아홉 군데를 「공개본의 이 글 → 이렇게」 표로 하나씩 얹는다. 글마다 공개본에 꼭 한 번 있어야 하고, 아니면 멈춘다.
 function shellRecipe(pub) {
   const endText = lf(git('show', `${END}:experiences/synk-world-app/app-shell.mjs`).toString());
   const s0 = endText.indexOf('// 첫날 끝 · 맞춤 앞면(1차, 결정 11-19)'), s1 = endText.indexOf("note:t('goal.consent.note')};}});", s0);
@@ -80,17 +80,24 @@ function shellRecipe(pub) {
   if (h0 < 0 || h1 < 0) throw Error('app-shell.mjs: 끝 판에서 관문 뒤 앞면 갈고리를 못 찾음');
   const enterHook = endText.slice(h0, h1 + "openReminderLink();});return;}\n".length);
   const seoulEnd = 'native:()=>operating&&account?.supportsSpeaking===false});';
+  const readHook = endText.match(/tutor:home\.tutor\?\.\(\)\.tutor\|\|\([^\n]*?\)\}\),/g) || [];
+  if (readHook.length !== 1) throw Error('app-shell.mjs: 끝 판에서 관문 read 갈고리를 못 찾음');
+  const identityHook = ' if(front?.onIdentity())entryDestinationHandled=false;';
+  const i0 = endText.indexOf(identityHook);
+  if (i0 < 0) throw Error('app-shell.mjs: 끝 판에서 주인 바뀜 갈고리를 못 찾음');
+  // [공개본의 글, 바꿀 글, 끝 판(master)에 꼭 있어야 하는 글] — 손으로 적은 갈고리가 master와 어긋나면 멈춘다(Fable P2-3)
   const steps = [
-    [/^import \{createSeoulEntry[^}]*\} from '\.\/seoul-entry\.mjs';\n/m, m => m + "import {createFrontEntry} from './world-front-entry.mjs';\n"],
+    [/^import \{createSeoulEntry[^}]*\} from '\.\/seoul-entry\.mjs';\n/m, m => m + "import {createFrontEntry} from './world-front-entry.mjs';\n", "import {createFrontEntry} from './world-front-entry.mjs';"],
     ['let seoul=null,entryGate=null,', 'let seoul=null,front=null,entryGate=null,'],
-    [' seoul?.onIdentity();\n', ' seoul?.onIdentity();\n front?.onIdentity();\n'],
+    [' seoul?.onIdentity();\n', ' seoul?.onIdentity();\n' + endText.slice(i0, endText.indexOf('\n', i0) + 1), identityHook],
     ['if(!fromSeoul&&home.ensureTutor&&', 'if(!fromSeoul&&!front?.free()&&home.ensureTutor&&'],
-    ['sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch', 'sessionConfirmed=false;close();if(front?.active()){front.drop();void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch'],
+    ['sessionConfirmed=false;close();if(home.isMaru)await entryGate.start();else welcome();}catch', 'sessionConfirmed=false;close();if(front?.active()){front.drop();entryDestinationHandled=false;void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch'],
     ['home.connectHost?.({road:', 'home.connectHost?.({tutorFree:()=>!!front?.free(),road:'],
-    [seoulEnd + '\n', seoulEnd.replace('});', ',frontOn:()=>!!front?.soon()});') + '\n' + block + '\n'],
-    ["tutor:home.tutor?.().tutor||null}),", "tutor:home.tutor?.().tutor||(front?.free()?'front':null)}),"],
-    [onEnter, onEnter + enterHook]
+    [seoulEnd + '\n', seoulEnd.replace('});', ',frontOn:()=>!!front?.soon()});') + '\n' + block + '\n', 'supportsSpeaking===false,frontOn:()=>!!front?.soon()});'],
+    ['tutor:home.tutor?.().tutor||null}),', readHook[0]],
+    [onEnter, onEnter + enterHook, onEnter]
   ];
+  for (const [, to, mark] of steps) { const need = mark ?? to; if (!endText.includes(need)) throw Error(`app-shell.mjs: 끝 판(master)에 「${need.slice(0, 60)}」가 없다 — master 갈고리가 바뀌었으면 표를 맞춘다`); }
   let text = pub;
   for (const [from, to] of steps) {
     const n = typeof from === 'string' ? text.split(from).length - 1 : (text.match(new RegExp(from.source, from.flags + 'g')) || []).length;
@@ -100,9 +107,30 @@ function shellRecipe(pub) {
   if (/atlasNext(Guest)?On/.test(text) && !/atlasNext(Guest)?On/.test(pub)) throw Error('app-shell.mjs: 공개본에 없는 atlasNextOn을 부른다');
   return text;
 }
+// 다리가 활동 이름을 화면 언어로 바꿀 때 부르는 home.planLabel은 master(Atlas 커밋)에서만 내보낸다. 공개본에 함수는 있으니 내보내기 한 줄만 얹는다(Fable P2-1).
+// 그리고 다리 · 앱 셸 앞면 묶음이 부르는 home 이름이 후보 home 객체에 다 있는지 본다(import 이름 대조는 속성 부르기를 보지 않는다).
+function homeExtra(text) {
+  const line = 'planLabel:next=>planLabel(next),';
+  if (!lf(git('show', `${END}:experiences/brand-opening/home.mjs`).toString()).includes(line)) throw Error('home.mjs: 끝 판에 planLabel 내보내기가 없다');
+  if (!/^function planLabel\(/m.test(text)) throw Error('home.mjs: 공개본에 planLabel 함수가 없다');
+  if (!text.includes(line)) {
+    const a = '\n showPlay:()=>showPlay(),';
+    if (text.split(a).length !== 2) throw Error('home.mjs: 후보에서 showPlay 내보내기 줄을 못 찾음');
+    text = text.replace(a, `\n ${line}${a.slice(1)}`);
+  }
+  const o0 = text.indexOf('export const home={'), o1 = text.indexOf('\n};', o0);
+  if (o0 < 0 || o1 < 0) throw Error('home.mjs: 후보에서 home 객체를 못 찾음');
+  const obj = text.slice(o0, o1);
+  const shell = lf(git('show', `${END}:experiences/synk-world-app/app-shell.mjs`).toString()), s0 = shell.indexOf('// 첫날 끝 · 맞춤 앞면(1차, 결정 11-19)');
+  const callers = lf(git('show', `${END}:experiences/synk-world-app/world-front-entry.mjs`).toString()) + shell.slice(s0, shell.indexOf("note:t('goal.consent.note')};}});", s0));
+  for (const name of new Set([...callers.matchAll(/\bhome\.([a-zA-Z]+)/g)].map(m => m[1])))
+    if (!new RegExp(`(?:^|[\\s,{])${name}\\s*[:,(]`, 'm').test(obj)) throw Error(`home.mjs: 다리가 부르는 home.${name}이 후보 home 객체에 없다`);
+  return text;
+}
 for (const [src, rel] of MOD) {
   const pub = await live(rel);
-  const cand = rel === 'app-shell.mjs' ? shellRecipe(pub) : merge3(pub, rw(lf(git('show', `${BASE}:${src}`).toString()), rel), rw(mineOnly(src), rel), rel);
+  let cand = rel === 'app-shell.mjs' ? shellRecipe(pub) : merge3(pub, rw(lf(git('show', `${BASE}:${src}`).toString()), rel), rw(mineOnly(src), rel), rel);
+  if (rel === 'brand-opening/home.mjs') cand = homeExtra(cand);
   if (cand === pub) continue;
   write('base', rel, pub); write('new', rel, cand); items.push('world/' + rel);
 }

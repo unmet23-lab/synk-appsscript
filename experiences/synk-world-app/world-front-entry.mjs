@@ -222,7 +222,8 @@ export function createFrontEntry({client,life,home,worldUrl,launchGame,openLife,
   await show(view);
   return true;
  }
- function onIdentity(){if(session&&session.owner!==owner())drop();}
+ // 주인이 바뀌었으면 틀을 내리고 참을 돌려준다(앱은 그때 관문 뒤 갈 곳을 다시 정한다).
+ function onIdentity(){if(session&&session.owner!==owner()){drop();return true;}return false;}
  onLang(code=>{
   try{session?.api?.setLang(code);}catch{}
   // 「나」로 연 설정에서 언어를 바꾸면 홈이 설정을 튜터 판으로 다시 그린다 — 앞면의 설정(내 계정 단추 · 튜터 단추 없음)으로 다시 연다.

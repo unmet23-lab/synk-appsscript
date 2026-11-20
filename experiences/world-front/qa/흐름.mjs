@@ -215,6 +215,15 @@ if (LOGIN) {
       const after = await page.evaluate(() => ({front: !!document.querySelector('#front-layer'), stage: window.__synkOpening?.stage?.() || null, seoul: !!document.querySelector('#seoul-layer'), lang: localStorage.getItem('synk.world.lang'), nav: navigator.language}));
       check(!after.front, '로그아웃하면 앞면이 내려감', JSON.stringify(after));
       check(await ownerNow() === 'guest', '로그아웃 뒤 손님');
+      // 같은 쪽에서 다시 로그인하면(PC 앱처럼 쪽을 새로 열지 않음) 타이틀을 지나 앞면이 다시 뜬다 — 관문 뒤 갈 곳을 다시 정하는지(Fable P2-2)
+      // 오프닝을 본 기기라 로그아웃 뒤 타이틀은 바로 닫힌다(stage 'closed'). 타이틀이 떠 있으면 누르고 지난다.
+      await page.evaluate(() => window.__synkWorld.client.signIn('player-a'));
+      await until('같은 쪽에서 다시 로그인', async () => await ownerNow() !== 'guest', 10000);
+      await sleep(600);
+      if (await page.evaluate(() => window.__synkOpening?.stage?.() === 'title')) await page.mouse.click(W / 2, H * .55);
+      const back = await until('다시 로그인한 뒤 앞면', () => page.evaluate(() => !!document.querySelector('#front-layer')?.open), 20000);
+      await sleep(1200); await shot('8-다시로그인');
+      check(!!back && !await page.evaluate(() => !!document.querySelector('[data-tutor-action]')), '같은 쪽에서 다시 로그인하면 튜터 고르기 없이 앞면이 다시 뜸');
     }
   }
 }

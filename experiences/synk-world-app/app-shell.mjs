@@ -283,7 +283,7 @@ function reconcileAccount(){
  }
  life.sync();
  seoul?.onIdentity();
- front?.onIdentity();
+ if(front?.onIdentity())entryDestinationHandled=false;   // 주인이 바뀌어 앞면을 내렸으면 다음 입장에서 갈 곳을 다시 정한다(PC 앱은 로그인이 쪽을 새로 열지 않는다)
  if(!snap&&['world-play','world-retry','world-reward','world-profile','world-device-records','game','world-game-loading','world-game-error','world-game-conflict','world-speaking','world-me2'].includes(screen)){draftRun=null;answers=[];lastCompletion=null;close();}
 }
 function renderStatus(){
@@ -1127,7 +1127,7 @@ const commands={
  logout:async()=>{if(dramaInvite.language)finishDramaInvite();accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}
    // Atlas 새 길의 로그아웃 표지(손님 저장소 — 되는 만큼만, 단계4_계획 §18-5-3): 이미 연 계정 코치가 있을 때만, 잠깐만 기다린다.
    try{const leavingAtlas=life.owner===leaving?life.atlasNext:null;if(leavingAtlas){let timer;await Promise.race([leavingAtlas.noteLogout(),new Promise(resolve=>{timer=setTimeout(resolve,1500);})]).finally(()=>clearTimeout(timer));}}catch{/* 로그아웃을 막지 않는다 */}
-   await client.logout();const signedOutAt=Date.now();if(leaving){noteDeviceAccount(localStorage,leaving,signedOutAt);clearMonthAnswer(localStorage,leaving);}noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(front?.active()){front.drop();void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
+   await client.logout();const signedOutAt=Date.now();if(leaving){noteDeviceAccount(localStorage,leaving,signedOutAt);clearMonthAnswer(localStorage,leaving);}noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(front?.active()){front.drop();entryDestinationHandled=false;void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
 };
 commands.speaking=openSpeaking;
 commands.me2=openMe2;
