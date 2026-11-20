@@ -15,7 +15,9 @@ pub const LEDGER: &str = "notify.json";
 pub const TOPICS: [&str; 9] = ["status", "folders", "changes", "devices", "restore", "space", "signin", "update", "move"];
 /// Problems shown once ever rather than once a day.
 const ONCE: [&str; 1] = ["first-backup"];
-const PROBLEMS: [&str; 4] = ["first-backup", "stale", "partial", "missing"];
+/// Problems shown at most once a week rather than once a day.
+const WEEKLY: [&str; 1] = ["update-admin"];
+const PROBLEMS: [&str; 6] = ["first-backup", "stale", "partial", "missing", "update", "update-admin"];
 /// 「사흘 넘게」 (2.2).
 pub const STALE_MS: u64 = 72 * 3_600_000;
 
@@ -51,6 +53,35 @@ pub fn stale(cause: &str) -> Notice {
         _ => ("사흘 넘게 백업하지 못했습니다", "무엇이 막혔는지 확인해 주세요."),
     };
     Notice { problem: "stale", topic: "status", title, body, action: Some("확인하기") }
+}
+
+/// 「업데이트 준비됨」 (2.2 · 4.10): a newer signed version is announced. A click asks once and installs it.
+pub fn update_ready() -> Notice {
+    Notice { problem: "update", topic: "update", title: "업무 백업 새 판이 나왔습니다", body: "설치할 때 관리자 확인이 한 번 뜨고, 설치하는 동안 자동 백업이 잠시 멈춥니다.", action: Some("설치") }
+}
+/// The same for an account that cannot approve the administrator prompt itself: once a week, ask the administrator. A
+/// click still offers the install, where the administrator types their own password (GPT GA2: the text says so).
+pub fn update_ask_admin() -> Notice {
+    Notice { problem: "update-admin", topic: "update", title: "업무 백업 새 판이 나왔습니다", body: "설치에는 관리자 계정의 비밀번호가 필요합니다. 관리자에게 부탁해 이 알림을 눌러 설치해 주세요.", action: None }
+}
+
+/// Days since 1970-01-01 of a `YYYY-MM-DD` date (the civil calendar), or none for anything else.
+fn day_number(date: &str) -> Option<i64> {
+    let b = date.as_bytes();
+    if b.len() != 10 || b[4] != b'-' || b[7] != b'-' { return None; }
+    let num = |s: &str| if s.bytes().all(|c| c.is_ascii_digit()) { s.parse::<i64>().ok() } else { None };
+    let (y, m, d) = (num(&date[0..4])?, num(&date[5..7])?, num(&date[8..10])?);
+    if !(1..=12).contains(&m) || !(1..=31).contains(&d) { return None; }
+    let y = if m <= 2 { y - 1 } else { y };
+    let era = y.div_euclid(400);
+    let yoe = y - era * 400;
+    let doy = (153 * (if m > 2 { m - 3 } else { m + 9 }) + 2) / 5 + d - 1;
+    Some(era * 146_097 + yoe * 365 + yoe / 4 - yoe / 100 + doy - 719_468)
+}
+/// A weekly problem shown on `last` is done for the seven days from then. A clock set back before it shows it again,
+/// as a daily one would.
+fn shown_this_week(last: &str, today: &str) -> bool {
+    matches!((day_number(last), day_number(today)), (Some(a), Some(b)) if (0..7).contains(&(b - a)))
 }
 
 fn escape(text: &str) -> String {
@@ -92,7 +123,10 @@ pub fn plan(ledger: &Value, found: &[Notice], judged: &[&str], today: &str) -> (
     for item in ledger["once"].as_array().into_iter().flatten() { if item.as_str().is_some_and(|p| ONCE.contains(&p)) && !once.contains(item) { once.push(item.clone()); } }
     let mut show: Vec<Notice> = Vec::new();
     for notice in found {
-        let done = if ONCE.contains(&notice.problem) { once.iter().any(|p| p == notice.problem) } else { days.get(notice.problem).and_then(Value::as_str) == Some(today) };
+        let last = days.get(notice.problem).and_then(Value::as_str);
+        let done = if ONCE.contains(&notice.problem) { once.iter().any(|p| p == notice.problem) }
+            else if WEEKLY.contains(&notice.problem) { last.is_some_and(|day| shown_this_week(day, today)) }
+            else { last == Some(today) };
         if !done && !show.iter().any(|n| n.problem == notice.problem) { show.push(notice.clone()); }
     }
     (show, json!({"v": 1, "days": days, "once": once}))
@@ -118,10 +152,15 @@ pub fn write(root: &Path, ledger: &Value) -> Result<(), String> {
 /// ledger's lock: the window app and a run never write over each other's marks (GPT workbackup-notify GB1).
 /// Returns one record per notice tried: its problem and `shown`, or the error code.
 pub fn deliver(root: &Path, found: &[Notice], judged: &[&str], today: &str, show: impl Fn(&Notice) -> Result<(), String>) -> Vec<Value> {
+    deliver_waiting(root, found, judged, || today.to_string(), show, 100)
+}
+/// The same, with today's date read when it is used: for what is due once the ledger's lock is held, and for each mark
+/// right after its notice was shown — one shown past midnight is marked on the day it showed (GPT update-notice GA6 · -c GA5).
+pub fn deliver_now(root: &Path, found: &[Notice], judged: &[&str], today: impl Fn() -> String, show: impl Fn(&Notice) -> Result<(), String>) -> Vec<Value> {
     deliver_waiting(root, found, judged, today, show, 100)
 }
 /// Waits up to `tries` × 50 ms for the lock; held longer, nothing is shown and the next run tries again.
-fn deliver_waiting(root: &Path, found: &[Notice], judged: &[&str], today: &str, show: impl Fn(&Notice) -> Result<(), String>, tries: u32) -> Vec<Value> {
+fn deliver_waiting(root: &Path, found: &[Notice], judged: &[&str], today: impl Fn() -> String, show: impl Fn(&Notice) -> Result<(), String>, tries: u32) -> Vec<Value> {
     let mut held = None;
     for attempt in 0..tries {
         match crate::platform::try_lock(root, crate::platform::NOTIFY_LOCK) {
@@ -133,11 +172,11 @@ fn deliver_waiting(root: &Path, found: &[Notice], judged: &[&str], today: &str, 
     }
     let Some(_lock) = held else { return vec![json!({"ledger": "NOTIFY_BUSY"})] };
     let before = read(root);
-    let (due, mut ledger) = plan(&before, found, judged, today);
+    let (due, mut ledger) = plan(&before, found, judged, &today());
     let mut records = Vec::new();
     for notice in &due {
         match show(notice) {
-            Ok(()) => { mark(&mut ledger, notice.problem, today); records.push(json!({"problem": notice.problem, "shown": true})); }
+            Ok(()) => { mark(&mut ledger, notice.problem, &today()); records.push(json!({"problem": notice.problem, "shown": true})); }
             Err(code) => records.push(json!({"problem": notice.problem, "shown": false, "error": code})),
         }
     }
@@ -148,6 +187,29 @@ fn deliver_waiting(root: &Path, found: &[Notice], judged: &[&str], today: &str, 
 
 #[cfg(test)] mod tests {
     use super::*;
+    #[test] fn the_update_notice_for_a_standard_account_comes_once_a_week() {
+        assert_eq!(day_number("1970-01-01"), Some(0));
+        assert_eq!(day_number("2026-03-01").zip(day_number("2026-02-28")).map(|(a, b)| a - b), Some(1));
+        assert_eq!(day_number("2024-03-01").zip(day_number("2024-02-28")).map(|(a, b)| a - b), Some(2));
+        assert_eq!(day_number("2027-01-01").zip(day_number("2026-12-31")).map(|(a, b)| a - b), Some(1));
+        for bad in ["2026-13-01", "2026-1-01", "20261120", "2026-11-2x", ""] { assert_eq!(day_number(bad), None, "{bad}"); }
+        let ask = [update_ask_admin()];
+        let (show, ledger) = plan(&Value::Null, &ask, &["update", "update-admin"], "2026-11-20");
+        assert_eq!(show.len(), 1);
+        let mut ledger = ledger; mark(&mut ledger, "update-admin", "2026-11-20");
+        for day in ["2026-11-20", "2026-11-23", "2026-11-26"] { assert!(plan(&ledger, &ask, &["update-admin"], day).0.is_empty(), "{day}"); }
+        for day in ["2026-11-27", "2026-12-20", "2026-11-19"] { assert_eq!(plan(&ledger, &ask, &["update-admin"], day).0.len(), 1, "{day}"); }
+        // The record outlasts the other problems' passes, and an administrator's notice is daily.
+        let (_, kept) = plan(&ledger, &[], &["partial", "missing", "stale"], "2026-11-21");
+        assert_eq!(kept["days"]["update-admin"], "2026-11-20");
+        let ready = [update_ready()];
+        let mut daily = plan(&Value::Null, &ready, &["update"], "2026-11-20").1; mark(&mut daily, "update", "2026-11-20");
+        assert!(plan(&daily, &ready, &["update"], "2026-11-20").0.is_empty());
+        assert_eq!(plan(&daily, &ready, &["update"], "2026-11-21").0.len(), 1);
+        // Nothing newer: resolved, and its record goes.
+        assert!(plan(&daily, &[], &["update", "update-admin"], "2026-11-21").1["days"].get("update").is_none());
+        for notice in [update_ready(), update_ask_admin()] { assert_eq!(topic_of(&open_url(notice.topic)), Some("update")); }
+    }
     #[test] fn only_exact_open_addresses_name_a_topic() {
         for topic in TOPICS { assert_eq!(topic_of(&open_url(topic)), Some(topic)); }
         for bad in ["synk-workbackup:open?topic=STATUS", "SYNK-WORKBACKUP:open?topic=status", "synk-workbackup:open?topic=status&x=1",
@@ -204,12 +266,23 @@ fn deliver_waiting(root: &Path, found: &[Notice], judged: &[&str], today: &str, 
         assert!(fs::read_dir(&root).unwrap().all(|e| !e.unwrap().file_name().to_string_lossy().ends_with(".tmp")));
         fs::remove_dir_all(&root).unwrap();
     }
+    #[test] fn a_notice_shown_past_midnight_is_marked_on_the_day_it_showed() {
+        let root = std::env::temp_dir().join(format!("swb-notify-midnight-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root); fs::create_dir_all(&root).unwrap();
+        let reads = std::cell::Cell::new(0);
+        let day = || { reads.set(reads.get() + 1); if reads.get() == 1 { "2026-11-20".to_string() } else { "2026-11-21".to_string() } };
+        let records = deliver_now(&root, &[update_ready()], &["update"], day, |_| Ok(()));
+        assert_eq!(records, vec![json!({"problem": "update", "shown": true})]);
+        assert_eq!(read(&root)["days"]["update"], "2026-11-21");
+        assert!(plan(&read(&root), &[update_ready()], &["update"], "2026-11-21").0.is_empty(), "not again on the day it showed");
+        fs::remove_dir_all(&root).unwrap();
+    }
     #[test] fn one_ledger_update_at_a_time() {
         let root = std::env::temp_dir().join(format!("swb-notify-lock-{}", std::process::id()));
         fs::create_dir_all(&root).unwrap();
         let other = crate::platform::try_lock(&root, crate::platform::NOTIFY_LOCK).unwrap().expect("the lock");
         let shown = std::cell::Cell::new(0);
-        let busy = deliver_waiting(&root, &[first_backup()], &[], "2026-11-13", |_| { shown.set(shown.get() + 1); Ok(()) }, 3);
+        let busy = deliver_waiting(&root, &[first_backup()], &[], || "2026-11-13".into(), |_| { shown.set(shown.get() + 1); Ok(()) }, 3);
         assert_eq!((busy, shown.get()), (vec![json!({"ledger": "NOTIFY_BUSY"})], 0), "nothing shown or written while another holds it");
         assert_eq!(read(&root), Value::Null);
         drop(other);

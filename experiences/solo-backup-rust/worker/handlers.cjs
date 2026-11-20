@@ -97,7 +97,7 @@ async function createApplication({ host, root, workRoot = null, resticPath, clie
     }});
   await recommended.open();recommended.onChange=()=>push();
   function state() {
-    const value = {...profiles.getState(), version:'0.7.0', recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state(),
+    const value = {...profiles.getState(), version:APP_VERSION, recovery:recovery.getState(), account:account.state(), device:account.deviceName, launchAtLogin,recommended:recommended.state(),
       solio:{ setup: solioSetup && Date.now() - Date.parse(solioSetup.at) < 1800000 ? { ...solioSetup } : null, restNetworks: [...restNetworks], aiTools },
       move:{ reinstall: reinstallJob ? { ...reinstallJob } : null, progress: moveProgress && cloud().job?.kind === 'move' ? { bytes: moveProgress.bytes, total: moveProgress.total, folder: moveProgress.folder, bytesPerSecond: moveProgress.bytesPerSecond } : null }};
     withRun(value);

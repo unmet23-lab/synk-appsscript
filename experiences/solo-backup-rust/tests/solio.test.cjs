@@ -52,6 +52,10 @@ test('status: one fixed word, no names, the fields solio reads', () => {
   assert.deepEqual(attention({}, { ledger: { days: { missing: '2026-11-17' } } }), ['attention', ['folders']]);
   assert.deepEqual(attention({}, { update: { available: '0.7.1' } }), ['safe', ['update']]);
   assert.deepEqual(attention({}, { update: { available: '0.7.0' } }), ['safe', []], 'the version already installed is not an update');
+  assert.deepEqual(attention({}, { version: '0.7.2', update: { available: '0.7.1' } }), ['safe', []], 'a version passed by an update is not one');
+  assert.deepEqual(attention({}, { update: { available: '0.6.9' } }), ['safe', []], 'a lower version');
+  assert.deepEqual(attention({}, { version: '0.7.9', update: { available: '0.7.10' } }), ['safe', ['update']], 'compared as numbers');
+  assert.deepEqual(attention({}, { version: 'dev', update: { available: '0.7.1' } }), ['safe', []], 'an unknown own version judges nothing');
   assert.deepEqual(attention({}, { startupRegistered: false }), ['attention', ['status']], 'run tasks missing');
   assert.deepEqual(attention({}, { startupRegistered: null }), ['safe', []], 'unknown is not judged');
   assert.ok(attention({ credentialRequired: true, missingSources: ['x'], health: { status: 'attention' } })[1].every((t, i, all) => solio.TOPICS.indexOf(t) >= (i ? solio.TOPICS.indexOf(all[i - 1]) : 0)), 'fixed order');

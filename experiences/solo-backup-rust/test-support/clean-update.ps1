@@ -48,6 +48,9 @@ function RunTasks() {
   $found
 }
 function Version() { (Get-ItemProperty -LiteralPath $uninstallKey -ErrorAction SilentlyContinue).DisplayVersion }
+function LastRunLine() { $lines = @(Get-Content -LiteralPath (Join-Path $state 'runs.jsonl') -ErrorAction SilentlyContinue); if ($lines.Count) { $lines[-1] | ConvertFrom-Json } }
+# 「업데이트 준비됨」 (4.10) a run told, shown or not (the record has the problem either way).
+function UpdateTold($run) { [bool](@($run.notify) | Where-Object { $_.problem -eq 'update' -or $_.problem -eq 'update-admin' }) }
 # The window app in one of its update modes: its exit code and its one JSON line.
 function Update([string]$mode, [string]$name) {
   $out = Join-Path $Work "$name.out"
@@ -86,6 +89,11 @@ $data = Join-Path $Work 'data'
 $setup = & node (Join-Path $support 'clean-app.cjs') setup $data (Join-Path $Work 'repo') (Join-Path $Work 'kits\kit.json')
 Expect ($LASTEXITCODE -eq 0) "a local profile set up through the installed worker ($setup)"
 Expect ((Run $runExe @('--run', 'manual')) -eq 0) 'a first backup by the installed run executable'
+# Never checked: the run tells nothing, writes its record, then has the window app check the feed (4.10 「업데이트 준비됨」).
+# There is no feed yet, so the check's record says so.
+$first = LastRunLine
+$checked = Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw -ErrorAction SilentlyContinue | ConvertFrom-Json
+Expect ($first.updateNotice.installed -eq '0.7.0' -and $null -eq $first.updateNotice.notice -and -not (UpdateTold $first) -and $checked.error -eq 'UPDATE_FEED') "the first run told nothing, then checked for an update after its record (updateNotice: $($first.updateNotice | ConvertTo-Json -Compress), update.json: $($checked | ConvertTo-Json -Compress))"
 $p = Start-Process -FilePath $Probe -ArgumentList @("`"$runExe`"", "`"$(Join-Path $Work 'register.json')`"", '--keep') -Wait -PassThru -NoNewWindow
 Expect ($p.ExitCode -eq 0 -and @(RunTasks).Count -eq 5) "five tasks (four runs and the request task) registered ($(@(RunTasks) -join ', '))"
 Set-Content -LiteralPath (Join-Path $state 'keep.txt') -Value 'user state'
@@ -121,6 +129,12 @@ Feed '0.7.0' 'older.exe' $olderSig
 $r = Update '--update-check' 'check-same'
 $record = Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw | ConvertFrom-Json
 Expect ($r.Code -eq 0 -and $null -eq $record.available -and $null -eq $record.error) "the installed version announced: nothing available ($($script:results['check-same'].out))"
+# One check at a time (11-20 설계 검토): while another check holds the check lock, this one writes nothing and ends 75.
+$before = Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw
+$hold = [IO.File]::Open((Join-Path $state 'update-check.lock'), 'OpenOrCreate', 'ReadWrite', 'ReadWrite'); $hold.Lock(0, 1)
+$r = Update '--update-check' 'check-busy'
+$hold.Unlock(0, 1); $hold.Close()
+Expect ($r.Code -eq 75 -and $r.Lines[-1].error -eq 'CHECK_BUSY' -and (Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw) -eq $before) "another check holding the lock: this one writes nothing and ends 75 ($($script:results['check-busy'].out))"
 $r = Update '--update-install' 'install-same'
 Expect ($r.Code -eq 0 -and $null -eq $r.Lines[-1].result.available) "the installed version announced: install has nothing to do ($($script:results['install-same'].out))"
 Unchanged 'the installed version announced'
@@ -136,8 +150,12 @@ foreach ($case in @(
   Unchanged $case.what
 }
 # The real package while this user's engine lock is held (a backup or restore of theirs is going): refused, try later.
-$goodFeed = & node (Join-Path $support '..\scripts\update-feed.cjs') $good "$good.sig" "http://127.0.0.1:$Port/SynkWorkBackup-0.7.1-setup.exe" (Join-Path $Work 'workbackup.json')
+$goodFeed = & node (Join-Path $support '..\scripts\update-feed.cjs') --local-test $good "$good.sig" "http://127.0.0.1:$Port/SynkWorkBackup-0.7.1-setup.exe" (Join-Path $Work 'workbackup.json')
 Expect ($LASTEXITCODE -eq 0) "update-feed.cjs makes the feed of the real package ($goodFeed)"
+# SYNK 솔리오 installs the engine from the same entry, checking these two; the updater below reads the feed with them in it.
+$made = (Get-Content -LiteralPath (Join-Path $Work 'workbackup.json') -Raw | ConvertFrom-Json).platforms.'windows-x86_64-nsis'
+$goodSize = (Get-Item -LiteralPath $good).Length; $goodSha = (Get-FileHash -LiteralPath $good -Algorithm SHA256).Hash.ToLowerInvariant()
+Expect ($made.size -eq $goodSize -and $made.sha256 -eq $goodSha) "the feed says the package's size and SHA-256 ($($made.size) of $goodSize bytes, $($made.sha256))"
 Copy-Item -LiteralPath (Join-Path $Work 'workbackup.json') -Destination (Join-Path $feed 'workbackup.json') -Force
 $lock = [IO.File]::Open((Join-Path $state 'engine.lock'), 'OpenOrCreate', 'ReadWrite', 'ReadWrite')
 $lock.Lock(0, 1)
@@ -150,6 +168,22 @@ Unchanged 'the engine lock held'
 $r = Update '--update-check' 'check-newer'
 $record = Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw | ConvertFrom-Json
 Expect ($r.Code -eq 0 -and $record.available -eq '0.7.1') "0.7.1 announced: the check finds it and update.json says so ($($script:results['check-newer'].out))"
+# The refusals above left the user state as it was (GPT GA5: checked here, before the run below changes it).
+$now = @(StateFiles)
+$changedEarly = @($stateBefore | Where-Object { $b = $_; -not ($now | Where-Object { $_.Path -eq $b.Path -and $_.Hash -eq $b.Hash }) } | ForEach-Object Path)
+Expect ($changedEarly.Count -eq 0) "the refused installs left the user state as it was (changed or gone: $($changedEarly -join ', '))"
+# A run now tells 「업데이트 준비됨」 from that record (the check is not due again) against the installed 0.7.0.
+$checkRecord = Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw
+Expect ((Run $runExe @('--run', 'manual')) -eq 0) 'a run with 0.7.1 announced'
+$told = LastRunLine
+# No try at all, failed or not: the record is as the check left it (GPT full GA5).
+$still = Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw
+Expect ($told.updateNotice.installed -eq '0.7.0' -and $told.updateNotice.available -eq '0.7.1' -and $told.updateNotice.notice -eq 'update' -and (UpdateTold $told) -and $still -eq $checkRecord) "the run told 「업데이트 준비됨」 without checking again (updateNotice: $($told.updateNotice | ConvertTo-Json -Compress), notify: $($told.notify | ConvertTo-Json -Compress -Depth 4), update.json before: $checkRecord, after: $still)"
+# Whether this desktop showed the toast is written down, not judged: a clean runner may refuse it, and showing and clicking
+# are checked on a real PC (QA T13).
+Write-Host "the 「업데이트 준비됨」 toast on this runner: $(@($told.notify) | Where-Object { $_.problem -eq 'update' } | ConvertTo-Json -Compress)"
+# That run changed the state (its record, the last backup): what the update must keep is the state from here.
+$stateBefore = @(StateFiles)
 $clock = [Diagnostics.Stopwatch]::StartNew()
 $r = Update '--update-install' 'install-newer'
 Expect ($r.Code -eq 0 -and ($r.Lines | Where-Object { $_.installing -eq '0.7.1' })) "the real package: signature accepted and the installer started ($($script:results['install-newer'].out))"
@@ -175,6 +209,10 @@ $stateAfter = @(StateFiles)
 $lost = @($stateBefore | Where-Object { $b = $_; -not ($stateAfter | Where-Object { $_.Path -eq $b.Path -and $_.Hash -eq $b.Hash }) } | ForEach-Object Path)
 Expect ($lost.Count -eq 0) "the user state stays as it was ($($stateBefore.Count) files, changed or gone: $($lost -join ', '))"
 Expect ((Run $runExe @('--run', 'manual')) -eq 0) 'the updated run executable backs up the same profile'
+# The record still says 0.7.1 is available, but the installed window app is 0.7.1 now (its file version): nothing to tell.
+# Judged from the run's own record, not from what was shown (GPT GA6: the day's ledger would hide a wrong judgement).
+$after = LastRunLine
+Expect ($after.updateNotice.installed -eq '0.7.1' -and $after.updateNotice.available -eq '0.7.1' -and $null -eq $after.updateNotice.notice -and -not (UpdateTold $after)) "after the update the same record tells nothing, read against the installed version (updateNotice: $($after.updateNotice | ConvertTo-Json -Compress))"
 $r = Update '--update-check' 'check-after'
 Expect ($r.Code -eq 0 -and $null -eq (Get-Content -LiteralPath (Join-Path $state 'update.json') -Raw | ConvertFrom-Json).available) "after the update nothing newer is announced ($($script:results['check-after'].out))"
 

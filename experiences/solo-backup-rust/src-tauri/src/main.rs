@@ -224,23 +224,36 @@ fn updating_folder()->Result<PathBuf,&'static str>{
     if exe.parent().is_some_and(platform::installing){return Err("INSTALLING");}
     platform::state_dir(false).map_err(|_|"STATE_ROOT")
 }
-/// `--update-check` (what the run executable starts once a day — the result goes to `update.json`) and
-/// `--update-install` (also what SYNK 솔리오 can start). JSON lines out: `--update-check` writes one;
+/// `--update-check` (a person, SYNK 솔리오 — the result goes to `update.json`), `--update-check-due` (what the run
+/// executable starts: the same, only if it is still due once the check lock is held) and `--update-install` (also what
+/// SYNK 솔리오 can start). JSON lines out: a check writes one;
 /// `--update-install` writes `{"ok":true,"installing":<version>}` just before the installer is started and then one
 /// closing line, `{"ok":true,…}` or `{"ok":false,"error":<code>}` (카본 끝판 A2). Exit 0: checked, already the
 /// newest, or the installer started and took over (its marker is in the install folder); 3: a package whose signature
-/// or signed version is wrong, nothing installed; 75: this user's backup or restore holds the engine, try
+/// or signed version is wrong, nothing installed; 75: this user's backup or restore holds the engine, or another update check is going (CHECK_BUSY), try
 /// later; 78: this build has no public key yet; 1: anything else (the line says which).
 fn update_mode(mode:&str)->i32{
     let outcome=(||->Result<Value,&'static str>{
         let root=updating_folder()?;
+        // One check at a time, whoever starts it (a run, a person, SYNK 솔리오): the lock comes first and is held until
+        // update.json is written, so it is the one writer there (11-20 설계 검토). Held by another check, or not to be had
+        // (update::check_lock): nothing is written, and the next run tries again (11-20 저녁 설계 검토).
+        let checking=mode!="--update-install";
+        let _lock=if checking{match update::check_lock(&root){Ok(Some(lock))=>{update::clear_temps(&root);Some(lock)},Ok(None)=>return Err("CHECK_BUSY"),Err(())=>return Err("CHECK_LOCK")}}else{None};
+        // The run executable's check (`--update-check-due`) looks again once it holds the lock: one that waited behind
+        // another finds the fresh record and asks the feed no second time (GPT -d GA4). This app's own file version
+        // counts as in the run (update::due_for).
+        let own=std::env::current_exe().ok().and_then(|exe|update::installed_version(&exe));
+        if mode=="--update-check-due"&&!update::due_for(&update::read(&root),epoch_ms(),own.as_deref()){return Ok(json!({"due":false}));}
         let app=updater_app().map_err(|_|"APP_BUILD")?;let handle=app.handle().clone();
         let current=handle.package_info().version.to_string();
         tauri::async_runtime::block_on(async{
-            if mode=="--update-check"{
+            if checking{
+                // The try is written before the feed is asked, so one ended part way still counts.
+                update::write(&root,&update::tried(&update::read(&root),&current,epoch_ms())).map_err(|_|"UPDATE_RECORD")?;
                 let found=update::check(&handle).await;
                 let available=found.as_ref().ok().and_then(|u|u.as_ref()).map(|u|u.version.clone());
-                let record=update::record(&current,available.as_deref(),found.as_ref().err().copied(),epoch_ms());
+                let record=update::checked(&update::read(&root),&current,found.as_ref().map(|_|available.as_deref()).map_err(|code|*code),epoch_ms());
                 update::write(&root,&record).map_err(|_|"UPDATE_RECORD")?;
                 found.map(|_|record)
             }else{
@@ -251,7 +264,7 @@ fn update_mode(mode:&str)->i32{
     match outcome{
         Ok(value)=>{println!("{}",json!({"ok":true,"result":value}));0},
         Err("UP_TO_DATE")=>{println!("{}",json!({"ok":true,"result":{"available":null}}));0},
-        Err(code)=>{println!("{}",json!({"ok":false,"error":code}));match code{"UPDATE_SIGNATURE"=>3,"RUN_ACTIVE"=>75,"UPDATE_NOT_CONFIGURED"=>78,_=>1}}
+        Err(code)=>{println!("{}",json!({"ok":false,"error":code}));match code{"UPDATE_SIGNATURE"=>3,"RUN_ACTIVE"|"CHECK_BUSY"=>75,"UPDATE_NOT_CONFIGURED"=>78,_=>1}}
     }
 }
 fn update_message(code:&str)->&'static str{match code{
@@ -271,10 +284,17 @@ fn offer_update()->Result<(),String>{
     let root=updating_folder()?;
     let app=updater_app()?;let handle=app.handle().clone();
     let say=|text:&str|{rfd::MessageDialog::new().set_title("업무 백업 업데이트").set_description(text).show();};
-    match tauri::async_runtime::block_on(update::check(&handle)){
+    let found=tauri::async_runtime::block_on(update::check_for_click(&handle));
+    // The click only reads the feed: update.json is written by checks holding the check lock alone, each asking the feed
+    // and writing under it (11-20 설계 검토 조건 2). A version taken off the feed stops being told at the next check,
+    // which comes every 3 hours while a newer version is announced (update::due_for, 11-20 밤 설계 검토).
+    match found{
         Ok(Some(next))=>{
             let version=update::version_text(&next.version).unwrap_or_default();
-            let text=format!("새 판 {version}이 나왔습니다. 지금 업데이트할까요?\n\n관리자 확인이 한 번 뜹니다. 업데이트하는 동안 자동 백업이 잠시 멈추고, 끝나면 앱이 다시 열립니다.");
+            // An account that cannot approve the prompt itself (the weekly 「관리자에게 부탁」 notice) is told the administrator
+            // types their password here — the one way such a PC is updated (GPT workbackup-update-notice GA2 · -b GA5).
+            let text=if update::can_approve(){format!("새 판 {version}이 나왔습니다. 지금 업데이트할까요?\n\n관리자 확인이 한 번 뜹니다. 업데이트하는 동안 자동 백업이 잠시 멈추고, 끝나면 앱이 다시 열립니다.")}
+                else{format!("새 판 {version}이 나왔습니다. 설치에는 이 컴퓨터 관리자 계정의 비밀번호가 필요합니다.\n\n관리자가 함께 있으면 「업데이트」를 누르고, 뜨는 Windows 확인 창에 관리자 비밀번호를 넣어 주세요. 업데이트하는 동안 자동 백업이 잠시 멈추고, 끝나면 앱이 다시 열립니다.")};
             // Cancel first, as in every dialog here: Escape or closing it is 「나중에」.
             let answer=rfd::MessageDialog::new().set_title("업무 백업 업데이트").set_description(text).set_buttons(rfd::MessageButtons::OkCancelCustom("나중에".into(),"업데이트".into())).show();
             if matches!(answer,rfd::MessageDialogResult::Custom(ref s) if s=="업데이트"){
@@ -383,7 +403,7 @@ fn run()->Result<(),String>{
 }
 fn main(){
     if let [mode]=std::env::args().skip(1).collect::<Vec<_>>().as_slice(){
-        if mode=="--update-check"||mode=="--update-install"{std::process::exit(update_mode(mode));}
+        if mode=="--update-check"||mode=="--update-check-due"||mode=="--update-install"{std::process::exit(update_mode(mode));}
     }
     if let Err(code)=run(){
     if (code=="ALREADY_RUNNING"||code=="INSTALLING")&&!std::env::args().any(|a|a=="--test-mode"||a=="--smoke"){return;}

@@ -71,7 +71,7 @@ function statusOf({ state: s, version, ledger = null, update = null, startupRegi
   }
   if (configured && s.serverRestore) topics.add('restore');
   const available = typeof update?.available === 'string' && /^[0-9]+\.[0-9]+\.[0-9]+$/.test(update.available) ? update.available : null;
-  if (available && available !== version) topics.add('update');
+  if (available && newer(available, version)) topics.add('update');
   const word = !configured ? 'not-set-up' : moved ? 'moved' : restoreOnly ? 'restore-only'
     : p.level === 'paused' ? 'paused' : p.level === 'off' ? 'off'
     : p.reason === 'empty' && !topics.size ? 'starting'
@@ -87,6 +87,16 @@ function statusOf({ state: s, version, ledger = null, update = null, startupRegi
     bytes: configured && Number.isSafeInteger(s.lastBackup?.bytes) && s.lastBackup.bytes >= 0 ? s.lastBackup.bytes : null,
     writer, nextRunAt: writer ? iso(s.nextBackupAt) : null, writtenAt: new Date(now).toISOString()
   };
+}
+
+/** `a`가 `b`보다 새 판인가. 세 칸을 숫자로 견주고, 둘 중 하나라도 x.y.z 꼴이 아니면 거짓이다(update.rs `newer`와 같은 뜻).
+ *  지나간 판이 update.json에 남아 있어도 업데이트로 보지 않는다(11-20 저녁 설계 검토). */
+function newer(a, b) {
+  const triple = v => typeof v === 'string' && /^[0-9]{1,9}\.[0-9]{1,9}\.[0-9]{1,9}$/.test(v) ? v.split('.').map(Number) : null;
+  const x = triple(a), y = triple(b);
+  if (!x || !y) return false;
+  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i];
+  return false;
 }
 
 /** 요청 하나를 계약대로 확인한다. `{ ok: true, value }` 또는 `{ ok: false, reason }`. `at`은 이름의 시각이다. */

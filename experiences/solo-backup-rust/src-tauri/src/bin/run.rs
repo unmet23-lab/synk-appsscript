@@ -31,7 +31,7 @@
 #[path = "../space.rs"] mod space;
 // AI 도구의 MCP 보기 도구 (4.16): `--mcp`.
 #[path = "../mcp.rs"] mod mcp;
-use backup_native::{bundle, notify, platform, power, runlog, schedule, secret, worker::Worker};
+use backup_native::{bundle, notify, platform, power, runlog, schedule, secret, update, worker::Worker};
 use serde_json::{json, Map, Value};
 use std::{fs::{self, File}, path::{Path, PathBuf}, sync::{Arc, Mutex}, time::{Duration, Instant, SystemTime, UNIX_EPOCH}};
 
@@ -387,10 +387,79 @@ fn run() -> i32 {
         drop(guard.take());
         line["space"] = space::daily(&root, &places, &today, budget, epoch_ms());
     }
+    // 「업데이트 준비됨」 (4.10): every run tells from the last check's record (update.json) against the installed window app's
+    // own version, before its record is written; what it judged goes into the record (versions only). A test run neither
+    // tells nor checks.
+    let window_app = if args.test { None } else { std::env::current_exe().ok().map(|exe| exe.with_file_name(WINDOW_APP)) };
+    let installed = window_app.as_deref().and_then(update::installed_version);
+    if window_app.is_some() {
+        let record = update::read(&root);
+        let (found, judged) = update_problems(&record, installed.as_deref(), update::can_approve());
+        // Only a plain version number from the record goes into the run's record (GPT -b GA2).
+        let available = record["available"].as_str().and_then(update::version_text);
+        line["updateNotice"] = json!({"installed": installed, "available": available, "notice": found.first().map(|n| n.problem)});
+        if !judged.is_empty() {
+            // Today as of telling, once the ledger is held — not as of the run's start (GPT GA3 · -b GA6).
+            let records = notify::deliver_now(&root, &found, &judged, || schedule::local_now().chars().take(10).collect(), notify::show);
+            if !records.is_empty() {
+                match line["notify"].as_array_mut() { Some(all) => all.extend(records), None => line["notify"] = json!(records) }
+            }
+        }
+    }
     let _ = runlog::append(&root, &line);
+    // When it is due (20 hours after a check that reached the feed, 3 after one that did not or while a later version is
+    // announced, at once after the window app changed version) the window app checks the feed — `--update-check-due`, which takes the check lock itself, looks at
+    // the due time again under it and is update.json's one writer; the next run tells from it. After this run's record is
+    // written, so an update that ends this process meanwhile loses nothing (GPT GA4), and with the engine lock let go. This run waits for it: what started it (Task Scheduler, a test) sees it end with the run.
+    if let Some(app) = window_app.filter(|_| checks_update(args.trigger)) {
+        if update::due_for(&update::read(&root), epoch_ms(), installed.as_deref()) {
+            drop(worker.take());
+            drop(guard.take());
+            let _ = check_update(&app);
+        }
+    }
     drop(worker); // the state lock goes with the worker and the guard, after the record is written
     drop(guard);
     code
+}
+
+/// The window app beside this executable, which checks the update feed (4.10).
+const WINDOW_APP: &str = "WorkBackup.exe";
+/// The request task, which SYNK 솔리오 wakes on demand, does not wait for the feed: while it runs, Task Scheduler ignores a
+/// second wake (IgnoreNew), so a request left meanwhile would wait for the next run (GPT full GA1). The hourly run checks.
+fn checks_update(trigger: &str) -> bool { trigger != "request" }
+/// How long a run waits for the window app's check: its own feed timeout is a minute.
+const UPDATE_CHECK_WAIT: Duration = Duration::from_secs(120);
+
+/// Starts the window app's `--update-check-due` and waits for it, ended if it takes longer than UPDATE_CHECK_WAIT. What it
+/// found, or its error code, is in update.json — written by the check alone; it counts its try before it asks the feed,
+/// so one ended here still waits its 3 hours. One that could not be started is tried again by the next run.
+fn check_update(app: &Path) -> Result<(), &'static str> {
+    use std::process::{Command, Stdio};
+    let started = Instant::now();
+    let mut child = Command::new(app).arg("--update-check-due").stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null()).spawn().map_err(|_| "CHECK_START")?;
+    loop {
+        match child.try_wait() {
+            Ok(Some(_)) => return Ok(()),
+            Ok(None) if started.elapsed() < UPDATE_CHECK_WAIT => std::thread::sleep(Duration::from_millis(250)),
+            _ => { let _ = child.kill(); let _ = child.wait(); return Err("CHECK_TIMEOUT"); }
+        }
+    }
+}
+
+/// 「업데이트 준비됨」 (2.2 · 4.10) from the last check's record and the installed window app's version: a later version
+/// announced is told — to an account that cannot approve the administrator prompt as the weekly 「관리자에게 부탁」 one. A
+/// check that found nothing later resolves both. No record, a failed check or an unknown installed version judges
+/// nothing, so an earlier notice's record stays.
+fn update_problems(record: &Value, installed: Option<&str>, approve: bool) -> (Vec<notify::Notice>, Vec<&'static str>) {
+    let Some(installed) = installed else { return (vec![], vec![]) };
+    match record["available"].as_str() {
+        // A failed try keeps the version the last check found, so it is still told (11-20 설계 검토).
+        Some(available) if update::newer(available, installed) =>
+            (vec![if approve { notify::update_ready() } else { notify::update_ask_admin() }], vec!["update", "update-admin"]),
+        _ if record["checkedAt"].is_u64() && record["error"].is_null() => (vec![], vec!["update", "update-admin"]),
+        _ => (vec![], vec![]),
+    }
 }
 
 fn main() { std::process::exit(run()); }
@@ -428,6 +497,33 @@ fn main() { std::process::exit(run()); }
         assert!(!line.to_string().contains("C:\\\\"), "no paths in the record");
         let failed = json!({"profiles": {"local": {"outcome": "partial"}, "b2": {"outcome": "failed", "exitCode": 1}}});
         assert_eq!(record_profiles(&failed, 0, &mut json!({})), "failed");
+    }
+    #[test] fn an_update_is_told_from_the_record_against_the_installed_version() {
+        let names = |found: &[notify::Notice]| found.iter().map(|n| n.problem).collect::<Vec<_>>();
+        let both = vec!["update", "update-admin"];
+        let newer = json!({"v": 1, "checkedAt": 5, "current": "0.7.0", "available": "0.7.1", "error": null});
+        let (found, judged) = update_problems(&newer, Some("0.7.0"), true);
+        assert_eq!((names(&found), judged.clone()), (vec!["update"], both.clone()));
+        assert_eq!(found[0].topic, "update");
+        assert_eq!(names(&update_problems(&newer, Some("0.7.0"), false).0), vec!["update-admin"], "a standard account is asked to tell the administrator");
+        // Updated since the check: the installed app is that version, so nothing is told and the notice is resolved.
+        assert_eq!(update_problems(&newer, Some("0.7.1"), true), (vec![], both.clone()));
+        assert_eq!(update_problems(&json!({"v": 1, "checkedAt": 5, "current": "0.7.1", "available": null, "error": null}), Some("0.7.1"), true), (vec![], both));
+        // A failed check, no record, or an installed version not read: nothing judged, so an earlier notice's record stays.
+        assert_eq!(update_problems(&json!({"v": 1, "checkedAt": 5, "current": "0.7.0", "available": null, "error": "UPDATE_FEED"}), Some("0.7.0"), true), (vec![], vec![]));
+        assert_eq!(update_problems(&json!({}), Some("0.7.0"), true), (vec![], vec![]));
+        // A later try that failed keeps the version found before: still told.
+        let failed_after = json!({"v": 1, "checkedAt": 5, "triedAt": 9, "current": "0.7.0", "available": "0.7.1", "error": "UPDATE_FEED"});
+        assert_eq!(names(&update_problems(&failed_after, Some("0.7.0"), true).0), vec!["update"]);
+        assert_eq!(update_problems(&newer, None, true), (vec![], vec![]));
+    }
+    #[test] fn a_check_that_cannot_start_says_so() {
+        let root = std::env::temp_dir().join(format!("swb-update-check-{}", std::process::id()));
+        assert_eq!(check_update(&root.join("missing").join(WINDOW_APP)), Err("CHECK_START"));
+    }
+    #[test] fn the_request_task_does_not_wait_for_the_feed() {
+        assert!(!checks_update("request"));
+        for trigger in ["hourly", "logon", "wake", "unlock", "manual"] { assert!(checks_update(trigger), "{trigger}"); }
     }
     #[test] fn problems_come_from_the_records_of_profiles_meant_to_run() {
         let now = 10 * notify::STALE_MS;

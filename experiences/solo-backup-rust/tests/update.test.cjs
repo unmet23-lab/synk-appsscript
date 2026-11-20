@@ -32,7 +32,9 @@ test('the release checks one https feed beside the PC app\'s, binds each package
 
 test('the window app takes the update switches alone, and the release still takes nothing else', () => {
   const main = read('src-tauri/src/main.rs');
-  assert.match(main, /if let \[mode\]=std::env::args\(\)\.skip\(1\)\.collect::<Vec<_>>\(\)\.as_slice\(\)\{\n\s+if mode=="--update-check"\|\|mode=="--update-install"/);
+  assert.match(main, /if let \[mode\]=std::env::args\(\)\.skip\(1\)\.collect::<Vec<_>>\(\)\.as_slice\(\)\{\n\s+if mode=="--update-check"\|\|mode=="--update-check-due"\|\|mode=="--update-install"/);
+  // The run executable starts the check that looks at its due time again under the check lock.
+  assert.match(read('src-tauri/src/bin/run.rs'), /Command::new\(app\)\.arg\("--update-check-due"\)/);
   assert.match(main, /let switches:&\[&str\]=if cfg!\(debug_assertions\)\{&\["--background","--test-mode","--smoke"\]\}else\{&\["--background"\]\};/);
   // The notice's click asks first (cancel is the first button), and installing holds the engine lock.
   assert.match(main, /OkCancelCustom\("나중에"\.into\(\),"업데이트"\.into\(\)\)/);
@@ -79,7 +81,9 @@ test('a signature counts only when a built-in key verifies the file and the vers
 
 function signature({ version, file }) {
   const comment = ['timestamp:1794788230', `file:${file}`, ...(version ? [`version:${version}`] : [])].join('\t');
-  return Buffer.from(`untrusted comment: signature from tauri secret key\nRUSUfake\ntrusted comment: ${comment}\nZmFrZQ==\n`).toString('base64');
+  // minisign's shape (ED, key id, signature; the 64-byte global signature), not a signature any key verifies.
+  const raw = Buffer.concat([Buffer.from('ED'), Buffer.alloc(72, 7)]).toString('base64'), global = Buffer.alloc(64, 9).toString('base64');
+  return Buffer.from(`untrusted comment: signature from tauri secret key\n${raw}\ntrusted comment: ${comment}\n${global}\n`).toString('base64');
 }
 
 test('update-feed.cjs makes the static feed only for a signature bound to that installer and version', (t) => {
@@ -95,12 +99,27 @@ test('update-feed.cjs makes the static feed only for a signature bound to that i
   assert.equal(value.platforms['windows-x86_64'].url, url);
   assert.equal(trustedComment(value.platforms['windows-x86_64-nsis'].signature).version, '0.7.1');
   assert.match(sha256, /^[0-9a-f]{64}$/);
-  // The Solio backup room checks these two before the signature (desktop/src/solio-backup.cjs validateFeed)
-  for (const entry of Object.values(value.platforms)) {
-    assert.equal(entry.size, fs.statSync(setup).size);
-    assert.equal(entry.sha256, crypto.createHash('sha256').update(fs.readFileSync(setup)).digest('hex'));
-    assert.equal(entry.sha256, sha256);
+  // SYNK 솔리오's engine install reads the same entry: the installer's size and SHA-256 (11-20).
+  const bytes = fs.readFileSync(setup);
+  for (const target of ['windows-x86_64-nsis', 'windows-x86_64']) {
+    assert.equal(value.platforms[target].size, bytes.length, target);
+    assert.equal(value.platforms[target].sha256, crypto.createHash('sha256').update(bytes).digest('hex'), target);
   }
+  assert.equal(sha256, value.platforms['windows-x86_64-nsis'].sha256);
+  // Where SYNK 솔리오 downloads from (STAGE1_DESIGN 4.10 「업데이트 자리」), or this PC for the clean-Windows exercise.
+  assert.throws(() => feed({ setup, signature: sig, url: url.replace('unmet23-lab/synk-policy', 'someone/else') }), /download url must be https:\/\/github\.com\/unmet23-lab\/synk-policy\/releases\/download\/workbackup-0\.7\.1\//);
+  assert.throws(() => feed({ setup, signature: sig, url: url.replace('https:', 'http:') }), /download url must be/);
+  const local = 'http://127.0.0.1:8765/SynkWorkBackup-0.7.1-setup.exe';
+  assert.throws(() => feed({ setup, signature: sig, url: local }), /download url must be/, 'this PC only when the exercise asks');
+  assert.equal(feed({ setup, signature: sig, url: local, localTest: true }).feed.platforms['windows-x86_64'].url, local);
+  assert.throws(() => feed({ setup, signature: sig, url: 'http://127.0.0.1:8765/nested/SynkWorkBackup-0.7.1-setup.exe', localTest: true }), /download url must be/);
+  // A signature cut short, or one missing its global signature, is not minisign's whole.
+  const whole = fs.readFileSync(sig, 'utf8');
+  fs.writeFileSync(sig, whole.slice(0, -20));
+  assert.throws(() => feed({ setup, signature: sig, url }), /not a whole minisign signature/);
+  fs.writeFileSync(sig, Buffer.from(Buffer.from(whole, 'base64').toString('utf8').split('\n').slice(0, 3).join('\n')).toString('base64'));
+  assert.throws(() => feed({ setup, signature: sig, url }), /not a whole minisign signature/);
+  fs.writeFileSync(sig, whole);
   fs.writeFileSync(sig, signature({ version: '0.7.0', file: 'SynkWorkBackup-0.7.1-setup.exe' }));
   assert.throws(() => feed({ setup, signature: sig, url }), /signature is for version 0\.7\.0/);
   fs.writeFileSync(sig, signature({ version: null, file: 'SynkWorkBackup-0.7.1-setup.exe' }));
@@ -111,6 +130,10 @@ test('update-feed.cjs makes the static feed only for a signature bound to that i
   assert.throws(() => feed({ setup, signature: sig, url: url.replace('0.7.1-setup', '0.7.2-setup') }), /end in the installer name/);
   const renamed = path.join(dir, 'setup.exe'); fs.copyFileSync(setup, renamed);
   assert.throws(() => feed({ setup: renamed, signature: sig, url }), /SynkWorkBackup-<version>-setup\.exe/);
+  const padded = path.join(dir, 'SynkWorkBackup-0.07.1-setup.exe'); fs.copyFileSync(setup, padded);
+  assert.throws(() => feed({ setup: padded, signature: sig, url }), /SynkWorkBackup-<version>-setup\.exe/, 'a version SYNK 솔리오 would refuse');
+  fs.writeFileSync(setup, '');
+  assert.throws(() => feed({ setup, signature: sig, url }), /installer must be 1 to/);
 });
 
 test('D0 comes back only when every file and folder is the same, and a sealed kit opens only with the seed', (t) => {
@@ -194,4 +217,18 @@ test('the clean-Windows workflow keeps secrets and keys to this repository and i
   assert.deepEqual([...new Set(flow.match(/secrets\.[A-Z_]+/g))], ['secrets.WORKBACKUP_CI_SEED']);
   for (const upload of flow.split('actions/upload-artifact').slice(1)) assert.doesNotMatch(upload.split('\n      - ')[0], /keys|\.key\b/);
   assert.match(flow, /name: workbackup-carry\n\s+retention-days: 1\n/);
+});
+
+test('one version everywhere the app says what it is', () => {
+  // SYNK 솔리오 reads update.json against the engine's APP_VERSION, and the server and the manifest get it too: a release
+  // that moves one of these and not the rest would show a version already installed as an update (11-20 저녁 설계 검토).
+  const version = JSON.parse(read('src-tauri/tauri.conf.json')).version;
+  assert.match(version, /^[0-9]+\.[0-9]+\.[0-9]+$/);
+  assert.equal(JSON.parse(read('package.json')).version, version, 'package.json');
+  assert.equal(read('src-tauri/Cargo.toml').match(/^version = "([^"]+)"$/m)[1], version, 'Cargo.toml');
+  assert.equal(require('../engine/src/account.cjs').APP_VERSION, version, 'engine APP_VERSION');
+  assert.equal(read('scripts/stage-resources.cjs').match(/appVersion:'([^']+)'/)[1], version, 'resource manifest');
+  const handlers = read('worker/handlers.cjs');
+  assert.match(handlers, /\.\.\.profiles\.getState\(\),\s*version\s*:\s*APP_VERSION\b/, 'the window state says APP_VERSION');
+  assert.doesNotMatch(handlers, /\bversion\s*:\s*['"`]/, 'and no version of its own');
 });
