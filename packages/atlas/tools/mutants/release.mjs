@@ -35,4 +35,28 @@ export const RELEASE_MUTANTS = [
     "          'manifest에 지도 파일이 없다(공개 판은 지도와 함께 낸다 — 없으면 켜진 길의 코치가 MAP_FAILED)',\n",
     '',
   ],
+  [
+    'unit',
+    '공개',
+    '코치가 늘 받는 지도 파일(units · words)을 보지 않는다 — units.json이 빠진 판이 지나가 MAP_FAILED(GPT GA2)',
+    PUBLISH,
+    "const MAP_ALWAYS = ['index.json', 'units.json', 'words.json'];\n",
+    "const MAP_ALWAYS = ['index.json'];\n",
+  ],
+  [
+    'unit',
+    '공개',
+    'index의 은행 조각을 보지 않는다 — 조각이 빠진 판이 지나가 그 은행을 여는 코치가 MAP_FAILED(GPT GA2)',
+    PUBLISH,
+    '  const names = [...MAP_ALWAYS, ...banks.map(bank => `items/${bank}.json`)];\n',
+    '  const names = [...MAP_ALWAYS];\n',
+  ],
+  [
+    'unit',
+    '공개',
+    '공개본 받기가 던지면 확인이 예외로 끝난다 — 앞서 찾은 문제와 끊긴 파일이 남지 않는다(GPT GA1)',
+    PUBLISH,
+    '      return { failed: error?.message || String(error) };\n',
+    '      throw error;\n',
+  ],
 ];

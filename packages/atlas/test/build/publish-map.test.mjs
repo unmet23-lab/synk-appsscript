@@ -8,7 +8,7 @@ import { build } from '../../tools/build.mjs';
 import { subjectTool } from '../support/subject.mjs';
 import { tempDir } from '../support/temp.mjs';
 
-const { publishItems } = await subjectTool('publish.mjs');
+const { publishItems, mapRequiredProblems } = await subjectTool('publish.mjs');
 const built = await build({
   out: tempDir('atlas-publish-map-'),
   state: { commit: 'c'.repeat(40), dirty: false },
@@ -30,4 +30,9 @@ test('빌드한 manifest의 지도 파일이 모두 올리기 목록에 있고, 
     .map(file => path.relative(built.out, file).replace(/\\/g, '/'))
     .sort();
   assert.deepEqual([...items].sort(), tree);
+});
+
+test('빌드한 지도는 켜진 길의 코치가 받는 파일을 모두 싣는다 — index의 은행마다 조각이 있다(GPT GA2)', () => {
+  const mapDir = path.join(built.out, 'atlas', built.edition, 'map');
+  assert.deepEqual(mapRequiredProblems(mapDir, built.manifest.map?.files ?? {}), []);
 });

@@ -12,7 +12,20 @@ const { checkPublish } = await subjectTool('publish.mjs');
 
 const sha256 = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
-const MAP = { 'index.json': '{"edition":1}', 'units.json': '[]', 'items/talk-rally.json': '[1]' };
+// 켜진 길의 코치가 받는 지도 꼴 그대로 — index.json의 문항 줄(bank 칸)이 말하는 은행마다 조각이 있다(GPT GA2).
+const indexOf = banks =>
+  JSON.stringify({
+    format: 'atlas-map-index/1',
+    fields: ['n', 'bank'],
+    items: banks.map((bank, i) => [i + 1, bank]),
+  });
+const MAP = {
+  'index.json': indexOf(['talk-rally']),
+  'units.json': '[]',
+  'words.json': '{}',
+  'items/talk-rally.json': '[1]',
+};
+const without = name => Object.fromEntries(Object.entries(MAP).filter(([key]) => key !== name));
 
 // tools/build.mjs가 내는 나무와 같은 꼴을 손으로 만든다(이 묶음은 esbuild 없이 돈다).
 // map: 지도 파일(map/ 뒤 경로 → 내용) — 판 폴더의 map/ 아래에 쓰고 manifest의 map 칸에 적는다(tools/build.mjs와 같은 꼴).
@@ -169,6 +182,71 @@ test('공개 판은 지도와 함께 낸다 — manifest에 지도 칸이 없거
     assert.equal(result.command, null);
     assert.match(result.problems.join(), /manifest에 지도 파일이 없다/);
   }
+});
+
+test('공개 판의 지도는 켜진 길의 코치가 받는 파일을 모두 싣는다 — index · units · words와 index의 은행마다 조각(GPT GA2)', async () => {
+  const fetcher = answer(404);
+  // manifest의 파일표와 나무에서 함께 빼도(올리기 목록에서도 빠진다) 막는다
+  for (const name of Object.keys(MAP)) {
+    const { out } = tree('1.0.0', { map: without(name) });
+    const result = await checkPublish({ out, fetcher });
+    assert.equal(result.ok, false, name);
+    assert.equal(result.command, null, name);
+    assert.ok(
+      result.problems.includes(
+        `manifest에 지도 ${name}이 없다(켜진 길의 코치가 받는다 — 없으면 MAP_FAILED)`,
+      ),
+      `${name}: ${result.problems.join()}`,
+    );
+  }
+  const other = tree('1.0.0', {
+    map: { ...MAP, 'index.json': indexOf(['talk-rally', 'order-rush']) },
+  });
+  assert.deepEqual((await checkPublish({ out: other.out, fetcher })).problems, [
+    'manifest에 지도 items/order-rush.json이 없다(켜진 길의 코치가 받는다 — 없으면 MAP_FAILED)',
+  ]);
+  for (const text of ['{"edition":1}', 'not json', indexOf([''])]) {
+    const broken = tree('1.0.0', { map: { ...MAP, 'index.json': text } });
+    const result = await checkPublish({ out: broken.out, fetcher });
+    assert.equal(result.ok, false, text);
+    assert.match(result.problems.join(), /map\/index\.json을 읽지 못했다/, text);
+  }
+});
+
+test('공개본의 판 폴더 파일을 받다가 끊기거나 본문을 못 읽어도 던지지 않는다 — 앞서 찾은 문제와 함께 그 파일을 알린다(GPT GA1)', async () => {
+  const { out } = tree('1.0.0');
+  const base = site(out, '1.0.0', { 'map/index.json': '{"other":1}' });
+  const ends = (url, tail) => new URL(url).pathname.endsWith(tail);
+  const cut = async (url, init) => {
+    if (ends(url, '/map/units.json')) throw new Error('network down');
+    if (ends(url, '/map/words.json'))
+      return {
+        status: 200,
+        ok: true,
+        arrayBuffer: async () => {
+          throw new Error('reset');
+        },
+      };
+    return base(url, init);
+  };
+  const result = await checkPublish({ out, fetcher: cut });
+  assert.equal(result.ok, false);
+  assert.equal(result.command, null);
+  assert.deepEqual(result.problems, [
+    '공개본의 map/index.json이 manifest와 다르다 — 판 폴더는 덮지 않는다(판을 올린다)',
+    '공개본의 map/units.json을 확인하지 못했다(network down) — 확인하기 전에는 올리지 않는다',
+    '공개본의 map/words.json을 확인하지 못했다(reset) — 확인하기 전에는 올리지 않는다',
+  ]);
+  const offline = await checkPublish({
+    out,
+    fetcher: async () => {
+      throw new Error('offline');
+    },
+  });
+  assert.equal(offline.ok, false);
+  assert.deepEqual(offline.problems, [
+    '공개본을 확인하지 못했다(offline) — 확인하기 전에는 올리지 않는다',
+  ]);
 });
 
 test('지도 자리가 폴더가 아니거나 적힌 지도 파일 자리가 폴더여도 던지지 않고 문제로 알린다(GPT GA3)', async () => {

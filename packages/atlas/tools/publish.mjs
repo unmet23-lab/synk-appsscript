@@ -3,9 +3,11 @@
 //   ② 꼭 있어야 할 파일(엔진 묶음 atlas.mjs · 입구 loader.js · loader.mjs)이 manifest에 있고, 나무의 파일 목록이 manifest에 적힌 것과
 //      꼭 같으며(적히지 않은 파일 · 빠진 파일 없음), 파일마다 sha256이 같다. 지도(판 폴더의 map/ — manifest의 map 칸)도 같다:
 //      지도가 빠지거나 다르면 켜진 길의 코치가 지도를 못 받아(MAP_FAILED) 목록의 계정이 모두 지금 판으로 돌아간다(설계 주인 11-20).
-//      그래서 공개 판은 지도 파일이 하나 이상 적힌 manifest여야 한다(GPT GA2). 폴더 · 파일 자리가 뒤바뀌면 던지지 않고 문제로 알린다(GA3)
+//      그래서 공개 판의 manifest는 켜진 길의 코치가 받는 지도 파일을 모두 싣는다 — index.json · units.json · words.json과
+//      index.json에 든 은행마다 items/<은행>.json(GPT GA2). 폴더 · 파일 자리가 뒤바뀌면 던지지 않고 문제로 알린다(GA3)
 //   ③ 판 폴더를 덮지 않는다 — 공개본에 같은 판의 manifest가 있으면 바이트가 같을 때만 지나가고, 판 폴더의 파일(엔진 묶음 · 지도)은
-//      하나씩 본다: 공개본에 없으면(404) 이번에 더하고(선택 공개 2단계의 지도처럼), 있으면 sha256이 같아야 한다(GPT GA1)
+//      하나씩 본다: 공개본에 없으면(404) 이번에 더하고(선택 공개 2단계의 지도처럼), 있으면 sha256이 같아야 한다(GPT GA1).
+//      받기나 본문 읽기가 던지면 그 파일을 「확인하지 못했다」로 남기고 다음 파일을 본다(앞서 찾은 문제도 남는다)
 //   ④ 다 맞으면 tools/공개.js 올리기 명령(미리 보기)을 찍는다. 실행(--실행 --계획 --검수)은 그 도구의 절차 그대로다.
 // 이 도구는 공개하지 않는다. 단계 0에서는 쓰지 않는다(공개본이 바뀌지 않는다) — 첫 공개는 단계 4의 제품 전환과 함께다.
 //   node packages/atlas/tools/publish.mjs <밖> [--사이트 https://synk.im]
@@ -58,6 +60,36 @@ function hashProblems(dir, table, label = '') {
     .map(([name]) => `${label}${name}이 manifest와 다르다`);
 }
 
+// 켜진 길의 코치가 받는 지도 파일(src/coach/index.mjs loadMap): units.json은 늘 받고, items/<은행>.json은 그 은행을 열 때,
+// words.json은 낱말 이름을 싣지 않은 조각을 열 때 받는다. 은행은 index.json의 문항 줄(bank 칸)에서 읽는다. 하나라도 manifest에서
+// 빠지면 올리기 목록에서도 빠져 공개본에서 404 → MAP_FAILED다(GPT GA2 — 지도 파일이 하나 이상인지만 보던 것을 고친다).
+const MAP_ALWAYS = ['index.json', 'units.json', 'words.json'];
+function indexBanks(mapDir) {
+  const file = path.join(mapDir, 'index.json');
+  if (!isFile(file)) return { banks: [], problems: [] }; // 빠진 index.json은 아래 MAP_ALWAYS · 목록 대조가 알린다
+  try {
+    const index = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const at = Array.isArray(index?.fields) ? index.fields.indexOf('bank') : -1;
+    if (at < 0 || !Array.isArray(index.items)) throw new Error('문항 줄의 bank 칸이 없다');
+    const banks = [...new Set(index.items.map(row => row?.[at]))];
+    if (banks.some(bank => typeof bank !== 'string' || !bank))
+      throw new Error('은행 이름이 빈 줄이 있다');
+    return { banks, problems: [] };
+  } catch (error) {
+    return { banks: [], problems: [`map/index.json을 읽지 못했다(${error.message})`] };
+  }
+}
+export function mapRequiredProblems(mapDir, mapTable) {
+  const { banks, problems } = indexBanks(mapDir);
+  const names = [...MAP_ALWAYS, ...banks.map(bank => `items/${bank}.json`)];
+  return [
+    ...problems,
+    ...names
+      .filter(name => !Object.hasOwn(mapTable, name))
+      .map(name => `manifest에 지도 ${name}이 없다(켜진 길의 코치가 받는다 — 없으면 MAP_FAILED)`),
+  ];
+}
+
 function contentProblems({ atlas, edition, manifest }) {
   const required = Object.entries(REQUIRED).flatMap(([table, names]) =>
     names.filter(name => !manifest[table]?.[name]).map(name => `manifest에 ${name}이 없다`),
@@ -67,7 +99,7 @@ function contentProblems({ atlas, edition, manifest }) {
   const mapTable = manifest.map?.files ?? {};
   const mapShape = [
     ...(Object.keys(mapTable).length
-      ? []
+      ? mapRequiredProblems(mapDir, mapTable)
       : [
           'manifest에 지도 파일이 없다(공개 판은 지도와 함께 낸다 — 없으면 켜진 길의 코치가 MAP_FAILED)',
         ]),
@@ -121,26 +153,36 @@ const editionFiles = manifest => [
 
 async function publicProblems({ edition, manifest, manifestBytes }, site, fetcher) {
   const folder = `${site.replace(/\/$/, '')}/atlas/${edition}/`;
-  const get = name =>
-    fetcher(`${folder}${name}?probe=${Date.now()}`, { headers: { 'cache-control': 'no-cache' } });
-  const response = await get('manifest.json');
-  if (response.status === 404) return [];
-  if (!response.ok)
-    return [`공개본을 확인하지 못했다(${response.status}) — 확인하기 전에는 올리지 않는다`];
-  const published = Buffer.from(await response.arrayBuffer());
-  if (sha256(published) !== sha256(manifestBytes))
+  // 받기 · 본문 읽기가 던져도(끊김 · 시간 초과) 예외로 끝내지 않고 그 파일을 「확인하지 못했다」로 돌려준다(GPT GA1).
+  const read = async name => {
+    try {
+      const response = await fetcher(`${folder}${name}?probe=${Date.now()}`, {
+        headers: { 'cache-control': 'no-cache' },
+      });
+      if (response.status === 404) return { missing: true };
+      if (!response.ok) return { failed: String(response.status) };
+      return { bytes: Buffer.from(await response.arrayBuffer()) };
+    } catch (error) {
+      return { failed: error?.message || String(error) };
+    }
+  };
+  const head = await read('manifest.json');
+  if (head.missing) return [];
+  if (head.failed)
+    return [`공개본을 확인하지 못했다(${head.failed}) — 확인하기 전에는 올리지 않는다`];
+  if (sha256(head.bytes) !== sha256(manifestBytes))
     return [`공개본에 다른 ${edition} 판이 있다 — 판 폴더는 덮지 않는다(판을 올린다)`];
   // 같은 판이 이미 있다. 판 폴더의 파일은 하나씩 본다 — 없으면(404) 이번에 더하고(선택 공개 2단계의 지도처럼), 있으면 sha256이
   // 같아야 한다. 다르면 같은 판 폴더를 덮게 되므로 멈춘다(GPT GA1).
   const problems = [];
   for (const [name, info] of editionFiles(manifest)) {
-    const file = await get(name);
-    if (file.status === 404) continue;
-    if (!file.ok)
+    const file = await read(name);
+    if (file.missing) continue;
+    if (file.failed)
       problems.push(
-        `공개본의 ${name}을 확인하지 못했다(${file.status}) — 확인하기 전에는 올리지 않는다`,
+        `공개본의 ${name}을 확인하지 못했다(${file.failed}) — 확인하기 전에는 올리지 않는다`,
       );
-    else if (sha256(Buffer.from(await file.arrayBuffer())) !== info.sha256)
+    else if (sha256(file.bytes) !== info.sha256)
       problems.push(`공개본의 ${name}이 manifest와 다르다 — 판 폴더는 덮지 않는다(판을 올린다)`);
   }
   return problems;
