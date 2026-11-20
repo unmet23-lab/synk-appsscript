@@ -11,7 +11,8 @@
  *   node tools/작업실예약.js 상태 <편 폴더>                 서버에 직접 물어 맞춘다(--저장안함)
  *   node tools/작업실예약.js 취소 <편 폴더>                 등록을 거둔다(원고 취소·예약 작업 취소·검토 링크 폐기) — 고쳐서 다시 올릴 때 먼저
  *   node tools/작업실예약.js 자격                          작업실 자동화 계정(이메일·비밀번호)을 Windows 자격 보관소에 넣는다 — 유호님이 직접 입력
- *   영어 이름도 받는다: credential(자격) · status(상태) · cancel(취소). 명령도 편 폴더도 아니면 자격을 읽기 전에 받은 글자를 보이고 멈춘다.
+ *   node tools/작업실예약.js 게시주소 [--실행]              예약큐 캐시로 게시가 끝난 작업실 판의 공개 주소를 게시결과에 적는다(쓰기는 운영 사본 · 예약큐 정기 작업 ③, 11-18)
+ *   영어 이름도 받는다: credential(자격) · status(상태) · cancel(취소) · published(게시주소). 명령도 편 폴더도 아니면 자격을 읽기 전에 받은 글자를 보이고 멈춘다.
  *   공통: --주소 <작업실 주소>(기본 https://workspace.synk.im) · --언어없이 · --AI표시없이 · --첫댓글빼고 · --json
  *
  * 등록 순서(관문이 늘 먼저): 원본 영상 올리기 → 원고 저장(판마다 계정·제목·문구·옵션) → 「잠금」 필수 검토 링크 → 사내 승인 → 시각별 예약
@@ -328,29 +329,37 @@ const STATUS = (job) => (job.status === 'scheduled' && job.reviewWaiting ? '승�
     : job.status === 'missed' ? '놓침' : job.status === 'unknown' ? '확인 필요' : job.status === 'manual' ? '손으로' : ['cancelled', 'skipped', 'expired'].includes(job.status) ? '취소됨' : '실패');
 
 // 게시결과.json의 그 계정 줄만 바꾼다(크롬으로 올린 다른 판 줄은 그대로).
-function mergeResults(bundle, rows) {
+// opts.작업줄만(11-18 「게시주소」): 같은 계정 · 같은 작업ID 줄이 정확히 하나일 때만 그 줄을 바꾸고, 같은 게시물 줄이나 빈 계획 줄로 넘어가거나
+// 새 줄을 덧붙이지 않는다(없거나 둘이면 던진다 — 고른 뒤 다시 등록으로 작업ID가 바뀐 판에 옛 작업 줄을 덧붙이지 않게, GPT 검수 GA1).
+function mergeResults(bundle, rows, opts = {}) {
   const file = path.join(bundle.dir, '게시', '게시결과.json');
   const raw = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
   const result = raw === null ? {} : JSON.parse(raw.replace(/^\uFEFF/, ''));
   if (!result || typeof result !== 'object' || Array.isArray(result) || (result.판 != null && !Array.isArray(result.판)) || (result.추가게시 != null && !Array.isArray(result.추가게시))) throw new Error('게시결과.json 모양이 달라 건드리지 않았다');
   const list = Array.isArray(result.판) ? result.판 : [];
-  const { postIdOf } = require('./lib/게시성과판정.js');
-  const keyOf = p => postIdOf(p.주소)?.key || p.주소 || null;
+  // 같은 게시물인가는 게시성과연결 postOfRow · samePost 하나로 본다(설계 검토 다시 보기 — 주소, 없으면 게시물ID + 플랫폼. 게시물ID만 있는 줄 · 플랫폼이
+  // 다른 같은 ID도 가린다, 4회차 GA1 · GA4). 둘 다 게시물을 가리키는데 같은 게시물이 아니면 다르다
+  const { postOfRow, samePost } = require('./lib/게시성과연결.js');
+  const { WITHDRAWN } = require('./게시장부.js');
+  const differs = (a, b) => Boolean(postOfRow(a) && postOfRow(b) && !samePost(a, b));
   for (const value of rows) {
     const row = require('./lib/게시성과연결.js').identity(bundle.name, value);
     const all = [list, result.추가게시 || []].flatMap(rows => rows.map((p, i) => ({ p, i, rows })));
     const sameJob = all.filter(({ p }) => p.계정 === row.계정 && row.작업 && p.작업 === row.작업);
-    const samePost = all.filter(({ p }) => p.계정 === row.계정 && keyOf(row) && keyOf(p) === keyOf(row));
-    if (samePost.some(({ p }) => p.작업 && row.작업 && p.작업 !== row.작업)) throw new Error('같은 게시 주소의 작업ID가 달라 건드리지 않았다');
+    const sameRows = all.filter(({ p }) => p.계정 === row.계정 && samePost(p, row));
+    if (sameRows.some(({ p }) => p.작업 && row.작업 && p.작업 !== row.작업)) throw new Error('같은 게시 주소의 작업ID가 달라 건드리지 않았다');
     // 추가게시도 같은 게시물로 찾는다. 주소·작업ID가 모두 빈 계획 줄만 마지막 대안이다.
-    const candidates = sameJob.length ? sameJob : samePost.length ? samePost : all.filter(({ p, rows }) => rows === list && p.계정 === row.계정 && !p.주소 && !p.작업);
+    const candidates = opts.작업줄만 ? sameJob : sameJob.length ? sameJob : sameRows.length ? sameRows : all.filter(({ p, rows }) => rows === list && p.계정 === row.계정 && !p.주소 && !p.작업);
+    if (opts.작업줄만 && candidates.length !== 1) throw new Error(`같은 계정 · 작업ID 줄이 ${candidates.length}개라 건드리지 않았다(새 줄을 만들지 않는다)`);
     if (candidates.length > 1) throw new Error('같은 계정의 여러 게시 결과가 있어 작업ID로 하나를 확인해야 한다');
     const hit = candidates[0];
     if (hit) {
-      if (keyOf(hit.p) && keyOf(row) && keyOf(hit.p) !== keyOf(row)) throw new Error('같은 작업ID의 게시 주소가 달라 건드리지 않았다');
+      if (differs(hit.p, row)) throw new Error('같은 작업ID의 게시 주소가 달라 건드리지 않았다');
       // 예약큐와 같은 보호(10-28 상태 --캐시가 B8 두 판을 「승인 대기」로 내림): 검토 링크를 승인해도 서버는 내보내는 순간까지 reviewWaiting을
       // 남기니 「승인」을 적은 「예약됨」은 내리지 않고, 게시물 ID까지 적힌 「게시됨」(공개를 직접 확인한 판)은 서버가 무엇으로 내려도 그대로 둔다.
-      const keep = (hit.p.상태 === '예약됨' && hit.p.승인 && row.상태 === '승인 대기') || (hit.p.상태 === '게시됨' && hit.p.게시물ID && row.상태 !== '게시됨');
+      // 거둔 줄(보류 · 지움)은 서버가 무엇이든 상태를 그대로 둔다 — 상태 · 상태 --캐시가 지운 판을 「게시됨」으로 되살리지 않게(설계 검토 다시 보기 N1)
+      const keep = (hit.p.상태 === '예약됨' && hit.p.승인 && row.상태 === '승인 대기') || (hit.p.상태 === '게시됨' && hit.p.게시물ID && row.상태 !== '게시됨')
+        || WITHDRAWN.has(hit.p.상태);
       hit.rows[hit.i] = require('./lib/게시성과연결.js').identity(bundle.name, { ...hit.p, ...row, ...(keep ? { 상태: hit.p.상태 } : {}) });
     } else list.push(row);
   }
@@ -572,19 +581,104 @@ async function registerLocked(bundle, ws, rows, opts = {}) {
   return { post, jobs, url: review.url, expiresAt: review.link.expiresAt, rows: eligible, archived };
 }
 
+// 서버 작업 찾기(11-18 설계 검토 D2) — 작업실.json의 판 줄 {계정, 채널, 작업}과 원고 postId로 고른다. 예약큐 캐시에는 모든 원고의 작업이
+// 들어 있으니 작업ID에 더해 원고 · 채널까지 같아야 그 판의 작업이다. → { job } · 캐시에 없으면 { job: null } · 어긋나면 { job: null, 막힘 }
+function jobOf(state, plate, jobs) {
+  const job = (jobs || []).find((j) => j && plate && j.id === plate.작업);
+  if (!job) return { job: null };
+  if (job.postId !== state?.postId || job.channelId !== plate.채널) {
+    return { job: null, 막힘: `${plate.계정}: 서버 작업 ${String(plate.작업).slice(0, 8)}의 원고 · 채널이 작업실.json과 다르다(원고 ${job.postId === state?.postId ? '같음' : '다름'} · 채널 ${job.channelId === plate.채널 ? '같음' : '다름'})` };
+  }
+  return { job };
+}
+
 // ws 대신 jobs(예약큐 캐시의 서버 작업 목록)를 주면 서버에 묻지 않고 그것으로 옮긴다 — Claude 세션은 운영 서버를 직접 읽지 않는다.
+// 캐시 길은 원고 · 채널까지 맞는 작업만 쓰고(jobOf), 캐시에 없는 작업(14일 창 밖)은 「작업 없음」으로 쓰지 않고 막힘으로 돌려준다(설계 검토 D6).
 async function status(bundle, ws, { save = true, jobs = null } = {}) {
   const state = readState(bundle);
   if (!state?.postId) return null;
-  const detail = jobs ? { jobs } : await ws.get(`/api/social/posts/${state.postId}`);
-  const rows = (state.판 || []).map((p) => {
-    const job = (detail.jobs || []).find((j) => j.id === p.작업) || (!jobs && (detail.jobs || []).find((j) => j.channelId === p.채널));
-    return { 계정: p.계정, 상태: job ? STATUS(job) : '작업 없음', 시각: job?.scheduledAt ? new Date(job.scheduledAt).toISOString() : p.시각, 방법: '작업실', 작업: job?.id || p.작업,
+  const detail = jobs ? null : await ws.get(`/api/social/posts/${state.postId}`);
+  const rows = [], 막힘 = [];
+  for (const p of state.판 || []) {
+    let job;
+    if (jobs) {
+      const found = jobOf(state, p, jobs);
+      if (!found.job) { 막힘.push(found.막힘 || `${p.계정}: 캐시에 작업 ${String(p.작업 || '').slice(0, 8)}이 없다 — 이 줄은 쓰지 않았다`); continue; }
+      job = found.job;
+    } else job = (detail.jobs || []).find((j) => j.id === p.작업) || (detail.jobs || []).find((j) => j.channelId === p.채널);
+    rows.push({ 계정: p.계정, 상태: job ? STATUS(job) : '작업 없음', 시각: job?.scheduledAt ? new Date(job.scheduledAt).toISOString() : p.시각, 방법: '작업실', 작업: job?.id || p.작업,
       원고ID: state.postId, ...(job?.publishedAt ? { 게시관측시각: job.publishedAt } : {}),
-      ...(job?.publicationUrl ? { 주소: job.publicationUrl } : {}), ...(job?.message ? { 서버: String(job.message).slice(0, 200) } : {}) };
-  });
-  if (save) mergeResults(bundle, rows);
-  return { postId: state.postId, rows };
+      ...(job?.publicationUrl ? { 주소: job.publicationUrl } : {}), ...(job?.message ? { 서버: String(job.message).slice(0, 200) } : {}) });
+  }
+  if (save && rows.length) mergeResults(bundle, rows);
+  return { postId: state.postId, rows, 막힘 };
+}
+
+// 게시가 끝난 작업실 판의 공개 주소를 게시결과에 적을 줄(11-18). synkbrief · yuhobuilds 인스타 줄이 게시 뒤에도 「승인 대기」 · 주소 없음으로 남아
+// 게시 성과 판정이 편 폴더를 못 찾았다. 세 회차 검수 뒤 설계 검토로 다시 짰다(.tmp/검수/설계검토_게시성과편연결_20261118.md).
+// 신원은 등록 도구가 잠금 안에서만 쓰는 작업실.json에서 읽는다 — 게시결과 줄은 사람과 여러 도구가 고쳐 믿지 않는다(D1). 판 줄마다
+//   ① 서버 작업이 그 원고 · 그 채널의 그 작업이고(jobOf) 「게시됨」이며, 공개 주소가 게시물로 읽히고 그 플랫폼이 서버 채널 플랫폼과 같다
+//   ② 같은 원고를 쓰는 작업실.json이 이 편 하나다(편 폴더를 복사한 경우 — ctx.같은원고, D5)
+//   ③ 게시결과에서 그 계정 · 작업 줄이 정확히 하나이고, 그 줄이 도구가 적는 중간 상태(또는 주소 없는 게시됨)이며, 주소 · 게시물ID가 없거나 같은 게시물이다
+//   ④ 그 계정의 줄(rowOf)이 거둔 줄(보류 · 지움)이 아니다 — 지움 줄을 게시됨으로 되살리지 않는다(D3)
+// 일 때만 {계정, 상태 게시됨, 작업, 주소, 게시관측시각}을 낸다. 시각 · 원고ID · 승인 · 서버 메시지는 건드리지 않는다. 이미 「게시됨」 + 같은 게시물이면 넘어간다.
+// 같은 게시물이 작업ID 없는 다른 줄(손 연결이 남긴 추가게시)에도 있으면 판 줄을 채우고 「중복」으로 알린다(D7). → { rows, 막힘, 중복 }
+const 채울상태 = new Set(['승인 대기', '예약됨', '보내는 중', '확인 필요', '작업 없음', '게시됨']);
+function publishedPlan(bundle, cache, { 같은원고 = () => 1 } = {}) {
+  const { postIdOf } = require('./lib/게시성과판정.js');
+  const { rowOf, WITHDRAWN } = require('./게시장부.js');
+  const out = { rows: [], 막힘: [], 중복: [] };
+  const state = readState(bundle);
+  if (!state?.postId || !Array.isArray(state.판)) return out;
+  const file = path.join(bundle.dir, '게시', '게시결과.json');
+  const result = fs.existsSync(file) ? 묶음.readJson(file) : {};
+  const 판 = Array.isArray(result?.판) ? result.판 : [];
+  const all = [...판, ...(Array.isArray(result?.추가게시) ? result.추가게시 : [])].filter((r) => r && typeof r === 'object');
+  const { samePost } = require('./lib/게시성과연결.js');
+  const sameAs = (r, id) => samePost(r, { 주소: null, 게시물ID: id.externalId, 플랫폼: id.platform });
+  let 원고수 = null;
+  const 판줄 = state.판.filter((p) => p && typeof p === 'object');
+  for (const plate of state.판) {
+    if (!plate || typeof plate.계정 !== 'string' || typeof plate.작업 !== 'string' || !plate.작업) continue;
+    // 한 작업실.json 안에서 같은 작업 · 같은 채널은 판 줄 하나에만 있어야 한다(4회차 GA5 — 두 계정 줄에 같은 주소를 주지 않게)
+    const 겹침 = 판줄.filter((p) => p !== plate && (p.작업 === plate.작업 || (plate.채널 && p.채널 === plate.채널)));
+    if (겹침.length) { out.막힘.push(`${plate.계정}: 작업실.json에서 같은 작업 · 채널이 다른 판 줄(${겹침.map((p) => p.계정).join(', ')})에도 있다 — 사람이 본다`); continue; }
+    const found = jobOf(state, plate, cache?.jobs);
+    if (found.막힘) { out.막힘.push(found.막힘); continue; }
+    const job = found.job;
+    if (!job || job.status !== 'published') continue;
+    const id = postIdOf(job.publicationUrl);
+    if (!id) { out.막힘.push(`${plate.계정}: 서버는 게시됨인데 공개 주소를 게시물로 읽지 못했다(${job.publicationUrl || '주소 없음'})`); continue; }
+    const channel = (cache?.channels || []).find((c) => c && c.id === job.channelId);
+    if (!channel || channel.platform !== id.platform) { out.막힘.push(`${plate.계정}: 공개 주소(${id.platform})가 서버 채널(${channel?.platform || '모름'})과 플랫폼이 다르다`); continue; }
+    const mine = all.filter((r) => r.계정 === plate.계정 && r.작업 === plate.작업);
+    // 이미 「게시됨」 + 같은 게시물 주소면 넘어간다 — 주소 없이 게시물ID만 있는 게시됨 줄은 주소를 채운다(4회차 GA3)
+    if (mine.length === 1 && mine[0].상태 === '게시됨' && postIdOf(mine[0].주소)?.key === id.key) continue;
+    if (원고수 === null) 원고수 = 같은원고(state.postId);
+    if (원고수 !== 1) { out.막힘.push(`${plate.계정}: 같은 원고(${String(state.postId).slice(0, 8)})의 작업실.json이 ${원고수}개 편에 있다 — 어느 편인지 보고 손으로 고친다`); continue; }
+    if (mine.length !== 1) { out.막힘.push(`${plate.계정}: 게시결과에 작업 ${plate.작업.slice(0, 8)} 줄이 ${mine.length}개라 건드리지 않았다(새 줄을 만들지 않는다)`); continue; }
+    const row = mine[0];
+    if (!채울상태.has(row.상태)) { out.막힘.push(`${plate.계정}: 작업 줄이 「${row.상태 || '상태 없음'}」이라 게시됨으로 바꾸지 않는다`); continue; }
+    if ((row.주소 || row.게시물ID) && !sameAs(row, id)) { out.막힘.push(`${plate.계정}: 작업 줄에 다른 게시물이 적혀 있다 — 주소가 달라 건드리지 않았다`); continue; }
+    const cur = rowOf(판, plate.계정);
+    if (cur && WITHDRAWN.has(cur.상태)) { out.막힘.push(`${plate.계정}: 그 계정 줄이 「${cur.상태}」(거둔 판)인데 서버는 게시됨이다 — 사람이 본다`); continue; }
+    out.rows.push({ 계정: plate.계정, 상태: '게시됨', 작업: job.id, 주소: job.publicationUrl, ...(job.publishedAt ? { 게시관측시각: job.publishedAt } : {}) });
+    if (all.some((r) => r !== row && r.계정 === plate.계정 && !r.작업 && sameAs(r, id))) out.중복.push(`${plate.계정}: 같은 게시물이 작업ID 없는 줄에도 있다 — 중복 정리 필요`);
+  }
+  return out;
+}
+
+// 잠금 안에서 부른다 — 작업실.json · 게시결과를 다시 읽어 위 조건을 다시 본 뒤(D5 · 다시 등록 사이), 줄마다 기존 병합(mergeResults)에 「작업줄만」으로 넘긴다.
+// 병합은 읽은 뒤 파일이 바뀌었거나 같은 게시물을 다른 작업ID 줄이 쓰면 다시 막는다. 줄 하나가 막혀도 그 편의 다른 줄은 한다.
+// → { 고침: [{계정, 주소}], 막힘: [까닭], 중복: [까닭] }
+function applyPublished(bundle, cache, ctx = {}) {
+  const plan = publishedPlan(bundle, cache, ctx);
+  const 고침 = [];
+  for (const row of plan.rows) {
+    try { mergeResults(bundle, [row], { 작업줄만: true }); 고침.push({ 계정: row.계정, 주소: row.주소 }); }
+    catch (error) { plan.막힘.push(`${row.계정}: ${error.message}`); }
+  }
+  return { 고침, 막힘: plan.막힘, 중복: plan.중복 };
 }
 
 // 원고를 지금 판(revision)으로 다시 읽어 취소한다 — 예약 작업이 모두 취소된다.
@@ -710,10 +804,53 @@ function queueFolders(repo) {
   return readyFolders(path.join(repo, 'docs', '마케팅')).filter((dir) => !공용쪽기록(path.basename(dir), main));
 }
 
+// 「게시주소」 — docs/마케팅의 모든 편에서 게시가 끝난 작업실 판의 주소를 예약큐 캐시로 게시결과에 적는다(11-18). 예약큐 정기 작업이
+// 서버를 읽은 바로 뒤에 부른다(tools/예약큐예약/run-hidden.py ③). 쓰기는 운영 사본에서만 하고(상태 --캐시와 같은 까닭 — 기록이 한 자리),
+// 다른 자리에서는 미리 보기만 한다. 편 하나가 막혀도 나머지는 하고, 막힌 편은 까닭과 함께 돌려준다. 고칠 줄이 있는 편만 잠근다(고칠 것 없는
+// 편을 잠가 그사이 등록 · 취소가 BUSY로 멈추지 않게). cache = { jobs, channels }(예약큐 캐시).
+async function fillPublished(repo, cache, { run = false } = {}) {
+  const root = path.join(repo, 'docs', '마케팅');
+  const out = { 고침: [], 막힘: [], 중복: [], 쓴파일: [] };
+  const listDirs = () => { try { return fs.readdirSync(root, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => path.join(root, e.name)); } catch { return null; } };
+  const dirs = listDirs();
+  if (!dirs) return out;
+  // 같은 원고를 쓰는 작업실.json 수(D5) — 처음 한 번 세고, 쓰는 편은 잠금 안에서 폴더를 다시 훑어 다시 센다(그사이 편 폴더를 복사했을 때)
+  const 원고수 = () => { const m = new Map(); for (const dir of listDirs() || []) { const st = readState({ dir }); if (st?.postId) m.set(st.postId, (m.get(st.postId) || 0) + 1); } return m; };
+  const first = 원고수();
+  for (const dir of dirs) {
+    const bundle = { dir, name: path.basename(dir) };
+    let r;
+    try {
+      const pre = publishedPlan(bundle, cache, { 같은원고: (id) => first.get(id) || 0 });
+      if (!run || !pre.rows.length) r = { 고침: pre.rows.map((x) => ({ 계정: x.계정, 주소: x.주소 })), 막힘: pre.막힘, 중복: pre.중복 };
+      else r = await withBundleLock(bundle, async () => applyPublished(bundle, cache, { 같은원고: (id) => 원고수().get(id) || 0 }));
+    } catch (error) { out.막힘.push({ 편: bundle.name, 까닭: error.message }); continue; }
+    for (const why of r.막힘) out.막힘.push({ 편: bundle.name, 까닭: why });
+    for (const why of r.중복) out.중복.push({ 편: bundle.name, 까닭: why });
+    if (!r.고침.length) continue;
+    if (run) out.쓴파일.push(path.relative(repo, path.join(dir, '게시', '게시결과.json')).split(path.sep).join('/'));
+    out.고침.push(...r.고침.map((x) => ({ 편: bundle.name, 계정: x.계정, 주소: x.주소 })));
+  }
+  return out;
+}
+
+// 「게시주소」를 쓸 수 있는 자리인가(GA4) — 운영 사본이거나, 운영 사본 가리킴을 확실히 읽었는데 없는 PC일 때만. 가리지 못하면(오류) 쓰지 않는다.
+function 게시주소쓰기자리(repo) {
+  let 운영;
+  try { 운영 = require('./운영사본.js'); } catch (error) { return { ok: false, why: `운영사본.js를 읽지 못했다 — ${error.message}` }; }
+  let f;
+  try { f = 운영.찾기(repo); } catch (error) { return { ok: false, why: `운영 사본 가리킴을 읽지 못했다 — ${String(error.message).split('\n')[0]}` }; }
+  if (!f.운영사본) return { ok: true };
+  if (운영.운영사본인가(repo)) return { ok: true };
+  return { ok: false, why: `쓰기는 운영 사본의 정기 작업이 한다(${f.운영사본})` };
+}
+const 게시주소_캐시한도ms = 2 * 3600_000;
+
 // 예약큐 정기 작업이 남긴 서버 캐시(tools/lib/작업실읽기.cjs 모양)의 작업 목록.
 function cachedJobs() {
   const file = path.join(process.env.SYNK_QUEUE_DIR || path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'synk', '예약큐'), '서버.json');
-  try { return { jobs: require('./lib/작업실읽기.cjs').다듬기(묶음.readJson(file)).jobs, file }; } catch { return null; }
+  // 채널 · 읽은 때는 「게시주소」가 쓴다(채널 플랫폼 대조 · 낡은 캐시 건너뛰기, 11-18)
+  try { const d = require('./lib/작업실읽기.cjs').다듬기(묶음.readJson(file)); return { jobs: d.jobs, channels: d.channels, checkedAt: d.checkedAt, file }; } catch { return null; }
 }
 
 function printPlan(bundle, rows) {
@@ -729,7 +866,7 @@ function printPlan(bundle, rows) {
 const FLAGS = new Set(['--실행', '--텔레그램', '--json', '--대기열', '--저장안함', '--언어없이', '--AI표시없이', '--첫댓글빼고', '--캐시', '--주소']);
 
 // 첫 인자를 명령 이름으로 맞춘다. 터미널에 따라 한글이 다른 꼴(NFD)로 넘어올 수 있어 NFC로 맞추고, 치기 쉬운 영어 이름도 받는다.
-const 명령별칭 = { credential: '자격', status: '상태', cancel: '취소' };
+const 명령별칭 = { credential: '자격', status: '상태', cancel: '취소', published: '게시주소' };
 function 명령이름(arg) {
   const s = String(arg ?? '').normalize('NFC');
   return 명령별칭[s.toLowerCase()] || s;
@@ -835,6 +972,45 @@ async function main() {
   const o = args(argv);
   const 명령 = 명령이름(o.rest[0]);
   if (명령 === '자격') { saveCredentialInteractive(); return; }
+  if (명령 === '게시주소') {
+    const cached = cachedJobs();
+    if (!cached) {
+      const why = '예약큐 서버 캐시가 없다 — 정기 작업 「SYNK 예약큐」가 아직 안 돌았다(이번은 건너뛴다)';
+      console.log(o.json ? JSON.stringify({ 건너뜀: why, 고침: [], 막힘: [], 중복: [], 쓴파일: [] }, null, 2) : why);
+      return;
+    }
+    // 서버 읽기(②)가 실패해 캐시가 낡았으면 그 캐시로 쓰지 않는다(GA10)
+    const age = Date.now() - Date.parse(cached.checkedAt || '');
+    if (!(age <= 게시주소_캐시한도ms)) {
+      const why = `예약큐 서버 캐시가 낡았다(읽은 때 ${cached.checkedAt || '모름'}) — 이번은 건너뛴다`;
+      console.log(o.json ? JSON.stringify({ 건너뜀: why, 고침: [], 막힘: [], 중복: [], 쓴파일: [] }, null, 2) : why); // --json은 늘 JSON으로(GA4)
+      return;
+    }
+    const repo = 묶음.repoOf(process.cwd());
+    // 쓰기는 운영 사본에서만(운영 사본이 없는 PC는 이 자리) — 세션 작업본은 미리 보기로 본다. 가리지 못하면 쓰지 않는다(GA4)
+    const 자리 = o.run ? 게시주소쓰기자리(repo) : { ok: false };
+    const run = o.run && 자리.ok;
+    if (o.run && !run) console.log(`${자리.why} — 여기서는 미리 보기만 한다`);
+    const r = await fillPublished(repo, cached, { run });
+    if (r.막힘.length) process.exitCode = 1;
+    // 쓴 파일은 출력 꼴(--json)과 상관없이 올린다(GA3 — 다음 회차는 이미 고친 줄을 건너뛰어 다시 올리지 않는다)
+    if (run && r.쓴파일.length) {
+      try {
+        const { 장부올리기, 장부올리기글 } = require('./lib/장부올리기.js');
+        const pushed = await 장부올리기(r.쓴파일, `chore(작업실 예약): 게시가 끝난 판 ${r.고침.length}개의 공개 주소를 게시결과에 적음 — ${[...new Set(r.고침.map((x) => x.편))].slice(0, 4).join(', ')}`, { 저장소: repo });
+        r.올리기 = 장부올리기글(pushed, '게시 주소') || null;
+        // 못 올렸으면 실패로 끝낸다(GA6) — 쓴 줄은 다음 회차가 이미 고친 줄로 건너뛰니, 다음 장부 올리기나 세션 올리기가 함께 가져간다
+        if (['실패', '멈춤'].includes(pushed?.결과)) process.exitCode = 1;
+      } catch (error) { r.올리기 = `게시 주소 기록 올리기 실패(작업본에 남음 — 다음 올리기에 같이): ${error.message}`; process.exitCode = 1; }
+    }
+    if (o.json) { console.log(JSON.stringify(r, null, 2)); return; }
+    console.log(`게시가 끝난 작업실 판 ${r.고침.length}개${run ? ' 게시결과에 적음' : '(미리 보기)'}${r.막힘.length ? ` · 막힌 곳 ${r.막힘.length}` : ''}${r.중복.length ? ` · 중복 정리 필요 ${r.중복.length}` : ''}`);
+    for (const x of r.고침) console.log(`  ${x.편} · ${x.계정} · ${x.주소}`);
+    for (const x of r.막힘) console.log(`  ! ${x.편}: ${x.까닭}`);
+    for (const x of r.중복) console.log(`  ~ ${x.편}: ${x.까닭}`);
+    if (r.올리기) console.log('  ' + r.올리기);
+    return;
+  }
   if (명령 === '상태' && argv.includes('--캐시')) {
     const cached = cachedJobs();
     if (!cached) { console.log('예약큐 서버 캐시가 없다 — 정기 작업 「SYNK 예약큐」가 아직 안 돌았다'); process.exitCode = 1; return; }
@@ -842,6 +1018,8 @@ async function main() {
     const r = await status(target, null, { save: !o.noSave, jobs: cached.jobs });
     if (!r) { 기록없음(target); return; }
     for (const row of r.rows) console.log(`  ${row.계정} · ${row.상태} · ${kst(row.시각)}${row.주소 ? ` · ${row.주소}` : ''}`);
+    for (const why of r.막힘 || []) console.log(`  ! ${why}`);
+    if (r.막힘?.length) process.exitCode = 1;
     if (!o.noSave) await 운영사본기록올리기(target, ['게시결과.json'], `chore(작업실 예약): ${target.name} 상태 맞춤`);
     return;
   }
@@ -896,4 +1074,4 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.message); process.exitCode = error.code === 'NO_CREDENTIAL' ? 3 : error.code === 'USAGE' ? 2 : 1; });
 
-module.exports = { Workspace, connect, planBundle, register, handleOne, status, cancel, matchChannel, checkedFile, readyFolders, queueFolders, 다른자리등록, sharedBundle, cachedJobs, sendLink, resendPending, notifyFailureOnce, resendFailureNotices, clearFailureNotice, checkFailureTelegram: () => 텔레그램한번.check(TELEGRAM), companions, 명령이름, STATUS, LOCAL_DIR, FAILURE_DIR, mergeResults };
+module.exports = { Workspace, connect, planBundle, register, handleOne, status, cancel, matchChannel, checkedFile, readyFolders, queueFolders, 다른자리등록, sharedBundle, cachedJobs, sendLink, resendPending, notifyFailureOnce, resendFailureNotices, clearFailureNotice, checkFailureTelegram: () => 텔레그램한번.check(TELEGRAM), companions, 명령이름, STATUS, LOCAL_DIR, FAILURE_DIR, mergeResults, jobOf, publishedPlan, applyPublished, fillPublished, 게시주소쓰기자리 };

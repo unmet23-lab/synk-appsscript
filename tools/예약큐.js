@@ -308,7 +308,16 @@ function collect(server, accounts, now) {
           const confirmed = local.상태 === '게시됨' && local.게시물ID;
           // 검토 링크를 승인해도 서버는 내보내는 순간까지 reviewWaiting을 남긴다 — 게시결과에 「승인」을 적은 「예약됨」은 예약됨으로 센다(10-27 E4 · B8).
           const approved = local.상태 === '예약됨' && local.승인;
-          if (job && !confirmed) { state = serverState(job); if (approved && state === '승인 대기') state = '예약됨'; url = job.publicationUrl || url; }
+          if (job && !confirmed) {
+            state = serverState(job); if (approved && state === '승인 대기') state = '예약됨'; url = job.publicationUrl || url;
+            // 서버는 게시됨인데 게시결과에 주소가 없다(11-18 설계 검토 S1) — ③ 「작업실 게시 주소」가 막혔거나 아직 안 돈 판이다. 나간 지 2시간이
+            // 넘어도 비어 있으면 알린다(게시 성과 판정이 이 판을 편에 잇지 못한다). 막힌 까닭은 node tools/작업실예약.js 게시주소(미리 보기)가 보인다.
+            // 게시 완료를 알리는 쪽이 publishedAt을 비워 둘 때가 있다(GPT 검수 GA2) — 그때는 서버가 그 작업을 마지막으로 고친 때(updatedAt), 없으면 예약 시각으로 본다
+            const publishedAt = Date.parse(job.publishedAt || job.updatedAt || job.scheduledAt || '');
+            if (state === '게시됨' && !local.주소 && !local.게시물ID && Number.isFinite(publishedAt) && publishedAt + GRACE_MS < now) {
+              warnings.push(`서버는 게시됨인데 게시결과에 주소가 없음: ${p.계정} · ${dir.name} — node tools/작업실예약.js 게시주소로 까닭을 본다`);
+            }
+          }
           else if (!job && ['승인 대기', '예약됨'].includes(local.상태)) {
             warnings.push(`예약됨인데 서버에 없음: ${p.계정} · ${dir.name}`);
             state = '서버에 없음';
@@ -818,8 +827,18 @@ function todayAlert(report, now) {
 // 「걸린 돌림 판의 판본이 걸린 뒤 바뀜」(11-11)도 텔레그램에 넣지 않는다 — 판본을 고치는 세션 · 14시 게시 회차가 예약 큐 출력에서 보고 바꿔 거는 일이다.
 // 「걸린 돌림 판의 게시글을 · 판본 상태를 읽지 못함」(11-12)도 같다 — 원고 파일을 고치는 세션이 본다.
 const APPROVAL_WARNING = /^(검토 링크가 |걸린 돌림 판의 )/;
+// 「서버는 게시됨인데 게시결과에 주소가 없음」(11-18)은 판마다 한 줄이라 여럿이면 다른 경고를 여덟 줄 밖으로 밀어낸다(GPT 검수 GA4) — 텔레그램에는
+// 첫 주소 누락 경고가 있던 자리에 한 줄로 묶는다(다시 검수 GA1 — 맨 뒤로 옮기면 하나뿐인 주소 누락이 여덟 줄 밖으로 밀린다)
+const ADDRESS_WARNING = '서버는 게시됨인데 게시결과에 주소가 없음: ';
+function addressSummary(all) {
+  const addr = all.filter((w) => w.startsWith(ADDRESS_WARNING));
+  if (addr.length < 2) return all;
+  const line = `${ADDRESS_WARNING}${addr.length}판(${addr.slice(0, 3).map((w) => w.slice(ADDRESS_WARNING.length).split(' — ')[0]).join(' / ')}${addr.length > 3 ? ' 외' : ''}) — node tools/작업실예약.js 게시주소로 까닭을 본다`;
+  const first = all.indexOf(addr[0]);
+  return all.flatMap((w, i) => (i === first ? [line] : w.startsWith(ADDRESS_WARNING) ? [] : [w]));
+}
 function alert(report) {
-  const warnings = report.warnings.filter((w) => !APPROVAL_WARNING.test(w));
+  const warnings = addressSummary(report.warnings.filter((w) => !APPROVAL_WARNING.test(w)));
   // SHIFT 판을 품은 편은 브랜드 줄과 SHIFT 줄 두 번 나오니 폴더로 한 번만 적는다. 까닭(맹검 · 검사 뒤 바뀜 · 판 더해짐)이 있으면 괄호에,
   // 슬롯이 지난 편(돌림 원본 · 옮긴 판)은 아직 걸 판의 날도 괄호에 적는다(11-11 Fable 5.2 검수 P2-9 — 어느 편 · 무슨 까닭인지).
   const fix = [...new Map(report.fix.map((x) => [x.folder, x])).values()].map((x) => {

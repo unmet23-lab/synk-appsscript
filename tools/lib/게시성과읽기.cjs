@@ -20,9 +20,14 @@ const { randomUUID } = require('node:crypto');
 const { execFile } = require('node:child_process');
 
 const PROJECT = 'synk-bake-unmet27';
-// 등록 제목은 앞 TITLE_MAX자(파이썬 글자 = 코드 포인트)만 가져온다. 자동 등록의 제목은 플랫폼 캡션(유튜브는 영상 제목)이라,
-// 캡션으로 편을 잇는 lib/게시성과캡션.js가 「잘렸는가」를 이 값으로 가린다(11-18).
-const TITLE_MAX = 160;
+// 회사 서버는 등록 제목을 JavaScript 글자(UTF-16) 200자에서 잘라 저장한다(11-18 실측 — 331건 가운데 146건이 꼭 200). 자동 등록의 제목은
+// 플랫폼 캡션(유튜브는 영상 제목)이라 캡션으로 편을 잇는 lib/게시성과캡션.js가 쓴다. 읽기는 200자(파이썬 글자 = 코드 포인트)까지라 서버 글을
+// 더 자르지 않고, 「잘렸는가」는 캡션 쪽이 UTF-16 길이 TITLE_MAX로 가린다. 11-18 첫 판은 읽기가 160자에서 잘랐다.
+const TITLE_MAX = 200;
+// 수집기가 모은 게시물(posts)의 제목은 1000자까지 저장돼 있다(11-18 실측 — 384건 가운데 342건에 title, 가장 긴 것 1000이고 꼭 1000자가 13건이라 서버가
+// 1000자에서 자르는 것으로 본다. 200자에서 잘린 등록 146건 가운데 138건이 수집 목록에 있고 모두 등록 제목으로 시작했다). 캡션 연결은 등록 제목이 200자에서
+// 잘렸을 때 이 제목으로 완결 글을 견준다(GPT 검수 GA6 — 꼭 200자인 완결 캡션과 잘린 캡션을 가리려고). 읽기도 그 길이까지 가져온다.
+const POST_TITLE_MAX = 1000;
 // 읽는 플랫폼. 뒤 넷은 API 수집이 없다. 공개 화면이나 로그인 통계 화면에서 읽은 게시물 숫자를 서버 external-observations.mjs의 project()가
 // posts·snapshots(하루 한 벌)에 넣어 둔다(11-19: 텔레그램 · 샤오훙수 · 스레드 · RUTUBE 계정이 장부에 한 줄도 없었다).
 // 더우인은 같은 날 크리에이터 센터 작품 목록의 영상별 숫자를, 링크드인은 개인 프로필 게시물 분석 화면의 숫자를 넣기 시작했다(tools/계정통계예약/post-lifetime.cjs).
@@ -89,7 +94,7 @@ if app and app.get('State',{}).get('Running') is True and mount:
    n=count.get(p['channelId'],0)
    if n>=PER:continue
    count[p['channelId']]=n+1
-   kept.append({'id':p['_id'],'channelId':p['channelId'],'externalId':text(p.get('externalId'),120),'url':text(p.get('url'),300),'publishedAt':when(p['publishedAt']),'publicationFormat':code(p.get('publicationFormat'))})
+   kept.append({'id':p['_id'],'channelId':p['channelId'],'externalId':text(p.get('externalId'),120),'url':text(p.get('url'),300),'publishedAt':when(p['publishedAt']),'publicationFormat':code(p.get('publicationFormat')),'title':text(p.get('title'),${POST_TITLE_MAX}),'urlFromAttachment':p.get('urlFromAttachment') is True})
   out['posts']=kept
   postIds={p['id'] for p in kept}
   since=(now-datetime.timedelta(days=DAYS)).isoformat().replace('+00:00','Z')
@@ -161,4 +166,4 @@ function 다듬기(payload) {
   return { checkedAt: iso(payload.checkedAt) || new Date().toISOString(), channels, entries, posts, snapshots };
 }
 
-module.exports = { 읽기, 다듬기, 파이썬, TITLE_MAX, PLATFORMS, API_PLATFORMS };
+module.exports = { 읽기, 다듬기, 파이썬, TITLE_MAX, POST_TITLE_MAX, PLATFORMS, API_PLATFORMS };

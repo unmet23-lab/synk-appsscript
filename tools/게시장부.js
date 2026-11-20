@@ -348,7 +348,12 @@ function postTextSha(dir, account) {
   const mine = (bundle.prep && Array.isArray(bundle.prep.판) ? bundle.prep.판 : []).filter((p) => p && p.계정 === account).slice(0, 1);
   let plate = null;
   try { plate = mine.length ? 묶음.plates({ ...bundle, prep: { ...bundle.prep, 판: mine } })[0] : null; } catch (e) { throw textUnreadable(e, dir); }
-  const parts = TEXT_KEYS.map((k) => (plate?.texts?.[k] == null ? '' : String(plate.texts[k]).replace(/\r\n?/g, '\n').trim()));
+  return textShaOf(plate?.texts);
+}
+// 판 글(texts) 하나의 지문 — postTextSha와 게시 성과 캡션 연결(tools/lib/게시성과캡션.js)이 같은 셈을 쓴다(11-18). 캡션 연결은 판 글을 한 번만 읽어
+// 그 글로 지문과 캡션을 함께 본다(지문을 센 뒤 글을 다시 읽으면 그 사이 바뀐 글로 지문 검사를 지나갈 수 있다 — GPT 검수 GA8).
+function textShaOf(texts) {
+  const parts = TEXT_KEYS.map((k) => (texts?.[k] == null ? '' : String(texts[k]).replace(/\r\n?/g, '\n').trim()));
   return parts.some(Boolean) ? crypto.createHash('sha256').update(JSON.stringify(parts)).digest('hex') : null;
 }
 
@@ -688,5 +693,5 @@ function main(argv) {
   } catch (error) { console.error(error.message); return 1; }
 }
 
-module.exports = { claim, finish, release, pendingClaims, sameCell, closedCell, blockedWhy, postTextSha, readyDayWhy, TEXT_UNREADABLE, main, held, rowOf, registryHolds, CLAIM, TRIAL, WITHDRAWN };
+module.exports = { claim, finish, release, pendingClaims, sameCell, closedCell, blockedWhy, postTextSha, textShaOf, readyDayWhy, TEXT_UNREADABLE, main, held, rowOf, registryHolds, CLAIM, TRIAL, WITHDRAWN };
 if (require.main === module) process.exitCode = main(process.argv.slice(2));

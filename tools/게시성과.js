@@ -15,6 +15,8 @@
  *   node tools/게시성과.js --화면목록 [--json]  주 1회 읽을 칸 목록(요약의 「화면 필요」와 같다)
  *   node tools/게시성과.js --요약              장부만으로 요약을 다시 만든다(서버를 읽지 않는다)
  *   node tools/게시성과.js --연결목록 <json> [--실행]  주소·편·계정·구분·근거·이유를 확인해 기존 장부/게시결과에 잇는다(게시 안 함)
+ *     게시결과에 다른 번호만 적힌 판(페북 페이지 게시물 번호)에 그 게시물의 주소를 이을 때는 「같은게시물」에 그 줄의 게시물ID를 글자 그대로 적는다
+ *     — 그 번호 줄 하나에만 적고(없거나 여럿이면 멈춘다) 그 번호는 「처음게시물ID」로 남는다
  *   (늘) 주소 없이 건 판의 게시물은 계정 · 게시글지문 · 서버 글 = 판 글이 맞으면 스스로 잇는다(캡션 연결 — lib/게시성과캡션.js, 장부 「게시연결」 how 캡션)
  *   공통: --json · --캐시 <서버 읽기 JSON>(시험·다시 보기) · --저장소 <폴더>(기본: 이 도구가 든 저장소) · --쇼츠안읽음
  *
@@ -171,7 +173,7 @@ function loadAccounts(repo) {
   try {
     const { accounts } = JSON.parse(fs.readFileSync(path.join(repo, 'docs', '마케팅', 'sns-계정.json'), 'utf8'));
     return Object.entries(accounts || {}).map(([key, a]) => ({ key, platform: a.platform, handle: a.handle || '', ...(a.apiPageId ? { apiPageId: String(a.apiPageId) } : {}),
-      ...(a.publicUrl ? { url: String(a.publicUrl) } : {}) }));
+      ...(a.publicUrl ? { url: String(a.publicUrl) } : {}), ...(a.expectedChannelId ? { expectedChannelId: String(a.expectedChannelId) } : {}) }));
   } catch { return []; }
 }
 
@@ -488,7 +490,7 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
     '',
     '## 서버에 등록되지 않은 게시',
     '',
-    '편 폴더 게시결과.json에 「게시됨」으로 적혔는데 서버 게시 성과에 없는 주소다. 이 편은 판정이 쌓이지 않으니 작업실 「게시 주소로 추가」로 등록한다(24시간 창은 게시 + 30시간에 닫힌다). 「주소 없음」 줄은 서버가 재는 계정(인스타 · 페북 · 유튜브 · 틱톡) 판이 게시물 주소 없이 「게시됨」인 것이다 — 그 판의 공개 주소를 게시결과.json 「주소」에 적으면 다음 회차에 위 등록 줄로 바뀐다(14시 게시 작업 1단계 「어제 슬롯 판 공개 확인」).',
+    '편 폴더 게시결과.json에 「게시됨」으로 적혔는데 서버 게시 성과에 없는 주소다. 이 편은 판정이 쌓이지 않으니 작업실 「게시 주소로 추가」로 등록한다(24시간 창은 게시 + 30시간에 닫힌다). 「주소 없음」 줄은 서버가 재는 계정(인스타 · 페북 · 유튜브 · 틱톡) 판이 게시물 주소 없이 「게시됨」인 것이다 — 그 판의 공개 주소를 게시결과.json 「주소」에 적으면 다음 회차에 위 등록 줄로 바뀐다(14시 게시 작업 1단계 「어제 슬롯 판 공개 확인」). 게시물ID만 적힌 판(페북 페이지 게시물 번호 등)은 그 번호가 서버 등록 주소의 번호와 다르면 스스로 잇지 않는다 — 같은 게시물임을 확인한 뒤 --연결목록 요청의 「같은게시물」에 그 줄의 게시물ID를 글자 그대로 적어 잇는다(적혀 있던 번호는 「처음게시물ID」로 남는다). 주소만 손으로 적으면 번호가 어긋난 채 남는다.',
     '',
     ...(unregistered.length ? unregistered.map(u => (u.주소없음
       ? `- ${kst(u.at)} ${u.folder} · ${u.account} · 주소 없음${u.url ? `(게시물 주소가 아님: ${u.url})` : ''}`
@@ -507,10 +509,17 @@ function summarize({ ledger, now, unregistered = [], unmapped = [], index = null
 const TRACKED_ACCOUNT = /instagram|facebook|youtube|tiktok/;
 
 /** 게시결과.json에 「게시됨」인데 서버 등록에 없는 주소(최근 14일) — 서버가 재는 계정 판이 게시물 주소 없이 「게시됨」이면 주소없음으로 함께.
- * 장부의 콘텐츠 연결(사람 --연결목록 · 캡션 연결)이 그 편 · 계정에 이미 게시물을 이었으면 주소없음으로 띄우지 않는다(판정은 쌓이고 있다) */
+ * 장부의 콘텐츠 연결(사람 --연결목록 · 캡션 연결)이 그 편 · 계정에 게시결과에 안 적힌 게시물을 이어 두었으면, 그 수만큼만 주소없음 줄을 덜 띄운다
+ * (판정은 쌓이고 있다). 이미 주소가 적힌 게시물의 연결은 세지 않는다 — 원 게시만 이어져 있을 때 주소 없는 재게시 경고까지 지우지 않게(GPT 검수 GA9) */
 function unregisteredOf(index, registeredKeys, now, connections = new Map()) {
   const out = [];
-  const linked = new Set([...connections.values()].filter(l => l.group === '콘텐츠' && l.folder).map(l => `${l.folder}|${l.account}`));
+  const covered = new Map();
+  for (const l of connections.values()) {
+    if (l.group !== '콘텐츠' || !l.folder) continue;
+    const info = index.folders.get(l.folder);
+    if (info && 연결.resultRows(info.result).some(r => r && 판정.postIdOf(r.주소)?.key === l.post)) continue;
+    covered.set(`${l.folder}|${l.account}`, (covered.get(`${l.folder}|${l.account}`) || 0) + 1);
+  }
   for (const info of index.folders.values()) {
     for (const p of 연결.resultRows(info.result)) {
       if (!p || p.상태 !== '게시됨') continue;
@@ -518,7 +527,9 @@ function unregisteredOf(index, registeredKeys, now, connections = new Map()) {
       if (!Number.isFinite(at) || at < now - RECENT_DAYS * 86_400_000 || at > now) continue;
       const id = 판정.postIdOf(p.주소);
       if (!id) {
-        if (typeof p.계정 === 'string' && TRACKED_ACCOUNT.test(p.계정) && !linked.has(`${info.folder}|${p.계정}`)) out.push({ folder: info.folder, account: p.계정, url: p.주소 || null, at, 주소없음: true });
+        const key = `${info.folder}|${p.계정}`;
+        if (covered.get(key) > 0) { covered.set(key, covered.get(key) - 1); continue; }
+        if (typeof p.계정 === 'string' && TRACKED_ACCOUNT.test(p.계정)) out.push({ folder: info.folder, account: p.계정, url: p.주소 || null, at, 주소없음: true });
         continue;
       }
       // 텔레그램 · 샤오훙수 · 스레드 · RUTUBE는 「게시 주소로 추가」로 등록하는 플랫폼이 아니다 — 서버 하루 숫자가 들어오면 판정한다(11-19)
@@ -608,7 +619,7 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
     const { plans, failed } = 캡션.준비(repo, requests, source, accounts, [...ledger, ...linkLines], now);
     autoLines = plans.filter(p => p.changed).map(p => p.line);
     for (const line of autoLines) connections.set(line.post, line);
-    report.캡션연결 = autoLines.map(l => ({ post: l.post, 편: l.folder, 계정: l.account }));
+    report.캡션연결 = autoLines.map(l => ({ post: l.post, 편: l.folder, 계정: l.account, ...(l.how && l.how !== '캡션' ? { 방법: l.how } : {}) }));
     report.캡션못이음 = [...failed, ...skipped.filter(s => s.account)];
   } catch (e) { report.캡션연결오류 = e.message; }
   const server = 연결.filterServer(source, connections);
@@ -669,6 +680,8 @@ async function run(o, { now = Date.now(), shorts = null, data = null } = {}) {
   report.별도분류 = [...connections.values()].filter(l => l.group !== '콘텐츠').length;
   const studyLedger = ledgerAfter.filter(l => !connections.has(l.post) || connections.get(l.post).group === '콘텐츠');
   report.시험 = 시험요약글(시험.시험판정({ ledger: studyLedger, screens: screensOf(studyLedger), index, accounts, now }));
+  // 미리 보기도 게시결과 쓰기를 메모리로 한 번 돌려, --실행에서 멈출 연결(같은게시물 번호 줄이 없음 · 번호가 다름)을 지금 보인다(설계 검토 8 P2-4)
+  report.게시결과 = 연결.planResults(repo, linkPlans).map(p => path.relative(repo, p.file).replace(/\\/g, '/'));
   if (!o.실행) return report;
 
   // 쓰기 — 장부(바뀐 판정만) → 편 폴더 → 요약 → 올리기
@@ -761,7 +774,7 @@ async function main(argv) {
     for (const u of report.미등록 || []) console.log(`  ! 서버 미등록: ${u}`);
     for (const u of report.미연결 || []) console.log(`  ! 편 연결 필요: ${u.channel} ${u.url} (계정·원고 확인 뒤 --연결목록)`);
     if (report.연결?.length) console.log(`  편 연결 ${report.연결.length}건${o.실행 ? ' 확인·기록' : ' 미리 보기'}`);
-    if (report.캡션연결?.length) console.log(`  캡션으로 이음 ${report.캡션연결.length}건${o.실행 ? '' : '(미리 보기)'}: ${report.캡션연결.map(c => `${c.편} ${c.계정}`).join(' · ')}`);
+    if (report.캡션연결?.length) console.log(`  캡션 · 게시물ID로 이음 ${report.캡션연결.length}건${o.실행 ? '' : '(미리 보기)'}: ${report.캡션연결.map(c => `${c.편} ${c.계정}${c.방법 ? `(${c.방법})` : ''}`).join(' · ')}`);
     if (report.캡션연결오류) console.log(`  ! 캡션 연결을 건너뜀: ${report.캡션연결오류}`);
     if (report.올리기) console.log(`  ${report.올리기}`);
     if (!o.실행 && report.새판정.length) console.log('  (미리 보기 — --실행을 붙이면 쓴다)');

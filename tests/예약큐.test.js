@@ -1134,3 +1134,56 @@ test('걸린 돌림 판의 게시글 지문은 그 계정 판의 글만 읽는�
   fs.writeFileSync(원고, 좋은.replace('Di esto', 'Dilo'));
   assert.match(큐().out, /! 걸린 돌림 판의 판본이 걸린 뒤 바뀜: lab-mx-youtube .*건 뒤에 게시글\(제목 · 본문 · 댓글\)을 고쳤다/);
 });
+
+// 서버는 게시됨인데 게시결과에 주소가 없는 작업실 판(11-18 설계 검토 S1) — 「작업실 게시 주소」(③)가 막혔거나 안 돈 판을 알린다. 나간 지 2시간 안은 조용하다.
+test('작업실 판이 서버에서 게시됐는데 게시결과에 주소가 없으면 2시간 뒤 경고한다', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-주소없음-'));
+  try {
+    fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: { 'synkbrief-instagram': { platform: 'instagram', handle: '@synkbrief' } } }));
+    const cache = path.join(base, '서버.json');
+    fs.writeFileSync(cache, JSON.stringify({ checkedAt: '2026-11-18T03:00:00Z', channels: [{ id: 'ch-ig', platform: 'instagram', handle: 'synkbrief' }], posts: [], jobs: [
+      { id: 'job-old', channelId: 'ch-ig', status: 'published', scheduledAt: '2026-11-17T12:00:00Z', publishedAt: '2026-11-17T12:01:00Z', publicationUrl: 'https://www.instagram.com/reel/DfzTnYHiUuc/' },
+      { id: 'job-new', channelId: 'ch-ig', status: 'published', scheduledAt: '2026-11-18T02:30:00Z', publishedAt: '2026-11-18T02:31:00Z', publicationUrl: 'https://www.instagram.com/reel/DfzTodaDVOe/' },
+      { id: 'job-done', channelId: 'ch-ig', status: 'published', scheduledAt: '2026-11-16T12:00:00Z', publishedAt: '2026-11-16T12:01:00Z', publicationUrl: 'https://www.instagram.com/reel/DfuKEM-kZ2H/' }] }));
+    const plate = (name, 슬롯, 작업, extra = {}) => 편(name, { 브랜드: 'synkbrief', 슬롯, 성격: '상시', 제목: name, 판: [{ 계정: 'synkbrief-instagram', 시각: `${슬롯}T21:00+09:00` }] },
+      { 판: [{ 계정: 'synkbrief-instagram', 상태: '승인 대기', 방법: '작업실', 작업, ...extra }] }, base);
+    plate('sb-old', '2026-11-17', 'job-old');
+    plate('sb-new', '2026-11-18', 'job-new');
+    plate('sb-done', '2026-11-16', 'job-done', { 상태: '게시됨', 주소: 'https://www.instagram.com/reel/DfuKEM-kZ2H/' });
+    const r = spawnSync(process.execPath, [tool, '--폴더', base, '--서버캐시', cache, '--지금', '2026-11-18T12:00+09:00', '--json'],
+      { encoding: 'utf8', env: { ...process.env, SYNK_QUEUE_DIR: path.join(base, '상태') } });
+    assert.equal(r.status, 0, r.stderr);
+    const warnings = JSON.parse(r.stdout).warnings.filter((w) => w.startsWith('서버는 게시됨인데'));
+    assert.deepEqual(warnings, ['서버는 게시됨인데 게시결과에 주소가 없음: synkbrief-instagram · sb-old — node tools/작업실예약.js 게시주소로 까닭을 본다']);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
+
+// GPT 검수(게시성과예약큐경고-20261118) GA2 · GA4 — 게시 시각이 빈 게시됨 작업도 알리고, 텔레그램에서는 주소 누락을 한 줄로 묶어 다른 경고를 밀어내지 않는다
+test('게시 시각이 빈 게시됨 작업도 주소 누락을 알리고, --알림은 주소 누락을 한 줄로 묶어 다른 경고를 여덟 줄 밖으로 밀어내지 않는다', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), '예약큐-주소묶음-'));
+  try {
+    fs.writeFileSync(path.join(base, 'sns-계정.json'), JSON.stringify({ accounts: { 'synkbrief-instagram': { platform: 'instagram', handle: '@synkbrief' } } }));
+    const jobs = [];
+    const plate = (name, 슬롯, 작업, 상태 = '승인 대기') => 편(name, { 브랜드: 'synkbrief', 슬롯, 성격: '상시', 제목: name, 판: [{ 계정: 'synkbrief-instagram', 시각: `${슬롯}T21:00+09:00` }] },
+      { 판: [{ 계정: 'synkbrief-instagram', 상태, 방법: '작업실', 작업 }] }, base);
+    // job-0은 예약 시각은 오래됐지만 서버가 30분 전에 게시로 고쳤다(updatedAt) — 아직 2시간 안이라 알리지 않아야 한다(다시 검수 GA2)
+    for (let i = 0; i < 9; i += 1) {
+      jobs.push({ id: `job-${i}`, channelId: 'ch-ig', status: 'published', scheduledAt: '2026-11-17T12:00:00Z', publishedAt: null, updatedAt: i === 0 ? '2026-11-18T02:30:00Z' : '2026-11-17T12:01:00Z', publicationUrl: `https://www.instagram.com/reel/DfNULLPUB00${i}/` });
+      plate(`sb-null-${i}`, '2026-11-17', `job-${i}`);
+    }
+    plate('sb-gone', '2026-11-19', 'job-없음', '예약됨');
+    const cache = path.join(base, '서버.json');
+    fs.writeFileSync(cache, JSON.stringify({ checkedAt: '2026-11-18T03:00:00Z', channels: [{ id: 'ch-ig', platform: 'instagram', handle: 'synkbrief' }], posts: [], jobs }));
+    const sent = path.join(base, '보낸글.txt');
+    const r = spawnSync(process.execPath, [tool, '--폴더', base, '--서버캐시', cache, '--지금', '2026-11-18T12:00+09:00', '--json', '--알림'],
+      { encoding: 'utf8', env: { ...process.env, SYNK_QUEUE_DIR: path.join(base, '상태'), SYNK_HERMES_EXE: 'file:' + sent } });
+    assert.equal(r.status, 0, r.stderr);
+    const addr = JSON.parse(r.stdout).warnings.filter((w) => w.startsWith('서버는 게시됨인데'));
+    assert.equal(addr.length, 8, 'publishedAt이 비어도 updatedAt으로 2시간을 잰다');
+    assert.ok(!addr.some((w) => w.includes('sb-null-0')), '예약 시각이 아니라 updatedAt으로 잰다 — 30분 전에 나간 판은 아직 알리지 않는다');
+    const text = fs.readFileSync(sent, 'utf8');
+    assert.match(text, /예약됨인데 서버에 없음: synkbrief-instagram · sb-gone/, '다른 경고가 밀려나지 않는다');
+    assert.equal((text.match(/서버는 게시됨인데/g) || []).length, 1, '주소 누락은 한 줄로');
+    assert.match(text, /주소가 없음: 8판\(synkbrief-instagram · sb-null-1 \/ synkbrief-instagram · sb-null-2 \/ synkbrief-instagram · sb-null-3 외\)/);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
