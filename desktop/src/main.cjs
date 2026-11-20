@@ -145,16 +145,20 @@ async function launchFromTray(id){
 }
 // 창이 없는 동안 로그인 복원이 다시 시도할 수 있는 실패로 멈추면 본체가 다시 잇는다. 5초에서 두 배씩 5분까지 늘린다.
 // Windows 로그인 직후 망이 붙기 전에 숨은 채 켜지는 길이다. 창이 생기면 화면이 「다시 불러오기」를 맡는다(설계 검토 D1)
-let hiddenAuthRetry=null,hiddenAuthDelay=5000;
+let hiddenAuthRetry=null,hiddenAuthDelay=5000,hiddenAuthLoading=false;
 function scheduleHiddenAuthRetry(state){
   const waiting=!!auth&&runtime.clientId==='platform'&&(!window||window.isDestroyed())&&!quittingRequested&&state?.status==='error'&&state.error?.retryable===true;
-  if(!waiting){if(hiddenAuthRetry){clearTimeout(hiddenAuthRetry);hiddenAuthRetry=null;}if(state?.status!=='error')hiddenAuthDelay=5000;return;}
-  if(hiddenAuthRetry)return;
+  // 대기 시간은 로그인이 끝난 때(성공이나 다시 시도할 수 없는 끝)에만 처음으로 돌린다. 복원 중의 중간 상태(restoring)는 지나가는 값이다(GPT 검수 GA3)
+  const settled=state?.signedIn===true||!['restoring','signing-in','signing-out','error'].includes(state?.status);
+  if(!waiting){if(hiddenAuthRetry){clearTimeout(hiddenAuthRetry);hiddenAuthRetry=null;}if(settled)hiddenAuthDelay=5000;return;}
+  // 다시 읽는 중이면 예약하지 않는다. 읽기가 시작하며 내는 error 상태로 두 번째 읽기가 겹쳤다. 끝난 뒤 그때의 상태로 한 번만 다시 본다(GPT 검수 GA1)
+  if(hiddenAuthRetry||hiddenAuthLoading)return;
   const delay=hiddenAuthDelay;hiddenAuthDelay=Math.min(hiddenAuthDelay*2,300000);
   hiddenAuthRetry=setTimeout(()=>{
     hiddenAuthRetry=null;
     if(quittingRequested||window&&!window.isDestroyed())return;
-    void Promise.resolve().then(()=>requireSuite(()=>auth.accountRequest('load',{}))).catch(()=>{}).finally(()=>scheduleHiddenAuthRetry(accountStatus()));
+    hiddenAuthLoading=true;
+    void Promise.resolve().then(()=>requireSuite(()=>auth.accountRequest('load',{}))).catch(()=>{}).finally(()=>{hiddenAuthLoading=false;scheduleHiddenAuthRetry(accountStatus());});
   },delay);
   hiddenAuthRetry.unref?.();
 }
@@ -776,7 +780,7 @@ function createWindow(){
         if(runtime.clientId==='platform')result.ui=packaged?{ok:true,packageBootOnly:true}:await require('../tools/native-ui-probe.cjs').probeNativeUI(contents,artifacts);
         result.packaged=packaged;result.capturePath=path.join(artifacts,runtime.clientId+'-hidden-preview.png');
         fs.writeFileSync(path.join(artifacts,runtime.clientId+'-hidden-preview.png'),(await contents.capturePage()).toPNG());
-        if(runtime.clientId==='platform'){result.nativeShell=await contents.executeJavaScript(`({url:location.href,ready:document.documentElement.dataset.ready==='true',face:!!document.querySelector('#portal-entry [data-portal-stage]'),html:document.body.innerText.length,remoteResources:performance.getEntriesByType('resource').filter(r=>/^https?:/.test(r.name)).map(r=>r.name)})`);result.nativeShell.networkBlocked=true;result.nativeShell.networkRequests=smokeNetworkRequests;result.nativeShell.consoleErrors=smokeConsoleErrors;}
+        if(runtime.clientId==='platform'){result.nativeShell=await contents.executeJavaScript(`({url:location.href,ready:document.documentElement.dataset.ready==='true',face:!!document.querySelector('#portal-entry [data-portal-stage]')&&!!document.getElementById('portal-entry')?.dataset.portalState&&!document.querySelector('.host-fallback'),html:document.body.innerText.length,remoteResources:performance.getEntriesByType('resource').filter(r=>/^https?:/.test(r.name)).map(r=>r.name)})`);result.nativeShell.networkBlocked=true;result.nativeShell.networkRequests=smokeNetworkRequests;result.nativeShell.consoleErrors=smokeConsoleErrors;}
         process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:result.node==='undefined'&&result.rejected.code==='UNKNOWN_CLIENT'&&(runtime.clientId!=='world'||smokeDownload?.state==='completed')&&(runtime.clientId!=='platform'||result.ui?.ok&&result.nativeShell.ready&&result.nativeShell.url===PLATFORM_ENTRY&&result.nativeShell.face&&result.nativeShell.remoteResources.length===0&&smokeNetworkRequests.length===0&&smokeConsoleErrors.length===0),...result,download:smokeDownload,visible:window.isVisible(),preferences:contents.getLastWebPreferences()})+'\n');clearTimeout(timer);app.exit(0);
       }catch(error){process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:false,clientId:runtime.clientId,error:error.message})+'\n');clearTimeout(timer);app.exit(1);}
     });

@@ -45,9 +45,9 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
     bindings.clear();
     if(isActive())tray.destroy();tray=null;
   }
-  function updateMenu(){
+  function updateMenu(list=apps){
     if(!isActive())return;
-    const entries=apps.map(id=>({label:TRAY_APPS[id],click:()=>onLaunchApp(id)}));
+    const entries=list.map(id=>({label:TRAY_APPS[id],click:()=>onLaunchApp(id)}));
     tray.setContextMenu(Menu.buildFromTemplate([
       {label:'SYNK Platform 열기',click:show},
       ...(entries.length?[{type:'separator'},...entries]:[]),
@@ -61,8 +61,8 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
     if(!Array.isArray(ids)||ids.length>5||ids.some(id=>typeof id!=='string'||!Object.hasOwn(TRAY_APPS,id)))return {ok:false,code:'INVALID_TRAY_APPS'};
     const next=ids.filter((id,index)=>ids.indexOf(id)===index);
     if(next.length===apps.length&&next.every((id,index)=>apps[index]===id))return {ok:true,changed:false};
-    apps=next;
-    try{updateMenu();return {ok:true,changed:true};}catch{return {ok:false,code:'TRAY_UNAVAILABLE'};}
+    // 메뉴가 실제로 바뀐 뒤에만 적용 목록을 적는다. 갱신이 실패하면 같은 목록으로 다시 걸 수 있다(GPT 검수 GA4)
+    try{updateMenu(next);apps=next;return {ok:true,changed:true};}catch{return {ok:false,code:'TRAY_UNAVAILABLE'};}
   }
   if(enabled){
     try{

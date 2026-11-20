@@ -181,6 +181,25 @@ test('a face that fails to mount leaves window buttons and one line instead of a
   assert.equal(f.root.dataset.ready,'true');
 });
 
+test('the development smoke and the screen probe fail when the face fell back to the one line',()=>{
+  // GPT 검수 GA2: 실패 안내도 ready를 세우므로, 얼굴이 섰는지는 무대 · 얼굴 상태 · 실패 안내가 없음을 함께 본다
+  const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8');
+  const face=main.match(/face:(!!document\.querySelector\('#portal-entry \[data-portal-stage\]'\)[^,]*),html:/);
+  assert.ok(face,'the smoke face criterion is no longer where this test reads it');
+  assert.match(main,/result\.nativeShell\.face&&/,'the smoke verdict needs the face');
+  const page=({stage=true,state='invite',fallback=false})=>({
+    querySelector:selector=>selector==='#portal-entry [data-portal-stage]'?(stage?{}:null):selector==='.host-fallback'?(fallback?{}:null):null,
+    getElementById:id=>id==='portal-entry'?{dataset:state?{portalState:state}:{}}:null,
+  });
+  const judge=document=>vm.runInNewContext(face[1],{document});
+  assert.equal(judge(page({})),true);
+  assert.equal(judge(page({fallback:true})),false,'the one-line notice fails the smoke');
+  assert.equal(judge(page({state:''})),false,'a stage the face never drove fails');
+  assert.equal(judge(page({stage:false})),false);
+  const probe=fs.readFileSync(path.join(__dirname,'../tools/native-ui-probe.cjs'),'utf8');
+  assert.match(probe,/check\('orb-face-mounted',[^\n]*!q\('\.host-fallback'\)/,'the probe fails on the one-line notice too');
+});
+
 test('the host hands convenience the bridge, its storage, the toast and the close-to-tray setting',async()=>{
   const f=await fixture({initialAuth:account('member-i'),clients:[{id:'messenger',status:'installed',canLaunch:true}]});
   assert.equal(f.convenience.bridge,f.bridge);

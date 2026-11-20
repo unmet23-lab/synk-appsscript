@@ -6,7 +6,7 @@ async function probeNativeUI(contents,artifacts){
   const checks=await contents.executeJavaScript(`(async()=>{
     const checks=[],q=s=>document.querySelector(s),check=(name,ok)=>checks.push({name,ok:!!ok}),wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     for(let i=0;i<240&&q('#portal-entry')?.dataset.portalState!=='auth';i++)await wait(50);
-    check('orb-face-mounted',!!q('#portal-entry [data-portal-stage]'));
+    check('orb-face-mounted',!!q('#portal-entry [data-portal-stage]')&&!!q('#portal-entry')?.dataset.portalState&&!q('.host-fallback'));
     q('#portal-entry')?.dispatchEvent(new CustomEvent('synk:qa-guest-entry'));
     for(let i=0;i<240&&document.documentElement.dataset.orbClient!=='app';i++)await wait(50);
     check('orb-qa-guest-entry',document.documentElement.dataset.orbClient==='app'&&q('#portal-entry')?.dataset.portalState==='entered');

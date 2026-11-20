@@ -67,11 +67,11 @@ test('a source run offers no startup setting and never writes Windows startup, w
   assert.equal(f.preferences.update({globalShortcut:'Ctrl+Alt+S',zoomFactor:1.2}).ok,true);assert.deepEqual([...f.registrations.keys()],['Ctrl+Alt+S']);assert.deepEqual(f.startup,[]);
 });
 test('dynamic tray entries use fixed catalog names and ordinary close responds immediately to its setting',()=>{
-  const app=new EventEmitter(),window=new EventEmitter();window.webContents=new EventEmitter();window.isDestroyed=()=>false;window.isMinimized=()=>false;window.show=()=>{};window.focus=()=>{};let hides=0,hide=true,menu,actions=[];window.hide=()=>hides++;
+  const app=new EventEmitter(),window=new EventEmitter();window.webContents=new EventEmitter();window.isDestroyed=()=>false;window.isMinimized=()=>false;window.show=()=>{shows++;};window.focus=()=>{};let shows=0,created=0;let hides=0,hide=true,menu,actions=[];window.hide=()=>hides++;
   class Tray extends EventEmitter{isDestroyed(){return false;}setToolTip(){}setContextMenu(value){menu=value;}destroy(){}}
-  let built=0;const tray=createPlatformTray({app,Tray,Menu:{buildFromTemplate:value=>{built++;return value;}},getWindow:()=>window,createWindow:()=>{},shouldHide:()=>hide,onLaunchApp:id=>actions.push(id)});tray.attachWindow(window);
+  let built=0;const tray=createPlatformTray({app,Tray,Menu:{buildFromTemplate:value=>{built++;return value;}},getWindow:()=>window,createWindow:()=>{created++;},shouldHide:()=>hide,onLaunchApp:id=>actions.push(id)});tray.attachWindow(window);
   // 본체가 거는 앱 줄은 목록의 이름만 받고, 누르면 그 앱의 실행을 본체에 넘긴다. Platform 창을 열지 않는다(PC 0.5.0 설계 1.3)
-  assert.deepEqual(tray.setApps(['messenger','messenger']),{ok:true,changed:true});assert.equal(menu.filter(item=>item.label==='SYNK Workspace').length,1);menu.find(item=>item.label==='SYNK Workspace').click();assert.deepEqual(actions,['messenger']);
+  assert.deepEqual(tray.setApps(['messenger','messenger']),{ok:true,changed:true});assert.equal(menu.filter(item=>item.label==='SYNK Workspace').length,1);menu.find(item=>item.label==='SYNK Workspace').click();assert.deepEqual(actions,['messenger']);assert.equal(shows,0,'the tray row does not show the Platform window');assert.equal(created,0,'nor create it');
   const before=built;assert.deepEqual(tray.setApps(['messenger']),{ok:true,changed:false});assert.equal(built,before,'the same apps do not rebuild the menu');
   assert.equal(tray.setApps(['../cmd']).code,'INVALID_TRAY_APPS');assert.equal(tray.setApps(Array(6).fill('world')).code,'INVALID_TRAY_APPS');assert.equal(tray.setApps([{id:'world'}]).code,'INVALID_TRAY_APPS');
   assert.deepEqual(tray.setApps([]),{ok:true,changed:true});assert.equal(menu.some(item=>item.label==='SYNK Workspace'),false);assert.deepEqual(menu.map(item=>item.label||item.type),['SYNK Platform 열기','separator','완전히 종료']);
