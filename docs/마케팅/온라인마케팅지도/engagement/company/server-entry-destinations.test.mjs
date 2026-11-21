@@ -63,7 +63,8 @@ async function fixture(t,{staffIdentity=false}={}){
   app.store.put('pulseFeatureSettings','main',{myModels:true});
   app.store.put('customerWorkspaces','brand',{id:'brand',status:'active',members:[{synkUserId:id,role:'member'}]});
   return Object.assign(f,{app,request,login,snapshot,jar,token:(owner=id,extra={})=>token(NATIVE_ENTRY_IDENTITY.clientId,owner,extra),
-    browserToken:(owner=id,extra={})=>token(PORTAL_ENTRY_IDENTITY.clientId,owner,extra)});
+    // 운영 등록 platform-browser를 글자로 고정한다(GPT GA1)
+    browserToken:(owner=id,extra={})=>token('6cde60e1-d9c4-489e-8a36-3a2ff392e077',owner,extra)});
 }
 
 async function staffLogin(f){
@@ -336,10 +337,12 @@ test('portal CORS shutdown during authentication returns readable unavailable wi
 
 // 11-21: synk.im 홈 「회사 공간」 칸은 회사 쿠키 없이 SYNK 플랫폼 로그인(platform-browser)으로 자기 배정을 읽는다.
 test('real HTTP portal bearer reads its own assignments with readable CORS, no cookie and no writes',async t=>{
-  const f=await fixture(t);const before=f.snapshot();
+  const f=await fixture(t);assert.equal(PORTAL_ENTRY_IDENTITY.clientId,'6cde60e1-d9c4-489e-8a36-3a2ff392e077');
+  // 다른 계정의 고객 쿠키가 있어도 synk.im의 Bearer 조회는 쿠키를 읽지 않는다 — 읽었다면 계정이 어긋나 409다(GPT GA2)
+  await f.login(other);const before=f.snapshot();
   const pre=await f.request(web,{method:'OPTIONS',cookie:false,originHeader:portal,headers:{'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,content-type'}});
   assert.equal(pre.status,204);assert.equal(pre.headers.get('access-control-allow-headers'),'Authorization, Content-Type');assert.equal(pre.headers.get('access-control-allow-origin'),portal);
-  const r=await f.request(web,{input:{expectedAccountId:id},bearer:f.browserToken(),cookie:false,originHeader:portal});
+  const r=await f.request(web,{input:{expectedAccountId:id},bearer:f.browserToken(),cookie:true,originHeader:portal});
   assert.equal(r.status,200);assert.equal(r.headers.get('access-control-allow-origin'),portal);assert.deepEqual(r.headers.getSetCookie(),[]);
   assert.deepEqual(r.data,{version:1,accountMatch:true,workspace:{state:'assigned',destination:'/'},pulse:{state:'assigned',destination:'/pulse-app/'}});
   const nativeToken=await f.request(web,{input:{expectedAccountId:id},bearer:f.token(),cookie:false,originHeader:portal});

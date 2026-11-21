@@ -216,7 +216,7 @@ test('a company space the lookup cannot confirm does not hold sign-in: Solio sti
   let fan = made.view.scenes.at(-1).fan;
   assert.deepEqual(fan.names.map(n => n.space), ['solio']);
   // 펼침이 까닭과 「다시 확인」을 둔다(PC 검수 F1, 유호님 11-21 「다 고쳐야지」)
-  assert.equal(fan.lead, '회사 공간 배정을 확인하지 못했어요.');
+  assert.equal(fan.lead, '회사 공간 배정을 확인하지 못했습니다.');
   assert.deepEqual(fan.foot.map(f => f.action), ['recheck-spaces', 'account', 'settings', 'logout']);
   // 다시 확인이 또 실패하면 까닭이 남고, 확인되면 공간이 서고 까닭이 사라진다. 회사 공간은 열지 않고 첫 화면 경로도 건드리지 않는다
   answer = { status: 'partial', destinations: ['/'], unavailable: ['pulse'] };
@@ -224,7 +224,14 @@ test('a company space the lookup cannot confirm does not hold sign-in: Solio sti
   await settle();
   fan = made.view.scenes.at(-1).fan;
   assert.deepEqual(fan.names.map(n => n.space), ['solio', 'workspace']);
-  assert.equal(fan.lead, '회사 공간 가운데 일부를 확인하지 못했어요.');
+  assert.equal(fan.lead, '회사 공간 가운데 일부를 확인하지 못했습니다.');
+  // 다 확인되지 않은 다시 확인은 이미 아는 공간을 지우지 않는다(카본 A2)
+  answer = { status: 'unavailable', destinations: [], unavailable: ['workspace', 'pulse'] };
+  made.face.handle('foot', 'recheck-spaces');
+  await settle();
+  fan = made.view.scenes.at(-1).fan;
+  assert.deepEqual(fan.names.map(n => n.space), ['solio', 'workspace']);
+  assert.equal(fan.lead, '회사 공간 배정을 확인하지 못했습니다.');
   answer = { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [] };
   made.face.handle('foot', 'recheck-spaces');
   await settle();

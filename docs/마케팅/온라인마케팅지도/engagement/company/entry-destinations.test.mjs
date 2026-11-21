@@ -17,7 +17,7 @@ function fixture(t,options={}){
   const directory=mkdtempSync(join(tmpdir(),'synk-entry-destinations-')),store=new Store(directory);
   const identity=createSynkIdentity({store,origin,config:null});
   const f={store,stamp:Date.parse('2026-11-15T00:00:00Z'),myModels:true,featureError:false,status:200,accountId:id,active:true,
-    sessions:[{id:sessionId,current:true,revoked:false,product:'platform'}],centralCalls:[],reads:[],webCurrent:true,webEnabled:true,webCalls:0,stopping:false,hook:null};
+    sessions:[{id:sessionId,current:true,revoked:false,product:'platform'}],centralCalls:[],reads:[],webCurrent:true,webEnabled:true,webCalls:0,staffReads:0,stopping:false,hook:null};
   const workspaces=createWorkspaceService({store,clientProjects:{},features:{read(){if(f.featureError)throw Error('synthetic storage failure');return {myModels:f.myModels};}}});
   const auth={user:{synkUserId:id}};
   const customerIdentity={status:()=>({enabled:f.webEnabled}),authenticate:async()=>{f.webCalls++;if(f.webHook)await f.webHook();return f.webAuth===null?null:auth;},isCurrent:value=>value===auth&&f.webCurrent};
@@ -26,6 +26,7 @@ function fixture(t,options={}){
   const route=createEntryDestinations({origin,customerIdentity,customerConfig:options.config===undefined?config:options.config,
     synkIdentity:{hasActiveCompanyAccount(value){f.reads.push(['company',value]);return identity.hasActiveCompanyAccount(value);}},
     pulseWorkspaces:{entryAssignment(value){f.reads.push(['pulse',value]);return workspaces.entryAssignment(value);}},now:()=>f.stamp,stopping:()=>f.stopping,
+    readStaffSession:()=>{f.staffReads++;return null;},
     fetch:async(url,init)=>{assert.equal(url,config.accountApiUrl);assert.equal(init.redirect,'error');assert.equal(init.headers['X-SYNK-Product'],'platform');
       f.centralCalls.push({url,init});if(f.hook)await f.hook();if(f.status!==200)return new Response(null,{status:f.status});
       if(f.rawResponse)return f.rawResponse();return Response.json({ok:true,account:{synk_user_id:f.accountId,status:f.active?'active':'disabled'},sessions:f.sessions});},
@@ -174,18 +175,22 @@ test('web identity closing during authentication is unavailable without reading 
 
 // 11-21 유호님 「웅」(회사 공간 로그인이 끊긴 배정 회원에게도 synk.im 홈 「회사 공간」 칸을): synk.im은 회사 쿠키 대신 자기 SYNK 플랫폼 로그인으로 자기 배정만 읽는다.
 const portal='https://synk.im';
+// 운영 등록(tools/synk-id/state/bindings-production-20261007-confirmed.json의 platform-browser)을 글자로 고정한다. 서버 상수에서 가져오면 상수가 틀려도 시험이 따라 바뀐다(GPT GA1)
+const platformBrowser='6cde60e1-d9c4-489e-8a36-3a2ff392e077';
 test('the synk.im platform login reads its own assignments on the web route without a company or customer session',async t=>{
+  assert.equal(PORTAL_ENTRY_IDENTITY.clientId,platformBrowser);
   const f=fixture(t);f.employee();f.pulse();f.webAuth=null;const before=f.snapshot();
-  const r=await f.request({path:web,claims:{client_id:PORTAL_ENTRY_IDENTITY.clientId},headers:{origin:portal}});
+  const r=await f.request({path:web,claims:{client_id:platformBrowser},headers:{origin:portal}});
   assert.equal(r.status,200);
   assert.deepEqual(r.data,{version:1,accountMatch:true,workspace:{state:'assigned',destination:'/'},pulse:{state:'assigned',destination:'/pulse-app/'}});
   assert.equal(r.headers['access-control-allow-origin'],portal);
-  assert.equal(f.webCalls,0,'the portal bearer never reads a company or customer cookie');
+  assert.equal(f.webCalls,0,'the portal bearer never reads a customer session');
+  assert.equal(f.staffReads,0,'the portal bearer never reads a company session (GPT GA2)');
   assert.equal(f.centralCalls.length,1);assert.equal(f.snapshot(),before);
 });
 
 test('the portal bearer accepts only the platform browser client, only from synk.im, and only for its own live account',async t=>{
-  const f=fixture(t);f.employee();f.pulse();f.webAuth=null;const browser={client_id:PORTAL_ENTRY_IDENTITY.clientId};
+  const f=fixture(t);f.employee();f.pulse();f.webAuth=null;const browser={client_id:platformBrowser};
   let r=await f.request({path:web,headers:{origin:portal}});
   assert.equal(r.status,403);assert.equal(r.data.error.code,'CLIENT_FORBIDDEN','a native client token is not the portal client');
   const calls=f.centralCalls.length;

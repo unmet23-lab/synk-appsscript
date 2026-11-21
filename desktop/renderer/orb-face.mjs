@@ -86,11 +86,12 @@ const trimmed = value => (typeof value === 'string' && value.trim() ? value.trim
 /* 호스트와 본체가 보내는 까닭 글은 옛 얼굴의 「-어요」 말씨다. 새 얼굴의 「-습니다」 문장에 맞춰 끝만 바꾼다.
  * 받침이 ㅆ(했 · 었 · 났 · 있), ㅄ(없), ㄶ(않), ㅀ(싫)인 글자 뒤의 「-어요 · -아요」, 「-예요 · -이에요」, 「돼요」, 「해요」만 바꾸고,
  * 「주세요」 같은 부탁과 모르는 꼴은 그대로 둔다 */
-// 펼침에 두는 배정 조회 까닭 한 줄(PC 검수 F1). 호스트의 옛 고르기 화면 글은 「아래 단추」 같은 옛 화면을 가리키므로 쓰지 않는다
+// 펼침에 두는 배정 조회 까닭 한 줄(PC 검수 F1). 호스트의 옛 고르기 화면 글은 「아래 단추」 같은 옛 화면을 가리키므로 쓰지 않는다.
+// 새 얼굴의 말씨(「-습니다」)를 따른다 — 같은 펼침의 오류 줄과 한 화면에 선다(사무실 검수 FA1이 짚음)
 export function assignmentCheckLead(check) {
-  if (check?.status === 'partial') return '회사 공간 가운데 일부를 확인하지 못했어요.';
-  if (check?.status === 'account_mismatch') return '회사 공간이 다른 계정으로 로그인되어 있어 확인하지 못했어요.';
-  return '회사 공간 배정을 확인하지 못했어요.';
+  if (check?.status === 'partial') return '회사 공간 가운데 일부를 확인하지 못했습니다.';
+  if (check?.status === 'account_mismatch') return '회사 공간이 다른 계정으로 로그인되어 있어 확인하지 못했습니다.';
+  return '회사 공간 배정을 확인하지 못했습니다.';
 }
 
 export function faceSentence(value) {
@@ -921,10 +922,16 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     try {
       const result = await options.onRecheckSpaces({ accountKey: snap.accountKey, generation: snap.generation });
       if (!stillSame()) return;
-      if (result && result.ok !== false) rememberAssigned(result.destinations, snap.accountKey, result.assignmentCheck);
-      else feedback.switch = faceSentence(result?.message) || '회사 공간을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.';
+      if (result && result.ok !== false) {
+        if (result.assignmentCheck && typeof result.assignmentCheck.status === 'string') {
+          // 다 확인되지 않은 답(일부 · 추가 로그인 · 확인 불가)은 이미 아는 공간을 지우지 않는다. 새로 확인된 공간만 더하고 까닭을 바꾼다(카본 A2)
+          mergeAssigned(result.destinations, snap.accountKey);
+          assignedCheck = { status: result.assignmentCheck.status };
+        } else rememberAssigned(result.destinations, snap.accountKey, null);
+      }
+      else feedback.switch = faceSentence(result?.message) || '회사 공간을 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
     } catch {
-      if (stillSame()) feedback.switch = '회사 공간을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.';
+      if (stillSame()) feedback.switch = '회사 공간을 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요.';
     } finally {
       if (runId === asyncSeq) busyAction = null;
       if (!disposed) render();
