@@ -94,7 +94,14 @@ async function prepareNativeSynkCompanyEntry(){
   }catch(error){
     // 이 SYNK ID에 이어진 회사 계정이 아직 없다(서버 NOT_LINKED). 오류 화면 대신 로그인 칸을 연다. 회사 비밀번호로 한 번 들어오면
     // linkNativeCompanyAfterPassword가 지금 SYNK ID에 잇는다(검정 구 4단계 7절, 회사 화면 Fable 최종 F1)
-    if(error?.code==='NOT_LINKED'){synkNativeGateFailure=false;state.authMode='login';state.authToken='';state.authNotice='이 SYNK ID에 이어진 회사 계정이 아직 없어요. 회사 비밀번호로 한 번 들어오면 지금 SYNK ID에 이어져요.';renderAuth();return false;}
+    // 서버 코드는 SYNK_ 머리가 붙는다(synk-identity.mjs fail, 다시 검수 FA1). 초대 주소로 열었으면 가입 칸으로 간다(시작 처리의 초대 갈래와 같다, FA2)
+    if(error?.code==='SYNK_NOT_LINKED'){
+      synkNativeGateFailure=false;
+      const invite=new URLSearchParams(location.search).get('invite');
+      if(invite){state.authMode='join';state.authToken=invite;state.authNotice='';history.replaceState(null,'',location.pathname);}
+      else{state.authMode='login';state.authToken='';state.authNotice='이 SYNK ID에 이어진 회사 계정이 아직 없어요. 회사 비밀번호로 한 번 들어오면 지금 SYNK ID에 이어져요.';}
+      renderAuth();return false;
+    }
     synkNativeGateFailure=true;throw Object.assign(error,{code:'SYNK_PLATFORM_ENTRY'});
   }
   finally{synkConnectionPending=false;}
@@ -332,14 +339,17 @@ async function beginSynkCompany(action,params={},button,note){
 // 이어지지 않았으면 방금 넣은 비밀번호로 지금 SYNK ID에 한 번 잇는다. 그래야 PC 안에서 다음부터 누르지 않고 들어온다(로그인 길은 SYNK ID 하나).
 // 칸 아래 한 줄이 그 SYNK ID의 이름을 보이고(installNativeLinkNote), 잇기 직전에 같은 SYNK ID와 세대인지 다시 본다(설계 검토 R13).
 // 잇기가 끝나면 /?tab=messenger로 다시 싣는다(검토 R8). 실패하면 방금 만든 회사 세션을 끝낸다. 미연결 세션이 남으면 열 때마다 확인 오류가 뜬다(검토 R4)
-let synkNativeLinkStamp=null,synkNativeLinkWatching=false;
+let synkNativeLinkStamp=null,synkNativeLinkWatching=false,synkNativeLinkSeq=0;
 async function installNativeLinkNote(){
-  const desktop=getSynkDesktopBridge(),form=document.querySelector('#auth-form');
+  const desktop=getSynkDesktopBridge(),form=document.querySelector('#auth-form'),seq=++synkNativeLinkSeq;
   synkNativeLinkStamp=null;
   // 칸이 선 뒤 SYNK ID 로그인이 바뀌면 한 줄과 스탬프를 지금 값으로 다시 잡는다(회사 화면 Fable 최종 F2)
   if(desktop?.onAuthChanged&&!synkNativeLinkWatching){synkNativeLinkWatching=true;try{desktop.onAuthChanged(()=>{if(!document.querySelector('#auth-form'))return;document.querySelector('#synk-link-note')?.remove?.();void installNativeLinkNote();});}catch{synkNativeLinkWatching=false;}}
   if(!desktop?.authStatus||!form||document.querySelector('#synk-link-note'))return;
   let auth;try{auth=await desktop.authStatus();}catch{return;}
+  // 알림이 연달아 오면 마지막 호출만 한 줄을 세운다(다시 검수 FA3)
+  if(seq!==synkNativeLinkSeq)return;
+  document.querySelector('#synk-link-note')?.remove?.();
   if(auth?.configured!==true||!auth.signedIn||!auth.account?.synk_user_id||form.isConnected===false)return;
   // 같은 칸의 다른 안내처럼 해요체로 쓴다. 이름이 없으면 「지금 로그인한 SYNK ID」라고 쓴다(회사 화면 검수 A3)
   const name=String(auth.account.display_name||'').trim();
