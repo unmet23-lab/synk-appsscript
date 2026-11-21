@@ -250,3 +250,43 @@ test('5,000 record files: a 15-second tick stats far fewer files than a full lis
   await records.scan();
   assert.ok(calls.stat >= 5000);
 });
+
+/* ── GPT 검수(solio-office-be-20261120) ── */
+test('GA12: a cwd line still being written at the first look is read whole once it is finished', async () => {
+  let t = Date.now();
+  const dir = tmp('partial');
+  const line = claudeLine('C:\\work\\half');
+  const file = put(path.join(dir, 'projects', 'C--work-half', uuid(31) + '.jsonl'), '{"type":"summary","summary":"x"}\n' + line.slice(0, 20), t - 5 * S);
+  const records = createOfficeRecords({ roots: { claude: [dir], codex: [] }, now: () => t });
+  assert.equal(byId(await records.scan({ full: true }))[uuid(31)].cwd, null, 'half a line is not guessed');
+  fs.appendFileSync(file, line.slice(20));
+  t += 15 * S;
+  assert.equal(byId(await records.scan())[uuid(31)].cwd, 'C:\\work\\half', 'the finished line is read from its start');
+  // 다 읽은 줄 뒤에서 자란 파일은 그 뒤만 읽는다(앞 줄은 다시 읽지 않는다)
+  const other = put(path.join(dir, 'projects', 'C--work-half', uuid(32) + '.jsonl'), '{"type":"summary","summary":"x"}\n', t);
+  t += 15 * S;
+  assert.equal(byId(await records.scan({ full: true }))[uuid(32)].cwd, null);
+  fs.appendFileSync(other, claudeLine('C:\\work\\later'));
+  t += 15 * S;
+  assert.equal(byId(await records.scan())[uuid(32)].cwd, 'C:\\work\\later');
+});
+
+test('GA13: a file dated in the future counts from when it was first seen, so an unchanged file goes quiet and is dropped after 30 minutes', async () => {
+  let t = Date.now();
+  const dir = tmp('future');
+  const file = put(path.join(dir, 'projects', 'C--work-future', uuid(41) + '.jsonl'), claudeLine('C:\\work\\future'), t + 48 * H);
+  const records = createOfficeRecords({ roots: { claude: [dir], codex: [] }, now: () => t });
+  const seen = t;
+  assert.equal(byId(await records.scan({ full: true }))[uuid(41)].changedAt, seen, 'a time in the future is taken as now');
+  t += 15 * S;
+  assert.equal(byId(await records.scan())[uuid(41)].changedAt, seen, 'unchanged: still the time it was first seen');
+  t += 3 * M;
+  assert.equal(byId(await records.scan({ full: true }))[uuid(41)].changedAt, seen, 'a full listing keeps it too');
+  t += 28 * M;
+  assert.equal(byId(await records.scan())[uuid(41)], undefined, 'quiet for 30 minutes: no longer returned');
+  // 다시 적히면(여전히 앞날의 때여도) 새 소식이다
+  fs.appendFileSync(file, claudeLine('C:\\work\\future'));
+  fs.utimesSync(file, (t + 49 * H) / 1e3, (t + 49 * H) / 1e3);
+  t += 15 * S;
+  assert.equal(byId(await records.scan({ full: true }))[uuid(41)].changedAt, t, 'a new write is news again');
+});

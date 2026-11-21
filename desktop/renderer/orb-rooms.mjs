@@ -709,7 +709,8 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
       }
       // 사무실의 「승인 물음도 보기」 끄기(사무실 구현설계 11.1). 묻지 않는다. 다 지우면 줄이 사라지므로 결과는 맨 아래 작은 줄에 쓴다
       case 'office-hooks-off': {
-        if (typeof dev.officeHooks?.hooksOff !== 'function' || sets.hooks?.on !== true) return true;
+        // 지우지 못한 설정 파일이 남은 때(left)의 「다시 지우기」도 같은 길이다(사무실 설계 검토 solio-office-hooks 고칠 것 5)
+        if (typeof dev.officeHooks?.hooksOff !== 'function' || (sets.hooks?.on !== true && sets.hooks?.left !== true)) return true;
         if (st.busy) { refuseBusy(key); return true; }
         const my = gen, s = sets;
         st.busy = 'office-hooks:off';
@@ -719,7 +720,7 @@ export function createOrbRooms({ subs = null, account = null, pc = {}, now = () 
         if (my !== gen) return true;
         if (st.busy === 'office-hooks:off') st.busy = null;
         if (s !== sets) { changed(); return true; }
-        if (res?.ok === true) { s.hooks = { ok: true, on: false }; if (current === 'settings') { st.roomNote = officeHooksOffWords(res); focusReq = ask({ say: true }); } }
+        if (res?.ok === true) { s.hooks = { ok: true, on: false, left: false }; if (current === 'settings') { st.roomNote = officeHooksOffWords(res); focusReq = ask({ say: true }); } }
         else { note(key, officeHooksOffWords(res)); readHooks(); }
         changed(); return true;
       }

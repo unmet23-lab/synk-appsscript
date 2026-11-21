@@ -101,24 +101,25 @@ test('a non-viewer, a signed-out window, a bad id, and a missing or broken viewe
   }
 });
 
-test('with no viewers file the asking account is noted once in viewer-pending.json, and hook news never notes', async () => {
+test('with no viewers file the asking account is noted once in its own viewer-pending file, and hook news never notes', async () => {
   const f = setup({ viewers: null });
-  const pending = path.join(path.dirname(f.viewersFile), 'viewer-pending.json');
-  assert.equal(f.office.pendingFile, pending);
+  const dir = path.join(path.dirname(f.viewersFile), 'viewer-pending');
+  const fileOf = a => path.join(dir, a.synk_user_id + '.json');
+  assert.equal(f.office.pendingDir, dir);
   await f.office.snapshot(YUHO);
-  assert.deepEqual(JSON.parse(fs.readFileSync(pending, 'utf8')), { asked: [{ synk_user_id: YUHO.synk_user_id, display_name: '유호', asked_at: new Date(T0).toISOString() }] }, 'the folder is made and one line written');
-  fs.rmSync(pending);
+  assert.deepEqual(JSON.parse(fs.readFileSync(fileOf(YUHO), 'utf8')), { synk_user_id: YUHO.synk_user_id, display_name: '유호', asked_at: new Date(T0).toISOString() }, 'the folder is made and one file written');
+  fs.rmSync(fileOf(YUHO));
   await f.office.snapshot(YUHO);
   await f.office.allowed(YUHO);
   await f.office.watch(true, YUHO);
-  assert.equal(fs.existsSync(pending), false, 'the same account is written once while the app runs');
+  assert.equal(fs.existsSync(fileOf(YUHO)), false, 'the same account is written once while the app runs');
   await f.office.ingest(hook('PostToolUse', T0), OTHER);
-  assert.equal(fs.existsSync(pending), false, 'hook news does not note anyone');
+  assert.deepEqual(fs.readdirSync(dir), [], 'hook news does not note anyone');
   await f.office.allowed(OTHER);
   await f.office.snapshot(SECOND);
-  assert.deepEqual(JSON.parse(fs.readFileSync(pending, 'utf8')).asked.map(x => x.synk_user_id), [OTHER.synk_user_id, SECOND.synk_user_id], 'other accounts add their own line');
+  assert.deepEqual(fs.readdirSync(dir).sort(), [OTHER.synk_user_id + '.json', SECOND.synk_user_id + '.json'].sort(), 'each account writes only its own file');
   await f.office.allowed(null);
-  assert.equal(JSON.parse(fs.readFileSync(pending, 'utf8')).asked.length, 2, 'a signed-out window is not noted');
+  assert.equal(fs.readdirSync(dir).length, 2, 'a signed-out window is not noted');
 });
 
 test('the viewers file is in LOCALAPPDATA on Windows, an env value wins, and without a place nobody is allowed', async () => {
@@ -314,7 +315,7 @@ function hookSetup({ installed = false, viewers = [YUHO.synk_user_id] } = {}) {
   let account = null;
   const hooks = createOfficeHooks({
     userData: f.userData, installed, env: installed ? {} : { [OVERRIDE_ENV]: claude }, baseDirs: () => [],
-    accepts: () => (account ? office.accepts(account) : false), deliver: e => { if (account) void office.ingest(e, account); }, listenRetries: 0,
+    accepts: () => (account ? office.accepts(account) : false), deliver: (e, a, ticket) => { if (account) void office.ingest(e, account, ticket); }, listenRetries: 0,
   });
   const office = createOffice({ userData: f.userData, viewersFile: f.viewersFile, model, records: f.records, capacity: f.capacity, roots: { claude: [claude], codex: [] }, hooks, now: () => Date.now() });
   return { ...f, claude, added, hooks, office, setAccount: a => { account = a; } };
@@ -389,7 +390,7 @@ test('the server stays open across account changes; without a signed-in viewer i
   await pause();
   assert.equal(await f.office.accepts(OTHER), false);
   assert.deepEqual((await f.office.snapshot(YUHO)).state.sessions, {}, 'nothing folded for a non-viewer or a signed-out window');
-  assert.ok(!fs.existsSync(path.join(path.dirname(f.viewersFile), 'viewer-pending.json')) || !fs.readFileSync(path.join(path.dirname(f.viewersFile), 'viewer-pending.json'), 'utf8').includes(OTHER.synk_user_id), 'hook news never notes an account');
+  assert.ok(!fs.existsSync(path.join(path.dirname(f.viewersFile), 'viewer-pending', OTHER.synk_user_id + '.json')), 'hook news never notes an account');
   f.office.accountChanged(OTHER);
   assert.equal(f.hooks.listening(), true, 'an account change does not close the server');
   f.setAccount(YUHO);
@@ -521,4 +522,242 @@ test('GA3 · GA4: two overlapping folder removals through the office both stick,
   assert.deepEqual(await f.office.removeRoot(a, YUHO), { ok: false, code: 'NOT_FOUND' });
   assert.deepEqual(await f.office.addRoot(a, YUHO), { ok: false, code: 'FOLDER' }, 'only an added folder must exist');
   assert.deepEqual(await f.office.removeRoot(c, OTHER), { ok: false, code: 'NOT_ALLOWED' });
+});
+
+/* 설계 검토의 단일 실행 잠금 설계: 넘긴 소식은 받기 표를 들고 오고, ingest가 접기 바로 앞에서 다시 본다 */
+test('an ingest waiting on the viewers file when hooks are turned off is dropped before it folds anything; one with no ticket is refused while a hooks service is attached', async () => {
+  const f = setup();
+  const h = holdingFs(f.viewersFile);
+  const claude = path.join(f.top, 'claude-home');
+  fs.mkdirSync(claude);
+  const hooks = createOfficeHooks({ userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: claude }, baseDirs: () => [], accepts: () => YUHO, listenRetries: 0, deliver: (e, a, ticket) => { delivered.push(office.ingest(e, a, ticket)); } });
+  const delivered = [];
+  const reduced = [];
+  const spy = { ...model, officeReduce: (st, e, ctx) => { if (e && e.kind === 'hook') reduced.push(e.event); return model.officeReduce(st, e, ctx); } };
+  const office = createOffice({ userData: f.userData, viewersFile: f.viewersFile, model: spy, records: f.records, capacity: f.capacity, roots: { claude: [claude], codex: [] }, hooks, fsImpl: h.fsImpl, now: () => Date.now() });
+  office.accountChanged(YUHO);
+  assert.equal((await hooks.enable([])).ok, true);
+  const st = hookState(f), p = PATH_PREFIX + st.token;
+  h.arm(); // 다음 볼 계정 파일 읽기가 붙잡힌다: ingest의 gate에서 기다린다
+  assert.equal(await post(st.port, p, { hook_event_name: 'PostToolUse', session_id: S1, cwd: f.shop, tool_name: 'Read' }), 204);
+  await pause();
+  assert.equal(delivered.length, 1, 'the news was handed over while acceptance was open');
+  const off = hooks.disable(); // 받기가 이 틱에 닫힌다
+  h.release();
+  assert.deepEqual(await delivered[0], { ok: false, code: 'CLOSED' });
+  assert.deepEqual(reduced, [], 'commit never ran for it');
+  assert.equal((await off).ok, true);
+  assert.deepEqual((await office.snapshot(YUHO)).state.sessions, {});
+  assert.deepEqual(await office.ingest(hook('PostToolUse', Date.now()), YUHO), { ok: false, code: 'CLOSED' }, 'with a hooks service attached, only news carrying a live ticket is folded');
+  assert.deepEqual(reduced, []);
+  await hooks.close();
+});
+
+/* ── GPT 검수 solio-office-be-20261120 묶음 B(GB1~GB11) ── */
+/* 한 번만 붙잡는 fs: which(file, method)가 참인 첫 부름 하나를 release까지 기다리게 한다. after가 참이면 일을 마친 뒤(읽은 값을 쥔 채) 기다린다 */
+function holdOnce(which, { after = false } = {}) {
+  let armed = false, gate = null, release = () => {}, reached = () => {}, reachedP = null;
+  const p = fs.promises;
+  const wrap = method => async (file, ...a) => {
+    if (!(armed && which(String(file), method))) return p[method](file, ...a);
+    armed = false;
+    if (!after) { reached(); await gate; return p[method](file, ...a); }
+    const value = await p[method](file, ...a);
+    reached(); await gate;
+    return value;
+  };
+  return {
+    arm() { armed = true; gate = new Promise(r => { release = r; }); reachedP = new Promise(r => { reached = r; }); return reachedP; },
+    release: () => release(),
+    fsImpl: { ...fs, promises: { ...p, stat: wrap('stat'), readFile: wrap('readFile'), writeFile: wrap('writeFile'), lstat: wrap('lstat'), mkdir: wrap('mkdir') } },
+  };
+}
+function officeWith(f, fsImpl, extra = {}) {
+  return createOffice({
+    userData: f.userData, viewersFile: f.viewersFile, model, records: f.records, capacity: f.capacity, roots: ROOTS, fsImpl, now: f.clock.now,
+    setInterval: f.clock.setInterval, clearInterval: f.clock.clearInterval, setTimeout: f.clock.setTimeout, clearTimeout: f.clock.clearTimeout, ...extra,
+  });
+}
+const officeJson = f => path.join(f.userData, 'Office', YUHO.synk_user_id, 'office.json');
+
+test('GB1: a department save waiting on its folder check is not written when the user signs out and back in meanwhile', async () => {
+  const f = setup();
+  const h = holdOnce((file, method) => method === 'stat' && file === f.shop);
+  const office = officeWith(f, h.fsImpl);
+  const first = { ...YUHO, sessionGeneration: 1 }, again = { ...YUHO, sessionGeneration: 2 };
+  office.accountChanged(first);
+  const reached = h.arm();
+  const saving = office.saveDepartment({ name: '쇼핑몰', folder: f.shop }, first);
+  await reached;
+  office.accountChanged(null);
+  office.accountChanged(again);
+  h.release();
+  assert.deepEqual(await saving, { ok: false, code: 'AUTH_CHANGED' });
+  assert.equal(fs.existsSync(officeJson(f)), false, 'nothing was written for the earlier sign-in');
+  assert.deepEqual((await office.snapshot(again)).departments, []);
+  assert.equal((await office.saveDepartment({ name: '쇼핑몰', folder: f.shop }, again)).ok, true, 'the same save in the new sign-in works');
+});
+
+test('GB2: turning hooks on is dropped before any settings file is touched when the user signs out while it runs', async () => {
+  const f = setup({ viewers: [YUHO.synk_user_id] });
+  const claude = path.join(f.top, 'claude-home');
+  fs.mkdirSync(claude);
+  const h = holdOnce((file, method) => method === 'writeFile' && path.basename(file).startsWith('hooks.json'));
+  const hooks = createOfficeHooks({ userData: f.userData, installed: false, env: { [OVERRIDE_ENV]: claude }, baseDirs: () => [], listenRetries: 0, fsImpl: h.fsImpl });
+  const office = createOffice({ userData: f.userData, viewersFile: f.viewersFile, model, records: f.records, capacity: f.capacity, roots: { claude: [claude], codex: [] }, hooks, now: () => Date.now() });
+  const first = { ...YUHO, sessionGeneration: 1 }, again = { ...YUHO, sessionGeneration: 2 };
+  office.accountChanged(first);
+  const reached = h.arm();
+  const turning = office.setHooks(true, first);
+  await reached; // 상태 파일에 고칠 폴더를 적는 중이다(서버는 열렸다)
+  office.accountChanged(null);
+  office.accountChanged(again);
+  h.release();
+  assert.equal((await turning).code, 'AUTH_CHANGED');
+  assert.deepEqual(fs.readdirSync(claude), [], 'no settings.json was made');
+  const st = JSON.parse(fs.readFileSync(path.join(f.userData, 'Office', 'hooks.json'), 'utf8'));
+  assert.deepEqual([st.enabled, st.dirs], [false, []], 'the folder written first was taken back');
+  assert.equal(hooks.listening(), false, 'the server opened for it was closed');
+  assert.equal((await office.setHooks(true, again)).ok, true, 'the new sign-in can turn hooks on');
+  assert.ok(fs.readFileSync(path.join(claude, 'settings.json'), 'utf8').includes(PATH_PREFIX));
+  await office.setHooks(false, again);
+  await hooks.close();
+});
+
+test('GB3: a snapshot read that finishes after a folder removal does not put the removed folder back in memory', async () => {
+  const f = setup();
+  const a = path.join(f.work, 'claude-a'), b = path.join(f.work, 'claude-b');
+  for (const d of [a, b]) fs.mkdirSync(d);
+  const h = holdOnce((file, method) => method === 'readFile' && path.basename(file) === 'office.json', { after: true });
+  const office = officeWith(f, h.fsImpl);
+  for (const d of [a, b]) assert.equal((await office.addRoot(d, YUHO)).ok, true);
+  const reached = h.arm();
+  const reading = office.snapshot(YUHO);
+  await reached;
+  assert.equal((await office.removeRoot(a, YUHO)).ok, true);
+  h.release();
+  const snap = await reading;
+  assert.deepEqual(snap.roots.added, [b], 'the snapshot answers with the newer list');
+  await office.watch(true, YUHO);
+  assert.ok(!f.records.calls.at(-1).roots.claude.includes(a), 'the scan (and hooks-set) uses the list without the removed folder');
+  await office.watch(false, YUHO);
+});
+
+test('GB4: a subscription-room account folder that arrives as the default Claude folder is not watched or hooked', async () => {
+  const f = setup();
+  const sub = 'C:\\Users\\a\\AppData\\Local\\AiSubscriptions\\accounts\\claude-1\\.claude';
+  const office = officeWith(f, fs, { roots: { claude: [sub, 'C:\\Users\\a\\.claude'], codex: [] } });
+  assert.deepEqual((await office.snapshot(YUHO)).roots.claude, ['C:\\Users\\a\\.claude']);
+});
+
+test('GB6 · GPT 검수 be3 GA9: a pending note that waited while the owner approved an account writes nothing, and a late write can only bring back the asking account\'s own file', async () => {
+  const f = setup({ viewers: null });
+  const dir = path.join(path.dirname(f.viewersFile), 'viewer-pending');
+  const fileOf = a => path.join(dir, a.synk_user_id + '.json');
+  // 볼 계정 파일을 다시 보기 전에 승인이 끼면 쓰지 않는다
+  const h = holdOnce((file, method) => method === 'mkdir' && file === dir);
+  const office = officeWith(f, h.fsImpl);
+  const reached = h.arm();
+  const asking = office.snapshot(SECOND);
+  await reached;
+  fs.mkdirSync(path.dirname(f.viewersFile), { recursive: true });
+  fs.writeFileSync(f.viewersFile, JSON.stringify({ synk_user_ids: [YUHO.synk_user_id] })); // 승인 도구가 받았다
+  h.release();
+  assert.deepEqual(await asking, { ok: true, available: false });
+  await settle();
+  assert.equal(fs.existsSync(fileOf(SECOND)), false, 'nothing is written once a viewer is set');
+  // 다시 본 뒤에 승인이 끼면 그 계정의 파일 하나가 생긴다. 승인 도구가 지운 다른 계정의 파일은 되살아나지 않는다
+  const g = setup({ viewers: null });
+  const gdir = path.join(path.dirname(g.viewersFile), 'viewer-pending');
+  fs.mkdirSync(gdir, { recursive: true });
+  fs.writeFileSync(path.join(gdir, OTHER.synk_user_id + '.json'), JSON.stringify({ synk_user_id: OTHER.synk_user_id, display_name: '시험 계정', asked_at: new Date(T0).toISOString() }));
+  const k = holdOnce((file, method) => method === 'writeFile' && /\.tmp$/.test(file) && file.startsWith(gdir));
+  const late = officeWith(g, k.fsImpl);
+  const writing = k.arm();
+  const asked = late.snapshot(SECOND);
+  await writing;
+  fs.mkdirSync(path.dirname(g.viewersFile), { recursive: true });
+  fs.writeFileSync(g.viewersFile, JSON.stringify({ synk_user_ids: [YUHO.synk_user_id] })); // 승인 도구가 받고
+  fs.rmSync(gdir, { recursive: true, force: true }); // 대기 파일을 모두 지웠다
+  k.release();
+  await asked;
+  await settle();
+  assert.equal(fs.existsSync(path.join(gdir, OTHER.synk_user_id + '.json')), false, 'another account\'s deleted line does not come back');
+});
+
+test('GB7: a viewers file with one entry that is not an account id lets nobody in, as the approval tool says', async () => {
+  const f = setup({ viewersText: JSON.stringify({ synk_user_ids: [YUHO.synk_user_id, null] }) });
+  assert.equal(await f.office.allowed(YUHO), false);
+  assert.deepEqual(await f.office.snapshot(YUHO), { ok: true, available: false });
+});
+
+test('GB9: a session that ended forgets its department at once, so resuming it within 30 minutes does not bring the old department back', async () => {
+  const f = setup();
+  const dept = (await f.office.saveDepartment({ name: '쇼핑몰', folder: f.shop }, YUHO)).data.departments[0].id;
+  await f.office.ingest(hook('PostToolUse', T0, { cwd: 'C:\\elsewhere' }), YUHO);
+  assert.equal((await f.office.assign(S1, dept, YUHO)).ok, true);
+  assert.deepEqual((await f.office.snapshot(YUHO)).assignments, { [S1]: dept });
+  await f.clock.advance(5 * S);
+  await f.office.ingest(hook('SessionEnd', T0 + 5 * S, { cwd: 'C:\\elsewhere' }), YUHO);
+  await settle();
+  assert.deepEqual((await f.office.snapshot(YUHO)).assignments, {}, 'the memory is gone when the session ends');
+});
+
+test('GB10: a watch(true) that waited on the viewers file while the room was closed starts nothing', async () => {
+  const f = setup();
+  const h = holdOnce((file, method) => method === 'stat' && file === f.viewersFile);
+  const office = officeWith(f, h.fsImpl);
+  const reached = h.arm();
+  const opening = office.watch(true, YUHO);
+  await reached;
+  assert.deepEqual(await office.watch(false, YUHO), { ok: true, watching: false }, 'the close finishes first');
+  h.release();
+  assert.deepEqual(await opening, { ok: true, watching: false });
+  assert.equal(f.records.calls.length, 0, 'no records were read for the closed room');
+  assert.ok(!f.clock.intervals().includes(OFFICE_TICKS.tick), 'no 15 s timer');
+});
+
+test('GB11: closing a department row marks only what had finished when it was closed, not what finished while the call waited', async () => {
+  const f = setup();
+  const h = holdOnce((file, method) => method === 'stat' && file === f.viewersFile);
+  const office = officeWith(f, h.fsImpl);
+  await office.ingest(hook('PostToolUse', T0, { cwd: 'C:\\elsewhere' }), YUHO);
+  await office.ingest(hook('Stop', T0 + 1 * S, { cwd: 'C:\\elsewhere' }), YUHO);
+  await f.clock.advance(2 * S);
+  const reached = h.arm();
+  const closing = office.seen(null, YUHO); // T0 + 2 s에 닫았다
+  await reached;
+  await f.clock.advance(3 * M);
+  await office.ingest(hook('PostToolUse', T0 + 3 * M, { cwd: 'C:\\elsewhere' }), YUHO);
+  await office.ingest(hook('Stop', T0 + 3 * M + S, { cwd: 'C:\\elsewhere' }), YUHO); // 기다리는 사이에 새로 끝냈다
+  h.release();
+  assert.deepEqual(await closing, { ok: true });
+  const s = (await office.snapshot(YUHO)).state.sessions[S1];
+  assert.ok(s.seenAt == null || s.seenAt < s.stopAt, 'the seen mark is not later than the finish that came while it waited');
+  assert.equal(s.stopAt, T0 + 3 * M + S, 'the later finish still shows');
+});
+
+test('0.5.2 공개 검수 C2: a late watch from an account that may not see the office leaves the viewer\'s scan running', async () => {
+  const f = setup();
+  assert.equal((await f.office.watch(true, YUHO)).ok, true);
+  assert.ok(f.clock.intervals().includes(OFFICE_TICKS.tick));
+  assert.deepEqual(await f.office.watch(true, OTHER), { ok: false, code: 'NOT_ALLOWED' });
+  assert.deepEqual(await f.office.watch(false, null), { ok: false, code: 'NOT_ALLOWED' });
+  assert.ok(f.clock.intervals().includes(OFFICE_TICKS.tick), 'the viewer still scans every 15 s');
+  // 볼 계정 파일에서 빠지면 살피기가 다음 틱에 스스로 멈춘다
+  fs.writeFileSync(f.viewersFile, JSON.stringify({ synk_user_ids: [SECOND.synk_user_id] }));
+  await f.clock.advance(OFFICE_TICKS.tick);
+  assert.ok(!f.clock.intervals().includes(OFFICE_TICKS.tick), 'a viewer taken off the list stops scanning by itself');
+});
+
+test('카본 검수 solio-office-be2 A4: a send-to-department request that arrives after the session ended is refused and writes nothing', async () => {
+  const f = setup();
+  const dept = (await f.office.saveDepartment({ name: '쇼핑몰', folder: f.shop }, YUHO)).data.departments[0].id;
+  await f.office.ingest(hook('PostToolUse', T0, { cwd: 'C:\\elsewhere' }), YUHO);
+  await f.clock.advance(5 * S);
+  await f.office.ingest(hook('SessionEnd', T0 + 5 * S, { cwd: 'C:\\elsewhere' }), YUHO);
+  await settle();
+  assert.deepEqual(await f.office.assign(S1, dept, YUHO), { ok: false, code: 'NOT_FOUND' }, 'an earlier screen asked for a session that has ended');
+  assert.deepEqual((await f.office.snapshot(YUHO)).assignments, {});
+  assert.equal((await f.office.assign(S1, null, YUHO)).ok, true, 'clearing is still allowed');
 });

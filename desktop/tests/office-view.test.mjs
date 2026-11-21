@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { officeState, officeReduce } from '../renderer/office-model.mjs';
 import { officeRoom, officeSubscriptions, officeCapacityRow, officeGroupStatus, officeFloorScene, createOfficeRoom, OFFICE_REST_SAY, OFFICE_FLOOR_DEPTS, folderTail, modelWord,
-  officeHooksAsideRow, OFFICE_HOOKS_ASK, OFFICE_HOOKS_NOTICE, OFFICE_HOOKS_SAY, OFFICE_HOOKS_LINE, OFFICE_HOOKS_ON_DONE, OFFICE_HOOKS_OFF_DONE } from '../renderer/office-room.mjs';
+  officeSettingsRow, officeRo, OFFICE_HOOKS_NO_TARGET, officeHooksAsideRow, OFFICE_HOOKS_ASK, OFFICE_HOOKS_NOTICE, OFFICE_HOOKS_SAY, OFFICE_HOOKS_LINE, OFFICE_HOOKS_ON_DONE, OFFICE_HOOKS_OFF_DONE, OFFICE_HOOKS_LEFT, OFFICE_HOOKS_LEFT_NOTE } from '../renderer/office-room.mjs';
 import { floorLayout, FLOOR_MOTION } from '../renderer/office-floor.mjs';
 import { createOrbRooms } from '../renderer/orb-rooms.mjs';
 
@@ -490,4 +490,44 @@ test('the general settings room by the orb shows 「Claude Code의 알림이 솔
   assert.equal(scene(true).rows.at(-1).key, 'office-hooks', 'turned on elsewhere, the line comes back');
   rooms.close();
   assert.equal(listener, null, 'closing the room stops listening');
+});
+
+/* ── 카본 화면 검수(solio-office-screen-20261120) ── */
+test('carbon A1: with no Claude settings folder to write, the hooks row shows no 「켜기」 and says why', () => {
+  const hooks = { on: false, available: true, dirs: [{ dir: 'C:\\Users\\a\\.claude', on: false, folder: false, file: false, code: null }], message: null };
+  const row = officeSettingsRow({ roots: { claude: ['C:\\Users\\a\\.claude'], codex: [], added: [] }, hooks, ui: { hooksAsk: true } });
+  const hookRow = row.more.find(x => x[0] === 'row' && x[1] === '승인 물음도 보기');
+  assert.equal(hookRow[3], '', 'no button that would open nothing');
+  assert.ok(row.more.some(x => x[0] === 'note' && x[1] === OFFICE_HOOKS_NO_TARGET));
+  assert.ok(!row.more.some(x => x[0] === 'confirm'), 'no confirmation without a folder to write');
+  // 폴더가 있으면 「켜기」가 선다
+  const ok = officeSettingsRow({ roots: { claude: ['C:\\Users\\a\\.claude'], codex: [], added: [] }, hooks: { ...hooks, dirs: [{ ...hooks.dirs[0], folder: true }] }, ui: {} });
+  assert.equal(ok.more.find(x => x[0] === 'row' && x[1] === '승인 물음도 보기')[3][0], '켜기');
+});
+
+test('carbon A7: 「로 · 으로」 reads digits, Latin endings and trailing brackets', () => {
+  const cases = { '개발부': '개발부로', '법무실': '법무실로', '회계팀': '회계팀으로', '개발 3': '개발 3으로', '개발 2': '개발 2로', '개발 7': '개발 7로', 'Design': 'Design으로', 'Codex': 'Codex로', '법무(계약)': '법무(계약)으로', '마케팅(SNS)': '마케팅(SNS)로' };
+  for (const [w, want] of Object.entries(cases)) assert.equal(officeRo(w), want, w);
+});
+
+/* ── 설계 검토 solio-office-hooks 고칠 것 5: 받지 않는데 지우지 못한 설정 파일이 남은 때 ── */
+test('left: the settings row and the aside row say a settings file is left and offer 「다시 지우기」 on the turn-off path; 켜기 stays reachable', () => {
+  const dir = 'C:\\Users\\a\\.claude';
+  const hooks = { on: false, left: true, available: true, dirs: [{ dir, on: false, folder: true, file: true, code: 'READ' }], message: null };
+  const row = officeSettingsRow({ roots: { claude: [dir], codex: [], added: [] }, hooks, ui: {} });
+  const hookRow = row.more.find(x => x[0] === 'row' && x[1] === '승인 물음도 보기');
+  assert.deepEqual([hookRow[2], hookRow[3][0], hookRow[3][1]], [OFFICE_HOOKS_LEFT, '다시 지우기', 'hooks-off']);
+  assert.ok(row.more.some(x => x[0] === 'note' && x[1] === OFFICE_HOOKS_LEFT_NOTE));
+  assert.ok(row.more.some(x => x[0] === 'acts' && x[1][0][0] === '켜기' && x[1][0][1] === 'hooks-ask'), 'turning on again is still possible');
+  assert.ok(!row.more.some(x => x[0] === 'note' && x[1] === OFFICE_HOOKS_NO_TARGET));
+  assert.match(row.mid, /승인 물음 지우지 못함/);
+  assert.ok(row.more.some(x => x[0] === 'row' && x[1] === 'Claude Code' && x[2] === dir + ' · 설정 파일을 읽지 못함'), 'the folder says why');
+  // 이 실행에서 켤 수 없어도(available 거짓) 남은 줄은 보이고 지울 수 있다
+  const elsewhere = officeSettingsRow({ roots: { claude: [dir], codex: [], added: [] }, hooks: { ...hooks, available: false }, ui: {} });
+  assert.equal(elsewhere.more.find(x => x[0] === 'row' && x[1] === '승인 물음도 보기')[3][0], '다시 지우기');
+  // 구 곁 설정 방(볼 계정이 아니어도 끌 수 있는 자리)
+  const aside = officeHooksAsideRow({ ok: true, on: false, left: true });
+  assert.deepEqual([aside.mid, aside.more[0][1], aside.more[1][1][0][0], aside.more[1][1][0][1]], [OFFICE_HOOKS_LEFT, OFFICE_HOOKS_LEFT_NOTE, '다시 지우기', 'office-hooks-off']);
+  assert.equal(officeHooksAsideRow({ ok: true, on: false, left: false }), null);
+  assert.equal(officeHooksAsideRow({ ok: true, on: true, left: false }).mid, OFFICE_HOOKS_LINE);
 });

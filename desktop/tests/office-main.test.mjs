@@ -6,6 +6,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
+import http from 'node:http';
+import { EventEmitter } from 'node:events';
 import { createRequire } from 'node:module';
 
 const main = fs.readFileSync(new URL('../src/main.cjs', import.meta.url), 'utf8');
@@ -35,7 +37,7 @@ const ADDED = path.join(os.tmpdir(), 'Office-Main-Added');
 
 test('every synk:office-* channel is in handlers, on one line, and goes through officeCall behind the sender check (off and status: the sender check only)', () => {
   assert.match(main, /^const \{createOffice,loadOfficeModel\}=require\('\.\/office\.cjs'\);$/m);
-  assert.match(main, /^const \{createOfficeHooks\}=require\('\.\/office-hooks\.cjs'\);$/m);
+  assert.match(main, /^const \{createOfficeHooks,runUnhook:runOfficeUnhook\}=require\('\.\/office-hooks\.cjs'\);$/m);
   const start = lines.findIndex(l => l.trim() === 'const handlers={');
   const end = lines.findIndex((l, i) => i > start && l === '  };');
   assert.ok(start > 0 && end > start, 'the handlers object is found');
@@ -177,12 +179,12 @@ function helpers({ status = signedIn(YUHO), dialogResult = { canceled: false, fi
     removeRoot: async (dir, a) => { calls.push(['removeRoot', dir, a.synk_user_id]); return { ok: true }; },
   };
   const ctx = {
-    path, status, calls, service,
-    accountStatus: () => ctx.status,
+    path, status, calls, service, renewing: null,
+    accountStatus: () => ctx.status, renewingAccount: () => ctx.renewing,
     window: alive ? { isDestroyed: () => false } : null,
     dialog: { showOpenDialog: async (...a) => { calls.push(['dialog', a[0] === ctx.window, plain(a[1])]); onDialog?.(ctx); return dialogResult; } },
   };
-  vm.runInNewContext([source('async function officeChooseFolder('), source('async function officeSaveDepartment('), source('async function officeAddRoot('), source('async function officeRemoveRoot(')].join('\n'), ctx);
+  vm.runInNewContext([source('const officeAccountOf='), source('async function officeChooseFolder('), source('async function officeSaveDepartment('), source('async function officeAddRoot('), source('async function officeRemoveRoot(')].join('\n'), ctx);
   return ctx;
 }
 const DIALOG = ['dialog', true, { properties: ['openDirectory'] }];
@@ -229,6 +231,25 @@ test('saveDepartment: the folder comes from the chooser, a standing session or t
     assert.equal((await c.officeSaveDepartment(c.service, YUHO, input)).code, 'VALUE', JSON.stringify(input));
     assert.ok(!c.calls.some(x => x[0] === 'saveDepartment' || x[0] === 'dialog'));
   }
+});
+
+/* GPT 검수(solio-office-be-20261120) GA9: 고르는 사이에 같은 계정이 토큰을 갱신해도(잠깐 restoring, 회차는 그대로) 같은 묶음이다(officeCall과 같은 셈) */
+test('GA9: a same-account token renewal while the folder chooser is open keeps the chosen folder; a real sign-in change still drops it', async () => {
+  const id = YUHO.synk_user_id;
+  const renewing = ctx => { ctx.status = { signedIn: false, status: 'restoring', sessionGeneration: 1, account: null }; ctx.renewing = YUHO.synk_user_id; };
+  let c = helpers({ onDialog: renewing });
+  assert.equal((await c.officeAddRoot(c.service, YUHO)).ok, true, 'adding a watched folder');
+  assert.deepEqual(c.calls.at(-1), ['addRoot', CHOSEN, id]);
+  c = helpers({ onDialog: renewing });
+  assert.equal((await c.officeSaveDepartment(c.service, YUHO, { name: '법무부', folder: 'choose' })).ok, true, 'choosing a department folder');
+  assert.deepEqual(c.calls.at(-1), ['saveDepartment', { name: '법무부', folder: CHOSEN }, id]);
+  c = helpers({ onDialog: ctx => { ctx.status = { signedIn: false, status: 'restoring', sessionGeneration: 1, account: null }; ctx.renewing = OTHER.synk_user_id; } });
+  assert.equal((await c.officeAddRoot(c.service, YUHO)).code, 'AUTH_CHANGED', 'a renewal for another account is a change');
+  c = helpers({ onDialog: ctx => { ctx.status = { signedIn: false, status: 'restoring', sessionGeneration: 2, account: null }; ctx.renewing = YUHO.synk_user_id; } });
+  assert.equal((await c.officeAddRoot(c.service, YUHO)).code, 'AUTH_CHANGED', 'a new round is a change');
+  c = helpers({ onDialog: ctx => { ctx.status = { signedIn: false, status: 'signed-out', sessionGeneration: 1, account: null }; } });
+  assert.equal((await c.officeAddRoot(c.service, YUHO)).code, 'AUTH_CHANGED', 'signed out');
+  assert.ok(!c.calls.some(x => x[0] === 'addRoot'));
 });
 
 test('roots: adding opens the chooser and hands over the one chosen folder; removing hands over the one folder (the store reads and writes the list in its queue, GA3)', async () => {
@@ -386,7 +407,7 @@ function hooksMain({ packaged = true, mode = 'release', clientId = 'platform', s
     accountStatus: () => ctx.status, renewingAccount: () => null,
     app: { getPath: name => 'C:\\synthetic\\' + name, exit: code => ctx.exits.push(code) },
     sendDesktop: (...a) => ctx.sent.push(a),
-    office: async () => ({ accepts: async a => a.synk_user_id === YUHO.synk_user_id, ingest: async (e, a) => { ctx.ingested.push([e.event, a.synk_user_id]); return { ok: true }; } }),
+    office: async () => ({ accepts: async a => a.synk_user_id === YUHO.synk_user_id, ingest: async (e, a, ticket) => { ctx.ingested.push([e.event, a.synk_user_id, ticket]); return { ok: true }; } }),
     createOfficeHooks: options => { ctx.made.push(options); return { disable: async () => ({ ok: true, written: 0, refused: 0, dirs: ['C:\\x'] }), unhook: async () => { ctx.made.at(-1).unhooked = true; return { ok: true }; }, status: async () => ({ on: true, available: true, dirs: [{ dir: 'C:\\x' }] }) }; },
   };
   vm.runInNewContext([source('const officeOff='), source('const officeAccountOf='), source('const officeLoginOf='), 'let officeHooks=null;', source('const officeHooksRelease='), source('const officeHooksInstalled='), source('function officeHooksService(){'), source('async function officeHooksOff(){'), source('async function officeHooksStatus(){')].join('\n'), ctx);
@@ -416,9 +437,9 @@ test('the hooks service edits real settings only in the installed release build,
   o.deliver({ kind: 'hook', event: 'Stop' }, false);
   // 몸을 받는 사이에 다른 계정으로 바뀌어도 허락한 계정으로 넘긴다. 지금 계정이 아니면 사무실의 ingest가 버린다
   installed.status = signedIn(OTHER);
-  o.deliver({ kind: 'hook', event: 'PostToolUse' }, allowed);
+  o.deliver({ kind: 'hook', event: 'PostToolUse' }, allowed, 7);
   await new Promise(r => setTimeout(r, 0));
-  assert.deepEqual(installed.ingested, [['PostToolUse', YUHO.synk_user_id]], 'news is folded for the account that allowed it, never the account signed in later');
+  assert.deepEqual(installed.ingested, [['PostToolUse', YUHO.synk_user_id, 7]], 'news is folded for the account that allowed it, never the account signed in later, with the acceptance ticket the server gave');
   o.onChange();
   assert.deepEqual(plain(installed.sent), [['synk:office-changed']]);
 });
@@ -426,7 +447,7 @@ test('the hooks service edits real settings only in the installed release build,
 test('turning off and asking whether hooks are on need no viewer or sign-in, only the platform client; the answers carry no folder', async () => {
   const out = hooksMain({ status: { signedIn: false, account: null } });
   assert.deepEqual(plain(await out.officeHooksOff()), { ok: true });
-  assert.deepEqual(plain(await out.officeHooksStatus()), { ok: true, on: true });
+  assert.deepEqual(plain(await out.officeHooksStatus()), { ok: true, on: true, left: false });
   for (const options of [{ clientId: 'world' }, { smoke: true }]) {
     const c = hooksMain(options);
     assert.equal((await c.officeHooksOff()).code, 'LAUNCHER_ONLY');
@@ -435,36 +456,9 @@ test('turning off and asking whether hooks are on need no viewer or sign-in, onl
   }
 });
 
-test('--office-unhook is handled before the single-instance lock: it removes Solio\'s lines without a window and exits', async () => {
-  const at = name => lines.findIndex(l => l.startsWith(name));
-  const unhookAt = at('const officeUnhook='), lockAt = lines.findIndex(l => l.includes('app.requestSingleInstanceLock()'));
-  assert.ok(unhookAt > 0 && unhookAt < lockAt, 'before the lock');
-  assert.match(lines[at('const yielded=')], /^const yielded=!officeUnhook&&/, 'the update hand-off does not run while unhooking');
-  assert.match(lines[at('if(officeUnhook||yielded)')], /^if\(officeUnhook\|\|yielded\)\{\/\*.*\*\/\}$/, 'no lock, no window, no services');
-  const run = async (argv, options = {}) => {
-    const ctx = hooksMain({ argv, ...options });
-    vm.runInNewContext([source('const officeUnhook='), source('if(officeUnhook)void ')].join('\n'), ctx);
-    for (let i = 0; i < 5; i++) await new Promise(r => setTimeout(r, 0));
-    return ctx;
-  };
-  const yes = await run(['SYNK Platform.exe', '--office-unhook']);
-  assert.equal(yes.made.length, 1);
-  assert.deepEqual([yes.made[0].userData, yes.made[0].installed, yes.made[0].unhooked], ['C:\\synthetic\\userData', true, true]);
-  assert.equal(yes.made[0].accepts, undefined, 'no server is wired for the unhook run');
-  assert.deepEqual(yes.exits, [0]);
-  const no = await run(['SYNK Platform.exe']);
-  assert.deepEqual([no.made.length, no.exits.length], [0, 0], 'a normal start does not unhook');
-  // 사무실을 꺼 둔 판(PC 0.5.2)도 지우는 길은 설치본으로 그대로 돈다. 넘겨받은 폴더(SYNK_OFFICE_HOOK_DIRS)를 지우지 않는다(GPT 검수 GA1)
-  const shelved = await run(['SYNK Platform.exe', '--office-unhook'], { shipped: false });
-  assert.deepEqual([shelved.made.length, shelved.made[0].installed, shelved.made[0].unhooked, shelved.exits], [1, true, true, [0]]);
-  // 꺼 둔 판은 기본 설정 폴더를 보지 않는다(r2 GA1). 켜고 낸 판은 전과 같이 본다
-  assert.deepEqual(plain(shelved.made[0].baseDirs()), [], 'the shelved build cleans only the folders in its state file');
-  assert.equal(yes.made[0].baseDirs, undefined, 'the shipped build keeps the default folder');
-});
-
 /* r2 GA1: 실제 지우기 코드를 이 줄의 옵션 그대로 돌린다. 꺼 둔 판은 적어 두지 않은 폴더(CLAUDE_CONFIG_DIR · SYNK_OFFICE_HOOK_DIRS)의 솔리오 줄을 남긴다 */
 test('r2 GA1: --office-unhook in the shelved build leaves Solio lines in folders it never recorded; the shipped build still cleans the default folder', async () => {
-  const { createOfficeHooks } = createRequire(import.meta.url)('../src/office-hooks.cjs');
+  const { createOfficeHooks, runUnhook: runUnhookReal } = createRequire(import.meta.url)('../src/office-hooks.cjs');
   const top = fs.mkdtempSync(path.join(os.tmpdir(), 'office-main-unhook-'));
   const saved = { cfg: process.env.CLAUDE_CONFIG_DIR, over: process.env.SYNK_OFFICE_HOOK_DIRS };
   try {
@@ -478,6 +472,8 @@ test('r2 GA1: --office-unhook in the shelved build leaves Solio lines in folders
       const ctx = hooksMain({ argv: ['SYNK Platform.exe', '--office-unhook'], shipped });
       ctx.app.getPath = () => userData;
       ctx.createOfficeHooks = options => createOfficeHooks(options);
+      ctx.app.requestSingleInstanceLock = () => true;
+      ctx.runOfficeUnhook = options => runUnhookReal(options);
       vm.runInNewContext([source('const officeUnhook='), source('if(officeUnhook)void ')].join('\n'), ctx);
       for (let i = 0; i < 200 && !ctx.exits.length; i++) await new Promise(r => setTimeout(r, 5));
       assert.deepEqual(ctx.exits, [0], name);
@@ -506,6 +502,224 @@ test('the server starts with the platform main (not in smoke runs, not while the
   assert.equal(quit[0][0], 'before-quit');
   quit[0][1]();
   assert.deepEqual(closed, [true]);
+});
+
+/* ── --office-unhook과 단일 실행 잠금(설계 검토의 단일 실행 잠금 설계, 구현설계.md 12.3 「앱을 지울 때」) ──
+   main.cjs의 줄을 실행마다 따로 VM에서 돌린다. 실행 사이의 단일 실행 잠금은 가짜 하나를 함께 쓴다 */
+const require = createRequire(import.meta.url);
+const { createOfficeHooks: realHooks, runUnhook, UNHOOK_EXIT, OVERRIDE_ENV, PATH_PREFIX } = require('../src/office-hooks.cjs');
+const { createOffice: realOffice, loadOfficeModel: realModel } = require('../src/office.cjs');
+const made = [];
+test.after(() => { for (const d of made) { try { fs.rmSync(d, { recursive: true, force: true }); } catch { /* 이미 없다 */ } } });
+const tmpDir = () => { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'office-main-unhook-')); made.push(d); return d; };
+const ticks = async (n = 20) => { for (let i = 0; i < n; i++) await new Promise(r => setTimeout(r, 0)); };
+
+function sharedLock() {
+  return {
+    holder: null,
+    take(p) { if (this.holder && this.holder !== p) return false; this.holder = p; return true; },
+    free(p) { if (this.holder === p) this.holder = null; },
+  };
+}
+/* 한 실행: 시작 줄(--office-unhook, 잠금)만 돌린다. yielded는 거짓(설치기 넘김이 아님) */
+function launch({ argv, lock, unhook = async () => ({ ok: true }), runOptions = {}, shipped = true, userData = 'C:\\synthetic\\userData' }) {
+  const ctx = hooksMain({ argv, shipped });
+  ctx.quits = 0;
+  ctx.app = {
+    getPath: () => userData,
+    requestSingleInstanceLock: () => lock.take(ctx),
+    exit: code => { ctx.exits.push(code); lock.free(ctx); },
+    quit: () => { ctx.quits += 1; },
+  };
+  ctx.createOfficeHooks = options => { ctx.made.push(options); return { unhook: () => unhook(options) }; };
+  ctx.runOfficeUnhook = options => runUnhook({ ...options, createHooks: ctx.createOfficeHooks, ...runOptions });
+  vm.runInNewContext([source('const officeUnhook='), source('if(officeUnhook)void '), 'const yielded=false;', source('if(officeUnhook||yielded)'), source('else if(!app.requestSingleInstanceLock())app.quit();')].join('\n'), ctx);
+  return ctx;
+}
+
+test('--office-unhook takes the single-instance lock first: while it removes the lines a second app launch quits, and it exits 0 and frees the lock', async () => {
+  const at = name => lines.findIndex(l => l.startsWith(name));
+  assert.equal(lines[at('if(officeUnhook)void ')], "if(officeUnhook)void runOfficeUnhook({userData:app.getPath('userData'),installed:officeHooksRelease(),...(officeOff()?{baseDirs:()=>[],lock:()=>true}:{lock:nonce=>app.requestSingleInstanceLock({officeUnhook:nonce})})}).then(code=>app.exit(code),()=>app.exit(1));", 'the exit code is the unhook result; the lock request carries the one-time value');
+  assert.match(lines[at('const yielded=')], /^const yielded=!officeUnhook&&/, 'the update hand-off does not run while unhooking');
+  assert.match(lines[at('if(officeUnhook||yielded)')], /^if\(officeUnhook\|\|yielded\)\{\/\*.*\*\/\}$/, 'no second lock, no window, no services');
+  const lock = sharedLock();
+  let finish;
+  const slow = new Promise(r => { finish = r; });
+  const unhooking = launch({ argv: ['SYNK Platform.exe', '--office-unhook'], lock, unhook: () => slow });
+  assert.equal(lock.holder, unhooking, 'the unhook run holds the lock from its first tick');
+  await ticks();
+  assert.deepEqual(unhooking.made.map(o => [o.userData, o.installed, o.accepts]), [['C:\\synthetic\\userData', true, undefined]], 'it turns off alone, with no server wired');
+  const second = launch({ argv: ['SYNK Platform.exe'], lock });
+  assert.equal(second.quits, 1, 'an app launched meanwhile loses the lock and quits');
+  assert.deepEqual(second.made, [], 'and never touches the hooks');
+  finish({ ok: true });
+  await ticks();
+  assert.deepEqual(unhooking.exits, [0]);
+  assert.equal(lock.holder, null);
+  const third = launch({ argv: ['SYNK Platform.exe'], lock });
+  assert.equal(third.quits, 0, 'after the unhook run an app starts normally');
+  // 지우지 못한 폴더가 남으면 0이 아니다
+  const left = launch({ argv: ['SYNK Platform.exe', '--office-unhook'], lock: sharedLock(), unhook: async () => ({ ok: false, code: 'READ' }) });
+  await ticks();
+  assert.deepEqual(left.exits, [UNHOOK_EXIT.LEFT]);
+  const broken = launch({ argv: ['SYNK Platform.exe', '--office-unhook'], lock: sharedLock(), unhook: async () => { throw new Error('x'); } });
+  await ticks();
+  assert.deepEqual(broken.exits, [UNHOOK_EXIT.FAILED]);
+  const normal = launch({ argv: ['SYNK Platform.exe'], lock: sharedLock() });
+  assert.deepEqual([normal.made.length, normal.exits.length, normal.quits], [0, 0, 0], 'a normal start does not unhook');
+  assert.equal(unhooking.made[0].baseDirs, undefined, 'the shipped build keeps the default folder');
+  // 사무실을 꺼 둔 판(PC 0.5.2): 훅을 받는 앱이 없으므로 잠금을 청하지 않고, 적어 둔 폴더에서만 지운다(GPT 검수 solio-office-off r2 GA1)
+  const busy = sharedLock();
+  busy.take('running app');
+  const shelved = launch({ argv: ['SYNK Platform.exe', '--office-unhook'], lock: busy, shipped: false });
+  await ticks();
+  assert.equal(busy.holder, 'running app', 'the shelved build does not ask for the lock');
+  assert.deepEqual(shelved.made.map(o => [o.installed, plain(o.baseDirs())]), [[true, []]], 'it cleans only the folders in its state file');
+  assert.deepEqual(shelved.exits, [0]);
+});
+
+test('--office-unhook that loses the lock writes nothing and only watches the state file; with nothing confirmed in 8 s it exits non-zero', async () => {
+  const userData = tmpDir();
+  const lock = sharedLock();
+  lock.take('running app');
+  let t = 0;
+  const clock = { now: () => t, setTimeout: (fn, ms) => { t += ms; setImmediate(fn); return { unref() {} }; } };
+  const late = launch({ argv: ['SYNK Platform.exe', '--office-unhook'], lock, userData, runOptions: clock });
+  await ticks(10);
+  for (let i = 0; i < 400 && !late.exits.length; i++) await ticks(2);
+  assert.deepEqual(late.exits, [UNHOOK_EXIT.UNCONFIRMED], 'could not confirm');
+  assert.ok(t >= 8000 && t <= 8100, `gave up after 8 s (${t} ms)`);
+  assert.deepEqual(late.made, [], 'it never made a hooks service: the running app is the only writer');
+  assert.equal(fs.existsSync(path.join(userData, 'Office')), false, 'nothing was written');
+  assert.equal(lock.holder, 'running app');
+});
+
+/* 켜진 앱: main.cjs의 사무실 · 훅 서버 줄과 second-instance 줄을 실제 office.cjs · office-hooks.cjs로 돌린다.
+   설정 폴더 · 볼 계정 파일 · userData는 모두 임시 폴더다. 넘겨받은 폴더로만 고치는 실행(설치본이 아님)이다 */
+async function runningApp() {
+  const top = tmpDir();
+  const userData = path.join(top, 'userData'), claude = path.join(top, 'claude'), viewersFile = path.join(top, 'viewers.json');
+  fs.mkdirSync(claude, { recursive: true });
+  fs.writeFileSync(viewersFile, JSON.stringify({ synk_user_ids: [YUHO.synk_user_id] }));
+  const model = await realModel();
+  const reduced = [];
+  const spy = { ...model, officeReduce: (st, e, c) => { if (e && e.kind === 'hook') reduced.push(e.event); return model.officeReduce(st, e, c); } };
+  // 볼 계정 파일의 stat을 붙잡는 fs(ingest의 gate에서 기다리게 한다)
+  let hold = null, release = () => {};
+  const officeFs = { ...fs, promises: { ...fs.promises, stat: async (file, ...a) => { if (hold && String(file) === viewersFile) { const h = hold; hold = null; await h; } return fs.promises.stat(file, ...a); } } };
+  // settings.json의 lstat을 붙잡는 fs(끄기가 아직 도는 동안을 만든다)
+  let holdSettings = null, releaseSettings = () => {}, reachedSettings = () => {};
+  const hooksFs = { ...fs, promises: { ...fs.promises, lstat: async (file, ...a) => { if (holdSettings && path.basename(String(file)) === 'settings.json') { const h = holdSettings; holdSettings = null; reachedSettings(); await h; } return fs.promises.lstat(file, ...a); } } };
+  const app = new EventEmitter();
+  app.getPath = () => userData;
+  const ctx = {
+    packaged: false, officeShipped: false, smoke: false, runtime: { clientId: 'platform', mode: 'development' },
+    app, status: signedIn(YUHO), accountStatus: () => ctx.status, renewingAccount: () => null,
+    sendDesktop: () => {}, loadOfficeModel: () => Promise.resolve(spy),
+    createOffice: options => realOffice({ ...options, viewersFile, fsImpl: officeFs, records: { scan: async () => [] }, capacity: { read: async () => null }, roots: { claude: [claude], codex: [] } }),
+    createOfficeHooks: options => realHooks({ ...options, env: { [OVERRIDE_ENV]: claude }, baseDirs: () => [], listenRetries: 0, fsImpl: hooksFs }),
+    appLocationReady: false, windows: 0, requestPlatformWindow: () => { ctx.windows += 1; },
+    window: null, pendingTeachingView: false, sendTeachingView() {}, connectionRecovery: null,
+  };
+  vm.runInNewContext([
+    source('let officeService=null,officeLoading=null;'), source('const officeAccountOf='), source('const officeLoginOf='), source('function office(){'),
+    source('const officeOff='), 'let officeHooks=null;', source('const officeHooksRelease='), source('const officeHooksInstalled='), source('function officeHooksService(){'), source('function officeUnhookAsked('),
+    source("  app.on('second-instance',"),
+  ].join('\n'), ctx);
+  const service = await ctx.office();
+  const ingests = [], accepted = [];
+  const ingest = service.ingest;
+  service.ingest = (...a) => { ingests.push({ armed: !!hold, ticket: a[2], result: ingest(...a) }); return ingests.at(-1).result; };
+  const accepts = service.accepts;
+  service.accepts = async (...a) => { const r = await accepts(...a); accepted.push(r); return r; };
+  return {
+    ctx, app, claude, userData, reduced, ingests, accepted,
+    holdGate() { hold = new Promise(r => { release = r; }); }, releaseGate: () => release(),
+    holdSettings() { holdSettings = new Promise(r => { releaseSettings = r; }); return new Promise(r => { reachedSettings = r; }); }, releaseSettings: () => releaseSettings(),
+  };
+}
+const NEWS = { hook_event_name: 'PostToolUse', session_id: S1, cwd: 'C:\\work\\shop', tool_name: 'Read', tool_input: { file_path: 'C:\\work\\shop\\a.ts' } };
+function send(port, p, body, { split = false } = {}) {
+  const data = Buffer.from(JSON.stringify(body));
+  let done;
+  const answered = new Promise(r => { done = r; });
+  const req = http.request({ host: '127.0.0.1', port, path: p, method: 'POST', headers: { 'content-length': data.length } }, res => { const code = res.statusCode; res.resume(); res.on('end', () => done(code)); });
+  req.on('error', e => done(e.code));
+  if (!split) { req.end(data); return { answered }; }
+  req.write(data.subarray(0, 10));
+  return { answered, finish: () => { req.end(data.subarray(10)); return answered; } };
+}
+const UNHOOK_ARGV = ['C:\\Program Files\\SYNK Platform\\SYNK Platform.exe', '--office-unhook'];
+
+test('the running app takes --office-unhook from second-instance before the location check and any window: acceptance closes in that tick, a body ending afterwards is dropped, and the lines go', async () => {
+  const a = await runningApp();
+  const hooks = a.ctx.officeHooksService();
+  assert.equal((await hooks.enable([])).ok, true);
+  const st = JSON.parse(fs.readFileSync(path.join(a.userData, 'Office', 'hooks.json'), 'utf8'));
+  const p = PATH_PREFIX + st.token;
+  // 처음 소식은 접힌다(받기가 열려 있다)
+  assert.equal(await send(st.port, p, NEWS).answered, 204);
+  for (let i = 0; i < 50 && !a.reduced.length; i++) await ticks(2);
+  assert.deepEqual(a.reduced, ['PostToolUse']);
+  // 받기를 허락한 뒤 몸이 끝나기 전에 지우는 프로그램이 온다
+  const before = a.accepted.length;
+  const req = send(st.port, p, NEWS, { split: true });
+  for (let i = 0; i < 100 && a.accepted.length === before; i++) await ticks(2);
+  assert.equal(a.accepted.at(-1), true, 'the second hook was allowed');
+  const reached = a.holdSettings();
+  a.app.emit('second-instance', {}, UNHOOK_ARGV, 'C:\\', {});
+  // 같은 틱: 앞서 넘긴 소식의 표가 이미 맞지 않는다
+  assert.equal(hooks.accepting(a.ingests[0].ticket), false, 'acceptance closed inside the handler: the ticket of the news handed over before no longer matches');
+  await reached; // 끄기는 아직 settings.json을 읽고 있다(서버도 열려 있다)
+  assert.equal(hooks.listening(), true);
+  assert.equal(await req.finish(), 404, 'the body that ended afterwards is refused');
+  await ticks();
+  assert.deepEqual(a.reduced, ['PostToolUse'], 'commit did not run for it');
+  assert.equal(a.ingests.length, 1, 'it was never handed to the office');
+  a.releaseSettings();
+  await hooks.status([]); // 끄기 뒤에 도는 차례
+  assert.ok(!fs.readFileSync(path.join(a.claude, 'settings.json'), 'utf8').includes('synk-office'), 'the lines are gone');
+  const after = JSON.parse(fs.readFileSync(path.join(a.userData, 'Office', 'hooks.json'), 'utf8'));
+  assert.deepEqual([after.enabled, after.dirs], [false, []], 'what the waiting unhook run looks for');
+  assert.equal(hooks.listening(), false);
+  assert.equal(a.ctx.windows, 0, 'no window was opened, even before the location check finished');
+});
+
+test('an ingest the running app already handed to the office and that waits on the viewers file is dropped when --office-unhook arrives (commit not called)', async () => {
+  const a = await runningApp();
+  const hooks = a.ctx.officeHooksService();
+  assert.equal((await hooks.enable([])).ok, true);
+  const st = JSON.parse(fs.readFileSync(path.join(a.userData, 'Office', 'hooks.json'), 'utf8'));
+  const service = await a.ctx.office();
+  const ingest = service.ingest;
+  service.ingest = (...args) => { a.holdGate(); return ingest(...args); }; // 이 ingest의 gate가 붙잡힌다
+  assert.equal(await send(st.port, PATH_PREFIX + st.token, NEWS).answered, 204);
+  for (let i = 0; i < 100 && !a.ingests.length; i++) await ticks(2);
+  assert.equal(a.ingests.length, 1, 'handed over while acceptance was open');
+  a.app.emit('second-instance', {}, UNHOOK_ARGV, 'C:\\', {});
+  a.releaseGate();
+  assert.deepEqual(await a.ingests[0].result, { ok: false, code: 'CLOSED' });
+  assert.deepEqual(a.reduced, [], 'commit never ran');
+  await hooks.status([]);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(a.userData, 'Office', 'hooks.json'), 'utf8')).enabled, false);
+  // 플랫폼이 아닌 실행이나 보통 다시 실행은 끄지 않는다
+  const other = await runningApp();
+  const otherHooks = other.ctx.officeHooksService();
+  assert.equal((await otherHooks.enable([])).ok, true);
+  other.ctx.appLocationReady = true;
+  other.app.emit('second-instance', {}, ['SYNK Platform.exe'], 'C:\\', {});
+  assert.equal(other.ctx.windows, 1, 'a normal second launch shows the window');
+  assert.equal((await otherHooks.status([])).on, true, 'and leaves hooks on');
+  await otherHooks.close();
+  // 사무실을 꺼 둔 포장 판은 지우는 실행이 잠금을 청하지 않으므로 이 길이 오지 않는다. 와도 훅 서비스를 만들지 않는다(넘겨받은 폴더를 지우지 않게)
+  const shelf = await runningApp();
+  let built = 0;
+  const make = shelf.ctx.createOfficeHooks;
+  shelf.ctx.createOfficeHooks = options => { built += 1; return make(options); };
+  shelf.ctx.packaged = true;
+  shelf.app.emit('second-instance', {}, UNHOOK_ARGV, 'C:\\', {});
+  await ticks();
+  assert.equal(built, 0, 'no hooks service in the shelved build');
 });
 
 /* ── PC 0.5.2: 포장된 판은 사무실을 꺼 둔 채 낸다(officeShipped, 11-20) ── */
@@ -552,7 +766,7 @@ test('PC 0.5.2: the packaged build keeps the office off — every office channel
   assert.match(main, /^const officeOff=\(\)=>packaged&&!officeShipped;$/m);
   const off = wired({ packaged: true });
   for (const channel of CHANNELS) {
-    const want = channel === 'synk:office-hooks-off' ? { ok: true } : channel === 'synk:office-hooks-status' ? { ok: true, on: false } : { ok: false, code: 'NOT_AVAILABLE' };
+    const want = channel === 'synk:office-hooks-off' ? { ok: true } : channel === 'synk:office-hooks-status' ? { ok: true, on: false, left: false } : { ok: false, code: 'NOT_AVAILABLE' };
     assert.deepEqual(await ask(off, channel), want, channel);
   }
   off.status = { signedIn: false, account: null };
@@ -573,7 +787,7 @@ test('PC 0.5.2: the switch touches only the packaged build — a source run and 
     const on = wired(options);
     for (const channel of CHANNELS) assert.equal((await ask(on, channel)).ok, true, `${label}: ${channel}`);
     assert.deepEqual(await ask(on, 'synk:office-snapshot'), { ok: true, available: true }, label);
-    assert.deepEqual(await ask(on, 'synk:office-hooks-status'), { ok: true, on: true }, label);
+    assert.deepEqual(await ask(on, 'synk:office-hooks-status'), { ok: true, on: true, left: false }, label);
     assert.deepEqual([on.loads, on.offices.length, on.hooks.length], [1, 1, 1], `${label}: one office and one hooks service`);
     assert.equal(on.hooks[0].installed, installed, `${label}: real settings only in the installed release build`);
     assert.equal(on.installed(), installed);
@@ -581,4 +795,22 @@ test('PC 0.5.2: the switch touches only the packaged build — a source run and 
     await settle();
     assert.deepEqual(on.calls, ['snapshot', 'watch', 'officeSaveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'officeAddRoot', 'officeRemoveRoot', 'seen', 'setHooks', 'disable', 'status', 'snapshot', 'status', 'start'], label);
   }
+});
+
+test('설계 검토 solio-office-hooks 고칠 것 6: the running app writes the unhook run\'s one-time value (from the lock request) with the count of folders left; a malformed value is not written', async () => {
+  const a = await runningApp();
+  const hooks = a.ctx.officeHooksService();
+  assert.equal((await hooks.enable([])).ok, true);
+  const nonce = '0123456789abcdef'.repeat(2);
+  a.app.emit('second-instance', {}, UNHOOK_ARGV, 'C:\\', { officeUnhook: nonce });
+  await hooks.status([]); // 끄기 뒤에 도는 차례
+  const st = JSON.parse(fs.readFileSync(path.join(a.userData, 'Office', 'hooks.json'), 'utf8'));
+  assert.deepEqual([st.enabled, st.dirs, st.unhooked], [false, [], { nonce, left: 0 }]);
+  const b = await runningApp();
+  const other = b.ctx.officeHooksService();
+  assert.equal((await other.enable([])).ok, true);
+  b.app.emit('second-instance', {}, UNHOOK_ARGV, 'C:\\', { officeUnhook: '../../not-a-nonce' });
+  await other.status([]);
+  const sb = JSON.parse(fs.readFileSync(path.join(b.userData, 'Office', 'hooks.json'), 'utf8'));
+  assert.deepEqual([sb.enabled, sb.unhooked], [false, undefined], 'turned off, but nothing the run could mistake for its own value');
 });

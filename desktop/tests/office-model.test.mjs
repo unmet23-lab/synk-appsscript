@@ -376,3 +376,147 @@ test('reset drops everything, prune keeps ended sessions long enough, the reduce
 test('the time limits are the design values', () => {
   assert.deepEqual({ ...OFFICE_TIMES }, { recordWork: 90 * S, silent: 12 * M, longTurn: 2 * M, stopGrace: 10 * S, drop: 30 * M, askKeep: 12 * H });
 });
+
+/* ── GPT 검수(solio-office-be-20261120) ── */
+test('GA10: a SessionEnd folded after newer news of the same session does not hide it; folded in time order it shows the same', () => {
+  const late = fold([hook('PostToolUse', T0 + 11 * S), hook('SessionEnd', T0 + 10 * S)]);
+  const inOrder = fold([hook('SessionEnd', T0 + 10 * S), hook('PostToolUse', T0 + 11 * S)]);
+  assert.deepEqual(shape(one(inOrder, T0 + 12 * S)), ['working', '일하는 중', false]);
+  assert.deepEqual(shape(one(late, T0 + 12 * S)), ['working', '일하는 중', false], 'the late end does not take the working staff away');
+  // 끝 뒤 10초 안의 기록은 그 끝의 마무리라 새 소식으로 세지 않는다. 그런 기록 뒤에 늦게 닿은 끝은 세션을 내린다
+  const tail = fold([hook('PostToolUse', T0), rec(T0 + 15 * S), hook('SessionEnd', T0 + 10 * S)]);
+  assert.deepEqual(officeSessions(tail, T0 + 20 * S), []);
+  // 늦게 닿은 끝도 그 앞의 승인 물음은 푼다
+  const asked = fold([ask(T0), hook('SubagentStart', T0 + 20 * S, { agentId: 'x' }), hook('SessionEnd', T0 + 10 * S)]);
+  assert.notEqual(one(asked, T0 + 30 * S)?.status, 'asked');
+});
+
+test('GA11: news before an idle prompt belongs to the earlier wait, so a quick new turn after it gets no done alert', () => {
+  const st = fold([hook('PostToolUse', T0), hook('Stop', T0 + 20 * S), rec(T0 + 32 * S), idle(T0 + 80 * S), hook('PostToolUse', T0 + 200 * S), hook('Stop', T0 + 201 * S)]);
+  assert.deepEqual(shape(one(st, T0 + 202 * S)), ['done', '끝냄', false], 'the turn took one second');
+  // 그 차례가 정말 길었으면 느낌표가 붙는다
+  const long = fold([hook('PostToolUse', T0), hook('Stop', T0 + 20 * S), rec(T0 + 32 * S), idle(T0 + 80 * S), hook('PostToolUse', T0 + 200 * S), hook('Stop', T0 + 200 * S + 2 * M + S)]);
+  assert.equal(one(long, T0 + 6 * M).alert, true);
+  // 대기 알림이 늦게 닿아도 앞 대기의 소식으로 새 차례를 길게 세지 않는다
+  const lateIdle = fold([hook('PostToolUse', T0), hook('Stop', T0 + 20 * S), rec(T0 + 32 * S), hook('PostToolUse', T0 + 200 * S), idle(T0 + 80 * S), hook('Stop', T0 + 201 * S)]);
+  assert.equal(one(lateIdle, T0 + 202 * S).alert, false);
+});
+
+/* ── 설계 검토 2026-11-21 (마): 끝의 때보다 이른 칸을 지우는 함수 하나(dropUpTo)와 접는 순서 섞기 ── */
+// 정해진 씨앗의 의사 난수(mulberry32). 걸리면 메시지의 순서로 그대로 다시 본다
+const seeded = seed => () => {
+  seed = (seed + 0x6D2B79F5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+const shuffle = (list, rand) => { const a = list.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const timeOf = e => (e.kind === 'record' ? e.changedAt : e.at);
+const inTime = list => list.slice().sort((a, b) => timeOf(a) - timeOf(b));
+const orderText = list => list.map(e => (e.event || e.kind) + (e.agentId ? ':' + e.agentId : '') + '@' + (timeOf(e) - T0) / S + 's').join(' ');
+// 세션의 핵심 칸. 번호 있는 도우미는 지금 도는 것만 본다. 끝난 도우미(false)는 늦게 닿은 시작을 다시 세지 않으려고 남기 때문이다
+const coreOf = s => s && {
+  endedAt: s.endedAt, lastEndAt: s.lastEndAt, hooked: s.hooked, tool: s.tool, cwd: s.cwd, model: s.model,
+  lastHookAt: s.lastHookAt, lastRecordAt: s.lastRecordAt,
+  postAt: s.postAt, askAt: s.askAt, clearAt: s.clearAt, idleAt: s.idleAt, stopAt: s.stopAt, doneLong: s.doneLong, seenAt: s.seenAt,
+  lastTool: s.lastTool, lastToolAt: s.lastToolAt,
+  running: Object.entries(s.agents).filter(([, v]) => typeof v === 'number').sort(), anonAgents: s.anonAgents,
+};
+// 「처음」 칸은 끝이 늦게 닿으면 남은 칸 가운데 가장 이른 때로 다시 잡는다. 시각 순서의 값보다 이르지 않아야 한다(차례 시작은 모름도 된다)
+const FIRSTS = ['firstAt', 'hookedAt', 'turnStartAt'];
+const notEarlier = (got, want, k) => got[k] === want[k] || (got[k] == null ? k === 'turnStartAt' : want[k] != null && got[k] > want[k]);
+
+const END = T0 + 4 * M;
+const beforeEnd = [ // 4분의 끝과 그 앞의 소식. 언제 닿든 끝이 모두 지운다
+  hook('SessionStart', T0, { model: 'claude-fable-5-2' }),
+  hook('PostToolUse', T0 + 10 * S, { toolName: 'Read', toolDetail: 'auth.ts' }),
+  hook('SubagentStart', T0 + 20 * S, { agentId: 'x' }),
+  hook('SubagentStart', T0 + 25 * S), // 번호 없는 도우미
+  ask(T0 + 30 * S),
+  rec(T0 + 40 * S),
+  hook('PostToolUse', T0 + 50 * S, { agentId: 'x', toolName: 'Grep', toolDetail: 'cart' }),
+  hook('Stop', T0 + 3 * M), // 2분 넘은 차례. 시각 순서로는 느낌표가 붙었다가 끝에 지워진다
+  idle(T0 + 3 * M + 20 * S),
+  hook('SessionEnd', END),
+  rec(END + 5 * S), // 끝의 마무리 기록
+];
+const after5 = sec => T0 + 5 * M + sec * S;
+const BUNDLES = {
+  'ended for good': { events: beforeEnd, now: END + M, want: null },
+  'resumed and working': {
+    events: [...beforeEnd, hook('SessionStart', after5(0), { model: 'claude-opus-5-5' }), hook('PostToolUse', after5(10), { toolName: 'Bash', toolDetail: 'npm' }), hook('SubagentStart', after5(20), { agentId: 'y' }), rec(after5(30))],
+    now: after5(40), want: ['working', false, 1, 'shop · 명령 · npm', 'claude-opus-5-5'],
+  },
+  'resumed and asked': {
+    events: [...beforeEnd, hook('PostToolUse', after5(10), { toolName: 'Edit', toolDetail: 'cart.ts' }), ask(after5(20))],
+    now: T0 + 6 * M, want: ['asked', true, 0, 'shop · 쓰기 · cart.ts', null],
+  },
+  'resumed and done again (a short turn)': {
+    events: [...beforeEnd, hook('PostToolUse', after5(10), { toolName: 'Edit', toolDetail: 'cart.ts' }), hook('Stop', T0 + 6 * M)],
+    now: T0 + 6 * M + 30 * S, want: ['done', false, 0, 'shop · 쓰기 · cart.ts', null],
+  },
+  'resumed by a record only': { events: [...beforeEnd, rec(after5(0))], now: after5(30), want: ['working', false, 0, 'shop', null] },
+  'ended twice': {
+    events: [...beforeEnd, hook('PostToolUse', after5(0), { toolName: 'Read' }), hook('SubagentStart', after5(10), { agentId: 'y' }), ask(after5(20)), hook('SessionEnd', T0 + 6 * M), hook('PostToolUse', T0 + 7 * M, { toolName: 'Grep', toolDetail: 'auth' })],
+    now: T0 + 7 * M + 10 * S, want: ['working', false, 0, 'shop · 찾기 · auth', null],
+  },
+  // 아래 셋은 끝 뒤의 첫 소식이 같은 칸의 늦은 소식에 덮일 수 있어 「처음」 칸이 늦게 잡히는 묶음이다
+  'resumed with two tools': {
+    events: [...beforeEnd, hook('PostToolUse', after5(10), { toolName: 'Bash', toolDetail: 'npm' }), hook('PostToolUse', after5(15), { toolName: 'Edit', toolDetail: 'cart.ts' }), rec(after5(30))],
+    now: after5(40), want: ['working', false, 0, 'shop · 쓰기 · cart.ts', null],
+  },
+  'a tool within 10 seconds after the end': {
+    events: [...beforeEnd, hook('PostToolUse', END + 3 * S, { toolName: 'Read', toolDetail: 'a.ts' }), hook('PostToolUse', after5(0), { toolName: 'Bash', toolDetail: 'npm' })],
+    now: after5(10), want: ['working', false, 0, 'shop · 명령 · npm', null],
+  },
+  'resumed, done, waiting, then a new turn': {
+    events: [...beforeEnd, hook('PostToolUse', after5(0)), hook('Stop', after5(30)), idle(after5(40)), hook('PostToolUse', T0 + 7 * M)],
+    now: T0 + 7 * M + 10 * S, want: ['working', false, 0, 'shop', null],
+  },
+};
+
+test('설계 검토 (마): the same news folded in any order gives the staff line and core fields of the time-order fold', () => {
+  Object.entries(BUNDLES).forEach(([name, { events, now, want }], k) => {
+    const timed = fold(inTime(events));
+    const view = officeSessions(timed, now);
+    const v = view[0] ?? null;
+    assert.deepEqual(v && [v.status, v.alert, v.subagents, v.activity, v.model], want, name + ': the time-order fold');
+    const core = coreOf(timed.sessions.a);
+    const ends = events.filter(e => e.event === 'SessionEnd');
+    const orders = [[...inTime(events).filter(e => !ends.includes(e)), ...ends], inTime(events).reverse()]; // 끝만 맨 뒤, 거꾸로
+    const rand = seeded(20261121 + k);
+    for (let i = 0; i < 40; i++) orders.push(shuffle(events, rand));
+    for (const order of orders) {
+      const got = fold(order), at = name + ' / ' + orderText(order);
+      assert.deepEqual(officeSessions(got, now), view, at);
+      assert.deepEqual(coreOf(got.sessions.a), core, at);
+      for (const f of FIRSTS) assert.ok(notEarlier(got.sessions.a, timed.sessions.a, f), f + ' ' + at);
+    }
+  });
+});
+
+test('be3 GA11: a helper started before the end, a tool after the resume, then the late end leaves no helper, approval or done mark', () => {
+  const early = [hook('SessionStart', T0), hook('PostToolUse', T0 + 10 * S, { toolName: 'Read', toolDetail: 'a.ts' }), hook('SubagentStart', T0 + 20 * S, { agentId: 'x' }), hook('SubagentStart', T0 + 25 * S), ask(T0 + 30 * S), hook('Stop', T0 + 3 * M)];
+  const end = hook('SessionEnd', END), resumed = hook('PostToolUse', T0 + 5 * M, { toolName: 'Bash', toolDetail: 'npm' });
+  const late = fold([...early, resumed, end]);
+  const inOrder = fold([...early, end, resumed]);
+  const v = one(late, T0 + 5 * M + S);
+  assert.deepEqual([v.status, v.alert, v.subagents, v.activity], ['working', false, 0, 'shop · 명령 · npm']);
+  assert.deepEqual(v, one(inOrder, T0 + 5 * M + S));
+  assert.deepEqual(coreOf(late.sessions.a), coreOf(inOrder.sessions.a));
+  for (const f of FIRSTS) assert.equal(late.sessions.a[f], inOrder.sessions.a[f], f); // 끝 뒤의 소식이 하나뿐이면 「처음」 칸도 같다
+  // 세션은 선 채로 남고 끝의 때만 늘어난다. 본체는 이 늘어남으로 「보낼 부서」 기억을 지운다
+  const s = late.sessions.a;
+  assert.deepEqual([s.endedAt, s.lastEndAt, s.stopAt, s.doneLong, s.askAt, s.anonAgents, s.agents], [null, END, null, false, null, 0, {}]);
+  // 다시 선 뒤에 늦게 닿은 끝 앞의 소식(도우미 시작, 승인 물음, 마무리 기록)은 받지 않는다
+  assert.equal(fold([hook('SubagentStart', T0 + 30 * S, { agentId: 'z' }), ask(T0 + M), rec(END + 5 * S), hook('SessionEnd', T0 + 2 * M)], {}, late), late);
+  // 끝보다 늦은 소식은 남는다: 끝 뒤에 시작한 도우미는 늦은 끝이 지우지 않는다
+  const kept = fold([...early, hook('SubagentStart', T0 + 4 * M + S, { agentId: 'y' }), resumed, end]);
+  assert.equal(one(kept, T0 + 5 * M + S).subagents, 1);
+});
+
+test('a session quiet for 30 minutes comes back through the same drop as an end: no old helper, model or last tool', () => {
+  const st = fold([hook('SessionStart', T0, { model: 'claude-opus-5-5' }), hook('PostToolUse', T0 + S, { toolName: 'Read', toolDetail: 'a.ts' }), hook('SubagentStart', T0 + 2 * S, { agentId: 'x' }), hook('SubagentStart', T0 + 3 * S), hook('PostToolUse', T0 + 40 * M)]);
+  const v = one(st, T0 + 40 * M + S);
+  assert.deepEqual([v.status, v.subagents, v.model, v.activity], ['working', 0, null, 'shop']);
+});

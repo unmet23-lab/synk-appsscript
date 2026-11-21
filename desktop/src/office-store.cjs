@@ -9,7 +9,13 @@
 //    읽고 고치고 쓰기와 새 폴더가 있는지 보는 일은 모두 그 차례 안에서 한다. 그래서 부른 차례대로 적히고 서로 덮지 않는다(GPT 검수 GA3).
 //  · 폴더가 있는지는 새로 더하거나 바꾸는 폴더만 본다. 이미 저장된 폴더는 다시 보지 않는다. 옮겼거나 외장 드라이브를 뺀 폴더도
 //    빼거나 이름을 고칠 수 있어야 하기 때문이다(GA4).
-//  · 고치는 함수는 모두 { ok:true, data } 또는 { ok:false, code }를 돌려준다. code: ACCOUNT, VALUE, NAME, NAME_TAKEN, FOLDER, LIMIT, NOT_FOUND, READ, WRITE.
+//  · 고치는 함수는 모두 { ok:true, data } 또는 { ok:false, code }를 돌려준다. code: ACCOUNT, VALUE, NAME, NAME_TAKEN, FOLDER, LIMIT, NOT_FOUND, READ, SIZE, WRITE, AUTH_CHANGED.
+//  · 고치는 함수는 끝 인자로 { guard }를 받는다. guard()가 참이 아니면 쓰기 바로 앞과 이름 바꾸기 바로 앞에서 멈추고 AUTH_CHANGED다. 부른 쪽이 로그인 묶음을
+//    거기서 다시 본다(GPT 검수 GB1 · be3 GA4). 이름 바꾸기가 도는 동안의 로그아웃은 막지 못한다. 파일 자리가 계정 번호로 정해져 다른 계정의 파일에 쓰는 일은 없다.
+//    그래서 AUTH_CHANGED는 「그 묶음에 답하지 않는다」는 뜻이고 「쓰지 않았다」는 약속이 아니다(구현설계 11.1).
+//  · 구독 방의 계정 폴더는 보는 폴더가 아니다(3.4의 5). 판정은 isSubscriptionDir 하나다. 있는 폴더는 realpath로 풀고,
+//    이 앱의 실제 자리(userData/AiSubscriptions/accounts)의 안쪽인지와 이름 무늬를 함께 본다(설계 검토 solio-office-hooks (마), GPT 검수 be3 GA10).
+//  · 읽기 상한(MAX_BYTES)을 넘는 파일은 쓰지 않는다(SIZE). 상한을 넘은 파일은 읽지 못한 것으로 보고 기본값으로 덮지 않는다(GB8).
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -49,7 +55,7 @@ const nameKey = v => cleanName(v).toLowerCase();
 const goodName = n => n.length > 0 && [...n].length <= NAME_MAX && !CONTROL.test(n);
 
 /* 파일의 값을 받을 수 있는 꼴로 고른다. 부서의 모르는 칸은 남긴다 */
-function normalise(raw, cores) {
+function normalise(raw, cores, isSub = f => SUBSCRIPTION_ACCOUNTS.test(path.resolve(f))) {
   const data = defaults();
   if (!isObject(raw)) return data;
   if (VIEWS.includes(raw.view)) data.view = raw.view;
@@ -73,11 +79,25 @@ function normalise(raw, cores) {
   const claude = [];
   for (const r of Array.isArray(roots.claude) ? roots.claude : []) {
     const f = cleanFolder(r);
-    if (!f || SUBSCRIPTION_ACCOUNTS.test(f) || seen.has(folderKey(f)) || claude.length >= MAX_ROOTS) continue;
+    if (!f || isSub(f) || seen.has(folderKey(f)) || claude.length >= MAX_ROOTS) continue;
     seen.add(folderKey(f)); claude.push(f);
   }
   data.roots = { ...roots, claude };
   return data;
+}
+/** 구독 방 계정 폴더 판정을 만든다. userData가 없으면 이름 무늬만 본다 */
+function subscriptionCheck(userData, fsImpl = fs) {
+  const real = p => { try { return typeof fsImpl.realpathSync?.native === 'function' ? fsImpl.realpathSync.native(p) : fs.realpathSync.native(p); } catch { return path.resolve(p); } };
+  const key = p => path.resolve(p).replace(/[\\/]+$/, '').toLowerCase();
+  const accounts = typeof userData === 'string' && userData ? path.join(userData, 'AiSubscriptions', 'accounts') : null;
+  return dir => {
+    if (typeof dir !== 'string' || !dir) return false;
+    const resolved = path.resolve(dir), r = real(dir);
+    if (SUBSCRIPTION_ACCOUNTS.test(resolved) || SUBSCRIPTION_ACCOUNTS.test(r)) return true;
+    if (!accounts) return false;
+    const k = key(r);
+    return [accounts, real(accounts)].some(a => { const ak = key(a); return k === ak || k.startsWith(ak + path.sep); });
+  };
 }
 /* 화면에 넘기는 꼴: 아는 칸만 */
 function publicData(data) {
@@ -96,6 +116,7 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
   const coreCount = () => { const n = Number(typeof cores === 'function' ? cores() : cores); return Number.isInteger(n) && n >= 1 ? n : 1; };
   const goodAccount = id => typeof id === 'string' && ID.test(id) && !!base;
   const fileOf = id => path.join(base, id, FILE);
+  const isSubscriptionDir = subscriptionCheck(userData, fsImpl);
 
   /* 파일을 읽는다. 없으면 기본값, 깨졌으면 기본값과 broken, 읽지 못하면 error */
   async function load(accountId) {
@@ -103,22 +124,27 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
     try { text = await fsp.readFile(fileOf(accountId), 'utf8'); } catch (e) {
       return e && e.code === 'ENOENT' ? { raw: null, data: defaults(), broken: false } : { raw: null, data: defaults(), broken: false, error: true };
     }
+    if (text.length > MAX_BYTES) return { raw: null, data: defaults(), broken: false, error: true, code: 'SIZE' };
     let raw = null;
-    if (text.length <= MAX_BYTES) { try { raw = JSON.parse(text); } catch { raw = null; } }
+    try { raw = JSON.parse(text); } catch { raw = null; }
     if (!isObject(raw)) return { raw: null, data: defaults(), broken: true };
-    return { raw, data: normalise(raw, coreCount()), broken: false };
+    return { raw, data: normalise(raw, coreCount(), isSubscriptionDir), broken: false };
   }
 
-  async function write(accountId, current, data) {
+  async function write(accountId, current, data, guard) {
     const file = fileOf(accountId), dir = path.dirname(file);
     const out = { ...(current.raw || {}), view: data.view, manualCap: data.manualCap, departments: data.departments, assignments: data.assignments, roots: data.roots };
+    const text = JSON.stringify(out, null, 2) + '\n';
+    if (text.length > MAX_BYTES) return { ok: false, code: 'SIZE' }; // 다음 읽기가 받지 못할 파일은 쓰지 않는다
     const tmp = path.join(dir, `${FILE}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`);
     try {
       await fsp.mkdir(dir, { recursive: true });
       if (current.broken) { // 깨진 내용을 덮기 전에 한 벌. 그사이 파일이 없어졌으면 둘 것이 없다
         try { await fsp.copyFile(file, file + '.bad'); } catch (e) { if (!e || e.code !== 'ENOENT') throw e; }
       }
-      await fsp.writeFile(tmp, JSON.stringify(out, null, 2) + '\n', 'utf8');
+      await fsp.writeFile(tmp, text, 'utf8');
+      // 임시 파일을 쓰는 사이에 로그인이 바뀌었으면 바꿔 넣지 않는다(GPT 검수 be3 GA4). 이 확인과 이름 바꾸기 사이에는 기다림이 없다
+      if (typeof guard === 'function' && guard() !== true) { await fsp.unlink(tmp).catch(() => {}); return { ok: false, code: 'AUTH_CHANGED' }; }
       await fsp.rename(tmp, file);
       return { ok: true };
     } catch {
@@ -127,18 +153,19 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
     }
   }
 
-  /* 같은 계정의 고치기는 차례로: 읽고, 고치고, 쓴다 */
-  function mutate(accountId, change) {
+  /* 같은 계정의 고치기는 차례로: 읽고, 고치고, 쓴다. guard는 쓰기 바로 앞에서 부른다 */
+  function mutate(accountId, change, guard) {
     if (!goodAccount(accountId)) return Promise.resolve({ ok: false, code: 'ACCOUNT' });
     const prev = queues.get(accountId) || Promise.resolve();
     const job = prev.then(async () => {
       const current = await load(accountId);
-      if (current.error) return { ok: false, code: 'READ' };
+      if (current.error) return { ok: false, code: current.code || 'READ' };
       const data = structuredClone(current.data);
       const result = await change(data);
       if (!result.ok) return result;
       if (result.unchanged) return { ok: true, data: publicData(data), unchanged: true };
-      const written = await write(accountId, current, data);
+      if (typeof guard === 'function' && guard() !== true) return { ok: false, code: 'AUTH_CHANGED' };
+      const written = await write(accountId, current, data, guard);
       return written.ok ? { ok: true, data: publicData(data) } : written;
     }).catch(() => ({ ok: false, code: 'WRITE' }));
     queues.set(accountId, job);
@@ -160,7 +187,7 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
   /** 부서 더하기(id 없음)와 고치기(id). input: { id?, name?, folder?, role?, tool? } — role · tool을 빼면 그대로, null이면 지운다.
       name과 folder는 새 부서에는 꼭 있어야 한다. 번호가 있는 부서에서 빼면 차례 안에서 읽은 저장된 값 그대로다(이름만 · 폴더만 고칠 때, GA3).
       저장된 폴더는 지금 없어도 된다(GA4) */
-  async function saveDepartment(accountId, input) {
+  async function saveDepartment(accountId, input, { guard } = {}) {
     if (!goodAccount(accountId)) return { ok: false, code: 'ACCOUNT' };
     if (!isObject(input)) return { ok: false, code: 'VALUE' };
     const id = input.id ?? null;
@@ -191,7 +218,7 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
       }
       if (at >= 0) data.departments[at] = dept; else data.departments.push(dept);
       return { ok: true };
-    });
+    }, guard);
   }
   function newId(data) {
     for (let i = 0; i < 8; i++) {
@@ -202,7 +229,7 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
   }
 
   /** 부서 빼기. 그 부서로 보낸 기억도 지운다(세션은 「부서 없는 일」로 간다) */
-  function removeDepartment(accountId, id) {
+  function removeDepartment(accountId, id, { guard } = {}) {
     if (typeof id !== 'string') return Promise.resolve(goodAccount(accountId) ? { ok: false, code: 'VALUE' } : { ok: false, code: 'ACCOUNT' });
     return mutate(accountId, async data => {
       const at = data.departments.findIndex(d => d.id === id);
@@ -210,11 +237,11 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
       data.departments.splice(at, 1);
       data.assignments = Object.fromEntries(Object.entries(data.assignments).filter(([, did]) => did !== id));
       return { ok: true };
-    });
+    }, guard);
   }
 
   /** 「보낼 부서」: 세션 하나를 부서에. departmentId가 null이면 기억을 지운다. 기억은 500개까지이고 오래된 것부터 버린다 */
-  function assign(accountId, sessionId, departmentId) {
+  function assign(accountId, sessionId, departmentId, { guard } = {}) {
     if (!goodAccount(accountId)) return Promise.resolve({ ok: false, code: 'ACCOUNT' });
     if (typeof sessionId !== 'string' || !SESSION_ID.test(sessionId)) return Promise.resolve({ ok: false, code: 'VALUE' });
     if (departmentId !== null && typeof departmentId !== 'string') return Promise.resolve({ ok: false, code: 'VALUE' });
@@ -230,7 +257,7 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
       data.assignments[sessionId] = departmentId;
       data.assignments = Object.fromEntries(Object.entries(data.assignments).slice(-MAX_ASSIGNMENTS));
       return { ok: true };
-    });
+    }, guard);
   }
 
   /** 끝난 세션들의 「보낼 부서」 기억을 지운다(5절). 지울 것이 없으면 쓰지 않는다 */
@@ -245,7 +272,7 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
   }
 
   /** 설정: { view?: 'tilted'|'top', manualCap?: 1~논리 코어 수의 정수 또는 null(자동) } */
-  function saveSettings(accountId, input) {
+  function saveSettings(accountId, input, { guard } = {}) {
     if (!goodAccount(accountId)) return Promise.resolve({ ok: false, code: 'ACCOUNT' });
     if (!isObject(input) || (!own(input, 'view') && !own(input, 'manualCap'))) return Promise.resolve({ ok: false, code: 'VALUE' });
     if (own(input, 'view') && !VIEWS.includes(input.view)) return Promise.resolve({ ok: false, code: 'VALUE' });
@@ -255,18 +282,18 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
       if (own(input, 'view')) data.view = input.view;
       if (own(input, 'manualCap')) data.manualCap = cap;
       return { ok: true };
-    });
+    }, guard);
   }
 
   /** 손님이 더한 Claude 설정 폴더(3.4의 5). 있는 폴더만, 여덟까지, 큰 · 작은 글자를 가리지 않고 겹친 것은 하나로 */
-  async function saveRoots(accountId, dirs) {
+  async function saveRoots(accountId, dirs, { guard } = {}) {
     if (!goodAccount(accountId)) return { ok: false, code: 'ACCOUNT' };
     const given = Array.isArray(dirs) ? dirs : Array.isArray(dirs?.claude) ? dirs.claude : null;
     if (!given) return { ok: false, code: 'VALUE' };
     const claude = [], seen = new Set();
     for (const d of given) {
       const f = cleanFolder(d);
-      if (!f || SUBSCRIPTION_ACCOUNTS.test(f)) return { ok: false, code: 'FOLDER' };
+      if (!f || isSubscriptionDir(f)) return { ok: false, code: 'FOLDER' };
       if (seen.has(folderKey(f))) continue;
       seen.add(folderKey(f)); claude.push(f);
     }
@@ -276,24 +303,24 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
       for (const f of claude) if (!known.has(folderKey(f)) && !(await isDirectory(f))) return { ok: false, code: 'FOLDER' };
       data.roots = { ...data.roots, claude };
       return { ok: true };
-    });
+    }, guard);
   }
 
   /** 보는 폴더 하나 더하기(GA3). 저장된 목록을 차례 안에서 읽어 끝에 붙인다. 있는지는 이 폴더만 본다. 이미 있으면 그대로 */
-  function addRoot(accountId, dir) {
+  function addRoot(accountId, dir, { guard } = {}) {
     if (!goodAccount(accountId)) return Promise.resolve({ ok: false, code: 'ACCOUNT' });
     const f = cleanFolder(dir);
-    if (!f || SUBSCRIPTION_ACCOUNTS.test(f)) return Promise.resolve({ ok: false, code: 'FOLDER' });
+    if (!f || isSubscriptionDir(f)) return Promise.resolve({ ok: false, code: 'FOLDER' });
     return mutate(accountId, async data => {
       if (data.roots.claude.some(x => folderKey(x) === folderKey(f))) return { ok: true, unchanged: true };
       if (data.roots.claude.length >= MAX_ROOTS) return { ok: false, code: 'LIMIT' };
       if (!(await isDirectory(f))) return { ok: false, code: 'FOLDER' };
       data.roots = { ...data.roots, claude: [...data.roots.claude, f] };
       return { ok: true };
-    });
+    }, guard);
   }
   /** 보는 폴더 하나 빼기(GA3 · GA4). 손님이 더한 목록에 있을 때만(큰 · 작은 글자와 끝 빗금은 가리지 않는다). 폴더가 지금 없어도 뺀다 */
-  function removeRoot(accountId, dir) {
+  function removeRoot(accountId, dir, { guard } = {}) {
     if (!goodAccount(accountId)) return Promise.resolve({ ok: false, code: 'ACCOUNT' });
     if (typeof dir !== 'string' || !dir.trim() || dir.length > PATH_MAX) return Promise.resolve({ ok: false, code: 'VALUE' });
     const key = folderKey(cleanFolder(dir) || dir.trim());
@@ -302,10 +329,10 @@ function createOfficeStore({ userData, fsImpl = fs, cores = () => (os.cpus() || 
       if (kept.length === data.roots.claude.length) return { ok: false, code: 'NOT_FOUND' };
       data.roots = { ...data.roots, claude: kept };
       return { ok: true };
-    });
+    }, guard);
   }
 
-  return { read, saveDepartment, removeDepartment, assign, forgetSessions, saveSettings, saveRoots, addRoot, removeRoot, base, fileOf: id => (goodAccount(id) ? fileOf(id) : null) };
+  return { read, saveDepartment, removeDepartment, assign, forgetSessions, saveSettings, saveRoots, addRoot, removeRoot, isSubscriptionDir, base, fileOf: id => (goodAccount(id) ? fileOf(id) : null) };
 }
 
-module.exports = { createOfficeStore, VIEWS, NAME_MAX, MAX_DEPARTMENTS, MAX_ROOTS, MAX_ASSIGNMENTS, SESSION_ID };
+module.exports = { createOfficeStore, subscriptionCheck, VIEWS, NAME_MAX, MAX_DEPARTMENTS, MAX_ROOTS, MAX_ASSIGNMENTS, MAX_BYTES, SESSION_ID, SUBSCRIPTION_ACCOUNTS };

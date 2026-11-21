@@ -286,3 +286,59 @@ test('GA4: folders that went missing can still be removed one by one; only an ad
   assert.equal((await store.saveDepartment(A, { id, name: '외장 드라이브 2', folder: w('blog') })).ok, true, 'the same stored folder is not checked again');
   assert.equal((await store.saveDepartment(A, { id, name: '외장', folder: w('gone2') })).code, 'FOLDER');
 });
+
+test('GB8: a save that would grow office.json past the read limit is refused, and a file already past it is never overwritten with defaults', async () => {
+  const { store, file, w } = setup();
+  assert.equal((await store.saveDepartment(A, { name: '쇼핑몰', folder: w('shop') })).ok, true);
+  // 다음 판이 더한 큰 칸: 붙여 쓴 꼴로는 상한 안이지만 들여쓰기를 넣으면 넘는다
+  const raw = JSON.parse(fs.readFileSync(file(A), 'utf8'));
+  raw.later = Array(300000).fill(1);
+  const compact = JSON.stringify(raw);
+  assert.ok(compact.length < 1024 * 1024);
+  fs.writeFileSync(file(A), compact);
+  assert.deepEqual(await store.saveSettings(A, { view: 'top' }), { ok: false, code: 'SIZE' });
+  assert.equal(fs.readFileSync(file(A), 'utf8'), compact, 'the file is left as it was');
+  assert.equal((await store.read(A)).data.departments.length, 1, 'the departments are still there');
+  // 이미 상한을 넘은 파일: 고치기는 기본값으로 덮지 않고 멈춘다
+  const big = JSON.stringify({ ...raw, later: 'x'.repeat(1100000) });
+  fs.writeFileSync(file(A), big);
+  assert.deepEqual(await store.saveDepartment(A, { name: '법무', folder: w('law') }), { ok: false, code: 'SIZE' });
+  assert.deepEqual(await store.addRoot(A, w('blog')), { ok: false, code: 'SIZE' });
+  assert.equal(fs.readFileSync(file(A), 'utf8'), big, 'never overwritten');
+  assert.equal(fs.existsSync(file(A) + '.bad'), false, 'it is not treated as a broken file');
+});
+
+test('GB1: a guard that turns false stops the write right before it, and an unchanged result needs no guard', async () => {
+  const { store, file, w } = setup();
+  assert.deepEqual(await store.saveDepartment(A, { name: '쇼핑몰', folder: w('shop') }, { guard: () => false }), { ok: false, code: 'AUTH_CHANGED' });
+  assert.equal(fs.existsSync(file(A)), false);
+  assert.equal((await store.saveDepartment(A, { name: '쇼핑몰', folder: w('shop') }, { guard: () => true })).ok, true);
+  assert.deepEqual(await store.assign(A, sid(1), null, { guard: () => false }), { ok: true, data: (await store.read(A)).data, unchanged: true }, 'nothing to write, so nothing to stop');
+});
+
+test('GPT 검수 be3 GA10: a subscription-room account folder is refused however it is written — with a 「.」 part, through a junction, or under this app\'s own AiSubscriptions', async () => {
+  const { store, userData, top, file } = setup();
+  const acc = path.join(userData, 'AiSubscriptions', 'accounts', 'claude-1', '.claude');
+  fs.mkdirSync(acc, { recursive: true });
+  assert.deepEqual(await store.addRoot(A, acc), { ok: false, code: 'FOLDER' });
+  assert.deepEqual(await store.addRoot(A, path.join(userData, 'AiSubscriptions', '.', 'accounts', 'claude-1', '.claude')), { ok: false, code: 'FOLDER' }, 'a 「.」 part does not slip through');
+  const link = path.join(top, 'looks-normal');
+  fs.symlinkSync(path.join(userData, 'AiSubscriptions', 'accounts', 'claude-1'), link, 'junction');
+  assert.deepEqual(await store.addRoot(A, path.join(link, '.claude')), { ok: false, code: 'FOLDER' }, 'a junction into the accounts folder is refused');
+  assert.deepEqual(await store.saveRoots(A, [path.join(link, '.claude')]), { ok: false, code: 'FOLDER' });
+  assert.equal(store.isSubscriptionDir(path.join(link, '.claude')), true);
+  assert.equal(store.isSubscriptionDir(path.join(top, 'work')), false);
+  assert.equal(fs.existsSync(file(A)), false, 'nothing was written');
+});
+
+test('GPT 검수 be3 GA4: a guard that turns false while the temp file is written stops the rename; the file stays as it was', async () => {
+  const top = fs.mkdtempSync(path.join(os.tmpdir(), 'office-store-'));
+  const userData = path.join(top, 'userData');
+  let signedOut = false;
+  const fsImpl = { ...fs, promises: { ...fs.promises, writeFile: async (f, d, o) => { const r = await fs.promises.writeFile(f, d, o); if (/\.tmp$/.test(String(f))) signedOut = true; return r; } } };
+  const store = createOfficeStore({ userData, cores: () => 8, fsImpl });
+  const guard = () => !signedOut;
+  assert.deepEqual(await store.saveSettings(A, { view: 'top' }, { guard }), { ok: false, code: 'AUTH_CHANGED' });
+  assert.equal(fs.existsSync(path.join(userData, 'Office', A, 'office.json')), false, 'not renamed into place');
+  assert.deepEqual(fs.readdirSync(path.join(userData, 'Office', A)), [], 'the temp file is gone');
+});

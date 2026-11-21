@@ -252,7 +252,8 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     let st = null;
     for (const s of staffOnScreen) if (Math.hypot(x - s.x, y - s.y) < s.r + 6) st = s;
     let zone = st ? st.zone : null;
-    if (!zone) for (const q of zonesOnScreen) if (inside(q.pts, x, y)) zone = q.key;
+    // 「그 밖」 구역은 줄이 따로 없어 누를 곳이 아니다. 그 안의 직원은 제 부서로 간다(카본 A4)
+    if (!zone) for (const q of zonesOnScreen) if (q.key !== 'other' && inside(q.pts, x, y)) zone = q.key;
     return { zone, staff: st ? st.id : null };
   }
   const at = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };

@@ -71,7 +71,11 @@ test('보는계정 — 깨진 viewers.json은 덮지 않고 멈추고, --버리�
   assert.equal(r.code, 1);
   assert.match(r.err, /덮어쓰지 않고 멈춘다/);
   assert.equal(fs.readFileSync(s.목록자리, 'utf8'), '{ broken');
-  assert.equal(s.부르기('--버리기').code, 1, '깨진 목록이면 버리기도 멈춘다');
+  // 버리기는 목록이 깨져 있어도 대기 파일만 지운다. 목록이 깨지면 앱이 대기 줄을 새로 쓰기 때문이다(GPT 검수 GB13)
+  assert.equal(s.부르기('--버리기').code, 0, '깨진 목록이어도 버리기는 된다');
+  assert.ok(!fs.existsSync(s.물음자리));
+  assert.equal(fs.readFileSync(s.목록자리, 'utf8'), '{ broken', '목록은 건드리지 않는다');
+  s.물음([시연]);
   fs.writeFileSync(s.목록자리, JSON.stringify({ synk_user_ids: ['bad id!'] }));
   assert.equal(s.부르기().code, 1, '꼴이 다른 번호가 있어도 멈춘다');
   fs.rmSync(s.목록자리);
@@ -80,4 +84,63 @@ test('보는계정 — 깨진 viewers.json은 덮지 않고 멈추고, --버리�
   assert.ok(!fs.existsSync(s.목록자리), '--버리기는 볼 계정을 만들지 않는다');
   assert.equal(s.부르기('--모르는값').code, 1, '모르는 인자는 쓰는 법을 보인다');
   assert.equal(s.부르기('--받기', 유호.synk_user_id, '--버리기').code, 1, '받기와 버리기를 함께 쓰지 않는다');
+});
+
+test('보는계정 — 받기는 잠금 하나로 차례를 지키고, 오래된 잠금도 저절로 치우지 않으며 --잠금풀기로 푼다(GPT 검수 GB5 · be3 GA8)', () => {
+  const s = 자리();
+  const 잠금자리 = path.join(path.dirname(s.목록자리), 'viewers.lock');
+  s.물음([유호, 시연]);
+  fs.writeFileSync(잠금자리, '1');
+  const r = s.부르기('--받기', 유호.synk_user_id);
+  assert.equal(r.code, 1);
+  assert.match(r.err, /다른 받기가 viewers\.json을 고치는 중이거나 멈춘 받기가 잠금을 남겼다/);
+  assert.match(r.err, /--잠금풀기/);
+  assert.ok(!fs.existsSync(s.목록자리), '잠겨 있으면 쓰지 않는다');
+  assert.ok(fs.existsSync(잠금자리), '남의 잠금은 그대로 둔다');
+  const 보기만 = s.부르기();
+  assert.equal(보기만.code, 0, '보기만 하는 부름은 잠금을 쓰지 않는다');
+  assert.match(보기만.err, /잠금이 있다/, '보기만 해도 남은 잠금을 알린다');
+  const 옛때 = new Date(Date.now() - 5 * 60e3);
+  fs.utimesSync(잠금자리, 옛때, 옛때);
+  assert.equal(s.부르기('--받기', 유호.synk_user_id).code, 1, '오래된 잠금도 저절로 치우지 않는다');
+  assert.ok(fs.existsSync(잠금자리));
+  assert.equal(s.부르기('--잠금풀기').code, 0);
+  assert.ok(!fs.existsSync(잠금자리), '--잠금풀기가 푼다');
+  assert.equal(s.부르기('--잠금풀기', '--버리기').code, 1, '다른 일과 함께 쓰지 않는다');
+  const 다시 = s.부르기('--받기', 유호.synk_user_id);
+  assert.equal(다시.code, 0, 다시.err);
+  assert.deepEqual(s.목록().synk_user_ids, [유호.synk_user_id]);
+  assert.ok(!fs.existsSync(잠금자리), '받기가 끝나면 잠금을 푼다');
+  // 이어서 다른 받기: 앞 받기를 덮지 않고 더한다
+  s.물음([시연]);
+  assert.equal(s.부르기('--받기', 시연.synk_user_id).code, 0);
+  assert.deepEqual(s.목록().synk_user_ids, [유호.synk_user_id, 시연.synk_user_id]);
+});
+
+test('보는계정 — 계정마다의 대기 파일과 옛 한 파일을 함께 읽고, 받으면 둘 다 지운다(설계 검토 solio-office-hooks 고칠 것 8)', () => {
+  const s = 자리();
+  const 폴더 = path.join(path.dirname(s.목록자리), 'viewer-pending');
+  fs.mkdirSync(폴더, { recursive: true });
+  fs.writeFileSync(path.join(폴더, 시연.synk_user_id + '.json'), JSON.stringify(시연));
+  fs.writeFileSync(path.join(폴더, 'bad-name.json'), JSON.stringify(유호)); // 파일 이름과 번호가 다르면 버린다
+  s.물음([유호]);
+  const r = s.부르기();
+  assert.equal(r.code, 0, r.err);
+  assert.match(r.out, /번호 owner-1234567890/);
+  assert.match(r.out, /번호 demo-12345678901/);
+  assert.equal(r.out.match(/번호 owner-1234567890/g).length, 1, '같은 계정은 한 줄');
+  assert.equal(s.부르기('--받기', 시연.synk_user_id).code, 0);
+  assert.deepEqual(s.목록().synk_user_ids, [시연.synk_user_id]);
+  assert.ok(!fs.existsSync(폴더) && !fs.existsSync(s.물음자리), '대기 파일은 모두 지운다');
+});
+
+test('보는계정 — 이미 받은 계정은 대기 목록에 다시 보이지 않는다(GPT 검수 GB6)', () => {
+  const s = 자리();
+  fs.writeFileSync(s.목록자리, JSON.stringify({ synk_user_ids: [유호.synk_user_id] }));
+  s.물음([유호, 시연]); // 앱이 받기 직전에 쓰기 시작한 대기 줄이 받은 뒤에 남은 꼴
+  const r = s.부르기();
+  assert.equal(r.code, 0, r.err);
+  assert.doesNotMatch(r.out, /번호 owner-1234567890/, '받은 계정은 묻지 않는다');
+  assert.match(r.out, /번호 demo-12345678901/);
+  assert.equal(s.부르기('--받기', 유호.synk_user_id).code, 1, '목록에 없는 번호다');
 });

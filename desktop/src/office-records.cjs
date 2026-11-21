@@ -189,33 +189,36 @@ function createOfficeRecords({ roots = () => defaultRoots(), fsImpl = fs, now = 
     });
   }
 
-  /* [start, end) 바이트에서 온전한 줄만 본다. start가 줄 가운데면 그 첫 조각을, end가 파일 끝이 아니면 마지막 조각을 버린다 */
+  /* [start, end) 바이트에서 온전한 줄만 본다. start가 줄 가운데면 그 첫 조각을, end가 파일 끝이 아니면 마지막 조각을 버린다.
+     @returns { cwd, upTo } — upTo는 다 본 온전한 줄의 끝이다(다음에 이어 읽을 자리). 파일 끝의 줄바꿈 없는 줄은 아직 쓰는 중일 수 있어
+     그 줄의 처음을 upTo로 둔다. 다음 살피기가 그 줄을 처음부터 다시 읽는다(GPT 검수 GA12) */
   async function cwdInSlice(handle, start, end, size, tool) {
-    if (end <= start) return null;
+    if (end <= start) return { cwd: null, upTo: start };
     const from = start > 0 ? start - 1 : 0;
     const buf = Buffer.alloc(end - from);
     const { bytesRead } = await handle.read(buf, 0, buf.length, from);
     const data = buf.subarray(0, bytesRead);
     let begin = 0;
-    if (start > 0) { const nl = data.indexOf(10); if (nl < 0) return null; begin = nl + 1; }
+    if (start > 0) { const nl = data.indexOf(10); if (nl < 0) return { cwd: null, upTo: start }; begin = nl + 1; }
     let stop = data.length;
-    if (from + data.length < size) { const nl = data.lastIndexOf(10); if (nl < begin) return null; stop = nl + 1; }
+    if (from + data.length < size) { const nl = data.lastIndexOf(10); if (nl < begin) return { cwd: null, upTo: from + begin }; stop = nl + 1; }
     for (const line of data.toString('utf8', begin, stop).split('\n')) {
       const cwd = cwdOfLine(line.trim(), tool);
-      if (cwd) return cwd;
+      if (cwd) return { cwd, upTo: from + stop };
     }
-    return null;
+    const last = stop > begin ? data.lastIndexOf(10, stop - 1) : -1;
+    return { cwd: null, upTo: from + (last >= begin ? last + 1 : begin) };
   }
 
   async function readCwd(file, tool, size, grownFrom) {
     let handle;
-    try { handle = await fsp.open(file, 'r'); } catch { return null; }
+    try { handle = await fsp.open(file, 'r'); } catch { return { cwd: null, upTo: grownFrom }; }
     try {
       if (grownFrom > 0) return await cwdInSlice(handle, Math.max(grownFrom, size - SLICE), size, size, tool);
       const head = await cwdInSlice(handle, 0, Math.min(SLICE, size), size, tool);
-      if (head || size <= SLICE) return head;
+      if (head.cwd || size <= SLICE) return head;
       return await cwdInSlice(handle, size - SLICE, size, size, tool);
-    } catch { return null; } finally {
+    } catch { return { cwd: null, upTo: grownFrom }; } finally {
       try { await handle.close(); } catch { /* 닫지 못해도 넘어간다 */ }
     }
   }
@@ -223,19 +226,30 @@ function createOfficeRecords({ roots = () => defaultRoots(), fsImpl = fs, now = 
   async function cwdOf(s, rootKey) {
     const c = cwdCache.get(s.file);
     if (c && s.size >= c.size && (c.cwd !== null || s.size === c.size)) return c.cwd;
-    const grownFrom = c && c.cwd === null && s.size > c.size ? c.size : 0; // 줄어든 파일은 처음부터 다시 읽는다
-    const cwd = await readCwd(s.file, s.tool, s.size, grownFrom);
+    // 못 찾은 파일이 자랐으면 다 본 온전한 줄의 끝(upTo)부터 읽는다. 줄어든 파일은 처음부터 다시 읽는다
+    const grownFrom = c && c.cwd === null && s.size > c.size ? Math.min(c.upTo ?? c.size, c.size) : 0;
+    const { cwd, upTo } = await readCwd(s.file, s.tool, s.size, grownFrom);
     cwdCache.delete(s.file);
-    cwdCache.set(s.file, { cwd, size: s.size, rootKey });
+    cwdCache.set(s.file, { cwd, size: s.size, upTo, rootKey });
     while (cwdCache.size > MAX_CACHE) cwdCache.delete(cwdCache.keys().next().value);
     return cwd;
+  }
+
+  /* 바뀐 때. 앞날의 고친 때(시계를 뒤로 돌렸다)는 그 값을 처음 본 때로 친다. 그대로인 파일은 그때에 머물러 30분 뒤 내린다.
+     매번 지금으로 치면 바뀌지 않은 파일이 살필 때마다 새 소식이 된다(GPT 검수 GA13). 처음 본 때는 세션 기억(s)에 둔다 */
+  function changedAtOf(s, t) {
+    const raw = changedOf(s);
+    if (raw <= t) { s.future = null; return raw; }
+    const mark = raw + ':' + s.size;
+    if (!s.future || s.future.mark !== mark) s.future = { mark, at: t };
+    return s.future.at;
   }
 
   async function observations(t) {
     const found = [];
     for (const rs of rootStates.values()) {
       for (const s of rs.sessions.values()) {
-        const changedAt = Math.min(changedOf(s), t); // 앞날의 고친 때(시계가 바뀜)는 지금으로 친다
+        const changedAt = changedAtOf(s, t);
         if (t - changedAt < T.drop) found.push({ s, changedAt, rootKey: rs.key, cwd: null });
       }
     }
