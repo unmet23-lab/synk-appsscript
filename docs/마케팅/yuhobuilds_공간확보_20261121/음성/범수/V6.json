@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V6",
+ "text": "폴더마다 뭐가 클라우드에만 있는지, 이렇게 적혀 있어요.",
+ "dur": 3.12,
+ "words": [
+  {
+   "text": "폴더마다",
+   "start": 0.03,
+   "end": 0.465
+  },
+  {
+   "text": "뭐가",
+   "start": 0.765,
+   "end": 0.915
+  },
+  {
+   "text": "클라우드에만",
+   "start": 0.975,
+   "end": 1.499
+  },
+  {
+   "text": "있는지,",
+   "start": 1.545,
+   "end": 1.845
+  },
+  {
+   "text": "이렇게",
+   "start": 2.249,
+   "end": 2.43
+  },
+  {
+   "text": "적혀",
+   "start": 2.474,
+   "end": 2.67
+  },
+  {
+   "text": "있어요.",
+   "start": 2.714,
+   "end": 3.12
+  }
+ ],
+ "source": {
+  "key": "2d02e2160ec7d7ea092cd25b58a6f8d3",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 156
+ }
+}

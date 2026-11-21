@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V9",
+ "text": "정리 맡길 때 붙일 세 마디, 저장해 두세요.",
+ "dur": 2.139,
+ "words": [
+  {
+   "text": "정리",
+   "start": 0.02,
+   "end": 0.238
+  },
+  {
+   "text": "맡길",
+   "start": 0.278,
+   "end": 0.469
+  },
+  {
+   "text": "때",
+   "start": 0.511,
+   "end": 0.592
+  },
+  {
+   "text": "붙일",
+   "start": 0.646,
+   "end": 0.85
+  },
+  {
+   "text": "세",
+   "start": 0.892,
+   "end": 0.973
+  },
+  {
+   "text": "마디,",
+   "start": 1.041,
+   "end": 1.218
+  },
+  {
+   "text": "저장해",
+   "start": 1.463,
+   "end": 1.735
+  },
+  {
+   "text": "두세요.",
+   "start": 1.776,
+   "end": 2.139
+  }
+ ],
+ "source": {
+  "key": "b95669491119748f959bbecd33129d42",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 140
+ }
+}

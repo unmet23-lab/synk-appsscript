@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "제가 고른 작품 세 편의 작업 파일, 천사십육 개가 섞여 있었거든요.",
+ "dur": 3.367,
+ "words": [
+  {
+   "text": "제가",
+   "start": 0.02,
+   "end": 0.195
+  },
+  {
+   "text": "고른",
+   "start": 0.245,
+   "end": 0.408
+  },
+  {
+   "text": "작품",
+   "start": 0.446,
+   "end": 0.659
+  },
+  {
+   "text": "세",
+   "start": 0.71,
+   "end": 0.773
+  },
+  {
+   "text": "편의",
+   "start": 0.823,
+   "end": 0.973
+  },
+  {
+   "text": "작업",
+   "start": 1.011,
+   "end": 1.236
+  },
+  {
+   "text": "파일,",
+   "start": 1.274,
+   "end": 1.399
+  },
+  {
+   "text": "천사십육",
+   "start": 1.751,
+   "end": 2.303
+  },
+  {
+   "text": "개가",
+   "start": 2.34,
+   "end": 2.491
+  },
+  {
+   "text": "섞여",
+   "start": 2.541,
+   "end": 2.716
+  },
+  {
+   "text": "있었거든요.",
+   "start": 2.755,
+   "end": 3.367
+  }
+ ],
+ "source": {
+  "key": "f220527b8084f2e85a16da40f4f7d07a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

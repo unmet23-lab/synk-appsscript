@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "둘, 옮긴 목록을 남겨.",
+ "dur": 1.936,
+ "words": [
+  {
+   "text": "둘,",
+   "start": 0.02,
+   "end": 0.197
+  },
+  {
+   "text": "옮긴",
+   "start": 0.768,
+   "end": 1.025
+  },
+  {
+   "text": "목록을",
+   "start": 1.084,
+   "end": 1.379
+  },
+  {
+   "text": "남겨.",
+   "start": 1.439,
+   "end": 1.936
+  }
+ ],
+ "source": {
+  "key": "7661cb49e69b04a8cf8c752321479f21",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.02,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 153
+ }
+}

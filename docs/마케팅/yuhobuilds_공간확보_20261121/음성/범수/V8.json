@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V8",
+ "text": "폴더마다 한 줄씩, 천사십육 개를 다 되살렸어요. 빠진 파일은 하나도 없었고요.",
+ "dur": 3.902,
+ "words": [
+  {
+   "text": "폴더마다",
+   "start": 0.06,
+   "end": 0.448
+  },
+  {
+   "text": "한",
+   "start": 0.498,
+   "end": 0.561
+  },
+  {
+   "text": "줄씩,",
+   "start": 0.598,
+   "end": 0.899
+  },
+  {
+   "text": "천사십육",
+   "start": 0.937,
+   "end": 1.464
+  },
+  {
+   "text": "개를",
+   "start": 1.501,
+   "end": 1.651
+  },
+  {
+   "text": "다",
+   "start": 1.689,
+   "end": 1.764
+  },
+  {
+   "text": "되살렸어요.",
+   "start": 1.814,
+   "end": 2.315
+  },
+  {
+   "text": "빠진",
+   "start": 2.653,
+   "end": 2.891
+  },
+  {
+   "text": "파일은",
+   "start": 2.929,
+   "end": 3.167
+  },
+  {
+   "text": "하나도",
+   "start": 3.205,
+   "end": 3.367
+  },
+  {
+   "text": "없었고요.",
+   "start": 3.405,
+   "end": 3.902
+  }
+ ],
+ "source": {
+  "key": "e9629709bf6d898a6df778ad28ae96cf",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.12,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

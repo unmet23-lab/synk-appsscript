@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V10",
+ "text": "되살리고도 삼십오 기가 넘게 비웠고, 작품 셋은 지켰어요.",
+ "dur": 3.237,
+ "words": [
+  {
+   "text": "되살리고도",
+   "start": 0.02,
+   "end": 0.465
+  },
+  {
+   "text": "삼십오",
+   "start": 0.51,
+   "end": 0.837
+  },
+  {
+   "text": "기가",
+   "start": 0.881,
+   "end": 1
+  },
+  {
+   "text": "넘게",
+   "start": 1.045,
+   "end": 1.268
+  },
+  {
+   "text": "비웠고,",
+   "start": 1.312,
+   "end": 1.655
+  },
+  {
+   "text": "작품",
+   "start": 2.145,
+   "end": 2.412
+  },
+  {
+   "text": "셋은",
+   "start": 2.458,
+   "end": 2.65
+  },
+  {
+   "text": "지켰어요.",
+   "start": 2.71,
+   "end": 3.237
+  }
+ ],
+ "source": {
+  "key": "0da5a01966c2f0555b05537907672e79",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

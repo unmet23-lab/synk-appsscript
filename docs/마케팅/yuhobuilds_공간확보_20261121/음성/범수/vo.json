@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1123,
+  "lufs": -17
+ },
+ "made": "2026-11-20T22:55:36.855Z",
+ "lines": [
+  {
+   "id": "V1",
+   "text": "AI한테 공간 확보를 맡겼더니, 오십이 점 육 기가를 비웠는데요,",
+   "dur": 3.228,
+   "syllablesPerSec": 7.43,
+   "src": "V1.wav",
+   "key": "6e5445838e469762e009c8ee710741f5",
+   "words": 9
+  },
+  {
+   "id": "V2",
+   "text": "그래서 이제 세 마디를 붙여요. 하나, 내가 고른 건 먼저 빼.",
+   "dur": 3.035,
+   "syllablesPerSec": 7.25,
+   "src": "V2.wav",
+   "key": "cd72cb689f2be5cec00bca59d2423300",
+   "words": 11
+  },
+  {
+   "id": "V3",
+   "text": "제가 고른 작품 세 편의 작업 파일, 천사십육 개가 섞여 있었거든요.",
+   "dur": 3.367,
+   "syllablesPerSec": 7.72,
+   "src": "V3.wav",
+   "key": "f220527b8084f2e85a16da40f4f7d07a",
+   "words": 11
+  },
+  {
+   "id": "V4",
+   "text": "PC에서 내려가, 클라우드에만 남았어요.",
+   "dur": 2.188,
+   "syllablesPerSec": 6.86,
+   "src": "V4.wav",
+   "key": "521de80d1bb226f650c499516d47cf4d",
+   "words": 4
+  },
+  {
+   "id": "V5",
+   "text": "둘, 옮긴 목록을 남겨.",
+   "dur": 1.936,
+   "syllablesPerSec": 4.13,
+   "src": "V5.wav",
+   "key": "7661cb49e69b04a8cf8c752321479f21",
+   "words": 4
+  },
+  {
+   "id": "V6",
+   "text": "폴더마다 뭐가 클라우드에만 있는지, 이렇게 적혀 있어요.",
+   "dur": 3.12,
+   "syllablesPerSec": 7.37,
+   "src": "V6.wav",
+   "key": "2d02e2160ec7d7ea092cd25b58a6f8d3",
+   "words": 7
+  },
+  {
+   "id": "V7",
+   "text": "셋, 되살리는 명령도 남겨.",
+   "dur": 1.731,
+   "syllablesPerSec": 5.78,
+   "src": "V7.wav",
+   "key": "bd8d359776a64d0000c7952babbdd66c",
+   "words": 4
+  },
+  {
+   "id": "V8",
+   "text": "폴더마다 한 줄씩, 천사십육 개를 다 되살렸어요. 빠진 파일은 하나도 없었고요.",
+   "dur": 3.902,
+   "syllablesPerSec": 7.94,
+   "src": "V8.wav",
+   "key": "e9629709bf6d898a6df778ad28ae96cf",
+   "words": 11
+  },
+  {
+   "id": "V9",
+   "text": "정리 맡길 때 붙일 세 마디, 저장해 두세요.",
+   "dur": 2.139,
+   "syllablesPerSec": 7.48,
+   "src": "V9.wav",
+   "key": "b95669491119748f959bbecd33129d42",
+   "words": 8
+  },
+  {
+   "id": "V10",
+   "text": "되살리고도 삼십오 기가 넘게 비웠고, 작품 셋은 지켰어요.",
+   "dur": 3.237,
+   "syllablesPerSec": 7.11,
+   "src": "V10.wav",
+   "key": "0da5a01966c2f0555b05537907672e79",
+   "words": 8
+  }
+ ]
+}

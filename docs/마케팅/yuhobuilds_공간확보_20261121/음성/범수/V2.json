@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "그래서 이제 세 마디를 붙여요. 하나, 내가 고른 건 먼저 빼.",
+ "dur": 3.035,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.02,
+   "end": 0.239
+  },
+  {
+   "text": "이제",
+   "start": 0.28,
+   "end": 0.376
+  },
+  {
+   "text": "세",
+   "start": 0.417,
+   "end": 0.487
+  },
+  {
+   "text": "마디를",
+   "start": 0.555,
+   "end": 0.775
+  },
+  {
+   "text": "붙여요.",
+   "start": 0.857,
+   "end": 1.089
+  },
+  {
+   "text": "하나,",
+   "start": 1.584,
+   "end": 1.762
+  },
+  {
+   "text": "내가",
+   "start": 2.064,
+   "end": 2.201
+  },
+  {
+   "text": "고른",
+   "start": 2.256,
+   "end": 2.42
+  },
+  {
+   "text": "건",
+   "start": 2.462,
+   "end": 2.53
+  },
+  {
+   "text": "먼저",
+   "start": 2.571,
+   "end": 2.75
+  },
+  {
+   "text": "빼.",
+   "start": 2.804,
+   "end": 3.035
+  }
+ ],
+ "source": {
+  "key": "cd72cb689f2be5cec00bca59d2423300",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 181
+ }
+}
