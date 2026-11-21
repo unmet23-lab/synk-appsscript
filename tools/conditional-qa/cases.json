@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 156,
+  "expectedCount": 207,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1252,6 +1252,414 @@
       "name": "CI 커밋에 저장된 LAB 판본 글과 원고의 UTF-8, JSON, 판본글 형식",
       "group": "커밋 SHA로 LAB 판본 글·원고 전수 검사",
       "route": "linux",
+      "profile": "default"
+    },
+    {
+      "id": "S157",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "every backup a clean-up would forget is compared with the newest complete one first, oldest first, a few a run (Fable 2)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S158",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a partial backup newer than the complete one is the one compared with: a file updated in one going and gone since is gone (r2 GA7)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S159",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "past a threshold the clean-up holds every backup; files gone, files changed and bytes gone each count (4.4 처음 문턱)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S160",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "shares count against the files the backup before had: 299 of 1000 gone, or half less one changed, is no hold",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S161",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "copies of one content gone count the sizes they had, though restic removes no bytes for them (GPT GA4 · r2 GA5)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S162",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "what is neither file nor folder is no file gone: the backup before tells which, and the lines are read again without them (r2 GA3 · r3 GA1 · GA3 · GA4)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S163",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "the newest backup going is compared with the newest that stays, and once confirmed goes without (r3 GA2)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S164",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a file the diff calls gone but still on the disk is not gone: a OneDrive placeholder, a file a program held (GPT GA9 · GA7)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S165",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "each folder is compared with the newest backup that stays and has it: an unplugged drive with the one kept for it, a folder none has not at all (GPT GA2 · Fable 1)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S166",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a partial backup's fill is compared too: a file only it held, gone from the disk, counts (Fable 3)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S167",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "「확인을 마침」 covers each folder only between the backups it was compared in: another folder of a backup in that time is still compared (r4 GA1)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S168",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "「확인을 마침」 covers a folder as it was spelled: one spelled otherwise may be another folder, and is compared (설계 검토 기록10)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S169",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a partial backup that could not read a folder is not the one compared with for it: the one before that read it is (r4 GA2)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S170",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a file the fill of the backup compared with holds is not gone, though it is gone from the disk (r4 GA3)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S171",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "where the partial backup compared with could not read, a file is gone only when no other backup that stays holds it (Fable 후속 · r5 GA1)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S172",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a folder still chosen that no backup that stays could read: what the backup going holds there is its last copy (r5 GA2)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S173",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a folder whose name the two backups spell in other cases is compared inside each: 300 changed are seen (r5 GA4)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S174",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "what a backup holds of a folder is asked of restic, not guessed from its list: a scan that failed while the files were saved is no hold left out (r6 GA1)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S175",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a fill is seen on every way: with no backup that stays holding the folder, and in the other backups asked (r6 GA2 · GA3 · GA5)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S176",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a file a partial backup and its fill both hold is one file in the shares (r7 GA1)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S177",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a file both the tree and the fill of the backup going hold, gone, counts once with the larger size (r8 GA1)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S178",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a file gone from the disk is not gone while the fill of a backup that stays holds it, though that backup has no tree of the folder (r7 GA2)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S179",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "where the backup compared with could not read, the fill of another that stays is asked though its tree lacks the folder (r7 GA5)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S180",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a list that names the drive or the folder itself could not read any of it: what is not there is asked of the others that stay (r7 GA3)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S181",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a fill asked to read a whole folder holds it whole: what only it held is counted (r7 GA4 · GA6)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S182",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "one rule wherever a file is in doubt: where the backup going had it, what it is compared with and where a copy is (Fable 후속 4)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S183",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a fill that read a whole folder read all of it: the clean-up keeps no older backup for what the partial one could not read there (r7 GA4 · Fable 후속 4)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S184",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a file the tree and the fill of the backup going both hold counts once wherever the tree side counted it: a folder none that stays has (Fable 후속 5)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S185",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "the share of a backup whose tree and fill both hold a folder is told both ways; only when they tell apart is its tree listed, once (Fable 후속 5)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S186",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "how many files are counted with the disk, and whether their sizes are read, go by the most the share can be of (r9 GA1)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S187",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a copy the fill has larger than the tree copy is of the share with all its size (r9 GA4)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S188",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a name is matched as spelled first: a folder that tells case apart may hold two files whose names differ only in it (r10 GA1 · r11 GA1)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S189",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a folder a backup that stays spells in other cases is told both ways, and a hold either way holds: the disk now cannot tell which it was (r12 GA1 · r13 GA2)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S190",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a folder spelled anew on a drive not plugged in is still compared with the newest backup that has it: told as the same folder too (r13 GA1)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S191",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "taken for another folder, a folder spelled otherwise hides nothing: files of the same names there are no copies (r13)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S192",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "the folders of one backup need not be one way: each is counted every way, and of each count the most is taken (설계 검토 기록11)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S193",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a folder spelled more ways than two is counted as the same as each of them (설계 검토 기록11)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S194",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a file found only through a folder that is a junction now is not on the disk: it belongs to another folder (설계 검토 기록11)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S195",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a folder counted two ways is counted at its most toward the file threshold too: the sizes are read (설계 검토 기록11)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S196",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a folder no longer chosen that none that stays holds as spelled is left out, however another spelling is held: it thins no share (설계 검토 기록11)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S197",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a folder past what 「확인을 마침」 covered, though within what some way of it saw, is counted and out of the share (설계 검토 기록11)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S198",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a large file gone from a folder out of the share is no less gone: the sizes are read with it (r14 GA1)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S199",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "the list a hold shows names each path once, so a folder counted two ways leaves room for the others (r14 GA3)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S200",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a path whose type changed counts the files the backup before had there, every one; a list it cannot read forgets nothing (GPT GA8 · r2 GA6 · GA8)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S201",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a usual clean-up asks restic which folders a backup holds of the one going and the one compared with only, not of every backup that stays (Fable 후속 3)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S202",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a comparison that fails, or tells no counts, forgets nothing; the clean-up waits for the next run",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S203",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "「확인을 마침」 lets the backups between the two compared go without a comparison; a rollback that ended leaves a hold to the person (GPT GA1 · Fable 2)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S204",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a hold the settings cannot vouch for is dropped as a whole; its name list is kept within bounds",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S205",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "every run result says while a hold waits, a skipped one too (GPT GA10)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S206",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "「지워지기 전으로 되살리기」 restores the folders that changed from the backup the hold keeps — or a part of one (GPT GA11)",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S207",
+      "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
+      "name": "a backup whose folders cannot be told apart is compared whole, so one odd backup does not stop every clean-up after it",
+      "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
       "profile": "default"
     }
   ]

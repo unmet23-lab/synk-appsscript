@@ -246,6 +246,9 @@ test('a newest partial snapshot without exactly one list does not push out a goo
 
 /** A path as written, ends and all: Windows needs the long form for a name ending in a dot or a space. */
 const exact = p => process.platform === 'win32' ? '\\\\?\\' + p : p;
+// A test that walks many cases, each with its own fixture, takes a minute or more on a busy PC: past the two or three
+// minutes a test is given by default (tools/관련시험.js, tools/conditional-qa), it is given ten.
+const LONG = 10 * 60 * 1000;
 
 test('a name ending in a dot or a space is told as one the backup cannot hold; the backup stays complete (4.2 「이 백업에 담지 못하는 이름」)', async () => {
   const { engine, fail, advance, calls, snapshots, root } = await fixture();
@@ -429,7 +432,7 @@ test('every name found is held in a file of its own, written when they change (4
   assert.equal((await fs.stat(file)).mtimeMs, empty);
 });
 
-test('names past the list are each looked at again when a walk does not read every folder (4.2, GPT r2 GA2 · GA6)', async () => {
+test('names past the list are each looked at again when a walk does not read every folder (4.2, GPT r2 GA2 · GA6)', { timeout: LONG }, async () => {
   const { engine, advance } = await fixture();
   const [src] = engine.config.sources, many = path.join(src, '가득'), tail = path.join(src, '하나');
   await fs.mkdir(many); await fs.mkdir(tail);
@@ -765,7 +768,8 @@ test('a chosen folder gone while it is walked is one not read (4.2, 설계 검�
   await engine.setAutomatic(true);
   await engine.runOnce({});
   const fsp = require('node:fs/promises'), readdir = fsp.readdir;
-  fsp.readdir = (p, ...rest) => p === exact(src) ? Promise.reject(Object.assign(new Error('gone'), { code: 'ENOENT' })) : readdir(p, ...rest);
+  // The walk's read of it: the check of the chosen folders before the backup reads it too, by the same path off Windows.
+  fsp.readdir = (p, ...rest) => p === exact(src) && rest[0]?.withFileTypes ? Promise.reject(Object.assign(new Error('gone'), { code: 'ENOENT' })) : readdir(p, ...rest);
   advance(61 * 60000);
   try { await engine.runOnce({}); } finally { fsp.readdir = readdir; }
   assert.deepEqual([JSON.parse(await fs.readFile(file, 'utf8')).names, engine.config.leftOutNames.checked], [[path.join(src, 'a.')], false]);
@@ -1265,7 +1269,8 @@ test('the backup is written down before the walk of the folders (4.2, 설계 검
   const fsp = require('node:fs/promises'), readdir = fsp.readdir, save = engine.save;
   let saved = null, atWalk;
   engine.save = async function (...a) { saved = JSON.parse(JSON.stringify({ id: this.config.lastBackup?.id, left: this.config.leftOutNames, warning: this.config.warning })); return save.apply(this, a); };
-  fsp.readdir = (p, ...rest) => { if (p === exact(src) && atWalk === undefined) atWalk = saved; return readdir(p, ...rest); };
+  // The walk's first read of the folder (not the check of the chosen folders before the backup — the same path off Windows).
+  fsp.readdir = (p, ...rest) => { if (p === exact(src) && rest[0]?.withFileTypes && atWalk === undefined) atWalk = saved; return readdir(p, ...rest); };
   fail.scan = [path.join(src, '알린 메모.')];
   advance(61 * 60000);
   try { await engine.runOnce({}); } finally { fsp.readdir = readdir; engine.save = save; }

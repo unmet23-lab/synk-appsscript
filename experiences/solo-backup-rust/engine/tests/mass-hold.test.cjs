@@ -18,6 +18,14 @@ const id = c => c.repeat(64);
 const treeOf = original => '/' + original.replace(/^([A-Za-z]):/, '$1').replaceAll('\\', '/').replace(/\/+$/, '');
 const many = (n, folder, modifier, prefix = 'f') => Array.from({ length: n }, (_, i) => [`${treeOf(folder)}/${prefix}${i}.txt`, modifier]);
 const fileNodes = n => Array.from({ length: n }, (_, i) => ({ message_type: 'node', path: `/n${i}`, type: 'file', size: 10 }));
+// The drive the test folders are on, as a fill's link root names it: D: on the GitHub Windows runner.
+const DRIVE = os.tmpdir().slice(0, 2).toUpperCase();
+// The engine tells backups and the disk apart by Windows paths (drive letters, `path.win32`, junctions): off Windows
+// these tests mean nothing, so they skip there and run on the GitHub Windows host (tools/conditional-qa S157 ~ S207).
+const windowsPaths = process.platform !== 'win32' && 'Windows 경로 규칙을 보는 시험 — GitHub Windows에서 돈다(tools/conditional-qa)';
+// A test that walks many cases, each with its own fixture, takes a minute or more on a busy PC: past the two or three
+// minutes a test is given by default (tools/관련시험.js, tools/conditional-qa), it is given ten.
+const LONG = 10 * 60 * 1000;
 
 async function fixture() {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'mass-hold-'));
@@ -91,7 +99,7 @@ async function fixture() {
   return { root, engine, fake, docs, pics, latest, forgot, make, advance: ms => { now += ms; }, now: () => now };
 }
 
-test('every backup a clean-up would forget is compared with the newest complete one first, oldest first, a few a run (Fable 2)', async () => {
+test('every backup a clean-up would forget is compared with the newest complete one first, oldest first, a few a run (Fable 2)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   const old = fake.snap('1', 50), mid = fake.snap('2', 30), last = fake.snap('3', 0);
   f.latest(last);
@@ -120,7 +128,7 @@ test('every backup a clean-up would forget is compared with the newest complete 
   for (const s of [partial, list, fill, fillList]) assert.ok(h.fake.snapshots.some(x => x.id === s.id));
 });
 
-test('a partial backup newer than the complete one is the one compared with: a file updated in one going and gone since is gone (r2 GA7)', async () => {
+test('a partial backup newer than the complete one is the one compared with: a file updated in one going and gone since is gone (r2 GA7)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   const run = crypto.randomUUID();
   const complete = fake.snap('1', 50, { files: 600 }), middle = fake.snap('2', 30, { files: 600, tags: ['partial'] }), newest = fake.snap('3', 1, { files: 350, tags: ['partial', 'run:' + run] });
@@ -139,7 +147,7 @@ test('a partial backup newer than the complete one is the one compared with: a f
   assert.deepEqual(g.fake.diffs, [[m2.id, c2.id]]);
 });
 
-test('past a threshold the clean-up holds every backup; files gone, files changed and bytes gone each count (4.4 처음 문턱)', async () => {
+test('past a threshold the clean-up holds every backup; files gone, files changed and bytes gone each count (4.4 처음 문턱)', { skip: windowsPaths }, async () => {
   for (const kind of ['removed', 'changed', 'bytes']) {
     const f = await fixture(), { engine, fake, docs, pics } = f;
     const before = fake.snap('1', 30), last = fake.snap('2', 0);
@@ -168,7 +176,7 @@ test('past a threshold the clean-up holds every backup; files gone, files change
   }
 });
 
-test('shares count against the files the backup before had: 299 of 1000 gone, or half less one changed, is no hold', async () => {
+test('shares count against the files the backup before had: 299 of 1000 gone, or half less one changed, is no hold', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   fake.snap('1', 30, { files: 1000 }); const last = fake.snap('2', 0, { files: 800 }); f.latest(last);
   fake.diff = { lines: many(299, docs, '-') };
@@ -181,7 +189,7 @@ test('shares count against the files the backup before had: 299 of 1000 gone, or
   assert.equal(g.engine.config.massHold ?? null, null, 'changed under half; bytes told only with a file gone');
 });
 
-test('copies of one content gone count the sizes they had, though restic removes no bytes for them (GPT GA4 · r2 GA5)', async () => {
+test('copies of one content gone count the sizes they had, though restic removes no bytes for them (GPT GA4 · r2 GA5)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3;
   const copies = n => Array.from({ length: n }, (_, i) => ({ message_type: 'node', path: `/f${i}.txt`, type: 'file', size: 2 * GiB }));
   // Ten copies of one 2 GiB file, six gone and 12 GiB of new files since: restic removes no blob (four copies hold it) and
@@ -211,7 +219,7 @@ test('copies of one content gone count the sizes they had, though restic removes
   assert.ok(!h.fake.calls.some(a => a[0] === 'ls' && a.at(-1) === `${b3.id}:${treeOf(h.docs)}`));
 });
 
-test('what is neither file nor folder is no file gone: the backup before tells which, and the lines are read again without them (r2 GA3 · r3 GA1 · GA3 · GA4)', async () => {
+test('what is neither file nor folder is no file gone: the backup before tells which, and the lines are read again without them (r2 GA3 · r3 GA1 · GA3 · GA4)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3;
   const node = (p, type = 'file', size = 1) => ({ message_type: 'node', path: p, type, size });
   // 200 links gone: no hold.
@@ -247,7 +255,7 @@ test('what is neither file nor folder is no file gone: the backup before tells w
   assert.deepEqual([k.engine.config.massHold ?? null, k.forgot()], [null, [b4.id]]);
 });
 
-test('the newest backup going is compared with the newest that stays, and once confirmed goes without (r3 GA2)', async () => {
+test('the newest backup going is compared with the newest that stays, and once confirmed goes without (r3 GA2)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   // No backup for a day: the complete one stays, the newer partial one goes — 250 files only it held are gone from the disk.
   const complete = fake.snap('1', 50, { files: 600 }), partial = fake.snap('2', 25, { files: 600, tags: ['partial'] });
@@ -267,7 +275,7 @@ test('the newest backup going is compared with the newest that stays, and once c
   assert.deepEqual([fake.diffs.length, f.forgot()], [1, [partial.id]]);
 });
 
-test('a file the diff calls gone but still on the disk is not gone: a OneDrive placeholder, a file a program held (GPT GA9 · GA7)', async () => {
+test('a file the diff calls gone but still on the disk is not gone: a OneDrive placeholder, a file a program held (GPT GA9 · GA7)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   fake.snap('1', 30, { files: 500 }); const last = fake.snap('2', 0, { files: 500, tags: [VERIFIED, 'partial'] }); f.latest(last);
   for (let i = 0; i < 300; i++) await fs.writeFile(path.join(docs, `f${i}.txt`), '');
@@ -290,7 +298,7 @@ test('a file the diff calls gone but still on the disk is not gone: a OneDrive p
   assert.deepEqual([g.engine.config.massHold ?? null, g.forgot()], [null, [b.id]]);
 });
 
-test('each folder is compared with the newest backup that stays and has it: an unplugged drive with the one kept for it, a folder none has not at all (GPT GA2 · Fable 1)', async () => {
+test('each folder is compared with the newest backup that stays and has it: an unplugged drive with the one kept for it, a folder none has not at all (GPT GA2 · Fable 1)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs, pics } = f;
   // The newest has docs only (pics not found); the newest with pics stays for it (retain). The one before goes: docs is
   // compared with the newest, pics with the one kept for it, where nothing changed.
@@ -320,7 +328,7 @@ test('each folder is compared with the newest backup that stays and has it: an u
   assert.deepEqual([h.removed, h.before, h.folders], [300, 600, [{ path: k.docs, removed: 300, changed: 0 }]]);
 });
 
-test('a partial backup\'s fill is compared too: a file only it held, gone from the disk, counts (Fable 3)', async () => {
+test('a partial backup\'s fill is compared too: a file only it held, gone from the disk, counts (Fable 3)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3, root = 'C:\\swb-fill-link';
   const setup = async () => {
     const x = await fixture(), run = crypto.randomUUID(), fillRun = crypto.randomUUID();
@@ -328,7 +336,7 @@ test('a partial backup\'s fill is compared too: a file only it held, gone from t
     const fill = x.fake.snap('3', 29, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), fillList = x.fake.snap('4', 29, { tags: ['meta', 'run:' + fillRun] });
     x.latest(x.fake.snap('5', 0));
     // The fill read, through a link root on C:, the Outlook file the partial one could not.
-    x.fake.dumps[fillList.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [path.join(x.docs, 'outlook.pst')], failed: [], cut: false }));
+    x.fake.dumps[fillList.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [path.join(x.docs, 'outlook.pst')], failed: [], cut: false }));
     const inFill = treeOf(root + x.docs.slice(2));
     x.fake.ls[`${fill.id}:${inFill}`] = [{ message_type: 'node', path: '/outlook.pst', type: 'file', size: 5 * GiB }];
     x.fake.diff = { lines: [[`${inFill}/outlook.pst`, '-']] };
@@ -357,7 +365,7 @@ test('a partial backup\'s fill is compared too: a file only it held, gone from t
   assert.equal(j.engine.config.massHold?.removedBytes, 5 * GiB);
 });
 
-test('「확인을 마침」 covers each folder only between the backups it was compared in: another folder of a backup in that time is still compared (r4 GA1)', async () => {
+test('「확인을 마침」 covers each folder only between the backups it was compared in: another folder of a backup in that time is still compared (r4 GA1)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs, pics } = f;
   // B had pics only; pics is kept in K (the newest has no pics). Y had both; P, a partial one, docs only.
   const B = fake.snap('1', 55, { paths: [pics] }), Y = fake.snap('2', 45), K = fake.snap('3', 32), P = fake.snap('4', 27, { files: 600, paths: [docs], tags: ['partial'] }), N = fake.snap('5', 0, { paths: [docs] });
@@ -373,7 +381,7 @@ test('「확인을 마침」 covers each folder only between the backups it was 
   assert.deepEqual([engine.config.massHold?.beforeId, engine.config.massHold?.removed], [P.id, 250]);
 });
 
-test('「확인을 마침」 covers a folder as it was spelled: one spelled otherwise may be another folder, and is compared (설계 검토 기록10)', async () => {
+test('「확인을 마침」 covers a folder as it was spelled: one spelled otherwise may be another folder, and is compared (설계 검토 기록10)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   // The person confirmed DOCS between these times; B holds docs, which a parent that tells case apart may hold as well.
   const B = fake.snap('1', 30, { paths: [docs] }), N = fake.snap('2', 0, { paths: [docs] });
@@ -385,7 +393,7 @@ test('「확인을 마침」 covers a folder as it was spelled: one spelled othe
   assert.deepEqual([engine.config.massHold?.beforeId, engine.config.massHold?.removed], [B.id, 300]);
 });
 
-test('a partial backup that could not read a folder is not the one compared with for it: the one before that read it is (r4 GA2)', async () => {
+test('a partial backup that could not read a folder is not the one compared with for it: the one before that read it is (r4 GA2)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs, pics } = f;
   const run = crypto.randomUUID();
   const B = fake.snap('1', 40), K = fake.snap('2', 30), P = fake.snap('3', 10, { tags: ['partial', 'run:' + run] }), list = fake.snap('4', 10, { tags: ['meta', 'run:' + run] }), N = fake.snap('5', 0, { paths: [docs] });
@@ -403,12 +411,12 @@ test('a partial backup that could not read a folder is not the one compared with
   assert.ok(!fake.diffs.some(([, b]) => b === P.id));
 });
 
-test('a file the fill of the backup compared with holds is not gone, though it is gone from the disk (r4 GA3)', async () => {
+test('a file the fill of the backup compared with holds is not gone, though it is gone from the disk (r4 GA3)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3, root = 'C:\\swb-fill-link';
   const f = await fixture(), { engine, fake, docs } = f;
   const fillOf = (c, hours, run, fillRun) => {
     const fill = fake.snap(c, hours, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = fake.snap(String.fromCharCode(c.charCodeAt(0) + 1), hours, { tags: ['meta', 'run:' + fillRun] });
-    fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [path.join(docs, 'outlook.pst')], failed: [], cut: false }));
+    fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [path.join(docs, 'outlook.pst')], failed: [], cut: false }));
     fake.ls[`${fill.id}:${treeOf(root + docs.slice(2))}`] = [{ message_type: 'node', path: '/outlook.pst', type: 'file', size: 5 * GiB }];
     return fill;
   };
@@ -428,7 +436,7 @@ test('a file the fill of the backup compared with holds is not gone, though it i
   // The diff says gone, the disk has it no more: N's fill keeps it, so it is not counted.
   const g = await fixture(), later = crypto.randomUUID();
   const gFill = (c, hours, run) => { const fillRun = crypto.randomUUID(), fill = g.fake.snap(c, hours, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = g.fake.snap(String.fromCharCode(c.charCodeAt(0) + 1), hours, { tags: ['meta', 'run:' + fillRun] });
-    g.fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [path.join(g.docs, 'outlook.pst')], failed: [], cut: false }));
+    g.fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [path.join(g.docs, 'outlook.pst')], failed: [], cut: false }));
     g.fake.ls[`${fill.id}:${treeOf(root + g.docs.slice(2))}`] = [{ message_type: 'node', path: '/outlook.pst', type: 'file', size: 5 * GiB }]; };
   const B2 = g.fake.snap('2', 30);
   g.fake.ls[`${B2.id}:${treeOf(g.docs)}`] = [{ message_type: 'node', path: '/outlook.pst', type: 'file', size: 5 * GiB }];
@@ -441,7 +449,7 @@ test('a file the fill of the backup compared with holds is not gone, though it i
   assert.deepEqual([g.engine.config.massHold ?? null, g.forgot()], [null, [B2.id]]);
 });
 
-test('where the partial backup compared with could not read, a file is gone only when no other backup that stays holds it (Fable 후속 · r5 GA1)', async () => {
+test('where the partial backup compared with could not read, a file is gone only when no other backup that stays holds it (Fable 후속 · r5 GA1)', { skip: windowsPaths }, async () => {
   const setup = async kHas => {
     const x = await fixture(), { fake, docs, pics } = x;
     // The drive came out while P was read: it names pics\\sub among what it could not read, and the drive is still out.
@@ -465,7 +473,7 @@ test('where the partial backup compared with could not read, a file is gone only
   assert.deepEqual([g.engine.config.massHold?.kind, g.engine.config.massHold?.removed, g.engine.config.massHold?.beforeId], ['removed', 601, g.B.id]);
 });
 
-test('a folder still chosen that no backup that stays could read: what the backup going holds there is its last copy (r5 GA2)', async () => {
+test('a folder still chosen that no backup that stays could read: what the backup going holds there is its last copy (r5 GA2)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs, pics } = f;
   // pics has no complete backup: its first partial one A and newest P could not read it at all; only B, between, did.
   const lists = {};
@@ -495,7 +503,7 @@ test('a folder still chosen that no backup that stays could read: what the backu
   assert.equal(g.engine.config.massHold ?? null, null);
 });
 
-test('a folder whose name the two backups spell in other cases is compared inside each: 300 changed are seen (r5 GA4)', async () => {
+test('a folder whose name the two backups spell in other cases is compared inside each: 300 changed are seen (r5 GA4)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs, pics } = f;
   const upper = docs.toUpperCase();
   const B = fake.snap('1', 30, { files: 600 }), N = fake.snap('2', 0, { files: 600, paths: [upper, pics] }); f.latest(N);
@@ -510,7 +518,7 @@ test('a folder whose name the two backups spell in other cases is compared insid
   assert.deepEqual([engine.config.massHold?.kind, engine.config.massHold?.changed], ['changed', 300]);
 });
 
-test('what a backup holds of a folder is asked of restic, not guessed from its list: a scan that failed while the files were saved is no hold left out (r6 GA1)', async () => {
+test('what a backup holds of a folder is asked of restic, not guessed from its list: a scan that failed while the files were saved is no hold left out (r6 GA1)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs, pics } = f;
   const partial = (c, hours, unreadable) => { const run = crypto.randomUUID(), x = fake.snap(c, hours, { files: 600, tags: ['partial', 'run:' + run] }), meta = fake.snap(String.fromCharCode(c.charCodeAt(0) + 1), hours, { tags: ['meta', 'run:' + run] }); fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, unreadable, cut: false })); return x; };
   // B's list names pics, yet B saved its 300 photos; P read pics after they were gone from it and from the disk.
@@ -522,7 +530,7 @@ test('what a backup holds of a folder is asked of restic, not guessed from its l
   assert.deepEqual([engine.config.massHold?.kind, engine.config.massHold?.removed, engine.config.massHold?.beforeId], ['removed', 300, B.id]);
 });
 
-test('a fill is seen on every way: with no backup that stays holding the folder, and in the other backups asked (r6 GA2 · GA3 · GA5)', async () => {
+test('a fill is seen on every way: with no backup that stays holding the folder, and in the other backups asked (r6 GA2 · GA3 · GA5)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3, root = 'C:\\swb-fill-link';
   const node = (p, size = 10) => ({ message_type: 'node', path: p, type: 'file', size });
   // pics with no backup that stays holding it (A and P lack its tree); the 5 GiB file is only in B's fill and gone.
@@ -550,7 +558,7 @@ test('a fill is seen on every way: with no backup that stays holding the folder,
   const B = gl('3', 40, []).x, K = gl('5', 20, [archive]), P2 = gl('7', 10, [archive]);
   const kFill = g.fake.snap('a', 19, { tags: ['fill', 'fills:' + K.run, 'run:' + crypto.randomUUID()] });
   const kMeta = g.fake.snap('b', 19, { tags: ['meta', kFill.tags.find(t => t.startsWith('run:'))] });
-  g.fake.dumps[kMeta.id] = Buffer.from(JSON.stringify({ v: 1, fills: K.run, roots: [{ from: root, to: 'C:' }], asked: [archive], failed: [], cut: false }));
+  g.fake.dumps[kMeta.id] = Buffer.from(JSON.stringify({ v: 1, fills: K.run, roots: [{ from: root, to: DRIVE }], asked: [archive], failed: [], cut: false }));
   g.fake.ls[`${kFill.id}:${treeOf(root + g.docs.slice(2))}`] = [node('/archive.pst', 5 * GiB)];
   g.fake.ls[`${B.id}:${treeOf(g.docs)}`] = [node('/archive.pst', 5 * GiB)];
   g.latest(g.fake.snap('d', 0, { paths: [g.pics] }));
@@ -560,7 +568,7 @@ test('a fill is seen on every way: with no backup that stays holding the folder,
   assert.equal(g.engine.config.massHold ?? null, null);
 });
 
-test('a file a partial backup and its fill both hold is one file in the shares (r7 GA1)', async () => {
+test('a file a partial backup and its fill both hold is one file in the shares (r7 GA1)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   const root = 'C:\\swb-fill-link', run = crypto.randomUUID(), fillRun = crypto.randomUUID();
   // B, a partial one, held 600 files of docs; 200 others it had are gone from the disk and from N.
@@ -568,7 +576,7 @@ test('a file a partial backup and its fill both hold is one file in the shares (
   fake.dumps[list.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: [path.join(docs, 'k0.txt')], cut: false }));
   // Its fill read again 200 files its tree holds too, still on the disk: not 200 more of the share.
   const fill = fake.snap('3', 29, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = fake.snap('4', 29, { tags: ['meta', 'run:' + fillRun] });
-  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [path.join(docs, 'k0.txt')], failed: [], cut: false }));
+  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [path.join(docs, 'k0.txt')], failed: [], cut: false }));
   const nodes = Array.from({ length: 200 }, (_, n) => ({ message_type: 'node', path: `/k${n}.txt`, type: 'file', size: 10 }));
   fake.ls[`${fill.id}:${treeOf(root + docs.slice(2))}`] = nodes;
   fake.ls[`${B.id}:${treeOf(docs)}`] = nodes;
@@ -582,7 +590,7 @@ test('a file a partial backup and its fill both hold is one file in the shares (
   const gB = g.fake.snap('1', 30, { tags: ['partial', 'run:' + gRun], files: 600, paths: [g.docs] }), gList = g.fake.snap('2', 30, { tags: ['meta', 'run:' + gRun] });
   g.fake.dumps[gList.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: [path.join(g.docs, 'k0.txt')], cut: false }));
   const gFill = g.fake.snap('3', 29, { tags: ['fill', 'fills:' + gRun, 'run:' + gFillRun] }), gMeta = g.fake.snap('4', 29, { tags: ['meta', 'run:' + gFillRun] });
-  g.fake.dumps[gMeta.id] = Buffer.from(JSON.stringify({ v: 1, fills: gRun, roots: [{ from: root, to: 'C:' }], asked: [path.join(g.docs, 'k0.txt')], failed: [], cut: false }));
+  g.fake.dumps[gMeta.id] = Buffer.from(JSON.stringify({ v: 1, fills: gRun, roots: [{ from: root, to: DRIVE }], asked: [path.join(g.docs, 'k0.txt')], failed: [], cut: false }));
   g.fake.ls[`${gFill.id}:${treeOf(root + g.docs.slice(2))}`] = Array.from({ length: 200 }, (_, n) => ({ message_type: 'node', path: `/K${n}.TXT`, type: 'file', size: 10 }));
   g.fake.ls[`${gB.id}:${treeOf(g.docs)}`] = nodes;
   for (let n = 0; n < 200; n++) await fs.writeFile(path.join(g.docs, `k${n}.txt`), 'k');
@@ -592,14 +600,14 @@ test('a file a partial backup and its fill both hold is one file in the shares (
   assert.deepEqual([g.engine.config.massHold?.kind, g.engine.config.massHold?.removed, g.engine.config.massHold?.before], ['removed', 200, 600]);
 });
 
-test('a file both the tree and the fill of the backup going hold, gone, counts once with the larger size (r8 GA1)', async () => {
+test('a file both the tree and the fill of the backup going hold, gone, counts once with the larger size (r8 GA1)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3, f = await fixture(), { engine, fake, docs } = f;
   const root = 'C:\\swb-fill-link', run = crypto.randomUUID(), fillRun = crypto.randomUUID();
   // B's tree holds archive.pst at 1 KiB; its fill read it again at 5 GiB. It is gone from the disk and from N.
   const B = fake.snap('1', 30, { tags: ['partial', 'run:' + run] }), list = fake.snap('2', 30, { tags: ['meta', 'run:' + run] });
   fake.dumps[list.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: [path.join(docs, 'archive.pst')], cut: false }));
   const fill = fake.snap('3', 29, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = fake.snap('4', 29, { tags: ['meta', 'run:' + fillRun] });
-  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [path.join(docs, 'archive.pst')], failed: [], cut: false }));
+  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [path.join(docs, 'archive.pst')], failed: [], cut: false }));
   fake.ls[`${fill.id}:${treeOf(root + docs.slice(2))}`] = [{ message_type: 'node', path: '/archive.pst', type: 'file', size: 5 * GiB }];
   fake.ls[`${B.id}:${treeOf(docs)}`] = [{ message_type: 'node', path: '/archive.pst', type: 'file', size: 1024 }];
   f.latest(fake.snap('5', 0));
@@ -608,7 +616,7 @@ test('a file both the tree and the fill of the backup going hold, gone, counts o
   assert.deepEqual([engine.config.massHold?.kind, engine.config.massHold?.removed, engine.config.massHold?.removedBytes], ['bytes', 1, 5 * GiB]);
 });
 
-test('a file gone from the disk is not gone while the fill of a backup that stays holds it, though that backup has no tree of the folder (r7 GA2)', async () => {
+test('a file gone from the disk is not gone while the fill of a backup that stays holds it, though that backup has no tree of the folder (r7 GA2)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3, root = 'C:\\swb-fill-link';
   const f = await fixture(), { engine, fake, docs } = f;
   const big = { message_type: 'node', path: '/archive.pst', type: 'file', size: 5 * GiB };
@@ -619,7 +627,7 @@ test('a file gone from the disk is not gone while the fill of a backup that stay
   fake.dumps[list.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: [], cut: true }));
   fake.missing.add(`${P.id}:${treeOf(docs)}`);
   const fillRun = crypto.randomUUID(), fill = fake.snap('5', 1.5, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = fake.snap('6', 1.5, { tags: ['meta', 'run:' + fillRun] });
-  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [path.join(docs, 'archive.pst')], failed: [], cut: false }));
+  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [path.join(docs, 'archive.pst')], failed: [], cut: false }));
   fake.ls[`${fill.id}:${treeOf(root + docs.slice(2))}`] = [big];
   f.latest(P);
   fake.diff = { lines: [] };
@@ -627,7 +635,7 @@ test('a file gone from the disk is not gone while the fill of a backup that stay
   assert.deepEqual([engine.config.massHold ?? null, f.forgot()], [null, [B.id]]);
 });
 
-test('where the backup compared with could not read, the fill of another that stays is asked though its tree lacks the folder (r7 GA5)', async () => {
+test('where the backup compared with could not read, the fill of another that stays is asked though its tree lacks the folder (r7 GA5)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3, root = 'C:\\swb-fill-link';
   const g = await fixture();
   const gl = (c, hours, unreadable) => { const run = crypto.randomUUID(), x = g.fake.snap(c, hours, { tags: ['partial', 'run:' + run] }), meta = g.fake.snap(String.fromCharCode(c.charCodeAt(0) + 1), hours, { tags: ['meta', 'run:' + run] }); g.fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, unreadable, cut: false })); return { x, run }; };
@@ -639,7 +647,7 @@ test('where the backup compared with could not read, the fill of another that st
   g.fake.missing.add(`${K.x.id}:${treeOf(g.docs)}`);
   const kFill = g.fake.snap('a', 19, { tags: ['fill', 'fills:' + K.run, 'run:' + crypto.randomUUID()] });
   const kMeta = g.fake.snap('b', 19, { tags: ['meta', kFill.tags.find(t => t.startsWith('run:'))] });
-  g.fake.dumps[kMeta.id] = Buffer.from(JSON.stringify({ v: 1, fills: K.run, roots: [{ from: root, to: 'C:' }], asked: [archive], failed: [], cut: false }));
+  g.fake.dumps[kMeta.id] = Buffer.from(JSON.stringify({ v: 1, fills: K.run, roots: [{ from: root, to: DRIVE }], asked: [archive], failed: [], cut: false }));
   g.fake.ls[`${kFill.id}:${treeOf(root + g.docs.slice(2))}`] = [{ message_type: 'node', path: '/archive.pst', type: 'file', size: 5 * GiB }];
   g.fake.ls[`${B.id}:${treeOf(g.docs)}`] = [{ message_type: 'node', path: '/archive.pst', type: 'file', size: 5 * GiB }];
   g.latest(g.fake.snap('d', 0, { paths: [g.pics] }));
@@ -649,7 +657,7 @@ test('where the backup compared with could not read, the fill of another that st
   assert.equal(g.engine.config.massHold ?? null, null);
 });
 
-test('a list that names the drive or the folder itself could not read any of it: what is not there is asked of the others that stay (r7 GA3)', async () => {
+test('a list that names the drive or the folder itself could not read any of it: what is not there is asked of the others that stay (r7 GA3)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, pics } = f;
   // P, the newest, saved part of pics while its list names the drive (/Q) among what it could not read. K holds the 300
   // photos P lacks; they are gone from the disk.
@@ -663,7 +671,7 @@ test('a list that names the drive or the folder itself could not read any of it:
   assert.deepEqual([engine.config.massHold ?? null, f.forgot()], [null, [B.id]]);
 });
 
-test('a fill asked to read a whole folder holds it whole: what only it held is counted (r7 GA4 · GA6)', async () => {
+test('a fill asked to read a whole folder holds it whole: what only it held is counted (r7 GA4 · GA6)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3, root = 'C:\\swb-fill-link';
   const f = await fixture(), { engine, fake, docs, pics } = f;
   const listed = (c, hours, unreadable) => { const run = crypto.randomUUID(), x = fake.snap(c, hours, { files: 600, tags: ['partial', 'run:' + run] }), meta = fake.snap(String.fromCharCode(c.charCodeAt(0) + 1), hours, { tags: ['meta', 'run:' + run] }); fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, unreadable, cut: false })); return { x, run }; };
@@ -679,7 +687,7 @@ test('a fill asked to read a whole folder holds it whole: what only it held is c
   assert.deepEqual([engine.config.massHold?.kind, engine.config.massHold?.removedBytes, engine.config.massHold?.beforeId], ['bytes', 5 * GiB, b.x.id]);
 });
 
-test('one rule wherever a file is in doubt: where the backup going had it, what it is compared with and where a copy is (Fable 후속 4)', async () => {
+test('one rule wherever a file is in doubt: where the backup going had it, what it is compared with and where a copy is (Fable 후속 4)', { skip: windowsPaths, timeout: LONG }, async () => {
   const GiB = 1024 ** 3, root = 'C:\\swb-fill-link', X = 'archive.pst';
   const limit = { files: 200, removedShare: 0.3, changedShare: 0.5, bytes: GiB, list: 500, compare: 6, ask: 300 };
   // Where B, going, had X: in its tree; or — what it could not read — in its fill, asked for X or for the folder whole,
@@ -698,7 +706,7 @@ test('one rule wherever a file is in doubt: where the backup going had it, what 
     const meta = (c, hours, run, body) => { const m = fake.snap(c, hours, { tags: ['meta', 'run:' + run] }); fake.dumps[m.id] = Buffer.from(JSON.stringify(body)); };
     const fillOf = (c, hours, run, asked) => {
       const fillRun = crypto.randomUUID(), fill = fake.snap(c, hours, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] });
-      meta(String.fromCharCode(c.charCodeAt(0) + 1), hours, fillRun, { v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [asked], failed: [], cut: false });
+      meta(String.fromCharCode(c.charCodeAt(0) + 1), hours, fillRun, { v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [asked], failed: [], cut: false });
       fake.ls[`${fill.id}:${treeOf(root + docs.slice(2))}`] = [node];
     };
     const [tree, fillKind] = source.split('+');
@@ -735,7 +743,7 @@ test('one rule wherever a file is in doubt: where the backup going had it, what 
   assert.deepEqual(wrong, []);
 });
 
-test('a fill that read a whole folder read all of it: the clean-up keeps no older backup for what the partial one could not read there (r7 GA4 · Fable 후속 4)', async () => {
+test('a fill that read a whole folder read all of it: the clean-up keeps no older backup for what the partial one could not read there (r7 GA4 · Fable 후속 4)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   const root = 'C:\\swb-fill-link', run = crypto.randomUUID(), fillRun = crypto.randomUUID();
   // B, complete, read docs\a.txt. P, the newest, could not; its fill read docs whole.
@@ -744,7 +752,7 @@ test('a fill that read a whole folder read all of it: the clean-up keeps no olde
   fake.dumps[list.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: [path.join(docs, 'a.txt')], cut: false }));
   const fill = fake.snap('5', 1.5, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] });
   const meta = fake.snap('6', 1.5, { tags: ['meta', 'run:' + fillRun] });
-  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [docs], failed: [], cut: false }));
+  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [docs], failed: [], cut: false }));
   const inFill = `${fill.id}:${treeOf(root + docs.slice(2))}`;
   fake.ls[inFill] = [{ message_type: 'node', path: '/a.txt', type: 'file', size: 10 }];
   f.latest(P);
@@ -762,13 +770,13 @@ test('a fill that read a whole folder read all of it: the clean-up keeps no olde
   engine.fillFolders.clear(); // as an engine that has not asked yet
   assert.equal(await engine.fillFor(fake.snapshots, P, docs), null);
   // Its list cut short, it holds nothing to use: no listing is asked for it — one that fails stops no restore (r9 GA3).
-  fake.fileAt.delete(inFill); engine.fillFolders.clear(); engine.fillCache = new Map([[meta.id, { v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [docs], failed: [], cut: true }]]);
+  fake.fileAt.delete(inFill); engine.fillFolders.clear(); engine.fillCache = new Map([[meta.id, { v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [docs], failed: [], cut: true }]]);
   const before = fake.calls.length;
   assert.equal(await engine.fillFor(fake.snapshots, P, docs), null);
   assert.deepEqual(fake.calls.slice(before).filter(a => a[0] === 'ls'), []);
 });
 
-test('a file the tree and the fill of the backup going both hold counts once wherever the tree side counted it: a folder none that stays has (Fable 후속 5)', async () => {
+test('a file the tree and the fill of the backup going both hold counts once wherever the tree side counted it: a folder none that stays has (Fable 후속 5)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs, pics } = f;
   const root = 'C:\\swb-fill-link', run = crypto.randomUUID(), fillRun = crypto.randomUUID();
   const limit = { files: 200, removedShare: 0.3, changedShare: 0.5, bytes: 1024 ** 3, list: 500, compare: 6, ask: 300 };
@@ -778,7 +786,7 @@ test('a file the tree and the fill of the backup going both hold counts once whe
   const B = fake.snap('1', 30, { tags: ['partial', 'run:' + run], files: 600 }), list = fake.snap('2', 30, { tags: ['meta', 'run:' + run] });
   fake.dumps[list.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: [path.join(docs, 'g0.txt')], cut: false }));
   const fill = fake.snap('3', 29, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = fake.snap('4', 29, { tags: ['meta', 'run:' + fillRun] });
-  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [path.join(docs, 'g0.txt')], failed: [], cut: false }));
+  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [path.join(docs, 'g0.txt')], failed: [], cut: false }));
   fake.ls[`${B.id}:${treeOf(docs)}`] = [...Array.from({ length: 500 }, (_, n) => node(`k${n}.txt`)), ...Array.from({ length: 100 }, (_, n) => node(`g${n}.txt`))];
   fake.ls[`${fill.id}:${treeOf(root + docs.slice(2))}`] = Array.from({ length: 100 }, (_, n) => node(`g${n}.txt`));
   for (let n = 0; n < 500; n++) await fs.writeFile(path.join(docs, `k${n}.txt`), 'k');
@@ -788,7 +796,7 @@ test('a file the tree and the fill of the backup going both hold counts once whe
   assert.deepEqual([r.removed, r.before, r.kind], [100, 600, null]);
 });
 
-test('the share of a backup whose tree and fill both hold a folder is told both ways; only when they tell apart is its tree listed, once (Fable 후속 5)', async () => {
+test('the share of a backup whose tree and fill both hold a folder is told both ways; only when they tell apart is its tree listed, once (Fable 후속 5)', { skip: windowsPaths, timeout: LONG }, async () => {
   const limit = { files: 200, removedShare: 0.3, changedShare: 0.5, bytes: 1024 ** 3, list: 500, compare: 6, ask: 300 };
   const setup = async (kept, tree = 100) => {
     const f = await fixture(), { fake, docs } = f;
@@ -798,7 +806,7 @@ test('the share of a backup whose tree and fill both hold a folder is told both 
     const B = fake.snap('1', 30, { tags: ['partial', 'run:' + run], files: tree, paths: [docs] }), list = fake.snap('2', 30, { tags: ['meta', 'run:' + run] });
     fake.dumps[list.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: [path.join(docs, 'f0.txt')], cut: false }));
     const fill = fake.snap('3', 29, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = fake.snap('4', 29, { tags: ['meta', 'run:' + fillRun] });
-    fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [path.join(docs, 'f0.txt')], failed: [], cut: false }));
+    fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [path.join(docs, 'f0.txt')], failed: [], cut: false }));
     fake.ls[`${B.id}:${treeOf(docs)}`] = Array.from({ length: tree }, (_, n) => node(`k${n}.txt`));
     fake.ls[`${fill.id}:${treeOf(root + docs.slice(2))}`] = Array.from({ length: 900 }, (_, n) => node(`f${n}.txt`));
     for (let n = 0; n < kept; n++) await fs.writeFile(path.join(docs, `f${n}.txt`), 'f');
@@ -824,7 +832,7 @@ test('the share of a backup whose tree and fill both hold a folder is told both 
   assert.deepEqual([all.r.removed, all.r.before, all.r.kind, all.listed], [900, 1000, 'removed', 1]);
 });
 
-test('how many files are counted with the disk, and whether their sizes are read, go by the most the share can be of (r9 GA1)', async () => {
+test('how many files are counted with the disk, and whether their sizes are read, go by the most the share can be of (r9 GA1)', { skip: windowsPaths }, async () => {
   const MiB = 1024 ** 2, GiB = 1024 ** 3, f = await fixture(), { engine, fake, docs } = f;
   const root = 'C:\\swb-fill-link', run = crypto.randomUUID(), fillRun = crypto.randomUUID();
   const limit = { files: 200, removedShare: 0.3, changedShare: 0.5, bytes: GiB, list: 500, compare: 6, ask: 300 };
@@ -833,7 +841,7 @@ test('how many files are counted with the disk, and whether their sizes are read
   const B = fake.snap('1', 30, { tags: ['partial', 'run:' + run], files: 600, bytes: 6 * GiB, paths: [docs] }), list = fake.snap('2', 30, { tags: ['meta', 'run:' + run] });
   fake.dumps[list.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: [path.join(docs, 'f0.txt')], cut: false }));
   const fill = fake.snap('3', 29, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = fake.snap('4', 29, { tags: ['meta', 'run:' + fillRun] });
-  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [path.join(docs, 'f0.txt')], failed: [], cut: false }));
+  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [path.join(docs, 'f0.txt')], failed: [], cut: false }));
   fake.ls[`${B.id}:${treeOf(docs)}`] = [...Array.from({ length: 230 }, (_, n) => node(`g${n}.txt`, 25 * MiB)), ...Array.from({ length: 370 }, (_, n) => node(`k${n}.txt`, 10))];
   fake.ls[`${fill.id}:${treeOf(root + docs.slice(2))}`] = Array.from({ length: 400 }, (_, n) => node(`f${n}.txt`, 10));
   for (let n = 0; n < 400; n++) await fs.writeFile(path.join(docs, `f${n}.txt`), 'f');
@@ -844,7 +852,7 @@ test('how many files are counted with the disk, and whether their sizes are read
   assert.deepEqual([r.kind, r.removed, r.bytes, r.before], ['bytes', 230, 230 * 25 * MiB, 1000]);
 });
 
-test('a copy the fill has larger than the tree copy is of the share with all its size (r9 GA4)', async () => {
+test('a copy the fill has larger than the tree copy is of the share with all its size (r9 GA4)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3, f = await fixture(), { engine, fake, docs } = f;
   const root = 'C:\\swb-fill-link', run = crypto.randomUUID(), fillRun = crypto.randomUUID();
   const limit = { files: 200, removedShare: 0.3, changedShare: 0.5, bytes: GiB, list: 500, compare: 6, ask: 300 };
@@ -852,7 +860,7 @@ test('a copy the fill has larger than the tree copy is of the share with all its
   const B = fake.snap('1', 30, { tags: ['partial', 'run:' + run], files: 1000, bytes: 15 * GiB, paths: [docs] }), list = fake.snap('2', 30, { tags: ['meta', 'run:' + run] });
   fake.dumps[list.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: [path.join(docs, 'archive.pst')], cut: false }));
   const fill = fake.snap('3', 29, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = fake.snap('4', 29, { tags: ['meta', 'run:' + fillRun] });
-  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: [path.join(docs, 'archive.pst')], failed: [], cut: false }));
+  fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: [path.join(docs, 'archive.pst')], failed: [], cut: false }));
   fake.ls[`${B.id}:${treeOf(docs)}`] = [{ message_type: 'node', path: '/archive.pst', type: 'file', size: 1024 }];
   fake.ls[`${fill.id}:${treeOf(root + docs.slice(2))}`] = [{ message_type: 'node', path: '/archive.pst', type: 'file', size: 5 * GiB }];
   const H = fake.snap('9', 2, { paths: [docs] });
@@ -861,7 +869,7 @@ test('a copy the fill has larger than the tree copy is of the share with all its
   assert.deepEqual([r.kind, r.removed, r.bytes], [null, 1, 5 * GiB]);
 });
 
-test('a name is matched as spelled first: a folder that tells case apart may hold two files whose names differ only in it (r10 GA1 · r11 GA1)', async () => {
+test('a name is matched as spelled first: a folder that tells case apart may hold two files whose names differ only in it (r10 GA1 · r11 GA1)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3, KiB = 1024;
   const limit = { files: 200, removedShare: 0.3, changedShare: 0.5, bytes: GiB, list: 500, compare: 6, ask: 300 };
   // B's tree (its size in all) and its fill, each name → size; the names gone from N and the disk.
@@ -871,7 +879,7 @@ test('a name is matched as spelled first: a folder that tells case apart may hol
     const B = fake.snap('1', 30, { tags: ['partial', 'run:' + run], files: 1000, bytes: all * GiB, paths: [docs] }), list = fake.snap('2', 30, { tags: ['meta', 'run:' + run] });
     fake.dumps[list.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: names.map(n => path.join(docs, n)), cut: false }));
     const fill = fake.snap('3', 29, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = fake.snap('4', 29, { tags: ['meta', 'run:' + fillRun] });
-    fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: 'C:' }], asked: names.map(n => path.join(docs, n)), failed: [], cut: false }));
+    fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: root, to: DRIVE }], asked: names.map(n => path.join(docs, n)), failed: [], cut: false }));
     const nodes = sizes => Object.entries(sizes).map(([name, size]) => ({ message_type: 'node', path: '/' + name, type: 'file', size }));
     fake.ls[`${B.id}:${treeOf(docs)}`] = nodes(tree);
     fake.ls[`${fill.id}:${treeOf(root + docs.slice(2))}`] = nodes(filled);
@@ -896,7 +904,7 @@ test('a name is matched as spelled first: a folder that tells case apart may hol
   assert.deepEqual(await setup({ 'Archive.pst': 8 * GiB, 'archive.pst': GiB }, { 'ARCHIVE.pst': 5 * GiB }, [], 14), ['bytes', 1, 5 * GiB]);
 });
 
-test('a folder a backup that stays spells in other cases is told both ways, and a hold either way holds: the disk now cannot tell which it was (r12 GA1 · r13 GA2)', async () => {
+test('a folder a backup that stays spells in other cases is told both ways, and a hold either way holds: the disk now cannot tell which it was (r12 GA1 · r13 GA2)', { skip: windowsPaths }, async () => {
   const GiB = 1024 ** 3;
   const nodes = sizes => Object.entries(sizes).map(([name, size]) => ({ message_type: 'node', path: '/' + name, type: 'file', size }));
   // B, a partial one, saved Reports (15 GiB, Archive.pst 4 GiB of it) and its fill ARCHIVE.pst (5 GiB); both are gone.
@@ -912,7 +920,7 @@ test('a folder a backup that stays spells in other cases is told both ways, and 
     const B = fake.snap('1', 30, { tags: ['partial', 'run:' + run], files: 1000, bytes: 15 * GiB, paths: [mine] }), list = fake.snap('2', 30, { tags: ['meta', 'run:' + run] });
     fake.dumps[list.id] = Buffer.from(JSON.stringify({ v: 1, unreadable: [path.join(mine, 'ARCHIVE.pst')], cut: false }));
     const fill = fake.snap('3', 29, { tags: ['fill', 'fills:' + run, 'run:' + fillRun] }), meta = fake.snap('4', 29, { tags: ['meta', 'run:' + fillRun] });
-    fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: link, to: 'C:' }], asked: [path.join(mine, 'ARCHIVE.pst')], failed: [], cut: false }));
+    fake.dumps[meta.id] = Buffer.from(JSON.stringify({ v: 1, fills: run, roots: [{ from: link, to: DRIVE }], asked: [path.join(mine, 'ARCHIVE.pst')], failed: [], cut: false }));
     fake.ls[`${B.id}:${treeOf(mine)}`] = nodes({ 'Archive.pst': 4 * GiB, 'other.dat': 11 * GiB });
     fake.ls[`${fill.id}:${treeOf(link + mine.slice(2))}`] = nodes({ 'ARCHIVE.pst': 5 * GiB });
     const H = fake.snap('9', 2, { paths: [theirs] });
@@ -927,7 +935,7 @@ test('a folder a backup that stays spells in other cases is told both ways, and 
   assert.deepEqual(await setup(false), [false, 'bytes', 3, 20 * GiB]);
 });
 
-test('a folder spelled anew on a drive not plugged in is still compared with the newest backup that has it: told as the same folder too (r13 GA1)', async () => {
+test('a folder spelled anew on a drive not plugged in is still compared with the newest backup that has it: told as the same folder too (r13 GA1)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f;
   const mine = 'Q:\\Reports', theirs = 'Q:\\reports';
   // B and P saved Reports; it was renamed reports, taken out and chosen again, and H saved it; now its drive is out.
@@ -947,7 +955,7 @@ test('a folder spelled anew on a drive not plugged in is still compared with the
   assert.deepEqual(fake.diffs, [[B.id, P.id], [`${B.id}:${treeOf(mine)}`, `${H.id}:${treeOf(theirs)}`]]);
 });
 
-test('taken for another folder, a folder spelled otherwise hides nothing: files of the same names there are no copies (r13)', async () => {
+test('taken for another folder, a folder spelled otherwise hides nothing: files of the same names there are no copies (r13)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f;
   const mine = 'Q:\\Reports', theirs = 'Q:\\reports';
   // B saved Reports, 300 files; H saved reports, files of the same names and contents; Reports is not on this PC now.
@@ -958,7 +966,7 @@ test('taken for another folder, a folder spelled otherwise hides nothing: files 
   assert.deepEqual([going.includes(B.id), engine.config.massHold?.kind, engine.config.massHold?.removed], [false, 'removed', 300]);
 });
 
-test('the folders of one backup need not be one way: each is counted every way, and of each count the most is taken (설계 검토 기록11)', async () => {
+test('the folders of one backup need not be one way: each is counted every way, and of each count the most is taken (설계 검토 기록11)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f;
   const X = 'Q:\\Docs', x = 'Q:\\docs', Y = 'Q:\\Pics', y = 'Q:\\pics';
   // B (1000 files) saved Docs and Pics. Docs was spelled anew: P, a day old, still has Docs; H has docs, without 150 of
@@ -973,7 +981,7 @@ test('the folders of one backup need not be one way: each is counted every way, 
   assert.deepEqual([going.includes(B.id), engine.config.massHold?.kind, engine.config.massHold?.removed, engine.config.massHold?.removedBytes], [false, 'removed', 300, 4500]);
 });
 
-test('a folder spelled more ways than two is counted as the same as each of them (설계 검토 기록11)', async () => {
+test('a folder spelled more ways than two is counted as the same as each of them (설계 검토 기록11)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f;
   const X = 'Q:\\Docs', one = 'Q:\\docs', two = 'Q:\\DOCS';
   // B saved Docs, and P, a day old, too. H1, the newest, saved docs — another folder beside it, whose files stand for
@@ -986,7 +994,7 @@ test('a folder spelled more ways than two is counted as the same as each of them
   assert.deepEqual(engine.config.massHold?.compared, [{ path: X, at: P.time, reach: [P.time, H1.time] }]);
 });
 
-test('a file found only through a folder that is a junction now is not on the disk: it belongs to another folder (설계 검토 기록11)', async () => {
+test('a file found only through a folder that is a junction now is not on the disk: it belongs to another folder (설계 검토 기록11)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f, root = path.dirname(f.docs);
   // B saved old, 300 files. The person took old out and made it a junction to new, which holds files of the same names.
   const old = path.join(root, 'old'), now = path.join(root, 'new');
@@ -1000,7 +1008,7 @@ test('a file found only through a folder that is a junction now is not on the di
   assert.deepEqual([going.includes(B.id), engine.config.massHold?.kind, engine.config.massHold?.removed], [false, 'removed', 300]);
 });
 
-test('a folder counted two ways is counted at its most toward the file threshold too: the sizes are read (설계 검토 기록11)', async () => {
+test('a folder counted two ways is counted at its most toward the file threshold too: the sizes are read (설계 검토 기록11)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f, MiB = 1024 ** 2;
   const X = 'Q:\\Docs', x = 'Q:\\docs';
   // B (1000 files, 10 GiB) saved Docs; P, older, spelled as it, and H, the newest, spelled docs, both lack the same 160 of
@@ -1012,7 +1020,7 @@ test('a folder counted two ways is counted at its most toward the file threshold
   assert.deepEqual([going.includes(B.id), engine.config.massHold?.kind, engine.config.massHold?.removed, engine.config.massHold?.removedBytes], [false, 'bytes', 160, 4000 * MiB]);
 });
 
-test('a folder no longer chosen that none that stays holds as spelled is left out, however another spelling is held: it thins no share (설계 검토 기록11)', async () => {
+test('a folder no longer chosen that none that stays holds as spelled is left out, however another spelling is held: it thins no share (설계 검토 기록11)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f;
   const Old = 'Q:\\Old', old = 'Q:\\old', work = 'Q:\\Work';
   // B (1000 files) saved Old (500 of them) and Work. Old was taken out over 30 days ago, as was old, another folder K
@@ -1024,7 +1032,7 @@ test('a folder no longer chosen that none that stays holds as spelled is left ou
   assert.deepEqual([going.includes(B.id), engine.config.massHold?.kind, engine.config.massHold?.removed, engine.config.massHold?.before], [false, 'removed', 250, 500]);
 });
 
-test('a folder past what 「확인을 마침」 covered, though within what some way of it saw, is counted and out of the share (설계 검토 기록11)', async () => {
+test('a folder past what 「확인을 마침」 covered, though within what some way of it saw, is counted and out of the share (설계 검토 기록11)', { skip: windowsPaths }, async () => {
   // D (1000 files) saved R (600 of them) and Z, of which 250 are gone: 62% of the 400 left once R is out of the share,
   // not 25% of 1000. A confirmed hold covered R to a backup before D, and some way of it saw R past D — after the backup
   // it kept, or before it.
@@ -1048,7 +1056,7 @@ test('a folder past what 「확인을 마침」 covered, though within what some
   assert.deepEqual(again.config.massCheck.folders[0].reach, [at(45), at(5)]);
 });
 
-test('a large file gone from a folder out of the share is no less gone: the sizes are read with it (r14 GA1)', async () => {
+test('a large file gone from a folder out of the share is no less gone: the sizes are read with it (r14 GA1)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f, GiB = 1024 ** 3, MiB = 1024 ** 2;
   const R = 'Q:\\R', Z = 'Q:\\Z', at = h => new Date(f.now() - h * HOUR).toISOString();
   // D saved R (one file of 2 GiB) and Z (1 MiB). Past what a confirmed hold covered, R is out of the share: 1 MiB is left
@@ -1061,7 +1069,7 @@ test('a large file gone from a folder out of the share is no less gone: the size
   assert.deepEqual([going.includes(D.id), engine.config.massHold?.kind, engine.config.massHold?.removedBytes], [false, 'bytes', 2 * GiB]);
 });
 
-test('the list a hold shows names each path once, so a folder counted two ways leaves room for the others (r14 GA3)', async () => {
+test('the list a hold shows names each path once, so a folder counted two ways leaves room for the others (r14 GA3)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f;
   const X = 'Q:\\Docs', x = 'Q:\\docs', Z = 'Q:\\Work';
   engine.massLimits = { list: 400 };
@@ -1074,7 +1082,7 @@ test('the list a hold shows names each path once, so a folder counted two ways l
   assert.deepEqual([list.filter(i => i.folder === X).length, list.filter(i => i.folder === Z).length], [300, 50]);
 });
 
-test('a path whose type changed counts the files the backup before had there, every one; a list it cannot read forgets nothing (GPT GA8 · r2 GA6 · GA8)', async () => {
+test('a path whose type changed counts the files the backup before had there, every one; a list it cannot read forgets nothing (GPT GA8 · r2 GA6 · GA8)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   const before = fake.snap('1', 30, { files: 500 }), last = fake.snap('2', 0, { files: 251 }); f.latest(last);
   // Fifty folders of one file and one of 250 became files: 300 of 500 gone.
@@ -1092,7 +1100,7 @@ test('a path whose type changed counts the files the backup before had there, ev
   assert.deepEqual([g.forgot(), g.engine.config.massHold ?? null], [[], null]);
 });
 
-test('a usual clean-up asks restic which folders a backup holds of the one going and the one compared with only, not of every backup that stays (Fable 후속 3)', async () => {
+test('a usual clean-up asks restic which folders a backup holds of the one going and the one compared with only, not of every backup that stays (Fable 후속 3)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f;
   const going = fake.snap('1', 30);
   for (const [c, hours] of [['2', 20], ['3', 16], ['4', 12], ['5', 8], ['6', 4]]) fake.snap(c, hours);
@@ -1104,7 +1112,7 @@ test('a usual clean-up asks restic which folders a backup holds of the one going
   assert.deepEqual(f.forgot(), [going.id]);
 });
 
-test('a comparison that fails, or tells no counts, forgets nothing; the clean-up waits for the next run', async () => {
+test('a comparison that fails, or tells no counts, forgets nothing; the clean-up waits for the next run', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake } = f;
   fake.snap('1', 30); const last = fake.snap('2', 0); f.latest(last);
   fake.diff = new Error('repository is locked');
@@ -1121,7 +1129,7 @@ test('a comparison that fails, or tells no counts, forgets nothing; the clean-up
   assert.deepEqual([g.forgot(), g.fake.diffs], [[], []]);
 });
 
-test('「확인을 마침」 lets the backups between the two compared go without a comparison; a rollback that ended leaves a hold to the person (GPT GA1 · Fable 2)', async () => {
+test('「확인을 마침」 lets the backups between the two compared go without a comparison; a rollback that ended leaves a hold to the person (GPT GA1 · Fable 2)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   // An older backup kept for another reason (a move reading it) is not a candidate this time.
   const pinned = fake.snap('9', 50); engine.config.movePin = { snapshotId: pinned.id, until: new Date(f.now() + HOUR).toISOString() };
@@ -1148,7 +1156,7 @@ test('「확인을 마침」 lets the backups between the two compared go withou
   assert.equal((await engine.massConfirm()).massHold, null);
 });
 
-test('a hold the settings cannot vouch for is dropped as a whole; its name list is kept within bounds', async () => {
+test('a hold the settings cannot vouch for is dropped as a whole; its name list is kept within bounds', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, root, docs } = f;
   fake.snap('1', 30); const last = fake.snap('2', 0); f.latest(last);
   fake.diff = { lines: many(700, docs, '-') };
@@ -1160,7 +1168,7 @@ test('a hold the settings cannot vouch for is dropped as a whole; its name list 
   assert.equal(reopened.config.massHold, null);
 });
 
-test('every run result says while a hold waits, a skipped one too (GPT GA10)', async () => {
+test('every run result says while a hold waits, a skipped one too (GPT GA10)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   fake.snap('1', 30); const last = fake.snap('2', 0); f.latest(last);
   fake.diff = { lines: many(600, docs, '-') };
@@ -1171,7 +1179,7 @@ test('every run result says while a hold waits, a skipped one too (GPT GA10)', a
   assert.deepEqual(await engine.runOnce(), { outcome: 'skipped', reason: 'off' });
 });
 
-test('「지워지기 전으로 되살리기」 restores the folders that changed from the backup the hold keeps — or a part of one (GPT GA11)', async () => {
+test('「지워지기 전으로 되살리기」 restores the folders that changed from the backup the hold keeps — or a part of one (GPT GA11)', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs, root } = f;
   const out = path.join(root, 'output');
   await assert.rejects(engine.restoreMassBefore({ parent: out }), e => e.code === 'NOT_FOUND');
@@ -1213,7 +1221,7 @@ test('「지워지기 전으로 되살리기」 restores the folders that change
   assert.equal(await fs.readFile(path.join(g.engine.config.lastRestore.path, `01-${path.basename(g.docs)}`, 'a.txt'), 'utf8'), 'abc');
 });
 
-test('a backup whose folders cannot be told apart is compared whole, so one odd backup does not stop every clean-up after it', async () => {
+test('a backup whose folders cannot be told apart is compared whole, so one odd backup does not stop every clean-up after it', { skip: windowsPaths }, async () => {
   const f = await fixture(), { engine, fake, docs } = f;
   const odd = fake.snap('1', 30, { paths: [] }), last = fake.snap('2', 0); f.latest(last);
   fake.diff = { lines: [] };

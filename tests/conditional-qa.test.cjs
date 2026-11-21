@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 156);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 55, linux: 16, local: 85 });
+  assert.equal(check(root), 207);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 106, linux: 16, local: 85 });
 });
 test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
   // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
@@ -118,8 +118,11 @@ test('S129–S137 run on the Windows host with the forked engine, the run execut
   // with the real restic; its top-level `skip: !restic` went in unregistered and turned conditional-qa and wide-tests red.
   // S146–S151 are the 옮겨 오기 Windows-file tests (`windowsOnly('…'`, a top-level test that skips off Windows): as
   // subtests of one test (11-16 `079c05b673`) their skips still counted as unregistered in wide-tests.
+  // S157–S207 are the 대량 삭제 · 변경 멈춤 tests (`mass-hold.test.cjs`), which read Windows paths as the engine does:
+  // from 11-20 `9ddcbeb409` they ran on Linux unregistered and 38 failed in wide-tests (experiences).
   const moveFiles = ['S146', 'S147', 'S148', 'S149', 'S150', 'S151', 'S152'];
-  const rows = ['S129', 'S130', 'S131', 'S132', 'S133', 'S134', 'S137', 'S145', ...moveFiles, 'S135', 'S136'].map(id => manifest.cases.find(item => item.id === id));
+  const massHold = Array.from({ length: 51 }, (_, i) => 'S' + (157 + i));
+  const rows = ['S129', 'S130', 'S131', 'S132', 'S133', 'S134', 'S137', 'S145', ...moveFiles, ...massHold, 'S135', 'S136'].map(id => manifest.cases.find(item => item.id === id));
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/conditional-qa.yml'), 'utf8').replace(/\r\n/g, '\n');
   assert.match(workflow, /npm ci --prefix experiences\/solo-backup-rust\/engine /);
   // The executables are cached only under a key of every tracked file they are built from; a miss builds them here.
@@ -146,7 +149,7 @@ test('S129–S137 run on the Windows host with the forked engine, the run execut
       }
     }
   }
-  assert.deepEqual(skipping.sort(), rows.slice(0, 8 + moveFiles.length).map(row => `${row.file}\n${row.name}`).sort(), 'register every fork test that skips off the Windows host');
+  assert.deepEqual(skipping.sort(), rows.slice(0, 8 + moveFiles.length + massHold.length).map(row => `${row.file}\n${row.name}`).sort(), 'register every fork test that skips off the Windows host');
   for (const row of rows) {
     assert.deepEqual([row.route, row.profile], ['windows', 'default'], row.id);
     const source = fs.readFileSync(path.join(root, row.file), 'utf8');
