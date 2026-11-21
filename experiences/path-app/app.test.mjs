@@ -627,7 +627,14 @@ test('다가오는 날: 넣은 날은 카드와 상관없이 오늘 화면에 �
     const app = await boot(t, { raw: goalDoc(goal), seed: studySeed('guest', { dates: [entry(sample)] }) });
     assert.match(pageText(app), /다가오는 날|지난 날/, 'goal=' + goal);
     assert.match(pageText(app), /이 탭에만 있어요/);
+    // 채널 탭은 모두에게 열리고 「오늘 화면에 보이기」가 이 자리를 약속하므로 새 소식도 카드와 상관없이 둔다(카본 A2).
+    assert.match(pageText(app), /새 소식/, 'news goal=' + goal);
   }
+  // 글에서 빠진 날만 있던 목록을 지우면 칸이 사라지므로 초점은 쪽 제목으로 간다(카본 A3).
+  const cleaned = await boot(t, { raw: goalDoc('job'), seed: studySeed('guest', { dates: [{ id: 'gone-date', start: '2026-12-01', end: '2026-12-01' }] }) });
+  cleaned.click('datesClean');
+  assert.doesNotMatch(pageText(cleaned), /다가오는 날/);
+  assert.match(cleaned.document.activeElement?.getAttribute('class') || '', /\bpage-title\b/, '초점이 쪽 제목에 있다');
   const fresh = await boot(t, { raw: goalDoc('study') });
   assert.doesNotMatch(pageText(fresh), /다가오는 날/, '넣은 날이 없으면 칸이 없다');
   assert.match(pageText(fresh), /새 소식/, '유학 카드에는 새 소식이 있다');

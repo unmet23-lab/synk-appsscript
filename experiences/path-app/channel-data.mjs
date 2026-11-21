@@ -65,12 +65,14 @@ export const POSTS = Object.freeze([
     title: L('유학 비자 잔고 증명, 얼마를 얼마 동안', 'Proof of funds for a student visa: how much, and for how long'),
     points: [
       L('유학(D-2)과 어학연수(D-4) 비자를 신청할 때 은행 잔고 증명이 필요해요. 금액은 비자 종류와 대학이 수도권인지에 따라 달라요.', 'Student (D-2) and language training (D-4) visas need proof of funds. The amount depends on the visa and on whether the school is in the Seoul area.'),
-      L('몽골에서 신청할 때는 본인이나 부모의 몽골 은행 잔고 증명서를 내요. 언제 발급받는지와 얼마 동안 유지하는지에도 조건이 있어요.', 'When applying in Mongolia, you submit a balance certificate from your own or a parent’s Mongolian bank account. There are rules on when it is issued and how long the money is kept.'),
+      L('몽골에서 신청할 때는 예치(잔고) 증명서와 본인이나 부모의 몽골 은행 계좌 거래내역서를 내요. 언제 발급받는지와 얼마 동안 유지하는지에도 조건이 있어요.', 'In Mongolia you submit a deposit (balance) certificate and the statement of your own or a parent’s Mongolian bank account. There are rules on when it is issued and how long the money is kept.'),
       L('법무부가 TOPIK 4급이 있으면 이 증명을 면제하는 계획을 발표했지만 시행일은 정해지지 않았어요. 지금은 증명이 필요해요.', 'The Ministry of Justice has announced a plan to waive this proof for TOPIK level 4, but no start date has been set. For now the proof is required.')
     ],
+    // KVAC에서 읽은 사실은 출처 줄(법무부)과 따로 날짜와 함께 적는다(페이블 다시 검수 FA2).
+    note: L('KVAC 몽골 유학(D-2) 서류 목록 7번 칸(2026-11-22 확인): 예치증명서와 본인 또는 부모의 몽골 은행 계좌 거래내역서. 같은 칸에 「우수 인증 대학은 해당되지 않음」이라고 적혀 있어요. 내 학교가 해당되는지는 아래 KVAC 서류 목록에서 확인하세요.', 'KVAC Mongolia student visa (D-2) list, item 7 (checked 2026-11-22): a deposit certificate and the transaction statement of your own or a parent’s Mongolian bank account. The same item says it does not apply to top-certified universities. Check whether your school counts in the KVAC list below.'),
     source: { title: L('법무부 2026-10-07 보도자료(별첨의 현행 기준)', 'Ministry of Justice press release, 2026-10-07 (current rules in the annex)'), url: 'https://www.moj.go.kr/bbs/moj/182/611170/artclView.do' },
     checkedAt: '2026-11-21', postedAt: '2026-11-21', dates: [],
-    forYou: 'finance', action: null
+    forYou: 'finance', action: { label: L('KVAC 유학 비자 서류 목록', 'KVAC student visa document list'), url: KVAC_D2 }
   },
   {
     id: 'visa-docs-mn', channel: 'visa', status: 'official',
@@ -88,14 +90,14 @@ export const POSTS = Object.freeze([
     id: 'gks-2027-u', channel: 'scholarship', status: 'official',
     title: L('2027 정부초청장학생(GKS) 학부: 대사관 접수는 끝났고 1월 7일 발표', '2027 GKS undergraduate: embassy applications have closed, results on Jan 7'),
     points: [
-      L('2027 학부 장학생 대사관 전형은 몽골에서 4명(일반 2명, R-GKS 2명)을 뽑아요. 접수는 2026년 9월 15~30일에 끝났어요.', 'The 2027 undergraduate embassy track selects 4 students from Mongolia (2 general, 2 R-GKS). Applications ran Sep 15–30, 2026 and have closed.'),
+      L('2027 학부 장학생 대사관 전형은 몽골에서 4명을 뽑아요. 일반 전형 2명, 지방 대학에만 지원하는 R-GKS 전형 2명이에요. 접수는 2026년 9월 15~30일에 끝났어요.', 'The 2027 undergraduate embassy track selects 4 students from Mongolia: 2 in the general track and 2 in R-GKS, which applies to regional universities only. Applications ran Sep 15–30, 2026 and have closed.'),
       L('지원 조건은 만 25세 미만(2002년 3월 1일 이후 출생), 고등학교 졸업 또는 졸업 예정, 본인과 부모 모두 외국 국적이에요. TOPIK 3급 이상이면 가산점이 있어요.', 'You must be under 25 (born on or after Mar 1, 2002), have finished or be finishing high school, and you and both parents must hold non-Korean nationality. TOPIK level 3 or higher earns extra points.'),
       L('장학생은 한국어연수 1년과 학위 과정 동안 등록금(학기당 500만 원 한도), 왕복 항공료, 학업장려금(학위 기간 한 해 1,440만 원)을 받아요. 최종 합격 발표는 2027년 1월 7일 예정이에요.', 'Scholars get one year of Korean training plus the degree, with tuition (up to ₩5,000,000 a semester), round-trip airfare and a stipend (₩14,400,000 a year during the degree). Final results are planned for Jan 7, 2027.')
     ],
     source: { title: L('주몽골 한국대사관 「2027 정부초청 외국인(몽골국적) 학부 장학생 모집」', 'Korean Embassy in Mongolia: 2027 GKS undergraduate call'), url: 'https://overseas.mofa.go.kr/mn-ko/brd/m_373/view.do?seq=1339551' },
     checkedAt: '2026-11-21', postedAt: '2026-11-21',
     dates: [{ id: 'gks-2027-u-final', kind: 'result', start: '2027-01-07', label: L('GKS 학부 최종 합격 발표(예정)', 'GKS undergraduate final results (planned)') }],
-    forYou: 'gksGrade', criteria: { gradePct: 80, other: L('또는 석차 상위 20% 안, 또는 CGPA 2.64/4.0 이상', 'or the top 20% of your class, or a CGPA of 2.64/4.0 or higher') },
+    forYou: 'gksGrade', criteria: { gradePct: 80, of: L('고등학교 전 학년 성적', 'all high school years'), other: L('또는 석차 상위 20% 안, 또는 CGPA 2.64/4.0 이상', 'or the top 20% of your class, or a CGPA of 2.64/4.0 or higher') },
     action: null
   },
   {
@@ -125,8 +127,8 @@ export const POSTS = Object.freeze([
     id: 'scam-check-university', channel: 'scam', status: 'official',
     title: L('지원하기 전에 인증 대학인지 확인하세요', 'Check that the university is certified before you apply'),
     points: [
-      L('교육부와 법무부가 교육국제화역량을 인증한 대학은 학위과정 181곳, 어학연수과정 123곳이에요. 인증 기간은 2026년 3월부터 2030년 2월까지예요.', 'The Ministry of Education and the Ministry of Justice have certified 181 universities for degree programs and 123 for language programs, from Mar 2026 to Feb 2030.'),
-      L('2026년 2학기부터 1년 동안 비자 발급이 제한되는 대학이 학위과정 16곳, 어학연수과정 4곳 있어요. 같은 대학도 과정마다 따로 정해지니 내가 갈 과정으로 확인하세요.', 'For one year from the second semester of 2026, visas are restricted for 16 degree programs and 4 language programs. Each program is judged separately, so check the program you plan to join.'),
+      L('교육부와 법무부가 교육국제화역량을 인증한 대학은 학위과정 181곳, 어학연수과정 123곳이에요. 인증 기간은 2026년 3월부터 2030년 2월까지지만, 해마다 점검해 기준에 못 미치면 인증이 취소되니 지원할 때 명단을 다시 확인하세요.', 'The Ministry of Education and the Ministry of Justice have certified 181 universities for degree programs and 123 for language programs, from Mar 2026 to Feb 2030. Certification is checked every year and can be withdrawn, so check the list again when you apply.'),
+      L('2026년 2학기부터 1년 동안 비자 발급이 제한되는 대학이 학위과정 16곳, 어학연수과정 4곳 있어요. 같은 대학도 과정마다 따로 정해지니 내가 갈 과정으로 확인하세요.', 'For one year from the second semester of 2026, visas are restricted at 16 universities for degree programs and 4 for language programs. Degree and language tracks are judged separately, so check the track you plan to join.'),
       L('KVAC도 학생비자를 신청하기 전에 Study in Korea의 인증 대학 명단에서 학교를 확인하라고 안내해요.', 'KVAC also tells students to check the school against the certified list on Study in Korea before applying for a student visa.')
     ],
     source: { title: L('법무부 · 교육부 「2025년 교육국제화역량 인증 결과」 보도자료(2026-02-12)', 'Ministries of Justice and Education: 2025 certification results (2026-02-12)'), url: 'https://www.moj.go.kr/bbs/moj/182/603491/artclView.do' },
@@ -159,9 +161,11 @@ export function univPosts(programs) {
   return programs.filter((p) => !p.example && Array.isArray(p.applyRounds) && p.applyRounds.length).map((p) => {
     const rounds = p.applyRounds, many = rounds.length > 1, base = Number(rounds[0][0].slice(0, 4));
     const span = (r, en) => `${monthDay(r[0], en, base)} – ${monthDay(r[1], en, base)}`;
+    // 차수가 지나도 맞는 말(「접수 기간」)로 쓰고, 첫 해를 밝힌다(이듬해에 열어도 해가 헷갈리지 않게).
     const roundsText = L(
-      `${rounds.map((r, i) => `${many ? `${i + 1}차 ` : ''}${span(r, false)}`).join(', ')}에 접수해요.`,
-      `Applications run ${rounds.map((r, i) => `${many ? `round ${i + 1} ` : ''}${span(r, true)}`).join(', ')}.`);
+      `접수 기간(${base}년): ${rounds.map((r, i) => `${many ? `${i + 1}차 ` : ''}${span(r, false)}`).join(', ')}.`,
+      `Application periods (${base}): ${rounds.map((r, i) => `${many ? `round ${i + 1} ` : ''}${span(r, true)}`).join(', ')}.`);
+    const who = L(`${p.name.ko}${p.level !== 'language' ? ' 학부' : ''}`, `${p.name.en}${p.level !== 'language' ? ' undergraduate' : ''}`);
     const korean = p.requires.topik ? L(`TOPIK ${p.requires.topik}급 이상이 필요해요. 다른 길도 있는지 요강에서 확인하세요.`, `TOPIK level ${p.requires.topik} or higher is required. Check the guide for other ways to qualify.`)
       : L('한국어 성적이 없어도 지원할 수 있어요.', 'You can apply without a Korean test score.');
     const ug = p.level !== 'language';
@@ -170,7 +174,7 @@ export function univPosts(programs) {
       title: L(`${p.name.ko}${ug ? ' 학부' : ''}${p.term ? ` ${p.term.ko}` : ''} 원서 접수`, `${p.name.en}${ug ? ' undergraduate' : ''}${p.term ? `, ${p.term.en}` : ''}: applications`),
       points: [roundsText, korean, L('대학이 공개한 모집 요강에서 옮겼어요. SYNK와 협약한 대학은 아니에요.', 'Taken from the university’s published admissions guide. Not a SYNK partner university.')],
       source: p.source, checkedAt: p.checkedAt, postedAt: p.checkedAt,
-      dates: rounds.map((r, i) => ({ id: `univ-${p.id}-${r[0]}`, kind: 'apply', start: r[0], end: r[1], label: many ? L(`${i + 1}차 원서 접수`, `Round ${i + 1} applications`) : L('원서 접수', 'Applications') })),
+      dates: rounds.map((r, i) => ({ id: `univ-${p.id}-${r[0]}`, kind: 'apply', start: r[0], end: r[1], label: many ? L(`${i + 1}차 원서 접수`, `Round ${i + 1} applications`) : L('원서 접수', 'Applications'), who })),
       // 과정 자료에는 요강 주소만 있고 접수처 주소가 없다(원광대 학부는 방문 · 우편 접수). 접수처 단추를 걸지 않는다.
       forYou: 'program', programId: p.id, action: null
     });
@@ -214,11 +218,11 @@ export function validateChannelData(channels, posts, programIds = []) {
       if (!isObj(d) || !ID_RE.test(d.id) || dateIds.has(d.id) || !DATE_KINDS.includes(d.kind) || !isDate(d.start) || !isPair(d.label)) fail('date ' + p.id);
       dateIds.add(d.id);
       if (d.kind === 'apply' ? !(isDate(d.end) && d.end >= d.start) : d.end !== undefined) fail('date span ' + d.id);
-      if (!(d.url === undefined || isHttps(d.url)) || !(d.cancelled === undefined || d.cancelled === true)) fail('date extra ' + d.id);
+      if (!(d.url === undefined || isHttps(d.url)) || !(d.cancelled === undefined || d.cancelled === true) || !(d.who === undefined || isPair(d.who))) fail('date extra ' + d.id);
     }
     // 규칙마다 필요한 자료: 시험 글은 성적 발표 날, 장학금 성적 글은 기준.
     if (p.forYou === 'topikExam' && !p.dates.some((d) => d.kind === 'result')) fail('topikExam needs a result date ' + p.id);
-    if (p.forYou === 'gksGrade' ? !(isObj(p.criteria) && Number.isInteger(p.criteria.gradePct) && p.criteria.gradePct > 0 && p.criteria.gradePct <= 100 && (p.criteria.other === undefined || isPair(p.criteria.other, 300))) : p.criteria !== undefined) fail('post criteria ' + p.id);
+    if (p.forYou === 'gksGrade' ? !(isObj(p.criteria) && Number.isInteger(p.criteria.gradePct) && p.criteria.gradePct > 0 && p.criteria.gradePct <= 100 && (p.criteria.other === undefined || isPair(p.criteria.other, 300)) && (p.criteria.of === undefined || isPair(p.criteria.of))) : p.criteria !== undefined) fail('post criteria ' + p.id);
   }
   return true;
 }
@@ -261,7 +265,9 @@ export function upcomingDates(posts, saved, now = new Date()) {
     if (!hit) { missing++; continue; }
     const d = hit.date, end = endDay(d);
     const changed = s.start !== d.start || s.end !== end ? { start: s.start, end: s.end } : null;
-    rows.push({ ...hit, due: dueDay(d), status: dateStatus(d, now), changed });
+    // 차례는 화면의 날짜 칸과 같은 날로 센다: 시작 전인 접수는 시작 날(카본 A5).
+    const status = dateStatus(d, now);
+    rows.push({ ...hit, due: status.state === 'before' ? d.start : dueDay(d), status, changed });
   }
   const byDue = (a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0);
   const gone = (r) => r.status.state === 'past' || r.status.state === 'cancelled';

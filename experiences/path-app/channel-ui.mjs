@@ -29,13 +29,16 @@ function ctx(view) {
   const won = (n) => (en ? `₩${n.toLocaleString('en-US')}` : n < 10000 ? `${n.toLocaleString('ko-KR')}원` : n % 10000 === 0 ? `${(n / 10000).toLocaleString('ko-KR')}만 원` : `${Math.floor(n / 10000).toLocaleString('ko-KR')}만 ${(n % 10000).toLocaleString('ko-KR')}원`);
   const thisYear = Number(new Date((now instanceof Date ? now.getTime() : new Date(now).getTime()) + 9 * 3600000).toISOString().slice(0, 4));
   const md = (d) => monthDay(d, en, thisYear);
-  return { now, en, L, pick, won, md, posts: view.posts || [], programs: view.programs || [], rules: view.rules || [], profile: view.profile, lang: en ? 'en' : 'ko' };
+  return { now, en, L, pick, won, md, posts: view.posts || [], programs: view.programs || [], rules: view.rules || [], profile: view.profile, lang: en ? 'en' : 'ko', condOn: view.condOn !== false, persisted: view.persisted !== false, note: typeof view.note === 'string' ? view.note : '' };
 }
 
 const channelOf = (id) => CHANNELS.find((c) => c.id === id) || null;
 const newTab = (T) => `<span class="sr-only"> (${T.L('새 탭에서 열림', 'opens in new tab')})</span>`;
 const promise = (T) => `<p class="sx-fine">${T.L('이 결과는 입학이나 비자, 장학금 선발을 약속하지 않아요. 마지막 판단은 대학과 출입국, 장학 기관이 해요.', 'This does not promise admission, a visa or a scholarship. The university, the immigration office and the scholarship body make the final decision.')}</p>`;
-const storeLine = (T) => T.L('이 탭에만 있어요. 탭을 닫으면 사라지니 달력에도 넣어 두세요.', 'Kept in this tab only. It disappears when you close the tab, so add it to your calendar too.');
+// 저장이 막힌 브라우저면 눈으로도 보이게 경고로 바꾼다(페이블 F3). 로그아웃해도 지워진다(페이블 F1).
+const storeLine = (T) => (T.persisted
+  ? `<p class="sx-fine sx-store-line">${T.L('넣은 날은 이 탭에만 있어요. 탭을 닫거나 로그아웃하면 사라지니 달력에도 넣어 두세요.', 'Dates you add stay in this tab only. They disappear when you close the tab or sign out, so add them to your calendar too.')}</p>`
+  : `<p class="sx-store is-warn sx-store-line">${T.L('이 브라우저에서는 저장할 수 없어서 넣은 날을 지금 화면에서만 기억해요. 새로 고치면 사라지니 달력에 넣어 두세요.', 'This browser cannot store dates, so they are remembered on this screen only and are lost on reload. Add them to your calendar.')}</p>`);
 
 /** 날의 남은 날 글. 보이는 글과 화면 읽기 글을 따로 낸다(「D-12」를 「12일 남음」으로 읽게). */
 export function leftText(status, T) {
@@ -98,7 +101,7 @@ export function forYouLines(post, view) {
   }
   if (post.forYou === 'gksGrade') {
     const c = post.criteria;
-    const rule = { text: T.L(`기준: 평균 ${c.gradePct}% 이상${c.other ? ` (${c.other.ko})` : ''}`, `Requirement: average of ${c.gradePct}% or higher${c.other ? ` (${c.other.en})` : ''}`) };
+    const rule = { text: T.L(`기준: ${c.of ? `${c.of.ko} ` : ''}평균 ${c.gradePct}% 이상${c.other ? ` (${c.other.ko})` : ''}`, `Requirement: ${c.of ? `${c.of.en}, ` : ''}average of ${c.gradePct}% or higher${c.other ? ` (${c.other.en})` : ''}`) };
     return [rule, p.gradePct === null || p.gradePct === undefined ? enter({ ko: '성적 평균', en: 'your grade average' }) : { text: T.L(`내 값: 평균 ${p.gradePct}%`, `Yours: ${p.gradePct}% average`) }];
   }
   if (post.forYou === 'topikExam') {
@@ -128,9 +131,9 @@ export function forYouLines(post, view) {
 }
 
 function forYouCard(post, T) {
-  const lines = forYouLines(post, { T });
+  const lines = forYouLines(post, { T }).filter((l) => T.condOn || !l.cond);
   if (!lines.length) return '';
-  const cond = lines.some((l) => l.cond) ? `<button type="button" class="sx-link" data-action="nav" data-page="cond">${T.L('내 조건 넣기', 'Enter my conditions')}${NEXT}</button>` : '';
+  const cond = T.condOn && lines.some((l) => l.cond) ? `<button type="button" class="sx-link" data-action="nav" data-page="cond">${T.L('내 조건 넣기', 'Enter my conditions')}${NEXT}</button>` : '';
   return `<section class="sx-card butter sx-foryou"><p class="sx-k">${T.L('내게 해당되나요?', 'Does this apply to me?')}</p>${lines.filter((l) => l.lead).map((l) => `<p class="sx-fy-lead">${esc(l.text)}</p>`).join('')}<ul>${lines.filter((l) => !l.lead).map((l) => `<li${l.plan ? ' class="is-plan"' : ''}>${esc(l.text)}</li>`).join('')}</ul>${cond}${post.programId ? `<button type="button" class="sx-link" data-action="univOpen" data-id="${esc(post.programId)}">${T.L('과정 자세히 보기', 'See program details')}${NEXT}</button>` : ''}${promise(T)}</section>`;
 }
 
@@ -196,7 +199,8 @@ export function renderPost(view) {
   if (!p) return `<div class="sx">${back(null)}<h1 class="sx-title page-title" tabindex="-1">${T.L('글을 찾지 못했어요.', 'Post not found.')}</h1></div>`;
   const c = channelOf(p.channel), saved = profile.dates || [];
   const stale = isStalePost(p, T.now) ? `<p class="sx-note is-box">${T.L('확인한 지 90일이 지났어요. 날짜는 공식 안내에서 다시 확인하세요.', 'This was checked more than 90 days ago. Check the dates in the official notice.')}</p>` : '';
-  const dates = p.dates.length ? `<h2 class="sx-h">${T.L('날짜', 'Dates')}</h2><p class="sx-fine sx-store-line">${storeLine(T)}</p><ul class="sx-days">${p.dates.map((d) => dateRow(p, d, T, saved)).join('')}</ul>` : '';
+  const live = p.dates.some((d) => { const st = dateStatus(d, T.now).state; return st !== 'past' && st !== 'cancelled'; });
+  const dates = p.dates.length ? `<h2 class="sx-h" id="sx-dates-h" tabindex="-1">${T.L('날짜', 'Dates')}</h2>${T.note ? `<p class="sx-store is-warn sx-date-note">${esc(T.note)}</p>` : ''}${live ? storeLine(T) : ''}<ul class="sx-days">${p.dates.map((d) => dateRow(p, d, T, saved)).join('')}</ul>` : '';
   const action = p.action ? `<a class="sx-cta" href="${esc(p.action.url)}" target="_blank" rel="noopener noreferrer">${esc(T.pick(p.action.label))}${newTab(T)} ${GO}</a><p class="sx-fine">${T.L('공식 쪽으로 연결해요. 접수와 신청은 본인이 직접 해요.', 'This opens the official site. You apply yourself.')}</p>` : '';
   const tag = postTag(p, T);
   return `<div class="sx">${back(c)}
@@ -218,21 +222,21 @@ export function renderUpcoming(view) {
   const { upcoming, past, missing } = upcomingDates(T.posts, saved, T.now);
   const row = (r) => {
     const left = leftText(r.status, T);
-    const changed = r.changed ? `<span class="sx-changed">${T.L(`날짜가 바뀌었어요(전에 본 날 ${spanText({ kind: r.date.kind, start: r.changed.start, end: r.changed.end }, T)})`, `Date changed (you saw ${spanText({ kind: r.date.kind, start: r.changed.start, end: r.changed.end }, T)})`)} <button type="button" class="sx-link sm" data-action="dateConfirm" data-id="${esc(r.date.id)}">${T.L('확인했어요', 'Got it')}</button></span>` : '';
-    return `<li class="sx-dayrow${r.status.state === 'past' || r.status.state === 'cancelled' ? ' is-gone' : ''}"><button type="button" class="sx-dayrow-btn" data-action="postOpen" data-id="${esc(r.post.id)}">${dayBox(r.date, r.status, T)}<span class="sx-day-main"><b>${esc(T.pick(r.date.label))}</b><small>${esc(spanText(r.date, T))} · ${esc(T.pick(r.post.title))}</small></span><span class="sx-dleft${near(r.status) ? ' is-near' : ''}"><span aria-hidden="true">${esc(left.shown)}</span><span class="sr-only">${esc(left.said)}</span></span></button>${changed}</li>`;
+    const changed = r.changed ? `<span class="sx-changed">${T.L(`날짜가 바뀌었어요(전에 본 날 ${spanText({ kind: r.date.kind, start: r.changed.start, end: r.changed.end }, T)})`, `Date changed (you saw ${spanText({ kind: r.date.kind, start: r.changed.start, end: r.changed.end }, T)})`)} <button type="button" class="sx-link sm" data-action="dateConfirm" data-id="${esc(r.date.id)}">${T.L('확인했어요', 'Got it')}<span class="sr-only"> ${esc(T.pick(r.date.label))}</span></button></span>` : '';
+    return `<li class="sx-dayrow${r.status.state === 'past' || r.status.state === 'cancelled' ? ' is-gone' : ''}"><button type="button" class="sx-dayrow-btn" data-action="postOpen" data-id="${esc(r.post.id)}" data-date="${esc(r.date.id)}">${dayBox(r.date, r.status, T)}<span class="sx-day-main"><b>${esc(T.pick(r.date.label))}</b><small>${esc(spanText(r.date, T))} · ${esc(T.pick(r.post.title))}</small></span><span class="sx-dleft${near(r.status) ? ' is-near' : ''}"><span aria-hidden="true">${esc(left.shown)}</span><span class="sr-only">${esc(left.said)}</span></span></button>${changed}</li>`;
   };
   const gone = missing ? `<p class="sx-note">${T.L(`글에서 빠지거나 바뀐 날이 ${missing}개 있어요.`, `${missing} saved date${missing === 1 ? ' was' : 's were'} removed or changed in the posts.`)} <button type="button" class="sx-link sm" data-action="datesClean">${T.L('목록에서 지우기', 'Remove from list')}</button></p>` : '';
   const pastList = past.length ? `<details class="sx-past"><summary>${T.L(`지난 날 ${past.length}개`, `${past.length} past date${past.length === 1 ? '' : 's'}`)}</summary><ul class="sx-days">${past.map(row).join('')}</ul></details>` : '';
-  return `<section class="sx sx-today" aria-labelledby="sx-up-h"><h2 class="sx-h" id="sx-up-h">${T.L('다가오는 날', 'Coming up')}</h2><p class="sx-fine sx-store-line">${storeLine(T)}</p>
+  return `<section class="sx sx-today" aria-labelledby="sx-up-h"><h2 class="sx-h" id="sx-up-h" tabindex="-1">${T.L('다가오는 날', 'Coming up')}</h2>${storeLine(T)}
 ${upcoming.length ? `<ul class="sx-days">${upcoming.map(row).join('')}</ul>` : `<p class="sx-note">${T.L('다가오는 날이 없어요.', 'Nothing coming up.')}</p>`}${gone}${pastList}</section>`;
 }
 
-/** 새 소식 두 편(유학 카드의 오늘 화면). 보이기로 둔 채널의 글이 없으면 빈 글. */
+/** 새 소식 두 편(오늘 화면, 카드와 상관없이). 보이기로 둔 채널의 글이 없으면 빈 글. */
 export function renderNews(view) {
   const T = ctx(view), off = (T.profile && T.profile.channelsOff) || [];
   const list = latestPosts(T.posts, off, 2);
   if (!list.length) return '';
-  return `<section class="sx sx-today" aria-labelledby="sx-news-h"><h2 class="sx-h" id="sx-news-h">${T.L('새 소식', 'Latest news')}<button type="button" class="sx-link" data-action="nav" data-page="channels">${T.L('채널', 'News')}${NEXT}</button></h2>
+  return `<section class="sx sx-today" aria-labelledby="sx-news-h"><div class="sx-h-row"><h2 class="sx-h" id="sx-news-h">${T.L('새 소식', 'Latest news')}</h2><button type="button" class="sx-link" data-action="nav" data-page="channels">${T.L('채널 모두 보기', 'All news')}${NEXT}</button></div>
 <div class="sx-news">${list.map((p) => { const c = channelOf(p.channel); return `<button type="button" class="sx-newsbtn" data-action="postOpen" data-id="${esc(p.id)}"><span class="sx-ic is-${esc(c.tone)}">${ICON[c.id]}</span><small>${esc(T.pick(c.name))}</small><b>${esc(T.pick(p.title))}</b></button>`; }).join('')}</div></section>`;
 }
 
@@ -258,7 +262,9 @@ export function icsText(post, date, lang, stamp = new Date()) {
   const en = lang === 'en', pick = (o) => (en ? o.en : o.ko);
   const day = endDay(date), compact = (d) => d.replace(/-/g, '');
   const dt = (stamp instanceof Date ? stamp : new Date(stamp)).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-  const what = date.kind === 'apply' ? (en ? `Deadline: ${pick(date.label)}` : `${pick(date.label)} 마감`) : pick(date.label);
+  // 대학 소식의 날 이름에는 대학이 없어서(「1차 원서 접수」) 달력 목록에서 구분되게 과정 이름을 붙인다.
+  const name = date.who ? (en ? `${pick(date.label)} (${pick(date.who)})` : `${pick(date.who)} ${pick(date.label)}`) : pick(date.label);
+  const what = date.kind === 'apply' ? (en ? `Deadline: ${name}` : `${name} 마감`) : name;
   const desc = `${pick(post.title)}\n${en ? 'Source' : '출처'}: ${post.source.url}\n${en ? 'Check the official notice before you act.' : '움직이기 전에 공식 안내를 다시 확인하세요.'}`;
   return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SYNK//PATH study//' + (en ? 'EN' : 'KO'), 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
     `UID:${date.id}@path.synk.im`, `DTSTAMP:${dt}`, `DTSTART;VALUE=DATE:${compact(day)}`, `DTEND;VALUE=DATE:${compact(nextDay(day))}`,

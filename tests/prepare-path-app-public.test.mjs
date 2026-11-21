@@ -137,4 +137,10 @@ test('channel posts are checked before any public bundle is made', async () => {
   assert.throws(() => checkChannelData([{ ...first, source: { ...first.source, url: 'http://example.com/' } }, ...POSTS.slice(1)]), /Invalid channel data/, 'a post without an https source stops the bundle');
   assert.throws(() => checkChannelData([{ ...first, points: first.points.slice(0, 2) }, ...POSTS.slice(1)]), /Invalid channel data/);
   assert.throws(() => checkChannelData([first, first]), /Invalid channel data/, 'duplicate post ids stop the bundle');
+  // 손 글이 공개판에 없는 예시 과정을 가리키면 묶음을 만들지 않는다(카본 A1).
+  const { PROGRAMS } = await import('../experiences/path-app/study-data.mjs');
+  const example = PROGRAMS.find((p) => p.example);
+  assert.ok(example, 'there is an example program to point at');
+  const toExample = { ...first, id: 'points-at-example', forYou: 'program', programId: example.id, dates: [] };
+  assert.throws(() => checkChannelData([toExample, ...POSTS]), /Invalid channel data: post program/);
 });

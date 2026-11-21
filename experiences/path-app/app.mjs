@@ -79,6 +79,7 @@ const DICT = {
   reset: ['저장 데이터 초기화', 'Reset saved data'], resetAsk: ['읽을 수 없는 저장 데이터를 지우고 새로 시작할까요?', 'Delete unreadable saved data and start fresh?'],
   storeFail: ['이 탭에 저장하지 못했어요. 작성 내용은 화면에 남아 있어요.', 'Could not save in this tab. Your text stays on screen.'],
   pageAnn: ['페이지', 'page'],
+  datesStore: ['「다가오는 날」은 계정에 저장되지 않고 이 탭에만 있어요. 탭을 닫거나 로그아웃하면 사라져요.', '“Coming up” dates are not saved to your account; they stay in this tab only and disappear when you close the tab or sign out.'],
   studyStore: ['「내 조건」(한국어 · 성적 · 준비한 돈)과 「다가오는 날」은 계정에 저장되지 않고 이 탭에만 있어요. 탭을 닫거나 로그아웃하면 사라져요.', '“My conditions” (Korean level, grades, funds) and “Coming up” dates are not saved to your account; they stay in this tab only and disappear when you close the tab or sign out.'],
   toolsLead: ['공식 안내와 별개인 SYNK 페이지예요. 새 탭에서 열리고 PATH 저장 내용과 분리돼요.', 'Separate SYNK pages, not official sources. They open in a new tab, apart from PATH data.']
 };
@@ -177,7 +178,7 @@ const session = createPathSession({
 state = session.document()?.state || createInitialState('ko');
 hadDoc = !!session.document()?.state;
 
-const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false, univId: null, univFilter: 'all', studyText: {}, studyErrors: {}, channelId: null, postId: null };
+const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false, univId: null, univFilter: 'all', studyText: {}, studyErrors: {}, channelId: null, postId: null, dateNote: null };
 activeOwner = ownerKey(); wasOnboarded = !!state.onboarded;
 
 function persist() { return commit(state); }
@@ -328,7 +329,7 @@ function today() {
     return `<main class="home" id="main"><aside class="stage home-stage is-three" aria-label="${t('pickCard')}"><div class="rod" aria-hidden="true"></div>${cards}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('pickCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${t('nT1')}</span> <span class="title-2">${t('nT2')}</span></h1>
 <ul class="goal-list">${GOALS.map((x) => `<li><button type="button" class="goal-row" data-action="exploreGoal" data-id="${x.id}"><span class="goal-sym" data-goal="${x.id}">${SYMBOL[x.id]}</span><span class="goal-txt"><b>${esc(pick(x.label))}</b><small>${esc(pick(x.description))}</small></span><span class="row-go" aria-hidden="true">${ICON.arrow}</span></button></li>`).join('')}</ul>
-${upcomingHtml()}<div class="home-grid">${sec(t('official'), t('offSub'), officialList('all'))}${sec(t('tools'), '', toolRows())}</div></div></main>`;
+${upcomingHtml()}${newsHtml()}<div class="home-grid">${sec(t('official'), t('offSub'), officialList('all'))}${sec(t('tools'), '', toolRows())}</div></div></main>`;
   }
   const mine = state.tasks.filter((x) => x.goal === g.id);
   const nt = getNextTask(state);
@@ -349,7 +350,7 @@ ${upcomingHtml()}<div class="home-grid">${sec(t('official'), t('offSub'), offici
   const off = g.id === 'job' && jobsFeed.snapshot().status === 'disabled' ? `<p class="off"><i aria-hidden="true"></i>${t('jobsOff')}</p>` : '';
   return `<main class="home" id="main"><aside class="stage home-stage" aria-label="${t('myCard')}"><div class="rod" aria-hidden="true"></div>${hang(g.id, { kicker: t('myCard'), mode: 'next' })}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('changeCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${h1a}</span> <span class="title-2">${h1b}</span></h1>
-${stamps(st, g.steps.map(pick))}${card}${g.id === 'study' && STUDY_ON ? renderStudyEntry(studyView()) : ''}${upcomingHtml()}${g.id === 'study' && CHANNEL_ON ? renderNews(channelView()) : ''}
+${stamps(st, g.steps.map(pick))}${card}${g.id === 'study' && STUDY_ON ? renderStudyEntry(studyView()) : ''}${upcomingHtml()}${newsHtml()}
 <div class="home-grid">${sec(t('homeOpps'), t('demoSub'), `<ul class="rows">${opps.map(oppRow).join('')}</ul>`)}${sec(t('official'), t('offSub'), officialList(g.id) + off)}</div></div></main>`;
 }
 
@@ -457,16 +458,24 @@ function profile() {
 <section class="settings-group"><h2>${t('goal')}</h2><p>${g ? esc(pick(g.label)) : t('none')}</p><button type="button" class="btn-line" data-action="changeGoal">${t('changeGoal')}</button></section>
 <section class="settings-group"><h2>${t('location')}</h2><p>${t(state.location || 'unknown')}</p></section>
 <section class="settings-group"><h2>${t('lang')}</h2><p>${state.lang === 'en' ? 'English' : '한국어'}</p></section>
-<section class="settings-group"><h2>${t('storage')}</h2>${accSt.signedIn ? `<p>${state.lang === 'en' ? 'Syncs to your account. Please check the save status above.' : '계정에 동기화합니다. 위의 저장 상태를 확인해 주세요.'}</p>` : `<p>${t('storageText')}</p><button type="button" class="btn-line danger" data-action="clear">${t('clear')}</button>`}${STUDY_ON ? `<p>${t('studyStore')}</p>` : ''}</section></div>`;
+<section class="settings-group"><h2>${t('storage')}</h2>${accSt.signedIn ? `<p>${state.lang === 'en' ? 'Syncs to your account. Please check the save status above.' : '계정에 동기화합니다. 위의 저장 상태를 확인해 주세요.'}</p>` : `<p>${t('storageText')}</p><button type="button" class="btn-line danger" data-action="clear">${t('clear')}</button>`}${STUDY_ON ? `<p>${t('studyStore')}</p>` : CHANNEL_ON ? `<p>${t('datesStore')}</p>` : ''}</section></div>`;
 }
 
 const studyView = () => ({ lang: state.lang, profile: studyProfile(), programs: STUDY_PROGRAMS, rules: rulesAt(RULES, new Date()), now: new Date() });
 const condView = () => ({ ...studyView(), persisted: study.persisted(), text: S.studyText, errors: S.studyErrors });
-const channelView = () => ({ ...studyView(), posts: CHANNEL_POSTS });
+// 날짜 목록 위 경고는 종류만 기억하고 그릴 때 지금 언어로 고른다(언어를 바꿔도 앞 언어로 남지 않게 — 페이블 다시 검수 FA1).
+const DATE_NOTES = {
+  full: ['다가오는 날이 서른 개라 더 넣을 수 없어요. 다가오는 날에서 하나를 뺀 뒤 넣어 주세요.', 'Coming up already has 30 dates. Remove one first.'],
+  ics: ['이 브라우저에서는 달력 파일을 만들 수 없어요. 날짜를 직접 적어 두세요.', 'This browser cannot create the calendar file. Please note the date yourself.']
+};
+const dateNoteText = () => (DATE_NOTES[S.dateNote] ? accL(...DATE_NOTES[S.dateNote]) : '');
+const channelView = () => ({ ...studyView(), posts: CHANNEL_POSTS, condOn: STUDY_ON, persisted: study.persisted(), note: dateNoteText() });
 const channels = () => renderChannels({ ...channelView(), channelId: S.channelId });
 const post = () => renderPost({ ...channelView(), postId: S.postId });
 // 다가오는 날은 넣은 날이 하나라도 있으면 카드와 상관없이 오늘 화면에 둔다.
 const upcomingHtml = () => (CHANNEL_ON ? renderUpcoming(channelView()) : '');
+// 새 소식도 카드와 상관없이 둔다. 채널 탭은 모두에게 열리고, 채널의 「오늘 화면에 보이기」가 이 자리를 가리킨다.
+const newsHtml = () => (CHANNEL_ON ? renderNews(channelView()) : '');
 const univ = () => renderUniv({ ...studyView(), filter: S.univFilter });
 const univDetail = () => renderUnivDetail({ ...studyView(), programId: S.univId });
 const univCompare = () => renderUnivCompare(studyView());
@@ -510,7 +519,7 @@ function render(focus = true) {
 }
 // 화면을 옮기면 맨 위에서 시작한다(앞 화면에서 내려 둔 자리에 머물러 뒤로 · 출처 줄이 머리 막대 밑에 숨지 않게).
 const toTop = () => { try { if (typeof scrollTo === 'function') scrollTo(0, 0); } catch { /* 시험 환경 */ } };
-function go(page) { S.drop = MOTION && page !== S.page && (page === 'onboard' || page === 'today'); S.page = page; S.flash = null; S.error = null; S.copyMsg = null; S.studyText = {}; S.studyErrors = {}; render(); toTop(); }
+function go(page) { S.drop = MOTION && page !== S.page && (page === 'onboard' || page === 'today'); S.page = page; S.flash = null; S.dateNote = null; S.error = null; S.copyMsg = null; S.studyText = {}; S.studyErrors = {}; render(); toTop(); }
 
 function ensureTask(oppId) {
   const o = oppById(oppId);
@@ -572,7 +581,7 @@ const ACT = {
     const cur = studyProfile(), now = new Date();
     let msg;
     if (cur.dates.some((x) => x.id === id)) {
-      studyWrite(removeDate(cur, id));
+      studyWrite(removeDate(cur, id)); S.dateNote = null;
       msg = accL('다가오는 날에서 뺐어요.', 'Removed from Coming up.');
     } else {
       const st = dateStatus(hit.date, now).state;
@@ -581,25 +590,30 @@ const ACT = {
       // 서른 개면 지난 날과 글에서 사라진 날부터 정리한다.
       if (base.dates.length >= MAX_DATES) base = keepDates(base, base.dates.filter((x) => { const h = findDate(CHANNEL_POSTS, x.id); const s2 = h && dateStatus(h.date, now).state; return h && s2 !== 'past' && s2 !== 'cancelled'; }).map((x) => x.id));
       const r = addDate(base, { id, start: hit.date.start, end: endDay(hit.date) });
-      if (r.full) msg = accL('다가오는 날이 서른 개라 더 넣을 수 없어요. 지난 날을 지운 뒤 넣어 주세요.', 'Coming up already has 30 dates. Remove some first.');
+      // 실패 안내는 화면 읽기 알림만이 아니라 날짜 목록 위에도 보인다(페이블 F3).
+      if (r.full) { S.dateNote = 'full'; msg = dateNoteText(); }
       else {
+        S.dateNote = null;
         studyWrite(r.profile);
         msg = study.persisted() ? accL('이 탭의 다가오는 날에 넣었어요.', 'Added to Coming up in this tab.') : accL('이 브라우저에서는 저장할 수 없어 지금 화면에서만 기억해요.', 'This browser cannot store it, so it is kept on this screen only.');
       }
     }
-    render(false); root.querySelector(`[data-action="dateToggle"][data-id="${id}"]`)?.focus(); say(msg);
+    render(false); (root.querySelector(`[data-action="dateToggle"][data-id="${id}"]`) || root.querySelector('#sx-dates-h') || root.querySelector('.page-title'))?.focus(); say(msg);
   },
   dateConfirm(el) {
     const hit = findDate(CHANNEL_POSTS, el.dataset.id);
     if (!hit) return;
     studyWrite(confirmDate(studyProfile(), { id: hit.date.id, start: hit.date.start, end: endDay(hit.date) }));
-    render(false); root.querySelector(`.sx-dayrow-btn[data-id="${hit.post.id}"]`)?.focus();
+    render(false);
+    const row = root.querySelector(`.sx-dayrow-btn[data-date="${hit.date.id}"]`), fold = row && row.closest('details');
+    if (fold) fold.open = true;
+    (row || root.querySelector('#sx-up-h'))?.focus();
     say(accL('바뀐 날짜를 확인했어요.', 'Changed date confirmed.'));
   },
   datesClean() {
     const cur = studyProfile();
     studyWrite(keepDates(cur, cur.dates.filter((x) => findDate(CHANNEL_POSTS, x.id)).map((x) => x.id)));
-    render(false); root.querySelector('#sx-up-h')?.focus();
+    render(false); (root.querySelector('#sx-up-h') || root.querySelector('.page-title'))?.focus();
     say(accL('글에서 빠진 날을 목록에서 지웠어요.', 'Removed dates that are no longer in the posts.'));
   },
   dateIcs(el) {
@@ -610,9 +624,12 @@ const ACT = {
       const a = document.createElement('a');
       a.href = url; a.download = `${hit.date.id}.ics`; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 30000);
+      if (S.dateNote) { S.dateNote = null; render(false); root.querySelector(`[data-action="dateIcs"][data-id="${hit.date.id}"]`)?.focus(); }
       say(accL('달력 파일을 내려받았어요. 파일을 열어 달력에 넣으세요.', 'Calendar file downloaded. Open it to add the date to your calendar.'));
     } catch {
-      say(accL('이 브라우저에서는 달력 파일을 만들 수 없어요. 날짜를 직접 적어 두세요.', 'This browser cannot create the calendar file. Please note the date yourself.'));
+      S.dateNote = 'ics';
+      render(false); root.querySelector(`[data-action="dateIcs"][data-id="${hit.date.id}"]`)?.focus();
+      say(dateNoteText());
     }
   },
   studyFilter(el) {

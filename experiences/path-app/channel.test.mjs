@@ -124,15 +124,19 @@ test('다가오는 날: 가까운 순, 시작 전 접수는 시작 날로, 바�
   assert.deepEqual(u.upcoming[1].changed, { start: '2026-12-09', end: '2026-12-09' });
   assert.equal(u.upcoming[0].changed, null);
   const html = renderUpcoming(view({ ...createProfile(), dates: list })), text = textOf(html);
-  assert.match(text, /이 탭에만 있어요/);
+  assert.match(text, /넣은 날은 이 탭에만 있어요/);
   assert.match(text, /11월 23일~27일/);
   assert.match(text, /시작 D-2/);
   assert.match(text, /2일 뒤 접수 시작/, '화면 읽기 글');
   assert.match(text, /날짜가 바뀌었어요\(전에 본 날 12월 9일\)/);
-  assert.match(html, /data-action="dateConfirm" data-id="topik-pbt108-result"/);
+  assert.match(html, /data-action="dateConfirm" data-id="topik-pbt108-result">확인했어요<span class="sr-only"> PBT 제108회 성적 발표<.span>/, '확인 단추에도 날 이름');
+  assert.match(html, /data-date="topik-pbt108-result"/, '줄 단추는 날 id를 갖는다(확인 뒤 초점)');
+  assert.match(html, /id="sx-up-h" tabindex="-1"/);
   assert.match(text, /글에서 빠지거나 바뀐 날이 1개 있어요/);
   assert.match(html, /<details class="sx-past"><summary>지난 날 1개/);
   assert.equal(renderUpcoming(view(createProfile())), '', '넣은 날이 없으면 칸을 두지 않는다');
+  const order = upcomingDates(ALL, [saved('topik-pbt108-result'), saved('univ-jbnu-lang-2026-11-30'), saved('topik-ibt16-exam-mn')], NOW).upcoming.map((r) => r.date.id);
+  assert.deepEqual(order, ['topik-ibt16-exam-mn', 'univ-jbnu-lang-2026-11-30', 'topik-pbt108-result'], '시작 전 접수(11-30 시작 · 12-11 마감)는 날짜 칸에 보이는 시작 날로 센다');
   const en = textOf(renderUpcoming(view({ ...createProfile(), dates: [saved('topik-pbt109-result')] }, { lang: 'en' })));
   assert.match(en, /31 days left/);
   assert.doesNotMatch(en, /D-31/);
@@ -156,6 +160,25 @@ test('채널 글: 넣기 단추는 aria-pressed와 날 이름을 갖고, 지난 
   const uni = renderPost(view(createProfile(), { postId: 'univ-wku-ug' }));
   assert.doesNotMatch(uni, /class="sx-cta"/);
   assert.match(uni, /data-action="univOpen" data-id="wku-ug"/);
+  assert.match(uni, /id="sx-dates-h" tabindex="-1"/, '지난 날을 빼서 단추가 사라지면 초점이 갈 제목');
+  assert.match(textOf(uni), /넣은 날은 이 탭에만 있어요/);
+  // 날이 모두 지난 글에는 넣을 단추가 없으므로 저장 안내를 띄우지 않는다. 요점은 지나도 맞는 말이고 해를 밝힌다.
+  assert.match(textOf(uni), /탭을 닫거나 로그아웃하면 사라지니/, '로그아웃해도 지워진다고 알린다(페이블 F1)');
+  // 저장이 막힌 브라우저와 넣기 · 달력 실패는 눈으로도 보인다(페이블 F3).
+  const blocked = renderPost(view(createProfile(), { postId: 'univ-wku-ug', persisted: false }));
+  assert.match(blocked, /class="sx-store is-warn sx-store-line">이 브라우저에서는 저장할 수 없어서 넣은 날을 지금 화면에서만 기억해요/);
+  assert.match(renderUpcoming(view({ ...createProfile(), dates: [saved('topik-pbt109-result')] }, { persisted: false })), /sx-store is-warn/);
+  assert.match(renderPost(view(createProfile(), { postId: 'univ-wku-ug', note: '다가오는 날이 서른 개라 더 넣을 수 없어요.' })), /<p class="sx-store is-warn sx-date-note">다가오는 날이 서른 개라 더 넣을 수 없어요\.<\/p>/);
+  assert.doesNotMatch(uni, /sx-date-note/);
+  const shut = textOf(renderPost(view(createProfile(), { postId: 'univ-jbnu-ug' })));
+  assert.doesNotMatch(shut, /이 탭에만 있어요/);
+  assert.match(shut, /접수 기간\(2026년\): 1차 9월 21일 – 10월 2일, 2차 11월 9일 – 11월 20일\./);
+  // 조건 화면이 없는 판(과정 0)에서는 「내 조건 넣기」를 걸지 않는다.
+  const noCond = renderPost(view(createProfile(), { postId: 'visa-funds-proof', condOn: false }));
+  assert.doesNotMatch(noCond, /data-page="cond"/);
+  assert.doesNotMatch(textOf(noCond), /넣으면 나란히/);
+  assert.match(renderPost(view(createProfile(), { postId: 'visa-funds-proof' })), /data-page="cond"/);
+  assert.match(textOf(renderPost(view(createProfile(), { postId: 'gks-2027-u' }))), /지방 대학에만 지원하는 R-GKS 전형 2명/);
   assert.match(textOf(renderPost(view(createProfile(), { postId: 'no-such' }))), /글을 찾지 못했어요/);
 });
 
@@ -177,7 +200,7 @@ test('「내게 해당되나요?」: 판정 말 대신 기준과 내 값, 지방
   assert.match(lines(createProfile(), RULES, 'en'), /Study \(D-2\): outside Seoul area ₩16,000,000, Seoul area ₩20,000,000/);
   const gks = ALL.find((p) => p.forYou === 'gksGrade');
   const g = forYouLines(gks, view(setField(createProfile(), 'gradePct', 78))).map((l) => l.text).join(' / ');
-  assert.match(g, /기준: 평균 80% 이상 \(또는 석차 상위 20% 안/);
+  assert.match(g, /기준: 고등학교 전 학년 성적 평균 80% 이상 \(또는 석차 상위 20% 안/);
   assert.match(g, /내 값: 평균 78%/);
   const t = forYouLines(ALL.find((p) => p.id === 'topik-mn-2026-results'), view(createProfile())).map((l) => l.text).join(' / ');
   assert.match(t, /마감 전에 성적이 나오는 곳이에요\. \/ 전북대학교 한국어학당 1차\(12월 11일 마감\): PBT 제108회 \/ /);
@@ -205,6 +228,7 @@ test('채널 화면: 맨 위 글은 가장 가까운 날, 채널마다 「오늘
   assert.equal(isNewPost(POSTS[0], new Date('2026-12-06T12:00:00+09:00')), false);
   assert.deepEqual(latestPosts(ALL, CHANNELS.map((c) => c.id).filter((id) => id !== 'scam'), 5).map((p) => p.channel), ['scam', 'scam', 'scam']);
   assert.match(textOf(renderNews(view(createProfile()))), /새 소식/);
+  assert.match(renderNews(view(createProfile())), /<h2 class="sx-h" id="sx-news-h">새 소식<\/h2><button/, '제목 안에 단추를 넣지 않는다(구역 이름이 「새 소식」으로만 읽힌다)');
   assert.equal(renderNews(view({ ...createProfile(), channelsOff: CHANNELS.map((c) => c.id) })), '');
   assert.match(textOf(renderChannels(view(createProfile(), { lang: 'en' }))), /Show on Today/);
 });
@@ -215,7 +239,7 @@ test('달력 파일: 줄끝은 CRLF, 한 줄 75바이트 안, 접수 기간은 �
   assert.ok(ics.startsWith('BEGIN:VCALENDAR\r\n') && ics.endsWith('END:VCALENDAR\r\n'));
   assert.match(ics, /DTSTART;VALUE=DATE:20261231\r\nDTEND;VALUE=DATE:20270101/);
   assert.match(ics, /UID:univ-wku-ug-2026-12-28@path\.synk\.im/);
-  assert.match(ics, /SUMMARY:2차 원서 접수 마감/);
+  assert.match(ics, /SUMMARY:원광대학교 학부 2차 원서 접수 마감/, '달력 목록에서 어느 대학인지 보인다');
   for (const line of ics.split('\r\n')) assert.ok(new TextEncoder().encode(line).length <= 75, line);
   assert.doesNotMatch(ics.replace(/\r\n /g, ''), /[^\\],(?=[^\r\n]*\r\nURL)/, '설명의 쉼표는 이스케이프한다');
   const one = icsText(findDate(ALL, 'topik-pbt109-result').post, findDate(ALL, 'topik-pbt109-result').date, 'en');

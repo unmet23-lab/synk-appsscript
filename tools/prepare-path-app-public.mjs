@@ -40,7 +40,9 @@ function builder() {
 /** Project only canonical browser-safe fields. Never copy the input file verbatim. */
 /** 채널 글을 공개 전에 검사한다. 앱은 브라우저에서 검사하지 않으므로 틀린 글이면 여기서 묶음을 만들지 않는다. */
 export function checkChannelData(posts = POSTS, programs = PROGRAMS) {
-  return validateChannelData(CHANNELS, allPosts(programsFor(programs, true), posts), programs.map((p) => p.id));
+  // 공개판에 싣는 과정만 넘긴다: 손 글이 예시 과정을 가리키면 공개판에서 빈 연결이 되므로 여기서 막는다.
+  const shown = programsFor(programs, true);
+  return validateChannelData(CHANNELS, allPosts(shown, posts), shown.map((p) => p.id));
 }
 
 export function validatePathConfig(raw, { targetUrl = PATH_PUBLIC_URL, local = false } = {}) {
