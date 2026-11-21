@@ -82,13 +82,17 @@ $settings = Get-Content -LiteralPath (Join-Path $adminState 'vault\settings.json
 $odd = if ($settings -is [Collections.IDictionary]) { $settings['leftOutNames'] }
 $script:results['adminLeftOutNames'] = $odd
 # Exactly that file and no other: one entry, the very path D0 made, letter for letter — not another source's file of
-# the same name (GPT GA2 · oddnames r9 GA2). The array is made outside the `if`, whose output would unroll a
-# one-entry array into its string. A count is the whole number 1, not `true` (which -eq 1 would take — r9 GA2).
+# the same name (GPT GA2 · oddnames r9 GA2). Compared ordinally: -ceq compares by language rules, which can pass over
+# a soft hyphen (U+00AD) put into the name (r10 GA1 · GA3). The folder is the full path D0 and the profile resolved
+# (`.` and `..` gone — r10 GA2); the name is put after it, since GetFullPath would drop its last dot. The array is
+# made outside the `if`, whose output would unroll a one-entry array into its string. A count is the whole number 1,
+# not `true` (which -eq 1 would take — r9 GA2).
 function IsOne($value) { ($value -is [int] -or $value -is [long]) -and $value -eq 1 }
-$oddPath = Join-Path $data '끝이 점인 이름.'
+$oddPath = [IO.Path]::GetFullPath($data).TrimEnd('\') + '\끝이 점인 이름.'
 $oddNames = @(if ($odd -is [Collections.IDictionary] -and $odd['names'] -is [Collections.IList]) { $odd['names'] })
 $oddRight = $odd -is [Collections.IDictionary] -and $odd.Contains('count') -and (IsOne $odd['count']) -and $odd['cut'] -is [bool] -and -not $odd['cut'] -and
-  -not $odd.Contains('checked') -and $oddNames.Count -eq 1 -and $oddNames[0] -is [string] -and $oddNames[0] -ceq $oddPath
+  -not $odd.Contains('checked') -and $oddNames.Count -eq 1 -and $oddNames[0] -is [string] -and
+  [string]::Equals($oddNames[0], $oddPath, [StringComparison]::Ordinal)
 Expect ((IsOne $r.Run.profiles.local.odd) -and $oddRight) "the first backup tells the one name ending in a dot it could not hold (run odd: $($r.Run.profiles.local.odd), leftOutNames: $($odd | ConvertTo-Json -Compress))"
 $locked = Join-Path $data '잠글 문서\계약서.docx'
 Change $locked
