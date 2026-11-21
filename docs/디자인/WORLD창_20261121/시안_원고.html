@@ -54,7 +54,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .view[hidden]{display:none}
 
 /* 판 */
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr) minmax(0,1fr) auto;gap:12px;height:100%;min-height:560px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,.95fr) minmax(0,1.05fr) auto;gap:12px;height:100%;min-height:560px}
 .tile{background:var(--tile);border-radius:24px;padding:20px;position:relative}
 .tile h2{margin:0;font-size:14px;font-weight:700;color:var(--ink2)}
 .tile .big{font-size:40px;font-weight:700;letter-spacing:-.015em;font-variant-numeric:tabular-nums;line-height:1}
@@ -64,14 +64,18 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .go{grid-column:1/3;grid-row:1/3;display:flex;flex-direction:column;padding:8px;overflow:hidden;background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
 .go figure{margin:0;flex:1;min-height:150px;position:relative;border-radius:18px;overflow:hidden;background:#f3ece6}
 .go figure img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
-.go .go-foot{padding:16px 10px 8px 12px;display:flex;align-items:center;gap:18px}
+.go .go-foot{padding:16px 10px 8px 12px;display:flex;align-items:flex-end;gap:18px}
+.go-copy{flex:1}.go-tag{display:inline-block;margin-left:8px;font-size:12px;font-weight:700;background:#fff4cc;color:#6b4e00;border-radius:999px;padding:3px 9px}
+.go-meter{display:flex;align-items:center;gap:12px;margin-top:12px}.go-meter .prog{flex:1;margin:0}.go-meter span{font-size:12.5px;color:var(--ink2);font-weight:600;white-space:nowrap}
+.go .go-foot .go-acts{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:8px}.quiet{border:0;background:none;padding:4px 2px;font-size:13px;font-weight:700;color:var(--ink2)}.quiet:hover{color:var(--ink)}
 .go .go-foot div{flex:1}
-.go-ctx{font-size:13px;color:var(--ink2);font-weight:600;display:flex;align-items:center;gap:6px}
+.go-ctx{font-size:13px;color:var(--ink2);font-weight:600;display:inline-flex;align-items:center;gap:6px}
 .go-ctx i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
 .go-ctx[data-off] i{background:#c7c7cc}
 .go strong{display:block;font-size:22px;font-weight:700;margin-top:4px}
 .go p{margin:3px 0 0;font-size:14px;color:var(--ink2)}
-.prog{height:6px;border-radius:999px;background:var(--tile2);margin-top:12px;overflow:hidden;max-width:360px}.prog i{display:block;height:100%;border-radius:999px;background:var(--yel)}
+.prog{height:6px;border-radius:999px;background:var(--tile2);margin-top:12px;overflow:hidden;max-width:360px}
+.prog i{transition:width .3s ease}.prog i{display:block;height:100%;border-radius:999px;background:var(--yel)}
 .pill{border-radius:999px;padding:14px 22px;font-size:15.5px;font-weight:700;border:0;line-height:1;white-space:nowrap}
 .pill.yel{background:var(--yel);color:var(--ink)}
 .pill.yel:hover{background:var(--yel2)}
@@ -93,7 +97,21 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .day[data-today][data-done] b{box-shadow:none;background:var(--yel)}
 .day[data-today][data-done] b::after{border-color:var(--ink)}
 
-.score{display:flex;flex-direction:column;gap:12px;justify-content:space-between}
+.skillt{display:flex;flex-direction:column;gap:6px;padding:16px 12px 12px}
+.sk-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:0 6px}
+.sk-head span{font-size:11.5px;color:var(--ink3);font-weight:600}
+.sk{list-style:none;margin:0;padding:0;display:grid;gap:2px;flex:1;align-content:space-evenly}
+.skb{width:100%;border:0;background:transparent;border-radius:14px;padding:6px 10px 7px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center}
+.skb:hover{background:rgba(255,255,255,.6)}
+.skb[aria-pressed=true]{background:#fff;box-shadow:0 1px 3px rgba(60,40,20,.1)}
+.skb b{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.skb em{font-style:normal;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.skb .sbar{grid-column:1/3;height:5px;border-radius:999px;background:var(--tile2);overflow:hidden}
+.skb .sbar i{display:block;height:100%;border-radius:999px}
+.skb .sbar i{background:var(--ink3)}
+.skb[aria-pressed=true] .sbar i{background:var(--yel2)}
+.skb[data-strong] .sbar i{background:var(--ok)}
+.skb[data-strong] em{color:var(--ok)}
 .bar{height:10px;border-radius:999px;background:#fff;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--ink);border-radius:999px}
 .score .legend{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);font-weight:600}
@@ -115,8 +133,9 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .game .ic{width:44px;height:44px;border-radius:14px;background:var(--tile);display:grid;place-items:center}
 .game strong{font-size:13.5px;font-weight:700;line-height:1.3}
 .game em{font-style:normal;font-size:12px;color:var(--ink2)}
-.game[data-last] .ic{background:var(--yel)}
-.game[data-last] em{color:var(--ink);font-weight:700}
+.game[data-rec] .ic{background:var(--yel)}
+.glist>li{display:flex}.glist .game{height:100%}.games-head h2{flex:none}
+.game[data-rec] em{color:var(--ink);font-weight:700}
 
 /* 내 SYNK ID */
 .idgrid{display:grid;grid-template-columns:320px repeat(3,minmax(0,1fr));grid-template-rows:auto auto auto auto;gap:12px;align-items:stretch}
@@ -224,7 +243,7 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
   .grid,.idgrid{grid-template-columns:1fr 1fr;gap:10px}
   .go{grid-column:1/3;grid-row:auto;min-height:330px}
   .week{grid-column:1/3}
-  .score,.ways{grid-column:1/3}
+  .skillt,.ways{grid-column:1/3}
   .games{grid-column:1/3}
   .glist{grid-template-columns:repeat(3,minmax(0,1fr))}
   .tile .big{font-size:32px}
@@ -232,14 +251,14 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
   .badge-tile{padding-bottom:12px}
   .hang{transform:scale(.86);transform-origin:50% 0;height:410px;margin-bottom:-10px}
   .idhead h1{font-size:24px}
-  .go .go-foot{flex-wrap:wrap}.go .go-foot .pill{width:100%}
+  .go .go-foot{flex-wrap:wrap}.go .go-foot .go-acts{width:100%;align-items:stretch}.go .go-foot .pill{width:100%}
 }
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation:none!important}}
 </style>
 </head>
 <body>
 <div class="mock" aria-label="시안 막대">
-  <span><b>WORLD 창 시안 3판</b>11-21</span>
+  <span><b>WORLD 창 시안 4판</b>11-21</span>
   <span class="grp">계정 <button data-role="student" aria-pressed="true">학생</button><button data-role="teacher" aria-pressed="false">강사</button></span>
   <span class="grp">폭 <button data-w="pc" aria-pressed="true">PC 창</button><button data-w="phone" aria-pressed="false">휴대폰</button></span>
   <span>단추는 모두 눌러 볼 수 있어요. 학생증은 눌러서 뒤집어 보세요.</span>
@@ -280,8 +299,8 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
         <article class="tile go">
           <figure><img alt="방 책상 앞에서 휴대폰으로 한국어를 말하며 연습하는 학생" src="__IMG_ROOM__"></figure>
           <div class="go-foot">
-            <div><span class="go-ctx" id="ctx"><i></i><span data-ctx>개인 학습</span></span><strong>바람길 3단계</strong><p>어제 여기서 멈췄어요. 길 묻기 6문항이 남았어요.</p><div class="prog" role="img" aria-label="20문항 가운데 14문항"><i style="width:70%"></i></div></div>
-            <button class="pill yel" data-game="바람길">이어서 하기</button>
+            <div class="go-copy"><span class="go-ctx" id="ctx"><i></i><span data-ctx>개인 학습</span></span><span class="go-tag">오늘은 약한 곳부터</span><strong data-rec-skill>듣고 부정·변경 이해하기</strong><p data-rec-why></p><div class="go-meter"><div class="prog" role="img" data-rec-aria><i data-rec-bar></i></div><span data-rec-num></span></div></div>
+            <div class="go-acts"><button class="pill yel" data-rec-go data-game="말의 리듬">말의 리듬으로 연습</button><button class="quiet" data-game="바람길">이어 하기 · 바람길 3단계</button></div>
           </div>
         </article>
         <article class="tile week">
@@ -289,11 +308,9 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
           <div class="days" id="days"></div>
           <p class="week-note">목요일만 비었어요. 일요일까지 하면 6일이에요.</p>
         </article>
-        <article class="tile score">
-          <h2>혼자 맞힌 비율</h2>
-          <div class="big">75<small>%</small></div>
-          <div class="bar" aria-hidden="true"><i style="width:75%"></i></div>
-          <div class="legend"><span>이번 주 <b>128</b>문항</span><span>혼자 <b>96</b> · 도움 <b>32</b></span></div>
+        <article class="tile skillt">
+          <div class="sk-head"><h2>내 실력</h2><span>혼자 맞힌 비율 · 최근 2주</span></div>
+          <ul class="sk" id="skills" aria-label="기술을 고르면 그 기술을 채우는 게임을 앞에 둡니다"></ul>
         </article>
         <article class="tile ways">
           <h2>연습 방식</h2>
@@ -301,7 +318,7 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
           <div><div class="q">오늘은</div><div class="seg" role="group" aria-label="오늘 컨디션" data-seg="today"><button aria-pressed="true">좋아요</button><button aria-pressed="false">보통</button><button aria-pressed="false">피곤해요</button></div></div>
         </article>
         <article class="tile games">
-          <div class="games-head"><h2>게임</h2><span>누르면 바로 열려요. 기록은 계정에 남아요.</span></div>
+          <div class="games-head"><h2>게임</h2><span data-games-note>노란 칸은 「부정·변경 듣기」를 채우는 게임이에요.</span></div>
           <ul class="glist" id="games"></ul>
         </article>
       </div>
@@ -403,7 +420,16 @@ const PEOPLE={
   teacher:{name:'유호',photo:'__IMG_TEACHER__',kind:'SYNK 강사증',role:'강사',short:'SYNK F32D·E069',uid:'f32d36a3-0c73-48be-a302-199db0a5e069',
     classes:[{id:'',name:'개인 학습'},{id:'c1',name:'TOPIK 4급 온라인 시험반',role:'강사'}],cls:'c1',rights:['WORLD 기본 연습','싱크타운','반 운영']},
 };
-const GAMES=[['바람길','wind','3단계',1],['레이싱','flag','어제'],['말의 리듬','note','지난주'],['주문 폭주','cup','처음'],['입장 검사','ticket','처음'],['선생님이 돌아왔다','book','지난주'],['빈칸 베기','blank','처음'],['말 랠리','talk','처음'],['게임 전체 · 상점','bag','열기']];
+// 게임마다 엔진이 매기는 기술(각 게임 원천의 ko.listening.* · ko.reading.* · G2xx 꼬리표에서)
+const GAMES=[['바람길','wind','순서 · 부정 듣기'],['레이싱','flag','낱말 듣기'],['말의 리듬','note','이유 · 부정 듣기'],['주문 폭주','cup','세부 · 낱말 듣기'],['입장 검사','ticket','조건 · 부정 읽기'],['선생님이 돌아왔다','book','조사 · 순서 읽기'],['빈칸 베기','blank','낱말 · 조사 읽기'],['말 랠리','talk','듣고 대답하기'],['게임 전체 · 상점','bag','모든 게임']];
+// 보이기용 예시: 혼자 맞힌 비율이 낮은 기술부터. games는 그 기술 꼬리표가 많은 게임 차례
+const SKILLS=[
+  {id:'neg',label:'듣고 부정·변경 이해하기',short:'부정·변경 듣기',pct:42,n:12,why:'「안 돼요」, 「바뀌었어요」처럼 말이 뒤집히는 곳을 자주 놓쳐요.',games:['말의 리듬','바람길','주문 폭주']},
+  {id:'cond',label:'읽고 조건 이해하기',short:'조건 읽기',pct:48,n:21,why:'「-(으)면」 조건이 붙은 안내문에서 자주 틀려요.',games:['입장 검사']},
+  {id:'obj',label:'조사 「을/를」',short:'을/를',pct:55,n:20,why:'「을/를」과 「이/가」를 자주 헷갈려요.',games:['빈칸 베기','선생님이 돌아왔다']},
+  {id:'word',label:'낱말 듣기',short:'낱말 듣기',pct:92,n:38,why:'잘하고 있어요. 가볍게 이어 가요.',games:['레이싱','주문 폭주'],strong:1},
+];
+let pick='neg';
 const DAYS=[['월',1],['화',1],['수',1],['목',0],['금',1],['토',1,1],['일',0,0,1]];
 let who='student',learning=true,deleting=false,share=true,sessions=[];
 const toastEl=$('#toast');let tt;
@@ -413,7 +439,23 @@ const view=v=>{const id=v==='id';$('#t-practice').setAttribute('aria-selected',!
 $('#t-practice').onclick=()=>view('practice');$('#t-id').onclick=()=>view('id');$('#who').onclick=()=>view('id');
 $('.tabs').addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const id=$('#t-id').getAttribute('aria-selected')==='true';view(id?'practice':'id');(id?$('#t-practice'):$('#t-id')).focus();}});
 
-$('#games').innerHTML=GAMES.map(([n,ic,s,last])=>`<li><button class="game" data-game="${n}"${last?' data-last':''}><span class="ic"><svg class="i"><use href="#g-${ic}"/></svg></span><strong>${n}</strong><em>${s}</em></button></li>`).join('');
+// 받침에 맞춘 조사: jo('조건 읽기','을','를') → 를
+const jo=(w,a,b)=>{const c=w.replace(/[^가-힣]+$/,'').slice(-1).charCodeAt(0)-0xac00;const j=c>=0&&c<11172?c%28:0;return a==='으로'?(j===0||j===8?b:a):(j?a:b);};
+function recommend(){
+  const s=SKILLS.find(x=>x.id===pick),weak=SKILLS.filter(x=>!x.strong);
+  const rank=n=>n==='게임 전체 · 상점'?9:s.games.includes(n)?s.games.indexOf(n):weak.some(w=>w.games.includes(n))?5:7;
+  const list=[...GAMES].sort((a,b)=>rank(a[0])-rank(b[0]));
+  $('#games').innerHTML=list.map(([n,ic,t])=>{const r=s.games.includes(n);return `<li><button class="game" data-game="${n}"${r?' data-rec':''}><span class="ic"><svg class="i"><use href="#g-${ic}"/></svg></span><strong>${n}</strong><em>${r?s.short:t}</em></button></li>`;}).join('');
+  $('#skills').innerHTML=SKILLS.map(k=>`<li><button class="skb" data-skill="${k.id}" aria-pressed="${k.id===pick}"${k.strong?' data-strong':' data-weak'}><b>${k.label}</b><em>${k.pct}%</em><span class="sbar" aria-hidden="true"><i style="width:${k.pct}%"></i></span></button></li>`).join('');
+  $('[data-rec-skill]').textContent=s.label;$('[data-rec-why]').textContent=s.why;
+  $('[data-rec-bar]').style.width=s.pct+'%';$('[data-rec-num]').textContent=`혼자 맞힘 ${s.pct}% · 최근 ${s.n}문항`;
+  $('[data-rec-aria]').setAttribute('aria-label',`${s.label} 혼자 맞힘 ${s.pct}퍼센트`);
+  const go=$('[data-rec-go]'),g0=s.games[0];go.dataset.game=g0;go.textContent=`${g0}${jo(g0,'으로','로')} 연습`;
+  $('.go-tag').textContent=s.strong?'잘하는 곳 이어 가기':'오늘은 약한 곳부터';
+  $('[data-games-note]').textContent=s.strong?`「${s.short}」${jo(s.short,'은','는')} 잘하고 있어요. 노란 칸에서 가볍게 이어 가요.`:`노란 칸은 「${s.short}」${jo(s.short,'을','를')} 채우는 게임이에요.`;
+}
+$('#skills').addEventListener('click',e=>{const b=e.target.closest('[data-skill]');if(!b)return;pick=b.dataset.skill;recommend();});
+recommend();
 $('#days').innerHTML=DAYS.map(([d,done,today,future])=>`<div class="day"${done?' data-done':''}${today?' data-today':''}${future?' data-future':''}><b aria-hidden="true"></b><span>${d}</span><span class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${done?'했어요':future?'아직':'안 했어요'}</span></div>`).join('');
 
 document.addEventListener('click',e=>{

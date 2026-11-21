@@ -1,4 +1,4 @@
-// WORLD 창 시안 2판: 장면 캡처와 눌러 보기 시험
+// WORLD 창 시안: 장면 캡처와 눌러 보기 시험(4판부터 약한 곳 추천 포함)
 //   node 눌러보기.cjs <구운 파일.html>   캡처는 그 파일 옆 shots/
 const { chromium } = require("playwright");
 const path = require('node:path'); const fs = require('node:fs'); const { pathToFileURL } = require('node:url');
@@ -9,6 +9,8 @@ const fails = [], ok = m => console.log('  ok', m), bad = m => { fails.push(m); 
 const overflow = p => p.evaluate(() => { const w = document.querySelector('#win'), wr = w.getBoundingClientRect(); return [...w.querySelectorAll('*')].filter(n => { const r = n.getBoundingClientRect(); return r.width && n.closest('.view:not([hidden]),.top') && (r.right > wr.right + 1 || r.left < wr.left - 1); }).map(n => n.className?.baseVal ?? n.className ?? n.tagName).slice(0, 6); });
 // 보이는 보기가 창 안에 한 화면으로 드는지(스크롤 없이)
 const fits = p => p.evaluate(() => { const b = document.querySelector('#body'); return b.scrollHeight - b.clientHeight; });
+// 판 안의 글이 아래로 잘리는지
+const clipped = p => p.evaluate(() => [...document.querySelectorAll('.view:not([hidden]) .tile')].filter(t => t.offsetParent && t.scrollHeight > t.clientHeight + 1).map(t => t.className));
 (async () => {
   const b = await chromium.launch({ channel: 'msedge', headless: true });
   for (const [vw, vh] of [[1440, 980], [1280, 900]]) {
@@ -17,7 +19,28 @@ const fits = p => p.evaluate(() => { const b = document.querySelector('#body'); 
     await p.goto(url); await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(out, `${vw}-practice.png`) });
     let o = await overflow(p); o.length ? bad(`${vw} 연습 넘침 ${o}`) : ok(`${vw} 연습 넘침 없음`);
+    let cl = await clipped(p); cl.length ? bad(`${vw} 연습 판 잘림 ${cl}`) : ok(`${vw} 연습 판 잘림 없음`);
     let f = await fits(p); f <= 2 ? ok(`${vw} 연습 한 화면`) : bad(`${vw} 연습이 ${f}px 넘쳐 스크롤`);
+    // 약한 곳 추천: 처음엔 가장 약한 기술, 줄을 고르면 첫 판 · 게임 차례가 바뀐다
+    const first = () => p.getAttribute('.game >> nth=0', 'data-game');
+    const cta = () => p.textContent('[data-rec-go]');
+    (await first()) === '말의 리듬' && (await cta()) === '말의 리듬으로 연습' ? ok('처음: 부정·변경 듣기 → 말의 리듬') : bad(`처음 추천 ${await first()} / ${await cta()}`);
+    (await p.locator('.game[data-last]').count()) === 0 ? ok('마지막 게임 노란 칸 없음') : bad('data-last 남음');
+    (await p.locator('.game[data-rec]').count()) === 3 ? ok('추천 칸 셋') : bad('추천 칸 수');
+    await p.click('[data-skill=cond]'); await p.waitForTimeout(150);
+    (await first()) === '입장 검사' && (await cta()) === '입장 검사로 연습' ? ok('조건 읽기 → 입장 검사') : bad(`조건 ${await first()} / ${await cta()}`);
+    (await p.textContent('[data-games-note]')).startsWith('노란 칸은 「조건 읽기」를') ? ok('게임 머리 글 바뀜') : bad('게임 머리 글');
+    (await p.getAttribute('[data-skill=cond]', 'aria-pressed')) === 'true' ? ok('고른 줄 표시') : bad('고른 줄');
+    await p.screenshot({ path: path.join(out, `${vw}-practice-cond.png`) });
+    await p.click('[data-skill=obj]'); (await first()) === '빈칸 베기' ? ok('을/를 → 빈칸 베기') : bad('을/를');
+    await p.click('[data-skill=word]'); (await p.textContent('.go-tag')) === '잘하는 곳 이어 가기' && (await p.textContent('[data-games-note]')).startsWith('「낱말 듣기」는') ? ok('잘하는 줄 글') : bad('잘하는 줄');
+    cl = await clipped(p); cl.length ? bad(`${vw} 고른 뒤 판 잘림 ${cl}`) : ok(`${vw} 고른 뒤 판 잘림 없음`);
+    f = await fits(p); f <= 2 ? ok(`${vw} 고른 뒤 한 화면`) : bad(`${vw} 고른 뒤 ${f}px 넘침`);
+    await p.click('[data-skill=neg]');
+    await p.click('[data-rec-go]'); (await p.textContent('#sheet-name')) === '말의 리듬' ? ok('연습 단추 → 말의 리듬 열림') : bad('연습 단추');
+    await p.keyboard.press('Escape');
+    await p.click('.quiet'); (await p.textContent('#sheet-name')) === '바람길' ? ok('이어 하기 → 바람길') : bad('이어 하기');
+    await p.keyboard.press('Escape');
     await p.click('.game >> nth=2'); (await p.isVisible('#sheet')) ? ok('게임 판 열림') : bad('게임 판 안 열림');
     await p.keyboard.press('Escape'); (await p.isHidden('#sheet')) ? ok('Esc로 닫힘') : bad('Esc로 안 닫힘');
     await p.click('[data-seg=help] button >> nth=0'); (await p.getAttribute('[data-seg=help] button >> nth=0', 'aria-pressed')) === 'true' ? ok('도움 방식 바뀜') : bad('도움 방식');
