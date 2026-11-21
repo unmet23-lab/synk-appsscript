@@ -166,12 +166,35 @@ async function libraryFeed(knownIds) {
     if (filename === label) return null;
     return /^(synk-contest-feed-(\d{4}-\d{2}-\d{2}_(?:0830|1430|2000))\.json|bootstrap-20261117-20261118\.json)$/.exec(filename);
   };
-  const more = 'loc=css:[role=tabpanel] button:text-is("Show more") >> nth=0';
   for (let i = 0; i < 5; i++) {
-    const available = await page.evaluate(() => [...document.querySelectorAll('[role=tabpanel] button')]
-      .some((button) => button.innerText.trim() === 'Show more' && button.getClientRects().length));
-    if (!available) break;
-    await page.click(more, { label: 'Read older contest receipts' });
+    const state = await page.evaluate(async () => {
+      const more = () => {
+        const matches = [...document.querySelectorAll('[role=tabpanel] button')].filter((button) =>
+          button.innerText.trim() === 'Show more' && button.checkVisibility({ visibilityProperty: true }));
+        return matches.find((button) => !button.disabled) || matches[0];
+      };
+      const labels = () => [...document.querySelectorAll('[role=tabpanel] button[aria-label]')]
+        .map((button) => button.getAttribute('aria-label')).join('\n');
+      if (!more()) return 'end';
+      let before;
+      let until = Date.now() + 8000;
+      do {
+        const button = more();
+        if (before === undefined && button && !button.disabled) {
+          before = labels();
+          button.click();
+          until = Date.now() + 8000;
+        } else if (before !== undefined && labels() !== before && button && !button.disabled) {
+          return 'next';
+        }
+        // 파일이 먼저 도착하고 다음 단추가 잠시 뒤에 다시 나타날 수 있다.
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      } while (Date.now() < until);
+      if (before !== undefined && labels() !== before) return more() ? 'next' : 'end';
+      return more() ? 'timeout' : 'end';
+    });
+    if (state === 'timeout') console.warn('그록 파일 목록이 응답하지 않아 현재 보이는 첨부까지 읽습니다.');
+    if (state !== 'next') break;
   }
   const names = await page.evaluate(() => [...document.querySelectorAll('[role=tabpanel] button[aria-label]')]
     .map((button) => button.getAttribute('aria-label')));
