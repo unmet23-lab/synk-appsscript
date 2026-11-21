@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "다음에요.",
+ "dur": 0.839,
+ "words": [
+  {
+   "text": "다음에요.",
+   "start": 0.02,
+   "end": 0.839
+  }
+ ],
+ "source": {
+  "key": "ed714a60d66d7d8428722f27e13f1036",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "괜찮아요. 이번엔 선배가 주말에 같이 등산 가자고 휴대폰 사진을 보여 준다. 몽글이 미안한 듯 웃으며 부드럽게 다음을 기약한다.",
+   "next": "좀 생각해 볼게요."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 245
+ }
+}

@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b2",
+ "text": "택시비 해!",
+ "dur": 0.728,
+ "words": [
+  {
+   "text": "택시비",
+   "start": 0.02,
+   "end": 0.387
+  },
+  {
+   "text": "해!",
+   "start": 0.448,
+   "end": 0.728
+  }
+ ],
+ "source": {
+  "key": "8d502a0bf2ff0ec9eb6eaf58b33b5690",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 163
+ }
+}

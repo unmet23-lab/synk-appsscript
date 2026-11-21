@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "b1",
+ "text": "한 잔 받아!",
+ "dur": 0.999,
+ "words": [
+  {
+   "text": "한",
+   "start": 0.01,
+   "end": 0.091
+  },
+  {
+   "text": "잔",
+   "start": 0.152,
+   "end": 0.293
+  },
+  {
+   "text": "받아!",
+   "start": 0.353,
+   "end": 0.999
+  }
+ ],
+ "source": {
+  "key": "51541ca16b31d70968b170f0c054c542",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "회사 회식 자리, 사람 좋은 부장님이 웃으며 신입에게 소주잔을 쑥 내민다. 기분 좋게, 살짝 밀어붙이듯.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 181
+ }
+}

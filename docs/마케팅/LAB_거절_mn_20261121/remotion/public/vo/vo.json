@@ -1,0 +1,129 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1121,
+  "lufs": -16
+ },
+ "made": "2026-11-21T10:25:53.849Z",
+ "lines": [
+  {
+   "id": "m0",
+   "text": "싫어요!",
+   "dur": 0.78,
+   "syllablesPerSec": 3.85,
+   "src": "m0.wav",
+   "key": "3b2400b2823e288535054d000221bd54",
+   "words": 1
+  },
+  {
+   "id": "m1",
+   "text": "괜찮아요.",
+   "dur": 1.062,
+   "syllablesPerSec": 3.77,
+   "src": "m1.wav",
+   "key": "ed01769ff7dcfa6fddf2e56253d8f525",
+   "words": 1
+  },
+  {
+   "id": "m2",
+   "text": "다음에요.",
+   "dur": 0.839,
+   "syllablesPerSec": 4.77,
+   "src": "m2.wav",
+   "key": "ed714a60d66d7d8428722f27e13f1036",
+   "words": 1
+  },
+  {
+   "id": "m3",
+   "text": "좀 생각해 볼게요.",
+   "dur": 1.741,
+   "syllablesPerSec": 4.02,
+   "src": "m3.wav",
+   "key": "a2cf2580ec42d8b3d788977bd632fb39",
+   "words": 3
+  },
+  {
+   "id": "m4",
+   "text": "마음만 받을게요.",
+   "dur": 1.489,
+   "syllablesPerSec": 4.7,
+   "src": "m4.wav",
+   "key": "e3a9bdc1a2cc796c9b30168b2ae845e7",
+   "words": 2
+  },
+  {
+   "id": "m5",
+   "text": "다음에요~",
+   "dur": 0.77,
+   "syllablesPerSec": 5.19,
+   "src": "m5.wav",
+   "key": "e4ff291f24b288019ad082788aa450f7",
+   "words": 1
+  },
+  {
+   "id": "s1",
+   "text": "노래방 가자!",
+   "dur": 1.277,
+   "syllablesPerSec": 3.92,
+   "src": "s1.wav",
+   "key": "145e0a29f7810eea6b0c58d282b74b88",
+   "words": 2
+  },
+  {
+   "id": "b1",
+   "text": "한 잔 받아!",
+   "dur": 0.999,
+   "syllablesPerSec": 4,
+   "src": "b1.wav",
+   "key": "51541ca16b31d70968b170f0c054c542",
+   "words": 3
+  },
+  {
+   "id": "s0",
+   "text": "주말에 등산 가자!",
+   "dur": 1.24,
+   "syllablesPerSec": 5.65,
+   "src": "s0.wav",
+   "key": "bf701aa6fb4b8b4b121bdc4188a41d79",
+   "words": 3
+  },
+  {
+   "id": "d1",
+   "text": "소개팅 할래?",
+   "dur": 1.455,
+   "syllablesPerSec": 3.44,
+   "src": "d1.wav",
+   "key": "ad5be7ce77d7920c422484a12f683430",
+   "words": 2
+  },
+  {
+   "id": "b2",
+   "text": "택시비 해!",
+   "dur": 0.728,
+   "syllablesPerSec": 5.49,
+   "src": "b2.wav",
+   "key": "8d502a0bf2ff0ec9eb6eaf58b33b5690",
+   "words": 2
+  },
+  {
+   "id": "s2",
+   "text": "또 다음에?!",
+   "dur": 1.007,
+   "syllablesPerSec": 3.97,
+   "src": "s2.wav",
+   "key": "1e3bd15f7500950db8df1836bf2cbbe3",
+   "words": 2
+  }
+ ]
+}

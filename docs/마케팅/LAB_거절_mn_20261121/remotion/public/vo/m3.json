@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "좀 생각해 볼게요.",
+ "dur": 1.741,
+ "words": [
+  {
+   "text": "좀",
+   "start": 0.2,
+   "end": 0.361
+  },
+  {
+   "text": "생각해",
+   "start": 0.421,
+   "end": 0.763
+  },
+  {
+   "text": "볼게요.",
+   "start": 0.824,
+   "end": 1.741
+  }
+ ],
+ "source": {
+  "key": "a2cf2580ec42d8b3d788977bd632fb39",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "다음에요. 동료가 소개팅 상대 사진을 신나게 내민다. 몽글이 눈을 굴리며 곤란한 듯 웃으며 천천히, 생각하는 척 말한다.",
+   "next": "마음만 받을게요."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 478
+ }
+}

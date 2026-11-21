@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s0",
+ "text": "주말에 등산 가자!",
+ "dur": 1.24,
+ "words": [
+  {
+   "text": "주말에",
+   "start": 0.02,
+   "end": 0.362
+  },
+  {
+   "text": "등산",
+   "start": 0.423,
+   "end": 0.724
+  },
+  {
+   "text": "가자!",
+   "start": 0.805,
+   "end": 1.24
+  }
+ ],
+ "source": {
+  "key": "bf701aa6fb4b8b4b121bdc4188a41d79",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8",
+   "prev": "회식 자리에서 신난 선배가 휴대폰의 산 사진을 신입에게 보여 주며 활기차게 권한다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 168
+ }
+}

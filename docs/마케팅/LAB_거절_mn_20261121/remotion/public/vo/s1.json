@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "노래방 가자!",
+ "dur": 1.277,
+ "words": [
+  {
+   "text": "노래방",
+   "start": 0.02,
+   "end": 0.425
+  },
+  {
+   "text": "가자!",
+   "start": 0.506,
+   "end": 1.277
+  }
+ ],
+ "source": {
+  "key": "145e0a29f7810eea6b0c58d282b74b88",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8",
+   "prev": "회식이 끝나 갈 무렵, 아까 등산 가자고 했던 선배가 자리에서 벌떡 일어나 마이크를 흔들며 모두에게 크게 외친다. 들뜨고 활기차게.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 179
+ }
+}

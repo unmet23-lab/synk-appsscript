@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s2",
+ "text": "또 다음에?!",
+ "dur": 1.007,
+ "words": [
+  {
+   "text": "또",
+   "start": 0.03,
+   "end": 0.111
+  },
+  {
+   "text": "다음에?!",
+   "start": 0.312,
+   "end": 1.007
+  }
+ ],
+ "source": {
+  "key": "1e3bd15f7500950db8df1836bf2cbbe3",
+  "voice": {
+   "id": "tc_6a3350f8e5a50a4abe948fa8",
+   "name": "도윤"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_6a3350f8e5a50a4abe948fa8",
+   "prev": "아까 등산 가자고 했을 때도 다음에요라는 말을 들은 선배가, 노래방 가자는 말에도 신입이 다음에요라고 하자 마이크를 든 채 어이없고 서운하게 외친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 172
+ }
+}

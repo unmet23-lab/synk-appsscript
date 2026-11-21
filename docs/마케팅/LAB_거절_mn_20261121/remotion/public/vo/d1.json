@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "d1",
+ "text": "소개팅 할래?",
+ "dur": 1.455,
+ "words": [
+  {
+   "text": "소개팅",
+   "start": 0.2,
+   "end": 0.562
+  },
+  {
+   "text": "할래?",
+   "start": 0.622,
+   "end": 1.455
+  }
+ ],
+ "source": {
+  "key": "ad5be7ce77d7920c422484a12f683430",
+  "voice": {
+   "id": "tc_69f2e455ea79fd197aa0476f",
+   "name": "서현"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_69f2e455ea79fd197aa0476f",
+   "prev": "회식 자리에서 장난기 많은 동료가 휴대폰 속 남자 사진을 신입 앞에 들이밀며 눈을 반짝이고 신나게 묻는다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 336
+ }
+}

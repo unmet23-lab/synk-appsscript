@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "괜찮아요.",
+ "dur": 1.062,
+ "words": [
+  {
+   "text": "괜찮아요.",
+   "start": 0.02,
+   "end": 1.062
+  }
+ ],
+ "source": {
+  "key": "ed01769ff7dcfa6fddf2e56253d8f525",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "싫어요 한마디에 회식 자리가 꽁꽁 얼어붙었다. 몽글이 다시 해 본다. 부장님이 내민 잔 앞에서 웃으며 부드럽고 공손하게, 고맙지만 사양한다는 느낌으로.",
+   "next": "다음에요."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 455
+ }
+}
