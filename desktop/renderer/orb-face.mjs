@@ -72,13 +72,22 @@ const SPACE_OF_DEST = Object.freeze({ '/': 'workspace', '/pulse-app/': 'pulse' }
 const DEST_OF_SPACE = Object.freeze({ workspace: '/', pulse: '/pulse-app/' });
 const SPACE_LABEL = Object.freeze({ solio: 'SOLIO', workspace: 'WORKSPACE', pulse: 'PULSE' });
 const SPACE_DESC = Object.freeze({ solio: '혼자 하는 사업의 도구', workspace: '팀이 함께 일하는 곳', pulse: '고객과 함께 만드는 곳' });
+/* 띠의 닫기 글에 쓰는 공간 이름(「PULSE 닫기」, 「Workspace 닫기」) */
+const SPACE_NAME = Object.freeze({ workspace: 'Workspace', pulse: 'PULSE' });
 const SPACE_ROOM = Object.freeze({
-  workspace: Object.freeze({ say: 'Workspace를 열었습니다.', then: '따로 열린 Workspace 창에서 이어 가 주세요.' }),
+  // Workspace도 창 안에서 열린다(4단계). 열린 동안 방은 비고 뷰가 덮는다. 이 글은 Workspace가 닫혔을 때의 방이다
+  workspace: Object.freeze({ say: 'Workspace가 닫혔습니다.', then: '저장하지 않은 내용은 남지 않았을 수 있습니다. 다시 열면 첫 화면부터 엽니다.' }),
   // PULSE는 창 안에서 열린다(3단계). 열린 동안 방은 비고 뷰가 덮는다. 이 글은 PULSE가 닫혔을 때(뷰 프로세스가 사라지는 따위)의 방이다
   pulse: Object.freeze({ say: 'PULSE가 닫혔습니다.', then: '저장하지 않은 내용은 남지 않았을 수 있습니다. 다시 열면 첫 화면부터 엽니다.' }),
 });
+/* 본체가 그 공간의 뷰 자리를 주지 않은 실행(뷰 다리가 없는 화면)에서는 공간이 따로 열린 창이다. 그때의 방 글이다 */
+const SPACE_ROOM_OUTSIDE = Object.freeze({
+  workspace: Object.freeze({ say: 'Workspace를 열었습니다.', then: '따로 열린 Workspace 창에서 이어 가 주세요.' }),
+  // 0.5.2 사무실 화면 검수 FA3: 뷰 다리 없이 PULSE를 바깥 창으로 연 직후 「PULSE가 닫혔습니다」라고 말하지 않는다
+  pulse: Object.freeze({ say: 'PULSE를 열었습니다.', then: '따로 열린 PULSE 창에서 이어 가 주세요.' }),
+});
 const SIX_HOURS = 6 * 3600e3;
-/* 창 안의 PULSE가 열린 동안 맨 위 띠의 높이(CSS px). orb-face.css의 data-orb-band 규칙과 같은 값이다(3단계 구현 설계 4.1) */
+/* 창 안의 공간(PULSE, Workspace)이 열린 동안 맨 위 띠의 높이(CSS px). orb-face.css의 data-orb-band 규칙과 같은 값이다(3단계 구현 설계 4.1) */
 export const PULSE_BAND = 56;
 
 const trimmed = value => (typeof value === 'string' && value.trim() ? value.trim() : '');
@@ -237,15 +246,27 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   let aside = null;
   /* 방이 쓰는 런처 쪽 다리(설계 1.3절 「자료 어댑터」). account는 내 계정의 요청 · 신원 · 로그인과 보안, confirmLeave는 쓰던 글 확인이다.
    * bind로 런처에 손잡이를 넘겨, 계정 생명주기가 바뀔 때 내 계정 자료를 버리게 한다. 런처가 넘기지 않으면 「계정」은 옛 화면을 연다 */
-  /* 창 안의 PULSE 뷰(3단계 구현 설계 4절). 본체가 뷰를 만들고, 보일지는 이 컨트롤러가 정해 place로 알린다 */
-  const embed = options.embed && typeof options.embed.place === 'function' ? options.embed : null;
+  /* 창 안의 공간 뷰(PULSE는 3단계 구현 설계 4절, Workspace는 4단계 6절). 본체가 공간마다 뷰를 만들고, 보일지는 이 컨트롤러가 정해 place로 알린다.
+   * 공간마다 {embed(본체 다리), open(뷰가 살아 있음), closing(띠의 닫기를 묻는 중), sent(마지막으로 보낸 자리)}를 둔다. 보이는 뷰는 언제나 지금 공간의 것 하나다 */
+  const embeds = {};
+  for (const [name, given] of [['pulse', options.embed], ['workspace', options.workspaceEmbed]]) if (given && typeof given.place === 'function') embeds[name] = { embed: given, open: false, closing: false, sent: '' };
+  const slotOf = name => (Object.hasOwn(embeds, name) ? embeds[name] : null);
+  const embed = embeds.pulse?.embed || null;
   // guestPulse: 로그아웃한 손님이 PULSE 초대로 들어온 때다. 손님에게는 PULSE만 배정된 것으로 본다(설계 검토 R1)
-  let pulseOpen = false, pulseClosing = false, embedSent = '', embedFocusNext = false, guestPulse = false, signingOut = false;
+  // share: Workspace가 청한 화면 공유 고르기 {id, items}(4단계 4.2). pendingReveal: 구가 다른 공간으로 들어가는 동안 온 「돌아가서 저장」(3단계 화면 Fable F1)
+  // pendingMainOpen: 본체가 공간을 열라고 했는데(트레이의 Workspace 줄) 아직 들어오기 전이면 들어온 뒤에 연다
+  let embedFocusNext = false, guestPulse = false, signingOut = false, share = null, pendingReveal = null, pendingMainOpen = null;
   const embedOff = [];
-  if (embed) {
-    try { const off = embed.onChanged?.(value => onEmbedChange(value)); if (typeof off === 'function') embedOff.push(off); } catch { /* 본체 알림 없이도 연다 */ }
-    try { const off = embed.onEvent?.(value => onEmbedEvent(value)); if (typeof off === 'function') embedOff.push(off); } catch { /* 같다 */ }
-    try { void Promise.resolve(embed.state?.()).then(value => { if (value && typeof value === 'object') onEmbedChange(value); }).catch(() => {}); } catch { /* 같다 */ }
+  // 본체의 단축 동작. 지금은 트레이 줄이 보내는 {type:'open-space', space:'workspace'} 하나만 받는다(4단계 구현 설계 3.5)
+  if (typeof options.onDesktopAction === 'function') {
+    try { const off = options.onDesktopAction(action => { if (action && typeof action === 'object' && action.type === 'open-space' && slotOf(action.space)) openFromMain(action.space); }); if (typeof off === 'function') embedOff.push(off); } catch { /* 본체 알림 없이도 연다 */ }
+  }
+  for (const [name, slot] of Object.entries(embeds)) {
+    const bridge = slot.embed;
+    try { const off = bridge.onChanged?.(value => onEmbedChange(name, value)); if (typeof off === 'function') embedOff.push(off); } catch { /* 본체 알림 없이도 연다 */ }
+    try { const off = bridge.onEvent?.(value => onEmbedEvent(name, value)); if (typeof off === 'function') embedOff.push(off); } catch { /* 같다 */ }
+    if (name === 'workspace') { try { const off = bridge.onShareAsk?.(value => onShareAsk(value)); if (typeof off === 'function') embedOff.push(off); } catch { /* 같다 */ } }
+    try { void Promise.resolve(bridge.state?.()).then(value => { if (value && typeof value === 'object') onEmbedChange(name, value); }).catch(() => {}); } catch { /* 같다 */ }
   }
   const roomOptions = options.rooms && typeof options.rooms === 'object' ? options.rooms : {};
   const accountAdapter = roomOptions.account && typeof roomOptions.account.request === 'function' && typeof roomOptions.account.identity === 'function' ? roomOptions.account : null;
@@ -468,8 +489,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       return { space, solio: solioScene(state), prog: at, programs, ...scenes };
     }
     // 창 안의 PULSE가 열려 있으면 방은 비운다. 뷰가 띠 아래를 덮고, 펼침을 여는 동안에는 검정으로 남는다
-    if (space === 'pulse' && (pulseOpen || pulseClosing)) return { space, say: '', then: '', action: null, error: feedback.switch, embedded: true };
-    const copy = SPACE_ROOM[space];
+    const slot = slotOf(space);
+    if (slot && (slot.open || slot.closing)) return { space, say: '', then: '', action: null, error: feedback.switch, embedded: true };
+    const copy = !slot && SPACE_ROOM_OUTSIDE[space] ? SPACE_ROOM_OUTSIDE[space] : SPACE_ROOM[space];
     return { space, say: copy.say, then: copy.then, action: typeof options.onOpenSpace === 'function' ? { action: 'reopen-space', label: '다시 열기' } : null, error: feedback.switch };
   }
 
@@ -535,77 +557,128 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       aside: mode === 'portal' ? null : aside,
       rooms: mode === 'portal' || !aside ? null : rooms.scene({ aside, checking: sol.checking, name: roomName(), accountKey: state.accountKey || '', member: memberShown(state) }),
       legacy: legacyKind,
-      band: bandOn() ? 'pulse' : null,
-      bandClose: bandOn() && pulseOpen && !pulseClosing && !switchOpen && !aside && typeof embed?.close === 'function',
+      band: bandOn() ? space : null,
+      bandClose: bandOn() && !!slotOf(space)?.open && !slotOf(space).closing && !switchOpen && !aside && !share && typeof slotOf(space).embed.close === 'function',
+      bandCloseLabel: bandOn() ? `${SPACE_NAME[space]} 닫기` : '',
+      share: share && mode === 'app' && space === 'workspace' ? { id: share.id, items: share.items } : null,
       focus: focusKey,
       focusSeq,
     };
     return scene;
   }
 
-  /* 띠 모양은 들어온 뒤 PULSE 공간에 있는 동안이다. 구가 PULSE로 들어가는 길에서도 미리 서서, 도착한 구가 다시 옮겨 가지 않는다.
-   * PULSE가 닫혀 「다시 열기」를 보이는 동안에도 띠 자리를 지킨다. 사람이 하지 않은 일로 작은 구가 옮겨 가지 않게 한다(설계 검토 R12) */
-  function bandOn() { return !!embed && space === 'pulse' && clientMode() === 'app'; }
-  /* 뷰가 보이는 때: 띠 모양이고, 뷰가 열렸고, 구가 띠 자리에 멈췄고, 펼침과 곁방과 옛 화면이 닫혔고, 이 화면이 다른 일(로그아웃 확인 따위)을 하고 있지 않을 때.
-   * 그 밖에는 숨기고 구를 이 화면에서 움직인다(4.2, 설계 검토 R11) */
-  function embedVisible() { return bandOn() && pulseOpen && !pulseClosing && orbAt === 'home' && orbTarget === 'home' && !switchOpen && !aside && !legacyKind && busyAction === null && !signingOut && !isHidden(); }
+  /* 띠 모양은 들어온 뒤 뷰 자리가 있는 공간(PULSE, Workspace)에 있는 동안이다. 구가 그 공간으로 들어가는 길에서도 미리 서서, 도착한 구가 다시 옮겨 가지 않는다.
+   * 뷰가 닫혀 「다시 열기」를 보이는 동안에도 띠 자리를 지킨다. 사람이 하지 않은 일로 작은 구가 옮겨 가지 않게 한다(3단계 설계 검토 R12) */
+  function bandOn() { return !!slotOf(space) && clientMode() === 'app'; }
+  /* 뷰가 보이는 때: 그 공간이 지금 공간이고, 뷰가 열렸고, 구가 띠 자리에 멈췄고, 펼침과 곁방과 옛 화면과 화면 공유 고르기가 닫혔고,
+   * 이 화면이 다른 일(로그아웃 확인 따위)을 하고 있지 않을 때. 그 밖에는 숨기고 구를 이 화면에서 움직인다(3단계 4.2, 설계 검토 R11) */
+  function embedVisible(name = space) { const slot = slotOf(name); return name === space && bandOn() && !!slot?.open && !slot.closing && orbAt === 'home' && orbTarget === 'home' && !switchOpen && !aside && !legacyKind && !share && busyAction === null && !signingOut && !isHidden(); }
   function syncEmbed() {
-    if (!embed) return;
-    const next = { visible: embedVisible(), top: PULSE_BAND };
-    const key = JSON.stringify(next);
-    if (key === embedSent) return;
-    embedSent = key;
-    const focusNow = next.visible && embedFocusNext;
-    if (next.visible) embedFocusNext = false;
-    // 초점은 본체가 옮기지 않는다. 도착한 뒤와 Esc가 아닌 닫기 뒤에만 이 화면이 뷰로 보낸다(설계 검토 R3)
-    try { void Promise.resolve(embed.place(next)).then(() => { if (focusNow && !disposed && embedVisible()) return embed.focus?.(); return null; }).catch(() => { embedSent = ''; }); } catch { embedSent = ''; }
+    // 숨길 뷰를 먼저 보내고 보일 뷰를 나중에 보낸다. 공간을 오갈 때 두 뷰가 한꺼번에 서지 않는다
+    const order = Object.keys(embeds).sort((a, b) => Number(a === space) - Number(b === space));
+    for (const name of order) {
+      const slot = embeds[name];
+      const next = { visible: embedVisible(name), top: PULSE_BAND };
+      const key = JSON.stringify(next);
+      if (key === slot.sent) continue;
+      slot.sent = key;
+      const focusNow = next.visible && embedFocusNext;
+      if (next.visible) embedFocusNext = false;
+      // 초점은 본체가 옮기지 않는다. 도착한 뒤와 Esc가 아닌 닫기 뒤에만 이 화면이 뷰로 보낸다(3단계 설계 검토 R3)
+      try { void Promise.resolve(slot.embed.place(next)).then(() => { if (focusNow && !disposed && embedVisible(name)) return slot.embed.focus?.(); return null; }).catch(() => { slot.sent = ''; }); } catch { slot.sent = ''; }
+    }
   }
-  /* 본체의 알림. 「돌아가서 저장」을 고르면 PULSE로 데려가 쓰던 글을 보인다(3절). 사람이 하지 않은 일이라 구를 들여보내지 않고 그 자리에서 바꾼다(설계 검토 R12) */
-  function revealPulse() {
-    if (disposed || !pulseOpen) return;
+  /* 본체의 알림. 「돌아가서 저장」을 고르면 그 공간으로 데려가 쓰던 글을 보인다(3단계 3절). 사람이 하지 않은 일이라 구를 들여보내지 않고 그 자리에서 바꾼다(3단계 설계 검토 R12).
+   * 펼침을 연 채 받으면 펼침을 닫고 바꾼다. 구가 다른 공간으로 들어가는 중이면 도착한 뒤에 바꾼다(3단계 화면 Fable F1) */
+  function revealSpace(name) {
+    if (disposed || !slotOf(name)?.open) return;
     // 옛 화면이 열려 있으면 clientMode()가 'legacy'라 먼저 닫는다(카본 A1)
     if (legacyKind && clientMode() === 'legacy') closeLegacy({ silent: true });
     if (clientMode() !== 'app') return;
     if (switchOpen) { switchOpen = false; fanPin = false; }
     if (aside) { aside = null; rooms.close(); }
-    if (space !== 'pulse') {
-      if (!assignedFor(machine.read()).includes('pulse') || orbTarget !== 'home') { render(); return; }
-      space = 'pulse';
+    if (space !== name) {
+      if (!assignedFor(machine.read()).includes(name)) { render(); return; }
+      if (orbTarget === 'inside') { pendingReveal = name; render(); return; }
+      space = name;
       feedback.switch = '';
-      view.settle?.('pulse');
+      view.settle?.(name);
     }
     embedFocusNext = true;
     render();
   }
-  function onEmbedEvent(value) {
-    if (disposed || !value || typeof value !== 'object') return;
-    if (value.type === 'focus-band' && bandOn()) { focus('here'); render(); }
-    else if (value.type === 'reveal') revealPulse();
-    // 본체가 스스로 숨겼다(화면 문서를 새로 싣기 시작했다가 그만둔 따위). 보낸 값을 잊고 지금 값을 다시 보낸다(설계 검토 R13)
-    else if (value.type === 'hidden') { embedSent = ''; render(); }
-  }
-  function onEmbedChange(value) {
+  /* 본체가 Workspace를 열라고 한다(트레이의 Workspace 줄, 4단계 3.5). 배정에 없으면 까닭을 한 줄 말한다(설계 검토 R17) */
+  function openFromMain(name) {
     if (disposed) return;
-    const open = value?.open === true;
-    if (open === pulseOpen) return;
-    pulseOpen = open;
-    // 뷰가 사라지면 다음 열림에서 자리를 다시 보낸다
-    if (!open) embedSent = '';
+    if (clientMode() !== 'app' || orbTarget === 'inside') { pendingMainOpen = name; return; }
+    pendingMainOpen = null;
+    // 까닭은 펼침에서 말한다. 펼침이 닫혀 있으면 열어서 보인다
+    if (!assignedFor(machine.read()).includes(name)) { sayInSwitch(`이 계정에는 ${SPACE_NAME[name] || name} 배정이 없습니다.`); return; }
+    if (space === name && slotOf(name)?.open) { revealSpace(name); return; }
+    if (switchOpen) { switchOpen = false; fanPin = false; }
+    if (aside) { aside = null; rooms.close(); }
+    // 열지 못하면 그 까닭도 펼침에서 말한다(펼침에서 고른 때와 같다, 0.4.95 카본 D2)
+    void runOpenSpace(name).then(() => { if (!disposed && feedback.switch && space !== name && clientMode() === 'app' && !switchOpen) sayInSwitch(feedback.switch); });
+  }
+  function sayInSwitch(line) {
+    if (disposed || clientMode() !== 'app') return;
+    if (!switchOpen) openSwitch({ pin: true });
+    feedback.switch = line;
     render();
   }
-  /* 띠의 「PULSE 닫기」(설계 검토 R6). 쓰던 글이 있으면 본체가 묻는다. 닫히면 회원은 솔리오로, 손님은 묻는 화면으로 간다 */
-  async function closePulse() {
-    if (disposed || !bandOn() || !pulseOpen || pulseClosing || busyAction !== null || typeof embed.close !== 'function') return;
-    pulseClosing = true;
-    // 손님의 「로그인」은 펼침에서 온다. 묻는 동안 펼침을 닫아 두어야 남기면 PULSE가 곧 다시 보인다
+  function onEmbedEvent(name, value) {
+    if (disposed || !value || typeof value !== 'object') return;
+    if (value.type === 'focus-band' && bandOn() && space === name) { focus('here'); render(); }
+    else if (value.type === 'reveal') revealSpace(name);
+    else if (value.type === 'open') openFromMain(name);
+    // 본체가 스스로 숨겼다(화면 문서를 새로 싣기 시작했다가 그만둔 따위). 보낸 값을 잊고 지금 값을 다시 보낸다(3단계 설계 검토 R13)
+    else if (value.type === 'hidden') { const slot = slotOf(name); if (slot) slot.sent = ''; render(); }
+  }
+  function onEmbedChange(name, value) {
+    if (disposed) return;
+    const slot = slotOf(name);
+    if (!slot) return;
+    const open = value?.open === true;
+    if (open === slot.open) return;
+    slot.open = open;
+    // 뷰가 사라지면 다음 열림에서 자리를 다시 보낸다. Workspace가 닫히면 묻던 화면 공유 고르기도 거둔다
+    if (!open) { slot.sent = ''; if (name === 'workspace' && share) answerShare(null); }
+    render();
+  }
+  /* 화면 공유 고르기(4단계 4.2). 본체가 보낸 목록을 방 자리에 세우고 뷰를 숨긴다. 빈 목록은 본체가 물음을 거둔 것이다 */
+  function onShareAsk(value) {
+    if (disposed || !value || typeof value !== 'object' || !Number.isInteger(value.id)) return;
+    const items = Array.isArray(value.items) ? value.items.slice(0, 24).map(item => ({ name: trimmed(item?.name) || '이름 없는 창', kind: item?.kind === 'screen' ? 'screen' : 'window', thumb: typeof item?.thumb === 'string' && item.thumb.startsWith('data:image/') ? item.thumb : '' })) : [];
+    if (!items.length) { if (share && share.id === value.id) { share = null; embedFocusNext = true; render(); } return; }
+    // 지금 Workspace에 있지 않으면 고를 수 없다. 바로 거절한다
+    if (clientMode() !== 'app' || space !== 'workspace' || !slotOf('workspace')?.open) { void Promise.resolve(slotOf('workspace')?.embed.answerShare?.({ id: value.id, pick: null })).catch(() => {}); return; }
+    share = { id: value.id, items };
+    focus('share');
+    render();
+  }
+  function answerShare(pick) {
+    const asked = share;
+    if (!asked) return;
+    share = null;
+    embedFocusNext = true;
+    try { void Promise.resolve(slotOf('workspace')?.embed.answerShare?.({ id: asked.id, pick: Number.isInteger(pick) && pick >= 0 && pick < asked.items.length ? pick : null })).catch(() => {}); } catch { /* 본체가 시간으로 거절한다 */ }
+    render();
+  }
+  /* 띠의 닫기 글(「PULSE 닫기」, 「Workspace 닫기」, 3단계 설계 검토 R6). 쓰던 글이 있으면 본체가 묻는다. 닫히면 회원은 솔리오로, 손님은 묻는 화면으로 간다 */
+  async function closeSpace(name = space) {
+    const slot = slotOf(name);
+    if (disposed || !bandOn() || space !== name || !slot?.open || slot.closing || busyAction !== null || typeof slot.embed.close !== 'function') return;
+    slot.closing = true;
+    // 손님의 「로그인」은 펼침에서 온다. 묻는 동안 펼침을 닫아 두어야 남기면 그 공간이 곧 다시 보인다
     if (switchOpen) { switchOpen = false; fanPin = false; feedback.switch = ''; }
+    if (share) answerShare(null);
     render();
     let outcome = 'kept';
-    try { outcome = (await embed.close())?.outcome || 'kept'; } catch { outcome = 'kept'; }
-    pulseClosing = false;
+    try { outcome = (await slot.embed.close())?.outcome || 'kept'; } catch { outcome = 'kept'; }
+    slot.closing = false;
     if (disposed) return;
-    if (outcome === 'kept' || clientMode() !== 'app' || space !== 'pulse') { if (outcome === 'kept') embedFocusNext = true; render(); return; }
-    if (guestPulse && machine.read().authStatus !== 'signed-in') { guestPulse = false; leaveToAsk({ status: 'signed-out' }); render(); return; }
+    if (outcome === 'kept' || clientMode() !== 'app' || space !== name) { if (outcome === 'kept') embedFocusNext = true; render(); return; }
+    if (name === 'pulse' && guestPulse && machine.read().authStatus !== 'signed-in' && !machine.read().accountKey) { guestPulse = false; leaveToAsk({ status: 'signed-out' }); render(); return; }
     enterSpace('solio', { fromSwitch: true });
   }
   function render() {
@@ -848,10 +921,14 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 계정으로 들어온 회원이면(토큰 갱신 중에 들어와도) 다음에 켤 때 빠른 길을 탄다. 회원 판정과 같은 기준이다
     if (enteredAs === 'signed-in') writeStorage(storage, ORB_RETURNING_KEY, '1');
     focus('here');
-    // PULSE에 도착하면 뷰가 보일 때 자판 초점을 뷰로 보낸다(설계 검토 R3)
-    if (space === 'pulse') embedFocusNext = true;
+    // 뷰가 있는 공간에 도착하면 뷰가 보일 때 자판 초점을 뷰로 보낸다(3단계 설계 검토 R3)
+    if (slotOf(space)) embedFocusNext = true;
     render();
     if (space === 'solio') startSolio({ arriving: true });
+    // 들어가는 동안 온 「돌아가서 저장」을 이제 잇는다(3단계 화면 Fable F1)
+    if (pendingReveal) { const name = pendingReveal; pendingReveal = null; revealSpace(name); }
+    else if (pendingMainOpen && space !== pendingMainOpen) { const name = pendingMainOpen; pendingMainOpen = null; openFromMain(name); }
+    else pendingMainOpen = null;
   }
 
   /* ── 실행 번호와 계정 결속(지금 얼굴과 같다) ── */
@@ -1319,6 +1396,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     try {
       const result = await options.onInvite(validated.value, { kind: validated.kind, pathname: validated.pathname });
       if (!isInviteRunValid(runId, startGen, startAccountKey)) return;
+      // 직원 문서가 초대를 받은 뒤 답을 잃었다(HANDOFF_UNCONFIRMED). 그 문서는 Workspace 뷰에 남아 있으니 회원은 Workspace로 데려가 이어 가게 한다(4단계 설계 3.4, 검토 R5)
+      if (result && result.ok === false && result.code === 'HANDOFF_UNCONFIRMED' && slotOf('workspace')?.open && (machine.read().authStatus === 'signed-in' || machine.read().accountKey)) {
+        view.setInviteValue?.('');
+        after = () => completeEntryWith({ destination: '/' });
+        return;
+      }
       if (result && result.ok === false) {
         if (view.getInviteValue?.() !== rawValue) view.setInviteValue?.(rawValue);
         feedback.inviteError = sanitizeInviteFeedback(result.message, rawValue, validated.value) || '이 초대코드를 확인하지 못했습니다. 받은 코드를 다시 붙여 넣어 주세요.';
@@ -1327,7 +1410,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       }
       view.setInviteValue?.('');
       const target = SPACE_OF_DEST[normalizePortalWorkspaceDestination(result?.destination)] || null;
-      if (result?.keepOpen !== true && machine.read().authStatus === 'signed-in' && target) {
+      // 토큰을 갱신하는 회원(accountKey는 남고 authStatus만 잠깐 바뀜)도 회원 길로 간다. 손님으로 보면 「PULSE 닫기」가 묻는 화면으로 데려갔다(0.5.2 공개 후보 카본 B1)
+      if (result?.keepOpen !== true && (machine.read().authStatus === 'signed-in' || machine.read().accountKey) && target) {
         after = () => completeEntryWith({ destination: result.destination });
         return;
       }
@@ -1469,10 +1553,11 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     render();
     // 창 안의 PULSE가 살아 있거나 손님의 PULSE면 배정을 망으로 다시 묻지 않고 본체의 PULSE 열기(있던 뷰를 다시 씀)로 간다.
     // 겉은 이 계정의 것이다. 계정이 바뀌면 본체가 닫는다(설계 검토 R7)
-    const direct = target === 'pulse' && embed && typeof embed.open === 'function' && (pulseOpen || guestPulse);
+    const slot = slotOf(target);
+    const direct = !!slot && typeof slot.embed.open === 'function' && (slot.open || (target === 'pulse' && guestPulse));
     let result;
     try {
-      result = direct ? await embed.open() : await options.onOpenSpace(dest, context);
+      result = direct ? await slot.embed.open() : await options.onOpenSpace(dest, context);
     } catch {
       result = { ok: false };
     } finally {
@@ -1560,7 +1645,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 쓰던 글을 남기면 PULSE에 머문다. 숨은 PULSE를 묻는 화면 뒤에 남기면 「돌아가서 저장」이 돌아올 곳이 없다(카본 A1)
     if (action === 'signin') {
       if (!guestPulse || machine.read().accountKey) return;
-      if (pulseOpen && typeof embed?.close === 'function') { void closePulse(); return; }
+      if (embeds.pulse?.open && typeof embed?.close === 'function') { void closeSpace('pulse'); return; }
       guestPulse = false; leaveToAsk({ status: 'signed-out' }); render(); return;
     }
     if (action === 'logout') {
@@ -1939,6 +2024,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       case 'retry-workspace': void runRetryWorkspace(); return true;
       case 'continue-personal': void runContinuePersonal(); return true;
       case 'go': go(payload); return true;
+      // 화면 공유 고르기의 답(4단계 4.2). 인자는 목록의 번호다
+      case 'share-pick': answerShare(Number.parseInt(String(payload ?? ''), 10)); return true;
+      case 'share-cancel': answerShare(null); return true;
       case 'open-switch': toggleSwitch(); return true;
       /* 다가가서 머물면 열리고, 펼침 구역을 벗어나 머물면 닫힌다(고정한 것은 닫지 않는다) */
       case 'fan-near': openSwitch({ pin: false }); return true;
@@ -1972,8 +2060,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       case 'backup-start': case 'backup-open': case 'backup-dismiss': return backupAction(action, typeof payload === 'string' ? payload : '');
       case 'recheck-auth': void recheckAuth(); return true;
       case 'reopen-space': void runOpenSpace(space, { reopen: true }); return true;
-      case 'band-f6': if (!embedVisible()) return false; void Promise.resolve(embed.focus?.()).catch(() => {}); return true;
-      case 'pulse-close': void closePulse(); return true;
+      case 'band-f6': if (!embedVisible()) return false; void Promise.resolve(slotOf(space)?.embed.focus?.()).catch(() => {}); return true;
+      case 'pulse-close': case 'band-close': void closeSpace(space); return true;
       case 'legacy-back': closeLegacy(); return true;
       case 'qa-guest': void runQaGuest(); return true;
       case 'pageshow': if (payload === true) releaseNavigationHold(); return true;
@@ -1988,6 +2076,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function escape() {
     const state = machine.read();
     const mode = clientMode();
+    // 화면 공유 고르기가 서 있으면 Esc는 고르지 않음이다(4단계 6.4)
+    if (share && mode === 'app') { answerShare(null); return true; }
     if (mode === 'portal') {
       if (state.phase === 'invite' && (busyAction === null || busyAction === 'invite')) { closeInvite(); return true; }
       if (busyAction !== null && busyAction !== 'signin') return false;
@@ -2109,7 +2199,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       officeOff = null;
       if (hadBusyInvite) options.onCancelInvite?.();
       // 얼굴이 없어지면 PULSE 뷰를 숨긴다(본체도 화면 문서가 바뀌면 숨긴다). 뷰와 쓰던 글은 본체에 그대로 산다
-      if (embed) { try { void Promise.resolve(embed.place({ visible: false, top: PULSE_BAND })).catch(() => {}); } catch { /* 본체의 일이다 */ } }
+      for (const slot of Object.values(embeds)) { try { void Promise.resolve(slot.embed.place({ visible: false, top: PULSE_BAND })).catch(() => {}); } catch { /* 본체의 일이다 */ } }
+      if (share) { const asked = share; share = null; try { void Promise.resolve(slotOf('workspace')?.embed.answerShare?.({ id: asked.id, pick: null })).catch(() => {}); } catch { /* 본체가 시간으로 거절한다 */ } }
       for (const off of embedOff.splice(0)) { try { off(); } catch { /* 무시 */ } }
       view.dispose?.();
     },

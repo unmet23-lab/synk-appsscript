@@ -947,10 +947,10 @@ test('GPT r10 GA1 · GA4: no owner file behind a junction, and no request when t
   assert.equal((await noOwner.snapshot(ME)).install.code, 'REQUEST_FAILED');
 });
 
-/* ── PC 0.5.2: 포장된 판에서는 꺼 둔다(11-20) ── */
-test('PC 0.5.2: in a packaged build the room is hidden and the calls say NOT_AVAILABLE; one switch turns it on', async () => {
+/* ── 포장된 판의 스위치: PC 0.5.2는 껐고(11-20), 다음 판부터 켠다(11-21) ── */
+test('a packaged build with the switch off hides the room and the calls say NOT_AVAILABLE; one switch turns it on', async () => {
   const env = appdata(temp(), { status: sample() });
-  const off = B.createSolioBackup({ platform: 'win32', env, packaged: true, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const off = B.createSolioBackup({ platform: 'win32', env, packaged: true, inRelease: false, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   assert.deepEqual(await off.snapshot(ME), { ok: true, available: false });
   assert.deepEqual(await off.start(ME, 'protect'), { ok: false, code: 'NOT_AVAILABLE' });
   assert.deepEqual(await off.open(ME, 'status'), { ok: false, code: 'NOT_AVAILABLE' });
@@ -962,7 +962,9 @@ test('PC 0.5.2: in a packaged build the room is hidden and the calls say NOT_AVA
   const source = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   assert.equal((await source.snapshot(ME)).available, true, 'a source run stays open');
   const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
-  assert.match(src, /^const IN_RELEASE = false;$/m, 'PC 0.5.2 ships with the room off');
+  assert.match(src, /^const IN_RELEASE = true;$/m, 'the next PC build ships with the room on');
+  const shipped = B.createSolioBackup({ platform: 'win32', env, packaged: true, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  assert.equal((await shipped.snapshot(ME)).available, true, 'the default is the switch');
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
   const call = main.match(/createSolioBackup\(\{[^}]*\}\)/g) || [];
   assert.deepEqual(call, ["createSolioBackup({packaged,cacheRoot:path.join(app.getPath('userData'),'WorkBackupSetup'),openExternal:url=>shell.openExternal(url)})"], 'main makes the service once, with the packaged flag and nothing that turns it back on');

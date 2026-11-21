@@ -1,5 +1,5 @@
 'use strict';
-// 회사 공통 진입 · main과 공개 preload 연결 시험. 실제 main.cjs를 가짜 Electron, auth, PULSE와 회사 관리자·배정 조회 대역으로 돌려
+// 회사 공통 진입 · main과 공개 preload 연결 시험. 실제 main.cjs를 가짜 Electron, auth, PULSE, Workspace와 회사 관리자·배정 조회 대역으로 돌려
 // main이 무엇을 받고 무엇을 넘기는지만 본다. 관리자와 배정 조회의 동작 자체는 company-entry.test.cjs와
 // company-entry-destinations.test.cjs가 본다. 실제 창, 프로필, 계정, 서버는 쓰지 않는다.
 // 실행: node --test desktop/tests/company-entry-native.test.cjs
@@ -45,6 +45,7 @@ async function mainFixture({clientId='platform',argv=[],suite=null}={}){
   };
   const publisher={initialize:async()=>{},refresh:()=>control.suiteAvailable,available:()=>control.suiteAvailable,project:state=>state,publish(){},beginSignIn:()=>true,signOut:()=>true,dispose(){}};
   const manager={options:null,calls:[],answers:{}},lookups={options:null,calls:[],answers:{}},pulse={calls:[],answer:null,cancels:[],cancelAnswer:null,opens:0},launches=[];
+  const workspace={options:null,opens:0,invites:[],surfaceAnswer:null};
   let authOptions=null;
   const stubs={
     electron:{app,BrowserWindow:Window,ipcMain:{removeHandler(){},handle:(name,handler)=>handlers.set(name,handler)},session:{fromPartition:jar},protocol:{registerSchemesAsPrivileged(){}},Menu:{setApplicationMenu(){}},shell:{openExternal:async()=>{throw Error('No browser allowed');}},dialog:{showMessageBoxSync:()=>0},safeStorage:{isEncryptionAvailable:()=>false},screen:{getAllDisplays:()=>[{workArea:{x:0,y:0,width:1920,height:1080}}],getPrimaryDisplay:()=>({workArea:{x:0,y:0,width:1920,height:1080}})},globalShortcut:{register:()=>false,unregister(){}},clipboard:{writeText(){throw Error('No clipboard operation allowed');}}},
@@ -56,6 +57,10 @@ async function mainFixture({clientId='platform',argv=[],suite=null}={}){
       accountRequest:()=>{throw Error('No account request allowed');}};},publicError:()=>({})},
     './pulse-app.cjs':{createPulseApp:()=>({open:async()=>{pulse.opens+=1;return {ok:true,id:'pulse',independentWindow:true};},openInvite:async request=>{pulse.calls.push(request);return pulse.answer?pulse.answer(request):{ok:true,requestId:request.requestId,accountGeneration:request.accountGeneration,state:'received',destination:'/pulse-app/'};},
       cancelInvite:input=>{pulse.cancels.push(input);return pulse.cancelAnswer?pulse.cancelAnswer(input):null;},syncContext(){},dispose(){}}),pulseInviteRefusal:require('../src/pulse-app.cjs').pulseInviteRefusal},
+    // 창 안의 Workspace 관리자도 대역이다. 배정 열기와 직원 초대의 겉 요청이 무엇으로 오는지만 본다.
+    './workspace-app.cjs':{...require('../src/workspace-app.cjs'),createWorkspaceApp:options=>{workspace.options=options;return {
+      open:async(...args)=>{workspace.opens+=1;workspace.openArgs=args;return {ok:true,id:'workspace'};},surfaceForInvite:async binding=>{workspace.invites.push(binding);return workspace.surfaceAnswer;},
+      syncContext(){},publishAuth(){},busy:()=>false,hasSurface:()=>false,dispose(){}};}},
     './company-entry.cjs':{...companyEntryModule,createCompanyEntryManager:options=>{
       manager.options=options;
       const call=name=>input=>{manager.calls.push([name,input]);return manager.answers[name]?manager.answers[name](input):Promise.resolve({ok:true,requestId:input.requestId,accountGeneration:input.accountGeneration,state:'received',destination:'/'});};
@@ -79,7 +84,7 @@ async function mainFixture({clientId='platform',argv=[],suite=null}={}){
   vm.runInNewContext(fs.readFileSync(filename,'utf8'),{require:id=>Object.hasOwn(stubs,id)?stubs[id]:id.startsWith('./')?require(path.join(__dirname,'../src',id)):require(id),__dirname:path.dirname(filename),process:{argv,platform:'win32',arch:'x64',env:{},resourcesPath:'/synthetic/resources'},console,Buffer,fetch,setTimeout:smoke?()=>0:setTimeout,clearTimeout:smoke?()=>{}:clearTimeout},{filename});
   for(let waited=0;!handlers.has('synk:company-invite-handoff')&&waited<2000;waited+=5)await new Promise(resolve=>setTimeout(resolve,5));
   assert.ok(handlers.has('synk:company-invite-handoff'),'the synthetic platform window');
-  return {handlers,frame,contents,event:{sender:contents,senderFrame:frame},control,manager,lookups,pulse,launches,jars,authCalls,fetched,get authOptions(){return authOptions;}};
+  return {handlers,frame,contents,event:{sender:contents,senderFrame:frame},control,manager,lookups,pulse,workspace,launches,jars,authCalls,fetched,get authOptions(){return authOptions;}};
 }
 const call=(f,channel,...args)=>f.handlers.get(channel)(f.event,...args);
 
@@ -203,11 +208,20 @@ test('관리자와 배정 조회는 auth의 현재 세대, 숫자 epoch, 확인�
   await f.lookups.options.fetcher(destinationsModule.DESTINATIONS_URL,{method:'POST'});
   assert.equal(f.fetched.length,1);
   assert.deepEqual(Object.keys(f.lookups.options).sort(),['fetcher','getAccessToken','getBinding','openPulse','openWorkspace']);
-  // 확인된 목적지는 기존 제품 기능으로만 연다. Workspace는 기존 회사 앱 실행, PULSE는 기존 창 열기다. 인자는 main이 고정한다.
-  assert.deepEqual(await f.lookups.options.openWorkspace('https://evil.invalid/'),{ok:true});
-  assert.deepEqual(f.launches,['messenger']);
+  // 확인된 목적지는 기존 제품 기능으로만 연다. Workspace는 플랫폼 창 안의 Workspace 열기이고 따로 설치한 앱을 실행하지 않는다.
+  // PULSE는 기존 창 열기다. 인자는 main이 고정한다.
+  assert.deepEqual(await f.lookups.options.openWorkspace('https://evil.invalid/'),{ok:true,id:'workspace'});
+  assert.equal(f.workspace.opens,1);
+  assert.deepEqual(f.workspace.openArgs,[]);
+  assert.deepEqual(f.launches,[]);
   assert.deepEqual(plain(await f.lookups.options.openPulse('persist:other')),{ok:true,id:'pulse',independentWindow:true});
   assert.equal(f.pulse.opens,1);
+  // 직원 초대의 겉은 관리자가 넘긴 결속 그대로 창 안의 Workspace 관리자에 청하고, 그 답을 그대로 돌려준다.
+  const binding=f.manager.options.getBinding(),answer={surface:{},session:{}};
+  f.workspace.surfaceAnswer=answer;
+  assert.equal(await f.manager.options.openEmployeeSurface(binding),answer);
+  assert.equal(f.workspace.invites.length,1);
+  assert.equal(f.workspace.invites[0],binding);
   assert.deepEqual(f.authCalls,['getAccessToken']);
 });
 

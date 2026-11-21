@@ -86,6 +86,18 @@ function pulseCover(value){
   el.style.cssText='position:fixed;left:0;right:0;bottom:0;top:'+value.top+'px;z-index:2147483646;background:#141414;color:#6d6d6d;display:flex;align-items:center;justify-content:center;font:400 13px system-ui,sans-serif';
 }
 const openPulse=()=>{if(!pulseOpen){pulseOpen=true;tellPulse();}};
+// 창 안의 Workspace 뷰(4단계 구현 설계 3.2)의 대역. PULSE와 같은 덮개를 밝은 바탕으로 깐다. 배정 열기 '/'와 workspaceView.open이 연다.
+// 화면 공유 물음(synk:workspace-share-ask)은 시험이 shareAsk로 보내고, 화면의 답은 shareAnswers로 읽는다
+let workspaceOpen=false;const workspaceChanged=new Set(),workspaceEvents=new Set(),workspacePlaced=[],shareAsks=new Set(),shareAnswers=[];
+const tellWorkspace=()=>{for(const fn of workspaceChanged){try{fn({open:workspaceOpen});}catch{}}};
+function workspaceCover(value){
+  let el=document.getElementById('qa-workspace-view');
+  if(!value?.visible||!workspaceOpen){if(el)el.remove();return;}
+  if(!el){el=document.createElement('div');el.id='qa-workspace-view';el.textContent='Workspace 회사 화면 자리(본체가 붙이는 뷰)';document.body.append(el);}
+  el.style.cssText='position:fixed;left:0;right:0;bottom:0;top:'+value.top+'px;z-index:2147483646;background:#f4f4f2;color:#8a8a8a;display:flex;align-items:center;justify-content:center;font:400 13px system-ui,sans-serif';
+}
+const openWorkspace=()=>{if(!workspaceOpen){workspaceOpen=true;tellWorkspace();}};
+const desktopActions=new Set();
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   pulseView:Object.freeze({
     place:async value=>{pulsePlaced.push({visible:value?.visible===true,top:value?.top});pulseCover(value);return {ok:true,open:pulseOpen};},
@@ -96,6 +108,18 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     onChanged:fn=>{pulseChanged.add(fn);return ()=>pulseChanged.delete(fn);},
     onEvent:fn=>{pulseEvents.add(fn);return ()=>pulseEvents.delete(fn);},
   }),
+  workspaceView:Object.freeze({
+    place:async value=>{workspacePlaced.push({visible:value?.visible===true,top:value?.top});workspaceCover(value);return {ok:true,open:workspaceOpen};},
+    state:async()=>({open:workspaceOpen}),
+    focus:async()=>{calls.push('workspace-focus');return {ok:true};},
+    close:async()=>{calls.push('workspace-close');workspaceOpen=false;workspaceCover(null);tellWorkspace();return {ok:true,outcome:'closed'};},
+    open:async()=>{calls.push('workspace-open');openWorkspace();return {ok:true,id:'workspace'};},
+    onChanged:fn=>{workspaceChanged.add(fn);return ()=>workspaceChanged.delete(fn);},
+    onEvent:fn=>{workspaceEvents.add(fn);return ()=>workspaceEvents.delete(fn);},
+    onShareAsk:fn=>{shareAsks.add(fn);return ()=>shareAsks.delete(fn);},
+    answerShare:async value=>{shareAnswers.push(value);return {ok:true};},
+  }),
+  onDesktopAction:fn=>{desktopActions.add(fn);return ()=>desktopActions.delete(fn);},
   getEnvironment:async()=>{await ready;return {...env};},
   getClients:async()=>[],
   authStatus:async()=>{await restoring;return auth;},
@@ -113,7 +137,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   accountIdentity:async()=>{calls.push('identity');if(auth.signedIn!==true)return {ok:false,error:{code:'AUTH_REQUIRED'}};return {ok:true,email:'member@example.com',newEmail:null,createdAt:'2026-03-02T00:00:00Z',identities:[{provider:'email'},{provider:'google'}]};},
   authSecurity:async section=>{calls.push('security:'+section);return {ok:true};},
   resolveCompanyEntryDestinations:async req=>{calls.push('resolve');return echo(req,{result:assignment});},
-  openAssignedCompanyDestination:async req=>{calls.push('open:'+req.destination);if(req.destination==='/pulse-app/')openPulse();return echo(req,{destination:req.destination});},
+  openAssignedCompanyDestination:async req=>{calls.push('open:'+req.destination);if(req.destination==='/pulse-app/')openPulse();if(req.destination==='/')openWorkspace();return echo(req,{destination:req.destination});},
   cancelCompanyEntry:async()=>null,
   inspectCompanyInviteCode:async req=>{calls.push('invite-code');return invite(req,'/');},
   handoffCompanyInviteLink:async req=>{calls.push('invite-link');return invite(req,'/');},
@@ -273,4 +297,10 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   pulseEvent:value=>{for(const fn of pulseEvents){try{fn(value);}catch{}}},
   setPulseOpen:value=>{pulseOpen=value===true;if(!pulseOpen)pulseCover(null);tellPulse();},
   tray:()=>JSON.parse(JSON.stringify(tray)),
+  // 창 안의 Workspace 뷰 대역: 화면이 보낸 자리, 열림, 화면 공유 물음과 답, 트레이 줄 흉내
+  workspacePlaced:()=>workspacePlaced.map(v=>({...v})),
+  setWorkspaceOpen:value=>{workspaceOpen=value===true;if(!workspaceOpen)workspaceCover(null);tellWorkspace();},
+  shareAsk:value=>{for(const fn of shareAsks){try{fn(value);}catch{}}},
+  shareAnswers:()=>shareAnswers.map(v=>({...v})),
+  desktopAction:value=>{for(const fn of desktopActions){try{fn(value);}catch{}}},
 }));

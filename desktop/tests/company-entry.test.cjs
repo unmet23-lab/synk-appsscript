@@ -16,6 +16,8 @@ const ORIGIN='https://workspace.synk.im';
 const TOKEN='Inv1te_T0ken-For-Company-Entry-0123456789';
 const OTHER_TOKEN='Other_T0ken-For-Company-Entry-9876543210';
 const PARTITION='persist:company-entry-test';
+// 직원 문서를 싣는 Workspace 겉의 통. 분류 창의 partition과 다르다.
+const WORKSPACE_PARTITION='persist:synk-workspace-test';
 const ACCOUNT=crypto.randomUUID();
 const CAPABILITY='data-synk-company-entry';
 const LINK=`${ORIGIN}/#invite=${TOKEN}`;
@@ -184,15 +186,25 @@ function companyScript(role,behavior={}){
   };
 }
 
-function manual({binding=signedIn(),selectCompanyPartition=()=>PARTITION,deliverCustomer,cancelCustomer,dialog,onUnloadKept}={}){
-  const electron=fakeElectron(),timers=fakeTimers(),customer=[];
+// 직원 문서의 겉. main의 Workspace 관리자(surfaceForInvite)처럼 따로 된 통의 새 창을 만들어 그 창과 세션을 준다.
+function workspaceSurface(electron,{partition=WORKSPACE_PARTITION,guarded=false}={}){
+  const surface=new electron.BrowserWindow({show:false,webPreferences:{partition}});
+  if(guarded)surface.workspaceGuarded=true;
+  return {surface,session:surface.webContents.session};
+}
+
+function manual({binding=signedIn(),selectCompanyPartition=()=>PARTITION,deliverCustomer,cancelCustomer,dialog,onUnloadKept,openEmployeeSurface}={}){
+  const electron=fakeElectron(),timers=fakeTimers(),customer=[],surfaces=[];
   let current=binding;
+  const surfaceFor=openEmployeeSurface||(()=>workspaceSurface(electron));
   const manager=createCompanyEntryManager({
     BrowserWindow:electron.BrowserWindow,session:electron.session,getBinding:()=>(current?{...current}:current),
     deliverCustomer:deliverCustomer||(request=>{customer.push(request);return new Promise(()=>{});}),cancelCustomer,
+    // 관리자가 겉을 청할 때 받은 결속을 남긴다.
+    openEmployeeSurface:value=>{surfaces.push(value);return surfaceFor(value,electron);},
     selectCompanyPartition,dialog,onUnloadKept,setTimeout:timers.setTimeout,clearTimeout:timers.clearTimeout,
   });
-  return {manager,electron,timers,customer,get binding(){return current;},setBinding(value){current=value;}};
+  return {manager,electron,timers,customer,surfaces,get binding(){return current;},setBinding(value){current=value;}};
 }
 
 function navigate(h,win,load,scripts,documents){
@@ -210,9 +222,9 @@ function navigate(h,win,load,scripts,documents){
   load.resolve();
 }
 
-function integrated({binding,scripts={},customerAnswer,selectCompanyPartition}={}){
+function integrated({binding,scripts={},customerAnswer,selectCompanyPartition,openEmployeeSurface}={}){
   const calls=[],documents=[];
-  const h=manual({binding,selectCompanyPartition,deliverCustomer:async request=>{
+  const h=manual({binding,selectCompanyPartition,openEmployeeSurface,deliverCustomer:async request=>{
     calls.push(request);
     return customerAnswer?customerAnswer(request):{ok:true,requestId:request.requestId,accountGeneration:request.accountGeneration,state:'received',destination:'/pulse-app/'};
   }});
@@ -231,6 +243,8 @@ function commitDocument(h,url,win=h.electron.windows.at(-1)){
   if(load)load.resolve();
   return {win,contents,frame,event:{sender:contents,senderFrame:frame},offer:offersOf(frame)[0]};
 }
+// 직원 문서는 관리자가 겉을 받은 뒤(비동기) 그 겉에 싣는다. 겉을 붙일 때까지 기다린 뒤 고정 /가 준비됐다고 알린다.
+async function employeeDocument(h){await settle(5);return commitDocument(h,EMPLOYEE_URL);}
 const commit=(doc,payload,event=doc.event)=>doc.contents.ipc.invoke(CHANNELS.commit,event,payload);
 const result=(doc,payload,event=doc.event)=>doc.contents.ipc.emit(CHANNELS.result,event,payload);
 
@@ -255,15 +269,26 @@ function assertTokenOnlyInOffers(h,responses){
 
 // ── 관리자와 preload를 함께 돌리는 흐름 ──
 
-test('맨 코드는 receiver 분류 뒤 같은 회사 창의 고정 /에서 실제 큐에 들어간 다음에만 성공한다',async t=>{
+test('맨 코드는 숨은 receiver 창에서 분류한 뒤 Workspace 겉의 고정 /에서 실제 큐에 들어간 다음에만 성공한다',async t=>{
   const logs=quietConsole(t);
   const h=integrated({scripts:{[RECEIVER_URL]:companyScript('receiver'),[EMPLOYEE_URL]:companyScript('employee')}});
   const ids=idsFor(h);
   const response=await within(h.manager.inspectCode({code:TOKEN,...ids}));
   assert.deepEqual(response,{ok:true,...ids,state:'received',destination:'/'});
-  assert.equal(h.electron.windows.length,1);
-  const [win]=h.electron.windows,[receiver,employee]=h.documents;
-  assert.deepEqual(win.webContents.loads,[RECEIVER_URL,EMPLOYEE_URL]);
+  assert.equal(h.electron.windows.length,2);
+  const [classifier,win]=h.electron.windows,[receiver,employee]=h.documents;
+  // 분류 창은 회사 partition에서 receiver만 싣고, 보이지 않은 채 직원 분류 뒤 닫힌다.
+  assert.equal(classifier.options.webPreferences.partition,PARTITION);
+  assert.deepEqual(classifier.webContents.loads,[RECEIVER_URL]);
+  assert.equal(classifier.isVisible(),false);
+  assert.equal(classifier.isDestroyed(),true);
+  assert.equal(receiver.contents,classifier.webContents);
+  // 직원 문서는 openEmployeeSurface가 그 결속으로 준 겉에 실린다.
+  assert.equal(h.surfaces.length,1);
+  assert.deepEqual({...h.surfaces[0]},h.binding);
+  assert.equal(win.options.webPreferences.partition,WORKSPACE_PARTITION);
+  assert.equal(employee.contents,win.webContents);
+  assert.deepEqual(win.webContents.loads,[EMPLOYEE_URL]);
   assert.deepEqual(receiver.state.tokens,[TOKEN]);
   assert.deepEqual(employee.state.queue,[{requestId:ids.requestId,accountGeneration:ids.accountGeneration,token:TOKEN}]);
   assert.equal(employee.state.acks,1);
@@ -286,12 +311,17 @@ test('맨 코드는 receiver 분류 뒤 같은 회사 창의 고정 /에서 실�
   assert.deepEqual(logs,[]);
 });
 
-test('엄격한 직원 전체 링크는 분류 없이 고정 /로만 간다',async t=>{
+test('엄격한 직원 전체 링크는 분류 창 없이 Workspace 겉의 고정 /로만 간다',async t=>{
   const logs=quietConsole(t);
   const h=integrated({scripts:{[EMPLOYEE_URL]:companyScript('employee')}});
   const ids=idsFor(h);
   const response=await within(h.manager.handoffLink({href:LINK,...ids}));
   assert.deepEqual(response,{ok:true,...ids,state:'received',destination:'/'});
+  // 첫 창이 곧 겉이다. 회사 partition의 분류 창은 만들지 않는다.
+  assert.equal(h.electron.windows.length,1);
+  assert.equal(h.surfaces.length,1);
+  assert.equal(h.electron.windows[0].options.webPreferences.partition,WORKSPACE_PARTITION);
+  assert.equal(h.electron.windows[0].isVisible(),true);
   assert.deepEqual(h.electron.windows[0].webContents.loads,[EMPLOYEE_URL]);
   assert.deepEqual(h.documents[0].state.tokens,[TOKEN]);
   assertTokenOnlyInOffers(h,[response]);
@@ -319,8 +349,10 @@ test('receiver의 classified만으로는 끝나지 않는다. 최종 문서가 �
   const ids=idsFor(h);
   const box=track(h.manager.inspectCode({code:TOKEN,...ids}));
   await settle();
-  const [win]=h.electron.windows;
-  assert.deepEqual(win.webContents.loads,[RECEIVER_URL,EMPLOYEE_URL]);
+  const [classifier,win]=h.electron.windows;
+  assert.deepEqual(classifier.webContents.loads,[RECEIVER_URL]);
+  assert.equal(classifier.isDestroyed(),true);
+  assert.deepEqual(win.webContents.loads,[EMPLOYEE_URL]);
   assert.equal(box.settled,false);
   h.timers.advance(STAGE_MS);
   await settle(5);
@@ -334,7 +366,8 @@ test('직원 문서가 큐에 넣은 뒤 ACK가 사라지면 미확인이며 다
   const ids=idsFor(h);
   const box=track(h.manager.inspectCode({code:TOKEN,...ids}));
   await settle();
-  const [win]=h.electron.windows,employee=h.documents[1];
+  const [classifier,win]=h.electron.windows,employee=h.documents[1];
+  assert.equal(employee.contents,win.webContents);
   assert.equal(employee.state.queue.length,1);
   assert.equal(box.settled,false);
   h.timers.advance(STAGE_MS);
@@ -342,7 +375,8 @@ test('직원 문서가 큐에 넣은 뒤 ACK가 사라지면 미확인이며 다
   assert.deepEqual(box.value,{ok:false,...ids,code:UNCONFIRMED_CODE,retryable:false});
   h.timers.advance(TOTAL_MS);
   await settle();
-  assert.deepEqual(win.webContents.loads,[RECEIVER_URL,EMPLOYEE_URL]);
+  assert.deepEqual(classifier.webContents.loads,[RECEIVER_URL]);
+  assert.deepEqual(win.webContents.loads,[EMPLOYEE_URL]);
   assert.equal(offersOf(employee.frame).length,1);
   assert.deepEqual(employee.state.tokens,[TOKEN]);
   assert.equal(win.isDestroyed(),false);
@@ -395,11 +429,12 @@ test('capability 속성이 없는 문서는 결속하지 않고 토큰을 받지
   assert.equal(box.value.code,'HANDOFF_TIMEOUT');
 });
 
-test('다른 계정 세대가 되면 인계가 끝난 회사 창을 바로 없애고, 같은 세대의 갱신은 창을 남긴다',async()=>{
+test('다른 계정 세대가 되면 인계가 끝난 직원 문서의 겉을 바로 없애고, 같은 세대의 갱신은 겉을 남긴다',async()=>{
   const h=integrated({scripts:{[EMPLOYEE_URL]:companyScript('employee')}});
   const ids=idsFor(h);
   assert.equal((await within(h.manager.handoffLink({href:LINK,...ids}))).ok,true);
   const [win]=h.electron.windows;
+  assert.equal(win.options.webPreferences.partition,WORKSPACE_PARTITION);
   h.setBinding({...h.binding,epoch:h.binding.epoch+1});
   h.manager.syncAccount();
   assert.equal(win.isDestroyed(),false);
@@ -439,7 +474,11 @@ test('직원 전체 링크는 정확한 https workspace.synk.im /와 invite 조�
   assert.deepEqual(await h.manager.inspectCode({code:LINK,...ids}),{ok:false,...ids,code:'INVALID_INPUT',retryable:false});
   assert.equal(h.electron.windows.length,0);
   const box=track(h.manager.handoffLink({href:LINK,...ids}));
+  await settle(5);
+  // 첫 창이 곧 Workspace 겉이다.
   assert.equal(h.electron.windows.length,1);
+  assert.equal(h.surfaces.length,1);
+  assert.equal(h.electron.windows[0].options.webPreferences.partition,WORKSPACE_PARTITION);
   assert.deepEqual(h.electron.windows[0].webContents.loads,[EMPLOYEE_URL]);
   assert.equal(box.settled,false);
 });
@@ -469,7 +508,7 @@ test('계정 결속은 main의 현재 세대와 확정 계정만 쓴다',async()
   assert.equal(commitDocument(guest,RECEIVER_URL).offer.expectedAccountId,null);
 });
 
-test('맨 코드는 고른 partition과 신뢰 preload의 숨긴 창에서 고정 receiver를 연다',async()=>{
+test('맨 코드는 고른 partition과 신뢰 preload의 숨긴 창에서 고정 receiver를 열고, 분류 동안 그 창을 보이지 않는다',async()=>{
   const chosen=[];
   const h=manual({selectCompanyPartition:binding=>{chosen.push(binding);return PARTITION;}});
   const ids=idsFor(h);
@@ -493,7 +532,8 @@ test('맨 코드는 고른 partition과 신뢰 preload의 숨긴 창에서 고�
   assert.equal(webview.prevented,true);
   assert.equal(win.isVisible(),false);
   const doc=commitDocument(h,RECEIVER_URL);
-  assert.equal(win.isVisible(),true);
+  // offer를 보낸 뒤에도 분류 창은 숨은 채다. 사람에게 보일 것이 없다.
+  assert.equal(win.isVisible(),false);
   assert.deepEqual(doc.offer,{id:doc.offer.id,...ids,expectedAccountId:ACCOUNT});
   assert.equal(JSON.stringify(win.options).includes(TOKEN),false);
   // 창 옵션은 보안과 무관한 값만 바꿀 수 있다.
@@ -556,7 +596,11 @@ test('분류 단계는 정확한 classified만 받고 receiver의 delivered와 c
   assert.deepEqual(doc.contents.loads,[RECEIVER_URL]);
   result(doc,{...base,documentId,outcome:'classified',kind:'employee',destination:'/'});
   await settle(5);
-  assert.deepEqual(doc.contents.loads,[RECEIVER_URL,EMPLOYEE_URL]);
+  // 직원 분류 뒤 분류 창은 닫히고, 고정 /는 Workspace 겉에 실린다. 분류 성공만으로는 끝나지 않는다.
+  assert.deepEqual(doc.contents.loads,[RECEIVER_URL]);
+  assert.equal(doc.win.isDestroyed(),true);
+  assert.equal(h.electron.windows.length,2);
+  assert.deepEqual(h.electron.windows[1].webContents.loads,[EMPLOYEE_URL]);
   assert.equal(box.settled,false);
 });
 
@@ -609,7 +653,7 @@ test('분류 실패 결과는 commit한 receiver 문서의 정확한 모양과 �
   for(const [code,retryable] of allowed){
     const h=manual(),ids=idsFor(h);
     const box=track(h.manager.handoffLink({href:LINK,...ids}));
-    const doc=commitDocument(h,EMPLOYEE_URL),documentId=crypto.randomUUID(),base={id:doc.offer.id,...ids,documentId};
+    const doc=await employeeDocument(h),documentId=crypto.randomUUID(),base={id:doc.offer.id,...ids,documentId};
     result(doc,{...base,outcome:'classify-failed',code,retryable});
     await settle(5);
     assert.equal(box.settled,false,code);
@@ -637,13 +681,17 @@ test('분류 실패 결과는 commit한 receiver 문서의 정확한 모양과 �
   }
 });
 
-test('직원 최종 단계는 새 id로 다시 결속하고 commit에서 원본을 지우며 delivered만 성공이다',async()=>{
+test('직원 최종 단계는 Workspace 겉에서 새 id로 다시 결속하고 commit에서 원본을 지우며 delivered만 성공이다',async()=>{
   const h=manual(),ids=idsFor(h);
   const box=track(h.manager.inspectCode({code:TOKEN,...ids}));
   const receiver=commitDocument(h,RECEIVER_URL),receiverDocument=crypto.randomUUID();
   assert.equal((await commit(receiver,{id:receiver.offer.id,...ids,documentId:receiverDocument})).token,TOKEN);
   result(receiver,{id:receiver.offer.id,...ids,documentId:receiverDocument,outcome:'classified',kind:'employee',destination:'/'});
-  const employee=commitDocument(h,EMPLOYEE_URL);
+  const employee=await employeeDocument(h);
+  assert.notEqual(employee.win,receiver.win);
+  assert.equal(receiver.win.isDestroyed(),true);
+  assert.equal(employee.offer.expectedAccountId,ACCOUNT);
+  assert.equal(employee.win.isVisible(),true);
   assert.notEqual(employee.offer.id,receiver.offer.id);
   assert.equal(await commit(receiver,{id:receiver.offer.id,...ids,documentId:receiverDocument}),null);
   const documentId=crypto.randomUUID(),base={id:employee.offer.id,...ids};
@@ -713,7 +761,7 @@ test('최종 commit 뒤 ACK가 끊기면 어떤 끝맺음도 미확인이며 다
   for(const [name,end] of Object.entries(endings)){
     const h=manual(),ids=idsFor(h);
     const box=track(h.manager.handoffLink({href:LINK,...ids}));
-    const doc=commitDocument(h,EMPLOYEE_URL),documentId=crypto.randomUUID();
+    const doc=await employeeDocument(h),documentId=crypto.randomUUID();
     assert.equal((await commit(doc,{id:doc.offer.id,...ids,documentId})).token,TOKEN,name);
     end(h,doc,ids,documentId);
     await settle(5);
@@ -904,6 +952,189 @@ test('처리 중 새 요청은 BUSY이고 기존 요청을 덮지 않으며, 같
   await settle(5);
   const afterDispose=idsFor(h);
   assert.deepEqual(await h.manager.inspectCode({code:TOKEN,...afterDispose}),{ok:false,...afterDispose,code:'HANDOFF_UNAVAILABLE',retryable:false});
+});
+
+// ── 직원 문서의 Workspace 겉 ──
+
+// 맨 코드를 숨은 분류 창의 receiver에서 직원으로 분류시킨다. 분류 창의 문서를 돌려준다.
+async function classifyEmployee(h,ids){
+  const receiver=commitDocument(h,RECEIVER_URL),documentId=crypto.randomUUID(),base={id:receiver.offer.id,...ids,documentId};
+  assert.equal((await commit(receiver,base)).token,TOKEN);
+  result(receiver,{...base,outcome:'classified',kind:'employee',destination:'/'});
+  return receiver;
+}
+
+test('Workspace 관리자가 지킨 겉에는 창 열기 처리기와 쓰던 글 확인을 다시 걸지 않고, 나머지 지킴은 그대로 건다',async()=>{
+  const dialogs=[];let kept=0;
+  const h=manual({dialog:{showMessageBoxSync:(...args)=>{dialogs.push(args);return 1;}},onUnloadKept:()=>{kept+=1;},openEmployeeSurface:(_binding,electron)=>workspaceSurface(electron,{guarded:true})});
+  const ids=idsFor(h);
+  const box=track(h.manager.inspectCode({code:TOKEN,...ids}));
+  const receiver=await classifyEmployee(h,ids);
+  // 숨은 분류 창은 회사 입구가 지킨다.
+  assert.deepEqual(receiver.contents.openHandler({url:EMPLOYEE_URL}),{action:'deny'});
+  assert.equal(receiver.contents.listenerCount('will-prevent-unload'),2);
+  const doc=await employeeDocument(h),surface=doc.win;
+  assert.equal(surface.workspaceGuarded,true);
+  assert.equal(surface.webContents.openHandler,null);
+  assert.equal(surface.webContents.listenerCount('will-prevent-unload'),0);
+  const unload={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};
+  surface.webContents.emit('will-prevent-unload',unload);
+  assert.equal(unload.defaultPrevented,false);
+  assert.deepEqual(dialogs,[]);
+  assert.equal(kept,0);
+  // 이동 막기, webview 막기, 고정 문서의 offer와 commit은 그대로다.
+  const outside=nav(),webview=nav();
+  surface.webContents.emit('will-navigate',outside,'https://example.com/');
+  surface.webContents.emit('will-attach-webview',webview);
+  assert.equal(outside.prevented,true);
+  assert.equal(webview.prevented,true);
+  assert.equal(surface.isVisible(),true);
+  const documentId=crypto.randomUUID(),base={id:doc.offer.id,...ids,documentId};
+  assert.equal((await commit(doc,base)).token,TOKEN);
+  result(doc,{...base,outcome:'delivered'});
+  await settle(5);
+  assert.deepEqual(box.value,{ok:true,...ids,state:'received',destination:'/'});
+  assert.equal(surface.isDestroyed(),false);
+});
+
+test('Workspace가 바빠 겉을 주지 못하면 BUSY(다시 시도 됨)이고 분류 창은 닫힌다',async()=>{
+  const h=manual({openEmployeeSurface:async()=>({busy:true})}),ids=idsFor(h);
+  const box=track(h.manager.inspectCode({code:TOKEN,...ids}));
+  const receiver=await classifyEmployee(h,ids);
+  await settle(5);
+  assert.deepEqual(box.value,{ok:false,...ids,code:'BUSY',retryable:true});
+  assert.equal(receiver.win.isDestroyed(),true);
+  assert.equal(h.surfaces.length,1);
+  assert.equal(h.electron.windows.length,1);
+  assert.equal(h.timers.size,0);
+  // 바쁨과 함께 온 겉도 닫는다.
+  const g=manual({openEmployeeSurface:(_binding,electron)=>({...workspaceSurface(electron),busy:true})}),linkIds=idsFor(g);
+  assert.deepEqual(await within(g.manager.handoffLink({href:LINK,...linkIds})),{ok:false,...linkIds,code:'BUSY',retryable:true});
+  assert.equal(g.electron.windows[0].isDestroyed(),true);
+  assert.deepEqual(g.electron.windows[0].webContents.loads,[]);
+});
+
+test('겉을 받지 못하면 HANDOFF_UNAVAILABLE(다시 시도 안 됨)이다',async()=>{
+  const answers={null:()=>null,undefined:()=>undefined,thrown:()=>{throw new Error('합성');},rejected:()=>Promise.reject(new Error('합성')),noSurface:()=>({session:{}})};
+  for(const [name,open] of Object.entries(answers)){
+    const h=manual({openEmployeeSurface:open}),ids=idsFor(h);
+    const box=track(h.manager.inspectCode({code:TOKEN,...ids}));
+    const receiver=await classifyEmployee(h,ids);
+    await settle(5);
+    assert.deepEqual(box.value,{ok:false,...ids,code:'HANDOFF_UNAVAILABLE',retryable:false},name);
+    assert.equal(receiver.win.isDestroyed(),true,name);
+    assert.equal(h.electron.windows.length,1,name);
+    assert.equal(h.timers.size,0,name);
+  }
+  // 링크도 같다. 분류 창은 만들지 않는다.
+  const h=manual({openEmployeeSurface:()=>null}),ids=idsFor(h);
+  assert.deepEqual(await within(h.manager.handoffLink({href:LINK,...ids})),{ok:false,...ids,code:'HANDOFF_UNAVAILABLE',retryable:false});
+  assert.equal(h.electron.windows.length,0);
+  // openEmployeeSurface를 받지 않은 관리자는 직원 문서를 열지 못한다.
+  const electron=fakeElectron(),binding=signedIn(),bareIds={requestId:crypto.randomUUID(),accountGeneration:binding.accountGeneration};
+  const bare=createCompanyEntryManager({BrowserWindow:electron.BrowserWindow,session:electron.session,getBinding:()=>({...binding}),deliverCustomer:()=>new Promise(()=>{}),selectCompanyPartition:()=>PARTITION,setTimeout:()=>0,clearTimeout:()=>{}});
+  assert.deepEqual(await within(bare.handoffLink({href:LINK,...bareIds})),{ok:false,...bareIds,code:'HANDOFF_UNAVAILABLE',retryable:false});
+  assert.equal(electron.windows.length,0);
+});
+
+test('겉을 기다리는 동안 요청이 끝나면 그 답으로 끝나고, 뒤늦게 온 겉은 닫힌다',async()=>{
+  const endings={
+    cancel:[(h,ids)=>assert.deepEqual(h.manager.cancel({...ids}),{ok:false,...ids,code:'CANCELLED',retryable:true}),'CANCELLED'],
+    timeout:[h=>h.timers.advance(TOTAL_MS),'HANDOFF_TIMEOUT'],
+    dispose:[h=>h.manager.dispose(),'CANCELLED'],
+  };
+  for(const [name,[end,code]] of Object.entries(endings))for(const via of ['code','link']){
+    const pending=deferred(),label=name+' '+via;
+    const h=manual({openEmployeeSurface:()=>pending.promise}),ids=idsFor(h);
+    const box=track(via==='code'?h.manager.inspectCode({code:TOKEN,...ids}):h.manager.handoffLink({href:LINK,...ids}));
+    if(via==='code')await classifyEmployee(h,ids);
+    await settle(5);
+    assert.equal(h.surfaces.length,1,label);
+    assert.equal(box.settled,false,label);
+    end(h,ids);
+    await settle(5);
+    assert.deepEqual(box.value,{ok:false,...ids,code,retryable:true},label);
+    const late=workspaceSurface(h.electron);
+    pending.resolve(late);
+    await settle(5);
+    assert.equal(late.surface.isDestroyed(),true,label);
+    assert.deepEqual(late.surface.webContents.loads,[],label);
+    assert.equal(late.surface.webContents.ipc.handlers.size,0,label);
+    assert.deepEqual(box.value,{ok:false,...ids,code,retryable:true},label);
+    assert.equal(h.timers.size,0,label);
+  }
+});
+
+test('겉을 기다리는 동안 결속이 다른 세대나 epoch가 되면 ACCOUNT_CHANGED이고 받은 겉은 닫힌다',async()=>{
+  const changes={generation:h=>h.setBinding(signedIn()),epoch:h=>h.setBinding({...h.binding,epoch:h.binding.epoch+1})};
+  // 계정 알림(syncAccount)이 먼저 오면 그때 끝나고, 오지 않았으면 겉이 온 때 결속을 다시 보고 끝낸다.
+  for(const [name,change] of Object.entries(changes))for(const synced of [false,true]){
+    const pending=deferred(),label=name+(synced?' syncAccount':'');
+    const h=manual({openEmployeeSurface:()=>pending.promise}),ids=idsFor(h);
+    const box=track(h.manager.inspectCode({code:TOKEN,...ids}));
+    await classifyEmployee(h,ids);
+    await settle(5);
+    change(h);
+    if(synced)h.manager.syncAccount();
+    await settle(5);
+    assert.equal(box.settled,synced,label);
+    const late=workspaceSurface(h.electron);
+    pending.resolve(late);
+    await settle(5);
+    assert.deepEqual(box.value,{ok:false,...ids,code:'ACCOUNT_CHANGED',retryable:true},label);
+    assert.equal(late.surface.isDestroyed(),true,label);
+    assert.deepEqual(late.surface.webContents.loads,[],label);
+    assert.equal(h.timers.size,0,label);
+  }
+});
+
+test('직원 분류 뒤 분류 창이 닫혀도 요청은 CANCELLED로 끝나지 않고 같은 요청과 토큰으로 겉의 직원 문서에 이어진다',async()=>{
+  const pending=deferred();
+  const h=manual({openEmployeeSurface:()=>pending.promise}),ids=idsFor(h);
+  const box=track(h.manager.inspectCode({code:TOKEN,...ids}));
+  const receiver=await classifyEmployee(h,ids);
+  await settle(5);
+  // 관리자가 분류 창을 요청에서 먼저 떼고 닫았다. 그 창의 closed와 끊김이 다시 와도 요청은 그대로다.
+  assert.equal(receiver.win.isDestroyed(),true);
+  receiver.win.emit('closed');
+  receiver.contents.emit('render-process-gone',{},{reason:'crashed'});
+  await settle(5);
+  assert.equal(box.settled,false);
+  assert.equal(await commit(receiver,{id:receiver.offer.id,...ids,documentId:crypto.randomUUID()}),null);
+  pending.resolve(workspaceSurface(h.electron));
+  const doc=await employeeDocument(h);
+  assert.notEqual(doc.win,receiver.win);
+  assert.deepEqual(doc.contents.loads,[EMPLOYEE_URL]);
+  assert.notEqual(doc.offer.id,receiver.offer.id);
+  const documentId=crypto.randomUUID(),base={id:doc.offer.id,...ids,documentId};
+  assert.deepEqual(await commit(doc,base),{...base,token:TOKEN});
+  result(doc,{...base,outcome:'delivered'});
+  await settle(5);
+  assert.deepEqual(box.value,{ok:true,...ids,state:'received',destination:'/'});
+  assert.equal(h.timers.size,0);
+});
+
+test('겉의 세션이 답의 세션과 다르거나 IPC가 없으면 HANDOFF_UNAVAILABLE이고 그 겉을 닫는다',async()=>{
+  const answers={
+    other:electron=>({surface:workspaceSurface(electron).surface,session:electron.session.fromPartition('persist:other-test')}),
+    missing:electron=>({surface:workspaceSurface(electron).surface,session:null}),
+    noIpc:electron=>{const answer=workspaceSurface(electron);answer.surface.webContents.ipc=null;return answer;},
+  };
+  for(const via of ['link','code'])for(const [name,answer] of Object.entries(answers)){
+    const h=manual({openEmployeeSurface:(_binding,electron)=>answer(electron)}),ids=idsFor(h),label=name+' '+via;
+    const box=track(via==='code'?h.manager.inspectCode({code:TOKEN,...ids}):h.manager.handoffLink({href:LINK,...ids}));
+    if(via==='code')await classifyEmployee(h,ids);
+    await settle(5);
+    const surface=h.electron.windows.at(-1);
+    assert.equal(h.electron.windows.length,via==='code'?2:1,label);
+    assert.equal(h.electron.windows[0].isDestroyed(),true,label);
+    assert.deepEqual(box.value,{ok:false,...ids,code:'HANDOFF_UNAVAILABLE',retryable:false},label);
+    assert.equal(surface.isDestroyed(),true,label);
+    assert.deepEqual(surface.webContents.loads,[],label);
+    // 세션을 확인하기 전에는 그 겉에 지킴과 IPC를 걸지 않는다.
+    assert.equal(surface.webContents.listenerCount('dom-ready'),0,label);
+    assert.equal(h.timers.size,0,label);
+  }
 });
 
 // ── preload 단독 ──
@@ -1237,11 +1468,13 @@ test('화면은 주소, partition, 프로필, 계정 ID를 고르지 못한다',
   assert.equal(h.electron.windows.length,0);
 });
 
-test('회사 창은 저장하지 않은 입력을 버리기 전에 묻고, 남기면 진행 중인 앱 종료를 멈춘다',async()=>{
+test('쓰던 글 확인을 걸지 않은 겉에는 회사 입구가 저장하지 않은 입력을 버리기 전에 묻고, 남기면 진행 중인 앱 종료를 멈춘다',async()=>{
   const answers=[],dialogs=[];let kept=0;
   const h=manual({dialog:{showMessageBoxSync:(win,options)=>{dialogs.push({win,options});return answers.shift();}},onUnloadKept:()=>{kept+=1;}});
   track(h.manager.handoffLink({href:LINK,...idsFor(h)}));
+  await settle(5);
   const [win]=h.electron.windows;
+  assert.equal(win.workspaceGuarded,undefined);
   const unload=target=>{const event={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};target.webContents.emit('will-prevent-unload',event);return event.defaultPrevented;};
   answers.push(0);assert.equal(unload(win),false);assert.equal(kept,1);
   answers.push(1);assert.equal(unload(win),true);assert.equal(kept,1);
@@ -1256,10 +1489,12 @@ test('회사 창은 저장하지 않은 입력을 버리기 전에 묻고, 남�
   let quiet=0;
   const g=manual({onUnloadKept:()=>{quiet+=1;}});
   track(g.manager.handoffLink({href:LINK,...idsFor(g)}));
+  await settle(5);
   assert.equal(unload(g.electron.windows[0]),false);assert.equal(quiet,1);
   // onUnloadKept의 오류는 창을 깨뜨리지 않는다.
   const broken=manual({onUnloadKept:()=>{throw new Error('합성 오류');}});
   track(broken.manager.handoffLink({href:LINK,...idsFor(broken)}));
+  await settle(5);
   assert.doesNotThrow(()=>unload(broken.electron.windows[0]));
 });
 
@@ -1467,8 +1702,10 @@ function syntheticAuth(t,{load=async()=>({...SAVED_SIGN_IN}),clear=()=>undefined
 function lookupFor(getBinding){
   return createCompanyEntryDestinations({getBinding,getAccessToken:async()=>{throw new Error('토큰을 읽지 않는다');},fetcher:async()=>{throw new Error('서버에 묻지 않는다');}});
 }
+// receiver는 OTHER_TOKEN을 고객 초대로, 그 밖의 코드를 직원 초대로 분류한다.
+const byToken=token=>(token===OTHER_TOKEN?{kind:'customer',destination:'/pulse-app/'}:{kind:'employee',destination:'/'});
 
-test('세션 만료로 auth가 로그아웃을 확정하면 남은 AUTH_REQUIRED와 관계없이 확정 손님의 초대가 넘어간다',async t=>{
+test('세션 만료로 auth가 로그아웃을 확정하면 남은 AUTH_REQUIRED와 관계없이 확정 손님의 고객 초대는 넘어가고 직원 초대는 로그인이 필요하다고 답한다',async t=>{
   const auth=syntheticAuth(t,{tokens:['issued','offline','rejected']});
   const jars=fakeJars();
   let h=null;
@@ -1476,14 +1713,18 @@ test('세션 만료로 auth가 로그아웃을 확정하면 남은 AUTH_REQUIRED
   await auth.service.initialize();
   const member=auth.binding(),first=member.accountGeneration;
   assert.deepEqual(member,{accountGeneration:first,expectedAccountId:ACCOUNT,epoch:0,status:'signed-in'});
-  h=integrated({binding:member,selectCompanyPartition:binding=>partitions.select(binding),scripts:{[RECEIVER_URL]:companyScript('receiver'),[EMPLOYEE_URL]:companyScript('employee')}});
+  h=integrated({binding:member,selectCompanyPartition:binding=>partitions.select(binding),scripts:{[RECEIVER_URL]:companyScript('receiver',{classify:byToken}),[EMPLOYEE_URL]:companyScript('employee')}});
   // main의 publishAuthState처럼 auth가 바뀔 때마다 결속을 다시 읽고 관리자와 partition을 맞춘다.
   const publish=()=>{h.setBinding(auth.binding());h.manager.syncAccount();partitions.sync();};
+  // 회원의 맨 코드는 그 계정 partition의 숨은 창에서 분류되고, Workspace 겉의 직원 문서에서 실제 큐에 들어간다.
   const memberIds=idsFor(h);
-  assert.deepEqual(await within(h.manager.handoffLink({href:LINK,...memberIds})),{ok:true,...memberIds,state:'received',destination:'/'});
-  const [memberWindow]=h.electron.windows,memberPartition=companyEntryPartition(member);
-  assert.equal(memberWindow.options.webPreferences.partition,memberPartition);
-  assert.equal(offersOf(h.documents[0].frame)[0].expectedAccountId,ACCOUNT);
+  assert.deepEqual(await within(h.manager.inspectCode({code:TOKEN,...memberIds})),{ok:true,...memberIds,state:'received',destination:'/'});
+  const [memberReceiver,memberWindow]=h.electron.windows,memberPartition=companyEntryPartition(member);
+  assert.equal(memberReceiver.options.webPreferences.partition,memberPartition);
+  assert.equal(memberReceiver.isDestroyed(),true);
+  assert.equal(memberWindow.options.webPreferences.partition,WORKSPACE_PARTITION);
+  assert.equal(h.surfaces.length,1);
+  for(const doc of h.documents)assert.equal(offersOf(doc.frame)[0].expectedAccountId,ACCOUNT);
 
   // 같은 계정의 토큰 갱신이 다시 시도할 수 있게 실패했다. 세대는 그대로이고 결속은 error라 손님이 아니다.
   // 그 계정의 회사 창과 저장소, 저장된 로그인은 남고 새 인계와 조회는 다시 시도하라는 답으로 막힌다.
@@ -1500,7 +1741,8 @@ test('세션 만료로 auth가 로그아웃을 확정하면 남은 AUTH_REQUIRED
   assert.deepEqual(await h.manager.inspectCode({code:TOKEN,...waitingInspect}),{ok:false,...waitingInspect,code:'TEMPORARY_UNAVAILABLE',retryable:true});
   assert.deepEqual(await h.manager.handoffLink({href:LINK,...waitingLink}),{ok:false,...waitingLink,code:'TEMPORARY_UNAVAILABLE',retryable:true});
   assert.deepEqual(await lookupFor(()=>h.binding).resolve(waitingLookup),{ok:false,...waitingLookup,code:'TEMPORARY_UNAVAILABLE',retryable:true});
-  assert.equal(h.electron.windows.length,1);
+  assert.equal(h.electron.windows.length,2);
+  assert.equal(h.surfaces.length,1);
   assert.equal(auth.counts.clear,0);
 
   // 서버가 그 세션을 거절했다. auth는 세션과 금고를 비우고 새 세대의 로그아웃을 확정하며, 그 이유로 AUTH_REQUIRED를 남긴다.
@@ -1512,29 +1754,46 @@ test('세션 만료로 auth가 로그아웃을 확정하면 남은 AUTH_REQUIRED
   const guest=h.binding;
   assert.notEqual(guest.accountGeneration,first);
   assert.deepEqual(guest,{accountGeneration:guest.accountGeneration,expectedAccountId:null,epoch:1,status:'signed-out'});
-  // 이전 세대의 회사 창과 그 저장소는 지금처럼 바로 정리된다.
+  // 이전 세대의 직원 문서 겉과 회사 창 저장소는 지금처럼 바로 정리된다.
   await settle(5);
   assert.equal(memberWindow.isDestroyed(),true);
   assert.deepEqual(jars.cleared,[memberPartition,memberPartition+':cache']);
 
-  // 확정 손님의 맨 코드는 손님 partition의 새 창에서 receiver 분류를 거쳐 직원 문서의 실제 큐까지 간다.
-  const ids=idsFor(h);
-  const response=await within(h.manager.inspectCode({code:TOKEN,...ids}));
-  assert.deepEqual(response,{ok:true,...ids,state:'received',destination:'/'});
-  const guestWindow=h.electron.windows[1],guestDocuments=h.documents.filter(doc=>doc.contents===guestWindow.webContents);
-  assert.equal(guestWindow.options.webPreferences.partition,companyEntryPartition(guest));
+  // 확정 손님의 맨 코드는 손님 partition의 새 숨은 창에서 receiver 분류를 거친다. 고객 코드는 PULSE 경로로 넘어가고,
+  // 직원 코드는 Workspace 겉을 청하지 않고 SIGN_IN_REQUIRED로 끝난다. 직원 링크는 분류 창도 열지 않고 같은 답이다.
+  const customerIds=idsFor(h),employeeIds=idsFor(h),linkIds=idsFor(h);
+  const responses=[
+    await within(h.manager.inspectCode({code:OTHER_TOKEN,...customerIds})),
+    await within(h.manager.inspectCode({code:TOKEN,...employeeIds})),
+    await within(h.manager.handoffLink({href:LINK,...linkIds})),
+  ];
+  assert.deepEqual(responses,[
+    {ok:true,...customerIds,state:'received',destination:'/pulse-app/'},
+    {ok:false,...employeeIds,code:'SIGN_IN_REQUIRED',retryable:false},
+    {ok:false,...linkIds,code:'SIGN_IN_REQUIRED',retryable:false},
+  ]);
+  assert.deepEqual(h.customer,[{token:OTHER_TOKEN,...customerIds}]);
+  assert.equal(h.surfaces.length,1);
+  const guestWindows=h.electron.windows.slice(2);
+  assert.equal(guestWindows.length,2);
   assert.notEqual(companyEntryPartition(guest),memberPartition);
-  assert.deepEqual(guestDocuments.map(doc=>doc.url),[RECEIVER_URL,EMPLOYEE_URL]);
+  for(const win of guestWindows){
+    assert.equal(win.options.webPreferences.partition,companyEntryPartition(guest));
+    assert.deepEqual(win.webContents.loads,[RECEIVER_URL]);
+    assert.equal(win.isVisible(),false);
+    assert.equal(win.isDestroyed(),true);
+  }
+  const guestDocuments=h.documents.filter(doc=>guestWindows.some(win=>win.webContents===doc.contents));
+  assert.deepEqual(guestDocuments.map(doc=>doc.url),[RECEIVER_URL,RECEIVER_URL]);
   for(const doc of guestDocuments)assert.equal(offersOf(doc.frame)[0].expectedAccountId,null);
-  assert.deepEqual(guestDocuments[1].state.queue,[{requestId:ids.requestId,accountGeneration:ids.accountGeneration,token:TOKEN}]);
   // 배정 조회는 다시 시도하라는 답 대신 로그인이 필요하다고 답한다.
   const lookup=idsFor(h);
   assert.deepEqual(await lookupFor(()=>h.binding).resolve(lookup),{ok:false,...lookup,code:'LOGIN_REQUIRED',retryable:false});
-  assertTokenOnlyInOffers(h,[response]);
+  assertTokenOnlyInOffers(h,responses);
   assert.deepEqual(auth.unexpected,[]);
 });
 
-test('로그인을 취소해 auth가 로그아웃을 확정하면 남은 AUTH_CANCELLED와 관계없이 확정 손님의 초대가 넘어간다',async t=>{
+test('로그인을 취소해 auth가 로그아웃을 확정하면 남은 AUTH_CANCELLED와 관계없이 확정 손님의 고객 초대는 넘어가고 직원 초대는 로그인이 필요하다고 답한다',async t=>{
   // auth-preparation 시험과 같은 길이다. 로그인 준비(금고 비우기) 중에 취소하므로 로그인 창과 콜백 서버는 열리지 않는다.
   const preparing=deferred();
   const auth=syntheticAuth(t,{load:async()=>null,clear:call=>(call===1?preparing.promise:undefined)});
@@ -1549,11 +1808,22 @@ test('로그인을 취소해 auth가 로그아웃을 확정하면 남은 AUTH_CA
   const binding=auth.binding();
   assert.deepEqual(binding,{accountGeneration:auth.service.accountGeneration(),expectedAccountId:null,epoch:2,status:'signed-out'});
   assert.notEqual(companyEntryPartition(binding),null);
-  const h=integrated({binding,scripts:{[RECEIVER_URL]:companyScript('receiver'),[EMPLOYEE_URL]:companyScript('employee')}});
-  const inspect=idsFor(h),link=idsFor(h),lookup=idsFor(h);
-  const responses=[await within(h.manager.inspectCode({code:TOKEN,...inspect})),await within(h.manager.handoffLink({href:LINK,...link}))];
-  assert.deepEqual(responses,[{ok:true,...inspect,state:'received',destination:'/'},{ok:true,...link,state:'received',destination:'/'}]);
-  assert.equal(h.documents.length,3);
+  const h=integrated({binding,scripts:{[RECEIVER_URL]:companyScript('receiver',{classify:byToken}),[EMPLOYEE_URL]:companyScript('employee')}});
+  const customer=idsFor(h),inspect=idsFor(h),link=idsFor(h),lookup=idsFor(h);
+  const responses=[
+    await within(h.manager.inspectCode({code:OTHER_TOKEN,...customer})),
+    await within(h.manager.inspectCode({code:TOKEN,...inspect})),
+    await within(h.manager.handoffLink({href:LINK,...link})),
+  ];
+  assert.deepEqual(responses,[
+    {ok:true,...customer,state:'received',destination:'/pulse-app/'},
+    {ok:false,...inspect,code:'SIGN_IN_REQUIRED',retryable:false},
+    {ok:false,...link,code:'SIGN_IN_REQUIRED',retryable:false},
+  ]);
+  assert.deepEqual(h.customer,[{token:OTHER_TOKEN,...customer}]);
+  // 손님은 Workspace 겉을 청하지 않는다. 두 맨 코드만 receiver 문서에 닿는다.
+  assert.deepEqual(h.surfaces,[]);
+  assert.deepEqual(h.documents.map(doc=>doc.url),[RECEIVER_URL,RECEIVER_URL]);
   for(const doc of h.documents)assert.equal(offersOf(doc.frame)[0].expectedAccountId,null);
   assert.deepEqual(await lookupFor(()=>h.binding).resolve(lookup),{ok:false,...lookup,code:'LOGIN_REQUIRED',retryable:false});
   assertTokenOnlyInOffers(h,responses);
@@ -1590,13 +1860,16 @@ test('복원 중, 저장된 로그인의 재시도 대기, 다시 시도할 수 
   const masked=auth.service.status();
   assert.deepEqual({status:masked.status,signedIn:masked.signedIn,account:masked.account,retryable:masked.error?.retryable},{status:'signed-out',signedIn:false,account:null,retryable:true});
   await blocked('재시도 오류가 남은 로그아웃 표시','error');
-  // 로그아웃을 마치면(suite-session.cjs가 부르는 auth.signOut) 이유가 없는 확정 로그아웃이 되어 손님 초대가 넘어간다.
+  // 로그아웃을 마치면(suite-session.cjs가 부르는 auth.signOut) 이유가 없는 확정 로그아웃이 된다. 손님의 고객 초대는 넘어가고,
+  // 직원 초대는 다시 시도하라는 답이 아니라 로그인이 필요하다는 답이다.
   await auth.service.signOut();
   assert.equal(auth.service.status().error,null);
   const guest=auth.binding();
   assert.equal(guest.status,'signed-out');
-  const h=integrated({binding:guest,scripts:{[RECEIVER_URL]:companyScript('receiver'),[EMPLOYEE_URL]:companyScript('employee')}});
-  const ids=idsFor(h);
-  assert.deepEqual(await within(h.manager.inspectCode({code:TOKEN,...ids})),{ok:true,...ids,state:'received',destination:'/'});
+  const h=integrated({binding:guest,scripts:{[RECEIVER_URL]:companyScript('receiver',{classify:byToken}),[EMPLOYEE_URL]:companyScript('employee')}});
+  const customer=idsFor(h),employee=idsFor(h);
+  assert.deepEqual(await within(h.manager.inspectCode({code:OTHER_TOKEN,...customer})),{ok:true,...customer,state:'received',destination:'/pulse-app/'});
+  assert.deepEqual(await within(h.manager.inspectCode({code:TOKEN,...employee})),{ok:false,...employee,code:'SIGN_IN_REQUIRED',retryable:false});
+  assert.deepEqual(h.surfaces,[]);
   assert.deepEqual(auth.unexpected,[]);
 });

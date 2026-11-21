@@ -11,7 +11,7 @@ function block(){
 }
 const signedIn=(appIds=['messenger'],extra={})=>({status:'signed-in',signedIn:true,sessionGeneration:1,library:{status:'ready',appIds},...extra});
 function harness({state=signedIn(),installed=true,windowOpen=false}={}){
-  const calls={setApps:[],probes:[],launches:[],windows:0,loads:[],timers:[]};
+  const calls={setApps:[],probes:[],launches:[],windows:0,actions:[],loads:[],timers:[]};
   const probes=[];let launchImpl=async(id,{confirm})=>confirm()?{ok:true}:{ok:false,code:'LAUNCH_CANCELLED'};
   const context={
     platformTray:{isActive:()=>true,setApps:ids=>{calls.setApps.push([...ids]);return {ok:true};}},
@@ -24,7 +24,7 @@ function harness({state=signedIn(),installed=true,windowOpen=false}={}){
     }),
     installed,manualProbe:false,
     requireSuite:operation=>operation(),
-    requestPlatformWindow:()=>{calls.windows++;},
+    requestPlatformWindow:action=>{calls.windows++;calls.actions.push(action??null);},
     setTimeout:(fn,ms)=>{const timer={fn,ms,unref(){}};calls.timers.push(timer);return timer;},
     clearTimeout:timer=>{const index=calls.timers.indexOf(timer);if(index>=0)calls.timers.splice(index,1);},
     Promise,Array,
@@ -67,46 +67,32 @@ test('a newer check wins over an older one that finishes later',async()=>{
   assert.deepEqual(calls.setApps,[[]]);
 });
 
-test('pressing SYNK Workspace launches it from the main process without creating the Platform window',async()=>{
+// 검정 구 4단계(구현 설계 3.5): 트레이의 Workspace 줄은 따로 설치한 앱을 실행하지 않는다. 플랫폼 창을 부르고 화면이 창 안의 Workspace를 연다
+test('pressing SYNK Workspace opens the Platform window into the Workspace inside it, never the installed app',async()=>{
   const {context,calls}=harness();
   await context.launchFromTray('messenger');await flush();
-  assert.deepEqual(calls.launches,['messenger']);
-  assert.equal(calls.windows,0);
+  assert.deepEqual(calls.launches,[],'the installed Workspace app is not started');
+  assert.equal(calls.windows,1);
+  // vm 안에서 만든 값이라 꼴만 견준다
+  assert.equal(JSON.stringify(calls.actions),JSON.stringify([{type:'open-space',space:'workspace'}]));
 });
 
-test('a press that can no longer launch opens the Platform window instead of disappearing',async()=>{
+test('a press without the Workspace right only opens the Platform window',async()=>{
   const revoked=harness();revoked.context.state=signedIn(['pulse']);
   await revoked.context.launchFromTray('messenger');
-  assert.deepEqual(revoked.calls.launches,[]);assert.equal(revoked.calls.windows,1);
-  const failed=harness();failed.setLaunch(async()=>({ok:false,code:'INVALID_INSTALLATION'}));
-  await failed.context.launchFromTray('messenger');
-  assert.equal(failed.calls.windows,1);
-  const thrown=harness();thrown.setLaunch(async()=>{throw new Error('suite refresh failed');});
-  await thrown.context.launchFromTray('messenger');
-  assert.equal(thrown.calls.windows,1);
-  thrown.setLaunch(async()=>({ok:true}));
-  await thrown.context.launchFromTray('messenger');
-  assert.deepEqual(thrown.calls.launches,['messenger','messenger'],'a thrown launch does not block the next press');
-  assert.equal(thrown.calls.windows,1);
+  assert.deepEqual(revoked.calls.launches,[]);assert.equal(revoked.calls.windows,1);assert.deepEqual(revoked.calls.actions,[null]);
+  const signedOut=harness({state:{status:'signed-out',signedIn:false,library:{status:'unavailable',appIds:[]}}});
+  await signedOut.context.launchFromTray('messenger');
+  assert.deepEqual(signedOut.calls.actions,[null]);
 });
 
-test('the account changing while the launch checks its files keeps Workspace from starting',async()=>{
-  const {context,calls,setLaunch}=harness();
-  let started=false;
-  setLaunch(async(id,{confirm})=>{context.state=signedIn(['messenger'],{sessionGeneration:2});if(!confirm())return {ok:false,code:'LAUNCH_CANCELLED'};started=true;return {ok:true};});
-  await context.launchFromTray('messenger');
-  assert.equal(started,false);assert.equal(calls.windows,1);
-});
-
-test('a second press while a launch runs is ignored, and nothing happens while quitting',async()=>{
-  const {context,calls,setLaunch}=harness();
-  let release;setLaunch(()=>new Promise(resolve=>{release=()=>resolve({ok:true});}));
-  const first=context.launchFromTray('messenger');await context.launchFromTray('messenger');
-  release();await first;
-  assert.deepEqual(calls.launches,['messenger']);
+test('every press asks again, and nothing happens while quitting',async()=>{
+  const {context,calls}=harness();
+  await context.launchFromTray('messenger');await context.launchFromTray('messenger');
+  assert.equal(calls.windows,2);assert.deepEqual(calls.launches,[]);
   context.quittingRequested=true;
   await context.launchFromTray('messenger');
-  assert.deepEqual(calls.launches,['messenger']);assert.equal(calls.windows,0);
+  assert.equal(calls.windows,2);
   await context.syncTrayApps();
   assert.deepEqual(calls.setApps.at(-1),[],'a quitting app keeps no app row');
 });

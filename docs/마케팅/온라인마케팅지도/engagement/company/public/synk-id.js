@@ -323,6 +323,46 @@ async function beginSynkCompany(action,params={},button,note){
   }catch(error){if(note?.isConnected)note.textContent=error.message;else if(typeof notify==='function')notify(error.message);}
   finally{synkConnectionPending=false;if(button?.isConnected)button.disabled=false;}
 }
+// 검정 구 4단계(구현 설계 7절): PC 앱의 native 연결에서 회사 비밀번호로 들어오거나 초대로 가입한 직후, 그 회사 계정이 아직 SYNK ID에
+// 이어지지 않았으면 방금 넣은 비밀번호로 지금 SYNK ID에 한 번 잇는다. 그래야 PC 안에서 다음부터 누르지 않고 들어온다(로그인 길은 SYNK ID 하나).
+// 칸 아래 한 줄이 그 SYNK ID의 이름을 보이고(installNativeLinkNote), 잇기 직전에 같은 SYNK ID와 세대인지 다시 본다(설계 검토 R13).
+// 잇기가 끝나면 /?tab=messenger로 다시 싣는다(검토 R8). 실패하면 방금 만든 회사 세션을 끝낸다. 미연결 세션이 남으면 열 때마다 확인 오류가 뜬다(검토 R4)
+let synkNativeLinkStamp=null;
+async function installNativeLinkNote(){
+  const desktop=getSynkDesktopBridge(),form=document.querySelector('#auth-form');
+  synkNativeLinkStamp=null;
+  if(!desktop?.authStatus||!form||document.querySelector('#synk-link-note'))return;
+  let auth;try{auth=await desktop.authStatus();}catch{return;}
+  if(auth?.configured!==true||!auth.signedIn||!auth.account?.synk_user_id||form.isConnected===false)return;
+  const name=String(auth.account.display_name||'').trim()||'지금 로그인한 계정';
+  const note=document.createElement('p');note.id='synk-link-note';note.className='synk-id-login-note';
+  note.textContent=`들어오면 이 회사 계정이 SYNK ID ${name}에 이어집니다.`;
+  form.append(note);
+  synkNativeLinkStamp={accountId:auth.account.synk_user_id,generation:auth.sessionGeneration};
+}
+async function linkNativeCompanyAfterPassword(password){
+  const desktop=getSynkDesktopBridge(),stamp=synkNativeLinkStamp;
+  if(!desktop?.authStatus||typeof password!=='string'||!password||!stamp)return false;
+  let me;
+  // api()는 native 복구로 교환을 시작할 수 있어 쓰지 않는다(workspace-entry.js와 같다)
+  try{const response=await fetch('/api/me',{credentials:'same-origin',cache:'no-store'});if(!response.ok)return false;me=await response.json();}catch{return false;}
+  if(!me?.user||me.synkUserId)return false;
+  const csrfToken=me.csrfToken;
+  try{
+    const auth=await desktop.authStatus();
+    if(!auth?.signedIn||auth.account?.synk_user_id!==stamp.accountId||auth.sessionGeneration!==stamp.generation)throw Object.assign(new Error('확인하는 동안 SYNK ID 로그인이 바뀌었어요. 다시 로그인해 주세요.'),{code:'SYNK_LINK_CHANGED'});
+    const status=await synkCompanyRequest('status');
+    if(!status?.enabled)throw Object.assign(new Error('회사 SYNK ID 연결을 준비하고 있어요. 잠시 뒤 다시 로그인해 주세요.'),{code:'SYNK_LINK_UNAVAILABLE'});
+    const challenge=await synkCompanyRequest('challenge',{action:'link',currentPassword:password,csrfToken,confirm:true});
+    await synkCompanyRequest('exchange',{challenge:challenge.challenge,confirm:true});
+  }catch(error){
+    try{await synkCompanyRequest('logout',{csrfToken});}catch{}
+    throw Object.assign(new Error(error?.message||'SYNK ID에 잇지 못했어요. 다시 로그인해 주세요.'),{code:error?.code||'SYNK_LINK_FAILED'});
+  }
+  synkNativeLinkStamp=null;
+  location.replace('/?tab=messenger');
+  return true;
+}
 async function openSynkIdentityDialog(){
   modal('SYNK ID 연결','회사 계정과 공통 로그인', '<p role="status">연결 상태를 확인하고 있어요.</p>');
   try{

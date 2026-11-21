@@ -122,7 +122,9 @@ function pulseAppPartition(scope){return 'persist:synk-pulse-app-'+createHash('s
 // window (pulse-view.cjs, 3단계 구현 설계 2.1), with the names the former window had. Its show() and focus() only bring
 // the platform window forward; the platform screen decides when the view is shown. dialogParent() is the window the
 // unsaved-draft question belongs to.
-function createPulseApp({clientId,getAccount,getRenewingAccount=()=>null,getAccountGeneration=()=>null,createSurface,session,dialog,openExternal,getDownloads,onUnloadKept=()=>{},loadTimeoutMs=25000,inviteTimeoutMs=5000}){
+function createPulseApp({clientId,getAccount,getRenewingAccount=()=>null,getAccountGeneration=()=>null,createSurface,session,dialog,openExternal,getDownloads,onUnloadKept=()=>{},loadTimeoutMs=25000,inviteTimeoutMs=5000,timers=globalThis}){
+  // 시한은 timers로 잰다. 시험이 가짜 시계를 넣어 부하에 흔들리지 않게 한다(0.5.2 공개 후보 검수 A1)
+  const setTimeout=(fn,ms)=>timers.setTimeout(fn,ms),clearTimeout=handle=>timers.clearTimeout(handle);
   // inviting is the invite openInvite is answering (one at a time; cancelInvite names it by its two IDs), and handoff
   // the window hand-off it began, if any.
   let owner=scopeOf(getAccount?.()),epoch=0,activeWindow=null,activeSession=null,pending=null,delivering=null,inviting=null,handoff=null,disposed=false,cleanup=Promise.resolve();

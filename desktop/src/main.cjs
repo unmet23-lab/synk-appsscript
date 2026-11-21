@@ -1,5 +1,5 @@
 'use strict';
-const {app,BrowserWindow,WebContentsView,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard,Notification,systemPreferences}=require('electron');
+const {app,BrowserWindow,WebContentsView,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard,Notification,systemPreferences,desktopCapturer}=require('electron');
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
 const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,identity,sourceScope}=require('./catalog.cjs');
 const {safeEntry,assertSender,trustedEntry,worldNotificationAllowed,preferences,allowedNavigation,externalDestination,contentSecurityPolicy,nativeContentSecurityPolicy}=require('./security.cjs');
@@ -34,7 +34,8 @@ const {createDraftRecovery}=require('./draft-recovery.cjs');
 const {createDraftRecoveryRequests}=require('./draft-recovery-ipc.cjs');
 const {copyDiagnostics}=require('./diagnostics-clipboard.cjs');
 const {createPulseApp,pulseInviteRefusal}=require('./pulse-app.cjs');
-const {createPulseViewHost}=require('./pulse-view.cjs');
+const {createSpaceViewHost}=require('./space-view.cjs');
+const {createWorkspaceApp,WORKSPACE_ENTRY}=require('./workspace-app.cjs');
 const {createCompanyEntryManager,createCompanyEntryPartitions,companyAnswerFromPulse,entryRefusal,bindingFromAuth}=require('./company-entry.cjs');
 const {createCompanyEntryDestinations}=require('./company-entry-destinations.cjs');
 const {createPlatformUpdater}=require('./platform-update.cjs');
@@ -80,7 +81,7 @@ app.setName(current.productName);
 app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.sessionScope+(smoke?'.smoke':'')));
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
-let window,platformTray,trayMemory,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,pulseView,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
+let window,platformTray,trayMemory,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,pulseView,workspaceApp,workspaceView,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
 // 켜짐부터 열림까지(1-가 구현 설계 2절). orbBoot는 구가 드러나기 시작한 시각과 움직임 종류다. 본체가 정해 시작 창과 앱 창에 같은 값을 준다.
 // startupHandoff는 시작 창에서 앱 창으로 겹쳐 넘기는 동안의 상태, unseenFailure는 숨은 채 시작한 길에서 아직 보이지 않은 실패다.
 let orbBoot=null,startupHandoff=null,unseenFailure=null;
@@ -103,7 +104,7 @@ let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);workspaceApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
   if(installations)return installations;
@@ -119,7 +120,7 @@ function ensureInstallations(){
 // 트레이 메뉴의 앱 줄(PC 0.5.0 설계 1.3). 본체가 화면에 주는 로그인 값(accountStatus)으로 권한을 보고, 설치는 해시 없는 확인으로 본다.
 // 화면이 보내던 목록과 그 기억은 쓰지 않는다. 누르면 본체가 바로 실행하고, 못 하면 Platform 창을 연다
 const TRAY_APP='messenger';
-let trayAppsSeq=0,trayAppsTimer=null,trayAppsTick=null,trayLaunching=false;
+let trayAppsSeq=0,trayAppsTimer=null,trayAppsTick=null;
 function trayAppAllowed(id=TRAY_APP){const state=accountStatus();return id===TRAY_APP&&state?.signedIn===true&&state.library?.status==='ready'&&Array.isArray(state.library.appIds)&&state.library.appIds.includes(id);}
 async function syncTrayApps(){
   if(!platformTray?.isActive())return;
@@ -133,18 +134,12 @@ async function syncTrayApps(){
 }
 // 설치 파일 준비의 진행처럼 몰려 오는 알림은 0.3초 묶어 한 번 본다
 function scheduleTrayApps(){if(!platformTray?.isActive())return;clearTimeout(trayAppsTimer);trayAppsTimer=setTimeout(()=>{trayAppsTimer=null;void syncTrayApps();},300);trayAppsTimer.unref?.();}
+// 트레이의 Workspace 줄은 따로 설치한 앱을 실행하지 않는다. 플랫폼 창을 부르고 화면이 창 안의 Workspace를 연다(4단계 구현 설계 3.5).
+// 줄은 지금처럼 그 앱이 설치된 회원에게만 보인다. 앱을 거둘지는 유호님 답으로 정한다. 권한이 없어졌으면 창만 연다
 async function launchFromTray(id){
-  if(quittingRequested||trayLaunching)return;
-  if(!trayAppAllowed(id)){requestPlatformWindow();return;}
-  // 해시를 마치고 띄우기 바로 앞에서 계정 세대와 조건을 다시 본다(설계 검토 D6)
-  const generation=accountStatus()?.sessionGeneration;
-  const unchanged=()=>!quittingRequested&&trayAppAllowed(id)&&accountStatus()?.sessionGeneration===generation;
-  trayLaunching=true;let result=null;
-  try{result=await requireSuite(()=>ensureInstallations().launch(id,{confirm:unchanged}));}catch{result=null;}
-  finally{trayLaunching=false;}
-  void syncTrayApps();
   if(quittingRequested)return;
-  if(result?.ok!==true)requestPlatformWindow();
+  if(!trayAppAllowed(id)){requestPlatformWindow();return;}
+  requestPlatformWindow({type:'open-space',space:'workspace'});
 }
 // 창이 없는 동안 로그인 복원이 다시 시도할 수 있는 실패로 멈추면 본체가 다시 잇는다. 5초에서 두 배씩 5분까지 늘린다.
 // Windows 로그인 직후 망이 붙기 전에 숨은 채 켜지는 길이다. 창이 생기면 화면이 「다시 불러오기」를 맡는다(설계 검토 D1)
@@ -360,7 +355,7 @@ app.on('will-quit',event=>{
         endHandoffWhenShown();}}
     });return;
   }
-  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();companyEntry?.dispose();companyDestinations?.dispose();pulseApp?.dispose();careNotifications?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();if(trayAppsTick)clearInterval(trayAppsTick);if(trayAppsTimer)clearTimeout(trayAppsTimer);if(hiddenAuthRetry)clearTimeout(hiddenAuthRetry);
+  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();companyEntry?.dispose();companyDestinations?.dispose();pulseApp?.dispose();workspaceApp?.dispose();workspaceFollower?.dispose();workspaceAuth?.dispose();careNotifications?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();if(trayAppsTick)clearInterval(trayAppsTick);if(trayAppsTimer)clearTimeout(trayAppsTimer);if(hiddenAuthRetry)clearTimeout(hiddenAuthRetry);
 });
 // 장치 1(1-가 구현 설계 2절): 설치기가 이 앱을 바꾸는 중이면 창과 서비스를 만들기 전에 설치기에 창을 보이라고 청하고 끝난다. 옛 실행 파일이 켜져 바꾸기를 막지 않게 한다
 // 9ae0365423부터 이 저장소에서 구운 설치기(공개하지 않았다)는 앱을 지울 때 --office-unhook으로 한 번 돌렸다. 공개 판의 지우는 프로그램은 이 인자를 부르지 않는다.
@@ -529,10 +524,11 @@ async function prepareUpdateHandoff({token,version,file}={}){
       // 다만 시작 창이 있는데 보이지도 최소화되지도 않았으면 사람이 켠 실행에서 아직 그려지기 전이다(숨은 채 시작한 길에는 시작 창이 없다).
       // 그때는 조용히 가지 않는다. 설치기 창과 새 앱이 앞으로 뜬다(0.4.96 공개 후보 검수 D1 2차)
       const asked=!!startupWin&&!startupWin.isMinimized();
-      // 창 안의 PULSE가 살아 있으면 조용히 가지 않는다. PULSE에 쓰던 글이 있는지 미리 물을 길이 없다(3단계 구현 설계 2.3, 바깥 창일 때와 같은 결과)
-      const draftless=!asked&&others.length===0&&!pulseView?.hasSurface()&&(!main||!(await draftsUnsaved(main)));
-      // 초안을 묻는 사이(0.7초까지) PULSE가 열렸으면(최소화된 창에 초대가 온 따위) 조용히 가지 않는다(3단계 GPT 엔진 검수 GA1)
-      const quiet=draftless&&!pulseView?.hasSurface();
+      // 창 안의 PULSE나 Workspace가 살아 있으면 조용히 가지 않는다. 그 안에 쓰던 글이 있는지 미리 물을 길이 없다(3단계 구현 설계 2.3, 4단계 3.1)
+      const spaceOpen=()=>!!pulseView?.hasSurface()||!!workspaceView?.hasSurface();
+      const draftless=!asked&&others.length===0&&!spaceOpen()&&(!main||!(await draftsUnsaved(main)));
+      // 초안을 묻는 사이(0.7초까지) 뷰가 열렸으면(최소화된 창에 초대가 온 따위) 조용히 가지 않는다(3단계 GPT 엔진 검수 GA1)
+      const quiet=draftless&&!spaceOpen();
       const minimized=!!(main?.isMinimized()||startupWin?.isMinimized()||!main&&!startupWin&&arrivalShow==='minimized');
       if(gen!==handoffGen)return;
       // 초안을 묻는 사이(0.7초까지) 사람이 창을 열었으면 조용히 가지 않고 보이는 넘김으로 간다(0.4.96 검수 C5)
@@ -576,6 +572,70 @@ function endHandoffWhenShown(){
   const visible=()=>{const shown=startupWindow?.browserWindow?.()||(window&&!window.isDestroyed()?window:null);return !!shown&&shown.isVisible();};
   const tick=()=>{if(gen!==handoffGen)return;if(visible()||Date.now()-started>8000)endHandoff();else setTimeout(tick,50);};
   tick();
+}
+/*
+  Workspace 화면 공유 고르기(4단계 구현 설계 4.2). Workspace 관리자가 보이는 뷰의 회사 출처 프레임이 청한 때만 부른다.
+  화면과 창 목록(플랫폼 창 자신은 뺀다, 24개까지)을 화면에 이름 · 종류 · 작은 그림으로만 보낸다. 출처 ID는 보내지 않고 화면은 번호로 답한다.
+  60초 안에 답이 없거나 null이면 거절이다. 한 번에 하나만 묻는다. 끝나면 빈 목록을 보내 화면의 고르기를 거둔다
+*/
+const SHARE_ANSWER_MS=60000,SHARE_MAX=24;
+/*
+  Workspace 로그인(4단계 구현 설계 2절 · 3.3, 검토 R1). 회사 서버는 messenger 제품의 토큰만 받는다. 그래서 Workspace 앱처럼 messenger 클라이언트의
+  로그인을 따로 갖는다. 금고는 userData/WorkspaceAuth다. 플랫폼이 쓰는 Suite 기록을 따라가 같은 SYNK ID로만 선다(createSuiteFollower).
+  처음 Workspace를 열 때 만든다. 그 금고가 비어 있으면 시스템 브라우저가 한 번 열려 같은 SYNK ID로 로그인을 마친다(플랫폼 로그인과 같은 길)
+*/
+let workspaceAuth=null,workspaceFollower=null;
+function workspaceAuthConfig(){if(runtime.clientId!=='platform'||smoke||!runtime.auth?.clients?.messenger)return null;try{return configuration(runtime.auth,'messenger',runtime.mode);}catch{return null;}}
+function ensureWorkspaceAuth(){
+  if(workspaceAuth)return workspaceAuth;
+  const config=workspaceAuthConfig();
+  if(!config||!suiteStore||quittingRequested)return null;
+  const store=createTokenStore({directory:path.join(app.getPath('userData'),'WorkspaceAuth'),safeStorage,scope:current.sessionScope+'.workspace',configFingerprint:config.fingerprint});
+  const signInReturn=createSignInReturn();
+  workspaceAuth=createAuthService({config,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),device:suiteDeviceId,onChange:state=>{workspaceApp?.publishAuth(state);if(signInReturn(state))bringToFront(window,{app});}});
+  workspaceFollower=createSuiteFollower({store:suiteStore,auth:workspaceAuth});
+  void workspaceFollower.start();
+  return workspaceAuth;
+}
+const WORKSPACE_AUTH_NONE=Object.freeze({configured:false,signedIn:false,status:'unconfigured',account:null,error:null});
+// 뷰의 native 연결 일곱 이름의 실제 일. 모두 Workspace 로그인으로 한다. 로그아웃도 Workspace 로그인만 끊는다(검토 R2)
+function workspaceNative(){
+  return {prepare:()=>{ensureWorkspaceAuth();},
+    status:()=>ensureWorkspaceAuth()?.status()??WORKSPACE_AUTH_NONE,
+    accountLoad:()=>{const service=ensureWorkspaceAuth();return service?service.accountRequest('load',{}):{ok:false,error:{code:'AUTH_UNAVAILABLE',message:'Workspace 로그인을 준비하지 못했어요.',retryable:false}};},
+    signIn:async()=>{const service=ensureWorkspaceAuth();if(!service)return WORKSPACE_AUTH_NONE;await service.signIn();return service.status();},
+    cancelSignIn:async()=>{const service=ensureWorkspaceAuth();return service?service.cancel():WORKSPACE_AUTH_NONE;},
+    signOut:async()=>{const service=ensureWorkspaceAuth();return service?service.signOut():{ok:false};},
+    companyRequest:jar=>createCompanyRequests({entry:WORKSPACE_ENTRY,clientId:'messenger',session:jar,auth:{getAccessToken:()=>{const service=ensureWorkspaceAuth();if(!service)throw Object.assign(new Error('AUTH_UNAVAILABLE'),{code:'AUTH_UNAVAILABLE'});return service.getAccessToken();}}})};
+}
+let shareAsk=null,shareSeq=0;
+// 첫 판은 화면 소리를 주지 않는다(4단계 설계 4.2, 검토 R10). 고른 화면이나 창의 그림만 준다
+async function chooseWorkspaceShare(){
+  if(shareAsk||!window||window.isDestroyed()||typeof desktopCapturer?.getSources!=='function')return null;
+  let sources=[];
+  try{sources=await desktopCapturer.getSources({types:['screen','window'],thumbnailSize:{width:320,height:180},fetchWindowIcons:false});}catch{return null;}
+  let own=null;try{own=window&&!window.isDestroyed()?window.getMediaSourceId():null;}catch{own=null;}
+  sources=(Array.isArray(sources)?sources:[]).filter(source=>source&&typeof source.id==='string'&&/^(?:screen|window):/.test(source.id)&&source.id!==own).slice(0,SHARE_MAX);
+  if(!sources.length||shareAsk||!window||window.isDestroyed())return null;
+  const id=++shareSeq;
+  const thumb=source=>{try{return source.thumbnail&&!source.thumbnail.isEmpty()?source.thumbnail.toDataURL():'';}catch{return '';}};
+  const items=sources.map(source=>({name:String(source.name||'').slice(0,120),kind:source.id.startsWith('screen:')?'screen':'window',thumb:thumb(source)}));
+  const picked=await new Promise(resolve=>{
+    const finish=value=>{if(shareAsk?.id!==id)return;clearTimeout(shareAsk.timer);shareAsk=null;sendDesktop('synk:workspace-share-ask',{id,items:[]});resolve(value);};
+    shareAsk={id,finish,count:items.length,timer:setTimeout(()=>finish(null),SHARE_ANSWER_MS)};
+    shareAsk.timer.unref?.();
+    sendDesktop('synk:workspace-share-ask',{id,items});
+  });
+  if(!Number.isInteger(picked)||picked<0||picked>=sources.length)return null;
+  const source=sources[picked];
+  return {video:source};
+}
+function answerWorkspaceShare(input){
+  if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length!==2||!Number.isInteger(input.id))return {ok:false,code:'INVALID_INPUT'};
+  const pick=input.pick;
+  if(!(pick===null||Number.isInteger(pick)&&pick>=0&&pick<SHARE_MAX))return {ok:false,code:'INVALID_INPUT'};
+  if(!shareAsk||shareAsk.id!==input.id||(pick!==null&&pick>=shareAsk.count))return {ok:false,code:'SHARE_NOT_ASKED'};
+  shareAsk.finish(pick);return {ok:true};
 }
 function prefersReducedMotion(){try{return systemPreferences?.getAnimationSettings?.().prefersReducedMotion===true;}catch{return false;}}
 /* 넘김이 취소되거나 실패했다: 가림막을 끝내고, 덮은 장면을 거두고, 쪽지를 지운다 */
@@ -622,8 +682,8 @@ function initializeMain(){
   if(runtime.clientId==='platform'&&process.platform==='win32'&&process.arch==='x64'&&packaged&&!smoke){
     const reported=new Set();
     trayMemory=createTrayMemoryReclaimer({getWindows:()=>BrowserWindow.getAllWindows(),getMetrics:()=>app.getAppMetrics(),
-      // 숨은 창 안의 PULSE가 소리를 내거나 캡처되는 동안에도 줄이지 않는다(3단계 구현 설계 2.3). 뷰는 창 목록에 없다
-      busy:()=>quittingRequested||!platformTray?.isActive()||['downloading','opening'].includes(platformUpdate?.snapshot().state)||!!pulseView?.busy(),
+      // 숨은 창 안의 PULSE나 Workspace가 소리를 내거나 캡처되는 동안에도 줄이지 않는다(3단계 구현 설계 2.3). 뷰는 창 목록에 없다. 통화는 뷰가 숨어도 이어진다(4단계 3.1)
+      busy:()=>quittingRequested||!platformTray?.isActive()||['downloading','opening'].includes(platformUpdate?.snapshot().state)||!!pulseView?.busy()||!!workspaceApp?.busy(),
       reportError:code=>{
         if(reported.has(code))return;reported.add(code);
         void fs.promises.appendFile(path.join(app.getPath('userData'),'tray-memory.log'),new Date().toISOString()+' '+code+'\n').catch(()=>process.emitWarning(code));
@@ -670,8 +730,14 @@ function createWindow(){
   // below does. PULSE's view is not attached to the tray, so its quit state
   // is reset here; leaving the page without quitting changes nothing.
   // PULSE는 플랫폼 창 안의 뷰로 연다(3단계 구현 설계 2절). 뷰를 보일지는 화면이 정하고, 뷰의 상태와 띠로 가는 F6은 화면에 알린다
-  if(runtime.clientId==='platform'&&!pulseView)pulseView=createPulseViewHost({WebContentsView,getWindow:()=>window,onChange:value=>sendDesktop('synk:pulse-view-changed',value),onFocusBand:()=>sendDesktop('synk:pulse-view-event',{type:'focus-band'}),onHidden:()=>sendDesktop('synk:pulse-view-event',{type:'hidden'})});
+  if(runtime.clientId==='platform'&&!pulseView)pulseView=createSpaceViewHost({WebContentsView,getWindow:()=>window,onChange:value=>sendDesktop('synk:pulse-view-changed',value),onFocusBand:()=>sendDesktop('synk:pulse-view-event',{type:'focus-band'}),onHidden:()=>sendDesktop('synk:pulse-view-event',{type:'hidden'})});
   if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,getRenewingAccount:renewingAccount,getAccountGeneration:pulseAccountGeneration,createSurface:options=>pulseView.createSurface(options),session,dialog,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads'),onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
+  // Workspace도 플랫폼 창 안의 뷰로 연다(4단계 구현 설계 3절). 자리는 PULSE와 따로 하나다. 어느 뷰를 보일지는 화면이 정한다
+  if(runtime.clientId==='platform'&&!workspaceView)workspaceView=createSpaceViewHost({WebContentsView,getWindow:()=>window,onChange:value=>sendDesktop('synk:workspace-view-changed',value),onFocusBand:()=>sendDesktop('synk:workspace-view-event',{type:'focus-band'}),onHidden:()=>sendDesktop('synk:workspace-view-event',{type:'hidden'})});
+  // 로그인 길은 플랫폼의 SYNK ID 하나다(설계 2절). 뷰의 native 연결 뒤는 플랫폼 로그인이 아니라 Workspace 로그인(messenger 클라이언트)이다(설계 3.3, 검토 R1 · R2 · R12)
+  if(runtime.clientId==='platform'&&!workspaceApp)workspaceApp=createWorkspaceApp({clientId:runtime.clientId,getAccount:accountStatus,getRenewingAccount:renewingAccount,createSurface:options=>workspaceView.createSurface(options),closeSurfaceForExit:()=>workspaceView.closeForExit(),isSurfaceVisible:()=>workspaceView.visible(),session,dialog,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads'),
+    native:workspaceNative(),
+    chooseShare:()=>chooseWorkspaceShare(),onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
   // The company entry: one fixed company window at a time in an in-memory partition bound to the verified account and
   // its generation (company-entry.cjs), and main's own lookup of the member's company destinations
   // (company-entry-destinations.cjs). A customer invite the company receiver classified goes once to the PULSE manager
@@ -681,8 +747,8 @@ function createWindow(){
   // Workspace app launch and the PULSE window opening, each with its own sign-in and access checks.
   if(runtime.clientId==='platform'&&!companyEntry){
     companyPartitions=createCompanyEntryPartitions({session,getBinding:companyBinding});
-    companyEntry=createCompanyEntryManager({BrowserWindow,session,getBinding:companyBinding,selectCompanyPartition:binding=>companyPartitions.select(binding),deliverCustomer:request=>Promise.resolve(pulseApp.openInvite(request)).then(companyAnswerFromPulse),cancelCustomer:request=>companyAnswerFromPulse(pulseApp.cancelInvite(request)),dialog,onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
-    companyDestinations=createCompanyEntryDestinations({getBinding:companyBinding,getAccessToken:()=>auth.getAccessToken(),fetcher:typeof globalThis.fetch==='function'?globalThis.fetch.bind(globalThis):null,openWorkspace:()=>installations.launch('messenger'),openPulse:()=>pulseApp.open()});
+    companyEntry=createCompanyEntryManager({BrowserWindow,session,getBinding:companyBinding,selectCompanyPartition:binding=>companyPartitions.select(binding),openEmployeeSurface:binding=>workspaceApp.surfaceForInvite(binding),deliverCustomer:request=>Promise.resolve(pulseApp.openInvite(request)).then(companyAnswerFromPulse),cancelCustomer:request=>companyAnswerFromPulse(pulseApp.cancelInvite(request)),dialog,onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
+    companyDestinations=createCompanyEntryDestinations({getBinding:companyBinding,getAccessToken:()=>auth.getAccessToken(),fetcher:typeof globalThis.fetch==='function'?globalThis.fetch.bind(globalThis):null,openWorkspace:()=>workspaceApp.open(),openPulse:()=>pulseApp.open()});
   }
   if(runtime.clientId==='messenger'&&!teacherService){
     const teacherKey=teacherAuthConfig?suiteKey(teacherAuthConfig,runtime.mode):null;
@@ -732,6 +798,10 @@ function createWindow(){
   // 「돌아가서 저장」이나 PULSE가 답하지 않으면 끝내기와 업데이트 설치를 되돌리고(PULSE 관리자의 onUnloadKept와 같은 일, 답이 없을 때는 그쪽이 불리지 않는다 · 설계 검토 R4),
   // 창을 보이고 화면을 PULSE로 데려간다. 트레이를 끈 사람의 창 닫기도 같다(설계 검토 R10). 다시 끝낼 때는 setImmediate로 미룬다
   if(isPlatform&&pulseView)pulseView.installCloseGate(window,{quitting:()=>quittingRequested,quit:()=>setImmediate(()=>app.quit()),onKept:()=>{if(quittingRequested){quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}if(!window||window.isDestroyed())return;if(window.isMinimized())window.restore();window.show();window.focus();sendDesktop('synk:pulse-view-event',{type:'reveal'});}});
+  // 화면 공유를 묻는 동안 창이 숨거나 플랫폼 화면이 새 문서를 실으면 그 물음은 거절로 끝낸다(4단계 설계 4.2, 검토 R20)
+  if(isPlatform){window.on('hide',()=>shareAsk?.finish(null));contents.on('did-start-navigation',(details,_url,isInPlace,isMainFrame)=>{const main=details?.isMainFrame??isMainFrame,same=details?.isSameDocument??isInPlace;if(main===true&&same!==true)shareAsk?.finish(null);});}
+  // Workspace 자리에도 같은 문을 단다. PULSE 문이 막고 자기 공간을 닫은 뒤 close()를 다시 부르면 이 문의 차례다(4단계 구현 설계 3.1)
+  if(isPlatform&&workspaceView)workspaceView.installCloseGate(window,{quitting:()=>quittingRequested,quit:()=>setImmediate(()=>app.quit()),onKept:()=>{if(quittingRequested){quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}if(!window||window.isDestroyed())return;if(window.isMinimized())window.restore();window.show();window.focus();sendDesktop('synk:workspace-view-event',{type:'reveal'});}});
   // 쓰던 글을 지키려고 끝내기를 그만두면 끝내는 중 표시를 되돌린다. Workspace도 같다. 되돌리지 않으면 화면 프로세스 되살리기가 끝내는 중으로 보고 멈춘다(엔진 검수 GA1)
   contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented){quittingRequested=false;if(isPlatform){startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}}});
   if(smoke)contents.on('console-message',details=>{if(details.level==='error')smokeConsoleErrors.push({message:details.message.slice(0,300),source:details.sourceId.split('?')[0],line:details.lineNumber});});
@@ -810,6 +880,14 @@ function createWindow(){
     // 띠의 「PULSE 닫기」. 쓰던 글이 있으면 PULSE 관리자의 쓰던 글 확인이 묻는다(설계 검토 R6)
     'synk:pulse-view-close':()=>isPlatform&&pulseView?pulseView.closeByPerson():{ok:false,code:'LAUNCHER_ONLY'},
     'synk:pulse-app-open':()=>isPlatform&&!smoke?requireSuite(()=>pulseApp.open()):{ok:false,code:'PULSE_APP_UNAVAILABLE'},
+    // 창 안의 Workspace 뷰(4단계 구현 설계 3.5). PULSE 뷰와 같은 꼴이다
+    'synk:workspace-view-place':input=>isPlatform&&workspaceView?workspaceView.place(input):{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:workspace-view-state':()=>isPlatform&&workspaceView?workspaceView.state():{open:false},
+    'synk:workspace-view-focus':()=>isPlatform&&workspaceView?workspaceView.focusView():{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:workspace-view-close':()=>isPlatform&&workspaceView?workspaceView.closeByPerson():{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:workspace-app-open':()=>isPlatform&&!smoke?requireSuite(()=>workspaceApp.open()):{ok:false,code:'WORKSPACE_APP_UNAVAILABLE'},
+    // 화면 공유 고르기의 답(4.2). 꼭 {id, pick}이고 pick은 보낸 목록의 번호나 null이다
+    'synk:workspace-share-answer':input=>answerWorkspaceShare(input),
     // A customer invite with its request, exactly {token,requestId,accountGeneration}; any other form, a lone {token}
     // included, is refused. pulse-app.cjs checks it again, binds it to auth's current generation, waits for the
     // document's own receipt and keeps the token out of every result. Every answer, a refusal here included, has the

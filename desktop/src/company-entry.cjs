@@ -15,6 +15,9 @@
 //   토큰을 내주지 않았을 때만 CANCELLED다. 토큰이 떠나기 전의 취소는 이 관리자가 연 회사 창을 닫으므로 그 창의 preload도 함께 끝난다.
 // - 회사 창은 main이 고른 계정·세대별 메모리 partition(companyEntryPartition)에서만 열린다. 플랫폼, Workspace 앱, PULSE의
 //   기존 쿠키는 복사하지도 지우지도 않는다. 다른 계정, 로그아웃, 새 로그인이 되면 이전 세대의 창과 그 저장소를 정리한다.
+// - 검정 구 4단계(구현 설계 3.4): 분류(receiver) 창은 보이지 않는다. 직원 문서(employee)는 따로 뜨는 창이 아니라 플랫폼 창 안의
+//   Workspace 뷰에 싣는다. 그 겉은 main이 주는 openEmployeeSurface(binding)가 그 계정의 Workspace 통에서 만든다. 손님은 직원 문서로
+//   가지 않고 SIGN_IN_REQUIRED로 끝난다(분류는 토큰을 쓰지 않으므로 코드는 남는다). 열린 Workspace가 바쁘면 BUSY다.
 const path=require('node:path');
 const crypto=require('node:crypto');
 const {preferences}=require('./security.cjs');
@@ -32,7 +35,7 @@ const HANDOFF_ID=/^[A-Za-z0-9_-]{32}$/;
 const TOKEN=/^[A-Za-z0-9_-]{16,200}$/;
 // https, 정확한 호스트, 표준 포트(생략), 사용자 정보 없음, 경로 /, 쿼리 없음, invite 조각 하나. 아래 new URL 비교로 한 번 더 확인한다.
 const EMPLOYEE_LINK=/^https:\/\/workspace\.synk\.im\/#invite=([A-Za-z0-9_-]{16,200})$/;
-const PUBLIC_CODES=new Set(['INVALID_INPUT','INVITE_REJECTED','TEMPORARY_UNAVAILABLE','RATE_LIMITED','ACCOUNT_CHANGED','ACCOUNT_MISMATCH','BUSY','CANCELLED','HANDOFF_TIMEOUT','HANDOFF_UNAVAILABLE',UNCONFIRMED_CODE]);
+const PUBLIC_CODES=new Set(['INVALID_INPUT','INVITE_REJECTED','TEMPORARY_UNAVAILABLE','RATE_LIMITED','ACCOUNT_CHANGED','ACCOUNT_MISMATCH','BUSY','CANCELLED','HANDOFF_TIMEOUT','HANDOFF_UNAVAILABLE','SIGN_IN_REQUIRED',UNCONFIRMED_CODE]);
 const STAGES=Object.freeze({classify:Object.freeze({role:'receiver',url:RECEIVER_URL}),deliver:Object.freeze({role:'employee',url:EMPLOYEE_URL})});
 const CLASSIFIED=new Map([['employee','/'],['customer','/pulse-app/']]);
 const FINAL_OUTCOMES=new Set(['delivered','unavailable','demo','not-received']);
@@ -223,6 +226,8 @@ function createCompanyEntryManager(deps={}){
   const cancelCustomer=typeof deps?.cancelCustomer==='function'?deps.cancelCustomer:()=>null;
   const later=typeof deps?.setTimeout==='function'?deps.setTimeout:setTimeout;
   const cancelLater=typeof deps?.clearTimeout==='function'?deps.clearTimeout:clearTimeout;
+  // 직원 문서를 실을 Workspace 겉(4단계). 답은 {surface, session} · {busy:true} · null이다. 없으면 직원 문서를 열 수 없다
+  const openEmployeeSurface=typeof deps?.openEmployeeSurface==='function'?deps.openEmployeeSurface:null;
   const windowOptions=cosmetic(deps?.windowOptions);
   const wired=typeof BrowserWindow==='function'&&!!session&&typeof session.fromPartition==='function'&&typeof getBinding==='function'&&typeof deliverCustomer==='function'&&typeof selectCompanyPartition==='function';
   const windows=new Map();   // 이 관리자가 만든 회사 창 → 만든 때의 계정 세대
@@ -282,8 +287,36 @@ function createCompanyEntryManager(deps={}){
     return true;
   }
 
+  // 직원 문서의 겉(Workspace 뷰)을 이 요청에 붙인다. 그 겉의 세션이 받은 통이어야 하고, IPC와 싣기가 있어야 한다
+  function attach(req,surface,expectedSession){
+    const contents=surface&&surface.webContents;
+    if(!contents||!expectedSession||contents.session!==expectedSession||!contents.ipc||typeof contents.ipc.handle!=='function'||typeof contents.ipc.on!=='function'||typeof contents.loadURL!=='function')return false;
+    try{guard(surface,contents);}catch{return false;}
+    windows.set(surface,req.accountGeneration);
+    req.window=surface;req.contents=contents;
+    return true;
+  }
+  // 직원 문서는 Workspace 뷰에 싣는다. 겉을 받는 동안(쓰던 글 물음) 요청이 끝났거나 결속이 달라졌으면 새 겉을 닫고 그대로 끝낸다(설계 검토 R6)
+  async function deliverInWorkspace(req){
+    const binding=readBinding(getBinding);
+    if(!binding||!current(req)){changed(req);return;}
+    if(binding.status!=='signed-in'){finish(req,failure(req,'SIGN_IN_REQUIRED',false));return;}
+    if(!openEmployeeSurface){finish(req,failure(req,'HANDOFF_UNAVAILABLE',false));return;}
+    req.step='preparing';
+    let answer=null;
+    try{answer=await openEmployeeSurface(binding);}catch{answer=null;}
+    const surface=answer&&typeof answer==='object'?answer.surface:null;
+    if(req.done){destroy(surface);return;}
+    if(!current(req)){destroy(surface);changed(req);return;}
+    if(answer&&answer.busy===true){destroy(surface);finish(req,failure(req,'BUSY',true));return;}
+    if(!surface||!attach(req,surface,answer.session)){destroy(surface);finish(req,failure(req,'HANDOFF_UNAVAILABLE',false));return;}
+    enter(req,'deliver');
+  }
+
   function guard(win,contents){
-    contents.setWindowOpenHandler(()=>({action:'deny'}));
+    // Workspace 관리자가 만든 겉은 새 창(바깥 링크)과 쓰던 글 확인을 이미 걸었다. 다시 걸면 대화상자가 두 번 뜬다(4단계 설계 3.4)
+    const workspaceSurface=win&&win.workspaceGuarded===true;
+    if(!workspaceSurface)contents.setWindowOpenHandler(()=>({action:'deny'}));
     contents.on('will-attach-webview',event=>event.preventDefault());
     contents.on('will-navigate',(details,url)=>{
       const nav=navigation(details,url);
@@ -313,8 +346,8 @@ function createCompanyEntryManager(deps={}){
     contents.on('render-process-gone',()=>{if(controls(win))interrupt(active,'HANDOFF_UNAVAILABLE');});
     // 직원 문서는 저장하지 않은 가입 입력을 beforeunload로 지킨다. Electron은 그 거절을 말없이 받아들여 창 닫기가 아무 일도
     // 하지 않으므로, 플랫폼·PULSE 창처럼 묻는다. 남기기를 고르면 진행 중인 앱 종료도 멈춘다(main의 onUnloadKept).
-    if(dialog&&typeof dialog.showMessageBoxSync==='function')installDraftExitGuard({contents,window:win,dialog,text:WORKSPACE_EXIT_TEXT});
-    contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented&&!win.isDestroyed())unloadKept();});
+    if(!workspaceSurface&&dialog&&typeof dialog.showMessageBoxSync==='function')installDraftExitGuard({contents,window:win,dialog,text:WORKSPACE_EXIT_TEXT});
+    if(!workspaceSurface)contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented&&!win.isDestroyed())unloadKept();});
     win.on('closed',()=>{windows.delete(win);if(controls(win))interrupt(active,'CANCELLED');});
     // 이 창의 webContents에만 묶인 IPC다. 다른 창이나 전역 ipcMain에서 온 메시지는 여기 닿지 않는다.
     contents.ipc.handle(CHANNELS.commit,(event,payload)=>commit(win,event,payload));
@@ -342,7 +375,8 @@ function createCompanyEntryManager(deps={}){
     req.record=record;req.step='offered';
     try{frame.send(CHANNELS.offer,{id:record.id,requestId:req.requestId,accountGeneration:req.accountGeneration,expectedAccountId:req.expectedAccountId});}
     catch{interrupt(req,'HANDOFF_UNAVAILABLE');return;}
-    try{if(!win.isDestroyed()&&!win.isVisible())win.show();}catch{}
+    // 분류 창은 보이지 않는다. 직원 문서의 겉(Workspace 뷰)은 show()가 플랫폼 창을 앞으로 부를 뿐이고, 뷰를 보일지는 화면이 정한다
+    if(req.stage==='deliver'){try{if(!win.isDestroyed())win.show();}catch{}}
   }
 
   function commit(win,event,payload){
@@ -398,7 +432,8 @@ function createCompanyEntryManager(deps={}){
   function classified(req,kind){
     // 분류 단계는 끝났다. 분류 성공은 최종 성공이 아니다.
     cancelLater(req.stageTimer);req.stageTimer=null;req.record=null;epoch+=1;
-    if(kind==='employee'){enter(req,'deliver');return;}
+    // 직원: 분류 창을 요청에서 먼저 떼고 닫는다(그 창의 closed가 요청을 CANCELLED로 끝내지 않게). 같은 요청과 토큰으로 Workspace 뷰에서 잇는다
+    if(kind==='employee'){const receiver=req.window;req.window=null;req.contents=null;windows.delete(receiver);destroy(receiver);void deliverInWorkspace(req);return;}
     // 고객: receiver 창을 닫고, 같은 요청과 토큰의 소유권을 PULSE 현재 계정 경로에 한 번 넘긴다.
     // 회사 창의 쿠키나 partition은 PULSE로 옮기지 않는다. 넘긴 뒤에는 이 관리자가 토큰을 갖지 않는다.
     const token=req.token;
@@ -437,6 +472,8 @@ function createCompanyEntryManager(deps={}){
     const promise=new Promise(resolve=>{req.resolve=resolve;});
     active=req;
     req.totalTimer=later(()=>expire(req),TOTAL_MS);
+    // 직원 전체 링크는 분류 없이 바로 Workspace 뷰로 간다. 맨 코드는 숨은 분류 창에서 시작한다
+    if(parsed.stage==='deliver'){void deliverInWorkspace(req);return promise;}
     if(!open(req,binding)){finish(req,failure(req,'HANDOFF_UNAVAILABLE',false));return promise;}
     enter(req,parsed.stage);
     return promise;

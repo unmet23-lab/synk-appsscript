@@ -346,7 +346,10 @@ function companyInviteErrorMessage(code, { isPulseLink = false } = {}) {
     case 'ACCOUNT_MISMATCH':
       return '열린 작업 공간의 계정과 현재 로그인한 계정이 달라요. 계정을 맞춘 뒤 다시 시도해 주세요.';
     case 'BUSY':
-      return '다른 작업 공간 요청을 처리하고 있어요. 잠시 뒤 다시 시도해 주세요.';
+      return '다른 작업 공간 요청을 처리하고 있거나, 열린 Workspace에 하던 작업이 있어요. 마친 뒤 다시 시도해 주세요.';
+    // 손님은 Workspace 초대를 받지 않는다. 로그인한 뒤 같은 코드로 받는다(검정 구 4단계 구현 설계 2절)
+    case 'SIGN_IN_REQUIRED':
+      return 'Workspace 초대는 로그인한 뒤에 받을 수 있어요. 로그인한 뒤 같은 코드를 다시 넣어 주세요.';
     case 'CANCELLED':
       return '초대 확인이 취소되었어요. 코드를 확인한 뒤 다시 눌러 주세요.';
     case 'AUTH_PENDING':

@@ -329,7 +329,7 @@ function handoffContext(fail,{visible=true,focused=true,startup=false,others=0,o
   const extra=Array.from({length:others},()=>({...win}));
   const context={
     process:{env:{LOCALAPPDATA:'C:\Users\fixture\AppData\Local'},platform:'win32',pid:4321},
-    smoke:false,handoffGen:0,window:win,curtain:null,quietQuit:false,handoffCover:null,quittingRequested:false,pulseView:null,
+    smoke:false,handoffGen:0,window:win,curtain:null,quietQuit:false,handoffCover:null,quittingRequested:false,pulseView:null,workspaceView:null,
     startupWindow:startup?{isVisible:()=>true,browserWindow:()=>win}:null,
     endHandoff:()=>{calls.push('end');boom('end');},
     BrowserWindow:{getAllWindows:()=>{boom('windows');return [win,...extra];},getFocusedWindow:()=>{boom('focus');return focused?win:null;}},
@@ -379,6 +379,10 @@ test('every handoff step that throws falls back to the old path: the app still q
   const late={};const opened=handoffContext(null,{visible:false,onDrafts:()=>{late.context.pulseView={hasSurface:()=>true};}});late.context=opened.context;
   await opened.context.prepareUpdateHandoff({token:'a'.repeat(64),version:'0.4.97',file:'x.exe'});
   assert.equal(opened.context.quietQuit,false);assert.deepEqual(opened.calls.filter(c=>c!=='end'),['note']);
+  // 창 안의 Workspace가 그 사이에 열려도 같다(4단계 구현 설계 3.1)
+  const lateWs={};const openedWs=handoffContext(null,{visible:false,onDrafts:()=>{lateWs.context.workspaceView={hasSurface:()=>true};}});lateWs.context=openedWs.context;
+  await openedWs.context.prepareUpdateHandoff({token:'a'.repeat(64),version:'0.4.97',file:'x.exe'});
+  assert.equal(openedWs.context.quietQuit,false);assert.deepEqual(openedWs.calls.filter(c=>c!=='end'),['note']);
 });
 test('a curtain handle that throws while the last window closes still hands the update to the installer',async()=>{
   const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8').replace(/\r\n/g,'\n');
@@ -394,13 +398,13 @@ test('a curtain handle that throws while the last window closes still hands the 
 // 시작 관문 단계(앱 창이 아직 없음)에서 새 판을 받아 넘길 때: 시작 창은 앱 창 자리이고 쓸 초안이 없다(0.4.96 카본 D1, Fable F1).
 // 숨은 채 시작한 길(시작 창이 없음)은 조용히 바뀌고, 사람이 시작 창을 최소화해 두었으면 새 앱도 최소화로 켜진다. 다른 창이 있거나,
 // 사람이 켠 실행에서 시작 창이 아직 그려지기 전(보이지도 최소화되지도 않음)이면 조용히 가지 않는다(공개 후보 카본 D1 2차)
-function gateHandoffContext({startup=null,others=0,arrival=null,pulse=false}={}){
+function gateHandoffContext({startup=null,others=0,arrival=null,pulse=false,workspace=false}={}){
   const notes=[],asked=[];
   const startupWin=startup?{isDestroyed:()=>false,isVisible:()=>startup==='minimized',isMinimized:()=>startup==='minimized'}:null;
   const extra=Array.from({length:others},()=>({isDestroyed:()=>false,isVisible:()=>false,isMinimized:()=>false}));
   const context={
     process:{env:{LOCALAPPDATA:'C:\Users\fixture\AppData\Local'},platform:'win32',pid:4321},
-    smoke:false,handoffGen:0,window:null,curtain:null,quietQuit:false,handoffCover:null,quittingRequested:false,pulseView:pulse?{hasSurface:()=>true}:null,arrivalShow:arrival,
+    smoke:false,handoffGen:0,window:null,curtain:null,quietQuit:false,handoffCover:null,quittingRequested:false,pulseView:pulse?{hasSurface:()=>true}:null,workspaceView:workspace?{hasSurface:()=>true}:null,arrivalShow:arrival,
     startupWindow:startupWin?{isVisible:()=>false,browserWindow:()=>startupWin}:null,
     endHandoff:()=>{},
     BrowserWindow:{getAllWindows:()=>[...(startupWin?[startupWin]:[]),...extra],getFocusedWindow:()=>null},
@@ -427,6 +431,8 @@ test('a handoff from the startup gate, before the app window exists, is quiet on
     [{others:1},{quiet:false,visibility:'hidden'}],
     // 창 안의 PULSE 뷰는 창 목록에 없지만, 살아 있으면 쓰던 글을 미리 물을 수 없으니 조용히 가지 않는다(3단계 구현 설계 2.3)
     [{pulse:true},{quiet:false,visibility:'hidden'}],
+    // 창 안의 Workspace 뷰도 같다. 통화나 쓰던 글이 있을 수 있다(4단계 구현 설계 3.1)
+    [{workspace:true},{quiet:false,visibility:'hidden'}],
   ];
   for(const [shape,want] of shapes){
     const label=JSON.stringify(shape);

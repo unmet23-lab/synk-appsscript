@@ -2382,7 +2382,7 @@ test('without an embed bridge the face behaves as before and sends nothing', asy
   await settle(); h.face.setState(signedIn()); await settle(); h.face.handle('continue-personal'); await settle();
   h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
   assert.equal(h.view.last().band, null);
-  assert.equal(h.view.last().room.say, 'PULSE가 닫혔습니다.');
+  assert.equal(h.view.last().room.say, 'PULSE를 열었습니다.', 'the separate PULSE window is open, not closed (0.5.2 FA3)');
 });
 
 test('reveal brings the face into PULSE without a dive, and the view takes the keyboard focus (설계 검토 R12 · R3)', async t => {
@@ -2520,4 +2520,198 @@ test('disposing the face hides the PULSE view and drops its listeners', async t 
   assert.deepEqual(e.last(), { visible: false, top: 56 });
   const n = e.sent.length; e.setOpen(false); e.event({ type: 'reveal' }); await settle();
   assert.equal(e.sent.length, n);
+});
+
+/* ── 창 안의 Workspace(4단계 구현 설계 6절) ── */
+function spaceEmbed(name, order) {
+  const sent = [], focused = [], shareAnswers = [];
+  let changed = null, evented = null, asked = null, open = false;
+  const embed = {
+    place(value) { sent.push({ ...value }); order.push([name, value.visible]); return Promise.resolve({ ok: true, open }); },
+    state: () => Promise.resolve({ open }),
+    focus() { focused.push(1); return Promise.resolve({ ok: true }); },
+    open() { api.direct.push(1); if (!open) api.setOpen(true); return Promise.resolve({ ok: true, id: name, reused: true }); },
+    close() { const outcome = api.closeAnswer; if (outcome === 'closed') api.setOpen(false); return Promise.resolve({ ok: true, outcome }); },
+    onChanged(fn) { changed = fn; return () => { changed = null; }; },
+    onEvent(fn) { evented = fn; return () => { evented = null; }; },
+    ...(name === 'workspace' ? { onShareAsk(fn) { asked = fn; return () => { asked = null; }; }, answerShare(value) { shareAnswers.push(value); return Promise.resolve({ ok: true }); } } : {}),
+  };
+  const api = { embed, sent, focused, shareAnswers, direct: [], closeAnswer: 'closed', setOpen(v) { open = v; changed?.({ open: v }); }, event(v) { evented?.(v); }, ask(v) { asked?.(v); }, last: () => sent.at(-1) };
+  return api;
+}
+const SHARE_ITEMS = [{ name: '화면 1', kind: 'screen', thumb: 'data:image/png;base64,AAAA' }, { name: '메모장', kind: 'window', thumb: '' }];
+async function enteredWithBoth(t, extra = {}) {
+  const order = [], desktopActions = [];
+  const p = spaceEmbed('pulse', order), w = spaceEmbed('workspace', order);
+  const workspace = { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [] };
+  const opens = [];
+  const h = harness(t, { options: {
+    embed: p.embed, workspaceEmbed: w.embed,
+    onDesktopAction: fn => { desktopActions.push(fn); return () => {}; },
+    onEnter: () => ({ ok: true, action: 'workspace', workspace }),
+    onOpenSpace: dest => { opens.push(dest); if (dest === '/') w.setOpen(true); if (dest === '/pulse-app/') p.setOpen(true); return { ok: true, destination: dest }; },
+    ...extra,
+  } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle();
+  h.face.handle('continue-personal');
+  await settle();
+  return { h, p, w, order, opens, tray: action => desktopActions.forEach(fn => fn(action)) };
+}
+
+test('Workspace opens inside the window under the band with its own close label, and PULSE stays hidden', async t => {
+  const { h, p, w } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  const last = h.view.last();
+  assert.deepEqual([last.space, last.band, last.bandClose, last.bandCloseLabel], ['workspace', 'workspace', true, 'Workspace 닫기']);
+  assert.deepEqual(last.room, { space: 'workspace', say: '', then: '', action: null, error: '', embedded: true });
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+  assert.ok(p.sent.every(v => v.visible === false), 'PULSE is never shown in Workspace');
+  assert.equal(w.focused.length, 1, 'arrival sends the focus into Workspace');
+});
+
+test('moving between Workspace and PULSE hides the one before showing the other, so two views never stand together', async t => {
+  const { h, p, w, order } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  assert.deepEqual(p.last(), { visible: true, top: 56 });
+  assert.deepEqual(w.last(), { visible: false, top: 56 });
+  assert.equal(h.view.last().bandCloseLabel, 'PULSE 닫기');
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+  assert.deepEqual(p.last(), { visible: false, top: 56 });
+  const shown = new Set();
+  for (const [name, visible] of order) {
+    if (visible) shown.add(name); else shown.delete(name);
+    assert.ok(shown.size <= 1, 'two views shown at once: ' + [...shown].join(','));
+  }
+  assert.equal(w.direct.length, 1, 'going back to a live Workspace reuses the view');
+});
+
+test('a closed Workspace view leaves a room that says so and can be reopened', async t => {
+  const { h, w } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  w.setOpen(false); await settle();
+  const last = h.view.last();
+  assert.equal(last.band, 'workspace');
+  assert.equal(last.room.say, 'Workspace가 닫혔습니다.');
+  assert.deepEqual(last.room.action, { action: 'reopen-space', label: '다시 열기' });
+  h.face.handle('reopen-space'); await settle();
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+});
+
+test('「Workspace 닫기」 closes Workspace and goes to Solio; keeping a draft stays', async t => {
+  const { h, w } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  w.closeAnswer = 'kept';
+  h.face.handle('band-close'); await settle();
+  assert.equal(h.view.last().space, 'workspace');
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+  w.closeAnswer = 'closed';
+  h.face.handle('band-close'); await settle();
+  assert.equal(h.view.last().space, 'solio');
+  assert.deepEqual(w.last(), { visible: false, top: 56 });
+});
+
+test('the tray line opens Workspace for an assigned account, and says why for an account without it (설계 검토 R17)', async t => {
+  const { h, w, tray } = await enteredWithBoth(t);
+  tray({ type: 'open-space', space: 'workspace' }); await settle();
+  assert.equal(h.view.last().space, 'workspace');
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+  tray({ type: 'something-else', space: 'workspace' }); tray(null); await settle();
+  assert.equal(h.view.last().space, 'workspace');
+
+  const order = [], other = spaceEmbed('workspace', order), actions = [];
+  const onlyPulse = { status: 'resolved', destinations: ['/pulse-app/'], unavailable: [] };
+  const g = harness(t, { options: { workspaceEmbed: other.embed, onDesktopAction: fn => { actions.push(fn); return () => {}; }, onEnter: () => ({ ok: true, action: 'workspace', workspace: onlyPulse }) } });
+  await settle(); g.face.setState(signedIn()); await settle(); g.face.handle('continue-personal'); await settle();
+  actions.forEach(fn => fn({ type: 'open-space', space: 'workspace' })); await settle();
+  assert.equal(g.view.last().space, 'solio');
+  assert.equal(g.view.last().fan.open, true, 'the fan opens to say why');
+  assert.equal(g.view.last().fan.error, '이 계정에는 Workspace 배정이 없습니다.');
+  assert.ok(other.sent.every(v => v.visible === false));
+});
+
+test('a tray open or a reveal that comes while the orb is going into another space waits for the arrival (3단계 화면 Fable F1)', async t => {
+  const { h, w, tray } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'solio'); await settle();
+  let release = null;
+  h.view.dive = space => { h.view.log.push(['dive', space]); return new Promise(resolve => { release = resolve; }); };
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  assert.ok(release, 'the orb is on its way into PULSE');
+  const shownBefore = w.sent.filter(v => v.visible).length;
+  w.event({ type: 'reveal' }); await settle();
+  assert.notEqual(h.view.last().space, 'workspace', 'nothing changes while the orb moves');
+  assert.equal(w.sent.filter(v => v.visible).length, shownBefore, 'Workspace is not shown on the way');
+  release(); await settle();
+  assert.equal(h.view.last().space, 'workspace', 'the reveal is carried out after arriving');
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'solio'); await settle();
+  release(); await settle();
+  assert.equal(h.view.last().space, 'solio');
+  release = null;
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  assert.ok(release, 'the orb is on its way into PULSE again');
+  tray({ type: 'open-space', space: 'workspace' }); await settle();
+  assert.notEqual(h.view.last().space, 'workspace');
+  release(); await settle();
+  assert.equal(h.view.last().space, 'workspace', 'the tray open is carried out after arriving');
+});
+
+test('a screen-share ask hides Workspace and shows the picker; a pick is answered once and Workspace comes back', async t => {
+  const { h, w } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  w.ask({ id: 7, items: SHARE_ITEMS }); await settle();
+  const last = h.view.last();
+  assert.deepEqual(last.share, { id: 7, items: SHARE_ITEMS });
+  assert.equal(last.focus, 'share');
+  assert.equal(last.bandClose, false, 'no close while the picker is open');
+  assert.deepEqual(w.last(), { visible: false, top: 56 });
+  h.face.handle('share-pick', '1'); await settle();
+  assert.deepEqual(w.shareAnswers, [{ id: 7, pick: 1 }]);
+  assert.equal(h.view.last().share, null);
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+  h.face.handle('share-pick', '0'); await settle();
+  assert.equal(w.shareAnswers.length, 1, 'nothing is answered twice');
+});
+
+test('Esc or 「취소」 on the picker answers with no choice; an out-of-range pick is no choice', async t => {
+  const { h, w } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  w.ask({ id: 8, items: SHARE_ITEMS }); await settle();
+  assert.equal(h.face.handle('escape'), true);
+  await settle();
+  w.ask({ id: 9, items: SHARE_ITEMS }); await settle();
+  h.face.handle('share-cancel'); await settle();
+  w.ask({ id: 10, items: SHARE_ITEMS }); await settle();
+  h.face.handle('share-pick', '5'); await settle();
+  assert.deepEqual(w.shareAnswers, [{ id: 8, pick: null }, { id: 9, pick: null }, { id: 10, pick: null }]);
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+});
+
+test('a share ask outside Workspace is refused at once, an empty list withdraws the picker, and closing Workspace drops it', async t => {
+  const { h, w } = await enteredWithBoth(t);
+  w.setOpen(true); await settle();
+  w.ask({ id: 11, items: SHARE_ITEMS }); await settle();
+  assert.deepEqual(w.shareAnswers, [{ id: 11, pick: null }], 'Solio is showing, so nobody can choose');
+  assert.equal(h.view.last().share, null);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  w.ask({ id: 12, items: SHARE_ITEMS }); await settle();
+  w.ask({ id: 12, items: [] }); await settle();
+  assert.equal(h.view.last().share, null, 'main took the question back (timeout)');
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+  w.ask({ id: 13, items: SHARE_ITEMS }); await settle();
+  w.setOpen(false); await settle();
+  assert.equal(h.view.last().share, null);
+  assert.deepEqual(w.shareAnswers.at(-1), { id: 13, pick: null });
+});
+
+test('share items are cleaned: names are trimmed, kinds are screen or window, thumbnails are data images only', async t => {
+  const { h, w } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  w.ask({ id: 14, items: [{ name: '  ', kind: 'tab', thumb: 'https://example.invalid/x.png' }, { name: ' 화면 ', kind: 'screen', thumb: 'data:image/png;base64,AA' }] }); await settle();
+  assert.deepEqual(h.view.last().share.items, [{ name: '이름 없는 창', kind: 'window', thumb: '' }, { name: '화면', kind: 'screen', thumb: 'data:image/png;base64,AA' }]);
 });

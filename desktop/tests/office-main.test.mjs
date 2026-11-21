@@ -261,7 +261,7 @@ test('roots: adding opens the chooser and hands over the one chosen folder; remo
 test('an account change or sign-out reaches the office, a same-account renewal does not clear it, and quitting closes it', () => {
   const changed = [];
   const ctx = {
-    careNotifications: null, pulseApp: null, syncCompanyEntry() {}, scheduleHiddenAuthRetry() {}, syncTrayApps: async () => {},
+    careNotifications: null, pulseApp: null, workspaceApp: null, syncCompanyEntry() {}, scheduleHiddenAuthRetry() {}, syncTrayApps: async () => {},
     window: null, trustedEntry: () => false, entry: '', runtime: { clientId: 'platform' },
     renewing: null, renewingAccount: () => ctx.renewing,
     officeService: null, officeEmployeeTasks:null, solioBackupService: null, solioBackupSweep: () => {},

@@ -1289,18 +1289,52 @@ if(!process.versions.electron){
         // 4. 배정 하나: 로그인 뒤 고르기 화면 없이 솔리오로 간다. 그 공간은 열지 않고 펼침에만 세운다(유호님 11-21)
         const inSolioNoOpen=async w=>{const c=await calls(w),solio=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio]');return !!r&&!r.hidden;})()");return {ok:solio&&!c.some(x=>x.startsWith('open:')),solio,calls:c};};
         const fanSpaces=w=>w.js("[...document.querySelectorAll('.fan-go[data-go]')].map(b=>b.dataset.go)");
-        if(only('4'))for(const [dest,name,say] of [['/','workspace','Workspace를 열었습니다.']]){
-          const w=await open();await boot(w,{assignment:{status:'resolved',destinations:[dest],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
+        // 4-Workspace. 창 안의 Workspace(4단계 구현 설계 3.2 · 6절): 배정 하나면 솔리오로 가고, 펼침에서 고르면 띠 아래를 뷰가 덮는다
+        if(only('4')){
+          const w=await open();await boot(w,{assignment:{status:'resolved',destinations:['/'],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
           const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(600);const s0=await inSolioNoOpen(w);
-          check('4 one assignment lands in Solio and opens nothing: '+name,r.ok&&s0.ok,{...r.state,...s0});
+          check('4 one assignment lands in Solio and opens nothing: workspace',r.ok&&s0.ok,{...r.state,...s0});
           await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
-          const fan=await fanSpaces(w);check('4 the fan lists Solio and the one space: '+name,JSON.stringify(fan)===JSON.stringify(['solio',name]),{fan});
-          // 펼침이 접힌 뒤 구가 그 방에 들어가 점 로고를 지나 왼쪽 위 작은 구가 될 때까지(빠른 들어감 1.05초 · 점 로고 0.56초 · 작은 구 0.7초) 기다린 뒤 재고 찍는다.
-          // 초점은 펼침을 연 작은 구에 이미 있어 도착 신호가 되지 못한다(Fable 최종 F2 — 900ms만 기다리면 도착 중간 장면이 찍혔다)
-          await click(w,`.fan-go[data-go="${name}"]`);await until(w,s=>!s.fan);await wait(3000);const c=await calls(w);
-          check('4 choosing it in the fan opens it once: '+name,c.filter(x=>x==='open:'+dest).length===1&&(await text(w,'[data-space-say]'))===say,{calls:c});
-          await capture(w,'room-'+name);
-          await click(w,'[data-orb-act="reopen-space"]');await wait(600);check('4 「다시 열기」 opens again: '+name,(await calls(w)).filter(x=>x==='open:'+dest).length===2);
+          const fan=await fanSpaces(w);check('4 the fan lists Solio and the one space: workspace',JSON.stringify(fan)==='["solio","workspace"]',{fan});
+          await click(w,'.fan-go[data-go="workspace"]');await until(w,s=>!s.fan);
+          for(let i=0;i<120&&!(await w.js("!!document.getElementById('qa-workspace-view')"));i++)await wait(40);await wait(300);
+          const look=()=>w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s),here=q('.here').getBoundingClientRect(),cover=document.getElementById('qa-workspace-view'),share=q('.share');return {band:document.documentElement.dataset.orbBand||'',hereTop:Math.round(here.top),hereBottom:Math.round(here.bottom),close:!q('.band-close').hidden,closeText:(q('.band-close')||{}).textContent||'',cover:cover?Math.round(cover.getBoundingClientRect().top):null,pulse:!!document.getElementById('qa-pulse-view'),say:(q('[data-space-say]')||{}).textContent||'',name:(q('[data-here-text]')||{}).textContent||'',share:!!share&&!share.hidden,tiles:[...document.querySelectorAll('#portal-entry .share-tile')].length,focus:document.activeElement?.className||''};})()");
+          const p1=await look(),placed=await w.js('window.__orbFixture.workspacePlaced()'),c=await calls(w);
+          check('4 Workspace opens once inside the window: the band, the small orb in it, the view under it, 「Workspace 닫기」 and no room line',c.filter(x=>x==='open:/').length===1&&p1.band==='workspace'&&p1.hereTop===6&&p1.hereBottom<=56&&p1.cover===56&&p1.close&&p1.closeText==='Workspace 닫기'&&p1.say===''&&!p1.pulse&&JSON.stringify(placed.at(-1))==='{"visible":true,"top":56}',{p1,placed,calls:c});
+          check('4 the Workspace view takes the keyboard focus after arriving',c.includes('workspace-focus'),{calls:c});
+          await captureSizes(w,'workspace-band');w.win.setContentSize(390,844);await wait(500);await capture(w,'workspace-band-390');w.win.setContentSize(1440,900);await wait(400);
+          // 화면 공유 고르기(6.4): 뷰를 숨기고 방 자리에 화면과 창을 세운다. 고르면 답하고 뷰로 돌아온다
+          const thumb=(fill,bars)=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect width="320" height="180" fill="${fill}"/>${bars.map(([x,y,wd])=>`<rect x="${x}" y="${y}" width="${wd}" height="10" rx="2" fill="#9a9a9a"/>`).join('')}</svg>`);
+          const items=[{name:'화면 1',kind:'screen',thumb:thumb('#2a2a2a',[[24,24,180],[24,52,120],[24,80,220]])},{name:'화면 2',kind:'screen',thumb:thumb('#202020',[[24,24,140],[24,52,200]])},{name:'메모장 — 회의 메모.txt',kind:'window',thumb:thumb('#f2f2f2',[[20,20,240],[20,44,200],[20,68,260]])},{name:'Excel — 3분기 매출',kind:'window',thumb:thumb('#e9efe9',[[20,20,90],[120,20,90],[20,44,90],[120,44,90]])},{name:'이름이 아주 긴 창의 제목은 두 줄까지만 보이고 나머지는 줄여서 보입니다 — 브라우저',kind:'window',thumb:''}];
+          await w.js(`window.__orbFixture.shareAsk(${JSON.stringify({id:1,items})})`);await wait(400);
+          const p2=await look();
+          check('4 a share ask hides the view and shows the picker with screens and windows, focus on the first tile',p2.share&&p2.tiles===5&&!p2.cover&&!p2.close&&/share-tile/.test(p2.focus)&&JSON.stringify((await w.js('window.__orbFixture.workspacePlaced()')).at(-1))==='{"visible":false,"top":56}',p2);
+          await captureSizes(w,'workspace-share');w.win.setContentSize(390,844);await wait(500);await capture(w,'workspace-share-390');w.win.setContentSize(1440,900);await wait(400);
+          await click(w,'.share-tile[data-orb-arg="2"]');let back=null;for(let i=0;i<60&&back!==56;i++){back=(await look()).cover;if(back!==56)await wait(40);}
+          check('4 picking a window answers once with its number and Workspace comes back',back===56&&JSON.stringify(await w.js('window.__orbFixture.shareAnswers()'))==='[{"id":1,"pick":2}]'&&!(await look()).share,{back,answers:await w.js('window.__orbFixture.shareAnswers()')});
+          await w.js(`window.__orbFixture.shareAsk(${JSON.stringify({id:2,items})})`);await wait(300);await key(w,'Escape');await wait(400);
+          check('4 Esc on the picker answers with no choice and Workspace comes back',JSON.stringify((await w.js('window.__orbFixture.shareAnswers()')).at(-1))==='{"id":2,"pick":null}'&&(await look()).cover===56);
+          // 본체가 Workspace 뷰를 닫으면 띠 자리를 지킨 채 「다시 열기」를 보인다
+          await w.js('window.__orbFixture.setWorkspaceOpen(false)');await wait(400);
+          const p3=await look();check('4 a closed Workspace keeps the band place and offers 「다시 열기」',p3.band==='workspace'&&p3.hereTop===6&&!p3.cover&&!p3.close&&p3.say==='Workspace가 닫혔습니다.',p3);
+          await capture(w,'workspace-closed');
+          await click(w,'[data-orb-act="reopen-space"]');await wait(900);
+          check('4 「다시 열기」 opens Workspace again',(await look()).cover===56,await calls(w));
+          await click(w,'.band-close');let solio=null;for(let i=0;i<150&&!solio;i++){if(await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio]');return !!r&&!r.hidden&&!document.documentElement.dataset.orbBand;})()"))solio={ok:true};else await wait(40);}solio=solio||{ok:false};await wait(500);
+          check('4 「Workspace 닫기」 closes Workspace and goes to Solio, the band goes',solio.ok&&(await calls(w)).includes('workspace-close')&&!(await look()).cover,await look());
+          // 트레이의 Workspace 줄(본체 단축 동작 open-space)은 솔리오에서 Workspace를 연다
+          await w.js("window.__orbFixture.desktopAction({type:'open-space',space:'workspace'})");let trayed=null;for(let i=0;i<150&&trayed!==56;i++){trayed=(await look()).cover;if(trayed!==56)await wait(40);}
+          check('4 the tray line opens Workspace in the window',trayed===56&&(await look()).band==='workspace',{trayed});
+          w.win.destroy();
+        }
+        // 4-Workspace 없음. 배정에 Workspace가 없는 계정에 트레이 줄이 오면 펼침을 열어 까닭을 말한다(설계 검토 R17)
+        if(only('4')){
+          const w=await open();await boot(w,{assignment:{status:'resolved',destinations:['/pulse-app/'],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(800);
+          await w.js("window.__orbFixture.desktopAction({type:'open-space',space:'workspace'})");await until(w,s=>s.fan,{timeout:4000});await wait(600);
+          const said=await w.js("(()=>{const e=document.querySelector('#portal-entry [data-fan-error]')||document.querySelector('#portal-entry .fan-error');return e&&!e.hidden?e.textContent:'';})()");
+          check('4 a tray open without a Workspace assignment opens the fan and says why',said==='이 계정에는 Workspace 배정이 없습니다.'&&!(await calls(w)).includes('open:/'),{said});
+          await capture(w,'workspace-not-assigned');
           w.win.destroy();
         }
         // 4-PULSE. 창 안의 PULSE(3단계 구현 설계 4절): 바깥 창 없이 띠 아래를 뷰가 덮고, 작은 구가 왼쪽 위 띠에 남는다

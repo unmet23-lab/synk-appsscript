@@ -31,7 +31,9 @@ const plain=value=>JSON.parse(JSON.stringify(value)),pick=offer=>({id:offer.id,r
 // epoch: another account, a sign-out or a new sign-in moves it. renew() is the same SYNK ID renewing its token: the
 // state says restoring while auth's private renewingAccountId names the account, as main.cjs passes it, and the epoch
 // and its generation stay. request() is the portal's own request for the current generation.
-function fixture({state=member('synthetic-owner-a'),clientId='platform',load=()=>Promise.resolve(),sessions=new Map(),page={},renderer,inviteTimeoutMs=250}={}){
+// A clock the test moves by hand. Bounds tested with it never race a loaded run (0.5.2 공개 후보 검수 A1).
+function manualClock(){let next=1;const due=new Map();return {setTimeout(fn){const id=next++;due.set(id,fn);return {id,unref(){}};},clearTimeout(handle){if(handle)due.delete(handle.id);},fire(){const fns=[...due.values()];due.clear();for(const fn of fns)fn();},get pending(){return due.size;}};}
+function fixture({state=member('synthetic-owner-a'),clientId='platform',load=()=>Promise.resolve(),sessions=new Map(),page={},renderer,inviteTimeoutMs=250,timers}={}){
   const windows=[],external=[],partitions=[],dialogs=[],answers=[];let current=state,renewing=null,kept=0,generation=randomUUID();
   class Window extends EventEmitter{
     constructor(options){super();this.options=options;this.destroyed=false;this.shown=0;this.focused=0;this.loads=[];this.sent=[];this.webContents=pulseContents(this,{renderer});windows.push(this);}
@@ -41,7 +43,7 @@ function fixture({state=member('synthetic-owner-a'),clientId='platform',load=()=
   }
   const session={fromPartition(partition){partitions.push(partition);if(!sessions.has(partition)){const value=new EventEmitter();Object.assign(value,{partition,cleared:0,cacheCleared:0,setPermissionRequestHandler(fn){this.permission=fn;},setPermissionCheckHandler(fn){this.permissionCheck=fn;},webRequest:{onBeforeRequest(_filter,handler){value.request=handler;}},async clearStorageData(){this.cleared++;},async clearCache(){this.cacheCleared++;}});sessions.set(partition,value);}return sessions.get(partition);}};
   const dialog={showMessageBoxSync(window,options){dialogs.push({window,options});return answers.length?answers.shift():0;}};
-  const service=createPulseApp({clientId,getAccount:()=>current,getRenewingAccount:()=>renewing,getAccountGeneration:()=>generation,createSurface:options=>new Window(options),session,dialog,openExternal:async url=>external.push(url),getDownloads:()=>'/synthetic/downloads',onUnloadKept:()=>{kept++;},loadTimeoutMs:250,inviteTimeoutMs});
+  const service=createPulseApp({clientId,getAccount:()=>current,getRenewingAccount:()=>renewing,getAccountGeneration:()=>generation,createSurface:options=>new Window(options),session,dialog,openExternal:async url=>external.push(url),getDownloads:()=>'/synthetic/downloads',onUnloadKept:()=>{kept++;},loadTimeoutMs:250,inviteTimeoutMs,...(timers?{timers}:{})});
   return {service,windows,external,partitions,sessions,dialogs,answers,get kept(){return kept;},get generation(){return generation;},
     setAccount(value,{notify=true,epoch=true}={}){current=value;if(epoch)generation=randomUUID();if(notify)service.syncContext(value);},
     renew(id,options){renewing=id;this.setAccount(restoring,{...options,epoch:false});},verified(value){renewing=null;this.setAccount(value,{epoch:false});},
@@ -419,9 +421,10 @@ test('a changed address, a hashchange or the old DOM receipt event is no receipt
   assert.equal(w.sent.length,1);assert.equal(w.page.commits.length,1);
 });
 test('a ready document that never binds is handed no token, and a new document that binds takes the next invite',async()=>{
-  // The refusal waits out the invite time limit; at 250ms a loaded test run timed out before the page's own bind (11-20).
-  const f=fixture({page:{bind:false},inviteTimeoutMs:2000});await f.service.open();const w=f.windows[0];
-  refused(await f.service.openInvite(f.request()),'PULSE_APP_INVITE_FAILED',{retryable:true});
+  // The refusal waits out the invite time limit. The bound passes only once the page had every chance to bind (manual clock).
+  const clock=manualClock(),f=fixture({page:{bind:false},timers:clock});await f.service.open();const w=f.windows[0];
+  const answer=f.service.openInvite(f.request());await settle();assert.equal(clock.pending,1);clock.fire();
+  refused(await answer,'PULSE_APP_INVITE_FAILED',{retryable:true});
   assert.equal(w.page.binds.length,1);assert.deepEqual(w.page.commits,[]);assert.deepEqual(w.page.received,[]);
   assert.doesNotMatch(JSON.stringify(w.page.posted),new RegExp(TOKEN));assert.equal(w.page.href,ENTRY);
   w.page=fakePage(ENTRY);await settle();
@@ -626,8 +629,10 @@ test('an offer the busy page runs only after the bound gets no token: the window
   assert.doesNotMatch(JSON.stringify(w.page.posted),/SYNTHETIC_invite-token/);
 });
 test('a token handed over without a receipt by the bound is reported unconfirmed, neither a delivery nor a plain failure, and is never sent again',async()=>{
-  const f=fixture({page:{stall:true},inviteTimeoutMs:50});await f.service.open();const w=f.windows[0];
-  refused(await f.service.openInvite(f.request()),'PULSE_APP_INVITE_UNCONFIRMED',{retryable:false});assert.deepEqual(w.page.commits.map(answer=>answer?.token),[TOKEN]);
+  // The bound passes only after the page took the token and stalled (manual clock), so a loaded run cannot end it first.
+  const clock=manualClock(),f=fixture({page:{stall:true},timers:clock});await f.service.open();const w=f.windows[0];
+  const answer=f.service.openInvite(f.request());await settle();assert.deepEqual(w.page.commits.map(value=>value?.token),[TOKEN]);clock.fire();
+  refused(await answer,'PULSE_APP_INVITE_UNCONFIRMED',{retryable:false});assert.deepEqual(w.page.commits.map(value=>value?.token),[TOKEN]);
   // The busy page gets to the offer only now and keeps the token, which is why the result did not say it failed.
   w.page.resume();await settle();assert.deepEqual(w.page.received,[TOKEN]);assert.equal(w.page.href,ENTRY);assert.equal(w.shown,1);
   assert.equal(w.sent.length,1);assert.equal(w.page.commits.length,1);

@@ -93,7 +93,7 @@ function markup() {
         <button class="obj" type="button" data-orb-prog="office" aria-current="false" style="--k:4">${PROGRAM_ICON.office}<span class="obj-n"></span></button>
       </nav>
       <button class="quiet legacy-back" type="button" data-orb-act="legacy-back">돌아가기</button>
-      <button class="quiet band-close" type="button" data-orb-act="pulse-close" hidden>PULSE 닫기</button>
+      <button class="quiet band-close" type="button" data-orb-act="band-close" hidden>PULSE 닫기</button>
     </div>
     <div class="fan" role="group" aria-label="갈 수 있는 공간과 계정" data-orb-fan><p class="fan-error" role="alert" data-fan-error></p><p class="fan-lead" data-fan-lead></p></div>
     <div class="room room-top" data-room="solio">
@@ -145,6 +145,14 @@ function markup() {
     <div class="room" data-room="space">
       <p class="say rise" style="--i:1"><span data-space-say></span><span class="then" data-space-then></span></p>
       <p class="read rise" style="--i:3"><span data-space-error role="alert"></span><button class="reread" type="button" data-orb-act="reopen-space">다시 열기</button></p>
+      <div class="share" role="group" aria-labelledby="orb-share-title" data-share hidden>
+        <p class="share-title" id="orb-share-title">공유할 화면을 고르세요</p>
+        <p class="share-h" data-share-screens-h>화면</p>
+        <div class="share-grid" data-share-screens></div>
+        <p class="share-h" data-share-windows-h>창</p>
+        <div class="share-grid" data-share-windows></div>
+        <button class="quiet share-cancel" type="button" data-orb-act="share-cancel">취소</button>
+      </div>
     </div>
   </section>
 </div>`;
@@ -183,6 +191,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     diag: $('[data-diag]'), diagWhen: $('[data-diag-when]'), diagName: $('[data-diag-name]'), diagWord: $('[data-diag-word]'), diagSay: $('[data-diag-say]'), diagCost: $('[data-diag-cost]'), details: $('[data-details]'), detailsTop: $('[data-details-top]'),
     reread: $('[data-orb-act="reread"]'), subsManage: $('[data-orb-act="subs-manage"]'), fan: $('[data-orb-fan]'), fanError: $('[data-fan-error]'), fanLead: $('[data-fan-lead]'), connect: $('[data-orb-act="connect"]'), recheck: $('[data-orb-act="recheck-auth"]'), solioStatus: $('[data-solio-status]'),
     space: $('[data-room="space"]'), spaceSay: $('[data-space-say]'), spaceThen: $('[data-space-then]'), spaceError: $('[data-space-error]'), reopen: $('[data-orb-act="reopen-space"]'),
+    share: $('[data-share]'), shareScreens: $('[data-share-screens]'), shareWindows: $('[data-share-windows]'), shareScreensH: $('[data-share-screens-h]'), shareWindowsH: $('[data-share-windows-h]'),
     rail: $('[data-orb-rail]'), objs: [...root.querySelectorAll('[data-orb-prog]')],
     visits: $('[data-room="solio-visits"]'), visSay: $('[data-vis-say]'), visThen: $('[data-vis-then]'), visRows: $('[data-vis-rows]'), visWhen: $('[data-vis-when]'), visScope: $('[data-vis-scope]'),
     backup: $('[data-room="solio-backup"]'), bakSay: $('[data-bak-say]'), bakThen: $('[data-bak-then]'), bakActs: $('[data-bak-acts]'), bakRows: $('[data-bak-rows]'), bakWhen: $('[data-bak-when]'), bakScope: $('[data-bak-scope]'),
@@ -661,8 +670,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     if (app.nameBtn?.getAttribute?.('aria-label') !== nameLabel) app.nameBtn?.setAttribute?.('aria-label', nameLabel);
     app.orbBtn.setAttribute('aria-label', `지금 ${s.spaceLabel}. 다른 공간으로 가기`);
     app.legacyBack.hidden = s.mode !== 'legacy';
-    // 창 안의 PULSE를 닫는 자리(3단계 설계 검토 R6). 쓰던 글이 있으면 본체가 묻는다
-    if (app.bandClose) app.bandClose.hidden = !s.bandClose;
+    // 창 안의 공간(PULSE, Workspace)을 닫는 자리(3단계 설계 검토 R6). 쓰던 글이 있으면 본체가 묻는다. 글은 공간마다다(4단계 6.1)
+    if (app.bandClose) { app.bandClose.hidden = !s.bandClose; if (s.bandCloseLabel) setText(app.bandClose, s.bandCloseLabel); }
+    renderShare(s.share || null);
     if (!room) { renderRail(s, [], null); lastProg = null; renderAsides(null, null); return; }
     const solio = room.space === 'solio';
     const prog = solio ? (room.prog || 'subs') : null;
@@ -717,6 +727,32 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       app.reopen.hidden = !room.action;
       app.reopen.disabled = s.busy;
     }
+  }
+
+  /* ── Workspace 화면 공유 고르기(4단계 6.4). 화면과 창을 작은 그림과 이름으로 둔다. 움직임은 없다. 같은 물음은 다시 그리지 않는다 ── */
+  let shareShown = null;
+  function renderShare(share) {
+    if (!app.share) return;
+    if (!share) { if (!app.share.hidden) app.share.hidden = true; shareShown = null; return; }
+    app.share.hidden = false;
+    if (shareShown === share.id) return;
+    shareShown = share.id;
+    const tile = (item, index) => {
+      const btn = doc.createElement('button');
+      btn.type = 'button'; btn.className = 'share-tile'; btn.dataset.orbAct = 'share-pick'; btn.dataset.orbArg = String(index);
+      const pic = doc.createElement('span'); pic.className = 'share-pic';
+      if (item.thumb) { const img = doc.createElement('img'); img.alt = ''; img.src = item.thumb; img.draggable = false; pic.append(img); }
+      const name = doc.createElement('span'); name.className = 'share-name'; name.textContent = item.name;
+      btn.append(pic, name);
+      btn.setAttribute('aria-label', `${item.kind === 'screen' ? '화면' : '창'} ${item.name} 공유하기`);
+      return btn;
+    };
+    const screens = [], windows = [];
+    share.items.forEach((item, index) => (item.kind === 'screen' ? screens : windows).push(tile(item, index)));
+    app.shareScreens.replaceChildren(...screens);
+    app.shareWindows.replaceChildren(...windows);
+    app.shareScreensH.hidden = app.shareScreens.hidden = screens.length === 0;
+    app.shareWindowsH.hidden = app.shareWindows.hidden = windows.length === 0;
   }
 
   /* ── 솔리오 안의 프로그램(시안 .rail) ── */
@@ -1686,6 +1722,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       case 'first-name': return sw.names.querySelector('button') || sw.foot.querySelector('button');
       case 'current-name': return sw.names.querySelector('[aria-current="true"]') || sw.names.querySelector('button');
       case 'here': return app.orbBtn;
+      case 'share': return app.share?.querySelector('.share-tile') || app.share?.querySelector('.share-cancel') || null;
       // 방이 열리면 그 방의 맨 위 문장에 초점을 둔다. 낭독기는 결론 문장부터 읽는다(2단계 둘째 조각 설계 1.3절)
       case 'aside': return app.asides[scene?.aside]?.say || null;
       case 'aside-return': return asideReturnTarget();

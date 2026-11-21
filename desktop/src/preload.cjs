@@ -127,6 +127,18 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     onChanged:callback=>subscribe('synk:pulse-view-changed',callback),
     onEvent:callback=>subscribe('synk:pulse-view-event',callback),
   }),
+  // 창 안의 Workspace 뷰(4단계 구현 설계 3.5). PULSE 뷰와 같은 꼴이고, 화면 공유 고르기의 물음과 답이 더 있다(4.2)
+  workspaceView:Object.freeze({
+    place:input=>{const value=pulseViewPlace(input);return value?ipcRenderer.invoke('synk:workspace-view-place',value):Promise.resolve({ok:false,code:'INVALID_INPUT'});},
+    state:()=>ipcRenderer.invoke('synk:workspace-view-state'),
+    focus:()=>ipcRenderer.invoke('synk:workspace-view-focus'),
+    close:()=>ipcRenderer.invoke('synk:workspace-view-close'),
+    open:()=>ipcRenderer.invoke('synk:workspace-app-open'),
+    onChanged:callback=>subscribe('synk:workspace-view-changed',callback),
+    onEvent:callback=>subscribe('synk:workspace-view-event',callback),
+    onShareAsk:callback=>subscribe('synk:workspace-share-ask',callback),
+    answerShare:input=>input&&typeof input==='object'&&Number.isInteger(input.id)&&(input.pick===null||Number.isInteger(input.pick)&&input.pick>=0&&input.pick<24)?ipcRenderer.invoke('synk:workspace-share-answer',{id:input.id,pick:input.pick}):Promise.resolve({ok:false,code:'INVALID_INPUT'}),
+  }),
   openPulseAppInvite:input=>{const invite=pulseInvite(input);return invite?ipcRenderer.invoke('synk:pulse-app-open-invite',invite):Promise.resolve({ok:false,requestId:inviteNamed(input,'requestId'),accountGeneration:inviteNamed(input,'accountGeneration'),code:'PULSE_APP_INVITE_INVALID',retryable:false});},
   handoffCompanyInviteLink:input=>{const value=companyLink(input);return value?ipcRenderer.invoke('synk:company-invite-handoff',value):companyInvalid(input);},
   inspectCompanyInviteCode:input=>{const value=companyCode(input);return value?ipcRenderer.invoke('synk:company-invite-inspect',value):companyInvalid(input);},

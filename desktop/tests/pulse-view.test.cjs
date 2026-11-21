@@ -28,7 +28,7 @@ function harness({zoom=1}={}){
     close(){this.closes++;const event={defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};this.emit('close',event);if(!event.defaultPrevented){this.destroyed=true;this.emit('closed');}}});
   let window=win;
   const host=createPulseViewHost({WebContentsView:View,getWindow:()=>window,onChange:value=>changes.push(value),onFocusBand:()=>bands.push(1),onHidden:()=>hidden.push(1),exitAnswerMs:50});
-  return {host,views,win,changes,bands,hidden,setWindow(value){window=value;}};
+  return {host,views,win,changes,bands,hidden,View,setWindow(value){window=value;}};
 }
 const surfaceOptions={backgroundColor:'#000000',webPreferences:{sandbox:true,contextIsolation:true}};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -47,12 +47,12 @@ test('a surface is added hidden, black, with the given preferences; show() and f
   assert.deepEqual(h.changes,[{open:true}]);
   h.win.minimized=true;h.win.visible=false;s.show();s.focus();
   assert.equal(v.visible,false,'show never shows the view');assert.equal(h.win.restores,1);assert.equal(h.win.shows,1);assert.equal(h.win.focuses,1);
-  assert.throws(()=>h.host.createSurface(surfaceOptions),/PULSE_VIEW_BUSY/);
+  assert.throws(()=>h.host.createSurface(surfaceOptions),/SPACE_VIEW_BUSY/);
 });
 
 test('without a platform window no surface is made',()=>{
-  const h=harness();h.setWindow(null);assert.throws(()=>h.host.createSurface(surfaceOptions),/PULSE_VIEW_NO_WINDOW/);
-  h.setWindow({isDestroyed:()=>true});assert.throws(()=>h.host.createSurface(surfaceOptions),/PULSE_VIEW_NO_WINDOW/);
+  const h=harness();h.setWindow(null);assert.throws(()=>h.host.createSurface(surfaceOptions),/SPACE_VIEW_NO_WINDOW/);
+  h.setWindow({isDestroyed:()=>true});assert.throws(()=>h.host.createSurface(surfaceOptions),/SPACE_VIEW_NO_WINDOW/);
 });
 
 test('the screen places the view under the band times the zoom, and a resize or a zoom change places it again',()=>{
@@ -95,7 +95,7 @@ test('F6 inside PULSE goes to the band; F6 with a modifier or a repeat stays in 
   assert.equal(press({}),true);assert.equal(h.bands.length,1);assert.equal(h.win.webContents.focusCount,1);
   for(const extra of [{shift:true},{control:true},{alt:true},{meta:true},{isAutoRepeat:true},{type:'keyUp'},{key:'F5'}])assert.equal(press(extra),false,JSON.stringify(extra));
   assert.equal(h.bands.length,1);
-  assert.deepEqual(h.host.focusView(),{ok:false,code:'PULSE_VIEW_HIDDEN'});h.host.place({visible:true,top:56});c.focusCount=0;assert.deepEqual(h.host.focusView(),{ok:true});assert.equal(c.focusCount,1);
+  assert.deepEqual(h.host.focusView(),{ok:false,code:'SPACE_VIEW_HIDDEN'});h.host.place({visible:true,top:56});c.focusCount=0;assert.deepEqual(h.host.focusView(),{ok:true});assert.equal(c.focusCount,1);
 });
 
 test('busy while the view plays sound or is captured, for the tray memory trim',()=>{
@@ -182,4 +182,56 @@ test('the band 「PULSE 닫기」 asks like an exit and reports how it ended (�
   s=h.host.createSurface(surfaceOptions);const c=h.views[1].webContents;c.dirty=true;
   assert.deepEqual(await h.host.closeByPerson(),{ok:true,outcome:'kept'});assert.equal(s.isDestroyed(),false);
   c.on('will-prevent-unload',event=>event.preventDefault());assert.deepEqual(await h.host.closeByPerson(),{ok:true,outcome:'closed'});assert.equal(s.isDestroyed(),true);
+});
+
+// 4단계 구현 설계 3.1: 한 창에 자리 둘(PULSE, Workspace). 문도 둘이고, 앞 문이 자기 공간을 닫고 close()를 다시 부르면 뒷문의 차례다
+function twoSpaces({pulse={},workspace={},quitting=false,withPulse=true}={}){
+  const h=harness(),order=[];
+  const second=createPulseViewHost({WebContentsView:h.View,getWindow:()=>h.win,exitAnswerMs:50});
+  const open=(name,host,{dirty=false,answer=null})=>{
+    const s=host.createSurface(surfaceOptions),c=h.views.at(-1).webContents;c.dirty=dirty;
+    // 그 공간 관리자의 쓰던 글 확인. 'leave'면 막고(나가기), 'stay'면 둔다
+    c.on('will-prevent-unload',event=>{order.push(name+' asked');if(answer==='leave')event.preventDefault();});
+    c.once('destroyed',()=>order.push(name+' closed'));
+    return {s,c};
+  };
+  const first=withPulse?open('pulse',h.host,pulse):null,other=open('workspace',second,workspace);
+  const calls={quit:0,kept:[]};let isQuitting=quitting;
+  // 본체의 quit은 setImmediate(()=>app.quit())이고, app.quit은 창을 다시 닫는다
+  for(const [name,host] of [['pulse',h.host],['workspace',second]])host.installCloseGate(h.win,{quitting:()=>isQuitting,quit:()=>{calls.quit++;order.push('quit');setImmediate(()=>{if(!h.win.destroyed)h.win.close();});},onKept:()=>calls.kept.push(name)});
+  return {...h,second,pulse:first,workspace:other,order,calls};
+}
+const settle=async()=>{for(let i=0;i<6;i++)await tick();};
+test('two spaces in one window: the first gate closes PULSE and closes again, the second closes Workspace, then the window closes',async()=>{
+  const t=twoSpaces();t.win.close();
+  assert.equal(t.win.destroyed,false);assert.deepEqual(t.pulse.c.closes,[{waitForBeforeUnload:true}]);assert.deepEqual(t.workspace.c.closes,[],'Workspace waits for its turn');
+  await settle();
+  assert.deepEqual(t.order,['pulse closed','workspace closed']);assert.deepEqual(t.workspace.c.closes,[{waitForBeforeUnload:true}]);
+  assert.equal(t.win.closes,3);assert.equal(t.win.destroyed,true);assert.deepEqual(t.calls,{quit:0,kept:[]});
+  assert.equal(t.host.hasSurface(),false);assert.equal(t.second.hasSurface(),false);
+  const alone=twoSpaces({withPulse:false});alone.win.close();await settle();
+  assert.deepEqual(alone.order,['workspace closed'],'without PULSE the first gate passes');assert.equal(alone.win.closes,2);assert.equal(alone.win.destroyed,true);
+});
+test('two drafts are asked in turn while quitting, and each closed space quits again',async()=>{
+  const t=twoSpaces({pulse:{dirty:true,answer:'leave'},workspace:{dirty:true,answer:'leave'},quitting:true});t.win.close();await settle();
+  assert.deepEqual(t.order,['pulse asked','pulse closed','quit','workspace asked','workspace closed','quit']);
+  assert.equal(t.win.destroyed,true);assert.deepEqual(t.calls.kept,[]);
+});
+test('「돌아가서 저장」 in the second space calls the second gate\'s onKept and keeps the window and Workspace',async()=>{
+  const t=twoSpaces({pulse:{dirty:true,answer:'leave'},workspace:{dirty:true,answer:'stay'},quitting:true});t.win.close();await settle();
+  assert.deepEqual(t.order,['pulse asked','pulse closed','quit','workspace asked']);
+  assert.deepEqual(t.calls.kept,['workspace']);assert.equal(t.calls.quit,1);
+  assert.equal(t.win.destroyed,false);assert.equal(t.host.hasSurface(),false);assert.equal(t.second.hasSurface(),true);assert.equal(t.workspace.c.destroyed,false);
+  const keptFirst=twoSpaces({pulse:{dirty:true,answer:'stay'},workspace:{dirty:true,answer:'leave'}});keptFirst.win.close();await settle();
+  assert.deepEqual(keptFirst.order,['pulse asked']);assert.deepEqual(keptFirst.calls.kept,['pulse']);
+  assert.deepEqual(keptFirst.workspace.c.closes,[],'Workspace is never asked when PULSE stays');assert.equal(keptFirst.win.destroyed,false);
+});
+test('visible() is true only while the view is shown, each place on its own (4단계 4.2)',()=>{
+  const h=harness();assert.equal(h.host.visible(),false);const s=h.host.createSurface(surfaceOptions);assert.equal(h.host.visible(),false,'a new view is hidden');
+  h.host.place({visible:true,top:56});assert.equal(h.host.visible(),true);h.host.place({visible:false,top:56});assert.equal(h.host.visible(),false);
+  h.host.place({visible:true,top:56});h.win.webContents.emit('did-start-navigation',{isMainFrame:true,isSameDocument:false});assert.equal(h.host.visible(),false,'main hid it');
+  h.host.place({visible:true,top:56});assert.equal(h.host.visible(),true);s.destroy();assert.equal(h.host.visible(),false,'a closed view');
+  const t=twoSpaces();t.host.place({visible:true,top:56});assert.equal(t.host.visible(),true);assert.equal(t.second.visible(),false);
+  t.host.place({visible:false,top:56});t.second.place({visible:true,top:56});assert.equal(t.host.visible(),false);assert.equal(t.second.visible(),true);
+  const thrown=harness();thrown.host.createSurface(surfaceOptions);thrown.views[0].getVisible=()=>{throw Error('합성');};assert.equal(thrown.host.visible(),false);
 });

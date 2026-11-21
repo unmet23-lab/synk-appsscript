@@ -770,20 +770,36 @@ html[data-orb-client="app"] #portal-entry .orb-stage[data-fan] ~ .portal-window-
 html[data-motion="reduced"] #portal-entry .orb-layer,html[data-motion="reduced"] #portal-entry .rise,html[data-motion="reduced"] #portal-entry .obj-n,html[data-motion="reduced"] #portal-entry .more,html[data-motion="reduced"] #portal-entry .more-in > *,html[data-motion="reduced"] #portal-entry .fan-go,html[data-motion="reduced"] #portal-entry .fan-foot,html[data-motion="reduced"] #portal-entry .room{transition-duration:.01s !important;transition-delay:0s !important}
 html[data-motion="reduced"] #portal-entry .room.enter > *{animation:none}
 
-/* ── 창 안의 PULSE(3단계 구현 설계 4.1): 맨 위 56px 띠만 얼굴이고 그 아래는 본체가 붙인 PULSE 뷰다. 띠 모양은 아래 옛 화면 띠와 같다.
+/* ── 창 안의 공간(PULSE는 3단계 구현 설계 4.1, Workspace는 4단계 구현 설계 6.1): 맨 위 56px 띠만 얼굴이고 그 아래는 본체가 붙인 그 공간의 뷰다. 띠 모양은 아래 옛 화면 띠와 같다.
    무대는 창 전체 그대로 둔다. 펼침을 열면 뷰가 숨고 펼침이 그 자리에 선다. 띠 높이는 orb-face.mjs의 PULSE_BAND와 같다 ── */
-#portal-entry[data-orb-band="pulse"] .here{top:6px}
-#portal-entry[data-orb-band="pulse"] .rail{display:none}
-#portal-entry[data-orb-band="pulse"]::after{content:"";position:absolute;z-index:4;left:0;right:0;top:55px;height:1px;background:var(--hair);pointer-events:none}
+#portal-entry[data-orb-band] .here{top:6px}
+#portal-entry[data-orb-band] .rail{display:none}
+#portal-entry[data-orb-band]::after{content:"";position:absolute;z-index:4;left:0;right:0;top:55px;height:1px;background:var(--hair);pointer-events:none}
 #portal-entry .band-close{display:none;margin-left:22px}
-#portal-entry[data-orb-band="pulse"] .band-close:not([hidden]){display:inline-block}
-/* 펼친 동안에는 띠 선과 「PULSE 닫기」를 감춘다. 자란 구와 펼침의 첫 줄이 띠 높이에 걸린다 */
-#portal-entry[data-orb-band="pulse"]:has(.orb-stage[data-fan="1"])::after,
-#portal-entry[data-orb-band="pulse"]:has(.orb-stage[data-fan="1"]) .band-close,
-#portal-entry[data-orb-band="pulse"]:has(.room-aside:not([hidden]))::after,
-#portal-entry[data-orb-band="pulse"]:has(.room-aside:not([hidden])) .band-close{display:none}
-/* 띠가 선 동안 알림 줄은 띠 안 가운데에 둔다. 아래는 PULSE 뷰가 덮는다(설계 검토 R11) */
-html[data-orb-band="pulse"] #toast{bottom:auto;top:8px}
+#portal-entry[data-orb-band] .band-close:not([hidden]){display:inline-block}
+/* 펼친 동안에는 띠 선과 닫기 글(「PULSE 닫기」, 「Workspace 닫기」)을 감춘다. 자란 구와 펼침의 첫 줄이 띠 높이에 걸린다 */
+#portal-entry[data-orb-band]:has(.orb-stage[data-fan="1"])::after,
+#portal-entry[data-orb-band]:has(.orb-stage[data-fan="1"]) .band-close,
+#portal-entry[data-orb-band]:has(.room-aside:not([hidden]))::after,
+#portal-entry[data-orb-band]:has(.room-aside:not([hidden])) .band-close{display:none}
+/* 띠가 선 동안 알림 줄은 띠 안 가운데에 둔다. 아래는 공간의 뷰가 덮는다(3단계 설계 검토 R11). html[data-orb-client] #toast보다 앞서야 bottom이 풀린다(사무실 화면 검수 FA1) */
+html[data-orb-client][data-orb-band] #toast{bottom:auto;top:8px}
+/* ── Workspace 화면 공유 고르기(4단계 구현 설계 6.4): 방 자리에 바로 서고 바로 사라진다(움직임 없음). 그림 칸은 가는 테두리 하나이고,
+   가리키거나 초점이 온 칸만 밝아진다. 고리와 빽빽한 점 무늬는 쓰지 않는다 ── */
+#portal-entry .room[data-room="space"]:has(.share:not([hidden])){top:clamp(76px,11vh,112px);transform:none;bottom:24px;max-height:none}
+#portal-entry .room[data-room="space"]:has(.share:not([hidden])) > .say,#portal-entry .room[data-room="space"]:has(.share:not([hidden])) > .read{display:none}
+#portal-entry .share{display:flex;flex-direction:column;gap:14px;padding-bottom:12px}
+#portal-entry .share-title{margin:0;font:var(--body);color:var(--paper)}
+#portal-entry .share-h{margin:6px 0 0;font:var(--small);color:var(--dim)}
+#portal-entry .share-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:12px}
+#portal-entry .share-tile{appearance:none;display:flex;flex-direction:column;gap:8px;margin:0;padding:8px;border:1px solid var(--hair-strong);border-radius:10px;background:transparent;text-align:left;cursor:pointer;transition:border-color .2s ease,background-color .2s ease}
+#portal-entry .share-tile:hover,#portal-entry .share-tile:focus-visible{border-color:var(--ring);background:rgba(243,241,236,.04);outline:none}
+#portal-entry .share-pic{display:block;aspect-ratio:16/9;border-radius:6px;overflow:hidden;background:var(--pit)}
+#portal-entry .share-pic img{display:block;width:100%;height:100%;object-fit:contain}
+#portal-entry .share-name{display:block;font:var(--small);color:rgba(243,241,236,.86);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#portal-entry .share-cancel{align-self:flex-start;margin-top:6px}
+@media (max-width:640px){#portal-entry .share-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+html[data-motion="reduced"] #portal-entry .share-tile{transition:none}
 
 /* ── 임시로 여는 옛 화면(legacy): 맨 위 56px 띠만 새 얼굴이고 그 아래가 옛 런처다(설계 9절) ── */
 html[data-orb-client="legacy"] #portal-entry{bottom:auto;height:56px;border-bottom:1px solid var(--hair)}
