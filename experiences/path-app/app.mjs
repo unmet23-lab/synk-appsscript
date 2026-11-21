@@ -561,7 +561,8 @@ const ACT = {
     sayStudyCount();
   },
   studyClear() {
-    study.clear(); S.studyText = {}; S.studyErrors = {};
+    const kept = studyProfile().compare;
+    studyWrite({ ...createProfile(), compare: kept }); S.studyText = {}; S.studyErrors = {};
     render(false); root.querySelector('[data-action="studySet"]')?.focus();
     say(accL('조건을 모두 지웠어요.', 'All conditions cleared.'));
   },
@@ -570,7 +571,10 @@ const ACT = {
     const next = studyWrite(toggleCompare(cur, id, STUDY_IDS));
     render(false);
     (root.querySelector(`[data-action="studyCompare"][data-id="${id}"]`) || root.querySelector('h1'))?.focus();
-    say(next.compare.length === before ? accL('세 곳까지 담을 수 있어요.', 'You can compare up to 3.') : accL(`비교에 ${next.compare.length}곳 담았어요.`, `${next.compare.length} in compare.`));
+    const n = next.compare.length;
+    say(n === before ? accL('세 곳까지 담을 수 있어요.', 'You can compare up to 3.')
+      : n < before ? accL(`비교에서 뺐어요. 지금 ${n}곳을 담았어요.`, `Removed from compare. ${n} in compare now.`)
+        : accL(`비교에 담았어요. 지금 ${n}곳을 담았어요.`, `Added to compare. ${n} in compare now.`));
   },
   setLang(el) {
     const id = el.dataset.id === 'en' ? 'en' : 'ko';

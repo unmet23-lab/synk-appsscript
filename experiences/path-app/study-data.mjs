@@ -35,7 +35,8 @@ export const RULES = Object.freeze([
   { id: 'finance-d4-local', kind: 'finance', visa: 'D-4', region: 'local', won: 8000000, status: 'in-force', basis: '2023-07-03', inCurrentGuide: true, source: KVAC_D4, checkedAt: '2026-11-21' },
   { id: 'finance-d4-metro', kind: 'finance', visa: 'D-4', region: 'metro', won: 10000000, status: 'in-force', basis: '2023-07-03', inCurrentGuide: true, source: KVAC_D4, checkedAt: '2026-11-21' },
   // 몽골에서 신청할 때 잔고 증명서를 내는 방법. 대조에는 쓰지 않고 재정 칸 아래 안내로 보인다.
-  { id: 'finance-proof-mn', kind: 'finance-proof', issuedWithinDays: 14, heldDays: 30, status: 'in-force', basis: '2026-11-21', source: KVAC_D2, checkedAt: '2026-11-21' },
+  { id: 'finance-proof-mn-d2', kind: 'finance-proof', visa: 'D-2', issuedWithinDays: 14, heldDays: 30, status: 'in-force', basis: '2026-11-21', source: KVAC_D2, checkedAt: '2026-11-21' },
+  { id: 'finance-proof-mn-d4', kind: 'finance-proof', visa: 'D-4', issuedWithinDays: 14, heldDays: 30, status: 'in-force', basis: '2026-11-21', source: KVAC_D4, checkedAt: '2026-11-21' },
   // 계획 발표: 대조에는 쓰지 않고 안내 글로만 보인다. 시행일이 정해지면 in-force 규칙으로 바꾼다.
   { id: 'finance-topik4-waiver', kind: 'finance-waiver', topik: 4, status: 'announced', basis: '2026-10-07', source: MOJ_2026, checkedAt: '2026-11-21' }
 ].map(Object.freeze));
@@ -77,7 +78,7 @@ export const PROGRAMS = Object.freeze([
     requires: { education: 'highschool', gradePct: 0, topik: 2 },
     requiresNote: L('TOPIK 2급으로 입학하면 입학 직후 전북대 한국어연수과정 2개 학기를 꼭 들어야 해요. 국내 한국어학당 4급반 수료나 전북대 자체시험 2급으로도 지원할 수 있어요. 고교 성적의 최저 기준은 없고 서류와 면접 총점 60점 이상이 합격 기준이에요. 검정고시는 인정하지 않아요. 졸업하려면 TOPIK 4급이 필요해요.',
       'If you enter with TOPIK level 2, you must complete two terms of the university’s Korean language program right after admission. Completing level 4 at a Korean language institute in Korea, or level 2 on the university’s own test, also qualifies. There is no minimum school grade; you need 60 points or more across document review and interview. School-leaving equivalency exams are not accepted. TOPIK level 4 is required to graduate.'),
-    costs: { tuition: 4032000, dorm: 2809260, living: null },
+    costs: { tuition: 4032000, dorm: 2809260, living: null }, dormLabel: L('두 학기 · 3인실 · 평일 세 끼 포함', 'Two semesters · triple room · weekday meals included'),
     costsNote: L('등록금은 인문 · 사회과학 · 경상대학 기준이에요(한 학기 2,016,000원). 공과대학은 한 학기 2,704,000원, 예술대학은 2,779,000원이에요. 기숙사는 참빛관 3인실, 평일 세 끼 포함 한 학기 1,404,630원 기준이고 방학은 들어 있지 않아요. 남학생은 식사 없는 대동관(한 학기 580,000원)도 신청할 수 있어요. 모두 2026학년도 2학기 금액이라 2027년에는 달라질 수 있어요.',
       'Tuition is for humanities, social sciences and commerce (₩2,016,000 per semester). Engineering is ₩2,704,000 and arts ₩2,779,000 per semester. The dormitory figure is Chambit Hall, triple room with three weekday meals, ₩1,404,630 per semester, excluding vacations. Male students can also apply for Daedong Hall without meals (₩580,000 per semester). All amounts are for the second semester of 2026 and may change in 2027.'),
     scholarship: [{ topik: 5, won: 820500 }, { topik: 6, won: 2016000 }],
@@ -96,11 +97,11 @@ export const PROGRAMS = Object.freeze([
     requiresNote: L('한국어를 전혀 몰라도 지원할 수 있고 배치시험으로 반을 정해요. 고등학교 졸업(예정) 이상이면 돼요. 2개 학기 이상 등록하면 어학연수(D-4) 비자를 신청할 수 있어요.',
       'You can apply with no Korean at all; a placement test decides your class. A high school diploma (or expected graduation) is enough. Registering for two or more terms lets you apply for the language training (D-4) visa.'),
     costs: { tuition: 5600000, dorm: null, living: null },
-    costsNote: L('수업료는 한 학기 1,400,000원이고 한 해 네 학기예요(2027년 봄학기부터 오른 금액). 전형료는 70,000원이에요. 기숙사비는 2인실, 평일 세 끼 포함 한 학기 약 100만 원이라고 안내해요.',
-      'Tuition is ₩1,400,000 per term, four terms a year (raised from spring 2027). The application fee is ₩70,000. The institute says the dormitory costs about ₩1,000,000 per term for a double room with three weekday meals.'),
+    costsNote: L('수업료는 한 학기 1,400,000원이고 한 해 네 학기예요(2027년 봄학기부터 오른 금액). 전형료는 70,000원이에요. 기숙사비는 2인실, 평일 세 끼 포함 「1학기 약 100만 원」이라고만 안내해 한 해 금액을 알 수 없어서 합계에 넣지 않았어요.',
+      'Tuition is ₩1,400,000 per term, four terms a year (raised from spring 2027). The application fee is ₩70,000. The institute only says the dormitory is “about ₩1,000,000 per term” for a double room with three weekday meals, so the yearly cost is unknown and not included in the total.'),
     scholarship: [],
-    applyOpens: null, applyRounds: [['2026-11-30', '2026-12-25']],
-    applyNote: L('봄학기 접수 마감은 1차 2026-12-11, 2차 2026-12-25예요. 수업은 2027-03-02에 시작해요. 일정은 바뀔 수 있어요.', 'Spring term deadlines are 2026-12-11 (first) and 2026-12-25 (second). Classes start on 2027-03-02. Dates may change.'),
+    applyOpens: null, applyRounds: [['2026-11-30', '2026-12-11'], ['2026-12-12', '2026-12-25']],
+    applyNote: L('봄학기 접수는 2026-11-30부터예요. 1차 마감은 12-11, 2차 마감은 12-25예요. 수업은 2027-03-02에 시작해요. 일정은 바뀔 수 있어요.', 'Spring term applications open on 2026-11-30. The first deadline is 12-11 and the second is 12-25. Classes start on 2027-03-02. Dates may change.'),
     certified: false, checkedAt: '2026-11-21',
     source: { title: L('전북대학교 한국어학당 한국어 연수과정 안내', 'Jeonbuk National University Korean Language Institute program guide'), url: 'https://wz3.jbnu.ac.kr/lec_korean/10877/subview.do' }
   },
@@ -111,7 +112,7 @@ export const PROGRAMS = Object.freeze([
     requires: { education: 'highschool', gradePct: 0, topik: 0 },
     requiresNote: L('입학할 때 TOPIK은 필수가 아니에요(성적이 있는 사람만 내요). 졸업하려면 TOPIK 4급(예체능 3급) 이상이나 그에 맞는 조건 하나를 채워야 해요. 고교 성적의 최저 기준은 없고 서류와 면접 총점 60점 이상이 합격 기준이에요.',
       'TOPIK is not required for admission (submit a score only if you have one). To graduate you need TOPIK level 4 (level 3 for arts and sports) or one equivalent condition. There is no minimum school grade; you need 60 points or more across document review and interview.'),
-    costs: { tuition: 6379000, dorm: 1618000, living: null },
+    costs: { tuition: 6379000, dorm: 1618000, living: null }, dormLabel: L('두 학기 · 2인실 · 식비 별도', 'Two semesters · double room · meals extra'),
     costsNote: L('등록금은 인문 · 사회 계열 기준이에요(첫 학기 3,248,000원, 다음 학기 3,131,000원). 공학 · 예능 계열은 첫 학기 4,375,000원이에요. 기숙사는 학생생활관 2인실 관리비 한 학기 809,000원 기준이고 식비는 따로예요(하루 세 끼 한 학기 1,075,000원). 모두 2026학년도 금액이라 2027년에는 오를 수 있어요.',
       'Tuition is for humanities and social sciences (₩3,248,000 for the first semester, ₩3,131,000 after). Engineering and arts are ₩4,375,000 for the first semester. The dormitory figure is the residence hall double room fee, ₩809,000 per semester; meals are extra (₩1,075,000 per semester for three meals a day). All amounts are for 2026 and may rise in 2027.'),
     scholarship: [{ topik: 3, won: 1624000 }, { topik: 4, won: 1948800 }, { topik: 5, won: 3248000 }],
@@ -130,9 +131,9 @@ export const PROGRAMS = Object.freeze([
     requires: { education: 'highschool', gradePct: 0, topik: 0 },
     requiresNote: L('고등학교 졸업 이상이면 지원할 수 있고 한국어 조건은 없어요. 어학연수(D-4-1) 비자를 받으려면 두 학기 이상 등록해야 해요.',
       'A high school diploma is enough and there is no Korean requirement. To get the language training (D-4-1) visa you must register for at least two terms.'),
-    costs: { tuition: 4400000, dorm: 1618000, living: null },
-    costsNote: L('수강료는 한 학기 1,100,000원이고 한 해 네 학기예요. 처음 한 번 전형료 · 교재비 100,000원과 보험료 100,000원을 더 내요(요강의 한 해 합계 4,600,000원). 기숙사는 2인실 관리비 한 학기 809,000원(방학 제외) 두 학기 기준이고 식비는 따로예요.',
-      'Tuition is ₩1,100,000 per term, four terms a year. You also pay a one-time ₩100,000 for application and textbooks and ₩100,000 for insurance (the guide’s yearly total is ₩4,600,000). The dormitory figure is the double room fee of ₩809,000 per semester (excluding vacations) for two semesters; meals are extra.'),
+    costs: { tuition: 4400000, dorm: null, living: null },
+    costsNote: L('수강료는 한 학기 1,100,000원이고 한 해 네 학기예요. 처음 한 번 전형료 · 교재비 100,000원과 보험료 100,000원을 더 내요(요강의 한 해 합계 4,600,000원). 기숙사 2인실 관리비는 대학 정규 학기(방학 제외) 한 학기에 809,000원이고 식비는 따로예요. 연수는 방학에도 이어져 한 해 기숙사비를 알 수 없어서 합계에 넣지 않았어요.',
+      'Tuition is ₩1,100,000 per term, four terms a year. You also pay a one-time ₩100,000 for application and textbooks and ₩100,000 for insurance (the guide’s yearly total is ₩4,600,000). The double-room dormitory fee is ₩809,000 per regular university semester (excluding vacations), with meals extra. Language terms continue through vacations, so the yearly dormitory cost is unknown and not included in the total.'),
     scholarship: [],
     scholarshipNote: L('연수 과정 자체의 장학금은 요강에 없어요. 두 학기 이상 수료하고 원광대 학부에 들어가면 첫 학기 등록금을 100% 깎아 줘요.',
       'The guide lists no scholarship for the language program itself. If you complete two or more terms and enter Wonkwang University as an undergraduate, the first semester’s tuition is fully waived.'),
@@ -148,10 +149,10 @@ export const PROGRAMS = Object.freeze([
     requires: { education: 'highschool', gradePct: 0, topik: 2 },
     requiresNote: L('TOPIK 2급이 없어도 세종학당 초급2 이상, 사회통합프로그램 2단계, 전주대 한국어학당 3급 이상 수료, 대학 자체 시험(JJ-TOPIK) 합격 같은 조건 가운데 하나로 지원할 수 있어요. TOPIK 2급 이하로 입학하면 두 학기, 3급이면 한 학기 동안 한국어 집중교육을 꼭 들어야 해요. 고교 성적의 최저 기준은 없고 서류평가 60점 이상이 합격 기준이에요. 졸업하려면 TOPIK 4급이 필요해요.',
       'Without TOPIK level 2 you can still apply through one of several alternatives, such as King Sejong Institute Beginner 2 or higher, KIIP level 2, completing level 3 at the university’s Korean language institute, or passing the university’s own test (JJ-TOPIK). Entering with TOPIK level 2 or lower requires two semesters of intensive Korean; level 3 requires one. There is no minimum school grade; you need 60 points or more in document review. TOPIK level 4 is required to graduate.'),
-    costs: { tuition: 7330000, dorm: 1738000, living: null },
+    costs: { tuition: 7330000, dorm: 1738000, living: null }, dormLabel: L('두 학기 · 2인실 · 식비 별도', 'Two semesters · double room · meals extra'),
     costsNote: L('등록금은 인문 · 사회과학 · 경영 계열 기준이에요(한 학기 3,665,000원). 관광 · 의과학 · 체육 계열은 한 학기 4,302,000원, 공학 · 디자인 · 소프트웨어 계열은 4,788,000원이에요. 보험료와 기타경비는 들어 있지 않아요. 기숙사는 스타빌 2인실 한 학기(16주) 869,000원 기준이고 식비는 들어 있지 않아요. 모두 2026학년도 금액이라 달라질 수 있어요.',
       'Tuition is for humanities, social sciences and business (₩3,665,000 per semester). Tourism, medical sciences and sports are ₩4,302,000 and engineering, design and software ₩4,788,000 per semester. Insurance and other fees are not included. The dormitory figure is a Star Ville double room, ₩869,000 per 16-week semester, without meals. All amounts are for 2026 and may change.'),
-    scholarship: [{ topik: 2, won: 1466000 }, { topik: 3, won: 1832500 }, { topik: 4, won: 2565500 }, { topik: 5, won: 3665000 }],
+    scholarship: [{ topik: 0, won: 1466000 }, { topik: 3, won: 1832500 }, { topik: 4, won: 2565500 }, { topik: 5, won: 3665000 }],
     scholarshipNote: L('입학하는 학기에만 주는 장학금이에요. 신입생은 모두 등록금의 40%를 깎아 주고, TOPIK 3급은 50%, 4급은 70%, 5급 이상은 100%예요. 다음 학기부터는 TOPIK 급수와 직전 학기 성적으로 25%에서 100%까지 정해요.',
       'These apply to the entry semester only. Every freshman gets 40% off tuition; TOPIK level 3 gets 50%, level 4 gets 70%, and level 5 or higher gets 100%. From the next semester, 25% to 100% is decided by TOPIK level and the previous semester’s grades.'),
     applyOpens: null, applyRounds: [['2026-10-12', '2026-10-21'], ['2026-12-01', '2026-12-11'], ['2027-01-04', '2027-01-13']],
@@ -184,8 +185,8 @@ export function scholarshipAmount(program, step) {
   if (Number.isInteger(step.won)) return step.won;
   return Math.round(program.costs.tuition * step.tuitionRate * (program.scholarshipTerms === 1 ? 0.5 : 1));
 }
-export function proofRule(rules) {
-  return rules.find((r) => r.kind === 'finance-proof' && r.status === 'in-force' && !r.stale) || null;
+export function proofRule(rules, visa) {
+  return rules.find((r) => r.kind === 'finance-proof' && r.status === 'in-force' && !r.stale && r.visa === visa) || null;
 }
 export function programById(programs, id) {
   return programs.find((p) => p.id === id) || null;
@@ -201,7 +202,7 @@ export function validateStudyData(rules, programs) {
     if (!RULE_STATUS.includes(r.status) || !isDate(r.basis) || !isDate(r.checkedAt) || !isSource(r.source)) fail('rule source ' + r.id);
     if (r.kind === 'finance') { if (!VISAS.includes(r.visa) || !REGIONS.includes(r.region) || !isWon(r.won) || typeof r.inCurrentGuide !== 'boolean') fail('finance rule ' + r.id); }
     else if (r.kind === 'finance-waiver') { if (!isLevel(r.topik)) fail('waiver rule ' + r.id); }
-    else if (r.kind === 'finance-proof') { if (![r.issuedWithinDays, r.heldDays].every((d) => Number.isInteger(d) && d > 0 && d <= 366)) fail('proof rule ' + r.id); }
+    else if (r.kind === 'finance-proof') { if (!VISAS.includes(r.visa) || ![r.issuedWithinDays, r.heldDays].every((d) => Number.isInteger(d) && d > 0 && d <= 366)) fail('proof rule ' + r.id); }
     else fail('rule kind ' + r.id);
   }
   const seenFinance = new Set();
@@ -218,7 +219,7 @@ export function validateStudyData(rules, programs) {
     if (!REGIONS.includes(p.region) || !LEVELS.includes(p.level) || !VISAS.includes(p.visa)) fail('program kind ' + p.id);
     if (p.example ? !IMAGE_IDS.includes(p.image) : !(p.image === null || IMAGE_IDS.includes(p.image))) fail('program image ' + p.id);
     if (!(p.tone === undefined || TONES.includes(p.tone))) fail('program tone ' + p.id);
-    for (const key of ['term', 'requiresNote', 'costsNote', 'scholarshipNote', 'applyNote']) if (!(p[key] === undefined || p[key] === null || isNote(p[key]))) fail('program ' + key + ' ' + p.id);
+    for (const key of ['term', 'requiresNote', 'costsNote', 'scholarshipNote', 'applyNote', 'dormLabel']) if (!(p[key] === undefined || p[key] === null || isNote(p[key]))) fail('program ' + key + ' ' + p.id);
     if (!(p.partner === undefined || typeof p.partner === 'boolean') || (p.example && p.partner)) fail('program partner ' + p.id);
     if (!(p.scholarshipTerms === undefined || p.scholarshipTerms === 1 || p.scholarshipTerms === 2)) fail('program scholarship terms ' + p.id);
     if ((p.level === 'language') !== (p.visa === 'D-4')) fail('program visa ' + p.id);
@@ -229,11 +230,11 @@ export function validateStudyData(rules, programs) {
     if (!isObj(c) || !isWon(c.tuition) || !known(c.dorm) || !known(c.living)) fail('program costs ' + p.id);
     if (!Array.isArray(p.scholarship)) fail('program scholarship ' + p.id);
     // 장학금 단계는 비율(tuitionRate) 또는 한 해 금액(won) 가운데 하나로 적는다. 급수가 오를수록 금액이 커야 한다.
-    let last = 0, lastAmount = 0;
+    let last = -1, lastAmount = 0;
     for (const s of p.scholarship) {
       const byRate = typeof s.tuitionRate === 'number' && s.tuitionRate > 0 && s.tuitionRate <= 1 && s.won === undefined;
       const byWon = isWon(s.won) && s.won > 0 && s.won <= c.tuition && s.tuitionRate === undefined;
-      if (!isObj(s) || !isLevel(s.topik) || s.topik <= last || s.topik < q.topik || !(byRate || byWon)) fail('scholarship steps ' + p.id);
+      if (!isObj(s) || !isLevel(s.topik) || s.topik <= last || (s.topik !== 0 && s.topik < q.topik) || !(byRate || byWon)) fail('scholarship steps ' + p.id);
       const amount = scholarshipAmount(p, s);
       if (!(amount > lastAmount)) fail('scholarship steps ' + p.id);
       last = s.topik; lastAmount = amount;
@@ -299,9 +300,10 @@ export function applyWindow(program, now = new Date()) {
 /** 접수 시작까지 남은 날. 날짜가 없거나 지났으면 null(화면은 「일정 확인 필요」로 쓴다). */
 export function daysUntil(dateText, now = new Date()) {
   if (!isDate(dateText)) return null;
-  const n = now instanceof Date ? now : new Date(now);
-  const today = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
-  const d = Math.round((Date.parse(dateText + 'T00:00:00Z') - today) / 86400000);
+  const t = now instanceof Date ? now.getTime() : new Date(now).getTime();
+  // 한국 대학의 접수일은 한국 날짜다. 기기 시간대(몽골 UTC+8 등)와 상관없이 한국 시간(UTC+9)의 오늘로 센다.
+  const todayKst = Math.floor((t + 9 * 3600000) / 86400000);
+  const d = Date.parse(dateText + 'T00:00:00Z') / 86400000 - todayKst;
   return d >= 0 ? d : null;
 }
 

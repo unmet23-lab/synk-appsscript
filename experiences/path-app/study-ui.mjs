@@ -39,7 +39,7 @@ function ctx(view) {
   const anyPartner = programs.some((p) => p.partner === true);
   const fitText = (n) => (allExample
     ? L(`개의 예시 과정이 지금 조건에 맞아요 (예시 ${programs.length}개 중)`, `of ${programs.length} example programs fit your conditions`)
-    : L('곳이 지금 조건에 맞아요', n === 1 ? 'program fits your conditions' : 'programs fit your conditions'));
+    : L('개 과정이 지금 조건에 맞아요', n === 1 ? 'program fits your conditions' : 'programs fit your conditions'));
   return { now, en, L, pick, pair, won, topik, programs, rules, profile, allExample, anyPartner, fitText };
 }
 
@@ -58,6 +58,13 @@ const opens = (p, T) => {
   if (w.state === 'open') return w.days === null ? T.L('접수 중', 'Open now') : w.days === 0 ? T.L('오늘 마감', 'Closes today') : T.L(`마감 D-${w.days}`, `Closes in ${w.days}d`);
   if (w.state === 'closed') return T.L('접수 끝남', 'Closed');
   return T.L('일정 확인 필요', 'Check dates');
+};
+const opensLong = (p, T) => {
+  const w = applyWindow(p, T.now);
+  if (w.state === 'before') return T.L(`접수 시작 D-${w.days}`, `Applications open in ${w.days}d`);
+  if (w.state === 'open') return w.days === null ? T.L('지금 접수 중', 'Applications open now') : w.days === 0 ? T.L('오늘 접수 마감', 'Applications close today') : T.L(`접수 마감 D-${w.days}`, `Applications close in ${w.days}d`);
+  if (w.state === 'closed') return T.L('이번 접수 끝남', 'Applications closed');
+  return T.L('접수 일정 확인 필요', 'Check application dates');
 };
 const costLabel = (c, T) => (c.missing.length ? T.L('확인된 비용의 합', 'Confirmed costs') : T.L('내가 낼 돈', 'What you pay'));
 const needKorean = (p, T) => (p.requires.topik ? T.L(`${p.requires.topik}급`, `Level ${p.requires.topik}`) : T.L('없어도 됨', 'None'));
@@ -87,9 +94,9 @@ export function renderStudyEntry(view) {
   const T = ctx(view), empty = isEmptyProfile(T.profile), n = countFit(T.profile, T.programs, T.rules);
   const title = T.allExample ? T.L('예시 과정으로 내 조건 맞춰 보기', 'Try your conditions on example programs')
     : n === null ? T.L('내 조건으로 갈 수 있는 대학을 알아봐요', 'See which schools fit your conditions')
-      : T.L(`지금 조건에 맞는 곳 ${n}곳`, `${n} program${n === 1 ? '' : 's'} fit your conditions`);
+      : T.L(`지금 조건에 맞는 과정 ${n}개`, `${n} program${n === 1 ? ' fits' : 's fit'} your conditions`);
   const sub = T.allExample ? T.L('협력 대학은 준비 중이에요. 한국어, 성적, 준비한 돈을 넣어 미리 맞춰 볼 수 있어요.', 'Partner universities are being prepared. Enter your Korean level, grades and funds to try it in advance.')
-    : n === null ? T.L('한국어, 성적, 준비한 돈을 넣으면 맞는 곳과 모자란 것을 알려 줘요.', 'Enter your Korean level, grades and funds to see what fits and what is missing.')
+    : n === null ? T.L('한국어, 성적, 준비한 돈을 넣으면 맞는 과정과 모자란 것을 알려 줘요.', 'Enter your Korean level, grades and funds to see what fits and what is missing.')
       : T.L('조건을 바꾸면 바로 다시 계산해요.', 'Change a condition and it recalculates right away.');
   return `<section class="sx sx-entry" aria-label="${T.L('대학', 'Schools')}"><button type="button" class="sx-entry-btn" data-action="nav" data-page="${empty ? 'cond' : 'univ'}"><span><b>${esc(title)}</b><small>${esc(sub)}</small></span><span class="sx-go" aria-hidden="true">${GO}</span></button></section>`;
 }
@@ -97,13 +104,13 @@ export function renderStudyEntry(view) {
 function countCard(T) {
   const n = countFit(T.profile, T.programs, T.rules);
   if (n === null) {
-    return `<section class="sx-card lapis"><h2>${T.L('성적과 한국어를 넣으면 맞는 곳을 알려 줘요.', 'Enter your grades and Korean level to see what fits.')}</h2><p>${T.L('둘 중 하나라도 비어 있으면 세지 않아요. 넣기 전에는 대조 칸이 「확인 필요」로 보여요.', 'Nothing is counted while either one is empty. Until then, each comparison shows “To check”.')}</p><button type="button" class="sx-cta" data-action="nav" data-page="cond">${T.L('내 조건 넣기', 'Enter my conditions')} ${GO}</button></section>`;
+    return `<section class="sx-card lapis"><h2>${T.L('성적과 한국어를 넣으면 맞는 과정을 세어 줘요.', 'Enter your grades and Korean level to count the programs that fit.')}</h2><p>${T.L('학력과 준비한 돈도 넣으면 그 조건이 모자란 과정은 빼고 세요.', 'If you also enter your education and funds, programs where those fall short are left out.')}</p><button type="button" class="sx-cta" data-action="nav" data-page="cond">${T.L('내 조건 넣기', 'Enter my conditions')} ${GO}</button></section>`;
   }
-  return `<section class="sx-card lapis"><p class="sx-k">${T.L('지금 조건으로', 'With your conditions now')}</p><p class="sx-big"><b>${n}</b><span>${esc(T.fitText(n))}</span></p><button type="button" class="sx-btn2" data-action="nav" data-page="cond">${T.L('내 조건 바꿔 보기', 'Change my conditions')}</button></section>`;
+  return `<section class="sx-card lapis"><p class="sx-k">${T.L('지금 조건으로', 'With your conditions now')}</p><p class="sx-big"><b>${n}</b><span>${esc(T.fitText(n))}</span></p><p>${T.L('넣은 조건 가운데 모자란 것이 없는 과정을 셌어요.', 'Counted programs where none of the conditions you entered fall short.')}</p><button type="button" class="sx-btn2" data-action="nav" data-page="cond">${T.L('내 조건 바꿔 보기', 'Change my conditions')}</button></section>`;
 }
 
 export function renderUniv(view) {
-  const T = ctx(view), profile = T.profile;
+  const T = ctx(view), profile = T.profile, empty = isEmptyProfile(profile);
   const f = STUDY_FILTERS.includes(view.filter) ? view.filter : 'all';
   // 접수 중이거나 곧 시작하는 과정을 앞에, 접수가 끝난 과정을 뒤에 둔다(같은 상태끼리는 자료 순서).
   const rank = { open: 0, before: 1, unknown: 2, closed: 3 };
@@ -118,19 +125,19 @@ export function renderUniv(view) {
   if (!T.programs.length) return `<div class="sx sx-wide">${head}<section class="sx-card"><h2>${T.L('협력 대학을 준비하고 있어요.', 'Partner universities are being prepared.')}</h2><p>${T.L('준비되면 여기에서 조건과 비용을 맞춰 볼 수 있어요.', 'Once ready, you can compare conditions and costs here.')}</p></section></div>`;
   const cards = list.map((p) => {
     const m = matchProgram(profile, p, T.rules), on = profile.compare.includes(p.id), full = profile.compare.length >= MAX_COMPARE && !on;
-    return `<li class="sx-ucard"><div class="sx-ucard-top"><button type="button" class="sx-photo" data-action="univOpen" data-id="${esc(p.id)}">${image(p)}<span class="sx-photo-body"><small>${esc(T.pick(p.place))} · ${T.pair(LEVEL[p.level])}${p.term ? ` · ${esc(T.pick(p.term))}` : ''}</small><b>${esc(T.pick(p.name))}</b></span></button><button type="button" class="sx-pick" aria-pressed="${on}" data-action="studyCompare" data-id="${esc(p.id)}"${full ? ' disabled' : ''}>${on ? T.L('비교에 담음', 'In compare') : T.L('비교', 'Compare')}</button></div>
+    return `<li class="sx-ucard"><div class="sx-ucard-top"><button type="button" class="sx-photo" data-action="univOpen" data-id="${esc(p.id)}">${image(p)}<span class="sx-photo-body"><small>${esc(T.pick(p.place))} · ${T.pair(LEVEL[p.level])}${p.term ? ` · ${esc(T.pick(p.term))}` : ''}</small><b>${esc(T.pick(p.name))}</b></span></button><button type="button" class="sx-pick" aria-pressed="${on}" data-action="studyCompare" data-id="${esc(p.id)}"${full ? ' disabled' : ''}>${on ? T.L('비교에 담음', 'In compare') : T.L('비교', 'Compare')}<span class="sr-only"> ${esc(T.pick(p.name))}</span></button></div>
 <dl class="sx-facts"><div><dt>${p.level === 'language' ? T.L('한 해 수업료', 'Tuition per year') : T.L('한 해 등록금', 'Tuition per year')}</dt><dd>${T.won(p.costs.tuition)}</dd></div><div><dt>${T.L('필요한 한국어', 'Korean needed')}</dt><dd>${needKorean(p, T)}</dd></div><div><dt>${T.L('원서 접수', 'Applications')}</dt><dd>${esc(opens(p, T))}</dd></div></dl>
-<p class="sx-fitline"><span>${exampleTag(p, T)} ${T.L(`내 조건 4개 중 ${m.okCount}개 맞음`, `${m.okCount} of 4 conditions met`)}</span>${meter(m, T)}</p></li>`;
+<p class="sx-fitline"><span>${exampleTag(p, T)} ${empty ? T.L('내 조건을 넣으면 맞춰 봐요', 'Enter your conditions to compare') : T.L(`내 조건 4개 중 ${m.okCount}개 맞음`, `${m.okCount} of 4 conditions met`)}</span>${empty ? '' : meter(m, T)}</p></li>`;
   }).join('');
-  const none = list.length ? '' : `<section class="sx-card"><h2>${f === 'fit' && !readyToCount(profile) ? T.L('성적과 한국어를 넣으면 맞는 곳만 골라 볼 수 있어요.', 'Enter your grades and Korean level to filter by fit.') : f === 'fit' ? T.L('지금 조건에 맞는 곳이 아직 없어요.', 'Nothing fits your conditions yet.') : T.L('이 갈래의 과정은 아직 없어요.', 'No programs in this category yet.')}</h2><p>${T.L('전체 목록에서 과정을 열면 무엇이 모자란지 볼 수 있어요.', 'Open a program in the full list to see what is missing.')}</p><div class="sx-row2"><button type="button" class="sx-btn2" data-action="nav" data-page="cond">${T.L('내 조건 보기', 'My conditions')}</button><button type="button" class="sx-btn2" data-action="studyFilter" data-id="all">${T.L('전체 보기', 'Show all')}</button></div></section>`;
+  const none = list.length ? '' : `<section class="sx-card"><h2>${f === 'fit' && !readyToCount(profile) ? T.L('성적과 한국어를 넣으면 맞는 과정만 골라 볼 수 있어요.', 'Enter your grades and Korean level to filter by fit.') : f === 'fit' ? T.L('지금 조건에 맞는 과정이 아직 없어요.', 'Nothing fits your conditions yet.') : T.L('이 갈래의 과정은 아직 없어요.', 'No programs in this category yet.')}</h2><p>${T.L('전체 목록에서 과정을 열면 무엇이 모자란지 볼 수 있어요.', 'Open a program in the full list to see what is missing.')}</p><div class="sx-row2"><button type="button" class="sx-btn2" data-action="nav" data-page="cond">${T.L('내 조건 보기', 'My conditions')}</button><button type="button" class="sx-btn2" data-action="studyFilter" data-id="all">${T.L('전체 보기', 'Show all')}</button></div></section>`;
   const bar = profile.compare.length >= 2 ? `<div class="sx-cmpbar"><button type="button" class="sx-cta butter" data-action="nav" data-page="univCompare">${T.L(`${profile.compare.length}곳 나란히 보기`, `Compare ${profile.compare.length} side by side`)} ${GO}</button></div>` : profile.compare.length === 1 ? `<p class="sx-fine">${T.L('한 곳을 더 담으면 나란히 볼 수 있어요.', 'Add one more to compare side by side.')}</p>` : '';
   return `<div class="sx sx-wide">${head}
 ${countCard(T)}
-<div class="sx-chips" role="group" aria-label="${T.L('거르기', 'Filter')}">${chip('all', T.L(`전체 ${T.programs.length}`, `All ${T.programs.length}`))}${chip('fit', T.L('조건이 맞는 곳', 'Fits me'))}${chip('language', T.pair(LEVEL.language))}${chip('undergraduate', T.pair(LEVEL.undergraduate))}</div>
+<div class="sx-chips" role="group" aria-label="${T.L('거르기', 'Filter')}">${chip('all', T.L(`전체 ${T.programs.length}`, `All ${T.programs.length}`))}${chip('fit', T.L('조건이 맞는 과정', 'Fits me'))}${chip('language', T.pair(LEVEL.language))}${chip('undergraduate', T.pair(LEVEL.undergraduate))}</div>
 ${list.length ? `<ul class="sx-ulist">${cards}</ul>` : none}${bar}${promise(T)}</div>`;
 }
 
-function financeMore(i, T) {
+function financeMore(i, T, visa) {
   const waiver = announcedRules(T.rules, 'finance-waiver')[0];
   const enter = i.mine === null ? `<button type="button" class="sx-link" data-action="nav" data-page="cond">${T.L('준비한 돈 넣기', 'Enter my funds')}${NEXT}</button>` : '';
   let note = '';
@@ -138,8 +145,8 @@ function financeMore(i, T) {
     note = `<p class="sx-note">${i.rule.stale ? T.L('이 금액을 확인한 지 오래돼 다시 확인하고 있어요. 그래서 맞는지 판정하지 않았어요.', 'This amount was checked a while ago and is being re-checked, so it is not judged here.') : T.L(`이 금액은 ${i.rule.basis}에 시행된 기준이에요. 지금 쓰는 안내에서도 같은지 확인하고 있어서 맞는지 판정하지 않았어요.`, `This amount took effect on ${i.rule.basis}. We are confirming it against the current guide, so it is not judged here.`)}${i.mine !== null && i.gap > 0 ? ` ${T.L(`이 기준으로는 ${T.won(i.gap)}이 더 필요해요.`, `By this figure, ${T.won(i.gap)} more would be needed.`)}` : ''}</p>`;
   } else if (i.status === 'lack') note = `<p class="sx-note">${T.L(`${T.won(i.gap)}이 더 필요해요.`, `${T.won(i.gap)} more is needed.`)}</p>`;
   const plan = waiver ? `<p class="sx-note plan"><b>${T.L('계획 발표', 'Announced plan')}</b> ${T.L(`TOPIK ${waiver.topik}급이 있으면 이 증명을 면제하는 계획이 ${waiver.basis}에 발표됐어요. 시작하는 날은 아직 정해지지 않았어요.`, `A plan to waive this proof for TOPIK level ${waiver.topik} was announced on ${waiver.basis}. No start date has been set.`)} <a href="${esc(waiver.source.url)}" target="_blank" rel="noopener noreferrer">${esc(T.pick(waiver.source.title))}${newTab(T)}</a></p>` : '';
-  const proof = proofRule(T.rules);
-  const how = proof ? `<p class="sx-note">${T.L(`몽골에서 신청할 때는 본인이나 부모의 몽골 은행 잔고 증명서를 비자 신청일 기준 ${proof.issuedWithinDays}일 안에 발급받아 내고, 이 금액을 ${proof.heldDays}일 넘게 유지해야 해요.`, `When applying in Mongolia, submit a balance certificate from your own or a parent’s Mongolian bank account issued within ${proof.issuedWithinDays} days of the visa application, and keep this amount for at least ${proof.heldDays} days.`)} <a href="${esc(proof.source.url)}" target="_blank" rel="noopener noreferrer">${esc(T.pick(proof.source.title))}${newTab(T)}</a></p>` : '';
+  const proof = proofRule(T.rules, visa);
+  const how = proof ? `<p class="sx-note">${T.L(`몽골에서 신청할 때는 본인이나 부모의 몽골 은행 잔고 증명서를 비자 신청일 기준 ${proof.issuedWithinDays}일 안에 발급받아 내고, 이 금액을 ${proof.heldDays}일 이상 유지해야 해요.`, `When applying in Mongolia, submit a balance certificate from your own or a parent’s Mongolian bank account issued within ${proof.issuedWithinDays} days of the visa application, and keep this amount for at least ${proof.heldDays} days.`)} <a href="${esc(proof.source.url)}" target="_blank" rel="noopener noreferrer">${esc(T.pick(proof.source.title))}${newTab(T)}</a></p>` : '';
   return enter + note + (i.rule ? sourceLine(i.rule, T) : '') + how + plan;
 }
 
@@ -150,31 +157,33 @@ export function renderUnivDetail(view) {
   const m = matchProgram(profile, p, T.rules), c = programCost(profile, p), on = profile.compare.includes(p.id), full = profile.compare.length >= MAX_COMPARE && !on;
   const items = m.items.map((i) => {
     let more = '';
-    if (i.key === 'finance') more = financeMore(i, T);
+    if (i.key === 'finance') more = financeMore(i, T, p.visa);
     else if (i.status === 'check') more = `<button type="button" class="sx-link" data-action="nav" data-page="cond">${T.L('내 조건에 넣기', 'Enter it in my conditions')}${NEXT}</button>`;
     else if (i.key === 'topik' && i.status === 'lack') more = `<p class="sx-note">${T.L(`${i.gap}급을 더 올리면 맞아요.`, `${i.gap} more level${i.gap === 1 ? '' : 's'} to meet this.`)}</p>`;
     else if (i.key === 'grade' && i.status === 'lack') more = `<p class="sx-note">${T.L(`${i.gap}%가 모자라요.`, `${i.gap}% short.`)}</p>`;
     return `<li><div class="sx-match-top"><b>${T.pair(KEY_NAME[i.key])}</b>${tag(i.status, T)}</div><dl class="sx-match-grid"><div><dt>${T.L('필요한 것', 'Needed')}</dt><dd>${esc(needText(i, T))}</dd></div><div><dt>${T.L('내 것', 'Mine')}</dt><dd>${esc(mineText(i, T))}</dd></div></dl>${more}</li>`;
   }).join('');
   const pct = Math.round(c.rate * 100);
-  const schNote = c.scholarship ? (c.rate === null ? T.L(`한국어 ${profile.topik}급 장학금 ${T.won(c.scholarship)}을 뺀 값이에요.`, `After the ${T.won(c.scholarship)} scholarship for TOPIK level ${profile.topik}.`) : T.L(`한국어 ${profile.topik}급 장학금 ${pct}%를 뺀 값이에요.`, `After the ${pct}% scholarship for TOPIK level ${profile.topik}.`))
+  const schNote = c.scholarship ? (c.stepTopik === 0 ? T.L(`신입생 모두에게 주는 장학금 ${T.won(c.scholarship)}을 뺀 값이에요.`, `After the ${T.won(c.scholarship)} scholarship every freshman receives.`)
+      : c.rate === null ? T.L(`한국어 ${c.stepTopik}급 장학금 ${T.won(c.scholarship)}을 뺀 값이에요.`, `After the ${T.won(c.scholarship)} scholarship for TOPIK level ${c.stepTopik}.`) : T.L(`한국어 ${c.stepTopik}급 장학금 ${pct}%를 뺀 값이에요.`, `After the ${pct}% scholarship for TOPIK level ${c.stepTopik}.`))
     : !p.scholarship.length ? T.L('이 과정은 한국어 급수 장학금이 없어요.', 'This program has no Korean-level scholarship.')
-      : profile.topik === null ? T.L('한국어 급수를 넣으면 장학금을 빼서 보여 줘요.', 'Enter your Korean level to subtract the scholarship.') : T.L('지금 급수로는 장학금이 없어요.', 'No scholarship at your current level.');
+      : profile.topik === null ? T.L('한국어 급수를 넣으면 장학금을 빼서 보여 줘요.', 'Enter your Korean level to subtract the scholarship.')
+        : p.scholarshipNote ? T.L('지금 급수로 정해진 장학금은 없어요. 아래 장학금 안내를 확인하세요.', 'No fixed scholarship at your current level. See the scholarship note below.') : T.L('지금 급수로는 장학금이 없어요.', 'No scholarship at your current level.');
   const next = c.nextLevel ? `<section class="sx-card meadow"><p class="sx-k">${T.L('급수를 올리면', 'If you raise your level')}</p><h2>${T.L(`${c.nextLevel.topik}급이면 ${c.missing.length ? '확인된 비용의 합이' : '내가 낼 돈이'} ${T.won(c.nextLevel.total)}으로 줄어요.`, `At level ${c.nextLevel.topik}, ${c.missing.length ? 'the confirmed costs drop' : 'what you pay drops'} to ${T.won(c.nextLevel.total)}.`)}</h2></section>` : '';
-  const unknownCost = (key) => (key === 'dorm' ? T.L('대학 안내에서 확인', 'Check with the university') : T.L('대학이 안내하지 않음', 'Not stated by the university'));
+  const unknownCost = (key) => (key === 'dorm' ? T.L('합계에 없음 · 아래 안내', 'Not in total · see note') : T.L('대학이 안내하지 않음', 'Not stated by the university'));
   const note = (o) => (o ? `<p class="sx-note">${esc(T.pick(o))}</p>` : '');
   const small = (o) => (o ? `<p class="sx-note is-small">${esc(T.pick(o))}</p>` : '');
-  const missingNote = c.missing.length ? `<p class="sx-note">${T.L(`${c.missing.map((k) => (k === 'dorm' ? '기숙사비' : '생활비')).join('와 ')}는 대학이 금액을 안내하지 않아 합계에 넣지 않았어요.`, `${c.missing.map((k) => (k === 'dorm' ? 'Dormitory fees' : 'Living costs')).join(' and ')} are not stated by the university, so they are not included in the total.`)}</p>` : '';
+  const missingNote = c.missing.length ? `<p class="sx-note">${T.L(`합계에는 ${c.missing.length === 2 ? '기숙사비와 생활비가' : c.missing[0] === 'dorm' ? '기숙사비가' : '생활비가'} 빠져 있어요.`, `The total does not include ${c.missing.map((k) => (k === 'dorm' ? 'dormitory fees' : 'living costs')).join(' or ')}.`)}</p>` : '';
   const realSource = !p.example && p.source ? `<p class="sx-src"><b>${T.L('출처', 'Source')}</b> <a href="${esc(p.source.url)}" target="_blank" rel="noopener noreferrer">${esc(T.pick(p.source.title))}${newTab(T)}</a> · ${T.L('확인', 'checked')} ${esc(p.checkedAt)}</p>` : '';
   return `<div class="sx">${back}
-<div class="sx-photo is-hero">${image(p)}<span class="sx-photo-top">${exampleTag(p, T)}<span class="sx-tag white">${T.L('원서 접수', 'Applications')} ${esc(opens(p, T))}</span></span><span class="sx-photo-body"><small>${esc(T.pick(p.place))} · ${T.pair(LEVEL[p.level])} · ${esc(T.pick(p.majors))}${p.term ? ` · ${esc(T.pick(p.term))}` : ''}</small></span></div>
+<div class="sx-photo is-hero">${image(p)}<span class="sx-photo-top">${exampleTag(p, T)}<span class="sx-tag white">${esc(opensLong(p, T))}</span></span><span class="sx-photo-body"><small>${esc(T.pick(p.place))} · ${T.pair(LEVEL[p.level])} · ${esc(T.pick(p.majors))}${p.term ? ` · ${esc(T.pick(p.term))}` : ''}</small></span></div>
 <h1 class="sx-title page-title" tabindex="-1">${esc(T.pick(p.name))}</h1>
 ${p.example ? `<p class="sx-lead">${T.L('화면을 미리 보이려고 넣은 예시 과정이에요. 금액, 일정, 입학 조건은 실제 대학의 것이 아니에요.', 'An example program to preview the screen. The amounts, dates and admission conditions are not from a real university.')}</p>` : `${p.partner ? '' : `<p class="sx-lead">${T.L('대학이 공개한 모집 요강에서 옮긴 정보예요. SYNK와 협약한 대학은 아니에요. 지원하기 전에 원문을 꼭 확인하세요.', 'Taken from the university’s published admissions guide. This is not a SYNK partner university. Check the original before applying.')}</p>`}${realSource}`}
 ${p.applyNote ? `<p class="sx-note is-box"><b>${T.L('원서 접수', 'Applications')}</b> ${esc(T.pick(p.applyNote))}</p>` : ''}
 <h2 class="sx-h">${T.L('내 조건과 맞춰 보기', 'Compare with my conditions')} ${meter(m, T)}</h2><ul class="sx-match">${items}</ul>${note(p.requiresNote)}
 <h2 class="sx-h">${T.L('한 해에 드는 돈', 'Cost for one year')} ${exampleTag(p, T)}</h2>
 <div class="sx-hero-num"><small>${costLabel(c, T)}</small><b>${T.won(c.total)}</b><small>${esc(schNote)}</small></div>
-<ul class="sx-money"><li><span>${p.level === 'language' ? T.L('수업료', 'Tuition') : T.L('등록금', 'Tuition')}</span><span>${T.won(c.tuition)}</span></li><li${c.dorm === null ? ' class="is-unknown"' : ''}><span>${T.L('기숙사', 'Dormitory')}</span><span>${c.dorm === null ? unknownCost('dorm') : T.won(c.dorm)}</span></li><li${c.living === null ? ' class="is-unknown"' : ''}><span>${T.L('생활비', 'Living costs')}</span><span>${c.living === null ? unknownCost('living') : T.won(c.living)}</span></li>${c.scholarship ? `<li class="minus"><span>${T.L('장학금', 'Scholarship')}</span><span>− ${T.won(c.scholarship)}</span></li>` : ''}</ul>${missingNote}${small(p.costsNote)}${small(p.scholarshipNote)}${next}
+<ul class="sx-money"><li><span>${p.level === 'language' ? T.L('수업료', 'Tuition') : T.L('등록금', 'Tuition')}</span><span>${T.won(c.tuition)}</span></li><li${c.dorm === null ? ' class="is-unknown"' : ''}><span>${T.L('기숙사', 'Dormitory')}${p.dormLabel && c.dorm !== null ? `<small>${esc(T.pick(p.dormLabel))}</small>` : ''}</span><span>${c.dorm === null ? unknownCost('dorm') : T.won(c.dorm)}</span></li><li${c.living === null ? ' class="is-unknown"' : ''}><span>${T.L('생활비', 'Living costs')}</span><span>${c.living === null ? unknownCost('living') : T.won(c.living)}</span></li>${c.scholarship ? `<li class="minus"><span>${T.L('장학금', 'Scholarship')}</span><span>− ${T.won(c.scholarship)}</span></li>` : ''}</ul>${missingNote}${small(p.costsNote)}${small(p.scholarshipNote)}${next}
 <div class="sx-row2"><button type="button" class="sx-btn2" data-action="nav" data-page="cond">${T.L('내 조건 바꿔 보기', 'Change my conditions')}</button><button type="button" class="sx-btn2" aria-pressed="${on}" data-action="studyCompare" data-id="${esc(p.id)}"${full ? ' disabled' : ''}>${on ? T.L('비교에 담음', 'In compare') : T.L('비교에 담기', 'Add to compare')}</button></div>
 ${profile.compare.length >= 2 ? `<button type="button" class="sx-cta butter" data-action="nav" data-page="univCompare">${T.L(`${profile.compare.length}곳 나란히 보기`, `Compare ${profile.compare.length} side by side`)} ${GO}</button>` : ''}${promise(T)}</div>`;
 }
@@ -183,16 +192,20 @@ export function renderUnivCompare(view) {
   const T = ctx(view), profile = T.profile, list = profile.compare.map((id) => programById(T.programs, id)).filter(Boolean);
   const back = `<button type="button" class="sx-back" data-action="nav" data-page="univ">${BACK}${T.L('대학', 'Schools')}</button>`;
   const title = `<h1 class="sx-title page-title" tabindex="-1">${T.L('나란히 보기', 'Side by side')}</h1>`;
-  if (list.length < 2) return `<div class="sx">${back}${title}<section class="sx-card"><h2>${T.L('두 곳 넘게 담으면 나란히 볼 수 있어요.', 'Add at least two programs to compare.')}</h2><button type="button" class="sx-cta" data-action="nav" data-page="univ">${T.L('대학 보기', 'Browse schools')} ${GO}</button></section></div>`;
+  if (list.length < 2) return `<div class="sx">${back}${title}<section class="sx-card"><h2>${T.L('두 곳 이상 담으면 나란히 볼 수 있어요.', 'Add at least two programs to compare.')}</h2><button type="button" class="sx-cta" data-action="nav" data-page="univ">${T.L('대학 보기', 'Browse schools')} ${GO}</button></section></div>`;
   const row = (h, fn) => `<tr><th scope="row">${h}</th>${list.map((p) => `<td>${fn(p)}</td>`).join('')}</tr>`;
+  const anyMissing = list.some((p) => programCost(profile, p).missing.length);
+  const costsWord = anyMissing ? T.L('확인된 비용의 합', 'Confirmed costs') : T.L('내가 낼 돈', 'What you pay');
   return `<div class="sx sx-wide">${back}${title}
 <div class="sx-cmp-wrap" role="region" tabindex="0" aria-label="${T.L('나란히 보기 표', 'Comparison table')}"><table class="sx-cmp" data-cols="${list.length}"><thead><tr><td></td>${list.map((p) => `<th scope="col"><button type="button" class="sx-cmp-head" data-action="univOpen" data-id="${esc(p.id)}">${image(p)}<span>${esc(T.pick(p.name))}</span></button></th>`).join('')}</tr></thead><tbody>
-${row(T.L('지역', 'Region'), (p) => esc(T.pick(p.place)))}${row(T.L('과정', 'Program'), (p) => T.pair(LEVEL[p.level]))}${row(T.L('한 해 수업료', 'Tuition per year'), (p) => T.won(p.costs.tuition))}
-${row(list.some((p) => programCost(profile, p).missing.length) ? T.L('확인된 비용의 합', 'Confirmed costs') : T.L('내가 낼 돈', 'What you pay'), (p) => T.won(programCost(profile, p).total))}${row(T.L('필요한 한국어', 'Korean needed'), (p) => needKorean(p, T))}
+${row(T.L('지역', 'Region'), (p) => esc(T.pick(p.place)))}${row(T.L('과정', 'Program'), (p) => T.pair(LEVEL[p.level]))}${row(T.L('한 해 등록금 · 수업료', 'Tuition per year'), (p) => T.won(p.costs.tuition))}
+${row(T.L('한 해 기숙사', 'Dormitory per year'), (p) => (p.costs.dorm === null ? `<span class="sx-cmp-miss">${T.L('합계에 없음', 'Not in total')}</span>` : `${T.won(p.costs.dorm)}${p.dormLabel ? `<small>${esc(T.pick(p.dormLabel))}</small>` : ''}`))}
+${row(T.L('지금 급수 장학금', 'Scholarship at your level'), (p) => { const c = programCost(profile, p); return c.scholarship ? `− ${T.won(c.scholarship)}` : T.L('없음', 'None'); })}
+${row(costsWord, (p) => { const c = programCost(profile, p); return `<b>${T.won(c.total)}</b>${c.missing.length ? `<small>${esc(T.L(`${c.missing.length === 2 ? '기숙사 · 생활비' : c.missing[0] === 'dorm' ? '기숙사비' : '생활비'} 빠짐`, `excludes ${c.missing.map((k) => (k === 'dorm' ? 'dormitory' : 'living costs')).join(' and ')}`))}</small>` : ''}`; })}${row(T.L('필요한 한국어', 'Korean needed'), (p) => needKorean(p, T))}
 ${row(T.L('필요한 성적', 'Grades needed'), (p) => (p.requires.gradePct ? `${p.requires.gradePct}%` : T.L('조건 없음', 'None')))}${row(T.L('잔고 증명', 'Proof of funds'), (p) => { const i = matchProgram(profile, p, T.rules).items[3]; return i.need === null ? T.L('확인 필요', 'To check') : T.won(i.need); })}
 ${row(T.L('원서 접수', 'Applications'), (p) => esc(opens(p, T)))}${row(T.L('내 조건', 'My conditions'), (p) => { const m = matchProgram(profile, p, T.rules); return `${m.okCount} / 4${meter(m, T)}`; })}
 ${row(`<span class="sr-only">${T.L('비교에서 빼기', 'Remove from compare')}</span>`, (p) => `<button type="button" class="sx-link" data-action="studyCompare" data-id="${esc(p.id)}">${T.L('빼기', 'Remove')}<span class="sr-only"> ${esc(T.pick(p.name))}</span></button>`)}</tbody></table></div>
-<p class="sx-fine">${list.some((p) => programCost(profile, p).missing.length) ? T.L('「확인된 비용의 합」은 대학이 금액을 안내한 비용만 더하고 지금 내 한국어 급수의 장학금을 뺀 값이에요.', '“Confirmed costs” adds only the costs the university states and subtracts the scholarship for your current Korean level.') : T.L('「내가 낼 돈」은 지금 내 한국어 급수의 장학금을 뺀 값이에요.', '“What you pay” subtracts the scholarship for your current Korean level.')}${list.some((p) => p.example) ? ` ${T.L('예시 과정의 금액은 실제 대학의 것이 아니에요.', 'Amounts for example programs are not from a real university.')}` : ''}</p>${promise(T)}</div>`;
+<p class="sx-fine">${anyMissing ? T.L('「확인된 비용의 합」은 한 해 금액을 알 수 있는 비용만 더하고 지금 급수의 장학금을 뺀 값이에요. 빠진 비용이 과정마다 달라서, 합계만 보지 말고 칸마다 견주어 보세요.', '“Confirmed costs” adds only the yearly costs that are known and subtracts the scholarship at your current level. Missing costs differ by program, so compare row by row rather than by the total alone.') : T.L('「내가 낼 돈」은 지금 내 한국어 급수의 장학금을 뺀 값이에요.', '“What you pay” subtracts the scholarship for your current Korean level.')}${list.some((p) => p.example) ? ` ${T.L('예시 과정의 금액은 실제 대학의 것이 아니에요.', 'Amounts for example programs are not from a real university.')}` : ''}</p>${promise(T)}</div>`;
 }
 
 /** 숫자 칸 아래 글. 입력 중에는 칸을 다시 그리지 않고 이 글만 바꾼다. */
@@ -206,25 +219,32 @@ export function condHint(lang, key, error) {
 /** 내 조건 화면의 결과 자리(#sx-cond-result 안). 조건이 바뀌면 이 자리만 갈아 끼운다. */
 export function renderCondResult(view) {
   const T = ctx(view), profile = T.profile;
-  const n = countFit(profile, T.programs, T.rules), n4 = countFit(profile, T.programs, T.rules, 4), r = routes(profile, T.programs, T.rules);
-  const lead = n === null ? '' : profile.topik < 4 && n4 > n ? (T.allExample ? T.L(`4급이면 예시 과정 ${n4}개가 맞아요.`, `With level 4, ${n4} example programs fit.`) : T.L(`4급을 따면 ${n4}곳으로 늘어요.`, `With level 4 it becomes ${n4}.`))
+  const n = countFit(profile, T.programs, T.rules), r = routes(profile, T.programs, T.rules, T.now);
+  let up = null;
+  if (n !== null) for (let t = profile.topik + 1; t <= 6 && !up; t++) { const k = countFit(profile, T.programs, T.rules, t); if (k > n) up = { t, k }; }
+  const lead = n === null ? '' : up ? (T.allExample ? T.L(`${up.t}급이면 예시 과정 ${up.k}개가 맞아요.`, `With level ${up.t}, ${up.k} example programs fit.`) : T.L(`${up.t}급을 따면 ${up.k}개 과정으로 늘어요.`, `With level ${up.t} it becomes ${up.k} programs.`))
     : n === 0 ? T.L('모자란 조건은 과정마다 달라요. 대학을 열어 무엇이 모자란지 확인하세요.', 'What is missing differs by program. Open a school to see it.') : T.L('과정을 열면 조건 넷을 하나씩 맞춰 볼 수 있어요.', 'Open a program to check all four conditions one by one.');
   const top = n === null
-    ? `<section class="sx-card lapis"><h2>${T.L('성적과 한국어를 둘 다 넣으면 맞는 곳을 알려 줘요.', 'Enter both your grades and Korean level to see what fits.')}</h2><p>${T.L('둘 중 하나라도 비어 있으면 세지 않아요.', 'Nothing is counted while either one is empty.')}</p><button type="button" class="sx-cta" data-action="nav" data-page="univ">${T.L('대학 보기', 'Browse schools')} ${GO}</button></section>`
+    ? `<section class="sx-card lapis"><h2>${T.L('성적과 한국어를 둘 다 넣으면 맞는 과정을 세어 줘요.', 'Enter both your grades and Korean level to count the programs that fit.')}</h2><p>${T.L('둘 중 하나라도 비어 있으면 세지 않아요.', 'Nothing is counted while either one is empty.')}</p><button type="button" class="sx-cta" data-action="nav" data-page="univ">${T.L('대학 보기', 'Browse schools')} ${GO}</button></section>`
     : `<section class="sx-card lapis"><p class="sx-k">${T.L('지금 조건으로', 'With your conditions now')}</p><p class="sx-big"><b>${n}</b><span>${esc(T.fitText(n))}</span></p><p>${esc(lead)}</p><button type="button" class="sx-cta" data-action="nav" data-page="univ">${T.L('대학 보기', 'Browse schools')} ${GO}</button></section>`;
   const route = (title, x, visa, body) => {
-    const st = x.status === 'none' ? '' : x.status === 'ok' ? `<span class="sx-tag is-ok">${T.L('지금 시작 가능', 'Open now')}</span>` : tag(x.status, T);
+    const st = x.status === 'none' ? '' : x.status === 'ok' ? `<span class="sx-tag is-ok">${T.L('조건 맞음', 'Fits')}</span>` : tag(x.status, T);
     return `<section class="sx-card line"><div class="sx-match-top"><h3>${esc(title)}</h3>${st}</div><p>${esc(body)}</p><p class="sx-src"><b>${T.L('비자', 'Visa')}</b> ${esc(visa)}</p></section>`;
   };
-  const unit = (c) => (T.allExample ? T.L(`예시 과정 ${c}개`, `${c} example program${c === 1 ? '' : 's'}`) : T.L(`${c}곳`, `${c} program${c === 1 ? '' : 's'}`));
+  // 「학부 과정이 N개」처럼 앞 말이 이미 과정이라 한국어는 수만 붙인다. 예시만 있으면 그렇다고 덧붙인다.
+  const unit = (c) => (T.allExample ? T.L(`${c}개(예시)`, `${c} example program${c === 1 ? '' : 's'}`) : T.L(`${c}개`, `${c} program${c === 1 ? '' : 's'}`));
   const none = T.L('준비된 과정이 아직 없어요.', 'No programs are ready yet.');
+  const openText = (x) => (x.open === x.count ? '' : x.open ? T.L(` 그 가운데 지금 접수 중이거나 곧 접수가 열리는 곳은 ${x.open}개예요.`, ` ${x.open} of them ${x.open === 1 ? 'is' : 'are'} open now or opening soon.`) : T.L(' 다만 지금은 모두 이번 접수가 끝났어요.', ' However, applications for all of them have closed for now.'));
+  const lackText = (x, kind) => (x.academic > 0 ? T.L('성적과 한국어가 맞는 과정은 있지만 학력이나 준비한 돈이 모자라요. 과정을 열어 무엇이 모자란지 확인하세요.', 'Some programs fit your grades and Korean, but your education or funds fall short. Open a program to see what is missing.')
+    : x.topikGap ? T.L(`가장 낮은 곳이 TOPIK ${x.lowestTopik}급을 요구해요. ${x.topikGap}급을 더 올리면 열려요.`, `The lowest requirement is TOPIK level ${x.lowestTopik}. ${x.topikGap} more level${x.topikGap === 1 ? '' : 's'} opens it.`)
+      : kind === 'language' ? T.L('성적 조건이 맞는 어학 과정이 없어요.', 'No language program matches your grades.') : T.L('성적 조건이 맞는 학부 과정이 없어요.', 'No undergraduate program matches your grades.'));
+  const checkText = T.L('성적과 한국어를 넣으면 맞는 과정을 알려 줘요.', 'Enter your grades and Korean level to see which programs fit.');
   const directBody = r.direct.status === 'none' ? none
-    : r.direct.status === 'ok' ? T.L(`성적과 한국어 조건이 맞는 학부 과정이 ${unit(r.direct.count)} 있어요. 과정마다 필요한 급수가 달라요.`, `${unit(r.direct.count)} for undergraduate study match your grades and Korean. Each needs a different level.`)
-      : r.direct.topikGap ? T.L(`가장 낮은 곳이 TOPIK ${r.direct.lowestTopik}급을 요구해요. ${r.direct.topikGap}급을 더 올리면 열려요.`, `The lowest requirement is TOPIK level ${r.direct.lowestTopik}. ${r.direct.topikGap} more level${r.direct.topikGap === 1 ? '' : 's'} opens it.`)
-        : r.direct.status === 'check' ? T.L('성적과 한국어를 넣으면 맞는 학부 과정을 알려 줘요.', 'Enter grades and Korean level to see matching undergraduate programs.') : T.L('한국어 조건은 맞지만 성적 조건이 맞는 학부 과정이 없어요.', 'Your Korean level fits, but no undergraduate program matches your grades.');
+    : r.direct.status === 'ok' ? T.L(`조건이 맞는 학부 과정이 ${unit(r.direct.count)} 있어요.`, `${unit(r.direct.count)} for undergraduate study ${r.direct.count === 1 ? 'fits' : 'fit'} your conditions.`) + openText(r.direct)
+      : r.direct.status === 'check' ? checkText : lackText(r.direct, 'undergraduate');
   const langBody = r.languageFirst.status === 'none' ? none
-    : r.languageFirst.status === 'ok' ? T.L('한국에서 한국어를 먼저 배운 뒤 학부에 들어가요. 한국어 성적이 없어도 지원할 수 있어요.', 'Learn Korean in Korea first, then enter an undergraduate program. You can apply without a Korean score.')
-      : r.languageFirst.status === 'check' ? T.L('한국어 성적이 없어도 지원할 수 있어요. 성적을 넣으면 맞는 곳을 알려 줘요.', 'You can apply without a Korean score. Enter your grades to see what fits.') : T.L('성적 조건이 맞는 어학 과정이 없어요.', 'No language program matches your grades.');
+    : r.languageFirst.status === 'ok' ? T.L(`한국에서 한국어를 먼저 배운 뒤 학부에 들어가요. 조건이 맞는 어학 과정이 ${unit(r.languageFirst.count)} 있어요.`, `Learn Korean in Korea first, then enter an undergraduate program. ${unit(r.languageFirst.count)} for language study ${r.languageFirst.count === 1 ? 'fits' : 'fit'} your conditions.`) + openText(r.languageFirst)
+      : r.languageFirst.status === 'check' ? T.L('한국어 성적이 없어도 지원할 수 있는 과정이 많아요. 성적과 한국어를 넣으면 맞는 과정을 알려 줘요.', 'Many programs accept you without a Korean score. Enter your grades and Korean level to see which fit.') : lackText(r.languageFirst, 'language');
   return `${top}
 <h2 class="sx-h">${T.L('갈 수 있는 길', 'Routes you can take')}</h2>
 ${route(T.L('어학 과정 먼저, 그다음 학부', 'Language program first, then undergraduate'), r.languageFirst, T.L('어학연수(D-4) → 유학(D-2)', 'Language training (D-4) → Study (D-2)'), langBody)}
@@ -239,13 +259,13 @@ export function renderCond(view) {
   const gradeText = text.gradePct ?? (profile.gradePct === null ? '' : String(profile.gradePct));
   const fundsText = text.fundsWon ?? (profile.fundsWon === null ? '' : String(Math.round(profile.fundsWon / 10000)));
   return `<div class="sx"><button type="button" class="sx-back" data-action="nav" data-page="univ">${BACK}${T.L('대학', 'Schools')}</button>
-<header class="sx-head"><h1 class="sx-title page-title" tabindex="-1">${T.L('내 조건', 'My conditions')}</h1><p class="sx-lead">${T.L('넣거나 바꾸면 갈 수 있는 길과 맞는 곳이 바로 따라 바뀌어요.', 'Enter or change a value and the routes and matches update right away.')}</p></header>
+<header class="sx-head"><h1 class="sx-title page-title" tabindex="-1">${T.L('내 조건', 'My conditions')}</h1><p class="sx-lead">${T.L('넣거나 바꾸면 갈 수 있는 길과 맞는 과정이 바로 따라 바뀌어요.', 'Enter or change a value and the routes and matches update right away.')}</p></header>
 <p class="sx-store${persisted ? '' : ' is-warn'}" role="status">${persisted ? T.L('이 조건은 이 탭에만 저장돼요. 계정에는 저장되지 않고, 탭을 닫거나 로그아웃하면 사라져요.', 'These conditions are kept in this tab only. They are not saved to your account and disappear when you close the tab or sign out.') : T.L('이 브라우저에서는 저장할 수 없어서 지금 화면에서만 기억해요. 새로 고치면 사라져요.', 'This browser cannot store them, so they are remembered on this screen only and are lost on reload.')}</p>
 <div class="sx-field"><span class="sx-label">${T.L('한국어', 'Korean')} <b>${esc(T.topik(profile.topik))}</b></span>${seg('topik', [[0, T.L('없음', 'None')], ...[1, 2, 3, 4, 5, 6].map((v) => [v, T.L(`${v}급`, `L${v}`)])], T.L('한국어 급수(TOPIK)', 'Korean level (TOPIK)'))}</div>
 <div class="sx-field"><span class="sx-label">${T.L('학력', 'Education')} <b>${esc(profile.education ? T.pair(EDU[profile.education]) : T.L('아직 안 넣음', 'Not entered'))}</b></span>${seg('education', Object.keys(EDU).map((k) => [k, T.pair(EDU[k])]), T.L('학력', 'Education'))}</div>
 ${field('sx-grade', 'gradePct', T.L('고등학교 성적 평균', 'High school grade average'), '%', gradeText)}
 ${field('sx-funds', 'fundsWon', T.L('준비한 돈', 'Funds prepared'), T.L('만 원', '× ₩10,000'), fundsText)}
-<p class="sx-fine">${T.L('누른 칸을 한 번 더 누르면 「안 넣음」으로 돌아가요.', 'Press a selected option again to clear it.')}</p>
+<p class="sx-fine">${T.L('누른 칸을 한 번 더 누르면 「아직 안 넣음」으로 돌아가요.', 'Press a selected option again to clear it.')}</p>
 <div id="sx-cond-result">${renderCondResult(view)}</div>
 ${promise(T)}</div>`;
 }

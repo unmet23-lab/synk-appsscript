@@ -603,6 +603,9 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
 .sx-cmp td{font-weight:650;font-feature-settings:'tnum'}
 .sx-cmp tbody tr:last-child td,.sx-cmp tbody tr:last-child th{border-bottom:0;padding-top:2px}
 .sx-cmp .sx-meter{display:flex;margin-top:8px}
+.sx-cmp td small,.sx-money li small{display:block;margin-top:2px;font-size:12px;font-weight:500;line-height:1.4;color:var(--gray)}
+.sx-cmp td b{font-weight:700}
+.sx-cmp-miss{font-weight:500;color:var(--gray)}
 .sx-cmp-head{display:block;width:100%;padding:0;border:0;background:none;text-align:left}
 .sx-cmp-head .sx-img{width:100%;aspect-ratio:4/3;height:auto;object-fit:cover;border-radius:14px;background:#d9dde2}
 .sx-cmp-head span{display:block;margin-top:8px;font:700 15px/1.35 var(--kr);color:var(--ink)}

@@ -1,5 +1,5 @@
 // PATH 조건 대조기. 순수 함수만 둔다. 결과는 판정이 아닌 대조다(입학 · 비자를 약속하지 않는다).
-import { financeRule, scholarshipAmount, MAX_TOPIK } from './study-data.mjs';
+import { financeRule, scholarshipAmount, applyWindow, MAX_TOPIK } from './study-data.mjs';
 
 export const MATCH_KEYS = Object.freeze(['education', 'grade', 'topik', 'finance']);
 
@@ -48,18 +48,19 @@ export function matchProgram(profile, program, rules) {
  */
 export function programCost(profile, program) {
   const topik = Number.isInteger(profile?.topik) ? profile.topik : null;
+  const level = topik ?? 0;   // 급수 0 단계(신입생 모두)는 급수를 안 넣어도 받는다
   const { tuition, dorm, living } = program.costs;
   let step = null;
-  if (topik !== null) for (const s of program.scholarship) if (topik >= s.topik) step = s;
+  for (const s of program.scholarship) if (level >= s.topik) step = s;
   const scholarship = step ? scholarshipAmount(program, step) : 0;
   // rate는 비율로 적힌 단계일 때만 있다(금액으로 적힌 단계는 null).
   const rate = !step ? 0 : typeof step.tuitionRate === 'number' ? step.tuitionRate : null;
   const known = tuition + (dorm ?? 0) + (living ?? 0);
   const missing = ['dorm', 'living'].filter((k) => program.costs[k] === null);
   const total = known - scholarship;
-  const next = program.scholarship.find((s) => s.topik > (topik ?? -1) && scholarshipAmount(program, s) > scholarship) || null;
+  const next = program.scholarship.find((s) => s.topik > level && scholarshipAmount(program, s) > scholarship) || null;
   const nextLevel = next ? { topik: next.topik, total: known - scholarshipAmount(program, next) } : null;
-  return { tuition, dorm, living, scholarship, rate, total, nextLevel, missing };
+  return { tuition, dorm, living, scholarship, rate, stepTopik: step ? step.topik : null, total, nextLevel, missing };
 }
 
 /**
@@ -72,18 +73,26 @@ export function countFit(profile, programs, rules, topik) {
   return programs.filter((x) => matchProgram(p, x, rules).fits).length;
 }
 
-/** 갈 수 있는 길 둘: 어학 과정 먼저 / 바로 학부. */
-export function routes(profile, programs, rules) {
+/**
+ * 갈 수 있는 길 둘: 어학 과정 먼저 / 바로 학부.
+ * 머리 숫자와 같은 기준이다: 성적과 한국어를 둘 다 넣기 전에는 'check', 넣은 뒤에는 fits인 과정을 센다.
+ * open은 그 가운데 지금 접수 중이거나 접수가 곧 열리는 과정 수다(마감된 과정은 「지금」 갈 수 없다).
+ */
+export function routes(profile, programs, rules, now = new Date()) {
+  const ready = readyToCount(profile);
+  const topik = Number.isInteger(profile?.topik) ? profile.topik : null;
   const of = (level) => programs.filter((x) => x.level === level);
   const summarize = (list) => {
-    const matched = list.map((x) => matchProgram(profile, x, rules));
-    const count = matched.filter((m) => m.canApplyAcademically).length;
-    const topik = Number.isInteger(profile?.topik) ? profile.topik : null;
     const needs = list.map((x) => x.requires.topik).filter((n) => n > 0);
     const lowest = needs.length ? Math.min(...needs) : 0;
     const topikGap = topik === null ? null : Math.max(0, lowest - topik);
-    const status = !list.length ? 'none' : count > 0 ? 'ok' : matched.some((m) => m.items[1].status === 'check' || m.items[2].status === 'check') ? 'check' : 'lack';
-    return { status, count, total: list.length, lowestTopik: lowest, topikGap };
+    if (!list.length) return { status: 'none', count: 0, academic: 0, open: 0, total: 0, lowestTopik: lowest, topikGap };
+    const matched = list.map((x) => [x, matchProgram(profile, x, rules)]);
+    const fit = matched.filter(([, m]) => m.fits);
+    const academic = matched.filter(([, m]) => m.canApplyAcademically).length;
+    const open = fit.filter(([x]) => ['open', 'before'].includes(applyWindow(x, now).state)).length;
+    const status = !ready ? 'check' : fit.length ? 'ok' : 'lack';
+    return { status, count: fit.length, academic, open, total: list.length, lowestTopik: lowest, topikGap };
   };
   return { languageFirst: summarize(of('language')), direct: summarize(of('undergraduate')) };
 }

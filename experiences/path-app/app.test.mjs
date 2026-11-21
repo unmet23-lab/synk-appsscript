@@ -484,7 +484,7 @@ test('대학 탭: 목록에서 자세히, 내 조건에서 넣은 값이 결과�
   assert.match(app.root.querySelector('h1').textContent, /내 조건으로 갈 수 있는 대학/);
   assert.equal(app.root.querySelector('button[data-page="univ"]').getAttribute('aria-current'), 'page');
   assert.equal(app.root.querySelectorAll('button[data-action="univOpen"]').length, 3);
-  assert.match(pageText(app), /성적과 한국어를 넣으면 맞는 곳을 알려 줘요/);
+  assert.match(pageText(app), /성적과 한국어를 넣으면 맞는 과정을 세어 줘요/);
   assert.equal(app.root.querySelectorAll('img').every(img => /^\.\/assets\/univ-[abc]\.webp$/.test(img.getAttribute('src')) && img.getAttribute('width') && img.getAttribute('height')), true);
 
   app.click('nav', '[data-page="cond"]');
@@ -507,7 +507,7 @@ test('대학 탭: 목록에서 자세히, 내 조건에서 넣은 값이 결과�
   grade.value = ''; app.event('input', grade);
   assert.equal(grade.getAttribute('aria-invalid'), null);
   assert.equal(JSON.parse(app.record(STUDY_KEY)).gradePct, null);
-  assert.match(app.root.querySelector('#sx-cond-result').textContent, /둘 다 넣으면 맞는 곳을 알려 줘요/);
+  assert.match(app.root.querySelector('#sx-cond-result').textContent, /둘 다 넣으면 맞는 과정을 세어 줘요/);
 
   const funds = app.root.querySelector('#sx-funds');
   funds.value = '1,600'; app.event('input', funds);
@@ -524,6 +524,14 @@ test('대학 탭: 목록에서 자세히, 내 조건에서 넣은 값이 결과�
   assert.match(app.root.querySelector('h1').textContent, /예시대학 A/);
   assert.match(pageText(app), /법무부 2026-10-07 보도자료/);
 
+  app.click('nav', '[data-page="cond"]');
+  app.click('studyClear');
+  const cleared = JSON.parse(app.record(STUDY_KEY));
+  assert.deepEqual([cleared.topik, cleared.fundsWon, cleared.compare], [null, null, ['example-a-ug', 'example-b-lang']], '조건만 지우고 비교에 담은 과정은 남긴다');
+  assert.match(app.announcer.textContent, /조건을 모두 지웠어요/);
+  app.click('nav', '[data-page="univ"]');
+  app.click('studyCompare', '[data-id="example-b-lang"]');
+  assert.match(app.announcer.textContent, /비교에서 뺐어요. 지금 1곳을 담았어요/);
   app.click('nav', '[data-page="profile"]');
   assert.match(pageText(app), /「내 조건」\(한국어 · 성적 · 준비한 돈\)은 계정에 저장되지 않고/);
   app.click('clear');
