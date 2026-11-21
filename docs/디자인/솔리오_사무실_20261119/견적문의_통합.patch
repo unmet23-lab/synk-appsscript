@@ -1514,10 +1514,10 @@ index 0000000000000000000000000000000000000000..899f42c68b1f4caf3c49421c53e59707
 +module.exports={scanQuotes,confirmQuote};
 diff --git a/desktop/src/office-quote-thread.cjs b/desktop/src/office-quote-thread.cjs
 new file mode 100644
-index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755caa50e6c3
+index 0000000000000000000000000000000000000000..c7313415867e5eb09a276c7dd336beb632811de3
 --- /dev/null
 +++ b/desktop/src/office-quote-thread.cjs
-@@ -0,0 +1,411 @@
+@@ -0,0 +1,453 @@
 +'use strict';
 +
 +const { createHash } = require('node:crypto');
@@ -1680,14 +1680,18 @@ index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755c
 +  const item=spans.find(span=>span.kind==='product'&&!/^(?:본|주문|예비분|수량|납기|배송|수령|단위|기준)(?:은|는|이|가|을|를|에|만)?$/.test(span.value));
 +  return item?{name:normalize(item.value),anchor:text.indexOf(item.value)}:null;
 +}
-+function quantitySources(text,spans) {
++function quantitySources(text,spans,scopedOrders=[]) {
 +  const eligible=new Set(spans.filter(s=>s.kind==='quantity').map(s=>s.value));
 +  const quantities={absolute:[],increment:[],portion:[]};
 +  for(const match of text.matchAll(UNITS)){
 +    if(!eligible.has(match[0]))continue;
 +    const before=text.slice(0,match.index),after=text.slice(match.index+match[0].length);
 +    let kind='absolute';
-+    if(/(?:[그이]\s*중(?:에서|에)?|일부|나머지|잔여|남은|(?:the )?remaining)\s*$/i.test(before))kind='portion';
++    const inScopedOrder=scopedOrders.some(clause=>{
++      const start=text.indexOf(clause);
++      return start>=0&&match.index>=start&&match.index<start+clause.length;
++    });
++    if(inScopedOrder||/(?:[그이]\s*중(?:에서|에)?|일부|나머지|잔여|남은|(?:the )?remaining)\s*$/i.test(before))kind='portion';
 +    else if(/(?:추가로|추가\s*(?:수량|주문)(?:은|이)?|(?:additional|extra))\s*$/i.test(before)||
 +      /^(?:을|를|만)?\s*(?:더|추가(?!\s*(?:비용|요금|금액|가격|문의|설명)))/.test(after)||
 +      /\b(?:additional|extra|more)\b/i.test(match[0]))kind='increment';
@@ -1711,7 +1715,7 @@ index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755c
 +  const anchor=product?.anchor??(first?authored.indexOf(first.value):authored.search(PRICE));
 +  const record={messageId,text:authored,anchor:Math.max(0,anchor),name:product?.name,order:(previous?.order||0)+1};
 +  const root=previous?.root||record;
-+  const counts=quantitySources(authored,spans);
++  const counts=quantitySources(authored,spans,facts.scopedOrders);
 +  const relativeOnly=Boolean(number)&&!counts.absolute.length;
 +  const newProduct=Boolean(product)&&(product.explicit||!relativeOnly);
 +  const base=previous?.product||root;
@@ -1719,6 +1723,7 @@ index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755c
 +  const additions=replacement?[]:[...(previous?.additions||[])];
 +  const portions=replacement?[]:[...(previous?.portions||[])];
 +  const notes=replacement?[]:[...(previous?.notes||[])];
++  const holds=replacement?new Map():new Map(previous?.holds);
 +  let incomplete=!replacement&&Boolean(previous?.incomplete);
 +  const fields=new Map(previous?.fields);
 +  const pieces=[];
@@ -1733,8 +1738,9 @@ index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755c
 +    include('처음 문의: ',root,170);
 +    include('이전 사양: ',base,124);
 +    for(const item of additions)include('이전 추가 요청: ',item,80);
-+    for(const item of portions)include('이전 분할 납품: ',item,70);
++    for(const item of portions)include('이전 일부 수량 요청: ',item,70);
 +    for(const item of notes)include('이전 조건 변경: ',item,70);
++    for(const item of holds.values())include('이후 고객이 남긴 조건: ',item,100);
 +    for(const [kind,item] of fields){
 +      if(kinds.has(kind)&&(kind!=='quantity'||counts.absolute.length))continue;
 +      include('이전 조건 변경: ',item,56);
@@ -1745,14 +1751,21 @@ index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755c
 +  if(counts.increment.length)additions.push({...record,anchor:counts.increment[0].anchor,values:counts.increment.map(q=>q.value)});
 +  if(counts.portion.length)portions.push({...record,anchor:counts.portion[0].anchor,values:counts.portion.map(q=>q.value)});
 +  if(previous&&!kinds.size&&facts.changed)notes.push(record);
++  for(const [target,text] of facts.affectedDetails||[]){
++    const exceptions=(facts.scopedOrders||[]).filter(clause=>containsFieldValue(clause,target));
++    holds.set(target,{...record,anchor:Math.max(0,authored.indexOf(text)),values:[text,...exceptions]});
++  }
++  if(facts.procurement)for(const target of holds.keys()){
++    if(!facts.affectedDetails?.has(target)&&containsFieldValue(authored,target)&&facts.renew)holds.delete(target);
++  }
 +  for(const kind of kinds){
 +    if(kind==='product'||kind==='quantity'&&!counts.absolute.length)continue;
 +    const values=kind==='quantity'?[...new Set(counts.absolute.map(q=>q.value))]:[...new Set(spans.filter(span=>span.kind===kind).map(span=>span.value))];
 +    fields.set(kind,{...record,values,anchor:authored.indexOf(values[0])});
 +  }
 +  // Each increment needs source space in the card. Beyond that space, ask the member to review the conversation.
-+  if(additions.length>24)incomplete=true;
-+  const context={root,order:record.order,product:newProduct&&product.name!==base.name?record:base,additions:additions.slice(-24),portions:portions.slice(-2),notes:notes.slice(-2),fields,incomplete};
++  if(additions.length>24||holds.size>24)incomplete=true;
++  const context={root,order:record.order,product:newProduct&&product.name!==base.name?record:base,additions:additions.slice(-24),portions:portions.slice(-2),notes:notes.slice(-2),fields,holds:new Map([...holds].slice(-24)),incomplete};
 +  // Use whole messages in the customer's original order whenever the selected sources fit on the card.
 +  const ordered=[...pieces].sort((a,b)=>a.item.order-b.item.order||a.item.anchor-b.item.anchor);
 +  const messages=new Map();
@@ -1782,21 +1795,31 @@ index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755c
 +    latest=window+' … '+excerpt(authored,limit-window.length-3);
 +  }
 +  const evidence=header+latest;
-+  const essential=[fields.get('quantity'),...additions,...context.portions].filter(Boolean);
++  const essential=[fields.get('quantity'),...additions,...context.portions,...holds.values()].filter(Boolean);
 +  const complete=!incomplete&&essential.every(item=>{
 +    const source=item.messageId===messageId?latest:history.filter(part=>part.id===item.messageId).map(part=>part.text).join('\n');
 +    return item.values.every(value=>containsFieldValue(source,value));
 +  });
 +  return {context,evidence,complete};
 +}
-+function withdrawalTarget(clause) {
-+  const generic=/^(?:견적|견적서|요청|문의|주문|발주|진행|거래|건|전체|모두|저희|우리|저|당사|당분간|내부|사정|승인|결정|일단|잠시|지금|현재|이번|지난|기존|앞서|죄송|하지만|부득이|더는|아직|우선|해당|원래|그대로)/;
-+  const mentioned=detailSpans(clause,true).find(s=>s.kind==='product'&&!generic.test(s.value));
-+  if(mentioned)return mentioned.value;
-+  const topics=[...clause.matchAll(/(?:^|\s)([가-힣a-z0-9-]+?)(?:은|는|을|를)(?=\s|$)/gi)];
-+  return topics.reverse().find(m=>!generic.test(m[1]))?.[1]||'';
++function withdrawalTarget(clause,context,retained) {
++  const generic=/^(?:견적|견적서|요청|문의|주문|발주|제작|진행|거래|건|전체|모두|저희|우리|저|당사|당분간|내부|사정|승인|결정|일단|잠시|지금|현재|이번|지난|기존|앞서|죄송|하지만|부득이|더는|아직|우선|해당|원래|그대로)/;
++  const topics=[...clause.matchAll(/(?:^|\s)([가-힣a-z0-9-]+?)(?:은|는|을|를)(?=\s|$)/gi)].map(m=>m[1]);
++  const mentioned=detailSpans(clause,true).find(s=>s.kind==='product'&&!generic.test(s.value)&&!/(?:은|는|에서)$/.test(s.value))?.value;
++  const candidates=[...topics,mentioned].filter(t=>t&&!generic.test(t));
++  const sources=context?[...context.additions,...context.portions,...context.notes,context.product]:[];
++  const grounded=candidates.find(t=>sources.some(s=>containsFieldValue(s.text,t))||retained.some(s=>containsFieldValue(s,t)));
++  if(grounded)return grounded;
++  if(mentioned)return mentioned;
++  if(/^(?:저희|우리|당사)(?:\s|는|가)/.test(clause))return '';
++  const explicitOther=retained.some(text=>PRICE_REQUEST.test(text)||ENGLISH_PRICE_REQUEST.test(text));
++  if(explicitOther&&candidates.length)return context?null:candidates[0];
++  const focus=topics.findLast(t=>!/^(?:지금|현재|당분간|이번|오늘|내일)$/.test(t));
++  if(!focus||generic.test(focus))return '';
++  // The context of a new, bare subject needs a member's review before an old quote can continue.
++  return null;
 +}
-+function mailFacts(body) {
++function mailFacts(body,context) {
 +  // Keep grammatical direction within the clause. A buyer's budget in a neighbouring clause is evidence.
 +  const lines=body.replace(/((?:말씀드렸|전했|말했|요청했|희망했)(?:지만|고|는데))\s*/g,'$1\n').replace(/((?:취소|철회)(?:하고|하되|하지만|해\s*(?:주(?:시)?고|주시되)|한\s*(?:뒤|후)))\s*/g,'$1\n')
 +    .replace(/(보류(?:하고|하며|하되))\s+/g,'$1\n')
@@ -1805,20 +1828,21 @@ index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755c
 +    .replace(/(싶지(?:는|도|가)?\s*않(?:지만|고|으나))\s*/g,'$1\n')
 +    .split(/(?<=[.!?？。])\s+|,\s+|(?<=[가-힣]),\s*|\n+/).map(s=>s.trim()).filter(Boolean);
 +  const stopsQuote=s=>CANCEL.test(s)&&!/(?:취소|철회)(?:를)?\s*하지\s*(?:않|마|말)/.test(s)&&!HOLDS_DETAIL.test(s);
-+  let retained=[],withdrawAll=false;
-+  const withdrawnProducts=[];
++  let retained=[],withdrawAll=false,unknownWithdrawal=false;
++  const withdrawnProducts=new Map();
 +  for(const clause of lines){
 +    if(!stopsQuote(clause)&&!DECLINES_QUOTE.test(clause)){retained.push(clause);continue;}
-+    const target=withdrawalTarget(clause);
++    const target=withdrawalTarget(clause,context,retained);
 +    if(target){
-+      withdrawnProducts.push(target);
-+      retained=retained.filter(text=>!text.includes(target));
++      withdrawnProducts.set(target,clause);
++      retained=retained.filter(text=>!containsFieldValue(text,target));
 +    }else{
++      if(target===null)unknownWithdrawal=true;
 +      withdrawAll=true;
 +      retained=[];
 +    }
 +  }
-+  const withdrawn=withdrawAll||withdrawnProducts.length>0;
++  const withdrawn=withdrawAll||withdrawnProducts.size>0;
 +  const clauses=retained.filter(s=>!NO_REQUEST.test(s)&&!ACK.test(s)).map(text=>{
 +    const price=PRICE.test(text), procurement=!/(?:겠|싶었|바랐|원했)다고\s*(?:말씀|전했|말했|생각했)/.test(text)&&(PRICE_REQUEST.test(text)||ENGLISH_PRICE_REQUEST.test(text)), budget=BUDGET.test(text);
 +    const seller=SELLER_FRAME.test(text)||OFFER.test(text)||BILL.test(text);
@@ -1831,7 +1855,7 @@ index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755c
 +  });
 +  const active=clauses.filter(c=>!c.seller&&!c.statement);
 +  const spans=active.flatMap(c=>c.spans);
-+  return {withdrawn,withdrawAll,withdrawnProducts,evidence:withdrawn?retained.join(' '):body,ask:active.some(c=>c.ask),price:active.some(c=>c.price),
++  return {withdrawn,withdrawAll,unknownWithdrawal,withdrawnProducts,orderedClauses:lines,retainedClauses:retained,evidence:withdrawn?retained.join(' '):body,ask:active.some(c=>c.ask),price:active.some(c=>c.price),
 +    procurement:active.some(c=>c.procurement),seller:clauses.some(c=>c.seller),
 +    statement:clauses.some(c=>c.statement),spans,values:new Set(spans.map(s=>s.id)),
 +    changed:active.some(c=>c.op),renew:active.some(c=>c.renew),
@@ -1874,8 +1898,9 @@ index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755c
 +    if(m.bulk)continue;
 +    if(previous?.at===m.at&&previous.id!==m.id)ambiguousAt=m.at;
 +    previous=m;
-+    const subject=clean(m.subject,240),body=authoredText(m.body),facts=mailFacts(body);
 +    const sender=m.sender||'';
++    const subject=clean(m.subject,240),body=authoredText(m.body);
++    const facts=mailFacts(body,!m.outgoing&&sender===customer?lastRequest?.context:null);
 +    if(m.outgoing){
 +      const recipients=m.recipients||[];
 +      if(facts.procurement)for(const address of recipients){
@@ -1896,15 +1921,32 @@ index 0000000000000000000000000000000000000000..05e3c1296abf90f1dc1b33008076755c
 +      open=null;review=true;continue;
 +    }
 +    if(facts.withdrawn&&(!customer||sender===customer)){
-+      const priorProduct=lastRequest?.context.product.text||'';
-+      if(facts.withdrawAll||!lastRequest||facts.withdrawnProducts.some(target=>priorProduct.includes(target))){
-+        open=null;lastRequest=null;review=false;
++      const context=lastRequest?.context;
++      const targets=[...facts.withdrawnProducts.keys()];
++      const adjustments=context?[...context.additions,...context.portions,...context.notes]:[];
++      facts.affectedDetails=new Map([...facts.withdrawnProducts].filter(([target])=>adjustments.some(item=>containsFieldValue(item.text,target))));
++      const inMain=target=>Boolean(context&&containsFieldValue(context.product.text,target));
++      const stopsCurrent=targets.some(target=>target===context?.product.name||inMain(target));
++      const overlaps=targets.some(target=>facts.affectedDetails.has(target)&&target!==context?.product.name&&inMain(target));
++      if(facts.withdrawAll||!lastRequest||stopsCurrent){
++        open=null;lastRequest=null;review=facts.unknownWithdrawal||overlaps;
++      }else if(facts.affectedDetails.size){
++        const selected=new Set([...facts.retainedClauses,...facts.affectedDetails.values()]);
++        const update=facts.orderedClauses.filter(clause=>selected.has(clause)).join('\n');
++        facts.scopedOrders=facts.retainedClauses.filter(clause=>[...facts.affectedDetails.keys()].some(target=>containsFieldValue(clause,target))&&
++          (PRICE_REQUEST.test(clause)||ENGLISH_PRICE_REQUEST.test(clause)));
++        if(!open&&!facts.evidence){
++          lastRequest.context=requestEvidence(lastRequest,facts,update,m.id).context;
++          continue;
++        }
++        facts.evidence=update;
 +      }
 +      if(!facts.evidence)continue;
 +    }
 +    const firstTitle=quotedTitle&&!REPLY_SUBJECT.test(subject)&&(ASK.test(subject)||/견적서?\s*$|\bRFQ\b/i.test(subject));
 +    const prior=sender===customer?lastRequest:null;
-+    const event=requestEvent(facts,prior,Boolean(open),firstTitle);
++    const updatesOpen=open&&(facts.affectedDetails?.size||facts.withdrawn&&facts.procurement&&!facts.reminder);
++    const event=updatesOpen?'open':requestEvent(facts,prior,Boolean(open),firstTitle);
 +    if(event==='keep'){
 +      if(!open&&prior&&facts.reminder)review=true;
 +      continue;
@@ -3002,10 +3044,10 @@ index 0000000000000000000000000000000000000000..2d14f767c67a401c261b5b0a92595da2
 +}
 diff --git a/desktop/tests/office-quote-handoff.test.cjs b/desktop/tests/office-quote-handoff.test.cjs
 new file mode 100644
-index 0000000000000000000000000000000000000000..36f03530021ac13d0d0b48ff3584e1e3786b6d15
+index 0000000000000000000000000000000000000000..82269ad4fb91f60525e702deaa0ebd93af7a218e
 --- /dev/null
 +++ b/desktop/tests/office-quote-handoff.test.cjs
-@@ -0,0 +1,541 @@
+@@ -0,0 +1,572 @@
 +'use strict';
 +
 +const test=require('node:test'),assert=require('node:assert/strict');
@@ -3234,11 +3276,16 @@ index 0000000000000000000000000000000000000000..36f03530021ac13d0d0b48ff3584e1e3
 +  assert.equal(assessThread([first,declined,newQuote]).item?.id,'30');
 +  const purchasing=mailMessage('지금은 발주를 보류 중이지만, 내부 검토용으로 안내책자 37권 견적 부탁드립니다.',40);
 +  assert.equal(assessThread([first,outgoing(22),purchasing]).item?.id,'40');
-+  for(const hold of ['내부 승인 전이라 당분간 견적을 보류해 주세요.','견적은 당분간 보류하겠습니다.']){
++  for(const hold of ['내부 승인 전이라 당분간 견적을 보류해 주세요.','견적은 당분간 보류하겠습니다.',
++    '저희 회사는 견적을 당분간 보류하겠습니다.','저희 팀은 견적을 당분간 보류하겠습니다.','제작은 당분간 보류하겠습니다.',
++    '저희 회사는 당분간 보류하겠습니다.']){
 +    assert.equal(assessThread([first,mailMessage(hold,30)]).state,'closed',hold);
 +  }
 +  assert.equal(assessThread([first,mailMessage('명함 견적 부탁드립니다. 지금은 견적을 보류하겠습니다.',30)]).state,'closed');
 +  assert.equal(assessThread([first,mailMessage('배송만 잠시 보류해 주세요.',30)]).state,'open');
++  assert.notEqual(assessThread([first,mailMessage('인쇄는 당분간 보류하겠습니다.',35)]).state,'open');
++  const cover=mailMessage('표지 시안 비용만 먼저 견적 부탁드립니다. 인쇄는 당분간 보류하겠습니다.',35);
++  assert.equal(assessThread([mailMessage('안내책자 37권 견적 부탁드립니다.',10),cover]).state,'review');
 +  const mixed=mailMessage('안내책자 37권 견적 부탁드리고 명함 500장 견적을 받아보고 싶지는 않습니다.',31);
 +  const result=assessThread([mixed]);
 +  assert.equal(result.item?.id,'31');
@@ -3249,7 +3296,8 @@ index 0000000000000000000000000000000000000000..36f03530021ac13d0d0b48ff3584e1e3
 +    const sameMessage=assessThread([mailMessage(book+' '+decline,10)]);
 +    assert.equal(sameMessage.item?.evidence,book,decline);
 +    const nextMessage=assessThread([mailMessage(book,10),mailMessage(decline,20)]);
-+    assert.equal(nextMessage.item?.id,'10',decline);
++    if(/^(?:명함은|예비분은)/.test(decline))assert.equal(nextMessage.state,'review',decline);
++    else assert.equal(nextMessage.item?.id,'10',decline);
 +  }
 +  for(const reason of ['당분간 보류하겠습니다만 …','견적은 당분간 보류하겠습니다만, 진행 여부는 차후 알려드리겠습니다.']){
 +    assert.notEqual(assessThread([first,mailMessage(reason,40)]).state,'open',reason);
@@ -3284,6 +3332,31 @@ index 0000000000000000000000000000000000000000..36f03530021ac13d0d0b48ff3584e1e3
 +  assert.match(read([base,longChange,'나머지 수량의 납기도 확인 부탁드립니다.']),/그중 5권은 12월 5일/);
 +  const ordered=read([base,'그중 5권은 먼저 납품 가능한지 확인 부탁드립니다.',extra,deadline]);
 +  assert.ok(ordered.indexOf('그중 5권')>=0&&ordered.indexOf('그중 5권')<ordered.indexOf('20권 추가'));
++  for(const addition of [extra,'예비분 5권 추가 견적 부탁드립니다.']){
++    for(const held of ['예비분은 당분간 보류하겠습니다.','예비분은 제작을 당분간 보류하겠습니다.',
++      '예비분은 견적을 당분간 보류하겠습니다.','예비분은 일단은 보류하겠습니다.']){
++      for(const further of [[],[deadline]]){
++        const evidence=read([base,addition,held,...further]);
++        assert.ok(evidence.includes('안내책자 37권'),held);
++        assert.ok(evidence.includes(held)&&evidence.indexOf(addition)<evidence.indexOf(held),held);
++      }
++    }
++  }
++  const baseAndExtras=['예비분으로 쓸 안내책자 37권 견적 부탁드립니다.','예비분 5권 추가 견적 부탁드립니다.','예비분은 당분간 보류하겠습니다.'];
++  assert.notEqual(assessThread(baseAndExtras.map((body,i)=>mailMessage(body,10+i))).state,'open');
++  for(const count of ['7권','5권']){
++    const held='그중 '+count+'은 견적을 보류하겠습니다.';
++    const result=read([base,'그중 '+count+'은 12월 5일까지 먼저 납품 가능한지 확인 부탁드립니다.',held,
++      '나머지는 12월 7일까지 납품 가능한지 확인 부탁드립니다.']);
++    for(const value of ['37권',held,'12월 7일'])assert.ok(result.includes(value),value);
++  }
++  const hold='예비분은 당분간 보류하겠습니다.';
++  const exception='다만 당장 필요한 예비분 3권은 견적 부탁드립니다.';
++  for(const next of [[],[deadline]]){
++    const evidence=read([base,extra,hold+' '+exception,...next]);
++    assert.ok(evidence.includes(hold)&&evidence.indexOf(exception)>evidence.indexOf(hold),evidence);
++    assert.ok(evidence.includes('안내책자 37권'));
++  }
 +  const increments=Array.from({length:28},(_,i)=>mailMessage((i+1)+'권 추가해 주세요.',20+i));
 +  assert.equal(assessThread([mailMessage(base,10),...increments]).state,'review');
 +});
