@@ -453,7 +453,7 @@ export function createPlatformAccount({ config, storage, onStatus = () => {},
 
   // synk.im 홈 「회사 공간」 칸(11-21): 회사 서버에 이 탭의 SYNK 플랫폼 로그인으로 자기 배정만 묻는다. 토큰은 이 모듈 밖으로 내지 않고,
   // 배정된 목적지('/' · '/pulse-app/')만 돌려준다. 로그인이 만료됐다는 답이면 한 번만 새로 받아 다시 묻는다. 확인하지 못하면 null이다.
-  async function companySpaces(targetAccountId, { signal } = {}) {
+  async function lookupOwnCompanySpaces(targetAccountId, { signal } = {}) {
     if (!isAccountBound(targetAccountId)) throw changed();
     const ref = binding;
     let token = ref.accessToken;
@@ -476,7 +476,7 @@ export function createPlatformAccount({ config, storage, onStatus = () => {},
     invalidate,
     isAccountBound,
     completePurposeOnboarding,
-    companySpaces,
+    companySpaces: lookupOwnCompanySpaces,
     subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
     async request(operation, params) {
       if (!['platformLoad', 'platformSave', 'platformDelete', 'atlasSummary', 'insightLoad', 'insightSave', 'insightDelete', 'understandingLoad', 'understandingSave', 'understandingDelete', 'memoryGet', 'memoryPost'].includes(operation) || !authenticatedClient || snapshot.status !== 'signed-in' || !isAccountBound(accountId)) throw changed();

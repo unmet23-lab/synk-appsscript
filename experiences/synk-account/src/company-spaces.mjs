@@ -15,15 +15,16 @@ export const COMPANY_SPACES = Object.freeze([
 ]);
 const KNOWN_DESTINATIONS = new Set(COMPANY_SPACES.map(space => space.destination));
 
-const isPlainObject = value => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+// 이름은 번들 안의 다른 모듈과 겹치지 않게 짓는다 — 겹치면 묶을 때 이름이 밀려 공개본 조각 갈아 끼우기가 어긋난다
+const isCompanySpacesRecord = value => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const sameKeys = (value, keys) => Object.keys(value).sort().join(',') === keys.join(',');
 
 // 회사 서버의 답을 고정된 꼴로만 읽는다. 맞지 않으면 null(칸을 세우지 않음)이다.
 export function readCompanySpacesBody(body) {
-  if (!isPlainObject(body) || !sameKeys(body, SUCCESS_KEYS) || body.version !== 1 || body.accountMatch !== true) return null;
+  if (!isCompanySpacesRecord(body) || !sameKeys(body, SUCCESS_KEYS) || body.version !== 1 || body.accountMatch !== true) return null;
   const { workspace, pulse } = body;
-  if (!isPlainObject(workspace) || !sameKeys(workspace, ['destination', 'state']) || workspace.destination !== '/' || !WORKSPACE_STATES.has(workspace.state)) return null;
-  if (!isPlainObject(pulse) || !sameKeys(pulse, ['destination', 'state']) || pulse.destination !== '/pulse-app/' || !PULSE_STATES.has(pulse.state)) return null;
+  if (!isCompanySpacesRecord(workspace) || !sameKeys(workspace, ['destination', 'state']) || workspace.destination !== '/' || !WORKSPACE_STATES.has(workspace.state)) return null;
+  if (!isCompanySpacesRecord(pulse) || !sameKeys(pulse, ['destination', 'state']) || pulse.destination !== '/pulse-app/' || !PULSE_STATES.has(pulse.state)) return null;
   return [...(workspace.state === 'assigned' ? ['/'] : []), ...(pulse.state === 'assigned' ? ['/pulse-app/'] : [])];
 }
 
