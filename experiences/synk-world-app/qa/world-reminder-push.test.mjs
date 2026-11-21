@@ -306,6 +306,22 @@ test('잠금 화면 글 언어: 한국어 틀 — 한글 단계 학생만 고른
  }
 });
 
+test('2단 바인딩의 digest()는 1단이 지금 기록으로 지은 요약을 돌려준다 — 거절된 요약을 다시 보낼 때 쓴다(설계 주인 11-21 규칙 4)',()=>{
+ const push=fakePush({device:true,active:true,plan:{next:null,log:[]}});let bound=null;
+ push.bindSettings=value=>{bound=value;return ()=>{bound=null;};};
+ let reviews=[at(1,10)];
+ const c=controller({push,read:()=>({reviews,studyTimes:[at(0,9)]})});
+ const binding=bound;
+ try{
+  c.reminders.refresh();
+  const sent=push.calls.filter(call=>call[0]==='sync').at(-1)[1].digest;
+  assert.deepEqual(binding.digest().digest,sent,'보낸 요약과 같은 기록으로 짓는다');
+  reviews=[at(2,10)];
+  assert.notDeepEqual(binding.digest().digest.reviews,sent.reviews,'지금 기록으로 새로 짓는다');
+ }finally{c.reminders.dispose();}
+ assert.equal(binding.digest(),null,'멈춘 뒤에는 짓지 않는다');
+});
+
 test('열린 설정 화면: 2단이 서버 설정을 들이면 횟수 · 시각 단추도 그 값으로 바뀐다(GPT push-versions-world GA11)',()=>{
  const push=fakePush({device:true,active:true,plan:{next:null,log:[]}});let bound=null;
  push.bindSettings=value=>{bound=value;return ()=>{bound=null;};};

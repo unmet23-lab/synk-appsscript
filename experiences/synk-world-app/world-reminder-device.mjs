@@ -479,11 +479,13 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   const state=load(),entries=state.entries.filter(row=>Number.isFinite(row.deliveredAt));
   if(entries.length!==state.entries.length)save({...state,entries});
  }
- // 2단 설정 판 맞추기(world-push bindSettings, 단계4 계획 §24-6의 5): 이 브라우저의 1단 설정이 계정 설정의 기기 쪽 사본이다. 서버 판이 이
- // 브라우저 판 이상이고 내용이 다르면 서버 설정을 들인다 — 다른 기기의 새 설정을 그리고, 다음 쓰기가 옛 시각으로 되돌리지 않게(설계 검토 P1-1).
+ // 2단 설정 판 맞추기(world-push bindSettings, 단계4 계획 §24-6의 5): 이 브라우저의 1단 설정이 계정 설정의 기기 쪽 사본이다. 보내지 못한 편집이
+ // 없거나 그 바탕이 서버 판과 다르면 서버 설정을 들인다 — 다른 기기의 새 설정을 그리고, 다음 쓰기가 옛 값으로 되돌리지 않게(설계 검토 P1-1).
  // 들일 때는 설정을 보내지 않는다. 마지막 기기를 끌 때(disablePush) 서버 설정을 넣는 것과 같은 꼴이다.
  const unbindPush=push?.bindSettings?.({
   read:()=>{const state=load();return {frequency:state.frequency,hour:state.hour,since:state.since};},
+  // 거절된 요약을 다시 보낼 때 지금 기록으로 새로 짓는다(설계 주인 11-21 규칙 4 — 다시 보낼 때 새로 짓는다).
+  digest:()=>{if(stopped)return null;const time=now(),handover=handoverEntries(load(),time);return {digest:digestOf(inputs(),time),...(handover.length?{handover}:{})};},
   adopt:value=>{
    if(stopped||!REMINDER_POLICY.frequencies.includes(value?.frequency))return;
    const state=load();
