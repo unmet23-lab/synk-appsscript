@@ -10,14 +10,15 @@ import { fileURLToPath } from 'node:url';
 import * as 만료 from '../tools/path유학자료만료.mjs';
 import { POSTS, STALE_DAYS, isStalePost } from '../experiences/path-app/channel-data.mjs';
 import { RULES, PROGRAMS, staleItems } from '../experiences/path-app/study-data.mjs';
+import { PROGRAM_DOCS, VISA_DOCS } from '../experiences/path-app/docs-data.mjs';
 
 const require = createRequire(import.meta.url);
 const 뿌리 = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const 작업 = require('../tools/크레딧작업/PATH유학자료확인.js');
 const 실행기 = require('../tools/크레딧실행.js');
 const 자료 = (이름) => fs.readFileSync(path.join(뿌리, 'experiences/path-app', 이름), 'utf8');
-const 원본글 = () => `${자료('channel-data.mjs')}\n${자료('study-data.mjs')}`;
-const 목록 = 만료.목록만들기({ POSTS, RULES, PROGRAMS });
+const 원본글 = () => `${자료('channel-data.mjs')}\n${자료('study-data.mjs')}\n${자료('docs-data.mjs')}`;
+const 목록 = 만료.목록만들기({ POSTS, RULES, PROGRAMS, PROGRAM_DOCS, VISA_DOCS });
 const KST2359 = (날) => new Date(`${날}T14:59:00.000Z`);
 const 하루뒤 = (날) => new Date(Date.parse(`${날}T00:00:00Z`) + 86400000).toISOString().slice(0, 10);
 
@@ -34,10 +35,20 @@ function 가짜공개본(고치기 = (s) => s, { 죽음 = false } = {}) {
   };
 }
 
-test('목록: 손 글 · 규칙 · 실제 과정만 세고 예시 과정은 뺀다', () => {
+test('목록: 손 글 · 규칙 · 실제 과정 · 내 길 서류 묶음만 세고 예시 과정은 뺀다', () => {
   const 실제 = PROGRAMS.filter((p) => !p.example);
-  assert.equal(목록.length, POSTS.length + RULES.length + 실제.length);
+  const 서류 = Object.keys(PROGRAM_DOCS).length + Object.keys(VISA_DOCS).length;
+  assert.equal(목록.length, POSTS.length + RULES.length + 실제.length + 서류);
   assert.ok(!목록.some((x) => x.id.startsWith('example-')));
+  assert.equal(new Set(목록.map((x) => x.id)).size, 목록.length, '항목 id가 겹치지 않는다');
+  assert.ok(목록.filter((x) => x.종류 === '서류').every((x) => /^docs-/.test(x.id) && x.이름.startsWith('내 길')));
+});
+
+test('서류 묶음의 마지막 날도 앱의 「다시 확인하세요」 판정과 맞다(글과 같은 셈)', () => {
+  const 묶음 = Object.values(PROGRAM_DOCS)[0];
+  const 마지막 = 만료.항목셈(목록.filter((x) => x.id === 묶음.id), { 오늘: 묶음.checkedAt })[0].마지막날;
+  assert.equal(isStalePost({ checkedAt: 묶음.checkedAt }, KST2359(마지막)), false);
+  assert.equal(isStalePost({ checkedAt: 묶음.checkedAt }, KST2359(하루뒤(마지막))), true);
 });
 
 test('마지막 날이 앱의 「다시 확인하세요」 판정과 맞다(그날 밤까지 확인됨, 다음 날 밤에는 낡음)', () => {
@@ -46,8 +57,8 @@ test('마지막 날이 앱의 「다시 확인하세요」 판정과 맞다(그�
   const 줄들 = 만료.항목셈(목록, { 오늘: '2026-11-22' }).filter((x) => x.검사 === '확인일');
   assert.equal(줄들.length, 목록.length);
   for (const x of 줄들) {
-    const 낡음 = (날) => (x.종류 === '글'
-      ? isStalePost(POSTS.find((p) => p.id === x.id), KST2359(날))
+    const 낡음 = (날) => (x.종류 === '서류' ? isStalePost({ checkedAt: x.기준날 }, KST2359(날))
+      : x.종류 === '글' ? isStalePost(POSTS.find((p) => p.id === x.id), KST2359(날))
       : staleItems(RULES, PROGRAMS, KST2359(날)).some((s) => s.id === x.id));
     assert.equal(낡음(x.마지막날), false, `${x.id} 마지막 날 ${x.마지막날}에는 아직 확인됨`);
     assert.equal(낡음(하루뒤(x.마지막날)), true, `${x.id} 다음 날에는 낡음`);
@@ -86,7 +97,7 @@ test('글 읽기: 저장소 원본과 공개 묶음(esbuild) 모두에서 모듈
   const esbuild = require(require.resolve('esbuild', { paths: [path.join(뿌리, 'experiences/synk-account')] }));
   // tools/prepare-path-app-public.mjs와 같은 묶음 설정(축소 없음).
   const 묶음 = await esbuild.build({
-    stdin: { contents: "export * from './channel-data.mjs';\nexport { RULES, PROGRAMS } from './study-data.mjs';", resolveDir: path.join(뿌리, 'experiences/path-app'), loader: 'js' },
+    stdin: { contents: "export * from './channel-data.mjs';\nexport { RULES, PROGRAMS } from './study-data.mjs';\nexport { PROGRAM_DOCS, VISA_DOCS } from './docs-data.mjs';", resolveDir: path.join(뿌리, 'experiences/path-app'), loader: 'js' },
     bundle: true, write: false, format: 'esm', platform: 'browser', target: 'es2022', charset: 'utf8', logLevel: 'silent',
   });
   비교(만료.글에서읽기(묶음.outputFiles[0].text, [...기대.keys()]), '공개 묶음');
@@ -151,10 +162,11 @@ test('지난 날을 넣으면 확인일이 문턱 안인 자료가 새로 걸려
     await t.돌기('2027-02-10');
     assert.equal(t.알림.length, 2);
     const 글 = t.알림[1];
-    assert.match(글, /새로 25건 생겼어요\(오늘 2027-02-10, 문턱 14일\)\. 지금 걸린 항목은 모두 26건이에요\./);
+    assert.match(글, /새로 32건 생겼어요\(오늘 2027-02-10, 문턱 14일\)\. 지금 걸린 항목은 모두 33건이에요\./);
     assert.match(글, /2026-11-21에 확인한 자료 21건\(글 9 · 규칙 7 · 과정 5\): 2027-02-18이 지나면 앱이 「다시 확인하세요」를 띄워요\(8일 남음\)/);
+    assert.match(글, /2026-11-22에 확인한 자료 7건\(서류 7\): 2027-02-20이 지나면 앱이 「다시 확인하세요」를 띄워요\(10일 남음\)/);
     assert.doesNotMatch(글, /jbnu-ug\): 마지막 접수/, '이미 알린 항목은 다시 싣지 않는다');
-    assert.equal(t.기록().걸림.length, 26);
+    assert.equal(t.기록().걸림.length, 33);
   } finally { t.지우기(); }
 });
 

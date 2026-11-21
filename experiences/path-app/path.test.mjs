@@ -49,6 +49,8 @@ test('서류 기한의 날 id는 차수의 시작 날에 매달리고, 검사는
   assert.throws(() => validateDocsData(bad([ug.deadlines[0], ug.deadlines[0]]), VISA_DOCS), /deadline/, '같은 차수 · 같은 종류가 둘');
   const both = { ...ug, docs: [{ ...ug.docs[0], only: { cond: { ko: 'x', en: 'x' } }, topikHolder: true }, ...ug.docs.slice(1)] };
   assert.throws(() => validateDocsData({ ...PROGRAM_DOCS, 'jj-ug': both }, VISA_DOCS), /only/);
+  assert.throws(() => validateDocsData({ ...PROGRAM_DOCS, 'jj-ug': { ...ug, id: 'docs-jbnu-ug' } }, VISA_DOCS), /source jj-ug/, '묶음 id는 만료 알림이 읽는 꼴');
+  assert.deepEqual(Object.values(VISA_DOCS).map((v) => v.id), ['docs-visa-d2', 'docs-visa-d4-1']);
 });
 
 test('탭 저장: 과정 고르기 · 그만하기 · 바꾸기와 표시, 예순 개 한도, 옛 저장값', () => {

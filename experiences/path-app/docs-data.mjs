@@ -5,7 +5,6 @@ const L = (ko, en) => Object.freeze({ ko, en });
 const freeze = (o) => Object.freeze(o);
 
 export const DOC_STAGES = Object.freeze(['apply', 'admitted', 'visa']);
-const CHECKED = '2026-11-22';
 
 const KVAC_D2 = freeze({ title: L('KVAC 몽골 「유학(D-2-1~D-2-4)」 서류 목록', 'KVAC Mongolia student visa (D-2) document list'), url: 'https://www.visaforkorea.mn/ko/study-visa-d-2-1d-2-4' });
 const KVAC_D4 = freeze({ title: L('KVAC 몽골 「한국어연수(D-4-1)」 서류 목록', 'KVAC Mongolia language trainee visa (D-4-1) document list'), url: 'https://www.visaforkorea.mn/ko/korean-language-trainee-d-4-1' });
@@ -18,7 +17,8 @@ const only = (ko, en) => freeze({ cond: L(ko, en) });
 
 const JBNU_UG = freeze({
   source: freeze({ title: L('전북대학교 2027학년도 전기 학부 외국인특별전형 모집요강', 'Jeonbuk National University, Spring 2027 undergraduate international admissions guide'), url: 'https://ioffice.jbnu.ac.kr/bbs/ioffice/5310/401304/artclView.do' }),
-  checkedAt: CHECKED,
+  id: 'docs-jbnu-ug',
+  checkedAt: '2026-11-22',
   term: L('2027학년도 전기 요강 기준', 'Based on the Spring 2027 guide'),
   ask: L('전북대 국제협력과(admissionu@jbnu.ac.kr, 요강 10쪽)', 'JBNU Office of International Affairs (admissionu@jbnu.ac.kr, guide p. 10)'), // 공개허용: 대학이 공개 요강에 적은 입학 업무 연락처
   how: L('UWAY에서 온라인으로 접수하고(성적증명서와 사진 파일을 올려요), 서류는 우편이나 방문으로 국제협력과에 내요. 전형료는 80,000원이에요.', 'Apply online on UWAY (you upload your transcript and photo), then send the documents to the Office of International Affairs by post or in person. The application fee is ₩80,000.'),
@@ -62,7 +62,8 @@ const JBNU_UG = freeze({
 
 const JBNU_LANG = freeze({
   source: freeze({ title: L('전북대학교 한국어학당 입학신청 · 제출서류', 'Jeonbuk National University Korean Language Institute: application and documents'), url: 'https://wz3.jbnu.ac.kr/lec_korean/10899/subview.do' }),
-  checkedAt: CHECKED,
+  id: 'docs-jbnu-lang',
+  checkedAt: '2026-11-22',
   term: L('2027 봄학기 접수 기준(학당 쪽)', 'Based on the spring 2027 intake (institute pages)'),
   how: L('온라인으로 접수하고 서류는 스캔해서 올려요. 전형료 금액은 쪽에 적혀 있지 않아요.', 'Apply online and upload scanned documents. The page does not state the application fee.'),
   rules: [L('모든 서류에 국문이나 영문 번역본, 또는 공증본을 붙여요. 번역본이면 번역자 확인서를 더 내요.', 'Attach a Korean or English translation, or a notarized copy, to every document. With a translation, add the translator confirmation form.')],
@@ -84,7 +85,8 @@ const JBNU_LANG = freeze({
 
 const WKU_UG = freeze({
   source: freeze({ title: L('원광대학교 2027학년도 1학기(3월) 외국인 학부 신(편)입학 모집요강(안)', 'Wonkwang University, Spring 2027 undergraduate international admissions guide (draft)'), url: 'https://ipsi.wku.ac.kr/detail.do?menuurl=qBExJT7yxTZkr1QAFxkj1g%3D%3D&board_seq=9786' }),
-  checkedAt: CHECKED,
+  id: 'docs-wku-ug',
+  checkedAt: '2026-11-22',
   term: L('2027학년도 1학기 요강 기준', 'Based on the Spring 2027 guide'),
   ask: L('원광대 국제교류과(063-850-5843, 요강 문의처)', 'Wonkwang University Office of International Affairs (+82-63-850-5843, from the guide)'),
   how: L('방문이나 우편으로 국제교류과에 내요. 온라인 접수는 없어요. 전형료는 100,000원이고 돌려주지 않아요.', 'Submit in person or by post to the Office of International Affairs. There is no online application. The fee is ₩100,000 and is not refunded.'),
@@ -119,7 +121,8 @@ const WKU_UG = freeze({
 
 const WKU_LANG = freeze({
   source: freeze({ title: L('2026 원광대학교 한국문화교육센터 모집요강', 'Wonkwang University Korean Culture Education Center admissions guide, 2026'), url: 'https://ipsi.wku.ac.kr/detail.do?menuurl=8pYtphfeWm2Bb85hdKCTcQ%3D%3D&board_seq=7060' }),
-  checkedAt: CHECKED,
+  id: 'docs-wku-lang',
+  checkedAt: '2026-11-22',
   term: L('2026학년도 요강의 2027 봄학기 일정', 'Spring 2027 dates from the 2026 guide'),
   ask: L('원광대 한국문화교육센터(063-850-5504, 요강 문의처)', 'Wonkwang University Korean Culture Education Center (+82-63-850-5504, from the guide)'),
   how: L('원본과 사본을 나눠 우편이나 방문으로 내요. 전형료 · 교재비는 100,000원이고 처음 입학할 때 한 번 내요.', 'Submit originals and copies by post or in person. The application and textbook fee of ₩100,000 is paid once, at first entry.'),
@@ -143,7 +146,8 @@ const WKU_LANG = freeze({
 
 const JJ_UG = freeze({
   source: freeze({ title: L('2027학년도 전주대학교 전기 외국인 신 · 편입학 특별전형 모집요강', 'Jeonju University, Spring 2027 international admissions guide'), url: 'https://www.jj.ac.kr/global/admission/guidelines.do' }),
-  checkedAt: CHECKED,
+  id: 'docs-jj-ug',
+  checkedAt: '2026-11-22',
   term: L('2027학년도 전기 요강 기준', 'Based on the Spring 2027 guide'),
   how: L('oia.jj.ac.kr에서 온라인 원서를 내고 서류와 면접 동영상을 올린 뒤, 서류는 방문 · 택배 · 우편으로 기한까지 국제교육관에 도착하게 보내요. 이메일로는 받지 않아요. 전형료는 120,000원이에요.', 'Apply online at oia.jj.ac.kr and upload the documents and interview video, then send the documents in person, by courier or by post so they arrive at the International Education Center by the deadline. Email is not accepted. The fee is ₩120,000.'),
   rules: [
@@ -199,7 +203,7 @@ const visaTail = (p) => [
 
 export const VISA_DOCS = freeze({
   'D-2': freeze({
-    name: L('유학(D-2)', 'Student (D-2)'), source: KVAC_D2, checkedAt: CHECKED,
+    id: 'docs-visa-d2', name: L('유학(D-2)', 'Student (D-2)'), source: KVAC_D2, checkedAt: '2026-11-22',
     rules: [L('몽골어 서류는 번역본 원본에 번역자 신분증 사본과 번역자 확인서를 붙여요. 신청은 비자신청센터나 공인대행법인에 본인이 직접 가는 것이 원칙이에요.', 'Mongolian documents need an original translation with the translator’s ID copy and the translator confirmation form. You apply in person at the visa center or an authorized agency as a rule.')],
     docs: [
       ...visaCommon('visa-d2'),
@@ -208,7 +212,7 @@ export const VISA_DOCS = freeze({
     ]
   }),
   'D-4-1': freeze({
-    name: L('어학연수(D-4-1)', 'Language trainee (D-4-1)'), source: KVAC_D4, checkedAt: CHECKED,
+    id: 'docs-visa-d4-1', name: L('어학연수(D-4-1)', 'Language trainee (D-4-1)'), source: KVAC_D4, checkedAt: '2026-11-22',
     rules: [L('몽골어 서류는 번역본 원본에 번역자 신분증 사본과 번역자 확인서를 붙여요. 신청은 비자신청센터나 공인대행법인에 본인이 직접 가는 것이 원칙이에요.', 'Mongolian documents need an original translation with the translator’s ID copy and the translator confirmation form. You apply in person at the visa center or an authorized agency as a rule.')],
     docs: [
       ...visaCommon('visa-d4'),
@@ -251,15 +255,15 @@ export function validateDocsData(programDocs = PROGRAM_DOCS, visaDocs = VISA_DOC
     if (!(d.changedAt === undefined || isDate(d.changedAt))) fail('doc changedAt ' + d.id);
     ids.add(d.id);
   };
-  const checkSet = (set, where) => {
-    if (!isObj(set) || !isObj(set.source) || !isPair(set.source.title) || !isHttps(set.source.url) || !isDate(set.checkedAt)) fail('source ' + where);
+  const checkSet = (set, where, id) => {
+    if (!isObj(set) || set.id !== id || !isObj(set.source) || !isPair(set.source.title) || !isHttps(set.source.url) || !isDate(set.checkedAt)) fail('source ' + where);
     if (!Array.isArray(set.docs) || !set.docs.length) fail('docs ' + where);
     if (!(set.rules === undefined || (Array.isArray(set.rules) && set.rules.every((r) => isPair(r))))) fail('rules ' + where);
     if (!(set.unclear === undefined || (Array.isArray(set.unclear) && set.unclear.every((r) => isPair(r))))) fail('unclear ' + where);
   };
   for (const [pid, pd] of Object.entries(programDocs)) {
     if (!programIds.includes(pid)) fail('unknown program ' + pid);
-    checkSet(pd, pid);
+    checkSet(pd, pid, `docs-${pid}`);
     if (!isPair(pd.how) || !isPair(pd.term) || !(pd.status === undefined || isPair(pd.status)) || !(pd.ask === undefined || isPair(pd.ask))) fail('program text ' + pid);
     for (const d of pd.docs) { checkDoc(d, pid); if (d.stage === 'visa') fail('visa doc in program ' + d.id); if (!d.id.startsWith(pid + '-')) fail('doc id prefix ' + d.id); }
     if (!Array.isArray(pd.deadlines)) fail('deadlines ' + pid);
@@ -271,7 +275,7 @@ export function validateDocsData(programDocs = PROGRAM_DOCS, visaDocs = VISA_DOC
     }
   }
   for (const [visa, vd] of Object.entries(visaDocs)) {
-    checkSet(vd, visa);
+    checkSet(vd, visa, `docs-visa-${visa.toLowerCase().replace('-', '')}`);
     if (!isPair(vd.name)) fail('visa name ' + visa);
     for (const d of vd.docs) { checkDoc(d, visa); if (d.stage !== 'visa') fail('non-visa doc in visa ' + d.id); }
   }

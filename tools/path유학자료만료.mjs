@@ -4,7 +4,8 @@
 // 앱(synk.im/path/app/)은 확인한 지 90일이 넘은 자료에 「다시 확인하세요」를 띄운다.
 //   글(channel-data.mjs POSTS): isStalePost가 한국 날짜로 센다 → 확인일 + 90일째까지 「확인됨」.
 //   규칙(study-data.mjs RULES) · 실제 과정(PROGRAMS, example: false): staleItems가 시각으로 센다 → 확인일 + 90일째 09:00(KST)에 넘어간다.
-//   그래서 하루 종일 「확인됨」인 마지막 날은 글 = 확인일 + 90, 규칙 · 과정 = 확인일 + 89다.
+//   내 길 서류(docs-data.mjs PROGRAM_DOCS · VISA_DOCS): 글과 같은 isStalePost로 센다.
+//   그래서 하루 종일 「확인됨」인 마지막 날은 글 · 서류 = 확인일 + 90, 규칙 · 과정 = 확인일 + 89다.
 // 실제 과정은 마지막 접수 차수(applyRounds, 없으면 applyCloses)가 끝나면 다음 요강으로 고쳐야 한다. 마지막 날 = 그 끝 날.
 // 남은 날 = 마지막 날 − 오늘(KST). 문턱(14일) 이하이거나 음수면 걸린다.
 //
@@ -27,15 +28,15 @@ import { 날짜인가, 날더하기, 날차이, 오늘KST, 기본뿌리 } from '
 export { 오늘KST, 기본뿌리 };
 export const 기본문턱 = 14;
 export const 공개주소 = 'https://synk.im/path/app/';
-export const 마지막날더함 = Object.freeze({ 글: 90, 규칙: 89, 과정: 89 });
+export const 마지막날더함 = Object.freeze({ 글: 90, 규칙: 89, 과정: 89, 서류: 90 });
 const 자료폴더 = 'experiences/path-app';
-const 자료파일 = Object.freeze({ channel: 'channel-data.mjs', study: 'study-data.mjs' });
+const 자료파일 = Object.freeze({ channel: 'channel-data.mjs', study: 'study-data.mjs', docs: 'docs-data.mjs' });
 
 const 이스케이프 = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const 날꼴 = `["'](\\d{4}-\\d{2}-\\d{2})["']`;
 
-/** 모듈 값에서 검사할 항목: 손 글 · 규칙 · 실제 과정. 예시 과정은 세지 않는다. */
-export function 목록만들기({ POSTS = [], RULES = [], PROGRAMS = [] }) {
+/** 모듈 값에서 검사할 항목: 손 글 · 규칙 · 실제 과정 · 내 길 서류 묶음. 예시 과정은 세지 않는다. */
+export function 목록만들기({ POSTS = [], RULES = [], PROGRAMS = [], PROGRAM_DOCS = {}, VISA_DOCS = {} }) {
   const 짧게 = (s, n) => (s.length > n ? `${s.slice(0, n)}…` : s);
   const 규칙이름 = (r) => (r.kind === 'finance' ? `재정 기준 ${r.visa} ${r.region === 'metro' ? '수도권' : '지방'}`
     : r.kind === 'finance-proof' ? `잔고 증명 방법 ${r.visa}` : r.kind === 'finance-waiver' ? '잔고 증명 면제 계획' : `규칙 ${r.kind}`);
@@ -45,6 +46,11 @@ export function 목록만들기({ POSTS = [], RULES = [], PROGRAMS = [] }) {
     ...PROGRAMS.filter((p) => !p.example).map((p) => ({
       종류: '과정', id: p.id, 이름: `${p.name.ko}${p.level === 'language' ? '' : ' 학부'}`, checkedAt: p.checkedAt, 접수끝: 접수끝날(p),
     })),
+    ...Object.entries(PROGRAM_DOCS).map(([pid, d]) => {
+      const p = PROGRAMS.find((x) => x.id === pid);
+      return { 종류: '서류', id: d.id, 이름: `내 길 서류 ${p ? `${p.name.ko}${p.level === 'language' ? '' : ' 학부'}` : pid}`, checkedAt: d.checkedAt, 접수끝: null };
+    }),
+    ...Object.entries(VISA_DOCS).map(([visa, d]) => ({ 종류: '서류', id: d.id, 이름: `내 길 비자 서류 ${visa}`, checkedAt: d.checkedAt, 접수끝: null })),
   ];
 }
 
@@ -107,8 +113,9 @@ export async function 저장소자료(뿌리) {
   const 파일 = (이름) => path.join(뿌리, 자료폴더, 이름);
   const 채널 = await import(pathToFileURL(파일(자료파일.channel)).href);
   const 유학 = await import(pathToFileURL(파일(자료파일.study)).href);
-  const 목록 = 목록만들기({ POSTS: 채널.POSTS, RULES: 유학.RULES, PROGRAMS: 유학.PROGRAMS });
-  const 글 = `${fs.readFileSync(파일(자료파일.channel), 'utf8')}\n${fs.readFileSync(파일(자료파일.study), 'utf8')}`;
+  const 서류 = await import(pathToFileURL(파일(자료파일.docs)).href);
+  const 목록 = 목록만들기({ POSTS: 채널.POSTS, RULES: 유학.RULES, PROGRAMS: 유학.PROGRAMS, PROGRAM_DOCS: 서류.PROGRAM_DOCS, VISA_DOCS: 서류.VISA_DOCS });
+  const 글 = [자료파일.channel, 자료파일.study, 자료파일.docs].map((x) => fs.readFileSync(파일(x), 'utf8')).join('\n');
   const 읽음 = 글에서읽기(글, 목록.map((x) => x.id));
   for (const 항목 of 목록) {
     const r = 읽음.get(항목.id);
@@ -171,7 +178,7 @@ export function 알림글(r, 새것) {
   const 확인 = [...묶음].map(([날, xs]) => {
     if (xs.length === 1) return `· ${항목글(xs[0])}`;
     const 먼저 = xs.reduce((a, b) => (a.남은날 <= b.남은날 ? a : b));
-    const 셈 = ['글', '규칙', '과정'].map((k) => [k, xs.filter((x) => x.종류 === k).length]).filter(([, n]) => n).map(([k, n]) => `${k} ${n}`).join(' · ');
+    const 셈 = ['글', '규칙', '과정', '서류'].map((k) => [k, xs.filter((x) => x.종류 === k).length]).filter(([, n]) => n).map(([k, n]) => `${k} ${n}`).join(' · ');
     const 대기 = xs.some((x) => x.공개대기) ? ' 일부는 저장소에서 고쳐졌고 공개가 남았어요.' : '';
     return `· ${날}에 확인한 자료 ${xs.length}건(${셈}): ${먼저.마지막날}이 지나면 앱이 「다시 확인하세요」를 띄워요(${남은글(먼저.남은날)}). 출처를 다시 읽고 checkedAt을 고쳐야 해요.${대기}`;
   });
@@ -179,7 +186,7 @@ export function 알림글(r, 새것) {
   return [
     `[PATH 유학] 공식 자료를 다시 확인할 항목이 새로 ${새것.length}건 생겼어요(오늘 ${r.오늘}, 문턱 ${r.문턱}일).${r.걸림.length > 새것.length ? ` 지금 걸린 항목은 모두 ${r.걸림.length}건이에요.` : ''}`,
     ...접수, ...확인, ...공개,
-    '고칠 곳: experiences/path-app/channel-data.mjs · study-data.mjs. 전체 목록: node tools/path유학자료만료.mjs',
+    '고칠 곳: experiences/path-app/channel-data.mjs · study-data.mjs · docs-data.mjs. 전체 목록: node tools/path유학자료만료.mjs',
   ].join('\n');
 }
 
