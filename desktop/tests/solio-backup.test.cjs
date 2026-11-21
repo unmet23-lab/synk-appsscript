@@ -195,7 +195,7 @@ test('「보호 시작」 downloads, holds, verifies, writes the setup request, 
   assert.deepEqual(log.map(x => x[0]), ['hold', 'run']);
   assert.equal(atRun.length, 1, 'the setup request is there before the installer starts');
   const body = JSON.parse(fs.readFileSync(path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests', atRun[0]), 'utf8'));
-  assert.deepEqual(body, { v: 1, kind: 'setup', mode: 'protect', hint: 'owner@example.com' });
+  assert.deepEqual(body, { v: 1, kind: 'setup', mode: 'protect' }, 'no Google address goes into the request (GPT solio-backup-be-20261121 GA1)');
   assert.deepEqual(fs.readdirSync(cacheRoot), [], 'the download folder is removed after the install');
   assert.equal(after.engine.installed, true);
 });
@@ -449,15 +449,12 @@ test('GA1: a holder whose handle points elsewhere is never run', async () => {
   assert.deepEqual(log, ['release']);
 });
 
-test('GA2: the hint is asked for the account that pressed the button', async () => {
-  const asked = [], env = appdata(temp());
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), openExternal: async () => {}, previewAccounts: MINE });
-  await service.start(ME, 'protect', { getHint: async account => { asked.push(account); return null; } });
-  await service.whenIdle();
-  assert.deepEqual(asked, [ME]);
+test('GA2: the request carries no Google address, and main no longer looks one up; a new sign-in of the same account counts as a change', async () => {
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
-  assert.ok(main.includes('result.accountId!==account.synk_user_id)return null'), 'main gives no hint once another account is signed in');
+  assert.doesNotMatch(main, /solioBackupHint|getHint/, 'main gives the room no address to pass on');
   assert.ok(main.includes('now.sessionGeneration===generation'), 'a new sign-in of the same account counts as a change');
+  const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
+  assert.doesNotMatch(src.slice(src.indexOf('function createSolioBackup')), /getHint|hintFor|mode, hint/, 'the service passes no hint anywhere');
 });
 
 test('GA3: an installer that exits with an error is not 「done」 even if an engine is there', async () => {
@@ -1063,36 +1060,37 @@ test('cancel mark: a mark is removed only after 24 hours 5 minutes (the longer l
     'only the expired mark whose request is gone is removed; a recent one, one still in claimed, one from a clock that went back, and a folder stay');
 });
 
-test('cancel mark: the hint goes only to an engine that keeps the mark (0.7.0 or later), by the status file, the uninstall entry and the signed feed', async () => {
-  const hintIn = async ({ status, ver = '0.7.0' }) => {
+test('GPT solio-backup-be-20261121 GA1: no request carries a Google address, whatever engine is installed or about to be', async () => {
+  const bodyOf = async ({ status, ver = '0.7.0' }) => {
     const env = appdata(temp(), { status });
     const dir = engineDir();
     const service = B.createSolioBackup({ platform: 'win32', env, run: async () => JSON.stringify({ loc: `"${dir}"`, ver }), previewAccounts: MINE });
     await service.start(ME, 'protect', { getHint: async () => 'owner@example.com' });
     await service.whenIdle();
     const [name] = requestsIn(env);
-    return JSON.parse(fs.readFileSync(path.join(requestsDir(env), name), 'utf8')).hint ?? null;
+    return JSON.parse(fs.readFileSync(path.join(requestsDir(env), name), 'utf8'));
   };
   const setup = engine => ({ ...sample(), engine, state: 'not-set-up' });
-  assert.equal(await hintIn({ status: setup('0.7.0') }), 'owner@example.com');
-  assert.equal(await hintIn({ status: setup('1.0.0') }), 'owner@example.com');
-  assert.equal(await hintIn({ status: setup('0.6.9') }), null, 'an older engine gets no hint');
-  assert.equal(await hintIn({ status: { ...setup('0.7.0'), engine: undefined } }), null, 'no engine version, no hint');
-  assert.equal(await hintIn({ status: setup('0.7.0'), ver: '0.6.0' }), null, 'an older engine installed over a newer status file gets no hint');
-  assert.equal(await hintIn({ status: setup('0.7.0'), ver: '0.6.9-rc.1' }), null, 'an unreadable installed version gets no hint (GPT GA2)');
-  assert.equal(await hintIn({ status: setup('0.7.0'), ver: '' }), null, 'no installed version, no hint');
-  // 설치 길: 서명을 확인한 피드의 판으로 가린다
-  const install = async version => {
-    const key = minisignKey(), data = crypto.randomBytes(2000), engineState = {}, env = appdata(temp()), cacheRoot = temp();
-    let atRun = null;
-    const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot, run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data, version), file: data }),
-      hold: fakeHold([], { engineState, afterInstall: () => { atRun = requestsIn(env); } }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
-    await service.start(ME, 'protect', { getHint: async () => 'owner@example.com' });
-    await service.whenIdle();
-    return JSON.parse(fs.readFileSync(path.join(requestsDir(env), atRun[0]), 'utf8')).hint ?? null;
-  };
-  assert.equal(await install('0.7.0'), 'owner@example.com');
-  assert.equal(await install('0.6.5'), null, 'an older engine in the feed gets no hint');
+  for (const engine of ['0.7.0', '1.0.0', '0.6.9']) assert.deepEqual(await bodyOf({ status: setup(engine) }), { v: 1, kind: 'setup', mode: 'protect' }, engine);
+  const key = minisignKey(), data = crypto.randomBytes(2000), engineState = {}, env = appdata(temp()), cacheRoot = temp();
+  let atRun = null;
+  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot, run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data, '0.7.0'), file: data }),
+    hold: fakeHold([], { engineState, afterInstall: () => { atRun = requestsIn(env); } }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  await service.start(ME, 'protect', { getHint: async () => 'owner@example.com' });
+  await service.whenIdle();
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(requestsDir(env), atRun[0]), 'utf8')), { v: 1, kind: 'setup', mode: 'protect' }, 'install path');
+});
+
+test('GPT solio-backup-be-20261121 GA2: when the requests listing fails, a leftover setup request in claimed still gets its mark', async () => {
+  const env = appdata(temp()), dir = requestsDir(env);
+  fs.mkdirSync(path.join(dir, 'claimed'), { recursive: true });
+  const name = `${Date.now()}-deadbeefdddddddddddddddd.json`;
+  fs.writeFileSync(path.join(dir, 'claimed', name), setupBody);
+  const fsImpl = { ...fs, promises: fs.promises,
+    readdirSync: (file, ...a) => { if (path.basename(String(file)) === 'requests') throw Object.assign(Error('busy'), { code: 'EBUSY' }); return fs.readdirSync(file, ...a); } };
+  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  service.accountChanged();
+  assert.deepEqual(marksIn(env), [`${name}.cancel`]);
 });
 
 test('cancel mark (GPT GA3): an expired mark stays when the claimed folder could not be read, so a request still there keeps its mark', async () => {

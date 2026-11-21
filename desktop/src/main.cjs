@@ -259,7 +259,6 @@ function solioBackup(){if(!solioBackupService)solioBackupService=createSolioBack
 function solioBackupSweep(){if(runtime.clientId!=='platform'||smoke)return;try{solioBackup().accountChanged();}catch{}}
 function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};const status=accountStatus();if(status?.signedIn!==true||!status.account)return {ok:false,code:'SIGN_IN_REQUIRED'};return work(solioBackup(),status.account);}
 // 누른 계정과 지금 로그인한 계정이 같을 때만 그 계정의 Google 주소를 준다(GPT 검수 GA2)
-async function solioBackupHint(account){const result=await auth.identity();if(!result?.ok||typeof account?.synk_user_id!=='string'||result.accountId!==account.synk_user_id)return null;const google=(result.identities||[]).find(row=>row?.provider==='google'&&typeof row.email==='string');return google?.email||null;}
 // 솔리오 「사무실」(11-20, docs/디자인/솔리오_사무실_20261119/구현설계.md 11.1 · 13절, 15절 6단계): 플랫폼 창에서 로그인한 계정만 묻는다. 볼 계정인지는 office.cjs가 채널마다 viewers.json으로 본다.
 // 처음 부를 때 office-model.mjs를 불러 한 번 만든다. 로그인이 바뀌면 publishAuthState가 accountChanged를 부른다.
 // 같은 계정의 토큰 갱신은 잠깐 restoring(계정 없음)으로 보이므로 그동안은 그 계정 그대로 본다(PULSE의 renewingAccount와 같다). 그래야 갱신마다 세션 기억과 기록 살피기가 끊기지 않는다.
@@ -828,7 +827,7 @@ function createWindow(){
     'synk:sns-health-snapshot':()=>snsHealthCall(),
     'synk:solio-backup-snapshot':()=>solioBackupCall((service,account)=>service.snapshot(account)),
     // 누를 때의 계정과 로그인 세대를 잡아 둔다. 같은 계정이라도 다시 로그인했으면 다른 회차로 본다(GPT 셋째 검수 GA4)
-    'synk:solio-backup-start':mode=>solioBackupCall((service,account)=>{const generation=accountStatus()?.sessionGeneration;return service.start(account,mode,{getHint:solioBackupHint,isCurrent:()=>{const now=accountStatus();return now?.signedIn===true&&now.account?.synk_user_id===account.synk_user_id&&now.sessionGeneration===generation;},isSameLogin:()=>{const now=accountStatus();if(now?.sessionGeneration!==generation)return false;return now?.signedIn===true?now.account?.synk_user_id===account.synk_user_id:renewingAccount()===account.synk_user_id;}});}),
+    'synk:solio-backup-start':mode=>solioBackupCall((service,account)=>{const generation=accountStatus()?.sessionGeneration;return service.start(account,mode,{isCurrent:()=>{const now=accountStatus();return now?.signedIn===true&&now.account?.synk_user_id===account.synk_user_id&&now.sessionGeneration===generation;},isSameLogin:()=>{const now=accountStatus();if(now?.sessionGeneration!==generation)return false;return now?.signedIn===true?now.account?.synk_user_id===account.synk_user_id:renewingAccount()===account.synk_user_id;}});}),
     'synk:solio-backup-open':topic=>solioBackupCall((service,account)=>service.open(account,topic)),
     'synk:solio-backup-dismiss':()=>solioBackupCall((service,account)=>service.dismiss(account)),
     // 솔리오 「사무실」(구현설계.md 13절): 모두 officeCall을 거친다. 폴더는 본체가 고르기 창이나 지금 선 세션에서 받는다
