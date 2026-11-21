@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Format: ONE tall vertical image, 9:16 (portrait), sharp and detailed.
+
+Subject: a needle-felted wool doll of a Korean man in his fifties, the "team leader" character of a short series. He stands alone, facing the camera straight on, framed from the waist up, his face large and fully visible in the upper-middle of the image. He smiles warmly but a little pushily, eyebrows raised, as if about to offer someone a drink.
+
+His look (keep every detail exactly like this — this picture will be the face and outfit reference for every other picture of him):
+- neat short black wool hair with grey at the temples, combed with a side part (nothing covers the eyes)
+- thin round gold-rimmed glasses that do not hide the eyes
+- warm peach felt skin, two glossy round black bead eyes, thick short black felt eyebrows, a small rounded felt nose, soft pink felt cheeks
+- navy felt suit jacket, white felt shirt, loosened burgundy felt tie
+- no hat, no jewelry
+
+Background: a cozy Korean pub at night, softly out of focus — a warm brown wooden wall and round hanging lamps with amber light.
+
+Style: real handmade needle-felt craft photographed with a macro lens, visible wool fibers, warm light, gentle depth of field. Absolutely no text, letters, numbers, logos or symbols anywhere.

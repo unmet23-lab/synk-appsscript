@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1fcf7-05b6-7f41-a765-c95d86470cbb"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"몽글이 몸을 낮추고 눈을 질끈 감은 순간을, 얼어붙은 회식 자리의 클로즈업 한 장으로 만들겠습니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"얼어붙은 회식 자리에서 눈을 질끈 감고 식은땀을 흘리는 몽글의 클로즈업입니다."}}
+{"type":"turn.completed","usage":{"input_tokens":128939,"cached_input_tokens":106496,"cache_write_input_tokens":0,"output_tokens":1903,"reasoning_output_tokens":431}}
