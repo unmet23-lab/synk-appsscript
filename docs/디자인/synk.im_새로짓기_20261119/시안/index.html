@@ -160,10 +160,11 @@ html[data-sky="sunset"] .gate-sky::after{content:"";position:absolute;inset:0;ba
 .state::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--meadow-ink)}
 .state.soon::before{background:none;border:2px solid var(--ink)}
 .w-close{top:clamp(112px,16svh,168px);max-width:none;gap:clamp(16px,3svh,30px);visibility:hidden;opacity:0}
-.w-close h3{font:700 clamp(34px,4.5vw,74px)/1.12 var(--sans);letter-spacing:-.035em;white-space:nowrap}
+.w-close h3{font:700 clamp(34px,4.5vw,62px)/1.12 var(--sans);letter-spacing:-.035em;white-space:nowrap}   /* 위 한계 62px: 1440폭을 넘으면 글 칸 여백이 커져 74px 제목이 「2 교실」 말풍선에 닿았다(11-21 검수) */
 .w-close p{font:500 clamp(18px,1.6vw,24px)/1.6 var(--sans);max-width:22em}
-html[lang="en"] body:not(.flat) .w-close h3{font-size:clamp(26px,3vw,48px)}   /* 영어 끝 제목이 「2 Classroom」 말풍선에 닿지 않게(11-21 검수). en-fix.css는 상세 쪽과 같이 쓰므로 여기에 둔다 */
+html[lang="en"] body:not(.flat) .w-close h3{font-size:clamp(26px,3vw,42px)}   /* 영어 끝 제목이 「2 Classroom」 말풍선에 닿지 않게(11-21 검수, 위 한계 42px은 1600~2560폭까지 잼). en-fix.css는 상세 쪽과 같이 쓰므로 여기에 둔다 */
 .loop-go{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center}
+@media (min-width:900px) and (max-width:1279px){.loop-go{flex-direction:column;align-items:flex-start;gap:14px}}   /* 태블릿 가로 크기에서 둘째 링크가 「1 한국어」 말풍선에 닿지 않게 세로로 쌓는다(11-21 검수) */
 /* 그림 속 말풍선: 다섯 곳의 이름 */
 .w-pins{position:absolute;inset:0}
 .w-pins li{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-100%)}
@@ -172,6 +173,8 @@ html[lang="en"] body:not(.flat) .w-close h3{font-size:clamp(26px,3vw,48px)}   /*
 .w-pins button:hover{transform:translateY(-4px)}
 .w-pins b{position:relative;z-index:1;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--paper);font:800 14px/1 var(--sans)}
 .w-pins span{position:relative;z-index:1}
+html[lang="en"] .w-pins li:nth-child(4){transform:translate(-85%,-100%)}   /* 영어 「4 Work in Korea」는 길어 오른쪽이 잘렸다. 꼬리를 오른쪽에 두고 말풍선을 왼쪽으로 붙인다(11-21 검수) */
+html[lang="en"] .w-pins li:nth-child(4) button::after{left:85%}
 .w-loop{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;overflow:visible}
 .w-loop path{fill:none;stroke-linecap:round;stroke-linejoin:round}
 .w-loop .draw{stroke:var(--butter);stroke-width:16;stroke-dasharray:100 200;stroke-dashoffset:100.5}
@@ -928,7 +931,9 @@ p{text-wrap:pretty}
     // HIDE는 건물 뒤의 길(그림 화소 [왼쪽, 위, 오른쪽, 아래]). 발이 그 안으로 들어가면 가장자리 18화소에 걸쳐 옅어지고 나오면 다시 짙어진다
     me.style.opacity = 1 - Math.max(...HIDE.map(([x0, y0, x1, y1]) => clamp((p.x - x0) / 18) * clamp((x1 - p.x) / 18) * clamp((p.y - y0) / 18) * clamp((y1 - p.y) / 18)));
   }
-  const HIDE = [[690, 548, 800, 678], [1205, 592, 1380, 706]];   // 집은 문턱(678)부터 옅어져 바닥선(660)에서 가림 조각이 덮을 때 이미 다 감춰진다
+  // 집은 문턱(678)부터 옅어져 바닥선(660)에서 가림 조각이 덮을 때 이미 다 감춰지고, 「1 한국어」 말풍선 위(478)를 지나서 다시 나온다.
+  // 카페는 회사 앞을 떠나 「5 모임」 말풍선 뒤로 들어갈 때(530) 옅어지고, 카페 왼쪽(1195)에서 다시 나온다. 말풍선에 몸이 반쯤 가려 머리만 보이던 것을 없앴다(11-21 검수)
+  const HIDE = [[690, 478, 800, 678], [1195, 530, 1380, 706]];
   [me, newbie].forEach(el => {                                       // 칸 하나의 크기: 집 앞에서 사람 키가 그림 화소로 94(처음 그림 속 학생보다 조금 작게, 건물과 어울리게)
     el.style.width = 94 / WALK.body * WALK.ar / 15.36 + '%'; el.style.aspectRatio = WALK.ar;
     el.style.transformOrigin = `50% ${(1 - WALK.pad) * 100}%`;
