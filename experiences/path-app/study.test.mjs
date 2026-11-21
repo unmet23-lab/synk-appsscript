@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { RULES, PROGRAMS, validateStudyData, staleItems, financeRule, announcedRules, daysUntil, programById, proofRule, rulesAt, programsFor, applyWindow } from './study-data.mjs';
 import { matchProgram, programCost, countFit, countNeeds, readyToCount, routes, MATCH_KEYS } from './match.mjs';
 import { STUDY_KEY, GUEST_OWNER, createProfile, normalizeProfile, setField, toggleCompare, isEmptyProfile, parseWhole, createProfileStore, MAX_FUNDS_WON } from './study-profile.mjs';
-import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, filterPrograms, condHint } from './study-ui.mjs';
+import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, studyCountSay, filterPrograms, condHint } from './study-ui.mjs';
 
 const EX = PROGRAMS.filter((p) => p.example), REAL = PROGRAMS.filter((p) => !p.example);
 const A = programById(EX, 'example-a-ug'), B = programById(EX, 'example-b-lang'), C = programById(EX, 'example-c-ug');
@@ -545,4 +545,17 @@ test('나란히 보기 머리의 표지 글자는 표지 색을 지키고, 상�
       assert.doesNotMatch(small, /학부 · 학부|어학 과정 · 한국어 연수|Undergraduate · Undergraduate|Language program · Korean language program/, small);
     }
   }
+});
+
+// ── 다시 검수(path-study-univ-r2-20261121 FA1) 반영 ──
+test('화면 읽기 안내는 화면의 세기 안내와 같은 기준 · 같은 말을 쓴다', () => {
+  const progs = programsFor(PROGRAMS, true);
+  assert.equal(studyCountSay(view(createProfile(), { programs: progs })), '한국어 급수를 넣으면 맞는 과정을 세어 줘요.');
+  assert.equal(studyCountSay(view(setField(createProfile(), 'gradePct', 82), { programs: progs })), '한국어 급수를 넣으면 맞는 과정을 세어 줘요.', '성적을 먼저 넣어도 「둘 다」라고 하지 않는다');
+  assert.equal(studyCountSay(view(setField(createProfile(), 'topik', 3), { programs: progs })), '지금 조건에 맞는 과정 5개');
+  assert.equal(studyCountSay(view(createProfile(), { programs: EX })), '성적과 한국어를 넣으면 맞는 과정을 세어 줘요.');
+  assert.equal(studyCountSay(view(setField(setField(createProfile(), 'topik', 0), 'fundsWon', 1000000), { lang: 'en', programs: progs })), '0 programs fit your conditions');
+  const one = setField(setField(setField(createProfile(), 'topik', 0), 'education', 'graduated'), 'fundsWon', 9000000);
+  assert.equal(studyCountSay(view(one, { lang: 'en', programs: progs })), '2 programs fit your conditions');
+  assert.equal(studyCountSay(view(setField(createProfile(), 'topik', 0), { lang: 'en', programs: [real('wku-ug')] })), '1 program fits your conditions');
 });

@@ -115,6 +115,13 @@ export function filterPrograms(profile, filter, programs = PROGRAMS, rules = RUL
   return programs.filter((p) => filter === 'all' || p.level === filter);
 }
 
+/** 조건을 바꿀 때 화면 읽기 프로그램이 읽는 한 줄. 화면의 세기 안내와 같은 기준 · 같은 말을 쓴다. */
+export function studyCountSay(view) {
+  const T = ctx(view), n = countFit(T.profile, T.programs, T.rules);
+  return n === null ? T.L(`${T.needWord} 넣으면 맞는 과정을 세어 줘요.`, `Enter ${T.needWord} to count the programs that fit.`)
+    : T.L(`지금 조건에 맞는 과정 ${n}개`, `${n} program${n === 1 ? ' fits' : 's fit'} your conditions`);
+}
+
 /** 오늘 화면에 두는 입구 한 줄. */
 export function renderStudyEntry(view) {
   const T = ctx(view), empty = isEmptyProfile(T.profile), n = countFit(T.profile, T.programs, T.rules);

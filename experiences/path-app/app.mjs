@@ -4,9 +4,8 @@ import { renderAccountPanel, renderAccountNotice, getAccountErrorMessage } from 
 import { createJobsFeed, renderJobs, jobOpportunity } from './jobs-ui.mjs';
 import { SCHEMA_VERSION, STORAGE_KEY, createInitialState, normalizeState, updateProfile, upsertTask, confirmTask, getNextTask } from './state.mjs';
 import { PROGRAMS, RULES, rulesAt, programsFor } from './study-data.mjs';
-import { countFit } from './match.mjs';
 import { createProfileStore, createProfile, setField, toggleCompare, parseWhole, GUEST_OWNER } from './study-profile.mjs';
-import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, condHint, STUDY_FILTERS, GRADE_MAX, FUNDS_MAX_MAN } from './study-ui.mjs';
+import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, studyCountSay, condHint, STUDY_FILTERS, GRADE_MAX, FUNDS_MAX_MAN } from './study-ui.mjs';
 
 void SCHEMA_VERSION; void STORAGE_KEY;
 const root = document.getElementById('app');
@@ -646,9 +645,7 @@ const ACT = {
 };
 
 function sayStudyCount() {
-  const v = studyView(), n = countFit(v.profile, v.programs, v.rules);
-  say(n === null ? accL('성적과 한국어를 둘 다 넣으면 맞는 곳을 알려 줘요.', 'Enter both grades and Korean level to see what fits.')
-    : accL(`지금 조건에 맞는 과정 ${n}개`, `${n} program${n === 1 ? '' : 's'} fit your conditions`));
+  say(studyCountSay(studyView()));
 }
 // 숫자 칸: 읽을 수 있는 값이면 바로 조건에 넣고, 아니면 조건은 그대로 두고 칸 아래에 알린다.
 // 치는 동안 칸은 다시 그리지 않는다(커서와 휴대폰 자판을 지킨다). 칸 아래 글과 결과 자리만 바꾼다.

@@ -493,6 +493,7 @@ test('대학 탭: 목록에서 자세히, 내 조건에서 넣은 값이 결과�
   app.click('studySet', '[data-key="topik"][data-id="3"]');
   assert.equal(app.document.activeElement.getAttribute('data-id'), '3', '누른 단추로 초점이 돌아온다');
   assert.equal(app.root.querySelector('button[data-action="studySet"][data-key="topik"][data-id="3"]').getAttribute('aria-pressed'), 'true');
+  assert.match(app.announcer.textContent, /성적과 한국어를 넣으면 맞는 과정을 세어 줘요/, '화면 읽기 안내도 화면과 같은 말을 쓴다');
 
   const grade = app.root.querySelector('#sx-grade');
   grade.focus(); grade.value = '80'; app.event('input', grade);
