@@ -416,7 +416,8 @@
       res();
     }, reduce ? 0 : 110);
   }, reduce ? 0 : delay));
-  const flipTo = (c, face) => new Promise((res) => { play('flip'); gsap.to(c.flip, { rotationY: face === 'front' ? 0 : 180, transformPerspective: 900, duration: reduce ? 0 : 0.62, ease: 'back.out(1.4)', onComplete: res }); c.w += 0.45; c.pv += sign() * 1.5; });
+  // is-turned: 기록 면이 보이는 카드 — 움직임 줄이기에서는 3D로 돌리지 않고 이 표시로 앞면 · 기록 면 가운데 하나만 보인다
+  const flipTo = (c, face) => new Promise((res) => { play('flip'); c.el.classList.toggle('sc-turned', face !== 'front'); gsap.to(c.flip, { rotationY: face === 'front' ? 0 : 180, transformPerspective: 900, duration: reduce ? 0 : 0.62, ease: 'back.out(1.4)', onComplete: res }); c.w += 0.45; c.pv += sign() * 1.5; });
   // ok: true(맞음) · false(틀림) · 'wait'(확인할 때가 됐다 — 앱의 「지금 확인」. 뒤에 확인되면 confirmStamp로 ✓)
   const stamp = (c, ok, label) => {
     const wait = ok === 'wait';

@@ -1,0 +1,37 @@
+# 진단(2026-11-21): 배포 점검의 /lab/ 휴대폰 그림 「흔들림」을 점검과 같은 실행기에서 가른다(.github/site-check/diag-lab.mjs).
+# 이 가지에만 있는 임시 워크플로다 — 결과를 받으면 가지째 지운다. synk.im(main)과 배포 점검에는 닿지 않는다.
+name: 배포 점검 진단 (LAB 휴대폰 흔들림)
+on:
+  push:
+    branches: [diag/site-check-lab-20261121]
+permissions:
+  contents: read
+concurrency:
+  group: site-check-lab-diag
+  cancel-in-progress: false
+jobs:
+  diag:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: 플레이라이트 준비(배포 점검과 같은 판)
+        run: |
+          npm install --no-save --no-package-lock playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: 진단
+        run: node .github/site-check/diag-lab.mjs
+        env:
+          DIAG_ROUTES: '[["/lab/","mobile",6],["/en/lab/","mobile",3],["/lab/","desktop",2],["/en/lab/","desktop",2]]'
+          DIAG_VARIANTS: '[["그대로",""],["평면 고침",".ls-box,.ls-flip{transform-style:flat!important}.ls-flip,.ls-front,.ls-back{transform:none!important}.ls-side{display:none!important}.ls-card:not(.is-turned) .ls-back{visibility:hidden!important}"]]'
+      - name: 결과 올리기
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-check-lab-diag
+          path: site-check-artifacts
+          if-no-files-found: ignore
+          retention-days: 7

@@ -368,3 +368,5 @@ a.sc-btn{text-decoration:none}
 }
 /* 움직임 줄이기면 움직일 일이 없으니 합성 층을 따로 만들지 않는다 — 층마다 그릴 때 화소가 조금씩 달라 배포 점검의 「흔들림」을 냈다(위 규칙들보다 뒤에 둔다) */
 @media (prefers-reduced-motion:reduce){.sc-w,.sc-card,.sc-guide,.sc-cal-page{will-change:auto}}
+/* 움직임 줄이기면 카드 면을 3D 공간에서 그리지 않는다 — 뒤집기가 즉시라 3D가 보일 일이 없고, 3D 면 위의 그림은 소프트웨어 그리기에서 장마다 화소가 ±1씩 달라 배포 점검의 「흔들림」을 냈다(실행기 진단 11-21). 기록 면은 sc-turned 표시로 바꿔 보인다 */
+@media (prefers-reduced-motion:reduce){.sc-box,.sc-flip{transform-style:flat}.sc-flip,.sc-front,.sc-back{transform:none!important}.sc-side{display:none}.sc-card.sc-turned .sc-front,.sc-card:not(.sc-turned) .sc-back{visibility:hidden}}
