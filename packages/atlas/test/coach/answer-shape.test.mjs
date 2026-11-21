@@ -170,7 +170,7 @@ test('저장 차례 — 늦게 실패한 전달 쓰기 뒤에 저장된 답, 답
 });
 
 // 기록부에 든 사건으로 정한다(설계 주인 11-21 — r4 GPT GA1). 판의 표지는 새 판을 열면 비워지고, 묶음의 마지막 전달은 답 뒤의 전달까지 본다.
-// 저장 뒤 전달은 접기와 같은 함수(record/adapt.mjs audioBefore)가 기록부의 그 제시 묶음에서 그 답 앞의 마지막 전달을 본다.
+// 저장 뒤 전달은 접기와 같은 함수(record/adapt.mjs audiosBefore)가 기록부의 그 제시 묶음에서 그 답 앞의 마지막 전달을 본다.
 test('답 뒤에 온 전달은 그 답의 전달이 아니고, 저장 전에 새 판을 열어도 늦게 실패한 전달은 거짓이다 — 기록부로 정한다', async () => {
   const time = clock();
   const after = await openCoach({ items, time });

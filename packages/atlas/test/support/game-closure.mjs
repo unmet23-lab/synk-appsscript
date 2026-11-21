@@ -14,8 +14,9 @@ export const nameOf = file =>
 const OLD_ENGINE = /(^|\/)atlas-learning\.js$/;
 const TEST = /\.test\.m?js$/;
 
-// `<script … src=…>` — 큰따옴표 · 작은따옴표 · 따옴표 없는 값을 모두 받는다(r4 GPT GA2 · GA6). 대소문자를 가리지 않는다.
-export const SCRIPT_SRC = /<script\b[^>]*?\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
+// `<script … src=…>` — 큰따옴표 · 작은따옴표 · 따옴표 없는 값을 모두 받는다(r4 GPT GA2 · GA6). 대소문자를 가리지 않는다. 속성 이름이
+// 바로 src인 것만 읽는다 — data-src 같은 이름은 브라우저가 싣지 않는다(r5 GPT GA3).
+export const SCRIPT_SRC = /<script\b[^>]*?[\s/]src\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
 
 // 게임 하나의 입구 — 그 폴더의 HTML이 싣는 제 스크립트들.
 function entriesOf(dir) {

@@ -2,7 +2,7 @@
 // 바뀌면 이 파일만 고친다. 기록부는 저장이 끝난 사건만 근거로 보이고(add의 stored), 서버의 답을 받고(receive), 꼬리를 읽는다(refresh).
 // 서버의 답 꼴(learning?view=trail POST · GET) — { accepted, clamped, rejected, rejectedCode, summary, serverTime }(GET은 summary · serverTime).
 import { evidenceOf } from '../fold/evidence.mjs';
-import { audioBefore, deviceKey, foldEventsOf, groupsOf, itemOf } from '../record/adapt.mjs';
+import { audiosBefore, deviceKey, foldEventsOf, groupsOf, itemOf } from '../record/adapt.mjs';
 import { EVENT_FORM, EVENT_TYPES } from '../record/events.mjs';
 import { openRecord } from '../record/log.mjs';
 
@@ -83,13 +83,13 @@ function meetsOf(record, index) {
 }
 
 // 저장 뒤 그 답의 소리 전달(evidence.delivered — 단계 4 계획 §25-3 불변식 나). 기록부에 든 사건으로 그 제시의 묶음을 짓고, 접기와 같은
-// 함수(audioBefore)로 그 답 앞의 마지막 전달을 본다. 저장이 실패한 쓰기는 기록부에 없고, 제외된 전달 뒤의 소리는 「아직」이다. 소리가
+// 함수(audiosBefore)로 그 답 앞의 마지막 전달을 본다. 저장이 실패한 쓰기는 기록부에 없고, 제외된 전달 뒤의 소리는 「아직」이다. 소리가
 // 들지 않는 문항은 늘 전달된 것이다. 그 답이 기록부에 없으면 거짓이다.
 function deliveredAt(record, presentationId, answerId) {
   const group = groupsOf(entriesOf(record.heldEvents())).get(presentationId);
   if (!group?.children.some(entry => entry.key === answerId)) return false;
   if (group.source.event.audioRequired !== true) return true;
-  return audioBefore(group, answerId) === 'completed';
+  return audiosBefore(group).get(answerId) === 'completed';
 }
 
 // exclusive: 호스트의 차례(turn) — 기록부가 차례 밖에서 시작된 손님 요약 저장에만 청한다(§18-5-1 R1).

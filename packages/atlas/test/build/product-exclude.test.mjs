@@ -98,13 +98,14 @@ function checkMember(file, masked, match, found) {
 }
 
 // 한 파일을 표와 견준다 — 표 밖이면 stray에, 표 안이면 used에.
+// 고를 때도 다시 찍은 글을 본다 — 원문에서 글자를 유니코드 탈출 꼴로 적은 이름도 다시 찍으면 제 이름이 된다(r5 GPT GA4).
 function checkFile(file, text, found) {
-  if (!/exclude/.test(text)) return;
   const code = readCode(text);
   if (!code) {
     found.stray.push(`${file} 다시 찍지 못함`);
     return;
   }
+  if (!/exclude/.test(code.raw)) return;
   const { raw, masked } = code;
   for (const match of masked.matchAll(MEMBER)) checkMember(file, masked, match, found);
   for (const match of raw.matchAll(BRACKETS))
@@ -151,6 +152,7 @@ test('찾는 꼴 — 선택 연결 · 메서드의 선택 호출 · 부르지 �
     "coach['exclude'](id);",
     'const ex = coach.exclude; ex(id);',
     'const { exclude } = coach; exclude(id);',
+    'coach.\\u0065xclude(heard.id);',
   ])
     assert.ok(strayOf(GAME, text).stray.length > 0, text);
   const UI = 'synk-world-app/world-learning-ui.mjs';

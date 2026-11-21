@@ -92,18 +92,20 @@ const excludeOf = (exclusion, answerKey, at) => ({
   ref: answerKey,
 });
 
-// 그 제시의 자식 가운데 접기 차례(orderOf)로 이 사건(key) 앞의 마지막 전달의 소리. 그 전달이 제외됐으면 「아직」(pending)이고, 전달이 없어도
-// 「아직」이다. 접기(stepChild)와 코치의 저장 뒤 전달(evidence.delivered — coach/record.mjs)이 함께 부른다(단계 4 계획 §25-3 불변식 나 ·
-// 설계 주인 11-21). 판의 표지는 판이 바뀌면 낡으므로 기록부에 든 사건만 본다.
-export function audioBefore({ source, children = [], exclusions = [] }, key) {
+// 그 제시의 자식마다(열쇠 → 소리) 접기 차례(orderOf)로 그 사건 앞의 마지막 전달의 소리. 그 전달이 제외됐으면 「아직」(pending)이고, 전달이
+// 없어도 「아직」이다. 묶음을 한 번 정렬해 한 차례에 센다(r5 GPT GA1 — 답마다 다시 정렬하면 답 수의 제곱이 든다). 접기(presentedGroup)와 코치의
+// 저장 뒤 전달(evidence.delivered — coach/record.mjs)이 함께 부른다(단계 4 계획 §25-3 불변식 나 · 설계 주인 11-21). 판의 표지는 판이 바뀌면
+// 낡으므로 기록부에 든 사건만 본다.
+export function audiosBefore({ source, children = [], exclusions = [] }) {
   const { targets } = exclusionsOf(source.event, exclusions);
+  const audios = new Map();
   let audio = 'pending';
   for (const entry of [...children].sort(orderOf)) {
-    if (entry.key === key) break;
+    audios.set(entry.key, audio);
     if (entry.event.type === EVENT_TYPES.delivery)
       audio = targets.has(entry.event.id) ? 'pending' : entry.event.audio;
   }
-  return audio;
+  return audios;
 }
 
 function stepChild(entry, state, context) {
@@ -120,7 +122,7 @@ function stepChild(entry, state, context) {
   if (event.type !== EVENT_TYPES.attempted) return;
   if (!state.answered) state.firstAnswer = entry;
   state.answered = true;
-  state.audio = audioBefore(context.group, entry.key);
+  state.audio = context.audios.get(entry.key);
   const answer = answerOf(entry, context.item, state, context.presented, context.view);
   state.out.push(answer);
   const exclusion = context.targets.get(event.id) ?? context.whole;
@@ -167,7 +169,7 @@ function presentedGroup({ source, children = [], exclusions = [] }, index) {
     item,
     presented,
     view: judgeView(presented),
-    group: { source, children, exclusions },
+    audios: audiosBefore({ source, children, exclusions }),
     ...exclusionsOf(presented, exclusions),
   };
   const state = {

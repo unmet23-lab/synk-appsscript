@@ -12,6 +12,7 @@ import {
   maskStrings,
   nameOf,
   printed,
+  SCRIPT_SRC,
 } from '../support/game-closure.mjs';
 import { Flow } from '../flow/legacy.mjs';
 
@@ -153,7 +154,8 @@ test('제품 내용은 모두 막기를 지나 정의된다 — 셸의 게임 �
 //   - 첫 인자로 객체 글자 · 펼치기 · 함수 호출 · 표에 없는 이름을 넘기기(바꿔 넘기는 내용)
 //   - 불러 본 내용과 같은 이름의 지역 사본(별칭으로 들인 원본을 고쳐 같은 이름으로 짓기 · 다시 선언 · 대입 · 인자 · 풀어 받기)
 //   - 부르지 않고 읽기(`const open = coach.live`), 허용한 typeof 옆자리의 읽기, 대괄호 이름(`coach['live']`), 풀어 받기(`{ live } = coach`)
-//   - 작은따옴표 · 따옴표 없는 `<script src>`로 싣는 게임 모듈(따라가기)
+//   - 작은따옴표 · 따옴표 없는 `<script src>`로 싣는 게임 모듈, data-src가 앞에 선 입구(따라가기)
+//   - 원문에서 `\u` 꼴로 쓴 이름(다시 찍은 글로 검사할 파일을 고른다)
 // 빠짐없음은 이 검사가 아니라 4-6e-2의 실행 시험이 지킨다 — 진입 시험의 가짜 live가 받은 인자를 진짜 defineContent에 넘기고, 순간 맞춤이
 // 켜져야 하는 판에서 adaptive를 단정한다. 이 검사에 새 우회 꼴이 나오면 엔진 묶음의 P1이 아니라 4-6e-2 시험 항목으로 넘긴다.
 // 남는 한계: 실행 중에 FLOW_ 값을 고치는 꼴은 찾지 못한다. 지금 FLOW_ 값은 FLOW_VOICE 말고는 얼어 있지 않다(4-6e-2가 깊게 얼린다).
@@ -352,8 +354,9 @@ test('게임 파일이 코치 live · declaredFrom에 넘기는 것은 불러 �
   const owners = ownersOf(contents);
   const found = { used: new Set(), stray: [] };
   for (const file of files) {
-    const text = fs.readFileSync(path.join(EXPERIENCES, file), 'utf8');
-    if (/\b(live|declaredFrom)\b/.test(text)) scanCode(file, readCode(text), owners, found);
+    // 고를 때도 다시 찍은 글을 본다 — 원문에서 글자를 유니코드 탈출 꼴로 적은 이름도 다시 찍으면 제 이름이 된다(r5 GPT GA4).
+    const code = readCode(fs.readFileSync(path.join(EXPERIENCES, file), 'utf8'));
+    if (/\b(live|declaredFrom)\b/.test(code.raw)) scanCode(file, code, owners, found);
   }
   assert.deepEqual(
     found.stray,
@@ -401,4 +404,20 @@ test('호출 자리 검사가 닫는 꼴 — 띄어 쓴 호출은 지나가고, 
     'const spec = { id: "x", items: LEVELS, knobs: [] }; coach.live(spec);',
   ];
   for (const code of strays) assert.ok(scan(code).stray.length > 0, code);
+});
+
+test('따라가기의 입구와 검사할 파일 고르기 — 속성 이름이 바로 src인 것만 읽고, 고를 때도 다시 찍은 글을 본다(r5 GPT GA3 · GA4)', () => {
+  const srcs = html =>
+    [...html.matchAll(SCRIPT_SRC)].map(match => match[1] ?? match[2] ?? match[3]);
+  assert.deepEqual(
+    srcs(
+      '<script type="module" data-src="https://example.invalid/x.mjs" src="./flow.mjs"></script>',
+    ),
+    ['./flow.mjs'],
+  );
+  assert.deepEqual(srcs("<script src='./a.mjs'></script><SCRIPT SRC=./b.mjs></SCRIPT>"), [
+    './a.mjs',
+    './b.mjs',
+  ]);
+  assert.match(readCode('coach.l\\u0069ve(bad);').raw, /\.live\(/);
 });
