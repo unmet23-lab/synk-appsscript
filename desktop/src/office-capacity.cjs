@@ -19,7 +19,7 @@ function cpuTimes(list) {
   return { idle, total };
 }
 const safe = fn => { try { return fn(); } catch { return null; } };
-const memGb = v => (Number.isFinite(Number(v)) && Number(v) >= 0 ? round1(Number(v) / GB) : null);
+const memGb = v => (v != null && v !== '' && Number.isFinite(Number(v)) && Number(v) >= 0 ? round1(Number(v) / GB) : null); // null이 0GB가 되지 않게(0.5.2 공개 검수 B3)
 
 function createOfficeCapacity({ osImpl = os, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), sampleMs = SAMPLE_MS } = {}) {
   /**

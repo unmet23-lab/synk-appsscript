@@ -111,20 +111,24 @@ const rowLabel = parts => parts.filter(Boolean).join(', ');
 
 /* ── 수용 인원 줄(6절, 시안 pcHTML) ── 첫 조각은 보이기만 한다. 구독을 둘 다 다 썼으면 숫자 대신 쉰다고 말한다(6절 11-20) */
 export const OFFICE_REST_SAY = '구독을 다 써서 다시 찰 때까지 쉽니다';
+/* 읽은 수인가: null · 빈 글자는 Number()가 0으로 바꾸므로 따로 거른다(메모리를 읽지 못하면 본체가 null을 보낸다, P2 묶음 카본 A1) */
+const known = v => v != null && v !== '' && Number.isFinite(Number(v));
+/* 쉬는 때: 두 구독의 남은 양을 다 알고 둘 다 0이며, 손님이 수를 직접 정하지 않았을 때. 직접 정한 수가 이긴다(0.5.2 공개 검수 A4) */
+export const officeResting = c => !!c && c.source !== 'manual' && c.missing.length === 0 && c.toolCaps.claude === 0 && c.toolCaps.codex === 0;
 export function officeCapacityRow({ pc = null, subscriptions = {}, manualCap = null, active = 0, ui = {}, now = Date.now() } = {}) {
   const note = ui.notes?.get?.('cap') || '';
-  if (!pc || !Number.isFinite(Number(pc.cores)) || !Number.isFinite(Number(pc.totalMemGb))) {
+  if (!pc || !known(pc.cores) || !known(pc.totalMemGb)) {
     return { key: 'cap', gap: true, nm: '수용 인원', mid: '이 PC의 프로세서와 메모리를 아직 읽지 못했습니다', val: '', when: '', label: rowLabel(['수용 인원', '이 PC의 프로세서와 메모리를 아직 읽지 못했습니다']), more: [['note', '사무실을 열어 두면 곧 다시 읽습니다.'], ['live', note]] };
   }
   const c = officeCapacity({ cores: pc.cores, totalMemGb: pc.totalMemGb, subscriptions, manual: manualCap });
   const cores = Math.max(1, Math.floor(Number(pc.cores))), mem = Math.round(Math.max(0, Number(pc.totalMemGb)));
-  const resting = c.missing.length === 0 && c.toolCaps.claude === 0 && c.toolCaps.codex === 0;
+  const resting = officeResting(c);
   const low = ['claude', 'codex'].filter(t => subscriptions[t] && subscriptions[t].leftPercent < 50).map(t => ` · ${t === 'codex' ? 'Codex' : 'Claude'} ${subscriptions[t].leftPercent}%`).join('');
   const mid = resting ? OFFICE_REST_SAY : `${cores}코어 · ${mem}GB${low}`;
   const val = resting ? '' : countWord(c.cap) + '까지';
   const per = n => (n >= 1 ? countWord(n) : '없음');
-  const cpu = Number.isFinite(pc.cpuPercent) ? ` · 지금 ${Math.round(pc.cpuPercent)}% 쓰는 중` : '';
-  const free = Number.isFinite(pc.freeMemGb) ? ` · 지금 ${Math.round(pc.freeMemGb * 10) / 10}GB 비어 있음` : '';
+  const cpu = known(pc.cpuPercent) ? ` · 지금 ${Math.round(pc.cpuPercent)}% 쓰는 중` : '';
+  const free = known(pc.freeMemGb) ? ` · 지금 ${Math.round(pc.freeMemGb * 10) / 10}GB 비어 있음` : '';
   const toolRow = tool => {
     const s = subscriptions[tool], name = TOOL_NAME[tool];
     if (!s) return ['row', name, '남은 양을 모릅니다', countWord(c.toolCaps[tool]) + '까지', ''];
@@ -268,7 +272,9 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
   const subscriptions = officeSubscriptions(subs, now);
   const settings = snap.settings && typeof snap.settings === 'object' ? snap.settings : {};
   const pc = snap.pc && typeof snap.pc === 'object' ? snap.pc : null;
-  const cap = pc && Number.isFinite(Number(pc.cores)) ? officeCapacity({ cores: pc.cores, totalMemGb: pc.totalMemGb, subscriptions, manual: settings.manualCap }).cap : null;
+  // 쉬는 때는 수용 인원 줄이 숫자 대신 쉰다고 말하므로, 맨 위 글도 「몇까지인데」를 세지 않는다(0.5.2 공개 검수 A4)
+  const capInfo = pc && known(pc.cores) && known(pc.totalMemGb) ? officeCapacity({ cores: pc.cores, totalMemGb: pc.totalMemGb, subscriptions, manual: settings.manualCap }) : null;
+  const cap = capInfo && !officeResting(capInfo) ? capInfo.cap : null;
   const head = officeTaskHeadline(officeHeadline(list, { cap }), list, snap.tasking);
   const view = ui.view || (settings.view === 'top' ? 'top' : 'tilted');
   const tasking = Array.isArray(snap.tasking?.tasks);
@@ -405,7 +411,7 @@ export function createOfficeRoom({ api = null, snapshot = () => null, reread = (
         if (!sid || !d) { note(key, officeCodeSay('NOT_FOUND')); reread(); changed(); return true; }
         const res = await run(key, () => call('assign', sid, d.id));
         // 보낸 부서의 줄을 열어 둔다(시안 send → pin)
-        return after(key, res, '', () => { note('d:' + d.id, `이 세션을 ${ro(d.name)} 보냈습니다. 세션이 끝나면 이 기억도 지웁니다.`); openReq = ask({ key: 'd:' + d.id }); });
+        return after(key, res, '', () => { note('d:' + d.id, `이 세션을 ${ro(d.name)} 보냈습니다.`); openReq = ask({ key: 'd:' + d.id }); });
       }
       case 'view': {
         const view = arg === 'top' ? 'top' : 'tilted';

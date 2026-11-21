@@ -208,7 +208,8 @@ function createOfficeRecords({ roots = () => defaultRoots(), fsImpl = fs, now = 
       if (st.mtimeMs === node.mtimeMs) continue;
       const entries = await list(dir);
       if (!entries) continue;
-      const added = entries.filter(e => !node.names.has(e.name));
+      // 처음 보는 이름과, 이름은 알지만 늘어놓은 폴더 목록에 없는 진짜 폴더(연결이었다가 같은 이름의 폴더로 돌아온 것)를 새로 본다(GPT 검수 be10 GA1 · P2 묶음 GA2)
+      const added = entries.filter(e => !node.names.has(e.name) || (!node.leaf && e.isDirectory() && rs.layout.child(node.depth, e.name) && !rs.dirs.has(path.join(dir, e.name))));
       node.mtimeMs = st.mtimeMs;
       node.names = new Set(entries.map(e => e.name));
       if (!node.leaf) {

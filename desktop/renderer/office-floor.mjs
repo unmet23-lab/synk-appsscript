@@ -56,9 +56,13 @@ export function floorLayout(scene) {
     const need = bottom.map(z => Math.max(2, Math.min(8, z.staff.length)) * STEP + 0.8);
     const half = Math.max(gridHalf, (need.reduce((a, b) => a + b, 0) + GAP * (bottom.length - 1)) / 2);
     const z0 = rows ? (rows * ZD + (rows - 1) * GAP) / 2 + 0.65 : -STRIP / 2;
-    const width = (2 * half - GAP * (bottom.length - 1)) / bottom.length;
+    // 남는 폭은 구역마다 필요한 폭에 비례해 나눈다. 고르게 나누면 직원이 많은 구역의 구슬이 좌대 밖으로 나간다(0.5.2 공개 검수 A5)
+    const total = need.reduce((a, b) => a + b, 0), spare = Math.max(0, 2 * half - GAP * (bottom.length - 1) - total);
+    let x = -half;
     bottom.forEach((z, i) => {
-      const x0 = -half + i * (width + GAP), x1 = x0 + width, mid = (x0 + x1) / 2, n = Math.min(8, z.staff.length);
+      const width = need[i] + spare * (need[i] / total);
+      const x0 = x, x1 = x0 + width, mid = (x0 + x1) / 2, n = Math.min(8, z.staff.length);
+      x = x1 + GAP;
       const spots = Array.from({ length: n }, (_, k) => ({ x: mid + (k - (n - 1) / 2) * STEP, z: z0 + STRIP / 2 - 0.05 }));
       out.push({ ...z, rect: { x0, x1, z0, z1: z0 + STRIP }, spots });
     });

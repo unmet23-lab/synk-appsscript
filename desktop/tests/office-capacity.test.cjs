@@ -39,6 +39,11 @@ test('no time between samples gives null, values are clamped, and a missing cpu 
   assert.deepEqual(await broken.read(), { cores: 6, totalMemGb: 8, freeMemGb: 1, cpuPercent: null });
   const bare = createOfficeCapacity({ osImpl: { cpus: () => [], totalmem: () => NaN, freemem: () => -1 }, sleep: async () => {} });
   assert.deepEqual(await bare.read(), { cores: 1, totalMemGb: null, freeMemGb: null, cpuPercent: null });
+  // 0.5.2 공개 검수 B3: 메모리를 읽다 실패하거나 null이 오면 0GB가 아니라 모름이다
+  const failing = createOfficeCapacity({ osImpl: { cpus: () => [], totalmem: () => { throw new Error('x'); }, freemem: () => null }, sleep: async () => {} });
+  const read = await failing.read();
+  assert.equal(read.totalMemGb, null);
+  assert.equal(read.freeMemGb, null);
 });
 
 test('a real read returns sane numbers', async () => {

@@ -731,6 +731,8 @@ html[data-orb-client="app"] #portal-entry .orb-stage[data-fan] ~ .portal-window-
   #portal-entry .when{grid-column:1 / -1;grid-row:3;text-align:left;white-space:normal}
   #portal-entry .rows.vis{grid-template-columns:minmax(0,1fr)}
   #portal-entry .rows.off{grid-template-columns:minmax(0,1fr)}
+  /* 사무실 줄의 column-gap:normal(위 규칙)이 이 폭의 16px를 이기지 않게 다시 적는다(0.5.2 공개 검수 B2) */
+  #portal-entry .rows.off .row{column-gap:16px}
   #portal-entry .mid{grid-column:1 / -1;grid-row:2}
   #portal-entry .row-plain > :nth-child(2){grid-column:1 / -1;grid-row:2}
   #portal-entry .row-plain > :last-child{grid-column:2;grid-row:1}

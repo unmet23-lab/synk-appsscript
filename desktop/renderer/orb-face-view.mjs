@@ -828,8 +828,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     },
   });
   // 줄의 열림이 바뀌면 그림의 밝은 부서도 바뀐다. 움직임 줄이기에서는 그림이 저절로 다시 그려지지 않으므로 그때 한 번 그린다
-  const offObserver = typeof win.MutationObserver === 'function' ? new win.MutationObserver(() => { if (reduced()) officeFloor.redraw(); }) : null;
-  offObserver?.observe(app.offRows, { attributes: true, attributeFilter: ['class'], subtree: false });
+  // 열림 표시(opened)는 줄 단추에 붙으므로 아래까지 보고, 줄 단추의 class가 바뀐 때만 그린다(공간 지도 검수 c FA2)
+  const offObserver = typeof win.MutationObserver === 'function' ? new win.MutationObserver(records => {
+    if (reduced() && records.some(r => r.target?.parentElement === app.offRows && r.target.matches?.('button.row'))) officeFloor.redraw();
+  }) : null;
+  offObserver?.observe(app.offRows, { attributes: true, attributeFilter: ['class'], subtree: true });
   const onOfficeOver = event => {
     const t = event.target, s = t?.closest?.('.row.staff'), m = t?.closest?.('.more');
     const b = t?.closest?.('button.row[data-key]') || (m ? m.previousElementSibling : null);
@@ -1089,7 +1092,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     for (const b of [app.orbBtn, app.nameBtn]) if (b.getAttribute('aria-expanded') !== String(open)) b.setAttribute('aria-expanded', String(open));
     app.fan.inert = !open;
     // 펼친 동안 물러난 이름 단추와 오브제 줄, 흐린 방은 Tab 차례에서도 빠진다. 그 안에 있던 초점은 보이는 구 단추로 먼저 옮긴다(검수 A1)
-    const back = [app.nameBtn, app.rail, app.solio, app.backup, app.visits, app.health, app.space, ...Object.values(app.asides).map(a => a.room)].filter(Boolean);
+    const back = [app.nameBtn, app.rail, app.solio, app.backup, app.visits, app.health, app.office, app.space, ...Object.values(app.asides).map(a => a.room)].filter(Boolean); // 사무실 방도(공간 지도 검수 c FA1)
     // 다가가 머물러 연(고정하지 않은) 펼침이면 옮기기 전 자리를 기억해 두고, 닫을 때 초점이 구에 그대로 있으면 그 자리로 돌려놓는다(최종 검수 F5)
     if (open) { const a = doc.activeElement; if (a && back.some(x => x.contains(a))) { fanReturn = f.pin ? null : a; app.orbBtn.focus?.({ preventScroll: true }); } }
     if (open && f.pin) fanReturn = null;

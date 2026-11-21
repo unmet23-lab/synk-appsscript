@@ -170,6 +170,33 @@ test('with both subscriptions used up the row says it rests until they fill agai
   assert.notEqual(officeCapacityRow({ pc: PC, subscriptions: { claude: used.claude, codex: { leftPercent: 30 } }, now: NOW }).mid, OFFICE_REST_SAY);
 });
 
+test('P2 묶음 카본 A1: memory the main process could not read (null) is unknown, not 0 GB — no capacity is counted from it', () => {
+  for (const pc of [{ cores: 8, totalMemGb: null, freeMemGb: null, cpuPercent: null }, { cores: null, totalMemGb: 16 }, { cores: 8, totalMemGb: '' }]) {
+    const row = officeCapacityRow({ pc, now: NOW });
+    assert.equal(row.mid, '이 PC의 프로세서와 메모리를 아직 읽지 못했습니다', JSON.stringify(pc));
+    assert.equal(row.val, '');
+  }
+  const busy = [record('sess-mem-0001', MKT, 'claude', NOW - 20 * S), record('sess-mem-0002', SHOP, 'claude', NOW - 30 * S)];
+  const room = officeRoom(snapOf({ state: stateOf(busy), pc: { cores: 8, totalMemGb: null, freeMemGb: null, cpuPercent: null } }), {}, NOW, {});
+  assert.ok(!/까지인데/.test(room.say), 'the headline does not count 「up to one」 from an unknown memory');
+  const known = officeCapacityRow({ pc: { cores: 8, totalMemGb: 15.7, freeMemGb: null, cpuPercent: null }, now: NOW });
+  assert.ok(!/비어 있음|쓰는 중/.test(known.more.map(m => m[2]).join(' ')), 'unknown free memory and CPU say nothing');
+});
+
+test('0.5.2 공개 검수 A4: a number set by hand wins over resting, and while resting the headline does not count 「up to」', () => {
+  const used = officeSubscriptions({ rows: [weekly('claude', 100), weekly('gpt', 100)] }, NOW);
+  const mine = officeCapacityRow({ pc: PC, subscriptions: used, manualCap: 2, now: NOW });
+  assert.notEqual(mine.mid, OFFICE_REST_SAY);
+  assert.equal(mine.val, '둘까지');
+  assert.equal(mine.more.find(m => m[1] === '합쳐서')[3], '직접 정함 · 동시에 둘까지');
+  const busy = [record('sess-rest-0001', MKT, 'claude', NOW - 20 * S), record('sess-rest-0002', SHOP, 'claude', NOW - 30 * S)];
+  const subs = { rows: [weekly('claude', 100), weekly('gpt', 100)] };
+  const resting = officeRoom(snapOf({ state: stateOf(busy), pc: PC }), {}, NOW, { subs });
+  assert.ok(!/까지인데/.test(resting.say), 'no 「one at most, but two are working」 while the capacity row says it rests');
+  const handSet = officeRoom(snapOf({ state: stateOf(busy), pc: PC, settings: { view: 'tilted', manualCap: 1 } }), {}, NOW, { subs });
+  assert.match(handSet.say, /하나까지인데 지금 둘이 일하고 있습니다/, 'a number set by hand is still counted');
+});
+
 test('subscription remaining comes from the default login rows only; account folders and unknown values are left out', () => {
   const subs = { rows: [weekly('claude', 10, { folder: true }), weekly('claude', 50), weekly('gemini', 0), { service: 'gpt', source: 'auto', kind: 'weekly', folder: false, live: {} }] };
   assert.deepEqual(officeSubscriptions(subs, NOW), { claude: { leftPercent: 50, resetsAt: NOW + 3 * DAY } });
@@ -209,6 +236,14 @@ test('the floor draws up to six departments and bundles the rest into one 「그
   assert.ok(Math.min(...strip.map(z => z.rect.z0)) > Math.max(...layout.filter(z => z.kind === 'dept').map(z => z.rect.z1)), 'below the two rows of departments');
   // 빈 자리는 가는 선으로 그린다: 자리 수만큼 자리가 있고, 직원이 더 많으면 자리가 는다(여섯까지)
   assert.equal(layout[0].spots.length, 3);
+  // 0.5.2 공개 검수 A5: 아래 띠의 두 구역은 직원 수에 맞춘 폭이다. 구슬이 제 좌대 안에 있고 두 좌대가 겹치지 않는다
+  const loneBand = { key: 'lobby', kind: 'lobby', name: '부서 없는 일', staff: [{ id: 'l1', status: 'working' }] };
+  const manyBand = { key: 'other', kind: 'other', name: '그 밖', staff: Array.from({ length: 8 }, (_, i) => ({ id: 'o' + i, status: 'working' })) };
+  for (const order of [[loneBand, manyBand], [manyBand, loneBand]]) {
+    const bands = floorLayout({ seats: 1, zones: order }).filter(z => z.kind !== 'dept');
+    for (const z of bands) for (const p of z.spots) assert.ok(p.x >= z.rect.x0 && p.x <= z.rect.x1, z.key + ' keeps its staff on its own stand');
+    assert.ok(bands[0].rect.x1 < bands[1].rect.x0, 'the two stands do not overlap');
+  }
   const crowded = floorLayout({ seats: 1, zones: [{ key: 'd:x', kind: 'dept', name: 'x', staff: Array.from({ length: 5 }, (_, i) => ({ id: 'p' + i, status: 'working' })) }] });
   assert.equal(crowded[0].spots.length, 5);
   assert.ok(FLOOR_MOTION.rimPeriod >= 2400, 'the working rim changes over at least 2.4 s');

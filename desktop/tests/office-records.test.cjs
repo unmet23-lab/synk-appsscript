@@ -431,6 +431,59 @@ test('설계 검토 be9 고칠 것 3 · 캐시 정리와 다시 늘어놓기: be
   assert.ok(touched.some(([name, p]) => name === 'readdir' && p === path.resolve(root)), 'the top is listed again');
 });
 
+test('GPT 검수 be10 GA1: a year folder swapped for a link and then back under the same name is read again at the next tick, not at the next full listing', async () => {
+  let t = Date.now();
+  const root = tmp('codex-back');
+  const elsewhere = tmp('codex-back-target');
+  const day = d => path.join(d, '2026', '11', '21');
+  const own = path.join(day(root), `rollout-2026-11-21T09-00-00-${uuid(57)}.jsonl`);
+  put(own, codexMeta('C:\\work\\back'), t - 1000);
+  put(path.join(day(elsewhere), `rollout-2026-11-21T09-00-00-${uuid(58)}.jsonl`), codexMeta('C:\\work\\elsewhere'), t - 1000);
+  const roots = { claude: [], codex: [root] };
+  const records = createOfficeRecords({ roots, now: () => t });
+  assert.ok(byId(await records.scan({ full: true, roots }))[uuid(57)]);
+  const keep = tmp('codex-back-keep');
+  fs.cpSync(path.join(root, '2026'), path.join(keep, '2026'), { recursive: true, preserveTimestamps: true });
+  fs.rmSync(path.join(root, '2026'), { recursive: true, force: true });
+  fs.symlinkSync(path.join(elsewhere, '2026'), path.join(root, '2026'), 'junction');
+  t += 15 * S;
+  assert.equal(byId(await records.scan({ roots }))[uuid(57)], undefined, 'while it is a link nothing below it is read');
+  try { fs.unlinkSync(path.join(root, '2026')); } catch { fs.rmdirSync(path.join(root, '2026')); }
+  fs.cpSync(path.join(keep, '2026'), path.join(root, '2026'), { recursive: true, preserveTimestamps: true });
+  fs.utimesSync(own, (t + 14 * S) / 1e3, (t + 14 * S) / 1e3); // 돌아온 뒤 다시 적혔다
+  fs.utimesSync(root, (t + 10 * S) / 1e3, (t + 10 * S) / 1e3); // 부모가 바뀐 것이 틱에 보이게(Windows는 폴더의 고친 때를 늦게 바꿀 수 있다)
+  t += 15 * S;
+  assert.ok(byId(await records.scan({ roots }))[uuid(57)], 'back as a real folder: read at this tick');
+});
+
+test('P2 묶음 GPT GA2: the year folder comes back as a real folder even if the parent was listed again while it was a link', async () => {
+  let t = Date.now();
+  const root = tmp('codex-back2');
+  const elsewhere = tmp('codex-back2-target');
+  const day = d => path.join(d, '2026', '11', '21');
+  const own = path.join(day(root), `rollout-2026-11-21T09-00-00-${uuid(59)}.jsonl`);
+  put(own, codexMeta('C:\\work\\back2'), t - 1000);
+  fs.mkdirSync(path.join(elsewhere, '2026'), { recursive: true });
+  const roots = { claude: [], codex: [root] };
+  const records = createOfficeRecords({ roots, now: () => t });
+  assert.ok(byId(await records.scan({ full: true, roots }))[uuid(59)]);
+  const keep = tmp('codex-back2-keep');
+  fs.cpSync(path.join(root, '2026'), path.join(keep, '2026'), { recursive: true, preserveTimestamps: true });
+  fs.rmSync(path.join(root, '2026'), { recursive: true, force: true });
+  fs.symlinkSync(path.join(elsewhere, '2026'), path.join(root, '2026'), 'junction');
+  t += 15 * S;
+  await records.scan({ roots });
+  // 연결인 동안 부모를 다시 늘어놓는다(전체 훑기). 연결의 이름도 다시 기억한다
+  t += 15 * S;
+  await records.scan({ full: true, roots });
+  try { fs.unlinkSync(path.join(root, '2026')); } catch { fs.rmdirSync(path.join(root, '2026')); }
+  fs.cpSync(path.join(keep, '2026'), path.join(root, '2026'), { recursive: true, preserveTimestamps: true });
+  fs.utimesSync(own, (t + 14 * S) / 1e3, (t + 14 * S) / 1e3);
+  fs.utimesSync(root, (t + 10 * S) / 1e3, (t + 10 * S) / 1e3); // 부모가 바뀐 것이 틱에 보이게
+  t += 15 * S;
+  assert.ok(byId(await records.scan({ roots }))[uuid(59)], 'back as a real folder: read at this tick, not at the next full listing');
+});
+
 test('GPT 검수 be8 GA1: a folder left out of one scan keeps what was seen in it — an unchanged file dated ahead stays dropped when the folder comes back', async () => {
   let t = Date.now();
   const dir = tmp('rest-root');

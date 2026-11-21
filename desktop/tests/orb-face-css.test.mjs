@@ -124,3 +124,9 @@ test('a long name in 내 계정 is cut short instead of covering the next cell, 
   const view = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
   assert.match(view, /const ASIDE_NAMES = Object\.freeze\(\['manage', 'account', 'settings'\]\);/, 'the account and settings rooms share the top room markup');
 });
+
+test('0.5.2 공개 검수 B2: below 640px the office rows keep the 16px gap between name and status, as the other rows do', () => {
+  const narrow = /@media \(max-width:640px\)\{[\s\S]*?\r?\n\}\r?\n/.exec(css)?.[0] || '';
+  assert.match(narrow, /#portal-entry \.rows\.off \.row\{column-gap:16px\}/, 'the narrow rule restates the gap after .rows.off .row{column-gap:normal}');
+  assert.ok(css.indexOf('#portal-entry .rows.off .row{column-gap:normal}') < css.indexOf('#portal-entry .rows.off .row{column-gap:16px}'), 'and comes after it');
+});
