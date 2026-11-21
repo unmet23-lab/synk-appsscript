@@ -63,8 +63,8 @@
     {
       "id": "hook",
       "칸": "머리",
-      "글": "“수고하세요” kat prof?",
-      "원문": "교수님께 「수고하세요」?",
+      "글": "Cakap “수고하세요”\nkat prof?",
+      "원문": "「수고하세요」라고 말하기\n교수님께?",
       "초": [
         0,
         1.75
@@ -116,8 +116,8 @@
     {
       "id": "a1Mean",
       "칸": "뜻",
-      "글": "Prof, kerja elok-elok ya!",
-      "원문": "교수님, 일 잘하세요!",
+      "글": "Prof, kerja kuat ya!",
+      "원문": "교수님, 열심히 일하세요!",
       "초": [
         0.25,
         3.25
@@ -139,8 +139,8 @@
     {
       "id": "literal",
       "칸": "뜻",
-      "글": "수고하세요 = “Kerja elok-elok!”",
-      "원문": "수고하세요 = 「일 잘하세요!」",
+      "글": "수고하세요 = “Kerja kuat!”",
+      "원문": "수고하세요 = 「열심히 일하세요!」",
       "초": [
         5.5,
         8.7
@@ -234,8 +234,8 @@
     {
       "id": "a2Mean.1",
       "칸": "뜻",
-      "글": "Selamat tinggal!",
-      "원문": "잘 있어요!",
+      "글": "Saya pergi dulu!",
+      "원문": "저 먼저 갈게요!",
       "초": [
         9.4,
         11
@@ -342,7 +342,7 @@
     {
       "id": "ruleElder",
       "칸": "진행",
-      "글": "Kat profesor, bos",
+      "글": "Kat prof, bos",
       "원문": "교수님 · 상사에게",
       "초": [
         12.9,
@@ -373,8 +373,8 @@
     {
       "id": "gag",
       "칸": "진행",
-      "글": "Kalau prof, boleh",
-      "원문": "교수님이면 괜찮아요",
+      "글": "Dia boleh",
+      "원문": "그분(교수님)은 해도 돼요",
       "초": [
         16.5,
         17.3
@@ -418,6 +418,29 @@
         "최대줄": 1,
         "줄바꿈": "nowrap",
         "가운데": true,
+        "글꼴": "'Inter Tight', 'SUIT', sans-serif"
+      }
+    },
+    {
+      "id": "b2Mean",
+      "칸": "뜻",
+      "글": "Kerja kuat",
+      "원문": "열심히 일해요",
+      "초": [
+        16.52,
+        17.4
+      ],
+      "장면": "교수 말풍선 「수고해요」 맨 아래 붉은 뜻 줄(이 줄이 없는 판본도 있다 — 몽골판)",
+      "상자": {
+        "폭": 630,
+        "굵기": 800,
+        "줄높이": 1.18,
+        "최대줄": 1,
+        "줄바꿈": "nowrap",
+        "가운데": true,
+        "x": 360,
+        "y": 697,
+        "글자크기": 44,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -484,8 +507,8 @@
     {
       "id": "a2Mean.2",
       "칸": "뜻",
-      "글": "Selamat tinggal!",
-      "원문": "잘 있어요!",
+      "글": "Saya pergi dulu!",
+      "원문": "저 먼저 갈게요!",
       "초": [
         19.1,
         20.6
@@ -542,14 +565,14 @@
     {
       "id": "게시글.youtube.본문.1",
       "칸": "게시글",
-      "글": "Dalam bahasa Korea, 수고하세요 (sugohaseyo) maksud literalnya “kerja elok-elok”. Cakap kat kawan atau rakan sekerja okay, tapi kat profesor, bos atau orang yang lebih tua, kadang-kadang bunyi macam bagi arahan.",
-      "원문": "한국어 수고하세요는 글자 그대로 「일 잘하세요」라는 뜻이다. 친구나 동료에게는 괜찮지만, 교수님 · 상사나 나이 많은 사람에게는 가끔 명령하는 것처럼 들린다."
+      "글": "Dalam bahasa Korea, 수고하세요 (sugohaseyo) maksud literalnya “kerja kuat”. Cakap kat kawan atau rakan sekerja okay, tapi kat profesor, bos atau orang yang lebih tua, kadang-kadang bunyi macam bagi arahan.",
+      "원문": "한국어 수고하세요는 글자 그대로 「열심히 일하세요」라는 뜻이다. 친구나 동료에게는 괜찮지만, 교수님 · 상사나 나이 많은 사람에게는 가끔 명령하는 것처럼 들린다."
     },
     {
       "id": "게시글.youtube.본문.2",
       "칸": "게시글",
-      "글": "Bila keluar dari bilik orang atasan, cakap 안녕히 계세요 (annyeonghi gyeseyo) — ucapan orang yang pergi kepada orang yang tinggal, macam “selamat tinggal”.",
-      "원문": "윗사람의 방을 나설 때는 안녕히 계세요라고 한다 — 떠나는 사람이 남는 사람에게 하는 인사로, 「슬라맛 팅갈」과 같다."
+      "글": "Bila keluar dari bilik orang atasan, cakap 안녕히 계세요 (annyeonghi gyeseyo) — ucapan orang yang pergi kepada orang yang tinggal, macam “saya pergi dulu”.",
+      "원문": "윗사람의 방을 나설 때는 안녕히 계세요라고 한다 — 떠나는 사람이 남는 사람에게 하는 인사로, 「저 먼저 갈게요」와 비슷하다."
     },
     {
       "id": "게시글.youtube.본문.3",

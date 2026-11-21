@@ -206,7 +206,7 @@
   "lineH": 1.16,
   "hook": "Two coffees. Easy, right?",
   "hookSize": 62,
-  "r1": "This cup?",
+  "r1": "This one?",
   "r1Size": 52,
   "heard": "“이” = 2…\nbut he heard “this”!",
   "heardSize": 56,
@@ -252,7 +252,7 @@
   "_원문": {
     "hello": "잔(컵) — 이 편의 낱말",
     "hook": "커피 두 잔. 쉽겠지?",
-    "r1": "이 컵이요?",
+    "r1": "이거요?",
     "heard": "«이» = 2…\n그런데 점원은 «이것»으로 들었다!",
     "menu": "컵을 세나? «잔» 앞에서는:\n하나 → 한, 둘 → 두, 셋 → 세",
     "two": "2컵 = «두 잔»",

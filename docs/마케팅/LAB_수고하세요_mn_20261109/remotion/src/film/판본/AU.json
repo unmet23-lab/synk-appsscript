@@ -180,9 +180,9 @@
   "ruleElder": "To profs & bosses",
   "ruleSize": 46,
   "ruleTop": 872,
-  "gag": "Profs can say it",
+  "gag": "He’s allowed",
   "gagSize": 54,
-  "b2Mean": "Casual",
+  "b2Mean": "Work hard!",
   "end": "To your prof:",
   "endSize": 62,
   "meanSize": 44,
@@ -212,8 +212,8 @@
     "b1Mean": "그래요, 조심히 가요!",
     "ruleFriend": "친구 · 동료에게",
     "ruleElder": "교수님 · 상사에게",
-    "gag": "교수님은 말해도 돼요",
-    "b2Mean": "일 열심히 해요(수고해요의 뜻)",
+    "gag": "그분(교수님)은 해도 돼요",
+    "b2Mean": "열심히 일해요!",
     "end": "교수님께:"
   }
 }
