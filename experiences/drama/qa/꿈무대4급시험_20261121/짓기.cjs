@@ -56,6 +56,31 @@ async function main() {
       explanation: { ko: x.explanation.ko, mn: x.explanation.mn }, choiceNotes: x.choiceNotes };
   }
   fs.writeFileSync(path.join(밖, '문항.json'), JSON.stringify(문항, null, 1));
+  // 음성 구: 1화 시범판이 묶어 둔 Orbloom(MIT, 머리에 고지) 사본을 그대로 쓴다.
+  fs.copyFileSync(path.join(자리.저장소, 'experiences', 'drama', 'pilot', 'orbloom.mjs'), path.join(밖, 'orbloom.mjs'));
+  // 글꼴: Inter Tight(라틴 · 키릴 — 몽골어 Ө ө Ү ү 포함)와 DM Mono(라틴 라벨)를 python fontTools로 줄여 글꼴/에 둔다(1화 시범판 빌드와 같은 방식).
+  // fontTools가 없으면 건너뛴다 — 화면은 SUIT와 기기 고정폭 글꼴로 대신한다.
+  const 글꼴밖 = path.join(밖, '글꼴');
+  fs.mkdirSync(글꼴밖, { recursive: true });
+  const 라틴 = 'U+0020-007E,U+00A0-00FF,U+2010-2027,U+2030-203A,U+2190-2193,U+2713';
+  const 키릴 = 'U+0400-04FF';
+  const 글꼴들 = [
+    ['InterTight/InterTight-Medium.ttf', 'InterTight-Medium.woff2', `${라틴},${키릴}`],
+    ['InterTight/InterTight-SemiBold.ttf', 'InterTight-SemiBold.woff2', `${라틴},${키릴}`],
+    ['InterTight/InterTight-Bold.ttf', 'InterTight-Bold.woff2', `${라틴},${키릴}`],
+    ['DM_Mono/DMMono-Regular.ttf', 'DMMono-Regular.woff2', 라틴],
+    ['DM_Mono/DMMono-Medium.ttf', 'DMMono-Medium.woff2', 라틴],
+  ];
+  for (const [원, 이름, 범위] of 글꼴들) {
+    const 받은 = path.join(글꼴밖, 이름);
+    const 원파일 = path.join(자리.저장소, 'docs', '브랜드_폰트', 원);
+    // 이미 줄인 파일이 원본보다 새로우면 다시 줄이지 않는다(fontTools가 한 벌에 수십 초 걸린다).
+    if (fs.existsSync(받은) && fs.statSync(받은).mtimeMs > fs.statSync(원파일).mtimeMs) { 쓴것.push(`글꼴 ${이름}(있음)`); continue; }
+    try {
+      execFileSync('python', ['-m', 'fontTools.subset', path.join(자리.저장소, 'docs', '브랜드_폰트', 원), `--unicodes=${범위}`, `--output-file=${받은}`, '--flavor=woff2', '--layout-features=*', '--no-hinting'], { stdio: 'pipe' });
+      쓴것.push(`글꼴 ${이름}`);
+    } catch (e) { console.error(`${이름}: 글꼴을 줄이지 못했다(python fontTools 필요) — 화면은 SUIT로 대신한다`); }
+  }
   // 화면
   const { html } = 폰트.심기(fs.readFileSync(path.join(__dirname, '원고.htm'), 'utf8'));
   fs.writeFileSync(path.join(밖, 'index.html'), html);

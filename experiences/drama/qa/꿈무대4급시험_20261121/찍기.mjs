@@ -86,7 +86,13 @@ const 화면 = (이름, 시간 = 240000) => 쪽.waitForSelector(`body[data-화�
 const 쉬기 = (ms) => 쪽.waitForTimeout(ms);
 async function 찍기(파일) {
   await 쪽.evaluate(() => document.fonts.ready);
-  await 쉬기(500);
+  // 짧은 움직임(판 올라옴 · 자막 · 받아 적기 · 고칠 꼴 · 불꽃)이 끝날 때까지 기다린다. 끝없는 움직임(구 · 깜빡임 · 크롬)과 9초 밀림은 기다리지 않는다.
+  await 쪽.waitForFunction(() => document.getAnimations().every((a) => {
+    if (a.playState !== 'running') return true;
+    const t = a.effect?.getComputedTiming?.();
+    return !t || t.iterations === Infinity || t.endTime > 4000;
+  }), null, { timeout: 8000 }).catch(() => {});
+  await 쉬기(300);
   await 쪽.screenshot({ path: path.join(밖, 파일) });
   console.log(`찍음 ${파일}`);
 }

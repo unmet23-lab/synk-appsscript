@@ -6,181 +6,308 @@
 <title>꿈 무대 4급 시험판</title>
 <link rel="icon" href="data:,">
 <style>
-/* 꿈 무대 4급 시험판(2026-11-21). 짓기.cjs가 브랜드 서체를 심어 index.html로 쓴다.
-   짜임: 위에 장면(영상은 덮지 않는다) · 가운데 판 · 아래 단추 자리. 색과 유리는 1화 시범판(pilot.css)의 값을 따른다.
-   대본은 배우가 형광펜을 칠한 종이 한 장, 다시 만나는 날은 한 주 칸 띠다(docs/디자인/참고사이트 5-2절). */
+/* 꿈 무대 4급 시험판(2026-11-21). 짓기.cjs가 SUIT를 심고 Inter Tight · DM Mono를 줄여 글꼴/에 둔다.
+   겉은 드라마 말하기 정본 「시네마 자막」(docs/디자인/드라마_장면/README.md)과 1화 시범판(pilot.css)을 잇는다.
+   영상이 위를 밝게 채우고, 대사는 자막, 아래는 유리 판 하나와 음성 구(Orbloom). 포인트는 말하는 순간(구)과 해낸 순간(크롬 칩) 둘뿐이다.
+   첫 판의 크림색 대본 종이 · 노란 형광펜 · 빨간 녹음 알약 · 요일 칸은 11-21 유호님 「너무 촌스럽고 AI 슬롭 티 나」로 버렸다. */
+@font-face { font-family: 'Synk Inter'; src: url('글꼴/InterTight-Medium.woff2') format('woff2'); font-weight: 400 549; font-display: swap; }
+@font-face { font-family: 'Synk Inter'; src: url('글꼴/InterTight-SemiBold.woff2') format('woff2'); font-weight: 550 679; font-display: swap; }
+@font-face { font-family: 'Synk Inter'; src: url('글꼴/InterTight-Bold.woff2') format('woff2'); font-weight: 680 900; font-display: swap; }
+@font-face { font-family: 'Synk Mono'; src: url('글꼴/DMMono-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Synk Mono'; src: url('글꼴/DMMono-Medium.woff2') format('woff2'); font-weight: 500 700; font-display: swap; }
+
 :root {
-  --바탕: #060608; --면: #0b0b0e; --글: #f4f5f8; --흐림: rgba(244,245,248,.66); --옅음: rgba(244,245,248,.5);
-  --유리: rgba(255,255,255,.065); --유리2: rgba(255,255,255,.1); --테: inset 0 0 0 1px rgba(255,255,255,.12);
-  --따뜻: #ffcf5c; --미끄: #ff6b81; --초록: #6fd39a; --녹음: #ff5a4f;
-  --종이: #f5f0e6; --먹: #1f1c18; --먹흐림: #6b645a; --형광: rgba(255, 214, 64, .72);
-  --산스: "SUIT Variable", "SUIT", system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --몽골: system-ui, -apple-system, "Segoe UI", Roboto, "SUIT Variable", sans-serif;
-  --고정: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --bg: #060608; --scr: #09090b;
+  --ink: #f4f5f8; --dim: rgba(244,245,248,.64); --muted: rgba(244,245,248,.54); --faint: rgba(244,245,248,.38);
+  --accent: #8b7bff; --accent-2: #6fd3ff; --warm: #ffcf5c; --slip: #ff6b81; --label: #a9b4ff;
+  --edge: inset 0 0 0 1px rgba(255,255,255,.12);
+  --spring: cubic-bezier(.23,1,.32,1);
+  /* 라틴 · 키릴(몽골어)은 Inter Tight, 한글은 SUIT. 라벨만 DM Mono 영문 대문자 — 한글은 고정폭에 넣지 않는다. */
+  --sans: 'Synk Inter', 'SUIT Variable', 'SUIT', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --mono: 'Synk Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: var(--바탕); color: var(--글); font-family: var(--산스); -webkit-font-smoothing: antialiased; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
 body { font-size: 15px; line-height: 1.5; letter-spacing: -.01em; word-break: keep-all; overflow: hidden; }
-[lang="mn"] { font-family: var(--몽골); letter-spacing: 0; }
-[lang="mn"] [lang="ko"] { font-family: var(--산스); letter-spacing: -.01em; white-space: nowrap; }
-button { font: inherit; color: inherit; border: 0; cursor: pointer; }
+button { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
+[lang="mn"] { letter-spacing: 0; }
+[lang="mn"] [lang="ko"] { letter-spacing: -.01em; white-space: nowrap; }
+[lang="mn"] .붙임 { white-space: nowrap; }
 
-.앱 { position: relative; height: 100dvh; width: 100%; display: flex; flex-direction: column; background: var(--면); overflow: hidden; }
-@media (min-width: 560px) { body { display: grid; place-items: center; } .앱 { width: 420px; height: min(calc(100dvh - 40px), 900px); border-radius: 32px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 40px 100px -40px rgba(0,0,0,.9); } }
+/* 화면 한 장(휴대폰은 꽉 차게, 넓은 화면은 가운데 세로 화면 하나) */
+.app { position: relative; height: 100dvh; width: 100%; overflow: hidden; background: var(--scr); isolation: isolate;
+  --stage-h: max(46%, calc(100% - 300px)); }
+@media (min-width: 560px) {
+  body { display: grid; place-items: center; }
+  .app { width: min(430px, calc(100vw - 48px)); height: min(calc(100dvh - 48px), 932px); border-radius: 36px;
+    box-shadow: 0 50px 120px -40px rgba(120,100,255,.35), inset 0 0 0 1px rgba(255,255,255,.08), 0 0 0 1px #000; }
+}
+.app[data-무대="작게"] { --stage-h: 31%; }
+.app[data-무대="없음"] { --stage-h: 100%; }
 
-/* 위 띠 */
-.위 { flex: none; display: flex; align-items: center; gap: 10px; padding: max(12px, env(safe-area-inset-top)) 16px 10px; }
-.위 .이름 { font-size: 14px; font-weight: 700; letter-spacing: -.02em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.위 .이름 small { font-weight: 600; color: var(--옅음); margin-left: 6px; }
-.칩 { margin-left: auto; flex: none; height: 30px; padding: 0 12px; border-radius: 999px; background: var(--유리); box-shadow: var(--테); font-size: 12.5px; font-weight: 650; color: var(--흐림); }
-.칩 b { color: var(--글); font-weight: 700; }
+/* 1 장면 — 영상은 위에 밝게. 코치 화면에서는 얼굴이 보이는 머리 그림으로 줄고, 놓친 곳에서는 흐린 바탕이 된다. */
+.stage { position: absolute; inset: 0 0 auto 0; height: var(--stage-h); overflow: hidden; background: #000; transition: height .6s var(--spring); }
+.stage img, .stage video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: var(--x, 50%) 30%; opacity: 0; transition: opacity .5s var(--spring), filter .6s var(--spring); }
+.stage[data-층="정지"] img, .stage[data-층="영상"] video { opacity: 1; }
+.stage img.밀림 { animation: 밀림 9s linear both; }
+@keyframes 밀림 { from { transform: scale(1.1); } to { transform: scale(1); } }
+.stage::after { content: ''; position: absolute; inset: -1px; z-index: 2; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.55), transparent 18%, transparent 72%, var(--scr) 100%); }
+.app[data-무대="없음"] .stage img { filter: blur(30px) saturate(1.2) brightness(.4); transform: scale(1.2); animation: none; }
+.app[data-무대="없음"] .stage::after { background: radial-gradient(90% 70% at 50% 30%, rgba(139,123,255,.10), rgba(9,9,11,.86) 80%); }
+.grain { position: absolute; inset: 0; z-index: 3; opacity: .08; mix-blend-mode: overlay; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"); }
+body[data-화면="rec"] .stage::before { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; box-shadow: inset 0 0 70px rgba(139,123,255,.34); animation: 숨 2.4s ease-in-out infinite; }
+@keyframes 숨 { 50% { opacity: .55; } }
 
-/* 장면 */
-.무대 { flex: none; position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000 center / cover no-repeat; overflow: hidden; transition: height .4s; }
-.무대 video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.앱[data-무대="작게"] .무대 { aspect-ratio: auto; height: 132px; background-position: 50% 28%; }
-.앱[data-무대="작게"] .무대 video { display: none; }
-.앱[data-무대="없음"] .무대 { display: none; }
-.진행 { flex: none; display: flex; align-items: center; gap: 5px; padding: 12px 16px 0; min-height: 18px; font-size: 12.5px; color: var(--옅음); font-weight: 600; }
-.진행 i { width: 20px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.16); }
-.진행 i.됨 { background: var(--따뜻); }
-.진행 i.지금 { background: var(--글); }
-.진행 span { margin-left: 8px; }
-.진행:empty { display: none; }
+/* 2 위 띠 — 회차 알약(고정폭 영문) · 설명 말 칩 · 진행 띠 · 지어낸 인물 */
+.top { position: absolute; z-index: 10; top: max(14px, env(safe-area-inset-top)); left: 14px; right: 14px; display: grid; gap: 10px; }
+.top-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ep { font: 500 10.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 7px 10px; border-radius: 999px;
+  background: rgba(255,255,255,.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); white-space: nowrap; }
+.chip { margin-left: auto; flex: none; height: 28px; padding: 0 11px; border-radius: 999px; border: 0; background: rgba(255,255,255,.08);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-size: 12px; font-weight: 600; color: var(--dim); cursor: pointer; }
+.chip b { color: var(--ink); font-weight: 650; }
+.chip::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); margin-right: 7px; vertical-align: 1px; }
+.prog { display: flex; gap: 4px; }
+.prog:empty { display: none; }
+.prog i { position: relative; flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.18); overflow: hidden; }
+.prog i::after { content: ''; position: absolute; inset: 0; background: #fff; transform: scaleX(var(--p, 0)); transform-origin: left; transition: transform .6s var(--spring); }
+.ai-tag { justify-self: start; font-size: 11px; color: var(--dim); text-shadow: 0 1px 6px rgba(0,0,0,.7); }
 
-/* 판 */
-.판 { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 12px; scrollbar-width: none; }
-.판::-webkit-scrollbar { display: none; }
-.머리 { font: 600 11px/1 var(--고정); letter-spacing: .12em; text-transform: uppercase; color: var(--옅음); display: flex; align-items: center; gap: 8px; }
-.머리 .한 { font-family: var(--산스); letter-spacing: 0; text-transform: none; font-size: 12.5px; font-weight: 650; }
-.상태 { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: var(--글); }
-.상태 i { width: 8px; height: 8px; border-radius: 50%; background: var(--초록); }
-.상태.녹음 i { background: var(--녹음); animation: 깜빡 1s infinite; }
-@keyframes 깜빡 { 50% { opacity: .3; } }
-h1, h2 { margin: 0; font-weight: 720; letter-spacing: -.03em; line-height: 1.3; }
-h1 { font-size: 22px; } h2 { font-size: 21px; }
-.말 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.42; letter-spacing: -.025em; }
-.뜻 { margin: 2px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--흐림); }
-.작은 { margin: 0; font-size: 13px; line-height: 1.55; color: var(--흐림); }
-.묶음 { display: grid; gap: 2px; }
+/* 3 자막 — 말풍선 없이. 아래 판 바로 위에서 끝나고, 글자 뒤는 늘 어둡다. */
+.subs { position: absolute; z-index: 10; left: 0; right: 0; padding: 0 24px; bottom: calc(var(--dock-h, 0px) + max(14px, env(safe-area-inset-bottom)) + 18px);
+  display: grid; justify-items: center; gap: 6px; text-align: center; pointer-events: none; }
+.subs:not(:empty)::before { content: ''; position: absolute; z-index: -1; inset: -34px 0 -18px; background: linear-gradient(180deg, rgba(9,9,11,0), rgba(9,9,11,.9) 34px); }
+.subs .who { font-size: 11.5px; font-weight: 650; letter-spacing: .02em; color: rgba(255,255,255,.6); }
+.subs .ko { margin: 0; font-weight: 720; font-size: clamp(19px, 5.4vw, 21px); line-height: 1.36; letter-spacing: -.03em; text-wrap: balance; }
+.subs .w { display: inline-block; animation: 떠오름 .5s var(--spring) both; animation-delay: calc(var(--i) * 110ms); }
+.subs .mean { margin: 0; font-size: 12.5px; line-height: 1.45; color: rgba(255,255,255,.72); text-wrap: balance; }
+@keyframes 떠오름 { from { opacity: 0; filter: blur(8px); transform: translateY(8px); } }
 
-/* 메시지(조감독) */
-.메시지 { background: var(--유리); box-shadow: var(--테); border-radius: 18px 18px 18px 6px; padding: 12px 14px 13px; }
-.메시지 .누가 { font-size: 12px; color: var(--옅음); font-weight: 650; margin-bottom: 4px; }
-.메시지 p { margin: 0; font-size: 15px; line-height: 1.55; }
-.메시지 .뜻 { margin-top: 6px; }
-.문형들 { display: flex; flex-wrap: wrap; gap: 6px; }
-.문형 { display: inline-flex; align-items: baseline; gap: 5px; height: 28px; padding: 0 11px; align-items: center; border-radius: 999px; background: var(--유리); box-shadow: var(--테); font-size: 13px; font-weight: 700; }
-.문형 small { font-size: 11px; font-weight: 700; color: var(--따뜻); }
-.문형.셋 small { color: var(--옅음); }
+/* 해낸 순간 — 크롬 칩(여기만) */
+.win { position: absolute; z-index: 16; left: 50%; top: calc(var(--stage-h) * .46); transform: translate(-50%, 0); display: flex; align-items: center; gap: 9px; padding: 10px 17px 10px 11px; border-radius: 999px;
+  background: rgba(10,10,14,.62); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18), 0 10px 40px -10px rgba(139,123,255,.7); pointer-events: none; }
+.win .chk { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, var(--accent-2), var(--accent)); }
+.win .chk::after { content: ''; width: 5px; height: 10px; margin-top: -2px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.win b { font-weight: 800; font-size: 16px; letter-spacing: -.02em; background: linear-gradient(100deg, #fff 0, #cfd5e6 30%, #8a90a8 48%, #fff 62%, #b8bed0 100%); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: 크롬 1.8s linear infinite; }
+@keyframes 크롬 { to { background-position: -200% 0; } }
+.spark { position: absolute; z-index: 16; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; }
 
-/* 대본 종이 한 장 */
-.종이 { background: var(--종이); color: var(--먹); border-radius: 14px; padding: 13px 15px 14px; box-shadow: 0 14px 30px -18px rgba(0,0,0,.9); }
-.종이 .윗줄 { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; color: var(--먹흐림); margin-bottom: 6px; }
-.종이 .꼬리 { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; background: var(--먹); color: var(--종이); font-size: 12px; font-weight: 700; white-space: nowrap; }
-.종이 .줄 { margin: 0; font-size: 20px; font-weight: 720; line-height: 1.5; letter-spacing: -.025em; }
-.종이 mark { background: linear-gradient(180deg, transparent 52%, var(--형광) 52%, var(--형광) 92%, transparent 92%); color: inherit; padding: 0 1px; }
-.종이 .뜻 { color: var(--먹흐림); margin-top: 6px; }
-.종이.가림 .줄 { color: transparent; text-shadow: 0 0 11px rgba(31,28,24,.55); user-select: none; }
-.종이.가림 mark { background: none; }
-.종이 .가림글 { margin: 6px 0 0; font-size: 13.5px; font-weight: 650; color: var(--먹); }
+/* 4 아래 — 유리 판 하나 · 음성 구 · 단추 */
+.dock { position: absolute; z-index: 12; left: 12px; right: 12px; bottom: max(14px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 12px;
+  max-height: calc(100% - 104px); }
+.app[data-무대="작게"] .dock { max-height: calc(100% - var(--stage-h) + 22px); }
+.app[data-무대="없음"] .dock { top: calc(max(14px, env(safe-area-inset-top)) + 46px); max-height: none; }
+.app[data-무대="없음"] .actions { margin-top: auto; }
+.panel { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; border-radius: 24px; padding: 16px 16px 17px;
+  background: rgba(16,16,22,.88); box-shadow: var(--edge), 0 30px 60px -30px rgba(0,0,0,.9); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  animation: 올라옴 .55s var(--spring) both; }
+.panel::-webkit-scrollbar { display: none; }
+.panel:empty { display: none; }
+@keyframes 올라옴 { 0% { opacity: 0; transform: translateY(22px); } 65% { opacity: 1; transform: translateY(-6px); } 100% { transform: none; } }
+.panel.조용 { animation: none; }
 
-/* 코치 노트 */
-.노트 { background: var(--유리); box-shadow: var(--테); border-radius: 20px; padding: 15px 15px 16px; display: grid; gap: 11px; }
-.들림 { background: rgba(0,0,0,.28); border-radius: 12px; padding: 10px 12px; }
-.들림 .작은 { font-size: 12px; margin-bottom: 3px; color: var(--옅음); font-weight: 650; }
-.들림 p.말 { font-size: 16.5px; font-weight: 650; line-height: 1.5; }
-.틀림 { text-decoration: underline wavy var(--미끄); text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
-.맞음 { text-decoration: underline var(--초록); text-decoration-thickness: 2px; text-underline-offset: 5px; }
-.고칠꼴 { margin: 0; font-size: 23px; font-weight: 760; letter-spacing: -.03em; line-height: 1.35; }
-.고칠꼴 s { color: var(--옅음); text-decoration-color: var(--미끄); text-decoration-thickness: 2px; }
-.고칠꼴 .화살 { color: var(--옅음); font-weight: 500; margin: 0 4px; }
-.고칠꼴 em { font-style: normal; color: var(--따뜻); }
-.규칙 { margin: 0; font-size: 15px; line-height: 1.6; }
-.근거 { margin: 0; font-size: 12px; line-height: 1.5; color: var(--옅음); }
-.줄단추 { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.작은단추 { height: 36px; padding: 0 14px; border-radius: 999px; background: var(--유리2); box-shadow: var(--테); font-size: 13.5px; font-weight: 700; }
-.글단추 { background: none; padding: 4px 0; font-size: 13px; color: var(--흐림); text-decoration: underline; text-underline-offset: 3px; }
+.k { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font: 500 10.5px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--label); }
+.k .dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--slip); box-shadow: 0 0 10px var(--slip); }
+.k .dot.warm { background: var(--warm); box-shadow: 0 0 10px var(--warm); }
+.k .dot.sky { background: var(--accent-2); box-shadow: 0 0 10px var(--accent-2); }
+.k .dot.rec { animation: 깜빡 1s steps(1) infinite; }
+@keyframes 깜빡 { 50% { opacity: .2; } }
+.k b { font: 700 11.5px/1.2 var(--sans); letter-spacing: 0; text-transform: none; color: var(--dim); }
+.k .right { margin-left: auto; }
+.tag { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 999px; background: rgba(111,211,255,.12); color: var(--accent-2);
+  font: 700 11.5px/1 var(--sans); letter-spacing: -.01em; white-space: nowrap; }
+.tag.dim { background: rgba(255,255,255,.07); color: var(--dim); }
+.tag .급 { opacity: .72; margin-right: 1px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
 
-/* 결과 */
-.결과 { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 740; letter-spacing: -.02em; }
-.결과 i { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--초록); position: relative; }
-.결과 i::after { content: ""; position: absolute; left: 7px; top: 4px; width: 6px; height: 11px; border: solid #0b0b0e; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
-.결과.아직 i { background: var(--미끄); }
-.결과.아직 i::after { left: 10px; top: 5px; width: 0; height: 12px; border-width: 0 2.5px 0 0; transform: none; }
+h1, h2 { margin: 0; font-weight: 780; letter-spacing: -.035em; line-height: 1.22; }
+h1 { font-size: 26px; }
+h2 { font-size: 21px; }
+.lead { margin: 8px 0 0; font-size: 14.5px; line-height: 1.55; color: var(--dim); }
+.lead b { color: var(--ink); font-weight: 700; }
+.fine { margin: 10px 0 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.rule { margin: 0; font-size: 15px; line-height: 1.62; color: var(--ink); }
+.src { margin: 10px 0 0; padding-top: 9px; border-top: 1px solid rgba(255,255,255,.08); font-size: 11.5px; line-height: 1.5; color: var(--muted); }
+.hr { height: 1px; background: rgba(255,255,255,.08); margin: 14px 0; }
 
-/* 놓친 곳 */
-.놓친 { display: grid; gap: 12px; }
-.놓친 .이름줄 { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.놓친 .꼴 { margin: 0; font-size: 30px; font-weight: 760; letter-spacing: -.035em; line-height: 1.15; }
-.딱지 { flex: none; display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12.5px; font-weight: 750; background: rgba(255,207,92,.16); color: var(--따뜻); }
-.딱지.해냄 { background: rgba(111,211,154,.16); color: var(--초록); }
-.장면줄 { display: grid; grid-template-columns: 76px 1fr; gap: 11px; align-items: center; }
-.장면줄 .작은그림 { width: 76px; aspect-ratio: 16 / 9; border-radius: 7px; background: #222 center / cover no-repeat; }
-.장면줄 .종이줄 { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.5; color: var(--먹); }
-.장면줄 s { color: var(--먹흐림); text-decoration-color: #d33a52; text-decoration-thickness: 2px; }
-.한주 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-.한주 .날 { display: grid; justify-items: center; gap: 3px; padding: 8px 0 9px; border-radius: 12px; background: var(--유리); box-shadow: var(--테); }
-.한주 .날 small { font-size: 11px; font-weight: 650; color: var(--옅음); }
-.한주 .날 b { font-size: 17px; font-weight: 740; letter-spacing: -.02em; }
-.한주 .날 em { font-style: normal; font-size: 10.5px; font-weight: 750; color: var(--옅음); min-height: 14px; }
-.한주 .날.오늘 { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.55); }
-.한주 .날.오늘 em { color: var(--글); }
-.한주 .날.다시 { background: var(--따뜻); box-shadow: none; }
-.한주 .날.다시 small, .한주 .날.다시 b, .한주 .날.다시 em { color: #1b1406; }
-.한주 .날.닫힘 { background: rgba(111,211,154,.2); }
-.한주 .날.닫힘 em { color: var(--초록); }
-.걸음 { list-style: none; margin: 0; padding: 0; display: grid; }
-.걸음 li { position: relative; display: grid; grid-template-columns: 18px 1fr; gap: 10px; padding: 0 0 13px; }
-.걸음 li::before { content: ""; position: absolute; left: 5px; top: 14px; bottom: 0; width: 1.5px; background: rgba(255,255,255,.14); }
+/* 메시지 — 문형 자리에 보라 밑줄 */
+.msg { margin: 0; font-size: 15.5px; font-weight: 600; line-height: 1.62; letter-spacing: -.02em; }
+.msg u { text-decoration: none; box-shadow: inset 0 -1.5px 0 rgba(139,123,255,.9); }
+.mean { margin: 6px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
+
+/* 대사 한 줄 — 문형은 보라 바탕 + 밑줄 */
+.line { margin: 0; font-size: 19px; font-weight: 760; line-height: 1.56; letter-spacing: -.028em; text-wrap: pretty; }
+.pat { padding: 0 2px; margin: 0 -1px; border-radius: 2px; background: rgba(139,123,255,.15); box-shadow: inset 0 -2px 0 var(--accent); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.line.가림 { color: transparent; text-shadow: 0 0 12px rgba(244,245,248,.55); user-select: none; }
+.line.가림 .pat { background: rgba(139,123,255,.1); box-shadow: inset 0 -2px 0 rgba(139,123,255,.5); }
+.가림말 { margin: 10px 0 0; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+.meta { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.meta .fine { margin: 0; }
+.line.흐림 { opacity: .5; }
+
+/* 받아 적은 내 말 — 한 자씩 찍히고 틀린 곳에 물결선이 그려진다 */
+.heard { border-radius: 16px 16px 16px 6px; padding: 10px 13px 11px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+.heard .cap { margin: 0 0 3px; font-size: 11px; font-weight: 650; color: var(--muted); }
+.heard .said { margin: 0; font-size: 15.5px; font-weight: 600; line-height: 1.6; color: rgba(255,255,255,.93); }
+/* 1ms steps 움직임은 크롬에서 1초 넘게 늦춘 글자가 끝내 나타나지 않았다(11-21) — 0.12초 흐려짐으로 찍는다. */
+.ch { animation: 찍힘 .12s ease-out both; animation-delay: calc(var(--i) * 32ms + 120ms); }
+@keyframes 찍힘 { from { opacity: 0; } to { opacity: 1; } }
+.wavy, .good { position: relative; }
+.wavy::after, .good::after { content: ''; position: absolute; left: 0; right: 0; bottom: -5px; height: 5px; clip-path: inset(0 100% 0 0); animation: 그음 .6s var(--spring) forwards; animation-delay: var(--d, 0s); }
+.wavy::after { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 3.2 Q2 .4 4 3.2 T8 3.2' fill='none' stroke='%23ff6b81' stroke-width='1.4'/%3E%3C/svg%3E") repeat-x 0 50% / 8px 5px; }
+.good::after { height: 2px; bottom: -3px; border-radius: 2px; background: var(--accent-2); }
+@keyframes 그음 { to { clip-path: inset(0 0 0 0); } }
+.caret { display: inline-block; width: 2px; height: 1.05em; margin-left: 1px; vertical-align: -.17em; background: var(--ink); animation: 깜빡 .9s steps(1) infinite, 사라짐 .2s forwards; animation-delay: 0s, var(--d, 0s); }
+@keyframes 사라짐 { to { opacity: 0; visibility: hidden; } }
+
+/* 고칠 꼴 — 코치 노트의 첫눈. 그은 글자 뒤에 바른 글자가 넘겨 들어오고, 고친 글자만 따뜻하게 빛난다. */
+.fix { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 12px; margin: 16px 0 14px; font-size: 28px; font-weight: 790; letter-spacing: -.04em; line-height: 1.2; }
+.fix .old { color: var(--faint); }
+.fix .old s { text-decoration-color: var(--slip); text-decoration-thickness: 2.5px; }
+.fix .arrow { width: 18px; height: 18px; flex: none; color: var(--muted); }
+.fix .new { display: inline-block; animation: 넘김 .52s var(--spring) both; animation-delay: var(--d, 0s); transform-origin: 50% 85%; }
+.fix .new em { font-style: normal; color: var(--warm); text-shadow: 0 0 16px rgba(255,207,92,.55); }
+@keyframes 넘김 { from { opacity: 0; transform: perspective(300px) rotateX(75deg) translateY(4px); } }
+
+/* 카드 */
+.card { margin-top: 12px; border-radius: 16px; padding: 12px 14px 13px; background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.09); }
+.card .k { margin-bottom: 7px; }
+.card.why { background: rgba(139,123,255,.08); box-shadow: inset 0 0 0 1px rgba(139,123,255,.26); }
+.card.warm { background: rgba(255,207,92,.07); box-shadow: inset 0 0 0 1px rgba(255,207,92,.24); }
+.card.warm .lead { margin: 0; color: var(--ink); }
+
+.result { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 18px; font-weight: 760; letter-spacing: -.025em; }
+.result .ok { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, var(--accent-2), var(--accent)); }
+.result .ok::after { content: ''; width: 5px; height: 10px; margin-top: -2px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.result.아직 .ok { background: rgba(255,107,129,.9); }
+.result.아직 .ok::after { width: 2.5px; height: 11px; margin: 0; border: 0; border-radius: 2px; background: #fff; transform: none; box-shadow: 0 0 0 0 #fff; }
+
+/* 단추 */
+.actions { flex: none; display: grid; gap: 8px; }
+.actions:empty { display: none; }
+.row { display: flex; gap: 8px; align-items: center; }
+.row.wrap { flex-wrap: wrap; }
+.pill, .ghost, .link { cursor: pointer; border: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: transform .15s var(--spring), background .15s, opacity .15s; }
+.pill { flex: 1; height: 54px; padding: 0 22px; border-radius: 999px; background: var(--ink); color: #0a0a0e; font-weight: 760; font-size: 16px; letter-spacing: -.02em; white-space: nowrap; }
+.ghost { flex: none; height: 54px; padding: 0 20px; border-radius: 999px; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.13); font-size: 15px; font-weight: 650; color: var(--ink); white-space: nowrap; }
+.ghost.flex { flex: 1; }
+.ghost.small { height: 34px; padding: 0 13px; font-size: 12.5px; }
+.pill:active, .ghost:active { transform: scale(.97); }
+.link { background: none; padding: 6px 2px; color: var(--muted); font-size: 12.5px; text-decoration: underline; text-underline-offset: 3px; }
+.under { margin: 0; text-align: center; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.ic.play { width: 0; height: 0; border-left: 8px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+button:disabled { opacity: .38; cursor: not-allowed; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wait { display: flex; align-items: center; gap: 10px; margin-top: 12px; color: var(--dim); font-size: 13.5px; }
+.wait .bars { display: flex; gap: 3px; }
+.wait .bars i { width: 14px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.16); transition: background .3s; }
+.wait .bars i.on { background: var(--accent-2); }
+
+/* 음성 구 — Orbloom(orbloom@0.1.0, MIT © 2026 Ricky Bharti). 아래 orb- 규칙은 1화 시범판이 옮긴 패키지 orb.css 그대로다. */
+.mic { flex: none; align-self: center; display: grid; justify-items: center; gap: 7px; }
+.orb-btn { position: relative; border: 0; padding: 0; background: none; border-radius: 50%; cursor: pointer; filter: drop-shadow(0 10px 30px rgba(139,123,255,.35)); transition: transform .15s var(--spring); }
+.orb-btn:active { transform: scale(.96); }
+.orb-btn:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 4px; }
+.mstate { font: 500 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.mstate.on { color: var(--label); }
+.orb-motion { --orb-diameter: 96px; --orb-shell-blur: 8px; position: relative; display: block; width: var(--orb-diameter); height: var(--orb-diameter); contain: layout paint style; }
+.orb-motion[data-ambient-motion="true"] { animation: orb-ambient-motion var(--orb-motion-duration, 7s) ease-in-out var(--orb-motion-delay, 0s) infinite; will-change: transform; }
+.orb-shell, .orb-clip, .orb-canvas, .orb-fallback, .orb-chrome { display: block; width: 100%; height: 100%; }
+.orb-shell { position: relative; }
+.orb-clip { position: absolute; inset: 0; overflow: hidden; border-radius: 50%; clip-path: circle(50% at 50% 50%); -webkit-clip-path: circle(50% at 50% 50%); mask-image: radial-gradient(closest-side, #000 calc(100% - .5px), transparent); -webkit-mask-image: radial-gradient(closest-side, #000 calc(100% - .5px), transparent); }
+.orb-canvas { position: relative; z-index: 1; clip-path: circle(50% at 50% 50%); -webkit-clip-path: circle(50% at 50% 50%); }
+.orb-fallback { position: absolute; z-index: 0; inset: 0; opacity: 0; background: radial-gradient(circle at 40% 36%, rgba(255,255,255,.75) 0 1px, transparent 5px), radial-gradient(ellipse at 60% 62%, rgba(111,211,255,.45), transparent 30%), radial-gradient(ellipse at 38% 40%, rgba(139,123,255,.55), transparent 34%), radial-gradient(circle, #0d0b1c 0 70%, rgba(194,201,255,.5) 97%, transparent 100%); }
+.orb-chrome { position: absolute; z-index: 2; inset: 0; border-radius: 50%; pointer-events: none; opacity: .35; box-shadow: inset 0 1px 1px rgba(255,255,255,.7), inset 0 -1px 1px rgba(255,255,255,.45), inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 var(--orb-shell-blur) rgba(255,255,255,.18); }
+.orb-no-webgl .orb-canvas { display: none; }
+.orb-no-webgl .orb-fallback { opacity: 1; }
+@keyframes orb-ambient-motion { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(var(--orb-motion-distance, -8px)) scale(var(--orb-motion-scale, 1)); } }
+
+/* 놓친 곳 — 문형 하나에 한 장 */
+.꼴큰 { margin: 2px 0 6px; font-size: 38px; font-weight: 800; letter-spacing: -.045em; line-height: 1.08; }
+.상태 { flex: none; display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font: 700 12px/1 var(--sans); letter-spacing: -.01em;
+  background: rgba(255,207,92,.12); color: var(--warm); box-shadow: inset 0 0 0 1px rgba(255,207,92,.26); }
+.상태.해냄 { background: rgba(111,211,255,.12); color: var(--accent-2); box-shadow: inset 0 0 0 1px rgba(111,211,255,.28); }
+.장면줄 { display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: center; margin-top: 14px; padding: 11px; border-radius: 16px; background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+.장면줄 .썸 { width: 84px; aspect-ratio: 16 / 9; border-radius: 9px; background: #1a1a20 center / cover no-repeat; }
+.장면줄 .cap { margin: 0 0 3px; font-size: 11.5px; font-weight: 650; color: var(--muted); }
+.장면줄 .줄 { margin: 0; font-size: 14.5px; font-weight: 680; line-height: 1.55; letter-spacing: -.02em; }
+.장면줄 s { color: var(--faint); text-decoration-color: var(--slip); text-decoration-thickness: 2px; }
+
+/* 날 눈금 — 눈금 하나가 하루. 놓친 날과 다시 만날 날만 점으로 */
+.날띠 { position: relative; display: grid; grid-template-columns: repeat(7, 1fr); margin: 18px 2px 4px; }
+.날띠 .요 { grid-row: 1; text-align: center; font-size: 11px; font-weight: 600; color: var(--muted); }
+.날띠 .수 { grid-row: 2; text-align: center; margin-top: 3px; font-size: 17px; font-weight: 620; letter-spacing: -.02em; color: var(--dim); font-variant-numeric: tabular-nums; }
+.날띠 .수.표시 { color: var(--ink); font-weight: 760; }
+.날띠 .선 { grid-row: 3; grid-column: 1 / -1; align-self: center; height: 1px; margin: 0 calc(100% / 14); background: rgba(255,255,255,.14); }
+.날띠 .구간 { grid-row: 3; align-self: center; height: 2px; border-radius: 2px; margin: 0 calc(100% / 14); background: linear-gradient(90deg, var(--slip), var(--warm)); }
+.날띠 .구간.해냄 { background: linear-gradient(90deg, var(--slip), var(--accent-2)); }
+.날띠 .자리 { grid-row: 3; height: 18px; display: grid; place-items: center; position: relative; z-index: 1; }
+.날띠 .자리::before { content: ''; width: 1px; height: 6px; background: rgba(255,255,255,.28); }
+.날띠 .자리 i { position: absolute; width: 9px; height: 9px; border-radius: 50%; }
+.날띠 .자리 i.놓침 { background: var(--slip); box-shadow: 0 0 10px rgba(255,107,129,.6); }
+.날띠 .자리 i.다시 { width: 11px; height: 11px; background: var(--warm); box-shadow: 0 0 12px rgba(255,207,92,.7); }
+.날띠 .자리 i.해냄 { width: 11px; height: 11px; background: var(--accent-2); box-shadow: 0 0 12px rgba(111,211,255,.7); }
+.날띠 .표 { grid-row: 4; text-align: center; margin-top: 4px; font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.날띠 .표.다시 { color: var(--warm); }
+.날띠 .표.해냄 { color: var(--accent-2); }
+.날띠 .사이 { grid-row: 4; justify-self: center; margin-top: 4px; font-size: 11px; font-weight: 700; color: var(--dim); white-space: nowrap; }
+
+/* 다시 만나기 걸음 — 꽉 찬 작은 점과 가는 선 */
+.걸음 { list-style: none; margin: 4px 0 0; padding: 0; display: grid; }
+.걸음 li { position: relative; display: grid; grid-template-columns: 13px 1fr; gap: 0 12px; padding-bottom: 13px; }
+.걸음 li::before { content: ''; position: absolute; left: 6px; top: 16px; bottom: 0; width: 1px; background: rgba(255,255,255,.12); }
 .걸음 li:last-child { padding-bottom: 0; }
 .걸음 li:last-child::before { display: none; }
-.걸음 .점 { width: 12px; height: 12px; border-radius: 50%; margin-top: 5px; background: var(--면); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.4); }
-.걸음 li[data-상태="됨"] .점 { background: var(--초록); box-shadow: none; }
-.걸음 li[data-상태="다음"] .점 { background: var(--따뜻); box-shadow: none; }
-.걸음 .때 { font-size: 13px; font-weight: 750; }
-.걸음 .때 small { font-weight: 650; color: var(--옅음); margin-left: 6px; }
-.걸음 li[data-상태="다음"] .때 { color: var(--따뜻); }
-.걸음 .일 { font-size: 14px; line-height: 1.5; color: var(--흐림); }
-.걸음 .일 b { color: var(--글); font-weight: 700; }
+.걸음 .점 { width: 7px; height: 7px; margin: 7px 0 0 3px; border-radius: 50%; background: rgba(255,255,255,.26); }
+.걸음 li[data-상태="됨"] .점 { background: var(--accent-2); box-shadow: 0 0 8px rgba(111,211,255,.55); }
+.걸음 li[data-상태="다음"] .점 { width: 9px; height: 9px; margin: 6px 0 0 2px; background: var(--warm); box-shadow: 0 0 10px rgba(255,207,92,.65); }
+.걸음 .때 { font-size: 12.5px; font-weight: 720; color: var(--ink); }
+.걸음 .때 small { margin-left: 6px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.걸음 li[data-상태="다음"] .때 { color: var(--warm); }
+.걸음 .일 { font-size: 14px; line-height: 1.5; color: var(--dim); }
+.걸음 .일 b { color: var(--ink); font-weight: 700; }
+.소제목 { margin: 18px 0 8px; font-size: 12.5px; font-weight: 720; color: var(--ink); }
 
 /* 읽기 한 문항 */
-.문항 { display: grid; gap: 10px; }
-.문항 .지문 { margin: 0; font-size: 17px; line-height: 1.6; font-weight: 600; }
-.보기들 { display: grid; gap: 8px; }
-.보기 { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; border-radius: 14px; background: var(--유리); box-shadow: var(--테); font-size: 16px; font-weight: 650; }
-.보기 b { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12.5px; background: var(--유리2); }
-.보기.고름 { box-shadow: inset 0 0 0 1.5px var(--미끄); }
-.보기.정답 { box-shadow: inset 0 0 0 1.5px var(--초록); background: rgba(111,211,154,.12); }
-.보기:disabled { cursor: default; }
+.지문 { margin: 10px 0 0; font-size: 16.5px; font-weight: 600; line-height: 1.75; letter-spacing: -.02em; }
+.빈칸 { display: inline-block; min-width: 4.2em; height: 1.3em; vertical-align: -.3em; margin: 0 2px; border-radius: 7px; background: rgba(139,123,255,.16); box-shadow: inset 0 -2px 0 var(--accent); }
+.보기들 { display: grid; gap: 8px; margin-top: 14px; }
+.보기 { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 10px 14px; border: 0; border-radius: 14px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1);
+  color: var(--ink); text-align: left; font-size: 16px; font-weight: 650; letter-spacing: -.02em; cursor: pointer; transition: background .15s, box-shadow .15s, transform .15s var(--spring); }
+.보기 .no { flex: none; width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; background: rgba(255,255,255,.1); font-size: 12.5px; font-weight: 650; color: var(--dim); }
+.보기.정답 { background: rgba(111,211,255,.1); box-shadow: inset 0 0 0 1.5px var(--accent-2); }
+.보기.정답 .no { background: var(--accent-2); color: #061018; }
+.보기.고름 { box-shadow: inset 0 0 0 1.5px var(--slip); }
+.보기:disabled { cursor: default; opacity: 1; }
+.보기:not(:disabled):active { transform: scale(.98); }
 
-/* 아래 단추 자리 */
-.아래 { flex: none; padding: 10px 16px max(16px, env(safe-area-inset-bottom)); display: grid; gap: 8px; background: linear-gradient(180deg, rgba(11,11,14,0), var(--면) 14px); }
-.아래 .줄 { display: flex; gap: 8px; }
-.알약 { flex: 1; height: 54px; border-radius: 999px; font-size: 16.5px; font-weight: 760; letter-spacing: -.02em; background: var(--유리2); box-shadow: var(--테); white-space: nowrap; }
-.알약.주 { background: var(--글); color: #0b0b0e; box-shadow: none; }
-.알약.녹음 { background: var(--녹음); color: #fff; box-shadow: none; }
-.알약:disabled { opacity: .45; cursor: default; }
-.알약.손짓 { animation: 숨 1.6s ease-in-out infinite; }
-@keyframes 숨 { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,90,79,.5); } 50% { box-shadow: 0 0 0 9px rgba(255,90,79,0); } }
-.소리줄 { display: flex; align-items: center; justify-content: center; gap: 4px; height: 30px; }
-.소리줄 i { width: 5px; height: 4px; border-radius: 3px; background: var(--녹음); transition: height .08s; }
-.아래 .알림 { margin: 0; text-align: center; font-size: 12.5px; color: var(--옅음); }
-@media (prefers-reduced-motion: reduce) { .알약.손짓, .상태.녹음 i { animation: none; } }
+@media (max-height: 700px) { .orb-motion { --orb-diameter: 80px; } .line { font-size: 17.5px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .wavy::after, .good::after { clip-path: none; } }
 </style>
 </head>
 <body>
-<div class="앱" id="앱" data-무대="크게">
-  <header class="위">
-    <div class="이름" id="이름">꿈 무대 · 옥상 장면<small>4급 대본</small></div>
-    <button class="칩" id="말바꿈" type="button"></button>
+<div class="app" id="앱" data-무대="크게">
+  <div class="stage" id="무대" data-층="정지"><img id="정지" alt=""><video id="화면" playsinline preload="auto"></video><div class="grain"></div></div>
+  <header class="top">
+    <div class="top-row"><span class="ep" id="이름">Dream · Rooftop</span><button class="chip" id="말바꿈" type="button"></button></div>
+    <div class="prog" id="진행"></div>
+    <span class="ai-tag" id="지어낸">지어낸 인물</span>
   </header>
-  <div class="무대" id="무대"><video id="화면" playsinline preload="auto"></video></div>
-  <div class="진행" id="진행"></div>
-  <main class="판" id="판"></main>
-  <div class="아래" id="아래"></div>
+  <div class="subs" id="자막" aria-live="polite"></div>
+  <div class="win" id="해냄" hidden><span class="chk"></span><b id="해냄글"></b></div>
+  <div class="dock" id="아래쪽">
+    <section class="panel" id="판"></section>
+    <div class="mic" id="구자리" hidden>
+      <button class="orb-btn" id="구단추" type="button"><span class="orb-motion" data-ambient-motion="true"><span class="orb-shell"><span class="orb-clip"><canvas id="구그림" class="orb-canvas" width="192" height="192"></canvas><span class="orb-fallback" aria-hidden="true"></span></span><span class="orb-chrome" aria-hidden="true"></span></span></span></button>
+      <span class="mstate" id="구말"></span>
+    </div>
+    <div class="actions" id="아래"></div>
+  </div>
 </div>
 <script type="module">
 import { 차례, 나줄, 대답수, 앞친구, 문형, 메시지, 규칙글, 빠짐글, 다른자리, 근거 } from './대본.mjs';
@@ -192,12 +319,13 @@ const 처음상태 = () => ({ 기록: [], 오프셋: 0, 설명말: 'mn' });
 let 저장 = (() => { try { return { ...처음상태(), ...JSON.parse(localStorage.getItem(열쇠) || '{}') }; } catch { return 처음상태(); } })();
 const 남기기 = () => { try { localStorage.setItem(열쇠, JSON.stringify(저장)); } catch {} };
 const 지금 = () => Date.now() + 저장.오프셋 * 86400000;
-const 녹음 = new Map();       // '장면|d3' · 'take2|d3' · 'review|d3' → { 소리: Blob, 받아쓰기: Promise<{status, text}> }
+const 녹음 = new Map();       // 'scene|d3' · 'take2|d3' · 'review|d3' → { 소리: Blob, 받아쓰기: Promise<{status, text}>, 봄 }
 let 받아쓰기됨 = null;          // 서버 받아쓰기 상태 { ok, 장치, 모델 }
-let 마이크 = null, 소리판 = null, 범위 = 0;
+let 마이크 = null, 범위 = 0;
 
 const $ = (id) => document.getElementById(id);
-const 앱 = $('앱'), 판 = $('판'), 아래 = $('아래'), 화면 = $('화면'), 무대 = $('무대'), 진행 = $('진행');
+const 앱 = $('앱'), 판 = $('판'), 아래 = $('아래'), 화면 = $('화면'), 정지 = $('정지'), 무대 = $('무대'), 진행 = $('진행'), 자막 = $('자막');
+const 구자리 = $('구자리'), 구단추 = $('구단추'), 구말 = $('구말');
 
 function h(tag, attrs, ...kids) {
   const el = document.createElement(tag);
@@ -212,64 +340,151 @@ function h(tag, attrs, ...kids) {
   return el;
 }
 const 놓기 = (el, ...kids) => { el.replaceChildren(...kids.flat(Infinity).filter((x) => x != null && x !== false)); };
-const 쉬기 = (ms) => new Promise((r) => setTimeout(r, ms));
+// 판은 새 화면마다 아래에서 올라온다. 같은 화면을 다시 그릴 때(설명 말 바꿈)는 조용히.
+function 판놓기(...kids) { 판.classList.remove('조용'); 판.style.animation = 'none'; void 판.offsetWidth; 판.style.animation = ''; 놓기(판, ...kids); }
+function 판바꿈(...kids) { 판.classList.add('조용'); 놓기(판, ...kids); }
 // 화면 하나를 그릴 때마다 범위를 새로 잡는다 — 지난 화면의 기다림이 새 화면을 건드리지 않게.
 const 새범위 = () => ++범위;
 const 살았나 = (s) => s === 범위;
 function 단계(이름) { document.body.dataset.화면 = 이름; }
+const 몸짓줄임 = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// 아래 판 높이를 재어 자막이 판 바로 위에서 끝나게 한다.
+new ResizeObserver(() => 앱.style.setProperty('--dock-h', `${$('아래쪽').offsetHeight}px`)).observe($('아래쪽'));
 
 /* ── 말 ── 화면은 한국어(4급 학생), 뜻과 설명은 몽골어를 먼저 보이고 칩으로 한국어로 바꾼다. */
 function 말바꿈그리기() { 놓기($('말바꿈'), '설명 ', h('b', {}, 저장.설명말 === 'mn' ? 'Монгол' : '한국어')); }
 $('말바꿈').addEventListener('click', () => { 저장.설명말 = 저장.설명말 === 'mn' ? 'ko' : 'mn'; 남기기(); 말바꿈그리기(); 다시그리기?.(); });
 let 다시그리기 = null;
-// 몽골어 글 속 「한국어」는 한국어 글꼴로 — 기기 글꼴로 넘어가면 한글 자간이 벌어진다.
-const 몽골글 = (글) => String(글 || '').split(/(「[^」]*」)/).filter(Boolean).map((조각) => (조각.startsWith('「') ? h('span', { lang: 'ko' }, 조각) : 조각));
+// 몽골어 글 속 「한국어」는 줄을 바꾸지 않는다. 조각 뒤에 붙는 몽골어 꼬리(「-는」-г · 「바람에」-ийн)도 조각과 한 덩어리로 둔다.
+const 몽골글 = (글) => String(글 || '').split(/(「[^」]*」(?:-[^\s.,!?;:]+)?)/u).filter(Boolean).map((조각) => {
+  if (!조각.startsWith('「')) return 조각;
+  const 끝 = 조각.lastIndexOf('」') + 1;
+  const 한 = h('span', { lang: 'ko' }, 조각.slice(0, 끝));
+  return 끝 < 조각.length ? h('span', { class: '붙임' }, 한, 조각.slice(끝)) : 한;
+});
 const 설명 = (짝) => 저장.설명말 === 'mn' ? h('span', { lang: 'mn' }, 몽골글(짝.mn)) : h('span', { lang: 'ko' }, 짝.ko);
-const 뜻줄 = (mn) => mn ? h('p', { class: '뜻', lang: 'mn' }, mn) : null;
+const 뜻줄 = (mn, 반 = 'mean') => mn ? h('p', { class: 반, lang: 'mn' }, mn) : null;
+const 점 = (색 = '') => h('span', { class: `dot ${색}` });
+const 라벨 = (영, 한, { 색, 오른쪽 } = {}) => h('div', { class: 'k' }, 색 != null ? 점(색) : null, 영, 한 ? h('b', {}, 한) : null, 오른쪽 ? h('span', { class: 'right' }, 오른쪽) : null);
+const 꼬리표 = (p, 반 = '') => h('span', { class: `tag ${반}` }, h('span', { class: '급' }, `${p.급}급`), p.꼴);
+const 화살 = () => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 18 18'); s.setAttribute('class', 'arrow'); s.innerHTML = '<path d="M3 9h11M10 4.5 14.5 9 10 13.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>'; return s; };
 
 /* ── 날짜 ── */
 const 요일 = ['일', '월', '화', '수', '목', '금', '토'];
 const 날짜글 = (d) => `${d.getMonth() + 1}월 ${d.getDate()}일 (${요일[d.getDay()]})`;
 const 날짜짧게 = (d) => `${d.getMonth() + 1}월 ${d.getDate()}일`;
+const 같은날 = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 // 따옴표 뒤의 「라고 · 이라고」: 끝 글자에 받침이 있으면 「이라고」.
 const 라고 = (글) => { const c = String(글 || '').trim().slice(-1).charCodeAt(0) - 0xAC00; return c >= 0 && c < 11172 && c % 28 ? '이라고' : '라고'; };
 
-/* ── 장면 ── */
+/* ── 장면 ── 세로로 자른 화면에서 친구 얼굴이 가운데 오게 컷마다 가로 자리(%)를 둔다(11-21 컷 낱장에서 잼). */
+const 가로 = { N1: 27, N9: 28, W1: 50, W3: 45, N2: 30, N10: 32, N3: 35, N4: 44, N5: 40, N6: 52, N7: 38, N8: 44, N12: 68 };
 const 클립 = (이름) => `영상/${이름}.mp4`;
-function 무대모양(모양, 그림) { 앱.dataset.무대 = 모양; 무대.style.backgroundImage = 그림 ? `url(${그림})` : ''; if (모양 !== '크게') 화면.pause(); }
+function 무대모양(모양, 컷) {
+  앱.dataset.무대 = 모양;
+  if (컷) {
+    const 새그림 = `그림/${컷}.jpg`;
+    무대.style.setProperty('--x', `${가로[컷] ?? 50}%`);
+    if (!정지.src.endsWith(encodeURI(새그림))) { 정지.src = 새그림; 정지.classList.remove('밀림'); void 정지.offsetWidth; 정지.classList.add('밀림'); }
+  }
+  무대.dataset.층 = '정지';
+  화면.pause();
+}
 function 틀기(이름, { 되풀이 = false, 소리 = 1 } = {}) {
   return new Promise((됨) => {
-    무대모양('크게');
-    화면.hidden = false; 화면.loop = 되풀이; 화면.src = 클립(이름); 화면.volume = 소리; 화면.currentTime = 0;
+    앱.dataset.무대 = '크게';
+    무대.style.setProperty('--x', `${가로[이름] ?? 50}%`);
+    화면.loop = 되풀이; 화면.src = 클립(이름); 화면.volume = 소리; 화면.currentTime = 0;
+    화면.onplaying = () => { 무대.dataset.층 = '영상'; };
     화면.onended = () => { if (!되풀이) 됨(); };
     화면.onerror = () => 됨();
     화면.play().catch(() => 됨());
     if (되풀이) 됨();
   });
 }
-function 진행쓰기(지금번, 글) {
-  if (!지금번) { 놓기(진행); return; }
-  놓기(진행, Array.from({ length: 대답수 }, (_, i) => h('i', { class: i + 1 < 지금번 ? '됨' : i + 1 === 지금번 ? '지금' : '' })), h('span', {}, 글 || (지금번 > 대답수 ? '장면 끝' : `대답 ${지금번} / ${대답수}`)));
+function 진행쓰기(지금번, 이름글 = 'Dream · Rooftop') {
+  $('이름').textContent = 이름글;
+  if (!지금번) { 놓기(진행); $('지어낸').hidden = true; return; }
+  $('지어낸').hidden = false;
+  if (진행.children.length !== 대답수) 놓기(진행, Array.from({ length: 대답수 }, () => h('i')));
+  [...진행.children].forEach((c, k) => c.style.setProperty('--p', k + 1 < 지금번 ? 1 : 0));
+}
+// 자막: 말하는 사람 · 대사(낱말마다 떠오름) · 뜻. 대사는 한 화면에 한 문장 묶음이다.
+function 자막쓰기(누구, 말, mn) {
+  if (!말) { 놓기(자막); return; }
+  let i = 0;
+  놓기(자막, h('div', { class: 'who' }, 누구),
+    h('p', { class: 'ko', lang: 'ko' }, 말.split(' ').flatMap((w, k, a) => [h('span', { class: 'w', style: `--i:${i++}` }, w), k < a.length - 1 ? ' ' : null])),
+    mn ? h('p', { class: 'mean', lang: 'mn' }, mn) : null);
+}
+const 자막지우기 = () => 놓기(자막);
+
+/* ── 음성 구(Orbloom) ── 1화 시범판과 같은 테마. 구를 눌러 녹음을 시작하고 다시 눌러 끝낸다. */
+const 구테마 = { preset: 'nebula-violet-02', id: 'synk-drama', seed: 2.4,
+  colors: { base: '#0d0b1c', interior: '#030208', accents: ['#8b7bff', '#6fd3ff', '#ffffff'] },
+  appearance: { intensity: 1, detail: .78, glass: .5, glow: .95 }, motion: { speed: .8, drift: .6 },
+  audioResponse: { brightness: 1.25, motion: .65, pulse: .95 } };
+let 구 = null, 구일 = null;
+(async () => {
+  try { const { createOrb, createOrbTheme } = await import('./orbloom.mjs'); 구 = createOrb($('구그림'), { theme: createOrbTheme(구테마), quality: 'balanced', state: 'idle' }); }
+  catch { 구단추.querySelector('.orb-motion')?.classList.add('orb-no-webgl'); }
+})();
+구단추.addEventListener('click', () => 구일?.());
+function 구모드(상태, 글, { id = null, 일 = null } = {}) {
+  try { 구?.setState(상태); } catch {}
+  구말.textContent = 글; 구말.classList.toggle('on', 상태 === 'speaking' || 상태 === 'listening');
+  구단추.id = id || '구단추'; 구일 = 일; 구단추.setAttribute('aria-label', 글);
+  구자리.hidden = false;
+}
+function 구숨김() { 구자리.hidden = true; 구일 = null; 구단추.id = '구단추'; try { 구?.setState('idle'); 구?.setAudioLevel(0); } catch {} }
+function 구듣기(흐름) {
+  if (!구 || !흐름) return () => {};
+  try {
+    const 틀 = new AudioContext(); const 원 = 틀.createMediaStreamSource(흐름);
+    const 거름 = 틀.createBiquadFilter(); 거름.type = 'highpass'; 거름.frequency.value = 80;
+    const 잼 = 틀.createAnalyser(); 잼.fftSize = 1024; 잼.smoothingTimeConstant = 0;
+    const 끔 = 틀.createGain(); 끔.gain.value = 0;
+    원.connect(거름); 거름.connect(잼); 잼.connect(끔); 끔.connect(틀.destination);
+    틀.resume().catch(() => {});
+    const 떼기 = 구.attachAudioSource(잼);
+    return { 잼, 끊기: () => { try { 떼기?.(); } catch {} try { 틀.close(); } catch {} try { 구.setAudioLevel(0); } catch {} } };
+  } catch { return { 잼: null, 끊기: () => {} }; }
+}
+
+/* ── 해낸 순간 — 크롬 칩 · 작은 불꽃(여기만) ── */
+function 해냄(글) {
+  const 칩 = $('해냄'); $('해냄글').textContent = 글; 칩.hidden = false;
+  칩.animate([{ opacity: 0, transform: 'translate(-50%,0) scale(.6)' }, { opacity: 1, transform: 'translate(-50%,0) scale(1.06)', offset: .65 }, { opacity: 1, transform: 'translate(-50%,0) scale(1)' }], { duration: 600, easing: 'cubic-bezier(.23,1,.32,1)' });
+  if (!몸짓줄임()) {
+    const 색 = ['#6fd3ff', '#8b7bff', '#ffcf5c', '#fff'];
+    const 위 = 칩.offsetTop + 칩.offsetHeight / 2;
+    for (let i = 0; i < 14; i++) {
+      const p = h('i', { class: 'spark', style: `background:${색[i % 4]};left:50%;top:${위}px` }); 앱.append(p);
+      const a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 70;
+      p.animate([{ opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }, { opacity: 0, transform: `translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d}px)) scale(.3)` }], { duration: 800 + Math.random() * 300, easing: 'cubic-bezier(.23,1,.32,1)', fill: 'forwards' }).onfinish = () => p.remove();
+    }
+  }
+  setTimeout(() => { const a = 칩.animate([{ opacity: 1 }, { opacity: 0, transform: 'translate(-50%,-10px) scale(.96)' }], { duration: 300 }); a.onfinish = () => { 칩.hidden = true; }; }, 3000);
 }
 
 /* ── 마이크와 녹음 ── */
 async function 마이크열기() {
   if (마이크) return 마이크;
   마이크 = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-  try { const 틀 = new (window.AudioContext || window.webkitAudioContext)(); 소리판 = 틀.createAnalyser(); 소리판.fftSize = 512; 틀.createMediaStreamSource(마이크).connect(소리판); } catch { 소리판 = null; }
   return 마이크;
 }
-function 녹음하기(막대들) {
+function 녹음하기() {
   const 기록기 = new MediaRecorder(마이크);
   const 조각 = []; let 가장큼 = 0, 말한칸 = 0, 그림 = 0;
-  const 칸 = 소리판 ? new Uint8Array(소리판.fftSize) : null;
+  const 귀 = 구듣기(마이크);
+  const 잼 = 귀.잼; const 칸 = 잼 ? new Uint8Array(잼.fftSize) : null;
   const 재기 = () => {
-    if (소리판) {
-      소리판.getByteTimeDomainData(칸);
+    if (잼) {
+      잼.getByteTimeDomainData(칸);
       let 합 = 0; for (const v of 칸) 합 += (v - 128) ** 2;
       const 크기 = Math.min(1, Math.sqrt(합 / 칸.length) / 40);
       가장큼 = Math.max(가장큼, 크기); if (크기 > 0.12) 말한칸++;
-      막대들.forEach((m, i) => { m.style.height = `${4 + 26 * Math.max(0, 크기 - Math.abs(i - 6) * 0.06)}px`; });
     }
     그림 = requestAnimationFrame(재기);
   };
@@ -277,7 +492,7 @@ function 녹음하기(막대들) {
   기록기.ondataavailable = (e) => 조각.push(e.data);
   const 끝 = new Promise((됨) => { 기록기.onstop = () => 됨(new Blob(조각, { type: 기록기.mimeType })); });
   기록기.start();
-  return { 멈추기: async () => { 기록기.stop(); cancelAnimationFrame(그림); return { 소리: await 끝, 말함: !소리판 || (가장큼 > 0.15 && 말한칸 > 8) }; } };
+  return { 멈추기: async () => { 기록기.stop(); cancelAnimationFrame(그림); 귀.끊기(); return { 소리: await 끝, 말함: !잼 || (가장큼 > 0.15 && 말한칸 > 8) }; } };
 }
 async function 받아쓰기상태() {
   if (받아쓰기됨) return 받아쓰기됨;
@@ -290,80 +505,76 @@ function 받아쓰기보내기(소리) {
 }
 const 듣기 = (소리) => { const a = new Audio(URL.createObjectURL(소리)); a.play().catch(() => {}); return a; };
 
-/* ── 대본 줄 ── 짚을 글자에 형광펜. 가림이면 줄을 흐리게 가리고 문형만 보인다. */
-function 대본종이(줄, { 머리글, 가림 = false } = {}) {
-  const 꼴 = 줄.문형 ? 문형[줄.문형] : null;
+/* ── 대사 한 줄 ── 짚을 글자에 보라 밑줄. 가림이면 줄을 흐리게 가리고 문형만 말로 알린다. */
+function 대사줄(줄, { 가림 = false } = {}) {
   const i = 줄.짚을 ? 줄.대본.indexOf(줄.짚을) : -1;
-  const 글 = i < 0 ? [줄.대본] : [줄.대본.slice(0, i), h('mark', {}, 줄.짚을), 줄.대본.slice(i + 줄.짚을.length)];
-  return h('div', { class: `종이${가림 ? ' 가림' : ''}` },
-    h('div', { class: '윗줄' }, h('span', {}, 머리글 || `대본 · 대답 ${줄.번}`), 꼴 ? h('span', { class: '꼬리' }, `${꼴.급}급 「${꼴.꼴}」`) : null),
-    h('p', { class: '줄', lang: 'ko', 'aria-hidden': 가림 ? 'true' : null }, 글),
-    가림 ? h('p', { class: '가림글' }, `대본을 가렸어요. 넣을 문형: 「${꼴?.꼴 || ''}」`) : 뜻줄(줄.mn),
-    줄.덧 && !가림 ? h('p', { class: '뜻', style: 'color: var(--먹)' }, 줄.덧) : null);
+  const 글 = i < 0 ? [줄.대본] : [줄.대본.slice(0, i), h('span', { class: 'pat' }, 줄.짚을), 줄.대본.slice(i + 줄.짚을.length)];
+  return h('p', { class: `line${가림 ? ' 가림' : ''}`, lang: 'ko', 'aria-hidden': 가림 ? 'true' : null }, 글);
 }
 
 /* ── 내 차례 한 번 ── 녹음하고 받아쓰기를 보낸다(기다리지 않는다). 돌려줌 { 열쇠 } */
-function 내차례(줄, { 판이름 = 'scene', 클립이름 = 줄.클립, 가림 = false, 머리글, 진행글 } = {}) {
+function 내차례(줄, { 판이름 = 'scene', 클립이름 = 줄.클립, 가림 = false, 진행글 } = {}) {
   const s = 새범위();
   const 녹음열쇠 = `${판이름}|${줄.id}`;
   let 봄 = !가림;
+  const 영 = 판이름 === 'take2' ? 'Take 2 · Your turn' : 판이름 === 'review' ? 'Revisit · Your turn' : 'Your turn';
   return new Promise(async (됨) => {
-    진행쓰기(판이름 === 'scene' ? 줄.번 : 대답수 + 1, 진행글);
+    진행쓰기(판이름 === 'scene' ? 줄.번 : 0, 진행글);
     await 틀기(클립이름, { 되풀이: true, 소리: 0.3 });
     const 물음 = 앞친구(줄.id);
-    const 위판 = (상태) => [
-      h('div', { class: `상태${상태 === '녹음' ? ' 녹음' : ''}` }, h('i'), 상태 === '녹음' ? '녹음 중 · 다 말하면 ■를 눌러요' : 판이름 === 'take2' ? '테이크 2 · 내 차례' : '내 차례'),
-      h('div', { class: '묶음' }, h('p', { class: '작은' }, '친구가 물었어요'), h('p', { class: '말' }, `「${물음?.말 || ''}」`), 뜻줄(물음?.mn)),
-      대본종이(줄, { 머리글, 가림: 가림 && !봄 }),
-      가림 && !봄 ? h('div', { class: '줄단추' }, h('button', { class: '글단추', type: 'button', on: { click: () => { 봄 = true; 처음(); } } }, '대본 보기 (보면 「혼자 해냄」으로 세지 않아요)')) : null,
-      !가림 && 줄.문형 && 판이름 === 'scene' ? h('p', { class: '작은' }, '내 말로 바꿔도 돼요. 형광펜 문형만 살려 말해요.') : null,
+    const p = 줄.문형 ? 문형[줄.문형] : null;
+    const 판글 = (상태) => [
+      라벨(상태 === '녹음' ? 'Recording' : 영, 판이름 === 'scene' ? `대답 ${줄.번} / ${대답수}` : `대답 ${줄.번}`, { 색: 상태 === '녹음' ? 'rec' : '', 오른쪽: p ? 꼬리표(p) : null }),
+      대사줄(줄, { 가림: 가림 && !봄 }),
+      가림 && !봄 ? [h('p', { class: '가림말' }, '대본 없이 말해요'), h('p', { class: 'fine', style: 'margin-top: 4px' }, `넣을 문형 「${p?.꼴 || ''}」 · 친구 물음에 내 말로 대답해요.`),
+        h('button', { class: 'link', type: 'button', on: { click: () => { 봄 = true; 처음(); } } }, '대본 보기 (보면 「혼자 해냄」으로 세지 않아요)')]
+        : 뜻줄(줄.mn),
+      !가림 && 판이름 === 'scene' && (줄.덧 || 줄.문형) ? h('p', { class: 'fine' }, 줄.덧 || '내 말로 바꿔도 돼요. 밑줄 친 문형만 살려 말해요.') : null,
     ];
     const 처음 = () => {
       if (!살았나(s)) return;
       단계('turn');
-      놓기(판, 위판());
-      const 첫 = 줄.번 === 1 && 판이름 === 'scene' && !녹음.size;
-      놓기(아래, h('button', { class: `알약 녹음${첫 ? ' 손짓' : ''}`, id: '말하기', type: 'button', on: { click: 말하는중 } }, '● 말하기'),
-        첫 ? h('p', { class: '알림' }, '누르고 한국어로 말해요. 녹음은 이 기기에만 남아요.') : null);
+      자막쓰기('친구', 물음?.말, 물음?.mn);
+      판놓기(판글());
+      놓기(아래);
+      구모드('listening', 'Tap to speak', { id: '말하기', 일: 말하는중 });
     };
     const 말하는중 = () => {
       if (!살았나(s)) return;
       단계('rec');
-      놓기(판, 위판('녹음'));
-      const 막대 = Array.from({ length: 13 }, () => h('i'));
-      놓기(아래, h('div', { class: '소리줄' }, 막대), h('button', { class: '알약 주', id: '그만', type: 'button' }, '■ 다 말했어요'));
-      const 녹 = 녹음하기(막대);
-      $('그만').onclick = async () => {
+      판바꿈(판글('녹음'));
+      const 녹 = 녹음하기();
+      구모드('speaking', 'Tap to stop', { id: '그만', 일: async () => {
+        구일 = null;
         const r = await 녹.멈추기();
         const 받아쓰기 = 받아쓰기됨?.ok ? 받아쓰기보내기(r.소리) : Promise.resolve({ status: 'unavailable' });
         녹음.set(녹음열쇠, { 소리: r.소리, 받아쓰기, 봄 });
         다음(r);
-      };
+      } });
     };
     const 다음 = (r) => {
       if (!살았나(s)) return;
       단계('after');
-      놓기(판, 위판(), r.말함 ? h('div', { class: '결과' }, h('i'), '녹음했어요')
-        : h('p', { class: '작은' }, '소리가 거의 안 들렸어요. 마이크 가까이에서 다시 말해 볼까요?'));
-      놓기(아래, h('div', { class: '줄' },
-        h('button', { class: '알약', type: 'button', on: { click: () => 듣기(녹음.get(녹음열쇠).소리) } }, '▶ 듣기'),
-        h('button', { class: '알약', type: 'button', on: { click: 처음 } }, '↺ 다시'),
-        h('button', { class: '알약 주', id: '다음', type: 'button', on: { click: () => { 화면.pause(); 됨({ 열쇠: 녹음열쇠 }); } } }, '다음 →')));
+      구숨김();
+      판바꿈(판글().map((x, k) => (k === 1 && x ? (x.classList.add('흐림'), x) : x)),
+        h('div', { class: 'meta' }, r.말함 ? [h('span', { class: 'result', style: 'margin: 0; font-size: 15px' }, h('span', { class: 'ok', style: 'width: 20px; height: 20px' }), '녹음했어요')]
+          : h('p', { class: 'fine', style: 'margin: 0; color: var(--ink)' }, '소리가 거의 안 들렸어요. 마이크 가까이에서 다시 말해 볼까요?')));
+      놓기(아래, h('div', { class: 'row' },
+        h('button', { class: 'ghost', type: 'button', 'aria-label': '내 녹음 듣기', on: { click: () => 듣기(녹음.get(녹음열쇠).소리) } }, h('i', { class: 'ic play' })),
+        h('button', { class: 'ghost', type: 'button', on: { click: 처음 } }, '다시'),
+        h('button', { class: 'pill', id: '다음', type: 'button', on: { click: () => { 화면.pause(); 됨({ 열쇠: 녹음열쇠 }); } } }, '다음')));
     };
     처음();
   });
 }
 
-/* ── 친구 · 감독 말 ── */
-async function 듣는차례(칸, 다음번) {
+/* ── 친구 · 감독 말 ── 영상이 주인공이라 판을 비우고 자막만 */
+async function 듣는차례(칸, 다음번, 진행글) {
   const s = 새범위();
   단계('friend');
-  진행쓰기(다음번);
-  const 감독 = 칸.종류 === '감독';
-  놓기(판, h('div', { class: '상태' }, h('i', { style: 'background: var(--따뜻)' }), 감독 ? '감독이 말해요' : '친구가 말해요 · 잘 들어 보세요'),
-    칸.말 ? h('div', { class: '묶음' }, h('p', { class: '작은' }, 감독 ? '감독' : '친구'), h('p', { class: '말' }, `「${칸.말}」`), 뜻줄(칸.mn))
-      : h('p', { class: '작은' }, '친구가 내 대답을 듣고 웃어요.'));
-  놓기(아래, h('p', { class: '알림' }, '영상이 끝나면 저절로 넘어가요.'));
+  진행쓰기(다음번 <= 대답수 ? 다음번 : 0, 진행글);
+  구숨김(); 놓기(판); 놓기(아래);
+  자막쓰기(칸.종류 === '감독' ? '감독' : '친구', 칸.말, 칸.mn);
   await 틀기(칸.클립);
   return 살았나(s);
 }
@@ -381,44 +592,54 @@ async function 판정받기(녹음열쇠, 줄) {
   return { ...판정(줄, 답.text), 들림: 다듬기(답.text) };
 }
 
-/* ── 첫 화면 ── 다시 만날 날이 된 놓친 곳이 있으면 맨 위에 그 카드를 둔다. */
+/* ── 첫 화면 ── 다시 만날 날이 된 놓친 곳이 있으면 그 카드 하나만 크게. */
 async function 첫화면() {
   const s = 새범위(); 다시그리기 = 첫화면;
   단계('intro');
-  놓기($('이름'), '꿈 무대 · 옥상 장면', h('small', {}, '4급 대본'));
   진행쓰기(0);
-  무대모양('크게', '그림/N1.jpg'); 화면.hidden = true; 화면.removeAttribute('src'); 화면.load();
+  $('지어낸').hidden = false;
+  구숨김(); 자막지우기();
+  무대모양('크게', 'N1');
   const 지금때 = 지금();
   const 열린 = 놓친곳(저장.기록, { 지금: 지금때 }).filter((x) => x.열림);
   const 때된 = 열린.find((x) => x.때됨);
   const 줄 = 때된 ? 나줄.find((x) => x.id === 때된.줄) : null;
-  놓기(판,
-    때된 ? h('div', { class: '노트', style: 'background: rgba(255,207,92,.1)' },
-      h('div', { class: '머리' }, h('span', { class: '한', style: 'color: var(--따뜻)' }, `다시 만나는 날 · ${날짜짧게(learningDate(지금때))}`)),
-      h('h2', {}, `${때된.지난날}일 전 놓친 「${문형[줄.문형].꼴}」, 다시`),
-      h('p', { class: '작은' }, `옥상 장면 대답 ${줄.번}이에요. 이번엔 대본을 가리고 친구 물음에 대답해요.`)) : null,
-    // 다시 만날 날이 된 날은 그 카드만 크게 둔다. 새 촬영 안내(메시지 · 문형)는 「새로 찍기」를 누른 뒤의 일이라 접는다.
-    때된 ? null : [
-      h('h1', {}, '옥상 장면, 새 대본으로 찍어요'),
-      h('div', { class: '메시지' }, h('div', { class: '누가' }, `${메시지.누구} · ${메시지.시각}`), h('p', { lang: 'ko' }, 메시지.ko), 저장.설명말 === 'mn' ? h('p', { class: '뜻', lang: 'mn' }, 메시지.mn) : null),
-      h('div', { class: '묶음', style: 'gap: 8px' }, h('p', { class: '작은' }, '이 장면에서 말할 문형'),
-        h('div', { class: '문형들' }, 나줄.filter((x) => x.문형).map((x) => { const p = 문형[x.문형]; return h('span', { class: `문형${p.급 === 3 ? ' 셋' : ''}` }, h('small', {}, `${p.급}급`), p.꼴); }))),
-      h('p', { class: '작은' }, '등만 보이는 사람이 나예요. 친구가 물으면 대본 줄로 대답해요. 소리를 켜고, 마이크를 물으면 허용해 주세요.')],
-    h('div', { class: '줄단추' },
-      열린.length ? h('button', { class: '글단추', type: 'button', on: { click: 놓친곳화면 } }, `놓친 곳 ${열린.length}`) : null,
-      저장.기록.length ? h('button', { class: '글단추', type: 'button', on: { click: () => { if (confirm('이 기기의 시험 기록을 지울까요?')) { 저장 = 처음상태(); 남기기(); 녹음.clear(); 첫화면(); } } } }, '시험 기록 지우기') : null,
-      저장.오프셋 ? h('span', { class: '작은' }, `시험판 날짜: ${날짜글(new Date(지금때))}`) : null));
-  놓기(아래, 때된
-    ? h('div', { class: '줄' }, h('button', { class: '알약', type: 'button', id: '새촬영', on: { click: () => 시작(() => 장면()) } }, '새로 찍기'),
-      h('button', { class: '알약 주', type: 'button', id: '다시만나기', on: { click: () => 시작(() => 다시만나기(줄)) } }, '그 장면 다시'))
-    : h('button', { class: '알약 주', type: 'button', id: '시작', on: { click: () => 시작(() => 장면()) } }, '촬영 시작'));
+  const 덧단추 = h('div', { class: 'row wrap', style: 'margin-top: 8px; gap: 14px' },
+    열린.length ? h('button', { class: 'link', type: 'button', on: { click: 놓친곳화면 } }, `놓친 곳 ${열린.length}`) : null,
+    저장.기록.length ? h('button', { class: 'link', type: 'button', on: { click: () => { if (confirm('이 기기의 시험 기록을 지울까요?')) { 저장 = 처음상태(); 남기기(); 녹음.clear(); 첫화면(); } } } }, '시험 기록 지우기') : null,
+    저장.오프셋 ? h('span', { class: 'fine', style: 'margin: 0' }, `시험판 날짜 ${날짜글(new Date(지금때))}`) : null);
+  if (때된) {
+    const p = 문형[줄.문형];
+    판놓기(라벨('Revisit', `${때된.지난날}일 전 놓친 문형`, { 색: 'warm' }),
+      h('h1', { lang: 'ko' }, `「${p.꼴}」, 다시`),
+      h('p', { class: 'lead' }, `옥상 장면 대답 ${줄.번}이에요. 이번엔 `, h('b', {}, '대본 없이'), ' 친구 물음에 대답해요.'),
+      h('div', { class: 'card warm' }, h('p', { class: 'lead', lang: 'ko' }, `「${앞친구(줄.id)?.말 || ''}」`), 뜻줄(앞친구(줄.id)?.mn)),
+      덧단추.childElementCount ? 덧단추 : null);
+    놓기(아래, h('div', { class: 'row' },
+      h('button', { class: 'ghost', type: 'button', id: '새촬영', on: { click: () => 시작(() => 장면()) } }, '새로 찍기'),
+      h('button', { class: 'pill', type: 'button', id: '다시만나기', on: { click: () => 시작(() => 다시만나기(줄)) } }, '그 장면 다시')));
+  } else {
+    const 글 = []; let 남은 = 메시지.ko;
+    for (const 조각 of 메시지.짚을 || []) { const i = 남은.indexOf(조각); if (i < 0) continue; 글.push(남은.slice(0, i), h('u', {}, 조각)); 남은 = 남은.slice(i + 조각.length); }
+    글.push(남은);
+    판놓기(라벨('Message', `${메시지.누구} · ${메시지.시각}`, { 색: 'sky' }),
+      h('p', { class: 'msg', lang: 'ko' }, 글),
+      저장.설명말 === 'mn' ? 뜻줄(메시지.mn) : null,
+      h('div', { class: 'hr' }),
+      h('p', { class: 'fine', style: 'margin: 0 0 8px; color: var(--dim); font-weight: 650' }, '오늘 내 대사의 문형'),
+      h('div', { class: 'tags' }, 나줄.filter((x) => x.문형).map((x) => 꼬리표(문형[x.문형], 문형[x.문형].급 === 3 ? 'dim' : ''))),
+      h('p', { class: 'fine' }, '등만 보이는 사람이 나예요. 친구가 물으면 대본 줄로 대답해요.'),
+      덧단추.childElementCount ? 덧단추 : null);
+    놓기(아래, h('button', { class: 'pill', type: 'button', id: '시작', on: { click: () => 시작(() => 장면()) } }, '장면 시작'),
+      h('p', { class: 'under' }, '소리를 켜고, 마이크를 물으면 허용해 주세요.'));
+  }
   받아쓰기상태();
 }
 async function 시작(갈곳) {
   try { await 마이크열기(); } catch {
     단계('nomic');
-    놓기(판, h('h2', {}, '마이크를 쓸 수 없어요'), h('p', { class: '작은' }, '브라우저 주소창 옆에서 마이크를 허용하고 다시 열어 주세요.'));
-    놓기(아래, h('button', { class: '알약 주', type: 'button', on: { click: 첫화면 } }, '처음 화면'));
+    판놓기(라벨('Mic', '마이크'), h('h2', {}, '마이크를 쓸 수 없어요'), h('p', { class: 'lead' }, '브라우저 주소창 옆에서 마이크를 허용하고 다시 열어 주세요.'));
+    놓기(아래, h('button', { class: 'pill', type: 'button', on: { click: 첫화면 } }, '처음 화면'));
     return;
   }
   await 받아쓰기상태();
@@ -441,69 +662,78 @@ async function 장면() {
 }
 
 /* ── 장면 끝 → 코치가 듣고 노트 하나 ── */
+function 듣는판(영, 한, 제목, 몇, 전체) {
+  return [라벨(영, 한, { 색: 'sky' }), h('h2', {}, 제목),
+    전체 ? h('div', { class: 'wait' }, h('div', { class: 'bars' }, Array.from({ length: 전체 }, (_, k) => h('i', { class: k < 몇 ? 'on' : '' }))), `${몇} / ${전체}줄 들음`) : null];
+}
 async function 코치듣기(열쇠들, 보임) {
   const s = 새범위(); 다시그리기 = null;
   단계('listen');
   진행쓰기(0);
-  무대모양('작게', '그림/N12.jpg');
-  const 판정줄 = h('p', { class: '작은' });
-  놓기(판, h('div', { class: '머리' }, h('span', { class: '한' }, '컷, 오케이! · 장면 끝')),
-    h('h2', {}, 받아쓰기됨?.ok ? '코치가 대사를 듣고 있어요' : '이번엔 받아쓰기를 쓸 수 없어요'),
-    판정줄);
+  자막지우기(); 구숨김();
+  무대모양('작게', 'N12');
+  const 제목 = 받아쓰기됨?.ok ? '코치가 대사를 듣고 있어요' : '이번엔 받아쓰기를 쓸 수 없어요';
+  판놓기(듣는판('Scene end', '컷, 오케이!', 제목, 0, 열쇠들.length));
   놓기(아래);
   let 끝난 = 0;
-  const 결과들 = await Promise.all(열쇠들.map(async ([줄, 열쇠]) => { const r = await 판정받기(열쇠, 줄); 끝난++; 놓기(판정줄, `${끝난} / ${열쇠들.length}줄 들음`); return { 줄, 판정: r }; }));
+  const 결과들 = await Promise.all(열쇠들.map(async ([줄, 열쇠]) => { const r = await 판정받기(열쇠, 줄); 끝난++; if (살았나(s)) 판바꿈(듣는판('Scene end', '컷, 오케이!', 제목, 끝난, 열쇠들.length)); return { 줄, 판정: r }; }));
   if (!살았나(s)) return;
   for (const { 줄, 판정: r } of 결과들) if (r.결과 === 'pass' || r.결과 === 'note') 남김(줄, 'scene', 보임, { 결과: r.결과, 갈래: r.갈래, 규칙: r.규칙, 보일: r.보일, 바른: r.바른, 들림: r.들림 });
   const 고른 = 노트고르기(결과들);
   if (고른) return 코치노트(고른.줄, 고른.판정, `scene|${고른.줄.id}`, 결과들);
   const 못씀 = 결과들.every((x) => x.판정.못씀);
   단계('clean');
-  놓기(판, h('div', { class: '머리' }, h('span', { class: '한' }, '컷, 오케이! · 장면 끝')),
-    h('h2', {}, 못씀 ? '녹음만 했어요' : '놓친 곳 없이 끝냈어요'),
-    h('p', { class: '작은' }, 못씀 ? '받아쓰기를 쓸 수 없어 코치 노트를 만들지 못했어요. 내 목소리로 장면을 들어 보세요.' : '문형 여섯이 모두 들렸어요.'));
-  놓기(아래, h('div', { class: '줄' }, h('button', { class: '알약', type: 'button', on: { click: () => 내장면() } }, '▶ 내 장면'), h('button', { class: '알약 주', type: 'button', on: { click: 첫화면 } }, '처음 화면')));
+  판놓기(라벨('Scene end', '컷, 오케이!', { 색: 'sky' }), h('h2', {}, 못씀 ? '녹음만 했어요' : '놓친 곳 없이 끝냈어요'),
+    h('p', { class: 'lead' }, 못씀 ? '받아쓰기를 쓸 수 없어 코치 노트를 만들지 못했어요. 내 목소리로 장면을 들어 보세요.' : '문형 여섯이 모두 들렸어요.'));
+  놓기(아래, h('div', { class: 'row' }, h('button', { class: 'ghost', type: 'button', on: { click: () => 내장면() } }, h('i', { class: 'ic play' }), '내 장면'), h('button', { class: 'pill', type: 'button', on: { click: 첫화면 } }, '처음 화면')));
 }
 
-/* ── 코치 노트 ── 틀린 곳 하나를 짚는다. 설명은 몽골어가 먼저다. */
-function 틀린곳글(들림, 위치, 모양 = '틀림') {
-  if (!위치) return [들림];
-  return [들림.slice(0, 위치[0]), h('span', { class: 모양 }, 들림.slice(...위치)), 들림.slice(위치[1])];
+/* ── 코치 노트 ── 틀린 곳 하나. 받아 적은 말이 한 자씩 찍히고, 틀린 곳에 물결선, 그 뒤에 고칠 꼴이 넘겨 들어온다. */
+const 자간 = 32; // ms, 한 자 찍힘(.ch와 같다)
+function 찍히는말(들림, 위치, 모양 = 'wavy') {
+  const 글자 = [...(들림 || '')];
+  const 덩이 = (a, b, 반) => { const 칸 = 글자.slice(a, b).map((c, k) => h('span', { class: 'ch', style: `--i:${a + k}` }, c)); return 반 ? h('span', { class: 반, style: `--d:${(글자.length * 자간 + 260) / 1000}s` }, 칸) : 칸; };
+  const 끝 = 글자.length * 자간 + 160;
+  const 꼬리 = h('span', { class: 'caret', style: `--d:${끝 / 1000}s` });
+  if (!위치) return { 글: [덩이(0, 글자.length), 꼬리], 끝 };
+  // 위치는 문자열 칸(UTF-16)이다. 한글은 한 칸이라 글자 칸과 같다.
+  return { 글: [덩이(0, 위치[0]), 덩이(위치[0], 위치[1], 모양), 덩이(위치[1], 글자.length), 꼬리], 끝: 끝 + 700 };
 }
-function 고칠꼴(보일, 바른) {
-  if (!바른) return h('p', { class: '고칠꼴', lang: 'ko' }, h('s', {}, 보일));
+function 고칠꼴(보일, 바른, 늦음 = 0) {
+  if (!바른) return h('div', { class: 'fix', lang: 'ko' }, h('span', { class: 'old' }, h('s', {}, 보일)));
   let a = 0; while (a < 보일.length && a < 바른.length && 보일[a] === 바른[a]) a++;
   let b = 0; while (b < 보일.length - a && b < 바른.length - a && 보일[보일.length - 1 - b] === 바른[바른.length - 1 - b]) b++;
-  return h('p', { class: '고칠꼴', lang: 'ko' },
-    보일.slice(0, a), h('s', {}, 보일.slice(a, 보일.length - b)), 보일.slice(보일.length - b),
-    h('span', { class: '화살' }, '→'),
-    바른.slice(0, a), h('em', {}, 바른.slice(a, 바른.length - b)), 바른.slice(바른.length - b));
+  return h('div', { class: 'fix', lang: 'ko' },
+    h('span', { class: 'old' }, 보일.slice(0, a), h('s', {}, 보일.slice(a, 보일.length - b)), 보일.slice(보일.length - b)),
+    화살(),
+    h('span', { class: 'new', style: `--d:${늦음 / 1000}s` }, 바른.slice(0, a), h('em', {}, 바른.slice(a, 바른.length - b)), 바른.slice(바른.length - b)));
 }
 function 노트글(줄, r) {
   const p = 문형[줄.문형];
   if (r.갈래 === 'missing') return { ko: 빠짐글.ko(p), mn: 빠짐글.mn(p) };
   return 규칙글[r.규칙]?.[줄.문형] || 규칙글[r.규칙]?.S454 || { ko: p.쓰임.ko, mn: p.쓰임.mn };
 }
-function 코치노트(줄, r, 녹음열쇠, 결과들) {
+function 코치노트(줄, r, 녹음열쇠, 결과들, { 조용 = false } = {}) {
   const s = 새범위();
-  다시그리기 = () => 코치노트(줄, r, 녹음열쇠, 결과들);
+  다시그리기 = () => 코치노트(줄, r, 녹음열쇠, 결과들, { 조용: true });
   단계('coach');
   진행쓰기(0);
-  무대모양('작게', `그림/${앞친구(줄.id)?.클립 || 'N12'}.jpg`);
+  자막지우기(); 구숨김();
+  무대모양('작게', 앞친구(줄.id)?.클립 || 'N12');
   const p = 문형[줄.문형];
   const 글 = 노트글(줄, r);
-  놓기(판, h('div', { class: '노트' },
-    h('div', { class: '머리' }, 'Coach note', h('span', { class: '한' }, `대답 ${줄.번} · ${p.급}급 「${p.꼴}」`)),
-    h('h2', {}, r.갈래 === 'form' ? '이 한 곳만 고쳐요' : '이 문형을 넣어 말해요'),
-    h('div', { class: '들림' }, h('p', { class: '작은' }, '받아 적은 내 말'), h('p', { class: '말', lang: 'ko' }, 틀린곳글(r.들림, r.위치))),
-    r.갈래 === 'form' ? 고칠꼴(r.보일, r.바른) : h('p', { class: '고칠꼴', lang: 'ko' }, h('em', {}, 줄.짚을)),
-    h('p', { class: '규칙' }, 설명(글)),
-    h('p', { class: '근거' }, `근거 · ${근거} ${p.급}급 「${p.꼴}」`),
-    h('div', { class: '줄단추' },
-      h('button', { class: '작은단추', type: 'button', on: { click: () => { const 칸 = 녹음.get(녹음열쇠); if (칸) 듣기(칸.소리); } } }, '▶ 내 녹음'),
-      h('button', { class: '글단추', type: 'button', id: '달라요', on: { click: () => 달라요(줄, 결과들) } }, '받아 적은 글이 내 말과 달라요'))));
-  놓기(아래, h('button', { class: '알약 주', type: 'button', id: '테이크2', on: { click: () => 테이크2(줄) } }, '이 줄만 다시 말하기'),
-    h('p', { class: '알림' }, `놓친 곳에 넣었어요. ${REVISIT_DAYS}일 뒤 이 장면에서 다시 만나요.`));
+  const 말 = 찍히는말(r.들림, r.위치);
+  (조용 ? 판바꿈 : 판놓기)(
+    라벨('Coach note', `대답 ${줄.번} · ${p.급}급 「${p.꼴}」`, { 색: '' }),
+    h('div', { class: 'heard' }, h('p', { class: 'cap' }, '받아 적은 내 말'), h('p', { class: 'said', lang: 'ko' }, 말.글)),
+    r.갈래 === 'form' ? 고칠꼴(r.보일, r.바른, 말.끝) : h('div', { class: 'fix', lang: 'ko' }, h('span', { class: 'new', style: `--d:${말.끝 / 1000}s` }, h('em', {}, 줄.짚을))),
+    h('div', { class: 'card why' }, 라벨('Why', r.갈래 === 'form' ? '이 한 곳만 고쳐요' : '이 문형을 넣어 말해요'), h('p', { class: 'rule' }, 설명(글)),
+      h('p', { class: 'src' }, `근거 · ${근거} `, h('span', { style: 'white-space: nowrap' }, `${p.급}급 「${p.꼴}」`))),
+    h('div', { class: 'row', style: 'margin-top: 12px; gap: 14px' },
+      h('button', { class: 'ghost small', type: 'button', on: { click: () => { const 칸 = 녹음.get(녹음열쇠); if (칸) 듣기(칸.소리); } } }, h('i', { class: 'ic play' }), '내 녹음'),
+      h('button', { class: 'link', type: 'button', id: '달라요', on: { click: () => 달라요(줄, 결과들) } }, '받아 적은 글이 내 말과 달라요')));
+  놓기(아래, h('button', { class: 'pill', type: 'button', id: '테이크2', on: { click: () => 테이크2(줄) } }, '이 줄만 다시 말하기'),
+    h('p', { class: 'under' }, `놓친 곳에 넣었어요. ${REVISIT_DAYS}일 뒤 이 장면에서 다시 만나요.`));
 }
 // 받아쓰기가 틀렸다고 하면 그 노트를 지우고(놓친 곳에서도 뺀다) 다음 노트로 간다.
 function 달라요(줄, 결과들) {
@@ -519,61 +749,74 @@ function 달라요(줄, 결과들) {
 async function 테이크2(줄) {
   다시그리기 = null;
   const 친구 = 앞친구(줄.id);
-  if (친구 && !(await 듣는차례(친구, 대답수 + 1))) return;
-  const r = await 내차례(줄, { 판이름: 'take2', 진행글: '테이크 2' });
+  if (친구 && !(await 듣는차례(친구, 대답수 + 1, 'Dream · Take 2'))) return;
+  const r = await 내차례(줄, { 판이름: 'take2', 진행글: 'Dream · Take 2' });
   const s = 새범위();
   단계('take2-listen');
-  무대모양('작게', `그림/${친구?.클립 || 'N12'}.jpg`);
-  놓기(판, h('div', { class: '머리' }, h('span', { class: '한' }, '테이크 2')), h('h2', {}, '코치가 듣고 있어요'));
+  자막지우기();
+  무대모양('작게', 친구?.클립 || 'N12');
+  판놓기(듣는판('Take 2', `대답 ${줄.번}`, '코치가 듣고 있어요'));
   놓기(아래);
   const 판정결과 = await 판정받기(r.열쇠, 줄);
   if (!살았나(s)) return;
   남김(줄, 'take2', `take2-${Date.now()}`, { 결과: 판정결과.결과, 갈래: 판정결과.갈래, 보일: 판정결과.보일, 들림: 판정결과.들림 });
   테이크2결과(줄, 판정결과);
 }
-function 테이크2결과(줄, r) {
-  새범위(); 다시그리기 = () => 테이크2결과(줄, r);
+function 결과줄(통과, 글) { return h('div', { class: `result${통과 ? '' : ' 아직'}` }, h('span', { class: 'ok' }), 글); }
+function 들림칸(r, 통과) {
+  if (!r.들림) return null;
+  const 말 = 찍히는말(r.들림, r.위치, 통과 ? 'good' : 'wavy');
+  return h('div', { class: 'heard' }, h('p', { class: 'cap' }, '받아 적은 내 말'), h('p', { class: 'said', lang: 'ko' }, 말.글));
+}
+function 테이크2결과(줄, r, { 조용 = false } = {}) {
+  새범위(); 다시그리기 = () => 테이크2결과(줄, r, { 조용: true });
   단계('take2-done');
   const 통과 = r.결과 === 'pass';
   const 다시 = 놓친곳(저장.기록, { 지금: 지금() }).find((x) => x.줄 === 줄.id && x.열림);
-  놓기(판, h('div', { class: '머리' }, h('span', { class: '한' }, `테이크 2 · 대답 ${줄.번}`)),
-    h('div', { class: `결과${통과 ? '' : ' 아직'}` }, h('i'), 통과 ? '고쳤어요. 이번엔 맞게 들렸어요.' : r.결과 === 'note' ? '아직 같은 곳이 들려요' : '잘 들리지 않았어요'),
-    r.들림 ? h('div', { class: '들림' }, h('p', { class: '작은' }, '받아 적은 내 말'), h('p', { class: '말', lang: 'ko' }, 틀린곳글(r.들림, r.위치, 통과 ? '맞음' : '틀림'))) : null,
-    다시 ? h('div', { class: '노트' },
-      h('div', { class: '머리' }, h('span', { class: '한', style: 'color: var(--따뜻)' }, '놓친 곳에 넣었어요')),
-      h('p', { class: '규칙' }, `오늘 고쳐도 ${REVISIT_DAYS}일 뒤 한 번 더 만나요. ${날짜글(다시.다시날)}, 대본 없이 이 질문에 대답하면 놓친 곳에서 빠져요.`)) : null);
-  놓기(아래, h('div', { class: '줄' },
-    h('button', { class: '알약', type: 'button', on: { click: () => 테이크2(줄) } }, '↺ 한 번 더'),
-    h('button', { class: '알약 주', type: 'button', id: '놓친곳', on: { click: 놓친곳화면 } }, '놓친 곳 보기')));
+  (조용 ? 판바꿈 : 판놓기)(라벨('Take 2', `대답 ${줄.번}`, { 색: 'sky' }),
+    결과줄(통과, 통과 ? '고쳤어요. 이번엔 맞게 들렸어요' : r.결과 === 'note' ? '아직 같은 곳이 들려요' : '잘 들리지 않았어요'),
+    들림칸(r, 통과),
+    다시 ? h('div', { class: 'card warm' }, 라벨('Revisit', '놓친 곳에 넣었어요', { 색: 'warm' }),
+      h('p', { class: 'lead' }, `오늘 고쳐도 ${REVISIT_DAYS}일 뒤 한 번 더 만나요. `, h('b', {}, 날짜글(다시.다시날)), '에 대본 없이 이 질문에 대답하면 놓친 곳에서 빠져요.')) : null);
+  놓기(아래, h('div', { class: 'row' },
+    h('button', { class: 'ghost', type: 'button', on: { click: () => 테이크2(줄) } }, '한 번 더'),
+    h('button', { class: 'pill', type: 'button', id: '놓친곳', on: { click: 놓친곳화면 } }, '놓친 곳 보기')));
+  if (통과 && !조용) 해냄('고쳤어요');
 }
 
-/* ── 놓친 곳 ── 문형 하나에 카드 하나. 한 주 칸 띠와 다시 만나기 걸음. */
-// 대본 줄에 고친 자국: 틀린 꼴은 빨간 줄로 긋고, 바른 꼴에 형광펜. 문형을 빠뜨린 줄은 형광펜만.
+/* ── 놓친 곳 ── 문형 하나에 한 장: 문형 · 대본 줄의 고친 자국 · 날 눈금 · 다시 만나기 걸음 */
 function 대본고침(줄, 처음) {
   const i = 줄.대본.indexOf(줄.짚을);
   const 앞 = 줄.대본.slice(0, i), 뒤 = 줄.대본.slice(i + 줄.짚을.length);
   const 그음 = 처음.갈래 === 'form' && 처음.보일 ? [h('s', {}, 처음.보일), ' '] : null;
-  return [앞, 그음, h('mark', { style: 'background: linear-gradient(180deg, transparent 52%, var(--형광) 52%, var(--형광) 92%, transparent 92%); color: inherit' }, 줄.짚을), 뒤];
+  return [앞, 그음, h('span', { class: 'pat' }, 줄.짚을), 뒤];
 }
-function 주띠(기준날, 다시날, 닫은날) {
+function 날띠(기준날, 다시날, 닫은날) {
   const 오늘 = learningDate(지금());
   const 처음날 = new Date(learningDate(기준날)); 처음날.setHours(12, 0, 0, 0);
-  const 같은날 = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-  return h('div', { class: '한주' }, Array.from({ length: 7 }, (_, k) => {
-    const d = new Date(처음날); d.setDate(d.getDate() + k);
-    const 다시 = 같은날(d, 다시날), 오늘이 = 같은날(d, 오늘), 닫힘 = 같은날(d, 닫은날);
-    return h('div', { class: `날${다시 ? ' 다시' : ''}${오늘이 ? ' 오늘' : ''}${닫힘 ? ' 닫힘' : ''}` },
-      h('small', {}, 요일[d.getDay()]), h('b', {}, d.getDate()), h('em', {}, 닫힘 ? '해냄' : 다시 ? '다시' : 오늘이 ? '오늘' : k === 0 ? '놓침' : ''));
-  }));
+  const 날들 = Array.from({ length: 7 }, (_, k) => { const d = new Date(처음날); d.setDate(d.getDate() + k); return d; });
+  const 다시칸 = 날들.findIndex((d) => 같은날(d, 다시날 || 닫은날));
+  const 칸 = [];
+  날들.forEach((d, k) => {
+    const 다시 = 같은날(d, 다시날), 닫힘 = 같은날(d, 닫은날), 오늘이 = 같은날(d, 오늘);
+    const 표시 = k === 0 || 다시 || 닫힘 || 오늘이;
+    칸.push(h('div', { class: '요', style: `grid-column:${k + 1}` }, 요일[d.getDay()]),
+      h('div', { class: `수${표시 ? ' 표시' : ''}`, style: `grid-column:${k + 1}` }, d.getDate()),
+      h('div', { class: '자리', style: `grid-column:${k + 1}` }, k === 0 ? h('i', { class: '놓침' }) : 닫힘 ? h('i', { class: '해냄' }) : 다시 ? h('i', { class: '다시' }) : null),
+      h('div', { class: `표${닫힘 ? ' 해냄' : 다시 ? ' 다시' : ''}`, style: `grid-column:${k + 1}` }, 닫힘 ? '해냄' : 다시 ? (오늘이 ? '오늘 · 다시' : '다시') : k === 0 ? (오늘이 ? '오늘 · 놓침' : '놓침') : 오늘이 ? '오늘' : ''));
+  });
+  return h('div', { class: '날띠' }, h('div', { class: '선' }),
+    다시칸 > 0 ? [h('div', { class: `구간${닫은날 ? ' 해냄' : ''}`, style: `grid-column: 1 / ${다시칸 + 2}` }), h('div', { class: '사이', style: `grid-column: 1 / ${다시칸 + 2}` }, `${다시칸}일 뒤`)] : null,
+    칸);
 }
-function 놓친곳화면() {
-  새범위(); 다시그리기 = 놓친곳화면;
+function 놓친곳화면({ 조용 = false } = {}) {
+  새범위(); 다시그리기 = () => 놓친곳화면({ 조용: true });
   단계('missed');
-  진행쓰기(0);
-  무대모양('없음');
+  진행쓰기(0, 'Dream stage');
+  자막지우기(); 구숨김();
   const 목록 = 놓친곳(저장.기록, { 지금: 지금() });
-  놓기($('이름'), '놓친 곳', h('small', {}, '꿈 무대 · 4급'));
-  const 카드들 = 목록.map((x) => {
+  무대모양('없음', 목록[0] ? (앞친구(목록[0].줄)?.클립 || 'N12') : 'N1');
+  const 장들 = 목록.map((x) => {
     const 줄 = 나줄.find((y) => y.id === x.줄), p = 문형[줄.문형];
     const 기록들 = 저장.기록.filter((r) => r.줄 === x.줄);
     const 테이크 = [...기록들].reverse().find((r) => r.판 === 'take2' && r.시각 >= x.처음.시각);
@@ -586,37 +829,38 @@ function 놓친곳화면() {
       { 상태: 닫음 ? '됨' : '다음', 때: 다시날 ? 날짜글(다시날) : '', 작은: `${REVISIT_DAYS}일 뒤`, 일: 닫음 ? ['대본 없이 ', h('b', {}, '혼자 해냈어요')] : ['같은 질문에 ', h('b', {}, '대본 없이'), ' 다시 대답해요'] },
       { 상태: 읽기 ? '됨' : 닫음 ? '다음' : '', 때: '같은 날', 작은: '다른 자리', 일: 읽기 ? [읽기.결과 === 'pass' ? '오디션에 늦은 날 문항을 맞혔어요' : '오디션에 늦은 날 문항을 풀고 풀이를 읽었어요'] : ['오디션에 늦은 날 · 읽기 한 문항'] },
     ];
-    return h('section', { class: '놓친', 'data-줄': x.줄 },
-      h('div', { class: '이름줄' }, h('p', { class: '꼴', lang: 'ko' }, `「${p.꼴}」`), h('span', { class: `딱지${닫음 ? ' 해냄' : ''}` }, 닫음 ? '혼자 해냄' : x.때됨 ? '오늘 다시' : '다시 만날 날 잡힘')),
-      h('p', { class: '작은' }, `${p.급}급 · ${p.쓰임.ko.replace(/ 써요\.$/, '')}`),
-      h('div', { class: '종이' }, h('div', { class: '장면줄' }, h('div', { class: '작은그림', style: `background-image: url(그림/${앞친구(x.줄)?.클립 || 'N12'}.jpg)` }),
-        h('div', {}, h('div', { class: '윗줄', style: 'margin-bottom: 2px' }, h('span', {}, `옥상 장면 · 대답 ${줄.번}`)),
-          h('p', { class: '종이줄', lang: 'ko' }, 대본고침(줄, x.처음))))),
-      주띠(x.처음.시각, x.다시날, 닫음 ? learningDate(닫음.시각) : null),
-      h('div', { class: '묶음', style: 'gap: 8px' }, h('p', { class: '작은', style: 'font-weight: 700; color: var(--글)' }, '다시 만나기'),
-        h('ol', { class: '걸음' }, 걸음.map((g) => h('li', { 'data-상태': g.상태 }, h('i', { class: '점' }), h('div', {}, h('div', { class: '때' }, g.때, g.작은 ? h('small', {}, g.작은) : null), h('div', { class: '일' }, g.일)))))));
+    return h('section', { 'data-줄': x.줄 },
+      라벨('Revisit', `놓친 곳 ${목록.length}`, { 색: 닫음 ? 'sky' : 'warm', 오른쪽: h('span', { class: `상태${닫음 ? ' 해냄' : ''}` }, 닫음 ? '혼자 해냄' : x.때됨 ? '오늘 다시' : '다시 만날 날 잡힘') }),
+      h('p', { class: '꼴큰', lang: 'ko' }, `「${p.꼴}」`),
+      h('p', { class: 'mean', style: 'margin: 0; font-size: 13px; color: var(--dim)' }, `${p.급}급 · `, 설명(p.쓰임)),
+      h('div', { class: '장면줄' }, h('div', { class: '썸', style: `background-image: url(그림/${앞친구(x.줄)?.클립 || 'N12'}.jpg); background-position: ${가로[앞친구(x.줄)?.클립] ?? 50}% 30%` }),
+        h('div', {}, h('p', { class: 'cap' }, `옥상 장면 · 대답 ${줄.번}`), h('p', { class: '줄', lang: 'ko' }, 대본고침(줄, x.처음)))),
+      날띠(x.처음.시각, x.다시날, 닫음 ? learningDate(닫음.시각) : null),
+      h('p', { class: '소제목' }, '다시 만나기'),
+      h('ol', { class: '걸음' }, 걸음.map((g) => h('li', { 'data-상태': g.상태 }, h('i', { class: '점' }), h('div', {}, h('div', { class: '때' }, g.때, g.작은 ? h('small', {}, g.작은) : null), h('div', { class: '일' }, g.일))))));
   });
-  놓기(판, 카드들.length ? 카드들 : [h('h2', {}, '놓친 곳이 없어요'), h('p', { class: '작은' }, '장면을 찍으면 코치가 놓친 문형을 여기에 모아요.')]);
+  (조용 ? 판바꿈 : 판놓기)(장들.length ? 장들 : [라벨('Revisit', '놓친 곳', { 색: 'sky' }), h('h2', {}, '놓친 곳이 없어요'), h('p', { class: 'lead' }, '장면을 찍으면 코치가 놓친 문형을 여기에 모아요.')]);
   const 때된 = 목록.find((x) => x.열림 && x.때됨);
   const 줄 = 때된 ? 나줄.find((y) => y.id === 때된.줄) : null;
-  놓기(아래, h('div', { class: '줄' },
-    때된 ? h('button', { class: '알약 주', type: 'button', id: '다시만나기', on: { click: () => 시작(() => 다시만나기(줄)) } }, '그 장면 다시')
-      : 목록.some((x) => x.열림) ? h('button', { class: '알약', type: 'button', id: '날넘김', on: { click: () => { 저장.오프셋 += REVISIT_DAYS; 남기기(); 첫화면(); } } }, `시험판: ${REVISIT_DAYS}일 뒤로`) : null,
-    h('button', { class: `알약${때된 || 목록.some((x) => x.열림) ? '' : ' 주'}`, type: 'button', id: '처음', on: { click: 첫화면 } }, '처음 화면')));
+  const 열림 = 목록.some((x) => x.열림);
+  놓기(아래, h('div', { class: 'row' },
+    때된 ? h('button', { class: 'ghost', type: 'button', id: '처음', on: { click: 첫화면 } }, '처음 화면') : 열림 ? h('button', { class: 'ghost', type: 'button', id: '날넘김', on: { click: () => { 저장.오프셋 += REVISIT_DAYS; 남기기(); 첫화면(); } } }, `시험판: ${REVISIT_DAYS}일 뒤로`) : null,
+    때된 ? h('button', { class: 'pill', type: 'button', id: '다시만나기', on: { click: () => 시작(() => 다시만나기(줄)) } }, '그 장면 다시')
+      : h('button', { class: 'pill', type: 'button', id: 때된 ? null : '처음', on: { click: 첫화면 } }, '처음 화면')));
 }
 
 /* ── 다시 만나는 날 ── 대본을 가리고 같은 질문에 대답한다. 대본을 보고 맞히면 「고침」만, 안 보고 맞히면 닫힌다. */
 async function 다시만나기(줄) {
   다시그리기 = null;
-  놓기($('이름'), '꿈 무대 · 옥상 장면', h('small', {}, '다시 만나는 날'));
   const 보임 = `review-${Date.now()}`;
   const 친구 = 앞친구(줄.id);
-  if (친구 && !(await 듣는차례(친구, 대답수 + 1))) return;
-  const r = await 내차례(줄, { 판이름: 'review', 가림: true, 머리글: `다시 만나는 날 · 대답 ${줄.번}`, 진행글: '다시 만나는 날' });
+  if (친구 && !(await 듣는차례(친구, 대답수 + 1, 'Dream · Revisit'))) return;
+  const r = await 내차례(줄, { 판이름: 'review', 가림: true, 진행글: 'Dream · Revisit' });
   const s = 새범위();
   단계('review-listen');
-  무대모양('작게', `그림/${친구?.클립 || 'N12'}.jpg`);
-  놓기(판, h('div', { class: '머리' }, h('span', { class: '한' }, '다시 만나는 날')), h('h2', {}, '코치가 듣고 있어요'));
+  자막지우기();
+  무대모양('작게', 친구?.클립 || 'N12');
+  판놓기(듣는판('Revisit', `대답 ${줄.번}`, '코치가 듣고 있어요'));
   놓기(아래);
   const 결과 = await 판정받기(r.열쇠, 줄);
   if (!살았나(s)) return;
@@ -624,23 +868,29 @@ async function 다시만나기(줄) {
   if (결과.결과 === 'pass' || 결과.결과 === 'note') 남김(줄, 'review', 보임, { 결과: 결과.결과, 갈래: 결과.갈래, 규칙: 결과.규칙, 보일: 결과.보일, 바른: 결과.바른, 들림: 결과.들림, 봄 });
   다시만나기결과(줄, 결과, 봄);
 }
-function 다시만나기결과(줄, r, 봄) {
-  새범위(); 다시그리기 = () => 다시만나기결과(줄, r, 봄);
+function 다시만나기결과(줄, r, 봄, { 조용 = false } = {}) {
+  새범위(); 다시그리기 = () => 다시만나기결과(줄, r, 봄, { 조용: true });
   단계('review-done');
-  const 닫힘 = r.결과 === 'pass' && !봄;
+  const 통과 = r.결과 === 'pass';
+  const 닫힘 = 통과 && !봄;
   const 문항 = 다른자리[줄.문형];
-  놓기(판, h('div', { class: '머리' }, h('span', { class: '한' }, `다시 만나는 날 · 대답 ${줄.번}`)),
-    h('div', { class: `결과${r.결과 === 'pass' ? '' : ' 아직'}` }, h('i'), 닫힘 ? '대본 없이 혼자 해냈어요' : r.결과 === 'pass' ? '맞게 말했어요. 대본을 봐서 한 번 더 만나요' : r.결과 === 'note' ? '아직 같은 곳이 들려요' : '잘 들리지 않았어요'),
-    r.들림 ? h('div', { class: '들림' }, h('p', { class: '작은' }, '받아 적은 내 말'), h('p', { class: '말', lang: 'ko' }, 틀린곳글(r.들림, r.위치, r.결과 === 'pass' ? '맞음' : '틀림'))) : null,
-    r.결과 === 'note' ? h('div', { class: '노트' }, r.갈래 === 'form' ? 고칠꼴(r.보일, r.바른) : null, h('p', { class: '규칙' }, 설명(노트글(줄, r))), h('p', { class: '작은' }, `${REVISIT_DAYS}일 뒤 다시 만나요.`)) : null,
-    닫힘 ? h('p', { class: '작은' }, '놓친 곳에서 이 문형을 뺐어요. 같은 문형을 다른 이야기에서 한 번 더 읽어 봐요.') : null);
-  놓기(아래, h('div', { class: '줄' },
-    닫힘 && 문항 ? h('button', { class: '알약 주', type: 'button', id: '다른자리', on: { click: () => 읽기문항(줄) } }, '다른 자리에서 한 번 더') : null,
-    h('button', { class: `알약${닫힘 && 문항 ? '' : ' 주'}`, type: 'button', on: { click: 놓친곳화면 } }, '놓친 곳 보기')));
+  (조용 ? 판바꿈 : 판놓기)(라벨('Revisit', `대답 ${줄.번}`, { 색: 닫힘 ? 'sky' : 'warm' }),
+    결과줄(통과, 닫힘 ? '대본 없이 혼자 해냈어요' : 통과 ? '맞게 말했어요. 대본을 봐서 한 번 더 만나요' : r.결과 === 'note' ? '아직 같은 곳이 들려요' : '잘 들리지 않았어요'),
+    들림칸(r, 통과),
+    r.결과 === 'note' ? h('div', { class: 'card why' }, 라벨('Why', '이 한 곳만 고쳐요'), r.갈래 === 'form' ? 고칠꼴(r.보일, r.바른) : null, h('p', { class: 'rule' }, 설명(노트글(줄, r))), h('p', { class: 'src' }, `${REVISIT_DAYS}일 뒤 다시 만나요.`)) : null,
+    닫힘 ? h('div', { class: 'card' }, 라벨('Next', '다른 자리', { 색: 'sky' }), h('p', { class: 'lead', style: 'margin: 0' }, '놓친 곳에서 이 문형을 뺐어요. 같은 문형을 ', h('b', {}, '다른 이야기'), '에서 한 번 더 읽어 봐요.')) : null);
+  놓기(아래, h('div', { class: 'row' },
+    h('button', { class: 'ghost', type: 'button', on: { click: 놓친곳화면 } }, '놓친 곳'),
+    닫힘 && 문항 ? h('button', { class: 'pill', type: 'button', id: '다른자리', on: { click: () => 읽기문항(줄) } }, '다른 자리에서 한 번 더')
+      : h('button', { class: 'pill', type: 'button', on: { click: 첫화면 } }, '처음 화면')));
+  if (닫힘 && !조용) 해냄('혼자 해냈어요');
 }
 
 /* ── 다른 자리 · 읽기 한 문항 ── 문항과 풀이는 은행(tii-g4-a, AI 2중 검수)의 글 그대로다. */
 let 문항들 = null;
+function 지문글(글) {
+  return String(글 || '').split(/(\(\s*\)|（\s*）|_{2,})/).map((조각) => (/^(\(\s*\)|（\s*）|_{2,})$/.test(조각) ? h('span', { class: '빈칸', 'aria-label': '빈칸' }) : 조각));
+}
 async function 읽기문항(줄) {
   const s = 새범위(); 다시그리기 = null;
   if (!문항들) 문항들 = await fetch('문항.json').then((r) => r.json()).catch(() => ({}));
@@ -648,18 +898,22 @@ async function 읽기문항(줄) {
   if (!살았나(s)) return;
   if (!문) return 놓친곳화면();
   let 고름 = null;
-  const 그리기 = () => {
-    다시그리기 = 그리기;
+  const 그리기 = (조용 = false) => {
+    다시그리기 = () => 그리기(true);
     단계(고름 == null ? 'item' : 'item-done');
-    무대모양('없음');
-    진행쓰기(0);
+    진행쓰기(0, 'Dream stage');
+    자막지우기(); 구숨김();
+    무대모양('없음', 앞친구(줄.id)?.클립 || 'N12');
     const 맞음 = 고름 === 문.answer;
-    놓기(판, h('div', { class: '머리' }, h('span', { class: '한' }, `다른 자리 · 4급 「${문형[줄.문형].꼴}」 · 읽기`)),
-      h('div', { class: '문항' }, h('p', { class: '작은' }, 문.question), h('p', { class: '지문', lang: 'ko' }, 문.passage),
-        h('div', { class: '보기들' }, 문.choices.map((c, k) => h('button', { class: `보기${고름 != null && k === 문.answer ? ' 정답' : ''}${고름 === k && !맞음 ? ' 고름' : ''}`, type: 'button', disabled: 고름 != null, on: { click: () => { 고름 = k; 남김(줄, 'item', `item-${문.id}`, { 결과: k === 문.answer ? 'pass' : 'note', 고른: k }); 그리기(); } } }, h('b', {}, '①②③④'[k]), c)))),
-      고름 != null ? h('div', { class: '노트' }, h('div', { class: `결과${맞음 ? '' : ' 아직'}` }, h('i'), 맞음 ? '맞혔어요' : '다시 볼까요'),
-        h('p', { class: '규칙' }, 설명(문.explanation)), !맞음 && 문.choiceNotes?.[고름] ? h('p', { class: '작은' }, 문.choiceNotes[고름]) : null) : null);
-    놓기(아래, 고름 == null ? null : h('button', { class: '알약 주', type: 'button', id: '놓친곳', on: { click: 놓친곳화면 } }, '놓친 곳 보기'));
+    const p = 문형[줄.문형];
+    (조용 ? 판바꿈 : 판놓기)(라벨('Reading', `다른 자리 · ${p.급}급 「${p.꼴}」`, { 색: 'sky' }),
+      h('p', { class: 'fine', style: 'margin: 0; color: var(--dim)' }, 문.question),
+      h('p', { class: '지문', lang: 'ko' }, 지문글(문.passage)),
+      h('div', { class: '보기들' }, 문.choices.map((c, k) => h('button', { class: `보기${고름 != null && k === 문.answer ? ' 정답' : ''}${고름 === k && !맞음 ? ' 고름' : ''}`, type: 'button', disabled: 고름 != null,
+        on: { click: () => { 고름 = k; 남김(줄, 'item', `item-${문.id}`, { 결과: k === 문.answer ? 'pass' : 'note', 고른: k }); 그리기(true); } } }, h('span', { class: 'no' }, k + 1), h('span', { lang: 'ko' }, c)))),
+      고름 != null ? h('div', { class: 'card why' }, 라벨('Why', 맞음 ? '맞혔어요' : '다시 볼까요'), h('p', { class: 'rule' }, 설명(문.explanation)),
+        !맞음 && 문.choiceNotes?.[고름] ? h('p', { class: 'src' }, 문.choiceNotes[고름]) : null) : null);
+    놓기(아래, 고름 == null ? null : h('button', { class: 'pill', type: 'button', id: '놓친곳', on: { click: 놓친곳화면 } }, '놓친 곳 보기'));
   };
   그리기();
 }
@@ -668,13 +922,13 @@ async function 읽기문항(줄) {
 async function 내장면() {
   const s = 새범위(); 다시그리기 = null;
   단계('playback');
-  놓기(판, h('div', { class: '머리' }, h('span', { class: '한' }, '내 목소리가 들어간 장면')), h('p', { class: '작은' }, '처음부터 흘러요.'));
-  놓기(아래);
+  놓기(판); 놓기(아래); 구숨김();
   for (const 칸 of 차례) {
     if (!살았나(s)) return;
-    if (칸.종류 !== '나') { await 틀기(칸.클립); continue; }
+    if (칸.종류 !== '나') { 자막쓰기(칸.종류 === '감독' ? '감독' : '친구', 칸.말, 칸.mn); await 틀기(칸.클립); continue; }
     const 녹 = 녹음.get(`take2|${칸.id}`) || 녹음.get(`scene|${칸.id}`);
     if (!녹) continue;
+    자막쓰기('나', 칸.대본, 칸.mn);
     await 틀기(칸.클립, { 되풀이: true, 소리: 0.3 });
     await new Promise((됨) => { const a = 듣기(녹.소리); a.onended = 됨; a.onerror = 됨; });
   }
