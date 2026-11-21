@@ -631,3 +631,73 @@ test('주문 대조 — 앞 판은 걸림 없는 파일을 넘기고, 장면 이
   const 일부 = 눈돌리기(편, {}, ['--판', 'C2']);
   assert.ok(일부.결과.안잰판.includes('C3'), JSON.stringify(일부.결과.안잰판));
 });
+
+// ───────── 둘레(11-21) — 둘레에 무리가 있는 컷의 받은 판에서 둘레 무리가 굳었나 ─────────
+// 왜: 11-21 공모전 편(제출 전이라 작품 내용은 적지 않는다) 시험에서 둘레 무리가 굳은 판을 세 번 받았는데, 주인공이 움직여 사람 값은 살아 있었다.
+//   가짜 영상: 점 무늬 둘레 + 늘 움직이는 가운데 네모(주인공). 앞 2.5초 · 1.75초 둘레가 굳은 판(걸려야 할 옛 판 — 끝 그림을 쓴 판의 첫 장 붙듦)과
+//   처음부터 저마다 움직이는 판 · 무리가 번갈아 움직이는 판(지나가야 할 새 판), 「창」으로 잘라 쓰는 무리 컷(그 창 안에서 잰다).
+const 둘레준비 = 준비 && 있음('python', ['-I', '-X', 'utf8', '-c', 'import numpy, cv2']);
+const 둘레영상 = String.raw`
+import sys, subprocess, numpy as np
+자리, 굳은초 = sys.argv[1], float(sys.argv[2])   # 굳은초 < 0: 무리를 네 묶음으로 나눠 6장씩 번갈아 움직인다(한 칸이 장의 4분의 1만 움직인다)
+구간 = [float(x) for x in sys.argv[3].split(",")] if len(sys.argv) > 3 else None   # [a, b]: 처음부터 움직이다 a~b초에만 둘레가 선다
+W, H, fps, 초 = 270, 480, 24, 5
+rng = np.random.default_rng(7)
+점 = [(rng.uniform(0, W), rng.uniform(0, H), int(rng.uniform(5, 12)), rng.uniform(40, 230), rng.uniform(0, 6.3), rng.uniform(0.5, 1.4)) for _ in range(170)]
+p = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "gray", "-s", f"{W}x{H}", "-r", str(fps), "-i", "-",
+                      "-c:v", "libx264", "-crf", "16", "-pix_fmt", "yuv420p", 자리], stdin=subprocess.PIPE)
+yy, xx = np.mgrid[-12:13, -12:13]
+for i in range(int(초 * fps)):
+    t = i / fps; im = np.full((H, W), 90, np.uint8)
+    for k, (x, y, r, c, ph, f) in enumerate(점):
+        if 구간:
+            te = t if t < 구간[0] else (구간[0] if t < 구간[1] else t - (구간[1] - 구간[0]))
+        elif 굳은초 < 0:
+            g = k % 4; 켠장 = (i // 24) * 6 + min(max(i % 24 - 6 * g, 0), 6); te = 켠장 / fps * 4
+        else:
+            te = t - 굳은초 if t >= 굳은초 else None
+        if te is not None:
+            x += 8 * np.sin(2 * np.pi * f * te + ph); y += 6 * np.cos(2 * np.pi * f * te + ph * 1.3)
+        cx, cy = int(round(x)), int(round(y))
+        m = (xx ** 2 + yy ** 2) < r * r
+        x0, y0 = cx - 12, cy - 12
+        sx0, sy0 = max(0, -x0), max(0, -y0); sx1, sy1 = min(25, W - x0), min(25, H - y0)
+        if sx1 <= sx0 or sy1 <= sy0: continue
+        조각 = im[y0 + sy0:y0 + sy1, x0 + sx0:x0 + sx1]; 조각[m[sy0:sy1, sx0:sx1]] = int(c)
+    cy = int(240 + 120 * np.sin(2 * np.pi * 0.8 * t))   # 가운데 주인공은 늘 움직인다
+    im[cy - 30:cy + 30, 115:155] = 240
+    p.stdin.write(im.tobytes())
+p.stdin.close(); p.wait()
+`;
+
+test('둘레 — 무리 컷의 판에서 둘레가 0.9초 넘게 서면 걸림(주인공이 움직여도 · 앞뒤가 크게 움직여도), 저마다 · 번갈아 움직이는 판은 지나가 쓸 판이 된다 · 좁은 「창」은 그 창을 가로 320으로 맞춰 잰다 · 무리 없는 컷은 재지 않는다', { skip: !둘레준비 && '파이썬(numpy · cv2) · ffmpeg 없음' }, (t) => {
+  const 표 = [{ t: 0.3, 누가: '앞쪽 손님', 무엇: '상자를 옮긴다' }, { t: 0.8, 누가: '뒤쪽 행인', 무엇: '옆길로 걸어간다' }];
+  const 편 = 편만들기(t, { C3: {} }, { 고침: (s) => {
+    s.detail.find(d => d.cut === 'C1').둘레 = 표;
+    Object.assign(s.detail.find(d => d.cut === 'C2'), { 둘레: 표, 창: { 세로: 0.5, 배율: 2.5 } });   // 좁은 창 — 자른 화면을 가로 320으로 맞춰 잰다
+    Object.assign(s.detail.find(d => d.cut === 'C4'), { 둘레: 표, in: 4.5, out: 5.0 });   // 파일 끝 0.5초만 쓰는 무리 컷 — 장 사이가 11쌍이어도 잰다
+  } });
+  for (const [이름, 굳은초, 구간] of [['C1', 2.5], ['C1__2', 0], ['C1__3', 1.75], ['C1__4', -1], ['C1__5', 0, '0.625,1.708'], ['C2', 0], ['C4', 99]]) {
+    const g = spawnSync('python', ['-I', '-X', 'utf8', '-c', 둘레영상, path.join(편, '받음', `${이름}.mp4`), String(굳은초), ...(구간 ? [구간] : [])], { encoding: 'utf8' });
+    assert.equal(g.status, 0, g.stderr);
+  }
+  const r = 돌리기(편);
+  assert.ok(r.결과, r.stdout + r.stderr);
+  const 파일 = (n) => r.결과.판.C1.파일.find(f => f.파일 === n);
+  assert.match(파일('C1.mp4').걸림.join(' / '), /^둘레굳음: 둘레 무리가 멈췄다 — 1초 창에서 둘레 칸이 굳은 몫 0\.5~[\d.]+초 \d+%\(무늬 있는 \d+칸\)/);
+  assert.match(파일('C1__3.mp4').걸림.join(' / '), /^둘레굳음:/, '앞 1.75초만 굳은 판도 걸린다');
+  assert.match(파일('C1__5.mp4').걸림.join(' / '), /^둘레굳음:/, '앞뒤로 크게 움직여도 그 사이 1.08초 선 둘레를 잡는다(선 장의 몫 · 한 장 걸음)');
+  for (const n of ['C1__2.mp4', 'C1__4.mp4']) {
+    assert.deepEqual(파일(n).걸림, [], `${n} ${JSON.stringify(파일(n))}`);
+    assert.ok(파일(n).둘레.가장 < 0.75, JSON.stringify(파일(n).둘레));
+  }
+  assert.ok(['C1__2.mp4', 'C1__4.mp4'].includes(r.결과.쓸판.C1), r.결과.쓸판.C1);
+  assert.deepEqual(r.결과.판.C1.조건.둘레, [4, [['C1', 0.5, 4, null]]], '무리 컷 판의 조건에 둘레판과 재는 컷 · 구간 · 창이 든다 — 새로 「둘레」를 적은 컷이 생기면 다시 잰다');
+  const 창 = r.결과.판.C2.파일[0];
+  assert.deepEqual(창.걸림, [], JSON.stringify(창));
+  assert.ok(창.둘레 && 창.둘레.가장 < 0.75 && !창.확인.some(x => x.startsWith('둘레못잼')), JSON.stringify(창));
+  assert.deepEqual(r.결과.판.C2.조건.둘레, [4, [['C2', 0.5, 3.5, { 세로: 0.5, 배율: 2.5 }]]]);
+  assert.match(r.결과.판.C4.파일[0].걸림.join(' / '), /^둘레굳음: .*4\.5~4\.9\d?초/, '파일 끝 0.5초 구간도 잰다(굳은 둘레는 걸린다)');
+  assert.ok(!('둘레' in r.결과.판.C3.파일[0]), '무리 없는 컷은 재지 않는다');
+  assert.ok(!('둘레' in r.결과.판.C3.조건));
+});

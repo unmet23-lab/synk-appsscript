@@ -2899,3 +2899,68 @@ test('지시문 시늉(T30) — 빈손 시늉 · 감탄 소리만이면 걸림, 
   const 까닭 = 시늉줄(돌려(판(옛), (s) => { 컷(s, 'C1').시늉까닭 = '누구나 아는 몸짓'; }));
   assert.deepEqual(까닭.map((x) => x.등급), ['주의']);
 });
+
+// ───────── T31 둘레 무리(26) — 11-21 공모전 편(제출 전이라 작품 내용은 적지 않는다) ─────────
+// 왜: 둘레에 무리가 있는 장면을 720p로 다섯 번 구웠고 주인공 컷 세 판 모두 둘레 무리가 굳었다. 「둘레」 칸이 없었고(주인공 동작만 적음), 끝 그림을 「둘레는 같은 자리 그대로」로 구웠고,
+//   끝 그림을 쓴 판은 첫 1.5~2초를 시작 그림 그대로 붙들었다. 11-22 GPT 검수 두 회차 뒤 설계를 다시 짰다 — 「둘레」는 박자 표, 지시문은 꼴(AROUND 줄 · 초 박자)로 본다.
+//   걸려야 할 옛 판(빈 둘레 · 글 한 줄 · 한 무리 · 늦은 첫 박자 · 까닭 없는 끝 그림 · AROUND 줄 없는 지시문 · 초 박자 없는 AROUND · in unison)과
+//   지나가야 할 새 판(박자 표 · 「없음: 까닭」 · 부정한 무리 낱말 · 무리마다 다른 초의 AROUND)을 고정한다.
+//   11-22 Fable 설계 검토 뒤: 기계는 빠뜨림만 막고 글의 뜻은 풀지 않는다 — 선언한 한계(그림 짝 · AROUND의 뜻 · 박자 「무엇」의 뜻 · 무리 낱말 오탐)는 「이 입력은 지나간다」로 고정한다.
+const 무리컷 = (s, 날짜 = '2026-11-21') => { s.편.만든날 = 날짜; 컷(s, 'C1').구도 = '허리 위 · 옆 45도 — 뒤로 시장 사람들이 오간다'; };
+const 둘레표 = [{ t: 0.3, 누가: '앞쪽 손님', 무엇: '상자를 들어 옮긴다' }, { t: 0.8, 누가: '뒤쪽 행인', 무엇: '옆길로 빠져 걸어간다' }];
+const T31줄 = (r) => r.항목들.filter((x) => x.항목 === '틀' && /T31/.test(x.글)).map((x) => [x.컷, x.등급, x.글]);
+const T31등급 = (고침, dir) => T31줄(틀돌리기(고침, [], dir)).map((v) => v.slice(0, 2));
+
+test('둘레 무리(T31) — 무리 낱말이 있는데 「둘레」가 비었거나 박자 표가 아니면 걸림(앞선 편은 주의) · 박자 표와 「없음: 까닭」은 지나간다 · 끝 그림은 「끝그림까닭」', { skip: !파이썬 && '파이썬 없음' }, () => {
+  let x = T31줄(틀돌리기((s) => 무리컷(s)));
+  assert.deepEqual(x.map((v) => v.slice(0, 2)), [['C1', '걸림']]);
+  assert.match(x[0][2], /둘레에 무리 낱말이 있는데 「둘레」 칸이 비었다\(26 · T31\)/);
+  assert.deepEqual(T31등급((s) => 무리컷(s, '2026-11-18')), [['C1', '주의']], '둘레부터(11-19) 앞선 편은 주의');
+  const 표문제 = [
+    ['뒤 사람들은 저마다 다른 박자로 오간다', /「둘레」는 박자 표로 적는다/],
+    [[둘레표[0]], /t · 누가 · 무엇을 다 갖춘 것이 1개다/],
+    [[둘레표[0], { ...둘레표[1], 누가: '앞쪽 손님' }], /「누가」가 하나뿐이다/],
+    [둘레표.map((b) => ({ ...b, t: b.t + 1.2 })), /첫 박자가 1\.5초다/],
+    [[둘레표[0], { t: 0.8, 누가: '뒤쪽 행인' }], /다 갖춘 것이 1개다/],
+    ['없음:', /「둘레」는 박자 표로 적는다 — .*「없음: <까닭>」\(까닭까지\)/],
+    [[{ ...둘레표[0], t: -0.2 }, { ...둘레표[1], t: 1.8 }], /t가 0보다 작다/],
+  ];
+  for (const [둘레, 글] of 표문제) {
+    x = T31줄(틀돌리기((s) => { 무리컷(s); 컷(s, 'C1').둘레 = 둘레; }));
+    assert.deepEqual(x.map((v) => v.slice(0, 2)), [['C1', '걸림']], JSON.stringify(둘레));
+    assert.match(x[0][2], 글);
+  }
+  assert.deepEqual(T31등급((s) => { 무리컷(s); 컷(s, 'C1').둘레 = 둘레표; }), [], '박자 표');
+  assert.deepEqual(T31등급((s) => { 무리컷(s); 컷(s, 'C1').둘레 = '없음: 뒤 시장은 문을 닫아 비었다'; }), [], '「없음: 까닭」');
+  // 선언한 한계 — 박자 표 「무엇」의 뜻(몸짓인지 정지인지)은 풀지 않는다(굽기 전 관문 ⑩의 눈과 받은 뒤 둘레굳음이 본다)
+  assert.deepEqual(T31등급((s) => { 무리컷(s); 컷(s, 'C1').둘레 = [둘레표[0], { ...둘레표[1], 무엇: '같은 자리에 서 있다' }]; }), [], '「무엇」의 뜻은 풀지 않는다(선언한 한계)');
+  x = T31줄(틀돌리기((s) => { s.편.만든날 = '2026-11-21'; 컷(s, 'C1').둘레 = 둘레표; 컷(s, 'C1').끝그림 = '정지/C1_끝.png'; }));
+  assert.deepEqual(x.map((v) => v.slice(0, 2)), [['C1', '걸림']], '「둘레」 박자 표만 있어도 무리 컷이다');
+  assert.match(x[0][2], /「끝그림」을 쓴다\(26 · T31\) — 끝 그림을 쓴 무리 컷 두 판이 모두 첫 1\.5~2초를/);
+  assert.deepEqual(T31등급((s) => { s.편.만든날 = '2026-11-21'; Object.assign(컷(s, 'C1'), { 둘레: 둘레표, 끝그림: '정지/C1_끝.png', 끝그림까닭: '480p 빠른 판으로 첫 2초를 먼저 잰다' }); }), []);
+  // 무리 낱말 — 한국어는 뒤의 부정, 영어는 바로 앞의 부정만 뺀다(GPT 검수 11-22: 「without disturbing the crowd」는 무리다)
+  for (const [구도, 무리] of [['무리 없이 한 번에 담는다', false], ['텅 빈 시장, 사람들이 없다', false], ['an empty plaza without crowds', false], ['a wall of hundreds of lanterns', false],
+    ['hundreds of local people cross the square', true], ['the camera pans without disturbing the crowd', true], ['an empty plaza after the crowds have left', true]]) {
+    assert.deepEqual(T31등급((s) => { s.편.만든날 = '2026-11-21'; 컷(s, 'C1').구도 = `허리 위 · 옆 45도 — ${구도}`; }), 무리 ? [['C1', '걸림']] : [], 구도);
+  }
+  // 선언한 한계 — 무리 낱말은 알림이다. 무리가 없는 컷에 걸리면 「없음: 까닭」으로 푼다
+  assert.deepEqual(T31등급((s) => { s.편.만든날 = '2026-11-21'; 컷(s, 'C1').구도 = '허리 위 · 옆 45도 — an empty plaza after the crowds have left'; 컷(s, 'C1').둘레 = '없음: 무리가 떠난 빈 광장'; }), []);
+});
+
+test('지시문 둘레(T31) — 무리 컷의 판에 AROUND 줄이 없거나(BACKGROUND는 아니다) 초 박자가 둘보다 적거나 in unison이면 걸림, 무리마다 다른 초를 적으면 지나가고, 무리 없는 컷은 보지 않는다', { skip: !파이썬 && '파이썬 없음' }, () => {
+  const 판 = (AROUND, 더 = '') => `@이미지 1 is the exact first frame of this video.\nACTION: at about 0.5 s she lifts the lid; at about 1.6 s she smiles at the steam.\n${더}${AROUND ? `AROUND: ${AROUND}\n` : ''}SOUND: market noise.\n`;
+  const 둘레줄 = (r) => r.항목들.filter((x) => x.항목 === '지시문' && x.글.startsWith('(둘레)')).map((x) => [x.컷, x.등급, x.글]);
+  const 돌려 = (글, 무리 = true) => { const dir = 임시(); const seq = 틀읽기(); if (무리) { 무리컷(seq); 컷(seq, 'C1').둘레 = 둘레표; } return 돌리기([쓰기(dir, '컷표.json', JSON.stringify(seq)), '--지시문', 쓰기(dir, 'C1.txt', 글), '--출력', path.join(dir, '검사')]); };
+  const 걸림 = (글, 글꼴) => { const x = 둘레줄(돌려(글)); assert.deepEqual(x.map((v) => v.slice(0, 2)), [['C1', '걸림']], 글); assert.match(x[0][2], 글꼴); };
+  걸림(판(null), /^\(둘레\) 둘레에 무리가 있는 컷인데 지시문에 AROUND 줄이 없다\(26 · T31\)/);
+  걸림(판(null, 'BACKGROUND: weathered brick stalls in morning light.\n'), /AROUND 줄이 없다/);
+  걸림(판('each one wears a red scarf.'), /AROUND 줄에 서로 다른 초 박자가 0개뿐이다/);
+  걸림(판('at 0.3 s the front row steps forward; at 0.30 seconds the back row steps forward.'), /서로 다른 초 박자가 1개뿐이다/);
+  걸림(판('at 0.3 s the front row steps forward; at .30 seconds the back row steps forward.'), /서로 다른 초 박자가 1개뿐이다/);
+  걸림(판('at about 0.5 s the shoppers all turn in unison; at about 1.0 s they walk on.'), /한꺼번에 움직이게 적었다\(「in unison」/);
+  assert.deepEqual(둘레줄(돌려(판('the shoppers keep moving from the first frame to the last, never in unison: at about 0.3 s one lifts a crate; at about 0.8 s another hurries past behind her.'))), []);
+  assert.deepEqual(둘레줄(돌려(판('the vendors stack crates at 1 s while a cyclist swerves past at 2 s and the shoppers step aside at 3 s.'))), [], '정해 둔 말이 없어도 무리마다 다른 초면 지나간다');
+  assert.deepEqual(둘레줄(돌려(판(null), false)), [], '무리 없는 컷');
+  // 선언한 한계 — AROUND 줄은 있나 · 서로 다른 초가 둘 이상인가만 본다. 그 초에 무리가 서 있는지는 굽기 전 관문 ⑩의 눈과 받은 뒤 둘레굳음이 본다
+  assert.deepEqual(둘레줄(돌려(판('from 0.3 s to 4.0 s each shopper wears a red scarf and stands still.'))), [], 'AROUND의 뜻은 풀지 않는다(선언한 한계)');
+});

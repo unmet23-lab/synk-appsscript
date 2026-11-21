@@ -59,7 +59,8 @@ _객체 = (객체,)
     "detail": _목록, "detail[]": _객체, "detail[].cut": _글,
     "detail[].t": _수, "detail[].dur": _수, "detail[].in": _수, "detail[].out": _수, "detail[].길이": _수,
     "detail[].band": _글, "detail[].line": _글, "detail[].장면": _글, "detail[].구도": _글, "detail[].카메라": _글, "detail[].연기세기": _글, "detail[].움직임": _글,
-    "detail[].넘어옴": _글, "detail[].공간연결": _글, "detail[].소리": _글, "detail[].타당성": _글, "detail[].시늉까닭": _글, "detail[].감정부위": _글, "detail[].그림단계": _글,
+    "detail[].넘어옴": _글, "detail[].공간연결": _글, "detail[].소리": _글, "detail[].타당성": _글, "detail[].시늉까닭": _글, "detail[].둘레": (글, 목록), "detail[].둘레[]": _객체, "detail[].둘레[].t": _수, "detail[].둘레[].누가": _글, "detail[].둘레[].무엇": _글,
+    "detail[].끝그림까닭": _글, "detail[].감정부위": _글, "detail[].그림단계": _글,
     "detail[].감정자리": (글, 거짓),                      # false는 「감정 자리가 아니다」로 읽는다
     "detail[].판": _글, "detail[].같은판": _글,            # 같은판은 까닭을 글로 적는다(true는 밝힌 것이 아니다)
     "detail[].인물": (글들,), "detail[].그림인물": (글들,), "detail[].끝그림인물": (글들,),

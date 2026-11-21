@@ -163,6 +163,9 @@ def 굽기전(판목록, 무시까닭=None, 컷표=None):
                 hits += [(등급, f"(빛) {말}") for 등급, 말 in 검사.빛대조(seq, 정보["컷들"], 글)]
                 if hasattr(검사, "시늉대조"):   # T30(29 · 11-20) — 시늉에 맡긴 뜻을 같은 컷의 말이나 진짜 소품이 받치나
                     hits += [(등급, f"(시늉) {말}") for 등급, 말 in 검사.시늉대조(seq, 정보["컷들"], 글)]
+                if hasattr(검사, "둘레대조"):   # T31(26 · 11-21) — 둘레에 무리가 있는 컷의 지시문에 AROUND 줄이 있고 무리를 굳히지 않나
+                    표경로 = 판의표[pack][0]
+                    hits += [(등급, f"(둘레) {말}") for 등급, 말 in 검사.둘레대조(seq, 정보["컷들"], 글, os.path.dirname(표경로) if 표경로 else None)]
         for 등급, 말 in hits:
             줄.append((등급, 판id, 말))
         if seq and 검사.틀둘(seq) and not 정보["소리만"] and not 정보["프리비즈"]:
