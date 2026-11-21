@@ -7,7 +7,7 @@ import { chooseFilmSources, createFilmPlayer, evaluateFilmReadiness } from '../i
 import { createVoiceInput, voiceError } from '../interview/voice.mjs';
 import { WhisperModel } from '../interview/whisper-model.mjs';
 import { createStrictVR } from '../interview/film/strict-vr.mjs';
-import { validateJob, jobTexts } from './engine/job-schema.mjs';
+import { validateJob, jobTexts, LANGUAGE_NAMES as KOREAN_LANGUAGE_NAMES } from './engine/job-schema.mjs';
 import { createWorkdaySession } from './engine/session.mjs';
 import { buildRecord, recordLines, recordSerial, RECORD_LIMITS } from './engine/record.mjs';
 import { planRecordSheet, paintRecordSheet, sheetText, SHEET, SHEET_FONT } from './engine/record-sheet.mjs';
@@ -427,7 +427,11 @@ const outward = (say) => say?.kind === 'relay' && say.direction === 'out';
 /** The example a turn offers: Korean, or for relay out the same words in the learner's language. */
 const exampleOf = (say) => (outward(say) ? foreignOf(say.foreign) : say?.example ? { code: '', text: say.example } : null);
 /** A guest's words in the learner's language: the chosen hint language, English when none was chosen. */
-const foreignOf = (foreign) => localOf(foreign?.text);
+/** A person's words: their one language if they have one, else the learner's language. */
+const spokenOf = (person, words) => (person?.language ? { code: person.language, text: words?.[person.language] || '' } : localOf(words));
+const foreignOf = (foreign) => spokenOf(foreign, foreign?.text);
+/** 「내 나라 말로」, or 「영어로」 for a guest who speaks English to every learner. */
+const sayOnIn = (say) => (say?.foreign?.language ? `${KOREAN_LANGUAGE_NAMES[say.foreign.language] || say.foreign.language}로` : '내 나라 말로');
 /** A value written once per language (a guest's words, name or booking cell) in the learner's language, else English.
  * A plain Korean text stays as it is (code ''). */
 function localOf(value) {
@@ -517,7 +521,7 @@ function render() {
     $('caption').classList.toggle('chat', line.channel === 'chat');
     setWho('caption-who', line.action ? null : line, ` · ${line.role}${CHANNEL_NAMES[line.channel] ? ` · ${CHANNEL_NAMES[line.channel]}` : ''}`);
     // A person speaking the learner's language: their words first, the Korean meaning under them.
-    const said = line.foreign ? localOf(line.foreign) : { code: '', text: line.text };
+    const said = line.foreign ? spokenOf(line, line.foreign) : { code: '', text: line.text };
     setText('caption-text', said.text);
     if (said.code) $('caption-text').lang = said.code; else $('caption-text').removeAttribute('lang');
     $('caption-meaning').hidden = !line.foreign; setText('caption-meaning', line.foreign ? `뜻: ${line.text}` : '');
@@ -554,7 +558,7 @@ function renderPlay(state) {
   const phase = state.phase, say = state.say, tour = state.tour;
   const status = state.paused ? '잠시 멈췄어요. 마이크도 껐어요.'
     : phase === 'line' ? (state.line.action ? '지금 일어난 일을 봐요.' : state.line.channel === 'chat' ? '메시지를 읽고 「다음」을 눌러요.' : !canPlay(state.line.clip) ? '자막을 읽고 「다음」을 눌러요.' : lineDone ? '다 들었으면 「다음」을 눌러요.' : `${nameOf(state.line).text}의 말을 들어요.`)
-    : phase === 'say' ? (micActive ? '듣고 있어요. 말을 마치면 알아서 넘어가요.' : transcribing ? '말한 것을 글로 바꾸고 있어요. 잠시만 기다려요.' : say.kind === 'work' ? '화면과 서류를 보고 골라요.' : outward(say) ? (mode === 'voice' ? '내 나라 말로 소리 내어 전하고 「말로 전했어요」를 눌러요.' : '내 나라 말로 쓰고 「답하기」를 눌러요. 어떤 글자로 써도 돼요.') : say.kind === 'relay' ? '외국인의 말을 한국어로 전해요.' : say.kind === 'fork' && !say.chosen ? '어떻게 할지 먼저 골라요.' : say.kind === 'report' && !say.ready ? '보고할 일을 골라요.' : mode === 'voice' ? '「말하기」를 누르고 한국어로 말해요.' : '한국어로 쓰고 「답하기」를 눌러요.')
+    : phase === 'say' ? (micActive ? '듣고 있어요. 말을 마치면 알아서 넘어가요.' : transcribing ? '말한 것을 글로 바꾸고 있어요. 잠시만 기다려요.' : say.kind === 'work' ? '화면과 서류를 보고 골라요.' : outward(say) ? (mode === 'voice' ? `${sayOnIn(say)} 소리 내어 전하고 「말로 전했어요」를 눌러요.` : `${sayOnIn(say)} 쓰고 「답하기」를 눌러요.${say.foreign.language ? '' : ' 어떤 글자로 써도 돼요.'}`) : say.kind === 'relay' ? '외국인의 말을 한국어로 전해요.' : say.kind === 'fork' && !say.chosen ? '어떻게 할지 먼저 골라요.' : say.kind === 'report' && !say.ready ? '보고할 일을 골라요.' : mode === 'voice' ? '「말하기」를 누르고 한국어로 말해요.' : '한국어로 쓰고 「답하기」를 눌러요.')
     : phase === 'tour' ? '둘러보는 중이에요. 점을 누르면 이름이 나와요.'
     : phase === 'note' ? '읽고 「다음」을 눌러요.'
     : '한 장면을 마쳤어요.';
@@ -597,7 +601,7 @@ function renderPlay(state) {
     $('help-hint').hidden = !helpHint; setText('help-hint', helpHint);
     $('answer-area').hidden = !say.ready;
     $('answer').hidden = mode !== 'text'; $('answer-label').hidden = mode !== 'text'; $('answer').disabled = state.paused || busy;
-    setText('answer-label', out ? '내 나라 말로 쓰기' : '내 말'); $('answer').placeholder = out ? '어떤 글자로 써도 돼요.' : '한국어로 써 주세요.';
+    setText('answer-label', out ? `${sayOnIn(say)} 쓰기` : '내 말'); $('answer').placeholder = !out ? '한국어로 써 주세요.' : say.foreign.language ? `${sayOnIn(say)} 써 주세요.` : '어떤 글자로 써도 돼요.';
     renderHeard();
   }
   // tour
@@ -862,7 +866,7 @@ function hudView(state) {
   } else if (state.phase === 'line') {
     const channel = CHANNEL_NAMES[state.line.channel] ? ` · ${CHANNEL_NAMES[state.line.channel]}` : '';
     view.status = state.line.action ? '지금 일어난 일' : `${nameOf(state.line).text} · ${state.line.role}${channel}`; view.dot = '#3D6BC9';
-    view.title = state.line.foreign ? localOf(state.line.foreign).text : state.line.text;
+    view.title = state.line.foreign ? spokenOf(state.line, state.line.foreign).text : state.line.text;
     view.body = [state.line.foreign ? `뜻: ${state.line.text}` : '', hintShown ? hintOf(state.line.hint) : ''].filter(Boolean).join('\n');
     if (lineDone) main('next', '다음', { primary: true });
   } else if (state.phase === 'say') {

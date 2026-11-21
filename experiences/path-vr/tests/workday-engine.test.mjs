@@ -707,6 +707,44 @@ test('a guest has a name per language, speaks in the learner\'s language, and he
   }
 });
 
+test('a guest who speaks English to every learner is written once in English and recorded as English', () => {
+  const hint = { mn: 'туслах', vi: 'gợi ý', en: 'hint' };
+  const job = fresh();
+  job.cast.tourist = { name: 'Emma Clarke', role: '체크아웃 손님', language: 'en' };
+  const asks = { type: 'line', who: 'tourist', text: '짐을 오후 네 시까지 맡길 수 있을까요?', foreign: { en: 'Could you keep my luggage until four?' } };
+  const answer = { type: 'relay', direction: 'out', id: 'tell-tourist', who: 'tourist', record: '선배의 답을 손님께 영어로 전하는 차례', hint,
+    meaning: '네 시까지 맡아 드리고 번호표를 드린대요.', prompt: '선배의 답을 손님께 영어로 전해요.', foreign: { en: 'We can keep it until four. Here is your tag.' } };
+  job.scenes[0].steps.splice(1, 0, asks, answer);
+  assert.deepEqual(validateJob(job).errors, [], 'one language is enough for a person who speaks one language');
+
+  const session = createWorkdaySession(job);
+  session.startScene('arrival');
+  let state = session.advance();
+  assert.equal(state.line.language, 'en');
+  state = session.advance();
+  assert.equal(state.say.foreign.language, 'en');
+  state = session.submitSay({ mode: 'own-text', text: 'We keep it until four.' });
+  for (let guard = 0; guard < 200 && state.phase !== 'scene-end'; guard++) {
+    if (state.phase === 'line' || state.phase === 'note') state = session.advance();
+    else if (state.phase === 'tour') state = session.finishTour();
+    else if (state.phase === 'say') state = session.submitSay({ mode: 'text', text: '네, 알겠습니다.' });
+  }
+  const lines = recordLines(buildRecord(job, session.serialize(), { serial: 'PW-20261130-AAAAAA', date: new Date(2026, 10, 30) }));
+  const own = lines.sections.find((section) => section.title.includes('모국어나 외국어로 전한 것'));
+  assert.deepEqual(own.rows, ['선배의 답을 손님께 영어로 전하는 차례 · 영어로 씀']);
+
+  const broken = [
+    ['a language the page cannot name', (copy) => { copy.cast.tourist.language = 'xx'; }, /language는/],
+    ['a name per language for a one-language person', (copy) => { copy.cast.tourist.names = { mn: 'a', vi: 'b', en: 'c' }; }, /names를 쓰지 않아요/],
+    ['their words missing their language', (copy) => { copy.scenes[0].steps[1].foreign = { mn: 'x' }; }, /foreign에는 en를 모두/],
+  ];
+  for (const [name, breakIt, expected] of broken) {
+    const copy = structuredClone(job); breakIt(copy);
+    const result = validateJob(copy);
+    assert.ok(result.errors.some((error) => expected.test(error)), `${name}: ${result.errors.join(' | ')}`);
+  }
+});
+
 test('a tool pick off the mark comes back for another try, and closing items carry hints', () => {
   const hint = { mn: 'туслах', vi: 'gợi ý', en: 'hint' };
   const job = fresh();

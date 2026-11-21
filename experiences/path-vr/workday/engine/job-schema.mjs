@@ -8,6 +8,8 @@ export const TOOL_KINDS = Object.freeze(['screen', 'paper', 'phone', 'chat']);
 // Words a pre-registration service must not put on screen or on the record (design 4-10).
 // A job that needs one as a workplace term lists the whole term in job.allowedTerms.
 export const FORBIDDEN_RECORD_WORDS = Object.freeze(['추천', '적합', '합격', '검증', '보장', '점수', '등급']);
+// Korean names of the languages a person may speak to every learner (cast.<id>.language).
+export const LANGUAGE_NAMES = Object.freeze({ en: '영어', mn: '몽골어', vi: '베트남어', zh: '중국어', ja: '일본어', ru: '러시아어', uz: '우즈베크어', ne: '네팔어' });
 
 const text = (value) => typeof value === 'string' && value.trim().length > 0;
 const plain = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -46,7 +48,12 @@ function check(job, manifest, fail) {
   for (const [id, person] of Object.entries(cast)) {
     if (!ID.test(id) || !text(person?.name) || !text(person?.role)) fail(`cast.${id}`, '이름과 역할이 필요해요.');
     if (person?.names !== undefined && !localized(person.names)) fail(`cast.${id}`, `names에는 ${everyLanguage.join(', ')}를 모두 적어요.`);
+    // language: this person speaks one language to every learner (an English-speaking guest). Their name stays one.
+    if (person?.language !== undefined && !Object.hasOwn(LANGUAGE_NAMES, person.language)) fail(`cast.${id}`, `language는 ${Object.keys(LANGUAGE_NAMES).join(', ')} 가운데 하나예요.`);
+    if (person?.language !== undefined && person?.names !== undefined) fail(`cast.${id}`, 'language가 있는 인물에는 names를 쓰지 않아요.');
   }
+  // The languages a person's words are written in: their one language, or every hint language and English.
+  const spoken = (who) => (typeof cast[who]?.language === 'string' ? [cast[who].language] : everyLanguage);
   const places = plain(job.places) ? job.places : {};
   if (!plain(job.places) || !Object.keys(places).length) fail('places', '자리가 없어요.');
   const notes = plain(job.notes) ? job.notes : {};
@@ -127,7 +134,7 @@ function check(job, manifest, fail) {
       if (step.channel === 'chat' && step.clip !== undefined) fail(where, '채팅 줄에는 영상이 없어요.');
       else if (step.clip !== undefined) clipCheck(where, step.clip, 'speaking');
       // foreign: the person speaks the learner's language. The caption shows it, and text is its Korean meaning.
-      if (step.foreign !== undefined && !localized(step.foreign)) fail(where, `foreign에는 ${everyLanguage.join(', ')}를 모두 적어요.`);
+      if (step.foreign !== undefined && !(plain(step.foreign) && spoken(step.who).every((code) => text(step.foreign[code])))) fail(where, `foreign에는 ${spoken(step.who).join(', ')}를 모두 적어요.`);
       if (step.foreign === undefined || step.hint !== undefined) hinted(where, step.hint);
       if (step.place !== undefined && !Object.hasOwn(places, step.place)) fail(where, `자리 ${step.place}가 없어요.`);
     } else if (step.type === 'move') {
@@ -209,7 +216,7 @@ function check(job, manifest, fail) {
       if (step.channel !== undefined && step.channel !== 'phone') fail(where, 'relay의 channel은 phone만 써요.');
       // Every hint language, and English for a learner who chose none.
       if (!plain(step.foreign)) fail(where, 'foreign(외국인의 말)이 없어요.');
-      else for (const code of everyLanguage) if (!text(step.foreign[code])) fail(where, `foreign의 ${code}가 비었어요.`);
+      else for (const code of spoken(step.who)) if (!text(step.foreign[code])) fail(where, `foreign의 ${code}가 비었어요.`);
       hinted(where, step.hint);
       if (step.listen !== undefined) clipCheck(where, step.listen, 'listening');
     } else if (step.type === 'report') {

@@ -5,6 +5,7 @@
  * page can confirm: which option was pressed and how the turn was answered — never what was
  * said. The learner types every free-text field and hands the sheet to an employer themselves. */
 import { sceneSayIds, sceneWorkIds } from './session.mjs';
+import { LANGUAGE_NAMES } from './job-schema.mjs';
 
 export const RECORD_NOTICE = Object.freeze([
   '이 기록은 체험에서 일어난 일을 적은 것입니다. 한국어 실력이나 일하는 기술을 재지 않았고, 채용 여부를 판단하는 자료가 아닙니다.',
@@ -15,7 +16,9 @@ const VIEW = Object.freeze({ screen: '화면', quest: 'Quest' });
 const SPEAK = Object.freeze({ voice: '음성', text: '글', mixed: '음성과 글' });
 const PRODUCED = Object.freeze({ voice: '말로 답함', text: '글로 답함', example: '예시 문장을 고름' });
 // A turn said on to a guest in the learner's own language (relay out). It is not Korean, so it never joins the Korean tallies.
-const OWN = Object.freeze({ 'own-voice': '모국어로 말함', 'own-text': '모국어로 씀', example: '예시를 보고 전함' });
+const OWN = Object.freeze({ 'own-voice': '말함', 'own-text': '씀', example: '예시를 보고 전함' });
+/** 「모국어로 말함」, or for a person who speaks one language 「영어로 말함」. */
+const ownHow = (language, produced) => (produced === 'example' ? OWN.example : `${language ? `${LANGUAGE_NAMES[language] || language}로` : '모국어로'} ${OWN[produced]}`);
 const trim = (value, limit) => Array.from(String(value ?? '').replace(/\s+/gu, ' ').trim()).slice(0, limit).join('');
 const ymd = (date, separator) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join(separator);
 
@@ -38,7 +41,10 @@ export function buildRecord(job, data, { name = '', reasons = {}, hard = '', dec
   const asked = done.flatMap((scene) => sceneSayIds(scene));
   const answered = asked.map((id) => ({ id, entry: data.says?.[id] })).filter(({ entry }) => entry);
   const entries = answered.filter(({ id }) => !outward(id));
-  const own = answered.filter(({ id, entry }) => outward(id) && OWN[entry.produced]).map(({ id, entry }) => `${steps.get(id).record} · ${OWN[entry.produced]}`);
+  const languageOf = (id) => job.cast?.[steps.get(id)?.who]?.language || '';
+  const ownEntries = answered.filter(({ id, entry }) => outward(id) && OWN[entry.produced]);
+  const own = ownEntries.map(({ id, entry }) => `${steps.get(id).record} · ${ownHow(languageOf(id), entry.produced)}`);
+  const ownForeign = ownEntries.some(({ id }) => languageOf(id));
   const count = (mode) => entries.filter(({ entry }) => entry.produced === mode).length;
   const direct = entries.filter(({ entry }) => entry.produced === 'voice' || entry.produced === 'text');
   const modes = new Set(direct.map(({ entry }) => entry.produced));
@@ -63,7 +69,7 @@ export function buildRecord(job, data, { name = '', reasons = {}, hard = '', dec
     speak: modes.size === 2 ? SPEAK.mixed : modes.has('voice') ? SPEAK.voice : modes.has('text') ? SPEAK.text : '',
     completed: { scenes: done.length, of: job.scenes.length, minutes: activeMs > 0 ? Math.max(1, Math.round(activeMs / 60000)) : 0, replayedScenes: done.filter((scene) => (data.scenes[scene.id].finishes ?? 1) > 1).length },
     korean: { voice: count('voice'), text: count('text'), example: count('example'), unaided: direct.filter(({ entry }) => !entry.helped).length, replays: films ? data.counts?.replays || 0 : null, hints: data.counts?.hints || 0, turns },
-    choices, tools, own,
+    choices, tools, own, ownForeign,
     reflection: { hard: trim(hard, RECORD_LIMITS.hard), decision: decisionLabel },
     ladder: job.closing.ladder.items.map((item) => ({ label: item.label, value: trim(ladder[item.id], RECORD_LIMITS.ladder) })).filter((item) => item.value),
     notice: [...RECORD_NOTICE, ...(job.reviewNote ? [job.reviewNote] : [])],
@@ -89,7 +95,7 @@ export function recordLines(record) {
       korean.replays === null ? `힌트 ${korean.hints}번` : `다시 듣기 ${korean.replays}번 · 힌트 ${korean.hints}번`,
       ...korean.turns,
     ].filter(Boolean) },
-    { title: '모국어로 전한 것', rows: record.own || [] },
+    { title: record.ownForeign ? '모국어나 외국어로 전한 것' : '모국어로 전한 것', rows: record.own || [] },
     { title: '일터의 도구를 다룬 것', rows: record.tools || [] },
     { title: '일터에서 고른 것', rows: record.choices.length ? record.choices.map((choice) => `${choice.scene}: ${choice.text}${choice.how ? ` · ${choice.how}` : ''}${choice.reason ? ` — 까닭: ${choice.reason}` : ''}`) : ['고른 갈림길이 아직 없습니다.'] },
     { title: '체험 뒤 본인의 답', rows: [

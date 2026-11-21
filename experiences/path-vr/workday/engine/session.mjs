@@ -214,7 +214,8 @@ export function createWorkdaySession(job, { saved = null } = {}) {
   }
   function reset() { data = blankData(job); hinted.clear(); tried.clear(); phase = 'idle'; sceneIndex = -1; pending = []; current = null; lastLine = null; say = null; tour = null; paused = false; place = null; placeCaption = ''; return snapshot(); }
   // names: the same person's name in each hint language; the page picks the learner's.
-  const person = (id) => ({ who: id, name: job.cast[id].name, names: job.cast[id].names ? { ...job.cast[id].names } : null, role: job.cast[id].role });
+  // language: a person who speaks one language to every learner.
+  const person = (id) => ({ who: id, name: job.cast[id].name, names: job.cast[id].names ? { ...job.cast[id].names } : null, language: job.cast[id].language || null, role: job.cast[id].role });
   const lineView = (step) => step ? { clip: step.clip, ...person(step.who), text: step.text, foreign: step.foreign ? { ...step.foreign } : null, hint: step.hint || null, action: step.action === true, channel: step.channel || null } : null;
   function snapshot() {
     const active = scene();
