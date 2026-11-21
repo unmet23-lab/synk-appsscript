@@ -3530,8 +3530,8 @@
         "검수": {
           "현지어": {
             "결과": "통과",
-            "지문": "b23fd16cbe58a7dc2f0412c79c6b6c9626f40e403530c5edd0e18c8382cd893e",
-            "시각": "2026-11-21T01:59:56.403Z",
+            "지문": "2e8bac5e8dd786ddeeb5e7d5b307e15ed5176b52a8b3bf4ebb47e9dee67e614c",
+            "시각": "2026-11-21T14:20:36.272Z",
             "도구": "tools/현지어대조.js",
             "줄": 14,
             "다시본줄": 0,
@@ -3539,16 +3539,16 @@
             "문법모델": "gemini-4-carbon",
             "역모델": "gemini-3.8-flash",
             "기록": ".tmp/현지어대조/LAB_사층F_mn_20261101/UZ.판본.대조.json",
-            "뜻대조": "flash · Opus 직역 14줄을 원문과 견줬다. 화면 9줄은 뜻이 같다(hook 4층은 어디, death «죽음»이란 말 = 사, sameSound 발음이 같다, soSub F = Four, floorF 유령들의 층, endCard F층으로). 게시글 5줄도 같다. 셋째 겹(Fable 5.2 주간 한도로 Opus 5.5 대체)이 뜻 검사 불편 지적 뒤 고친 death · floorF와 endCard를 그대로로 봤다"
+            "뜻대조": "원문을 안 본 Opus 5.5 직역과 flash 직역 14줄을 원문과 줄마다 견줬다. endCard «F»ga / borasizmi?는 flash 「«F»로 가시겠습니까?」, Opus 「«F»에 가십니까?」로 원문 「F에 갈 거예요?」와 같다. hook · death · sameSound · so · soSub · floorA · floorF · phew와 게시글 넷도 원문 뜻과 같다. 셋째 겹 Fable 5.2가 hook · endCard · 게시글 끝 질문을 모두 그대로 두라고 했다. 이번 회차에 고친 줄은 없다(endCard는 앞 회차의 둘째 고침)."
           },
           "글자": {
             "결과": "통과",
-            "지문": "90a3256562429172178e53bbc4d22a4cb051aa9d429b7c47f7aa981be193b90c",
-            "시각": "2026-11-21T10:59:56+09:00",
+            "지문": "1038609d5bbb826cd14578c6221a0d202b8e66e5072cc1907ba4da181ca3ceda",
+            "시각": "2026-11-21T23:29:21+09:00",
             "도구": "tools/글자검사.js",
             "기록": ".tmp/글자검사/LAB_사층F_mn_20261101/UZ/결과.json",
             "고칠것": 0,
-            "확인할것": 7,
+            "확인할것": 8,
             "엔진잼": "함",
             "글자인식": "읽음",
             "기준": [
@@ -3569,8 +3569,8 @@
                 "좁은여백"
               ]
             },
-            "눈확인": "death · sameSound · so · soSub 읽기 시간은 같은 편 RU · KZ와 같은 동결 원본 박자다(UZ death · sameSound 27자는 RU 25자와 비슷하다). 좁은 여백 셋을 봤다: 9.5초 위 머리 자리는 엘리베이터 문 위 F 표지, 14초 아래는 몽글 몸, 4초 오른쪽은 원본 한국어 카드 자리로 기준 판과 같다. 6.5초 프레임에서 «Oʻlim» = 사 (sa)!와 Talaffuzi bir xil!이 판 안에 있고, 10초 프레임에서 4-qavat = / Sharpalar qavati 두 줄이 판 안에 있다. 15.3초 끝 카드 F qavatigami?는 한 줄로 판 안이다",
-            "글지문": "b23fd16cbe58a7dc2f0412c79c6b6c9626f40e403530c5edd0e18c8382cd893e"
+            "눈확인": "endCard를 «F»ga / borasizmi?로 바꿔 다시 구운 판. 좁은 여백 그림 셋을 봤다: 9.5초 표지판 4-qavat = / Sharpalar qavati는 검은 판 안 두 줄이고 위 머리 자리 걸림은 문 위 금빛 F 그림이다. 14초 아래는 몽글 눈 그림이다. 4초 오른쪽 사 · sa · 4 판은 오른쪽 단추 선 안쪽이다. 0.7 · 6.5 · 8.0 · 8.5 · 13.2 · 15.5초 프레임을 봤다. hook 4-qavat qani?, 등식 판 세 줄(4 = 사 / «Oʻlim» = 사 (sa)! / Talaffuzi bir xil!), 흰 판 4 → F / F = «Four», 말풍선 Qutuldim…, 끝 카드 «F»ga / borasizmi? 두 줄이 모두 판 안에 감김 · 겹침 없이 들었다. 끝 카드 오른쪽 끝은 약 904px로 단추 자리 밖이다. 읽기 시간 넷(death · so · soSub · endCard)은 원본 박자다.",
+            "글지문": "2e8bac5e8dd786ddeeb5e7d5b307e15ed5176b52a8b3bf4ebb47e9dee67e614c"
           }
         }
       }
