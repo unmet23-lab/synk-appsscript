@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1fb91-58f4-7a43-a66a-aa2c8d91cb78"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the imagegen skill to create one matching panel with Mongle shaking to the right.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle shakes to the right, glasses swinging left, as the clerk holds back a laugh."}}
+{"type":"turn.completed","usage":{"input_tokens":81428,"cached_input_tokens":62720,"cache_write_input_tokens":0,"output_tokens":1101,"reasoning_output_tokens":285}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1fb1b-cd82-70a2-894f-f52cbe62e391"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one dreamy felt close-up of the jar with the tiny mom, matching the freeze-dryer and character references."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A tiny felt mom smiles and waves inside a glass jar on the dreamy icy-blue freeze-dryer’s tray."}}
+{"type":"turn.completed","usage":{"input_tokens":47266,"cached_input_tokens":35456,"cache_write_input_tokens":0,"output_tokens":959,"reasoning_output_tokens":0}}

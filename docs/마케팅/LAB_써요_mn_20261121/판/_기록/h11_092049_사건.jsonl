@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1fb7a-2b5f-72f3-b798-1d58aafccb5f"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll generate one panel with Mongle scrunched up from the bitter taste, keeping the shop framing and warm felt style.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle scrunches up at the bitter coffee, beret airborne and glasses askew, as the startled clerk watches."}}
+{"type":"turn.completed","usage":{"input_tokens":49653,"cached_input_tokens":40704,"cache_write_input_tokens":0,"output_tokens":1004,"reasoning_output_tokens":0}}

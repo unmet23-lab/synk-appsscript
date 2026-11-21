@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1fb1a-234b-7380-b67e-772e113a8c7a"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll use the image-generation tool to make one close-up, matching the mother in your references.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A warm felt close-up of Mom smiling through one tear, her hand held to her chest."}}
+{"type":"turn.completed","usage":{"input_tokens":98017,"cached_input_tokens":87680,"cache_write_input_tokens":0,"output_tokens":1051,"reasoning_output_tokens":70}}

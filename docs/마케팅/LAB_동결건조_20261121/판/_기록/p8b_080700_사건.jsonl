@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1fb36-9920-7f43-b048-e849c6207114"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll keep the scene and framing fixed, with Mom jumping joyfully and both arms raised.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Tiny Mom jumps joyfully with both arms raised, her handbag swinging beneath a felt sparkle beside the lid."}}
+{"type":"turn.completed","usage":{"input_tokens":79637,"cached_input_tokens":65280,"cache_write_input_tokens":0,"output_tokens":750,"reasoning_output_tokens":120}}

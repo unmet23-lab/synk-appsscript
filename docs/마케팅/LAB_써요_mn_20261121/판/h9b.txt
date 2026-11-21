@@ -1,0 +1,14 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — one panel of a vertical comedy short: a needle-felt miniature diorama photo, portrait 2:3, soft warm afternoon light from a shop window, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style, light and scale of the felt reference photo — NOT its café, NOT its barista).
+
+WORLD (same in every panel): a tiny felt neighbourhood accessory shop seen across its wooden counter — FIXED CAMERA at counter height, straight-on. On the counter: a small felt hat stand with a few soft berets, a little felt mirror on a stand, a tray of round felt eyeglasses, a tiny felt espresso machine on the right, and a small wooden coin tray. Behind: soft felt shelves with folded scarves and hats, a warm window. The TOP 24% of the image is a plain soft cream felt wall with nothing on it (no shelves, no signs) — keep it empty for titles. The front face of the counter (bottom 25% of the image) is plain warm wood.
+CHARACTERS (keep identical in every panel they appear in):
+- THE CLERK: a cheerful Korean felt doll young man with short black felt hair, a round friendly face, small black bead eyes, rosy cheeks, wearing a cream knitted sweater and a forest-green felt apron. He stands behind the counter on the RIGHT side of the frame. He does NOT wear glasses.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera; closed eyes are two short curved dark stitched lines). Mongle has NO arms, NO legs, NO hands and NO neck, ever — its head and body are one soft dome. It moves by tilting, squashing and bouncing its whole body. Mongle sits ON the counter on the LEFT-CENTRE of the frame, its bottom hem on the counter top at about 78% of the image height, about 30% of the image width wide. A small coral felt coin purse sits on the counter next to Mongle.
+
+Attached images in order: (1) the drinking panel — same camera, framing, Mongle with beret and glasses, cup and clerk.
+
+Same fixed camera, one second later: MONGLE has pulled back upright from the cup and FROZEN stiff mid-gulp — both glossy bead eyes now WIDE OPEN in shock behind the round glasses, its whole body stiff and straight, the round glasses jolted up a little, one tiny drop of dark coffee on its front. The cup stands back on the counter in the same spot, a thin wisp of steam. THE CLERK's hopeful smile freezes, eyebrows raised.
+
+Only the characters named in this panel, nobody else. Absolutely no text, letters, numbers, prices, symbols, question marks or watermarks anywhere — not on signs, not on tags, not on the coins, not on the cup. No real brand, no logos.

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1fb75-f716-7da0-add1-fd3bc73cfb73"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll keep the same framing and felt textures, with the beret slipped over Mongle’s eyes and the clerk hiding a laugh.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle wobbles beneath its slipped beret while the clerk covers a laugh."}}
+{"type":"turn.completed","usage":{"input_tokens":110824,"cached_input_tokens":91776,"cache_write_input_tokens":0,"output_tokens":1071,"reasoning_output_tokens":47}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1fb7a-2b2f-7cd0-b493-b5490dbcc99c"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll create one felt diorama panel with Mongle hidden in a soft steam cloud and the clerk leaning back in surprise.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Mongle disappears inside a fluffy felt steam cloud as the startled clerk leans back."}}
+{"type":"turn.completed","usage":{"input_tokens":81280,"cached_input_tokens":62464,"cache_write_input_tokens":0,"output_tokens":1098,"reasoning_output_tokens":106}}
