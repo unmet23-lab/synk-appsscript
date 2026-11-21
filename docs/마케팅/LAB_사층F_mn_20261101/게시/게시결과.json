@@ -296,16 +296,16 @@
     },
     {
       "계정": "lab-mx-tiktok",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00-06:00",
       "지문": "a821a0cdd0e6d31653b153a67b64495f3d387873a883e4ebad482bdc69c2bd7e",
       "게시글지문": "b2812ccd3f00376e55f69e9981f62d8f2dc23368e3c624935ce2f88145e2784e",
       "방법": "ego",
       "게시물ID": "7709387156610944263",
       "주소": "https://www.tiktok.com/@synklab.mx/video/7709387156610944263",
-      "확인": "예약 한국 시각 2026-11-21 04:00 · TikTok Studio 콘텐츠 목록(@synklab.mx, Profile 12) 줄 「Nov 21, 4:00 AM (GMT+9) Seoul Everyone」 · 줄 글 첫 줄 「En coreano, el 4 se dice 사 (sa), y “muerte” (死) suena igualito. Por eso muchos edificios ponen F en lugar del piso 4.」(원고 첫 줄과 같음) · 누르기 전 칸 Nov 21, 2026 04:00 input:(GMT+9) Local Time · AI 표시 끔 · 캡션 일치 true · 표지 그림 올림(판 표지와 회색 16×16 차이 9, 첫 장면과 107.1) · 누르기 전 표지 유지 true",
+      "확인": "틱톡 공개 쪽 statusCode 0 · createTime 2026-11-20 19:00Z(한국 11-21 04:00) · 글 「En coreano, el 4 se dice 사 (sa)」 · 11-21 11-21 14:22 KST 이 회차가 로그인 없이 확인",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-18T06:24:33.703Z"
+      "기록시각": "2026-11-21T05:22:34.932Z"
     },
     {
       "계정": "lab-lk-facebook",

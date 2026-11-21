@@ -84,29 +84,29 @@
     },
     {
       "계정": "lab-br-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00-03:00",
       "지문": "4bbc0615a9b4a06bf028793f01589f9eb3a12773ba337ff1b4ac1f83f7c24a5b",
       "게시글지문": "f133aff71446e962e137d2cf2e1b563d34c992d216d96d4e2f5506bf1671a779",
       "방법": "ego",
       "게시물ID": "Ek7lBoULVNk",
       "주소": "https://youtube.com/shorts/Ek7lBoULVNk",
-      "확인": "예약 한국 시각 2026-11-21 01:00 = 현지 13:00(2026-11-20) · 스튜디오 예약 창 「2026. 11. 21. 오전 1:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Brasil | Coreano divertido」 목록 「예약됨 2026. 11. 21.」 · 글 첫 줄 「Barriga, pera E barco: em coreano é tudo “배” 😵 #learnkorean」 · 동영상 언어 포르투갈어(브라질) · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "oEmbed 200 · 제목 「Barriga, pera E barco: em coreano é tudo 배」 · 11-21 11-21 14:22 KST 이 회차가 로그인 없이 확인",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-17T05:43:46.184Z"
+      "기록시각": "2026-11-21T05:22:28.408Z"
     },
     {
       "계정": "lab-us-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00-05:00",
       "지문": "4b69d143cace2f4e4014a0bee8f889973f0973466c20e84374eec13d9d958cf9",
       "게시글지문": "862d1dc96e86be8df4674f6f24b6cae66218ad8254a5faaaf8cc4666a441b3e3",
       "방법": "ego",
       "게시물ID": "PFSaFhIW_bM",
       "주소": "https://youtube.com/shorts/PFSaFhIW_bM",
-      "확인": "예약 한국 시각 2026-11-21 03:00 = 현지 13:00(2026-11-20) · 스튜디오 예약 창 「」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB USA | Korean Made Fun」 목록 「예약됨 2026. 11. 21.」 · 글 첫 줄 「One Korean word = belly, pear AND boat 😵 #learnkorean」 · 동영상 언어  ·  · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "oEmbed 200 · 제목 「One Korean word = belly, pear AND boat」 · 11-21 11-21 14:22 KST 이 회차가 로그인 없이 확인",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-17T05:58:13.429Z"
+      "기록시각": "2026-11-21T05:22:31.884Z"
     },
     {
       "계정": "lab-ca-youtube",
@@ -123,16 +123,16 @@
     },
     {
       "계정": "lab-my-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-21T13:00:00+08:00",
       "지문": "047b86cc0128d1fa01c07d118414cee4eda22e85964d43587772af5a0eab6ba2",
       "게시글지문": "7a530fb79c0f5e37245e8b547064a4a7cc37011f9fa909093710825363e75186",
       "방법": "ego",
       "게시물ID": "-CfpdjxBGJE",
       "주소": "https://youtube.com/shorts/-CfpdjxBGJE",
-      "확인": "예약 한국 시각 2026-11-21 14:00 = 현지 13:00(2026-11-21) · 스튜디오 예약 창 「2026. 11. 21. 오후 2:00 현지 시간(GMT+0900)」 · 「동영상 예약됨」 창 · 채널 「SYNK LAB Malaysia | Seronok Belajar Korea」 목록 「예약됨 2026. 11. 21.」 · 글 첫 줄 「Perut, pear dan bot — dalam bahasa Korea semuanya “배” 😵 #learnkorean」 · 동영상 언어 말레이어 · 교육 · 아동용 아님 · 변경 콘텐츠 아님",
+      "확인": "oEmbed 200 · 제목 「Perut, pear dan bot — dalam bahasa Korea semuanya 배」 · 11-21 11-21 14:22 KST 이 회차가 로그인 없이 확인",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
-      "기록시각": "2026-11-17T05:48:27.572Z"
+      "기록시각": "2026-11-21T05:22:32.541Z"
     },
     {
       "계정": "lab-tw-youtube",
@@ -262,16 +262,16 @@
     },
     {
       "계정": "lab-py-youtube",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-20T13:00:00-03:00",
       "지문": "e66fde68cc6059ee1798a97d7ecd02a469dbdd845882d5e98be066983141185f",
       "게시글지문": "ecdd504f2c4ff1fa48963ef3b7e60d0d515e3928139af6b62976638bbc8d7d20",
       "방법": "ego-browser · Profile 7(유호) · 공간 274 「게시 1119-1930 나라별 유튜브」 · 스튜디오 계정 메뉴 → 계정 전환 → 채널 줄 실제 클릭으로 활성 채널을 바꿈 → 올리기 창에서 제목 · 설명 · 아동용 아님 · 변경 콘텐츠 아니요 · 동영상 언어 → 공개 상태 단계 예약(현지 시간 GMT+0900, 2026. 11. 21. 오전 1:00) → 「예약」 → 편집 화면에서 제목 및 설명 언어를 스페인어로 저장. 스크립트 C:/Users/q1212/ego/yt-20261119-1930/(sw.mjs · yt.mjs · yt-resume.mjs · editlang.mjs · listread.mjs)",
       "게시물ID": "ah4m5_yRDCA",
       "주소": "https://youtube.com/shorts/ah4m5_yRDCA",
-      "확인": "예약 한국 시각 2026-11-21 01:00 = 현지 13:00(2026-11-20, America/Asuncion -03:00) · 제목 첫 줄 「¿Panza, pera y bote? En coreano todo se dice “배” 😵 #aprendecoreano」 · 채널 「SYNK LAB Paraguay | Coreano divertido」. studio.youtube.com/channel/UCyYm3TWZQWliVyHF_dc3Tbg/videos/short 목록 줄에서 「예약됨 · 2026. 11. 21. 예약 날짜」를 읽었다. 그 줄의 공개 상태 칸을 열어 「2026. 11. 21. · 오전 1:00 · 현지 시간대(GMT+0900)로 기본 설정됨」을 읽고 저장 없이 닫았다. 완료 창은 「동영상 예약됨 2026년 11월 21일 1:00에 동영상이 공개 상태로 설정됩니다」였다. 올린 파일은 공용 작업본 판본/PY/video.mp4(sha256 e66fde68cc60…, 판 지문과 같음, 멕시코 판과 다름)다. 동영상 언어와 제목 및 설명 언어는 스페인어, 아동용 아님, 변경된 콘텐츠 아니요, 카테고리 교육이다. 썸네일은 고르지 않았다. 로그인 없이 oEmbed가 403(공개 전)이다.",
+      "확인": "oEmbed 200 · 제목 「¿Panza, pera y bote? En coreano todo se dice 배」 · 11-21 11-21 14:22 KST 이 회차가 로그인 없이 확인",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-19 18시 회차 — 8장 띠 · 음량 · 게시글 대조 · 링크 200 · 올리기 전 검사 고칠 것 0)",
-      "기록시각": "2026-11-19T10:53:08.724Z",
+      "기록시각": "2026-11-21T05:22:31.334Z",
       "후속": [
         "2026-11-21 01:00(한국) 뒤 https://www.youtube.com/oembed?url=https://www.youtube.com/shorts/ah4m5_yRDCA&format=json 이 200인지 본다."
       ]
