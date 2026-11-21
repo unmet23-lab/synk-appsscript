@@ -1805,7 +1805,11 @@ function 관문모듈다름(돌리기 = (인자) => spawnSync('git', 인자, { c
   // :/ = 저장소 뿌리 기준(도구를 다른 자리에 복사해 돌려도 빈 결과로 통과하지 않게)
   const r = 돌리기(['diff', '--name-only', '-z', 'origin/master', '--', ...관문모듈.map((p) => `:/${p}`)]);
   if (r.status !== 0) throw new 멈춤(`관문 모듈을 origin/master와 견주지 못했다 — ${String(r.stderr || r.error || `종료 ${r.status}`).trim().split('\n').pop()}`);
-  return String(r.stdout || '').split('\0').filter(Boolean);
+  const changed = String(r.stdout || '').split('\0').filter(Boolean);
+  const modulePath = 'tools/lib/뮤즈1차.js';
+  if (!changed.includes(modulePath) && (돌리기(['cat-file', '-e', 'origin/master:' + modulePath]).status !== 0 ||
+      돌리기(['ls-files', '--error-unmatch', '--', ':/' + modulePath]).status !== 0)) changed.push(modulePath);
+  return changed;
 }
 
 /** 올리기. 옵션: 항목[]·원본·공개폴더·지움[]·기준·기준폴더·전부·줄끝도·토큰·토큰안함·허용[]·후보폴더·위에·실행·계획·메시지·사본·새사본·원격주소·주소… */

@@ -392,6 +392,7 @@ function main(argv) {
   }
   const who = 시청자[args['브랜드']];
   if (!who) throw new Error(`브랜드는 ${Object.keys(시청자).join(' · ')} 가운데 하나다: ${args['브랜드']}`);
+  if (args['틀'] !== undefined && args['틀'] !== '퀴즈') throw new Error(`--틀은 퀴즈만 있다: ${args['틀']}`);
   const src = path.resolve(video);
   const info = probe(src);
   const firstCut = 첫컷인자(src, args, info.duration);
@@ -460,7 +461,6 @@ function main(argv) {
     const source = plan && fs.existsSync(plan) ? fs.readFileSync(plan, 'utf8') : '기획 원문 없음';
     require('./lib/뮤즈1차.js').review('콘텐츠', source + '\n\n대사·자막\n' + fs.readFileSync(speech, 'utf8'), sheets);
   }
-  if (args['틀'] !== undefined && args['틀'] !== '퀴즈') throw new Error(`--틀은 퀴즈만 있다: ${args['틀']}`);
   if (args['틀'] === '퀴즈' && want === '자동') console.log('  --틀 퀴즈: 지난 편 자동 고르기는 이야기 편을 넣는다 — --지난 <그 계정의 지난 퀴즈 편 영상 둘>을 준다(제작절차 「LAB 하루 두 편」 7)');
   fs.writeFileSync(path.join(out, '질문.md'), buildPrompt({ brand: args['브랜드'], sheets, speech, cuts, previous, 틀: args['틀'] || null, 중간: args['중간'] === true }));
   fs.writeFileSync(path.join(out, '볼이유_질문.md'), buildWorthPrompt({ brand: args['브랜드'], sheets, speech, cuts }));

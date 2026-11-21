@@ -2857,10 +2857,18 @@ async function main(argv) {
   if (o.명령 === '준비') {
     const { 폴더, 목록 } = await 준비하기(o, { 알리기 });
     const { review } = require('./lib/뮤즈1차.js');
-    const captures = [목록.화면, 목록.가져온캡처].filter(Boolean)
-      .flatMap(set => set.장들.filter(frame => frame.판 === '후').map(frame => path.join(폴더, frame.그림)));
-    for (const [index, bundle] of 목록.묶음.entries()) {
-      review(목록.종류 === '화면' ? '화면' : '코드', fs.readFileSync(path.join(폴더, bundle.파일), 'utf8'), index === 0 ? captures : []);
+    for (const bundle of 목록.묶음) {
+      const captures = [];
+      for (const set of [목록.화면, 목록.가져온캡처].filter(Boolean)) {
+        set.화면들.forEach((screen, index) => {
+          const id = 'S' + String(index + 1).padStart(2, '0') + (set.가져옴 ? 'g' : '');
+          if (bundle.항목.some(item => item.startsWith(id + '-'))) {
+            captures.push(...set.장들.filter(frame => frame.이름 === screen.이름 && frame.판 === '후').map(frame => path.join(폴더, frame.그림)));
+          }
+        });
+      }
+      const packet = fs.readFileSync(path.join(폴더, bundle.파일), 'utf8');
+      review(목록.종류 === '화면' ? '화면' : '코드', packet.slice(packet.indexOf('## 이번 변경')), captures);
     }
     찍기(`${폴더}`);
     찍기(`${목록.종류} 검수 · 바탕 ${목록.바탕.커밋.slice(0, 9)} → ${목록.끝 === '작업본' ? '작업본' : 목록.끝.커밋.slice(0, 9)} · 파일 ${목록.파일.length}개(뺌 ${목록.파일.filter(f => f.뺀까닭).length})`);
