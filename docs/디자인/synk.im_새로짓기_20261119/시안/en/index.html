@@ -503,6 +503,7 @@ html[lang="en"] .arms b{white-space:normal}
 html[lang="en"] .next-say b{font-size:clamp(44px,6.6vw,108px)}
 /* 홈 */
 html[lang="en"] .w-open h2,html[lang="en"] .w-close h3{font-size:clamp(28px,3.3vw,54px);white-space:normal;max-width:13em}
+html[lang="en"] .w-close h3{font-size:clamp(26px,3vw,48px)}   /* 끝 제목이 「2 Classroom」 말풍선에 닿지 않게(11-21 검수) */
 html[lang="en"] .w-w{font-size:clamp(48px,7.4vw,124px);line-height:1}
 html[lang="en"] .rail a{white-space:nowrap}
 @media (max-width:900px){html[lang="en"] .rail a{font-size:11.5px;gap:4px}html[lang="en"] .rail li+li::before{width:5px;margin:0 4px}html[lang="en"] .rail ol{flex-wrap:wrap}}
@@ -609,7 +610,7 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
       </div>
       <div class="w-layer w-map">
         <div class="w-map-in">
-          <img src="../assets/town-road.webp" alt="A small town where one road runs in a full loop. Along it stand a house, a classroom, a university gate, an office and a café, in that order. A student sets out from the house, passes the five places one by one and comes back home, where she welcomes a newcomer. A 3D illustration.">
+          <img src="../assets/town-road.webp" alt="A small town where one road runs in a full loop. Along it stand a house, a classroom, a university gate, an office and a café, in that order. A student sets out from the house, passes the classroom, the gate, the office and the café one by one, and comes back home, where she welcomes a newcomer. A 3D illustration.">
           <svg class="w-loop" viewBox="0 0 1536 1024" preserveAspectRatio="none" aria-hidden="true"><path class="draw" pathLength="100" d="M785.0 702.0 C775.8 698.0 767.2 690.3 760.0 684.0 C752.8 677.7 747.3 674.7 742.0 664.0 C736.7 653.3 732.0 635.7 728.0 620.0 C724.0 604.3 720.0 585.8 718.0 570.0 C716.0 554.2 715.7 538.3 716.0 525.0 C716.3 511.7 717.2 500.8 720.0 490.0 C722.8 479.2 727.2 468.3 733.0 460.0 C738.8 451.7 745.5 445.8 755.0 440.0 C764.5 434.2 775.8 428.7 790.0 425.0 C804.2 421.3 821.7 421.2 840.0 418.0 C858.3 414.8 880.0 409.5 900.0 406.0 C920.0 402.5 939.2 400.0 960.0 397.0 C980.8 394.0 1001.7 389.5 1025.0 388.0 C1048.3 386.5 1078.8 387.7 1100.0 388.0 C1121.2 388.3 1132.8 388.2 1152.0 390.0 C1171.2 391.8 1197.8 395.3 1215.0 399.0 C1232.2 402.7 1243.8 406.5 1255.0 412.0 C1266.2 417.5 1275.8 422.7 1282.0 432.0 C1288.2 441.3 1287.7 456.7 1292.0 468.0 C1296.3 479.3 1303.7 489.7 1308.0 500.0 C1312.3 510.3 1316.3 520.8 1318.0 530.0 C1319.7 539.2 1319.3 547.0 1318.0 555.0 C1316.7 563.0 1314.7 570.2 1310.0 578.0 C1305.3 585.8 1299.2 594.2 1290.0 602.0 C1280.8 609.8 1267.5 617.3 1255.0 625.0 C1242.5 632.7 1228.8 641.3 1215.0 648.0 C1201.2 654.7 1185.3 659.8 1172.0 665.0 C1158.7 670.2 1147.0 674.0 1135.0 679.0 C1123.0 684.0 1114.2 689.3 1100.0 695.0 C1085.8 700.7 1066.7 708.7 1050.0 713.0 C1033.3 717.3 1016.7 719.2 1000.0 721.0 C983.3 722.8 966.7 723.8 950.0 724.0 C933.3 724.2 916.7 723.7 900.0 722.0 C883.3 720.3 864.2 716.3 850.0 714.0 C835.8 711.7 825.8 710.0 815.0 708.0 C804.2 706.0 794.2 706.0 785.0 702.0Z"></path></svg>
           <img class="w-occ" src="../assets/occ-house.webp" alt=""><img class="w-occ" src="../assets/occ-cafe.webp" alt="">
           <div class="w-fig w-new" aria-hidden="true"><i></i></div>
@@ -945,7 +946,11 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
     pinLis.forEach((li, i) => li.classList.toggle('here', !idle && i === st.pin));
     newbie.classList.toggle('on', !idle && st.newbie);
     occs.forEach((o, i) => { const c = WALK.occ[i]; o.classList.toggle('over', p.y < c.base && p.x > c.x[0] && p.x < c.x[1]); });
+    // 집 · 카페 뒤를 지나는 동안은 학생을 잠깐 감춘다. 사람 키가 지붕보다 커서, 몸만 가리면 지붕 위로 머리가 나와 지붕을 밟은 것처럼 보였다(11-21 검수).
+    // HIDE는 건물 뒤의 길(그림 화소 [왼쪽, 위, 오른쪽, 아래]). 발이 그 안으로 들어가면 가장자리 18화소에 걸쳐 옅어지고 나오면 다시 짙어진다
+    me.style.opacity = 1 - Math.max(...HIDE.map(([x0, y0, x1, y1]) => clamp((p.x - x0) / 18) * clamp((x1 - p.x) / 18) * clamp((p.y - y0) / 18) * clamp((y1 - p.y) / 18)));
   }
+  const HIDE = [[690, 548, 800, 678], [1205, 592, 1380, 706]];   // 집은 문턱(678)부터 옅어져 바닥선(660)에서 가림 조각이 덮을 때 이미 다 감춰진다
   [me, newbie].forEach(el => {                                       // 칸 하나의 크기: 집 앞에서 사람 키가 그림 화소로 94(처음 그림 속 학생보다 조금 작게, 건물과 어울리게)
     el.style.width = 94 / WALK.body * WALK.ar / 15.36 + '%'; el.style.aspectRatio = WALK.ar;
     el.style.transformOrigin = `50% ${(1 - WALK.pad) * 100}%`;
@@ -958,7 +963,10 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
   function playWalk() { if (walking) return; walking = true; walkIdle = false; walkT0 = performance.now(); walkRaf = requestAnimationFrame(walkFrame); }
   function stopWalk() { if (walkIdle) return; cancelAnimationFrame(walkRaf); walkRaf = 0; walking = false; walkIdle = true; walkDraw(walkPose(0), true); }
   stopWalk();
-  new IntersectionObserver(es => { if (flat && !reduce && es[0].isIntersecting) playWalk(); }, { threshold: .6 }).observe($('.w-map'));
+  // 좁은 화면은 마을 그림이 충분히 보이면 한 번 걷는다. 그림이 정사각형이라 가로로 든 휴대폰처럼 낮은 화면에서는 그림의 60%가 한꺼번에 보일 수 없다.
+  // 그래서 비율 대신 보이는 높이로 본다: 그림 높이의 60% 또는 화면 높이의 80% 가운데 작은 쪽(11-21 검수)
+  new IntersectionObserver(es => { const e = es[0]; if (flat && !reduce && e.isIntersecting && e.intersectionRect.height >= Math.min(.6 * e.boundingClientRect.height, .8 * innerHeight)) playWalk(); },
+    { threshold: Array.from({ length: 21 }, (_, i) => i / 20) }).observe($('.w-map'));
   window.__walk = ms => { cancelAnimationFrame(walkRaf); walkRaf = 0; walking = true; walkIdle = false; walkDraw(walkPose(ms)); return { end: END, plan: PLAN.map(p => [Math.round(p.t0), Math.round(p.t1)]) }; };   // 확인용: 그 시각의 모습으로 멈춘다
 
   /* 4 그림 속 화면 자리에 실물을 올린다(그림은 화면을 덮게 잘리므로 자리를 계산한다) */
