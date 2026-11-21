@@ -4,7 +4,9 @@ import { renderAccountPanel, renderAccountNotice, getAccountErrorMessage } from 
 import { createJobsFeed, renderJobs, jobOpportunity } from './jobs-ui.mjs';
 import { SCHEMA_VERSION, STORAGE_KEY, createInitialState, normalizeState, updateProfile, upsertTask, confirmTask, getNextTask } from './state.mjs';
 import { PROGRAMS, RULES, rulesAt, programsFor } from './study-data.mjs';
-import { createProfileStore, createProfile, setField, toggleCompare, parseWhole, GUEST_OWNER } from './study-profile.mjs';
+import { createProfileStore, createProfile, setField, toggleCompare, parseWhole, GUEST_OWNER, MAX_DATES, addDate, removeDate, confirmDate, keepDates, toggleChannel } from './study-profile.mjs';
+import { POSTS, allPosts, findDate, endDay, dateStatus } from './channel-data.mjs';
+import { renderChannels, renderPost, renderUpcoming, renderNews, icsText } from './channel-ui.mjs';
 import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, studyCountSay, condHint, STUDY_FILTERS, GRADE_MAX, FUNDS_MAX_MAN } from './study-ui.mjs';
 
 void SCHEMA_VERSION; void STORAGE_KEY;
@@ -14,7 +16,7 @@ const announcer = document.getElementById('announcer');
 // 화면 결: 「패스」 — 줄에 매단 카드 한 장(내 목표)과 한 걸음마다 찍히는 도장. 2026-11-13 리디자인(시안 C).
 const DICT = {
   langLabel: ['언어', 'Language'], navLabel: ['주요 메뉴', 'Main menu'],
-  today: ['오늘', 'Today'], univ: ['대학', 'Schools'], explore: ['찾기', 'Explore'], prepare: ['준비', 'Prepare'], help: ['도움', 'Help'], profile: ['나', 'Me'],
+  today: ['오늘', 'Today'], channels: ['채널', 'News'], univ: ['대학', 'Schools'], explore: ['찾기', 'Explore'], prepare: ['준비', 'Prepare'], help: ['도움', 'Help'], profile: ['나', 'Me'],
   signIn: ['가입 · 로그인', 'Sign in'], myAccount: ['내 계정', 'My account'],
   q1: ['지금, 어떤 준비를 하고 있나요?', 'What are you preparing for right now?'],
   obT1: ['한국에서 쓸', 'Pick the first card'], obT2: ['첫 카드를 고르세요.', 'you’ll carry in Korea.'],
@@ -77,7 +79,7 @@ const DICT = {
   reset: ['저장 데이터 초기화', 'Reset saved data'], resetAsk: ['읽을 수 없는 저장 데이터를 지우고 새로 시작할까요?', 'Delete unreadable saved data and start fresh?'],
   storeFail: ['이 탭에 저장하지 못했어요. 작성 내용은 화면에 남아 있어요.', 'Could not save in this tab. Your text stays on screen.'],
   pageAnn: ['페이지', 'page'],
-  studyStore: ['「내 조건」(한국어 · 성적 · 준비한 돈)은 계정에 저장되지 않고 이 탭에만 있어요. 내 조건 화면에서 지울 수 있고, 탭을 닫거나 로그아웃하면 사라져요.', '“My conditions” (Korean level, grades, funds) are not saved to your account; they stay in this tab only. You can clear them on the My conditions screen, and they disappear when you close the tab or sign out.'],
+  studyStore: ['「내 조건」(한국어 · 성적 · 준비한 돈)과 「다가오는 날」은 계정에 저장되지 않고 이 탭에만 있어요. 탭을 닫거나 로그아웃하면 사라져요.', '“My conditions” (Korean level, grades, funds) and “Coming up” dates are not saved to your account; they stay in this tab only and disappear when you close the tab or sign out.'],
   toolsLead: ['공식 안내와 별개인 SYNK 페이지예요. 새 탭에서 열리고 PATH 저장 내용과 분리돼요.', 'Separate SYNK pages, not official sources. They open in a new tab, apart from PATH data.']
 };
 const t = (k) => (DICT[k] || [k, k])[state.lang === 'en' ? 1 : 0];
@@ -132,6 +134,9 @@ const PUBLIC_WEB = (() => { try { return document.querySelector?.('meta[name="sy
 const STUDY_PROGRAMS = programsFor(PROGRAMS, PUBLIC_WEB);
 const STUDY_ON = STUDY_PROGRAMS.length > 0;
 const STUDY_IDS = STUDY_PROGRAMS.map((p) => p.id);
+// 채널: 손으로 쓴 글이 하나라도 있을 때만 탭을 연다. 「대학 소식」 글은 실을 과정에서 만든다(공개판에는 예시 과정이 없다).
+const CHANNEL_POSTS = allPosts(STUDY_PROGRAMS);
+const CHANNEL_ON = POSTS.length > 0;
 // 조건은 계정 문서와 섞지 않고 이 탭에만 둔다. 저장값에 주인(손님 또는 계정 ID)을 함께 적는다.
 // 손님이 넣은 조건은 로그인한 계정이 이어받는다. 주인이 다른 계정이거나 로그아웃 · 세션 만료로 손님이 되면 지운다(공용 기기).
 // 시작할 때는 계정 상태가 정해지기 전이라 주인이 다르면 감추기만 하고, 정해진 뒤(studySettled)에 지운다.
@@ -172,7 +177,7 @@ const session = createPathSession({
 state = session.document()?.state || createInitialState('ko');
 hadDoc = !!session.document()?.state;
 
-const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false, univId: null, univFilter: 'all', studyText: {}, studyErrors: {} };
+const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false, univId: null, univFilter: 'all', studyText: {}, studyErrors: {}, channelId: null, postId: null };
 activeOwner = ownerKey(); wasOnboarded = !!state.onboarded;
 
 function persist() { return commit(state); }
@@ -214,6 +219,7 @@ const TAB_ICON = {
   today: svg(24, 1.6, '<rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10.2h16M8.5 3.5v4M15.5 3.5v4"/><path d="M11.9 14.9h.2" stroke-width="2.6"/>'),
   explore: svg(24, 1.6, '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/>'),
   prepare: svg(24, 1.6, '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>'),
+  channels: svg(24, 1.6, '<rect x="4" y="5" width="13" height="14.5" rx="2"/><path d="M17 9h3v8.5a2 2 0 0 1-2 2H6"/><path d="M7.5 9h6M7.5 12.5h6M7.5 16h4"/>'),
   univ: svg(24, 1.6, '<path d="M3.5 9.6 12 4.6l8.5 5"/><path d="M6 11v7.5M10 11v7.5M14 11v7.5M18 11v7.5M3.5 19.5h17"/>'),
   help: svg(24, 1.6, '<path d="M4.5 5.5h15v10h-8l-4 3.5v-3.5h-3z"/><path d="M10.4 8.9a1.7 1.7 0 1 1 2.3 1.6c-.5.2-.7.6-.7 1.1M12 13.4v.1"/>'),
   profile: svg(24, 1.6, '<circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4"/>')
@@ -255,7 +261,7 @@ const findJobEntry = (id) => (jobsFeed.snapshot().jobs || []).find((j) => j.id =
 const oppRow = (o) => `<li><button type="button" class="row" data-action="detail" data-id="${esc(o.id)}"><span><b>${demoBadge(o)}${esc(pick(o.title))}</b><small>${esc(pick(o.summary))}</small></span><span class="row-go" aria-hidden="true">${ICON.arrow}</span></button></li>`;
 
 /* ── 틀: 머리 막대 · 넓은 화면 탭 · 휴대폰 아래 탭 ── */
-const TABS = ['today', 'univ', 'explore', 'prepare', 'help', 'profile'].filter((p) => p !== 'univ' || STUDY_ON);
+const TABS = ['today', 'channels', 'univ', 'explore', 'prepare', 'help', 'profile'].filter((p) => (p !== 'univ' || STUDY_ON) && (p !== 'channels' || CHANNEL_ON));
 const UNIV_PAGES = ['cond', 'univDetail', 'univCompare'];
 function shell(main) {
   const nav = state.onboarded && S.page !== 'onboard';
@@ -272,7 +278,7 @@ function shell(main) {
 ${nav ? `<nav class="tabs" aria-label="${t('navLabel')}">${tabs}</nav>` : ''}<div class="bar-right">${lang}${acct}</div></header>
 ${main}${nav ? `<nav class="tabbar" aria-label="${t('navLabel')}">${bar}</nav>` : ''}</div>`;
 }
-function navActive(p) { return S.page === p || (p === 'explore' && S.page === 'detail') || (p === 'prepare' && S.page === 'editor') || (p === 'univ' && UNIV_PAGES.includes(S.page)); }
+function navActive(p) { return S.page === p || (p === 'explore' && S.page === 'detail') || (p === 'prepare' && S.page === 'editor') || (p === 'univ' && UNIV_PAGES.includes(S.page)) || (p === 'channels' && S.page === 'post'); }
 
 // quiet = 첫 실행에서는 「로그인하지 않은 상태」 안내를 빼고(첫 화면을 카드에 양보), 오류 · 저장 실패 · 막힘만 보인다
 function notices(quiet = false, noFlash = false) {
@@ -322,7 +328,7 @@ function today() {
     return `<main class="home" id="main"><aside class="stage home-stage is-three" aria-label="${t('pickCard')}"><div class="rod" aria-hidden="true"></div>${cards}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('pickCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${t('nT1')}</span> <span class="title-2">${t('nT2')}</span></h1>
 <ul class="goal-list">${GOALS.map((x) => `<li><button type="button" class="goal-row" data-action="exploreGoal" data-id="${x.id}"><span class="goal-sym" data-goal="${x.id}">${SYMBOL[x.id]}</span><span class="goal-txt"><b>${esc(pick(x.label))}</b><small>${esc(pick(x.description))}</small></span><span class="row-go" aria-hidden="true">${ICON.arrow}</span></button></li>`).join('')}</ul>
-<div class="home-grid">${sec(t('official'), t('offSub'), officialList('all'))}${sec(t('tools'), '', toolRows())}</div></div></main>`;
+${upcomingHtml()}<div class="home-grid">${sec(t('official'), t('offSub'), officialList('all'))}${sec(t('tools'), '', toolRows())}</div></div></main>`;
   }
   const mine = state.tasks.filter((x) => x.goal === g.id);
   const nt = getNextTask(state);
@@ -343,7 +349,7 @@ function today() {
   const off = g.id === 'job' && jobsFeed.snapshot().status === 'disabled' ? `<p class="off"><i aria-hidden="true"></i>${t('jobsOff')}</p>` : '';
   return `<main class="home" id="main"><aside class="stage home-stage" aria-label="${t('myCard')}"><div class="rod" aria-hidden="true"></div>${hang(g.id, { kicker: t('myCard'), mode: 'next' })}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('changeCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${h1a}</span> <span class="title-2">${h1b}</span></h1>
-${stamps(st, g.steps.map(pick))}${card}${g.id === 'study' && STUDY_ON ? renderStudyEntry(studyView()) : ''}
+${stamps(st, g.steps.map(pick))}${card}${g.id === 'study' && STUDY_ON ? renderStudyEntry(studyView()) : ''}${upcomingHtml()}${g.id === 'study' && CHANNEL_ON ? renderNews(channelView()) : ''}
 <div class="home-grid">${sec(t('homeOpps'), t('demoSub'), `<ul class="rows">${opps.map(oppRow).join('')}</ul>`)}${sec(t('official'), t('offSub'), officialList(g.id) + off)}</div></div></main>`;
 }
 
@@ -456,17 +462,23 @@ function profile() {
 
 const studyView = () => ({ lang: state.lang, profile: studyProfile(), programs: STUDY_PROGRAMS, rules: rulesAt(RULES, new Date()), now: new Date() });
 const condView = () => ({ ...studyView(), persisted: study.persisted(), text: S.studyText, errors: S.studyErrors });
+const channelView = () => ({ ...studyView(), posts: CHANNEL_POSTS });
+const channels = () => renderChannels({ ...channelView(), channelId: S.channelId });
+const post = () => renderPost({ ...channelView(), postId: S.postId });
+// 다가오는 날은 넣은 날이 하나라도 있으면 카드와 상관없이 오늘 화면에 둔다.
+const upcomingHtml = () => (CHANNEL_ON ? renderUpcoming(channelView()) : '');
 const univ = () => renderUniv({ ...studyView(), filter: S.univFilter });
 const univDetail = () => renderUnivDetail({ ...studyView(), programId: S.univId });
 const univCompare = () => renderUnivCompare(studyView());
 const cond = () => renderCond(condView());
-const PAGES = { today, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile };
+const PAGES = { today, channels, post, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile };
 const LOCKED_ACTIONS = ['pickGoal', 'step2', 'toggle', 'finish', 'skip', 'prepareThis', 'confirm', 'body', 'loc', 'setLang', 'changeGoal', 'prepareJob', 'saveJob', 'removeJob'];
 function render(focus = true) {
   if (composingEl && root.contains(composingEl) && document.activeElement === composingEl) { deferredRender = true; deferredFocus = deferredFocus || focus; return; }
   composingEl = null;
   syncStudyOwner();
   if (!STUDY_ON && (S.page === 'univ' || UNIV_PAGES.includes(S.page))) S.page = 'today';
+  if (!CHANNEL_ON && (S.page === 'channels' || S.page === 'post')) S.page = 'today';
   const accSt = session.status();
   const ae = document.activeElement;
   const keepId = !focus && ae && root.contains(ae) ? ae.id : '';
@@ -545,8 +557,64 @@ const ACT = {
     if (id == null) { render(false); return; }
     S.taskId = id; go('editor');
   },
-  nav: (el) => go(el.dataset.page),
+  nav: (el) => { if (el.dataset.page === 'channels') S.channelId = null; go(el.dataset.page); },
   univOpen(el) { S.univId = el.dataset.id; go('univDetail'); },
+  channelOpen(el) { S.channelId = el.dataset.id || null; go('channels'); },
+  postOpen(el) { S.postId = el.dataset.id; go('post'); },
+  channelShow(el) {
+    const id = el.dataset.id, next = studyWrite(toggleChannel(studyProfile(), id));
+    render(false); root.querySelector(`[data-action="channelShow"][data-id="${id}"]`)?.focus();
+    say(next.channelsOff.includes(id) ? accL('오늘 화면의 새 소식에서 뺐어요.', 'Removed from Latest news on Today.') : accL('오늘 화면의 새 소식에 보여요.', 'Shown in Latest news on Today.'));
+  },
+  dateToggle(el) {
+    const id = el.dataset.id, hit = findDate(CHANNEL_POSTS, id);
+    if (!hit) return;
+    const cur = studyProfile(), now = new Date();
+    let msg;
+    if (cur.dates.some((x) => x.id === id)) {
+      studyWrite(removeDate(cur, id));
+      msg = accL('다가오는 날에서 뺐어요.', 'Removed from Coming up.');
+    } else {
+      const st = dateStatus(hit.date, now).state;
+      if (st === 'past' || st === 'cancelled') return;
+      let base = cur;
+      // 서른 개면 지난 날과 글에서 사라진 날부터 정리한다.
+      if (base.dates.length >= MAX_DATES) base = keepDates(base, base.dates.filter((x) => { const h = findDate(CHANNEL_POSTS, x.id); const s2 = h && dateStatus(h.date, now).state; return h && s2 !== 'past' && s2 !== 'cancelled'; }).map((x) => x.id));
+      const r = addDate(base, { id, start: hit.date.start, end: endDay(hit.date) });
+      if (r.full) msg = accL('다가오는 날이 서른 개라 더 넣을 수 없어요. 지난 날을 지운 뒤 넣어 주세요.', 'Coming up already has 30 dates. Remove some first.');
+      else {
+        studyWrite(r.profile);
+        msg = study.persisted() ? accL('이 탭의 다가오는 날에 넣었어요.', 'Added to Coming up in this tab.') : accL('이 브라우저에서는 저장할 수 없어 지금 화면에서만 기억해요.', 'This browser cannot store it, so it is kept on this screen only.');
+      }
+    }
+    render(false); root.querySelector(`[data-action="dateToggle"][data-id="${id}"]`)?.focus(); say(msg);
+  },
+  dateConfirm(el) {
+    const hit = findDate(CHANNEL_POSTS, el.dataset.id);
+    if (!hit) return;
+    studyWrite(confirmDate(studyProfile(), { id: hit.date.id, start: hit.date.start, end: endDay(hit.date) }));
+    render(false); root.querySelector(`.sx-dayrow-btn[data-id="${hit.post.id}"]`)?.focus();
+    say(accL('바뀐 날짜를 확인했어요.', 'Changed date confirmed.'));
+  },
+  datesClean() {
+    const cur = studyProfile();
+    studyWrite(keepDates(cur, cur.dates.filter((x) => findDate(CHANNEL_POSTS, x.id)).map((x) => x.id)));
+    render(false); root.querySelector('#sx-up-h')?.focus();
+    say(accL('글에서 빠진 날을 목록에서 지웠어요.', 'Removed dates that are no longer in the posts.'));
+  },
+  dateIcs(el) {
+    const hit = findDate(CHANNEL_POSTS, el.dataset.id);
+    if (!hit) return;
+    try {
+      const url = URL.createObjectURL(new Blob([icsText(hit.post, hit.date, state.lang)], { type: 'text/calendar;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = `${hit.date.id}.ics`; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+      say(accL('달력 파일을 내려받았어요. 파일을 열어 달력에 넣으세요.', 'Calendar file downloaded. Open it to add the date to your calendar.'));
+    } catch {
+      say(accL('이 브라우저에서는 달력 파일을 만들 수 없어요. 날짜를 직접 적어 두세요.', 'This browser cannot create the calendar file. Please note the date yourself.'));
+    }
+  },
   studyFilter(el) {
     S.univFilter = STUDY_FILTERS.includes(el.dataset.id) ? el.dataset.id : 'all';
     render(false); root.querySelector(`[data-action="studyFilter"][data-id="${S.univFilter}"]`)?.focus();
@@ -560,8 +628,9 @@ const ACT = {
     sayStudyCount();
   },
   studyClear() {
-    const kept = studyProfile().compare;
-    studyWrite({ ...createProfile(), compare: kept }); S.studyText = {}; S.studyErrors = {};
+    // 조건만 지운다. 비교에 담은 과정, 다가오는 날, 채널 설정은 남긴다.
+    const cur = studyProfile();
+    studyWrite({ ...createProfile(), compare: cur.compare, dates: cur.dates, channelsOff: cur.channelsOff }); S.studyText = {}; S.studyErrors = {};
     render(false); root.querySelector('[data-action="studySet"]')?.focus();
     say(accL('조건을 모두 지웠어요.', 'All conditions cleared.'));
   },

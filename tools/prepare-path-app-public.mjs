@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { readConfig, isLoopback } from '../experiences/synk-account/src/core.mjs';
 import { PROGRAMS, IMAGE_IDS, programsFor } from '../experiences/path-app/study-data.mjs';
+import { CHANNELS, POSTS, allPosts, validateChannelData } from '../experiences/path-app/channel-data.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const APP = 'experiences/path-app';
@@ -37,6 +38,11 @@ function builder() {
 }
 
 /** Project only canonical browser-safe fields. Never copy the input file verbatim. */
+/** 채널 글을 공개 전에 검사한다. 앱은 브라우저에서 검사하지 않으므로 틀린 글이면 여기서 묶음을 만들지 않는다. */
+export function checkChannelData(posts = POSTS, programs = PROGRAMS) {
+  return validateChannelData(CHANNELS, allPosts(programsFor(programs, true), posts), programs.map((p) => p.id));
+}
+
 export function validatePathConfig(raw, { targetUrl = PATH_PUBLIC_URL, local = false } = {}) {
   if (local ? !LOCAL_URLS.has(targetUrl) : targetUrl !== PATH_PUBLIC_URL) throw Error('PATH requires its exact registered callback URL.');
   const checked = readConfig(raw, targetUrl), client = checked.clients['path-app'];
@@ -148,6 +154,7 @@ function publicHtml(html, files, config) {
 
 /** Produce a new isolated candidate only. Registration and deployment are separate. */
 export async function preparePathAppPublic({ out, config, targetUrl = PATH_PUBLIC_URL, root = ROOT } = {}) {
+  checkChannelData();
   const publicConfig = validatePathConfig(config, { targetUrl });
   const workspace = await fs.realpath(root), output = await destination(out, workspace);
   const compiled = await bundlePathApp({ root: workspace }), sources = compiled.sources, files = new Map([['app.mjs', compiled.bytes]]);

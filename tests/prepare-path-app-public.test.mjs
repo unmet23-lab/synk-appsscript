@@ -128,3 +128,13 @@ test('public images: example programs ship no image, real programs ship only app
   assert.deepEqual(publicImages([real[0], real[0]]), ['assets/univ-a.webp']);
   assert.throws(() => publicImages([{ ...real[0], image: '../secret' }]), /Unapproved PATH image/);
 });
+
+test('channel posts are checked before any public bundle is made', async () => {
+  const { checkChannelData } = await import('../tools/prepare-path-app-public.mjs');
+  const { POSTS } = await import('../experiences/path-app/channel-data.mjs');
+  assert.equal(checkChannelData(), true);
+  const first = POSTS[0];
+  assert.throws(() => checkChannelData([{ ...first, source: { ...first.source, url: 'http://example.com/' } }, ...POSTS.slice(1)]), /Invalid channel data/, 'a post without an https source stops the bundle');
+  assert.throws(() => checkChannelData([{ ...first, points: first.points.slice(0, 2) }, ...POSTS.slice(1)]), /Invalid channel data/);
+  assert.throws(() => checkChannelData([first, first]), /Invalid channel data/, 'duplicate post ids stop the bundle');
+});

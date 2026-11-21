@@ -1,6 +1,6 @@
 # PATH 통합 앱
 
-> **2026-11-21 유학 앱으로 넓히기 시작**: 유호님 「path앱을 좀 전문적으로 파보자」 · 「네, 2판으로」에 따라 [PATH 유학 앱 기획](../../docs/디자인/PATH_유학앱_20261120/README.md)의 1단계(내 조건, 대학)를 넣었다. 아래 「내 조건과 대학」 절을 본다.
+> **2026-11-21 유학 앱으로 넓히기 시작**: 유호님 「path앱을 좀 전문적으로 파보자」 · 「네, 2판으로」에 따라 [PATH 유학 앱 기획](../../docs/디자인/PATH_유학앱_20261120/README.md)의 1단계(내 조건, 대학)와 2단계(채널, 「내 길에 넣기」)를 넣었다. 아래 「내 조건과 대학」과 「채널과 「내 길에 넣기」」 절을 본다.
 >
 > **2026-11-11 살림 확정, 새 기능은 이 판에서 멈춤** ([결정](../../docs/_ops/결정.md)). 다음 일은 두 가지다. 몽골 학원 학생 흐름에 잇는 것, 그리고 실제 가입자 다섯 명으로 세 유형 중 누가 다시 돌아오는지 보는 것이다. 공고 연동은 법 확인 뒤에 켠다.
 
@@ -29,6 +29,15 @@
 - **아직 없는 것:** 협약 대학, 전주대학교 한국어학당(수업료가 두 문서에서 다르고 2027년 일정이 없다), 투그릭 환산, 「이 대학으로 준비 시작」.
 - **검수와 공개(2026-11-21):** 카본 28건(반영 27 · 일부 1)을 고쳤다. 최종 검수는 Fable 5.2가 사용량 한도라 Opus 5.5가 대신 봤고 5건(반영 4 · 일부 1)을 공개 전에 고쳤다. 다시 검수에서 카본 0건, Opus 5.5 1건(반영)과 0건이었다. 2026-11-21 synk-policy `0502b2355`로 [PATH 앱](https://synk.im/path/app/)에 공개했다. 자세한 기록은 [1단계 설계](../../docs/디자인/PATH_유학앱_20261120/1단계_설계.md)의 「고객 화면 검수와 공개」 절에 있다.
 
+## 채널과 「내 길에 넣기」(2026-11-21, 유학 앱 2단계)
+
+설계, 글 목록과 출처, 검토 반영은 [2단계 설계](../../docs/디자인/PATH_유학앱_20261120/2단계_설계.md)에 있다.
+
+- **화면:** 아래 탭에 「채널」(영어 「News」)이 생겼다. 채널 다섯(TOPIK, 비자와 서류, 장학금, 사기 주의, 대학 소식), 채널 글(요점 셋, 출처와 확인한 날, 「내게 해당되나요?」, 날 목록), 오늘 화면의 「다가오는 날」과 「새 소식」이다.
+- **자료:** `channel-data.mjs`에 손으로 쓴 글 아홉 편이 있다. 모든 글은 공식 쪽에서 직접 읽은 것만 쓰고 출처와 확인한 날을 단다. 대학 소식 글은 1단계 과정의 접수 차수에서 저절로 만든다. 글이 틀리면 공개 묶음(`tools/prepare-path-app-public.mjs`)이 멈춘다. 확인한 지 90일이 지난 글은 머리에 다시 확인하라고 띄운다.
+- **넣은 날의 저장:** 「내 길에 넣기」로 넣은 날은 내 조건과 같은 탭 저장(`synk-path-study-v1`의 `dates`)에만 있다. 넣는 자리마다 「이 탭에만 있어요」를 적고, 「달력에 넣기」로 .ics 파일을 내려받아 휴대폰 달력에 남길 수 있다. 계정 저장은 3단계에서 계정 문서 2판으로 옮긴다.
+- **아직 없는 것:** 알림, 글을 모으는 중인 채널(한국 생활, 취업, 선배 이야기, 부모님 방), 확인한 날이 차기 전에 깨우는 예약.
+
 ## 화면 결 — 「패스」(2026-11-13 리디자인)
 
 유호님 「처음부터 끝까지 싹다 리디자인」 뒤 시안 세 갈래(A 노선 · B 빛글자 · C 패스) 가운데 C를 골라(「c가 생각보다 직관적이라 쓰기 편할것같아」 · 「c는 어때? 이번엔 페이블 검수 받지말고 진행해」) 앱 전체를 다시 그렸다. 시안 · 비교 캡처는 세션 작업 폴더 `.tmp/path-redesign-20261113/`(git 밖)에 둔다.
@@ -53,7 +62,7 @@ node experiences/path-app/server.mjs
 서버는 파일별 허용 목록으로 화면 소스와 승인된 글꼴, 승인된 대학 그림(`study-data.mjs`의 `IMAGE_IDS`)만 제공한다. `server.mjs`·시험·기록·비밀 설정은 제공하지 않는다. 외부 폰트 요청은 없다. SUIT Variable은 승인 원본, Inter Tight는 승인된 Regular 400(별칭) · Medium 500 · SemiBold 600 파일, 번호 글자는 DM Mono Medium을 제공한다. 세 글꼴의 OFL 라이선스도 별도 정적 경로로 제공한다.
 
 ```powershell
-node --test experiences/path-app/state.test.mjs experiences/path-app/document.test.mjs experiences/path-app/account.test.mjs experiences/path-app/jobs-ui.test.mjs experiences/path-app/app.test.mjs experiences/path-app/study.test.mjs experiences/path-app/server.test.mjs tests/prepare-path-app-public.test.mjs
+node --test experiences/path-app/state.test.mjs experiences/path-app/document.test.mjs experiences/path-app/account.test.mjs experiences/path-app/jobs-ui.test.mjs experiences/path-app/app.test.mjs experiences/path-app/study.test.mjs experiences/path-app/channel.test.mjs experiences/path-app/server.test.mjs tests/prepare-path-app-public.test.mjs
 ```
 
 ## 첫 진입과 보관 기준

@@ -12,6 +12,8 @@ import * as studyData from './study-data.mjs';
 import * as studyMatch from './match.mjs';
 import * as studyProfile from './study-profile.mjs';
 import * as studyUi from './study-ui.mjs';
+import * as channelData from './channel-data.mjs';
+import * as channelUi from './channel-ui.mjs';
 
 // The real app runs unchanged apart from its static ESM imports. This small DOM
 // provides only element parsing, selectors, live input values and event bubbling;
@@ -180,7 +182,7 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
   TestURL.createObjectURL = () => `blob:qa-${downloads.length}`;
   TestURL.revokeObjectURL = value => revoked.push(value);
   const context = {
-    ...stateModel, ...content, ...accountUi, ...jobsUi, ...studyData, ...studyMatch, ...studyProfile, ...studyUi,
+    ...stateModel, ...content, ...accountUi, ...jobsUi, ...studyData, ...studyMatch, ...studyProfile, ...studyUi, ...channelData, ...channelUi,
     // 기본은 예시 묶음이다. 실제 과정이 자료에 들어와도 아래 흐름 시험은 같은 묶음으로 돈다.
     PROGRAMS: programs ?? studyData.PROGRAMS.filter(program => program.example),
     createPathSession: options => {
@@ -477,8 +479,8 @@ const settle = async () => { for (let i = 0; i < 12; i++) await new Promise(reso
 test('대학 탭: 목록에서 자세히, 내 조건에서 넣은 값이 결과와 탭 저장에만 닿고 계정 문서는 그대로다', async t => {
   const app = await boot(t);
   const before = app.saved();
-  assert.equal(app.root.querySelector('nav.tabs').querySelectorAll('button').length, 6);
-  assert.equal(app.root.querySelector('nav.tabbar').querySelectorAll('button').length, 6);
+  assert.equal(app.root.querySelector('nav.tabs').querySelectorAll('button').length, 7, '채널 탭이 오늘 다음에 더해진다');
+  assert.equal(app.root.querySelector('nav.tabbar').querySelectorAll('button').length, 7);
   assert.doesNotMatch(pageText(app), /undefined/);
   app.click('nav', '[data-page="univ"]');
   assert.match(app.root.querySelector('h1').textContent, /내 조건으로 갈 수 있는 대학/);
@@ -534,7 +536,7 @@ test('대학 탭: 목록에서 자세히, 내 조건에서 넣은 값이 결과�
   app.click('studyCompare', '[data-id="example-b-lang"]');
   assert.match(app.announcer.textContent, /비교에서 뺐어요. 지금 1곳을 담았어요/);
   app.click('nav', '[data-page="profile"]');
-  assert.match(pageText(app), /「내 조건」\(한국어 · 성적 · 준비한 돈\)은 계정에 저장되지 않고/);
+  assert.match(pageText(app), /「내 조건」\(한국어 · 성적 · 준비한 돈\)과 「다가오는 날」은 계정에 저장되지 않고/);
   app.click('clear');
   assert.equal(app.record(STUDY_KEY), undefined, '이 탭의 자료를 지우면 내 조건도 지운다');
 });
@@ -547,7 +549,7 @@ test('오늘 화면의 입구는 유학 준비 카드에만 있고, 공개판에
   const job = await boot(t);
   assert.equal(job.root.querySelector('button.sx-entry-btn'), null);
   const live = await boot(t, { raw: studyGoalDocument(), publicWeb: true });
-  assert.equal(live.root.querySelector('nav.tabs').querySelectorAll('button').length, 5);
+  assert.equal(live.root.querySelector('nav.tabs').querySelectorAll('button').length, 6, '대학 탭은 없어도 채널 탭은 있다');
   assert.equal(live.root.querySelector('button[data-page="univ"]'), null);
   assert.equal(live.root.querySelector('button.sx-entry-btn'), null);
   assert.doesNotMatch(pageText(live), /예시대학 [ABC]|내 조건|대학 탭/);
@@ -600,7 +602,7 @@ test('실제 과정이 있으면 공개판에도 대학 탭이 나오고 예시�
     source: { title: { ko: '시험대학교 모집 요강', en: 'Test University admissions guide' }, url: 'https://example.ac.kr/guide.pdf' }, checkedAt: '2026-11-21' };
   for (const publicWeb of [true, false]) {
     const app = await boot(t, { raw: studyGoalDocument(), publicWeb, programs: [...studyData.PROGRAMS.filter(program => program.example), real] });
-    assert.equal(app.root.querySelector('nav.tabs').querySelectorAll('button').length, 6, 'publicWeb=' + publicWeb);
+    assert.equal(app.root.querySelector('nav.tabs').querySelectorAll('button').length, 7, 'publicWeb=' + publicWeb);
     assert.match(app.root.querySelector('button.sx-entry-btn').textContent, /내 조건으로 갈 수 있는 대학을 알아봐요/);
     app.click('nav', '[data-page="univ"]');
     assert.equal(app.root.querySelectorAll('button[data-action="univOpen"]').length, 1);
@@ -611,4 +613,46 @@ test('실제 과정이 있으면 공개판에도 대학 탭이 나오고 예시�
     assert.match(app.root.querySelector('h1').textContent, /시험대학교/);
     assert.match(pageText(app), /시험대학교 모집 요강/);
   }
+});
+
+// ── 2단계: 채널과 다가오는 날 ──
+test('다가오는 날: 넣은 날은 카드와 상관없이 오늘 화면에 보이고, 채널 글에서 넣고 빼며, 조건 지우기에도 남는다', async t => {
+  const goalDoc = goal => JSON.stringify({ ...createPathDocument('ko'), state: stateModel.updateProfile(stateModel.createInitialState('ko'), { onboarded: true, primaryGoal: goal }, '2026-11-21T00:00:00.000Z') });
+  // 시험을 돌리는 날에 지나지 않은 날 하나를 고른다(날짜가 지나도 이 시험이 깨지지 않게).
+  const now = new Date();
+  const pick = channelData.POSTS.flatMap(post => post.dates.map(date => ({ post, date }))).find(x => !['past', 'cancelled'].includes(channelData.dateStatus(x.date, now).state));
+  const sample = channelData.POSTS.flatMap(post => post.dates.map(date => ({ post, date })))[0];
+  const entry = x => ({ id: x.date.id, start: x.date.start, end: channelData.endDay(x.date) });
+  for (const goal of ['study', 'student', 'job', null]) {
+    const app = await boot(t, { raw: goalDoc(goal), seed: studySeed('guest', { dates: [entry(sample)] }) });
+    assert.match(pageText(app), /다가오는 날|지난 날/, 'goal=' + goal);
+    assert.match(pageText(app), /이 탭에만 있어요/);
+  }
+  const fresh = await boot(t, { raw: goalDoc('study') });
+  assert.doesNotMatch(pageText(fresh), /다가오는 날/, '넣은 날이 없으면 칸이 없다');
+  assert.match(pageText(fresh), /새 소식/, '유학 카드에는 새 소식이 있다');
+  if (!pick) { t.diagnostic('지나지 않은 날이 자료에 없어 넣기 흐름은 건너뛴다'); return; }
+  fresh.click('nav', '[data-page="channels"]');
+  assert.match(fresh.root.querySelector('h1').textContent, /채널/);
+  fresh.click('channelOpen', `[data-id="${pick.post.channel}"]`);
+  fresh.click('postOpen', `[data-id="${pick.post.id}"]`);
+  fresh.click('dateToggle', `[data-id="${pick.date.id}"]`);
+  assert.match(fresh.announcer.textContent, /이 탭의 다가오는 날에 넣었어요/);
+  assert.equal(fresh.root.querySelector(`button[data-action="dateToggle"][data-id="${pick.date.id}"]`).getAttribute('aria-pressed'), 'true');
+  assert.deepEqual(JSON.parse(fresh.record(STUDY_KEY)).dates, [entry(pick)]);
+  fresh.click('nav', '[data-page="univ"]');
+  fresh.click('nav', '[data-page="cond"]');
+  fresh.click('studySet', '[data-key="topik"][data-id="3"]');
+  fresh.click('studyClear');
+  assert.deepEqual(JSON.parse(fresh.record(STUDY_KEY)).dates, [entry(pick)], '조건만 지우고 넣은 날은 남긴다');
+  fresh.click('nav', '[data-page="today"]');
+  assert.ok(pageText(fresh).includes(pick.date.label.ko), '오늘 화면의 다가오는 날에 넣은 날 이름이 있다');
+  fresh.click('postOpen', `[data-id="${pick.post.id}"]`);
+  fresh.click('dateToggle', `[data-id="${pick.date.id}"]`);
+  assert.match(fresh.announcer.textContent, /다가오는 날에서 뺐어요/);
+  assert.deepEqual(JSON.parse(fresh.record(STUDY_KEY)).dates, []);
+  fresh.click('nav', '[data-page="channels"]');
+  fresh.click('channelShow', '[data-id="scam"]');
+  assert.match(fresh.announcer.textContent, /새 소식에서 뺐어요/);
+  assert.deepEqual(JSON.parse(fresh.record(STUDY_KEY)).channelsOff, ['scam']);
 });
