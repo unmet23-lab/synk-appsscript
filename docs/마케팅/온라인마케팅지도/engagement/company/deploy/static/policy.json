@@ -18,6 +18,7 @@
     "docs/브랜드_폰트/DM_Mono/DMMono-Regular.ttf"
   ],
   "exclude": [
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/staff-story.html",
     "docs/마케팅/온라인마케팅지도/engagement/company/public/publish-rules.js",
     "docs/마케팅/온라인마케팅지도/engagement/company/public/subtitle-lab.js",
     "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-app/casting-catalog.mjs",

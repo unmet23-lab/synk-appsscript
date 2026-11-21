@@ -32,6 +32,14 @@ function imageFiles(){
   }
   return files;
 }
+test('published story and receipt HTML ship with the server while their browser assets can update separately', () => {
+  const shell = C+'/public/staff-story.html';
+  const assets = ['staff-story.js', 'staff-story.css', 'staff-stories.js', 'staff-stories.css']
+    .map(name => C+'/public/'+name);
+  assert.ok(imageFiles().has(shell), 'the release image includes the published story and receipt shell');
+  assert.deepEqual(selectStaticPaths([shell, ...assets]), assets.slice().sort());
+});
+
 test('no server module imports, requires or reads a file the static set would carry',()=>{
   const files=imageFiles(),staticFiles=new Set([...files].filter(isStatic)),problems=[];
   assert.match(readFileSync(join(here,'Dockerfile.dockerignore'),'utf8'),/^docs\/마케팅\/온라인마케팅지도\/engagement\/company\/\*-test-context\.mjs$/m);
