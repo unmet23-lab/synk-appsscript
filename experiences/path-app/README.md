@@ -1,5 +1,7 @@
 # PATH 통합 앱
 
+> **2026-11-21 유학 앱으로 넓히기 시작**: 유호님 「path앱을 좀 전문적으로 파보자」 · 「네, 2판으로」에 따라 [PATH 유학 앱 기획](../../docs/디자인/PATH_유학앱_20261120/README.md)의 1단계(내 조건, 대학)를 넣었다. 아래 「내 조건과 대학」 절을 본다.
+>
 > **2026-11-11 살림 확정, 새 기능은 이 판에서 멈춤** ([결정](../../docs/_ops/결정.md)). 다음 일은 두 가지다. 몽골 학원 학생 흐름에 잇는 것, 그리고 실제 가입자 다섯 명으로 세 유형 중 누가 다시 돌아오는지 보는 것이다. 공고 연동은 법 확인 뒤에 켠다.
 
 해외에서 한국 유학을 준비하는 사람, 한국에서 유학 중인 사람, 취업을 준비하는 사람이 첫 실행에서 지금 필요한 도움을 고르는 화면이다. 사용자 분류는 현재의 주목표이며 신분·입학·취업·체류 자격 판정이 아니다. 여러 목표가 겹칠 수 있고 나중에 바꿀 수 있다.
@@ -13,6 +15,17 @@
 공고 연동 코드는 Moloco·Coupang의 공개 Greenhouse 채용 API에서 한국 근무 공고의 제목·회사·위치·원문 링크만 읽는다. 제공처별 갱신 상태와 확인 시각, 저장·검색·준비 연결을 구현했다. 다만 **2026-11-10 BM v1.16·v1.17 결정에 따라 법 확인이 끝날 때까지 공개판의 공고 연동은 OFF**다([결정](../../docs/_ops/결정.md)). 서버의 `SYNK_PATH_JOBS_ENABLED`가 정확히 `true`일 때만 켜지며, 기본 OFF 응답은 `availability: disabled`, 빈 공고·출처 배열이고 외부 공고 요청을 보내지 않는다. 화면은 준비 중 안내와 공식 정보 입구를 보여 준다. 기존 개인 저장 기록은 유지한다.
 
 외국인 지원 가능 여부·비자 지원·마감일을 추정하지 않는다. 학업·생활 과정 및 여섯 합성 공고는 별도의 연습 예시다. 준비 완료는 기관 제출·채용 접수와 다르다. 채용 본문 복제·지원서 대리 제출·기관 접수·Atlas 효과 보장은 포함하지 않는다.
+
+## 내 조건과 대학(2026-11-21, 유학 앱 1단계)
+
+설계와 검토 반영은 [1단계 설계](../../docs/디자인/PATH_유학앱_20261120/1단계_설계.md)에 있다.
+
+- **화면:** 아래 탭에 「대학」이 생겼다. 대학 목록, 대학 자세히(조건 넷 대조, 한 해 비용, 장학금), 나란히 보기(셋까지), 내 조건(한국어, 학력, 성적, 준비한 돈)이다. 새 화면은 `.sx` 아래에서만 시안 2판의 결을 쓴다.
+- **자료:** `study-data.mjs`에 공식 조건(`RULES`)과 과정(`PROGRAMS`)이 있다. 재정 금액 넷은 2026-11-21에 현행 공식 안내에서 직접 읽었고 출처 링크와 확인한 날이 화면에 나온다. 확인한 지 90일이 넘으면 그 금액으로 판정하지 않는다.
+- **예시와 공개판:** 과정 셋은 협약 전이라 모두 예시다(금액, 일정, 입학 조건은 만든 값). 아래 보관 기준에 따라 **공개판에는 예시 과정을 싣지 않는다.** 실제 과정이 하나도 없으면 공개판에서 대학 탭과 오늘의 입구가 나오지 않는다. 로컬 미리보기에서는 「예시」 표와 함께 보인다. 실제 과정을 넣으려면 `PROGRAMS`에 `example: false`와 출처, 확인한 날을 적는다(없으면 모듈이 던진다).
+- **내 조건의 저장:** 계정 문서(`synk.path-app`)는 건드리지 않는다. 조건은 이 탭의 `sessionStorage`(`synk-path-study-v1`)에만 있고 서버로 가지 않는다. 저장값에 주인을 적어, 다른 계정이거나 로그아웃 · 세션 만료 뒤에는 지운다. 손님이 넣은 조건은 로그인한 계정이 이어받는다.
+- **대조의 뜻:** 결과는 판정이 아니다. 화면마다 입학이나 비자를 약속하지 않는다고 적는다.
+- **아직 없는 것:** 실제 대학 자료, 투그릭 환산, 「이 대학으로 준비 시작」, 고객 화면 검수(공개판에 대학 탭이 나올 때 받는다).
 
 ## 화면 결 — 「패스」(2026-11-13 리디자인)
 
@@ -35,10 +48,10 @@ node experiences/path-app/server.mjs
 
 기본 주소는 `http://127.0.0.1:4326/`다. 설정 없는 화면 미리보기는 `PATH_APP_PORT`로 포트를 바꿀 수 있다. 계정과 공고를 연결하려면 `--config <공개 설정 JSON>`을 명시하며 등록된 4326 포트만 사용한다. 서버는 계정 비밀값을 읽지 않고 허용된 공개 설정과 화면 묶음만 제공한다. 운영 비공개 API의 CORS는 `https://synk.im`만 허용하므로 실제 계정 동기화 검증은 공개 주소에서 한다.
 
-서버는 파일별 허용 목록으로 화면 소스와 승인된 글꼴만 제공한다. `server.mjs`·시험·기록·비밀 설정은 제공하지 않는다. 외부 폰트 요청은 없다. SUIT Variable은 승인 원본, Inter Tight는 승인된 Regular 400(별칭) · Medium 500 · SemiBold 600 파일, 번호 글자는 DM Mono Medium을 제공한다. 세 글꼴의 OFL 라이선스도 별도 정적 경로로 제공한다.
+서버는 파일별 허용 목록으로 화면 소스와 승인된 글꼴, 승인된 대학 그림(`study-data.mjs`의 `IMAGE_IDS`)만 제공한다. `server.mjs`·시험·기록·비밀 설정은 제공하지 않는다. 외부 폰트 요청은 없다. SUIT Variable은 승인 원본, Inter Tight는 승인된 Regular 400(별칭) · Medium 500 · SemiBold 600 파일, 번호 글자는 DM Mono Medium을 제공한다. 세 글꼴의 OFL 라이선스도 별도 정적 경로로 제공한다.
 
 ```powershell
-node --test experiences/path-app/state.test.mjs experiences/path-app/document.test.mjs experiences/path-app/account.test.mjs experiences/path-app/jobs-ui.test.mjs experiences/path-app/app.test.mjs experiences/path-app/server.test.mjs tests/prepare-path-app-public.test.mjs
+node --test experiences/path-app/state.test.mjs experiences/path-app/document.test.mjs experiences/path-app/account.test.mjs experiences/path-app/jobs-ui.test.mjs experiences/path-app/app.test.mjs experiences/path-app/study.test.mjs experiences/path-app/server.test.mjs tests/prepare-path-app-public.test.mjs
 ```
 
 ## 첫 진입과 보관 기준
@@ -47,7 +60,7 @@ node --test experiences/path-app/state.test.mjs experiences/path-app/document.te
 - 둘러보기는 목표가 없는 중립 홈으로 연결하고 미응답을 임의로 추정하지 않는다.
 - 한국어·영어를 바꾸어도 현재 목표·작성 중인 준비를 보존한다.
 - 목표를 바꾸어도 다른 목표의 초안을 숨기거나 삭제하지 않는다.
-- 예시 자료와 공식 정보 링크를 자료 유형으로 구분한다. 예시의 금액·마감·비자 조건을 만들지 않는다.
+- 예시 자료와 공식 정보 링크를 자료 유형으로 구분한다. 예시의 금액·마감·비자 조건을 만들지 않는다. 대학 탭의 예시 과정은 화면을 미리 보이려고 만든 값이라 공개판에 싣지 않는다(2026-11-21).
 - 저장 실패·손상 데이터·미지원 판본에서는 성공으로 표시하거나 기존 내용을 자동 덮어쓰지 않는다. 게스트는 탭별 세션이며 계정 자료와 서로 바꾸어 넣지 않는다.
 - 본인이 내용을 확인한 뒤에만 준비 완료로 표시하며 수정하면 다시 확인한다. 외부 링크 클릭은 제출·접수 기록을 만들지 않는다.
 

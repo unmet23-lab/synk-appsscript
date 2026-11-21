@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { readConfig, isLoopback } from '../experiences/synk-account/src/core.mjs';
+import { PROGRAMS, IMAGE_IDS, programsFor } from '../experiences/path-app/study-data.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const APP = 'experiences/path-app';
@@ -21,6 +22,12 @@ const FONTS = Object.freeze({
   'assets/DMMono-Medium.woff2': 'docs/브랜드_폰트/플랫폼_웹/DMMono-Medium.woff2',
   'assets/DMMono-LICENSE.txt': 'docs/브랜드_폰트/DM_Mono/OFL.txt',
 });
+/** 공개판에 싣는 과정이 쓰는 그림만 싣는다. 그림 이름은 자료의 승인 목록(IMAGE_IDS)에 있어야 한다. 예시 과정은 공개판에 없으므로 그 그림도 싣지 않는다. */
+export function publicImages(programs = PROGRAMS) {
+  const ids = [...new Set(programsFor(programs, true).map(program => program.image))].sort();
+  for (const id of ids) if (!IMAGE_IDS.includes(id)) throw Error('Unapproved PATH image: ' + id);
+  return ids.map(id => 'assets/' + id + '.webp');
+}
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const slash = value => value.replaceAll('\\', '/');
 let esbuild;
@@ -145,6 +152,7 @@ export async function preparePathAppPublic({ out, config, targetUrl = PATH_PUBLI
   const workspace = await fs.realpath(root), output = await destination(out, workspace);
   const compiled = await bundlePathApp({ root: workspace }), sources = compiled.sources, files = new Map([['app.mjs', compiled.bytes]]);
   for (const [name, source] of Object.entries(FONTS)) files.set(name, await readCanonical(path.join(workspace, source), workspace, sources));
+  for (const name of publicImages()) files.set(name, await readCanonical(path.join(workspace, APP, name), workspace, sources));
   const css = (await readCanonical(path.join(workspace, APP, 'styles.css'), workspace, sources)).toString('utf8');
   files.set('styles.css', publicCss(css, files));
   files.set('config.json', JSON.stringify(publicConfig, null, 2) + '\n');

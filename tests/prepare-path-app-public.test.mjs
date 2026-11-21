@@ -117,3 +117,14 @@ test('dependency graph rejects private modules and dependencies outside both all
   await fs.writeFile(path.join(graph, 'app.mjs'), 'globalThis.openModule = name => import(name);');
   await assert.rejects(bundlePathApp({ root: fixture, appRoot: graph }), /complete module graph/);
 });
+
+test('public images: example programs ship no image, real programs ship only approved images', async () => {
+  const { publicImages } = await import('../tools/prepare-path-app-public.mjs');
+  const { PROGRAMS } = await import('../experiences/path-app/study-data.mjs');
+  assert.deepEqual(publicImages(PROGRAMS.filter(program => program.example)), []);
+  assert.equal(built.manifest.files.some(file => file.name.endsWith('.webp')), false, 'the current all-example data adds no image to the public bundle');
+  const real = PROGRAMS.map(program => ({ ...program, example: false }));
+  assert.deepEqual(publicImages(real), ['assets/univ-a.webp', 'assets/univ-b.webp', 'assets/univ-c.webp']);
+  assert.deepEqual(publicImages([real[0], real[0]]), ['assets/univ-a.webp']);
+  assert.throws(() => publicImages([{ ...real[0], image: '../secret' }]), /Unapproved PATH image/);
+});

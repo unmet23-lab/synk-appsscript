@@ -172,3 +172,22 @@ test('the local entry bundles newly added safe dependencies without exposing arb
     await rm(fixture, { recursive: true, force: true });
   }
 });
+
+test('승인된 대학 그림만 image/webp로 주고, 목록에 없는 그림은 주지 않는다', async () => {
+  const { IMAGE_IDS, PROGRAMS } = await import('./study-data.mjs');
+  for (const program of PROGRAMS) assert.ok(IMAGE_IDS.includes(program.image), program.id);
+  const real = new URL('./assets/', import.meta.url);
+  for (const id of IMAGE_IDS) {
+    const bytes = await readFile(new URL(id + '.webp', real));
+    assert.equal(bytes.subarray(0, 4).toString('latin1'), 'RIFF', id + ' is a real WebP file in the app assets');
+    assert.ok(bytes.length < 300000, id + ' stays small');
+    assert.equal((await request('/assets/' + id + '.webp')).status, 404, 'a missing file is not invented');
+    await writeFile(path.join(root, 'assets', id + '.webp'), bytes);
+    const result = await request('/assets/' + id + '.webp');
+    assert.equal(result.status, 200, id);
+    assert.equal(result.headers['content-type'], 'image/webp');
+    assert.equal(sha(result.body), sha(bytes));
+  }
+  await writeFile(path.join(root, 'assets', 'univ-z.webp'), 'UNLISTED_IMAGE_FIXTURE');
+  for (const target of ['/assets/univ-z.webp', '/assets/univ-a.png', '/assets/univ-a.webp/', '/assets/UNIV-A.webp']) assert.equal((await request(target)).status, 404, target);
+});

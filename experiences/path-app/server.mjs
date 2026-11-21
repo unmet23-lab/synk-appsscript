@@ -3,11 +3,14 @@ import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { bundlePathApp, validatePathConfig, pathContentSecurityPolicy } from '../../tools/prepare-path-app-public.mjs';
+import { IMAGE_IDS } from './study-data.mjs';
 
 const APP_ROOT = fileURLToPath(new URL('./', import.meta.url));
 const FONT_ROOT = new URL('../../docs/브랜드_폰트/', import.meta.url);
 
 // Inter Tight is served as approved static files (Regular 400, Medium 500, SemiBold 600 basic Latin), not a variable font.
+// 승인된 그림: 자료(study-data.mjs)의 그림 이름 목록 하나를 서버와 공개 묶음 도구가 함께 읽는다.
+export const imageRoutes = root => IMAGE_IDS.map(id => ['/assets/' + id + '.webp', [path.join(root, 'assets', id + '.webp'), 'image/webp']]);
 export const FONT_FILES = Object.freeze({
   '/assets/SUIT-Variable.woff2': new URL('SUIT/SUIT-Variable.woff2', FONT_ROOT),
   '/assets/InterTight.woff2': new URL('플랫폼_웹/InterTight-Regular.woff2', FONT_ROOT),
@@ -42,6 +45,7 @@ export function createServer({ root = APP_ROOT, appBundle = null, config = null 
     ...Object.entries(FONT_FILES).map(([route, file]) => [
       route, [file, route.endsWith('.woff2') ? 'font/woff2' : 'text/plain; charset=utf-8'],
     ]),
+    ...imageRoutes(root),
   ]);
 
   return http.createServer(async (req, res) => {

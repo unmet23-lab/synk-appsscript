@@ -8,6 +8,10 @@ import { createPathSession, GUEST_KEY, LEGACY_KEY, ACCOUNT_CACHE_PREFIX } from '
 import { createPathDocument } from './document.mjs';
 import * as accountUi from './account-ui.mjs';
 import * as jobsUi from './jobs-ui.mjs';
+import * as studyData from './study-data.mjs';
+import * as studyMatch from './match.mjs';
+import * as studyProfile from './study-profile.mjs';
+import * as studyUi from './study-ui.mjs';
 
 // The real app runs unchanged apart from its static ESM imports. This small DOM
 // provides only element parsing, selectors, live input values and event bubbling;
@@ -115,10 +119,11 @@ function fixture() {
   }, '2026-11-09T10:01:00.000Z');
 }
 
-async function boot(t, { failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false } = {}) {
+async function boot(t, { failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null } = {}) {
   const initial = raw ?? JSON.stringify(legacy ? fixture() : { ...createPathDocument('ko'), state: fixture() });
   const originalKey = legacy ? LEGACY_KEY : GUEST_KEY;
   const records = new Map([[originalKey, initial]]);
+  for (const [key, value] of Object.entries(seed || {})) records.set(key, value);
   const recoveryKey = ACCOUNT_CACHE_PREFIX + 'qa-account';
   const recoveryDocument = { ...createPathDocument('ko'), state: stateModel.upsertTask(fixture(), { ...fixture().tasks[0], body: '복구 선택 전 원문을 그대로 보존합니다.' }) };
   const recoveryRaw = '\n ' + JSON.stringify({ version: 1, accountId: 'qa-account', baseRevision: 1, state: recoveryDocument, pending: true }) + ' \n';
@@ -163,6 +168,7 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
     activeElement: null, body,
     documentElement: { lang: 'ko' },
     getElementById: id => id === 'app' ? root : id === 'announcer' ? announcer : root.querySelector(`#${id}`),
+    querySelector: selector => publicWeb && selector === 'meta[name="synk-path-runtime"]' ? new Element('meta', { name: 'synk-path-runtime', content: 'public-web' }) : null,
     createElement(tag) {
       const element = new Element(tag); element.ownerDocument = document;
       element.click = () => { if (downloadThrows) throw new Error('Download was blocked'); downloads.push({ href: element.href, filename: element.download }); };
@@ -174,7 +180,7 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
   TestURL.createObjectURL = () => `blob:qa-${downloads.length}`;
   TestURL.revokeObjectURL = value => revoked.push(value);
   const context = {
-    ...stateModel, ...content, ...accountUi, ...jobsUi,
+    ...stateModel, ...content, ...accountUi, ...jobsUi, ...studyData, ...studyMatch, ...studyProfile, ...studyUi,
     createPathSession: options => {
       sessionOptions = options;
       session = createPathSession({ ...options, storage, fetcher, lang: 'ko', ...(accountFactory ? { accountFactory } : {}),
@@ -210,7 +216,7 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
     event('input', textarea);
   };
   return { root, announcer, click, event, typeBody, initial, session,
-    original: () => records.get(originalKey), saved: () => records.get(GUEST_KEY), writes: () => writes,
+    original: () => records.get(originalKey), saved: () => records.get(GUEST_KEY), writes: () => writes, record: key => records.get(key),
     failWrites: () => { failWrite = true; }, providerSignOuts: () => providerSignOuts,
     notifyStatus: () => sessionOptions.onStatus(session.status()),
     switchOwner: id => { owner = id; remote = { ...createPathDocument('ko'), state: fixture() }; accountOptions.onStatus(status()); },
@@ -457,4 +463,122 @@ test('A to B to A while confirming initial recovery cannot reuse the earlier vie
   assert.equal(app.useRemoteCalls(), 0);
   assert.equal(app.storedRecoveryRaw(), app.recoveryRaw);
   assert.match(app.root.textContent, /계정 상태/);
+});
+
+// ── 1단계: 내 조건 · 대학 ──
+const STUDY_KEY = studyProfile.STUDY_KEY;
+const studySeed = (owner, fields = { topik: 4, gradePct: 88 }) => ({ [STUDY_KEY]: JSON.stringify({ ...studyProfile.createProfile(), ...fields, ...(owner ? { owner } : {}) }) });
+const pageText = app => app.root.textContent.replace(/\s+/g, ' ');
+const studyGoalDocument = () => JSON.stringify({ ...createPathDocument('ko'), state: stateModel.updateProfile(stateModel.createInitialState('ko'), { onboarded: true, primaryGoal: 'study' }, '2026-11-21T00:00:00.000Z') });
+const settle = async () => { for (let i = 0; i < 12; i++) await new Promise(resolve => setImmediate(resolve)); };
+
+test('대학 탭: 목록에서 자세히, 내 조건에서 넣은 값이 결과와 탭 저장에만 닿고 계정 문서는 그대로다', async t => {
+  const app = await boot(t);
+  const before = app.saved();
+  assert.equal(app.root.querySelector('nav.tabs').querySelectorAll('button').length, 6);
+  assert.equal(app.root.querySelector('nav.tabbar').querySelectorAll('button').length, 6);
+  assert.doesNotMatch(pageText(app), /undefined/);
+  app.click('nav', '[data-page="univ"]');
+  assert.match(app.root.querySelector('h1').textContent, /내 조건으로 갈 수 있는 대학/);
+  assert.equal(app.root.querySelector('button[data-page="univ"]').getAttribute('aria-current'), 'page');
+  assert.equal(app.root.querySelectorAll('button[data-action="univOpen"]').length, 3);
+  assert.match(pageText(app), /성적과 한국어를 넣으면 맞는 곳을 알려 줘요/);
+  assert.equal(app.root.querySelectorAll('img').every(img => /^\.\/assets\/univ-[abc]\.webp$/.test(img.getAttribute('src')) && img.getAttribute('width') && img.getAttribute('height')), true);
+
+  app.click('nav', '[data-page="cond"]');
+  assert.match(app.root.querySelector('h1').textContent, /내 조건/);
+  assert.equal(app.root.querySelector('button[data-page="univ"]').getAttribute('aria-current'), 'page', '내 조건은 대학 탭 아래 화면이다');
+  app.click('studySet', '[data-key="topik"][data-id="3"]');
+  assert.equal(app.document.activeElement.getAttribute('data-id'), '3', '누른 단추로 초점이 돌아온다');
+  assert.equal(app.root.querySelector('button[data-action="studySet"][data-key="topik"][data-id="3"]').getAttribute('aria-pressed'), 'true');
+
+  const grade = app.root.querySelector('#sx-grade');
+  grade.focus(); grade.value = '80'; app.event('input', grade);
+  assert.equal(app.root.querySelector('#sx-grade'), grade, '치는 동안 숫자 칸은 다시 그리지 않는다');
+  assert.match(app.root.querySelector('#sx-cond-result').textContent, /2\s*개의 예시 과정이 지금 조건에 맞아요/);
+  assert.deepEqual((({ topik, gradePct, owner }) => ({ topik, gradePct, owner }))(JSON.parse(app.record(STUDY_KEY))), { topik: 3, gradePct: 80, owner: 'guest' });
+
+  grade.value = '850'; app.event('input', grade);
+  assert.equal(grade.getAttribute('aria-invalid'), 'true');
+  assert.match(app.root.querySelector('#sx-grade-hint').textContent, /0부터 100까지/);
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).gradePct, 80, '읽을 수 없는 값은 조건을 바꾸지 않는다');
+  grade.value = ''; app.event('input', grade);
+  assert.equal(grade.getAttribute('aria-invalid'), null);
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).gradePct, null);
+  assert.match(app.root.querySelector('#sx-cond-result').textContent, /둘 다 넣으면 맞는 곳을 알려 줘요/);
+
+  const funds = app.root.querySelector('#sx-funds');
+  funds.value = '1,600'; app.event('input', funds);
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).fundsWon, 16000000);
+  assert.equal(app.saved(), before, '계정 · 손님 문서는 한 글자도 바뀌지 않는다');
+
+  app.click('nav', '[data-page="univ"]');
+  app.click('studyCompare', '[data-id="example-a-ug"]');
+  app.click('studyCompare', '[data-id="example-b-lang"]');
+  app.click('nav', '[data-page="univCompare"]');
+  assert.match(app.root.querySelector('h1').textContent, /나란히 보기/);
+  assert.equal(app.root.querySelector('table').getAttribute('data-cols'), '2');
+  app.click('univOpen', '[data-id="example-a-ug"]');
+  assert.match(app.root.querySelector('h1').textContent, /예시대학 A/);
+  assert.match(pageText(app), /법무부 2026-10-07 보도자료/);
+
+  app.click('nav', '[data-page="profile"]');
+  assert.match(pageText(app), /「내 조건」\(한국어 · 성적 · 준비한 돈\)은 계정에 저장되지 않고/);
+  app.click('clear');
+  assert.equal(app.record(STUDY_KEY), undefined, '이 탭의 자료를 지우면 내 조건도 지운다');
+});
+
+test('오늘 화면의 입구는 유학 준비 카드에만 있고, 공개판에는 예시 과정과 대학 탭을 싣지 않는다', async t => {
+  const study = await boot(t, { raw: studyGoalDocument() });
+  const entry = study.root.querySelector('button.sx-entry-btn');
+  assert.ok(entry); assert.match(entry.textContent, /예시 과정으로 내 조건 맞춰 보기/);
+  assert.equal(entry.getAttribute('data-page'), 'cond');
+  const job = await boot(t);
+  assert.equal(job.root.querySelector('button.sx-entry-btn'), null);
+  const live = await boot(t, { raw: studyGoalDocument(), publicWeb: true });
+  assert.equal(live.root.querySelector('nav.tabs').querySelectorAll('button').length, 5);
+  assert.equal(live.root.querySelector('button[data-page="univ"]'), null);
+  assert.equal(live.root.querySelector('button.sx-entry-btn'), null);
+  assert.doesNotMatch(pageText(live), /예시대학 [ABC]|내 조건|대학 탭/);
+});
+
+test('내 조건의 주인: 같은 계정이면 새로 고침 뒤에도 남고, 다른 계정이나 손님으로 돌아가면 지운다', async t => {
+  const same = await boot(t, { signedIn: true, seed: studySeed('qa-account') });
+  assert.equal(JSON.parse(same.record(STUDY_KEY)).gradePct, 88, '로그인한 학생이 새로 고쳐도 조건이 남는다');
+  same.click('nav', '[data-page="univ"]'); same.click('nav', '[data-page="cond"]');
+  assert.equal(same.root.querySelector('#sx-grade').value, '88');
+  same.switchOwner('other-account');
+  await settle();
+  assert.equal(same.record(STUDY_KEY), undefined, '계정이 바뀌면 앞 사람의 조건을 지운다');
+
+  const other = await boot(t, { signedIn: true, seed: studySeed('someone-else') });
+  assert.equal(other.record(STUDY_KEY), undefined, '다른 계정의 조건은 보이지 않고 지워진다');
+  other.click('nav', '[data-page="univ"]'); other.click('nav', '[data-page="cond"]');
+  assert.equal(other.root.querySelector('#sx-grade').value, '');
+
+  const inherit = await boot(t, { signedIn: true, seed: studySeed('guest') });
+  assert.equal(JSON.parse(inherit.record(STUDY_KEY)).owner, 'qa-account', '손님이 넣은 조건은 로그인한 계정이 이어받는다');
+  assert.equal(JSON.parse(inherit.record(STUDY_KEY)).topik, 4);
+
+  const expired = await boot(t, { seed: studySeed('qa-account') });
+  assert.equal(expired.record(STUDY_KEY), undefined, '세션이 끝나 손님으로 돌아오면 앞 계정의 조건을 지운다');
+});
+
+test('편집이 막힌 계정에서도 내 조건은 쓸 수 있고, 저장이 막히면 저장됐다고 하지 않는다', async t => {
+  const locked = await boot(t, { signedIn: true });
+  locked.setStatusOverride({ ...locked.session.status(), canEdit: false });
+  locked.notifyStatus();
+  locked.click('nav', '[data-page="univ"]'); locked.click('nav', '[data-page="cond"]');
+  locked.click('studySet', '[data-key="education"][data-id="graduated"]');
+  assert.equal(JSON.parse(locked.record(STUDY_KEY)).education, 'graduated');
+
+  const blocked = await boot(t);
+  blocked.failWrites();
+  blocked.click('nav', '[data-page="univ"]'); blocked.click('nav', '[data-page="cond"]');
+  assert.match(blocked.root.querySelector('.sx-store').textContent, /이 탭에만 저장돼요/);
+  const grade = blocked.root.querySelector('#sx-grade');
+  grade.value = '75'; blocked.event('input', grade);
+  assert.equal(blocked.record(STUDY_KEY), undefined);
+  assert.match(blocked.root.querySelector('.sx-store').textContent, /저장할 수 없어서 지금 화면에서만 기억해요/);
+  assert.equal(blocked.root.querySelector('#sx-grade').value, '75', '화면 안에서는 넣은 값을 기억한다');
 });

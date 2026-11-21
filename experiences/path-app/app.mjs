@@ -3,6 +3,10 @@ import { createPathSession } from './account.mjs';
 import { renderAccountPanel, renderAccountNotice, getAccountErrorMessage } from './account-ui.mjs';
 import { createJobsFeed, renderJobs, jobOpportunity } from './jobs-ui.mjs';
 import { SCHEMA_VERSION, STORAGE_KEY, createInitialState, normalizeState, updateProfile, upsertTask, confirmTask, getNextTask } from './state.mjs';
+import { PROGRAMS, RULES, rulesAt, programsFor } from './study-data.mjs';
+import { countFit } from './match.mjs';
+import { createProfileStore, createProfile, setField, toggleCompare, parseWhole, GUEST_OWNER } from './study-profile.mjs';
+import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, condHint, STUDY_FILTERS, GRADE_MAX, FUNDS_MAX_MAN } from './study-ui.mjs';
 
 void SCHEMA_VERSION; void STORAGE_KEY;
 const root = document.getElementById('app');
@@ -11,7 +15,7 @@ const announcer = document.getElementById('announcer');
 // 화면 결: 「패스」 — 줄에 매단 카드 한 장(내 목표)과 한 걸음마다 찍히는 도장. 2026-11-13 리디자인(시안 C).
 const DICT = {
   langLabel: ['언어', 'Language'], navLabel: ['주요 메뉴', 'Main menu'],
-  today: ['오늘', 'Today'], explore: ['찾기', 'Explore'], prepare: ['준비', 'Prepare'], help: ['도움', 'Help'], profile: ['나', 'Me'],
+  today: ['오늘', 'Today'], univ: ['대학', 'Schools'], explore: ['찾기', 'Explore'], prepare: ['준비', 'Prepare'], help: ['도움', 'Help'], profile: ['나', 'Me'],
   signIn: ['가입 · 로그인', 'Sign in'], myAccount: ['내 계정', 'My account'],
   q1: ['지금, 어떤 준비를 하고 있나요?', 'What are you preparing for right now?'],
   obT1: ['한국에서 쓸', 'Pick the first card'], obT2: ['첫 카드를 고르세요.', 'you’ll carry in Korea.'],
@@ -74,6 +78,7 @@ const DICT = {
   reset: ['저장 데이터 초기화', 'Reset saved data'], resetAsk: ['읽을 수 없는 저장 데이터를 지우고 새로 시작할까요?', 'Delete unreadable saved data and start fresh?'],
   storeFail: ['이 탭에 저장하지 못했어요. 작성 내용은 화면에 남아 있어요.', 'Could not save in this tab. Your text stays on screen.'],
   pageAnn: ['페이지', 'page'],
+  studyStore: ['「내 조건」(한국어 · 성적 · 준비한 돈)은 계정에 저장되지 않고 이 탭에만 있어요. 내 조건 화면에서 지울 수 있고, 탭을 닫거나 로그아웃하면 사라져요.', '“My conditions” (Korean level, grades, funds) are not saved to your account; they stay in this tab only. You can clear them on the My conditions screen, and they disappear when you close the tab or sign out.'],
   toolsLead: ['공식 안내와 별개인 SYNK 페이지예요. 새 탭에서 열리고 PATH 저장 내용과 분리돼요.', 'Separate SYNK pages, not official sources. They open in a new tab, apart from PATH data.']
 };
 const t = (k) => (DICT[k] || [k, k])[state.lang === 'en' ? 1 : 0];
@@ -123,6 +128,36 @@ function resetForDoc(doc) {
   else if (!state.onboarded) S.page = session.status().canImportGuest ? 'profile' : 'onboard';
   else S.page = 'today';
 }
+// 「내 조건 · 대학」. 공개판(공개 묶음이 넣는 표시가 있는 화면)에는 예시 과정을 싣지 않는다. 실을 과정이 없으면 탭과 입구를 감춘다.
+const PUBLIC_WEB = (() => { try { return document.querySelector?.('meta[name="synk-path-runtime"]')?.getAttribute('content') === 'public-web'; } catch { return false; } })();
+const STUDY_PROGRAMS = programsFor(PROGRAMS, PUBLIC_WEB);
+const STUDY_ON = STUDY_PROGRAMS.length > 0;
+const STUDY_IDS = STUDY_PROGRAMS.map((p) => p.id);
+// 조건은 계정 문서와 섞지 않고 이 탭에만 둔다. 저장값에 주인(손님 또는 계정 ID)을 함께 적는다.
+// 손님이 넣은 조건은 로그인한 계정이 이어받는다. 주인이 다른 계정이거나 로그아웃 · 세션 만료로 손님이 되면 지운다(공용 기기).
+// 시작할 때는 계정 상태가 정해지기 전이라 주인이 다르면 감추기만 하고, 정해진 뒤(studySettled)에 지운다.
+const study = createProfileStore((() => { try { return sessionStorage; } catch { return null; } })());
+let studySettled = false;
+const studyOwnerNow = () => session.status().accountId || GUEST_OWNER;
+function syncStudyOwner() {
+  const now = studyOwnerNow(), saved = study.owner();
+  if (saved === now) return false;
+  if (saved === GUEST_OWNER) { study.setOwner(now); return false; }
+  if (now === GUEST_OWNER && !studySettled) return false;
+  study.clear(); if (now !== GUEST_OWNER) study.setOwner(now);
+  S.studyText = {}; S.studyErrors = {}; S.univId = null; S.univFilter = 'all';
+  return true;
+}
+// 감춰 둔 남의 조건 위에 쓰지 않는다: 주인이 다르면 비우고 지금 주인 것으로 새로 쓴다.
+function studyWrite(next) {
+  if (study.owner() !== studyOwnerNow()) { study.clear(); study.setOwner(studyOwnerNow()); }
+  return study.set(next);
+}
+function studyProfile() {
+  if (study.owner() !== studyOwnerNow()) return createProfile();
+  const p = study.get();
+  return { ...p, compare: p.compare.filter((id) => STUDY_IDS.includes(id)) };
+}
 const session = createPathSession({
   configUrl: './config.json',
   onDocument(doc) {
@@ -138,7 +173,7 @@ const session = createPathSession({
 state = session.document()?.state || createInitialState('ko');
 hadDoc = !!session.document()?.state;
 
-const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false };
+const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false, univId: null, univFilter: 'all', studyText: {}, studyErrors: {} };
 activeOwner = ownerKey(); wasOnboarded = !!state.onboarded;
 
 function persist() { return commit(state); }
@@ -180,6 +215,7 @@ const TAB_ICON = {
   today: svg(24, 1.6, '<rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10.2h16M8.5 3.5v4M15.5 3.5v4"/><path d="M11.9 14.9h.2" stroke-width="2.6"/>'),
   explore: svg(24, 1.6, '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/>'),
   prepare: svg(24, 1.6, '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>'),
+  univ: svg(24, 1.6, '<path d="M3.5 9.6 12 4.6l8.5 5"/><path d="M6 11v7.5M10 11v7.5M14 11v7.5M18 11v7.5M3.5 19.5h17"/>'),
   help: svg(24, 1.6, '<path d="M4.5 5.5h15v10h-8l-4 3.5v-3.5h-3z"/><path d="M10.4 8.9a1.7 1.7 0 1 1 2.3 1.6c-.5.2-.7.6-.7 1.1M12 13.4v.1"/>'),
   profile: svg(24, 1.6, '<circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4"/>')
 };
@@ -220,7 +256,8 @@ const findJobEntry = (id) => (jobsFeed.snapshot().jobs || []).find((j) => j.id =
 const oppRow = (o) => `<li><button type="button" class="row" data-action="detail" data-id="${esc(o.id)}"><span><b>${demoBadge(o)}${esc(pick(o.title))}</b><small>${esc(pick(o.summary))}</small></span><span class="row-go" aria-hidden="true">${ICON.arrow}</span></button></li>`;
 
 /* ── 틀: 머리 막대 · 넓은 화면 탭 · 휴대폰 아래 탭 ── */
-const TABS = ['today', 'explore', 'prepare', 'help', 'profile'];
+const TABS = ['today', 'univ', 'explore', 'prepare', 'help', 'profile'].filter((p) => p !== 'univ' || STUDY_ON);
+const UNIV_PAGES = ['cond', 'univDetail', 'univCompare'];
 function shell(main) {
   const nav = state.onboarded && S.page !== 'onboard';
   const acctSt = session.status();
@@ -236,7 +273,7 @@ function shell(main) {
 ${nav ? `<nav class="tabs" aria-label="${t('navLabel')}">${tabs}</nav>` : ''}<div class="bar-right">${lang}${acct}</div></header>
 ${main}${nav ? `<nav class="tabbar" aria-label="${t('navLabel')}">${bar}</nav>` : ''}</div>`;
 }
-function navActive(p) { return S.page === p || (p === 'explore' && S.page === 'detail') || (p === 'prepare' && S.page === 'editor'); }
+function navActive(p) { return S.page === p || (p === 'explore' && S.page === 'detail') || (p === 'prepare' && S.page === 'editor') || (p === 'univ' && UNIV_PAGES.includes(S.page)); }
 
 // quiet = 첫 실행에서는 「로그인하지 않은 상태」 안내를 빼고(첫 화면을 카드에 양보), 오류 · 저장 실패 · 막힘만 보인다
 function notices(quiet = false, noFlash = false) {
@@ -307,7 +344,7 @@ function today() {
   const off = g.id === 'job' && jobsFeed.snapshot().status === 'disabled' ? `<p class="off"><i aria-hidden="true"></i>${t('jobsOff')}</p>` : '';
   return `<main class="home" id="main"><aside class="stage home-stage" aria-label="${t('myCard')}"><div class="rod" aria-hidden="true"></div>${hang(g.id, { kicker: t('myCard'), mode: 'next' })}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('changeCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${h1a}</span> <span class="title-2">${h1b}</span></h1>
-${stamps(st, g.steps.map(pick))}${card}
+${stamps(st, g.steps.map(pick))}${card}${g.id === 'study' && STUDY_ON ? renderStudyEntry(studyView()) : ''}
 <div class="home-grid">${sec(t('homeOpps'), t('demoSub'), `<ul class="rows">${opps.map(oppRow).join('')}</ul>`)}${sec(t('official'), t('offSub'), officialList(g.id) + off)}</div></div></main>`;
 }
 
@@ -415,14 +452,22 @@ function profile() {
 <section class="settings-group"><h2>${t('goal')}</h2><p>${g ? esc(pick(g.label)) : t('none')}</p><button type="button" class="btn-line" data-action="changeGoal">${t('changeGoal')}</button></section>
 <section class="settings-group"><h2>${t('location')}</h2><p>${t(state.location || 'unknown')}</p></section>
 <section class="settings-group"><h2>${t('lang')}</h2><p>${state.lang === 'en' ? 'English' : '한국어'}</p></section>
-<section class="settings-group"><h2>${t('storage')}</h2>${accSt.signedIn ? `<p>${state.lang === 'en' ? 'Syncs to your account. Please check the save status above.' : '계정에 동기화합니다. 위의 저장 상태를 확인해 주세요.'}</p>` : `<p>${t('storageText')}</p><button type="button" class="btn-line danger" data-action="clear">${t('clear')}</button>`}</section></div>`;
+<section class="settings-group"><h2>${t('storage')}</h2>${accSt.signedIn ? `<p>${state.lang === 'en' ? 'Syncs to your account. Please check the save status above.' : '계정에 동기화합니다. 위의 저장 상태를 확인해 주세요.'}</p>` : `<p>${t('storageText')}</p><button type="button" class="btn-line danger" data-action="clear">${t('clear')}</button>`}${STUDY_ON ? `<p>${t('studyStore')}</p>` : ''}</section></div>`;
 }
 
-const PAGES = { today, explore, detail, prepare, editor, help, profile };
+const studyView = () => ({ lang: state.lang, profile: studyProfile(), programs: STUDY_PROGRAMS, rules: rulesAt(RULES, new Date()), now: new Date() });
+const condView = () => ({ ...studyView(), persisted: study.persisted(), text: S.studyText, errors: S.studyErrors });
+const univ = () => renderUniv({ ...studyView(), filter: S.univFilter });
+const univDetail = () => renderUnivDetail({ ...studyView(), programId: S.univId });
+const univCompare = () => renderUnivCompare(studyView());
+const cond = () => renderCond(condView());
+const PAGES = { today, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile };
 const LOCKED_ACTIONS = ['pickGoal', 'step2', 'toggle', 'finish', 'skip', 'prepareThis', 'confirm', 'body', 'loc', 'setLang', 'changeGoal', 'prepareJob', 'saveJob', 'removeJob'];
 function render(focus = true) {
   if (composingEl && root.contains(composingEl) && document.activeElement === composingEl) { deferredRender = true; deferredFocus = deferredFocus || focus; return; }
   composingEl = null;
+  syncStudyOwner();
+  if (!STUDY_ON && (S.page === 'univ' || UNIV_PAGES.includes(S.page))) S.page = 'today';
   const accSt = session.status();
   const ae = document.activeElement;
   const keepId = !focus && ae && root.contains(ae) ? ae.id : '';
@@ -454,7 +499,7 @@ function render(focus = true) {
 }
 // 화면을 옮기면 맨 위에서 시작한다(앞 화면에서 내려 둔 자리에 머물러 뒤로 · 출처 줄이 머리 막대 밑에 숨지 않게).
 const toTop = () => { try { if (typeof scrollTo === 'function') scrollTo(0, 0); } catch { /* 시험 환경 */ } };
-function go(page) { S.drop = MOTION && page !== S.page && (page === 'onboard' || page === 'today'); S.page = page; S.flash = null; S.error = null; S.copyMsg = null; render(); toTop(); }
+function go(page) { S.drop = MOTION && page !== S.page && (page === 'onboard' || page === 'today'); S.page = page; S.flash = null; S.error = null; S.copyMsg = null; S.studyText = {}; S.studyErrors = {}; render(); toTop(); }
 
 function ensureTask(oppId) {
   const o = oppById(oppId);
@@ -502,6 +547,31 @@ const ACT = {
     S.taskId = id; go('editor');
   },
   nav: (el) => go(el.dataset.page),
+  univOpen(el) { S.univId = el.dataset.id; go('univDetail'); },
+  studyFilter(el) {
+    S.univFilter = STUDY_FILTERS.includes(el.dataset.id) ? el.dataset.id : 'all';
+    render(false); root.querySelector(`[data-action="studyFilter"][data-id="${S.univFilter}"]`)?.focus();
+  },
+  studySet(el) {
+    const key = el.dataset.key, id = el.dataset.id;
+    const value = key === 'topik' ? Number(id) : id;
+    const cur = studyProfile();
+    studyWrite(setField(cur, key, cur[key] === value ? null : value));
+    render(false); root.querySelector(`[data-action="studySet"][data-key="${key}"][data-id="${id}"]`)?.focus();
+    sayStudyCount();
+  },
+  studyClear() {
+    study.clear(); S.studyText = {}; S.studyErrors = {};
+    render(false); root.querySelector('[data-action="studySet"]')?.focus();
+    say(accL('조건을 모두 지웠어요.', 'All conditions cleared.'));
+  },
+  studyCompare(el) {
+    const id = el.dataset.id, cur = studyProfile(), before = cur.compare.length;
+    const next = studyWrite(toggleCompare(cur, id, STUDY_IDS));
+    render(false);
+    (root.querySelector(`[data-action="studyCompare"][data-id="${id}"]`) || root.querySelector('h1'))?.focus();
+    say(next.compare.length === before ? accL('세 곳까지 담을 수 있어요.', 'You can compare up to 3.') : accL(`비교에 ${next.compare.length}곳 담았어요.`, `${next.compare.length} in compare.`));
+  },
   setLang(el) {
     const id = el.dataset.id === 'en' ? 'en' : 'ko';
     const back = () => {
@@ -570,6 +640,40 @@ const ACT = {
   clear() { return ACT.clearGuest(); },
   reset() { return ACT.clearGuest(); }
 };
+
+function sayStudyCount() {
+  const v = studyView(), n = countFit(v.profile, v.programs, v.rules);
+  say(n === null ? accL('성적과 한국어를 둘 다 넣으면 맞는 곳을 알려 줘요.', 'Enter both grades and Korean level to see what fits.')
+    : accL(`지금 조건에 맞는 과정 ${n}개`, `${n} program${n === 1 ? '' : 's'} fit your conditions`));
+}
+// 숫자 칸: 읽을 수 있는 값이면 바로 조건에 넣고, 아니면 조건은 그대로 두고 칸 아래에 알린다.
+// 치는 동안 칸은 다시 그리지 않는다(커서와 휴대폰 자판을 지킨다). 칸 아래 글과 결과 자리만 바꾼다.
+let studySayTimer = null;
+function studyInput(el) {
+  const key = el.dataset.key;
+  if (key !== 'gradePct' && key !== 'fundsWon') return;
+  const v = parseWhole(el.value, 0, key === 'gradePct' ? GRADE_MAX : FUNDS_MAX_MAN);
+  S.studyText = { ...S.studyText, [key]: el.value };
+  if (v === undefined) S.studyErrors = { ...S.studyErrors, [key]: true };
+  else {
+    const { [key]: _gone, ...rest } = S.studyErrors; S.studyErrors = rest;
+    studyWrite(setField(studyProfile(), key, v === null ? null : key === 'fundsWon' ? v * 10000 : v));
+  }
+  const bad = !!S.studyErrors[key];
+  if (bad) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid');
+  const hint = root.querySelector(`#${el.id}-hint`);
+  if (hint) { hint.textContent = condHint(state.lang, key, bad); hint.setAttribute('class', bad ? 'sx-hint is-error' : 'sx-hint'); }
+  const result = root.querySelector('#sx-cond-result');
+  if (result) result.innerHTML = renderCondResult(condView());
+  const note = root.querySelector('.sx-store');
+  if (note && !study.persisted() && !/is-warn/.test(note.getAttribute('class') || '')) { render(false); return; }
+  if (studySayTimer) clearTimeout(studySayTimer);
+  studySayTimer = setTimeout(() => {
+    studySayTimer = null;
+    if (S.page !== 'cond') return;
+    if (S.studyErrors[key]) say(condHint(state.lang, key, true)); else sayStudyCount();
+  }, 900);
+}
 
 function saveBody(body) {
   const task = state.tasks.find((x) => x.id === S.taskId);
@@ -682,7 +786,7 @@ Object.assign(ACT, {
   clearGuest: () => {
     if (!confirm(accL('이 탭에 저장된 게스트 자료를 지울까요? 계정에 저장된 자료에는 영향이 없습니다.', 'Clear the guest data saved in this tab? Data saved in your account is not affected.'))) return;
     const r = session.clearGuest();
-    if (accOk(r)) { S.flash = accL('이 탭의 게스트 자료를 지웠습니다.', 'Cleared guest data in this tab.'); say(S.flash); }
+    if (accOk(r)) { study.clear(); S.studyText = {}; S.studyErrors = {}; S.flash = accL('이 탭의 게스트 자료를 지웠습니다.', 'Cleared guest data in this tab.'); say(S.flash); }
     render(false);
   },
 });
@@ -714,6 +818,10 @@ root.addEventListener('input', (e) => {
   if (e.isComposing) { if (composingEl !== e.target) { composingEl = e.target; composingOwner = ownerKey(); } }
   if (composingEl === e.target && composingOwner !== ownerKey()) return;
   if (e.target.dataset.action === 'jobQuery') { S.jobQueryText = e.target.value; return; }
+  if (e.target.dataset.action === 'studyInput') {
+    try { studyInput(e.target); } catch (err) { const m = getAccountErrorMessage(err, state.lang); S.flash = esc(m); render(false); say(m); }
+    return;
+  }
   if (e.target.dataset.action === 'body') {
     const v = e.target.value, ss = e.target.selectionStart, se = e.target.selectionEnd;
     if (!saveBody(v)) {
@@ -756,5 +864,6 @@ root.addEventListener('keydown', (e) => {
 
 S.draft = newDraft();
 render(false);
-void session.init().catch((err) => { const m = getAccountErrorMessage(err, state.lang); S.flash = esc(m); render(false); say(m); });
+void session.init().catch((err) => { const m = getAccountErrorMessage(err, state.lang); S.flash = esc(m); render(false); say(m); })
+  .finally(() => { studySettled = true; if (syncStudyOwner()) render(false); });
 void jobsFeed.load();
