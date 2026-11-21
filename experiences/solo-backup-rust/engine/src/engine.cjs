@@ -1124,27 +1124,40 @@ class BackupEngine extends EventEmitter {
    *  only as the settings say (r4 GA5, 설계 검토 기록 4 F1; r3 GA3). */
   async oddBefore() {
     const shown = this.config.leftOutNames, held = this.config.leftOutHeld, heldSeq = held?.seq || 0;
-    this.oddFile = null; this.oddUnread = false;
+    // Those shown before are held too, as a write that failed leaves them there alone (설계 검토 기록 8 F3 · F4).
+    this.oddFile = null; this.oddUnread = false; this.oddShownBefore = shown?.names || [];
     // Read whether or not the settings point at it: a backup may stop after writing it before the settings ever did,
     // and the turns go on from it (설계 검토 기록 6 F2).
     let file = null, none = false;
     try { file = json(await fs.readFile(path.join(this.stateDir, ODD_FILE), 'utf8')); } catch (e) { none = e?.code === 'ENOENT'; }
     const ok = typeof file?.id === 'string' && Array.isArray(file.names) && file.names.every(p => typeof p === 'string' && p.length >= 1 && p.length <= 32767);
     if (!shown && !held && !ok) return null;
-    let names = shown?.names || [], cut = shown?.cut === true, count = Math.max(shown?.count || 0, held?.count || 0), says = null;
+    // The count is the hold's: the one shown may carry one kept back as maybe another, and read back it would grow (설계
+    // 검토 기록 8 F1). Settings from before the hold have only the one shown.
+    let names = shown?.names || [], cut = shown?.cut === true, count = held ? held.count : shown?.count || 0, says = null, known = null, older = null, dropped = held?.dropped || 0;
     if (ok) {
       const seq = Number.isSafeInteger(file.seq) && file.seq >= 0 ? file.seq : 0;
       const many = Number.isSafeInteger(file.count) && file.count >= file.names.length ? file.count : file.names.length;
-      this.oddFile = { id: file.id, seq, names: file.names, cut: file.cut === true, count: many };
+      const pushed = Number.isSafeInteger(file.dropped) && file.dropped >= 0 && file.dropped <= many - file.names.length ? file.dropped : 0;
+      this.oddFile = { id: file.id, seq, names: file.names, cut: file.cut === true, count: many, dropped: pushed };
       names = [...new Set([...file.names, ...names])].sort();
       cut = seq > heldSeq ? file.cut === true : seq < heldSeq || cut || !!held?.cut || file.cut === true;
       // How many the hold stands for, those it could not name too (past its limit, or a write that failed — GPT r7 GA3 ·
       // GA4 · GA5): a file past the settings says it alone, those shown aside.
-      if (seq > heldSeq) { count = many; says = many - file.names.length; } else count = Math.max(count, many);
+      if (seq > heldSeq) { count = many; says = many - file.names.length; known = file.names; dropped = pushed; }
+      else {
+        // A file behind the settings counts no more than they do: names let go since are not counted again (기록 8 F5).
+        if (seq >= heldSeq) count = Math.max(count, many);
+        // A file behind the settings (a write failed since) may hold names the count is not for — those since let go
+        // (GPT r8 GA6): what is known by name is told with the folders backed up (oddShow).
+        if (seq < heldSeq) older = file.names; else dropped = Math.max(dropped, pushed);
+      }
     } else if (none) cut = cut || !!held?.cut;
     else { this.oddUnread = true; cut = true; }
-    // Those counted but not known by name (`unknown`).
-    return { names, cut, count: Math.max(count, names.length), unknown: says ?? Math.max(0, count - names.length) };
+    // Those counted but not known by name (`unknown`), the names they are counted against (`known`), and how many of them
+    // were left out past the limit (`dropped`) rather than lost to a failure.
+    known ??= names;
+    return { names, cut, count: older ? count : Math.max(count, names.length), unknown: says ?? Math.max(0, count - known.length), known, older, shown: shown?.names || [], dropped };
   }
   /** Sets the names for backup `s` as known before the walk — what restic told, and those found before in the folders
    *  still backed up — not yet looked through (`checked` false), so a run that stops in the walk leaves no backup told
@@ -1153,7 +1166,7 @@ class BackupEngine extends EventEmitter {
   async oddPending(s, present, told, toldCut) {
     const before = await this.oddBefore();
     const all = topMost([...told, ...(before?.names || []).filter(p => present.some(f => inside(f, p) !== null))]);
-    await this.oddHold(all, this.oddShow(s, all, { cut: toldCut, before, checked: false }), { present, complete: false });
+    await this.oddHold(all, this.oddShow(s, all, { cut: toldCut, before, checked: false, seen: [...told] }), { present, complete: false });
     return before;
   }
   /** `all` as the names backup `s` could not hold, as the window shows them. With `before` past what was held — past
@@ -1161,14 +1174,27 @@ class BackupEngine extends EventEmitter {
    *  may be more (`cut`), and those counted but not known by name stay counted: where they are is not known (r6 GA4 ·
    *  GA5 · GA6 · GA8, 설계 검토 기록 6 F1).
    *  Whether there may be more. */
-  oddShow(s, all, { cut, before, checked }) {
+  oddShow(s, all, { cut, before, checked, seen = all }) {
     // Those counted but not known by name stay counted; those known are looked at again — so a count kept once does not
     // keep itself (설계 검토 기록 6 F1).
     // Of those, any found now not known by name before may be them, so they are not told twice (GPT r7 GA1) — all but
     // one: a name found now may be another, so one stays not known by name until a walk of every folder (설계 검토
     // 기록 7 F1).
-    const known = new Set((before?.names || []).map(nameKey)), had = before?.cut ? before.unknown : 0;
-    const fresh = had ? all.filter(p => !known.has(nameKey(p))).length : 0, unknown = Math.max(Math.min(had, 1), had - fresh);
+    // With a file behind the settings, only those shown are known by name (GPT r8 GA6): any of that file may have been
+    // let go since, a chosen folder away or not (GPT r9 GA6) — one held there by name may be counted twice, never none.
+    // A name of that file found again is no new one.
+    const older = before?.older || null, olderKeys = new Set((older || []).map(nameKey));
+    const known = new Set((older ? before.shown : before?.known || before?.names || []).map(nameKey));
+    const had = !before?.cut ? 0 : older ? Math.max(0, before.count - known.size) : before.unknown;
+    // Those found now, not known by name, fill first those left out past the limit (found again, GPT r7 GA1), then those
+    // lost to a failure — all but one of these when a name is new (설계 검토 기록 7 F1). Before the walk only those
+    // restic told are found now.
+    const fresh = had ? seen.filter(p => !known.has(nameKey(p))) : [], dropped = Math.min(had, before?.dropped || 0), lost = had - dropped;
+    // One of those left out past the limit stays, a name found now being maybe another: so a count with some left out
+    // does not come down to none before a walk of every folder (기록 8 F1) — one past them at most.
+    const byDrop = Math.min(fresh.length, Math.max(0, dropped - (fresh.length ? 1 : 0))), floor = lost > 0 && fresh.some(p => !olderKeys.has(nameKey(p))) ? 1 : 0;
+    const byLost = Math.min(fresh.length - byDrop, Math.max(0, lost - floor)), unknown = had - byDrop - byLost;
+    this.oddDropped = dropped - byDrop; this.oddLost = lost - byLost;
     const past = !checked && !!before?.cut, count = past ? all.length + unknown : all.length, more = !!cut || past;
     this.oddUnknown = unknown;
     this.config.leftOutNames = count || !checked ? { at: s.time, count, names: oddList(all), cut: more, ...(checked ? {} : { checked: false }) } : null;
@@ -1183,27 +1209,37 @@ class BackupEngine extends EventEmitter {
    *  it is until a walk of every chosen folder (r5 GA2 · GA8, 기록 5 F4), the settings saying it holds fewer (r6 GA1).
    *  None left, the file is written empty, not removed (r5 GA7). Written when they change; one that cannot be written
    *  leaves the file as it was, the settings a turn past it and `cut`. */
-  async oddHold(all, cut, { present, complete, unread = null }) {
+  async oddHold(all, cut, { present, complete, unread = null, gone = null }) {
     const chosen = this.config.sources || [], inChosen = p => chosen.some(f => inside(f, p) !== null), now = this.oddFile, held = this.config.leftOutHeld;
     // Those not known by name stay counted in the hold until a walk of every chosen folder — one away may hold them (GPT
     // r7 GA3).
-    const carry = complete && present.length >= chosen.length ? 0 : this.oddUnknown || 0, heldSeq = held?.seq || 0;
-    if (this.oddUnread && (!complete || present.length < chosen.length)) { this.config.leftOutHeld = { id: held?.id || 'unwritten', seq: heldSeq, count: all.length + carry, cut: true }; return; }
+    const every0 = complete && present.length >= chosen.length, keptDrop = every0 ? 0 : this.oddDropped || 0, carry = every0 ? 0 : (this.oddDropped || 0) + (this.oddLost || 0), heldSeq = held?.seq || 0;
+    // Not written, so the settings go a turn past the file: one written since and not pointed at reads as no newer
+    // (GPT r8 GA3).
+    if (this.oddUnread && (!complete || present.length < chosen.length)) { this.config.leftOutHeld = { id: held?.id || 'unwritten', seq: heldSeq + 1, count: all.length + carry + (this.oddShownBefore || []).filter(p => inChosen(p) && !present.some(f => inside(f, p) !== null)).length, dropped: 0, cut: true }; return; }
     const away = p => inChosen(p) && !present.some(f => inside(f, p) !== null);
-    const keep = (now?.names || []).filter(complete ? away : unread ? p => away(p) || unread.some(d => inside(d, p) !== null) : inChosen);
+    // One looked at and not there under that very name is let go (GPT r8 GA2).
+    const keep = [...new Set([...(now?.names || []), ...(this.oddShownBefore || [])])].filter(p => !gone?.has(p)).filter(complete ? away : unread ? p => away(p) || unread.some(d => inside(d, p) !== null) : inChosen);
     const every = keep.length ? [...new Set([...all, ...keep])].sort() : all;
     const names = [], max = this.oddHoldMax ?? UNREADABLE_MAX, maxChars = this.oddHoldChars ?? ODD_HOLD_CHARS; let chars = 0;
-    for (const p of every) { if (names.length >= max || chars + p.length > maxChars) break; names.push(p); chars += p.length; }
+    // Past the limit, those held already go first and the new wait: a name held is not pushed out by a new one that sorts
+    // before it (GPT r8 GA4 · GA5). A new one left out is counted, and the next walk finds it again.
+    const was = new Set(now?.names || []), order = was.size ? [...every.filter(p => was.has(p)), ...every.filter(p => !was.has(p))] : every;
+    for (const p of order) { if (names.length >= max || chars + p.length > maxChars) break; names.push(p); chars += p.length; }
+    if (order !== every) names.sort();
     // How many it stands for: those it could not name past its limit too (GPT r7 GA3 · GA4).
-    const count = every.length + carry, more = !!cut || names.length < every.length || carry > 0 || (!complete && !!now?.cut), file = path.join(this.stateDir, ODD_FILE);
+    // Those left out now and those left out before not found again may be the same: the more of them is counted; those
+    // lost to a failure come on top.
+    const dropped = Math.max(every.length - names.length, keptDrop), count = names.length + dropped + carry - keptDrop;
+    const more = !!cut || names.length < every.length || carry > 0 || (!complete && !!now?.cut), file = path.join(this.stateDir, ODD_FILE);
     const seq = Math.max(heldSeq, now?.seq || 0) + 1;
     // The same file as it is stays — unless the settings are past it (a write failed since): it is written again a turn
     // past them, or it would read as the older (GPT r7 GA6).
-    if (now && heldSeq <= now.seq && now.cut === more && now.count === count && now.names.length === names.length && now.names.every((p, i) => p === names[i])) { this.config.leftOutHeld = { id: now.id, seq: now.seq, count, cut: more }; return; }
+    if (now && heldSeq <= now.seq && now.cut === more && now.count === count && (now.dropped || 0) === dropped && now.names.length === names.length && now.names.every((p, i) => p === names[i])) { this.config.leftOutHeld = { id: now.id, seq: now.seq, count, dropped, cut: more }; return; }
     if (!names.length && !more && !now && !held) return;
     const id = crypto.randomUUID();
-    try { await atomic(file, JSON.stringify({ v: 1, id, seq, names, count, cut: more })); this.oddFile = { id, seq, names, cut: more, count }; this.config.leftOutHeld = { id, seq, count, cut: more }; }
-    catch { this.config.leftOutHeld = { id: now?.id || 'unwritten', seq, count, cut: true }; }
+    try { await atomic(file, JSON.stringify({ v: 1, id, seq, names, count, dropped, cut: more })); this.oddFile = { id, seq, names, cut: more, count, dropped }; this.config.leftOutHeld = { id, seq, count, dropped, cut: more }; }
+    catch { this.config.leftOutHeld = { id: now?.id || 'unwritten', seq, count, dropped, cut: true }; }
   }
   /** What backup `s` could not hold for a name ending in a dot or a space (4.2 「이 백업에 담지 못하는 이름」): those restic
    *  told while counting (`told`), and — as restic stops counting once the backup is saved and tells none beside the
@@ -1222,7 +1258,14 @@ class BackupEngine extends EventEmitter {
     const unread = walked.done && !walked.unreadCut ? walked.unread : null, notRead = p => !unread || unread.some(d => inside(d, p) !== null);
     const exact = new Set(found.map(nameKey));
     const by = Date.now() + (this.oddLookBudgetMs ?? ODD_LOOK_BUDGET);
-    const look = await stillThere((before?.names || []).filter(p => !exact.has(nameKey(p)) && present.some(f => inside(f, p) !== null) && notRead(p)), by);
+    const ask = (before?.names || []).filter(p => !exact.has(nameKey(p)) && present.some(f => inside(f, p) !== null) && notRead(p));
+    const look = await stillThere(ask, by);
+    // Those looked at and not there are gone — but not under a chosen folder gone by the end of the walk, where nothing
+    // is there (설계 검토 기록 7 F2, GPT r8 GA2).
+    // The chosen folders looked at again after those names: one gone meanwhile tells nothing of them (기록 8 F2), nor do
+    // any when they could not all be looked at in time (GPT r9 GA5).
+    const there = new Set(look.names), roots = await stillThere(present, Date.now() + (this.oddLookBudgetMs ?? ODD_LOOK_BUDGET)), rootGone = present.filter(d => walked.unread.includes(d) || !roots.done || !roots.names.includes(d));
+    const gone = new Set(ask.filter(p => !there.has(p) && !rootGone.some(r => inside(r, p) !== null)));
     // One found now under another spelling is told once, as found now, when it is that very file (r2 GA3) — any of those
     // found under that spelling (r4 GA3), or kept already under another (r5 GA3); two files in a folder that tells case
     // apart stay two (r3 GA1). Each is looked at once, by its volume and number (r6 GA3); one that cannot be stays.
@@ -1239,7 +1282,7 @@ class BackupEngine extends EventEmitter {
       kept.push(p);
     }
     const all = topMost([...found, ...kept]);
-    await this.oddHold(all, this.oddShow(s, all, { cut: toldCut || walked.more, before, checked }), { present, complete: false, unread });
+    await this.oddHold(all, this.oddShow(s, all, { cut: toldCut || walked.more, before, checked }), { present, complete: false, unread, gone });
   }
   /** The chosen folders that are there now. One that is gone — an unplugged drive, a folder moved or deleted — is
    *  left out of this backup, and the backups that hold it are kept (retain) and restored (restoreLatest); with

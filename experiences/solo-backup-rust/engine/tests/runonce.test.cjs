@@ -711,9 +711,12 @@ test('a run that could not read the names file and so did not write it leaves th
   const readdir = fsp.readdir;
   fsp.readdir = (p, ...rest) => p.endsWith(path.sep + '잠긴') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(p, ...rest);
   fsp.readFile = (p, ...rest) => p === file ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readFile(p, ...rest);
+  const seq = engine.config.leftOutHeld.seq;
   advance(61 * 60000);
   try { await engine.runOnce({}); } finally { fsp.readFile = readFile; fsp.readdir = readdir; }
   assert.equal(engine.config.leftOutHeld.cut, true);
+  // And a turn past the file, so one written since and not pointed at reads as no newer (GPT r8 GA3).
+  assert.ok(engine.config.leftOutHeld.seq > seq);
 });
 
 test('a count kept once, the names it was for gone, does not keep itself (4.2, 설계 검토 기록 6 F1)', async () => {
@@ -775,20 +778,20 @@ test('with no such name ever, no names file is written (4.2)', async () => {
   await assert.rejects(fs.stat(path.join(engine.stateDir, 'left-out-names.json')), { code: 'ENOENT' });
 });
 
-test('names found again past what is held are not told twice (4.2, GPT r7 GA1)', async () => {
+for (const past of [1, 2]) test(`names found again past what is held are not told twice, ${past} past it (4.2, GPT r7 GA1)`, async () => {
   const { engine, fail, advance } = await fixture();
   const [src] = engine.config.sources;
   engine.oddHoldMax = 1000; // as 200,000 (UNREADABLE_MAX) for real
-  fail.scan = Array.from({ length: 1001 }, (_, i) => path.join(src, `n${String(i).padStart(4, '0')}.`));
+  fail.scan = Array.from({ length: 1000 + past }, (_, i) => path.join(src, `n${String(i).padStart(4, '0')}.`));
   await engine.setAutomatic(true);
   await engine.runOnce({});
-  assert.deepEqual([engine.config.leftOutHeld.count, engine.config.leftOutHeld.cut], [1001, true]);
-  // One folder never read: the one past what is held, found again, may be the one not known by name — and may not, so
-  // one stays counted: one past them at most, and it does not grow (설계 검토 기록 7 F1).
+  assert.deepEqual([engine.config.leftOutHeld.count, engine.config.leftOutHeld.cut], [1000 + past, true]);
+  // One folder never read: the one past what is held, found again, may be the one left out past the limit — and may
+  // not, so one stays counted: one past them at most, and the count does not grow (설계 검토 기록 8 F1).
   await fs.mkdir(path.join(src, '잠긴'));
   const fsp = require('node:fs/promises'), readdir = fsp.readdir;
   fsp.readdir = (p, ...rest) => p.endsWith(path.sep + '잠긴') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(p, ...rest);
-  try { for (let i = 0; i < 3; i++) { advance(61 * 60000); assert.equal((await engine.runOnce({})).odd, 1002); } }
+  try { for (let i = 0; i < 3; i++) { advance(61 * 60000); assert.equal((await engine.runOnce({})).odd, 1001 + past); } }
   finally { fsp.readdir = readdir; delete engine.oddHoldMax; }
 });
 
@@ -821,7 +824,7 @@ for (const stopped of [false, true]) test(`those a chosen folder away holds past
   // Unplugged, and a new name in the other folder, which sorts first: the hold is full, and `tail.` falls out of it.
   const away = usb + '-뽑음';
   await fs.rename(usb, away);
-  await fs.writeFile(exact(path.join(second, 'new.')), '');
+  await fs.mkdir(path.join(second, '새')); await fs.writeFile(exact(path.join(second, '새', 'new.')), '');
   let pending = null;
   engine.oddPending = async (...a) => { const r = await Object.getPrototypeOf(engine).oddPending.apply(engine, a); pending = structuredClone({ held: engine.config.leftOutHeld, names: engine.config.leftOutNames }); return r; };
   for (let i = 0; i < 2; i++) {
@@ -829,10 +832,10 @@ for (const stopped of [false, true]) test(`those a chosen folder away holds past
     if (stopped) { engine.config.leftOutHeld = pending.held; engine.config.leftOutNames = pending.names; }
   }
   delete engine.oddPending;
-  // Back, with the folder that holds it unread: still counted.
+  // Back, with the folders that hold `tail.` and the new one unread: both still counted, the new one by number.
   await fs.rename(away, usb);
   const fsp = require('node:fs/promises'), readdir = fsp.readdir;
-  fsp.readdir = (p, ...rest) => p.endsWith(path.sep + '깊은') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(p, ...rest);
+  fsp.readdir = (p, ...rest) => p.endsWith(path.sep + '깊은') || p.endsWith(path.sep + '새') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(p, ...rest);
   advance(61 * 60000);
   try { assert.equal((await engine.runOnce({})).odd, 4); } finally { fsp.readdir = readdir; delete engine.oddHoldMax; }
 });
@@ -863,12 +866,12 @@ test('a hold that could not be written stays counted for those it could not name
   advance(61 * 60000);
   try { await engine.runOnce({}); } finally { fsp.open = open; delete engine.oddPending; }
   engine.config.leftOutHeld = pending.held; engine.config.leftOutNames = pending.names;
-  // Those shown renamed, and the folder that holds `tail.` unread: the 1,001 told less those shown stay counted, `tail.`
-  // among them — the name held for the folder away not taken for one of them.
+  // Those shown renamed, and the folder that holds `tail.` unread: all but those shown stay counted, `tail.` among them —
+  // the one held for the folder away too, the file behind the settings knowing none by name (GPT r9 GA6).
   fail.scan = [];
   fsp.readdir = (p, ...rest) => p.endsWith(path.sep + '깊은') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(p, ...rest);
   advance(61 * 60000);
-  try { assert.equal((await engine.runOnce({})).odd, 1001 - pending.names.names.length); } finally { fsp.readdir = readdir; }
+  try { assert.equal((await engine.runOnce({})).odd, 1002 - pending.names.names.length); } finally { fsp.readdir = readdir; }
 });
 
 test('a hold the settings are past is written again though it reads the same (4.2, GPT r7 GA6)', async () => {
@@ -939,6 +942,235 @@ test('a chosen folder gone by the end of the walk is one not read, whatever was 
   fsp.readdir = (p, ...rest) => p === exact(sub) ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(p, ...rest);
   advance(61 * 60000);
   try { assert.equal((await engine.runOnce({})).odd, 1); } finally { fsp.readdir = readdir; }
+});
+
+for (const stopped of [false, true]) test(`past what is held, those held already are not pushed out by new ones that sort first${stopped ? ', each run stopped before the settings' : ''} (4.2, GPT r8 GA4${stopped ? ' · GA5' : ''})`, async () => {
+  const { engine, fail, advance } = await fixture({ folders: 2 });
+  const [usb, second] = engine.config.sources, deep = path.join(usb, '깊은');
+  await fs.mkdir(deep);
+  for (const p of [path.join(usb, 'a.'), path.join(usb, 'b.'), path.join(deep, 'tail.')]) await fs.writeFile(exact(p), '');
+  engine.oddHoldMax = 3; // as 200,000 (UNREADABLE_MAX) for real
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  // Unplugged, and restic tells two new names in the other folder, which sort first.
+  const away = usb + '-뽑음';
+  await fs.rename(usb, away);
+  fail.scan = [path.join(second, 'n1.'), path.join(second, 'n2.')];
+  let pending = null;
+  engine.oddPending = async (...a) => { const r = await Object.getPrototypeOf(engine).oddPending.apply(engine, a); pending = structuredClone({ held: engine.config.leftOutHeld, names: engine.config.leftOutNames }); return r; };
+  advance(61 * 60000); await engine.runOnce({});
+  delete engine.oddPending;
+  if (stopped) { engine.config.leftOutHeld = pending.held; engine.config.leftOutNames = pending.names; }
+  assert.ok(JSON.parse(await fs.readFile(path.join(engine.stateDir, 'left-out-names.json'), 'utf8')).names.includes(path.join(deep, 'tail.')));
+  // Back, with the folder that holds `tail.` unread: all five told.
+  await fs.rename(away, usb);
+  const fsp = require('node:fs/promises'), readdir = fsp.readdir;
+  fsp.readdir = (p, ...rest) => p.endsWith(path.sep + '깊은') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(p, ...rest);
+  advance(61 * 60000);
+  try { assert.equal((await engine.runOnce({})).odd, 5); } finally { fsp.readdir = readdir; delete engine.oddHoldMax; }
+});
+
+test('a names file behind the settings is not taken to know the names the count is for (4.2, GPT r8 GA6 · r9 GA6)', async () => {
+  const { engine, advance } = await fixture({ folders: 2 });
+  const [usb, second] = engine.config.sources, deep = path.join(second, '깊은'), file = path.join(engine.stateDir, 'left-out-names.json');
+  await fs.mkdir(deep); await fs.writeFile(exact(path.join(deep, 'tail.')), ''); await fs.writeFile(exact(path.join(usb, 'usb.')), '');
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  // The file holds the name of a folder away and one renamed since; the settings, a turn past it (its write failed),
+  // count that one away and `tail.`.
+  await fs.writeFile(file, JSON.stringify({ v: 1, id: 'old', seq: 1, names: [path.join(usb, 'usb.'), path.join(second, '고친.')], count: 2, cut: false }));
+  engine.config.leftOutHeld = { id: 'old', seq: 2, count: 2, dropped: 0, cut: true };
+  engine.config.leftOutNames = { at: engine.config.lastBackup.at, count: 1, names: [], cut: true, checked: false };
+  await fs.rename(usb, usb + '-뽑음');
+  const fsp = require('node:fs/promises'), readdir = fsp.readdir;
+  fsp.readdir = (p, ...rest) => p.endsWith(path.sep + '깊은') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(p, ...rest);
+  advance(61 * 60000);
+  // `tail.`, and the one held for the folder away as well (counted twice rather than none).
+  try { assert.equal((await engine.runOnce({})).odd, 2); } finally { fsp.readdir = readdir; }
+});
+
+test('a name renamed before its chosen folder went away does not take the place of one not known by name (4.2, GPT r9 GA6)', async () => {
+  const { engine, fail, advance } = await fixture({ folders: 2 });
+  const [usb, other] = engine.config.sources, deep = path.join(other, '깊은'), tail = path.join(deep, 'tail.'), file = path.join(engine.stateDir, 'left-out-names.json');
+  await fs.writeFile(exact(path.join(usb, 'old.')), '');
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  // `old.` renamed, and 1,000 new names told with a new `tail.`, in a run whose names file cannot be written.
+  await fs.rename(exact(path.join(usb, 'old.')), path.join(usb, 'old.txt'));
+  await fs.mkdir(deep); await fs.writeFile(exact(tail), '');
+  const told = Array.from({ length: 1000 }, (_, i) => path.join(other, `가 ${String(i).padStart(4, '0')}.`));
+  fail.scan = [...told, tail];
+  const fsp = require('node:fs/promises'), open = fsp.open, readdir = fsp.readdir;
+  fsp.open = (x, ...rest) => String(x).startsWith(file + '.') ? Promise.reject(Object.assign(new Error('full'), { code: 'ENOSPC' })) : open(x, ...rest);
+  advance(61 * 60000);
+  try { await engine.runOnce({}); } finally { fsp.open = open; }
+  engine.config.leftOutNames = { ...engine.config.leftOutNames, names: told }; // all 1,000 shown, as with short names
+  // Unplugged; those shown renamed, and `tail.`'s folder unread: it is still told.
+  await fs.rename(usb, usb + '-뽑음');
+  fail.scan = [];
+  fsp.readdir = (x, ...rest) => x.endsWith(path.sep + '깊은') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(x, ...rest);
+  advance(61 * 60000);
+  try { assert.ok((await engine.runOnce({})).odd >= 1); } finally { fsp.readdir = readdir; }
+});
+
+test('those looked at and not there are let go from the hold, a walk out of time (4.2, GPT r8 GA2)', async () => {
+  const { engine, advance } = await fixture();
+  const [src] = engine.config.sources, file = path.join(engine.stateDir, 'left-out-names.json'), gone = [path.join(src, 'g1.'), path.join(src, 'g2.')];
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  await fs.writeFile(file, JSON.stringify({ v: 1, id: 'held', seq: 2, names: gone, count: 2, cut: false }));
+  engine.config.leftOutHeld = { id: 'held', seq: 2, count: 2, dropped: 0, cut: false };
+  engine.config.leftOutNames = { at: engine.config.lastBackup.at, count: 2, names: gone, cut: false };
+  engine.oddWalkBudgetMs = 0;
+  advance(61 * 60000);
+  try { await engine.runOnce({}); } finally { delete engine.oddWalkBudgetMs; }
+  assert.deepEqual(JSON.parse(await fs.readFile(file, 'utf8')).names, []);
+});
+
+test('those not known by name stay counted through a walk of every folder while a chosen folder is away (4.2, GPT r7 GA3)', async () => {
+  const { engine, advance } = await fixture({ folders: 2 });
+  const [usb] = engine.config.sources, deep = path.join(usb, '깊은'), file = path.join(engine.stateDir, 'left-out-names.json');
+  await fs.mkdir(deep);
+  for (const n of ['u1.', 'u2.']) await fs.writeFile(exact(path.join(deep, n)), '');
+  await engine.setAutomatic(true);
+  // The names file cannot be written, and those shown do not name them (as past the list).
+  const fsp = require('node:fs/promises'), open = fsp.open, readdir = fsp.readdir;
+  fsp.open = (p, ...rest) => String(p).startsWith(file + '.') ? Promise.reject(Object.assign(new Error('full'), { code: 'ENOSPC' })) : open(p, ...rest);
+  try { await engine.runOnce({}); } finally { fsp.open = open; }
+  engine.config.leftOutNames = { ...engine.config.leftOutNames, names: [] };
+  // Unplugged: a walk of every folder there is.
+  const away = usb + '-뽑음';
+  await fs.rename(usb, away);
+  advance(61 * 60000); await engine.runOnce({});
+  // Back, with the folder that holds them unread: still counted.
+  await fs.rename(away, usb);
+  fsp.readdir = (p, ...rest) => p.endsWith(path.sep + '깊은') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(p, ...rest);
+  advance(61 * 60000);
+  try { assert.equal((await engine.runOnce({})).odd, 2); } finally { fsp.readdir = readdir; }
+});
+
+test('one left out past the limit stays counted when a new name is found and the rest renamed (4.2, 설계 검토 기록 8 F1)', async () => {
+  const { engine, advance } = await fixture();
+  const [src] = engine.config.sources, p = path.join(src, 'p'), q = path.join(src, 'q'), ps = ['p1.', 'p2.', 'p3.'].map(n => path.join(p, n));
+  await fs.mkdir(p); await fs.mkdir(q);
+  for (const x of [...ps, path.join(q, 'q1.')]) await fs.writeFile(exact(x), '');
+  engine.oddHoldMax = 3; // as 200,000 (UNREADABLE_MAX) for real
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  engine.config.leftOutNames = { ...engine.config.leftOutNames, names: ps }; // `q1.` past the list, as past 1,000
+  const fsp = require('node:fs/promises'), readdir = fsp.readdir;
+  fsp.readdir = (x, ...rest) => x.endsWith(path.sep + 'q') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(x, ...rest);
+  try {
+    await fs.rename(exact(ps[0]), ps[0] + 'txt'); await fs.writeFile(exact(path.join(p, 'n1.')), '');
+    advance(61 * 60000); await engine.runOnce({});
+    for (const x of [ps[1], ps[2], path.join(p, 'n1.')]) await fs.rename(exact(x), x + 'txt');
+    advance(61 * 60000);
+    assert.equal((await engine.runOnce({})).odd, 1);
+  } finally { fsp.readdir = readdir; delete engine.oddHoldMax; }
+});
+
+test('a chosen folder gone while those names are looked at again lets none of them go (4.2, 설계 검토 기록 8 F2)', async () => {
+  const { engine, advance } = await fixture({ folders: 2 });
+  const [usb] = engine.config.sources, sub = path.join(usb, 'sub'), file = path.join(engine.stateDir, 'left-out-names.json');
+  await fs.mkdir(sub); await fs.writeFile(exact(path.join(sub, 'tail.')), '');
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  // A walk out of time, and the drive pulled once the backup is written down.
+  const fsp = require('node:fs/promises'), lstat = fsp.lstat;
+  let pulled = false;
+  engine.oddPending = async (...a) => { const r = await Object.getPrototypeOf(engine).oddPending.apply(engine, a); pulled = true; return r; };
+  fsp.lstat = (x, ...rest) => pulled && String(x).startsWith(exact(usb)) ? Promise.reject(Object.assign(new Error('gone'), { code: 'ENOENT' })) : lstat(x, ...rest);
+  engine.oddWalkBudgetMs = 0;
+  advance(61 * 60000);
+  try { await engine.runOnce({}); } finally { fsp.lstat = lstat; delete engine.oddPending; delete engine.oddWalkBudgetMs; }
+  assert.ok(JSON.parse(await fs.readFile(file, 'utf8')).names.includes(path.join(sub, 'tail.')));
+});
+
+test('a name shown only, its write failed, is held when its chosen folder is away (4.2, 설계 검토 기록 8 F3)', async () => {
+  const { engine, advance } = await fixture({ folders: 2 });
+  const [usb, other] = engine.config.sources, sub = path.join(usb, 'sub'), file = path.join(engine.stateDir, 'left-out-names.json');
+  await fs.writeFile(exact(path.join(other, 'a.')), '');
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  await fs.mkdir(sub); await fs.writeFile(exact(path.join(sub, 'new.')), '');
+  const fsp = require('node:fs/promises'), open = fsp.open, readdir = fsp.readdir;
+  fsp.open = (x, ...rest) => String(x).startsWith(file + '.') ? Promise.reject(Object.assign(new Error('full'), { code: 'ENOSPC' })) : open(x, ...rest);
+  advance(61 * 60000);
+  try { await engine.runOnce({}); } finally { fsp.open = open; }
+  // Unplugged, then back with `sub` unread: `new.` is still told.
+  const away = usb + '-뽑음';
+  await fs.rename(usb, away);
+  advance(61 * 60000); await engine.runOnce({});
+  await fs.rename(away, usb);
+  fsp.readdir = (x, ...rest) => x.endsWith(path.sep + 'sub') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(x, ...rest);
+  advance(61 * 60000);
+  try { assert.equal((await engine.runOnce({})).odd, 2); } finally { fsp.readdir = readdir; }
+});
+
+test('a names file that cannot be read keeps counted those shown for a chosen folder away (4.2, 설계 검토 기록 8 F4)', async () => {
+  const { engine, advance } = await fixture({ folders: 2 });
+  const [usb, other] = engine.config.sources, sub = path.join(usb, 'sub'), file = path.join(engine.stateDir, 'left-out-names.json');
+  await fs.mkdir(sub); await fs.writeFile(exact(path.join(sub, 'u.')), ''); await fs.writeFile(exact(path.join(other, 'a.')), '');
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  await fs.writeFile(file, '{ not json');
+  const away = usb + '-뽑음';
+  await fs.rename(usb, away);
+  advance(61 * 60000); await engine.runOnce({});
+  // Back with `sub` unread, and `a.` renamed: `u.` is still counted.
+  await fs.rename(away, usb);
+  await fs.rename(exact(path.join(other, 'a.')), path.join(other, 'a.txt'));
+  const fsp = require('node:fs/promises'), readdir = fsp.readdir;
+  fsp.readdir = (x, ...rest) => x.endsWith(path.sep + 'sub') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(x, ...rest);
+  advance(61 * 60000);
+  try { assert.equal((await engine.runOnce({})).odd, 1); } finally { fsp.readdir = readdir; }
+});
+
+test('a names file behind the settings does not count again a name let go since (4.2, 설계 검토 기록 8 F5)', async () => {
+  const { engine, advance } = await fixture();
+  const [src] = engine.config.sources, file = path.join(engine.stateDir, 'left-out-names.json'), a = path.join(src, 'a.'), b = path.join(src, 'b.');
+  await fs.writeFile(exact(a), ''); await fs.writeFile(exact(b), ''); await fs.mkdir(path.join(src, '잠긴'));
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  const fsp = require('node:fs/promises'), open = fsp.open, readdir = fsp.readdir;
+  fsp.readdir = (x, ...rest) => x.endsWith(path.sep + '잠긴') ? Promise.reject(Object.assign(new Error('denied'), { code: 'EACCES' })) : readdir(x, ...rest);
+  try {
+    // `a.` renamed in a run whose names file cannot be written.
+    await fs.rename(exact(a), a + 'txt');
+    fsp.open = (x, ...rest) => String(x).startsWith(file + '.') ? Promise.reject(Object.assign(new Error('full'), { code: 'ENOSPC' })) : open(x, ...rest);
+    advance(61 * 60000);
+    try { await engine.runOnce({}); } finally { fsp.open = open; }
+    advance(61 * 60000);
+    assert.equal((await engine.runOnce({})).odd, 1);
+    await fs.rename(exact(b), b + 'txt');
+    advance(61 * 60000);
+    assert.equal((await engine.runOnce({})).odd, undefined);
+  } finally { fsp.readdir = readdir; }
+});
+
+test('when the chosen folders cannot all be looked at again in time, no name is let go (4.2, GPT r9 GA5)', async () => {
+  const { engine, advance } = await fixture({ folders: 2 });
+  const [usb] = engine.config.sources, sub = path.join(usb, 'sub'), file = path.join(engine.stateDir, 'left-out-names.json');
+  await fs.mkdir(sub); await fs.writeFile(exact(path.join(sub, 'tail.')), '');
+  await engine.setAutomatic(true);
+  await engine.runOnce({});
+  // A walk out of time; the drive pulled once the backup is written down, and the folders looked at again out of time too.
+  const fsp = require('node:fs/promises'), lstat = fsp.lstat;
+  let pulled = false;
+  engine.oddPending = async (...a) => { const r = await Object.getPrototypeOf(engine).oddPending.apply(engine, a); pulled = true; return r; };
+  fsp.lstat = (x, ...rest) => pulled && String(x).startsWith(exact(usb)) ? Promise.reject(Object.assign(new Error('gone'), { code: 'ENOENT' })) : lstat(x, ...rest);
+  const realStill = engine.oddLookBudgetMs;
+  engine.oddWalkBudgetMs = 0;
+  const looks = [];
+  advance(61 * 60000);
+  try {
+    // The second look (the folders) finds its time gone: give the first all of it.
+    engine.oddLookBudgetMs = 50;
+    const orig = fsp.lstat;
+    fsp.lstat = async (x, ...rest) => { looks.push(String(x)); if (String(x) === exact(usb) || String(x) === exact(engine.config.sources[1])) await new Promise(r => setTimeout(r, 120)); return orig(x, ...rest); };
+    await engine.runOnce({});
+  } finally { fsp.lstat = lstat; delete engine.oddPending; delete engine.oddWalkBudgetMs; if (realStill === undefined) delete engine.oddLookBudgetMs; else engine.oddLookBudgetMs = realStill; }
+  assert.ok(JSON.parse(await fs.readFile(file, 'utf8')).names.includes(path.join(sub, 'tail.')), JSON.stringify(looks.slice(-4)));
 });
 
 test('1,001 names of 300 characters are all held (4.2, GPT r3 GA4)', async () => {

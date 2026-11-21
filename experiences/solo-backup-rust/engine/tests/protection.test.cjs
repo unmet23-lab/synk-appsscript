@@ -181,10 +181,11 @@ test('the names a backup could not hold are read back as written, or not at all 
   assert.equal(read({ at, count: 40, names: Array.from({ length: 40 }, (_, i) => 'C:\\' + 'x'.repeat(990) + i + '.') }).names.length, 32, 'and 32,768 characters in all (GPT GA1)');
   // Where each is held, apart from the settings (설계 검토 기록 3): which file, how many, whether more were found.
   const held = o => { const c = { leftOutHeld: o, leftOutAll: { names: ['C:\\a\\b.'] } }; normalizeProtection(c); return [c.leftOutHeld, 'leftOutAll' in c]; };
-  assert.deepEqual(held({ id: 'x1', count: 3, cut: 'yes' }), [{ id: 'x1', seq: 0, count: 3, cut: false }, false]);
-  assert.deepEqual(held({ id: 'x1', seq: 7, count: 3 }), [{ id: 'x1', seq: 7, count: 3, cut: false }, false]);
+  assert.deepEqual(held({ id: 'x1', count: 3, cut: 'yes' }), [{ id: 'x1', seq: 0, count: 3, dropped: 0, cut: false }, false]);
+  assert.deepEqual(held({ id: 'x1', seq: 7, count: 3, dropped: 2 }), [{ id: 'x1', seq: 7, count: 3, dropped: 2, cut: false }, false]);
+  for (const dropped of [4, -1, 1.5, '2']) assert.equal(held({ id: 'x1', count: 3, dropped })[0].dropped, 0);
   assert.deepEqual(held({ id: 'x1', seq: -1, count: 3 })[0].seq, 0);
-  assert.deepEqual(held({ id: 'x1', count: 0, cut: true }), [{ id: 'x1', seq: 0, count: 0, cut: true }, false]);
+  assert.deepEqual(held({ id: 'x1', count: 0, cut: true }), [{ id: 'x1', seq: 0, count: 0, dropped: 0, cut: true }, false]);
   for (const bad of [null, 'x', {}, { id: '', count: 1 }, { id: 'x'.repeat(65), count: 1 }, { id: 'x', count: -1 }, { id: 'x', count: 1.5 }, { id: 'x', count: 2 ** 31 + 1 }]) assert.deepEqual(held(bad), [null, false]);
   for (const bad of [null, 'x', { count: 1, names: [] }, { at, count: 0, names: [] }, { at, count: 1.5, names: [] }, { at: 'later', count: 1, names: [] }]) assert.equal(read(bad), null);
 });

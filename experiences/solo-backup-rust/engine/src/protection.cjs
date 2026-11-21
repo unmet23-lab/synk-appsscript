@@ -61,7 +61,7 @@ function leftOutOf(o) {
 // window's state.
 function leftOutHeldOf(o) {
   if (!o || typeof o !== 'object' || typeof o.id !== 'string' || !o.id || o.id.length > 64 || !Number.isSafeInteger(o.count) || o.count < 0 || o.count > 2 ** 31) return null;
-  return { id: o.id, seq: Number.isSafeInteger(o.seq) && o.seq >= 0 ? o.seq : 0, count: o.count, cut: o.cut === true };
+  return { id: o.id, seq: Number.isSafeInteger(o.seq) && o.seq >= 0 ? o.seq : 0, count: o.count, dropped: Number.isSafeInteger(o.dropped) && o.dropped >= 0 && o.dropped <= o.count ? o.dropped : 0, cut: o.cut === true };
 }
 function schedule(c, intervalMs, now, inMemoryAttempt = 0) {
   const attempt = Math.max(time(c?.lastAttemptAt), inMemoryAttempt);
