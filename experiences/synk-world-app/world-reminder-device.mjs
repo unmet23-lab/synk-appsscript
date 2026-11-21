@@ -305,8 +305,8 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   if(name==='reminder-push-no'){if(target.document?.querySelector?.('[data-push-consent="sheet"]')){close();return decline();}closeConsent();rerenderSettings();return;}
   if(name==='reminder-keep'){
    save(updateReminderSettings(load(),{enabled:true},now()));
-   // 2단이 켜진 계정은 서버의 물러남도 그때부터 다시 센다.
-   if(pushActive())syncSettings();
+   // 2단이 켜진 계정은 서버의 물러남도 그때부터 다시 센다. 상태를 아직 모를 때도 판으로 적어 두고 상태가 서면 보낸다(world-push sync · 설계 검토 P2-7).
+   if(push)syncSettings();
    toast(onMessage(refresh()));repaint();return;
   }
   if(name==='reminder-stop'){
@@ -459,8 +459,8 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
     return;
    }
    const choose=values=>{save(updateReminderSettings(load(),values,now()));refresh();
-    // 2단이 켜진 계정은 설정이 계정에 하나다 — 서버에도 바로 보낸다(물러남도 그때부터 다시 센다).
-    if(pushActive())syncSettings();
+    // 2단이 켜진 계정은 설정이 계정에 하나다 — 서버에도 바로 보낸다(물러남도 그때부터 다시 센다). 상태를 아직 모를 때도 판으로 적어 둔다(P2-7).
+    if(push)syncSettings();
     toast(t('reminder.saved'));update();};
    if(control.name==='reminder-count')choose({frequency:Number(control.value)});
    if(control.name==='reminder-hour')choose({hour:control.value==='auto'?null:Number(control.value)});
@@ -476,7 +476,21 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   const state=load(),entries=state.entries.filter(row=>Number.isFinite(row.deliveredAt));
   if(entries.length!==state.entries.length)save({...state,entries});
  }
- return {refresh,schedule,tick,askMarkup,examMarkup,examChanged,consentMarkup,settingsMarkup,bindSettings,command,opened,openKind,forgetPending,
+ // 2단 설정 판 맞추기(world-push bindSettings, 단계4 계획 §24-6의 5): 이 브라우저의 1단 설정이 계정 설정의 기기 쪽 사본이다. 서버 판이 이
+ // 브라우저 판 이상이고 내용이 다르면 서버 설정을 들인다 — 다른 기기의 새 설정을 그리고, 다음 쓰기가 옛 시각으로 되돌리지 않게(설계 검토 P1-1).
+ // 들일 때는 설정을 보내지 않는다. 마지막 기기를 끌 때(disablePush) 서버 설정을 넣는 것과 같은 꼴이다.
+ const unbindPush=push?.bindSettings?.({
+  read:()=>{const state=load();return {frequency:state.frequency,hour:state.hour,since:state.since};},
+  adopt:value=>{
+   if(stopped||!REMINDER_POLICY.frequencies.includes(value?.frequency))return;
+   const state=load();
+   save({...state,frequency:value.frequency,hour:REMINDER_POLICY.hours.includes(value.hour)?value.hour:null,since:Number.isFinite(value.since)?value.since:state.since});
+   rerenderSettings();repaint();
+  }})||null;
+ // 떠날 때(pagehide · 화면 숨김): 모으던 다시 잡기(400ms)를 바로 돌려 막 낸 답의 「오늘 공부함」이 요약에 들게 한다(설계 검토 P2-6).
+ // 그다음 app-shell이 push.flush()로 모은 요약을 보낸다.
+ function flushPending(){if(stopped||!pending)return;clearTimeout(pending);pending=null;refresh();}
+ return {refresh,schedule,tick,askMarkup,examMarkup,examChanged,consentMarkup,settingsMarkup,bindSettings,command,opened,openKind,forgetPending,flushPending,
   metrics:()=>({owner,state:load(),plan:last,support:support(),push:remote(),hour:last?last.hour:reminderHour({hour:load().hour,now:now(),offset}).hour}),
-  dispose(){stopped=true;clearInterval(timer);timer=null;clearTimeout(pending);pending=null;unwatch?.();unwatch=null;target.removeEventListener?.('focus',onVisible);target.document?.removeEventListener?.('visibilitychange',onVisible);}};
+  dispose(){stopped=true;clearInterval(timer);timer=null;clearTimeout(pending);pending=null;unwatch?.();unwatch=null;unbindPush?.();target.removeEventListener?.('focus',onVisible);target.document?.removeEventListener?.('visibilitychange',onVisible);}};
 }
