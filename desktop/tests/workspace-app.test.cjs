@@ -1,7 +1,7 @@
 'use strict';
 // 검정 구 4단계 구현 설계 3.2 · 3.4 · 4절: 플랫폼 창 안의 Workspace 관리자. 가짜 겉(뷰 자리의 겉과 같은 이름)과 가짜 세션으로 본다.
 const test=require('node:test'),assert=require('node:assert/strict'),{EventEmitter}=require('node:events'),{createHash}=require('node:crypto'),path=require('node:path');
-const {createWorkspaceApp,workspaceScopeOf,workspaceAppPartition,workspaceNavigationAllowed,workspaceRequestAllowed,workspaceExternalDestination,workspaceFrame,WORKSPACE_ORIGIN:ORIGIN,WORKSPACE_ENTRY:ENTRY,WORKSPACE_VIEW_PRELOAD,WORKSPACE_BACKGROUND,NATIVE_CHANNEL}=require('../src/workspace-app.cjs');
+const {createWorkspaceApp,workspaceAccessToken,workspaceScopeOf,workspaceAppPartition,workspaceNavigationAllowed,workspaceRequestAllowed,workspaceExternalDestination,workspaceFrame,WORKSPACE_ORIGIN:ORIGIN,WORKSPACE_ENTRY:ENTRY,WORKSPACE_VIEW_PRELOAD,WORKSPACE_BACKGROUND,NATIVE_CHANNEL}=require('../src/workspace-app.cjs');
 const {WORKSPACE_EXIT_TEXT}=require('../src/draft-exit.cjs');
 
 const SRC=path.join(__dirname,'..','src');
@@ -476,4 +476,57 @@ test('permission checks read origins as URLs, so a trailing slash from Electron 
   assert.equal(checked(f,A,c,'speaker-selection',ORIGIN+'/',{embeddingOrigin:ORIGIN+'/'}),true);
   assert.equal(checked(f,A,c,'media',ORIGIN+'/',{mediaType:'audio',embeddingOrigin:ORIGIN+'/'}),true);
   assert.equal(checked(f,A,c,'media',ORIGIN+'/',{mediaType:'audio',embeddingOrigin:'https://evil.invalid/'}),false);
+});
+
+// GPT 엔진 검수 pc-orb-step4-engine-20261122-b
+test('the company token goes out only for this surface\'s SYNK ID; a lagging Workspace login is woken and refused (b GA1)',async()=>{
+  let account=A,refreshed=0,flip=null;
+  const service={status:()=>({signedIn:true,status:'signed-in',account:{synk_user_id:account}}),getAccessToken:async()=>{flip?.();return 'synthetic-token';}};
+  assert.equal(await workspaceAccessToken(service,A,()=>{refreshed++;}),'synthetic-token');
+  account=B;
+  await assert.rejects(workspaceAccessToken(service,A,()=>{refreshed++;}),{code:'WORKSPACE_ACCOUNT_PENDING'});
+  await settle();assert.equal(refreshed,1,'the Suite follower is woken');
+  account=A;flip=()=>{account=B;};
+  await assert.rejects(workspaceAccessToken(service,A),{code:'WORKSPACE_ACCOUNT_PENDING'},'a login that changes while the token is read is refused');
+  flip=null;account=A;
+  await assert.rejects(workspaceAccessToken(null,A),{code:'AUTH_UNAVAILABLE'});
+  for(const id of [null,undefined,''])await assert.rejects(workspaceAccessToken(service,id),{code:'WORKSPACE_ACCOUNT_PENDING'},String(id));
+  await assert.rejects(workspaceAccessToken({status(){throw Error('합성');},getAccessToken:async()=>'x'},A),{code:'WORKSPACE_ACCOUNT_PENDING'});
+  const seen=[];const g=fixture({native:{companyRequest(jar,id){seen.push(id);return ()=>({ok:true});}}});await g.app.open();
+  assert.deepEqual(seen,[A],'the company requests are bound to the surface\'s SYNK ID');
+});
+test('an invite while Workspace is signed out starts the Workspace login once and stays pending until it ends (b GA2)',async()=>{
+  const binding={status:'signed-in',expectedAccountId:U};const calls=[];
+  let status={configured:true,signedIn:false,status:'signed-out',account:null};
+  const f=fixture({state:member(U),native:{prepare(){},status:()=>status,signIn:async()=>{calls.push('signIn');status={configured:true,signedIn:false,status:'signing-in',account:null};return status;}}});
+  assert.deepEqual(await f.app.surfaceForInvite(binding),{pending:true});
+  await settle();assert.deepEqual(calls,['signIn']);
+  assert.deepEqual(await f.app.surfaceForInvite(binding),{pending:true});
+  await settle();assert.deepEqual(calls,['signIn'],'a login under way is not started again');
+  status={configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:U}};
+  assert.ok((await f.app.surfaceForInvite(binding))?.surface,'the retry after the login gets the surface');
+  for(const other of [{configured:false,signedIn:false,status:'signed-out',account:null},{configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:A}},{configured:true,signedIn:false,status:'error',account:null},null]){
+    const g=fixture({state:member(U),native:{prepare(){},status:()=>other,signIn:async()=>{calls.push('other');}}});
+    assert.deepEqual(await g.app.surfaceForInvite(binding),{pending:true},JSON.stringify(other));await settle();
+  }
+  assert.ok(!calls.includes('other'),'only a signed-out Workspace login is started here');
+});
+test('a new-window link to a company document opens in this view; other links go to the browser (b GA3)',async()=>{
+  const f=fixture();await f.app.open();const s=f.surface,c=s.webContents;
+  const link='https://workspace.synk.im/?tab=workroom';
+  assert.deepEqual(c.openHandler({url:link}),{action:'deny'});await settle();
+  assert.deepEqual(s.loads,[ENTRY,link]);assert.deepEqual(f.external,[]);
+  assert.deepEqual(c.openHandler({url:'https://example.invalid/x'}),{action:'deny'});await settle();
+  assert.deepEqual(s.loads,[ENTRY,link]);assert.deepEqual(f.external,['https://example.invalid/x']);
+  for(const other of ['http://workspace.synk.im/?tab=workroom','https://workspace.synk.im/messenger/','https://workspace.synk.im.evil.invalid/'])c.openHandler({url:other});
+  await settle();assert.deepEqual(s.loads,[ENTRY,link],'only the company document opens in the view');
+  s.destroy();c.openHandler({url:link});await settle();assert.equal(s.loads.length,2,'a closed view loads nothing');
+});
+
+test('main wiring: a zoom change lays out the Workspace view too, and company requests take the surface account (b GA4 · GA1)',()=>{
+  const main=require('node:fs').readFileSync(path.join(SRC,'main.cjs'),'utf8');
+  const change=main.match(/onChange:\(\)=>\{sendDesktop\('synk:desktop-preferences',desktopSnapshot\(\)\);([^}]*)\}/);
+  assert.ok(change,'the preferences change callback is found');
+  assert.match(change[1],/pulseView\?\.relayout\(\)/);assert.match(change[1],/workspaceView\?\.relayout\(\)/);
+  assert.match(main,/companyRequest:\(jar,accountId\)=>createCompanyRequests\(\{[^\n]*getAccessToken:\(\)=>workspaceAccessToken\(ensureWorkspaceAuth\(\),accountId,/);
 });

@@ -46,6 +46,19 @@ function workspaceRequestAllowed(details){
     return originOf(details.initiatorOrigin)===WORKSPACE_ORIGIN||originOf(details.referrer)===WORKSPACE_ORIGIN;
   }catch{return false;}
 }
+/*
+  회사 요청(exchange · renew)에 싣는 Workspace 토큰은 이 뷰의 SYNK ID 것이어야 한다. 플랫폼 계정을 바꾼 뒤 Suite 따라가기(500ms마다)가
+  아직 못 따라왔으면 앞 계정의 토큰이 새 계정의 통에서 나간다(GPT 엔진 검수 b GA1). 받기 전과 받은 뒤에 견주고, 다르면 따라가기를 깨우고 거절한다
+*/
+async function workspaceAccessToken(service,accountId,refresh){
+  const fail=code=>Object.assign(new Error(code),{code});
+  if(!service)throw fail('AUTH_UNAVAILABLE');
+  const same=()=>{try{const status=service.status();return typeof accountId==='string'&&accountId!==''&&status?.signedIn===true&&status.account?.synk_user_id===accountId;}catch{return false;}};
+  if(!same()){void Promise.resolve().then(()=>refresh?.()).catch(()=>{});throw fail('WORKSPACE_ACCOUNT_PENDING');}
+  const token=await service.getAccessToken();
+  if(!same())throw fail('WORKSPACE_ACCOUNT_PENDING');
+  return token;
+}
 // 시스템 브라우저로 넘길 주소. http · https이고 사용자 정보가 없으며 뷰 안에서 열 문서가 아니어야 한다
 function workspaceExternalDestination(value){const url=parsed(value);return url&&['http:','https:'].includes(url.protocol)&&!workspaceNavigationAllowed(value)?url.href:null;}
 // 계정 통은 확인된 SYNK ID 하나에만 묶인다. 손님, 복원 중, 오류, anonymous-local은 통이 없다
@@ -165,7 +178,8 @@ function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRe
     const contents=surface.webContents;
     const fromPage=event=>{try{return !surface.isDestroyed()&&activeSurface===surface&&event?.sender===contents&&event.senderFrame===contents.mainFrame&&workspaceNavigationAllowed(event.senderFrame?.url);}catch{return false;}};
     const handle=(channel,work)=>contents.ipc.handle(channel,async(event,...args)=>{if(!fromPage(event))return {ok:false,code:'UNTRUSTED_SENDER'};try{return await work(...args);}catch{return {ok:false,code:'WORKSPACE_NATIVE_FAILED'};}});
-    const companyRequest=typeof native.companyRequest==='function'?native.companyRequest(isolated):null;
+    // 겉은 만든 때의 계정 것이다. 계정이 바뀌면 syncContext가 겉을 닫는다. 토큰은 그 계정의 것만 싣는다(GA1)
+    const companyRequest=typeof native.companyRequest==='function'?native.companyRequest(isolated,ownerAccount()):null;
     handle(NATIVE_CHANNEL.status,()=>native.status?.()??null);
     // 회사 화면이 부르는 것은 load 하나다(synk-id.js retryNativeSynkRestore). 그 밖의 계정 요청은 이 뷰에 열지 않는다
     handle(NATIVE_CHANNEL.account,operation=>operation==='load'&&typeof native.accountLoad==='function'?native.accountLoad():{ok:false,code:'INVALID_REQUEST'});
@@ -180,7 +194,11 @@ function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRe
     // 회사 입구가 이 겉을 초대에 쓸 때 새 창 · 쓰던 글 확인을 다시 걸지 않게 한다(대화상자가 두 번 뜨지 않게, 설계 3.4)
     surface.workspaceGuarded=true;
     bindNative(surface,isolated);
-    contents.setWindowOpenHandler(({url})=>{openOutside(url);return {action:'deny'};});
+    // 회사 문서 안의 새 창 링크(대화에서 공유받은 작업실 따위)는 새 창 대신 이 뷰에서 연다. 쓰던 글은 떠나기 확인이 지킨다(GPT 엔진 검수 b GA3)
+    contents.setWindowOpenHandler(({url})=>{
+      if(workspaceNavigationAllowed(url)){void Promise.resolve().then(()=>{if(!surface.isDestroyed()&&activeSurface===surface)return surface.loadURL(url);}).catch(()=>{});return {action:'deny'};}
+      openOutside(url);return {action:'deny'};
+    });
     contents.on('will-attach-webview',event=>event.preventDefault());
     // 메신저 iframe이 바깥 주소로 가려 하면 막고 브라우저로 연다. 요청 취소만으로 막으면 그 칸이 오류 화면이 된다(검토 R16)
     contents.on('will-frame-navigate',event=>{try{if(event.isMainFrame)return;const target=event.url;if(originOf(target)===WORKSPACE_ORIGIN)return;event.preventDefault();openOutside(target);}catch{}});
@@ -245,8 +263,13 @@ function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRe
     try{native.prepare?.();}catch{}
     // 회사 화면은 Workspace 로그인으로 그 회사 계정을 SYNK ID에 잇는다. 그 로그인이 같은 SYNK ID로 끝나기 전에 초대를 받으면 잇지 못한 채
     // 초대가 소모된다. 그래서 끝나기 전에는 {pending:true}로 답하고 회사 입구가 다시 시도할 수 있는 오류로 끝낸다(GPT 엔진 검수 GA2)
-    let ready=false;try{const status=native.status?.();ready=status?.signedIn===true&&status.account?.synk_user_id===binding.expectedAccountId;}catch{ready=false;}
-    if(!ready)return {pending:true};
+    let ready=false,status=null;try{status=native.status?.();ready=status?.signedIn===true&&status.account?.synk_user_id===binding.expectedAccountId;}catch{ready=false;}
+    if(!ready){
+      // Workspace에서 로그아웃했으면 Suite 따라가기는 다시 들어가지 않는다(Suite 기록이 그대로다). 초대를 넣은 것은 들어가겠다는 뜻이라
+      // 여기서 Workspace 로그인을 시작한다. 다시 시도하면 그 로그인이 끝난 뒤 초대를 받는다(GPT 엔진 검수 b GA2)
+      if(status?.configured!==false&&status?.status==='signed-out')void Promise.resolve().then(()=>native.signIn?.()).catch(()=>{});
+      return {pending:true};
+    }
     if(pending)return {busy:true};
     // 통화 중인 Workspace는 쓰던 글이 없어도 말없이 닫지 않는다(검토 R6)
     if(alive()&&busy())return {busy:true};
@@ -275,4 +298,4 @@ function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRe
     dispose(){disposed=true;++epoch;pending=null;closeSurface();activeSession=null;}};
 }
 
-module.exports={createWorkspaceApp,workspaceScopeOf,workspaceAppPartition,workspaceNavigationAllowed,workspaceRequestAllowed,workspaceExternalDestination,workspaceFrame,WORKSPACE_ORIGIN,WORKSPACE_ENTRY,WORKSPACE_VIEW_PRELOAD,WORKSPACE_BACKGROUND,NATIVE_CHANNEL};
+module.exports={createWorkspaceApp,workspaceAccessToken,workspaceScopeOf,workspaceAppPartition,workspaceNavigationAllowed,workspaceRequestAllowed,workspaceExternalDestination,workspaceFrame,WORKSPACE_ORIGIN,WORKSPACE_ENTRY,WORKSPACE_VIEW_PRELOAD,WORKSPACE_BACKGROUND,NATIVE_CHANNEL};

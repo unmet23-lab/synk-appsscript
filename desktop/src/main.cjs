@@ -35,7 +35,7 @@ const {createDraftRecoveryRequests}=require('./draft-recovery-ipc.cjs');
 const {copyDiagnostics}=require('./diagnostics-clipboard.cjs');
 const {createPulseApp,pulseInviteRefusal}=require('./pulse-app.cjs');
 const {createSpaceViewHost}=require('./space-view.cjs');
-const {createWorkspaceApp,WORKSPACE_ENTRY}=require('./workspace-app.cjs');
+const {createWorkspaceApp,workspaceAccessToken,WORKSPACE_ENTRY}=require('./workspace-app.cjs');
 const {createCompanyEntryManager,createCompanyEntryPartitions,companyAnswerFromPulse,entryRefusal,bindingFromAuth}=require('./company-entry.cjs');
 const {createCompanyEntryDestinations}=require('./company-entry-destinations.cjs');
 const {createPlatformUpdater}=require('./platform-update.cjs');
@@ -605,7 +605,8 @@ function workspaceNative(){
     signIn:async()=>{const service=ensureWorkspaceAuth();if(!service)return WORKSPACE_AUTH_NONE;await service.signIn();return service.status();},
     cancelSignIn:async()=>{const service=ensureWorkspaceAuth();return service?service.cancel():WORKSPACE_AUTH_NONE;},
     signOut:async()=>{const service=ensureWorkspaceAuth();return service?service.signOut():{ok:false};},
-    companyRequest:jar=>createCompanyRequests({entry:WORKSPACE_ENTRY,clientId:'messenger',session:jar,auth:{getAccessToken:()=>{const service=ensureWorkspaceAuth();if(!service)throw Object.assign(new Error('AUTH_UNAVAILABLE'),{code:'AUTH_UNAVAILABLE'});return service.getAccessToken();}}})};
+    // 토큰은 그 겉의 SYNK ID 것만 싣는다. Suite 따라가기가 아직 못 따라왔으면 깨우고 거절한다(GPT 엔진 검수 b GA1)
+    companyRequest:(jar,accountId)=>createCompanyRequests({entry:WORKSPACE_ENTRY,clientId:'messenger',session:jar,auth:{getAccessToken:()=>workspaceAccessToken(ensureWorkspaceAuth(),accountId,()=>workspaceFollower?.refresh?.())}})};
 }
 let shareAsk=null,shareSeq=0;
 // 첫 판은 화면 소리를 주지 않는다(4단계 설계 4.2, 검토 R10). 고른 화면이나 창의 그림만 준다
@@ -671,7 +672,7 @@ function initializeMain(){
   suiteStore=suiteDirectory?createSuiteStore({directory:suiteDirectory,key:suiteBindingKey}):null;suiteDeviceId=suiteDirectory?suiteDevice({directory:suiteDirectory}):null;
   suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(projectAuth(auth.status()));}}):null;
   if(runtime.clientId==='platform'){
-    desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>{sendDesktop('synk:desktop-preferences',desktopSnapshot());pulseView?.relayout();},enabled:!smoke,packaged,name:current.appId});
+    desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>{sendDesktop('synk:desktop-preferences',desktopSnapshot());pulseView?.relayout();workspaceView?.relayout();},enabled:!smoke,packaged,name:current.appId});
     desktopPreferences.initialize();
     windowPlacement=windowPlacement||createWindowPlacement({directory:app.getPath('userData'),screen,enabled:!smoke});
     // 쓰던 글을 지키던 편집기는 PC 0.5.0에서 옛 화면과 함께 거뒀다. 남은 보관은 켤 때마다 지우고, 지우지 못하면 다음에 켤 때 다시 지운다(PC 0.5.0 설계 4.5 R4)
