@@ -2821,13 +2821,31 @@ export function mountWebPortalHost({
       return { ok: true, action: 'purpose' };
     },
 
-    onEnter({ generation, accountKey }) {
-      requestCancelCompanyEntry();
-      return executeAssignmentResolution({
-        accountKey,
-        generation,
-        interactiveRecovery: false,
-      });
+    // 로그인 뒤에는 작업 공간 고르기도 제품 고르기도 없이 플랫폼으로 들어간다. 배정을 조회하지 않고 회사 공간을 열지 않는다.
+    // 배정된 사람은 플랫폼의 앱 목록에서 Workspace · PULSE로 옮겨 가고, 처음 오는 사람은 초대코드로만 들어온다(유호님 11-21, PC 앱과 같게).
+    // 가려던 주소(#solio/… 같은 딥링크)가 있으면 그대로 두고, 없으면 홈이다. 온보딩이 남은 계정은 묻지 않았다는 값을 남긴다
+    // 실패 글은 여기서 채운다. 얼굴의 기본 글은 「배정된 작업 공간을 …」이라 이제 틀린 까닭이 된다(카본 web-no-chooser-20261121 A1)
+    async onEnter({ accountKey }) {
+      const enterFailed = { ok: false, code: 'ENTER_FAILED', message: 'SYNK에 들어가지 못했어요. 잠시 뒤 다시 시도해 주세요.' };
+      const accountChanged = { ok: false, code: 'ACCOUNT_CHANGED', message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.' };
+      try {
+        requestCancelCompanyEntry();
+        const boundAccount = verifyBoundAccount(accountKey);
+        if (!boundAccount) return accountChanged;
+        syncObservedPendingOnboarding(boundAccount.identity?.());
+        if (isPurposeOnboardingPending(boundAccount, accountKey)) {
+          const marked = await settlePurposeOnboarding(boundAccount, 'not-asked', accountKey, { bounded: true });
+          if (marked?.ok === false) {
+            const message = typeof marked.message === 'string' && marked.message.trim() ? marked.message.trim() : enterFailed.message;
+            return { ...marked, message };
+          }
+          if (!verifyBoundAccount(accountKey)) return accountChanged;
+        }
+        onEnsureEnteredRoute?.();
+        return { ok: true };
+      } catch {
+        return enterFailed;
+      }
     },
 
     onRetryWorkspace(context) {

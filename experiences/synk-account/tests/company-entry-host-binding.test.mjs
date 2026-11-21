@@ -1594,237 +1594,6 @@ test('R2: invite link submitted after unsynced restoring->signed-out settles pri
   assert.equal(classifyBind.expectedAccountId, null);
 });
 
-test('R3: retry-workspace after unsynced same-account generation bump settles prior generation before binding new resolution', async t => {
-  const dom = createFakeDomEnvironment();
-  let authIdentity = {
-    status: 'signed-in',
-    signedIn: true,
-    accountId: account,
-    accountKey: account,
-    accountGeneration: 1,
-  };
-  let cancelCalls = 0;
-  let resolveSecond = null;
-  const resolveCalls = [];
-
-  const host = mountWebPortalHost({
-    root: dom.root,
-    getReducedMotion: () => true,
-    getStartupState: () => ({ status: authIdentity.status }),
-    getAccount: () => ({
-      identity: () => authIdentity,
-      isAccountBound: id => authIdentity.signedIn === true && authIdentity.accountId === id,
-    }),
-    companyBoundaries: {
-      resolveAssignedDestination(args) {
-        resolveCalls.push(args);
-        if (resolveCalls.length === 1) {
-          return Promise.resolve({
-            ok: true,
-            result: {
-              status: 'resolved',
-              destinations: ['/', '/pulse-app/'],
-              unavailable: [],
-            },
-          });
-        }
-        return new Promise(resolve => {
-          resolveSecond = resolve;
-        });
-      },
-      openAssignedDestination() {
-        return { ok: true, navigationRequested: true };
-      },
-      cancelCompanyEntry() {
-        cancelCalls += 1;
-        if (resolveSecond) {
-          const pending = resolveSecond;
-          resolveSecond = null;
-          pending({ ok: false, code: 'CANCELLED', retryable: true });
-        }
-      },
-    },
-  });
-  t.after(() => host.dispose());
-
-  dom.root.querySelector('[data-portal-action="orb"]').click();
-  await tick();
-  await tick();
-
-  assert.equal(host.getState().phase, 'workspace');
-  assert.deepEqual(host.getState().workspace.destinations, ['/', '/pulse-app/']);
-  assert.equal(resolveCalls.length, 1);
-  const firstBoundGen = resolveCalls[0].accountGeneration;
-
-  // Same account with new identity generation before syncAccountState runs.
-  authIdentity = {
-    status: 'signed-in',
-    signedIn: true,
-    accountId: account,
-    accountKey: account,
-    accountGeneration: 2,
-  };
-
-  dom.root.querySelector('[data-portal-action="retry-workspace"]').click();
-  const cancelsAfterRetryStart = cancelCalls;
-  assert.equal(resolveCalls.length, 2);
-  const secondBoundGen = resolveCalls[1].accountGeneration;
-  assert.notEqual(secondBoundGen, firstBoundGen);
-
-  // Subsequent syncAccountState calls for the same state must not cancel the newly bound retry resolution.
-  host.syncAccountState();
-  host.syncAccountState();
-  assert.equal(cancelCalls, cancelsAfterRetryStart);
-  assert.ok(resolveSecond, 'retry-workspace resolution remains active across same-state syncs');
-
-  const finishSecond = resolveSecond;
-  resolveSecond = null;
-  finishSecond({
-    ok: true,
-    result: {
-      status: 'partial',
-      destinations: ['/'],
-      unavailable: ['pulse'],
-    },
-  });
-  await tick();
-  await tick();
-
-  assert.equal(host.getState().phase, 'workspace');
-  assert.equal(host.getState().workspace.status, 'partial');
-  assert.deepEqual(host.getState().workspace.destinations, ['/']);
-  assert.deepEqual(host.getState().workspace.unavailable, ['pulse']);
-});
-
-test('R4: interactive login-recovery watch stays alive after initial return across same-state syncs and cancels once on continue-personal or account switch', async t => {
-  async function setupLoginRecoveryWatch() {
-    const dom = createFakeDomEnvironment();
-    let authIdentity = {
-      status: 'signed-in',
-      signedIn: true,
-      accountId: account,
-      accountKey: account,
-      accountGeneration: 1,
-    };
-    let cancelCalls = 0;
-    let retainedUpdate = null;
-    const resolveCalls = [];
-
-    const host = mountWebPortalHost({
-      root: dom.root,
-      getReducedMotion: () => true,
-      getStartupState: () => ({ status: authIdentity.status }),
-      getAccount: () => ({
-        identity: () => authIdentity,
-        isAccountBound: id => authIdentity.signedIn === true && authIdentity.accountId === id,
-      }),
-      companyBoundaries: {
-        resolveAssignedDestination(args) {
-          resolveCalls.push(args);
-          if (args.interactiveRecovery) {
-            retainedUpdate = args.onAssignmentUpdate;
-          }
-          return Promise.resolve({
-            ok: true,
-            result: {
-              status: 'login_required',
-              destinations: [],
-              unavailable: [],
-            },
-          });
-        },
-        openAssignedDestination() {
-          return { ok: true, navigationRequested: true };
-        },
-        cancelCompanyEntry() {
-          cancelCalls += 1;
-        },
-      },
-    });
-    t.after(() => host.dispose());
-
-    dom.root.querySelector('[data-portal-action="orb"]').click();
-    await tick();
-    await tick();
-    assert.equal(host.getState().phase, 'workspace');
-    assert.equal(host.getState().workspace.status, 'login_required');
-
-    dom.root.querySelector('[data-portal-action="retry-workspace"]').click();
-    await tick();
-    await tick();
-    assert.equal(resolveCalls.length, 2);
-    assert.equal(resolveCalls[1].interactiveRecovery, true);
-    assert.equal(typeof retainedUpdate, 'function');
-    // Starting recovery cancels the previous assignment lookup once. Measure subsequent cancellation separately.
-    assert.equal(cancelCalls, 1);
-    const cancelsAtRecoveryStart = cancelCalls;
-
-    return {
-      dom,
-      host,
-      getCancelCalls: () => cancelCalls - cancelsAtRecoveryStart,
-      getRetainedUpdate: () => retainedUpdate,
-      setAuthIdentity(next) {
-        authIdentity = next;
-      },
-    };
-  }
-
-  // (a) Same-state sync twice -> 0 cancels; retained update applies resolved multi-destination workspace.
-  const caseA = await setupLoginRecoveryWatch();
-  caseA.host.syncAccountState();
-  caseA.host.syncAccountState();
-  assert.equal(caseA.getCancelCalls(), 0);
-  caseA.getRetainedUpdate()({
-    ok: true,
-    result: {
-      status: 'resolved',
-      destinations: ['/', '/pulse-app/'],
-      unavailable: [],
-    },
-  });
-  assert.equal(caseA.host.getState().phase, 'workspace');
-  assert.equal(caseA.host.getState().workspace.status, 'resolved');
-  assert.deepEqual(caseA.host.getState().workspace.destinations, ['/', '/pulse-app/']);
-
-  // (b) Clicking continue-personal after initial return cancels the retained watch exactly once.
-  const caseB = await setupLoginRecoveryWatch();
-  caseB.dom.root.querySelector('[data-portal-action="continue-personal"]').click();
-  await tick();
-  await tick();
-  assert.equal(caseB.getCancelCalls(), 1);
-  assert.equal(caseB.host.getState().phase, 'purpose'); // Personal entry keeps the product chooser visible.
-
-  // (c) Syncing signed-in B after initial return cancels once and ignores late update from A.
-  const caseC = await setupLoginRecoveryWatch();
-  const staleUpdateFromA = caseC.getRetainedUpdate();
-  caseC.setAuthIdentity({
-    status: 'signed-in',
-    signedIn: true,
-    accountId: secondAccount,
-    accountKey: secondAccount,
-    accountGeneration: 2,
-  });
-  caseC.host.syncAccountState();
-  assert.equal(caseC.getCancelCalls(), 1);
-  await tick();
-  await tick();
-  assert.equal(caseC.host.getState().accountKey, secondAccount);
-  assert.equal(caseC.host.getState().workspace.status, 'login_required');
-
-  staleUpdateFromA({
-    ok: true,
-    result: {
-      status: 'resolved',
-      destinations: ['/', '/pulse-app/'],
-      unavailable: [],
-    },
-  });
-  assert.equal(caseC.host.getState().accountKey, secondAccount);
-  assert.equal(caseC.host.getState().workspace.status, 'login_required');
-  assert.deepEqual(caseC.host.getState().workspace.destinations, []);
-});
-
 test('R5: restoring same-account preservation requires matching explicit identity accountGeneration', async t => {
   const dom = createFakeDomEnvironment();
   let authIdentity = {
@@ -2443,7 +2212,7 @@ test('R7b: built-in default mountWebPortalHost boundaries complete guest invite 
 
 
 async function settleEntryHost() { for(let n=0;n<8;n++) await tick(); }
-for(const mode of ['web','pc'])for(const purpose of ['none','pending'])test('unassigned existing-user entry uses the product picker without creating onboarding '+mode+' '+purpose,async t=>{
+for(const mode of ['pc'])for(const purpose of ['none','pending'])test('unassigned existing-user entry uses the product picker without creating onboarding '+mode+' '+purpose,async t=>{
  const dom=createFakeDomEnvironment(),writes=[],opened=[];let ensureCount=0;
  const identity={status:'signed-in',signedIn:true,accountId:account,accountKey:account,accountGeneration:1,onboarding:{purpose}};
  const auth={configured:true,status:'signed-in',signedIn:true,accountGeneration:generation,sessionGeneration:1,account:{synk_user_id:account},onboarding:{purpose}};
@@ -2455,97 +2224,86 @@ for(const mode of ['web','pc'])for(const purpose of ['none','pending'])test('una
  assert.equal(writes.length,purpose==='pending'?1:0,'only an actually pending newcomer may write an onboarding outcome');
  if(purpose==='pending')assert.equal(mode==='web'?writes[0]:writes[0].outcome,'chosen');
 });
-test('unassigned existing-user entry after asynchronous company recovery uses the same picker without onboarding writes',async t=>{
- const dom=createFakeDomEnvironment(),writes=[],identity={status:'signed-in',signedIn:true,accountId:account,accountKey:account,accountGeneration:1,onboarding:{purpose:'none'}};let onUpdate,ensureCount=0;
- const host=mountWebPortalHost({root:dom.root,getReducedMotion:()=>true,getStartupState:()=>({status:'signed-in'}),getAccount:()=>({identity:()=>identity,isAccountBound:id=>id===account,completePurposeOnboarding:async outcome=>{writes.push(outcome);return {ok:true};}}),companyBoundaries:{resolveAssignedDestination:async context=>{onUpdate=context.onAssignmentUpdate;return {ok:true,result:{status:'login_required',destinations:[],unavailable:[]}};},cancelCompanyEntry(){}},onEnsureEnteredRoute:()=>{ensureCount++;}});
- t.after(()=>host.dispose());await settleEntryHost();assert.equal(host.getState().phase,'workspace');assert.equal(typeof onUpdate,'function');
- onUpdate({ok:true,result:{status:'resolved',destinations:[],unavailable:[]}});await settleEntryHost();assert.equal(host.getState().phase,'purpose');assert.equal(ensureCount,0);assert.deepEqual(writes,[]);
- await host.closePurposePicker();await settleEntryHost();assert.deepEqual(writes,[],'dismissing a product menu is not newcomer onboarding');assert.notEqual(host.getState().phase,'entered','closing the existing-user picker must keep the black portal');assert.equal(host.getState().active,true);assert.equal(host.getState().accountKey,account);
-});
-for(const result of [{status:'partial',destinations:[],unavailable:['pulse']},{status:'unavailable',destinations:[],unavailable:['workspace','pulse']}])test('unassigned existing-user entry does not treat unresolved company lookup as no assignment '+result.status,async t=>{
- const dom=createFakeDomEnvironment(),identity={status:'signed-in',signedIn:true,accountId:account,accountKey:account,accountGeneration:1,onboarding:{purpose:'none'}};
- const host=mountWebPortalHost({root:dom.root,getReducedMotion:()=>true,getStartupState:()=>({status:'signed-in'}),getAccount:()=>({identity:()=>identity,isAccountBound:id=>id===account}),companyBoundaries:{resolveAssignedDestination:async()=>({ok:true,result}),cancelCompanyEntry(){}}});t.after(()=>host.dispose());await settleEntryHost();assert.equal(host.getState().phase,'workspace');assert.notEqual(host.getState().phase,'purpose');
+
+// 웹 로그인 뒤에는 작업 공간 고르기도 제품 고르기도 없이 플랫폼으로 들어간다. 회사 배정을 묻지 않고 회사 공간을 열지 않는다(유호님 11-21, PC 앱과 같게)
+for (const destinations of [[], ['/'], ['/', '/pulse-app/']]) for (const purpose of ['none', 'pending']) {
+  test('web sign-in enters the platform without a chooser or company lookup: ' + (destinations.join(' ') || 'unassigned') + ' ' + purpose, async t => {
+    const dom = createFakeDomEnvironment(), writes = [], opened = [], hashes = [], phases = [];
+    let lookups = 0, ensureCount = 0;
+    const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose } };
+    const host = mountWebPortalHost({
+      root: dom.root,
+      getReducedMotion: () => true,
+      getStartupState: () => ({ status: 'signed-in' }),
+      getAccount: () => ({ identity: () => identity, isAccountBound: id => id === account, completePurposeOnboarding: async outcome => { writes.push(outcome); return { ok: true }; } }),
+      companyBoundaries: {
+        resolveAssignedDestination: async () => { lookups++; return { ok: true, result: { status: 'resolved', destinations, unavailable: [] } }; },
+        openAssignedDestination: destination => { opened.push(destination); return { ok: true, navigationRequested: true }; },
+        cancelCompanyEntry() {},
+      },
+      onActiveChange: (active, detail) => { if (detail?.phase) phases.push(detail.phase); },
+      onEnsureEnteredRoute: () => { ensureCount++; },
+      onNavigateHash: hash => hashes.push(hash),
+    });
+    t.after(() => host.dispose());
+    await settleEntryHost();
+    assert.equal(host.getState().phase, 'entered');
+    assert.equal(lookups, 0, 'sign-in does not ask the company server');
+    assert.deepEqual(opened, [], 'sign-in opens no company space');
+    assert.deepEqual(hashes, [], 'sign-in chooses no product for the member');
+    assert.equal(phases.includes('workspace') || phases.includes('purpose'), false, 'no chooser scene on the way in');
+    assert.equal(ensureCount, 1, 'the platform keeps the route the member came for, or home');
+    assert.deepEqual(writes, purpose === 'pending' ? ['not-asked'] : [], 'only a pending newcomer records that nobody asked');
+  });
+}
+
+test('web sign-in does not enter when the account changes during the onboarding write', async t => {
+  const dom = createFakeDomEnvironment();
+  let bound = true, finish, ensureCount = 0;
+  const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'pending' } };
+  const host = mountWebPortalHost({
+    root: dom.root,
+    getReducedMotion: () => true,
+    getStartupState: () => ({ status: 'signed-in' }),
+    getAccount: () => ({ identity: () => identity, isAccountBound: id => bound && id === account, completePurposeOnboarding: () => new Promise(resolve => { finish = resolve; }) }),
+    companyBoundaries: { resolveAssignedDestination: async () => assert.fail('no company lookup at sign-in'), cancelCompanyEntry() {} },
+    onEnsureEnteredRoute: () => { ensureCount++; },
+    completionWaitMs: 60000,
+  });
+  t.after(() => host.dispose());
+  await settleEntryHost();
+  assert.equal(host.getState().phase, 'entering');
+  assert.equal(typeof finish, 'function');
+  bound = false;
+  finish({ ok: true });
+  await settleEntryHost();
+  assert.notEqual(host.getState().phase, 'entered');
+  assert.equal(ensureCount, 0);
 });
 
+// 실패 글은 들어가기를 말한다. 얼굴의 기본 글(「배정된 작업 공간을 …」)이 나오지 않는다(카본 web-no-chooser-20261121 A1)
+for (const failure of ['throws', 'no-message']) test('web sign-in failure names the entry, not a work space: ' + failure, async t => {
+  const dom = createFakeDomEnvironment();
+  const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'pending' } };
+  const host = mountWebPortalHost({
+    root: dom.root,
+    getReducedMotion: () => true,
+    getStartupState: () => ({ status: 'signed-in' }),
+    getAccount: () => ({ identity: () => identity, isAccountBound: id => id === account, completePurposeOnboarding: () => (failure === 'throws' ? Promise.reject(new Error('offline')) : Promise.resolve({ ok: false })) }),
+    companyBoundaries: { resolveAssignedDestination: async () => assert.fail('no company lookup at sign-in'), cancelCompanyEntry() {} },
+    completionWaitMs: 60000,
+  });
+  t.after(() => host.dispose());
+  await settleEntryHost();
+  assert.equal(host.getState().phase, 'enter-error');
+  assert.equal(host.getState().errorMessage, 'SYNK에 들어가지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+});
 
 test('unassigned existing-user entry on PC stays inside the black portal when its picker closes',async t=>{
  const dom=createFakeDomEnvironment(),writes=[];const auth={configured:true,status:'signed-in',signedIn:true,accountGeneration:generation,sessionGeneration:1,account:{synk_user_id:account},onboarding:{purpose:'none'}};
  const host=mountDesktopPortalHost({root:dom.root,getReducedMotion:()=>true,getAuth:()=>auth,bridge:{authStatus:async()=>auth,resolveCompanyEntryDestinations:async request=>({ok:true,requestId:request.requestId,accountGeneration:request.accountGeneration,result:{status:'resolved',destinations:[],unavailable:[]}}),cancelCompanyEntry:async()=>null,accountRequest:async(operation,params)=>{writes.push({operation,...params});return {ok:true};}},onEnsureEnteredView:()=>({ok:true})});
  t.after(()=>host.dispose());await settleEntryHost();assert.equal(host.getState().phase,'purpose');await host.closePurposePicker();await settleEntryHost();assert.notEqual(host.getState().phase,'entered');assert.equal(host.getState().active,true);assert.equal(host.getState().accountKey,account);assert.deepEqual(writes,[]);assert.equal(auth.signedIn,true);
 });
-
-for (const [kind, destination] of [['both', '/'], ['both', '/pulse-app/'], ['partial', '/']]) {
-  test('real transport preserves an existing account destination after personal chooser close: ' + kind + ' ' + destination, async t => {
-    const navigations = [], writes = [], requests = [];
-    const dom = createFakeDomEnvironment({ fetchImpl: async (url, init) => {
-      requests.push({ url, init });
-      assert.equal(init.method, 'POST');
-      return new Response(JSON.stringify({ version: 1, accountMatch: true,
-        workspace: { state: 'assigned', destination: '/' },
-        pulse: { state: kind === 'partial' ? 'unavailable' : 'assigned', destination: '/pulse-app/' },
-      }), { status: 200, headers: { 'content-type': 'application/json' } });
-    } });
-    dom.win.location.assign = href => navigations.push(href);
-    const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'none' } };
-    const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
-      getStartupState: () => ({ status: 'signed-in' }),
-      getAccount: () => ({ identity: () => identity, isAccountBound: id => id === account,
-        completePurposeOnboarding: async outcome => { writes.push(outcome); return { ok: true }; },
-      }),
-    });
-    t.after(() => host.dispose());
-    await settleEntryHost();
-    assert.equal(host.getState().phase, 'workspace');
-    assert.equal(requests.length, 1);
-    dom.root.querySelector('[data-portal-action="continue-personal"]').click();
-    await settleEntryHost();
-    assert.equal(host.getState().phase, 'purpose');
-    dom.root.querySelector('[data-portal-action="close-purpose"]').click();
-    await settleEntryHost();
-    assert.equal(host.getState().phase, 'workspace');
-    assert.deepEqual(host.getState().workspace.destinations, kind === 'partial' ? ['/'] : ['/', '/pulse-app/']);
-    dom.root.querySelector('[data-portal-workspace="' + destination + '"]').click();
-    await settleEntryHost();
-    assert.deepEqual(navigations, ['https://workspace.synk.im' + destination]);
-    assert.equal(requests.length, 1, 'a verified return must not require a second lookup');
-    assert.deepEqual(writes, [], 'existing account navigation must not complete newcomer onboarding');
-  });
-}
-
-for (const initialStatus of ['login_required', 'account_mismatch']) {
-  test('an unverified chooser return refreshes its company lookup and ignores the cancelled watch: ' + initialStatus, async t => {
-    const dom = createFakeDomEnvironment(), writes = [];
-    const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'none' } };
-    let lookups = 0, oldUpdate;
-    const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
-      getStartupState: () => ({ status: 'signed-in' }),
-      getAccount: () => ({ identity: () => identity, isAccountBound: id => id === account,
-        completePurposeOnboarding: async outcome => { writes.push(outcome); return { ok: true }; },
-      }),
-      companyBoundaries: {
-        resolveAssignedDestination(args) {
-          lookups += 1;
-          if (lookups === 1) { oldUpdate = args.onAssignmentUpdate; return Promise.resolve({ ok: true, result: { status: initialStatus, destinations: [], unavailable: [] } }); }
-          return Promise.resolve({ ok: true, result: { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [] } });
-        },
-        cancelCompanyEntry() {},
-        openAssignedDestination() { return { ok: true, navigationRequested: true }; },
-      },
-    });
-    t.after(() => host.dispose()); await settleEntryHost();
-    assert.equal(host.getState().phase, 'workspace');
-    dom.root.querySelector('[data-portal-action="continue-personal"]').click(); await settleEntryHost();
-    assert.equal(host.getState().phase, 'purpose');
-    oldUpdate({ ok: true, result: { status: 'resolved', destinations: [], unavailable: [] } });
-    await settleEntryHost(); assert.equal(host.getState().phase, 'purpose');
-    dom.root.querySelector('[data-portal-action="close-purpose"]').click(); await settleEntryHost();
-    assert.equal(lookups, 2);
-    assert.equal(host.getState().phase, 'workspace');
-    assert.deepEqual(host.getState().workspace.destinations, ['/', '/pulse-app/']);
-    assert.deepEqual(writes, []);
-  });
-}
-
 
 async function canonicalAccountFixture(t) {
   const authId = '90000000-0000-4000-8000-000000000009';
@@ -2565,118 +2323,44 @@ async function canonicalAccountFixture(t) {
   return { realAccount, storage, values, key, token, authId };
 }
 
-test('canonical account binding accepts a distinct Auth UUID and sends only verified SYNK ID to company resolution', async t => {
-  const f = await canonicalAccountFixture(t), dom = createFakeDomEnvironment(), requests = [];
+test('canonical account binding accepts a distinct Auth UUID and enters with the verified SYNK ID without asking the company server', async t => {
+  const f = await canonicalAccountFixture(t), dom = createFakeDomEnvironment();
+  let ensureCount = 0;
   const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
     getSessionStorage: () => f.storage, getStartupState: () => ({ status: 'signed-in' }), getAccount: () => f.realAccount,
-    companyBoundaries: { resolveAssignedDestination: async args => { requests.push(args); return { ok: true, result: { status: 'resolved', destinations: ['/'], unavailable: [] } }; }, cancelCompanyEntry() {} },
+    companyBoundaries: { resolveAssignedDestination: async () => assert.fail('no company lookup at sign-in'), cancelCompanyEntry() {} },
+    onEnsureEnteredRoute: () => { ensureCount++; },
   });
   t.after(() => host.dispose()); await settleEntryHost();
-  assert.equal(requests.length, 1, 'a legitimate different Auth UUID must reach company resolution');
-  assert.equal(requests[0].expectedAccountId, account);
-  assert.notEqual(requests[0].expectedAccountId, f.authId);
-  assert.equal(host.getState().phase, 'workspace');
+  assert.equal(host.getState().phase, 'entered');
   assert.equal(host.getState().accountKey, account);
+  assert.notEqual(host.getState().accountKey, f.authId);
+  assert.equal(ensureCount, 1);
 });
 
-for (const changedRaw of ['replacement', 'malformed', 'removed']) test('canonical account binding rejects '+changedRaw+' raw session and ignores its late company result', async t => {
-  const f = await canonicalAccountFixture(t), dom = createFakeDomEnvironment(), requests = [];
-  let finish;
-  const deferred = new Promise(resolve => { finish = resolve; });
-  const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
-    getSessionStorage: () => f.storage, getStartupState: () => f.realAccount.identity(), getAccount: () => f.realAccount,
-    companyBoundaries: { resolveAssignedDestination: args => { requests.push(args); return deferred; }, cancelCompanyEntry() {} },
-  });
-  t.after(() => host.dispose()); await settleEntryHost();
-  assert.equal(requests.length, 1);
+for (const changedRaw of ['replacement', 'malformed', 'removed']) test('canonical account binding does not enter after a '+changedRaw+' raw session', async t => {
+  const f = await canonicalAccountFixture(t), dom = createFakeDomEnvironment();
+  let ensureCount = 0;
   if (changedRaw === 'replacement') f.values.set(f.key, JSON.stringify({ access_token: f.token(secondAccount), user: { id: secondAccount } }));
   else if (changedRaw === 'malformed') f.values.set(f.key, '{');
   else f.values.delete(f.key);
   assert.equal(f.realAccount.isAccountBound(account), false, 'the original manager fence must revoke the exact raw session binding');
-  host.syncAccountState();
-  assert.equal(host.getState().phase, 'auth');
-  finish({ ok: true, result: { status: 'resolved', destinations: ['/'], unavailable: [] } });
-  await settleEntryHost();
-  assert.notEqual(host.getState().accountKey, account);
-  assert.equal(host.getState().phase, 'auth');
-  assert.equal(requests.length, 1, 'a stale result must not start another bound request');
-});
-
-for (const change of ['current', 'replacement', 'malformed', 'removed', 'same-account refresh']) {
-  test('canonical late company result without a host sync: ' + change, async t => {
-    const f = await canonicalAccountFixture(t);
-    const dom = createFakeDomEnvironment();
-    const opened = [];
-    const writes = [];
-    let lookups = 0;
-    let finish;
-    const pending = new Promise(resolve => { finish = resolve; });
-    const accountManager = {
-      identity: () => f.realAccount.identity(),
-      isAccountBound: id => f.realAccount.isAccountBound(id),
-      async completePurposeOnboarding(outcome) {
-        writes.push(outcome);
-        return { ok: true };
-      },
-    };
-    const host = mountWebPortalHost({
-      root: dom.root,
-      getReducedMotion: () => true,
-      getSessionStorage: () => f.storage,
-      getStartupState: accountManager.identity,
-      getAccount: () => accountManager,
-      companyBoundaries: {
-        resolveAssignedDestination() { lookups++; return pending; },
-        openAssignedDestination(destination) {
-          opened.push(destination);
-          return { ok: true, navigationRequested: true };
-        },
-        cancelCompanyEntry() {},
-      },
-    });
-    t.after(() => host.dispose());
-    await settleEntryHost();
-    assert.equal(host.getState().phase, 'entering');
-    assert.equal(lookups, 1);
-
-    if (change === 'replacement') {
-      f.values.set(f.key, JSON.stringify({ access_token: f.token(secondAccount), user: { id: secondAccount } }));
-    } else if (change === 'malformed') {
-      f.values.set(f.key, '{');
-    } else if (change === 'removed') {
-      f.values.delete(f.key);
-    } else if (change === 'same-account refresh') {
-      const generationBefore = accountManager.identity().accountGeneration;
-      const session = JSON.parse(f.values.get(f.key));
-      f.values.set(f.key, JSON.stringify({ ...session, expires_at: 4102444800 }));
-      await f.realAccount.refresh();
-      assert.equal(accountManager.isAccountBound(account), true);
-      assert.ok(accountManager.identity().accountGeneration > generationBefore);
-    }
-
-    // Resolve the original request before the host receives a session-change notification.
-    finish({ ok: true, result: { status: 'resolved', destinations: ['/'], unavailable: [] } });
-    await settleEntryHost();
-    const state = host.getState();
-    if (change === 'current') {
-      assert.equal(state.phase, 'entered');
-      assert.deepEqual(opened, ['/']);
-    } else {
-      assert.equal(state.phase, 'enter-error');
-      assert.equal(state.errorMessage, '계정 연결이 바뀌었어요. 다시 확인해 주세요.');
-      assert.deepEqual(opened, []);
-    }
-    assert.deepEqual(writes, []);
-    assert.equal(lookups, 1);
+  const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
+    getSessionStorage: () => f.storage, getStartupState: () => f.realAccount.identity(), getAccount: () => f.realAccount,
+    companyBoundaries: { resolveAssignedDestination: async () => assert.fail('no company lookup at sign-in'), cancelCompanyEntry() {} },
+    onEnsureEnteredRoute: () => { ensureCount++; },
   });
-}
+  t.after(() => host.dispose()); await settleEntryHost();
+  assert.notEqual(host.getState().phase, 'entered');
+  assert.equal(ensureCount, 0);
+});
 
 // 카본 0.4.94 원천 검수: 오류 단계의 「다시 시도」로 들어가는 동안 방금 숨긴 단추에 초점이 남으면 다음 프레임에 초점이 포털 밖으로 빠진다.
 // Fable 0.4.94 원천 검수: 구를 유지하는 동안 숨긴 내부 구역의 상태 글 대신 구 옆의 낭독기용 상태 글이 같은 뜻을 알린다.
 test('enter-error retry moves focus from the hidden retry button onto the portal while the orb holds', async t => {
   const dom = createFakeDomEnvironment();
-  const authIdentity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1 };
-  const resolveCalls = [];
+  const authIdentity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'pending' } };
+  const writes = [];
   const host = mountWebPortalHost({
     root: dom.root,
     getReducedMotion: () => true,
@@ -2684,18 +2368,15 @@ test('enter-error retry moves focus from the hidden retry button onto the portal
     getAccount: () => ({
       identity: () => authIdentity,
       isAccountBound: id => authIdentity.signedIn === true && authIdentity.accountId === id,
-    }),
-    companyBoundaries: {
-      resolveAssignedDestination(args) {
-        resolveCalls.push(args);
-        if (resolveCalls.length === 1) return Promise.reject(new Error('assignment lookup failed'));
+      // 첫 기록은 거절되어 진입 오류가 나고, 다시 시도한 기록은 끝나지 않아 구를 붙든 채 머문다
+      completePurposeOnboarding(outcome) {
+        writes.push(outcome);
+        if (writes.length === 1) return Promise.resolve({ ok: false, code: 'ONBOARDING_REJECTED', message: '처음 화면 기록을 남기지 못했어요. 다시 시도해 주세요.' });
         return new Promise(() => {});
       },
-      openAssignedDestination() {
-        return { ok: true, navigationRequested: true };
-      },
-      cancelCompanyEntry() {},
-    },
+    }),
+    companyBoundaries: { resolveAssignedDestination: async () => assert.fail('no company lookup at sign-in'), cancelCompanyEntry() {} },
+    completionWaitMs: 60000,
   });
   t.after(() => host.dispose());
 
@@ -2715,14 +2396,14 @@ test('enter-error retry moves focus from the hidden retry button onto the portal
 
   retry.click();
   assert.equal(host.getState().phase, 'entering');
-  assert.equal(resolveCalls.length, 2);
+  for (let n = 0; n < 3; n++) await tick();
+  assert.equal(writes.length, 2);
   assert.equal(dom.root.querySelector('[data-portal-interior]').hidden, true);
   assert.notEqual(dom.doc.activeElement, retry);
   assert.equal(dom.doc.activeElement, dom.root);
   assert.equal(dom.root.querySelector('[data-portal-pane="welcome"]').hidden, false);
   // 상태 줄은 구 구역 밖(포털 뿌리 바로 아래)에 있고, 글은 같은 렌더가 아니라 다음 차례에 들어간다.
   assert.equal(orbStatus.parentElement, dom.root);
-  assert.equal(orbStatus.textContent, '');
   await new Promise(resolve => setTimeout(resolve, 5));
-  assert.equal(orbStatus.textContent, '계정에 연결된 작업 공간을 불러오고 있어요.');
+  assert.equal(orbStatus.textContent, '계정을 확인하고 들어가고 있어요.');
 });

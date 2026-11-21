@@ -960,7 +960,7 @@ async function runCentralPortalConsentStep(t, {
   };
 }
 
-test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 원이 자동 확대된 뒤 배정 작업으로 바로 진입한다', async t => {
+test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 원이 자동 확대된 뒤 고르기 화면 없이 플랫폼으로 바로 들어간다', async t => {
   const config = buildTestConfig();
   const centralSubject = '11111111-2222-4333-8444-555555555555';
   const localStorage = createMemoryStorage();
@@ -1115,6 +1115,7 @@ test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 �
   const openedDestinations = [];
   let finishDestinationLookup;
   const destinationLookup = new Promise(resolve => { finishDestinationLookup = resolve; });
+  let lookupCalls = 0;
   const dom2 = createPlatformDomEnv({
     url: 'https://synk.im/account/platform.html#home',
     reducedMotion: false,
@@ -1133,7 +1134,7 @@ test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 �
     cryptoRef: webcrypto,
     nowFn: dom2.now,
     companyBoundaries: {
-      resolveAssignedDestination: () => destinationLookup,
+      resolveAssignedDestination: () => { lookupCalls += 1; return destinationLookup; },
       openAssignedDestination: async dest => {
         openedDestinations.push(dest);
         return { ok: true, destination: dest, navigationRequested: true };
@@ -1164,26 +1165,11 @@ test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 �
   dom2.stepAnimationFrames(Math.ceil(PORTAL_DURATION_MS / 2) + 50, 6);
   await flushMicrotasks();
 
-  // 배정을 기다리는 동안에도 구만 보인다. 응답 전에는 작업을 열지 않는다.
-  assert.equal(dom2.portalRoot.querySelector('[data-portal-pane="welcome"]').hidden, false);
-  assert.equal(dom2.portalRoot.querySelector('[data-portal-interior]').hidden, true);
-  assert.deepEqual(openedDestinations, []);
-  finishDestinationLookup({
-    ok: true,
-    result: { status: 'resolved', destinations: ['/'], unavailable: [] },
-  });
-  await flushMicrotasks();
-  assert.deepEqual(openedDestinations, ['/']);
-
-  // 목적지의 첫 응답이 늦어도 출발 문서에 예전 홈이 한 프레임이라도 드러나지 않는다.
+  // 배정을 묻지 않고 고르기 화면 없이 바로 플랫폼으로 들어간다. 회사 공간은 열지 않는다(유호님 11-21).
   assert.equal(host2.getState().phase, 'entered');
-  assert.equal(dom2.portalRoot.hidden, false);
-  assert.equal(dom2.portalRoot.querySelector('[data-portal-pane="welcome"]').hidden, false);
-  assert.equal(dom2.portalRoot.querySelector('[data-portal-interior]').hidden, true);
-
-  // 뒤로 돌아와 이 문서를 복원하면 떠나는 동안 유지하던 구를 해제한다.
-  host2.handlePageShow({ persisted: true });
-  assert.equal(dom2.portalRoot.hidden, true);
+  assert.equal(lookupCalls, 0);
+  assert.deepEqual(openedDestinations, []);
+  void finishDestinationLookup;
 
   // localStorage에는 어떤 토큰도 새로 저장되지 않아야 한다.
   const persistedLocal = JSON.stringify(localStorage.snapshot());
