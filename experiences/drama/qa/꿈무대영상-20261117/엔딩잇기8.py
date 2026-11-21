@@ -11,6 +11,12 @@
 
     python -I -X utf8 엔딩잇기8.py <밖.mp4> <설정.json>
 
+파생판(11-21, 유호님 「응, 파생판부터」)은 설정에 세 칸을 더해 같은 스크립트로 잇는다.
+- 「자막」: [[글자 폴더의 그림 이름, 시작초, 끝초], …] — 엄마 모국어 자막판. 영화 장면 위와 엔딩 위에 같은 결로 얹는다.
+- 「타자」: [{"기록": 입력 기록.json, "시작": 초, "끝": 초, "자리": [가운데 x, 글 아래 y]}] — 목소리를 꺼 둔 학생의 글자 판.
+  기록은 [[밀리초, 입력창의 글], …]이고 친 속도대로 보인다(견본은 `엔딩타자.py`).
+- 「곡잇기횟수」: 가운데 두 마디를 몇 번 더 잇나(기본 1). 글자 판은 친 시간만큼 카드가 길어져 3이다.
+
 카드 글자는 `엔딩카드.cjs`(원고 `엔딩원고.cjs`의 「판8」), 제작 마크는 `엔딩로고.py`의 평면 판이다.
 """
 import importlib.util
@@ -21,6 +27,7 @@ import sys
 
 import cv2
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 
 _s = importlib.util.spec_from_file_location("옛", os.path.join(os.path.dirname(os.path.abspath(__file__)), "엔딩잇기.py"))
 옛 = importlib.util.module_from_spec(_s)
@@ -71,7 +78,80 @@ def 그레인입히기(판, rng):
     return 판 + n
 
 
-def 뒤판(설정, 시작, 일터):
+def 덧만들기(설정):
+    """파생판의 덧층(자막 · 친 글자)을 그리는 함수를 돌려준다. 없으면 None. 그레인보다 먼저 얹는다."""
+    자막 = 설정.get("자막") or []
+    타자 = 설정.get("타자") or []
+    if not 자막 and not 타자:
+        return None
+    그림 = {}
+    for 이름, _, _ in 자막:
+        그림[이름] = cv2.resize(읽기(os.path.join(설정["글자"], 이름 + ".png"), True), (W, H), interpolation=cv2.INTER_AREA)
+    글꼴자리 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "docs", "브랜드_폰트", "SUIT", "SUIT-Medium.otf")
+    색 = (210, 223, 230, 255)   # #E6DFD2(BGR 순서로 그린 뒤 그대로 쓴다)
+    판들 = []
+    for 타 in 타자:
+        기록 = json.load(open(타["기록"], encoding="utf-8"))
+        상태 = [(m / 1000, 글) for m, 글 in 기록["글"]]
+        크기 = 타.get("크기", 32)
+        글꼴 = ImageFont.truetype(글꼴자리, 크기 * 2)
+        판들.append({**타, "상태": 상태, "x0": round(타["자리"][0] - 글꼴.getlength(상태[-1][1]) / 4), "글꼴": 글꼴, "크기": 크기, "캐시": {}})
+
+    def 줄그림(글, 글꼴, 크기):
+        w, h = max(4, int(글꼴.getlength(글)) + 40), 크기 * 3
+        im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        ImageDraw.Draw(im).text((0, round(h * 0.8)), 글, font=글꼴, fill=색, anchor="ls")
+        return cv2.resize(np.array(im), (w // 2, h // 2), interpolation=cv2.INTER_AREA), 글꼴.getlength(글) / 2
+
+    def 덧(t, 판):
+        for 이름, a, b in 자막:
+            if a - 0.12 <= t <= b + 0.12:
+                투명 = min(1.0, (t - a + 0.12) / 0.12, (b + 0.12 - t) / 0.12)
+                덮기(판, 그림[이름], 0, 0, max(0.0, 투명))
+        for 타 in 판들:
+            a, b = 타["시작"], 타["끝"]
+            if not (a <= t <= b):
+                continue
+            tr = t - a
+            글, 마지막 = "", None
+            for 초, s in 타["상태"]:
+                if 초 <= tr:
+                    글, 마지막 = s, 초
+            투명 = min(1.0, (b - t) / 0.35)
+            if 글:
+                if 글 not in 타["캐시"]:
+                    타["캐시"][글] = 줄그림(글, 타["글꼴"], 타["크기"])
+                층, 길이 = 타["캐시"][글]
+            else:
+                층, 길이 = None, 0.0
+            x0, y, 크기 = 타["x0"], 타["자리"][1], 타["크기"]
+            if 층 is not None:
+                덮기(판, 층, x0, y - round(크기 * 1.2), 투명)
+            쉼 = tr - (마지막 if 마지막 is not None else 0.0)
+            if 쉼 < 0.45 or (쉼 - 0.45) % 1.0 < 0.5:   # 치는 동안은 켜 두고, 멈추면 깜빡인다
+                cx = x0 + round(길이) + 3
+                판[y - 크기:y + 크기 // 5, cx:cx + 2] = 판[y - 크기:y + 크기 // 5, cx:cx + 2] * (1 - 0.85 * 투명) + np.array([210, 223, 230], np.float32) * 0.85 * 투명
+    return 덧
+
+
+def 덧입히기(v, 덧, 일터):
+    """영화 장면(ffmpeg로 이은 앞판)에 덧층을 얹어 다시 굽는다."""
+    b = subprocess.run(["ffmpeg", "-v", "error", "-i", v, "-f", "rawvideo", "-pix_fmt", "bgr24", "-"], capture_output=True, check=True).stdout
+    장들 = np.frombuffer(b, np.uint8).reshape(-1, H, W, 3)
+    밖 = os.path.join(일터, "영화_덧.mp4")
+    p = subprocess.Popen(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{W}x{H}",
+                          "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-crf", "16", "-preset", "slow", "-pix_fmt", "yuv420p", 밖],
+                         stdin=subprocess.PIPE)
+    for i, 장 in enumerate(장들):
+        판 = 장.astype(np.float32)
+        덧(i / FPS, 판)
+        p.stdin.write(np.clip(판, 0, 255).astype(np.uint8).tobytes())
+    p.stdin.close()
+    p.wait()
+    return 밖
+
+
+def 뒤판(설정, 시작, 일터, 덧=None):
     T = {k: (박(설정, v) if isinstance(v, int) else v) for k, v in 설정["때"].items()}
     끝 = T["끝"]
     글 = {}
@@ -224,6 +304,8 @@ def 뒤판(설정, 시작, 일터):
             판 = 밀기(원, t, T["쿠키"], T["쿠키끝"], 0.03, (0.56, 0.62))
         else:
             판 = 텅빈(t) * 0
+        if 덧 is not None:
+            덧(t, 판)
         판 = 그레인입히기(판, rng)
         p.stdin.write(np.clip(판, 0, 255).astype(np.uint8).tobytes())
     p.stdin.close()
@@ -232,14 +314,15 @@ def 뒤판(설정, 시작, 일터):
 
 
 def 곡늘이기(설정, 일터):
-    """엔딩곡 가운데 두 마디(설정 「곡잇기」의 [a, b]초, 8박)를 한 번 더 잇는다. 두 자리 모두 소리가 잦아드는 박이라 60ms로 겹친다."""
+    """엔딩곡 가운데 두 마디(설정 「곡잇기」의 [a, b]초, 8박)를 「곡잇기횟수」(기본 1)만큼 더 잇는다. 두 자리 모두 소리가 잦아드는 박이라 60ms로 겹친다."""
     s = 옛.소리읽기(설정["곡"])
     a, b = 설정["곡잇기"]
     ia, ib, k = round(a * SR), round(b * SR), round(0.06 * SR)
     r = np.linspace(0, 1, k)[:, None]
-    앞 = s[:ib].copy()
-    앞[-k:] = 앞[-k:] * np.cos(r * np.pi / 2) + s[ia - k:ia] * np.sin(r * np.pi / 2)
-    out = np.concatenate([앞, s[ia:]])
+    앞, 조각 = s[:ib].copy(), s[ia:ib].copy()
+    for x in (앞, 조각):   # b에서 a로 되돌아가는 자리마다 60ms로 겹친다
+        x[-k:] = x[-k:] * np.cos(r * np.pi / 2) + s[ia - k:ia] * np.sin(r * np.pi / 2)
+    out = np.concatenate([앞] + [조각] * (설정.get("곡잇기횟수", 1) - 1) + [s[ia:]])
     p = os.path.join(일터, "곡_늘임.wav")
     (np.clip(out, -1, 1) * 32767).astype(np.int16).tofile(p + ".raw")
     subprocess.run(["ffmpeg", "-y", "-v", "error", "-f", "s16le", "-ar", str(SR), "-ac", "2", "-i", p + ".raw", p], check=True)
@@ -252,7 +335,10 @@ def main():
     일터 = os.path.join(os.path.dirname(os.path.abspath(밖)), "_일터8")
     os.makedirs(일터, exist_ok=True)
     v1, a1, 영화초 = 옛.영화(설정, 일터)
-    v2, T = 뒤판(설정, 영화초, 일터)
+    덧 = 덧만들기(설정)
+    if 덧 is not None:
+        v1 = 덧입히기(v1, 덧, 일터)
+    v2, T = 뒤판(설정, 영화초, 일터, 덧)
     목록 = os.path.join(일터, "목록.txt")
     open(목록, "w", encoding="utf-8").write(f"file '{v1}'\nfile '{v2}'\n")
     붙음 = os.path.join(일터, "붙음.mp4")
