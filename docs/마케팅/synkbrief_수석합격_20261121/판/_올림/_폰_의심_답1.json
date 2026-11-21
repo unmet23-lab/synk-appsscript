@@ -1,0 +1,82 @@
+{
+ "schemaVersion": "1",
+ "ok": true,
+ "data": {
+  "consumptionSubject": {
+   "kind": "personal",
+   "userId": "7635885049866896404"
+  },
+  "node": {
+   "nodeId": "node_ma0mkpyvkk",
+   "type": "image",
+   "title": "폰_의심",
+   "tags": [],
+   "status": "empty",
+   "upstreamNodeIds": [],
+   "downstreamNodeIds": [],
+   "executionDependencyNodeIds": [],
+   "resources": [],
+   "generation": {
+    "mode": "t2i",
+    "prompt": "Create one vertical 9:16 photorealistic close-up still from a grounded Korean drama: an extreme close-up of a smartphone screen, shot on a cinema camera with a macro lens, the screen filling the whole frame edge to edge, slightly tilted, sharp, with faint real screen texture and a soft reflection of an office ceiling light in one corner.\n\nONE FILM, ONE WORLD (every still of this film shares these exact people, places, light and props — copy them exactly):\n\nLOOK: a vertical 9:16 photograph, a still frame from a grounded Korean drama shot on a real cinema camera with a 35mm-50mm lens, natural color, gentle film grain, real and unglamorous, not staged, not glossy, not an ad. Real skin texture with light pores, not over-smoothed. Hands anatomically correct with five fingers. Indoors the air is clear and still; nothing floats, drifts or falls. No watermark, no logos, no brand marks anywhere. The only readable text allowed anywhere is the exact text written in that still's own description; everything else (clothing, walls, screens, keyboards, monitors, phones, papers, folders) has no letters or numbers at all.\n\nPEOPLE (ordinary private individuals who resemble no real person, not celebrity-like):\n- THE TOP SCORER: a Korean man aged 33, slim, neatly cut short black hair parted on his left side, an oval face, narrow calm eyes, straight thin brows, clean-shaven, a small mole on his right cheekbone. NO glasses, no earphones, no watch, no jewelry. At the office he wears a light-blue button-down dress shirt with the top button open and a dark navy V-neck knit vest, charcoal slacks. In the studio (a few days later) he wears a plain black crewneck sweater. His phone (the SAME phone every time): a black smartphone in a plain black matte case.\n- COLLEAGUES (office only): four or five ordinary Korean office workers in their 30s-50s in white or pale shirts and cardigans. They always stay soft and out of focus at the edges or behind him; their faces are never sharp or centered.\n\nTHE BANNER (the SAME object every time): a long horizontal white vinyl office banner, about 2.4 m wide and 50 cm tall, taped flat to the white wall above THE TOP SCORER's desk with clear tape at its four corners. Printed on it in large bold Korean letters, red for the first character and black for the rest, exactly: 축 수석 합격. Nothing else is printed on it.\n\nTHE BOUQUET (the SAME object every time): a round hand-tied bouquet of white and pale-yellow roses with a few sprigs of baby's breath, wrapped in plain brown kraft paper and tied with a thin cream ribbon. No card, no tag, no letters.\n\nFRAME: only the phone screen is visible, nothing else. The screen shows a plain light-grey online community board app with no logo, no app name, no icons with letters. At the top a bold post title in large black Korean letters, exactly: 평균 30점 과목에서 100점?\nUnder the title, a short grey line of blurred unreadable small text. Below that, two comment rows, each with a small plain grey round avatar circle and one short comment line in medium black Korean letters, exactly:\nfirst comment: 이게 사람 점수야?\nsecond comment: AI 쓴 거 아니야?\nThe three Korean lines must be spelled exactly as written, large and readable, and nothing else on the screen is readable — no time, no numbers other than those in the title, no usernames, no buttons with text. The lower third of the screen shows more comment rows as soft grey blurred bars with no readable letters.",
+    "model": "seedream_5.5",
+    "ratio": "9:16",
+    "resolution": "2K",
+    "outputCount": 2,
+    "references": [],
+    "promptParts": [
+     {
+      "kind": "text",
+      "text": "Create one vertical 9:16 photorealistic close-up still from a grounded Korean drama: an extreme close-up of a smartphone screen, shot on a cinema camera with a macro lens, the screen filling the whole frame edge to edge, slightly tilted, sharp, with faint real screen texture and a soft reflection of an office ceiling light in one corner.\n\nONE FILM, ONE WORLD (every still of this film shares these exact people, places, light and props — copy them exactly):\n\nLOOK: a vertical 9:16 photograph, a still frame from a grounded Korean drama shot on a real cinema camera with a 35mm-50mm lens, natural color, gentle film grain, real and unglamorous, not staged, not glossy, not an ad. Real skin texture with light pores, not over-smoothed. Hands anatomically correct with five fingers. Indoors the air is clear and still; nothing floats, drifts or falls. No watermark, no logos, no brand marks anywhere. The only readable text allowed anywhere is the exact text written in that still's own description; everything else (clothing, walls, screens, keyboards, monitors, phones, papers, folders) has no letters or numbers at all.\n\nPEOPLE (ordinary private individuals who resemble no real person, not celebrity-like):\n- THE TOP SCORER: a Korean man aged 33, slim, neatly cut short black hair parted on his left side, an oval face, narrow calm eyes, straight thin brows, clean-shaven, a small mole on his right cheekbone. NO glasses, no earphones, no watch, no jewelry. At the office he wears a light-blue button-down dress shirt with the top button open and a dark navy V-neck knit vest, charcoal slacks. In the studio (a few days later) he wears a plain black crewneck sweater. His phone (the SAME phone every time): a black smartphone in a plain black matte case.\n- COLLEAGUES (office only): four or five ordinary Korean office workers in their 30s-50s in white or pale shirts and cardigans. They always stay soft and out of focus at the edges or behind him; their faces are never sharp or centered.\n\nTHE BANNER (the SAME object every time): a long horizontal white vinyl office banner, about 2.4 m wide and 50 cm tall, taped flat to the white wall above THE TOP SCORER's desk with clear tape at its four corners. Printed on it in large bold Korean letters, red for the first character and black for the rest, exactly: 축 수석 합격. Nothing else is printed on it.\n\nTHE BOUQUET (the SAME object every time): a round hand-tied bouquet of white and pale-yellow roses with a few sprigs of baby's breath, wrapped in plain brown kraft paper and tied with a thin cream ribbon. No card, no tag, no letters.\n\nFRAME: only the phone screen is visible, nothing else. The screen shows a plain light-grey online community board app with no logo, no app name, no icons with letters. At the top a bold post title in large black Korean letters, exactly: 평균 30점 과목에서 100점?\nUnder the title, a short grey line of blurred unreadable small text. Below that, two comment rows, each with a small plain grey round avatar circle and one short comment line in medium black Korean letters, exactly:\nfirst comment: 이게 사람 점수야?\nsecond comment: AI 쓴 거 아니야?\nThe three Korean lines must be spelled exactly as written, large and readable, and nothing else on the screen is readable — no time, no numbers other than those in the title, no usernames, no buttons with text. The lower third of the screen shows more comment rows as soft grey blurred bars with no readable letters."
+     }
+    ],
+    "writebackSupported": true,
+    "writebackBlockers": []
+   },
+   "layout": {
+    "x": 62506.673000000104,
+    "y": 648.889,
+    "width": 320,
+    "height": 568.889
+   },
+   "resourceObservedAtMs": 1795215372234
+  },
+  "mutation": {
+   "action": "create",
+   "savedDraftVersion": 1645,
+   "effectiveGeneration": {
+    "mode": "t2i",
+    "model": "5.5",
+    "ratio": "9:16",
+    "resolution": "2K",
+    "outputCount": 2
+   }
+  },
+  "quote": {
+   "maxCredits": 18,
+   "draftVersion": 1645,
+   "confirmable": true,
+   "confirmationRequired": false
+  },
+  "approval": {
+   "creditCeiling": 18
+  },
+  "submission": {
+   "submitId": "78ba438f-d710-40c2-864a-f44b84abbae5",
+   "state": "succeeded",
+   "resources": [
+    {
+     "resourceId": "74f60b19-4fe5-4523-8cee-66dcfcfeb470",
+     "state": "succeeded"
+    },
+    {
+     "resourceId": "7a1ad431-c511-4728-a56b-8ba9d6e47d4a",
+     "state": "succeeded"
+    }
+   ]
+  }
+ },
+ "meta": {
+  "requestId": "20261121065647EE8E5700F9790F57DC65"
+ }
+}

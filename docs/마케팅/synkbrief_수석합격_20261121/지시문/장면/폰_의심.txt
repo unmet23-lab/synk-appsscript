@@ -1,8 +1,8 @@
 곳: 없음
 Create one vertical 9:16 photorealistic close-up still from a grounded Korean drama: an extreme close-up of a smartphone screen, shot on a cinema camera with a macro lens, the screen filling the whole frame edge to edge, slightly tilted, sharp, with faint real screen texture and a soft reflection of an office ceiling light in one corner.
 ---
-FRAME: only the phone screen is visible, nothing else. The screen shows a plain light-grey online community board app with no logo, no app name, no icons with letters. At the top a bold post title in large black Korean letters, exactly: 평균 30점 과목에서 100점?
-Under the title, a short grey line of blurred unreadable small text. Below that, two comment rows, each with a small plain grey round avatar circle and one short comment line in medium black Korean letters, exactly:
+FRAME: only the phone screen is visible, nothing else. The screen shows a plain light-grey online community board app with no logo, no app name, no icons with letters. All the readable content sits close together in the upper-middle band of the screen, between 28% and 62% of the frame height: first a bold post title in large black Korean letters, exactly: 평균 30점 과목에서 100점?
+Directly under the title, with only a small gap, two comment rows close together, each with a small plain grey round avatar circle and one short comment line in medium black Korean letters, exactly:
 first comment: 이게 사람 점수야?
 second comment: AI 쓴 거 아니야?
-The three Korean lines must be spelled exactly as written, large and readable, and nothing else on the screen is readable — no time, no numbers other than those in the title, no usernames, no buttons with text. The lower third of the screen shows more comment rows as soft grey blurred bars with no readable letters.
+The three Korean lines must be spelled exactly as written, large and readable, and nothing else on the screen is readable — no time, no numbers other than those in the title, no usernames, no buttons with text, no extra lines of small text. Below the second comment the lower part of the screen is plain empty light grey with nothing on it. The top quarter of the frame is the dim top edge of the screen, plain and empty.

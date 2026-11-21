@@ -1,0 +1,105 @@
+{
+ "schemaVersion": "1",
+ "ok": true,
+ "data": {
+  "consumptionSubject": {
+   "kind": "personal",
+   "userId": "7635885049866896404"
+  },
+  "node": {
+   "nodeId": "node_c54v6bbgf8",
+   "type": "image",
+   "title": "시작_축하",
+   "tags": [],
+   "status": "empty",
+   "upstreamNodeIds": [],
+   "downstreamNodeIds": [],
+   "executionDependencyNodeIds": [],
+   "resources": [],
+   "generation": {
+    "mode": "i2i",
+    "prompt": "Create one vertical 9:16 photorealistic still from a grounded Korean drama, shot on a cinema camera with a 35mm lens at chest height from the middle of the office, looking toward the back wall, natural depth of field. {{res:46d25000-b9ee-444f-ab0b-ea312117cc2f}} is THE TOP SCORER's face root: copy his face exactly from {{res:46d25000-b9ee-444f-ab0b-ea312117cc2f}} — same face shape, eyes, brows, side-parted hair, mole on his right cheekbone.\n\nONE FILM, ONE WORLD (every still of this film shares these exact people, places, light and props — copy them exactly):\n\nLOOK: a vertical 9:16 photograph, a still frame from a grounded Korean drama shot on a real cinema camera with a 35mm-50mm lens, natural color, gentle film grain, real and unglamorous, not staged, not glossy, not an ad. Real skin texture with light pores, not over-smoothed. Hands anatomically correct with five fingers. Indoors the air is clear and still; nothing floats, drifts or falls. No watermark, no logos, no brand marks anywhere. The only readable text allowed anywhere is the exact text written in that still's own description; everything else (clothing, walls, screens, keyboards, monitors, phones, papers, folders) has no letters or numbers at all.\n\nPEOPLE (ordinary private individuals who resemble no real person, not celebrity-like):\n- THE TOP SCORER: a Korean man aged 33, slim, neatly cut short black hair parted on his left side, an oval face, narrow calm eyes, straight thin brows, clean-shaven, a small mole on his right cheekbone. NO glasses, no earphones, no watch, no jewelry. At the office he wears a light-blue button-down dress shirt with the top button open and a dark navy V-neck knit vest, charcoal slacks. In the studio (a few days later) he wears a plain black crewneck sweater. His phone (the SAME phone every time): a black smartphone in a plain black matte case.\n- COLLEAGUES (office only): four or five ordinary Korean office workers in their 30s-50s in white or pale shirts and cardigans. They always stay soft and out of focus at the edges or behind him; their faces are never sharp or centered.\n\nTHE BANNER (the SAME object every time): a long horizontal white vinyl office banner, about 2.4 m wide and 50 cm tall, taped flat to the white wall above THE TOP SCORER's desk with clear tape at its four corners. Printed on it in large bold Korean letters, red for the first character and black for the rest, exactly: 축 수석 합격. Nothing else is printed on it.\n\nTHE BOUQUET (the SAME object every time): a round hand-tied bouquet of white and pale-yellow roses with a few sprigs of baby's breath, wrapped in plain brown kraft paper and tied with a thin cream ribbon. No card, no tag, no letters.\n\nPLACE 1 — A SMALL TAX ACCOUNTING OFFICE in Seoul: one open room with white walls, a grey carpet-tile floor, two rows of light-oak desks with black monitors (screens show only soft blank light, no text), black office chairs, a tall window wall on the LEFT side of the room. THE TOP SCORER's desk is the one by the window near the back wall; the banner hangs on the back wall directly above that desk. His desk holds a black monitor, a closed silver laptop, a white mug and a small stack of plain beige folders.\n- DAY LIGHT (PLACE 1, day): late-afternoon daylight through the tall windows on the LEFT gives a soft warm key from the left; white ceiling panels give a gentle even fill; faces are bright and readable.\n- NIGHT LIGHT (PLACE 1, night, a few days later): every ceiling light is off and the room is empty; the only light is the cold blue-grey city night coming through the tall windows on the LEFT plus one small desk lamp left on at a far desk on the RIGHT giving a faint warm glow; deep soft shadows; the banner is still readable.\n\nFRAME: DAY in PLACE 1, a celebration in the office. THE TOP SCORER stands in front of his desk at the center of the frame, full body down to the knees, facing the camera, holding THE BOUQUET against his chest with both hands, his head tilted down in a shy small bow, a modest embarrassed smile, cheeks lifted. His face is clearly visible and sharp, about one eighth of the frame height. On the back wall directly above and behind him THE BANNER is taped flat, fully inside the frame from its left end to its right end, its Korean letters 축 수석 합격 large, sharp and perfectly readable, red 축 and black 수석 합격. To his left and right, at the edges of the frame and slightly in front of him, four COLLEAGUES are clapping, seen from the side and from behind, out of focus, their faces turned toward him and never sharp. His desk behind him: black monitor with a blank soft-lit screen, closed silver laptop, white mug, beige folders. Warm late-afternoon daylight from the tall windows on the LEFT. The top fifth of the frame is the white wall and ceiling above the banner.",
+    "model": "seedream_5.5",
+    "ratio": "9:16",
+    "resolution": "2K",
+    "outputCount": 2,
+    "references": [
+     {
+      "kind": "resource",
+      "id": "46d25000-b9ee-444f-ab0b-ea312117cc2f",
+      "type": "image",
+      "writebackSupported": true
+     }
+    ],
+    "promptParts": [
+     {
+      "kind": "text",
+      "text": "Create one vertical 9:16 photorealistic still from a grounded Korean drama, shot on a cinema camera with a 35mm lens at chest height from the middle of the office, looking toward the back wall, natural depth of field. "
+     },
+     {
+      "kind": "reference",
+      "referenceIndex": 0
+     },
+     {
+      "kind": "text",
+      "text": " is THE TOP SCORER's face root: copy his face exactly from "
+     },
+     {
+      "kind": "reference",
+      "referenceIndex": 0
+     },
+     {
+      "kind": "text",
+      "text": " — same face shape, eyes, brows, side-parted hair, mole on his right cheekbone.\n\nONE FILM, ONE WORLD (every still of this film shares these exact people, places, light and props — copy them exactly):\n\nLOOK: a vertical 9:16 photograph, a still frame from a grounded Korean drama shot on a real cinema camera with a 35mm-50mm lens, natural color, gentle film grain, real and unglamorous, not staged, not glossy, not an ad. Real skin texture with light pores, not over-smoothed. Hands anatomically correct with five fingers. Indoors the air is clear and still; nothing floats, drifts or falls. No watermark, no logos, no brand marks anywhere. The only readable text allowed anywhere is the exact text written in that still's own description; everything else (clothing, walls, screens, keyboards, monitors, phones, papers, folders) has no letters or numbers at all.\n\nPEOPLE (ordinary private individuals who resemble no real person, not celebrity-like):\n- THE TOP SCORER: a Korean man aged 33, slim, neatly cut short black hair parted on his left side, an oval face, narrow calm eyes, straight thin brows, clean-shaven, a small mole on his right cheekbone. NO glasses, no earphones, no watch, no jewelry. At the office he wears a light-blue button-down dress shirt with the top button open and a dark navy V-neck knit vest, charcoal slacks. In the studio (a few days later) he wears a plain black crewneck sweater. His phone (the SAME phone every time): a black smartphone in a plain black matte case.\n- COLLEAGUES (office only): four or five ordinary Korean office workers in their 30s-50s in white or pale shirts and cardigans. They always stay soft and out of focus at the edges or behind him; their faces are never sharp or centered.\n\nTHE BANNER (the SAME object every time): a long horizontal white vinyl office banner, about 2.4 m wide and 50 cm tall, taped flat to the white wall above THE TOP SCORER's desk with clear tape at its four corners. Printed on it in large bold Korean letters, red for the first character and black for the rest, exactly: 축 수석 합격. Nothing else is printed on it.\n\nTHE BOUQUET (the SAME object every time): a round hand-tied bouquet of white and pale-yellow roses with a few sprigs of baby's breath, wrapped in plain brown kraft paper and tied with a thin cream ribbon. No card, no tag, no letters.\n\nPLACE 1 — A SMALL TAX ACCOUNTING OFFICE in Seoul: one open room with white walls, a grey carpet-tile floor, two rows of light-oak desks with black monitors (screens show only soft blank light, no text), black office chairs, a tall window wall on the LEFT side of the room. THE TOP SCORER's desk is the one by the window near the back wall; the banner hangs on the back wall directly above that desk. His desk holds a black monitor, a closed silver laptop, a white mug and a small stack of plain beige folders.\n- DAY LIGHT (PLACE 1, day): late-afternoon daylight through the tall windows on the LEFT gives a soft warm key from the left; white ceiling panels give a gentle even fill; faces are bright and readable.\n- NIGHT LIGHT (PLACE 1, night, a few days later): every ceiling light is off and the room is empty; the only light is the cold blue-grey city night coming through the tall windows on the LEFT plus one small desk lamp left on at a far desk on the RIGHT giving a faint warm glow; deep soft shadows; the banner is still readable.\n\nFRAME: DAY in PLACE 1, a celebration in the office. THE TOP SCORER stands in front of his desk at the center of the frame, full body down to the knees, facing the camera, holding THE BOUQUET against his chest with both hands, his head tilted down in a shy small bow, a modest embarrassed smile, cheeks lifted. His face is clearly visible and sharp, about one eighth of the frame height. On the back wall directly above and behind him THE BANNER is taped flat, fully inside the frame from its left end to its right end, its Korean letters 축 수석 합격 large, sharp and perfectly readable, red 축 and black 수석 합격. To his left and right, at the edges of the frame and slightly in front of him, four COLLEAGUES are clapping, seen from the side and from behind, out of focus, their faces turned toward him and never sharp. His desk behind him: black monitor with a blank soft-lit screen, closed silver laptop, white mug, beige folders. Warm late-afternoon daylight from the tall windows on the LEFT. The top fifth of the frame is the white wall and ceiling above the banner."
+     }
+    ],
+    "writebackSupported": true,
+    "writebackBlockers": []
+   },
+   "layout": {
+    "x": 61777.7840000001,
+    "y": 1848.8890000000001,
+    "width": 320,
+    "height": 568.889
+   },
+   "resourceObservedAtMs": 1795214829207
+  },
+  "mutation": {
+   "action": "create",
+   "savedDraftVersion": 1633,
+   "effectiveGeneration": {
+    "mode": "i2i",
+    "model": "5.5",
+    "ratio": "9:16",
+    "resolution": "2K",
+    "outputCount": 2
+   }
+  },
+  "quote": {
+   "maxCredits": 18,
+   "draftVersion": 1633,
+   "confirmable": true,
+   "confirmationRequired": false
+  },
+  "approval": {
+   "creditCeiling": 18
+  },
+  "submission": {
+   "submitId": "bfdcfac9-f5ab-43c1-b559-0c310b20be37",
+   "state": "succeeded",
+   "resources": [
+    {
+     "resourceId": "01203fd1-fb51-4709-9664-a5468c42a5e7",
+     "state": "succeeded"
+    },
+    {
+     "resourceId": "6820f0b2-6457-4f63-b191-a60a01027bbb",
+     "state": "succeeded"
+    }
+   ]
+  }
+ },
+ "meta": {
+  "requestId": "202611210647489902283F36EB0A7EF55A"
+ }
+}

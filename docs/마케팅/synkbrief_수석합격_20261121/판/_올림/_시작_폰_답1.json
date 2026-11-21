@@ -1,0 +1,119 @@
+{
+ "schemaVersion": "1",
+ "ok": true,
+ "data": {
+  "consumptionSubject": {
+   "kind": "personal",
+   "userId": "7635885049866896404"
+  },
+  "node": {
+   "nodeId": "node_jz0mms5m89",
+   "type": "image",
+   "title": "시작_폰",
+   "tags": [],
+   "status": "empty",
+   "upstreamNodeIds": [],
+   "downstreamNodeIds": [],
+   "executionDependencyNodeIds": [],
+   "resources": [],
+   "generation": {
+    "mode": "i2i",
+    "prompt": "Create one vertical 9:16 photorealistic still from a grounded Korean drama, shot on a cinema camera with a 50mm lens at his seated eye level from his front-left, shallow depth of field. {{res:b0a557e6-7c20-4b75-8b3a-2dac3b622e29}} is THE TOP SCORER's face root: copy his face exactly from {{res:b0a557e6-7c20-4b75-8b3a-2dac3b622e29}} — same face shape, eyes, brows, side-parted hair, mole on his right cheekbone. {{res:f4c17963-d8df-41d6-9371-262e87bbfb47}} shows the same office, banner and bouquet during the celebration a few minutes earlier: keep that exact office, light, clothes and bouquet.\n\nONE FILM, ONE WORLD (every still of this film shares these exact people, places, light and props — copy them exactly):\n\nLOOK: a vertical 9:16 photograph, a still frame from a grounded Korean drama shot on a real cinema camera with a 35mm-50mm lens, natural color, gentle film grain, real and unglamorous, not staged, not glossy, not an ad. Real skin texture with light pores, not over-smoothed. Hands anatomically correct with five fingers. Indoors the air is clear and still; nothing floats, drifts or falls. No watermark, no logos, no brand marks anywhere. The only readable text allowed anywhere is the exact text written in that still's own description; everything else (clothing, walls, screens, keyboards, monitors, phones, papers, folders) has no letters or numbers at all.\n\nPEOPLE (ordinary private individuals who resemble no real person, not celebrity-like):\n- THE TOP SCORER: a Korean man aged 33, slim, neatly cut short black hair parted on his left side, an oval face, narrow calm eyes, straight thin brows, clean-shaven, a small mole on his right cheekbone. NO glasses, no earphones, no watch, no jewelry. At the office he wears a light-blue button-down dress shirt with the top button open and a dark navy V-neck knit vest, charcoal slacks. In the studio (a few days later) he wears a plain black crewneck sweater. His phone (the SAME phone every time): a black smartphone in a plain black matte case.\n- COLLEAGUES (office only): four or five ordinary Korean office workers in their 30s-50s in white or pale shirts and cardigans. They always stay soft and out of focus at the edges or behind him; their faces are never sharp or centered.\n\nTHE BANNER (the SAME object every time): a long horizontal white vinyl office banner, about 2.4 m wide and 50 cm tall, taped flat to the white wall above THE TOP SCORER's desk with clear tape at its four corners. Printed on it in large bold Korean letters, red for the first character and black for the rest, exactly: 축 수석 합격. Nothing else is printed on it.\n\nTHE BOUQUET (the SAME object every time): a round hand-tied bouquet of white and pale-yellow roses with a few sprigs of baby's breath, wrapped in plain brown kraft paper and tied with a thin cream ribbon. No card, no tag, no letters.\n\nPLACE 1 — A SMALL TAX ACCOUNTING OFFICE in Seoul: one open room with white walls, a grey carpet-tile floor, two rows of light-oak desks with black monitors (screens show only soft blank light, no text), black office chairs, a tall window wall on the LEFT side of the room. THE TOP SCORER's desk is the one by the window near the back wall; the banner hangs on the back wall directly above that desk. His desk holds a black monitor, a closed silver laptop, a white mug and a small stack of plain beige folders.\n- DAY LIGHT (PLACE 1, day): late-afternoon daylight through the tall windows on the LEFT gives a soft warm key from the left; white ceiling panels give a gentle even fill; faces are bright and readable.\n- NIGHT LIGHT (PLACE 1, night, a few days later): every ceiling light is off and the room is empty; the only light is the cold blue-grey city night coming through the tall windows on the LEFT plus one small desk lamp left on at a far desk on the RIGHT giving a faint warm glow; deep soft shadows; the banner is still readable.\n\nFRAME: DAY in PLACE 1, a few minutes after the celebration. THE TOP SCORER sits alone at his desk by the window, a medium close-up from mid-chest up, his face large and clearly visible in three-quarter view turned slightly toward the camera, both eyes visible. Light-blue dress shirt with the top button open, dark navy V-neck knit vest. He holds his black phone in his right hand at chest height, the screen facing him (we see only the back of the phone and its black case), and looks down at the screen with a lingering happy smile, cheeks still lifted. THE BOUQUET lies on the desk beside his left elbow, its roses fresh. Warm late-afternoon daylight from the tall windows on the LEFT gives a soft warm key on the left side of his face. Behind him, softly out of focus, the white wall, the lower edge of THE BANNER (too soft to read) and two colleagues at their desks, blurred. The top sixth of the frame is soft white wall.",
+    "model": "seedream_5.5",
+    "ratio": "9:16",
+    "resolution": "2K",
+    "outputCount": 2,
+    "references": [
+     {
+      "kind": "resource",
+      "id": "b0a557e6-7c20-4b75-8b3a-2dac3b622e29",
+      "type": "image",
+      "writebackSupported": true
+     },
+     {
+      "kind": "resource",
+      "id": "f4c17963-d8df-41d6-9371-262e87bbfb47",
+      "type": "image",
+      "writebackSupported": true
+     }
+    ],
+    "promptParts": [
+     {
+      "kind": "text",
+      "text": "Create one vertical 9:16 photorealistic still from a grounded Korean drama, shot on a cinema camera with a 50mm lens at his seated eye level from his front-left, shallow depth of field. "
+     },
+     {
+      "kind": "reference",
+      "referenceIndex": 0
+     },
+     {
+      "kind": "text",
+      "text": " is THE TOP SCORER's face root: copy his face exactly from "
+     },
+     {
+      "kind": "reference",
+      "referenceIndex": 0
+     },
+     {
+      "kind": "text",
+      "text": " — same face shape, eyes, brows, side-parted hair, mole on his right cheekbone. "
+     },
+     {
+      "kind": "reference",
+      "referenceIndex": 1
+     },
+     {
+      "kind": "text",
+      "text": " shows the same office, banner and bouquet during the celebration a few minutes earlier: keep that exact office, light, clothes and bouquet.\n\nONE FILM, ONE WORLD (every still of this film shares these exact people, places, light and props — copy them exactly):\n\nLOOK: a vertical 9:16 photograph, a still frame from a grounded Korean drama shot on a real cinema camera with a 35mm-50mm lens, natural color, gentle film grain, real and unglamorous, not staged, not glossy, not an ad. Real skin texture with light pores, not over-smoothed. Hands anatomically correct with five fingers. Indoors the air is clear and still; nothing floats, drifts or falls. No watermark, no logos, no brand marks anywhere. The only readable text allowed anywhere is the exact text written in that still's own description; everything else (clothing, walls, screens, keyboards, monitors, phones, papers, folders) has no letters or numbers at all.\n\nPEOPLE (ordinary private individuals who resemble no real person, not celebrity-like):\n- THE TOP SCORER: a Korean man aged 33, slim, neatly cut short black hair parted on his left side, an oval face, narrow calm eyes, straight thin brows, clean-shaven, a small mole on his right cheekbone. NO glasses, no earphones, no watch, no jewelry. At the office he wears a light-blue button-down dress shirt with the top button open and a dark navy V-neck knit vest, charcoal slacks. In the studio (a few days later) he wears a plain black crewneck sweater. His phone (the SAME phone every time): a black smartphone in a plain black matte case.\n- COLLEAGUES (office only): four or five ordinary Korean office workers in their 30s-50s in white or pale shirts and cardigans. They always stay soft and out of focus at the edges or behind him; their faces are never sharp or centered.\n\nTHE BANNER (the SAME object every time): a long horizontal white vinyl office banner, about 2.4 m wide and 50 cm tall, taped flat to the white wall above THE TOP SCORER's desk with clear tape at its four corners. Printed on it in large bold Korean letters, red for the first character and black for the rest, exactly: 축 수석 합격. Nothing else is printed on it.\n\nTHE BOUQUET (the SAME object every time): a round hand-tied bouquet of white and pale-yellow roses with a few sprigs of baby's breath, wrapped in plain brown kraft paper and tied with a thin cream ribbon. No card, no tag, no letters.\n\nPLACE 1 — A SMALL TAX ACCOUNTING OFFICE in Seoul: one open room with white walls, a grey carpet-tile floor, two rows of light-oak desks with black monitors (screens show only soft blank light, no text), black office chairs, a tall window wall on the LEFT side of the room. THE TOP SCORER's desk is the one by the window near the back wall; the banner hangs on the back wall directly above that desk. His desk holds a black monitor, a closed silver laptop, a white mug and a small stack of plain beige folders.\n- DAY LIGHT (PLACE 1, day): late-afternoon daylight through the tall windows on the LEFT gives a soft warm key from the left; white ceiling panels give a gentle even fill; faces are bright and readable.\n- NIGHT LIGHT (PLACE 1, night, a few days later): every ceiling light is off and the room is empty; the only light is the cold blue-grey city night coming through the tall windows on the LEFT plus one small desk lamp left on at a far desk on the RIGHT giving a faint warm glow; deep soft shadows; the banner is still readable.\n\nFRAME: DAY in PLACE 1, a few minutes after the celebration. THE TOP SCORER sits alone at his desk by the window, a medium close-up from mid-chest up, his face large and clearly visible in three-quarter view turned slightly toward the camera, both eyes visible. Light-blue dress shirt with the top button open, dark navy V-neck knit vest. He holds his black phone in his right hand at chest height, the screen facing him (we see only the back of the phone and its black case), and looks down at the screen with a lingering happy smile, cheeks still lifted. THE BOUQUET lies on the desk beside his left elbow, its roses fresh. Warm late-afternoon daylight from the tall windows on the LEFT gives a soft warm key on the left side of his face. Behind him, softly out of focus, the white wall, the lower edge of THE BANNER (too soft to read) and two colleagues at their desks, blurred. The top sixth of the frame is soft white wall."
+     }
+    ],
+    "writebackSupported": true,
+    "writebackBlockers": []
+   },
+   "layout": {
+    "x": 62506.673000000104,
+    "y": 0,
+    "width": 320,
+    "height": 568.889
+   },
+   "resourceObservedAtMs": 1795215312881
+  },
+  "mutation": {
+   "action": "create",
+   "savedDraftVersion": 1642,
+   "effectiveGeneration": {
+    "mode": "i2i",
+    "model": "5.5",
+    "ratio": "9:16",
+    "resolution": "2K",
+    "outputCount": 2
+   }
+  },
+  "quote": {
+   "maxCredits": 18,
+   "draftVersion": 1642,
+   "confirmable": true,
+   "confirmationRequired": false
+  },
+  "approval": {
+   "creditCeiling": 18
+  },
+  "submission": {
+   "submitId": "a75916de-4ba6-453c-8083-53822be3d7a8",
+   "state": "succeeded",
+   "resources": [
+    {
+     "resourceId": "6f97eb5e-c66d-46fd-bec2-c7811a19070d",
+     "state": "succeeded"
+    },
+    {
+     "resourceId": "309ad7f2-6531-4487-987c-6643617c20b8",
+     "state": "succeeded"
+    }
+   ]
+  }
+ },
+ "meta": {
+  "requestId": "20261121065557BB849DDB71C4C69A4835"
+ }
+}

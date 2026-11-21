@@ -1,0 +1,3 @@
+# Seedream 5.5 2K 원판(26장 약 108MB)은 한 번에 올리는 용량 한도(tools/git-storage-policy.json 50MB)를 넘어 git 밖에 둔다.
+# 넘기기(tools/예약사본.js)가 공용 작업본 같은 자리로 옮긴다. 본편에 쓴 판은 지시문/동영상.json · remotion/src/timeline.ts · 기획.md 「v2 마감과 자체 검수」에 적었다.
+*.png

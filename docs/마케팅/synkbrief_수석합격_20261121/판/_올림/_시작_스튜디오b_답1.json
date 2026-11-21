@@ -1,0 +1,105 @@
+{
+ "schemaVersion": "1",
+ "ok": true,
+ "data": {
+  "consumptionSubject": {
+   "kind": "personal",
+   "userId": "7635885049866896404"
+  },
+  "node": {
+   "nodeId": "node_xqefab2d6h",
+   "type": "image",
+   "title": "시작_스튜디오b",
+   "tags": [],
+   "status": "empty",
+   "upstreamNodeIds": [],
+   "downstreamNodeIds": [],
+   "executionDependencyNodeIds": [],
+   "resources": [],
+   "generation": {
+    "mode": "i2i",
+    "prompt": "Create one vertical 9:16 photorealistic still from a grounded Korean drama, shot on a cinema camera with a 35mm lens at standing chest height from just behind and beside the studio's tripod camera, natural depth of field. {{res:59ca585e-b4f4-40b3-b47c-d05aa5dddd31}} is THE TOP SCORER's face root: copy his face exactly from {{res:59ca585e-b4f4-40b3-b47c-d05aa5dddd31}} — same oval face shape, same narrow calm eyes, same straight thin brows, same neat side-parted short hair (parted on his left, nothing falling on the forehead), same mole on his right cheekbone, same clothes.\n\nONE FILM, ONE WORLD (every still of this film shares these exact people, places, light and props — copy them exactly):\n\nLOOK: a vertical 9:16 photograph, a still frame from a grounded Korean drama shot on a real cinema camera with a 35mm-50mm lens, natural color, gentle film grain, real and unglamorous, not staged, not glossy, not an ad. Real skin texture with light pores, not over-smoothed. Hands anatomically correct with five fingers. Indoors the air is clear and still; nothing floats, drifts or falls. No watermark, no logos, no brand marks anywhere. The only readable text allowed anywhere is the exact text written in that still's own description; everything else (clothing, walls, screens, keyboards, monitors, phones, papers, folders) has no letters or numbers at all.\n\nPEOPLE (ordinary private individuals who resemble no real person, not celebrity-like):\n- THE TOP SCORER: a Korean man aged 33, slim, neatly cut short black hair parted on his left side, an oval face, narrow calm eyes, straight thin brows, clean-shaven, a small mole on his right cheekbone. NO glasses, no earphones, no watch, no jewelry. He always wears the same clothes in every still, at the office and in the studio a few days later: a light-blue button-down dress shirt with the top button open, a dark navy V-neck knit vest, charcoal slacks. His phone (the SAME phone every time): a black smartphone in a plain black matte case.\n- COLLEAGUES (office only): four or five ordinary Korean office workers in their 30s-50s in white or pale shirts and cardigans. They always stay soft and out of focus at the edges or behind him; their faces are never sharp or centered.\n\nTHE BANNER (the SAME object every time): a long horizontal white vinyl office banner, about 2.4 m wide and 50 cm tall, taped flat to the white wall above THE TOP SCORER's desk with clear tape at its four corners. Printed on it in large bold Korean letters, red for the first character and black for the rest, exactly: 축 수석 합격. Nothing else is printed on it.\n\nTHE BOUQUET (the SAME object every time): a round hand-tied bouquet of white and pale-yellow roses with a few sprigs of baby's breath, wrapped in plain brown kraft paper and tied with a thin cream ribbon. No card, no tag, no letters.\n\nPLACE 2 — A SMALL VIDEO-TALK STUDIO, a few days later: a dim room with a dark charcoal fabric backdrop, a small round black table with a black desktop microphone on a short stand, one black chair. In the foreground a black video camera on a tripod with a small red recording light on its body.\n- LIGHT (PLACE 2): one soft LED panel on his RIGHT gives a soft cool-white key from the right; the rest of the room falls into dark charcoal shadow; a faint rim of light on his left shoulder. His face is always readable.\n\nFRAME: PLACE 2, a few days later. In the left foreground, the back and side of the black video camera on its tripod, out of focus, its small red recording light glowing. Beyond it, in sharp focus in the middle of the frame, THE TOP SCORER stands beside the black chair at the small round black table, wearing the same light-blue dress shirt with the top button open, the dark navy V-neck knit vest and charcoal slacks, his right hand resting on the backrest of the chair, about to sit down. His body faces the table, his head turned slightly toward the camera, eyes lowered to the table, a tense, tired expression, lips pressed together. His upper body and face are clearly visible, his face about one tenth of the frame height. On the table the black desktop microphone on its short stand. The soft cool-white LED panel on his RIGHT lights his face from the right; the dark charcoal backdrop behind him; deep shadows at the frame edges. The top fifth of the frame is the dark backdrop.",
+    "model": "seedream_5.5",
+    "ratio": "9:16",
+    "resolution": "2K",
+    "outputCount": 2,
+    "references": [
+     {
+      "kind": "resource",
+      "id": "59ca585e-b4f4-40b3-b47c-d05aa5dddd31",
+      "type": "image",
+      "writebackSupported": true
+     }
+    ],
+    "promptParts": [
+     {
+      "kind": "text",
+      "text": "Create one vertical 9:16 photorealistic still from a grounded Korean drama, shot on a cinema camera with a 35mm lens at standing chest height from just behind and beside the studio's tripod camera, natural depth of field. "
+     },
+     {
+      "kind": "reference",
+      "referenceIndex": 0
+     },
+     {
+      "kind": "text",
+      "text": " is THE TOP SCORER's face root: copy his face exactly from "
+     },
+     {
+      "kind": "reference",
+      "referenceIndex": 0
+     },
+     {
+      "kind": "text",
+      "text": " — same oval face shape, same narrow calm eyes, same straight thin brows, same neat side-parted short hair (parted on his left, nothing falling on the forehead), same mole on his right cheekbone, same clothes.\n\nONE FILM, ONE WORLD (every still of this film shares these exact people, places, light and props — copy them exactly):\n\nLOOK: a vertical 9:16 photograph, a still frame from a grounded Korean drama shot on a real cinema camera with a 35mm-50mm lens, natural color, gentle film grain, real and unglamorous, not staged, not glossy, not an ad. Real skin texture with light pores, not over-smoothed. Hands anatomically correct with five fingers. Indoors the air is clear and still; nothing floats, drifts or falls. No watermark, no logos, no brand marks anywhere. The only readable text allowed anywhere is the exact text written in that still's own description; everything else (clothing, walls, screens, keyboards, monitors, phones, papers, folders) has no letters or numbers at all.\n\nPEOPLE (ordinary private individuals who resemble no real person, not celebrity-like):\n- THE TOP SCORER: a Korean man aged 33, slim, neatly cut short black hair parted on his left side, an oval face, narrow calm eyes, straight thin brows, clean-shaven, a small mole on his right cheekbone. NO glasses, no earphones, no watch, no jewelry. He always wears the same clothes in every still, at the office and in the studio a few days later: a light-blue button-down dress shirt with the top button open, a dark navy V-neck knit vest, charcoal slacks. His phone (the SAME phone every time): a black smartphone in a plain black matte case.\n- COLLEAGUES (office only): four or five ordinary Korean office workers in their 30s-50s in white or pale shirts and cardigans. They always stay soft and out of focus at the edges or behind him; their faces are never sharp or centered.\n\nTHE BANNER (the SAME object every time): a long horizontal white vinyl office banner, about 2.4 m wide and 50 cm tall, taped flat to the white wall above THE TOP SCORER's desk with clear tape at its four corners. Printed on it in large bold Korean letters, red for the first character and black for the rest, exactly: 축 수석 합격. Nothing else is printed on it.\n\nTHE BOUQUET (the SAME object every time): a round hand-tied bouquet of white and pale-yellow roses with a few sprigs of baby's breath, wrapped in plain brown kraft paper and tied with a thin cream ribbon. No card, no tag, no letters.\n\nPLACE 2 — A SMALL VIDEO-TALK STUDIO, a few days later: a dim room with a dark charcoal fabric backdrop, a small round black table with a black desktop microphone on a short stand, one black chair. In the foreground a black video camera on a tripod with a small red recording light on its body.\n- LIGHT (PLACE 2): one soft LED panel on his RIGHT gives a soft cool-white key from the right; the rest of the room falls into dark charcoal shadow; a faint rim of light on his left shoulder. His face is always readable.\n\nFRAME: PLACE 2, a few days later. In the left foreground, the back and side of the black video camera on its tripod, out of focus, its small red recording light glowing. Beyond it, in sharp focus in the middle of the frame, THE TOP SCORER stands beside the black chair at the small round black table, wearing the same light-blue dress shirt with the top button open, the dark navy V-neck knit vest and charcoal slacks, his right hand resting on the backrest of the chair, about to sit down. His body faces the table, his head turned slightly toward the camera, eyes lowered to the table, a tense, tired expression, lips pressed together. His upper body and face are clearly visible, his face about one tenth of the frame height. On the table the black desktop microphone on its short stand. The soft cool-white LED panel on his RIGHT lights his face from the right; the dark charcoal backdrop behind him; deep shadows at the frame edges. The top fifth of the frame is the dark backdrop."
+     }
+    ],
+    "writebackSupported": true,
+    "writebackBlockers": []
+   },
+   "layout": {
+    "x": 62986.673000000104,
+    "y": 0,
+    "width": 320,
+    "height": 568.889
+   },
+   "resourceObservedAtMs": 1795218282435
+  },
+  "mutation": {
+   "action": "create",
+   "savedDraftVersion": 1660,
+   "effectiveGeneration": {
+    "mode": "i2i",
+    "model": "5.5",
+    "ratio": "9:16",
+    "resolution": "2K",
+    "outputCount": 2
+   }
+  },
+  "quote": {
+   "maxCredits": 18,
+   "draftVersion": 1660,
+   "confirmable": true,
+   "confirmationRequired": false
+  },
+  "approval": {
+   "creditCeiling": 18
+  },
+  "submission": {
+   "submitId": "337ace51-2595-4716-87d3-bff17f9039d4",
+   "state": "succeeded",
+   "resources": [
+    {
+     "resourceId": "3563a905-e152-43cf-aa4d-4cf8fd19889d",
+     "state": "succeeded"
+    },
+    {
+     "resourceId": "5b345a75-3cc4-4d4e-8f02-9fc85aeb22cf",
+     "state": "succeeded"
+    }
+   ]
+  }
+ },
+ "meta": {
+  "requestId": "2026112107452200BE9785EE4DF6A251AC"
+ }
+}

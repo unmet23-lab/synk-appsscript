@@ -1,0 +1,105 @@
+{
+ "schemaVersion": "1",
+ "ok": true,
+ "data": {
+  "consumptionSubject": {
+   "kind": "personal",
+   "userId": "7635885049866896404"
+  },
+  "node": {
+   "nodeId": "node_dpcfvh0heg",
+   "type": "image",
+   "title": "시작_녹화끝",
+   "tags": [],
+   "status": "empty",
+   "upstreamNodeIds": [],
+   "downstreamNodeIds": [],
+   "executionDependencyNodeIds": [],
+   "resources": [],
+   "generation": {
+    "mode": "i2i",
+    "prompt": "Create one vertical 9:16 photorealistic still from a grounded Korean drama, shot on a cinema camera with a 50mm lens at seated eye level from his right side, about 45 degrees, shallow depth of field. {{res:6c823cea-c071-4aea-b0ce-d5a1d4b0c7d2}} is THE TOP SCORER's face root: copy his face exactly from {{res:6c823cea-c071-4aea-b0ce-d5a1d4b0c7d2}} — same face shape, eyes, brows, side-parted hair, mole on his right cheekbone.\n\nONE FILM, ONE WORLD (every still of this film shares these exact people, places, light and props — copy them exactly):\n\nLOOK: a vertical 9:16 photograph, a still frame from a grounded Korean drama shot on a real cinema camera with a 35mm-50mm lens, natural color, gentle film grain, real and unglamorous, not staged, not glossy, not an ad. Real skin texture with light pores, not over-smoothed. Hands anatomically correct with five fingers. Indoors the air is clear and still; nothing floats, drifts or falls. No watermark, no logos, no brand marks anywhere. The only readable text allowed anywhere is the exact text written in that still's own description; everything else (clothing, walls, screens, keyboards, monitors, phones, papers, folders) has no letters or numbers at all.\n\nPEOPLE (ordinary private individuals who resemble no real person, not celebrity-like):\n- THE TOP SCORER: a Korean man aged 33, slim, neatly cut short black hair parted on his left side, an oval face, narrow calm eyes, straight thin brows, clean-shaven, a small mole on his right cheekbone. NO glasses, no earphones, no watch, no jewelry. At the office he wears a light-blue button-down dress shirt with the top button open and a dark navy V-neck knit vest, charcoal slacks. In the studio (a few days later) he wears a plain black crewneck sweater. His phone (the SAME phone every time): a black smartphone in a plain black matte case.\n- COLLEAGUES (office only): four or five ordinary Korean office workers in their 30s-50s in white or pale shirts and cardigans. They always stay soft and out of focus at the edges or behind him; their faces are never sharp or centered.\n\nTHE BANNER (the SAME object every time): a long horizontal white vinyl office banner, about 2.4 m wide and 50 cm tall, taped flat to the white wall above THE TOP SCORER's desk with clear tape at its four corners. Printed on it in large bold Korean letters, red for the first character and black for the rest, exactly: 축 수석 합격. Nothing else is printed on it.\n\nTHE BOUQUET (the SAME object every time): a round hand-tied bouquet of white and pale-yellow roses with a few sprigs of baby's breath, wrapped in plain brown kraft paper and tied with a thin cream ribbon. No card, no tag, no letters.\n\nPLACE 2 — A SMALL VIDEO-TALK STUDIO, a few days later: a dim room with a dark charcoal fabric backdrop, a small round black table with a black desktop microphone on a short stand, one black chair. In the foreground a black video camera on a tripod with a small red recording light on its body.\n- LIGHT (PLACE 2): one soft LED panel on his RIGHT gives a soft cool-white key from the right; the rest of the room falls into dark charcoal shadow; a faint rim of light on his left shoulder. His face is always readable.\n\nFRAME: PLACE 2, after the recording. THE TOP SCORER sits alone at the small round black table, a medium shot from the waist up seen from his right side, his face in clear three-quarter profile turned toward the table, sharp and readable, eyes open looking down at the empty table, a blank, hollow expression. Plain black crewneck sweater. His forearms rest on the table, hands loosely apart, nothing in his hands. The black desktop microphone stands on the table in front of him. In the soft background on the far left, the black tripod camera, small and out of focus, its small red recording light still glowing. The soft cool-white LED panel now lights him from behind-right, so his face is a little darker than before but still readable; the dark charcoal backdrop. The top sixth of the frame is the dark backdrop.",
+    "model": "seedream_5.5",
+    "ratio": "9:16",
+    "resolution": "2K",
+    "outputCount": 2,
+    "references": [
+     {
+      "kind": "resource",
+      "id": "6c823cea-c071-4aea-b0ce-d5a1d4b0c7d2",
+      "type": "image",
+      "writebackSupported": true
+     }
+    ],
+    "promptParts": [
+     {
+      "kind": "text",
+      "text": "Create one vertical 9:16 photorealistic still from a grounded Korean drama, shot on a cinema camera with a 50mm lens at seated eye level from his right side, about 45 degrees, shallow depth of field. "
+     },
+     {
+      "kind": "reference",
+      "referenceIndex": 0
+     },
+     {
+      "kind": "text",
+      "text": " is THE TOP SCORER's face root: copy his face exactly from "
+     },
+     {
+      "kind": "reference",
+      "referenceIndex": 0
+     },
+     {
+      "kind": "text",
+      "text": " — same face shape, eyes, brows, side-parted hair, mole on his right cheekbone.\n\nONE FILM, ONE WORLD (every still of this film shares these exact people, places, light and props — copy them exactly):\n\nLOOK: a vertical 9:16 photograph, a still frame from a grounded Korean drama shot on a real cinema camera with a 35mm-50mm lens, natural color, gentle film grain, real and unglamorous, not staged, not glossy, not an ad. Real skin texture with light pores, not over-smoothed. Hands anatomically correct with five fingers. Indoors the air is clear and still; nothing floats, drifts or falls. No watermark, no logos, no brand marks anywhere. The only readable text allowed anywhere is the exact text written in that still's own description; everything else (clothing, walls, screens, keyboards, monitors, phones, papers, folders) has no letters or numbers at all.\n\nPEOPLE (ordinary private individuals who resemble no real person, not celebrity-like):\n- THE TOP SCORER: a Korean man aged 33, slim, neatly cut short black hair parted on his left side, an oval face, narrow calm eyes, straight thin brows, clean-shaven, a small mole on his right cheekbone. NO glasses, no earphones, no watch, no jewelry. At the office he wears a light-blue button-down dress shirt with the top button open and a dark navy V-neck knit vest, charcoal slacks. In the studio (a few days later) he wears a plain black crewneck sweater. His phone (the SAME phone every time): a black smartphone in a plain black matte case.\n- COLLEAGUES (office only): four or five ordinary Korean office workers in their 30s-50s in white or pale shirts and cardigans. They always stay soft and out of focus at the edges or behind him; their faces are never sharp or centered.\n\nTHE BANNER (the SAME object every time): a long horizontal white vinyl office banner, about 2.4 m wide and 50 cm tall, taped flat to the white wall above THE TOP SCORER's desk with clear tape at its four corners. Printed on it in large bold Korean letters, red for the first character and black for the rest, exactly: 축 수석 합격. Nothing else is printed on it.\n\nTHE BOUQUET (the SAME object every time): a round hand-tied bouquet of white and pale-yellow roses with a few sprigs of baby's breath, wrapped in plain brown kraft paper and tied with a thin cream ribbon. No card, no tag, no letters.\n\nPLACE 2 — A SMALL VIDEO-TALK STUDIO, a few days later: a dim room with a dark charcoal fabric backdrop, a small round black table with a black desktop microphone on a short stand, one black chair. In the foreground a black video camera on a tripod with a small red recording light on its body.\n- LIGHT (PLACE 2): one soft LED panel on his RIGHT gives a soft cool-white key from the right; the rest of the room falls into dark charcoal shadow; a faint rim of light on his left shoulder. His face is always readable.\n\nFRAME: PLACE 2, after the recording. THE TOP SCORER sits alone at the small round black table, a medium shot from the waist up seen from his right side, his face in clear three-quarter profile turned toward the table, sharp and readable, eyes open looking down at the empty table, a blank, hollow expression. Plain black crewneck sweater. His forearms rest on the table, hands loosely apart, nothing in his hands. The black desktop microphone stands on the table in front of him. In the soft background on the far left, the black tripod camera, small and out of focus, its small red recording light still glowing. The soft cool-white LED panel now lights him from behind-right, so his face is a little darker than before but still readable; the dark charcoal backdrop. The top sixth of the frame is the dark backdrop."
+     }
+    ],
+    "writebackSupported": true,
+    "writebackBlockers": []
+   },
+   "layout": {
+    "x": 62506.673000000104,
+    "y": 1946.667,
+    "width": 320,
+    "height": 568.889
+   },
+   "resourceObservedAtMs": 1795215483944
+  },
+  "mutation": {
+   "action": "create",
+   "savedDraftVersion": 1651,
+   "effectiveGeneration": {
+    "mode": "i2i",
+    "model": "5.5",
+    "ratio": "9:16",
+    "resolution": "2K",
+    "outputCount": 2
+   }
+  },
+  "quote": {
+   "maxCredits": 18,
+   "draftVersion": 1651,
+   "confirmable": true,
+   "confirmationRequired": false
+  },
+  "approval": {
+   "creditCeiling": 18
+  },
+  "submission": {
+   "submitId": "38a1f1a9-b1cc-498e-aacd-95530a909875",
+   "state": "succeeded",
+   "resources": [
+    {
+     "resourceId": "fc94a26b-cb16-43d9-ac27-3a3849ff2237",
+     "state": "succeeded"
+    },
+    {
+     "resourceId": "5ac66d59-07ae-4c04-bbe5-1f776cb1fc6f",
+     "state": "succeeded"
+    }
+   ]
+  }
+ },
+ "meta": {
+  "requestId": "2026112106583815214E6CA010B156EB99"
+ }
+}
