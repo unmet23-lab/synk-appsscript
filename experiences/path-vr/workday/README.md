@@ -26,7 +26,7 @@
 ```bash
 node experiences/path-vr/server.mjs            # http://127.0.0.1:4292/workday/
 node --test experiences/path-vr/tests/workday-engine.test.mjs
-node tools/package-path-workday.mjs            # 공개 묶음 → .tmp/path-workday-pages/
+node tools/package-path-workday.mjs --jobs care-home   # 공개 묶음 → .tmp/path-workday-pages/ (공개를 허락받은 직업만 적는다)
 node tools/package-path-workday.mjs --live     # 빌려 쓰는 면접실 파일이 synk.im에 같은 바이트로 있는지
 ```
 

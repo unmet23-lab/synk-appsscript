@@ -26,6 +26,7 @@ function playScene(session, sceneId, picks = {}, mode = 'text') {
   for (let guard = 0; guard < 200 && state.phase !== 'scene-end'; guard++) {
     if (state.phase === 'line' || state.phase === 'note') state = session.advance();
     else if (state.phase === 'tour') state = session.finishTour();
+    else if (state.phase === 'say' && state.say.kind === 'work') state = session.choose(picks[state.say.id] || state.say.options[0].id);
     else if (state.phase === 'say') {
       if (state.say.kind === 'fork') session.choose(picks[state.say.id] || state.say.options[0].id);
       if (state.say.kind === 'report') for (const id of picks[state.say.id] || [state.say.items[0].id]) session.toggleItem(id);
@@ -375,7 +376,7 @@ test('saved progress is restored only for the same job and edition, and holds no
   playScene(first, 'arrival'); playScene(first, 'handover', { handover: 'ask' });
   const saved = first.serialize();
   assert.ok(!JSON.stringify(saved).includes('알겠습니다'), 'the answer text is never part of the saved data');
-  assert.deepEqual(Object.keys(saved).sort(), ['counts', 'edition', 'forkScene', 'forks', 'hinted', 'job', 'says', 'scenes', 'tour', 'v']);
+  assert.deepEqual(Object.keys(saved).sort(), ['counts', 'edition', 'forkScene', 'forks', 'hinted', 'job', 'says', 'scenes', 'tour', 'v', 'works']);
   const again = createWorkdaySession(careHome, { saved: JSON.parse(JSON.stringify(saved)) });
   assert.deepEqual(again.snapshot().progress.scenes.map((scene) => scene.done), [true, true, false, false, false]);
   assert.equal(again.serialize().forks.handover, 'ask');
@@ -558,6 +559,201 @@ test('only files the catalogue points at are served, and the styles keep still',
   assert.ok(!jobTexts(careHome).some((value) => /^[a-z0-9-]+$/.test(value) && ['senior', 'office', 'room'].includes(value)), 'plain ids stay out of the text list');
 });
 
+test('a tool step and a relay step run on data alone, and the sheet lists the tool without right or wrong', () => {
+  const hint = { mn: 'туслах', vi: 'gợi ý', en: 'hint' };
+  const job = fresh();
+  job.cast.guest = { name: '바트', role: '손님' };
+  const tool = { type: 'work', id: 'find-room', record: '예약 화면에서 방 번호를 찾는 차례', prompt: '손님의 방 번호를 골라요.', hint,
+    tool: { kind: 'screen', title: '예약 조회', rows: [['손님', 'BAT / 바트'], ['객실', '302 · 트윈']], note: '조식 포함' },
+    options: [{ id: 'r302', label: '302호', hint, then: [{ type: 'line', who: 'senior', clip: 'room-right', hint, text: '네, 302호 맞아요.' }] }, { id: 'r320', label: '320호', hint, then: [{ type: 'line', who: 'senior', clip: 'room-again', hint, text: '한 번 더 볼래요? 숫자 순서가 달라요.' }] }] };
+  const relay = { type: 'relay', id: 'guest-relay', record: '손님의 말을 한국어로 전하는 차례', who: 'guest', hint,
+    foreign: { mn: 'Нэмэлт хөнжил авч болох уу?', vi: 'Cho tôi thêm một cái chăn được không?', en: 'Could I have one more blanket?' },
+    meaning: '담요를 하나 더 받고 싶대요.', prompt: '손님의 말을 선배에게 한국어로 전해요.', example: '선배님, 손님이 담요를 하나 더 받고 싶으시대요.' };
+  job.scenes[0].steps.splice(1, 0, tool, relay);
+  // The day goes on from the pick: a later line appears only after the other room number was picked.
+  job.scenes[0].steps.push({ type: 'line', who: 'senior', channel: 'phone', clip: 'room-call', hint, text: '아까 방 번호는 다시 확인했어요.', when: { 'find-room': 'r320' } });
+  assert.deepEqual(validateJob(job).errors, [], 'a tool pick is not a value fork, so the closing does not list it');
+  assert.ok(jobClipIds(job).length > 0);
+
+  const session = createWorkdaySession(job);
+  let state = session.startScene('arrival');
+  state = session.advance();
+  assert.equal(state.say.kind, 'work');
+  assert.equal(state.say.tool.title, '예약 조회');
+  assert.equal(state.say.example, null);
+  assert.equal(session.canSubmit('text', '302호'), false, 'a tool step ends on the pick, not on an answer');
+  state = session.choose('r320');
+  assert.equal(state.phase, 'line');
+  assert.equal(state.line.text, '한 번 더 볼래요? 숫자 순서가 달라요.');
+  state = session.advance();
+  assert.equal(state.say.kind, 'relay');
+  assert.equal(state.say.foreign.text.vi, 'Cho tôi thêm một cái chăn được không?');
+  assert.equal(state.say.foreign.name, '바트');
+  assert.equal(state.say.example, '선배님, 손님이 담요를 하나 더 받고 싶으시대요.');
+  state = session.submitSay({ mode: 'text', text: '손님이 담요를 원하세요.' });
+  const seen = [];
+  for (let guard = 0; guard < 200 && state.phase !== 'scene-end'; guard++) {
+    if (state.phase === 'line') { seen.push(state.line); state = session.advance(); }
+    else if (state.phase === 'note') state = session.advance();
+    else if (state.phase === 'tour') state = session.finishTour();
+    else if (state.phase === 'say') state = session.submitSay({ mode: 'text', text: '네, 알겠습니다.' });
+  }
+  const phoneLine = seen.find((line) => line.text === '아까 방 번호는 다시 확인했어요.');
+  assert.ok(phoneLine, 'the later line follows the earlier pick');
+  assert.equal(phoneLine.channel, 'phone');
+  const data = session.serialize();
+  assert.deepEqual(data.works, { 'find-room': { scene: 'arrival' } });
+  const lines = recordLines(buildRecord(job, data, { serial: 'PW-20261130-AAAAAA', date: new Date(2026, 10, 30) }));
+  const tools = lines.sections.find((section) => section.title.includes('일터의 도구를 다룬 것'));
+  assert.deepEqual(tools.rows, ['예약 화면에서 방 번호를 찾는 차례']);
+  assert.ok(!/맞힘|틀림|정답|오답/.test(JSON.stringify(lines)), 'the sheet never says whether a tool was used rightly');
+  const korean = lines.sections.find((section) => section.title.includes('한국어로 한 일'));
+  assert.ok(korean.rows.includes('손님의 말을 한국어로 전하는 차례 · 글로 답함'));
+
+  // A run again replaces the tool record of that scene.
+  playScene(session, 'arrival');
+  assert.equal(session.serialize().forks['find-room'], 'r302', 'a run again replaces the earlier pick');
+
+  const broken = [
+    ['tool of an unknown kind', (copy) => { copy.scenes[0].steps[1].tool.kind = 'fax'; }, /tool은 kind/],
+    ['tool with nothing to read', (copy) => { delete copy.scenes[0].steps[1].tool.rows; }, /rows나 lines/],
+    ['tool with one option', (copy) => { copy.scenes[0].steps[1].options.length = 1; }, /2~4개/],
+    ['relay without English', (copy) => { delete copy.scenes[0].steps[2].foreign.en; }, /foreign의 en/],
+    ['relay by an unknown person', (copy) => { copy.scenes[0].steps[2].who = 'nobody'; }, /인물 nobody/],
+    ['a line on an unknown channel', (copy) => { copy.scenes[0].steps.at(-1).channel = 'radio'; }, /channel은 phone/],
+    ['when naming a tool option that does not exist', (copy) => { copy.scenes[0].steps.at(-1).when = { 'find-room': 'r999' }; }, /보기 find-room=r999/],
+  ];
+  for (const [name, breakIt, expected] of broken) {
+    const copy = structuredClone(job); breakIt(copy);
+    const result = validateJob(copy);
+    assert.ok(result.errors.some((error) => expected.test(error)), `${name}: ${result.errors.join(' | ')}`);
+  }
+});
+
+test('a guest has a name per language, speaks in the learner\'s language, and hears Korean said on in it', () => {
+  const hint = { mn: 'туслах', vi: 'gợi ý', en: 'hint' };
+  const job = fresh();
+  job.cast.guest = { name: '손님', role: '1208호 손님', names: { mn: 'Батбаяр', vi: 'Nguyễn Văn An', en: 'Batbayar' } };
+  const tool = { type: 'work', id: 'find-room', record: '예약 화면에서 방 번호를 찾는 차례', prompt: '손님의 방 번호를 골라요.', hint,
+    tool: { kind: 'screen', title: '예약 조회', rows: [['손님', { mn: 'БАТБАЯР', vi: 'NGUYEN VAN AN', en: 'BATBAYAR' }], ['객실', '1208']], lines: [{ mn: 'Өглөөний цай орсон', vi: 'Có bữa sáng', en: 'Breakfast included' }] },
+    options: [{ id: 'r1208', label: '1208호', hint, then: [{ type: 'line', who: 'senior', hint, text: '네, 1208호 맞아요.' }] }, { id: 'r1280', label: '1280호', hint, then: [{ type: 'line', who: 'senior', hint, text: '한 번 더 볼래요?' }] }] };
+  const call = { type: 'line', who: 'guest', channel: 'phone', text: '방이 너무 추워요. 난방이 안 돼요.',
+    foreign: { mn: 'Өрөө маш хүйтэн байна. Халаалт ажиллахгүй байна.', vi: 'Phòng lạnh quá. Máy sưởi không chạy.', en: 'The room is very cold. The heating does not work.' } };
+  const chat = { type: 'line', who: 'senior', channel: 'chat', hint, text: '시설팀에 보냈어요.' };
+  const back = { type: 'relay', direction: 'out', channel: 'phone', id: 'tell-guest', who: 'guest', record: '선배의 답을 손님께 모국어로 전하는 차례', hint,
+    meaning: '십 분 안에 직원이 방으로 가서 난방을 봐 드린대요.', prompt: '선배의 답을 손님께 내 나라 말로 전해요.',
+    foreign: { mn: 'Арван минутын дотор ажилтан өрөөнд тань очиж халаалтыг шалгана.', vi: 'Trong mười phút nhân viên sẽ đến phòng để kiểm tra máy sưởi.', en: 'A staff member will come to your room within ten minutes to check the heating.' } };
+  job.scenes[0].steps.splice(1, 0, tool, call, chat, back);
+  assert.deepEqual(validateJob(job).errors, [], 'a line may have no clip, and a guest name or tool cell may be written per language');
+  assert.ok(!jobClipIds(job).includes(undefined));
+
+  const session = createWorkdaySession(job);
+  let state = session.startScene('arrival');
+  state = session.advance();
+  assert.equal(state.say.tool.rows[0][1].vi, 'NGUYEN VAN AN');
+  state = session.choose('r1208');
+  assert.equal(state.line.clip, undefined, 'a colleague can answer on the photograph and caption');
+  // A line without a clip counts its hint once, and the next clip-less line is a step of its own.
+  session.openHint(); session.openHint();
+  state = session.advance();
+  assert.equal(state.line.channel, 'phone');
+  assert.equal(state.line.foreign.mn, 'Өрөө маш хүйтэн байна. Халаалт ажиллахгүй байна.');
+  assert.deepEqual(state.line.names, { mn: 'Батбаяр', vi: 'Nguyễn Văn An', en: 'Batbayar' });
+  session.openHint();
+  assert.equal(session.snapshot().counts.hints, 2);
+  state = session.advance();
+  assert.equal(state.line.channel, 'chat');
+  state = session.advance();
+  assert.equal(state.say.kind, 'relay');
+  assert.equal(state.say.direction, 'out');
+  assert.equal(state.say.channel, 'phone');
+  assert.equal(state.say.meaning, '십 분 안에 직원이 방으로 가서 난방을 봐 드린대요.');
+  assert.equal(state.say.example, null, 'the example of an out turn is its foreign text, in the learner\'s language');
+  assert.equal(session.canSubmit('voice', '십 분 안에 와요'), false, 'Korean speech is not this turn');
+  assert.equal(session.canSubmit('own-text', 'A'), false);
+  assert.equal(session.canSubmit('own-text', 'Арван минут'), true, 'any letters');
+  assert.equal(session.canSubmit('own-voice'), true, 'said aloud, never transcribed');
+  state = session.submitSay({ mode: 'own-voice' });
+  for (let guard = 0; guard < 200 && state.phase !== 'scene-end'; guard++) {
+    if (state.phase === 'line' || state.phase === 'note') state = session.advance();
+    else if (state.phase === 'tour') state = session.finishTour();
+    else if (state.phase === 'say') state = session.submitSay({ mode: 'text', text: '네, 알겠습니다.' });
+  }
+  const data = session.serialize();
+  assert.equal(data.says['tell-guest'].produced, 'own-voice');
+  const record = buildRecord(job, data, { serial: 'PW-20261130-AAAAAA', date: new Date(2026, 10, 30) });
+  assert.deepEqual(record.own, ['선배의 답을 손님께 모국어로 전하는 차례 · 모국어로 말함']);
+  const lines = recordLines(record);
+  const own = lines.sections.find((section) => section.title.includes('모국어로 전한 것'));
+  assert.deepEqual(own.rows, ['선배의 답을 손님께 모국어로 전하는 차례 · 모국어로 말함']);
+  const korean = lines.sections.find((section) => section.title.includes('한국어로 한 일'));
+  assert.ok(!korean.rows.some((row) => row.includes('모국어')), 'a turn in the learner\'s own language is not Korean');
+  assert.equal(record.korean.voice, 0);
+
+  const broken = [
+    ['a name without English', (copy) => { delete copy.cast.guest.names.en; }, /names에는 mn, vi, en/],
+    ['a tool cell missing a language', (copy) => { delete copy.scenes[0].steps[1].tool.rows[0][1].vi; }, /tool\.rows는/],
+    ['a chat line with a film', (copy) => { copy.scenes[0].steps[3].clip = 'senior-chat'; }, /채팅 줄에는 영상이 없어요/],
+    ['a line in the guest\'s words without one language', (copy) => { delete copy.scenes[0].steps[2].foreign.vi; }, /foreign에는 mn, vi, en/],
+    ['a line in Korean without a hint', (copy) => { delete copy.scenes[0].steps[3].hint; }, /힌트가 없어요/],
+    ['an out turn with a Korean example', (copy) => { copy.scenes[0].steps[4].example = '십 분 안에 와요.'; }, /out의 예시는 foreign/],
+    ['a turn going sideways', (copy) => { copy.scenes[0].steps[4].direction = 'across'; }, /direction은 in이나 out/],
+    ['a relay on a chat channel', (copy) => { copy.scenes[0].steps[4].channel = 'chat'; }, /relay의 channel은 phone/],
+  ];
+  for (const [name, breakIt, expected] of broken) {
+    const copy = structuredClone(job); breakIt(copy);
+    const result = validateJob(copy);
+    assert.ok(result.errors.some((error) => expected.test(error)), `${name}: ${result.errors.join(' | ')}`);
+  }
+});
+
+test('a tool pick off the mark comes back for another try, and closing items carry hints', () => {
+  const hint = { mn: 'туслах', vi: 'gợi ý', en: 'hint' };
+  const job = fresh();
+  const tool = { type: 'work', id: 'find-room', record: '예약 화면에서 방 번호를 찾는 차례', prompt: '손님의 방 번호를 골라요.', hint,
+    tool: { kind: 'screen', title: '예약 조회', rows: [['객실', '1208']] },
+    options: [
+      { id: 'r1280', label: '1280호', hint, retry: true, then: [{ type: 'line', who: 'senior', hint, text: '객실 칸을 한 번 더 볼래요?' }] },
+      { id: 'r1208', label: '1208호', hint, then: [{ type: 'line', who: 'senior', hint, text: '네, 1208호 맞아요.' }] },
+    ] };
+  job.scenes[0].steps.splice(1, 0, tool);
+  job.closing.conditions.items[0].hint = hint;
+  job.closing.principles[0].hint = hint;
+  job.closing.ladder.items[0].hint = hint;
+  job.closing.reflection.decisions[0].hint = hint;
+  assert.deepEqual(validateJob(job).errors, []);
+
+  const session = createWorkdaySession(job);
+  session.startScene('arrival');
+  let state = session.advance();
+  assert.equal(state.say.kind, 'work');
+  state = session.choose('r1280');
+  assert.equal(state.line.text, '객실 칸을 한 번 더 볼래요?');
+  state = session.advance();
+  assert.equal(state.say.id, 'find-room', 'the same tool comes back');
+  assert.deepEqual(state.say.options.map((option) => option.tried), [true, false]);
+  assert.equal(session.choose('r1280').say?.id, 'find-room', 'an option already tried cannot be picked again');
+  state = session.choose('r1208');
+  assert.equal(state.line.text, '네, 1208호 맞아요.');
+  assert.equal(session.serialize().forks['find-room'], 'r1208', 'when sees the last pick');
+  // A run again starts with every option open.
+  session.leave();
+  session.startScene('arrival');
+  assert.deepEqual(session.advance().say.options.map((option) => option.tried), [false, false]);
+
+  const broken = [
+    ['every option a retry', (copy) => { copy.scenes[0].steps[1].options[1].retry = true; }, /retry가 없는 보기/],
+    ['retry that is not true or false', (copy) => { copy.scenes[0].steps[1].options[0].retry = 'yes'; }, /retry는 true나 false/],
+    ['a closing hint missing a language', (copy) => { delete copy.closing.conditions.items[0].hint.vi; }, /closing\.conditions\.items\[0\].*힌트 언어 vi/],
+    ['a ladder hint missing a language', (copy) => { delete copy.closing.ladder.items[0].hint.mn; }, /closing\.ladder\.items.*힌트 언어 mn/],
+  ];
+  for (const [name, breakIt, expected] of broken) {
+    const copy = structuredClone(job); breakIt(copy);
+    const result = validateJob(copy);
+    assert.ok(result.errors.some((error) => expected.test(error)), `${name}: ${result.errors.join(' | ')}`);
+  }
+});
+
 test('a job still being made, or one that fails the check, is not served', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'workday-jobs-'));
   try {
@@ -590,10 +786,16 @@ test('the desk panel cuts by whole letters and the cut row with its mark still f
 });
 
 test('the publish bundle holds only approved workday files, with the page policy written in', async () => {
-  const { prepareWorkdayPages, verifyWorkdayPages, references, WORKDAY_OUTPUT } = await import('../../../tools/package-path-workday.mjs');
+  const { prepareWorkdayPages, verifyWorkdayPages, references, publicIndex, WORKDAY_OUTPUT } = await import('../../../tools/package-path-workday.mjs');
+  // Only the jobs named for publishing ship; another open job (open for a local test) becomes a card.
+  await assert.rejects(prepareWorkdayPages(), /Name the jobs to publish/);
+  await assert.rejects(prepareWorkdayPages({ jobs: ['no-such-job'] }), /Not an open job: no-such-job/);
+  const index = { schemaVersion: 1, jobs: [{ id: 'care-home', status: 'open', title: 'A', role: 'B', minutes: 15, poster: 'care-home/x.jpg' }, { id: 'hotel-front', status: 'open', title: 'C', role: 'D', summary: 'E', minutes: 15, poster: 'hotel-front/y.jpg' }, { id: 'duty-free', status: 'making', title: 'F', role: 'G', summary: 'H' }] };
+  assert.deepEqual(publicIndex(index, new Set(['care-home'])).jobs, [index.jobs[0], { id: 'hotel-front', status: 'making', title: 'C', role: 'D', summary: 'E' }, index.jobs[2]]);
   assert.deepEqual(references('workday/play.mjs', "import a from './engine/a.mjs'; import('../interview/b.mjs'); new URL('./jobs/index.json', import.meta.url);").sort(), ['interview/b.mjs', 'workday/engine/a.mjs', 'workday/jobs/index.json']);
   assert.deepEqual(references('workday/index.html', '<a href="../">x</a><link href="./workday.css?v=1"><img src="../assets/logo.webp">').sort(), ['./', 'assets/logo.webp', 'workday/workday.css']);
-  const built = await prepareWorkdayPages();
+  const built = await prepareWorkdayPages({ jobs: ['care-home'] });
+  assert.deepEqual(built.jobs, ['care-home']);
   assert.ok(built.files >= 20);
   assert.ok(built.outside.includes('interview/film-player.mjs') && built.outside.every((file) => !file.startsWith('workday/')));
   assert.deepEqual(await verifyWorkdayPages(), { files: built.files, outside: built.outside.length, live: false });

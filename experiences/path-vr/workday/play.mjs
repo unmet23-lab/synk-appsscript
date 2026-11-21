@@ -246,7 +246,7 @@ function questPlan(sceneId) {
 }
 function startFrom(sceneId) {
   if (!questPlan(sceneId).open) { render(); return; }
-  const token = ++epoch; stopMic();
+  const token = ++epoch; stopMic(); busy = false; transcribing = false;
   const state = session.startScene(sceneId);
   if (state.scene?.id !== sceneId) { render(); return; }
   if (vr?.active) { usedQuest = true; vrScenes++; markQuestSeen(); }
@@ -347,13 +347,15 @@ async function action(name) {
       return;
     }
     if (kind === 'opt') { stopMic(); session.choose(id); hintShown = false; return render(); }
+    if (kind === 'work') { const token = ++epoch; stopMic(); session.choose(id); hintShown = false; save(); return void drive(token).catch(report); }
     if (kind === 'item') { session.toggleItem(id); return render(); }
     if (kind === 'example') { session.openExample(); save(); return render(); }
     if (kind === 'use-example') return submit('example');
     if (kind === 'skip-unheard') return unheard ? submit('unheard') : undefined;
     if (kind === 'retry-film') return retryFilm();
     if (kind === 'mic') return toggleMic();
-    if (kind === 'answer') return submit('text', $('answer').value);
+    if (kind === 'answer') return submit(outward(state.say) ? 'own-text' : 'text', $('answer').value);
+    if (kind === 'own-voice') return submit('own-voice');
     if (kind === 'go') { const token = ++epoch; session.goTo(id); hintShown = false; return void drive(token).catch(report); }
     if (kind === 'point') { session.hear(id); hintShown = false; sayPointName(session.snapshot().tour?.openPoint); save(); return render(); }
     if (kind === 'close-point') { session.closePoint(); return render(); }
@@ -409,7 +411,7 @@ function resume() {
   render();
 }
 function leave() {
-  ++epoch; busy = false; moving = false; held = false; stopMic(); sayPointName(null); film?.stop(); replaying = false;
+  ++epoch; busy = false; moving = false; held = false; transcribing = false; stopMic(); sayPointName(null); film?.stop(); replaying = false;
   session.leave(); save();
   if (vr?.active) void vr.exit();
   showPlace(job.scenes[0].place); shownSerial = -1; fade = { from: 0, to: 0, start: 0 }; $('veil').classList.remove('on');
@@ -418,6 +420,39 @@ function leave() {
 
 /* ---------- rendering ---------- */
 const hintOf = (value) => (hintLanguage && value?.[hintLanguage]) || '';
+const TOOL_NAMES = Object.freeze({ screen: '업무 화면', paper: '서류', phone: '전화', chat: '채팅' });
+const CHANNEL_NAMES = Object.freeze({ phone: '전화', chat: '채팅' });
+/** relay out: Korean words said on to a guest in the learner's own language. Nothing is transcribed. */
+const outward = (say) => say?.kind === 'relay' && say.direction === 'out';
+/** The example a turn offers: Korean, or for relay out the same words in the learner's language. */
+const exampleOf = (say) => (outward(say) ? foreignOf(say.foreign) : say?.example ? { code: '', text: say.example } : null);
+/** A guest's words in the learner's language: the chosen hint language, English when none was chosen. */
+const foreignOf = (foreign) => localOf(foreign?.text);
+/** A value written once per language (a guest's words, name or booking cell) in the learner's language, else English.
+ * A plain Korean text stays as it is (code ''). */
+function localOf(value) {
+  if (typeof value === 'string') return { code: '', text: value };
+  const code = value?.[hintLanguage] ? hintLanguage : 'en';
+  return { code, text: value?.[code] || '' };
+}
+const nameOf = (person) => (person?.names ? localOf(person.names) : { code: '', text: person?.name || '' });
+/** An element holding words that may be in another script: lang lets the device font draw them whole. */
+function localNode(tag, value) {
+  const { code, text } = localOf(value), node = Object.assign(document.createElement(tag), { textContent: text });
+  if (code) node.lang = code;
+  return node;
+}
+/** 「이름 · 역할」 with the name in the learner's language. */
+function setWho(id, person, rest) {
+  const node = $(id), name = person ? nameOf(person) : null, key = JSON.stringify([name, rest]);
+  if (node.dataset.key === key) return;
+  node.dataset.key = key;
+  if (!name) { node.replaceChildren(); return; }
+  const span = Object.assign(document.createElement('span'), { textContent: name.text });
+  if (name.code) span.lang = name.code;
+  node.replaceChildren(span, rest);
+}
+const toolText = (tool) => [...(tool?.rows || []).map(([label, value]) => `${label}: ${localOf(value).text}`), ...(tool?.lines || []).map((row) => localOf(row).text), tool?.note || ''].filter(Boolean).join('\n');
 /** 「바리스타는」, 「제조 현장은」: 은 after a final consonant, 는 otherwise (and for a name not ending in Hangul). */
 function withTopic(word) {
   const last = String(word).trim().slice(-1), code = last.charCodeAt(0) - 0xAC00;
@@ -437,8 +472,8 @@ function fillStatic() {
   $('hint-field').hidden = job.hintLanguages.length === 0;
   document.querySelector(`input[name="mode"][value="${mode}"]`).checked = true;
 }
-function button(label, onClick, { pressed, className } = {}) {
-  const node = document.createElement('button'); node.type = 'button'; node.textContent = label;
+function button(label, onClick, { pressed, className, disabled } = {}) {
+  const node = document.createElement('button'); node.type = 'button'; node.textContent = label; node.disabled = !!disabled;
   if (className) node.className = className;
   if (pressed !== undefined) node.setAttribute('aria-pressed', String(pressed));
   node.addEventListener('click', onClick); return node;
@@ -478,8 +513,14 @@ function render() {
   for (const id of ['caption-hint', 'help-hint', 'point-hint', 'note-hint']) { if (hintLanguage) $(id).lang = hintLanguage; else $(id).removeAttribute('lang'); }
   if (showLine) {
     $('caption').classList.toggle('action', line.action);
-    setText('caption-who', line.action ? '' : `${line.name} · ${line.role}`);
-    setText('caption-text', line.text);
+    $('caption').classList.toggle('phone', line.channel === 'phone');
+    $('caption').classList.toggle('chat', line.channel === 'chat');
+    setWho('caption-who', line.action ? null : line, ` · ${line.role}${CHANNEL_NAMES[line.channel] ? ` · ${CHANNEL_NAMES[line.channel]}` : ''}`);
+    // A person speaking the learner's language: their words first, the Korean meaning under them.
+    const said = line.foreign ? localOf(line.foreign) : { code: '', text: line.text };
+    setText('caption-text', said.text);
+    if (said.code) $('caption-text').lang = said.code; else $('caption-text').removeAttribute('lang');
+    $('caption-meaning').hidden = !line.foreign; setText('caption-meaning', line.foreign ? `뜻: ${line.text}` : '');
     const lineHint = state.phase === 'line' && hintShown ? hintOf(line.hint) : '';
     $('caption-hint').hidden = !lineHint; setText('caption-hint', lineHint);
   }
@@ -512,8 +553,8 @@ function renderSetup(state) {
 function renderPlay(state) {
   const phase = state.phase, say = state.say, tour = state.tour;
   const status = state.paused ? '잠시 멈췄어요. 마이크도 껐어요.'
-    : phase === 'line' ? (state.line.action ? '지금 일어난 일을 봐요.' : !canPlay(state.line.clip) ? '자막을 읽고 「다음」을 눌러요.' : lineDone ? '다 들었으면 「다음」을 눌러요.' : `${state.line.name}의 말을 들어요.`)
-    : phase === 'say' ? (micActive ? '듣고 있어요. 말을 마치면 알아서 넘어가요.' : transcribing ? '말한 것을 글로 바꾸고 있어요. 잠시만 기다려요.' : say.kind === 'fork' && !say.chosen ? '어떻게 할지 먼저 골라요.' : say.kind === 'report' && !say.ready ? '보고할 일을 골라요.' : mode === 'voice' ? '「말하기」를 누르고 한국어로 말해요.' : '한국어로 쓰고 「답하기」를 눌러요.')
+    : phase === 'line' ? (state.line.action ? '지금 일어난 일을 봐요.' : state.line.channel === 'chat' ? '메시지를 읽고 「다음」을 눌러요.' : !canPlay(state.line.clip) ? '자막을 읽고 「다음」을 눌러요.' : lineDone ? '다 들었으면 「다음」을 눌러요.' : `${nameOf(state.line).text}의 말을 들어요.`)
+    : phase === 'say' ? (micActive ? '듣고 있어요. 말을 마치면 알아서 넘어가요.' : transcribing ? '말한 것을 글로 바꾸고 있어요. 잠시만 기다려요.' : say.kind === 'work' ? '화면과 서류를 보고 골라요.' : outward(say) ? (mode === 'voice' ? '내 나라 말로 소리 내어 전하고 「말로 전했어요」를 눌러요.' : '내 나라 말로 쓰고 「답하기」를 눌러요. 어떤 글자로 써도 돼요.') : say.kind === 'relay' ? '외국인의 말을 한국어로 전해요.' : say.kind === 'fork' && !say.chosen ? '어떻게 할지 먼저 골라요.' : say.kind === 'report' && !say.ready ? '보고할 일을 골라요.' : mode === 'voice' ? '「말하기」를 누르고 한국어로 말해요.' : '한국어로 쓰고 「답하기」를 눌러요.')
     : phase === 'tour' ? '둘러보는 중이에요. 점을 누르면 이름이 나와요.'
     : phase === 'note' ? '읽고 「다음」을 눌러요.'
     : '한 장면을 마쳤어요.';
@@ -524,16 +565,39 @@ function renderPlay(state) {
   if (phase === 'say') {
     setText('say-prompt', say.prompt);
     setText('example-label', say.kind === 'fork' ? '이 선택의 말' : '예시 문장');
-    const list = say.kind === 'report' ? say.items.map((item) => ({ id: `item:${item.id}`, label: item.text, pressed: item.selected })) : say.options.map((item) => ({ id: `opt:${item.id}`, label: item.label, pressed: say.chosen === item.id }));
-    renderList($('options'), JSON.stringify([say.id, list]), () => list.map((item) => button(item.label, () => void action(item.id), { pressed: item.pressed, className: say.kind === 'report' ? 'check' : 'option' })));
+    const list = say.kind === 'report' ? say.items.map((item) => ({ id: `item:${item.id}`, label: item.text, pressed: item.selected })) : say.options.map((item) => ({ id: `${say.kind === 'work' ? 'work' : 'opt'}:${item.id}`, label: item.label, pressed: say.chosen === item.id, disabled: item.tried }));
+    // The tool card: a work screen, paper, phone or chat drawn from the scene table's words.
+    const tool = say.kind === 'work' ? say.tool : null;
+    $('tool-card').hidden = !tool;
+    if (tool) {
+      $('tool-card').dataset.kind = tool.kind;
+      setText('tool-kind', TOOL_NAMES[tool.kind] || ''); setText('tool-title', tool.title);
+      renderList($('tool-rows'), JSON.stringify([say.id, tool.rows || [], hintLanguage]), () => (tool.rows || []).flatMap(([label, value]) => [Object.assign(document.createElement('dt'), { textContent: label }), localNode('dd', value)]));
+      $('tool-rows').hidden = !(tool.rows || []).length;
+      renderList($('tool-lines'), JSON.stringify([say.id, tool.lines || [], hintLanguage]), () => (tool.lines || []).map((row) => localNode('p', row)));
+      $('tool-lines').hidden = !(tool.lines || []).length;
+      setText('tool-note', tool.note || ''); $('tool-note').hidden = !tool.note;
+    }
+    // in: a guest speaking the learner's language. out: the Korean words to say on to that guest.
+    const out = outward(say), foreign = say.kind === 'relay' ? (out ? { code: 'ko', text: say.meaning } : foreignOf(say.foreign)) : null;
+    $('foreign').hidden = !foreign;
+    $('foreign').classList.toggle('out', out);
+    if (foreign) {
+      setWho('foreign-who', say.foreign, out ? `님께 전할 말${say.channel === 'phone' ? ' · 전화' : ''}` : ` · ${say.foreign.role}${say.channel === 'phone' ? ' · 전화' : ''}`);
+      setText('foreign-text', foreign.text); $('foreign-text').lang = foreign.code;
+    }
+    renderList($('options'), JSON.stringify([say.id, list]), () => list.map((item) => button(item.label, () => void action(item.id), { pressed: item.pressed, disabled: item.disabled, className: say.kind === 'report' ? 'check' : 'option' })));
     $('options').hidden = list.length === 0;
-    $('example').hidden = !say.exampleOpen || !say.example; setText('example-text', say.example || '');
+    const example = exampleOf(say);
+    $('example').hidden = !say.exampleOpen || !example; setText('example-text', example?.text || '');
+    if (example?.code) $('example-text').lang = example.code; else $('example-text').removeAttribute('lang');
     const chosen = say.options.find((item) => item.id === say.chosen);
     const selectedHints = say.kind === 'report' ? say.items.filter((item) => item.selected).map((item) => hintOf(item.hint)) : [];
     const helpHint = hintShown ? [hintOf(say.hint), hintOf(chosen?.hint), ...selectedHints].filter(Boolean).join('\n') : '';
     $('help-hint').hidden = !helpHint; setText('help-hint', helpHint);
     $('answer-area').hidden = !say.ready;
     $('answer').hidden = mode !== 'text'; $('answer-label').hidden = mode !== 'text'; $('answer').disabled = state.paused || busy;
+    setText('answer-label', out ? '내 나라 말로 쓰기' : '내 말'); $('answer').placeholder = out ? '어떤 글자로 써도 돼요.' : '한국어로 써 주세요.';
     renderHeard();
   }
   // tour
@@ -562,26 +626,28 @@ function renderPlay(state) {
   const primary = $('primary');
   const primaryLabel = state.paused ? '이어서 하기'
     : phase === 'line' ? '다음'
-    : phase === 'say' ? (mode === 'voice' ? (micActive ? '말 끝내기' : transcribing ? '글로 바꾸는 중' : '말하기') : '답하기')
+    : phase === 'say' ? (mode === 'voice' ? (outward(say) ? '말로 전했어요' : micActive ? '말 끝내기' : transcribing ? '글로 바꾸는 중' : '말하기') : '답하기')
     : phase === 'tour' ? (tour.openPoint?.note ? '닫기' : '둘러보기 마치기')
     : phase === 'note' ? '다음'
     : nextUp ? `다음 장면 · ${nextUp.title}` : '맺음 보기';
   setText('primary', primaryLabel);
-  primary.hidden = phase === 'line' && !lineDone && !state.paused;
-  primary.disabled = busy && !state.paused || phase === 'say' && !state.paused && (!say.ready || mode === 'text' && !session.canSubmit('text', $('answer').value));
+  // A tool step ends on its options; it has no main button of its own.
+  primary.hidden = phase === 'line' && !lineDone && !state.paused || phase === 'say' && say.kind === 'work' && !state.paused;
+  primary.disabled = busy && !state.paused || phase === 'say' && !state.paused && (!say.ready || mode === 'text' && !session.canSubmit(outward(say) ? 'own-text' : 'text', $('answer').value));
   const hintAvailable = hintAvailableFor(state);
   $('hint-button').hidden = !hintAvailable || hintShown;
   // 「다시 듣기」 only when there is a film to hear again; with photographs and captions there is nothing to replay.
   $('replay').hidden = state.paused || !['line', 'say'].includes(phase) || !state.line || state.line.action || micActive || !canPlay(state.line.clip);
-  $('example-button').hidden = state.paused || phase !== 'say' || !say.example || say.exampleOpen;
+  $('example-button').hidden = state.paused || phase !== 'say' || !exampleOf(say) || say.exampleOpen;
   setText('example-button', say?.kind === 'fork' ? '이 선택의 말 보기' : '예시 문장 보기');
   $('use-example').hidden = state.paused || phase !== 'say' || !say.ready || micActive || !(say.exampleOpen || say.kind === 'report');
-  setText('use-example', say?.kind === 'report' ? '말하지 않고 보고하기' : say?.kind === 'fork' ? '이 말 그대로 답하기' : '예시 문장으로 답하기');
+  setText('use-example', useExampleLabel(say));
   $('skip-unheard').hidden = state.paused || phase !== 'say' || !unheard || micActive;
   $('finish-here').hidden = phase !== 'scene-end' || !nextUp;
   $('pause').hidden = state.paused || phase === 'scene-end' || moving;
   setText('leave', phase === 'scene-end' ? '시작 화면으로' : '그만하기');
 }
+function useExampleLabel(say) { return say?.kind === 'report' ? '말하지 않고 보고하기' : say?.kind === 'fork' ? '이 말 그대로 답하기' : outward(say) ? '예시를 보고 전했어요' : '예시 문장으로 답하기'; }
 /** Whether this step has a hint in the chosen language: the page and the desk card show the button on the same rule. */
 function hintAvailableFor(state) {
   if (!hintLanguage || state.paused) return false;
@@ -651,6 +717,11 @@ function field(labelText, input, helpText) {
   if (helpText) wrap.append(Object.assign(document.createElement('p'), { className: 'small', textContent: helpText }));
   return wrap;
 }
+/** A closing item's hint in the chosen language, always shown: the closing is what the learner decides on. */
+function closingHint(hint) {
+  const text = hintOf(hint);
+  return text ? [Object.assign(document.createElement('p'), { className: 'hint closing-hint', textContent: text, lang: hintLanguage })] : [];
+}
 function fillClosing() {
   const closing = job.closing, data = session.serialize();
   setText('closing-lead', closing.lead);
@@ -663,7 +734,7 @@ function fillClosing() {
     const mine = document.createElement('div'); mine.className = 'fork-mine';
     mine.append(Object.assign(document.createElement('span'), { textContent: '오늘 나는' }), Object.assign(document.createElement('p'), { textContent: fork.mine[data.forks[fork.id]] }));
     const theirs = document.createElement('div'); theirs.className = 'fork-principle';
-    theirs.append(Object.assign(document.createElement('span'), { textContent: withTopic(job.role) }), Object.assign(document.createElement('strong'), { textContent: principle.title }), Object.assign(document.createElement('p'), { textContent: principle.body }));
+    theirs.append(Object.assign(document.createElement('span'), { textContent: withTopic(job.role) }), Object.assign(document.createElement('strong'), { textContent: principle.title }), Object.assign(document.createElement('p'), { textContent: principle.body }), ...closingHint(principle.hint));
     // One sentence the occupation would say here, shown whatever was chosen.
     const model = document.createElement('p'); model.className = 'fork-say';
     model.append(Object.assign(document.createElement('span'), { textContent: '이렇게 말해요' }), document.createTextNode(fork.say));
@@ -676,6 +747,7 @@ function fillClosing() {
   setText('conditions-lead', closing.conditions.lead);
   $('conditions').replaceChildren(...closing.conditions.items.flatMap((item) => {
     const term = Object.assign(document.createElement('dt'), { textContent: item.title }), detail = Object.assign(document.createElement('dd'), { textContent: item.body });
+    detail.append(...closingHint(item.hint));
     if (item.source) detail.append(Object.assign(document.createElement('small'), { textContent: item.source }));
     return [term, detail];
   }));
@@ -686,14 +758,16 @@ function fillClosing() {
   for (const item of reflection.decisions) {
     const label = document.createElement('label'), input = Object.assign(document.createElement('input'), { type: 'radio', name: 'decision', value: item.id, checked: closingForm.decision === item.id });
     input.addEventListener('change', () => { closingForm.decision = item.id; closingChanged(); });
-    label.append(input, Object.assign(document.createElement('span'), { textContent: item.label })); decisions.append(label);
+    label.append(input, Object.assign(document.createElement('span'), { textContent: item.label }), ...closingHint(item.hint)); decisions.append(label);
   }
   setText('hard-label', reflection.hardLabel); setText('hard-help', reflection.hardHelp || ''); $('hard').value = closingForm.hard || '';
   setText('ladder-lead', closing.ladder.lead);
   $('ladder').replaceChildren(...closing.ladder.items.map((item) => {
     const input = Object.assign(document.createElement('input'), { type: 'text', id: `ladder-${item.id}`, maxLength: RECORD_LIMITS.ladder, value: closingForm.ladder[item.id] || '', placeholder: item.placeholder || '' });
     input.addEventListener('input', () => { closingForm.ladder[item.id] = input.value; closingChanged(); });
-    return field(item.label, input);
+    const wrap = field(item.label, input);
+    wrap.append(...closingHint(item.hint));
+    return wrap;
   }));
   $('name').value = closingForm.name || '';
   const next = closing.next, link = $('next-link');
@@ -786,8 +860,10 @@ function hudView(state) {
       else main('exit', 'VR에서 나가기', { primary: true });
     }
   } else if (state.phase === 'line') {
-    view.status = state.line.action ? '지금 일어난 일' : `${state.line.name} · ${state.line.role}`; view.dot = '#3D6BC9';
-    view.title = state.line.text; view.body = hintShown ? hintOf(state.line.hint) : '';
+    const channel = CHANNEL_NAMES[state.line.channel] ? ` · ${CHANNEL_NAMES[state.line.channel]}` : '';
+    view.status = state.line.action ? '지금 일어난 일' : `${nameOf(state.line).text} · ${state.line.role}${channel}`; view.dot = '#3D6BC9';
+    view.title = state.line.foreign ? localOf(state.line.foreign).text : state.line.text;
+    view.body = [state.line.foreign ? `뜻: ${state.line.text}` : '', hintShown ? hintOf(state.line.hint) : ''].filter(Boolean).join('\n');
     if (lineDone) main('next', '다음', { primary: true });
   } else if (state.phase === 'say') {
     const say = state.say, chosen = say.options.find((item) => item.id === say.chosen);
@@ -795,20 +871,30 @@ function hudView(state) {
     const canSpeak = mode === 'voice' && !!voice?.ready;
     view.dot = micActive ? '#E5483B' : '#4E8A3A'; view.status = micActive ? '듣고 있어요 · 말을 마치면 넘어가요' : '내 차례';
     view.title = say.prompt;
+    if (say.kind === 'work') {
+      view.status = `일의 도구 · ${TOOL_NAMES[say.tool.kind] || ''}`; view.dot = '#3D6BC9';
+      view.body = [`${say.tool.title}`, toolText(say.tool), hintShown ? hintOf(say.hint) : ''].filter(Boolean).join('\n');
+      for (const option of say.options) main(`work:${option.id}`, option.label, { enabled: !option.tried });
+      return finishHud(view, state, system);
+    }
     const selectedHints = say.kind === 'report' ? say.items.filter((item) => item.selected).map((item) => hintOf(item.hint)) : [];
     const hint = hintShown ? [hintOf(say.hint), hintOf(chosen?.hint), ...selectedHints].filter(Boolean).join(' ') : '';
-    const example = say.exampleOpen && say.example ? `${say.kind === 'fork' ? '이 선택의 말' : '예시'}: ${say.example}` : '';
-    const lead = micNote && !micActive ? micNote : heard ? `들린 말: ${heard}` : !canSpeak && (say.kind !== 'fork' || say.chosen) ? '이 보기에서는 말로만 답해요. 글로 답하려면 화면으로 돌아가요.' : chosen && !example ? `고른 것: ${chosen.label}` : '';
-    view.body = [lead, example, hint].filter(Boolean).join('\n');
+    const out = outward(say), shown = exampleOf(say);
+    const example = say.exampleOpen && shown ? `${say.kind === 'fork' ? '이 선택의 말' : '예시'}: ${shown.text}` : '';
+    const lead = micNote && !micActive ? micNote : heard ? `들린 말: ${heard}` : !canSpeak && !out && (say.kind !== 'fork' || say.chosen) ? '이 보기에서는 말로만 답해요. 글로 답하려면 화면으로 돌아가요.' : chosen && !example ? `고른 것: ${chosen.label}` : '';
+    const foreignLine = out ? `${nameOf(say.foreign).text}님께 전할 말: ${say.meaning}` : say.kind === 'relay' ? `${nameOf(say.foreign).text}: ${foreignOf(say.foreign).text}` : '';
+    view.body = [foreignLine, lead, example, hint].filter(Boolean).join('\n');
     if (say.kind === 'fork' && !say.chosen) for (const option of say.options) main(`opt:${option.id}`, option.label);
     else {
       if (say.kind === 'report') for (const item of say.items) main(`item:${item.id}`, item.text, { pressed: item.selected });
-      if (canSpeak) main('mic', micActive ? '말 끝내기' : '말하기', { primary: true, enabled: say.ready && !busy });
+      // Said on aloud in the learner's own language: no recogniser is needed, so the desk card always offers it.
+      if (out) main('own-voice', '말로 전했어요', { primary: true, enabled: say.ready && !busy });
+      else if (canSpeak) main('mic', micActive ? '말 끝내기' : '말하기', { primary: true, enabled: say.ready && !busy });
       if (unheard && !micActive) main('skip-unheard', '이대로 넘어가기');
-      if (say.example && !say.exampleOpen) main('example', say.kind === 'fork' ? '이 선택의 말 보기' : '예시 문장 보기');
+      if (shown && !say.exampleOpen) main('example', say.kind === 'fork' ? '이 선택의 말 보기' : '예시 문장 보기');
       // The same rule as the page: a report can be sent without speaking, an example once it is open.
-      if (say.ready && !micActive && (say.exampleOpen || say.kind === 'report')) main('use-example', say.kind === 'report' ? '말하지 않고 보고하기' : say.kind === 'fork' ? '이 말 그대로 답하기' : '예시 문장으로 답하기', { primary: !canSpeak });
-      if (!canSpeak) main('exit', vr?.previewing ? '화면으로 돌아가기' : 'VR에서 나가기');
+      if (say.ready && !micActive && (say.exampleOpen || say.kind === 'report')) main('use-example', useExampleLabel(say), { primary: !canSpeak && !out });
+      if (!canSpeak && !out) main('exit', vr?.previewing ? '화면으로 돌아가기' : 'VR에서 나가기');
     }
   } else if (state.phase === 'tour') {
     const tour = state.tour, point = tour.openPoint;
@@ -834,6 +920,10 @@ function hudView(state) {
       if (upNext) main('next', `다음 장면 · ${upNext.title}`, { primary: true }); else main('exit', 'VR에서 나가기', { primary: true });
     }
   }
+  return finishHud(view, state, system);
+}
+/** The parts every desk card shares: the place note and the system row. */
+function finishHud(view, state, system) {
   // While the view is dark for a place change, the card says what it is waiting for.
   if (placeNote) view.status = placeNote;
   const live = ['line', 'say', 'tour', 'note'].includes(state.phase) && !state.paused;
@@ -888,7 +978,7 @@ $('share-record').hidden = typeof navigator.share !== 'function' || typeof navig
 $('primary').addEventListener('click', () => {
   const state = session.snapshot();
   if (state.paused) return void action('resume');
-  if (state.phase === 'say') return void action(mode === 'voice' ? 'mic' : 'answer');
+  if (state.phase === 'say') return void action(mode === 'voice' ? (outward(state.say) ? 'own-voice' : 'mic') : 'answer');
   if (state.phase === 'tour' && state.tour.openPoint?.note) return void action('close-point');
   void action('next');
 });
@@ -919,7 +1009,7 @@ const timer = setInterval(() => {
   if (state.paused) return;
   // The line's speech ends before its clip does: open the next step at the reviewed cue.
   const playing = film?.current;
-  if (state.phase === 'line' && !lineDone && !replaying && playing?.id === state.line.clip) {
+  if (state.phase === 'line' && !lineDone && !replaying && playing && playing.id === state.line.clip) {
     const cue = clipOf(playing.id)?.answerStartSeconds;
     if (Number.isFinite(cue) && playing.time >= cue) finishLine();
   }

@@ -25,7 +25,7 @@
         <div id="film-stage" aria-hidden="true"></div>
         <div id="points" class="points"></div>
         <div class="screen-top"><span class="chip phase"><i aria-hidden="true"></i><span id="scene-chip">시작 전</span></span><span id="place-chip" class="chip place"></span></div>
-        <div class="caption" id="caption" hidden><p class="caption-who" id="caption-who"></p><p class="caption-text" id="caption-text"></p><p class="caption-hint" id="caption-hint" hidden></p></div>
+        <div class="caption" id="caption" hidden><p class="caption-who" id="caption-who"></p><p class="caption-text" id="caption-text"></p><p class="caption-meaning" id="caption-meaning" hidden></p><p class="caption-hint" id="caption-hint" hidden></p></div>
         <div id="pause-overlay" class="overlay" hidden><p>일시 정지</p><span>「이어서 하기」를 누르면 다시 이어져요.</span></div>
         <div id="veil" class="veil" aria-hidden="true"><p id="veil-caption"></p></div>
       </div>
@@ -53,7 +53,9 @@
 
         <div id="play" class="panel" hidden>
           <div id="say-panel" hidden>
+            <div id="foreign" class="foreign" hidden><p id="foreign-who" class="foreign-who"></p><p id="foreign-text" class="foreign-text"></p></div>
             <p class="prompt" id="say-prompt"></p>
+            <section id="tool-card" class="tool-card" aria-labelledby="tool-title" hidden><p id="tool-kind" class="tool-kind"></p><h3 id="tool-title" class="tool-title"></h3><dl id="tool-rows" class="tool-rows"></dl><div id="tool-lines" class="tool-lines"></div><p id="tool-note" class="tool-note" hidden></p></section>
             <div id="options" class="options" role="group" aria-label="고를 수 있는 것"></div>
             <div id="example" class="example" hidden><span class="example-label" id="example-label">예시 문장</span><p id="example-text"></p></div>
             <p id="help-hint" class="hint" hidden></p>

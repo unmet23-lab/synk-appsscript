@@ -2,7 +2,9 @@
  * validateJob() returns every problem it finds so a broken table is fixed in one pass, and the
  * page refuses to open a job that fails. No network, no DOM. */
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const STEP_TYPES = new Set(['line', 'say', 'tour', 'note', 'move', 'report']);
+const STEP_TYPES = new Set(['line', 'say', 'tour', 'note', 'move', 'report', 'work', 'relay']);
+// The tools a work step can show (상향판 기준 1): a work screen, a paper, a phone, a chat window.
+export const TOOL_KINDS = Object.freeze(['screen', 'paper', 'phone', 'chat']);
 // Words a pre-registration service must not put on screen or on the record (design 4-10).
 // A job that needs one as a workplace term lists the whole term in job.allowedTerms.
 export const FORBIDDEN_RECORD_WORDS = Object.freeze(['추천', '적합', '합격', '검증', '보장', '점수', '등급']);
@@ -34,9 +36,17 @@ function check(job, manifest, fail) {
     if (!plain(hint)) { fail(where, '힌트가 없어요.'); return; }
     for (const code of languages) if (!text(hint[code])) fail(where, `힌트 언어 ${code}가 비었어요.`);
   };
+  // Words written in every hint language and English: a foreign guest's words, their name, a tool
+  // cell in their language. The page shows the learner's hint language, or English if none was chosen.
+  const everyLanguage = [...new Set([...languages, 'en'])];
+  const localized = (value) => plain(value) && everyLanguage.every((code) => text(value[code]));
+  const cell = (value) => text(value) || localized(value);
   const cast = plain(job.cast) ? job.cast : {};
   if (!plain(job.cast) || !Object.keys(cast).length) fail('cast', '인물이 없어요.');
-  for (const [id, person] of Object.entries(cast)) if (!ID.test(id) || !text(person?.name) || !text(person?.role)) fail(`cast.${id}`, '이름과 역할이 필요해요.');
+  for (const [id, person] of Object.entries(cast)) {
+    if (!ID.test(id) || !text(person?.name) || !text(person?.role)) fail(`cast.${id}`, '이름과 역할이 필요해요.');
+    if (person?.names !== undefined && !localized(person.names)) fail(`cast.${id}`, `names에는 ${everyLanguage.join(', ')}를 모두 적어요.`);
+  }
   const places = plain(job.places) ? job.places : {};
   if (!plain(job.places) || !Object.keys(places).length) fail('places', '자리가 없어요.');
   const notes = plain(job.notes) ? job.notes : {};
@@ -76,7 +86,9 @@ function check(job, manifest, fail) {
     const clip = clips?.get(id);
     if (clip && clip.kind !== kind) fail(where, `영상 ${id}의 종류가 ${kind}이 아니에요.`);
   };
-  const forkOptions = new Map(), forkScene = new Map();
+  // forkOptions: value forks the closing lists. workOptions: tool choices, usable in `when` but not in the closing.
+  const forkOptions = new Map(), forkScene = new Map(), workOptions = new Map();
+  const optionsOf = (fork) => forkOptions.get(fork) || workOptions.get(fork);
   const sayIds = new Set();
   const scenes = list(job.scenes);
   if (!scenes.length) fail('scenes', '장면이 없어요.');
@@ -87,7 +99,7 @@ function check(job, manifest, fail) {
     if (condition === undefined) return;
     if (!plain(condition) || !Object.keys(condition).length) { fail(where, 'when은 갈림길 id와 보기 id의 짝이에요.'); return; }
     for (const [fork, wanted] of Object.entries(condition)) {
-      const options = forkOptions.get(fork), values = Array.isArray(wanted) ? wanted : [wanted];
+      const options = optionsOf(fork), values = Array.isArray(wanted) ? wanted : [wanted];
       if (!options) { fail(where, `when의 갈림길 ${fork}는 이 걸음보다 앞에 없어요.`); continue; }
       if (!values.length || values.some((value) => !options.has(value))) fail(where, `when의 보기 ${fork}=${values.join('|')}이 없어요.`);
       if (forkScene.get(fork) !== visiting) needed.add(forkScene.get(fork));
@@ -109,8 +121,14 @@ function check(job, manifest, fail) {
       if (!text(step.text)) fail(where, '대사가 비었어요.');
       // action: what happens in front of the learner, not something said. It has no 「다시 듣기」.
       if (step.action !== undefined && typeof step.action !== 'boolean') fail(where, 'action은 true나 false예요.');
-      clipCheck(where, step.clip, 'speaking');
-      hinted(where, step.hint);
+      // channel: phone shows the line as a call, chat as a message window. A chat line has no voice.
+      if (step.channel !== undefined && !['phone', 'chat'].includes(step.channel)) fail(where, 'channel은 phone이나 chat이에요.');
+      // A line without a clip runs on the photograph and caption.
+      if (step.channel === 'chat' && step.clip !== undefined) fail(where, '채팅 줄에는 영상이 없어요.');
+      else if (step.clip !== undefined) clipCheck(where, step.clip, 'speaking');
+      // foreign: the person speaks the learner's language. The caption shows it, and text is its Korean meaning.
+      if (step.foreign !== undefined && !localized(step.foreign)) fail(where, `foreign에는 ${everyLanguage.join(', ')}를 모두 적어요.`);
+      if (step.foreign === undefined || step.hint !== undefined) hinted(where, step.hint);
       if (step.place !== undefined && !Object.hasOwn(places, step.place)) fail(where, `자리 ${step.place}가 없어요.`);
     } else if (step.type === 'move') {
       if (!Object.hasOwn(places, step.place)) fail(where, `자리 ${step.place}가 없어요.`);
@@ -146,6 +164,54 @@ function check(job, manifest, fail) {
         }
         forkOptions.set(step.id, ids); forkScene.set(step.id, visiting);
       }
+    } else if (step.type === 'work') {
+      // A tool of the job (상향판 기준 1): the learner reads a screen or paper and picks. Facts, not values.
+      if (!ID.test(step.id || '') || sayIds.has(step.id)) fail(where, '도구 걸음 id가 잘못됐거나 겹쳐요.');
+      sayIds.add(step.id);
+      if (!text(step.prompt) || !text(step.record)) fail(where, '물음과 차례 이름(record)이 필요해요.');
+      hinted(where, step.hint);
+      const tool = step.tool;
+      if (!plain(tool) || !TOOL_KINDS.includes(tool.kind) || !text(tool.title)) fail(where, `tool은 kind(${TOOL_KINDS.join(', ')})와 title이 필요해요.`);
+      else {
+        const rows = tool.rows, lines = tool.lines;
+        if (rows === undefined && lines === undefined) fail(where, 'tool에는 rows나 lines가 필요해요.');
+        // A value can be one text or the same thing in every language (a guest's name on a booking).
+        if (rows !== undefined && (!Array.isArray(rows) || !rows.length || rows.some((row) => !Array.isArray(row) || row.length !== 2 || !text(row[0]) || !cell(row[1])))) fail(where, `tool.rows는 [이름, 값]의 줄이에요. 값은 글이나 ${everyLanguage.join(', ')}를 모두 적은 객체예요.`);
+        if (lines !== undefined && (!Array.isArray(lines) || !lines.length || !lines.every(cell))) fail(where, `tool.lines는 글이나 ${everyLanguage.join(', ')}를 모두 적은 객체의 줄이에요.`);
+        if (tool.note !== undefined && !text(tool.note)) fail(where, 'tool.note가 비었어요.');
+      }
+      const options = list(step.options);
+      if (!Array.isArray(step.options) || options.length < 2 || options.length > 4) fail(where, '도구 걸음의 보기는 2~4개예요.');
+      const ids = new Set();
+      for (const option of options) {
+        const at = `${where}.options.${option?.id}`;
+        if (!ID.test(option?.id || '') || ids.has(option.id)) fail(at, '보기 id가 잘못됐거나 겹쳐요.');
+        ids.add(option?.id);
+        if (!text(option?.label)) fail(at, 'label이 비었어요.');
+        hinted(at, option?.hint);
+        // retry: after its answer the same tool comes back, and the learner picks again.
+        if (option?.retry !== undefined && typeof option.retry !== 'boolean') fail(at, 'retry는 true나 false예요.');
+        branch(`${at}.then`, option?.then);
+      }
+      if (options.length && options.every((option) => option?.retry === true)) fail(where, 'retry가 없는 보기가 하나 이상 있어야 해요.');
+      workOptions.set(step.id, ids); forkScene.set(step.id, visiting);
+    } else if (step.type === 'relay') {
+      // The learner's own language at work (상향판 기준 2): a guest's words in the learner's language, said on in Korean.
+      if (!ID.test(step.id || '') || sayIds.has(step.id)) fail(where, '잇기 걸음 id가 잘못됐거나 겹쳐요.');
+      sayIds.add(step.id);
+      if (!Object.hasOwn(cast, step.who)) fail(where, `인물 ${step.who}가 없어요.`);
+      // in (default): the guest's words, said on in Korean. out: Korean words (meaning), said on to
+      // the guest in the learner's own language; foreign is then the example, and nothing is transcribed.
+      if (step.direction !== undefined && !['in', 'out'].includes(step.direction)) fail(where, 'direction은 in이나 out이에요.');
+      const out = step.direction === 'out';
+      for (const key of out ? ['prompt', 'meaning', 'record'] : ['prompt', 'example', 'meaning', 'record']) if (!text(step[key])) fail(where, `${key}가 비었어요.`);
+      if (out && step.example !== undefined) fail(where, 'out의 예시는 foreign에 적어요.');
+      if (step.channel !== undefined && step.channel !== 'phone') fail(where, 'relay의 channel은 phone만 써요.');
+      // Every hint language, and English for a learner who chose none.
+      if (!plain(step.foreign)) fail(where, 'foreign(외국인의 말)이 없어요.');
+      else for (const code of everyLanguage) if (!text(step.foreign[code])) fail(where, `foreign의 ${code}가 비었어요.`);
+      hinted(where, step.hint);
+      if (step.listen !== undefined) clipCheck(where, step.listen, 'listening');
     } else if (step.type === 'report') {
       if (!ID.test(step.id || '') || sayIds.has(step.id)) fail(where, '보고 id가 잘못됐거나 겹쳐요.');
       sayIds.add(step.id);
@@ -167,9 +233,9 @@ function check(job, manifest, fail) {
         if (group.length < 2) continue;
         const at = `${where}.items.${id}`;
         const forks = new Set(group.flatMap((item) => (plain(item.when) ? Object.keys(item.when) : ['']))), fork = [...forks][0];
-        if (forks.size !== 1 || !forkOptions.has(fork) || group.some((item) => Object.keys(item.when).length !== 1)) { fail(at, '같은 id의 항목들은 모두 같은 갈림길 하나를 when으로 가리켜요.'); continue; }
+        if (forks.size !== 1 || !optionsOf(fork) || group.some((item) => Object.keys(item.when).length !== 1)) { fail(at, '같은 id의 항목들은 모두 같은 갈림길 하나를 when으로 가리켜요.'); continue; }
         const covered = group.flatMap((item) => (Array.isArray(item.when[fork]) ? item.when[fork] : [item.when[fork]]));
-        if (covered.length !== forkOptions.get(fork).size || new Set(covered).size !== covered.length || covered.some((value) => !forkOptions.get(fork).has(value))) fail(at, `갈림길 ${fork}의 보기마다 꼭 한 항목이 맞아야 해요.`);
+        if (covered.length !== optionsOf(fork).size || new Set(covered).size !== covered.length || covered.some((value) => !optionsOf(fork).has(value))) fail(at, `갈림길 ${fork}의 보기마다 꼭 한 항목이 맞아야 해요.`);
       }
       if (!text(step.record?.included) || !text(step.record?.omitted)) fail(where, '보고 기록 문구 둘이 필요해요.');
       branch(`${where}.then.included`, step.then?.included);
@@ -210,6 +276,7 @@ function check(job, manifest, fail) {
     const principles = new Set();
     for (const principle of list(closing.principles)) {
       if (!ID.test(principle?.id || '') || !text(principle?.title) || !text(principle?.body)) fail(`closing.principles.${principle?.id}`, 'id, 제목, 설명이 필요해요.');
+      if (principle?.hint !== undefined) hinted(`closing.principles.${principle?.id}`, principle.hint);
       principles.add(principle?.id);
     }
     if (!principles.size) fail('closing.principles', '원칙이 없어요.');
@@ -228,11 +295,15 @@ function check(job, manifest, fail) {
     for (const id of forkOptions.keys()) if (!listed.has(id)) fail(`closing.forks.${id}`, '이 갈림길이 맺음에 없어요.');
     const conditions = closing.conditions;
     if (!text(conditions?.lead) || !Array.isArray(conditions?.items) || !conditions.items.length || conditions.items.some((item) => !text(item?.title) || !text(item?.body))) fail('closing.conditions', '실제 조건의 첫 글과 항목이 필요해요.');
+    // The closing is what a learner decides on: each item may carry a hint, always shown in the chosen language.
+    list(conditions?.items).forEach((item, index) => { if (item?.hint !== undefined) hinted(`closing.conditions.items[${index}]`, item.hint); });
     const reflection = closing.reflection;
     const decisions = list(reflection?.decisions);
     if (!text(reflection?.hardLabel) || !text(reflection?.decisionLabel) || decisions.length !== 3 || decisions.some((item) => !ID.test(item?.id || '') || !text(item?.label))) fail('closing.reflection', '소감 물음과 세 가지 답이 필요해요.');
+    for (const item of decisions) if (item?.hint !== undefined) hinted(`closing.reflection.decisions.${item?.id}`, item.hint);
     const ladder = closing.ladder;
     if (!text(ladder?.lead) || !Array.isArray(ladder?.items) || !ladder.items.length || ladder.items.some((item) => !ID.test(item?.id || '') || !text(item?.label))) fail('closing.ladder', '준비 사다리 항목이 필요해요.');
+    for (const item of list(ladder?.items)) if (item?.hint !== undefined) hinted(`closing.ladder.items.${item?.id}`, item.hint);
     if (closing.next !== undefined && (!text(closing.next?.label) || !text(closing.next?.href) || closing.next.href !== closing.next.href.trim() || /^[a-z]+:|^\/\//i.test(closing.next.href))) fail('closing.next', '다음 칸은 같은 사이트 안의 상대 주소여야 해요.');
   }
   // Nothing a learner reads may sound like a grade or a recommendation.
@@ -265,7 +336,7 @@ export function jobClipIds(job) {
   const add = (id) => { if (typeof id === 'string' && !ids.includes(id)) ids.push(id); };
   const walk = (steps) => { for (const step of list(steps)) {
     if (step?.type === 'line') add(step.clip);
-    if (step?.type === 'say' || step?.type === 'report') add(step.listen);
+    if (step?.type === 'say' || step?.type === 'report' || step?.type === 'relay') add(step.listen);
     for (const option of list(step?.options)) walk(option?.then);
     if (step?.type === 'report') { walk(step.then?.included); walk(step.then?.omitted); }
   } };

@@ -4,7 +4,7 @@
  * SYNK may not recommend a person to an employer (design 4-4, 4-10). It states only what the
  * page can confirm: which option was pressed and how the turn was answered — never what was
  * said. The learner types every free-text field and hands the sheet to an employer themselves. */
-import { sceneSayIds } from './session.mjs';
+import { sceneSayIds, sceneWorkIds } from './session.mjs';
 
 export const RECORD_NOTICE = Object.freeze([
   '이 기록은 체험에서 일어난 일을 적은 것입니다. 한국어 실력이나 일하는 기술을 재지 않았고, 채용 여부를 판단하는 자료가 아닙니다.',
@@ -14,6 +14,8 @@ export const RECORD_LIMITS = Object.freeze({ name: 40, reason: 80, hard: 300, la
 const VIEW = Object.freeze({ screen: '화면', quest: 'Quest' });
 const SPEAK = Object.freeze({ voice: '음성', text: '글', mixed: '음성과 글' });
 const PRODUCED = Object.freeze({ voice: '말로 답함', text: '글로 답함', example: '예시 문장을 고름' });
+// A turn said on to a guest in the learner's own language (relay out). It is not Korean, so it never joins the Korean tallies.
+const OWN = Object.freeze({ 'own-voice': '모국어로 말함', 'own-text': '모국어로 씀', example: '예시를 보고 전함' });
 const trim = (value, limit) => Array.from(String(value ?? '').replace(/\s+/gu, ' ').trim()).slice(0, limit).join('');
 const ymd = (date, separator) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join(separator);
 
@@ -30,14 +32,17 @@ export function recordSerial(date, randomBytes) {
 export function buildRecord(job, data, { name = '', reasons = {}, hard = '', decision = '', ladder = {}, view = 'screen', date = new Date(), serial, films = true } = {}) {
   if (!serial) throw new TypeError('기록 번호가 필요해요.');
   const done = job.scenes.filter((scene) => data.scenes?.[scene.id]?.done === true);
+  const steps = new Map();
+  for (const scene of job.scenes) for (const step of scene.steps) if (['say', 'report', 'relay', 'work'].includes(step.type)) steps.set(step.id, step);
+  const outward = (id) => steps.get(id)?.type === 'relay' && steps.get(id).direction === 'out';
   const asked = done.flatMap((scene) => sceneSayIds(scene));
-  const entries = asked.map((id) => ({ id, entry: data.says?.[id] })).filter(({ entry }) => entry);
+  const answered = asked.map((id) => ({ id, entry: data.says?.[id] })).filter(({ entry }) => entry);
+  const entries = answered.filter(({ id }) => !outward(id));
+  const own = answered.filter(({ id, entry }) => outward(id) && OWN[entry.produced]).map(({ id, entry }) => `${steps.get(id).record} · ${OWN[entry.produced]}`);
   const count = (mode) => entries.filter(({ entry }) => entry.produced === mode).length;
   const direct = entries.filter(({ entry }) => entry.produced === 'voice' || entry.produced === 'text');
   const modes = new Set(direct.map(({ entry }) => entry.produced));
   const activeMs = done.reduce((sum, scene) => sum + (data.scenes[scene.id].activeMs || 0), 0);
-  const steps = new Map();
-  for (const scene of job.scenes) for (const step of scene.steps) if (step.type === 'say' || step.type === 'report') steps.set(step.id, step);
   const how = (id) => PRODUCED[data.says?.[id]?.produced] || '';
   const choices = job.closing.forks.flatMap((fork) => {
     const chosen = data.forks?.[fork.id], step = steps.get(fork.id);
@@ -46,7 +51,9 @@ export function buildRecord(job, data, { name = '', reasons = {}, hard = '', dec
     const text = step.type === 'report' ? step.record[chosen] : step.options.find((option) => option.id === chosen)?.label;
     return text ? [{ scene: fork.scene, text, how: how(fork.id), reason: trim(reasons[fork.id], RECORD_LIMITS.reason) }] : [];
   });
-  const turns = entries.filter(({ id, entry }) => steps.get(id)?.type === 'say' && !steps.get(id).options && PRODUCED[entry.produced]).map(({ id }) => `${steps.get(id).record} · ${how(id)}`);
+  const turns = entries.filter(({ id, entry }) => ['say', 'relay'].includes(steps.get(id)?.type) && !steps.get(id).options && PRODUCED[entry.produced]).map(({ id }) => `${steps.get(id).record} · ${how(id)}`);
+  // Tools of the job the learner handled: what was done, never whether it was right.
+  const tools = done.flatMap((scene) => sceneWorkIds(scene)).filter((id) => data.works?.[id]).map((id) => steps.get(id).record);
   const decisionLabel = job.closing.reflection.decisions.find((item) => item.id === decision)?.label || '';
   return {
     job: { id: job.id, title: job.title, role: job.role, edition: job.edition },
@@ -56,7 +63,7 @@ export function buildRecord(job, data, { name = '', reasons = {}, hard = '', dec
     speak: modes.size === 2 ? SPEAK.mixed : modes.has('voice') ? SPEAK.voice : modes.has('text') ? SPEAK.text : '',
     completed: { scenes: done.length, of: job.scenes.length, minutes: activeMs > 0 ? Math.max(1, Math.round(activeMs / 60000)) : 0, replayedScenes: done.filter((scene) => (data.scenes[scene.id].finishes ?? 1) > 1).length },
     korean: { voice: count('voice'), text: count('text'), example: count('example'), unaided: direct.filter(({ entry }) => !entry.helped).length, replays: films ? data.counts?.replays || 0 : null, hints: data.counts?.hints || 0, turns },
-    choices,
+    choices, tools, own,
     reflection: { hard: trim(hard, RECORD_LIMITS.hard), decision: decisionLabel },
     ladder: job.closing.ladder.items.map((item) => ({ label: item.label, value: trim(ladder[item.id], RECORD_LIMITS.ladder) })).filter((item) => item.value),
     notice: [...RECORD_NOTICE, ...(job.reviewNote ? [job.reviewNote] : [])],
@@ -82,6 +89,8 @@ export function recordLines(record) {
       korean.replays === null ? `힌트 ${korean.hints}번` : `다시 듣기 ${korean.replays}번 · 힌트 ${korean.hints}번`,
       ...korean.turns,
     ].filter(Boolean) },
+    { title: '모국어로 전한 것', rows: record.own || [] },
+    { title: '일터의 도구를 다룬 것', rows: record.tools || [] },
     { title: '일터에서 고른 것', rows: record.choices.length ? record.choices.map((choice) => `${choice.scene}: ${choice.text}${choice.how ? ` · ${choice.how}` : ''}${choice.reason ? ` — 까닭: ${choice.reason}` : ''}`) : ['고른 갈림길이 아직 없습니다.'] },
     { title: '체험 뒤 본인의 답', rows: [
       record.reflection.decision ? `오늘 해 보니: ${record.reflection.decision}` : '',

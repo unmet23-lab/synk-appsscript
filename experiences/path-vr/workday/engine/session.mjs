@@ -8,11 +8,17 @@
 export const SESSION_DATA_VERSION = 2;
 export const SAY_MODES = Object.freeze(['voice', 'text', 'example', 'unheard']);
 const clone = (value) => JSON.parse(JSON.stringify(value));
-const blankData = (job) => ({ v: SESSION_DATA_VERSION, job: job.id, edition: job.edition, forks: {}, forkScene: {}, scenes: {}, says: {}, counts: { replays: 0, hints: 0, examples: 0 }, hinted: [], tour: { places: [], points: [] } });
+// works: tool steps the learner handled (id → scene). The option picked lives in forks, so `when` can use it.
+const blankData = (job) => ({ v: SESSION_DATA_VERSION, job: job.id, edition: job.edition, forks: {}, forkScene: {}, scenes: {}, says: {}, works: {}, counts: { replays: 0, hints: 0, examples: 0 }, hinted: [], tour: { places: [], points: [] } });
 
-/** Say and report steps a scene asks for, in order (fork branches never add one). */
+/** Turns a scene asks the learner to answer, in order (fork branches never add one). All are in
+ * Korean except a relay out, which is said on in the learner's own language. */
 export function sceneSayIds(scene) {
-  return (scene?.steps || []).filter((step) => step.type === 'say' || step.type === 'report').map((step) => step.id);
+  return (scene?.steps || []).filter((step) => step.type === 'say' || step.type === 'report' || step.type === 'relay').map((step) => step.id);
+}
+/** Tool steps of a scene, in order. */
+export function sceneWorkIds(scene) {
+  return (scene?.steps || []).filter((step) => step.type === 'work').map((step) => step.id);
 }
 
 function restore(job, saved) {
@@ -22,6 +28,7 @@ function restore(job, saved) {
   for (const [id, scene] of Object.entries(saved.scenes || {})) if (sceneIds.has(id)) data.scenes[id] = { done: scene?.done === true, runs: Math.max(0, Math.trunc(Number(scene?.runs) || 0)), finishes: Math.max(0, Math.trunc(Number(scene?.finishes) || (scene?.done === true ? 1 : 0))), activeMs: Math.max(0, Number(scene?.activeMs) || 0) };
   for (const [id, option] of Object.entries(saved.forks || {})) if (typeof option === 'string' && sceneIds.has(saved.forkScene?.[id])) { data.forks[id] = option; data.forkScene[id] = saved.forkScene[id]; }
   for (const [id, say] of Object.entries(saved.says || {})) if (sceneIds.has(say?.scene) && SAY_MODES.includes(say.produced)) data.says[id] = { scene: say.scene, produced: say.produced, helped: say.helped === true };
+  for (const [id, work] of Object.entries(saved.works || {})) if (sceneIds.has(work?.scene)) data.works[id] = { scene: work.scene };
   for (const key of ['replays', 'hints', 'examples']) data.counts[key] = Math.max(0, Math.trunc(Number(saved.counts?.[key]) || 0));
   data.hinted = (Array.isArray(saved.hinted) ? saved.hinted : []).filter((key) => typeof key === 'string').slice(0, 400);
   data.tour.places = (saved.tour?.places || []).filter((id) => Object.hasOwn(job.places, id));
@@ -35,6 +42,8 @@ export function createWorkdaySession(job, { saved = null } = {}) {
   let place = null, placeCaption = '', placeSerial = 0;
   let say = null, tour = null;
   const hinted = new Set(data.hinted);
+  // Work options already tried in this run of the scene (retry), by step id.
+  const tried = new Map();
   const scene = () => job.scenes[sceneIndex] || null;
   // runs: times started (a stop half way counts); finishes: times it reached its end.
   const sceneData = (id) => (data.scenes[id] ||= { done: false, runs: 0, finishes: 0, activeMs: 0 });
@@ -66,7 +75,8 @@ export function createWorkdaySession(job, { saved = null } = {}) {
     // Running a scene again replaces what it recorded; other scenes keep theirs.
     for (const [sayId, entry] of Object.entries(data.says)) if (entry.scene === id) delete data.says[sayId];
     for (const [forkId, owner] of Object.entries(data.forkScene)) if (owner === id) { delete data.forks[forkId]; delete data.forkScene[forkId]; }
-    const record = sceneData(id); record.done = false; record.runs++; record.activeMs = 0;
+    for (const [workId, work] of Object.entries(data.works)) if (work.scene === id) delete data.works[workId];
+    const record = sceneData(id); record.done = false; record.runs++; record.activeMs = 0; tried.clear();
     pending = [...job.scenes[index].steps]; lastLine = null;
     setPlace(job.scenes[index].place, job.scenes[index].title);
     next();
@@ -83,7 +93,18 @@ export function createWorkdaySession(job, { saved = null } = {}) {
   }
   function choose(optionId) {
     if (paused || phase !== 'say' || !current.options?.some((option) => option.id === optionId)) return snapshot();
-    say.chosen = optionId; return snapshot();
+    if (current.type === 'work' && tried.get(current.id)?.has(optionId)) return snapshot();
+    say.chosen = optionId;
+    // A tool step ends on the pick: the colleague answers what was picked, and the day goes on.
+    if (current.type === 'work') {
+      const owner = scene().id, option = sayOption();
+      data.forks[current.id] = optionId; data.forkScene[current.id] = owner; data.works[current.id] = { scene: owner };
+      // retry: the colleague says where to look, then the same tool comes back without the option just tried.
+      if (option.retry === true) { if (!tried.has(current.id)) tried.set(current.id, new Set()); tried.get(current.id).add(optionId); pending.unshift(...option.then, current); }
+      else pending.unshift(...option.then);
+      next();
+    }
+    return snapshot();
   }
   function toggleItem(itemId) {
     if (paused || phase !== 'say' || current.type !== 'report' || !reportItems().some((item) => item.id === itemId)) return snapshot();
@@ -91,7 +112,8 @@ export function createWorkdaySession(job, { saved = null } = {}) {
     return snapshot();
   }
   function hintKey() {
-    if (phase === 'line') return `line:${sceneIndex}:${current.clip}`;
+    // A line without a clip is told apart by its words.
+    if (phase === 'line') return `line:${sceneIndex}:${current.clip || current.text}`;
     if (phase === 'say') return `say:${current.id}`;
     if (phase === 'note') return `note:${current.note}`;
     if (phase === 'tour') return tour.openPoint ? `point:${tour.current}:${tour.openPoint}` : `tour:${sceneIndex}`;
@@ -106,7 +128,7 @@ export function createWorkdaySession(job, { saved = null } = {}) {
     return snapshot();
   }
   function openExample() {
-    if (paused || phase !== 'say' || current.type === 'report' || (current.options && !say.chosen) || say.exampleOpen) return snapshot();
+    if (paused || phase !== 'say' || current.type === 'report' || current.type === 'work' || (current.options && !say.chosen) || say.exampleOpen) return snapshot();
     say.exampleOpen = true; data.counts.examples++;
     return snapshot();
   }
@@ -117,11 +139,14 @@ export function createWorkdaySession(job, { saved = null } = {}) {
     return lastLine.clip;
   }
   function canSubmit(mode, text) {
-    if (paused || phase !== 'say') return false;
+    if (paused || phase !== 'say' || current.type === 'work') return false;
     if (current.type === 'report' ? say.selected.size === 0 : current.options ? !say.chosen : false) return false;
     // A turn is accepted on one Korean syllable (「네」) or two letters of anything else; what was said is never judged.
     const bare = String(text || '').replace(/[\s.,!?…~'"「」]/gu, '');
-    return mode === 'example' || mode === 'unheard' || (['voice', 'text'].includes(mode) && (bare.length >= 2 || /[가-힣]/u.test(bare)));
+    const enough = bare.length >= 2 || /[가-힣]/u.test(bare);
+    // Said on to a guest in the learner's own language: aloud (never transcribed) or written in any letters.
+    if (current.type === 'relay' && current.direction === 'out') return mode === 'example' || mode === 'own-voice' || (mode === 'own-text' && enough);
+    return mode === 'example' || mode === 'unheard' || (['voice', 'text'].includes(mode) && enough);
   }
   function submitSay({ mode, text = '' } = {}) {
     if (!canSubmit(mode, text)) return snapshot();
@@ -187,9 +212,10 @@ export function createWorkdaySession(job, { saved = null } = {}) {
   function addActiveMs(ms) {
     if (!paused && scene() && ['line', 'say', 'tour', 'note'].includes(phase) && Number.isFinite(ms) && ms > 0) sceneData(scene().id).activeMs += Math.min(ms, 5000);
   }
-  function reset() { data = blankData(job); hinted.clear(); phase = 'idle'; sceneIndex = -1; pending = []; current = null; lastLine = null; say = null; tour = null; paused = false; place = null; placeCaption = ''; return snapshot(); }
-  const person = (id) => ({ who: id, name: job.cast[id].name, role: job.cast[id].role });
-  const lineView = (step) => step ? { clip: step.clip, ...person(step.who), text: step.text, hint: step.hint || null, action: step.action === true } : null;
+  function reset() { data = blankData(job); hinted.clear(); tried.clear(); phase = 'idle'; sceneIndex = -1; pending = []; current = null; lastLine = null; say = null; tour = null; paused = false; place = null; placeCaption = ''; return snapshot(); }
+  // names: the same person's name in each hint language; the page picks the learner's.
+  const person = (id) => ({ who: id, name: job.cast[id].name, names: job.cast[id].names ? { ...job.cast[id].names } : null, role: job.cast[id].role });
+  const lineView = (step) => step ? { clip: step.clip, ...person(step.who), text: step.text, foreign: step.foreign ? { ...step.foreign } : null, hint: step.hint || null, action: step.action === true, channel: step.channel || null } : null;
   function snapshot() {
     const active = scene();
     const view = {
@@ -201,16 +227,21 @@ export function createWorkdaySession(job, { saved = null } = {}) {
       counts: { ...data.counts },
     };
     if (phase === 'say') {
-      const option = sayOption(), report = current.type === 'report';
+      const option = sayOption(), report = current.type === 'report', work = current.type === 'work', relay = current.type === 'relay';
+      const out = relay && current.direction === 'out';
       view.say = {
-        id: current.id, kind: report ? 'report' : current.options ? 'fork' : 'free',
+        id: current.id, kind: report ? 'report' : work ? 'work' : relay ? 'relay' : current.options ? 'fork' : 'free',
+        tool: work ? current.tool : null,
+        // in: foreign is the guest's words. out: meaning is the Korean to pass on, and foreign its example.
+        foreign: relay ? { ...person(current.who), text: { ...current.foreign } } : null,
+        direction: relay ? (out ? 'out' : 'in') : null, meaning: out ? current.meaning : null, channel: current.channel || null,
         prompt: current.prompt, hint: current.hint || null, listen: current.listen || null,
-        options: (current.options || []).map((item) => ({ id: item.id, label: item.label, hint: item.hint || null })),
+        options: (current.options || []).map((item) => ({ id: item.id, label: item.label, hint: item.hint || null, tried: !!tried.get(current.id)?.has(item.id) })),
         chosen: say.chosen,
-        example: report ? null : option ? option.example : current.options ? null : current.example,
+        example: report || work || out ? null : option ? option.example : current.options ? null : current.example,
         exampleOpen: say.exampleOpen, hintOpen: say.hintOpen,
         items: report ? reportItems().map((item) => ({ id: item.id, text: item.text, hint: item.hint || null, selected: say.selected.has(item.id) })) : [],
-        ready: report ? say.selected.size > 0 : current.options ? !!say.chosen : true,
+        ready: report ? say.selected.size > 0 : work ? false : current.options ? !!say.chosen : true,
       };
     }
     if (phase === 'tour') {
