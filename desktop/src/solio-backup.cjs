@@ -541,11 +541,15 @@ function createSolioBackup({
   }
   /* 요청 폴더와 두 조상이 연결점(정션 · 링크)이 아닌 진짜 폴더인가. 아니면 치우지 않는다. 연결점을 따라가 다른 폴더의 파일을 지우지 않게 한다(GPT 열째 GA2).
      쓰기(writeSetupRequest)도 같은 셋을 본다 */
-  function realFolders() {
-    try {
-      for (const dir of [paths.root, paths.solio, paths.requests]) { const stat = fsImpl.lstatSync(dir); if (!stat.isDirectory() || stat.isSymbolicLink()) return false; }
-      return true;
-    } catch { return false; }
+  function realFolders() { return folderState() === 'real'; }
+  /* 'real' · 'none'(아직 없음) · 'link'(연결점이나 폴더가 아님) · 'unknown'(확인하지 못함) */
+  function folderState() {
+    for (const dir of [paths.root, paths.solio, paths.requests]) {
+      let stat;
+      try { stat = fsImpl.lstatSync(dir); } catch (error) { return error?.code === 'ENOENT' ? 'none' : 'unknown'; }
+      if (!stat.isDirectory() || stat.isSymbolicLink()) return 'link';
+    }
+    return 'real';
   }
   /* 이름의 실행 표로 다른 실행이 아직 쓰고 있는 요청인지 본다. 'yes' · 'no' · 'unknown'.
      그 실행의 표 파일을 지워 본다. 지워지면(또는 없으면) 끝난 실행이고, 쥐고 있어 못 지우면 살아 있다.
@@ -613,7 +617,9 @@ function createSolioBackup({
     // 앞에서 이름으로 표식을 받았거나 여기서 보인다. claimed의 파일은 엔진의 것이어서 지우지 않는다
     let claimed = [];
     // requests 목록을 읽지 못했어도 claimed는 따로 본다(GPT solio-backup-be-20261121 GA2). 폴더가 없거나 연결점이면 보지 않는다
-    const where = realFolders() ? claimedState() : 'none';
+    // 폴더 확인이 그 순간 실패하면 claimed를 읽은 것으로 치지 않는다(GPT solio-backup-be-20261121-r2 GA1)
+    const folders = folderState();
+    const where = folders === 'real' ? claimedState() : folders;
     if (where === 'link') listed = false;
     // 확인하지 못했으면 곧 다시 본다(GPT 취소 표식 다시 검수 GA2). 연결점은 바뀌지 않으므로 다시 서두르지 않는다
     if (where === 'unknown') { listed = false; failed = true; }

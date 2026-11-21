@@ -1187,3 +1187,22 @@ test('cancel mark (GPT r3 GA1): a request already gone from both folders is forg
   assert.equal(writes, after, 'no retry once the request is gone from both folders');
   letOpen(); await service.whenIdle();
 });
+
+test('GPT solio-backup-be-20261121-r2 GA1: a failed folder check keeps an expired mark whose request is still in claimed, and is checked again soon', async () => {
+  const t = 1794880000000, now = t + 24 * 3600000 + 5 * 60000;
+  const env = appdata(temp()), dir = requestsDir(env);
+  fs.mkdirSync(path.join(dir, 'claimed'), { recursive: true });
+  const name = `${t}-deadbeef00000000000000e1.json`;
+  fs.writeFileSync(path.join(dir, `${name}.cancel`), '');
+  fs.writeFileSync(path.join(dir, 'claimed', name), JSON.stringify({ v: 1, kind: 'run-now' }));
+  let checks = 0, locked = true;
+  const fsImpl = { ...fs, promises: fs.promises,
+    lstatSync: (file, ...a) => { if (locked && path.basename(String(file)) === 'requests' && ++checks === 2) throw Object.assign(Error('busy'), { code: 'EBUSY' }); return fs.lstatSync(file, ...a); } };
+  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
+  service.accountChanged();
+  assert.deepEqual(marksIn(env), [`${name}.cancel`], 'kept: claimed was not read');
+  locked = false;
+  fs.unlinkSync(path.join(dir, 'claimed', name));
+  for (let i = 0; i < 30 && marksIn(env).length; i++) await new Promise(r => setTimeout(r, 50));
+  assert.deepEqual(marksIn(env), [], 'the timed retry reads both folders and then removes it');
+});
