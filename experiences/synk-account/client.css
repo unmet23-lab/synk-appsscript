@@ -1,0 +1,376 @@
+/* WORLD 앱 창 · 앱 계정 쪽(client.html) — SYNK ID(synk.im/id) A 한 칸과 PC 앱 「내 계정」의 문법(2026-11-21 유호님 「프론트가 예전버전인데 최신버전으로」).
+   client.html만 부른다. 옛 scrapbook.css · style.css · world-classroom.css · wardrobe.css는 local-world · teacher가 그대로 쓴다.
+   <link id="world-wardrobe-style">가 이 파일이라 옷장(wardrobe-view.mjs)은 wardrobe.css를 덧붙이지 않는다 — 옷장 규칙도 여기에 있다.
+   글자: SYNK Sans 한 벌, 크기 13 · 15 · 17 · 22 · 34, 굵기 400 · 600. 단추는 검정 알약 · 선 알약 · 밑줄 글자, 누르는 칸 44px 이상.
+   펠트 · 실땀 · 형광펜 · 스티커 · 영문 꼬리표 · 둥근 카드 상자는 없다. 옷장 그림 뒤 바탕(고른 종이)은 사진의 일부라 그대로 둔다. */
+@font-face{font-family:'SYNK Sans';src:url('./assets/SYNKSans-rest.woff2') format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+2074,U+2081-2084,U+20A9,U+20AC,U+2103,U+2109,U+2122,U+2194-2196,U+2198-2199,U+2219,U+2248,U+2295-2297,U+2460-246E,U+24C3,U+24D8,U+25A0-25A1,U+25A3,U+25B2-25B3,U+25B6-25B7,U+25BC-25BD,U+25C0-25C1,U+25C6-25C8,U+25CE-25D1,U+260E-260F,U+261C-261F,U+2660-2661,U+2663,U+2665,U+2669-266A,U+266C,U+26A0,U+2713,U+3131-3138,U+313A-314A,U+314C-3163,U+321C,U+327C,U+33A1,U+33A5,U+AC02-AC03,U+AC05-AC07,U+AC09-AC0F,U+AC11,U+AC13-AC14,U+AC17-AC18,U+AC1A-AC1B,U+AC1E-AC30,U+AC32-AC6F,U+AC71-AC73,U+AC75-AC76,U+AC79-AC7F,U+AC82,U+AC84-AC8B,U+AC8D-AC8F,U+AC91-AC9F,U+ACA1-ACA7,U+ACAB,U+ACAD-ACAF,U+ACB1-ACB8,U+ACBA-ACBB,U+ACBE-ACC3,U+ACC5-ACDF,U+ACE2-ACE3,U+ACE5-ACE7,U+ACE9-ACEF,U+ACF2,U+ACF4,U+ACF6-ACFB,U+ACFE-ACFF,U+AD01-AD10,U+AD12-AD1B,U+AD1D-AD48,U+AD4A-AD4F,U+AD51-AD6B,U+AD6E-AD6F,U+AD71-AD73,U+AD76-AD7C,U+AD7E-AD80,U+AD82-AD8B,U+AD8D-ADBF,U+ADC1-ADDB,U+ADDD-ADDF,U+ADE1-ADF7,U+ADF9-ADFB,U+ADFD-ADFF,U+AE01-AE07,U+AE0A,U+AE0C-AE2F,U+AE31-AE33,U+AE35-AE37,U+AE39-AE3F,U+AE42-AE44,U+AE46-AE49,U+AE4B,U+AE4D-AE4F,U+AE51-AE53,U+AE55-AE64,U+AE66-AEBB,U+AEBD,U+AEBF-AECE,U+AED1-AED7,U+AED9-AEF3,U+AEF5-AF2B,U+AF2E-AF33,U+AF35-AF3B,U+AF3E-AF41,U+AF44-AF48,U+AF4A-AF63,U+AF65-AFB7,U+AFB9-AFBB,U+AFBD-AFBF,U+AFC1-AFC7,U+AFC9-AFD3,U+AFD5-AFE7,U+AFE9-B00B,U+B00D-B00F,U+B011-B043,U+B045-B049,U+B04B,U+B04D-B053,U+B056-B05C,U+B05E-B07B,U+B07D-B083,U+B085-B097,U+B099-B09B,U+B09D-B09F,U+B0A2-B0A7,U+B0AA,U+B0AD,U+B0B0,U+B0B2-B0B3,U+B0B5-B0B7,U+B0B9-B0BB,U+B0BD-B0C3,U+B0C6-B0C7,U+B0C9-B107,U+B109-B10F,U+B111-B112,U+B114-B117,U+B119-B122,U+B125-B136,U+B138-B13F,U+B141-B143,U+B145-B14F,U+B151-B154,U+B156-B177,U+B179-B17B,U+B17D-B191,U+B195-B203,U+B205-B207,U+B209-B20B,U+B20D-B21F,U+B221-B273,U+B275-B28F,U+B291-B293,U+B295-B297,U+B299-B2A4,U+B2A7-B2C7,U+B2C9-B2CB,U+B2CD-B2CF,U+B2D1-B2D7,U+B2DA-B2DC,U+B2DE-B2E3,U+B2E6-B2E7,U+B2E9-B2EA,U+B2EE-B2F3,U+B2F6,U+B2F8,U+B2FA-B2FE,U+B301-B353,U+B355-B357,U+B359-B35B,U+B35D-B35E,U+B360-B366,U+B368-B36D,U+B36F,U+B371-B377,U+B379-B3C3,U+B3C6-B3C7,U+B3C9-B3CA,U+B3CD-B3D4,U+B3D6-B3D8,U+B3DA-B3FB,U+B3FD-B40F,U+B411-B417,U+B419-B41B,U+B41D-B41F,U+B421-B427,U+B42A-B44F,U+B451-B453,U+B455-B457,U+B459-B45F,U+B461-B464,U+B466-B46B,U+B46D-B47F,U+B481-B4A3,U+B4A5-B4B6,U+B4B8-B4DB,U+B4DE-B4DF,U+B4E1-B4E2,U+B4E5-B4EB,U+B4ED-B4EE,U+B4F0,U+B4F2-B513,U+B515-B529,U+B52B-B52F,U+B532-B53F,U+B541-B54B,U+B54D-B54F,U+B551-B59F,U+B5A1-B5A3,U+B5A5-B5BA,U+B5BC-B60F,U+B612-B6EF,U+B6F1-B6F7,U+B6F9-B727,U+B729-B73A,U+B73C-B743,U+B745-B75F,U+B761-B77B,U+B77E-B77F,U+B781-B783,U+B785-B78B,U+B78D-B78E,U+B792-B797,U+B79A-B79F,U+B7A1-B7A7,U+B7A9-B7AA,U+B7AD-B7B4,U+B7B6-B7C8,U+B7CA-B7EB,U+B7ED-B7EF,U+B7F1-B7FB,U+B7FE,U+B801-B806,U+B80A-B823,U+B826-B827,U+B829-B82B,U+B82D-B834,U+B836-B837,U+B83A-B83F,U+B841-B85B,U+B85E-B85F,U+B861-B863,U+B865-B86B,U+B86E-B8CB,U+B8CD-B8E7,U+B8E9-B8EB,U+B8ED-B8F8,U+B8FA-B903,U+B905-B917,U+B919-B957,U+B95A-B973,U+B975-B977,U+B979-B97B,U+B97D-B983,U+B985-B9AB,U+B9AE-B9AF,U+B9B1-B9B3,U+B9B5-B9BB,U+B9BE-B9C0,U+B9C2-B9C7,U+B9CA-B9CB,U+B9CD,U+B9CF,U+B9D2-B9D8,U+B9DA,U+B9DC,U+B9DF-B9E0,U+B9E2,U+B9E5-B9E7,U+B9E9-B9F9,U+B9FB-BA37,U+BA3A-BA3B,U+BA3D-BA47,U+BA49-BA53,U+BA55-BA6F,U+BA71-BA73,U+BA75-BA84,U+BA86,U+BA88-BAA7,U+BAAA-BAAF,U+BAB1-BAB7,U+BAB9-BABA,U+BABC,U+BABE-BB33,U+BB37,U+BB39-BB3A,U+BB3D-BB46,U+BB48-BB4F,U+BB51-BB53,U+BB55-BB57,U+BB59-BBBF,U+BBC1-BBF7,U+BBF9-BBFB,U+BBFD-BBFE,U+BC01-BC0E,U+BC10,U+BC12-BC13,U+BC17,U+BC19-BC1A,U+BC1E-BC23,U+BC25-BC28,U+BC2A-BC2F,U+BC32-BC83,U+BC85-BC87,U+BC89-BC8B,U+BC8D-BC93,U+BC96,U+BC98-BC99,U+BC9B-BC9F,U+BCA1-BCA7,U+BCA9-BCBC,U+BCBE-BCBF,U+BCC1-BCC3,U+BCC5-BCCC,U+BCCE-BCD0,U+BCD2-BCF3,U+BCF6-BCF7,U+BCF9-BCFB,U+BCFD-BD04,U+BD06-BD08,U+BD0A-BD0F,U+BD11-BD23,U+BD25-BD7F,U+BD81-BD83,U+BD85-BD87,U+BD89-BD94,U+BD96-BD98,U+BD9A-BDD3,U+BDD5-BE0B,U+BE0D-BE13,U+BE15-BE43,U+BE45-BE47,U+BE49-BE5A,U+BE5C-BE5F,U+BE61-BE67,U+BE69-BE7B,U+BE7D-BE7F,U+BE81-BE8F,U+BE91-BF07,U+BF09-BFCF,U+BFD1-C057,U+C059-C05B,U+C05D-C05F,U+C061-C0AB,U+C0AE-C0AF,U+C0B1-C0B3,U+C0B5-C0BB,U+C0BD-C0C0,U+C0C2-C0C7,U+C0CA-C0D7,U+C0D9-C0DC,U+C0DE-C0F3,U+C0F5-C11B,U+C11F,U+C121-C123,U+C125-C12E,U+C130,U+C132-C137,U+C139-C13B,U+C13D-C14A,U+C14C-C153,U+C155-C157,U+C159-C167,U+C169-C18B,U+C18E-C18F,U+C191-C1DF,U+C1E1-C1FB,U+C1FD-C217,U+C21A-C21B,U+C21D-C227,U+C229-C22A,U+C22C-C26B,U+C26D-C273,U+C275-C27C,U+C27E-C28F,U+C291-C2A3,U+C2A5-C2A7,U+C2A9-C2B4,U+C2B6-C2B8,U+C2BA-C2DB,U+C2DE-C2DF,U+C2E1-C2E3,U+C2E5-C2EA,U+C2EE-C2F0,U+C2F2-C2F5,U+C2F7-C312,U+C314-C367,U+C369-C378,U+C37A-C37B,U+C37D-C383,U+C385-C4EF,U+C4F1-C4F3,U+C4F5-C4F7,U+C4F9-C4FF,U+C502-C527,U+C52A-C52B,U+C52D-C543,U+C546-C547,U+C54B,U+C54D-C553,U+C556-C557,U+C55A-C55D,U+C55F,U+C562-C567,U+C569-C570,U+C572-C57B,U+C57E-C57F,U+C581-C590,U+C592-C597,U+C599-C5B3,U+C5B6-C5B7,U+C5B9-C5BB,U+C5BD-C5C3,U+C5C9-C5CF,U+C5D1-C5D3,U+C5D5-C5D7,U+C5D9-C5EB,U+C5EE-C5EF,U+C5F1-C5F3,U+C5F5-C5FE,U+C602-C605,U+C607,U+C609-C61A,U+C61C-C623,U+C625-C627,U+C629-C62B,U+C62D,U+C62F-C636,U+C638-C63F,U+C641-C643,U+C645-C653,U+C655-C65B,U+C65D-C677,U+C679-C67B,U+C67D-C693,U+C695-C6A8,U+C6AA-C6AF,U+C6B2-C6B3,U+C6B5-C6B7,U+C6B9-C6BF,U+C6C2,U+C6C4-C6CB,U+C6CD-C6CF,U+C6D1-C6D3,U+C6D5-C6DF,U+C6E1-C6F8,U+C6FA-C703,U+C705-C71F,U+C721-C723,U+C725-C73B,U+C73D-C73F,U+C741-C743,U+C745-C74B,U+C74D-C750,U+C752-C757,U+C759-C773,U+C776-C777,U+C779-C77B,U+C77E-C783,U+C786,U+C789,U+C78B-C78D,U+C78F,U+C792-C793,U+C795,U+C797,U+C799-C79F,U+C7A2-C7A4,U+C7A6-C7AB,U+C7AD-C7C0,U+C7C2-C7C7,U+C7C9-C7FF,U+C802-C803,U+C805-C807,U+C809-C80F,U+C812-C814,U+C816-C81B,U+C81D-C837,U+C839-C84B,U+C84D-C86F,U+C872-C873,U+C875-C87F,U+C882-C884,U+C886-C88A,U+C88D-C8DF,U+C8E1-C8FB,U+C8FE-C8FF,U+C901-C903,U+C905-C90B,U+C90D-C910,U+C912-C917,U+C919-C92B,U+C92D-C987,U+C989-C98F,U+C991-C997,U+C999-C99C,U+C99E-C9BF,U+C9C2-C9C3,U+C9C5-C9C7,U+C9C9-C9CF,U+C9D2,U+C9D4-C9D8,U+C9DB,U+C9DE-C9DF,U+C9E1-C9E6,U+C9E8-C9EC,U+C9EE-C9F7,U+C9F9-CA4B,U+CA4D-CABC,U+CABE-CAD2,U+CAD4-CB48,U+CB4A-CB63,U+CB65-CC0C,U+CC0E-CC27,U+CC2A-CC2D,U+CC2F,U+CC31-CC37,U+CC39-CC3A,U+CC3F-CC43,U+CC46-CC53,U+CC56-CC58,U+CC5A-CC97,U+CC9A-CC9B,U+CC9D-CC9F,U+CCA1-CCA7,U+CCAA,U+CCAC,U+CCAE-CCB3,U+CCB5-CCCF,U+CCD1-CCE3,U+CCE5-CD07,U+CD0A-CD2B,U+CD2D-CD5B,U+CD5D-CD93,U+CD96-CD97,U+CD99-CD9B,U+CD9D-CDA3,U+CDA5-CDA8,U+CDAA-CDAF,U+CDB1-CDC3,U+CDC5-CDE7,U+CDE9-CE1F,U+CE22-CE34,U+CE36-CE57,U+CE5A-CE5B,U+CE5D-CE5F,U+CE61-CE67,U+CE6A-CE6C,U+CE6E-CE73,U+CE75-CE77,U+CE79-CE7B,U+CE7D-CE8F,U+CE91-CE9F,U+CEA2-CEE3,U+CEE5-CEE7,U+CEE9-CEEB,U+CEED-CEF3,U+CEF6-CEFF,U+CF01-CF12,U+CF14-CF1B,U+CF1D-CF23,U+CF25-CF2F,U+CF31-CF53,U+CF55-CF57,U+CF59-CF5B,U+CF5D-CF63,U+CF65-D06B,U+D06D-D06F,U+D071-D073,U+D075-D07B,U+D07D-D0A3,U+D0A5-D0A7,U+D0A9-D0AB,U+D0AD-D0B8,U+D0BA-D0BF,U+D0C2-D0C7,U+D0C9-D0CF,U+D0D1-D0D4,U+D0D6-D0DB,U+D0DE-D0EC,U+D0EE-D12F,U+D131-D137,U+D139-D14B,U+D14E-D14F,U+D151-D15B,U+D15D-D19F,U+D1A1-D1B0,U+D1B2-D1B4,U+D1B6-D1F3,U+D1F5-D22B,U+D22D-D22F,U+D231-D29B,U+D29D-D2B7,U+D2BA-D2BB,U+D2BD-D2BF,U+D2C1-D2C7,U+D2C9-D2EF,U+D2F1-D2FF,U+D301-D304,U+D306-D30B,U+D30D-D30F,U+D311-D327,U+D329-D337,U+D339-D37B,U+D37D-D397,U+D399-D39B,U+D39D-D39F,U+D3A1-D3B3,U+D3B5-D3B7,U+D3B9-D3BB,U+D3BD-D3C8,U+D3CA-D3CF,U+D3D1-D3EB,U+D3EE-D3EF,U+D3F1-D3F3,U+D3F5-D3FB,U+D3FD-D45B,U+D45D-D477,U+D47A-D47B,U+D47D-D47F,U+D481-D487,U+D489-D48C,U+D48E-D4E7,U+D4E9-D503,U+D505-D50B,U+D50D-D53B,U+D53E-D543,U+D545-D550,U+D552-D557,U+D55A-D55B,U+D55D-D55F,U+D561-D567,U+D56A-D56C,U+D56E-D573,U+D576-D587,U+D58A-D5A4,U+D5A6-D5C7,U+D5C9-D5D7,U+D5D9-D5E3,U+D5E5-D5EB,U+D5ED-D5F6,U+D5F8-D5FF,U+D601-D603,U+D605-D607,U+D609-D610,U+D612-D613,U+D616-D61B,U+D61D-D637,U+D639-D63B,U+D63D-D647,U+D64A-D64C,U+D64E-D653,U+D656-D657,U+D659-D65B,U+D65D-D668,U+D66A-D68B,U+D68E-D69E,U+D6A0-D6A7,U+D6A9-D6C3,U+D6C5-D6E7,U+D6E9-D71F,U+D721-D733,U+D735-D74F,U+D751-D757,U+D759-D764,U+D766-D76B,U+D76D-D76F,U+D771-D787,U+D789-D78B,U+D78D-D78F,U+D791-D797,U+D799-D7A2,U+FFE6}
+@font-face{font-family:'SYNK Sans';src:url('./assets/SYNKSans-ui.woff2') format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+20-7E,U+A0,U+A5,U+A9,U+AD-AE,U+B0-B3,U+B6-B7,U+B9,U+D7,U+F7,U+2015,U+2018-2019,U+201C-201D,U+2025-2026,U+2032-2033,U+203B,U+2190-2193,U+2197,U+25CB,U+2605-2606,U+3008-3011,U+3014-3015,U+3139,U+314B,U+AC00-D7A3}
+.sc{
+  --paper:#fff;--ink:#0b0b0c;--ink-2:#4f4f55;--ink-3:#6c6c72;--line:#e7e7ea;--line-2:#cfcfd4;--edge:#8a8a90;--g-edge:#747775;--surface:#f3f3f4;--hover:#2a2a2e;--under:#b9b9be;
+  --err:#b3261e;--ok:#1f7a4d;--alert:#c4321f;
+  --t13:13px;--t15:15px;--t17:17px;--t22:22px;--t34:34px;
+  --sans:'SYNK Sans',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+  color-scheme:light;
+  box-sizing:border-box;display:flex;justify-content:center;min-height:100vh;min-height:100dvh;margin:0;
+  padding:clamp(32px,9vh,104px) max(20px,env(safe-area-inset-right,0px)) 16px max(20px,env(safe-area-inset-left,0px));
+  font-family:var(--sans);font-size:var(--t15);line-height:1.6;font-synthesis:none;color:var(--ink);background:var(--paper);
+  word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%
+}
+.sc *,.sc *::before,.sc *::after{box-sizing:border-box}
+.sc [hidden]{display:none!important}
+.sc button,.sc input,.sc select,.sc textarea{font:inherit;color:inherit}
+.sc h1,.sc h2,.sc h3,.sc h4,.sc p,.sc ul,.sc ol,.sc dl,.sc dd,.sc fieldset,.sc figure{margin:0}
+.sc ul{padding:0;list-style:none}
+.sc a{color:inherit}
+.sc img{max-width:100%;height:auto}
+.sc :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sc [tabindex="-1"]:focus{outline:none}
+.sc strong,.sc b{font-weight:600}
+/* 제목 기본값 — 모듈이 그리는 제목도 단계 밖으로 나가지 않게(구역 22 · 작은 제목 17 · 줄 제목 15) */
+.sc h2{font-size:var(--t22);font-weight:600;line-height:1.35}
+.sc h3{font-size:var(--t17);font-weight:600;line-height:1.45}
+.sc h4,.sc h5{font-size:var(--t15);font-weight:600;line-height:1.5}
+.sc .visually-hidden{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+
+/* 쪽: 한 칸. 로그인 · 기다림 · 설정 없음은 440(PC 앱 로그인 창 폭), 로그인 뒤 WORLD 계정은 880(옷장 두 칸이 들어가는 폭). */
+.sc .sc-main{display:flex;flex-direction:column;width:100%;max-width:440px;min-width:0}
+.sc.account-open .sc-main,.sc .sc-main:has(>.classroom-connection:not([hidden])){max-width:880px}
+.sc .brand{display:inline-flex;align-items:center;align-self:flex-start;min-width:44px;min-height:44px;color:var(--ink);text-decoration:none}
+.sc .wordmark{display:block;width:64px;height:auto;fill:currentColor}
+
+/* 머리: 제품 이름(회색 머리, SYNK ID 화면의 「SYNK ID」 자리) → 제목 하나 → 한 줄 */
+.sc .hero{display:grid;gap:8px;margin-top:16px}
+.sc .sc-kicker{font-size:var(--t17);font-weight:600;line-height:1.4;color:var(--ink-3)}
+.sc h1{margin-top:4px;font-size:var(--t34);font-weight:600;line-height:1.25;letter-spacing:0;text-wrap:balance}
+.sc #product-copy{font-size:var(--t17);line-height:1.6;color:var(--ink-2);text-wrap:pretty}
+/* 로그인한 뒤에는 「유호의 SYNK ID」가 제목이다 — 머리는 제품 이름만 남긴다 */
+.sc.account-open .hero h1,.sc.account-open #product-copy,.sc .sc-main:has(>.classroom-connection:not([hidden]))>.hero>:is(h1,#product-copy){display:none}
+
+/* 알림 — 상자를 칠하지 않고 한 줄. JS가 class를 `notice` / `notice error`로 통째로 덮어쓴다. */
+.sc .notice{position:relative;min-width:0;font-size:var(--t15);line-height:1.6;color:var(--ink);text-wrap:pretty;overflow-wrap:anywhere}
+.sc .notice:empty{display:none}
+.sc #notice{margin-top:24px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sc.account-open #notice{margin-top:16px}
+.sc .notice.error{padding-left:30px;color:var(--err);font-weight:600}
+.sc #notice.error{padding-left:30px}
+.sc .notice.error::before{content:"";position:absolute;left:0;top:calc(.8em - 10px);width:20px;height:20px;background:center/20px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23b3261e' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='10' cy='10' r='7.6'/%3E%3Cpath d='M10 6.2v4.6M10 13.6v.1'/%3E%3C/svg%3E")}
+.sc #notice.error::before{top:calc(14px + .8em - 10px)}
+.sc .small{font-size:var(--t13);line-height:1.7;font-weight:400;color:var(--ink-3);text-wrap:pretty}
+.sc .muted{font-weight:400;color:var(--ink-3)}
+
+/* 단추: 채운 검정(그 자리의 한 행동) · 선 알약(그다음) · 밑줄 글자. 테두리는 진짜 선(강제 색 모드에서도 남는다). */
+.sc .sb-btn{display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0 8px;min-height:48px;padding:8px 24px;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:#fff;font-size:var(--t15);font-weight:600;line-height:1.4;text-align:center;text-decoration:none;cursor:pointer;transition:background-color .2s var(--ease),border-color .2s var(--ease),transform .12s var(--ease)}
+.sc .sb-btn:hover:not(:disabled){background:var(--hover);border-color:var(--hover)}
+.sc .sb-btn:active:not(:disabled){transform:scale(.98)}
+.sc .sb-btn.soft{background:var(--paper);color:var(--ink);border-color:var(--g-edge)}
+.sc .sb-btn.soft:hover:not(:disabled){background:var(--paper);border-color:var(--ink)}
+.sc .sb-btn:disabled{background:var(--surface);border-color:var(--surface);color:var(--ink-3);cursor:not-allowed}
+.sc .sb-btn.soft:disabled{background:var(--paper);border-color:var(--line-2)}
+/* JS가 만드는 글 단추(button(…) 기본 class 'plain') — 밑줄 글자 */
+.sc .plain{display:inline-flex;align-items:center;min-height:44px;min-width:44px;padding:0;border:0;background:none;font-size:var(--t15);font-weight:600;color:var(--ink);text-align:left;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--under);cursor:pointer}
+.sc .plain:hover:not(:disabled){text-decoration-color:currentColor}
+.sc .plain:disabled{color:var(--ink-3);cursor:not-allowed}
+.sc .plain.danger,.sc .danger:not(.sb-btn){color:var(--alert);text-decoration-color:color-mix(in srgb,var(--alert) 45%,transparent)}
+.sc .plain.danger:disabled{color:var(--ink-3)}
+.sc .actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}
+.sc .actions:empty{display:none}
+
+/* 로그인 · 기다림: 검정 알약은 칸 폭, 「연결 다시 확인」 · 「로그인 취소」는 그 아래 선 알약 */
+.sc .sc-actions{display:grid;gap:12px;margin-top:24px}
+.sc .sc-actions:not(:has(>:not([hidden]))){display:none}
+.sc .sc-actions>.sb-btn{width:100%}
+/* 브라우저 로그인을 기다리는 동안(「로그인 취소」가 보일 때): 회색 알약 안에 작은 점 하나가 천천히 깜빡여 멈춘 화면이 아님을 알린다 */
+.sc .sc-actions:has(>#cancel-connect:not([hidden]))>#connect:disabled::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;forced-color-adjust:none;animation:sc-wait 1.6s ease-in-out infinite}
+@keyframes sc-wait{0%,100%{opacity:.25}50%{opacity:1}}
+
+/* 설정 없음 */
+.sc .setup{display:grid;gap:12px;justify-items:start;margin-top:24px}
+.sc .setup h2{font-size:var(--t22);font-weight:600;line-height:1.35}
+.sc .setup>p{font-size:var(--t15);color:var(--ink-2)}
+.sc .setup>.sb-btn{margin-top:8px}
+
+/* 폼 칸 */
+.sc label{font-size:var(--t15);font-weight:600}
+.sc input:not([type="checkbox"]):not([type="radio"]),.sc select{display:block;width:100%;height:48px;margin-top:8px;padding:0 16px;border:1px solid var(--edge);border-radius:8px;background:var(--paper);font-size:var(--t15);font-weight:400;color:var(--ink);appearance:none}
+.sc input:not([type="checkbox"]):not([type="radio"]):focus-visible,.sc select:focus-visible{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink)}
+.sc input:not([type="checkbox"]):not([type="radio"]):disabled,.sc select:disabled{background-color:var(--surface);color:var(--ink-3)}
+.sc input::placeholder{color:var(--ink-3)}
+.sc select{padding-right:44px;background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%230b0b0c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E") right 14px center/20px no-repeat}
+.sc .toggle{display:grid;grid-template-columns:22px 1fr;gap:12px;align-items:center;min-height:44px;font-weight:600;line-height:1.5;cursor:pointer}
+.sc input[type="checkbox"]{appearance:none;flex:none;width:22px;height:22px;margin:0;border:1.5px solid var(--edge);border-radius:6px;background:var(--paper);cursor:pointer}
+.sc input[type="checkbox"]:checked,.sc input[type="checkbox"]:indeterminate{border-color:var(--ink);background:var(--ink) center/16px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 10.5 3.2 3.2L15 7'/%3E%3C/svg%3E")}
+.sc input[type="checkbox"]:indeterminate{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M5.5 10h9'/%3E%3C/svg%3E")}
+.sc input[type="checkbox"]:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sc input[type="checkbox"]:disabled{background-color:var(--surface);border-color:var(--line-2);cursor:not-allowed}
+.sc input[type="checkbox"]:checked:disabled,.sc input[type="checkbox"]:indeterminate:disabled{background-color:var(--ink-3);border-color:var(--ink-3)}
+.sc input[type="radio"]{accent-color:var(--ink)}
+
+/* 로그인한 뒤: 제목 34 + 로그아웃 선 알약 → 구역마다 작은 제목과 검은 1px 선 아래 줄(PC 앱 「내 계정」과 같은 문법) */
+.sc #account{margin-top:0}
+.sc .account-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:32px}
+.sc .account-head h2{min-width:0;font-size:var(--t34);font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.sc .account-head>.plain{flex:none;justify-content:center;min-height:44px;margin-top:2px;padding:6px 20px;border:1px solid var(--g-edge);border-radius:999px;text-decoration:none}
+.sc .account-head>.plain:hover:not(:disabled){border-color:var(--ink)}
+.sc .account-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 48px;align-items:start;margin-top:40px}
+.sc .sb-card{display:grid;gap:10px;min-width:0;padding-top:16px;border-top:1px solid var(--ink)}
+.sc .sb-card>h3{margin-bottom:2px;font-size:var(--t17);font-weight:600;line-height:1.45}
+.sc .sb-card>p:not(.small){font-size:var(--t15);color:var(--ink-2)}
+.sc .sb-card>.sb-btn{justify-self:start;min-height:44px;padding:6px 20px}
+.sc .details{display:grid;gap:4px}
+.sc .details li{position:relative;padding-left:14px;font-size:var(--t15);color:var(--ink-2);overflow-wrap:anywhere}
+.sc .details li::before{content:"";position:absolute;left:0;top:.8em;width:5px;height:1px;background:var(--ink-3)}
+.sc .session-row{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;min-height:48px;border-bottom:1px solid var(--line)}
+.sc .session-row>p{min-width:0;font-size:var(--t15);color:var(--ink);overflow-wrap:anywhere}
+.sc .session-row>.plain{flex:none}
+.sc .sb-card>.plain{justify-self:start}
+.sc #account>.small{margin-top:24px;font-size:var(--t15);color:var(--err);font-weight:600}
+.sc #account>.actions{margin-top:32px;padding-top:16px;border-top:1px solid var(--line)}
+.sc #account>.actions .sb-btn{min-height:44px;padding:6px 20px}
+
+/* 마을 기록(desktop/renderer/town-records-card.mjs — PC · 포털과 같은 원천, 마크업은 그대로 두고 여기서만 입힌다) */
+.sc .town-card .town-records{display:grid;gap:12px}
+.sc .town-card .town-records>.small{font-size:var(--t15);color:var(--ink-2);overflow-wrap:anywhere}
+.sc .town-card .town-records-lead{color:var(--ink-3)}
+.sc .town-card .town-records-message{padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t15);color:var(--ink)}
+.sc .town-card .town-records-message.is-error{color:var(--err);font-weight:600}
+.sc .town-card .town-records-section{display:grid;gap:6px;padding-top:12px;border-top:1px solid var(--line)}
+.sc .town-card .town-records-section h4{font-size:var(--t15);font-weight:600}
+.sc .town-card .town-records-rows{display:grid;gap:2px}
+.sc .town-card .town-records-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;min-height:44px}
+.sc .town-card .town-records-text{flex:1 1 180px;min-width:0;font-size:var(--t15);overflow-wrap:anywhere}
+.sc .town-card .town-records-actions{display:flex;flex-wrap:wrap;gap:4px 16px}
+.sc .town-card .town-records-detail{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+
+/* WORLD 게임 · 옷장 · 연습 방식 */
+.sc #world-games{display:grid;gap:16px;min-width:0;margin-top:64px;padding-top:20px;border-top:1px solid var(--ink)}
+.sc #world-games>h2{font-size:var(--t22);font-weight:600;line-height:1.35}
+.sc #world-games>.notice{color:var(--ink-2)}
+.sc #world-games>.actions .sb-btn{min-height:44px;padding:6px 20px}
+.sc .game-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.sc .game-links>button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:56px;min-width:0;padding:10px 16px 10px 20px;border:1px solid var(--line-2);border-radius:12px;background:var(--paper);font-size:var(--t15);font-weight:600;line-height:1.4;color:var(--ink);text-align:left;cursor:pointer;transition:border-color .2s var(--ease),background-color .2s var(--ease)}
+.sc .game-links>button::after{content:"";flex:none;width:18px;height:18px;background:currentColor;-webkit-mask:center/18px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%230b0b0c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 10h11M11 6l4 4-4 4'/%3E%3C/svg%3E");mask:center/18px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%230b0b0c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 10h11M11 6l4 4-4 4'/%3E%3C/svg%3E");forced-color-adjust:none}
+.sc .game-links>button:hover:not(:disabled){border-color:var(--ink)}
+.sc .game-links>button:first-child{background:var(--ink);border-color:var(--ink);color:#fff}
+.sc .game-links>button:first-child:hover:not(:disabled){background:var(--hover);border-color:var(--hover)}
+.sc .game-links>button:disabled{border-color:var(--line);color:var(--ink-3);cursor:not-allowed}
+.sc #world-games iframe{display:block;width:100%;min-width:0;min-height:720px;margin-top:16px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.sc .world-preferences{display:grid;gap:12px;margin-top:40px;padding-top:16px;border-top:1px solid var(--line)}
+.sc .world-preferences>h3{font-size:var(--t17);font-weight:600}
+.sc .world-preference-group{display:grid;gap:8px;margin-top:4px}
+.sc .world-preference-group>p{font-size:var(--t15);font-weight:600}
+.sc .world-preference-choices{display:flex;flex-wrap:wrap;gap:8px}
+.sc .world-preference-choices .sb-btn{min-height:44px;padding:6px 20px}
+.sc .world-preference-choices .sb-btn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.sc .world-preference-choices .sb-btn[aria-pressed="true"]:hover:not(:disabled){background:var(--hover);border-color:var(--hover)}
+
+/* 옷장(wardrobe-view.mjs) — 그림은 그대로, 단추 · 칸 · 글만 이 문법으로 */
+.sc .wardrobe-section{margin:32px 0 8px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink);min-width:0;scroll-margin-top:24px;overflow-wrap:anywhere}
+.sc .wardrobe-section img{display:block;max-width:100%;height:auto}
+.sc .wardrobe-section button{line-height:1.4}
+.sc .wardrobe-heading{position:relative;padding-right:200px;margin-bottom:20px}
+.sc .wardrobe-eyebrow{display:none}
+.sc .wardrobe-heading h2{font-size:var(--t22);font-weight:600;line-height:1.35;margin-bottom:4px}
+.sc .wardrobe-heading>p:last-of-type{font-size:var(--t15);color:var(--ink-2)}
+.sc .wardrobe-worn{position:absolute;right:0;top:0;width:180px;display:flex;align-items:center;gap:10px;font-size:var(--t13);line-height:1.5;color:var(--ink-2)}
+.sc .wardrobe-worn img{width:56px;border-radius:12px;background:var(--surface)}
+.sc .wardrobe-worn span{flex:1;min-width:0}
+.sc .wardrobe-sync{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;margin-bottom:24px;font-size:var(--t13);color:var(--ink-3)}
+.sc .wardrobe-sync>p{flex:1 1 260px}
+.sc .wardrobe-conflict{width:100%;display:grid;gap:12px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t15);color:var(--ink)}
+.sc .wardrobe-conflict>div,.sc .wardrobe-conflict{min-width:0}
+.sc .wardrobe-layout{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:40px;align-items:start}
+.sc .wardrobe-fitting{position:sticky;top:24px;min-width:0}
+.sc .wardrobe-stage-label{margin-bottom:10px;font-size:var(--t13);font-weight:600;color:var(--ink-3)}
+.sc .wardrobe-picture{padding:24px;background:url('./assets/wardrobe/felt-paper.webp') center/cover;border-radius:16px;min-width:0;overflow:hidden}
+.sc .wardrobe-bg-night{background-image:url('./assets/wardrobe/felt-night.webp')}
+.sc .wardrobe-bg-lapis{background-image:url('./assets/wardrobe/felt-lapis.webp')}
+.sc .wardrobe-matte{display:grid;place-items:center;aspect-ratio:1/1;overflow:visible;background:#fffdf9;border-radius:4px}
+.sc .wardrobe-mascot{width:100%;object-fit:contain;transform-origin:50% 80%}
+.sc .wardrobe-fitting>h3{margin:20px 0 4px;font-size:var(--t17);font-weight:600;line-height:1.45}
+.sc .wardrobe-story{min-height:48px;font-size:var(--t15);color:var(--ink-2)}
+.sc .wardrobe-acquired{margin:8px 0 16px;font-size:var(--t13);color:var(--ink-3)}
+.sc .wardrobe-backgrounds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.sc .wardrobe-fitting-actions{display:grid;gap:8px;margin-top:16px}
+.sc .wardrobe-feedback{min-height:24px;margin-top:12px;font-size:var(--t13);color:var(--ink-2)}
+.sc .wardrobe-feedback:empty{min-height:0;margin-top:0}
+.sc .wardrobe-button{display:inline-flex;align-items:center;justify-content:center;min-width:0;min-height:44px;padding:8px 20px;border:1px solid var(--g-edge);border-radius:999px;background:var(--paper);color:var(--ink);font-size:var(--t15);font-weight:600;text-align:center;text-decoration:none;cursor:pointer;transition:background-color .2s var(--ease),border-color .2s var(--ease)}
+.sc .wardrobe-button:hover:not(:disabled){border-color:var(--ink)}
+.sc .wardrobe-button[aria-pressed="true"],.sc .wardrobe-primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.sc .wardrobe-button[aria-pressed="true"]:hover:not(:disabled),.sc .wardrobe-primary:hover:not(:disabled){background:var(--hover);border-color:var(--hover)}
+.sc .wardrobe-button-small,.sc .wardrobe-background{padding:6px 12px;font-size:var(--t13)}
+.sc .wardrobe-section button:disabled{background:var(--surface);border-color:var(--surface);color:var(--ink-3);cursor:not-allowed}
+.sc .wardrobe-section-title h3{margin-bottom:4px;font-size:var(--t17);font-weight:600;line-height:1.45}
+.sc .wardrobe-section-title p{font-size:var(--t13);color:var(--ink-3)}
+.sc .wardrobe-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:16px 0}
+.sc .wardrobe-filters .wardrobe-button{padding:6px 8px;font-size:var(--t13)}
+.sc .wardrobe-items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sc .wardrobe-item{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;padding:8px 8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);cursor:pointer;transition:border-color .2s var(--ease)}
+.sc .wardrobe-item:hover:not(:disabled){border-color:var(--edge)}
+.sc .wardrobe-item[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.sc .wardrobe-section .wardrobe-item:disabled{background:var(--paper);border-color:var(--line);color:var(--ink-3)}
+.sc .wardrobe-thumb{display:block;width:100%;border-radius:8px;overflow:hidden;background:var(--surface)}
+.sc .wardrobe-thumb img{width:100%;aspect-ratio:1/1;object-fit:contain}
+.sc .wardrobe-item-name{min-height:36px;padding:0 2px;font-size:var(--t13);font-weight:600;line-height:1.4;text-align:center}
+.sc .wardrobe-item-state{font-size:var(--t13);font-weight:400;line-height:1.4;color:var(--ink-3);text-align:center}
+.sc .wardrobe-progress{margin-top:24px;padding-top:16px;border-top:1px solid var(--line)}
+.sc .wardrobe-progress h4{margin-bottom:4px;font-size:var(--t15);font-weight:600}
+.sc .wardrobe-progress>p{font-size:var(--t13);color:var(--ink-3)}
+.sc .wardrobe-progress .wardrobe-milestone{margin-top:6px;font-size:var(--t13);color:var(--ink-2)}
+.sc .wardrobe-saved,.sc .wardrobe-album{margin-top:40px;padding-top:16px;border-top:1px solid var(--line)}
+.sc .wardrobe-save-form{display:flex;gap:12px;align-items:flex-end;margin:16px 0 20px}
+.sc .wardrobe-save-form label{flex:1;min-width:0;margin:0;font-size:var(--t13);color:var(--ink-2)}
+.sc .wardrobe-save-form button{flex:none;min-height:48px}
+.sc .wardrobe-empty{padding:8px 0;font-size:var(--t15);color:var(--ink-3)}
+.sc .wardrobe-memory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:16px}
+.sc .wardrobe-memory{min-width:0}
+.sc .wardrobe-picture-small{padding:12px;border-radius:12px}
+.sc .wardrobe-memory h4{margin:12px 0 4px;font-size:var(--t15);font-weight:600;overflow-wrap:anywhere}
+.sc .wardrobe-small{font-size:var(--t13);color:var(--ink-3)}
+.sc .wardrobe-memory .wardrobe-button{width:100%;margin-top:8px}
+.sc .wardrobe-remove{display:block;min-height:44px;margin-left:auto;padding:8px 0;border:0;background:none;font-size:var(--t13);font-weight:600;color:var(--ink-2);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.sc .wardrobe-render-preview [hidden]{display:none!important}
+.sc .wardrobe-render-modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.sc .wardrobe-render-modes .wardrobe-button{padding:6px 10px;font-size:var(--t13)}
+.sc .wardrobe-render-stage{min-width:0}
+.sc .wardrobe-three-stage{width:100%;height:390px;overflow:hidden;border-radius:16px;background:#fffdf9}
+.sc .wardrobe-three-stage canvas{display:block;width:100%;height:100%}
+.sc .wardrobe-render-note{margin-top:10px;font-size:var(--t13);color:var(--ink-3)}
+.sc .wardrobe-three-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}
+.sc .wardrobe-three-controls .wardrobe-button{padding:6px;font-size:var(--t13)}
+.sc .wardrobe-three-photo{grid-column:1/-1}
+.sc .wardrobe-three-capture,.sc .wardrobe-photo-download{display:flex;align-items:center;gap:12px;margin-top:12px}
+.sc .wardrobe-three-capture img,.sc .wardrobe-photo-download img{width:72px;max-height:90px;object-fit:contain;border-radius:8px}
+.sc .wardrobe-three-capture a,.sc .wardrobe-photo-download a{flex:1;min-width:0}
+@keyframes sc-wardrobe-welcome{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-6px) rotate(-2deg)}65%{transform:translateY(-3px) rotate(2deg)}}
+.sc .wardrobe-react .wardrobe-mascot{animation:sc-wardrobe-welcome .7s ease-out 1}
+
+/* 반 연결(account-classroom.mjs) · 반 과제(world-classroom.mjs) · 마을 공유(town-sharing.mjs) */
+.sc .classroom-connection{gap:12px;margin-top:32px}
+.sc .classroom-connection>div{display:grid;gap:12px;min-width:0}
+.sc .classroom-connection h2{font-size:var(--t22);font-weight:600;line-height:1.35}
+.sc .classroom-connection label:not(.toggle){display:block;max-width:420px}
+.sc .classroom-connection a:not([class]){justify-self:start;display:inline-flex;align-items:center;min-height:44px;font-size:var(--t15);font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--under)}
+.sc .classroom-connection a:not([class]):hover{text-decoration-color:currentColor}
+.sc .classroom-connection iframe{width:100%;min-height:720px;border:1px solid var(--line);border-radius:12px}
+.sc .wc-panel{display:grid;gap:16px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line);min-width:0}
+.sc .wc-panel>section{display:grid;gap:12px;min-width:0}
+.sc .wc-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.sc .wc-heading h2{font-size:var(--t22);font-weight:600;line-height:1.35}
+.sc .wc-heading p,.sc .wc-practice-list>p{font-size:var(--t15);color:var(--ink-2)}
+.sc .wc-connection{font-size:var(--t13);color:var(--ink-3)}
+.sc .wc-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.sc .wc-card{display:grid;align-content:start;gap:8px;min-width:0;padding:16px;border:1px solid var(--line-2);border-radius:12px;background:var(--paper)}
+.sc .wc-card h4{font-size:var(--t17);font-weight:600;line-height:1.45}
+.sc .wc-card p{font-size:var(--t13);color:var(--ink-2);overflow-wrap:anywhere}
+.sc .wc-card button{width:100%;margin-top:4px;white-space:normal}
+.sc .wc-label,.sc .wc-count{justify-self:start;display:inline-flex;align-items:center;min-height:24px;padding:0 10px;border-radius:999px;background:var(--surface);font-size:var(--t13);font-weight:600;color:var(--ink-2)}
+.sc .wc-practice-list{display:grid;gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.sc .wc-field{display:grid;gap:8px;font-size:var(--t15)}
+.sc .wc-consent{display:flex;align-items:flex-start;gap:12px;margin:16px 0;font-size:var(--t15);font-weight:400}
+.sc .wc-passage{margin:16px 0;padding:20px;border:1px solid var(--line-2);border-radius:12px;background:var(--paper);font-size:var(--t17);line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}
+.sc .wc-activity{display:grid;gap:12px}
+.sc .wc-activity>h3{font-size:var(--t22);font-weight:600;line-height:1.35}
+.sc .wc-activity>p{color:var(--ink-2)}
+.sc .wc-activity>.sb-btn{justify-self:start;white-space:normal;max-width:100%}
+.sc .wc-question{margin:16px 0;padding:0;border:0;min-width:0}
+.sc .wc-question legend{max-width:100%;margin-bottom:10px;padding:0;font-size:var(--t17);font-weight:600;line-height:1.6}
+.sc .wc-option{position:relative;display:block;margin:8px 0;font-weight:400;cursor:pointer}
+.sc .wc-option input{position:absolute;left:16px;top:50%;width:20px;height:20px;margin:-10px 0 0}
+.sc .wc-option span{display:block;width:100%;padding:14px 16px 14px 48px;border:1px solid var(--line-2);border-radius:12px;background:var(--paper);font-size:var(--t15);line-height:1.6;transition:border-color .2s var(--ease)}
+.sc .wc-option:hover span{border-color:var(--edge)}
+.sc .wc-option input:checked+span{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--surface)}
+.sc .wc-option input:focus-visible+span{outline:2px solid var(--ink);outline-offset:2px}
+.sc .wc-result{display:grid;gap:8px}
+.sc .wc-result h4{font-size:var(--t17);font-weight:600}
+.sc .wc-result article{padding:12px 0;border-bottom:1px solid var(--line)}
+.sc .wc-result p{font-size:var(--t15);color:var(--ink-2)}
+.sc .wc-result .sb-btn{justify-self:start;margin-top:12px}
+.sc .wc-error{font-size:var(--t15);font-weight:600;color:var(--err)}
+.sc .wc-empty{font-size:var(--t15);color:var(--ink-3)}
+.sc .wc-activity .small{font-size:var(--t13)}
+.sc .wc-coaching{display:grid;gap:8px;padding:16px 0;border-bottom:1px solid var(--line)}
+.sc .wc-coaching .sb-btn{justify-self:start;white-space:normal;max-width:100%}
+.sc .wc-run-progress{padding:8px 0;font-weight:600}
+.sc .wc-intro{display:grid;gap:12px;padding:24px 0}
+.sc .wc-intro h1{font-size:var(--t34)}
+.sc .wc-intro img{display:none}
+.sc .wc-development{padding-bottom:16px;border-bottom:1px solid var(--line);font-size:var(--t13);color:var(--ink-3)}
+.sc .wc-town-sharing{display:grid;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
+.sc .wc-town-sharing h3{font-size:var(--t17);font-weight:600}
+.sc .wc-town-sharing p{font-size:var(--t15);color:var(--ink-2)}
+.sc .wc-town-sharing .toggle span{font-size:var(--t15)}
+.sc .wc-town-sharing button{justify-self:start;max-width:100%;white-space:normal}
+
+/* 확인 창 — 되돌릴 수 없는 일 앞에서 한 번 더(계정 삭제 요청 · 마을 기록 비우기) */
+.sc dialog{width:min(440px,calc(100vw - 32px));max-width:none;padding:28px;border:1px solid var(--line-2);border-radius:16px;background:var(--paper);color:var(--ink);box-shadow:0 24px 64px rgba(11,11,12,.18)}
+.sc dialog::backdrop{background:rgba(11,11,12,.42)}
+.sc dialog h2{margin-bottom:12px;font-size:var(--t22);font-weight:600;line-height:1.35}
+.sc dialog p{font-size:var(--t15);color:var(--ink-2)}
+.sc dialog .actions{display:grid;gap:10px;margin-top:24px}
+.sc dialog .actions>button{justify-content:center;width:100%;min-height:48px;padding:8px 24px;border:1px solid var(--g-edge);border-radius:999px;background:var(--paper);text-decoration:none}
+.sc dialog .actions>button:first-child{background:var(--alert);border-color:var(--alert);color:#fff}
+.sc dialog .actions>button:first-child:hover:not(:disabled){background:#a72a1a;border-color:#a72a1a}
+.sc dialog .actions>button:disabled{background:var(--surface);border-color:var(--surface);color:var(--ink-3)}
+
+/* 바닥 */
+.sc .sc-foot{display:grid;gap:4px;margin-top:auto;padding-top:56px}
+.sc .footer-links{display:flex;flex-wrap:wrap;gap:0 20px;font-size:var(--t13);color:var(--ink-3)}
+.sc .footer-links a{display:inline-flex;align-items:center;min-height:44px;color:inherit;text-decoration:none}
+.sc .footer-links a:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+
+@media (max-width:860px){
+  .sc .game-links{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sc .wc-cards{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px){
+  .sc .account-grid{grid-template-columns:minmax(0,1fr);gap:32px}
+  .sc .wardrobe-heading{padding-right:0}
+  .sc .wardrobe-worn{position:static;width:auto;margin-top:12px}
+  .sc .wardrobe-worn img{width:48px}
+  .sc .wardrobe-layout{grid-template-columns:minmax(0,1fr);gap:32px}
+  .sc .wardrobe-fitting{position:static}
+  .sc .wardrobe-picture:not(.wardrobe-picture-small){max-width:420px;margin:0 auto;padding:20px}
+  .sc .wardrobe-fitting>h3,.sc .wardrobe-stage-label,.sc .wardrobe-story,.sc .wardrobe-acquired{text-align:center}
+  .sc .wardrobe-story{min-height:0}
+  .sc .wardrobe-items{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .sc .wardrobe-memory-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .sc .wardrobe-fitting-actions{grid-template-columns:1fr 1fr}
+  .sc .wardrobe-fitting-actions button{padding:8px 12px}
+  .sc #world-games iframe,.sc .classroom-connection iframe{min-height:560px}
+}
+@media (max-width:520px){
+  .sc{padding-top:20px}
+  .sc .account-head{margin-top:24px}
+  .sc .account-head h2{font-size:var(--t22);padding-top:8px}
+  .sc #world-games{margin-top:48px}
+  .sc .game-links{grid-template-columns:minmax(0,1fr)}
+  .sc .wardrobe-items{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sc .wardrobe-save-form{flex-wrap:wrap}
+  .sc .wardrobe-save-form label{flex-basis:100%}
+  .sc .wardrobe-save-form button{width:100%}
+  .sc .wardrobe-memory-grid{gap:12px}
+  .sc .wardrobe-fitting-actions{grid-template-columns:1fr}
+  .sc .wardrobe-three-stage{height:340px}
+  .sc .wc-heading{flex-wrap:wrap}
+}
+@media (forced-colors:active){
+  .sc input[type="checkbox"]{appearance:auto;width:22px;height:22px;background:none}
+  .sc select{appearance:auto;background-image:none;padding-right:16px}
+  .sc .wardrobe-button[aria-pressed="true"],.sc .world-preference-choices .sb-btn[aria-pressed="true"],.sc .wardrobe-item[aria-pressed="true"]{outline:2px solid CanvasText;outline-offset:1px}
+  /* 키보드 초점은 고른 표시(2px 선)와 다르게 — Highlight 3px · 4px 띄움 */
+  .sc :is(.wardrobe-button,.wardrobe-item,.sb-btn,.plain,.game-links>button):focus-visible,.sc .wardrobe-button[aria-pressed="true"]:focus-visible,.sc .world-preference-choices .sb-btn[aria-pressed="true"]:focus-visible,.sc .wardrobe-item[aria-pressed="true"]:focus-visible{outline:3px solid Highlight;outline-offset:4px}
+}
+@media (prefers-reduced-motion:reduce){
+  .sc,.sc *,.sc *::before,.sc *::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
+
+/* 플랫폼 로그인 콜백 대기 중 첫 paint부터 검정 공간을 먼저 표시한다(style.css에서 옮김 — body.sb-page → body.sc). */
+.client-portal-orb{display:none}
+.client-portal-orb .portal-orb-canvas{display:block;width:100%;height:100%}
+html[data-platform-portal-boot="true"],html[data-platform-portal-boot="true"] body.sc{background:#000000!important;background-image:none!important;color-scheme:dark;overflow:hidden}
+html[data-platform-portal-boot="true"] body.sc::before,html[data-platform-portal-boot="true"] body.sc::after{display:none!important}
+html[data-platform-portal-boot="true"] body.sc>main{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+html[data-platform-portal-boot="true"] .client-portal-orb{display:block;position:fixed;inset:0;z-index:100;background:#000000;pointer-events:none}
+html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data-platform-portal-boot="true"] .client-portal-orb[data-orb-mode="static"]::after{content:'';position:absolute;left:50%;top:50%;width:clamp(136px,min(64vw,51svh),448px);height:clamp(136px,min(64vw,51svh),448px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(245,247,252,.52) 0%,rgba(20,23,29,.94) 38%,#040507 78%,#dce2ec 99%,#f4f7fc 100%);box-shadow:inset 0 0 0 1px rgba(236,241,248,.56)}
