@@ -3,7 +3,7 @@
 // 숨은 Electron 창에 실제 synk-desktop://platform/index.html을 띄우고 합성 다리(orb-face-fixture.cjs)로 인증 · 배정 · 초대 · 구독 자료를 준다.
 // 바깥 요청은 모두 막고, 콘솔 오류와 막힌 요청이 0인지 본다. 결과 JSON과 캡처는 git 밖 폴더에 쓴다.
 // 돌지 않는 것: 11번의 「창이 숨은 채 켬」(숨은 시험 창도 document.hidden이 거짓이라 흉내 낼 수 없다), 8번의 진입 오류 화면
-// (실제 호스트는 배정 조회 실패와 예외를 공간 고르기의 까닭으로 바꾸고, 진입 오류는 계정이 바뀌는 경합에서만 생긴다). 둘 다 컨트롤러 시험(orb-face.test.mjs)이 본다.
+// (실제 호스트는 배정 조회 실패와 예외에도 솔리오로 보내고, 진입 오류는 계정이 바뀌는 경합에서만 생긴다). 둘 다 컨트롤러 시험(orb-face.test.mjs)이 본다.
 //   node desktop/tools/orb-face-browser-qa.cjs <결과 폴더>   (ORB_QA_ONLY=19 처럼 차례 하나만)
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const root=path.resolve(__dirname,'..');
@@ -1318,10 +1318,17 @@ if(!process.versions.electron){
           check('18-12 Esc closes the settings room back to Solio, and with 구독 팁 off the subscription row has no tip',e1.settings&&e1.solio&&!e1.tip&&e1.mode==='app',e1);
           w.win.destroy();
         }
+        // 4. 배정 하나: 로그인 뒤 고르기 화면 없이 솔리오로 간다. 그 공간은 열지 않고 펼침에만 세운다(유호님 11-21)
+        const inSolioNoOpen=async w=>{const c=await calls(w),solio=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio]');return !!r&&!r.hidden;})()");return {ok:solio&&!c.some(x=>x.startsWith('open:')),solio,calls:c};};
+        const fanSpaces=w=>w.js("[...document.querySelectorAll('.fan-go[data-go]')].map(b=>b.dataset.go)");
         if(only('4'))for(const [dest,name,say] of [['/','workspace','Workspace를 열었습니다.']]){
           const w=await open();await boot(w,{assignment:{status:'resolved',destinations:[dest],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
-          const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});const c=await calls(w);
-          check('4 one assignment opens once: '+name,r.ok&&c.filter(x=>x==='open:'+dest).length===1&&(await text(w,'[data-space-say]'))===say,{...r.state,calls:c});
+          const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(600);const s0=await inSolioNoOpen(w);
+          check('4 one assignment lands in Solio and opens nothing: '+name,r.ok&&s0.ok,{...r.state,...s0});
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
+          const fan=await fanSpaces(w);check('4 the fan lists Solio and the one space: '+name,JSON.stringify(fan)===JSON.stringify(['solio',name]),{fan});
+          await click(w,`.fan-go[data-go="${name}"]`);await until(w,s=>!s.fan);await wait(900);const c=await calls(w);
+          check('4 choosing it in the fan opens it once: '+name,c.filter(x=>x==='open:'+dest).length===1&&(await text(w,'[data-space-say]'))===say,{calls:c});
           await capture(w,'room-'+name);
           await click(w,'[data-orb-act="reopen-space"]');await wait(600);check('4 「다시 열기」 opens again: '+name,(await calls(w)).filter(x=>x==='open:'+dest).length===2);
           w.win.destroy();
@@ -1329,7 +1336,13 @@ if(!process.versions.electron){
         // 4-PULSE. 창 안의 PULSE(3단계 구현 설계 4절): 바깥 창 없이 띠 아래를 뷰가 덮고, 작은 구가 왼쪽 위 띠에 남는다
         if(only('4')){
           const w=await open();await boot(w,{assignment:{status:'resolved',destinations:['/pulse-app/'],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
-          const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(900);
+          const r0=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(600);const s0=await inSolioNoOpen(w);
+          check('4 a PULSE assignment lands in Solio and does not open PULSE',r0.ok&&s0.ok,{...r0.state,...s0});
+          // 펼침에서 PULSE를 고르면 창 안에서 열린다
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
+          // 펼침이 접힌 뒤 구가 PULSE 자리로 들어가는 동안 기다린다(아래 「다시 고르기」와 같은 기다림)
+          await click(w,'.fan-go[data-go="pulse"]');const r=await until(w,s=>!s.fan&&s.mode==='app'&&s.ui==='app',{timeout:12000});
+          for(let i=0;i<100&&!(await w.js("!!document.getElementById('qa-pulse-view')"));i++)await wait(40);await wait(300);
           const look=()=>w.js("(()=>{const q=s=>document.querySelector('#portal-entry '+s),here=q('.here').getBoundingClientRect(),cover=document.getElementById('qa-pulse-view');return {band:document.documentElement.dataset.orbBand||'',hereTop:Math.round(here.top),hereBottom:Math.round(here.bottom),close:!q('.band-close').hidden,closeRight:Math.round(q('.band-close').getBoundingClientRect().right),cover:cover?Math.round(cover.getBoundingClientRect().top):null,say:(q('[data-space-say]')||{}).textContent||'',name:(q('[data-here-text]')||{}).textContent||''};})()");
           const p1=await look(),placed=await w.js('window.__orbFixture.pulsePlaced()'),c=await calls(w);
           check('4 PULSE opens once inside the window: the band, the small orb in it, the view under it and no room line',r.ok&&c.filter(x=>x==='open:/pulse-app/').length===1&&p1.band==='pulse'&&p1.hereTop===6&&p1.hereBottom<=56&&p1.cover===56&&p1.close&&p1.say===''&&p1.name==='PULSE'&&JSON.stringify(placed.at(-1))==='{"visible":true,"top":56}',{p1,placed,calls:c});
@@ -1356,23 +1369,24 @@ if(!process.versions.electron){
           const p4=await look();check('4 「PULSE 닫기」 closes PULSE and goes to Solio, the band goes',back.ok&&(await calls(w)).includes('pulse-close')&&p4.band===''&&!p4.cover&&p4.hereTop>6,{p4});
           w.win.destroy();
         }
-        // 5. 배정 여럿: 공간 고르기 → 화살표와 Enter로 PULSE
+        // 5. 배정 여럿: 로그인 뒤 고르기 화면 없이 솔리오로 간다. 펼침에 두 공간이 서고, 자판 Enter로 PULSE만 연다(유호님 11-21)
         if(only('5')){
           const w=await open();await boot(w,{assignment:{status:'resolved',destinations:['/','/pulse-app/'],unavailable:[]},subs:subsReady},{restore:signedIn('none')});
-          const r=await until(w,s=>s.phase==='workspace'&&s.ui==='switch',{timeout:12000});check('5 two assignments show the chooser',r.ok,r.state);await captureSizes(w,'entry-chooser');
-          await w.js("document.querySelector('.sw[data-go]').focus()");await key(w,'Right');await key(w,'Return');
-          const p=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});const c=await calls(w);
-          check('5 arrow and Enter open PULSE only',p.ok&&c.includes('open:/pulse-app/')&&!c.includes('open:/'),{...p.state,calls:c});
+          const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(600);const s0=await inSolioNoOpen(w);
+          check('5 two assignments land in Solio without the chooser',r.ok&&s0.ok,{...r.state,...s0});await captureSizes(w,'entry-solio-two-spaces');
           await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
-          check('5 the fan lists Solio and both spaces',JSON.stringify(await w.js("[...document.querySelectorAll('.fan-go[data-go]')].map(b=>b.dataset.go)"))==='["solio","workspace","pulse"]');
+          const fan=await fanSpaces(w);check('5 the fan lists Solio and both spaces',JSON.stringify(fan)==='["solio","workspace","pulse"]',{fan});
+          await w.js("document.querySelector('.fan-go[data-go=\"pulse\"]').focus()");await key(w,'Return');
+          const p=await until(w,s=>!s.fan&&s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(600);const c=await calls(w);
+          check('5 Enter in the fan opens PULSE only',p.ok&&c.includes('open:/pulse-app/')&&!c.includes('open:/'),{...p.state,calls:c});
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
           await click(w,'.fan-go[data-go="solio"]');const s2=await until(w,s=>s.ui==='app'&&!s.fan);let inSolio=null;for(let i=0;i<100&&!inSolio?.ok;i++){inSolio=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio]'),say=document.querySelector('#portal-entry [data-room=solio] [data-say]');return {ok:!!r&&!r.hidden&&!!say&&say.textContent.trim().length>0,hidden:r?.hidden,say:(say?.textContent||'').trim().slice(0,40),rooms:[...document.querySelectorAll('#portal-entry [data-room]')].filter(x=>!x.hidden).map(x=>x.dataset.room)};})()");if(!inSolio.ok)await wait(60);}check('5 going to Solio from the fan',s2.ok&&inSolio.ok,{...s2.state,...inSolio});
           w.win.destroy();
         }
-        // 5-2. 「솔리오로」(Esc)
+        // 5-2. 배정이 둘이고 구독이 없는 회원도 곧바로 솔리오의 첫 문장을 본다
         if(only('5-2')){
           const w=await open();await boot(w,{assignment:{status:'resolved',destinations:['/','/pulse-app/'],unavailable:[]},subs:subsNone},{restore:signedIn('none')});
-          await until(w,s=>s.phase==='workspace'&&s.ui==='switch',{timeout:12000});await key(w,'Escape');
-          const s=await until(w,st=>st.mode==='app'&&st.ui==='app',{timeout:12000});check('5 Esc on the chooser goes to Solio',s.ok&&(await text(w,'[data-say]'))==='아직 연결한 AI 구독이 없습니다.',s.state);
+          const s=await until(w,st=>st.mode==='app'&&st.ui==='app',{timeout:12000});await wait(600);check('5 two assignments go straight to Solio',s.ok&&(await text(w,'[data-say]'))==='아직 연결한 AI 구독이 없습니다.',s.state);
           await capture(w,'solio-none');
           // 「구독 연결하기」 → 계정 관리 방, 「계정 더하기」 줄을 연 채로(2단계 둘째 조각 설계 9.1)
           await click(w,'[data-orb-act="connect"]');await wait(600);
@@ -1380,18 +1394,13 @@ if(!process.versions.electron){
           check('9 「구독 연결하기」 opens the account management room with 「계정 더하기」 open',add.shown&&add.open&&add.say==='아직 연결한 계정이 없습니다.'&&add.mode==='app',add);await capture(w,'manage-none');
           w.win.destroy();
         }
-        // 6. 배정 확인 실패 넷
-        if(only('6'))for(const [status,assignment] of [['partial',{status:'partial',destinations:['/'],unavailable:['pulse']}],['login_required',{status:'login_required',destinations:[],unavailable:[]}],['account_mismatch',{status:'account_mismatch',destinations:[],unavailable:[]}],['unavailable',{status:'unavailable',destinations:[],unavailable:['workspace','pulse']}]]){
+        // 6. 배정 확인 실패 넷: 회사 공간을 확인하지 못해도 로그인을 붙잡지 않고 솔리오로 간다. 펼침에는 확인된 공간만 선다(유호님 11-21)
+        if(only('6'))for(const [status,assignment,want] of [['partial',{status:'partial',destinations:['/'],unavailable:['pulse']},['solio','workspace']],['login_required',{status:'login_required',destinations:[],unavailable:[]},['solio']],['account_mismatch',{status:'account_mismatch',destinations:[],unavailable:[]},['solio']],['unavailable',{status:'unavailable',destinations:[],unavailable:['workspace','pulse']},['solio']]]){
           const w=await open();await boot(w,{assignment,subs:subsNone},{restore:signedIn('none')});
-          const r=await until(w,s=>s.phase==='workspace'&&s.ui==='switch',{timeout:12000});
-          const lead=await text(w,'[data-sw-lead]'),acts=await w.js("[...document.querySelectorAll('.sw-foot button')].map(b=>b.textContent)");
-          check('6 '+status+' shows a reason and 「다시 확인」',r.ok&&lead.length>0&&acts.includes('다시 확인'),{lead,acts,...r.state});
-          if(status==='login_required'){
-            await capture(w,'entry-login-required');
-            const before=(await calls(w)).filter(x=>x==='resolve').length;
-            await w.js("[...document.querySelectorAll('.sw-foot button')].find(b=>b.textContent==='다시 확인')?.click()");await wait(600);
-            const after=(await calls(w)).filter(x=>x==='resolve').length;check('6 「다시 확인」 looks the assignment up again',after===before+1,{before,after});
-          }
+          const r=await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(600);const s0=await inSolioNoOpen(w);
+          check('6 '+status+' still lands in Solio with no chooser or retry screen',r.ok&&s0.ok,{...r.state,...s0});
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
+          const fan=await fanSpaces(w);check('6 '+status+' lists only confirmed spaces in the fan',JSON.stringify(fan)===JSON.stringify(want),{fan});
           w.win.destroy();
         }
         // 8. error · enter-error, 다시 시도 뒤 checking에 글이 없다, unconfigured

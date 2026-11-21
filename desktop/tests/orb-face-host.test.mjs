@@ -149,42 +149,62 @@ test('onEnterDefault refuses when the account changed', async t => {
   assert.equal(result.code, 'ACCOUNT_CHANGED');
 });
 
-test('one assignment opens once and the entry result names the destination', async t => {
+// 로그인 뒤에는 고르기 화면 없이 늘 솔리오로 간다. 배정된 공간은 열지 않고 구 곁 펼침에만 세운다(유호님 11-21)
+test('one assignment opens nothing on sign-in: Solio first, and the switch lists the space', async t => {
   const { root } = fakeRoot();
   const auth = { current: signedInAuth() };
-  const opens = [];
+  const opens = [], opened = [];
   const { mountFace, made } = orbFaceFactory();
-  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge: companyBridge(auth, { destinations: ['/pulse-app/'], opens }), mountFace });
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge: companyBridge(auth, { destinations: ['/pulse-app/'], opens }), mountFace, onOpenPurposeTarget: async id => { opened.push(id); return { ok: true }; } });
   t.after(() => host.dispose());
   await settle();
-  assert.deepEqual(opens, ['/pulse-app/']);
-  assert.equal(host.getState().phase, 'entered');
-  assert.deepEqual(made.view.log.find(e => e[0] === 'dive'), ['dive', 'pulse']);
-  assert.ok(!made.view.scenes.some(s => s.layer === 'switch'));
-});
-
-test('two assignments show one chooser and open only the chosen one, then reopen another space after entry', async t => {
-  const { root } = fakeRoot();
-  const auth = { current: signedInAuth() };
-  const opens = [], lookups = { n: 0 };
-  const { mountFace, made } = orbFaceFactory();
-  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge: companyBridge(auth, { destinations: ['/', '/pulse-app/'], opens, lookups }), mountFace });
-  t.after(() => host.dispose());
-  await settle();
-  assert.equal(host.getState().phase, 'workspace');
   assert.deepEqual(opens, []);
-  made.face.handle('go', 'workspace');
-  await settle();
-  assert.deepEqual(opens, ['/']);
+  assert.deepEqual(opened, ['solio']);
   assert.equal(host.getState().phase, 'entered');
-  // 들어온 뒤 공간 고르기에서 PULSE를 연다. 살아 있는 기록이 있으면 다시 조회하지 않는다
-  const before = lookups.n;
+  assert.deepEqual(made.view.log.find(e => e[0] === 'dive'), ['dive', 'solio']);
+  assert.ok(!made.view.scenes.some(s => s.layer === 'switch' || s.phase === 'workspace'), 'no chooser after sign-in');
   made.face.handle('open-switch');
   await settle();
+  assert.deepEqual(made.view.scenes.at(-1).fan.names.map(n => n.space), ['solio', 'pulse']);
+});
+
+test('two assignments show no chooser on sign-in, and the switch opens only the chosen space', async t => {
+  const { root } = fakeRoot();
+  const auth = { current: signedInAuth({ purpose: 'pending' }) };
+  const opens = [], opened = [], writes = [];
+  const { mountFace, made } = orbFaceFactory();
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge: companyBridge(auth, { destinations: ['/', '/pulse-app/'], opens, writes }), mountFace, onOpenPurposeTarget: async id => { opened.push(id); return { ok: true }; } });
+  t.after(() => host.dispose());
+  await settle();
+  assert.equal(host.getState().phase, 'entered');
+  assert.deepEqual(opens, []);
+  assert.deepEqual(opened, ['solio']);
+  assert.deepEqual(writes.map(w => w.outcome), ['not-asked']);
+  assert.ok(!made.view.scenes.some(s => s.layer === 'switch' || s.phase === 'workspace'), 'no chooser after sign-in');
+  made.face.handle('open-switch');
+  await settle();
+  assert.deepEqual(made.view.scenes.at(-1).fan.names.map(n => n.space), ['solio', 'workspace', 'pulse']);
   made.face.handle('go', 'pulse');
   await settle();
-  assert.deepEqual(opens, ['/', '/pulse-app/']);
-  assert.equal(lookups.n, before, 'a live record needs no second lookup');
+  assert.deepEqual(opens, ['/pulse-app/']);
+});
+
+test('a company space the lookup cannot confirm does not hold sign-in: Solio still opens', async t => {
+  const { root } = fakeRoot();
+  const auth = { current: signedInAuth() };
+  const opens = [], opened = [];
+  const bridge = { ...companyBridge(auth, { opens }), resolveCompanyEntryDestinations: async request => ({ ok: true, requestId: request.requestId, accountGeneration: request.accountGeneration, result: { status: 'login_required', destinations: [], unavailable: ['workspace', 'pulse'] } }) };
+  const { mountFace, made } = orbFaceFactory();
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge, mountFace, onOpenPurposeTarget: async id => { opened.push(id); return { ok: true }; } });
+  t.after(() => host.dispose());
+  await settle();
+  assert.equal(host.getState().phase, 'entered');
+  assert.deepEqual(opened, ['solio']);
+  assert.deepEqual(opens, []);
+  assert.ok(!made.view.scenes.some(s => s.layer === 'switch' || s.phase === 'workspace'), 'no chooser or retry screen after sign-in');
+  made.face.handle('open-switch');
+  await settle();
+  assert.deepEqual(made.view.scenes.at(-1).fan.names.map(n => n.space), ['solio']);
 });
 
 test('onOpenSpace looks the assignment up once when the record expired, and never opens what is not assigned', async t => {
@@ -196,9 +216,7 @@ test('onOpenSpace looks the assignment up once when the record expired, and neve
   const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge: companyBridge(auth, { destinations: () => list, opens, lookups }), mountFace, onOpenPurposeTarget: async () => ({ ok: true }) });
   t.after(() => host.dispose());
   await settle();
-  // 「솔리오로」를 거쳐 들어가면 확인 기록이 비워진다
-  made.face.handle('continue-personal');
-  await settle();
+  // 로그인 뒤 솔리오로 들어가면 확인 기록이 비워진다
   assert.equal(host.getState().phase, 'entered');
   made.face.handle('open-switch');
   await settle();
@@ -218,8 +236,7 @@ test('a space dropped from the assignment is not opened even though the switch s
   const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge: companyBridge(auth, { destinations: () => list, opens }), mountFace, onOpenPurposeTarget: async () => ({ ok: true }) });
   t.after(() => host.dispose());
   await settle();
-  made.face.handle('continue-personal');
-  await settle();
+  assert.equal(host.getState().phase, 'entered');
   list = ['/'];
   made.face.handle('open-switch');
   await settle();

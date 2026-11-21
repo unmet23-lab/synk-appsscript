@@ -1717,6 +1717,45 @@ export function mountDesktopPortalHost({
     };
   }
 
+  // 배정을 확인한 뒤 회사 공간을 열지 않고 솔리오로 갈 때의 계정 확인과 온보딩 판정. 로그인 뒤 진입과 「솔리오로 계속」이 함께 쓴다
+  async function enterPersonalAfterAssignment(accountKey, generation) {
+    const liveAuth = await readLiveAuth();
+    const fence = buildAuthFence(liveAuth, accountKey, generation);
+    if (
+      !fence
+      || !matchesAuthFence(liveAuth, fence, {
+        requireAccountGeneration: Boolean(fence.accountGeneration),
+      })
+    ) {
+      verifiedAssignmentRecord = null;
+      return {
+        ok: false,
+        code: 'ACCOUNT_CHANGED',
+        message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
+      };
+    }
+
+    const purposeMode = resolveDesktopEnteringPurposeMode(liveAuth, accountKey);
+    if (purposeMode === 'existing') {
+      if (
+        verifiedAssignmentRecord
+        && (
+          verifiedAssignmentRecord.fence?.accountKey !== accountKey
+          || !matchesAuthFence(liveAuth, verifiedAssignmentRecord.fence, {
+            requireAccountGeneration: true,
+          })
+        )
+      ) {
+        verifiedAssignmentRecord = null;
+      }
+    } else {
+      verifiedAssignmentRecord = null;
+      onApplyHashRoute?.();
+    }
+
+    return { ok: true, action: 'purpose', purposeMode };
+  }
+
   portal = mountFace(root, {
     ...(faceOptions && typeof faceOptions === 'object' ? faceOptions : {}),
     hostElements,
@@ -1802,8 +1841,15 @@ export function mountDesktopPortalHost({
       return { ok: true, action: 'purpose' };
     },
 
+    // 로그인 뒤에는 고르기 화면 없이 늘 솔리오로 간다. 배정된 Workspace · PULSE는 열지 않고 목록만 넘겨 구 곁 펼침에서 옮겨 가게 한다.
+    // 처음 오는 사람은 초대코드로만 Workspace · PULSE에 들어온다(유호님 11-21)
     async onEnter({ accountKey, generation }) {
-      return executeDesktopAssignmentFlow({ accountKey, generation });
+      const result = await executeDesktopAssignmentFlow({ accountKey, generation, openSingle: false });
+      if (!isPlainObject(result) || result.ok === false || result.action !== 'workspace') return result;
+      const destinations = Array.isArray(result.workspace?.destinations) ? [...result.workspace.destinations] : [];
+      const personal = await enterPersonalAfterAssignment(accountKey, generation);
+      if (personal.ok === false) return personal;
+      return { ...personal, destinations };
     },
 
     async onRetryWorkspace(context) {
@@ -1898,44 +1944,8 @@ export function mountDesktopPortalHost({
     },
 
     async onContinuePersonal(context) {
-      const accountKey = context?.accountKey;
       cancelActiveResolve();
-
-      const liveAuth = await readLiveAuth();
-      const fence = buildAuthFence(liveAuth, accountKey, context?.generation);
-      if (
-        !fence
-        || !matchesAuthFence(liveAuth, fence, {
-          requireAccountGeneration: Boolean(fence.accountGeneration),
-        })
-      ) {
-        verifiedAssignmentRecord = null;
-        return {
-          ok: false,
-          code: 'ACCOUNT_CHANGED',
-          message: '계정 연결이 바뀌었어요. 다시 확인해 주세요.',
-        };
-      }
-
-      const purposeMode = resolveDesktopEnteringPurposeMode(liveAuth, accountKey);
-      if (purposeMode === 'existing') {
-        if (
-          verifiedAssignmentRecord
-          && (
-            verifiedAssignmentRecord.fence?.accountKey !== accountKey
-            || !matchesAuthFence(liveAuth, verifiedAssignmentRecord.fence, {
-              requireAccountGeneration: true,
-            })
-          )
-        ) {
-          verifiedAssignmentRecord = null;
-        }
-      } else {
-        verifiedAssignmentRecord = null;
-        onApplyHashRoute?.();
-      }
-
-      return { ok: true, action: 'purpose', purposeMode };
+      return enterPersonalAfterAssignment(context?.accountKey, context?.generation);
     },
 
     onCancelInvite() {

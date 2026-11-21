@@ -21,12 +21,23 @@
 2026년 11월 16일 유호님이 Claude가 재작성하는 새 프론트에도 이번 로그인 흐름을 유지하라고 하셨다. 화면을 바꾸는 작업은 아래 동작과 실제 계정 확인 결과를 이어받는다.
 
 - 첫 구에서 기존 계정은 로그인 클릭 없이 복원한다. 중앙 ID 확인, OAuth 콜백과 배정 조회, 목적지 문서가 열리는 동안 같은 구를 유지한다. 이전 홈과 연결 중 안내가 잠깐 비치는 현상까지 확인한다.
-- 배정이 하나면 해당 작업을 바로 연다. Workspace와 PULSE를 모두 쓰는 실제 관리자처럼 배정이 둘이면 작업 공간 선택을 한 번 보여준다. 손님은 구를 눌러 Google, 이메일 또는 초대코드로 시작하며 실제 입력이나 동의가 필요한 화면으로 이어진다.
+- 웹 계정 화면은 배정이 하나면 해당 작업을 바로 연다. Workspace와 PULSE를 모두 쓰는 실제 관리자처럼 배정이 둘이면 작업 공간 선택을 한 번 보여준다. PC 앱은 11-21부터 고르기 없이 솔리오로 들어간다([아래 절](#pc-no-chooser-20261121)). 손님은 구를 눌러 Google, 이메일 또는 초대코드로 시작하며 실제 입력이나 동의가 필요한 화면으로 이어진다.
 - 기존 계정 결속과 요청 세대 확인, 계정 변경과 로그아웃, 연결 오류의 재시도 동작을 유지한다. 처음 도착한 페이지의 pageshow가 진행 중인 로그인을 취소하지 않게 한다. BFCache로 돌아왔을 때 목적지로 떠나는 동안 유지했던 구를 해제하는 처리도 보존한다.
 
 관련 원천은 [웹 포털 연결](../experiences/synk-account/src/platform-portal.mjs), [공용 포털 화면](../desktop/renderer/portal-entry.mjs), [중앙 ID](../experiences/synk-account/src/portal.mjs), [콜백](../experiences/synk-account/src/client.mjs)이다. [기존 계정 복귀 회귀 시험](../experiences/synk-account/tests/platform-returning-session.test.mjs)과 정상 진입 경로로 확인하며, 계정 원천 변경은 AGENTS의 check-account-bundles.js --build 절차를 따른다.
 
 이번 운영 확인은 서버 73판의 실제 관리자 계정으로 마쳤다. 로그인 클릭 0회, 두 작업 중 선택 1회, 배정 조회 HTTP 200, 선택 화면 이전의 중간 문구 0건이었다. Workspace 내 업무에서 PULSE 제작 보드를 열었고, 15초 영상의 실제 재생과 960×540 화면을 확인했다. 공개한 전환 수정은 26974905와 0182da54다. [실제 확인 기록](../.tmp/company-staff-entry-20261115/portal-web-handoff-20261116.md)에 화면과 원본 증거를 보존했다.
+
+<a id="pc-no-chooser-20261121"></a>
+### PC 앱은 고르기 화면 없이 솔리오로 들어간다(2026-11-21)
+
+유호님이 11-21에 「로그인하면 지금 고르는거 화면이 없었으면 좋겠어」, 「워크스페이스랑 pulse는 일단 초대코드로만 로그인하게해줘」라고 하셨다. 이미 배정된 계정은 구 곁 펼침에서 옮겨 가는 안을 고르셨다.
+
+- PC 앱은 로그인하면 늘 솔리오로 들어간다. 배정은 그대로 조회하지만 회사 공간을 열지 않고, 확인된 공간을 펼침 목록에만 넘긴다.
+- 배정 조회가 실패해도(추가 로그인 필요, 다른 계정, 확인 불가) 로그인을 붙잡지 않는다. 펼침에는 확인된 공간만 보인다.
+- 처음 오는 사람은 묻는 화면의 초대코드로만 Workspace와 PULSE에 들어온다.
+- 웹 계정 화면(synk.im/account/platform.html)은 바꾸지 않았다.
+- 원천은 `desktop/renderer/portal-host.mjs`의 `onEnter`와 `enterPersonalAfterAssignment`, `orb-face.mjs`의 `triggerEnter`다. 시험은 `desktop/tests/orb-face-host.test.mjs`, 화면 확인은 `desktop/tools/orb-face-browser-qa.cjs`의 4~6번이다.
 
 <a id="solio-20261114"></a>
 ## 2026-11-14 솔리오와 회원 메뉴 재배치

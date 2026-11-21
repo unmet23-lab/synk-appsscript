@@ -946,7 +946,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       } else if (result && result.action === 'purpose') {
         workspaceNeedsRetry = false;
         clearFeedback();
-        rememberAssigned([], startAccountKey);
+        // 호스트는 고르기 화면 없이 솔리오로 보내며 배정된 공간 목록만 넘긴다. 펼침이 그 공간을 안다(유호님 11-21)
+        rememberAssigned(result.destinations || [], startAccountKey);
         const mode = result.purposeMode === 'existing' ? 'existing' : 'onboarding';
         const moved = machine.enterToPurpose({ mode });
         if (!moved.ok) {
