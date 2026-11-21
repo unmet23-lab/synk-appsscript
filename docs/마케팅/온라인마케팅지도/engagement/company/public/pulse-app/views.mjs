@@ -69,7 +69,7 @@ const assetFields=(s,item={})=>`${field('새 이미지 올리기','file','','fil
 const visibility=value=>`<label class="field">공개 범위<select name="visibility"><option value="internal" ${value!=='customer'?'selected':''}>제작자만 보기 · 준비 중</option><option value="customer" ${value==='customer'?'selected':''}>고객에게 보이기</option></select></label>`;
 // 체험 머리 · 직원 이름표 — 체험은 영어에서 숨기고 직원 화면은 한국어다.
 const demoHeader=()=>'<span class="tag berry demo-tag">고객 체험</span>'+btn('처음부터','demo-reset','','quiet')+'<a class="button quiet" href="./">체험 나가기</a>';
-const STAFF_HEAD={space:'작업실',projects:'제작 보드',ledger:'운영판',brands:'고객 브랜드',notify:'알림',logout:'로그아웃',install:'앱 설치',intake:'새 의뢰',open:'받는 중',pause:'쉬기',paused:'접수 쉬는 중'};
+const STAFF_HEAD={space:'작업실',projects:'제작 보드',ledger:'운영판',brands:'고객 브랜드',roster:'채널 명단',notify:'알림',logout:'로그아웃',install:'앱 설치',intake:'새 의뢰',open:'받는 중',pause:'쉬기',paused:'접수 쉬는 중'};
 // 직원 머리 띠(작업실 · 11-13 B안 「제작 보드」): 검정 띠 하나에 갈 곳 셋(제작 보드 · 고객 브랜드 · 알림)과 새 의뢰 접수 스위치를 늘 둔다.
 // 스위치는 어느 직원 화면에서나 보인다(잊고 쉬어 둔 채 판매가 멈추지 않게). 바꾸기는 관리자만 — 「쉬기」는 첫 화면에 쉬는 칸을 열고(폼은 본문에 둬야 실시간 갱신에 쓰던 글이 남는다),
 // 쉬는 동안 「받는 중」은 그 자리에서 다시 받는다. 크루에게는 상태 글만 보인다.
@@ -85,8 +85,8 @@ function staffHeader(s){
   // 앱 설치는 로그인 전에도 둔다(PC 앱 창은 설치 안내가 없다). 아이콘은 staff.css가 그리고 글은 단추 이름으로 남는다(좁은 폭에서는 글을 숨긴다).
   const install=s.desktopApp?'':btn(STAFF_HEAD.install,'install',`title="${STAFF_HEAD.install}"`,'quiet install-button');
   if(!s.user)return install; // 로그인 전: 띠 설명 글 「작업실」(app.mjs)이 이름표를 대신한다.
-  const home=!s.project&&!s.brands&&!s.ledger,me=[...(s.user.name||STAFF_HEAD.space)][0];
-  return `<nav class="staff-nav" aria-label="작업실">${btn(STAFF_HEAD.projects,'projects',home?'aria-current="page"':'','quiet staff-tab')}${btn(STAFF_HEAD.ledger,'ledger',s.ledger?'aria-current="page"':'','quiet staff-tab')}${btn(STAFF_HEAD.brands,'brands',s.brands?'aria-current="page"':'','quiet staff-tab')}${staffNotify(s)}</nav>${staffIntakeHead(s)}${install}<span class="staff-me" title="${esc(s.user.name||'')}" aria-hidden="true">${esc(me)}</span><span class="user-label small">${esc(s.user.name||STAFF_HEAD.space)}</span>${btn(STAFF_HEAD.logout,'logout','','quiet staff-logout')}`;
+  const home=!s.project&&!s.brands&&!s.ledger&&!s.roster,me=[...(s.user.name||STAFF_HEAD.space)][0];
+  return `<nav class="staff-nav" aria-label="작업실">${btn(STAFF_HEAD.projects,'projects',home?'aria-current="page"':'','quiet staff-tab')}${btn(STAFF_HEAD.ledger,'ledger',s.ledger?'aria-current="page"':'','quiet staff-tab')}${btn(STAFF_HEAD.brands,'brands',s.brands?'aria-current="page"':'','quiet staff-tab')}${s.staffIntake?.canEdit?btn(STAFF_HEAD.roster,'people-roster',s.roster?'aria-current="page"':'','quiet staff-tab'):''}${staffNotify(s)}</nav>${staffIntakeHead(s)}${install}<span class="staff-me" title="${esc(s.user.name||'')}" aria-hidden="true">${esc(me)}</span><span class="user-label small">${esc(s.user.name||STAFF_HEAD.space)}</span>${btn(STAFF_HEAD.logout,'logout','','quiet staff-logout')}`;
 }
 // i18n-skip-end
 // PC 앱의 PULSE 창(s.desktopApp)은 앱 설치·기기 알림을 쓸 수 없어 설치 안내 단추를 두지 않는다. 새 소식은 「알림」(앱 안 알림)으로 본다.
@@ -371,9 +371,18 @@ function roomPreview(p){
   return pickPlayable(first)||pickFallback(first)||pickPlayable(second)||pickFallback(second);
 }
 // keep(판 4): 「내 모델로 모아 두기」 회원 상태(app.mjs가 그 프로젝트에서 읽은 것만 — 스위치가 꺼져 있으면 없다).
-const roomInfo=s=>{const preview=roomPreview(s.project);return {...roomModel(s.project),...(preview?{preview}:{}),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{}),...(marketingOn(s)?{marketing:true}:{})};};
+const roomInfo=s=>{const preview=roomPreview(s.project);return {...roomModel(s.project),...(preview?{preview}:{}),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{}),...(marketingOn(s)?{marketing:true}:{}),...(peopleOn(s)?{people:true}:{})};};
 // 마케팅 성과(11-16 계약): 스위치(features.marketing)를 읽어 켜져 있는 의뢰 흐름 손님에게만 칸을 그린다. 상태는 app.mjs가 프로젝트마다 s.marketing에 둔다.
 const marketingOn=s=>isCustomerRoom(s)&&s.marketing?.projectId===s.project?.id&&s.marketing.on===true;
+// 인플루언서 광고(11-21 조각 ①): 스위치(features.people — 서버가 고를 채널이 있을 때만 참)가 켜진 손님 방에서, 결제를 마친 뒤(제작 · 영상 단계)에만. 상태는 app.mjs의 s.people.
+const peopleOn=s=>isCustomerRoom(s)&&s.people?.projectId===s.project?.id&&s.people.on===true&&['make','review'].includes(roomModel(s.project).stage);
+function peopleEntry(){return `<section class="sx-extra sx-ppl-entry" data-room-in><div><h2>${esc(t('인플루언서 광고'))}</h2><p class="sx-small">${esc(t('이 영상을 다른 채널에도 실어 보세요. 채널을 보고 담당자에게 물어보시면 돼요.'))}</p></div><button type="button" class="sx-go" data-room-go="people"><span>${esc(t('채널 보기',null,'list'))}</span>${arrow}</button></section>`;}
+// 인플루언서 광고 칸: 화면 모듈(people-view.mjs)은 처음 열 때 app.mjs가 불러 s.peopleView로 둔다. 오기 전에는 기다림 한 줄.
+function peopleRoom(s){
+  const p=s.people,status=p.status==='ready'?'ready':p.status==='error'||s.peopleViewFailed?'error':'loading';
+  const body=s.peopleView?s.peopleView({status,entries:p.entries,kind:s.project.studio?.request?.answers?.kind||'',filter:p.filter}):status==='error'?`<div class="sx-ppl-page"><p class="sx-kicker">${esc(t('인플루언서 광고'))}</p><h1 class="sx-display" data-room-title>${esc(t('채널을 불러오지 못했어요'))}</h1><p class="sx-body">${esc(t('인터넷 연결을 확인한 뒤 다시 불러와 주세요.'))}</p><button type="button" class="sx-go is-solid" data-ppl-do="retry"><span>${esc(t('다시 불러오기'))}</span>${arrow}</button></div>`:`<div class="sx-ppl-page"><p class="sx-kicker">${esc(t('인플루언서 광고'))}</p><p class="sx-small" role="status">${esc(t('채널을 불러오고 있어요.'))}</p></div>`;
+  return `<div class="sx-shell sx-room sx-ppl" data-mode="customer" data-tab="people" data-state="people">${body}${journalOf(s,'drawer',{tab:'people'})}</div>`;
+}
 // 고객 방 왼쪽 단의 입구 한 줄: 이번 달 한 장의 결론(없으면 가장 최근 리포트의 한 문장)과 「리포트 보기」. 휴대폰은 머리의 칸 이름이 숨으므로 이 줄이 입구다.
 function marketingEntry(s){
   const m=s.marketing,line=m.status==='ready'?marketingLine(m.heads)||t('아직 잰 것이 없어요. 첫 회차를 재면 여기에 올라와요.'):t('SYNK가 재서 올린 리포트를 여기에서 읽으실 수 있어요.');
@@ -408,7 +417,7 @@ function customerRoom(s){
   // 제안이 바뀌었으면(안 id가 다르면) 옛 화면 상태(모델 · 펼침 · 둘 다 아니에요)를 그리기 전에 버린다(11-07 검수).
   const info=roomInfo(s);if(info.direction&&(info.state==='direction'||s.tab==='pick'&&info.direction.canPick)){const key=info.direction.options.map(o=>o.id).join(',');return directionScreen(info,{top:alertBox(s),ui:s.directionUi?.key===key?s.directionUi:{},journal:journalOf(s,'drawer',{tab:'pick'})});}
   const extras=roomExtras(p);
-  const after=`${extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(t(item.title))}</h2><p class="sx-small">${esc(t(item.text))}</p></div><button type="button" class="sx-go" data-room-do="paper" data-paper="${esc(item.paper)}"><span>${esc(t(item.button))}</span>${arrow}</button></section>`).join('')}${info.marketing?marketingEntry(s):''}`;
+  const after=`${extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(t(item.title))}</h2><p class="sx-small">${esc(t(item.text))}</p></div><button type="button" class="sx-go" data-room-do="paper" data-paper="${esc(item.paper)}"><span>${esc(t(item.button))}</span>${arrow}</button></section>`).join('')}${info.marketing?marketingEntry(s):''}${info.people?peopleEntry():''}`;
   // 기기 기억 안내는 왼쪽 단(지금 할 일) 한가운데가 아니라 그림 아래 띠로 — 맹검 11-07 「시스템 안내가 내용 자리에 들어옴」.
   // 내 모델 입구(판 4 운영 시험 P3): 스위치 myModels가 켜진 손님 방에서, 위 인물 칸이 이미 「내 모델 열기」를 둔 방(브랜드 회원 · 다시 쓰기)이 아니면 아래 띠에 한 줄.
   // 위 인물 칸이 실제로 「내 모델 열기」를 그린 방만 뺀다 — 인물이 끝난 방(turn end)은 personaKeep이 아무것도 그리지 않는다(최종 검수 F4).
@@ -684,7 +693,7 @@ export function projectView(s){
   if(s.mode==='staff'&&s.tab==='desk'&&s.project.studio?.request)return deskScreen(s);
   if(s.mode!=='staff'){
     // 의뢰 흐름 손님(판 3): 방 · 1차안 · 방향 · 영상과 납품 · 묻기 · 완성 광고. 옛 탭 이름은 roomTab이 이 중 하나로 옮긴다.
-    if(isCustomerRoom(s)){const view=roomTab(s.tab);if(view==='films')return filmsRoom(s);if(view==='marketing'&&marketingOn(s))return marketingRoom(s);if(view==='review'&&(s.project.versions||[]).length)return reviewRoom(s);return customerRoom(s);}
+    if(isCustomerRoom(s)){const view=roomTab(s.tab);if(view==='films')return filmsRoom(s);if(view==='marketing'&&marketingOn(s))return marketingRoom(s);if(view==='people'&&peopleOn(s))return peopleRoom(s);if(view==='review'&&(s.project.versions||[]).length)return reviewRoom(s);return customerRoom(s);}
     if(s.tab==='review')return reviewRoom(s);
     if(s.tab==='history')return deliveryRoom(s);
     if(s.tab==='films')return filmsRoom(s);

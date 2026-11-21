@@ -135,8 +135,8 @@ test('인물 파일은 백업 목록에 오르고, 지운 자료(묘비)는 건�
 });
 
 test('스위치 값 읽기 · 프로젝트 언어',()=>{
-  assert.deepEqual(readPulseFeatures(null),{publicLocales:['ko'],projectLocales:['ko'],personaRequest:false,personaReal:false,myModels:false,marketing:false});
-  assert.deepEqual(readPulseFeatures({projectLocales:['ko','en'],publicLocales:['ko','en'],personaRequest:true,personaReal:true,myModels:true,marketing:true}),{publicLocales:['ko','en'],projectLocales:['ko','en'],personaRequest:true,personaReal:true,myModels:true,marketing:true});
+  assert.deepEqual(readPulseFeatures(null),{publicLocales:['ko'],projectLocales:['ko'],personaRequest:false,personaReal:false,myModels:false,marketing:false,people:false});
+  assert.deepEqual(readPulseFeatures({projectLocales:['ko','en'],publicLocales:['ko','en'],personaRequest:true,personaReal:true,myModels:true,marketing:true,people:true}),{publicLocales:['ko','en'],projectLocales:['ko','en'],personaRequest:true,personaReal:true,myModels:true,marketing:true,people:true});
   assert.equal(readPulseFeatures({personaRequest:false,personaReal:true}).personaReal,false,'인물 접수가 꺼져 있으면 실제 인물도 꺼진다');
   const f=readPulseFeatures({projectLocales:['ko','en']});
   assert.equal(projectLocaleOf(f,{contactLocale:'en'}),'en');assert.equal(projectLocaleOf(f,{contactLocale:'ja'}),'ko');assert.equal(projectLocaleOf(f,undefined),'ko');

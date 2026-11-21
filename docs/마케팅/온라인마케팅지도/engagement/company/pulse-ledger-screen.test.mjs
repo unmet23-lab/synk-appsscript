@@ -168,7 +168,7 @@ test('앱 연결: 운영판은 직원만 늦게 불러오고(목록 밖), 결제
   assert.match(app,/mountScreens\(\);placeTimeline\(\);if\(s\.ledger\)s\.ledgerPlace\?\.\(main\);/,'그릴 때마다 막대 · 띠 자리를 넣는다');
   assert.match(app,/request\('\/api\/pulse\/ledger'\+\(month\?'\?month='\+encodeURIComponent\(month\):''\)\)/);
   assert.match(app,/if\(s\.ledger!==ask\)return;/,'늦게 온 앞 달 답은 버린다');
-  assert.match(app,/\(s\.brands\?brandsView\(\):s\.ledger\?ledgerView\(\):picker\(s\)\)/);
+  assert.match(app,/\(s\.brands\?brandsView\(\):s\.ledger\?ledgerView\(\):s\.roster\?rosterView\(\):picker\(s\)\)/);
   assert.match(app,/function resetContext\([^)]*\)\{[^\n]*s\.ledger=null;/);
   assert.match(app,/const ledger=!!s\.project\?\.studio\?\.request\?\.paymentLedger&&!!form\.querySelector\('\[name=channel\]'\)/);
   assert.match(app,/if\(ledger&&\(amount!==null&&!Number\.isSafeInteger\(amount\)\|\|net!==null&&!Number\.isSafeInteger\(net\)\)\)\{showMutationError\('금액은 원 단위 숫자로 적어 주세요\.'\);return;\}/,'소수 · 너무 큰 수는 보내기 전에 막는다');

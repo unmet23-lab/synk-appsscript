@@ -366,3 +366,32 @@ html.is-staff .desk-pay-channel .desk-check{margin:0 0 10px}
 html.is-staff .comment-photos{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 html.is-staff .comment-photos a{display:block;line-height:0}
 html.is-staff .comment-photos img{display:block;height:96px;width:auto;max-width:100%;object-fit:contain;background:#111;border-radius:4px}
+/* ── 채널 명단(인플루언서 광고 창 조각 ①, 11-21 — people-roster-view.mjs) ── */
+html.is-staff #main>.ppl-desk{max-width:1080px;margin:0 auto;padding:32px 24px 64px;display:grid;gap:28px}
+html.is-staff .ppl-note{margin:0;font-size:14px;line-height:1.6;color:var(--st-ink-70)}
+html.is-staff .ppl-head h1{font:600 28px/1.2 var(--st-sans);margin:0 0 8px}
+html.is-staff .ppl-head p{max-width:64ch;color:var(--st-ink-70)}
+html.is-staff .ppl-switch{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 20px;background:var(--st-sheet);border:1px solid var(--st-line)}
+html.is-staff .ppl-switch h2{font:600 17px/1.3 var(--st-sans);margin:0 0 4px}
+html.is-staff .ppl-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--st-line)}
+html.is-staff .ppl-row{display:grid;grid-template-columns:56px 1fr auto;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--st-line)}
+html.is-staff .ppl-face{width:56px;height:56px;margin:0;overflow:hidden;background:var(--st-paper-2)}
+html.is-staff .ppl-face img{width:100%;height:100%;object-fit:cover;display:block}
+html.is-staff .ppl-initial{display:grid;place-items:center;width:100%;height:100%;font-size:22px;color:var(--st-ink-70)}
+html.is-staff .ppl-row h3{font:600 16px/1.3 var(--st-sans);margin:0 0 2px}
+html.is-staff .ppl-row p{margin:0;color:var(--st-ink-70)}
+html.is-staff .ppl-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px!important}
+html.is-staff .ppl-row-act{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+html.is-staff .ppl-edit{margin:0 0 8px;padding:20px;background:var(--st-sheet);border:1px solid var(--st-line)}
+html.is-staff .ppl-edit h3{font:600 17px/1.3 var(--st-sans);margin:0 0 14px}
+html.is-staff .ppl-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;align-items:start}
+html.is-staff .ppl-topics{display:flex;flex-wrap:wrap;gap:6px 14px;grid-column:1/-1;border:0;padding:0;margin:0}
+html.is-staff .ppl-topics legend{width:100%;margin-bottom:6px}
+html.is-staff .ppl-check{display:flex;align-items:center;gap:8px}html.is-staff .ppl-topics .ppl-check{white-space:nowrap}
+html.is-staff #main .ppl-check input[type=checkbox]{width:18px;height:18px;min-height:0;flex:none;margin:0;padding:0}
+html.is-staff .ppl-edit-act{display:flex;gap:10px;margin-top:16px}
+html.is-staff .ppl-preview{display:grid;gap:10px;justify-items:start}
+html.is-staff .ppl-preview h2{font:600 17px/1.3 var(--st-sans);margin:0}
+html.is-staff .ppl-preview-box{width:100%;max-height:760px;overflow:auto;border:1px solid var(--st-line);background:#000;color:var(--sx-ink)}html.is-staff .ppl-preview-box :is(h1,h2,h3){color:var(--sx-ink)}
+html.is-staff .ppl-foot{color:var(--st-ink-56)}
+@media (max-width:760px){html.is-staff .ppl-row{grid-template-columns:48px 1fr}html.is-staff .ppl-face{width:48px;height:48px}html.is-staff .ppl-row-act{grid-column:1/-1;justify-content:flex-start}html.is-staff .ppl-edit-grid{grid-template-columns:1fr}html.is-staff .ppl-switch{flex-direction:column;align-items:flex-start}}

@@ -5,12 +5,13 @@
 //   projectLocales — 프로젝트의 소통 언어(contactLocale)로 허락하는 언어. 영어 시험은 공개 메뉴 없이 여기에만 en을 더해 초대 링크로 본다.
 //   personaRequest · personaReal · myModels — 전용 인물 접수(가상) · 실제 인물 접수 · 내 모델(판 3 · 4)
 //   marketing — 고객 방의 「마케팅 성과」 칸(2026-11-16). 공개 의뢰서와 projectView에는 싣지 않는다. 고객 방 자료에는 server.mjs가 프로젝트마다 정한 값(pulse-marketing.mjs visible)을 얹는다.
+//   people — 고객 방의 「인플루언서 광고」 창(2026-11-21). 공개 의뢰서와 projectView에는 싣지 않는다. 고객 방 자료에는 server.mjs가 고를 수 있는 칸이 있을 때만 참(pulse-people.mjs visible)을 얹는다.
 import {DEFAULT_LOCALE,DICTIONARY_LOCALES} from './public/pulse-app/i18n.mjs';
 
 export const PULSE_FEATURES_KIND='pulseFeatureSettings';
 const ID='main';
-const FLAGS=['personaRequest','personaReal','myModels','marketing'],LISTS=['publicLocales','projectLocales'];
-export const PULSE_FEATURE_DEFAULTS=Object.freeze({publicLocales:Object.freeze([DEFAULT_LOCALE]),projectLocales:Object.freeze([DEFAULT_LOCALE]),personaRequest:false,personaReal:false,myModels:false,marketing:false});
+const FLAGS=['personaRequest','personaReal','myModels','marketing','people'],LISTS=['publicLocales','projectLocales'];
+export const PULSE_FEATURE_DEFAULTS=Object.freeze({publicLocales:Object.freeze([DEFAULT_LOCALE]),projectLocales:Object.freeze([DEFAULT_LOCALE]),personaRequest:false,personaReal:false,myModels:false,marketing:false,people:false});
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
 // 언어 목록: 사전이 있는 언어만, 한국어는 늘 들어 있고 맨 앞이다. 겹치면 하나로.
@@ -22,7 +23,7 @@ function localeList(value,strict){
 }
 // 저장된 값을 읽을 때: 알 수 없거나 어긋난 값은 기본(끔)으로. 쓰는 쪽(configure)은 같은 규칙을 엄격히 본다.
 export function readPulseFeatures(stored){
-  const out={publicLocales:[...PULSE_FEATURE_DEFAULTS.publicLocales],projectLocales:[...PULSE_FEATURE_DEFAULTS.projectLocales],personaRequest:false,personaReal:false,myModels:false,marketing:false};
+  const out={publicLocales:[...PULSE_FEATURE_DEFAULTS.publicLocales],projectLocales:[...PULSE_FEATURE_DEFAULTS.projectLocales],personaRequest:false,personaReal:false,myModels:false,marketing:false,people:false};
   if(!object(stored))return out;
   const project=localeList(stored.projectLocales,false);if(project)out.projectLocales=project;
   const open=localeList(stored.publicLocales,false);if(open&&open.every(item=>out.projectLocales.includes(item)))out.publicLocales=open;

@@ -38,6 +38,8 @@ export async function request(path,{body,csrf='',staff=false,member=false,file,h
 export const MARKETING_KINDS=Object.freeze(['memo','ai-search','competitor-ads','label-review']);
 export const marketingRunOk=value=>typeof value==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.-]{0,39}$/.test(value);
 export const marketingList=({signal}={})=>request('/pulse/api/marketing',{signal});
+// 인플루언서 광고 창(11-21 조각 ①): 고를 수 있는 채널 목록. 스위치가 꺼졌거나 고를 채널이 없으면 서버가 404를 낸다.
+export const peopleList=({signal}={})=>request('/pulse/api/people',{signal});
 export function marketingReport(kind,run,{signal}={}){
   if(!MARKETING_KINDS.includes(kind)||!marketingRunOk(run))return Promise.reject(new PulseError(t('요청 주소를 확인해 주세요.'),400));
   return request(`/pulse/api/marketing/report?kind=${encodeURIComponent(kind)}&run=${encodeURIComponent(run)}`,{signal});

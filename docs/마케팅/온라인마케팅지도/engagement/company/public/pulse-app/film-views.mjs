@@ -32,11 +32,11 @@ const withMarks=(text,marks)=>Object.entries(marks).reduce((html,[name,mark])=>h
 // ── 고객 방 ──
 // 단계 낱말 줄(판 3, 11-08): 앱 머리에 하나만 둔다. 지금 단계까지만 열리고, 완성 광고는 줄 끝에.
 export function roomRail(p,{tab='overview'}={}){
-  const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),view=roomTab(tab),now=['draft','review','films','marketing'].includes(view)?view:p.stage,away=view==='films'||view==='marketing';
+  const at=ROOM_STAGES.findIndex(item=>item.id===p.stage),view=roomTab(tab),now=['draft','review','films','marketing','people'].includes(view)?view:p.stage,away=view==='films'||view==='marketing'||view==='people';
   // 판이 오기 전의 1차안 칸은 지금 단계여도 열지 않는다(모델을 정하기 전에 글 콘티로 넘어가지 않게).
   const locked=(item,i)=>item.id==='draft'&&!p.hasRound||item.id!==now&&i>at;
-  // 줄 끝의 따로 선 칸: 완성 광고와, 스위치(features.marketing)가 켜진 손님의 마케팅 성과(11-16).
-  const foot=[p.films&&['films',t('SYNK 작품')],p.marketing&&['marketing',t('마케팅 성과')]].filter(Boolean);
+  // 줄 끝의 따로 선 칸: SYNK 작품과, 스위치(features.marketing)가 켜진 손님의 마케팅 성과(11-16), 인플루언서 광고(11-21 — 스위치 people · 결제 뒤).
+  const foot=[p.films&&['films',t('SYNK 작품')],p.marketing&&['marketing',t('마케팅 성과')],p.people&&['people',t('인플루언서 광고')]].filter(Boolean);
   return `<nav class="sx-steps sx-head-steps" aria-label="${esc(t('단계'))}"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now&&!away?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(stageName(item.id,p.photo))}</button>`).join('')}</div>${foot.length?`<div class="sx-steps-foot sx-small">${foot.map(([id,label])=>`<button type="button" class="${view===id?'is-now':''}" ${view===id?'aria-current="page"':''} data-room-go="${id}">${esc(label)}</button>`).join('')}</div>`:''}</nav>`;
 }
 // 머리 하나: 프로젝트 이름(누르면 고객 방) · 접수 번호 · 단계 줄. 앱에서는 앱 머리 칸에, 예시에서는 화면 안 머리에 같은 마크업을 그린다.
@@ -464,7 +464,7 @@ function payCard(p){
 }
 // 끝맺음(판 4 B4): 수령 확인 뒤. 크몽 구매확정 · 후기 · 같은 모델로 다음 편, 방이 닫히기 전에 파일을 따로 두라는 말.
 function doneCard(p){
-  return `<section class="sx-done" data-room-in><ol class="sx-pay-steps sx-body"><li><span>${esc(t('크몽에서 작업물을 확인하시고 「구매확정」을 눌러 주세요'))}</span></li><li><span>${esc(t('마음에 드셨다면 크몽 후기 한 줄이 다음 손님께 큰 도움이 돼요'))}</span></li><li><span>${esc(p?.photo?t('같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요'):t('같은 모델 · 같은 자막 규격으로 다음 편을 이어 만들 수 있어요. 담당자에게 알려 주세요'))}</span></li></ol><p class="sx-done-next"><button type="button" class="sx-quiet" data-room-do="journal" data-journal-say="${esc(p?.photo?t('다음 사진을 이어 만들고 싶어요.'):t('다음 편을 이어 만들고 싶어요.'))}">${esc(p?.photo?t('다음 사진 묻기'):t('다음 편 묻기'))}</button></p><p class="sx-small">${esc(t('프로젝트를 마치면 이 방이 닫혀요. 받은 파일은 따로 보관해 주세요.'))}</p></section>`;
+  return `<section class="sx-done" data-room-in><ol class="sx-pay-steps sx-body"><li><span>${esc(t('크몽에서 작업물을 확인하시고 「구매확정」을 눌러 주세요'))}</span></li><li><span>${esc(t('마음에 드셨다면 크몽 후기 한 줄이 다음 손님께 큰 도움이 돼요'))}</span></li><li><span>${esc(p?.photo?t('같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요'):t('같은 모델 · 같은 자막 규격으로 다음 편을 이어 만들 수 있어요. 담당자에게 알려 주세요'))}</span></li></ol>${p?.people?`<p class="sx-done-next"><button type="button" class="sx-quiet" data-room-go="people">${esc(t('이 영상을 다른 채널에도 실어 보기'))}</button></p>`:''}<p class="sx-done-next"><button type="button" class="sx-quiet" data-room-do="journal" data-journal-say="${esc(p?.photo?t('다음 사진을 이어 만들고 싶어요.'):t('다음 편을 이어 만들고 싶어요.'))}">${esc(p?.photo?t('다음 사진 묻기'):t('다음 편 묻기'))}</button></p><p class="sx-small">${esc(t('프로젝트를 마치면 이 방이 닫혀요. 받은 파일은 따로 보관해 주세요.'))}</p></section>`;
 }
 // 고른 방향: 이름 · 한 문장 · 값 · 받으실 날 · 수정 · 다음 길. 판이 오기 전까지 다시 고를 수 있다.
 function chosenCard(d){

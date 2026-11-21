@@ -49,7 +49,7 @@ const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redi
 export const roomStage=state=>STAGE_OF[state]||'check';
 // 단계 id · 옛 탭 이름을 고객 방의 화면 하나로. 머리의 단계 줄 · 방 안 이동 · 알림 이동이 이것만 쓴다.
 // 묻기(contact)는 판 3b부터 화면이 아니라 일지다 — 옛 이름으로 오면 고객 방(app.mjs가 일지를 연다).
-export const roomTab=id=>id==='history'||id==='review'?'review':['draft','films','pick','marketing'].includes(id)?id:'overview';
+export const roomTab=id=>id==='history'||id==='review'?'review':['draft','films','pick','marketing','people'].includes(id)?id:'overview';
 // 마케팅 성과(11-16 계약): GET /pulse/api/marketing의 reports를 화면이 믿는 꼴로만 남긴다(최신 회차가 앞). 종류마다 앞의 것이 그 종류의 최신이다.
 // 문자열은 평문이고 화면은 esc로만 넣는다. 꼴이 어긋난 줄은 버린다.
 const MARKETING_KIND_IDS=['memo','ai-search','competitor-ads','label-review'];

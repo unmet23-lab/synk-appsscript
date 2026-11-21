@@ -136,10 +136,10 @@ test('the closing card offers to ask about the next piece in the words of that p
   const photo=done('photo');
   assert.match(photo,/data-journal-say="다음 사진을 이어 만들고 싶어요\.">다음 사진 묻기<\/button>/);
   assert.doesNotMatch(photo,/다음 편/);
-  // 채우기는 묻기 칸이 비어 있을 때만, input 사건으로 쓰던 글에 올린다(보내기는 손님이 누른다).
+  // 채우기는 묻기 칸이 비었거나 앞 단추가 채운 글 그대로일 때만(손님이 고친 글은 두고), input 사건으로 쓰던 글에 올린다(보내기는 손님이 누른다).
   const app=read('app.mjs');
   assert.match(app,/const say=ask\.dataset\.journalSay\|\|''/);
-  assert.match(app,/if\(field&&!field\.value\.trim\(\)\)\{field\.value=say;field\.dispatchEvent\(new Event\('input',\{bubbles:true\}\)\);/);
+  assert.match(app,/if\(field&&\(!field\.value\.trim\(\)\|\|field\.value===journalSaid\)\)\{journalSaid=say;field\.value=say;field\.dispatchEvent\(new Event\('input',\{bubbles:true\}\)\);/);
 });
 
 test('the day look is switched on and off in one place and never leaks to other screens',()=>{
@@ -211,7 +211,7 @@ test('the day look is switched on and off in one place and never leaks to other 
     for(const one of selector.split(/,(?![^(]*\))/).map(part=>part.trim()).filter(Boolean))assert.ok(/\[data-day\]|sx-day|^\.sx-room-(due|say)\b|^\.sx-done-next\b/.test(one),one);
   }
   // 캐시 판을 올렸다(바뀐 화면 모듈과 스타일을 새로 받게).
-  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v75-words-20261121';/);
+  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v76-people-20261122';/);
 });
 
 // 처음 보는 사람용 낱말(유호님 11-21 「처음 보는 사람이 더 이해하기 좋게」): 맹검이 모른다고 짚은 말을 바꿨다.

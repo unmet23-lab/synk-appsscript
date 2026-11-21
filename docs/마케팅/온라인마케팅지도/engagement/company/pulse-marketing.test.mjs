@@ -349,7 +349,7 @@ test('고객 방 자료: 리포트가 없으면 features.marketing이 false, 한
   const saved=await f.upload(f.owner,f.a.id,memo({runId:'a1'}));assert.equal(saved.status,200,saved.text);assert.equal(saved.data.visible,true);
   assert.equal((await room(ga)).marketing,true);
   assert.equal((await room(gb)).marketing,false,'가 프로젝트에 올려도 나 프로젝트는 그대로다');
-  const features=await room(ga);assert.deepEqual(Object.keys(features).sort(),['locale','locales','marketing','myModels','personaReal','personaRequest']);
+  const features=await room(ga);assert.deepEqual(Object.keys(features).sort(),['locale','locales','marketing','myModels','people','personaReal','personaRequest']);
   assert.equal((await f.features(false)).status,200);
   assert.equal((await room(ga)).marketing,false);
   assert.equal((await f.features(true)).status,200);
