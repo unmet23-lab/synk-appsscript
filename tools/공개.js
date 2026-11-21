@@ -1799,7 +1799,7 @@ function 결과요약(후보) {
 
 // 판정기 허용 줄 「Gated synk.im publish」의 앞머리 git diff는 이 파일만 본다. 이 파일이 믿는 검수 · 점검 모듈도 올라간 판이어야
 // 어느 세션의 미커밋 · 안 올린 고침이 관문을 타고 나가지 않는다(2026-11-09). 잣대는 앞머리와 같다(origin/master와 같은가).
-const 관문모듈 = ['tools/검수묶음.mjs', 'tools/lib/검수증명.mjs', 'tools/lib/검수캡처.mjs', 'tools/lib/공개전점검.js', 'tools/lib/크롬조종.js', 'tools/접근성검사.js',
+const 관문모듈 = ['tools/lib/뮤즈1차.js', 'tools/검수묶음.mjs', 'tools/lib/검수증명.mjs', 'tools/lib/검수캡처.mjs', 'tools/lib/공개전점검.js', 'tools/lib/크롬조종.js', 'tools/접근성검사.js',
   'tools/lib/import엇갈림.js', 'tools/lib/importmap-csp.cjs', 'tools/lib/올림장부.cjs', 'tools/lib/GPT검수모델.js', 'tools/lib/거둔말.json'];
 function 관문모듈다름(돌리기 = (인자) => spawnSync('git', 인자, { cwd: path.resolve(__dirname, '..'), encoding: 'utf8', windowsHide: true })) {
   // :/ = 저장소 뿌리 기준(도구를 다른 자리에 복사해 돌려도 빈 결과로 통과하지 않게)
@@ -2517,6 +2517,11 @@ async function main(argv = process.argv.slice(2)) {
   } catch (e) {
     if (e instanceof 사용법오류) { console.error(`${e.message}\n${사용법}`); return 2; }
     r = { 결과: '실패', 이유: e.message };
+  }
+  const live = r.확인 || (옵션.명령 === '확인' && r.대조 ? r : null);
+  if (live) {
+    const evidence = [r.커밋, ...확인글(live), live.오류, ...(r.빠짐 || []).map(x => x.경로)].filter(Boolean);
+    require('./lib/뮤즈1차.js').review('라이브', evidence.join('\n'));
   }
   if (옵션.json) console.log(JSON.stringify(r, null, 2));
   else console.log(옵션.명령 === '올리기' ? 올리기글(r, argv) : 옵션.명령 === '확인' ? 확인결과글(r) : 옵션.명령 === '기준' ? 기준글(r, argv) : 채우기글(r));

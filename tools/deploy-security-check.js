@@ -270,7 +270,7 @@ async function 검수반영({ root = ROOT, 검수, deployment, description }) {
     if (!git(['ls-tree', 'origin/master', '--', x.경로]).toString().startsWith('100644 ') || !git(['ls-files', '--stage', '--', x.경로]).toString().startsWith('100644 ')) throw new Error(`배포 파일 모드가 검수 후보와 다르다: ${x.경로}`);
     if (!git(['cat-file', '--filters', `origin/master:${x.경로}`]).equals(x.버퍼)) throw new Error(`배포 파일이 origin/master와 다르다: ${x.경로}`);
   }
-  git(['diff', '--quiet', 'origin/master', '--', 'tools/deploy-security-check.js', 'tools/검수묶음.mjs', 'tools/lib/검수증명.mjs', 'tools/배포판점검.js', '.claude/hooks/lib/clasp-project.js']);
+  git(['diff', '--quiet', 'origin/master', '--', 'tools/deploy-security-check.js', 'tools/lib/뮤즈1차.js', 'tools/검수묶음.mjs', 'tools/lib/검수증명.mjs', 'tools/배포판점검.js', '.claude/hooks/lib/clasp-project.js']);
   const 임시기준 = fs.realpathSync(os.tmpdir());
   const snapshot = fs.mkdtempSync(path.join(임시기준, 'synk-reviewed-deploy-'));
   const 상태 = { 단계: '준비', 검수, deployment, versionNumber: null, 설명: description, ...(사슬 ? { 사슬 } : {}) };
@@ -332,6 +332,7 @@ async function main(argv = process.argv.slice(2)) {
     if (o.후보) { console.log(`Apps Script 검수 후보: ${후보쓰기(o.후보, 배포후보읽기())}`); return; }
     if (!o.push) throw new Error('--후보 또는 --push를 준다');
     const r = await 검수반영(o);
+    require('./lib/뮤즈1차.js').review('라이브', `Apps Script 고정 버전 @${r.versionNumber}. 배포 원문과 검수 후보가 일치하고 기존 deployment의 버전을 다시 조회했다. 사용자 흐름 시험 결과는 이 기록에 없다.`);
     console.log(`Apps Script 기존 배포 반영·대조 완료 @${r.versionNumber} · 검수 ${r.검수}${r.사슬 ? `(사슬 ${r.사슬.join(' → ')})` : ''}`);
     return;
   }

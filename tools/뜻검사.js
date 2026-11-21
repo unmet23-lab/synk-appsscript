@@ -693,6 +693,9 @@ function main(argv) {
     const 이름 = 편 ? `${path.basename(path.resolve(편))}/${키 || path.basename(글파일, '.json')}` : `${path.basename(글파일, '.json')}-${도장}`;
     const 밖 = path.resolve(값.밖 || path.join(메인, '.tmp', '뜻검사', 이름));
     const 재료 = 재료만들기(글파일, { 편, 밖 });
+    const 기획경로 = 편 && path.join(편, '기획.md');
+    const 원문 = 기획경로 && fs.existsSync(기획경로) ? fs.readFileSync(기획경로, 'utf8') : '별도 기획 원문 없음';
+    require('./lib/뮤즈1차.js').review('콘텐츠', 원문 + '\n\n판본 글\n' + fs.readFileSync(글파일, 'utf8'));
     if (키 && !재료.판본) { 재료.판본 = 키; 재료.시험관셈 = 받은때셈(재료); fs.writeFileSync(path.join(밖, '재료.json'), JSON.stringify(재료, null, 2) + '\n'); }
     if (재료.앞회차 && 재료.앞회차.번호 && fs.existsSync(path.join(밖, '앞회차', String(재료.앞회차.번호), '채점.json'))) console.log(`앞 회차 ${재료.앞회차.번호}의 채점(준비.json 「기록」이 가리키던 것)은 이제 ${기록자리(path.join(밖, '앞회차', String(재료.앞회차.번호), '채점.json'))}에 있다`);
     if (재료.앞회차 && 재료.앞회차.번호) console.log(`앞 회차 답을 ${기록자리(path.join(밖, '앞회차', String(재료.앞회차.번호), '재료.json')).replace(/\/재료\.json$/, '')}로 옮겼다 — ${재료.앞회차.같은시험지 ? '시험지가 글자 하나 다르지 않다: 채점이 앞 회차 지적을 함께 센다' : '시험지가 바뀌었다: 앞 회차 지적은 세지 않는다'}`);
