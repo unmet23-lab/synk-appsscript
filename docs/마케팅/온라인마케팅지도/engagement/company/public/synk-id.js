@@ -70,6 +70,7 @@ async function prepareSynkCompanyEntry(){
 async function prepareNativeSynkCompanyEntry(){
   installNativeSynkObserver();
   synkConnectionPending=true;
+  let checkedMe=null;
   try{
     let auth=await currentNativeSynkStatus();
     synkNativeConfigured=auth.configured===true;
@@ -81,7 +82,7 @@ async function prepareNativeSynkCompanyEntry(){
     if(!auth.signedIn||!auth.account?.synk_user_id){renderAuth();return false;}
     const id=auth.account.synk_user_id,generation=auth.sessionGeneration;
     const current=async()=>{const latest=await currentNativeSynkStatus();if(!latest.signedIn||latest.account?.synk_user_id!==id||latest.sessionGeneration!==generation)throw Object.assign(new Error('플랫폼 계정 연결이 바뀌었어요. 다시 연결해 주세요.'),{code:'SYNK_PLATFORM_ENTRY'});};
-    let me=await synkCheckMe();await current();
+    let me=await synkCheckMe();checkedMe=me;await current();
     if(me.synkUserId!==id){
       const status=await synkCompanyRequest('status');await current();
       if(!status.enabled)throw new Error('회사 SYNK ID 연결을 준비하고 있어요.');
@@ -97,6 +98,8 @@ async function prepareNativeSynkCompanyEntry(){
     // 서버 코드는 SYNK_ 머리가 붙는다(synk-identity.mjs fail, 다시 검수 FA1). 초대 주소로 열었으면 가입 칸으로 간다(시작 처리의 초대 갈래와 같다, FA2)
     if(error?.code==='SYNK_NOT_LINKED'){
       synkNativeGateFailure=false;
+      // 이어지지 않은 회사 세션이 남아 있으면 끝낸다. 남기면 로그인 칸 뒤에 그 회사 쿠키가 그대로 남는다(다시 검수 r3 FA1)
+      if(checkedMe?.user){try{await synkCompanyRequest('logout',{csrfToken:checkedMe.csrfToken});}catch{}}
       const invite=new URLSearchParams(location.search).get('invite');
       if(invite){state.authMode='join';state.authToken=invite;state.authNotice='';history.replaceState(null,'',location.pathname);}
       else{state.authMode='login';state.authToken='';state.authNotice='이 SYNK ID에 이어진 회사 계정이 아직 없어요. 회사 비밀번호로 한 번 들어오면 지금 SYNK ID에 이어져요.';}

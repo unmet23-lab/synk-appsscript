@@ -140,3 +140,19 @@ test('two sign-in notices in a row leave one line (FA3)',async()=>{
   await new Promise(resolve=>setImmediate(resolve));await new Promise(resolve=>setImmediate(resolve));
   assert.equal(f.appended.length,1);assert.equal(f.appended[0].textContent,'들어오면 이 회사 계정이 SYNK ID(유호)에 이어져요.');
 });
+
+// 회사 화면 다시 검수(pc-orb-step4-company-web-20261122-r3)
+test('an unlinked company session that is still alive is ended before the login form is drawn (r3 FA1)',async()=>{
+  const f=fixture({meApi:true,me:{user:{id:'company-A'},csrfToken:'csrf-A',synkUserId:null},request:notLinked});
+  assert.equal(await f.run('prepareNativeSynkCompanyEntry()'),false);
+  const ops=f.calls.filter(call=>call.operation).map(call=>call.operation);
+  assert.deepEqual(ops,['status','challenge','exchange','logout']);
+  assert.equal(JSON.stringify(f.calls.find(call=>call.operation==='logout').params),JSON.stringify({csrfToken:'csrf-A'}));
+  assert.equal(f.renders.length,1);assert.equal(f.renders[0].mode,'login');
+  const none=fixture({meApi:true,me:{user:null,csrfToken:'',synkUserId:null},request:notLinked});
+  assert.equal(await none.run('prepareNativeSynkCompanyEntry()'),false);
+  assert.ok(!none.calls.some(call=>call.operation==='logout'),'no session, nothing to end');
+  const failing=fixture({meApi:true,me:{user:{id:'company-A'},csrfToken:'csrf-A',synkUserId:null},request:operation=>{if(operation==='logout')throw Error('합성');return notLinked(operation);}});
+  assert.equal(await failing.run('prepareNativeSynkCompanyEntry()'),false,'a failed logout still draws the login form');
+  assert.equal(failing.renders.length,1);
+});
