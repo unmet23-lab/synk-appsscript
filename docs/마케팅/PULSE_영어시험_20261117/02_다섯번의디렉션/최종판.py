@@ -35,17 +35,25 @@ WARM = (0xEF, 0xE7, 0xDA)
 #   C1 3.9~4.7 · C2 2.1~2.8 · C3 4.0~4.6 · C4 「I'm fi—」 2.5~2.8, 재채기 4.0~4.4, 「I'm fine」 5.5~6.05 · C5 「I'm—」 1.4~1.55,
 #   「Myself?」 2.8~3.3, 「Who's that?」 3.9~4.3, 「That's a wrap」 4.6~5.0(약 140Hz — 남자 목소리로 나옴, 하린 대사는 220~250Hz).
 #   「Myself?」는 「Who's that?」까지 이어 두어 두 마디 사이에 자막이 비지 않게 한다(11-21 미학 맹검 GPT 「글이 표정을 뒤따라온다」).
+#   11-21 마감 관문(마감_20261121-2226) 반영: 판마다 슬레이트가 든 동안 같은 주문을 DIRECTION 꼬리표와 함께 안전 영역(y 1040)에 단다(F20 —
+#   분필 글이 y 1600~1860이라 릴스 · 쇼츠 아래 글자에 덮인다). 「Who's that?」은 「Myself?」 아래 둘째 줄로 4.5초까지 두고(F16),
+#   「That's a wrap」은 웃음이 터지기 직전 5.45초까지 둔다(F21). 글의 \n은 줄바꿈이다.
 CAPS = {
-    "C1": [(3.80, 4.85, "I’m fine")],
-    "C2": [(2.05, 2.95, "I’m fine!")],
-    "C3": [(3.95, 4.75, "I’m fine")],
-    "C4": [(2.40, 3.00, "I’m fi—"), (5.45, 6.25, "I’m fine", 1130)],   # 다가감 15%로 5.5초 뒤 턱이 990까지 내려와 그 자막만 내린다
-    "C5": [(1.35, 1.95, "I’m—"), (2.75, 3.85, "Myself?"), (3.85, 4.45, "Who’s that?"), (4.55, 5.15, "That’s a wrap")],
-    "C6": [],
+    "C1": [(0.0, 1.45, "She just got dumped."), (3.80, 4.85, "I’m fine")],
+    "C2": [(0.0, 1.20, "Lying to her mom\non the phone."), (2.05, 2.95, "I’m fine!")],
+    "C3": [(0.0, 1.10, "Just won the lottery.\nAt work. Hide it."), (3.95, 4.75, "I’m fine")],
+    "C4": [(0.0, 1.40, "About to sneeze."), (2.40, 3.00, "I’m fi—"), (5.45, 6.25, "I’m fine", 1130)],   # 다가감 15%로 5.5초 뒤 턱이 990까지 내려와 그 자막만 내린다
+    "C5": [(0.0, 1.15, "Be yourself."), (1.35, 1.95, "I’m—"), (2.75, 4.50, "Myself?"), (3.85, 4.50, "Who’s that?", 1142), (4.55, 5.45, "That’s a wrap")],
+    "C6": [(1.25, 3.40, "She doesn’t exist.\nBut she takes direction.")],
 }
 DIRECTOR = {"That’s a wrap"}   # 화면 밖 감독 목소리(약 140Hz) — 하린 말과 헷갈리지 않게 꼬리표를 단다(11-21 그록 · 소네트 「누가 한 말인지 모름」)
+DIRECTION = {"She just got dumped.", "Lying to her mom\non the phone.", "Just won the lottery.\nAt work. Hide it.", "About to sneeze.", "Be yourself."}
+# 판 안 빠르기 — (판 안 시작 초, 끝 초, 배). 1보다 작으면 늦추고 그만큼 앞에 빈 소리를 넣어 딱 소리를 그림에 맞춘다, 크면 소리도 atempo로 당긴다.
+#   C2 · C3은 딱(0.70 · 0.60초) 앞 들고 있는 구간을 반 빠르기로 늘려 주문을 1.7초쯤 읽게 한다(F13). C1은 눈 감고 참는 2.1~3.6초를 1.5배로 당겨
+#   첫 「I'm fine」이 3.3초에 오게 한다(F17).
+SPEED = {"C1": [(2.1, 3.6, 1.5)], "C2": [(0.0, 0.65, 0.5)], "C3": [(0.0, 0.55, 0.5)]}
 CAP_Y = 1040   # 말자막 가운데 높이(1080×1920 화소) — 턱(약 860) 아래, C3 휴대폰 윗변(약 1130) 위. 메타 안전 영역 y 269~1248 안
-CARD = {"어둠": 3.2, "로고": 3.4, "고지": 3.7, "주소": 4.0}   # C6 편집 구간(0.6초부터) 안의 초 — 슬레이트가 판 3.5~4.0초(편집 2.9~3.4초)에 빠진 뒤 연다. 로고가 3.8초에 멈춰 끝까지 2.6초 선다
+CARD = {"어둠": 3.8, "로고": 4.0, "고지": 4.3, "주소": 4.6}   # C6 판 안의 초 — 슬레이트가 판 3.5~4.0초에 빠진 뒤 연다. 로고가 4.4초에 멈춰 판 끝(7.0)까지 2.6초 선다
 FONTS = os.path.join(REPO, "docs", "마케팅", "PULSE_포트폴리오_제작준비_20261012", "video", "자막시안_20261103", "remotion", "public", "fonts")
 CREAM = (239, 230, 216)
 
@@ -83,15 +91,39 @@ def transcribe(table):
     return out
 
 
+def pieces(cut, a, b):
+    """판 구간 [a, b]를 SPEED 경계로 나눈 (시작, 끝, 배) 목록"""
+    cuts_ = sorted({a, b} | {x for s_, e_, _ in SPEED.get(cut, []) for x in (s_, e_) if a < x < b})
+    out = []
+    for s_, e_ in zip(cuts_, cuts_[1:]):
+        f = next((f for x0, x1, f in SPEED.get(cut, []) if x0 <= s_ and e_ <= x1), 1.0)
+        out.append((s_, e_, f))
+    return out
+
+
+def edit_len(cut, a, b):
+    return sum((e_ - s_) / f for s_, e_, f in pieces(cut, a, b))
+
+
+def to_edit(cut, a, b, x):
+    """판 안 초 x를 그 판의 편집 안 초로"""
+    t = 0.0
+    for s_, e_, f in pieces(cut, a, b):
+        if x <= s_:
+            break
+        t += (min(x, e_) - s_) / f
+    return t
+
+
 def place(table):
-    """판마다 말자막의 (편 초 시작, 끝, 글) — CAPS 표를 판의 in · out에 맞춰 편 시각으로 옮긴다"""
+    """판마다 말자막의 (편 초 시작, 끝, 글) — CAPS 표를 판의 in · out · 빠르기에 맞춰 편 시각으로 옮긴다"""
     caps, t0 = [], 0.0
     for cut, a, b, _ in table:
         for c in CAPS[cut]:
             x, y, text = c[:3]
             if a <= x < b:
-                caps.append((t0 + x - a, t0 + min(y, b) - a, text, c[3] if len(c) > 3 else CAP_Y))
-        t0 += b - a
+                caps.append((t0 + to_edit(cut, a, b, x), t0 + to_edit(cut, a, b, min(y, b)), text, c[3] if len(c) > 3 else CAP_Y))
+        t0 += edit_len(cut, a, b)
     return caps
 
 
@@ -184,13 +216,15 @@ def plain_patch(text, f, color=CREAM, spacing=0.0):
 
 
 def caption_patch(text):
-    """말자막 — 명조 600 글을 옅은 어둠 띠(둥근 모서리) 위에 얹는다. 크림 스웨터 위에서도 읽히게(11-21)."""
-    f = font(round(44 * K), 600)
-    l, t, r, b = f.getbbox(text)
+    """말자막 — 명조 600 글을 옅은 어둠 띠(둥근 모서리) 위에 얹는다. 크림 스웨터 위에서도 읽히게(11-21).
+    슬레이트 주문과 끝 슬레이트 글은 한 단계 작게, 두 줄까지 — 띠 폭을 오른쪽 단추 자리(x 920) 안에 둔다."""
+    small = "\n" in text or text in DIRECTION
+    f = font(round((38 if small else 44) * K), 600)
+    l, t, r, b = (int(round(v)) for v in ImageDraw.Draw(Image.new("L", (8, 8))).multiline_textbbox((0, 0), text, font=f, align="center", spacing=round(8 * K)))
     padx, pady = round(17 * K), round(9 * K)
     label = None
-    if text in DIRECTOR:
-        label = plain_patch("DIRECTOR", inter("InterTight-SemiBold.ttf", round(18 * K)), color=(200, 205, 215), spacing=0.16)
+    if text in DIRECTOR or text in DIRECTION:
+        label = plain_patch("DIRECTOR" if text in DIRECTOR else "DIRECTION", inter("InterTight-SemiBold.ttf", round(18 * K)), color=(200, 205, 215), spacing=0.16)
     lh = 0 if label is None else label.shape[0] - 4
     w = max(r - l, 0 if label is None else label.shape[1] - 12) + 2 * padx
     h = (b - t) + 2 * pady + lh
@@ -198,8 +232,8 @@ def caption_patch(text):
     ImageDraw.Draw(box).rounded_rectangle((0, 0, w - 1, h - 1), radius=round(12 * K), fill=255)
     box = box.filter(ImageFilter.GaussianBlur(1.2))
     txt = Image.new("L", (w, h), 0)
-    ImageDraw.Draw(txt).text(((w - (r - l)) / 2 - l, pady + lh - t), text, font=f, fill=255)
-    a_box = np.asarray(box, np.float32) / 255 * 0.5
+    ImageDraw.Draw(txt).multiline_text(((w - (r - l)) / 2 - l, pady + lh - t), text, font=f, fill=255, align="center", spacing=round(8 * K))
+    a_box = np.asarray(box, np.float32) / 255 * 0.72   # 크림 니트(회색 약 230) 위에서 글 둘레가 회색 80 아래가 되는 짙기 — 0.5 · 0.58은 올리기전검사 「흰 기본 글자」(둘레 어두운 칸 18 · 42%)에 걸렸다(11-21 3차 판)
     a_txt = np.asarray(txt, np.float32) / 255
     out = np.zeros((h, w, 4), np.float32)
     out[..., :3] = (14, 12, 18)
@@ -239,10 +273,10 @@ def ramp(t, a, d):
 
 
 def 음량맞춤(path):
-    """공용 tools/음량마감.mjs로 −14 LUFS · 봉우리 −1.2 dBFS 아래 · AAC 384k(실측 320k 미만이면 품질 모드로 다시)로 마감한다.
+    """공용 tools/음량마감.mjs로 −14.5 LUFS(±0.5) · 봉우리 −1.2 dBFS 아래 · AAC 384k(실측 320k 미만이면 품질 모드로 다시)로 마감한다.
     11-21 2차 판까지는 이 파일 안의 리미터 반복을 썼는데 AAC 실측이 194~286kbps로 올리기전검사 기준(320)에 못 미쳤다."""
     tmp = path[:-4] + "_마감.mp4"
-    run("node", os.path.join(REPO, "tools", "음량마감.mjs"), path, tmp, "--목표", "-14", "--리미터", "0.8", "--덮어쓰기")   # 기본 0.84는 봉우리 −1.1로 기준(−1.2)을 0.1 넘었다(11-21)
+    run("node", os.path.join(REPO, "tools", "음량마감.mjs"), path, tmp, "--리미터", "0.68", "--덮어쓰기")   # 공용 기준 −14.5±0.5 LUFS · 봉우리 −1.2 아래. 품질 모드 AAC가 봉우리를 1~2dB 올려 리미터를 0.68로 낮췄다(11-21 3차 판 −14.9 · −1.6)
     os.replace(tmp, path)
 
 
@@ -253,28 +287,48 @@ def main():
         json.dump(transcribe(table), open(os.path.join(OUT, "_받아쓰기_720p.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         return
     caps = place(table)
+    cut_starts, acc = set(), 0.0
+    for cut, a, b, _ in table:
+        cut_starts.add(round(acc, 3))
+        acc += edit_len(cut, a, b)
     for a, b, s, _ in caps:
         print(f"  자막 {a:5.2f}~{b:5.2f} {s}")
 
     # 1) 잘라 잇기 — 판과 컷표 구간이 그대로면 앞 회차의 이음 판을 다시 쓴다(PC가 바쁠 때 10분 걸렸다)
     joined = os.path.join(OUT, "_이음_720p.mov")
-    key = json.dumps([(cut, a, b, os.path.getmtime(os.path.join(SRC, f"{cut}.mp4"))) for cut, a, b, _ in table])
+    key = json.dumps([(cut, a, b, SPEED.get(cut), os.path.getmtime(os.path.join(SRC, f"{cut}.mp4"))) for cut, a, b, _ in table])
     keyf = joined + ".key"
     if not (os.path.exists(joined) and os.path.exists(keyf) and open(keyf, encoding="utf-8").read() == key):
-        args, fc = ["ffmpeg", "-y", "-v", "error"], []
+        args, fc, parts = ["ffmpeg", "-y", "-v", "error"], [], []
         for i, (cut, a, b, _) in enumerate(table):
             args += ["-i", os.path.join(SRC, f"{cut}.mp4")]
-            fc.append(f"[{i}:v]trim={a}:{b},setpts=PTS-STARTPTS,scale={W}:-2:flags=lanczos,crop={W}:{H},fps={FPS},setsar=1[v{i}]")
-            fc.append(f"[{i}:a]atrim={a}:{b},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo[a{i}]")
-        fc.append("".join(f"[v{i}][a{i}]" for i in range(len(table))) + f"concat=n={len(table)}:v=1:a=1[v][a]")
+            ps = pieces(cut, a, b)
+            fc.append(f"[{i}:v]split={len(ps)}" + "".join(f"[s{i}_{j}]" for j in range(len(ps))))
+            fc.append(f"[{i}:a]asplit={len(ps)}" + "".join(f"[t{i}_{j}]" for j in range(len(ps))))
+            for j, (s_, e_, f) in enumerate(ps):
+                tag = f"{i}_{j}"
+                fc.append(f"[s{tag}]trim={s_}:{e_},setpts=(PTS-STARTPTS)/{f},scale={W}:-2:flags=lanczos,crop={W}:{H},fps={FPS},setsar=1[v{tag}]")
+                au = f"[t{tag}]atrim={s_}:{e_},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo"
+                if f > 1:
+                    fc.append(f"{au},atempo={f}[a{tag}]")
+                elif f < 1:   # 늘린 만큼 앞에 빈 소리 — 딱 소리가 늘린 그림의 딱에 온다
+                    pad = (e_ - s_) / f - (e_ - s_)
+                    fc.append(f"anullsrc=r=48000:cl=stereo,atrim=0:{pad:.4f},asetpts=PTS-STARTPTS[z{tag}]")
+                    fc.append(f"{au}[y{tag}]")
+                    fc.append(f"[z{tag}][y{tag}]concat=n=2:v=0:a=1[a{tag}]")
+                else:
+                    fc.append(f"{au}[a{tag}]")
+                parts.append(tag)
+        fc.append("".join(f"[v{t}][a{t}]" for t in parts) + f"concat=n={len(parts)}:v=1:a=1[v][a]")
         run(*args, "-filter_complex", ";".join(fc), "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-crf", "14", "-preset", "fast",
             "-c:a", "pcm_s16le", joined)
         open(keyf, "w", encoding="utf-8").write(key)
 
     # 2) 자막과 끝 화면 얹기
     cap_p = {s: caption_patch(s) for _, _, s, _ in caps}
-    c6 = sum(b - a for cut, a, b, _ in table if cut != "C6")
-    total = sum(b - a for _, a, b, _ in table)
+    c6 = sum(edit_len(cut, a, b) for cut, a, b, _ in table if cut != "C6")
+    c6_in = next(a for cut, a, b, _ in table if cut == "C6")
+    total = sum(edit_len(cut, a, b) for cut, a, b, _ in table)
     logo = logo_patch(600)
     disc = plain_patch("Every person in this film is AI-generated", inter("InterTight-SemiBold.ttf", 42))
     url = plain_patch("synk.im/en/pulse", inter("InterTight-Medium.ttf", 36))
@@ -282,9 +336,12 @@ def main():
     hs = [logo.shape[0], disc.shape[0], url.shape[0]]
     top = 1236 - (hs[0] + 44 + hs[1] + 26 + hs[2])
     card_y = [top + hs[0] / 2, top + hs[0] + 44 + hs[1] / 2, top + hs[0] + 44 + hs[1] + 26 + hs[2] / 2]
-    ys = np.arange(H, dtype=np.float32)
-    s = np.clip((ys - (top - 120)) / 150, 0, 1)
-    shade = (0.80 * s * s * (3 - 2 * s))[:, None, None]   # 로고 120px 위에서 시작해 150px 동안 짙어진다 — 얼굴은 그대로 밝다
+    # 글 묶음 뒤에만 부드러운 타원 그늘(가장 짙은 곳 0.72) — 11-21 1차 마감 관문 F18: 화면 폭 띠는 목을 가로지르는 수평선이 되고
+    #   크림 니트가 숯색으로 보여 마지막 장이 「옷이 바뀐 그림」으로 남았다
+    gy, gx = np.mgrid[0:H, 0:W].astype(np.float32)
+    rr = np.sqrt(((gx - W / 2) / 640) ** 2 + ((gy - (top + 1236) / 2) / 260) ** 2)
+    s = np.clip((1 - rr) / 0.55, 0, 1)
+    shade = (0.72 * s * s * (3 - 2 * s))[:, :, None]
 
     # 음량 −14 LUFS — 한 번에 거는 loudnorm은 34초 판에서 −15.6에 머물러(11-18), 먼저 재고 그 값으로 다시 건다
     r = subprocess.run(["ffmpeg", "-hide_banner", "-i", joined, "-vn", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json", "-f", "null", "-"],
@@ -310,10 +367,10 @@ def main():
         t = i / FPS
         for a, b, s, cy in caps:
             if a <= t < b:
-                k = ramp(t, a, 0.25)
+                k = 1.0 if round(a, 3) in cut_starts else ramp(t, a, 0.25)   # 컷과 함께 뜨는 주문 자막은 흐리게 오르지 않는다(11-21 3차 판)
                 o = min(k, 1.0 if t < b - 0.2 else (b - t) / 0.2)
                 blend(fr, cap_p[s], W / 2, cy + (1 - k) * 8 * K, o)
-        tc = t - c6
+        tc = t - c6 + c6_in   # C6 판 안의 초
         if tc >= CARD["어둠"]:
             g = ramp(tc, CARD["어둠"], 0.5)
             fr[:] = (fr.astype(np.float32) * (1 - shade * g) + np.array([10, 8, 14], np.float32) * shade * g).astype(np.uint8)
