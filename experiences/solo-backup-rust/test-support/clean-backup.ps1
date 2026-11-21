@@ -81,13 +81,15 @@ Expect ($r.Code -eq 0 -and $r.Run.outcome -eq 'complete' -and $r.Run.profiles.lo
 $settings = Get-Content -LiteralPath (Join-Path $adminState 'vault\settings.json') -Raw -ErrorAction SilentlyContinue | ConvertFrom-Json -AsHashtable
 $odd = if ($settings -is [Collections.IDictionary]) { $settings['leftOutNames'] }
 $script:results['adminLeftOutNames'] = $odd
-# Exactly that name and no other (GPT GA2): one entry, whose last part is the whole name, to the very end (\z, not $,
-# which also matches before a last line break — GPT -b GA1). The array is made outside
-# the `if`, whose output would unroll a one-entry array into its string.
+# Exactly that file and no other: one entry, the very path D0 made, letter for letter — not another source's file of
+# the same name (GPT GA2 · oddnames r9 GA2). The array is made outside the `if`, whose output would unroll a
+# one-entry array into its string. A count is the whole number 1, not `true` (which -eq 1 would take — r9 GA2).
+function IsOne($value) { ($value -is [int] -or $value -is [long]) -and $value -eq 1 }
+$oddPath = Join-Path $data '끝이 점인 이름.'
 $oddNames = @(if ($odd -is [Collections.IDictionary] -and $odd['names'] -is [Collections.IList]) { $odd['names'] })
-$oddRight = $odd -is [Collections.IDictionary] -and $odd.Contains('count') -and $odd['count'] -eq 1 -and $odd['cut'] -is [bool] -and -not $odd['cut'] -and -not $odd.Contains('checked') -and
-  $oddNames.Count -eq 1 -and $oddNames[0] -is [string] -and $oddNames[0] -match '(^|[\\/])끝이 점인 이름\.\z'
-Expect ($r.Run.profiles.local.odd -eq 1 -and $oddRight) "the first backup tells the one name ending in a dot it could not hold (run odd: $($r.Run.profiles.local.odd), leftOutNames: $($odd | ConvertTo-Json -Compress))"
+$oddRight = $odd -is [Collections.IDictionary] -and $odd.Contains('count') -and (IsOne $odd['count']) -and $odd['cut'] -is [bool] -and -not $odd['cut'] -and
+  -not $odd.Contains('checked') -and $oddNames.Count -eq 1 -and $oddNames[0] -is [string] -and $oddNames[0] -ceq $oddPath
+Expect ((IsOne $r.Run.profiles.local.odd) -and $oddRight) "the first backup tells the one name ending in a dot it could not hold (run odd: $($r.Run.profiles.local.odd), leftOutNames: $($odd | ConvertTo-Json -Compress))"
 $locked = Join-Path $data '잠글 문서\계약서.docx'
 Change $locked
 $held = Hold $locked
