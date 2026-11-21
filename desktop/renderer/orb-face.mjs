@@ -580,7 +580,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       const slot = embeds[name];
       const next = { visible: embedVisible(name), top: PULSE_BAND };
       const key = JSON.stringify(next);
-      if (key === slot.sent) continue;
+      // 이미 보이는 뷰로 돌아왔으면(트레이 열기 · 「돌아가서 저장」) 자리는 그대로 두고 초점만 보낸다(4단계 화면 카본 A3)
+      if (key === slot.sent) { if (next.visible && embedFocusNext) { embedFocusNext = false; try { void Promise.resolve(slot.embed.focus?.()).catch(() => {}); } catch { /* 초점은 사람이 옮길 수 있다 */ } } continue; }
       slot.sent = key;
       const focusNow = next.visible && embedFocusNext;
       if (next.visible) embedFocusNext = false;
@@ -610,6 +611,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   /* 본체가 Workspace를 열라고 한다(트레이의 Workspace 줄, 4단계 3.5). 배정에 없으면 까닭을 한 줄 말한다(설계 검토 R17) */
   function openFromMain(name) {
     if (disposed) return;
+    // 옛 화면이 열려 있으면 먼저 닫는다(revealSpace와 같다, 4단계 화면 카본 A2)
+    if (legacyKind && clientMode() === 'legacy') closeLegacy({ silent: true });
     if (clientMode() !== 'app' || orbTarget === 'inside') { pendingMainOpen = name; return; }
     pendingMainOpen = null;
     // 까닭은 펼침에서 말한다. 펼침이 닫혀 있으면 열어서 보인다
@@ -648,13 +651,23 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   /* 화면 공유 고르기(4단계 4.2). 본체가 보낸 목록을 방 자리에 세우고 뷰를 숨긴다. 빈 목록은 본체가 물음을 거둔 것이다 */
   function onShareAsk(value) {
     if (disposed || !value || typeof value !== 'object' || !Number.isInteger(value.id)) return;
-    const items = Array.isArray(value.items) ? value.items.slice(0, 24).map(item => ({ name: trimmed(item?.name) || '이름 없는 창', kind: item?.kind === 'screen' ? 'screen' : 'window', thumb: typeof item?.thumb === 'string' && item.thumb.startsWith('data:image/') ? item.thumb : '' })) : [];
+    const items = Array.isArray(value.items) ? value.items.slice(0, 24).map(item => { const kind = item?.kind === 'screen' ? 'screen' : 'window'; return { name: trimmed(item?.name) || (kind === 'screen' ? '이름 없는 화면' : '이름 없는 창'), kind, thumb: typeof item?.thumb === 'string' && item.thumb.startsWith('data:image/') ? item.thumb : '' }; }) : [];
     if (!items.length) { if (share && share.id === value.id) { share = null; embedFocusNext = true; render(); } return; }
-    // 지금 Workspace에 있지 않으면 고를 수 없다. 바로 거절한다
-    if (clientMode() !== 'app' || space !== 'workspace' || !slotOf('workspace')?.open) { void Promise.resolve(slotOf('workspace')?.embed.answerShare?.({ id: value.id, pick: null })).catch(() => {}); return; }
+    // 묻던 것이 있으면 새 물음이 그것을 갈음한다. 앞 물음은 고르지 않음으로 답한다(4단계 화면 카본 A1)
+    if (share && share.id !== value.id) dropShare();
+    // 지금 Workspace 방 자리가 보이지 않으면 고를 수 없다. 바로 거절한다
+    if (!shareRoomShown() || orbTarget !== 'home') { void Promise.resolve(slotOf('workspace')?.embed.answerShare?.({ id: value.id, pick: null })).catch(() => {}); return; }
     share = { id: value.id, items };
     focus('share');
     render();
+  }
+  /* 고르기가 설 수 있는 때: 들어온 뒤 Workspace 방이고, 뷰가 열려 있고, 펼침 · 곁방 · 옛 화면 · 로그아웃 확인이 없을 때. 벗어나면 고르지 않음으로 답한다(4단계 화면 카본 A1) */
+  function shareRoomShown() { return clientMode() === 'app' && space === 'workspace' && !!slotOf('workspace')?.open && !switchOpen && !aside && !legacyKind && !signingOut; }
+  function dropShare() {
+    const asked = share;
+    if (!asked) return;
+    share = null;
+    try { void Promise.resolve(slotOf('workspace')?.embed.answerShare?.({ id: asked.id, pick: null })).catch(() => {}); } catch { /* 본체가 시간으로 거절한다 */ }
   }
   function answerShare(pick) {
     const asked = share;
@@ -683,6 +696,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   }
   function render() {
     if (disposed) return;
+    if (share && !shareRoomShown()) dropShare();
     const state = machine.read();
     if (state.phase !== 'entered' && navigationHoldActive) navigationHoldActive = false;
     if (state.phase !== lastPhase) {
@@ -926,9 +940,11 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     render();
     if (space === 'solio') startSolio({ arriving: true });
     // 들어가는 동안 온 「돌아가서 저장」을 이제 잇는다(3단계 화면 Fable F1)
-    if (pendingReveal) { const name = pendingReveal; pendingReveal = null; revealSpace(name); }
-    else if (pendingMainOpen && space !== pendingMainOpen) { const name = pendingMainOpen; pendingMainOpen = null; openFromMain(name); }
-    else pendingMainOpen = null;
+    // 둘 다 한 번만 쓰고 비운다. 트레이 열기는 회원으로 들어왔을 때만 잇는다(손님 PULSE 초대 위에 배정 없음 펼침을 띄우지 않게, 4단계 화면 카본 A2)
+    const reveal = pendingReveal, mainOpen = pendingMainOpen;
+    pendingReveal = null; pendingMainOpen = null;
+    if (reveal) revealSpace(reveal);
+    else if (mainOpen && space !== mainOpen && machine.read().accountKey) openFromMain(mainOpen);
   }
 
   /* ── 실행 번호와 계정 결속(지금 얼굴과 같다) ── */

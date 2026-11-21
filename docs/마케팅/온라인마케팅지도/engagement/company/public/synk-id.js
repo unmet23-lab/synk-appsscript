@@ -334,9 +334,10 @@ async function installNativeLinkNote(){
   if(!desktop?.authStatus||!form||document.querySelector('#synk-link-note'))return;
   let auth;try{auth=await desktop.authStatus();}catch{return;}
   if(auth?.configured!==true||!auth.signedIn||!auth.account?.synk_user_id||form.isConnected===false)return;
-  const name=String(auth.account.display_name||'').trim()||'지금 로그인한 계정';
+  // 같은 칸의 다른 안내처럼 해요체로 쓴다. 이름이 없으면 「지금 로그인한 SYNK ID」라고 쓴다(회사 화면 검수 A3)
+  const name=String(auth.account.display_name||'').trim();
   const note=document.createElement('p');note.id='synk-link-note';note.className='synk-id-login-note';
-  note.textContent=`들어오면 이 회사 계정이 SYNK ID ${name}에 이어집니다.`;
+  note.textContent=name?`들어오면 이 회사 계정이 SYNK ID(${name})에 이어져요.`:'들어오면 이 회사 계정이 지금 로그인한 SYNK ID에 이어져요.';
   form.append(note);
   synkNativeLinkStamp={accountId:auth.account.synk_user_id,generation:auth.sessionGeneration};
 }
@@ -356,6 +357,8 @@ async function linkNativeCompanyAfterPassword(password){
     const challenge=await synkCompanyRequest('challenge',{action:'link',currentPassword:password,csrfToken,confirm:true});
     await synkCompanyRequest('exchange',{challenge:challenge.challenge,confirm:true});
   }catch(error){
+    // 실패한 스탬프는 버린다. 로그인 칸을 다시 그리면 installNativeLinkNote가 지금 SYNK ID로 새로 잡는다(회사 화면 검수 A2)
+    synkNativeLinkStamp=null;
     try{await synkCompanyRequest('logout',{csrfToken});}catch{}
     throw Object.assign(new Error(error?.message||'SYNK ID에 잇지 못했어요. 다시 로그인해 주세요.'),{code:error?.code||'SYNK_LINK_FAILED'});
   }

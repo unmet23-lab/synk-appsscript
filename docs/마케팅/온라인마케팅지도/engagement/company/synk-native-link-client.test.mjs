@@ -33,7 +33,9 @@ function fixture({auth=signedIn(),me={user:{id:'company-A'},csrfToken:'csrf-A',s
 test('the native sign-in line names the SYNK ID the company account will be linked to',async()=>{
   const f=fixture();await f.run('installNativeLinkNote()');
   assert.equal(f.appended.length,1);assert.equal(f.appended[0].id,'synk-link-note');
-  assert.equal(f.appended[0].textContent,'들어오면 이 회사 계정이 SYNK ID 유호에 이어집니다.');
+  assert.equal(f.appended[0].textContent,'들어오면 이 회사 계정이 SYNK ID(유호)에 이어져요.');
+  const nameless=fixture({auth:signedIn(id,1,'')});await nameless.run('installNativeLinkNote()');
+  assert.equal(nameless.appended[0].textContent,'들어오면 이 회사 계정이 지금 로그인한 SYNK ID에 이어져요.','no name keeps a whole sentence (검수 A3)');
   const browser=fixture({native:false});await browser.run('installNativeLinkNote()');assert.equal(browser.appended.length,0,'a browser has no native link');
   const signedOut=fixture({auth:{configured:true,signedIn:false,status:'signed-out',sessionGeneration:1,account:null}});await signedOut.run('installNativeLinkNote()');
   assert.equal(signedOut.appended.length,0);assert.equal(await signedOut.run("linkNativeCompanyAfterPassword('pw-synthetic')"),false);
@@ -66,6 +68,7 @@ test('a SYNK ID or generation that changed after the note is never linked, and t
     const ops=f.calls.filter(call=>call.operation).map(call=>call.operation);
     assert.deepEqual(ops,['logout']);assert.equal(JSON.stringify(f.calls.find(call=>call.operation==='logout').params),JSON.stringify({csrfToken:'csrf-A'}));
     assert.deepEqual(f.moves,[]);
+    assert.equal(await f.run("linkNativeCompanyAfterPassword('pw-synthetic')"),false,'the failed stamp is dropped; a redrawn form takes a new one (검수 A2)');
   }
 });
 
@@ -85,6 +88,10 @@ test('the sign-in and join submit link right after the password response, before
   assert.ok(sent>0&&link>sent&&check>link,'link runs between the password response and the native check');
   assert.match(block,/endpoint === '\/api\/join' \|\| endpoint === '\/api\/login'/);
   assert.match(block,/const password = values\.password; values\.password = '';/);
+  // 잇기가 실패하면 로그인 칸을 새로 그리고 까닭을 안내로, 회사 이메일을 미리 채운다(가입 칸에는 이메일 칸이 없다, 검수 A1 · A2)
+  assert.ok(block.includes("catch (linkError) { state.authMode = 'login'; state.authToken = ''; state.authNotice = linkError?.message"),'a failed link goes back to the login form');
+  assert.ok(block.includes("state.authPrefill = String(signedIn?.user?.email || values.email || ''); renderAuth(); break; }"),'with the company e-mail filled in');
+  assert.ok(block.includes('let signedIn=null;try{signedIn=await api(endpoint, values);}'));
   const render=appSource.slice(appSource.indexOf('function renderAuth()'),appSource.indexOf('function shell('));
   assert.match(render,/\(join\|\|login\)&&typeof installNativeLinkNote==='function'/);
 });

@@ -2715,3 +2715,76 @@ test('share items are cleaned: names are trimmed, kinds are screen or window, th
   w.ask({ id: 14, items: [{ name: '  ', kind: 'tab', thumb: 'https://example.invalid/x.png' }, { name: ' 화면 ', kind: 'screen', thumb: 'data:image/png;base64,AA' }] }); await settle();
   assert.deepEqual(h.view.last().share.items, [{ name: '이름 없는 창', kind: 'window', thumb: '' }, { name: '화면', kind: 'screen', thumb: 'data:image/png;base64,AA' }]);
 });
+
+/* 4단계 화면 카본 지적(pc-orb-step4-screen-20261122) */
+test('leaving the picker by the fan answers no choice at once, and Esc then closes the fan (카본 A1)', async t => {
+  const { h, w } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  w.ask({ id: 21, items: SHARE_ITEMS }); await settle();
+  assert.ok(h.view.last().share);
+  h.face.handle('open-switch'); await settle();
+  assert.deepEqual(w.shareAnswers, [{ id: 21, pick: null }]);
+  assert.equal(h.view.last().share, null);
+  assert.equal(h.view.last().fan.open, true);
+  assert.equal(h.face.handle('escape'), true); await settle();
+  assert.equal(h.view.last().fan.open, false, 'Esc closes the fan, not an old picker');
+  assert.deepEqual(w.shareAnswers.length, 1);
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+});
+
+test('a share ask while the fan or a room is open is refused, and a new ask replaces an old one (카본 A1)', async t => {
+  const { h, w } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  h.face.handle('open-switch'); await settle();
+  w.ask({ id: 22, items: SHARE_ITEMS }); await settle();
+  assert.deepEqual(w.shareAnswers, [{ id: 22, pick: null }]);
+  assert.equal(h.view.last().share, null);
+  h.face.handle('escape'); await settle();
+  w.ask({ id: 23, items: SHARE_ITEMS }); await settle();
+  w.ask({ id: 24, items: SHARE_ITEMS }); await settle();
+  assert.deepEqual(w.shareAnswers.at(-1), { id: 23, pick: null });
+  assert.equal(h.view.last().share.id, 24);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'solio'); await settle();
+  assert.deepEqual(w.shareAnswers.at(-1), { id: 24, pick: null }, 'going to another space answers too');
+});
+
+test('a tray open while an old screen is shown closes it and opens Workspace (카본 A2)', async t => {
+  const { h, w, tray } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('foot', 'account'); await settle();
+  assert.equal(h.face.clientMode(), 'legacy');
+  tray({ type: 'open-space', space: 'workspace' }); await settle();
+  assert.equal(h.face.clientMode(), 'app');
+  assert.equal(h.view.last().space, 'workspace');
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+});
+
+test('a tray open that came before a guest PULSE invite is not carried out over the guest PULSE (카본 A2)', async t => {
+  const order = [], p = spaceEmbed('pulse', order), w = spaceEmbed('workspace', order), actions = [];
+  const h = harness(t, { initial: { status: 'signed-out' }, options: { embed: p.embed, workspaceEmbed: w.embed, onDesktopAction: fn => { actions.push(fn); return () => {}; }, onInvite: () => { p.setOpen(true); return { ok: true, state: 'received', destination: '/pulse-app/' }; } } });
+  await settle();
+  actions.forEach(fn => fn({ type: 'open-space', space: 'workspace' })); await settle();
+  h.view.type('https://workspace.synk.im/pulse-app/#invite=SyntheticInvite_1234567890');
+  h.face.handle('invite-submit'); await settle();
+  assert.equal(h.view.last().space, 'pulse');
+  assert.equal(h.view.last().fan.open, false, 'no assignment line pops over the guest PULSE');
+  assert.deepEqual(p.last(), { visible: true, top: 56 });
+});
+
+test('a reveal or tray open for a view already shown sends the keyboard focus into it (카본 A3)', async t => {
+  const { h, w, tray } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  const focused = w.focused.length;
+  w.event({ type: 'reveal' }); await settle();
+  assert.equal(w.focused.length, focused + 1);
+  tray({ type: 'open-space', space: 'workspace' }); await settle();
+  assert.equal(w.focused.length, focused + 2);
+  h.face.handle('open-switch'); await settle(); h.face.handle('escape'); await settle();
+  assert.equal(w.focused.length, focused + 2, 'Esc on the fan still leaves the focus on the orb');
+});
+
+test('a screen without a name is called a screen (카본 A4)', async t => {
+  const { h, w } = await enteredWithBoth(t);
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'workspace'); await settle();
+  w.ask({ id: 25, items: [{ name: ' ', kind: 'screen', thumb: '' }] }); await settle();
+  assert.deepEqual(h.view.last().share.items, [{ name: '이름 없는 화면', kind: 'screen', thumb: '' }]);
+});
