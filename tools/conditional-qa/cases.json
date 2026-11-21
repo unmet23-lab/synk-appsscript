@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 213,
+  "expectedCount": 222,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1707,6 +1707,78 @@
       "file": "tests/검수안전경로.test.mjs",
       "name": "안전경로: 대소문자만 다른 이름과 Windows 8.3 짧은 이름은 막지 않는다(-b GA1)",
       "group": "검수 파일의 Windows 경로",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S214",
+      "file": "desktop/tests/platform-tray-memory.test.cjs",
+      "name": "the shipped Windows module rejects invalid requests and can cancel an empty batch",
+      "group": "PC 트레이의 Windows 메모리 모듈",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S215",
+      "file": "desktop/tests/solio-backup.test.cjs",
+      "name": "a real hold on Windows: while held nobody can write, rename or delete the file, but reading works",
+      "group": "솔리오 백업의 Windows 파일 동작",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S216",
+      "file": "desktop/tests/solio-backup.test.cjs",
+      "name": "P1: a folder swapped for a junction after the hold is caught before anything runs",
+      "group": "솔리오 백업의 Windows 파일 동작",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S217",
+      "file": "desktop/tests/solio-backup.test.cjs",
+      "name": "a cache folder that is itself a junction is resolved before the download folder is made",
+      "group": "솔리오 백업의 Windows 파일 동작",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S218",
+      "file": "desktop/tests/solio-backup.test.cjs",
+      "name": "GA5: a status file reached through a junction is not read",
+      "group": "솔리오 백업의 Windows 파일 동작",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S219",
+      "file": "desktop/tests/solio-backup.test.cjs",
+      "name": "GPT GA1 (again): a real hold reports a Korean path intact",
+      "group": "솔리오 백업의 Windows 파일 동작",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S220",
+      "file": "desktop/tests/solio-backup.test.cjs",
+      "name": "GPT GA4 (again): a lost exit code is 「not confirmed」, never 「done」, and the request stays",
+      "group": "솔리오 백업의 Windows 파일 동작",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S221",
+      "file": "desktop/tests/solio-backup.test.cjs",
+      "name": "GPT fourth round GA2: while held, nothing can be renamed, moved or copied over the installer",
+      "group": "솔리오 백업의 Windows 파일 동작",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S222",
+      "file": "desktop/tests/solio-backup.test.cjs",
+      "name": "GPT r9 GA1 · Opus design: a second app run sharing the folder keeps a live run's request and clears a finished run's, by the run's held owner file",
+      "group": "솔리오 백업의 Windows 파일 동작",
       "route": "windows",
       "profile": "default"
     }

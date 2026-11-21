@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 213);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 112, linux: 16, local: 85 });
+  assert.equal(check(root), 222);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 121, linux: 16, local: 85 });
 });
 test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
   // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
@@ -27,6 +27,17 @@ test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly th
   const skipping = [...source.matchAll(/^test\('([^']+)', \{ skip:/gm)].map(match => match[1]);
   assert.deepEqual(rows.map(row => row.name).sort(), skipping.sort());
   for (const row of rows) assert.deepEqual([row.route, row.profile, row.file], ['windows', 'default', 'tests/tmp자동정리.test.js']);
+});
+test('Windows-only Solio backup and tray tests have Windows CI coverage', () => {
+  const declaration = /^test\(\s*(['"])((?:\\.|(?!\1).)*)\1\s*,\s*\{\s*skip\s*:\s*([^}]+)\}/gm;
+  for (const file of ['desktop/tests/solio-backup.test.cjs', 'desktop/tests/platform-tray-memory.test.cjs']) {
+    const names = [...fs.readFileSync(path.join(root, file), 'utf8').matchAll(declaration)]
+      .filter(match => /!==?\s*['"]win32['"]|\bWINDOWS_LOCK\b/.test(match[3]))
+      .map(match => match[2].replace(/\\(.)/g, '$1'));
+    const registered = manifest.cases.filter(row => row.file === file && row.route === 'windows');
+    assert.deepEqual(registered.map(row => row.name).sort(), names.sort(), file);
+    assert.ok(names.length > 0, file);
+  }
 });
 test('every root test that skips off Windows is registered — on the Windows PC nothing skips, so only this static scan sees it before the push', () => {
   // The Linux guard (`guard.cjs --skips`) reports the skip only after the push, outside TAP (`# fail 0` and a red step). Trodden 11-09 (twice) and 11-10.
