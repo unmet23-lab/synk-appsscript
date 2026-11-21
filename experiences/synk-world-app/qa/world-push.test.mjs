@@ -250,6 +250,7 @@ test('요약 모으기: 2단이 켜진 계정만 — 같은 요약은 6시간에
  clock+=7*3600000;push.sync({digest:digest({reviews:[4],lastStudyDay:'2026-10-22'})});assert.equal(syncs().length,6,'6시간 지나면 같아도 한 번');
  // 모아 둔 요약은 설정과 함께 나간다. 보낸 것과 같은 요약으로 돌아오면 모아 둔 것을 버린다.
  clock+=60000;push.sync({digest:digest({reviews:[5],lastStudyDay:'2026-10-22'})});assert.equal(syncs().length,6);
+ await flush();   // 앞 설정 요청의 응답이 왔다(옛 서버에는 설정 요청을 하나씩 보낸다)
  push.sync({settings:{frequency:2,hour:null}});assert.equal(syncs().length,7);assert.deepEqual(syncs()[6].body.digest.reviews,[5],'설정과 함께');
  clock+=60000;push.sync({digest:digest({reviews:[6],lastStudyDay:'2026-10-22'})});push.sync({digest:digest({reviews:[5],lastStudyDay:'2026-10-22'})});
  clock+=5*60000;t.mock.timers.tick(5*60000);await flush();assert.equal(syncs().length,7,'되돌아온 요약 — 모아 둔 것을 버렸다');
@@ -804,6 +805,27 @@ test('판: 처음 켜는 동안 1단이 그대로면 켠 뒤 설정을 다시 �
  await push.enable({settings:{frequency:2,hour:9,since:null},digest:DIGEST('2026-10-21')});await settled();
  assert.equal(push.snapshot().device.subscribed,true);
  assert.equal(s.syncs().length,0);assert.equal(s.stored.settings.hour,9);
+});
+
+test('판: 옛 서버로 되돌린 동안 설정 요청이 날아가는 중에 바꾼 설정은 그 응답 뒤에 모은 요약과 함께 보낸다 — 판 없는 두 설정 요청이 거꾸로 닿아 앞 값이 남지 않는다(GPT push-versions-world-r3 GA5 · GA10)',async()=>{
+ const s=versionedServer(),r=rollback(s),rem=reminderSettings(),storage=memory(),push=on(s,{request:r.request,storage});push.bindSettings(rem);
+ await push.setAccount('acc-1');
+ r.old=true;await push.refresh();
+ assert.equal(push.snapshot().versioning,false);
+ r.holdSync=true;
+ rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});await flush();
+ rem.set({hour:20});push.sync({settings:{frequency:2,hour:20},digest:DIGEST('2026-10-23')});await flush();
+ assert.equal(r.queue.length,1,'앞 설정 요청이 날아가는 동안 둘째는 나가지 않는다');
+ r.holdSync=false;await r.queue.shift().go();await settled();await flush();await settled();
+ assert.deepEqual(s.syncs().filter(call=>!call.rejected).map(call=>[call.body.settings?.hour,call.body.digest?.lastStudyDay??null,'versions' in call.body]),
+  [[9,null,false],[20,'2026-10-23',false]]);
+ assert.equal(s.stored.settings.hour,20);assert.equal(EDIT_OF(storage),null);
+ // 요약만 날아가는 동안에는 설정을 바로 보낸다.
+ r.holdSync=true;push.sync({digest:DIGEST('2026-10-24')});await flush();
+ rem.set({hour:7});push.sync({settings:{frequency:2,hour:7}});await flush();
+ assert.equal(r.queue.length,2);
+ r.holdSync=false;for(const item of r.queue.splice(0))await item.go();await settled();
+ assert.equal(s.stored.settings.hour,7);
 });
 
 test('판: 권한 창 사이에 옛 서버로 되돌려도 켜기는 판 없이 다시 보내 켜진다(GPT push-versions-world-r2 GA2)',async()=>{

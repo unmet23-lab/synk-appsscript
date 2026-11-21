@@ -132,7 +132,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  function reconcile(expected){
   if(!binding||!current(expected)||closing||!state.account.active)return;
   const mine=readEdit();
-  if(!state.versioning){if(mine&&!flying(mine)&&jobs.size===0)deliver(expected,{digest:null,plain:mine,plainFrom:mine});return;}
+  if(!state.versioning){if(mine&&!flying(mine)&&jobs.size===0)deliver(expected,{plain:mine,plainFrom:mine});return;}
   if(mine){
    const server=state.versions?.settings??null;
    if(!mine.known){rewrite(mine,{...mine,base:server,known:true});reconcile(expected);return;}
@@ -157,7 +157,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   if(value){body.settings={frequency:value.frequency,hour:value.hour??null};if(mine)versions.settings=mine.base;}
   if(digest){Object.assign(body,digest.item);if(based){versions.digest=state.versions?.digest??null;if(Array.isArray(digest.item.digest?.reviews))versions.reviews=state.versions?.reviews??null;}}
   if(Object.keys(versions).length)body.versions=versions;
-  const seq=++order,job={settings:mine,digest,sent:true};jobs.add(job);
+  const seq=++order,job={settings:mine,digest,sent:true,carries:!!value};jobs.add(job);
   clearTimeout(retryTimer);retryTimer=null;
   const run=bounded(Promise.resolve(request('sync',body,{keepalive:true,...(leaving?{leaving:true}:{}),onWait:()=>{job.sent=false;},onSent:()=>{job.sent=true;}})));
   run.then(data=>{
@@ -421,7 +421,11 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    const item=digest?{digest,...(Array.isArray(handover)&&handover.length?{handover}:{})}:null;
    if(settings){
     const value=item?make(item):pendingSync;drop();if(value)lastSync=syncMark(value.item,time);
-    if(legacy){if(value)owedDigest=value;return deliver(expected,{digest:value,plain:{frequency:settings.frequency,hour:settings.hour??null}});}
+    // 판을 모르는 옛 서버: 설정을 실은 앞 요청이 날아가는 중이면 편집으로 적어 두고(모은 요약은 남겨 둔다) 그 응답 뒤 맞추기가 함께 보낸다 — 판 없는
+    // 두 설정 요청이 서버에 거꾸로 닿아 앞 값이 남지 않게(GPT push-versions-world-r3 GA5 · GA10).
+    if(legacy){if(value)owedDigest=value;
+     if([...jobs].some(job=>job.carries)){writeEdit({frequency:settings.frequency,hour:settings.hour??null,base:null,known:false,tries:0});return null;}
+     return deliver(expected,{digest:value,plain:{frequency:settings.frequency,hour:settings.hour??null}});}
     return send(value);
    }
    if(!item)return;
