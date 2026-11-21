@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>og · profile-photo</title>
+<!-- 링크 미리보기(1200×630) 원고. build.mjs profile-photo가 Chrome으로 og.png를 찍는다.
+     영상 표지와 같은 결: 검정 위 흰 큰 제목, 마지막 줄만 버터. 오른쪽은 보낸 셀카와 받은 사진. 제목 줄은 page.js TITLE_LINES와 같다. -->
+<style>
+@font-face{font-family:'SUIT Variable';font-weight:100 900;src:url(../../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2')}
+@font-face{font-family:'DM Mono';font-weight:500;src:url(../../../브랜드_폰트/DM_Mono/DMMono-Medium.ttf);unicode-range:U+0021-007E}
+@font-face{font-family:'Inter Tight';font-weight:600;src:url(../../../브랜드_폰트/InterTight/InterTight-Medium.ttf);unicode-range:U+0021-007E}
+*{box-sizing:border-box}
+html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#060709}
+body{font-family:'Inter Tight','SUIT Variable',sans-serif;color:#FAFAF9;word-break:keep-all;-webkit-font-smoothing:antialiased}
+.panel{position:absolute;inset:22px;display:grid;grid-template-columns:1fr 560px;gap:36px;align-items:stretch;padding:34px;border-radius:30px;background:#0C0D10;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.left{display:flex;flex-direction:column;justify-content:space-between;padding:4px 0 2px 6px}
+.top{display:flex;align-items:center;gap:16px}
+.bead{display:grid;place-items:center;height:46px;padding:0 18px;border-radius:999px;background:#FAFAF9}
+.bead img{height:26px}
+.crumb{font:500 14px/1 'DM Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:rgba(250,250,249,.56)}
+.eyebrow{margin:0 0 14px;font-size:22px;font-weight:600;color:rgba(250,250,249,.8)}
+h1{margin:0;font-size:60px;font-weight:800;line-height:1.12;letter-spacing:-.035em}
+h1 span{display:block}
+h1 .hl{color:#F5C445}
+.url{display:inline-flex;align-items:center;align-self:flex-start;height:50px;padding:0 22px;border-radius:999px;background:#FAFAF9;color:#08090C;font:600 21px/1 'Inter Tight','SUIT Variable',sans-serif}
+.shot{display:flex;flex-direction:column;justify-content:center;gap:12px}
+.shot img{width:100%;border-radius:20px}
+.shot p{margin:0;font-size:17px;color:rgba(250,250,249,.6)}
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="left">
+    <div class="top"><span class="bead"><img src="../assets/brand-shift.webp" alt="synk SHIFT"></span><span class="crumb">synkbrief / profile photo</span></div>
+    <div>
+      <p class="eyebrow">SYNK 브리핑 · ChatGPT 앱</p>
+      <h1><span>셀카 한 장을</span><span>프로필 사진으로</span><span class="hl">바꾸는 법</span></h1>
+    </div>
+    <span class="url">synk.im/brief/profile-photo</span>
+  </div>
+  <div class="shot"><img src="shots/01-first-selfie.webp" alt=""><p>예시 셀카는 AI로 만든 가상 인물이에요</p></div>
+</div>
+</body>
+</html>

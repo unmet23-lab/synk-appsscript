@@ -63,6 +63,9 @@ const STATIC = {
   // homepage = synk.im/builds/homepage(11-01, yuhobuilds Y29 「AI 홈페이지가 다 똑같은 이유」 나눔 자료) — render(page.js)가 내용.json 하나로 쪽(index.html)과 PDF 원고를 그린다.
   // keepDirs = 폴더째 싣는 그림(실험 화면 28장 · 작은 그림과 큰 그림). 펠트 우체통은 GPT 이미지 2.5로 청금석 판에 구워 오림(판·지시문 .tmp/homepage-felt-20261101/).
   homepage: { out: 'builds/homepage', render: 'page.js', files: ['request.js', 'view.js'], assets: ['favicon-32.png', 'brand-shift.webp', 'homepage-art-intro.webp'], keepDirs: ['shots'] },
+  // profile-photo = synk.im/brief/profile-photo(11-22, synkbrief 「셀카 한 장으로 프로필 사진」 나눔 자료) — page.js가 편의 자료 원고(.md)를 글 그대로 읽어 한 쪽을 그린다.
+  // 인스타 앱 안 브라우저에서 가볍게 열리도록 화면 양식은 쪽 안에 두고 app.css(시그널 68KB)를 싣지 않는다(theme 'none'). PDF 없음. shots = 실험 사진 일곱 장(webp, 메타데이터 없음), brand-shift-sm = 머리 로고를 표시 크기의 3배(264×72)로 줄인 사본(원본 142KB → 10KB).
+  'profile-photo': { out: 'brief/profile-photo', render: 'page.js', files: [], assets: ['favicon-32.png'], keep: ['brand-shift-sm.webp'], keepDirs: ['shots'], theme: 'none' },
 };
 
 async function buildStatic(name) {
@@ -79,9 +82,9 @@ async function buildStatic(name) {
   fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(path.join(out, 'assets'), { recursive: true });
   for (const f of tool.files) fs.copyFileSync(path.join(src, f), path.join(out, f));
-  const rendered = page ? { index: path.join(out, 'index.html'), guide: path.join(out, 'guide.html') } : null;
-  if (page) { fs.writeFileSync(rendered.index, page.renderPage(data)); fs.writeFileSync(rendered.guide, page.renderGuide(data)); }
-  fs.writeFileSync(path.join(out, 'app.css'), THEMES.signal());
+  const rendered = page ? { index: path.join(out, 'index.html'), ...(page.renderGuide ? { guide: path.join(out, 'guide.html') } : {}) } : null;
+  if (page) { fs.writeFileSync(rendered.index, page.renderPage(data)); if (rendered.guide) fs.writeFileSync(rendered.guide, page.renderGuide(data)); }
+  if (tool.theme !== 'none') fs.writeFileSync(path.join(out, 'app.css'), THEMES.signal());
   for (const f of tool.assets) fs.copyFileSync(path.join(HERE, 'assets', f), path.join(out, 'assets', f));
   for (const f of tool.keep || []) { fs.mkdirSync(path.dirname(path.join(out, f)), { recursive: true }); fs.copyFileSync(path.join(src, f), path.join(out, f)); }
   for (const d of tool.keepDirs || []) fs.cpSync(path.join(src, d), path.join(out, d), { recursive: true });
@@ -89,7 +92,7 @@ async function buildStatic(name) {
   const font = subsetFont([...tool.files.map(f => path.join(src, f)), ...(rendered ? Object.values(rendered) : []), ...(fs.existsSync(og) ? [og] : [])], path.join(out, 'assets/SUIT-subset.woff2'));
   console.log(`${name}: 글자 ${font.chars}개로 폰트를 줄임${font.missing ? ` (폰트에 없어 시스템 글꼴로 보일 기호: ${font.missing})` : ''}`);
   subsetLatin(path.join(out, 'assets'));
-  if (rendered) {
+  if (rendered && rendered.guide) {
     const printed = printOnePage(rendered.guide, path.join(out, 'guide.pdf'), page.WIDTH);
     fs.rmSync(rendered.guide);
     if (printed) console.log(`${name}: PDF 한 장 생성`);
