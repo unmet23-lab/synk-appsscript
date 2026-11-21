@@ -34,9 +34,9 @@
 유호님이 11-21에 「로그인하면 지금 고르는거 화면이 없었으면 좋겠어」, 「워크스페이스랑 pulse는 일단 초대코드로만 로그인하게해줘」라고 하셨다. 이미 배정된 계정은 구 곁 펼침에서 옮겨 가는 안을 고르셨다. PC 앱을 먼저 바꾼 뒤 웹 계정 화면도 같게 하라고 하셨다(「Web too」).
 
 - PC 앱은 로그인하면 늘 솔리오로 들어간다. 배정은 그대로 조회하지만 회사 공간을 열지 않고, 확인된 공간을 펼침 목록에만 넘긴다.
-- 배정 조회가 실패해도(추가 로그인 필요, 다른 계정, 확인 불가) 로그인을 붙잡지 않는다. 펼침에는 확인된 공간만 보인다.
+- 배정 조회가 실패해도(추가 로그인 필요, 다른 계정, 확인 불가) 로그인을 붙잡지 않는다. 펼침에는 확인된 공간만 보이고, 위에 까닭 한 줄과 발치에 「다시 확인」이 선다. 「다시 확인」은 배정만 다시 읽고 회사 공간을 열지 않는다. 다 확인되지 않은 답은 이미 아는 공간을 지우지 않는다.
 - 처음 오는 사람은 묻는 화면의 초대코드로만 Workspace와 PULSE에 들어온다.
-- 웹 계정 화면(synk.im/account/platform.html)은 로그인하면 작업 공간 고르기와 제품 고르기(SHIFT · 솔리오 · WORLD · PATH) 없이 플랫폼으로 들어가고, 회사 공간을 열지 않는다. 가려던 주소(딥링크)가 있으면 그 주소, 없으면 홈이다. 온보딩이 남은 계정은 묻지 않았다는 값(not-asked)을 남긴다. 들어간 뒤 배정을 조용히 한 번 조회해, 배정된 계정에만 홈 선반 아래에 「회사 공간」 칸(Workspace · PULSE 바로가기)을 세운다. 조회가 실패하거나 그사이 계정이 바뀌면 칸을 세우지 않는다. 로그인하지 않은 손님의 「둘러보기」 제품 고르기는 그대로다.
+- 웹 계정 화면(synk.im/account/platform.html)은 로그인하면 작업 공간 고르기와 제품 고르기(SHIFT · 솔리오 · WORLD · PATH) 없이 플랫폼으로 들어가고, 회사 공간을 열지 않는다. 가려던 주소(딥링크)가 있으면 그 주소, 없으면 홈이다. 온보딩이 남은 계정은 묻지 않았다는 값(not-asked)을 남긴다. 들어간 뒤 배정을 조용히 한 번 조회해, 배정된 계정에만 홈 선반 아래에 「회사 공간」 칸(Workspace · PULSE 바로가기)을 세운다. 조회가 실패하거나 그사이 계정이 바뀌면 칸을 세우지 않는다. 조회는 회사 쿠키가 아니라 이 탭의 SYNK 플랫폼 로그인으로 한다. 회사 서버의 웹 배정 경로는 synk.im에서 온 platform-browser 토큰만 받고, 그 길에서는 쿠키를 읽지 않는다. 그래서 회사 공간에 로그인한 적이 없거나 세션이 끊긴 배정 회원도 칸을 본다(유호님 11-21 「웅 지금 오류나 고칠것들 다 고쳐야지」, 회사 판 반영 뒤 공개). 로그인하지 않은 손님의 「둘러보기」 제품 고르기는 그대로다.
 - 웹 원천은 `experiences/synk-account/src/platform-portal.mjs`의 `onEnter`와 `lookupAssignedSpaces`, `platform.mjs`의 `companySpacesSection`이고, 들어가는 동안의 낭독기 글은 `desktop/renderer/portal-entry.mjs`가 「계정을 확인하고 들어가고 있어요.」로 알린다. 시험은 `experiences/synk-account/tests/company-entry-host-binding.test.mjs`의 「web sign-in …」과 `platform-returning-session.test.mjs`다.
 - 원천은 `desktop/renderer/portal-host.mjs`의 `onEnter`와 `enterPersonalAfterAssignment`, `orb-face.mjs`의 `triggerEnter`다. 시험은 `desktop/tests/orb-face-host.test.mjs`, 화면 확인은 `desktop/tools/orb-face-browser-qa.cjs`의 4~6번이다.
 
