@@ -1014,6 +1014,17 @@ test('Workspace가 바빠 겉을 주지 못하면 BUSY(다시 시도 됨)이고 
   assert.deepEqual(g.electron.windows[0].webContents.loads,[]);
 });
 
+// Workspace 로그인이 같은 SYNK ID로 끝나기 전이면 초대를 소모하지 않고 다시 시도하게 한다(GPT 엔진 검수 pc-orb-step4-engine-20261122 GA2)
+test('Workspace 로그인이 아직이면 TEMPORARY_UNAVAILABLE(다시 시도 됨)이고 분류 창은 닫힌다',async()=>{
+  const h=manual({openEmployeeSurface:async()=>({pending:true})}),ids=idsFor(h);
+  const box=track(h.manager.inspectCode({code:TOKEN,...ids}));
+  const receiver=await classifyEmployee(h,ids);
+  await settle(5);
+  assert.deepEqual(box.value,{ok:false,...ids,code:'TEMPORARY_UNAVAILABLE',retryable:true});
+  assert.equal(receiver.win.isDestroyed(),true);
+  assert.equal(h.timers.size,0);
+});
+
 test('겉을 받지 못하면 HANDOFF_UNAVAILABLE(다시 시도 안 됨)이다',async()=>{
   const answers={null:()=>null,undefined:()=>undefined,thrown:()=>{throw new Error('합성');},rejected:()=>Promise.reject(new Error('합성')),noSurface:()=>({session:{}})};
   for(const [name,open] of Object.entries(answers)){

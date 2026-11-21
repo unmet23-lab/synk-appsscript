@@ -620,6 +620,12 @@ test('기존 제품 열기의 실패는 고정 공개 code로만 나뉘고 성�
     ['/',{ok:false,code:'INVALID_INSTALLATION'},'HANDOFF_UNAVAILABLE',false],
     ['/',{ok:false,code:'RELEASE_UNAVAILABLE'},'HANDOFF_UNAVAILABLE',false],
     ['/',{ok:false,code:'LAUNCH_FAILED'},'HANDOFF_UNAVAILABLE',true],
+    // 창 안의 Workspace(4단계, GPT 엔진 검수 GA7)
+    ['/',{ok:false,code:'WORKSPACE_APP_ACCOUNT_CHANGED'},'ACCOUNT_CHANGED',false],
+    ['/',{ok:false,code:'WORKSPACE_APP_ACCOUNT_PENDING'},'TEMPORARY_UNAVAILABLE',true],
+    ['/',{ok:false,code:'WORKSPACE_APP_STORAGE_UNAVAILABLE'},'TEMPORARY_UNAVAILABLE',true],
+    ['/',{ok:false,code:'WORKSPACE_APP_OPEN_FAILED'},'HANDOFF_UNAVAILABLE',true],
+    ['/',{ok:false,code:'WORKSPACE_APP_UNAVAILABLE'},'HANDOFF_UNAVAILABLE',false],
     ['/',{ok:false,code:'DISPOSED'},'HANDOFF_UNAVAILABLE',false],
     ['/',undefined,'HANDOFF_UNAVAILABLE',false],
     ['/',{ok:'true'},'HANDOFF_UNAVAILABLE',false],

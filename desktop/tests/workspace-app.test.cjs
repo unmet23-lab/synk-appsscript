@@ -43,7 +43,7 @@ function fakeSession(partition,{preloadApi=true,preloadThrows=false}={}){
   if(preloadApi)s.registerPreloadScript=function(spec){this.counts.preload++;if(preloadThrows)throw Error('합성 실패');this.preloads.push(spec);};
   return s;
 }
-function fixture({state=member(A),clientId='platform',platform='win32',status=200,load=()=>Promise.resolve(),visible=true,chooseShare=async()=>null,closeForExit=null,sessionOptions={},sessions=new Map(),native=null,timers=null,now=null,openExternal=null}={}){
+function fixture({state=member(A),clientId='platform',platform='win32',status=200,load=()=>Promise.resolve(),visible=true,chooseShare=async()=>null,screenShare=false,closeForExit=null,sessionOptions={},sessions=new Map(),native=null,timers=null,now=null,openExternal=null}={}){
   const surfaces=[],partitions=[],external=[],dialogs=[],answers=[],log=[],shares=[];let current=state,renewing=null,kept=0,shown=visible,clock=1e6;
   const parent=new EventEmitter();Object.assign(parent,{destroyed:false,isDestroyed(){return this.destroyed;}});
   class Surface extends EventEmitter{
@@ -56,7 +56,7 @@ function fixture({state=member(A),clientId='platform',platform='win32',status=20
   const session={fromPartition(partition){partitions.push(partition);if(!sessions.has(partition))sessions.set(partition,fakeSession(partition,sessionOptions));return sessions.get(partition);}};
   const dialog={showMessageBoxSync(win,options){dialogs.push({win,options});return answers.length?answers.shift():0;},showMessageBox(win,options){dialogs.push({win,options,async:true});return Promise.resolve({response:0});}};
   const work=(name,value)=>(...args)=>{log.push([name,...args]);return value;};
-  const nativeDefault={prepare:work('prepare'),status:work('status',{configured:true,signedIn:true,status:'signed-in'}),accountLoad:work('accountLoad',{ok:true,account:{display_name:'합성'}}),
+  const nativeDefault={prepare:work('prepare'),status:(...args)=>{log.push(['status',...args]);return {configured:true,signedIn:true,status:'signed-in',account:current?.account||null};},accountLoad:work('accountLoad',{ok:true,account:{display_name:'합성'}}),
     signIn:work('signIn',{status:'signing-in'}),cancelSignIn:work('cancelSignIn',{status:'signed-out'}),signOut:work('signOut',{ok:true}),
     companyRequest(jar){log.push(['companyRequest',jar]);return (operation,params)=>{log.push(['company',operation,params]);return {ok:true,operation};};}};
   const f={surfaces,partitions,external,dialogs,answers,log,shares,parent,sessions,get kept(){return kept;},
@@ -67,7 +67,7 @@ function fixture({state=member(A),clientId='platform',platform='win32',status=20
   f.app=createWorkspaceApp({clientId,platform,getAccount:()=>current,getRenewingAccount:()=>renewing,createSurface:options=>new Surface(options),
     ...(closeForExit?{closeSurfaceForExit:()=>closeForExit(f)}:{}),isSurfaceVisible:()=>shown,session,dialog,
     openExternal:openExternal||(async url=>{external.push(url);}),getDownloads:()=>'/synthetic/downloads',native:native??nativeDefault,
-    chooseShare:options=>{shares.push(options);return chooseShare(options);},onUnloadKept:()=>{kept++;},loadTimeoutMs:250,
+    chooseShare:options=>{shares.push(options);return chooseShare(options);},screenShare,onUnloadKept:()=>{kept++;},loadTimeoutMs:250,
     // 바깥 열기는 1.5초에 한 번이다. 따로 주지 않으면 부를 때마다 2초씩 간다
     now:now||(()=>clock+=2000),...(timers?{timers}:{})});
   return f;
@@ -305,7 +305,7 @@ const SCREEN={requestingUrl:ORIGIN+'/messenger/',mediaTypes:[]};
 async function ask(f,id,contents,details=SCREEN,permission='media'){let answer;f.session(id).permission(contents,permission,value=>{answer=value;},details);await settle();return answer;}
 function display(f,id,request){const got=[];f.session(id).displayMedia(request,value=>got.push(value));return got;}
 test('screen sharing: the screen request asks the platform picker once, and the display request that follows gets only the picked video, never sound',async()=>{
-  const f=fixture({chooseShare:async()=>({video:SOURCE})});await f.app.open();const c=f.surface.webContents;
+  const f=fixture({screenShare:true,chooseShare:async()=>({video:SOURCE})});await f.app.open();const c=f.surface.webContents;
   assert.equal(await ask(f,A,c),true);assert.equal(f.shares.length,1);
   let got=display(f,A,{videoRequested:true,audioRequested:true,frame:frameAt(ORIGIN+'/messenger/',c.mainFrame)});
   assert.deepEqual(got,[{video:SOURCE}],'the same-origin messenger frame; no screen sound even when asked');assert.deepEqual(Object.keys(got[0]),['video']);
@@ -313,12 +313,12 @@ test('screen sharing: the screen request asks the platform picker once, and the 
   assert.equal(await ask(f,A,c,{requestingUrl:ENTRY},'display-capture'),true,'a display-capture request asks the same way');assert.equal(f.shares.length,2);
   assert.deepEqual(display(f,A,{videoRequested:true,frame:c.mainFrame}),[{video:SOURCE}]);
   // 고르기가 소리를 돌려줘도 첫 판은 화면 소리를 주지 않는다(설계 4.2, 검토 R10)
-  const loud=fixture({chooseShare:async()=>({video:SOURCE,audio:'loopback'})});await loud.app.open();
+  const loud=fixture({screenShare:true,chooseShare:async()=>({video:SOURCE,audio:'loopback'})});await loud.app.open();
   assert.equal(await ask(loud,A,loud.surface.webContents),true);
   assert.deepEqual(display(loud,A,{videoRequested:true,audioRequested:true,frame:loud.surface.webContents.mainFrame}),[{video:SOURCE}]);
 });
 test('a screen request is refused without asking when hidden, from another contents or origin, off Windows or without a surface',async()=>{
-  const f=fixture({chooseShare:async()=>({video:SOURCE})});
+  const f=fixture({screenShare:true,chooseShare:async()=>({video:SOURCE})});
   assert.equal(f.session(A),undefined,'no jar, so no handler, before an open');
   await f.app.open();const c=f.surface.webContents,other=fakeContents();other.navigate(ENTRY);
   assert.equal(await ask(f,A,other),false,'another contents');
@@ -326,11 +326,11 @@ test('a screen request is refused without asking when hidden, from another conte
   f.setVisible(false);assert.equal(await ask(f,A,c),false,'a hidden view');f.setVisible(true);
   assert.deepEqual(f.shares,[]);
   f.surface.destroy();assert.equal(await ask(f,A,c),false,'no surface');
-  const mac=fixture({platform:'darwin',chooseShare:async()=>({video:SOURCE})});await mac.app.open();
+  const mac=fixture({platform:'darwin',screenShare:true,chooseShare:async()=>({video:SOURCE})});await mac.app.open();
   assert.equal(await ask(mac,A,mac.surface.webContents),false);assert.deepEqual(mac.shares,[]);
 });
 test('a display request without a fresh pick, or from a foreign frame, is refused with null; a legacy capture never gets a pick it did not ask for',async()=>{
-  let clock=1000;const f=fixture({chooseShare:async()=>({video:SOURCE}),now:()=>clock});await f.app.open();const c=f.surface.webContents;
+  let clock=1000;const f=fixture({screenShare:true,chooseShare:async()=>({video:SOURCE}),now:()=>clock});await f.app.open();const c=f.surface.webContents;
   assert.deepEqual(display(f,A,{videoRequested:true,frame:c.mainFrame}),[null],'no pick at all');
   const refusals=[{videoRequested:false,audioRequested:true,frame:c.mainFrame},{videoRequested:true,frame:fakeContents().mainFrame},{videoRequested:true,frame:frameAt('https://evil.invalid/',c.mainFrame)},{videoRequested:true,frame:null},{videoRequested:true},null];
   for(const [index,request] of refusals.entries()){assert.equal(await ask(f,A,c),true);assert.deepEqual(display(f,A,request),[null],'refusal '+index);assert.deepEqual(display(f,A,{videoRequested:true,frame:c.mainFrame}),[null],'the pick is spent by the refusal '+index);}
@@ -340,7 +340,7 @@ test('a display request without a fresh pick, or from a foreign frame, is refuse
   const mac=fixture({platform:'darwin'});await mac.app.open();assert.deepEqual(display(mac,A,{videoRequested:true,frame:mac.surface.webContents.mainFrame}),[null]);
 });
 test('screen requests ask one at a time; no pick, a failure, an account change or a closed view while asking refuses',async()=>{
-  let pick=deferred();const f=fixture({chooseShare:()=>pick.promise});await f.app.open();const c=f.surface.webContents;
+  let pick=deferred();const f=fixture({screenShare:true,chooseShare:()=>pick.promise});await f.app.open();const c=f.surface.webContents;
   let first;f.session(A).permission(c,'media',value=>{first=value;},SCREEN);await settle();
   assert.equal(await ask(f,A,c),false,'a second request while asking');assert.equal(first,undefined);assert.equal(f.shares.length,1);
   pick.resolve({video:SOURCE});await settle();assert.equal(first,true);assert.deepEqual(display(f,A,{videoRequested:true,frame:c.mainFrame}),[{video:SOURCE}]);
@@ -351,7 +351,7 @@ test('screen requests ask one at a time; no pick, a failure, an account change o
   pick=deferred();got=undefined;f.session(A).permission(d,'media',value=>{got=value;},SCREEN);await settle();f.surface.destroy();pick.resolve({video:SOURCE});await settle();assert.equal(got,false,'a closed view');
   await f.app.open();pick=deferred();got=undefined;f.session(A).permission(f.surface.webContents,'media',value=>{got=value;},SCREEN);await settle();f.app.dispose();pick.resolve({video:SOURCE});await settle();assert.equal(got,false,'disposed');
   // 답은 한 번뿐이다. callback이 던져도 묻기는 풀린다
-  const once=fixture({chooseShare:async()=>({video:SOURCE})});await once.app.open();const calls=[],oc=once.surface.webContents;
+  const once=fixture({screenShare:true,chooseShare:async()=>({video:SOURCE})});await once.app.open();const calls=[],oc=once.surface.webContents;
   once.session(A).permission(oc,'media',value=>{calls.push(value);throw Error('합성');},SCREEN);await settle();
   once.session(A).displayMedia({videoRequested:true,frame:oc.mainFrame},value=>{calls.push(value);throw Error('합성');});
   assert.deepEqual(calls,[true,{video:SOURCE}]);assert.equal(await ask(once,A,oc),true,'asking is free again');
@@ -400,7 +400,7 @@ test('the native link: six handled channels on this surface\'s own ipc, answered
   const handled=Object.entries(NATIVE_CHANNEL).filter(([name])=>name!=='changed').map(([,channel])=>channel);
   assert.deepEqual([...c.handlers.keys()].sort(),handled.sort());assert.equal(Object.keys(NATIVE_CHANNEL).length,7);
   assert.deepEqual(f.log.filter(entry=>entry[0]==='companyRequest'),[['companyRequest',jar]],'company requests use this surface\'s jar');
-  assert.deepEqual(await c.call(NATIVE_CHANNEL.status),{configured:true,signedIn:true,status:'signed-in'});
+  assert.deepEqual(await c.call(NATIVE_CHANNEL.status),{configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:A}});
   assert.deepEqual(await c.call(NATIVE_CHANNEL.account,{},'load'),{ok:true,account:{display_name:'합성'}});
   for(const operation of ['renew','logout','status',undefined,{op:'load'}])assert.deepEqual(await c.call(NATIVE_CHANNEL.account,{},operation),{ok:false,code:'INVALID_REQUEST'},String(operation));
   assert.deepEqual(await c.call(NATIVE_CHANNEL.signIn),{status:'signing-in'});assert.deepEqual(await c.call(NATIVE_CHANNEL.cancel),{status:'signed-out'});assert.deepEqual(await c.call(NATIVE_CHANNEL.signOut),{ok:true});
@@ -412,11 +412,11 @@ test('the native link: six handled channels on this surface\'s own ipc, answered
   assert.deepEqual(await c.call(NATIVE_CHANNEL.status,{senderFrame:null}),untrusted);
   c.mainFrame.url=ORIGIN+'/messenger/';assert.deepEqual(await c.call(NATIVE_CHANNEL.account,{},'load'),untrusted,'a main frame away from the company /');
   c.mainFrame.url='https://evil.invalid/';assert.deepEqual(await c.call(NATIVE_CHANNEL.company,{},'status',{}),untrusted);
-  c.mainFrame.url=ORIGIN+'/?tab=social';assert.deepEqual(await c.call(NATIVE_CHANNEL.status),{configured:true,signedIn:true,status:'signed-in'});
+  c.mainFrame.url=ORIGIN+'/?tab=social';assert.deepEqual(await c.call(NATIVE_CHANNEL.status),{configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:A}});
   assert.equal(f.log.length,before+1,'no native work for an untrusted sender');
   s.destroy();assert.deepEqual(await c.call(NATIVE_CHANNEL.status),untrusted,'a closed surface');
   await f.app.open();assert.deepEqual(await c.call(NATIVE_CHANNEL.status),untrusted,'the old surface\'s channels stay closed after a new open');
-  assert.deepEqual(await f.surface.webContents.call(NATIVE_CHANNEL.status),{configured:true,signedIn:true,status:'signed-in'});
+  assert.deepEqual(await f.surface.webContents.call(NATIVE_CHANNEL.status),{configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:A}});
 });
 test('the native link answers a failure code when its work throws or is missing',async()=>{
   const f=fixture({native:{status(){throw Error('합성');},accountLoad:async()=>{throw Error('합성');}}});await f.app.open();const c=f.surface.webContents;
@@ -442,4 +442,38 @@ test('the native link refuses a same-origin frame even at the company / ; only t
   for(const url of [ORIGIN+'/',ENTRY])assert.deepEqual(await c.call(NATIVE_CHANNEL.status,{senderFrame:frameAt(url,c.mainFrame)}),{ok:false,code:'UNTRUSTED_SENDER'},url);
   assert.deepEqual(await c.call(NATIVE_CHANNEL.signOut,{senderFrame:frameAt(ENTRY)}),{ok:false,code:'UNTRUSTED_SENDER'},'a look-alike main frame object');
   assert.equal(f.log.length,before);
+});
+
+// GPT 엔진 검수 pc-orb-step4-engine-20261122
+test('screen sharing is off by default: a screen request is refused without asking and a display request gets null (GA1)',async()=>{
+  const f=fixture({chooseShare:async()=>({video:SOURCE})});await f.app.open();const c=f.surface.webContents;
+  assert.equal(await ask(f,A,c),false);assert.equal(await ask(f,A,c,{requestingUrl:ENTRY},'display-capture'),false);
+  assert.deepEqual(f.shares,[],'the platform picker is never asked');
+  assert.deepEqual(display(f,A,{videoRequested:true,frame:c.mainFrame}),[null]);
+  assert.equal(permit(f,A,c,'media',{requestingUrl:ORIGIN+'/messenger/',mediaTypes:['audio']}),true,'the microphone still works');
+});
+test('surfaceForInvite waits for the Workspace login of the same SYNK ID before giving a surface (GA2)',async()=>{
+  const binding={status:'signed-in',expectedAccountId:U};
+  for(const status of [{configured:true,signedIn:false,status:'signing-in',account:null},{configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:A}},null]){
+    const f=fixture({state:member(U),native:{prepare(){},status:()=>status}});
+    assert.deepEqual(await f.app.surfaceForInvite(binding),{pending:true},JSON.stringify(status));
+    assert.equal(f.surfaces.length,0,'no surface before the Workspace login is ready');
+  }
+  const throwing=fixture({state:member(U),native:{prepare(){},status(){throw Error('합성');}}});
+  assert.deepEqual(await throwing.app.surfaceForInvite(binding),{pending:true});
+  const ready=fixture({state:member(U)});const answer=await ready.app.surfaceForInvite(binding);
+  assert.ok(answer?.surface,'ready once the Workspace login is the same SYNK ID');
+});
+test('requests the company document starts go out without a referrer, by the origin the browser records (GA4)',()=>{
+  const image={url:'https://i.ytimg.com/vi/synthetic/hqdefault.jpg',resourceType:'image',referrer:''};
+  assert.equal(workspaceRequestAllowed({...image,initiatorOrigin:ORIGIN}),true,'no-referrer company page, initiator is the company');
+  assert.equal(workspaceRequestAllowed({...image,initiatorOrigin:'https://evil.invalid'}),false);
+  assert.equal(workspaceRequestAllowed(image),false,'neither a referrer nor an initiator');
+  assert.equal(workspaceRequestAllowed({...image,resourceType:'script',initiatorOrigin:ORIGIN}),false,'scripts stay on the company origin');
+});
+test('permission checks read origins as URLs, so a trailing slash from Electron still matches (GA5)',async()=>{
+  const f=fixture();await f.app.open();const c=f.surface.webContents;
+  assert.equal(checked(f,A,c,'speaker-selection',ORIGIN+'/',{embeddingOrigin:ORIGIN+'/'}),true);
+  assert.equal(checked(f,A,c,'media',ORIGIN+'/',{mediaType:'audio',embeddingOrigin:ORIGIN+'/'}),true);
+  assert.equal(checked(f,A,c,'media',ORIGIN+'/',{mediaType:'audio',embeddingOrigin:'https://evil.invalid/'}),false);
 });

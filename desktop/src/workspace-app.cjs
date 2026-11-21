@@ -42,7 +42,8 @@ function workspaceRequestAllowed(details){
     if(['script','worker','sharedWorker','serviceWorker','object','wasm'].includes(details.resourceType))return false;
     if(LIVEKIT_HOST.test(url.hostname)&&!url.port)return url.protocol==='wss:'||url.protocol==='https:';
     if(url.protocol!=='https:'&&url.protocol!=='wss:')return false;
-    return originOf(details.referrer)===WORKSPACE_ORIGIN;
+    // 회사 서버는 Referrer-Policy: no-referrer라 referrer가 빈다. 브라우저가 적는 요청 출처(initiatorOrigin)로 본다(GPT 엔진 검수 GA4)
+    return originOf(details.initiatorOrigin)===WORKSPACE_ORIGIN||originOf(details.referrer)===WORKSPACE_ORIGIN;
   }catch{return false;}
 }
 // 시스템 브라우저로 넘길 주소. http · https이고 사용자 정보가 없으며 뷰 안에서 열 문서가 아니어야 한다
@@ -61,7 +62,10 @@ function workspaceFrame(contents,frame){try{return !!frame&&!!contents&&frame.to
   native: {status(), accountLoad(), signIn(), cancelSignIn(), signOut(), companyRequest(session)} — 본체가 주는 native 연결의 실제 일.
   chooseShare(): 본체가 플랫폼 화면에서 고르게 하고 {video} 또는 null을 돌려준다. 소리는 쓰지 않는다(설계 4.2).
 */
-function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRenewingAccount=()=>null,createSurface,closeSurfaceForExit=async()=>'none',isSurfaceVisible=()=>false,session,dialog,openExternal,getDownloads,native={},chooseShare=async()=>null,onUnloadKept=()=>{},loadTimeoutMs=25000,timers=globalThis,now=()=>Date.now()}){
+// screenShare: 화면 공유를 열지(기본 끔). Electron 44는 getDisplayMedia와 옛 화면 캡처(getUserMedia의 chromeMediaSource)를 권한 단계에서
+// 같은 빈 media 요청으로 준다. 옛 캡처는 표시 처리기를 거치지 않아 사람이 고른 창과 다른 화면 전체와 시스템 소리를 잡을 수 있다.
+// 둘을 가를 길이 생길 때까지 본체는 끈 채로 둔다(GPT 엔진 검수 pc-orb-step4-engine-20261122 GA1). 고르기 길은 시험이 켜서 지킨다
+function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRenewingAccount=()=>null,createSurface,closeSurfaceForExit=async()=>'none',isSurfaceVisible=()=>false,session,dialog,openExternal,getDownloads,native={},chooseShare=async()=>null,screenShare=false,onUnloadKept=()=>{},loadTimeoutMs=25000,timers=globalThis,now=()=>Date.now()}){
   const setTimeout=(fn,ms)=>timers.setTimeout(fn,ms),clearTimeout=handle=>timers.clearTimeout(handle);
   let owner=workspaceScopeOf(getAccount?.()),epoch=0,activeSurface=null,activeSession=null,pending=null,disposed=false,cleanup=Promise.resolve(),lastExternal=0,sharing=false;
   // micDocument는 마이크를 허락한 문서(겉의 주 프레임)다. 그 문서가 사는 동안 통화 중으로 센다(검토 R11).
@@ -98,8 +102,9 @@ function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRe
   function permissionChecked(contents,permission,requestingOrigin,details){
     if(platform!=='win32'||!alive())return false;
     if(contents&&contents!==activeSurface.webContents)return false;
-    if(requestingOrigin!==WORKSPACE_ORIGIN&&originOf(details?.requestingUrl)!==WORKSPACE_ORIGIN)return false;
-    if(details?.embeddingOrigin&&details.embeddingOrigin!==WORKSPACE_ORIGIN)return false;
+    // Electron은 출처를 끝에 /가 붙은 URL 꼴로 넘기기도 한다. URL로 풀어 출처 단위로 견준다(GPT 엔진 검수 GA5)
+    if(originOf(requestingOrigin)!==WORKSPACE_ORIGIN&&originOf(details?.requestingUrl)!==WORKSPACE_ORIGIN)return false;
+    if(details?.embeddingOrigin&&originOf(details.embeddingOrigin)!==WORKSPACE_ORIGIN)return false;
     return permission==='media'&&details?.mediaType==='audio'||permission==='speaker-selection';
   }
   function documentOf(contents){try{return contents.mainFrame?{contents,frame:contents.mainFrame,seq:documentSeq}:null;}catch{return null;}}
@@ -143,7 +148,7 @@ function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRe
     if(made.has(isolated))return isolated;
     isolated.setPermissionRequestHandler((contents,permission,callback,details)=>{
       let answered=false;const answer=value=>{if(answered)return;answered=true;try{callback(value===true);}catch{}};
-      if(screenAsk(permission,details)){void shareConsent(contents,details).then(answer,()=>answer(false));return;}
+      if(screenAsk(permission,details)){if(screenShare!==true){answer(false);return;}void shareConsent(contents,details).then(answer,()=>answer(false));return;}
       answer(permissionAllowed(contents,permission,details));
     });
     isolated.setPermissionCheckHandler((contents,permission,requestingOrigin,details)=>permissionChecked(contents,permission,requestingOrigin,details));
@@ -238,6 +243,10 @@ function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRe
     const expected=epoch;
     if(!syncContext()||binding?.status!=='signed-in'||ownerAccount()!==binding.expectedAccountId)return null;
     try{native.prepare?.();}catch{}
+    // 회사 화면은 Workspace 로그인으로 그 회사 계정을 SYNK ID에 잇는다. 그 로그인이 같은 SYNK ID로 끝나기 전에 초대를 받으면 잇지 못한 채
+    // 초대가 소모된다. 그래서 끝나기 전에는 {pending:true}로 답하고 회사 입구가 다시 시도할 수 있는 오류로 끝낸다(GPT 엔진 검수 GA2)
+    let ready=false;try{const status=native.status?.();ready=status?.signedIn===true&&status.account?.synk_user_id===binding.expectedAccountId;}catch{ready=false;}
+    if(!ready)return {pending:true};
     if(pending)return {busy:true};
     // 통화 중인 Workspace는 쓰던 글이 없어도 말없이 닫지 않는다(검토 R6)
     if(alive()&&busy())return {busy:true};

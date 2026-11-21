@@ -127,15 +127,14 @@ async function syncTrayApps(){
   const seq=++trayAppsSeq;
   // 로그아웃이나 권한 없음은 설치 확인을 기다리지 않고 바로 뺀다(설계 검토 D6)
   if(quittingRequested||!trayAppAllowed()){platformTray.setApps([]);return;}
-  let installed=false;
-  try{installed=(await ensureInstallations().probe(TRAY_APP))?.installed===true;}catch{installed=false;}
+  // 줄은 창 안의 Workspace를 열므로 따로 설치한 앱이 없어도 배정된 회원에게 보인다(4단계 구현 설계 3.5, GPT 엔진 검수 GA6)
   if(seq!==trayAppsSeq||!platformTray?.isActive())return;
-  platformTray.setApps(installed&&!quittingRequested&&trayAppAllowed()?[TRAY_APP]:[]);
+  platformTray.setApps(!quittingRequested&&trayAppAllowed()?[TRAY_APP]:[]);
 }
 // 설치 파일 준비의 진행처럼 몰려 오는 알림은 0.3초 묶어 한 번 본다
 function scheduleTrayApps(){if(!platformTray?.isActive())return;clearTimeout(trayAppsTimer);trayAppsTimer=setTimeout(()=>{trayAppsTimer=null;void syncTrayApps();},300);trayAppsTimer.unref?.();}
 // 트레이의 Workspace 줄은 따로 설치한 앱을 실행하지 않는다. 플랫폼 창을 부르고 화면이 창 안의 Workspace를 연다(4단계 구현 설계 3.5).
-// 줄은 지금처럼 그 앱이 설치된 회원에게만 보인다. 앱을 거둘지는 유호님 답으로 정한다. 권한이 없어졌으면 창만 연다
+// 줄은 Workspace가 배정된 회원에게 보인다. 따로 설치한 앱을 거둘지는 유호님 답으로 정한다. 권한이 없어졌으면 창만 연다
 async function launchFromTray(id){
   if(quittingRequested)return;
   if(!trayAppAllowed(id)){requestPlatformWindow();return;}
@@ -616,7 +615,8 @@ async function chooseWorkspaceShare(){
   try{sources=await desktopCapturer.getSources({types:['screen','window'],thumbnailSize:{width:320,height:180},fetchWindowIcons:false});}catch{return null;}
   let own=null;try{own=window&&!window.isDestroyed()?window.getMediaSourceId():null;}catch{own=null;}
   sources=(Array.isArray(sources)?sources:[]).filter(source=>source&&typeof source.id==='string'&&/^(?:screen|window):/.test(source.id)&&source.id!==own).slice(0,SHARE_MAX);
-  if(!sources.length||shareAsk||!window||window.isDestroyed())return null;
+  // 목록을 받는 사이 창이 숨거나 내려갔으면 묻지 않는다(GPT 엔진 검수 GA3)
+  if(!sources.length||shareAsk||!window||window.isDestroyed()||!window.isVisible()||window.isMinimized())return null;
   const id=++shareSeq;
   const thumb=source=>{try{return source.thumbnail&&!source.thumbnail.isEmpty()?source.thumbnail.toDataURL():'';}catch{return '';}};
   const items=sources.map(source=>({name:String(source.name||'').slice(0,120),kind:source.id.startsWith('screen:')?'screen':'window',thumb:thumb(source)}));
@@ -799,7 +799,7 @@ function createWindow(){
   // 창을 보이고 화면을 PULSE로 데려간다. 트레이를 끈 사람의 창 닫기도 같다(설계 검토 R10). 다시 끝낼 때는 setImmediate로 미룬다
   if(isPlatform&&pulseView)pulseView.installCloseGate(window,{quitting:()=>quittingRequested,quit:()=>setImmediate(()=>app.quit()),onKept:()=>{if(quittingRequested){quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}if(!window||window.isDestroyed())return;if(window.isMinimized())window.restore();window.show();window.focus();sendDesktop('synk:pulse-view-event',{type:'reveal'});}});
   // 화면 공유를 묻는 동안 창이 숨거나 플랫폼 화면이 새 문서를 실으면 그 물음은 거절로 끝낸다(4단계 설계 4.2, 검토 R20)
-  if(isPlatform){window.on('hide',()=>shareAsk?.finish(null));contents.on('did-start-navigation',(details,_url,isInPlace,isMainFrame)=>{const main=details?.isMainFrame??isMainFrame,same=details?.isSameDocument??isInPlace;if(main===true&&same!==true)shareAsk?.finish(null);});}
+  if(isPlatform){window.on('hide',()=>shareAsk?.finish(null));window.on('minimize',()=>shareAsk?.finish(null));contents.on('did-start-navigation',(details,_url,isInPlace,isMainFrame)=>{const main=details?.isMainFrame??isMainFrame,same=details?.isSameDocument??isInPlace;if(main===true&&same!==true)shareAsk?.finish(null);});}
   // Workspace 자리에도 같은 문을 단다. PULSE 문이 막고 자기 공간을 닫은 뒤 close()를 다시 부르면 이 문의 차례다(4단계 구현 설계 3.1)
   if(isPlatform&&workspaceView)workspaceView.installCloseGate(window,{quitting:()=>quittingRequested,quit:()=>setImmediate(()=>app.quit()),onKept:()=>{if(quittingRequested){quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}if(!window||window.isDestroyed())return;if(window.isMinimized())window.restore();window.show();window.focus();sendDesktop('synk:workspace-view-event',{type:'reveal'});}});
   // 쓰던 글을 지키려고 끝내기를 그만두면 끝내는 중 표시를 되돌린다. Workspace도 같다. 되돌리지 않으면 화면 프로세스 되살리기가 끝내는 중으로 보고 멈춘다(엔진 검수 GA1)

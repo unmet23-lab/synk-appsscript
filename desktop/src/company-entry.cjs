@@ -309,6 +309,8 @@ function createCompanyEntryManager(deps={}){
     if(req.done){destroy(surface);return;}
     if(!current(req)){destroy(surface);changed(req);return;}
     if(answer&&answer.busy===true){destroy(surface);finish(req,failure(req,'BUSY',true));return;}
+    // Workspace 로그인이 아직 끝나지 않았다. 초대를 소모하지 않고 다시 시도하게 한다(workspace-app surfaceForInvite, GPT 엔진 검수 GA2)
+    if(answer&&answer.pending===true){destroy(surface);finish(req,failure(req,'TEMPORARY_UNAVAILABLE',true));return;}
     if(!surface||!attach(req,surface,answer.session)){destroy(surface);finish(req,failure(req,'HANDOFF_UNAVAILABLE',false));return;}
     enter(req,'deliver');
   }

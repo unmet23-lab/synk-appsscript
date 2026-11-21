@@ -70,7 +70,8 @@ app.whenReady().then(async()=>{
     const workspace=createWorkspaceApp({clientId:'platform',getAccount:()=>account,createSurface:options=>workspaceHost.createSurface(options),closeSurfaceForExit:()=>workspaceHost.closeForExit(),isSurfaceVisible:()=>workspaceHost.visible(),
       session,dialog,openExternal:url=>externals.push(url),getDownloads:()=>userData,
       native:{status:()=>nativeStatus,companyRequest:()=>async operation=>({ok:true,operation})},
-      chooseShare:async()=>{shares.push(1);return pick();}});
+      // 본체는 화면 공유를 끈 채 낸다(GPT 엔진 검수 GA1, 단위 시험이 지킨다). 여기서는 켜서 고르기 길이 진짜 Electron에서 도는지 본다
+      screenShare:true,chooseShare:async()=>{shares.push(1);return pick();}});
     // 고르기는 이 시험 창 자신(검은 data: 문서)만 준다. 실제 화면은 잡지 않는다
     let pick=()=>({video:win.webContents.mainFrame});
     const opened=await workspace.open();
@@ -87,6 +88,11 @@ app.whenReady().then(async()=>{
     const status=await contents.executeJavaScript('window.synkDesktop.authStatus()');
     const company=await contents.executeJavaScript("window.synkDesktop.companyRequest('status')");
     check('native calls reach main through the view only',status?.status==='signed-in'&&company?.operation==='status',{status:status?.status,company});
+    // 직원 초대 문서(/)에서는 회사 입구 preload가 실제로 돌아 제 표시를 내놓고, native 연결도 함께 선다(GPT 엔진 검수 GA8)
+    await contents.loadURL('https://workspace.synk.im/');
+    const employee=await contents.executeJavaScript('({entry:!!window.synkCompanyEntryHost,native:!!window.synkDesktop,url:location.href})');
+    check('on the employee document the real company entry preload and the native link run together',employee.entry===true&&employee.native===true&&employee.url==='https://workspace.synk.im/',{employee});
+    await contents.loadURL('https://workspace.synk.im/?tab=messenger');
     const messenger=contents.mainFrame.frames.find(frame=>frame.url==='https://workspace.synk.im/messenger/');
     const inFrame=messenger?await messenger.executeJavaScript('({native:typeof window.synkDesktop,marker:window.__workspaceSessionPreload===true})'):null;
     check('the messenger iframe has no native link',!!messenger&&inFrame?.native==='undefined',{inFrame});

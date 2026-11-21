@@ -34,37 +34,28 @@ function harness({state=signedIn(),installed=true,windowOpen=false}={}){
 }
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 
-test('a hidden start shows SYNK Workspace from the account and the installation alone, with nothing remembered',async()=>{
+// 검정 구 4단계(구현 설계 3.5, GPT 엔진 검수 pc-orb-step4-engine-20261122 GA6): 줄은 창 안의 Workspace를 열므로 따로 설치한 앱을 찾지 않는다
+test('a hidden start shows SYNK Workspace from the account alone, without looking for an installed app',async()=>{
   const {context,calls}=harness();
   await context.syncTrayApps();
   assert.deepEqual(calls.setApps,[['messenger']]);
-  assert.deepEqual(calls.probes,['messenger']);
+  assert.deepEqual(calls.probes,[],'no installation probe');
   for(const [name,state] of [['signed out',{status:'signed-out',signedIn:false,library:{status:'unavailable',appIds:[]}}],['no Workspace permission',signedIn(['pulse'])],['library still loading',signedIn([],{library:{status:'unavailable',appIds:[]}})],['masked suite sign-in',{status:'restoring',signedIn:false,library:{status:'unavailable',appIds:[]}}]]){
     const h=harness({state});await h.context.syncTrayApps();
-    assert.deepEqual(h.calls.setApps,[[]],name);assert.deepEqual(h.calls.probes,[],name+' does not even probe');
+    assert.deepEqual(h.calls.setApps,[[]],name);assert.deepEqual(h.calls.probes,[],name);
   }
   const missing=harness({installed:false});await missing.context.syncTrayApps();
-  assert.deepEqual(missing.calls.setApps,[[]]);
+  assert.deepEqual(missing.calls.setApps,[['messenger']],'the separate app is not needed any more');
 });
 
-test('signing out empties the menu at once, and a late probe of the earlier state never puts the row back',async()=>{
-  const {context,calls,probes}=harness();
-  context.manualProbe=true;
-  const first=context.syncTrayApps();
+test('signing out or losing Workspace empties the menu at the next check',async()=>{
+  const {context,calls}=harness();
+  await context.syncTrayApps();
   context.state={status:'signed-out',signedIn:false,library:{status:'unavailable',appIds:[]}};
   await context.syncTrayApps();
-  assert.deepEqual(calls.setApps,[[]],'no wait for the probe');
-  probes[0]({id:'messenger',installed:true});await first;
-  assert.deepEqual(calls.setApps,[[]],'the earlier probe is dropped');
-});
-
-test('a newer check wins over an older one that finishes later',async()=>{
-  const {context,calls,probes}=harness();
-  context.manualProbe=true;
-  const older=context.syncTrayApps(),newer=context.syncTrayApps();
-  probes[1]({id:'messenger',installed:false});await newer;
-  probes[0]({id:'messenger',installed:true});await older;
-  assert.deepEqual(calls.setApps,[[]]);
+  context.state=signedIn(['messenger']);await context.syncTrayApps();
+  context.state=signedIn(['pulse']);await context.syncTrayApps();
+  assert.deepEqual(calls.setApps,[['messenger'],[],['messenger'],[]]);
 });
 
 // 검정 구 4단계(구현 설계 3.5): 트레이의 Workspace 줄은 따로 설치한 앱을 실행하지 않는다. 플랫폼 창을 부르고 화면이 창 안의 Workspace를 연다
