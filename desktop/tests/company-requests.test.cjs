@@ -32,3 +32,18 @@ test('all existing company operations retain fixed routes, confirmations, CSRF a
   }
   assert.equal(f.calls.length,cases.length);assert.equal(f.tokenCalls(),2);
 });
+
+// 4단계 GPT 엔진 검수 c GA4 · d GA1: Workspace 뷰의 통은 보내기 바로 앞에서 지금 계정의 것인지 본다
+test('a Workspace jar checks it is still current right before sending, after the token await',async()=>{
+  const calls=[];let live=true;
+  const request=createCompanyRequests({entry:'https://company.example.invalid/?tab=messenger',clientId:'messenger',
+    auth:{getAccessToken:async()=>{queueMicrotask(()=>{live=false;});return 'synthetic-main-token';},current:()=>live},
+    session:{fetch:async(url,options)=>{calls.push(url);return {ok:true,text:async()=>'{}'};}}});
+  const renewed=await request('renew',{csrfToken:'synthetic-csrf'});
+  assert.equal(renewed.ok,false);assert.equal(renewed.error.code,'WORKSPACE_ACCOUNT_CHANGED');
+  assert.deepEqual(calls,[],'the account changed while the token was awaited, so nothing is sent');
+  live=false;assert.equal((await request('logout',{csrfToken:'synthetic-csrf'})).error.code,'WORKSPACE_ACCOUNT_CHANGED');assert.deepEqual(calls,[]);
+  live=true;const sent=createCompanyRequests({entry:'https://company.example.invalid/?tab=messenger',clientId:'messenger',
+    auth:{getAccessToken:async()=>'synthetic-main-token',current:()=>live},session:{fetch:async url=>{calls.push(url);return {ok:true,text:async()=>'{}'};}}});
+  assert.notEqual((await sent('renew',{csrfToken:'synthetic-csrf'})).ok,false);assert.equal(calls.length,1);
+});

@@ -104,8 +104,10 @@ let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-// Workspace 로그인의 Suite 따라가기를 500ms 틈 없이 지금 플랫폼 기록에 묶는다. 묶지 않으면 계정을 바꾼 직후 새 계정의 뷰가 앞 계정의 로그인 상태와 계정 정보를 받는다(4단계 설계 검토 R2)
-function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);try{void workspaceFollower?.refresh();}catch{/* 다음 따라가기가 다시 본다 */}workspaceApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+// Workspace 로그인의 Suite 따라가기를 500ms 틈 없이 지금 플랫폼 기록에 묶는다. 묶지 않으면 계정을 바꾼 직후 새 계정의 뷰가 앞 계정의 로그인 상태와 계정 정보를 받는다(4단계 설계 검토 R2).
+// 모듈을 읽는 중(workspaceFollower 선언 앞)에 불려도 다음 따라가기가 다시 본다
+function followWorkspaceNow(){try{void workspaceFollower?.refresh();}catch{}}
+function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);followWorkspaceNow();workspaceApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
   if(installations)return installations;
@@ -609,7 +611,7 @@ function workspaceNative(){
     // 직원 초대가 Workspace 로그인을 기다릴 때 Suite 따라가기를 한 번 더 돌린다(GPT 엔진 검수 c GA1 · GA5)
     retryLogin:()=>{ensureWorkspaceAuth();return workspaceFollower?.retry?.();},
     // 토큰은 그 겉의 SYNK ID 것만, 그 겉이 살아 있을 때만 싣는다. Suite 따라가기가 아직 못 따라왔으면 깨우고 거절한다(GPT 엔진 검수 b GA1 · c GA4)
-    companyRequest:(jar,{accountId,current}={})=>createCompanyRequests({entry:WORKSPACE_ENTRY,clientId:'messenger',session:jar,auth:{getAccessToken:()=>workspaceAccessToken(ensureWorkspaceAuth(),accountId,{refresh:()=>workspaceFollower?.refresh?.(),current})}})};
+    companyRequest:(jar,{accountId,current}={})=>createCompanyRequests({entry:WORKSPACE_ENTRY,clientId:'messenger',session:jar,auth:{getAccessToken:()=>workspaceAccessToken(ensureWorkspaceAuth(),accountId,{refresh:()=>workspaceFollower?.refresh?.(),current}),current:()=>{try{return typeof current!=='function'||current()===true;}catch{return false;}}}})};
 }
 let shareAsk=null,shareSeq=0;
 // 첫 판은 화면 소리를 주지 않는다(4단계 설계 4.2, 검토 R10). 고른 화면이나 창의 그림만 준다

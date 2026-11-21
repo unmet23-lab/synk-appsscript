@@ -14,6 +14,9 @@ function createCompanyRequests({entry,clientId,session,auth}){
       if(['exchange','renew'].includes(operation))headers.Authorization='Bearer '+await auth.getAccessToken();
       const url=new URL(operation==='logout'?'/api/logout':'/api/synk-id/'+operation,entry).href;
       if(operation!=='status')headers['Content-Type']='application/json';
+      // auth.current(있으면): 보내기 바로 앞에서 그 통이 아직 지금 계정의 것인지 본다. 토큰 받기와 보내기 사이(await)에 계정이 바뀌고 뷰가 닫히면 보내지 않는다
+      // (Workspace 뷰, 4단계 GPT 엔진 검수 c GA4 · d GA1). 회사 입구처럼 주지 않는 곳은 그대로다
+      if(typeof auth?.current==='function'&&auth.current()!==true)throw Object.assign(new Error('WORKSPACE_ACCOUNT_CHANGED'),{code:'WORKSPACE_ACCOUNT_CHANGED'});
       const response=await session.fetch(url,{method:operation==='status'?'GET':'POST',headers,credentials:'include',redirect:'error',signal:AbortSignal.timeout(12000),...(operation==='status'?{}:{body:JSON.stringify(body)})});
       const raw=await response.text();if(raw.length>1048576)bad();const data=JSON.parse(raw);
       if(!response.ok)return {ok:false,error:{code:typeof data.code==='string'&&/^[A-Z_]{1,80}$/.test(data.code)?data.code:'COMPANY_UNAVAILABLE',message:typeof data.error==='string'?data.error.slice(0,500):'회사 서버에 요청하지 못했어요. 잠시 뒤 다시 해 주세요.',status:response.status}};
