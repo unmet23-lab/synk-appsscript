@@ -37,7 +37,9 @@ EDL = {
     # 마감 관문 F10(11-21): C5 끝은 뺀 이어폰을 턱 앞에 낮게 드는데 C6 첫 장은 손이 귀 옆이라 순간이동했다.
     #   빠른 고침 — 손이 아직 귀에 있는 3.75초(뺀 직후)에서 끊고, 「Eat more.」는 C6 머리에 소리로 넘긴다.
     #   C5 끝의 젊어지는 할머니 손(F2 · F20)도 함께 빠진다.
-    "C5": (0.95, 3.75),   # 1.0~1.5초 어깨 톡톡 · 2.1초 손이 귀로 · 3.5초 이어폰 뺌
+    # 마감 다시 관문 2244 F4: 3.75초에서 끊자 C5 끝은 왼쪽 아래를 보고 C6 첫 장은 할머니 쪽을 보며 웃어 고개가 한 장 사이에 뒤집혔다
+    #   → 할머니 쪽으로 고개를 돌린 4.04초(손은 아직 뺨 높이에 이어폰을 듦)에서 끊어 C6 첫 장의 눈길 · 손과 잇는다
+    "C5": (0.95, 4.04),   # 1.0~1.5초 어깨 톡톡 · 2.1초 손이 귀로 · 3.5초 이어폰 뺌 · 3.9~4.0초 할머니 쪽으로 고개
     # 마감 관문 F1: 원본 2.40~2.60초 왼쪽 관자놀이 머리선에 흰 띠가 번진다 → 2.38초에서 끊고 머리를 0.6초로 당긴다
     #   (0~0.5초는 입이 열려 말하는 듯해 뺀다 · 0.6~1.25초는 다문 미소로 할머니 말을 듣는다)
     "C6": (0.60, 2.38),   # 1.35~2.0초 「Okay, Grandma.」(입 맞춤)
@@ -184,7 +186,7 @@ def overlay_frames(cs, total, tmp, plan):
         brand = plan["brand"][0] <= t < plan["brand"][1]
         endk = min(1.0, max(0.0, (t - plan["end"]) / 0.5)) if t >= plan["end"] else 0.0
         # 고지는 C7의 GOYO 자리에서만 — 끝 화면은 반전 두 줄이 같은 말을 크게 하고, 줄을 늘리지 않는다(카본 맹검 「발표 슬라이드처럼 넉 줄」)
-        note_on = plan["note"] <= t < plan["end"] + 0.25
+        note_on = plan["note"] <= t < plan["end"] + 0.05   # 끝 화면 주소 줄과 겹치지 않게(2244 가벼운 흠)
         key = (tuple(lines), brand, round(endk, 2), note_on) if (anim or 0 < endk < 1) else (tuple(s for s, _ in lines), brand, endk, note_on)
         if key != last_key:
             im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -192,7 +194,8 @@ def overlay_frames(cs, total, tmp, plan):
                 draw_caps(im, lines, t)
             if brand:
                 b = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-                bottom = SA.paste_logo(b, logo, 400, 332, shadow=0)
+                # 마감 다시 관문 2244 F1: 다시 구운 C7에서 서진 머리가 높아 태그라인 끝이 검은 머리에 묻혔다 → 20% 줄이고 52px 올린다(태그라인 아래 끝 y 375 위)
+                bottom = SA.paste_logo(b, logo, 320, 280, shadow=0)
                 ink = plan["brand_ink"]
                 if ink:
                     tint = Image.new("RGBA", b.size, SA.INK + (0,)); tint.putalpha(b.split()[-1]); b = tint
