@@ -12,7 +12,21 @@ test('WORLD callback payload freezes real account storage and all dynamic wardro
  const html=await fs.readFile(path.join(payload,'client.html'),'utf8');
  const learningScript=new URL(/src="([^"]*atlas-learning\.js[^\"]*)"/.exec(html)[1],'https://synk.im/account/client.html');
  assert.equal(learningScript.pathname,'/try/learning-hub/atlas-learning.js');assert.ok(learningScript.searchParams.get('v'));
- assert.match(html,/href="https:\/\/synk.im\/world\/"/);assert.match(html,/<nav>[\s\S]*href="\/try\/learning-hub\/">기본 학습<\/a>/);assert.doesNotMatch(html,/href="\.\.\/learning-hub\/"/);
+ const footer=/<footer\b[^>]*>([\s\S]*?)<\/footer>/.exec(html)?.[1] || '';
+ assert.match(footer,/<a\b[^>]*href="\/try\/learning-hub\/"[^>]*>\s*기본 학습\s*<\/a>/);
+ assert.match(footer,/href="https:\/\/synk.im\/world\/"/);
+ assert.match(html,/<a\b(?=[^>]*\bid="learning-link")(?=[^>]*\bhref="\/try\/learning-hub\/")[^>]*>\s*기본 학습 열기\s*<\/a>/);
+ assert.doesNotMatch(html,/href="\.\.\/learning-hub\/"/);
+ const stylesheet=/<link\b(?=[^>]*\brel="stylesheet")[^>]*\bhref="([^"]+)"/.exec(html)?.[1];
+ assert.ok(stylesheet,'WORLD callback stylesheet');
+ const cssPath=new URL(stylesheet,callback).pathname;
+ assert.equal(cssPath,'/account/client.css');
+ const css=await fs.readFile(path.join(payload,'client.css'),'utf8');
+ assert.equal(sha(css),manifest.files['client.css']);
+ for(const font of ['SYNKSans-ui.woff2','SYNKSans-rest.woff2']){
+  assert.ok(css.includes('./assets/'+font),font);
+  assert.ok(manifest.files['assets/'+font],font);
+ }
  for(const name of ['wardrobe.css','world.webmanifest','dist/wardrobe-three.js'])assert.ok(manifest.files[name]);
  assert.deepEqual(JSON.parse(await fs.readFile(path.join(payload,'config.json'),'utf8')),config);await assert.rejects(prepare(input,out),/EEXIST/);
  const invalid=path.join(dir,'invalid.json');await fs.writeFile(invalid,JSON.stringify({...config,authorizationClients:[]}));await assert.rejects(prepare(invalid,path.join(dir,'invalid')),/WORLD_PUBLIC_CONFIG_NOT_VERIFIED/);

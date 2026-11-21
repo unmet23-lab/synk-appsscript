@@ -36,7 +36,23 @@ function fakeEngine(state) {
     return JSON.stringify({ loc: `"${state.dir}"`, ver: '0.7.0' });
   };
 }
-function engineDir() { const dir = temp(); fs.writeFileSync(path.join(dir, 'WorkBackupRun.exe'), 'x'); return dir; }
+const fixtureRunners = new Map();
+function engineDir() {
+  const dir = temp();
+  const nativeFile = path.join(dir, 'WorkBackupRun.exe');
+  fs.writeFileSync(nativeFile, 'x');
+  const installDir = path.win32.join('C:\\Solio test programs', path.basename(dir));
+  fixtureRunners.set(path.win32.join(installDir, 'WorkBackupRun.exe'), nativeFile);
+  return installDir;
+}
+// The registry reports Windows paths even when the test runner stores its files on Linux.
+function engineFiles(io = fs.promises) {
+  return { ...io, stat: (file, ...args) => io.stat(fixtureRunners.get(file) ?? file, ...args) };
+}
+function createBackup(options) {
+  const io = options.fsImpl ?? fs;
+  return B.createSolioBackup({ ...options, fsImpl: { ...io, promises: engineFiles(io.promises) } });
+}
 
 /* minisign 열쇠와 서명을 시험 안에서 만든다(Tauri signer와 같은 「ED」 꼴) */
 function minisignKey() {
@@ -95,7 +111,7 @@ test('only the owner account sees the real entry; the built-in list keeps no acc
   assert.equal(B.previewAllowed({ synk_user_id: '../x' }, MINE), false);
   assert.ok(B.PREVIEW_ACCOUNTS.length >= 1 && B.PREVIEW_ACCOUNTS.every(h => /^[a-f0-9]{64}$/.test(h)));
   const env = appdata(temp(), { status: sample() });
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({}), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({}), previewAccounts: MINE });
   assert.deepEqual(await service.snapshot(OTHER), { ok: true, available: false });
   assert.deepEqual(await service.start(OTHER, 'protect'), { ok: false, code: 'NOT_AVAILABLE' });
   assert.deepEqual(await service.open(OTHER, 'restore'), { ok: false, code: 'NOT_AVAILABLE' });
@@ -136,13 +152,16 @@ test('the screen picks one view: Mac, no engine, engine removed, set-up, newer f
 
 test('the engine counts as installed only with the HKLM uninstall entry and WorkBackupRun.exe in its folder', async () => {
   const dir = engineDir();
-  assert.deepEqual(await B.readEngine({ run: async () => JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }) }), { installed: true, version: '0.7.0' });
-  assert.equal((await B.readEngine({ run: async () => '{}' })).installed, false);
-  assert.equal((await B.readEngine({ run: async () => JSON.stringify({ loc: temp(), ver: '0.7.0' }) })).installed, false, 'the entry without the runner is not an engine');
-  assert.equal((await B.readEngine({ run: async () => JSON.stringify({ loc: 'relative\\dir' }) })).installed, false);
-  assert.equal((await B.readEngine({ run: async () => null })).installed, false);
+  const readEngine = run => B.readEngine({ run, fsImpl: engineFiles() });
+  assert.deepEqual(await readEngine(async () => JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' })), { installed: true, version: '0.7.0' });
+  assert.equal((await readEngine(async () => '{}')).installed, false);
+  assert.equal((await readEngine(async () => JSON.stringify({ loc: temp(), ver: '0.7.0' }))).installed, false, 'the entry without the runner is not an engine');
+  assert.equal((await readEngine(async () => JSON.stringify({ loc: 'relative\\dir' }))).installed, false);
+  assert.equal((await readEngine(async () => null)).installed, false);
   assert.match(B.ENGINE_SCRIPT, /Registry64/);
   assert.doesNotMatch(B.ENGINE_SCRIPT, /업무 백업/, 'the Korean key name goes through the environment, not the command line');
+  fs.unlinkSync(fixtureRunners.get(path.win32.join(dir, 'WorkBackupRun.exe')));
+  assert.equal((await readEngine(fakeEngine({ dir }))).installed, false);
 });
 
 test('the setup request is the engine contract exactly: the engine validates it, and only an address-shaped hint goes in', async () => {
@@ -183,7 +202,7 @@ test('「보호 시작」 downloads, holds, verifies, writes the setup request, 
   const key = minisignKey(), data = crypto.randomBytes(20000), log = [], engineState = {};
   const env = appdata(temp()), cacheRoot = temp();
   let atRun = null;
-  const service = B.createSolioBackup({
+  const service = createBackup({
     platform: 'win32', env, cacheRoot, run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }),
     hold: fakeHold(log, { engineState, afterInstall: () => { atRun = requestsIn(env); } }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE,
   });
@@ -204,7 +223,7 @@ test('a file that does not match is never run, and no setup request is left', as
   const key = minisignKey(), data = crypto.randomBytes(20000), log = [];
   const env = appdata(temp()), cacheRoot = temp();
   const tampered = Buffer.from(data); tampered[5] ^= 1;
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot, run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: tampered }), hold: fakeHold(log), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, cacheRoot, run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: tampered }), hold: fakeHold(log), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE });
   await service.start(ME, 'protect');
   await service.whenIdle();
   const snap = await service.snapshot(ME);
@@ -217,12 +236,12 @@ test('a file that does not match is never run, and no setup request is left', as
 test('a refused administrator prompt removes the setup request; a missing feed says it cannot be had yet', async () => {
   const key = minisignKey(), data = crypto.randomBytes(1000), log = [];
   const env = appdata(temp());
-  const declined = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold: fakeHold(log, { outcome: 'declined' }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE });
+  const declined = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold: fakeHold(log, { outcome: 'declined' }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE });
   await declined.start(ME, 'move');
   await declined.whenIdle();
   assert.equal((await declined.snapshot(ME)).install.code, 'DECLINED');
   assert.deepEqual(requestsIn(env), []);
-  const missing = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: null }), hold: fakeHold([]), previewAccounts: MINE });
+  const missing = createBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: null }), hold: fakeHold([]), previewAccounts: MINE });
   await missing.snapshot(ME);
   await new Promise(resolve => setTimeout(resolve, 20));
   assert.equal((await missing.snapshot(ME)).feed.state, 'missing');
@@ -233,7 +252,7 @@ test('a refused administrator prompt removes the setup request; a missing feed s
 
 test('with the engine installed but no status, 「보호 시작」 writes only the setup request and opens the engine window', async () => {
   const opened = [], env = appdata(temp()), hold = async () => { throw Error('must not download'); };
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), request: async () => { throw Error('no network'); }, hold, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), request: async () => { throw Error('no network'); }, hold, openExternal: async url => opened.push(url), previewAccounts: MINE });
   assert.equal((await service.snapshot(ME)).view, 'needs-setup');
   await service.start(ME, 'protect');
   await service.whenIdle();
@@ -255,7 +274,7 @@ test('the space report paths never leave: not read, not in answers, logs, errors
     for (const status of [sample(), { ...sample(), v: 2 }, undefined]) {
       const env = appdata(temp(), { status });
       const engineState = { dir: status ? engineDir() : null };
-      const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data, seen }), hold: fakeHold([], { engineState }), keys: [{ role: 'operating', pub: key.pub }], openExternal: async url => said.push(url), previewAccounts: MINE });
+      const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data, seen }), hold: fakeHold([], { engineState }), keys: [{ role: 'operating', pub: key.pub }], openExternal: async url => said.push(url), previewAccounts: MINE });
       const answers = [await service.snapshot(ME), await service.start(ME, 'protect'), await service.whenIdle(), await service.snapshot(ME), await service.open(ME, 'space'), await service.snapshot(ME)];
       const text = JSON.stringify(answers);
       assert.ok(!text.includes('sentinel') && !text.includes('고객 폴더'), text);
@@ -336,7 +355,7 @@ const quiet = { wait: async () => {} };
 test('P1: two quick presses start one install only', async () => {
   const key = minisignKey(), data = crypto.randomBytes(1000), log = [], engineState = {};
   const run = async () => { await new Promise(r => setTimeout(r, 200)); return engineState.dir ? JSON.stringify({ loc: `"${engineState.dir}"`, ver: '0.7.0' }) : '{}'; };
-  const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold: fakeHold(log, { engineState }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold: fakeHold(log, { engineState }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   const answers = await Promise.all([service.start(ME, 'protect'), service.start(ME, 'protect')]);
   await service.whenIdle();
   assert.deepEqual(answers.map(a => a.ok), [true, false]);
@@ -356,7 +375,7 @@ test('P1: a folder swapped for a junction after the hold is caught before anythi
     return { finalPath: file, sha256: shaOf(file), release() { log.push(['release']); }, async run() { log.push(['run']); return { outcome: 'exited', code: 0 }; } };
   };
   const env = appdata(temp());
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect');
   await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'VERIFY_FAILED');
@@ -369,7 +388,7 @@ test('a cache folder that is itself a junction is resolved before the download f
   fs.symlinkSync(real, link, 'junction');
   let heldAt = null;
   const inner = fakeHold([], { engineState });
-  const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: link, run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold: async file => { heldAt = file; return inner(file); }, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: link, run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold: async file => { heldAt = file; return inner(file); }, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect');
   await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.phase, 'done');
@@ -378,12 +397,12 @@ test('a cache folder that is itself a junction is resolved before the download f
 
 test('P2: a failed engine check is not 「no engine」 and does not reinstall', async () => {
   const env = appdata(temp(), { status: sample() });
-  const service = B.createSolioBackup({ platform: 'win32', env, run: async () => null, previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env, run: async () => null, previewAccounts: MINE, ...quiet });
   assert.equal((await service.snapshot(ME)).view, 'engine-unknown');
   assert.deepEqual(await service.start(ME, 'protect'), { ok: false, code: 'ENGINE_UNKNOWN' });
   let calls = 0, t = 0;
   const dir = engineDir();
-  const kept = B.createSolioBackup({ platform: 'win32', env, run: async () => (++calls === 1 ? JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }) : null), previewAccounts: MINE, now: () => (t += 120000) });
+  const kept = createBackup({ platform: 'win32', env, run: async () => (++calls === 1 ? JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }) : null), previewAccounts: MINE, now: () => (t += 120000) });
   assert.equal((await kept.snapshot(ME)).engine.installed, true);
   // 앞의 답을 기억하지 않는다. 뒤의 확인이 실패하면 옛 답이 아니라 「확인하지 못함」이다(GPT 여덟째 검수 GA6 · GA7)
   assert.equal((await kept.snapshot(ME)).view, 'engine-unknown', 'a later failed check shows 「not known」, never an older answer');
@@ -392,7 +411,7 @@ test('P2: a failed engine check is not 「no engine」 and does not reinstall', 
 
 test('P2: an unreadable status file with the engine installed opens the engine instead of offering 보호 시작', async () => {
   const env = appdata(temp(), { status: '{' });
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   assert.equal((await service.snapshot(ME)).view, 'status-unreadable');
   assert.deepEqual(await service.start(ME, 'protect'), { ok: false, code: 'NOT_NEEDED' });
   const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
@@ -404,7 +423,7 @@ test('P2: an unreadable status file with the engine installed opens the engine i
 test('P2: if the holder dies after the installer started, the request stays and the engine is looked for again', async () => {
   const key = minisignKey(), data = crypto.randomBytes(1000), env = appdata(temp()), engineState = {};
   const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run(onStarted) { onStarted(); setTimeout(() => { engineState.dir = engineDir(); }, 5); return { outcome: 'gone' }; } });
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, wait: () => new Promise(r => setTimeout(r, 20)) });
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, wait: () => new Promise(r => setTimeout(r, 20)) });
   await service.start(ME, 'protect');
   await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_UNCONFIRMED', 'not 「done」 without the exit code (GPT 다시 검수 GA4)');
@@ -420,7 +439,7 @@ test('the installer download refuses an unknown redirect and a wrong length', as
   };
   const cases = [[{ location: 'https://evil.example/github-production-release-asset/1' }, 'UNTRUSTED_REDIRECT'], [{ location: 'https://release-assets.githubusercontent.com/github-production-release-asset/1', length: 5 }, 'VERIFY_FAILED']];
   for (const [patch, code] of cases) {
-    const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run: fakeEngine({}), request: net(patch), hold: fakeHold([]), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+    const service = createBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run: fakeEngine({}), request: net(patch), hold: fakeHold([]), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
     await service.start(ME, 'protect');
     await service.whenIdle();
     assert.equal((await service.snapshot(ME)).install.code, code);
@@ -443,7 +462,7 @@ test('P2: safe with attention words leads with them; the engine-present failures
 test('GA1: a holder whose handle points elsewhere is never run', async () => {
   const key = minisignKey(), data = crypto.randomBytes(500), log = [], env = appdata(temp());
   const hold = async () => ({ finalPath: path.join(temp(), 'elsewhere.exe'), release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } });
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'VERIFY_FAILED');
   assert.deepEqual(log, ['release']);
@@ -460,7 +479,7 @@ test('GA2: the request carries no Google address, and main no longer looks one u
 test('GA3: an installer that exits with an error is not 「done」 even if an engine is there', async () => {
   const key = minisignKey(), data = crypto.randomBytes(500), engineState = { dir: null }, env = appdata(temp());
   const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run(onStarted) { onStarted(); engineState.dir = engineDir(); return { outcome: 'exited', code: 2 }; } });
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_STOPPED');
   assert.deepEqual(requestsIn(env), [], 'the request of a failed install is removed');
@@ -469,7 +488,7 @@ test('GA3: an installer that exits with an error is not 「done」 even if an en
 test('GA4: an engine that appeared while downloading is opened, not installed again', async () => {
   const key = minisignKey(), data = crypto.randomBytes(500), engineState = { dir: null }, env = appdata(temp()), log = [], opened = [];
   const hold = async file => { engineState.dir = engineDir(); return { finalPath: file, sha256: shaOf(file), release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } }; };
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, openExternal: async url => opened.push(url), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, openExternal: async url => opened.push(url), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'move'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.phase, 'opened');
   assert.deepEqual(log, ['release']);
@@ -479,7 +498,7 @@ test('GA4: an engine that appeared while downloading is opened, not installed ag
 
 test('GA7: a failed engine-window open leaves no setup request behind', async () => {
   const env = appdata(temp());
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), openExternal: async () => { throw Error('no handler'); }, previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), openExternal: async () => { throw Error('no handler'); }, previewAccounts: MINE });
   await service.start(ME, 'protect'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'OPEN_FAILED');
   assert.deepEqual(requestsIn(env), []);
@@ -524,7 +543,7 @@ test('GPT GA1 (again): a real hold reports a Korean path intact', { skip: proces
 test('GPT GA3 (again) · third GA4: a changed sign-in stops before any request or prompt', async () => {
   const key = minisignKey(), data = crypto.randomBytes(500), engineState = {}, env = appdata(temp());
   let current = true;
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }),
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }),
     hold: async file => { current = false; return fakeHold([], { engineState })(file); }, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   let written = null;
   const watch = setInterval(() => { const names = requestsIn(env); if (names[0] && !written) written = JSON.parse(fs.readFileSync(path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests', names[0]), 'utf8')); }, 1);
@@ -542,7 +561,7 @@ test('GPT GA4 (again): a lost exit code is 「not confirmed」, never 「done」
   for (const ran of [{ outcome: 'gone' }, { outcome: 'exited', code: null }]) {
     engineState.dir = null;
     const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run(onStarted) { onStarted(); engineState.dir = engineDir(); return ran; } });
-    const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+    const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
     await service.start(ME, 'protect'); await service.whenIdle();
     assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_UNCONFIRMED', JSON.stringify(ran));
     assert.ok(requestsIn(env).length >= 1, JSON.stringify(ran));
@@ -556,7 +575,7 @@ test('GPT GA5 (again): a failed engine check right before the prompt launches no
   let checks = 0;
   const run = async () => (++checks <= 1 ? '{}' : null);
   const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } });
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'ENGINE_UNKNOWN');
   assert.deepEqual(log, ['release']);
@@ -585,7 +604,7 @@ test('Fable F1 · F3: a finished install result yields to the protection state; 
 test('a holder whose own hash differs from the feed is never run, whatever the path says', async () => {
   const key = minisignKey(), data = crypto.randomBytes(500), log = [], env = appdata(temp());
   const hold = async file => ({ finalPath: file, sha256: 'f'.repeat(64), release() { log.push('release'); }, async run() { log.push('run'); return { outcome: 'exited', code: 0 }; } });
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine({}), request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'VERIFY_FAILED');
   assert.deepEqual(log, ['release']);
@@ -596,7 +615,7 @@ test('a clean installer exit followed by failed engine checks is 「not confirme
   let checks = 0;
   const run = async () => (++checks <= 2 ? '{}' : null);
   const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run(onStarted) { onStarted(); return { outcome: 'exited', code: 0 }; } });
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.code, 'INSTALL_UNCONFIRMED');
 });
@@ -605,7 +624,7 @@ test('GPT third round GA1: a slow earlier engine check never overwrites a newer 
   const dir = engineDir(), opened = [];
   let calls = 0;
   const run = async () => { const n = ++calls; if (n === 1) { await new Promise(r => setTimeout(r, 150)); return '{}'; } return JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }); };
-  const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp(), { status: sample() }), run, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env: appdata(temp(), { status: sample() }), run, openExternal: async url => opened.push(url), previewAccounts: MINE });
   const slow = service.snapshot(ME);
   await new Promise(r => setTimeout(r, 20));
   await service.start(ME, 'protect');
@@ -619,7 +638,7 @@ test('GPT fourth round GA1: 보호 시작 decides on its own fresh check, whatev
   let calls = 0;
   // 첫 확인(누를 때)은 늦게 「있음」을, 그사이 시작한 주기 확인은 빨리 「없음」을 낸다
   const run = async () => { const n = ++calls; if (n === 1) { await new Promise(r => setTimeout(r, 120)); return JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }); } return '{}'; };
-  const service = B.createSolioBackup({ platform: 'win32', env, run, request: async () => { throw Error('must not download'); }, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run, request: async () => { throw Error('must not download'); }, openExternal: async url => opened.push(url), previewAccounts: MINE });
   const pressed = service.start(ME, 'protect');
   await new Promise(r => setTimeout(r, 10));
   await service.snapshot(ME);
@@ -633,7 +652,7 @@ test('GPT fifth round: an 「installed」 answer is never overwritten by an olde
   let calls = 0;
   // 누를 때의 확인은 늦게 「없음」, 그사이 주기 확인은 빨리 「있음」
   const run = async () => { const n = ++calls; if (n === 1) { await new Promise(r => setTimeout(r, 120)); return '{}'; } return JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }); };
-  const service = B.createSolioBackup({ platform: 'win32', env, run, request: async () => { throw Error('must not download'); }, openExternal: async url => opened.push(url), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run, request: async () => { throw Error('must not download'); }, openExternal: async url => opened.push(url), previewAccounts: MINE });
   const pressed = service.start(ME, 'protect');
   await new Promise(r => setTimeout(r, 10));
   await service.snapshot(ME);
@@ -663,7 +682,7 @@ test('GPT fourth round GA2: while held, nothing can be renamed, moved or copied 
 test('GPT r6 GA2 · GA4: the room shows each fresh check at once, never an older answer for 15 or 60 seconds', async () => {
   const state = { dir: engineDir() }, env = appdata(temp(), { status: sample() });
   let t = Date.parse('2026-11-20T03:00:00Z');
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine(state), previewAccounts: MINE, now: () => t });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine(state), previewAccounts: MINE, now: () => t });
   assert.equal((await service.snapshot(ME)).engine.installed, true);
   state.dir = null; t += 1000;
   assert.equal((await service.snapshot(ME)).engine.installed, false, 'removed one second later shows removed');
@@ -673,7 +692,7 @@ test('GPT r6 GA2 · GA4: the room shows each fresh check at once, never an older
   let calls = 0;
   const dir = engineDir();
   const run = async () => { const n = ++calls; if (n === 1) { await new Promise(r => setTimeout(r, 80)); return JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }); } return '{}'; };
-  const racing = B.createSolioBackup({ platform: 'win32', env, run, previewAccounts: MINE });
+  const racing = createBackup({ platform: 'win32', env, run, previewAccounts: MINE });
   const slow = racing.snapshot(ME);
   await new Promise(r => setTimeout(r, 10));
   assert.equal((await racing.snapshot(ME)).engine.installed, false);
@@ -685,13 +704,13 @@ test('GPT r6 GA3: a failed download opens the engine that appeared meanwhile ins
   const key = minisignKey(), data = crypto.randomBytes(500), engineState = { dir: null }, env = appdata(temp()), opened = [];
   const net = fakeNet({ feed: release(key, data), file: data });
   const request = async (url, options) => { if (url.startsWith('https://release-assets.githubusercontent.com/')) { engineState.dir = engineDir(); throw Object.assign(Error('reset'), { code: 'ECONNRESET' }); } return net(url, options); };
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request, hold: async () => { throw Error('must not hold'); }, openExternal: async url => opened.push(url), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request, hold: async () => { throw Error('must not hold'); }, openExternal: async url => opened.push(url), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect'); await service.whenIdle();
   assert.equal((await service.snapshot(ME)).install.phase, 'opened');
   assert.deepEqual(opened, ['synk-workbackup:open?topic=status']);
   assert.equal(requestsIn(env).length, 1);
   // 엔진이 없으면 처음 오류 그대로다
-  const none = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run: fakeEngine({}), request: async (url, options) => { if (url.startsWith('https://release-assets.githubusercontent.com/')) throw Object.assign(Error('reset'), { code: 'ECONNRESET' }); return net(url, options); }, previewAccounts: MINE, keys: [{ role: 'operating', pub: key.pub }], ...quiet });
+  const none = createBackup({ platform: 'win32', env: appdata(temp()), cacheRoot: temp(), run: fakeEngine({}), request: async (url, options) => { if (url.startsWith('https://release-assets.githubusercontent.com/')) throw Object.assign(Error('reset'), { code: 'ECONNRESET' }); return net(url, options); }, previewAccounts: MINE, keys: [{ role: 'operating', pub: key.pub }], ...quiet });
   await none.start(ME, 'protect'); await none.whenIdle();
   assert.equal((await none.snapshot(ME)).install.phase, 'error');
 });
@@ -713,7 +732,7 @@ test('GPT r6 GA5: a sign-in change removes the pending request at that moment; m
   const env = appdata(temp());
   let current = true, letOpen;
   const opening = new Promise(r => { letOpen = r; });
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
   await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current });
   for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
   assert.equal(requestsIn(env).length, 1, 'the request is out while the engine window opens');
@@ -723,7 +742,7 @@ test('GPT r6 GA5: a sign-in change removes the pending request at that moment; m
   letOpen(); await service.whenIdle();
   // 같은 로그인이면 지우지 않는다
   const env2 = appdata(temp());
-  const kept = B.createSolioBackup({ platform: 'win32', env: env2, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const kept = createBackup({ platform: 'win32', env: env2, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   await kept.start(ME, 'protect', { isCurrent: () => true }); await kept.whenIdle();
   kept.accountChanged();
   assert.equal(requestsIn(env2).length, 1);
@@ -738,7 +757,7 @@ test('GPT r6 GA5: on the download path the engine is checked before the request 
   const engine = fakeEngine(engineState);
   const run = async () => { seen.push(['check', requestsIn(env).length]); return engine(); };
   const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run(onStarted) { seen.push(['run', requestsIn(env).length]); onStarted(); engineState.dir = engineDir(); return { outcome: 'exited', code: 0 }; } });
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env, cacheRoot: temp(), run, request: fakeNet({ feed: release(key, data), file: data }), hold, keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect'); await service.whenIdle();
   const runAt = seen.findIndex(s => s[0] === 'run');
   assert.deepEqual(seen.slice(0, runAt + 1).map(s => s[1]), seen.slice(0, runAt).map(() => 0).concat(1), 'no engine check happens while the request is out before the prompt');
@@ -765,7 +784,7 @@ test('GPT r7 GA6 · GA7: no check result outlives its own read, during an instal
   const run = async () => (answer === 'yes' ? JSON.stringify({ loc: `"${dir}"`, ver: '0.7.0' }) : answer === 'no' ? '{}' : null);
   let letFeed;
   const feedWait = new Promise(r => { letFeed = r; });
-  const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), run, request: async () => { await feedWait; return { status: 404, headers: {}, body: Readable.from([]) }; }, previewAccounts: MINE, ...quiet });
+  const service = createBackup({ platform: 'win32', env: appdata(temp()), run, request: async () => { await feedWait; return { status: 404, headers: {}, body: Readable.from([]) }; }, previewAccounts: MINE, ...quiet });
   answer = 'no';
   await service.start(ME, 'protect');
   answer = 'yes';
@@ -782,7 +801,7 @@ test('GPT r7 GA6 · GA7: no check result outlives its own read, during an instal
 
 test('GPT r7 GA5: a failed check when opening the engine window says 「not known」, not 「no engine」', async () => {
   let n = 0;
-  const service = B.createSolioBackup({ platform: 'win32', env: appdata(temp()), run: async () => (++n === 1 ? null : '{}'), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env: appdata(temp()), run: async () => (++n === 1 ? null : '{}'), previewAccounts: MINE });
   assert.deepEqual(await service.open(ME, 'status'), { ok: false, code: 'ENGINE_UNKNOWN' });
   assert.deepEqual(await service.open(ME, 'status'), { ok: false, code: 'NO_ENGINE' });
   const { backupActionNotice } = await import('../renderer/solio-backup-model.mjs');
@@ -792,7 +811,7 @@ test('GPT r7 GA5: a failed check when opening the engine window says 「not know
 test('GPT r7 GA8: no older request is left behind; a new press replaces it and a sign-in change removes it', async () => {
   const env = appdata(temp());
   let current = true;
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   for (const asked of ['protect', 'move']) { await service.start(ME, asked, { getHint: async () => 'owner@example.com', isCurrent: () => current }); await service.whenIdle(); }
   assert.equal(requestsIn(env).length, 1, 'the second press replaced the first');
   assert.equal(JSON.parse(fs.readFileSync(path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests', requestsIn(env)[0]), 'utf8')).mode, 'move');
@@ -804,7 +823,7 @@ test('GPT r7 GA8: no older request is left behind; a new press replaces it and a
 test('GPT r7 GA2: a same-generation token renewal keeps the request; main tells the two apart', async () => {
   const env = appdata(temp());
   let state = 'signed-in';
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   await service.start(ME, 'move', { isCurrent: () => state === 'signed-in', isSameLogin: () => state !== 'other' }); await service.whenIdle();
   state = 'renewing';
   service.accountChanged();
@@ -823,7 +842,7 @@ test('GPT r8 GA3 · GA4: a request the sign-in change or a failed open could not
   // 로그인 바뀜 때 잠겨 있으면 남았다가 다음 방 표시에서 지운다
   const env = appdata(temp());
   let current = true;
-  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current }); await service.whenIdle();
   assert.equal(requestsIn(env).length, 1);
   current = false;
@@ -837,7 +856,7 @@ test('GPT r8 GA3 · GA4: a request the sign-in change or a failed open could not
   // 엔진 창을 열지 못했을 때 잠겨 있으면 같은 로그인 아래에서도 다시 지운다
   locked = true;
   const env2 = appdata(temp());
-  const failing = B.createSolioBackup({ platform: 'win32', env: env2, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: async () => { throw Error('no handler'); }, previewAccounts: MINE });
+  const failing = createBackup({ platform: 'win32', env: env2, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: async () => { throw Error('no handler'); }, previewAccounts: MINE });
   await failing.start(ME, 'move', { getHint: async () => 'owner@example.com' }); await failing.whenIdle();
   assert.equal((await failing.snapshot(ME)).install.code, 'OPEN_FAILED');
   assert.equal(requestsIn(env2).length, 1, 'locked after the failed open');
@@ -853,7 +872,7 @@ test('r8 request lifetime: the folder on disk is the record — leftovers from a
   fs.writeFileSync(path.join(dir, '.0123456789abcdef.tmp'), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' }));
   fs.writeFileSync(path.join(dir, '1794880000001-bbbbbbbbbbbbbbbb.json'), JSON.stringify({ v: 1, kind: 'run-now' }));
   fs.writeFileSync(path.join(dir, 'claimed', '1794880000002-cccccccccccccccc.json'), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect' }));
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   service.accountChanged();
   assert.deepEqual(fs.readdirSync(dir).sort(), ['1794880000000-aaaaaaaaaaaaaaaa.json.cancel', '1794880000001-bbbbbbbbbbbbbbbb.json', '1794880000002-cccccccccccccccc.json.cancel', 'claimed'], "the earlier run's setup request and the temp file are gone, both setup requests carry a cancel mark; run-now and the engine's claimed file are untouched");
   assert.equal(fs.readdirSync(path.join(dir, 'claimed')).length, 1);
@@ -868,7 +887,7 @@ test('Fable request-lifetime P1: a request the sweep cannot read is retried, not
   const env = appdata(temp()), dir = path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, '1794880000000-aaaaaaaaaaaaaaaa.json'), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' }));
-  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   service.accountChanged();
   assert.equal(requestsIn(env).length, 1, 'unreadable: still there');
   locked = false;
@@ -881,7 +900,7 @@ test('GPT r9 GA1 · Opus design: a second app run sharing the folder keeps a liv
   const env = appdata(temp()), dir = path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests');
   let letOpen;
   const opening = new Promise(r => { letOpen = r; });
-  const first = B.createSolioBackup({ platform: 'win32', env, tag: 'aaaa1111', run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  const first = createBackup({ platform: 'win32', env, tag: 'aaaa1111', run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
   await first.start(ME, 'move', { getHint: async () => 'owner@example.com' });
   for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
   assert.equal(requestsIn(env).length, 1);
@@ -891,7 +910,7 @@ test('GPT r9 GA1 · Opus design: a second app run sharing the folder keeps a liv
   const dead = `${String(Date.now()).padStart(13, '0')}-cccc33330123456789abcdef.json`;
   fs.writeFileSync(path.join(dir, dead), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' }));
   fs.writeFileSync(path.join(dir, '.owner-cccc3333'), '');
-  const second = B.createSolioBackup({ platform: 'win32', env, tag: 'bbbb2222', run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const second = createBackup({ platform: 'win32', env, tag: 'bbbb2222', run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   second.accountChanged();
   assert.equal(requestsIn(env).length, 1, 'the live run\'s request stays; the finished run\'s is gone');
   assert.ok(!requestsIn(env).includes(dead));
@@ -908,7 +927,7 @@ test('GPT r9 GA2: the sweep does not follow a junction in place of the requests 
   const kept = path.join(elsewhere, '1794880000000-aaaaaaaaaaaaaaaa.json');
   fs.writeFileSync(kept, JSON.stringify({ v: 1, kind: 'setup', mode: 'protect' }));
   fs.symlinkSync(elsewhere, path.join(solio, 'requests'), 'junction');
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   service.accountChanged();
   assert.ok(fs.existsSync(kept), 'a file behind the junction is left alone');
 });
@@ -919,7 +938,7 @@ test('GPT r9 GA7: once a lock lifts, the request goes within a few tenths of a s
   const env = appdata(temp()), dir = path.join(env.APPDATA, 'SynkWorkBackup', 'solio', 'requests');
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, '1794880000000-aaaaaaaaaaaaaaaa.json'), JSON.stringify({ v: 1, kind: 'setup', mode: 'protect', hint: 'old@example.com' }));
-  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   service.accountChanged();
   await new Promise(r => setTimeout(r, 350));
   assert.equal(requestsIn(env).length, 1);
@@ -934,14 +953,14 @@ test('GPT r10 GA1 · GA4: no owner file behind a junction, and no request when t
   const env = appdata(temp()), solio = path.join(env.APPDATA, 'SynkWorkBackup', 'solio'), elsewhere = temp();
   fs.mkdirSync(solio, { recursive: true });
   fs.symlinkSync(elsewhere, path.join(solio, 'requests'), 'junction');
-  const junction = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const junction = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   await junction.start(ME, 'protect', { getHint: async () => 'owner@example.com' }); await junction.whenIdle();
   assert.deepEqual(fs.readdirSync(elsewhere), [], 'nothing written behind the junction');
   assert.equal((await junction.snapshot(ME)).install.code, 'REQUEST_FAILED');
   // 표 파일을 열지 못하면 요청을 쓰지 않는다
   const env2 = appdata(temp());
   const fsImpl = { ...fs, promises: fs.promises, openSync: (file, ...a) => { if (/\.owner-/.test(String(file))) throw Object.assign(Error('denied'), { code: 'EACCES' }); return fs.openSync(file, ...a); } };
-  const noOwner = B.createSolioBackup({ platform: 'win32', env: env2, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const noOwner = createBackup({ platform: 'win32', env: env2, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   await noOwner.start(ME, 'protect', { getHint: async () => 'owner@example.com' }); await noOwner.whenIdle();
   assert.deepEqual(requestsIn(env2), []);
   assert.equal((await noOwner.snapshot(ME)).install.code, 'REQUEST_FAILED');
@@ -950,20 +969,20 @@ test('GPT r10 GA1 · GA4: no owner file behind a junction, and no request when t
 /* ── 포장된 판의 스위치: PC 0.5.2는 껐고(11-20), 다음 판부터 켠다(11-21) ── */
 test('a packaged build with the switch off hides the room and the calls say NOT_AVAILABLE; one switch turns it on', async () => {
   const env = appdata(temp(), { status: sample() });
-  const off = B.createSolioBackup({ platform: 'win32', env, packaged: true, inRelease: false, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const off = createBackup({ platform: 'win32', env, packaged: true, inRelease: false, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   assert.deepEqual(await off.snapshot(ME), { ok: true, available: false });
   assert.deepEqual(await off.start(ME, 'protect'), { ok: false, code: 'NOT_AVAILABLE' });
   assert.deepEqual(await off.open(ME, 'status'), { ok: false, code: 'NOT_AVAILABLE' });
   assert.deepEqual(requestsIn(env), []);
   const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
   assert.equal(solioBackupView(await off.snapshot(ME)).visible, false, 'the room does not show');
-  const on = B.createSolioBackup({ platform: 'win32', env, packaged: true, inRelease: true, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const on = createBackup({ platform: 'win32', env, packaged: true, inRelease: true, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   assert.equal((await on.snapshot(ME)).available, true);
-  const source = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const source = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   assert.equal((await source.snapshot(ME)).available, true, 'a source run stays open');
   const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
   assert.match(src, /^const IN_RELEASE = true;$/m, 'the next PC build ships with the room on');
-  const shipped = B.createSolioBackup({ platform: 'win32', env, packaged: true, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const shipped = createBackup({ platform: 'win32', env, packaged: true, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   assert.equal((await shipped.snapshot(ME)).available, true, 'the default is the switch');
   const main = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.cjs'), 'utf8');
   const call = main.match(/createSolioBackup\(\{[^}]*\}\)/g) || [];
@@ -984,7 +1003,7 @@ test('cancel mark: a sign-in change marks the request before deleting it, and th
   const env = appdata(temp(), { status: { ...sample(), state: 'not-set-up' } });
   let current = true, letOpen;
   const opening = new Promise(r => { letOpen = r; });
-  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
   await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current });
   for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
   const [name] = requestsIn(env);
@@ -1018,7 +1037,7 @@ test('cancel mark (GPT GA1): a sign-in change marks this run\'s request even whe
   const env = appdata(temp(), { status: { ...sample(), state: 'not-set-up' } });
   let current = true, letOpen;
   const opening = new Promise(r => { letOpen = r; });
-  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
   await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current });
   for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
   const [name] = requestsIn(env);
@@ -1038,7 +1057,7 @@ test('cancel mark: a request the engine already moved to claimed is marked, and 
   const name = `${Date.now()}-deadbeefaaaaaaaaaaaaaaaa.json`;
   fs.writeFileSync(path.join(dir, 'claimed', name), setupBody);
   fs.writeFileSync(path.join(dir, 'claimed', `${Date.now()}-deadbeefbbbbbbbbbbbbbbbb.json`), JSON.stringify({ v: 1, kind: 'run-now' }));
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   service.accountChanged();
   assert.deepEqual(marksIn(env), [`${name}.cancel`], 'only the setup request is marked');
   assert.equal(fs.readdirSync(path.join(dir, 'claimed')).length, 2, 'claimed files are not deleted');
@@ -1056,7 +1075,7 @@ test('cancel mark: a mark is removed only after 24 hours 5 minutes (the longer l
   for (const n of [gone, recent, inClaimed, future]) fs.writeFileSync(path.join(dir, `${n}.cancel`), '');
   fs.mkdirSync(path.join(dir, `${folder}.cancel`));
   fs.writeFileSync(path.join(dir, 'claimed', inClaimed), JSON.stringify({ v: 1, kind: 'run-now' }));
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
   service.accountChanged();
   assert.deepEqual(marksIn(env), [`${recent}.cancel`, `${inClaimed}.cancel`, `${future}.cancel`, `${folder}.cancel`].sort(),
     'only the expired mark whose request is gone is removed; a recent one, one still in claimed, one from a clock that went back, and a folder stay');
@@ -1066,7 +1085,7 @@ test('GPT solio-backup-be-20261121 GA1: no request carries a Google address, wha
   const bodyOf = async ({ status, ver = '0.7.0' }) => {
     const env = appdata(temp(), { status });
     const dir = engineDir();
-    const service = B.createSolioBackup({ platform: 'win32', env, run: async () => JSON.stringify({ loc: `"${dir}"`, ver }), previewAccounts: MINE });
+    const service = createBackup({ platform: 'win32', env, run: async () => JSON.stringify({ loc: `"${dir}"`, ver }), previewAccounts: MINE });
     await service.start(ME, 'protect', { getHint: async () => 'owner@example.com' });
     await service.whenIdle();
     const [name] = requestsIn(env);
@@ -1076,7 +1095,7 @@ test('GPT solio-backup-be-20261121 GA1: no request carries a Google address, wha
   for (const engine of ['0.7.0', '1.0.0', '0.6.9']) assert.deepEqual(await bodyOf({ status: setup(engine) }), { v: 1, kind: 'setup', mode: 'protect' }, engine);
   const key = minisignKey(), data = crypto.randomBytes(2000), engineState = {}, env = appdata(temp()), cacheRoot = temp();
   let atRun = null;
-  const service = B.createSolioBackup({ platform: 'win32', env, cacheRoot, run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data, '0.7.0'), file: data }),
+  const service = createBackup({ platform: 'win32', env, cacheRoot, run: fakeEngine(engineState), request: fakeNet({ feed: release(key, data, '0.7.0'), file: data }),
     hold: fakeHold([], { engineState, afterInstall: () => { atRun = requestsIn(env); } }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet });
   await service.start(ME, 'protect', { getHint: async () => 'owner@example.com' });
   await service.whenIdle();
@@ -1090,7 +1109,7 @@ test('GPT solio-backup-be-20261121 GA2: when the requests listing fails, a lefto
   fs.writeFileSync(path.join(dir, 'claimed', name), setupBody);
   const fsImpl = { ...fs, promises: fs.promises,
     readdirSync: (file, ...a) => { if (path.basename(String(file)) === 'requests') throw Object.assign(Error('busy'), { code: 'EBUSY' }); return fs.readdirSync(file, ...a); } };
-  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE });
   service.accountChanged();
   assert.deepEqual(marksIn(env), [`${name}.cancel`]);
 });
@@ -1108,7 +1127,7 @@ test('cancel mark (GPT GA3): an expired mark stays when the claimed folder could
     const fsImpl = { ...fs, promises: fs.promises,
       readdirSync: (file, ...a) => { if (fault === 'readdir' && isClaimed(file)) throw busy(); return fs.readdirSync(file, ...a); },
       lstatSync: (file, ...a) => { if (fault === 'lstat' && isClaimed(file)) throw busy(); return fs.lstatSync(file, ...a); } };
-    const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
+    const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
     service.accountChanged();
     assert.deepEqual(marksIn(env), [`${name}.cancel`], `${fault} failure: the mark stays`);
   }
@@ -1119,7 +1138,7 @@ test('cancel mark (GPT re-check GA1): another writer\'s run-now that only shares
   fs.mkdirSync(dir, { recursive: true });
   const name = `${Date.now()}-abcd1234ffffffffffffffff.json`;
   fs.writeFileSync(path.join(dir, name), JSON.stringify({ v: 1, kind: 'run-now' }));
-  const service = B.createSolioBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, tag: 'abcd1234' });
+  const service = createBackup({ platform: 'win32', env, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, tag: 'abcd1234' });
   service.accountChanged();
   assert.deepEqual(requestsIn(env), [name], 'kept');
   assert.deepEqual(marksIn(env), [], 'not marked');
@@ -1137,7 +1156,7 @@ test('cancel mark (GPT re-check GA3): when the first mark and the folder reads f
   const env = appdata(temp(), { status: { ...sample(), state: 'not-set-up' } });
   let current = true, letOpen;
   const opening = new Promise(r => { letOpen = r; });
-  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
   await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current });
   for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
   const [name] = requestsIn(env);
@@ -1162,7 +1181,7 @@ test('cancel mark (GPT re-check GA2): a claimed folder that could not be checked
   let locked = true;
   const fsImpl = { ...fs, promises: fs.promises,
     lstatSync: (file, ...a) => { if (locked && path.basename(String(file)) === 'claimed') throw Object.assign(Error('busy'), { code: 'EBUSY' }); return fs.lstatSync(file, ...a); } };
-  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
+  const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
   service.accountChanged();
   assert.deepEqual(marksIn(env), [`${name}.cancel`], 'kept while claimed is unknown');
   locked = false;
@@ -1177,7 +1196,7 @@ test('cancel mark (GPT r3 GA1): a request already gone from both folders is forg
   const env = appdata(temp(), { status: { ...sample(), state: 'not-set-up' } });
   let current = true, letOpen;
   const opening = new Promise(r => { letOpen = r; });
-  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
+  const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), openExternal: () => opening, previewAccounts: MINE });
   await service.start(ME, 'protect', { getHint: async () => 'owner@example.com', isCurrent: () => current });
   for (let i = 0; i < 50 && !requestsIn(env).length; i++) await new Promise(r => setTimeout(r, 5));
   const [name] = requestsIn(env);
@@ -1200,7 +1219,7 @@ test('GPT solio-backup-be-20261121-r2 GA1: a failed folder check keeps an expire
   let checks = 0, locked = true;
   const fsImpl = { ...fs, promises: fs.promises,
     lstatSync: (file, ...a) => { if (locked && path.basename(String(file)) === 'requests' && ++checks === 2) throw Object.assign(Error('busy'), { code: 'EBUSY' }); return fs.lstatSync(file, ...a); } };
-  const service = B.createSolioBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
+  const service = createBackup({ platform: 'win32', env, fsImpl, run: fakeEngine({ dir: engineDir() }), previewAccounts: MINE, now: () => now });
   service.accountChanged();
   assert.deepEqual(marksIn(env), [`${name}.cancel`], 'kept: claimed was not read');
   locked = false;

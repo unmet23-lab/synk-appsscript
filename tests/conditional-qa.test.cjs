@@ -17,8 +17,8 @@ const good = () => ({ version: 1, commit, manifestDigest: manifest.digest, expec
 function scratch(t) { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'conditional-qa-test-')); t.after(() => { if (!c.within(os.tmpdir(), dir) || fs.lstatSync(dir).isSymbolicLink()) throw Error('Unsafe test cleanup'); fs.rmSync(dir, { recursive: true, force: true }); }); return dir; }
 
 test('all 113 original cases have one concrete route and a live source file', () => {
-  assert.equal(check(root), 207);
-  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 106, linux: 16, local: 85 });
+  assert.equal(check(root), 213);
+  assert.deepEqual(Object.fromEntries(['windows', 'linux', 'local'].map(route => [route, manifest.cases.filter(row => row.route === route).length])), { windows: 112, linux: 16, local: 85 });
 });
 test('the temp-folder cleanup Windows cases (robocopy, junctions) are exactly the skip-marked tests in their source', () => {
   // 11-10 `171259080` added five Windows-only tests without registering them; Linux skipped them and syntax-check stayed red for 31 runs.
@@ -32,7 +32,7 @@ test('every root test that skips off Windows is registered — on the Windows PC
   // The Linux guard (`guard.cjs --skips`) reports the skip only after the push, outside TAP (`# fail 0` and a red step). Trodden 11-09 (twice) and 11-10.
   const registered = new Set(manifest.cases.map(row => `${row.file}\n${row.name}`));
   const declaration = /^\s*(?:test|it)\((['"`])((?:\\.|(?!\1).)*)\1\s*,\s*\{\s*skip\s*:\s*([^}]*)\}/;
-  const offWindows = /!==?\s*['"]win32['"]|!\s*윈도우|!\s*(?:isWindows|onWindows|WINDOWS|windows)\b/;
+  const offWindows = /!==?\s*['"]win32['"]|!\s*(?:윈도우|창)(?![\p{L}\p{N}_])|!\s*(?:isWindows|onWindows|WINDOWS|windows)\b/u;
   const missing = [], unreadable = [];
   let seen = 0;
   for (const file of fs.readdirSync(path.join(root, 'tests')).filter(name => /\.test\.(?:js|cjs|mjs)$/.test(name))) {

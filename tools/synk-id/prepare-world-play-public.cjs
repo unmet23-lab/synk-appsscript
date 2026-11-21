@@ -60,7 +60,7 @@ async function prepare(configPath,out,{includePlatform=false,platformSourceRoot=
  await bundle('client');
  if(includePlatform)await bundle('platform');
  const manifest=JSON.parse(await fs.readFile(path.join(ROOT,SOURCE,'build-manifest.json'),'utf8'));
- for(const name of ['client.html','style.css','world-classroom.css','wardrobe.css','world.webmanifest','dist/wardrobe-three.js',...Object.keys(manifest.sha256).filter(name=>name.startsWith('assets/'))])await output(name,await capture(path.join(ROOT,SOURCE,name)));
+ for(const name of ['client.html','client.css','style.css','world-classroom.css','wardrobe.css','world.webmanifest','dist/wardrobe-three.js',...Object.keys(manifest.sha256).filter(name=>name.startsWith('assets/'))])await output(name,await capture(path.join(ROOT,SOURCE,name)));
  await output('config.json',Buffer.from(JSON.stringify(config,null,2)+'\n'));
  for(const [name,record]of records)if(sha(await fs.readFile(path.join(ROOT,name)))!==record.sourceSha256)throw Error('SHARED_SOURCE_CHANGED_DURING_FREEZE: '+name);
  for(const [name,record]of platformRecords)if(sha(await fs.readFile(record.source))!==record.sourceSha256)throw Error('PLATFORM_SOURCE_CHANGED_DURING_FREEZE: '+name);

@@ -7,6 +7,7 @@
 
 import { Config } from "@remotion/cli/config";
 import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 
 Config.setRspack(true);
 // 올림 화질(제작 방식 v2 §2-4, 10-19): 손실 없는 PNG 프레임 → H.264 12Mbps(slow), yuv420p·BT.709.
@@ -21,6 +22,16 @@ Config.setOverwriteOutput(true);
 // 한 편만 다른 값이 필요하면 이 파일을 고치지 말고 렌더 명령에 --audio-bitrate=<값>을 준다(명령줄이 이 줄보다 먼저다).
 Config.setAudioBitrate("384k");
 Config.setDefaultPremountInSeconds(2);
+
+// 영상과 음악층을 다시 렌더할 때 같은 대기 시간을 쓴다. 설정이 없는 편은 Remotion 기본값을 쓴다.
+const timeoutFile = "render-timeout-ms.json";
+if (existsSync(timeoutFile)) {
+  const milliseconds = JSON.parse(readFileSync(timeoutFile, "utf8"));
+  if (!Number.isSafeInteger(milliseconds) || milliseconds <= 0) {
+    throw new Error("render-timeout-ms.json에는 양의 정수 밀리초를 적어 주세요.");
+  }
+  Config.setDelayRenderTimeoutInMilliseconds(milliseconds);
+}
 
 Config.setChromiumOpenGlRenderer("angle");
 

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "expectedCount": 207,
+  "expectedCount": 213,
   "sourceRuns": [
     41277757203,
     41284837729
@@ -1659,6 +1659,54 @@
       "file": "experiences/solo-backup-rust/engine/tests/mass-hold.test.cjs",
       "name": "a backup whose folders cannot be told apart is compared whole, so one odd backup does not stop every clean-up after it",
       "group": "업무 백업 1단계 — 대량 삭제 · 변경 멈춤(Windows 경로)",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S208",
+      "file": "tests/검수안전경로.test.mjs",
+      "name": "안전경로: 정션을 만나면 그 자리에서 멈춘다 — 부모 목록에서 정션을 보고, 정션과 그 아래는 fs로도 fsutil로도 한 번도 묻지 않는다",
+      "group": "검수 파일의 Windows 경로",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S209",
+      "file": "tests/검수안전경로.test.mjs",
+      "name": "안전경로: lstat이 보통 폴더로 보고하는 칸(볼륨 마운트 지점 흉내)도 막는다 — 부모 목록의 재분석 속성으로, 목록에 없으면 진짜 fsutil이 읽은 표지로(정션은 마운트 지점과 같은 표지 0xa0000003 — 설계 검토 3 규칙 9)",
+      "group": "검수 파일의 Windows 경로",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S210",
+      "file": "tests/검수안전경로.test.mjs",
+      "name": "안전경로: 파일인 칸이 재분석 지점이어도 막는다",
+      "group": "검수 파일의 Windows 경로",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S211",
+      "file": "tests/검수안전경로.test.mjs",
+      "name": "안전경로: 목록에 없어 fsutil에 물었는데 모르는 답(권한 거부 · 시간 초과 · 실행 실패)이면, 있는 칸은 막고 기억하지 않는다",
+      "group": "검수 파일의 Windows 경로",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S212",
+      "file": "tests/검수안전경로.test.mjs",
+      "name": "안전경로: 이름에 4390이 든 없는 경로는 「보통」으로 기억되지 않는다 — 나중에 그 자리에 생긴 재분석 지점을 막는다",
+      "group": "검수 파일의 Windows 경로",
+      "route": "windows",
+      "profile": "default"
+    },
+    {
+      "id": "S213",
+      "file": "tests/검수안전경로.test.mjs",
+      "name": "안전경로: 대소문자만 다른 이름과 Windows 8.3 짧은 이름은 막지 않는다(-b GA1)",
+      "group": "검수 파일의 Windows 경로",
       "route": "windows",
       "profile": "default"
     }
