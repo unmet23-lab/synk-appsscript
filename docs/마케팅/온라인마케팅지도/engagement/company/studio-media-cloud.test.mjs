@@ -76,13 +76,21 @@ async function setup(t,{mode='upload',names=null,options={},clock=null}={}){
   const gcs=await fakeGcs(),dir=await mkdtemp(join(tmpdir(),'media-cloud-'));t.after(async()=>{cloud.stop();store.db.close();await gcs.close();await rm(dir,{recursive:true,force:true});});
   await mkdir(join(dir,'studio-media'),{recursive:true});const store=new Store(dir);
   const list=new Set(names||[]),now={t:Date.parse('2026-11-20T00:00:00Z')};
+  const fixtureClock=clock||(()=>now.t);
   const credentials={token:async()=>'test-token',bucket:async()=>BUCKET};
-  const cloud=createMediaCloud({store,directory:dir,credentials,gcs:gcsClient({credentials,base:gcs.base}),clock:clock||(()=>now.t),namesOf:()=>[...list],
+  const cloud=createMediaCloud({store,directory:dir,credentials,gcs:gcsClient({credentials,base:gcs.base}),clock:fixtureClock,namesOf:()=>[...list],
     options:{floorBytes:0,warnBytes:0,minCacheBytes:0,minEvictBytes:1,...options}});
   if(mode)await setMode(dir,mode);
   registerMediaCloud(dir,cloud);
   return {gcs,dir,store,cloud,list,now,
-    async file(ext='mp4',bytes=Buffer.from(randomUUID().repeat(40))){const name=randomUUID()+'.'+ext;await writeFile(join(dir,'studio-media',name),bytes,{mode:0o600});list.add(name);return {name,bytes};}};
+    async file(ext='mp4',bytes=Buffer.from(randomUUID().repeat(40))){
+      const name=randomUUID()+'.'+ext,path=join(dir,'studio-media',name);
+      await writeFile(path,bytes,{mode:0o600});
+      const createdAt=new Date(fixtureClock());
+      await utimes(path,createdAt,createdAt);
+      list.add(name);
+      return {name,bytes};
+    }};
 }
 async function setMode(dir,mode,extra={}){const path=join(dir,SWITCH_FILE);await rm(path,{force:true});await writeFile(path,JSON.stringify({mode,...extra}),{mode:0o600});await chmod(path,0o600);}
 const localPath=(ctx,name)=>join(ctx.dir,'studio-media',name);
@@ -190,7 +198,7 @@ test('evict: only when the switch says evict and the cache is over its limit; on
   assert.deepEqual(await ctx.cloud.evict(),{removed:0});
   await setMode(ctx.dir,'evict',{cacheBytes:1});ctx.now.t+=20*86400000;
   await ensureLocalMedia(ctx.dir,recent.name);
-  // file times are the real wall clock; push the fake clock far enough that every file is idle except the one just used
+  // Only the recently used file has been accessed since the fixture clock advanced.
   const result=await ctx.cloud.evict();
   assert.equal(result.removed,1);
   assert.ok(!existsSync(localPath(ctx,old.name)));
@@ -202,7 +210,7 @@ test('evict: only when the switch says evict and the cache is over its limit; on
 test('evict: a file whose disk stamp differs from the ledger, or whose object changed, is kept',async t=>{
   const ctx=await setup(t),a=await ctx.file(),b=await ctx.file();await ctx.cloud.tick();
   await setMode(ctx.dir,'evict',{cacheBytes:1});ctx.now.t+=20*86400000;
-  const when=new Date(Date.now()-86400000);await utimes(localPath(ctx,a.name),when,when);
+  const when=new Date((await stat(localPath(ctx,a.name))).mtimeMs-86400000);await utimes(localPath(ctx,a.name),when,when);
   ctx.gcs.objects.get('studio-media/'+b.name).generation=99999;
   assert.equal((await ctx.cloud.evict()).removed,0);assert.ok(existsSync(localPath(ctx,a.name)));assert.ok(existsSync(localPath(ctx,b.name)));
 });
@@ -218,7 +226,7 @@ test('reconcile: an object that vanished is uploaded again under a new name when
 
 test('reconcile: a changed disk stamp with the same bytes is fixed, with other bytes the row becomes a conflict',async t=>{
   const ctx=await setup(t),a=await ctx.file(),b=await ctx.file();await ctx.cloud.tick();
-  const when=new Date(Date.now()-3600000);await utimes(localPath(ctx,a.name),when,when);
+  const when=new Date((await stat(localPath(ctx,a.name))).mtimeMs-3600000);await utimes(localPath(ctx,a.name),when,when);
   await writeFile(localPath(ctx,b.name),Buffer.from('replaced bytes'));
   const result=await ctx.cloud.reconcile();
   assert.equal(result.stampDrift,2);assert.equal(result.stampFixed,1);
@@ -370,7 +378,7 @@ test('an urgent eviction frees only what the fetch needs (카본 B4)',async t=>{
   const day=86400000,ctx=await setup(t,{mode:'evict'});
   const files=[];for(let i=0;i<4;i++){files.push(await ctx.file('mp4',Buffer.alloc(300*KiB,i+1)));}
   await ctx.cloud.tick();await ctx.cloud.tick();
-  ctx.now.t+=2*day;  // the fake clock is days ahead of the files' real modification times, so every file is idle
+  ctx.now.t+=2*day;  // All four files have been idle for two days on the fixture clock.
   const result=await ctx.cloud.evict({urgent:true,needBytes:300*KiB});
   assert.equal(result.removed,1,'one 300KiB file is enough');
 });
