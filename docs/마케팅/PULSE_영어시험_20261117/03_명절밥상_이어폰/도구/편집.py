@@ -174,7 +174,7 @@ def overlay_frames(cs, total, tmp, plan):
     pulse = Image.open(SA.PULSE).convert("RGBA")
     # 11-21 GOYO의 두 O를 고리 안 점에서 꽉 찬 원으로(유호님이 싫어하시는 고리 · 구멍 무늬 — 11-20) — 브랜드/로고.py logo_goyo_solid
     logo = Image.open(os.path.join(EP, "브랜드", "로고_A_GOYO_찬원.png")).convert("RGBA")
-    url_f, small, tag_f, rev_f, maker_f = font(40), font(30), ImageFont.truetype(SA.FONT_R, 30), font(50), font(40)
+    url_f, small, tag_f, rev_f, maker_f = font(40), font(30), ImageFont.truetype(SA.FONT_R, 30), font(50), font(46)   # 하는 일 줄은 반전 줄에 가깝게(마감 다시 관문 2108)
     n = round(total * FPS)
     last_key, last_img = None, None
     for i in range(n):
@@ -404,7 +404,9 @@ def main():
         "tap": tap, "pull": pull, "click": click,
         # 대사 원고(컷표 소리.원고)의 판 안 초 → 편 시간. 질문 넷은 「톡」까지, 뒤 셋은 다음 줄이 나올 때까지
         "caps": [
-            ("So… any wedding plans?", at(cs, "C1", 0.80), tap),
+            # 마감 다시 관문(11-21 2108): 0.8~1.5초 고모 젓가락이 전을 얹는 손끝이 자막 판에 가려 전이 혼자 움직이는 듯했다
+            #   → 전이 접시에 닿은 뒤(편 1.4초, 「any wedding plans?」가 들리는 중)에 띄운다 — 첫 2초 안이다
+            ("So… any wedding plans?", at(cs, "C1", 2.20), tap),
             ("You look thin. Eating okay?", at(cs, "C2", 0.70), tap),
             ("I got promoted, you know.", 4.50, tap),
             ("Seeing anyone yet?", at(cs, "C3", 3.40), tap),
