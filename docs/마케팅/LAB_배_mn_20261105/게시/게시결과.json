@@ -291,6 +291,71 @@
       "후속": [
         "2026-11-22 04:00(한국) 뒤 https://www.youtube.com/oembed?url=https://www.youtube.com/shorts/smtxc4qRuN4&format=json 이 200인지 본다."
       ]
+    },
+    {
+      "계정": "lab-id-youtube",
+      "상태": "예약됨",
+      "시각": "2026-11-23T13:00:00+07:00",
+      "지문": "7a36a3bb74620fcbdb9faa4a8fa75dc17bb881255d61579b943722f47931419b",
+      "게시글지문": "f4222ad392a3d50e6b4b93a75fecd01fea395306e1bb4cd0a2813562e793620e",
+      "방법": "ego",
+      "게시물ID": "w1QBtK9MNhA",
+      "주소": "https://youtube.com/shorts/w1QBtK9MNhA",
+      "확인": "쇼츠 목록(SYNK LAB Indonesia | Serunya Bahasa Korea): 「Perut, pir, perahu — dalam bahasa Korea semuanya “배” 😵 #belajarkorea」 · 예약됨 · 2026. 11. 23. 예약 날짜 · 예약 창 2026. 11. 23. 오후 3:00 현지 시간대(GMT+0900)로 기본 설정됨 · 제목 및 설명 언어: 인도네시아어로 저장됨",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+      "기록시각": "2026-11-21T06:55:30.957Z"
+    },
+    {
+      "계정": "lab-th-youtube",
+      "상태": "예약됨",
+      "시각": "2026-11-23T13:00:00+07:00",
+      "지문": "178c81df1cddf858b7c6ace69dd5b6f3009939f62f9685e1682b358fba677830",
+      "게시글지문": "f576bf29063ab030d575b4decb6c384ebbb405eba8092939e62d4fa8461e91e1",
+      "방법": "ego",
+      "게시물ID": "MZzOcgPGlhQ",
+      "주소": "https://youtube.com/shorts/MZzOcgPGlhQ",
+      "확인": "쇼츠 목록(SYNK LAB Thailand | เรียนเกาหลีสนุก ๆ): 「ท้อง สาลี่ และเรือ ภาษาเกาหลีเรียกว่า “배” หมดเลย 😵 #เรียนภาษาเกาหลี」 · 예약됨 · 2026. 11. 23. 예약 날짜 · 예약 창 2026. 11. 23. 오후 3:00 현지 시간대(GMT+0900)로 기본 설정됨 · 제목 및 설명 언어: 태국어로 저장됨",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+      "기록시각": "2026-11-21T06:55:33.495Z"
+    },
+    {
+      "계정": "lab-mm-youtube",
+      "상태": "예약됨",
+      "시각": "2026-11-23T13:00:00+06:30",
+      "지문": "27740ac2cdd32404e8f0e330bcff09806733b6c94d2bc149a3d385799cdf9225",
+      "게시글지문": "c7f7336a8a70b82be8b0bd6db863ca126ce62df548ab3d07ac77b3e355a5d4f5",
+      "방법": "ego",
+      "게시물ID": "7SXhRXHElZE",
+      "주소": "https://youtube.com/shorts/7SXhRXHElZE",
+      "확인": "쇼츠 목록(SYNK LAB Myanmar | ကိုရီးယားစာ ပျော်ပျော်သင်မယ်): 「ဗိုက်၊ သစ်တော်သီး၊ လှေ — အားလုံးက ကိုရီးယားလို “배” ပဲ 😵 #learnkorean」 · 예약됨 · 2026. 11. 23. 예약 날짜 · 예약 창 2026. 11. 23. 오후 3:30 현지 시간대(GMT+0900)로 기본 설정됨 · 제목 및 설명 언어: 버마어로 저장됨",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+      "기록시각": "2026-11-21T06:55:34.409Z"
+    },
+    {
+      "계정": "lab-th-tiktok",
+      "상태": "예약됨",
+      "시각": "2026-11-24T13:00:00+07:00",
+      "지문": "178c81df1cddf858b7c6ace69dd5b6f3009939f62f9685e1682b358fba677830",
+      "게시글지문": "b2f48a4b7a1e841781fe086b38b04784d3189069856ea58ead8274260effa14b",
+      "방법": "ego",
+      "게시물ID": "7710503228021968148",
+      "주소": "https://www.tiktok.com/@synklab.th/video/7710503228021968148",
+      "확인": "TikTok Studio 콘텐츠 목록(@synklab.th) 줄 「Nov 24, 3:00 PM (GMT+9) Seoul Everyone」 · 글 첫 줄 「ภาษาไทยแยกเป็น 3 คำ คือ ท้อง สาลี่ และเรือ แต่ภาษาเกาหลีมีแค่คำเดียว คือ 배 (bae)」(목록 줄 글에 원고 첫 줄 있음) · 그 날짜 · 시각 줄 1개 · 누르기 전 칸 Nov 24, 2026 15:00 input:(GMT+9) Local Time · 캡션 일치 true · AI 표시 끔",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+      "기록시각": "2026-11-21T06:25:26.724Z"
+    },
+    {
+      "계정": "lab-id-tiktok",
+      "상태": "예약됨",
+      "시각": "2026-11-25T13:00:00+07:00",
+      "지문": "7a36a3bb74620fcbdb9faa4a8fa75dc17bb881255d61579b943722f47931419b",
+      "게시글지문": "5e5e688c1461031348e8ced4a87f323c170709e3a5f0f748e04acc2349af2c9d",
+      "방법": "ego",
+      "게시물ID": "7710504017041919253",
+      "주소": "https://www.tiktok.com/@synklab.id/video/7710504017041919253",
+      "확인": "TikTok Studio 콘텐츠 목록(@synklab.id) 줄 「Nov 25, 3:00 PM (GMT+9) Seoul Everyone」 · 글 첫 줄 「Bahasa Indonesia punya tiga kata yang beda: perut, pir, dan perahu. Bahasa Korea cuma punya satu: 배 (bae).」(목록 줄 글에 원고 첫 줄 있음) · 그 날짜 · 시각 줄 1개 · 누르기 전 칸 Nov 25, 2026 15:00 input:(GMT+9) Local Time · 캡션 일치 true · AI 표시 끔",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
+      "기록시각": "2026-11-21T06:25:27.274Z"
     }
   ]
 }
