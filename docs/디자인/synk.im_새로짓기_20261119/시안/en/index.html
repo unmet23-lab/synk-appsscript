@@ -860,7 +860,7 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
     body.classList.toggle('flat', flat);
     if (flat) [mapIn, wOpen, wClose, pins, loop, rail, ...scenes, ...says, ...scenes.map(s => s.firstElementChild)].forEach(el => el.removeAttribute('style'));
     if (flat && !was) { stopWalk(); if (reduce) loopDraw.style.strokeDashoffset = 0; }   // 움직임을 줄였으면 학생은 집 앞에 서 있고 길은 다 그려져 있다
-    needFit = true; if (flat) fitPins();
+    fitPins();
   }
   function road() {
     if (flat) return;
@@ -875,7 +875,6 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
     show(pins, far ? end : 1 - smooth(.42, .7, x));
     loop.style.opacity = far ? end : 0;
     if (x < 5.5) stopWalk(); else if (end > .98) playWalk();   // 마을 전체로 다 나오면 학생이 걷기 시작한다. 장면 안으로 되돌아가면 집 앞으로 돌아간다
-    if (needFit && (x < .25 || x > 5.99)) fitPins();             // 말풍선 자리는 그림이 제 크기(배율 1)일 때 잰다
     scenes.forEach((s, i) => {
       const o = smooth(i + .5, i + .9, x) * (i < 4 ? 1 - smooth(i + 1.95, i + 2, x) : 1 - smooth(5.2, 5.65, x));
       show(s, o);
@@ -964,10 +963,10 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
   const HIDE = [[690, 548, 800, 678], [1205, 592, 1380, 706]];
   // 말풍선을 화면 안으로: 그림이 화면보다 넓게 잘리는 창(가로세로비 1.5 아래)이나 휴대폰에서 끝 말풍선이 화면 밖으로 나가지 않게 민다.
   // 꼬리(::after)는 민 만큼 반대로 옮겨 그 건물을 계속 가리킨다. 꼬리가 말풍선 끝을 넘지 않게 미는 양을 막는다(11-21 다음 판)
-  let needFit = true;
+  // 잴 때만 그림을 제 크기(배율 1 — 처음과 끝 장면의 크기)로 잠깐 놓고 재고 곧바로 되돌린다. 그래서 스크롤 위치와 상관없이 창 크기가 바뀔 때와 글꼴을 받았을 때 바로 잰다(11-22 카본)
   function fitPins() {
-    needFit = false;
-    const W = document.documentElement.clientWidth, M = 8;
+    const W = document.documentElement.clientWidth, M = 8, was = mapIn.style.transform;
+    if (!flat) mapIn.style.transform = 'translate(-50%,-50%) scale(1)';
     pinLis.forEach(li => {
       li.style.removeProperty('--nx'); li.style.removeProperty('--tx');
       const bt = li.firstElementChild, b = bt.getBoundingClientRect(), k = b.width / (bt.offsetWidth || b.width || 1);
@@ -975,8 +974,9 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
       // 말풍선은 다 밀고, 꼬리는 말풍선 끝 18화소 안에서 멈춘다(건물이 화면 밖에 걸린 창에서는 꼬리가 그쪽 끝을 가리킨다)
       if (d) { li.style.setProperty('--nx', d / k + 'px'); li.style.setProperty('--tx', Math.max(-lim, Math.min(lim, d)) / k + 'px'); }
     });
+    if (!flat) mapIn.style.transform = was;
   }
-  document.fonts.ready.then(() => { needFit = true; if (flat) fitPins(); else road(); });
+  document.fonts.ready.then(fitPins);
   [me, newbie].forEach(el => {                                       // 칸 하나의 크기: 집 앞에서 사람 키가 그림 화소로 94(처음 그림 속 학생보다 조금 작게, 건물과 어울리게)
     el.style.width = 94 / WALK.body * WALK.ar / 15.36 + '%'; el.style.aspectRatio = WALK.ar;
     el.style.transformOrigin = `50% ${(1 - WALK.pad) * 100}%`;
