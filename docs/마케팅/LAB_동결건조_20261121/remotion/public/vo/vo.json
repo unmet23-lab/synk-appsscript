@@ -1,0 +1,120 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_69f2e455ea79fd197aa0476f",
+  "name": "서현"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1121,
+  "lufs": -16
+ },
+ "made": "2026-11-20T23:51:44.659Z",
+ "lines": [
+  {
+   "id": "f1",
+   "text": "엄마 동결건조하고 싶다…",
+   "dur": 1.935,
+   "syllablesPerSec": 5.17,
+   "src": "f1.wav",
+   "key": "9f42b8f0a7ffe84bc61c1ef90935c7d4",
+   "words": 3
+  },
+  {
+   "id": "m1",
+   "text": "엄마를… 말린다고?!",
+   "dur": 1.593,
+   "syllablesPerSec": 4.39,
+   "src": "m1.wav",
+   "key": "1d7eeb0e64c46d7823dd2bae9ce607c1",
+   "words": 2
+  },
+  {
+   "id": "m0",
+   "text": "동결… 건조?",
+   "dur": 1.205,
+   "syllablesPerSec": 3.32,
+   "src": "m0.wav",
+   "key": "63e442b03609d28f164a40a57f5e4bdd",
+   "words": 2
+  },
+  {
+   "id": "mo1",
+   "text": "간식 챙겨 가~",
+   "dur": 1.254,
+   "syllablesPerSec": 3.99,
+   "src": "mo1.wav",
+   "key": "fc310c9be0a320e90a0d1809e1e96c44",
+   "words": 3
+  },
+  {
+   "id": "f2",
+   "text": "봐, 동결건조 딸기. 그대로지?",
+   "dur": 2.408,
+   "syllablesPerSec": 4.57,
+   "src": "f2.wav",
+   "key": "e228bf56a73d463df54e542fb9478092",
+   "words": 4
+  },
+  {
+   "id": "m2",
+   "text": "잠깐…",
+   "dur": 0.858,
+   "syllablesPerSec": 2.33,
+   "src": "m2.wav",
+   "key": "1b8740e9603458d5ab5f1b3d741e8ec2",
+   "words": 1
+  },
+  {
+   "id": "f3",
+   "text": "엄마, 늙지 마…",
+   "dur": 1.479,
+   "syllablesPerSec": 3.38,
+   "src": "f3.wav",
+   "key": "6941cd2e67acc70c12ceaa156831fcec",
+   "words": 3
+  },
+  {
+   "id": "mo2",
+   "text": "얘는 참…",
+   "dur": 0.913,
+   "syllablesPerSec": 3.29,
+   "src": "mo2.wav",
+   "key": "2cdab04ed8c074a8b54a48d87b421464",
+   "words": 2
+  },
+  {
+   "id": "mo3",
+   "text": "이렇게?",
+   "dur": 0.947,
+   "syllablesPerSec": 3.17,
+   "src": "mo3.wav",
+   "key": "d9c90cc4446460213569c3be7964df4f",
+   "words": 1
+  },
+  {
+   "id": "m4",
+   "text": "엄마~!",
+   "dur": 0.641,
+   "syllablesPerSec": 3.12,
+   "src": "m4.wav",
+   "key": "50bce6b7e7a1c368b351c42079b8cb41",
+   "words": 1
+  },
+  {
+   "id": "m3",
+   "text": "엄마, 동결건조하고 싶어!",
+   "dur": 2.163,
+   "syllablesPerSec": 4.62,
+   "src": "m3.wav",
+   "key": "90d5c62dd8755b875186147af8f6bfc3",
+   "words": 3
+  }
+ ]
+}

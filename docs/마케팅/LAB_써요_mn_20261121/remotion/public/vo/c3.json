@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c3",
+ "text": "설탕은 오백 원이에요~",
+ "dur": 1.785,
+ "words": [
+  {
+   "text": "설탕은",
+   "start": 0.03,
+   "end": 0.515
+  },
+  {
+   "text": "오백",
+   "start": 0.575,
+   "end": 0.798
+  },
+  {
+   "text": "원이에요~",
+   "start": 0.879,
+   "end": 1.785
+  }
+ ],
+ "source": {
+  "key": "39f6c1d405e909999d31b68f30494df5",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1171,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "점원이 웃음을 참으며 설탕 통을 내밀고, 장난스럽게 값을 말한다.",
+   "next": "돈… 다 썼어요…"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 223
+ }
+}

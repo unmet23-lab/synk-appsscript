@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1153,
+  "lufs": -16
+ },
+ "made": "2026-11-21T01:19:39.137Z",
+ "lines": [
+  {
+   "id": "c1",
+   "text": "한번 써 보세요~",
+   "dur": 1.188,
+   "syllablesPerSec": 5.05,
+   "src": "c1.wav",
+   "key": "d3182fe002c3ae3909e5a3a6195deb4a",
+   "words": 3
+  },
+  {
+   "id": "m1",
+   "text": "모자를 써요~",
+   "dur": 1.038,
+   "syllablesPerSec": 4.82,
+   "src": "m1.wav",
+   "key": "611266410f55be6221367b34da23034c",
+   "words": 2
+  },
+  {
+   "id": "m2",
+   "text": "앗! 안 보여!",
+   "dur": 0.935,
+   "syllablesPerSec": 4.28,
+   "src": "m2.wav",
+   "key": "8388cf0ac6c7a27dddc0564c3951b6b3",
+   "words": 3
+  },
+  {
+   "id": "m3",
+   "text": "안경을 써요!",
+   "dur": 1.202,
+   "syllablesPerSec": 4.16,
+   "src": "m3.wav",
+   "key": "895e4a0df4e959d97f0472fe0210986a",
+   "words": 2
+  },
+  {
+   "id": "m4",
+   "text": "돈을 써요!",
+   "dur": 0.981,
+   "syllablesPerSec": 4.08,
+   "src": "m4.wav",
+   "key": "e7d0ed5462aeff85125022b08472bb13",
+   "words": 2
+  },
+  {
+   "id": "c2",
+   "text": "서비스예요~",
+   "dur": 1.184,
+   "syllablesPerSec": 4.22,
+   "src": "c2.wav",
+   "key": "8214ed4624c46f84d87f593787be1f61",
+   "words": 1
+  },
+  {
+   "id": "m5",
+   "text": "커피가… 써요!!",
+   "dur": 1.114,
+   "syllablesPerSec": 4.49,
+   "src": "m5.wav",
+   "key": "b9f89aeefec68e9468285169ba8d2ae5",
+   "words": 2
+  },
+  {
+   "id": "c3",
+   "text": "설탕은 오백 원이에요~",
+   "dur": 1.785,
+   "syllablesPerSec": 5.04,
+   "src": "c3.wav",
+   "key": "39f6c1d405e909999d31b68f30494df5",
+   "words": 3
+  },
+  {
+   "id": "e2",
+   "text": "돈… 다 썼어요…",
+   "dur": 1.366,
+   "syllablesPerSec": 3.66,
+   "src": "e2.wav",
+   "key": "c031784b71bf1bf1b5359561c896f91a",
+   "words": 3
+  }
+ ]
+}

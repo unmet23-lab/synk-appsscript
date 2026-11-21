@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "앗! 안 보여!",
+ "dur": 0.935,
+ "words": [
+  {
+   "text": "앗!",
+   "start": 0.02,
+   "end": 0.181
+  },
+  {
+   "text": "안",
+   "start": 0.382,
+   "end": 0.443
+  },
+  {
+   "text": "보여!",
+   "start": 0.524,
+   "end": 0.935
+  }
+ ],
+ "source": {
+  "key": "8388cf0ac6c7a27dddc0564c3951b6b3",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2213,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 453
+ }
+}

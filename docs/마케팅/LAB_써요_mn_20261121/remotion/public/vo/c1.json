@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c1",
+ "text": "한번 써 보세요~",
+ "dur": 1.188,
+ "words": [
+  {
+   "text": "한번",
+   "start": 0.03,
+   "end": 0.274
+  },
+  {
+   "text": "써",
+   "start": 0.335,
+   "end": 0.436
+  },
+  {
+   "text": "보세요~",
+   "start": 0.497,
+   "end": 1.188
+  }
+ ],
+ "source": {
+  "key": "d3182fe002c3ae3909e5a3a6195deb4a",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1153,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "작은 모자 가게 점원이 계산대 위 베레모를 가리키며 손님에게 친절하게 권한다.",
+   "next": "모자를 써요~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 208
+ }
+}

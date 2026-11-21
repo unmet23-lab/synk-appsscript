@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f1",
+ "text": "엄마 동결건조하고 싶다…",
+ "dur": 1.935,
+ "words": [
+  {
+   "text": "엄마",
+   "start": 0.02,
+   "end": 0.221
+  },
+  {
+   "text": "동결건조하고",
+   "start": 0.703,
+   "end": 1.506
+  },
+  {
+   "text": "싶다…",
+   "start": 1.567,
+   "end": 1.935
+  }
+ ],
+ "source": {
+  "key": "9f42b8f0a7ffe84bc61c1ef90935c7d4",
+  "voice": {
+   "id": "tc_69f2e455ea79fd197aa0476f",
+   "name": "서현"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_69f2e455ea79fd197aa0476f"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 277
+ }
+}

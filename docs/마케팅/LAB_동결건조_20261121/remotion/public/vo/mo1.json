@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "mo1",
+ "text": "간식 챙겨 가~",
+ "dur": 1.254,
+ "words": [
+  {
+   "text": "간식",
+   "start": 0.03,
+   "end": 0.393
+  },
+  {
+   "text": "챙겨",
+   "start": 0.453,
+   "end": 0.755
+  },
+  {
+   "text": "가~",
+   "start": 0.816,
+   "end": 1.254
+  }
+ ],
+ "source": {
+  "key": "fc310c9be0a320e90a0d1809e1e96c44",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_65a8c7e1915a6295614f775b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 366
+ }
+}

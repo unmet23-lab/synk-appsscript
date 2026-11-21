@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m0",
+ "text": "동결… 건조?",
+ "dur": 1.205,
+ "words": [
+  {
+   "text": "동결…",
+   "start": 0.02,
+   "end": 0.483
+  },
+  {
+   "text": "건조?",
+   "start": 0.624,
+   "end": 1.205
+  }
+ ],
+ "source": {
+  "key": "63e442b03609d28f164a40a57f5e4bdd",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2207,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "엄마 동결건조하고 싶다… 그 말을 들은 작은 친구가 뒷걸음질 치며, 무슨 말인지 몰라 겁먹은 목소리로 낱말을 한 마디씩 되뇐다.",
+   "next": "엄마를… 말린다고?!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 501
+ }
+}

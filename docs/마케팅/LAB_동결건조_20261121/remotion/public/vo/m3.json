@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m3",
+ "text": "엄마, 동결건조하고 싶어!",
+ "dur": 2.163,
+ "words": [
+  {
+   "text": "엄마,",
+   "start": 0.02,
+   "end": 0.301
+  },
+  {
+   "text": "동결건조하고",
+   "start": 0.803,
+   "end": 1.586
+  },
+  {
+   "text": "싶어!",
+   "start": 1.666,
+   "end": 2.163
+  }
+ ],
+ "source": {
+  "key": "90d5c62dd8755b875186147af8f6bfc3",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2207,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "기차가 떠난 뒤, 작은 친구가 벤치에 앉아 영상 통화로 자기 엄마를 보며, 방금 배운 말을 자랑하듯 신나고 다정하게 외친다.",
+   "next": ""
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 500
+ }
+}

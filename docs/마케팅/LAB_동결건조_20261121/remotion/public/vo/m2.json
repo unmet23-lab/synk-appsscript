@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m2",
+ "text": "잠깐…",
+ "dur": 0.858,
+ "words": [
+  {
+   "text": "잠깐…",
+   "start": 0.19,
+   "end": 0.858
+  }
+ ],
+ "source": {
+  "key": "1b8740e9603458d5ab5f1b3d741e8ec2",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2207,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "봐, 동결건조 딸기. 그대로지? 작은 친구가 딸기와 엄마를 번갈아 보다가 무언가를 깨닫고 조용히 말한다.",
+   "next": "엄마, 늙지 마…"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 431
+ }
+}

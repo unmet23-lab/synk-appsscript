@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m1",
+ "text": "엄마를… 말린다고?!",
+ "dur": 1.593,
+ "words": [
+  {
+   "text": "엄마를…",
+   "start": 0.05,
+   "end": 0.513
+  },
+  {
+   "text": "말린다고?!",
+   "start": 0.593,
+   "end": 1.593
+  }
+ ],
+ "source": {
+  "key": "1d7eeb0e64c46d7823dd2bae9ce607c1",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 2207,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "엄마 동결건조하고 싶다… 그 말을 들은 작은 친구가 엄마를 기계에 넣어 말리는 상상을 하고, 겁에 질려 덜덜 떨며 묻는다.",
+   "next": "간식 챙겨 가~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 365
+ }
+}

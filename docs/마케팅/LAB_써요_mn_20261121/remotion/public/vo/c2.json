@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "c2",
+ "text": "서비스예요~",
+ "dur": 1.184,
+ "words": [
+  {
+   "text": "서비스예요~",
+   "start": 0.03,
+   "end": 1.184
+  }
+ ],
+ "source": {
+  "key": "8214ed4624c46f84d87f593787be1f61",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1153,
+   "lufs": -16,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b",
+   "prev": "텅 빈 지갑을 보고 미안해진 점원이 따뜻한 아메리카노 한 잔을 밀어 주며 다정하게 말한다.",
+   "next": "커피가… 써요!!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 252
+ }
+}

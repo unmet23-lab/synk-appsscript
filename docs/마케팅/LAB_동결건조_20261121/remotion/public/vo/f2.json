@@ -1,0 +1,55 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f2",
+ "text": "봐, 동결건조 딸기. 그대로지?",
+ "dur": 2.408,
+ "words": [
+  {
+   "text": "봐,",
+   "start": 0.02,
+   "end": 0.138
+  },
+  {
+   "text": "동결건조",
+   "start": 0.657,
+   "end": 1.161
+  },
+  {
+   "text": "딸기.",
+   "start": 1.211,
+   "end": 1.513
+  },
+  {
+   "text": "그대로지?",
+   "start": 1.831,
+   "end": 2.408
+  }
+ ],
+ "source": {
+  "key": "e228bf56a73d463df54e542fb9478092",
+  "voice": {
+   "id": "tc_69f2e455ea79fd197aa0476f",
+   "name": "서현"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_69f2e455ea79fd197aa0476f"
+  },
+  "speed": 1.2,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 311
+ }
+}

@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "mo2",
+ "text": "얘는 참…",
+ "dur": 0.913,
+ "words": [
+  {
+   "text": "얘는",
+   "start": 0.02,
+   "end": 0.343
+  },
+  {
+   "text": "참…",
+   "start": 0.404,
+   "end": 0.913
+  }
+ ],
+ "source": {
+  "key": "2cdab04ed8c074a8b54a48d87b421464",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1121,
+   "lufs": -16,
+   "voiceId": "tc_65a8c7e1915a6295614f775b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 320
+ }
+}
