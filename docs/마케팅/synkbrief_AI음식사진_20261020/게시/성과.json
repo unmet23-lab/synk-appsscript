@@ -5,8 +5,8 @@
       {
         "계정": "synkbrief-instagram",
         "채널": "인스타 @synkbrief",
-        "주소": "https://www.instagram.com/reel/Det8fIUNiYe/",
-        "형식": "instagram-reels",
+        "주소": "https://www.instagram.com/p/Det8fIUNiYe/",
+        "형식": "instagram-post",
         "게시": "2026-10-20T13:31:17.000Z",
         "훅": null,
         "역할": null,
@@ -46,28 +46,6 @@
             "판정": "자료 부족",
             "다음": null,
             "까닭": "견줄 이전 편이 모자란다(공유 1편 · 저장 1편 · 3초 유지율 1편 · 평균 시청 1편 — 4편부터)"
-          },
-          "7일": {
-            "관측": "2026-10-28T00:00:34.510Z",
-            "지표": {
-              "views": 110,
-              "likes": 1,
-              "comments": 0,
-              "shares": 0,
-              "saves": 0,
-              "reach": 104,
-              "follows": 0
-            },
-            "평소대비": {
-              "배수": null,
-              "중앙값": null,
-              "편수": 2,
-              "기준": "앞선 편 같은 나이"
-            },
-            "위치": {},
-            "판정": "자료 부족",
-            "다음": null,
-            "까닭": "견줄 이전 편이 모자란다(공유 2편 · 저장 2편 — 4편부터)"
           }
         },
         "화면필요": [],
