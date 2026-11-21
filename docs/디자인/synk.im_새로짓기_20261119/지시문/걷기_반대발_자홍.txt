@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Edit the attached image (landscape 1536x1024). It shows one frame of a walking animation: a young woman in a stylized 3D animated render style, mid-stride, on a flat chroma-key background.
+
+Return the SAME image as the very next frame of the same walk: the other step. Her legs swap places: the leg that is now forward goes back with its heel lifted, and the leg that is now back comes forward and plants its foot. Her free arms swing the opposite way to match. Anything she holds stays in the same hand.
+
+Keep everything else exactly the same: the same young woman and face, the same hair, the same clothes, colors and details, the same high camera angle, the same direction of walking, the same light, the same size, and her head in exactly the same place in the image. The background stays one perfectly flat, uniform pure chroma-key magenta (#FF00FF) with no floor, no shadow and no other object. No text anywhere.

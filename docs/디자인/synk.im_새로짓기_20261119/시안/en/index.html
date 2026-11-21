@@ -172,9 +172,21 @@ html[data-sky="sunset"] .gate-sky::after{content:"";position:absolute;inset:0;ba
 .w-pins span{position:relative;z-index:1}
 .w-loop{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;overflow:visible}
 .w-loop path{fill:none;stroke-linecap:round;stroke-linejoin:round}
-.w-loop .draw{stroke:var(--butter);stroke-width:16;stroke-dasharray:100;stroke-dashoffset:100}
-.w-loop .run{stroke:var(--ink);stroke-width:5;stroke-dasharray:5 95;animation:run 9s linear infinite}
-@keyframes run{to{stroke-dashoffset:-100}}
+.w-loop .draw{stroke:var(--butter);stroke-width:16;stroke-dasharray:100 200;stroke-dashoffset:100.5}
+/* 길을 걷는 학생과 집 앞의 후배: 그림띠 한 장에서 칸을 고른다. 자리 · 크기 · 칸은 스크립트가 정한다 */
+.w-fig{position:absolute;left:0;top:0;pointer-events:none}
+.w-fig i{position:absolute;inset:0;background:url(../assets/walk.webp) 0 0 no-repeat}
+.w-fig::before{content:"";position:absolute;left:30%;width:56%;bottom:-2%;height:6%;border-radius:50%;background:radial-gradient(closest-side,rgba(84,60,32,.32),rgba(84,60,32,0))}
+.w-new{opacity:0;transition:opacity .8s var(--ease)}
+.w-new.on{opacity:1}
+/* 학생이 집 · 카페 뒤를 지날 때만 그 건물 조각을 학생 위에 얹는다(조각은 그림과 같은 화소라 평소에는 보이지 않는다) */
+.w-occ{position:absolute;pointer-events:none}
+.w-occ.over{z-index:1}
+/* 학생이 서 있는 곳의 말풍선 */
+.w-pins{z-index:2}
+.w-pins button,.w-pins button::after,.w-pins b{transition:transform .2s var(--ease),background-color .35s,color .35s}
+.w-pins .here button,.w-pins .here button::after{background:var(--ink);color:var(--paper)}
+.w-pins .here b{background:var(--butter);color:var(--ink)}
 /* 지금 어디인지: 다섯 점 */
 .rail{position:absolute;z-index:5;left:var(--gut);top:88px;width:min(46vw,560px);opacity:0}
 .rail ol{display:grid;grid-template-columns:repeat(5,1fr);position:relative}
@@ -413,8 +425,6 @@ body[data-tone="dark"] .nav.solid{background:rgba(0,0,0,.4);box-shadow:0 1px 0 r
 .w-open h2{font-size:clamp(32px,4.2vw,62px)}
 .w-open p:not(.tag):not(.w-key){max-width:20em}
 p{text-wrap:pretty}
-/* 길을 도는 표시: 짧은 검은 획 대신 둥근 점 */
-.w-loop .run{stroke-width:11;stroke-dasharray:.01 99.99}
 
 /* ── 2b 세 가지와 문턱(11-20 유호님: 사업계획서 발표 장표의 구성과 몽글 그림을 그대로) ── */
 .why{padding:var(--S) var(--gut) 0;display:grid;gap:clamp(40px,5vw,72px)}
@@ -598,8 +608,11 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
       </div>
       <div class="w-layer w-map">
         <div class="w-map-in">
-          <img src="../assets/town.webp" alt="A small town where a single road runs in one loop. Along the road stand a home, a classroom, a university gate, an office and a café, in that order, and a student stands in front of the home. A 3D illustration.">
-          <svg class="w-loop" viewBox="0 0 1536 1024" preserveAspectRatio="none" aria-hidden="true"><path class="draw" pathLength="100" d="M775.0 692.0 C752.8 681.3 732.8 666.3 722.0 648.0 C711.2 629.7 707.8 606.3 710.0 582.0 C712.2 557.7 720.0 525.3 735.0 502.0 C750.0 478.7 772.5 458.3 800.0 442.0 C827.5 425.7 865.0 413.2 900.0 404.0 C935.0 394.8 973.3 390.8 1010.0 387.0 C1046.7 383.2 1086.7 379.3 1120.0 381.0 C1153.3 382.7 1182.5 386.7 1210.0 397.0 C1237.5 407.3 1265.3 425.0 1285.0 443.0 C1304.7 461.0 1320.2 485.2 1328.0 505.0 C1335.8 524.8 1335.8 542.8 1332.0 562.0 C1328.2 581.2 1320.0 601.3 1305.0 620.0 C1290.0 638.7 1267.8 659.5 1242.0 674.0 C1216.2 688.5 1182.0 699.0 1150.0 707.0 C1118.0 715.0 1083.3 719.2 1050.0 722.0 C1016.7 724.8 982.5 725.7 950.0 724.0 C917.5 722.3 884.2 717.3 855.0 712.0 C825.8 706.7 797.2 702.7 775.0 692.0Z"></path><path class="run" pathLength="100" d="M775.0 692.0 C752.8 681.3 732.8 666.3 722.0 648.0 C711.2 629.7 707.8 606.3 710.0 582.0 C712.2 557.7 720.0 525.3 735.0 502.0 C750.0 478.7 772.5 458.3 800.0 442.0 C827.5 425.7 865.0 413.2 900.0 404.0 C935.0 394.8 973.3 390.8 1010.0 387.0 C1046.7 383.2 1086.7 379.3 1120.0 381.0 C1153.3 382.7 1182.5 386.7 1210.0 397.0 C1237.5 407.3 1265.3 425.0 1285.0 443.0 C1304.7 461.0 1320.2 485.2 1328.0 505.0 C1335.8 524.8 1335.8 542.8 1332.0 562.0 C1328.2 581.2 1320.0 601.3 1305.0 620.0 C1290.0 638.7 1267.8 659.5 1242.0 674.0 C1216.2 688.5 1182.0 699.0 1150.0 707.0 C1118.0 715.0 1083.3 719.2 1050.0 722.0 C1016.7 724.8 982.5 725.7 950.0 724.0 C917.5 722.3 884.2 717.3 855.0 712.0 C825.8 706.7 797.2 702.7 775.0 692.0Z"></path></svg>
+          <img src="../assets/town-road.webp" alt="A small town where one road runs in a full loop. Along it stand a house, a classroom, a university gate, an office and a café, in that order. A student sets out from the house, passes the five places one by one and comes back home, where she welcomes a newcomer. A 3D illustration.">
+          <svg class="w-loop" viewBox="0 0 1536 1024" preserveAspectRatio="none" aria-hidden="true"><path class="draw" pathLength="100" d="M785.0 702.0 C775.8 698.0 767.2 690.3 760.0 684.0 C752.8 677.7 747.3 674.7 742.0 664.0 C736.7 653.3 732.0 635.7 728.0 620.0 C724.0 604.3 720.0 585.8 718.0 570.0 C716.0 554.2 715.7 538.3 716.0 525.0 C716.3 511.7 717.2 500.8 720.0 490.0 C722.8 479.2 727.2 468.3 733.0 460.0 C738.8 451.7 745.5 445.8 755.0 440.0 C764.5 434.2 775.8 428.7 790.0 425.0 C804.2 421.3 821.7 421.2 840.0 418.0 C858.3 414.8 880.0 409.5 900.0 406.0 C920.0 402.5 939.2 400.0 960.0 397.0 C980.8 394.0 1001.7 389.5 1025.0 388.0 C1048.3 386.5 1078.8 387.7 1100.0 388.0 C1121.2 388.3 1132.8 388.2 1152.0 390.0 C1171.2 391.8 1197.8 395.3 1215.0 399.0 C1232.2 402.7 1243.8 406.5 1255.0 412.0 C1266.2 417.5 1275.8 422.7 1282.0 432.0 C1288.2 441.3 1287.7 456.7 1292.0 468.0 C1296.3 479.3 1303.7 489.7 1308.0 500.0 C1312.3 510.3 1316.3 520.8 1318.0 530.0 C1319.7 539.2 1319.3 547.0 1318.0 555.0 C1316.7 563.0 1314.7 570.2 1310.0 578.0 C1305.3 585.8 1299.2 594.2 1290.0 602.0 C1280.8 609.8 1267.5 617.3 1255.0 625.0 C1242.5 632.7 1228.8 641.3 1215.0 648.0 C1201.2 654.7 1185.3 659.8 1172.0 665.0 C1158.7 670.2 1147.0 674.0 1135.0 679.0 C1123.0 684.0 1114.2 689.3 1100.0 695.0 C1085.8 700.7 1066.7 708.7 1050.0 713.0 C1033.3 717.3 1016.7 719.2 1000.0 721.0 C983.3 722.8 966.7 723.8 950.0 724.0 C933.3 724.2 916.7 723.7 900.0 722.0 C883.3 720.3 864.2 716.3 850.0 714.0 C835.8 711.7 825.8 710.0 815.0 708.0 C804.2 706.0 794.2 706.0 785.0 702.0Z"></path></svg>
+          <img class="w-occ" src="../assets/occ-house.webp" alt=""><img class="w-occ" src="../assets/occ-cafe.webp" alt="">
+          <div class="w-fig w-new" aria-hidden="true"><i></i></div>
+          <div class="w-fig w-me" aria-hidden="true"><i></i></div>
           <ol class="w-pins" aria-label="The five places one person passes through"><li style="--x:44.99%;--y:51.86%"><button type="button"><b>1</b><span>Korean</span></button></li><li style="--x:53.32%;--y:29.39%"><button type="button"><b>2</b><span>Classroom</span></button></li><li style="--x:75.26%;--y:27.73%"><button type="button"><b>3</b><span>Study in Korea</span></button></li><li style="--x:90.17%;--y:39.75%"><button type="button"><b>4</b><span>Work in Korea</span></button></li><li style="--x:83.33%;--y:57.52%"><button type="button"><b>5</b><span>Community</span></button></li></ol>
         </div>
       </div>
@@ -837,9 +850,11 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
   let flat = false;
   const show = (el, o, t) => { el.style.opacity = o; el.style.visibility = o < .02 ? 'hidden' : 'visible'; if (t !== undefined) el.style.transform = t; };
   function layoutRoad() {
+    const was = flat;
     flat = reduce || innerWidth < 900 || innerHeight < 560;
     body.classList.toggle('flat', flat);
     if (flat) [mapIn, wOpen, wClose, pins, loop, rail, ...scenes, ...says, ...scenes.map(s => s.firstElementChild)].forEach(el => el.removeAttribute('style'));
+    if (flat && !was) { stopWalk(); if (reduce) loopDraw.style.strokeDashoffset = 0; }   // 움직임을 줄였으면 학생은 집 앞에 서 있고 길은 다 그려져 있다
   }
   function road() {
     if (flat) return;
@@ -853,7 +868,7 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
     show(wOpen, 1 - o0, `translateY(${-30 * o0}px)`);
     show(pins, far ? end : 1 - smooth(.42, .7, x));
     loop.style.opacity = far ? end : 0;
-    loopDraw.style.strokeDashoffset = 100 * (1 - smooth(5.5, 5.98, x));
+    if (x < 5.5) stopWalk(); else if (end > .98) playWalk();   // 마을 전체로 다 나오면 학생이 걷기 시작한다. 장면 안으로 되돌아가면 집 앞으로 돌아간다
     scenes.forEach((s, i) => {
       const o = smooth(i + .5, i + .9, x) * (i < 4 ? 1 - smooth(i + 1.95, i + 2, x) : 1 - smooth(5.2, 5.65, x));
       show(s, o);
@@ -870,6 +885,72 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
   const goto = x => { const b = wrap.getBoundingClientRect(); scrollTo({ top: scrollY + b.top + (x / (N - 1)) * (b.height - innerHeight), behavior: reduce ? 'auto' : 'smooth' }); };
   $('#w-go').addEventListener('click', () => { if (flat) scenes[0].scrollIntoView({ behavior: 'smooth' }); else goto(1); });
   $$('button', pins).forEach((bt, i) => bt.addEventListener('click', () => { if (flat) scenes[i].scrollIntoView({ behavior: 'smooth' }); else goto(i + 1); }));
+
+  /* 마을 길을 걷는 학생(11-21 유호님): 집에서 나와 교실, 대학 정문, 회사, 카페를 차례로 지난다. 한 곳에 설 때마다 그 단계의 모습으로 바뀌고
+     그곳의 말풍선이 켜진다. 길을 한 바퀴 돌아 집 앞에 오면 새로 온 후배가 서 있고 학생이 손을 흔든다. 한 번 돌고 멈춘다.
+     그림띠 칸: 단계마다 [서 있기, 걷기 왼발, 걷기 오른발] 셋씩(한국어 · 교실은 뒤로 걷는 모습, 유학 · 취업 · 모임은 앞으로 걷는 모습), 마지막 칸은 후배.
+     칸의 사람은 화면 왼쪽을 향한다. 오른쪽으로 걸을 때는 좌우를 뒤집는다 */
+  const WALK = {"n": 16, "ar": 0.7781, "body": 0.8876, "pad": 0.0118, "occ": [{"box": [636, 505, 800, 668], "base": 660, "x": [690, 800]}, {"box": [1095, 575, 1375, 745], "base": 706, "x": [1090, 1380]}]};
+  const me = $('.w-me'), newbie = $('.w-new'), pinLis = $$('li', pins), occs = $$('.w-occ');
+  const LEN = loopDraw.getTotalLength(), at = f => loopDraw.getPointAtLength(clamp(f) * LEN);
+  const SPEED = .14, STEP = 36, STAY = 1100, FIRST_STAY = 800;    // 그림 화소/ms, 걸음 한 번의 길이(그림 화소), 한 곳에 서 있는 시간(ms)
+  const near = ([px, py]) => { let best = 0, bd = Infinity; for (let i = 0; i <= 600; i++) { const p = at(i / 600), d = (p.x - px) ** 2 + (p.y - py) ** 2; if (d < bd) { bd = d; best = i / 600; } } return best; };
+  // 서는 자리(그림 화소): 집 앞(길의 시작) · 교실 앞 · 대학 정문 앞 · 회사 모퉁이 · 카페 옆. 마지막은 집 앞의 후배 곁
+  const STOPS = [0, ...[[840, 418], [1152, 390], [1318, 528], [1172, 665]].map(near), 1 - 44 / LEN];
+  const sizeOf = y => .8 + .2 * clamp((y - 388) / (702 - 388));     // 먼 길(위)의 사람은 작게. 교실 문 높이가 집 문의 0.8쯤이다
+  const FACE = [];                                                    // 길 위 자리마다 향하는 쪽(1 왼쪽, -1 오른쪽). 방향이 뚜렷하게 바뀔 때만 돈다
+  for (let i = 0, f = 1; i <= 400; i++) { const a = at(i / 400), b = at(i / 400 + .003), dx = b.x - a.x, dl = Math.hypot(dx, b.y - a.y) || 1; if (dx / dl > .3) f = -1; else if (dx / dl < -.3) f = 1; FACE.push(f); }
+  const PLAN = [];                                                    // [시작 ms, 끝 ms, 무엇]
+  let T = 0;
+  const stay = (f, k, ms, pin) => { PLAN.push({ t0: T, t1: T + ms, f, k, pin }); T += ms; };
+  stay(0, 0, FIRST_STAY, 0);
+  for (let i = 0; i < 5; i++) {
+    const d = (STOPS[i + 1] - STOPS[i]) * LEN, ms = d / SPEED;
+    PLAN.push({ t0: T, t1: T + ms, from: STOPS[i], to: STOPS[i + 1], look: i, d }); T += ms;
+    if (i < 4) stay(STOPS[i + 1], 3 * (i + 1), STAY, i + 1);
+  }
+  const END = T + 900;                                                // 집 앞에 서고 길의 노란 줄이 다 이어지면 멈춘다
+  stay(STOPS[5], 12, Infinity, -1);
+  const last = PLAN[PLAN.length - 2], NEW_AT = last.t0 + (last.t1 - last.t0) * .45;   // 마지막 길의 절반쯤에서 후배가 나타난다
+  function walkPose(t) {
+    const s = PLAN.find(p => t < p.t1);
+    if (s.from === undefined) {
+      const u = clamp((t - s.t0) / 260), home = s.pin === -1;
+      return { f: s.f, k: s.k, flip: s.k === 12 ? -1 : 1, bob: 0, pop: 1 + .045 * Math.sin(Math.PI * u) * (s.t0 > 0), pin: s.pin, trail: home ? s.f + (1 - s.f) * smooth(0, 600, t - s.t0) : s.f, newbie: t >= NEW_AT };
+    }
+    const u = (t - s.t0) / (s.t1 - s.t0), e = .5 * u + .5 * u * u * (3 - 2 * u);    // 걷기 시작과 멈춤만 살짝 느리게
+    const d = e * s.d, f = s.from + (s.to - s.from) * e, step = d / STEP;
+    return { f, k: 3 * s.look + 1 + (Math.floor(step) % 2), flip: FACE[Math.round(clamp(f) * 400)], bob: 1.4 * Math.abs(Math.sin(Math.PI * step)), pop: 1, pin: -1, trail: f, newbie: t >= NEW_AT };
+  }
+  function place(el, x, y, k, flip, bob, pop) {
+    el.style.left = x / 15.36 + '%'; el.style.top = y / 10.24 + '%';
+    el.style.transform = `translate(-50%,${-(1 - WALK.pad) * 100}%) scale(${sizeOf(y) * pop})`;
+    const im = el.firstElementChild;
+    im.style.backgroundPosition = `${k / (WALK.n - 1) * 100}% 0`;
+    im.style.transform = `translateY(${-bob}%) scaleX(${flip})`;
+  }
+  function walkDraw(st, idle) {
+    const p = at(st.f);
+    place(me, p.x, p.y, st.k, st.flip, st.bob, st.pop);
+    loopDraw.style.strokeDashoffset = idle || st.trail <= 0 ? 100.5 : 100 * (1 - st.trail);   // 아직 안 걸었으면 줄 끝의 둥근 마개도 보이지 않게
+    pinLis.forEach((li, i) => li.classList.toggle('here', !idle && i === st.pin));
+    newbie.classList.toggle('on', !idle && st.newbie);
+    occs.forEach((o, i) => { const c = WALK.occ[i]; o.classList.toggle('over', p.y < c.base && p.x > c.x[0] && p.x < c.x[1]); });
+  }
+  [me, newbie].forEach(el => {                                       // 칸 하나의 크기: 집 앞에서 사람 키가 그림 화소로 94(처음 그림 속 학생보다 조금 작게, 건물과 어울리게)
+    el.style.width = 94 / WALK.body * WALK.ar / 15.36 + '%'; el.style.aspectRatio = WALK.ar;
+    el.style.transformOrigin = `50% ${(1 - WALK.pad) * 100}%`;
+    const im = el.firstElementChild; im.style.backgroundSize = `${WALK.n * 100}% 100%`; im.style.transformOrigin = `50% ${(1 - WALK.pad) * 100}%`;
+  });
+  { const p = at(0); place(newbie, p.x, p.y, WALK.n - 1, -1, 0, 1); }
+  occs.forEach((o, i) => { const [x0, y0, x1, y1] = WALK.occ[i].box; Object.assign(o.style, { left: x0 / 15.36 + '%', top: y0 / 10.24 + '%', width: (x1 - x0) / 15.36 + '%', height: (y1 - y0) / 10.24 + '%' }); });
+  let walkT0 = 0, walkRaf = 0, walking = false, walkIdle = false;
+  function walkFrame(now) { const t = now - walkT0; walkDraw(walkPose(t)); walkRaf = t < END ? requestAnimationFrame(walkFrame) : 0; }
+  function playWalk() { if (walking) return; walking = true; walkIdle = false; walkT0 = performance.now(); walkRaf = requestAnimationFrame(walkFrame); }
+  function stopWalk() { if (walkIdle) return; cancelAnimationFrame(walkRaf); walkRaf = 0; walking = false; walkIdle = true; walkDraw(walkPose(0), true); }
+  stopWalk();
+  new IntersectionObserver(es => { if (flat && !reduce && es[0].isIntersecting) playWalk(); }, { threshold: .6 }).observe($('.w-map'));
+  window.__walk = ms => { cancelAnimationFrame(walkRaf); walkRaf = 0; walking = true; walkIdle = false; walkDraw(walkPose(ms)); return { end: END, plan: PLAN.map(p => [Math.round(p.t0), Math.round(p.t1)]) }; };   // 확인용: 그 시각의 모습으로 멈춘다
 
   /* 4 그림 속 화면 자리에 실물을 올린다(그림은 화면을 덮게 잘리므로 자리를 계산한다) */
   function placeOn(bg, el, r) {                          // r = 그림 안에서의 [왼쪽, 위, 폭, 높이] 비율

@@ -1,0 +1,7 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Edit the attached image. Return the SAME image with exactly one thing removed: the small young woman (short black bob, cream cardigan, mustard-yellow top, navy trousers, small navy backpack) standing on the pale stone road just to the right of the tiny house in the lower left part of the road loop. She is the only person in the image.
+
+Where she was, show what was behind her: the same pale stone paving of the road with the same tile pattern, the same soft green lawn with the same gentle light, the right corner of the tiny house's cream wall, its small green bush and its doorstep, all continuing naturally. Do not draw any shadow where she stood.
+
+Keep everything else exactly as it is: the same 1536x1024 landscape framing and size, the same high camera position, the same warm early-morning lighting, colors and soft haze. Every remaining house, building, tree, bush, flower and road stays in exactly the same place, shape and size. Do not add any new object, person, animal, text, letter or symbol. The result must look like the same illustration a moment before she stepped onto the road.

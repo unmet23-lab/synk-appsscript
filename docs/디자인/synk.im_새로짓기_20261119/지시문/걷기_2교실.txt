@@ -1,0 +1,20 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Create exactly one image, landscape 1536x1024: a character sprite sheet for a small walking animation that will be placed on top of the town illustration.
+
+Image 1 is the character reference: the same young woman as a tiny figure in the town illustration, seen from a high camera. Image 2 is the wardrobe reference for this sheet (the same young woman up close). Image 3 is the whole town, for the camera angle and the light.
+
+Draw the SAME young woman as Image 1 and Image 2 (identical round friendly face, warm light-brown skin, rosy cheeks, short glossy black bob with straight bangs, small gold stud earrings) in the SAME premium stylized 3D animated render style (soft matte clay-like materials, gentle subsurface skin, smooth simplified forms, warm cream and soft pastel palette with mustard-yellow accents). Not photoreal, not anime, not a toy.
+
+Camera: every figure is seen from the SAME high camera as the town in Image 3, looking down at about 40 degrees, so the top of her head and her shoulders are visible and her body is slightly foreshortened, exactly like the tiny figure in Image 1. Warm early-morning key light from the upper left, identical on every figure.
+
+Wardrobe for this whole sheet: a cream cable-knit cardigan worn open over a mustard-yellow top, navy trousers, beige flat shoes, and a small navy backpack on both shoulders. She carries one pale green textbook. Every figure wears exactly this, with the same colors and the same details.
+
+Three full-body figures of the SAME size stand in one evenly spaced row, each in its own third of the image, from left to right:
+1. Standing still, facing the camera, hugging the green textbook to her chest with her left arm and raising her right hand high as if answering in class, smiling proudly.
+2. Walking away from the camera toward the upper left of the frame, seen from behind in back three-quarter view: we see the back of her head, her backpack and only a little of her left cheek, mid-stride: her LEFT foot forward, her free right arm swinging forward. Her left arm keeps the green textbook against her chest; only her right arm swings.
+3. The very next step of the same walk, same direction, same size and same camera: her RIGHT foot forward, her free right arm swinging back. Her left arm keeps the green textbook against her chest; only her right arm swings.
+
+Every figure is shown whole, from the top of the hair to the shoes, about 62 percent of the image height, with plenty of empty space around it. The figures do not touch or overlap. Every figure is the same height and the same scale.
+
+Background: one perfectly flat, uniform pure chroma-key green (#00FF00) everywhere, with no floor, no ground line, no cast shadows, no reflections, no gradient, no vignette and no other object. No text, no letters, no numbers, no logos anywhere.
