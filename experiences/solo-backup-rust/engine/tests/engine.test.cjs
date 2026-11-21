@@ -18,8 +18,9 @@ const secretStore = {
 async function files(root) { const result = []; for (const entry of await fs.readdir(root, { withFileTypes: true })) { const p = path.join(root, entry.name); if (entry.isDirectory()) result.push(...await files(p)); else result.push(p); } return result; }
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 
-test('real Windows restic: backup, changed files, new-PC recovery, failure preservation and exact retention', { skip: !resticPath, timeout: process.env.SOLO_BACKUP_SLOW_TEST === '1' ? 1800000 : 480000 }, async t => {
-  // The two fill tests (4.2) add about a sixth: 19 min on a busy PC (11-16), so the slow limit is 30 min.
+// GitHub Windows reached the 8-minute limit during restore step 26 of 28. A busy local PC has taken 19 minutes.
+const restoreSuiteTimeout = (process.env.SOLO_BACKUP_SLOW_TEST === '1' ? 30 : 15) * 60_000;
+test('real Windows restic: backup, changed files, new-PC recovery, failure preservation and exact retention', { skip: !resticPath, timeout: restoreSuiteTimeout }, async t => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'solo-backup-functional-'));
   const source = path.join(root, '작업 자료'); const target = path.join(root, '백업'); const keys = path.join(root, '별도 복구키'); const restore = path.join(root, '복구 결과');
   await Promise.all([source, target, keys, restore].map(p => fs.mkdir(p)));
