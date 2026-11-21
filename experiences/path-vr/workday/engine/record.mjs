@@ -26,7 +26,8 @@ export function recordSerial(date, randomBytes) {
   return `PW-${ymd(date, '')}-${bytes.map((value) => alphabet[value % alphabet.length]).join('')}`;
 }
 
-export function buildRecord(job, data, { name = '', reasons = {}, hard = '', decision = '', ladder = {}, view = 'screen', date = new Date(), serial } = {}) {
+/** films: whether this run could play any film. Without films nothing was heard, so the sheet does not count replays. */
+export function buildRecord(job, data, { name = '', reasons = {}, hard = '', decision = '', ladder = {}, view = 'screen', date = new Date(), serial, films = true } = {}) {
   if (!serial) throw new TypeError('기록 번호가 필요해요.');
   const done = job.scenes.filter((scene) => data.scenes?.[scene.id]?.done === true);
   const asked = done.flatMap((scene) => sceneSayIds(scene));
@@ -53,8 +54,8 @@ export function buildRecord(job, data, { name = '', reasons = {}, hard = '', dec
     name: trim(name, RECORD_LIMITS.name),
     view: VIEW[view] || VIEW.screen,
     speak: modes.size === 2 ? SPEAK.mixed : modes.has('voice') ? SPEAK.voice : modes.has('text') ? SPEAK.text : '',
-    completed: { scenes: done.length, of: job.scenes.length, minutes: activeMs > 0 ? Math.max(1, Math.round(activeMs / 60000)) : 0, replayedScenes: done.filter((scene) => data.scenes[scene.id].runs > 1).length },
-    korean: { voice: count('voice'), text: count('text'), example: count('example'), unaided: direct.filter(({ entry }) => !entry.helped).length, replays: data.counts?.replays || 0, hints: data.counts?.hints || 0, turns },
+    completed: { scenes: done.length, of: job.scenes.length, minutes: activeMs > 0 ? Math.max(1, Math.round(activeMs / 60000)) : 0, replayedScenes: done.filter((scene) => (data.scenes[scene.id].finishes ?? 1) > 1).length },
+    korean: { voice: count('voice'), text: count('text'), example: count('example'), unaided: direct.filter(({ entry }) => !entry.helped).length, replays: films ? data.counts?.replays || 0 : null, hints: data.counts?.hints || 0, turns },
     choices,
     reflection: { hard: trim(hard, RECORD_LIMITS.hard), decision: decisionLabel },
     ladder: job.closing.ladder.items.map((item) => ({ label: item.label, value: trim(ladder[item.id], RECORD_LIMITS.ladder) })).filter((item) => item.value),
@@ -74,9 +75,11 @@ export function recordLines(record) {
       completed.replayedScenes ? `다시 한 장면 ${completed.replayedScenes}개` : '',
     ].filter(Boolean).join(' · ')] },
     { title: '한국어로 한 일', rows: [
-      answered.length ? answered.join(' · ') : '답한 차례가 아직 없습니다.',
+      // A turn the device could not make out is left off on purpose (it must not read as the learner's Korean),
+      // so the empty line says only what this sheet holds, not that the learner never answered.
+      answered.length ? answered.join(' · ') : '이 기록에 적힌 답이 없습니다.',
       korean.voice + korean.text ? `힌트나 예시를 열지 않고 답한 것 ${korean.unaided}번` : '',
-      `다시 듣기 ${korean.replays}번 · 힌트 ${korean.hints}번`,
+      korean.replays === null ? `힌트 ${korean.hints}번` : `다시 듣기 ${korean.replays}번 · 힌트 ${korean.hints}번`,
       ...korean.turns,
     ].filter(Boolean) },
     { title: '일터에서 고른 것', rows: record.choices.length ? record.choices.map((choice) => `${choice.scene}: ${choice.text}${choice.how ? ` · ${choice.how}` : ''}${choice.reason ? ` — 까닭: ${choice.reason}` : ''}`) : ['고른 갈림길이 아직 없습니다.'] },

@@ -19,7 +19,7 @@ function restore(job, saved) {
   if (!saved || saved.v !== SESSION_DATA_VERSION || saved.job !== job.id || saved.edition !== job.edition) return blankData(job);
   const data = blankData(job), sceneIds = new Set(job.scenes.map((scene) => scene.id));
   // Keep only fields this version writes, and only for scenes and forks the table still has.
-  for (const [id, scene] of Object.entries(saved.scenes || {})) if (sceneIds.has(id)) data.scenes[id] = { done: scene?.done === true, runs: Math.max(0, Math.trunc(Number(scene?.runs) || 0)), activeMs: Math.max(0, Number(scene?.activeMs) || 0) };
+  for (const [id, scene] of Object.entries(saved.scenes || {})) if (sceneIds.has(id)) data.scenes[id] = { done: scene?.done === true, runs: Math.max(0, Math.trunc(Number(scene?.runs) || 0)), finishes: Math.max(0, Math.trunc(Number(scene?.finishes) || (scene?.done === true ? 1 : 0))), activeMs: Math.max(0, Number(scene?.activeMs) || 0) };
   for (const [id, option] of Object.entries(saved.forks || {})) if (typeof option === 'string' && sceneIds.has(saved.forkScene?.[id])) { data.forks[id] = option; data.forkScene[id] = saved.forkScene[id]; }
   for (const [id, say] of Object.entries(saved.says || {})) if (sceneIds.has(say?.scene) && SAY_MODES.includes(say.produced)) data.says[id] = { scene: say.scene, produced: say.produced, helped: say.helped === true };
   for (const key of ['replays', 'hints', 'examples']) data.counts[key] = Math.max(0, Math.trunc(Number(saved.counts?.[key]) || 0));
@@ -36,7 +36,8 @@ export function createWorkdaySession(job, { saved = null } = {}) {
   let say = null, tour = null;
   const hinted = new Set(data.hinted);
   const scene = () => job.scenes[sceneIndex] || null;
-  const sceneData = (id) => (data.scenes[id] ||= { done: false, runs: 0, activeMs: 0 });
+  // runs: times started (a stop half way counts); finishes: times it reached its end.
+  const sceneData = (id) => (data.scenes[id] ||= { done: false, runs: 0, finishes: 0, activeMs: 0 });
   const matches = (when) => !when || Object.entries(when).every(([fork, option]) => (Array.isArray(option) ? option.includes(data.forks[fork]) : data.forks[fork] === option));
   const missing = (item) => (item.requires || []).filter((id) => data.scenes[id]?.done !== true);
   function setPlace(id, caption) { place = id; placeCaption = caption || ''; placeSerial++; }
@@ -55,7 +56,7 @@ export function createWorkdaySession(job, { saved = null } = {}) {
       phase = 'say'; return;
     }
     current = null; lastLine = null;
-    sceneData(scene().id).done = true;
+    const finished = sceneData(scene().id); finished.done = true; finished.finishes = (finished.finishes || 0) + 1;
     phase = 'scene-end';
   }
   function startScene(id) {
@@ -118,8 +119,9 @@ export function createWorkdaySession(job, { saved = null } = {}) {
   function canSubmit(mode, text) {
     if (paused || phase !== 'say') return false;
     if (current.type === 'report' ? say.selected.size === 0 : current.options ? !say.chosen : false) return false;
-    // A turn is accepted on two letters or more; what was said is never judged.
-    return mode === 'example' || mode === 'unheard' || (['voice', 'text'].includes(mode) && String(text || '').replace(/[\s.,!?…~]/gu, '').length >= 2);
+    // A turn is accepted on one Korean syllable (「네」) or two letters of anything else; what was said is never judged.
+    const bare = String(text || '').replace(/[\s.,!?…~'"「」]/gu, '');
+    return mode === 'example' || mode === 'unheard' || (['voice', 'text'].includes(mode) && (bare.length >= 2 || /[가-힣]/u.test(bare)));
   }
   function submitSay({ mode, text = '' } = {}) {
     if (!canSubmit(mode, text)) return snapshot();

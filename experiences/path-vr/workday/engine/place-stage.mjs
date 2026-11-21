@@ -271,10 +271,11 @@ export async function buildWorkdayStage({ mount, getFrameState = () => [], getSt
   const applyLook = (next) => { look = next; camera.rotation.set(look.pitch, look.yaw, 0, 'YXZ'); };
   const turn = (direction) => { if (previewing) { drag = null; applyLook(previewLookAfter(look, { type: 'turn', direction })); } };
   const resetLook = () => { if (previewing) { drag = null; applyLook(previewLookAfter(look, { type: 'reset' })); } };
-  const previewButtons = [['왼쪽 30도', () => turn(1)], ['정면', resetLook], ['오른쪽 30도', () => turn(-1)], ['드래그 켜기', () => { freeDrag = !freeDrag; drag = null; updateDrag(); }]].map(([label, action]) => {
+  const previewButtons = [['왼쪽 30도', () => turn(1)], ['정면', resetLook], ['오른쪽 30도', () => turn(-1)], ['마우스로 둘러보기', () => { freeDrag = !freeDrag; drag = null; updateDrag(); }]].map(([label, action]) => {
     const button = document.createElement('button'); button.type = 'button'; button.textContent = label; button.addEventListener('click', action); previewControls.append(button); return { button, action };
   });
-  function updateDrag() { const button = previewButtons[3].button; button.textContent = freeDrag ? '드래그 끄기' : '드래그 켜기'; button.setAttribute('aria-pressed', String(freeDrag)); renderer.domElement.style.cursor = freeDrag ? 'grab' : 'default'; }
+  function updateDrag() { const button = previewButtons[3].button; // The name stays the same; only the pressed state says whether dragging is on.
+    button.setAttribute('aria-pressed', String(freeDrag)); renderer.domElement.style.cursor = freeDrag ? 'grab' : 'default'; }
   function resize() {
     if (!previewing) return;
     const width = Math.max(1, mount.clientWidth || innerWidth), height = Math.max(1, mount.clientHeight || innerHeight);

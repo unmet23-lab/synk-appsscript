@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readFile, readdir, stat, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { validateJob, jobClipIds, jobFiles, jobTexts, FORBIDDEN_RECORD_WORDS } from '../workday/engine/job-schema.mjs';
@@ -9,6 +10,7 @@ import { buildRecord, recordLines, recordSerial, RECORD_NOTICE, RECORD_LIMITS } 
 import { planRecordSheet, paintRecordSheet, wrapText, SHEET } from '../workday/engine/record-sheet.mjs';
 import { imagePdf } from '../workday/engine/pdf.mjs';
 import { questScenePlan, createSilenceGate, clipHoldsStill, QUEST_LIMIT_MINUTES } from '../workday/engine/comfort.mjs';
+import { hudRows } from '../workday/engine/hud.mjs';
 import { publicFiles, workdayJobFiles } from '../server.mjs';
 
 const WORKDAY = fileURLToPath(new URL('../workday/', import.meta.url));
@@ -42,7 +44,7 @@ function factoryJob() {
   const hint = { en: 'hint' };
   const line = (clip, text, extra = {}) => ({ type: 'line', clip, who: 'lead', text, hint, ...extra });
   return {
-    schemaVersion: 1, id: 'factory-test', edition: '시험판 0.1', title: '공장 첫 출근', role: '제조 현장', summary: '안전 표지를 읽고 작업 지시를 들어요.', minutes: 4, hintLanguages: ['en'],
+    schemaVersion: 1, id: 'factory-test', edition: '시험판 0.1', title: '공장의 하루', role: '제조 현장', summary: '안전 표지를 읽고 작업 지시를 들어요.', minutes: 4, hintLanguages: ['en'],
     cast: { lead: { name: '박 반장', role: '작업반장' } },
     places: {
       gate: { name: '작업장 입구', photo: 'places/gate.jpg', alt: '작업장 입구에 안전 표지가 붙어 있다.', points: [{ id: 'helmet-sign', x: 0.3, y: 0.3, label: '안전모 착용', hint }] },
@@ -64,7 +66,7 @@ function factoryJob() {
           { id: 'jam', key: true, text: '기계가 한 번 멈췄습니다.', hint },
           { id: 'order', when: { order: 'ask' }, text: '지시를 한 번 더 여쭸습니다.', hint },
           { id: 'order', when: { order: ['nod'] }, text: '지시를 다 알아듣지 못했습니다.', hint },
-        ], record: { included: '기계가 멈춘 일을 보고에 넣었다', omitted: '기계가 멈춘 일을 보고에 넣지 않았다' },
+        ], record: { included: '기계가 멈춘 일을 보고에 넣는다', omitted: '기계가 멈춘 일을 보고에 넣지 않는다' },
           then: { included: [line('lead-thanks', '말해 줘서 고마워요.')], omitted: [line('lead-jam', '기계가 멈췄다면서요.')] } },
       ] },
     ],
@@ -142,10 +144,18 @@ test('a broken scene table is refused with a reason for each fault', () => {
     ['action that is not a boolean', (job) => { job.scenes[3].steps[3].action = 'yes'; }, /action은/],
     ['scene without minutes', (job) => { delete job.scenes[2].minutes; }, /예상 분/],
     ['external next link', (job) => { job.closing.next.href = 'https://example.com/'; }, /상대 주소/],
+    ['next link hidden behind a space', (job) => { job.closing.next.href = ' //example.com/'; }, /상대 주소/],
+    ['photo path hidden behind a space', (job) => { job.places.room.photo = ' https://example.com/a.jpg'; }, /사진/],
     ['duplicate say id', (job) => { job.scenes[2].steps[1].id = 'handover'; }, /겹쳐요/],
     ['line by an unknown person', (job) => { job.scenes[0].steps[0].who = 'stranger'; }, /인물 stranger/],
     ['steps that are not a list', (job) => { job.scenes[0].steps = { a: 1 }; }, /걸음이 없어요/],
     ['options written as an object', (job) => { job.scenes[1].steps[2].options = { ask: {} }; }, /2~3개/],
+    // A key that usually names an id can also key a learner's sentence: the word check still reads it.
+    ['guarded word in a closing sentence keyed by an option id', (job) => { job.closing.forks.find((fork) => fork.mine?.listen).mine.listen = '이 선택을 추천해요.'; }, /「추천」/],
+    ['guarded word in the edition', (job) => { job.edition = '등급판 1.0'; }, /「등급」/],
+    ['duplicate principle id', (job) => { job.closing.principles.push({ ...job.closing.principles[0] }); }, /같은 id/],
+    ['duplicate ladder item id', (job) => { job.closing.ladder.items.push({ ...job.closing.ladder.items[0] }); }, /같은 id/],
+    ['duplicate decision id', (job) => { job.closing.reflection.decisions[2].id = job.closing.reflection.decisions[0].id; }, /같은 id/],
   ];
   for (const [name, breakIt, expected] of cases) {
     const job = fresh(); breakIt(job);
@@ -302,6 +312,11 @@ test('speech the device could not make out moves on without counting against the
   session.startScene('arrival'); session.advance();
   assert.equal(session.canSubmit('voice', ''), false, 'an empty recognition is not a spoken answer');
   assert.equal(session.canSubmit('unheard'), true);
+  // One Korean syllable is a whole answer (「네」); one stray mark or letter is not.
+  assert.equal(session.canSubmit('text', '네.'), true);
+  assert.equal(session.canSubmit('voice', '네'), true);
+  assert.equal(session.canSubmit('text', 'a'), false);
+  assert.equal(session.canSubmit('text', '…'), false);
   session.submitSay({ mode: 'unheard' });
   session.advance(); session.finishTour();
   playScene(session, 'handover', { handover: 'confirm' }, 'unheard');
@@ -318,6 +333,13 @@ test('speech the device could not make out moves on without counting against the
   assert.equal(record.choices[0].how, '', 'the choice is kept; how it was said is left blank');
   const body = JSON.stringify(recordLines(record).sections);
   assert.ok(!/가운데|못해|unheard/.test(body), 'no fraction and no trace of the failed recognition');
+  // When every turn went unheard, the sheet does not claim the learner never answered.
+  const quiet = createWorkdaySession(careHome);
+  quiet.startScene('arrival'); quiet.advance(); quiet.submitSay({ mode: 'unheard' }); quiet.advance(); quiet.finishTour();
+  while (quiet.snapshot().phase !== 'scene-end') quiet.advance();
+  const quietLines = recordLines(buildRecord(careHome, quiet.serialize(), { serial: 'PW-20261130-AAAAAA', date: new Date(2026, 10, 30) }));
+  const korean = quietLines.sections.find((section) => section.title.includes('한국어로 한 일'));
+  assert.ok(korean.rows.includes('이 기록에 적힌 답이 없습니다.') && !JSON.stringify(korean).includes('아직'), JSON.stringify(korean));
 });
 
 test('pause holds the scene, leaving drops it, and a scene run again replaces its record', () => {
@@ -335,6 +357,15 @@ test('pause holds the scene, leaving drops it, and a scene run again replaces it
   const data = session.serialize();
   assert.equal(data.forks.handover, 'confirm');
   assert.equal(data.scenes.handover.runs, 3);
+  assert.equal(data.scenes.handover.finishes, 2, 'a stop half way is not a finish');
+  // A scene stopped half way and then finished once is not 「다시 한 장면」.
+  const once = createWorkdaySession(careHome);
+  playScene(once, 'arrival'); once.startScene('handover'); once.leave(); playScene(once, 'handover', { handover: 'confirm' });
+  const onceLines = recordLines(buildRecord(careHome, once.serialize(), { serial: 'PW-20261130-AAAAAA', date: new Date(2026, 10, 30) }));
+  assert.ok(!JSON.stringify(onceLines).includes('다시 한 장면'), JSON.stringify(onceLines.sections[0]));
+  // Without any film there was nothing to hear again, so the sheet does not count replays.
+  const silent = recordLines(buildRecord(careHome, once.serialize(), { serial: 'PW-20261130-AAAAAA', date: new Date(2026, 10, 30), films: false }));
+  assert.ok(!JSON.stringify(silent).includes('다시 듣기') && JSON.stringify(silent).includes('힌트 0번'));
   assert.equal(session.snapshot().progress.anyDone, true);
   assert.equal(session.snapshot().progress.allDone, false);
 });
@@ -372,13 +403,13 @@ test('the record lists what happened and never a score, grade or recommendation'
   assert.deepEqual(record.korean.turns, ['자기소개 차례 · 말로 답함', '비틀거리신 어르신께 말을 건네는 차례 · 말로 답함']);
   assert.deepEqual(record.choices.map((choice) => choice.scene), ['아침 인계', '아침 인사', '아침 식사', '오후', '저녁 인계']);
   // A choice is written in the option's own words and how the turn was answered — not as a claim about what was said.
-  assert.deepEqual(record.choices.map((choice) => choice.text), ['모르는 말을 되묻는다', '까닭을 여쭙고 조금 뒤에 다시 온다', '스스로 드시게 곁에서 기다린다', '마음을 받아 주고 이야기를 듣는다', '비틀거리신 일을 보고에 넣었다']);
+  assert.deepEqual(record.choices.map((choice) => choice.text), ['모르는 말을 되묻는다', '까닭을 여쭙고 조금 뒤에 다시 온다', '스스로 드시게 곁에서 기다린다', '마음을 받아 주고 이야기를 듣는다', '비틀거리신 일을 보고에 넣는다']);
   assert.equal(record.choices[1].reason, '어르신이 피곤해 보이셨다');
   assert.equal(record.reflection.decision, '아직 모르겠다');
   assert.deepEqual(record.ladder, [{ label: 'TOPIK 급수와 성적 날짜', value: '3급, 2026년 10월' }]);
   const lines = recordLines(record);
   assert.equal(lines.sections.length, 5);
-  assert.equal(lines.heading, '체험 기록 — 요양원 첫 출근');
+  assert.equal(lines.heading, '체험 기록 — 요양보호사의 하루');
   assert.equal(lines.sections[1].rows[0], '말로 답한 것 7번');
   assert.match(lines.serial, /^기록 번호\(본인 기기에서 만듦\) PW-/);
   const everything = JSON.stringify(lines);
@@ -456,14 +487,14 @@ test('a second occupation runs on data alone', async () => {
   playScene(session, 'gate', { order: 'ask' });
   playScene(session, 'wrap', { report: ['jam'] });
   const lines = recordLines(buildRecord(job, session.serialize(), { serial: 'PW-20261130-AAAAAA', date: new Date(2026, 10, 30) }));
-  assert.deepEqual(lines.sections[2].rows, ['입구: 한 번 더 말해 달라고 한다 · 글로 답함', '보고: 기계가 멈춘 일을 보고에 넣었다 · 글로 답함']);
+  assert.deepEqual(lines.sections[2].rows, ['입구: 한 번 더 말해 달라고 한다 · 글로 답함', '보고: 기계가 멈춘 일을 보고에 넣는다 · 글로 답함']);
   // A condition that does not match removes the step: asking again skips the check-back line.
   const asked = createWorkdaySession(job);
   asked.startScene('gate'); asked.advance(); asked.finishTour(); asked.choose('ask');
   assert.equal(asked.submitSay({ mode: 'example' }).line.clip, 'lead-again');
   assert.equal(asked.advance().phase, 'scene-end');
   // Nothing in the engine or the pages names an occupation.
-  const sources = ['engine/job-schema.mjs', 'engine/session.mjs', 'engine/record.mjs', 'engine/record-sheet.mjs', 'engine/pdf.mjs', 'engine/hud.mjs', 'engine/place-stage.mjs', 'engine/comfort.mjs', 'play.mjs', 'play.html', 'hub.mjs'];
+  const sources = ['engine/job-schema.mjs', 'engine/session.mjs', 'engine/record.mjs', 'engine/record-sheet.mjs', 'engine/pdf.mjs', 'engine/hud.mjs', 'engine/place-stage.mjs', 'engine/comfort.mjs', 'play.mjs', 'play.html', 'hub.mjs', 'index.html'];
   for (const file of sources) assert.ok(!/어르신|요양|돌봄|간호|공장/.test(await readFile(path.join(WORKDAY, file), 'utf8')), `${file} holds no occupation word`);
 });
 
@@ -524,6 +555,38 @@ test('only files the catalogue points at are served, and the styles keep still',
     for (const word of FORBIDDEN_RECORD_WORDS.filter((item) => !['점수', '등급'].includes(item))) assert.ok(!source.includes(word), `${file} avoids 「${word}」`);
   }
   assert.ok(jobTexts(careHome).length > 200);
+  assert.ok(!jobTexts(careHome).some((value) => /^[a-z0-9-]+$/.test(value) && ['senior', 'office', 'room'].includes(value)), 'plain ids stay out of the text list');
+});
+
+test('a job still being made, or one that fails the check, is not served', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'workday-jobs-'));
+  try {
+    const jobs = path.join(root, 'workday', 'jobs');
+    const put = async (id, job) => { await mkdir(path.join(jobs, id), { recursive: true }); await writeFile(path.join(jobs, id, 'job.json'), JSON.stringify(job)); };
+    const broken = fresh(); broken.closing.lead = '오늘 점수는 합격입니다.';
+    await put('open-ok', { ...fresh(), id: 'open-ok' });
+    await put('making', { ...fresh(), id: 'making' });
+    await put('open-broken', { ...broken, id: 'open-broken' });
+    await writeFile(path.join(jobs, 'index.json'), JSON.stringify({ jobs: [
+      { id: 'open-ok', status: 'open' }, { id: 'making', status: 'making' }, { id: 'open-broken', status: 'open' },
+    ] }));
+    assert.deepEqual(await workdayJobFiles(root), ['workday/jobs/open-ok/job.json']);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('the desk panel cuts by whole letters and the cut row with its mark still fits', () => {
+  const graphemes = (value) => Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(value), (part) => part.segment);
+  const context = { measureText: (value) => ({ width: graphemes(value).length * 10 }) };
+  // Vietnamese written with combining marks, and an emoji made of two code units.
+  const text = 'Cụ ăn chậm lắm, em chờ cụ nhé 🙂 rồi báo cho chị hướng dẫn.'.normalize('NFD');
+  const rows = hudRows(context, text, 120, 2);
+  assert.equal(rows.length, 2);
+  assert.ok(rows.every((row) => context.measureText(row).width <= 120), rows.join(' | '));
+  assert.ok(rows[1].endsWith('…'));
+  for (const row of rows) assert.ok(!/^\p{M}/u.test(row), 'no row starts with a lone combining mark');
+  assert.ok(text.startsWith(rows[0] + rows[1].slice(0, -1)), 'rows keep the text in order');
+  assert.deepEqual(hudRows(context, '짧은 글', 120, 2), ['짧은 글']);
+  assert.deepEqual(hudRows(context, '첫 줄\n둘째 줄', 120, 2), ['첫 줄', '둘째 줄']);
 });
 
 test('the publish bundle holds only approved workday files, with the page policy written in', async () => {

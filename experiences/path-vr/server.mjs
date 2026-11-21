@@ -5,7 +5,7 @@ import {readFile,stat,readdir,realpath} from 'node:fs/promises';
 import {createReadStream} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
-import {jobFiles} from './workday/engine/job-schema.mjs';
+import {jobFiles,validateJob} from './workday/engine/job-schema.mjs';
 const ROOT=fileURLToPath(new URL('.',import.meta.url));
 const PUBLIC=['index.html','style.css','app.mjs','model.mjs','scene.mjs','xr.mjs','vendor/three.module.js','vendor/three.core.js','vendor/engine.js','vendor/trail.js','vendor/personalization.js',...['SUIT.woff2','InterTight.woff2','DMMono.woff2','logo-path.webp','logo-path-320.webp','path-vr-felt.webp','path-vr-felt-480.webp','PathSans-ui.woff2','PathSans-rest.woff2','slab-cream-long.webp','slab-blush-long.webp','slab-coral-long.webp','badge-check.webp','wide-cream.webp','wide-lapis.webp','wide-butter.webp'].map(n=>'assets/'+n)];
 const INTERVIEW_PUBLIC=['index.html','style.css','room.mjs','app.mjs','dialogue.mjs','content.mjs','actors.mjs','audio.mjs','voice.mjs','audio-worklet.js','credits.json','film-manifest.json','film-player.mjs','film/index.html','film/style.css','film/preview.mjs','film/compare.html','film/compare.css','film/compare.mjs','film/nanobanana.html','film/rehearsal.html','film/rehearsal.css','film/rehearsal.mjs','film/rehearsal-session.mjs','film/answer-followup.mjs','film/listening-sequence.mjs','film/strict-vr.mjs','film/room-space.mjs','film/speech-turn.mjs','film/strict-manifest.json'].map(n=>'interview/'+n);
@@ -17,10 +17,14 @@ export async function workdayJobFiles(root=ROOT){
   const out=[],jobs=path.join(root,'workday','jobs'),json=async file=>JSON.parse(await readFile(file,'utf8'));
   let index;try{index=await json(path.join(jobs,'index.json'));}catch{return out;}
   for(const entry of Array.isArray(index?.jobs)?index.jobs:[]){
-    if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry?.id||''))continue;
+    // Only an open job is public, and only when its scene table passes the same check the page runs.
+    // A job still being made keeps its files off the list even when they sit in the folder.
+    if(entry?.status!=='open'||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry?.id||''))continue;
     let job,manifest=null;try{job=await json(path.join(jobs,entry.id,'job.json'));}catch{continue;}
+    try{manifest=await json(path.join(jobs,entry.id,'manifest.json'));}catch{}
+    if(!validateJob(job,manifest).ok)continue;
     out.push(`workday/jobs/${entry.id}/job.json`);
-    try{manifest=await json(path.join(jobs,entry.id,'manifest.json'));out.push(`workday/jobs/${entry.id}/manifest.json`);}catch{}
+    if(manifest)out.push(`workday/jobs/${entry.id}/manifest.json`);
     for(const name of jobFiles(job,manifest))try{if((await stat(path.join(jobs,entry.id,name))).isFile())out.push(`workday/jobs/${entry.id}/${name}`);}catch{}
   }
   return out.sort();

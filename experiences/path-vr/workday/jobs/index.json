@@ -4,20 +4,48 @@
     {
       "id": "care-home",
       "status": "open",
-      "title": "요양원 첫 출근",
+      "title": "요양보호사의 하루",
       "role": "요양보호사",
       "minutes": 15,
       "scenes": 5,
       "poster": "care-home/places/office-senior.jpg",
       "posterAlt": "요양원 사무실 문 앞에 근무복을 입은 선배 요양보호사가 서 있다.",
-      "summary": "어르신 두 분을 맡아 하루를 보내요. 듣고, 말하고, 갈림길에서 골라요."
+      "summary": "어르신 두 분을 맡아 하루를 보내요. 건네는 말에 답하고, 갈림길에서 골라요."
     },
     {
-      "id": "factory",
+      "id": "hotel-front",
       "status": "making",
-      "title": "공장 첫 출근",
-      "role": "제조 현장",
-      "summary": "안전 표지를 읽고, 작업 지시를 듣고, 본 것을 보고해요."
+      "title": "호텔 프런트의 하루",
+      "role": "호텔 접수사무원",
+      "summary": "체크인과 체크아웃을 맡아 손님을 맞아요. 친절과 규칙 사이에서 골라요."
+    },
+    {
+      "id": "duty-free",
+      "status": "making",
+      "title": "면세점 판매의 하루",
+      "role": "면세점 판매사무원",
+      "summary": "외국인 손님에게 물건을 안내하고, 면세 규칙을 지키며 팔아요."
+    },
+    {
+      "id": "trade-office",
+      "status": "making",
+      "title": "해외영업·무역 사무의 하루",
+      "role": "해외영업·무역 사무원",
+      "summary": "회의에서 지시를 받고, 해외 거래처와 연락하고, 상사에게 보고해요."
+    },
+    {
+      "id": "medical-coordinator",
+      "status": "making",
+      "title": "의료 코디네이터의 하루",
+      "role": "의료 코디네이터",
+      "summary": "외국인 환자를 안내하고, 의사와 환자 사이의 말을 이어요."
+    },
+    {
+      "id": "customer-care",
+      "status": "making",
+      "title": "고객상담의 하루",
+      "role": "고객상담 사무원",
+      "summary": "전화와 채팅으로 고객의 문의를 듣고, 정해진 대로 답해요."
     }
   ]
 }

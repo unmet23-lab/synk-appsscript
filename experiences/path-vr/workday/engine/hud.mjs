@@ -30,17 +30,32 @@ export function pickHudButton(uv, buttons = []) {
   return hit && hit.enabled !== false ? hit.id : null;
 }
 
-function rows(context, text, maxWidth, maxRows) {
-  const out = []; let row = '';
-  for (const character of String(text || '')) {
-    if (character === '\n' || (row && context.measureText(row + character).width > maxWidth)) { out.push(row); row = character === '\n' ? '' : character; if (out.length === maxRows) break; continue; }
-    row += character;
+// Split by what a reader sees as one letter, so combining marks and emoji never break apart.
+const letters = typeof Intl !== 'undefined' && Intl.Segmenter
+  ? (value) => Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(value), (part) => part.segment)
+  : (value) => Array.from(value);
+
+/** Rows of whole letters that each fit maxWidth. A text that does not fit ends with … and that row fits too. */
+export function hudRows(context, text, maxWidth, maxRows) {
+  const source = letters(String(text ?? '')), out = [];
+  let row = '', index = 0;
+  for (; index < source.length && out.length < maxRows; index++) {
+    const letter = source[index];
+    if (letter === '\n') { out.push(row); row = ''; continue; }
+    // A row always takes at least one letter, so a very wide letter cannot stop the loop.
+    if (row && context.measureText(row + letter).width > maxWidth) { out.push(row); row = ''; index--; continue; }
+    row += letter;
   }
   if (out.length < maxRows && row) out.push(row);
   // Mark a cut text instead of dropping its end without a sign.
-  if (out.length === maxRows && out.join('').length < String(text || '').replace(/\n/g, '').length) out[maxRows - 1] = `${out[maxRows - 1].slice(0, -1)}…`;
+  if (index < source.length && out.length) {
+    const last = letters(out[out.length - 1]);
+    while (last.length && context.measureText(`${last.join('')}…`).width > maxWidth) last.pop();
+    out[out.length - 1] = `${last.join('')}…`;
+  }
   return out;
 }
+const rows = hudRows;
 
 export function paintHud(context, view = {}) {
   const buttons = layoutHudButtons(view.buttons);
@@ -59,9 +74,9 @@ export function paintHud(context, view = {}) {
   if (view.corner) { context.textAlign = 'right'; context.fillText(String(view.corner), HUD.width - 36, 26, 420); context.textAlign = 'left'; }
   context.fillStyle = '#08090C'; context.font = `700 40px ${FONT}`;
   const titleRows = rows(context, view.title, 1464, 3);
-  titleRows.forEach((row, index) => context.fillText(row, 36, 78 + index * 52));
+  titleRows.forEach((row, index) => context.fillText(row, 36, 78 + index * 52, 1464));
   context.fillStyle = '#4A4E55'; context.font = `500 30px ${FONT}`;
-  rows(context, view.body, 1464, Math.max(1, 4 - titleRows.length)).forEach((row, index) => context.fillText(row, 36, 86 + titleRows.length * 52 + index * 40));
+  rows(context, view.body, 1464, Math.max(1, 4 - titleRows.length)).forEach((row, index) => context.fillText(row, 36, 86 + titleRows.length * 52 + index * 40, 1464));
   for (const button of buttons) {
     const system = button.row === 'system', off = button.enabled === false;
     const radius = system ? button.h / 2 : 26;
@@ -75,7 +90,7 @@ export function paintHud(context, view = {}) {
     context.font = `700 ${system ? 28 : 32}px ${FONT}`; context.textAlign = 'center';
     const labelRows = rows(context, button.label, button.w - 44, system || button.h < 84 ? 1 : 2);
     const lineHeight = system ? 34 : 40, top = button.y + (button.h - labelRows.length * lineHeight) / 2 + 3;
-    labelRows.forEach((row, index) => context.fillText(row, button.x + button.w / 2, top + index * lineHeight));
+    labelRows.forEach((row, index) => context.fillText(row, button.x + button.w / 2, top + index * lineHeight, button.w - 44));
     context.textAlign = 'left';
   }
 }

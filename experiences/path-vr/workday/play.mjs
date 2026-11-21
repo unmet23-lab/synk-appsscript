@@ -31,7 +31,7 @@ let mode = 'text', hintLanguage = '', closingForm = { name: '', hard: '', decisi
 let voice = null, preparingVoice = false, checkingMic = false, microphoneReady = false, micActive = false, micLevel = 0, micPeak = 0, heard = '', micNote = '';
 let epoch = 0, busy = false, moving = false, lineDone = false, replaying = false, hintShown = false, shownSerial = -1, lastTick = performance.now();
 let fade = { from: 0, to: 0, start: 0 }, vr = null, stageRef = null, vrChecked = false, vrSupported = false, vrEnteredAt = 0, vrScenes = 0, questFirstVisit = false, usedQuest = false;
-let filmOff = false, unheard = false, placeNote = '', loadError = '';
+let filmOff = false, unheard = false, placeNote = '', loadError = '', held = false, transcribing = false, notePage = { key: '', index: 0 };
 // A spoken turn ends on quiet after speech (about two seconds), without waiting for recognised words.
 const silence = createSilenceGate({ quietMs: 1800 });
 let gateState = 'waiting';
@@ -48,10 +48,16 @@ function save() {
 }
 function clearSaved() { try { const store = readStore(); delete store[job.id]; sessionStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch { /* nothing to clear */ } }
 function wipe() {
+  if (!job || !session) return;
   if (!confirm('이 기기에 남은 진행과 고른 것, 맺음에 쓴 글을 지울까요?')) return;
-  ++epoch; busy = false; stopMic(); film?.stop();
+  ++epoch; busy = false; moving = false; held = false; replaying = false; placeNote = '';
+  stopMic(); sayPointName(null); film?.stop();
   clearSaved(); closingForm = { name: '', hard: '', decision: '', reasons: {}, ladder: {}, serial: '' }; usedQuest = false;
-  session.reset(); showPlace(job.scenes[0].place); shownSerial = -1; render();
+  // A shared device: the next person is treated as a first headset visit again.
+  try { localStorage.removeItem(QUEST_SEEN_KEY); } catch { /* nothing kept */ }
+  session.reset(); showPlace(job.scenes[0].place); shownSerial = -1;
+  fade = { from: 0, to: 0, start: 0 }; $('veil').classList.remove('on');
+  render();
 }
 // One bit kept on the device: whether a headset was ever used here (a first visit is one scene).
 const questSeen = () => { try { return localStorage.getItem(QUEST_SEEN_KEY) === '1'; } catch { return false; } };
@@ -67,11 +73,11 @@ async function boot() {
   try {
     const index = await getJson(new URL('./jobs/index.json', import.meta.url));
     const entry = index.jobs.find((item) => item.id === jobId && item.status === 'open') || (!jobId && index.jobs.find((item) => item.status === 'open'));
-    if (!entry) throw new Error('열려 있는 직업을 찾지 못했어요.');
+    if (!entry) throw Object.assign(new Error('열려 있는 직업을 찾지 못했어요. 직업 고르기에서 다시 골라 주세요.'), { shown: true });
     jobBase = new URL(`./jobs/${entry.id}/`, import.meta.url);
     const [table, clips] = await Promise.all([getJson(new URL('job.json', jobBase)), getJson(new URL('manifest.json', jobBase)).catch(() => null)]);
     const checked = validateJob(table, clips);
-    if (!checked.ok) { console.error('장면표 확인 실패', checked.errors); throw new Error('이 직업의 장면표에 문제가 있어 열지 못했어요.'); }
+    if (!checked.ok) { console.error('장면표 확인 실패', checked.errors); throw Object.assign(new Error('이 직업의 장면표에 문제가 있어 열지 못했어요.'), { shown: true }); }
     job = table;
     await prepareManifest(clips);
     const saved = readStore()[job.id] || {};
@@ -83,7 +89,10 @@ async function boot() {
     fillStatic();
     showPlace(job.scenes[0].place);
     initVR();
-  } catch (error) { loadError = error?.message || '일터를 불러오지 못했어요.'; }
+  } catch (error) {
+    console.error('일터 불러오기 실패', error);
+    loadError = error?.shown ? error.message : '일터를 불러오지 못했어요. 인터넷 연결을 확인하고 새로 고쳐 주세요.';
+  }
   render();
 }
 /** Film sources are written relative to the job folder; the player wants addresses it can load
@@ -127,12 +136,18 @@ function ensureFilm() {
 /** A clip that fails to load or play must not stop the day: this run goes on with photographs and
  * captions, and the learner can ask for the films again. The player's own messages are not shown. */
 function filmFailed() {
-  filmOff = true; replaying = false;
+  filmOff = true; replaying = false; film?.stop();
   const state = session?.snapshot();
   if (state?.phase === 'line' && !lineDone) lineDone = true;
   render();
 }
-function retryFilm() { filmOff = false; film?.dispose(); film = null; render(); }
+function retryFilm() {
+  filmOff = false; film?.dispose(); film = null;
+  const state = session.snapshot();
+  if (state.phase === 'line' && !state.paused && canPlay(state.line.clip)) void playLine(state, epoch).catch(report);
+  else if (state.phase === 'say' && !state.paused) void startListening(state);
+  render();
+}
 function clipEnded(id) {
   const state = session.snapshot();
   if (replaying) { replaying = false; if (state.phase === 'say') void startListening(state); else if (state.phase === 'line') { lineDone = true; render(); } return; }
@@ -171,6 +186,7 @@ async function movePlace(state, token) {
   shownSerial = state.placeSerial;
   const veil = $('veil'), stepMs = reducedMotion ? 0 : FADE_MS;
   $('veil-caption').textContent = state.placeCaption || '';
+  placeNote = '';
   veil.classList.add('on'); fadeTo(1);
   await wait(stepMs); guard(token);
   film?.stop();
@@ -198,9 +214,13 @@ async function drive(token = epoch) {
     try { await movePlace(state, token); } finally { if (current(token)) { busy = false; moving = false; } }
   }
   state = session.snapshot();
+  // Paused while the place was changing: nothing plays until 「이어서 하기」 starts this step again.
+  if (state.paused) { held = true; save(); render(); return; }
   if (state.phase === 'line') await playLine(state, token);
   else {
     hintShown = false;
+    // A tour or a note shows the photograph: no clip stays on the stage from the line before.
+    if (state.phase === 'tour' || state.phase === 'note') film?.stop();
     if (state.phase === 'say') { heard = ''; micNote = ''; unheard = false; $('answer').value = ''; void startListening(state); }
     if (state.phase === 'scene-end') { film?.pause(); const following = nextOpenScene(state); if (following) void preloadFor(following.id); }
     if (state.phase === 'closing') { film?.stop(); fillClosing(); }
@@ -229,7 +249,7 @@ function startFrom(sceneId) {
   const token = ++epoch; stopMic();
   const state = session.startScene(sceneId);
   if (state.scene?.id !== sceneId) { render(); return; }
-  if (vr?.active) { usedQuest = true; vrScenes++; }
+  if (vr?.active) { usedQuest = true; vrScenes++; markQuestSeen(); }
   void preloadFor(sceneId);
   void drive(token).catch(report);
 }
@@ -284,10 +304,11 @@ async function toggleMic() {
     busy = false; render(); return;
   }
   const spoke = silence.heardSpeech();
-  micActive = false; silence.reset(); gateState = 'waiting'; busy = true; render();
+  micActive = false; silence.reset(); gateState = 'waiting'; busy = true; transcribing = true; render();
   let text = '';
   try { text = String((await getVoice().stop()).text || '').trim(); } catch (error) { if (current(token)) micNote = voiceError(error).message; }
-  if (!current(token)) return;
+  transcribing = false;
+  if (!current(token)) { render(); return; }
   busy = false; heard = text;
   if (session.canSubmit('voice', text)) return submit('voice', text);
   // Sound was there but no words came out of the recogniser: that is the device's miss, not the
@@ -336,6 +357,8 @@ async function action(name) {
     if (kind === 'go') { const token = ++epoch; session.goTo(id); hintShown = false; return void drive(token).catch(report); }
     if (kind === 'point') { session.hear(id); hintShown = false; sayPointName(session.snapshot().tour?.openPoint); save(); return render(); }
     if (kind === 'close-point') { session.closePoint(); return render(); }
+    if (kind === 'note-next') { notePage = { ...notePage, index: notePage.index + 1 }; return render(); }
+    if (kind === 'note-prev') { notePage = { ...notePage, index: Math.max(0, notePage.index - 1) }; return render(); }
   } catch (error) { report(error); }
 }
 function nextScene() {
@@ -381,11 +404,12 @@ function pause() {
 function resume() {
   if (!session.snapshot().paused) return;
   session.resume(); lastTick = performance.now();
+  if (held) { held = false; void drive(epoch).catch(report); render(); return; }
   void film?.resume().catch(() => { lineDone = true; render(); });
   render();
 }
 function leave() {
-  ++epoch; busy = false; moving = false; stopMic(); sayPointName(null); film?.stop(); replaying = false;
+  ++epoch; busy = false; moving = false; held = false; stopMic(); sayPointName(null); film?.stop(); replaying = false;
   session.leave(); save();
   if (vr?.active) void vr.exit();
   showPlace(job.scenes[0].place); shownSerial = -1; fade = { from: 0, to: 0, start: 0 }; $('veil').classList.remove('on');
@@ -394,6 +418,11 @@ function leave() {
 
 /* ---------- rendering ---------- */
 const hintOf = (value) => (hintLanguage && value?.[hintLanguage]) || '';
+/** 「바리스타는」, 「제조 현장은」: 은 after a final consonant, 는 otherwise (and for a name not ending in Hangul). */
+function withTopic(word) {
+  const last = String(word).trim().slice(-1), code = last.charCodeAt(0) - 0xAC00;
+  return `${word}${code >= 0 && code < 11172 && code % 28 ? '은' : '는'}`;
+}
 function setText(id, text) { const node = $(id); if (node.textContent !== text) node.textContent = text; }
 function renderHeard() { $('heard').textContent = heard ? `들린 말: ${heard}` : ''; }
 function fillStatic() {
@@ -416,7 +445,10 @@ function button(label, onClick, { pressed, className } = {}) {
 }
 function renderList(container, key, build) {
   if (container.dataset.key === key) return;
+  // A rebuilt list keeps keyboard focus on the button in the same place.
+  const focused = container.contains(document.activeElement) ? [...container.querySelectorAll('button')].indexOf(document.activeElement) : -1;
   container.dataset.key = key; container.replaceChildren(...build());
+  if (focused >= 0) container.querySelectorAll('button')[focused]?.focus({ preventScroll: true });
 }
 function render() {
   const body = document.body;
@@ -430,10 +462,10 @@ function render() {
   body.dataset.phase = phase; body.dataset.mode = mode; body.dataset.mic = micActive ? 'on' : 'off';
   body.classList.toggle('in-session', active); body.classList.toggle('in-closing', state.phase === 'closing');
   // progress slots
-  renderList($('slots'), JSON.stringify([state.progress.scenes, state.scene?.id, state.phase]), () => [...state.progress.scenes.map((scene, index) => {
+  renderList($('slots'), JSON.stringify([state.progress.scenes, state.scene?.id, state.phase, checkingMic]), () => [...state.progress.scenes.map((scene, index) => {
     const waits = scene.waitsFor.length ? `「${scene.waitsFor.join('」, 「')}」 장면을 마치면 열려요` : '';
-    const item = document.createElement('li'), node = button(`${index + 1} ${scene.title}`, () => { if (!active) startFrom(scene.id); });
-    node.disabled = active || !!waits; if (scene.done) item.classList.add('done'); if (waits) item.classList.add('waits'); if (state.scene?.id === scene.id) item.classList.add('now');
+    const item = document.createElement('li'), node = button(`${index + 1} ${scene.title}`, () => { if (!active && !checkingMic) startFrom(scene.id); });
+    node.disabled = active || !!waits || checkingMic; if (scene.done) item.classList.add('done'); if (waits) item.classList.add('waits'); if (state.scene?.id === scene.id) item.classList.add('now');
     node.setAttribute('aria-label', `장면 ${index + 1} ${scene.title}${scene.done ? ' · 마침' : ''}${waits ? ` · ${waits}` : ''}`);
     if (waits) node.title = waits;
     item.append(node); return item;
@@ -459,7 +491,9 @@ function render() {
 function renderSetup(state) {
   const started = state.progress.anyDone, upNext = state.progress.scenes.find(openScene);
   setText('status', state.progress.allDone ? '장면을 모두 마쳤어요. 맺음에서 체험 기록을 받을 수 있어요.' : started ? '하던 곳부터 이어서 할 수 있어요. 다른 사람이 하던 것이면 「처음부터 새로 하기」를 눌러요.' : '의자에 앉아서 시작해요. 장면마다 2~3분쯤 걸려요.');
-  $('start').disabled = preparingVoice || checkingMic;
+  // The voice model may still be downloading: answering in writing can start at once, as the hint says.
+  $('start').disabled = checkingMic || (preparingVoice && mode === 'voice');
+  $('preview').disabled = checkingMic;
   // With every scene finished the main button leads to the closing; a scene is run again from its slot.
   setText('start', !upNext ? '맺음과 체험 기록 보기' : started ? `이어서 하기 · ${upNext.title}` : '시작');
   $('restart').hidden = !started;
@@ -469,17 +503,17 @@ function renderSetup(state) {
   setText('microphone-check', checkingMic ? '듣고 있어요…' : microphoneReady ? '마이크 다시 확인' : '2. 마이크 확인');
   $('voice-hint').hidden = mode !== 'voice' || !!voice?.ready;
   $('mic-meter').hidden = !checkingMic;
-  $('open-closing').hidden = !started || !upNext;
+  $('open-closing').hidden = !started || !upNext; $('open-closing').disabled = checkingMic;
   // The headset stage is built only on a headset browser, or after the learner asks for the check.
   $('vr').disabled = vrChecked ? (!vrSupported || mode !== 'voice' || !voice?.ready || !microphoneReady || !!vr?.active) : false;
   setText('vr', !vrChecked ? 'VR 기기인지 확인' : vrSupported ? 'Quest로 들어가기' : 'Quest에서 VR 입장');
-  for (const input of document.querySelectorAll('input[name="mode"]')) input.disabled = preparingVoice || checkingMic;
+  for (const input of document.querySelectorAll('input[name="mode"]')) { input.disabled = checkingMic; input.checked = input.value === mode; }
 }
 function renderPlay(state) {
   const phase = state.phase, say = state.say, tour = state.tour;
   const status = state.paused ? '잠시 멈췄어요. 마이크도 껐어요.'
-    : phase === 'line' ? (state.line.action ? '지금 일어난 일을 봐요.' : lineDone ? '다 들었으면 「다음」을 눌러요.' : `${state.line.name}의 말을 들어요.`)
-    : phase === 'say' ? (micActive ? '듣고 있어요. 말을 마치면 알아서 넘어가요.' : say.kind === 'fork' && !say.chosen ? '어떻게 할지 먼저 골라요.' : say.kind === 'report' && !say.ready ? '보고할 일을 골라요.' : mode === 'voice' ? '「말하기」를 누르고 한국어로 말해요.' : '한국어로 쓰고 「답하기」를 눌러요.')
+    : phase === 'line' ? (state.line.action ? '지금 일어난 일을 봐요.' : !canPlay(state.line.clip) ? '자막을 읽고 「다음」을 눌러요.' : lineDone ? '다 들었으면 「다음」을 눌러요.' : `${state.line.name}의 말을 들어요.`)
+    : phase === 'say' ? (micActive ? '듣고 있어요. 말을 마치면 알아서 넘어가요.' : transcribing ? '말한 것을 글로 바꾸고 있어요. 잠시만 기다려요.' : say.kind === 'fork' && !say.chosen ? '어떻게 할지 먼저 골라요.' : say.kind === 'report' && !say.ready ? '보고할 일을 골라요.' : mode === 'voice' ? '「말하기」를 누르고 한국어로 말해요.' : '한국어로 쓰고 「답하기」를 눌러요.')
     : phase === 'tour' ? '둘러보는 중이에요. 점을 누르면 이름이 나와요.'
     : phase === 'note' ? '읽고 「다음」을 눌러요.'
     : '한 장면을 마쳤어요.';
@@ -528,27 +562,64 @@ function renderPlay(state) {
   const primary = $('primary');
   const primaryLabel = state.paused ? '이어서 하기'
     : phase === 'line' ? '다음'
-    : phase === 'say' ? (mode === 'voice' ? (micActive ? '말 끝내기' : '말하기') : '답하기')
+    : phase === 'say' ? (mode === 'voice' ? (micActive ? '말 끝내기' : transcribing ? '글로 바꾸는 중' : '말하기') : '답하기')
     : phase === 'tour' ? (tour.openPoint?.note ? '닫기' : '둘러보기 마치기')
     : phase === 'note' ? '다음'
     : nextUp ? `다음 장면 · ${nextUp.title}` : '맺음 보기';
   setText('primary', primaryLabel);
   primary.hidden = phase === 'line' && !lineDone && !state.paused;
   primary.disabled = busy && !state.paused || phase === 'say' && !state.paused && (!say.ready || mode === 'text' && !session.canSubmit('text', $('answer').value));
-  const hintAvailable = !!hintLanguage && !state.paused && (phase === 'line' ? !!hintOf(state.line.hint) : phase === 'say' ? !!hintOf(say.hint) : phase === 'tour' ? !!hintOf(tour.openPoint ? (tour.openPoint.note?.hint || tour.openPoint.hint) : tour.hint) : phase === 'note' ? !!hintOf(note?.hint) : false);
+  const hintAvailable = hintAvailableFor(state);
   $('hint-button').hidden = !hintAvailable || hintShown;
-  $('replay').hidden = state.paused || !['line', 'say'].includes(phase) || !state.line || state.line.action || micActive;
+  // 「다시 듣기」 only when there is a film to hear again; with photographs and captions there is nothing to replay.
+  $('replay').hidden = state.paused || !['line', 'say'].includes(phase) || !state.line || state.line.action || micActive || !canPlay(state.line.clip);
   $('example-button').hidden = state.paused || phase !== 'say' || !say.example || say.exampleOpen;
   setText('example-button', say?.kind === 'fork' ? '이 선택의 말 보기' : '예시 문장 보기');
   $('use-example').hidden = state.paused || phase !== 'say' || !say.ready || micActive || !(say.exampleOpen || say.kind === 'report');
   setText('use-example', say?.kind === 'report' ? '말하지 않고 보고하기' : say?.kind === 'fork' ? '이 말 그대로 답하기' : '예시 문장으로 답하기');
   $('skip-unheard').hidden = state.paused || phase !== 'say' || !unheard || micActive;
   $('finish-here').hidden = phase !== 'scene-end' || !nextUp;
-  $('pause').hidden = state.paused || phase === 'scene-end';
+  $('pause').hidden = state.paused || phase === 'scene-end' || moving;
   setText('leave', phase === 'scene-end' ? '시작 화면으로' : '그만하기');
 }
+/** Whether this step has a hint in the chosen language: the page and the desk card show the button on the same rule. */
+function hintAvailableFor(state) {
+  if (!hintLanguage || state.paused) return false;
+  const say = state.say, tour = state.tour, chosen = say?.options?.find((item) => item.id === say.chosen);
+  if (state.phase === 'line') return !!hintOf(state.line?.hint);
+  if (state.phase === 'say') return !!(hintOf(say.hint) || hintOf(chosen?.hint) || (say.kind === 'report' && say.items.some((item) => item.selected && hintOf(item.hint))));
+  if (state.phase === 'tour') return !!hintOf(tour.openPoint ? (tour.openPoint.note?.hint || tour.openPoint.hint) : tour.hint);
+  if (state.phase === 'note') return !!hintOf(state.note?.hint);
+  return false;
+}
+/** A note's words split into pages that fit the desk card's three body rows. */
+const NOTE_PAGE_CHARS = 120;
+function notePages(note, text) {
+  const pieces = text ? [text] : [note.lead, ...(note.rows ? note.rows.map(([time, what]) => `${time}  ${what}`) : note.body || [])].filter(Boolean);
+  const sentences = pieces.flatMap((piece) => piece.length <= NOTE_PAGE_CHARS ? [piece] : (piece.match(/[^.?!。]+[.?!。]?\s*/gu) || [piece]).map((part) => part.trim()).filter(Boolean));
+  const pages = [];
+  for (const sentence of sentences) {
+    const last = pages.at(-1);
+    if (last && last.length + sentence.length + 1 <= NOTE_PAGE_CHARS && (!note.rows || last.split('\n').length < 3)) pages[pages.length - 1] = `${last}${note.rows ? '\n' : ' '}${sentence}`;
+    else pages.push(sentence);
+  }
+  return pages.length ? pages : [''];
+}
+function notePaged(view, note, doneAction, doneLabel) {
+  const key = `${note.id}|${hintShown ? hintLanguage : ''}`;
+  if (notePage.key !== key) notePage = { key, index: 0 };
+  const pages = notePages(note, hintShown ? hintOf(note.hint) : '');
+  const index = Math.min(notePage.index, pages.length - 1);
+  view.status = pages.length > 1 ? `읽기 · ${index + 1}/${pages.length}쪽` : '읽기';
+  view.title = note.title; view.body = pages[index];
+  const main = (id, label, extra = {}) => view.buttons.push({ id, label, row: 'main', ...extra });
+  if (index > 0) main('note-prev', '앞 쪽');
+  if (index < pages.length - 1) main('note-next', '다음 쪽', { primary: true });
+  else main(doneAction, doneLabel, { primary: true });
+}
 function renderPoints(state) {
-  const tour = state.phase === 'tour' && !state.paused ? state.tour : null;
+  // The next place's points appear only after the dark, never over the photograph being left.
+  const tour = state.phase === 'tour' && !state.paused && !moving ? state.tour : null;
   const points = tour ? tour.points : [];
   renderList($('points'), JSON.stringify([points, tour?.openPoint?.id, tour?.current]), () => points.map((point) => {
     const node = button('', () => void action(`point:${point.id}`), { className: 'point' });
@@ -556,6 +627,7 @@ function renderPoints(state) {
     node.setAttribute('aria-label', point.heard ? point.label : '이름 보기');
     if (point.x >= 0.7) node.classList.add('left');
     if (point.heard || tour.openPoint?.id === point.id) { node.classList.add('named'); const tag = document.createElement('span'); tag.textContent = point.label; node.append(tag); }
+    node.setAttribute('aria-expanded', String(tour.openPoint?.id === point.id));
     if (tour.openPoint?.id === point.id) node.classList.add('open');
     return node;
   }));
@@ -570,7 +642,7 @@ function openClosing() {
 }
 function currentRecord() {
   if (!closingForm.serial) { const bytes = new Uint8Array(6); crypto.getRandomValues(bytes); closingForm.serial = recordSerial(new Date(), bytes); }
-  return buildRecord(job, session.serialize(), { ...closingForm, view: usedQuest ? 'quest' : 'screen', date: new Date(), serial: closingForm.serial });
+  return buildRecord(job, session.serialize(), { ...closingForm, view: usedQuest ? 'quest' : 'screen', date: new Date(), serial: closingForm.serial, films: readyClips.size > 0 });
 }
 function field(labelText, input, helpText) {
   const wrap = document.createElement('div'); wrap.className = 'field';
@@ -583,20 +655,22 @@ function fillClosing() {
   const closing = job.closing, data = session.serialize();
   setText('closing-lead', closing.lead);
   const principles = new Map(closing.principles.map((item) => [item.id, item]));
-  $('forks').replaceChildren(...closing.forks.filter((fork) => data.forks[fork.id]).map((fork) => {
+  setText('closing-title', session.snapshot().progress.allDone ? '오늘 하루를 마쳤어요.' : '여기까지 한 것을 돌아봐요.');
+  // Only forks of finished scenes, the same rule as the record below.
+  $('forks').replaceChildren(...closing.forks.filter((fork) => data.forks[fork.id] && data.scenes?.[data.forkScene?.[fork.id]]?.done === true).map((fork) => {
     const principle = principles.get(fork.principle), row = document.createElement('div'); row.className = 'fork';
     const scene = Object.assign(document.createElement('p'), { className: 'fork-scene', textContent: fork.scene });
     const mine = document.createElement('div'); mine.className = 'fork-mine';
     mine.append(Object.assign(document.createElement('span'), { textContent: '오늘 나는' }), Object.assign(document.createElement('p'), { textContent: fork.mine[data.forks[fork.id]] }));
     const theirs = document.createElement('div'); theirs.className = 'fork-principle';
-    theirs.append(Object.assign(document.createElement('span'), { textContent: `${job.role}는` }), Object.assign(document.createElement('strong'), { textContent: principle.title }), Object.assign(document.createElement('p'), { textContent: principle.body }));
+    theirs.append(Object.assign(document.createElement('span'), { textContent: withTopic(job.role) }), Object.assign(document.createElement('strong'), { textContent: principle.title }), Object.assign(document.createElement('p'), { textContent: principle.body }));
     // One sentence the occupation would say here, shown whatever was chosen.
     const model = document.createElement('p'); model.className = 'fork-say';
     model.append(Object.assign(document.createElement('span'), { textContent: '이렇게 말해요' }), document.createTextNode(fork.say));
     theirs.append(model);
-    const reason = Object.assign(document.createElement('input'), { type: 'text', id: `reason-${fork.id}`, maxLength: RECORD_LIMITS.reason, value: closingForm.reasons[fork.id] || '', placeholder: '모국어로 써도 돼요.' });
+    const reason = Object.assign(document.createElement('input'), { type: 'text', id: `reason-${fork.id}`, maxLength: RECORD_LIMITS.reason, value: closingForm.reasons[fork.id] || '' });
     reason.addEventListener('input', () => { closingForm.reasons[fork.id] = reason.value; closingChanged(); });
-    row.append(scene, mine, theirs, field('왜 그렇게 골랐나요? (안 써도 돼요)', reason));
+    row.append(scene, mine, theirs, field('왜 그렇게 골랐나요? (안 써도 돼요)', reason, '모국어로 써도 돼요.'));
     return row;
   }));
   setText('conditions-lead', closing.conditions.lead);
@@ -717,27 +791,40 @@ function hudView(state) {
     if (lineDone) main('next', '다음', { primary: true });
   } else if (state.phase === 'say') {
     const say = state.say, chosen = say.options.find((item) => item.id === say.chosen);
+    // Speaking is the only way to answer inside the headset view: with no voice ready the card says how to answer in writing.
+    const canSpeak = mode === 'voice' && !!voice?.ready;
     view.dot = micActive ? '#E5483B' : '#4E8A3A'; view.status = micActive ? '듣고 있어요 · 말을 마치면 넘어가요' : '내 차례';
     view.title = say.prompt;
-    view.body = micNote && !micActive ? micNote : heard ? `들린 말: ${heard}` : say.exampleOpen && say.example ? `${say.kind === 'fork' ? '이 선택의 말' : '예시'}: ${say.example}` : hintShown ? [hintOf(say.hint), hintOf(chosen?.hint)].filter(Boolean).join(' ') : chosen ? `고른 것: ${chosen.label}` : '';
+    const selectedHints = say.kind === 'report' ? say.items.filter((item) => item.selected).map((item) => hintOf(item.hint)) : [];
+    const hint = hintShown ? [hintOf(say.hint), hintOf(chosen?.hint), ...selectedHints].filter(Boolean).join(' ') : '';
+    const example = say.exampleOpen && say.example ? `${say.kind === 'fork' ? '이 선택의 말' : '예시'}: ${say.example}` : '';
+    const lead = micNote && !micActive ? micNote : heard ? `들린 말: ${heard}` : !canSpeak && (say.kind !== 'fork' || say.chosen) ? '이 보기에서는 말로만 답해요. 글로 답하려면 화면으로 돌아가요.' : chosen && !example ? `고른 것: ${chosen.label}` : '';
+    view.body = [lead, example, hint].filter(Boolean).join('\n');
     if (say.kind === 'fork' && !say.chosen) for (const option of say.options) main(`opt:${option.id}`, option.label);
     else {
       if (say.kind === 'report') for (const item of say.items) main(`item:${item.id}`, item.text, { pressed: item.selected });
-      main('mic', micActive ? '말 끝내기' : '말하기', { primary: true, enabled: say.ready && !busy });
+      if (canSpeak) main('mic', micActive ? '말 끝내기' : '말하기', { primary: true, enabled: say.ready && !busy });
       if (unheard && !micActive) main('skip-unheard', '이대로 넘어가기');
       if (say.example && !say.exampleOpen) main('example', say.kind === 'fork' ? '이 선택의 말 보기' : '예시 문장 보기');
-      if (say.exampleOpen && !micActive) main('use-example', say.kind === 'fork' ? '이 말 그대로 답하기' : '예시 문장으로 답하기');
+      // The same rule as the page: a report can be sent without speaking, an example once it is open.
+      if (say.ready && !micActive && (say.exampleOpen || say.kind === 'report')) main('use-example', say.kind === 'report' ? '말하지 않고 보고하기' : say.kind === 'fork' ? '이 말 그대로 답하기' : '예시 문장으로 답하기', { primary: !canSpeak });
+      if (!canSpeak) main('exit', vr?.previewing ? '화면으로 돌아가기' : 'VR에서 나가기');
     }
   } else if (state.phase === 'tour') {
     const tour = state.tour, point = tour.openPoint;
-    view.status = `둘러보기 · ${job.places[tour.current].name}`; view.dot = '#D9A21B';
-    view.title = point ? point.label : tour.prompt;
-    view.body = point ? (hintShown ? hintOf(point.note?.hint || point.hint) : point.note ? '앞에 뜬 글을 읽어 보세요.' : '') : hintShown ? hintOf(tour.hint) : '점을 가리켜 누르면 이름이 나와요.';
-    for (const place of [{ id: tour.home, name: job.places[tour.home].name }, ...tour.board]) main(`go:${place.id}`, place.name, { pressed: tour.current === place.id });
-    main('next', '둘러보기 마치기', { primary: true });
+    view.dot = '#D9A21B';
+    if (point?.note) {
+      // A note opened from a point is read on the desk card, page by page, then closed.
+      notePaged(view, point.note, 'close-point', '닫기');
+    } else {
+      view.status = `둘러보기 · ${job.places[tour.current].name}`;
+      view.title = point ? point.label : tour.prompt;
+      view.body = point ? (hintShown ? hintOf(point.hint) : '') : hintShown ? hintOf(tour.hint) : '점을 가리켜 누르면 이름이 나와요.';
+      for (const place of [{ id: tour.home, name: job.places[tour.home].name }, ...tour.board]) main(`go:${place.id}`, place.name, { pressed: tour.current === place.id });
+      main('next', '둘러보기 마치기', { primary: true });
+    }
   } else if (state.phase === 'note') {
-    view.status = '읽기'; view.title = state.note.title; view.body = hintShown ? hintOf(state.note.hint) : '앞에 뜬 글을 읽고 「다음」을 눌러 주세요.';
-    main('next', '다음', { primary: true });
+    notePaged(view, state.note, 'next', '다음');
   } else if (state.phase === 'scene-end') {
     if (upNext && !plan.open) rest();
     else {
@@ -748,17 +835,17 @@ function hudView(state) {
     }
   }
   // While the view is dark for a place change, the card says what it is waiting for.
-  if (moving && placeNote) view.status = placeNote;
+  if (placeNote) view.status = placeNote;
   const live = ['line', 'say', 'tour', 'note'].includes(state.phase) && !state.paused;
-  if (live && state.line && !state.line.action && ['line', 'say'].includes(state.phase) && !micActive) system.push({ id: 'replay', label: '다시 듣기' });
-  if (live && hintLanguage && !hintShown) system.push({ id: 'hint', label: '힌트' });
-  if (live) system.push({ id: 'pause', label: '일시 정지' });
+  if (live && state.line && !state.line.action && ['line', 'say'].includes(state.phase) && !micActive && canPlay(state.line.clip)) system.push({ id: 'replay', label: '다시 듣기' });
+  if (live && !hintShown && hintAvailableFor(state)) system.push({ id: 'hint', label: '힌트' });
+  if (live && !moving) system.push({ id: 'pause', label: '일시 정지' });
   system.push({ id: 'exit', label: '나가기' });
   for (const item of system) view.buttons.push({ ...item, row: 'system' });
   return view;
 }
 function stageState() {
-  const state = session.snapshot(), tour = state.phase === 'tour' && !state.paused ? state.tour : null;
+  const state = session.snapshot(), tour = state.phase === 'tour' && !state.paused && !moving ? state.tour : null;
   const placeId = state.place || job.scenes[0].place, playing = film?.current?.id;
   return {
     mode, voiceReady: !!voice?.ready && microphoneReady, hud: hudView(state), fade: fadeValue(),
@@ -774,7 +861,7 @@ function initVR() {
     onExit() { vrEnteredAt = 0; pause(); render(); },
     onStatus(event) {
       $('vr-status').textContent = VR_STATUS[event.status] || VR_STATUS.unsupported;
-      if (event.status === 'active') { vrEnteredAt = performance.now(); vrScenes = 0; questFirstVisit = !questSeen(); markQuestSeen(); usedQuest = true; save(); }
+      if (event.status === 'active') { vrEnteredAt = performance.now(); vrScenes = 0; questFirstVisit = !questSeen(); }
       render();
     },
   }, { createStage: async (options) => {
@@ -805,11 +892,12 @@ $('primary').addEventListener('click', () => {
   if (state.phase === 'tour' && state.tour.openPoint?.note) return void action('close-point');
   void action('next');
 });
-for (const [id, name] of [['replay', 'replay'], ['example-button', 'example'], ['hint-button', 'hint'], ['use-example', 'use-example'], ['skip-unheard', 'skip-unheard'], ['retry-film', 'retry-film'], ['pause', 'pause'], ['leave', 'leave'], ['finish-here', 'leave']]) $(id).addEventListener('click', () => void action(name));
+for (const [id, name] of [['replay', 'replay'], ['example-button', 'example'], ['hint-button', 'hint'], ['use-example', 'use-example'], ['skip-unheard', 'skip-unheard'], ['retry-film', 'retry-film'], ['pause', 'pause'], ['leave', 'leave']]) $(id).addEventListener('click', () => void action(name));
+$('finish-here').addEventListener('click', openClosing);
 $('voice-prepare').addEventListener('click', () => void prepareVoice());
 $('microphone-check').addEventListener('click', () => void checkMicrophone());
 $('open-closing').addEventListener('click', openClosing);
-$('back-to-scenes').addEventListener('click', () => { session.leave(); render(); });
+$('back-to-scenes').addEventListener('click', leave);
 $('clear-data').addEventListener('click', wipe);
 $('preview').addEventListener('click', () => void vr?.preview());
 $('vr').addEventListener('click', () => void (vrChecked ? vr?.enter() : checkVR()));

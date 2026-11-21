@@ -10,7 +10,8 @@ export const FORBIDDEN_RECORD_WORDS = Object.freeze(['추천', '적합', '합격
 const text = (value) => typeof value === 'string' && value.trim().length > 0;
 const plain = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
 const list = (value) => (Array.isArray(value) ? value : []);
-const localFile = (value, extension) => text(value) && !/^[a-z]+:|^\/|\.\.|\\/i.test(value) && extension.test(value);
+// A path with spaces around it is refused: a browser drops them and could read ' https:…' as another site.
+const localFile = (value, extension) => text(value) && value === value.trim() && !/^[a-z]+:|^\/|\.\.|\\/i.test(value) && extension.test(value);
 
 export function validateJob(job, manifest = null) {
   const errors = [];
@@ -196,6 +197,16 @@ function check(job, manifest, fail) {
   else {
     if (!Object.hasOwn(places, closing.place)) fail('closing.place', '맺음 자리가 없어요.');
     if (!text(closing.lead)) fail('closing.lead', '맺음 첫 글이 필요해요.');
+    // A repeated id would make two entries share one answer (reasons, decision, ladder), so each list keeps ids unique.
+    const once = (where, items) => {
+      const seen = new Set();
+      for (const item of items) { if (seen.has(item?.id)) fail(`${where}.${item?.id}`, '같은 id가 두 번 있어요.'); seen.add(item?.id); }
+    };
+    once('closing.principles', list(closing.principles));
+    once('closing.forks', list(closing.forks));
+    once('closing.reflection.decisions', list(closing.reflection?.decisions));
+    once('closing.ladder.items', list(closing.ladder?.items));
+    once('closing.conditions.items', list(closing.conditions?.items).filter((item) => item?.id !== undefined));
     const principles = new Set();
     for (const principle of list(closing.principles)) {
       if (!ID.test(principle?.id || '') || !text(principle?.title) || !text(principle?.body)) fail(`closing.principles.${principle?.id}`, 'id, 제목, 설명이 필요해요.');
@@ -222,7 +233,7 @@ function check(job, manifest, fail) {
     if (!text(reflection?.hardLabel) || !text(reflection?.decisionLabel) || decisions.length !== 3 || decisions.some((item) => !ID.test(item?.id || '') || !text(item?.label))) fail('closing.reflection', '소감 물음과 세 가지 답이 필요해요.');
     const ladder = closing.ladder;
     if (!text(ladder?.lead) || !Array.isArray(ladder?.items) || !ladder.items.length || ladder.items.some((item) => !ID.test(item?.id || '') || !text(item?.label))) fail('closing.ladder', '준비 사다리 항목이 필요해요.');
-    if (closing.next !== undefined && (!text(closing.next?.label) || !text(closing.next?.href) || /^[a-z]+:|^\/\//i.test(closing.next.href))) fail('closing.next', '다음 칸은 같은 사이트 안의 상대 주소여야 해요.');
+    if (closing.next !== undefined && (!text(closing.next?.label) || !text(closing.next?.href) || closing.next.href !== closing.next.href.trim() || /^[a-z]+:|^\/\//i.test(closing.next.href))) fail('closing.next', '다음 칸은 같은 사이트 안의 상대 주소여야 해요.');
   }
   // Nothing a learner reads may sound like a grade or a recommendation.
   const allowed = list(job.allowedTerms).filter(text);
@@ -232,13 +243,16 @@ function check(job, manifest, fail) {
   }
 }
 
-/** Every string a learner can read in a job (ids, file names and allowedTerms left out). */
+/** Every string a learner can read in a job. Only allowedTerms is left out by name. A key that
+ * usually holds an id or a file name (who, place, listen, …) can also be an option id that keys a
+ * learner's sentence (closing.forks[].mine.listen), so such a key drops only plain ASCII
+ * references and keeps any text with Korean or other letters in it. */
 export function jobTexts(job) {
-  const out = [], skip = new Set(['id', 'photo', 'audio', 'clip', 'listen', 'who', 'place', 'home', 'note', 'principle', 'href', 'type', 'edition', 'allowedTerms', 'hintLanguages', 'board', 'requires', 'when']);
+  const out = [], references = new Set(['id', 'photo', 'audio', 'clip', 'listen', 'who', 'place', 'home', 'note', 'principle', 'href', 'type', 'hintLanguages', 'board', 'requires', 'when']);
   const walk = (value, key) => {
-    if (skip.has(key)) return;
-    if (typeof value === 'string') out.push(value);
-    else if (Array.isArray(value)) value.forEach((item) => walk(item, ''));
+    if (key === 'allowedTerms') return;
+    if (typeof value === 'string') { if (!references.has(key) || /[^\x20-\x7e]/.test(value)) out.push(value); }
+    else if (Array.isArray(value)) value.forEach((item) => walk(item, key));
     else if (plain(value)) for (const [name, item] of Object.entries(value)) walk(item, name);
   };
   walk(job, '');
@@ -269,5 +283,5 @@ export function jobFiles(job, manifest = null) {
   }
   // Only films that passed review are served; the others play as photograph and caption anyway.
   for (const clip of list(manifest?.clips)) if (clip?.reviewed === true && text(clip?.file)) files.add(clip.file);
-  return [...files].filter((file) => !/^[a-z]+:|^\/|\.\.|\\/i.test(file)).sort();
+  return [...files].filter((file) => file === file.trim() && !/^[a-z]+:|^\/|\.\.|\\/i.test(file)).sort();
 }

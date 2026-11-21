@@ -64,7 +64,7 @@ function probe(file) {
 
 /** Quiet spans from the audio track: [{ start, end }]. `end` is the duration for a span that runs out. */
 function quietSpans(file, duration) {
-  const log = run('ffmpeg', ['-hide_banner', '-nostats', '-i', file, '-af', 'silencedetect=noise=-30dB:d=0.2', '-f', 'null', '-'], { allowFailure: true }).stderr;
+  const log = run('ffmpeg', ['-hide_banner', '-nostats', '-i', file, '-af', 'silencedetect=noise=-30dB:d=0.1', '-f', 'null', '-'], { allowFailure: true }).stderr;
   const spans = [];
   for (const line of log.split('\n')) {
     const start = /silence_start: (-?[\d.]+)/.exec(line), end = /silence_end: ([\d.]+)/.exec(line);
@@ -189,7 +189,7 @@ function main() {
     schemaVersion: 1, id: `workday-${jobId}`, status: anyReviewed ? 'ready' : 'making', title: job.title, projection: 'rectilinear-mono', stereo: false,
     source: { status: anyReviewed ? 'verified' : 'making', provider: 'Google Flow', model: option('--model') || manifest.source?.model || '', generationDate: manifest.source?.generationDate || new Date().toISOString().slice(0, 10),
       reviewScope: '영상마다 길이와 소리 줄기, 대사 받아쓰기 대조, 시작과 끝 프레임, 배경 고정(still)을 봤다. 헤드셋과 실제 휴대폰 확인은 아직이다.' },
-    notice: '인물과 장소는 AI로 만든 그림과 영상입니다. 실제 사람이나 시설이 아닙니다.',
+    notice: manifest.notice || '인물과 장소는 AI로 만든 그림과 영상이에요. 실제 사람이나 시설이 아니에요.',
     clips: ordered,
   };
   writeFileSync(manifestFile, JSON.stringify(output, null, 2) + '\n');
