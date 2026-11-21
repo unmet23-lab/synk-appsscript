@@ -56,7 +56,7 @@ const officeDeptOf=spec=>{if(Object.hasOwn(office?.assignments||{},spec.id))retu
 function officeSession(spec,t){
   const at=t-(Number(spec.ago)||0),hooked=spec.tool!=='codex'&&spec.hooked!==false;
   const s={id:spec.id,tool:spec.tool==='codex'?'codex':'claude',cwd:spec.cwd||null,model:spec.model||null,hooked,firstAt:at-600e3,hookedAt:null,lastHookAt:null,lastRecordAt:null,postAt:null,askAt:null,clearAt:null,idleAt:null,stopAt:null,turnStartAt:null,doneLong:false,seenAt:null,endedAt:null,agents:{},anonAgents:0,lastTool:spec.toolName?{name:spec.toolName,detail:spec.detail||''}:null,lastToolAt:spec.toolName?at:null};
-  for(let i=0;i<(Number(spec.helpers)||0);i++)s.agents['qa-agent-'+i]=true;
+  for(let i=0;i<(Number(spec.helpers)||0);i++)s.agents['qa-agent-'+i]=at-30e3;/* 상태 규칙은 도우미를 시작한 때(숫자)로 센다 */
   if(!hooked){s.lastRecordAt=at;return s;}
   s.hookedAt=s.firstAt;s.lastHookAt=at;
   if(spec.kind==='ask')s.askAt=at;
@@ -66,9 +66,7 @@ function officeSession(spec,t){
   return s;
 }
 const officeSnap=()=>{if(!office||office.available!==true)return {ok:true,available:false};const t=Date.now();const sessions={};for(const spec of office.sessions||[])sessions[spec.id]=officeSession(spec,t);
-  return {ok:true,available:true,state:{sessions,ignored:{}},departments:JSON.parse(JSON.stringify(office.departments||[])),assignments:{...(office.assignments||{})},settings:{view:'tilted',manualCap:null,...(office.settings||{})},roots:JSON.parse(JSON.stringify(office.roots||{claude:[],codex:[],added:[]})),pc:office.pc===undefined?{cores:16,totalMemGb:31.7,freeMemGb:19,cpuPercent:38}:office.pc,hooks:JSON.parse(JSON.stringify(office.hooks||{on:false,available:false})),readAt:t};};
-// 「승인 물음도 보기」(사무실 구현설계 12.3): 켜면 판의 폴더가 모두 이어지고(없는 파일은 새로 만든 것으로), 끄면 다 끊긴다. 끄기와 켜졌는지 묻기는 볼 계정이 아니어도 답한다(11.1)
-const officeHooksTo=on=>{const h=office.hooks||(office.hooks={available:true,dirs:[]});const dirs=h.dirs||[];h.on=on;h.message=null;h.dirs=dirs.map(d=>({...d,on:on&&!!d.folder,file:!!d.file||(on&&!!d.folder),code:null}));return {written:on?dirs.filter(d=>d.folder).length:0,created:on?dirs.filter(d=>d.folder&&!d.file).length:0};};
+  return {ok:true,available:true,state:{sessions,ignored:{}},departments:JSON.parse(JSON.stringify(office.departments||[])),assignments:{...(office.assignments||{})},settings:{view:'tilted',manualCap:null,...(office.settings||{})},roots:JSON.parse(JSON.stringify(office.roots||{claude:[],codex:[],added:[]})),pc:office.pc===undefined?{cores:16,totalMemGb:31.7,freeMemGb:19,cpuPercent:38}:office.pc,readAt:t};};
 const officeGate=()=>auth.signedIn!==true?{ok:false,code:'SIGN_IN_REQUIRED'}:!office||office.available!==true?{ok:false,code:'NOT_ALLOWED'}:null;
 const officeChange=work=>{const refused=officeGate();if(refused)return refused;const res=work();if(res?.ok!==false)officeEmit();return res||{ok:true};};
 let release=null;let restoring=new Promise(resolve=>{release=resolve;});
@@ -200,9 +198,6 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     addRoot:async()=>{calls.push('office-root-add');return officeChange(()=>{const r=office.roots||(office.roots={claude:[],codex:[],added:[]}),dir='C:\\qa\\.claude-work';if(r.added.includes(dir))return {ok:true};r.added.push(dir);r.claude.push(dir);return {ok:true};});},
     removeRoot:async dir=>{calls.push('office-root-remove:'+dir);return officeChange(()=>{const r=office.roots;if(!r?.added?.includes(dir))return {ok:false,code:'NOT_FOUND'};r.added=r.added.filter(d=>d!==dir);r.claude=r.claude.filter(d=>d!==dir);return {ok:true};});},
     seen:async departmentId=>{calls.push('office-seen:'+departmentId);return officeChange(()=>{const t=Date.now();for(const spec of office.sessions||[])if(spec.kind==='done'&&officeDeptOf(spec)===(departmentId??null))officeSeen[spec.id]=t;return {ok:true};});},
-    hooksSet:async on=>{calls.push('office-hooks-set:'+(on===true));return officeChange(()=>{if(on===true&&office.hooks?.available!==true)return {ok:false,code:'NOT_HERE'};const r=officeHooksTo(on===true);return {ok:true,...r,refused:0};});},
-    hooksOff:async()=>{calls.push('office-hooks-off');if(!office?.hooks)return {ok:true};officeHooksTo(false);officeEmit();return {ok:true};},
-    hooksStatus:async()=>{calls.push('office-hooks-status');return {ok:true,on:office?.hooks?.on===true};},
     onChanged:fn=>{officeListeners.add(fn);return ()=>officeListeners.delete(fn);},
   }),
 }));

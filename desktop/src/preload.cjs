@@ -158,7 +158,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     open:topic=>typeof topic==='string'&&/^[a-z]{1,16}$/.test(topic)?ipcRenderer.invoke('synk:solio-backup-open',topic):Promise.resolve({ok:false,code:'INVALID'}),
     dismiss:()=>ipcRenderer.invoke('synk:solio-backup-dismiss'),
   }),
-  // 솔리오 「사무실」(11-20): 세션 모음의 모습을 받고, 부서 · 보낼 부서 · 설정 · 보는 폴더 · 승인 물음 알림을 고친다. 인자는 위의 꼴로 다시 만든 것만 건너간다.
+  // 솔리오 「사무실」(11-20): 세션 모음의 모습을 받고, 부서 · 보낼 부서 · 설정 · 보는 폴더를 고친다. 인자는 위의 꼴로 다시 만든 것만 건너간다.
   office:Object.freeze({
     snapshot:()=>ipcRenderer.invoke('synk:office-snapshot'),
     watch:on=>ipcRenderer.invoke('synk:office-watch',on===true),
@@ -169,10 +169,6 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     addRoot:()=>ipcRenderer.invoke('synk:office-roots-add'),
     removeRoot:dir=>typeof dir==='string'&&dir.length>0&&dir.length<=1024?ipcRenderer.invoke('synk:office-roots-remove',dir):officeInvalid(),
     seen:departmentId=>departmentId===null||officeId(departmentId)?ipcRenderer.invoke('synk:office-seen',departmentId):officeInvalid(),
-    // 「승인 물음도 보기」(구현설계.md 12.3): 켜기는 참 하나만 건너간다(거짓은 끄기다). 끄기와 켜졌는지 묻기는 넘기는 값이 없다. 설정 폴더는 본체가 정한다
-    hooksSet:on=>ipcRenderer.invoke('synk:office-hooks-set',on===true),
-    hooksOff:()=>ipcRenderer.invoke('synk:office-hooks-off'),
-    hooksStatus:()=>ipcRenderer.invoke('synk:office-hooks-status'),
     onChanged:callback=>subscribe('synk:office-changed',callback),
   }),
   onAuthChanged:callback=>{if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,status)=>callback(status);ipcRenderer.on('synk:auth-changed',listener);return ()=>ipcRenderer.removeListener('synk:auth-changed',listener);},

@@ -1,12 +1,12 @@
 // 솔리오 「사무실」을 본체와 preload에 이은 자리(구현설계.md 11.1 · 13절, 15절 6단계). main.cjs의 줄을 떼어 가짜 값으로 돌린다.
-// 실제 사용자 폴더, viewers.json, 폴더 고르기 창, Claude Code 설정 파일은 쓰지 않는다. 훅 서버(5단계)는 가짜를 넘긴다.
+// 실제 사용자 폴더, viewers.json, 폴더 고르기 창, Claude Code 설정 파일은 쓰지 않는다. 첫 조각에는 훅이 없다(11-21).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
-import { createRequire } from 'node:module';
+import { EventEmitter } from 'node:events';
 
 const main = fs.readFileSync(new URL('../src/main.cjs', import.meta.url), 'utf8');
 const preloadSource = fs.readFileSync(new URL('../src/preload.cjs', import.meta.url), 'utf8');
@@ -22,9 +22,7 @@ function source(start) {
   return lines.slice(i, end + 1).join('\n');
 }
 
-const CHANNELS = ['snapshot', 'watch', 'department-save', 'department-remove', 'session-assign', 'settings-save', 'roots-add', 'roots-remove', 'seen', 'hooks-set', 'hooks-off', 'hooks-status'].map(c => `synk:office-${c}`);
-/* 끄기와 켜졌는지 묻기만 officeCall(볼 계정 확인)을 거치지 않는다(구현설계.md 11.1, 13절) */
-const NO_GATE = { 'synk:office-hooks-off': '()=>officeHooksOff()', 'synk:office-hooks-status': '()=>officeHooksStatus()' };
+const CHANNELS = ['snapshot', 'watch', 'department-save', 'department-remove', 'session-assign', 'settings-save', 'roots-add', 'roots-remove', 'seen'].map(c => `synk:office-${c}`);
 const YUHO = { synk_user_id: 'owner-1234567890', display_name: '유호' };
 const OTHER = { synk_user_id: 'tester-1234567890', display_name: '시험 계정' };
 const S1 = '00000001-0000-4000-8000-000000000001';
@@ -33,9 +31,8 @@ const DEPT_DIR = path.join(os.tmpdir(), 'office-main-dept');
 const CHOSEN = path.join(os.tmpdir(), 'office-main-chosen');
 const ADDED = path.join(os.tmpdir(), 'Office-Main-Added');
 
-test('every synk:office-* channel is in handlers, on one line, and goes through officeCall behind the sender check (off and status: the sender check only)', () => {
+test('every synk:office-* channel is in handlers, on one line, and goes through officeCall behind the sender check', () => {
   assert.match(main, /^const \{createOffice,loadOfficeModel\}=require\('\.\/office\.cjs'\);$/m);
-  assert.match(main, /^const \{createOfficeHooks\}=require\('\.\/office-hooks\.cjs'\);$/m);
   const start = lines.findIndex(l => l.trim() === 'const handlers={');
   const end = lines.findIndex((l, i) => i > start && l === '  };');
   assert.ok(start > 0 && end > start, 'the handlers object is found');
@@ -44,11 +41,10 @@ test('every synk:office-* channel is in handlers, on one line, and goes through 
   assert.deepEqual(found, CHANNELS, 'exactly the agreed channels, in the handlers object');
   for (const channel of CHANNELS) {
     const line = block.find(l => l.startsWith(`    '${channel}':`));
-    if (Object.hasOwn(NO_GATE, channel)) { assert.equal(line, `    '${channel}':${NO_GATE[channel]},`, `${channel} is the one fixed call`); continue; }
     assert.match(line, /^ {4}'synk:office-[a-z-]+':(\(\)|[A-Za-z]+|\([A-Za-z,]+\))=>officeCall\(.*\),$/, `${channel} goes through officeCall on one line`);
   }
   const literals = [...main.matchAll(/'synk:office-[a-z-]+'/g)].map(m => m[0].slice(1, -1));
-  assert.deepEqual(literals.filter(c => !CHANNELS.includes(c)), ['synk:office-changed', 'synk:office-changed'], 'no other office channel, besides office-changed that main sends for the office and for the hooks server');
+  assert.deepEqual(literals.filter(c => !CHANNELS.includes(c)), ['synk:office-changed'], 'no other office channel, besides office-changed that main sends for the office');
   assert.equal(literals.filter(c => CHANNELS.includes(c)).length, CHANNELS.length);
   assert.match(main, /onChange:\(\)=>sendDesktop\('synk:office-changed'\)/);
   assert.match(main, /for\(const \[channel,handler\]of Object\.entries\(handlers\)\)\{ipcMain\.removeHandler\(channel\);ipcMain\.handle\(channel,async\(event,\.\.\.args\)=>\{assertSender\(event,window,entry,runtime\.clientId\);/);
@@ -62,14 +58,12 @@ function gate({ runtime = { clientId: 'platform' }, smoke = false, status, load,
     sendDesktop: (...a) => { ctx.sent.push(a); },
     loadOfficeModel: () => (load ? load(ctx) : Promise.resolve(MODEL)),
     createOffice: options => { ctx.created.push(options); return { ...SERVICE, accountChanged: a => ctx.told.push(a === null ? null : a.synk_user_id) }; },
-    officeHooksService: () => HOOKS,
   };
   vm.runInNewContext([source('const officeOff='), source('let officeService=null,officeLoading=null;'), source('const officeAccountOf='), source('const officeLoginOf='), source('function office(){'), source('async function officeCall(work){')].join('\n'), ctx);
   return ctx;
 }
 const MODEL = { officeReduce() {} };
 const SERVICE = { id: 'service' };
-const HOOKS = { id: 'hooks' };
 const work = (service, account) => ({ ok: true, same: service.id === SERVICE.id, account: account.synk_user_id });
 const signedIn = account => ({ signedIn: true, sessionGeneration: 1, account });
 
@@ -89,7 +83,7 @@ test('officeCall: platform client only, signed in with an account, one office ma
   assert.equal(ctx.created[0].userData, 'C:\\synthetic\\userData');
   assert.deepEqual(ctx.paths, ['userData']);
   assert.equal(ctx.created[0].model, MODEL);
-  assert.equal(ctx.created[0].hooks, HOOKS, 'the office gets the hooks service so the snapshot carries the real hooks state');
+  assert.equal(Object.hasOwn(ctx.created[0], 'hooks'), false, 'the office is made without a hooks service (11-21)');
   assert.deepEqual(ctx.told, [YUHO.synk_user_id], 'the office learns the current account when it is made (GA1)');
   ctx.created[0].onChange();
   assert.deepEqual(plain(ctx.sent), [['synk:office-changed']], 'office changes reach the window as a payload-free office-changed');
@@ -119,23 +113,20 @@ test('GA1: a sign-out or a new sign-in while the office works drops its answer; 
   assert.equal((await run(() => {})).ok, true);
 });
 
-test('the handlers pass only the agreed values; the snapshot is the office answer as it is, with its hooks state', async () => {
+test('the handlers pass only the agreed values; the snapshot is the office answer as it is', async () => {
   const start = lines.findIndex(l => l.trim() === 'const handlers={');
   const handlerLines = lines.slice(start).filter(l => /^ {4}'synk:office-/.test(l));
   const calls = [];
-  const HOOK_STATE = { on: true, available: true, dirs: [{ dir: 'C:\\synthetic\\.claude', on: true, folder: true, file: true, code: null }], message: null };
-  const service = new Proxy({}, { get: (_t, name) => (...a) => { calls.push([name, ...a.slice(0, -1).map(plain), a.at(-1).synk_user_id]); return name === 'snapshot' ? { ok: true, available: true, hooks: HOOK_STATE } : { ok: true }; } });
+  const service = new Proxy({}, { get: (_t, name) => (...a) => { calls.push([name, ...a.slice(0, -1).map(plain), a.at(-1).synk_user_id]); return name === 'snapshot' ? { ok: true, available: true } : { ok: true }; } });
   const ctx = {
     officeCall: run => run(service, YUHO),
-    officeHooksOff: () => { calls.push(['officeHooksOff']); return { ok: true }; },
-    officeHooksStatus: () => { calls.push(['officeHooksStatus']); return { ok: true, on: true }; },
     officeSaveDepartment: (s, account, input) => { calls.push(['officeSaveDepartment', plain(input), account.synk_user_id]); return { ok: true }; },
     officeAddRoot: (s, account) => { calls.push(['officeAddRoot', account.synk_user_id]); return { ok: true }; },
     officeRemoveRoot: (s, account, dir) => { calls.push(['officeRemoveRoot', dir, account.synk_user_id]); return { ok: true }; },
   };
   const h = vm.runInNewContext(`({\n${handlerLines.join('\n')}\n})`, ctx);
   const snap = await h['synk:office-snapshot']();
-  assert.deepEqual(plain(snap.hooks), HOOK_STATE, 'no forced off: the hooks state comes from the office');
+  assert.deepEqual(plain(snap), { ok: true, available: true });
   await h['synk:office-watch']('yes');
   await h['synk:office-watch'](true);
   await h['synk:office-department-save']({ name: '법무', folder: 'choose' });
@@ -145,16 +136,11 @@ test('the handlers pass only the agreed values; the snapshot is the office answe
   await h['synk:office-roots-add']('C:\\ignored');
   await h['synk:office-roots-remove'](ADDED);
   await h['synk:office-seen'](null);
-  await h['synk:office-hooks-set'](true);
-  await h['synk:office-hooks-set']('yes');
-  await h['synk:office-hooks-off']('C:\\ignored');
-  await h['synk:office-hooks-status']('C:\\ignored');
   const id = YUHO.synk_user_id;
   assert.deepEqual(calls, [
     ['snapshot', id], ['watch', false, id], ['watch', true, id],
     ['officeSaveDepartment', { name: '법무', folder: 'choose' }, id], ['removeDepartment', 'dept-1', id], ['assign', S1, null, id],
     ['saveSettings', { view: 'top' }, id], ['officeAddRoot', id], ['officeRemoveRoot', ADDED, id], ['seen', null, id],
-    ['setHooks', true, id], ['setHooks', false, id], ['officeHooksOff'], ['officeHooksStatus'],
   ]);
   const refused = await vm.runInNewContext(`({\n${handlerLines[0]}\n})`, { officeCall: async () => ({ ok: true, available: false }) })['synk:office-snapshot']();
   assert.deepEqual(plain(refused), { ok: true, available: false }, 'the gate answer comes back as it is');
@@ -177,12 +163,12 @@ function helpers({ status = signedIn(YUHO), dialogResult = { canceled: false, fi
     removeRoot: async (dir, a) => { calls.push(['removeRoot', dir, a.synk_user_id]); return { ok: true }; },
   };
   const ctx = {
-    path, status, calls, service,
-    accountStatus: () => ctx.status,
+    path, status, calls, service, renewing: null,
+    accountStatus: () => ctx.status, renewingAccount: () => ctx.renewing,
     window: alive ? { isDestroyed: () => false } : null,
     dialog: { showOpenDialog: async (...a) => { calls.push(['dialog', a[0] === ctx.window, plain(a[1])]); onDialog?.(ctx); return dialogResult; } },
   };
-  vm.runInNewContext([source('async function officeChooseFolder('), source('async function officeSaveDepartment('), source('async function officeAddRoot('), source('async function officeRemoveRoot(')].join('\n'), ctx);
+  vm.runInNewContext([source('const officeAccountOf='), source('async function officeChooseFolder('), source('async function officeSaveDepartment('), source('async function officeAddRoot('), source('async function officeRemoveRoot(')].join('\n'), ctx);
   return ctx;
 }
 const DIALOG = ['dialog', true, { properties: ['openDirectory'] }];
@@ -229,6 +215,25 @@ test('saveDepartment: the folder comes from the chooser, a standing session or t
     assert.equal((await c.officeSaveDepartment(c.service, YUHO, input)).code, 'VALUE', JSON.stringify(input));
     assert.ok(!c.calls.some(x => x[0] === 'saveDepartment' || x[0] === 'dialog'));
   }
+});
+
+/* GPT 검수(solio-office-be-20261120) GA9: 고르는 사이에 같은 계정이 토큰을 갱신해도(잠깐 restoring, 회차는 그대로) 같은 묶음이다(officeCall과 같은 셈) */
+test('GA9: a same-account token renewal while the folder chooser is open keeps the chosen folder; a real sign-in change still drops it', async () => {
+  const id = YUHO.synk_user_id;
+  const renewing = ctx => { ctx.status = { signedIn: false, status: 'restoring', sessionGeneration: 1, account: null }; ctx.renewing = YUHO.synk_user_id; };
+  let c = helpers({ onDialog: renewing });
+  assert.equal((await c.officeAddRoot(c.service, YUHO)).ok, true, 'adding a watched folder');
+  assert.deepEqual(c.calls.at(-1), ['addRoot', CHOSEN, id]);
+  c = helpers({ onDialog: renewing });
+  assert.equal((await c.officeSaveDepartment(c.service, YUHO, { name: '법무부', folder: 'choose' })).ok, true, 'choosing a department folder');
+  assert.deepEqual(c.calls.at(-1), ['saveDepartment', { name: '법무부', folder: CHOSEN }, id]);
+  c = helpers({ onDialog: ctx => { ctx.status = { signedIn: false, status: 'restoring', sessionGeneration: 1, account: null }; ctx.renewing = OTHER.synk_user_id; } });
+  assert.equal((await c.officeAddRoot(c.service, YUHO)).code, 'AUTH_CHANGED', 'a renewal for another account is a change');
+  c = helpers({ onDialog: ctx => { ctx.status = { signedIn: false, status: 'restoring', sessionGeneration: 2, account: null }; ctx.renewing = YUHO.synk_user_id; } });
+  assert.equal((await c.officeAddRoot(c.service, YUHO)).code, 'AUTH_CHANGED', 'a new round is a change');
+  c = helpers({ onDialog: ctx => { ctx.status = { signedIn: false, status: 'signed-out', sessionGeneration: 1, account: null }; } });
+  assert.equal((await c.officeAddRoot(c.service, YUHO)).code, 'AUTH_CHANGED', 'signed out');
+  assert.ok(!c.calls.some(x => x[0] === 'addRoot'));
 });
 
 test('roots: adding opens the chooser and hands over the one chosen folder; removing hands over the one folder (the store reads and writes the list in its queue, GA3)', async () => {
@@ -304,7 +309,7 @@ function bridge() {
 test('preload exposes exactly the office bridge, frozen, and rebuilds every argument', async () => {
   const { office, calls, listeners } = bridge();
   assert.ok(Object.isFrozen(office));
-  assert.deepEqual(Object.keys(office), ['snapshot', 'watch', 'saveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'addRoot', 'removeRoot', 'seen', 'hooksSet', 'hooksOff', 'hooksStatus', 'onChanged']);
+  assert.deepEqual(Object.keys(office), ['snapshot', 'watch', 'saveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'addRoot', 'removeRoot', 'seen', 'onChanged']);
   const last = () => calls.at(-1);
   const refused = async (p, why) => { const before = calls.length; assert.deepEqual(plain(await p), { ok: false, code: 'VALUE' }, why); assert.equal(calls.length, before, `${why}: nothing crosses`); };
 
@@ -354,12 +359,6 @@ test('preload exposes exactly the office bridge, frozen, and rebuilds every argu
   await office.seen('dept-1'); assert.deepEqual(last(), ['synk:office-seen', 'dept-1']);
   await refused(office.seen(), 'seen needs a department or null');
 
-  await office.hooksSet(true); assert.deepEqual(last(), ['synk:office-hooks-set', true]);
-  await office.hooksSet('yes'); assert.deepEqual(last(), ['synk:office-hooks-set', false], 'only a real true turns hooks on');
-  await office.hooksSet({ dirs: ['C:\\Users\\a\\.claude'] }); assert.deepEqual(last(), ['synk:office-hooks-set', false], 'no folder crosses');
-  await office.hooksOff('C:\\Users\\a\\.claude'); assert.deepEqual(last(), ['synk:office-hooks-off']);
-  await office.hooksStatus('x'); assert.deepEqual(last(), ['synk:office-hooks-status']);
-
   const paths = /[A-Za-z]:\\|\\\\|^\//;
   for (const [channel, ...args] of calls) {
     if (channel === 'synk:office-roots-remove') continue;
@@ -377,143 +376,55 @@ test('preload exposes exactly the office bridge, frozen, and rebuilds every argu
   assert.throws(() => office.onChanged('nope'), /callback/);
 });
 
-/* ── 훅 서버를 이은 자리(구현설계.md 11.1 · 12.3, 15절 5단계) ── */
-/* shipped: 사무실을 켜고 낸 판(officeShipped). 아래 훅 시험들은 켜고 낸 판의 동작을 본다. 꺼 둔 판은 맨 아래 PC 0.5.2 시험이 본다 */
-function hooksMain({ packaged = true, mode = 'release', clientId = 'platform', smoke = false, status = signedIn(YUHO), argv = [], shipped = true } = {}) {
+/* ── 첫 조각에는 훅이 없다(11-21 유호님 「훅 빼고 내기」, 구현설계.md 0절 · 3.4 · 12.3) ── */
+test('main and preload have no hooks: no hooks module, no hooks channel or bridge, no server start', () => {
+  assert.doesNotMatch(main, /office-hooks|createOfficeHooks|officeHooks|runOfficeUnhook|officeUnhookAsked|synk:office-hooks/);
+  // 훅 소식의 입구(office.cjs ingest)는 첫 조각에서 부르는 곳이 없다. 넷째 검수의 GA8 · GA11(늦은 SessionEnd)을 둘째 조각으로 미룬 근거다.
+  // 둘째 조각에서 이을 때는 그 둘을 먼저 고치고 이 줄을 바꾼다(구현설계 8절)
+  assert.doesNotMatch(main, /\.ingest\(/, 'nothing in main feeds hook news to the office');
+  assert.doesNotMatch(preloadSource, /ingest/);
+  assert.doesNotMatch(preloadSource, /office-hooks|hooksSet|hooksOff|hooksStatus/);
+  assert.equal(fs.existsSync(new URL('../src/office-hooks.cjs', import.meta.url)), false);
+});
+
+/* 9ae0365423부터 이 저장소에서 구운 설치기(공개하지 않았다)는 앱을 --office-unhook으로 돌렸다. 이 판은 지울 것이 없어 바로 끝난다 */
+function startLines({ argv, clientId = 'platform', smoke = false }) {
   const ctx = {
-    packaged, officeShipped: shipped, smoke, runtime: { clientId, mode }, status, made: [], sent: [], exits: [], ingested: [],
-    process: { argv },
-    accountStatus: () => ctx.status, renewingAccount: () => null,
-    app: { getPath: name => 'C:\\synthetic\\' + name, exit: code => ctx.exits.push(code) },
-    sendDesktop: (...a) => ctx.sent.push(a),
-    office: async () => ({ accepts: async a => a.synk_user_id === YUHO.synk_user_id, ingest: async (e, a) => { ctx.ingested.push([e.event, a.synk_user_id]); return { ok: true }; } }),
-    createOfficeHooks: options => { ctx.made.push(options); return { disable: async () => ({ ok: true, written: 0, refused: 0, dirs: ['C:\\x'] }), unhook: async () => { ctx.made.at(-1).unhooked = true; return { ok: true }; }, status: async () => ({ on: true, available: true, dirs: [{ dir: 'C:\\x' }] }) }; },
+    runtime: { clientId }, smoke, process: { argv }, exits: [], locks: 0, quits: 0,
+    app: { exit: code => ctx.exits.push(code), requestSingleInstanceLock: () => { ctx.locks += 1; return true; }, quit: () => { ctx.quits += 1; } },
   };
-  vm.runInNewContext([source('const officeOff='), source('const officeAccountOf='), source('const officeLoginOf='), 'let officeHooks=null;', source('const officeHooksRelease='), source('const officeHooksInstalled='), source('function officeHooksService(){'), source('async function officeHooksOff(){'), source('async function officeHooksStatus(){')].join('\n'), ctx);
+  vm.runInNewContext([source('const officeUnhook='), source('if(officeUnhook)app.exit(0);'), 'const yielded=false;', source('if(officeUnhook||yielded)'), source('else if(!app.requestSingleInstanceLock())app.quit();')].join('\n'), ctx);
   return ctx;
 }
-
-test('the hooks service edits real settings only in the installed release build, takes news only for a signed-in viewer, and tells the window about changes', async () => {
-  const installed = hooksMain();
-  installed.officeHooksService();
-  installed.officeHooksService();
-  assert.equal(installed.made.length, 1, 'made once');
-  assert.equal(installed.made[0].userData, 'C:\\synthetic\\userData');
-  assert.equal(installed.made[0].installed, true);
-  for (const [label, options] of [['preview build', { mode: 'development' }], ['source run', { packaged: false, mode: 'development' }], ['smoke', { smoke: true }]]) {
-    const c = hooksMain(options);
-    c.officeHooksService();
-    assert.equal(c.made[0].installed, false, `${label} takes the folders only from the override`);
-  }
-  const o = installed.made[0];
-  // accepts는 받기를 허락한 볼 계정을 돌려주고, deliver는 그 계정으로만 접는다(GPT 검수 r8 GA1)
-  const allowed = await o.accepts();
-  assert.equal(allowed?.synk_user_id, YUHO.synk_user_id);
-  installed.status = signedIn(OTHER);
-  assert.equal(await o.accepts(), false, 'another account is not a viewer');
-  installed.status = { signedIn: false, account: null };
-  assert.equal(await o.accepts(), false, 'signed out');
-  o.deliver({ kind: 'hook', event: 'Stop' }, false);
-  // 몸을 받는 사이에 다른 계정으로 바뀌어도 허락한 계정으로 넘긴다. 지금 계정이 아니면 사무실의 ingest가 버린다
-  installed.status = signedIn(OTHER);
-  o.deliver({ kind: 'hook', event: 'PostToolUse' }, allowed);
-  await new Promise(r => setTimeout(r, 0));
-  assert.deepEqual(installed.ingested, [['PostToolUse', YUHO.synk_user_id]], 'news is folded for the account that allowed it, never the account signed in later');
-  o.onChange();
-  assert.deepEqual(plain(installed.sent), [['synk:office-changed']]);
-});
-
-test('turning off and asking whether hooks are on need no viewer or sign-in, only the platform client; the answers carry no folder', async () => {
-  const out = hooksMain({ status: { signedIn: false, account: null } });
-  assert.deepEqual(plain(await out.officeHooksOff()), { ok: true });
-  assert.deepEqual(plain(await out.officeHooksStatus()), { ok: true, on: true });
-  for (const options of [{ clientId: 'world' }, { smoke: true }]) {
-    const c = hooksMain(options);
-    assert.equal((await c.officeHooksOff()).code, 'LAUNCHER_ONLY');
-    assert.equal((await c.officeHooksStatus()).code, 'LAUNCHER_ONLY');
-    assert.equal(c.made.length, 0);
-  }
-});
-
-test('--office-unhook is handled before the single-instance lock: it removes Solio\'s lines without a window and exits', async () => {
+test('an --office-unhook run ends at once with 0: no lock, no update hand-off, no window and no services; other runs start as before', () => {
   const at = name => lines.findIndex(l => l.startsWith(name));
-  const unhookAt = at('const officeUnhook='), lockAt = lines.findIndex(l => l.includes('app.requestSingleInstanceLock()'));
-  assert.ok(unhookAt > 0 && unhookAt < lockAt, 'before the lock');
-  assert.match(lines[at('const yielded=')], /^const yielded=!officeUnhook&&/, 'the update hand-off does not run while unhooking');
+  assert.equal(lines[at('const officeUnhook=')], "const officeUnhook=runtime.clientId==='platform'&&!smoke&&process.argv.includes('--office-unhook');");
+  assert.equal(lines[at('if(officeUnhook)')], 'if(officeUnhook)app.exit(0);');
+  assert.match(lines[at('const yielded=')], /^const yielded=!officeUnhook&&/, 'the update hand-off does not run for it');
   assert.match(lines[at('if(officeUnhook||yielded)')], /^if\(officeUnhook\|\|yielded\)\{\/\*.*\*\/\}$/, 'no lock, no window, no services');
-  const run = async (argv, options = {}) => {
-    const ctx = hooksMain({ argv, ...options });
-    vm.runInNewContext([source('const officeUnhook='), source('if(officeUnhook)void ')].join('\n'), ctx);
-    for (let i = 0; i < 5; i++) await new Promise(r => setTimeout(r, 0));
-    return ctx;
-  };
-  const yes = await run(['SYNK Platform.exe', '--office-unhook']);
-  assert.equal(yes.made.length, 1);
-  assert.deepEqual([yes.made[0].userData, yes.made[0].installed, yes.made[0].unhooked], ['C:\\synthetic\\userData', true, true]);
-  assert.equal(yes.made[0].accepts, undefined, 'no server is wired for the unhook run');
-  assert.deepEqual(yes.exits, [0]);
-  const no = await run(['SYNK Platform.exe']);
-  assert.deepEqual([no.made.length, no.exits.length], [0, 0], 'a normal start does not unhook');
-  // 사무실을 꺼 둔 판(PC 0.5.2)도 지우는 길은 설치본으로 그대로 돈다. 넘겨받은 폴더(SYNK_OFFICE_HOOK_DIRS)를 지우지 않는다(GPT 검수 GA1)
-  const shelved = await run(['SYNK Platform.exe', '--office-unhook'], { shipped: false });
-  assert.deepEqual([shelved.made.length, shelved.made[0].installed, shelved.made[0].unhooked, shelved.exits], [1, true, true, [0]]);
-  // 꺼 둔 판은 기본 설정 폴더를 보지 않는다(r2 GA1). 켜고 낸 판은 전과 같이 본다
-  assert.deepEqual(plain(shelved.made[0].baseDirs()), [], 'the shelved build cleans only the folders in its state file');
-  assert.equal(yes.made[0].baseDirs, undefined, 'the shipped build keeps the default folder');
-});
-
-/* r2 GA1: 실제 지우기 코드를 이 줄의 옵션 그대로 돌린다. 꺼 둔 판은 적어 두지 않은 폴더(CLAUDE_CONFIG_DIR · SYNK_OFFICE_HOOK_DIRS)의 솔리오 줄을 남긴다 */
-test('r2 GA1: --office-unhook in the shelved build leaves Solio lines in folders it never recorded; the shipped build still cleans the default folder', async () => {
-  const { createOfficeHooks } = createRequire(import.meta.url)('../src/office-hooks.cjs');
-  const top = fs.mkdtempSync(path.join(os.tmpdir(), 'office-main-unhook-'));
-  const saved = { cfg: process.env.CLAUDE_CONFIG_DIR, over: process.env.SYNK_OFFICE_HOOK_DIRS };
-  try {
-    const line = { type: 'http', url: 'http://127.0.0.1:40001/synk-office/' + 'z'.repeat(43), timeout: 2 };
-    const settings = JSON.stringify({ env: { K: 'v' }, hooks: { Stop: [{ hooks: [line] }] } }, null, 2);
-    const run = async (shipped, name) => {
-      const cfg = path.join(top, name, 'profile'), over = path.join(top, name, 'override'), userData = path.join(top, name, 'userData');
-      for (const dir of [cfg, over, userData]) { fs.mkdirSync(dir, { recursive: true }); }
-      for (const dir of [cfg, over]) fs.writeFileSync(path.join(dir, 'settings.json'), settings);
-      process.env.CLAUDE_CONFIG_DIR = cfg; process.env.SYNK_OFFICE_HOOK_DIRS = over;
-      const ctx = hooksMain({ argv: ['SYNK Platform.exe', '--office-unhook'], shipped });
-      ctx.app.getPath = () => userData;
-      ctx.createOfficeHooks = options => createOfficeHooks(options);
-      vm.runInNewContext([source('const officeUnhook='), source('if(officeUnhook)void ')].join('\n'), ctx);
-      for (let i = 0; i < 200 && !ctx.exits.length; i++) await new Promise(r => setTimeout(r, 5));
-      assert.deepEqual(ctx.exits, [0], name);
-      return { profile: fs.readFileSync(path.join(cfg, 'settings.json'), 'utf8'), override: fs.readFileSync(path.join(over, 'settings.json'), 'utf8') };
-    };
-    const shelved = await run(false, 'shelved');
-    assert.equal(shelved.profile, settings, 'CLAUDE_CONFIG_DIR is left as it was');
-    assert.equal(shelved.override, settings, 'SYNK_OFFICE_HOOK_DIRS is left as it was');
-    const shipped = await run(true, 'shipped');
-    assert.deepEqual(JSON.parse(shipped.profile), { env: { K: 'v' } }, 'the shipped build still removes its lines from the default folder');
-    assert.equal(shipped.override, settings, 'the installed build never cleans a handed-over folder');
-  } finally {
-    for (const [key, value] of [['CLAUDE_CONFIG_DIR', saved.cfg], ['SYNK_OFFICE_HOOK_DIRS', saved.over]]) { if (value === undefined) delete process.env[key]; else process.env[key] = value; }
-    fs.rmSync(top, { recursive: true, force: true });
+  const old = startLines({ argv: ['SYNK Platform.exe', '--office-unhook'] });
+  assert.deepEqual([old.exits, old.locks, old.quits], [[0], 0, 0]);
+  for (const [label, options] of [['a normal start', { argv: ['SYNK Platform.exe'] }], ['WORLD with the flag', { argv: ['SYNK World.exe', '--office-unhook'], clientId: 'world' }], ['a smoke run', { argv: ['x', '--office-unhook'], smoke: true }]]) {
+    const c = startLines(options);
+    assert.deepEqual([c.exits, c.locks], [[], 1], label);
   }
 });
-
-const START_LINE = '    if(!smoke&&!officeOff())void officeHooksService().start().catch(()=>{});';
-test('the server starts with the platform main (not in smoke runs, not while the office is off) and closes when quitting', () => {
-  assert.ok(lines.some(l => l === START_LINE), 'started in initializeMain');
-  const startAt = lines.findIndex(l => l === START_LINE);
-  const initAt = lines.findIndex(l => l.startsWith('function initializeMain(){'));
-  assert.ok(startAt > initAt && lines.slice(initAt, startAt).some(l => l.startsWith("  if(runtime.clientId==='platform'){")), 'inside the platform branch of initializeMain');
-  const quit = [], closed = [];
-  vm.runInNewContext(source("app.on('before-quit',()=>void officeHooks?.close());"), { app: { on: (e, fn) => quit.push([e, fn]) }, officeHooks: { close: () => { closed.push(true); return Promise.resolve(); } } });
-  assert.equal(quit[0][0], 'before-quit');
-  quit[0][1]();
-  assert.deepEqual(closed, [true]);
+test('the running app opens no window for an --office-unhook second instance and shows it for a normal one', () => {
+  const app = new EventEmitter();
+  const ctx = { app, runtime: { clientId: 'platform' }, appLocationReady: true, windows: 0, requestPlatformWindow: () => { ctx.windows += 1; }, window: null, pendingTeachingView: false, sendTeachingView() {}, connectionRecovery: null };
+  vm.runInNewContext(source("  app.on('second-instance',"), ctx);
+  app.emit('second-instance', {}, ['C:\\Program Files\\SYNK Platform\\SYNK Platform.exe', '--office-unhook'], 'C:\\', { officeUnhook: '0'.repeat(32) });
+  assert.equal(ctx.windows, 0);
+  app.emit('second-instance', {}, ['SYNK Platform.exe'], 'C:\\', {});
+  assert.equal(ctx.windows, 1);
 });
 
-/* ── PC 0.5.2: 포장된 판은 사무실을 꺼 둔 채 낸다(officeShipped, 11-20) ── */
-/* 사무실 · 훅 · 채널 · 앱을 켤 때의 서버 열기 줄을 한 자리에 이어 돌린다. packaged · shipped만 바꾼다 */
-function wired({ packaged, shipped = false } = {}) {
+/* ── 사무실을 켜는 자리(officeShipped). 0.5.2는 꺼 둔 채 냈고(11-20), 11-21에 켠다 ── */
+/* 사무실과 채널 줄을 한 자리에 이어 돌린다. packaged · shipped만 바꾼다 */
+function wired({ packaged, shipped }) {
   const ctx = {
     packaged, officeShipped: shipped, smoke: false, runtime: { clientId: 'platform', mode: 'release' }, status: signedIn(YUHO),
-    paths: [], loads: 0, offices: [], hooks: [], calls: [],
+    paths: [], loads: 0, offices: [], calls: [],
     accountStatus: () => ctx.status, renewingAccount: () => null,
     app: { getPath: name => { ctx.paths.push(name); return 'C:\\synthetic\\' + name; } },
     sendDesktop() {},
@@ -521,11 +432,7 @@ function wired({ packaged, shipped = false } = {}) {
     createOffice: options => {
       ctx.offices.push(options);
       const did = name => () => { ctx.calls.push(name); return name === 'snapshot' ? { ok: true, available: true } : { ok: true }; };
-      return { accountChanged() {}, ...Object.fromEntries(['snapshot', 'watch', 'removeDepartment', 'assign', 'saveSettings', 'seen', 'setHooks'].map(name => [name, did(name)])) };
-    },
-    createOfficeHooks: options => {
-      ctx.hooks.push(options);
-      return { start: async () => { ctx.calls.push('start'); return { ok: true }; }, disable: async () => { ctx.calls.push('disable'); return { ok: true }; }, status: async () => { ctx.calls.push('status'); return { on: true }; } };
+      return { accountChanged() {}, ...Object.fromEntries(['snapshot', 'watch', 'removeDepartment', 'assign', 'saveSettings', 'seen'].map(name => [name, did(name)])) };
     },
     officeSaveDepartment: () => { ctx.calls.push('officeSaveDepartment'); return { ok: true }; },
     officeAddRoot: () => { ctx.calls.push('officeAddRoot'); return { ok: true }; },
@@ -535,50 +442,32 @@ function wired({ packaged, shipped = false } = {}) {
   const handlerLines = lines.slice(start).filter(l => /^ {4}'synk:office-/.test(l));
   vm.runInNewContext([
     source('const officeOff='), source('let officeService=null,officeLoading=null;'), source('const officeAccountOf='), source('const officeLoginOf='), source('function office(){'),
-    'let officeHooks=null;', source('const officeHooksRelease='), source('const officeHooksInstalled='), source('function officeHooksService(){'), source('async function officeHooksOff(){'), source('async function officeHooksStatus(){'),
-    source('async function officeCall(work){'), `globalThis.handlers=({\n${handlerLines.join('\n')}\n});`, `globalThis.launch=()=>{${START_LINE.trim()}};`, 'globalThis.installed=()=>officeHooksInstalled();',
+    source('async function officeCall(work){'), `globalThis.handlers=({\n${handlerLines.join('\n')}\n});`,
   ].join('\n'), ctx);
   return ctx;
 }
 const ARGS = {
   'synk:office-watch': [true], 'synk:office-department-save': [{ name: '법무부', folder: 'choose' }], 'synk:office-department-remove': ['dept-1'],
-  'synk:office-session-assign': [S1, null], 'synk:office-settings-save': [{ view: 'top' }], 'synk:office-roots-remove': [ADDED], 'synk:office-seen': [null], 'synk:office-hooks-set': [true],
+  'synk:office-session-assign': [S1, null], 'synk:office-settings-save': [{ view: 'top' }], 'synk:office-roots-remove': [ADDED], 'synk:office-seen': [null],
 };
 const ask = (ctx, channel) => Promise.resolve(ctx.handlers[channel](...(ARGS[channel] || []))).then(plain);
-const settle = async () => { for (let i = 0; i < 5; i++) await new Promise(r => setTimeout(r, 0)); };
 
-test('PC 0.5.2: the packaged build keeps the office off — every office channel answers NOT_AVAILABLE, hooks off/status answer off, and nothing is made, read or started', async () => {
-  assert.match(main, /^const officeShipped=false;$/m, '0.5.2 ships with the office off until its review is done (turning it on is this one line, then this test)');
+test('the office ships on (officeShipped), and a packaged build with the switch off answers NOT_AVAILABLE everywhere and makes nothing', async () => {
+  assert.match(main, /^const officeShipped=true;$/m, '11-21: the first piece ships without hooks (turning it off is this one line)');
   assert.match(main, /^const officeOff=\(\)=>packaged&&!officeShipped;$/m);
-  const off = wired({ packaged: true });
-  for (const channel of CHANNELS) {
-    const want = channel === 'synk:office-hooks-off' ? { ok: true } : channel === 'synk:office-hooks-status' ? { ok: true, on: false } : { ok: false, code: 'NOT_AVAILABLE' };
-    assert.deepEqual(await ask(off, channel), want, channel);
-  }
+  const off = wired({ packaged: true, shipped: false });
+  for (const channel of CHANNELS) assert.deepEqual(await ask(off, channel), { ok: false, code: 'NOT_AVAILABLE' }, channel);
   off.status = { signedIn: false, account: null };
   assert.deepEqual(plain(await off.officeCall(work)), { ok: false, code: 'NOT_AVAILABLE' }, 'answered before the sign-in check');
-  assert.equal(off.installed(), false, 'the real Claude Code settings are never the target');
-  off.launch();
-  await settle();
-  assert.deepEqual([off.loads, off.offices.length, off.hooks.length, off.paths.length, off.calls], [0, 0, 0, 0, []], 'no model, no office (so no viewers.json read), no hooks service, no userData path, no server start');
+  assert.deepEqual([off.loads, off.offices.length, off.paths.length, off.calls], [0, 0, 0, []], 'no model, no office (so no viewers.json read), no userData path');
   // 화면 쪽: 이 답이면 사무실 오브제와 방이 서지 않는다(office-room.mjs의 장면은 ok:false나 available이 참이 아니면 보이지 않는다)
-  const { createOfficeRoom, officeHooksAsideRow } = await import('../renderer/office-room.mjs');
+  const { createOfficeRoom } = await import('../renderer/office-room.mjs');
   const room = createOfficeRoom({ api: null, snapshot: () => null, reread() {}, changed() {} });
   assert.equal(room.scene({ ok: false, code: 'NOT_AVAILABLE' }, Date.now(), null).visible, false);
-  assert.equal(officeHooksAsideRow({ ok: true, on: false }), null, 'no turn-off row in the settings room');
-});
-
-test('PC 0.5.2: the switch touches only the packaged build — a source run and a packaged build with the office shipped still reach the office, the hooks and the server', async () => {
-  for (const [label, options, installed] of [['source run', { packaged: false }, false], ['packaged, office shipped', { packaged: true, shipped: true }, true]]) {
+  for (const [label, options] of [['source run', { packaged: false, shipped: false }], ['packaged, office shipped', { packaged: true, shipped: true }]]) {
     const on = wired(options);
     for (const channel of CHANNELS) assert.equal((await ask(on, channel)).ok, true, `${label}: ${channel}`);
-    assert.deepEqual(await ask(on, 'synk:office-snapshot'), { ok: true, available: true }, label);
-    assert.deepEqual(await ask(on, 'synk:office-hooks-status'), { ok: true, on: true }, label);
-    assert.deepEqual([on.loads, on.offices.length, on.hooks.length], [1, 1, 1], `${label}: one office and one hooks service`);
-    assert.equal(on.hooks[0].installed, installed, `${label}: real settings only in the installed release build`);
-    assert.equal(on.installed(), installed);
-    on.launch();
-    await settle();
-    assert.deepEqual(on.calls, ['snapshot', 'watch', 'officeSaveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'officeAddRoot', 'officeRemoveRoot', 'seen', 'setHooks', 'disable', 'status', 'snapshot', 'status', 'start'], label);
+    assert.deepEqual([on.loads, on.offices.length], [1, 1], `${label}: one office`);
+    assert.deepEqual(on.calls, ['snapshot', 'watch', 'officeSaveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'officeAddRoot', 'officeRemoveRoot', 'seen'], label);
   }
 });

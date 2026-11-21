@@ -250,3 +250,230 @@ test('5,000 record files: a 15-second tick stats far fewer files than a full lis
   await records.scan();
   assert.ok(calls.stat >= 5000);
 });
+
+/* ── GPT 검수(solio-office-be-20261120) ── */
+test('GA12: a cwd line still being written at the first look is read whole once it is finished', async () => {
+  let t = Date.now();
+  const dir = tmp('partial');
+  const line = claudeLine('C:\\work\\half');
+  const file = put(path.join(dir, 'projects', 'C--work-half', uuid(31) + '.jsonl'), '{"type":"summary","summary":"x"}\n' + line.slice(0, 20), t - 5 * S);
+  const records = createOfficeRecords({ roots: { claude: [dir], codex: [] }, now: () => t });
+  assert.equal(byId(await records.scan({ full: true }))[uuid(31)].cwd, null, 'half a line is not guessed');
+  fs.appendFileSync(file, line.slice(20));
+  t += 15 * S;
+  assert.equal(byId(await records.scan())[uuid(31)].cwd, 'C:\\work\\half', 'the finished line is read from its start');
+  // 다 읽은 줄 뒤에서 자란 파일은 그 뒤만 읽는다(앞 줄은 다시 읽지 않는다)
+  const other = put(path.join(dir, 'projects', 'C--work-half', uuid(32) + '.jsonl'), '{"type":"summary","summary":"x"}\n', t);
+  t += 15 * S;
+  assert.equal(byId(await records.scan({ full: true }))[uuid(32)].cwd, null);
+  fs.appendFileSync(other, claudeLine('C:\\work\\later'));
+  t += 15 * S;
+  assert.equal(byId(await records.scan())[uuid(32)].cwd, 'C:\\work\\later');
+});
+
+test('GA13: a file dated in the future counts from when it was first seen, so an unchanged file goes quiet and is dropped after 30 minutes', async () => {
+  let t = Date.now();
+  const dir = tmp('future');
+  const file = put(path.join(dir, 'projects', 'C--work-future', uuid(41) + '.jsonl'), claudeLine('C:\\work\\future'), t + 48 * H);
+  const records = createOfficeRecords({ roots: { claude: [dir], codex: [] }, now: () => t });
+  const seen = t;
+  assert.equal(byId(await records.scan({ full: true }))[uuid(41)].changedAt, seen, 'a time in the future is taken as now');
+  t += 15 * S;
+  assert.equal(byId(await records.scan())[uuid(41)].changedAt, seen, 'unchanged: still the time it was first seen');
+  t += 3 * M;
+  assert.equal(byId(await records.scan({ full: true }))[uuid(41)].changedAt, seen, 'a full listing keeps it too');
+  t += 28 * M;
+  assert.equal(byId(await records.scan())[uuid(41)], undefined, 'quiet for 30 minutes: no longer returned');
+  // 다시 적히면(여전히 앞날의 때여도) 새 소식이다
+  fs.appendFileSync(file, claudeLine('C:\\work\\future'));
+  fs.utimesSync(file, (t + 49 * H) / 1e3, (t + 49 * H) / 1e3);
+  t += 15 * S;
+  assert.equal(byId(await records.scan({ full: true }))[uuid(41)].changedAt, t, 'a new write is news again');
+});
+
+test('GPT 검수 be5 GA6: a helper record written while the main record is dated ahead is still news', async () => {
+  let t = Date.now();
+  const dir = tmp('future-helper');
+  const id = uuid(43);
+  put(path.join(dir, 'projects', 'C--work-helper', id + '.jsonl'), claudeLine('C:\\work\\helper'), t + 45 * M);
+  const helper = path.join(dir, 'projects', 'C--work-helper', id, 'subagents', 'agent-1.jsonl');
+  put(helper, claudeLine('C:\\work\\helper'), t - 60 * M);
+  const records = createOfficeRecords({ roots: { claude: [dir], codex: [] }, now: () => t });
+  assert.equal(byId(await records.scan({ full: true }))[id].changedAt, t);
+  t += 31 * M;
+  assert.equal(byId(await records.scan({ full: true }))[id], undefined, 'quiet for 30 minutes: dropped');
+  fs.appendFileSync(helper, claudeLine('C:\\work\\helper'));
+  fs.utimesSync(helper, (t - 1000) / 1e3, (t - 1000) / 1e3);
+  assert.ok(byId(await records.scan({ full: true }))[id], 'the helper wrote a second ago, so the session stands again');
+});
+
+test('설계 검토 be8 고칠 것 2: links below the watched folder are not followed — a helper folder linked elsewhere does not make an old session look busy', async () => {
+  let t = Date.now();
+  const dir = tmp('linked-helper');
+  const other = tmp('linked-target');
+  const id = uuid(46);
+  put(path.join(dir, 'projects', 'C--work-link', id + '.jsonl'), claudeLine('C:\\work\\link'), t - 3 * H);
+  put(path.join(other, 'agent-1.jsonl'), claudeLine('C:\\work\\other'), t - 1000);
+  fs.mkdirSync(path.join(dir, 'projects', 'C--work-link', id), { recursive: true });
+  fs.symlinkSync(other, path.join(dir, 'projects', 'C--work-link', id, 'subagents'), 'junction');
+  const records = createOfficeRecords({ roots: { claude: [dir], codex: [] }, now: () => t });
+  assert.equal(byId(await records.scan({ full: true }))[id], undefined, 'the linked helper folder is not read');
+  // 한 번 본 프로젝트 폴더를 연결로 바꾸어도 틱이 따라가지 않는다
+  const proj = path.join(dir, 'projects', 'C--work-swap');
+  const newId = uuid(47);
+  put(path.join(proj, uuid(48) + '.jsonl'), claudeLine('C:\\work\\swap'), t - 1000);
+  assert.ok(byId(await records.scan({ full: true }))[uuid(48)], 'a real project folder is read');
+  const elsewhere = tmp('linked-project');
+  put(path.join(elsewhere, newId + '.jsonl'), claudeLine('C:\\work\\elsewhere'), t);
+  fs.rmSync(proj, { recursive: true, force: true });
+  fs.symlinkSync(elsewhere, proj, 'junction');
+  t += 15 * S;
+  assert.equal(byId(await records.scan())[newId], undefined, 'the tick does not follow the swapped-in link');
+});
+
+test('GPT 검수 be9 GA1: a year folder swapped for a link is not followed through the remembered folders below it, nor after the root comes back', async () => {
+  let t = Date.now();
+  const root = tmp('codex-swap');
+  const elsewhere = tmp('codex-elsewhere');
+  const day = d => path.join(d, '2026', '11', '21');
+  const name = n => `rollout-2026-11-21T09-00-00-${uuid(n)}.jsonl`;
+  put(path.join(day(root), name(50)), codexMeta('C:\\work\\own'), t - 1000);
+  const roots = { claude: [], codex: [root] };
+  const records = createOfficeRecords({ roots, now: () => t });
+  assert.ok(byId(await records.scan({ full: true, roots }))[uuid(50)], 'its own session is read');
+  // 2026 폴더를 다른 곳을 가리키는 연결로 바꾼다. 그 아래에 같은 이름의 달 · 날 폴더와 새 기록이 있다
+  put(path.join(day(elsewhere), name(51)), codexMeta('C:\\work\\elsewhere'), t);
+  fs.rmSync(path.join(root, '2026'), { recursive: true, force: true });
+  fs.symlinkSync(path.join(elsewhere, '2026'), path.join(root, '2026'), 'junction');
+  t += 15 * S;
+  assert.equal(byId(await records.scan({ roots }))[uuid(51)], undefined, 'the tick does not read through the link');
+  // 폴더가 한 번 빠졌다가 2분 안에 돌아와도 같다
+  t += 15 * S;
+  await records.scan({ roots: { claude: [], codex: [] } });
+  t += 15 * S;
+  assert.equal(byId(await records.scan({ roots }))[uuid(51)], undefined, 'nor after the root comes back');
+});
+
+test('설계 검토 be9 고칠 것 1: just before reporting, the real place of the top is judged again; anything but false reports nothing from that folder', async () => {
+  const t = Date.now();
+  const dir = tmp('refuse-top');
+  put(path.join(dir, 'projects', 'C--work-refuse', uuid(52) + '.jsonl'), claudeLine('C:\\work\\refuse'), t - 1000);
+  const roots = { claude: [dir], codex: [] };
+  const asked = [];
+  for (const [answer, seen] of [[false, true], [true, false], [null, false], ['throw', false]]) {
+    const refuse = async top => { asked.push(top); if (answer === 'throw') throw new Error('x'); return answer; };
+    const records = createOfficeRecords({ roots, now: () => t, refuse });
+    assert.equal(!!byId(await records.scan({ full: true }))[uuid(52)], seen, String(answer));
+  }
+  assert.ok(asked.every(a => a.toLowerCase() === fs.realpathSync.native(path.join(dir, 'projects')).toLowerCase()), 'it is asked about the real place of the top');
+});
+
+test('설계 검토 be9 고칠 것 2: a folder that fails once to stat keeps what was first seen of its sessions', async () => {
+  let t = Date.now();
+  const dir = tmp('forget-keep');
+  const proj = path.join(dir, 'projects', 'C--work-keep');
+  put(path.join(proj, uuid(53) + '.jsonl'), claudeLine('C:\\work\\keep'), t + 45 * M); // 앞날의 때
+  let failOnce = false;
+  const fsImpl = { ...fs, promises: { ...fs.promises, lstat: async p => {
+    if (failOnce && path.resolve(p) === path.resolve(proj)) { failOnce = false; throw Object.assign(new Error('busy'), { code: 'EBUSY' }); }
+    return fs.promises.lstat(p);
+  } } };
+  const records = createOfficeRecords({ fsImpl, roots: { claude: [dir], codex: [] }, now: () => t });
+  assert.ok(byId(await records.scan({ full: true }))[uuid(53)]);
+  failOnce = true;
+  t += 15 * S;
+  await records.scan(); // 틱: 프로젝트 폴더의 lstat이 한 번 실패한다
+  t += 31 * M;
+  assert.equal(byId(await records.scan({ full: true }))[uuid(53)], undefined, 'still quiet since it was first seen');
+});
+
+test('설계 검토 be9 고칠 것 3 · 보고 직전 확인: even when lstat follows links, a helper folder linked outside the top makes no session busy', async () => {
+  const t = Date.now();
+  const dir = tmp('layer-real');
+  const other = tmp('layer-real-target');
+  const id = uuid(54);
+  put(path.join(dir, 'projects', 'C--work-layer', id + '.jsonl'), claudeLine('C:\\work\\layer'), t - 3 * H);
+  put(path.join(other, 'agent-1.jsonl'), claudeLine('C:\\work\\other'), t - 1000);
+  fs.mkdirSync(path.join(dir, 'projects', 'C--work-layer', id), { recursive: true });
+  fs.symlinkSync(other, path.join(dir, 'projects', 'C--work-layer', id, 'subagents'), 'junction');
+  // 연결을 알아보지 못하는 lstat(stat과 같다): 늘어놓기는 연결을 따라가고, 보고 직전 확인만 남는다
+  const fsImpl = { ...fs, promises: { ...fs.promises, lstat: (...a) => fs.promises.stat(...a) } };
+  const records = createOfficeRecords({ fsImpl, roots: { claude: [dir], codex: [] }, now: () => t });
+  assert.equal(byId(await records.scan({ full: true }))[id], undefined, 'the real place check alone keeps it out');
+});
+
+test('설계 검토 be9 고칠 것 3 · 캐시 정리와 다시 늘어놓기: below a year folder swapped for a link nothing remembered is looked at again, and a root coming back is listed from the top', async () => {
+  let t = Date.now();
+  const root = tmp('layer-forget');
+  const elsewhere = tmp('layer-forget-target');
+  const day = d => path.join(d, '2026', '11', '21');
+  put(path.join(day(root), `rollout-2026-11-21T09-00-00-${uuid(55)}.jsonl`), codexMeta('C:\\work\\own'), t - 1000);
+  put(path.join(day(elsewhere), `rollout-2026-11-21T09-00-00-${uuid(56)}.jsonl`), codexMeta('C:\\work\\elsewhere'), t - 1000);
+  const touched = [];
+  const wrap = name => (...a) => { touched.push([name, path.resolve(String(a[0]))]); return fs.promises[name](...a); };
+  const fsImpl = { promises: { stat: wrap('stat'), lstat: wrap('lstat'), readdir: wrap('readdir'), open: (...a) => fs.promises.open(...a), realpath: (...a) => fs.promises.realpath(...a) } };
+  const roots = { claude: [], codex: [root] };
+  const records = createOfficeRecords({ fsImpl, roots, now: () => t });
+  assert.ok(byId(await records.scan({ full: true, roots }))[uuid(55)]);
+  fs.rmSync(path.join(root, '2026'), { recursive: true, force: true });
+  fs.symlinkSync(path.join(elsewhere, '2026'), path.join(root, '2026'), 'junction');
+  touched.length = 0;
+  t += 15 * S;
+  await records.scan({ roots });
+  const below = path.join(root, '2026') + path.sep;
+  assert.deepEqual(touched.filter(([, p]) => p.startsWith(below)), [], 'the month and day folders and the session file below the link are not looked at again');
+  // 폴더가 빠졌다가 2분 안에 돌아오면 맨 위부터 다시 늘어놓는다
+  t += 15 * S;
+  await records.scan({ roots: { claude: [], codex: [] } });
+  touched.length = 0;
+  t += 15 * S;
+  await records.scan({ roots });
+  assert.ok(touched.some(([name, p]) => name === 'readdir' && p === path.resolve(root)), 'the top is listed again');
+});
+
+test('GPT 검수 be8 GA1: a folder left out of one scan keeps what was seen in it — an unchanged file dated ahead stays dropped when the folder comes back', async () => {
+  let t = Date.now();
+  const dir = tmp('rest-root');
+  const id = uuid(45);
+  put(path.join(dir, 'projects', 'C--work-rest', id + '.jsonl'), claudeLine('C:\\work\\rest'), t + 45 * M);
+  const records = createOfficeRecords({ roots: { claude: [dir], codex: [] }, now: () => t });
+  const roots = { claude: [dir], codex: [] };
+  assert.equal(byId(await records.scan({ full: true, roots }))[id].changedAt, t);
+  t += 1 * M;
+  assert.deepEqual(await records.scan({ full: true, roots: { claude: [], codex: [] } }), [], 'the folder is left out for one scan');
+  t += 30 * M;
+  assert.equal(byId(await records.scan({ full: true, roots }))[id], undefined, 'back again: still quiet since it was first seen');
+});
+
+test('GPT 검수 be7 GA3: helper lists that differ are told apart whatever their file names hold', async () => {
+  let t = Date.now();
+  const dir = tmp('future-names');
+  const id = uuid(44);
+  put(path.join(dir, 'projects', 'C--work-names', id + '.jsonl'), claudeLine('C:\\work\\names'), t + 45 * M);
+  const subs = path.join(dir, 'projects', 'C--work-names', id, 'subagents');
+  put(path.join(subs, 'a.jsonl'), claudeLine('C:\\work\\names'), 100);
+  put(path.join(subs, 'b.jsonl'), claudeLine('C:\\work\\names'), 200);
+  const records = createOfficeRecords({ roots: { claude: [dir], codex: [] }, now: () => t });
+  assert.equal(byId(await records.scan({ full: true }))[id].changedAt, t);
+  t += 31 * M;
+  assert.equal(byId(await records.scan({ full: true }))[id], undefined, 'quiet for 30 minutes: dropped');
+  // 두 도우미 파일을 이름에 구분 글자가 든 파일 하나로 바꾼다
+  fs.rmSync(path.join(subs, 'a.jsonl'));
+  fs.rmSync(path.join(subs, 'b.jsonl'));
+  put(path.join(subs, 'a.jsonl=100,b.jsonl'), claudeLine('C:\\work\\names'), 200);
+  assert.ok(byId(await records.scan({ full: true }))[id], 'a different helper list is news');
+});
+
+test('GPT 검수 be4 GA13: an unchanged file dated 45 minutes ahead stays dropped when the clock reaches that time', async () => {
+  let t = Date.now();
+  const dir = tmp('future-near');
+  put(path.join(dir, 'projects', 'C--work-near', uuid(42) + '.jsonl'), claudeLine('C:\work\near'), t + 45 * M);
+  const records = createOfficeRecords({ roots: { claude: [dir], codex: [] }, now: () => t });
+  const seen = t;
+  assert.equal(byId(await records.scan({ full: true }))[uuid(42)].changedAt, seen);
+  t += 31 * M;
+  assert.equal(byId(await records.scan())[uuid(42)], undefined, 'quiet for 30 minutes: dropped');
+  t += 15 * M; // 지금이 파일의 고친 때를 지났다
+  assert.equal(byId(await records.scan())[uuid(42)], undefined, 'the same file does not come back as news');
+  assert.equal(byId(await records.scan({ full: true }))[uuid(42)], undefined, 'nor in a full listing');
+});

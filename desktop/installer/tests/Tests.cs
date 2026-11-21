@@ -705,65 +705,16 @@ internal static class SignalInstallerTests
                     Assert(Hash(sentinel)==sentinelHash,"Automatic upgrade changed external synthetic account data.");
                 });
             }
-            // 솔리오 「사무실」의 훅 지우기(office-unhook.nsh). 가짜 앱은 --office-unhook으로 불리면 시험 폴더의 기록에 한 줄을 남긴다.
-            // 위의 다시 설치와 자동 업데이트는 새 설치기가 옛 판의 지우는 프로그램을 --updated로 부르는 길이다. 그 길에서는 훅을 지우지 않는다
-            string officeLog=Fixture.ContainsKey("officeUnhookLimitMs")?(string)Fixture["officeUnhookLog"]:null;
-            if(officeLog!=null)
-            {
-                int officeLimit=(int)Fixture["officeUnhookLimitMs"];string officeHang=(string)Fixture["officeUnhookHang"];
-                Check("reinstall and automatic update run the old uninstaller with --updated and never --office-unhook", delegate
-                {
-                    Assert(!File.Exists(officeLog),"An update or reinstall ran --office-unhook: "+(File.Exists(officeLog)?File.ReadAllText(officeLog):""));
-                });
-                Check("uninstall stops an --office-unhook run and its child at the limit and still removes the app", delegate
-                {
-                    var uninstaller=Path.Combine(Spec.InstallDirectory,"Uninstall "+Path.GetFileNameWithoutExtension(Spec.ExecutableName)+".exe");
-                    Assert(File.Exists(uninstaller)&&IsInside(uninstaller,Root),"Fixture uninstaller missing.");
-                    File.WriteAllText(officeHang,"hold the unhook run past its limit");
-                    try
-                    {
-                        var watch=Stopwatch.StartNew();
-                        Assert(Run(uninstaller,"/S /currentuser /KEEP_APP_DATA _?="+Spec.InstallDirectory)==0,"Uninstall with a hung unhook run failed.");
-                        long elapsed=watch.ElapsedMilliseconds;
-                        Assert(elapsed>=officeLimit-250&&elapsed<officeLimit+30000,"Uninstall did not wait for the unhook limit and then go on: "+elapsed+" ms.");
-                        // 창을 보이지 않게(STARTF_USESHOWWINDOW, SW_HIDE) 한 번만, 정확히 --office-unhook으로 불렀다. 둘째 줄은 그 실행이 띄운 하위 프로세스다
-                        string[] lines=File.ReadAllLines(officeLog);
-                        Assert(lines.Length==2&&lines[0]=="start --office-unhook flags=1 show=0"&&lines[1].StartsWith("start --office-unhook child ",StringComparison.Ordinal),"Unexpected unhook runs: "+String.Join(" | ",lines));
-                        WaitFor(delegate { return FixtureProcesses()==0; },"The hung unhook run or its child is still running.");
-                        Assert(!File.Exists(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName)),"The app executable remains after the uninstall.");
-                        WaitFor(delegate { using (var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64)) return hive.OpenSubKey(UninstallKey())==null; },"Uninstall registration remains after a hung unhook run.");
-                        Assert(Hash(sentinel)==sentinelHash,"Uninstall changed external synthetic data.");
-                    }
-                    finally { File.Delete(officeHang); }
-                    File.Delete(officeLog);
-                });
-                Check("the fixture installs again into its own folder after the uninstall", delegate
-                {
-                    // 지우기가 설치 자리 기록을 지웠다. 처음처럼 이 시험의 자리를 다시 적어 실제 Programs 폴더에 설치하지 않게 한다
-                    using (var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))
-                    using (var key=hive.CreateSubKey(InstallKey()))
-                        key.SetValue("InstallLocation",Spec.InstallDirectory,RegistryValueKind.String);
-                    Assert(Same(engine.Preflight(),Spec.InstallDirectory),"Preflight chose another folder for the reinstall.");
-                    InstallOnWorker(engine);
-                    engine.VerifyInstalled(); VerifyRegistrationAndShortcuts();
-                    Assert(!File.Exists(officeLog),"A fresh install ran --office-unhook.");
-                });
-            }
             Check("fixture uninstall preserves external data and removes its registration", delegate
             {
                 var uninstaller = Path.Combine(Spec.InstallDirectory, "Uninstall " + Path.GetFileNameWithoutExtension(Spec.ExecutableName) + ".exe");
                 Assert(File.Exists(uninstaller) && IsInside(uninstaller, Root), "Fixture uninstaller missing.");
                 Assert(Run(uninstaller, "/S /currentuser /KEEP_APP_DATA _?=" + Spec.InstallDirectory) == 0, "Fixture uninstall failed.");
-                // 훅 지우기가 끝날 때까지 기다린 뒤에 파일을 지운다. 지우는 프로그램이 돌아왔을 때 기록에 done이 있고 앱 실행 파일은 없다
-                if(officeLog!=null)
-                {
-                    string[] lines=File.Exists(officeLog)?File.ReadAllLines(officeLog):new string[0];
-                    Assert(lines.Length==2&&lines[0]=="start --office-unhook flags=1 show=0"&&lines[1]=="done","Uninstall did not run --office-unhook once and wait for it: "+String.Join(" | ",lines));
-                    Assert(!File.Exists(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName)),"The app executable remains after the uninstall.");
-                }
                 WaitFor(delegate { using (var hive = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64)) return hive.OpenSubKey(UninstallKey()) == null; }, "Fixture uninstall registration remains.");
                 Assert(Hash(sentinel) == sentinelHash, "Uninstall changed external synthetic data.");
                 Assert(!File.Exists(StartMenuShortcut()) && !File.Exists(DesktopShortcut()), "Fixture shortcuts remain after uninstall.");
+                // 지우는 프로그램은 설치 폴더 지우기의 실패를 따로 알리지 않는다. 실행 파일이 실제로 사라졌는지 본다(GPT 검수 solio-office-be5 GA3)
+                WaitFor(delegate { return !File.Exists(Path.Combine(Spec.InstallDirectory, Spec.ExecutableName)); }, "The app executable remains after the uninstall.");
             });
             Check("real SYNK Platform registration remains unchanged", delegate
             {
@@ -952,12 +903,6 @@ internal static class SignalInstallerTests
     {
         var watch = Stopwatch.StartNew();
         while (!ready()) { Assert(watch.ElapsedMilliseconds < timeout, error); Thread.Sleep(40); }
-    }
-    private static int FixtureProcesses()
-    {
-        var found = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(Spec.ExecutableName));
-        foreach (var process in found) process.Dispose();
-        return found.Length;
     }
     private static int Run(string executable, string arguments)
     {

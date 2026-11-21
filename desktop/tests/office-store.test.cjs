@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { createOfficeStore, MAX_DEPARTMENTS, MAX_ASSIGNMENTS } = require('../src/office-store.cjs');
+const { createOfficeStore, subscriptionCheck, MAX_DEPARTMENTS, MAX_ASSIGNMENTS } = require('../src/office-store.cjs');
 const { loadOfficeModel } = require('../src/office.cjs');
 
 const A = 'owner-1234567890', B = 'tester-1234567890';
@@ -285,4 +285,241 @@ test('GA4: folders that went missing can still be removed one by one; only an ad
   assert.equal((await store.saveDepartment(A, { id, name: '외장 드라이브' })).ok, true);
   assert.equal((await store.saveDepartment(A, { id, name: '외장 드라이브 2', folder: w('blog') })).ok, true, 'the same stored folder is not checked again');
   assert.equal((await store.saveDepartment(A, { id, name: '외장', folder: w('gone2') })).code, 'FOLDER');
+});
+
+test('GB8: a save that would grow office.json past the read limit is refused, and a file already past it is never overwritten with defaults', async () => {
+  const { store, file, w } = setup();
+  assert.equal((await store.saveDepartment(A, { name: '쇼핑몰', folder: w('shop') })).ok, true);
+  // 다음 판이 더한 큰 칸: 붙여 쓴 꼴로는 상한 안이지만 들여쓰기를 넣으면 넘는다
+  const raw = JSON.parse(fs.readFileSync(file(A), 'utf8'));
+  raw.later = Array(300000).fill(1);
+  const compact = JSON.stringify(raw);
+  assert.ok(compact.length < 1024 * 1024);
+  fs.writeFileSync(file(A), compact);
+  assert.deepEqual(await store.saveSettings(A, { view: 'top' }), { ok: false, code: 'SIZE' });
+  assert.equal(fs.readFileSync(file(A), 'utf8'), compact, 'the file is left as it was');
+  assert.equal((await store.read(A)).data.departments.length, 1, 'the departments are still there');
+  // 이미 상한을 넘은 파일: 고치기는 기본값으로 덮지 않고 멈춘다
+  const big = JSON.stringify({ ...raw, later: 'x'.repeat(1100000) });
+  fs.writeFileSync(file(A), big);
+  assert.deepEqual(await store.saveDepartment(A, { name: '법무', folder: w('law') }), { ok: false, code: 'SIZE' });
+  assert.deepEqual(await store.addRoot(A, w('blog')), { ok: false, code: 'SIZE' });
+  assert.equal(fs.readFileSync(file(A), 'utf8'), big, 'never overwritten');
+  assert.equal(fs.existsSync(file(A) + '.bad'), false, 'it is not treated as a broken file');
+});
+
+test('GB1: a guard that turns false stops the write right before it, and an unchanged result needs no guard', async () => {
+  const { store, file, w } = setup();
+  assert.deepEqual(await store.saveDepartment(A, { name: '쇼핑몰', folder: w('shop') }, { guard: () => false }), { ok: false, code: 'AUTH_CHANGED' });
+  assert.equal(fs.existsSync(file(A)), false);
+  assert.equal((await store.saveDepartment(A, { name: '쇼핑몰', folder: w('shop') }, { guard: () => true })).ok, true);
+  assert.deepEqual(await store.assign(A, sid(1), null, { guard: () => false }), { ok: true, data: (await store.read(A)).data, unchanged: true }, 'nothing to write, so nothing to stop');
+});
+
+test('GPT 검수 be3 GA10: a subscription-room account folder is refused however it is written — with a 「.」 part, through a junction, or under this app\'s own AiSubscriptions', async () => {
+  const { store, userData, top, file } = setup();
+  const acc = path.join(userData, 'AiSubscriptions', 'accounts', 'claude-1', '.claude');
+  fs.mkdirSync(acc, { recursive: true });
+  assert.deepEqual(await store.addRoot(A, acc), { ok: false, code: 'FOLDER' });
+  assert.deepEqual(await store.addRoot(A, path.join(userData, 'AiSubscriptions', '.', 'accounts', 'claude-1', '.claude')), { ok: false, code: 'FOLDER' }, 'a 「.」 part does not slip through');
+  const link = path.join(top, 'looks-normal');
+  fs.symlinkSync(path.join(userData, 'AiSubscriptions', 'accounts', 'claude-1'), link, 'junction');
+  assert.deepEqual(await store.addRoot(A, path.join(link, '.claude')), { ok: false, code: 'FOLDER' }, 'a junction into the accounts folder is refused');
+  assert.deepEqual(await store.saveRoots(A, [path.join(link, '.claude')]), { ok: false, code: 'FOLDER' });
+  assert.equal(await store.isSubscriptionDir(path.join(link, '.claude')), true);
+  assert.equal(await store.isSubscriptionDir(path.join(top, 'work')), false);
+  assert.equal(fs.existsSync(file(A)), false, 'nothing was written');
+});
+
+test('GPT 검수 be4 GA9: a sign-out while the folder is made writes no .bad copy over the earlier one', async () => {
+  const { userData, file } = setup();
+  fs.mkdirSync(path.dirname(file(A)), { recursive: true });
+  fs.writeFileSync(file(A), '{ 깨진 파일');
+  fs.writeFileSync(file(A) + '.bad', '앞서 둔 사본');
+  let signedOut = false;
+  const fsImpl = { ...fs, promises: { ...fs.promises, mkdir: async (...a) => { const r = await fs.promises.mkdir(...a); signedOut = true; return r; } } };
+  const store = createOfficeStore({ userData, cores: () => 8, fsImpl });
+  assert.deepEqual(await store.saveSettings(A, { view: 'top' }, { guard: () => !signedOut }), { ok: false, code: 'AUTH_CHANGED' });
+  assert.equal(fs.readFileSync(file(A) + '.bad', 'utf8'), '앞서 둔 사본', 'the earlier copy is kept');
+  assert.equal(fs.readFileSync(file(A), 'utf8'), '{ 깨진 파일');
+});
+
+test('GPT 검수 be4 GA10 · be6 GA3 · GA4: the check never blocks the main process — no sync realpath; a path that does not answer in time is left out, and later checks of it neither wait nor pile up', async () => {
+  const top = fs.mkdtempSync(path.join(os.tmpdir(), 'office-store-'));
+  const userData = path.join(top, 'userData');
+  const share = '\\\\slow-server\\share\\.claude';
+  let calls = 0, syncCalls = 0, shareCalls = 0;
+  // 동기 realpath는 부르면 250ms 동안 본체를 붙잡는다(공유의 응답이 느린 때)
+  const hold = p => { syncCalls += 1; const end = Date.now() + 250; while (Date.now() < end) { /* 붙잡힘 */ } return path.resolve(p); };
+  const fsImpl = { ...fs, realpathSync: Object.assign(hold, { native: hold }),
+    promises: { ...fs.promises, realpath: async p => { calls += 1; if (String(p).startsWith('\\\\slow-server')) { shareCalls += 1; return new Promise(() => {}); } return fs.promises.realpath(p); } } };
+  const check = subscriptionCheck(userData, fsImpl, { timeoutMs: 60 });
+  let ticked = 0;
+  const tick = new Promise(r => setTimeout(() => { ticked = Date.now(); r(); }, 10));
+  const started = Date.now();
+  const answer = check(share);
+  await tick;
+  assert.ok(ticked - started < 50, `a 10 ms timer is not held by the check (${ticked - started} ms)`);
+  assert.equal(await answer, true, 'a path that does not answer is not watched: it may be an account folder');
+  assert.equal(syncCalls, 0, 'no sync realpath');
+  assert.ok(Date.now() - started < 1000);
+  assert.equal(await check(share), true);
+  assert.equal(shareCalls, 1, 'the path still being solved is not asked again');
+  // 시간을 넘긴 뒤의 판정은 타이머를 새로 걸지 않고 바로 답한다(멈춘 풀기에 기다림이 쌓이지 않는다)
+  let timers = 0;
+  const counted = subscriptionCheck(userData, fsImpl, { timeoutMs: 30, setTimeout: (fn, ms) => { timers += 1; return setTimeout(fn, ms); } });
+  assert.equal(await counted(share + '2'), true);
+  const firstTimers = timers;
+  for (let i = 0; i < 64; i++) assert.equal(await counted(share + '2'), true);
+  assert.equal(timers, firstTimers, 'no new timer per check once the path timed out');
+  assert.equal(await check(path.join(userData, 'AiSubscriptions', 'accounts', 'claude-1', '.claude')), true, 'the letters still catch an account folder at once');
+});
+
+test('GPT 검수 be5 GA1 · be6 GA4: each check solves the path again, so a link pointed into the accounts folder later is caught; a slow answer is never taken from an earlier one', async () => {
+  const userData = path.join(os.tmpdir(), 'office-store-be5', 'userData');
+  const accounts = path.join(userData, 'AiSubscriptions', 'accounts', 'claude-1');
+  const link = 'C:\\Users\\a\\.claude-work';
+  let target = 'C:\\Users\\a\\real-claude', slow = false;
+  const fsImpl = { ...fs, promises: { ...fs.promises, realpath: async p => {
+    if (path.resolve(String(p)).toLowerCase() !== path.resolve(link).toLowerCase()) throw Object.assign(new Error('no'), { code: 'ENOENT' });
+    if (slow) return new Promise(() => {});
+    return target;
+  } } };
+  const check = subscriptionCheck(userData, fsImpl, { timeoutMs: 40 });
+  assert.equal(await check(link), false);
+  target = accounts; // 연결 폴더의 대상을 구독 방 계정 폴더로 바꿨다
+  assert.equal(await check(link), true, 'the new target is seen at once');
+  target = 'C:\\Users\\a\\real-claude';
+  assert.equal(await check(link), false, 'pointed back: watched again');
+  slow = true; // 대상을 바꾸는 중에 풀기가 늦다
+  assert.equal(await check(link), true, 'a slow answer is not the earlier allowed value: the folder is left out');
+});
+
+test('GPT 검수 be8 GA2: a path that fails to solve for any reason but 「not there」 is unknown, for the folder and for the accounts folder alike', async () => {
+  const userData = 'C:\\Users\\a\\AppData\\Roaming\\SYNK Desktop';
+  const accounts = path.join(userData, 'AiSubscriptions', 'accounts');
+  const vault = 'D:\\vault\\accts';
+  const link = 'C:\\Users\\a\\.claude-x';
+  const locked = 'C:\\Users\\a\\.claude-locked';
+  let deny = true;
+  const same = (a, b) => path.resolve(String(a)).toLowerCase() === path.resolve(b).toLowerCase();
+  const fail = code => Object.assign(new Error(code), { code });
+  const fsImpl = { ...fs, promises: { ...fs.promises, realpath: async p => {
+    if (same(p, accounts)) { if (deny) throw fail('EACCES'); return vault; }
+    if (same(p, link)) return path.join(vault, 'claude-1', '.claude');
+    if (same(p, locked)) throw fail('EPERM');
+    throw fail('ENOENT');
+  } } };
+  const check = subscriptionCheck(userData, fsImpl, { timeoutMs: 40 });
+  assert.equal(await check(link), true, 'the accounts folder cannot be solved: a folder inside its real place is not let through');
+  assert.equal(await check(locked), true, 'a folder that cannot be solved is not watched');
+  assert.equal(await check('C:\\Users\\a\\.claude-gone'), true, 'while the accounts folder is unknown, nothing is told apart from it');
+  deny = false;
+  assert.equal(await check(link), true, 'solved: inside the accounts folder');
+  assert.equal(await check('C:\\Users\\a\\.claude-gone'), false, 'a folder that is not there is judged by its letters');
+});
+
+test('설계 검토 be8 고칠 것 3: a path that realpath calls missing but stat finds is unknown, not judged by its letters', async () => {
+  const userData = 'C:\\Users\\a\\AppData\\Roaming\\SYNK Desktop';
+  const odd = 'C:\\Users\\a\\.claude-odd';
+  const same = (a, b) => path.resolve(String(a)).toLowerCase() === path.resolve(b).toLowerCase();
+  const missing = () => Object.assign(new Error('no'), { code: 'ENOENT' });
+  const fsImpl = { ...fs, promises: { ...fs.promises,
+    realpath: async () => { throw missing(); },
+    stat: async p => { if (same(p, odd)) return { isDirectory: () => true }; throw missing(); },
+  } };
+  const check = subscriptionCheck(userData, fsImpl, { timeoutMs: 40 });
+  assert.equal(await check(odd), true, 'there, but its real place is unknown');
+  assert.equal(await check('C:\\Users\\a\\.claude-gone'), false, 'really missing: judged by its letters');
+});
+
+test('GPT 검수 be9 GA2: when realpath says missing but the follow-up stat fails some other way, the place is unknown', async () => {
+  const userData = 'C:\\Users\\a\\AppData\\Roaming\\SYNK Desktop';
+  const accounts = path.join(userData, 'AiSubscriptions', 'accounts');
+  const link = 'C:\\Users\\a\\.claude-x';
+  const same = (a, b) => path.resolve(String(a)).toLowerCase() === path.resolve(b).toLowerCase();
+  const fail = code => Object.assign(new Error(code), { code });
+  const fsImpl = { ...fs, promises: { ...fs.promises,
+    realpath: async p => { if (same(p, link)) return 'D:\\vault\\accts\\claude-1\\.claude'; throw fail('ENOENT'); },
+    stat: async p => { if (same(p, accounts)) throw fail('EACCES'); throw fail('ENOENT'); },
+  } };
+  const check = subscriptionCheck(userData, fsImpl, { timeoutMs: 40 });
+  assert.equal(await check(link), true, 'the accounts folder may be an alias elsewhere: not let through');
+});
+
+test('설계 검토 be9 고칠 것 4: a value that cannot be judged, or a realpath that answers with no text, is unknown', async () => {
+  const userData = 'C:\\Users\\a\\AppData\\Roaming\\SYNK Desktop';
+  const fsImpl = { ...fs, promises: { ...fs.promises, realpath: async () => '' } };
+  const check = subscriptionCheck(userData, fsImpl, { timeoutMs: 40 });
+  assert.equal(await check('C:\\Users\\a\\.claude'), true, 'an empty answer from realpath is not a place');
+  for (const v of [undefined, null, '', 42]) assert.equal(await check(v), true, String(v));
+});
+
+test('설계 검토 be7 고칠 것 1: a stored folder that is not watched can be added again (unchanged) and removed, without solving its path', async () => {
+  const { userData, file } = setup();
+  const share = '\\\\slow-server\\share\\.claude';
+  fs.mkdirSync(path.dirname(file(A)), { recursive: true });
+  fs.writeFileSync(file(A), JSON.stringify({ view: 'tilted', departments: [], assignments: {}, roots: { claude: [share] } }));
+  let asked = 0;
+  const fsImpl = { ...fs, promises: { ...fs.promises, realpath: async p => { if (String(p).startsWith('\\\\slow-server')) { asked += 1; return new Promise(() => {}); } return fs.promises.realpath(p); } } };
+  const store = createOfficeStore({ userData, cores: () => 8, fsImpl });
+  const started = Date.now();
+  const again = await store.addRoot(A, share);
+  assert.equal(again.ok, true);
+  assert.equal(again.unchanged, true, 'already in the list: kept as it is, not FOLDER');
+  assert.equal((await store.removeRoot(A, share)).ok, true);
+  assert.deepEqual(JSON.parse(fs.readFileSync(file(A), 'utf8')).roots.claude, []);
+  assert.equal(asked, 0);
+  assert.ok(Date.now() - started < 1000);
+});
+
+test('GPT 검수 be7 GA2 · GA4: when the accounts folder itself does not answer in time, a folder inside its real place is left out', async () => {
+  const userData = 'C:\\Users\\a\\AppData\\Roaming\\SYNK Desktop';
+  const accounts = path.join(userData, 'AiSubscriptions', 'accounts');
+  const vault = 'D:\\vault\\accts'; // 계정 폴더 자리의 실제 위치가 이름 무늬 밖에 있다
+  const link = 'C:\\Users\\a\\.claude-x';
+  let slowAccounts = false;
+  const same = (a, b) => path.resolve(String(a)).toLowerCase() === path.resolve(b).toLowerCase();
+  const fsImpl = { ...fs, promises: { ...fs.promises, realpath: async p => {
+    if (same(p, accounts)) return slowAccounts ? new Promise(() => {}) : vault;
+    if (same(p, link)) return path.join(vault, 'claude-1', '.claude');
+    throw Object.assign(new Error('no'), { code: 'ENOENT' });
+  } } };
+  const check = subscriptionCheck(userData, fsImpl, { timeoutMs: 40 });
+  assert.equal(await check(link), true, 'inside the solved place of the accounts folder');
+  slowAccounts = true;
+  assert.equal(await check(link), true, 'the accounts folder is slow: not judged by its letters alone');
+  assert.equal(await check('C:\\Users\\a\\.claude'), true, 'while it is slow, no folder can be told apart from it');
+});
+
+test('GPT 검수 be7 GA1: a stored folder whose path does not answer stays in office.json through reads and saves', async () => {
+  const { userData, file } = setup();
+  const share = '\\\\slow-server\\share\\.claude';
+  fs.mkdirSync(path.dirname(file(A)), { recursive: true });
+  fs.writeFileSync(file(A), JSON.stringify({ view: 'tilted', departments: [], assignments: {}, roots: { claude: [share] } }));
+  let asked = 0;
+  const fsImpl = { ...fs, promises: { ...fs.promises, realpath: async p => { if (String(p).startsWith('\\\\slow-server')) { asked += 1; return new Promise(() => {}); } return fs.promises.realpath(p); } } };
+  const store = createOfficeStore({ userData, cores: () => 8, fsImpl });
+  const started = Date.now();
+  assert.deepEqual((await store.read(A)).data.roots.claude, [share], 'reading keeps the stored folder');
+  assert.equal((await store.saveSettings(A, { view: 'top' })).ok, true);
+  assert.deepEqual(JSON.parse(fs.readFileSync(file(A), 'utf8')).roots.claude, [share], 'saving the view keeps it');
+  assert.equal((await store.saveRoots(A, [share])).ok, true, 'saving the same stored list is not held up by that folder');
+  assert.deepEqual(JSON.parse(fs.readFileSync(file(A), 'utf8')).roots.claude, [share]);
+  assert.equal(asked, 0, 'stored folders are not solved when read or saved');
+  assert.ok(Date.now() - started < 1000, 'nothing waited for the slow path');
+  // 살필 때는 그 폴더를 보지 않는다(모르는 폴더다)
+  assert.equal(await store.isSubscriptionDir(share), true);
+});
+
+test('GPT 검수 be3 GA4: a guard that turns false while the temp file is written stops the rename; the file stays as it was', async () => {
+  const top = fs.mkdtempSync(path.join(os.tmpdir(), 'office-store-'));
+  const userData = path.join(top, 'userData');
+  let signedOut = false;
+  const fsImpl = { ...fs, promises: { ...fs.promises, writeFile: async (f, d, o) => { const r = await fs.promises.writeFile(f, d, o); if (/\.tmp$/.test(String(f))) signedOut = true; return r; } } };
+  const store = createOfficeStore({ userData, cores: () => 8, fsImpl });
+  const guard = () => !signedOut;
+  assert.deepEqual(await store.saveSettings(A, { view: 'top' }, { guard }), { ok: false, code: 'AUTH_CHANGED' });
+  assert.equal(fs.existsSync(path.join(userData, 'Office', A, 'office.json')), false, 'not renamed into place');
+  assert.deepEqual(fs.readdirSync(path.join(userData, 'Office', A)), [], 'the temp file is gone');
 });

@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { officeState, officeReduce } from '../renderer/office-model.mjs';
 import { officeRoom, officeSubscriptions, officeCapacityRow, officeGroupStatus, officeFloorScene, createOfficeRoom, OFFICE_REST_SAY, OFFICE_FLOOR_DEPTS, folderTail, modelWord,
-  officeHooksAsideRow, OFFICE_HOOKS_ASK, OFFICE_HOOKS_NOTICE, OFFICE_HOOKS_SAY, OFFICE_HOOKS_LINE, OFFICE_HOOKS_ON_DONE, OFFICE_HOOKS_OFF_DONE } from '../renderer/office-room.mjs';
+  officeSettingsRow, officeRo } from '../renderer/office-room.mjs';
 import { floorLayout, FLOOR_MOTION } from '../renderer/office-floor.mjs';
 import { createOrbRooms } from '../renderer/orb-rooms.mjs';
 
@@ -29,7 +29,7 @@ const EVENTS = [
 const PC = { cores: 16, totalMemGb: 31.7, freeMemGb: 19, cpuPercent: 38 };
 const snapOf = (patch = {}) => ({
   ok: true, available: true, state: stateOf(EVENTS), departments: DEPTS, assignments: {}, settings: { view: 'tilted', manualCap: null },
-  roots: { claude: ['C:\\Users\\a\\.claude'], codex: ['C:\\Users\\a\\.codex\\sessions'], added: [] }, pc: PC, hooks: { on: false, available: false }, readAt: NOW - 30 * S, ...patch,
+  roots: { claude: ['C:\\Users\\a\\.claude'], codex: ['C:\\Users\\a\\.codex\\sessions'], added: [] }, pc: PC, readAt: NOW - 30 * S, ...patch,
 });
 const weekly = (service, used, extra = {}) => ({ id: 'r-' + service, service, source: 'auto', kind: 'weekly', folder: false, live: { weekly: { usedPercent: used, resetsAt: NOW + 3 * DAY } }, ...extra });
 const SUBS = { ok: true, rows: [weekly('claude', 36), weekly('gpt', 88)] };
@@ -56,7 +56,7 @@ test('the headline comes from the model: the question first, then how many sessi
   const room = officeRoom(snapOf(), {}, NOW, { subs: SUBS });
   assert.equal(room.say, '개발부가 3분 전에 승인을 물었습니다.');
   assert.equal(room.then, '하나는 승인 물음을 모릅니다.');
-  assert.equal(room.hint, '', 'no hooks setting in this build, so no line that points to one');
+  assert.equal(room.hint, '', 'no hooks setting in the first piece, so no line that points to one');
   assert.equal(room.alert, true);
   assert.equal(room.foot, '방금 읽었습니다. 이 방이 열려 있는 동안 15초마다 기록을 살핍니다.');
   const empty = officeRoom(snapOf({ state: officeState(), departments: [] }), {}, NOW, { subs: SUBS });
@@ -187,7 +187,7 @@ test('the settings row offers the two views and the watched folders, and no hook
   const folders = cfg.more.filter(m => m[0] === 'row');
   assert.deepEqual(folders.map(m => [m[1], m[2], Array.isArray(m[3]) ? m[3][1] : '']), [['Claude Code', 'C:\\Users\\a\\.claude', ''], ['Claude Code', 'D:\\other\\.claude', 'root-remove'], ['Codex', 'C:\\Users\\a\\.codex\\sessions', '']], 'only an added folder can be taken out');
   assert.ok(cfg.more.some(m => m[0] === 'acts' && m[1][0][1] === 'root-add'));
-  assert.ok(!JSON.stringify(cfg.more).includes('승인 물음'), 'no hooks switch while hooks.available is false');
+  assert.ok(!JSON.stringify(cfg.more).includes('승인 물음'), 'no hooks switch in the first piece');
   assert.equal(rowOf(officeRoom(snapOf(), { view: 'top' }, NOW), 'cfg').mid, '보기 · 위에서 · 보는 폴더 둘', 'the chosen view shows before the save comes back');
 });
 
@@ -356,138 +356,55 @@ test('one thing at a time: a press while another save is running is refused with
   assert.equal(h.scene().rows.find(r => r.key === 'add').more.find(m => m[0] === 'live')[1], '', 'the answer that came after the reset leaves no line');
 });
 
-/* ── 「승인 물음도 보기」(사무실 구현설계 11.1 · 11.4 · 12.3, 15절 5단계) ── */
-const HOME = 'C:\\Users\\a\\.claude', WORK = 'D:\\other\\.claude', GONE = 'E:\\gone\\.claude';
-const ROOTS2 = { claude: [HOME, WORK], codex: ['C:\\Users\\a\\.codex\\sessions'], added: [WORK] };
-const hooksOf = patch => ({ on: false, available: true, message: null, dirs: [{ dir: HOME, on: false, folder: true, file: true, code: null }, { dir: WORK, on: false, folder: true, file: false, code: null }], ...patch });
-const cfgOf = (hooks, ui = {}) => rowOf(officeRoom(snapOf({ roots: ROOTS2, hooks }), ui, NOW, { subs: SUBS }), 'cfg');
-const hookRow = cfg => cfg.more.find(m => m[0] === 'row' && m[1] === '승인 물음도 보기');
+/* ── 첫 조각은 기록 파일만 읽는다(11-21 유호님 「훅 빼고 내기」) ── */
+test('설계 검토 be7 고칠 것 1: an added folder that is not watched still has its line, a remove button and 「지금은 보지 않음」', () => {
+  const share = '\\\\slow-server\\share\\.claude';
+  const row = officeSettingsRow({ roots: { claude: ['C:\\Users\\a\\.claude'], codex: [], added: [share] } });
+  const line = row.more.find(m => m[0] === 'row' && m[2] === share + ' · 지금은 보지 않음');
+  assert.ok(line, 'the folder has its line');
+  assert.deepEqual(line[3], ['빼기', 'root-remove', share, '']);
+  assert.ok(row.more.some(m => m[0] === 'note' && m[1].includes('지금은 보지 않음')), 'one line says why');
+  assert.equal(row.mid, '보기 · 비스듬히 · 보는 폴더 하나', 'the count is the folders watched now');
+  const watched = officeSettingsRow({ roots: { claude: ['C:\\Users\\a\\.claude', share], codex: [], added: [share] } });
+  assert.equal(watched.more.filter(m => m[0] === 'row' && m[2] === share).length, 1, 'a watched folder is not listed twice');
+  assert.ok(!watched.more.some(m => m[0] === 'note' && m[1].includes('지금은 보지 않음')));
+  // 화면 r5 FA1: 기본 폴더가 다른 꼴(빗금 방향 · 끝 빗금)로 적혀도 더한 폴더와 같은 폴더면 한 줄이고, 빼기는 더한 글자로 부른다
+  const other = officeSettingsRow({ roots: { claude: ['D:/claude-work/'], codex: [], added: ['D:\\claude-work'], resting: [] } });
+  const rows = other.more.filter(m => m[0] === 'row' && m[1] === 'Claude Code');
+  assert.equal(rows.length, 1);
+  assert.deepEqual(rows[0][3], ['빼기', 'root-remove', 'D:\\claude-work', '']);
+  assert.ok(!other.more.some(m => m[0] === 'note' && m[1].includes('지금은 보지 않음')));
+  // 본체가 보낸 목록이 있으면 그것을 쓴다
+  const told = officeSettingsRow({ roots: { claude: ['C:\\Users\\a\\.claude'], codex: [], added: ['C:\\x'], resting: [] } });
+  assert.ok(!told.more.some(m => m[0] === 'row' && String(m[2]).includes('지금은 보지 않음')));
+});
 
-test('the hooks switch stands in 설정 only when this run can turn it on (or it is on); off, it offers 「켜기」 and the headline points to it', () => {
-  assert.equal(hookRow(cfgOf({ on: false, available: false })), undefined, 'a run that cannot edit settings files shows no switch');
-  const room = officeRoom(snapOf({ roots: ROOTS2, hooks: hooksOf() }), {}, NOW, { subs: SUBS });
-  assert.equal(room.hint, '승인 물음은 설정에서 켜면 봅니다.');
+test('records only: no staff line repeats 「승인 물음은 모릅니다」; the headline says it once, and the settings rooms have no hooks switch', () => {
+  const only = [
+    record('sess-rec-0001', MKT, 'claude', NOW - 20 * S),
+    record('sess-rec-0002', SHOP, 'claude', NOW - 4 * MIN),
+    record('sess-cdx-0003', SHOP + '\\api', 'codex', NOW - 30 * S),
+  ];
+  const room = officeRoom(snapOf({ state: stateOf(only) }), {}, NOW, { subs: SUBS });
+  assert.equal(room.say, '둘이 일하고 있습니다.');
+  assert.equal(room.then, '모두 승인 물음을 모릅니다.');
+  assert.equal(room.hint, '');
+  assert.equal(room.alert, false, 'no alert without hook news');
+  const staff = room.rows.flatMap(r => (r.more || []).filter(m => m[0] === 'staff'));
+  assert.equal(staff.length, 3);
+  assert.ok(staff.every(m => !m[5].includes('승인 물음')), 'the note is not repeated on every line');
+  const one = officeRoom(snapOf({ state: stateOf(only.slice(0, 1)) }), {}, NOW, { subs: SUBS });
+  assert.equal(one.then, '승인 물음은 모릅니다.');
+  // 훅 소식을 받은 세션이 하나라도 있으면(둘째 조각) 모르는 세션의 줄에 그 말이 다시 붙는다
+  const mixed = officeRoom(snapOf(), {}, NOW, { subs: SUBS });
+  assert.ok(mixed.rows.flatMap(r => (r.more || []).filter(m => m[0] === 'staff')).some(m => m[5].endsWith('승인 물음은 모릅니다')));
   const cfg = rowOf(room, 'cfg');
-  assert.equal(cfg.mid, '보기 · 비스듬히 · 승인 물음 꺼짐 · 보는 폴더 셋', 'the order of 11.4: view, questions, folders');
-  assert.deepEqual(hookRow(cfg), ['row', '승인 물음도 보기', '꺼져 있습니다', ['켜기', 'hooks-ask', '', 'toggle'], '']);
-  assert.ok(!cfg.more.some(m => m[0] === 'confirm'), 'nothing is asked before 「켜기」');
-  const folderAt = cfg.more.findIndex(m => m[0] === 'row' && m[1] === 'Claude Code');
-  assert.ok(cfg.more.findIndex(m => m[0] === 'pick') < cfg.more.indexOf(hookRow(cfg)) && cfg.more.indexOf(hookRow(cfg)) < folderAt, 'between 보기 and the folders');
-  assert.deepEqual(cfg.more.filter(m => m[0] === 'row' && m[1] === 'Claude Code').map(m => m[2]), [HOME, WORK], 'no per-folder state while off');
+  assert.equal(cfg.mid, '보기 · 비스듬히 · 보는 폴더 둘');
+  assert.ok(!JSON.stringify(cfg.more).includes('승인 물음'));
 });
 
-test('「켜기」 unfolds the notice from 12.3 for six kinds of news and lists every settings file, saying which is new and which folder is skipped', () => {
-  const cfg = cfgOf(hooksOf({ dirs: [...hooksOf().dirs, { dir: GONE, on: false, folder: false, file: false, code: null }] }), { hooksAsk: true });
-  assert.deepEqual(hookRow(cfg)[3], ['켜기', 'hooks-ask', '', 'toggle on']);
-  const ask = cfg.more.find(m => m[0] === 'confirm');
-  assert.equal(ask[1], OFFICE_HOOKS_ASK);
-  assert.equal(ask[2][0], OFFICE_HOOKS_NOTICE);
-  assert.match(OFFICE_HOOKS_NOTICE, /알림 여섯 가지를 더합니다/);
-  assert.match(OFFICE_HOOKS_NOTICE, /다른 프로그램이 같은 포트를 열면 그 프로그램이 받을 수 있습니다/, 'the remaining risk is told before turning on (12.2)');
-  assert.match(OFFICE_HOOKS_NOTICE, /끄면 솔리오가 더한 것만 지웁니다\.$/);
-  assert.ok(!/일곱/.test(OFFICE_HOOKS_NOTICE));
-  assert.deepEqual(ask[2].slice(1), [HOME + '\\settings.json', WORK + '\\settings.json · 설정 파일이 없어 새로 만듭니다', GONE + ' · 폴더가 없어 건너뜁니다']);
-  assert.deepEqual(ask[3].map(b => [b[0], b[1]]), [['설정 파일에 더하기', 'hooks-on'], ['그만두기', 'hooks-keep']]);
-});
-
-test('on: 「끄기」, each watched Claude folder says whether it sends news, a folder added later is offered again with the same two steps, and the server messages show', () => {
-  const on = hooksOf({ on: true, dirs: [{ dir: HOME, on: true, folder: true, file: true, code: null }, { dir: WORK, on: false, folder: true, file: true, code: null }] });
-  let cfg = cfgOf(on);
-  assert.equal(cfg.mid, '보기 · 비스듬히 · 승인 물음 켜짐 · 보는 폴더 셋');
-  assert.deepEqual(hookRow(cfg), ['row', '승인 물음도 보기', '켜져 있습니다', ['끄기', 'hooks-off', '', ''], '']);
-  assert.deepEqual(cfg.more.filter(m => m[0] === 'row' && m[1] === 'Claude Code').map(m => [m[2], Array.isArray(m[3]) ? m[3][1] : '']), [[HOME + ' · 알림 받음', ''], [WORK + ' · 알림 없음', 'root-remove']], 'the state follows the path, so 「빼기」 keeps its place');
-  assert.deepEqual(cfg.more.find(m => m[0] === 'acts' && m[2] === '알림이 없는 폴더')[1].map(b => [b[0], b[1]]), [['이 폴더에도 더하기', 'hooks-ask']]);
-  cfg = cfgOf(on, { hooksAsk: true });
-  assert.deepEqual(cfg.more.find(m => m[0] === 'confirm')[2].slice(1), [WORK + '\\settings.json'], 'only the folder that is not connected yet');
-  const all = cfgOf(hooksOf({ on: true, dirs: [{ dir: HOME, on: true, folder: true, file: true, code: null }, { dir: WORK, on: true, folder: true, file: true, code: null }] }));
-  assert.ok(!all.more.some(m => m[0] === 'acts' && m[2] === '알림이 없는 폴더'), 'nothing to add when every folder is connected');
-  assert.ok(cfgOf(hooksOf({ on: true, message: 'silent' })).more.some(m => m[0] === 'note' && m[1] === OFFICE_HOOKS_SAY.silent));
-  assert.equal(OFFICE_HOOKS_SAY.silent, '알림이 오지 않습니다. Claude Code 설정에서 이 주소가 막혀 있을 수 있습니다.');
-  const port = cfgOf(hooksOf({ on: false, message: 'port' }));
-  assert.ok(port.more.some(m => m[0] === 'note' && m[1] === '받는 자리가 바뀌어 알림을 껐습니다. 다시 켜려면 설정 파일을 고쳐야 합니다.'));
-  assert.equal(hookRow(port)[3][1], 'hooks-ask', 'turning on again takes the two steps');
-  const stuck = cfgOf(hooksOf({ on: true, dirs: [{ dir: HOME, on: true, folder: true, file: true, code: 'READ' }, { dir: WORK, on: false, folder: true, file: true, code: 'BUSY' }] }));
-  assert.deepEqual(stuck.more.filter(m => m[0] === 'row' && m[1] === 'Claude Code').map(m => m[2]), [HOME + ' · 설정 파일을 읽지 못함', WORK + ' · 설정 파일이 바뀌는 중']);
-});
-
-test('the room two steps: 「설정 파일에 더하기」 does nothing until 「켜기」 unfolded the notice; 그만두기 and folding the row take it back', async () => {
-  const h = roomHarness();
-  h.setSnap(snapOf({ roots: ROOTS2, hooks: hooksOf() }));
-  h.api.hooksSet = (...a) => { h.calls.push(['hooksSet', ...a]); return Promise.resolve(h.res.hooksSet || { ok: true, written: 2, created: 1, refused: 0 }); };
-  h.api.hooksOff = (...a) => { h.calls.push(['hooksOff', ...a]); return Promise.resolve(h.res.hooksOff || { ok: true }); };
-  const live = () => rowOf(h.scene(), 'cfg').more.find(m => m[0] === 'live')[1];
-  await h.room.handle({ key: 'cfg', act: 'hooks-on' });
-  assert.deepEqual(h.calls, [], 'no write without the first press');
-  await h.room.handle({ key: 'cfg', act: 'hooks-ask' });
-  assert.ok(rowOf(h.scene(), 'cfg').more.some(m => m[0] === 'confirm'));
-  assert.equal(h.scene().focus.ask, true, 'the question gets the focus');
-  await h.room.handle({ key: 'cfg', act: 'hooks-keep' });
-  assert.ok(!rowOf(h.scene(), 'cfg').more.some(m => m[0] === 'confirm'));
-  await h.room.handle({ key: 'cfg', act: 'hooks-on' });
-  assert.deepEqual(h.calls, []);
-  await h.room.handle({ key: 'cfg', act: 'hooks-ask' });
-  await h.room.handle({ key: 'cfg', act: 'row-fold' });
-  await h.room.handle({ key: 'cfg', act: 'hooks-on' });
-  assert.deepEqual(h.calls, [], 'folding the settings row takes the question back');
-  await h.room.handle({ key: 'cfg', act: 'hooks-ask' });
-  await h.room.handle({ key: 'cfg', act: 'hooks-on' });
-  assert.deepEqual(h.calls, [['hooksSet', true]]);
-  assert.equal(live(), OFFICE_HOOKS_ON_DONE);
-  assert.ok(!rowOf(h.scene(), 'cfg').more.some(m => m[0] === 'confirm'), 'the notice folds after writing');
-  assert.ok(h.reads() >= 1, 'the board is read again');
-  // 몇 폴더가 거절되면 그 수와 까닭을, 다 거절되면 까닭만 말한다
-  h.res.hooksSet = { ok: true, code: 'READ', written: 1, refused: 1 };
-  await h.room.handle({ key: 'cfg', act: 'hooks-ask' });
-  await h.room.handle({ key: 'cfg', act: 'hooks-on' });
-  assert.equal(live(), OFFICE_HOOKS_ON_DONE + ' 폴더 하나는 설정 파일을 읽지 못해 켜지 않았습니다.');
-  for (const [code, words] of [['BUSY', '설정 파일이 바뀌는 중이라 켜지 않았습니다.'], ['READ', '설정 파일을 읽지 못해 켜지 않았습니다.'], ['NOT_HERE', '이 실행에서는 켤 수 없습니다.'], ['NOT_ALLOWED', '이 계정에서는 사무실을 고칠 수 없습니다.']]) {
-    h.res.hooksSet = { ok: false, code };
-    await h.room.handle({ key: 'cfg', act: 'hooks-ask' });
-    await h.room.handle({ key: 'cfg', act: 'hooks-on' });
-    assert.equal(live(), words, code);
-  }
-  // 끄기는 묻지 않는다
-  await h.room.handle({ key: 'cfg', act: 'hooks-off' });
-  assert.deepEqual(h.calls.at(-1), ['hooksOff']);
-  assert.equal(live(), OFFICE_HOOKS_OFF_DONE);
-  h.res.hooksOff = { ok: false, code: 'READ' };
-  await h.room.handle({ key: 'cfg', act: 'hooks-off' });
-  assert.equal(live(), '설정 파일을 읽지 못해 끄지 못했습니다.');
-  // 방을 떠나면 펼친 안내문도 거둔다
-  await h.room.handle({ key: 'cfg', act: 'hooks-ask' });
-  h.room.close();
-  await h.room.handle({ key: 'cfg', act: 'hooks-on' });
-  assert.equal(h.calls.filter(c => c[0] === 'hooksSet').length, 6);
-});
-
-test('the general settings room by the orb shows 「Claude Code의 알림이 솔리오로 오고 있습니다」 and 「끄기」 while hooks are on, for any account', async () => {
-  assert.equal(officeHooksAsideRow(null), null);
-  assert.equal(officeHooksAsideRow({ ok: true, on: false }), null);
-  const row = officeHooksAsideRow({ ok: true, on: true });
-  assert.equal(row.mid, OFFICE_HOOKS_LINE);
-  assert.equal(OFFICE_HOOKS_LINE, 'Claude Code의 알림이 솔리오로 오고 있습니다');
-  assert.deepEqual(row.more.find(m => m[0] === 'acts')[1].map(b => [b[0], b[1]]), [['끄기', 'office-hooks-off']]);
-  let on = true, listener = null;
-  const calls = [];
-  const officeHooks = {
-    hooksStatus: () => { calls.push('status'); return Promise.resolve({ ok: true, on }); },
-    hooksOff: () => { calls.push('off'); on = false; return Promise.resolve({ ok: true }); },
-    onChanged: fn => { listener = fn; return () => { listener = null; }; },
-  };
-  const rooms = createOrbRooms({ pc: { officeHooks, environment: () => ({ platform: 'win32' }) }, setTimer: () => 0, clearTimer: () => {}, snapshot: () => null });
-  const tick = () => new Promise(r => setTimeout(r, 0));
-  rooms.open('settings'); await tick();
-  const scene = member => rooms.scene({ aside: 'settings', member }).settings;
-  assert.equal(scene(false).rows.at(-1).key, 'office-hooks', 'a guest or a non-viewer sees the line too, after the PC settings');
-  assert.ok(typeof listener === 'function', 'the room follows office changes while open');
-  await rooms.handle({ room: 'settings', key: 'office-hooks', act: 'office-hooks-off' });
-  assert.deepEqual(calls, ['status', 'off']);
-  assert.ok(!scene(true).rows.some(r => r.key === 'office-hooks'), 'the line goes once hooks are off');
-  assert.equal(scene(true).foot, OFFICE_HOOKS_OFF_DONE);
-  await rooms.handle({ room: 'settings', key: 'office-hooks', act: 'office-hooks-off' });
-  assert.deepEqual(calls, ['status', 'off'], 'nothing to turn off any more');
-  on = true; listener(); await tick();
-  assert.equal(scene(true).rows.at(-1).key, 'office-hooks', 'turned on elsewhere, the line comes back');
-  rooms.close();
-  assert.equal(listener, null, 'closing the room stops listening');
+/* ── 카본 화면 검수(solio-office-screen-20261120) ── */
+test('carbon A7: 「로 · 으로」 reads digits, Latin endings and trailing brackets', () => {
+  const cases = { '개발부': '개발부로', '법무실': '법무실로', '회계팀': '회계팀으로', '개발 3': '개발 3으로', '개발 2': '개발 2로', '개발 7': '개발 7로', 'Design': 'Design으로', 'Codex': 'Codex로', '법무(계약)': '법무(계약)으로', '마케팅(SNS)': '마케팅(SNS)로' };
+  for (const [w, want] of Object.entries(cases)) assert.equal(officeRo(w), want, w);
 });

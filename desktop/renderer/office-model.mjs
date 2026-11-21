@@ -67,28 +67,77 @@ export function officeDepartmentOf({ sessionId = null, cwd = null } = {}, depart
 export const officeState = () => ({ sessions: {}, ignored: {} });
 
 const fresh = (id, tool) => ({
-  id, tool, cwd: null, model: null, hooked: false,
+  id, tool, cwd: null, model: null, modelAt: null, hooked: false,
   firstAt: null, hookedAt: null, lastHookAt: null, lastRecordAt: null,
   postAt: null, // 마지막 PostToolUse(도우미 것까지)
-  askAt: null, clearAt: null, // 승인 물음과 그것을 푸는 소식(도우미 것이 아닌 PostToolUse, Stop, SessionEnd)의 마지막 때
-  idleAt: null, stopAt: null, turnStartAt: null, doneLong: false, seenAt: null, endedAt: null,
-  agents: {}, anonAgents: 0, lastTool: null, lastToolAt: null,
+  askAt: null, clearAt: null, // 승인 물음과 그것을 푸는 소식(도우미 것이 아닌 PostToolUse, Stop)의 마지막 때. 끝(SessionEnd)은 그 앞의 물음을 지운다
+  idleAt: null, stopAt: null, turnStartAt: null, seenAt: null,
+  stopFrom: null, doneLong: false, // 마지막 Stop이 끝낸 차례의 첫 소식(모르면 null)과, 그 차례가 2분을 넘었는지
+  endedAt: null, // 지금 꺼져 있으면 그 끝의 때. 끝 뒤의 소식이 있으면 null
+  lastEndAt: null, // 받은 끝 가운데 가장 늦은 때. 늦게 닿아 세션을 내리지 않은 끝도 센다. 이 때와 그보다 이른 소식은 받지 않는다
+  agents: {}, // 번호 있는 도우미: 시작한 때(숫자) 또는 false(끝남)
+  anonAgents: 0, lastTool: null, lastToolAt: null,
 });
 const lastNews = s => Math.max(s.lastHookAt ?? -Infinity, s.lastRecordAt ?? -Infinity);
 /* 승인을 물은 표시. 같은 때에 온 것끼리는 가를 수 없으므로 남긴다(4.1 「가를 수 없으면 남긴다」) */
 const isAsked = s => s.askAt != null && (s.clearAt == null || s.askAt >= s.clearAt);
 const keepFor = s => (isAsked(s) ? T.askKeep : T.drop);
 const afterStop = (s, at, grace) => s.stopAt == null || at > s.stopAt + grace;
-/* 그 차례의 첫 소식. SessionStart와 idle_prompt는 입력을 기다리는 때라 세지 않는다 */
-const turnNews = (s, at) => { if (s.turnStartAt == null || at < s.turnStartAt) s.turnStartAt = at; };
-const subagentCount = s => Object.values(s.agents).filter(Boolean).length + s.anonAgents;
+/* 그 차례의 첫 소식. SessionStart와 idle_prompt는 입력을 기다리는 때라 세지 않는다. idle_prompt보다 앞선 소식은 앞 대기의 것이다(GPT 검수 GA11) */
+const turnNews = (s, at) => {
+  if (s.idleAt != null && at <= s.idleAt) return;
+  if (s.turnStartAt == null || at < s.turnStartAt) s.turnStartAt = at;
+};
+const running = s => Object.values(s.agents).filter(v => typeof v === 'number');
+const subagentCount = s => running(s).length + s.anonAgents;
+const earliest = list => list.reduce((m, v) => (v != null && (m == null || v < m) ? v : m), null);
+/* 남은 칸에 있는 차례 소식(도구, 승인 물음, 도우미 시작, 훅을 받은 뒤의 기록) 가운데 lo보다 늦고 hi보다 이른 가장 이른 때.
+   기록은 lo 뒤 10초 안의 바뀜을 세지 않는다 */
+function earliestTurnNews(s, lo, hi = Infinity) {
+  const r = s.lastRecordAt;
+  const record = s.hooked && r != null && r >= s.hookedAt && r > lo + T.stopGrace ? r : null;
+  return earliest([s.postAt, s.askAt, ...running(s)].filter(v => v != null && v > lo).concat(record).filter(v => v == null || v < hi));
+}
+
+/* t와 그보다 이른 때에 생긴 칸을 모두 지운다. 기록은 t 뒤 10초 안의 바뀜(끝의 마무리)까지 지운다.
+   끝(SessionEnd)과 오래 조용한 세션이 다시 설 때가 이 함수 하나를 지난다. 시각 순서로 접어 끝 뒤에 다시 선 세션과
+   끝이 늦게 닿은 세션이 같은 칸을 갖게 하려는 것이다(GPT 검수 be GA10 · be3 GA11, 설계 검토 2026-11-21 (마)).
+   · 「마지막」 칸(lastHookAt, postAt, askAt, clearAt, idleAt, stopAt, modelAt, lastToolAt)은 t보다 늦게 남은 값이 곧 끝 뒤의 값이다.
+   · 번호 있는 도우미는 t 이전에 시작한 것을 지운다. 끝남(false)은 남겨 늦게 닿은 시작을 다시 세지 않는다.
+     번호 없는 도우미는 시작 때를 둘 수 없으므로 0으로 둔다(끝 뒤에 시작한 것이 먼저 닿았으면 덜 센다).
+   · 「처음」 칸(firstAt, hookedAt, turnStartAt)은 남은 칸 가운데 가장 이른 때로 다시 잡는다. 덮어쓴 때는 알 수 없으므로
+     실제보다 늦을 수 있다. 차례는 짧게 세어 느낌표를 덜 붙이는 쪽이다. 끝 앞에서부터 센 차례(stopFrom)는 느낌표를 뗀다.
+   · 작업 폴더와 도구 이름은 같은 세션 번호면 같으므로 남긴다 */
+function dropUpTo(s, t) {
+  const tr = t + T.stopGrace;
+  const gone = v => v != null && v <= t;
+  for (const k of ['lastHookAt', 'postAt', 'askAt', 'clearAt', 'idleAt']) if (gone(s[k])) s[k] = null;
+  if (s.lastRecordAt != null && s.lastRecordAt <= tr) s.lastRecordAt = null;
+  if (gone(s.modelAt)) { s.model = null; s.modelAt = null; }
+  if (gone(s.lastToolAt)) { s.lastTool = null; s.lastToolAt = null; }
+  if (gone(s.stopAt)) { s.stopAt = null; s.stopFrom = null; s.doneLong = false; }
+  if (s.stopAt == null || gone(s.seenAt)) s.seenAt = null;
+  s.agents = Object.fromEntries(Object.entries(s.agents).filter(([, v]) => !(typeof v === 'number' && v <= t)));
+  s.anonAgents = 0;
+  s.hooked = s.lastHookAt != null;
+  const hookTimes = [s.lastHookAt, s.postAt, s.askAt, s.clearAt, s.idleAt, s.stopAt, s.modelAt, s.lastToolAt, ...running(s)];
+  if (!s.hooked) s.hookedAt = null; else if (gone(s.hookedAt)) s.hookedAt = earliest(hookTimes);
+  if (s.firstAt != null && s.firstAt <= tr) s.firstAt = earliest(hookTimes.concat(s.lastRecordAt));
+  // 늦게 닿은 Stop이 끝 뒤 차례의 첫 소식을 지웠을 수 있어 남은 칸과 견준다. 남은 칸은 모두 끝 뒤 차례의 소식이라 실제보다 이르지 않다.
+  // 지금 차례의 시작이 기록에서 왔으면 끝 뒤의 첫 훅보다 이르지 않아야 차례 소식이다(훅을 받기 전의 기록은 모른다)
+  const kept = s.hooked && s.turnStartAt != null && s.turnStartAt > tr && s.turnStartAt >= s.hookedAt ? s.turnStartAt : null;
+  s.turnStartAt = earliest([kept, earliestTurnNews(s, Math.max(t, s.stopAt ?? -Infinity, s.idleAt ?? -Infinity))]);
+  // 끝 앞에서 시작한 것으로 센 차례는 끝 뒤의 첫 소식을 모른다. 느낌표를 뗀다
+  if (s.stopFrom != null && s.stopFrom <= tr) { s.stopFrom = null; s.doneLong = false; }
+}
 
 /* 소식 하나를 접는다. 들어오는 것:
    { kind:'hook', event, sessionId, cwd, at, toolName?, toolDetail?, notificationType?, agentId?, model? }
    { kind:'record', sessionId, cwd, tool:'claude'|'codex', changedAt } — changedAt은 도우미 기록까지 본 가장 늦은 고친 때
    { kind:'seen', departmentId, at } — 그 부서의 줄을 열었다 닫음. departmentId null은 「부서 없는 일」. ctx의 부서로 직원을 고른다
    { kind:'reset' } — 계정이 바뀌면 다 비운다
-   늦게 닿은 소식도 있으므로 순서가 아니라 때(at)로 견준다. 주어진 상태는 고치지 않고 새 상태를 돌려준다 */
+   늦게 닿은 소식도 있으므로 순서가 아니라 때(at)로 견준다. 주어진 상태는 고치지 않고 새 상태를 돌려준다.
+   SessionEnd는 늦게 닿아도 dropUpTo로 그 때까지의 칸을 지우고 lastEndAt을 늘린다. 본체는 lastEndAt이 늘어난 세션의 「보낼 부서」 기억을 지운다 */
 export function officeReduce(state, event, ctx = {}) {
   const base = state && state.sessions && state.ignored ? state : officeState();
   if (!event || typeof event !== 'object') return base;
@@ -104,11 +153,11 @@ export function officeReduce(state, event, ctx = {}) {
     return { sessions, ignored: { ...base.ignored, [id]: later(base.ignored[id], at) } };
   }
   let s = own(base.sessions, id) ? base.sessions[id] : null;
-  if (s && s.endedAt != null) {
-    if (at <= s.endedAt + (isRecord ? T.stopGrace : 0)) return base; // 꺼진 뒤에 늦게 닿은 소식과 마무리 기록
-    s = null; // 내린 세션에 새 소식이 오면 처음부터 다시 선다(3.4의 3)
-  } else if (s && at - lastNews(s) >= keepFor(s)) s = null;
+  // 가장 늦은 끝과 그보다 이른 소식은 그 끝이 이미 지웠다. 끝 뒤 10초 안의 기록 바뀜은 그 끝의 마무리다. 세션이 다시 선 뒤에 닿아도 같다
+  if (s && s.lastEndAt != null && at <= s.lastEndAt + (isRecord ? T.stopGrace : 0)) return base;
   s = s ? { ...s, agents: { ...s.agents } } : fresh(id, isRecord && event.tool === 'codex' ? 'codex' : 'claude');
+  if (s.endedAt != null) s.endedAt = null; // 꺼진 세션에 끝 뒤의 소식이 오면 다시 선다. 끝까지의 칸은 끝이 이미 지웠다(3.4의 3)
+  else if (Number.isFinite(lastNews(s)) && at - lastNews(s) >= keepFor(s)) dropUpTo(s, lastNews(s)); // 내린 세션도 같은 함수로 비우고 다시 선다
   s.firstAt = s.firstAt == null ? at : Math.min(s.firstAt, at);
   const cwd = typeof event.cwd === 'string' && event.cwd.trim() ? event.cwd : null;
   // 작업 폴더는 훅의 값이 먼저다. 기록의 값은 형식이 약속된 것이 아니다(3.1)
@@ -126,7 +175,7 @@ export function officeReduce(state, event, ctx = {}) {
   const agentId = event.agentId != null && event.agentId !== '' ? String(event.agentId) : '';
   switch (event.event) {
     case 'SessionStart':
-      if (event.model) s.model = String(event.model);
+      if (event.model && (s.modelAt == null || at >= s.modelAt)) { s.model = String(event.model); s.modelAt = at; }
       break;
     case 'PostToolUse':
       s.postAt = later(s.postAt, at);
@@ -141,29 +190,37 @@ export function officeReduce(state, event, ctx = {}) {
       if (event.notificationType === 'permission_prompt') {
         s.askAt = later(s.askAt, at);
         if (afterStop(s, at, 0)) turnNews(s, at);
-      } else if (event.notificationType === 'idle_prompt') s.idleAt = later(s.idleAt, at);
+      } else if (event.notificationType === 'idle_prompt') {
+        s.idleAt = later(s.idleAt, at);
+        // 입력을 기다린다는 소식 앞의 소식은 새 차례의 첫 소식이 아니다. 늦게 닿았으면 새 차례의 첫 소식을 모르는 채로 둔다(느낌표를 붙이지 않는 쪽)
+        if (s.turnStartAt != null && s.turnStartAt <= s.idleAt) s.turnStartAt = null;
+      }
       break;
     case 'Stop':
       s.clearAt = later(s.clearAt, at);
       if (s.stopAt == null || at > s.stopAt) {
         // 그 차례의 첫 소식부터 Stop까지가 2분을 넘을 때만 느낌표. 첫 소식을 모르면 붙이지 않는다
-        const start = s.turnStartAt != null && s.turnStartAt < at ? s.turnStartAt : at;
-        s.doneLong = at - start > T.longTurn;
+        s.stopFrom = s.turnStartAt != null && s.turnStartAt < at ? s.turnStartAt : null;
+        s.doneLong = s.stopFrom != null && at - s.stopFrom > T.longTurn;
         s.stopAt = at;
         s.turnStartAt = null;
       }
       break;
     case 'SubagentStart':
-      if (agentId) { if (!own(s.agents, agentId)) s.agents = { ...s.agents, [agentId]: true }; } else s.anonAgents += 1;
+      // 시작한 때를 둔다. 같은 도우미의 시작이 둘 닿으면 이른 쪽이다
+      if (agentId) { const was = s.agents[agentId]; if (!own(s.agents, agentId) || (typeof was === 'number' && at < was)) s.agents[agentId] = at; } else s.anonAgents += 1;
       if (afterStop(s, at, 0)) turnNews(s, at);
       break;
     case 'SubagentStop':
       // 끝남이 시작보다 먼저 닿아도 그 도우미는 다시 세지 않는다. 번호가 없으면 0 밑으로 내려가지 않는다
-      if (agentId) s.agents = { ...s.agents, [agentId]: false }; else s.anonAgents = Math.max(0, s.anonAgents - 1);
+      if (agentId) s.agents[agentId] = false; else s.anonAgents = Math.max(0, s.anonAgents - 1);
       break;
     case 'SessionEnd':
-      s.endedAt = later(s.endedAt, at);
-      s.clearAt = later(s.clearAt, at);
+      // 이 끝과 그보다 이른 칸을 모두 지운다. 이 끝보다 늦은 소식이 남았으면 그 세션은 끝난 뒤 다시 섰으므로 내리지 않는다.
+      // 시각 순서로 접었을 때와 끝이 늦게 닿았을 때가 같은 칸을 갖는다(GPT 검수 be GA10 · be3 GA11)
+      s.lastEndAt = later(s.lastEndAt, at);
+      dropUpTo(s, at);
+      s.endedAt = Number.isFinite(lastNews(s)) ? null : at;
       break;
   }
   return { ...base, sessions: { ...base.sessions, [id]: s } };

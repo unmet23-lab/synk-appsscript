@@ -615,7 +615,7 @@ if(!process.versions.electron){
           v.win.destroy();
         }
         // 22. 솔리오 「사무실」(사무실 구현설계 14.2 · 14.4). 들어가기와 나오기, 다른 프로그램에 있을 때 오브제의 느낌표, 보기 바꾸기, 줄을 열었다 닫으면 끝냄 알림이 지워짐,
-        //     부서 빼기의 두 번 확인, 자판만으로 부서 더하기, 수용 인원을 넘었을 때, 부서 여섯과 일곱, 세션이 없을 때, 「승인 물음도 보기」의 두 번 확인과 설정 방의 끄는 줄을 본다. 다섯 크기(꽉 참 1440×900, 1080×700, 720×760, 420×760, 380×250)에서 두 보기를 찍는다.
+        //     부서 빼기의 두 번 확인, 자판만으로 부서 더하기, 수용 인원을 넘었을 때, 부서 여섯과 일곱, 기록으로만 선 직원(첫 조각의 실제 모습, 11-21 훅을 뺐다), 세션이 없을 때를 본다. 다섯 크기(꽉 참 1440×900, 1080×700, 720×760, 420×760, 380×250)에서 두 보기를 찍는다.
         //     그림은 눈 깜빡임 · 테두리 밝기 · 느낌표만 움직인다. 1.2초 사이에 캔버스에서 바뀐 점의 몫을 잰다
         if(only('22')&&mode==='main'){
           const MKT='C:\\qa\\문서\\마케팅',SHOP='C:\\qa\\코드\\shop';
@@ -722,6 +722,24 @@ if(!process.versions.electron){
           const l9=await look(w);
           check('22 a seventh department has its row, and the floor bundles it into 「그 밖」',l9.zones.split(' ').filter(z=>z.startsWith('d:')).length===6&&l9.zones.endsWith('other')&&l9.rows.some(r=>r.startsWith('d:qd7x|영업부')),l9);
           await shoot(w,'office-seven',[[1440,900]]);
+          // 첫 조각의 실제 모습(11-21 훅을 뺐다): 모든 직원이 기록으로만 선다. 느낌표가 없고, 맨 위 둘째 줄이 승인 물음을 모른다고 한 번 말한다
+          const recs=[{id:'sess-qa-rec-01',cwd:MKT,kind:'work',ago:20e3,hooked:false},{id:'sess-qa-rec-02',cwd:SHOP,kind:'work',ago:240e3,hooked:false},{id:'sess-qa-rec-03',tool:'codex',cwd:SHOP+'\\api',kind:'work',ago:30e3}];
+          await setBoard(w,board({sessions:recs}));
+          const lr=await look(w);
+          check('22 records only (the first piece): no ! on the object or any row, and the headline says once that it cannot tell about questions',lr.say==='둘이 일하고 있습니다.'&&lr.then==='모두 승인 물음을 모릅니다.'&&!lr.news&&!lr.rows.some(r=>r.endsWith('|!')),lr);
+          await shoot(w,'office-records-only',[[1440,900],[720,760]]);
+          // 더했지만 지금 보지 않는 폴더(구독 방 계정 폴더이거나 2초 안에 답하지 않음)도 설정 줄에 남고 뺄 수 있다(설계 검토 be7 고칠 것 1)
+          const resting='\\\\qa-share\\team\\.claude';
+          await setBoard(w,board({sessions:recs,roots:{claude:['C:\\Users\\qa\\.claude'],codex:['C:\\Users\\qa\\.codex\\sessions'],added:[resting]}}));
+          await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(600);
+          const restLook="(()=>{const m="+ROOM+".querySelector('button.row[data-key=\"cfg\"] + .more');const b=m&&[...m.querySelectorAll('[data-room-act=\"root-remove\"]')].find(x=>x.dataset.roomArg==="+JSON.stringify(resting)+");return {open:!!m,text:m?m.textContent:'',remove:!!b};})()";
+          const lrest=await w.js(restLook);
+          check('22 a folder that is added but not watched keeps its line in 설정 with 「지금은 보지 않음」 and 빼기',lrest.open&&lrest.text.includes(resting)&&lrest.text.includes('지금은 보지 않음')&&lrest.remove,lrest);
+          await w.js("document.querySelector('#portal-entry [data-off-rows] button.row[data-key=\"cfg\"] + .more').scrollIntoView({block:'center'})");await wait(200);
+          await capture(w,'office-root-resting');
+          await w.js("(()=>{const m="+ROOM+".querySelector('button.row[data-key=\"cfg\"] + .more');const b=[...m.querySelectorAll('[data-room-act=\"root-remove\"]')].find(x=>x.dataset.roomArg==="+JSON.stringify(resting)+");b.focus({preventScroll:true});b.click();})()");await wait(1200);
+          check('22 its 빼기 removes it',(await calls(w)).includes('office-root-remove:'+resting)&&!(await w.js(restLook)).text.includes(resting));
+          await click(w,'#portal-entry [data-off-rows] button.row[data-key="cfg"]');await wait(400);
           // 세션이 하나도 없을 때
           await setBoard(w,board({departments:[],sessions:[]}));
           const l10=await look(w);
@@ -730,59 +748,6 @@ if(!process.versions.electron){
           await click(w,'#portal-entry [data-orb-prog="subs"]');await wait(700);
           check('22 leaving the room at the end stops the record watch',(await calls(w)).filter(c=>c.startsWith('office-watch:')).at(-1)==='office-watch:false');
           w.win.destroy();
-          // 「승인 물음도 보기」(사무실 구현설계 12.3 · 14.2): 「켜기」는 안내문과 고칠 설정 파일을 펼치기만 하고, 그 안의 「설정 파일에 더하기」를 눌러야 켠다.
-          //     켠 뒤에는 볼 계정이 아니어도 구 곁의 설정 방에 「Claude Code의 알림이 솔리오로 오고 있습니다」 줄과 「끄기」가 선다(11.1)
-          {
-            const HOME='C:\\Users\\qa\\.claude',WORK='D:\\qa\\.claude-work';
-            const hooksBoard=board({roots:{claude:[HOME,WORK],codex:['C:\\Users\\qa\\.codex\\sessions'],added:[WORK]},hooks:{on:false,available:true,message:null,dirs:[{dir:HOME,on:false,folder:true,file:true,code:null},{dir:WORK,on:false,folder:true,file:false,code:null}]}});
-            const k=await open();await boot(k,{subs:subsReady,office:hooksBoard},{restore:signedIn('none')});
-            await until(k,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1600);
-            await click(k,'#portal-entry [data-orb-prog="office"]');await wait(1200);
-            const CFG='#portal-entry [data-off-rows] button.row[data-key="cfg"]';
-            const cfgLook=()=>k.js("(()=>{const r="+ROOM+",b=r.querySelector('button.row[data-key=\"cfg\"]'),m=b.nextElementSibling,c=m.querySelector('.confirm');const sw=[...m.querySelectorAll('.row.sub')].find(x=>x.querySelector('.nm')?.textContent==='승인 물음도 보기');return {hint:r.querySelector('[data-off-hint]').hidden?'':r.querySelector('[data-off-hint]').textContent,mid:b.querySelector('.mid').textContent,state:sw?.querySelector('.mid')?.textContent||'',btn:sw?.querySelector('[data-room-act]')?.textContent||'',expanded:sw?.querySelector('[data-room-act]')?.getAttribute('aria-expanded')||'',confirm:!!c,question:c?.querySelector('[data-ask-q]')?.textContent||'',notes:c?[...c.querySelectorAll('.more-note')].map(n=>n.textContent):[],acts:c?[...c.querySelectorAll('[data-room-act]')].map(x=>x.textContent+'|'+x.dataset.roomAct):[],focusAsk:document.activeElement?.dataset?.askQ!==undefined,live:(m.querySelector('[role=status]')||{}).textContent||'',dirs:[...m.querySelectorAll('.row.sub')].filter(x=>x.querySelector('.nm')?.textContent==='Claude Code').map(x=>x.querySelector('.mid').textContent)};})()");
-            const h0=await k.js("(()=>{const h="+ROOM+".querySelector('[data-off-hint]');return h.hidden?'':h.textContent;})()");
-            check('22 hooks off: a line under the headline says the questions show once turned on in settings',h0==='승인 물음은 설정에서 켜면 봅니다.',{h0});
-            await click(k,CFG);await wait(600);
-            const k1=await cfgLook();
-            check('22 the settings row has 「승인 물음도 보기」 between the view and the folders, off with 「켜기」, and asks nothing yet',k1.mid==='보기 · 비스듬히 · 승인 물음 꺼짐 · 보는 폴더 셋'&&k1.state==='꺼져 있습니다'&&k1.btn==='켜기'&&k1.expanded==='false'&&!k1.confirm,k1);
-            await press(k,CFG+' + .more [data-room-act="hooks-ask"]');await wait(700);
-            const k2=await cfgLook();
-            check('22 「켜기」 unfolds the notice for six kinds of news and the settings files (one is made new), with the focus on the question and nothing written yet',k2.confirm&&k2.question==='Claude Code 설정 파일에 알림을 더할까요?'&&/알림 여섯 가지를 더합니다/.test(k2.notes[0]||'')&&/다른 프로그램이 같은 포트를 열면/.test(k2.notes[0]||'')&&k2.notes[1]===HOME+'\\settings.json'&&k2.notes[2]===WORK+'\\settings.json · 설정 파일이 없어 새로 만듭니다'&&JSON.stringify(k2.acts)===JSON.stringify(['설정 파일에 더하기|hooks-on','그만두기|hooks-keep'])&&k2.expanded==='true'&&k2.focusAsk&&!(await calls(k)).some(c=>c.startsWith('office-hooks-set')),k2);
-            const shootAt=async(w,name,sel,block='center')=>{for(const [W,Hh] of sizes5){w.win.setContentSize(W,Hh);for(let i=0;i<40&&(await w.js('innerWidth'))!==W;i++)await wait(50);await wait(420);await w.js('document.querySelector('+JSON.stringify(sel)+').scrollIntoView({block:'+JSON.stringify(block)+'})');await wait(150);await capture(w,`${name}-${W}x${Hh}`);}w.win.setContentSize(1440,900);await wait(400);};
-            await shootAt(k,'office-hooks-ask',CFG+' + .more .confirm','start');
-            await press(k,CFG+' + .more .confirm [data-room-act="hooks-keep"]');await wait(500);
-            const k3=await cfgLook();
-            check('22 「그만두기」 folds the notice and writes nothing',!k3.confirm&&!(await calls(k)).some(c=>c.startsWith('office-hooks-set')),k3);
-            await press(k,CFG+' + .more [data-room-act="hooks-ask"]');await wait(500);
-            await press(k,CFG+' + .more .confirm [data-room-act="hooks-on"]');await wait(1400);
-            const k4=await cfgLook();
-            check('22 the second press 「설정 파일에 더하기」 turns hooks on: one call, the switch says on with 「끄기」, each folder says it sends news, and the hint goes',(await calls(k)).filter(c=>c==='office-hooks-set:true').length===1&&k4.state==='켜져 있습니다'&&k4.btn==='끄기'&&!k4.confirm&&k4.live==='알림을 더했습니다. 새로 켜는 Claude Code 세션부터 승인 물음을 봅니다.'&&JSON.stringify(k4.dirs)===JSON.stringify([HOME+' · 알림 받음',WORK+' · 알림 받음'])&&k4.hint===''&&k4.mid==='보기 · 비스듬히 · 승인 물음 켜짐 · 보는 폴더 셋',k4);
-            await shootAt(k,'office-hooks-on',CFG,'start');
-            await key(k,'Escape');await wait(500);
-            // 구 곁의 설정 방: 켜져 있는 동안 끄는 줄이 선다
-            await click(k,'.here-orb');await until(k,s=>s.fan);await wait(500);await k.js("document.querySelector('.fan [data-foot=settings]').focus()");await click(k,'.fan [data-foot="settings"]');await wait(1000);
-            const SR='#portal-entry [data-room=settings] ';
-            const aside=()=>k.js("(()=>{const r=document.querySelector('#portal-entry [data-room=settings]'),b=r.querySelector('button.row[data-key=\"office-hooks\"]');return {shown:!r.hidden,row:!!b,mid:b?.querySelector('.mid')?.textContent||'',off:b?[...b.nextElementSibling.querySelectorAll('[data-room-act]')].map(x=>x.textContent+'|'+x.dataset.roomAct):[],foot:r.querySelector('[data-aside-foot]').textContent,rows:[...r.querySelectorAll('button.row[data-key]')].map(x=>x.dataset.key)};})()");
-            const a1=await aside();
-            check('22 while hooks are on the settings room by the orb has 「Claude Code의 알림이 솔리오로 오고 있습니다」 with 「끄기」',a1.shown&&a1.row&&a1.mid==='Claude Code의 알림이 솔리오로 오고 있습니다'&&JSON.stringify(a1.off)===JSON.stringify(['끄기|office-hooks-off'])&&a1.rows.at(-1)==='office-hooks',a1);
-            await k.js("(()=>{const b=document.querySelector('#portal-entry [data-room=settings] button.row[data-key=\"office-hooks\"]');if(!b.classList.contains('opened'))b.click();return true;})()");await wait(500);
-            await shootAt(k,'settings-office-hooks','#portal-entry [data-room=settings] button.row[data-key="office-hooks"]');
-            await k.js("(()=>{const x=document.querySelector('#portal-entry [data-room=settings] button.row[data-key=\"office-hooks\"] + .more [data-room-act=\"office-hooks-off\"]');x.focus();x.click();return true;})()");await wait(1000);
-            const a2=await aside();
-            check('22 「끄기」 there turns hooks off at once (no second question), the line goes and the bottom line says only Solio\'s lines were removed',(await calls(k)).includes('office-hooks-off')&&!a2.row&&a2.foot==='알림을 껐습니다. 솔리오가 더한 줄만 지웠습니다.',a2);
-            k.win.destroy();
-            // 볼 계정이 아닌 계정: 사무실은 없어도 켜져 있는 훅은 설정 방에서 끈다
-            const n=await open();await boot(n,{subs:subsReady,office:{available:false,hooks:{on:true}}},{restore:signedIn('none')});
-            await until(n,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1400);
-            const nObjs=await n.js("[...document.querySelectorAll('#portal-entry [data-orb-prog]')].filter(o=>!o.hidden).map(o=>o.dataset.orbProg)");
-            await click(n,'.here-orb');await until(n,s=>s.fan);await wait(500);await n.js("document.querySelector('.fan [data-foot=settings]').focus()");await click(n,'.fan [data-foot="settings"]');await wait(1000);
-            const n1=await n.js("(()=>{const b=document.querySelector('#portal-entry [data-room=settings] button.row[data-key=\"office-hooks\"]');return {row:!!b,mid:b?.querySelector('.mid')?.textContent||''};})()");
-            check('22 an account that is not an office viewer still sees the hooks line and can turn hooks off',!nObjs.includes('office')&&n1.row&&n1.mid==='Claude Code의 알림이 솔리오로 오고 있습니다',{nObjs,...n1});
-            await n.js("(()=>{const b=document.querySelector('#portal-entry [data-room=settings] button.row[data-key=\"office-hooks\"]');if(!b.classList.contains('opened'))b.click();return true;})()");await wait(400);
-            await n.js("(()=>{const x=document.querySelector('#portal-entry [data-room=settings] button.row[data-key=\"office-hooks\"] + .more [data-room-act=\"office-hooks-off\"]');x.focus();x.click();return true;})()");await wait(900);
-            check('22 the non-viewer\'s 「끄기」 reaches the main process and the line goes',(await calls(n)).includes('office-hooks-off')&&!(await n.js("!!document.querySelector('#portal-entry [data-room=settings] button.row[data-key=\"office-hooks\"]')")),{calls:(await calls(n)).filter(c=>c.startsWith('office-hooks'))});
-            n.win.destroy();
-          }
           // 볼 계정이 아니면 오브제도 방도 없다
           const v=await open();await boot(v,{subs:subsReady,office:{available:false}},{restore:signedIn('none')});
           await until(v,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(1400);
