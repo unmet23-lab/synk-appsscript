@@ -374,3 +374,173 @@ html[data-platform-portal-boot="true"] body.sc::before,html[data-platform-portal
 html[data-platform-portal-boot="true"] body.sc>main{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
 html[data-platform-portal-boot="true"] .client-portal-orb{display:block;position:fixed;inset:0;z-index:100;background:#000000;pointer-events:none}
 html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data-platform-portal-boot="true"] .client-portal-orb[data-orb-mode="static"]::after{content:'';position:absolute;left:50%;top:50%;width:clamp(136px,min(64vw,51svh),448px);height:clamp(136px,min(64vw,51svh),448px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(245,247,252,.52) 0%,rgba(20,23,29,.94) 38%,#040507 78%,#dce2ec 99%,#f4f7fc 100%);box-shadow:inset 0 0 0 1px rgba(236,241,248,.56)}
+
+/* WORLD 앱 창 — 보기 셋(연습 · 옷장 · 내 SYNK ID)과 연습 판(2026-11-22 유호님 「부족한부분을 위주로 추천」, 시안 docs/디자인/WORLD창_20261121 4판).
+   account-view.mjs가 로그인한 WORLD 창의 <body>에 world-app과 world-tab-<보기>를 붙인다. 플랫폼 · 강사 화면에는 붙지 않는다.
+   #world-games의 자식(첫 판 · 최근 30일 · 최근 연습 · 연습 방식 · 게임 · 저장 줄 · 게임 칸)을 격자 자리에 놓는다. 자식 순서와 부모는 그대로다(시험이 기대는 짜임).
+   노랑은 결정 단추(연습), 고른 기술, 추천 게임에만 쓴다. 움직임은 누를 때 줄어드는 것뿐이다. */
+.sc.world-app{--wp-tile:#f6f4f1;--wp-tile2:#ece8e3;--wp-ink2:#6b6762;--wp-yel:#ffc82c;--wp-yel2:#f5b800;--wp-miss:#9a4a12;padding-top:clamp(16px,3vh,32px)}
+.sc.world-app .sc-main,.sc.world-app .sc-main:has(>.classroom-connection:not([hidden])){max-width:1180px}
+.sc.world-app .sc-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
+.sc.world-app .hero{display:none}
+.sc.world-app #notice{margin-top:8px;padding:10px 0}
+.sc.world-app #notice:not(.error){font-size:var(--t13);color:var(--wp-ink2);border-top:0;border-bottom:0;padding:4px 2px}
+.sc .wp-tabs{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--wp-tile)}
+.sc .wp-tab{min-height:44px;padding:0 20px;border:0;border-radius:999px;background:none;font-size:var(--t15);font-weight:600;color:var(--wp-ink2);cursor:pointer;transition:background-color .2s var(--ease)}
+.sc .wp-tab:hover{color:var(--ink)}
+.sc .wp-tab[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(60,40,20,.12)}
+
+/* 보기 셋 */
+.sc.world-app .sc-main>#world-games,.sc.world-app .sc-main>#account{order:3}
+.sc.world-app .sc-main>.classroom-connection{order:4}
+.sc.world-app .sc-main>.sc-foot{order:9}
+.sc.world-tab-practice #account,.sc.world-tab-wardrobe #account,.sc.world-tab-id #world-games,.sc.world-tab-wardrobe .classroom-connection{display:none}
+.sc.world-tab-practice #world-games>.wardrobe-section{display:none}
+.sc.world-app.world-tab-wardrobe #world-games>:not(.wardrobe-section,.wp-play,.wp-play-acts){display:none}
+.sc.world-app.world-tab-wardrobe #world-games{grid-template-columns:minmax(0,1fr);grid-template-areas:none}
+.sc.world-app.world-tab-wardrobe #world-games>*{grid-area:auto}
+.sc.world-app .wardrobe-section{margin-top:0;padding-top:8px;border-top:0}
+.sc.world-tab-practice .classroom-connection>div,.sc.world-tab-id .classroom-connection>#world-classroom{display:none}
+.sc.world-tab-practice .classroom-connection:not(:has(>#world-classroom:not([hidden]))){display:none}
+.sc.world-app .classroom-connection{margin-top:12px;padding:20px 24px;border-top:0;border-radius:24px;background:var(--wp-tile)}
+.sc.world-app .classroom-connection .wc-panel{margin-top:0;padding-top:0;border-top:0}
+
+/* 연습: 판 다섯 장 + 게임 */
+.sc.world-app #world-games{margin-top:12px;padding-top:0;border-top:0;gap:12px}
+.sc.world-tab-practice #world-games{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;
+  grid-template-areas:"hero hero rec rec" "hero hero skills ways" "games games games games" "save save play play" "sacts sacts pacts pacts" "close close close close" "frame frame frame frame"}
+/* 게임 진도에 고를 일이 생기면(다시 연결 · 진도 고르기 단추) 저장 줄을 맨 위로 올린다. 평소에는 게임 판 아래에 작게 둔다 */
+.sc.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden])){
+  grid-template-areas:"save save play play" "sacts sacts pacts pacts" "hero hero rec rec" "hero hero skills ways" "games games games games" "close close close close" "frame frame frame frame"}
+/* 게임을 여는 동안: 판을 접고 게임만 크게 */
+.sc.world-tab-practice #world-games:has(>iframe:not([hidden])){grid-template-areas:"close close close close" "frame frame frame frame" "save save play play" "sacts sacts pacts pacts"}
+.sc.world-tab-practice #world-games:has(>iframe:not([hidden]))>:is(.wp-hero,.wp-record,.wp-skills,.world-preferences,.wp-games){display:none}
+.sc #world-games>.wp-hero{grid-area:hero}
+.sc #world-games>.wp-record{grid-area:rec}
+.sc #world-games>.wp-skills{grid-area:skills}
+.sc.world-app #world-games>.world-preferences{grid-area:ways}
+.sc #world-games>.wp-games{grid-area:games}
+.sc #world-games>.wp-save{grid-area:save}
+.sc #world-games>.wp-save-acts{grid-area:sacts}
+.sc #world-games>.wp-play{grid-area:play}
+.sc #world-games>.wp-play-acts{grid-area:pacts}
+.sc #world-games>.wp-playing{grid-area:close;display:none}
+.sc #world-games:has(>iframe:not([hidden]))>.wp-playing{display:flex}
+.sc.world-app #world-games>iframe{grid-area:frame;margin-top:0;min-height:max(560px,calc(100vh - 220px));border-radius:16px}
+.sc.world-app #world-games>.actions:not(:has(>:not([hidden]))){display:none}
+.sc.world-app #world-games>.notice{padding:0 4px;font-size:var(--t13);color:var(--wp-ink2)}
+.sc.world-app #world-games>.actions .sb-btn{min-height:44px;padding:4px 18px;font-size:var(--t13)}
+.sc.world-app #world-games>.wp-save::before{content:"";display:inline-block;width:7px;height:7px;margin-right:8px;border-radius:50%;background:var(--ok);vertical-align:1px}
+
+/* 판 */
+.sc.world-app :is(.wp-record,.wp-skills,.wp-games),.sc.world-app #world-games>.world-preferences{min-width:0;padding:20px;border-radius:24px;background:var(--wp-tile)}
+.sc .wp-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px}
+.sc .wp-head h3{font-size:var(--t15);font-weight:600;color:var(--wp-ink2)}
+.sc .wp-head .small{color:var(--wp-ink2)}
+
+/* 첫 판: 그림 한 장, 놓친 곳 이름과 까닭, 노란 연습 단추 */
+.sc .wp-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:minmax(180px,1fr) auto;min-width:0;padding:8px;border-radius:24px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+.sc .wp-art{grid-column:1/3;border-radius:18px;background:#f3ece6 url('./assets/world/practice-room.webp') 50% 40%/cover no-repeat}
+.sc .wp-hero-body{display:grid;align-content:end;gap:4px;min-width:0;padding:16px 12px 8px}
+.sc .wp-ctx{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:var(--t13);font-weight:600;color:var(--wp-ink2)}
+.sc .wp-where::before{content:"";display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:var(--ok);vertical-align:1px}
+.sc .wp-where.off::before{background:var(--line-2)}
+.sc .wp-tag{padding:2px 10px;border-radius:999px;background:#fff4cc;color:#5c4400}
+.sc .wp-hero h2{margin-top:4px;font-size:var(--t22);font-weight:600;line-height:1.35}
+.sc .wp-why{font-size:var(--t15);color:var(--wp-ink2);text-wrap:pretty}
+.sc .wp-status{display:none}
+.sc .wp-acts{display:flex;align-items:flex-end;padding:16px 12px 12px 8px}
+.sc .sb-btn.wp-go{min-height:52px;padding:8px 26px;border-color:var(--wp-yel);background:var(--wp-yel);color:var(--ink)}
+.sc .sb-btn.wp-go:hover:not(:disabled){border-color:var(--wp-yel2);background:var(--wp-yel2)}
+
+/* 최근 30일 */
+.sc.world-app .wp-record{display:flex;flex-direction:column;justify-content:space-between;gap:10px;padding:18px 20px}
+.sc .wp-big{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.sc .wp-big b{font-size:var(--t34);font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.sc .wp-big span{font-size:var(--t17);font-weight:600;color:var(--wp-ink2)}
+.sc .wp-counts{font-size:var(--t13);font-weight:600;color:var(--wp-ink2)}
+
+/* 최근 연습: 놓친 곳부터, 누르면 고른 곳에 맞춰 첫 판 · 게임 차례가 바뀐다 */
+.sc.world-app .wp-skills{display:flex;flex-direction:column;gap:8px;padding:16px 12px 12px}
+.sc .wp-skills>.wp-head,.sc .wp-skills>.small{padding:0 8px}
+.sc .wp-skill-list{display:grid;gap:2px}
+.sc .wp-skill{display:grid;grid-template-columns:minmax(0,1fr);gap:0;width:100%;min-height:44px;padding:6px 12px;border:0;border-radius:14px;background:transparent;font-size:var(--t15);font-weight:600;line-height:1.4;color:var(--ink);text-align:left;cursor:pointer;transition:background-color .2s var(--ease)}
+.sc .wp-skill::after{content:attr(data-word);font-size:var(--t13);font-weight:400;color:var(--wp-ink2)}
+.sc .wp-skill[data-status="practice"]::after{color:var(--wp-miss);font-weight:600}
+.sc .wp-skill[data-status="recent-independent"]::after{color:var(--ok)}
+.sc .wp-skill:hover{background:rgba(255,255,255,.6)}
+.sc .wp-skill[aria-pressed="true"]{background:var(--paper);box-shadow:inset 3px 0 0 var(--wp-yel2),0 1px 3px rgba(60,40,20,.1)}
+
+/* 연습 방식: 흰 칸 고르기 */
+.sc.world-app #world-games>.world-preferences{display:flex;flex-direction:column;gap:10px;margin-top:0;border-top:0}
+.sc.world-app .world-preferences>h3{font-size:var(--t15);font-weight:600;color:var(--wp-ink2)}
+.sc.world-app .world-preferences>p.small{display:none}
+.sc.world-app .world-preference-group{gap:6px;margin-top:0}
+.sc.world-app .world-preference-group>p{font-size:var(--t13);font-weight:600;color:var(--wp-ink2)}
+.sc.world-app .world-preference-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:3px;padding:3px;border-radius:12px;background:var(--wp-tile2)}
+.sc.world-app .world-preference-choices .sb-btn{min-height:44px;padding:4px 6px;border:0;border-radius:9px;background:transparent;color:var(--wp-ink2);font-size:var(--t13);line-height:1.3}
+.sc.world-app .world-preference-choices .sb-btn:hover:not(:disabled){background:rgba(255,255,255,.5);color:var(--ink)}
+.sc.world-app .world-preference-choices .sb-btn[aria-pressed="true"],.sc.world-app .world-preference-choices .sb-btn[aria-pressed="true"]:hover:not(:disabled){background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(60,40,20,.12)}
+
+/* 게임: 칸마다 선 아이콘과 연습하는 기술. 노란 칸은 고른 곳을 연습하는 게임 */
+.sc.world-app .wp-games{padding:16px}
+.sc.world-app .wp-games>.wp-head{justify-content:flex-start;margin:2px 4px 12px}
+.sc.world-app .wp-games>.wp-head h3{font-size:var(--t17);color:var(--ink)}
+.sc.world-app .game-links{grid-template-columns:repeat(9,minmax(0,1fr));gap:8px;margin-top:0}
+.sc.world-app .game-links>button,.sc.world-app .game-links>button:first-child{flex-direction:column;justify-content:flex-start;align-items:center;gap:6px;min-height:0;padding:14px 6px 12px;border:0;border-radius:16px;background:var(--paper);color:var(--ink);font-size:var(--t13);line-height:1.35;text-align:center;transition:box-shadow .15s var(--ease),transform .15s var(--ease)}
+.sc.world-app .game-links>button:hover:not(:disabled),.sc.world-app .game-links>button:first-child:hover:not(:disabled){background:var(--paper);box-shadow:0 6px 16px -8px rgba(60,40,20,.22)}
+.sc.world-app .game-links>button:active:not(:disabled){transform:scale(.98)}
+.sc.world-app .game-links>button::before{content:"";flex:none;width:44px;height:44px;border-radius:14px;background:var(--wp-tile) center/22px no-repeat}
+.sc.world-app .game-links>button::after{content:attr(data-skills);width:auto;height:auto;background:none;-webkit-mask:none;mask:none;font-size:var(--t13);font-weight:400;color:var(--wp-ink2)}
+.sc.world-app .game-links>button[data-rec]::before{background-color:var(--wp-yel)}
+.sc.world-app .game-links>button[data-rec]::after{color:var(--ink);font-weight:600}
+.sc.world-app .wp-playing{align-items:center}
+
+/* 내 SYNK ID: 판 여러 장, 첫 장은 학생증 */
+.sc.world-app .account-head{margin-top:20px}
+.sc.world-app .account-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch;margin-top:20px}
+.sc.world-app .account-grid>.sb-card{align-content:start;padding:20px;border-top:0;border-radius:24px;background:var(--wp-tile)}
+.sc.world-app .account-grid>.sb-card>h3{font-size:var(--t15);color:var(--wp-ink2)}
+.sc.world-app .account-grid>.wp-idcard{position:relative;grid-row:span 2;padding-top:52px;overflow:hidden;background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+.sc.world-app .account-grid>.wp-idcard::before{content:"";position:absolute;inset:0 0 auto;height:32px;background:var(--wp-yel)}
+.sc.world-app .account-grid>.wp-idcard>h3{font-size:var(--t34);color:var(--ink);line-height:1.2;overflow-wrap:anywhere}
+.sc.world-app .wp-kind{order:-1;font-size:var(--t13);font-weight:600;color:var(--wp-ink2)}
+.sc.world-app .wp-idnum{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px}
+.sc.world-app .wp-idnum>.small{min-width:0;overflow-wrap:anywhere}
+.sc.world-app #account>.actions{margin-top:20px;padding-top:0;border-top:0}
+
+@media (max-width:1100px){
+  .sc.world-app .game-links{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+@media (max-width:900px){
+  .sc.world-tab-practice #world-games{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"hero hero" "skills rec" "skills ways" "games games" "save play" "sacts pacts" "close close" "frame frame"}
+  .sc.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden])){grid-template-areas:"save play" "sacts pacts" "hero hero" "skills rec" "skills ways" "games games" "close close" "frame frame"}
+  .sc.world-tab-practice #world-games:has(>iframe:not([hidden])){grid-template-areas:"close close" "frame frame" "save play" "sacts pacts"}
+  .sc .wp-hero{grid-template-rows:minmax(200px,1fr) auto}
+  .sc.world-app .account-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .sc.world-tab-practice #world-games,.sc.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden])),.sc.world-tab-practice #world-games:has(>iframe:not([hidden])){grid-template-columns:minmax(0,1fr);grid-template-areas:none}
+  .sc.world-app.world-tab-practice #world-games>*{grid-area:auto}
+  .sc.world-app.world-tab-practice #world-games>.wp-games{order:1}
+  .sc.world-app.world-tab-practice #world-games>.world-preferences{order:2}
+  .sc.world-app.world-tab-practice #world-games>:is(.wp-save,.wp-save-acts,.wp-play,.wp-play-acts){order:3}
+  .sc .wp-hero{grid-template-columns:minmax(0,1fr)}
+  .sc .wp-art{grid-column:auto;min-height:180px}
+  .sc .wp-acts{padding:4px 12px 12px}
+  .sc .wp-acts>.sb-btn{width:100%}
+  .sc.world-app .game-links{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sc.world-app .account-grid{grid-template-columns:minmax(0,1fr)}
+  .sc.world-app .account-grid>.wp-idcard{grid-row:auto}
+  .sc .wp-tabs{width:100%}
+  .sc .wp-tab{flex:1;padding:0 8px}
+}
+.sc.world-app .game-links>button[data-game="korean-runner"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8h11a3 3 0 1 0-3-3'/%3E%3Cpath d='M3 12h15a3 3 0 1 1-3 3'/%3E%3Cpath d='M3 16h7'/%3E%3C/svg%3E")}
+.sc.world-app .game-links>button[data-game="korean-racing"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 21V4'/%3E%3Cpath d='M5 4h12l-2.5 4L17 12H5'/%3E%3C/svg%3E")}
+.sc.world-app .game-links>button[data-game="korean-rhythm"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l11-2v13'/%3E%3Cpath d='M9 18a3 2.5 0 1 1-3-2.5h3z' fill='%231d1d1f'/%3E%3Cpath d='M20 16a3 2.5 0 1 1-3-2.5h3z' fill='%231d1d1f'/%3E%3C/svg%3E")}
+.sc.world-app .game-links>button[data-game="order-rush"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8h12v6a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z'/%3E%3Cpath d='M17 10h1.5a2.5 2.5 0 0 1 0 5H17'/%3E%3Cpath d='M9 3v2M13 3v2'/%3E%3C/svg%3E")}
+.sc.world-app .game-links>button[data-game="entry-check"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z'/%3E%3Cpath d='M9 11h6M9 14h4'/%3E%3C/svg%3E")}
+.sc.world-app .game-links>button[data-game="story-classroom"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5.5C6.5 4 9.5 4 12 5.5 14.5 4 17.5 4 20 5.5V19c-2.5-1.5-5.5-1.5-8 0-2.5-1.5-5.5-1.5-8 0z'/%3E%3Cpath d='M12 5.5V19'/%3E%3C/svg%3E")}
+.sc.world-app .game-links>button[data-game="blank-slice"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 16h5M16 16h5'/%3E%3Cpath d='M10 18h4'/%3E%3Cpath d='M12 5v9'/%3E%3Cpath d='M10 5h4'/%3E%3C/svg%3E")}
+.sc.world-app .game-links>button[data-game="talk-rally"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5h10v7H8l-4 3z'/%3E%3Cpath d='M10 15v2h6l4 3v-8h-3'/%3E%3C/svg%3E")}
+.sc.world-app .game-links>button[data-game="learning-hub"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8h14l-1 12H6z'/%3E%3Cpath d='M9 8V6a3 3 0 0 1 6 0v2'/%3E%3C/svg%3E")}

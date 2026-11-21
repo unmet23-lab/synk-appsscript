@@ -7,6 +7,11 @@ import { takeWorldPlayEntry,worldGameHref } from './world-play-entry.mjs';
 import { createClassroomTownHost } from './classroom-town-host.mjs';
 // SYNK TOWN's 「마을 기록」 card (W6c — the PC app's town-records-card.mjs, shared with the portal and the PC 「내 계정」).
 import { createTownRecords, attachTownRecords, townExport } from '../../../desktop/renderer/town-records-card.mjs';
+// WORLD 앱 창의 「연습」 보기(놓친 곳부터 추천) — 2026-11-22. 묶음 안에서 account-view 바로 앞에 놓이도록 마지막에 가져온다.
+import { createWorldPractice } from './world-practice.mjs';
+// WORLD 앱 창의 보기 셋. 반을 바꿔 화면을 다시 지어도 보던 보기를 잇는다.
+const WORLD_TABS = Object.freeze([['practice', '연습'], ['wardrobe', '옷장'], ['id', '내 SYNK ID']]);
+let worldTab = 'practice';
 const TOWN_CLASSES = Object.freeze({ button: 'plain', note: 'small', link: 'plain link', retry: 'plain' });
 // A small modal question for the town card with a safe default (「취소」 keeps everything as it is).
 function confirmTown({ title, ok }) {
@@ -27,6 +32,25 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   const root = document.getElementById('account'), world = document.getElementById('world-games');let data, host, playHost, wardrobeView, ended = false, deleteRequestId, gameFrame, gameGeneration=0, loadVersion=0, stopPreferences, learningPending=false, learningUnconfirmed=false,playEntryUsed=false;
   // The town card is read once per signed-in account and account state (townFor) and redrawn in place; a reply after stop() is dropped.
   let drawTown = null, townFor = null;
+  // WORLD 앱 창(client.html, 수업 개발 연결 제외): 보기 탭 · 연습 판 · 마지막 학습 요약.
+  const worldApp = product === 'world' && !localConnection;
+  let practiceView = null, lastAtlas = null, tabBar = null;
+  function showTab(name) {
+    if (!worldApp || !WORLD_TABS.some(([key]) => key === name)) return;
+    worldTab = name;const body = document.body;
+    for (const [key] of WORLD_TABS) body.classList.remove(`world-tab-${key}`);
+    body.classList.add('world-app');body.classList.add(`world-tab-${name}`);
+    for (const tab of tabBar?.children || []) if (tab.dataset?.tab) tab.setAttribute('aria-pressed', String(tab.dataset.tab === name));
+  }
+  function drawTabs() {
+    if (!worldApp) return;
+    if (!tabBar) {
+      tabBar = element('nav', null, 'wp-tabs');tabBar.setAttribute('aria-label', 'WORLD 보기');
+      for (const [key, label] of WORLD_TABS) { const tab = element('button', label, 'wp-tab');tab.type = 'button';tab.dataset.tab = key;tab.onclick = () => showTab(key);tabBar.append(tab); }
+      document.querySelector?.('.sc-head')?.append(tabBar);
+    }
+    showTab(worldTab);
+  }
   const town = createTownRecords({
     load: async () => { const reply = await client.townRecords();guard();if (ended) throw Object.assign(new Error('closed'), { code: 'ACCOUNT_CHANGED' });return reply; },
     send: async command => { const reply = await client.townRights(command);guard();if (ended) throw Object.assign(new Error('closed'), { code: 'ACCOUNT_CHANGED' });return reply; },
@@ -37,7 +61,7 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   const retryPlay = () => { if(playHost&&!['conflict','stopped'].includes(playHost.status().phase))void playHost.retry().catch(()=>{}); };
   const visibility = () => { try { if (document.visibilityState === 'hidden') { void host?.flush();void playHost?.flush().catch(()=>{}); } else { void host?.retry();retryPlay();void wardrobeView?.refresh(); } } catch { /* an ended session has nothing to send */ } };
   const online = () => { try { void host?.retry();retryPlay();void wardrobeView?.refresh(); } catch { /* a stopped account must not resume */ } };
-  const stopWorld = () => { wardrobeView?.stop();wardrobeView=null;stopPreferences?.();stopPreferences=null;document.removeEventListener?.('visibilitychange', visibility);window.removeEventListener?.('online',online);closeGame();playHost?.stop();playHost=null;if(window.SYNKPlayHost)delete window.SYNKPlayHost;host?.stop();host = null;if (window.SYNKLearningHost) delete window.SYNKLearningHost;world.replaceChildren();world.hidden = true;gameFrame=null; };
+  const stopWorld = () => { practiceView=null;wardrobeView?.stop();wardrobeView=null;stopPreferences?.();stopPreferences=null;document.removeEventListener?.('visibilitychange', visibility);window.removeEventListener?.('online',online);closeGame();playHost?.stop();playHost=null;if(window.SYNKPlayHost)delete window.SYNKPlayHost;host?.stop();host = null;if (window.SYNKLearningHost) delete window.SYNKLearningHost;world.replaceChildren();world.hidden = true;gameFrame=null; };
   async function action(fn) { try { guard();await fn();if (!ended) guard(); } catch (error) { if (!ended) notice(error.message, true); } }
   const button = (text, fn, className = 'plain') => { const b = element('button', text, className);b.type = 'button';b.onclick = () => { b.disabled = true;void action(fn).finally(() => { b.disabled = false; }); };return b; };
   const card = title => { const c = element('section', null, 'sb-card');c.append(element('h3', title));return c; };
@@ -48,12 +72,19 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     sessionId: (data.sessions || []).find(session => session.current && !session.revoked)?.id || null });
   function games() {
     stopWorld();if (product !== 'world' || !data.account?.synk_user_id) return;
-    world.hidden = false;world.append(element('h2', 'WORLD 게임'));
+    world.hidden = false;world.append(element('h2', 'WORLD 게임', worldApp ? 'visually-hidden' : null));
     const context=classConnection?data.classroom:data;
     const personalConnected = data.learning?.enabled === true && data.capabilities?.learningSync === true && data.account.status === 'active';
     const connected = context?.learning?.enabled === true && personalConnected;
-    const status = element('p', '', 'notice');status.setAttribute('role', 'status');status.setAttribute('aria-live', 'polite');
-    const statusActions = element('div', null, 'actions'), retry = element('button', '저장 상태 다시 확인', 'sb-btn soft');retry.type = 'button';
+    // 연습 보기: 놓친 곳을 세운 첫 판, 최근 30일, 최근 연습. 게임 판은 아래 게임 목록 자리에 놓는다.
+    if (worldApp) {
+      practiceView = createWorldPractice({ element, button, games: WORLD_GAMES, openGame: path => openGame(path), showAccount: () => showTab('id'),
+        context: classConnection ? '반 연습' : '개인 학습', connected });
+      world.append(practiceView.hero, practiceView.record, practiceView.skills);
+      if (lastAtlas) practiceView.setSummary(lastAtlas.result, lastAtlas.failed);
+    }
+    const status = element('p', '', worldApp ? 'notice wp-save' : 'notice');status.setAttribute('role', 'status');status.setAttribute('aria-live', 'polite');
+    const statusActions = element('div', null, worldApp ? 'actions wp-save-acts' : 'actions'), retry = element('button', '저장 상태 다시 확인', 'sb-btn soft');retry.type = 'button';
     let learningState = { phase: 'idle', queued: 0 }, retrying = false;
     const renderLearningStatus = state => {
       learningState = state;
@@ -78,7 +109,7 @@ export function createAccountView({ client, product, guard, notice, logout, prev
         .finally(() => { retrying = false;if (!ended && host === currentHost) renderLearningStatus(learningState); });
     };
     statusActions.append(retry);world.append(status, statusActions);renderLearningStatus(learningState);
-    const playStatus=element('p','','notice'),playActions=element('div',null,'actions');playStatus.setAttribute('role','status');playStatus.dataset.playStatus='';
+    const playStatus=element('p','',worldApp?'notice wp-play':'notice'),playActions=element('div',null,worldApp?'actions wp-play-acts':'actions');playStatus.setAttribute('role','status');playStatus.dataset.playStatus='';
     let playState={phase:'loading'},opening=false,pendingPath=null;
     const playRetry=button('게임 기록 다시 연결',async()=>{
       const current=playHost;if(!current)throw new Error('WORLD 계정을 다시 불러온 뒤 시도해 주세요.');
@@ -144,12 +175,18 @@ export function createAccountView({ client, product, guard, notice, logout, prev
         if(currentPlay.status?.().phase==='conflict')throw new Error('사용할 게임 진도를 먼저 골라 주세요.');
         if((localConnection||classConnection)&&path!=='learning-hub'){await onGameRequest?.(path);pendingPath=null;return;}
         await currentHost?.ready();guard();if(ended||host!==currentHost||currentPlay!==playHost||generation!==gameGeneration)return;
-        frame.src=worldGameHref(path);frame.hidden=false;pendingPath=null;
+        frame.src=worldGameHref(path);frame.hidden=false;pendingPath=null;showTab('practice');
       }catch(error){if(!ended&&currentPlay===playHost){renderPlayFailure(currentPlay,error);throw error;}}
       finally{opening=false;}
     }
-    for (const { path, label } of WORLD_GAMES) links.append(button(label,()=>openGame(path),'sb-glass'));
-    world.append(links, frame);
+    if (worldApp) {
+      // 게임을 여는 동안에는 판들을 접고 게임만 크게 보인다(client.css). 이 단추로 닫고 연습 판으로 돌아온다.
+      const playing = element('div', null, 'wp-playing');playing.append(button('게임 닫고 연습으로', async () => closeGame(), 'sb-btn soft'));
+      world.append(practiceView.games, playing, frame);
+    } else {
+      for (const { path, label } of WORLD_GAMES) links.append(button(label,()=>openGame(path),'sb-glass'));
+      world.append(links, frame);
+    }
     if(!preview&&!playEntryUsed){playEntryUsed=true;const entry=takeWorldPlayEntry();if(entry)void action(()=>openGame(entry));}
   }
   async function load({ preserveWorld = false } = {}) {
@@ -180,8 +217,10 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   async function atlas(target) {
     let result;
     try { result = typeof client.atlasSummary === 'function' ? await client.atlasSummary() : null;guard(); }
-    catch { if (!ended) target.replaceChildren(element('h3', '내 학습 요약'), element('p', '학습 요약을 불러오지 못했어요. 연습과 계정은 그대로 쓸 수 있어요.', 'small'));return; }
+    catch { if (!ended) { lastAtlas = { result: null, failed: true };practiceView?.setSummary(null, true);target.replaceChildren(element('h3', '내 학습 요약'), element('p', '학습 요약을 불러오지 못했어요. 연습과 계정은 그대로 쓸 수 있어요.', 'small')); }return; }
     if (ended) return;
+    // 연습 보기의 첫 판 · 최근 연습도 같은 요약 한 번으로 채운다(요청을 더하지 않는다).
+    lastAtlas = { result: result?.summary ? result : { shared: result?.shared, summary: null }, failed: false };practiceView?.setSummary(lastAtlas.result);
     if (!result?.summary) { target.replaceChildren(element('h3', '내 학습 요약'), element('p', '아직 보여 줄 학습 요약이 없어요.', 'small'));return; }
     const { summary } = result, rows = [];
     const chosen = Object.entries(summary.presentation || {}).filter(([key, value]) => SETTING_WORDS[key]?.[value]).map(([key, value]) => SETTING_WORDS[key][value]);
@@ -204,10 +243,17 @@ export function createAccountView({ client, product, guard, notice, logout, prev
         : '「학습 기록 연결」이 꺼져 있어 다른 SYNK 앱에는 직접 고른 배우는 이유만 전해요.', 'small'));
   }
   function render(keepWorld = false) {
-    document.body.classList.add('account-open');root.hidden = false;root.replaceChildren();const head = element('div', null, 'account-head');
+    document.body.classList.add('account-open');drawTabs();root.hidden = false;root.replaceChildren();const head = element('div', null, 'account-head');
     head.append(element('h2', `${data.account?.profile?.display_name || '나'}의 ${localConnection?'개발용 WORLD 연결':'SYNK ID'}`), button(localConnection?'이 창의 연결 종료':'로그아웃', () => signOut()));root.append(head);
-    const grid = element('div', null, 'account-grid'), identity = card('계정과 소속');
-    identity.append(element('p', `SYNK ID · ${data.account?.synk_user_id || '확인 중'}`, 'small'));
+    const grid = element('div', null, 'account-grid'), identity = card(worldApp ? (data.account?.profile?.display_name || '나') : '계정과 소속');
+    if (worldApp) {
+      // 내 SYNK ID 보기의 첫 칸은 학생증(강사는 강사증) 한 장이다. 문의할 때 쓰는 번호를 복사할 수 있다.
+      const role = (data.memberships || []).filter(m => m.active !== false).map(memberLabel)[0] || '';identity.classList.add('wp-idcard');
+      identity.append(element('p', role === '학생' ? 'SYNK 학생증' : role === '강사' ? 'SYNK 강사증' : 'SYNK ID', 'wp-kind'));
+      const id = data.account?.synk_user_id || '';
+      const copy = button('번호 복사', async () => { const write = globalThis.navigator?.clipboard?.writeText;if (!id || typeof write !== 'function') throw new Error('이 화면에서는 복사할 수 없어요. 번호를 끌어 골라 복사해 주세요.');await globalThis.navigator.clipboard.writeText(id);notice('SYNK ID 번호를 복사했어요. 문의할 때 붙여 넣어 주세요.'); }, 'plain');
+      const number = element('div', null, 'wp-idnum');number.append(element('p', `문의할 때 쓰는 번호 · ${id || '확인 중'}`, 'small'), copy);identity.append(number);
+    } else identity.append(element('p', `SYNK ID · ${data.account?.synk_user_id || '확인 중'}`, 'small'));
     identity.append(list((data.memberships || []).map(m => `${memberLabel(m)}${m.student_code ? ` · ${m.student_code}` : ''}${m.active === false ? ' · 소속 종료' : ''}`), '아직 연결된 소속이 없어요.'));
     identity.append(element('p', `로그인 방법: ${(data.account?.providers || []).map(value => ({ email: '이메일', google: 'Google' })[value] || value).join(', ') || '이메일'}`, 'small'));
     const deleting = data.account?.status === 'deletion-requested', canEnable = data.capabilities?.learningSync === true && !deleting;
@@ -280,9 +326,11 @@ export function createAccountView({ client, product, guard, notice, logout, prev
         :Object.freeze({async read(){current();const result=await townClient.townRead();current();return result;},async command(payload){current();const result=await townClient.townCommand(payload);current();return result;}});
     }
     if(classConnection)url.pathname=run.gameId==='synk-town'?new URL('../synk-town/linked.html',location.href).pathname:new URL(worldGameHref(run.gameId)).pathname;
-    gameFrame.src=url.href;gameFrame.hidden=false;world.hidden=false;gameFrame.scrollIntoView?.({behavior:'smooth',block:'start'});
+    gameFrame.src=url.href;gameFrame.hidden=false;world.hidden=false;showTab('practice');gameFrame.scrollIntoView?.({behavior:'smooth',block:'start'});
   }
   // The SYNK ID page tidies this list after a password change ends the other sessions in Auth.
   const sessions = () => (data?.sessions || []).map(session => ({ ...session }));
-  return { load,applyAccount,launchRun,closeGame,sessions, stop() { ended = true;loadVersion++;town.reset();drawTown = null;townFor = null;document.body.classList.remove('account-open');stopWorld();root.replaceChildren();root.hidden = true; } };
+  return { load,applyAccount,launchRun,closeGame,sessions, stop() { ended = true;loadVersion++;town.reset();drawTown = null;townFor = null;document.body.classList.remove('account-open');
+    if (worldApp) { tabBar?.remove?.();tabBar = null;for (const [key] of WORLD_TABS) document.body.classList.remove(`world-tab-${key}`);document.body.classList.remove('world-app'); }
+    stopWorld();root.replaceChildren();root.hidden = true; } };
 }
