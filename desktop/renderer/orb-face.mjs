@@ -254,8 +254,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   const embed = embeds.pulse?.embed || null;
   // guestPulse: 로그아웃한 손님이 PULSE 초대로 들어온 때다. 손님에게는 PULSE만 배정된 것으로 본다(설계 검토 R1)
   // share: Workspace가 청한 화면 공유 고르기 {id, items}(4단계 4.2). pendingReveal: 구가 다른 공간으로 들어가는 동안 온 「돌아가서 저장」(3단계 화면 Fable F1)
-  // pendingMainOpen: 본체가 공간을 열라고 했는데(트레이의 Workspace 줄) 아직 들어오기 전이면 들어온 뒤에 연다
-  let embedFocusNext = false, guestPulse = false, signingOut = false, share = null, pendingReveal = null, pendingMainOpen = null;
+  // pendingMainOpen: 본체가 공간을 열라고 했는데(트레이의 Workspace 줄) 아직 들어오기 전이면 들어온 뒤에 연다.
+  // mainOpenAfterBusy: 그 열기가 다른 일(다른 공간 열기 따위)을 하는 동안 왔으면 그 일이 끝난 뒤에 연다(4단계 화면 Fable F3)
+  let embedFocusNext = false, guestPulse = false, signingOut = false, share = null, pendingReveal = null, pendingMainOpen = null, mainOpenAfterBusy = null;
   const embedOff = [];
   // 본체의 단축 동작. 지금은 트레이 줄이 보내는 {type:'open-space', space:'workspace'} 하나만 받는다(4단계 구현 설계 3.5)
   if (typeof options.onDesktopAction === 'function') {
@@ -615,8 +616,17 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     if (legacyKind && clientMode() === 'legacy') closeLegacy({ silent: true });
     if (clientMode() !== 'app' || orbTarget === 'inside') { pendingMainOpen = name; return; }
     pendingMainOpen = null;
-    // 까닭은 펼침에서 말한다. 펼침이 닫혀 있으면 열어서 보인다
-    if (!assignedFor(machine.read()).includes(name)) { sayInSwitch(`이 계정에는 ${SPACE_NAME[name] || name} 배정이 없습니다.`); return; }
+    // 다른 일을 하는 동안에는 펼침을 건드리지 않고 그 일이 끝난 뒤에 연다. 그 일의 실패 글이 가려지지 않고 이 요청도 버려지지 않는다(4단계 화면 Fable F3)
+    if (busyAction !== null) { mainOpenAfterBusy = name; return; }
+    mainOpenAfterBusy = null;
+    // 까닭은 펼침에서 말한다. 펼침이 닫혀 있으면 열어서 보인다.
+    // 배정 조회를 다 확인하지 못한 계정이면 「배정이 없다」고 단정하지 않는다. 펼침 머리의 까닭과 「다시 확인」이 말한다(4단계 화면 Fable F2)
+    if (!assignedFor(machine.read()).includes(name)) {
+      const state = machine.read();
+      const unsure = memberShown(state) && assignedCheck && assignedAccount === state.accountKey;
+      sayInSwitch(unsure ? '' : `이 계정에는 ${SPACE_NAME[name] || name} 배정이 없습니다.`);
+      return;
+    }
     if (space === name && slotOf(name)?.open) { revealSpace(name); return; }
     if (switchOpen) { switchOpen = false; fanPin = false; }
     if (aside) { aside = null; rooms.close(); }
@@ -697,6 +707,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   function render() {
     if (disposed) return;
     if (share && !shareRoomShown()) dropShare();
+    // 하던 일이 끝났으면 그동안 온 트레이 열기를 잇는다(4단계 화면 Fable F3)
+    if (mainOpenAfterBusy && busyAction === null) { const name = mainOpenAfterBusy; mainOpenAfterBusy = null; queueMicrotask(() => openFromMain(name)); }
     const state = machine.read();
     if (state.phase !== 'entered' && navigationHoldActive) navigationHoldActive = false;
     if (state.phase !== lastPhase) {
@@ -1681,6 +1693,10 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     cancelAutoZoom();
     navigationHoldActive = false;
     workspaceNeedsRetry = false;
+    // 미뤄 둔 트레이 열기와 「돌아가서 저장」은 이 계정의 것이다. 다음 로그인이나 다른 계정에서 스스로 열리지 않게 버린다(4단계 화면 Fable F1)
+    pendingReveal = null;
+    pendingMainOpen = null;
+    mainOpenAfterBusy = null;
     switchOpen = false;
     fanPin = false;
     if (legacyKind) closeLegacy({ silent: true });

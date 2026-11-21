@@ -2788,3 +2788,56 @@ test('a screen without a name is called a screen (카본 A4)', async t => {
   w.ask({ id: 25, items: [{ name: ' ', kind: 'screen', thumb: '' }] }); await settle();
   assert.deepEqual(h.view.last().share.items, [{ name: '이름 없는 화면', kind: 'screen', thumb: '' }]);
 });
+
+// 4단계 PC 화면 Fable 최종(pc-orb-step4-screen-20261122)
+test('a tray open held while the orb moves is dropped on sign-out, so the next sign-in does not open Workspace by itself (F1)', async t => {
+  const { h, w, tray } = await enteredWithBoth(t);
+  const dive = h.view.dive;
+  let release = null;
+  h.view.dive = space => { h.view.log.push(['dive', space]); return new Promise(resolve => { release = resolve; }); };
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  assert.ok(release, 'the orb is on its way into PULSE');
+  tray({ type: 'open-space', space: 'workspace' }); await settle();
+  h.face.setState({ status: 'signed-out', generation: 2 }); await settle();
+  release(); await settle();
+  h.view.dive = dive;
+  const shownBefore = w.sent.filter(v => v.visible).length;
+  h.face.setState(signedIn(ACCOUNT, 3)); await settle();
+  h.face.handle('continue-personal'); await settle();
+  assert.notEqual(h.view.last().space, 'workspace');
+  assert.equal(w.sent.filter(v => v.visible).length, shownBefore, 'Workspace is not shown after the new sign-in');
+});
+
+test('a tray open on an account whose company check is incomplete opens the fan with that reason, not 「no assignment」 (F2)', async t => {
+  const order = [], other = spaceEmbed('workspace', order), actions = [];
+  const h = harness(t, { storage: memoryStorage({ [ORB_RETURNING_KEY]: '1' }), options: {
+    workspaceEmbed: other.embed,
+    onDesktopAction: fn => { actions.push(fn); return () => {}; },
+    onEnter: () => ({ ok: true, action: 'purpose', purposeMode: 'existing', destinations: ['/pulse-app/'], assignmentCheck: { status: 'unavailable' } }),
+  } });
+  await settle(); h.face.setState(signedIn()); await settle();
+  assert.equal(h.face.getState().phase, 'entered');
+  actions.forEach(fn => fn({ type: 'open-space', space: 'workspace' })); await settle();
+  const fan = h.view.last().fan;
+  assert.equal(fan.open, true);
+  assert.equal(fan.lead, '회사 공간 배정을 확인하지 못했습니다.');
+  assert.equal(fan.error, '', 'no line that says there is no assignment');
+  assert.ok(other.sent.every(v => v.visible === false));
+});
+
+test('a tray open that comes while another space is opening waits for it, then opens Workspace (F3)', async t => {
+  let finish = null;
+  const { h, w, opens, tray } = await enteredWithBoth(t, { onOpenSpace: dest => {
+    opens.push(dest);
+    if (dest === '/pulse-app/') return new Promise(resolve => { finish = resolve; });
+    if (dest === '/') w.setOpen(true);
+    return { ok: true, destination: dest };
+  } });
+  h.face.handle('open-switch'); await settle(); h.face.handle('go', 'pulse'); await settle();
+  assert.ok(finish, 'PULSE is opening');
+  tray({ type: 'open-space', space: 'workspace' }); await settle();
+  assert.deepEqual(opens, ['/pulse-app/'], 'nothing else opens while PULSE is opening');
+  finish({ ok: false, message: 'PULSE를 열지 못했어요.' }); await settle(); await settle();
+  assert.equal(h.view.last().space, 'workspace', 'the tray request is carried out after the other open ends');
+  assert.deepEqual(w.last(), { visible: true, top: 56 });
+});
