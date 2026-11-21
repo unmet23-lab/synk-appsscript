@@ -22,7 +22,7 @@ function source(start) {
   return lines.slice(i, end + 1).join('\n');
 }
 
-const CHANNELS = ['snapshot', 'watch', 'department-save', 'department-remove', 'session-assign', 'settings-save', 'roots-add', 'roots-remove', 'seen'].map(c => `synk:office-${c}`);
+const CHANNELS = ['snapshot', 'task-submit', 'task-action', 'watch', 'department-save', 'department-remove', 'session-assign', 'settings-save', 'roots-add', 'roots-remove', 'seen'].map(c => `synk:office-${c}`);
 const YUHO = { synk_user_id: 'owner-1234567890', display_name: '유호' };
 const OTHER = { synk_user_id: 'tester-1234567890', display_name: '시험 계정' };
 const S1 = '00000001-0000-4000-8000-000000000001';
@@ -44,7 +44,7 @@ test('every synk:office-* channel is in handlers, on one line, and goes through 
     assert.match(line, /^ {4}'synk:office-[a-z-]+':(\(\)|[A-Za-z]+|\([A-Za-z,]+\))=>officeCall\(.*\),$/, `${channel} goes through officeCall on one line`);
   }
   const literals = [...main.matchAll(/'synk:office-[a-z-]+'/g)].map(m => m[0].slice(1, -1));
-  assert.deepEqual(literals.filter(c => !CHANNELS.includes(c)), ['synk:office-changed'], 'no other office channel, besides office-changed that main sends for the office');
+  assert.deepEqual([...new Set(literals.filter(c => !CHANNELS.includes(c)))], ['synk:office-changed'], 'no other office channel, besides office-changed that main sends for the office');
   assert.equal(literals.filter(c => CHANNELS.includes(c)).length, CHANNELS.length);
   assert.match(main, /onChange:\(\)=>sendDesktop\('synk:office-changed'\)/);
   assert.match(main, /for\(const \[channel,handler\]of Object\.entries\(handlers\)\)\{ipcMain\.removeHandler\(channel\);ipcMain\.handle\(channel,async\(event,\.\.\.args\)=>\{assertSender\(event,window,entry,runtime\.clientId\);/);
@@ -120,11 +120,12 @@ test('the handlers pass only the agreed values; the snapshot is the office answe
   const service = new Proxy({}, { get: (_t, name) => (...a) => { calls.push([name, ...a.slice(0, -1).map(plain), a.at(-1).synk_user_id]); return name === 'snapshot' ? { ok: true, available: true } : { ok: true }; } });
   const ctx = {
     officeCall: run => run(service, YUHO),
+    officeTasks:()=>null,
     officeSaveDepartment: (s, account, input) => { calls.push(['officeSaveDepartment', plain(input), account.synk_user_id]); return { ok: true }; },
     officeAddRoot: (s, account) => { calls.push(['officeAddRoot', account.synk_user_id]); return { ok: true }; },
     officeRemoveRoot: (s, account, dir) => { calls.push(['officeRemoveRoot', dir, account.synk_user_id]); return { ok: true }; },
   };
-  const h = vm.runInNewContext(`({\n${handlerLines.join('\n')}\n})`, ctx);
+  const h = vm.runInNewContext(source('async function officeWithTasks(')+'\n'+`({\n${handlerLines.join('\n')}\n})`, ctx);
   const snap = await h['synk:office-snapshot']();
   assert.deepEqual(plain(snap), { ok: true, available: true });
   await h['synk:office-watch']('yes');
@@ -142,7 +143,7 @@ test('the handlers pass only the agreed values; the snapshot is the office answe
     ['officeSaveDepartment', { name: '법무', folder: 'choose' }, id], ['removeDepartment', 'dept-1', id], ['assign', S1, null, id],
     ['saveSettings', { view: 'top' }, id], ['officeAddRoot', id], ['officeRemoveRoot', ADDED, id], ['seen', null, id],
   ]);
-  const refused = await vm.runInNewContext(`({\n${handlerLines[0]}\n})`, { officeCall: async () => ({ ok: true, available: false }) })['synk:office-snapshot']();
+  const refused = await vm.runInNewContext(`({\n${handlerLines[0]}\n})`, { officeWithTasks(){throw Error('not allowed');}, officeCall: async () => ({ ok: true, available: false }) })['synk:office-snapshot']();
   assert.deepEqual(plain(refused), { ok: true, available: false }, 'the gate answer comes back as it is');
 });
 
@@ -263,7 +264,7 @@ test('an account change or sign-out reaches the office, a same-account renewal d
     careNotifications: null, pulseApp: null, syncCompanyEntry() {}, scheduleHiddenAuthRetry() {}, syncTrayApps: async () => {},
     window: null, trustedEntry: () => false, entry: '', runtime: { clientId: 'platform' },
     renewing: null, renewingAccount: () => ctx.renewing,
-    officeService: null, solioBackupService: null, solioBackupSweep: () => {},
+    officeService: null, officeEmployeeTasks:null, solioBackupService: null, solioBackupSweep: () => {},
   };
   vm.runInNewContext([source('const officeAccountOf='), source('const officeLoginOf='), source('function publishAuthState(state){')].join('\n'), ctx);
   ctx.publishAuthState(signedIn(YUHO));
@@ -309,12 +310,23 @@ function bridge() {
 test('preload exposes exactly the office bridge, frozen, and rebuilds every argument', async () => {
   const { office, calls, listeners } = bridge();
   assert.ok(Object.isFrozen(office));
-  assert.deepEqual(Object.keys(office), ['snapshot', 'watch', 'saveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'addRoot', 'removeRoot', 'seen', 'onChanged']);
+  assert.deepEqual(Object.keys(office), ['snapshot', 'submitTask', 'taskAction', 'watch', 'saveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'addRoot', 'removeRoot', 'seen', 'onChanged']);
   const last = () => calls.at(-1);
   const refused = async (p, why) => { const before = calls.length; assert.deepEqual(plain(await p), { ok: false, code: 'VALUE' }, why); assert.equal(calls.length, before, `${why}: nothing crosses`); };
 
   await office.snapshot('ignored');
   assert.deepEqual(last(), ['synk:office-snapshot']);
+  const assignment={id:S1,provider:'claude',departmentId:null,prompt:'첫 줄\n둘째 줄',previousId:null};
+  await office.submitTask({...assignment,cwd:'arbitrary',account:OTHER.synk_user_id,approvalPolicy:'anything'});
+  assert.deepEqual(last(),['synk:office-task-submit',assignment]);
+  for(const change of [{provider:'gemini'},{id:'bad'},{departmentId:'../data'},{prompt:' '},{previousId:'bad'}])await refused(office.submitTask({...assignment,...change}),'invalid assignment');
+  await office.taskAction(S1,'terminal');
+  assert.deepEqual(last(),['synk:office-task-action',S1,'terminal']);
+  await office.taskAction(S1,'saveAnswer','직접 고른 답');
+  assert.deepEqual(last(),['synk:office-task-action',S1,'saveAnswer','직접 고른 답']);
+  await refused(office.taskAction(S1,'saveAnswer','   '),'empty manual text');
+  await refused(office.taskAction(S1,'saveAnswer','a'.repeat(524289)),'oversized manual text');
+  await refused(office.taskAction(S1,'approve'),'there is no tool-approval action');
   await office.watch('yes'); assert.deepEqual(last(), ['synk:office-watch', false]);
   await office.watch(true); assert.deepEqual(last(), ['synk:office-watch', true]);
 
@@ -423,6 +435,7 @@ test('the running app opens no window for an --office-unhook second instance and
 /* 사무실과 채널 줄을 한 자리에 이어 돌린다. packaged · shipped만 바꾼다 */
 function wired({ packaged, shipped }) {
   const ctx = {
+    officeTasks:()=>null,
     packaged, officeShipped: shipped, smoke: false, runtime: { clientId: 'platform', mode: 'release' }, status: signedIn(YUHO),
     paths: [], loads: 0, offices: [], calls: [],
     accountStatus: () => ctx.status, renewingAccount: () => null,
@@ -442,7 +455,7 @@ function wired({ packaged, shipped }) {
   const handlerLines = lines.slice(start).filter(l => /^ {4}'synk:office-/.test(l));
   vm.runInNewContext([
     source('const officeOff='), source('let officeService=null,officeLoading=null;'), source('const officeAccountOf='), source('const officeLoginOf='), source('function office(){'),
-    source('async function officeCall(work){'), `globalThis.handlers=({\n${handlerLines.join('\n')}\n});`,
+    source('async function officeWithTasks('),source('async function officeCall(work){'), `globalThis.handlers=({\n${handlerLines.join('\n')}\n});`,
   ].join('\n'), ctx);
   return ctx;
 }
@@ -466,7 +479,7 @@ test('the office ships on (officeShipped), and a packaged build with the switch 
   assert.equal(room.scene({ ok: false, code: 'NOT_AVAILABLE' }, Date.now(), null).visible, false);
   for (const [label, options] of [['source run', { packaged: false, shipped: false }], ['packaged, office shipped', { packaged: true, shipped: true }]]) {
     const on = wired(options);
-    for (const channel of CHANNELS) assert.equal((await ask(on, channel)).ok, true, `${label}: ${channel}`);
+    for (const channel of CHANNELS) assert.equal((await ask(on, channel)).ok, !channel.startsWith('synk:office-task-'), `${label}: ${channel}`);
     assert.deepEqual([on.loads, on.offices.length], [1, 1], `${label}: one office`);
     assert.deepEqual(on.calls, ['snapshot', 'watch', 'officeSaveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'officeAddRoot', 'officeRemoveRoot', 'seen'], label);
   }

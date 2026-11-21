@@ -635,8 +635,11 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
         const off = api.onChanged(() => {
           // 바뀜 알림이 몰려 와도 한 번만 다시 읽는다
           if (disposed || officeChange !== null) return;
-          // 사무실을 볼 수 있는 계정일 때만 다시 읽는다
-          officeChange = setTimer(() => { officeChange = null; if (!disposed && clientMode() === 'app' && space === 'solio' && !isHidden() && reads.office.result?.available === true) syncRead('office', { again: true }); }, OFFICE_TIMING.changed);
+          // 처음 권한을 받은 회원도 열린 솔리오에서 본체의 새 판을 읽는다.
+          officeChange = setTimer(() => {
+            officeChange = null;
+            if (!disposed && clientMode() === 'app' && space === 'solio' && !isHidden() && solioReadable(machine.read())) syncRead('office', { again: true });
+          }, OFFICE_TIMING.changed);
         });
         officeOff = typeof off === 'function' ? off : () => {};
       } catch { officeOff = () => {}; }

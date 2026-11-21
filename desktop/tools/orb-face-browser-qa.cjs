@@ -614,6 +614,9 @@ if(!process.versions.electron){
           check('21 an account without the real entry has no backup object',!o2.includes('backup')&&o2.includes('visits'),{objs:o2});
           v.win.destroy();
         }
+        if(only('office-tasks')&&mode==='main'){
+          await require('./office-task-browser-qa.cjs')({open,boot,signedIn,signedOut,subsNone,until,wait,click,capture,check,calls});
+        }
         // 22. 솔리오 「사무실」(사무실 구현설계 14.2 · 14.4). 들어가기와 나오기, 다른 프로그램에 있을 때 오브제의 느낌표, 보기 바꾸기, 줄을 열었다 닫으면 끝냄 알림이 지워짐,
         //     부서 빼기의 두 번 확인, 자판만으로 부서 더하기, 수용 인원을 넘었을 때, 부서 여섯과 일곱, 기록으로만 선 직원(첫 조각의 실제 모습, 11-21 훅을 뺐다), 세션이 없을 때를 본다. 다섯 크기(꽉 참 1440×900, 1080×700, 720×760, 420×760, 380×250)에서 두 보기를 찍는다.
         //     그림은 눈 깜빡임 · 테두리 밝기 · 느낌표만 움직인다. 1.2초 사이에 캔버스에서 바뀐 점의 몫을 잰다

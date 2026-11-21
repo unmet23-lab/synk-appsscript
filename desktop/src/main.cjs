@@ -50,6 +50,7 @@ const {createMacApplicationLocationGate}=require('./mac-application-location.cjs
 const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
 const {createLocalServerGate}=require('./local-server-owner.cjs');
 const {createOffice,loadOfficeModel}=require('./office.cjs');
+const {enabled:officeTasksEnabled,createTaskRuntime}=require('./office-task-runtime.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
@@ -102,7 +103,7 @@ let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
   if(installations)return installations;
@@ -268,6 +269,22 @@ function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {o
 const officeShipped=true;
 const officeOff=()=>packaged&&!officeShipped;
 let officeService=null,officeLoading=null;
+const officeTaskSource=officeTasksEnabled({packaged,mode:runtime.mode,clientId:runtime.clientId,platform:process.platform,smoke});
+let officeEmployeeTasks=null;
+function officeTasks(){
+  if(!officeTaskSource)return null;
+  if(!officeEmployeeTasks)officeEmployeeTasks=createTaskRuntime({userData:app.getPath('userData'),current:()=>officeLoginOf(accountStatus()),office,model:loadOfficeModel,changed:()=>sendDesktop('synk:office-changed')});
+  return officeEmployeeTasks;
+}
+async function officeWithTasks(service,account){
+  const view=await service.snapshot(account);
+  const tasks=view?.available&&officeTasks();
+  if(!tasks)return view;
+  const history=await tasks.snapshot(account);
+  if(history.code==='NOT_ALLOWED')return view;
+  if(!history.ok && !['STORAGE','STORAGE_FULL'].includes(history.code))return {ok:false,code:history.code};
+  return {...view,tasking:{tasks:history.tasks||[],...(history.code?{code:history.code}:{})}};
+}
 const officeAccountOf=state=>{if(state?.signedIn===true&&state.account)return state.account;const renewing=renewingAccount();return renewing?{synk_user_id:renewing}:null;};
 // 로그인 묶음(구현설계 11.1 「계정 묶기」, GPT 검수 r7 · r8 GA1): 계정에 로그인 회차(sessionGeneration)를 실어 넘긴다. 사무실은 들어온 순간의 묶음이 지금 묶음과 같을 때만 기억을 바꾸고 답한다
 const officeLoginOf=state=>{const account=officeAccountOf(state);return account?{...account,sessionGeneration:state?.sessionGeneration}:null;};
@@ -317,6 +334,8 @@ require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=
 app.on('before-quit',()=>{quittingRequested=true;startupWindow?.prepareForQuit();handoffCover?.prepareForQuit();});
 app.on('before-quit',()=>aiSubscriptions?.dispose());
 app.on('before-quit',()=>officeService?.close());
+app.on('before-quit',()=>officeEmployeeTasks?.close());
+app.on('browser-window-focus',(_event,focused)=>{if(officeTaskSource&&focused===window)sendDesktop('synk:office-changed');});
 app.on('will-quit',event=>{
   if(platformUpdate?.needsInstallHandoff()){
     // will-quit runs only after the normal window/draft guards accepted. Hold
@@ -831,7 +850,9 @@ function createWindow(){
     'synk:solio-backup-open':topic=>solioBackupCall((service,account)=>service.open(account,topic)),
     'synk:solio-backup-dismiss':()=>solioBackupCall((service,account)=>service.dismiss(account)),
     // 솔리오 「사무실」(구현설계.md 13절): 모두 officeCall을 거친다. 폴더는 본체가 고르기 창이나 지금 선 세션에서 받는다
-    'synk:office-snapshot':()=>officeCall((service,account)=>service.snapshot(account)),
+    'synk:office-snapshot':()=>officeCall(officeWithTasks),
+    'synk:office-task-submit':input=>officeCall((_service,account)=>officeTasks()?.submit(account,input)??{ok:false,code:'NOT_AVAILABLE'}),
+    'synk:office-task-action':(id,action,text)=>officeCall((_service,account)=>officeTasks()?.action(account,id,action,text)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-watch':on=>officeCall((service,account)=>service.watch(on===true,account)),
     'synk:office-department-save':input=>officeCall((service,account)=>officeSaveDepartment(service,account,input)),
     'synk:office-department-remove':id=>officeCall((service,account)=>service.removeDepartment(id,account)),

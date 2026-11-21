@@ -2150,6 +2150,35 @@ test('사무실 stands last, only when the main process answers available:true, 
   }
 });
 
+test('an office change can reveal the first confirmed membership in an open Solio window', async t => {
+  const office = officeFake({ ok: true, available: false });
+  const h = harness(t, { options: { office: office.api } });
+  await settle();
+  h.face.setState(signedIn());
+  await settle(20);
+  assert.ok(!programKeys(h).includes('office'));
+
+  const before = office.reads();
+  office.emit();
+  await settle(20);
+  assert.equal(office.reads(), before + 1);
+  assert.ok(!programKeys(h).includes('office'), 'a notification alone cannot grant access');
+
+  office.set({ ...officeBoard({ asked: false }), tasking: { tasks: [] } });
+  office.emit(); office.emit();
+  await settle(20);
+  assert.equal(office.reads(), before + 2);
+  assert.ok(programKeys(h).includes('office'));
+  assert.ok(h.view.last().room.office.tasking);
+
+  h.face.setState({ status: 'signed-out', accountKey: null, generation: 2 });
+  await settle(20);
+  const afterLogout = office.reads();
+  office.emit();
+  await settle(20);
+  assert.equal(office.reads(), afterLogout);
+});
+
 test('the 사무실 object carries the alert mark while another program is open, and loses it after a change notice', async t => {
   const office = officeFake(officeBoard());
   const h = harness(t, { options: { office: office.api, siteVisits: readFake(visible()).api } });

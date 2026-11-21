@@ -8,13 +8,14 @@ import { createOrbSound, followSoundPreference } from './orb-sound.mjs';
 import { createOrbSignature } from './orb-signature.mjs';
 import { rowSpeech } from './site-visits-model.mjs';
 import { createOfficeFloor } from './office-floor.mjs';
+import { createOfficeTaskView } from './office-task-view.mjs';
 
 export const PORTAL_STATE_EVENT = 'synk:portal-state';
 export const QA_GUEST_EVENT = 'synk:qa-guest-entry';
 
 const EASE = { io: easeIO, ioq: easeIOQ, out: easeOut };
 const NON_HOST_TAGS = new Set(['SCRIPT', 'STYLE', 'TEMPLATE', 'LINK', 'META', 'NOSCRIPT']);
-const FOCUSABLE = 'button:not([disabled]),input:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])';
+const FOCUSABLE = 'button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])';
 const MARK_SVG = '<svg class="mark rise" style="--i:0" viewBox="0 0 560 328" role="img" aria-label="싱크"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>';
 /* 솔리오 안의 프로그램 오브제(시안 .rail의 그림). 이름은 컨트롤러가 장면으로 넘긴다. 백업은 방이 생길 때 구독 다음 자리에 넣는다 */
 const PROGRAM_ICON = Object.freeze({
@@ -133,6 +134,7 @@ function markup() {
     <div class="room room-top" data-room="solio-office" hidden>
       <p class="say rise" style="--i:1" tabindex="-1" data-off-head><span data-off-say></span><span class="then" data-off-then></span></p>
       <p class="more-note off-hint rise" style="--i:2" data-off-hint hidden></p>
+      <div data-off-tasks></div>
       <div class="office rise" style="--i:3">
         <div class="off-slot" role="img" aria-label="부서마다 직원이 앉아 있는 사무실 그림입니다. 같은 내용이 부서 줄에 글로 있습니다." data-off-slot hidden><canvas aria-hidden="true" data-off-floor></canvas></div>
         <div class="rows off" role="group" aria-label="사무실의 부서" data-off-rows></div>
@@ -794,8 +796,10 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   /* ── 솔리오 「사무실」의 방(사무실 구현설계 11.2, 시안 사무실.html). 맨 위 두 줄, 사무실 그림, 줄(방의 줄과 같은 data-key 줄)이다.
      그림에서 부서에 다가가 0.18초 머물면 그 부서의 줄이 열리고, 벗어나 0.4초 지나면 고정하지 않은 줄이 접힌다(시안의 그림 머무는 시간 = NEAR.prog · NEAR.close).
      그림을 누르면 그 줄이 고정되고, 빈 곳을 누르면 모두 접힌다. 줄이나 직원 줄에 손을 대면 그림의 그 부서와 직원이 밝아진다 ── */
-  let offTimer = 0, offLeave = 0;
+  let offTimer = 0, offLeave = 0, assignmentFloor = null;
   const markOfficeStaff = id => { for (const r of app.offRows.querySelectorAll('.row.staff')) r.classList.toggle('hot', !!id && r.dataset.staff === id); };
+  const taskHost = $('[data-off-tasks]'), drawing = app.offSlot.parentElement;
+  const officeTasks = createOfficeTaskView(taskHost, payload => onAction('room', { room: 'solio-office', ...payload }));
   const officeFloor = createOfficeFloor(app.offFloor, {
     win,
     reduced,
@@ -808,8 +812,17 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       if (b) { clearTimeout(offLeave); clearTimeout(subLeave); if (!b.classList.contains('opened')) offTimer = setTimeout(() => { if (!disposed && b.isConnected) openVis(b); }, NEAR.prog); }
       else { clearTimeout(offLeave); offLeave = setTimeout(() => { if (!disposed) closeMores(false, app.offRows); }, NEAR.close); }
     },
-    onPress: zone => {
+    onPress: (zone, staff) => {
       clearTimeout(offTimer); clearTimeout(offLeave);
+      if (staff && assignmentFloor) {
+        for (const group of assignmentFloor.zones) {
+          const worker = group.staff.find(person => person.id === staff);
+          if (worker?.provider) {
+            onAction('room', { room: 'solio-office', act: 'task-open', key: worker.zone, arg: worker.provider });
+            return;
+          }
+        }
+      }
       const b = zone ? rowByKey(app.offRows, zone) : null;
       if (b) { openVis(b, true); showRow(b); } else closeMores(true, app.offRows);
     },
@@ -826,12 +839,22 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const onOfficeLeave = () => { officeFloor.setHot(null); markOfficeStaff(null); };
   function renderOffice(v, shown) {
     const on = !!(v && v.visible);
+    assignmentFloor = shown && on && v.tasking ? v.floor : null;
+    officeTasks.render(on ? v.tasking : null);
     setText(app.offSay, on ? v.say : '');
     setText(app.offThen, on ? v.then : '');
     setText(app.offHint, on ? v.hint : '');
     app.offHint.hidden = !(on && v.hint);
     setText(app.offFoot, on ? v.foot : '');
     const zones = on && v.floor ? v.floor.zones || [] : [];
+    // 직원이 있으면 그림을 기록보다 앞에 둔다. 첫 회원은 바로 입력하도록 두고, 입력 중에도 초점을 지킨다.
+    const pictureFirst = Boolean(on && v.tasking && zones.length);
+    const first = pictureFirst ? drawing : taskHost, second = pictureFirst ? taskHost : drawing;
+    if (first.nextElementSibling !== second) {
+      if (typeof app.office.moveBefore === 'function') app.office.moveBefore(first, second);
+      else if (first.contains(doc.activeElement)) first.after(second);
+      else second.before(first);
+    }
     // 세션도 부서도 없으면 빈 그림을 두지 않는다. 흐름 시험이 구역과 보기를 읽도록 자리에 적어 둔다
     app.offSlot.hidden = !zones.length;
     const zoneKeys = zones.map(z => z.key).join(' '), viewName = on && v.floor ? v.floor.view : '';
@@ -2111,6 +2134,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       clearTimeout(offLeave);
       offObserver?.disconnect();
       officeFloor.dispose();
+      officeTasks.dispose();
       app.offRows.removeEventListener('pointerover', onOfficeOver);
       app.offRows.removeEventListener('pointerleave', onOfficeLeave);
       if (introWait) introWait();

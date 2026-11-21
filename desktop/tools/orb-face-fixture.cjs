@@ -66,7 +66,8 @@ function officeSession(spec,t){
   return s;
 }
 const officeSnap=()=>{if(!office||office.available!==true)return {ok:true,available:false};const t=Date.now();const sessions={};for(const spec of office.sessions||[])sessions[spec.id]=officeSession(spec,t);
-  return {ok:true,available:true,state:{sessions,ignored:{}},departments:JSON.parse(JSON.stringify(office.departments||[])),assignments:{...(office.assignments||{})},settings:{view:'tilted',manualCap:null,...(office.settings||{})},roots:JSON.parse(JSON.stringify(office.roots||{claude:[],codex:[],added:[]})),pc:office.pc===undefined?{cores:16,totalMemGb:31.7,freeMemGb:19,cpuPercent:38}:office.pc,readAt:t};};
+  const tasking=office.tasking?{tasking:JSON.parse(JSON.stringify(office.tasking))}:{};
+  return {ok:true,available:true,state:{sessions,ignored:{}},departments:JSON.parse(JSON.stringify(office.departments||[])),assignments:{...(office.assignments||{})},settings:{view:'tilted',manualCap:null,...(office.settings||{})},roots:JSON.parse(JSON.stringify(office.roots||{claude:[],codex:[],added:[]})),pc:office.pc===undefined?{cores:16,totalMemGb:31.7,freeMemGb:19,cpuPercent:38}:office.pc,readAt:t,...tasking};};
 const officeGate=()=>auth.signedIn!==true?{ok:false,code:'SIGN_IN_REQUIRED'}:!office||office.available!==true?{ok:false,code:'NOT_ALLOWED'}:null;
 const officeChange=work=>{const refused=officeGate();if(refused)return refused;const res=work();if(res?.ok!==false)officeEmit();return res||{ok:true};};
 let release=null;let restoring=new Promise(resolve=>{release=resolve;});
@@ -178,6 +179,37 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   // 솔리오 「사무실」(main.cjs synk:office-*). 로그인한 회원에게만 답하고, 정하지 않으면 볼 계정이 아닌 답이다
   office:Object.freeze({
     snapshot:async()=>{calls.push('office-snapshot');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return officeSnap();},
+    submitTask:async input=>{
+      calls.push('office-task-submit:'+JSON.stringify(input));
+      return officeChange(()=>{
+        if(!office.tasking)return {ok:false,code:'NOT_ALLOWED'};
+        if(office.tasking.code||office.submitCode)return {ok:false,code:office.tasking.code||office.submitCode};
+        const tasks=office.tasking.tasks;
+        if(!tasks.some(t=>t.id===input.id)){
+          const department=office.departments?.find(d=>d.id===input.departmentId);
+          const time=Date.now();
+          tasks.push({...input,departmentName:department?.name||'',previousId:input.previousId||null,
+            status:'queued',answer:'',reason:null,canOpenTerminal:false,createdAt:time,updatedAt:time});
+        }
+        return {ok:true,id:input.id};
+      });
+    },
+    taskAction:async(id,action,text)=>{
+      calls.push('office-task-action:'+id+':'+action);
+      return officeChange(()=>{
+        const task=office.tasking?.tasks.find(t=>t.id===id);
+        if(!task)return {ok:false,code:'NOT_FOUND'};
+        if(action==='saveAnswer'){
+          if(task.provider!=='codex'||task.reason!=='MANUAL_RESULT'||!['terminal','interrupted'].includes(task.status))return {ok:false,code:'NOT_ALLOWED'};
+          if(typeof text!=='string'||!text.trim()||text.length>524288)return {ok:false,code:'VALUE'};
+          if(office.manualAnswerCode)return {ok:false,code:office.manualAnswerCode};
+          Object.assign(task,{status:'interrupted',reason:'MEMBER_RESULT',viaTerminal:true,answer:text,canOpenTerminal:false,continuationPrompt:null});
+        }
+        if(action==='cancel'){task.status='interrupted';task.reason='CANCELLED';}
+        if(action==='resume')task.status='queued';
+        return {ok:true};
+      });
+    },
     watch:async on=>{calls.push('office-watch:'+(on===true));return officeGate()||{ok:true,watching:on===true};},
     saveDepartment:async input=>{calls.push('office-save:'+JSON.stringify(input));return officeChange(()=>{
       const id=input?.id??null,list=office.departments||(office.departments=[]),kept=input?.name===undefined&&id!==null?list.find(x=>x.id===id):null;

@@ -67,7 +67,7 @@ export function floorLayout(scene) {
 }
 
 /* canvas: 그림을 그릴 캔버스(자리 요소 안에 꽉 찬다). reduced(): 움직임 줄이기. isOpen(key): 그 부서 줄이 열려 있는가.
-   onHover(zone, staff): 손이 가리키는 부서 열쇠와 직원 번호(바뀔 때만). onPress(zone): 눌린 부서 열쇠(빈 곳이면 null) */
+   onHover(zone, staff): 손이 가리키는 부서 열쇠와 직원 번호(바뀔 때만). onPress(zone, staff): 눌린 부서와 직원(빈 곳이면 null) */
 export function createOfficeFloor(canvas, { win = globalThis, reduced = () => false, isOpen = () => false, onHover = () => {}, onPress = () => {} } = {}) {
   const ctx = canvas?.getContext?.('2d') || null;
   const raf = fn => (typeof win.requestAnimationFrame === 'function' ? win.requestAnimationFrame(fn) : setTimeout(() => fn(Date.now()), M.frameMs));
@@ -264,7 +264,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
     if (h.zone !== over.zone || h.staff !== over.staff) { over = h; if (reduced()) draw(); onHover(h.zone, h.staff, e); }
   };
   const onLeave = e => { ptr = { x: -1e4, y: -1e4 }; canvas.style.cursor = ''; if (over.zone || over.staff) { over = { zone: null, staff: null }; if (reduced()) draw(); onHover(null, null, e); } };
-  const onClick = e => { const p = at(e), h = hit(p.x, p.y); onPress(h.zone); };
+  const onClick = e => { const p = at(e), h = hit(p.x, p.y); onPress(h.zone, h.staff); };
   canvas?.addEventListener?.('pointermove', onMove);
   canvas?.addEventListener?.('pointerleave', onLeave);
   canvas?.addEventListener?.('click', onClick);
