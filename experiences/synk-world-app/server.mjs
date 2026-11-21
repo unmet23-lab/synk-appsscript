@@ -101,6 +101,7 @@ const server=http.createServer(async(req,res)=>{
   if(/[\\\0]/.test(pathname)||pathname.split('/').some(segment=>segment==='.'||segment==='..')){res.writeHead(403).end();return;}
   const first=pathname.split('/')[1];
   if(first==='brand-opening'){base=brandOpening;pathname=pathname.slice(first.length+1);}
+  else if(pathname==='/assets/launch-notice.js'){base=path.resolve(root,'../launch-notice');pathname='/launch-notice.js';}
   else if(allowedGames.has(first)){base=path.resolve(root,'..',first);pathname=pathname.slice(first.length+1);}
   // 내 위치 짧은 진단의 낱말 듣기(world-diagnostic-items.mjs): 레이싱은 게임 폴더를 열지 않고 낱말 녹음만 내준다.
   else if(/^\/korean-racing\/assets\/narration\/w\d{4}\.mp3$/.test(pathname)){base=path.resolve(root,'../korean-racing');pathname=pathname.slice('/korean-racing'.length);}

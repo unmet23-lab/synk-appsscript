@@ -30,7 +30,25 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
  const publicPayload=process.env.SYNK_WORLD_PUBLIC_PAYLOAD?path.resolve(process.env.SYNK_WORLD_PUBLIC_PAYLOAD):null;
  const runtimeConfig=publicPayload?JSON.parse(fs.readFileSync(path.join(publicPayload,'world-config.json'),'utf8')).account:config;
  const mime={'.html':'text/html','.mjs':'text/javascript','.js':'text/javascript','.css':'text/css','.json':'application/json','.webp':'image/webp','.jpg':'image/jpeg','.png':'image/png','.svg':'image/svg+xml','.woff2':'font/woff2','.mp4':'video/mp4','.mp3':'audio/mpeg'};
- const server=publicPayload?http.createServer((req,res)=>{const url=new URL(req.url,'http://localhost');if(url.pathname==='/health'){res.writeHead(200,{'Content-Type':'application/json'}).end(JSON.stringify({mode:'account',database:null,rehearsal:false,static:true}));return;}if(!url.pathname.startsWith('/world/')){res.writeHead(404).end();return;}let rel=decodeURIComponent(url.pathname.slice('/world/'.length));if(!rel||rel.endsWith('/'))rel+='index.html';const target=path.resolve(publicPayload,rel),within=path.relative(publicPayload,target);if(within.startsWith('..')||path.isAbsolute(within)||!fs.existsSync(target)){res.writeHead(404).end();return;}res.writeHead(200,{'Content-Type':mime[path.extname(target)]||'application/octet-stream','Cache-Control':'no-store'});fs.createReadStream(target).pipe(res);}):spawn(process.execPath,[path.join(root,'experiences/synk-world-app/server.mjs')],{cwd:root,env:{...process.env,SYNK_TALK_ROOT:talkRoot,SYNK_WORLD_PORT:String(port),SYNK_WORLD_MODE:'account',SYNK_WORLD_BASE_PATH:'/world/',SYNK_WORLD_ACCOUNT_CONFIG:path.join(directory,'config.json'),SYNK_WORLD_DATA_DIR:path.join(directory,'must-not-create')},stdio:'pipe'});
+ // The launch notice is published once at the site root, separately from the /world bundle.
+ const sourceNotice=path.join(root,'experiences/launch-notice/launch-notice.js');
+ const siteNotice=publicPayload&&path.resolve(publicPayload,'../assets/launch-notice.js');
+ const noticeFile=siteNotice&&fs.existsSync(siteNotice)?siteNotice:sourceNotice;
+ const server=publicPayload?http.createServer((req,res)=>{
+  const url=new URL(req.url,'http://localhost');
+  if(url.pathname==='/health'){res.writeHead(200,{'Content-Type':'application/json'}).end(JSON.stringify({mode:'account',database:null,rehearsal:false,static:true}));return;}
+  let target;
+  if(url.pathname==='/assets/launch-notice.js')target=noticeFile;
+  else{
+   if(!url.pathname.startsWith('/world/')){res.writeHead(404).end();return;}
+   let rel=decodeURIComponent(url.pathname.slice('/world/'.length));if(!rel||rel.endsWith('/'))rel+='index.html';
+   target=path.resolve(publicPayload,rel);const within=path.relative(publicPayload,target);
+   if(within.startsWith('..')||path.isAbsolute(within)){res.writeHead(404).end();return;}
+  }
+  if(!fs.existsSync(target)){res.writeHead(404).end();return;}
+  res.writeHead(200,{'Content-Type':mime[path.extname(target)]||'application/octet-stream','Cache-Control':'no-store'});
+  if(req.method==='HEAD')res.end();else fs.createReadStream(target).pipe(res);
+ }):spawn(process.execPath,[path.join(root,'experiences/synk-world-app/server.mjs')],{cwd:root,env:{...process.env,SYNK_TALK_ROOT:talkRoot,SYNK_WORLD_PORT:String(port),SYNK_WORLD_MODE:'account',SYNK_WORLD_BASE_PATH:'/world/',SYNK_WORLD_ACCOUNT_CONFIG:path.join(directory,'config.json'),SYNK_WORLD_DATA_DIR:path.join(directory,'must-not-create')},stdio:'pipe'});
  if(publicPayload)await new Promise(r=>server.listen(port,'127.0.0.1',r));
  let serverOutput='';server.stderr?.on('data',chunk=>serverOutput+=chunk);server.stdout?.on('data',chunk=>serverOutput+=chunk);
  const url=`http://127.0.0.1:${port}`,calls=[],errors=[],external=[],assetErrors=[];let browserServer,browser,page,output;
@@ -43,6 +61,9 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
  const lifeKey='synk.life-korean.progress.v1',lifeEvidence={};
  try{
   const health=await waitServer();assert.equal(health.mode,'account');assert.equal(health.database,null);assert.equal(health.rehearsal,false);
+  const notice=await fetch(url+'/assets/launch-notice.js');
+  assert.equal(notice.status,200);assert.match(notice.headers.get('content-type')||'',/^(text|application)\/javascript\b/);
+  assert.deepEqual(Buffer.from(await notice.arrayBuffer()),fs.readFileSync(noticeFile));
   if(!publicPayload){
    for(const file of ['holdout.mjs','review/holdout-20261028.json']){
     const response=await fetch(url+'/world/topik-items/'+file);assert.equal(response.status,200);
