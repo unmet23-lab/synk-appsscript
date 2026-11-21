@@ -353,13 +353,15 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  const pushUrl=()=>{const url=new URL(config.accountApiUrl);url.pathname=url.pathname.replace(/\/$/,'').replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/,'')+'/functions/v1/world-push/api';url.search='';url.hash='';return url.href;};
  const pushHeaders=token=>({apikey:config.supabasePublishableKey,Authorization:`Bearer ${token}`,'X-SYNK-Product':'world','X-SYNK-Contract':'1','X-SYNK-App-Version':'1.0.0','Content-Type':'application/json'});
  // leaving: 페이지를 떠나는 보내기(world-push flush) — 만료 전 토큰은 갱신을 기다리지 않고 그대로 쓴다. 기다림이 하나라도 끼면 같은 처리기의
- // account.stop()이 먼저 돌아 요청이 나가지 않는다(단계4 계획 §24-6의 5 · 설계 검토 P2-5). 평소에는 만료 30초 전부터 먼저 갱신한다.
- async function pushRequest(action,body={},{keepalive=false,leaving=false}={}){
+ // account.stop()이 먼저 돌아 요청이 나가지 않는다(단계4 계획 §24-6의 5 · 설계 검토 P2-5). keepalive 요청(요약 · 설정)은 토큰이 5초 넘게 남았으면
+ // 기다리지 않는다 — 그래야 「날아가는 중」이 대개 fetch가 나간 요청이다(기기 판 설계 관문 GA1). 평소 요청은 만료 30초 전부터 먼저 갱신한다.
+ // onWait · onSent: 토큰 갱신을 기다리기 시작할 때 · fetch를 내기 직전에 부른다(world-push가 떠날 때 기다리던 요청을 다시 보낸다).
+ async function pushRequest(action,body={},{keepalive=false,leaving=false,onWait=null,onSent=null}={}){
   if(native)throw Object.assign(Error('PUSH_UNSUPPORTED'),{code:'PUSH_UNSUPPORTED'});
   const expected=epoch;guard(expected);if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인해 주세요.'),{code:'AUTH_REQUIRED',status:401});
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);controllers.add(controller);
   try{
-   if(session.expires_at<=now()+(leaving&&keepalive?0:30000))await renew(expected);guard(expected);
+   if(session.expires_at<=now()+(keepalive?leaving?0:5000:30000)){onWait?.();await renew(expected);guard(expected);onSent?.();}
    for(let attempt=0;attempt<2;attempt++){
     const response=await fetcher(pushUrl(),{method:'POST',credentials:'omit',cache:'no-store',redirect:'error',keepalive,signal:keepalive?undefined:controller.signal,
      headers:pushHeaders(session.access_token),body:JSON.stringify({action,...body})});guard(expected);

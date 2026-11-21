@@ -1099,7 +1099,7 @@ const commands={
  logout:async()=>{accountActionPending=true;authBoundary++;entryGate?.invalidate();const leaving=client.snapshot?.accountId;try{try{await worldPush?.logout();}catch{/* 다음 열 때 상태가 다시 정리한다 */}
    // Atlas 새 길의 로그아웃 표지(손님 저장소 — 되는 만큼만, 단계4_계획 §18-5-3): 이미 연 계정 코치가 있을 때만, 잠깐만 기다린다.
    try{const leavingAtlas=life.owner===leaving?life.atlasNext:null;if(leavingAtlas){let timer;await Promise.race([leavingAtlas.noteLogout(),new Promise(resolve=>{timer=setTimeout(resolve,1500);})]).finally(()=>clearTimeout(timer));}}catch{/* 로그아웃을 막지 않는다 */}
-   await client.logout();const signedOutAt=Date.now();if(leaving){noteDeviceAccount(localStorage,leaving,signedOutAt);clearMonthAnswer(localStorage,leaving);}noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(front?.active()){front.drop();void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
+   await client.logout();const signedOutAt=Date.now();if(leaving){noteDeviceAccount(localStorage,leaving,signedOutAt);clearMonthAnswer(localStorage,leaving);}noteDeviceSignOut(localStorage,signedOutAt);sessionConfirmed=false;close();if(front?.active()){front.drop();void startOpening();}else if(home.isMaru)await entryGate.start();else welcome();}catch(e){if(e.code==='STALE_RESPONSE')return;void worldPush?.resume?.();home.toast(t('account.logoutFailed'));if(home.isMaru)showEntryRecovery();else welcome();}finally{accountActionPending=false;}},
 };
 commands.speaking=openSpeaking;
 commands.me2=openMe2;
@@ -1128,12 +1128,14 @@ document.addEventListener('change',event=>{const control=event.target;if(control
 // pagehide: 생활 세션을 닫고(그 뒤 계정 정리·늦은 준비가 생활 화면을 다시 세우지 않는다) 지금 시트의 자원을 버린 다음 계정을 멈춘다.
 // 2단 알림(단계4 계획 §24-6의 5): 떠날 때와 화면이 숨을 때 1단의 모으던 다시 잡기를 먼저 돌리고(막 낸 답의 「오늘 공부함」) 받히지 않은 설정 · 요약을
 // keepalive로 보낸다 — 안드로이드 크롬은 밀어 닫을 때 pagehide 없이 끝나는 일이 많다. 망이 돌아오거나 화면이 다시 보이면 바로 다시 보낸다.
-window.addEventListener('pagehide',()=>{authBoundary++;life.reminders?.flushPending?.();worldPush?.flush();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});
+// 떠날 때 1단의 모으던 다시 잡기를 world-push의 「떠나는 중」 안에서 돌린다 — 그 안에서 나가는 요약도 토큰 갱신을 기다리지 않는다(기기 판 설계 관문 GA1).
+const flushReminders=()=>{const pending=()=>life.reminders?.flushPending?.();if(worldPush)worldPush.flush(pending);else pending();};
+window.addEventListener('pagehide',()=>{authBoundary++;flushReminders();writing?.dispose();speaking?.dispose();life.close();releaseSheet();account?.stop();});
 window.addEventListener('online',()=>{worldPush?.retry();if(client.snapshot)client.refresh().then(refreshTutorAccount).catch(()=>{});});
 // Switching between side-by-side web and desktop windows need not hide either
 // document. Refocus must also restore the latest selected companion.
 window.addEventListener('focus',()=>{if(!document.hidden&&client.snapshot&&!client.busy)void refreshTutorAccount();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){life.reminders?.flushPending?.();worldPush?.flush();return;}worldPush?.retry();if(client.snapshot&&!client.busy)client.refresh().then(refreshTutorAccount).catch(()=>{});});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){flushReminders();return;}worldPush?.retry();if(client.snapshot&&!client.busy)client.refresh().then(refreshTutorAccount).catch(()=>{});});
 // A queued close event from sign-in must not clear a newly opened fitting room.
 const worldPanel=$('#world-panel')||$('#panel');
 worldPanel.addEventListener('close',()=>{if(!worldPanel.open){gameLaunch++;gameRecovery=null;screen='';hangerSignature='';renderHomeHanger(client.snapshot);releaseSheet();}});

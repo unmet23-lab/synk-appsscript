@@ -305,3 +305,18 @@ test('잠금 화면 글 언어: 한국어 틀 — 한글 단계 학생만 고른
   try{c.reminders.refresh();assert.equal(push.calls.filter(call=>call[0]==='sync').at(-1)[1].digest.lang,expected,`${hangulStage} ${lang}`);}finally{c.reminders.dispose();setLang('ko',{save:false});}
  }
 });
+
+test('열린 설정 화면: 2단이 서버 설정을 들이면 횟수 · 시각 단추도 그 값으로 바뀐다(GPT push-versions-world GA11)',()=>{
+ const push=fakePush({device:true,active:true,plan:{next:null,log:[]}});let bound=null;
+ push.bindSettings=value=>{bound=value;return ()=>{bound=null;};};
+ const c=controller({push});
+ try{
+  const shape=c.reminders.settingsMarkup().match(/data-shape="([^"]*)"/)[1];
+  const radio=(name,value,checked)=>({name,value:String(value),checked});
+  const radios=[radio('reminder-count',1,false),radio('reminder-count',2,true),radio('reminder-hour','auto',true),radio('reminder-hour',20,false)];
+  const box={isConnected:true,getAttribute:name=>name==='data-shape'?shape:null,querySelector:()=>null,querySelectorAll:()=>radios,addEventListener(){}};
+  c.reminders.bindSettings({querySelector:selector=>selector==='[data-reminder-settings]'?box:null});
+  bound.adopt({frequency:1,hour:20,since:null});
+  assert.deepEqual(radios.map(item=>item.checked),[true,false,false,true]);
+ }finally{c.reminders.dispose();}
+});

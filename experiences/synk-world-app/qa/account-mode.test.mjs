@@ -387,3 +387,20 @@ test('2단 알림 요청: keepalive 요청은 계정 정리가 끊지 않고, �
  // 붙잡아 둔 응답을 풀어 요청과 12초 타이머를 끝낸다(시험 러너가 기다리지 않게 — 다시 검수 GA2).
  for(const d of held)d.resolve(reply({ok:true,accountId:A}));await Promise.all(sent);
 });
+
+// 2단 알림 기기 판 설계 관문(11-21 GA1): keepalive 요청은 토큰이 5초 넘게 남았으면 갱신을 기다리지 않고 바로 fetch한다. 갱신을 기다리기 시작하면
+// onWait, fetch 직전에 onSent를 알린다 — world-push가 떠날 때 기다리던 요청을 다시 보낸다.
+test('2단 알림 요청: keepalive 요청은 토큰이 5초 넘게 남았으면 바로 나가고, 갱신을 기다리기 시작하면 알린다',async()=>{
+ const start=Date.now();let clock=start;const inits=[],marks=[];
+ const f=fixture({now:()=>clock,requestToken:async()=>{throw Object.assign(Error('offline'),{code:'NETWORK'});},
+  fetcher:async(url,init)=>{if(String(url).includes('/world-push/')){inits.push(init);return reply({ok:true,accountId:A});}return reply(snapshot());}});
+ await f.client.restore();
+ const expires=JSON.parse(f.tab.getItem('synk.oauth.session.world')).expires_at;
+ clock=expires-20000;
+ await f.account.pushRequest('sync',{digest:{}},{keepalive:true,onWait:()=>marks.push('wait'),onSent:()=>marks.push('sent')});
+ assert.equal(inits.length,1,'20초 남은 토큰으로 바로 나갔다');assert.deepEqual(marks,[]);
+ clock=expires-3000;
+ await f.account.pushRequest('sync',{digest:{}},{keepalive:true,onWait:()=>marks.push('wait'),onSent:()=>marks.push('sent')}).catch(()=>{});
+ assert.deepEqual(marks,['wait'],'갱신을 기다리기 시작했다고 알렸다(갱신이 실패해 나가지 않았다)');
+ assert.equal(inits.length,1);
+});

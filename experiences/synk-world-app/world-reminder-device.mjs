@@ -432,6 +432,9 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
    const state=load(),{supported,permission}=support(),on=(state.enabled&&supported&&permission==='granted')||pushDevice();
    if(toggle){toggle.checked=on;if(!supported||permission==='denied')toggle.disabled=true;}
    if(choices)choices.hidden=!(on||pushActive());if(line)line.innerHTML=statusMarkup();
+   // 횟수 · 시각 단추도 지금 값으로 맞춘다 — 다른 기기의 설정을 들였을 때 열린 화면이 옛 값을 보이지 않게(GPT push-versions-world GA11).
+   for(const input of current.querySelectorAll?.('input[name="reminder-count"],input[name="reminder-hour"]')||[])
+    input.checked=input.name==='reminder-count'?Number(input.value)===state.frequency:input.value==='auto'?state.hour===null:Number(input.value)===state.hour;
   };
   settingsUpdate=update;
   box.addEventListener('change',event=>{
@@ -488,7 +491,7 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
    rerenderSettings();repaint();
   }})||null;
  // 떠날 때(pagehide · 화면 숨김): 모으던 다시 잡기(400ms)를 바로 돌려 막 낸 답의 「오늘 공부함」이 요약에 들게 한다(설계 검토 P2-6).
- // 그다음 app-shell이 push.flush()로 모은 요약을 보낸다.
+ // app-shell이 push.flush(이 함수)로 부른다 — 그 안에서 나가는 요약은 떠남으로 간다.
  function flushPending(){if(stopped||!pending)return;clearTimeout(pending);pending=null;refresh();}
  return {refresh,schedule,tick,askMarkup,examMarkup,examChanged,consentMarkup,settingsMarkup,bindSettings,command,opened,openKind,forgetPending,flushPending,
   metrics:()=>({owner,state:load(),plan:last,support:support(),push:remote(),hour:last?last.hour:reminderHour({hour:load().hour,now:now(),offset}).hour}),
