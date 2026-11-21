@@ -134,8 +134,17 @@ function createSuiteFollower({store,auth,schedule=setInterval,unschedule=clearIn
       if(next.status==='signed-out'){attempt=null;await auth.signOut();return;}
       await auth.initialize();if(closed||expected!==sequence)return;
       const snapshot=auth.status();if(snapshot.signedIn&&snapshot.account?.synk_user_id===next.accountId){attempt=next.generation;return;}
-      if(snapshot.error?.retryable&&!forced){attempt=next.generation;return;}
+      if(snapshot.error?.retryable){
+        if(!forced){attempt=next.generation;return;}
+        // 한 번 더 돌릴 때도 저장된 로그인이 있으면 먼저 되살린다. 켤 때 되살리기가 503으로 멈춘 로그인을 지우지 않는다(4단계 설계 검토 R1).
+        // 되살리기가 다시 해 볼 수 있는 오류로 또 끝나면 그대로 둔다(서버가 아직 죽어 있으면 새 로그인도 끝나지 않는다). 확정 실패일 때만 다시 로그인한다
+        try{await auth.getAccessToken();}catch(error){if(closed||expected!==sequence)return;if(error?.retryable){attempt=next.generation;return;}}
+        if(closed||expected!==sequence)return;
+        const revived=auth.status();if(revived.signedIn&&revived.account?.synk_user_id===next.accountId){attempt=next.generation;return;}
+      }
       if(attempt===next.generation)return;attempt=next.generation;
+      // 한 번 더 돌린 줄이 앞 줄의 로그인 · 되살리기를 끊지 않는다(설계 검토 R3)
+      if(forced){const now=auth.status()?.status;if(now==='signing-in'||now==='restoring')return;}
       await auth.signOut();if(closed||expected!==sequence)return;await auth.signIn();
     }).catch(error=>{if(!closed&&expected===sequence)onError(error);});return queue;
   }

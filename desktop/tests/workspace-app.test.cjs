@@ -544,4 +544,5 @@ test('main wiring: a zoom change lays out the Workspace view too, and company re
   assert.match(change[1],/pulseView\?\.relayout\(\)/);assert.match(change[1],/workspaceView\?\.relayout\(\)/);
   assert.match(main,/companyRequest:\(jar,\{accountId,current\}=\{\}\)=>createCompanyRequests\(\{[^\n]*getAccessToken:\(\)=>workspaceAccessToken\(ensureWorkspaceAuth\(\),accountId,\{refresh:[^\n]*current\}\)/);
   assert.match(main,/retryLogin:\(\)=>\{ensureWorkspaceAuth\(\);return workspaceFollower\?\.retry\?\.\(\);\}/);
+  assert.match(main,/function publishAuthState\(state\)\{[^\n]*try\{void workspaceFollower\?\.refresh\(\);\}catch\{[^}]*\}workspaceApp\?\.syncContext\(state\);/,'the Workspace login is bound to the new platform record before the views hear of it (설계 검토 R2)');
 });

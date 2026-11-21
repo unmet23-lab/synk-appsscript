@@ -104,7 +104,8 @@ let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 let appLocationReady=process.platform!=='darwin'||!packaged||smoke;
 const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.platform,packaged,smoke,productName:current.productName});
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);workspaceApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+// Workspace 로그인의 Suite 따라가기를 500ms 틈 없이 지금 플랫폼 기록에 묶는다. 묶지 않으면 계정을 바꾼 직후 새 계정의 뷰가 앞 계정의 로그인 상태와 계정 정보를 받는다(4단계 설계 검토 R2)
+function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);try{void workspaceFollower?.refresh();}catch{/* 다음 따라가기가 다시 본다 */}workspaceApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
   if(installations)return installations;
