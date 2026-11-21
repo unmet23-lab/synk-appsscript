@@ -85,3 +85,8 @@
 .pill:focus-visible,.ask-form button:focus-visible{outline-offset:-6px}
 .p-shelf button:focus-visible{opacity:1;outline-color:var(--ink)}
 .ask-form:has(textarea:focus-visible){outline:2px solid #1d1d1f;outline-offset:3px}
+.gal-tabs button[aria-pressed="true"]:focus-visible,.door:focus-visible{outline-offset:-6px}
+
+/* 주소 복사 안내는 「주소 복사」 단추 다음의 늘 있는 알림 자리(.ask-links 그리드 칸) — 비어 있으면 흐름에서 빠져 줄과 간격을 만들지 않는다(그리드는 빈 칸도 한 줄로 센다) */
+.ask-links>.ask-out{margin:0;font:600 16px/1.5 var(--sans)}
+.ask-links>.ask-out:empty{position:absolute}

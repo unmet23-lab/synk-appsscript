@@ -230,6 +230,27 @@ function 홈짓기(lang) {
   }
   // 동작 줄이기를 켠 사람은 늘 flat 쪽을 탄다 — 그쪽 스크롤도 부드럽게 굴리지 않는다(카본 F1 · H3)
   글 = 바꿈(글, "scrollIntoView({ behavior: 'smooth' }); else goto(", "scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); else goto(", 2, '동작 줄이기 스크롤');
+  // 주소 복사 안내는 단추 곁에 늘 있는 알림 자리로(비어 있을 때는 자리를 차지하지 않는다 — 카본 F2 · H1)
+  글 = 바꿈(글, '\n      <p class="ask-out" id="ask-out" role="status" hidden></p>', '', 1, '복사 안내 옛 자리');
+  // 링크 묶음(.ask-links, 간격 14px 그리드) 안의 「주소 복사」 단추 바로 다음 칸. 비어 있으면 그 칸의 간격을 덮는다(최종 검수 b F1: .more-head 칸이 되면 휴대폰에서 14px 틈과 글자 꼴이 바뀌었다)
+  글 = 정규바꿈(글, /(<button type="button" id="ask-copy"[^>]*>[^<]*<\/button>)/, (m, a) => `${a}\n        <p class="ask-out" id="ask-out" role="status"></p>`, 1, '복사 안내 새 자리');
+  // 메뉴: 키보드로 열면 첫 항목으로, Escape와 로고 누름으로 닫는다(카본 H5)
+  글 = 바꿈(글, "const menu = on => { nav.classList.toggle('open', on); menuBtn.setAttribute('aria-expanded', String(on)); };",
+    "const menu = (on, keys) => { nav.classList.toggle('open', on); menuBtn.setAttribute('aria-expanded', String(on)); if (keys) (on ? $('.nav ul a') : menuBtn)?.focus(); }; addEventListener('keydown', e => { if (e.key === 'Escape' && nav.classList.contains('open')) menu(false, true); }); $('.nav .logo')?.addEventListener('click', () => menu(false));", 1, '메뉴 열고 닫기');
+  글 = 바꿈(글, "menuBtn.addEventListener('click', () => menu(!nav.classList.contains('open')));", "menuBtn.addEventListener('click', e => menu(!nav.classList.contains('open'), e.detail === 0));", 1, '메뉴 단추');
+  // 상단 바 색: body는 재지 않고, 맨 위에서 더 당겨지면(탄성 스크롤) 첫 구역 색을 쓴다(r3 H2)
+  글 = 바꿈(글, "const tones = $$('[data-tone]');", "const tones = $$('[data-tone]').filter(el => el !== body);", 1, '상단 바 색 대상');
+  글 = 바꿈(글, "let t = 'light'; for (const el of tones)", "let t = scrollY <= 0 && tones[0] ? tones[0].dataset.tone : 'light'; for (const el of tones)", 1, '상단 바 색 처음');
+  // 메뉴 「한국어와 유학」은 #road로 가지만, 그 앞 소개(#why)를 읽는 동안에도 현재 구역으로 켠다(r3 H3)
+  글 = 바꿈(글, "const el = $(a.getAttribute('href')); const b = el.getBoundingClientRect(); if (b.top <= y && b.bottom > y) id = a.getAttribute('href');",
+    "const h = a.getAttribute('href'); for (const el of (h === '#road' ? [$('#why'), $(h)] : [$(h)])) { if (!el) continue; const b = el.getBoundingClientRect(); if (b.top <= y && b.bottom > y) id = h; }", 1, '현재 구역');
+  // 길 무대: 단계 카드와 끝 카드는 투명할 때도 Tab으로 닿게 두고(누름만 막음), 초점이 들어오면 그 단계로 옮긴다(카본 H4)
+  글 = 바꿈(글, "const show = (el, o, t) => { el.style.opacity = o; el.style.visibility = o < .02 ? 'hidden' : 'visible'; if (t !== undefined) el.style.transform = t; };",
+    "const keep = new Set([...says, wClose]); const show = (el, o, t) => { el.style.opacity = o; if (keep.has(el)) { el.style.visibility = 'visible'; el.style.pointerEvents = o < .02 ? 'none' : ''; } else el.style.visibility = o < .02 ? 'hidden' : 'visible'; if (t !== undefined) el.style.transform = t; };", 1, '길 카드 보이기');
+  글 = 바꿈(글, "  const goto = x => {", "  says.forEach((t, i) => t.addEventListener('focusin', () => { if (!flat) goto(i + 1.12); })); wClose.addEventListener('focusin', () => { if (!flat) goto(N - 1); });\n  const goto = x => {", 1, '길 카드 초점');
+  // 이름을 붙일 수 없는 요소의 aria-label에 역할을 준다(카본 H7)
+  글 = 바꿈(글, '<p class="gate-three" aria-label=', '<p class="gate-three" role="group" aria-label=', 1, '세 문 이름');
+  글 = 바꿈(글, 'id="proof" aria-label=', 'id="proof" role="group" aria-label=', 1, '지금 시각 이름');
   // PC 앱 받기
   const P = T.pf;
   const 받기 = `<section class="pf" id="platform" data-platform-version="${I.판}" aria-labelledby="pf-t"><span id="platform-get" class="anchor" aria-hidden="true"></span>
@@ -263,7 +284,7 @@ function 홈짓기(lang) {
   const 대안 = { ko: '/', en: '/en/', mn: '/mn/', 'x-default': '/' };
   // 하늘(낮 · 노을 · 밤)은 첫 그림 전에 머리에서 정한다 — 쪽 끝의 시안 스크립트가 같은 식으로 다시 정한다(카본 H8)
   const 하늘 = `<script>(()=>{const h=new Date().getHours()+new Date().getMinutes()/60;document.documentElement.dataset.sky=new URLSearchParams(location.search).get('sky')||(h>=6&&h<17?'day':(h>=17&&h<19.5)||(h>=5&&h<6)?'sunset':'night')})()</script>`;
-  const 넘김 = `<script>(()=>{const a=document.documentElement.lang==='en'?'/en':'',m={'#atlas':a+'/atlas/','#principles':a+'/atlas/','#philosophy':a+'/atlas/','#drama':a+'/lab/#drama','#founder':a+'/founder/','#founder-quote':a+'/founder/'},go=()=>{const t=m[location.hash];if(t)location.replace(t)};go();addEventListener('hashchange',go);let moved=0;for(const e of ['wheel','touchstart','keydown','pointerdown'])addEventListener(e,()=>{moved=1},{passive:true,once:true});const settle=()=>{if(moved||!location.hash)return;const el=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(el)el.scrollIntoView({block:'start',behavior:'instant'})};addEventListener('load',()=>{for(const ms of [0,400,1000,1800,2800])setTimeout(settle,ms)})})()</script>`;
+  const 넘김 = `<script>(()=>{const a=document.documentElement.lang==='en'?'/en':'',m={'#atlas':a+'/atlas/','#principles':a+'/atlas/','#philosophy':a+'/atlas/','#drama':a+'/lab/#drama','#founder':a+'/founder/','#founder-quote':a+'/founder/'},go=()=>{const t=m[location.hash];if(t)location.replace(t)};go();addEventListener('hashchange',go);let moved=0;for(const e of ['wheel','touchstart','keydown','pointerdown'])addEventListener(e,()=>{moved=1},{passive:true,once:true});const settle=()=>{if(moved||!location.hash)return;let id;try{id=decodeURIComponent(location.hash.slice(1))}catch(e){return}const el=document.getElementById(id);if(el)el.scrollIntoView({block:'start',behavior:'instant'})};addEventListener('load',()=>{for(const ms of [0,400,1000,1800,2800])setTimeout(settle,ms)})})()</script>`;
   const 머리 = 머리글({ lang, title: 홈머리[lang].title, desc: 홈머리[lang].desc, 주소: 앞 + '/', 대안, og: og주소('home-' + lang), ogAlt: 홈머리[lang].alt,
     더: [하늘, 넘김, `<script type="module" src="${I.site}"></script>`].join('\n') });
   글 = 머리바꿈(글, 머리, Object.assign(lang === 'en' ? ['home-en', 'en-fix'] : ['home'], { 덧: 덧css }));
@@ -293,6 +314,12 @@ function 상세짓기(lang) {
     글 = 정규바꿈(글, /\s*document\.title = art\.dataset\.title \+ ' · SYNK[^']*';/, '', 1, '쪽 제목 줄');
     // 무대가 보이기 전에 사람이 먼저 고른 줄은 첫 줄로 덮지 않는다(카본 D1)
     글 = 바꿈(글, 'if (e.isIntersecting) { show(first); o.disconnect(); }', 'if (e.isIntersecting) { if (cur < 0) show(first); o.disconnect(); }', 1, '첫 줄 열기');
+    // 다섯 곳 줄은 탭 꼴로: 고른 줄만 탭 순서에 있고 방향키로 옮긴다. 초점만으로는 칸을 바꾸지 않아 열린 칸 안 링크에 Tab으로 닿고, 닫힌 칸은 inert(카본 D2 · E1, r3 D1 · E2)
+    글 = 바꿈(글, "rows.forEach((r, i) => { r.classList.toggle('on', i === k); r.setAttribute('aria-current', String(i === k)); });", "rows.forEach((r, i) => { r.classList.toggle('on', i === k); r.setAttribute('aria-current', String(i === k)); r.tabIndex = i === k ? 0 : -1; });", 1, '줄 탭 순서');
+    글 = 바꿈(글, "q2.pane.setAttribute('aria-hidden', String(i !== k));", "q2.pane.setAttribute('aria-hidden', String(i !== k)); q2.pane.inert = i !== k;", 1, '닫힌 칸 inert');
+    글 = 바꿈(글, "r.addEventListener('focus', () => show(i));", "r.addEventListener('keydown', e => { const d = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : e.key === 'ArrowUp' || e.key === 'ArrowLeft' ? -1 : 0; if (!d) return; e.preventDefault(); const n = (i + d + rows.length) % rows.length; show(n); rows[n].focus(); });", 1, '줄 방향키');
+    // 스크린 리더에 읽히는 이름에서 시안의 작업 말을 뺀다(r3 D2)
+    if (lang === 'ko') 글 = 바꿈(글, 'aria-label="이 쪽의 무기 셋"', 'aria-label="핵심 세 가지"', 1, '세 가지 이름');
     // 바닥: 방문 기록 안내
     글 = 정규바꿈(글, /(<footer class="foot"><nav[^>]*>[\s\S]*?<\/nav>)(<span>© 2026 SYNK<\/span><\/footer>)/, (m, n, c) => `${n}<span class="foot-note">${T.visit} <a href="${T.visitHref}">${T.visitMore}</a></span>${c}`, 1, '상세 바닥');
     글 = 정규바꿈(글, /(<a href="https:\/\/synk\.im\/privacy\/">[^<]*<\/a>)/, (m, a) => a + T.legal, 1, '상세 바닥 링크');
@@ -306,11 +333,13 @@ function 상세짓기(lang) {
     const lead = (a[0].match(/<p class="hero-lead">([\s\S]*?)<\/p>/)?.[1] || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
     단언(lead, `${lang} ${id} 첫 화면 설명`);
     const 첫문장 = lead.split(/(?<=[.?!])\s+/)[0].replace(/\.$/, '');
-    // 첫 줄이 긴 문장인 쪽(AI 강의 · 광고)만 첫 줄 그대로, 나머지는 첫 줄 — 첫 문장(카본 A1: 길이로 가르면 영어 유학 · 취업이 설명 없이 남았다)
-    const title = (id === 'ai' || id === 'ad' ? h1 : `${h1} — ${첫문장}`) + ' · SYNK';
+    // 제목은 「쪽 이름 — 설명」: 첫 줄이 긴 문장인 쪽(AI 강의 · 광고)은 그 문장, 나머지는 첫 문장(카본 A1, r3 E1)
+    const 쪽이름 = a[2];
+    const title = `${쪽이름} — ${id === 'ai' || id === 'ad' ? h1 : 첫문장} · SYNK`;
     const 대안 = { ko: 쪽주소('ko', id), en: 쪽주소('en', id), 'x-default': 쪽주소('ko', id) };
-    const heroAlt = a[0].match(/<img class="hero-bg" src="[^"]+" alt="([^"]*)"/)?.[1] || '';
-    const ogAlt = (lang === 'en' ? `First screen of the SYNK “${h1}” page` : `SYNK 「${h1}」 쪽 첫 화면`) + (heroAlt ? ' — ' + heroAlt : '');
+    // 공유 그림 대체 글: 쪽 이름과 첫 화면 그림 설명(style이 alt보다 앞서도 읽고, 광고 쪽은 얼굴 사진 벽을 적는다 — r3 E1 · I1)
+    const heroAlt = a[0].match(/<img class="hero-bg"[^>]*\balt="([^"]*)"/)?.[1] || (id === 'ad' ? (lang === 'en' ? 'a wall of AI model portraits' : 'AI 모델 얼굴 사진이 벽처럼 놓인 화면') : '');
+    const ogAlt = (lang === 'en' ? `First screen of the SYNK “${쪽이름}” page` : `SYNK 「${쪽이름}」 쪽 첫 화면`) + (heroAlt ? ' — ' + heroAlt : '');
     const 머리 = 머리글({ lang, title, desc: lead, 주소: 쪽주소(lang, id), 대안, og: og주소(상세[id] + '-' + lang), ogAlt });
     글 = 머리바꿈(글, 머리, Object.assign(lang === 'en' ? ['detail', 'en-fix'] : ['detail'], { 덧: 덧css }));
     글들[id] = 글;
@@ -319,6 +348,12 @@ function 상세짓기(lang) {
 }
 
 // ── 질문창 자료 · sitemap · llms ───────────────────────────────────────
+/** 공개 뒤에 다시 돌아도 같은 결과: 옛 글이 n번이면 바꾸고, 옛 글이 없고 새 글이 n번이면 그대로 둔다(다시 검수 FA2) */
+function 한번만바꿈(글, a, b, n, 이름) {
+  const 옛 = 글.split(a).length - 1, 새 = 글.split(b).length - 1;
+  if (옛 === 0 && 새 === n) return 글;
+  return 바꿈(글, a, b, n, 이름);
+}
 function 자료고침(lang) {
   let s = 공개글(lang === 'en' ? 'en/knowledge.json' : 'knowledge.json');
   const 표 = lang === 'en' ? [
@@ -330,7 +365,7 @@ function 자료고침(lang) {
     ['SYNK는 지금 한국어 교육, 회사의 AI 수업, 광고 제작, 한국 유학 준비 네 곳에서 일합니다.', 'SYNK가 지금 하는 일은 셋입니다. 한국어와 유학, AI 강의, 광고입니다.', 3],
     ['"네 사업 보기"', '"하는 일 셋 보기"', 6],
   ];
-  for (const [a, b, n] of 표) s = 바꿈(s, a, b, n, `${lang} 질문창 자료`);
+  for (const [a, b, n] of 표) s = 한번만바꿈(s, a, b, n, `${lang} 질문창 자료`);
   // 고친 두 기록의 확인 날짜
   for (const id of ['synk-intro', 'synk-vision']) {
     const i = s.indexOf(`"id": "${id}"`); 단언(i > 0, `${lang} ${id} 기록`);
@@ -352,14 +387,19 @@ function 사이트맵() {
   let s = 공개글('sitemap.xml');
   const 새 = [];
   for (const lang of ['ko', 'en']) for (const id of Object.keys(상세)) 새.push(`  <url><loc>${사이트}${쪽주소(lang, id)}</loc></url>`);
+  // 공개 뒤에 다시 돌면 이미 든 주소는 더하지 않는다(다시 검수 FA2)
+  const 있음 = 새.filter(x => s.includes(x));
+  단언(있음.length === 0 || 있음.length === 새.length, `sitemap에 새 쪽이 ${있음.length}/${새.length}개만 있다`);
+  if (있음.length) return s;
   return 바꿈(s, '  <url><loc>https://synk.im/mn/</loc></url>', 새.join('\n') + '\n  <url><loc>https://synk.im/mn/</loc></url>', 1, 'sitemap');
 }
 function llms() {
   let s = 공개글('llms.txt');
-  s = 바꿈(s, 'SYNK는 지금 한국어 교육, 회사의 AI 수업, 광고 제작, 한국 유학 준비 네 곳에서 일합니다.', 'SYNK가 지금 하는 일은 셋입니다. 한국어와 유학, AI 강의, 광고입니다.', 1, 'llms 한국어');
-  s = 바꿈(s, 'Today SYNK works in four areas: Korean education, AI classes for companies, ad production, and preparing to study in Korea.', 'Today SYNK does three things: Korean and study in Korea, AI lectures, and ads.', 1, 'llms 영어');
+  s = 한번만바꿈(s, 'SYNK는 지금 한국어 교육, 회사의 AI 수업, 광고 제작, 한국 유학 준비 네 곳에서 일합니다.', 'SYNK가 지금 하는 일은 셋입니다. 한국어와 유학, AI 강의, 광고입니다.', 1, 'llms 한국어');
+  s = 한번만바꿈(s, 'Today SYNK works in four areas: Korean education, AI classes for companies, ad production, and preparing to study in Korea.', 'Today SYNK does three things: Korean and study in Korea, AI lectures, and ads.', 1, 'llms 영어');
   const 이름 = { korean: ['한국어', 'Korean'], classroom: ['교실', 'Classroom'], study: ['유학', 'Study in Korea'], job: ['취업', 'Jobs'], community: ['모임', 'Community'], ai: ['AI 강의', 'AI lectures'], ad: ['광고', 'Ads'] };
   const 줄 = Object.keys(상세).map(id => `- [${이름[id][0]} · ${이름[id][1]}](${사이트}${쪽주소('ko', id)}) · [English](${사이트}${쪽주소('en', id)})`).join('\n');
+  if (s.includes(줄)) return s;   // 공개 뒤에 다시 돌 때
   return 바꿈(s, '- [SYNK LAB](https://synk.im/lab/)', 줄 + '\n- [SYNK LAB](https://synk.im/lab/)', 1, 'llms 쪽 목록');
 }
 

@@ -128,13 +128,55 @@ async function 확인() {
     const { ctx } = await 맥락(browser, { width, height: 900 });
     const page = await ctx.newPage();
     await page.goto(`https://synk.im${p}?from=qa&still`, { waitUntil: 'load' });
-    await page.evaluate(() => scrollTo(0, 1e7)); await page.waitForTimeout(600);
-    const 덮임 = await page.evaluate(() => [...document.querySelectorAll('.foot a, .foot button')].filter(a => { const r = a.getBoundingClientRect(); return r.width && r.height && r.bottom > 0 && r.top < innerHeight; })
-      .map(a => { const r = a.getBoundingClientRect(), el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return el && (el === a || a.contains(el)) ? null : `${a.textContent.trim().slice(0, 20)} ← ${el ? el.tagName + '.' + el.className : '없음'}`; }).filter(Boolean));
+    // 늦게 차는 그림으로 쪽이 길어지므로 높이가 멈출 때까지 맨 아래로 내린 뒤 잰다(다시 검수 FA1)
+    // 쪽이 부드러운 스크롤을 쓰므로 순간 이동으로 내린다(내리는 도중에 재면 바닥이 화면 밖이다)
+    for (let k = 0, 앞 = -1; k < 12; k++) { const h = await page.evaluate(() => { scrollTo({ top: 1e7, behavior: 'instant' }); return document.documentElement.scrollHeight; }); await page.waitForTimeout(500); if (h === 앞) break; 앞 = h; }
+    await page.evaluate(() => scrollTo({ top: 1e7, behavior: 'instant' })); await page.waitForTimeout(300);
+    const { 잰, 덮임 } = await page.evaluate(() => { const 보임 = [...document.querySelectorAll('.foot a, .foot button')].filter(a => { const r = a.getBoundingClientRect(); return r.width && r.height && r.bottom > 0 && r.top < innerHeight; });
+      return { 잰: 보임.length, 덮임: 보임.map(a => { const r = a.getBoundingClientRect(), el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return el && (el === a || a.contains(el)) ? null : `${a.textContent.trim().slice(0, 20)} ← ${el ? el.tagName + '.' + el.className : '없음'}`; }).filter(Boolean) }; });
+    if (!잰) 문제(`${p} ${width} 바닥 링크를 하나도 재지 못함(바닥이 화면에 없다)`);
     if (덮임.length) 문제(`${p} ${width} 바닥 링크가 덮임: ${덮임.join(' · ')}`);
     await ctx.close();
   }
   console.log('바닥 링크 누름 자리 확인 끝');
+  // 키보드: 다섯 곳 줄(열린 칸 안 링크에 Tab으로 닿음) · 휴대폰 메뉴(열면 첫 항목, Escape로 닫고 단추로) · 길 무대(마지막 핀 다음 Tab이 단계 카드로)
+  for (const lang of ['ko', 'en']) {
+    const 앞 = lang === 'en' ? '/en' : '';
+    { const { ctx } = await 맥락(browser, { width: 1440, height: 900 }); const page = await ctx.newPage();
+      await page.goto(`https://synk.im${앞}/classroom/?from=qa`, { waitUntil: 'load' });
+      const 첫줄 = page.locator('[data-hang] .lines li').first();
+      await 첫줄.scrollIntoViewIfNeeded(); await page.waitForTimeout(1200);
+      await 첫줄.focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(500);
+      await page.keyboard.press('Tab'); await page.waitForTimeout(200);
+      const 칸안 = await page.evaluate(() => Boolean(document.activeElement?.closest('.hang-pane.on')));
+      await 첫줄.focus(); await page.keyboard.press('ArrowDown'); await page.waitForTimeout(300);
+      const 줄 = await page.evaluate(() => { const rows = [...document.querySelectorAll('[data-hang] .lines li')]; return { 초점: rows.indexOf(document.activeElement), 열림: rows.findIndex(r => r.classList.contains('on')), 탭: rows.map(r => r.tabIndex).join('') }; });
+      if (줄.초점 !== 1 || 줄.열림 !== 1 || 줄.탭 !== '-10-1') 문제(`${lang} 교실 줄 방향키 ${JSON.stringify(줄)}`);
+      if (!칸안) 문제(`${lang} 교실 열린 칸 안 링크에 Tab이 닿지 않음`);
+      await ctx.close(); }
+    { const { ctx } = await 맥락(browser, { width: 390, height: 844 }); const page = await ctx.newPage();
+      await page.goto(`https://synk.im${앞}/?from=qa`, { waitUntil: 'load' });
+      await page.locator('.menu-btn').focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(300);
+      const 열림 = await page.evaluate(() => ({ 열림: document.querySelector('.nav').classList.contains('open'), 첫항목: document.activeElement === document.querySelector('.nav ul a') }));
+      await page.keyboard.press('Escape'); await page.waitForTimeout(300);
+      const 닫힘 = await page.evaluate(() => ({ 닫힘: !document.querySelector('.nav').classList.contains('open'), 단추: document.activeElement === document.querySelector('.menu-btn') }));
+      if (!열림.열림 || !열림.첫항목 || !닫힘.닫힘 || !닫힘.단추) 문제(`${lang} 메뉴 키보드 ${JSON.stringify({ ...열림, ...닫힘 })}`);
+      // 복사 안내: 비어 있을 때 링크 묶음 높이를 늘리지 않고, 글이 들어가면 링크와 같은 600 16px(최종 검수 b F1)
+      const 복사 = await page.evaluate(async () => { const links = document.querySelector('.ask-links'), out = document.querySelector('#ask-out'), 자리 = out.nextSibling;
+        const 있을때 = links.getBoundingClientRect().height; out.remove(); const 없을때 = links.getBoundingClientRect().height; links.insertBefore(out, 자리);
+        document.querySelector('#ask-copy').click(); await new Promise(r => setTimeout(r, 300)); const s = getComputedStyle(out);
+        return { 틈: Math.round(있을때 - 없을때), 글: out.textContent.length > 0, 크기: s.fontSize, 굵기: s.fontWeight, 안: out.parentElement === links }; });
+      if (복사.틈 !== 0 || !복사.글 || 복사.크기 !== '16px' || 복사.굵기 !== '600' || !복사.안) 문제(`${lang} 복사 안내 자리 ${JSON.stringify(복사)}`);
+      await ctx.close(); }
+    { const { ctx } = await 맥락(browser, { width: 1440, height: 900 }); const page = await ctx.newPage();
+      await page.goto(`https://synk.im${앞}/?from=qa`, { waitUntil: 'load' });
+      const 핀 = page.locator('.w-pins button').last(); await 핀.scrollIntoViewIfNeeded(); await page.waitForTimeout(800); await 핀.focus();
+      await page.keyboard.press('Tab'); await page.waitForTimeout(1500);
+      const 카드 = await page.evaluate(() => { const a = document.activeElement, s = a?.closest('.w-say'); return { 카드: Boolean(s), 보임: s ? +getComputedStyle(s).opacity : 0 }; });
+      if (!카드.카드 || 카드.보임 < .5) 문제(`${lang} 길 무대 Tab이 단계 카드로 가지 않음 ${JSON.stringify(카드)}`);
+      await ctx.close(); }
+  }
+  console.log('키보드 확인 끝');
   // 홈: 질문창 · 들어오는 주소 · 하늘 · 앨범
   for (const lang of ['ko', 'en']) {
     const 앞 = lang === 'en' ? '/en' : '';
