@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V2",
+ "text": "피디에프는 클로드가 쪽마다 글로 한 번, 사진으로 또 한 번 읽거든요.",
+ "dur": 3.367,
+ "words": [
+  {
+   "text": "피디에프는",
+   "start": 0.02,
+   "end": 0.479
+  },
+  {
+   "text": "클로드가",
+   "start": 0.594,
+   "end": 0.914
+  },
+  {
+   "text": "쪽마다",
+   "start": 0.964,
+   "end": 1.258
+  },
+  {
+   "text": "글로",
+   "start": 1.322,
+   "end": 1.514
+  },
+  {
+   "text": "한",
+   "start": 1.564,
+   "end": 1.64
+  },
+  {
+   "text": "번,",
+   "start": 1.679,
+   "end": 1.832
+  },
+  {
+   "text": "사진으로",
+   "start": 2.164,
+   "end": 2.509
+  },
+  {
+   "text": "또",
+   "start": 2.547,
+   "end": 2.598
+  },
+  {
+   "text": "한",
+   "start": 2.637,
+   "end": 2.714
+  },
+  {
+   "text": "번",
+   "start": 2.751,
+   "end": 2.828
+  },
+  {
+   "text": "읽거든요.",
+   "start": 2.866,
+   "end": 3.367
+  }
+ ],
+ "source": {
+  "key": "b9c293662b68c35b7f4b3d7c84e7db22",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 2102,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}

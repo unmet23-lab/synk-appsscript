@@ -1,0 +1,90 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V5",
+ "text": "단, 그래프나 스캔한 문서는 글로 바꾸면 내용이 사라져요. 그건 피디에프 그대로.",
+ "dur": 4.17,
+ "words": [
+  {
+   "text": "단,",
+   "start": 0.02,
+   "end": 0.195
+  },
+  {
+   "text": "그래프나",
+   "start": 0.625,
+   "end": 0.974
+  },
+  {
+   "text": "스캔한",
+   "start": 1.014,
+   "end": 1.269
+  },
+  {
+   "text": "문서는",
+   "start": 1.31,
+   "end": 1.645
+  },
+  {
+   "text": "글로",
+   "start": 1.739,
+   "end": 1.901
+  },
+  {
+   "text": "바꾸면",
+   "start": 1.94,
+   "end": 2.263
+  },
+  {
+   "text": "내용이",
+   "start": 2.303,
+   "end": 2.518
+  },
+  {
+   "text": "사라져요.",
+   "start": 2.559,
+   "end": 2.908
+  },
+  {
+   "text": "그건",
+   "start": 3.203,
+   "end": 3.377
+  },
+  {
+   "text": "피디에프",
+   "start": 3.418,
+   "end": 3.74
+  },
+  {
+   "text": "그대로.",
+   "start": 3.781,
+   "end": 4.17
+  }
+ ],
+ "source": {
+  "key": "b54413e10956e14ec6aaacff90d00f8d",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}

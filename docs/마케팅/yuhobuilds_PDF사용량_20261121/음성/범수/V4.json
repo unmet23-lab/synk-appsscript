@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V4",
+ "text": "여덟 쪽 약관을 이렇게 붙였더니, 읽는 양이 절반 아래로 줄었어요.",
+ "dur": 3.444,
+ "words": [
+  {
+   "text": "여덟",
+   "start": 0.02,
+   "end": 0.201
+  },
+  {
+   "text": "쪽",
+   "start": 0.239,
+   "end": 0.356
+  },
+  {
+   "text": "약관을",
+   "start": 0.395,
+   "end": 0.692
+  },
+  {
+   "text": "이렇게",
+   "start": 0.731,
+   "end": 0.912
+  },
+  {
+   "text": "붙였더니,",
+   "start": 0.951,
+   "end": 1.351
+  },
+  {
+   "text": "읽는",
+   "start": 1.907,
+   "end": 2.126
+  },
+  {
+   "text": "양이",
+   "start": 2.165,
+   "end": 2.334
+  },
+  {
+   "text": "절반",
+   "start": 2.373,
+   "end": 2.67
+  },
+  {
+   "text": "아래로",
+   "start": 2.709,
+   "end": 2.889
+  },
+  {
+   "text": "줄었어요.",
+   "start": 2.928,
+   "end": 3.444
+  }
+ ],
+ "source": {
+  "key": "1b64678aa4b2cc4930171049e9646374",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.08,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 154
+ }
+}

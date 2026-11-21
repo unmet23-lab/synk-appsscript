@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "P2G",
+ "text": "바꿔도 되는 문서 고르는 법, 게시글에 다 적어 뒀어요.",
+ "dur": 2.678,
+ "words": [
+  {
+   "text": "바꿔도",
+   "start": 0.04,
+   "end": 0.325
+  },
+  {
+   "text": "되는",
+   "start": 0.361,
+   "end": 0.559
+  },
+  {
+   "text": "문서",
+   "start": 0.609,
+   "end": 0.807
+  },
+  {
+   "text": "고르는",
+   "start": 0.856,
+   "end": 1.128
+  },
+  {
+   "text": "법,",
+   "start": 1.166,
+   "end": 1.314
+  },
+  {
+   "text": "게시글에",
+   "start": 1.55,
+   "end": 1.883
+  },
+  {
+   "text": "다",
+   "start": 1.921,
+   "end": 1.995
+  },
+  {
+   "text": "적어",
+   "start": 2.057,
+   "end": 2.193
+  },
+  {
+   "text": "뒀어요.",
+   "start": 2.23,
+   "end": 2.678
+  }
+ ],
+ "source": {
+  "key": "90157f9e6b8177a847e1f85835180e4f",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.04,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 151
+ }
+}

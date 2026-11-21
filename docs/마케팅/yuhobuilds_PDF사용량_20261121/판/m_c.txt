@@ -1,0 +1,16 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 2:3, the SAME tiny night-time desk world as image 1 (same dark charcoal felt wall, same dark walnut-brown felt desk, same warm lamp light from the left, same needle-felt craft style, same coral Mongle, same thick cream-white felt sheets) — but a NEW, CLOSER camera position.
+
+Attached images in order: (1) the world to match, (2) mascot reference.
+
+CAMERA: closer to Mongle than image 1 and a little HIGHER, looking slightly DOWN at the desk, so more of the desk surface is visible behind and around Mongle. Shallow depth of field.
+- The TOP 34% of the image is plain near-black wall with nothing in it — keep it empty and dark for titles.
+- MONGLE: the same small coral-pink felt blob mascot as image 1 (use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes with no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever. Mongle is now BIG in the frame: centred at 36% of the image width, about 44% of the image width wide, its top at about 42% of the image height and its hem at about 74%. Its body is turned three-quarters toward the RIGHT, toward the small stack, and its eyes look straight at the camera: two round glossy black bead eyes, open and bright, each with a tiny highlight — relaxed and relieved.
+- THE SHORT STACK: on the desk just right of Mongle, centred at 70% of the image width: a neat stack of exactly FIVE thick, chunky cream-white felt sheets lying flat (small rectangular sheets like tiny pages, each a clearly separate thick slab). Its top is lower than Mongle's eyes.
+- Leaning upright against the front of that stack: one small cream-white felt envelope, closed, with a tiny coral felt heart as its seal. No writing on it.
+- The tall stack from image 1 is NOT in this picture. No yellow sheets anywhere.
+- The BOTTOM 22% of the image is the desk surface in soft focus, with nothing on it.
+- Keep Mongle, the stack and the envelope between 8% and 82% of the image width.
+
+Exactly ONE Mongle, nobody else, no laptop, no other objects. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns, no perforations.

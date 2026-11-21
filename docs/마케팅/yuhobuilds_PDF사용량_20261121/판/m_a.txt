@@ -1,0 +1,17 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — a needle-felt miniature diorama photo, portrait 2:3, quiet night-time home-office mood, shallow depth of field, cosy handmade felt-and-wool textures everywhere (copy only the craft style and miniature scale of the felt reference photo — NOT its place, NOT its people, NOT its colours).
+
+Attached images in order: (1) mascot reference, (2) felt craft-style reference.
+
+SCENE: a tiny desk at night, seen from the front at desk height. The background is a plain, very dark charcoal felt wall, almost black, with nothing on it. One small warm desk lamp, out of frame on the left, lights the desk softly from the left; everything else falls off into darkness.
+- The TOP 38% of the image is plain near-black wall with nothing in it — keep it empty and dark for titles.
+- The desk surface (dark walnut-brown felt) starts at 70% of the image height. Everything stands on that line.
+- MONGLE: a small coral-pink felt blob mascot — use the mascot reference ONLY for its body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes (no white sclera). Mongle has NO arms, NO legs, NO hands, NO mouth and NO neck, ever — its head and body are one soft dome. Mongle sits on the desk on the LEFT, centred at 23% of the image width, about 24% of the image width wide, its top at about 53% of the image height. Mongle is turned slightly toward the right and is LOOKING UP at the top of the tall stack beside it: two round glossy black bead eyes, wide open, placed a little high on its face, each with a tiny highlight — it looks astonished at how tall the stack is.
+- THE TALL STACK: just right of Mongle, centred at 53% of the image width: a neat stack of exactly ELEVEN thick, chunky felt sheets lying flat on top of each other — small rectangular sheets like tiny pages, each sheet a clearly separate thick slab. The sheets ALTERNATE in colour from the bottom up: cream-white, butter-yellow, cream-white, butter-yellow … (six cream-white, five butter-yellow). The stack rises from the desk up to about 41% of the image height — clearly much taller than Mongle.
+- THE SHORT STACK: further right, centred at 77% of the image width: a neat stack of exactly FIVE of the same thick felt sheets, ALL cream-white, no yellow. Its top is at about 57% of the image height — it is less than half as tall as the tall stack and a little lower than Mongle's top.
+- Both stacks are plain felt: no labels, no writing, no clips.
+- The BOTTOM 28% of the image is the desk surface in soft focus, with nothing on it.
+- Keep Mongle and both stacks between 8% and 84% of the image width.
+
+Exactly ONE Mongle, nobody else, no laptop, no other objects. Absolutely no text, letters, numbers, symbols or watermarks anywhere. No real brand, no logos. No mesh, no grids of dots, no rings or holes patterns, no perforations.

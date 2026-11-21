@@ -1,0 +1,84 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 2103,
+  "lufs": -17
+ },
+ "made": "2026-11-21T11:21:05.919Z",
+ "lines": [
+  {
+   "id": "P1",
+   "text": "같은 문서도 피디에프면 클로드가 이 점 이 배를 읽어요. 사용량도 더 들어요.",
+   "dur": 3.718,
+   "syllablesPerSec": 8.07,
+   "src": "P1.wav",
+   "key": "4bc38fc83f5a1a9b89980c1583c5d612",
+   "words": 12
+  },
+  {
+   "id": "V2",
+   "text": "피디에프는 클로드가 쪽마다 글로 한 번, 사진으로 또 한 번 읽거든요.",
+   "dur": 3.367,
+   "syllablesPerSec": 8.02,
+   "src": "V2.wav",
+   "key": "b9c293662b68c35b7f4b3d7c84e7db22",
+   "words": 11
+  },
+  {
+   "id": "V3",
+   "text": "그래서 글만 있는 문서는, 열어서 전체 복사하고 붙여 넣어요.",
+   "dur": 2.844,
+   "syllablesPerSec": 8.44,
+   "src": "V3.wav",
+   "key": "8134e39135f285f69576ef3b2899eda8",
+   "words": 9
+  },
+  {
+   "id": "V4",
+   "text": "여덟 쪽 약관을 이렇게 붙였더니, 읽는 양이 절반 아래로 줄었어요.",
+   "dur": 3.444,
+   "syllablesPerSec": 7.55,
+   "src": "V4.wav",
+   "key": "1b64678aa4b2cc4930171049e9646374",
+   "words": 10
+  },
+  {
+   "id": "V5",
+   "text": "단, 그래프나 스캔한 문서는 글로 바꾸면 내용이 사라져요. 그건 피디에프 그대로.",
+   "dur": 4.17,
+   "syllablesPerSec": 7.67,
+   "src": "V5.wav",
+   "key": "b54413e10956e14ec6aaacff90d00f8d",
+   "words": 11
+  },
+  {
+   "id": "P2",
+   "text": "바꿔도 되는 문서 고르는 법, 댓글에 피디에프라고 남기면 보내 드려요.",
+   "dur": 3.528,
+   "syllablesPerSec": 7.94,
+   "src": "P2.wav",
+   "key": "f8b37045c16e34d3682ccffda3f24345",
+   "words": 10
+  },
+  {
+   "id": "P2G",
+   "text": "바꿔도 되는 문서 고르는 법, 게시글에 다 적어 뒀어요.",
+   "dur": 2.678,
+   "syllablesPerSec": 7.84,
+   "src": "P2G.wav",
+   "key": "90157f9e6b8177a847e1f85835180e4f",
+   "words": 9
+  }
+ ]
+}

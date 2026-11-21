@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "V3",
+ "text": "그래서 글만 있는 문서는, 열어서 전체 복사하고 붙여 넣어요.",
+ "dur": 2.844,
+ "words": [
+  {
+   "text": "그래서",
+   "start": 0.06,
+   "end": 0.261
+  },
+  {
+   "text": "글만",
+   "start": 0.297,
+   "end": 0.546
+  },
+  {
+   "text": "있는",
+   "start": 0.582,
+   "end": 0.735
+  },
+  {
+   "text": "문서는,",
+   "start": 0.771,
+   "end": 1.092
+  },
+  {
+   "text": "열어서",
+   "start": 1.352,
+   "end": 1.566
+  },
+  {
+   "text": "전체",
+   "start": 1.614,
+   "end": 1.827
+  },
+  {
+   "text": "복사하고",
+   "start": 1.863,
+   "end": 2.242
+  },
+  {
+   "text": "붙여",
+   "start": 2.278,
+   "end": 2.455
+  },
+  {
+   "text": "넣어요.",
+   "start": 2.491,
+   "end": 2.844
+  }
+ ],
+ "source": {
+  "key": "8134e39135f285f69576ef3b2899eda8",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1123,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.06,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 138
+ }
+}
