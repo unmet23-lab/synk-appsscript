@@ -5,9 +5,26 @@ import {readFile,stat,readdir,realpath} from 'node:fs/promises';
 import {createReadStream} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
+import {jobFiles} from './workday/engine/job-schema.mjs';
 const ROOT=fileURLToPath(new URL('.',import.meta.url));
 const PUBLIC=['index.html','style.css','app.mjs','model.mjs','scene.mjs','xr.mjs','vendor/three.module.js','vendor/three.core.js','vendor/engine.js','vendor/trail.js','vendor/personalization.js',...['SUIT.woff2','InterTight.woff2','DMMono.woff2','logo-path.webp','logo-path-320.webp','path-vr-felt.webp','path-vr-felt-480.webp','PathSans-ui.woff2','PathSans-rest.woff2','slab-cream-long.webp','slab-blush-long.webp','slab-coral-long.webp','badge-check.webp','wide-cream.webp','wide-lapis.webp','wide-butter.webp'].map(n=>'assets/'+n)];
 const INTERVIEW_PUBLIC=['index.html','style.css','room.mjs','app.mjs','dialogue.mjs','content.mjs','actors.mjs','audio.mjs','voice.mjs','audio-worklet.js','credits.json','film-manifest.json','film-player.mjs','film/index.html','film/style.css','film/preview.mjs','film/compare.html','film/compare.css','film/compare.mjs','film/nanobanana.html','film/rehearsal.html','film/rehearsal.css','film/rehearsal.mjs','film/rehearsal-session.mjs','film/answer-followup.mjs','film/listening-sequence.mjs','film/strict-vr.mjs','film/room-space.mjs','film/speech-turn.mjs','film/strict-manifest.json'].map(n=>'interview/'+n);
+// 일터 체험(workday): code files are named one by one. A job's data is found by following the
+// catalogue: jobs/index.json -> job.json and manifest.json -> the photographs, name audio and films they
+// name. Folders are never listed, so a job's production/ working folder cannot become public.
+export const WORKDAY_PUBLIC=Object.freeze(['index.html','hub.mjs','play.html','play.mjs','workday.css','jobs/index.json',...['job-schema.mjs','session.mjs','record.mjs','record-sheet.mjs','pdf.mjs','place-stage.mjs','hud.mjs','comfort.mjs'].map(n=>'engine/'+n)].map(n=>'workday/'+n));
+export async function workdayJobFiles(root=ROOT){
+  const out=[],jobs=path.join(root,'workday','jobs'),json=async file=>JSON.parse(await readFile(file,'utf8'));
+  let index;try{index=await json(path.join(jobs,'index.json'));}catch{return out;}
+  for(const entry of Array.isArray(index?.jobs)?index.jobs:[]){
+    if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry?.id||''))continue;
+    let job,manifest=null;try{job=await json(path.join(jobs,entry.id,'job.json'));}catch{continue;}
+    out.push(`workday/jobs/${entry.id}/job.json`);
+    try{manifest=await json(path.join(jobs,entry.id,'manifest.json'));out.push(`workday/jobs/${entry.id}/manifest.json`);}catch{}
+    for(const name of jobFiles(job,manifest))try{if((await stat(path.join(jobs,entry.id,name))).isFile())out.push(`workday/jobs/${entry.id}/${name}`);}catch{}
+  }
+  return out.sort();
+}
 // Explicit model assets only: a benchmark file placed beside a model must never
 // become public merely because its extension matches a runtime asset.
 export const WHISPER_PUBLIC_FILES=Object.freeze([
@@ -17,7 +34,7 @@ export const WHISPER_PUBLIC_FILES=Object.freeze([
 ]);
 const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.js':'text/javascript; charset=utf-8','.webp':'image/webp','.woff2':'font/woff2','.glb':'model/gltf-binary','.json':'application/json; charset=utf-8','.mp3':'audio/mpeg','.mp4':'video/mp4','.webm':'video/webm','.wav':'audio/wav','.gz':'application/gzip','.wasm':'application/wasm','.onnx':'application/octet-stream','.png':'image/png','.jpg':'image/jpeg','.txt':'text/plain; charset=utf-8','.md':'text/plain; charset=utf-8'};
 export async function publicFiles(){
-  const list=[...PUBLIC,...INTERVIEW_PUBLIC,...WHISPER_PUBLIC_FILES,'assets/licenses/SUIT-OFL.txt','assets/licenses/InterTight-OFL.txt','assets/licenses/DMMono-OFL.txt','vendor/GLTFLoader.js','vendor/BufferGeometryUtils.js','vendor/HDRLoader.js','vendor/THREE-LICENSE.txt','vendor/vosk/vosk.mjs','vendor/vosk/vosk-worker.js','vendor/vosk/LICENSE.txt','vendor/vosk/NOTICE.txt','models/vosk-model-small-ko-0.22.tar.gz'];
+  const list=[...PUBLIC,...INTERVIEW_PUBLIC,...WHISPER_PUBLIC_FILES,...WORKDAY_PUBLIC,...await workdayJobFiles(),'assets/licenses/SUIT-OFL.txt','assets/licenses/InterTight-OFL.txt','assets/licenses/DMMono-OFL.txt','vendor/GLTFLoader.js','vendor/BufferGeometryUtils.js','vendor/HDRLoader.js','vendor/THREE-LICENSE.txt','vendor/vosk/vosk.mjs','vendor/vosk/vosk-worker.js','vendor/vosk/LICENSE.txt','vendor/vosk/NOTICE.txt','models/vosk-model-small-ko-0.22.tar.gz'];
   for(const directory of ['assets/interview/actors','assets/interview/audio','assets/interview/room'])try{for(const f of await readdir(path.join(ROOT,directory),{withFileTypes:true}))if(f.isFile()&&!f.name.startsWith('.')&&/\.(glb|mp3|json|txt|jpg|hdr)$/.test(f.name))list.push(directory+'/'+f.name);}catch{}
   list.push('assets/interview/film/room-reference.png','assets/interview/film/room-reference-nanobanana.jpg','assets/interview/film/room-reference-4k.jpg','assets/interview/film/room-poster-4k.jpg','assets/interview/film/room-poster-1920.jpg','assets/interview/film/room-poster-1280.jpg','assets/interview/room/back-wall-photo.png','assets/interview/room/back-wall-elevation.png','assets/interview/room/front-room-extension.png','assets/interview/room/front-room-wide.png','assets/interview/room/left-wall-photo.png','assets/interview/room/right-wall-photo.png');
   try{for(const f of await readdir(path.join(ROOT,'assets/interview/film'),{withFileTypes:true}))if(f.isFile()&&/^[a-z0-9-]+\.(mp4|webm)$/.test(f.name))list.push('assets/interview/film/'+f.name);}catch{}
@@ -38,7 +55,7 @@ export function createServer({port=4292,accountConfigPath,accountConfig,host='12
     let pathname;try{pathname=decodeURIComponent(new URL(req.url,'http://127.0.0.1').pathname);}catch{return send(400,'Bad URL');}
     const common=await shared.read(pathname);if(common)return send(200,common.body,common.type);
     if(pathname==='/api/health')return send(200,JSON.stringify({ok:true,product:'path',mode:'local-mvp',data:'browser-only'}),'application/json');
-    const file=pathname==='/'?'index.html':pathname==='/interview/'?'interview/index.html':pathname==='/interview/film/'?'interview/film/index.html':pathname.slice(1);if(!(await approvedPromise).has(file))return send(404,'Not found');
+    const file=pathname==='/'?'index.html':pathname==='/interview/'?'interview/index.html':pathname==='/interview/film/'?'interview/film/index.html':pathname==='/workday/'?'workday/index.html':pathname.slice(1);if(!(await approvedPromise).has(file))return send(404,'Not found');
     if(file==='vendor/vosk/vosk-worker.js')headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("script-src 'self' 'wasm-unsafe-eval'","script-src 'self' 'unsafe-eval'");
     try{const absolute=await realpath(path.join(ROOT,file));if(!absolute.startsWith(ROOT))return send(404,'Not found');const info=await stat(absolute),range=parseRange(req.headers.range,info.size);if(range===false){res.writeHead(416,{...headers,'Content-Range':`bytes */${info.size}`});return res.end();}const start=range?.start||0,end=range?.end??info.size-1;res.writeHead(range?206:200,{...headers,'Content-Type':MIME[path.extname(file)]||'application/octet-stream','Accept-Ranges':'bytes','Content-Length':Math.max(0,end-start+1),...(range?{'Content-Range':`bytes ${start}-${end}/${info.size}`}:{})});if(req.method==='HEAD')return res.end();const stream=createReadStream(absolute,range?{start,end}:{});stream.on('error',()=>res.destroy());res.on('close',()=>stream.destroy());stream.pipe(res);}catch{return send(404,'Not found');}
   };

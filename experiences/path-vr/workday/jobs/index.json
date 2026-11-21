@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "jobs": [
+    {
+      "id": "care-home",
+      "status": "open",
+      "title": "요양원 첫 출근",
+      "role": "요양보호사",
+      "minutes": 15,
+      "scenes": 5,
+      "poster": "care-home/places/office-senior.jpg",
+      "posterAlt": "요양원 사무실 문 앞에 근무복을 입은 선배 요양보호사가 서 있다.",
+      "summary": "어르신 두 분을 맡아 하루를 보내요. 듣고, 말하고, 갈림길에서 골라요."
+    },
+    {
+      "id": "factory",
+      "status": "making",
+      "title": "공장 첫 출근",
+      "role": "제조 현장",
+      "summary": "안전 표지를 읽고, 작업 지시를 듣고, 본 것을 보고해요."
+    }
+  ]
+}

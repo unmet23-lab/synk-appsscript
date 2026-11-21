@@ -1,0 +1,414 @@
+{
+  "schemaVersion": 1,
+  "id": "care-home",
+  "edition": "표준판 1.0",
+  "title": "요양원 첫 출근",
+  "role": "요양보호사",
+  "summary": "요양원에서 어르신 두 분을 맡아 하루를 보내요. 듣고, 말하고, 갈림길에서 골라요.",
+  "minutes": 15,
+  "reviewNote": "장면과 대사는 요양 현장 전문가의 검토를 받기 전이에요.",
+  "hintLanguages": ["mn", "vi", "en"],
+  "cast": {
+    "senior": { "name": "정미경", "role": "선배 요양보호사" },
+    "night": { "name": "오은주", "role": "밤 근무 요양보호사" },
+    "soonja": { "name": "김순자 어르신", "role": "햇살방" },
+    "okbun": { "name": "최옥분 어르신", "role": "햇살방" }
+  },
+  "places": {
+    "office": {
+      "name": "사무실 앞",
+      "photo": "places/office-senior.jpg",
+      "live": [0.14, 0, 0.67, 1],
+      "alt": "요양원 사무실 문 앞에 근무복을 입은 선배 요양보호사가 서 있다.",
+      "points": []
+    },
+    "room": {
+      "name": "생활실 · 햇살방",
+      "photo": "places/room.jpg",
+      "alt": "침대 두 개가 놓인 밝은 생활실. 침대마다 머리맡에 호출 벨이 있다.",
+      "points": [
+        { "id": "call-bell", "x": 0.89, "y": 0.43, "label": "호출 벨",
+          "hint": { "mn": "Дуудлагын хонх. Настан тусламж хэрэгтэй үед дардаг.", "vi": "Chuông gọi. Cụ bấm khi cần giúp đỡ.", "en": "Call bell. A resident presses it when they need help." } },
+        { "id": "fall-sign", "x": 0.247, "y": 0.43, "label": "낙상 주의 표지",
+          "hint": { "mn": "Унахаас сэрэмжлүүлэх тэмдэг. Энэ настан унах эрсдэлтэй гэсэн үг.", "vi": "Biển cảnh báo té ngã. Cụ này dễ bị ngã.", "en": "Fall-risk sign. This resident may fall easily." } },
+        { "id": "bed-rail", "x": 0.32, "y": 0.56, "label": "침대 난간",
+          "hint": { "mn": "Орны хашлага.", "vi": "Thanh chắn giường.", "en": "Bed rail." } }
+      ]
+    },
+    "dining": {
+      "name": "식당 겸 프로그램실",
+      "photo": "places/dining.jpg",
+      "alt": "식탁 여러 개와 큰 창이 있는 넓은 방. 벽에 식단표와 일과표가 붙어 있다.",
+      "points": [
+        { "id": "menu", "x": 0.45, "y": 0.22, "label": "식단표",
+          "hint": { "mn": "Хоолны цэс.", "vi": "Thực đơn.", "en": "Meal menu." } },
+        { "id": "schedule", "x": 0.72, "y": 0.22, "label": "일과표", "note": "schedule",
+          "hint": { "mn": "Өдрийн хуваарь.", "vi": "Lịch sinh hoạt trong ngày.", "en": "Daily schedule." } }
+      ]
+    },
+    "nurse": {
+      "name": "간호사실",
+      "photo": "places/nurse.jpg",
+      "alt": "복도 쪽으로 열린 간호사실. 책상에 기록지 묶음이 있고 뒤에 약 보관함이 있다.",
+      "points": [
+        { "id": "record-sheet", "x": 0.47, "y": 0.63, "label": "기록지",
+          "hint": { "mn": "Тэмдэглэлийн хуудас. Настны байдал, хийсэн ажлаа бичдэг.", "vi": "Phiếu ghi chép. Ghi tình trạng của cụ và việc đã làm.", "en": "Care record sheet. You write the resident's condition and what you did." } },
+        { "id": "medicine", "x": 0.8, "y": 0.4, "label": "약 보관함",
+          "hint": { "mn": "Эмийн шүүгээ. Эмийг сувилагч өгдөг.", "vi": "Tủ thuốc. Y tá là người cho uống thuốc.", "en": "Medicine cabinet. The nurse gives the medicine." } }
+      ]
+    },
+    "bath-door": {
+      "name": "목욕실 앞",
+      "photo": "places/bath-door.jpg",
+      "alt": "닫힌 목욕실 문 앞 복도. 문 옆에 목욕 일정표가 붙어 있다.",
+      "points": [
+        { "id": "bath-plan", "x": 0.645, "y": 0.31, "label": "목욕 일정표", "note": "bath",
+          "hint": { "mn": "Усанд оруулах хуваарь.", "vi": "Lịch tắm.", "en": "Bathing schedule." } }
+      ]
+    },
+    "nurse-morning": {
+      "name": "간호사실",
+      "photo": "places/nurse-night.jpg",
+      "live": [0.47, 0.1, 0.82, 1],
+      "alt": "간호사실 앞에 밤 근무를 마친 요양보호사가 기록지를 들고 서 있다.",
+      "points": []
+    },
+    "room-bed": {
+      "name": "생활실 · 햇살방",
+      "photo": "places/room-bed-soonja.jpg",
+      "live": [0.12, 0.3, 0.82, 0.92],
+      "alt": "김순자 어르신이 이불을 덮고 침대에 누워 있다.",
+      "points": []
+    },
+    "room-table": {
+      "name": "생활실 · 햇살방",
+      "photo": "places/room-table-soonja.jpg",
+      "live": [0.26, 0.04, 0.96, 1],
+      "alt": "김순자 어르신이 침대 옆 식탁에 앉아 숟가락을 들고 있다.",
+      "points": []
+    },
+    "dining-okbun": {
+      "name": "식당 겸 프로그램실",
+      "photo": "places/dining-okbun.jpg",
+      "live": [0.12, 0.06, 0.6, 1],
+      "alt": "최옥분 어르신이 가방을 안고 식탁 옆에 서 있다.",
+      "points": []
+    },
+    "dining-soonja": {
+      "name": "식당 겸 프로그램실",
+      "photo": "places/dining-soonja.jpg",
+      "live": [0.14, 0.02, 0.84, 1],
+      "alt": "김순자 어르신이 식탁 앞 의자에 앉아 있다.",
+      "points": []
+    },
+    "nurse-evening": {
+      "name": "간호사실",
+      "photo": "places/nurse-senior.jpg",
+      "live": [0.12, 0.16, 0.56, 1],
+      "alt": "오후 늦게 간호사실 앞에 선배 요양보호사가 서 있다.",
+      "points": []
+    }
+  },
+  "notes": {
+    "schedule": {
+      "title": "낮 근무의 하루",
+      "lead": "한 예시예요. 시간과 순서는 시설마다 달라요.",
+      "rows": [
+        ["07:00", "출근, 아침 인계"],
+        ["07:30", "아침 인사, 일어나시는 것 돕기"],
+        ["08:00", "아침 식사"],
+        ["10:00", "프로그램, 목욕(요일마다)"],
+        ["12:00", "점심 식사"],
+        ["14:00", "프로그램, 간식"],
+        ["15:00", "기록 쓰기"],
+        ["15:30", "저녁 근무자에게 인계"],
+        ["16:00", "퇴근"]
+      ],
+      "hint": { "mn": "Өдрийн ээлжийн нэг жишээ. Цаг, дараалал нь байгууллага бүрд өөр.", "vi": "Một ví dụ về ca ngày. Giờ giấc và thứ tự khác nhau tùy cơ sở.", "en": "An example of a day shift. Times and order differ by facility." }
+    },
+    "bath": {
+      "title": "선배의 말",
+      "lead": "목욕과 화장실 돕는 일은 여기서 화면으로 보여 주지 않아요.",
+      "body": [
+        "목욕은 요일을 정해서 두 사람이 함께 도와 드려요.",
+        "문을 닫고, 몸을 수건으로 가려 드리는 것부터 해요.",
+        "화장실 가시는 것을 돕고 기저귀를 갈아 드리는 일도 요양보호사가 해요.",
+        "처음 한동안은 선배와 같이 해요."
+      ],
+      "hint": { "mn": "Усанд оруулах, бие засахад туслах ажил бас бий. Хаалгаа хааж, биеийг нь алчуураар халхалж өгнө. Эхэндээ ахлах ажилтантай хамт хийнэ.", "vi": "Công việc còn có giúp tắm và giúp đi vệ sinh. Đóng cửa và lấy khăn che người cho cụ. Thời gian đầu sẽ làm cùng người đi trước.", "en": "The job also includes helping with bathing and toileting. You close the door and cover the resident with a towel. At first you do it together with a senior worker." }
+    }
+  },
+  "scenes": [
+    {
+      "id": "arrival",
+      "title": "출근",
+      "minutes": 3,
+      "place": "office",
+      "steps": [
+        { "type": "line", "clip": "senior-welcome", "who": "senior",
+          "text": "어서 와요. 오늘 첫 출근이죠? 저는 정미경이에요. 오늘 하루 같이 다닐 거예요.",
+          "hint": { "mn": "Тавтай морил. Өнөөдөр анхны ажлын өдөр чинь, тийм үү? Намайг Жон Мигён гэдэг. Өнөөдөр бүтэн өдөр хамт явна.", "vi": "Chào em. Hôm nay là ngày đầu đi làm đúng không? Chị là Jeong Mi-gyeong. Hôm nay chị sẽ đi cùng em cả ngày.", "en": "Welcome. It's your first day, isn't it? I'm Jeong Mi-gyeong. I'll be with you all day today." } },
+        { "type": "say", "id": "intro", "listen": "senior-listen-office",
+          "prompt": "선배에게 자기소개를 해 보세요.",
+          "example": "안녕하세요. 저는 ○○○입니다. 오늘부터 일하게 됐습니다. 잘 부탁드립니다.",
+          "hint": { "mn": "Ахлах ажилтанд өөрийгөө танилцуул. Нэрээ хэлээд, өнөөдрөөс ажиллах болсноо хэл.", "vi": "Hãy tự giới thiệu với chị đi trước. Nói tên và nói rằng em bắt đầu làm từ hôm nay.", "en": "Introduce yourself to your senior. Say your name and that you start work today." },
+          "record": "자기소개 차례" },
+        { "type": "line", "clip": "senior-assign", "who": "senior",
+          "text": "반가워요. 오늘은 햇살방을 맡아요. 김순자 어르신, 최옥분 어르신 두 분이에요.",
+          "hint": { "mn": "Танилцсандаа таатай байна. Өнөөдөр «Хэтсал» өрөөг хариуцна. Ким Сүнжа настан, Чой Огбүн настан хоёр байгаа.", "vi": "Rất vui được gặp em. Hôm nay em phụ trách phòng Haetsal. Có hai cụ: cụ Kim Sun-ja và cụ Choi Ok-bun.", "en": "Nice to meet you. Today you look after the Haetsal Room. There are two residents: Ms. Kim Sun-ja and Ms. Choi Ok-bun." } },
+        { "type": "tour", "home": "office", "board": ["room", "dining", "nurse", "bath-door"],
+          "prompt": "일하기 전에 한 바퀴 둘러봐요. 가고 싶은 자리를 고르고, 점을 눌러 이름을 확인해 보세요.",
+          "hint": { "mn": "Ажил эхлэхээс өмнө тойрч үз. Очих газраа сонгоод, цэг дээр дарж нэрийг нь хар.", "vi": "Trước khi làm việc, hãy đi xem một vòng. Chọn nơi muốn đến và bấm vào chấm để xem tên.", "en": "Look around before work. Pick a place, then tap a dot to see its name." } }
+      ]
+    },
+    {
+      "id": "handover",
+      "title": "아침 인계",
+      "minutes": 2,
+      "place": "nurse-morning",
+      "steps": [
+        { "type": "line", "clip": "night-report-1", "who": "night",
+          "text": "김순자 어르신은 밤에 두 번 깨셨어요. 아침 약은 간호사 선생님이 드려요.",
+          "hint": { "mn": "Ким Сүнжа настан шөнө хоёр удаа сэрсэн. Өглөөний эмийг сувилагч өгнө.", "vi": "Cụ Kim Sun-ja đêm qua thức giấc hai lần. Thuốc buổi sáng do y tá cho uống.", "en": "Ms. Kim Sun-ja woke up twice during the night. The nurse gives her morning medicine." } },
+        { "type": "line", "clip": "night-report-2", "who": "night",
+          "text": "식사는 다진 식으로 나가요. 왼쪽이 불편하시니까, 일어나실 때 잘 봐 주세요.",
+          "hint": { "mn": "Хоолыг нь жижиглэж хэрчсэн байдлаар өгнө. Зүүн тал нь эвгүй тул босох үед нь сайн ажиглаарай.", "vi": "Bữa ăn của cụ là đồ ăn băm nhỏ. Bên trái của cụ yếu nên khi cụ đứng dậy hãy để ý kỹ.", "en": "Her meals are served minced. Her left side is weak, so watch her closely when she stands up." } },
+        { "type": "say", "id": "handover", "listen": "night-listen",
+          "prompt": "인계를 들었어요. 어떻게 할까요?",
+          "hint": { "mn": "Ээлж хүлээлцэх мэдээллийг сонслоо. Одоо яах вэ?", "vi": "Em vừa nghe bàn giao ca. Em sẽ làm gì?", "en": "You heard the handover. What will you do?" },
+          "options": [
+            { "id": "ask", "label": "모르는 말을 되묻는다",
+              "example": "죄송하지만, '다진 식'이 무엇입니까?",
+              "hint": { "mn": "Мэдэхгүй үгээ дахин асуух. «Тажин шиг гэж юу вэ?»", "vi": "Hỏi lại từ mình chưa hiểu. “‘Dajin sik’ là gì ạ?”", "en": "Ask about a word you don't know. \"Excuse me, what does 'dajin sik' mean?\"" },
+              "then": [
+                { "type": "line", "clip": "night-explain", "who": "night",
+                  "text": "음식을 잘게 다져서 드리는 식사예요. 씹기 힘드신 분께 드려요. 물어봐 줘서 고마워요.",
+                  "hint": { "mn": "Хоолыг жижиглэж хэрчээд өгдөг хоол. Зажлахад хэцүү хүмүүст өгдөг. Асуусанд баярлалаа.", "vi": "Đó là bữa ăn mà thức ăn được băm nhỏ. Dành cho người khó nhai. Cảm ơn em đã hỏi.", "en": "It's a meal with the food chopped very small, for people who have trouble chewing. Thank you for asking." } }
+              ] },
+            { "id": "confirm", "label": "들은 것을 다시 말해 확인한다",
+              "example": "밤에 두 번 깨셨고, 식사는 다진 식이고, 왼쪽이 불편하시다. 맞습니까?",
+              "hint": { "mn": "Сонссоноо давтан хэлж баталгаажуулах. «Шөнө хоёр удаа сэрсэн, хоол нь жижиглэсэн, зүүн тал нь эвгүй. Зөв үү?»", "vi": "Nhắc lại điều đã nghe để xác nhận. “Đêm thức hai lần, ăn đồ băm nhỏ, bên trái yếu. Đúng không ạ?”", "en": "Repeat what you heard to check. \"She woke twice, her meals are minced, her left side is weak. Is that right?\"" },
+              "then": [
+                { "type": "line", "clip": "night-confirm", "who": "night",
+                  "text": "네, 맞아요. 그렇게 다시 말해 주니까 저도 마음이 놓여요.",
+                  "hint": { "mn": "Тийм ээ, зөв. Ингэж давтаж хэлж өгөхөөр миний сэтгэл ч амар байна.", "vi": "Đúng rồi. Em nhắc lại như vậy thì chị cũng yên tâm.", "en": "Yes, that's right. When you repeat it like that, I feel at ease too." } }
+              ] },
+            { "id": "pass", "label": "인계가 바쁘니 일단 '네' 하고 넘어간다",
+              "example": "네, 알겠습니다.",
+              "hint": { "mn": "Ээлж хүлээлцэх ажил завгүй байгаа тул одоохондоо «за» гээд өнгөрөөх. «За, ойлголоо.»", "vi": "Lúc bàn giao ca đang bận nên tạm thời nói “vâng” rồi cho qua. “Vâng, em hiểu rồi.”", "en": "The handover is busy, so say \"yes\" for now and move on. \"Yes, I understand.\"" },
+              "then": [
+                { "type": "line", "clip": "night-pass", "who": "night",
+                  "text": "그래요. 모르는 말이 있으면 언제든 물어봐요.",
+                  "hint": { "mn": "За. Мэдэхгүй үг байвал хэзээ ч асуугаарай.", "vi": "Ừ. Có từ nào không hiểu thì cứ hỏi bất cứ lúc nào nhé.", "en": "All right. If there's a word you don't know, ask anytime." } }
+              ] }
+          ] }
+      ]
+    },
+    {
+      "id": "morning",
+      "title": "아침 인사와 식사",
+      "minutes": 3,
+      "place": "room-bed",
+      "steps": [
+        { "type": "line", "clip": "soonja-sleepy", "who": "soonja",
+          "text": "아이고… 조금만 더 잘게. 간밤에 잠을 통 못 잤어.",
+          "hint": { "mn": "Ээ дээ… Жаахан л унтчихъя. Урд шөнө огт унтаж чадаагүй.", "vi": "Ôi… cho bà ngủ thêm một chút. Đêm qua bà chẳng ngủ được gì cả.", "en": "Oh dear… let me sleep a little more. I hardly slept at all last night." } },
+        { "type": "say", "id": "wake", "listen": "soonja-listen-bed",
+          "prompt": "아침 식사 시간이 다 됐어요. 어떻게 할까요?",
+          "hint": { "mn": "Өглөөний хоолны цаг болж байна. Одоо яах вэ?", "vi": "Sắp đến giờ ăn sáng rồi. Em sẽ làm gì?", "en": "It's almost time for breakfast. What will you do?" },
+          "options": [
+            { "id": "later", "label": "까닭을 여쭙고 조금 뒤에 다시 온다",
+              "example": "어르신, 간밤에 잘 못 주무셨어요? 그럼 조금 더 주무세요. 이십 분 뒤에 다시 올게요.",
+              "hint": { "mn": "Шалтгааныг нь асуугаад, хэсэг хугацааны дараа эргэж ирэх. «Шөнө сайн унтаж чадаагүй юу? Тэгвэл жаахан унт. Хорин минутын дараа дахиж ирье.»", "vi": "Hỏi lý do rồi lát nữa quay lại. “Đêm qua cụ không ngủ được ạ? Vậy cụ ngủ thêm chút nữa. Hai mươi phút nữa cháu quay lại.”", "en": "Ask why, and come back a little later. \"Didn't you sleep well? Then rest a bit more. I'll come back in twenty minutes.\"" },
+              "then": [
+                { "type": "line", "clip": "soonja-thanks", "who": "soonja",
+                  "text": "그래, 고마워. 조금만 더 누워 있을게.",
+                  "hint": { "mn": "За, баярлалаа. Жаахан л хэвтэж байя.", "vi": "Ừ, cảm ơn cháu. Bà nằm thêm một chút thôi.", "en": "All right, thank you. I'll lie down just a little longer." } }
+              ] },
+            { "id": "now", "label": "다른 분들 식사 시간에 맞춰 지금 일어나시게 한다",
+              "example": "어르신, 식사 시간이에요. 다른 분들도 가셨어요. 지금 일어나셔야 해요.",
+              "hint": { "mn": "Бусад хүмүүсийн хоолны цагт тааруулж одоо босгох. «Хоолны цаг боллоо. Бусад нь явчихсан. Одоо босох хэрэгтэй.»", "vi": "Cho cụ dậy ngay để kịp giờ ăn của mọi người. “Đến giờ ăn rồi ạ. Mọi người đi cả rồi. Cụ phải dậy bây giờ.”", "en": "Have her get up now to match everyone's mealtime. \"It's time to eat. The others have gone. You need to get up now.\"" },
+              "then": [
+                { "type": "line", "clip": "soonja-reluctant", "who": "soonja",
+                  "text": "…알았어, 알았어. 일어나면 되잖아.",
+                  "hint": { "mn": "…За за, мэдлээ. Босчихвол болоо биз дээ.", "vi": "…Biết rồi, biết rồi. Bà dậy là được chứ gì.", "en": "…All right, all right. I'll get up, then." } }
+              ] }
+          ] },
+        { "type": "move", "place": "room-table", "caption": "아침 식사" },
+        { "type": "line", "clip": "soonja-slow", "who": "soonja",
+          "text": "내가 숟가락질이 느려서… 기다리게 해서 미안해.",
+          "hint": { "mn": "Би халбагаа удаан хөдөлгөдөг болохоор… Хүлээлгэсэнд уучлаарай.", "vi": "Bà cầm thìa chậm lắm… xin lỗi vì để cháu phải chờ.", "en": "I'm slow with my spoon… I'm sorry to keep you waiting." } },
+        { "type": "say", "id": "meal", "listen": "soonja-listen-table",
+          "prompt": "어르신이 천천히 드시고 계세요. 어떻게 할까요?",
+          "hint": { "mn": "Настан удаан хооллож байна. Одоо яах вэ?", "vi": "Cụ đang ăn rất chậm. Em sẽ làm gì?", "en": "She is eating slowly. What will you do?" },
+          "options": [
+            { "id": "wait", "label": "스스로 드시게 곁에서 기다린다",
+              "example": "괜찮아요, 어르신. 천천히 드세요. 제가 옆에 있을게요.",
+              "hint": { "mn": "Өөрөө идэхийг нь хажууд нь хүлээх. «Зүгээр ээ. Аажуухан идээрэй. Би хажууд чинь байя.»", "vi": "Ở bên cạnh chờ cụ tự ăn. “Không sao đâu ạ. Cụ cứ ăn từ từ. Cháu ở ngay bên cạnh.”", "en": "Wait beside her so she can eat by herself. \"It's all right. Take your time. I'll stay right here.\"" },
+              "then": [
+                { "type": "line", "clip": "soonja-proud", "who": "soonja",
+                  "text": "고마워. 내 손으로 먹으니까 밥맛이 좋네.",
+                  "hint": { "mn": "Баярлалаа. Өөрийн гараар идэхээр хоол амттай байна.", "vi": "Cảm ơn cháu. Tự tay mình ăn thì thấy ngon miệng.", "en": "Thank you. Food tastes good when I eat with my own hands." } }
+              ] },
+            { "id": "feed", "label": "힘들어 보이시니 제가 떠 드린다",
+              "example": "어르신, 힘드시죠? 제가 떠 드릴게요.",
+              "hint": { "mn": "Ядарч байгаа харагдаж байгаа тул би халбагадаж өгөх. «Ядарч байна уу? Би халбагадаж өгье.»", "vi": "Thấy cụ có vẻ mệt nên xúc cho cụ ăn. “Cụ mệt phải không ạ? Để cháu xúc cho cụ.”", "en": "She looks tired, so feed her yourself. \"You must be tired. Let me feed you.\"" },
+              "then": [
+                { "type": "line", "clip": "soonja-hesitate", "who": "soonja",
+                  "text": "…아니야, 내가 할 수 있는데.",
+                  "hint": { "mn": "…Үгүй ээ, би өөрөө чадна шүү дээ.", "vi": "…Không, bà tự làm được mà.", "en": "…No, I can do it myself." } }
+              ] }
+          ] }
+      ]
+    },
+    {
+      "id": "afternoon",
+      "title": "오후",
+      "minutes": 3,
+      "place": "dining-okbun",
+      "steps": [
+        { "type": "line", "clip": "okbun-home", "who": "okbun",
+          "text": "나 이제 집에 가야 돼. 애들 저녁 해 줘야지. 문 좀 열어 줘.",
+          "hint": { "mn": "Би одоо гэртээ харих ёстой. Хүүхдүүддээ оройн хоол хийж өгнө. Хаалга онгойлгоод өгөөч.", "vi": "Giờ bà phải về nhà. Phải nấu cơm tối cho các con. Mở cửa giúp bà.", "en": "I have to go home now. I need to make dinner for my children. Open the door for me." } },
+        { "type": "say", "id": "home", "listen": "okbun-listen",
+          "prompt": "최옥분 어르신은 치매가 있으세요. 어떻게 말할까요?",
+          "hint": { "mn": "Чой Огбүн настан зөнөгрөлтэй. Юу гэж хэлэх вэ?", "vi": "Cụ Choi Ok-bun bị sa sút trí tuệ. Em sẽ nói thế nào?", "en": "Ms. Choi Ok-bun has dementia. What will you say?" },
+          "options": [
+            { "id": "listen", "label": "마음을 받아 주고 이야기를 듣는다",
+              "example": "집에 가고 싶으세요, 어르신? 아이들 저녁이 걱정되시는군요. 아이들 이야기 좀 들려주세요.",
+              "hint": { "mn": "Сэтгэлийг нь ойлгож, яриаг нь сонсох. «Гэртээ харимаар байна уу? Хүүхдүүдийнхээ оройн хоолонд санаа зовж байна уу. Хүүхдүүдийнхээ тухай яриач.»", "vi": "Đón nhận cảm xúc của cụ và nghe cụ kể. “Cụ muốn về nhà ạ? Cụ đang lo bữa tối cho các con. Cụ kể cho cháu nghe về các con đi ạ.”", "en": "Accept her feelings and listen. \"You want to go home? You're worried about your children's dinner. Tell me about your children.\"" },
+              "then": [
+                { "type": "line", "clip": "okbun-story", "who": "okbun",
+                  "text": "우리 막내가 된장찌개를 제일 좋아해. 밥을 두 그릇씩 먹었어.",
+                  "hint": { "mn": "Манай отгон хүү шар буурцгийн шөлөнд хамгийн дуртай. Хоёр аяга будаа иддэг байсан.", "vi": "Thằng út nhà bà thích canh tương đậu nhất. Nó ăn hai bát cơm liền.", "en": "My youngest loves soybean paste stew the most. He used to eat two bowls of rice." } }
+              ] },
+            { "id": "block", "label": "밖은 위험하니 지금은 못 가신다고 말씀드린다",
+              "example": "어르신, 밖은 위험해요. 지금은 못 가세요.",
+              "hint": { "mn": "Гадаа аюултай тул одоо явж болохгүй гэж хэлэх. «Гадаа аюултай. Одоо явж болохгүй.»", "vi": "Bên ngoài nguy hiểm nên nói với cụ là bây giờ chưa đi được. “Bên ngoài nguy hiểm lắm ạ. Bây giờ cụ chưa đi được đâu.”", "en": "It's dangerous outside, so tell her she can't go now. \"It's dangerous outside. You can't go now.\"" },
+              "then": [
+                { "type": "line", "clip": "okbun-upset", "who": "okbun",
+                  "text": "왜 못 가! 애들이 기다린단 말이야!",
+                  "hint": { "mn": "Яагаад болохгүй гэж! Хүүхдүүд хүлээж байна шүү дээ!", "vi": "Sao lại không đi được! Các con đang chờ bà mà!", "en": "Why can't I go! My children are waiting for me!" } }
+              ] }
+          ] },
+        { "type": "move", "place": "dining-soonja", "caption": "그때, 옆자리에서" },
+        { "type": "line", "clip": "soonja-stumble", "who": "soonja", "action": true,
+          "text": "김순자 어르신이 일어서다 비틀거리신다. 식탁을 짚고 다시 앉으신다.",
+          "hint": { "mn": "Ким Сүнжа настан босох гээд гуйвав. Ширээнээс тулаад буцаж суулаа.", "vi": "Cụ Kim Sun-ja đang đứng dậy thì loạng choạng. Cụ vịn vào bàn rồi ngồi xuống lại.", "en": "Ms. Kim Sun-ja starts to stand and staggers. She holds the table and sits back down." } },
+        { "type": "say", "id": "check", "listen": "soonja-listen-dining",
+          "prompt": "김순자 어르신께 말을 건네 보세요.",
+          "example": "어르신, 괜찮으세요? 다치신 데는 없으세요?",
+          "hint": { "mn": "Ким Сүнжа настанд хандаж үг хэл. Зүгээр эсэх, гэмтсэн газар байгаа эсэхийг асуу.", "vi": "Hãy nói chuyện với cụ Kim Sun-ja. Hỏi xem cụ có sao không, có bị đau ở đâu không.", "en": "Speak to Ms. Kim Sun-ja. Ask whether she is all right and whether she is hurt." },
+          "record": "비틀거리신 어르신께 말을 건네는 차례" },
+        { "type": "line", "clip": "soonja-ok", "who": "soonja",
+          "text": "괜찮아, 괜찮아. 조금 어지러웠어.",
+          "hint": { "mn": "Зүгээр, зүгээр. Жаахан толгой эргэсэн.", "vi": "Không sao, không sao. Bà hơi chóng mặt một chút.", "en": "I'm fine, I'm fine. I was a little dizzy." } }
+      ]
+    },
+    {
+      "id": "evening",
+      "title": "저녁 인계",
+      "minutes": 2,
+      "requires": ["morning", "afternoon"],
+      "place": "nurse-evening",
+      "steps": [
+        { "type": "line", "clip": "senior-ask", "who": "senior",
+          "text": "오늘 하루 수고 많았어요. 두 분 어르신, 오늘 어떠셨어요? 본 대로 말해 줘요.",
+          "hint": { "mn": "Өнөөдөр их ажиллалаа. Хоёр настан өнөөдөр ямар байсан бэ? Харснаараа хэлээрэй.", "vi": "Hôm nay em vất vả rồi. Hai cụ hôm nay thế nào? Em thấy sao thì nói vậy nhé.", "en": "You worked hard today. How were the two residents? Tell me what you saw." } },
+        { "type": "report", "id": "report", "listen": "senior-listen-nurse",
+          "prompt": "오늘 본 일 가운데 선배에게 보고할 것을 고르고, 그대로 말해 보세요.",
+          "hint": { "mn": "Өнөөдөр харсан зүйлсээсээ ахлах ажилтанд мэдээлэх зүйлээ сонгоод, тэр чигээр нь хэл.", "vi": "Trong những việc em thấy hôm nay, hãy chọn điều cần báo cáo với chị đi trước rồi nói đúng như vậy.", "en": "Choose what to report to your senior from what you saw today, and say it." },
+          "items": [
+            { "id": "sleep", "when": { "wake": "later" },
+              "text": "김순자 어르신이 아침에 더 주무시고 싶어 하셔서, 이십 분 뒤에 다시 갔습니다.",
+              "hint": { "mn": "Ким Сүнжа настан өглөө дахиад унтмаар байсан тул хорин минутын дараа эргэж очсон.", "vi": "Buổi sáng cụ Kim Sun-ja muốn ngủ thêm nên hai mươi phút sau em mới quay lại.", "en": "Ms. Kim wanted to sleep more in the morning, so I went back twenty minutes later." } },
+            { "id": "sleep", "when": { "wake": "now" },
+              "text": "김순자 어르신이 아침에 더 주무시고 싶어 하셨는데, 식사 시간이라 일어나시게 했습니다.",
+              "hint": { "mn": "Ким Сүнжа настан өглөө дахиад унтмаар байсан ч хоолны цаг болсон тул босгосон.", "vi": "Buổi sáng cụ Kim Sun-ja muốn ngủ thêm, nhưng đến giờ ăn nên em đã bảo cụ dậy.", "en": "Ms. Kim wanted to sleep more in the morning, but it was mealtime, so I had her get up." } },
+            { "id": "meal", "when": { "meal": "wait" },
+              "text": "아침 식사는 천천히, 스스로 다 드셨습니다.",
+              "hint": { "mn": "Өглөөний хоолоо аажуухан, өөрөө бүгдийг идсэн.", "vi": "Bữa sáng cụ ăn chậm và tự ăn hết.", "en": "She ate breakfast slowly and finished it by herself." } },
+            { "id": "meal", "when": { "meal": "feed" },
+              "text": "아침 식사는 제가 떠 드렸습니다.",
+              "hint": { "mn": "Өглөөний хоолыг нь би халбагадаж өгсөн.", "vi": "Bữa sáng em đã xúc cho cụ ăn.", "en": "I spoon-fed her breakfast." } },
+            { "id": "home",
+              "text": "최옥분 어르신이 오후에 집에 가고 싶다고 하셨습니다.",
+              "hint": { "mn": "Чой Огбүн настан үдээс хойш гэртээ харимаар байна гэсэн.", "vi": "Buổi chiều cụ Choi Ok-bun nói muốn về nhà.", "en": "In the afternoon Ms. Choi said she wanted to go home." } },
+            { "id": "stumble", "key": true,
+              "text": "김순자 어르신이 오후에 식당에서 일어서다 비틀거리셨습니다. 어지럽다고 하셨고, 넘어지지는 않으셨습니다.",
+              "hint": { "mn": "Ким Сүнжа настан үдээс хойш хоолны өрөөнд босох гээд гуйвсан. Толгой эргэсэн гэсэн, унаагүй.", "vi": "Buổi chiều ở phòng ăn, cụ Kim Sun-ja đứng dậy thì loạng choạng. Cụ nói bị chóng mặt, và cụ không bị ngã.", "en": "In the afternoon Ms. Kim staggered when she stood up in the dining room. She said she felt dizzy, and she did not fall." } }
+          ],
+          "record": { "included": "비틀거리신 일을 보고에 넣었다", "omitted": "비틀거리신 일을 보고에 넣지 않았다" },
+          "then": {
+            "included": [
+              { "type": "line", "clip": "senior-thanks-report", "who": "senior",
+                "text": "비틀거리신 걸 말해 줘서 고마워요. 넘어지지 않으셔도 꼭 알려 줘야 해요. 다음에는 그 자리에서 바로 간호사 선생님께 말해 줘요.",
+                "hint": { "mn": "Гуйвсныг нь хэлсэнд баярлалаа. Унаагүй байсан ч заавал мэдэгдэх ёстой. Дараагийн удаа тэр дор нь шууд сувилагчид хэлээрэй.", "vi": "Cảm ơn em đã báo việc cụ loạng choạng. Dù cụ không ngã thì cũng nhất định phải báo. Lần sau em hãy báo ngay cho y tá tại chỗ nhé.", "en": "Thank you for telling me she staggered. Even if she didn't fall, you must always let us know. Next time, tell the nurse right away, on the spot." } }
+            ],
+            "omitted": [
+              { "type": "line", "clip": "senior-ask-stumble", "who": "senior",
+                "text": "김순자 어르신이 오후에 비틀거리셨다면서요. 넘어지지 않으셔도 꼭 알려야 해요. 다음에는 그 자리에서 바로 간호사 선생님께 말해 줘요.",
+                "hint": { "mn": "Ким Сүнжа настан үдээс хойш гуйвсан гэсэн. Унаагүй байсан ч заавал мэдэгдэх ёстой. Дараагийн удаа тэр дор нь шууд сувилагчид хэлээрэй.", "vi": "Chị nghe nói buổi chiều cụ Kim Sun-ja bị loạng choạng. Dù cụ không ngã thì em cũng nhất định phải báo. Lần sau em hãy báo ngay cho y tá tại chỗ nhé.", "en": "I heard Ms. Kim staggered this afternoon. Even if she didn't fall, you must always tell us. Next time, tell the nurse right away, on the spot." } }
+            ]
+          } }
+      ]
+    }
+  ],
+  "closing": {
+    "place": "office",
+    "lead": "맞고 틀린 답을 가리는 자리가 아니에요. 내가 고른 것과 요양보호사가 지키는 것을 나란히 봐요.",
+    "principles": [
+      { "id": "decide", "title": "어르신이 정하신다", "body": "언제 일어나고 무엇을 할지는 어르신이 정하세요. 요양보호사는 먼저 여쭙고, 그 뜻을 따를 길을 찾아요." },
+      { "id": "adult", "title": "어른으로 대한다", "body": "스스로 하실 수 있는 일은 느려도 기다려요. 어르신의 말을 막거나 아이에게 하듯 말하지 않아요." },
+      { "id": "together", "title": "혼자 판단하지 않는다", "body": "모르는 말은 되묻고, 들은 것은 다시 말해 확인해요. 확실하지 않으면 도움을 청해요." },
+      { "id": "report", "title": "본 대로 적고 말한다", "body": "넘어지지 않았어도 넘어질 뻔한 일은 그 자리에서 바로 알려요. 본 사실을 그대로 말해요." }
+    ],
+    "forks": [
+      { "id": "handover", "scene": "아침 인계", "principle": "together",
+        "mine": { "ask": "모르는 말을 되물었어요.", "confirm": "들은 것을 다시 말해 확인했어요.", "pass": "일단 '네' 하고 넘어갔어요." },
+        "say": "죄송하지만, '다진 식'이 무엇입니까?" },
+      { "id": "wake", "scene": "아침 인사", "principle": "decide",
+        "mine": { "later": "까닭을 여쭙고 조금 뒤에 다시 오겠다고 했어요.", "now": "다른 분들 식사 시간에 맞춰 지금 일어나시게 했어요." },
+        "say": "조금 더 주무세요. 이십 분 뒤에 다시 올게요." },
+      { "id": "meal", "scene": "아침 식사", "principle": "adult",
+        "mine": { "wait": "스스로 드시게 곁에서 기다렸어요.", "feed": "힘들어 보이셔서 제가 떠 드렸어요." },
+        "say": "천천히 드세요. 제가 옆에 있을게요." },
+      { "id": "home", "scene": "오후", "principle": "adult",
+        "mine": { "listen": "마음을 받아 주고 이야기를 들었어요.", "block": "밖은 위험하니 지금은 못 가신다고 말씀드렸어요." },
+        "say": "집에 가고 싶으세요? 아이들 이야기 좀 들려주세요." },
+      { "id": "report", "scene": "저녁 인계", "principle": "report",
+        "mine": { "included": "비틀거리신 일을 보고에 넣었어요.", "omitted": "비틀거리신 일을 보고에 넣지 않았어요." },
+        "say": "오후에 일어서다 비틀거리셨습니다. 어지럽다고 하셨고, 넘어지지는 않으셨습니다." }
+    ],
+    "conditions": {
+      "lead": "좋게만 보여 주지 않아요. 지원하기 전에 알아 둘 것들이에요.",
+      "items": [
+        { "title": "교대 근무", "body": "요양원은 밤에도 돌아가요. 낮, 저녁, 밤 근무를 돌아가며 해요. 근무표는 시설마다 달라요." },
+        { "title": "몸을 돕는 일", "body": "화장실 가시는 것과 목욕을 돕고, 기저귀를 갈아 드려요. 처음에는 선배와 같이 해요." },
+        { "title": "체력", "body": "오래 서서 일하고, 어르신을 부축하는 일이 많아요." },
+        { "title": "일하는 시간과 임금", "body": "시설 요양보호사는 한 달에 평균 164.7시간 일하고 219.8만 원을 받아요.", "source": "보건복지부 2025년 장기요양 실태조사, 2026년 8월 보도" }
+      ]
+    },
+    "reflection": {
+      "hardLabel": "이 일에서 힘들 것 같은 점",
+      "hardHelp": "한국어로 쓰기 어려우면 모국어로 써도 돼요.",
+      "decisionLabel": "오늘 해 보니",
+      "decisions": [
+        { "id": "more", "label": "이 일을 더 알아보겠다" },
+        { "id": "unsure", "label": "아직 모르겠다" },
+        { "id": "not-me", "label": "나와 맞지 않는다" }
+      ],
+      "decisionNote": "「나와 맞지 않는다」도 좋은 결과예요. 미리 알고 고르려고 하는 체험이에요."
+    },
+    "ladder": {
+      "lead": "준비한 것을 본인이 적어요. 증빙은 지원할 때 본인이 따로 내요.",
+      "items": [
+        { "id": "topik", "label": "TOPIK 급수와 성적 날짜", "placeholder": "예: 3급, 2026년 10월" },
+        { "id": "training", "label": "요양보호사 교육과 자격", "placeholder": "예: 요양보호사 교육 수료, 자격시험 준비 중" },
+        { "id": "degree", "label": "학위", "placeholder": "예: 전문학사 2027년 2월 졸업 예정" },
+        { "id": "visa", "label": "체류자격", "placeholder": "예: D-2" }
+      ]
+    },
+    "next": { "label": "요양보호사 면접 연습으로", "body": "체험을 마쳤으면 세 면접관 앞에서 지원 이유를 말해 봐요.", "href": "../interview/film/rehearsal.html" }
+  }
+}

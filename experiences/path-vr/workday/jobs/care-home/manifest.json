@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "workday-care-home",
+  "status": "making",
+  "title": "요양원 첫 출근",
+  "projection": "rectilinear-mono",
+  "stereo": false,
+  "source": {
+    "status": "making",
+    "provider": "Google Flow",
+    "model": "Omni 1.2 Flash",
+    "generationDate": "2026-11-21",
+    "reviewScope": "영상마다 길이와 소리 줄기, 대사 받아쓰기 대조, 시작과 끝 프레임, 배경 고정(still)을 봤다. 헤드셋과 실제 휴대폰 확인은 아직이다."
+  },
+  "notice": "인물과 장소는 AI로 만든 그림과 영상입니다. 실제 사람이나 시설이 아닙니다.",
+  "clips": [
+    {
+      "id": "senior-welcome",
+      "src": "clips/senior-welcome.mp4",
+      "file": "clips/senior-welcome.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": false,
+      "dialogue": "어서 와요. 오늘 첫 출근이죠? 저는 정미경이에요. 오늘 하루 같이 다닐 거예요.",
+      "place": "office",
+      "loop": false,
+      "durationSeconds": 8.04,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 790097,
+      "sha256": "cad6f9d463eeb8499b334c250f570f0f8acf38dfca8f2ac562d70b1c6f932cad",
+      "speechEndSeconds": 7.61,
+      "answerStartSeconds": 7.89,
+      "transition": {
+        "headHoldMs": 744,
+        "tailHoldMs": 429,
+        "validated": false
+      },
+      "still": {
+        "outside": 4.29,
+        "shift": 0
+      },
+      "brightnessTakenOut": 3.4
+    }
+  ]
+}
