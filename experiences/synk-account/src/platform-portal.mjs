@@ -1131,6 +1131,7 @@ export function mountWebPortalHost({
   onTrackAppLaunch,
   onEnsureEnteredRoute,
   onActiveChange,
+  onAssignedSpaces,
   companyTransport = null,
   companyBoundaries: customBoundaries = null,
 } = {}) {
@@ -2472,6 +2473,46 @@ export function mountWebPortalHost({
     })();
   }
 
+  // 고르기 화면 없이 들어간 뒤 배정을 조용히 확인한다. 회사 공간은 열지 않고, 확인된 공간만 플랫폼에 알려 배정된 계정에만 바로가기를 세운다.
+  // 확인하지 못하면 바로가기를 두지 않는다. 그동안 계정이 바뀌었으면 결과를 버린다(유호님 11-21 「배정된 계정에만 링크」, PC는 구 곁 펼침)
+  let assignedLookupSeq = 0;
+  function lookupAssignedSpaces(accountKey) {
+    if (typeof onAssignedSpaces !== 'function' || disposed) return;
+    const seq = ++assignedLookupSeq;
+    const boundAccount = verifyBoundAccount(accountKey);
+    const liveIdentity = boundAccount?.identity?.();
+    const binding = resolveCurrentCompanyBinding();
+    const hasCustomResolver = typeof customBoundaries?.resolveAssignedDestination === 'function';
+    if (!boundAccount || liveIdentity?.signedIn !== true || binding.mismatch || (!binding.accountId && !hasCustomResolver)) return;
+    const report = destinations => {
+      if (disposed || seq !== assignedLookupSeq || !verifyBoundAccount(accountKey)) return;
+      const after = resolveCurrentCompanyBinding();
+      if (after.mismatch || after.accountGeneration !== binding.accountGeneration) return;
+      try { onAssignedSpaces({ accountKey, destinations }); } catch { /* 플랫폼 그리기 실패가 입장을 흔들지 않게 한다 */ }
+    };
+    let pending;
+    try {
+      pending = boundaries.resolveAssignedDestination({
+        identity: liveIdentity,
+        accountKey,
+        accountGeneration: binding.accountGeneration,
+        expectedAccountId: binding.accountId,
+        interactiveRecovery: false,
+      });
+    } catch {
+      report([]);
+      return;
+    }
+    Promise.resolve(pending).then(assigned => {
+      const res = assigned?.ok === true ? assigned.result : null;
+      const confirmed = res && (res.status === 'resolved' || res.status === 'partial') && Array.isArray(res.destinations);
+      const destinations = confirmed
+        ? [...new Set(res.destinations.map(normalizePortalWorkspaceDestination).filter(Boolean))]
+        : [];
+      report(destinations);
+    }, () => report([]));
+  }
+
   async function refreshWorkspaceAfterReturn({
     accountKey,
     generation,
@@ -2821,8 +2862,8 @@ export function mountWebPortalHost({
       return { ok: true, action: 'purpose' };
     },
 
-    // 로그인 뒤에는 작업 공간 고르기도 제품 고르기도 없이 플랫폼으로 들어간다. 배정을 조회하지 않고 회사 공간을 열지 않는다.
-    // 배정된 사람은 플랫폼의 앱 목록에서 Workspace · PULSE로 옮겨 가고, 처음 오는 사람은 초대코드로만 들어온다(유호님 11-21, PC 앱과 같게).
+    // 로그인 뒤에는 작업 공간 고르기도 제품 고르기도 없이 플랫폼으로 들어간다. 회사 공간은 열지 않는다.
+    // 들어간 뒤 배정을 조용히 한 번 조회해(lookupAssignedSpaces) 배정된 계정에만 홈 「회사 공간」 칸을 세운다. 처음 오는 사람은 초대코드로만 들어온다(유호님 11-21, PC 앱과 같게).
     // 가려던 주소(#solio/… 같은 딥링크)가 있으면 그대로 두고, 없으면 홈이다. 온보딩이 남은 계정은 묻지 않았다는 값을 남긴다
     // 실패 글은 여기서 채운다. 얼굴의 기본 글은 「배정된 작업 공간을 …」이라 이제 틀린 까닭이 된다(카본 web-no-chooser-20261121 A1)
     async onEnter({ accountKey }) {
@@ -2842,6 +2883,7 @@ export function mountWebPortalHost({
           if (!verifyBoundAccount(accountKey)) return accountChanged;
         }
         onEnsureEnteredRoute?.();
+        lookupAssignedSpaces(accountKey);
         return { ok: true };
       } catch {
         return enterFailed;

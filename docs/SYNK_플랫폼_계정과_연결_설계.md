@@ -36,8 +36,8 @@
 - PC 앱은 로그인하면 늘 솔리오로 들어간다. 배정은 그대로 조회하지만 회사 공간을 열지 않고, 확인된 공간을 펼침 목록에만 넘긴다.
 - 배정 조회가 실패해도(추가 로그인 필요, 다른 계정, 확인 불가) 로그인을 붙잡지 않는다. 펼침에는 확인된 공간만 보인다.
 - 처음 오는 사람은 묻는 화면의 초대코드로만 Workspace와 PULSE에 들어온다.
-- 웹 계정 화면(synk.im/account/platform.html)은 로그인하면 배정을 묻지 않고, 작업 공간 고르기와 제품 고르기(SHIFT · 솔리오 · WORLD · PATH) 없이 플랫폼으로 들어간다. 가려던 주소(딥링크)가 있으면 그 주소, 없으면 홈이다. 온보딩이 남은 계정은 묻지 않았다는 값(not-asked)을 남긴다. 배정된 사람은 플랫폼 앱 목록의 Workspace · PULSE로 옮겨 간다. 로그인하지 않은 손님의 「둘러보기」 제품 고르기는 그대로다.
-- 웹 원천은 `experiences/synk-account/src/platform-portal.mjs`의 `onEnter`이고, 들어가는 동안의 낭독기 글은 `desktop/renderer/portal-entry.mjs`가 「계정을 확인하고 들어가고 있어요.」로 알린다. 시험은 `experiences/synk-account/tests/company-entry-host-binding.test.mjs`의 「web sign-in …」과 `platform-returning-session.test.mjs`다.
+- 웹 계정 화면(synk.im/account/platform.html)은 로그인하면 작업 공간 고르기와 제품 고르기(SHIFT · 솔리오 · WORLD · PATH) 없이 플랫폼으로 들어가고, 회사 공간을 열지 않는다. 가려던 주소(딥링크)가 있으면 그 주소, 없으면 홈이다. 온보딩이 남은 계정은 묻지 않았다는 값(not-asked)을 남긴다. 들어간 뒤 배정을 조용히 한 번 조회해, 배정된 계정에만 홈 선반 아래에 「회사 공간」 칸(Workspace · PULSE 바로가기)을 세운다. 조회가 실패하거나 그사이 계정이 바뀌면 칸을 세우지 않는다. 로그인하지 않은 손님의 「둘러보기」 제품 고르기는 그대로다.
+- 웹 원천은 `experiences/synk-account/src/platform-portal.mjs`의 `onEnter`와 `lookupAssignedSpaces`, `platform.mjs`의 `companySpacesSection`이고, 들어가는 동안의 낭독기 글은 `desktop/renderer/portal-entry.mjs`가 「계정을 확인하고 들어가고 있어요.」로 알린다. 시험은 `experiences/synk-account/tests/company-entry-host-binding.test.mjs`의 「web sign-in …」과 `platform-returning-session.test.mjs`다.
 - 원천은 `desktop/renderer/portal-host.mjs`의 `onEnter`와 `enterPersonalAfterAssignment`, `orb-face.mjs`의 `triggerEnter`다. 시험은 `desktop/tests/orb-face-host.test.mjs`, 화면 확인은 `desktop/tools/orb-face-browser-qa.cjs`의 4~6번이다.
 
 <a id="solio-20261114"></a>

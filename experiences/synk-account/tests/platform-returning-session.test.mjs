@@ -1111,7 +1111,7 @@ test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 �
   assert.equal(newTabSessionStorage.getItem(PLATFORM_LOGIN_INTENT), null);
   assert.equal(newTabSessionStorage.getItem(PLATFORM_RESUME_SUBJECT_KEY), null);
 
-  // 플랫폼 복귀 후: 검정 구가 자동으로 확대(zooming)된 뒤 배정 작업(Workspace)으로 바로 진입한다.
+  // 플랫폼 복귀 후: 검정 구가 자동으로 확대(zooming)된 뒤 배정을 묻지 않고 고르기 화면 없이 플랫폼으로 바로 들어간다.
   const openedDestinations = [];
   let finishDestinationLookup;
   const destinationLookup = new Promise(resolve => { finishDestinationLookup = resolve; });
@@ -1165,7 +1165,7 @@ test('기존 유효 중앙 Google/SYNK ID 로그인 사용자는 새 탭에서 �
   dom2.stepAnimationFrames(Math.ceil(PORTAL_DURATION_MS / 2) + 50, 6);
   await flushMicrotasks();
 
-  // 배정을 묻지 않고 고르기 화면 없이 바로 플랫폼으로 들어간다. 회사 공간은 열지 않는다(유호님 11-21).
+  // 고르기 화면 없이 바로 플랫폼으로 들어가고 회사 공간은 열지 않는다(유호님 11-21). 이 시험은 onAssignedSpaces를 넘기지 않아 조용한 배정 조회도 0회다.
   assert.equal(host2.getState().phase, 'entered');
   assert.equal(lookupCalls, 0);
   assert.deepEqual(openedDestinations, []);

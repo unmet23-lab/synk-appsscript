@@ -33,6 +33,16 @@ let category = 'all', collection = 'all', sort = 'default', query = platformRout
 const launches = new Map();
 let browserAccount = null, portalHost = null, startup = 0, startupPromise = null, pageActive = true, identity = { status: 'loading', displayName: '', message: '로그인 상태를 확인하고 있어요.' };
 let nativeIdentity = { status: 'loading' }, nativeIdentityVersion = 0;
+// 배정된 계정에만 세우는 회사 공간 바로가기(유호님 11-21 「배정된 계정에만 링크」). 로그인 뒤 고르기 화면을 없앴으므로 배정된 사람은 여기서 옮겨 간다. PC는 구 곁 펼침이 같은 일을 한다
+let companySpaces = { accountId: null, destinations: [] };
+const COMPANY_SPACES = [['/', 'workspace', 'Workspace', '팀이 함께 일하는 곳', 'https://workspace.synk.im/'], ['/pulse-app/', 'pulse', 'PULSE', '고객과 함께 만드는 곳', 'https://workspace.synk.im/pulse-app/']];
+function companySpacesSection() {
+ const id = browserAccount?.identity?.();
+ if (!(id?.signedIn === true && id.status === 'signed-in' && id.accountId && id.accountId === companySpaces.accountId)) return '';
+ const rows = COMPANY_SPACES.filter(([dest]) => companySpaces.destinations.includes(dest));
+ if (!rows.length) return '';
+ return `<section class="block company-spaces" aria-labelledby="company-spaces-title"><div class="block-head"><h2 id="company-spaces-title">회사 공간</h2></div><ul class="rows solio-rows">${rows.map(([dest, key, name, text, href]) => `<li class="row"><a class="row-main" href="${esc(dest === '/' ? platformCompanyEntry(href, id) : href)}" data-company-space="${key}">${name}</a><p class="solio-row-text">${text}</p></li>`).join('')}</ul></section>`;
+}
 const insightIdentity=()=>typeof window.synkDesktop?.authStatus==='function'?nativeIdentity:browserAccount?.identity()||identity;
 const insightRequest=(operation,params)=>typeof window.synkDesktop?.authStatus==='function'?window.synkDesktop.accountRequest(operation,params):browserAccount.request(operation,params);
 const memberActivity=createMemberActivity({getIdentity:insightIdentity,request:insightRequest,getFavorites:()=>library.read().favorites});
@@ -116,6 +126,8 @@ function accountPanel() {
 }
 function showBrowserAccount(state) {
  identity = state;
+ // 로그아웃하거나 다른 계정이 되면 회사 공간 칸을 비운다. 같은 계정으로 다시 들어와도 새 조회가 끝나기 전에는 옛 칸을 그리지 않는다(카본 A1).
+ { const now=browserAccount?.identity?.(); if(state.status==='signed-out'||(now?.accountId&&now.accountId!==companySpaces.accountId))companySpaces={accountId:null,destinations:[]}; }
  const entry = document.querySelector('.account-entry');
  let label = entry.querySelector('[data-account-label]');
  if(!label){label=document.createElement('span');label.dataset.accountLabel='';entry.replaceChildren(...[entry.querySelector('img, .avatar'),label].filter(Boolean));}
@@ -172,13 +184,14 @@ function homePage() {
  // WORLD는 선반에 두지 않고(이 기기에 남은 최근 · 즐겨찾기 기록도) 선반 아래 휴대폰 칸으로 안내한다(2026-11-11).
  const raw=library.read(), state={...raw,recent:raw.recent.filter(item=>listedItem(item.id)),favorites:raw.favorites.filter(listedItem)}, hasShortcuts=state.recent.length||state.favorites.length;
  const mineIds=[...new Set([...state.recent.map(item=>item.id),...state.favorites])];
+ // 회사 공간 칸은 배정된 계정에만, 선반 아래에 둔다(유호님 11-21 「배정된 계정에만 링크」).
  // 솔리오 칸: 내 앱(최근 · 즐겨찾기, 셋까지) 뒤, PATH 앞. 처음 온 사람은 솔리오가 큰 첫 칸이고 PATH가 다음 칸이다.
  const mine=[];for(const id of mineIds){if(mine.length===3)break;const html=homeItem(id,!mine.length);if(html)mine.push(html);}
  const shelfItems=[...mine,solioHomeItem(!mine.length)];if(shelfItems.length<4&&!mineIds.includes('path')){const path=homeItem('path',false);if(path)shelfItems.push(path);}
  // 두 줄 인사(시안 A): 최근에 연 앱이 있으면 그 앱을 이어서 열자고, 없으면(손님 포함) 한 ID로 여는 곳이라고. 상대 날짜는 넣지 않는다.
  const last=itemById(state.recent[0]?.id), title=last?`최근에 연 ${esc(last.name.replace(/^SYNK /,''))},<br><span>이어서 열까요?</span>`:'SYNK 앱과 솔리오,<br><span>한 ID로 열어요.</span>';
  return `<section class="hello" aria-labelledby="home-title"><p class="who">${whoLine()}</p><h1 id="home-title">${title}</h1></section>`+accountPanel()
- + `<ul class="shelf home-shelf count-${shelfItems.length}" aria-label="내 앱과 솔리오">${shelfItems.join('')}</ul>${hasShortcuts?'':'<p class="shelf-note">솔리오 소개와 웹에서 여는 면접 연습을 먼저 두었어요.</p>'}`
+ + `<ul class="shelf home-shelf count-${shelfItems.length}" aria-label="내 앱과 솔리오">${shelfItems.join('')}</ul>${hasShortcuts?'':'<p class="shelf-note">솔리오 소개와 웹에서 여는 면접 연습을 먼저 두었어요.</p>'}`+companySpacesSection()
  + worldPhoneSection({qrSrc:'./assets/world-qr.svg',openHref:platformPublicEntry('world')});
 }
 // 옛 주소 #app/world(새소식 · 즐겨찾기 · 북마크)는 앱 소개 대신 같은 휴대폰 칸을 보인다.
@@ -313,6 +326,7 @@ portalHost=mountWebPortalHost({
  onRetryAuth:()=>refreshBrowserAccount(),
  onTrackAppLaunch:appId=>{dispatch({type:'launch',id:appId,mode:'web'});},
  onEnsureEnteredRoute:()=>{solioFollowLegacy();render();},
+ onAssignedSpaces:value=>{companySpaces={accountId:value?.accountKey||null,destinations:Array.isArray(value?.destinations)?value.destinations:[]};render();},
  onActiveChange:active=>{
   if(active){
    setMore(false);solioProfileSet(false);clearTimeout(timer);

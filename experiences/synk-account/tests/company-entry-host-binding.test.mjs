@@ -2212,22 +2212,22 @@ test('R7b: built-in default mountWebPortalHost boundaries complete guest invite 
 
 
 async function settleEntryHost() { for(let n=0;n<8;n++) await tick(); }
-for(const mode of ['pc'])for(const purpose of ['none','pending'])test('unassigned existing-user entry uses the product picker without creating onboarding '+mode+' '+purpose,async t=>{
+const mode='pc';for(const purpose of ['none','pending'])test('unassigned existing-user entry uses the product picker without creating onboarding '+mode+' '+purpose,async t=>{
  const dom=createFakeDomEnvironment(),writes=[],opened=[];let ensureCount=0;
  const identity={status:'signed-in',signedIn:true,accountId:account,accountKey:account,accountGeneration:1,onboarding:{purpose}};
  const auth={configured:true,status:'signed-in',signedIn:true,accountGeneration:generation,sessionGeneration:1,account:{synk_user_id:account},onboarding:{purpose}};
  let host;
- if(mode==='web')host=mountWebPortalHost({root:dom.root,getReducedMotion:()=>true,getStartupState:()=>({status:'signed-in'}),getAccount:()=>({identity:()=>identity,isAccountBound:id=>id===account,completePurposeOnboarding:async outcome=>{writes.push(outcome);return {ok:true};}}),companyBoundaries:{resolveAssignedDestination:async()=>({ok:true,result:{status:'resolved',destinations:[],unavailable:[]}}),cancelCompanyEntry(){}},onEnsureEnteredRoute:()=>{ensureCount++;},onNavigateHash:hash=>opened.push(hash)});
- else host=mountDesktopPortalHost({root:dom.root,getReducedMotion:()=>true,getAuth:()=>auth,bridge:{authStatus:async()=>auth,resolveCompanyEntryDestinations:async request=>({ok:true,requestId:request.requestId,accountGeneration:request.accountGeneration,result:{status:'resolved',destinations:[],unavailable:[]}}),cancelCompanyEntry:async()=>null,accountRequest:async(operation,params)=>{writes.push({operation,...params});return {ok:true};}},onEnsureEnteredView:()=>{ensureCount++;return {ok:true};},onOpenPurposeTarget:async id=>{opened.push(id);return {ok:true};}});
+ host=mountDesktopPortalHost({root:dom.root,getReducedMotion:()=>true,getAuth:()=>auth,bridge:{authStatus:async()=>auth,resolveCompanyEntryDestinations:async request=>({ok:true,requestId:request.requestId,accountGeneration:request.accountGeneration,result:{status:'resolved',destinations:[],unavailable:[]}}),cancelCompanyEntry:async()=>null,accountRequest:async(operation,params)=>{writes.push({operation,...params});return {ok:true};}},onEnsureEnteredView:()=>{ensureCount++;return {ok:true};},onOpenPurposeTarget:async id=>{opened.push(id);return {ok:true};}});
  t.after(()=>host.dispose());await settleEntryHost();assert.equal(host.getState().phase,'purpose','a verified unassigned account should remain in the black product picker');assert.equal(ensureCount,0);assert.deepEqual(writes,[]);
  dom.root.querySelector('[data-portal-purpose="solio"]').click();await settleEntryHost();assert.equal(host.getState().phase,'entered');assert.deepEqual(opened,[mode==='web'?'#solio':'solio']);
  assert.equal(writes.length,purpose==='pending'?1:0,'only an actually pending newcomer may write an onboarding outcome');
  if(purpose==='pending')assert.equal(mode==='web'?writes[0]:writes[0].outcome,'chosen');
 });
 
-// 웹 로그인 뒤에는 작업 공간 고르기도 제품 고르기도 없이 플랫폼으로 들어간다. 회사 배정을 묻지 않고 회사 공간을 열지 않는다(유호님 11-21, PC 앱과 같게)
+// 웹 로그인 뒤에는 작업 공간 고르기도 제품 고르기도 없이 플랫폼으로 들어가고 회사 공간을 열지 않는다(유호님 11-21, PC 앱과 같게).
+// 이 시험은 onAssignedSpaces를 넘기지 않아 조용한 배정 조회도 돌지 않는다. 운영 플랫폼이 넘기는 조회는 아래 「reports assigned spaces」 시험이 본다(Opus 대체 검수 F1)
 for (const destinations of [[], ['/'], ['/', '/pulse-app/']]) for (const purpose of ['none', 'pending']) {
-  test('web sign-in enters the platform without a chooser or company lookup: ' + (destinations.join(' ') || 'unassigned') + ' ' + purpose, async t => {
+  test('web sign-in enters the platform without a chooser and opens no company space: ' + (destinations.join(' ') || 'unassigned') + ' ' + purpose, async t => {
     const dom = createFakeDomEnvironment(), writes = [], opened = [], hashes = [], phases = [];
     let lookups = 0, ensureCount = 0;
     const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose } };
@@ -2248,7 +2248,7 @@ for (const destinations of [[], ['/'], ['/', '/pulse-app/']]) for (const purpose
     t.after(() => host.dispose());
     await settleEntryHost();
     assert.equal(host.getState().phase, 'entered');
-    assert.equal(lookups, 0, 'sign-in does not ask the company server');
+    assert.equal(lookups, 0, 'without onAssignedSpaces the host runs no assignment lookup');
     assert.deepEqual(opened, [], 'sign-in opens no company space');
     assert.deepEqual(hashes, [], 'sign-in chooses no product for the member');
     assert.equal(phases.includes('workspace') || phases.includes('purpose'), false, 'no chooser scene on the way in');
@@ -2256,6 +2256,78 @@ for (const destinations of [[], ['/'], ['/', '/pulse-app/']]) for (const purpose
     assert.deepEqual(writes, purpose === 'pending' ? ['not-asked'] : [], 'only a pending newcomer records that nobody asked');
   });
 }
+
+// 들어간 뒤 배정을 조용히 확인해 배정된 계정에만 회사 공간 바로가기를 세운다. 회사 공간은 열지 않는다(유호님 11-21 「배정된 계정에만 링크」)
+for (const [label, result, expected] of [
+  ['unassigned', { status: 'resolved', destinations: [], unavailable: [] }, []],
+  ['workspace', { status: 'resolved', destinations: ['/'], unavailable: [] }, ['/']],
+  ['both', { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [] }, ['/', '/pulse-app/']],
+  ['partial', { status: 'partial', destinations: ['/'], unavailable: ['pulse'] }, ['/']],
+  ['login_required', { status: 'login_required', destinations: [], unavailable: [] }, []],
+]) {
+  test('web sign-in reports assigned spaces after entry without opening them: ' + label, async t => {
+    const dom = createFakeDomEnvironment(), opened = [], reports = [], lookupArgs = [];
+    const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'none' } };
+    const host = mountWebPortalHost({
+      root: dom.root,
+      getReducedMotion: () => true,
+      getStartupState: () => ({ status: 'signed-in' }),
+      getAccount: () => ({ identity: () => identity, isAccountBound: id => id === account }),
+      companyBoundaries: {
+        resolveAssignedDestination: async args => { lookupArgs.push(args); return { ok: true, result }; },
+        openAssignedDestination: destination => { opened.push(destination); return { ok: true, navigationRequested: true }; },
+        cancelCompanyEntry() {},
+      },
+      onAssignedSpaces: value => reports.push(value),
+    });
+    t.after(() => host.dispose());
+    await settleEntryHost();
+    assert.equal(host.getState().phase, 'entered');
+    assert.deepEqual(opened, [], 'the lookup never opens a company space');
+    assert.equal(lookupArgs.length, 1);
+    assert.equal(lookupArgs[0].interactiveRecovery, false, 'no popup or login window for the quiet lookup');
+    assert.deepEqual(reports, [{ accountKey: account, destinations: expected }]);
+  });
+}
+
+test('web sign-in drops a late assignment report after the account changed', async t => {
+  const dom = createFakeDomEnvironment(), reports = [];
+  let bound = true, finish;
+  const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'none' } };
+  const host = mountWebPortalHost({
+    root: dom.root,
+    getReducedMotion: () => true,
+    getStartupState: () => ({ status: 'signed-in' }),
+    getAccount: () => ({ identity: () => identity, isAccountBound: id => bound && id === account }),
+    companyBoundaries: { resolveAssignedDestination: () => new Promise(resolve => { finish = resolve; }), cancelCompanyEntry() {} },
+    onAssignedSpaces: value => reports.push(value),
+  });
+  t.after(() => host.dispose());
+  await settleEntryHost();
+  assert.equal(host.getState().phase, 'entered');
+  assert.equal(typeof finish, 'function');
+  bound = false;
+  finish({ ok: true, result: { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [] } });
+  await settleEntryHost();
+  assert.deepEqual(reports, []);
+});
+
+test('web sign-in reports no spaces when the quiet lookup fails', async t => {
+  const dom = createFakeDomEnvironment(), reports = [];
+  const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'none' } };
+  const host = mountWebPortalHost({
+    root: dom.root,
+    getReducedMotion: () => true,
+    getStartupState: () => ({ status: 'signed-in' }),
+    getAccount: () => ({ identity: () => identity, isAccountBound: id => id === account }),
+    companyBoundaries: { resolveAssignedDestination: () => Promise.reject(new Error('offline')), cancelCompanyEntry() {} },
+    onAssignedSpaces: value => reports.push(value),
+  });
+  t.after(() => host.dispose());
+  await settleEntryHost();
+  assert.equal(host.getState().phase, 'entered');
+  assert.deepEqual(reports, [{ accountKey: account, destinations: [] }]);
+});
 
 test('web sign-in does not enter when the account changes during the onboarding write', async t => {
   const dom = createFakeDomEnvironment();
@@ -2297,6 +2369,7 @@ for (const failure of ['throws', 'no-message']) test('web sign-in failure names 
   await settleEntryHost();
   assert.equal(host.getState().phase, 'enter-error');
   assert.equal(host.getState().errorMessage, 'SYNK에 들어가지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+  assert.equal(dom.root.querySelector('#portal-heading').textContent, 'SYNK 입장 실패');
 });
 
 test('unassigned existing-user entry on PC stays inside the black portal when its picker closes',async t=>{
@@ -2338,19 +2411,71 @@ test('canonical account binding accepts a distinct Auth UUID and enters with the
   assert.equal(ensureCount, 1);
 });
 
-for (const changedRaw of ['replacement', 'malformed', 'removed']) test('canonical account binding does not enter after a '+changedRaw+' raw session', async t => {
+test('canonical account binding looks up assigned spaces with the verified SYNK ID, not the Auth UUID', async t => {
+  const f = await canonicalAccountFixture(t), dom = createFakeDomEnvironment(), reports = [], lookupArgs = [];
+  const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
+    getSessionStorage: () => f.storage, getStartupState: () => ({ status: 'signed-in' }), getAccount: () => f.realAccount,
+    companyBoundaries: {
+      resolveAssignedDestination: async args => { lookupArgs.push(args); return { ok: true, result: { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [] } }; },
+      openAssignedDestination: () => assert.fail('the quiet lookup never opens a company space'),
+      cancelCompanyEntry() {},
+    },
+    onAssignedSpaces: value => reports.push(value),
+  });
+  t.after(() => host.dispose()); await settleEntryHost();
+  assert.equal(host.getState().phase, 'entered');
+  assert.equal(lookupArgs.length, 1);
+  assert.equal(lookupArgs[0].expectedAccountId, account);
+  assert.notEqual(lookupArgs[0].expectedAccountId, f.authId);
+  assert.equal(lookupArgs[0].accountKey, account);
+  assert.equal(lookupArgs[0].interactiveRecovery, false);
+  assert.deepEqual(reports, [{ accountKey: account, destinations: ['/', '/pulse-app/'] }]);
+});
+
+for (const changedRaw of ['replacement', 'malformed', 'removed']) test('canonical account binding drops the assigned-space report when the raw session becomes '+changedRaw+' during the lookup', async t => {
+  const f = await canonicalAccountFixture(t), dom = createFakeDomEnvironment(), reports = [];
+  let finish;
+  const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
+    getSessionStorage: () => f.storage, getStartupState: () => ({ status: 'signed-in' }), getAccount: () => f.realAccount,
+    companyBoundaries: { resolveAssignedDestination: () => new Promise(resolve => { finish = resolve; }), cancelCompanyEntry() {} },
+    onAssignedSpaces: value => reports.push(value),
+  });
+  t.after(() => host.dispose()); await settleEntryHost();
+  assert.equal(host.getState().phase, 'entered');
+  assert.equal(typeof finish, 'function', 'the quiet lookup is in flight');
+  if (changedRaw === 'replacement') f.values.set(f.key, JSON.stringify({ access_token: f.token(secondAccount), user: { id: secondAccount } }));
+  else if (changedRaw === 'malformed') f.values.set(f.key, '{');
+  else f.values.delete(f.key);
+  assert.equal(f.realAccount.isAccountBound(account), false);
+  finish({ ok: true, result: { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [] } });
+  await settleEntryHost();
+  assert.deepEqual(reports, []);
+});
+
+for (const changedRaw of ['replacement', 'malformed', 'removed']) test('canonical account binding refuses entry when the raw session becomes '+changedRaw+' during the onboarding write', async t => {
   const f = await canonicalAccountFixture(t), dom = createFakeDomEnvironment();
-  let ensureCount = 0;
+  let ensureCount = 0, finish;
+  // 실제 계정 관리자의 결속(isAccountBound)을 그대로 쓰고, 온보딩만 남은 것으로 보여 기록하는 동안 멈춰 둔다(Fable 대체 검수 F3)
+  const manager = {
+    identity: () => ({ ...f.realAccount.identity(), onboarding: { purpose: 'pending' } }),
+    isAccountBound: id => f.realAccount.isAccountBound(id),
+    completePurposeOnboarding: () => new Promise(resolve => { finish = resolve; }),
+  };
+  const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
+    getSessionStorage: () => f.storage, getStartupState: () => ({ status: 'signed-in' }), getAccount: () => manager,
+    companyBoundaries: { resolveAssignedDestination: async () => assert.fail('no company lookup at sign-in'), cancelCompanyEntry() {} },
+    onEnsureEnteredRoute: () => { ensureCount++; },
+    completionWaitMs: 60000,
+  });
+  t.after(() => host.dispose()); await settleEntryHost();
+  assert.equal(host.getState().phase, 'entering');
+  assert.equal(typeof finish, 'function', 'the onboarding write is in flight');
   if (changedRaw === 'replacement') f.values.set(f.key, JSON.stringify({ access_token: f.token(secondAccount), user: { id: secondAccount } }));
   else if (changedRaw === 'malformed') f.values.set(f.key, '{');
   else f.values.delete(f.key);
   assert.equal(f.realAccount.isAccountBound(account), false, 'the original manager fence must revoke the exact raw session binding');
-  const host = mountWebPortalHost({ root: dom.root, getReducedMotion: () => true,
-    getSessionStorage: () => f.storage, getStartupState: () => f.realAccount.identity(), getAccount: () => f.realAccount,
-    companyBoundaries: { resolveAssignedDestination: async () => assert.fail('no company lookup at sign-in'), cancelCompanyEntry() {} },
-    onEnsureEnteredRoute: () => { ensureCount++; },
-  });
-  t.after(() => host.dispose()); await settleEntryHost();
+  finish({ ok: true });
+  await settleEntryHost();
   assert.notEqual(host.getState().phase, 'entered');
   assert.equal(ensureCount, 0);
 });
@@ -2396,6 +2521,8 @@ test('enter-error retry moves focus from the hidden retry button onto the portal
 
   retry.click();
   assert.equal(host.getState().phase, 'entering');
+  // 같은 렌더에는 상태 글을 넣지 않는다 — 다음 차례로 미룬다(Fable 0.4.94, Opus 대체 검수 F2로 되살림)
+  assert.equal(orbStatus.textContent, '');
   for (let n = 0; n < 3; n++) await tick();
   assert.equal(writes.length, 2);
   assert.equal(dom.root.querySelector('[data-portal-interior]').hidden, true);
