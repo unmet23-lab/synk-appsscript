@@ -86,6 +86,13 @@ const trimmed = value => (typeof value === 'string' && value.trim() ? value.trim
 /* 호스트와 본체가 보내는 까닭 글은 옛 얼굴의 「-어요」 말씨다. 새 얼굴의 「-습니다」 문장에 맞춰 끝만 바꾼다.
  * 받침이 ㅆ(했 · 었 · 났 · 있), ㅄ(없), ㄶ(않), ㅀ(싫)인 글자 뒤의 「-어요 · -아요」, 「-예요 · -이에요」, 「돼요」, 「해요」만 바꾸고,
  * 「주세요」 같은 부탁과 모르는 꼴은 그대로 둔다 */
+// 펼침에 두는 배정 조회 까닭 한 줄(PC 검수 F1). 호스트의 옛 고르기 화면 글은 「아래 단추」 같은 옛 화면을 가리키므로 쓰지 않는다
+export function assignmentCheckLead(check) {
+  if (check?.status === 'partial') return '회사 공간 가운데 일부를 확인하지 못했어요.';
+  if (check?.status === 'account_mismatch') return '회사 공간이 다른 계정으로 로그인되어 있어 확인하지 못했어요.';
+  return '회사 공간 배정을 확인하지 못했어요.';
+}
+
 export function faceSentence(value) {
   const text = trimmed(value);
   if (!text) return '';
@@ -198,6 +205,8 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   const enteredKind = snap => (snap.accountKey ? 'signed-in' : 'guest');
   let assigned = []; // 이 계정에 확인된 배정 공간('workspace', 'pulse')
   let assignedAccount = null;
+  // 로그인 때 배정 조회가 끝내 다 확인되지 않았으면 그 까닭({ status })이다. 펼침이 까닭과 「다시 확인」을 둔다(PC 검수 F1)
+  let assignedCheck = null;
   let freshSignIn = false; // 이번에 묻는 화면을 거쳐 들어왔는지(점 로고의 길이를 정한다)
 
   // 구의 움직임은 한 줄로 차례를 지킨다. 계정이 바뀌거나 묻는 화면으로 돌아가면 orbGen을 올려 남은 움직임을 버린다
@@ -358,10 +367,12 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     const guestOnPulse = guestPulse && !state.accountKey;
     const names = [...(guestOnPulse ? [] : ['solio']), ...assignedFor(state)].map(name => ({ space: name, label: SPACE_LABEL[name], desc: SPACE_DESC[name], current: name === space }));
     const signedIn = memberShown(state);
+    const check = signedIn && assignedCheck && assignedAccount === state.accountKey ? assignedCheck : null;
+    const recheck = check && typeof options.onRecheckSpaces === 'function' ? [{ action: 'recheck-spaces', label: '다시 확인' }] : [];
     const foot = signedIn
-      ? [{ action: 'account', label: '계정' }, { action: 'settings', label: '설정' }, { action: 'logout', label: '로그아웃' }]
+      ? [...recheck, { action: 'account', label: '계정' }, { action: 'settings', label: '설정' }, { action: 'logout', label: '로그아웃' }]
       : guestOnPulse ? [{ action: 'signin', label: '로그인' }] : [{ action: 'settings', label: '설정' }];
-    return { kind: 'app', names, lead: '', error: feedback.switch, actions: [], foot, showClose: true };
+    return { kind: 'app', names, lead: check ? assignmentCheckLead(check) : '', error: feedback.switch, actions: [], foot, showClose: true };
   }
 
   /* 「누구로 보이나」의 기준이다. 들어온 회원이 토큰을 갱신하거나 재시도할 수 있는 연결 오류를 겪는 동안에도,
@@ -890,10 +901,34 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
   }
   function clearFeedback() { feedback.auth = ''; feedback.note = ''; feedback.inviteError = ''; feedback.inviteStatus = ''; feedback.workspace = ''; }
 
-  function rememberAssigned(destinations, accountKey) {
+  function rememberAssigned(destinations, accountKey, check = null) {
     const list = (Array.isArray(destinations) ? destinations : []).map(d => SPACE_OF_DEST[normalizePortalWorkspaceDestination(d)]).filter(Boolean);
     assigned = [...new Set(list)];
     assignedAccount = accountKey || null;
+    assignedCheck = accountKey && check && typeof check.status === 'string' ? { status: check.status } : null;
+  }
+
+  /* 펼침의 「다시 확인」: 들어온 채로 배정만 다시 읽어 펼침 목록과 까닭을 새로 쓴다. 회사 공간을 열지 않는다(PC 검수 F1) */
+  async function recheckSpaces() {
+    if (disposed || busyAction !== null || typeof options.onRecheckSpaces !== 'function') return;
+    const snap = machine.read();
+    if (!snap.accountKey || assignedAccount !== snap.accountKey) return;
+    const runId = ++asyncSeq;
+    busyAction = 'recheck-spaces';
+    feedback.switch = '';
+    render();
+    const stillSame = () => !disposed && runId === asyncSeq && machine.read().accountKey === snap.accountKey && machine.read().generation === snap.generation;
+    try {
+      const result = await options.onRecheckSpaces({ accountKey: snap.accountKey, generation: snap.generation });
+      if (!stillSame()) return;
+      if (result && result.ok !== false) rememberAssigned(result.destinations, snap.accountKey, result.assignmentCheck);
+      else feedback.switch = faceSentence(result?.message) || '회사 공간을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.';
+    } catch {
+      if (stillSame()) feedback.switch = '회사 공간을 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.';
+    } finally {
+      if (runId === asyncSeq) busyAction = null;
+      if (!disposed) render();
+    }
   }
 
   /* 들어간 공간을 이 계정의 배정 기억에 더한다. 「다시 확인」, 호스트의 진입 마침, 로그인한 채 받은 초대로 들어가도
@@ -947,8 +982,9 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
       } else if (result && result.action === 'purpose') {
         workspaceNeedsRetry = false;
         clearFeedback();
-        // 호스트는 고르기 화면 없이 솔리오로 보내며 배정된 공간 목록만 넘긴다. 펼침이 그 공간을 안다(유호님 11-21)
-        rememberAssigned(result.destinations || [], startAccountKey);
+        // 호스트는 고르기 화면 없이 솔리오로 보내며 배정된 공간 목록만 넘긴다. 펼침이 그 공간을 안다(유호님 11-21).
+        // 조회가 다 확인되지 않았으면 그 까닭도 넘긴다. 펼침이 「다시 확인」을 둔다(PC 검수 F1)
+        rememberAssigned(result.destinations || [], startAccountKey, result.assignmentCheck);
         const mode = result.purposeMode === 'existing' ? 'existing' : 'onboarding';
         const moved = machine.enterToPurpose({ mode });
         if (!moved.ok) {
@@ -1512,6 +1548,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     // 「계정」은 내 계정 방을, 「설정」은 설정 방을 연다(2단계 둘째 조각 설계 9.3). 설정 방은 손님에게도 있다
     if (action === 'account') { if (rooms.hasAccount()) openAside('account'); else openLegacy('account'); return; }
     if (action === 'settings') { openAside('settings'); return; }
+    if (action === 'recheck-spaces') { void recheckSpaces(); return; }
     // 손님의 「로그인」은 묻는 화면으로 돌아간다. 살아 있는 손님 PULSE는 「PULSE 닫기」와 같은 문으로 먼저 닫는다.
     // 쓰던 글을 남기면 PULSE에 머문다. 숨은 PULSE를 묻는 화면 뒤에 남기면 「돌아가서 저장」이 돌아올 곳이 없다(카본 A1)
     if (action === 'signin') {
@@ -1543,6 +1580,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     enteredAs = null;
     assigned = [];
     assignedAccount = null;
+    assignedCheck = null;
     guestPulse = false;
     stopSolio();
     stopReads();

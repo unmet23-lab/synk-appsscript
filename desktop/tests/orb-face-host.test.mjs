@@ -201,9 +201,10 @@ test('a company space the lookup cannot confirm does not hold sign-in: Solio sti
   const { root } = fakeRoot();
   const auth = { current: signedInAuth() };
   const opens = [], opened = [];
-  const bridge = { ...companyBridge(auth, { opens }), resolveCompanyEntryDestinations: async request => ({ ok: true, requestId: request.requestId, accountGeneration: request.accountGeneration, result: { status: 'login_required', destinations: [], unavailable: ['workspace', 'pulse'] } }) };
+  let answer = { status: 'login_required', destinations: [], unavailable: ['workspace', 'pulse'] }, hashRoutes = 0;
+  const bridge = { ...companyBridge(auth, { opens }), resolveCompanyEntryDestinations: async request => ({ ok: true, requestId: request.requestId, accountGeneration: request.accountGeneration, result: answer }) };
   const { mountFace, made } = orbFaceFactory();
-  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge, mountFace, onOpenPurposeTarget: async id => { opened.push(id); return { ok: true }; } });
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge, mountFace, onApplyHashRoute: () => { hashRoutes++; }, onOpenPurposeTarget: async id => { opened.push(id); return { ok: true }; } });
   t.after(() => host.dispose());
   await settle();
   assert.equal(host.getState().phase, 'entered');
@@ -212,7 +213,66 @@ test('a company space the lookup cannot confirm does not hold sign-in: Solio sti
   assert.ok(!made.view.scenes.some(s => s.layer === 'switch' || s.phase === 'workspace'), 'no chooser or retry screen after sign-in');
   made.face.handle('open-switch');
   await settle();
-  assert.deepEqual(made.view.scenes.at(-1).fan.names.map(n => n.space), ['solio']);
+  let fan = made.view.scenes.at(-1).fan;
+  assert.deepEqual(fan.names.map(n => n.space), ['solio']);
+  // 펼침이 까닭과 「다시 확인」을 둔다(PC 검수 F1, 유호님 11-21 「다 고쳐야지」)
+  assert.equal(fan.lead, '회사 공간 배정을 확인하지 못했어요.');
+  assert.deepEqual(fan.foot.map(f => f.action), ['recheck-spaces', 'account', 'settings', 'logout']);
+  // 다시 확인이 또 실패하면 까닭이 남고, 확인되면 공간이 서고 까닭이 사라진다. 회사 공간은 열지 않고 첫 화면 경로도 건드리지 않는다
+  answer = { status: 'partial', destinations: ['/'], unavailable: ['pulse'] };
+  made.face.handle('foot', 'recheck-spaces');
+  await settle();
+  fan = made.view.scenes.at(-1).fan;
+  assert.deepEqual(fan.names.map(n => n.space), ['solio', 'workspace']);
+  assert.equal(fan.lead, '회사 공간 가운데 일부를 확인하지 못했어요.');
+  answer = { status: 'resolved', destinations: ['/', '/pulse-app/'], unavailable: [] };
+  made.face.handle('foot', 'recheck-spaces');
+  await settle();
+  fan = made.view.scenes.at(-1).fan;
+  assert.deepEqual(fan.names.map(n => n.space), ['solio', 'workspace', 'pulse']);
+  assert.equal(fan.lead, '');
+  assert.deepEqual(fan.foot.map(f => f.action), ['account', 'settings', 'logout']);
+  assert.deepEqual(opens, []);
+  assert.equal(host.getState().phase, 'entered');
+  assert.deepEqual(opened, ['solio']);
+  assert.equal(hashRoutes, 0);
+});
+
+test('a recheck that finds no assignment clears the reason and leaves the first screen alone', async t => {
+  const { root } = fakeRoot();
+  const auth = { current: signedInAuth({ purpose: 'pending' }) };
+  let answer = { status: 'unavailable', destinations: [], unavailable: ['workspace', 'pulse'] }, hashRoutes = 0;
+  // not-asked 기록이 실패한 계정이다. 들어오면 이 세션에서는 온보딩을 마친 것으로 치므로 첫 화면 경로가 돌 일이 없고,
+  // 호스트의 quiet는 그 밖의 경로를 막는 덧막이다. 여기서는 다시 확인이 화면을 옮기지 않고 까닭만 지우는지 본다
+  const bridge = { ...companyBridge(auth, { failWrite: true }), resolveCompanyEntryDestinations: async request => ({ ok: true, requestId: request.requestId, accountGeneration: request.accountGeneration, result: answer }) };
+  const { mountFace, made } = orbFaceFactory();
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge, mountFace, onApplyHashRoute: () => { hashRoutes++; }, onOpenPurposeTarget: async () => ({ ok: true }) });
+  t.after(() => host.dispose());
+  await settle();
+  const routesAfterEntry = hashRoutes;
+  made.face.handle('open-switch');
+  await settle();
+  answer = { status: 'resolved', destinations: [], unavailable: [] };
+  made.face.handle('foot', 'recheck-spaces');
+  await settle();
+  const fan = made.view.scenes.at(-1).fan;
+  assert.deepEqual(fan.names.map(n => n.space), ['solio']);
+  assert.equal(fan.lead, '');
+  assert.equal(hashRoutes, routesAfterEntry, 'a recheck never applies the onboarding route');
+});
+
+test('a confirmed sign-in lookup leaves the switch without a reason or recheck', async t => {
+  const { root } = fakeRoot();
+  const auth = { current: signedInAuth() };
+  const { mountFace, made } = orbFaceFactory();
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge: companyBridge(auth, { destinations: ['/'] }), mountFace, onOpenPurposeTarget: async () => ({ ok: true }) });
+  t.after(() => host.dispose());
+  await settle();
+  made.face.handle('open-switch');
+  await settle();
+  const fan = made.view.scenes.at(-1).fan;
+  assert.equal(fan.lead, '');
+  assert.ok(!fan.foot.some(f => f.action === 'recheck-spaces'));
 });
 
 test('onOpenSpace looks the assignment up once when the record expired, and never opens what is not assigned', async t => {

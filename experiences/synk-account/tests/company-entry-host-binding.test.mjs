@@ -2329,6 +2329,47 @@ test('web sign-in reports no spaces when the quiet lookup fails', async t => {
   assert.deepEqual(reports, [{ accountKey: account, destinations: [] }]);
 });
 
+// 11-21 「웅」: 계정 관리자가 companySpaces를 주면 회사 쿠키 대신 SYNK 플랫폼 로그인으로 묻는다(회사 공간 로그인이 끊긴 배정 회원도 칸을 본다).
+test('web sign-in asks the account manager for assigned spaces with the platform login when it can', async t => {
+  const dom = createFakeDomEnvironment(), reports = [], asked = [];
+  const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'none' } };
+  const host = mountWebPortalHost({
+    root: dom.root,
+    getReducedMotion: () => true,
+    getStartupState: () => ({ status: 'signed-in' }),
+    getAccount: () => ({ identity: () => identity, isAccountBound: id => id === account, companySpaces: async id => { asked.push(id); return ['/pulse-app/', '/elsewhere', '/pulse-app/']; } }),
+    onAssignedSpaces: value => reports.push(value),
+  });
+  t.after(() => host.dispose());
+  await settleEntryHost();
+  assert.equal(host.getState().phase, 'entered');
+  assert.deepEqual(asked, [account]);
+  assert.deepEqual(reports, [{ accountKey: account, destinations: ['/pulse-app/'] }]);
+});
+
+test('web sign-in drops the platform-login answer when the account changed and reports nothing when the lookup fails', async t => {
+  for (const outcome of ['changed', 'rejected', 'unconfirmed']) {
+    const dom = createFakeDomEnvironment(), reports = [];
+    let bound = true, finish;
+    const identity = { status: 'signed-in', signedIn: true, accountId: account, accountKey: account, accountGeneration: 1, onboarding: { purpose: 'none' } };
+    const host = mountWebPortalHost({
+      root: dom.root,
+      getReducedMotion: () => true,
+      getStartupState: () => ({ status: 'signed-in' }),
+      getAccount: () => ({ identity: () => identity, isAccountBound: id => bound && id === account, companySpaces: () => new Promise((resolve, reject) => { finish = { resolve, reject }; }) }),
+      onAssignedSpaces: value => reports.push(value),
+    });
+    t.after(() => host.dispose());
+    await settleEntryHost();
+    assert.equal(host.getState().phase, 'entered', outcome);
+    if (outcome === 'changed') { bound = false; finish.resolve(['/', '/pulse-app/']); }
+    else if (outcome === 'rejected') finish.reject(Object.assign(new Error('changed'), { code: 'ACCOUNT_CHANGED' }));
+    else finish.resolve(null);
+    await settleEntryHost();
+    assert.deepEqual(reports, outcome === 'changed' ? [] : [{ accountKey: account, destinations: [] }], outcome);
+  }
+});
+
 test('web sign-in does not enter when the account changes during the onboarding write', async t => {
   const dom = createFakeDomEnvironment();
   let bound = true, finish, ensureCount = 0;

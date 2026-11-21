@@ -6,7 +6,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { Store } from './store.mjs';
 import { createSynkIdentity } from './synk-identity.mjs';
 import { createWorkspaceService } from './pulse-workspaces.mjs';
-import { createEntryDestinations, NATIVE_ENTRY_IDENTITY } from './entry-destinations.mjs';
+import { createEntryDestinations, NATIVE_ENTRY_IDENTITY, PORTAL_ENTRY_IDENTITY } from './entry-destinations.mjs';
 
 const id='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222';
 const authSubject='44444444-4444-4444-8444-444444444444',sessionId='33333333-3333-4333-8333-333333333333';
@@ -170,4 +170,45 @@ test('web identity closing during authentication is unavailable without reading 
     assert.deepEqual(result.data,{error:{code:'TEMPORARY_UNAVAILABLE',retryable:true}});
     assert.deepEqual(f.reads,[]);assert.equal(f.snapshot(),before);
   }
+});
+
+// 11-21 유호님 「웅」(회사 공간 로그인이 끊긴 배정 회원에게도 synk.im 홈 「회사 공간」 칸을): synk.im은 회사 쿠키 대신 자기 SYNK 플랫폼 로그인으로 자기 배정만 읽는다.
+const portal='https://synk.im';
+test('the synk.im platform login reads its own assignments on the web route without a company or customer session',async t=>{
+  const f=fixture(t);f.employee();f.pulse();f.webAuth=null;const before=f.snapshot();
+  const r=await f.request({path:web,claims:{client_id:PORTAL_ENTRY_IDENTITY.clientId},headers:{origin:portal}});
+  assert.equal(r.status,200);
+  assert.deepEqual(r.data,{version:1,accountMatch:true,workspace:{state:'assigned',destination:'/'},pulse:{state:'assigned',destination:'/pulse-app/'}});
+  assert.equal(r.headers['access-control-allow-origin'],portal);
+  assert.equal(f.webCalls,0,'the portal bearer never reads a company or customer cookie');
+  assert.equal(f.centralCalls.length,1);assert.equal(f.snapshot(),before);
+});
+
+test('the portal bearer accepts only the platform browser client, only from synk.im, and only for its own live account',async t=>{
+  const f=fixture(t);f.employee();f.pulse();f.webAuth=null;const browser={client_id:PORTAL_ENTRY_IDENTITY.clientId};
+  let r=await f.request({path:web,headers:{origin:portal}});
+  assert.equal(r.status,403);assert.equal(r.data.error.code,'CLIENT_FORBIDDEN','a native client token is not the portal client');
+  const calls=f.centralCalls.length;
+  r=await f.request({path:web,claims:browser});
+  assert.equal(r.data.error.code,'LOGIN_REQUIRED','outside the portal origin the bearer is ignored and the cookie read applies');assert.equal(f.centralCalls.length,calls);
+  r=await f.request({claims:browser,headers:{origin:portal}});
+  assert.equal(r.status,403);assert.equal(r.data.error.code,'CLIENT_FORBIDDEN','the browser client never becomes a native client');
+  r=await f.request({path:web,claims:browser,headers:{origin:portal},input:{expectedAccountId:other}});
+  assert.equal(r.status,409);assert.equal(r.data.error.code,'ACCOUNT_MISMATCH');
+  f.status=401;r=await f.request({path:web,claims:browser,headers:{origin:portal}});
+  assert.equal(r.status,401);assert.equal(r.data.error.code,'AUTH_REQUIRED');
+  assert.deepEqual(f.reads,[]);
+});
+
+test('the portal preflight allows the bearer header pair as well as the cookie read and nothing wider',async t=>{
+  const f=fixture(t);
+  const pre=headers=>f.request({path:web,method:'OPTIONS',bearer:null,headers:{origin:portal,'access-control-request-method':'POST',...headers}});
+  let r=await pre({'access-control-request-headers':'authorization, content-type'});
+  assert.equal(r.status,204);assert.equal(r.headers['access-control-allow-headers'],'Authorization, Content-Type');assert.equal(r.headers['access-control-allow-origin'],portal);
+  r=await pre({'access-control-request-headers':'Content-Type'});
+  assert.equal(r.status,204);assert.equal(r.headers['access-control-allow-headers'],'Content-Type');
+  for(const value of ['authorization','authorization, content-type, x-requested-with','authorization, authorization, content-type','']){
+    r=await pre({'access-control-request-headers':value});assert.equal(r.status,400,value);
+  }
+  assert.equal(f.centralCalls.length,0);assert.deepEqual(f.reads,[]);
 });

@@ -2475,6 +2475,7 @@ export function mountWebPortalHost({
 
   // 고르기 화면 없이 들어간 뒤 배정을 조용히 확인한다. 회사 공간은 열지 않고, 확인된 공간만 플랫폼에 알려 배정된 계정에만 바로가기를 세운다.
   // 확인하지 못하면 바로가기를 두지 않는다. 그동안 계정이 바뀌었으면 결과를 버린다(유호님 11-21 「배정된 계정에만 링크」, PC는 구 곁 펼침)
+  // 계정 관리자가 companySpaces를 주면 회사 쿠키 대신 SYNK 플랫폼 로그인으로 묻는다 — 회사 공간 로그인이 끊긴 배정 회원도 칸을 본다(11-21 「웅」)
   let assignedLookupSeq = 0;
   function lookupAssignedSpaces(accountKey) {
     if (typeof onAssignedSpaces !== 'function' || disposed) return;
@@ -2490,6 +2491,20 @@ export function mountWebPortalHost({
       if (after.mismatch || after.accountGeneration !== binding.accountGeneration) return;
       try { onAssignedSpaces({ accountKey, destinations }); } catch { /* 플랫폼 그리기 실패가 입장을 흔들지 않게 한다 */ }
     };
+    if (!hasCustomResolver && typeof boundAccount.companySpaces === 'function') {
+      let pendingSpaces;
+      try {
+        pendingSpaces = boundAccount.companySpaces(binding.accountId);
+      } catch {
+        report([]);
+        return;
+      }
+      Promise.resolve(pendingSpaces).then(
+        destinations => report(Array.isArray(destinations) ? [...new Set(destinations.map(normalizePortalWorkspaceDestination).filter(Boolean))] : []),
+        () => report([]),
+      );
+      return;
+    }
     let pending;
     try {
       pending = boundaries.resolveAssignedDestination({

@@ -4,7 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { createCompanyApp } from './server.mjs';
-import { NATIVE_ENTRY_IDENTITY } from './entry-destinations.mjs';
+import { NATIVE_ENTRY_IDENTITY, PORTAL_ENTRY_IDENTITY } from './entry-destinations.mjs';
 
 const origin='https://company.example.test',issuer=NATIVE_ENTRY_IDENTITY.issuer;
 const id='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222';
@@ -62,7 +62,8 @@ async function fixture(t,{staffIdentity=false}={}){
   app.store.db.prepare('INSERT INTO synk_identity_links VALUES (?,?,?,?)').run(id,'staff','revision','2026-11-15T00:00:00Z');
   app.store.put('pulseFeatureSettings','main',{myModels:true});
   app.store.put('customerWorkspaces','brand',{id:'brand',status:'active',members:[{synkUserId:id,role:'member'}]});
-  return Object.assign(f,{app,request,login,snapshot,jar,token:(owner=id,extra={})=>token(NATIVE_ENTRY_IDENTITY.clientId,owner,extra)});
+  return Object.assign(f,{app,request,login,snapshot,jar,token:(owner=id,extra={})=>token(NATIVE_ENTRY_IDENTITY.clientId,owner,extra),
+    browserToken:(owner=id,extra={})=>token(PORTAL_ENTRY_IDENTITY.clientId,owner,extra)});
 }
 
 async function staffLogin(f){
@@ -295,7 +296,8 @@ test('portal CORS rejects lookalike origins and hostile preflights without grant
   for(const scenario of [
     {headers:{...preflight,'Access-Control-Request-Method':'GET'}},
     {headers:{...preflight,'Access-Control-Request-Method':'post'}},
-    {headers:{...preflight,'Access-Control-Request-Headers':'content-type, authorization'}},
+    {headers:{...preflight,'Access-Control-Request-Headers':'authorization'}},
+    {headers:{...preflight,'Access-Control-Request-Headers':'content-type, authorization, x-requested-with'}},
     {headers:{...preflight,'Access-Control-Request-Headers':'content-type, content-type'}},
     {headers:{...preflight,'Access-Control-Request-Headers':'x-requested-with'}},
     {headers:{'Access-Control-Request-Method':'POST'}},
@@ -330,4 +332,17 @@ test('portal CORS shutdown during authentication returns readable unavailable wi
   const result=await pending;await stopping;
   assert.equal(result.status,503);assertPortalHeaders(result);
   assert.deepEqual(result.data,{error:{code:'TEMPORARY_UNAVAILABLE',retryable:true}});assert.deepEqual([...f.jar],cookies);
+});
+
+// 11-21: synk.im 홈 「회사 공간」 칸은 회사 쿠키 없이 SYNK 플랫폼 로그인(platform-browser)으로 자기 배정을 읽는다.
+test('real HTTP portal bearer reads its own assignments with readable CORS, no cookie and no writes',async t=>{
+  const f=await fixture(t);const before=f.snapshot();
+  const pre=await f.request(web,{method:'OPTIONS',cookie:false,originHeader:portal,headers:{'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,content-type'}});
+  assert.equal(pre.status,204);assert.equal(pre.headers.get('access-control-allow-headers'),'Authorization, Content-Type');assert.equal(pre.headers.get('access-control-allow-origin'),portal);
+  const r=await f.request(web,{input:{expectedAccountId:id},bearer:f.browserToken(),cookie:false,originHeader:portal});
+  assert.equal(r.status,200);assert.equal(r.headers.get('access-control-allow-origin'),portal);assert.deepEqual(r.headers.getSetCookie(),[]);
+  assert.deepEqual(r.data,{version:1,accountMatch:true,workspace:{state:'assigned',destination:'/'},pulse:{state:'assigned',destination:'/pulse-app/'}});
+  const nativeToken=await f.request(web,{input:{expectedAccountId:id},bearer:f.token(),cookie:false,originHeader:portal});
+  assert.equal(nativeToken.status,403);assert.deepEqual(nativeToken.data,{error:{code:'CLIENT_FORBIDDEN',retryable:false}});
+  assert.equal(f.snapshot(),before);
 });

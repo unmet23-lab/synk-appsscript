@@ -95,7 +95,7 @@ function markup() {
       <button class="quiet legacy-back" type="button" data-orb-act="legacy-back">돌아가기</button>
       <button class="quiet band-close" type="button" data-orb-act="pulse-close" hidden>PULSE 닫기</button>
     </div>
-    <div class="fan" role="group" aria-label="갈 수 있는 공간과 계정" data-orb-fan><p class="fan-error" role="alert" data-fan-error></p></div>
+    <div class="fan" role="group" aria-label="갈 수 있는 공간과 계정" data-orb-fan><p class="fan-error" role="alert" data-fan-error></p><p class="fan-lead" data-fan-lead></p></div>
     <div class="room room-top" data-room="solio">
       <p class="sr" role="status" aria-live="polite" data-solio-status></p>
       <div class="dial rise" style="--i:1" data-dial hidden><svg class="dial-sweep" viewBox="-360 -360 720 720" aria-hidden="true"><defs><linearGradient id="orb-dial-sweep" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F3F1EC" stop-opacity="0"/><stop offset=".5" stop-color="#F3F1EC" stop-opacity=".5"/><stop offset="1" stop-color="#F3F1EC" stop-opacity="0"/></linearGradient></defs><g class="d-sweep"><circle r="318" class="d-sweep-c" stroke="url(#orb-dial-sweep)"/></g></svg><svg viewBox="-360 -360 720 720" role="img" data-dial-svg></svg><span class="dial-orb" aria-hidden="true"></span><p class="dial-hero" aria-hidden="true"><b data-dial-value></b><small data-dial-unit></small><span data-dial-label></span></p></div>
@@ -181,7 +181,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     brief: $('[data-brief]'), soon: $('[data-soon]'), soonMore: $('[data-soon-more]'), live: $('[data-live]'), liveBig: $('[data-live-big]'), liveUnit: $('[data-live-unit]'), liveSmall: $('[data-live-small]'), tokOn: $('[data-orb-act="tok-on"]'),
     dial: $('[data-dial]'), dialSvg: $('[data-dial-svg]'), dialValue: $('[data-dial-value]'), dialUnit: $('[data-dial-unit]'), dialLabel: $('[data-dial-label]'),
     diag: $('[data-diag]'), diagWhen: $('[data-diag-when]'), diagName: $('[data-diag-name]'), diagWord: $('[data-diag-word]'), diagSay: $('[data-diag-say]'), diagCost: $('[data-diag-cost]'), details: $('[data-details]'), detailsTop: $('[data-details-top]'),
-    reread: $('[data-orb-act="reread"]'), subsManage: $('[data-orb-act="subs-manage"]'), fan: $('[data-orb-fan]'), fanError: $('[data-fan-error]'), connect: $('[data-orb-act="connect"]'), recheck: $('[data-orb-act="recheck-auth"]'), solioStatus: $('[data-solio-status]'),
+    reread: $('[data-orb-act="reread"]'), subsManage: $('[data-orb-act="subs-manage"]'), fan: $('[data-orb-fan]'), fanError: $('[data-fan-error]'), fanLead: $('[data-fan-lead]'), connect: $('[data-orb-act="connect"]'), recheck: $('[data-orb-act="recheck-auth"]'), solioStatus: $('[data-solio-status]'),
     space: $('[data-room="space"]'), spaceSay: $('[data-space-say]'), spaceThen: $('[data-space-then]'), spaceError: $('[data-space-error]'), reopen: $('[data-orb-act="reopen-space"]'),
     rail: $('[data-orb-rail]'), objs: [...root.querySelectorAll('[data-orb-prog]')],
     visits: $('[data-room="solio-visits"]'), visSay: $('[data-vis-say]'), visThen: $('[data-vis-then]'), visRows: $('[data-vis-rows]'), visWhen: $('[data-vis-when]'), visScope: $('[data-vis-scope]'),
@@ -1079,9 +1079,11 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       const p = el('p', 'fan-foot');
       p.style.setProperty('--k', String(names.length));
       p.append(...foot.map(x => button('quiet', x.label, { 'data-orb-act': 'foot', 'data-foot': x.action })));
-      app.fan.replaceChildren(app.fanError, ...nodes, ...(foot.length ? [p] : []));
+      app.fan.replaceChildren(app.fanError, app.fanLead, ...nodes, ...(foot.length ? [p] : []));
     }
     setText(app.fanError, f?.error || '');
+    // 배정 조회 까닭 한 줄(PC 검수 F1). 「다시 확인」은 아래 발치 줄에 선다
+    setText(app.fanLead, f?.lead || '');
     const open = Boolean(f?.open) && s.layer === 'app' && s.mode === 'app';
     if (open) { if (stageEl.dataset.fan !== '1') stageEl.dataset.fan = '1'; } else if ('fan' in stageEl.dataset) delete stageEl.dataset.fan;
     for (const b of [app.orbBtn, app.nameBtn]) if (b.getAttribute('aria-expanded') !== String(open)) b.setAttribute('aria-expanded', String(open));

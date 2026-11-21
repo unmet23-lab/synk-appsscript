@@ -7,8 +7,13 @@ export const NATIVE_ENTRY_IDENTITY=Object.freeze({
   issuer:'https://qiwxeddwwnzkwalpsuty.supabase.co',
   clientId:'9d7f276d-58bf-4c98-a7fd-9c3da0a40408',product:'platform',
 });
+// synk.im platform page's own browser client (platform-browser in the same production registration, rechecked 2026-11-21).
+// It is accepted only on the web route, only from the portal origin, and only as a bearer — never as a native client.
+export const PORTAL_ENTRY_IDENTITY=Object.freeze({issuer:NATIVE_ENTRY_IDENTITY.issuer,clientId:'6cde60e1-d9c4-489e-8a36-3a2ff392e077',product:'platform'});
 const NATIVE='/api/native/entry/destinations',WEB='/api/customer/entry/destinations';
 const PORTAL_ORIGIN='https://synk.im';
+// Preflight request headers the portal may ask for: the cookie read, or the platform-login bearer read.
+const portalRequestHeaders=value=>{const list=String(value||'').split(',').map(item=>item.trim().toLowerCase()).filter(Boolean).sort().join(',');return list==='content-type'||list==='authorization,content-type'?list:null;};
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 class EntryFault extends Error {
   constructor(status,code,retryable=false){super(code);this.status=status;this.code=code;this.retryable=retryable;}
@@ -45,7 +50,7 @@ export function createEntryDestinations({origin,customerIdentity,customerConfig=
   // Reuse only the existing production project's API and public key, not its accepted client ID.
   const nativeConfig=nativeConfiguration(customerConfig);
   const available=()=>{if(stopping())throw unavailable();};
-  async function nativeIdentity(req){
+  async function bearerIdentity(req,clientId){
     const token=/^Bearer ([^\s]+)$/i.exec(req.headers.authorization||'')?.[1];
     if(!token||token.length>16_384)throw fault(401,'AUTH_REQUIRED');
     if(!nativeConfig)throw unavailable();
@@ -64,7 +69,7 @@ export function createEntryDestinations({origin,customerIdentity,customerConfig=
     const claims=claimsOf(token),stamp=now();
     if(!claims||claims.iss!==NATIVE_ENTRY_IDENTITY.issuer+'/auth/v1'||!UUID.test(claims.sub||'')||!UUID.test(claims.session_id||'')||
       !Number.isSafeInteger(claims.iat)||claims.iat>Math.floor(stamp/1000)+60||!Number.isSafeInteger(claims.exp)||claims.exp*1000<=stamp)throw fault(401,'AUTH_REQUIRED');
-    if(claims.client_id!==NATIVE_ENTRY_IDENTITY.clientId)throw fault(403,'CLIENT_FORBIDDEN');
+    if(claims.client_id!==clientId)throw fault(403,'CLIENT_FORBIDDEN');
     if(data?.ok!==true||!UUID.test(data.account?.synk_user_id||'')||!['active','deletion-requested','disabled','deleted'].includes(data.account.status)||!Array.isArray(data.sessions))throw unavailable();
     if(data.account.status!=='active')throw fault(403,'ACCOUNT_UNAVAILABLE');
     const current=data.sessions.filter(row=>row?.current===true);
@@ -77,6 +82,9 @@ export function createEntryDestinations({origin,customerIdentity,customerConfig=
     const native=url.pathname===NATIVE;
     if(!native&&url.pathname!==WEB)return false;
     const portal=!native&&req.headers.origin===PORTAL_ORIGIN;
+    // 11-21: the portal may identify with its own SYNK platform login instead of a company cookie, so an assigned member
+    // whose company session lapsed still learns their own assignments. Cookies are not read on that path.
+    const portalBearer=portal&&req.method==='POST'&&req.headers.authorization!==undefined;
     const allowPortal=()=>{res.setHeader('Access-Control-Allow-Origin',PORTAL_ORIGIN);res.setHeader('Access-Control-Allow-Credentials','true');};
     if(!native)res.setHeader('Vary','Origin');
     // Only this read-only route accepts the portal origin for existing browser sessions.
@@ -86,10 +94,10 @@ export function createEntryDestinations({origin,customerIdentity,customerConfig=
       if(!native&&req.method==='OPTIONS'){
         if(url.search)throw fault(400,'INVALID_INPUT');
         if(!portal)throw fault(403,'ORIGIN_REJECTED');
-        if(req.headers['access-control-request-method']!=='POST'||
-          String(req.headers['access-control-request-headers']||'').trim().toLowerCase()!=='content-type'||
+        const requested=portalRequestHeaders(req.headers['access-control-request-headers']);
+        if(req.headers['access-control-request-method']!=='POST'||!requested||
           req.headers['access-control-request-private-network']!==undefined)throw fault(400,'INVALID_INPUT');
-        allowPortal();res.setHeader('Access-Control-Allow-Methods','POST');res.setHeader('Access-Control-Allow-Headers','Content-Type');
+        allowPortal();res.setHeader('Access-Control-Allow-Methods','POST');res.setHeader('Access-Control-Allow-Headers',requested==='content-type'?'Content-Type':'Authorization, Content-Type');
         available();send(res,204,null);return true;
       }
       available();
@@ -104,7 +112,8 @@ export function createEntryDestinations({origin,customerIdentity,customerConfig=
         typeof input.expectedAccountId!=='string'||!UUID.test(input.expectedAccountId))throw fault(400,'INVALID_INPUT');
       available();
       let synkUserId,auth,staff;
-      if(native)synkUserId=await nativeIdentity(req);
+      if(native)synkUserId=await bearerIdentity(req,NATIVE_ENTRY_IDENTITY.clientId);
+      else if(portalBearer)synkUserId=await bearerIdentity(req,PORTAL_ENTRY_IDENTITY.clientId);
       else{
         if(!customerIdentity.status().enabled)throw unavailable();
         const companySession=readStaffSession(req);

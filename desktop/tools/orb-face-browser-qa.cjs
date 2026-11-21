@@ -1371,6 +1371,15 @@ if(!process.versions.electron){
           check('6 '+status+' still lands in Solio with no chooser or retry screen',r.ok&&s0.ok,{...r.state,...s0});
           await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
           const fan=await fanSpaces(w);check('6 '+status+' lists only confirmed spaces in the fan',JSON.stringify(fan)===JSON.stringify(want),{fan});
+          // 펼침이 까닭 한 줄과 「다시 확인」을 둔다. 다시 확인이 배정을 확인하면 공간이 서고 까닭이 사라진다. 회사 공간은 열지 않는다(PC 검수 F1, 유호님 11-21 「다 고쳐야지」)
+          const lead=status==='partial'?'회사 공간 가운데 일부를 확인하지 못했어요.':status==='account_mismatch'?'회사 공간이 다른 계정으로 로그인되어 있어 확인하지 못했어요.':'회사 공간 배정을 확인하지 못했어요.';
+          const note=()=>w.js("(()=>{const l=document.querySelector('#portal-entry [data-fan-lead]'),b=document.querySelector('#portal-entry [data-foot=\"recheck-spaces\"]');return {lead:l?.textContent||'',leadShown:!!l&&getComputedStyle(l).display!=='none',recheck:b?.textContent||'',recheckShown:!!b&&getComputedStyle(b).display!=='none'};})()");
+          const n1=await note();check('6 '+status+' shows the reason and 「다시 확인」 in the fan',n1.lead===lead&&n1.leadShown&&n1.recheck==='다시 확인'&&n1.recheckShown,n1);
+          await captureSizes(w,'fan-check-'+status);
+          await w.js("window.__orbFixture.setAssignment({status:'resolved',destinations:['/','/pulse-app/'],unavailable:[]})");
+          await click(w,'#portal-entry [data-foot="recheck-spaces"]');let after=null;for(let i=0;i<60;i++){after=await fanSpaces(w);if(after.length===3)break;await wait(60);}
+          const n2=await note(),c=await calls(w);
+          check('6 '+status+' 「다시 확인」 confirms both spaces, drops the reason and opens nothing',JSON.stringify(after)==='["solio","workspace","pulse"]'&&!n2.leadShown&&!n2.recheckShown&&!c.some(x=>x.startsWith('open:')),{after,...n2,calls:c});
           w.win.destroy();
         }
         // 8. error · enter-error, 다시 시도 뒤 checking에 글이 없다, unconfigured

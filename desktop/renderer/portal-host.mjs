@@ -381,6 +381,13 @@ function desktopOpenDestinationErrorMessage(code) {
   }
 }
 
+// 로그인 때 배정 조회가 끝내 다 확인되지 않았으면(추가 로그인 · 다른 계정 · 확인 불가 · 일부만) 그 까닭만 펼침에 넘긴다.
+// 펼침이 「회사 공간을 확인하지 못했어요」와 「다시 확인」을 둔다(PC 검수 F1). 다 확인됐으면 null이다
+function assignmentCheckOf(workspace) {
+  const status = typeof workspace?.status === 'string' && workspace.status ? workspace.status : 'unavailable';
+  return status === 'resolved' ? null : { status };
+}
+
 function mapDesktopResolveErrorToWorkspace(code) {
   if (
     code === 'LOGIN_REQUIRED'
@@ -1495,7 +1502,8 @@ export function mountDesktopPortalHost({
     };
   }
 
-  async function executeDesktopAssignmentFlow({ accountKey, generation, openSingle = true }) {
+  // quiet: 들어온 뒤 펼침의 「다시 확인」처럼 배정만 다시 읽을 때는 첫 화면 경로(onApplyHashRoute)를 건드리지 않는다
+  async function executeDesktopAssignmentFlow({ accountKey, generation, openSingle = true, quiet = false }) {
     const liveAuth = await readLiveAuth();
     if (hasAccountDiverged(liveAuth, accountKey)) {
       return {
@@ -1581,7 +1589,7 @@ export function mountDesktopPortalHost({
     // 기존 테스트용 customBoundaries 반환 형태도 함께 지원한다.
     if (hasCustomResolver && assigned && assigned.kind === 'none') {
       const purposeMode = resolveDesktopEnteringPurposeMode(postResolveAuth, accountKey);
-      if (purposeMode === 'onboarding') {
+      if (purposeMode === 'onboarding' && !quiet) {
         onApplyHashRoute?.();
       }
       return { ok: true, action: 'purpose', purposeMode };
@@ -1672,7 +1680,7 @@ export function mountDesktopPortalHost({
     if (parsedResult.status === 'resolved' && parsedResult.unavailable.length === 0) {
       if (parsedResult.destinations.length === 0) {
         const purposeMode = resolveDesktopEnteringPurposeMode(postResolveAuth, accountKey);
-        if (purposeMode === 'onboarding') {
+        if (purposeMode === 'onboarding' && !quiet) {
           onApplyHashRoute?.();
         }
         return { ok: true, action: 'purpose', purposeMode };
@@ -1847,9 +1855,21 @@ export function mountDesktopPortalHost({
       const result = await executeDesktopAssignmentFlow({ accountKey, generation, openSingle: false });
       if (!isPlainObject(result) || result.ok === false || result.action !== 'workspace') return result;
       const destinations = Array.isArray(result.workspace?.destinations) ? [...result.workspace.destinations] : [];
+      const assignmentCheck = assignmentCheckOf(result.workspace);
       const personal = await enterPersonalAfterAssignment(accountKey, generation);
       if (personal.ok === false) return personal;
-      return { ...personal, destinations };
+      return { ...personal, destinations, ...(assignmentCheck ? { assignmentCheck } : {}) };
+    },
+
+    // 펼침의 「다시 확인」: 들어온 채로 배정만 다시 읽는다. 회사 공간을 열지 않고 첫 화면 경로도 건드리지 않는다(PC 검수 F1, 유호님 11-21 「다 고쳐야지」)
+    async onRecheckSpaces({ accountKey, generation } = {}) {
+      const result = await executeDesktopAssignmentFlow({ accountKey, generation, openSingle: false, quiet: true });
+      if (!isPlainObject(result)) return { ok: false, code: 'UNAVAILABLE', message: '' };
+      if (result.ok === false) return result;
+      if (result.action !== 'workspace') return { ok: true, destinations: [] };
+      const destinations = Array.isArray(result.workspace?.destinations) ? [...result.workspace.destinations] : [];
+      const assignmentCheck = assignmentCheckOf(result.workspace);
+      return { ok: true, destinations, ...(assignmentCheck ? { assignmentCheck } : {}) };
     },
 
     async onRetryWorkspace(context) {

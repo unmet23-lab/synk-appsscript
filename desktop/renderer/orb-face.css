@@ -136,6 +136,9 @@
 #portal-entry .fan-foot .quiet:hover:not(:disabled){color:var(--paper);border-bottom-color:var(--paper)}
 #portal-entry .fan-error{margin:0 0 8px;max-width:22em;font:var(--small);color:var(--paper)}
 #portal-entry .fan-error:empty{display:none}
+/* 펼침의 배정 조회 까닭(PC 검수 F1). 오류 글보다 한 단계 옅다 */
+#portal-entry .fan-lead{margin:0 0 8px;max-width:22em;font:var(--small);color:rgba(243,241,236,.72)}
+#portal-entry .fan-lead:empty{display:none}
 /* 펼친 동안 이름 단추와 오브제 줄은 물러나고, 방은 흐리고 눌리지 않는다. 바깥을 눌러 닫을 때 흐린 줄이나 단추가 같이 눌리지 않게 한다(설계 검토 1차 4) */
 #portal-entry .orb-stage[data-fan] .here-name,#portal-entry .orb-stage[data-fan] .rail{opacity:0;pointer-events:none}
 #portal-entry .orb-stage[data-fan] .room{opacity:.14;pointer-events:none}
