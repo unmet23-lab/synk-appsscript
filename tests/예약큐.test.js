@@ -569,15 +569,20 @@ test('실제 sns-계정.json — LAB 40곳(11-19 캄보디아 틱톡이 더해�
   }
   assert.equal(new Set(lab.map(([, a]) => a.language)).size, 21);
   assert.equal(new Set(lab.map(([, a]) => a.countryCode).filter(Boolean)).size, 25);
-  assert.deepEqual(lab.filter(([, a]) => a.audience === 'global').map(([key]) => key), ['lab-youtube'], '전 세계 계정은 @synkkorean 하나');
+  assert.deepEqual(lab.filter(([, a]) => a.audience === 'global').map(([key]) => key), [], '11-21부터 전 세계 계정은 없다(@synkkorean은 몽골 MN)');
+  // 11-21 유호님 — @synkkorean은 몽골 줄(몽골 다섯 계정과 같은 시각), 영어 원본은 11-26 점검까지 @synklabusa 현지 21:00 한 칸
+  assert.deepEqual([real['lab-youtube'].countryCode, real['lab-youtube'].language, real['lab-youtube'].dailyLine], ['MN', 'mn', 'LAB 몽골']);
+  assert.deepEqual(lab.filter(([, a]) => a.dailyLine === 'LAB 영어').map(([key]) => key), ['lab-us-youtube'], 'LAB 영어 줄은 @synklabusa 하나');
+  assert.deepEqual(T.slotsOn(real['lab-us-youtube'], '2026-11-23').map((s) => s.time), ['21:00'], '13:00 돌림 칸은 닫고 21:00 칸만 — 열어 두면 13시 돌림 빈 칸이 LAB 영어 빈 칸으로 보인다');
+  assert.equal(real['lab-us-youtube'].rotationSeed, undefined, '영어 편은 돌림 원본이 아니라 씨앗을 켜지 않는다(켜면 판본할일이 이 계정을 뺀다)');
   // 같은 나라 · 같은 플랫폼에 계정이 둘이면 안 된다(나라를 헷갈려 같은 영상이 두 번 나간다)
   const spots = lab.map(([, a]) => `${a.platform}|${a.countryCode || a.audience}`);
   assert.equal(new Set(spots).size, spots.length, '같은 나라 · 같은 플랫폼 계정 겹침');
-  // 같은 언어 묶음(같은 플랫폼 · 같은 말 — languageGroup, 없으면 language): 유튜브 영어 여섯(필리핀은 판이 필리핀어, 검사만 함께) · 유튜브 스페인어 둘뿐
+  // 같은 언어 묶음(같은 플랫폼 · 같은 말 — languageGroup, 없으면 language): 유튜브 영어 다섯(필리핀은 판이 필리핀어, 검사만 함께 · 11-21부터 @synkkorean은 몽골어라 빠짐) · 유튜브 스페인어 둘뿐
   const 돌림 = require('../tools/lib/돌림.js');
   const bundles = 돌림.bundlesOf(Object.fromEntries(lab));
   assert.deepEqual(bundles.map((b) => `${b.platform}|${b.group}|${[...b.accounts].sort().join(',')}`), [
-    'youtube|en|lab-au-youtube,lab-ca-youtube,lab-nz-youtube,lab-ph-youtube,lab-us-youtube,lab-youtube',
+    'youtube|en|lab-au-youtube,lab-ca-youtube,lab-nz-youtube,lab-ph-youtube,lab-us-youtube',
     'youtube|es|lab-mx-youtube,lab-py-youtube',
   ]);
   // 묶음 안에서 판본 키를 둘이 쓰지 않는다(같은 키면 같은 파일이 두 계정에 간다)

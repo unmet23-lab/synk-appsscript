@@ -123,6 +123,28 @@ test('표 — 편 줄 계정의 72시간 배수(없으면 24시간)를 관문 �
   assert.deepEqual(관문.요약절([]), []);
 });
 
+test('표 — 줄을 바꾼 계정은 그때 줄로 센다(11-21 @synkkorean 영어 → 몽골: 11-22 전 판은 LAB 영어, 뒤 판은 LAB 몽골)', t => {
+  const { root } = tempMarketing(t);
+  fs.writeFileSync(path.join(root, 'sns-계정.json'), JSON.stringify({ accounts: {
+    'lab-instagram': { platform: 'instagram', dailyLine: 'LAB 몽골' },
+    'lab-youtube': { platform: 'youtube', dailyLine: 'LAB 몽골' },
+    'lab-us-youtube': { platform: 'youtube', dailyLine: 'LAB 영어' },
+  } }));
+  const index = 편.buildIndex(root);
+  const at = (iso) => ({ publishedAt: iso });
+  const now = Date.parse('2026-11-30T12:00:00+09:00');
+  const judgments = [
+    { ...j('youtube:old', 'LAB_영어_20261102', 'lab-youtube', '72h', 1.7, 0), ...at('2026-11-20T21:00:00+09:00') }, // 바꾸기 전 영어 편
+    { ...j('youtube:us', 'LAB_영어_20261102', 'lab-us-youtube', '72h', 0.4, 0), ...at('2026-11-22T21:00:00-05:00') },
+    { ...j('youtube:mn', 'LAB_넘음_mn_20261101', 'lab-youtube', '72h', 2.2, 0), ...at('2026-11-22T13:00:00+09:00') }, // 바꾼 뒤 몽골 편
+    { ...j('youtube:late-en', 'LAB_못넘음_mn_20261102', 'lab-youtube', '72h', 9, 0), ...at('2026-11-20T21:00:00+09:00') }, // 바꾸기 전 몽골 편 판은 영어 줄이라 뺀다
+  ];
+  const by = Object.fromEntries(관문.표({ judgments, index, now }).map((r) => [r.folder, r]));
+  assert.equal(by.LAB_영어_20261102.배수, 1.7, '옛 영어 판과 새 미국 판 가운데 큰 값');
+  assert.equal(by.LAB_넘음_mn_20261101.배수, 2.2, '바꾼 뒤 @synkkorean 몽골 판은 LAB 몽골에 든다');
+  assert.equal(by.LAB_못넘음_mn_20261102, undefined);
+});
+
 test('게시성과 요약 — 관문 절은 편 색인이 없거나 읽다 막혀도 요약을 멈추지 않는다', () => {
   const text = 도구.summarize({ ledger: [], now: NOW, index: null });
   assert.match(text, /## 훅 이름표별/);

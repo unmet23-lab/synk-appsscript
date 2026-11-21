@@ -88,6 +88,16 @@ function 장부상태(ledgerText, id) {
   return (done.length ? done[done.length - 1] : rows[rows.length - 1]) || null;
 }
 
+// 줄을 바꾼 계정의 옛 줄 — 그때까지 나간 판은 옛 줄로 센다. @synkkorean(lab-youtube)은 11-21 유호님 결정으로 영어에서 몽골 줄로 바뀌었고
+// 몽골 편은 11-22부터 나간다. 지금 원장 줄로만 가르면 그 전 30일의 영어 편 반응이 「LAB 영어」 표에서 빠진다.
+const 옛줄 = Object.freeze([{ 계정: 'lab-youtube', 줄: 'LAB 영어', 까지: Date.parse('2026-11-22T00:00:00+09:00') }]);
+/** 그 판정이 나간 때의 계정 줄 — 옛 줄 표에 든 때면 그 줄, 아니면 지금 원장 줄 */
+function 판정줄(l, lineOf) {
+  const at = Date.parse(l.publishedAt);
+  const old = 옛줄.find((x) => x.계정 === l.account && Number.isFinite(at) && at < x.까지);
+  return old ? old.줄 : lineOf.get(l.account);
+}
+
 /** sns-계정.json → 계정 키 → dailyLine */
 function 계정줄들(marketingRoot) {
   try {
@@ -115,7 +125,7 @@ function 표({ judgments = [], index = null, now = Date.now(), 날 = 30 } = {}) 
   for (const l of judgments) {
     if (!l || !l.folder || !folders.has(l.folder) || (l.point !== '72h' && l.point !== '24h')) continue;
     const 줄 = 편줄(l.folder);
-    if (!줄 || lineOf.get(l.account) !== 줄) continue; // 두 채널 판 · 다른 줄 계정은 뺀다
+    if (!줄 || 판정줄(l, lineOf) !== 줄) continue; // 두 채널 판 · 다른 줄 계정은 뺀다(줄을 바꾼 계정은 그때 줄로 — 옛줄)
     // 하루 숫자로만 재는 플랫폼(텔레그램 · 샤오훙수 · 스레드 · RUTUBE, 11-19)은 뺀다 — 조회 몇 회짜리 채널이 「가장 큰 배수」를 차지하지 않게
     if (l.platform && !서버판.has(l.platform)) continue;
     if (!(Date.parse(l.publishedAt) >= cut)) continue;

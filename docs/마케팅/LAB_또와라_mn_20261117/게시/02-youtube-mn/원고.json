@@ -1,0 +1,20 @@
+{
+  "id": "02-youtube-mn",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "mn",
+  "audioLanguage": "mn",
+  "title": "«-어라» (-өра) бол ахмад хүн дүү, хүүхдэдээ хэлэхдээ хэрэглэдэг захирах нөхцөл.",
+  "caption": "«-어라» (-өра) бол ахмад хүн дүү, хүүхдэдээ хэлэхдээ хэрэглэдэг захирах нөхцөл. Монголоор «-аарай/-ээрэй» гэж ойлгож болно.\n먹어라 (мөгөра) = Идээрэй · 입어라 (ибөра) = Өмсөөрэй · 챙겨라 (чэнгёра) = Аваад яваарай · 가라 (гара) = Одоо яваарай · 또 와라 (тто вара) = Дахиад ирээрэй\nАхмад хүнд «-어라» биш «-세요» гэж хэлнэ шүү (드세요 · 가세요).\nТанд үргэлж «-어라» гэж хэлдэг хүн байдаг уу? Сэтгэгдэл хэсэгт бичээрэй 👇\nБид бол SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\n#солонгосхэл #한국어 #learnkorean #mongolia",
+  "pinnedComment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+  "alt": [
+    "A needle-felt miniature story about a Korean boarding-house grandmother and Mongle, a coral felt ghost-like mascot going home to Mongolia. At breakfast she slams down a bowl of rice piled into a mountain and says 먹어라! (eat!), then slaps on one more scoop until Mongle is squished. At the door she zips Mongle into a huge puffy long padded coat until only its eyes show: 입어라! (put it on!). In its room she stacks a tower of side-dish containers into the suitcase: 챙겨라! (take it!). A dark label over her head shows -어라 · -아라 = -аарай with 먹어라 · 입어라 · 가라 · 와라. On the day Mongle flies home, at the airport she says gruffly 가라! (go!) but will not let go of the suitcase handle; the moving walkway drags her along, crying and shouting 가라! 가라!. At the glass gate she finally lets go and says softly 또 와라. (come again.) Mongle answers 네…! in tears, and as the glass door closes she squeezes one more kimchi container through the gap onto Mongle's head: 챙겨라!"
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "영상은 01-ig-fb-mn/video.mp4(인스타 판과 같은 파일), 표지는 01-ig-fb-mn/cover.png. 제목 = 캡션_mn.txt 첫 줄의 첫 문장(첫 줄이 121자라 유튜브 한도 100자를 넘어서), 설명 = 캡션_mn.txt 전문, 고정 댓글 = 첫댓글_mn.txt. 동영상 언어는 나라별 유튜브 판 관례대로 그 판 말 mn(결정 11-11 · 게시경로 2-1). 합성 표시는 인스타 판과 같게 켜지 않음. 2026-11-21 @synkkorean이 몽골 채널로 바뀌며 단 판.",
+  "version": "m60-mn-v8"
+}

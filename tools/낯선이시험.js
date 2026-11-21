@@ -37,7 +37,8 @@ const ROOT = path.resolve(__dirname, '..');
 // 이해는 됐는데 몽글 · 펠트 카페가 지난 편과 같다는 이유가 섞여 떨어졌다). 같은 틀은 무대 구성 · 말 순서 · 머리 글 · 끝 카드로만 본다.
 const LAB고정 = '펠트 인형 마스코트(몽글 · 바리스타)와 펠트 카페 · 동네';
 const 시청자 = {
-  'lab-en': { 곳: '유튜브 쇼츠', 사람: '한국어를 이제 막 배우기 시작한 영어 사용자', 계정: 'lab-youtube', 고정: LAB고정 },
+  // 11-21부터 영어 편은 @synklabusa(lab-us-youtube)에 먼저 나간다(@synkkorean은 몽골 채널 — 11-26 2주 점검까지 임시)
+  'lab-en': { 곳: '유튜브 쇼츠', 사람: '한국어를 이제 막 배우기 시작한 영어 사용자', 계정: 'lab-us-youtube', 고정: LAB고정 },
   'lab-mn': { 곳: '인스타 릴스', 사람: '한국어를 이제 막 배우기 시작한 몽골 사람(몽골어로 생각한다)', 계정: 'lab-instagram', 고정: LAB고정 },
   // 10-25 두 채널 판(기획장부/LAB.md 머리말) — 원본 편이 통과한 뒤 옮긴 판의 최종본을 그 나라 사람이 본다.
   'lab-cn': { 곳: '샤오훙수 영상 노트', 사람: '한국어를 이제 막 배우기 시작한 중국 사람(간체 중국어로 생각한다)', 계정: 'lab-cn-xiaohongshu', 고정: LAB고정 },
@@ -304,7 +305,8 @@ function pickPrevious(account, { exclude = null, roots = [ROOT, 공용작업본(
       if (name === exclude || found.has(name) || !fs.existsSync(path.join(base, name, '게시', '준비.json'))) continue;
       let plates;
       try { plates = 묶음.plates(묶음.load(path.join(base, name))); } catch { continue; } // 원고가 깨진 편(JSON 아닌 원고.json 등)은 건너뛴다
-      const plate = plates.find((p) => p.account === account && p.video?.exists && Date.parse(p.time || ''));
+      // 돌림 판(나라 판본 — 판 「돌림」: true)은 그 계정의 지난 「편」이 아니다(11-21: @synklabusa에는 몽골 원본의 US 판본이 걸려 있어 영어 편과 견주게 됐다)
+      const plate = plates.find((p) => p.account === account && !p.raw?.돌림 && p.video?.exists && Date.parse(p.time || ''));
       if (plate) found.set(name, { name, video: plate.video.path, time: Date.parse(plate.time) });
     }
   }

@@ -1,6 +1,6 @@
 {
   "브랜드": "lab-mn",
-  "이름": "LAB 몽골 (@synk.mn · synkworld)",
+  "이름": "LAB 몽골 (@synk.mn · synkworld · 유튜브 @synkkorean — 11-21부터)",
   "근거": "docs/마케팅/시청자수요조사_20261022.md 3절 · 원자료 lab-mn_채널.csv(쇼츠 5편 이상 채널, 영어권 큰 채널은 lab-en 쪽)·lab-mn_공개SNS관찰.csv",
   "판정": { "배수": 3, "최소조회": 1000, "작은채널구독상한": 30000, "작은채널최소조회": 1000 },
   "틱톡판정": { "배수": 3, "최소조회": 3000 },
@@ -36,7 +36,8 @@
     { "id": "UCrGiGjPiYxQbuFTwNPPHAdg", "이름": "KIO-korea in and out", "핸들": "@amen10000" },
     { "id": "UCxjk7Obtx8zJ4hyzBxF1Jaw", "이름": "Korean Up", "핸들": "@koreanupfo" },
     { "id": "UCq23_i1i6mNnW9i9hbtoO4A", "이름": "JiJiNaraa", "핸들": "@Jijinaraa" },
-    { "id": "UCS6UJPJt2tnAyKc-ymWkrkw", "이름": "하루한국어 · Haru Korean", "핸들": "@LeeDevlog81" }
+    { "id": "UCS6UJPJt2tnAyKc-ymWkrkw", "이름": "하루한국어 · Haru Korean", "핸들": "@LeeDevlog81" },
+    { "id": "UCmZplYKuNHLPng4iL2AbLLg", "이름": "SYNK LAB Mongolia | Хөгжилтэй солонгос хэл", "핸들": "@synkkorean", "우리": true }
   ],
   "검색": {
     "어": [

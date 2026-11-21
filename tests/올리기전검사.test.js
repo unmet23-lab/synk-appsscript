@@ -250,6 +250,25 @@ test('⑩ 매일 판 — 판 계정의 줄에서 빠진 계정은 확인할 것,
   assert.equal(검사.tiktokFindings(plates('lab-instagram'), {}, {}).filter((f) => f.code === 'tiktok-plate').length, 1, '계정 표에 줄이 없으면 ⑨가 그대로 본다');
 });
 
+test('판 시각과 슬롯은 그 계정의 현지 날짜로 견준다(11-21 — @synklabusa 영어 편은 현지 21:00 -05:00, 한국 날짜로는 다음 날)', () => {
+  const accounts = {
+    'lab-us-youtube': { platform: 'youtube', timeZone: 'America/New_York', dailyLine: 'LAB 영어' },
+    'lab-youtube': { platform: 'youtube', timeZone: 'Asia/Ulaanbaatar', dailyLine: 'LAB 몽골' },
+    'lab-mm-tiktok': { platform: 'tiktok', timeZone: 'Asia/Yangon', dailyLine: 'LAB 두 채널' },
+    'yuhobuilds-youtube': { platform: 'youtube' },
+  };
+  const p = (account, time, raw = {}) => ({ account, time, raw });
+  const prep = { 슬롯: '2026-11-22' };
+  assert.equal(검사.slotDayProblem(p('lab-us-youtube', '2026-11-22T21:00:00-05:00'), prep, accounts), null, '현지 11-22 21:00 = 한국 11-23 11:00 — 슬롯 날이다');
+  assert.match(검사.slotDayProblem(p('lab-us-youtube', '2026-11-23T21:00:00-05:00'), prep, accounts), /슬롯 2026-11-22 날이 아니다/);
+  assert.equal(검사.slotDayProblem(p('lab-youtube', '2026-11-22T21:00:00+09:00'), prep, accounts), null, '몽골 편은 한국 시각으로 적어도 같은 날(울란바토르 20:00)');
+  assert.equal(검사.slotDayProblem(p('yuhobuilds-youtube', '2026-11-22T21:00:00+09:00'), prep, accounts), null, '시간대가 없는 계정은 한국 날짜');
+  assert.match(검사.slotDayProblem(p('yuhobuilds-youtube', '2026-11-22T21:00:00-05:00'), prep, accounts), /날이 아니다/, '시간대가 없으면 한국 날짜로 본다(옛 셈 그대로)');
+  assert.equal(검사.slotDayProblem(p('lab-mm-tiktok', '2026-11-24T23:30:00+09:00'), prep, accounts), null, '두 채널 판은 날이 달라도 된다');
+  assert.equal(검사.slotDayProblem(p('lab-us-youtube', '2026-11-25T13:00:00-05:00', { 돌림: true }), prep, accounts), null, '돌림 판은 날이 달라도 된다');
+  assert.equal(검사.slotDayProblem(p('lab-us-youtube', '2026-11-22T21:00:00-05:00'), {}, accounts), null, '슬롯이 없으면 이 검사는 말하지 않는다(「slot」 고칠 것이 따로 뜬다)');
+});
+
 test('⑫ 한 편의 같은 플랫폼 판 둘이 20시간 안이면 고칠 것 — 버마어 판을 다음 날로 두면 통과(10-26 유호님 · 11-10 20시간)', () => {
   const tt = (account, time) => ({ account, platform: 'tiktok', time });
   const xhs = { account: 'lab-cn-xiaohongshu', platform: 'xiaohongshu', time: '2026-10-30T22:00:00+09:00' };

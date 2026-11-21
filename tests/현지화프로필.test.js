@@ -56,11 +56,17 @@ test('글꼴 — 굵기는 가장 가까운 파일, 윈도우 경로는 %WINDIR%
   assert.deepEqual(모름, ['Comic Sans MS']);
 });
 
-test('계정 → 언어 · 나라 · 판본 키. @synkkorean은 판본 키 EN이라 영어 나라 전부를 시청자로 본다', () => {
+test('계정 → 언어 · 나라 · 판본 키. @synkkorean은 11-21부터 몽골(MN) 계정이고, 나라 코드가 아닌 판본 키는 그 언어 나라 전부를 시청자로 본다', () => {
   const yt = P.계정('lab-youtube', { 원장 });
-  assert.equal(yt.판본키, 'EN');
-  assert.deepEqual(yt.나라코드, ['US', 'CA', 'AU', 'NZ']);
-  assert.match(yt.나라설명, /EN/);
+  assert.equal(yt.판본키, 'MN');
+  assert.deepEqual(yt.나라코드, ['MN']);
+  assert.equal(yt.언어.코드, 'mn');
+  assert.equal(yt.나라설명, null);
+  // 전 세계 계정 꼴(판본 키가 나라 코드가 아님) — 11-20까지의 @synkkorean
+  const 옛 = P.계정('옛', { 원장: { accounts: { 옛: { platform: 'youtube', language: 'en', rotationVersion: 'EN', audience: 'global' } } } });
+  assert.equal(옛.판본키, 'EN');
+  assert.deepEqual(옛.나라코드, ['US', 'CA', 'AU', 'NZ']);
+  assert.match(옛.나라설명, /EN/);
   const my = P.계정('lab-my-youtube', { 원장 });
   assert.equal(my.언어.코드, 'ms');
   assert.deepEqual(my.나라코드, ['MY']);

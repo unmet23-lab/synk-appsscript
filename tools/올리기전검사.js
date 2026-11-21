@@ -1051,6 +1051,18 @@ function sameLanguageFindings(bundle, plates) {
 }
 const tiktokDayFindings = (plates) => samePlatformFindings(plates); // 옛 이름(시험 · 다른 도구가 부른다)
 
+// 판 시각이 편 슬롯 날인가 → null 또는 확인할 것 글. 슬롯은 그 계정의 현지 날짜로 견준다(11-21 — @synklabusa 영어 편은 현지 21:00(-05:00)이라
+// 한국 날짜로는 다음 날이다). 시간대가 없는 계정은 한국 날짜 그대로다.
+// LAB 두 채널 판은 그 줄의 목표 칸에 두니(버마어 틱톡은 몽골 틱톡과 다른 날) 편 슬롯과 날이 달라도 된다(10-26).
+// 돌림 판(11-10)은 돌림표가 계정마다 날을 어긋나게 정하니 편 슬롯과 날이 다른 것이 정상이다 — 칸은 rotationFindings가 본다.
+function slotDayProblem(plate, prep, accounts = {}) {
+  const at = Date.parse(plate.time || '');
+  if (!Number.isFinite(at) || !/^\d{4}-\d{2}-\d{2}$/.test(prep.슬롯 || '')) return null;
+  const a = accounts[plate.account];
+  if (a?.dailyLine === 'LAB 두 채널' || plate.raw?.돌림) return null;
+  return T.localDate(at, T.tzOf(a)) === prep.슬롯 ? null : `시각 ${plate.time}이 슬롯 ${prep.슬롯} 날이 아니다`;
+}
+
 async function run(dir, opts = {}) {
   const bundle = 묶음.load(dir);
   const prep = bundle.prep;
@@ -1086,10 +1098,8 @@ async function run(dir, opts = {}) {
     const at = plate.time ? Date.parse(plate.time) : NaN;
     if (!plate.time || Number.isNaN(at) || !/[+-]\d{2}:?\d{2}$|Z$/.test(plate.time)) add(FIX, 'time', where, `「시각」이 시간대가 붙은 시각(YYYY-MM-DDTHH:MM+09:00)이 아니다: ${plate.time || '없음'}`);
     else {
-      // LAB 두 채널 판은 그 줄의 목표 칸에 두니(버마어 틱톡은 몽골 틱톡과 다른 날) 편 슬롯과 날이 달라도 된다(10-26).
-      // 돌림 판(11-10)은 돌림표가 계정마다 날을 어긋나게 정하니 편 슬롯과 날이 다른 것이 정상이다 — 칸은 rotationFindings가 본다.
-      const ownDay = bundle.accounts[plate.account]?.dailyLine === 'LAB 두 채널' || Boolean(plate.raw?.돌림);
-      if (slotOk && !ownDay && kst(at).slice(0, 10) !== prep.슬롯) add(LOOK, 'time-slot', where, `시각 ${plate.time}이 슬롯 ${prep.슬롯} 날이 아니다`);
+      const slotDay = slotOk ? slotDayProblem(plate, prep, bundle.accounts) : null;
+      if (slotDay) add(LOOK, 'time-slot', where, slotDay);
       if (at < Date.now() && !done) add(LOOK, 'time-past', where, `시각 ${plate.time}이 이미 지났다 — 슬롯을 옮긴다`);
     }
     if (plate.blog) {
@@ -1291,5 +1301,5 @@ async function main() {
 
 if (require.main === module) main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 2; });
 
-module.exports = { run, landscapeReason, compositionRanges, inComposition, isLandscape, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, sameLanguageFindings, slotTimeFindings, rotationFindings, closedFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
+module.exports = { run, landscapeReason, compositionRanges, inComposition, isLandscape, linesOf, problemsOf, promptFindings, tiktokFindings, dailyFindings, tiktokDayFindings, samePlatformFindings, sameLanguageFindings, slotTimeFindings, slotDayProblem, rotationFindings, closedFindings, labelOf, plainWhite, shotRanges, inShot, voiceFiles, voiceFindings, parseTangle, tangledVoices,
   homageFindings, aestheticFindings, AESTHETIC_FROM, compositionLikeOriginal, stillLikeOriginal, gapFinding, SAFE };

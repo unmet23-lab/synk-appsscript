@@ -1251,10 +1251,12 @@
         "이야기",
         "노래"
       ],
-      "dailyLine": "LAB 나라별",
+      "dailyLine": "LAB 영어",
+      "lineNote": "2026-11-21 유호님 결정 — @synkkorean이 몽골 채널로 바뀌어, 11-26 「LAB 나라별 유튜브 2주 점검」에서 계속 여부를 정할 때까지 영어 원본(E편)을 이 채널 현지 21:00 칸에 먼저 올린다(임시). 13:00 나라별 돌림 칸은 그동안 닫는다(dailyTimesFrom 「미정」). 21:00 칸은 원장 형식 이름이 노래지만 E편이 채운다(dailyFormatsFrom 노래 = E편 첫날). 씨앗(rotationSeed)은 켜지 않는다 — E편은 돌림 원본이 아니다. 11-20까지는 LAB 나라별 줄(13:00 US 판본)",
       "dailyFrom": "2026-11-12",
+      "dailyTimesFrom": "미정",
       "dailyFormatsFrom": {
-        "노래": "미정"
+        "노래": "2026-11-22"
       },
       "postRoute": "youtube-studio",
       "postRouteVerified": true,
@@ -1596,11 +1598,11 @@
     "lab-youtube": {
       "brand": "LAB",
       "platform": "youtube",
-      "audience": "global",
-      "audienceNote": "전 세계 · 영어 — 나라 하나를 겨누지 않는다(판본 키 EN, PULSE 라디오 라이브와 함께 쓰는 채널). 09-20에 몽골 자리로 프로필을 바꿨던 흔적으로 countryCode MN이 남아 있었다(11-10 걷음). 채널 이름은 11-10 공개 화면에서 읽음",
+      "countryCode": "MN",
+      "audienceNote": "몽골 · 몽골어 — 2026-11-21 유호님 결정으로 LAB 몽골 줄(몽골 편을 인스타와 같은 날 같은 파일로). PULSE 라디오 라이브와 함께 쓰는 채널. 11-20까지는 전 세계 · 영어 채널(판본 키 EN)이었다",
       "handle": "@synkkorean",
       "expectedChannelId": "UCmZplYKuNHLPng4iL2AbLLg",
-      "expectedChannelTitle": "SYNK LAB | Learn Korean",
+      "expectedChannelTitle": "SYNK LAB Mongolia | Хөгжилтэй солонгос хэл",
       "publisher": "direct",
       "categoryId": "27",
       "madeForKids": false,
@@ -1610,29 +1612,28 @@
       "profileEvidence": "온라인마케팅지도/intl-youtube/publication.json",
       "loginAlias": "unmet23",
       "loginVerifiedAt": "2026-09-20",
-      "dailyLine": "LAB 영어",
+      "dailyLine": "LAB 몽골",
       "loginIdentityRef": "unmet23",
       "loginAuditSource": "docs/마케팅/온라인마케팅지도/inputs/login-audit.json",
-      "language": "en",
-      "timeZone": "Asia/Seoul",
-      "rotationVersion": "EN",
+      "language": "mn",
+      "timeZone": "Asia/Ulaanbaatar",
       "dailyTimes": [
-        "13:00",
-        "21:00"
+        "12:00",
+        "20:00"
       ],
       "dailyFormats": [
         "이야기",
         "노래"
       ],
-      "dailyTimesFrom": "미정",
+      "dailyTimesFrom": "2026-11-22",
       "postRoute": "workspace",
       "postRouteVerified": true,
       "postRoutePolicy": "official-api",
       "metricsRoute": "server",
       "metricsState": "reading",
       "rotationSeed": true,
-      "profileCheckedAt": "2026-11-18",
-      "profileCheckNote": "2026-11-18 LAB 39 프로필 점검 — 채널 설명을 13:00 이야기 편에 맞춰 바꿨다(카본 · Opus 직역 · Fable 5.2 세 겹, 스튜디오를 다시 열어 같은 글 확인). 배너 · 사진은 그대로. 기록 docs/마케팅/LAB프로필점검_20261118/README.md"
+      "profileCheckedAt": "2026-11-21",
+      "profileCheckNote": "2026-11-21 몽골로 전환 중 — 채널 이름 · 설명을 몽골어로 바꾸는 중(유호님 11-21 결정)"
     },
     "lab-instagram": {
       "brand": "LAB",
@@ -2508,7 +2509,7 @@
   "loginRoutingAuditedAt": "2026-11-09",
   "labRotation": {
     "설계": "LAB_하루두편_설계_20261110/README.md",
-    "칸": "계정마다 dailyTimes(timeZone의 현지 시각) · dailyFormats — 13:00 이야기 · 21:00 노래(11-10 밤 유호님 — 퀴즈 대신), 텔레그램은 21:00 노래 한 편. 몽골 네 계정은 11-09 결정 시각(한국 13:00 · 21:00 = 울란바토르 12:00 · 20:00) 그대로",
+    "칸": "계정마다 dailyTimes(timeZone의 현지 시각) · dailyFormats — 13:00 이야기 · 21:00 노래(11-10 밤 유호님 — 퀴즈 대신), 텔레그램은 21:00 노래 한 편. 몽골 다섯 계정(11-21부터 유튜브 @synkkorean 포함)은 11-09 결정 시각(한국 13:00 · 21:00 = 울란바토르 12:00 · 20:00) 그대로",
     "시작": "dailyFrom · dailyTimesFrom이 「미정」이면 그 칸은 시작 전(tools/예약큐.js · tools/돌림표.js가 셈에서 뺀다). 여는 날(현지 날짜)을 적는다. 11-15부터 프로필 · 로그인이 된 계정은 판본과 비축을 기다리지 않고 「첫판」과 함께 연다 — 열린 계정의 빈 칸이 판본 회차의 할 일이 되고, 그 키 판본이 하나라도 검수를 넘기면 첫 판이 달린다(유호님 11-15 「응, 시작해」 · 제작 절차 「LAB 하루 두 편」 8). 처음 적은 「5일치 비축을 건 날을 적는다」는 한 번도 차지 않아 17곳이 닫힌 채 남아 바꿨다",
     "여는법": "나라별 계정은 13:00 이야기 칸부터 연다 — 21:00 노래 칸은 dailyFormatsFrom {\"노래\": 「미정」}으로 닫아 두고 노래 비축(리듬 한국어 준비안)이 차면 날짜를 적는다. 노래 원본은 「돌림」.형식 「노래」로 적고, 차례를 지키는 곡은 「돌림」.연재 {이름, 차례}, 다른 길로 이미 올린 계정은 「돌림」.이미받음에 적는다(tools/돌림표.js 머리말). 여는 차례: 프로필이 차고(publicProfileComplete true) 그 길로 로그인된 계정의 postRouteVerified를 「첫판」으로, dailyFrom을 여는 날로 → 판 하나(첫 판 시험) → 예약 목록 · 공개 뒤 대조 → true. 걸 길은 지금 길(브라우저 — 유호님 11-10 「지금 길로 열어」, 약관 근거는 postRoutePolicy · 게시경로.md)",
     "판본검수": [
@@ -2524,7 +2525,7 @@
       "youtubeCap": 5,
       "window": 5
     },
-    "같은언어": "같은 플랫폼에서 같은 말로 올리는 계정(languageGroup, 없으면 language)은 한 묶음 — 같은 원본을 24시간 안에 둘이 받지 않고, 같은 파일(판본 지문)은 날이 달라도 둘이 받지 않는다(tools/lib/돌림.js ⑥, 확인 node tools/돌림표.js --묶음). 유튜브 영어: @synkkorean(전 세계) · 미국 · 캐나다 · 호주 · 뉴질랜드 + 필리핀(판은 필리핀어, 검사만 함께), 유튜브 스페인어: 멕시코 · 파라과이. 인도(힌디어) · 말레이시아(말레이어) · 스리랑카(싱할라어) · 카자흐스탄(카자흐어) · 키르기스스탄(키르기스어)은 현지어판이라 영어 · 러시아어 묶음이 아니다(docs/마케팅/현지화/README.md 「같은 언어 묶음」)",
+    "같은언어": "같은 플랫폼에서 같은 말로 올리는 계정(languageGroup, 없으면 language)은 한 묶음 — 같은 원본을 24시간 안에 둘이 받지 않고, 같은 파일(판본 지문)은 날이 달라도 둘이 받지 않는다(tools/lib/돌림.js ⑥, 확인 node tools/돌림표.js --묶음). 유튜브 영어: 미국 · 캐나다 · 호주 · 뉴질랜드 + 필리핀(판은 필리핀어, 검사만 함께 — @synkkorean은 11-21부터 몽골어라 묶음 밖), 유튜브 스페인어: 멕시코 · 파라과이. 인도(힌디어) · 말레이시아(말레이어) · 스리랑카(싱할라어) · 카자흐스탄(카자흐어) · 키르기스스탄(키르기스어)은 현지어판이라 영어 · 러시아어 묶음이 아니다(docs/마케팅/현지화/README.md 「같은 언어 묶음」)",
     "경로근거": "LAB_하루두편_설계_20261110/게시경로.md — postRoutePolicy(official-api · browser-tos-prohibited · unknown)는 그 문서 2절의 약관 근거, metricsRoute(server · public-api · public-page · vk-api · screen-only) · metricsState(reading 게시물 숫자가 읽힘 · unconfirmed 채널만 등록돼 첫 게시 뒤 확인 · missing 결측)는 4절. 결측은 0이 아니라 빈칸"
   }
 }

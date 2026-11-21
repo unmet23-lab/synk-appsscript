@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-19T16:11:36.380Z",
+  "generatedAt": "2026-11-21T10:51:09.418Z",
   "sourceAt": "2026-11-10",
   "accounts": [
     {
@@ -11,7 +11,7 @@
         "PATH"
       ],
       "contentTrack": "LAB",
-      "purpose": "한국어 학습 영상·Shorts. 같은 계정의 SYNK Radio 라이브를 PULSE가 공유",
+      "purpose": "몽골 대상 한국어 학습 Shorts(2026-11-21부터 LAB 몽골 줄 · 몽골어 — 그 전에는 전 세계 영어). 같은 계정의 SYNK Radio 라이브를 PULSE가 공유",
       "classificationBasis": "한국어 학습 영상·Shorts. 같은 계정의 SYNK Radio 라이브를 PULSE가 공유. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정. PATH 연결은 유학·정착 교육 연계 계획이며 현재 운영 실적을 뜻하지 않음.",
       "classificationSourcePaths": [
         "docs/마케팅_정본.md",
@@ -22,7 +22,7 @@
       "publicUrl": "https://www.youtube.com/@synkkorean",
       "externalId": "UCmZplYKuNHLPng4iL2AbLLg",
       "country": "몽골",
-      "countryCode": null,
+      "countryCode": "MN",
       "accountStatus": "operating"
     },
     {
@@ -1382,7 +1382,7 @@
       "business": "LAB",
       "secondaryBusinesses": [],
       "contentTrack": "LAB",
-      "purpose": "현지 한국어 학습 콘텐츠",
+      "purpose": "현지 한국어 학습 콘텐츠. 2026-11-21부터 11-26 2주 점검까지 영어 원본(E편)을 먼저 올리는 채널(임시)",
       "classificationBasis": "현지 한국어 학습 콘텐츠. 기존 콘텐츠 트랙을 유지하며 담당 사업 정본에 배정.",
       "classificationSourcePaths": [
         "docs/마케팅_정본.md",

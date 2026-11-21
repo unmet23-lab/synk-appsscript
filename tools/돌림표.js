@@ -50,7 +50,8 @@
  * 연다). --준비무시는 준비 · 「미정」을 풀고 셈만 해 본다(--쓰기와 함께 못 쓴다).
  * 걸린 판(예약됨 · 게시됨 · 거는 중 · 작업실 승인 대기 — 다른 작업본이 게시 장부 표에 잡은 것까지)은 --다시 · --멈춤에도 지우지 않는다.
  * 같은 언어 묶음은 계정의 languageGroup, 없으면 language다(같은 플랫폼 안에서만 묶는다). 나라 칸(countryCode)은 그 계정이 겨누는 나라 하나 —
- * 나라를 겨누지 않는 계정(@synkkorean — 전 세계 · 영어)은 countryCode를 비우고 rotationVersion · audience를 적는다.
+ * 나라를 겨누지 않는 계정은 countryCode를 비우고 rotationVersion · audience(global)를 적는다 — 지금은 없다(11-20까지는 @synkkorean이 전 세계 · 영어였고,
+ * 11-21부터 몽골 MN 계정이다).
  */
 const fs = require('node:fs');
 const os = require('node:os');

@@ -24,7 +24,10 @@ test('설정 넷이 모두 맞다 — 시드 채널·검색어·틱톡·못 잼,
     assert.ok(설정.못잼.some(m => /인스타/.test(m.곳)), `${b} 인스타는 못 잼으로 둔다`);
   }
   const 우리 = b => 스캔.설정읽기(b).설정;
-  assert.ok(우리('lab-en').유튜브.some(c => c.우리 && c.핸들 === '@synkkorean'));
+  // 11-21부터 @synkkorean은 몽골 채널 — 영어 쪽 우리 유튜브는 11-26 점검까지 @synklabusa
+  assert.ok(우리('lab-en').유튜브.some(c => c.우리 && c.핸들 === '@synklabusa'));
+  assert.ok(!우리('lab-en').유튜브.some(c => c.핸들 === '@synkkorean'), '몽골 채널은 영어 시드 · 우리에서 뺀다');
+  assert.ok(우리('lab-mn').유튜브.some(c => c.우리 && c.핸들 === '@synkkorean'));
   assert.ok(우리('lab-mn').틱톡.some(t => t.우리 && t.핸들 === 'synk.mn'));
   assert.ok(우리('synkbrief').유튜브.some(c => c.우리 && c.핸들 === '@synkbrief'));
   assert.ok(우리('yuhobuilds').유튜브.some(c => c.우리 && c.핸들 === '@yuhobuilds'));

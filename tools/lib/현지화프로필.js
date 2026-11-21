@@ -93,8 +93,8 @@ function 원장(경로 = 원장경로) {
   return readJson(경로);
 }
 
-/** 계정 키 → 언어 · 나라 프로필과 판본 키(rotationVersion → countryCode). lab-youtube(@synkkorean)처럼 판본 키가 나라 코드가 아니면
- *  그 언어의 나라 전부를 시청자 나라로 본다(나라 하나를 겨누지 않는 「전 세계」 계정 — 원장 audience global, 나라 칸은 비어 있다). */
+/** 계정 키 → 언어 · 나라 프로필과 판본 키(rotationVersion → countryCode). 판본 키가 나라 코드가 아니면(11-20까지의 lab-youtube 「EN」처럼)
+ *  그 언어의 나라 전부를 시청자 나라로 본다(나라 하나를 겨누지 않는 「전 세계」 계정 — 원장 audience global, 나라 칸은 비어 있다. 11-21부터 그런 계정은 없다). */
 function 계정(키, { 원장: led = null } = {}) {
   const a = (led || 원장()).accounts?.[키];
   if (!a) return null;

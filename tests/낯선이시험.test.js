@@ -180,7 +180,7 @@ test('--틀 퀴즈: 9번은 지난 퀴즈끼리 무대 · 주제 · 표정 · �
 
 test('브랜드마다 시청자가 있고, 모르는 브랜드는 멈춘다 · 본 계정으로 지난 편을 찾는다', () => {
   for (const brand of ['lab-en', 'lab-mn', 'lab-cn', 'lab-mm', 'synkbrief', 'yuhobuilds', 'pulse']) assert.ok(시청자[brand]);
-  assert.equal(시청자['lab-en'].계정, 'lab-youtube');
+  assert.equal(시청자['lab-en'].계정, 'lab-us-youtube', '11-21부터 영어 편은 @synklabusa에 먼저 나간다(@synkkorean은 몽골)');
   assert.equal(시청자.yuhobuilds.계정, 'yuhobuilds-instagram');
   assert.throws(() => buildPrompt({ brand: 'shift', sheets: ['a'], speech: 'b' }), /브랜드는/);
 });
@@ -225,6 +225,11 @@ test('지난 편 — 같은 계정 판에 영상이 있는 편 가운데 이 편
     편('LAB_다_20261027', 'lab-youtube', '2026-10-27T21:00:00+09:00');
     편('LAB_몽골_20261028', 'lab-instagram', '2026-10-28T21:00:00+09:00');
     편('LAB_영상없음_20261029', 'lab-youtube', '2026-10-29T21:00:00+09:00', false);
+    // 돌림 판(나라 판본)은 그 계정의 지난 편으로 고르지 않는다(11-21)
+    const 돌림편 = path.join(root, 'docs', '마케팅', 'LAB_돌림_mn_20261030', '게시');
+    fs.mkdirSync(돌림편, { recursive: true });
+    fs.writeFileSync(path.join(돌림편, 'video.mp4'), 'x');
+    fs.writeFileSync(path.join(돌림편, '준비.json'), JSON.stringify({ 브랜드: 'LAB', 슬롯: '2026-10-30', 판: [{ 계정: 'lab-youtube', 파일: 'docs/마케팅/LAB_돌림_mn_20261030/게시/video.mp4', 시각: '2026-10-30T21:00:00+09:00', 돌림: true }] }));
     const got = pickPrevious('lab-youtube', { exclude: 'LAB_다_20261027', roots: [root] });
     assert.deepEqual(got.map((p) => p.name), ['LAB_나_20261026', 'LAB_가_20261024']);
     assert.ok(got[0].video.endsWith('video.mp4'));
