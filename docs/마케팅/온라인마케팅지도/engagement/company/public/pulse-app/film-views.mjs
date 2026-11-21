@@ -123,7 +123,7 @@ function roomScreen(p,{news=true}={}){
   if(p.state==='model'&&p.proposal)return `${roomScene(modelScene(p.proposal.id))}<p class="sx-small sx-room-cap"><b>${esc(nameOf(p.proposal.name))}</b> ${esc(t(p.proposal.line))}</p><div class="sx-room-others" data-model-others hidden>${otherModels(p.proposal)}</div>`;
   const preview=roomPreviewScreen(p);
   if(preview)return preview;
-  if(news&&p.news?.pictures?.length){const pics=p.news.pictures.map(src=>safeUrl(src,{media:true})).filter(Boolean);if(pics.length)return `${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" data-cap alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b> <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button></p>`;}
+  if(news&&p.news?.pictures?.length){const pics=p.news.pictures.map(src=>safeUrl(src,{media:true})).filter(Boolean);if(pics.length)return `${pics.length===1?`<img class="sx-q-fill" src="${esc(pics[0])}" data-cap alt="" decoding="async">`:`<div class="sx-room-files" data-count="${pics.length}">${pics.map(src=>`<img src="${esc(src)}" data-cap alt="" decoding="async">`).join('')}</div>`}<p class="sx-small sx-room-cap" data-room-news="n:${esc(p.news.id)}"><b>${esc(t('작업 중인 화면이에요 · 완성본이 아니에요'))}</b>${p.word?.id===p.news.id?'':` <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:${esc(p.news.id)}">${esc(t('소식 보기'))}</button>`}</p>`;}
   const chosenSrc=p.state==='prepare'?safeUrl(p.direction?.chosen?.src,{media:true}):'';
   if(chosenSrc)return `<img class="sx-q-fill" src="${esc(chosenSrc)}" data-cap alt="" decoding="async"><p class="sx-small sx-room-cap">${esc(t('고르신 방향'))} <b>${esc(p.direction.chosen.name)}</b></p>`;
   const cuts=p.draft?.cuts||[];
@@ -484,6 +484,20 @@ function proposeCard(m,ui={}){
 // 고객 방과, 영상 확인 · 납품의 단계 낱말 줄에 같이 쓴다.
 // onPersona({decision,button}) · onPersonaFiles(purpose,files): 고객 전용 인물 카드(판 3)의 승인 단추와 사진 보내기 — 부른 쪽(app.mjs)이 서버에 보낸다.
 // onKeep() · onMyModels(): 판 4 「내 모델로 모아 두기」와 「내 모델 열기」(persona-view personaKeep).
+// 낮 판: 같은 소식을 한 화면에 두 번 적지 않는다(11-21 다듬기). 선반에 선 그림은 나눈 말의 그 줄에서 접는다(is-on-shelf).
+// 한마디가 글을 끝까지 보이면 그 줄의 글은 한 줄로 줄이고(is-said), 더 볼 것이 없으면 「나눈 말에서 보기」도 감춘다. 한마디가 넉 줄에서 잘리면 그 줄이 전문을 그대로 보인다.
+// 손님이 나눈 말의 그 줄로 가자고 한 소식(「나눈 말에서 보기」 · 「소식 보기」 · 알림)은 접지 않는다 — 운영설계 9절 물음 3 「일지는 그대로 전문을 둔다」.
+// app.mjs openJournal이 부르고, 이 화면이 떠 있는 동안 기억한다(다시 그려도 그 줄은 전문과 그림 그대로).
+const wholeRows=new Set();
+export function keepWhole(id){if(!id)return;wholeRows.add(id);for(const row of document.querySelectorAll('.sx-j-row'))if(row.dataset.journalId===id)row.classList.remove('is-said','is-on-shelf');}
+function tidyEcho(host){
+  const rowOf=id=>id?Array.from(host.querySelectorAll('.sx-journal [data-journal-id]')).find(node=>node.dataset.journalId===id):null;
+  const shelf=rowOf(host.querySelector('.sx-room-screen>[data-room-news]')?.dataset.roomNews);if(shelf&&!wholeRows.has(shelf.dataset.journalId))shelf.classList.add('is-on-shelf');
+  const say=host.querySelector('[data-room-say]'),quote=say?.querySelector('blockquote'),link=say?.querySelector('[data-journal-target]'),row=rowOf(link?.dataset.journalTarget);
+  if(!quote||!row)return;
+  const mark=()=>{const whole=quote.scrollHeight-quote.clientHeight<=1&&!wholeRows.has(row.dataset.journalId);row.classList.toggle('is-said',whole);link.hidden=whole&&(!row.querySelector('.sx-j-shots')||row.classList.contains('is-on-shelf'));};
+  mark();if(typeof ResizeObserver==='function')new ResizeObserver(mark).observe(quote);document.fonts?.ready?.then(mark);
+}
 export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFiles,onForm,onPaper,onPersona,onPersonaFiles,onKeep,onMyModels,ui={}}={}){
   const host=root.querySelector('.sx-room,.sx-shell,.sx-draft');if(!host)return {unmount(){}};
   // 휴대폰 단계 띠: 지금 단계가 화면 안에 오게 띠만 민다.
@@ -494,6 +508,7 @@ export function mountRoom(root,{animate=true,onGo,onEdit,onContact,onModel,onFil
   document.documentElement.classList.toggle('sx-day',host.matches('.sx-room[data-day]'));
   // 낮 판 제목의 강조 구절은 그릴 때마다 여기서 감싼다(그리는 글은 통짜 그대로).
   const roomTitle=host.matches('.sx-room')?host.querySelector('[data-room-title]'):null,keyed=!!roomTitle&&host.matches('[data-day]')&&markTitle(roomTitle);
+  if(host.matches('.sx-room[data-day]'))tidyEcho(host);
   if(animate&&host.matches('.sx-room')){
     // 강조 구절이 든 제목은 어절로 쪼개지 않는다(쪼개면 구절 표시가 지워진다) — 제목 전체를 한 번에 올린다.
     if(roomTitle){if(keyed)rise(roomTitle,{delay:60});else revealWords(roomTitle,{delay:60});}

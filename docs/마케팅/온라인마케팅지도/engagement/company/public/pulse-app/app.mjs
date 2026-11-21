@@ -11,7 +11,7 @@ import {header,headerCrumb,welcome,login,picker,projectView,dialogContent,liveVi
 import {createLiveConnection,projectRevision} from './live.mjs';
 import {publicBackend,projectBackend,resumableDraft} from './request-backend.mjs';
 import {mountRequestFlow} from './request-flow.mjs';
-import {mountEntry,mountRoom,mountDraft,mountDirection,JOURNAL_SHOWN,JOURNAL_SHEET,journalOverlay,journalSetOpen,journalFocus,sayPhotoChips} from './film-views.mjs';
+import {mountEntry,mountRoom,mountDraft,mountDirection,JOURNAL_SHOWN,JOURNAL_SHEET,journalOverlay,journalSetOpen,journalFocus,sayPhotoChips,keepWhole} from './film-views.mjs';
 import {mountFilmList,leanData} from './film-home.mjs';
 import {mountReview,mountFinal} from './film-review.mjs';
 import {draftModel,deskModel,roomState,roomStage,directionModel,usesRoom,roomTab,roomRoute,journalModel,journalShownIds,journalSeenUpTo,marketingHeads} from './room-view.mjs';
@@ -243,6 +243,7 @@ function watchJournal(){
 const setJournalOpen=on=>journalSetOpen(main,on);
 // 열기: 단이면 일지로 옮겨 묻기 칸에, 서랍 · 시트면 연다. target이 있으면(알림) 그 줄로.
 function openJournal({target='',opener=null}={}){
+  if(target)keepWhole(target);
   let box=journalBox();if(!box)return;
   // 「말만 보기」가 켜져 그 줄이 숨어 있으면 거르개를 풀고 모든 줄을 연다(작업 소식 줄 · 운영 조각 4).
   if(target&&!box.querySelector(`[data-journal-id="${CSS.escape(target)}"]`)&&(!s.journalAll||s.journalTalk)){s.journalAll=true;s.journalTalk=false;render();box=journalBox();if(!box)return;}
@@ -775,7 +776,9 @@ let previewUrls=[];
 const dropPreviewUrls=()=>{for(const url of previewUrls)URL.revokeObjectURL(url);previewUrls=[];};
 function progressPreview({pictures=true}={}){
   const form=dialog.querySelector('form[data-form="desk-progress"]'),box=dialog.querySelector('[data-progress-preview]');if(!form||!box)return;
-  const text=String(form.elements.text?.value||'').trim(),say=box.querySelector('[data-preview-text]');
+  // 번역 프로젝트(영어 등)는 손님 방에 번역 칸의 글이 걸린다 — 그 칸에 글이 있으면 그 글을 보인다.
+  const translated=String(form.elements.textTr?.value||'').trim(),text=translated||String(form.elements.text?.value||'').trim(),say=box.querySelector('[data-preview-text]');
+  if(translated)say.lang=form.elements.textTr.lang||'';else say.removeAttribute('lang');
   say.textContent=text||'쓴 글이 여기에 보여요.';say.classList.toggle('is-empty',!text); // i18n-skip
   if(!pictures)return;
   dropPreviewUrls();
@@ -1222,7 +1225,7 @@ document.addEventListener('click',async event=>{
   if(action==='confirm-delivery'){if(busy||loading||s.mode!=='customer'||!s.project.closeout?.canConfirm)return;const c=s.project.closeout;const files=c.files.map(file=>({...file,guide:s.project.versions.find(version=>version.id===file.id)?.guide||''}));drafts.delete([identity(),'confirm-delivery',c.deliveryKey].join(':'));openDialog('delivery-confirm',{deliveryKey:c.deliveryKey,revision:s.project.revision,files});return;}
   if(action==='approve'){const approval=previewApprovalState(s.project,{demo:!!demo});if(!approval.canApprove){notice(approval.reason);return;}const latest=latestPreview();if(s.versionId&&s.versionId!==latest?.id){notice(t('최신 시안을 먼저 열어 주세요.'));return;}const roundDrafts=s.project.studio?.feedbackRounds?.drafts||[];if(roundDrafts.some(d=>d.current&&d.items?.length)||hasDraft('round-draft')){notice(t('모은 수정 의견을 보내거나 초안을 비운 뒤 승인해 주세요.'));return;}const form=document.querySelector('[data-form=feedback]');if(form?.elements.text?.value.trim()){notice(t('쓰던 의견을 먼저 보내거나 지운 뒤 승인해 주세요.'));return;}if(latest&&latest.id===id)openDialog('approve',{...latest,revision:s.project.revision,...(s.project.studio?.request?.answers?.package==='photo'&&!latest.media?.mimeType?.startsWith('video/')?{photo:true}:{})});return;}
   if(action==='approve-confirm'){if(busy)return;const approval=previewApprovalState(s.project,{demo:!!demo});if(!approval.canApprove){notice(approval.reason);closeDialog();return;}const still=s.project.studio?.request?.answers?.package==='photo'&&!latestPreview()?.media?.mimeType?.startsWith('video/');if(id!==latestPreview()?.id){notice(still?t('새 시안이 왔어요. 최신 시안을 보고 승인해 주세요.',null,'photo'):t('새 시안이 왔어요. 최신 시안을 보고 승인해 주세요.'));closeDialog();return;}await mutate(()=>request('/pulse/api/action',{...options(),body:{action:'approve',versionId:id,revision:Number(button.dataset.revision)}}),{message:still?t('시안을 승인했어요. 이 시안으로 최종본을 만들어요.',null,'photo'):t('시안을 승인했어요. 이 시안으로 최종본을 만들어요.'),after:closeDialog});return;}
-  if(action==='resolve'){await mutate(()=>request(staffPath('/resolve'),{...options(),body:{revision:s.project.revision,messageId:id}}),{message:'의견을 처리했어요.',after:async()=>loadProject(s.project.id)});return;} // i18n-skip
+  if(action==='resolve'){await mutate(()=>request(staffPath('/resolve'),{...options(),body:{revision:s.project.revision,messageId:id}}),{message:'문의를 답 없이 닫았어요.',after:async()=>loadProject(s.project.id)});return;} // i18n-skip
   if(action==='workflow'){await mutate(()=>request('/api/client-workflow',{...options(),body:{projectId:s.project.id,messageId:id,revision:s.project.revision,action:button.dataset.workflow}}),{workflowAction:{messageId:id,action:button.dataset.workflow},message:'검토 상태를 바꿨어요.',after:async()=>loadProject(s.project.id)});return;} // i18n-skip
   if(action==='invite'){await mutate(()=>request(staffPath('/invite'),{...options(),body:{revision:s.project.revision}}),{message:'초대 링크를 만들었어요. 고객에게 보내 주세요.',after:async result=>{s.inviteUrl=location.origin+'/pulse-app/#invite='+encodeURIComponent(result.invite);await loadProject(s.project.id);}});return;} // i18n-skip
   if(action==='revoke'){confirmAction=()=>mutate(()=>request(staffPath('/revoke'),{...options(),body:{revision:s.project.revision}}),{message:'고객 접근을 끊었어요.',after:async()=>{s.inviteUrl='';closeDialog();await loadProject(s.project.id);}});openDialog('confirm',{title:'고객 접근을 끊을까요?',text:'보낸 초대 링크로는 더 이상 열리지 않아요. 다시 열어 주려면 새 초대 링크를 만들어 주세요.',button:'접근 끊기'});return;} // i18n-skip
@@ -1268,7 +1271,7 @@ window.matchMedia?.(JOURNAL_SHEET)?.addEventListener?.('change',()=>{if(s.journa
 document.addEventListener('keydown',event=>{if(event.key!=='Escape'||!s.journalOpen||document.querySelector('.sx-round-sheet[open],dialog[open]'))return;closeJournal();});
 window.addEventListener('hashchange',queueInviteNavigation);
 dialog.addEventListener('close',()=>{if(inviteNavigationPrompt&&!dialog.open)cancelInviteNavigation();scheduleInviteNavigation();});
-dialog.addEventListener('input',event=>{if(event.target?.name==='text'&&event.target.closest?.('form[data-form="desk-progress"]'))progressPreview({pictures:false});});
+dialog.addEventListener('input',event=>{if(['text','textTr'].includes(event.target?.name)&&event.target.closest?.('form[data-form="desk-progress"]'))progressPreview({pictures:false});});
 dialog.addEventListener('change',event=>{if(['keep','files'].includes(event.target?.name)&&event.target.closest?.('form[data-form="desk-progress"]'))progressPreview();});
 dialog.addEventListener('close',dropPreviewUrls);
 document.addEventListener('compositionend',scheduleInviteNavigation);

@@ -474,7 +474,7 @@ export function staffBoard(projects=[],now=Date.now(),{legacyTurn=null}={}){
   rows.theirs.sort((x,y)=>asked(x,y)||(y.waited??-1)-(x.waited??-1)||at(x).localeCompare(at(y)));
   rows.done.sort((x,y)=>at(y).localeCompare(at(x)));
   const live=[...rows.fresh,...rows.ours,...rows.theirs];
-  const soon=[...rows.ours,...rows.theirs].filter(item=>item.left!==null&&item.left<=3);
+  const soon=[...rows.ours,...rows.theirs].filter(item=>item.left!==null&&item.left<=3).sort((x,y)=>x.left-y.left);
   // 단계 칸: 답할 문의가 있는 건을 맨 위에(오래된 문의부터), 나머지는 전 순서 그대로. 머리 숫자의 문의는 끝난 건까지 센다(보관은 뺀다).
   const shown=[...rows.fresh,...rows.ours,...rows.theirs,...rows.done],asking=shown.filter(item=>item.asks>0).sort((x,y)=>String(x.askSince).localeCompare(String(y.askSince)));
   const column=id=>[...asking.filter(item=>item.stage===id),...shown.filter(item=>item.stage===id&&!item.asks)];

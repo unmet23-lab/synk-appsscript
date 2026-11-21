@@ -168,9 +168,35 @@ test('the update dialog shows how the update will hang in the customer room, fil
   const app=read('app.mjs');
   // 창을 열 때 한 번, 글은 쓸 때마다, 그림은 고를 때마다. 새로 고른 파일의 주소는 창을 닫으면 놓는다.
   assert.match(app,/dialog\.showModal\(\);if\(type==='desk-progress'\)progressPreview\(\);/);
-  assert.match(app,/dialog\.addEventListener\('input',event=>\{if\(event\.target\?\.name==='text'&&event\.target\.closest\?\.\('form\[data-form="desk-progress"\]'\)\)progressPreview\(\{pictures:false\}\);\}\);/);
+  assert.match(app,/dialog\.addEventListener\('input',event=>\{if\(\['text','textTr'\]\.includes\(event\.target\?\.name\)&&event\.target\.closest\?\.\('form\[data-form="desk-progress"\]'\)\)progressPreview\(\{pictures:false\}\);\}\);/);
   assert.match(app,/dialog\.addEventListener\('change',event=>\{if\(\['keep','files'\]\.includes\(event\.target\?\.name\)/);
   assert.match(app,/dialog\.addEventListener\('close',dropPreviewUrls\);/);
   assert.match(app,/say\.textContent=text\|\|'쓴 글이 여기에 보여요\.'/);
   assert.match(read('slate-screens.css'),/\.app-dialog\.is-wide\{width:min\(980px,calc\(100vw - 24px\)\)\}/);
+});
+
+// ── 다듬기(11-21 · 최종 검수 P2 넷) ──
+test('the head names what the columns show: open questions keep a finished project unfolded, and the soonest delivery leads',()=>{
+  // 14일 넘게 움직임이 없는 끝난 건도 열린 문의가 있으면 접지 않는다(머리 「답할 문의」가 부르는 건이 칸에 보이게).
+  const old=making({},{id:'old',title:'옛 납품 건',stage:'delivered',updatedAt:at(-24*20),versions:[video('f1','최종본','final')],messages:[ask('m1',-24*19)],closeout:{deliveryKey:'k',receipt:{confirmedAt:at(-24*20)}}});
+  const quietOld=making({},{id:'gone',title:'조용한 옛 건',stage:'delivered',updatedAt:at(-24*20),versions:[video('f1','최종본','final')],closeout:{deliveryKey:'k',receipt:{confirmedAt:at(-24*20)}}});
+  const html=picker({mode:'staff',workspace:{projects:[old,quietOld,making({},{id:'now',title:'제작 중 건',messages:[ask('m1',-2)]})],canWrite:true},staffStage:'deliver'});
+  assert.match(html,/<b>2<\/b><span>답할 문의<small>옛 납품 건 외 1<\/small>/);
+  assert.match(html,/class="project-tile staff-card is-done" data-action="open-project" data-id="old"/);
+  assert.match(html,/class="project-tile staff-row" data-action="open-project" data-id="gone"/);
+  // 「사흘 안 전달」은 남은 날 순이다 — 문의가 있는 건이 앞서 서도 이름은 가장 급한 건.
+  const board=staffBoard([making({payment:paid('2026-11-23')},{id:'d3',title:'사흘 뒤 건',messages:[ask('m1',-2)]}),making({payment:paid('2026-11-20')},{id:'d0',title:'오늘 전달할 건'})],NOW);
+  assert.deepEqual(board.ours.map(item=>item.id),['d3','d0']);
+  assert.deepEqual(board.soon.map(item=>item.id),['d0','d3']);
+});
+
+test('closing a question says so, and a translated project previews the text the customer will read',()=>{
+  const app=read('app.mjs');
+  assert.match(app,/staffPath\('\/resolve'\),[^;]*\{message:'문의를 답 없이 닫았어요\.'/);
+  assert.ok(!app.includes('의견을 처리했어요.'));
+  // 번역 칸에 글이 있으면 그 글이 미리 보기에 걸린다. 번역 프로젝트의 창에는 그 안내가 있다.
+  assert.match(app,/const translated=String\(form\.elements\.textTr\?\.value\|\|''\)\.trim\(\),text=translated\|\|String\(form\.elements\.text\?\.value\|\|''\)\.trim\(\)/);
+  const tr={locale:'en',entries:{}};
+  assert.match(dialogContent('desk-progress',{owner:'김하늘',tr}),/<p class="desk-at" data-preview-tr>[^<]+프로젝트예요\. 번역 칸에 글을 적으면 미리 보기도 그 글로 바뀌어요\./);
+  assert.ok(!dialogContent('desk-progress',{owner:'김하늘'}).includes('data-preview-tr'));
 });

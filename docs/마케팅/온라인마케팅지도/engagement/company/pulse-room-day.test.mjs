@@ -116,6 +116,18 @@ test('every room title has one key phrase, in Korean and in English, and it sits
   assert.equal(titleKey('표에 없는 제목'),'');
 });
 
+test('the shelf caption keeps its link only when its pictures belong to another update than the word card',()=>{
+  // 한마디와 선반의 그림이 같은 소식이면 캡션에 단추가 없다(같은 소식으로 가는 길은 한마디의 하나). 캡션은 어느 소식의 그림인지 적는다.
+  const same=projectView(state(making({progress:[{id:'n1',at:at(-30),stage:'make',text:'컷 둘을 마쳤어요.',assets:['a1','a2']}]})));
+  assert.match(same,/<p class="sx-small sx-room-cap" data-room-news="n:n1"><b>작업 중인 화면이에요 · 완성본이 아니에요<\/b><\/p>/);
+  assert.equal((same.match(/data-journal-target="n:n1"/g)||[]).length,1);
+  assert.match(same,/data-room-say>[^]*data-journal-target="n:n1">나눈 말에서 보기<\/button>/);
+  // 그림이 앞선 소식의 것이면(가장 최근 소식에는 그림이 없다) 캡션의 단추가 그 소식으로 간다.
+  const other=projectView(state(making()));
+  assert.match(other,/data-room-news="n:n1"><b>[^<]+<\/b> <button type="button" class="sx-link" data-room-do="journal" data-journal-target="n:n1">소식 보기<\/button><\/p>/);
+  assert.match(other,/data-room-say>[^]*data-journal-target="n:n2">나눈 말에서 보기<\/button>/);
+});
+
 test('the closing card offers to ask about the next piece in the words of that product',()=>{
   const done=(pkg)=>{const p=making({answers:{...emptyAnswers(),name:'오미톡',kind:'food',channels:['shorts'],package:pkg}},{stage:'delivered',versions:[video('v1','1차 시안','preview',{approvedAt:at(-10)}),video('f1','최종본','final',{approvedPreviewId:'v1'})],closeout:{deliveryKey:'k1',approvedPreviewId:'v1',canConfirm:false,receipt:{confirmedAt:at(-1)},files:[{id:'f1',label:'최종본'}]}});return projectView(state(p));};
   const film=done('s15');
@@ -168,11 +180,36 @@ test('the day look is switched on and off in one place and never leaks to other 
   // 휴대폰의 보는 차례(선반이 글보다 먼저 선다): 선반이 어두운 판의 높이(44dvh)를 넘지 않아 제목과 주 단추가 첫 화면에 남는다.
   assert.match(day,/\.sx-room\[data-day\] \.sx-room-hero\.is-preview-first>\.sx-room-screen>\.sx-q-fill\{max-height:calc\(44vh - 96px\);max-height:calc\(44dvh - 96px\)\}/);
   assert.match(day,/\.sx-room\[data-day\] \.sx-room-files:is\(\[data-count="5"\],\[data-count="6"\]\)>img\{max-height:min\(17vh,150px\);max-width:calc\(\(100% - 24px\)\/3\)\}/);
+  // 다듬기(11-21): 눕힌 작은 휴대폰(가로 · 높이 480px 이하)에서만 인화지에 하한을 둔다. 세로 작은 휴대폰은 주 단추가 첫 화면에 남게 앞 값 그대로.
+  const land=day.slice(day.indexOf('@media (max-width:820px) and (orientation:landscape) and (max-height:480px){'));
+  assert.ok(land.length<day.length);
+  assert.match(land,/\.sx-room\[data-day\] \.sx-room-cuts\{--cut-h:max\(64vh,420px\)\}/);
+  assert.match(land,/>\.sx-q-fill\{max-height:max\(calc\(44vh - 96px\),170px\);max-height:max\(calc\(44dvh - 96px\),170px\)\}/);
+  assert.match(land,/>img\{max-height:clamp\(110px,17vh,150px\)\}/);
+  assert.doesNotMatch(day.slice(0,day.length-land.length),/96px\),170px\)|max\(64vh,420px\)|clamp\(110px/);
+  // 판 안 그림 칸의 자리 색은 판(#f6f4f1)과 다르다(그림이 늦게 와도 칸이 보이게).
+  assert.match(day,/\.sx-room\[data-day\] \.sx-j-shots img\{background:#ebe7e1\}/);
+  // 재생 표는 먹색 판 위의 흰 세모다(밝은 영상 위에서도 보이게). 흰 방 옆 창 스크롤바는 색만 밝게 맞춘다(html의 색 구성은 그대로).
+  assert.match(day,/\.sx-room-play::before\{content:'';position:absolute;left:var\(--play-x,50%\);top:var\(--play-y,44%\);width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:2px;background:rgba\(29,29,31,\.74\)\}/);
+  assert.match(day,/html\.sx\.sx-day\{scrollbar-color:rgba\(29,29,31,\.34\) #fff\}\s+html\.sx\.sx-day body\{scrollbar-color:auto\}/);
+  // 나눈 말: 담당자의 말과 소식은 옅은 판 위에, 누르는 것은 가는 테. 데려간 줄의 강조가 판의 바탕에 지지 않게 판 규칙은 :where로 낮춘다.
+  assert.match(day,/\.sx-room\[data-day\] \.sx-journal \.sx-j-row:where\(\[data-who=staff\],\[data-who=auto\]\):where\(\.is-talk,\.is-progress\)\{margin:8px 0;padding:12px 14px;border-top:0;background:#f6f4f1;box-shadow:none\}/);
+  assert.match(day,/\.sx-room\[data-day\] \.sx-journal :is\(\[data-journal-go\],\.sx-j-more,\.sx-j-filter\)\{display:inline-flex;align-items:center;min-height:32px;padding:2px 13px;border:1px solid rgba\(29,29,31,\.5\);text-decoration:none;/);
+  assert.ok(day.indexOf('.sx-j-row:where([data-who=staff]')<day.indexOf(':is(.sx-j-row,.sx-j-ask).notification-target'));
+  // 같은 소식은 한 번만: 선반에 선 그림은 그 줄에서 접고, 한마디가 글을 끝까지 보이면 그 줄의 글은 한 줄로.
+  assert.match(day,/\.sx-room\[data-day\] \.sx-j-row\.is-on-shelf \.sx-j-shots\{display:none\}/);
+  assert.match(day,/\.sx-room\[data-day\] \.sx-j-row\.is-said \.sx-j-text\{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;line-clamp:1;overflow:hidden;white-space:normal;color:var\(--sx-dim\)\}/);
+  assert.match(views,/if\(host\.matches\('\.sx-room\[data-day\]'\)\)tidyEcho\(host\);/);
+  // 손님이 그 줄로 가자고 한 소식(나눈 말에서 보기 · 소식 보기 · 알림)은 접지 않는다(운영설계 9절 물음 3).
+  assert.match(views,/export function keepWhole\(id\)\{if\(!id\)return;wholeRows\.add\(id\);for\(const row of document\.querySelectorAll\('\.sx-j-row'\)\)if\(row\.dataset\.journalId===id\)row\.classList\.remove\('is-said','is-on-shelf'\);\}/);
+  assert.match(views,/if\(shelf&&!wholeRows\.has\(shelf\.dataset\.journalId\)\)shelf\.classList\.add\('is-on-shelf'\);/);
+  assert.match(app,/function openJournal\(\{target='',opener=null\}=\{\}\)\{\s+if\(target\)keepWhole\(target\);/);
+  assert.match(views,/const mark=\(\)=>\{const whole=quote\.scrollHeight-quote\.clientHeight<=1&&!wholeRows\.has\(row\.dataset\.journalId\);row\.classList\.toggle\('is-said',whole\);link\.hidden=whole&&\(!row\.querySelector\('\.sx-j-shots'\)\|\|row\.classList\.contains\('is-on-shelf'\)\);\};/);
   const body=day.replace(/\/\*[^]*?\*\//g,'').replace(/@(?:media|supports)[^{]*\{/g,'').replace(/^\s*\}\s*$/gm,'');
   for(const rule of body.split('}').map(part=>part.trim()).filter(Boolean)){
     const selector=rule.slice(0,rule.indexOf('{')).trim();
     for(const one of selector.split(/,(?![^(]*\))/).map(part=>part.trim()).filter(Boolean))assert.ok(/\[data-day\]|sx-day|^\.sx-room-(due|say)\b|^\.sx-done-next\b/.test(one),one);
   }
   // 캐시 판을 올렸다(바뀐 화면 모듈과 스타일을 새로 받게).
-  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v73-staff-care-20261121';/);
+  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v74-polish-20261121';/);
 });
