@@ -279,7 +279,8 @@ export function createWorldReminders({owner,storage=globalThis.localStorage,targ
   if(!result){rerenderSettings();return null;}
   let state=load();
   if(Array.isArray(result?.handover))state=mergeReminderEntries(state,result.handover,now());
-  if(result?.settings&&REMINDER_POLICY.frequencies.includes(result.settings.frequency))state={...state,frequency:result.settings.frequency,
+  // 서버 설정을 넣기 바로 앞에 보내지 못한 편집이 있는지 한 번 더 본다 — 끄기가 정한 뒤 다른 탭이 설정을 바꿨으면 그 편집을 지킨다(r4 GA10).
+  if(result?.settings&&!push.hasEdit?.()&&REMINDER_POLICY.frequencies.includes(result.settings.frequency))state={...state,frequency:result.settings.frequency,
    hour:REMINDER_POLICY.hours.includes(result.settings.hour)?result.settings.hour:null,since:Number.isFinite(result.settings.since)?result.settings.since:state.since};
   if(localOff)state=updateReminderSettings(state,{enabled:false},now());
   save(state);

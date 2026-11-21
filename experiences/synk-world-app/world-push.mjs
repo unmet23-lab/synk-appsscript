@@ -74,25 +74,29 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  const elapsed=mark=>mark?Math.max(now()-mark.at,mono()-mark.mono):Infinity;
  // ── 바탕 판(설계 주인 11-21 「서버가 매기는 compare-and-set」) ──
  // 설정 편집은 값과 바탕을 한 덩어리로 한 키에 둔다 — 두 키를 따로 읽으면 다른 탭의 쓰기가 그 사이에 낀다(GA2). base: 편집할 때 알던 서버 설정 판
- // (null = 아직 판이 없음). known: 그 판을 알았나(상태를 읽기 전에 바꾼 것은 거짓 — 상태가 서면 그때 판을 바탕으로 보낸다). tries: 거절된 횟수(0 · 1).
+ // (null = 아직 판이 없음). known: 그 판을 알았나(상태를 읽기 전에 바꾼 것 · 판을 모르는 옛 서버에서 바꾼 것은 거짓 — 판을 아는 상태가 서면 그때 판을
+ // 바탕으로 보낸다). tries: 거절된 횟수(0 · 1). id: 편집마다 새로 매긴다 — 바탕을 옮겨도 같은 편집으로 알아본다(r4 GA3).
  const versionKey=()=>`${PUSH_VERSION_KEY}.${owner}`;
+ const newId=()=>`${now().toString(36)}-${Math.random().toString(36).slice(2,10)}`;
  const settingsOf=value=>!value||typeof value!=='object'||!Number.isFinite(value.frequency)?null
-  :{frequency:value.frequency,hour:Number.isFinite(value.hour)?value.hour:null,base:positive(value.base),known:value.known===true,tries:value.tries===1?1:0};
+  :{frequency:value.frequency,hour:Number.isFinite(value.hour)?value.hour:null,base:positive(value.base),known:value.known===true,tries:value.tries===1?1:0,
+   id:typeof value.id==='string'&&value.id.length<=40?value.id:'legacy'};
  const readEdit=()=>{try{return settingsOf(JSON.parse(storage?.getItem(versionKey())||'null')?.settings);}catch{return null;}};
  const writeEdit=next=>{if(closing||!owner)return;try{next?storage?.setItem(versionKey(),JSON.stringify({settings:next})):storage?.removeItem(versionKey());}catch{}};
- const same=(a,b)=>!!a&&!!b&&a.frequency===b.frequency&&a.hour===b.hour&&a.base===b.base&&a.known===b.known&&a.tries===b.tries;
+ const same=(a,b)=>!!a&&!!b&&a.id===b.id&&a.frequency===b.frequency&&a.hour===b.hour&&a.base===b.base&&a.known===b.known&&a.tries===b.tries;
  // 덩어리를 그 덩어리일 때만 고친다(쓰기 직전에 다시 읽어, 다른 탭이 더 새 편집을 적었으면 두지 않는다).
  function rewrite(mine,next){if(same(readEdit(),mine))writeEdit(next);}
  const serverVersions=data=>{const v=data?.versions;return v&&typeof v==='object'?{settings:positive(v.settings),digest:positive(v.digest),reviews:positive(v.reviews)}:null;};
  const deviceOf=data=>data.device?.subscribed?{subscribed:true,deviceId:data.device.deviceId}:{subscribed:false};
  // 응답의 차례: 서버는 계획 줄을 잠그고 쓰므로 같은 계정의 응답은 부분마다 판이 함께 커지는 차례로 선다. 판이 하나라도 더 크면(작은 것은 없이) 서버가
- // 지금 적힌 상태보다 뒤에 처리한 응답이고(1), 더 작으면 앞에 처리한 응답이다(-1). 새 계획의 판은 받은 때라 옛 계획의 판보다 크다. 보낸 차례(seq)와
- // 서버에 닿은 차례는 다를 수 있다 — 둘 다 켜진 계정이고 판이 있으면 판으로 가리고, 모르면(0) 보낸 차례를 따른다.
+ // 지금 적힌 상태보다 뒤에 처리한 응답이고(1), 더 작으면 앞에 처리한 응답이다(-1). 같은 계획 안에서 빈 판(null — 아직 쓰지 않은 부분)은 어떤 숫자보다
+ // 앞이다(r4 GA1). 새 계획의 판은 옛 계획의 판보다 크다. 보낸 차례(seq)와 서버에 닿은 차례는 다를 수 있다 — 둘 다 켜진 계정이고 판이 있으면 판으로
+ // 가리고, 모르면(0) 보낸 차례를 따른다.
  function progress(data){
   const v=serverVersions(data),mine=state.versions;
   if(!state.versioning||data?.versioning!=='base'||!v||!mine||!state.account.active||!accountOf(data).active)return 0;
   let more=false,less=false;
-  for(const key of ['settings','digest','reviews']){if(v[key]===null||mine[key]===null)continue;if(v[key]>mine[key])more=true;else if(v[key]<mine[key])less=true;}
+  for(const key of ['settings','digest','reviews']){const a=v[key],b=mine[key];if(a===b)continue;if(b===null||(a!==null&&a>b))more=true;else less=true;}
   return more&&!less?1:less&&!more?-1:0;
  }
  // 이 응답을 계정 상태로 적나: 판이 더 크면 보낸 차례가 늦어도 적고, 판이 더 작으면 보낸 차례가 앞서도 적지 않는다.
@@ -101,7 +105,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  function noteSettings(value){
   if(!owner||closing||!Number.isFinite(value?.frequency))return;
   const known=!!state.checkedAt;if(known&&!state.account.active)return;
-  writeEdit({frequency:value.frequency,hour:Number.isFinite(value.hour)?value.hour:null,base:known?state.versions?.settings??null:null,known,tries:0});
+  writeEdit({frequency:value.frequency,hour:Number.isFinite(value.hour)?value.hour:null,base:known?state.versions?.settings??null:null,known,tries:0,id:newId()});
  }
  // 보낼 설정: 바탕이 지금 아는 서버 판과 같은 편집(그사이 다른 쓰기가 없었다). 떠날 때는 fetch가 나간 요청만 센다 — 토큰 갱신을 기다리는 요청은 떠나며
  // 다시 보낸다(GA1). 깃발로 들지 않고 늘 계산한다 — 늦은 응답 · 실패 · 로그아웃이 따로 지우지 못한다(GA2 · GA6 · GA9).
@@ -109,11 +113,15 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   if(!state.versioning||closing||!state.checkedAt)return null;
   const mine=readEdit();
   if(!mine||!mine.known||mine.base!==(state.versions?.settings??null))return null;
-  for(const job of jobs)if(same(job.settings,mine)&&(job.sent||!leaving))return null;
+  for(const job of jobs)if(job.settings?.id===mine.id&&job.settings.base===mine.base&&(job.sent||!leaving))return null;
   return mine;
  }
  const digestOut=(digest,leaving=false)=>{for(const job of jobs)if(job.digest===digest&&(job.sent||!leaving))return true;return false;};
- const flying=mine=>{for(const job of jobs)if(same(job.settings,mine))return true;return false;};
+ const flying=mine=>{for(const job of jobs)if(job.settings?.id===mine.id)return true;return false;};
+ // 설정을 실은 요청이 날아가는 중인가(옛 서버 쪽 설정은 하나씩 보낸다 — r3 GA5 · GA10, r4 GA9 · GA12).
+ const settingsFlying=()=>{for(const job of jobs)if(job.carries)return true;return false;};
+ // 지금 아는 요약 · 복습 때 판(판을 아는 상태일 때만). 요약을 지을 때 잡아 그 요약과 함께 든다(r4 GA2 · GA11).
+ const digestBase=()=>state.versioning&&state.checkedAt?{digest:state.versions?.digest??null,reviews:state.versions?.reviews??null}:null;
  // 1단 설정의 지금 값(이 브라우저의 localStorage — 탭이 함께 쓴다). 읽지 못하면 fallback.
  function liveSettings(fallback){
   let live=null;try{live=binding?.read?.()||null;}catch{}
@@ -131,11 +139,13 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // (설계 주인 규칙 5). 우리 요청이 날아가는 중이면 그 응답을 기다린다. 판을 모르는 옛 서버면 상태를 몰랐을 때 바꾼 편집을 판 없이 한 번 보낸다.
  function reconcile(expected){
   if(!binding||!current(expected)||closing||!state.account.active)return;
-  const mine=readEdit();
-  if(!state.versioning){if(mine&&!flying(mine)&&jobs.size===0)deliver(expected,{plain:mine,plainFrom:mine});return;}
+  let mine=readEdit();
+  // 옛 서버: 설정을 실은 요청이 날아가는 동안은 기다린다(그 응답 뒤 다시 맞춘다).
+  if(!state.versioning){if(mine&&!settingsFlying())deliver(expected,{plain:mine,plainFrom:mine});return;}
   if(mine){
    const server=state.versions?.settings??null;
-   if(!mine.known){rewrite(mine,{...mine,base:server,known:true});reconcile(expected);return;}
+   // 바탕을 모르는 편집은 지금 판을 바탕으로 옮긴다. 저장이 실패하면(용량 초과 따위) 여기서 멈춘다 — 같은 편집으로 되풀이하지 않게(r4 GA7).
+   if(!mine.known){const next={...mine,base:server,known:true};rewrite(mine,next);mine=readEdit();if(!same(mine,next))return;}
    if(mine.base===server){if(owedSettings()){if(jobs.size===0)deliver(expected);else later(expected);}return;}
    if(flying(mine))return;
    rewrite(mine,null);
@@ -143,7 +153,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   adopt(state.plan);
  }
  // 다시 보낼 요약: 1단이 지금 기록으로 새로 짓는다(묶음에 digest가 없으면 같은 요약). 거절된 요약은 한 번만 다시 보낸다.
- const rebuilt=digest=>{let item=null;try{item=binding?.digest?.()||null;}catch{}return {item:item&&item.digest?item:digest.item,tries:1};};
+ const rebuilt=(digest,base,tries=1)=>{let item=null;try{item=binding?.digest?.()||null;}catch{}return {item:item&&item.digest?item:digest.item,tries,base};};
  // 보내기: 보낼 설정(덩어리 그대로, 바탕 판과 함께)과 요약(보낼 때 아는 바탕 판과 함께)을 한 요청으로 keepalive로 보낸다(닫아도 끊기지 않는다 — 앞 회차).
  // 실패하면 RETRY_MS 간격으로 다시 보낸다. 진행 중인 요청이 있으면 다시 보내기는 기다린다(keepalive 몫 64KB). leaving: 떠날 때 — 기다림 없이 fetch까지
  // 가고, 만료 전 토큰을 그대로 쓴다. plain: 판을 모르는 서버에 판 없이 한 번 보내는 설정(plainFrom: 그 설정의 덩어리 — 받히면 비운다).
@@ -155,7 +165,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   if(!value&&!digest)return null;
   const versions={},body={},based=state.versioning&&!plain;
   if(value){body.settings={frequency:value.frequency,hour:value.hour??null};if(mine)versions.settings=mine.base;}
-  if(digest){Object.assign(body,digest.item);if(based){versions.digest=state.versions?.digest??null;if(Array.isArray(digest.item.digest?.reviews))versions.reviews=state.versions?.reviews??null;}}
+  // 요약 바탕은 그 요약을 지을 때 잡은 판이다 — 묵은 요약에 나중에 읽은 판이 붙지 않게(r4 GA2). 판을 모를 때 지은 요약은 지금 새로 지어 지금 판을 싣는다.
+  if(digest&&based&&!digest.base){const fresh=rebuilt(digest,digestBase(),digest.tries);if(owedDigest===digest)owedDigest=fresh;digest=fresh;}
+  if(digest){Object.assign(body,digest.item);if(based){versions.digest=digest.base.digest;if(Array.isArray(digest.item.digest?.reviews))versions.reviews=digest.base.reviews;}}
   if(Object.keys(versions).length)body.versions=versions;
   const seq=++order,job={settings:mine,digest,sent:true,carries:!!value};jobs.add(job);
   clearTimeout(retryTimer);retryTimer=null;
@@ -163,22 +175,25 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   run.then(data=>{
    jobs.delete(job);if(!current(expected))return;
    const active=data?.account?.active===true,applied=data?.applied||{},v=serverVersions(data);
-   // 판 없이(옛 서버에) 받힌 설정은 덩어리를 비운다 — 그 덩어리 그대로일 때만.
-   if(plainFrom&&active)rewrite(plainFrom,null);
-   // 설정: 받혔으면 비운다. 거절됐으면(그사이 다른 쓰기가 있었다) 처음이면 응답의 새 판을 바탕으로 한 번 다시 보내고 — 학생의 마지막 뜻이 이긴다 —
-   // 두 번째면 비워 서버 것을 들이고 멈춘다(설계 주인 규칙 4). 다시 보내기는 아래 맞추기가 한다(바탕이 지금 판과 같다).
+   // 이 응답이 지금 적힌 상태보다 앞에 처리된 것이면 지금 상태의 판이 아는 가장 새 판이다(r4 GA5).
+   const older=progress(data)<0,newest=older?state.versions:v;
+   // 판 없이(옛 서버에) 받힌 설정은 그 편집(id)을 비운다.
+   if(plainFrom&&active){const latest=readEdit();if(latest?.id===plainFrom.id)rewrite(latest,null);}
+   // 설정: 받혔으면 그 편집을 비우고, 그사이 이 브라우저에서 같은 바탕으로 한 더 새 편집은 바탕을 방금 쓴 판으로 옮긴다(자기 쓰기 사슬 — 다음 맞추기가
+   // 「그사이 다른 쓰기」로 보지 않게). 거절됐으면(그사이 다른 쓰기) 그 편집의 첫 거절이면 아는 가장 새 판을 바탕으로 옮겨 한 번 다시 보내고 — 학생의
+   // 마지막 뜻이 이긴다 — 이미 한 번 거절된 편집이면 비워 서버 것을 들이고 멈춘다(설계 주인 규칙 4). 같은 편집은 id로 알아본다 — 자기 쓰기 사슬이 바탕을
+   // 옮긴 편집도 같은 편집이다(r4 GA3). 다시 보내기는 아래 맞추기가 한다.
    if(mine&&active&&v){
     const latest=readEdit();
-    // 받혔는데 그사이 이 브라우저에서 같은 바탕으로 더 새 편집을 했으면, 그 편집의 바탕을 방금 쓴 판으로 옮긴다(앞 편집도 우리 것이다 — 다음 맞추기가
-    // 「그사이 다른 쓰기」로 보고 서버 것을 들이지 않게).
-    if(applied.settings===true&&!same(latest,mine)&&latest?.known&&latest.base===mine.base)rewrite(latest,{...latest,base:v.settings});
-    else if(applied.settings===true||mine.tries>0)rewrite(mine,null);
-    else rewrite(mine,{...mine,base:v.settings,tries:1});
+    if(applied.settings===true){
+     if(latest?.id===mine.id)rewrite(latest,null);
+     else if(latest?.known&&latest.base===mine.base)rewrite(latest,{...latest,base:v.settings});
+    }else if(latest?.id===mine.id)rewrite(latest,latest.tries>0?null:{...latest,base:newest.settings,tries:1});
    }
-   // 요약: 받혔거나 2단이 꺼진 계정이면 끝. 거절됐으면 처음 한 번만 새로 지어 다시 보낸다.
+   // 요약: 받혔거나 2단이 꺼진 계정이면 끝. 거절됐으면 처음 한 번만 지금 기록으로 새로 지어 아는 가장 새 판을 바탕으로 다시 보낸다.
    if(digest&&owedDigest===digest){
     const rejected=active&&!!v&&!!body.versions&&Object.hasOwn(body.versions,'digest')&&(applied.digest!==true||Object.hasOwn(body.versions,'reviews')&&applied.reviews!==true);
-    owedDigest=rejected&&digest.tries===0?rebuilt(digest):null;
+    owedDigest=rejected&&digest.tries===0?rebuilt(digest,{digest:newest.digest,reviews:newest.reviews}):null;
    }
    retryStep=0;
    if(newer(seq,data)){shown.account=Math.max(shown.account,seq);applyStatus(data,expected,{device:false});}else reconcile(expected);
@@ -191,8 +206,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    // 지금 요약을 판 없이 한 번 다시 보낸다(GA10 · r2 GA1). 다음 status가 다시 정한다.
    if(status===400&&code==='INVALID_ACTION'&&body.versions){
     emit({versioning:false});
-    const latest=readEdit();
-    deliver(expected,{digest:owedDigest,settings:false,plain:latest,plainFrom:latest});
+    // 맞추기가 지금 편집을 판 없이 보낸다 — 설정을 실은 다른 요청이 날아가는 중이면 그 응답 뒤에(r4 GA9 · GA12). 요약은 따로 보낸다.
+    reconcile(expected);
+    if(owedDigest&&!digestOut(owedDigest))deliver(expected,{settings:false});
     return;
    }
    // 400 · 413: 그 부분을 버린다. 요약이 틀렸으면 설정만 다시 보내고, 설정이 틀렸으면 덩어리를 비운다(맞추기가 1단을 서버 값으로 맞춘다).
@@ -200,7 +216,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    if(status===400||status===413){
     const digestFault=!!digest&&(status===413||code==='INVALID_DIGEST'||code==='INVALID_HANDOVER');
     if(digest&&owedDigest===digest)owedDigest=null;
-    if(mine&&!digestFault){rewrite(mine,null);reconcile(expected);}
+    if(mine&&!digestFault){const latest=readEdit();if(latest?.id===mine.id)rewrite(latest,null);reconcile(expected);}
     else if(owedSettings())later(expected,0);
    }
    else if(status!==401&&code!=='AUTH_REQUIRED')later(expected);
@@ -308,6 +324,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   enable({settings,digest,handover=[]}={}){
    const expected=epoch;
    if(!current(expected)||closing||mutation||attempt)return Promise.resolve(snapshot());
+   // 요약 바탕은 누를 때(요약을 지은 때) 잡는다 — 권한 창 사이에 읽은 새 판이 누를 때의 요약에 붙지 않게(r4 GA11).
+   const pressed=digest?digestBase():null;
    if(!registration||!publicKey)return Promise.resolve(emit({error:'PUSH_NOT_READY'}));
    if(worldPushSupport(env).permission==='denied')return Promise.resolve(emit({error:'PUSH_BLOCKED'}));
    let prompt;
@@ -336,7 +354,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      // 처음 켜는 계정이면 바탕과 상관없이 새 줄을 쓴다. 보내지 못한 편집은 응답 뒤 맞추기가 sync로 보낸다. 요약이 거절되면(권한 창 사이 다른 기기의
      // 요약) 새로 지어 한 번 다시 보낸다.
      const item={digest,...(Array.isArray(handover)&&handover.length?{handover}:{})};
-     const versions=state.versioning&&digest?{digest:state.versions?.digest??null,...(Array.isArray(digest.reviews)?{reviews:state.versions?.reviews??null}:{})}:null;
+     const versions=state.versioning&&pressed?{digest:pressed.digest,...(Array.isArray(digest.reviews)?{reviews:pressed.reviews}:{})}:null;
      // 보낼 설정은 보낼 때의 1단 값이다 — 권한 창이 열린 사이 이 탭이나 다른 탭에서 바꾼 설정이 누를 때의 값에 지지 않게(GPT push-versions-world-r3 GA1).
      const sent=liveSettings(settings);
      const payload={subscription:{endpoint:json.endpoint,keys:{p256dh:json.keys?.p256dh,auth:json.keys?.auth}},settings:sent,digest,handover,consent:1};
@@ -353,12 +371,15 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      // 켜며 보낸 요약을 sync와 같은 표로 적는다 — 켠 바로 뒤 다시 잡기가 같은 요약을 또 보내지 않게(10-22 화면 검수).
      lastSync=digest?syncMark(item,stamp()):null;
      const applied=data.applied||{},rejected=based&&digest&&(applied.digest!==true||Array.isArray(digest.reviews)&&applied.reviews!==true);
-     if(rejected)owedDigest=rebuilt({item,tries:0});
-     // 처음 켠 계정이면 서버는 보낸 설정으로 새 계획을 썼다. 요청이 날아가는 사이 1단이 바뀌었으면(학생이 이 탭이나 다른 탭에서 바꿨다 — 꺼진 계정이라
-     // 편집으로 적히지 않았다) 새 판을 바탕으로 편집으로 적는다. 결과를 적으며 맞추기가 보낸다(r3 GA1).
-     const after=liveSettings(null),fresh=serverVersions(data)?.settings;
-     if(applied.settings===true&&data.versioning==='base'&&fresh&&after&&sent&&(after.frequency!==sent.frequency||after.hour!==sent.hour))
-      writeEdit({frequency:after.frequency,hour:after.hour,base:fresh,known:true,tries:0});
+     const v=serverVersions(data);
+     if(rejected)owedDigest=rebuilt({item,tries:0},v?{digest:v.digest,reviews:v.reviews}:null);
+     // 처음 켠 계정이면 서버는 보낸 설정(보낼 때의 1단 값)으로 새 계획을 썼다 — 그 전의 편집은 모두 지난 것이라 비운다(r4 GA4 · GA8). 요청이 날아가는
+     // 사이 1단이 바뀌었으면(학생이 이 탭이나 다른 탭에서 바꿨다 — 꺼진 계정이라 편집으로 적히지 않았다) 새 판을 바탕으로 편집으로 적어 결과를 적으며
+     // 맞추기가 보낸다(r3 GA1).
+     if(applied.settings===true){
+      const after=liveSettings(null),moved=data.versioning==='base'&&!!v?.settings&&!!after&&!!sent&&(after.frequency!==sent.frequency||after.hour!==sent.hour);
+      writeEdit(moved?{frequency:after.frequency,hour:after.hour,base:v.settings,known:true,tries:0,id:newId()}:null);
+     }
      // 차례를 먼저 올린다 — 결과를 적으며 맞추기가 시작한 sync의 응답이 옛것으로 버려지지 않게(r2 GA6).
      settled();applyStatus(data,expected);
      if(owedDigest&&jobs.size===0)deliver(expected,{settings:false});
@@ -415,17 +436,18 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    const expected=epoch,time=stamp();
    // 요약 · 설정 요청은 모두 keepalive로 보낸다(deliver). 보낸 뒤 응답 전에 앱을 닫아도 계정 정리(stop)가 끊지 않는다(11-20 GPT 끝 판 GA1 ·
    // 다시 검수 GA1 · GA2 · GA3). 받히지 않으면 받을 때까지 다시 보낸다. 보낸 차례(seq)를 붙여 늦게 온 앞 응답은 뒤 응답이 그린 계획을 덮지 않는다.
-   const make=value=>({item:value,tries:0});
+   const make=value=>({item:value,tries:0,base:digestBase()});
    const send=value=>{if(value)owedDigest=value;return deliver(expected,{digest:value});};
    const drop=()=>{clearTimeout(syncTimer);syncTimer=null;pendingSync=null;};
    const item=digest?{digest,...(Array.isArray(handover)&&handover.length?{handover}:{})}:null;
    if(settings){
     const value=item?make(item):pendingSync;drop();if(value)lastSync=syncMark(value.item,time);
-    // 판을 모르는 옛 서버: 설정을 실은 앞 요청이 날아가는 중이면 편집으로 적어 두고(모은 요약은 남겨 둔다) 그 응답 뒤 맞추기가 함께 보낸다 — 판 없는
-    // 두 설정 요청이 서버에 거꾸로 닿아 앞 값이 남지 않게(GPT push-versions-world-r3 GA5 · GA10).
+    // 판을 모르는 옛 서버: 바꾼 설정도 판 키에 적는다(바탕 모름 — 다른 탭이 남긴 더 옛 편집을 덮는다, r4 GA6). 설정을 실은 앞 요청이 날아가는 중이면
+    // 그 응답 뒤 맞추기가 모은 요약과 함께 보낸다 — 판 없는 두 설정 요청이 서버에 거꾸로 닿아 앞 값이 남지 않게(r3 GA5 · GA10).
     if(legacy){if(value)owedDigest=value;
-     if([...jobs].some(job=>job.carries)){writeEdit({frequency:settings.frequency,hour:settings.hour??null,base:null,known:false,tries:0});return null;}
-     return deliver(expected,{digest:value,plain:{frequency:settings.frequency,hour:settings.hour??null}});}
+     const edit={frequency:settings.frequency,hour:settings.hour??null,base:null,known:false,tries:0,id:newId()};writeEdit(edit);
+     if(settingsFlying())return null;
+     return deliver(expected,{digest:value,plain:edit,plainFrom:edit});}
     return send(value);
    }
    if(!item)return;
@@ -461,6 +483,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    if(!state.account.active||jobs.size>0)return;
    clearTimeout(retryTimer);retryTimer=null;retryStep=0;reconcile(expected);if(jobs.size===0)resend(expected);
   },
+  // 이 브라우저에 보내지 못한 설정 편집이 있나 — 기기 쪽이 끄기 결과의 서버 설정을 1단에 넣기 바로 앞에 한 번 더 본다(r4 GA10).
+  hasEdit(){return !!owner&&!!readEdit();},
   // 1단 설정 묶음(world-reminder-device): read()는 이 브라우저의 1단 설정({frequency, hour, since}), adopt(값)은 서버 설정을 1단 설정에 넣는다
   // (설정 보내기를 부르지 않는다), digest()는 지금 기록으로 지은 요약({digest, handover?} — 거절된 요약을 다시 보낼 때). 떼는 함수를 돌려준다.
   bindSettings(value){binding=value&&typeof value.read==='function'&&typeof value.adopt==='function'?value:null;if(binding)reconcile(epoch);const bound=binding;return ()=>{if(binding===bound)binding=null;};},

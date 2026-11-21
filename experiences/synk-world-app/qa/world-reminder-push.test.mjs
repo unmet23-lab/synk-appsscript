@@ -306,6 +306,19 @@ test('잠금 화면 글 언어: 한국어 틀 — 한글 단계 학생만 고른
  }
 });
 
+test('끄기: 결과를 1단에 넣기 바로 앞에 보내지 못한 편집이 생겼으면 서버 설정을 넣지 않는다(GPT push-versions-world-r4 GA10)',async()=>{
+ const push=fakePush({device:true,active:true}),c=controller({push,target:fakeWindow({userAgent:ANDROID,permission:'default'}),clock:{now:at(2,10)}});
+ try{
+  push.hasEdit=()=>true;
+  push.answers.disable={removed:true,handover:[],settings:{frequency:1,hour:18,since:null},account:{active:false,devices:0}};
+  const before=c.reminders.metrics().state;
+  assert.notDeepEqual([before.frequency,before.hour],[1,18]);
+  await c.reminders.command('reminder-stop');
+  const after=c.reminders.metrics().state;
+  assert.deepEqual([after.frequency,after.hour],[before.frequency,before.hour]);
+ }finally{c.reminders.dispose();}
+});
+
 test('2단 바인딩의 digest()는 1단이 지금 기록으로 지은 요약을 돌려준다 — 거절된 요약을 다시 보낼 때 쓴다(설계 주인 11-21 규칙 4)',()=>{
  const push=fakePush({device:true,active:true,plan:{next:null,log:[]}});let bound=null;
  push.bindSettings=value=>{bound=value;return ()=>{bound=null;};};
