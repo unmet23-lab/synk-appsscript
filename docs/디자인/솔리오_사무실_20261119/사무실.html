@@ -195,9 +195,10 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 
 /* ── 자료(모두 예시) ─────────────────────────────────────────── */
 const DEPTS = [
-  {id:'mkt', name:'마케팅부', col:0, row:0, role:'블로그와 SNS 글을 쓰고, 반응과 경쟁사를 살핍니다.', dir:'문서\\마케팅'},
-  {id:'law', name:'법무부', col:1, row:0, role:'계약서와 약관을 읽고 위험한 조항을 짚습니다.', dir:'문서\\계약'},
-  {id:'dev', name:'개발부', col:2, row:0, role:'코드를 고치고 시험을 돌립니다.', dir:'코드\\shop'},
+  {id:'plan', name:'기획부', col:0, row:0, role:'사업계획서를 공고와 회사 자료에 맞춰 읽고, 빠진 것과 사실이 아닌 문장을 짚습니다.', dir:'문서\\기획'},
+  {id:'mkt', name:'마케팅부', col:1, row:0, role:'블로그와 SNS 글을 쓰고, 반응과 경쟁사를 살핍니다.', dir:'문서\\마케팅'},
+  {id:'law', name:'법무부', col:2, row:0, role:'계약서와 약관을 읽고 위험한 조항을 짚습니다.', dir:'문서\\계약'},
+  {id:'dev', name:'개발부', col:3, row:0, role:'코드를 고치고 시험을 돌립니다.', dir:'코드\\shop'},
   {id:'des', name:'디자인부', col:0, row:1, role:'상세 페이지와 배너 시안을 만듭니다.', dir:'문서\\디자인'},
   {id:'acc', name:'회계부', col:1, row:1, role:'영수증과 세금계산서를 정리합니다.', dir:'문서\\회계'},
   {id:'cs', name:'고객지원부', col:2, row:1, role:'문의 메일에 답장 초안을 씁니다.', dir:'문서\\문의'},
@@ -226,14 +227,16 @@ const S = (dept, seat, tool, model, state, say, act, when, extra) => Object.assi
 function cast0(scene) {
   uid = 0;
   if (scene === 'rest') return [
-    S('mkt', 0, 'Claude Code', 'Sonnet', 'idle', '어제 블로그 글 둘을 끝냈습니다', '쉬는 중', '어제'),
+    S('plan', 0, 'Claude Code', 'Opus', 'idle', '사업계획서 3판을 공고와 맞춰 읽었습니다', '쉬는 중', '어제'),
+    S('mkt', 0,'Claude Code', 'Sonnet', 'idle', '어제 블로그 글 둘을 끝냈습니다', '쉬는 중', '어제'),
     S('law', 0, 'Claude Code', 'Opus', 'idle', '용역 계약서 검토를 끝냈습니다', '쉬는 중', '어제'),
     S('dev', 0, 'Codex', 'GPT', 'idle', '결제 화면의 시험을 모두 통과했습니다', '쉬는 중', '3시간 전'),
     S('des', 0, 'Claude Code', 'Sonnet', 'idle', '상세 페이지 시안 셋을 끝냈습니다', '쉬는 중', '어제'),
   ];
   const ask = scene === 'ask';
   return [
-    S('mkt', 0, 'Claude Code', 'Sonnet', 'work', '11월 블로그 글 초안을 쓰고 있습니다', '쓰기 · 블로그_11월.md', '14분째', {fin:'11월 블로그 글 초안을 다 썼습니다'}),
+    S('plan', 0, 'Claude Code', 'Opus', 'done', '사업계획서 3판을 공고와 맞춰 읽었습니다', '끝냄 · 계획서_검토_3판.md', '어제'),
+    S('mkt', 0,'Claude Code', 'Sonnet', 'work', '11월 블로그 글 초안을 쓰고 있습니다', '쓰기 · 블로그_11월.md', '14분째', {fin:'11월 블로그 글 초안을 다 썼습니다'}),
     S('mkt', 1, 'Claude Code', 'Sonnet', 'work', '지난주 인스타그램 반응을 표로 정리하고 있습니다', '읽기 · 반응_46주.csv', '6분째', {fin:'지난주 인스타그램 반응을 표로 정리했습니다'}),
     ask ? S('law', 0, 'Claude Code', 'Opus', 'ask', '폴더 「계약_옛판」을 지워도 되는지 물었습니다', '3분 전에 승인을 물었습니다', '3분 전')
         : S('law', 0, 'Claude Code', 'Opus', 'work', '용역 계약서 7조의 손해배상 조항을 읽고 있습니다', '읽기 · 용역계약_v3.docx', '9분째', {fin:'용역 계약서 검토를 끝냈습니다'}),
@@ -275,9 +278,27 @@ const SCOUTS = [
   {head:'세 곳 모두 지난번과 같습니다', when:'방금', rest:'온결상점, 한뼘상점, 두루상점', say:['경쟁사 세 곳은 지난번과 같습니다.', '마케팅부가 방금 다 읽었습니다.']},
 ];
 let scoutI = 0, scouting = null, scoutT = [], lastHold = null, rivalNews = 0;
+/* 기획부 「사업계획서」: 맡긴 공고의 평가 항목과 회사 자료(다른 부서의 폴더)에 계획서를 맞춰 읽는다. 점수는 매기지 않는다(이름과 값은 모두 예시).
+   첫 값은 어제 읽은 3판이다. 「지금 읽기」를 누를 때마다 손님이 고쳐 저장한 다음 판을 읽는다. 마지막 판은 고칠 곳이 없는 때다.
+   아직 사실이 아닌 문장은 고쳐 쓰라고만 하지 않고, 만들어서 사실로 만들 수 있으면 그 부서에 맡기는 길을 준다 */
+const CALL = {name:'새싹창업 지원사업', due:'12월 5일 18:00 마감', left:'D-14', items:'문제 인식, 실현 가능성, 성장 전략, 팀 구성', file:'공고문_새싹창업.pdf'};
+const F_FIX = {nm:'3쪽', b:'「단골 손님 300명」이 자료와 다릅니다', small:'회계부의 영수증_10월.xlsx에는 다시 산 손님이 112명입니다', fix:'10월에 다시 산 손님 112명'};
+const F_MAKE = {nm:'5쪽', b:'「휴대폰에서 바로 주문할 수 있습니다」는 아직 사실이 아닙니다', small:'개발부의 코드\\shop에는 휴대폰 주문 화면이 없습니다', make:'휴대폰 주문 화면을 만들고 있습니다'};
+const PLANS = [
+  {v:3, when:'어제', head:'빠진 항목 하나, 사실이 아닌 문장 둘', gaps:[{nm:'성장 전략', b:'3년 뒤 매출 목표만 있고, 어떻게 늘릴지가 없습니다', small:'평가 항목 셋째 · 계획서 4쪽'}], ok:'문제 인식, 실현 가능성, 팀 구성은 계획서가 답합니다', facts:[F_FIX, F_MAKE]},
+  {v:4, when:'방금', head:'사실이 아닌 문장 하나', changed:'4쪽에 성장 전략을 채우고, 3쪽의 단골 손님 수를 112명으로 고쳤습니다', gaps:[], ok:'평가 항목 넷 모두 계획서가 답합니다', facts:[F_MAKE], say:['4판에서 빠진 항목이 채워졌습니다.', '아직 사실이 아닌 문장이 하나 남았습니다.']},
+  {v:5, when:'방금', head:'고칠 곳이 없습니다', gaps:[], ok:'평가 항목 넷 모두 계획서가 답합니다', facts:[], say:['5판은 고칠 곳이 없습니다.', '기획부가 공고와 회사 자료에 맞춰 다 읽었습니다.']},
+];
+let planI = 0, planning = null, planT = [], planNews = 0, planMake = null, planCopied = false;
+/* 5판에서 달라진 것은 개발부에 맡긴 화면이 끝났는지에 따라 다르다 */
+const planChanged = r => r.v < 5 ? r.changed : planMake && planMake.state === 'done' ? '5쪽의 휴대폰 주문은 개발부가 만든 화면으로 사실이 되었습니다' : '5쪽의 휴대폰 주문을 「2027년 3월에 엽니다」로 고쳤습니다';
 /* 부서의 기능: 부서를 누르면 직원 줄과 맡기기 칸 아래에 기능 이름이 한 줄씩 차례로 펼쳐진다. 기능이 늘어도 줄 하나씩만 는다.
    「경쟁사」만 지었고, soon이 붙은 둘은 기능이 늘었을 때의 모습을 보이는 자리다. 모든 부서의 맨 아래에는 「부서 설정」이 있다 */
 const ITEMS = {
+  plan: [
+    {id:'bizplan', name:'사업계획서'},
+    {id:'calls', name:'지원사업 공고', soon:'내 사업에 맞는 공고를 찾아 마감일을 알려 줍니다'},
+  ],
   mkt: [
     {id:'rivals', name:'경쟁사'},
     {id:'blog', name:'블로그 글', soon:'매주 글감을 찾아 초안을 씁니다'},
@@ -352,6 +373,7 @@ function moreHTML(d, st) {
   for (const f of ITEMS[d.id] || []) {
     if (f.soon) h += `<div class="row sub fact soon" style="--j:${j++}"><span class="nm">${esc(f.name)}</span><span class="mid">${esc(f.soon)}</span><span class="when">준비 중</span></div>`;
     else if (f.id === 'rivals') { const r = SCOUTS[scoutI]; h += item('rivals', f.name, scouting ? '세 곳을 다시 읽고 있습니다' : r.head, scouting ? '읽는 중' : r.when + ' 읽음', rivalsHTML(), rivalNews); }
+    else if (f.id === 'bizplan') { const r = PLANS[planI]; h += item('bizplan', f.name, planning ? `${planning.v}판을 공고와 자료에 맞춰 읽고 있습니다` : r.head, planning ? '읽는 중' : `${r.v}판 · ${r.when} 읽음`, planHTML(), planNews); }
   }
   h += item('set', '부서 설정', `${tool} · ${d.dir}`, '', setHTML);
   return h;
@@ -365,6 +387,26 @@ function rivalsHTML() {
   h += row(' fact', r.who ? '그 밖' : '읽은 곳', esc(r.rest), esc(MISS), r.who ? '' : read);
   h += `<p class="more-acts" style="--j:${j++}">${scouting ? '<span class="lab">읽는 중</span>' : '<button class="quiet" type="button" data-scout>지금 읽기</button>'}<button class="quiet" type="button" data-noop>목록 고치기</button></p>`;
   h += `<p class="more-note" style="--j:${j++}">세 곳을 월요일 09:00마다 다시 읽습니다. 누구나 볼 수 있는 쪽만 읽습니다.</p>`;
+  return h;
+}
+/* 기획부 「사업계획서」의 안쪽: 공고, 지난 판과 달라진 것, 빠진 항목, 사실이 아닌 문장을 한 줄씩 적고, 답한 항목은 한 줄로 묶는다 */
+function planHTML() {
+  const r = PLANS[planI]; let j = 0;
+  const row = (cls, nm, b, small, when) => `<div class="row sub${cls}" style="--j:${j++}"><span class="nm">${esc(nm)}</span><span class="mid"><b>${esc(b)}</b><small>${esc(small)}</small></span><span class="when">${esc(when)}</span></div>`;
+  let h = row(' fact', '공고', `${CALL.name} · ${CALL.due}`, `평가 항목 넷 · ${CALL.items}`, CALL.left);
+  if (r.v > 3) h += row('', '달라진 것', planChanged(r), `${r.v - 1}판과 견주었습니다`, r.v + '판');
+  for (const g of r.gaps) h += row(' now', g.nm, g.b, g.small, '빠짐');
+  for (const f of r.facts) {
+    h += row(' now', f.nm, f.b, f.small, f.fix ? '다름' : '아직 아님');
+    if (f.fix) h += `<p class="more-acts" style="--j:${j++}"><button class="quiet" type="button" data-copy>${planCopied ? '복사했습니다' : '고친 문장 복사'}</button><span class="lab">「${esc(f.fix)}」</span></p>`;
+    else {
+      const m = planMake, how = !m ? '' : m === 'wait' ? `개발부에 맡겼습니다. ${whyText('dev')}.` : m.state === 'done' ? '개발부가 화면을 다 만들었습니다. 다음 판에서 다시 봅니다.' : '개발부가 휴대폰 주문 화면을 만들고 있습니다.';
+      h += `<p class="more-acts" style="--j:${j++}">${m ? `<span class="lab">${esc(how)}</span>` : '<button class="quiet warn" type="button" data-make>개발부에 맡기기</button><span class="lab">만들면 이 문장이 사실이 됩니다. 만들지 않으면 여는 때를 적어 주세요.</span>'}</p>`;
+    }
+  }
+  h += row(' fact', '그 밖', r.ok, `견준 자료 · ${CALL.file}, 영수증_10월.xlsx, 코드\\shop`, '');
+  h += `<p class="more-acts" style="--j:${j++}">${planning ? '<span class="lab">읽는 중</span>' : '<button class="quiet" type="button" data-plan>지금 읽기</button>'}<button class="quiet" type="button" data-noop>공고 바꾸기</button></p>`;
+  h += `<p class="more-note" style="--j:${j++}">계획서 파일을 고쳐 저장하면 다시 읽고, 지난 판과 달라진 것만 말합니다. 점수는 매기지 않고 공고의 평가 항목으로만 봅니다. 계획서는 SYNK로 보내지 않고, 이 부서를 실행하는 내 구독의 AI만 읽습니다.</p>`;
   return h;
 }
 /* 설정: 사무실을 보는 각도를 고른다. 비스듬히(3D)와 위에서(2D)를 둘 다 지원한다 */
@@ -421,6 +463,7 @@ function sync() {
   for (const id of wasOpen) if (!open.has(id)) {
     if (openItem[id]) { openItem[id] = null; read = true; }          // 닫힌 부서는 다음에 열 때 기능이 접힌 채로 열린다
     if (id === 'mkt' && rivalNews) { rivalNews = 0; read = true; }
+    if (id === 'plan' && planNews) { planNews = 0; read = true; }
     for (const s of staff) if (s.dept === id && s.news) { s.news = false; read = true; }
   }
   wasOpen = new Set(open);
@@ -477,6 +520,9 @@ rowsEl.addEventListener('click', e => {
   if (t.dataset.tool) { const id = t.closest('.more').dataset.d; toolOf[id] = t.dataset.tool; delete notes[id]; render(true); return; }
   if (t.dataset.send) { send(t.dataset.send); return; }
   if ('scout' in t.dataset) { scout(); return; }
+  if ('plan' in t.dataset) { planRead(); return; }
+  if ('make' in t.dataset) { planMakeGo(); return; }
+  if ('copy' in t.dataset) { try { navigator.clipboard.writeText(F_FIX.fix).catch(() => {}); } catch (err) {} planCopied = true; render(true); return; }
   if ('diag' in t.dataset) diagnose();
 });
 /* 사무실을 처음 열 때와 「다시 살펴보기」: PC를 읽고, 몇이 함께 일할 수 있는지 한 문장으로 말한다 */
@@ -539,6 +585,36 @@ function scout() {
   }, 1700 * steps.length + 300));
   render(true);
 }
+/* 「지금 읽기」(기획부): 손님이 고쳐 저장한 다음 판을 기획부 직원이 읽고, 공고와 회사 자료에 견준다.
+   다 읽으면 맨 위 문장과 사업계획서 줄이 결과를 말한다. 자리가 없으면 다른 일처럼 차례를 기다린다 */
+function planRead() {
+  if (planning) return;
+  const nx = PLANS[Math.min(planI + 1, PLANS.length - 1)];
+  const who = give('plan', `사업계획서 ${nx.v}판을 공고와 회사 자료에 맞춰 읽고 있습니다`);
+  if (!who) { render(true); return; }
+  planning = {who, v:nx.v};
+  const steps = [`읽기 · 사업계획서_v${nx.v}.docx`, `견주기 · ${CALL.file}`, '견주기 · 영수증_10월.xlsx, 코드\\shop'];
+  who.act = steps[0];
+  steps.slice(1).forEach((a, i) => planT.push(setTimeout(() => { who.act = a; render(true); }, 1500 * (i + 1))));
+  planT.push(setTimeout(() => {
+    planI = Math.min(planI + 1, PLANS.length - 1); planning = null; planCopied = false;
+    const r = PLANS[planI];
+    // 5판을 읽을 때 개발부가 만들던 화면은 끝난 것으로 친다(시안에서 시간이 흐른 것을 보인다)
+    if (r.v === 5 && planMake && planMake !== 'wait' && busy(planMake)) Object.assign(planMake, {state:'done', say:'휴대폰 주문 화면을 만들었습니다', act:'끝냄 · 코드\\shop', when:'방금', subs:0, news:true, newsT0:performance.now()});
+    const left = r.gaps.length + r.facts.length;
+    Object.assign(who, {state:'done', say:`사업계획서 ${r.v}판을 다 읽었습니다. ` + (left ? '고칠 곳이 남았습니다' : '고칠 곳이 없습니다'), act:`끝냄 · 계획서_검토_${r.v}판.md`, when:'방금', news:true, newsT0:performance.now()});
+    planNews = performance.now();
+    hold(r.say, 4600);
+  }, 1500 * steps.length + 300));
+  render(true);
+}
+/* 「개발부에 맡기기」: 아직 사실이 아닌 문장을 만들어서 사실로 만든다. 개발부의 자리와 구독을 따라 시작하거나 기다린다 */
+function planMakeGo() {
+  const who = give('dev', F_MAKE.make);
+  planMake = who || 'wait';
+  if (who) who.fin = '휴대폰 주문 화면을 만들었습니다';
+  render(true);
+}
 function send(to) {
   const s = staff.find(x => x.dept === 'lobby'); if (!s) return;
   const seat = freeSeat(to);
@@ -551,9 +627,12 @@ function send(to) {
 
 /* ── 사무실 그림 ─────────────────────────────────────────────── */
 const ZW = 3.2, ZD = 2.4, GAP = .6, SLAB = .1, R0 = .3;
+/* 줄마다 부서 수가 달라도(앞줄 넷, 뒷줄 셋) 가운데를 맞춰 놓는다. FX는 가장 긴 줄의 반폭이다 */
+const ROWN = r => DEPTS.filter(d => !d.lobby && d.row === r).length;
+const FX = (Math.max(ROWN(0), ROWN(1)) * (ZW + GAP) - GAP) / 2;
 function rectOf(d) {
-  if (d.lobby) return {x0:-5.4, x1:5.4, z0:3.35, z1:4.45};
-  const cx = (d.col - 1) * (ZW + GAP), cz = (d.row - .5) * (ZD + GAP);
+  if (d.lobby) return {x0:-FX, x1:FX, z0:3.35, z1:4.45};
+  const cx = (d.col - (ROWN(d.row) - 1) / 2) * (ZW + GAP), cz = (d.row - .5) * (ZD + GAP);
   return {x0:cx - ZW / 2, x1:cx + ZW / 2, z0:cz - ZD / 2, z1:cz + ZD / 2};
 }
 function seatOf(d, i) {
@@ -578,7 +657,7 @@ function P0(x, y, z) {
 const P = (x, y, z) => { const p = P0(x, y, z); return [cam.ox + p[0] * cam.S, cam.oy + p[1] * cam.S, p[2], p[3]]; };
 function fit(w, h, left, top, t3) {
   let a = 1e9, b = -1e9, c = 1e9, e = -1e9;
-  for (const x of [-5.4, 5.4]) for (const z of [-2.7, 4.45]) for (const y of [0, 1.05]) { const p = P0(x, y, z); a = Math.min(a, p[0]); b = Math.max(b, p[0]); c = Math.min(c, p[1]); e = Math.max(e, p[1]); }
+  for (const x of [-FX, FX]) for (const z of [-2.7, 4.45]) for (const y of [0, 1.05]) { const p = P0(x, y, z); a = Math.min(a, p[0]); b = Math.max(b, p[0]); c = Math.min(c, p[1]); e = Math.max(e, p[1]); }
   // 사무실은 검정 위에 떠 있으므로 자리의 옆 여백까지 쓴다. 남는 높이는 아래에 더 둔다(줄의 첫 줄과 윗선이 가깝게)
   const spill = Math.max(0, Math.min(56, left - 14)) * t3; left -= spill; w += spill * 1.6;
   const pad = 10; cam.S = Math.min((w - pad * 2) / (b - a), (h - pad * 2) / (e - c));
@@ -740,11 +819,11 @@ const meta = $('#meta'); let awayT = 0;
 function wake() { meta.classList.remove('away'); clearTimeout(awayT); awayT = setTimeout(() => { if (!meta.matches(':hover') && !meta.contains(document.activeElement)) meta.classList.add('away'); }, 4000); }
 addEventListener('pointermove', wake); addEventListener('keydown', wake); wake();
 const CASES = [['ask', '승인 물음'], ['calm', '평소'], ['rest', '모두 쉼']];
-function setCase(i) { scoutT.forEach(clearTimeout); scoutT = []; scoutI = 0; scouting = null; if (sayHold === lastHold) sayHold = null; wasOpen = new Set(); rivalNews = 0; for (const k in openItem) delete openItem[k]; scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
+function setCase(i) { scoutT.forEach(clearTimeout); scoutT = []; scoutI = 0; scouting = null; planT.forEach(clearTimeout); planT = []; planI = 0; planning = null; planNews = 0; planMake = null; planCopied = false; if (sayHold === lastHold) sayHold = null; wasOpen = new Set(); rivalNews = 0; for (const k in openItem) delete openItem[k]; scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
 let ci = 0; $('#m-case').onclick = () => setCase(ci = (ci + 1) % CASES.length);
 /* 「알림 받기」: 일하던 직원 하나가 일을 끝내 알림이 오는 순간을 본다 */
 $('#m-ping').onclick = () => {
-  const c = staff.filter(s => s.state === 'work' && s.fin && s !== scouting);
+  const c = staff.filter(s => s.state === 'work' && s.fin && s !== scouting && !(planning && s === planning.who));
   const s = c.find(x => !staff.some(y => y.dept === x.dept && alerting(y))) || c[0];
   if (!s) return;
   Object.assign(s, {state:'done', say:s.fin, act:'끝냄', when:'방금', subs:0, news:true, newsT0:performance.now()});
@@ -764,6 +843,7 @@ if (/2d/.test(location.hash)) view = viewTo = 0;
 const h0 = CASES.findIndex(c => location.hash.includes(c[0])); if (h0 > 0) ci = h0;
 resize(); setCase(ci); requestAnimationFrame(frame);
 if (/mkt/.test(location.hash)) pin('mkt');          // #mkt: 마케팅부의 줄을 연 채로 연다
+if (/plan/.test(location.hash)) { openItem.plan = 'bizplan'; render(true); pin('plan'); }   // #plan: 기획부의 사업계획서를 연 채로 연다
 })();
 </script>
 </body>
