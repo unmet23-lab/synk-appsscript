@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1fcb8-1956-7641-8fed-7ebb7ff2b312"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬을 사용해 이미지를 생성합니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":91532,"cached_input_tokens":74752,"cache_write_input_tokens":0,"output_tokens":967,"reasoning_output_tokens":94}}

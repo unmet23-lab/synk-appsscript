@@ -1,0 +1,102 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_5c3c52cb5827e00008dd7f3b",
+  "name": "범수"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "normal",
+  "intensity": 1,
+  "tempo": 1.12,
+  "seed": 1121,
+  "lufs": -17
+ },
+ "made": "2026-11-21T08:12:59.330Z",
+ "lines": [
+  {
+   "id": "N1",
+   "text": "방에서 찍은 셀카 한 장이, 프로필 사진이 됐어요.",
+   "dur": 2.404,
+   "syllablesPerSec": 7.9,
+   "src": "N1.wav",
+   "key": "bc99c9474b23ef9695ed3db135ee6056",
+   "words": 8
+  },
+  {
+   "id": "N2",
+   "text": "챗지피티에 셀카를 올리고, 이렇게 보냈어요.",
+   "dur": 2.408,
+   "syllablesPerSec": 7.48,
+   "src": "N2.wav",
+   "key": "b603a6a110a3aa62f9dea4f4ab21d493",
+   "words": 5
+  },
+  {
+   "id": "N3",
+   "text": "이 셀카를 사진관에서 찍은 프로필 사진으로 바꿔 줘. 얼굴 생김새와 점은 그대로 두고.",
+   "dur": 4.789,
+   "syllablesPerSec": 7.1,
+   "src": "N3.wav",
+   "key": "999f1856dd966e6c97e011337586971c",
+   "words": 13
+  },
+  {
+   "id": "N4",
+   "text": "잔머리만 단정하게 정리해 줘. 한 줄 더 보냈더니, 머리도 정리됐어요.",
+   "dur": 3.799,
+   "syllablesPerSec": 7.11,
+   "src": "N4.wav",
+   "key": "94a85dc1c1eb9b8da85e44d20e934de4",
+   "words": 10
+  },
+  {
+   "id": "N5",
+   "text": "점도, 홑꺼풀도, 그대로예요.",
+   "dur": 2.072,
+   "syllablesPerSec": 5.31,
+   "src": "N5.wav",
+   "key": "e4a1d9bd6b59319fe248175673130a46",
+   "words": 3
+  },
+  {
+   "id": "N6",
+   "text": "배경만, 옷만, 카페 창가로 바꾸는 명령어도 있어요.",
+   "dur": 2.848,
+   "syllablesPerSec": 7.02,
+   "src": "N6.wav",
+   "key": "030cbf583da40dd9c32c1db302dd508e",
+   "words": 7
+  },
+  {
+   "id": "N7",
+   "text": "그 명령어 여섯 개 전부, 댓글에 프로필 남기면 보내 드려요.",
+   "dur": 3.457,
+   "syllablesPerSec": 6.65,
+   "src": "N7.wav",
+   "key": "2700324e655b7e02e23446e522c55fb0",
+   "words": 10
+  },
+  {
+   "id": "N7Y",
+   "text": "그 명령어 여섯 개 전부, 고정 댓글에 적어 뒀어요.",
+   "dur": 2.847,
+   "syllablesPerSec": 6.67,
+   "src": "N7Y.wav",
+   "key": "9daf5217cbb7dd546f13c8772bfb948c",
+   "words": 9
+  },
+  {
+   "id": "N7T",
+   "text": "그 명령어 여섯 개 전부, 아래 글에 적어 뒀어요.",
+   "dur": 2.569,
+   "syllablesPerSec": 7.01,
+   "src": "N7T.wav",
+   "key": "faa2eb630c5d34376091c371ff5904ea",
+   "words": 9
+  }
+ ]
+}

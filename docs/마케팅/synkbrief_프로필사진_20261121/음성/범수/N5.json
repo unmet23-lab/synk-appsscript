@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N5",
+ "text": "점도, 홑꺼풀도, 그대로예요.",
+ "dur": 2.072,
+ "words": [
+  {
+   "text": "점도,",
+   "start": 0.02,
+   "end": 0.344
+  },
+  {
+   "text": "홑꺼풀도,",
+   "start": 0.708,
+   "end": 1.233
+  },
+  {
+   "text": "그대로예요.",
+   "start": 1.496,
+   "end": 2.072
+  }
+ ],
+ "source": {
+  "key": "e4a1d9bd6b59319fe248175673130a46",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1121,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 160
+ }
+}

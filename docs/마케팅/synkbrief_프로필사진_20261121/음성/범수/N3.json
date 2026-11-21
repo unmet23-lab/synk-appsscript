@@ -1,0 +1,100 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N3",
+ "text": "이 셀카를 사진관에서 찍은 프로필 사진으로 바꿔 줘. 얼굴 생김새와 점은 그대로 두고.",
+ "dur": 4.789,
+ "words": [
+  {
+   "text": "이",
+   "start": 0.03,
+   "end": 0.044
+  },
+  {
+   "text": "셀카를",
+   "start": 0.13,
+   "end": 0.528
+  },
+  {
+   "text": "사진관에서",
+   "start": 0.571,
+   "end": 1.055
+  },
+  {
+   "text": "찍은",
+   "start": 1.111,
+   "end": 1.325
+  },
+  {
+   "text": "프로필",
+   "start": 1.368,
+   "end": 1.666
+  },
+  {
+   "text": "사진으로",
+   "start": 1.709,
+   "end": 2.036
+  },
+  {
+   "text": "바꿔",
+   "start": 2.079,
+   "end": 2.278
+  },
+  {
+   "text": "줘.",
+   "start": 2.321,
+   "end": 2.406
+  },
+  {
+   "text": "얼굴",
+   "start": 3.018,
+   "end": 3.246
+  },
+  {
+   "text": "생김새와",
+   "start": 3.288,
+   "end": 3.729
+  },
+  {
+   "text": "점은",
+   "start": 3.786,
+   "end": 4.028
+  },
+  {
+   "text": "그대로",
+   "start": 4.071,
+   "end": 4.313
+  },
+  {
+   "text": "두고.",
+   "start": 4.356,
+   "end": 4.789
+  }
+ ],
+ "source": {
+  "key": "999f1856dd966e6c97e011337586971c",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1121,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 166
+ }
+}

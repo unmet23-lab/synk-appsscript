@@ -1,0 +1,75 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N1",
+ "text": "방에서 찍은 셀카 한 장이, 프로필 사진이 됐어요.",
+ "dur": 2.404,
+ "words": [
+  {
+   "text": "방에서",
+   "start": 0.02,
+   "end": 0.288
+  },
+  {
+   "text": "찍은",
+   "start": 0.328,
+   "end": 0.543
+  },
+  {
+   "text": "셀카",
+   "start": 0.583,
+   "end": 0.81
+  },
+  {
+   "text": "한",
+   "start": 0.851,
+   "end": 0.918
+  },
+  {
+   "text": "장이,",
+   "start": 0.958,
+   "end": 1.145
+  },
+  {
+   "text": "프로필",
+   "start": 1.293,
+   "end": 1.56
+  },
+  {
+   "text": "사진이",
+   "start": 1.601,
+   "end": 1.855
+  },
+  {
+   "text": "됐어요.",
+   "start": 1.895,
+   "end": 2.404
+  }
+ ],
+ "source": {
+  "key": "bc99c9474b23ef9695ed3db135ee6056",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1121,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 165
+ }
+}

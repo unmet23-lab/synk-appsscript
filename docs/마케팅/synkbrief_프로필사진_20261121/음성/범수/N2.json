@@ -1,0 +1,60 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N2",
+ "text": "챗지피티에 셀카를 올리고, 이렇게 보냈어요.",
+ "dur": 2.408,
+ "words": [
+  {
+   "text": "챗지피티에",
+   "start": 0.02,
+   "end": 0.52
+  },
+  {
+   "text": "셀카를",
+   "start": 0.569,
+   "end": 0.94
+  },
+  {
+   "text": "올리고,",
+   "start": 0.988,
+   "end": 1.23
+  },
+  {
+   "text": "이렇게",
+   "start": 1.617,
+   "end": 1.827
+  },
+  {
+   "text": "보냈어요.",
+   "start": 1.875,
+   "end": 2.408
+  }
+ ],
+ "source": {
+  "key": "b603a6a110a3aa62f9dea4f4ab21d493",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1121,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 182
+ }
+}

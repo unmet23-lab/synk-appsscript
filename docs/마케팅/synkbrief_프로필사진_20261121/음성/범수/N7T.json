@@ -1,0 +1,80 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N7T",
+ "text": "그 명령어 여섯 개 전부, 아래 글에 적어 뒀어요.",
+ "dur": 2.569,
+ "words": [
+  {
+   "text": "그",
+   "start": 0.02,
+   "end": 0.085
+  },
+  {
+   "text": "명령어",
+   "start": 0.164,
+   "end": 0.49
+  },
+  {
+   "text": "여섯",
+   "start": 0.53,
+   "end": 0.739
+  },
+  {
+   "text": "개",
+   "start": 0.791,
+   "end": 0.843
+  },
+  {
+   "text": "전부,",
+   "start": 0.882,
+   "end": 1.157
+  },
+  {
+   "text": "아래",
+   "start": 1.523,
+   "end": 1.653
+  },
+  {
+   "text": "글에",
+   "start": 1.719,
+   "end": 1.849
+  },
+  {
+   "text": "적어",
+   "start": 1.889,
+   "end": 2.071
+  },
+  {
+   "text": "뒀어요.",
+   "start": 2.111,
+   "end": 2.569
+  }
+ ],
+ "source": {
+  "key": "faa2eb630c5d34376091c371ff5904ea",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1121,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 140
+ }
+}

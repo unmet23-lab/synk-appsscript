@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a1fcc1-4c49-79c0-8c19-5835a2ae671a"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"imagegen 스킬로 요청하신 셀카 이미지를 생성합니다.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":""}}
+{"type":"turn.completed","usage":{"input_tokens":82160,"cached_input_tokens":71680,"cache_write_input_tokens":0,"output_tokens":1668,"reasoning_output_tokens":473}}

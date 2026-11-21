@@ -1,0 +1,70 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N6",
+ "text": "배경만, 옷만, 카페 창가로 바꾸는 명령어도 있어요.",
+ "dur": 2.848,
+ "words": [
+  {
+   "text": "배경만,",
+   "start": 0.02,
+   "end": 0.494
+  },
+  {
+   "text": "옷만,",
+   "start": 0.648,
+   "end": 0.941
+  },
+  {
+   "text": "카페",
+   "start": 1.094,
+   "end": 1.276
+  },
+  {
+   "text": "창가로",
+   "start": 1.317,
+   "end": 1.624
+  },
+  {
+   "text": "바꾸는",
+   "start": 1.666,
+   "end": 1.959
+  },
+  {
+   "text": "명령어도",
+   "start": 2.001,
+   "end": 2.364
+  },
+  {
+   "text": "있어요.",
+   "start": 2.406,
+   "end": 2.848
+  }
+ ],
+ "source": {
+  "key": "030cbf583da40dd9c32c1db302dd508e",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1121,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 147
+ }
+}

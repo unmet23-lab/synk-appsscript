@@ -1,0 +1,85 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "N4",
+ "text": "잔머리만 단정하게 정리해 줘. 한 줄 더 보냈더니, 머리도 정리됐어요.",
+ "dur": 3.799,
+ "words": [
+  {
+   "text": "잔머리만",
+   "start": 0.06,
+   "end": 0.484
+  },
+  {
+   "text": "단정하게",
+   "start": 0.566,
+   "end": 0.894
+  },
+  {
+   "text": "정리해",
+   "start": 0.935,
+   "end": 1.195
+  },
+  {
+   "text": "줘.",
+   "start": 1.236,
+   "end": 1.318
+  },
+  {
+   "text": "한",
+   "start": 1.947,
+   "end": 2.043
+  },
+  {
+   "text": "줄",
+   "start": 2.084,
+   "end": 2.166
+  },
+  {
+   "text": "더",
+   "start": 2.207,
+   "end": 2.261
+  },
+  {
+   "text": "보냈더니,",
+   "start": 2.302,
+   "end": 2.658
+  },
+  {
+   "text": "머리도",
+   "start": 2.89,
+   "end": 3.109
+  },
+  {
+   "text": "정리됐어요.",
+   "start": 3.15,
+   "end": 3.799
+  }
+ ],
+ "source": {
+  "key": "94a85dc1c1eb9b8da85e44d20e934de4",
+  "voice": {
+   "id": "tc_5c3c52cb5827e00008dd7f3b",
+   "name": "범수"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1.12,
+   "seed": 1121,
+   "lufs": -17,
+   "voiceId": "tc_5c3c52cb5827e00008dd7f3b"
+  },
+  "speed": 1.05,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 9,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 159
+ }
+}
