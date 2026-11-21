@@ -158,10 +158,11 @@ html[data-sky="sunset"] .gate-sky::after{content:"";position:absolute;inset:0;ba
 .state{display:inline-flex;align-items:center;gap:9px;font:700 17px/1 var(--sans)}
 .state::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--meadow-ink)}
 .state.soon::before{background:none;border:2px solid var(--ink)}
-.w-close{top:clamp(84px,16svh,168px);max-width:none;gap:clamp(16px,3svh,30px);visibility:hidden;opacity:0}
-@media (max-height:640px){html:not([lang="en"]) .w-close{top:78px;gap:12px}}   /* 낮은 창(900×560 · 1024×600)에서 한국어 끝 장면 문단이 「1 한국어」 말풍선에 닿지 않게. 영어는 올리면 「2 Classroom」에 닿아 그대로 둔다(11-21 다음 판) */
+.w-close{top:clamp(112px,16svh,168px);max-width:none;gap:clamp(16px,3svh,30px);visibility:hidden;opacity:0}
+@media (max-height:640px) and (max-width:1280px){html:not([lang="en"]) .w-close{top:78px;gap:12px}}   /* 낮고 좁은 창(900×560 · 1024×600)에서 한국어 끝 장면 문단이 「1 한국어」 말풍선에 닿지 않게. 영어와 1280보다 넓은 창은 올리면 다른 말풍선에 닿아 그대로 둔다(11-22 Fable) */
 .w-close h3{font:700 clamp(34px,4.5vw,62px)/1.12 var(--sans);letter-spacing:-.035em;white-space:nowrap}   /* 위 한계 62px: 1440폭을 넘으면 글 칸 여백이 커져 74px 제목이 「2 교실」 말풍선에 닿았다(11-21 검수) */
 .w-close p{font:500 clamp(18px,1.6vw,24px)/1.6 var(--sans);max-width:22em}
+@media (min-width:1441px){html:not([lang="en"]) .w-close p{max-width:19.5em}}@media (min-width:900px) and (max-width:999px){.w-close p{max-width:20em}}   /* 넓은 창(1500~1920 × 600~760)에서 문단 끝이 「1」 말풍선에, 900폭대 영어에서 「2」 말풍선에 닿았다(11-22) */
 html[lang="en"] body:not(.flat) .w-close h3{font-size:clamp(26px,3vw,42px)}   /* 영어 끝 제목이 「2 Classroom」 말풍선에 닿지 않게(11-21 검수, 위 한계 42px은 1600~2560폭까지 잼). en-fix.css는 상세 쪽과 같이 쓰므로 여기에 둔다 */
 .loop-go{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center}
 @media (min-width:900px) and (max-width:1279px){.loop-go{flex-direction:column;align-items:flex-start;gap:14px}}   /* 태블릿 가로 크기에서 둘째 링크가 「1 한국어」 말풍선에 닿지 않게 세로로 쌓는다(11-21 검수) */
@@ -189,7 +190,8 @@ html[lang="en"] body:not(.flat) .w-close h3{font-size:clamp(26px,3vw,42px)}   /*
 .w-occ.over{z-index:1}
 /* 학생이 서 있는 곳의 말풍선 */
 .w-pins{z-index:2}
-.w-pins button,.w-pins button::after,.w-pins b{transition:transform .2s var(--ease),background-color .35s,color .35s}
+.w-pins button,.w-pins button::after,.w-pins b{transition:transform .2s var(--ease),translate .25s var(--ease),background-color .35s,color .35s}
+.w-pins button{translate:0 calc(-1 * var(--ly,0px))}   /* 지금 서 있는 곳의 말풍선이 학생 머리에 닿으면 그만큼 위로(11-22) */
 .w-pins .here button,.w-pins .here button::after{background:var(--ink);color:var(--paper)}
 .w-pins .here b{background:var(--butter);color:var(--ink)}
 /* 지금 어디인지: 다섯 점 */
@@ -954,9 +956,15 @@ html[lang="en"] .hang .lines li.on h3{font-weight:600;-webkit-text-stroke:.024em
     // HIDE는 건물 뒤의 길(그림 화소 [왼쪽, 위, 오른쪽, 아래]). 발이 그 안으로 들어가면 가장자리 18화소에 걸쳐 옅어지고 나오면 다시 짙어진다
     const op = 1 - Math.max(...HIDE.map(([x0, y0, x1, y1]) => clamp((p.x - x0) / 18) * clamp((x1 - p.x) / 18) * clamp((p.y - y0) / 18) * clamp((y1 - p.y) / 18)));
     me.style.opacity = op;
-    // 학생이 말풍선 밑을 지나는 동안은 그 말풍선이 옅어져 길을 비켜 준다(11-21 다음 판). 몸 가운데 절반 폭과 겹칠 때만 본다
+    // 학생이 말풍선 밑을 지나는 동안은 그 말풍선이 옅어져 길을 비켜 준다(11-21 다음 판). 몸 가운데 절반 폭과 겹칠 때만 본다.
+    // 지금 서 있는 곳의 말풍선(here)은 옅게 하지 않고, 겹치는 만큼 위로 비켜 올린다(--ly, 단추만 translate로 — 자리를 재는 li는 그대로). 11-22 Fable P1
     const r = idle || op < .3 ? null : me.getBoundingClientRect(), cx = r && (r.left + r.right) / 2, hw = r && r.width / 4;
-    pinLis.forEach(li => { const q = r && li.firstElementChild.getBoundingClientRect(); li.classList.toggle('yield', !!r && q.left < cx + hw && q.right > cx - hw && q.top < r.bottom && q.bottom > r.top + r.height * .08); });
+    pinLis.forEach((li, i) => {
+      const q = r && li.getBoundingClientRect(), hit = !!r && q.left < cx + hw && q.right > cx - hw && q.top < r.bottom && q.bottom > r.top + r.height * .08;
+      const here = !idle && i === st.pin, up = hit && here ? (q.bottom - (r.top + r.height * .08) + 3) * li.offsetWidth / (q.width || 1) : 0;
+      li.classList.toggle('yield', hit && !here);
+      if (up) li.style.setProperty('--ly', up.toFixed(1) + 'px'); else li.style.removeProperty('--ly');
+    });
   }
   // 집 · 카페 뒤의 길(그림 화소). 집은 문턱(678)부터 옅어져 바닥선(660)에서 가림 조각이 덮을 때 이미 다 감춰지고 지붕 위(548)로 다시 나온다.
   // 카페는 지붕 뒤(592)로 들어갈 때 옅어지고 카페 왼쪽(1205)에서 다시 나온다. 말풍선 밑은 감추지 않고 말풍선을 옅게 한다(위 yield)
