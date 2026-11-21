@@ -15,7 +15,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MAP_DIR } from './map-build.mjs';
-import { BANKS, readBanks, readUnits, REPO_ROOT } from './map-sources.mjs';
+import { BANKS, grammarNotes, readBanks, readUnits, REPO_ROOT } from './map-sources.mjs';
 import { ALL_ITEMS, MULTI_ONLY, tagContent } from './map-tags-content.mjs';
 
 const require = createRequire(import.meta.url);
@@ -60,10 +60,11 @@ async function assertFresh(packet) {
 // 낱말 이름: 글(품사 · 뜻) — 뜻은 같은 글의 다른 표제어가 흔한 낱말에만 있다(map/senses.json).
 export const wordName = (label, pos, sense) => `${label}(${pos}${sense ? ` · ${sense}` : ''})`;
 
-function catalogText(units, words) {
+// 3~4급 문형은 이름 뒤에 갈래와 뜻을 붙인다(「ko.grammar.S452 -는다거나2 (4급 표현 · 선택)」) — 이름이 같은 문형을 가르려고.
+export function catalogText(units, words, notes = grammarNotes()) {
   const grammar = units
     .filter(([, kind]) => kind === 'grammar')
-    .map(([id, , label]) => `${id} ${label}`);
+    .map(([id, , label]) => `${id} ${label}${notes.has(id) ? ` (${notes.get(id)})` : ''}`);
   const life = units.filter(([, kind]) => kind === 'life').map(([id, , label]) => `${id} ${label}`);
   const word = words.map(
     ([id, label, pos, , sense]) => `ko.word.${id} ${wordName(label, pos, sense)}`,

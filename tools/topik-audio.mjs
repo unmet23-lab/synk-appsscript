@@ -32,6 +32,7 @@ export const LINE_SEEDS = Object.freeze({
   'ti-l-d-027/l04': 1008, // 하나 엉킴 44% → 26%, 「잘못 탔어요」 그대로 들림(1005는 8%지만 「왔어요」로)
   'tii-l-a-010/l01': 1004, // 「부스」가 「보스」로
   'tii-l-b-003/l01': 1004, // 「자전거」가 「자전과」로
+  'tii-g4-b-034/l03': 1005, // 하나 최고 음높이 591Hz(1003) · 577Hz(1004), 1005는 560Hz 안
 });
 const SAMPLES = [
   { id: 'sample-topik1', exam: 'topik-i', script: [

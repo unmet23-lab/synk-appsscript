@@ -31,6 +31,22 @@ function grammarUnits(root) {
   ];
 }
 
+// 3~4급 문형의 갈래와 뜻(원천의 category · meaning 칸) — 태그 검수자가 받는 단위 목록에 싣는다. 이름이 같은 문형
+// (S313 「-는다거나1」 나열 · S452 「-는다거나2」 선택, S427 「-던데1」 연결어미 · S331 「-던데2」 종결어미)을 번호만으로는 가를 수 없다.
+// 지도 단위(units)에는 넣지 않는다 — 커밋된 지도 자료의 꼴이 바뀌지 않는다.
+export function grammarNotes(root = REPO_ROOT) {
+  const { fields, points } = readJson(root, 'strata/topik-ii.grammar.json');
+  const at = name => fields.indexOf(name);
+  return new Map(
+    points.map(point => [
+      `ko.grammar.${point[at('id')]}`,
+      [`${point[at('level')]}급 ${point[at('category')]}`, point[at('meaning')]]
+        .filter(Boolean)
+        .join(' · '),
+    ]),
+  );
+}
+
 function hangulUnits(root) {
   return readJson(root, 'strata/hangul.json').letters.map(([id, glyph]) => [
     `ko.hangul.${id}`,

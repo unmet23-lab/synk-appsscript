@@ -3675,6 +3675,751 @@
         "at": "2026-11-20"
       }
     },
+    "topik-items.tii-g4-b-001.v1": {
+      "units": [
+        "ko.grammar.S401",
+        "ko.grammar.G313"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-002.v2": {
+      "units": [
+        "ko.grammar.S401"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-003.v1": {
+      "units": [
+        "ko.grammar.S402",
+        "ko.grammar.G402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "아쉬운 대로 받아들이는 「(이)나마」가 답을 가른다. 「빌릴 수 있어서」의 -(으)ㄹ 수 있다는 「은커녕」 오답을 지우는 데 쓴다. 「-지만」은 몰라도 답이 나온다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-004.v1": {
+      "units": [
+        "ko.grammar.S402",
+        "ko.grammar.S410"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-005.v2": {
+      "units": [
+        "ko.grammar.S403"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-006.v2": {
+      "units": [
+        "ko.grammar.S403"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-007.v4": {
+      "units": [
+        "ko.grammar.S404"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-008.v1": {
+      "units": [
+        "ko.grammar.S404",
+        "ko.grammar.S210"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-009.v2": {
+      "units": [
+        "ko.grammar.S405"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-010.v2": {
+      "units": [
+        "ko.grammar.S405"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "「(이)란」이 무엇인지 풀이하는 뜻임을 알아보면 「친구라는 것은」을 고른다. 의존 명사 「것」은 네 보기를 가르지 않는다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-011.v2": {
+      "units": [
+        "ko.grammar.S406"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-012.v3": {
+      "units": [
+        "ko.grammar.S406",
+        "ko.grammar.S102"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-013.v2": {
+      "units": [
+        "ko.grammar.S407",
+        "ko.grammar.G307",
+        "ko.word.w0342"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-014.v1": {
+      "units": [
+        "ko.grammar.S407",
+        "ko.grammar.G202"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-015.v2": {
+      "units": [
+        "ko.grammar.S408",
+        "ko.grammar.G304",
+        "ko.word.w0128"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-016.v1": {
+      "units": [
+        "ko.grammar.S408",
+        "ko.grammar.S461"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-017.v3": {
+      "units": [
+        "ko.grammar.S409"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "뜻밖의 사람에게까지 미친 「까지」(마저의 뜻)가 답을 가른다. 「늘」 · 「포기하다」는 몰라도 오답 셋이 지워진다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-018.v1": {
+      "units": [
+        "ko.grammar.S409",
+        "ko.grammar.S413"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-019.v3": {
+      "units": [
+        "ko.grammar.S410"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-020.v1": {
+      "units": [
+        "ko.grammar.S410",
+        "ko.grammar.S402"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-021.v2": {
+      "units": [
+        "ko.grammar.S411",
+        "ko.word.w1099"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "자격의 「(으)로서」와 수단의 「(으)로써」를 가르려면 「회장」이 사람의 자리라는 것을 알아야 한다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-022.v2": {
+      "units": [
+        "ko.grammar.S411"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "자격의 「(으)로서」가 답을 가른다. 「입장」은 지도 밖이고 「선배」는 네 보기에 다 있어 답을 가르지 않는다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-023.v3": {
+      "units": [
+        "ko.grammar.S412",
+        "ko.grammar.S411"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "수단의 「(으)로써」가 답이고, 오답 「대화로서」를 지우려면 자격의 「(으)로서」를 알아야 한다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-024.v1": {
+      "units": [
+        "ko.grammar.S412",
+        "ko.word.w0918"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-025.v2": {
+      "units": [
+        "ko.grammar.S413"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-026.v2": {
+      "units": [
+        "ko.grammar.S413",
+        "ko.grammar.S409"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-027.v5": {
+      "units": [
+        "ko.grammar.S431",
+        "ko.grammar.S367"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-028.v6": {
+      "units": [
+        "ko.grammar.S431",
+        "ko.word.w1169",
+        "ko.word.w0384",
+        "ko.grammar.S367"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t2",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-029.v3": {
+      "units": [
+        "ko.grammar.S432",
+        "ko.word.w0088",
+        "ko.grammar.G212"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "겪어서 안 일을 전하는 「-더군요」가 주 단위다. 「길다」와 「열두 시쯤」(시간 표현)을 알아들어야 열한 시쯤 가겠다는 답을 고른다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-030.v4": {
+      "units": [
+        "ko.grammar.S432",
+        "ko.grammar.G305",
+        "ko.word.w0134"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "「잘하더군요」의 「-더군요」가 여자가 직접 듣고 안 일이라는 것을 알려 주어 노래한 사람을 여자로 잘못 안 오답을 지운다. 「못 봤어요」(못 부정)와 「보다」는 바로 앞에서 들었다는 오답을 지운다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-031.v3": {
+      "units": [
+        "ko.grammar.S433",
+        "ko.word.w0123"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "본 것을 전하는 「-더라」와 「있다」를 알아들어야 열쇠가 책상 위에 있다는 것을 알고 가지러 가겠다는 답을 고른다. 「열쇠」는 몰라도 답이 나온다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-032.v3": {
+      "units": [
+        "ko.grammar.S433",
+        "ko.word.w0090"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "본 것을 전하는 「-더라」와 「많다」가 답을 가른다. 초안은 「많다」를 앞에 두었지만 정답을 가르는 문형은 「-더라」다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-033.v3": {
+      "units": [
+        "ko.grammar.S434",
+        "ko.word.w0240",
+        "ko.word.w0305"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "시키는 말 「-아라/어라」가 주 단위다. 「같이」와 「혼자」를 알아들어야 혼자 옮기겠다는 오답과 민수 혼자 옮기라는 오답을 지운다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-034.v3": {
+      "units": [
+        "ko.grammar.S434",
+        "ko.word.w0217",
+        "ko.word.w0069"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "시키는 말 「-아라/어라」(자라)가 주 단위다. 「들어가다」 · 「오늘」을 알아들어야 밤새 연습하겠다는 오답과 내일 자겠다는 오답을 지운다. 「내일」은 몰라도 된다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-035.v3": {
+      "units": [
+        "ko.grammar.S435",
+        "ko.grammar.G405"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "뜻을 묻는 「-게요?」가 주 단위다. 정답의 「-(으)려고 하다」를 알아들어야 할 일을 대답하는 보기를 고른다. 「-았/었어요」 · 「연습하다」는 답을 가르지 않는다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-036.v4": {
+      "units": [
+        "ko.grammar.S435",
+        "ko.grammar.G405",
+        "ko.word.w0409"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-037.v3": {
+      "units": [
+        "ko.grammar.S436"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-038.v3": {
+      "units": [
+        "ko.grammar.S436",
+        "ko.word.w0183"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-039.v3": {
+      "units": [
+        "ko.grammar.S437",
+        "ko.grammar.S107",
+        "ko.word.w0231"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "부드럽게 묻는 「-나요?」가 주 단위다. 「한 학기 이상 공부한 학생만」의 「만」과 「처음」을 알아들어야 이번 학기에는 안 된다는 답을 고른다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-040.v3": {
+      "units": [
+        "ko.grammar.S437",
+        "ko.word.w0218",
+        "ko.grammar.G209"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "두 검수가 같게 적었지만 주 단위가 낱말 「왜」였다. 이 문항이 묻는 것은 혼잣말처럼 묻는 「-나?」이므로 S437을 주 단위로 두고, 까닭을 묻는 「왜」와 「안 오다」의 안 부정을 붙인다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-041.v3": {
+      "units": [
+        "ko.grammar.S438",
+        "ko.word.w0309"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "fix",
+        "second": "pass",
+        "verdict": "fixed",
+        "judge": "짐작하는 「-을걸요」가 주 단위이고 「끝나다」를 알아들어야 내일 받겠다는 답을 고른다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-042.v3": {
+      "units": [
+        "ko.grammar.S438",
+        "ko.grammar.S353"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "fix",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "하지 않은 일을 아쉬워하는 「-ㄹ걸」이 주 단위다. 「사 둘걸」의 「-어 두다」를 알아들어야 미리 사 뒀다는 오답을 지운다. 「표」는 답을 가르지 않는다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-043.v3": {
+      "units": [
+        "ko.grammar.S439",
+        "ko.word.w0561",
+        "ko.word.w0085",
+        "ko.grammar.G612"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-044.v3": {
+      "units": [
+        "ko.grammar.S439",
+        "ko.word.w0621",
+        "ko.word.w0764"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-045.v3": {
+      "units": [
+        "ko.grammar.S440",
+        "ko.word.w0309",
+        "ko.word.w0238"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "이어서 하나를 더 묻는 「-고요?」는 4급 S440이다. 초안의 S114(TOPIK I 「-고요」)가 아니다. 「끝나다」 · 「아직」을 알아들어야 아직 다 못 풀었다는 답을 고른다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-046.v3": {
+      "units": [
+        "ko.grammar.S440",
+        "ko.word.w0494",
+        "ko.word.w0330"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "이어서 하나를 더 묻는 「-고?」(S440)가 주 단위다. 「준비」와 「바꾸다」를 알아들어야 기타 줄을 못 바꿨다는 오답과 준비가 끝났다는 답을 가른다. 「내일」은 몰라도 된다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-047.v3": {
+      "units": [
+        "ko.grammar.S441",
+        "ko.grammar.G305"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "fix",
+        "verdict": "fixed",
+        "judge": "뜻밖이라 되묻는 「-다니요?」가 주 단위다. 「못 나가다」의 못 부정을 알아들어야 나갈 수 있다는 오답을 지운다. 정답의 「-거든요」는 몰라도 답이 나온다(1).",
+        "at": "2026-11-21"
+      }
+    },
+    "topik-items.tii-g4-b-048.v4": {
+      "units": [
+        "ko.grammar.S441",
+        "ko.grammar.G304",
+        "ko.word.w0117"
+      ],
+      "by": "draft:opus",
+      "review": {
+        "rubric": "atlas-tags-r2",
+        "packet": "g4-b-t1",
+        "first": "pass",
+        "second": "pass",
+        "verdict": "pass",
+        "at": "2026-11-21"
+      }
+    },
     "topik-items.tii-l-a-001.v1": {
       "units": [
         "ko.grammar.G305",

@@ -1,13 +1,14 @@
 {
-  "edition": 4,
-  "hash": "68bc3d842dac7809",
+  "edition": 5,
+  "hash": "00e62627231c5d4e",
   "onlyItemByKind": {
-    "grammar": 21,
-    "word": 1593,
+    "grammar": 23,
+    "word": 1586,
     "life": 2
   },
   "onlyItem": [
     "ko.grammar.G201",
+    "ko.grammar.G202",
     "ko.grammar.G303",
     "ko.grammar.G407",
     "ko.grammar.G411",
@@ -15,6 +16,7 @@
     "ko.grammar.S109",
     "ko.grammar.S110",
     "ko.grammar.S113",
+    "ko.grammar.S210",
     "ko.grammar.S214",
     "ko.grammar.S221",
     "ko.grammar.S222",
@@ -27,7 +29,7 @@
     "ko.grammar.S343",
     "ko.grammar.S345",
     "ko.grammar.S346",
-    "ko.grammar.S410",
+    "ko.grammar.S353",
     "ko.life.cafe-preference",
     "ko.life.plans-place",
     "ko.word.w0002",
@@ -97,7 +99,6 @@
     "ko.word.w0130",
     "ko.word.w0131",
     "ko.word.w0133",
-    "ko.word.w0134",
     "ko.word.w0135",
     "ko.word.w0136",
     "ko.word.w0137",
@@ -123,7 +124,6 @@
     "ko.word.w0177",
     "ko.word.w0178",
     "ko.word.w0181",
-    "ko.word.w0183",
     "ko.word.w0184",
     "ko.word.w0185",
     "ko.word.w0186",
@@ -211,7 +211,6 @@
     "ko.word.w0337",
     "ko.word.w0340",
     "ko.word.w0341",
-    "ko.word.w0342",
     "ko.word.w0343",
     "ko.word.w0345",
     "ko.word.w0346",
@@ -363,7 +362,6 @@
     "ko.word.w0557",
     "ko.word.w0559",
     "ko.word.w0560",
-    "ko.word.w0561",
     "ko.word.w0562",
     "ko.word.w0563",
     "ko.word.w0564",
@@ -405,7 +403,6 @@
     "ko.word.w0615",
     "ko.word.w0616",
     "ko.word.w0617",
-    "ko.word.w0621",
     "ko.word.w0622",
     "ko.word.w0625",
     "ko.word.w0626",
@@ -511,7 +508,6 @@
     "ko.word.w0760",
     "ko.word.w0761",
     "ko.word.w0763",
-    "ko.word.w0764",
     "ko.word.w0765",
     "ko.word.w0766",
     "ko.word.w0767",
@@ -798,7 +794,6 @@
     "ko.word.w1095",
     "ko.word.w1097",
     "ko.word.w1098",
-    "ko.word.w1099",
     "ko.word.w1100",
     "ko.word.w1101",
     "ko.word.w1102",
@@ -1625,7 +1620,6 @@
     "ko.word.w2002"
   ],
   "oneFamily": [
-    "ko.grammar.S102",
     "ko.life.cafe-add",
     "ko.life.greet-hello",
     "ko.life.greet-thanks",
@@ -1638,9 +1632,8 @@
   ],
   "noItem": {
     "grammar": {
-      "count": 102,
+      "count": 75,
       "units": [
-        "ko.grammar.G202",
         "ko.grammar.G412",
         "ko.grammar.G603",
         "ko.grammar.S101",
@@ -1655,7 +1648,6 @@
         "ko.grammar.S207",
         "ko.grammar.S208",
         "ko.grammar.S209",
-        "ko.grammar.S210",
         "ko.grammar.S211",
         "ko.grammar.S213",
         "ko.grammar.S215",
@@ -1704,7 +1696,6 @@
         "ko.grammar.S349",
         "ko.grammar.S350",
         "ko.grammar.S351",
-        "ko.grammar.S353",
         "ko.grammar.S354",
         "ko.grammar.S355",
         "ko.grammar.S356",
@@ -1717,31 +1708,7 @@
         "ko.grammar.S363",
         "ko.grammar.S364",
         "ko.grammar.S365",
-        "ko.grammar.S366",
-        "ko.grammar.S367",
-        "ko.grammar.S401",
-        "ko.grammar.S402",
-        "ko.grammar.S403",
-        "ko.grammar.S404",
-        "ko.grammar.S405",
-        "ko.grammar.S406",
-        "ko.grammar.S407",
-        "ko.grammar.S408",
-        "ko.grammar.S409",
-        "ko.grammar.S411",
-        "ko.grammar.S412",
-        "ko.grammar.S413",
-        "ko.grammar.S431",
-        "ko.grammar.S432",
-        "ko.grammar.S433",
-        "ko.grammar.S434",
-        "ko.grammar.S435",
-        "ko.grammar.S436",
-        "ko.grammar.S437",
-        "ko.grammar.S438",
-        "ko.grammar.S439",
-        "ko.grammar.S440",
-        "ko.grammar.S441"
+        "ko.grammar.S366"
       ]
     },
     "life": {
@@ -1761,7 +1728,7 @@
     }
   },
   "untagged": {
-    "total": 3515,
+    "total": 3563,
     "untagged": 82,
     "ratio": 0.023,
     "byBank": {
@@ -1836,9 +1803,9 @@
         "ratio": 0
       },
       "topik-items": {
-        "total": 505,
+        "total": 553,
         "untagged": 18,
-        "ratio": 0.036
+        "ratio": 0.033
       },
       "word-magic": {
         "total": 6,

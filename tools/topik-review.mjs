@@ -10,7 +10,7 @@
 //   node tools/topik-review.mjs 준비 <이름> --드라마 [<줄 id…>] [--미판정]   드라마 말하기 대사 칸 명세(drama-spec-r1 — 목록이 없으면 대본의 학생 줄 + 처음 보는 대사 전부),
 //                                                                반영은 대본 검수:'passed'·검수지문과 experiences/drama/review/spec-review.json
 //   node tools/topik-review.mjs 클로드 <이름> [--보내기|--받기]   1차: 블라인드 풀이 + 기준 검수 일괄(반값)
-//   node tools/topik-review.mjs 카본 <이름> [--묶음 4]             2차: 독립 검수 + 해설 역번역(하나씩 차례로, 옛 명령 이름도 받는다)
+//   node tools/topik-review.mjs 카본 <이름> [--묶음 4] [--동시 3]   2차: 독립 검수 + 해설 역번역(--동시가 없으면 묶음을 하나씩 차례로, 옛 명령 이름도 받는다)
 //   node tools/topik-review.mjs 판정 <이름> [--보내기 [--줄 <id…>]]  두 검수 합치기 · 엇갈린 문항은 Opus 판정(--줄이면 그 줄만)
 //   node tools/topik-review.mjs 반영 <이름>                         새 문항 review 줄·reviewStatus, 기존 문항 existing-verdicts.json
 //   node tools/topik-review.mjs 보고 <이름>                         판정 수·쓴 비용·1,000문항 어림(report.md)
@@ -667,7 +667,8 @@ export function argonDramaPrompt(units, rubric = rubricText('drama')) {
     + units.map(unit => `## ref ${unit.ref}\n### 상황\n${JSON.stringify(unit.blind, null, 1)}\n### 명세와 판정 시험\n${JSON.stringify(unit.specView, null, 1)}`).join('\n\n') + `\n\n${marker}\n` };
 }
 
-export async function runArgon(packet, dir, { groupSize = 4, call, log = console.log } = {}) {
+// 묶음을 parallel 개수만큼 함께 보낸다(카본 high는 한 묶음이 몇 분이라 차례로만 돌면 86문항에 두 시간이 넘는다 — 현장 노트 AI_CLI).
+export async function runArgon(packet, dir, { groupSize = 4, parallel = 1, call, log = console.log } = {}) {
   const outFile = path.join(dir, 'argon.json');
   const state = fs.existsSync(outFile) ? readJson(outFile) : { model: ARGON.label, rubric: packet.rubric, calls: [], results: {} };
   const pending = packet.units.filter(unit => !state.results[unit.ref]);
@@ -677,7 +678,7 @@ export async function runArgon(packet, dir, { groupSize = 4, call, log = console
     const same = pending.filter(unit => kindOf(unit) === kind), size = kind === 'writing' ? Math.min(groupSize, 2) : groupSize;
     for (let i = 0; i < same.length; i += size) groups.push({ kind, units: same.slice(i, i + size) });
   }
-  for (const { kind, units: group } of groups) {
+  const one = async ({ kind, units: group }) => {
     const { marker, prompt } = kind === 'writing' ? argonWritingPrompt(group) : kind === 'compose' ? argonComposePrompt(group) : kind === 'drama' ? argonDramaPrompt(group, rubricText('drama', packet.rubric?.id)) : argonPrompt(group);
     const started = Date.now();
     let record, error = null;
@@ -691,8 +692,12 @@ export async function runArgon(packet, dir, { groupSize = 4, call, log = console
     if (!error) for (const row of parsed.items || []) if (group.some(u => u.ref === row.ref)) state.results[row.ref] = row;
     const missing = group.filter(u => !state.results[u.ref]).map(u => u.ref);
     log(`카본 ${group.map(u => u.ref).join(',')} · ${seconds}초${error ? ` · 실패: ${error}` : missing.length ? ` · 빠짐 ${missing.join(',')}` : ''}`);
+    // 쓰기 전에 파일의 결과와 합친다 — 같은 묶음을 다른 실행이 함께 쓰고 있어도 서로의 결과를 덮지 않는다.
+    if (fs.existsSync(outFile)) state.results = { ...readJson(outFile).results, ...state.results };
     writeJson(outFile, state);
-  }
+  };
+  const worker = async () => { while (groups.length) await one(groups.shift()); };
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(Number(parallel) || 1, 6)) }, worker));
   return state;
 }
 
@@ -928,7 +933,7 @@ async function main([command, name, ...argv]) {
   }
   if (command === '카본' || command === '아르곤') { // 11-11부터 보이는 이름은 카본(gemini-4-carbon high), 옛 명령 아르곤도 같다
     const { 부르기 } = require('./lib/제미나이구독호출.js');
-    const state = await runArgon(packet, dir, { groupSize: num(argv, '--묶음') || 4, call: 부르기 });
+    const state = await runArgon(packet, dir, { groupSize: num(argv, '--묶음') || 4, parallel: num(argv, '--동시') || 1, call: 부르기 });
     console.log(`카본 결과 ${Object.keys(state.results).length}/${packet.units.length} · 호출 ${state.calls.length}`);
     return Object.keys(state.results).length === packet.units.length ? 0 : 1;
   }

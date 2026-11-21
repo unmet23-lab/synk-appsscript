@@ -88,6 +88,28 @@ test('아르곤: 문항을 묶어 차례로 부르고, 목록 끝을 못 본 답
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test('아르곤: --동시 값만큼 묶음을 함께 보내고 결과를 모두 남긴다', async () => {
+  const { runArgon } = await tool();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'topik-review-'));
+  try {
+    const units = ['u001', 'u002', 'u003', 'u004', 'u005'].map(ref => ({ ref, view: view() }));
+    let open = 0, most = 0;
+    const call = async ({ prompt }) => {
+      open += 1; most = Math.max(most, open);
+      await new Promise(resolve => setTimeout(resolve, 20));
+      open -= 1;
+      const refs = [...prompt.matchAll(/## ref (u\d{3})/g)].map(m => m[1]);
+      return { text: JSON.stringify({ seen: refs, items: refs.map(ref => ({ ref, ...review('pass'), backTranslation: { en: '', mn: '' }, translation_match: { ok: true, note: '' } })) }), selectedModel: 'gemini-4-carbon-high' };
+    };
+    const state = await runArgon(packet(units), dir, { groupSize: 1, parallel: 3, call, log: () => {} });
+    assert.equal(most, 3);
+    assert.deepEqual(Object.keys(state.results).sort(), ['u001', 'u002', 'u003', 'u004', 'u005']);
+    assert.equal(state.calls.length, 5);
+    const saved = JSON.parse(fs.readFileSync(path.join(dir, 'argon.json'), 'utf8'));
+    assert.equal(Object.keys(saved.results).length, 5);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
 test('반영: 새 문항에는 그 내용 지문으로 검수 줄을 달고, 검수 뒤 바뀐 문항은 건드리지 않으며, 기존 문항은 허용 목록에 쓴다', async () => {
   const { applyToItems, applyToExisting } = await tool();
   const { contentHash, reviewOutcome } = await validate();
