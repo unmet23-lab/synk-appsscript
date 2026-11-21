@@ -171,9 +171,9 @@ test('one assignment opens nothing on sign-in: Solio first, and the switch lists
 test('two assignments show no chooser on sign-in, and the switch opens only the chosen space', async t => {
   const { root } = fakeRoot();
   const auth = { current: signedInAuth({ purpose: 'pending' }) };
-  const opens = [], opened = [], writes = [];
+  const opens = [], opened = [], writes = [], lookups = { n: 0 };
   const { mountFace, made } = orbFaceFactory();
-  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge: companyBridge(auth, { destinations: ['/', '/pulse-app/'], opens, writes }), mountFace, onOpenPurposeTarget: async id => { opened.push(id); return { ok: true }; } });
+  const host = mountDesktopPortalHost({ root, getAuth: () => auth.current, bridge: companyBridge(auth, { destinations: ['/', '/pulse-app/'], opens, writes, lookups }), mountFace, onOpenPurposeTarget: async id => { opened.push(id); return { ok: true }; } });
   t.after(() => host.dispose());
   await settle();
   assert.equal(host.getState().phase, 'entered');
@@ -187,6 +187,14 @@ test('two assignments show no chooser on sign-in, and the switch opens only the 
   made.face.handle('go', 'pulse');
   await settle();
   assert.deepEqual(opens, ['/pulse-app/']);
+  // 펼침에서 한 공간을 열며 살아난 확인 기록이 있으면, 다른 공간을 열 때 다시 조회하지 않는다(Fable 최종 F3)
+  const before = lookups.n;
+  made.face.handle('open-switch');
+  await settle();
+  made.face.handle('go', 'workspace');
+  await settle();
+  assert.deepEqual(opens, ['/pulse-app/', '/']);
+  assert.equal(lookups.n, before, 'a live record needs no second lookup');
 });
 
 test('a company space the lookup cannot confirm does not hold sign-in: Solio still opens', async t => {

@@ -1327,7 +1327,9 @@ if(!process.versions.electron){
           check('4 one assignment lands in Solio and opens nothing: '+name,r.ok&&s0.ok,{...r.state,...s0});
           await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
           const fan=await fanSpaces(w);check('4 the fan lists Solio and the one space: '+name,JSON.stringify(fan)===JSON.stringify(['solio',name]),{fan});
-          await click(w,`.fan-go[data-go="${name}"]`);await until(w,s=>!s.fan);await wait(900);const c=await calls(w);
+          // 펼침이 접힌 뒤 구가 그 방에 들어가 점 로고를 지나 왼쪽 위 작은 구가 될 때까지(빠른 들어감 1.05초 · 점 로고 0.56초 · 작은 구 0.7초) 기다린 뒤 재고 찍는다.
+          // 초점은 펼침을 연 작은 구에 이미 있어 도착 신호가 되지 못한다(Fable 최종 F2 — 900ms만 기다리면 도착 중간 장면이 찍혔다)
+          await click(w,`.fan-go[data-go="${name}"]`);await until(w,s=>!s.fan);await wait(3000);const c=await calls(w);
           check('4 choosing it in the fan opens it once: '+name,c.filter(x=>x==='open:'+dest).length===1&&(await text(w,'[data-space-say]'))===say,{calls:c});
           await capture(w,'room-'+name);
           await click(w,'[data-orb-act="reopen-space"]');await wait(600);check('4 「다시 열기」 opens again: '+name,(await calls(w)).filter(x=>x==='open:'+dest).length===2);
