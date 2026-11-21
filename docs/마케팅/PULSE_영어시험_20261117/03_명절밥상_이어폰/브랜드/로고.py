@@ -65,6 +65,18 @@ def logo_goyo():
     return place([(G, 100), (O, 100), (Y, 92), (O, 100)], 20)
 
 
+# A GOYO 꽉 찬 원(11-21) — 고리 안 점(과녁 모양) O는 유호님이 싫어하시는 고리 · 구멍 무늬(11-20)라, 두 O를 고리 없이
+#   꽉 찬 원 하나로 그린다. 두 귀의 두 알이라는 뜻은 그대로다. 획 글자(G · Y)와 무게를 맞추려 원을 조금 줄인다(지름 92).
+def logo_goyo_solid():
+    T = 12
+    G = ring(50, 50, 50, T).difference(wedge(50, 50, 80, 0, 48))
+    G = G.union(Point(50 + (50 - T / 2) * math.cos(math.radians(48)), 50 + (50 - T / 2) * math.sin(math.radians(48))).buffer(T / 2, quad_segs=32))
+    G = G.union(box(56, 50 - T / 2, 100, 50 + T / 2).intersection(Point(50, 50).buffer(50))).union(Point(56, 50).buffer(T / 2, quad_segs=32))
+    O = Point(46, 50).buffer(46, quad_segs=96)
+    Y = unary_union([stroke([(T / 2, 100 - T / 2), (46, 52)], T), stroke([(92 - T / 2, 100 - T / 2), (46, 52)], T), stroke([(46, 52), (46, T / 2)], T)])
+    return place([(G, 100), (O, 92), (Y, 92), (O, 92)], 22)
+
+
 # B nunchi — 소문자, x높이 70, 오름 104, 획 11
 def logo_nunchi():
     T = 11
@@ -128,7 +140,7 @@ def raster(geom, width_px, pad=0.06):
 
 
 if __name__ == "__main__":
-    for tag, fn in (("A_GOYO", logo_goyo), ("B_nunchi", logo_nunchi), ("C_TACET", logo_tacet)):
+    for tag, fn in (("A_GOYO", logo_goyo), ("A_GOYO_찬원", logo_goyo_solid), ("B_nunchi", logo_nunchi), ("C_TACET", logo_tacet)):
         g, _ = fn()
         im = raster(g, 2400)
         p = os.path.join(OUT, f"로고_{tag}.png")

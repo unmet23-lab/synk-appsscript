@@ -50,7 +50,10 @@ PAD = {"C7": 0.25}   # 끝 화면 뒤(흐린 바탕이 4% 다가가는 동안)�
 #   11-21 낯선이 시험관 둘이 모두 「GOYO와 synk PULSE 중 누구 광고인지 모름」 · 끝 3초 「흐지부지」라 두 줄로 밝힌다.
 REVEAL = ("No one at this table exists.", "Neither does GOYO.")
 # 마감 관문 F21: 「Directed by an actor.」를 알아듣는 말로 — X 소개 글과 같은 말로 PULSE가 무엇을 하는지 밝힌다
-MAKER = "AI ad films, directed by an actor."
+# 11-21 밤 낯선이 시험 다시(GPT · 그록): 둘 다 22.1초 「synk PULSE가 제작사인지 서비스인지 · directed by an actor가 무슨 뜻인지 모름」
+#   → 로고 바로 위를 「An AI ad by」로 — 이 광고를 PULSE가 AI로 만들었다는 한 가지만 말한다(「directed by an actor」는 게시 글에서 말한다)
+#   셋째 시험(r3 「An AI ad by」)에서도 둘 다 22.1초 「synk PULSE가 어디인지 모름」 → 로고 아래에 하는 일을 한 줄로 말하고 위 줄은 뺀다
+MAKER = "We make ads with AI actors."
 BRAND_S, END_S = 0.3, 2.9    # C7 첫머리에서 GOYO 이름이 서는 초 · 끝 화면이 덮기 시작하는 초(GOYO 2.6초 · 끝 화면 3.1초)
 TAP_IN_C3B = 0.85     # 손끝이 이어폰을 누르는 순간
 PULL_IN_C5 = 3.50     # 이어폰이 귀에서 떨어지는 순간
@@ -157,11 +160,11 @@ def draw_caps(im, lines, now):
 def draw_note(im):
     """가상 브랜드 · AI 고지 — 시안의 자리(안전 영역 아래 가운데 y 1236)는 그대로, 24px 그림자 글 대신 28px 어두운 작은 판.
     11-21 낯선이 시험관 둘이 「맨 아래 작은 글자는 휴대폰에서 못 읽음」, 카본 맹검이 「밥상 접시 위 얼룩 줄」이라 했다."""
-    f = font(28)
+    f = font(34)   # 셋째 시험에서 둘 다 「19.3초 아래 작은 흰 글씨 못 읽음」 → 28 → 34px
     d = ImageDraw.Draw(im)
     w = d.textlength(SA.NOTE, font=f)
     x0, y1 = (W - w) / 2 - 18, 1236 + 10
-    d.rounded_rectangle((x0, y1 - 28 - 20, x0 + w + 36, y1), radius=12, fill=(16, 16, 18, 150))
+    d.rounded_rectangle((x0, y1 - 34 - 22, x0 + w + 36, y1), radius=12, fill=(16, 16, 18, 150))
     d.text((W / 2, y1 - 10), SA.NOTE, font=f, fill=(250, 248, 243, 235), anchor="ms")
 
 
@@ -169,8 +172,9 @@ def overlay_frames(cs, total, tmp, plan):
     """자막 · 브랜드 · 끝 화면 글을 투명 PNG 장으로 — 장마다 다를 때만 새로 그린다."""
     os.makedirs(os.path.join(tmp, "ov"), exist_ok=True)
     pulse = Image.open(SA.PULSE).convert("RGBA")
-    logo = Image.open(os.path.join(EP, "브랜드", "로고_A_GOYO.png")).convert("RGBA")
-    url_f, small, tag_f, rev_f = font(40), font(30), ImageFont.truetype(SA.FONT_R, 30), font(50)
+    # 11-21 GOYO의 두 O를 고리 안 점에서 꽉 찬 원으로(유호님이 싫어하시는 고리 · 구멍 무늬 — 11-20) — 브랜드/로고.py logo_goyo_solid
+    logo = Image.open(os.path.join(EP, "브랜드", "로고_A_GOYO_찬원.png")).convert("RGBA")
+    url_f, small, tag_f, rev_f, maker_f = font(40), font(30), ImageFont.truetype(SA.FONT_R, 30), font(50), font(40)
     n = round(total * FPS)
     last_key, last_img = None, None
     for i in range(n):
@@ -199,8 +203,8 @@ def overlay_frames(cs, total, tmp, plan):
                 e = Image.new("RGBA", (W, H), (0, 0, 0, 0))
                 bottom = SA.paste_logo(e, pulse, 700, 930, shadow=0)
                 d = ImageDraw.Draw(e)
-                SA.text(d, (W / 2, bottom + 92), "synk.im/en/pulse", url_f, (246, 243, 236, 235), spacing=2)
-                SA.text(d, (W / 2, 930 - 190 / 2 - 110), MAKER, small, (246, 243, 236, 205), spacing=1)
+                SA.text(d, (W / 2, bottom + 70), MAKER, maker_f, (246, 243, 236, 235), spacing=0)
+                SA.text(d, (W / 2, bottom + 150), "synk.im/en/pulse", url_f, (246, 243, 236, 235), spacing=2)
                 SA.text(d, (W / 2, 560), REVEAL[0], rev_f, (250, 248, 243, 250), spacing=0)
                 SA.text(d, (W / 2, 560 + 70), REVEAL[1], rev_f, (250, 248, 243, 250), spacing=0)
                 if endk < 1:

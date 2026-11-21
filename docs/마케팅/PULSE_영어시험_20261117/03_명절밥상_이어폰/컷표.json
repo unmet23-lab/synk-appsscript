@@ -198,7 +198,8 @@
         "시안/이름_A_GOYO.jpg",
         "시안/이름_B_nunchi.jpg",
         "시안/이름_C_TACET.jpg"
-      ]
+      ],
+      "고른판": "GOYO — 두 O를 고리 안 점(이어폰 바깥 면)에서 꽉 찬 원으로 바꾼 판(브랜드/로고_A_GOYO_찬원.png, 11-21). 고리 · 구멍 무늬를 싫어하시는 유호님 말씀(11-20)에 맞춘다"
     },
     {
       "글": "Hear only what matters.",
@@ -207,7 +208,7 @@
       "만드는법": "회사 글꼴(Inter Tight Regular) 작은 한 줄 — 로고타입과 같은 색"
     },
     {
-      "글": "No one at this table exists. · Neither does GOYO. · AI ad films, directed by an actor. · SYNK PULSE · synk.im/en/pulse",
+      "글": "No one at this table exists. · Neither does GOYO. · SYNK PULSE · We make ads with AI actors. · synk.im/en/pulse",
       "종류": "끝로고",
       "어디": "C7 22.15초부터 끝(25.25초)까지, 안전 영역(y 269~1248) 가운데 — 장면은 흐려진 채 계속 움직임(A 어둡게 · B 밝게)",
       "만드는법": "승인 로고 파일(어두운 바탕은 SYNK-PULSE-Paper, 밝은 바탕은 SYNK-PULSE-Ink) + 첫 편 영어 판처럼 마지막 장면 안의 끝 화면 꼴",
@@ -215,12 +216,12 @@
         "시안/끝_A.jpg",
         "시안/끝_B.jpg"
       ],
-      "고친까닭": "11-21 낯선이 시험관 둘(GPT · 그록)이 「GOYO와 synk PULSE 중 누구 광고인지 모름」 · 끝 3초 「흐지부지」, 마감 관문 F21 — 둘째셋째 기획후보 4절의 반전(없는 사람)을 끝 화면에 두고 PULSE가 하는 일을 X 소개 글과 같은 말로 적었다"
+      "고친까닭": "11-21 낯선이 시험관 둘(GPT · 그록)이 「GOYO와 synk PULSE 중 누구 광고인지 모름」 · 끝 3초 「흐지부지」, 마감 관문 F21 — 둘째셋째 기획후보 4절의 반전(없는 사람)을 끝 화면에 두고 PULSE가 하는 일을 X 소개 글과 같은 말로 적었다 · 11-21 밤 고친 판 낯선이 시험 세 회차(검수/낯선이시험_20261121_2/판정.md): 「directed by an actor」 · 「An AI ad by」로는 둘 다 PULSE가 무엇인지 몰라, 로고 아래에 하는 일 한 줄을 둔다"
     },
     {
       "글": "Fictional brand · Every person on screen is an AI model",
       "종류": "정보",
-      "어디": "C7 첫머리(19.25초)부터 끝 화면이 덮일 때(22.40초)까지, 9:16 안전 영역의 아래 가운데(y 1236) 28px 어두운 작은 판 — 끝 화면에서는 반전 두 줄이 같은 말을 크게 한다",
+      "어디": "C7 첫머리(19.25초)부터 끝 화면이 덮일 때(22.40초)까지, 9:16 안전 영역의 아래 가운데(y 1236) 34px 어두운 작은 판 — 끝 화면에서는 반전 두 줄이 같은 말을 크게 한다",
       "만드는법": "회사 글꼴 작은 줄 — 다시 올려도 표시가 남게 영상 안에 새긴다(조사 B9)"
     }
   ],
