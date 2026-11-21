@@ -10,11 +10,11 @@ const appSource=readFileSync(new URL('./public/app.js',import.meta.url),'utf8').
 const id='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222';
 const signedIn=(account=id,generation=1,name='유호')=>({configured:true,signedIn:true,status:'signed-in',sessionGeneration:generation,account:{synk_user_id:account,display_name:name}});
 
-function fixture({auth=signedIn(),me={user:{id:'company-A'},csrfToken:'csrf-A',synkUserId:null},request,native=true,form=true}={}){
-  const calls=[],moves=[],appended=[];let currentAuth=auth,currentMe=me;
+function fixture({auth=signedIn(),me={user:{id:'company-A'},csrfToken:'csrf-A',synkUserId:null},request,native=true,form=true,meApi=false}={}){
+  const calls=[],moves=[],appended=[],renders=[],authListeners=[];let currentAuth=auth,currentMe=me;
   const formEl={isConnected:true,append(node){appended.push(node);}};
-  const document={addEventListener(){},querySelector:selector=>selector==='#auth-form'&&form?formEl:selector==='#synk-link-note'?appended.find(node=>node.id==='synk-link-note')||null:null,createElement:()=>({id:'',className:'',textContent:''})};
-  const desktop={authStatus:async()=>currentAuth,onAuthChanged(){return()=>{};},
+  const document={addEventListener(){},querySelector:selector=>selector==='#auth-form'&&form?formEl:selector==='#synk-link-note'?appended.find(node=>node.id==='synk-link-note')||null:null,createElement:()=>{const node={id:'',className:'',textContent:'',remove(){const at=appended.indexOf(node);if(at>=0)appended.splice(at,1);}};return node;}};
+  const desktop={authStatus:async()=>currentAuth,onAuthChanged(fn){authListeners.push(fn);return()=>{};},
     companyRequest:async(operation,params)=>{calls.push({operation,params});if(request)return request(operation,params);
       if(operation==='status')return {enabled:true,linked:false,canLink:true,session:'company'};
       if(operation==='challenge')return {challenge:'synthetic-challenge'};
@@ -25,9 +25,9 @@ function fixture({auth=signedIn(),me={user:{id:'company-A'},csrfToken:'csrf-A',s
     fetch:async(path,options)=>{calls.push({path,options});return {ok:true,status:200,json:async()=>currentMe};},
     location:{href:'https://workspace.synk.im/',pathname:'/',search:'',hash:'',replace:value=>moves.push(value),reload:()=>moves.push('reload')},
     history:{replaceState(){}},sessionStorage:{getItem:()=>null,setItem(){},removeItem(){}},URL,URLSearchParams,AbortSignal,setTimeout,clearTimeout,setInterval:()=>1,clearInterval(){},
-    state:{user:null,csrf:''},notify(){},modal(){},closeModal(){},escape:String,api:async()=>{throw Error('api() must not be used here');}});
+    state:{user:null,csrf:''},renderAuth(){renders.push({mode:context.state.authMode,notice:context.state.authNotice});},notify(){},modal(){},closeModal(){},escape:String,api:async path=>{if(meApi&&path==='/api/me')return currentMe;throw Error('api() must not be used here');}});
   vm.runInContext(source,context);
-  return {run:code=>vm.runInContext(code,context),calls,moves,appended,setAuth:value=>{currentAuth=value;},get me(){return currentMe;}};
+  return {run:code=>vm.runInContext(code,context),calls,moves,appended,renders,authListeners,setAuth:value=>{currentAuth=value;},setRequest:value=>{request=value;},get me(){return currentMe;}};
 }
 
 test('the native sign-in line names the SYNK ID the company account will be linked to',async()=>{
@@ -94,4 +94,32 @@ test('the sign-in and join submit link right after the password response, before
   assert.ok(block.includes('let signedIn=null;try{signedIn=await api(endpoint, values);}'));
   const render=appSource.slice(appSource.indexOf('function renderAuth()'),appSource.indexOf('function shell('));
   assert.match(render,/\(join\|\|login\)&&typeof installNativeLinkNote==='function'/);
+});
+
+// 회사 화면 Fable 최종(pc-orb-step4-company-web-20261122)
+test('a SYNK ID with no linked company account opens the login form with a line, not the error screen (F1)',async()=>{
+  const f=fixture({meApi:true,me:{user:null,csrfToken:'',synkUserId:null},request:(operation)=>{if(operation==='status')return {enabled:true};if(operation==='challenge')return {challenge:'c'};if(operation==='exchange')throw Object.assign(new Error('기존 회사 계정에서 SYNK ID를 먼저 연결해 주세요.'),{code:'NOT_LINKED'});return {ok:true};}});
+  assert.equal(await f.run('prepareNativeSynkCompanyEntry()'),false);
+  assert.deepEqual(f.renders.map(r=>r.mode),['login']);
+  assert.equal(f.renders[0].notice,'이 SYNK ID에 이어진 회사 계정이 아직 없어요. 회사 비밀번호로 한 번 들어오면 지금 SYNK ID에 이어져요.');
+  const other=fixture({meApi:true,me:{user:null,csrfToken:'',synkUserId:null},request:(operation)=>{if(operation==='status')return {enabled:true};if(operation==='challenge')return {challenge:'c'};throw Object.assign(new Error('잠시 뒤'),{code:'COMPANY_UNAVAILABLE'});}});
+  await assert.rejects(other.run('prepareNativeSynkCompanyEntry()'),error=>error.code==='SYNK_PLATFORM_ENTRY');
+  assert.deepEqual(other.renders,[],'other failures keep the error screen');
+});
+
+test('a SYNK ID sign-in after the form was drawn redraws the line and takes a new stamp (F2)',async()=>{
+  const f=fixture({auth:{configured:true,signedIn:false,status:'signed-out',sessionGeneration:1,account:null}});
+  await f.run('installNativeLinkNote()');assert.equal(f.appended.length,0);
+  f.setAuth(signedIn(id,2,'유호'));for(const listener of f.authListeners)listener();await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(f.appended.length,1);assert.equal(f.appended[0].textContent,'들어오면 이 회사 계정이 SYNK ID(유호)에 이어져요.');
+  assert.equal(await f.run("linkNativeCompanyAfterPassword('pw-synthetic')"),true);
+  f.setAuth(signedIn(other,3,'다른 사람'));for(const listener of f.authListeners)listener();await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(f.appended.length,1,'the old line is replaced, not added to');assert.equal(f.appended[0].textContent,'들어오면 이 회사 계정이 SYNK ID(다른 사람)에 이어져요.');
+});
+
+test('a SYNK ID that changes between the link requests is never linked (F3)',async()=>{
+  const f=fixture();await f.run('installNativeLinkNote()');
+  f.setRequest(operation=>{if(operation==='status')return {enabled:true};if(operation==='challenge'){f.setAuth(signedIn(other,1,'다른 사람'));return {challenge:'c'};}if(operation==='exchange')throw Error('exchange must not run');return {ok:true};});
+  await assert.rejects(f.run("linkNativeCompanyAfterPassword('pw-synthetic')"),error=>error.code==='SYNK_LINK_CHANGED');
+  assert.deepEqual(f.calls.filter(call=>call.operation).map(call=>call.operation),['status','challenge','logout']);
 });

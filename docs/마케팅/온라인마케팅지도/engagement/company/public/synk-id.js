@@ -91,7 +91,12 @@ async function prepareNativeSynkCompanyEntry(){
     }
     if(!me.user||me.synkUserId!==id)throw new Error('플랫폼과 같은 SYNK ID로 회사 연결을 확인하지 못했어요.');
     synkNativeVerifiedAccount=id;synkNativeVerifiedGeneration=generation;synkNativeNeedsRecheck=false;synkNativeGateFailure=false;maskNativeSynkCompany(false);return {me,nativeStamp:{sequence:synkNativeEventSequence,accountId:id,generation}};
-  }catch(error){synkNativeGateFailure=true;throw Object.assign(error,{code:'SYNK_PLATFORM_ENTRY'});}
+  }catch(error){
+    // 이 SYNK ID에 이어진 회사 계정이 아직 없다(서버 NOT_LINKED). 오류 화면 대신 로그인 칸을 연다. 회사 비밀번호로 한 번 들어오면
+    // linkNativeCompanyAfterPassword가 지금 SYNK ID에 잇는다(검정 구 4단계 7절, 회사 화면 Fable 최종 F1)
+    if(error?.code==='NOT_LINKED'){synkNativeGateFailure=false;state.authMode='login';state.authToken='';state.authNotice='이 SYNK ID에 이어진 회사 계정이 아직 없어요. 회사 비밀번호로 한 번 들어오면 지금 SYNK ID에 이어져요.';renderAuth();return false;}
+    synkNativeGateFailure=true;throw Object.assign(error,{code:'SYNK_PLATFORM_ENTRY'});
+  }
   finally{synkConnectionPending=false;}
 }
 function maskNativeSynkCompany(mask){
@@ -327,10 +332,12 @@ async function beginSynkCompany(action,params={},button,note){
 // 이어지지 않았으면 방금 넣은 비밀번호로 지금 SYNK ID에 한 번 잇는다. 그래야 PC 안에서 다음부터 누르지 않고 들어온다(로그인 길은 SYNK ID 하나).
 // 칸 아래 한 줄이 그 SYNK ID의 이름을 보이고(installNativeLinkNote), 잇기 직전에 같은 SYNK ID와 세대인지 다시 본다(설계 검토 R13).
 // 잇기가 끝나면 /?tab=messenger로 다시 싣는다(검토 R8). 실패하면 방금 만든 회사 세션을 끝낸다. 미연결 세션이 남으면 열 때마다 확인 오류가 뜬다(검토 R4)
-let synkNativeLinkStamp=null;
+let synkNativeLinkStamp=null,synkNativeLinkWatching=false;
 async function installNativeLinkNote(){
   const desktop=getSynkDesktopBridge(),form=document.querySelector('#auth-form');
   synkNativeLinkStamp=null;
+  // 칸이 선 뒤 SYNK ID 로그인이 바뀌면 한 줄과 스탬프를 지금 값으로 다시 잡는다(회사 화면 Fable 최종 F2)
+  if(desktop?.onAuthChanged&&!synkNativeLinkWatching){synkNativeLinkWatching=true;try{desktop.onAuthChanged(()=>{if(!document.querySelector('#auth-form'))return;document.querySelector('#synk-link-note')?.remove?.();void installNativeLinkNote();});}catch{synkNativeLinkWatching=false;}}
   if(!desktop?.authStatus||!form||document.querySelector('#synk-link-note'))return;
   let auth;try{auth=await desktop.authStatus();}catch{return;}
   if(auth?.configured!==true||!auth.signedIn||!auth.account?.synk_user_id||form.isConnected===false)return;
@@ -340,6 +347,10 @@ async function installNativeLinkNote(){
   note.textContent=name?`들어오면 이 회사 계정이 SYNK ID(${name})에 이어져요.`:'들어오면 이 회사 계정이 지금 로그인한 SYNK ID에 이어져요.';
   form.append(note);
   synkNativeLinkStamp={accountId:auth.account.synk_user_id,generation:auth.sessionGeneration};
+}
+async function sameNativeLinkAccount(desktop,stamp){
+  const auth=await desktop.authStatus();
+  if(!auth?.signedIn||auth.account?.synk_user_id!==stamp.accountId||auth.sessionGeneration!==stamp.generation)throw Object.assign(new Error('확인하는 동안 SYNK ID 로그인이 바뀌었어요. 다시 로그인해 주세요.'),{code:'SYNK_LINK_CHANGED'});
 }
 async function linkNativeCompanyAfterPassword(password){
   const desktop=getSynkDesktopBridge(),stamp=synkNativeLinkStamp;
@@ -354,7 +365,10 @@ async function linkNativeCompanyAfterPassword(password){
     if(!auth?.signedIn||auth.account?.synk_user_id!==stamp.accountId||auth.sessionGeneration!==stamp.generation)throw Object.assign(new Error('확인하는 동안 SYNK ID 로그인이 바뀌었어요. 다시 로그인해 주세요.'),{code:'SYNK_LINK_CHANGED'});
     const status=await synkCompanyRequest('status');
     if(!status?.enabled)throw Object.assign(new Error('회사 SYNK ID 연결을 준비하고 있어요. 잠시 뒤 다시 로그인해 주세요.'),{code:'SYNK_LINK_UNAVAILABLE'});
+    // 요청 사이에 SYNK ID가 바뀌면 한 줄이 보인 것과 다른 SYNK ID에 이어진다. 잇는 요청마다 앞에서 다시 본다(회사 화면 Fable 최종 F3)
+    await sameNativeLinkAccount(desktop,stamp);
     const challenge=await synkCompanyRequest('challenge',{action:'link',currentPassword:password,csrfToken,confirm:true});
+    await sameNativeLinkAccount(desktop,stamp);
     await synkCompanyRequest('exchange',{challenge:challenge.challenge,confirm:true});
   }catch(error){
     // 실패한 스탬프는 버린다. 로그인 칸을 다시 그리면 installNativeLinkNote가 지금 SYNK ID로 새로 잡는다(회사 화면 검수 A2)
