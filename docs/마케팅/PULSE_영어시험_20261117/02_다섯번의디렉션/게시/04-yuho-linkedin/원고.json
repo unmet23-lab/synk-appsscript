@@ -1,0 +1,13 @@
+{
+ "brand": "PULSE",
+ "language": "en",
+ "audioLanguage": "en",
+ "alteredContent": true,
+ "madeForKids": false,
+ "id": "04-yuho-linkedin",
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 공개 글에 제작 도구 이름을 쓰지 않는다. 사람이 모두 AI 모델이라는 것을 글에 적는다(영어 채비 설계 2-2). 이 편에는 가상 브랜드가 없다. 대표 프로필 영상 글. 유호님 1인칭(대표 프로필 머리말 「directed by an actor」와 같은 결).",
+ "platform": "linkedin",
+ "account": "양유호",
+ "format": "video-post",
+ "caption": "Same actor. Same two words. Five directions.\n\n\"She just got dumped.\"\n\"Lying to her mom on the phone.\"\n\"Just won the lottery. At work. Hide it.\"\n\"About to sneeze.\"\n\"Be yourself.\"\n\nShe doesn't exist. Every person in this video is AI-generated, and nothing was filmed on set.\n\nMost AI-actor videos are about the model ignoring the director. I'm an actor, so I wanted the opposite: an AI model that takes a note the way an actor does.\n\nHow we made it:\n– Every take started as a still, so her face, the room and the light stayed the same across all six.\n– Each performance was written beat by beat: when she breathes, when her chin shakes, when the line lands.\n– Take 5 is the one direction she can't play. That's the joke, and the point.\n\nsynk.im/en/pulse"
+}
