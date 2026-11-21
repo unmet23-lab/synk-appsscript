@@ -1,0 +1,24 @@
+{
+ "brand": "PULSE",
+ "language": "en",
+ "audioLanguage": "en",
+ "alteredContent": true,
+ "madeForKids": false,
+ "id": "03-pulse-x",
+ "_비고": "올라가는 글의 정본. 사람이 읽는 판은 ../게시글.md. 공개 글에 제작 도구 이름을 쓰지 않는다. 사람이 모두 AI 모델이고 GOYO가 가상 브랜드라는 것을 글에 적는다. 타래 세 글. 첫 글에 영상, 둘째 글에 제작기 그림(시작 그림 아홉 장).",
+ "platform": "x",
+ "account": "@synk_pulse",
+ "format": "thread",
+ "caption": "Noise cancelling, tested at the hardest level:\na Korean family dinner.\n\nEvery person at this table is an AI model. GOYO is a brand that doesn't exist.",
+ "thread": [
+  {
+   "text": "Before anything moved, all nine shots existed as stills: the same table, the same afternoon light, the same five people.\nWe lock those first. Then we direct every relative beat by beat.",
+   "media": [
+    "C:/Users/q1212/Documents/synk-vendor/pulse-en-ep3-20261117/최종/제작기/제작기_1_시작그림9.jpg"
+   ]
+  },
+  {
+   "text": "Which question would you cancel first?\n\nSpec ad by SYNK PULSE.\nsynk.im/en/pulse\n\n#AIvideo #AIactor"
+  }
+ ]
+}
