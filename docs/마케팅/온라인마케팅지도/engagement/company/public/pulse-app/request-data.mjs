@@ -90,7 +90,12 @@ export const SLOTS=Object.freeze({
     ETC,
   ],
 });
-export const slotsFor=kind=>SLOTS[KINDS.find(item=>item.id===kind)?.group||'product'];
+// 음료 · 식품과 화장품은 겉 사진으로 알 수 없는 내용물(따른 색 · 거품 · 제형)을 같은 칸(use)에서 받는다(11-21 의뢰서 칸 정리).
+const USE_OF={
+  food:{label:k('내용물 · 먹는 모습'),why:k('따랐을 때의 색, 거품, 단면처럼 안에 든 모습은 겉 사진으로 알 수 없어요. 찍어 둔 게 없으면 한 줄로 적어 주세요.'),note:k('예) 따르면 색이 진하고 거품이 올라와요')},
+  beauty:{label:k('내용물 · 바른 모습'),why:k('제형의 색과 질감, 바르는 법은 겉 사진으로 알 수 없어요. 찍어 둔 게 없으면 한 줄로 적어 주세요.'),note:k('예) 손등에 펴 바르면 투명하게 스며들어요')},
+};
+export const slotsFor=kind=>{const group=SLOTS[KINDS.find(item=>item.id===kind)?.group||'product'],use=USE_OF[kind];return use?group.map(slot=>slot.id==='use'?{...slot,...use}:slot):group;};
 // 맞춤 인물 사진 칸(판 3 — 스위치 personaRequest가 켜진 공개 의뢰서에서만 그린다). id는 서버 pulse-personas.mjs PERSONA_SLOTS와 같다.
 // 이 칸의 사진은 프로젝트 자료가 아니라 인물 검토 자료라 받은 자료 수 · 스크린의 「보내 주신 사진」에 넣지 않는다.
 // 「같은 사람」 칸은 실제 인물 출연일 때만 연다(가상 인물에 남의 얼굴을 재현하는 길이 되지 않게 — 의뢰서 권리 칸 「실존 인물을 닮게 만드는 요청은 받지 않아요」와 같은 약속).
@@ -244,14 +249,14 @@ export function briefRows(a){
     {key:k('광고할 것'),step:'what',value:[a.name,kindOf(a)&&t(kindOf(a).label)].filter(Boolean).join(' · '),missing:a.name?'':k('이름을 알려 주세요')},
     {key:k('올릴 곳'),step:'where',value:[channelText(a),a.paid?t('광고비 집행'):''].filter(Boolean).join(' · '),missing:a.channels.length?'':k('모르면 저희가 제안해요')},
     {key:k('길이 · 구성'),step:'where',value:pkg?t('{label} · {title} · {price}부터 · {terms}',{label:t(pkg.label),title:t(pkg.title),price:price(pkg.price),terms:termsOf(pkg)}):a.package==='ask'?t('추천해 주세요'):'',missing:a.package?'':k('모르면 저희가 제안해요')},
-    {key:k('받은 자료'),step:'files',value:[fileCount?t('파일 {count}개',{count:fileCount}):'',...written,missing.length?t('아직 없음: {list}',{list:missing.join(', ')}):''].filter(Boolean).join(' · '),missing:fileCount||written.length?'':k('아직 없어요. 1차안에는 자리만 잡아 둘게요')},
+    {key:k('받은 자료'),step:'files',value:[fileCount?t('파일 {count}개',{count:fileCount}):'',...written,missing.length?t('아직 없음: {list}',{list:missing.join(', ')}):''].filter(Boolean).join(' · '),missing:fileCount||written.length?'':k('아직 없어요. 받기 전까지는 자리만 잡아 둘게요')},
     {key:k('보는 사람'),step:'message',value:a.audience,missing:a.audience?'':k('저희가 제안해요')},
     {key:k('남길 것'),step:'message',value:a.oneThing,missing:a.oneThing?'':k('저희가 한 문장으로 제안해요')},
     {key:k('보고 나서'),step:'message',value:a.action&&ACTIONS.find(item=>item.id===a.action)?t(ACTIONS.find(item=>item.id===a.action).label):undefined,missing:a.action?'':k('저희가 제안해요')},
     {key:k('화면 글자'),step:'words',value:a.screenText,missing:a.screenText?'':k('제품 이름만 얹어요')},
     {key:k('피할 말'),step:'words',value:[...a.avoid.map(claimText),a.avoidNote].filter(Boolean).join(', '),missing:(a.avoid.length||a.avoidNote)?'':k('없음')},
     {key:k('꼭 붙일 표시'),step:'words',value:a.notice==='none'?t('해당 없음'):a.notice==='unsure'?t('잘 모르겠어요 · 저희가 확인해요'):noticeOn(a)?[t(noticeLabel(a.notice)),a.noticeText].filter(Boolean).join(' · '):'',missing:a.notice?'':k('저희가 확인해요')},
-    {key:k('자랑할 사실'),step:'words',value:a.facts,missing:a.facts?'':k('없음')},
+    {key:k('믿게 할 사실'),step:'message',value:a.facts,missing:a.facts?'':k('없음')},
     {key:k('무엇으로'),step:'feel',value:win&&t(win),missing:win?'':k('저희가 제안해요')},
     {key:k('얼마나 과감하게'),step:'feel',value:BOLD.find(item=>item.id===a.bold)?t(BOLD.find(item=>item.id===a.bold).label):undefined,missing:a.bold?'':k('저희가 제안해요')},
     {key:k('참고 광고'),step:'feel',value:refs,missing:refs?'':k('없음')},

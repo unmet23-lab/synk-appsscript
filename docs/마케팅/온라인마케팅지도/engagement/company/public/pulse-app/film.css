@@ -424,6 +424,11 @@ html.sx.view-entry .app-header{display:none!important}
 .sx-q-who .sx-body{color:var(--sx-ink)}
 /* 준비물 */
 .sx-slots{display:grid;border-bottom:1px solid var(--sx-rule)}
+.sx-slots-more>summary{cursor:pointer;padding:14px 0;color:var(--sx-ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;list-style:none}
+.sx-slots-more>summary::-webkit-details-marker{display:none}
+.sx-slots-more>summary::after{content:' +';text-decoration:none}
+.sx-slots-more[open]>summary::after{content:' −'}
+.sx-slots-more>.sx-slots{border-top:1px solid var(--sx-rule)}
 .sx-slot{display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px;padding:12px 0;border-top:1px solid var(--sx-rule);transition:background .25s}
 .sx-slot.is-over{background:rgba(244,241,234,.08)}
 .sx-slot-frame{position:relative;display:flex;gap:1px;height:108px;box-shadow:inset 0 0 0 1px var(--sx-faint);cursor:pointer;overflow:hidden;transition:box-shadow .2s}
@@ -1179,7 +1184,10 @@ html.is-staff{color-scheme:light}
 .sx-head-steps .sx-steps-run{flex-wrap:nowrap;gap:0 14px;font-size:13px}
 .sx-head-steps .sx-steps-foot{font-size:13px}
 html.sx.has-room-head:not(.is-staff) .header-crumb,.sx-room-bar.is-head .header-crumb{flex:1 1 auto;min-width:0;align-items:center;overflow:hidden}
-html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-head .crumb-no{display:inline;flex:none;font-family:var(--sx-mono);font-size:13px;color:var(--sx-dim)}
+/* 접수 번호: 이름표는 본문 글꼴, 번호만 고정폭(film-legacy.css의 옛 규칙 html.sx:not(.is-staff) .crumb-no가 고정폭 · 자간을 걸어 더 구체적인 선택자로 덮는다 — 최종 검수 F2) */
+html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,.sx-room-bar.is-head .crumb-no{display:inline;flex:none;font-size:13px;color:var(--sx-dim)}
+html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no,html.sx .sx-room-bar.is-head .crumb-no{font-family:var(--sx-sans);letter-spacing:normal}
+html.sx.has-room-head:not(.is-staff) .header-crumb .crumb-no>.mono,.sx-room-bar.is-head .crumb-no>.mono{font-family:var(--sx-mono)}
 .sx-head-ask{white-space:nowrap}
 .header-actions .sx-head-ask.is-now{font-weight:600;text-decoration-thickness:2px}
 .sx-room-bar.is-head{right:var(--sx-m);width:auto;gap:14px;font-size:13px}

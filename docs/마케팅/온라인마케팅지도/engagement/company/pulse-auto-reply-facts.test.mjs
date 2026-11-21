@@ -90,7 +90,7 @@ test('실제 회사 서버 길: 방향을 고른 뒤 → 결제 차례 → 결�
   // ① 방향을 고른 뒤(1차안 준비): 제작팀 차례 · 결제 전 · 방향 제안에 적힌 날 · 정한 수정 2회.
   const chosen=await f.ask('다음엔 뭐가 와요?');
   assert.equal(chosen.model.state,'prepare');sameAsScreen(chosen);
-  assert.equal(chosen.facts.의뢰.지금.화면제목,'이 방향으로 정했어요');assert.equal(chosen.facts.의뢰.지금.단계,'03 1차안');assert.equal(chosen.facts.의뢰.지금.차례,'제작팀 차례');
+  assert.equal(chosen.facts.의뢰.지금.화면제목,'이 방향으로 정했어요');assert.equal(chosen.facts.의뢰.지금.단계,'03 영상 전 확인');assert.equal(chosen.facts.의뢰.지금.차례,'제작팀 차례');
   assert.match(chosen.facts.의뢰.받으실날,/방향 제안에 적힌 날/);
   assert.equal(chosen.facts.의뢰.결제.상태,'아직 결제 전이에요. 글 콘티를 확인하신 뒤 크몽 결제를 안내해 드려요.');
   assert.deepEqual([chosen.facts.의뢰.수정.정한횟수,chosen.facts.의뢰.수정.쓴횟수,chosen.facts.의뢰.수정.남은횟수],[2,0,2]);
@@ -141,7 +141,7 @@ test('실제 회사 서버 길: 방향을 고른 뒤 → 결제 차례 → 결�
   assert.equal(paid.facts.의뢰.결제.상태,'결제를 확인했어요.');assert.equal(paid.facts.의뢰.결제.금액,'300,000원');
   assert.match(paid.facts.의뢰.받으실날,/결제 확인 때 정한 날/);
   assert.equal(paid.facts.의뢰.결제.확인한때,kst(f.row.studio.request.payment.confirmedAt));assert.equal(paid.facts.의뢰.결제.방법,undefined,'결제를 확인한 뒤에는 결제하는 법을 넣지 않는다');
-  assert.deepEqual(paid.facts.의뢰.작업소식.map(item=>[item.단계,item.그림,item.글]),[['1차안','1장','장면 이미지를 그리고 있어요. POSTED-NEWS']]);
+  assert.deepEqual(paid.facts.의뢰.작업소식.map(item=>[item.단계,item.그림,item.글]),[['영상 전 확인','1장','장면 이미지를 그리고 있어요. POSTED-NEWS']]);
   // 손님 보기 밖의 것은 어디에도 없다: 결제 이력 · 취소 까닭 · 주문 번호 · 실수령 · 소식 초안 · 거둔 소식 · 직원이 올린 파일 이름.
   const leak=paid.raw.match(/SECRET-CANCEL-NOTE|KM-SECRET-REF|240,?000|SECRET-DRAFT-TEXT|WITHDRAWN-NEWS|비공개-작업화면|paymentLog|"net"|"ref"|requestedBy|confirmedBy|cancelledBy/);
   assert.equal(leak,null,leak?paid.raw.slice(Math.max(0,leak.index-120),leak.index+120):'');

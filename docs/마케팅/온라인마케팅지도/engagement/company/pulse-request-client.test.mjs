@@ -58,7 +58,8 @@ test('request tabs: a photo order has no voice — no brief line, nothing sent, 
   assert.ok(flow.includes("const voiceBlock=a=>pkgOf(a)?.photo?'':"),'no voice question for photos');
   assert.ok(flow.includes("const group=slotsFor(a.kind),slots=group.filter(slot=>slot.id!=='sound'||!pkgOf(a)?.photo||filesOf(a,slot.id).length);"),'no sound slot for photos, unless a sound file is already there to see and remove');
   // 걸러 낸 배열은 늘 새 배열이라, 제품 묶음의 크기 칸은 거르기 전 묶음으로 정한다(11-14 다시 검수 P1: 크기 칸이 모든 구성에서 사라졌다).
-  assert.ok(flow.includes("(group===slotsFor('food')?field({bind:'size',"),'the size field still shows for product kinds');
+  // 11-21: 음료 · 화장품은 slotsFor가 칸 이름을 바꾼 새 배열을 돌려준다 — 크기 칸은 배열이 아니라 업종 묶음 이름으로 정한다.
+  assert.ok(flow.includes("((KINDS.find(item=>item.id===a.kind)?.group||'product')==='product'?field({bind:'size',"),'the size field still shows for product kinds');
   assert.equal(flow.includes("slots===slotsFor("),false,'never compare a filtered list by identity');
   const css=await readFile(new URL('./public/pulse-app/film.css',import.meta.url),'utf8');
   assert.ok(css.includes('.sx-q[data-step=words] .sx-q-view:has([data-notice-line]:not([hidden]))>.sx-q-cap{display:none}'),'the caption gives way to the notice line on narrow screens');
@@ -218,8 +219,8 @@ test('the desk flags what staff must look at, and retired requests still open',(
   assert.match(deskChecks(project(two)).find(item=>item.label.includes('사실 확인')).note,/11월 편의점 출시/,'the line that needs checking, not the first line');
   const asked=deskChecks(project({...two,asks:[{id:'a',label:'11월 편의점 출시가 확정인가요?',status:'answered',answer:'네, 확정이에요'}]})).find(item=>item.label.includes('사실'));
   assert.equal(asked.ok,true);assert.match(asked.note,/네, 확정이에요/);
-  assert.equal(deskModel(project(request())).brief.find(([key])=>key==='자랑할 사실')[1],'12만 개');
-  assert.equal(deskModel(project(request({answers:{...request().answers,facts:''}}))).brief.find(([key])=>key==='자랑할 사실')[1],'없음');
+  assert.equal(deskModel(project(request())).brief.find(([key])=>key==='믿게 할 사실')[1],'12만 개');
+  assert.equal(deskModel(project(request({answers:{...request().answers,facts:''}}))).brief.find(([key])=>key==='믿게 할 사실')[1],'없음');
   assert.ok(checks.some(item=>item.label.includes('피할 말')));
   assert.ok(checks.some(item=>item.label.includes('여러 명')));
   const retired=deskModel(project({schemaVersion:1,number:'P-1',status:'retired',answers:{},files:[],asks:[],notes:[],rounds:[]}));
@@ -344,9 +345,9 @@ test('staff dialogs show what the customer picked where it is used: boldness on 
   const send=extra=>dialogContent('desk-send',{count:2,kind:'images',oneLine:'한 문장',...extra});
   const on=send({notice:'alcohol',noticeText:'지나친 음주는 <b>건강</b>에 해롭습니다'});
   // 손님이 적은 글은 누구의 글인지 밝힌다 — 확인이 끝난 문구로 읽히면 안 된다
-  assert.match(on,/꼭 붙일 표시가 있는 의뢰예요\(주류\)\. 손님이 의뢰서에 적은 고지 문구나 심의 번호는 「지나친 음주는 &lt;b&gt;건강&lt;\/b&gt;에 해롭습니다」예요\. 손님이 적은 그대로라 맞는 문구인지 확인이 필요해요\. 의뢰서에서 들어갈 문구와 자리를 1차안에 함께 넣어 보여 드리기로 했어요\. 장면에 문구가 나오는 자리와 때가 들어 있는지 보고 보내요\./);
+  assert.match(on,/꼭 붙일 표시가 있는 의뢰예요\(주류\)\. 손님이 의뢰서에 적은 고지 문구나 심의 번호는 「지나친 음주는 &lt;b&gt;건강&lt;\/b&gt;에 해롭습니다」예요\. 손님이 적은 그대로라 맞는 문구인지 확인이 필요해요\. 의뢰서에서 들어갈 문구와 자리를 미리 넣어 보여 드리기로 했어요\. 장면에 문구가 나오는 자리와 때가 들어 있는지 보고 보내요\./);
   assert.ok(on.indexOf('desk-guide')<on.indexOf('data-form="desk-send"'),'the notice line comes before the form');
-  assert.match(send({notice:'kids'}),/꼭 붙일 표시가 있는 의뢰예요\(어린이 제품\)\. 의뢰서에서 들어갈 문구와 자리를 1차안에 함께 넣어 보여 드리기로 했어요\./);
+  assert.match(send({notice:'kids'}),/꼭 붙일 표시가 있는 의뢰예요\(어린이 제품\)\. 의뢰서에서 들어갈 문구와 자리를 미리 넣어 보여 드리기로 했어요\./);
   assert.doesNotMatch(send({notice:'kids'}),/손님이 의뢰서에 적은/,'no quoted line when the customer wrote nothing');
   // 사진 상품에는 문구가 나오는 「때」가 없다
   const photo=send({photo:true,notice:'alcohol'});

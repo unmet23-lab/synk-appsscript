@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {emptyAnswers} from './public/pulse-app/request-data.mjs';
 import {roomModel,roomWord,roomDue,ROOM_COPY} from './public/pulse-app/room-view.mjs';
 import {projectView} from './public/pulse-app/views.mjs';
-import {roomView,titleKey} from './public/pulse-app/film-views.mjs';
+import {roomView,roomHead,titleKey} from './public/pulse-app/film-views.mjs';
 import {registerLocale,setLocale} from './public/pulse-app/i18n.mjs';
 import en from './public/pulse-app/i18n/en.mjs';
 
@@ -211,5 +211,28 @@ test('the day look is switched on and off in one place and never leaks to other 
     for(const one of selector.split(/,(?![^(]*\))/).map(part=>part.trim()).filter(Boolean))assert.ok(/\[data-day\]|sx-day|^\.sx-room-(due|say)\b|^\.sx-done-next\b/.test(one),one);
   }
   // 캐시 판을 올렸다(바뀐 화면 모듈과 스타일을 새로 받게).
-  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v74-polish-20261121';/);
+  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v75-words-20261121';/);
+});
+
+// 처음 보는 사람용 낱말(유호님 11-21 「처음 보는 사람이 더 이해하기 좋게」): 맹검이 모른다고 짚은 말을 바꿨다.
+test('a first-time customer reads plain words: stage names, the reference number, the journal filter and the SYNK work link',()=>{
+  const p=project({status:'checking'});
+  const html=projectView(state(p)),head=roomHead({...roomModel(p),films:true});
+  // 단계 다섯: 02는 담당자가 하는 일, 03은 영상 전에 손님이 확인하는 단계라고 이름에 적는다.
+  assert.match(head,/data-room-go="check">담당자 검토<\/button>/);assert.match(head,/data-room-go="draft">영상 전 확인<\/button>/);
+  assert.doesNotMatch(head,/>확인<\/button>|>1차안<\/button>/);
+  // 머리의 번호는 크몽 「문의하기」로 보내는 그 번호라 이름표를 단다.
+  assert.match(head,/<span class="crumb-no">접수 번호 <span class="mono">P-1120-AB12<\/span><\/span>/);
+  // 이름표는 본문 글꼴, 번호만 고정폭 — 옛 규칙(film-legacy.css, 고정폭 · 자간)을 더 구체적인 선택자로 덮는다(Fable F2). 좁은 화면에서 숨기는 규칙은 건드리지 않는다.
+  const css=read('film.css');assert.match(css,/html\.sx\.has-room-head:not\(\.is-staff\) \.header-crumb \.crumb-no,html\.sx \.sx-room-bar\.is-head \.crumb-no\{font-family:var\(--sx-sans\);letter-spacing:normal\}/);assert.match(css,/\.crumb-no>\.mono\{font-family:var\(--sx-mono\)\}/);
+  // 제작 중에도 서는 칸은 손님 광고가 아니라 SYNK 작품이다.
+  assert.match(head,/data-room-go="films">SYNK 작품<\/button>/);assert.doesNotMatch(html+head,/>완성 광고</);
+  // 손님에게 보이는 방 글에 「1차안」이 없다.
+  for(const [state,copy] of Object.entries(ROOM_COPY))assert.doesNotMatch(copy.title+copy.text,/1차안/,state);
+  const flow=read('request-flow.mjs')+read('request-data.mjs')+read('film-home.mjs');
+  assert.doesNotMatch(flow.split('\n').filter(line=>!/^\s*\/\//.test(line)).join('\n'),/[kt]\('[^']*1차안/);
+  // 나눈 말 거르개와 접기
+  const views=read('film-views.mjs');
+  assert.match(views,/t\('대화만 보기'\)/);assert.match(views,/t\('최근 것만 보기'\):t\('이전 기록 \{count\}개 더 보기',\{count:rest\}\)/);
+  for(const key of ['대화만 보기','최근 것만 보기','이전 기록 {count}개 더 보기','SYNK 작품','SYNK가 만든 다른 광고 보기','접수 번호'])assert.ok(Object.hasOwn(en,key),key);
 });

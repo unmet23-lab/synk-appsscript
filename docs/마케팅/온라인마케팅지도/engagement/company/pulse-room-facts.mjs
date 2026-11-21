@@ -12,20 +12,20 @@ export const ROOM_PACKAGES=Object.freeze({
   corp:{label:'기업',title:'기업 캠페인'},
   photo:{label:'사진',title:'모델이 제품을 든 사진 5장',days:3,revisions:2,photo:true},
 });
-// 단계 다섯(room-view.mjs ROOM_STAGES · STAGE_OF, 머리 단계 줄 이름은 film-views.mjs stageName — 사진 상품의 다섯째는 「사진 · 납품」).
-export const ROOM_STAGE_NAMES=Object.freeze({request:'01 의뢰서',check:'02 확인',draft:'03 1차안',make:'04 제작',review:'05 영상 · 납품'});
-const PHOTO_STAGE_NAMES=Object.freeze({...ROOM_STAGE_NAMES,review:'05 사진 · 납품'});
+// 단계 다섯(room-view.mjs ROOM_STAGES · STAGE_OF, 머리 단계 줄 이름은 film-views.mjs stageName — 사진 상품의 셋째는 「첫 장 확인」, 다섯째는 「사진 · 납품」).
+export const ROOM_STAGE_NAMES=Object.freeze({request:'01 의뢰서',check:'02 담당자 검토',draft:'03 영상 전 확인',make:'04 제작',review:'05 영상 · 납품'});
+const PHOTO_STAGE_NAMES=Object.freeze({...ROOM_STAGE_NAMES,draft:'03 첫 장 확인',review:'05 사진 · 납품'});
 export const roomStageName=(id,photo=false)=>Object.hasOwn(ROOM_STAGE_NAMES,id)?(photo?PHOTO_STAGE_NAMES:ROOM_STAGE_NAMES)[id]:'';
 const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redirect:'draft',model:'draft',prepare:'draft','prepare-images':'draft',script:'draft',images:'draft',revise:'draft',pay:'draft',make:'make',review:'review',deliver:'review',done:'review'};
 // 상태마다 고객 방 왼쪽 글(room-view.mjs ROOM_COPY — 단추는 뺐다).
 const COPY={
   write:{turn:'you',title:'의뢰서를 써 주세요',text:'제품 이름, 올릴 곳, 사진 몇 장이면 시작할 수 있어요. 모르는 칸은 저희가 제안해요.'},
   check:{turn:'us',title:'지금은 저희 차례예요',text:'보내 주신 의뢰서를 확인하고 있어요. 평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요. 확인이 끝나면 방향 두 안을 보내 드려요.'},
-  ask:{turn:'you',title:'이것만 더 알려 주세요',text:'아래 칸만 채워 주시면 바로 1차안을 만들어요.'},
+  ask:{turn:'you',title:'이것만 더 알려 주세요',text:'아래 칸만 채워 주시면 바로 이어서 만들어요.'},
   direction:{turn:'you',title:'두 방향 중 하나를 골라 주세요',text:'요청하신 내용은 그대로 두고, 무엇으로 기억에 남길지만 나눠 봤어요. 고르시면 글 콘티를 보내 드려요.'},
   redirect:{turn:'us',title:'새 방향을 준비하고 있어요',text:'주신 말씀으로 같은 값에 한 번 더 제안해 드려요.'},
   model:{turn:'you',title:'이 모델로 갈까요?',text:'장면을 만들기 전에 모델부터 정해요. 마음에 들면 그대로, 아니면 다른 모델을 골라 주세요.'},
-  prepare:{turn:'us',title:'1차안을 만들고 있어요',text:'광고가 남길 한 문장과 글 콘티를 먼저 보내 드려요.'},
+  prepare:{turn:'us',title:'글 콘티를 쓰고 있어요',text:'광고가 남길 한 문장과 컷마다 들어갈 내용을 글로 먼저 보내 드려요.'},
   'prepare-images':{turn:'us',title:'장면 이미지를 만들고 있어요',text:'확인하신 글 콘티대로 컷마다 장면 이미지를 만들어요. 다 되면 알려 드려요.'},
   script:{turn:'you',title:'글 콘티가 도착했어요',text:'한 문장과 컷마다 들어갈 내용을 봐 주세요. 맞으면 장면 이미지를 만들어요.'},
   images:{turn:'you',title:'장면 이미지가 도착했어요',text:'컷마다 보고 의견을 남겨 주세요. 괜찮으면 그대로 제작을 시작해요.'},

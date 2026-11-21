@@ -117,7 +117,7 @@ test('the journal reads top to bottom: pinned asks, the staff note, the ask box,
   assert.ok(order.every((at,i)=>at>0&&(i===0||at>order[i-1])),JSON.stringify(order));
   const list=html.slice(html.indexOf('class="sx-j-list"'),html.indexOf('data-journal-do="more"'));
   assert.equal((list.match(/class="sx-j-row /g)||[]).length,JOURNAL_SHOWN);
-  assert.match(html,/이전 말 13개 더 보기/);assert.equal((projectView(state(full(),{journalAll:true})).match(/class="sx-j-row /g)||[]).length,18);
+  assert.match(html,/이전 기록 13개 더 보기/);assert.equal((projectView(state(full(),{journalAll:true})).match(/class="sx-j-row /g)||[]).length,18);
   // 기기 기억 띠는 방 맨 아래 — 대화와 의뢰서 사이에 끼지 않는다(맹검 2 · 7 · 9).
   const offered=projectView(state(full(),{rememberOffer:true}));
   assert.ok(offered.indexOf('remember-offer')>offered.indexOf('data-room-brief'),'the device offer sits below the brief');

@@ -304,6 +304,8 @@ test('a photo order reads as photos from the stage line to the first sheet, and 
   // 머리 단계 줄.
   assert.match(roomRail(roomModel(photo)),/>사진 · 납품<\/button>/);assert.doesNotMatch(roomRail(roomModel(photo)),/영상 · 납품/);
   assert.match(roomRail(roomModel(film)),/>영상 · 납품<\/button>/);
+  // 셋째 칸: 사진은 「첫 장 확인」, 영상은 「영상 전 확인」(처음 보는 사람용 낱말, 11-21).
+  assert.match(roomRail(roomModel(photo)),/data-room-go="draft">첫 장 확인<\/button>/);assert.match(roomRail(roomModel(film)),/data-room-go="draft">영상 전 확인<\/button>/);
   // 고객 방: 첫 장이 도착한 때 · 사진이 도착한 때.
   const info=roomModel(photo);assert.equal(info.state,'images');
   const room=roomView(info);

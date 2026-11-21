@@ -80,7 +80,7 @@ test('one head: the name leads back to the room, the number and five steps sit i
   for(const [name,s] of Object.entries(ROOM_TABS)){
     const html=projectView(s),head=headerCrumb(s),actions=header({...s,desktopApp:false});
     assert.doesNotMatch(html,/class="sx-steps|sx-room-project|sx-dp-rail|sx-dr-back|sx-dr-left-foot|sx-room-bar/,name+': no second head or step line inside the screen');
-    assert.match(head,/^<button type="button" class="sx-head-title" data-room-go="room" title="고객 방으로"><b class="crumb-title">오미톡<\/b><\/button><span class="crumb-no mono">P-2026-ABCD<\/span>/,name);
+    assert.match(head,/^<button type="button" class="sx-head-title" data-room-go="room" title="고객 방으로"><b class="crumb-title">오미톡<\/b><\/button><span class="crumb-no">접수 번호 <span class="mono">P-2026-ABCD<\/span><\/span>/,name);
     assert.equal(head.split('class="sx-step ').length-1,5,name);assert.equal((head.match(/aria-current="page"/g)||[]).length<=1,true,name);
     assert.equal(actions.split('data-room-do="journal"').length-1,1,name+': one way to ask — the journal');assert.match(actions,/data-action="notifications"/,name+': notifications stay apart from asking');
   }

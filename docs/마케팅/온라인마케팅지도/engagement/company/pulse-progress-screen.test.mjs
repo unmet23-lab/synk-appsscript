@@ -130,7 +130,7 @@ test('영어: 소식 줄 · 안내 · 「말만 보기」 · 「소식 보기」
   await setLocale('en');
   try{
     assert.equal(t('작업 소식',null,'journal'),'shared a work-in-progress update');
-    for(const key of ['작업 중인 화면이에요 · 완성본이 아니에요','소식 보기','말만 보기','나눈 말이 아직 없어요'])assert.notEqual(t(key),key,key);
+    for(const key of ['작업 중인 화면이에요 · 완성본이 아니에요','소식 보기','대화만 보기','나눈 말이 아직 없어요'])assert.notEqual(t(key),key,key);
     const html=journalView(journalModel(project(news([{id:N(1),at:T(3),stage:'make',text:'We are editing.',assets:[A(1)]}]),{},[image(1)])),{owner:'Mina'});
     assert.match(html,/shared a work-in-progress update · /);assert.match(html,/Work in progress · not the finished version/);
   }finally{await setLocale('ko');}

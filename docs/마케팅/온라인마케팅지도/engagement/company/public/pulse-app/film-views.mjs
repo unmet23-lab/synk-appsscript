@@ -25,7 +25,7 @@ const sceneOf=item=>item.photos?.find(photo=>photo.kind==='scene')?.src||item.im
 // 모델 이름 · 한 줄은 카탈로그 한국어를 그리는 자리에서 번역한다.
 const nameOf=name=>t(name,null,'model');
 // 단계 이름(단계 문맥 — 의뢰서 칸 이름 「확인」과 영어가 갈린다).
-const stageName=(id,photo=false)=>({request:t('의뢰서',null,'stage'),check:t('확인',null,'stage'),draft:t('1차안',null,'stage'),make:t('제작',null,'stage'),review:photo?t('사진 · 납품',null,'stage'):t('영상 · 납품',null,'stage')})[id]||'';
+const stageName=(id,photo=false)=>({request:t('의뢰서',null,'stage'),check:t('담당자 검토',null,'stage'),draft:photo?t('첫 장 확인',null,'stage'):t('영상 전 확인',null,'stage'),make:t('제작',null,'stage'),review:photo?t('사진 · 납품',null,'stage'):t('영상 · 납품',null,'stage')})[id]||'';
 // 번역문 안의 자리표에 마크업을 넣는다: 번역문 전체를 먼저 이스케이프하고 자리표만 바꾼다(마크업은 자리표 밖 — 글은 늘 이스케이프된다).
 const withMarks=(text,marks)=>Object.entries(marks).reduce((html,[name,mark])=>html.split(`{${name}}`).join(mark),esc(text));
 
@@ -36,14 +36,14 @@ export function roomRail(p,{tab='overview'}={}){
   // 판이 오기 전의 1차안 칸은 지금 단계여도 열지 않는다(모델을 정하기 전에 글 콘티로 넘어가지 않게).
   const locked=(item,i)=>item.id==='draft'&&!p.hasRound||item.id!==now&&i>at;
   // 줄 끝의 따로 선 칸: 완성 광고와, 스위치(features.marketing)가 켜진 손님의 마케팅 성과(11-16).
-  const foot=[p.films&&['films',t('완성 광고')],p.marketing&&['marketing',t('마케팅 성과')]].filter(Boolean);
+  const foot=[p.films&&['films',t('SYNK 작품')],p.marketing&&['marketing',t('마케팅 성과')]].filter(Boolean);
   return `<nav class="sx-steps sx-head-steps" aria-label="${esc(t('단계'))}"><div class="sx-steps-run">${ROOM_STAGES.map((item,i)=>`<button type="button" class="sx-step ${item.id===now?'is-now':i<at?'is-done':''}" ${item.id===now&&!away?'aria-current="page"':''} ${locked(item,i)?'disabled':''} data-room-go="${item.id}">${esc(stageName(item.id,p.photo))}</button>`).join('')}</div>${foot.length?`<div class="sx-steps-foot sx-small">${foot.map(([id,label])=>`<button type="button" class="${view===id?'is-now':''}" ${view===id?'aria-current="page"':''} data-room-go="${id}">${esc(label)}</button>`).join('')}</div>`:''}</nav>`;
 }
 // 머리 하나: 프로젝트 이름(누르면 고객 방) · 접수 번호 · 단계 줄. 앱에서는 앱 머리 칸에, 예시에서는 화면 안 머리에 같은 마크업을 그린다.
 // 언어 메뉴(다국어 판 2)는 이 가운데 칸에 두지 않는다 — 앱 머리 오른쪽 끝(views.mjs header)에 하나만 선다(같은 머리에 둘이 서지 않게).
 // 가운데 칸은 넓이가 모자라면 끝이 잘리는 칸이라(overflow hidden) 821~1000 영어에서 메뉴가 잘렸다. 예시 머리(exampleHead)에는 메뉴가 없다(체험은 한국어로만).
 export function roomHead(p,{tab='overview'}={}){
-  return `<button type="button" class="sx-head-title" data-room-go="room" title="${esc(t('고객 방으로'))}"><b class="crumb-title">${esc(p.title)}</b></button>${p.number?`<span class="crumb-no mono">${esc(p.number)}</span>`:''}<i class="sx-head-break" aria-hidden="true"></i>${roomRail(p,{tab})}`;
+  return `<button type="button" class="sx-head-title" data-room-go="room" title="${esc(t('고객 방으로'))}"><b class="crumb-title">${esc(p.title)}</b></button>${p.number?`<span class="crumb-no">${esc(t('접수 번호'))} <span class="mono">${esc(p.number)}</span></span>`:''}<i class="sx-head-break" aria-hidden="true"></i>${roomRail(p,{tab})}`;
 }
 export const exampleHead=(p,{tab='overview'}={})=>`<header class="sx-room-bar is-head"><a class="sx-logo" href="./" aria-label="${esc(t('SYNK PULSE 처음으로'))}"><img src="./assets/request/logo-paper.webp" alt="SYNK PULSE" width="164" height="44"></a><div class="header-crumb">${roomHead(p,{tab})}</div><div class="header-actions"><button type="button" class="sx-head-ask" data-room-do="journal" aria-controls="room-journal">${esc(t('나눈 말'))}</button></div></header>`;
 // ── 일지(판 3b) ──
@@ -76,9 +76,9 @@ export function journalView(j,{place='column',here=null,video=false,photo=false,
     ${asks?`<div class="sx-j-pin" aria-label="${esc(t('답해 주실 것'))}">${asks}</div>`:''}
     ${j.pinned.next?`<p class="sx-j-next"><span>${esc(t('지금 담당자 안내'))}</span>${esc(j.pinned.next)}</p>`:''}
     <form class="sx-j-say" data-form="support"><textarea name="text" rows="1" maxlength="3000"${attach?'':' required'} placeholder="${esc(t('담당자에게 물어보세요'))}" aria-label="${esc(t('담당자에게 물어보기'))}" data-grow></textarea><button type="submit" class="sx-go" data-mutate><span>${esc(t('보내기',null,'send'))}</span>${arrow}</button>${attach?sayAttach():''}${video?`<p class="sx-j-hint" data-when="typing">${photo?withMarks(t('사진에서 고칠 곳은 {where} 의견 칸에 남겨 주세요.'),{where:`<span class="is-wide">${esc(t('오른쪽',null,'where'))}</span><span class="is-phone">${esc(t('사진 아래',null,'where'))}</span>`}):withMarks(t('영상에서 고칠 곳은 {where} 의견 칸에, 그 장면에서 남겨 주세요.'),{where:`<span class="is-wide">${esc(t('오른쪽',null,'where'))}</span><span class="is-phone">${esc(t('영상 아래',null,'where'))}</span>`})}</p>`:''}</form>
-    ${filter?`<p class="sx-j-tools"><button type="button" class="sx-quiet sx-j-filter" data-journal-do="talk" aria-pressed="${talk?'true':'false'}">${esc(t('말만 보기'))}</button></p>`:''}
+    ${filter?`<p class="sx-j-tools"><button type="button" class="sx-quiet sx-j-filter" data-journal-do="talk" aria-pressed="${talk?'true':'false'}">${esc(t('대화만 보기'))}</button></p>`:''}
     ${items.length?`<ol class="sx-j-list" aria-label="${esc(t('지난 말'))}">${shown.map(row).join('')}</ol>`:talk?`<p class="sx-small sx-j-empty">${esc(t('나눈 말이 아직 없어요'))}</p>`:''}
-    ${rest>0?`<button type="button" class="sx-quiet sx-j-more" data-journal-do="more" aria-expanded="${all?'true':'false'}">${esc(all?t('최근 말만 보기'):t('이전 말 {count}개 더 보기',{count:rest}))}</button>`:''}
+    ${rest>0?`<button type="button" class="sx-quiet sx-j-more" data-journal-do="more" aria-expanded="${all?'true':'false'}">${esc(all?t('최근 것만 보기'):t('이전 기록 {count}개 더 보기',{count:rest}))}</button>`:''}
   </aside>`;
 }
 // 문의 사진(운영 조각 8-B): 고르기 단추(이름 없는 파일 칸 — 그리기 기억 · 되살리기가 건드리지 않는다, 보내는 동안 잠김 data-mutate — 카본 A1)와 고른 사진의 미리 보기 칸.
@@ -330,7 +330,7 @@ const otherModels=m=>`<div class="sx-wall is-plain">${CASTING_MODELS.filter(item
 // i18n-skip-start
 const TITLE_MARKS={
   '의뢰서를 써 주세요':'의뢰서','지금은 저희 차례예요':'저희 차례','이것만 더 알려 주세요':'이것만','새 방향을 준비하고 있어요':'새 방향','이 모델로 갈까요?':'이 모델',
-  '1차안을 만들고 있어요':'1차안','장면 이미지를 만들고 있어요':'장면 이미지','글 콘티가 도착했어요':'글 콘티','장면 이미지가 도착했어요':'장면 이미지','의견을 반영하고 있어요':'의견',
+  '글 콘티를 쓰고 있어요':'글 콘티','장면 이미지를 만들고 있어요':'장면 이미지','글 콘티가 도착했어요':'글 콘티','장면 이미지가 도착했어요':'장면 이미지','의견을 반영하고 있어요':'의견',
   '확인하신 컷으로 만들고 있어요':'확인하신 컷','영상이 도착했어요':'영상','완성본을 받으세요':'완성본','글 콘티를 확인해 주셨어요':'글 콘티','완성본을 받으셨어요':'완성본',
   '결제가 취소됐어요':'결제','크몽에서 결제해 주세요':'결제','첫 장을 확인해 주셨어요':'첫 장','결제를 확인했어요':'결제','이 방향으로 정했어요':'이 방향','담당자가 직접 연락드려요':'담당자',
   '첫 장이 도착했어요':'첫 장','사진이 도착했어요':'사진','첫 장을 만들고 있어요':'첫 장','확인하신 첫 장대로 만들고 있어요':'확인하신 첫 장',
@@ -389,7 +389,7 @@ export function roomView(p,{bar=true,top='',after='',foot='',prep='',journal='',
     ${roomPaper(p)}
     ${prep}
     ${tail?`<div class="sx-room-foot is-tail">${tail}</div>`:''}
-    ${p.films?`<p class="sx-room-films"><button type="button" class="sx-small sx-link" data-room-go="films">${esc(t('SYNK가 끝까지 만든 완성 광고 보기'))}</button></p>`:''}
+    ${p.films?`<p class="sx-room-films"><button type="button" class="sx-small sx-link" data-room-go="films">${esc(t('SYNK가 만든 다른 광고 보기'))}</button></p>`:''}
   </div>`;
 }
 // 아래 인화지 쪽: 보내 주신 의뢰서 · 받은 자료. 고객 방과 방향 화면이 같이 쓴다.

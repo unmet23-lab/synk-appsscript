@@ -11,6 +11,10 @@ import {rise,riseAll,sink,revealWords,roll,typeIn,play,ease,reduced} from './mot
 // 올리기에 실패한 파일 줄 → 그 파일(켜기 전 후속 · 판 6 D, 11-11). 연결이 끊김 · 서버 오류 · 시간 초과처럼 같은 파일을 다시 보내면 될 수 있는 실패만 담는다 —
 // 형식 · 크기가 맞지 않는 파일(415 · 413 · 400)은 「지우기」 뒤 다른 파일을 고른다. 항목 객체에는 칸을 더하지 않는다(답은 서버 허용 목록 그대로 저장된다).
 const retryable=new WeakMap();
+// 접힌 파일 칸(11-21): 손님이 펼친 것을 다른 화면에 다녀와도 기억한다(이 탭 안에서만).
+const RARE_SLOTS=['label','sound'];let slotsMoreOpen=false;
+// 접힌 줄의 이름은 안에 든 칸대로(사진 상품은 소리 칸이 없어 라벨 칸만 남는다 — 카본 A1).
+const moreLabel=more=>{const label=more.some(slot=>slot.id==='label'),sound=more.some(slot=>slot.id==='sound');return label&&sound?t('라벨 인쇄 파일이나 브랜드 음악도 있어요'):label?t('라벨 · 패키지 인쇄 파일도 있어요'):t('브랜드 음악이나 로고 소리도 있어요');};
 // 진행 중인 그림 바꾸기(img → {src}) — 늦게 끝난 앞 바꾸기가 나중에 고른 그림을 덮지 않게(crossfade).
 const swaps=new WeakMap();
 // 파일 줄마다 바뀌지 않는 표(data-key) — 다시 그린 뒤 초점을 줄 번호가 아니라 그 파일로 되찾는다(최종 검수 -c P1: 위 줄이 지워져 번호가 당겨지면 초점이 다른 파일의 「지우기」로 옮겨져 이어 누른 Enter가 고르지 않은 파일을 지우던 길).
@@ -114,7 +118,7 @@ const contactLocaleRow=a=>offeredLocales().length>1&&LANG_NAMES[a.contactLocale]
 // ── 의뢰서 탭(11-13): 과감함 · 꼭 붙일 표시 · 목소리. 모두 눌러 고르고, 고르지 않아도 넘어간다. ──
 const boldNote=a=>{const item=BOLD.find(item=>item.id===a.bold),note=pkgOf(a)?.photo&&item?.photoNote||item?.note;return note?t(note):'';};
 const boldBlock=a=>`<div class="sx-sub" data-in><span class="sx-small">${esc(t('얼마나 과감하게 갈까요? · 선택'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('얼마나 과감하게'))}">${BOLD.map(item=>chip(t(item.label),a.bold===item.id,`data-do="bold" data-id="${item.id}"`)).join('')}</div><small class="sx-small sx-q-hint" data-bold-note${boldNote(a)?'':' hidden'}>${esc(boldNote(a))}</small></div>`;
-const noticeMore=a=>a.notice==='unsure'?`<small class="sx-small sx-q-hint">${esc(t('괜찮아요. 저희가 확인해 보고, 필요하면 그때 여쭤볼게요.'))}</small>`:!noticeOn(a)?'':`<small class="sx-small sx-q-hint">${esc(t('표시나 심의가 따로 정해진 업종이에요. 들어갈 문구와 자리를 1차안에 함께 넣어 보여 드리고, 최종 문구는 확인을 받아요.'))}</small>${field({bind:'noticeText',label:t('이미 쓰시는 고지 문구 · 심의 번호 · 선택'),value:a.noticeText,placeholder:t('예) 늘 넣으시는 안내 문구, 받아 두신 심의 번호'),max:300})}`;
+const noticeMore=a=>a.notice==='unsure'?`<small class="sx-small sx-q-hint">${esc(t('괜찮아요. 저희가 확인해 보고, 필요하면 그때 여쭤볼게요.'))}</small>`:!noticeOn(a)?'':`<small class="sx-small sx-q-hint">${esc(t('표시나 심의가 따로 정해진 업종이에요. 들어갈 문구와 자리를 미리 넣어 보여 드리고, 최종 문구는 확인을 받아요.'))}</small>${field({bind:'noticeText',label:t('이미 쓰시는 고지 문구 · 심의 번호 · 선택'),value:a.noticeText,placeholder:t('예) 늘 넣으시는 안내 문구, 받아 두신 심의 번호'),max:300})}`;
 // 광고할 것의 종류에 맞는 갈래만 보인다. 종류를 바꾸기 전에 고른 갈래는 맨 앞에 그대로 둔다(고른 것이 안 보이면 풀 수도 없다).
 const noticeIds=a=>{const ids=NOTICE_KINDS[a.kind]||NOTICE_KINDS.brand;return noticeOn(a)&&!ids.includes(a.notice)?[a.notice,...ids]:ids;};
 const noticeBlock=a=>`<div class="sx-sub" data-in><span class="sx-small">${esc(t('광고에 꼭 붙여야 하는 표시가 있는 업종인가요?'))}</span><div class="sx-chips" role="group" aria-label="${esc(t('꼭 붙일 표시'))}">${[...noticeIds(a).map(id=>[id,t(noticeLabel(id))]),['none',t('해당 없어요')],['unsure',t('잘 모르겠어요')]].map(([id,label])=>chip(label,a.notice===id,`data-do="notice" data-id="${esc(id)}"`)).join('')}</div><div data-notice-more>${noticeMore(a)}</div></div>`;
@@ -136,16 +140,21 @@ const views={
   files(a,step,i,n){
     // 사진 상품에는 소리 파일 칸을 두지 않는다 — 이미 올린 소리 파일이 있으면 볼 수 있고 지울 수 있게 남긴다. 크기 칸은 거르기 전 묶음으로 정한다(걸러 낸 배열은 늘 새 배열이다).
     const group=slotsFor(a.kind),slots=group.filter(slot=>slot.id!=='sound'||!pkgOf(a)?.photo||filesOf(a,slot.id).length);
+    // 가진 손님이 드문 칸(라벨 인쇄 파일 · 브랜드 음악)은 접힌 줄 안에 둔다(11-21 의뢰서 칸 정리). 파일을 올렸거나 손님이 펼쳤으면 펼친 채 그린다.
+    const main=slots.filter(slot=>!RARE_SLOTS.includes(slot.id)),more=slots.filter(slot=>RARE_SLOTS.includes(slot.id));
+    const open=slotsMoreOpen||more.some(slot=>filesOf(a,slot.id).length);
     return ask(step,i,n,t('이것만 보내 주세요'),t('제품 · 로고 · 글자는 AI로 다시 그리지 않고 보내 주신 파일을 그대로 얹어요. 그래서 원본이 중요해요. 지금 없는 건 나중에 보내도 돼요.'),
-      `<div class="sx-slots">${slots.map(slotView.bind(null,a)).join('')}</div>`+
+      `<div class="sx-slots">${main.map(slotView.bind(null,a)).join('')}</div>`+
+      (more.length?`<details class="sx-slots-more" data-slots-more data-in${open?' open':''}><summary class="sx-small">${esc(moreLabel(more))}</summary><div class="sx-slots">${more.map(slotView.bind(null,a)).join('')}</div></details>`:'')+
       field({bind:'pageUrl',label:t('제품 · 서비스 페이지 주소'),value:a.pageUrl,placeholder:'https://',help:t('여기 적힌 내용은 다시 적지 않으셔도 돼요.'),type:'url',max:1000})+
-      (group===slotsFor('food')?field({bind:'size',label:t('손에 들면 어느 정도 크기인가요?'),value:a.size,placeholder:t('예) 355ml 캔, 손바닥 안에 들어와요'),max:120}):'')+
+      ((KINDS.find(item=>item.id===a.kind)?.group||'product')==='product'?field({bind:'size',label:t('손에 들면 어느 정도 크기인가요?'),value:a.size,placeholder:t('예) 355ml 캔, 손바닥 안에 들어와요'),max:120}):'')+
       field({bind:'driveUrl',label:t('파일이 크면 드라이브 링크로'),value:a.driveUrl,placeholder:'https://',type:'url',max:1000}));
   },
   message(a,step,i,n){
-    return ask(step,i,n,t('보는 사람에게 무엇을 남길까요?'),t('광고 문장이 아니어도 돼요. 평소 하시는 말로 적어 주시면 저희가 한 문장으로 다듬어 1차안에 보여 드려요.'),
+    return ask(step,i,n,t('보는 사람에게 무엇을 남길까요?'),t('광고 문장이 아니어도 돼요. 평소 하시는 말로 적어 주시면 저희가 한 문장으로 다듬어 미리 보여 드려요.'),
       field({bind:'audience',label:t('이 제품은 누가, 언제 찾나요?'),value:a.audience,placeholder:t('예) 운동 끝나고 목마른 20대, 출근 전 시간이 없는 직장인'),rows:2,max:300})+
       field({bind:'oneThing',label:t('딱 하나만 남긴다면요?'),value:a.oneThing,placeholder:t('예) 한 캔에 맛이 다섯 번 바뀐다'),rows:2,max:300})+
+      field({bind:'facts',label:t('그 말을 믿게 할 사실 · 선택'),value:a.facts,placeholder:t('예) 누적 판매 12만 개, ○○ 인증'),help:t('자료가 있는 것만 적어 주세요. 그 자료도 준비물에 함께 넣어 주시면 좋아요.'),max:300})+
       `<div class="sx-sub" data-in><span class="sx-small">${esc(t('보고 나서 무엇을 하면 좋을까요?'))}</span><div class="sx-chips">${ACTIONS.map(item=>chip(t(item.label),a.action===item.id,`data-do="action" data-id="${item.id}"`)).join('')}</div></div>`);
   },
   words(a,step,i,n){
@@ -153,18 +162,17 @@ const views={
     return ask(step,i,n,t('화면에 정확히 나와야 할 글자가 있나요?'),t('제품명 표기, 가격, 기간, 꼭 넣어야 할 안내처럼 한 글자도 바뀌면 안 되는 말이에요. 화면에 바로 얹어 볼게요.'),
       field({bind:'screenText',label:t('화면에 나올 글자'),value:a.screenText,placeholder:t('예) 다섯 가지 맛, 톡.\n11월 편의점 출시'),rows:3,max:300})+
       `<div class="sx-sub" data-in><span class="sx-small">${esc(t('쓰면 안 되는 말 · 업종마다 자주 걸리는 말이에요. 빼야 하는 말을 눌러 주세요.'))}</span><div class="sx-chips">${watch.map(word=>chip(claimText(word),a.avoid.includes(word),`data-do="avoid" data-id="${esc(word)}"`)).join('')}</div></div>`+
-      field({bind:'avoidNote',label:t('그 밖에 피할 말이나 표현'),value:a.avoidNote,placeholder:t('예) 경쟁사 이름, 과한 표정'),max:300})+
-      noticeBlock(a)+
-      field({bind:'facts',label:t('자랑해도 되는 사실 · 선택'),value:a.facts,placeholder:t('예) 누적 판매 12만 개, ○○ 인증'),help:t('자료가 있는 것만 적어 주세요. 그 자료도 준비물에 함께 넣어 주시면 좋아요.'),max:300}));
+      field({bind:'avoidNote',label:t('그 밖에 쓰면 안 되는 말'),value:a.avoidNote,placeholder:t('예) 경쟁사 이름, 이제 쓰지 않는 제품 이름'),max:300})+
+      noticeBlock(a));
   },
   feel(a,step,i,n){
     const ref=a.refs[0]||{url:'',points:[],why:''};
     return ask(step,i,n,t('무엇으로 오래 남을까요?'),t('광고는 보통 셋 중 하나로 이겨요. 기획 첫 줄에 이것부터 정해요.'),
-      `<div class="sx-rows" role="radiogroup" aria-label="${esc(t('무엇으로 남길지'))}">${WIN.map((item,index)=>row({i:index,label:t(item.label),note:t(item.note),on:a.win===item.id,attr:`data-do="win" data-id="${item.id}"`})).join('')}${row({i:WIN.length,label:t('맡길게요'),note:t('제품에 맞는 쪽을 1차안에서 제안해요'),on:a.win==='ask',attr:'data-do="win" data-id="ask"'})}</div>`+
+      `<div class="sx-rows" role="radiogroup" aria-label="${esc(t('무엇으로 남길지'))}">${WIN.map((item,index)=>row({i:index,label:t(item.label),note:t(item.note),on:a.win===item.id,attr:`data-do="win" data-id="${item.id}"`})).join('')}${row({i:WIN.length,label:t('맡길게요'),note:t('제품에 맞는 쪽을 미리 제안해요'),on:a.win==='ask',attr:'data-do="win" data-id="ask"'})}</div>`+
       boldBlock(a)+
       field({bind:'refUrl',label:t('이런 광고면 좋겠어요 · 링크'),value:ref.url,placeholder:'https://',type:'url',max:1000,help:t('반응이 좋았던 광고의 짜임을 재서 뼈대로 쓰기 때문에, 참고 영상 하나가 말 열 줄보다 큰 힘이 돼요.')})+
       `<div class="sx-sub" data-in><span class="sx-small">${esc(t('그 광고의 어디가 좋았나요?'))}</span><div class="sx-chips">${REFERENCE_POINTS.map(point=>chip(t(point),ref.points.includes(point),`data-do="refpoint" data-id="${esc(point)}"`)).join('')}</div></div>`+
-      field({bind:'avoidFeel',label:t('이런 느낌은 피해 주세요 · 선택'),value:a.avoidFeel,placeholder:t('예) 홈쇼핑 같은 느낌'),max:200}));
+      field({bind:'avoidFeel',label:t('이런 느낌은 피해 주세요 · 선택'),value:a.avoidFeel,placeholder:t('예) 홈쇼핑 같은 느낌, 과한 표정'),max:200}));
   },
   // ctx(판 3): {flags:{request,real} — 서버가 허락한 맞춤 인물 스위치, photos — 인물 사진을 받는 길(공개 의뢰서)}. 스위치가 꺼져 있으면 판 3 전과 같은 화면이다.
   model(a,step,i,n,ctx={}){
@@ -237,7 +245,7 @@ function slotView(a,slot){
 const fileThumb=file=>file.preview?`<img src="${esc(file.preview)}" alt="${esc(file.fileName)}">`:`<span class="sx-slot-doc sx-no">${esc((file.fileName.split('.').pop()||'FILE').toUpperCase().slice(0,4))}</span>`;
 function slotStatus(a,slot){
   const files=filesOf(a,slot.id);
-  if(a.slots[slot.id]?.none)return `<i class="sx-led is-wait"></i>${esc(t('나중에 보내 주세요. 1차안에는 자리만 잡아 둘게요.'))}`;
+  if(a.slots[slot.id]?.none)return `<i class="sx-led is-wait"></i>${esc(t('나중에 보내 주세요. 받기 전까지는 자리만 잡아 둘게요.'))}`;
   if(!files.length)return '';
   // 올리는 중인 줄 → 실패한 줄 → 마지막 줄 차례로 말한다(최종 검수 F5 — 실패한 앞 줄을 다시 올릴 때도 진행 · 실패 까닭이 보이게).
   const last=files.find(file=>file.uploading)||[...files].reverse().find(file=>file.error)||files[files.length-1];
@@ -387,10 +395,10 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
     if(id==='what'){const kind=kindOf(a),src=kind?.shot||still('w-gift-sphere'),shape=shotShape(src);monSwap(`<img class="sx-q-fill" data-still src="${esc(src)}"${shape?` data-shot="${shape}"`:''} alt=""><p class="sx-small sx-q-cap" data-still-cap>${esc(kind?t(kind.who):t('「霜の肌理」 홀리데이 기프트 · 가상 브랜드로 만든 자체 작품'))}</p>`);return;}
     if(id==='where'){const pkg=pkgOf(a),from=`<small data-price-from ${pkg?'':'hidden'}>${esc(t('부터'))}</small>`,value=`<span data-price>${pkg?price(pkg.price):'—'}</span>`;monSwap(`<div class="sx-q-where"><img class="sx-q-fill" src="${still(RATIO_STILL[ratioOf(a)])}" data-ratio-still alt=""><div class="sx-q-finder" data-frame data-ratio="${ratioOf(a)}"><span class="sx-no" data-ratio-label>${ratioOf(a)}</span></div><div class="sx-q-price"><b class="sx-serif">${fromBefore()?from+value:value+from}</b><span class="sx-small" data-cuts-line ${pkg?'':'hidden'}><span data-cuts-label>${esc(pkg?.photo?t('받으실 사진'):t('영상 전에 먼저 보여 드리는 컷'))}</span> <b class="sx-no" data-cuts>${pkg?pkg.cuts:0}</b></span><span class="sx-small" data-terms ${pkg?'':'hidden'}>${esc(termsOf(pkg))}</span><div class="sx-q-ticks" data-strip aria-hidden="true"></div></div></div>`);fillStrip(pkg?.cuts||0);return;}
     if(id==='files'){const own=ownPhoto(a);monSwap(`<div class="sx-q-how"><figure><img src="${esc(own||still('file-gift-set'))}" data-cap alt=""><figcaption class="sx-small"><span class="sx-no">01</span> ${esc(own?t('보내 주신 사진'):t('이런 사진이면 돼요'))}</figcaption></figure>${[['02',k('장면 이미지 · 확인'),'sheet-gift-05'],['03',k('완성 영상'),'w-gift']].map(([no,label,name])=>`<figure><img src="${still(name)}" data-cap alt=""><figcaption class="sx-small"><span class="sx-no">${no}</span> ${esc(t(label))}</figcaption></figure>`).join('')}<p class="sx-small sx-q-how-note">${esc(t('제품 · 로고 · 글자는 AI로 그리지 않고 실제 파일을 얹어요. 영상을 만들기 전에 02에서 모든 컷을 먼저 보여 드려요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요.'))}</p></div>`);return;}
-    if(id==='message'||id==='words'){const own=ownPhoto(a),shot=kindOf(a)?.shot,shape=own?'':shotShape(shot);/* 판 4 B7: 사진 전에는 고른 업종의 작품 그림 위에 손님 말을 얹는다(음료 손님의 말이 눈 결정 · 화장품 병 위에 얹히던 것). 작품 그림은 광고 틀의 비율이 달라도 자르지 않고 틀 안에 맞춘다(data-shot — 가로 작품은 세로 틀의 위아래가, 세로 작품은 가로 틀의 양옆이 검정). */monSwap(`${frame({channels:a.channels.length?a.channels:['shorts']},`<img class="sx-q-fill" src="${esc(own||shot||still(id==='words'?'w-gift':'w-gift-snow'))}"${shape?` data-shot="${shape}"`:' data-cap'} alt=""><div class="sx-q-copy${id==='words'?' is-top':''}" data-copy></div>${id==='words'?'<p class="sx-q-notice sx-small" data-notice-line hidden></p>':''}`)}<p class="sx-small sx-q-cap">${esc(id==='words'?t('적으신 글자는 이 자리에 그대로 얹어요'):t('1차안에서 이 말을 한 문장으로 다듬어요'))}</p>`);updateCopy();updateNoticeLine();return;}
+    if(id==='message'||id==='words'){const own=ownPhoto(a),shot=kindOf(a)?.shot,shape=own?'':shotShape(shot);/* 판 4 B7: 사진 전에는 고른 업종의 작품 그림 위에 손님 말을 얹는다(음료 손님의 말이 눈 결정 · 화장품 병 위에 얹히던 것). 작품 그림은 광고 틀의 비율이 달라도 자르지 않고 틀 안에 맞춘다(data-shot — 가로 작품은 세로 틀의 위아래가, 세로 작품은 가로 틀의 양옆이 검정). */monSwap(`${frame({channels:a.channels.length?a.channels:['shorts']},`<img class="sx-q-fill" src="${esc(own||shot||still(id==='words'?'w-gift':'w-gift-snow'))}"${shape?` data-shot="${shape}"`:' data-cap'} alt=""><div class="sx-q-copy${id==='words'?' is-top':''}" data-copy></div>${id==='words'?'<p class="sx-q-notice sx-small" data-notice-line hidden></p>':''}`)}<p class="sx-small sx-q-cap">${esc(id==='words'?t('적으신 글자는 이 자리에 그대로 얹어요'):t('이 말을 한 문장으로 다듬어 미리 보여 드려요'))}</p>`);updateCopy();updateNoticeLine();return;}
     if(id==='feel'){const pick=WIN.find(item=>item.id===a.win)||WIN[1];monSwap(`${frame({channels:[pick.ratio==='16:9'?'youtube':'shorts']},`<video class="sx-q-fill" data-win-film src="${esc(pick.film)}" poster="${esc(pick.poster)}" muted loop playsinline preload="metadata" ${reduced()?'':'autoplay'}></video>`)}${holdButton('win',reduced())}<p class="sx-small sx-q-cap"><span data-win-kind>${esc(t(pick.kind))}</span> · <span data-win-cap>${esc(winCap(pick))}</span></p>`);const film=$('[data-win-film]');if(film&&!reduced())film.play().catch(()=>{}).finally(()=>syncHold(film));return;}
     if(id==='model'){monSwap(allModels?allWall(a):wall(a));if(!allModels&&!choiceText(a))leadFilm(modelOf(a.models[0])||picksOf(a)[0]);return;}
-    if(id==='contact'||id==='review'){monSwap(`${frame({channels:['shorts']},`<img class="sx-q-fill" src="${still(id==='contact'?'still-shards':'still-lid')}" alt="">`)}<p class="sx-small sx-q-cap">${esc(t('1차안의 장면 이미지는 이런 모습이에요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요'))}</p>`);return;}
+    if(id==='contact'||id==='review'){monSwap(`${frame({channels:['shorts']},`<img class="sx-q-fill" src="${still(id==='contact'?'still-shards':'still-lid')}" alt="">`)}<p class="sx-small sx-q-cap">${esc(t('미리 보여 드리는 장면 이미지는 이런 모습이에요. 장면 이미지는 그 컷의 첫 화면이라 움직이는 동안 작은 부분은 달라질 수 있어요'))}</p>`);return;}
     monSwap('');
   }
   function fillStrip(count){const strip=$('[data-strip]');if(!strip)return;strip.innerHTML=Array.from({length:count},(_,i)=>`<i data-c="${i}"></i>`).join('');[...strip.children].forEach((tick,i)=>play(tick,[{opacity:0},{opacity:1}],{delay:i*18,duration:300}));}
@@ -654,6 +662,7 @@ export function mountRequestFlow(root,{backend,onRoom,onExit}){
   const holdLabel=event=>{if(event.target.tagName==='VIDEO')syncHold(event.target);};
   mon.addEventListener('play',holdLabel,true);mon.addEventListener('pause',holdLabel,true);
   form.addEventListener('submit',event=>event.preventDefault());
+  form.addEventListener('toggle',event=>{if(event.target.matches?.('[data-slots-more]'))slotsMoreOpen=event.target.open;},true);
   host.addEventListener('keydown',event=>{
     if(!['ArrowDown','ArrowUp'].includes(event.key)||event.target.getAttribute?.('role')!=='radio')return;
     const items=[...event.target.closest('[role=radiogroup]').querySelectorAll('[role=radio]')],next=items[(items.indexOf(event.target)+(event.key==='ArrowDown'?1:-1)+items.length)%items.length];

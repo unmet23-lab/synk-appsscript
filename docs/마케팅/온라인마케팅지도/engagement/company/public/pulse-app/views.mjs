@@ -783,7 +783,7 @@ const BOLD_GUIDE={safe:'두 안 모두 이 업종 광고가 익숙하게 쓰는 
 const boldGuide=id=>{const item=BOLD.find(b=>b.id===id);return item&&BOLD_GUIDE[id]?`<p class="desk-sum desk-guide">손님이 「${esc(item.label)}」를 골랐어요. ${BOLD_GUIDE[id]} 무엇을 고르든 제품 사실과 피할 말은 지켜요.</p>`:'';};
 // 손님이 적은 글은 누구의 글인지 밝힌다(확인이 끝난 문구로 읽히지 않게). 사진 상품에는 문구가 나오는 「때」가 없다. 손님 글 뒤의 「예요/이에요」는 끝 글자의 받침에 맞춘다. 칸을 비운 의뢰도 의뢰서에 「저희가 확인해요」가 뜨니 같은 확인 줄을 띄운다 — 의뢰서 답이 없는 프로젝트(notice가 넘어오지 않음)에는 줄이 없다.
 const noticeGuide=item=>{const label=noticeLabel(item.notice);
-  if(label)return `<p class="desk-sum desk-guide">꼭 붙일 표시가 있는 의뢰예요(${esc(label)}).${item.noticeText?` 손님이 의뢰서에 적은 고지 문구나 심의 번호는 「${esc(item.noticeText)}」${ieyo(item.noticeText)}. 손님이 적은 그대로라 맞는 문구인지 확인이 필요해요.`:''} 의뢰서에서 들어갈 문구와 자리를 1차안에 함께 넣어 보여 드리기로 했어요. ${item.photo?'사진에 문구가 들어갈 자리가 잡혀 있는지':'장면에 문구가 나오는 자리와 때가 들어 있는지'} 보고 보내요.</p>`;
+  if(label)return `<p class="desk-sum desk-guide">꼭 붙일 표시가 있는 의뢰예요(${esc(label)}).${item.noticeText?` 손님이 의뢰서에 적은 고지 문구나 심의 번호는 「${esc(item.noticeText)}」${ieyo(item.noticeText)}. 손님이 적은 그대로라 맞는 문구인지 확인이 필요해요.`:''} 의뢰서에서 들어갈 문구와 자리를 미리 넣어 보여 드리기로 했어요. ${item.photo?'사진에 문구가 들어갈 자리가 잡혀 있는지':'장면에 문구가 나오는 자리와 때가 들어 있는지'} 보고 보내요.</p>`;
   if(item.notice==='unsure')return '<p class="desk-sum desk-guide">손님이 꼭 붙일 표시가 있는 업종인지 모르겠다고 했어요. 의뢰서에서 저희가 확인하기로 했어요. 표시가 필요한 업종인지 확인한 뒤에 보내요.</p>';
   if(item.notice==='')return '<p class="desk-sum desk-guide">꼭 붙일 표시 칸이 비어 있는 의뢰예요. 의뢰서에서 비운 칸은 저희가 확인하기로 했어요. 표시가 필요한 업종인지 확인한 뒤에 보내요.</p>';
   return '';};

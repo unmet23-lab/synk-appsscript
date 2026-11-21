@@ -42,7 +42,7 @@ export function roomState(p){
 // 단계는 다섯(판 3, 11-08): 영상 확인과 납품은 같은 화면이라 한 단계다.
 // 이름은 한국어 원문이다 — 화면은 film-views.mjs stageName이 단계 문맥(stage)의 문장으로 옮겨 그린다(「확인」이 의뢰서 칸 이름과 영어가 갈려 k로 감싸지 않는다).
 export const ROOM_STAGES=Object.freeze([
-  {id:'request',no:'01',name:'의뢰서'},{id:'check',no:'02',name:'확인'},{id:'draft',no:'03',name:'1차안'}, // i18n-skip
+  {id:'request',no:'01',name:'의뢰서'},{id:'check',no:'02',name:'담당자 검토'},{id:'draft',no:'03',name:'영상 전 확인'}, // i18n-skip
   {id:'make',no:'04',name:'제작'},{id:'review',no:'05',name:'영상 · 납품'}, // i18n-skip
 ]);
 const STAGE_OF={write:'request',check:'check',ask:'check',direction:'draft',redirect:'draft',model:'draft',prepare:'draft','prepare-images':'draft',script:'draft',images:'draft',revise:'draft',pay:'draft',make:'make',review:'review',deliver:'review',done:'review'};
@@ -84,11 +84,11 @@ export const CONFIRM_OF=Object.freeze({direction:'1/3',model:'1/3',script:'2/3',
 export const ROOM_COPY={
   write:{turn:'you',title:k('의뢰서를 써 주세요'),text:k('제품 이름, 올릴 곳, 사진 몇 장이면 시작할 수 있어요. 모르는 칸은 저희가 제안해요.'),action:{label:k('의뢰서 쓰기'),go:'write'}},
   check:{turn:'us',title:k('지금은 저희 차례예요'),text:k('보내 주신 의뢰서를 확인하고 있어요. 평일 10~19시에 보고, 빠진 게 있으면 그 칸만 다시 여쭤요. 확인이 끝나면 방향 두 안을 보내 드려요.')},
-  ask:{turn:'you',title:k('이것만 더 알려 주세요'),text:k('아래 칸만 채워 주시면 바로 1차안을 만들어요.')},
+  ask:{turn:'you',title:k('이것만 더 알려 주세요'),text:k('아래 칸만 채워 주시면 바로 이어서 만들어요.')},
   direction:{turn:'you',title:k('두 방향 중 하나를 골라 주세요'),text:k('요청하신 내용은 그대로 두고, 무엇으로 기억에 남길지만 나눠 봤어요. 고르시면 글 콘티를 보내 드려요.')},
   redirect:{turn:'us',title:k('새 방향을 준비하고 있어요'),text:k('주신 말씀으로 같은 값에 한 번 더 제안해 드려요.')},
   model:{turn:'you',title:k('이 모델로 갈까요?'),text:k('장면을 만들기 전에 모델부터 정해요. 마음에 들면 그대로, 아니면 다른 모델을 골라 주세요.')},
-  prepare:{turn:'us',title:k('1차안을 만들고 있어요'),text:k('광고가 남길 한 문장과 글 콘티를 먼저 보내 드려요.')},
+  prepare:{turn:'us',title:k('글 콘티를 쓰고 있어요'),text:k('광고가 남길 한 문장과 컷마다 들어갈 내용을 글로 먼저 보내 드려요.')},
   'prepare-images':{turn:'us',title:k('장면 이미지를 만들고 있어요'),text:k('확인하신 글 콘티대로 컷마다 장면 이미지를 만들어요. 다 되면 알려 드려요.')},
   script:{turn:'you',title:k('글 콘티가 도착했어요'),text:k('한 문장과 컷마다 들어갈 내용을 봐 주세요. 맞으면 장면 이미지를 만들어요.'),action:{label:k('글 콘티 보기'),go:'draft'}},
   images:{turn:'you',title:k('장면 이미지가 도착했어요'),text:k('컷마다 보고 의견을 남겨 주세요. 괜찮으면 그대로 제작을 시작해요.'),action:{label:k('장면 이미지 보기'),go:'draft'}},

@@ -78,7 +78,8 @@
 // v72(11-20): 고객 방 낮 판 — 방(roomView)만 밝은 작업실로 그리고 담당자 한마디 · 받으실 날 · 제목의 강조 구절을 더했다. 목록은 그대로이고, 바뀐 화면 모듈 · 스타일 · 사전을 새로 받게 판만 올린다.
 // v73(11-21): 담당자 화면 — 제작 보드의 답할 문의 · 소식 없이 지난 평일 꼬리표, 의뢰 확인의 「문의와 답」, 소식 쓰기 창의 미리 보기. 목록은 그대로이고 바뀐 화면 모듈 · 스타일을 새로 받게 판만 올린다.
 // v74(11-21): 다듬기 — 손님 방의 나눈 말(담당자의 말은 옅은 판, 같은 소식은 한 번만), 재생 표의 먹색 판, 눕힌 휴대폰의 인화지 크기, 담당자 화면의 머리 숫자 이름 · 닫기 알림 글 · 번역 미리 보기. 목록은 그대로이고 판만 올린다.
-const CACHE = 'synk-pulse-shell-v74-polish-20261121';
+// v75(11-21): 처음 보는 사람용 낱말 — 단계 이름(담당자 검토 · 영상 전 확인, 사진은 첫 장 확인), 「1차안」 문장, 머리의 「접수 번호」 이름표, 「대화만 보기」 · 「이전 기록」, 「SYNK 작품」 칸. 의뢰서 칸 정리 — 피할 말과 피할 느낌을 나눠 묻기, 「그 말을 믿게 할 사실」을 남길 말 아래로, 드문 파일 칸 둘(라벨 인쇄 파일 · 브랜드 음악)을 접힌 줄로, 음료 · 화장품의 내용물 사진 칸 이름. 목록은 그대로다.
+const CACHE = 'synk-pulse-shell-v75-words-20261121';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','entry-handoff.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

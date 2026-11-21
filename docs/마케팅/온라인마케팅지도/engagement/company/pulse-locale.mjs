@@ -10,7 +10,7 @@ const EN=Object.freeze({
   '몇 가지만 더 여쭤봐요':'A few quick questions',
   '모델을 확인해 주세요':'Please confirm the model',
   '방향 제안이 도착했어요':'Your direction proposal is here',
-  '1차안이 도착했어요':'Your first draft is here',
+  '확인하실 것이 도착했어요':'Something for you to check is here',
   '새 시안이 왔어요':'A new preview is ready',
   '최종본이 왔어요':'Your final film is here',
   '제작팀이 답했어요':'Your producer replied',
@@ -38,7 +38,7 @@ const EN=Object.freeze({
   '새 장면 {fresh}개 · 바뀐 장면 {changed}개':'{fresh} new · {changed} updated scenes',
   // 알림 본문 — pulse-live.mjs customerBodies · genericBody
   '프로젝트를 열어 새 내용과 다음 할 일을 확인해 주세요.':'Open your project to see what’s new and what comes next.',
-  '아래 칸만 답해 주시면 바로 1차안을 만들어요.':'Fill in the fields below and we’ll start the first draft right away.',
+  '아래 칸만 답해 주시면 바로 이어서 만들어요.':'Fill in the fields below and we’ll carry on right away.',
   '장면을 만들기 전에 모델을 확인해 주세요.':'Please confirm the model before we build any scenes.',
   '요청하신 내용은 그대로 두고 방향을 나눠 보내 드렸어요. 하나를 고르시면 글 콘티를 만들어 드려요.':'Everything you asked for stays. We’ve sent a few directions — pick one and we’ll write the script.',
   '컷마다 보고 의견을 남기거나, 괜찮으면 다음 단계로 넘겨 주세요.':'Look through each shot and leave notes, or move on to the next step if it all works.',

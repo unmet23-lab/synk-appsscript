@@ -473,7 +473,7 @@ test('each step tells the right person, and saving scenes stays quiet until a ro
   const live=await f.call('/pulse/api/live');
   assert.equal(live.status,200);
   const titles=live.data.notifications.map(item=>item.title);
-  assert.ok(titles.includes('1차안이 도착했어요'),titles.join());assert.ok(titles.includes('모델을 확인해 주세요'),titles.join());
+  assert.ok(titles.includes('확인하실 것이 도착했어요'),titles.join());assert.ok(titles.includes('모델을 확인해 주세요'),titles.join());
 });
 test('asking more after the check keeps the check: nothing the customer sent can be taken back',async t=>{
   const f=await fixture(t),{room,id}=await openRoom(f);

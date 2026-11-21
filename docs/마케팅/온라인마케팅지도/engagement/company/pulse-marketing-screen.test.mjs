@@ -276,7 +276,7 @@ test('the room shows the entry only while the switch is on, and the tab replaces
   assert.match(drawn,/id="mk-ai-search"/);
   assert.match(headerCrumb(s({...on,tab:'marketing'})),/class="is-now" aria-current="page" data-room-go="marketing"/);
   assert.match(projectView(s({marketing:{projectId:'p1',on:false,status:'off',heads:[],picks:{},reports:{}},tab:'marketing'})),/sx-room-hero/,'switch off: the room, not the tab');
-  assert.match(roomRail({stage:'check',films:true,marketing:false},{tab:'overview'}),/<div class="sx-steps-foot sx-small"><button type="button" class=""  data-room-go="films">완성 광고<\/button><\/div>/,'films-only foot is byte-for-byte what it was');
+  assert.match(roomRail({stage:'check',films:true,marketing:false},{tab:'overview'}),/<div class="sx-steps-foot sx-small"><button type="button" class=""  data-room-go="films">SYNK 작품<\/button><\/div>/,'films-only foot is byte-for-byte what it was');
 });
 
 test('the tab stays inside the screen rules: no style attributes, no service names or promises in the code, the shell does not store reports',()=>{
@@ -286,7 +286,7 @@ test('the tab stays inside the screen rules: no style attributes, no service nam
   assert.doesNotMatch(body,/매출|순위|노출을 (?:늘|올)|보장|1위|최고|최초/,'no sales, rank or exposure promises');
   assert.deepEqual([...new Set(body.match(/https?:\/\/[^'"`\s]+/g))],['https://www.facebook.com/ads/library/?id='],'the only outside link is the ad library');
   const sw=read('sw.js');
-  assert.match(sw,/const CACHE = 'synk-pulse-shell-v74-polish-20261121';/);
+  assert.match(sw,/const CACHE = 'synk-pulse-shell-v75-words-20261121';/);
   assert.match(sw,/RUNTIME\.push\(BASE\+'marketing-view\.mjs'\);/);
   assert.doesNotMatch(sw.slice(sw.indexOf('const BASE'),sw.indexOf('const RUNTIME')),/marketing-view/,'not precached for every customer');
   // 서버의 /pulse-app/ 정적 허용 목록에는 있다(없으면 칸을 열 때 모듈이 404라 「불러오지 못했어요」만 선다).
