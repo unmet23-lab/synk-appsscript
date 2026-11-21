@@ -45,6 +45,10 @@
       "status": "making",
       "title": "고객상담의 하루",
       "role": "고객상담 사무원",
+      "minutes": 33,
+      "scenes": 5,
+      "poster": "customer-care/places/entrance-lead.jpg",
+      "posterAlt": "상담실 입구에서 팀장과 선배 상담사가 서 있다. 뒤에 대기 콜 현황판, 공지 보드, 작은 보관함이 있다.",
       "summary": "전화와 채팅으로 고객의 문의를 듣고, 정해진 대로 답해요."
     }
   ]
