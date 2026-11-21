@@ -51,6 +51,7 @@ function ctx(view) {
 const tag = (status, T) => `<span class="sx-tag is-${status}">${T.pair(STATUS[status])}</span>`;
 const meter = (match, T) => `<span class="sx-meter" role="img" aria-label="${esc(match.items.map((i) => `${T.pair(KEY_NAME[i.key])} ${T.pair(STATUS[i.status])}`).join(', '))}">${match.items.map((i) => `<i class="is-${i.status}"></i>`).join('')}</span>`;
 const exampleTag = (p, T) => (p.example ? `<span class="sx-tag wait">${T.L('예시', 'Example')}</span>` : '');
+export const programImage = (p) => image(p);
 const image = (p) => (p.image
   ? `<img class="sx-img" src="./assets/${esc(p.image)}.webp" alt="" width="960" height="640">`
   : `<span class="sx-cover is-${esc(p.tone || 'lapis')}" aria-hidden="true"><span>${esc(p.place.en.split(',')[0].toUpperCase())}</span></span>`);
@@ -212,7 +213,7 @@ export function renderUnivDetail(view) {
 <div class="sx-photo is-hero">${image(p)}<span class="sx-photo-top">${exampleTag(p, T)}<span class="sx-tag white">${esc(opensLong(p, T))}</span></span><span class="sx-photo-body"><small>${esc(T.pick(p.place))} · ${T.pair(LEVEL[p.level])} · ${esc(T.pick(p.majors))}${p.term ? ` · ${esc(T.pick(p.term))}` : ''}</small></span></div>
 <h1 class="sx-title page-title" tabindex="-1">${esc(T.pick(p.name))}</h1>
 ${p.example ? `<p class="sx-lead">${T.L('화면을 미리 보이려고 넣은 예시 과정이에요. 금액, 일정, 입학 조건은 실제 대학의 것이 아니에요.', 'An example program to preview the screen. The amounts, dates and admission conditions are not from a real university.')}</p>` : `${p.partner ? '' : `<p class="sx-lead">${T.L('대학이 공개한 모집 요강에서 옮긴 정보예요. SYNK와 협약한 대학은 아니에요. 지원하기 전에 원문을 꼭 확인하세요.', 'Taken from the university’s published admissions guide. This is not a SYNK partner university. Check the original before applying.')}</p>`}${realSource}`}
-${p.applyNote ? `<p class="sx-note is-box"><b>${T.L('원서 접수', 'Applications')}</b> ${esc(T.pick(p.applyNote))}</p>` : ''}
+${p.applyNote ? `<p class="sx-note is-box"><b>${T.L('원서 접수', 'Applications')}</b> ${esc(T.pick(p.applyNote))}</p>` : ''}${view.pathPick || ''}
 <h2 class="sx-h">${T.L('내 조건과 맞춰 보기', 'Compare with my conditions')} ${meter(m, T)}</h2><ul class="sx-match">${items}</ul>${note(p.requiresNote)}
 <h2 class="sx-h">${T.L('한 해에 드는 돈', 'Cost for one year')} ${exampleTag(p, T)}</h2>
 <div class="sx-hero-num"><small>${costLabel(c, T)}</small><b>${T.won(c.total)}</b><small>${esc(schNote)}</small></div>

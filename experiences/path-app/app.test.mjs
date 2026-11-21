@@ -14,6 +14,8 @@ import * as studyProfile from './study-profile.mjs';
 import * as studyUi from './study-ui.mjs';
 import * as channelData from './channel-data.mjs';
 import * as channelUi from './channel-ui.mjs';
+import * as pathUi from './path-ui.mjs';
+import * as docsData from './docs-data.mjs';
 
 // The real app runs unchanged apart from its static ESM imports. This small DOM
 // provides only element parsing, selectors, live input values and event bubbling;
@@ -182,7 +184,7 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
   TestURL.createObjectURL = () => `blob:qa-${downloads.length}`;
   TestURL.revokeObjectURL = value => revoked.push(value);
   const context = {
-    ...stateModel, ...content, ...accountUi, ...jobsUi, ...studyData, ...studyMatch, ...studyProfile, ...studyUi, ...channelData, ...channelUi,
+    ...stateModel, ...content, ...accountUi, ...jobsUi, ...studyData, ...studyMatch, ...studyProfile, ...studyUi, ...channelData, ...channelUi, ...pathUi, ...docsData,
     // 기본은 예시 묶음이다. 실제 과정이 자료에 들어와도 아래 흐름 시험은 같은 묶음으로 돈다.
     PROGRAMS: programs ?? studyData.PROGRAMS.filter(program => program.example),
     createPathSession: options => {
@@ -682,4 +684,45 @@ test('달력 파일을 못 만들면 날짜 목록 위에 보이는 경고가 �
   app.click('nav', '[data-page="today"]');
   app.click('nav', '[data-page="channels"]');
   assert.doesNotMatch(pageText(app), /cannot create the calendar file/, '다른 쪽으로 가면 지운다');
+});
+
+test('내 길: 대학 자세히에서 과정을 고르면 오늘에 카드가 생기고, 서류를 표시하고, 과정을 바꾸기 전에 묻는다', async t => {
+  const real = studyData.programsFor(studyData.PROGRAMS, true);
+  const app = await boot(t, { raw: studyGoalDocument(), programs: real });
+  app.click('nav', '[data-page="univ"]');
+  app.click('univOpen', '[data-id="wku-ug"]');
+  assert.match(pageText(app), /이 과정의 원서 · 합격 뒤 서류와 유학\(D-2\) 비자 서류를 한곳에서 챙겨요/);
+  app.click('pathPick', '[data-id="wku-ug"]');
+  assert.match(app.announcer.textContent, /이 과정으로 준비해요/);
+  assert.equal(app.root.querySelector('button[data-action="pathPick"][data-id="wku-ug"]').getAttribute('aria-pressed'), 'true');
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).target, 'wku-ug');
+  app.click('nav', '[data-page="today"]');
+  assert.match(pageText(app), /준비 중인 과정/, '오늘 화면의 내 길 카드');
+  app.click('nav', '[data-page="path"]');
+  assert.match(app.root.querySelector('h1').textContent, /원광대학교 학부/);
+  assert.ok(app.root.querySelectorAll('button[data-page="today"]').some(b => b.getAttribute('aria-current') === 'page'), '내 길은 오늘 탭 아래 화면이다');
+  app.click('docToggle', '[data-id="wku-ug-passport"]');
+  assert.match(app.announcer.textContent, /준비했어요로 표시했어요\. 이 묶음 1\/8\./);
+  assert.equal(app.document.activeElement.getAttribute('data-id'), 'wku-ug-passport', '누른 단추로 초점이 돌아온다');
+  app.click('docToggle', '[data-id="visa-d2-photo"]');
+  assert.deepEqual(JSON.parse(app.record(STUDY_KEY)).docs.map(d => d.id), ['wku-ug-passport', 'visa-d2-photo']);
+  // 다른 과정으로 바꾸면 그 과정에 없는 표시를 지운다. 묻고, 아니라고 하면 그대로 둔다.
+  app.click('nav', '[data-page="univ"]');
+  app.click('univOpen', '[data-id="jj-ug"]');
+  app.setConfirmation(false);
+  app.click('pathPick', '[data-id="jj-ug"]');
+  assert.match(app.confirmations.at(-1), /앞 과정에서 표시한 서류 1개를 지우고 이 과정으로 바꿀까요/);
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).target, 'wku-ug', '아니라고 하면 바뀌지 않는다');
+  app.setConfirmation(true);
+  app.click('pathPick', '[data-id="jj-ug"]');
+  const saved = JSON.parse(app.record(STUDY_KEY));
+  assert.equal(saved.target, 'jj-ug');
+  assert.deepEqual(saved.docs.map(d => d.id), ['visa-d2-photo'], '같은 비자 서류 표시는 이어진다');
+  assert.match(app.announcer.textContent, /앞 과정의 표시 1개를 지웠어요/);
+  // 조건 모두 지우기는 고른 과정과 표시를 남긴다.
+  app.click('nav', '[data-page="cond"]');
+  app.click('studySet', '[data-key="topik"][data-id="3"]');
+  app.click('studyClear');
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).target, 'jj-ug');
+  assert.equal(JSON.parse(app.record(STUDY_KEY)).docs.length, 1);
 });

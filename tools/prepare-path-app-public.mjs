@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { readConfig, isLoopback } from '../experiences/synk-account/src/core.mjs';
 import { PROGRAMS, IMAGE_IDS, programsFor } from '../experiences/path-app/study-data.mjs';
 import { CHANNELS, POSTS, allPosts, validateChannelData } from '../experiences/path-app/channel-data.mjs';
+import { PROGRAM_DOCS, VISA_DOCS, validateDocsData } from '../experiences/path-app/docs-data.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const APP = 'experiences/path-app';
@@ -39,6 +40,11 @@ function builder() {
 
 /** Project only canonical browser-safe fields. Never copy the input file verbatim. */
 /** 채널 글을 공개 전에 검사한다. 앱은 브라우저에서 검사하지 않으므로 틀린 글이면 여기서 묶음을 만들지 않는다. */
+/** 「내 길」 서류 자료를 공개 전에 검사한다. 공개판에 싣는 과정의 서류만 있어야 한다. */
+export function checkDocsData(programDocs = PROGRAM_DOCS, visaDocs = VISA_DOCS, programs = PROGRAMS) {
+  return validateDocsData(programDocs, visaDocs, programsFor(programs, true).map((p) => p.id));
+}
+
 export function checkChannelData(posts = POSTS, programs = PROGRAMS) {
   // 공개판에 싣는 과정만 넘긴다: 손 글이 예시 과정을 가리키면 공개판에서 빈 연결이 되므로 여기서 막는다.
   const shown = programsFor(programs, true);
@@ -157,6 +163,7 @@ function publicHtml(html, files, config) {
 /** Produce a new isolated candidate only. Registration and deployment are separate. */
 export async function preparePathAppPublic({ out, config, targetUrl = PATH_PUBLIC_URL, root = ROOT } = {}) {
   checkChannelData();
+  checkDocsData();
   const publicConfig = validatePathConfig(config, { targetUrl });
   const workspace = await fs.realpath(root), output = await destination(out, workspace);
   const compiled = await bundlePathApp({ root: workspace }), sources = compiled.sources, files = new Map([['app.mjs', compiled.bytes]]);

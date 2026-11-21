@@ -700,6 +700,42 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
 .sx-news{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .sx-h-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;margin-bottom:12px}
 .sx-h-row .sx-h{margin:0}
+
+/* ── 내 길(3단계, 2026-11-22) ── */
+.sx-pathpick h2{margin:0 0 4px;font:700 17px/1.45 var(--kr)}
+.sx-pathpick .sx-row2{margin-top:12px}
+.sx-pathcard{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:16px 16px 16px 20px;border:0;border-radius:20px;background:var(--butter-wash);text-align:left;color:inherit}
+.sx-pathcard-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+.sx-pathcard-main small{font-size:13px;font-weight:650;color:var(--ink-2)}
+.sx-pathcard-main b{font:700 17px/1.4 var(--kr);color:var(--ink)}
+.sx-prog-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:13.5px;font-weight:650;color:var(--ink-2)}
+.sx-prog{-webkit-appearance:none;appearance:none;width:160px;max-width:100%;height:8px;border:0;border-radius:999px;background:var(--line);overflow:hidden;color:var(--meadow-deep)}
+.sx-prog::-webkit-progress-bar{background:var(--line);border-radius:999px}
+.sx-prog::-webkit-progress-value{background:var(--meadow-deep);border-radius:999px}
+.sx-prog::-moz-progress-bar{background:var(--meadow-deep);border-radius:999px}
+.sx-stage{margin-top:8px}
+.sx-stage-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}
+.sx-stage-head .sx-h{margin-bottom:6px}
+.sx-stage-who{font-size:13px;font-weight:650;color:var(--gray)}
+.sx-stage .sx-prog-row{margin:8px 0 6px}
+.sx-rules{margin:10px 0 4px;padding:12px 14px 12px 32px;border-radius:14px;background:var(--soft);font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.sx-rules li+li{margin-top:4px}
+.sx-rules li.is-unclear b{color:var(--butter-deep)}
+.sx-docs{margin:6px 0 0;padding:0;list-style:none}
+.sx-docrow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px 16px;padding:14px 0;border-bottom:1px solid var(--line)}
+.sx-docrow:last-child{border-bottom:0}
+.sx-doc-main{min-width:0}
+.sx-doc-name{display:block;font:700 15.5px/1.45 var(--kr);color:var(--ink)}
+.sx-doc-ko{display:block;margin-top:1px;font-size:12.5px;color:var(--gray)}
+.sx-doc-line{margin:4px 0 0;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
+.sx-doc-line b{margin-right:4px;font-weight:700;color:var(--ink)}
+.sx-doc-note{margin:4px 0 0;font-size:13.5px;line-height:1.55;color:var(--gray)}
+.sx-unclear{margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--butter-wash);font-size:13.5px;line-height:1.55;color:var(--butter-deep)}
+.sx-unclear p{margin:0}
+.sx-unclear p+p{margin-top:2px}
+.sx-docbtn{white-space:nowrap}
+.sx-done{margin-top:12px}
+.sx-folded{margin-top:18px}
 .sx-newsbtn{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:120px;padding:16px;border:0;border-radius:18px;background:var(--soft);text-align:left;color:inherit}
 .sx-newsbtn small{font-size:12.5px;font-weight:700;color:var(--ink-2)}
 .sx-newsbtn b{font:700 15.5px/1.45 var(--kr);color:var(--ink)}
@@ -716,6 +752,9 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
   .sx-day-acts{grid-column:1/-1}
   .sx-chrow{padding:10px 0}
   .sx-chrow .sx-show{margin-left:54px}
+  .sx-docrow{grid-template-columns:1fr}
+  .sx-docbtn{justify-self:start}
+  .sx-prog{width:120px}
 }
 @media (max-width:999px){.sx-ulist{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:767px){

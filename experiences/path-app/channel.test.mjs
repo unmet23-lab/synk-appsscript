@@ -51,7 +51,7 @@ test('대학 소식: 실제 과정마다 한 편, 날은 접수 차수와 같고
   assert.equal(posts.length, REAL.filter((p) => p.applyRounds && p.applyRounds.length).length);
   for (const post of posts) {
     const prog = programById(REAL, post.programId);
-    assert.deepEqual(post.dates.map((d) => [d.start, d.end]), prog.applyRounds.map((r) => [r[0], r[1]]));
+    assert.deepEqual(post.dates.filter((d) => d.kind === 'apply').map((d) => [d.start, d.end]), prog.applyRounds.map((r) => [r[0], r[1]]));
     assert.equal(post.action, null, '요강 주소를 접수처 단추로 걸지 않는다');
     assert.match(post.points[2].ko, /협약한 대학은 아니에요/);
   }
@@ -63,6 +63,13 @@ test('대학 소식: 실제 과정마다 한 편, 날은 접수 차수와 같고
   assert.deepEqual(added.slice(1), before);
   assert.deepEqual(dropped, before.slice(1));
   assert.match(univPosts([jj])[0].points[0].ko, /3차 2027년 1월 4일 – 2027년 1월 13일/, '해가 바뀌는 차수에는 해를 붙인다');
+  // 3단계: 서류 기한도 날로 들어가고 id는 그 차수의 시작 날에 매달린다(기한 날짜가 바뀌어도 그대로).
+  const jjDates = univPosts([jj])[0].dates;
+  assert.deepEqual(jjDates.filter((d) => d.docsDue).map((d) => d.id), ['univ-jj-ug-2026-12-01-docs', 'univ-jj-ug-2027-01-04-docs']);
+  assert.ok(jjDates.every((d, i) => i === 0 || jjDates[i - 1].start <= d.start), '날짜순');
+  assert.match(jjDates.find((d) => d.docsDue).label.ko, /2차 원서를 낸 사람만 · 대학 도착 기준/);
+  // 원서가 끝난 차수의 서류 기한은 채널 맨 위 글을 고르지 않는다(12-13: 전주대 서류 도착 12-18보다 원광대 어학 접수 마감 12-24).
+  assert.equal(featuredPost(ALL.filter((p) => p.channel === 'univ'), new Date('2026-12-13T12:00:00+09:00')).id, 'univ-wku-lang');
 });
 
 test('날 상태: 접수 기간은 시작 전 · 접수 중 · 지남, 하루짜리는 남은 날, 한국 날짜로 센다', () => {
@@ -170,7 +177,7 @@ test('채널 글: 넣기 단추는 aria-pressed와 날 이름을 갖고, 지난 
   assert.match(renderUpcoming(view({ ...createProfile(), dates: [saved('topik-pbt109-result')] }, { persisted: false })), /sx-store is-warn/);
   assert.match(renderPost(view(createProfile(), { postId: 'univ-wku-ug', note: '다가오는 날이 서른 개라 더 넣을 수 없어요.' })), /<p class="sx-store is-warn sx-date-note">다가오는 날이 서른 개라 더 넣을 수 없어요\.<\/p>/);
   assert.doesNotMatch(uni, /sx-date-note/);
-  const shut = textOf(renderPost(view(createProfile(), { postId: 'univ-jbnu-ug' })));
+  const shut = textOf(renderPost(view(createProfile(), { postId: 'univ-jbnu-ug', now: new Date('2027-03-01T12:00:00+09:00') })));
   assert.doesNotMatch(shut, /이 탭에만 있어요/);
   assert.match(shut, /접수 기간\(2026년\): 1차 9월 21일 – 10월 2일, 2차 11월 9일 – 11월 20일\./);
   // 조건 화면이 없는 판(과정 0)에서는 「내 조건 넣기」를 걸지 않는다.

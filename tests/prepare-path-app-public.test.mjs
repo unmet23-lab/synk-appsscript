@@ -144,3 +144,15 @@ test('channel posts are checked before any public bundle is made', async () => {
   const toExample = { ...first, id: 'points-at-example', forYou: 'program', programId: example.id, dates: [] };
   assert.throws(() => checkChannelData([toExample, ...POSTS]), /Invalid channel data: post program/);
 });
+
+test('docs data for 「내 길」 is checked before any public bundle is made', async () => {
+  const { checkDocsData } = await import('../tools/prepare-path-app-public.mjs');
+  const { PROGRAM_DOCS, VISA_DOCS } = await import('../experiences/path-app/docs-data.mjs');
+  assert.equal(checkDocsData(), true);
+  const ug = PROGRAM_DOCS['jbnu-ug'];
+  assert.throws(() => checkDocsData({ ...PROGRAM_DOCS, 'jbnu-ug': { ...ug, source: { ...ug.source, url: 'http://example.com/' } } }), /Invalid docs data/, 'a non-https source stops the bundle');
+  assert.throws(() => checkDocsData({ ...PROGRAM_DOCS, 'jbnu-ug': { ...ug, checkedAt: undefined } }), /Invalid docs data/);
+  assert.throws(() => checkDocsData({ ...PROGRAM_DOCS, 'not-shipped': ug }), /Invalid docs data: unknown program/, 'docs for a program the bundle does not carry');
+  assert.throws(() => checkDocsData({ ...PROGRAM_DOCS, 'jbnu-ug': { ...ug, docs: [...ug.docs, ug.docs[0]] } }), /Invalid docs data/, 'duplicate doc ids');
+  assert.throws(() => checkDocsData(PROGRAM_DOCS, { ...VISA_DOCS, 'D-2': { ...VISA_DOCS['D-2'], docs: [] } }), /Invalid docs data/);
+});

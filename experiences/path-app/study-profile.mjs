@@ -8,12 +8,15 @@ export const MAX_FUNDS_WON = 200000000;
 export const MAX_COMPARE = 3;
 export const MAX_DATES = 30;
 export const MAX_CHANNELS_OFF = 10;
+export const MAX_DOCS = 60;
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const intIn = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
 const ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
 const DATE_ID_RE = /^[a-z0-9][a-z0-9-]{0,79}$/;
 const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v + 'T00:00:00Z'));
+const isStamp = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(v) && Number.isFinite(Date.parse(v));
+const cleanDoc = (d) => (isObj(d) && typeof d.id === 'string' && ID_RE.test(d.id) && isStamp(d.doneAt) ? { id: d.id, doneAt: d.doneAt } : null);
 const cleanDate = (d) => (isObj(d) && typeof d.id === 'string' && DATE_ID_RE.test(d.id) && isDay(d.start) && isDay(d.end) && d.end >= d.start ? { id: d.id, start: d.start, end: d.end } : null);
 // 조건의 주인: 'guest' 또는 계정 ID. 공용 기기에서 앞 사람의 성적과 돈이 다음 사람에게 보이지 않게 한다.
 export const GUEST_OWNER = 'guest';
@@ -22,7 +25,8 @@ const ownerOf = (v) => (typeof v === 'string' && OWNER_RE.test(v) ? v : null);
 
 export function createProfile() {
   // dates: 「내 길에 넣기」로 넣은 날({ id, start, end } — 넣을 때 본 날). channelsOff: 오늘 화면 새 소식에서 뺀 채널.
-  return { v: STUDY_VERSION, topik: null, gradePct: null, fundsWon: null, education: null, compare: [], dates: [], channelsOff: [] };
+  // target: 「이 과정으로 준비하기」로 고른 과정. docs: 「준비했어요」를 누른 서류와 그 때(학생 자신의 표시, 확인이 아니다).
+  return { v: STUDY_VERSION, topik: null, gradePct: null, fundsWon: null, education: null, compare: [], dates: [], channelsOff: [], target: null, docs: [] };
 }
 
 /** 저장값을 고쳐 쓴다. 틀린 칸은 비우고, 꼴이 아예 다르면 빈 조건을 낸다. 던지지 않는다. */
@@ -43,6 +47,12 @@ export function normalizeProfile(raw) {
   }
   if (Array.isArray(raw.channelsOff)) for (const id of raw.channelsOff) {
     if (typeof id === 'string' && ID_RE.test(id) && !out.channelsOff.includes(id) && out.channelsOff.length < MAX_CHANNELS_OFF) out.channelsOff.push(id);
+  }
+  // 3단계 칸. 없던 옛 저장값은 빈 값으로 읽는다.
+  if (typeof raw.target === 'string' && ID_RE.test(raw.target)) out.target = raw.target;
+  if (Array.isArray(raw.docs)) for (const d of raw.docs) {
+    const c = cleanDoc(d);
+    if (c && !out.docs.some((x) => x.id === c.id) && out.docs.length < MAX_DOCS) out.docs.push(c);
   }
   return out;
 }
@@ -110,6 +120,33 @@ export function toggleChannel(profile, id) {
   return p;
 }
 
+/**
+ * 준비할 과정을 고르거나(id) 그만한다(null). 다른 과정을 고르면 keep(새 과정과 그 비자 묶음의 서류 id)에 없는 표시를 지운다.
+ * dropped는 지운 표시 수(화면이 알린다). 그만할 때는 표시를 남긴다(다시 고르면 이어진다).
+ */
+export function setTarget(profile, id, keep = null) {
+  const p = normalizeProfile(profile);
+  if (id === null) { p.target = null; return { profile: p, dropped: 0 }; }
+  if (typeof id !== 'string' || !ID_RE.test(id)) throw new RangeError('target');
+  let dropped = 0;
+  if (p.target !== id && Array.isArray(keep)) { const before = p.docs.length; p.docs = p.docs.filter((d) => keep.includes(d.id)); dropped = before - p.docs.length; }
+  p.target = id;
+  return { profile: p, dropped };
+}
+/** 「준비했어요」를 넣거나 뺀다. 예순 개면 넣지 않는다(full). now는 표시한 때. */
+export function toggleDoc(profile, id, now = new Date()) {
+  const p = normalizeProfile(profile);
+  if (typeof id !== 'string' || !ID_RE.test(id)) throw new RangeError('doc');
+  if (p.docs.some((d) => d.id === id)) { p.docs = p.docs.filter((d) => d.id !== id); return { profile: p, on: false, full: false }; }
+  if (p.docs.length >= MAX_DOCS) return { profile: p, on: false, full: true };
+  const at = (now instanceof Date ? now : new Date(now)).toISOString();
+  p.docs.push({ id, doneAt: at });
+  return { profile: p, on: true, full: false };
+}
+export function hasDoc(profile, id) {
+  return normalizeProfile(profile).docs.some((d) => d.id === id);
+}
+
 /** 조건(한국어 · 성적 · 돈 · 학력)만 본다. 비교 · 넣은 날 · 채널 설정은 세지 않는다(오늘 입구가 이 값을 쓴다). */
 export function isEmptyProfile(profile) {
   const p = normalizeProfile(profile);
@@ -142,7 +179,7 @@ export function createProfileStore(storage) {
     }
   } catch { persisted = false; }
   // 날만 넣은 손님도 로그인하면 이어받게 넣은 날과 채널 설정도 센다.
-  const hasData = () => !isEmptyProfile(profile) || profile.compare.length > 0 || profile.dates.length > 0 || profile.channelsOff.length > 0;
+  const hasData = () => !isEmptyProfile(profile) || profile.compare.length > 0 || profile.dates.length > 0 || profile.channelsOff.length > 0 || profile.target !== null || profile.docs.length > 0;
   const write = () => {
     try {
       const raw = JSON.stringify({ ...profile, owner });

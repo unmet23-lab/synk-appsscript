@@ -195,7 +195,7 @@ test('내 조건: 깨진 저장값은 빈 조건, 틀린 칸만 비움, 범위 �
   assert.deepEqual(normalizeProfile({ v: 2, topik: 3 }), createProfile());
   assert.deepEqual(normalizeProfile('{}'), createProfile());
   assert.deepEqual(normalizeProfile({ v: 1, topik: 7, gradePct: 80.5, fundsWon: -1, education: 'phd', compare: ['example-a-ug', 'example-a-ug', '../x', 'b', 'c', 'd'] }),
-    { v: 1, topik: null, gradePct: null, fundsWon: null, education: null, compare: ['example-a-ug', 'b', 'c'], dates: [], channelsOff: [] });
+    { v: 1, topik: null, gradePct: null, fundsWon: null, education: null, compare: ['example-a-ug', 'b', 'c'], dates: [], channelsOff: [], target: null, docs: [] });
   const p = setField(createProfile(), 'topik', 0);
   assert.equal(p.topik, 0); assert.equal(isEmptyProfile(p), false); assert.equal(isEmptyProfile(createProfile()), true);
   assert.equal(setField(p, 'topik', null).topik, null);

@@ -4,9 +4,11 @@ import { renderAccountPanel, renderAccountNotice, getAccountErrorMessage } from 
 import { createJobsFeed, renderJobs, jobOpportunity } from './jobs-ui.mjs';
 import { SCHEMA_VERSION, STORAGE_KEY, createInitialState, normalizeState, updateProfile, upsertTask, confirmTask, getNextTask } from './state.mjs';
 import { PROGRAMS, RULES, rulesAt, programsFor } from './study-data.mjs';
-import { createProfileStore, createProfile, setField, toggleCompare, parseWhole, GUEST_OWNER, MAX_DATES, addDate, removeDate, confirmDate, keepDates, toggleChannel } from './study-profile.mjs';
+import { createProfileStore, createProfile, setField, toggleCompare, parseWhole, GUEST_OWNER, MAX_DATES, addDate, removeDate, confirmDate, keepDates, toggleChannel, setTarget, toggleDoc } from './study-profile.mjs';
 import { POSTS, allPosts, findDate, endDay, dateStatus } from './channel-data.mjs';
 import { renderChannels, renderPost, renderUpcoming, renderNews, icsText } from './channel-ui.mjs';
+import { renderPath, renderPathCard, renderPathPick, pathTarget, stageCounts } from './path-ui.mjs';
+import { docsFor } from './docs-data.mjs';
 import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, studyCountSay, condHint, STUDY_FILTERS, GRADE_MAX, FUNDS_MAX_MAN } from './study-ui.mjs';
 
 void SCHEMA_VERSION; void STORAGE_KEY;
@@ -178,7 +180,7 @@ const session = createPathSession({
 state = session.document()?.state || createInitialState('ko');
 hadDoc = !!session.document()?.state;
 
-const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false, univId: null, univFilter: 'all', studyText: {}, studyErrors: {}, channelId: null, postId: null, dateNote: null };
+const S = { page: state.onboarded ? 'today' : 'onboard', step: 1, draft: null, filter: state.primaryGoal || 'all', compare: [], oppId: null, taskId: null, help: state.primaryGoal || 'study', flash: null, copyMsg: null, error: null, drop: MOTION, practiceOpen: false, univId: null, univFilter: 'all', studyText: {}, studyErrors: {}, channelId: null, postId: null, dateNote: null, docFull: false };
 activeOwner = ownerKey(); wasOnboarded = !!state.onboarded;
 
 function persist() { return commit(state); }
@@ -279,7 +281,7 @@ function shell(main) {
 ${nav ? `<nav class="tabs" aria-label="${t('navLabel')}">${tabs}</nav>` : ''}<div class="bar-right">${lang}${acct}</div></header>
 ${main}${nav ? `<nav class="tabbar" aria-label="${t('navLabel')}">${bar}</nav>` : ''}</div>`;
 }
-function navActive(p) { return S.page === p || (p === 'explore' && S.page === 'detail') || (p === 'prepare' && S.page === 'editor') || (p === 'univ' && UNIV_PAGES.includes(S.page)) || (p === 'channels' && S.page === 'post'); }
+function navActive(p) { return S.page === p || (p === 'explore' && S.page === 'detail') || (p === 'prepare' && S.page === 'editor') || (p === 'univ' && UNIV_PAGES.includes(S.page)) || (p === 'channels' && S.page === 'post') || (p === 'today' && S.page === 'path'); }
 
 // quiet = 첫 실행에서는 「로그인하지 않은 상태」 안내를 빼고(첫 화면을 카드에 양보), 오류 · 저장 실패 · 막힘만 보인다
 function notices(quiet = false, noFlash = false) {
@@ -329,7 +331,7 @@ function today() {
     return `<main class="home" id="main"><aside class="stage home-stage is-three" aria-label="${t('pickCard')}"><div class="rod" aria-hidden="true"></div>${cards}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('pickCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${t('nT1')}</span> <span class="title-2">${t('nT2')}</span></h1>
 <ul class="goal-list">${GOALS.map((x) => `<li><button type="button" class="goal-row" data-action="exploreGoal" data-id="${x.id}"><span class="goal-sym" data-goal="${x.id}">${SYMBOL[x.id]}</span><span class="goal-txt"><b>${esc(pick(x.label))}</b><small>${esc(pick(x.description))}</small></span><span class="row-go" aria-hidden="true">${ICON.arrow}</span></button></li>`).join('')}</ul>
-${upcomingHtml()}${newsHtml()}<div class="home-grid">${sec(t('official'), t('offSub'), officialList('all'))}${sec(t('tools'), '', toolRows())}</div></div></main>`;
+${pathHtml()}${upcomingHtml()}${newsHtml()}<div class="home-grid">${sec(t('official'), t('offSub'), officialList('all'))}${sec(t('tools'), '', toolRows())}</div></div></main>`;
   }
   const mine = state.tasks.filter((x) => x.goal === g.id);
   const nt = getNextTask(state);
@@ -350,7 +352,7 @@ ${upcomingHtml()}${newsHtml()}<div class="home-grid">${sec(t('official'), t('off
   const off = g.id === 'job' && jobsFeed.snapshot().status === 'disabled' ? `<p class="off"><i aria-hidden="true"></i>${t('jobsOff')}</p>` : '';
   return `<main class="home" id="main"><aside class="stage home-stage" aria-label="${t('myCard')}"><div class="rod" aria-hidden="true"></div>${hang(g.id, { kicker: t('myCard'), mode: 'next' })}<div class="home-cap"><span></span><button type="button" class="link" data-action="changeGoal">${t('changeCard')}</button></div></aside>
 <div class="home-main">${notices()}<p class="eyebrow">${t('today')}</p><h1 class="title page-title" tabindex="-1"><span>${h1a}</span> <span class="title-2">${h1b}</span></h1>
-${stamps(st, g.steps.map(pick))}${card}${g.id === 'study' && STUDY_ON ? renderStudyEntry(studyView()) : ''}${upcomingHtml()}${newsHtml()}
+${stamps(st, g.steps.map(pick))}${card}${g.id === 'study' && STUDY_ON ? renderStudyEntry(studyView()) : ''}${pathHtml()}${upcomingHtml()}${newsHtml()}
 <div class="home-grid">${sec(t('homeOpps'), t('demoSub'), `<ul class="rows">${opps.map(oppRow).join('')}</ul>`)}${sec(t('official'), t('offSub'), officialList(g.id) + off)}</div></div></main>`;
 }
 
@@ -477,10 +479,13 @@ const upcomingHtml = () => (CHANNEL_ON ? renderUpcoming(channelView()) : '');
 // 새 소식도 카드와 상관없이 둔다. 채널 탭은 모두에게 열리고, 채널의 「오늘 화면에 보이기」가 이 자리를 가리킨다.
 const newsHtml = () => (CHANNEL_ON ? renderNews(channelView()) : '');
 const univ = () => renderUniv({ ...studyView(), filter: S.univFilter });
-const univDetail = () => renderUnivDetail({ ...studyView(), programId: S.univId });
+// 「이 과정으로 준비하기」 상자는 path-ui가 짓고 대학 자세히에 끼운다(study-ui ↔ path-ui가 서로 부르지 않게).
+const univDetail = () => { const v = { ...channelView(), programId: S.univId }; return renderUnivDetail({ ...v, pathPick: renderPathPick(v, STUDY_PROGRAMS.find((p) => p.id === S.univId)) }); };
+const path = () => renderPath({ ...channelView(), docFull: S.docFull });
+const pathHtml = () => (STUDY_ON ? renderPathCard(channelView()) : '');
 const univCompare = () => renderUnivCompare(studyView());
 const cond = () => renderCond(condView());
-const PAGES = { today, channels, post, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile };
+const PAGES = { today, path, channels, post, univ, univDetail, univCompare, cond, explore, detail, prepare, editor, help, profile };
 const LOCKED_ACTIONS = ['pickGoal', 'step2', 'toggle', 'finish', 'skip', 'prepareThis', 'confirm', 'body', 'loc', 'setLang', 'changeGoal', 'prepareJob', 'saveJob', 'removeJob'];
 function render(focus = true) {
   if (composingEl && root.contains(composingEl) && document.activeElement === composingEl) { deferredRender = true; deferredFocus = deferredFocus || focus; return; }
@@ -519,7 +524,7 @@ function render(focus = true) {
 }
 // 화면을 옮기면 맨 위에서 시작한다(앞 화면에서 내려 둔 자리에 머물러 뒤로 · 출처 줄이 머리 막대 밑에 숨지 않게).
 const toTop = () => { try { if (typeof scrollTo === 'function') scrollTo(0, 0); } catch { /* 시험 환경 */ } };
-function go(page) { S.drop = MOTION && page !== S.page && (page === 'onboard' || page === 'today'); S.page = page; S.flash = null; S.dateNote = null; S.error = null; S.copyMsg = null; S.studyText = {}; S.studyErrors = {}; render(); toTop(); }
+function go(page) { S.drop = MOTION && page !== S.page && (page === 'onboard' || page === 'today'); S.page = page; S.flash = null; S.dateNote = null; S.docFull = false; S.error = null; S.copyMsg = null; S.studyText = {}; S.studyErrors = {}; render(); toTop(); }
 
 function ensureTask(oppId) {
   const o = oppById(oppId);
@@ -645,11 +650,39 @@ const ACT = {
     sayStudyCount();
   },
   studyClear() {
-    // 조건만 지운다. 비교에 담은 과정, 다가오는 날, 채널 설정은 남긴다.
+    // 조건만 지운다. 비교에 담은 과정, 다가오는 날, 채널 설정, 고른 과정과 서류 표시는 남긴다.
     const cur = studyProfile();
-    studyWrite({ ...createProfile(), compare: cur.compare, dates: cur.dates, channelsOff: cur.channelsOff }); S.studyText = {}; S.studyErrors = {};
+    studyWrite({ ...createProfile(), compare: cur.compare, dates: cur.dates, channelsOff: cur.channelsOff, target: cur.target, docs: cur.docs }); S.studyText = {}; S.studyErrors = {};
     render(false); root.querySelector('[data-action="studySet"]')?.focus();
     say(accL('조건을 모두 지웠어요.', 'All conditions cleared.'));
+  },
+  pathPick(el) {
+    const id = el.dataset.id, program = STUDY_PROGRAMS.find((p) => p.id === id), cur = studyProfile();
+    if (!program) return;
+    let msg;
+    if (cur.target === id) {
+      studyWrite(setTarget(cur, null).profile);
+      msg = accL('이 과정 준비를 그만했어요. 서류 표시는 남겨 둬요.', 'Stopped preparing for this program. Your marks are kept.');
+    } else {
+      const set = docsFor(program, cur), keep = set ? set.all.map((d) => d.id) : [];
+      const drop = cur.docs.filter((d) => !keep.includes(d.id)).length;
+      // 다른 과정으로 바꾸면 그 과정에 없는 표시를 지운다. 지우기 전에 묻는다.
+      if (drop && !confirm(accL(`앞 과정에서 표시한 서류 ${drop}개를 지우고 이 과정으로 바꿀까요?`, `Remove ${drop} mark${drop === 1 ? '' : 's'} from the previous program and switch to this one?`))) return;
+      studyWrite(setTarget(cur, id, keep).profile);
+      msg = drop ? accL(`이 과정으로 준비해요. 앞 과정의 표시 ${drop}개를 지웠어요.`, `Now preparing for this program. Removed ${drop} earlier mark${drop === 1 ? '' : 's'}.`)
+        : accL('이 과정으로 준비해요. 오늘 화면의 「내 길」에서 서류를 챙길 수 있어요.', 'Now preparing for this program. Track the documents in “My path” on Today.');
+    }
+    render(false); (root.querySelector(`[data-action="pathPick"][data-id="${id}"]`) || root.querySelector('.page-title'))?.focus(); say(msg);
+  },
+  docToggle(el) {
+    const id = el.dataset.id, cur = studyProfile(), r = toggleDoc(cur, id, new Date());
+    if (r.full) { S.docFull = true; render(false); root.querySelector(`[data-action="docToggle"][data-id="${id}"]`)?.focus(); say(accL('표시가 예순 개라 더 넣을 수 없어요. 다른 과정의 표시를 뺀 뒤 넣어 주세요.', 'You already have 60 marks. Remove some from another program first.')); return; }
+    S.docFull = false;
+    const next = studyWrite(r.profile), t = pathTarget({ ...channelView(), profile: next });
+    render(false); root.querySelector(`[data-action="docToggle"][data-id="${id}"]`)?.focus();
+    const doc = t && t.set.all.find((d) => d.id === id), c = t && doc ? stageCounts(t.set, next)[doc.stage] : null;
+    const count = c ? accL(` 이 묶음 ${c.n}/${c.total}.`, ` ${c.n} of ${c.total} in this group.`) : '';
+    say((r.on ? accL('준비했어요로 표시했어요.', 'Marked as ready.') : accL('표시를 뺐어요.', 'Mark removed.')) + count);
   },
   studyCompare(el) {
     const id = el.dataset.id, cur = studyProfile(), before = cur.compare.length;

@@ -193,14 +193,24 @@ function showButton(c, off, T) {
   return `<button type="button" class="sx-btn2 sm sx-show" aria-pressed="${on}" data-action="channelShow" data-id="${esc(c.id)}"><span class="sx-on">${ON}</span>${T.L('오늘 화면에 보이기', 'Show on Today')}<span class="sr-only"> ${esc(T.pick(c.name))}</span></button>`;
 }
 
+/** 글의 날 목록(제목 · 경고 · 저장 안내 · 날 줄). 채널 글과 3단계 「내 길」이 같이 쓴다. */
+function datesBlock(p, T, saved, title) {
+  if (!p.dates.length) return '';
+  const live = p.dates.some((d) => { const st = dateStatus(d, T.now).state; return st !== 'past' && st !== 'cancelled'; });
+  return `<h2 class="sx-h" id="sx-dates-h" tabindex="-1">${title || T.L('날짜', 'Dates')}</h2>${T.note ? `<p class="sx-store is-warn sx-date-note">${esc(T.note)}</p>` : ''}${live ? storeLine(T) : ''}<ul class="sx-days">${p.dates.map((d) => dateRow(p, d, T, saved)).join('')}</ul>`;
+}
+export function renderDates(view, post, title) {
+  const T = ctx(view);
+  return post ? datesBlock(post, T, (T.profile && T.profile.dates) || [], title) : '';
+}
+
 export function renderPost(view) {
   const T = ctx(view), profile = T.profile || {}, p = postById(T.posts, view.postId);
   const back = (c) => `<button type="button" class="sx-back" data-action="channelOpen" data-id="${c ? esc(c.id) : ''}">${BACK}${c ? esc(T.pick(c.name)) : T.L('채널', 'News')}</button>`;
   if (!p) return `<div class="sx">${back(null)}<h1 class="sx-title page-title" tabindex="-1">${T.L('글을 찾지 못했어요.', 'Post not found.')}</h1></div>`;
   const c = channelOf(p.channel), saved = profile.dates || [];
   const stale = isStalePost(p, T.now) ? `<p class="sx-note is-box">${T.L('확인한 지 90일이 지났어요. 날짜는 공식 안내에서 다시 확인하세요.', 'This was checked more than 90 days ago. Check the dates in the official notice.')}</p>` : '';
-  const live = p.dates.some((d) => { const st = dateStatus(d, T.now).state; return st !== 'past' && st !== 'cancelled'; });
-  const dates = p.dates.length ? `<h2 class="sx-h" id="sx-dates-h" tabindex="-1">${T.L('날짜', 'Dates')}</h2>${T.note ? `<p class="sx-store is-warn sx-date-note">${esc(T.note)}</p>` : ''}${live ? storeLine(T) : ''}<ul class="sx-days">${p.dates.map((d) => dateRow(p, d, T, saved)).join('')}</ul>` : '';
+  const dates = datesBlock(p, T, saved);
   const action = p.action ? `<a class="sx-cta" href="${esc(p.action.url)}" target="_blank" rel="noopener noreferrer">${esc(T.pick(p.action.label))}${newTab(T)} ${GO}</a><p class="sx-fine">${T.L('공식 쪽으로 연결해요. 접수와 신청은 본인이 직접 해요.', 'This opens the official site. You apply yourself.')}</p>` : '';
   const tag = postTag(p, T);
   return `<div class="sx">${back(c)}

@@ -2,6 +2,7 @@
 // 「대학 소식」 글은 손으로 적지 않고 study-data.mjs의 실제 과정 접수 차수에서 만든다(같은 날을 두 곳에 적지 않는다).
 // 검사(validateChannelData)는 공개 묶음 도구와 시험이 부른다. 날짜에 따라 바뀌는 조건(90일, 지난 날)은 검사에 넣지 않는다.
 import { daysUntil } from './study-data.mjs';
+import { deadlineDates } from './docs-data.mjs';
 
 const L = (ko, en) => Object.freeze({ ko, en });
 
@@ -174,7 +175,9 @@ export function univPosts(programs) {
       title: L(`${p.name.ko}${ug ? ' 학부' : ''}${p.term ? ` ${p.term.ko}` : ''} 원서 접수`, `${p.name.en}${ug ? ' undergraduate' : ''}${p.term ? `, ${p.term.en}` : ''}: applications`),
       points: [roundsText, korean, L('대학이 공개한 모집 요강에서 옮겼어요. SYNK와 협약한 대학은 아니에요.', 'Taken from the university’s published admissions guide. Not a SYNK partner university.')],
       source: p.source, checkedAt: p.checkedAt, postedAt: p.checkedAt,
-      dates: rounds.map((r, i) => ({ id: `univ-${p.id}-${r[0]}`, kind: 'apply', start: r[0], end: r[1], label: many ? L(`${i + 1}차 원서 접수`, `Round ${i + 1} applications`) : L('원서 접수', 'Applications'), who })),
+      // 원서 차수에 서류 기한(3단계 docs-data)을 더해 날짜순으로 둔다. 서류 기한의 id는 그 차수에 매달려 있다.
+      dates: [...rounds.map((r, i) => ({ id: `univ-${p.id}-${r[0]}`, kind: 'apply', start: r[0], end: r[1], label: many ? L(`${i + 1}차 원서 접수`, `Round ${i + 1} applications`) : L('원서 접수', 'Applications'), who })),
+        ...deadlineDates(p.id).map((d) => ({ ...d, who }))].sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0)),
       // 과정 자료에는 요강 주소만 있고 접수처 주소가 없다(원광대 학부는 방문 · 우편 접수). 접수처 단추를 걸지 않는다.
       forYou: 'program', programId: p.id, action: null
     });
@@ -218,7 +221,7 @@ export function validateChannelData(channels, posts, programIds = []) {
       if (!isObj(d) || !ID_RE.test(d.id) || dateIds.has(d.id) || !DATE_KINDS.includes(d.kind) || !isDate(d.start) || !isPair(d.label)) fail('date ' + p.id);
       dateIds.add(d.id);
       if (d.kind === 'apply' ? !(isDate(d.end) && d.end >= d.start) : d.end !== undefined) fail('date span ' + d.id);
-      if (!(d.url === undefined || isHttps(d.url)) || !(d.cancelled === undefined || d.cancelled === true) || !(d.who === undefined || isPair(d.who))) fail('date extra ' + d.id);
+      if (!(d.url === undefined || isHttps(d.url)) || !(d.cancelled === undefined || d.cancelled === true) || !(d.who === undefined || isPair(d.who)) || !(d.docsDue === undefined || (d.docsDue === true && d.kind === 'deadline'))) fail('date extra ' + d.id);
     }
     // 규칙마다 필요한 자료: 시험 글은 성적 발표 날, 장학금 성적 글은 기준.
     if (p.forYou === 'topikExam' && !p.dates.some((d) => d.kind === 'result')) fail('topikExam needs a result date ' + p.id);
@@ -290,10 +293,11 @@ export function isNewPost(post, now = new Date(), days = NEW_DAYS) {
   return daysSince(post.postedAt, now) < days;
 }
 
-/** 글에서 가장 가까운(지나지 않은 · 취소되지 않은) 날. 없으면 null. */
-export function nextDate(post, now = new Date()) {
+/** 글에서 가장 가까운(지나지 않은 · 취소되지 않은) 날. 없으면 null. skipDocs면 서류 기한(원서를 낸 사람만의 날)은 세지 않는다. */
+export function nextDate(post, now = new Date(), { skipDocs = false } = {}) {
   let best = null;
   for (const d of post.dates) {
+    if (skipDocs && d.docsDue) continue;
     const st = dateStatus(d, now);
     if (st.state === 'past' || st.state === 'cancelled') continue;
     const due = st.state === 'before' ? d.start : dueDay(d);
@@ -308,7 +312,8 @@ const newest = (a, b) => (a.postedAt < b.postedAt ? 1 : a.postedAt > b.postedAt 
 export function featuredPost(posts, now = new Date()) {
   let best = null;
   for (const p of posts) {
-    const n = nextDate(p, now);
+    // 원서가 끝난 차수의 서류 기한이 맨 위 글이 되어 「아직 지원할 수 있다」로 읽히지 않게 서류 기한은 세지 않는다.
+    const n = nextDate(p, now, { skipDocs: true });
     if (n && (!best || n.due < best.due)) best = { post: p, due: n.due };
   }
   return best ? best.post : [...posts].sort(newest)[0] || null;
