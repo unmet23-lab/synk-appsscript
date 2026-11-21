@@ -124,7 +124,7 @@
         "줄높이": 1.21,
         "최대줄": 2,
         "가운데": true,
-        "글자크기": 37,
+        "글자크기": 33,
         "글꼴": "'Inter Tight', 'SUIT', sans-serif"
       }
     },
@@ -664,8 +664,8 @@
     {
       "id": "endKo",
       "칸": "끝",
-      "글": "En coreano: solo uno",
-      "원문": "한국어로는: 딱 하나",
+      "글": "En coreano: un solo verbo",
+      "원문": "한국어로는: 동사 딱 하나",
       "초": [
         18.95,
         21.35
@@ -725,8 +725,8 @@
     {
       "id": "게시글.tiktok.본문.1",
       "칸": "게시글",
-      "글": "En español tu compa viene, llueve, nieva, te da sueño y suena el teléfono. En coreano, las cinco usan la misma palabra: 와요 (wa-yo), “viene”.",
-      "원문": "스페인어로는 친구가 오고, 비가 내리고, 눈이 내리고, 졸음이 오고, 전화가 울린다. 한국어로는 다섯 문장 모두 같은 낱말을 쓴다: 와요, 「온다」."
+      "글": "En español usas verbos distintos cuando viene tu compa, llueve, nieva, te da sueño o suena el teléfono. En coreano se usa la misma palabra en los cinco casos: 와요 (wa-yo), “viene”.",
+      "원문": "스페인어로는 친구가 올 때, 비가 올 때, 눈이 올 때, 졸음이 올 때, 전화가 울릴 때 서로 다른 동사를 쓴다. 한국어로는 다섯 경우 모두 같은 낱말을 쓴다: 와요(wa-yo), 「온다」."
     },
     {
       "id": "게시글.tiktok.본문.2",

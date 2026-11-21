@@ -190,7 +190,7 @@
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.15,
   "title": "Español: varios verbos. Coreano: solo uno",
-  "titleSize": 37,
+  "titleSize": 33,
   "lines": [
     "Ya viene mi compa",
     "Está lloviendo",
@@ -230,7 +230,7 @@
     "teléfono"
   ],
   "nounSize": 32,
-  "endKo": "En coreano: solo uno",
+  "endKo": "En coreano: un solo verbo",
   "endKoSize": 44,
   "wayoRead": "wa-yo",
   "wayoReadSize": 44,
@@ -257,6 +257,6 @@
     "nouns.1": "비 · 눈",
     "nouns.2": "잠",
     "nouns.3": "전화",
-    "endKo": "한국어로는: 딱 하나"
+    "endKo": "한국어로는: 동사 딱 하나"
   }
 }
