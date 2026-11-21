@@ -75,6 +75,7 @@ a { color: inherit; }
 
 .notes { margin-top: clamp(14px, 2.4vh, 22px); display: grid; gap: 7px; max-width: 40em; }
 .note { position: relative; padding-left: 16px; font: 400 14px/1.6 var(--sans); color: var(--dim); }
+.note.lo { white-space: pre-wrap; overflow-wrap: anywhere; }
 .note::before { content: ""; position: absolute; left: 1px; top: .78em; width: 5px; height: 1px; background: var(--dim); }
 .box { margin-top: clamp(14px, 2.4vh, 22px); max-width: 40em; padding: 14px 0 14px 18px; border-left: 1px solid var(--hair-2); font: 400 14px/1.6 var(--sans); color: var(--dim); }
 .box b { display: block; margin-bottom: 3px; font: 500 15px/1.4 var(--sans); color: var(--paper); }
@@ -192,7 +193,8 @@ a { color: inherit; }
 /* 옮겨 오기 4b — 프로그램 줄(고르는 단추는 이름 칸, 주소와 명령은 골라 복사하는 글) · 다시 로그인할 곳(긴 글은 줄을 바꾼다) */
 .fl.mv .nm { white-space: normal; overflow-wrap: anywhere; }
 /* 담지 못한 이름 — 끝의 점이나 빈칸과 닫는 」가 말줄임표에 가려지지 않게 줄을 바꾼다 */
-.fl.lo .nm { white-space: normal; overflow-wrap: anywhere; }
+.fl.lo .nm { white-space: pre-wrap; overflow-wrap: anywhere; }
+.fl.lo .vl { font: 400 13px/1.35 var(--sans); color: var(--dim); }
 .fl:not(.plain) .why { grid-column: 2 / -1; }
 .pickb { appearance: none; display: flex; align-items: center; gap: 12px; min-width: 0; margin: 0; padding: 0; background: none; border: 0; color: inherit; text-align: left; cursor: pointer; }
 .pickb .cb { flex: none; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--hair-2); }

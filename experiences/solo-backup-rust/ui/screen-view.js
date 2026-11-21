@@ -7,7 +7,7 @@ import { count, dayKo, josa, placesKo, size, timeKo, whenKo } from './ko-format.
 import { folderName, undoWindow, startStep, writerName, deviceLine, GOOGLE_STEP, pickedSources, restorePlace, sameOf, afterUndo,
   moveJob, moveRows, moveVolumes, moveKitNote, moveDeviceName, moveStopText, moveCounts, moveGroups, moveTitle, moveTakeList, moveFresh, moveLeft, placeKo,
   moveRechoose, moveStopCode, moveBigFolders, folderSubjectKo, tooBigKept, oldWho, oldFolders, oldWhere, oldFailText, OLD_NO_SPLIT_THEN, moveProgress, etaKo, COUNT_PART, moveRoots, appsRows, appsPhase, appsOutcome, settingRows, checksLeft, wingetText, APPS_MAX,
-  appsJob, appsSettings, appsUnrestored, movedHere, AI_TOOL_ROWS, REST_MAX, MASK_MAX, MASK_LEN, massOf, massModel, leftOutOf, leftOutCountKo, leftOutName, UNNAMED } from './screen-model.js';
+  appsJob, appsSettings, appsUnrestored, movedHere, AI_TOOL_ROWS, REST_MAX, MASK_MAX, MASK_LEN, massOf, massModel, massBigOf, leftOutOf, leftOutCountKo, leftOutName, UNNAMED } from './screen-model.js';
 import { EX, FAKE } from './fake-screens.js';
 import { failureText } from './state-store.js';
 
@@ -29,7 +29,7 @@ export function act(a) {
 }
 const row = (k, v, w = '', cls = '') => `<div class="row ${cls}"><span class="k">${k}</span><span class="v">${v}</span><span class="w">${w}</span></div>`;
 const gauge = (pct) => `<span class="gauge" aria-hidden="true"><i data-pct="${Number(pct) || 0}"></i></span>`;
-const notes = (list) => (list && list.length ? `<div class="notes rise i3">${list.map((t) => `<p class="note">${t}</p>`).join('')}</div>` : '');
+const notes = (list, cls = '') => (list && list.length ? `<div class="notes rise i3">${list.map((t) => `<p class="note${cls}">${t}</p>`).join('')}</div>` : '');
 const box = (b) => (b ? `<div class="box rise i3"><b>${h(b.title)}</b>${h(b.text)}</div>` : '');
 const say = (main, soft = '') => `<h1 class="say rise i1">${main}${soft ? `<br><span class="soft">${soft}</span>` : ''}</h1>`;
 const kick = (t) => `<p class="kick rise"><i class="dot" aria-hidden="true"></i>${t}</p>`;
@@ -91,7 +91,7 @@ export function homeScreen(m, acct = null, s = null) {
   const ack = !!acct?.googleAck, stepAck = m.googleStep ? stepAckOf(ack) : '';
   // 도는 중인 단추(acct.running)와, Google 걸음을 확인하기 전의 계정 단추는 막는다
   const actions = m.actions.map((a) => (acct?.running === a.id || (m.googleStep && !ack && a.account) ? { ...a, disabled: true } : a));
-  const html = `<div class="in">${kick(h(m.kick))}${say(h(m.title))}${then(h(m.sub))}${box(m.box)}${box(solioBoxOf(acct?.solioBox, s, m))}${stepAck}${notes((m.notes || []).map(h))}${link}${done}${homeRows(m)}${acts(actions.map((a) => ({ ...a })), `${hintOf(m, acct)}${gcancel(acct)}`)}</div>`;
+  const html = `<div class="in">${kick(h(m.kick))}${say(h(m.title))}${then(h(m.sub))}${box(m.box)}${box(solioBoxOf(acct?.solioBox, s, m))}${stepAck}${notes((m.notes || []).map(h), m.id === 'home-leftout' ? ' lo' : '')}${link}${done}${homeRows(m)}${acts(actions.map((a) => ({ ...a })), `${hintOf(m, acct)}${gcancel(acct)}`)}</div>`;
   const map = {}; for (const a of m.actions) map[a.id] = a; if (m.googleStep) map['google-ack'] = { id: 'google-ack' }; for (const x of links) map[x.to] = { id: x.to, to: x.to }; if (r?.act) map[r.act.id] = r.act;
   if (m.hintAct) map[m.hintAct.id] = { id: m.hintAct.id };
   return { kind: 'home', tone: m.tone, here: '백업·복구', top: [{ id: 'drawer', label: '설정' }], html, acts: map };
@@ -1114,16 +1114,19 @@ function massItem(x) {
   return `<div class="fl plain" role="listitem"><span class="nm">${h(file)}</span><span class="vl">${x.kind === 'changed' ? '<span class="x">바뀜</span>' : '지워짐'}</span>${where ? `<span class="ds">${h(where)}</span>` : ''}</div>`;
 }
 function massList(s, now, ui, acct, home) {
-  const mh = massOf(s), mm = massModel(s, now, { place: ui?.place, sentDefaultAt: ui?.sentDefaultAt, massAsk: ui?.massAsk, massSent: acct?.massSent, massGot: acct?.massGot });
+  const mh = massOf(s), mm = massModel(s, now, { place: ui?.place, sentDefaultAt: ui?.sentDefaultAt, massAsk: ui?.massAsk, massSent: acct?.massSent, massGot: acct?.massGot, massBig: acct?.massBig });
   // 기본 화면이 다른 일(도는 백업 · 다시 로그인 등)을 먼저 보이면 그 일이 끝날 때까지 막는다(Opus 대체 검수 FA2)
   const first = !!home && home.id !== 'home-mass', run = acct?.running || (first ? 'first' : null);
   const actions = mm.actions.map((a) => (run === a.id || first ? { ...a, disabled: true } : a));
   const wait = first ? notes([h(home.id === 'home-run' ? '지금 다른 일이 도는 중입니다. 끝나면 누를 수 있습니다.' : '기본 화면에 먼저 할 일이 있습니다. 그 일을 마치면 누를 수 있습니다.')]) : '';
   const l = `${kick(h(mm.kick))}${say(h(mm.title))}${then(h(mm.sub))}${box(mm.box)}${wait}${notes(mm.notes.map(h))}${acts(actions, hintOf(mm, run ? { running: run } : acct))}`;
   // 바뀐 폴더가 여럿이면 폴더마다 되살릴 수 있다 — 한 번에 받다 100만 개를 넘어 거절될 때도 이 길이다
-  const many = mh.folders.length > 1;
+  const many = mh.folders.length > 1, big = massBigOf(s, acct?.massSent, acct?.massBig);
   const fRows = mh.folders.map((f) => {
     const n = folderName(f.path), counts = [f.removed ? `지워짐 ${count(f.removed)}` : '', f.changed ? `바뀜 ${count(f.changed)}` : ''].filter(Boolean).join(' · ');
+    // 100만 개를 넘어 받지 못한 폴더는 다시 눌러도 같은 판에서 반드시 실패한다 — 단추 대신 그렇다고 쓴다(Opus 대체 검수 r9fix F1)
+    // 그 글은 경로 아래 줄에 둔다 — 오른쪽 칸에 두면 가운데 칸이 좁아져 980 ~ 1280px 두 단 배치에서 글자가 세로로 쌓인다(다시 검수 -b FA1)
+    if (many && big.isBig(f.path)) return row(h(n), `${h(counts)}<br><span class="meta">${h(f.path)}</span><br><span class="meta">100만 개가 넘어 지금은 받을 수 없음</span>`, '');
     const btn = many ? `<button class="lnk sm" type="button" data-act="mass-one" data-path="${h(f.path)}" aria-label="${h(`「${n}」 폴더만 ${mh.word} 전으로 되살리기`)}"${run ? ' aria-disabled="true"' : ''}>이 폴더만 되살리기</button>` : '';
     return row(h(n), `${h(counts)}<br><span class="meta">${h(f.path)}</span>`, btn);
   }).join('');
@@ -1149,7 +1152,7 @@ function leftOut(s, now) {
     ${notes([...(lo.checked ? [] : ['이번 백업은 폴더를 다 보지 못했습니다. 아직 보지 못한 폴더에 이런 이름이 더 있을 수 있습니다.']),
       '이름 끝의 점이나 빈칸을 지우면 다음 백업에 담깁니다.', '탐색기에서 이름이 바뀌지 않으면 그 파일을 만든 프로그램에서 바꿔 주세요.'])}
     ${acts([{ id: 'home', label: '돌아가기', kind: 'line' }])}`;
-  const items = lo.names.map((p) => { const x = leftOutName(p); return `<div class="fl plain lo" role="listitem"><span class="nm">「${h(x.name)}」</span><span class="vl"></span>${x.where ? `<span class="ds">${h(x.where)}</span>` : ''}</div>`; }).join('');
+  const items = lo.names.map((p) => { const x = leftOutName(p); return `<div class="fl plain lo" role="listitem"><span class="nm">「${h(x.name)}」</span><span class="vl">${h(x.mark)}</span>${x.where ? `<span class="ds">${h(x.where)}</span>` : ''}</div>`; }).join('');
   const more = lo.count > lo.names.length ? `<p class="foot">외 ${h(count(lo.count - lo.names.length))}개${lo.cut ? ' 이상' : ''}</p>` : '';
   const body = lo.names.length ? `<div class="files" role="list" aria-label="담지 못한 이름">${items}</div>${more}` : `<p class="empty">${h(UNNAMED)}</p>`;
   const r = panel('담지 못한 이름', `${h(`${count(lo.count)}개${lo.cut ? ' 이상' : ''}`)}${lo.at ? ` · ${h(whenKo(lo.at, now))}에 찾음` : ''}`, body);

@@ -267,6 +267,16 @@ export function massTooBig(s, sent) {
   if (e.mass && typeof e.mass === 'object' && Object.prototype.hasOwnProperty.call(e.mass, 'folder')) return typeof e.mass.folder === 'string' && e.mass.folder ? e.mass.folder : null;
   return sent && sent.beforeId === mh.beforeId && Number.isFinite(sent.at) && ms(e.at) >= sent.at && typeof sent.folder === 'string' && sent.folder ? sent.folder : null;
 }
+/**
+ * 이 멈춤에서 100만 개를 넘어 받을 수 없는 폴더들 — 창이 모아 둔 것(massBig, 같은 판)과 지금 실패 칸의 것. 그 폴더인지(isBig)도 함께 준다
+ * (기본 화면의 「다 받은 뒤」와 목록 화면의 「이 폴더만 되살리기」가 같은 셈을 쓴다 — Opus 대체 검수 r9fix F1)
+ */
+export function massBigOf(s, sent, mem) {
+  const mh = s?.massHold, now0 = massTooBig(s, sent);
+  const kept = mh && mem?.beforeId === mh.beforeId && Array.isArray(mem.folders) ? mem.folders.filter((p) => typeof p === 'string' && p) : [];
+  const list = [...kept, ...(now0 ? [now0] : [])];
+  return { list, isBig: (p) => list.some((b) => samePath(b, p)) };
+}
 /** 멈춤이 있는 동안 끝난 되살리기의 실패 글 — 실패 칸에는 어느 되살리기였는지가 없어(lastRestoreError) 멈춤의 말로 쓴다 */
 export function massFailText(code, mh, folder = null) {
   if (code === 'CATALOG_TOO_LARGE' && typeof folder === 'string' && folder) return `「${folderName(folder)}」 폴더는 파일과 폴더가 100만 개를 넘어 통째로 받을 수 없습니다. 안쪽 폴더만 꺼내는 길은 다음 업데이트에서 엽니다.`;
@@ -292,7 +302,10 @@ export function leftOutCountKo(lo, pair = '은/는') { const w = `${count(lo.cou
 /** 경로의 마지막 이름과 그 위 폴더 — 끝의 점이나 빈칸이 보이게 이름은 「」로 감싼다 */
 export function leftOutName(p) {
   const parts = String(p).split('\\'), name = parts.pop() || String(p);
-  return { name, where: parts.join(' › ') };
+  // 끝의 빈칸은 화면에서 하나로 접히거나 보이지 않는다 — 몇 개인지 글로 붙여 「회의록 」과 「회의록  」을 가른다(GPT 검수 workbackup-oddnames-20261121-r9 GA3)
+  // 맨 끝의 빈칸만 센다 — 점 앞의 빈칸은 점이 있어 보인다(카본 A1)
+  const spaces = (name.match(/ +$/) || [''])[0].length;
+  return { name, where: parts.join(' › '), spaces, mark: spaces ? `끝에 빈칸 ${count(spaces)}개` : '' };
 }
 const LEFT_LINK = { label: '어떤 파일인지 보기', to: 'left-out' };
 /** 수는 알지만 이름을 아직 알아내지 못한 몫 — 기본 화면 줄과 목록이 같은 말을 쓴다 */
@@ -748,7 +761,7 @@ function baseModel(state, now, opts) {
   // 쓰는 중인 파일과 함께 있으면 둘 다 쓴다(조율 세션 부탁 · GPT 검수 workbackup-oddnames-20261120 GA1)
   const lo = leftOutOf(s);
   if (lo && lo.count > 0) {
-    const notes = lo.names.slice(0, 2).map((p) => { const x = leftOutName(p); return `「${x.name}」${x.where ? ` · ${x.where}` : ''}`; });
+    const notes = lo.names.slice(0, 2).map((p) => { const x = leftOutName(p); return `「${x.name}」${x.mark ? `(${x.mark})` : ''}${x.where ? ` · ${x.where}` : ''}`; });
     // 엔진이 수는 세었지만 이름은 모를 수 있다(이름 보관을 못 읽은 뒤 걷기가 덜 끝남 — names 빈 목록). 그때는 「외」가 아니라 그렇다고 쓴다(Opus 대체 검수 F1)
     if (!notes.length) notes.push(UNNAMED);
     else if (lo.count > notes.length) notes.push(`외 ${count(lo.count - notes.length)}개${lo.cut ? ' 이상' : ''}`);

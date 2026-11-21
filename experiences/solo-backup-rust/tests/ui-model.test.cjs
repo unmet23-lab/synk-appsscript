@@ -1930,6 +1930,15 @@ test('한꺼번에 지워짐(설계 4.4 — 엔진 massHold, 조율 세션 9ddcb
   assert.equal(bigRest.notes[0], '「바탕화면」 폴더 말고는 다 되살렸습니다. 그 폴더가 필요 없으면 「확인을 마침」을 누르세요.');
   // -d FA2 — 남은 것이 받을 수 없는 큰 폴더뿐이면 반드시 실패할 전체 되살리기를 단추로 두지 않는다
   assert.deepEqual(bigRest.actions.map((a) => [a.id, a.kind]), [['mass-done', 'line']]);
+  // GPT 검수 r9 GA1 — 목록 화면도 창 기억(massBig)을 받아 기본 화면과 같은 단추만 둔다
+  const ro = STATES['home-mass-restored-one'], roDocs = ro.massHold.folders.find((f) => /Documents/.test(f.path)).path, roAcct = { massBig: { beforeId: ro.massHold.beforeId, folders: [roDocs] } };
+  assert.deepEqual(m.homeModel(ro, { now: NOW, massBig: roAcct.massBig }).actions.map((a) => a.id), ['mass-done']);
+  const roList = renderScreen('mass-list', { state: ro, model: m.homeModel(ro, { now: NOW, massBig: roAcct.massBig }), now: NOW, ui: {}, acct: roAcct, fake: true }).html;
+  assert.doesNotMatch(roList, /data-act="mass-restore"/); assert.match(roList, /data-act="mass-done"/);
+  // r9fix F1 — 받을 수 없는 큰 폴더 줄에는 「이 폴더만 되살리기」를 두지 않고 그렇다고 쓴다. 다른 폴더 줄은 그대로
+  assert.deepEqual([...roList.matchAll(/data-act="mass-one" data-path="([^"]+)"/g)].map((x) => x[1]).filter((p) => p === roDocs), []);
+  assert.match(roList, /<span class="meta">[^<]*Documents<\/span><br><span class="meta">100만 개가 넘어 지금은 받을 수 없음<\/span>/); assert.match(roList, /data-act="mass-one" data-path="[^"]*Pictures"/);
+  assert.deepEqual(m.massBigOf(ro, null, { beforeId: 'f'.repeat(64), folders: [roDocs] }).list, []);
   // -d FA1 — 다음 되살리기가 실패 칸을 지운 뒤에도 창이 모은 큰 폴더(massBig)는 「다 받은 뒤」에서 빠진다
   const cleared = draw(f4got, { ...bigOpts, massBig: { beforeId: f4.massHold.beforeId, folders: [DESK] } }).mm;
   assert.equal(cleared.notes[0], '아직 「사진」 · 「Projects」 폴더는 되살리지 않았습니다. 다 받은 뒤 「확인을 마침」을 누르세요.');
@@ -2025,7 +2034,7 @@ test('이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 조율 
   const a = draw(STATES['home-leftout']);
   assert.equal(a.mm.id, 'home-leftout'); assert.equal(a.mm.tone, 'warn'); assert.equal(a.mm.title, '이름 때문에 담지 못한 파일이 있습니다.');
   assert.equal(a.mm.sub, '이름 끝에 점(.)이나 빈칸이 있는 파일이나 폴더 3개는 Windows에서 백업할 수 없습니다. 이름을 바꾸면 다음 백업에 담깁니다.');
-  assert.deepEqual(a.mm.notes, ['「2026 견적서.」 · C: › Users › studio › Documents › 견적', '「회의록 」 · C: › Users › studio › Desktop', '외 1개']);
+  assert.deepEqual(a.mm.notes, ['「2026 견적서.」 · C: › Users › studio › Documents › 견적', '「회의록 」(끝에 빈칸 1개) · C: › Users › studio › Desktop', '외 1개']);
   assert.deepEqual(a.mm.links.map((l) => [l.label, l.to]), [['어떤 파일인지 보기', 'left-out']]); assert.equal(a.out.acts['left-out'].to, 'left-out');
   assert.equal(a.mm.actions[0].label, '파일 되살리기'); assert.ok(a.mm.actions.filter((x) => x.kind === 'main').length <= 1);
   // 쓰는 중인 파일과 함께 — 둘 다 쓰고 고리도 둘
@@ -2066,7 +2075,7 @@ test('이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 조율 
   // 목록 — 이름은 끝의 점이나 빈칸이 보이게 「」로, 위 폴더 경로, 다 보지 못한 날의 한 줄, 「외 N개」
   const s = STATES['home-leftout'], list = renderScreen('left-out', { state: s, model: m.homeModel(s, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true });
   assert.equal(list.here, '담지 못한 이름'); assert.equal(list.back, 'home');
-  assert.match(list.html, /<span class="nm">「회의록 」<\/span><span class="vl"><\/span><span class="ds">C: › Users › studio › Desktop<\/span>/);
+  assert.match(list.html, /<span class="nm">「회의록 」<\/span><span class="vl">끝에 빈칸 1개<\/span><span class="ds">C: › Users › studio › Desktop<\/span>/);
   assert.equal((list.html.match(/class="fl plain lo"/g) || []).length, 3); assert.doesNotMatch(strip(list.html), /다 보지 못했습니다/);
   assert.match(strip(list.html), /파일이나 폴더 3개는 이름 때문에 백업에 담지 못했습니다\./); assert.match(strip(list.html), /3개 · 오후 2:02에 찾음/);
   const un = STATES['home-leftout-unchecked'];
@@ -2087,6 +2096,14 @@ test('이 백업에 담지 못하는 이름(설계 4.2 — leftOutNames, 조율 
   assert.deepEqual(m.homeModel({ ...STATES['home-missing'], leftOutNames: unnamed.leftOutNames }, { now: NOW }).links.at(-1), { label: '이름 때문에 담지 못한 파일 자세히 보기', to: 'left-out' });
   const ul = strip(renderScreen('left-out', { state: unnamed, model: m.homeModel(unnamed, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html);
   assert.match(ul, /이름은 아직 알아내지 못했습니다/); assert.doesNotMatch(ul, /외 5개|찾은 이름이 없습니다/);
+  // GPT 검수 r9 GA3 — 끝 빈칸이 하나인 이름과 둘인 이름을 화면 글로 가른다(목록은 칸을 접지 않는 꼴 · 「끝에 빈칸 N개」, 기본 화면 줄도 같은 말)
+  const two = { ...s, leftOutNames: { ...s.leftOutNames, names: [String.raw`C:\x\회의록 `, String.raw`C:\x\회의록  `, String.raw`C:\x\메모 . `] } };
+  assert.deepEqual(m.homeModel(two, { now: NOW }).notes.slice(0, 2), ['「회의록 」(끝에 빈칸 1개) · C: › x', '「회의록  」(끝에 빈칸 2개) · C: › x']);
+  const tl = renderScreen('left-out', { state: two, model: m.homeModel(two, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html;
+  assert.deepEqual([...tl.matchAll(/<span class="vl">([^<]*)<\/span>/g)].map((x) => x[1]), ['끝에 빈칸 1개', '끝에 빈칸 2개', '끝에 빈칸 1개']);
+  // r9fix F2 — 기본 화면의 이름 줄도 빈칸을 접지 않는 꼴(keep)이다
+  assert.match(renderScreen('home', { state: two, model: m.homeModel(two, { now: NOW }), now: NOW, ui: {}, acct: {}, fake: true }).html, /<p class="note lo">「회의록  」/);
+  assert.equal(m.leftOutName(String.raw`C:\x\견적서.`).mark, ''); assert.equal(m.leftOutName(String.raw`C:\x\회의록 .`).mark, '');
   const odd = m.leftOutOf({ leftOutNames: { count: 'x', names: [null, 5, 'C:\\a.'], checked: 0 } });
   assert.deepEqual([odd.count, odd.names.length, odd.checked, odd.cut], [1, 1, true, false]);
   assert.equal(m.leftOutOf({ leftOutNames: null }), null);

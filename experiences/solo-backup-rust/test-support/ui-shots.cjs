@@ -119,7 +119,9 @@ const CASES = [
   ['home-leftout', 'home'], ['home-leftout-partial', 'home'], ['home-leftout-many', 'home'], ['home-leftout-off', 'home'],
   ['home-leftout', 'left-out'], ['home-leftout-many', 'left-out', { name: 'left-out-many' }], ['home-leftout-busy', 'home'], ['home-leftout-busy', 'left-out', { name: 'left-out-long' }],
   ...['home-lost-step', 'home-writekey', 'home-missing', 'home-probe', 'home-mass', 'home-mass-failed', 'home-restore-error', 'home-health', 'home-error', 'home-overdue', 'home-credential', 'home-startup', 'home-paused'].map((k) => [`${k}-leftout`, 'home']), ['home-leftout-unchecked', 'left-out', { name: 'left-out-unchecked' }],
-  ['home-mass-restored-one', 'home'], ['home-mass-restored-unknown', 'home'], ['home-mass-four', 'home'], ['home-mass-four', 'mass-list', { name: 'mass-list-four' }],
+  ['home-mass-restored-one', 'home'],
+  // 문서가 100만 개를 넘어 받지 못하고 사진만 받은 뒤의 목록 — 큰 폴더 줄의 글이 두 단 배치에서 세로로 쌓이지 않는지(GPT r9 GA1 · 다시 검수 -b FA1)
+  ['home-mass-restored-one', 'mass-list', { name: 'mass-list-big', acct: 'MASSBIG' }], ['home-mass-restored-one', 'home', { name: 'home-mass-big', acct: 'MASSBIG' }], ['home-mass-restored-unknown', 'home'], ['home-mass-four', 'home'], ['home-mass-four', 'mass-list', { name: 'mass-list-four' }],
   // 범위를 통째로 받기 · 옛 PC 판의 실패 · 만들다 만 폴더 열기 · 끊은 뒤 안내(E27 · E26 알림 · E29 · E28, 조율 세션 ced52da00)
   ['home-scope-done', 'home'], ['home-scope-big', 'home'], ['home-scope-unsafe-sel', 'home'], ['home-scope-failed', 'home'],
   ['home', 'restore', { name: 'restore-pick', ui: { place: 'pick' } }], ['home', 'restore', { name: 'restore-confirm', ui: { confirmAll: true } }], ['home-downloads', 'restore', { name: 'restore-guarded' }],
@@ -209,7 +211,7 @@ const CATALOG = {
       await pg.evaluate(({ screen, state, now, catalog, acct, undo, ui, mv, old }) => {
         if (screen === 'drawer') window.__wb.show('home', { state, now, still: true, drawer: true, acct, mv });
         else window.__wb.show(screen, { state, now, still: true, catalog: screen === 'restore' ? catalog : null, acct, undo, ui, mv, old });
-      }, { screen, state: STATES[stateName], now: NOW, catalog: extra.catalog ? OLD_CATALOG[extra.catalog] : CATALOG, acct: extra.acct === 'MOVE' ? MOVE_ACCT : extra.acct || null, undo: extra.undo === 'UNDO' ? UNDO : null, ui: extra.ui || null, mv: extra.mv ? MOVE_MV[extra.mv] : null, old: extra.old ? OLD_PC[extra.old] : null });
+      }, { screen, state: STATES[stateName], now: NOW, catalog: extra.catalog ? OLD_CATALOG[extra.catalog] : CATALOG, acct: extra.acct === 'MOVE' ? MOVE_ACCT : extra.acct === 'MASSBIG' ? { massBig: { beforeId: STATES[stateName].massHold.beforeId, folders: ['C:\\Users\\studio\\Documents'] } } : extra.acct || null, undo: extra.undo === 'UNDO' ? UNDO : null, ui: extra.ui || null, mv: extra.mv ? MOVE_MV[extra.mv] : null, old: extra.old ? OLD_PC[extra.old] : null });
       // 서랍 아래쪽처럼 첫 화면 밖에 있는 줄은 그 자리로 굴려서 찍는다
       if (extra.scrollTo) await pg.evaluate((sel) => document.querySelector(sel)?.scrollIntoView({ block: 'start' }), extra.scrollTo);
       await pg.waitForTimeout(120);
