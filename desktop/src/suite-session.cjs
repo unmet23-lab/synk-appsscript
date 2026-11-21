@@ -117,7 +117,7 @@ function createSuitePublisher({store,key,now=Date.now,onError=()=>{},onChange=()
 }
 
 function createSuiteFollower({store,auth,schedule=setInterval,unschedule=clearInterval,onError=()=>{}}){
-  let current=null,closed=false,timer=null,attempt=null,sequence=0,queue=Promise.resolve(),seen=false;
+  let current=null,closed=false,timer=null,attempt=null,sequence=0,queue=Promise.resolve(),seen=false,force=false;
   function observe(){if(closed)return queue;let next;try{next=store.read();}catch(error){onError(error);next={status:'checking',generation:'unavailable',accountId:null};}
     if(!next&&seen)next={status:'checking',generation:'unavailable',accountId:null};
     if(next)seen=true;
@@ -127,17 +127,22 @@ function createSuiteFollower({store,auth,schedule=setInterval,unschedule=clearIn
     // Only a flow interrupted by coordination may restart. A user cancellation
     // or rejected OAuth result still gets one attempt per platform generation.
     if(transition?.interrupted&&next?.status==='checking')attempt=null;
+    const forced=force;force=false;
     queue=queue.catch(()=>{}).then(async()=>{if(closed||expected!==sequence)return;
       if(!next){await auth.initialize();return;}
       if(next.status==='checking')return;
       if(next.status==='signed-out'){attempt=null;await auth.signOut();return;}
       await auth.initialize();if(closed||expected!==sequence)return;
       const snapshot=auth.status();if(snapshot.signedIn&&snapshot.account?.synk_user_id===next.accountId){attempt=next.generation;return;}
-      if(snapshot.error?.retryable){attempt=next.generation;return;}
+      if(snapshot.error?.retryable&&!forced){attempt=next.generation;return;}
       if(attempt===next.generation)return;attempt=next.generation;
       await auth.signOut();if(closed||expected!==sequence)return;await auth.signIn();
     }).catch(error=>{if(!closed&&expected===sequence)onError(error);});return queue;
   }
-  return {start(){void observe();if(timer===null){timer=schedule(()=>void observe(),500);timer?.unref?.();}return queue;},refresh:observe,dispose(){closed=true;sequence++;if(timer!==null)unschedule(timer);timer=null;}};
+  /* 사람이 다시 들어가려 할 때(Workspace 직원 초대를 넣음) 같은 플랫폼 세대라도 한 번 더 따라간다. 저장된 로그인을 먼저 되살리고(initialize),
+     그래도 그 계정이 아니면 다시 로그인한다. 다시 해 볼 수 있는 오류에 멈춰 있어도 다시 한다. 되살리거나 로그인하는 중이면 건드리지 않는다
+     (4단계 GPT 엔진 검수 c GA1 · GA5). 첫 따라가기 앞에 불려도 initialize가 먼저라 저장된 로그인을 지우지 않는다 */
+  function retry(){if(closed)return queue;let status=null;try{status=auth.status()?.status;}catch{status=null;}if(status==='restoring'||status==='signing-in')return queue;current=null;attempt=null;force=true;return observe();}
+  return {start(){void observe();if(timer===null){timer=schedule(()=>void observe(),500);timer?.unref?.();}return queue;},refresh:observe,retry,dispose(){closed=true;sequence++;if(timer!==null)unschedule(timer);timer=null;}};
 }
 module.exports={suiteKey,suiteDevice,validRecord,createSuiteStore,createSuitePublisher,createSuiteFollower};

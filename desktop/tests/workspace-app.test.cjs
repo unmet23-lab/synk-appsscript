@@ -205,7 +205,7 @@ test('new windows are always denied and their http and https addresses go to the
   t+=1499;assert.deepEqual(c.openHandler({url:'https://example.invalid/b'}),{action:'deny'});
   t+=1;c.openHandler({url:'https://example.invalid/c'});
   t+=5000;assert.deepEqual(c.openHandler({url:'file:///C:/secret'}),{action:'deny'});c.openHandler({url:'https://example.invalid/d'});
-  t+=5000;c.openHandler({url:ENTRY});c.openHandler({url:'https://user:pw@example.invalid/'});c.openHandler({url:'https://example.invalid/e'});
+  t+=5000;c.openHandler({url:'javascript:void(0)'});c.openHandler({url:'https://user:pw@example.invalid/'});c.openHandler({url:'https://example.invalid/e'});
   await settle();assert.deepEqual(f.external,['https://example.invalid/a','https://example.invalid/c','https://example.invalid/d','https://example.invalid/e'],'refused addresses do not use up the slot');
   const failing=fixture({openExternal:()=>{throw Error('합성');}});await failing.app.open();failing.surface.webContents.openHandler({url:'https://example.invalid/'});await settle();
 });
@@ -478,55 +478,70 @@ test('permission checks read origins as URLs, so a trailing slash from Electron 
   assert.equal(checked(f,A,c,'media',ORIGIN+'/',{mediaType:'audio',embeddingOrigin:'https://evil.invalid/'}),false);
 });
 
-// GPT 엔진 검수 pc-orb-step4-engine-20261122-b
-test('the company token goes out only for this surface\'s SYNK ID; a lagging Workspace login is woken and refused (b GA1)',async()=>{
-  let account=A,refreshed=0,flip=null;
-  const service={status:()=>({signedIn:true,status:'signed-in',account:{synk_user_id:account}}),getAccessToken:async()=>{flip?.();return 'synthetic-token';}};
-  assert.equal(await workspaceAccessToken(service,A,()=>{refreshed++;}),'synthetic-token');
+// GPT 엔진 검수 pc-orb-step4-engine-20261122-b · -c
+test('the company token goes out only for this surface\'s SYNK ID while that surface is current (b GA1 · c GA3 · GA4)',async()=>{
+  let account=A,signedIn=true,refreshed=0,during=null,live=true;
+  const service={status:()=>({signedIn,status:signedIn?'signed-in':'error',account:signedIn?{synk_user_id:account}:null}),getAccessToken:async()=>{during?.();return 'synthetic-token';}};
+  const current=()=>live;
+  assert.equal(await workspaceAccessToken(service,A,{current}),'synthetic-token');
   account=B;
-  await assert.rejects(workspaceAccessToken(service,A,()=>{refreshed++;}),{code:'WORKSPACE_ACCOUNT_PENDING'});
+  await assert.rejects(workspaceAccessToken(service,A,{refresh:()=>{refreshed++;},current}),{code:'WORKSPACE_ACCOUNT_PENDING'},'another account\'s token is not sent');
   await settle();assert.equal(refreshed,1,'the Suite follower is woken');
-  account=A;flip=()=>{account=B;};
-  await assert.rejects(workspaceAccessToken(service,A),{code:'WORKSPACE_ACCOUNT_PENDING'},'a login that changes while the token is read is refused');
-  flip=null;account=A;
+  account=A;during=()=>{account=B;};
+  await assert.rejects(workspaceAccessToken(service,A,{current}),{code:'WORKSPACE_ACCOUNT_PENDING'},'a login that changes while the token is read is refused');
+  during=()=>{live=false;};
+  await assert.rejects(workspaceAccessToken(service,A,{current}),{code:'WORKSPACE_ACCOUNT_CHANGED'},'a surface closed while the token is read sends nothing');
+  during=null;live=false;let asked=0;
+  await assert.rejects(workspaceAccessToken({...service,getAccessToken:async()=>{asked++;return 'x';}},A,{current}),{code:'WORKSPACE_ACCOUNT_CHANGED'});
+  assert.equal(asked,0,'a surface that is no longer current does not even read a token');
+  live=true;account=A;signedIn=false;during=()=>{signedIn=true;};
+  assert.equal(await workspaceAccessToken(service,A,{current}),'synthetic-token','a login stuck on a retryable error is renewed by reading the token (c GA3)');
   await assert.rejects(workspaceAccessToken(null,A),{code:'AUTH_UNAVAILABLE'});
-  for(const id of [null,undefined,''])await assert.rejects(workspaceAccessToken(service,id),{code:'WORKSPACE_ACCOUNT_PENDING'},String(id));
-  await assert.rejects(workspaceAccessToken({status(){throw Error('합성');},getAccessToken:async()=>'x'},A),{code:'WORKSPACE_ACCOUNT_PENDING'});
-  const seen=[];const g=fixture({native:{companyRequest(jar,id){seen.push(id);return ()=>({ok:true});}}});await g.app.open();
-  assert.deepEqual(seen,[A],'the company requests are bound to the surface\'s SYNK ID');
+  for(const id of [null,undefined,''])await assert.rejects(workspaceAccessToken(service,id),{code:'WORKSPACE_ACCOUNT_CHANGED'},String(id));
+  await assert.rejects(workspaceAccessToken(service,A,{current(){throw Error('합성');}}),{code:'WORKSPACE_ACCOUNT_CHANGED'});
 });
-test('an invite while Workspace is signed out starts the Workspace login once and stays pending until it ends (b GA2)',async()=>{
+test('company requests are bound to the surface account and stop when the surface closes or the platform account changes (c GA4)',async()=>{
+  const seen=[];const f=fixture({native:{companyRequest(jar,binding){seen.push(binding);return ()=>({ok:true});}}});await f.app.open();
+  assert.equal(seen.length,1);assert.equal(seen[0].accountId,A);
+  assert.equal(seen[0].current(),true);
+  f.renew(A);assert.equal(seen[0].current(),true,'a platform token renewal of the same account keeps it');
+  f.verified(member(A));assert.equal(seen[0].current(),true);
+  f.setAccount(member(B),{notify:false});assert.equal(seen[0].current(),false,'the platform account changed before the notice reached the manager');
+  f.setAccount(member(A),{notify:false});assert.equal(seen[0].current(),true);
+  f.surface.destroy();assert.equal(seen[0].current(),false,'a closed surface');
+  const g=fixture({native:{companyRequest(jar,binding){seen.push(binding);return ()=>({ok:true});}}});await g.app.open();
+  g.setAccount(member(B));assert.equal(seen.at(-1).current(),false,'the old surface after an account change');
+});
+test('an invite while the Workspace login is not ready runs the Suite follower once more and stays pending (b GA2 · c GA1 · GA5)',async()=>{
   const binding={status:'signed-in',expectedAccountId:U};const calls=[];
   let status={configured:true,signedIn:false,status:'signed-out',account:null};
-  const f=fixture({state:member(U),native:{prepare(){},status:()=>status,signIn:async()=>{calls.push('signIn');status={configured:true,signedIn:false,status:'signing-in',account:null};return status;}}});
-  assert.deepEqual(await f.app.surfaceForInvite(binding),{pending:true});
-  await settle();assert.deepEqual(calls,['signIn']);
-  assert.deepEqual(await f.app.surfaceForInvite(binding),{pending:true});
-  await settle();assert.deepEqual(calls,['signIn'],'a login under way is not started again');
-  status={configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:U}};
-  assert.ok((await f.app.surfaceForInvite(binding))?.surface,'the retry after the login gets the surface');
-  for(const other of [{configured:false,signedIn:false,status:'signed-out',account:null},{configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:A}},{configured:true,signedIn:false,status:'error',account:null},null]){
-    const g=fixture({state:member(U),native:{prepare(){},status:()=>other,signIn:async()=>{calls.push('other');}}});
-    assert.deepEqual(await g.app.surfaceForInvite(binding),{pending:true},JSON.stringify(other));await settle();
+  const native=()=>({prepare(){},status:()=>status,signIn:async()=>{calls.push('signIn');},retryLogin:()=>{calls.push('retry');}});
+  const f=fixture({state:member(U),native:native()});
+  for(const value of [{configured:true,signedIn:false,status:'signed-out',account:null},{configured:true,signedIn:false,status:'error',account:null,error:{retryable:true}},{configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:A}}]){
+    status=value;calls.length=0;
+    assert.deepEqual(await f.app.surfaceForInvite(binding),{pending:true},JSON.stringify(value));await settle();
+    assert.deepEqual(calls,['retry'],'the follower decides; the invite never starts a login itself');
   }
-  assert.ok(!calls.includes('other'),'only a signed-out Workspace login is started here');
+  status={configured:false,signedIn:false,status:'unconfigured',account:null};calls.length=0;
+  assert.deepEqual(await f.app.surfaceForInvite(binding),{pending:true});await settle();assert.deepEqual(calls,[],'an unconfigured login is not followed');
+  status={configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:U}};calls.length=0;
+  assert.ok((await f.app.surfaceForInvite(binding))?.surface,'the retry after the login gets the surface');assert.deepEqual(calls,[]);
 });
-test('a new-window link to a company document opens in this view; other links go to the browser (b GA3)',async()=>{
+test('new-window links, company documents included, go to the system browser and the view stays (b GA3 · c GA2 · GA6)',async()=>{
   const f=fixture();await f.app.open();const s=f.surface,c=s.webContents;
   const link='https://workspace.synk.im/?tab=workroom';
   assert.deepEqual(c.openHandler({url:link}),{action:'deny'});await settle();
-  assert.deepEqual(s.loads,[ENTRY,link]);assert.deepEqual(f.external,[]);
+  assert.deepEqual(f.external,[link]);assert.deepEqual(s.loads,[ENTRY],'the view is not replaced, so a call goes on');
   assert.deepEqual(c.openHandler({url:'https://example.invalid/x'}),{action:'deny'});await settle();
-  assert.deepEqual(s.loads,[ENTRY,link]);assert.deepEqual(f.external,['https://example.invalid/x']);
-  for(const other of ['http://workspace.synk.im/?tab=workroom','https://workspace.synk.im/messenger/','https://workspace.synk.im.evil.invalid/'])c.openHandler({url:other});
-  await settle();assert.deepEqual(s.loads,[ENTRY,link],'only the company document opens in the view');
-  s.destroy();c.openHandler({url:link});await settle();assert.equal(s.loads.length,2,'a closed view loads nothing');
+  assert.deepEqual(f.external,[link,'https://example.invalid/x']);
+  for(const other of ['https://user:pw@workspace.synk.im/','javascript:alert(1)','file:///C:/secret'])c.openHandler({url:other});
+  await settle();assert.deepEqual(f.external,[link,'https://example.invalid/x']);assert.deepEqual(s.loads,[ENTRY]);
 });
-
-test('main wiring: a zoom change lays out the Workspace view too, and company requests take the surface account (b GA4 · GA1)',()=>{
+test('main wiring: a zoom change lays out the Workspace view too, and company requests take the surface binding (b GA4 · GA1 · c GA4 · GA1)',()=>{
   const main=require('node:fs').readFileSync(path.join(SRC,'main.cjs'),'utf8');
   const change=main.match(/onChange:\(\)=>\{sendDesktop\('synk:desktop-preferences',desktopSnapshot\(\)\);([^}]*)\}/);
   assert.ok(change,'the preferences change callback is found');
   assert.match(change[1],/pulseView\?\.relayout\(\)/);assert.match(change[1],/workspaceView\?\.relayout\(\)/);
-  assert.match(main,/companyRequest:\(jar,accountId\)=>createCompanyRequests\(\{[^\n]*getAccessToken:\(\)=>workspaceAccessToken\(ensureWorkspaceAuth\(\),accountId,/);
+  assert.match(main,/companyRequest:\(jar,\{accountId,current\}=\{\}\)=>createCompanyRequests\(\{[^\n]*getAccessToken:\(\)=>workspaceAccessToken\(ensureWorkspaceAuth\(\),accountId,\{refresh:[^\n]*current\}\)/);
+  assert.match(main,/retryLogin:\(\)=>\{ensureWorkspaceAuth\(\);return workspaceFollower\?\.retry\?\.\(\);\}/);
 });

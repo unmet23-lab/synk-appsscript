@@ -605,8 +605,10 @@ function workspaceNative(){
     signIn:async()=>{const service=ensureWorkspaceAuth();if(!service)return WORKSPACE_AUTH_NONE;await service.signIn();return service.status();},
     cancelSignIn:async()=>{const service=ensureWorkspaceAuth();return service?service.cancel():WORKSPACE_AUTH_NONE;},
     signOut:async()=>{const service=ensureWorkspaceAuth();return service?service.signOut():{ok:false};},
-    // 토큰은 그 겉의 SYNK ID 것만 싣는다. Suite 따라가기가 아직 못 따라왔으면 깨우고 거절한다(GPT 엔진 검수 b GA1)
-    companyRequest:(jar,accountId)=>createCompanyRequests({entry:WORKSPACE_ENTRY,clientId:'messenger',session:jar,auth:{getAccessToken:()=>workspaceAccessToken(ensureWorkspaceAuth(),accountId,()=>workspaceFollower?.refresh?.())}})};
+    // 직원 초대가 Workspace 로그인을 기다릴 때 Suite 따라가기를 한 번 더 돌린다(GPT 엔진 검수 c GA1 · GA5)
+    retryLogin:()=>{ensureWorkspaceAuth();return workspaceFollower?.retry?.();},
+    // 토큰은 그 겉의 SYNK ID 것만, 그 겉이 살아 있을 때만 싣는다. Suite 따라가기가 아직 못 따라왔으면 깨우고 거절한다(GPT 엔진 검수 b GA1 · c GA4)
+    companyRequest:(jar,{accountId,current}={})=>createCompanyRequests({entry:WORKSPACE_ENTRY,clientId:'messenger',session:jar,auth:{getAccessToken:()=>workspaceAccessToken(ensureWorkspaceAuth(),accountId,{refresh:()=>workspaceFollower?.refresh?.(),current})}})};
 }
 let shareAsk=null,shareSeq=0;
 // 첫 판은 화면 소리를 주지 않는다(4단계 설계 4.2, 검토 R10). 고른 화면이나 창의 그림만 준다
