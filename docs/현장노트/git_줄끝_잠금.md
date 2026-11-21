@@ -1269,4 +1269,5 @@ ode_modules`)에만 있어서 `esbuild`를 못 찾는다. 바쁜 PC에서는 관
 - 원인(추정): `tools/git-storage-check.cjs`의 `git rev-list --objects` 전체 조회에 2분 제한이 있다. 다른 세션이 git과 시험을 많이 돌리는 동안 이 제한을 넘기면 오류 내용 없이 끊긴다. 한가할 때 같은 조회는 8.5초다. push 거절은 관련 시험의 자리 기다림이 길어 그사이 origin이 여러 번 움직인 탓이다.
 - 고침: 같은 명령을 다시 돌린다. 직전 회차에서 같은 변경의 관련 시험이 통과했으면 `--시험건너뜀 "<그 회차 커밋과 지도 run>"`을 붙여 기다림 없이 바로 올린다(이번 253b7b622).
 - 다시 확인: 출력에 「올린 커밋: … · origin 확인 ✓」가 나오고, `git status --short <경로>`가 비어 있다.
+- 11-21 덧붙임(Claude): 문서 한 개를 올리는데 두 번 다시 돌려도 같은 자리에서 멈췄다. 그때 `git rev-list --objects --no-object-names origin/master`를 직접 재니 121초였다(제한 120초, 객체 26만 4천 개). git 프로세스 25개와 node 68개가 돌고 있었다. 이렇게 바쁜 동안은 다시 돌려도 넘지 못한다. 같은 조회가 80초 안에 끝날 때까지 뒤에서 기다렸다가 올린다: `until timeout 80 git rev-list --objects --no-object-names origin/master >/dev/null; do sleep 180; done` 다음에 바로올리기.
 
