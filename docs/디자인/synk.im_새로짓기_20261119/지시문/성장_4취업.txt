@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Create exactly one image, landscape 1536x1024: a character sprite sheet for a small walking animation that will be placed on a 3D illustrated town.
+
+Image 1 is the SAME young woman at the very start of her story: a 17-year-old Mongolian student learning Korean at home (cream cardigan, mustard top, navy trousers, short black bob with straight bangs). Image 2 shows how tiny she appears in the town, seen from a high camera. Image 3 is the whole town, for the camera angle and the light.
+
+This sheet shows her at a LATER stage of her life: age 24, her first job at an office in Seoul. Keep her face clearly the same person as Image 1 (the same round friendly face, warm light-brown skin, rosy cheeks, dark eyes, small gold stud earrings), but she has visibly changed and grown: she looks clearly older, poised and confident, and her black hair is now sleek and shoulder-length, the bangs grown out and swept to one side, tucked behind one ear. Draw her in the SAME premium stylized 3D animated render style as Image 1 (soft matte clay-like materials, gentle subsurface skin, smooth simplified forms, warm pastel palette). Not photoreal, not anime, not a toy.
+
+Outfit and look for this whole sheet, completely different from Image 1: a tailored charcoal-grey blazer with matching slim charcoal trousers, a crisp white blouse, black low-heeled loafers, a white staff ID card on a navy lanyard around her neck, and a slim black laptop bag on her shoulder. Every figure wears exactly this, with the same colors and the same details. Do NOT use the cream cardigan, the mustard top or the navy trousers from Image 1.
+
+Camera: every figure is seen from the same high camera as the town in Image 3, looking down at about 40 degrees, so the top of her head and her shoulders are visible and her body is slightly foreshortened. Warm early-morning key light from the upper left, identical on every figure.
+
+Two full-body figures of the SAME size stand in one row, each in its own half of the image, from left to right:
+1. Standing still, facing the camera, standing tall with a confident warm smile, her right hand lifting the ID card on her chest a little to show it, her left hand on the strap of the laptop bag.
+2. Walking toward the lower left of the frame, seen in front three-quarter view, her face turned the way she is walking with a happy look, mid-stride with her LEFT foot forward. Her left hand holds the strap of the laptop bag; her right arm swings forward.
+
+Every figure is shown whole, from the top of the hair to the shoes, about 62 percent of the image height, with plenty of empty space around it. The figures do not touch or overlap. Both figures are the same height and the same scale.
+
+Background: one perfectly flat, uniform pure chroma-key green (#00FF00) everywhere, with no floor, no ground line, no cast shadows, no reflections, no gradient, no vignette and no other object. No text, no letters, no numbers, no logos anywhere.
