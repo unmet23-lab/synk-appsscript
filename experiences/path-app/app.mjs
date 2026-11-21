@@ -463,7 +463,7 @@ function profile() {
 
 const studyView = () => ({ lang: state.lang, profile: studyProfile(), programs: STUDY_PROGRAMS, rules: rulesAt(RULES, new Date()), now: new Date() });
 const condView = () => ({ ...studyView(), persisted: study.persisted(), text: S.studyText, errors: S.studyErrors });
-// 날짜 목록 위 경고는 종류만 기억하고 그릴 때 지금 언어로 고른다(언어를 바꿔도 앞 언어로 남지 않게 — 페이블 다시 검수 FA1).
+// 날짜 목록 위 경고는 종류만 기억하고 그릴 때 지금 언어로 고른다(언어를 바꿔도 앞 언어로 남지 않게).
 const DATE_NOTES = {
   full: ['다가오는 날이 서른 개라 더 넣을 수 없어요. 다가오는 날에서 하나를 뺀 뒤 넣어 주세요.', 'Coming up already has 30 dates. Remove one first.'],
   ics: ['이 브라우저에서는 달력 파일을 만들 수 없어요. 날짜를 직접 적어 두세요.', 'This browser cannot create the calendar file. Please note the date yourself.']
@@ -590,7 +590,7 @@ const ACT = {
       // 서른 개면 지난 날과 글에서 사라진 날부터 정리한다.
       if (base.dates.length >= MAX_DATES) base = keepDates(base, base.dates.filter((x) => { const h = findDate(CHANNEL_POSTS, x.id); const s2 = h && dateStatus(h.date, now).state; return h && s2 !== 'past' && s2 !== 'cancelled'; }).map((x) => x.id));
       const r = addDate(base, { id, start: hit.date.start, end: endDay(hit.date) });
-      // 실패 안내는 화면 읽기 알림만이 아니라 날짜 목록 위에도 보인다(페이블 F3).
+      // 실패 안내는 화면 읽기 알림만이 아니라 날짜 목록 위에도 보인다.
       if (r.full) { S.dateNote = 'full'; msg = dateNoteText(); }
       else {
         S.dateNote = null;

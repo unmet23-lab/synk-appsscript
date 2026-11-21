@@ -663,3 +663,23 @@ test('다가오는 날: 넣은 날은 카드와 상관없이 오늘 화면에 �
   assert.match(fresh.announcer.textContent, /새 소식에서 뺐어요/);
   assert.deepEqual(JSON.parse(fresh.record(STUDY_KEY)).channelsOff, ['scam']);
 });
+
+test('달력 파일을 못 만들면 날짜 목록 위에 보이는 경고가 뜨고, 언어를 바꾸면 경고도 그 언어로 바뀐다', async t => {
+  const goalDoc = JSON.stringify({ ...createPathDocument('ko'), state: stateModel.updateProfile(stateModel.createInitialState('ko'), { onboarded: true, primaryGoal: 'study' }, '2026-11-21T00:00:00.000Z') });
+  const now = new Date();
+  const pick = channelData.POSTS.flatMap(post => post.dates.map(date => ({ post, date }))).find(x => !['past', 'cancelled'].includes(channelData.dateStatus(x.date, now).state));
+  if (!pick) { t.diagnostic('지나지 않은 날이 자료에 없어 건너뛴다'); return; }
+  const app = await boot(t, { raw: goalDoc, downloadThrows: true });
+  app.click('nav', '[data-page="channels"]');
+  app.click('channelOpen', `[data-id="${pick.post.channel}"]`);
+  app.click('postOpen', `[data-id="${pick.post.id}"]`);
+  app.click('dateIcs', `[data-id="${pick.date.id}"]`);
+  assert.match(pageText(app), /이 브라우저에서는 달력 파일을 만들 수 없어요/, '눈으로 보이는 경고(페이블 F3)');
+  assert.match(app.announcer.textContent, /달력 파일을 만들 수 없어요/);
+  app.click('setLang', '[data-id="en"]');
+  assert.match(pageText(app), /This browser cannot create the calendar file/, '언어를 바꾸면 경고도 바뀐다(페이블 FA1)');
+  assert.doesNotMatch(pageText(app), /달력 파일을 만들 수 없어요/);
+  app.click('nav', '[data-page="today"]');
+  app.click('nav', '[data-page="channels"]');
+  assert.doesNotMatch(pageText(app), /cannot create the calendar file/, '다른 쪽으로 가면 지운다');
+});

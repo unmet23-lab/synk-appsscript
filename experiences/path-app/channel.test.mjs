@@ -177,7 +177,10 @@ test('채널 글: 넣기 단추는 aria-pressed와 날 이름을 갖고, 지난 
   const noCond = renderPost(view(createProfile(), { postId: 'visa-funds-proof', condOn: false }));
   assert.doesNotMatch(noCond, /data-page="cond"/);
   assert.doesNotMatch(textOf(noCond), /넣으면 나란히/);
-  assert.match(renderPost(view(createProfile(), { postId: 'visa-funds-proof' })), /data-page="cond"/);
+  const funds = renderPost(view(createProfile(), { postId: 'visa-funds-proof' }));
+  assert.match(funds, /data-page="cond"/);
+  assert.match(textOf(funds), /KVAC 몽골 유학\(D-2\) 서류 목록 7번 칸\(2026-11-22 확인\)/, 'KVAC에서 읽은 사실은 날짜와 함께(페이블 FA2)');
+  assert.match(funds, /class="sx-cta" href="https:\/\/www\.visaforkorea\.mn\/ko\/study-visa-d-2-1d-2-4"/);
   assert.match(textOf(renderPost(view(createProfile(), { postId: 'gks-2027-u' }))), /지방 대학에만 지원하는 R-GKS 전형 2명/);
   assert.match(textOf(renderPost(view(createProfile(), { postId: 'no-such' }))), /글을 찾지 못했어요/);
 });

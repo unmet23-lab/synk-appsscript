@@ -68,7 +68,7 @@ export const POSTS = Object.freeze([
       L('몽골에서 신청할 때는 예치(잔고) 증명서와 본인이나 부모의 몽골 은행 계좌 거래내역서를 내요. 언제 발급받는지와 얼마 동안 유지하는지에도 조건이 있어요.', 'In Mongolia you submit a deposit (balance) certificate and the statement of your own or a parent’s Mongolian bank account. There are rules on when it is issued and how long the money is kept.'),
       L('법무부가 TOPIK 4급이 있으면 이 증명을 면제하는 계획을 발표했지만 시행일은 정해지지 않았어요. 지금은 증명이 필요해요.', 'The Ministry of Justice has announced a plan to waive this proof for TOPIK level 4, but no start date has been set. For now the proof is required.')
     ],
-    // KVAC에서 읽은 사실은 출처 줄(법무부)과 따로 날짜와 함께 적는다(페이블 다시 검수 FA2).
+    // KVAC에서 읽은 사실은 출처 줄(법무부)과 따로 날짜와 함께 적는다.
     note: L('KVAC 몽골 유학(D-2) 서류 목록 7번 칸(2026-11-22 확인): 예치증명서와 본인 또는 부모의 몽골 은행 계좌 거래내역서. 같은 칸에 「우수 인증 대학은 해당되지 않음」이라고 적혀 있어요. 내 학교가 해당되는지는 아래 KVAC 서류 목록에서 확인하세요.', 'KVAC Mongolia student visa (D-2) list, item 7 (checked 2026-11-22): a deposit certificate and the transaction statement of your own or a parent’s Mongolian bank account. The same item says it does not apply to top-certified universities. Check whether your school counts in the KVAC list below.'),
     source: { title: L('법무부 2026-10-07 보도자료(별첨의 현행 기준)', 'Ministry of Justice press release, 2026-10-07 (current rules in the annex)'), url: 'https://www.moj.go.kr/bbs/moj/182/611170/artclView.do' },
     checkedAt: '2026-11-21', postedAt: '2026-11-21', dates: [],
@@ -265,7 +265,7 @@ export function upcomingDates(posts, saved, now = new Date()) {
     if (!hit) { missing++; continue; }
     const d = hit.date, end = endDay(d);
     const changed = s.start !== d.start || s.end !== end ? { start: s.start, end: s.end } : null;
-    // 차례는 화면의 날짜 칸과 같은 날로 센다: 시작 전인 접수는 시작 날(카본 A5).
+    // 차례는 화면의 날짜 칸과 같은 날로 센다: 시작 전인 접수는 시작 날.
     const status = dateStatus(d, now);
     rows.push({ ...hit, due: status.state === 'before' ? d.start : dueDay(d), status, changed });
   }
