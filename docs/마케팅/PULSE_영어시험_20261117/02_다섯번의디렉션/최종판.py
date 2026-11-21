@@ -27,20 +27,21 @@ W, H, FPS = 1080, 1920, 24
 K = W / 720   # 거친 판(720 폭)에서 정한 글자 크기 · 자리를 키우는 배수
 WARM = (0xEF, 0xE7, 0xDA)
 
-# 판마다 말자막 — (판 안 시작 초, 끝 초, 보일 글). 화면 밖 감독의 That's a wrap도 소리를 끄고 보는 사람을 위해 단다.
-#   C1은 대사가 4.0~4.5초로 컷표(2.5초)보다 늦게 나왔고, C4는 「I'm fi—」가 1.6~2.1초, 재채기가 4.3~4.6초, 「I'm fine」이 5.0~5.7초다.
-#   C4 앞 대사는 받아쓰기가 「I'm fine」으로 적지만 2.0초에서 소리가 끊겨 지시문대로 「I'm fi—」로 둔다(귀로는 확인 안 함).
+# 판마다 말자막 — (판 안 시작 초, 끝 초, 보일 글[, 가운데 높이(720 기준)]). 화면 밖 감독의 That's a wrap도 소리를 끄고 보는 사람을 위해 단다.
+#   11-21 720p 판을 받아쓰고(faster-whisper large-v3-turbo) 0.1초 소리 세기로 맞춘 값이다. 받아쓰기 초가 소리 세기와 어긋나면 소리 세기를 따랐다.
+#   C1 3.9~4.7 · C2 2.1~2.8 · C3 4.0~4.6 · C4 「I'm fi—」 2.5~2.8, 재채기 4.0~4.4, 「I'm fine」 5.5~6.05 · C5 「I'm—」 1.4~1.55,
+#   「Myself?」 2.8~3.3, 「Who's that?」 3.9~4.3, 「That's a wrap」 4.6~5.0(약 140Hz — 남자 목소리로 나옴, 하린 대사는 220~250Hz).
+#   C4는 다가감 15% 때문에 머리가 위로 올라와 그 판만 높이를 따로 준다(11-21 판에서 잰 정수리 2.6초 116 · 5.8초 80).
 CAPS = {
-    "C1": [(3.85, 5.05, "I’m fine")],
-    "C2": [(1.80, 3.20, "I’m fine!")],
-    "C3": [(4.00, 5.15, "I’m fine")],
-    "C4": [(1.25, 2.50, "I’m fi—"), (4.95, 5.95, "I’m fine")],
-    "C5": [(1.55, 2.75, "I’m—"), (2.85, 4.00, "Myself? …Who’s that?"), (4.10, 5.00, "That’s a wrap")],
+    "C1": [(3.80, 4.85, "I’m fine")],
+    "C2": [(2.05, 2.95, "I’m fine!")],
+    "C3": [(3.95, 4.75, "I’m fine")],
+    "C4": [(2.40, 3.00, "I’m fi—", 78), (5.45, 6.25, "I’m fine", 46)],
+    "C5": [(1.35, 1.95, "I’m—"), (2.75, 3.45, "Myself?"), (3.85, 4.45, "Who’s that?"), (4.55, 5.15, "That’s a wrap")],
     "C6": [],
 }
-# 판마다 쓰는 구간(in, out) — 컷표의 in · out과 같게 둔다(11-18 받은 판에 맞춰 고침)
-CAP_Y = 150   # 말자막 가운데 높이 — 가슴 높이(905)는 크림 니트 위라 안 읽히고(11-18 정지 그림 시험), 228은 앞머리 위에 얹혀 싸 보였다(11-18 볼 이유 심사)
-CARD = {"어둠": 2.8, "로고": 3.1, "고지": 3.4, "주소": 3.7}   # C6 슬레이트가 2.6~3.3초에 빠져서(11-18 받은 판) 컷표의 2.6초보다 0.5초 늦춘다
+CAP_Y = 110   # 말자막 가운데 높이(720 기준) — 11-21 가슴 위로 자른 판의 정수리가 150 안팎이라 올렸다(11-18 거친 판은 150)
+CARD = {"어둠": 3.0, "로고": 3.2, "고지": 3.5, "주소": 3.8}   # C6 편집 구간(0.6초부터) 안의 초 — 슬레이트가 판 3.5~4.0초(편집 2.9~3.4초)에 빠진다. 로고가 3.6초에 멈춰 끝까지 2.8초 선다
 
 
 def run(*a):
@@ -80,9 +81,10 @@ def place(table):
     """판마다 말자막의 (편 초 시작, 끝, 글) — CAPS 표를 판의 in · out에 맞춰 편 시각으로 옮긴다"""
     caps, t0 = [], 0.0
     for cut, a, b, _ in table:
-        for x, y, text in CAPS[cut]:
+        for c in CAPS[cut]:
+            x, y, text = c[:3]
             if a <= x < b:
-                caps.append((t0 + x - a, t0 + min(y, b) - a, text))
+                caps.append((t0 + x - a, t0 + min(y, b) - a, text, c[3] if len(c) > 3 else CAP_Y))
         t0 += b - a
     return caps
 
@@ -142,6 +144,31 @@ def ramp(t, a, d):
     return 1 - (1 - k) ** 3   # 빠르게 나와 천천히 멎음
 
 
+def 음량맞춤(path, 목표=-14.0, 봉우리=-1.5):
+    """두 번 거는 loudnorm이 이 편에서 −15.1 LUFS · 봉우리 0.0으로 끝나(11-21) 소리만 이득 + 리미터로 다시 맞춘다. 영상은 복사한다."""
+    def 재기(f):
+        r = subprocess.run(["ffmpeg", "-hide_banner", "-i", f, "-af", "ebur128=peak=true", "-f", "null", "-"],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
+        tail = r.stderr[r.stderr.rindex("Summary:"):]
+        i = float(tail.split("I:")[1].split("LUFS")[0])
+        pk = float(tail.split("Peak:")[1].split("dBFS")[0])
+        return i, pk
+    i, pk = 재기(path)
+    gain = 목표 - i
+    tmp = path[:-4] + "_음량.mp4"
+    lim = 10 ** ((봉우리 - 2.5) / 20)   # AAC로 묶을 때 봉우리가 1~2dB 솟아(11-21 −0.2 · −1.0) 2.5dB 더 낮게, 네 배 표본에서 거른다
+    for _ in range(5):
+        run("ffmpeg", "-y", "-v", "error", "-i", path, "-map", "0:v", "-map", "0:a", "-c:v", "copy",
+            "-af", f"volume={gain:.2f}dB,aresample=192000,alimiter=limit={lim:.3f}:attack=1:release=60:level=false,aresample=48000", "-ar", "48000",
+            "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", tmp)
+        i2, pk2 = 재기(tmp)
+        if abs(i2 - 목표) <= 0.3 and pk2 <= 봉우리:
+            break
+        gain += 목표 - i2
+    os.replace(tmp, path)
+    print(f"음량 {i:.1f} → {i2:.1f} LUFS · 봉우리 {pk:.1f} → {pk2:.1f} dBFS")
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     table = cuts()
@@ -149,7 +176,7 @@ def main():
         json.dump(transcribe(table), open(os.path.join(OUT, "_받아쓰기_720p.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         return
     caps = place(table)
-    for a, b, s in caps:
+    for a, b, s, _ in caps:
         print(f"  자막 {a:5.2f}~{b:5.2f} {s}")
 
     # 1) 잘라 잇기 — 판과 컷표 구간이 그대로면 앞 회차의 이음 판을 다시 쓴다(PC가 바쁠 때 10분 걸렸다)
@@ -168,7 +195,7 @@ def main():
         open(keyf, "w", encoding="utf-8").write(key)
 
     # 2) 자막과 끝 화면 얹기
-    cap_p = {s: text_patch(s, round(52 * K), weight=600) for _, _, s in caps}
+    cap_p = {s: text_patch(s, round(52 * K), weight=600) for _, _, s, _ in caps}
     c6 = sum(b - a for cut, a, b, _ in table if cut != "C6")
     total = sum(b - a for _, a, b, _ in table)
     logo = logo_patch(round(360 * K))
@@ -197,11 +224,11 @@ def main():
             break
         fr = np.frombuffer(buf, np.uint8).reshape(H, W, 3).copy()
         t = i / FPS
-        for a, b, s in caps:
+        for a, b, s, cy in caps:
             if a <= t < b:
                 k = ramp(t, a, 0.25)
                 o = min(k, 1.0 if t < b - 0.2 else (b - t) / 0.2)
-                blend(fr, cap_p[s], W / 2, CAP_Y * K + (1 - k) * 8 * K, o)
+                blend(fr, cap_p[s], W / 2, cy * K + (1 - k) * 8 * K, o)
         tc = t - c6
         if tc >= CARD["어둠"]:
             g = ramp(tc, CARD["어둠"], 0.5)
@@ -215,7 +242,8 @@ def main():
     dec.stdout.close()   # 이음 판이 n장보다 한두 장 길면 디코더가 남은 장을 내보내려다 막힌다(11-18 첫 굽기에서 10분 멈춤)
     dec.kill()
     dec.wait()
-    run("ffmpeg", "-y", "-v", "error", "-i", final, "-vf", "fps=2,scale=144:-2,tile=12x5:padding=3", "-frames:v", "1", "-q:v", "4",
+    음량맞춤(final)
+    run("ffmpeg", "-y", "-v", "error", "-i", final, "-vf", "fps=2,scale=144:-2,tile=12x7:padding=3", "-frames:v", "1", "-q:v", "4",
         os.path.join(OUT, "다섯번의디렉션_1080_반초.jpg"))
     print(final, f"{total:.1f}초")
 
