@@ -13,6 +13,8 @@ export const nameOf = file =>
   path.relative(EXPERIENCES, path.resolve(file)).split(path.sep).join('/');
 const OLD_ENGINE = /(^|\/)atlas-learning\.js$/;
 const TEST = /\.test\.m?js$/;
+// 이 스크립트는 공개할 때만 /assets/로 옮긴다.
+const publishedScripts = new Map([['/assets/launch-notice.js', 'launch-notice/launch-notice.js']]);
 
 // `<script … src=…>` — 큰따옴표 · 작은따옴표 · 따옴표 없는 값을 모두 받는다(r4 GPT GA2 · GA6). 대소문자를 가리지 않는다. 속성 이름이
 // 바로 src인 것만 읽는다 — data-src 같은 이름은 브라우저가 싣지 않는다(r5 GPT GA3).
@@ -24,9 +26,11 @@ function entriesOf(dir) {
   for (const html of fs.readdirSync(dir).filter(file => file.endsWith('.html'))) {
     const text = fs.readFileSync(path.join(dir, html), 'utf8');
     for (const match of text.matchAll(SCRIPT_SRC)) {
-      const src = (match[1] ?? match[2] ?? match[3]).split('?')[0];
+      const src = (match[1] ?? match[2] ?? match[3]).split(/[?#]/, 1)[0];
       if (/^(https?:)?\/\//.test(src)) continue;
-      const file = src.startsWith('/') ? path.join(EXPERIENCES, src) : path.join(dir, src);
+      const file = src.startsWith('/')
+        ? path.join(EXPERIENCES, publishedScripts.get(src) ?? src)
+        : path.join(dir, src);
       if (!OLD_ENGINE.test(file)) entries.add(file);
     }
   }
