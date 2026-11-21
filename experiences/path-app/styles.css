@@ -486,6 +486,9 @@ button.pass:hover{transform:translateY(-3px)}
 .sx-src b{margin-right:4px;font-weight:650;color:var(--ink-2)}
 .sx-note{margin:8px 0 0;font-size:14.5px;line-height:1.6;color:var(--ink-2)}
 .sx-note.plan{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--butter-wash)}
+.sx-note.is-box{margin-top:16px;padding:12px 14px;border-radius:14px;background:var(--soft)}
+.sx-note.is-box b{margin-right:6px;color:var(--ink)}
+.sx-note.is-small{font-size:13.5px;color:var(--gray)}
 .sx-note.plan b{margin-right:4px;color:var(--butter-deep)}
 .sx-store{margin:0 0 4px;padding:11px 14px;border-radius:14px;background:var(--soft);font-size:13.5px;line-height:1.55;color:var(--ink-2)}
 .sx-store.is-warn{background:var(--butter-wash);color:var(--butter-deep)}
@@ -551,6 +554,16 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
 .sx-photo-body small{display:block;font-size:13.5px;font-weight:650;line-height:1.45}
 .sx-photo-body b{display:block;margin-top:2px;font:700 21px/1.3 var(--kr);letter-spacing:-.01em}
 .sx-photo.is-hero{aspect-ratio:21/9;margin-bottom:20px}
+/* 실제 대학의 표지: 지어낸 건물 그림 대신 색 판과 도시 이름 */
+.sx-cover{position:absolute;inset:0;display:block;background:var(--lapis-deep);overflow:hidden}
+.sx-cover.is-meadow{background:var(--meadow-deep)}
+.sx-cover.is-ink{background:#1b1f26}
+.sx-cover.is-coral{background:var(--coral-ink)}
+.sx-cover span{position:absolute;left:14px;top:2px;font:800 76px/1 'Inter Tight',sans-serif;letter-spacing:-.04em;color:rgba(255,255,255,.16);white-space:nowrap}
+.sx-photo:has(.sx-cover)::after{background:linear-gradient(180deg,rgba(12,16,26,0) 30%,rgba(12,16,26,.34) 100%)}
+.sx-cmp-head .sx-cover{position:relative;inset:auto;width:100%;aspect-ratio:4/3;border-radius:14px}
+.sx-cmp-head .sx-cover span{left:8px;top:4px;font-size:30px}
+.sx-cmp-head .sx-cover+span{color:var(--ink)}
 .sx-pick{position:absolute;right:10px;top:10px;z-index:3;display:inline-flex;align-items:center;min-height:44px;padding:0 15px;border:0;border-radius:999px;background:rgba(255,255,255,.95);color:var(--ink);font-size:13px;font-weight:700}
 .sx-pick[aria-pressed=true]{background:var(--butter)}
 .sx-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 4px 0}
@@ -577,6 +590,7 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
 .sx-money li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;font-size:15.5px}
 .sx-money li span:last-child{font-weight:700;font-feature-settings:'tnum'}
 .sx-money li.minus span:last-child{color:var(--meadow-deep)}
+.sx-money li.is-unknown span:last-child{font-weight:500;color:var(--gray)}
 
 /* 나란히 보기 */
 .sx-cmp-wrap{position:relative;margin-top:8px;overflow-x:auto}

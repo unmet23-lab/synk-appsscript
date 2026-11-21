@@ -119,7 +119,7 @@ function fixture() {
   }, '2026-11-09T10:01:00.000Z');
 }
 
-async function boot(t, { failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null } = {}) {
+async function boot(t, { failRead = false, failWrite = false, legacy = false, raw = null, signedIn = false, downloadThrows = false, conflictSave = false, initialLocalConflict = false, publicWeb = false, seed = null, programs = null } = {}) {
   const initial = raw ?? JSON.stringify(legacy ? fixture() : { ...createPathDocument('ko'), state: fixture() });
   const originalKey = legacy ? LEGACY_KEY : GUEST_KEY;
   const records = new Map([[originalKey, initial]]);
@@ -181,6 +181,8 @@ async function boot(t, { failRead = false, failWrite = false, legacy = false, ra
   TestURL.revokeObjectURL = value => revoked.push(value);
   const context = {
     ...stateModel, ...content, ...accountUi, ...jobsUi, ...studyData, ...studyMatch, ...studyProfile, ...studyUi,
+    // 기본은 예시 묶음이다. 실제 과정이 자료에 들어와도 아래 흐름 시험은 같은 묶음으로 돈다.
+    PROGRAMS: programs ?? studyData.PROGRAMS.filter(program => program.example),
     createPathSession: options => {
       sessionOptions = options;
       session = createPathSession({ ...options, storage, fetcher, lang: 'ko', ...(accountFactory ? { accountFactory } : {}),
@@ -581,4 +583,23 @@ test('편집이 막힌 계정에서도 내 조건은 쓸 수 있고, 저장이 �
   assert.equal(blocked.record(STUDY_KEY), undefined);
   assert.match(blocked.root.querySelector('.sx-store').textContent, /저장할 수 없어서 지금 화면에서만 기억해요/);
   assert.equal(blocked.root.querySelector('#sx-grade').value, '75', '화면 안에서는 넣은 값을 기억한다');
+});
+
+test('실제 과정이 있으면 공개판에도 대학 탭이 나오고 예시는 어디에도 나오지 않는다', async t => {
+  const real = { ...studyData.PROGRAMS.find(program => program.example), id: 'test-ug', example: false, partner: false, image: null,
+    name: { ko: '시험대학교', en: 'Test University' }, costs: { tuition: 4000000, dorm: null, living: null },
+    source: { title: { ko: '시험대학교 모집 요강', en: 'Test University admissions guide' }, url: 'https://example.ac.kr/guide.pdf' }, checkedAt: '2026-11-21' };
+  for (const publicWeb of [true, false]) {
+    const app = await boot(t, { raw: studyGoalDocument(), publicWeb, programs: [...studyData.PROGRAMS.filter(program => program.example), real] });
+    assert.equal(app.root.querySelector('nav.tabs').querySelectorAll('button').length, 6, 'publicWeb=' + publicWeb);
+    assert.match(app.root.querySelector('button.sx-entry-btn').textContent, /내 조건으로 갈 수 있는 대학을 알아봐요/);
+    app.click('nav', '[data-page="univ"]');
+    assert.equal(app.root.querySelectorAll('button[data-action="univOpen"]').length, 1);
+    assert.match(pageText(app), /대학 공개 모집 요강/);
+    assert.doesNotMatch(pageText(app), /예시대학 [ABC]|예시 과정/);
+    assert.equal(app.root.querySelectorAll('img').length, 0, '실제 대학에는 지어낸 건물 그림이 없다');
+    app.click('univOpen', '[data-id="test-ug"]');
+    assert.match(app.root.querySelector('h1').textContent, /시험대학교/);
+    assert.match(pageText(app), /시험대학교 모집 요강/);
+  }
 });

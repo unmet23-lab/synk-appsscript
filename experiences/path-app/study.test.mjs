@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { RULES, PROGRAMS, validateStudyData, staleItems, financeRule, announcedRules, daysUntil, programById, proofRule, rulesAt, programsFor } from './study-data.mjs';
+import { RULES, PROGRAMS, validateStudyData, staleItems, financeRule, announcedRules, daysUntil, programById, proofRule, rulesAt, programsFor, applyWindow } from './study-data.mjs';
 import { matchProgram, programCost, countFit, readyToCount, routes, MATCH_KEYS } from './match.mjs';
 import { STUDY_KEY, GUEST_OWNER, createProfile, normalizeProfile, setField, toggleCompare, isEmptyProfile, parseWhole, createProfileStore, MAX_FUNDS_WON } from './study-profile.mjs';
 import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, filterPrograms, condHint } from './study-ui.mjs';
 
-const A = programById(PROGRAMS, 'example-a-ug'), B = programById(PROGRAMS, 'example-b-lang'), C = programById(PROGRAMS, 'example-c-ug');
+const EX = PROGRAMS.filter((p) => p.example), REAL = PROGRAMS.filter((p) => !p.example);
+const A = programById(EX, 'example-a-ug'), B = programById(EX, 'example-b-lang'), C = programById(EX, 'example-c-ug');
 const clone = (v) => JSON.parse(JSON.stringify(v));
 // 재정 금액을 지금 쓰는 안내에서 확인한 것으로 친 규칙. 실제 RULES의 표시는 자료가 정하므로 시험은 둘 다 본다.
 const FIRM = RULES.map((r) => (r.kind === 'finance' ? { ...r, inCurrentGuide: true } : r));
@@ -26,12 +27,13 @@ test('공식 규칙마다 https 출처 · 기준일 · 확인한 날이 있고, 
   assert.equal(financeRule(RULES, 'D-4', 'metro').won, 10000000);
 });
 
-test('협약 전 과정은 모두 예시이고 인증 표시가 없다', () => {
-  for (const p of PROGRAMS) { assert.equal(p.example, true); assert.equal(p.certified, false); assert.match(p.name.ko, /^예시/); }
+test('예시 과정은 인증 표시가 없고 이름이 「예시」로 시작한다', () => {
+  assert.equal(EX.length, 3);
+  for (const p of EX) { assert.equal(p.example, true); assert.equal(p.certified, false); assert.match(p.name.ko, /^예시/); }
 });
 
 test('검사는 출처 없는 규칙 · 출처 없는 실제 과정 · 인증 붙은 예시 · 재정 규칙 없는 과정을 거절한다', () => {
-  const rules = clone(RULES), programs = clone(PROGRAMS);
+  const rules = clone(RULES), programs = clone(EX);
   const bad = (mutate) => { const r = clone(rules), p = clone(programs); mutate(r, p); assert.throws(() => validateStudyData(r, p), /Invalid study data/); };
   bad((r) => { delete r[0].source; });
   bad((r) => { r[0].source.url = 'http://example.com/a'; });
@@ -63,9 +65,9 @@ test('계획 발표 규칙은 대조에 쓰이지 않고 따로 꺼낸다', () =
 });
 
 test('오래된 확인 날짜만 골라내고 예시 과정은 세지 않는다', () => {
-  assert.deepEqual(staleItems(RULES, PROGRAMS, new Date('2026-12-01T00:00:00Z')), []);
+  assert.deepEqual(staleItems(RULES, EX, new Date('2026-12-01T00:00:00Z')), []);
   assert.ok(RULES.filter((r) => r.kind === 'finance').every((r) => r.inCurrentGuide === true), '네 금액 모두 2026-11-21에 현행 안내에서 직접 읽었다');
-  const late = staleItems(RULES, PROGRAMS, new Date('2027-03-01T00:00:00Z'));
+  const late = staleItems(RULES, EX, new Date('2027-03-01T00:00:00Z'));
   assert.equal(late.length, RULES.length);
   assert.ok(late.every((x) => x.type === 'rule'));
 });
@@ -111,26 +113,26 @@ test('조건 넷의 경계: 같은 값은 맞음, 하나 모자라면 부족', (
 });
 
 test('「맞는 곳」은 성적과 한국어를 둘 다 넣어야 세고, 넣은 조건이 부족하면 빼고, 안 넣은 조건은 봐준다', () => {
-  assert.equal(countFit(createProfile(), PROGRAMS, FIRM), null, '안 넣어서 0으로 보이지 않는다');
-  assert.equal(countFit(setField(createProfile(), 'topik', 4), PROGRAMS, FIRM), null, '성적이 비면 세지 않는다');
-  assert.equal(countFit(setField(createProfile(), 'gradePct', 80), PROGRAMS, FIRM), null, '한국어가 비면 세지 않는다');
+  assert.equal(countFit(createProfile(), EX, FIRM), null, '안 넣어서 0으로 보이지 않는다');
+  assert.equal(countFit(setField(createProfile(), 'topik', 4), EX, FIRM), null, '성적이 비면 세지 않는다');
+  assert.equal(countFit(setField(createProfile(), 'gradePct', 80), EX, FIRM), null, '한국어가 비면 세지 않는다');
   assert.equal(readyToCount(setField(setField(createProfile(), 'gradePct', 0), 'topik', 0)), true, '0도 넣은 값이다');
   let p = setField(setField(createProfile(), 'gradePct', 80), 'topik', 2);
-  assert.equal(countFit(p, PROGRAMS, FIRM), 1);
-  assert.equal(countFit(p, PROGRAMS, FIRM, 4), 3);
-  assert.equal(countFit(setField(p, 'gradePct', 70), PROGRAMS, FIRM, 4), 2);
-  assert.equal(countFit(setField(p, 'gradePct', 50), PROGRAMS, FIRM, 6), 0);
+  assert.equal(countFit(p, EX, FIRM), 1);
+  assert.equal(countFit(p, EX, FIRM, 4), 3);
+  assert.equal(countFit(setField(p, 'gradePct', 70), EX, FIRM, 4), 2);
+  assert.equal(countFit(setField(p, 'gradePct', 50), EX, FIRM, 6), 0);
   p = setField(p, 'topik', 4);
-  assert.equal(countFit(setField(p, 'education', 'none'), PROGRAMS, FIRM), 0, '학력이 부족하면 세지 않는다');
-  assert.equal(countFit(setField(p, 'education', 'expected'), PROGRAMS, FIRM), 3);
-  assert.equal(countFit(setField(p, 'fundsWon', 9000000), PROGRAMS, FIRM), 1, '돈이 모자란 학부 둘은 빠지고 어학 과정만 남는다');
-  assert.equal(countFit(setField(p, 'fundsWon', 9000000), PROGRAMS, LOOSE), 3, '확인하지 못한 금액으로는 빼지 않는다');
+  assert.equal(countFit(setField(p, 'education', 'none'), EX, FIRM), 0, '학력이 부족하면 세지 않는다');
+  assert.equal(countFit(setField(p, 'education', 'expected'), EX, FIRM), 3);
+  assert.equal(countFit(setField(p, 'fundsWon', 9000000), EX, FIRM), 1, '돈이 모자란 학부 둘은 빠지고 어학 과정만 남는다');
+  assert.equal(countFit(setField(p, 'fundsWon', 9000000), EX, LOOSE), 3, '확인하지 못한 금액으로는 빼지 않는다');
   // 머리 숫자와 「조건이 맞는 곳」 거르기는 같은 기준이다
   for (const q of [p, setField(p, 'education', 'none'), setField(p, 'fundsWon', 9000000), setField(p, 'topik', 2)]) {
-    assert.equal(filterPrograms(q, 'fit', PROGRAMS, FIRM).length, countFit(q, PROGRAMS, FIRM));
+    assert.equal(filterPrograms(q, 'fit', EX, FIRM).length, countFit(q, EX, FIRM));
   }
-  assert.deepEqual(filterPrograms(createProfile(), 'fit', PROGRAMS, FIRM), []);
-  assert.equal(filterPrograms(createProfile(), 'language', PROGRAMS, FIRM).length, 1);
+  assert.deepEqual(filterPrograms(createProfile(), 'fit', EX, FIRM), []);
+  assert.equal(filterPrograms(createProfile(), 'language', EX, FIRM).length, 1);
 });
 
 test('재정 금액은 지금 쓰는 안내에서 확인했고 오래되지 않았을 때만 판정한다', () => {
@@ -152,10 +154,12 @@ test('성적 조건 0은 「조건 없음」이라 성적을 안 넣어도 맞�
 });
 
 test('공개판에는 예시 과정을 싣지 않는다', () => {
-  assert.deepEqual(programsFor(PROGRAMS, true), []);
-  assert.equal(programsFor(PROGRAMS, false).length, PROGRAMS.length);
+  assert.deepEqual(programsFor(EX, true), []);
+  assert.equal(programsFor(EX, false).length, EX.length);
+  assert.deepEqual(programsFor(PROGRAMS, true), programsFor(PROGRAMS, false).filter((x) => !x.example), '실제 과정이 있으면 미리보기와 공개판이 같다');
   const real = { ...A, id: 'real-a', example: false };
   assert.deepEqual(programsFor([A, real], true).map((x) => x.id), ['real-a']);
+  assert.deepEqual(programsFor([A, real], false).map((x) => x.id), ['real-a'], '실제 과정이 하나라도 있으면 미리보기에서도 예시를 뺀다');
 });
 
 test('장학금은 내 급수 이하의 가장 높은 단계, 다음 단계는 더 높은 가장 가까운 단계', () => {
@@ -173,14 +177,14 @@ test('장학금은 내 급수 이하의 가장 높은 단계, 다음 단계는 �
 
 test('갈 수 있는 길: 어학 먼저와 바로 학부', () => {
   let p = setField(setField(createProfile(), 'gradePct', 80), 'topik', 2);
-  let r = routes(p, PROGRAMS, RULES);
+  let r = routes(p, EX, RULES);
   assert.deepEqual([r.languageFirst.status, r.languageFirst.count], ['ok', 1]);
   assert.deepEqual([r.direct.status, r.direct.count, r.direct.lowestTopik, r.direct.topikGap], ['lack', 0, 3, 1]);
-  r = routes(setField(p, 'topik', 3), PROGRAMS, RULES);
+  r = routes(setField(p, 'topik', 3), EX, RULES);
   assert.deepEqual([r.direct.status, r.direct.count, r.direct.topikGap], ['ok', 1, 0]);
-  r = routes(createProfile(), PROGRAMS, RULES);
+  r = routes(createProfile(), EX, RULES);
   assert.equal(r.languageFirst.status, 'check'); assert.equal(r.direct.status, 'check'); assert.equal(r.direct.topikGap, null);
-  r = routes(p, PROGRAMS.filter((x) => x.level === 'language'), RULES);
+  r = routes(p, EX.filter((x) => x.level === 'language'), RULES);
   assert.equal(r.direct.status, 'none');
 });
 
@@ -199,7 +203,7 @@ test('내 조건: 깨진 저장값은 빈 조건, 틀린 칸만 비움, 범위 �
 });
 
 test('비교는 셋까지, 모르는 과정은 담지 않는다', () => {
-  const ids = PROGRAMS.map((x) => x.id);
+  const ids = EX.map((x) => x.id);
   let p = createProfile();
   for (const id of ids) p = toggleCompare(p, id, ids);
   assert.deepEqual(p.compare, ids);
@@ -259,7 +263,7 @@ test('저장이 막히면 메모리로만 기억하고 저장됐다고 하지 �
 });
 
 const NOW = new Date(2026, 10, 21, 12, 0);
-const view = (profile, extra = {}) => ({ lang: 'ko', profile, programs: PROGRAMS, rules: FIRM, now: NOW, ...extra });
+const view = (profile, extra = {}) => ({ lang: 'ko', profile, programs: EX, rules: FIRM, now: NOW, ...extra });
 const textOf = (html) => html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
 
 test('화면: 예시만 있는 동안 「대학 N곳」이라고 세지 않고 예시라고 적는다', () => {
@@ -274,7 +278,7 @@ test('화면: 예시만 있는 동안 「대학 N곳」이라고 세지 않고 �
   assert.match(textOf(renderUniv(view(p))), /1 개의 예시 과정이 지금 조건에 맞아요 \(예시 3개 중\)/);
   assert.match(textOf(renderUniv(view(createProfile()))), /성적과 한국어를 넣으면 맞는 곳을 알려 줘요/);
   assert.match(textOf(renderCondResult(view(p))), /4급이면 예시 과정 3개가 맞아요/);
-  const real = PROGRAMS.map((x) => ({ ...x, example: false }));
+  const real = EX.map((x) => ({ ...x, example: false }));
   assert.match(textOf(renderStudyEntry(view(p, { programs: real }))), /지금 조건에 맞는 곳 1곳/);
   assert.match(textOf(renderUniv(view(p, { programs: [] }))), /협력 대학을 준비하고 있어요/);
 });
@@ -327,3 +331,80 @@ test('조건의 주인: 손님 것을 계정이 이어받고, 주인 표시가 �
   assert.equal(createProfileStore(storage).get().topik, null, '주인이 없는 저장값도 버린다');
 });
 
+
+// ── 실제 대학 과정(공개 모집 요강) ──
+const SRC = { title: { ko: '시험대학교 2027학년도 외국인 모집 요강', en: 'Test University 2027 international admissions guide' }, url: 'https://example.ac.kr/guide.pdf' };
+const realUg = { ...A, id: 'test-ug', example: false, partner: false, name: { ko: '시험대학교', en: 'Test University' }, image: null, tone: 'meadow',
+  term: { ko: '2027학년도 3월 입학', en: 'March 2027 intake' }, requires: { education: 'highschool', gradePct: 0, topik: 3 },
+  requiresNote: { ko: 'TOPIK이 없으면 대학 한국어 시험으로도 지원할 수 있어요.', en: 'Without TOPIK you can apply through the university’s own Korean test.' },
+  costs: { tuition: 4000000, dorm: null, living: null }, costsNote: { ko: '인문 · 사회 계열 두 학기 기준이에요.', en: 'Two semesters, humanities and social sciences.' },
+  scholarship: [{ topik: 3, tuitionRate: 0.3 }, { topik: 4, tuitionRate: 0.5 }], scholarshipTerms: 1,
+  scholarshipNote: { ko: '입학한 첫 학기에만 줘요.', en: 'First semester only.' },
+  applyOpens: '2026-11-02', applyCloses: '2026-12-11', source: SRC, checkedAt: '2026-11-21' };
+
+test('실제 과정: 출처와 확인한 날이 있고, 지어낸 그림을 쓰지 않으며, 모르는 비용은 비워 둔다', () => {
+  assert.equal(validateStudyData(RULES, [realUg]), true);
+  const bad = (change) => assert.throws(() => validateStudyData(RULES, [{ ...realUg, ...change }]), /Invalid study data/);
+  bad({ source: null }); bad({ checkedAt: null }); bad({ image: 'campus-photo' }); bad({ tone: 'pink' });
+  bad({ applyCloses: '2026-10-01' }); bad({ scholarshipTerms: 3 }); bad({ term: { ko: '봄' } }); bad({ partner: 'yes' });
+  assert.throws(() => validateStudyData(RULES, [{ ...A, costs: { ...A.costs, dorm: null } }]), /Invalid study data/, '예시는 비용을 비울 수 없다');
+  assert.throws(() => validateStudyData(RULES, [{ ...A, partner: true }]), /Invalid study data/, '예시는 협력 대학이 될 수 없다');
+  for (const p of REAL) {
+    assert.equal(p.image, null, p.id + ': 실제 대학에 지어낸 건물 그림을 쓰지 않는다');
+    assert.match(p.source.url, /^https:\/\//); assert.match(p.checkedAt, /^\d{4}-\d{2}-\d{2}$/);
+    assert.equal(p.certified, false, p.id + ': 인증 대학 명단과 대조하기 전에는 인증 표시를 하지 않는다');
+    assert.notEqual(p.partner, true, p.id + ': 협약 전에는 협력 대학이 아니다');
+    assert.doesNotMatch(p.name.ko, /예시/);
+  }
+});
+
+test('실제 과정의 비용: 안내 없는 비용은 합계에서 빼고, 첫 학기만 주는 장학금은 절반만 뺀다', () => {
+  const at = (t) => programCost(setField(createProfile(), 'topik', t), realUg);
+  assert.deepEqual(at(2).missing, ['dorm', 'living']);
+  assert.equal(at(2).total, 4000000);
+  assert.equal(at(3).scholarship, 600000, '한 해 400만 원의 30%를 한 학기 몫만');
+  assert.equal(at(3).total, 3400000);
+  assert.deepEqual(at(3).nextLevel, { topik: 4, total: 3000000 });
+  assert.deepEqual(programCost(createProfile(), A).missing, []);
+  // 금액으로 적힌 장학금(수업료 일부만 깎는 경우)
+  const fixed = { ...realUg, scholarship: [{ topik: 5, won: 820500 }, { topik: 6, won: 2000000 }], scholarshipTerms: undefined };
+  assert.equal(validateStudyData(RULES, [fixed]), true);
+  const f = (t) => programCost(setField(createProfile(), 'topik', t), fixed);
+  assert.deepEqual([f(4).scholarship, f(4).rate, f(4).nextLevel.topik, f(4).nextLevel.total], [0, 0, 5, 3179500]);
+  assert.deepEqual([f(5).scholarship, f(5).rate, f(5).total, f(5).nextLevel.total], [820500, null, 3179500, 2000000]);
+  assert.equal(f(6).nextLevel, null);
+  assert.match(textOf(renderUnivDetail(view(setField(createProfile(), 'topik', 5), { programs: [fixed], programId: 'test-ug' }))), /한국어 5급 장학금 82만 500원을 뺀 값이에요/);
+  for (const steps of [[{ topik: 5, won: 900000 }, { topik: 6, won: 800000 }], [{ topik: 5, won: 100, tuitionRate: 0.1 }], [{ topik: 5, won: 99999999 }], [{ topik: 5 }]]) {
+    assert.throws(() => validateStudyData(RULES, [{ ...fixed, scholarship: steps }]), /Invalid study data/);
+  }
+});
+
+test('원서 접수: 시작 전, 접수 중, 지난 일정을 구분한다', () => {
+  const w = (opens, closes, now) => applyWindow({ applyOpens: opens, applyCloses: closes }, now);
+  assert.deepEqual(w('2026-12-01', '2026-12-20', new Date(2026, 10, 21)), { state: 'before', days: 10 });
+  assert.deepEqual(w('2026-11-02', '2026-12-11', new Date(2026, 10, 21)), { state: 'open', days: 20 });
+  assert.deepEqual(w('2026-11-21', undefined, new Date(2026, 10, 21)), { state: 'open', days: null });
+  assert.deepEqual(w('2026-11-02', '2026-11-20', new Date(2026, 10, 21)), { state: 'closed', days: null });
+  assert.deepEqual(w(null, null, new Date(2026, 10, 21)), { state: 'unknown', days: null });
+});
+
+test('화면: 공개 요강을 옮긴 대학은 「협력」이라고 하지 않고 출처와 비어 있는 비용을 그대로 보인다', () => {
+  const p = setField(setField(createProfile(), 'gradePct', 80), 'topik', 3);
+  const list = textOf(renderUniv(view(p, { programs: [realUg] })));
+  assert.match(list, /대학 공개 모집 요강/); assert.match(list, /협력 대학 준비 중/); assert.match(list, /SYNK와 협약한 대학은 아직 없어요/);
+  assert.match(list, /1\s*곳이 지금 조건에 맞아요/); assert.match(list, /마감 D-20/);
+  assert.match(textOf(renderUniv(view(p, { programs: [{ ...realUg, applyCloses: '2026-11-20' }] }))), /접수 끝남/);
+  assert.match(textOf(renderUnivDetail(view(p, { programs: [{ ...realUg, applyNote: { ko: '9월 입학 요강은 아직 나오지 않았어요.', en: 'The September guide is not out yet.' } }], programId: 'test-ug' }))), /원서 접수 9월 입학 요강은 아직 나오지 않았어요/); assert.doesNotMatch(list, /예시/);
+  const html = renderUnivDetail(view(p, { programs: [realUg], programId: 'test-ug' })), text = textOf(html);
+  assert.doesNotMatch(html, /<img/);
+  assert.match(html, /class="sx-cover is-meadow"/);
+  for (const want of ['시험대학교', '2027학년도 3월 입학', 'SYNK와 협약한 대학은 아니에요', '시험대학교 2027학년도 외국인 모집 요강', '확인 2026-11-21', '확인된 비용의 합', '340만 원',
+    '대학 안내에서 확인', '대학이 안내하지 않음', '기숙사비와 생활비는 대학이 금액을 안내하지 않아 합계에 넣지 않았어요', '인문 · 사회 계열 두 학기 기준이에요', '입학한 첫 학기에만 줘요',
+    'TOPIK이 없으면 대학 한국어 시험으로도', '조건 없음', '4급이면 확인된 비용의 합이 300만 원으로 줄어요']) assert.ok(text.includes(want), want);
+  assert.doesNotMatch(text, /undefined|NaN|null/);
+  const partner = textOf(renderUniv(view(p, { programs: [{ ...realUg, partner: true }] })));
+  assert.match(partner, /협력 대학/); assert.doesNotMatch(partner, /준비 중|공개 모집 요강/);
+  const cmp = renderUnivCompare(view({ ...p, compare: ['test-ug', B.id] }, { programs: [realUg, B] }));
+  assert.match(textOf(cmp), /확인된 비용의 합/); assert.match(cmp, /class="sx-cover is-meadow"/);
+  for (const lang of ['ko', 'en']) assert.doesNotMatch(renderUnivDetail(view(p, { lang, programs: [realUg], programId: 'test-ug' })), /\sstyle=|undefined|NaN/);
+});

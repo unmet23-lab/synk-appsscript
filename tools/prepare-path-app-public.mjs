@@ -24,7 +24,7 @@ const FONTS = Object.freeze({
 });
 /** 공개판에 싣는 과정이 쓰는 그림만 싣는다. 그림 이름은 자료의 승인 목록(IMAGE_IDS)에 있어야 한다. 예시 과정은 공개판에 없으므로 그 그림도 싣지 않는다. */
 export function publicImages(programs = PROGRAMS) {
-  const ids = [...new Set(programsFor(programs, true).map(program => program.image))].sort();
+  const ids = [...new Set(programsFor(programs, true).map(program => program.image).filter(image => image !== null))].sort();
   for (const id of ids) if (!IMAGE_IDS.includes(id)) throw Error('Unapproved PATH image: ' + id);
   return ids.map(id => 'assets/' + id + '.webp');
 }

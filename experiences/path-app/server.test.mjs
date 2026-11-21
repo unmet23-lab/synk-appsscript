@@ -175,7 +175,7 @@ test('the local entry bundles newly added safe dependencies without exposing arb
 
 test('승인된 대학 그림만 image/webp로 주고, 목록에 없는 그림은 주지 않는다', async () => {
   const { IMAGE_IDS, PROGRAMS } = await import('./study-data.mjs');
-  for (const program of PROGRAMS) assert.ok(IMAGE_IDS.includes(program.image), program.id);
+  for (const program of PROGRAMS) assert.ok(program.image === null || IMAGE_IDS.includes(program.image), program.id);
   const real = new URL('./assets/', import.meta.url);
   for (const id of IMAGE_IDS) {
     const bytes = await readFile(new URL(id + '.webp', real));

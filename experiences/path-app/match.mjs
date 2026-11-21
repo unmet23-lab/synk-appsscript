@@ -1,5 +1,5 @@
 // PATH 조건 대조기. 순수 함수만 둔다. 결과는 판정이 아닌 대조다(입학 · 비자를 약속하지 않는다).
-import { financeRule, MAX_TOPIK } from './study-data.mjs';
+import { financeRule, scholarshipAmount, MAX_TOPIK } from './study-data.mjs';
 
 export const MATCH_KEYS = Object.freeze(['education', 'grade', 'topik', 'finance']);
 
@@ -40,22 +40,26 @@ export function matchProgram(profile, program, rules) {
   return { items, okCount, canApplyAcademically, fits };
 }
 
-function scholarshipRate(program, topik) {
-  let rate = 0;
-  if (Number.isInteger(topik)) for (const s of program.scholarship) if (topik >= s.topik) rate = s.tuitionRate;
-  return rate;
-}
 
-/** 한 해에 드는 돈. 장학금은 내 급수 이하에서 가장 높은 단계의 비율을 등록금에 곱한다. */
+/**
+ * 한 해에 드는 돈. 장학금은 내 급수 이하에서 가장 높은 단계의 비율을 등록금에 곱한다
+ * (scholarshipTerms가 1이면 한 해 두 학기 가운데 한 학기에만 준다).
+ * 대학이 안내하지 않은 비용(null)은 합계에 넣지 않고 missing에 이름을 적는다.
+ */
 export function programCost(profile, program) {
   const topik = Number.isInteger(profile?.topik) ? profile.topik : null;
   const { tuition, dorm, living } = program.costs;
-  const rate = scholarshipRate(program, topik);
-  const scholarship = Math.round(tuition * rate);
-  const total = tuition + dorm + living - scholarship;
-  const next = program.scholarship.find((s) => s.topik > (topik ?? -1) && s.tuitionRate > rate) || null;
-  const nextLevel = next ? { topik: next.topik, total: tuition + dorm + living - Math.round(tuition * next.tuitionRate) } : null;
-  return { tuition, dorm, living, scholarship, rate, total, nextLevel };
+  let step = null;
+  if (topik !== null) for (const s of program.scholarship) if (topik >= s.topik) step = s;
+  const scholarship = step ? scholarshipAmount(program, step) : 0;
+  // rate는 비율로 적힌 단계일 때만 있다(금액으로 적힌 단계는 null).
+  const rate = !step ? 0 : typeof step.tuitionRate === 'number' ? step.tuitionRate : null;
+  const known = tuition + (dorm ?? 0) + (living ?? 0);
+  const missing = ['dorm', 'living'].filter((k) => program.costs[k] === null);
+  const total = known - scholarship;
+  const next = program.scholarship.find((s) => s.topik > (topik ?? -1) && scholarshipAmount(program, s) > scholarship) || null;
+  const nextLevel = next ? { topik: next.topik, total: known - scholarshipAmount(program, next) } : null;
+  return { tuition, dorm, living, scholarship, rate, total, nextLevel, missing };
 }
 
 /**

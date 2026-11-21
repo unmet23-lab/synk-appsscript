@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-21",
+  "cases": 104,
+  "overflow": [],
+  "brokenImages": [],
+  "failedRequests": [],
+  "smallTargets": [],
+  "notes": [],
+  "newConsoleErrors": [],
+  "knownConsoleErrors": {
+    "count": 64,
+    "what": "설정 없는 미리보기에서 config.json 요청을 CSP(connect-src none)가 막는 기존 동작"
+  }
+}
