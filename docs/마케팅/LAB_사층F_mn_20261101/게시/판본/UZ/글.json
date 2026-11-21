@@ -216,8 +216,8 @@
     {
       "id": "death",
       "칸": "뜻",
-      "글": "Oʻlim =",
-      "원문": "죽음 =",
+      "글": "«Oʻlim» =",
+      "원문": "「죽음」이란 말 =",
       "초": [
         5.8,
         7.2
@@ -325,7 +325,7 @@
     {
       "id": "floorF",
       "칸": "개그",
-      "글": "Arvohlar qavati",
+      "글": "Sharpalar qavati",
       "원문": "유령들의 층",
       "초": [
         8.9,
@@ -400,8 +400,8 @@
     {
       "id": "endCard",
       "칸": "끝",
-      "글": "F qavatiga\nborasizmi?",
-      "원문": "F층에\n갈 거예요?",
+      "글": "«F»ga\nborasizmi?",
+      "원문": "F에\n갈 거예요?",
       "초": [
         14.9,
         16
@@ -442,13 +442,20 @@
       "칸": "게시글",
       "글": "Siz uchun qaysi raqam omadsiz? Izohlarda yozing 👇",
       "원문": "당신에게는 어떤 숫자가 운이 없어요? 댓글에 적어 주세요 👇"
+    },
+    {
+      "id": "게시글.telegram.본문.4",
+      "칸": "게시글",
+      "글": "Siz uchun qaysi raqam omadsiz?",
+      "원문": "당신에게는 어떤 숫자가 운이 없어요?"
     }
   ],
   "원천": {
     "글": "remotion/src/m20/판본/UZ.json",
     "지도": "판본지도.json",
     "원고": {
-      "instagram": "게시/판본/UZ/원고_instagram.json"
+      "instagram": "게시/판본/UZ/원고_instagram.json",
+      "telegram": "게시/판본/UZ/원고_telegram.json"
     },
     "도구": "tools/lib/판본잇기.js — 손으로 고치지 않는다(원천을 고치고 node tools/판본글잇기.js 뽑기)"
   }
