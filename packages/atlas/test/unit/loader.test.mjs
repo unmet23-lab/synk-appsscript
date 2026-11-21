@@ -111,6 +111,26 @@ test('ready 전에는 NOT_READY로 던지고, ready 뒤에는 진짜 코치로 �
   assert.equal(coach.edition, '2.0.0');
 });
 
+test('ready 뒤에는 진짜 코치에 없는 메서드가 보이지 않는다 — 위 창의 앞 판을 따른 입구가 새 메서드를 함수로 내보이지 않는다', async () => {
+  const { loaderUrl } = editionFolder('2.1.0', fakeEngine('2.1.0'));
+  const coach = runClassic(documentContext({ scriptSrc: loaderUrl }), withEdition('2.1.0')).coach();
+  assert.equal(typeof coach.answerLog, 'function', 'ready 전에는 목록 그대로다');
+  assert.throws(
+    () => coach.answerLog({ days: 2 }),
+    error => error.code === 'NOT_READY',
+  );
+  await coach.ready;
+  assert.equal(typeof coach.answerLog, 'undefined');
+  assert.equal(typeof coach.recommend, 'function');
+  assert.ok(Object.isFrozen(coach));
+  coach.dispose();
+  assert.equal(typeof coach.recommend, 'function', '닫은 뒤에도 있는 메서드는 DISPOSED로 던진다');
+  assert.throws(
+    () => coach.recommend(),
+    error => error.code === 'DISPOSED',
+  );
+});
+
 test('판 묶음이 없으면 LOAD_FAILED로 거절하고, 다시 부르면 새로 받는다', async () => {
   const { folder, loaderUrl } = editionFolder('2.1.0', null);
   const atlas = runClassic(documentContext({ scriptSrc: loaderUrl }), withEdition('2.1.0'));

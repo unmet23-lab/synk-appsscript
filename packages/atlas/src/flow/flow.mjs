@@ -12,6 +12,8 @@
 //     (관찰 전에는 items.start), Flow가 돌리지 않는다 — 그 단계의 올림 · 내림과 그 안내 줄이 나오지 않는다. Flow가 바라는 문항 단계
 //     (옛 run.level() · settings().level)는 없다.
 //   · 손잡이가 items뿐인 내용은 순간 맞춤이 없다 — settings().adaptive가 거짓이고 시작 코드는 start.none(줄 없음)이다.
+//   · items를 둔 내용은 시간 손잡이와 선언된 손잡이(follows: 'declared')만 둔다 — 내용 차원 손잡이(도움 포함)를 두면 정의할 때 던진다
+//     (§25-12의 15 — 아래 itemsAlone).
 //   · 옛 기억(v: 2)에 문항 난도 칸(ITEM)이 있어도 그 칸만 빼고 읽는다(새 길이 처음 열 때 옛 내용 기억을 씨앗으로 한 번 읽는다).
 //   · priorFromSummary는 옮기지 않았다 — 새 길은 내용 기억이 없으면 내용의 시작값에서 연다(start의 prior 칸은 같은 뜻으로 남는다).
 // 그 밖의 뜻(목표 · 걸음 크기 · 오늘 · 표시 설정 · 가드 · 도움 줄이기 · 기억)은 같은 입력에 옛 것과 같은 결과를 낸다
@@ -39,6 +41,10 @@ const DEADBAND = 0.75;
 const PACE_TARGET = 0.9;
 
 const copy = value => JSON.parse(JSON.stringify(value));
+const frozen = value => {
+  if (value && typeof value === 'object') for (const one of Object.values(value)) frozen(one);
+  return Object.freeze(value);
+};
 const id = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 const scalar = value =>
   ['number', 'string', 'boolean'].includes(typeof value) &&
@@ -146,6 +152,19 @@ function specHead(input) {
   return spec;
 }
 
+/* 막기(설계 주인 11-21 — 단계 4 계획 §25-12의 15): 낸 문항의 난도는 두뇌가 정하고 Flow는 그 난도를 내용 추정에 싣는다. 두뇌가 고른
+ * 어려운 문항의 놓침은 내용 차원 풀의 손잡이를 종류와 상관없이(도움 포함) 덜어 낸다. 그래서 문항 난도를 실은 내용은 선언된 손잡이 밖의
+ * 내용 차원 손잡이를 갖지 못한다. 시간 손잡이는 난도 몫을 싣지 않아(challenge) 막지 않는다. 종류 목록이 아니라 차원으로 가른다 —
+ * 종류가 늘어도 내용 차원이면 막기에 든다. */
+function itemsAlone(spec) {
+  if (!spec.items) return;
+  const loose = spec.knobs.find(
+    knob => dimensionOf(knob) === 'content' && knob.follows !== 'declared',
+  );
+  if (loose)
+    fail(`content ${spec.id} has item levels, so knob ${loose.id} must be pace or declared`);
+}
+
 export function defineContent(input) {
   if (defined.has(input)) return input;
   const spec = specHead(input);
@@ -155,7 +174,9 @@ export function defineContent(input) {
   if (input.items != null) spec.items = itemsOf(input.items);
   const seen = new Set([ITEM]);
   for (const knob of knobs) spec.knobs.push(knobOf(knob, seen));
-  const result = Object.freeze(copy(spec));
+  itemsAlone(spec);
+  // 손잡이 목록까지 얼린다 — 정의한 값은 다시 검사하지 않고 돌려주므로, 뒤에 손잡이를 더하면 막기를 비켜 간다(GPT GA5).
+  const result = frozen(copy(spec));
   defined.add(result);
   return result;
 }

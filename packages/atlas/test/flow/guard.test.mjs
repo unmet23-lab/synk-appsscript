@@ -1,7 +1,8 @@
 // 옛 시험 tests/atlas-temper-flow.test.js 가운데 가드(check)의 장면을 새 가드(src/flow/guard.mjs)에 다시 건다.
 // 뺀 것: 가상 사람(PERSONAS)과 모의 실험(simulate) 장면 · 그 위의 도움 줄이기 제안 장면(옛 temper-flow.js의 모의 실험은 옮기지 않았다 —
 // 옮긴 것은 temper.js의 check와 그 상수뿐이다), 브라우저 전역 · require 순서 장면(새 모듈은 ES 모듈이라 해당이 없다 — 대신 아래에서
-// 가드가 아무것도 부르지 않는 잎인지 본다). 옛 장면의 내용 정의에 있던 items는 가드가 보지 않으므로 그대로 두었다.
+// 가드가 아무것도 부르지 않는 잎인지 본다). 옛 장면의 내용 정의에 있던 items는 가드가 보지 않아 뺐다 — items와 도움 손잡이를 함께 둔
+// 내용은 정의할 때 던진다(막기 — 단계 4 계획 §25-12의 15). 문항 난도 칸(ITEM)이 손잡이가 아니라는 장면은 그대로 선다.
 // 더한 것: 임의 입력 3,000개에서 새 check가 옛 temper.check와 같은 답을 내는지 맞댄다.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -13,7 +14,6 @@ const Temper = legacy('temper.js');
 const spec = Flow.defineContent({
   id: 'test.cafe',
   target: 0.75,
-  items: { levels: [1, 2, 3], weight: 2 },
   knobs: [
     { id: 'patience', kind: 'pace', values: [60, 52, 45, 38, 32, 27], start: 2 },
     { id: 'spawn', kind: 'pace', values: [14, 12, 10, 8, 7], start: 2 },

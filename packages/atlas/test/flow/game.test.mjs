@@ -4,19 +4,17 @@
 // 뺀 것: 저장 포트(createFlowPort) · 코치 겉(createLive) 장면 — Trail 기록과 증거 · 오늘 상태의 하루 만료 · 비우기와 다른 탭 ·
 // 기기에 남긴 표시 설정 · 문항 고르기(pick) · 같은 제시의 뒤 답(idempotency) · 판정할 수 없는 답(assessability). 이것들은 코치 쪽 시험이
 // 맡는다(단계 4 계획 §23-4). 문항 고르기는 새 길에서 두뇌의 recommend와 같아 순간 맞춤이 고르지 않는다.
-// 바꾼 것: 옛 장면의 내용 정의에는 items가 있다. 그대로 두고 새 뜻으로 단언한다 — 문항 단계는 움직이지 않고 낸 단계는 관찰만 한다.
+// 바꾼 것: 옛 장면의 내용 정의는 items · 시간 · 도움 손잡이를 함께 두었다. 새 Flow는 그 내용을 정의할 때 던진다(막기 — 단계 4 계획
+// §25-12의 15). 그래서 둘로 나눴다. RUSH는 items와 시간 손잡이(주문 폭주와 같은 꼴)로 문항 단계 · 시간 장면을 맡는다 — 문항 단계는
+// 움직이지 않고 낸 단계는 관찰만 한다. HELPED는 시간과 도움 손잡이(items 없음)로 도움 장면을 맡는다.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Flow, later, NOW } from './legacy.mjs';
 
-const SPEC = {
-  id: 'test.cafe.rush',
-  items: { levels: [1, 2, 3], weight: 2 },
-  knobs: [
-    { id: 'patience', kind: 'pace', values: [60, 52, 45, 38, 32], start: 2 },
-    { id: 'hint', kind: 'support', values: ['early', 'normal', 'late'], start: 1 },
-  ],
-};
+const PATIENCE = { id: 'patience', kind: 'pace', values: [60, 52, 45, 38, 32], start: 2 };
+const HINT = { id: 'hint', kind: 'support', values: ['early', 'normal', 'late'], start: 1 };
+const RUSH = { id: 'test.cafe.rush', items: { levels: [1, 2, 3], weight: 2 }, knobs: [PATIENCE] };
+const HELPED = { id: 'test.cafe.helped', knobs: [PATIENCE, HINT] };
 
 // 옛 겉의 offerLessHelp와 같은 조합: 제안(supportStep)이 되더라도 방금 바뀐 때라 받아들일 수 없으면 「지금은 아님」.
 function offer(run, { declared = {}, declinedAt = null, now }) {
@@ -35,8 +33,8 @@ function offer(run, { declared = {}, declinedAt = null, now }) {
 }
 
 test('a game moves the challenge with responses, and each change has a sentence; the item level is only observed', () => {
-  const run = Flow.start({ spec: SPEC, now: NOW });
-  assert.deepEqual(run.settings().values, { patience: 45, hint: 'normal' });
+  const run = Flow.start({ spec: RUSH, now: NOW });
+  assert.deepEqual(run.settings().values, { patience: 45 });
   const lines = [];
   for (let i = 0; i < 10; i += 1) {
     const out = run.observe({ outcome: 'success', pressure: 0.3, level: 1 + (i % 3) });
@@ -50,12 +48,12 @@ test('a game moves the challenge with responses, and each change has a sentence;
     lines.some(line => line.key === 'raise.pace'),
     'time pressure followed the quiet successes',
   );
-  // 문항 단계는 두뇌의 것이라 그 올림 · 내림 줄이 없다. 낸 단계가 추정보다 높으면 도움은 한 칸 더해질 수 있다(관찰 칸이 판단에 든다).
+  // 문항 단계는 두뇌의 것이라 그 올림 · 내림 줄이 없다.
   assert.ok(lines.every(line => !['raise.content', 'ease.content'].includes(line.key)));
 });
 
 test('help shown before an answer never raises the challenge', () => {
-  const run = Flow.start({ spec: SPEC, now: NOW });
+  const run = Flow.start({ spec: RUSH, now: NOW });
   for (let i = 0; i < 12; i += 1) {
     const out = run.observe({ outcome: 'success', assisted: true, pressure: 0.2, level: 1 });
     assert.ok(!out.change || out.change.direction < 0);
@@ -63,7 +61,7 @@ test('help shown before an answer never raises the challenge', () => {
 });
 
 test('a response without an answer (audio failed, nothing chosen) moves nothing', () => {
-  const run = Flow.start({ spec: SPEC, now: NOW });
+  const run = Flow.start({ spec: RUSH, now: NOW });
   const before = run.settings().indices;
   for (let i = 0; i < 6; i += 1) {
     const out = run.observe({ outcome: 'void', level: 1 });
@@ -74,7 +72,7 @@ test('a response without an answer (audio failed, nothing chosen) moves nothing'
 });
 
 test('a missed customer eases time', () => {
-  const run = Flow.start({ spec: SPEC, now: NOW });
+  const run = Flow.start({ spec: RUSH, now: NOW });
   const out = run.observe({ outcome: 'timeout' });
   assert.equal(out.change.kind, 'pace');
   assert.equal(out.settings.values.patience, 52);
@@ -82,15 +80,15 @@ test('a missed customer eases time', () => {
 });
 
 test('memory resumes on the next visit, and says so', () => {
-  const first = Flow.start({ spec: SPEC, now: NOW });
+  const first = Flow.start({ spec: RUSH, now: NOW });
   for (let i = 0; i < 12; i += 1) first.observe({ outcome: 'success', pressure: 0.3, level: 1 });
   const reached = first.settings().indices;
-  const again = Flow.start({ spec: SPEC, now: later(1), memory: first.memory(NOW) });
+  const again = Flow.start({ spec: RUSH, now: later(1), memory: first.memory(NOW) });
   assert.equal(again.intro().code, 'start.memory');
   assert.deepEqual(again.settings().indices, reached);
   assert.equal(Flow.line(again.intro()).text, '지난번에 하던 데서 이어 갈게요.');
   assert.equal(
-    Flow.line(Flow.start({ spec: SPEC, now: NOW }).intro()),
+    Flow.line(Flow.start({ spec: RUSH, now: NOW }).intro()),
     null,
     'a first visit says nothing',
   );
@@ -120,18 +118,19 @@ test('where help shows at once, steady successes still bring the offer of less h
 });
 
 test('less help is offered after quiet successes, accepted one step at a time, and a no keeps it quiet for two weeks', () => {
+  // 옛 장면은 items를 두고 쉬운 단계(1)만 냈다. 도움 손잡이는 items와 함께 둘 수 없어(막기) items를 뺐다 — 낸 단계 1은 시작 단계라
+  // 기대 성공률에 더하는 몫이 없다.
   const HELP = {
     id: 'test.help',
-    items: { levels: [1, 2, 3] },
     knobs: [{ id: 'hint', kind: 'support', values: ['early', 'normal', 'late'], start: 0 }],
   };
   const three = run => {
-    for (let i = 0; i < 3; i += 1) run.observe({ outcome: 'success', level: 1 });
+    for (let i = 0; i < 3; i += 1) run.observe({ outcome: 'success' });
   };
   // 제안은 방금 바뀐 응답이 아닌 차분한 때를 기다린다.
   const calm = (run, options) => {
     for (let i = 0; i < 6 && !offer(run, options).offer; i += 1)
-      run.observe({ outcome: 'success', level: 1 });
+      run.observe({ outcome: 'success' });
   };
   const visit = Flow.start({ spec: HELP, now: NOW });
   three(visit);
@@ -158,13 +157,13 @@ test('less help is offered after quiet successes, accepted one step at a time, a
 
 test('a game passes the settings the person chose; a lock the content set for itself still wins', () => {
   const hint = (presentation, declared = {}) => {
-    const knobs = { ...Flow.declaredFrom(SPEC, presentation).knobs, ...declared.knobs };
-    return Flow.start({ spec: SPEC, now: NOW, declared: { ...declared, knobs } }).settings();
+    const knobs = { ...Flow.declaredFrom(HELPED, presentation).knobs, ...declared.knobs };
+    return Flow.start({ spec: HELPED, now: NOW, declared: { ...declared, knobs } }).settings();
   };
   assert.equal(hint({ support: 'step' }).values.hint, 'early');
   assert.equal(hint({ support: 'independent' }).values.hint, 'late');
   assert.equal(hint({ support: 'choose' }).values.hint, 'normal');
   assert.equal(hint({ support: 'step' }, { knobs: { hint: 2 } }).values.hint, 'late');
   assert.equal(hint({ support: 'step' }, { mode: 'fixed' }).mode, 'fixed');
-  assert.throws(() => Flow.declaredFrom(SPEC, { minutes: 5 }), /presentation accepts only/);
+  assert.throws(() => Flow.declaredFrom(HELPED, { minutes: 5 }), /presentation accepts only/);
 });

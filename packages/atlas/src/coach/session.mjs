@@ -534,6 +534,7 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
       group.children.push(entryOf(made.event));
       group.attempts += 1;
       const fold = folds.find(one => one.id === made.event.id);
+      const presented = group.source.event;
       // 장부 만남(제품이 「처음이 아니다」라고 한 제시의 첫 만남)을 답보다 먼저 얹는다 — 기록부 · 서버 접기와 같은 첫 만남(카본 끝 판 둘째 E).
       // 이미 제외된 제시에 늦게 온 답은 거둔 답이다 — 호스트 pending · 판 안에 만남만 얹고 등급은 없다(Fable 5.2 합친 끝 판 F10).
       for (const prior of folds) if (prior !== fold) apply(s.learner, prior, pid);
@@ -547,7 +548,15 @@ export function createSession({ host, gameId, seed, dayOffset, mapItem }) {
         answer,
         at: fold.at,
       });
-      return { event: made.event, verdict, fold, grade: out.grade, stored: made.stored, group };
+      return {
+        event: made.event,
+        verdict,
+        fold,
+        grade: out.grade,
+        stored: made.stored,
+        group,
+        modality: presented.modality,
+      };
     },
 
     // 본인 말 — 판을 열지 않는다(「나」 화면은 판이 아니다). 열린 판이 있으면 그 판의 「다시」도 거둔다.

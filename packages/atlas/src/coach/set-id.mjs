@@ -28,3 +28,7 @@ export function gameOfSet(setId) {
   const match = SET_ID.exec(setId);
   return match && match[1].length <= GAME_MAX ? match[1] : null;
 }
+
+// 판 번호 → 판을 연 시각(코치 시계의 밀리초 — 판을 연 코치의 host.now()). 꼴이 틀렸으면 null(gameOfSet과 같은 꼴 검사).
+export const openedAtOfSet = setId =>
+  gameOfSet(setId) == null ? null : Number(SET_ID.exec(setId)[2]);

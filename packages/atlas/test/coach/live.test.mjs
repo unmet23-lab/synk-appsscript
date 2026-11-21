@@ -7,14 +7,13 @@ import { bankOf, clock, memoryPort, openCoach, T0 } from './support.mjs';
 import { rng } from '../support/seeds.mjs';
 
 const items = bankOf(rng(46), { items: 12 });
+// 주문 폭주와 같은 꼴(문항 난도와 시간 손잡이). 도움 손잡이는 items와 함께 둘 수 없어(막기 — 단계 4 계획 §25-12의 15) 뺐다 — 이 파일의
+// 장면은 도움 손잡이를 보지 않는다(도움 여부는 답의 접기 값이다).
 const RUSH = () => ({
   id: 'test.rush',
   target: 0.75,
   items: { levels: [1, 2, 3] },
-  knobs: [
-    { id: 'patience', kind: 'pace', values: [60, 52, 45, 38, 32], start: 2 },
-    { id: 'hint', kind: 'support', values: ['early', 'normal', 'late'], start: 1 },
-  ],
+  knobs: [{ id: 'patience', kind: 'pace', values: [60, 52, 45, 38, 32], start: 2 }],
 });
 
 function fakeStorage() {

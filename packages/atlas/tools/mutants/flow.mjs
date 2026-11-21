@@ -1,5 +1,6 @@
 // 순간 맞춤(4-6b · 단계 4 계획 §23-4)의 변형 목록 — 알고리즘 상수 · 가드가 막는 조건 · 응답 규칙 · items의 새 뜻(관찰 칸 · 손잡이 아님 ·
-// items뿐인 내용) · 옛 기억 씨앗 읽기 · 줄을 하나씩 일부러 깬 사본을 flow 묶음(test/flow — 옛 모듈과의 대조 2,000열 포함)이 잡아야 한다.
+// items뿐인 내용 · 내용 정의의 막기) · 옛 기억 씨앗 읽기 · 줄을 하나씩 일부러 깬 사본을 flow 묶음(test/flow — 옛 모듈과의 대조 2,000열
+// 포함)이 잡아야 한다.
 // 옛 tools/flow-mutation-check.js의 변형 가운데 알고리즘에 닿는 것을 새 코드에 다시 겨눈 것을 포함한다.
 // 변형 하나 = [잡을 묶음, 갈래, 이름, 바꿀 파일, 바꿀 글, 바꾼 글]. 바꿀 글은 그 파일에 꼭 한 번 있어야 한다(test/build/mutants.test.mjs).
 // flow 변형만 돌리기: node -e "import('./tools/mutants.mjs').then(async m => { const { FLOW_MUTANTS } = await import('./tools/mutants/flow.mjs'); process.exitCode = m.runMutants(FLOW_MUTANTS).length ? 1 : 0; })"
@@ -513,6 +514,34 @@ const OBSERVED_MUTANTS = [
   ],
 ];
 
+// 내용 정의의 막기(설계 주인 11-21 — 단계 4 계획 §25-12의 15) — test/flow/content-block.test.mjs가 잡는다.
+const BLOCK_MUTANTS = [
+  [
+    F,
+    '순간 맞춤 막기',
+    '막기 뺌 — 문항 난도를 실은 내용이 내용 차원 손잡이를 가져도 정의된다',
+    FLOW,
+    '  if (loose)\n    fail(`content ${spec.id} has item levels, so knob ${loose.id} must be pace or declared`);\n',
+    '',
+  ],
+  [
+    F,
+    '순간 맞춤 막기',
+    "막기를 content로 좁힘 — 문항 난도를 실은 내용의 도움 손잡이(kind: 'support')를 막지 않는다",
+    FLOW,
+    "    knob => dimensionOf(knob) === 'content' && knob.follows !== 'declared',",
+    "    knob => knob.kind === 'content' && knob.follows !== 'declared',",
+  ],
+  [
+    F,
+    '순간 맞춤 막기',
+    '정의한 값의 겉만 얼린다 — 뒤에 손잡이 목록에 도움 손잡이를 더하면 다시 검사 없이 막기를 비켜 간다(GPT GA5)',
+    FLOW,
+    '  const result = frozen(copy(spec));\n',
+    '  const result = Object.freeze(copy(spec));\n',
+  ],
+];
+
 export const FLOW_MUTANTS = [
   ...CONSTANT_MUTANTS,
   ...GUARD_MUTANTS,
@@ -520,4 +549,5 @@ export const FLOW_MUTANTS = [
   ...ITEM_MUTANTS,
   ...LINE_MUTANTS,
   ...OBSERVED_MUTANTS,
+  ...BLOCK_MUTANTS,
 ];

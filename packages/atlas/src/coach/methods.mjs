@@ -35,4 +35,5 @@ export const COACH_METHODS = Object.freeze([
   'responses', // 판 응답 목록 — 「내가 남긴 응답」 · 짧은 연습 길이(단계 4 계획 §22-5)
   'untell', // 본인 말 되돌리기 — { event, stored }, 본인 말 사건만 받는다(단계 4 계획 §22-6 · 4-5 끝 판 GPT GB4)
   'startSet', // 판 열기 — recommend 없이 present만 하는 판의 길이(단계 4 계획 §23-6 · 설계 주인 11-19 밤)
+  'answerLog', // 놓침 기록 — 이 기기의 2판 제시와 첫 판정 답, 창 경계 floor(단계 4 계획 §25-5 — 놓친 곳 카드, 게임 겉에는 주지 않는다)
 ]);

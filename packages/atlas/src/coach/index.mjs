@@ -19,6 +19,7 @@ import { elapsedDays, REASON_CODES } from '../reason/index.mjs';
 import { planActivities } from '../select/plan.mjs';
 import { dayKey } from '../select/session.mjs';
 import { render } from '../vellum/index.mjs';
+import { answerLogOf } from './answer-log.mjs';
 import { createLive, presentationFrom, todayOf } from './flow.mjs';
 import { createFlowMemory } from './flow-memory.mjs';
 import { acquireHost, hostScope, releaseHost } from './host.mjs';
@@ -259,14 +260,16 @@ export function createCoach(options = {}) {
     } catch {
       // 꼬리를 못 읽어도 든 사건으로 가른다.
     }
+    // 소리 전달 — 기록부에 든 사건으로 접기와 같은 함수가 정한다(단계 4 계획 §25-3 불변식 나). 판의 표지는 판이 바뀌면 낡는다.
+    const delivered = state.host.trail.deliveredAt(presented.id, out.event.id);
     const view = state.host.view();
     const family = fold.item.familyKey;
     if (view.waitAll === true || !view.met.has(family))
-      return { stored: true, independent: false, assisted, exposure: 'unknown' };
+      return { stored: true, independent: false, assisted, exposure: 'unknown', delivered };
     const lead = state.host.trail.leadAt(family, view.met.get(family));
     const exposure = lead && !lead.carried && lead.source === presented.id ? 'new' : 'repeat';
     const independent = exposure === 'new' && lead.id === fold.id && lead.solo;
-    return { stored: true, independent, assisted, exposure };
+    return { stored: true, independent, assisted, exposure, delivered };
   }
 
   // none의 이유 — 엔진이 그 까닭을 아는 것(하루 복습 상한 · 끈질긴 단위의 판 몫, choose markTop)만 싣는다. 제품이 판 끝 줄을 그 사실대로
@@ -331,7 +334,9 @@ export function createCoach(options = {}) {
   function answered(pid, result) {
     const out = live().answer(pid, result);
     const evidence = out.stored.then(ok =>
-      ok ? measured(out) : { stored: false, independent: false, assisted: null, exposure: null },
+      ok
+        ? measured(out)
+        : { stored: false, independent: false, assisted: null, exposure: null, delivered: false },
     );
     return {
       recorded: {
@@ -339,6 +344,9 @@ export function createCoach(options = {}) {
         verdict: out.verdict,
         correct: out.verdict === 'correct',
         grade: out.grade,
+        // 제시 사건의 형식(단계 4 계획 §25-3 불변식 나). 소리 전달(delivered)은 저장 뒤 evidence에 싣는다 — 셸은 판의 한 수를 게임이 넘긴
+        // 값이 아니라 저장 뒤 코치가 정한 판정 · 형식 · 전달로 센다.
+        modality: out.modality,
         stored: out.stored,
         evidence,
       },
@@ -522,6 +530,9 @@ export function createCoach(options = {}) {
         storage: {
           available: true,
           guest: state.host.guest,
+          // 기록부의 비움 세대(단계 4 계획 §25-3 불변식 가) — 기기 쪽 곁 기록(판 기록 · 내용 기억)의 열쇠를 이것으로 짓는다. 세대는 trail이 아니라
+          // 그 안의 record가 든다(4c 634502a85).
+          generation: state.host.trail.record.generation(),
           // 이 기기에 그 계정 · 그 동의 판의 요약이 있다(빈 요약 포함 — 계획 §6 셋째 조건). 손님은 기기가 원천이라 늘 참.
           base: state.host.guest || base != null,
           pending: state.host.pendingCount(),
@@ -694,6 +705,18 @@ export function createCoach(options = {}) {
       const { families, setOf } = state.host.trail.meetRows();
       const bySkill = Object.freeze(firstAnswersOf(families.values(), setOf, { game, since }));
       return Object.freeze({ game, days, since, bySkill });
+    },
+
+    // 놓침 기록(단계 4 계획 §25-5 — 놓친 곳 카드, 설계 주인 11-20). 이 기기 기록부에 든 2판 제시와 제시마다 첫 판정 답을 낸다 — 손님 · 동의를 끈
+    // 계정 · 서버 길 계정 모두. days는 1 ~ 365의 정수, games는 경험 이름(게임 이름 꼴)의 배열이고 주지 않으면 모든 경험이다. 내는 것은
+    // { days, since, floor, rows }(얼림 — 셈과 줄의 꼴은 answer-log.mjs). 게임 겉(문의 COACH_METHODS)에는 주지 않는다.
+    answerLog({ days, games = null } = {}) {
+      live();
+      if (!Number.isInteger(days) || days < 1 || days > 365)
+        throw new TypeError('Atlas coach: answerLog의 days는 1 ~ 365의 정수다');
+      if (games !== null && !(Array.isArray(games) && games.every(isGameId)))
+        throw new TypeError('Atlas coach: answerLog의 games는 게임 이름의 배열이다');
+      return answerLogOf(state.host, { days, games });
     },
 
     // 판을 연다(단계 4 계획 §23-6 · 설계 주인 11-19 밤). recommend 없이 present만 하는 판(정해진 차례 — 이야기 교실 · 낱말 마법 · 찰칵 ·

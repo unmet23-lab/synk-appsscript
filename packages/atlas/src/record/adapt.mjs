@@ -92,12 +92,23 @@ const excludeOf = (exclusion, answerKey, at) => ({
   ref: answerKey,
 });
 
+// 그 제시의 자식 가운데 접기 차례(orderOf)로 이 사건(key) 앞의 마지막 전달의 소리. 그 전달이 제외됐으면 「아직」(pending)이고, 전달이 없어도
+// 「아직」이다. 접기(stepChild)와 코치의 저장 뒤 전달(evidence.delivered — coach/record.mjs)이 함께 부른다(단계 4 계획 §25-3 불변식 나 ·
+// 설계 주인 11-21). 판의 표지는 판이 바뀌면 낡으므로 기록부에 든 사건만 본다.
+export function audioBefore({ source, children = [], exclusions = [] }, key) {
+  const { targets } = exclusionsOf(source.event, exclusions);
+  let audio = 'pending';
+  for (const entry of [...children].sort(orderOf)) {
+    if (entry.key === key) break;
+    if (entry.event.type === EVENT_TYPES.delivery)
+      audio = targets.has(entry.event.id) ? 'pending' : entry.event.audio;
+  }
+  return audio;
+}
+
 function stepChild(entry, state, context) {
   const event = entry.event;
-  if (event.type === EVENT_TYPES.delivery) {
-    state.audio = context.targets.has(event.id) ? 'pending' : event.audio;
-    return;
-  }
+  if (event.type === EVENT_TYPES.delivery) return;
   if (event.type === EVENT_TYPES.helped) {
     // 도움 만남은 그 답을 내는 데 쓴 도움 — 그 제시의 첫 답보다 앞선 도움과 답 없이 본 도움 — 에만 선다(설계 §3-3).
     // 첫 답 뒤에 정답 · 풀이를 본 것은 되짚기라 「이어서 혼자 맞힌 수」를 끊지 않는다(만남은 그 첫 답이 이미 세웠고,
@@ -109,6 +120,7 @@ function stepChild(entry, state, context) {
   if (event.type !== EVENT_TYPES.attempted) return;
   if (!state.answered) state.firstAnswer = entry;
   state.answered = true;
+  state.audio = audioBefore(context.group, entry.key);
   const answer = answerOf(entry, context.item, state, context.presented, context.view);
   state.out.push(answer);
   const exclusion = context.targets.get(event.id) ?? context.whole;
@@ -155,6 +167,7 @@ function presentedGroup({ source, children = [], exclusions = [] }, index) {
     item,
     presented,
     view: judgeView(presented),
+    group: { source, children, exclusions },
     ...exclusionsOf(presented, exclusions),
   };
   const state = {

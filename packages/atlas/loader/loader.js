@@ -35,6 +35,7 @@
     'responses',
     'untell',
     'startSet',
+    'answerLog',
   ];
   const TIMEOUT_MS = 20000;
   const scope = globalThis;
@@ -48,7 +49,6 @@
     return;
   }
 
-  // 같은 출처의 가장 위 창에 먼저 실린 입구가 있으면 그 판을 따른다.
   const ancestor = () => {
     let found = null;
     try {
@@ -126,11 +126,16 @@
     let disposed = false;
     const facade = { edition };
     for (const name of METHODS) {
-      facade[name] = (...args) => {
+      if (name === 'dispose') continue;
+      const call = (...args) => {
         if (disposed) throw fail('DISPOSED', `${name}: 이미 닫은 코치다`);
         if (!real) throw fail('NOT_READY', `${name}: await coach.ready 뒤에 부른다`);
         return real[name](...args);
       };
+      Object.defineProperty(facade, name, {
+        enumerable: true,
+        get: () => (real && !real[name] ? undefined : call),
+      });
     }
     facade.dispose = (...args) => {
       if (disposed) return undefined;
@@ -160,7 +165,6 @@
         );
       })
       .catch(error => {
-        // 닫은 뒤의 실패는 알릴 곳이 없다 — 떠난 화면에 처리되지 않은 거절을 남기지 않는다.
         if (disposed) return undefined;
         throw error;
       });

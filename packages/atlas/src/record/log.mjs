@@ -1209,6 +1209,8 @@ export function createRecord({
           }
         : null,
     generation: () => state.gen,
+    // 가장 늦은 치우기의 시각(0 = 치운 적 없음) — 놓침 기록(answerLog)의 창 경계를 이것으로 정한다(단계 4 계획 §25-5 floor).
+    sweptAt: () => state.sweptAt,
 
     // 손님 저장소 비우기(단계 4 계획 §22-4 손님 1 — 설계 주인 답 2). 사건 · 요약 사본 · 옮기기 표지를 한 트랜잭션으로 지우고 비움 표지
     // { gen, at, legacy, carried: null }을 쓴다. 저장소를 다시 만들지 않고 안에서 비우므로 열쇠 번호는 이어지고 이름도 그대로다. legacy는 옛 로그의

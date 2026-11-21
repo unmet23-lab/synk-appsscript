@@ -58,13 +58,6 @@ const FLOW_WORDS = {
   'start.fixed': '정해진 속도로 영업해요.',
   'start.baseline': '이번 영업은 기본 속도로 해요.',
 };
-// 읽기 관문처럼 items 옆에 내용 손잡이가 있는 내용.
-const GATE = {
-  id: 'test.reading.gate',
-  items: { levels: [1, 2, 3] },
-  knobs: [{ id: 'choices', values: [2, 3, 4], start: 1 }],
-};
-
 // 같은 응답 열(성공 · 놓침 · 시간 초과를 섞고, 낸 단계를 붙인다).
 function answers(seed, count) {
   const random = seeded(seed);
@@ -112,10 +105,7 @@ test('items is not a knob: Flow never moves the item level, and no line speaks o
     .map(answer => old.observe(answer).change)
     .filter(change => change?.knob === Old.ITEM);
   assert.ok(moved.length > 0, 'the old Flow moved the item level');
-  // items 옆의 내용 손잡이는 여전히 움직인다 — 문항 단계만 아니다.
-  const gate = Flow.start({ spec: GATE, now: NOW });
-  for (let i = 0; i < 12; i += 1) gate.observe({ outcome: 'success', level: 1 });
-  assert.ok(gate.changes().length > 0 && gate.changes().every(c => c.knob === 'choices'));
+  // items 옆에 둘 수 있는 손잡이는 시간 손잡이와 선언된 손잡이뿐이다(막기 — content-block.test.mjs). 그 시간 손잡이는 위에서 움직였다.
 });
 
 test('the observed item level enters the expected success rate; before any, the start level does', () => {

@@ -236,8 +236,8 @@ export const RECORD_MUTANTS = [
     '어댑터',
     '거둔 전달을 아직 증거로 쓴다',
     ADAPT,
-    "state.audio = context.targets.has(event.id) ? 'pending' : event.audio;",
-    'state.audio = event.audio;',
+    "audio = targets.has(entry.event.id) ? 'pending' : entry.event.audio;",
+    'audio = entry.event.audio;',
   ],
   [
     R,

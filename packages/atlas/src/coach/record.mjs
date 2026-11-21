@@ -2,7 +2,7 @@
 // 바뀌면 이 파일만 고친다. 기록부는 저장이 끝난 사건만 근거로 보이고(add의 stored), 서버의 답을 받고(receive), 꼬리를 읽는다(refresh).
 // 서버의 답 꼴(learning?view=trail POST · GET) — { accepted, clamped, rejected, rejectedCode, summary, serverTime }(GET은 summary · serverTime).
 import { evidenceOf } from '../fold/evidence.mjs';
-import { deviceKey, foldEventsOf, groupsOf, itemOf } from '../record/adapt.mjs';
+import { audioBefore, deviceKey, foldEventsOf, groupsOf, itemOf } from '../record/adapt.mjs';
 import { EVENT_FORM, EVENT_TYPES } from '../record/events.mjs';
 import { openRecord } from '../record/log.mjs';
 
@@ -27,19 +27,29 @@ function familyGroups(entries, family, index) {
   });
 }
 
-// 측정용 첫 만남(계획 §16 ② — Fable 5.2 D1 · D6). 그 계열의 만난 표 시각(at)에 선 만남 가운데 접기의 차례(시각 → 사건 번호, fold/order.mjs
-// byTime)로 맨 앞 하나 — { id(그 만남의 접기 번호 = 답이면 답 사건 번호), source(그 만남이 든 묶음의 머리 — 제시 번호), carried, solo }.
-// 만남의 차례는 어댑터(groupsOf · foldEventsOf)가 짓는 만남으로 짠다 — 도움 · 장부 만남 · 옛 꼴 사건의 차례가 접기와 같다.
-// 그 시각의 만남이 기록부에 없으면 null(요약으로 접힌 옛 만남 — 이 제시의 것이 아니다).
-function leadAt(record, family, at, index) {
+// 묶음들([머리 번호, 묶음] 쌍)을 접은 계열마다의 만남(접기 차례)과, 접기 번호 → 그 만남이 든 묶음의 머리.
+function marksOf(groups, index) {
   const folds = [];
   const sourceOf = new Map();
-  for (const [source, group] of familyGroups(entriesOf(record.heldEvents()), family, index))
+  for (const [source, group] of groups)
     for (const fold of foldEventsOf(group, index)) {
       folds.push(fold);
       sourceOf.set(fold.id, source);
     }
-  const lead = (evidenceOf(folds).marks.get(family) ?? []).find(mark => mark.at === at);
+  return { marks: evidenceOf(folds).marks, sourceOf };
+}
+
+// 측정용 첫 만남(계획 §16 ② — Fable 5.2 D1 · D6). 그 계열의 만난 표 시각(at)에 선 만남 가운데 접기의 차례(시각 → 사건 번호, fold/order.mjs
+// byTime)로 맨 앞 하나 — { id(그 만남의 접기 번호 = 답이면 답 사건 번호), source(그 만남이 든 묶음의 머리 — 제시 번호), carried, solo }.
+// 만남의 차례는 어댑터(groupsOf · foldEventsOf)가 짓는 만남으로 짠다 — 도움 · 장부 만남 · 옛 꼴 사건의 차례가 접기와 같다.
+// 그 시각의 만남이 기록부에 없으면 null(요약으로 접힌 옛 만남 — 이 제시의 것이 아니다).
+function leadIn({ marks, sourceOf }, family, at) {
+  return leadOfMark(
+    (marks.get(family) ?? []).find(mark => mark.at === at),
+    sourceOf,
+  );
+}
+function leadOfMark(lead, sourceOf) {
   if (!lead) return null;
   return {
     id: lead.id,
@@ -47,6 +57,39 @@ function leadAt(record, family, at, index) {
     carried: lead.carried === true,
     solo: lead.unaided === true && lead.grade != null,
   };
+}
+const leadAt = (record, family, at, index) =>
+  leadIn(marksOf(familyGroups(entriesOf(record.heldEvents()), family, index), index), family, at);
+
+// 계열마다의 첫 만남을 한 번에(놓침 기록 answerLog — 단계 4 계획 §25-5). 든 사건 전부를 한 번 묶고 접어, 묻는 계열 · 시각마다 leadAt과 같은
+// 값을 낸다. 계열의 만남은 그 계열의 묶음과 장부만 접은 것과 같다 — 제외 접기는 답 번호를 겨누어 다른 계열에 닿지 않는다. 줄마다 leadAt을
+// 부르면 부를 때마다 든 사건 전체를 다시 묶고 접는다. 묶음(제시 번호 → { source, children, exclusions })도 함께 낸다.
+// 계열마다 시각 → 그 시각의 맨 앞 만남 표를 처음 물을 때 한 번 짓는다 — 첫 만남이 서버 요약에만 있는 계열도 줄마다 만남 목록을 끝까지
+// 훑지 않는다(GPT GA6).
+function meetsOf(record, index) {
+  const groups = groupsOf(entriesOf(record.heldEvents()));
+  const { marks, sourceOf } = marksOf(groups, index);
+  const byFamily = new Map();
+  const firstAt = family => {
+    let byAt = byFamily.get(family);
+    if (!byAt) {
+      byAt = new Map();
+      for (const mark of marks.get(family) ?? []) if (!byAt.has(mark.at)) byAt.set(mark.at, mark);
+      byFamily.set(family, byAt);
+    }
+    return byAt;
+  };
+  return { groups, leadOf: (family, at) => leadOfMark(firstAt(family).get(at), sourceOf) };
+}
+
+// 저장 뒤 그 답의 소리 전달(evidence.delivered — 단계 4 계획 §25-3 불변식 나). 기록부에 든 사건으로 그 제시의 묶음을 짓고, 접기와 같은
+// 함수(audioBefore)로 그 답 앞의 마지막 전달을 본다. 저장이 실패한 쓰기는 기록부에 없고, 제외된 전달 뒤의 소리는 「아직」이다. 소리가
+// 들지 않는 문항은 늘 전달된 것이다. 그 답이 기록부에 없으면 거짓이다.
+function deliveredAt(record, presentationId, answerId) {
+  const group = groupsOf(entriesOf(record.heldEvents())).get(presentationId);
+  if (!group?.children.some(entry => entry.key === answerId)) return false;
+  if (group.source.event.audioRequired !== true) return true;
+  return audioBefore(group, answerId) === 'completed';
 }
 
 // exclusive: 호스트의 차례(turn) — 기록부가 차례 밖에서 시작된 손님 요약 저장에만 청한다(§18-5-1 R1).
@@ -87,6 +130,8 @@ export async function openTrail({
     // 「낸 것」 — 줄마다 사건 번호(id)가 실린다(단계 3 49935bb51, 계획 §16 ①). 번호 없는 서버 요약 줄은 id 칸 없이 그대로 온다.
     issued: () => record.issued(),
     leadAt: (family, at) => leadAt(record, family, at, index),
+    meets: () => meetsOf(record, index),
+    deliveredAt: (presentationId, answerId) => deliveredAt(record, presentationId, answerId),
     refresh: () => record.refresh(),
     // 저장 중인 사건(부모를 기다리는 자식까지)이 다 끝날 때까지 — 올리기 전에(단계 3 bed650c2f).
     saved: () => record.saved?.() ?? Promise.resolve(),
