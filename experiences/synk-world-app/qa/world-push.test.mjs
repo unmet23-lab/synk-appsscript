@@ -455,10 +455,10 @@ function manual(s){
 // 옛 서버로 되돌릴 수 있는 가짜: old가 참이면 판을 실은 요청은 400 INVALID_ACTION이고 응답에 판 · 받음 · 바탕 표시가 없다. hold…로 응답을 붙잡는다.
 function rollback(s){
  const state={old:false,queue:[],holdSync:false,holdStatus:null,holdUnsubscribe:null};
- const strip=data=>{if(!state.old)return data;const {versioning,versions,applied,...rest}=data;return rest;};
- const send=(action,body,options)=>{
+ const strip=data=>{const {versioning,versions,applied,planId,...rest}=data;return rest;};
+ const send=(action,body,options)=>{const old=state.old;
   if(state.old&&body.versions){s.calls.push({action,body,options,rejected:true});return Promise.reject(fault(400,'INVALID_ACTION'));}
-  return s.request(action,body,options).then(strip);
+  return s.request(action,body,options).then(data=>old?strip(data):data);
  };
  state.request=(action,body={},options={})=>{
   if(action==='status'&&state.holdStatus){const reply=send(action,body,options);return new Promise((resolve,reject)=>state.holdStatus.push(()=>reply.then(resolve,reject)));}
@@ -1322,8 +1322,9 @@ test('판: 앞 설정 요청이 시간 초과로 끝나면 기다리던 이 탭�
  push.dispose();
 });
 
-test('판: 옛 서버에 미뤄 둔 설정은 이 탭이 끄고 다시 켜면 지난 것이다 — 옛 응답이 와도 다시 켜며 보낸 설정을 덮지 않는다(GPT push-versions-world-r6 GA6)',async()=>{
- const s=versionedServer(),r=rollback(s),storage=memory(),rem=reminderSettings(),push=on(s,{request:r.request,storage});push.bindSettings(rem);
+test('판: 옛 서버에 미뤄 둔 설정은 이 탭이 끄고 다시 켜면 지난 것이다 — 옛 응답이 와도 다시 켜며 보낸 설정을 덮지 않는다(GPT push-versions-world-r6 GA6 · r7 GA3)',async()=>{
+ let time=V0;
+ const s=versionedServer({clock:()=>time}),r=rollback(s),storage=memory(),rem=reminderSettings(),push=on(s,{request:r.request,storage});push.bindSettings(rem);
  await push.setAccount('acc-1');await push.ready();
  r.old=true;await push.refresh();assert.equal(push.snapshot().versioning,false);
  r.holdSync=true;
@@ -1332,12 +1333,13 @@ test('판: 옛 서버에 미뤄 둔 설정은 이 탭이 끄고 다시 켜면 �
  const answer=r.queue.shift().late();   // 옛 서버가 9시를 받았고 응답만 늦다
  r.old=false;r.holdSync=false;await push.refresh();
  await push.disable();await settled();   // 마지막 기기를 껐다
- rem.set({hour:20});
+ time=V0+500000;rem.set({hour:20});
  await push.enable({settings:{frequency:2,hour:20,since:null},digest:DIGEST('2026-10-24')});await settled();
  assert.equal(s.stored.settings.hour,20);
  await answer().catch(()=>{});await settled();await settled();   // 옛 9시의 응답이 온다
  assert.equal(s.stored.settings.hour,20,'미뤄 둔 15시가 다시 켠 20시를 덮지 않는다');
  assert.equal(s.syncs().filter(call=>call.body.settings?.hour===15).length,0,'지난 15시를 보내지 않는다');
+ assert.equal(rem.value.hour,20,'1단도 20시로 남는다');
  push.dispose();
 });
 
@@ -1359,7 +1361,7 @@ test('판: 넘겨받을 편집의 바탕이 이 탭이 아는 판보다 크면 �
  a.dispose();
 });
 
-test('판: 상태를 읽기 전에 적은 편집도 상태가 서면 그 계획의 정체를 함께 적는다 — 다른 기기가 다시 켜 새 계획이 생기면 다시 보내지 않는다(GPT push-versions-world-r6 GA8)',async()=>{
+test('판: 상태를 읽기 전에 적은 편집은 계획 정체를 붙이지 않는다 — 다른 기기가 다시 켜 새 계획이 생겨도 이 탭에서 방금 고른 시각이 이긴다, 받는 한계(설계 주인 11-22, GPT push-versions-world-r6 GA8 · r7 GA2)',async()=>{
  let time=V0;
  const s=versionedServer({clock:()=>time}),storage=memory(),m=manual(s),rem=reminderSettings(),push=on(s,{storage,request:m.request});push.bindSettings(rem);
  s.failWhen=action=>action==='status'?fault(0,'PUSH_UNAVAILABLE'):null;
@@ -1367,12 +1369,82 @@ test('판: 상태를 읽기 전에 적은 편집도 상태가 서면 그 계획�
  rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});
  assert.equal(EDIT_OF(storage).known,false);
  s.failWhen=()=>null;await push.refresh();await settled();
- assert.equal(m.queue.length,1);assert.ok(EDIT_OF(storage).planId,'계획 정체를 적었다');
+ assert.equal(m.queue.length,1);assert.equal(EDIT_OF(storage).planId,null,'늦게 온 상태의 계획 정체를 붙이지 않는다');
  time=V0+500000;
  await s.request('unsubscribe');await s.request('subscribe',{settings:{frequency:2,hour:20},digest:DIGEST('2026-10-24')});   // 다른 기기가 끄고 20시로 다시 켰다
  while(m.queue.length){m.queue.shift().pass();await settled();}
- assert.equal(s.stored.settings.hour,20);assert.equal(rem.value.hour,20);assert.equal(EDIT_OF(storage),null);
+ assert.equal(s.stored.settings.hour,9,'이 탭에서 고른 9시가 남는다 — 받는 한계');assert.equal(rem.value.hour,9);assert.equal(EDIT_OF(storage),null);
  push.dispose();
+});
+
+test('판: 이미 켠 계정에 이 기기를 더하는 켜기는 미뤄 둔 옛 서버 설정을 버리지 않는다 — 켜기가 설정을 보내지 않으므로 그 뒤에 보낸다(GPT push-versions-world-r7 GA1)',async()=>{
+ const s=versionedServer({settings:{frequency:2,hour:9,since:null}}),r=rollback(s),b=browser({registered:true}),storage=memory(),rem=reminderSettings({frequency:2,hour:9,since:null});
+ const push=makeV(b,s,{now:()=>V0,request:r.request,storage});push.bindSettings(rem);
+ await push.setAccount('acc-1');await push.ready();
+ r.old=true;await push.refresh();
+ r.holdSync=true;
+ rem.set({hour:9});push.sync({settings:{frequency:2,hour:9}});await flush();
+ rem.set({hour:15});push.sync({settings:{frequency:2,hour:15}});await flush();   // 9시 응답을 기다리며 미뤄 둔다
+ const answer=r.queue.shift().late();
+ r.old=false;r.holdSync=false;
+ await push.enable({settings:{frequency:2,hour:15,since:null},digest:DIGEST('2026-10-24')});await settled();   // 이미 켠 계정에 이 브라우저를 더한다
+ await answer().catch(()=>{});await settled();await settled();
+ assert.equal(s.stored.settings.hour,15,'미뤄 둔 15시가 간다');assert.equal(rem.value.hour,15);
+ push.dispose();
+});
+
+test('판: 처음 켜는 탭이 응답을 기다리는 사이 바꾼 설정은 편집으로 적혀, 다른 탭의 응답이 먼저 와도 1단에서 지워지지 않는다(GPT push-versions-world-r7 GA4)',async()=>{
+ const s=versionedServer(),bA=browser({answer:'hang',registered:true}),storage=memory(),locks=fakeLocks(),rem=reminderSettings({frequency:2,hour:9,since:null});
+ s.active=false;
+ let release=null;
+ const requestA=(action,body,options)=>{
+  if(action==='subscribe'&&!release){const reply=s.request(action,body,options);return new Promise(resolve=>{release=()=>resolve(reply);});}
+  return s.request(action,body,options);
+ };
+ bA.env.navigator.locks=locks;
+ const a=makeV(bA,s,{now:()=>V0,request:requestA,storage});a.bindSettings(rem);
+ await a.setAccount('acc-1');await a.ready();
+ const turning=a.enable({settings:{frequency:2,hour:9,since:null},digest:DIGEST('2026-10-21')});
+ bA.resolvePrompt();await settled();
+ const m=manual(s),b=on(s,{storage,request:m.request,browser:{locks}});b.bindSettings(rem);
+ await b.setAccount('acc-1');await settled();
+ rem.set({hour:20});b.sync({settings:{frequency:2,hour:20}});await flush();
+ rem.set({hour:18});a.sync({settings:{frequency:2,hour:18}});await flush();
+ while(m.queue.length){m.queue.shift().pass();await settled();}   // B의 20시 응답이 A의 켜기 응답보다 먼저 온다
+ assert.equal(rem.value.hour,18,'B가 서버 설정을 1단에 들여 18시를 지우지 않는다');
+ release();await turning;await settled();
+ while(m.queue.length){m.queue.shift().pass();await settled();}
+ await settled();
+ assert.equal(s.stored.settings.hour,18,'마지막 뜻 18시');assert.equal(rem.value.hour,18);
+ a.dispose();b.dispose();
+});
+
+test('판: 넘겨받기 전에 상태를 다시 읽는 동안 온 다른 늦은 응답은 그 결과를 기다린다 — 다시 읽은 뒤 넘겨받는다(GPT push-versions-world-r7 GA6)',async()=>{
+ const s=versionedServer(),storage=memory(),locks=fakeLocks(),m=manual(s),rem=reminderSettings();
+ let holdStatus=null;
+ const requestA=(action,body,options)=>{
+  if(action==='status'&&holdStatus){const reply=s.request(action,body,options);return new Promise(resolve=>holdStatus.push(()=>resolve(reply)));}
+  return m.request(action,body,options);
+ };
+ const a=on(s,{storage,request:requestA,browser:{locks}});a.bindSettings(rem);
+ await a.setAccount('acc-1');
+ a.sync({digest:DIGEST('2026-10-23')});await flush();
+ const first=m.queue.shift().late();   // A의 요약은 닿았고 응답만 늦다(그때의 판)
+ holdStatus=[];void a.refresh();await flush();   // A의 상태 읽기도 닿았고 응답만 늦다(그때의 판)
+ await s.request('sync',{settings:{frequency:2,hour:15},versions:{settings:V0}});   // 다른 기기 15시
+ const requestB=(action,body,options)=>action==='sync'?Promise.reject(fault(0,'PUSH_UNAVAILABLE')):s.request(action,body,options);
+ const b=on(s,{storage,request:requestB,browser:{locks}});b.bindSettings(rem);
+ await b.setAccount('acc-1');await settled();
+ rem.set({hour:18});b.sync({settings:{frequency:2,hour:18}});await settled();
+ b.dispose();await settled();
+ first();await settled();await settled();   // A가 낡은 응답을 받고 상태를 다시 읽기 시작한다(응답은 붙잡힘)
+ assert.equal(holdStatus.length,2);
+ holdStatus.shift()();await settled();await settled();   // 그사이 앞의 낡은 상태 응답이 먼저 온다
+ assert.equal(EDIT_OF(storage)?.hour,18,'다시 읽는 동안 18시를 지우지 않는다');
+ holdStatus.shift()();holdStatus=null;await settled();await settled();
+ while(m.queue.length){m.queue.shift().pass();await settled();}
+ assert.equal(s.stored.settings.hour,18);assert.equal(rem.value.hour,18);
+ a.dispose();
 });
 
 test('판: 넘겨받은 닫힌 페이지의 편집이 보내는 사이 다른 기기의 쓰기로 거절되면 다시 보내지 않고 서버 것을 들인다(설계 주인 규칙 5, 섞기 시드 97)',async()=>{

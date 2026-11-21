@@ -136,7 +136,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 학생이 설정을 바꿨다: 값과 그때 알던 서버 판(바탕)을 한 번에 적는다. 2단이 꺼진 계정이면 적지 않는다(보낼 계획이 없다 — 켤 때 1단 설정이 간다).
  function noteSettings(value){
   if(!owner||closing||!Number.isFinite(value?.frequency))return;
-  const known=!!state.checkedAt;if(known&&!state.account.active)return;
+  // 2단이 꺼진 계정이면 적지 않는다 — 다만 이 탭의 켜기가 날아가는 동안(권한 창 · 응답 기다림)은 적는다. 1단에만 두면 그사이 다른 탭이 서버 설정을 1단에
+  // 들여 지운다(r7 GA4). 켜기 응답이 이 편집을 새 계획 바탕으로 옮기거나 비운다.
+  const known=!!state.checkedAt;if(known&&!state.account.active&&!attempt)return;
   const base=known?state.versions?.settings??null:null;
   // 새 편집은 옛 서버에 미뤄 둔 설정보다 새것이다(r5 GA4).
   legacyPending=null;
@@ -182,8 +184,10 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   if(!state.versioning){if(mine&&!flying(mine))rewrite(mine,null);return;}
   if(mine){
    const server=state.versions?.settings??null;
-   // 바탕을 모르는 편집은 지금 판을 바탕으로 옮긴다. 저장이 실패하면(용량 초과 따위) 여기서 멈춘다 — 같은 편집으로 되풀이하지 않게(r4 GA7).
-   if(!mine.known){const next=rebase(mine,server,{known:true,planId:state.planId});rewrite(mine,next);mine=readEdit();if(!same(mine,next))return;}
+   // 바탕을 모르는 편집은 지금 판을 바탕으로 옮긴다. 저장이 실패하면(용량 초과 따위) 여기서 멈춘다 — 같은 편집으로 되풀이하지 않게(r4 GA7). 계획 정체는
+   // 붙이지 않는다 — 이 편집이 늦게 온 상태의 계획 때 것인지 그 뒤 새 계획 때 것인지 모르므로, 모르는 계획으로 두어 학생이 이 탭에서 방금 고른 것이
+   // 이긴다(설계 주인 11-22, GPT world-r7 GA2).
+   if(!mine.known){const next=rebase(mine,server,{known:true});rewrite(mine,next);mine=readEdit();if(!same(mine,next))return;}
    if(mine.base===server){if(owedSettings())deliver(expected);return;}
    // 이 편집이나 이 페이지의 앞 설정 요청이 날아가는 중이면 그 응답을 기다린다 — 앞 요청이 받혔으면 응답의 자기 쓰기 사슬이 바탕을 옮긴다. 자기 쓰기로
    // 낡은 것을 거절로 세어 다시 보내기를 쓰지 않게(r5 GA3).
@@ -207,7 +211,11 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    const server=state.versions?.settings??null;
    // 편집의 바탕이 이 페이지가 아는 서버 판보다 크면(같은 계획) 이 페이지의 상태가 낡았다 — 그 페이지가 더 새 판을 보았다. 편집 하나에 한 번 상태를 다시
    // 읽고 그 뒤 맞추기가 정한다(r6 GA7: 낡은 상태로 다른 탭의 정당한 편집을 지우지 않게).
-   if(edit.known&&edit.base!=null&&server!=null&&edit.base>server&&!otherPlan(edit,state.planId)&&claimRead!==edit.id){claimRead=edit.id;void refresh();return;}
+   if(edit.known&&edit.base!=null&&server!=null&&edit.base>server&&!otherPlan(edit,state.planId)){
+    if(claimRead?.id!==edit.id){const mark={id:edit.id,pending:true};claimRead=mark;Promise.resolve(refresh()).catch(()=>{}).finally(()=>{mark.pending=false;if(current(expected))reconcile(expected);});return;}
+    // 다시 읽는 중에 온 다른 늦은 응답은 그 결과를 기다린다(r7 GA6). 다시 읽은 뒤에도 바탕이 크면(DB 복원 따위) 아래에서 서버 것을 들인다.
+    if(claimRead.pending)return;
+   }
    // 바탕이 서버 판과 다르면 서버 판이 바탕보다 한 칸 위이고 서버 값이 그 탭의 앞 설정과 같아도 들인다 — 그 탭의 앞 요청이 받힌 것인지 다른 기기가 같은
    // 값을 먼저 쓴 것인지 기기만으로는 가를 수 없고, 잘못 짐작하면 다른 기기의 쓰기를 덮는다(설계 주인 11-22 규칙 5 (가), GPT world-r6 GA1 · GA5).
    if(state.versioning&&edit.known&&edit.base===server)rewrite(edit,rebase(edit,server,{page,at:now(),tries:1}));
@@ -476,8 +484,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      // 맞추기가 보낸다(r3 GA1).
      // 다른 페이지가 새 계획을 읽고 쓴 편집(바탕이 새 계획의 판 이상)은 그 페이지 것이라 두고, 1단이 바뀐 것도 그 페이지가 보낸다(r5 GA6).
      // 그 편집이 1단의 지금 값이 아니면 그 뒤에 이 탭이 꺼진 계정으로 알고 1단만 바꾼 것이라, 1단 값을 새 판 바탕의 편집으로 적어 보낸다(r6 GA2 — 1단은
-     // 이 브라우저의 마지막 뜻이다). 켜기가 1단 값을 보냈으므로 옛 서버에 미뤄 둔 설정은 지난 것이다(r6 GA6).
-     legacyPending=null;
+     // 이 브라우저의 마지막 뜻이다). 새 계획을 썼으면 켜기가 1단 값을 보냈으므로 옛 서버에 미뤄 둔 설정은 지난 것이다(r6 GA6). 이미 켠 계정에 이 기기를
+     // 더한 켜기는 설정을 보내지 않으므로 미뤄 둔 설정을 두고 간다(r7 GA1).
+     if(applied.settings===true)legacyPending=null;
      const kept=readEdit(),after=liveSettings(null),theirs=!!kept&&kept.page!==page&&kept.known&&kept.base!=null&&v?.settings!=null&&kept.base>=v.settings;
      const theirsNow=theirs&&!!after&&kept.frequency===after.frequency&&(kept.hour??null)===(after.hour??null);
      if(applied.settings===true&&!theirsNow){
