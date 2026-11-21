@@ -1,0 +1,8 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+Edit Image 1 (a landscape 1536x1024 illustration in a premium stylized 3D animated render style). Return the SAME image with ONE change: the young woman with short black hair standing on the left and waving her hand high now has the new look shown in Image 2 (the same woman at a later stage of her life).
+
+Her new look: a soft cream turtleneck sweater, a long sage-green knit cardigan coat that falls to her knees, wide beige trousers and white sneakers. No cream cable cardigan, no mustard top, no navy trousers. Her black hair is now long, well past her shoulders, with soft loose waves and a side part, no bangs. Her face stays clearly the same person (round friendly face, warm light-brown skin, rosy cheeks, dark eyes, small gold stud earrings), now about 26, grown-up, warm and relaxed, the senior who welcomes newcomers.
+Keep her exact pose, position, size, gesture and expression. In her lowered hand she holds a white takeaway coffee cup. The seated friend and the newly arrived young man with the olive-green puffer jacket and the navy suitcase stay exactly the same.
+
+Keep everything else exactly as it is: the same framing and size, the same camera, the same lighting and colors, the same room or place, every piece of furniture and every object in the same place and size, and every other person with the same face, clothes, pose and position. The left part of the image stays calm, bright and plain. Do not add any new person, object, text, letters, numbers or logos.
