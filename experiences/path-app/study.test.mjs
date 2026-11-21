@@ -1,7 +1,8 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { RULES, PROGRAMS, validateStudyData, staleItems, financeRule, announcedRules, daysUntil, programById, proofRule, rulesAt, programsFor, applyWindow } from './study-data.mjs';
-import { matchProgram, programCost, countFit, readyToCount, routes, MATCH_KEYS } from './match.mjs';
+import { matchProgram, programCost, countFit, countNeeds, readyToCount, routes, MATCH_KEYS } from './match.mjs';
 import { STUDY_KEY, GUEST_OWNER, createProfile, normalizeProfile, setField, toggleCompare, isEmptyProfile, parseWhole, createProfileStore, MAX_FUNDS_WON } from './study-profile.mjs';
 import { renderUniv, renderUnivDetail, renderUnivCompare, renderCond, renderCondResult, renderStudyEntry, filterPrograms, condHint } from './study-ui.mjs';
 
@@ -475,12 +476,73 @@ test('목록: 아무것도 넣지 않으면 「4개 중 N개 맞음」 대신 �
 test('접수 배지: 상세는 상태를 스스로 말하고, 전북대 한국어학당은 1차 마감까지 센다', () => {
   const now = new Date('2026-12-05T12:00:00+09:00');
   const lang = real('jbnu-lang');
-  assert.deepEqual(applyWindow(lang, now), { state: 'open', days: 6 });
-  assert.deepEqual(applyWindow(lang, new Date('2026-12-15T12:00:00+09:00')), { state: 'open', days: 10 });
+  assert.deepEqual(applyWindow(lang, now), { state: 'open', days: 6, round: 1, nextOpens: '2026-12-12' });
+  assert.deepEqual(applyWindow(lang, new Date('2026-12-15T12:00:00+09:00')), { state: 'open', days: 10, round: 2, nextOpens: null });
   const detail = textOf(renderUnivDetail(view(createProfile(), { programs: [real('jbnu-ug')], programId: 'jbnu-ug', now })));
   assert.match(detail, /이번 접수 끝남/);
   assert.doesNotMatch(detail, /원서 접수 접수/);
   const wku = textOf(renderUnivDetail(view(createProfile(), { programs: [lang], programId: 'jbnu-lang', now })));
   assert.match(wku, /주몽골대사관 비자신청센터 어학연수\(D-4-1\) 안내/);
   assert.doesNotMatch(wku, /유학\(D-2\) 안내/);
+});
+
+// ── 최종 검수(Opus 5.5 대체, path-study-univ-20261121 F1~F5) 반영 ──
+test('세기에 필요한 칸은 보이는 과정이 쓰는 조건만이다: 실제 과정은 성적 기준이 없어 한국어만 넣어도 센다', () => {
+  const progs = programsFor(PROGRAMS, true);
+  assert.deepEqual(countNeeds(progs), ['topik']);
+  assert.deepEqual(countNeeds(PROGRAMS.filter((p) => p.example)), ['gradePct', 'topik']);
+  assert.deepEqual(countNeeds(), ['gradePct', 'topik'], '목록을 안 주면 둘 다');
+  const p = setField(createProfile(), 'topik', 3);
+  assert.equal(readyToCount(p, progs), true);
+  assert.equal(readyToCount(p), false);
+  assert.equal(countFit(p, progs, RULES), 5);
+  assert.equal(countFit(setField(p, 'gradePct', 0), progs, RULES), countFit(setField(p, 'gradePct', 100), progs, RULES), '성적은 결과를 바꾸지 않는다');
+  const empty = textOf(renderCondResult(view(createProfile(), { programs: progs })));
+  assert.match(empty, /한국어 급수를 넣으면 맞는 과정을 세어 줘요/);
+  assert.doesNotMatch(empty, /성적과 한국어|둘 중 하나라도/);
+  assert.match(textOf(renderUniv(view(createProfile(), { programs: progs }))), /한국어 급수를 넣으면 맞는 과정을 세어 줘요/);
+});
+
+test('학력이나 준비한 돈을 안 넣고 셌으면 그렇다고 이름으로 적는다(머리 카드 · 목록 · 오늘 입구)', () => {
+  const progs = programsFor(PROGRAMS, true), now = new Date('2026-11-21T12:00:00+09:00');
+  const p = setField(setField(createProfile(), 'topik', 1), 'gradePct', 82);
+  const note = /학력과 준비한 돈은 아직 넣지 않아서 빼지 않고 셌어요/;
+  assert.match(textOf(renderCondResult(view(p, { programs: progs, now }))), note);
+  assert.match(textOf(renderUniv(view(p, { programs: progs, now }))), note);
+  assert.match(textOf(renderStudyEntry(view(p, { programs: progs, now }))), note);
+  assert.match(textOf(renderCondResult(view(p, { lang: 'en', programs: progs, now }))), /Your education and funds are not entered yet, so no program was ruled out by them/);
+  const edu = setField(p, 'education', 'graduated');
+  assert.match(textOf(renderCondResult(view(edu, { programs: progs, now }))), /준비한 돈은 아직 넣지 않아서 빼지 않고 셌어요/);
+  assert.match(textOf(renderCondResult(view(edu, { lang: 'en', programs: progs, now }))), /Your funds are not entered yet, so no program was ruled out by them/);
+  const all = setField(edu, 'fundsWon', 20000000);
+  assert.doesNotMatch(textOf(renderCondResult(view(all, { programs: progs, now }))), /빼지 않고 셌어요/);
+  assert.match(textOf(renderStudyEntry(view(all, { programs: progs, now }))), /조건을 바꾸면 바로 다시 계산해요/);
+});
+
+test('접수 차수가 여럿이면 배지에 차수를, 상세에는 다음 차수가 열리는 날을 적는다', () => {
+  const lang = real('jbnu-lang'), last = new Date('2026-12-11T12:00:00+09:00');
+  const p = { ...createProfile(), compare: ['jbnu-lang', 'wku-lang'] };
+  const detail = textOf(renderUnivDetail(view(p, { programs: [lang], programId: 'jbnu-lang', now: last })));
+  assert.match(detail, /1차 오늘 접수 마감 · 2차 12월 12일부터/);
+  assert.match(textOf(renderUnivDetail(view(p, { lang: 'en', programs: [lang], programId: 'jbnu-lang', now: last }))), /Round 1 closes today · round 2 from Dec 12/);
+  const list = textOf(renderUniv(view(p, { programs: programsFor(PROGRAMS, true), now: last })));
+  assert.match(list, /1차 오늘 마감/);
+  assert.match(list, /마감 D-13/, '차수가 하나인 원광대 한국문화교육센터는 차수를 붙이지 않는다');
+  assert.doesNotMatch(list, /1차 마감 D-13/);
+  assert.match(textOf(renderUnivDetail(view(p, { programs: [lang], programId: 'jbnu-lang', now: new Date('2026-12-15T12:00:00+09:00') }))), /2차 접수 마감 D-10/);
+  assert.doesNotMatch(textOf(renderUnivDetail(view(p, { programs: [lang], programId: 'jbnu-lang', now: new Date('2026-12-15T12:00:00+09:00') }))), /3차/);
+  assert.match(textOf(renderUnivDetail(view(p, { programs: [real('jj-ug')], programId: 'jj-ug', now: new Date('2026-11-21T12:00:00+09:00') }))), /2차 접수 시작 D-10/);
+});
+
+test('나란히 보기 머리의 표지 글자는 표지 색을 지키고, 상세 머리 글은 같은 말을 되풀이하지 않는다', () => {
+  const css = readFileSync(new URL('./styles.css', import.meta.url), 'utf8');
+  assert.match(css, /\.sx-cmp-head>span:not\(\.sx-cover\)\{/);
+  assert.doesNotMatch(css, /\.sx-cmp-head span\{/, '자손 선택자는 표지 안 도시 이름까지 먹색으로 칠한다');
+  for (const id of ['jbnu-ug', 'jbnu-lang']) {
+    for (const lang of ['ko', 'en']) {
+      const html = renderUnivDetail(view(createProfile(), { lang, programs: [real(id)], programId: id }));
+      const small = textOf(html.match(/<span class="sx-photo-body"><small>(.*?)<\/small>/)[1]);
+      assert.doesNotMatch(small, /학부 · 학부|어학 과정 · 한국어 연수|Undergraduate · Undergraduate|Language program · Korean language program/, small);
+    }
+  }
 });

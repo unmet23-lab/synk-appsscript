@@ -2,7 +2,7 @@
 // 결: 시안 2판(2026-11-21) — 그림 한 장으로 여는 판, 큰 숫자 하나, 알약 단추. 색은 .sx 아래에서만 쓴다.
 // 공개 CSP가 style-src 'self'라 인라인 스타일을 쓰지 않는다.
 import { RULES, PROGRAMS, announcedRules, applyWindow, programById, proofRule, rulesAt } from './study-data.mjs';
-import { matchProgram, programCost, countFit, readyToCount, routes } from './match.mjs';
+import { matchProgram, programCost, countFit, countNeeds, readyToCount, routes } from './match.mjs';
 import { isEmptyProfile, MAX_COMPARE } from './study-profile.mjs';
 
 export const STUDY_FILTERS = Object.freeze(['all', 'fit', 'language', 'undergraduate']);
@@ -40,7 +40,12 @@ function ctx(view) {
   const fitText = (n) => (allExample
     ? L(`개의 예시 과정이 지금 조건에 맞아요 (예시 ${programs.length}개 중)`, `of ${programs.length} example programs fit your conditions`)
     : L('개 과정이 지금 조건에 맞아요', n === 1 ? 'program fits your conditions' : 'programs fit your conditions'));
-  return { now, en, L, pick, pair, won, topik, programs, rules, profile, allExample, anyPartner, fitText };
+  // 세기 전에 넣어야 하는 칸의 이름(조사까지). 지금 자료에 성적 기준이 없으면 한국어만 말한다.
+  const needs = countNeeds(programs);
+  const needWord = needs.length === 2 ? L('성적과 한국어를', 'your grades and Korean level') : needs[0] === 'gradePct' ? L('성적을', 'your grades') : L('한국어 급수를', 'your Korean level');
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const md = (d) => { const [, m, day] = d.split('-').map(Number); return L(`${m}월 ${day}일`, `${MON[m - 1]} ${day}`); };
+  return { now, en, L, pick, pair, won, topik, programs, rules, profile, allExample, anyPartner, fitText, needs, needWord, md };
 }
 
 const tag = (status, T) => `<span class="sx-tag is-${status}">${T.pair(STATUS[status])}</span>`;
@@ -52,17 +57,22 @@ const image = (p) => (p.image
 const newTab = (T) => `<span class="sr-only"> (${T.L('새 탭에서 열림', 'opens in new tab')})</span>`;
 const sourceLine = (rule, T) => `<p class="sx-src"><b>${T.L('출처', 'Source')}</b> <a href="${esc(rule.source.url)}" target="_blank" rel="noopener noreferrer">${esc(T.pick(rule.source.title))}${newTab(T)}</a> · ${T.L(`${rule.basis} 시행 · 확인 ${rule.checkedAt}`, `in force from ${rule.basis} · checked ${rule.checkedAt}`)}</p>`;
 const promise = (T) => `<p class="sx-fine">${T.L('이 결과는 입학이나 비자를 약속하지 않아요. 마지막 판단은 대학과 출입국이 해요.', 'This comparison does not promise admission or a visa. The university and immigration office make the final decision.')}</p>`;
+// 접수가 여러 차수면 「1차 마감 D-6」처럼 차수를 붙인다. 상세 배지는 다음 차수가 열리는 날까지 적는다.
+const inRound = (w, T) => (ko, en) => (w.round ? T.L(`${w.round}차 ${ko}`, `Round ${w.round} ${en[0].toLowerCase()}${en.slice(1)}`) : T.L(ko, en));
 const opens = (p, T) => {
-  const w = applyWindow(p, T.now);
-  if (w.state === 'before') return T.L(`시작 D-${w.days}`, `Opens in ${w.days}d`);
-  if (w.state === 'open') return w.days === null ? T.L('접수 중', 'Open now') : w.days === 0 ? T.L('오늘 마감', 'Closes today') : T.L(`마감 D-${w.days}`, `Closes in ${w.days}d`);
+  const w = applyWindow(p, T.now), R = inRound(w, T);
+  if (w.state === 'before') return R(`시작 D-${w.days}`, `Opens in ${w.days}d`);
+  if (w.state === 'open') return w.days === null ? R('접수 중', 'Open now') : w.days === 0 ? R('오늘 마감', 'Closes today') : R(`마감 D-${w.days}`, `Closes in ${w.days}d`);
   if (w.state === 'closed') return T.L('접수 끝남', 'Closed');
   return T.L('일정 확인 필요', 'Check dates');
 };
 const opensLong = (p, T) => {
-  const w = applyWindow(p, T.now);
-  if (w.state === 'before') return T.L(`접수 시작 D-${w.days}`, `Applications open in ${w.days}d`);
-  if (w.state === 'open') return w.days === null ? T.L('지금 접수 중', 'Applications open now') : w.days === 0 ? T.L('오늘 접수 마감', 'Applications close today') : T.L(`접수 마감 D-${w.days}`, `Applications close in ${w.days}d`);
+  const w = applyWindow(p, T.now), R = inRound(w, T);
+  // 영어는 차수까지 붙이면 휴대폰 배지보다 길어져 차수가 있을 때 「Applications」를 뺀다.
+  const E = (long, short) => (w.round ? short : long);
+  const next = w.state === 'open' && w.nextOpens ? T.L(` · ${w.round + 1}차 ${T.md(w.nextOpens)}부터`, ` · round ${w.round + 1} from ${T.md(w.nextOpens)}`) : '';
+  if (w.state === 'before') return R(`접수 시작 D-${w.days}`, E(`Applications open in ${w.days}d`, `Opens in ${w.days}d`));
+  if (w.state === 'open') return (w.days === null ? R('지금 접수 중', E('Applications open now', 'Open now')) : w.days === 0 ? R('오늘 접수 마감', E('Applications close today', 'Closes today')) : R(`접수 마감 D-${w.days}`, E(`Applications close in ${w.days}d`, `Closes in ${w.days}d`))) + next;
   if (w.state === 'closed') return T.L('이번 접수 끝남', 'Applications closed');
   return T.L('접수 일정 확인 필요', 'Check application dates');
 };
@@ -83,9 +93,25 @@ function mineText(item, T) {
   return item.mine === null ? none : T.won(item.mine);
 }
 
+/**
+ * 센 과정 가운데 학력이나 재정을 맞춰 보지 못한 것이 있으면 그 조건을 이름으로 적는다.
+ * 안 넣은 학력 · 돈은 빼지 않고 세므로, 돈이 모자란데 조건이 맞는다고 읽지 않게 한다.
+ */
+function uncheckedNote(T) {
+  const fit = T.programs.map((p) => matchProgram(T.profile, p, T.rules)).filter((m) => m.fits);
+  const keys = ['education', 'finance'].filter((k) => fit.some((m) => m.items.find((i) => i.key === k).status === 'check'));
+  if (!keys.length) return '';
+  const blank = keys.every((k) => (k === 'education' ? T.profile.education : T.profile.fundsWon) == null);
+  const ko = keys.length === 2 ? '학력과 준비한 돈은' : keys[0] === 'education' ? '학력은' : '준비한 돈은';
+  const many = keys.length === 2 || keys[0] === 'finance';
+  const en = keys.length === 2 ? 'Your education and funds' : keys[0] === 'education' ? 'Your education' : 'Your funds';
+  return blank ? T.L(`${ko} 아직 넣지 않아서 빼지 않고 셌어요.`, `${en} ${many ? 'are' : 'is'} not entered yet, so no program was ruled out by ${many ? 'them' : 'it'}.`)
+    : T.L(`${ko} 아직 맞춰 보지 못해 빼지 않고 셌어요.`, `${en} could not be checked yet, so no program was ruled out by ${many ? 'them' : 'it'}.`);
+}
+
 /** 대학 목록에서 거른 과정들. 「조건이 맞는 곳」은 머리 숫자와 같은 기준(fits)을 쓴다. */
 export function filterPrograms(profile, filter, programs = PROGRAMS, rules = RULES) {
-  if (filter === 'fit') return readyToCount(profile) ? programs.filter((p) => matchProgram(profile, p, rules).fits) : [];
+  if (filter === 'fit') return readyToCount(profile, programs) ? programs.filter((p) => matchProgram(profile, p, rules).fits) : [];
   return programs.filter((p) => filter === 'all' || p.level === filter);
 }
 
@@ -97,16 +123,16 @@ export function renderStudyEntry(view) {
       : T.L(`지금 조건에 맞는 과정 ${n}개`, `${n} program${n === 1 ? ' fits' : 's fit'} your conditions`);
   const sub = T.allExample ? T.L('협력 대학은 준비 중이에요. 한국어, 성적, 준비한 돈을 넣어 미리 맞춰 볼 수 있어요.', 'Partner universities are being prepared. Enter your Korean level, grades and funds to try it in advance.')
     : n === null ? T.L('한국어, 성적, 준비한 돈을 넣으면 맞는 과정과 모자란 것을 알려 줘요.', 'Enter your Korean level, grades and funds to see what fits and what is missing.')
-      : T.L('조건을 바꾸면 바로 다시 계산해요.', 'Change a condition and it recalculates right away.');
+      : uncheckedNote(T) || T.L('조건을 바꾸면 바로 다시 계산해요.', 'Change a condition and it recalculates right away.');
   return `<section class="sx sx-entry" aria-label="${T.L('대학', 'Schools')}"><button type="button" class="sx-entry-btn" data-action="nav" data-page="${empty ? 'cond' : 'univ'}"><span><b>${esc(title)}</b><small>${esc(sub)}</small></span><span class="sx-go" aria-hidden="true">${GO}</span></button></section>`;
 }
 
 function countCard(T) {
   const n = countFit(T.profile, T.programs, T.rules);
   if (n === null) {
-    return `<section class="sx-card lapis"><h2>${T.L('성적과 한국어를 넣으면 맞는 과정을 세어 줘요.', 'Enter your grades and Korean level to count the programs that fit.')}</h2><p>${T.L('학력과 준비한 돈도 넣으면 그 조건이 모자란 과정은 빼고 세요.', 'If you also enter your education and funds, programs where those fall short are left out.')}</p><button type="button" class="sx-cta" data-action="nav" data-page="cond">${T.L('내 조건 넣기', 'Enter my conditions')} ${GO}</button></section>`;
+    return `<section class="sx-card lapis"><h2>${T.L(`${T.needWord} 넣으면 맞는 과정을 세어 줘요.`, `Enter ${T.needWord} to count the programs that fit.`)}</h2><p>${T.L('학력과 준비한 돈도 넣으면 그 조건이 모자란 과정은 빼고 세요.', 'If you also enter your education and funds, programs where those fall short are left out.')}</p><button type="button" class="sx-cta" data-action="nav" data-page="cond">${T.L('내 조건 넣기', 'Enter my conditions')} ${GO}</button></section>`;
   }
-  return `<section class="sx-card lapis"><p class="sx-k">${T.L('지금 조건으로', 'With your conditions now')}</p><p class="sx-big"><b>${n}</b><span>${esc(T.fitText(n))}</span></p><p>${T.L('넣은 조건 가운데 모자란 것이 없는 과정을 셌어요.', 'Counted programs where none of the conditions you entered fall short.')}</p><button type="button" class="sx-btn2" data-action="nav" data-page="cond">${T.L('내 조건 바꿔 보기', 'Change my conditions')}</button></section>`;
+  return `<section class="sx-card lapis"><p class="sx-k">${T.L('지금 조건으로', 'With your conditions now')}</p><p class="sx-big"><b>${n}</b><span>${esc(T.fitText(n))}</span></p><p>${T.L('넣은 조건 가운데 모자란 것이 없는 과정을 셌어요.', 'Counted programs where none of the conditions you entered fall short.')}${uncheckedNote(T) ? ` ${esc(uncheckedNote(T))}` : ''}</p><button type="button" class="sx-btn2" data-action="nav" data-page="cond">${T.L('내 조건 바꿔 보기', 'Change my conditions')}</button></section>`;
 }
 
 export function renderUniv(view) {
@@ -129,7 +155,7 @@ export function renderUniv(view) {
 <dl class="sx-facts"><div><dt>${p.level === 'language' ? T.L('한 해 수업료', 'Tuition per year') : T.L('한 해 등록금', 'Tuition per year')}</dt><dd>${T.won(p.costs.tuition)}</dd></div><div><dt>${T.L('필요한 한국어', 'Korean needed')}</dt><dd>${needKorean(p, T)}</dd></div><div><dt>${T.L('원서 접수', 'Applications')}</dt><dd>${esc(opens(p, T))}</dd></div></dl>
 <p class="sx-fitline"><span>${exampleTag(p, T)} ${empty ? T.L('내 조건을 넣으면 맞춰 봐요', 'Enter your conditions to compare') : T.L(`내 조건 4개 중 ${m.okCount}개 맞음`, `${m.okCount} of 4 conditions met`)}</span>${empty ? '' : meter(m, T)}</p></li>`;
   }).join('');
-  const none = list.length ? '' : `<section class="sx-card"><h2>${f === 'fit' && !readyToCount(profile) ? T.L('성적과 한국어를 넣으면 맞는 과정만 골라 볼 수 있어요.', 'Enter your grades and Korean level to filter by fit.') : f === 'fit' ? T.L('지금 조건에 맞는 과정이 아직 없어요.', 'Nothing fits your conditions yet.') : T.L('이 갈래의 과정은 아직 없어요.', 'No programs in this category yet.')}</h2><p>${T.L('전체 목록에서 과정을 열면 무엇이 모자란지 볼 수 있어요.', 'Open a program in the full list to see what is missing.')}</p><div class="sx-row2"><button type="button" class="sx-btn2" data-action="nav" data-page="cond">${T.L('내 조건 보기', 'My conditions')}</button><button type="button" class="sx-btn2" data-action="studyFilter" data-id="all">${T.L('전체 보기', 'Show all')}</button></div></section>`;
+  const none = list.length ? '' : `<section class="sx-card"><h2>${f === 'fit' && !readyToCount(profile, T.programs) ? T.L(`${T.needWord} 넣으면 맞는 과정만 골라 볼 수 있어요.`, `Enter ${T.needWord} to filter by fit.`) : f === 'fit' ? T.L('지금 조건에 맞는 과정이 아직 없어요.', 'Nothing fits your conditions yet.') : T.L('이 갈래의 과정은 아직 없어요.', 'No programs in this category yet.')}</h2><p>${T.L('전체 목록에서 과정을 열면 무엇이 모자란지 볼 수 있어요.', 'Open a program in the full list to see what is missing.')}</p><div class="sx-row2"><button type="button" class="sx-btn2" data-action="nav" data-page="cond">${T.L('내 조건 보기', 'My conditions')}</button><button type="button" class="sx-btn2" data-action="studyFilter" data-id="all">${T.L('전체 보기', 'Show all')}</button></div></section>`;
   const bar = profile.compare.length >= 2 ? `<div class="sx-cmpbar"><button type="button" class="sx-cta butter" data-action="nav" data-page="univCompare">${T.L(`${profile.compare.length}곳 나란히 보기`, `Compare ${profile.compare.length} side by side`)} ${GO}</button></div>` : profile.compare.length === 1 ? `<p class="sx-fine">${T.L('한 곳을 더 담으면 나란히 볼 수 있어요.', 'Add one more to compare side by side.')}</p>` : '';
   return `<div class="sx sx-wide">${head}
 ${countCard(T)}
@@ -225,8 +251,8 @@ export function renderCondResult(view) {
   const lead = n === null ? '' : up ? (T.allExample ? T.L(`${up.t}급이면 예시 과정 ${up.k}개가 맞아요.`, `With level ${up.t}, ${up.k} example programs fit.`) : T.L(`${up.t}급을 따면 ${up.k}개 과정으로 늘어요.`, `With level ${up.t} it becomes ${up.k} programs.`))
     : n === 0 ? T.L('모자란 조건은 과정마다 달라요. 대학을 열어 무엇이 모자란지 확인하세요.', 'What is missing differs by program. Open a school to see it.') : T.L('과정을 열면 조건 넷을 하나씩 맞춰 볼 수 있어요.', 'Open a program to check all four conditions one by one.');
   const top = n === null
-    ? `<section class="sx-card lapis"><h2>${T.L('성적과 한국어를 둘 다 넣으면 맞는 과정을 세어 줘요.', 'Enter both your grades and Korean level to count the programs that fit.')}</h2><p>${T.L('둘 중 하나라도 비어 있으면 세지 않아요.', 'Nothing is counted while either one is empty.')}</p><button type="button" class="sx-cta" data-action="nav" data-page="univ">${T.L('대학 보기', 'Browse schools')} ${GO}</button></section>`
-    : `<section class="sx-card lapis"><p class="sx-k">${T.L('지금 조건으로', 'With your conditions now')}</p><p class="sx-big"><b>${n}</b><span>${esc(T.fitText(n))}</span></p><p>${esc(lead)}</p><button type="button" class="sx-cta" data-action="nav" data-page="univ">${T.L('대학 보기', 'Browse schools')} ${GO}</button></section>`;
+    ? `<section class="sx-card lapis"><h2>${T.L(`${T.needWord} 넣으면 맞는 과정을 세어 줘요.`, `Enter ${T.needWord} to count the programs that fit.`)}</h2>${T.needs.length === 2 ? `<p>${T.L('둘 중 하나라도 비어 있으면 세지 않아요.', 'Nothing is counted while either one is empty.')}</p>` : ''}<button type="button" class="sx-cta" data-action="nav" data-page="univ">${T.L('대학 보기', 'Browse schools')} ${GO}</button></section>`
+    : `<section class="sx-card lapis"><p class="sx-k">${T.L('지금 조건으로', 'With your conditions now')}</p><p class="sx-big"><b>${n}</b><span>${esc(T.fitText(n))}</span></p>${uncheckedNote(T) ? `<p>${esc(uncheckedNote(T))}</p>` : ''}<p>${esc(lead)}</p><button type="button" class="sx-cta" data-action="nav" data-page="univ">${T.L('대학 보기', 'Browse schools')} ${GO}</button></section>`;
   const route = (title, x, visa, body) => {
     const st = x.status === 'none' ? '' : x.status === 'ok' ? `<span class="sx-tag is-ok">${T.L('조건 맞음', 'Fits')}</span>` : tag(x.status, T);
     return `<section class="sx-card line"><div class="sx-match-top"><h3>${esc(title)}</h3>${st}</div><p>${esc(body)}</p><p class="sx-src"><b>${T.L('비자', 'Visa')}</b> ${esc(visa)}</p></section>`;
@@ -238,13 +264,13 @@ export function renderCondResult(view) {
   const lackText = (x, kind) => (x.academic > 0 ? T.L('성적과 한국어가 맞는 과정은 있지만 학력이나 준비한 돈이 모자라요. 과정을 열어 무엇이 모자란지 확인하세요.', 'Some programs fit your grades and Korean, but your education or funds fall short. Open a program to see what is missing.')
     : x.topikGap ? T.L(`가장 낮은 곳이 TOPIK ${x.lowestTopik}급을 요구해요. ${x.topikGap}급을 더 올리면 열려요.`, `The lowest requirement is TOPIK level ${x.lowestTopik}. ${x.topikGap} more level${x.topikGap === 1 ? '' : 's'} opens it.`)
       : kind === 'language' ? T.L('성적 조건이 맞는 어학 과정이 없어요.', 'No language program matches your grades.') : T.L('성적 조건이 맞는 학부 과정이 없어요.', 'No undergraduate program matches your grades.'));
-  const checkText = T.L('성적과 한국어를 넣으면 맞는 과정을 알려 줘요.', 'Enter your grades and Korean level to see which programs fit.');
+  const checkText = T.L(`${T.needWord} 넣으면 맞는 과정을 알려 줘요.`, `Enter ${T.needWord} to see which programs fit.`);
   const directBody = r.direct.status === 'none' ? none
     : r.direct.status === 'ok' ? T.L(`조건이 맞는 학부 과정이 ${unit(r.direct.count)} 있어요.`, `${unit(r.direct.count)} for undergraduate study ${r.direct.count === 1 ? 'fits' : 'fit'} your conditions.`) + openText(r.direct)
       : r.direct.status === 'check' ? checkText : lackText(r.direct, 'undergraduate');
   const langBody = r.languageFirst.status === 'none' ? none
     : r.languageFirst.status === 'ok' ? T.L(`한국에서 한국어를 먼저 배운 뒤 학부에 들어가요. 조건이 맞는 어학 과정이 ${unit(r.languageFirst.count)} 있어요.`, `Learn Korean in Korea first, then enter an undergraduate program. ${unit(r.languageFirst.count)} for language study ${r.languageFirst.count === 1 ? 'fits' : 'fit'} your conditions.`) + openText(r.languageFirst)
-      : r.languageFirst.status === 'check' ? T.L('한국어 성적이 없어도 지원할 수 있는 과정이 많아요. 성적과 한국어를 넣으면 맞는 과정을 알려 줘요.', 'Many programs accept you without a Korean score. Enter your grades and Korean level to see which fit.') : lackText(r.languageFirst, 'language');
+      : r.languageFirst.status === 'check' ? T.L(`한국어 성적이 없어도 지원할 수 있는 과정이 많아요. ${checkText}`, `Many programs accept you without a Korean score. ${checkText}`) : lackText(r.languageFirst, 'language');
   return `${top}
 <h2 class="sx-h">${T.L('갈 수 있는 길', 'Routes you can take')}</h2>
 ${route(T.L('어학 과정 먼저, 그다음 학부', 'Language program first, then undergraduate'), r.languageFirst, T.L('어학연수(D-4) → 유학(D-2)', 'Language training (D-4) → Study (D-2)'), langBody)}

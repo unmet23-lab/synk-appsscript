@@ -73,7 +73,7 @@ export const PROGRAMS = Object.freeze([
   // 금액 · 일정 · 조건은 요강 원문에서 직접 읽은 값이다. 원문에 없는 값(생활비 등)은 null로 둔다.
   {
     id: 'jbnu-ug', example: false, partner: false, name: L('전북대학교', 'Jeonbuk National University'), place: L('전북 전주', 'Jeonju, Jeonbuk'),
-    region: 'local', level: 'undergraduate', visa: 'D-2', majors: L('학부 신입학 · 외국인 전형', 'Undergraduate freshman · international admission'),
+    region: 'local', level: 'undergraduate', visa: 'D-2', majors: L('신입학 · 외국인 전형', 'Freshman · international admission'),
     term: L('2027년 3월 입학', 'March 2027 intake'), image: null, tone: 'lapis',
     requires: { education: 'highschool', gradePct: 0, topik: 2 },
     requiresNote: L('TOPIK 2급으로 입학하면 입학 직후 전북대 한국어연수과정 2개 학기를 꼭 들어야 해요. 국내 한국어학당 4급반 수료나 전북대 자체시험 2급으로도 지원할 수 있어요. 고교 성적의 최저 기준은 없고 서류와 면접 총점 60점 이상이 합격 기준이에요. 검정고시는 인정하지 않아요. 졸업하려면 TOPIK 4급이 필요해요.',
@@ -91,7 +91,7 @@ export const PROGRAMS = Object.freeze([
   },
   {
     id: 'jbnu-lang', example: false, partner: false, name: L('전북대학교 한국어학당', 'Jeonbuk National University Korean Language Institute'), place: L('전북 전주', 'Jeonju, Jeonbuk'),
-    region: 'local', level: 'language', visa: 'D-4', majors: L('한국어 연수과정 · 한 학기 10주', 'Korean language program · 10 weeks per term'),
+    region: 'local', level: 'language', visa: 'D-4', majors: L('한 학기 10주', '10 weeks per term'),
     term: L('2027년 봄학기', 'Spring term 2027'), image: null, tone: 'lapis',
     requires: { education: 'highschool', gradePct: 0, topik: 0 },
     requiresNote: L('한국어를 전혀 몰라도 지원할 수 있고 배치시험으로 반을 정해요. 고등학교 졸업(예정) 이상이면 돼요. 2개 학기 이상 등록하면 어학연수(D-4) 비자를 신청할 수 있어요.',
@@ -107,7 +107,7 @@ export const PROGRAMS = Object.freeze([
   },
   {
     id: 'wku-ug', example: false, partner: false, name: L('원광대학교', 'Wonkwang University'), place: L('전북 익산', 'Iksan, Jeonbuk'),
-    region: 'local', level: 'undergraduate', visa: 'D-2', majors: L('학부 신입학 · 외국인 전형', 'Undergraduate freshman · international admission'),
+    region: 'local', level: 'undergraduate', visa: 'D-2', majors: L('신입학 · 외국인 전형', 'Freshman · international admission'),
     term: L('2027년 3월 입학', 'March 2027 intake'), image: null, tone: 'meadow',
     requires: { education: 'highschool', gradePct: 0, topik: 0 },
     requiresNote: L('입학할 때 TOPIK은 필수가 아니에요(성적이 있는 사람만 내요). 졸업하려면 TOPIK 4급(예체능 3급) 이상이나 그에 맞는 조건 하나를 채워야 해요. 고교 성적의 최저 기준은 없고 서류와 면접 총점 60점 이상이 합격 기준이에요.',
@@ -126,7 +126,7 @@ export const PROGRAMS = Object.freeze([
   },
   {
     id: 'wku-lang', example: false, partner: false, name: L('원광대학교 한국문화교육센터', 'Wonkwang University Korean Culture Education Center'), place: L('전북 익산', 'Iksan, Jeonbuk'),
-    region: 'local', level: 'language', visa: 'D-4', majors: L('한국어 연수과정 · 한 학기 10주', 'Korean language program · 10 weeks per term'),
+    region: 'local', level: 'language', visa: 'D-4', majors: L('한 학기 10주', '10 weeks per term'),
     term: L('2027년 봄학기', 'Spring term 2027'), image: null, tone: 'meadow',
     requires: { education: 'highschool', gradePct: 0, topik: 0 },
     requiresNote: L('고등학교 졸업 이상이면 지원할 수 있고 한국어 조건은 없어요. 어학연수(D-4-1) 비자를 받으려면 두 학기 이상 등록해야 해요.',
@@ -144,7 +144,7 @@ export const PROGRAMS = Object.freeze([
   },
   {
     id: 'jj-ug', example: false, partner: false, name: L('전주대학교', 'Jeonju University'), place: L('전북 전주', 'Jeonju, Jeonbuk'),
-    region: 'local', level: 'undergraduate', visa: 'D-2', majors: L('학부 신입학 · 외국인 전형', 'Undergraduate freshman · international admission'),
+    region: 'local', level: 'undergraduate', visa: 'D-2', majors: L('신입학 · 외국인 전형', 'Freshman · international admission'),
     term: L('2027년 3월 입학', 'March 2027 intake'), image: null, tone: 'ink',
     requires: { education: 'highschool', gradePct: 0, topik: 2 },
     requiresNote: L('TOPIK 2급이 없어도 세종학당 초급2 이상, 사회통합프로그램 2단계, 전주대 한국어학당 3급 이상 수료, 대학 자체 시험(JJ-TOPIK) 합격 같은 조건 가운데 하나로 지원할 수 있어요. TOPIK 2급 이하로 입학하면 두 학기, 3급이면 한 학기 동안 한국어 집중교육을 꼭 들어야 해요. 고교 성적의 최저 기준은 없고 서류평가 60점 이상이 합격 기준이에요. 졸업하려면 TOPIK 4급이 필요해요.',
@@ -285,13 +285,15 @@ export function programsFor(programs, publicWeb) {
 /** 원서 접수의 지금 상태. before(시작 전) · open(접수 중) · closed(마감이 지남) · unknown(날짜를 모름). days는 시작 또는 마감까지 남은 날. */
 export function applyWindow(program, now = new Date()) {
   const rounds = Array.isArray(program.applyRounds) ? program.applyRounds : [[program.applyOpens ?? null, program.applyCloses ?? null]];
+  // 접수가 여러 차수면 몇 차인지와 다음 차수가 열리는 날을 붙인다(1차 마감이 접수 끝으로 읽히지 않게).
+  const at = (w, i) => (rounds.length > 1 ? { ...w, round: i + 1, nextOpens: isDate(rounds[i + 1]?.[0]) ? rounds[i + 1][0] : null } : w);
   let sawClose = false;
-  for (const [opens, closes] of rounds) {
+  for (const [i, [opens, closes]] of rounds.entries()) {
     const toOpen = daysUntil(opens, now);
-    if (toOpen !== null && toOpen > 0) return { state: 'before', days: toOpen };
+    if (toOpen !== null && toOpen > 0) return at({ state: 'before', days: toOpen }, i);
     const toClose = daysUntil(closes, now);
-    if (toClose !== null) return { state: 'open', days: toClose };
-    if (toOpen === 0) return { state: 'open', days: null };
+    if (toClose !== null) return at({ state: 'open', days: toClose }, i);
+    if (toOpen === 0) return at({ state: 'open', days: null }, i);
     if (isDate(closes)) sawClose = true;
   }
   return { state: sawClose ? 'closed' : 'unknown', days: null };

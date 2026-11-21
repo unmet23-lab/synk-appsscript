@@ -507,7 +507,7 @@ test('대학 탭: 목록에서 자세히, 내 조건에서 넣은 값이 결과�
   grade.value = ''; app.event('input', grade);
   assert.equal(grade.getAttribute('aria-invalid'), null);
   assert.equal(JSON.parse(app.record(STUDY_KEY)).gradePct, null);
-  assert.match(app.root.querySelector('#sx-cond-result').textContent, /둘 다 넣으면 맞는 과정을 세어 줘요/);
+  assert.match(app.root.querySelector('#sx-cond-result').textContent, /성적과 한국어를 넣으면 맞는 과정을 세어 줘요\.\s*둘 중 하나라도 비어 있으면 세지 않아요/);
 
   const funds = app.root.querySelector('#sx-funds');
   funds.value = '1,600'; app.event('input', funds);

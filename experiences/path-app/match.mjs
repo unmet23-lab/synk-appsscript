@@ -5,9 +5,17 @@ export const MATCH_KEYS = Object.freeze(['education', 'grade', 'topik', 'finance
 
 const num = (v, min, max) => (typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max ? v : null);
 
-/** 성적과 한국어를 둘 다 넣었는가. 아니면 「맞는 곳」을 세지 않는다(안 넣어서 0으로 보이지 않게). */
-export function readyToCount(profile) {
-  return Number.isInteger(profile?.gradePct) && Number.isInteger(profile?.topik);
+/**
+ * 세기 전에 넣어야 하는 칸. 보이는 과정 가운데 그 조건(0보다 큰 기준)이 있는 과정이 있을 때만 요구한다
+ * (결과를 바꾸지 않는 성적을 지어 넣지 않게). 과정 목록을 안 주면 성적과 한국어 둘 다다.
+ */
+export function countNeeds(programs) {
+  return ['gradePct', 'topik'].filter((k) => !Array.isArray(programs) || programs.some((p) => p.requires[k] > 0));
+}
+
+/** 세기에 필요한 칸을 다 넣었는가. 아니면 「맞는 곳」을 세지 않는다(안 넣어서 0으로 보이지 않게). */
+export function readyToCount(profile, programs) {
+  return countNeeds(programs).every((k) => Number.isInteger(profile?.[k]));
 }
 
 /** 조건 넷을 늘 같은 순서로 낸다. 안 넣은 값은 'check'다. 성적 조건 0은 「성적 조건 없음」이다. */
@@ -65,21 +73,21 @@ export function programCost(profile, program) {
 
 /**
  * 지금 조건에 맞는 과정 수. 머리 숫자와 「조건이 맞는 곳」 거르기가 이 함수 하나를 쓴다.
- * 성적이나 한국어를 안 넣었으면 null(세지 않는다). topik을 주면 그 급수였을 때로 센다.
+ * 세기에 필요한 칸(countNeeds)을 안 넣었으면 null(세지 않는다). topik을 주면 그 급수였을 때로 센다.
  */
 export function countFit(profile, programs, rules, topik) {
   const p = topik === undefined ? profile : { ...(profile || {}), topik };
-  if (!readyToCount(p)) return null;
+  if (!readyToCount(p, programs)) return null;
   return programs.filter((x) => matchProgram(p, x, rules).fits).length;
 }
 
 /**
  * 갈 수 있는 길 둘: 어학 과정 먼저 / 바로 학부.
- * 머리 숫자와 같은 기준이다: 성적과 한국어를 둘 다 넣기 전에는 'check', 넣은 뒤에는 fits인 과정을 센다.
+ * 머리 숫자와 같은 기준이다: 세기에 필요한 칸을 넣기 전에는 'check', 넣은 뒤에는 fits인 과정을 센다.
  * open은 그 가운데 지금 접수 중이거나 접수가 곧 열리는 과정 수다(마감된 과정은 「지금」 갈 수 없다).
  */
 export function routes(profile, programs, rules, now = new Date()) {
-  const ready = readyToCount(profile);
+  const ready = readyToCount(profile, programs);
   const topik = Number.isInteger(profile?.topik) ? profile.topik : null;
   const of = (level) => programs.filter((x) => x.level === level);
   const summarize = (list) => {

@@ -550,6 +550,7 @@ button.pass:hover{transform:translateY(-3px)}
 button.sx-photo:hover .sx-img{transform:scale(1.03)}
 .sx-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,16,26,0) 38%,rgba(12,16,26,.86) 100%);pointer-events:none}
 .sx-photo-top{position:absolute;left:14px;top:14px;right:14px;z-index:2;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+.sx-photo-top .sx-tag{max-width:100%;height:auto;min-height:26px;padding-top:6px;padding-bottom:6px;line-height:1.15;white-space:normal}
 .sx-photo-body{position:absolute;left:18px;right:18px;bottom:16px;z-index:2}
 .sx-photo-body small{display:block;font-size:13.5px;font-weight:650;line-height:1.45}
 .sx-photo-body b{display:block;margin-top:2px;font:700 21px/1.3 var(--kr);letter-spacing:-.01em}
@@ -563,7 +564,6 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
 .sx-photo:has(.sx-cover)::after{background:linear-gradient(180deg,rgba(12,16,26,0) 30%,rgba(12,16,26,.34) 100%)}
 .sx-cmp-head .sx-cover{position:relative;inset:auto;width:100%;aspect-ratio:4/3;border-radius:14px}
 .sx-cmp-head .sx-cover span{left:8px;top:4px;font-size:30px}
-.sx-cmp-head .sx-cover+span{color:var(--ink)}
 .sx-pick{position:absolute;right:10px;top:10px;z-index:3;display:inline-flex;align-items:center;min-height:44px;padding:0 15px;border:0;border-radius:999px;background:rgba(255,255,255,.95);color:var(--ink);font-size:13px;font-weight:700}
 .sx-pick[aria-pressed=true]{background:var(--butter)}
 .sx-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 4px 0}
@@ -608,7 +608,7 @@ button.sx-photo:hover .sx-img{transform:scale(1.03)}
 .sx-cmp-miss{font-weight:500;color:var(--gray)}
 .sx-cmp-head{display:block;width:100%;padding:0;border:0;background:none;text-align:left}
 .sx-cmp-head .sx-img{width:100%;aspect-ratio:4/3;height:auto;object-fit:cover;border-radius:14px;background:#d9dde2}
-.sx-cmp-head span{display:block;margin-top:8px;font:700 15px/1.35 var(--kr);color:var(--ink)}
+.sx-cmp-head>span:not(.sx-cover){display:block;margin-top:8px;font:700 15px/1.35 var(--kr);color:var(--ink)}
 
 /* 내 조건 */
 .sx-field{margin-top:26px}
