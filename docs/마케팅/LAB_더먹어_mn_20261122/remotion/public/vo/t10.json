@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "t10",
+ "text": "그럼 과일 먹어~",
+ "dur": 1.281,
+ "words": [
+  {
+   "text": "그럼",
+   "start": 0.02,
+   "end": 0.281
+  },
+  {
+   "text": "과일",
+   "start": 0.362,
+   "end": 0.704
+  },
+  {
+   "text": "먹어~",
+   "start": 0.765,
+   "end": 1.281
+  }
+ ],
+ "source": {
+  "key": "1de92188281b5259bb3f94bb23a396fc",
+  "voice": {
+   "id": "tc_65a8c7e1915a6295614f775b",
+   "name": "미선"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_65a8c7e1915a6295614f775b"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 509
+ }
+}

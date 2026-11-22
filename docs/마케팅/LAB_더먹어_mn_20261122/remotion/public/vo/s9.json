@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s9",
+ "text": "휴~",
+ "dur": 0.71,
+ "words": [
+  {
+   "text": "휴~",
+   "start": 0.04,
+   "end": 0.101
+  }
+ ],
+ "source": {
+  "key": "3adf55d0322d34e26b384fa39a2f86f7",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "그래~ 알았어~ 손님이 크게 안도의 한숨을 쉰다.",
+   "next": "그럼 과일 먹어~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 482
+ }
+}

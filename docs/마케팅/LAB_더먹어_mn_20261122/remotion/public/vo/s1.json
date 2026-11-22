@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "배불러요~",
+ "dur": 0.966,
+ "words": [
+  {
+   "text": "배불러요~",
+   "start": 0.02,
+   "end": 0.966
+  }
+ ],
+ "source": {
+  "key": "efe35480dd03f2c0a360913acbd66b44",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "더 먹어~ 손님이 배가 불러서 쑥스럽게 웃으며 사양한다.",
+   "next": "에이~ 더 먹어!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 485
+ }
+}

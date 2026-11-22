@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s3",
+ "text": "진짜 배불러요!",
+ "dur": 1.444,
+ "words": [
+  {
+   "text": "진짜",
+   "start": 0.02,
+   "end": 0.383
+  },
+  {
+   "text": "배불러요!",
+   "start": 0.443,
+   "end": 1.444
+  }
+ ],
+ "source": {
+  "key": "8567afe38eba098b7099a34f48d83707",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "에이~ 더 먹어! 배가 너무 불러 다급하게 말한다.",
+   "next": "조금만 더~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 493
+ }
+}

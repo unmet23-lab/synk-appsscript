@@ -1,0 +1,19 @@
+Use your image generation tool to create exactly ONE image. Do not write code, do not edit files, do not run shell commands. After the image is generated, reply with one short line describing it.
+
+IMAGE BRIEF — the base photo of a vertical comedy short shot with a FIXED camera. Later panels will reuse this exact photo and only change the poses, faces, the rice in the bowl and Mongle's roundness, so keep everything clear and uncluttered.
+
+STYLE: a real photograph of a handmade needle-felt / wool-felt miniature diorama — every object, wall, table, dish and doll is made of felted wool and fabric, soft fuzzy fibres visible, warm cozy evening lamp light, shallow depth of field like a macro photo of a stop-motion set. Match ONLY the felt material, lighting warmth and photographic look of the FIRST attached photo. Do NOT copy its room, its furniture or its dolls — this is a different room.
+
+FORMAT: portrait 2:3. Camera at the height of the tabletop, looking straight across a low floor table.
+
+SET: the living room of a Korean family apartment at dinner time, evening. The top 25% of the image is ONLY the softly blurred back wall: a warm cream felt wall, a felt standing lamp glowing amber on the RIGHT, a low felt cabinet with a small felt plant on the LEFT. A long low warm-walnut floor table (Korean family dinner table) runs across the whole image; its tabletop is at about 60% of the image height, and its thick wooden front edge and a soft beige felt floor rug fill the lower part of the image down to the bottom (the lower 36% of the image is mostly that plain table front and rug — keep it plain). On the tabletop: in the middle a small felt earthenware pot of bubbling soybean stew, three small side dishes (cabbage kimchi, rolled egg slices, green spinach). At the far LEFT end of the table: a plain white felt electric rice cooker with its lid open (no buttons with writing, no text).
+
+MOTHER (felt doll — the Korean friend's mother): kneels behind the table on the LEFT, beside the rice cooker, seen from the waist up, her body between about 4% and 36% of the image width, her head between about 26% and 44% of the image height. A Korean woman in her fifties: big round felt head, glossy black bead eyes with no white sclera, short curly permed dark-brown felt hair, rosy felt cheeks, a lavender felt sweater with a coral-pink felt apron. She holds a wooden felt rice paddle heaped with fluffy white felt rice in her right hand, reaching it toward Mongle's bowl, a big warm generous smile, eyes crinkled.
+
+MONGLE (the mascot from the SECOND attached image), the guest: sits behind the table in the CENTER-RIGHT on a flat felt floor cushion, its body rising above the tabletop, the middle of its body at about 62% of the image width, its body about 22% of the image width wide, normal slim size. In front of Mongle on the tabletop: one cream felt rice bowl heaped with a round mound of white felt rice, a pair of plain wooden chopsticks resting across the bowl's rim. Mongle faces the mother (three-quarter view turned left), a happy polite smile, a light blush.
+Use the SECOND image ONLY for Mongle's body shape, coral wool colour, fuzzy texture, scalloped bottom hem with a cream running stitch and glossy black bead eyes. Mongle has NO arms, NO legs, NO hands — never.
+
+FRIEND (felt doll — the mother's son, Mongle's Korean friend, about twenty): sits behind the table at the far RIGHT edge, body between about 82% and 100% of the image width (partly cut off by the right edge is fine), seen from the chest up, short black felt hair, a navy felt hoodie, glossy black bead eyes, holding a small felt spoon, smiling and watching.
+
+Leave clear empty space ABOVE Mongle's head and above the mother's head (later panels show a taller rice mound there). Exactly ONE Mongle, ONE mother, ONE friend, nobody else.
+Absolutely no text, letters, numbers, logos, symbols, clocks with numbers, labels or watermarks anywhere.

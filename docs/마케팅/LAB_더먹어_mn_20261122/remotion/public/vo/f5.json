@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "f5",
+ "text": "잘 먹었습니다, 해!",
+ "dur": 1.416,
+ "words": [
+  {
+   "text": "잘",
+   "start": 0.28,
+   "end": 0.462
+  },
+  {
+   "text": "먹었습니다,",
+   "start": 0.523,
+   "end": 0.989
+  },
+  {
+   "text": "해!",
+   "start": 1.05,
+   "end": 1.416
+  }
+ ],
+ "source": {
+  "key": "509289bfb35b6b94c5babf3940b4fc80",
+  "voice": {
+   "id": "tc_66d000ee0742c43c93a0ada1",
+   "name": "도현"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_66d000ee0742c43c93a0ada1",
+   "prev": "조금만 더~ 친구가 몸을 숙여 작은 목소리로 비법을 알려 준다.",
+   "next": "잘 먹었습니다!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 136
+ }
+}

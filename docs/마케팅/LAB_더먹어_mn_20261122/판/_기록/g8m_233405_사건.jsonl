@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a203ae-19bb-7753-b61f-4308b00c201f"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll keep the fixed scene and change only the poses, Mongle’s roundness, and the rice in its bowl.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Round, peaceful Mongle rises from its bow as the smiling mother draws back her rice-filled paddle."}}
+{"type":"turn.completed","usage":{"input_tokens":92421,"cached_input_tokens":69888,"cache_write_input_tokens":0,"output_tokens":1027,"reasoning_output_tokens":73}}

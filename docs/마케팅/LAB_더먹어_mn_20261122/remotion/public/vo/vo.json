@@ -1,0 +1,111 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_65a8c7e1915a6295614f775b",
+  "name": "미선"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "happy",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1122,
+  "lufs": -16
+ },
+ "made": "2026-11-22T16:51:34.570Z",
+ "lines": [
+  {
+   "id": "t0",
+   "text": "더 먹어~",
+   "dur": 1.253,
+   "syllablesPerSec": 2.39,
+   "src": "t0.wav",
+   "key": "ba9708ac3d04fed17c4099d191e2316d",
+   "words": 2
+  },
+  {
+   "id": "s1",
+   "text": "배불러요~",
+   "dur": 0.966,
+   "syllablesPerSec": 4.14,
+   "src": "s1.wav",
+   "key": "efe35480dd03f2c0a360913acbd66b44",
+   "words": 1
+  },
+  {
+   "id": "t2",
+   "text": "에이~ 더 먹어!",
+   "dur": 1.583,
+   "syllablesPerSec": 3.16,
+   "src": "t2.wav",
+   "key": "ac50d53140246b2c58528937971e24c3",
+   "words": 3
+  },
+  {
+   "id": "s3",
+   "text": "진짜 배불러요!",
+   "dur": 1.444,
+   "syllablesPerSec": 4.16,
+   "src": "s3.wav",
+   "key": "8567afe38eba098b7099a34f48d83707",
+   "words": 2
+  },
+  {
+   "id": "t4",
+   "text": "조금만 더~",
+   "dur": 0.951,
+   "syllablesPerSec": 4.21,
+   "src": "t4.wav",
+   "key": "e1dc420a8f7799551b8f30c249a5c4f5",
+   "words": 2
+  },
+  {
+   "id": "f5",
+   "text": "잘 먹었습니다, 해!",
+   "dur": 1.416,
+   "syllablesPerSec": 4.94,
+   "src": "f5.wav",
+   "key": "509289bfb35b6b94c5babf3940b4fc80",
+   "words": 3
+  },
+  {
+   "id": "s6",
+   "text": "잘 먹었습니다!",
+   "dur": 1.01,
+   "syllablesPerSec": 5.94,
+   "src": "s6.wav",
+   "key": "5f4bf903f1393a77c04df6f6c3fcd07c",
+   "words": 2
+  },
+  {
+   "id": "t8",
+   "text": "그래~ 알았어~",
+   "dur": 1.661,
+   "syllablesPerSec": 3.01,
+   "src": "t8.wav",
+   "key": "d4aeae4517c0b3055ed592993d8d4a31",
+   "words": 2
+  },
+  {
+   "id": "s9",
+   "text": "휴~",
+   "dur": 0.71,
+   "syllablesPerSec": 1.41,
+   "src": "s9.wav",
+   "key": "3adf55d0322d34e26b384fa39a2f86f7",
+   "words": 1
+  },
+  {
+   "id": "t10",
+   "text": "그럼 과일 먹어~",
+   "dur": 1.281,
+   "syllablesPerSec": 4.68,
+   "src": "t10.wav",
+   "key": "1de92188281b5259bb3f94bb23a396fc",
+   "words": 3
+  }
+ ]
+}
