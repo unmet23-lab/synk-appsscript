@@ -1,0 +1,287 @@
+{
+  "직업": "duty-free",
+  "모델": "Omni 1.2 Flash",
+  "해상도": "720p",
+  "비율": "16:9",
+  "판수": 1,
+  "만든날": "2026-11-21",
+  "값표": "실측 전(어림)",
+  "컷": [
+    {
+      "id": "manager-briefing",
+      "종류": "speaking",
+      "자리": "briefing",
+      "시작그림": "briefing",
+      "초": 10,
+      "어림크레딧": 30,
+      "대사": "좋은 아침이에요. 오늘 환율은 1달러에 1,385원이에요. 그리고 수분 크림은 오늘부터 한 분께 두 개까지만 팔아요.",
+      "글자": 42
+    },
+    {
+      "id": "senior-welcome",
+      "종류": "speaking",
+      "자리": "staff-senior",
+      "시작그림": "staff-senior",
+      "초": 10,
+      "어림크레딧": 30,
+      "대사": "반가워요. 저는 윤서영이에요. 오늘 하루 제 옆에서 같이 해요. 손님 앞에서 모르는 게 생기면 바로 물어봐요.",
+      "글자": 42
+    },
+    {
+      "id": "senior-listen-staff",
+      "종류": "listening",
+      "자리": "staff-senior",
+      "시작그림": "staff-senior",
+      "초": 5,
+      "어림크레딧": 15
+    },
+    {
+      "id": "senior-tour",
+      "종류": "speaking",
+      "자리": "staff-senior",
+      "시작그림": "staff-senior",
+      "초": 6,
+      "어림크레딧": 18,
+      "대사": "문 열기까지 이십 분 남았어요. 그 전에 매장을 한 바퀴 같이 봐요.",
+      "글자": 25
+    },
+    {
+      "id": "reseller-ask",
+      "종류": "speaking",
+      "자리": "counter-reseller",
+      "시작그림": "counter-reseller",
+      "초": 6,
+      "어림크레딧": 18,
+      "대사": "수분 크림 여섯 개 주세요. 친구들 여권도 같이 가져왔어요.",
+      "글자": 23
+    },
+    {
+      "id": "reseller-push",
+      "종류": "speaking",
+      "자리": "counter-reseller",
+      "시작그림": "counter-reseller",
+      "초": 8,
+      "어림크레딧": 24,
+      "대사": "여권이 세 개잖아요. 두 개씩이면 여섯 개 맞죠? 뒤에 줄도 긴데 빨리 좀 해 줘요.",
+      "글자": 30
+    },
+    {
+      "id": "reseller-listen",
+      "종류": "listening",
+      "자리": "counter-reseller",
+      "시작그림": "counter-reseller",
+      "초": 5,
+      "어림크레딧": 15
+    },
+    {
+      "id": "reseller-ok",
+      "종류": "speaking",
+      "자리": "counter-reseller",
+      "시작그림": "counter-reseller",
+      "초": 4,
+      "어림크레딧": 12,
+      "대사": "…알겠어요. 그럼 두 개만 줘요.",
+      "글자": 11
+    },
+    {
+      "id": "senior-relay-ask",
+      "종류": "speaking",
+      "자리": "counter-guest",
+      "시작그림": "counter-guest",
+      "초": 6,
+      "어림크레딧": 18,
+      "대사": "손님 말씀을 제가 다 못 알아듣겠어요. 대신 들어 줄래요?",
+      "글자": 22
+    },
+    {
+      "id": "guest-listen",
+      "종류": "listening",
+      "자리": "counter-guest",
+      "시작그림": "counter-guest",
+      "초": 5,
+      "어림크레딧": 15
+    },
+    {
+      "id": "senior-relay-thanks",
+      "종류": "speaking",
+      "자리": "counter-guest",
+      "시작그림": "counter-guest",
+      "초": 11,
+      "어림크레딧": 36,
+      "대사": "고마워요. 그럼 고객님 어머니께 맞는 크림을 같이 찾아봐요. 내일 아침 비행기면 출국 정보도 꼭 다시 봐야겠네요.",
+      "글자": 45
+    },
+    {
+      "id": "guest-bow",
+      "종류": "action",
+      "자리": "counter-guest",
+      "시작그림": "counter-guest",
+      "초": 6,
+      "어림크레딧": 18,
+      "대사": "손님이 크림 두 통을 받아 들고 고개를 숙여 인사하신다."
+    },
+    {
+      "id": "kyunghee-ask",
+      "종류": "speaking",
+      "자리": "shelf-kyunghee",
+      "시작그림": "shelf-kyunghee",
+      "초": 6,
+      "어림크레딧": 18,
+      "대사": "이 크림 바르면 눈가 주름이 없어져요? 친구가 그렇다던데.",
+      "글자": 23
+    },
+    {
+      "id": "kyunghee-listen-shelf",
+      "종류": "listening",
+      "자리": "shelf-kyunghee",
+      "시작그림": "shelf-kyunghee",
+      "초": 5,
+      "어림크레딧": 15
+    },
+    {
+      "id": "kyunghee-try",
+      "종류": "speaking",
+      "자리": "shelf-kyunghee",
+      "시작그림": "shelf-kyunghee",
+      "초": 5,
+      "어림크레딧": 15,
+      "대사": "어머, 발라 보니까 촉촉하네. 이걸로 두 개 줘요.",
+      "글자": 18
+    },
+    {
+      "id": "kyunghee-buy",
+      "종류": "speaking",
+      "자리": "shelf-kyunghee",
+      "시작그림": "shelf-kyunghee",
+      "초": 5,
+      "어림크레딧": 15,
+      "대사": "정말? 그럼 두 개 줘요. 언니도 하나 줘야겠다.",
+      "글자": 17
+    },
+    {
+      "id": "kyunghee-listen-counter",
+      "종류": "listening",
+      "자리": "counter-kyunghee",
+      "시작그림": "counter-kyunghee",
+      "초": 5,
+      "어림크레딧": 15
+    },
+    {
+      "id": "kyunghee-receipts",
+      "종류": "speaking",
+      "자리": "counter-kyunghee",
+      "시작그림": "counter-kyunghee",
+      "초": 8,
+      "어림크레딧": 24,
+      "대사": "아이고, 오늘 여기저기서 많이 샀네. 영수증이 아주 많아요. 여권 여기 있어요.",
+      "글자": 30
+    },
+    {
+      "id": "kyunghee-thanks",
+      "종류": "speaking",
+      "자리": "counter-kyunghee",
+      "시작그림": "counter-kyunghee",
+      "초": 7,
+      "어림크레딧": 21,
+      "대사": "어머, 그래요? 몰랐네. 알려 줘서 고마워요. 들어올 때 신고할게요.",
+      "글자": 25
+    },
+    {
+      "id": "kyunghee-trip",
+      "종류": "speaking",
+      "자리": "counter-kyunghee",
+      "시작그림": "counter-kyunghee",
+      "초": 6,
+      "어림크레딧": 18,
+      "대사": "고마워요. 친구들이랑 다낭 가요. 오랜만이라 설레네.",
+      "글자": 21
+    },
+    {
+      "id": "senior-claim",
+      "종류": "speaking",
+      "자리": "counter-senior",
+      "시작그림": "counter-senior",
+      "초": 9,
+      "어림크레딧": 27,
+      "대사": "화장품을 약처럼 말하면 안 돼요. '주름 개선'도 심사를 받은 기능성 화장품에만 쓰는 말이에요.",
+      "글자": 37
+    },
+    {
+      "id": "senior-listen-counter",
+      "종류": "listening",
+      "자리": "counter-senior",
+      "시작그림": "counter-senior",
+      "초": 5,
+      "어림크레딧": 15
+    },
+    {
+      "id": "senior-privacy-good",
+      "종류": "speaking",
+      "자리": "counter-senior",
+      "시작그림": "counter-senior",
+      "초": 9,
+      "어림크레딧": 27,
+      "대사": "잘했어요. 정말 일행이어도 전화로는 우리가 알 수 없어요. 여권과 출국 정보는 손님 것이에요.",
+      "글자": 37
+    },
+    {
+      "id": "senior-privacy-stop",
+      "종류": "speaking",
+      "자리": "counter-senior",
+      "시작그림": "counter-senior",
+      "초": 10,
+      "어림크레딧": 30,
+      "대사": "출국 시간도 손님 정보예요. 전화로는 정말 일행인지 알 수 없어요. 다음엔 '손님께 직접 연락해 보세요'라고 해요.",
+      "글자": 44
+    },
+    {
+      "id": "manager-heard",
+      "종류": "speaking",
+      "자리": "staff-manager",
+      "시작그림": "staff-manager",
+      "초": 10,
+      "어림크레딧": 30,
+      "대사": "서영 씨한테 들었어요. 아침에 친구 여권으로 나눠서 결제할 뻔했다면서요. 처음엔 헷갈릴 수 있어요.",
+      "글자": 40
+    },
+    {
+      "id": "manager-ask",
+      "종류": "speaking",
+      "자리": "staff-manager",
+      "시작그림": "staff-manager",
+      "초": 8,
+      "어림크레딧": 24,
+      "대사": "오늘 수고 많았어요. 목표는 넘겼어요. 오늘 있었던 일 가운데 알려 줄 게 있어요?",
+      "글자": 31
+    },
+    {
+      "id": "manager-listen",
+      "종류": "listening",
+      "자리": "staff-manager",
+      "시작그림": "staff-manager",
+      "초": 5,
+      "어림크레딧": 15
+    },
+    {
+      "id": "manager-thanks",
+      "종류": "speaking",
+      "자리": "staff-manager",
+      "시작그림": "staff-manager",
+      "초": 9,
+      "어림크레딧": 27,
+      "대사": "알려 줘서 고마워요. 같은 분이 다른 매장에서도 그럴 수 있어요. 다른 층에도 바로 알릴게요.",
+      "글자": 36
+    },
+    {
+      "id": "manager-resale",
+      "종류": "speaking",
+      "자리": "staff-manager",
+      "시작그림": "staff-manager",
+      "초": 13,
+      "어림크레딧": 48,
+      "대사": "서영 씨한테 들었는데, 오전에 친구 여권으로 크림을 많이 사려던 손님이 있었다면서요. 그런 일은 꼭 알려 줘요. 다른 층에서도 그럴 수 있어요.",
+      "글자": 56
+    }
+  ],
+  "어림합계": 633
+}
