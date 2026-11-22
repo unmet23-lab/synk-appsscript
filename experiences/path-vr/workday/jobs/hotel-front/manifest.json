@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "workday-hotel-front",
+  "status": "making",
+  "title": "호텔 프런트의 하루",
+  "projection": "rectilinear-mono",
+  "stereo": false,
+  "source": {
+    "status": "making",
+    "provider": "Google Flow",
+    "model": "Omni 1.2 Flash",
+    "reviewScope": "영상은 아직 만들지 않았다. 사진과 자막으로 진행한다."
+  },
+  "notice": "인물과 장소는 AI로 만든 그림과 영상이에요. 실제 사람이나 시설이 아니에요.",
+  "clips": []
+}

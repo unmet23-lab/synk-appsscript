@@ -1,0 +1,2677 @@
+{
+  "schemaVersion": 1,
+  "id": "hotel-front",
+  "edition": "표준판 1.0",
+  "title": "호텔 프런트의 하루",
+  "role": "호텔 접수사무원",
+  "summary": "호텔 프런트에서 체크인과 체크아웃을 맡아 하루를 보내요. 손님의 말에 답하고, 업무 화면과 서류를 보고, 갈림길에서 골라요.",
+  "minutes": 20,
+  "reviewNote": "장면과 대사는 호텔 현장 전문가의 검토를 받기 전입니다.",
+  "hintLanguages": [
+    "mn",
+    "vi",
+    "en"
+  ],
+  "allowedTerms": [
+    "고용추천"
+  ],
+  "cast": {
+    "senior": {
+      "name": "서지현",
+      "role": "선배 프런트 직원"
+    },
+    "night": {
+      "name": "김태민",
+      "role": "밤 근무 프런트 직원"
+    },
+    "manager": {
+      "name": "이정훈",
+      "role": "당직 지배인"
+    },
+    "evening": {
+      "name": "한예린",
+      "role": "저녁 근무 프런트 직원"
+    },
+    "checkout": {
+      "name": "김영수 손님",
+      "role": "1105호 · 체크아웃"
+    },
+    "misuk": {
+      "name": "오미숙 손님",
+      "role": "1602호 예약 · 일찍 도착"
+    },
+    "visitor": {
+      "name": "방 번호를 묻는 남성",
+      "role": "로비 방문객"
+    },
+    "eunbi": {
+      "name": "정은비 손님",
+      "role": "1207호"
+    },
+    "room903": {
+      "name": "903호 손님",
+      "role": "투숙객"
+    },
+    "room1208": {
+      "name": "1208호 투숙객",
+      "role": "외국인 손님"
+    },
+    "traveler": {
+      "name": "에마",
+      "role": "1418호 · 체크아웃 손님",
+      "language": "en"
+    }
+  },
+  "places": {
+    "front-senior": {
+      "name": "프런트 데스크",
+      "photo": "places/front-senior.jpg",
+      "live": [
+        0.2,
+        0.12,
+        0.6,
+        1
+      ],
+      "alt": "아침의 호텔 로비. 프런트 데스크 앞에 남색 제복을 입은 선배 직원이 서 있다.",
+      "points": []
+    },
+    "front": {
+      "name": "프런트 데스크",
+      "photo": "places/front.jpg",
+      "alt": "직원 쪽에서 본 프런트 데스크. 모니터와 카드키 발급기, 전화기, 고객등록카드 상자가 있고 건너편으로 로비가 보인다.",
+      "points": [
+        {
+          "id": "pms",
+          "x": 0.24,
+          "y": 0.45,
+          "label": "객실 관리 화면",
+          "hint": {
+            "mn": "Өрөөний удирдлагын дэлгэц. Захиалга, өрөөний байдал, тооцоог эндээс хардаг.",
+            "vi": "Màn hình quản lý phòng. Dùng để xem thông tin đặt phòng, tình trạng phòng và hóa đơn.",
+            "en": "Room management screen. You check bookings, room status and bills here."
+          }
+        },
+        {
+          "id": "key-encoder",
+          "x": 0.34,
+          "y": 0.64,
+          "label": "카드키 발급기",
+          "note": "keycard",
+          "hint": {
+            "mn": "Картан түлхүүр гаргах төхөөрөмж. Зочдын өрөөний картан түлхүүрийг энэ төхөөрөмжөөр бэлддэг.",
+            "vi": "Máy làm thẻ khóa phòng. Dùng để làm thẻ khóa phòng cho khách.",
+            "en": "Key card encoder. This machine makes guests' room key cards."
+          }
+        },
+        {
+          "id": "house-phone",
+          "x": 0.47,
+          "y": 0.66,
+          "label": "내선 전화",
+          "hint": {
+            "mn": "Дотоод утас. Зочдын өрөө болон бусад хэлтэстэй холбогддог.",
+            "vi": "Điện thoại nội bộ. Dùng để gọi đến phòng của khách và các bộ phận khác.",
+            "en": "House phone. This is the hotel's internal phone. Use it to call guest rooms and hotel departments."
+          }
+        },
+        {
+          "id": "reg-card",
+          "x": 0.62,
+          "y": 0.78,
+          "label": "고객등록카드(레지카드)",
+          "hint": {
+            "mn": "Зочны бүртгэлийн карт. Чек-ин хийхдээ зочин шалгаад гарын үсэг зурдаг.",
+            "vi": "Phiếu đăng ký nhận phòng. Khi nhận phòng, khách kiểm tra thông tin rồi ký tên.",
+            "en": "Guest registration card. At check-in, the guest checks the details and signs it."
+          }
+        }
+      ]
+    },
+    "lobby": {
+      "name": "로비",
+      "photo": "places/lobby.jpg",
+      "alt": "햇살이 드는 호텔 로비. 짐 수레 옆에 벨 데스크가 있고, 소파가 놓인 라운지와 안내 게시판이 있다.",
+      "points": [
+        {
+          "id": "bell-desk",
+          "x": 0.26,
+          "y": 0.58,
+          "label": "벨 데스크",
+          "hint": {
+            "mn": "Ачаа тээшний хэсэг. Зочны ачааг түр хадгалж, өрөөнд нь хүргэж өгдөг.",
+            "vi": "Quầy hành lý. Nhân viên giữ hành lý cho khách và mang lên phòng.",
+            "en": "Bell desk. Staff store guests' bags here and carry them to their rooms."
+          }
+        },
+        {
+          "id": "lounge",
+          "x": 0.56,
+          "y": 0.64,
+          "label": "로비 라운지",
+          "hint": {
+            "mn": "Лоббины амрах хэсэг. Зочид сууж хүлээдэг газар.",
+            "vi": "Khu chờ ở sảnh. Nơi khách ngồi chờ.",
+            "en": "Lobby lounge. Guests sit and wait here."
+          }
+        },
+        {
+          "id": "info-board",
+          "x": 0.91,
+          "y": 0.47,
+          "label": "안내 게시판",
+          "hint": {
+            "mn": "Мэдээллийн самбар. Өглөөний цай, автобус зэрэг буудлын үйлчилгээний мэдээлэл байдаг.",
+            "vi": "Bảng thông tin. Có thông tin về dịch vụ của khách sạn như bữa sáng và xe buýt.",
+            "en": "Information board. It shows hotel information such as breakfast times and bus times."
+          }
+        }
+      ]
+    },
+    "corridor": {
+      "name": "객실 층 복도",
+      "photo": "places/corridor.jpg",
+      "alt": "엘리베이터 홀에서 이어지는 객실 층 복도. 비상구 유도등과 소화기가 보인다.",
+      "points": [
+        {
+          "id": "elevator",
+          "x": 0.17,
+          "y": 0.55,
+          "label": "엘리베이터 홀",
+          "hint": {
+            "mn": "Цахилгаан шатны өмнөх талбай.",
+            "vi": "Sảnh thang máy.",
+            "en": "Elevator lobby."
+          }
+        },
+        {
+          "id": "exit-sign",
+          "x": 0.61,
+          "y": 0.24,
+          "label": "비상구 유도등",
+          "hint": {
+            "mn": "Аваарын гарцын гэрэлтдэг тэмдэг. Гал гарвал зочдыг энэ гарцаар гаргадаг.",
+            "vi": "Đèn chỉ lối thoát hiểm. Khi có cháy, nhân viên hướng dẫn khách đi theo lối này.",
+            "en": "Emergency exit sign. In a fire, staff lead guests out this way."
+          }
+        },
+        {
+          "id": "extinguisher",
+          "x": 0.875,
+          "y": 0.9,
+          "label": "소화기",
+          "hint": {
+            "mn": "Гал унтраагуур.",
+            "vi": "Bình chữa cháy.",
+            "en": "Fire extinguisher."
+          }
+        }
+      ]
+    },
+    "room": {
+      "name": "객실 · 디럭스 더블",
+      "photo": "places/room.jpg",
+      "alt": "객실 문 안쪽. 문에 비상대피안내도가 붙어 있고, 문 옆 벽에 카드키 꽂이가 있다. 왼쪽 옷장 안에 안전금고가 보인다.",
+      "points": [
+        {
+          "id": "evac-map",
+          "x": 0.55,
+          "y": 0.31,
+          "label": "비상대피안내도",
+          "hint": {
+            "mn": "Яаралтай үед гарах замын зураг. Өрөө бүрийн хаалганы дотор талд байдаг.",
+            "vi": "Sơ đồ thoát hiểm. Được dán ở mặt trong cửa mỗi phòng.",
+            "en": "Evacuation map. Every room has one on the inside of the door."
+          }
+        },
+        {
+          "id": "key-slot",
+          "x": 0.68,
+          "y": 0.42,
+          "label": "카드키 꽂이",
+          "hint": {
+            "mn": "Картан түлхүүр хийх хэсэг. Картаа хийхэд өрөөний гэрэл асдаг.",
+            "vi": "Khe cắm thẻ. Cắm thẻ khóa phòng vào thì đèn trong phòng bật.",
+            "en": "Key card slot. When you put the key card in, the room lights turn on."
+          }
+        },
+        {
+          "id": "safe",
+          "x": 0.31,
+          "y": 0.62,
+          "label": "안전금고",
+          "hint": {
+            "mn": "Сейф. Зочин үнэт зүйлээ хадгалдаг.",
+            "vi": "Két an toàn. Khách cất đồ có giá trị vào đây.",
+            "en": "In-room safe. Guests keep their valuables in it."
+          }
+        }
+      ]
+    },
+    "back-office": {
+      "name": "프런트 뒤 사무실",
+      "photo": "places/back-office.jpg",
+      "alt": "프런트 뒤의 작은 사무실. 책상에 인계 일지가 펼쳐져 있고, 벽에 근무표, 오른쪽에 분실물 보관 선반이 있다.",
+      "points": [
+        {
+          "id": "logbook",
+          "x": 0.22,
+          "y": 0.8,
+          "label": "인계 일지(로그북)",
+          "hint": {
+            "mn": "Ээлж хүлээлцэх дэвтэр. Дараагийн ээлжинд мэдэгдэх зүйлээ бичдэг.",
+            "vi": "Sổ bàn giao ca. Ghi những việc ca sau cần biết.",
+            "en": "Handover logbook. You write down what the next shift needs to know."
+          }
+        },
+        {
+          "id": "shift-table",
+          "x": 0.55,
+          "y": 0.38,
+          "label": "근무표",
+          "note": "schedule",
+          "hint": {
+            "mn": "Ээлжийн хуваарь.",
+            "vi": "Bảng phân ca.",
+            "en": "Shift schedule."
+          }
+        },
+        {
+          "id": "lost-found",
+          "x": 0.78,
+          "y": 0.55,
+          "label": "분실물 보관함",
+          "hint": {
+            "mn": "Гээгдсэн эд зүйлсийн тавиур. Зочдын мартсан зүйлийг хадгалдаг.",
+            "vi": "Kệ đồ thất lạc. Giữ đồ khách để quên.",
+            "en": "Lost and found shelf. Things guests leave behind are kept here."
+          }
+        }
+      ]
+    },
+    "back-office-night": {
+      "name": "프런트 뒤 사무실",
+      "photo": "places/back-office-night.jpg",
+      "live": [
+        0.28,
+        0.06,
+        0.8,
+        1
+      ],
+      "alt": "프런트 뒤 사무실에서 밤 근무를 마친 직원이 인계 일지를 들고 서 있다.",
+      "points": []
+    },
+    "front-checkout": {
+      "name": "프런트 데스크",
+      "photo": "places/front-checkout.jpg",
+      "live": [
+        0,
+        0.05,
+        0.9,
+        1
+      ],
+      "alt": "프런트 데스크 건너편에 체크아웃하는 남자 손님이 서 있고, 왼쪽 앞에 선배 직원이 계산서를 보고 있다.",
+      "points": []
+    },
+    "front-traveler": {
+      "name": "프런트 데스크",
+      "photo": "places/front-traveler.jpg",
+      "live": [
+        0.15,
+        0.03,
+        0.9,
+        1
+      ],
+      "alt": "프런트 데스크 건너편에 여행 가방 손잡이를 쥔 외국인 여성 손님이 웃는 얼굴로 서 있다.",
+      "points": []
+    },
+    "front-senior-side": {
+      "name": "프런트 데스크",
+      "photo": "places/front-senior-side.jpg",
+      "live": [
+        0.5,
+        0.04,
+        0.92,
+        1
+      ],
+      "alt": "프런트 데스크 안쪽, 옆자리의 선배 직원이 몸을 돌려 이쪽을 본다. 앞에 모니터가 켜져 있다.",
+      "points": []
+    },
+    "front-misuk": {
+      "name": "프런트 데스크",
+      "photo": "places/front-misuk.jpg",
+      "live": [
+        0.15,
+        0.04,
+        0.82,
+        1
+      ],
+      "alt": "프런트 데스크 건너편에 옷 가방을 든 오미숙 손님이 걱정스러운 얼굴로 서 있다.",
+      "points": []
+    },
+    "front-misuk-back": {
+      "name": "프런트 데스크",
+      "photo": "places/front-misuk-back.jpg",
+      "live": [
+        0.28,
+        0,
+        1,
+        1
+      ],
+      "alt": "한 시간 뒤, 오미숙 손님이 다시 프런트 데스크에 와서 서 있다. 지친 얼굴이다.",
+      "points": []
+    },
+    "lobby-misuk": {
+      "name": "로비",
+      "photo": "places/lobby-misuk.jpg",
+      "live": [
+        0.27,
+        0.14,
+        0.5,
+        1
+      ],
+      "alt": "로비에서 결혼식에 갈 옷으로 갈아입은 오미숙 손님이 웃으며 서 있다.",
+      "points": []
+    },
+    "front-visitor": {
+      "name": "프런트 데스크",
+      "photo": "places/front-visitor.jpg",
+      "live": [
+        0.12,
+        0.06,
+        0.76,
+        1
+      ],
+      "alt": "프런트 데스크에 한 남자가 두 팔을 얹고 몸을 기울여 서 있다. 손에 휴대폰을 쥐고 있다.",
+      "points": []
+    },
+    "front-manager": {
+      "name": "프런트 데스크",
+      "photo": "places/front-manager.jpg",
+      "live": [
+        0.06,
+        0.04,
+        0.96,
+        1
+      ],
+      "alt": "프런트 데스크 안쪽으로 짙은 정장을 입은 당직 지배인이 다가와 이쪽을 본다.",
+      "points": []
+    },
+    "back-office-evening": {
+      "name": "프런트 뒤 사무실",
+      "photo": "places/back-office-evening.jpg",
+      "live": [
+        0.12,
+        0.1,
+        0.8,
+        1
+      ],
+      "alt": "프런트 뒤 사무실에 저녁 근무 직원이 서 있고, 뒤쪽 책상에 선배 직원이 앉아 있다.",
+      "points": []
+    }
+  },
+  "notes": {
+    "schedule": {
+      "title": "프런트 낮 근무의 하루",
+      "lead": "한 예시예요. 시간과 순서는 호텔마다 달라요.",
+      "rows": [
+        [
+          "06:45",
+          "출근, 제복과 명찰"
+        ],
+        [
+          "07:00",
+          "밤 근무자에게 인계받기"
+        ],
+        [
+          "07:00~11:00",
+          "체크아웃, 계산서 확인"
+        ],
+        [
+          "11:00~14:00",
+          "정비 끝난 객실 확인, 일찍 온 손님 맞기. 점심은 한 사람씩 돌아가며 한 시간"
+        ],
+        [
+          "14:00~15:30",
+          "로비와 전화 응대, 15:00부터 오후 체크인"
+        ],
+        [
+          "15:30",
+          "저녁 근무자에게 인계"
+        ],
+        [
+          "16:00",
+          "퇴근"
+        ]
+      ],
+      "hint": {
+        "mn": "Ресепшний өдрийн ээлжийн нэг өдөр. Энэ бол нэг жишээ. Цаг, дараалал нь зочид буудал бүрт өөр. 06:45 ажилдаа ирж, дүрэмт хувцсаа өмсөж, нэрийн тэмдгээ зүүнэ. 07:00 шөнийн ээлжийн ажилтнаас ээлж хүлээж авна. 07:00–11:00 зочдын гарах бүртгэлийг (чек-аут) хийж, тооцооны хуудсыг шалгана. 11:00–14:00 цэвэрлэгээ дууссан өрөөг шалгаж, эрт ирсэн зочдыг хүлээн авна. Үдийн хоолондоо нэг нэгээрээ ээлжлэн нэг цаг завсарлана. 14:00–15:30 лоббид зочдод үйлчилж, утасны дуудлага хүлээн авна, 15:00-аас үдээс хойших чек-ин хийнэ. 15:30 оройн ээлжийн ажилтанд ээлжээ хүлээлгэж өгнө. 16:00 ажлаасаа тарна.",
+        "vi": "Một ngày làm ca ngày ở quầy lễ tân. Đây là một ví dụ. Giờ giấc và thứ tự khác nhau tùy khách sạn. 06:45 đến nơi làm việc, mặc đồng phục và đeo bảng tên. 07:00 nhận bàn giao từ ca đêm. 07:00–11:00 làm thủ tục trả phòng, kiểm tra hóa đơn. 11:00–14:00 kiểm tra phòng đã dọn xong, đón khách đến sớm. Mọi người thay phiên nhau nghỉ ăn trưa một tiếng. 14:00–15:30 tiếp khách ở sảnh và nghe điện thoại, từ 15:00 làm thủ tục nhận phòng buổi chiều. 15:30 bàn giao cho ca tối. 16:00 tan ca.",
+        "en": "One example of a day on the front desk day shift. The times and the order vary from hotel to hotel. 06:45 arrive, put on your uniform and name badge. 07:00 get the handover from the night shift. 07:00–11:00 check guests out and check their bills. 11:00–14:00 check which rooms are ready and welcome early guests. Staff take a one-hour lunch break one at a time. 14:00–15:30 help guests in the lobby and answer the phone; afternoon check-ins from 15:00. 15:30 hand over to the evening shift. 16:00 finish work."
+      }
+    },
+    "keycard": {
+      "title": "선배의 말",
+      "lead": "카드키는 이렇게 만들어요.",
+      "body": [
+        "카드키는 예약 화면에 적힌 퇴실 날, 정해진 시각까지만 열려요.",
+        "카드키를 잃어버렸다는 손님에게는 신분증으로 본인인지 확인한 뒤 새로 만들어 드려요.",
+        "방 번호는 소리 내어 말하지 않고, 카드키 봉투에 적어 손님께만 보여 드려요."
+      ],
+      "hint": {
+        "mn": "Ахлах ажилтны үг. Картан түлхүүрийг ингэж бэлддэг. Картан түлхүүр нь захиалгын дэлгэцэд бичсэн гарах өдрийн тогтсон цаг хүртэл л хаалга онгойлгоно. Картан түлхүүрээ гээсэн гэх зочны иргэний үнэмлэхийг үзэж, өөрөө мөн эсэхийг нь шалгасны дараа шинээр хийж өгнө. Өрөөний дугаарыг чангаар хэлэхгүй, картан түлхүүрийн дугтуй дээр бичээд зөвхөн зочинд харуулна.",
+        "vi": "Lời dặn của chị Ji-hyeon. Cách làm thẻ khóa phòng như sau. Thẻ chỉ mở được đến giờ quy định của ngày trả phòng ghi trên màn hình đặt phòng. Nếu khách nói làm mất thẻ, hãy xem giấy tờ tùy thân để xác nhận đúng là khách rồi mới làm thẻ mới. Không đọc to số phòng, mà viết lên bao đựng thẻ và chỉ cho khách xem.",
+        "en": "From your senior colleague: This is how to make a key card. A key card opens the door only until check-out time on the guest's check-out day. The booking screen shows the check-out date. If a guest says they lost their key card, check their ID to confirm who they are, then make a new one. Don't say the room number out loud. Write it on the key card envelope and show it only to the guest."
+      }
+    }
+  },
+  "scenes": [
+    {
+      "id": "arrival",
+      "title": "출근과 인계",
+      "minutes": 3,
+      "place": "front-senior",
+      "steps": [
+        {
+          "type": "line",
+          "clip": "senior-welcome",
+          "who": "senior",
+          "text": "좋은 아침이에요. 2주 동안 옆에서 봤으니, 오늘은 손님을 직접 맞아 봐요. 제가 옆에 있을게요.",
+          "hint": {
+            "mn": "Өглөөний мэнд. Хоёр долоо хоног хажуугаас харсан болохоор өнөөдөр зочдыг өөрөө угтаж үзээрэй. Би хажууд чинь байна.",
+            "vi": "Chào buổi sáng. Em đã đứng xem bên cạnh chị hai tuần rồi, hôm nay em tự đón khách thử nhé. Chị ở ngay bên cạnh.",
+            "en": "Good morning. You've been watching me work for two weeks, so today, try welcoming the guests yourself. I'll be right next to you."
+          }
+        },
+        {
+          "type": "say",
+          "id": "intro",
+          "listen": "senior-listen-front",
+          "prompt": "선배에게 인사하고, 오늘 직접 해 보겠다고 말해 보세요.",
+          "example": "좋은 아침이에요. 오늘 처음 직접 해 볼게요. 잘 부탁드려요.",
+          "hint": {
+            "mn": "Ахлах ажилтантай мэндэлж, өнөөдөр өөрөө хийж үзнэ гэдгээ хэлээрэй.",
+            "vi": "Hãy chào chị Ji-hyeon và nói rằng hôm nay em sẽ tự làm thử.",
+            "en": "Greet your senior colleague and say you'll do it yourself today."
+          },
+          "record": "아침 인사 차례"
+        },
+        {
+          "type": "line",
+          "clip": "senior-first",
+          "who": "senior",
+          "text": "좋아요. 먼저 밤 근무한 김태민 씨한테 인계부터 받아요.",
+          "hint": {
+            "mn": "Сайн байна. Эхлээд шөнийн ээлжинд ажилласан Ким Тэминээс ээлж хүлээж аваарай.",
+            "vi": "Tốt lắm. Trước tiên em nhận bàn giao từ anh Kim Tae-min bên ca đêm nhé.",
+            "en": "Good. First, get the handover from Kim Tae-min, who worked the night shift."
+          }
+        },
+        {
+          "type": "move",
+          "place": "back-office-night",
+          "caption": "인계"
+        },
+        {
+          "type": "line",
+          "clip": "night-report-1",
+          "who": "night",
+          "text": "오늘 체크아웃은 방 52개, 체크인은 48개예요.",
+          "hint": {
+            "mn": "Өнөөдөр 52 өрөөний зочин гарна (чек-аут), 48 өрөөнд шинэ зочин орно (чек-ин).",
+            "vi": "Hôm nay có 52 phòng check-out và 48 phòng check-in.",
+            "en": "Today 52 rooms are checking out and 48 are checking in."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "night-report-2",
+          "who": "night",
+          "text": "903호 손님이 새벽에 옆방이 시끄럽다고 두 번 전화하셨어요.",
+          "hint": {
+            "mn": "903 тоотын зочин үүрээр хажуу өрөө чимээ шуугиантай байна гээд хоёр удаа утасдсан.",
+            "vi": "Khách phòng 903 đã gọi xuống hai lần lúc rạng sáng, phàn nàn phòng bên cạnh ồn ào.",
+            "en": "The guest in 903 called twice before dawn to say the room next door was noisy."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "night-report-3",
+          "who": "night",
+          "text": "1602호는 얼리 체크인이라, 하우스키핑에 러시 걸어 놨어요.",
+          "hint": {
+            "mn": "1602 тоотын зочин эрт чек-ин хийх (얼리 체크인) тул өрөө цэвэрлэгээний албанд (하우스키핑) ‘러시’ хүсэлт тавьчихсан.",
+            "vi": "Phòng 1602 nhận phòng sớm (얼리 체크인), nên anh đã báo ‘러시’ cho bộ phận buồng phòng (하우스키핑).",
+            "en": "Room 1602 has an early check-in (얼리 체크인), so I put a '러시' on it with housekeeping."
+          }
+        },
+        {
+          "type": "say",
+          "id": "handover",
+          "listen": "night-listen",
+          "prompt": "인계를 들었어요. 어떻게 할까요?",
+          "hint": {
+            "mn": "Ээлж хүлээлцэх мэдээллийг сонслоо. Одоо яах вэ?",
+            "vi": "Em vừa nghe bàn giao ca. Em sẽ làm gì?",
+            "en": "You've just heard the handover. What will you do?"
+          },
+          "options": [
+            {
+              "id": "ask",
+              "label": "모르는 말을 되묻는다",
+              "example": "죄송한데, '러시'가 뭐예요?",
+              "hint": {
+                "mn": "Мэдэхгүй үгээ лавлаж асуух. «Уучлаарай, ‘러시’ гэж юу вэ?»",
+                "vi": "Hỏi lại từ mình chưa hiểu. “Xin lỗi, ‘러시’ là gì ạ?”",
+                "en": "Ask about the word you don't know. \"Excuse me, what does '러시' mean?\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "night-explain",
+                  "who": "night",
+                  "text": "그 방부터 먼저 청소해 달라는 뜻이에요. 물어봐 줘서 고마워요.",
+                  "hint": {
+                    "mn": "Тэр өрөөг хамгийн түрүүнд цэвэрлээрэй гэсэн үг. Асуусанд баярлалаа.",
+                    "vi": "Nghĩa là nhờ dọn phòng đó trước tiên. Cảm ơn em đã hỏi nhé.",
+                    "en": "It means asking them to clean that room before the others. Thanks for asking."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "confirm",
+              "label": "들은 것을 다시 말해 확인한다",
+              "example": "903호는 새벽에 소음 전화가 두 번 있었고, 1602호는 먼저 청소해 달라고 하신 거죠?",
+              "hint": {
+                "mn": "Сонссоноо давтан хэлж баталгаажуулах. «903 тоотоос үүрээр чимээ шуугианы талаар хоёр удаа утасдсан, 1602 тоотыг түрүүлж цэвэрлэж өгөөч гэж хэлсэн, тийм үү?»",
+                "vi": "Nhắc lại điều đã nghe để xác nhận. “Phòng 903 gọi phàn nàn tiếng ồn hai lần lúc rạng sáng, còn phòng 1602 anh đã nhờ dọn trước, đúng không ạ?”",
+                "en": "Repeat what you heard to make sure. \"903 called twice in the early hours about noise, and you asked for 1602 to be cleaned first, right?\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "night-confirm",
+                  "who": "night",
+                  "text": "네, 맞아요. 1602호 손님은 열한 시쯤 오신대요.",
+                  "hint": {
+                    "mn": "Тийм, зөв. 1602 тоотын зочин арван нэгэн цагийн үед ирнэ гэсэн.",
+                    "vi": "Đúng rồi. Khách phòng 1602 nói khoảng mười một giờ sẽ đến.",
+                    "en": "Yes, that's right. The guest for 1602 says she'll arrive around eleven."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "pass",
+              "label": "인계가 바쁘니 일단 '네' 하고 넘어간다",
+              "example": "네, 알겠어요.",
+              "hint": {
+                "mn": "Ээлж хүлээлцэх үед бүгд завгүй тул одоохондоо «за» гээд өнгөрөөх. «За, ойлголоо.»",
+                "vi": "Lúc bàn giao ca ai cũng bận, nên mình cứ nói “vâng” cho qua. “Vâng, em hiểu rồi.”",
+                "en": "Everyone is busy at handover, so say \"yes\" for now and move on. \"Yes, I understand.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "night-pass",
+                  "who": "night",
+                  "text": "그래요. 모르는 말 있으면 언제든 물어봐요. 저는 이만 퇴근할게요.",
+                  "hint": {
+                    "mn": "За. Мэдэхгүй үг байвал хэзээ ч хамаагүй асуугаарай. Би ингээд харилаа.",
+                    "vi": "Ừ. Có từ nào không hiểu thì cứ hỏi bất cứ lúc nào nhé. Giờ anh về đây.",
+                    "en": "All right. If there's a word you don't know, ask anytime. I'm heading home now."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "move",
+          "place": "front",
+          "caption": "프런트 데스크"
+        },
+        {
+          "type": "tour",
+          "home": "front",
+          "board": [
+            "lobby",
+            "corridor",
+            "room",
+            "back-office"
+          ],
+          "prompt": "손님이 몰리기 전에 한 바퀴 둘러봐요. 가고 싶은 자리를 고르고, 점을 눌러 이름을 확인해 보세요.",
+          "hint": {
+            "mn": "Зочид олноороо ирэхээс өмнө нэг тойроод үз. Очих газраа сонгоод, цэг дээр дарж нэрийг нь хар.",
+            "vi": "Trước khi khách đến đông, hãy đi xem một vòng. Chọn nơi muốn đến và bấm vào dấu chấm để xem tên.",
+            "en": "Look around before it gets busy. Pick a place, then tap a dot to see what it is called."
+          }
+        }
+      ]
+    },
+    {
+      "id": "checkout",
+      "title": "아침 체크아웃",
+      "minutes": 5,
+      "place": "front-checkout",
+      "steps": [
+        {
+          "type": "line",
+          "clip": "checkout-hello",
+          "who": "checkout",
+          "text": "체크아웃하려고요. 1105호예요.",
+          "hint": {
+            "mn": "Буудлаас гарах гэсэн юм. 1105 тоот.",
+            "vi": "Tôi muốn trả phòng. Phòng 1105.",
+            "en": "I'd like to check out. Room 1105."
+          }
+        },
+        {
+          "type": "say",
+          "id": "checkout-greet",
+          "listen": "checkout-listen",
+          "prompt": "계산서를 보여 드리며 확인을 부탁하고, 불편한 점은 없으셨는지 여쭤봐요.",
+          "example": "고객님, 계산서입니다. 확인 부탁드립니다. 불편한 점은 없으셨습니까?",
+          "hint": {
+            "mn": "Тооцооны хуудсыг үзүүлээд шалгаж өгөхийг хүсэж, буудалласан хугацаанд нь таагүй зүйл гарсан эсэхийг асуу.",
+            "vi": "Đưa hóa đơn cho khách xem, nhờ khách kiểm tra, rồi hỏi xem trong thời gian ở đây khách có điều gì không hài lòng không.",
+            "en": "Show the guest the bill and ask him to check it. Then ask if he had any problems during his stay."
+          },
+          "record": "계산서를 보여 드리는 차례"
+        },
+        {
+          "type": "line",
+          "clip": "checkout-beer",
+          "who": "checkout",
+          "text": "편하게 잘 쉬었어요. …어, 미니바 맥주 두 병이요? 저는 맥주를 안 마셨는데요.",
+          "hint": {
+            "mn": "Тав тухтай сайхан амарлаа. …Өө, мини барын хоёр шил шар айраг уу? Би шар айраг уугаагүй шүү дээ.",
+            "vi": "Tôi nghỉ ngơi thoải mái lắm. …Ơ, hai chai bia trong minibar à? Tôi đâu có uống bia.",
+            "en": "I had a comfortable stay. …Huh, two bottles of beer from the minibar? I didn't drink any beer."
+          }
+        },
+        {
+          "type": "work",
+          "id": "minibar",
+          "record": "미니바 확인표에서 객실을 찾는 차례",
+          "tool": {
+            "kind": "paper",
+            "title": "미니바 확인표 · 객실 정비팀",
+            "rows": [
+              [
+                "1015호",
+                "생수 1"
+              ],
+              [
+                "1105호",
+                "사용 없음"
+              ],
+              [
+                "1150호",
+                "맥주 2"
+              ]
+            ],
+            "note": "11월 21일 오후 확인"
+          },
+          "prompt": "손님은 맥주를 안 드셨대요. 확인표에서 맥주 두 병이 나온 객실을 찾아요.",
+          "hint": {
+            "mn": "Зочин шар айраг уугаагүй гэж байна. Хяналтын хуудаснаас хоёр шил шар айраг бичигдсэн өрөөг ол. (Мини барын хяналтын хуудас, өрөө цэвэрлэгээний баг: 1015 тоот – цэвэр ус 1, 1105 тоот – хэрэглээгүй, 1150 тоот – шар айраг 2. 11 сарын 21-ний үдээс хойш шалгасан.)",
+            "vi": "Khách nói không uống bia. Hãy tìm trong phiếu kiểm tra xem phòng nào đã dùng hai chai bia. (Phiếu kiểm tra minibar của bộ phận buồng phòng: phòng 1015 – một chai nước; phòng 1105 – không dùng; phòng 1150 – hai chai bia. Kiểm tra chiều 21/11.)",
+            "en": "The guest says he didn't drink any beer. On the check sheet, find the room that had two bottles of beer. (Minibar check sheet, from housekeeping: room 1015 – 1 water; room 1105 – nothing used; room 1150 – 2 beers. Checked on the afternoon of Nov 21.)"
+          },
+          "options": [
+            {
+              "id": "r1015",
+              "label": "1015호",
+              "hint": {
+                "mn": "1015 тоот",
+                "vi": "Phòng 1015",
+                "en": "Room 1015"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "minibar-1015",
+                  "who": "senior",
+                  "text": "같이 다시 봐요. 그 줄은 생수 한 병이에요. 맥주 두 병은 맨 아래 줄이에요.",
+                  "hint": {
+                    "mn": "Хамт дахиад харъя. Тэр мөрөнд нэг шил ус байна. Хоёр шил шар айраг бол хамгийн доод мөрөнд байна.",
+                    "vi": "Mình cùng xem lại nhé. Dòng đó là một chai nước suối. Hai chai bia nằm ở dòng dưới cùng.",
+                    "en": "Let's look again together. That row is one bottle of water. The two bottles of beer are in the bottom row."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "r1105",
+              "label": "1105호",
+              "hint": {
+                "mn": "1105 тоот",
+                "vi": "Phòng 1105",
+                "en": "Room 1105"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "minibar-1105",
+                  "who": "senior",
+                  "text": "같이 다시 봐요. 손님 방은 '사용 없음'이에요. 맥주 두 병은 맨 아래 줄이에요.",
+                  "hint": {
+                    "mn": "Хамт дахиад харъя. Энэ зочны байрласан өрөөний мөрөнд «хэрэглээгүй» гэж бичсэн байна. Хоёр шил шар айраг нь хамгийн доод мөрөнд байна.",
+                    "vi": "Mình cùng xem lại nhé. Phòng của khách được ghi là “không dùng”. Hai chai bia nằm ở dòng dưới cùng.",
+                    "en": "Let's look again together. The row for the guest's room says \"nothing used\". The two bottles of beer are in the bottom row."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "r1150",
+              "label": "1150호",
+              "hint": {
+                "mn": "1150 тоот",
+                "vi": "Phòng 1150",
+                "en": "Room 1150"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "minibar-1150",
+                  "who": "senior",
+                  "text": "맞아요, 그 줄이에요. 손님 방에는 '사용 없음'이라고 돼 있네요.",
+                  "hint": {
+                    "mn": "Зөв, тэр мөр байна. Энэ зочны байрласан өрөөний мөрөнд «хэрэглээгүй» гэж бичсэн байна.",
+                    "vi": "Đúng rồi, là dòng đó. Phòng của khách được ghi là “không dùng”.",
+                    "en": "That's right, it's that row. The row for the guest's room says \"nothing used\"."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "line",
+          "clip": "senior-fix",
+          "who": "senior",
+          "text": "다른 방 요금이 잘못 들어갔네요. 제가 빼고 맞는 방으로 옮길게요. 손님께 말씀드려요.",
+          "hint": {
+            "mn": "Өөр өрөөний төлбөр буруу орсон байна. Би үүнийг хасаад зөв өрөө рүү нь шилжүүлье. Зочинд хэлээрэй.",
+            "vi": "Khoản phí của phòng khác bị tính nhầm vào đây. Chị sẽ bỏ khoản này ra và chuyển sang đúng phòng. Em báo với khách nhé.",
+            "en": "Another room's charge was put on here by mistake. I'll take it off and move it to the right room. Please tell the guest."
+          }
+        },
+        {
+          "type": "say",
+          "id": "bill",
+          "listen": "checkout-listen",
+          "prompt": "손님께 사과하고, 고친 계산서를 확인해 달라고 말해요.",
+          "example": "고객님, 불편을 드려 죄송합니다. 미니바 요금을 뺀 계산서입니다. 확인 부탁드립니다.",
+          "hint": {
+            "mn": "Зочноос уучлалт гуйгаад, зассан тооцооны хуудсыг шалгаж өгөхийг хүс.",
+            "vi": "Xin lỗi khách, rồi nhờ khách kiểm tra lại hóa đơn đã sửa.",
+            "en": "Apologize to the guest and ask him to check the corrected bill."
+          },
+          "record": "고친 계산서를 손님께 말씀드리는 차례"
+        },
+        {
+          "type": "line",
+          "clip": "checkout-bus",
+          "who": "checkout",
+          "text": "이제 맞네요. 김포공항 가는 버스는 몇 시에 있어요? 한 시까지 가야 해요.",
+          "hint": {
+            "mn": "Одоо зөв боллоо. Гимпо нисэх буудал руу явах автобус хэдэн цагт байдаг вэ? Нэг цаг гэхэд очих ёстой.",
+            "vi": "Giờ thì đúng rồi. Xe buýt đi sân bay Gimpo mấy giờ có chuyến? Tôi phải đến đó trước một giờ.",
+            "en": "Now it's correct. What time is the bus to Gimpo Airport? I have to be there by one."
+          }
+        },
+        {
+          "type": "work",
+          "id": "bus",
+          "record": "공항버스 시간표를 보는 차례",
+          "tool": {
+            "kind": "paper",
+            "title": "공항버스 시간표 · 호텔 앞 정류장",
+            "rows": [
+              [
+                "김포공항행",
+                "11:20 · 11:50 · 12:20 · 12:50"
+              ],
+              [
+                "걸리는 시간",
+                "약 50분"
+              ]
+            ],
+            "note": "길이 막히면 더 걸릴 수 있어요."
+          },
+          "prompt": "한 시 전에 공항에 도착하려면 늦어도 몇 시 버스를 타야 하는지 시간표에서 찾아요.",
+          "hint": {
+            "mn": "Нэг цагаас өмнө нисэх буудалд хүрэхийн тулд хамгийн оройдоо хэдэн цагийн автобусанд суух ёстойг цагийн хуваариас ол. (Нисэх буудлын автобусны цагийн хуваарь, зочид буудлын урд талын зогсоол: Гимпо нисэх буудал руу 11:20, 11:50, 12:20, 12:50. Явах хугацаа 50 орчим минут. Зам түгжирвэл илүү удаж магадгүй.)",
+            "vi": "Hãy xem bảng giờ xe: muốn tới sân bay trước 1 giờ chiều thì muộn nhất phải đi chuyến mấy giờ? (Bảng giờ xe buýt sân bay · trạm trước khách sạn. Đi sân bay Gimpo: 11:20, 11:50, 12:20, 12:50. Thời gian đi khoảng 50 phút. Nếu tắc đường có thể lâu hơn.)",
+            "en": "Look at the timetable. To reach the airport before one o'clock, what is the latest bus the guest can take? (Airport bus timetable, stop in front of the hotel. Buses to Gimpo Airport: 11:20, 11:50, 12:20, 12:50. The ride takes about 50 minutes. It can take longer in heavy traffic.)"
+          },
+          "options": [
+            {
+              "id": "at-1120",
+              "label": "11시 20분 버스",
+              "hint": {
+                "mn": "11:20-ийн автобус",
+                "vi": "Chuyến 11 giờ 20",
+                "en": "The 11:20 bus"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "bus-1120",
+                  "who": "senior",
+                  "text": "그 버스도 한 시 전에 닿아요. 하지만 열한 시 오십 분 버스까지 탈 수 있어요.",
+                  "hint": {
+                    "mn": "Тэр автобус ч нэг цагаас өмнө хүрнэ. Гэхдээ арван нэгэн цаг тавин минутын автобусанд суусан ч амжина.",
+                    "vi": "Chuyến đó cũng đến trước một giờ. Nhưng khách có thể đi muộn nhất là chuyến mười một giờ năm mươi.",
+                    "en": "That bus gets there before one too. But she can take a bus as late as the 11:50."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "at-1150",
+              "label": "11시 50분 버스",
+              "hint": {
+                "mn": "11:50-ийн автобус",
+                "vi": "Chuyến 11 giờ 50",
+                "en": "The 11:50 bus"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "bus-1150",
+                  "who": "senior",
+                  "text": "맞아요. 길이 막힐 수 있으니 열한 시 이십 분 버스도 함께 말씀드려요.",
+                  "hint": {
+                    "mn": "Зөв. Зам түгжирч магадгүй тул арван нэгэн цаг хорин минутын автобусыг ч бас хамт хэлээрэй.",
+                    "vi": "Đúng rồi. Có thể bị tắc đường, nên em nhắc khách cả chuyến mười một giờ hai mươi nữa nhé.",
+                    "en": "That's right. Traffic can be heavy, so mention the 11:20 bus too."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "at-1220",
+              "label": "12시 20분 버스",
+              "hint": {
+                "mn": "12:20-ийн автобус",
+                "vi": "Chuyến 12 giờ 20",
+                "en": "The 12:20 bus"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "bus-1220",
+                  "who": "senior",
+                  "text": "그 버스는 한 시 십 분쯤 닿아요. 늦어도 열한 시 오십 분 버스를 타셔야 해요.",
+                  "hint": {
+                    "mn": "Тэр автобус нэг цаг арван минутын үед хүрнэ. Хамгийн оройдоо арван нэгэн цаг тавин минутын автобусанд суух ёстой.",
+                    "vi": "Chuyến đó khoảng một giờ mười mới tới. Khách phải đi muộn nhất là chuyến mười một giờ năm mươi.",
+                    "en": "That one arrives around 1:10. She has to take the 11:50 bus at the latest."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "say",
+          "id": "bus-tell",
+          "listen": "checkout-listen",
+          "prompt": "손님께 버스 시간을 안내해요.",
+          "example": "호텔 앞 정류장에서 열한 시 이십 분, 열한 시 오십 분에 버스가 있습니다. 길이 막힐 수 있으니 이십 분 차가 더 여유 있습니다.",
+          "hint": {
+            "mn": "Зочинд автобусны цагийг хэлж өг. Жишээ: Зочид буудлын урд талын зогсоолоос 11:20, 11:50-д автобус явна. Зам түгжирч магадгүй тул 11:20-ийн автобусаар явбал цагийн хувьд илүү найдвартай.",
+            "vi": "Hãy báo giờ xe buýt cho khách. Từ trạm trước khách sạn có xe lúc 11:20 và 11:50. Có thể bị tắc đường, nên đi chuyến 11:20 sẽ thong thả hơn.",
+            "en": "Tell the guest the bus times. There are buses from the stop in front of the hotel at 11:20 and 11:50. Traffic can be heavy, so the 11:20 bus gives him more time."
+          },
+          "record": "버스 시간을 안내하는 차례"
+        },
+        {
+          "type": "line",
+          "clip": "checkout-thanks",
+          "who": "checkout",
+          "text": "알려 줘서 고마워요. 덕분에 잘 쉬다 가요.",
+          "hint": {
+            "mn": "Хэлж өгсөнд баярлалаа. Сайхан амарч байгаад явлаа.",
+            "vi": "Cảm ơn cháu đã chỉ giúp nhé. Nhờ cháu mà lần này nghỉ ở đây rất thoải mái.",
+            "en": "Thanks for letting me know. I had a nice, restful stay."
+          }
+        },
+        {
+          "type": "move",
+          "place": "front-traveler"
+        },
+        {
+          "type": "line",
+          "who": "traveler",
+          "action": true,
+          "text": "조금 전에 체크아웃한 외국인 손님이 여행 가방을 끌고 다시 데스크로 온다.",
+          "hint": {
+            "mn": "Дөнгөж сая чек-аут хийсэн гадаад зочин чемоданаа чирсээр дахин ресепшн дээр ирлээ.",
+            "vi": "Một vị khách nước ngoài vừa trả phòng lúc nãy kéo vali quay lại quầy.",
+            "en": "A foreign guest who checked out a little earlier comes back to the desk, pulling a suitcase."
+          }
+        },
+        {
+          "type": "line",
+          "who": "traveler",
+          "foreign": {
+            "en": "Hi, I've just checked out, but my flight isn't until nine tonight. Could I leave my bags here until this evening?"
+          },
+          "text": "방금 체크아웃했는데, 비행기가 밤 아홉 시예요. 저녁까지 짐을 여기 맡길 수 있을까요?",
+          "hint": {
+            "mn": "(Англиар) Дөнгөж сая чек-аут хийсэн, гэхдээ онгоц маань орой есөн цагт ниснэ. Ачаагаа орой болтол энд үлдээж болох уу?",
+            "vi": "(Tiếng Anh) Tôi vừa trả phòng, nhưng chín giờ tối mới bay. Tôi gửi hành lý ở đây đến tối được không?",
+            "en": "Hi, I've just checked out, but my flight isn't until nine tonight. Could I leave my bags here until this evening?"
+          }
+        },
+        {
+          "type": "line",
+          "who": "senior",
+          "text": "짐은 벨 데스크에서 맡아 드려요. 영어로 안내해 볼래요?",
+          "hint": {
+            "mn": "Ачааг ачаа тээшний хэсэгт хадгалж өгдөг. Англиар тайлбарлаж үзэх үү?",
+            "vi": "Hành lý thì quầy hành lý giữ giúp khách. Em thử hướng dẫn bằng tiếng Anh nhé?",
+            "en": "The bell desk stores bags for guests. Would you like to try explaining that in English?"
+          }
+        },
+        {
+          "type": "relay",
+          "id": "luggage",
+          "direction": "out",
+          "who": "traveler",
+          "record": "외국인 손님께 영어로 짐 맡기는 곳을 안내하는 차례",
+          "prompt": "손님께 영어로 안내해요. 짐을 맡기는 곳과 짐표를 말해요.",
+          "meaning": "네, 저쪽 벨 데스크에서 저녁까지 짐을 맡아 드립니다. 짐표를 드리니, 찾으실 때 보여 주세요.",
+          "foreign": {
+            "en": "Of course. Our bell desk over there can keep your bags until this evening. They'll give you a tag, so please show it when you pick them up."
+          },
+          "hint": {
+            "mn": "Зочинд англиар тайлбарла. Ачаагаа хаана үлдээх, ачааны тасалбарын тухай хэлээрэй.",
+            "vi": "Hãy hướng dẫn khách bằng tiếng Anh. Cho khách biết chỗ gửi hành lý và nói về phiếu gửi hành lý.",
+            "en": "Tell the guest in English where to leave the bags, and mention the claim tag."
+          }
+        },
+        {
+          "type": "line",
+          "who": "traveler",
+          "foreign": {
+            "en": "Perfect, thank you so much!"
+          },
+          "text": "좋아요, 정말 고마워요!",
+          "hint": {
+            "mn": "(Англиар) Сайн байна, маш их баярлалаа!",
+            "vi": "(Tiếng Anh) Tuyệt quá, cảm ơn nhiều!",
+            "en": "Perfect, thank you so much!"
+          }
+        }
+      ]
+    },
+    {
+      "id": "checkin",
+      "title": "이른 체크인",
+      "minutes": 4,
+      "place": "front-misuk",
+      "requires": [
+        "arrival"
+      ],
+      "steps": [
+        {
+          "type": "line",
+          "clip": "misuk-arrive",
+          "who": "misuk",
+          "text": "체크인하려고요. 두 시에 조카 결혼식이 있어서 일찍 왔어요.",
+          "hint": {
+            "mn": "Чек-ин хийлгэх гэсэн юм. Хоёр цагт дүүгийн минь хүүхдийн хурим байгаа болохоор эрт ирлээ.",
+            "vi": "Tôi muốn nhận phòng. Hai giờ chiều có đám cưới cháu tôi nên tôi đến sớm.",
+            "en": "I'd like to check in. My nephew's wedding is at two, so I came early."
+          }
+        },
+        {
+          "type": "say",
+          "id": "checkin-greet",
+          "listen": "misuk-listen",
+          "prompt": "체크인을 도와드린다고 말하고, 예약하신 분 성함과 신분증을 부탁해요.",
+          "example": "체크인 도와드리겠습니다. 예약하신 분 성함과 신분증 부탁드립니다.",
+          "hint": {
+            "mn": "Чек-ин хийхэд тусална гэж хэлээд, захиалга өгсөн хүний нэрийг асууж, биеийн байцаалтаа үзүүлэхийг хүс.",
+            "vi": "Nói rằng em sẽ làm thủ tục nhận phòng cho khách, rồi xin tên người đặt phòng và giấy tờ tùy thân.",
+            "en": "Say you'll help with check-in, and ask for the name on the booking and an ID."
+          },
+          "record": "체크인을 시작하는 차례"
+        },
+        {
+          "type": "line",
+          "clip": "misuk-name",
+          "who": "misuk",
+          "text": "오미숙이요. 여기 신분증이요.",
+          "hint": {
+            "mn": "О Мисүк. Энэ миний үнэмлэх.",
+            "vi": "Oh Mi-suk. Đây là giấy tờ của tôi.",
+            "en": "Oh Mi-suk. Here's my ID."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "senior-misuk-explain",
+          "who": "senior",
+          "place": "front-senior-side",
+          "when": {
+            "handover": "pass"
+          },
+          "text": "아침 인계에서 들은 손님이에요. 러시는 그 방부터 먼저 청소해 달라는 거예요.",
+          "hint": {
+            "mn": "Өглөө ээлж хүлээлцэхэд яригдсан нөгөө зочин байна. ‘러시’ гэдэг нь тэр өрөөг хамгийн түрүүнд цэвэрлэж өгөөч гэсэн хүсэлт.",
+            "vi": "Đây là vị khách em đã nghe nhắc đến lúc bàn giao sáng nay. ‘러시’ nghĩa là yêu cầu dọn phòng đó trước tiên.",
+            "en": "This is the guest you heard about at the morning handover. '러시' means asking for that room to be cleaned first."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "senior-misuk-known",
+          "who": "senior",
+          "place": "front-senior-side",
+          "when": {
+            "handover": [
+              "ask",
+              "confirm"
+            ]
+          },
+          "text": "아침 인계에서 들은 그 손님이에요.",
+          "hint": {
+            "mn": "Өглөө ээлж хүлээлцэхэд яригдсан нөгөө зочин байна.",
+            "vi": "Đây chính là vị khách mà em đã nghe nhắc đến lúc bàn giao sáng nay.",
+            "en": "This is the guest you heard about at the morning handover."
+          }
+        },
+        {
+          "type": "work",
+          "id": "booking",
+          "record": "예약 화면에서 예약을 찾는 차례",
+          "tool": {
+            "kind": "screen",
+            "title": "예약 조회 · 오늘 도착",
+            "rows": [
+              [
+                "오미숙",
+                "디럭스 더블 · 1박 · 얼리 체크인 요청 · 1602호"
+              ],
+              [
+                "오민숙",
+                "스탠다드 · 2박"
+              ],
+              [
+                "오미선",
+                "디럭스 트윈 · 1박"
+              ]
+            ],
+            "note": "1602호: 정비 중 · 지금 빈 방: 디럭스 트윈 하나"
+          },
+          "prompt": "신분증의 이름은 오미숙이에요. 손님의 예약을 골라요.",
+          "hint": {
+            "mn": "Үнэмлэх дээрх нэр нь О Мисүк. Зочны захиалгыг сонго. (Өнөөдөр ирэх захиалга: О Мисүк – нэг том ортой делюкс өрөө (дабл), 1 хоног, эрт орох хүсэлттэй, 1602 тоот; О Минсүк – стандарт өрөө, 2 хоног; О Мисон – хоёр тусдаа ортой делюкс өрөө (твин), 1 хоног. 1602 тоот: цэвэрлэж байгаа. Одоо сул өрөө: хоёр тусдаа ортой делюкс өрөө (твин) нэг.)",
+            "vi": "Tên trên giấy tờ tùy thân là Oh Mi-suk. Hãy chọn đơn đặt phòng của khách. (Tra cứu đặt phòng · khách đến hôm nay: Oh Mi-suk – phòng Deluxe Double (một giường đôi), 1 đêm, yêu cầu nhận phòng sớm, phòng 1602; Oh Min-suk – phòng Standard, 2 đêm; Oh Mi-seon – phòng Deluxe Twin (hai giường đơn), 1 đêm. Phòng 1602: đang dọn. Phòng đang trống: một phòng Deluxe Twin (hai giường đơn).)",
+            "en": "The name on the ID is Oh Mi-suk. Choose her booking. (Booking search – today's arrivals: Oh Mi-suk – Deluxe Double, 1 night, early check-in requested, room 1602; Oh Min-suk – Standard, 2 nights; Oh Mi-seon – Deluxe Twin, 1 night. Room 1602: being cleaned. Vacant now: one Deluxe Twin.)"
+          },
+          "options": [
+            {
+              "id": "misuk",
+              "label": "오미숙",
+              "hint": {
+                "mn": "О Мисүк",
+                "vi": "Oh Mi-suk",
+                "en": "Oh Mi-suk"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "booking-misuk",
+                  "who": "senior",
+                  "text": "맞아요. 그런데 방은 아직 정비 중이에요. 언제 끝날지는 하우스키핑에 물어봐야 알아요.",
+                  "hint": {
+                    "mn": "Зөв. Гэхдээ өрөөг одоо болтол цэвэрлэж байна. Хэзээ дуусахыг цэвэрлэгээний албанаас асууж байж мэднэ.",
+                    "vi": "Đúng rồi. Nhưng phòng vẫn đang dọn. Khi nào xong thì phải hỏi bộ phận buồng phòng mới biết.",
+                    "en": "That's right. But the room is still being cleaned. We won't know when it'll be done until we ask housekeeping."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "minsuk",
+              "label": "오민숙",
+              "hint": {
+                "mn": "О Минсүк",
+                "vi": "Oh Min-suk",
+                "en": "Oh Min-suk"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "booking-minsuk",
+                  "who": "senior",
+                  "text": "같이 다시 봐요. 오민숙이 아니라 오미숙 님이에요. 방은 아직 정비 중이고요.",
+                  "hint": {
+                    "mn": "Хамт дахиад харъя. О Минсүк биш, О Мисүк. Өрөөг нь одоо болтол цэвэрлэж байна.",
+                    "vi": "Mình cùng xem lại nhé. Không phải Oh Min-suk mà là Oh Mi-suk. Phòng của khách vẫn đang dọn.",
+                    "en": "Let's look again together. It's Ms. Oh Mi-suk, not Oh Min-suk. Her room is still being cleaned."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "misun",
+              "label": "오미선",
+              "hint": {
+                "mn": "О Мисон",
+                "vi": "Oh Mi-seon",
+                "en": "Oh Mi-seon"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "booking-misun",
+                  "who": "senior",
+                  "text": "같이 다시 봐요. 오미선이 아니라 오미숙 님이에요. 방은 아직 정비 중이고요.",
+                  "hint": {
+                    "mn": "Хамт дахиад харъя. О Мисон биш, О Мисүк. Өрөөг нь одоо болтол цэвэрлэж байна.",
+                    "vi": "Mình cùng xem lại nhé. Không phải Oh Mi-seon mà là Oh Mi-suk. Phòng của khách vẫn đang dọn.",
+                    "en": "Let's look again together. It's Ms. Oh Mi-suk, not Oh Mi-seon. Her room is still being cleaned."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "line",
+          "clip": "misuk-upset",
+          "who": "misuk",
+          "place": "front-misuk",
+          "text": "아직이요? 결혼식 전에 옷을 갈아입어야 하는데… 어디서 갈아입어요?",
+          "hint": {
+            "mn": "Хараахан болоогүй юм уу? Хуримаас өмнө хувцсаа солих ёстой юм… Хаана солих юм бэ?",
+            "vi": "Vẫn chưa được à? Tôi phải thay đồ trước đám cưới… Vậy tôi thay ở đâu?",
+            "en": "Not yet? I have to change clothes before the wedding… Where am I supposed to change?"
+          }
+        },
+        {
+          "type": "say",
+          "id": "early",
+          "listen": "misuk-listen",
+          "prompt": "손님이 당황하셨어요. 어떻게 할까요?",
+          "hint": {
+            "mn": "Зочин сандарч байна. Одоо яах вэ?",
+            "vi": "Khách đang bối rối. Em sẽ làm gì?",
+            "en": "The guest is worried and doesn't know what to do. What will you do?"
+          },
+          "options": [
+            {
+              "id": "solve",
+              "label": "선배에게 빈 트윈을 드려도 되는지 묻고, 손님께 권한다",
+              "example": "선배님, 트윈 객실이 하나 비었는데 드려도 될까요?",
+              "hint": {
+                "mn": "Ахлах ажилтнаас сул байгаа хоёр тусдаа ортой өрөөг өгч болох эсэхийг асуугаад, зочинд санал болгох. «Эгч ээ, хоёр тусдаа ортой нэг өрөө сул байна. Өгч болох уу?»",
+                "vi": "Hỏi chị Ji-hyeon xem có được xếp cho khách phòng hai giường đơn đang trống hay không, rồi gợi ý cho khách. “Chị ơi, đang có một phòng hai giường đơn trống, em xếp cho khách được không ạ?”",
+                "en": "Ask your senior colleague whether you can give the guest the vacant twin room, then offer it to her. \"We have a twin room free. Can I give it to her?\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-ok",
+                  "who": "senior",
+                  "place": "front-senior-side",
+                  "text": "좋아요, 드려도 돼요. 손님께 여쭤봐요.",
+                  "hint": {
+                    "mn": "Болно, өгч болно. Зочноос асуугаарай.",
+                    "vi": "Được, em xếp đi. Em hỏi khách nhé.",
+                    "en": "Yes, you can. Ask her."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "guess",
+              "label": "보통 삼십 분이면 끝나니, 그렇게 말씀드려 안심시킨다",
+              "example": "고객님, 삼십 분이면 들어가실 수 있습니다. 로비에서 잠시만 기다려 주십시오.",
+              "hint": {
+                "mn": "Ихэвчлэн гучин минутын дотор дуусдаг тул тэгж хэлээд зочныг тайвшруулах. «Та гучин минутын дараа өрөөндөө орох боломжтой. Лоббид түр хүлээнэ үү.»",
+                "vi": "Thường ba mươi phút là dọn xong, nên nói như vậy để khách yên tâm. “Thưa quý khách, ba mươi phút nữa quý khách có thể vào phòng. Xin quý khách vui lòng chờ ở sảnh một chút.”",
+                "en": "Cleaning usually takes thirty minutes, so tell her that to reassure her. \"Your room will be ready for you in thirty minutes. Please wait in the lobby for just a little while.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "misuk-wait",
+                  "who": "misuk",
+                  "text": "삼십 분이요? 그럼 로비에서 기다릴게요.",
+                  "hint": {
+                    "mn": "Гучин минут уу? Тэгвэл лоббид хүлээж байя.",
+                    "vi": "Ba mươi phút à? Vậy tôi chờ ở sảnh.",
+                    "en": "Thirty minutes? Then I'll wait in the lobby."
+                  }
+                },
+                {
+                  "type": "line",
+                  "clip": "senior-busy",
+                  "who": "senior",
+                  "action": true,
+                  "text": "그사이 단체 손님이 내려오고, 선배는 옆 창구에서 단체 체크아웃을 받기 시작한다.",
+                  "hint": {
+                    "mn": "Тэр хооронд бүлэг зочид бууж ирж, ахлах ажилтан хажуугийн лангуун дээр тэдний гарах бүртгэлийг (чек-аут) хийж эхэллээ.",
+                    "vi": "Trong lúc đó, một đoàn khách đi xuống, và chị Ji-hyeon bắt đầu làm thủ tục trả phòng cho đoàn ở quầy bên cạnh.",
+                    "en": "Meanwhile a group of guests comes down, and your senior colleague starts checking the group out at the next counter."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "rule",
+              "label": "체크인은 세 시부터라는 규정을 말씀드린다",
+              "example": "죄송하지만, 체크인은 오후 세 시부터입니다.",
+              "hint": {
+                "mn": "Чек-ин үдээс хойш гурван цагаас эхэлдэг гэсэн журмыг хэлэх. «Уучлаарай, чек-ин үдээс хойш гурван цагаас эхэлдэг.»",
+                "vi": "Nói cho khách biết quy định nhận phòng từ ba giờ chiều. “Xin lỗi, giờ nhận phòng là từ ba giờ chiều ạ.”",
+                "en": "Tell her the rule: check-in starts at three. \"I'm sorry, but check-in starts at 3 p.m.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-offer",
+                  "who": "senior",
+                  "place": "front-senior-side",
+                  "text": "세 시 전이라도 빈 방은 드릴 수 있어요. 트윈은 어떠신지 여쭤봐요.",
+                  "hint": {
+                    "mn": "Гурван цагаас өмнө ч гэсэн сул өрөө байвал өгч болно. Хоёр ортой өрөө болох уу гэж асуугаарай.",
+                    "vi": "Dù chưa đến ba giờ, phòng nào trống thì vẫn xếp cho khách được. Em hỏi khách xem phòng hai giường đơn có được không.",
+                    "en": "Even before three, we can give a guest a room if one is vacant. Ask her whether a twin would be all right."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "move",
+          "place": "front-misuk",
+          "when": {
+            "early": [
+              "solve",
+              "rule"
+            ]
+          }
+        },
+        {
+          "type": "say",
+          "id": "twin-offer",
+          "when": {
+            "early": [
+              "solve",
+              "rule"
+            ]
+          },
+          "listen": "misuk-listen",
+          "record": "손님께 트윈 객실을 권하는 차례",
+          "prompt": "손님께 지금 쓸 수 있는 트윈 객실을 권해요.",
+          "example": "고객님, 지금 바로 쓰실 수 있는 트윈 객실이 있습니다. 그 방으로 드려도 괜찮으시겠습니까?",
+          "hint": {
+            "mn": "Одоо шууд орж болох хоёр тусдаа ортой өрөөг зочинд санал болго.",
+            "vi": "Hãy gợi ý cho khách phòng hai giường đơn có thể dùng ngay bây giờ.",
+            "en": "Offer the guest the twin room that's ready right now."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "misuk-relief",
+          "who": "misuk",
+          "place": "front-misuk",
+          "text": "트윈이어도 괜찮아요. 옷만 갈아입으면 되니까요. 고마워요.",
+          "hint": {
+            "mn": "Хоёр ортой ч байсан зүгээр. Хувцсаа л солих гэсэн юм. Баярлалаа.",
+            "vi": "Phòng hai giường cũng được. Tôi chỉ cần thay đồ thôi mà. Cảm ơn nhé.",
+            "en": "A twin is fine. I just need to change clothes. Thank you."
+          },
+          "when": {
+            "early": [
+              "solve",
+              "rule"
+            ]
+          }
+        },
+        {
+          "type": "work",
+          "id": "reg-card",
+          "when": {
+            "early": [
+              "solve",
+              "rule"
+            ]
+          },
+          "record": "고객등록카드를 확인하는 차례",
+          "tool": {
+            "kind": "paper",
+            "title": "고객등록카드(레지카드)",
+            "rows": [
+              [
+                "성명",
+                "오미숙"
+              ],
+              [
+                "객실",
+                "1602호 · 디럭스 더블"
+              ],
+              [
+                "퇴실",
+                "11월 23일"
+              ],
+              [
+                "연락처",
+                "(손님이 쓰는 칸)"
+              ],
+              [
+                "서명",
+                "(손님이 쓰는 칸)"
+              ]
+            ],
+            "note": "예약에서 뽑은 카드예요. 손님은 연락처를 쓰고 서명해요."
+          },
+          "prompt": "손님께 드리기 전에 카드를 봐요. 고쳐서 다시 뽑아야 할 칸은 어디인가요?",
+          "hint": {
+            "mn": "Зочинд өгөхөөсөө өмнө картыг хар. Аль нүдийг засаад дахин хэвлэх ёстой вэ? (Бүртгэлийн карт (레지카드): нэр О Мисүк; өрөө 1602, нэг том ортой делюкс өрөө (дабл); гарах өдөр 11 сарын 23; утас – зочин бичнэ; гарын үсэг – зочин зурна. Захиалгын мэдээллээр хэвлэсэн карт. Зочин утасны дугаараа бичээд гарын үсэг зурна.)",
+            "vi": "Trước khi đưa cho khách, hãy xem lại phiếu. Ô nào phải sửa rồi in lại? (Phiếu đăng ký nhận phòng (레지카드): họ tên Oh Mi-suk; phòng 1602, Deluxe Double (một giường đôi); trả phòng 23/11; số điện thoại – khách tự ghi; chữ ký – khách tự ký. Phiếu được in từ thông tin đặt phòng. Khách ghi số điện thoại rồi ký tên.)",
+            "en": "Look at the card before you give it to her. Which field must be corrected before you print the card again? (Registration card (레지카드): name Oh Mi-suk; room 1602, Deluxe Double; check-out Nov 23; contact number – for the guest to fill in; signature – for the guest to fill in. This card was printed from the booking. The guest fills in her contact number and signs.)"
+          },
+          "options": [
+            {
+              "id": "room",
+              "label": "객실",
+              "hint": {
+                "mn": "Өрөө",
+                "vi": "Phòng",
+                "en": "Room"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "card-room",
+                  "who": "senior",
+                  "text": "맞아요. 트윈으로 바꿨으니 객실 칸을 고쳐 다시 뽑아요.",
+                  "hint": {
+                    "mn": "Зөв. Хоёр тусдаа ортой өрөөгөөр сольсон тул «Өрөө» гэсэн нүдийг засаад дахин хэвлээрэй.",
+                    "vi": "Đúng rồi. Mình đã đổi sang phòng hai giường đơn nên em sửa ô ghi phòng rồi in lại nhé.",
+                    "en": "Right. We changed her to a twin, so correct the room field and print the card again."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "leave",
+              "label": "퇴실",
+              "hint": {
+                "mn": "Гарах өдөр",
+                "vi": "Ngày trả phòng",
+                "en": "Check-out"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "card-leave",
+                  "who": "senior",
+                  "text": "같이 다시 봐요. 퇴실은 예약대로 23일이에요. 트윈으로 바꿨으니 객실 칸을 고쳐요.",
+                  "hint": {
+                    "mn": "Хамт дахиад харъя. Гарах өдөр нь захиалгын дагуу 23-ны өдөр. Хоёр тусдаа ортой өрөөгөөр сольсон тул «Өрөө» гэсэн нүдийг засаарай.",
+                    "vi": "Mình cùng xem lại nhé. Ngày trả phòng vẫn là ngày 23, đúng như thông tin đặt phòng. Mình đã đổi sang phòng hai giường đơn nên em sửa ô ghi phòng nhé.",
+                    "en": "Let's look again together. Check-out is the 23rd, as booked. We changed her to a twin, so correct the room field."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "phone",
+              "label": "연락처",
+              "hint": {
+                "mn": "Утас",
+                "vi": "Số điện thoại",
+                "en": "Phone"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "card-phone",
+                  "who": "senior",
+                  "text": "같이 다시 봐요. 연락처는 손님이 쓰시는 칸이에요. 객실 칸이 아직 처음 방이에요.",
+                  "hint": {
+                    "mn": "Хамт дахиад харъя. «Утас» гэсэн нүдийг зочин өөрөө бөглөдөг. «Өрөө» гэсэн нүдэнд анхны өрөө хэвээрээ байна.",
+                    "vi": "Mình cùng xem lại nhé. Ô số điện thoại là ô để khách tự ghi. Ô số phòng vẫn còn ghi số phòng ban đầu.",
+                    "en": "Let's look again together. The guest fills in the contact number herself. The room field still shows the original room."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "say",
+          "id": "key-guide",
+          "listen": "misuk-listen",
+          "when": {
+            "early": [
+              "solve",
+              "rule"
+            ]
+          },
+          "prompt": "등록카드에 서명과 보증용 카드를 부탁하고, 카드키를 드리며 안내해요.",
+          "example": "여기 서명 부탁드립니다. 보증용 카드도 한 장 부탁드립니다. 방 번호는 카드키 봉투에 적어 두었습니다.",
+          "hint": {
+            "mn": "Бүртгэлийн карт дээр гарын үсэг зуруулж, барьцаа болгох төлбөрийн картыг нь аваад, картан түлхүүрийг өгөхдөө хэрэгтэй зүйлийг нь хэлж өг.",
+            "vi": "Hãy nhờ khách ký vào phiếu đăng ký và xuất trình thẻ bảo đảm thanh toán, rồi trao thẻ khóa phòng và hướng dẫn khách.",
+            "en": "Ask her to sign the registration card and provide a card as a guarantee. Then hand her the key card and tell her what she needs to know."
+          },
+          "record": "카드키를 드리며 안내하는 차례"
+        },
+        {
+          "type": "line",
+          "clip": "misuk-key",
+          "who": "misuk",
+          "when": {
+            "early": [
+              "solve",
+              "rule"
+            ]
+          },
+          "text": "네, 카드 여기요. 고마워요.",
+          "hint": {
+            "mn": "За, карт энэ байна. Баярлалаа.",
+            "vi": "Vâng, thẻ đây. Cảm ơn nhé.",
+            "en": "Sure, here's my card. Thank you."
+          }
+        }
+      ]
+    },
+    {
+      "id": "afternoon",
+      "title": "로비의 부탁과 전화",
+      "minutes": 4,
+      "place": "lobby",
+      "requires": [
+        "checkin"
+      ],
+      "steps": [
+        {
+          "type": "move",
+          "place": "front-misuk-back",
+          "caption": "열두 시",
+          "when": {
+            "early": "guess"
+          }
+        },
+        {
+          "type": "line",
+          "clip": "misuk-back",
+          "who": "misuk",
+          "when": {
+            "early": "guess"
+          },
+          "text": "삼십 분이면 된다면서요. 벌써 한 시간이 다 됐어요. 결혼식에 늦겠어요.",
+          "hint": {
+            "mn": "Гучин минутад болно гэсэн биз дээ. Аль хэдийн бараг бүтэн цаг өнгөрлөө. Хуримаас хоцрох нь.",
+            "vi": "Cháu bảo ba mươi phút là xong mà. Gần một tiếng rồi đấy. Trễ đám cưới mất thôi.",
+            "en": "You said thirty minutes. It's been almost an hour. I'm going to be late for the wedding."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "senior-late",
+          "who": "senior",
+          "place": "front-senior-side",
+          "when": {
+            "early": "guess"
+          },
+          "text": "제가 먼저 하우스키핑에 물어봤어야 했어요. 방금 정비가 끝났대요.",
+          "hint": {
+            "mn": "Би цэвэрлэгээний албанаас түрүүлж асуух ёстой байж. Цэвэрлэгээ дөнгөж сая дууссан гэнэ.",
+            "vi": "Lẽ ra chị phải hỏi bộ phận buồng phòng trước. Họ vừa báo là dọn xong rồi.",
+            "en": "I should have asked housekeeping first. They say the room has just been cleaned."
+          }
+        },
+        {
+          "type": "move",
+          "place": "front-misuk-back",
+          "when": {
+            "early": "guess"
+          }
+        },
+        {
+          "type": "say",
+          "id": "late-sorry",
+          "listen": "misuk-listen",
+          "when": {
+            "early": "guess"
+          },
+          "prompt": "손님께 사과하고, 서명과 보증용 카드를 부탁한 뒤 카드키를 드려요.",
+          "example": "오래 기다리시게 해서 정말 죄송합니다. 여기 서명과 보증용 카드 부탁드립니다. 방 번호는 카드키 봉투에 적어 두었습니다.",
+          "hint": {
+            "mn": "Зочноос уучлалт гуйгаад, гарын үсэг зуруулж, барьцаа болгох төлбөрийн картыг нь авсны дараа картан түлхүүрийг өг.",
+            "vi": "Hãy xin lỗi khách, nhờ khách ký tên và xuất trình thẻ bảo đảm thanh toán, rồi trao thẻ khóa phòng cho khách.",
+            "en": "Apologize to her, ask for a signature and a card for extra charges, then hand over the key card."
+          },
+          "record": "오래 기다리신 손님께 사과하는 차례"
+        },
+        {
+          "type": "move",
+          "place": "lobby-misuk",
+          "caption": "한 시쯤, 로비",
+          "when": {
+            "early": [
+              "solve",
+              "rule"
+            ]
+          }
+        },
+        {
+          "type": "line",
+          "clip": "misuk-dressed",
+          "who": "misuk",
+          "when": {
+            "early": [
+              "solve",
+              "rule"
+            ]
+          },
+          "text": "덕분에 옷 갈아입고 늦지 않게 가요. 고마워요.",
+          "hint": {
+            "mn": "Таны ачаар хувцсаа солиод, хоцрохгүй амжих нь. Баярлалаа.",
+            "vi": "Nhờ cháu mà kịp thay đồ, đi không bị trễ. Cảm ơn cháu nhé.",
+            "en": "Thanks to you, I got changed and I'll get there on time. Thank you."
+          }
+        },
+        {
+          "type": "move",
+          "place": "front-visitor",
+          "caption": "한 시 반, 프런트"
+        },
+        {
+          "type": "line",
+          "clip": "visitor-ask",
+          "who": "visitor",
+          "text": "정은비라는 사람, 여기 묵고 있죠? 제 동생이에요. 여기 사진도 있어요.",
+          "hint": {
+            "mn": "Жон Ынби гэдэг хүн энд буудалласан байгаа биз дээ? Миний дүү юм. Зураг нь ч энд байна.",
+            "vi": "Có người tên Jeong Eun-bi ở đây đúng không? Là em gái tôi. Ảnh đây này.",
+            "en": "Someone named Jeong Eun-bi is staying here, right? She's my sister. Here, I have a photo."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "visitor-ask-2",
+          "who": "visitor",
+          "text": "전화를 안 받아요. 어머니가 입원하셨어요. 방 번호 좀 알려 주세요.",
+          "hint": {
+            "mn": "Утсаа авахгүй байна. Ээж маань эмнэлэгт хэвтчихлээ. Өрөөний дугаарыг нь хэлж өгөөч.",
+            "vi": "Nó không nghe máy. Mẹ tôi phải nhập viện. Cho tôi biết số phòng đi.",
+            "en": "She isn't answering her phone. Our mother's been taken into hospital. Please tell me her room number."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "screen-eunbi",
+          "who": "visitor",
+          "action": true,
+          "text": "조회 화면에 정은비 손님이 나온다. 1207호, 이틀째 묵고 있다.",
+          "hint": {
+            "mn": "Хайлтын дэлгэцэн дээр Жон Ынби гэдэг зочин гарч ирлээ. 1207 тоот, хоёр дахь өдрөө буудаллаж байна.",
+            "vi": "Màn hình tra cứu hiện tên khách Jeong Eun-bi. Phòng 1207, hôm nay là ngày thứ hai khách ở đây.",
+            "en": "The search screen shows a guest named Jeong Eun-bi. Room 1207, on her second night."
+          }
+        },
+        {
+          "type": "say",
+          "id": "privacy",
+          "listen": "visitor-listen",
+          "prompt": "가족이라는 분이 방 번호를 물어요. 어떻게 할까요?",
+          "hint": {
+            "mn": "Зочны гэр бүлийнх нь гэх нэг хүн өрөөний дугаарыг нь асууж байна. Яах вэ?",
+            "vi": "Có người tự nhận là người nhà của khách và hỏi số phòng. Em sẽ làm gì?",
+            "en": "A man who says he is family is asking for the room number. What will you do?"
+          },
+          "options": [
+            {
+              "id": "tell",
+              "label": "가족사진까지 보여 주니, 방 번호를 알려 드린다",
+              "example": "1207호입니다. 엘리베이터를 타고 올라가시면 됩니다.",
+              "hint": {
+                "mn": "Гэр бүлийн зургаа хүртэл үзүүлсэн тул өрөөний дугаарыг хэлж өгөх. «1207 тоот. Цахилгаан шатаар дээш гараарай.»",
+                "vi": "Anh ấy còn cho xem cả ảnh gia đình, nên mình cho anh ấy biết số phòng. “Phòng 1207 ạ. Anh đi thang máy lên là được.”",
+                "en": "He even showed a family photo, so tell him the room number. \"It's room 1207. Take the elevator up.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "visitor-thanks",
+                  "who": "visitor",
+                  "text": "고맙습니다. 바로 올라가 볼게요.",
+                  "hint": {
+                    "mn": "Баярлалаа. Шууд дээшээ гаръя.",
+                    "vi": "Cảm ơn. Tôi lên ngay đây.",
+                    "en": "Thank you. I'll go straight up."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "confirm",
+              "label": "방 번호는 말하지 않고, 묵고 계신 것만 알려 드린다",
+              "example": "네, 투숙 중이십니다. 객실 번호는 알려 드릴 수 없습니다.",
+              "hint": {
+                "mn": "Өрөөний дугаарыг хэлэхгүй, зөвхөн буудалласан гэдгийг хэлэх. «Тийм, манайд буудалласан байгаа. Өрөөний дугаарыг хэлж өгөх боломжгүй.»",
+                "vi": "Không nói số phòng, chỉ cho biết là khách đang ở đây. “Vâng, vị khách đó đang lưu trú ở đây ạ. Còn số phòng thì chúng tôi không thể cung cấp ạ.”",
+                "en": "Don't give the room number, but tell him she is staying here. \"Yes, she is staying with us. I'm afraid I can't give you the room number.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "visitor-wait",
+                  "who": "visitor",
+                  "text": "그럼 여기서 기다릴게요. 내려올 때까지요.",
+                  "hint": {
+                    "mn": "Тэгвэл энд хүлээж байя. Доошоо бууж иртэл нь.",
+                    "vi": "Vậy tôi chờ ở đây. Chờ đến khi nó xuống.",
+                    "en": "Then I'll wait here. Until she comes down."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "protect",
+              "label": "묵는지도 말하지 않고, 메모를 받아 두겠다고 한다",
+              "example": "죄송합니다. 투숙객 정보는 말씀드릴 수 없습니다. 메모를 남기시면, 투숙 중인 분이라면 전해 드리겠습니다.",
+              "hint": {
+                "mn": "Буудалласан эсэхийг нь ч хэлэлгүй, зурвас хүлээж авч болно гэж хэлэх. «Уучлаарай, зочдын мэдээллийг өгөх боломжгүй. Та зурвас үлдээвэл, тэр хүн манайд буудалласан бол дамжуулж өгье.»",
+                "vi": "Không nói cả việc khách có ở đây hay không, chỉ nói sẽ nhận lời nhắn. “Xin lỗi anh, tôi không thể cho biết thông tin của khách. Anh có thể để lại lời nhắn; nếu người đó đang lưu trú ở đây, tôi sẽ chuyển giúp.”",
+                "en": "Don't even say whether she's staying here; offer to take a message. \"I'm sorry, I can't give out any guest information. You can leave a message. If she is staying with us, I'll pass it on.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "visitor-memo",
+                  "who": "visitor",
+                  "text": "어머니가 입원하셨는데 규정이 먼저예요? …알겠어요. 오빠가 왔었다고 꼭 전해 주세요.",
+                  "hint": {
+                    "mn": "Ээж маань эмнэлэгт хэвтчихээд байхад журам илүү чухал юм уу? …За, ойлголоо. Ах нь ирсэн гэж заавал хэлээрэй.",
+                    "vi": "Mẹ tôi nhập viện mà quy định vẫn quan trọng hơn à? …Thôi được. Nhớ nhắn lại với nó là anh trai nó có đến tìm nhé.",
+                    "en": "Our mother is in hospital, and rules come first? …Fine. Please make sure she knows her brother came."
+                  }
+                },
+                {
+                  "type": "line",
+                  "clip": "senior-memo",
+                  "who": "senior",
+                  "place": "front-senior-side",
+                  "text": "메모는 손님 방에 전화해서 그대로 전해요. 만날지는 손님이 정하세요.",
+                  "hint": {
+                    "mn": "Зочны өрөө рүү утасдаж, зурвасыг яг хэвээр нь дамжуулаарай. Уулзах эсэхээ зочин өөрөө шийднэ.",
+                    "vi": "Em gọi điện lên phòng của khách và chuyển nguyên văn lời nhắn nhé. Gặp hay không là do khách quyết định.",
+                    "en": "Call the guest's room and pass on the message just as it was left. Whether to meet him is up to the guest."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "move",
+          "place": "front",
+          "caption": "두 시쯤, 전화"
+        },
+        {
+          "type": "line",
+          "clip": "room903-noise",
+          "who": "room903",
+          "channel": "phone",
+          "text": "프런트죠? 옆방이 아까부터 너무 시끄러워요. 몇 번을 말해야 해요?",
+          "hint": {
+            "mn": "Ресепшн үү? Хажуу өрөө түрүүнээс хойш хэтэрхий чимээ шуугиантай байна. Хэдэн удаа хэлэх ёстой юм бэ?",
+            "vi": "Lễ tân phải không? Phòng bên cạnh ồn ào từ nãy đến giờ. Tôi phải nói bao nhiêu lần nữa?",
+            "en": "Is this the front desk? The room next door has been very loud for a long time. How many times do I have to tell you?"
+          }
+        },
+        {
+          "type": "say",
+          "id": "noise-sorry",
+          "prompt": "손님께 사과하고, 확인한 뒤 다시 전화드리겠다고 말해요.",
+          "example": "불편을 드려 죄송합니다. 바로 확인하고 다시 전화드리겠습니다.",
+          "hint": {
+            "mn": "Зочноос уучлалт гуйж, шалгаад эргээд залгана гэж хэлээрэй.",
+            "vi": "Xin lỗi khách và nói rằng em sẽ kiểm tra rồi gọi lại.",
+            "en": "Apologize and say you'll check and call back."
+          },
+          "record": "소음 불만 전화를 받는 차례"
+        },
+        {
+          "type": "work",
+          "id": "floor9",
+          "record": "객실 현황 화면에서 옆방을 찾는 차례",
+          "tool": {
+            "kind": "screen",
+            "title": "객실 현황 · 9층",
+            "rows": [
+              [
+                "901호",
+                "빈 방 · 정비 끝"
+              ],
+              [
+                "902호",
+                "투숙 중"
+              ],
+              [
+                "903호",
+                "투숙 중 · 전화한 손님"
+              ],
+              [
+                "904호",
+                "빈 방 · 정비 끝"
+              ]
+            ],
+            "note": "903호 양옆은 902호와 904호예요."
+          },
+          "prompt": "903호 옆방 가운데 손님이 묵고 있는 방을 찾아요.",
+          "hint": {
+            "mn": "903 тоотын хажуу өрөөнүүдээс зочин буудалласан өрөөг ол. (9 давхрын өрөөний байдал: 901 – сул, цэвэрлэгээ дууссан; 902 – зочинтой; 903 – зочинтой, утасдсан зочин; 904 – сул, цэвэрлэгээ дууссан. 903 тоотын хоёр талд 902, 904 байдаг.)",
+            "vi": "Trong các phòng bên cạnh phòng 903, hãy tìm phòng đang có khách ở. (Tình trạng phòng tầng 9: 901 – trống, đã dọn; 902 – có khách; 903 – có khách, là khách đang gọi; 904 – trống, đã dọn. Hai bên phòng 903 là 902 và 904.)",
+            "en": "Of the rooms next to 903, find the one with a guest in it. (Floor 9 room status: 901 – empty, cleaned; 902 – occupied; 903 – occupied, the caller; 904 – empty, cleaned. The rooms on each side of 903 are 902 and 904.)"
+          },
+          "options": [
+            {
+              "id": "r902",
+              "label": "902호",
+              "hint": {
+                "mn": "902 тоот",
+                "vi": "Phòng 902",
+                "en": "Room 902"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "floor9-902",
+                  "who": "senior",
+                  "text": "맞아요, 902호예요. 그 방엔 제가 바로 전화할게요.",
+                  "hint": {
+                    "mn": "Зөв, 902 тоот байна. Тэр өрөө рүү би одоо шууд залгая.",
+                    "vi": "Đúng rồi, là phòng 902. Chị sẽ gọi ngay cho phòng đó.",
+                    "en": "That's right, it's 902. I'll call that room right away."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "r904",
+              "label": "904호",
+              "hint": {
+                "mn": "904 тоот",
+                "vi": "Phòng 904",
+                "en": "Room 904"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "floor9-904",
+                  "who": "senior",
+                  "text": "같이 다시 봐요. 904호는 빈 방이에요. 손님이 있는 옆방은 902호예요.",
+                  "hint": {
+                    "mn": "Хамт дахиад харъя. 904 тоот сул өрөө. Зочинтой хажуу өрөө нь 902 тоот.",
+                    "vi": "Mình cùng xem lại nhé. Phòng 904 đang trống. Phòng bên cạnh có khách ở là phòng 902.",
+                    "en": "Let's look again together. 904 is empty. The occupied room next door is 902."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "line",
+          "clip": "room903-insult",
+          "who": "room903",
+          "channel": "phone",
+          "text": "또 전화했어요. 아직이에요? 당신 같은 사람이 무슨 프런트를 봐요? 말귀를 그렇게 못 알아들어요?",
+          "hint": {
+            "mn": "Дахиад залгаж байна. Одоо болтол болоогүй юм уу? Чам шиг хүн яаж ресепшн дээр ажилладаг юм? Хэлсэн үгийг ингэж ойлгохгүй гэж үү?",
+            "vi": "Tôi lại gọi đây. Vẫn chưa xong à? Người như bạn mà cũng làm lễ tân à? Nói thế mà cũng không hiểu à?",
+            "en": "I'm calling again. Still nothing? How does someone like you even work the front desk? Can't you understand something this simple?"
+          }
+        },
+        {
+          "type": "line",
+          "clip": "room903-swear",
+          "who": "room903",
+          "channel": "phone",
+          "action": true,
+          "text": "손님의 목소리가 더 커지고, 욕설이 이어진다.",
+          "hint": {
+            "mn": "Зочны дуу улам чангарч, хараал үргэлжилсээр байна.",
+            "vi": "Khách càng lúc càng to tiếng, rồi liên tục chửi bới.",
+            "en": "The guest gets louder and keeps swearing."
+          }
+        },
+        {
+          "type": "say",
+          "id": "abuse",
+          "prompt": "손님의 욕설이 이어져요. 어떻게 할까요?",
+          "hint": {
+            "mn": "Зочин хараасаар байна. Одоо яах вэ?",
+            "vi": "Khách vẫn tiếp tục chửi bới. Em sẽ làm gì?",
+            "en": "The guest keeps swearing. What will you do?"
+          },
+          "options": [
+            {
+              "id": "handoff",
+              "label": "선배에게 알리고 전화를 넘긴다",
+              "example": "담당 지배인을 연결해 드리겠습니다. 잠시만 기다려 주십시오.",
+              "hint": {
+                "mn": "Ахлах ажилтанд хэлээд дуудлагыг шилжүүлэх. «Хариуцсан менежертэй холбож өгье. Түр хүлээнэ үү.»",
+                "vi": "Báo cho chị Ji-hyeon và chuyển cuộc gọi. “Tôi sẽ nối máy để quý khách gặp quản lý phụ trách. Xin quý khách vui lòng chờ một chút.”",
+                "en": "Tell your senior colleague and hand the call over. \"I'll connect you to the duty manager. Please wait a moment.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "manager-take",
+                  "who": "manager",
+                  "place": "front-manager",
+                  "text": "선배한테 들었어요. 제가 받을게요. 이런 전화는 혼자 듣지 않아도 돼요.",
+                  "hint": {
+                    "mn": "Ахлах ажилтнаас чинь сонслоо. Би авъя. Ийм яриаг ганцаараа сонсох шаардлагагүй.",
+                    "vi": "Anh nghe chị Ji-hyeon nói rồi. Để anh nghe. Những cuộc gọi như thế này, em không cần phải nghe một mình.",
+                    "en": "Ji-hyeon told me. I'll take it. You don't have to deal with calls like this alone."
+                  }
+                },
+                {
+                  "type": "line",
+                  "clip": "manager-rest",
+                  "who": "manager",
+                  "text": "한국어 탓이 아니에요. 903호 손님은 제가 방을 옮겨 드릴게요. 오 분 쉬고 와요.",
+                  "hint": {
+                    "mn": "Солонгос хэлнээс чинь болоогүй. 903 тоотын зочныг би өөр өрөө рүү шилжүүлье. Таван минут амраад ирээрэй.",
+                    "vi": "Không phải tại tiếng Hàn của em đâu. Khách phòng 903 thì anh sẽ đổi phòng cho. Em nghỉ năm phút rồi quay lại nhé.",
+                    "en": "It's not because of your Korean. I'll move the guest in 903 to another room. Take five minutes, then come back."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "endure",
+              "label": "늦어진 건 내 잘못이니, 끝까지 듣고 사과한다",
+              "example": "죄송합니다, 고객님. 정말 죄송합니다.",
+              "hint": {
+                "mn": "Удсан нь миний буруу учраас эцэс хүртэл сонсож, уучлалт гуйх. «Уучлаарай. Үнэхээр уучлаарай.»",
+                "vi": "Chậm trễ là lỗi của mình, nên nghe cho hết rồi xin lỗi. “Xin lỗi quý khách. Tôi thật sự xin lỗi ạ.”",
+                "en": "Since the delay is your fault, listen until the guest finishes and apologize. \"I'm sorry. I'm truly sorry.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "room903-hangup",
+                  "who": "room903",
+                  "action": true,
+                  "text": "통화는 십 분 넘게 이어지다 끊겼다.",
+                  "hint": {
+                    "mn": "Утасны яриа арав гаруй минут үргэлжлээд тасарлаа.",
+                    "vi": "Cuộc gọi kéo dài hơn mười phút rồi bị ngắt.",
+                    "en": "The call went on for more than ten minutes before it ended."
+                  }
+                },
+                {
+                  "type": "line",
+                  "clip": "manager-after",
+                  "who": "manager",
+                  "place": "front-manager",
+                  "text": "903호 전화, 혼자 다 들었어요? 다음엔 선배나 저한테 바로 넘겨요.",
+                  "hint": {
+                    "mn": "903 тоотын дуудлагыг ганцаараа эцэс хүртэл нь сонссон уу? Дараагийн удаа ахлах ажилтанд эсвэл надад шууд шилжүүлээрэй.",
+                    "vi": "Cuộc gọi phòng 903, em nghe hết một mình à? Lần sau chuyển ngay cho chị Ji-hyeon hoặc anh nhé.",
+                    "en": "Did you take that whole call from 903 by yourself? Next time, pass it to Ji-hyeon or me right away."
+                  }
+                },
+                {
+                  "type": "line",
+                  "clip": "manager-rest",
+                  "who": "manager",
+                  "text": "한국어 탓이 아니에요. 903호 손님은 제가 방을 옮겨 드릴게요. 오 분 쉬고 와요.",
+                  "hint": {
+                    "mn": "Солонгос хэлнээс чинь болоогүй. 903 тоотын зочныг би өөр өрөө рүү шилжүүлье. Таван минут амраад ирээрэй.",
+                    "vi": "Không phải tại tiếng Hàn của em đâu. Khách phòng 903 thì anh sẽ đổi phòng cho. Em nghỉ năm phút rồi quay lại nhé.",
+                    "en": "It's not because of your Korean. I'll move the guest in 903 to another room. Take five minutes, then come back."
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shift-end",
+      "title": "교대 인계",
+      "minutes": 4,
+      "place": "front",
+      "requires": [
+        "checkout",
+        "checkin",
+        "afternoon"
+      ],
+      "steps": [
+        {
+          "type": "line",
+          "clip": "eunbi-tell",
+          "who": "eunbi",
+          "channel": "phone",
+          "when": {
+            "privacy": "tell"
+          },
+          "text": "프런트죠? 아까 오빠가 제 방 문을 두드렸어요. 프런트에서 방 번호를 알려 줬다던데, 맞아요?",
+          "hint": {
+            "mn": "Ресепшн үү? Түрүүн ах маань миний өрөөний хаалгыг тогшсон. Ресепшнээс өрөөний дугаарыг хэлж өгсөн гэсэн, үнэн үү?",
+            "vi": "Lễ tân phải không? Lúc nãy anh tôi đến gõ cửa phòng tôi. Anh ấy nói lễ tân đã cho biết số phòng, đúng không?",
+            "en": "Is this the front desk? My brother knocked on my door earlier. He said the front desk gave him my room number. Is that true?"
+          }
+        },
+        {
+          "type": "line",
+          "clip": "eunbi-confirm",
+          "who": "eunbi",
+          "channel": "phone",
+          "when": {
+            "privacy": "confirm"
+          },
+          "text": "프런트죠? 오빠가 로비에서 기다린다고 들었어요. 제가 여기 묵는 건 아무한테도 말 안 했는데…",
+          "hint": {
+            "mn": "Ресепшн үү? Ах маань лоббид хүлээж байгаа гэж сонслоо. Би энд буудалласнаа хэнд ч хэлээгүй байсан юм…",
+            "vi": "Lễ tân phải không? Tôi nghe nói anh tôi đang chờ ở sảnh. Tôi đâu có nói với ai là tôi ở đây…",
+            "en": "Is this the front desk? I heard my brother is waiting in the lobby. I didn't tell anyone I was staying here…"
+          }
+        },
+        {
+          "type": "line",
+          "clip": "eunbi-protect",
+          "who": "eunbi",
+          "channel": "phone",
+          "when": {
+            "privacy": "protect"
+          },
+          "text": "프런트죠? 메모 잘 받았어요. 오빠한테는 제가 직접 연락할게요. 고마워요.",
+          "hint": {
+            "mn": "Ресепшн үү? Зурвасыг авлаа. Ахтайгаа би өөрөө холбогдоно. Баярлалаа.",
+            "vi": "Lễ tân phải không? Tôi nhận được lời nhắn rồi. Tôi sẽ tự liên lạc với anh tôi. Cảm ơn nhé.",
+            "en": "Is this the front desk? I got the message. I'll contact my brother myself. Thank you."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "senior-escalate",
+          "who": "senior",
+          "place": "front-senior-side",
+          "when": {
+            "privacy": [
+              "tell",
+              "confirm"
+            ]
+          },
+          "text": "제가 사과드리고 지배인님께 알릴게요. 가족이라 해도 묵는지도, 방 번호도 말하지 않아요.",
+          "hint": {
+            "mn": "Би зочноос уучлалт гуйж, менежерт мэдэгдье. Гэр бүлийнх нь хүн гэсэн ч буудалласан эсэхийг ч, өрөөний дугаарыг ч хэлдэггүй.",
+            "vi": "Chị sẽ xin lỗi khách và báo cho quản lý trực. Dù là người nhà, mình cũng không nói khách có ở đây hay không, cũng không nói số phòng.",
+            "en": "I'll apologize to her and tell the duty manager. Even if someone says they're family, we don't say whether a guest is staying here or give out a room number."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "senior-phone",
+          "who": "senior",
+          "place": "front-senior-side",
+          "text": "네, 프런트입니다. …잠시만요. 외국 손님 전화예요. 들어 보고 무슨 일인지 한국어로 알려 줄래요?",
+          "hint": {
+            "mn": "Байна уу, ресепшн байна. …Түр хүлээгээрэй. Гадаад зочин утасдаж байна. Чи сонсоод юу болсныг солонгосоор хэлж өгөхгүй юү?",
+            "vi": "Vâng, lễ tân xin nghe. …Xin chờ một chút. Có khách nước ngoài gọi điện. Em nghe thử rồi nói lại cho chị bằng tiếng Hàn xem có chuyện gì được không?",
+            "en": "Hello, front desk. …One moment, please. It's a call from a foreign guest. Can you listen and tell me in Korean what it's about?"
+          }
+        },
+        {
+          "type": "relay",
+          "id": "room-cold",
+          "who": "room1208",
+          "listen": "senior-listen-side",
+          "record": "손님의 말을 한국어로 전하는 차례",
+          "foreign": {
+            "mn": "Сайн байна уу, би 1208 тоот өрөөнөөс ярьж байна. Өрөөний халаалт ажиллахгүй байна, их хүйтэн байна. Хүүхэд маань даараад чичирч байна. Хүн явуулаад үзүүлж болох уу? Бас нэг хөнжил нэмж өгөөч.",
+            "vi": "Alô, tôi gọi từ phòng 1208. Máy sưởi trong phòng không chạy, phòng lạnh lắm. Con tôi đang run cầm cập. Có ai lên xem giúp được không? Cho tôi xin thêm một cái chăn nữa nhé.",
+            "en": "Hello, this is room 1208. The heating isn't working, and the room is really cold. My child is shivering. Could someone come up and take a look? And could we have one more blanket, please?"
+          },
+          "meaning": "1208호 손님인데, 난방이 안 돼서 방이 많이 춥대요. 아이가 떨고 있대요. 누가 와서 봐 줄 수 있는지 물으셨고, 담요도 하나 더 달라고 하셨어요.",
+          "prompt": "손님의 말을 선배에게 한국어로 전해요. 방 번호, 일어난 일, 손님이 바라는 것을 말해요.",
+          "example": "선배님, 1208호 손님인데요. 난방이 안 돼서 방이 춥고 아이가 떨고 있대요. 누가 와서 봐 줄 수 있는지 물으셨고, 담요도 하나 더 달라고 하셨어요.",
+          "hint": {
+            "mn": "Зочны хэлснийг ахлах ажилтанд солонгосоор дамжуулж хэл. Өрөөний дугаар, юу болсон, зочин юу хүсэж байгааг хэлээрэй.",
+            "vi": "Hãy nói lại lời của khách bằng tiếng Hàn cho chị Ji-hyeon. Nói rõ số phòng, chuyện đã xảy ra và điều khách muốn.",
+            "en": "Tell your senior colleague in Korean what the guest said. Include the room number, what happened, and what the guest wants."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "senior-relay-thanks",
+          "who": "senior",
+          "text": "덕분에 금방 알았어요. 담요는 지금 올려 보낼게요. 시설팀에 물어보고 다시 전화드린다고 전해 줘요.",
+          "hint": {
+            "mn": "Чиний ачаар хурдан ойлголоо. Хөнжлийг одоо өрөөнд нь хүргүүлье. Засварынхнаас асуугаад эргээд залгана гэж зочинд хэлээрэй.",
+            "vi": "Nhờ em mà chị hiểu ngay. Chị sẽ cho mang chăn lên ngay. Em nói với khách là chị sẽ hỏi đội kỹ thuật rồi gọi lại nhé.",
+            "en": "Thanks, now I know what's going on. I'll send a blanket up now. Tell the guest I'll check with maintenance and call back."
+          }
+        },
+        {
+          "type": "relay",
+          "id": "room-cold-back",
+          "direction": "out",
+          "who": "room1208",
+          "channel": "phone",
+          "record": "선배의 답을 손님께 모국어로 전하는 차례",
+          "prompt": "선배의 답을 손님이 쓰는 말로 전해요.",
+          "meaning": "담요는 지금 올려 보내 드립니다. 시설팀에 언제 갈 수 있는지 알아보고 다시 전화드리겠습니다.",
+          "foreign": {
+            "mn": "Хөнжлийг одоо өрөөнд тань хүргүүлье. Засварын баг хэзээ очиж чадахыг тодруулаад тан руу эргэж залгая.",
+            "vi": "Dạ, chúng tôi sẽ cho mang chăn lên phòng quý khách ngay bây giờ. Chúng tôi sẽ hỏi đội kỹ thuật khi nào lên được rồi gọi lại cho quý khách.",
+            "en": "We'll send a blanket up to you right now. I'll ask our maintenance team when they can come, and then I'll call you back."
+          },
+          "hint": {
+            "mn": "Ахлах ажилтны хариуг зочны ярьдаг хэлээр дамжуулаарай.",
+            "vi": "Hãy nói lại câu trả lời của chị Ji-hyeon bằng thứ tiếng khách dùng.",
+            "en": "Pass your senior colleague's answer on in the language the guest speaks."
+          }
+        },
+        {
+          "type": "move",
+          "place": "back-office-evening",
+          "caption": "세 시 반, 교대"
+        },
+        {
+          "type": "work",
+          "id": "logbook",
+          "record": "인계 일지에서 남은 일을 찾는 차례",
+          "tool": {
+            "kind": "paper",
+            "title": "인계 일지(로그북) · 낮 근무",
+            "rows": [
+              [
+                "1105호 계산서",
+                "맥주 요금을 1150호로 옮김 · 끝"
+              ],
+              [
+                "1602호 일찍 온 손님",
+                "입실 · 끝"
+              ],
+              [
+                "903호 소음 불만",
+                "지배인이 방을 옮겨 드림 · 끝"
+              ],
+              [
+                "1208호 난방 고장",
+                "시설팀에 부탁함 · 담요 보냄"
+              ]
+            ]
+          },
+          "prompt": "저녁 근무자가 이어서 챙길 일을 찾아요. 아직 끝나지 않은 일은 무엇인가요?",
+          "hint": {
+            "mn": "Оройн ээлжийнхэн үргэлжлүүлэн анхаарах ажлыг ол. Хараахан дуусаагүй ажил аль нь вэ? (Ээлж хүлээлцэх дэвтэр (로그북), өдрийн ээлж: 1105 тоотын тооцоо – шар айргийн төлбөрийг 1150 тоот руу шилжүүлсэн, дууссан; 1602 тоотын эрт ирсэн зочин – өрөөндөө орсон, дууссан; 903 тоотын чимээ шуугианы гомдол – менежер өөр өрөө рүү шилжүүлсэн, дууссан; 1208 тоотын халаалтын эвдрэл – засварынханд хэлсэн, хөнжил явуулсан.)",
+            "vi": "Hãy tìm việc ca tối cần theo dõi tiếp. Việc nào chưa xong? (Sổ bàn giao ca (로그북), ca ngày: hóa đơn phòng 1105 – đã chuyển tiền bia sang phòng 1150, xong; phòng 1602, khách đến sớm – đã vào phòng, xong; phòng 903 phàn nàn về tiếng ồn – quản lý đã đổi phòng cho khách, xong; phòng 1208 hỏng máy sưởi – đã nhờ đội kỹ thuật, đã mang chăn lên.)",
+            "en": "Find what the evening shift needs to follow up on. Which item isn't finished yet? (Handover logbook (로그북), day shift: room 1105 bill – beer charge moved to 1150, done; early guest for 1602 – checked in, done; noise complaint from 903 – the duty manager moved the guest, done; heating broken in 1208 – asked maintenance to look at it, sent a blanket.)"
+          },
+          "options": [
+            {
+              "id": "bill",
+              "label": "1105호 계산서",
+              "hint": {
+                "mn": "1105 тоотын тооцоо",
+                "vi": "Hóa đơn phòng 1105",
+                "en": "Room 1105 bill"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "logbook-other",
+                  "who": "senior",
+                  "text": "같이 다시 봐요. 그 일은 끝났어요. 1208호는 시설팀이 아직 못 갔어요.",
+                  "hint": {
+                    "mn": "Хамт дахиад харъя. Тэр ажил дууссан. 1208 тоот руу засварынхан хараахан очоогүй байна.",
+                    "vi": "Mình cùng xem lại nhé. Việc đó xong rồi. Phòng 1208 thì đội kỹ thuật vẫn chưa lên được.",
+                    "en": "Let's look again together. That one is done. Maintenance hasn't made it to 1208 yet."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "early",
+              "label": "1602호 일찍 온 손님",
+              "hint": {
+                "mn": "1602 тоотын эрт ирсэн зочин",
+                "vi": "Phòng 1602, khách đến sớm",
+                "en": "Early guest for 1602"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "logbook-other",
+                  "who": "senior",
+                  "text": "같이 다시 봐요. 그 일은 끝났어요. 1208호는 시설팀이 아직 못 갔어요.",
+                  "hint": {
+                    "mn": "Хамт дахиад харъя. Тэр ажил дууссан. 1208 тоот руу засварынхан хараахан очоогүй байна.",
+                    "vi": "Mình cùng xem lại nhé. Việc đó xong rồi. Phòng 1208 thì đội kỹ thuật vẫn chưa lên được.",
+                    "en": "Let's look again together. That one is done. Maintenance hasn't made it to 1208 yet."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "noise",
+              "label": "903호 소음 불만",
+              "hint": {
+                "mn": "903 тоотын чимээ шуугианы гомдол",
+                "vi": "Phòng 903 phàn nàn về tiếng ồn",
+                "en": "Noise complaint from 903"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "logbook-other",
+                  "who": "senior",
+                  "text": "같이 다시 봐요. 그 일은 끝났어요. 1208호는 시설팀이 아직 못 갔어요.",
+                  "hint": {
+                    "mn": "Хамт дахиад харъя. Тэр ажил дууссан. 1208 тоот руу засварынхан хараахан очоогүй байна.",
+                    "vi": "Mình cùng xem lại nhé. Việc đó xong rồi. Phòng 1208 thì đội kỹ thuật vẫn chưa lên được.",
+                    "en": "Let's look again together. That one is done. Maintenance hasn't made it to 1208 yet."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "heating",
+              "label": "1208호 난방 고장",
+              "hint": {
+                "mn": "1208 тоотын халаалтын эвдрэл",
+                "vi": "Máy sưởi phòng 1208 hỏng",
+                "en": "Broken heating in 1208"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "logbook-heating",
+                  "who": "senior",
+                  "text": "맞아요. 1208호는 시설팀이 언제 갈지 아직 몰라요. 꼭 넘겨요.",
+                  "hint": {
+                    "mn": "Зөв. 1208 тоот руу засварынхан хэзээ очих нь хараахан тодорхойгүй. Оройн ээлжид заавал дамжуулаарай.",
+                    "vi": "Đúng rồi. Phòng 1208 thì vẫn chưa biết khi nào đội kỹ thuật lên. Em nhớ bàn giao nhé.",
+                    "en": "Right. We still don't know when maintenance can get to 1208. Be sure to pass that on."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "line",
+          "clip": "evening-ask",
+          "who": "evening",
+          "text": "수고했어요. 일지는 선배한테 받았어요. 직접 받은 일 중에 넘길 게 있으면 말해 줘요.",
+          "hint": {
+            "mn": "Өнөөдөр сайн ажиллалаа. Дэвтрийг ахлах ажилтнаас чинь авсан. Өөрөө хүлээж авсан ажлуудаас чинь дамжуулах зүйл байвал хэлээрэй.",
+            "vi": "Hôm nay em vất vả rồi. Sổ bàn giao thì chị đã nhận từ chị Ji-hyeon. Trong những việc em trực tiếp xử lý, có gì cần bàn giao thì nói chị nghe nhé.",
+            "en": "Thanks for today. I got the logbook from Ji-hyeon. If there's anything you handled yourself that I should know about, let me know."
+          }
+        },
+        {
+          "type": "report",
+          "id": "shift-report",
+          "listen": "evening-listen",
+          "prompt": "오늘 있었던 일 가운데 저녁 근무자에게 넘길 것을 고르고, 그대로 말해 보세요.",
+          "hint": {
+            "mn": "Өнөөдөр болсон явдлуудаас оройн ээлжийн ажилтанд дамжуулах зүйлээ сонгоод, яг болсноор нь хэлээд үзээрэй.",
+            "vi": "Trong những việc hôm nay, hãy chọn việc cần bàn giao cho ca tối rồi thử nói lại đúng như những gì đã xảy ra.",
+            "en": "Of the things that happened today, choose what to hand over to the evening shift, and report it exactly as it happened."
+          },
+          "items": [
+            {
+              "id": "heating",
+              "text": "1208호 난방이 안 된다고 하셔서 시설팀에 부탁했고, 담요를 올려 보냈어요.",
+              "hint": {
+                "mn": "1208 тоотын халаалт ажиллахгүй байна гэсэн тул засварынханд хэлж, хөнжил явуулсан.",
+                "vi": "Khách phòng 1208 báo máy sưởi không chạy nên em đã nhờ đội kỹ thuật xử lý và đã gửi chăn lên phòng.",
+                "en": "The guest in 1208 said the heating wasn't working, so I asked maintenance to check it and sent a blanket up."
+              }
+            },
+            {
+              "id": "visitor",
+              "key": true,
+              "text": "오후에 한 남성분이 정은비 님의 가족이라며 방 번호를 물으셨고, 그 뒤에 정은비 님이 전화하셨어요.",
+              "hint": {
+                "mn": "Үдээс хойш нэг эрэгтэй хүн өөрийгөө Жон Ынбигийн гэр бүлийн хүн гэж хэлээд өрөөний дугаарыг нь асуусан. Үүний дараа Жон Ынби утасдсан.",
+                "vi": "Buổi chiều có một người đàn ông nói là người nhà của khách Jeong Eun-bi và hỏi số phòng, sau đó khách Jeong Eun-bi đã gọi điện đến.",
+                "en": "This afternoon, a man asked for Ms. Jeong Eun-bi's room number, saying he was a member of her family, and after that Ms. Jeong Eun-bi phoned."
+              }
+            },
+            {
+              "id": "abuse",
+              "when": {
+                "abuse": "handoff"
+              },
+              "text": "903호 손님이 소음 불만으로 전화하시다 욕설을 하셔서, 선배님께 알리고 지배인님께 넘겼어요.",
+              "hint": {
+                "mn": "903 тоотын зочин чимээ шуугианы талаар гомдоллож байгаад хараасан тул ахлах ажилтанд хэлж, менежерт шилжүүлсэн.",
+                "vi": "Khách phòng 903 gọi phàn nàn tiếng ồn rồi chửi bới, nên em đã báo chị Ji-hyeon và chuyển cho quản lý trực.",
+                "en": "The guest in 903 called about noise and started swearing, so I told Ji-hyeon and passed the call to the duty manager."
+              }
+            },
+            {
+              "id": "abuse",
+              "when": {
+                "abuse": "endure"
+              },
+              "text": "903호 손님이 소음 불만으로 전화하시다 욕설을 하셨고, 제가 끝까지 들었어요.",
+              "hint": {
+                "mn": "903 тоотын зочин чимээ шуугианы талаар утсаар гомдоллож байгаад хараал хэлсэн. Би эцэс хүртэл нь сонссон.",
+                "vi": "Khách phòng 903 gọi phàn nàn về tiếng ồn rồi chửi bới, và em đã nghe cho đến hết cuộc gọi.",
+                "en": "The guest in 903 called to complain about noise and started swearing, and I heard them out."
+              }
+            },
+            {
+              "id": "early",
+              "when": {
+                "early": "guess"
+              },
+              "text": "1602호 오미숙 님이 일찍 오셨는데, 정비가 끝날 때까지 한 시간쯤 기다리셨어요.",
+              "hint": {
+                "mn": "1602 тоотын О Мисүк эрт ирсэн боловч өрөө цэвэрлэж дуустал нэг цаг орчим хүлээсэн.",
+                "vi": "Khách Oh Mi-suk phòng 1602 đến sớm, nhưng đã phải chờ khoảng một tiếng cho đến khi dọn phòng xong.",
+                "en": "Ms. Oh Mi-suk, booked for 1602, arrived early and waited about an hour until the room was ready."
+              }
+            },
+            {
+              "id": "early",
+              "when": {
+                "early": [
+                  "solve",
+                  "rule"
+                ]
+              },
+              "text": "1602호로 예약하신 오미숙 님이 일찍 오셔서, 비어 있던 트윈 객실로 바꿔 드렸어요.",
+              "hint": {
+                "mn": "1602 тоотыг захиалсан О Мисүк эрт ирсэн тул сул байсан хоёр тусдаа ортой өрөөгөөр сольж өгсөн.",
+                "vi": "Khách Oh Mi-suk đặt phòng 1602 đến sớm, nên em đã đổi sang phòng hai giường đơn lúc đó còn trống.",
+                "en": "Ms. Oh Mi-suk, booked for 1602, arrived early, so I moved her to a twin room that was free."
+              }
+            },
+            {
+              "id": "bill",
+              "text": "1105호 계산서에 다른 방 미니바 요금이 잘못 들어가 있어서 고쳤어요.",
+              "hint": {
+                "mn": "1105 тоотын тооцоонд өөр өрөөний мини барын төлбөр буруу орсон байсныг зассан.",
+                "vi": "Tiền minibar của phòng khác bị tính nhầm vào hóa đơn phòng 1105, em đã sửa lại.",
+                "en": "Another room's minibar charge was on room 1105's bill by mistake, and I corrected it."
+              }
+            }
+          ],
+          "record": {
+            "included": "방 번호를 물은 분의 일을 인계에 넣는다",
+            "omitted": "방 번호를 물은 분의 일을 인계에 넣지 않는다"
+          },
+          "then": {
+            "included": [
+              {
+                "type": "line",
+                "clip": "evening-thanks",
+                "who": "evening",
+                "text": "말해 줘서 고마워요. 그분이 다시 오시면 저도 알아야 하거든요.",
+                "hint": {
+                  "mn": "Хэлсэнд баярлалаа. Тэр хүн дахин ирвэл би ч бас мэдэж байх ёстой.",
+                  "vi": "Cảm ơn em đã nói cho chị biết. Nếu người đó quay lại thì chị cũng cần biết chuyện này.",
+                  "en": "Thanks for telling me. If he comes back, I need to know."
+                }
+              }
+            ],
+            "omitted": [
+              {
+                "type": "line",
+                "clip": "evening-ask-visitor",
+                "who": "evening",
+                "when": {
+                  "privacy": "protect"
+                },
+                "text": "방 번호를 물은 분이 있었다면서요? 아무 일 없었어도 그런 일은 꼭 넘겨줘요.",
+                "hint": {
+                  "mn": "Өрөөний дугаар асуусан хүн байсан гэл үү? Юу ч болоогүй байсан ч ийм зүйлийг заавал дамжуулж хэлээрэй.",
+                  "vi": "Chị nghe nói có người hỏi số phòng phải không? Dù không có chuyện gì xảy ra, những việc như vậy em cũng nhất định phải bàn giao.",
+                  "en": "I heard someone asked for a room number? Even if nothing happened, always pass things like that on."
+                }
+              },
+              {
+                "type": "line",
+                "clip": "evening-ask-visitor-2",
+                "who": "evening",
+                "when": {
+                  "privacy": [
+                    "tell",
+                    "confirm"
+                  ]
+                },
+                "text": "정은비 님 일은 선배한테 들었어요. 그런 일은 꼭 넘겨줘요. 다시 오실 수 있거든요.",
+                "hint": {
+                  "mn": "Жон Ынбигийн асуудлыг ахлах ажилтнаас сонссон. Ийм зүйлийг заавал дамжуулж хэлээрэй. Тэр хүн дахин ирж магадгүй шүү дээ.",
+                  "vi": "Chuyện của khách Jeong Eun-bi chị đã nghe từ chị Ji-hyeon rồi. Những chuyện như vậy em nhất định phải bàn giao. Người đó có thể quay lại mà.",
+                  "en": "I heard about Ms. Jeong Eun-bi from Ji-hyeon. Be sure to pass things like that on. That man might come back."
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "closing": {
+    "place": "front-senior",
+    "lead": "정답을 맞히는 시험이 아니에요. 내가 고른 것과 프런트 직원이 지키는 것을 나란히 봐요.",
+    "principles": [
+      {
+        "id": "check",
+        "title": "모르면 확인한다",
+        "body": "모르는 말은 되묻고, 모르는 시간과 사실은 짐작으로 말하지 않아요. 화면과 서류를 보고, 동료에게 물어 확인한 뒤 말해요.",
+        "hint": {
+          "mn": "Мэдэхгүй бол шалгана. Ойлгоогүй үгээ дахин асууна. Сайн мэдэхгүй цаг хугацаа, мэдээллийг таамгаар хэлэхгүй. Дэлгэц, бичиг баримтаа харж, хамт ажиллагсдаасаа асууж нягталсны дараа хэлнэ.",
+          "vi": "Không biết thì kiểm tra. Từ nào chưa hiểu thì hỏi lại; giờ giấc hay sự việc chưa nắm chắc thì không nói theo suy đoán. Xem màn hình và giấy tờ, hỏi đồng nghiệp cho chắc rồi mới nói.",
+          "en": "If you don't know, check. Ask when you don't understand a word, and don't guess at times or facts you don't know. Look at the screen and the documents, check with a colleague, and then answer."
+        }
+      },
+      {
+        "id": "listen",
+        "title": "할 수 있는 일을 찾아 말한다",
+        "body": "손님이 당황하거나 화가 나도 말을 끝까지 들어요. 불편을 사과하고, 규칙 안에서 지금 할 수 있는 일을 찾아 말해요.",
+        "hint": {
+          "mn": "Хийж чадах зүйлээ олж хэлнэ. Зочин сандарсан ч, уурласан ч яриаг нь эцэс хүртэл сонсоно. Төвөг учруулсандаа уучлалт гуйж, дүрмийн хүрээнд одоо хийж чадах зүйлээ олж хэлнэ.",
+          "vi": "Tìm điều mình có thể làm và nói với khách. Dù khách bối rối hay tức giận, vẫn nghe khách nói hết. Xin lỗi vì sự bất tiện, rồi tìm xem trong phạm vi quy định có thể làm gì ngay lúc này và nói với khách.",
+          "en": "Find what you can do and let the guest know. Even when a guest is flustered or angry, hear them out. Apologize for the inconvenience, then find something you can do right now within the rules and let them know."
+        }
+      },
+      {
+        "id": "privacy",
+        "title": "손님 정보는 말하지 않는다",
+        "body": "가족이라고 해도 방 번호도, 묵고 있는지도 말하지 않아요. 메모를 받아 손님께 전하고, 만날지는 손님이 정해요.",
+        "hint": {
+          "mn": "Зочны мэдээллийг өгөхгүй. Гэр бүлийнх нь хүн гэж хэлсэн ч өрөөний дугаарыг ч, буудалласан эсэхийг нь ч хэлэхгүй. Зурвасыг нь аваад зочинд дамжуулна. Уулзах эсэхээ зочин өөрөө шийднэ.",
+          "vi": "Không tiết lộ thông tin của khách. Dù người hỏi nói là người nhà, cũng không cho biết số phòng, cũng không cho biết khách có đang ở đây hay không. Nhận lời nhắn rồi chuyển cho khách; gặp hay không là do khách quyết định.",
+          "en": "Don't share guest information. Even if someone says they are family, don't give out the room number or say whether the guest is staying here. Take a message and pass it on to the guest; the guest decides whether to meet them."
+        }
+      },
+      {
+        "id": "alone",
+        "title": "혼자 견디지 않는다",
+        "body": "욕설과 폭언은 혼자 듣고 있지 않아요. 선배나 지배인에게 알리고 넘겨요. 폭언으로 몸이나 마음이 상했거나 상할 걱정이 크면, 회사는 그 직원이 하던 일을 잠시 멈추거나 바꿔 줘야 해요.",
+        "hint": {
+          "mn": "Ганцаараа тэвчихгүй. Хараал, доромжлолыг ганцаараа сонсоод суухгүй. Ахлах ажилтанд эсвэл менежерт хэлээд шилжүүлнэ. Доромжлолоос болж бие, сэтгэл санаагаараа хохирсон эсвэл хохирох эрсдэл өндөр бол компани тухайн ажилтны хийж байсан ажлыг түр зогсоох эсвэл өөр ажлаар солих ёстой.",
+          "vi": "Không chịu đựng một mình. Không một mình ngồi nghe chửi bới, lăng mạ. Báo cho anh chị đi trước hoặc quản lý rồi chuyển lại cho họ xử lý. Nếu lời lẽ xúc phạm đã làm nhân viên bị tổn hại về thể chất hoặc tinh thần, hoặc có nguy cơ cao gây tổn hại như vậy, công ty phải cho nhân viên đó tạm dừng hoặc đổi việc đang làm.",
+          "en": "Don't put up with it alone. Don't keep listening to swearing and abuse on your own. Tell a senior colleague or the duty manager and let them take over. If abuse has harmed an employee physically or mentally, or is very likely to, the company must let that employee stop what they are doing for a while or switch to other work."
+        }
+      },
+      {
+        "id": "report",
+        "title": "본 대로 넘긴다",
+        "body": "다음 근무자가 알아야 할 일은 아무 일도 일어나지 않았어도 사실대로 넘겨요.",
+        "hint": {
+          "mn": "Харснаа байгаагаар нь дамжуулна. Дараагийн ээлжийнхний мэдэх ёстой зүйлийг юу ч болоогүй байсан ч үнэнээр нь дамжуулна.",
+          "vi": "Thấy sao bàn giao vậy. Việc gì ca sau cần biết thì phải bàn giao đúng sự thật, kể cả khi không có chuyện gì xảy ra.",
+          "en": "Pass on what you saw, as you saw it. Tell the next shift what they need to know, truthfully, even if nothing came of it."
+        }
+      }
+    ],
+    "forks": [
+      {
+        "id": "handover",
+        "scene": "아침 인계",
+        "principle": "check",
+        "mine": {
+          "ask": "모르는 말을 되물었어요.",
+          "confirm": "들은 것을 다시 말해 확인했어요.",
+          "pass": "일단 '네' 하고 넘어갔어요."
+        },
+        "say": "죄송한데, '러시'가 뭐예요?"
+      },
+      {
+        "id": "early",
+        "scene": "이른 체크인",
+        "principle": "listen",
+        "mine": {
+          "solve": "선배에게 묻고 빈 트윈 객실을 권했어요.",
+          "guess": "삼십 분이면 된다고 말씀드렸어요.",
+          "rule": "체크인은 세 시부터라고 말씀드렸어요."
+        },
+        "say": "죄송합니다. 지금 바로 쓰실 수 있는 방이 있는지 확인해 드리겠습니다."
+      },
+      {
+        "id": "privacy",
+        "scene": "로비의 부탁",
+        "principle": "privacy",
+        "mine": {
+          "tell": "방 번호를 알려 드렸어요.",
+          "confirm": "묵고 계신 것만 알려 드렸어요.",
+          "protect": "묵는지도 말하지 않고 메모를 받았어요."
+        },
+        "say": "죄송합니다. 투숙객 정보는 말씀드릴 수 없습니다. 메모를 남기시면 전해 드리겠습니다."
+      },
+      {
+        "id": "abuse",
+        "scene": "903호 전화",
+        "principle": "alone",
+        "mine": {
+          "handoff": "선배에게 알리고 넘겼어요.",
+          "endure": "혼자 끝까지 듣고 사과했어요."
+        },
+        "say": "담당 지배인을 연결해 드리겠습니다. 잠시만 기다려 주십시오."
+      },
+      {
+        "id": "shift-report",
+        "scene": "교대 인계",
+        "principle": "report",
+        "mine": {
+          "included": "방 번호를 물은 분의 일을 넘겼어요.",
+          "omitted": "방 번호를 물은 분의 일을 넘기지 않았어요."
+        },
+        "say": "오후에 한 남성분이 투숙객의 가족이라며 방 번호를 물으셨어요."
+      }
+    ],
+    "conditions": {
+      "lead": "좋게만 보여 주지 않아요. 지원하기 전에 알아 둘 것들이에요.",
+      "items": [
+        {
+          "title": "교대 근무",
+          "body": "프런트는 하루 내내 열려 있어요. 아침, 저녁, 밤 근무를 근무표에 따라 돌아가며 해요. 주말과 공휴일, 명절에도 일해요. 밤에도 프런트를 비우지 않아요.",
+          "source": "한국고용정보원 임금직업포털(숙박시설 서비스 종사원 업무환경), 호텔 프런트 채용공고 (2026-11-22 대조)",
+          "hint": {
+            "mn": "Ээлжийн ажил. Ресепшн өдөр шөнөгүй ажилладаг. Өглөө, орой, шөнийн ээлжид хуваарийн дагуу сэлгэж ажиллана. Амралтын өдөр, нийтээр амрах өдөр, уламжлалт том баяраар ч ажиллана. Шөнө ч ресепшнийг эзэнгүй орхихгүй.",
+            "vi": "Làm theo ca. Quầy lễ tân mở cả ngày lẫn đêm. Làm luân phiên ca sáng, ca tối, ca đêm theo bảng phân ca. Vẫn làm vào cuối tuần, ngày lễ và các dịp Tết. Ban đêm cũng không để trống quầy lễ tân.",
+            "en": "Shift work. The front desk is open around the clock. You rotate through morning, evening and night shifts according to the roster. You work weekends, public holidays and major traditional holidays too. The desk is never left empty, even at night."
+          }
+        },
+        {
+          "title": "서서 하는 일",
+          "body": "근무 시간 대부분을 데스크 앞에 서서 손님을 맞아요. 체크아웃과 체크인이 몰리는 시간에는 쉬는 때를 맞추기 어려워요.",
+          "hint": {
+            "mn": "Зогсож хийдэг ажил. Ажлын ихэнх цагт лангууны ард зогсож зочдыг угтана. Чек-аут, чек-ин давхцсан ачаалалтай үед амрах цаг гаргахад хэцүү.",
+            "vi": "Công việc phải đứng. Phần lớn thời gian làm việc là đứng ở quầy đón khách. Vào giờ khách trả phòng và nhận phòng dồn dập thì khó sắp xếp được lúc nghỉ.",
+            "en": "Working on your feet. You spend most of your shift standing at the desk greeting guests. When check-outs and check-ins pile up, it is hard to take your breaks on time."
+          }
+        },
+        {
+          "title": "불만과 폭언",
+          "body": "화가 난 손님을 맞는 날이 있어요. 폭언으로 몸이나 마음이 상했거나 상할 걱정이 크면, 법은 회사가 그 직원의 일을 잠시 멈추게 하거나 바꿔 주고, 쉬는 시간을 늘려 주게 해요. 직원은 회사에 그렇게 해 달라고 요구할 수 있어요. 바쁜 시간에는 오 분도 쉬기 어려운 날이 있어요.",
+          "source": "산업안전보건법 제41조, 같은 법 시행령 제41조",
+          "hint": {
+            "mn": "Гомдол ба доромжлол. Уурласан зочинтой таарах өдөр байдаг. Хэл амаар доромжлуулснаас болж бие, сэтгэл санаагаараа хохирсон эсвэл хохирох эрсдэл өндөр бол хуулийн дагуу компани тухайн ажилтны ажлыг түр зогсоох эсвэл өөр ажилд шилжүүлэх, мөн амрах цагийг нь уртасгах үүрэгтэй. Ажилтан компаниасаа ийм арга хэмжээ авахыг шаардаж болно. Ачаалалтай үед таван минут ч амрахад хэцүү өдөр байдаг.",
+            "vi": "Phàn nàn và lời lẽ xúc phạm. Có những ngày phải tiếp khách đang giận. Nếu lời lẽ xúc phạm đã làm nhân viên bị tổn hại về thể chất hoặc tinh thần, hoặc có nguy cơ cao gây tổn hại như vậy, thì theo luật, công ty phải cho nhân viên đó tạm dừng hoặc đổi việc đang làm và kéo dài thời gian nghỉ giải lao. Nhân viên có thể yêu cầu công ty làm như vậy. Vào giờ cao điểm, có hôm đến năm phút nghỉ cũng khó.",
+            "en": "Complaints and abuse. Some days you will face angry guests. If verbal abuse has harmed an employee physically or mentally, or is very likely to, the law requires the company to let that employee pause their work for a while or switch to other work, and to give them longer breaks. The employee can ask the company to do this. Some days, when it's busy, it's hard to take even a five-minute break."
+          }
+        },
+        {
+          "title": "손님 정보",
+          "body": "일하며 알게 된 손님 정보를 남에게 알리면 법을 어기게 돼요. 5년 이하 징역이나 5천만 원 이하 벌금을 받을 수 있어요.",
+          "source": "개인정보 보호법 제59조, 제71조 (2026-11-22 대조)",
+          "hint": {
+            "mn": "Зочны мэдээлэл. Ажлын явцад мэдсэн зочны мэдээллийг бусдад задруулбал хууль зөрчсөн болно. 5 жил хүртэлх хорих ял эсвэл 50 сая вон хүртэлх торгуулийн шийтгэл хүлээж болзошгүй.",
+            "vi": "Thông tin của khách. Tiết lộ cho người khác thông tin của khách mà mình biết trong lúc làm việc là vi phạm pháp luật. Có thể bị phạt tù đến 5 năm hoặc phạt tiền đến 50 triệu won.",
+            "en": "Guest information. If you share guest information you learned at work with others, you are breaking the law. You could face up to five years in prison or a fine of up to 50 million won."
+          }
+        },
+        {
+          "title": "임금",
+          "body": "숙박시설 서비스 종사원을 뽑는 채용공고가 내건 월급은 평균 236만 원(세금 떼기 전)이에요. 이 일을 하는 사람 전체의 평균은 한 달 273만 원이에요. 숙박·음식점업의 평균 임금은 모든 산업 가운데 가장 적어요.",
+          "source": "한국고용정보원 임금직업포털 2025년(고용24 채용공고 제시임금, 고용보험 월평균 보수), 고용노동부 사업체노동력조사 2026년 8월",
+          "hint": {
+            "mn": "Цалин. Зочид буудал зэрэг буудаллах газрын үйлчилгээний ажилтан авах ажлын заруудад санал болгосон сарын цалин дунджаар 2.36 сая вон (татвар суутгахаас өмнө). Энэ ажлыг хийдэг бүх хүний дундаж цалин сард 2.73 сая вон. Зочид буудал, хоолны газрын салбарын дундаж цалин бүх салбараас хамгийн бага.",
+            "vi": "Lương. Mức lương tháng ghi trong các tin tuyển dụng nhân viên dịch vụ lưu trú trung bình là 2,36 triệu won (trước thuế). Mức trung bình của tất cả những người làm công việc này là 2,73 triệu won mỗi tháng. Lương trung bình của ngành lưu trú và ăn uống thấp nhất trong tất cả các ngành.",
+            "en": "Pay. Job ads for accommodation service workers offer an average of 2.36 million won a month (before tax). The average for everyone doing this work is 2.73 million won a month. Average pay in accommodation and food service is the lowest of all industries."
+          }
+        },
+        {
+          "title": "이 일로 가는 비자",
+          "body": "호텔 접수사무원은 E-7-2 비자예요. 일할 호텔이 문화체육관광부 장관의 고용추천을 받아야 해요. 국내 4년제를 졸업했으면 전공과 관계없이, 국내 전문대를 졸업했으면 관광·호텔 전공일 때 경력 없이 신청할 수 있어요.",
+          "source": "법무부 취업비자(E-7) 안내 길잡이 2026년 11월, 문화체육관광부 관광숙박업 외국인 고용추천서 발급신청 안내 2025년 11월 (2026-11-22 대조)",
+          "hint": {
+            "mn": "Энэ ажилд орох виз. Зочид буудлын ресепшний ажилтан E-7-2 визээр ажиллана. Ажиллах зочид буудал нь Соёл, спорт, аялал жуулчлалын сайдын ажилд авах зөвлөмж (고용추천) авсан байх ёстой. Солонгост 4 жилийн их сургууль төгссөн бол мэргэжил харгалзахгүйгээр, харин Солонгост коллеж (전문대) төгссөн бол аялал жуулчлал, зочид буудлын мэргэжилтэй тохиолдолд ажлын туршлагагүйгээр виз мэдүүлж болно.",
+            "vi": "Visa cho công việc này. Lễ tân khách sạn làm việc theo visa E-7-2. Khách sạn nơi mình sẽ làm phải được Bộ trưởng Bộ Văn hóa, Thể thao và Du lịch cấp giấy giới thiệu tuyển dụng (고용추천). Có thể nộp hồ sơ mà không cần kinh nghiệm làm việc nếu tốt nghiệp đại học 4 năm ở Hàn Quốc (ngành nào cũng được), hoặc tốt nghiệp cao đẳng (전문대) ở Hàn Quốc với chuyên ngành du lịch, khách sạn.",
+            "en": "The visa for this job. Hotel front desk clerks work on the E-7-2 visa. The hotel you will work for must get an employment recommendation (고용추천) from the Minister of Culture, Sports and Tourism. You can apply without work experience if you graduated from a four-year university in Korea, whatever your major, or from a Korean junior college (전문대) with a major in tourism or hotel management."
+          }
+        },
+        {
+          "title": "뽑을 수 있는 호텔과 한도",
+          "body": "관광호텔업, 수상관광호텔업, 한국전통호텔업, 가족호텔업만 뽑을 수 있어요. 호스텔, 소형호텔, 모텔, 게스트하우스는 이 비자로 뽑지 못해요. 보통은 외국인 손님이 30%를 넘는 호텔(수도권 밖 15%, 인구감소지역 10%)이 호텔마다 5명, 전국 400명까지 뽑아요. 관광·호텔 전공 유학생을 뽑을 때는 이 비율과 인원 한도를 적용하지 않아요.",
+          "source": "법무부 취업비자(E-7) 안내 길잡이 2026년 11월, 문화체육관광부 고용추천서 발급신청 안내 (2026-11-22 대조)",
+          "hint": {
+            "mn": "Ажилтан авч болох зочид буудал, авах хязгаар. Зөвхөн жуулчны зочид буудал (관광호텔업), усан дээрх жуулчны зочид буудал (수상관광호텔업), Солонгосын уламжлалт зочид буудал (한국전통호텔업), гэр бүлийн зочид буудал (가족호텔업) л ажилтан авч болно. Хостел, жижиг зочид буудал, мотель, гэст хаус энэ визээр ажилтан авч чадахгүй. Ердийн тохиолдолд гадаад зочдын эзлэх хувь 30%-иас (нийслэлийн бүсээс гадна 15%, хүн ам нь цөөрч буй бүсэд 10%) давсан зочид буудал тус бүр 5 хүн, улсын хэмжээнд 400 хүн хүртэл авдаг. Аялал жуулчлал, зочид буудлын мэргэжлийн гадаад оюутныг ажилд авахад энэ хувь, тооны хязгаар хамаарахгүй.",
+            "vi": "Loại khách sạn được phép tuyển và hạn mức. Chỉ khách sạn du lịch (관광호텔업), khách sạn du lịch trên mặt nước (수상관광호텔업), khách sạn truyền thống Hàn Quốc (한국전통호텔업) và khách sạn gia đình (가족호텔업) mới được phép tuyển. Hostel, khách sạn nhỏ, nhà nghỉ (모텔) và guesthouse không được tuyển người theo visa này. Thông thường, khách sạn có tỷ lệ khách nước ngoài trên 30% (ngoài vùng thủ đô là 15%, vùng dân số giảm là 10%) được tuyển tối đa 5 người mỗi khách sạn và tổng cộng 400 người trên cả nước. Khi tuyển du học sinh ngành du lịch, khách sạn thì không áp dụng tỷ lệ và giới hạn số người này.",
+            "en": "Which hotels can hire, and the limits. Only tourist hotels (관광호텔업), floating tourist hotels (수상관광호텔업), traditional Korean hotels (한국전통호텔업) and family hotels (가족호텔업) can hire. Hostels, small hotels, motels and guesthouses cannot hire on this visa. Usually, hotels where foreign guests are over 30% (over 15% outside the capital region, over 10% in depopulating areas) can hire up to 5 people per hotel, up to 400 nationwide. When a hotel hires international students with a tourism or hotel major, this guest ratio and these hiring limits do not apply."
+          }
+        },
+        {
+          "title": "임금 하한",
+          "body": "E-7-2로 일하려면 연봉이 2,589만 원 이상이어야 해요. 한 달로 나누면 약 216만 원이에요.",
+          "source": "법무부 공고 제2025-406호, 2026년 2월~12월 적용 (2026-11-22 대조)",
+          "hint": {
+            "mn": "Цалингийн доод хэмжээ. E-7-2 визээр ажиллахын тулд жилийн цалин 25.89 сая воноос багагүй байх ёстой. Сараар хуваавал 2.16 сая вон орчим.",
+            "vi": "Mức lương tối thiểu. Để làm việc theo visa E-7-2, lương năm phải từ 25,89 triệu won trở lên. Chia theo tháng là khoảng 2,16 triệu won.",
+            "en": "Minimum pay. To work on an E-7-2 visa, your yearly pay must be at least 25.89 million won. That is about 2.16 million won a month."
+          }
+        },
+        {
+          "title": "좁은 문",
+          "body": "2019~2025년에 졸업한 호텔·관광 전공 유학생 가운데 한국에서 취업한 사람은 20%예요. 호텔에 간 사람만 센 숫자는 아니에요. 졸업 뒤에는 구직 비자(D-10)로 바꿔 1년 동안 일자리를 찾을 수 있어요.",
+          "source": "법무부 「데이터로 풀어보는 외국인 유학생」 2026-09-04(2026년 3월 기준), 체류민원 매뉴얼 2026-11-16판",
+          "hint": {
+            "mn": "Ажилд орох боломж хомс. 2019–2025 онд төгссөн зочид буудал, аялал жуулчлалын мэргэжлийн гадаад оюутнуудын 20% нь Солонгост ажилд орсон. Энэ нь зөвхөн зочид буудалд ажилд орсон хүмүүсийн тоо биш. Төгссөний дараа визээ ажил хайх виз (D-10) болгон сольж, 1 жилийн турш ажил хайж болно.",
+            "vi": "Cửa hẹp. Trong số du học sinh ngành khách sạn, du lịch tốt nghiệp trong các năm 2019–2025, 20% có việc làm ở Hàn Quốc. Con số này không chỉ tính những người vào làm khách sạn. Sau khi tốt nghiệp, có thể đổi sang visa tìm việc (D-10) để tìm việc trong 1 năm.",
+            "en": "A narrow door. Of international students who majored in hotel or tourism studies and graduated in 2019–2025, 20% found work in Korea. This number is not just those who got hotel jobs. After graduating, you can switch to a job-seeking visa (D-10) and look for work for one year."
+          }
+        }
+      ]
+    },
+    "reflection": {
+      "hardLabel": "이 일에서 힘들 것 같은 점",
+      "hardHelp": "한국어로 쓰기 어려우면 모국어로 써도 돼요.",
+      "decisionLabel": "오늘 해 보니",
+      "decisions": [
+        {
+          "id": "more",
+          "label": "이 일을 더 알아보겠다",
+          "hint": {
+            "mn": "Энэ ажлын талаар илүү судална.",
+            "vi": "Em sẽ tìm hiểu thêm về công việc này.",
+            "en": "I'll look into this job more."
+          }
+        },
+        {
+          "id": "unsure",
+          "label": "아직 모르겠다",
+          "hint": {
+            "mn": "Одоохондоо мэдэхгүй байна.",
+            "vi": "Em vẫn chưa biết.",
+            "en": "I'm not sure yet."
+          }
+        },
+        {
+          "id": "not-me",
+          "label": "나와 맞지 않는다",
+          "hint": {
+            "mn": "Энэ ажил надад тохирохгүй.",
+            "vi": "Công việc này không hợp với em.",
+            "en": "This job isn't for me."
+          }
+        }
+      ],
+      "decisionNote": "「나와 맞지 않는다」도 좋은 결과예요. 미리 알고 고르려고 하는 체험이에요."
+    },
+    "ladder": {
+      "lead": "준비한 것을 본인이 적어요. 증빙은 지원할 때 본인이 따로 내요.",
+      "items": [
+        {
+          "id": "degree",
+          "label": "학위와 전공",
+          "placeholder": "예: 관광·호텔 계열 전문학사, 2027년 2월 졸업 예정",
+          "hint": {
+            "mn": "Боловсролын зэрэг, мэргэжил. Жишээ: аялал жуулчлал, зочид буудлын чиглэлийн коллежийн диплом (전문학사), 2027 оны 2-р сард төгсөнө.",
+            "vi": "Bằng cấp và chuyên ngành. Ví dụ: bằng cao đẳng (전문학사) ngành du lịch – khách sạn, dự kiến tốt nghiệp tháng 2/2027.",
+            "en": "Degree and major. Example: associate degree (전문학사) in tourism and hotel studies, graduating in February 2027."
+          }
+        },
+        {
+          "id": "topik",
+          "label": "TOPIK 급수와 시험 날짜",
+          "placeholder": "예: 4급, 2026년 10월",
+          "hint": {
+            "mn": "TOPIK-ийн түвшин ба шалгалт өгсөн огноо. Жишээ: 4-р түвшин, 2026 оны 10-р сар.",
+            "vi": "Cấp độ TOPIK và ngày thi. Ví dụ: cấp 4, tháng 10/2026.",
+            "en": "TOPIK level and test date. Example: level 4, October 2026."
+          }
+        },
+        {
+          "id": "language",
+          "label": "외국어",
+          "placeholder": "예: 영어 회화, 몽골어 모국어",
+          "hint": {
+            "mn": "Гадаад хэл. Жишээ: англи хэл – ярианы түвшинд; монгол хэл – төрөлх хэл.",
+            "vi": "Ngoại ngữ. Ví dụ: giao tiếp được tiếng Anh, tiếng mẹ đẻ là tiếng Việt.",
+            "en": "Foreign languages. Example: conversational English; Mongolian as native language."
+          }
+        },
+        {
+          "id": "practice",
+          "label": "호텔 실습이나 일한 경험",
+          "placeholder": "예: 호텔 프런트 현장실습 3개월",
+          "hint": {
+            "mn": "Зочид буудлын дадлага эсвэл ажилласан туршлага. Жишээ: зочид буудлын ресепшнд 3 сарын дадлага хийсэн.",
+            "vi": "Kinh nghiệm thực tập hoặc làm việc ở khách sạn. Ví dụ: thực tập 3 tháng tại quầy lễ tân khách sạn.",
+            "en": "Hotel internship or work experience. Example: a 3-month front desk internship at a hotel."
+          }
+        },
+        {
+          "id": "visa",
+          "label": "체류자격",
+          "placeholder": "예: D-2",
+          "hint": {
+            "mn": "Оршин суух статус (визийн төрөл). Жишээ: D-2.",
+            "vi": "Tư cách lưu trú (loại visa). Ví dụ: D-2.",
+            "en": "Visa status. Example: D-2."
+          }
+        }
+      ]
+    },
+    "next": {
+      "label": "다른 일터의 하루도 해 보기",
+      "body": "다른 일터를 골라 하루를 미리 겪어 봐요.",
+      "href": "index.html"
+    }
+  }
+}

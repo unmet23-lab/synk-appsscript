@@ -14,9 +14,13 @@
     },
     {
       "id": "hotel-front",
-      "status": "making",
+      "status": "open",
       "title": "호텔 프런트의 하루",
       "role": "호텔 접수사무원",
+      "minutes": 20,
+      "scenes": 5,
+      "poster": "hotel-front/places/front-senior.jpg",
+      "posterAlt": "아침의 호텔 로비. 프런트 데스크 앞에 남색 제복을 입은 선배 직원이 서 있다.",
       "summary": "체크인과 체크아웃을 맡아 손님을 맞아요. 친절과 규칙 사이에서 골라요."
     },
     {
