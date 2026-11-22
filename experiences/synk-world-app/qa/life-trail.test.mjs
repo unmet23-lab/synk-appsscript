@@ -120,9 +120,9 @@ test('계열: 정답이 바뀐 새 상황 복습은 새 문항(독립 근거), �
  const changed=byKey.get('life.cafe-expressions-order-transfer'),twin=byKey.get('life.greetings-expressions-hello-transfer');
  assert.equal(changed.exposure,'new');assert.equal(changed.independent,true,'정답 · 보기가 바뀐 복습은 처음 보는 문항');
  assert.equal(twin.exposure,'repeat');assert.equal(twin.independent,false,'「안녕하세요」 쌍둥이 복습은 같은 계열의 반복');
- // 같은 보기 묶음 9쌍: 복습이 본문항 계열을 쓴다.
+ // 같은 보기 묶음 7쌍: 복습이 본문항 계열을 쓴다(11-22 인사 팩 문항 고침으로 9 → 7).
  const pairs=LESSONS.flatMap(l=>l.questions.filter(sameChoices).map(x=>[l,x]));
- assert.equal(pairs.length,9);
+ assert.equal(pairs.length,7);
  for(const [l,x] of pairs)assert.equal(lifeItem({lesson:l,question:x,review:true}).familyKey,lifeItem({lesson:l,question:x}).familyKey,x.id);
 });
 

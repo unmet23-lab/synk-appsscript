@@ -1,15 +1,15 @@
 [
   {
     "id": "greetings-expressions",
-    "sha256": "c8e0a706a0c1d7b8b10d914cb620a86133c207fd16c189e9b78a31f887916fa4"
+    "sha256": "f48a5560c23109ee35c55b0f0d6ff2e95d4b7359fb6f6d8b4e9da295ab7d9c29"
   },
   {
     "id": "greetings-story",
-    "sha256": "63fd1c0c53723c9106da819f067c0c8dab5eb98ea2262758b17daabb54d7f79f"
+    "sha256": "18eb950be1c996fddd630517be1c1829cbb49a5ea64293f1444ae9bacd61125e"
   },
   {
     "id": "greetings-apply",
-    "sha256": "243ef422059a5215e91a81403b68bc71245e4a694a7aebe083d8b66ce8d48424"
+    "sha256": "bbde1ce78580d0a15d343f7b7b72fd41a98e0ce8d174f6b03d27d087aa7f506d"
   },
   {
     "id": "cafe-expressions",

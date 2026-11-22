@@ -8,10 +8,11 @@ import {storyVoice,renderSound,PREF_KEYS,PREF_LABELS,getPref} from '../../brand-
 
 test('레슨 표현이 이야기에 나오면 누를 수 있는 형광펜을 칠한다', () => {
   const lesson = lessonById('greetings-story');
-  const html = storyLineMarkup(lesson.scenes[2].text, lesson.expressions);
+  // 11-22: 인사 이야기는 서하 · 지호 · 태오 — 서하의 첫 줄 「안녕하세요! 저는 서하예요.」
+  const html = storyLineMarkup(lesson.scenes[1].text, lesson.expressions);
   const marks = [...html.matchAll(/<mark class="life-say" data-life-mark="(\d+)"[^>]*>([^<]+)<\/mark>/g)].map(m => [lesson.expressions[Number(m[1])].korean, m[2]]);
-  assert.deepEqual(marks, [['안녕하세요.', '안녕하세요'], ['저는 몽글이에요.', '저는 몽글이에요']]);
-  assert.equal(html.replace(/<[^>]+>/g, ''), lesson.scenes[2].text);
+  assert.deepEqual(marks, [['안녕하세요.', '안녕하세요'], ['저는 서하예요.', '저는 서하예요']]);
+  assert.equal(html.replace(/<[^>]+>/g, ''), lesson.scenes[1].text);
 });
 
 test('따옴표 안 글은 전처럼 칠하고, 표현과 맞을 때만 누를 수 있다', () => {

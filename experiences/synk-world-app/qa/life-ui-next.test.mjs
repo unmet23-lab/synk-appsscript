@@ -561,7 +561,8 @@ test('F7 — 새 판 겉으로 여는 시도(레슨 start · 홈 안내 연습 �
   engine(progress);
   const state = { now: 'engine' };
   const w = lifeOn({ progress, state });
-  const lesson = lessonById('greetings-expressions');
+  // 11-22: 인사 표현 레슨은 잡담 장면 없이 바로 문항이라, 이야기 장면이 있는 인사 이야기 레슨으로 연다.
+  const lesson = lessonById('greetings-story');
   try {
     const retire = w.nextOptions()?.onRetired;
     assert.equal(typeof retire, 'function', '새 판 겉에 판 바뀜 듣개(onRetired)를 넘긴다');

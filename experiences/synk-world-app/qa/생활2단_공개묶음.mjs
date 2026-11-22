@@ -3,7 +3,7 @@
 // master 전체 공개는 몽골 시범 뒤라(결정 11-20 Atlas 선택 공개), 지금 공개본 위에 이 일의 변경만 얹는다(앞면 공개묶음.mjs와 같은 꼴).
 // · 고친 원천: 바탕 판(이 일의 첫 커밋 바로 앞)에 이 일의 커밋(제목이 「WORLD 생활 원고 2단 · 인사 팩」)만 얹은 「내 판」을
 //   공개 빌드와 같은 경로 고쳐 쓰기를 거쳐 지금 공개본 위에 3방향으로 합친다. 겹치면 멈춘다.
-// · 새 그림(brand-opening/assets/life-people/): 끝 판 그대로.
+// · 새 그림(brand-opening/assets/life-people/)과 이야기 해설 글꼴 조각(NotoSerifKR-story): 끝 판 그대로.
 // · 앱(mobile.html)은 life-ui.mjs를 바로 읽는다. 홈을 혼자 여는 판의 묶음(content/life-standalone.mjs)은 이번에 바꾸지 않는다.
 // 출력: .tmp/life2-pub/base(지금 공개본) · new(후보 원천) · 항목.txt, 그리고 tools/공개.js 미리 보기 명령.
 import fs from 'node:fs';
@@ -64,13 +64,14 @@ for (const rel of SOURCES) {
   const text = merge3(rel, pub, rw(lf(git('show', `${BASE}:${src}`).toString()), rel), rw(mineOnly(src), rel));
   write('base', rel, pub); write('new', rel, text); items.push(`world/${rel}`);
 }
-// 새 그림: 끝 판 그대로
-for (const src of [...changed].filter(f => f.startsWith('experiences/brand-opening/assets/life-people/'))) {
+// 새 그림과 이야기 해설 글꼴(이야기 글자로 다시 자른 조각): 끝 판 그대로
+const ASSETS = f => f.startsWith('experiences/brand-opening/assets/life-people/') || /^experiences\/brand-opening\/assets\/NotoSerifKR-story\.(woff2|json)$/.test(f);
+for (const src of [...changed].filter(ASSETS)) {
   const rel = src.replace('experiences/', '');
   write('new', rel, git('show', `${END}:${src}`)); items.push(`world/${rel}`);
 }
 // 이 일이 고치지 않은 원천이 섞이지 않았는지
-const outside = [...changed].filter(f => f.startsWith('experiences/') && !SOURCES.some(rel => srcOf(rel) === f) && !f.startsWith('experiences/brand-opening/assets/life-people/') && !f.startsWith('experiences/brand-opening/content/') && !/\/qa\//.test(f));
+const outside = [...changed].filter(f => f.startsWith('experiences/') && !SOURCES.some(rel => srcOf(rel) === f) && !ASSETS(f) && !f.startsWith('experiences/brand-opening/content/') && !/\/qa\//.test(f));
 if (outside.length) console.log('공개하지 않는 원천(확인):', outside.join(' '));
 fs.writeFileSync(path.join(OUT, '항목.txt'), items.join('\n') + '\n');
 const posix = p => p.replaceAll('\\', '/');
