@@ -48,6 +48,7 @@ const draftStatus=owner=>({ok:true,available:true,enabled:Boolean(owner)&&auth.s
 const setUpdate=patch=>{update={...update,...patch};tell(updateListeners,{...update});return {...update};};
 // 솔리오 「사무실」(사무실 구현설계 14.2): 본체(main.cjs synk:office-*)의 답 모양만 흉내 낸다. 세션은 짧은 꼴(sessions)로 받아, 읽을 때마다 지금 시각에 맞춰
 // 상태 규칙(office-model.mjs)이 읽는 칸으로 짓는다. 폴더 고르기 창은 열지 않고 정해 둔 가짜 폴더를 고른 것으로 친다. 정하지 않으면 볼 계정이 아닌 답이다
+let officeMailTestWait=null;
 let office=null;const officeListeners=new Set(),officeSeen={};let officeSeq=0;
 const officeEmit=()=>setTimeout(()=>{for(const fn of officeListeners){try{fn();}catch{}}},0);
 const officeNorm=p=>String(p||'').replace(/[\\/]+/g,'\\').replace(/\\+$/,'').toLowerCase();
@@ -203,8 +204,39 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   // 솔리오 「사무실」(main.cjs synk:office-*). 로그인한 회원에게만 답하고, 정하지 않으면 볼 계정이 아닌 답이다
   office:Object.freeze({
     snapshot:async()=>{calls.push('office-snapshot');if(auth.signedIn!==true)return {ok:false,code:'SIGN_IN_REQUIRED'};return officeSnap();},
+    connectMail:async provider=>{
+      calls.push('office-mail-connect:'+provider);
+      return officeChange(()=>{
+        const row=office.tasking?.mail?.providers?.find(box=>box.id===provider);
+        if(!row?.configured)return {ok:false,code:'MAIL_CONFIG'};
+        const code=office.mailTestCodes?.[provider];
+        if(code)return {ok:false,code};
+        row.connected=true;row.address=office.mailTestAddresses?.[provider]||provider+'@example.test';
+        delete row.reconnect;
+        return {ok:true};
+      });
+    },
+    disconnectMail:async provider=>{
+      calls.push('office-mail-disconnect:'+provider);
+      return officeChange(()=>{
+        const row=office.tasking?.mail?.providers?.find(box=>box.id===provider);
+        if(!row)return {ok:false,code:'MAIL_CONFIG'};
+        row.connected=false;delete row.address;delete row.reconnect;
+        return {ok:true};
+      });
+    },
+    openMailResult:async(taskId,itemId)=>{
+      calls.push('office-mail-open:'+taskId+':'+itemId);
+      const refused=officeGate();if(refused)return refused;
+      const task=office.tasking?.tasks?.find(row=>row.id===taskId);
+      const found=task?.mailResult?.groups?.some(group=>group.items?.some(item=>item.id===itemId));
+      if(!found)return {ok:false,code:'MAIL_NOT_FOUND'};
+      const code=office.mailTestCodes?.open;
+      return code?{ok:false,code}:{ok:true};
+    },
     submitTask:async input=>{
       calls.push('office-task-submit:'+JSON.stringify(input));
+      if(officeMailTestWait?.action==='submit')await officeMailTestWait.gate;
       return officeChange(()=>{
         if(!office.tasking)return {ok:false,code:'NOT_ALLOWED'};
         if(office.tasking.code||office.submitCode)return {ok:false,code:office.tasking.code||office.submitCode};
@@ -220,9 +252,26 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     },
     taskAction:async(id,action,text)=>{
       calls.push('office-task-action:'+id+':'+action);
+      if(officeMailTestWait?.action===action)await officeMailTestWait.gate;
       return officeChange(()=>{
         const task=office.tasking?.tasks.find(t=>t.id===id);
         if(!task)return {ok:false,code:'NOT_FOUND'};
+        if(action==='reviewMail'||action==='confirmMail'){
+          if(task.provider!=='codex'||task.status!=='failed'||task.reason!=='MAIL_REVIEW')return {ok:false,code:'VALUE'};
+          if(office.mailReviewTest?.code)return {ok:false,code:office.mailReviewTest.code};
+          if(action==='reviewMail'){
+            if(task.mailReview?.reviewId||!office.mailReviewTest?.renew)return {ok:false,code:'VALUE'};
+            task.mailReview=JSON.parse(JSON.stringify(office.mailReviewTest.renew));
+          }else{
+            if(!text?.reviewId||text.reviewId!==task.mailReview?.reviewId)return {ok:false,code:'MAIL_CHANGED'};
+            calls.push('office-mail-confirmed:'+JSON.stringify({id,...text}));
+            const result=text.omitUnmet===true&&office.mailReviewTest?.resultWithOmissions
+              ? office.mailReviewTest.resultWithOmissions : office.mailReviewTest?.result;
+            Object.assign(task,result||{status:'queued',reason:null});
+            delete task.mailReview;
+          }
+          return action==='reviewMail'?{ok:true,mailReview:structuredClone(task.mailReview)}:{ok:true,id};
+        }
         if(action==='saveAnswer'){
           if(task.provider!=='codex'||task.reason!=='MANUAL_RESULT'||!['terminal','interrupted'].includes(task.status))return {ok:false,code:'NOT_ALLOWED'};
           if(typeof text!=='string'||!text.trim()||text.length>524288)return {ok:false,code:'VALUE'};
@@ -261,6 +310,17 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   configure:value=>{if(value?.env)env={...env,...value.env};if(value?.assignment)assignment=value.assignment;if(value?.invite)inviteMode=value.invite;if(value?.subs!==undefined)subs=value.subs;if(value?.subsFail)subsFail=value.subsFail;if(value?.visits!==undefined)visits=value.visits;if(value?.backup!==undefined)backup=value.backup;if(value?.health!==undefined)health=value.health;if(value?.office!==undefined)office=value.office;if(value?.tokens)tokens=value.tokens;configured();},
   // 사무실의 판을 바꾸고 본체처럼 바뀜을 알린다. office()는 지금 판(짧은 꼴)이다
   setOffice:value=>{office=value||null;officeEmit();},
+  holdOfficeMailReply:action=>{
+    if(officeMailTestWait)throw new Error('A fixture reply is already held.');
+    let release;
+    const gate=new Promise(resolve=>{release=resolve;});
+    officeMailTestWait={action,gate,release};
+  },
+  releaseOfficeMailReply:()=>{
+    const hold=officeMailTestWait;
+    officeMailTestWait=null;
+    hold?.release();
+  },
   office:()=>(office?JSON.parse(JSON.stringify(office)):null),
   // 모델별 토큰의 새 판을 알린다(세는 중의 진행, 다 센 판). 순서 번호는 이 창이 붙인다
   setTokens:value=>{nextTokens(value||{});emitTokens();},

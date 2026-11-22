@@ -28,8 +28,7 @@ async function checkpoint(hooks) {
 }
 
 // One child owns one stdio connection. Notifications and replies may arrive in either order.
-function connect(spec, hooks, tools, receive) {
-  const args = ['app-server','--stdio','-c','model_provider="openai"','-c','approvals_reviewer="user"'];
+function connect(spec, hooks, tools, receive, args=['app-server','--stdio','-c','model_provider="openai"','-c','approvals_reviewer="user"']) {
   let child;
   try { child = tools.spawn(tools.file,args,{cwd:spec.cwd,env:tools.env,stdio:['pipe','pipe','pipe'],shell:false,windowsHide:true}); }
   catch { throw error('NATIVE'); }
@@ -80,11 +79,11 @@ function connect(spec, hooks, tools, receive) {
     }
     if (tail.length>MAX_FRAME) fail(error('RESULT_TOO_LARGE'));
   });
-  function rpc(method,params) {
+  function rpc(method,params,timeoutMs=RPC_TIMEOUT) {
     if (fault) return Promise.reject(fault);
     const id=++next;
     return new Promise((resolve,reject)=>{
-      const timer=setTimeout(()=>{pending.delete(id);reject(error('NATIVE'));},RPC_TIMEOUT);
+      const timer=setTimeout(()=>{pending.delete(id);reject(error('NATIVE'));},timeoutMs);
       const finish = fn => value=>{clearTimeout(timer);fn(value);};
       const request={resolve:finish(resolve),reject:finish(reject)};
       pending.set(id,request);
@@ -125,13 +124,13 @@ function waitClosed(closed,ms) {
   });
 }
 
-async function openAccount(client,salt) {
+async function openAccount(client,salt,capture) {
   await client.rpc('initialize',{clientInfo:{name:'solio_office',title:'Solio',version:'1.0.0'},capabilities:{experimentalApi:true}});
   client.send({method:'initialized'});
-  return readAccount(client,salt);
+  return readAccount(client,salt,capture);
 }
 
-async function readAccount(client,salt) {
+async function readAccount(client,salt,capture) {
   const result=await client.rpc('account/read',{refreshToken:false});
   if (result?.account?.type !== 'chatgpt') throw error('LOGIN');
   const user=typeof result.userId==='string' ? result.userId.trim() : '';
@@ -141,7 +140,9 @@ async function readAccount(client,salt) {
   // An unidentified workspace may start a fresh task but cannot prove ownership of earlier turns.
   if (typeof workspace!=='string' || !workspace.trim()) return null;
   const identity=[user?'id':'email',user||mail,workspace.trim()];
-  return createHmac('sha256',salt).update(JSON.stringify(identity)).digest('hex');
+  const tagFor=key=>createHmac('sha256',key).update(JSON.stringify(identity)).digest('hex');
+  capture?.(workspace.trim(),tagFor);
+  return tagFor(salt);
 }
 
 function sameAccount(first,current) {
@@ -359,5 +360,32 @@ async function runCodex(spec,hooks,tools) {
   await checkpoint(hooks);
   return nativeContinuation(spec,hooks,tools,threadId,identity,salt);
 }
-module.exports={runCodex,nativePrompt};
+async function withMailPlannerAccount(spec,hooks,tools,work) {
+  const {mailServerArgs,mailTurn}=require('./office-mail-rpc.cjs');
+  const root=spec.quoteRecipient?spec.quoteAccountSalt:spec.providerSalt||spec.id;
+  if(!goodId(root)||!goodId(spec.id))throw error('SESSION');
+  const prefix='solio:office:mail-planner:v1\0',salt=prefix+root;
+  if(spec.requireJudgedAccount&&(!goodId(spec.judgedAccountSalt)||!spec.judgedAccountTag))throw error('LOGIN');
+  await checkpoint(hooks);
+  const turn=mailTurn(providerError),client=connect(spec,hooks,tools,turn.receive,mailServerArgs());
+  let workspace;
+  const capture=(current,tagFor)=>{
+    if(workspace&&workspace!==current)throw error('LOGIN');
+    workspace=current;
+    if(spec.judgedAccountTag&&!sameAccount(spec.judgedAccountTag,tagFor(prefix+(spec.judgedAccountSalt||root))))throw error('LOGIN');
+  };
+  try{
+    const account=await openAccount(client,salt,capture),continuing=spec.previousMail&&!spec.mailJudge&&!spec.mailPlanOnly;
+    if(!account||continuing&&!sameAccount(account,spec.providerTag)||spec.quoteRecipient&&!sameAccount(account,spec.quoteAccountTag))throw error('LOGIN');
+    turn.guard();
+    await checkpoint(hooks);
+    const sessionId=continuing?spec.sessionId:spec.id;
+    if(!goodId(sessionId)||!await hooks.session(sessionId,account))throw error('CANCELLED');
+    const verify=async()=>{await checkpoint(hooks);if(!sameAccount(account,await readAccount(client,salt,capture)))throw error('LOGIN');turn.check();};
+    const result=await work((prompt,schema)=>turn.ask(client,{cwd:spec.cwd,id:spec.id,workspace,signal:hooks.signal,verify},prompt,schema));
+    await verify();
+    return result;
+  }finally{client.interruptActive();await client.close();}
+}
+module.exports={runCodex,nativePrompt,withMailPlannerAccount};
 

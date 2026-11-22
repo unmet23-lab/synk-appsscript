@@ -22,7 +22,7 @@ function source(start) {
   return lines.slice(i, end + 1).join('\n');
 }
 
-const CHANNELS = ['snapshot', 'task-submit', 'task-action', 'watch', 'department-save', 'department-remove', 'session-assign', 'settings-save', 'roots-add', 'roots-remove', 'seen'].map(c => `synk:office-${c}`);
+const CHANNELS = ['snapshot', 'task-submit', 'mail-connect', 'mail-disconnect', 'mail-open', 'task-action', 'watch', 'department-save', 'department-remove', 'session-assign', 'settings-save', 'roots-add', 'roots-remove', 'seen'].map(c => `synk:office-${c}`);
 const YUHO = { synk_user_id: 'owner-1234567890', display_name: '유호' };
 const OTHER = { synk_user_id: 'tester-1234567890', display_name: '시험 계정' };
 const S1 = '00000001-0000-4000-8000-000000000001';
@@ -310,20 +310,51 @@ function bridge() {
 test('preload exposes exactly the office bridge, frozen, and rebuilds every argument', async () => {
   const { office, calls, listeners } = bridge();
   assert.ok(Object.isFrozen(office));
-  assert.deepEqual(Object.keys(office), ['snapshot', 'submitTask', 'taskAction', 'watch', 'saveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'addRoot', 'removeRoot', 'seen', 'onChanged']);
+  assert.deepEqual(Object.keys(office), ['snapshot','connectMail','disconnectMail','openMailResult','submitTask', 'taskAction', 'watch', 'saveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'addRoot', 'removeRoot', 'seen', 'onChanged']);
   const last = () => calls.at(-1);
   const refused = async (p, why) => { const before = calls.length; assert.deepEqual(plain(await p), { ok: false, code: 'VALUE' }, why); assert.equal(calls.length, before, `${why}: nothing crosses`); };
 
   await office.snapshot('ignored');
   assert.deepEqual(last(), ['synk:office-snapshot']);
+  await office.connectMail('gmail');assert.deepEqual(last(),['synk:office-mail-connect','gmail']);
+  await office.disconnectMail('outlook');assert.deepEqual(last(),['synk:office-mail-disconnect','outlook']);
+  await office.openMailResult(S1,S1);assert.deepEqual(last(),['synk:office-mail-open',S1,S1]);
+  await refused(office.connectMail('other'),'unknown mail provider');
+  await refused(office.openMailResult(S1,'https://example.test'),'external URL from renderer');
   const assignment={id:S1,provider:'claude',departmentId:null,prompt:'첫 줄\n둘째 줄',previousId:null};
   await office.submitTask({...assignment,cwd:'arbitrary',account:OTHER.synk_user_id,approvalPolicy:'anything'});
   assert.deepEqual(last(),['synk:office-task-submit',assignment]);
+  await office.submitTask({...assignment,provider:'codex',mailSearch:false});
+  assert.equal(last()[1].mailSearch,false,'explicit ordinary mode crosses the bridge');
+  await office.submitTask({...assignment,provider:'codex'});assert.equal('mailSearch' in last()[1],false);
   for(const change of [{provider:'gemini'},{id:'bad'},{departmentId:'../data'},{prompt:' '},{previousId:'bad'}])await refused(office.submitTask({...assignment,...change}),'invalid assignment');
   await office.taskAction(S1,'terminal');
   assert.deepEqual(last(),['synk:office-task-action',S1,'terminal']);
   await office.taskAction(S1,'saveAnswer','직접 고른 답');
   assert.deepEqual(last(),['synk:office-task-action',S1,'saveAnswer','직접 고른 답']);
+  await office.taskAction(S1,'reviewMail');assert.deepEqual(last(),['synk:office-task-action',S1,'reviewMail']);
+  await refused(office.taskAction(S1,'reviewMail',{extra:true}),'reopening a filter takes only an existing card id');
+  const filter={terms:['견적'],from:'',after:'',before:'',folder:'inbox',provider:'gmail',attachment:''};
+  await office.taskAction(S1,'confirmMail',{reviewId:S1,filter});
+  assert.deepEqual(plain(last()),['synk:office-task-action',S1,'confirmMail',{reviewId:S1,filter}]);
+  for(const choices of [{allowUnboundedPeriod:true},{allowUnboundedPeriod:false},{omitUnmet:true},{allowUnboundedPeriod:true,omitUnmet:true}]){
+    await office.taskAction(S1,'confirmMail',{reviewId:S1,filter,...choices});
+    assert.deepEqual(plain(last()),['synk:office-task-action',S1,'confirmMail',{reviewId:S1,filter,...choices}]);
+  }
+  for(const roleDecisions of [{from:'apply'},{folder:'exclude'},{from:'edit',folder:'apply'}]){
+    const args={reviewId:S1,filter,roleDecisions,omitUnmet:true};
+    await office.taskAction(S1,'confirmMail',args);
+    assert.deepEqual(plain(last()),['synk:office-task-action',S1,'confirmMail',args]);
+  }
+  for(const roleDecisions of [{},{from:true},{folder:'inbox'},{terms:'edit'},{from:'exclude',other:'apply'},[],null]){
+    await refused(office.taskAction(S1,'confirmMail',{reviewId:S1,filter,roleDecisions}),'only explicit sender and folder operations cross the bridge');
+  }
+  await refused(office.taskAction(S1,'confirmMail',{reviewId:S1,filter,allowUnboundedPeriod:'true'}),'an explicit period choice is a boolean');
+  await refused(office.taskAction(S1,'confirmMail',{reviewId:S1,filter,omitUnmet:1}),'an omission choice is a boolean');
+  await refused(office.taskAction(S1,'confirmMail',{reviewId:S1,filter,unknown:true}),'only known confirmation choices cross the bridge');
+  await refused(office.taskAction(S1,'confirmMail',{reviewId:S1,filter:{...filter,other:true}}),'strict filter keys');
+  await refused(office.taskAction(S1,'confirmMail',{reviewId:'invalid',filter}),'confirmation nonce must be a UUID');
+  await refused(office.taskAction(S1,'confirmMail',{reviewId:S1,filter:{...filter,terms:Array(7).fill('one')}}),'six search terms at most');
   await refused(office.taskAction(S1,'saveAnswer','   '),'empty manual text');
   await refused(office.taskAction(S1,'saveAnswer','a'.repeat(524289)),'oversized manual text');
   await refused(office.taskAction(S1,'approve'),'there is no tool-approval action');
@@ -479,7 +510,7 @@ test('the office ships on (officeShipped), and a packaged build with the switch 
   assert.equal(room.scene({ ok: false, code: 'NOT_AVAILABLE' }, Date.now(), null).visible, false);
   for (const [label, options] of [['source run', { packaged: false, shipped: false }], ['packaged, office shipped', { packaged: true, shipped: true }]]) {
     const on = wired(options);
-    for (const channel of CHANNELS) assert.equal((await ask(on, channel)).ok, !channel.startsWith('synk:office-task-'), `${label}: ${channel}`);
+    for (const channel of CHANNELS) assert.equal((await ask(on, channel)).ok, !/^synk:office-(task|mail)-/.test(channel), `${label}: ${channel}`);
     assert.deepEqual([on.loads, on.offices.length], [1, 1], `${label}: one office`);
     assert.deepEqual(on.calls, ['snapshot', 'watch', 'officeSaveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'officeAddRoot', 'officeRemoveRoot', 'seen'], label);
   }

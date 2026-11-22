@@ -673,7 +673,13 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     // 창 안의 공간(PULSE, Workspace)을 닫는 자리(3단계 설계 검토 R6). 쓰던 글이 있으면 본체가 묻는다. 글은 공간마다다(4단계 6.1)
     if (app.bandClose) { app.bandClose.hidden = !s.bandClose; if (s.bandCloseLabel) setText(app.bandClose, s.bandCloseLabel); }
     renderShare(s.share || null);
-    if (!room) { renderRail(s, [], null); lastProg = null; renderAsides(null, null); return; }
+    if (!room) {
+      renderRail(s, [], null);
+      lastProg = null;
+      renderAsides(null, null);
+      renderOffice(null, false);
+      return;
+    }
     const solio = room.space === 'solio';
     const prog = solio ? (room.prog || 'subs') : null;
     // 방이 열려 있으면 그 방 하나만 보인다(시안 #stage[data-aside])

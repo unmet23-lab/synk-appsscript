@@ -27,7 +27,7 @@ function employeeEnv(source){
   const env={...source};
   // Use the PC's signed-in CLI. A launcher may itself run inside a review profile or have an API key.
   const override=/^(?:ELECTRON_.*|NODE_OPTIONS|CLAUDECODE|CLAUDE_CONFIG_DIR|CLAUDE_CODE_(?:OAUTH_.*|API_KEY|ENTRYPOINT|CHILD_SESSION|USE_(?:BEDROCK|VERTEX|FOUNDRY))|CODEX_HOME|CODEX_API_KEY|CODEX_API_BASE_URL|OPENAI_(?:API_KEY|BASE_URL)|ANTHROPIC_(?:API_KEY|AUTH_TOKEN|BASE_URL|CUSTOM_HEADERS|PROFILE|CONFIG_DIR|FEDERATION_RULE_ID|ORGANIZATION_ID|IDENTITY_TOKEN(?:_FILE)?|SERVICE_ACCOUNT_ID|WORKSPACE_ID))$/i;
-  for(const k of Object.keys(env)) if(override.test(k)) delete env[k];
+  for(const k of Object.keys(env)) if(override.test(k)||/^SOLIO_MAIL_/i.test(k)) delete env[k];
   return env;
 }
 async function native(name,env){
@@ -111,7 +111,7 @@ async function ownsWorkers(userData,service,member,localAppData=process.env.LOCA
     return await readOwner(file);
   }catch{return false;}
 }
-function createTaskRuntime({userData,current,office,model,changed}){
+function createTaskRuntime({userData,current,office,model,changed,mailOptions}){
   async function context(a,departmentId){
     const s=await (await office()).snapshot(a);
     if(!s?.available)return {ok:false,code:'NOT_ALLOWED'};
@@ -126,6 +126,10 @@ function createTaskRuntime({userData,current,office,model,changed}){
     const env=employeeEnv(process.env), base=path.join(userData,'OfficeTaskRuns');
     await fs.mkdir(base,{recursive:true,mode:0o700});
     const file=await native(spec.provider,env);
+    if(spec.mailSearch){
+      if(spec.provider!=='codex')throw fail('MAIL_PLAN');
+      return require('./office-mail-plan.cjs').planMail(spec,hooks,{file,env,spawn});
+    }
     if(spec.provider==='claude'){
       const {stdout}=await exec(file,['--version'],{env,signal:hooks.signal,timeout:10000,maxBuffer:8192,windowsHide:true,shell:false});
       if(!supportsPromptGuard(stdout))throw fail('NO_CLI');
@@ -138,6 +142,7 @@ function createTaskRuntime({userData,current,office,model,changed}){
     return spec.provider==='claude'?runClaude(spec,hooks,tools):require('./office-task-codex.cjs').runCodex(spec,hooks,tools);
   }
   const authorized=async a=>{const service=await office();return await service.allowed(a)&&await ownsWorkers(userData,service,a.synk_user_id);};
-  return createOfficeTasks({userData,current,authorized,context,run,changed});
+  const mail=mailOptions?require('./office-mail.cjs').createOfficeMail({...mailOptions,userData,current,authorized,changed}):null;
+  return createOfficeTasks({userData,current,authorized,context,run,mail,changed});
 }
 module.exports={enabled,createTaskRuntime,employeeEnv,claudeSubscriber,native,taskDirectory,ownsWorkers,supportsPromptGuard};

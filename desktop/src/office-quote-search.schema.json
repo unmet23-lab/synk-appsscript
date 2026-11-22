@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "mailRef": {"type":"string","maxLength":512},
+    "otherRef": {"type":"string","maxLength":512},
+    "scope": {"type":"string","enum":["mailbox","web_docs","prior_result","general","undecided"]},
+    "attachment": {"type":"string","enum":["","has"]},
+    "unmet": {"type":"array","items":{"type":"string","maxLength":160},"maxItems":3},
+    "terms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 6
+    },
+    "from": {
+      "type": "string"
+    },
+    "after": {
+      "type": "string"
+    },
+    "before": {
+      "type": "string"
+    },
+    "folder": {
+      "type": "string",
+      "enum": [
+        "",
+        "received",
+        "all",
+        "inbox",
+        "sent"
+      ]
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "",
+        "all",
+        "gmail",
+        "outlook"
+      ]
+    },
+    "inherit": {
+      "type": "boolean"
+    },
+    "clear": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["terms", "from", "period", "folder", "provider", "attachment"] },
+      "maxItems": 6
+    },
+    "mergeTerms": {
+      "type": "string",
+      "enum": ["add", "replace"]
+    }
+  },
+  "required": [
+    "mailRef", "otherRef", "scope", "attachment", "unmet",
+    "terms",
+    "from",
+    "after",
+    "before",
+    "folder",
+    "provider",
+    "inherit",
+    "clear",
+    "mergeTerms"
+  ]
+}

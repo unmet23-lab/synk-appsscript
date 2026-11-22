@@ -9,6 +9,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PROVIDERS = ['claude', 'codex'];
 const STATES = ['queued', 'paused', 'running', 'terminal', 'completed', 'interrupted', 'failed'];
 const REASONS = ['RESTART', 'AUTH_CHANGED', 'CANCELLED', 'NO_CLI', 'LOGIN', 'LIMIT', 'PROVIDER', 'TERMINAL_CLOSED', 'NO_ANSWER', 'FOLDER', 'SESSION', 'PERMISSION', 'NATIVE', 'WRITE', 'RESULT_TOO_LARGE', 'UNCONFIRMED', 'HOOKS_OFF', 'MANUAL_RESULT','MEMBER_RESULT'];
+REASONS.push('MAIL_CHOOSE','MAIL_REVIEW','MAIL_CONNECT','MAIL_RECONNECT','MAIL_CONFIG','MAIL_PLAN','MAIL_NETWORK','MAIL_STORAGE','MAIL_LIMIT','MAIL_SCOPE','MAIL_CANCELLED','MAIL_CHANGED','MAIL_BUSY','MAIL_TIMEOUT','MAIL_NOT_FOUND','MAIL_NO_MAILBOX');
 const MAX_PROMPT = 8000;
 const MAX_ANSWER = 512 * 1024;
 const MAX_BYTES = 32 * 1024 * 1024;
@@ -26,7 +27,11 @@ function submission(value) {
   if (value.previousId != null && !goodId(value.previousId)) return null;
   if (typeof value.prompt !== 'string' || value.prompt.length > MAX_PROMPT || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value.prompt)) return null;
   const prompt = value.prompt.trim();
-  return prompt ? { id: value.id.toLowerCase(), provider: value.provider, departmentId: value.departmentId ?? null, prompt, previousId: value.previousId?.toLowerCase() ?? null } : null;
+  if(value.mailSearch!=null&&(typeof value.mailSearch!=='boolean'||value.mailSearch&&value.provider!=='codex'))return null;
+  if(value.quoteHandoff!=null&&(typeof value.quoteHandoff!=='boolean'||value.quoteHandoff&&(value.provider!=='codex'||value.mailSearch===false||value.mailRetry)))return null;
+  if(value.quoteResumeOf!=null&&(!goodId(value.quoteResumeOf)||value.quoteHandoff!==true||value.mailSearch!==true||value.previousId!=null))return null;
+  if(value.mailRetry!=null&&(typeof value.mailRetry!=='boolean'||value.mailRetry&&(!value.mailSearch||!value.previousId)))return null;
+  return prompt ? { id: value.id.toLowerCase(), provider: value.provider, departmentId: value.departmentId ?? null, prompt, previousId: value.previousId?.toLowerCase() ?? null,...(typeof value.mailSearch==='boolean'?{mailSearch:value.mailSearch}:{}),...(value.mailRetry===true?{mailRetry:true}:{}),...(value.quoteHandoff===true?{quoteHandoff:true}:{}),...(value.quoteResumeOf?{quoteResumeOf:value.quoteResumeOf.toLowerCase()}:{}) } : null;
 }
 function validRow(row) {
   return submission(row) && STATES.includes(row.status) && typeof row.departmentName === 'string' &&
@@ -36,15 +41,35 @@ function validRow(row) {
      typeof row.provisional==='string' && row.provisional.length<=MAX_ANSWER)) &&
     Number.isSafeInteger(row.createdAt) && Number.isSafeInteger(row.updatedAt) && (row.sessionId == null || goodId(row.sessionId));
 }
-function publicTask(row) {
+function baseTask(row) {
   const {id, provider, departmentId, departmentName, prompt, previousId, status, answer, reason, createdAt, updatedAt} = row;
+  if(row.quoteOrigin){
+    const receipt=status==='completed'?row.mailReceipt:null;
+    return {id,provider,departmentId,departmentName,prompt,previousId,status,reason,createdAt,updatedAt,mailSearch:true,
+      quoteSource:{...row.quoteOrigin},quoteOutcome:receipt?.quoteOutcome||null,answer:receipt?.draftText||''};
+  }
+  if(row.mailSearch){
+    const {visibleReceipt,summary}=require('./office-mail.cjs');
+    const receipt=status==='completed'?row.mailReceipt:null;
+    return {id,provider,departmentId,departmentName,prompt,previousId,status,reason,createdAt,updatedAt,mailSearch:true,
+      ...(row.quoteHandoff?{quoteHandoff:true,handoffs:[]}:{}),answer:receipt?summary(receipt):'',...(receipt?{mailResult:visibleReceipt(receipt)}:{})};
+  }
   if(provider==='codex' && row.viaTerminal===true && (status==='completed' || ['UNCONFIRMED','MANUAL_RESULT'].includes(reason))){
     return {id,provider,departmentId,departmentName,prompt,previousId,status:status==='terminal'?'terminal':'interrupted',
-      answer:'',reason:'MANUAL_RESULT',createdAt,updatedAt,viaTerminal:true};
+      answer:'',reason:'MANUAL_RESULT',createdAt,updatedAt,viaTerminal:true,...(row.mailSearch===false?{mailSearch:false}:{})};
   }
   const visibleAnswer=provider==='codex' && row.viaTerminal===true && reason!=='MEMBER_RESULT'?'':answer;
-  return { id, provider, departmentId, departmentName, prompt, previousId, status, answer:visibleAnswer, reason, createdAt, updatedAt, viaTerminal:row.viaTerminal===true };
+  return { id, provider, departmentId, departmentName, prompt, previousId, status, answer:visibleAnswer, reason, createdAt, updatedAt, viaTerminal:row.viaTerminal===true,...(row.mailSearch===false?{mailSearch:false}:{}) };
 }
+
+function publicTask(row){
+  const visible=baseTask(row);
+  if(['pending','ordinary','choose'].includes(row.mailDecision))visible.mailDecision=row.mailDecision;
+  if(row.mailDecision==='choose'&&REASONS.includes(row.mailDecisionReason))visible.mailDecisionReason=row.mailDecisionReason;
+  return visible;
+}
+// A metadata-only read can update one task while preserving its neighbours' original receipts.
+function editMetadata(row){delete row[originalRow];return row;}
 
 // Checking the current login and publishing the prepared file share one main-thread turn.
 function commitFile(from,to,current) {
@@ -53,7 +78,7 @@ function commitFile(from,to,current) {
 }
 
 // A single source instance owns this member's ledger. Never replace an unreadable ledger.
-function createTaskStore(userData, io = fs) {
+function createTaskStore(userData, io = fs, mail=null) {
   const memberDir = member => {
     if (typeof member !== 'string' || !MEMBER.test(member) || ['.','..'].includes(member)) throw new Error('ACCOUNT');
     return path.join(userData, 'Office', member);
@@ -104,7 +129,7 @@ function createTaskStore(userData, io = fs) {
       sessionId:receipt.sessionId,updatedAt:receipt.updatedAt,answerFile:true});
     storedAnswers.add(member+'/'+row.id);
   }
-  async function read(member) {
+  async function read(member,{metadataOnly=false,mailIds=null}={}) {
     const file = path.join(memberDir(member), 'tasks.json');
     let raw;
     try {
@@ -114,7 +139,26 @@ function createTaskStore(userData, io = fs) {
     const doc = JSON.parse(raw);
     if (doc?.version !== 1 || !Array.isArray(doc.tasks) || doc.tasks.length>MAX_TASKS || new Set(doc.tasks.map(t=>typeof t?.id==='string'?t.id.toLowerCase():null)).size !== doc.tasks.length) throw new Error('STORAGE');
     for(const row of doc.tasks){
+      const skipReceipt=row?.mailSearch===true&&mailIds&&!mailIds.has(row.id);
+      const saved=(metadataOnly||skipReceipt)&&row?{...row}:null;
+      if((row?.mailSearch===true||row?.mailChoice===true||row?.mailDecision==='choose')&&typeof row.mailReason==='string'){row.reason=row.mailReason;delete row.mailReason;}
+      if(row?.mailDecision==='review'&&row.status==='failed'&&row.reason==='MAIL_PLAN')row.reason='MAIL_REVIEW';
       if(!row || !validRow(row))throw new Error('STORAGE');
+      // A pending mode choice only needs the ledger. A later write retains the
+      // original rows and pointers without opening other tasks' encrypted results.
+      if(metadataOnly||skipReceipt){row[originalRow]=saved;continue;}
+      if(row.mailDecision==='pending'||row.mailDecision==='choose')continue;
+      if(row.mailSearch){
+        if(row.status==='completed'||['running','terminal'].includes(row.status)){
+          try{
+            const receipt=await mail?.vault.read(member,row.id);
+            if(receipt && Array.isArray(receipt.groups) && Array.isArray(receipt.bindings)&&(!row.quoteAttempt||row.quoteAttempt===receipt.quoteAttempt)){
+              row.mailReceipt=receipt;row.status='completed';row.reason=null;
+            }else if(row.status==='completed')throw new Error('MAIL_STORAGE');
+          }catch{row[originalRow]={...row};row.status='failed';row.reason='MAIL_STORAGE';}
+        }
+        row.answer='';continue;
+      }
       if(row.answerFile===true || row.viaTerminal===true || row.reason==='MANUAL_RESULT' || ['running','terminal'].includes(row.status)){
         const metadata={...row};
         try{
@@ -152,6 +196,32 @@ function createTaskStore(userData, io = fs) {
     const index=[],expiredPreviews=[];
     for(let task of tasks){
       if(task[originalRow]){index.push(task[originalRow]);continue;}
+      if(task.mailSearch||task.mailChoice||task.mailDecision==='pending'||task.mailDecision==='choose'){
+        const {mailReceipt,mailReviewRecord,...metadata}=task;
+        if(mailReviewRecord&&task.status==='failed'&&task.reason==='MAIL_REVIEW'){
+          if(!mail)throw new Error('MAIL_STORAGE');
+          const stored=await mail.vault.read(member,task.id);
+          if(stored&&stored.kind!=='mail-review')throw new Error('MAIL_STORAGE');
+          if(!stored||JSON.stringify(stored)!==JSON.stringify(mailReviewRecord))await mail.vault.write(member,task.id,mailReviewRecord,current);
+          metadata.mailReviewStored=true;
+        }
+        const mailKey=member+'/'+task.id+'/mail'+(task.quoteAttempt?'/'+task.quoteAttempt:'');
+        if(mailReceipt && task.status==='completed' && !storedAnswers.has(mailKey)){
+          // A previously published encrypted receipt can be read after disconnecting.
+          // Only newly generated receipts require the same live mailbox grant.
+          if(!mail)throw new Error('MAIL_STORAGE');
+          const stored=await mail.vault.read(member,task.id);
+          if(!stored||stored.kind==='mail-review'||task.quoteAttempt&&stored.quoteAttempt!==task.quoteAttempt){
+            await mail.vault.write(member,task.id,mailReceipt,()=>current()&&mail.valid(mailReceipt.readBindings||mailReceipt.bindings)&&
+              (!mailReceipt.mailBindingVersion||mail.atGeneration(member,mailReceipt.mailBindingVersion)));
+          }else if(!Array.isArray(stored.groups)||!Array.isArray(stored.bindings))throw new Error('MAIL_STORAGE');
+          storedAnswers.add(mailKey);
+        }
+        if(mailReceipt&&task.status==='completed')delete metadata.mailReviewStored;
+        // Previous office builds still open unrelated cards when encountering a newer mail error.
+        const mailReason=metadata.reason==='MAIL_REVIEW'?'MAIL_PLAN':metadata.reason?.startsWith('MAIL_')?metadata.reason:null;
+        index.push({...metadata,...(mailReason?{reason:'PROVIDER',mailReason}:{}),answer:''});continue;
+      }
       if(task.provider==='codex' && task.reason==='MEMBER_RESULT'){
         const key=member+'/'+task.id+'/member';
         if(!storedAnswers.has(key)){
@@ -211,4 +281,4 @@ function createTaskStore(userData, io = fs) {
   }
   return {read, write};
 }
-module.exports = {createTaskStore, commitFile, submission, publicTask, goodId, REASONS, MAX_ANSWER, MAX_TASKS, problem};
+module.exports = {createTaskStore, commitFile, submission, publicTask, editMetadata, goodId, REASONS, MAX_ANSWER, MAX_TASKS, problem};

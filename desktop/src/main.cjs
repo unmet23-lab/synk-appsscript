@@ -270,7 +270,7 @@ const officeTaskSource=officeTasksEnabled({packaged,mode:runtime.mode,clientId:r
 let officeEmployeeTasks=null;
 function officeTasks(){
   if(!officeTaskSource)return null;
-  if(!officeEmployeeTasks)officeEmployeeTasks=createTaskRuntime({userData:app.getPath('userData'),current:()=>officeLoginOf(accountStatus()),office,model:loadOfficeModel,changed:()=>sendDesktop('synk:office-changed')});
+  if(!officeEmployeeTasks)officeEmployeeTasks=createTaskRuntime({userData:app.getPath('userData'),current:()=>officeLoginOf(accountStatus()),office,model:loadOfficeModel,changed:()=>sendDesktop('synk:office-changed'),mailOptions:{secrets:subscriptionSecrets,openExternal:url=>shell.openExternal(url)}});
   return officeEmployeeTasks;
 }
 async function officeWithTasks(service,account){
@@ -280,7 +280,8 @@ async function officeWithTasks(service,account){
   const history=await tasks.snapshot(account);
   if(history.code==='NOT_ALLOWED')return view;
   if(!history.ok && !['STORAGE','STORAGE_FULL'].includes(history.code))return {ok:false,code:history.code};
-  return {...view,tasking:{tasks:history.tasks||[],...(history.code?{code:history.code}:{})}};
+  const mail=tasks.mail?await tasks.mail.snapshot(account):null;
+  return {...view,tasking:{tasks:history.tasks||[],...(history.code?{code:history.code}:{}),...(mail?{mail}:{})}};
 }
 const officeAccountOf=state=>{if(state?.signedIn===true&&state.account)return state.account;const renewing=renewingAccount();return renewing?{synk_user_id:renewing}:null;};
 // 로그인 묶음(구현설계 11.1 「계정 묶기」, GPT 검수 r7 · r8 GA1): 계정에 로그인 회차(sessionGeneration)를 실어 넘긴다. 사무실은 들어온 순간의 묶음이 지금 묶음과 같을 때만 기억을 바꾸고 답한다
@@ -936,6 +937,9 @@ function createWindow(){
     // 솔리오 「사무실」(구현설계.md 13절): 모두 officeCall을 거친다. 폴더는 본체가 고르기 창이나 지금 선 세션에서 받는다
     'synk:office-snapshot':()=>officeCall(officeWithTasks),
     'synk:office-task-submit':input=>officeCall((_service,account)=>officeTasks()?.submit(account,input)??{ok:false,code:'NOT_AVAILABLE'}),
+    'synk:office-mail-connect':p=>officeCall((_s,a)=>officeTasks()?.mail?.connect(a,p)??{ok:false,code:'NOT_AVAILABLE'}),
+    'synk:office-mail-disconnect':p=>officeCall((_s,a)=>officeTasks()?.mail?.disconnect(a,p)??{ok:false,code:'NOT_AVAILABLE'}),
+    'synk:office-mail-open':(task,item)=>officeCall((_s,a)=>officeTasks()?.mail?.openResult(a,task,item)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-task-action':(id,action,text)=>officeCall((_service,account)=>officeTasks()?.action(account,id,action,text)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-watch':on=>officeCall((service,account)=>service.watch(on===true,account)),
     'synk:office-department-save':input=>officeCall((service,account)=>officeSaveDepartment(service,account,input)),

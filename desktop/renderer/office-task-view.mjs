@@ -1,3 +1,7 @@
+import { mailCodeText } from './office-mail-model.mjs';
+import { createMailReviewPanel } from './office-mail-review.mjs';
+import { createOfficeMailControls, createOfficeMailResults } from './office-mail-view.mjs';
+import { createQuoteHandoffView, quoteOutcomeLabel } from './office-quote-handoff-view.mjs';
 import { classifyCodexTask, MAX_MANUAL_ANSWER_LENGTH } from './office-task-room.mjs';
 
 const NONE = Symbol('none');
@@ -33,6 +37,15 @@ const STARTED_FAILURE_REASONS = new Set([
 const SIDE_EFFECT_CAUTION =
   '실행이 시작된 뒤 멈췄으므로 일부 변경이 이미 반영되었을 수 있습니다. 다시 시도하기 전에 결과를 먼저 확인해 주세요.';
 const CONTINUATION_GUIDE = '공식 창에서 /status로 사용할 계정이 맞는지 확인한 다음 이 문구를 붙여넣고 Enter를 누르세요. Enter를 누르는 순간 표시된 계정에 이전 대화 내용도 함께 전달됩니다.';
+const MAIL_DECISION_REASON_NOTES = Object.freeze({
+  LOGIN: 'GPT 로그인이 필요해 업무 범위를 자동으로 확인하지 못했습니다.',
+  LIMIT: 'GPT 사용 한도에 도달해 업무 범위를 자동으로 확인하지 못했습니다.',
+  NO_CLI: 'GPT 실행 도구가 없어 업무 범위를 자동으로 확인하지 못했습니다.',
+  MAIL_PLAN: mailCodeText('MAIL_PLAN'),
+  MAIL_SCOPE: '요청하신 검색 범위는 지원하지 않습니다.',
+  MAIL_CHANGED: mailCodeText('MAIL_CHANGED'),
+  MAIL_STORAGE: mailCodeText('MAIL_STORAGE'),
+});
 
 function clearChildren(el) {
   while (el.firstChild) {
@@ -71,9 +84,12 @@ function didStartBeforeFailing(rawStatus, reason) {
   return STARTED_FAILURE_REASONS.has(reason) || (rawStatus === 'interrupted' && reason === 'RESTART');
 }
 
-function describeTask(task, deptMap) {
+function describeTask(task, deptMap, hasMail = false) {
   const rawStatus = typeof task.status === 'string' ? task.status : '';
   const reason = typeof task.reason === 'string' ? task.reason.trim() : '';
+  const hasQuoteHandoff = Boolean(task.quoteHandoff);
+  const isQuoteParent = task.quoteHandoff === true;
+  const isQuoteChild = Boolean(task.quoteSource);
   const codexState = classifyCodexTask(task);
   const suppressSnapshotAnswer =
     reason === 'MANUAL_RESULT' ||
@@ -114,12 +130,19 @@ function describeTask(task, deptMap) {
     claudeTerminalUnconfirmed ||
     claudePreview;
   let answerLabel = task.viaTerminal === true ? '공식 터미널에서 이어간 답' : '최종 답';
-  if (codexState.memberResult) answerLabel = '터미널에서 직접 옮긴 답';
-  else if (unsavedAnswer) answerLabel = '아직 저장하지 못한 답';
-  else if (claudeInterruptedUnconfirmed || claudeTerminalUnconfirmed || claudePreview) {
+  if (isQuoteChild && isCompleted && task.quoteOutcome === 'draft') {
+    answerLabel = '견적 답장 초안';
+  } else if (isQuoteChild && isCompleted && task.quoteOutcome === 'held') {
+    answerLabel = '보류 사유';
+  } else if (codexState.memberResult) {
+    answerLabel = '터미널에서 직접 옮긴 답';
+  } else if (unsavedAnswer) {
+    answerLabel = '아직 저장하지 못한 답';
+  } else if (claudeInterruptedUnconfirmed || claudeTerminalUnconfirmed || claudePreview) {
     answerLabel = '완료 확인 전 답';
   }
   const continuation =
+    !isQuoteChild &&
     task.provider === 'codex' &&
     rawStatus === 'terminal' &&
     task.canOpenTerminal === true &&
@@ -157,6 +180,7 @@ function describeTask(task, deptMap) {
     statusText = reason === 'CANCELLED' ? '취소됨' : '중단됨';
   } else if (rawStatus === 'failed') {
     if (reason === 'CANCELLED') statusText = '취소됨';
+    else if (hasMail && task.provider === 'codex' && reason === 'MAIL_CHOOSE') statusText = '선택 필요';
     else if (isWriteError) statusText = '저장 실패';
     else if (reason === 'NO_ANSWER') statusText = '응답 없음';
     else statusText = '실패';
@@ -175,7 +199,11 @@ function describeTask(task, deptMap) {
     metaParts.push('이어서 요청');
   }
 
-  const reasonText = formatMessage(reason);
+  const mailReason = reason.startsWith('MAIL_') ? mailCodeText(reason) : '';
+  const reasonText =
+    typeof mailReason === 'string' && mailReason.trim()
+      ? mailReason.trim()
+      : formatMessage(reason);
   let noteText = '';
   if (isCompleted) {
     noteText = '';
@@ -217,17 +245,78 @@ function describeTask(task, deptMap) {
   }
 
   const hasRealId = task.id != null && String(task.id) !== '';
+  const isStandardCodex =
+    task.provider === 'codex' &&
+    task.viaTerminal !== true &&
+    reason !== 'MANUAL_RESULT' &&
+    !codexState.memberResult &&
+    !codexState.manualResult &&
+    !codexState.legacyViaTerminal &&
+    !codexState.blockFollowUp;
+  const isMailReview =
+    Boolean(hasMail) && isStandardCodex && task.mailSearch === true && rawStatus === 'failed' && reason === 'MAIL_REVIEW';
+  if (isMailReview) {
+    statusText = '검색 조건 확인';
+    noteText = task.mailReview?.reason === 'source'
+      ? '아직 사서함을 조회하지 않았습니다. ‘이 조건으로 찾기’는 연결한 메일함을 검색하며, 웹에서 찾으시려면 ‘일반 업무로 맡기기’를 선택해 주세요.'
+      : '현재 검색 요청으로는 아직 사서함을 조회하지 않았으니, 조건을 확인해 주시면 메일을 찾습니다.';
+  }
+  if (hasMail && isStandardCodex && task.mailSearch !== true) {
+    if (task.mailDecision === 'pending' && (rawStatus === 'queued' || rawStatus === 'running')) {
+      statusText = '업무 범위 확인 중';
+    } else if (task.mailDecision === 'ordinary' && isCompleted) {
+      noteText = '사서함을 조회하지 않았습니다.';
+    } else if (task.mailDecision === 'choose' && rawStatus === 'failed' && reason === 'MAIL_CHOOSE') {
+      const key = task.mailDecisionReason;
+      if (typeof key === 'string' && Object.hasOwn(MAIL_DECISION_REASON_NOTES, key)) {
+        noteText = [MAIL_DECISION_REASON_NOTES[key], noteText].filter(Boolean).join(' ');
+      }
+    }
+  }
+  const isMailSearch = task.mailSearch === true;
+  const mailResult =
+    isStandardCodex &&
+    isCompleted &&
+    isMailSearch &&
+    task.mailResult != null &&
+    typeof task.mailResult === 'object' &&
+    Array.isArray(task.mailResult.groups)
+      ? task.mailResult
+      : null;
+  const mailReview = isMailReview
+    ? task.mailReview != null &&
+      typeof task.mailReview === 'object' &&
+      !Array.isArray(task.mailReview)
+      ? task.mailReview
+      : {}
+    : null;
+  const hasMailGroupCode = Boolean(
+    mailResult &&
+      mailResult.groups.some(
+        (group) =>
+          group != null &&
+          typeof group === 'object' &&
+          typeof group.code === 'string' &&
+          group.code.trim().length > 0,
+      ),
+  );
+  const canQuoteRewrite =
+    hasRealId && isQuoteChild && rawStatus === 'failed' && task.canRetry === true;
   return {
     hasRealId,
     metaText: metaParts.join(' · '),
     statusCode,
-    statusText,
+    statusText: hasMail === true ? quoteOutcomeLabel(task) || statusText : statusText,
     promptText: typeof task.prompt === 'string' ? task.prompt : task.prompt == null ? '' : String(task.prompt),
+    showQuoteHandoff: hasQuoteHandoff || isQuoteChild,
+    isQuoteChild,
     showAnswer,
     answerLabel,
     answerText: showAnswer ? (claudePreview ? previewText : answerText) : '',
-    showManualResult: hasRealId && codexState.manualResult,
-    continuation,
+    showManualResult: hasRealId && !isQuoteChild && codexState.manualResult,
+    mailResult,
+    mailReview,
+    continuation: isQuoteChild ? '' : continuation,
     noteText,
     canCancel:
       hasRealId &&
@@ -235,16 +324,36 @@ function describeTask(task, deptMap) {
         rawStatus === 'running' ||
         rawStatus === 'paused' ||
         rawStatus === 'terminal'),
-    canResume: hasRealId && rawStatus === 'paused',
-    canFollow: hasRealId && isCompleted && !codexState.blockFollowUp,
+    canResume: (hasRealId && rawStatus === 'paused') || canQuoteRewrite,
+    resumeLabel: canQuoteRewrite ? '다시 작성' : '재개',
+    canFollow: hasRealId && !isQuoteParent && !isQuoteChild && isCompleted && !codexState.blockFollowUp &&
+      (Boolean(hasMail) || task.mailSearch !== true),
     canRetry:
       hasRealId &&
+      !isQuoteParent &&
+      !isQuoteChild &&
       !codexState.blockFollowUp &&
+      (Boolean(hasMail) || task.mailSearch !== true) &&
       ((rawStatus === 'failed' && !isWriteError) ||
         rawStatus === 'interrupted' ||
         (rawStatus === 'completed' && !isCompleted)),
+    canMailGeneralBase:
+      hasRealId &&
+      !isQuoteChild &&
+      isStandardCodex &&
+      rawStatus === 'failed' &&
+      (reason === 'MAIL_CHOOSE' || (task.mailSearch === true && reason === 'MAIL_REVIEW')),
+    canMailFindBase:
+      hasRealId &&
+      !isQuoteChild &&
+      isStandardCodex &&
+      ((isCompleted && !isMailSearch) || (rawStatus === 'failed' && reason === 'MAIL_CHOOSE')),
+    canMailRepeatBase:
+      hasRealId && !isQuoteChild && isStandardCodex && isCompleted && isMailSearch && (hasMailGroupCode || (hasQuoteHandoff && task.quoteCanResume === true)),
+    mailRepeatLabel: isQuoteParent ? '이어서 조사' : '다시 찾기',
     canTerminal:
       hasRealId &&
+      !isQuoteChild &&
       Boolean(task.canOpenTerminal) &&
       !codexState.memberResult &&
       !codexState.legacyViaTerminal,
@@ -277,6 +386,8 @@ export function createOfficeTaskView(host, dispatch) {
   let activeProvider = 'claude';
   let activeDeptId = '';
   let activePreviousId = null;
+  let currentMail = null;
+  let currentMailUI = null;
 
   const MANUAL_LIMIT_MESSAGE = '524,288자를 초과한 답은 보관할 수 없습니다.';
   let manualSeq = 0;
@@ -404,7 +515,87 @@ export function createOfficeTaskView(host, dispatch) {
     return manual;
   }
 
+  function disposeMailResults(rec) {
+    if (!rec || !rec.mailResults) return;
+    const cur = rec.mailResults;
+    rec.mailResults = null;
+    cur.view.update(null, '');
+    if (cur.element && cur.element.parentNode) {
+      cur.element.parentNode.removeChild(cur.element);
+    }
+  }
+
+  function clearAllMailResults() {
+    for (const rec of cardMap.values()) {
+      disposeMailResults(rec);
+    }
+  }
+
+  function disposeMailReview(rec) {
+    if (!rec || !rec.mailReview) return;
+    const cur = rec.mailReview;
+    rec.mailReview = null;
+    if (cur.panel && typeof cur.panel.dispose === 'function') {
+      cur.panel.dispose();
+    }
+    if (cur.element && cur.element.parentNode) {
+      cur.element.parentNode.removeChild(cur.element);
+    }
+  }
+
+  function clearAllMailReviews() {
+    for (const rec of cardMap.values()) {
+      disposeMailReview(rec);
+    }
+  }
+
+  function focusChild(id) {
+    if (id == null) return;
+    const rawKey = String(id);
+    const trimmedKey = rawKey.trim();
+    if (!trimmedKey) return;
+    const rec = cardMap.get(rawKey) || cardMap.get(trimmedKey);
+    if (
+      !rec ||
+      !rec.el ||
+      !rec.state.hasRealId ||
+      (rec.state.realTaskId !== rawKey && rec.state.realTaskId !== trimmedKey)
+    ) {
+      return;
+    }
+    rec.el.tabIndex = -1;
+    rec.el.setAttribute('tabindex', '-1');
+    if (typeof rec.el.focus === 'function') {
+      rec.el.focus();
+    }
+    if (typeof rec.el.scrollIntoView === 'function') {
+      rec.el.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function disposeQuoteHandoff(rec) {
+    if (!rec || !rec.quoteHandoff) return;
+    const cur = rec.quoteHandoff;
+    rec.quoteHandoff = null;
+    cur.view.update(null, [], null, null);
+    if (cur.element && cur.element.parentNode) {
+      cur.element.parentNode.removeChild(cur.element);
+    }
+  }
+
+  function clearAllQuoteHandoffs() {
+    for (const rec of cardMap.values()) {
+      disposeQuoteHandoff(rec);
+    }
+  }
+
   function resetMemory() {
+    if (formRefs && formRefs.mailControls) {
+      formRefs.mailControls.update(null, null, false, false);
+    }
+    clearAllMailResults();
+    clearAllMailReviews();
+    clearAllQuoteHandoffs();
     clearAllManuals();
     manualSeq = 0;
     clearChildren(host);
@@ -424,6 +615,8 @@ export function createOfficeTaskView(host, dispatch) {
     activeProvider = 'claude';
     activeDeptId = '';
     activePreviousId = null;
+    currentMail = null;
+    currentMailUI = null;
     cardMap.clear();
     knownStatuses.clear();
     initializedLive = false;
@@ -470,6 +663,8 @@ export function createOfficeTaskView(host, dispatch) {
     fields.appendChild(providerField);
     fields.appendChild(deptField);
 
+    const mailControls = createOfficeMailControls(doc, emit);
+
     const followNote = doc.createElement('p');
     followNote.className = 'off-task-note';
     followNote.hidden = true;
@@ -504,6 +699,7 @@ export function createOfficeTaskView(host, dispatch) {
     actions.appendChild(submitBtn);
 
     form.appendChild(fields);
+    form.appendChild(mailControls.element);
     form.appendChild(followNote);
     form.appendChild(textarea);
     form.appendChild(errorNote);
@@ -584,6 +780,7 @@ export function createOfficeTaskView(host, dispatch) {
       form,
       providerSelect,
       deptSelect,
+      mailControls,
       followNote,
       textarea,
       errorNote,
@@ -729,6 +926,9 @@ export function createOfficeTaskView(host, dispatch) {
     const resumeBtn = createActionButton('재개', 'task-resume');
     const followBtn = createActionButton('이어서 맡기기', 'task-follow');
     const retryBtn = createActionButton('다시 맡기기', 'task-retry');
+    const mailGeneralBtn = createActionButton('일반 업무로 맡기기', 'task-mail-general');
+    const mailFindBtn = createActionButton('메일에서 찾기', 'task-mail-find');
+    const mailRepeatBtn = createActionButton('다시 찾기', 'task-mail-repeat');
     const terminalBtn = createActionButton('터미널 열기', 'task-terminal');
     const copyBtn = createActionButton('답 복사', 'copy-answer');
     const continuationBtn = createActionButton('이어가기 문구 복사', 'copy-continuation');
@@ -737,6 +937,9 @@ export function createOfficeTaskView(host, dispatch) {
     actionsEl.appendChild(resumeBtn);
     actionsEl.appendChild(followBtn);
     actionsEl.appendChild(retryBtn);
+    actionsEl.appendChild(mailGeneralBtn);
+    actionsEl.appendChild(mailFindBtn);
+    actionsEl.appendChild(mailRepeatBtn);
     actionsEl.appendChild(terminalBtn);
     actionsEl.appendChild(copyBtn);
     actionsEl.appendChild(continuationBtn);
@@ -765,8 +968,14 @@ export function createOfficeTaskView(host, dispatch) {
       resumeBtn,
       followBtn,
       retryBtn,
+      mailGeneralBtn,
+      mailFindBtn,
+      mailRepeatBtn,
       terminalBtn,
       copyBtn,
+      mailResults: null,
+      mailReview: null,
+      quoteHandoff: null,
       manual: null,
       state: {},
     };
@@ -781,13 +990,18 @@ export function createOfficeTaskView(host, dispatch) {
     }
   }
 
-  function patchCard(rec, key, info) {
+  function patchCard(rec, key, info, task, rawTasks) {
     const prev = rec.state;
     if (prev.key !== key) {
+      disposeMailResults(rec);
+      disposeMailReview(rec);
+      disposeQuoteHandoff(rec);
       disposeManual(rec);
       rec.el.setAttribute('data-task-id', key);
       prev.key = key;
     }
+    prev.hasRealId = Boolean(info.hasRealId);
+    prev.realTaskId = info.hasRealId && task && task.id != null ? String(task.id) : '';
     if (prev.metaText !== info.metaText) {
       rec.metaEl.textContent = info.metaText;
       prev.metaText = info.metaText;
@@ -809,30 +1023,90 @@ export function createOfficeTaskView(host, dispatch) {
       rec.promptEl.hidden = hidePrompt;
     }
 
-    if (rec.answerEl.hidden !== !info.showAnswer) {
-      rec.answerEl.hidden = !info.showAnswer;
+    const hasMail = Boolean(currentMail);
+    const showAnswer = Boolean(info.showAnswer && (!info.isQuoteChild || hasMail));
+    const answerLabelText = showAnswer ? info.answerLabel : info.isQuoteChild ? '' : info.answerLabel;
+    const answerText = showAnswer ? info.answerText : '';
+    if (rec.answerEl.hidden !== !showAnswer) {
+      rec.answerEl.hidden = !showAnswer;
     }
-    rec.answerLabel.hidden = !info.showAnswer;
-    if (rec.answerLabel.textContent !== info.answerLabel) rec.answerLabel.textContent = info.answerLabel;
-    patchButton(rec.copyBtn, info.showAnswer, key);
-    if (prev.answerText !== info.answerText) {
-      rec.answerEl.textContent = info.answerText;
-      prev.answerText = info.answerText;
+    rec.answerLabel.hidden = !showAnswer;
+    if (rec.answerLabel.textContent !== answerLabelText) rec.answerLabel.textContent = answerLabelText;
+    patchButton(rec.copyBtn, showAnswer, key);
+    if (prev.answerText !== answerText) {
+      rec.answerEl.textContent = answerText;
+      prev.answerText = answerText;
     }
     if (rec.continuationEl.textContent !== info.continuation) rec.continuationEl.textContent = info.continuation;
     rec.continuationBox.hidden = !info.continuation;
     patchButton(rec.continuationBtn, Boolean(info.continuation), key);
 
-    const hideNote = info.noteText.length === 0;
+    const cardNote = currentMailUI?.cardNotes?.[key];
+    const noteText = cardNote ? [info.noteText, cardNote].filter(Boolean).join(' ') : info.noteText;
+    const hideNote = noteText.length === 0;
     if (rec.noteEl.hidden !== hideNote) {
       rec.noteEl.hidden = hideNote;
     }
-    if (prev.noteText !== info.noteText) {
-      rec.noteEl.textContent = info.noteText;
-      prev.noteText = info.noteText;
+    if (prev.noteText !== noteText) {
+      rec.noteEl.textContent = noteText;
+      prev.noteText = noteText;
     }
 
     const argId = info.hasRealId ? key : '';
+    const showMailResults = Boolean(hasMail && argId && info.mailResult);
+    if (!showMailResults) {
+      disposeMailResults(rec);
+    } else {
+      if (
+        rec.mailResults &&
+        (rec.mailResults.taskId !== argId || rec.mailResults.epoch !== currentEpoch)
+      ) {
+        disposeMailResults(rec);
+      }
+      if (!rec.mailResults) {
+        const view = createOfficeMailResults(doc, emit, argId);
+        rec.mailResults = {
+          taskId: argId,
+          epoch: currentEpoch,
+          view,
+          element: view.element,
+        };
+        rec.el.insertBefore(view.element, rec.noteEl);
+      } else if (rec.mailResults.element.parentNode !== rec.el) {
+        rec.el.insertBefore(rec.mailResults.element, rec.noteEl);
+      }
+      rec.mailResults.view.update(info.mailResult, currentMailUI?.sourceNotes?.[argId]);
+    }
+
+    const showMailReview = Boolean(hasMail && argId && info.mailReview);
+    if (!showMailReview) {
+      disposeMailReview(rec);
+    } else {
+      if (
+        rec.mailReview &&
+        (rec.mailReview.taskId !== argId || rec.mailReview.epoch !== currentEpoch)
+      ) {
+        disposeMailReview(rec);
+      }
+      if (!rec.mailReview) {
+        const panel = createMailReviewPanel(doc, key, emit);
+        rec.mailReview = {
+          taskId: argId,
+          epoch: currentEpoch,
+          panel,
+          element: panel.element,
+        };
+        rec.el.insertBefore(panel.element, rec.actionsEl);
+      } else if (rec.mailReview.element.parentNode !== rec.el) {
+        rec.el.insertBefore(rec.mailReview.element, rec.actionsEl);
+      }
+      rec.mailReview.panel.update(
+        currentMailUI?.reviewByTask?.[key]?.renewalNeeded ? {} : info.mailReview,
+        currentMail.providers,
+        currentMailUI?.reviewByTask?.[key],
+      );
+    }
+
     const canManual = Boolean(
       info.showManualResult === true && argId,
     );
@@ -850,14 +1124,60 @@ export function createOfficeTaskView(host, dispatch) {
       }
       syncManualState(rec.manual);
     }
+
+    if (!info.showQuoteHandoff) {
+      disposeQuoteHandoff(rec);
+    } else {
+      if (!rec.quoteHandoff) {
+        const view = createQuoteHandoffView(doc, emit, focusChild);
+        rec.quoteHandoff = { view, element: view.element };
+      }
+      const handoffAnchor = rec.manual ? rec.manual.boxEl : rec.actionsEl;
+      if (
+        rec.quoteHandoff.element &&
+        (rec.quoteHandoff.element.parentNode !== rec.el ||
+          rec.quoteHandoff.element.nextSibling !== handoffAnchor)
+      ) {
+        rec.el.insertBefore(rec.quoteHandoff.element, handoffAnchor);
+      }
+      rec.quoteHandoff.view.update(task, rawTasks, currentMail, currentMailUI);
+    }
+
+    const isMailReview = Boolean(hasMail && info.mailReview);
+    const canMailGeneral = Boolean(hasMail && info.canMailGeneralBase);
+    const canMailFind = Boolean(hasMail && info.canMailFindBase);
+    const canMailRepeat = Boolean(hasMail && info.canMailRepeatBase);
+    const canRetry = Boolean(info.canRetry && (!canMailGeneral || isMailReview));
+    const retryLabel = isMailReview ? '원문 고치기' : '다시 맡기기';
+    if (rec.retryBtn.textContent !== retryLabel) {
+      rec.retryBtn.textContent = retryLabel;
+    }
+    if (rec.resumeBtn.textContent !== info.resumeLabel) {
+      rec.resumeBtn.textContent = info.resumeLabel;
+    }
+    if (rec.mailRepeatBtn.textContent !== info.mailRepeatLabel) {
+      rec.mailRepeatBtn.textContent = info.mailRepeatLabel;
+    }
     patchButton(rec.cancelBtn, info.canCancel, argId);
     patchButton(rec.resumeBtn, info.canResume, argId);
     patchButton(rec.followBtn, info.canFollow, argId);
-    patchButton(rec.retryBtn, info.canRetry, argId);
+    patchButton(rec.retryBtn, canRetry, argId);
+    patchButton(rec.mailGeneralBtn, canMailGeneral, key);
+    rec.mailGeneralBtn.disabled = Boolean(isMailReview && currentMailUI?.reviewByTask?.[key]?.blockGeneral);
+    patchButton(rec.mailFindBtn, canMailFind, key);
+    patchButton(rec.mailRepeatBtn, canMailRepeat, key);
     patchButton(rec.terminalBtn, info.canTerminal, argId);
 
     const anyAction =
-      info.showAnswer || info.canCancel || info.canResume || info.canFollow || info.canRetry || info.canTerminal;
+      showAnswer ||
+      info.canCancel ||
+      info.canResume ||
+      info.canFollow ||
+      canRetry ||
+      canMailGeneral ||
+      canMailFind ||
+      canMailRepeat ||
+      info.canTerminal;
     if (rec.actionsEl.hidden !== !anyAction) {
       rec.actionsEl.hidden = !anyAction;
     }
@@ -878,6 +1198,11 @@ export function createOfficeTaskView(host, dispatch) {
     const nextEpoch = model.epoch ?? 0;
     let rebuiltForm = false;
     if (!formRefs || nextEpoch !== currentEpoch) {
+      if (formRefs && formRefs.mailControls) {
+        formRefs.mailControls.update(null, null, false, false);
+      }
+      clearAllMailResults();
+      clearAllMailReviews();
       clearAllManuals();
       clearChildren(formSlotEl);
       formRefs = buildForm();
@@ -917,6 +1242,36 @@ export function createOfficeTaskView(host, dispatch) {
     activeProvider = nextProvider;
     activeDeptId = nextDeptId;
     activePreviousId = nextPreviousId;
+    currentMail = model.mail ? model.mail : null;
+    currentMailUI = model.mailUI && typeof model.mailUI === 'object' ? model.mailUI : null;
+
+    const showFormMail = nextProvider === 'codex' && Boolean(currentMail);
+    formRefs.mailControls.update(
+      showFormMail ? currentMail : null,
+      showFormMail ? currentMailUI : null,
+      showFormMail ? formState.mailSearch : null,
+      false,
+    );
+
+    if (!currentMail || rawTasks.length === 0) {
+      clearAllMailResults();
+      clearAllMailReviews();
+    } else if (cardMap.size > 0) {
+      const nextTaskIds = new Set();
+      for (const item of rawTasks) {
+        if (item && typeof item === 'object' && item.id != null && String(item.id) !== '') {
+          nextTaskIds.add(String(item.id));
+        }
+      }
+      for (const rec of cardMap.values()) {
+        if (rec.mailResults && !nextTaskIds.has(rec.mailResults.taskId)) {
+          disposeMailResults(rec);
+        }
+        if (rec.mailReview && !nextTaskIds.has(rec.mailReview.taskId)) {
+          disposeMailReview(rec);
+        }
+      }
+    }
 
     const deptMap = new Map();
     const deptOptions = [{ id: '', name: '사무실' }];
@@ -1038,8 +1393,8 @@ export function createOfficeTaskView(host, dispatch) {
         cardMap.set(key, rec);
       }
 
-      const info = describeTask(task, deptMap);
-      patchCard(rec, key, info);
+      const info = describeTask(task, deptMap, Boolean(currentMail));
+      patchCard(rec, key, info, task, rawTasks);
       nextCardEls.push(rec.el);
 
       const prevStatus = knownStatuses.get(key);
@@ -1051,6 +1406,8 @@ export function createOfficeTaskView(host, dispatch) {
 
     for (const [key, rec] of cardMap.entries()) {
       if (!seenCardKeys.has(key)) {
+        disposeMailReview(rec);
+        disposeQuoteHandoff(rec);
         disposeManual(rec);
         if (rec.el.parentNode) {
           rec.el.parentNode.removeChild(rec.el);
