@@ -10,7 +10,7 @@ Claude Code와 Codex가 일하는 모습을 부서가 있는 사무실로 보여
 
 ## 보는 법
 
-- 아티팩트: <https://claude.ai/artifact/1zoctENE5By6Hh3p1av1JE> (올린 계정으로 로그인했을 때만 열린다). 11-21에 기획부와 사업계획서를 더한 판이다. 같은 판을 먼저 올린 <https://claude.ai/artifact/RYYc2niwVjSeokwrjMgU6Z>와 그 앞의 11-20 판 <https://claude.ai/artifact/MFkgPmtV274wPJUB6p85ii>(고리 · 물결 · 큰 움직임을 뺀 판)은 다른 계정으로 올려서 지금 계정에서 열리지 않는다. 그 앞의 두 판 <https://claude.ai/artifact/SmCqRpKn2oKLBYeZeupYtY>, <https://claude.ai/artifact/RhpFDpBK86NxZKonbbSzea>는 다른 계정으로 올렸다.
+- 아티팩트: <https://claude.ai/artifact/8DKqeLC44W7JkKtAcho2nc> (올린 계정으로 로그인했을 때만 열린다). 11-21에 기획부와 사업계획서를 더한 판이고, 11-23에 지금 계정으로 다시 올렸다. 같은 판을 먼저 올린 <https://claude.ai/artifact/1zoctENE5By6Hh3p1av1JE>, <https://claude.ai/artifact/RYYc2niwVjSeokwrjMgU6Z>와 그 앞의 11-20 판 <https://claude.ai/artifact/MFkgPmtV274wPJUB6p85ii>(고리 · 물결 · 큰 움직임을 뺀 판)은 다른 계정으로 올려서 지금 계정에서 열리지 않는다. 그 앞의 두 판 <https://claude.ai/artifact/SmCqRpKn2oKLBYeZeupYtY>, <https://claude.ai/artifact/RhpFDpBK86NxZKonbbSzea>는 다른 계정으로 올렸다.
 - 저장소에서는 `node tools/지면서버.js 8765`를 띄우고 `http://localhost:8765/docs/디자인/솔리오_사무실_20261119/사무실.html`을 연다. 앱 안 브라우저에서는 `.claude/launch.json`의 「시안지면」으로 띄운다.
 - 아티팩트에 다시 올릴 때는 `node docs/디자인/솔리오_사무실_20261119/아티팩트판.cjs <나갈 파일>`로 구운 판을 올린다. 뼈대를 씌우지 않는 게시 도구(claude-artifacts의 `publish_files`)로 올릴 때는 끝에 `--문서`를 붙여 온전한 문서로 굽는다.
 - 화면 아래의 막대는 시안을 조작하는 것이고 디자인의 일부가 아니다. 「상황」은 승인 물음, 평소, 모두 쉼을 돈다. 「창 크기」는 창을 줄여 본다. 「알림 받기」를 누르면 일하던 직원 하나가 일을 끝내 알림이 오는 순간을 본다.
