@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>솔리오 사무실 시안</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap">
 <style>
 @font-face{font-family:'SUIT Variable';font-weight:100 900;font-display:swap;src:url(../../브랜드_폰트/SUIT/SUIT-Variable.woff2) format('woff2-variations');}
+@font-face{font-family:'DM Mono';font-weight:400;font-display:swap;src:url(../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf) format('truetype');}
 
 /* 짜임: 검정 구 클라이언트의 솔리오 방 하나다. 맨 위 문장이 결론을 말하고, 왼쪽에 사무실, 오른쪽에 부서 줄을 둔다.
    직원은 구의 작은 분신이다. 색은 하나이고, 급한 것만 밝다. */
@@ -19,6 +23,19 @@
   --hair-strong:rgba(243,241,236,.20);
   --ring:rgba(243,241,236,.55);
   --pit:#0C0C0B;
+  --sheet:#FFFFFF;
+  --sheet-ink:#151514;
+  --sheet-dim:#6B6A66;
+  --sheet-rule:#E7E5E0;
+  /* 사업계획서 작업 화면의 역할표(11-23 「글자와 색은 역할마다」).
+     글자: 손님의 계획서는 명조, 직원의 말과 단추는 SUIT, 쪽 · 날짜 · 파일 이름은 DM Mono.
+     색: 검정은 방, 흰 종이는 손님의 계획서, 청금석은 직원이 짚은 곳, 메도우는 정리된 것, 흰 알약은 결정 단추 */
+  --serif:'Noto Serif KR','Nanum Myeongjo','Batang',serif;
+  --mono:'DM Mono','SUIT Variable','Malgun Gothic',sans-serif;   /* 숫자 · 라틴은 DM Mono, 한글은 SUIT가 받는다(DM Mono에는 한글이 없다) */
+  --lapis:#3D6BC9;
+  --lapis-soft:#C5D6F5;
+  --meadow:#7DB45A;
+  --meadow-soft:#D3E8BE;
   --meta-bg:rgba(10,10,10,.84);
   --sans:'SUIT Variable','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
   --display:300 clamp(25px,min(3.5cqw,5.6cqh),54px)/1.3 var(--sans);
@@ -129,6 +146,125 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .obj{position:relative}
 .obj.news::after{content:'!';position:absolute;left:26px;top:4px;font:700 11px/1 var(--sans);color:var(--paper)}
 
+[hidden]{display:none !important}
+
+/* 기획부 「사업계획서」 작업 화면(11-23): 검은 방 위에 흰 계획서 한 장이 주인공이다.
+   종이 옆에 직원의 메모가 그 문단 높이에 붙고, 고른 메모 하나만 단추를 보인다. 색은 결정 단추(흰 알약)에만 쓴다 */
+/* 작업 화면에서는 맨 위 문장을 줄이고 방을 위로 올려 계획서가 한 화면에 더 많이 보이게 한다 */
+/* 종이 아래끝을 검게 덮던 아래 흐림을 빼고, 올라간 글이 잘린 조각으로 남지 않게 위쪽만 22px 흐린다 */
+#stage.planning .room{top:calc(clamp(76px,12cqh,118px) - 22px);max-height:calc(100% - clamp(76px,12cqh,118px) + 22px);padding-top:22px;padding-bottom:28px;-webkit-mask-image:linear-gradient(transparent,#000 22px);mask-image:linear-gradient(transparent,#000 22px)}
+#stage.planning .say{font:300 clamp(22px,min(2.3cqw,4.4cqh),34px)/1.3 var(--sans)}
+.work{margin-top:clamp(16px,2.6cqh,30px);padding-bottom:20px}
+.work-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin-bottom:clamp(16px,2.6cqh,26px)}
+.back{appearance:none;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;padding:0 0 4px;font:var(--small);color:rgba(243,241,236,.8);cursor:pointer}
+.back:hover{color:var(--paper);border-bottom-color:var(--paper)}
+.who{display:inline-flex;align-items:center;gap:9px;min-width:0;font:var(--small);color:rgba(243,241,236,.72)}
+.who b{font-weight:500;color:var(--paper)}
+.mini{position:relative;flex:none;width:20px;height:20px;border-radius:50%;background:#000;border:1px solid rgba(243,241,236,.5)}
+.mini::before,.mini::after{content:'';position:absolute;top:7.5px;width:2.5px;height:2.5px;border-radius:50%;background:var(--paper)}
+.mini::before{left:5.5px}.mini::after{right:5.5px}
+.mini.on{animation:rim 3.2s ease-in-out infinite}
+@keyframes rim{50%{border-color:rgba(243,241,236,.95)}}
+.call{padding:12px 0 14px;border-top:1px solid var(--hair-strong)}
+.call .pg{display:block;font:400 11.5px/1.3 var(--mono);color:var(--dim)}
+.call p{margin:3px 0 0;font:var(--small);color:rgba(243,241,236,.72)}
+.call p b{font:500 15px/1.4 var(--sans);color:var(--paper)}
+.call p.num{font:400 12.5px/1.4 var(--mono);letter-spacing:-.01em}
+.items{display:grid;gap:7px;margin:12px 0 0;padding:0;list-style:none;font:var(--small);color:rgba(243,241,236,.84)}
+.items li{display:inline-flex;align-items:center;gap:8px}
+.items li i{width:6px;height:6px;border-radius:50%;background:var(--meadow)}
+.items li small{font:400 11.5px/1.3 var(--mono);color:var(--dim)}
+.items li.weak{color:var(--lapis-soft);font-weight:500}
+.items li.weak i{width:10px;height:2px;border-radius:0;background:var(--lapis-soft)}
+.items li.weak small{color:var(--lapis-soft)}
+.items li .k{font:var(--small);font-weight:400}
+.desk{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,1fr);column-gap:clamp(22px,3.4cqw,56px);row-gap:20px;align-items:start}
+/* 계획서 종이 */
+.sheet{display:block;background:var(--sheet);color:var(--sheet-ink);border-radius:2px;padding:clamp(22px,3cqw,40px) clamp(22px,3.4cqw,46px) clamp(14px,2cqw,24px);box-shadow:0 30px 70px -24px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.04)}
+.sheet-h{padding-bottom:16px}
+.sheet-h small{font:400 11.5px/1.3 var(--mono);color:var(--sheet-dim)}
+.sheet-h h3{margin:10px 0 6px;font:600 clamp(22px,2.1cqw,27px)/1.3 var(--serif);letter-spacing:-.01em}
+.sheet-h p{margin:0;font:400 14px/1.5 var(--serif);color:var(--sheet-dim)}
+.sec{position:relative;padding:16px 0 17px;border-top:1px solid var(--sheet-rule);transition:opacity .45s ease}
+.sec .pg{display:block;font:400 12px/1.3 var(--sans);color:var(--sheet-dim)}
+.sec .pg b{margin-right:9px;font:400 11.5px/1.3 var(--mono)}
+.sec.has .pg{color:var(--lapis)}
+.sec h4{margin:6px 0 6px;font:600 16px/1.45 var(--serif)}
+.sec p{margin:0;font:400 15.5px/1.8 var(--serif);color:#2b2a27}
+.sec.unread{opacity:.2}
+.sec.has{cursor:pointer}
+.sec.has::before{content:'';position:absolute;left:-17px;top:22px;width:6px;height:6px;border-radius:50%;background:var(--lapis)}
+.sec.on::before{top:16px;bottom:17px;left:-16px;width:3px;height:auto;border-radius:0}
+.sec.changed p{animation:settle .9s cubic-bezier(.2,.8,.2,1)}
+@keyframes settle{from{opacity:0;transform:translateY(5px)}}
+/* 메모 */
+.notes{position:relative;min-width:0}
+.notes.side > *{position:absolute;left:0;right:0;transition:top .38s cubic-bezier(.2,.8,.2,1)}
+.note{padding:12px 0 14px;border-top:1px solid var(--hair-strong)}
+.note .pg{display:block;font:400 11.5px/1.3 var(--mono);color:var(--lapis-soft)}
+.note .what{display:block;margin:4px 0 0;padding:0;background:none;border:0;text-align:left;font:400 15px/1.45 var(--sans);color:rgba(243,241,236,.78);cursor:pointer}
+.note button.what:hover{color:var(--paper)}
+.note .what .arw{color:var(--dim);transition:color .25s ease}
+.note button.what:hover .arw{color:var(--paper)}
+.picked{margin:12px 0 0;font:var(--small);color:rgba(243,241,236,.72)}
+.note .why{margin:5px 0 0;font:400 13px/1.55 var(--sans);color:var(--dim)}
+.note.sel{border-top-color:var(--lapis-soft)}
+.note.sel .what{font-size:17px;font-weight:500;color:var(--paper);cursor:default}
+.note.sel .why{color:rgba(243,241,236,.76)}
+.note.done .what{font-size:13px;color:rgba(243,241,236,.66);cursor:default}
+.note.done .what::before{content:'';display:inline-block;width:6px;height:6px;margin-right:9px;border-radius:50%;background:var(--meadow);vertical-align:2px}
+.note.done{border-top-color:var(--hair)}
+.note.save{border-top-color:var(--meadow)}
+.note.new{animation:noteIn .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes noteIn{from{opacity:0;transform:translateX(10px)}}
+.note .acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-top:13px}
+.note .lab{font:var(--small);color:var(--dim)}
+.pill{appearance:none;display:inline-flex;align-items:center;height:38px;margin:0;padding:0 18px;border:1px solid var(--paper);border-radius:999px;background:var(--paper);font:500 14px/1 var(--sans);color:#000;cursor:pointer;white-space:nowrap}
+.pill:hover{background:#fff}
+.pill.ghost{background:none;border-color:rgba(243,241,236,.42);color:var(--paper)}
+.pill.ghost:hover{border-color:var(--paper)}
+.pill.small{height:34px;padding:0 14px;font-weight:400}
+.pill.dark{border-color:rgba(21,21,20,.4);color:var(--sheet-ink)}
+:is(.pill,.back,.note .what,.sec.has):focus-visible{outline:1px solid var(--ring);outline-offset:3px}
+.prop{margin-top:12px;padding:12px 14px;border:1px solid var(--hair-strong);border-radius:2px}
+.prop p{margin:0;font:400 14.5px/1.75 var(--serif);color:var(--paper)}
+.prop p + p{margin-top:8px;padding-top:8px;border-top:1px dashed var(--hair-strong)}
+.prop p:first-child:not(:last-child){color:var(--dim)}
+.prop small{display:block;margin-bottom:2px;font:400 12px/1.3 var(--sans);color:var(--dim)}
+.draft.reveal .s{animation:sIn .45s ease both;animation-delay:calc(var(--k) * 420ms)}
+@keyframes sIn{from{opacity:0}}
+.state{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;font:400 14px/1.5 var(--sans);color:rgba(243,241,236,.86)}
+.talk{margin-top:12px}
+.talk .q{display:flex;gap:9px;align-items:flex-start;margin:0;font:400 14px/1.5 var(--sans);color:var(--dim)}
+.talk .q.now{color:var(--paper)}
+.talk .a{margin:4px 0 10px 29px;font:500 14px/1.4 var(--sans);color:rgba(243,241,236,.86)}
+.talk .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0 29px}
+.talk .step{margin:12px 0 0 29px;font:var(--small);color:var(--dim)}
+/* 넣기: 종이 자리 */
+/* 빈 종이: 안쪽 18px에 점선을 둘러 「여기에 놓는다」를 보인다 */
+.sheet.blank{display:grid;place-items:center;min-height:clamp(300px,50cqh,480px);cursor:pointer;text-align:center;outline:1px dashed #CFCAC0;outline-offset:-18px;transition:box-shadow .25s ease}
+.sheet.blank:hover{outline-color:#8F8B83}
+.sheet.blank.drag{box-shadow:0 0 0 2px var(--paper),0 30px 70px -24px rgba(0,0,0,.9)}
+.blank-in{display:grid;justify-items:center;gap:10px;max-width:24em}
+.blank-in b{font:600 19px/1.35 var(--sans)}
+.blank-in small{font:400 13px/1.55 var(--sans);color:var(--sheet-dim)}
+.blank-in .pill{margin-top:8px}
+.start-side{display:grid;gap:12px;align-content:start}
+.start-side .lab{font:500 15px/1.4 var(--sans);color:var(--paper)}
+.start-side select{appearance:none;-webkit-appearance:none;height:42px;padding:0 40px 0 14px;border:1px solid rgba(243,241,236,.34);border-radius:2px;background:var(--pit) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M.5.5 5 5 9.5.5' fill='none' stroke='%23F3F1EC' stroke-opacity='.7'/%3E%3C/svg%3E") no-repeat right 16px center;font:400 14px var(--sans);color:var(--paper);cursor:pointer}
+.start-side select:hover{border-color:rgba(243,241,236,.6)}
+.start-side select:focus-visible{outline:1px solid var(--ring);outline-offset:3px}
+.start-side .why{margin:2px 0 0;font:400 13px/1.6 var(--sans);color:rgba(243,241,236,.66)}
+.start-side .acts{margin-top:6px}
+.start-side .hint{margin:0;font:var(--small);color:var(--paper)}
+@container stage (max-width:860px){
+  .desk{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+  .mini.on,.note.new,.sec.changed p,.draft.reveal .s{animation:none !important}
+  .sec,.notes.side > *{transition:none !important}
+}
+
 /* 창이 좁으면 사무실이 위, 줄이 아래로 쌓인다 */
 @container stage (max-width:860px){
   .office{grid-template-columns:minmax(0,1fr);row-gap:22px}
@@ -170,6 +306,7 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         <div id="slot" role="img" aria-label="부서마다 직원이 앉아 있는 사무실 그림. 같은 내용이 옆의 부서 줄에 글로 있습니다."></div>
         <div class="rows" id="rows"></div>
       </div>
+      <section class="work" id="work" hidden aria-label="기획부 사업계획서"></section>
     </main>
   </div>
 </div>
@@ -187,7 +324,7 @@ button.row .mid{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 'use strict';
 const $ = s => document.querySelector(s);
 const stage = $('#stage'), cv = $('#floor'), ctx = cv.getContext('2d');
-const slot = $('#slot'), room = $('#room'), rowsEl = $('#rows'), sayEl = $('#say'), orbBtn = $('#orb-btn');
+const slot = $('#slot'), room = $('#room'), rowsEl = $('#rows'), sayEl = $('#say'), orbBtn = $('#orb-btn'), workEl = $('#work'), officeEl = $('.office');
 const officeObj = $('.obj[aria-current="true"]');
 const INK = '243,241,236';
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -227,7 +364,7 @@ const S = (dept, seat, tool, model, state, say, act, when, extra) => Object.assi
 function cast0(scene) {
   uid = 0;
   if (scene === 'rest') return [
-    S('plan', 0, 'Claude Code', 'Opus', 'idle', '사업계획서 3판을 공고와 맞춰 읽었습니다', '쉬는 중', '어제'),
+    S('plan', 0, 'Claude Code', 'Opus', 'idle', '사업계획서를 기다리고 있습니다', '쉬는 중', ''),
     S('mkt', 0,'Claude Code', 'Sonnet', 'idle', '어제 블로그 글 둘을 끝냈습니다', '쉬는 중', '어제'),
     S('law', 0, 'Claude Code', 'Opus', 'idle', '용역 계약서 검토를 끝냈습니다', '쉬는 중', '어제'),
     S('dev', 0, 'Codex', 'GPT', 'idle', '결제 화면의 시험을 모두 통과했습니다', '쉬는 중', '3시간 전'),
@@ -235,7 +372,7 @@ function cast0(scene) {
   ];
   const ask = scene === 'ask';
   return [
-    S('plan', 0, 'Claude Code', 'Opus', 'done', '사업계획서 3판을 공고와 맞춰 읽었습니다', '끝냄 · 계획서_검토_3판.md', '어제'),
+    S('plan', 0, 'Claude Code', 'Opus', 'idle', '사업계획서를 기다리고 있습니다', '쉬는 중', ''),
     S('mkt', 0,'Claude Code', 'Sonnet', 'work', '11월 블로그 글 초안을 쓰고 있습니다', '쓰기 · 블로그_11월.md', '14분째', {fin:'11월 블로그 글 초안을 다 썼습니다'}),
     S('mkt', 1, 'Claude Code', 'Sonnet', 'work', '지난주 인스타그램 반응을 표로 정리하고 있습니다', '읽기 · 반응_46주.csv', '6분째', {fin:'지난주 인스타그램 반응을 표로 정리했습니다'}),
     ask ? S('law', 0, 'Claude Code', 'Opus', 'ask', '폴더 「계약_옛판」을 지워도 되는지 물었습니다', '3분 전에 승인을 물었습니다', '3분 전')
@@ -278,20 +415,38 @@ const SCOUTS = [
   {head:'세 곳 모두 지난번과 같습니다', when:'방금', rest:'온결상점, 한뼘상점, 두루상점', say:['경쟁사 세 곳은 지난번과 같습니다.', '마케팅부가 방금 다 읽었습니다.']},
 ];
 let scoutI = 0, scouting = null, scoutT = [], lastHold = null, rivalNews = 0;
-/* 기획부 「사업계획서」: 맡긴 공고의 평가 항목과 회사 자료(다른 부서의 폴더)에 계획서를 맞춰 읽는다. 점수는 매기지 않는다(이름과 값은 모두 예시).
-   첫 값은 어제 읽은 3판이다. 「지금 읽기」를 누를 때마다 손님이 고쳐 저장한 다음 판을 읽는다. 마지막 판은 고칠 곳이 없는 때다.
-   아직 사실이 아닌 문장은 고쳐 쓰라고만 하지 않고, 만들어서 사실로 만들 수 있으면 그 부서에 맡기는 길을 준다 */
-const CALL = {name:'새싹창업 지원사업', due:'12월 5일 18:00 마감', left:'D-14', items:'문제 인식, 실현 가능성, 성장 전략, 팀 구성', file:'공고문_새싹창업.pdf'};
-const F_FIX = {nm:'3쪽', b:'「단골 손님 300명」이 자료와 다릅니다', small:'회계부의 영수증_10월.xlsx에는 다시 산 손님이 112명입니다', fix:'10월에 다시 산 손님 112명'};
-const F_MAKE = {nm:'5쪽', b:'「휴대폰에서 바로 주문할 수 있습니다」는 아직 사실이 아닙니다', small:'개발부의 코드\\shop에는 휴대폰 주문 화면이 없습니다', make:'휴대폰 주문 화면을 만들고 있습니다'};
-const PLANS = [
-  {v:3, when:'어제', head:'빠진 항목 하나, 사실이 아닌 문장 둘', gaps:[{nm:'성장 전략', b:'3년 뒤 매출 목표만 있고, 어떻게 늘릴지가 없습니다', small:'평가 항목 셋째 · 계획서 4쪽'}], ok:'문제 인식, 실현 가능성, 팀 구성은 계획서가 답합니다', facts:[F_FIX, F_MAKE]},
-  {v:4, when:'방금', head:'사실이 아닌 문장 하나', changed:'4쪽에 성장 전략을 채우고, 3쪽의 단골 손님 수를 112명으로 고쳤습니다', gaps:[], ok:'평가 항목 넷 모두 계획서가 답합니다', facts:[F_MAKE], say:['4판에서 빠진 항목이 채워졌습니다.', '아직 사실이 아닌 문장이 하나 남았습니다.']},
-  {v:5, when:'방금', head:'고칠 곳이 없습니다', gaps:[], ok:'평가 항목 넷 모두 계획서가 답합니다', facts:[], say:['5판은 고칠 곳이 없습니다.', '기획부가 공고와 회사 자료에 맞춰 다 읽었습니다.']},
+/* 기획부 「사업계획서」 작업 화면(11-23 다시 지음). 계획서 한 장이 주인공이다. 흰 종이 위 문단 옆에 기획부 직원의 메모가 붙고,
+   메모마다 그 자리에서 고치는 단추가 있다. 순서는 넣기 → 읽기 → 메모를 하나씩 보며 고치기 → 새 파일로 저장이다(이름과 값은 모두 예시) */
+const CALLS = [
+  {name:'새싹창업 지원사업', due:'12월 5일 18:00 마감', left:'14일 남음', file:'공고문_새싹창업.pdf'},
+  {name:'소상공인 온라인 판로 지원', due:'12월 12일 18:00 마감', left:'21일 남음', file:'공고문_판로지원.pdf'},
 ];
-let planI = 0, planning = null, planT = [], planNews = 0, planMake = null, planCopied = false;
-/* 5판에서 달라진 것은 개발부에 맡긴 화면이 끝났는지에 따라 다르다 */
-const planChanged = r => r.v < 5 ? r.changed : planMake && planMake.state === 'done' ? '5쪽의 휴대폰 주문은 개발부가 만든 화면으로 사실이 되었습니다' : '5쪽의 휴대폰 주문을 「2027년 3월에 엽니다」로 고쳤습니다';
+const PLAN0 = {file:'사업계획서_v3.docx', title:'수제 그래놀라 정기배송', sub:'신청서 · 3판', secs:[
+  {id:'s2', pg:'2쪽', item:'문제 인식', h:'왜 이 일을 하나', p:'바쁜 직장인은 아침을 거르기 쉽습니다. 시중 그래놀라는 설탕이 많아 매일 먹기 어렵습니다.'},
+  {id:'s3', pg:'3쪽', item:'실현 가능성', h:'지금까지 한 일', p:'2025년 9월부터 온라인으로 팔아 왔습니다. 단골 손님 300명이 매달 다시 삽니다.'},
+  {id:'s4', pg:'4쪽', item:'실현 가능성', h:'주문하는 법', p:'홈페이지에서 주문합니다. 휴대폰에서 바로 주문할 수 있습니다.'},
+  {id:'s5', pg:'5쪽', item:'성장 전략', h:'3년 뒤', p:'3년 뒤 매출 5억 원을 목표로 합니다.'},
+  {id:'s6', pg:'6쪽', item:'팀 구성', h:'함께하는 사람', p:'대표가 직접 굽고, 포장은 동네 자활센터와 함께합니다.'},
+]};
+const ITEMS4 = [{nm:'문제 인식', secs:['s2']}, {nm:'실현 가능성', secs:['s3', 's4']}, {nm:'성장 전략', secs:['s5'], weak:'n3'}, {nm:'팀 구성', secs:['s6']}];
+/* 메모 셋: 자료와 다른 숫자(고쳐 줘), 아직 사실이 아닌 문장(만들어 달라기 또는 여는 때로), 빈약한 평가 항목(같이 쓰기) */
+const NOTES = [
+  {id:'n1', sec:'s3', what:'단골 손님 수가 회계부 자료와 다릅니다.', why:'계획서에는 300명이라고 썼는데, 회계부의 10월 영수증에서 다시 산 손님은 112명입니다.', from:'단골 손님 300명이 매달 다시 삽니다.', to:'10월 한 달 동안 다시 산 손님은 112명입니다.', done:'3쪽의 단골 손님 수를 112명으로 고쳤습니다.'},
+  {id:'n2', sec:'s4', what:'휴대폰 주문은 아직 없습니다.', why:'개발부가 맡은 가게 코드에 휴대폰 주문 화면이 없습니다. 만들면 이 문장이 사실이 됩니다.', from:'휴대폰에서 바로 주문할 수 있습니다.', to:'휴대폰 주문은 2027년 3월에 엽니다.', done:'4쪽의 휴대폰 주문을 「2027년 3월에 엽니다」로 고쳤습니다.', made:'개발부가 휴대폰 주문 화면을 만들었습니다. 4쪽 문장이 이제 사실입니다.'},
+  {id:'n3', sec:'s5', what:'「성장 전략」이 목표 숫자 한 줄뿐입니다.', why:'공고의 셋째 평가 항목입니다. 새 손님을 어디서 만나고, 어떻게 늘릴지가 빠졌습니다.', done:'5쪽에 성장 전략을 채웠습니다.'},
+];
+/* 같이 쓰기: 직원이 셋을 묻고, 고른 답으로 문단 초안을 쓴다. 둘째 물음은 회계부 영수증에서 읽은 값을 먼저 보여 준다 */
+const ASKS = [
+  {q:'첫해에 새 손님을 주로 어디서 만나나요?', opts:[['인스타그램', '인스타그램에서'], ['지인 소개', '지인 소개로'], ['오픈마켓', '오픈마켓에서']]},
+  {q:'10월 영수증을 보면 손님 한 분이 한 번에 평균 2만 4천 원어치를 삽니다. 이 값으로 셈할까요?', opts:[['네, 2만 4천 원으로', '2만 4천'], ['2만 8천 원으로 올려서', '2만 8천']]},
+  {q:'2년째부터 무엇으로 늘릴까요?', opts:[['정기배송 묶음', '정기배송 묶음을 열어 매달 다시 사게 합니다'], ['회사 단체 주문', '회사 단체 주문을 받아 한 번에 많이 팝니다'], ['새 맛 추가', '새 맛을 더해 다시 사는 손님을 늘립니다']]},
+];
+const draftOf = a => [`첫해에는 ${a[0]} 새 손님을 만납니다.`, `손님 한 분은 한 번에 평균 ${a[1]} 원어치를 삽니다.`, `2년째부터는 ${a[2]}.`, '이렇게 3년 뒤 매출 5억 원을 목표로 합니다.'];
+let planView = false, pv = null, pvTimers = [];
+const pvNew = () => ({stage:'start', file:'', call:0, secs:PLAN0.secs.map(s => ({...s})), read:0, step:'', who:null, sel:'n1', st:{n1:'open', n2:'open', n3:'open'}, prev:{}, ans:[], make:null, changed:null, changedT:0, draftT:0, foundT:{}, saved:false});
+pv = pvNew();
+const openNotes = () => NOTES.filter(n => pv.st[n.id] !== 'done');
+const secOf = id => pv.secs.find(s => s.id === id);
 /* 부서의 기능: 부서를 누르면 직원 줄과 맡기기 칸 아래에 기능 이름이 한 줄씩 차례로 펼쳐진다. 기능이 늘어도 줄 하나씩만 는다.
    「경쟁사」만 지었고, soon이 붙은 둘은 기능이 늘었을 때의 모습을 보이는 자리다. 모든 부서의 맨 아래에는 「부서 설정」이 있다 */
 const ITEMS = {
@@ -321,6 +476,7 @@ const 수 = n => n > 10 && n < 20 ? '열' + 수(n - 10) : ['', '하나', '둘', 
 const busy = s => s.state === 'work' || s.state === 'stall';
 function headline() {
   if (sayHold) return sayHold;
+  if (planView) return planSay();
   const asks = staff.filter(s => s.state === 'ask'), works = staff.filter(busy), q = waiting();
   if (asks.length) return [이가(deptOf(asks[0].dept).name) + ' ' + asks[0].act + '.',
     works.length && q ? `나머지 ${은는(수(works.length))} 일하고, ${은는(수(q))} 차례를 기다립니다.` : works.length ? '나머지 ' + 은는(수(works.length)) + ' 일하고 있습니다.' : q ? 은는(수(q)) + ' 차례를 기다립니다.' : '다른 일은 없습니다.'];
@@ -373,7 +529,7 @@ function moreHTML(d, st) {
   for (const f of ITEMS[d.id] || []) {
     if (f.soon) h += `<div class="row sub fact soon" style="--j:${j++}"><span class="nm">${esc(f.name)}</span><span class="mid">${esc(f.soon)}</span><span class="when">준비 중</span></div>`;
     else if (f.id === 'rivals') { const r = SCOUTS[scoutI]; h += item('rivals', f.name, scouting ? '세 곳을 다시 읽고 있습니다' : r.head, scouting ? '읽는 중' : r.when + ' 읽음', rivalsHTML(), rivalNews); }
-    else if (f.id === 'bizplan') { const r = PLANS[planI]; h += item('bizplan', f.name, planning ? `${planning.v}판을 공고와 자료에 맞춰 읽고 있습니다` : r.head, planning ? '읽는 중' : `${r.v}판 · ${r.when} 읽음`, planHTML(), planNews); }
+    else if (f.id === 'bizplan') h += `<button class="row sub item" type="button" data-openplan style="--j:${j++}"><span class="nm">${esc(f.name)}</span><span class="mid">${esc(planRowMid())}</span><span class="when">${pv.stage === 'reading' ? '읽는 중' : '열기'}</span></button>`;
   }
   h += item('set', '부서 설정', `${tool} · ${d.dir}`, '', setHTML);
   return h;
@@ -389,25 +545,122 @@ function rivalsHTML() {
   h += `<p class="more-note" style="--j:${j++}">세 곳을 월요일 09:00마다 다시 읽습니다. 누구나 볼 수 있는 쪽만 읽습니다.</p>`;
   return h;
 }
-/* 기획부 「사업계획서」의 안쪽: 공고, 지난 판과 달라진 것, 빠진 항목, 사실이 아닌 문장을 한 줄씩 적고, 답한 항목은 한 줄로 묶는다 */
-function planHTML() {
-  const r = PLANS[planI]; let j = 0;
-  const row = (cls, nm, b, small, when) => `<div class="row sub${cls}" style="--j:${j++}"><span class="nm">${esc(nm)}</span><span class="mid"><b>${esc(b)}</b><small>${esc(small)}</small></span><span class="when">${esc(when)}</span></div>`;
-  let h = row(' fact', '공고', `${CALL.name} · ${CALL.due}`, `평가 항목 넷 · ${CALL.items}`, CALL.left);
-  if (r.v > 3) h += row('', '달라진 것', planChanged(r), `${r.v - 1}판과 견주었습니다`, r.v + '판');
-  for (const g of r.gaps) h += row(' now', g.nm, g.b, g.small, '빠짐');
-  for (const f of r.facts) {
-    h += row(' now', f.nm, f.b, f.small, f.fix ? '다름' : '아직 아님');
-    if (f.fix) h += `<p class="more-acts" style="--j:${j++}"><button class="quiet" type="button" data-copy>${planCopied ? '복사했습니다' : '고친 문장 복사'}</button><span class="lab">「${esc(f.fix)}」</span></p>`;
-    else {
-      const m = planMake, how = !m ? '' : m === 'wait' ? `개발부에 맡겼습니다. ${whyText('dev')}.` : m.state === 'done' ? '개발부가 화면을 다 만들었습니다. 다음 판에서 다시 봅니다.' : '개발부가 휴대폰 주문 화면을 만들고 있습니다.';
-      h += `<p class="more-acts" style="--j:${j++}">${m ? `<span class="lab">${esc(how)}</span>` : '<button class="quiet warn" type="button" data-make>개발부에 맡기기</button><span class="lab">만들면 이 문장이 사실이 됩니다. 만들지 않으면 여는 때를 적어 주세요.</span>'}</p>`;
-    }
+/* ── 기획부 「사업계획서」 작업 화면 ─────────────────────────── */
+const planRowMid = () => pv.stage === 'start' ? '계획서를 넣으면 공고에 맞춰 읽고, 고칠 곳을 문장 옆에 적어 줍니다'
+  : pv.stage === 'reading' ? '계획서를 읽고 있습니다' : pv.saved ? '고친 판을 사업계획서_v4.docx로 저장했습니다'
+  : openNotes().length ? `고칠 곳이 ${수(openNotes().length)} 남았습니다` : '고칠 곳을 모두 정리했습니다';
+function planSay() {
+  if (pv.stage === 'start') return ['사업계획서를 넣어 주세요.', '공고에 맞춰 읽고, 고칠 곳을 문장 옆에 적어 드립니다.'];
+  if (pv.stage === 'reading') return ['기획부가 계획서를 읽고 있습니다.', '공고와 회사 자료에 한 쪽씩 견주는 중입니다.'];
+  if (pv.saved) return ['사업계획서_v4.docx로 저장했습니다.', '원본 3판은 그대로 남아 있습니다.'];
+  const n = openNotes().length;
+  // 메모가 종이 옆에 서는 넓은 창과 종이 아래로 쌓이는 좁은 창에서 가리키는 쪽이 다르다
+  const where = stage.clientWidth > 860 ? '오른쪽' : '계획서 아래';
+  return n ? [`고칠 곳이 ${수(n)} ${n === NOTES.length ? '있습니다' : '남았습니다'}.`, `${where} 메모를 위에서부터 하나씩 보시면 됩니다.`]
+    : ['고칠 곳을 모두 정리했습니다.', '고친 판을 새 파일로 저장하면 원본은 그대로 남습니다.'];
+}
+const fresh = (t, ms) => t && performance.now() - t < ms;
+function workHTML() {
+  const S = pv.stage;
+  const line = S === 'reading' ? pv.step : S === 'start' ? '계획서를 기다리고 있습니다' : pv.saved ? '저장을 마쳤습니다' : '다 읽었습니다. 메모를 보며 같이 고칩니다';
+  let h = `<div class="work-top"><button class="back" type="button" data-back>← 사무실</button>`
+    + `<span class="who"><i class="mini${S === 'reading' ? ' on' : ''}" aria-hidden="true"></i><b>기획부 직원</b><span>${esc(line)}</span></span></div>`;
+  if (S === 'start') return h + startHTML();
+  return h + `<div class="desk"><article class="sheet" aria-label="사업계획서">${sheetHTML()}</article><div class="notes" id="notes">${callHTML()}${notesHTML()}</div></div>`;
+}
+/* 공고와 평가 항목 넷: 메모 칸 맨 위, 계획서 머리와 같은 높이에 선다. 어느 쪽이 어느 항목에 답하는지와 빈약한 항목을 보인다 */
+function callHTML() {
+  const c = CALLS[pv.call], S = pv.stage;
+  return `<div class="call"><small class="pg">공고</small><p><b>${esc(c.name)}</b></p><p class="num">${esc(c.due)} · ${esc(c.left)}</p><ul class="items">`
+    + ITEMS4.map(it => { const weak = it.weak && pv.st[it.weak] !== 'done' && S !== 'reading'; return `<li class="${weak ? 'weak' : ''}"><i aria-hidden="true"></i>${esc(it.nm)}<small>${esc(it.secs.map(id => secOf(id).pg).join(', '))}</small>${weak ? '<span class="k">한 줄뿐</span>' : ''}</li>`; }).join('')
+    + `</ul></div>`;
+}
+/* 넣기: 종이 자리에 파일을 놓거나 고르고, 낼 공고를 고른 뒤 맡긴다 */
+function startHTML() {
+  const f = pv.file;
+  return `<div class="desk start"><label class="sheet blank" for="plan-file"><input id="plan-file" class="sr" type="file" accept=".docx,.pdf"><span class="blank-in">`
+    + (f ? `<b>${esc(f)}</b><small>이 파일을 읽습니다. 시안이라 내용은 예시 계획서로 보여 드립니다.</small><span class="pill ghost dark">다른 파일 고르기</span>`
+         : `<b>계획서 파일을 여기에 놓으세요</b><small>.docx나 .pdf를 넣습니다. 한글(.hwp) 파일은 PDF로 저장해 넣어 주세요.</small><span class="pill ghost dark">파일 고르기</span>`)
+    + `</span></label><div class="start-side"><label class="lab" for="plan-call">어느 공고에 내나요?</label>`
+    + `<select id="plan-call">${CALLS.map((c, i) => `<option value="${i}"${i === pv.call ? ' selected' : ''}>${esc(c.name)} · ${esc(c.due)}</option>`).join('')}</select>`
+    + `<p class="why">기획부 직원이 공고의 평가 항목과 회사 자료(회계부의 영수증, 개발부의 가게 코드)에 계획서를 맞춰 읽습니다. 점수는 매기지 않습니다. 계획서는 솔리오 서버로 보내지 않고, 내가 연결한 AI 구독으로만 읽습니다.</p>`
+    + `<div class="acts"><button class="pill" type="button" data-go>${f ? '기획부에 맡기기' : '예시 계획서로 맡겨 보기'}</button></div>`
+    + (notes.plan ? `<p class="hint">${esc(notes.plan)}</p>` : '') + `</div></div>`;
+}
+/* 계획서 종이: 읽는 동안은 읽은 쪽만 밝아지고, 메모가 붙은 문단은 왼쪽 여백에 점, 고르면 세로선이 선다 */
+function sheetHTML() {
+  const S = pv.stage;
+  const secs = pv.secs.map((s, i) => {
+    const n = NOTES.find(x => x.sec === s.id && pv.st[x.id] !== 'done' && (S !== 'reading' || i < pv.read));
+    const cls = ['sec', n ? 'has' : '', n && pv.sel === n.id && S !== 'reading' ? 'on' : '', S === 'reading' && i >= pv.read ? 'unread' : '', pv.changed === s.id && fresh(pv.changedT, 1400) ? 'changed' : ''].filter(Boolean).join(' ');
+    return `<section class="${cls}" data-sec="${s.id}"${n ? ` data-pick="${n.id}"` : ''}><small class="pg"><b>${esc(s.pg)}</b>${esc(s.item)}</small><h4>${esc(s.h)}</h4><p>${esc(s.p)}</p></section>`;
+  }).join('');
+  return `<header class="sheet-h"><small>${esc(pv.saved ? '사업계획서_v4.docx' : pv.file || PLAN0.file)}</small><h3>${esc(PLAN0.title)}</h3><p>${esc(CALLS[pv.call].name)} ${esc(pv.saved ? PLAN0.sub.replace('3판', '4판') : PLAN0.sub)}</p></header>${secs}`;
+}
+/* 메모: 고른 메모 하나만 단추를 보인다(한 번에 하나씩). 나머지는 무엇이 문제인지 한 문장만 보인다 */
+function notesHTML() {
+  const S = pv.stage; let h = '';
+  if (pv.st.n2 === 'make' && pv.make && pv.make !== 'wait' && pv.make.state === 'done') pv.st.n2 = 'done';
+  for (const n of NOTES) {
+    const i = pv.secs.findIndex(s => s.id === n.sec);
+    if (S === 'reading' && i >= pv.read) continue;
+    h += noteHTML(n, S === 'reading');
   }
-  h += row(' fact', '그 밖', r.ok, `견준 자료 · ${CALL.file}, 영수증_10월.xlsx, 코드\\shop`, '');
-  h += `<p class="more-acts" style="--j:${j++}">${planning ? '<span class="lab">읽는 중</span>' : '<button class="quiet" type="button" data-plan>지금 읽기</button>'}<button class="quiet" type="button" data-noop>공고 바꾸기</button></p>`;
-  h += `<p class="more-note" style="--j:${j++}">계획서 파일을 고쳐 저장하면 다시 읽고, 지난 판과 달라진 것만 말합니다. 점수는 매기지 않고 공고의 평가 항목으로만 봅니다. 계획서는 SYNK로 보내지 않고, 이 부서를 실행하는 내 구독의 AI만 읽습니다.</p>`;
+  if (S === 'review' && !openNotes().length) h += pv.saved
+    ? `<div class="note save"><p class="what">문서\\기획 폴더에 사업계획서_v4.docx로 저장했습니다.</p><p class="why">원본 사업계획서_v3.docx는 그대로 있습니다.</p><div class="acts"><button class="quiet" type="button" data-again>처음부터 다시 보기</button></div></div>`
+    : `<div class="note save sel"><p class="what">세 곳을 모두 정리했습니다.</p><p class="why">원본은 그대로 두고, 고친 판을 새 파일로 저장합니다.</p><div class="acts"><button class="pill" type="button" data-save>사업계획서_v4.docx로 저장</button></div></div>`;
   return h;
+}
+function noteHTML(n, still) {
+  const st = pv.st[n.id], sel = pv.sel === n.id && !still, pg = secOf(n.sec).pg, nw = fresh(pv.foundT[n.id], 700) ? ' new' : '';
+  if (st === 'done') {
+    const made = n.id === 'n2' && pv.make && pv.make !== 'wait' && pv.make.state === 'done';
+    return `<div class="note done${nw}" data-for="${n.sec}"><p class="what">${esc(made ? n.made : n.done)}</p>${made || pv.saved ? '' : `<div class="acts"><button class="quiet" type="button" data-undo="${n.id}">되돌리기</button></div>`}</div>`;
+  }
+  // 고르지 않은 메모는 쪽과 한 문장만 보인다. 문단 높이에 맞춰 서고, 누르면 그 메모가 열린다
+  const head = `<small class="pg">${esc(pg)}</small>` + (sel ? `<p class="what">${esc(n.what)}</p><p class="why">${esc(n.why)}</p>` : `<button class="what" type="button" data-pick="${n.id}"${still ? ' disabled' : ''}>${esc(n.what)}<span class="arw" aria-hidden="true"> ›</span></button>`);
+  return `<div class="note${sel ? ' sel' : ''}${nw}" data-for="${n.sec}">${head}${sel ? actsHTML(n, st) : ''}</div>`;
+}
+function actsHTML(n, st) {
+  const prop = (now, next) => `<div class="prop"><p><small>지금</small>${esc(now)}</p><p><small>고친 글</small>${esc(next)}</p></div>`;
+  if (n.id === 'n1') return st === 'prop'
+    ? prop(n.from, n.to) + `<div class="acts"><button class="pill" type="button" data-put="n1">계획서에 넣기</button><button class="pill ghost" type="button" data-keep="n1">그대로 두기</button></div>`
+    : `<div class="acts"><button class="pill" type="button" data-prop="n1">112명으로 고쳐 줘</button><button class="quiet" type="button" data-noop>영수증 보기</button></div>`;
+  if (n.id === 'n2') {
+    if (st === 'prop') return prop(n.from, n.to) + `<div class="acts"><button class="pill" type="button" data-put="n2">계획서에 넣기</button><button class="pill ghost" type="button" data-keep="n2">다른 방법 보기</button></div>`;
+    if (st === 'make') return `<p class="state"><i class="mini on" aria-hidden="true"></i>${esc(pv.make === 'wait' ? `개발부에 맡겼습니다. ${whyText('dev')}. 차례가 오면 시작합니다.` : '개발부가 휴대폰 주문 화면을 만들고 있습니다. 끝나면 이 메모가 알려 드립니다.')}</p>`
+      + `<div class="acts"><button class="quiet" type="button" data-prop="n2">기다리지 않고 여는 때로 고쳐 쓰기</button></div>`;
+    return `<div class="acts"><button class="pill" type="button" data-make>개발부에 만들어 달라기</button><button class="pill ghost" type="button" data-prop="n2">여는 때로 고쳐 쓰기</button></div>`;
+  }
+  if (st === 'ask') {
+    const k = pv.ans.length;
+    let h = '<div class="talk">';
+    pv.ans.forEach((a, i) => { h += `<p class="q">${esc(ASKS[i].q)}</p><p class="a">${esc(a[0])}</p>`; });
+    h += `<p class="q now"><i class="mini" aria-hidden="true"></i>${esc(ASKS[k].q)}</p><div class="chips">${ASKS[k].opts.map((o, i) => `<button class="pill ghost small" type="button" data-ans="${i}">${esc(o[0])}</button>`).join('')}</div>`;
+    return h + `<p class="step">${수(k + 1)}째 물음 · 모두 셋</p></div>`;
+  }
+  if (st === 'draft') {
+    const rv = fresh(pv.draftT, 2200) ? ' reveal' : '';
+    return `<p class="picked">고른 답 · ${pv.ans.map(a => esc(a[0])).join(' · ')}</p><div class="prop draft${rv}"><p><small>초안</small>${draftOf(pv.ans.map(a => a[1])).map((s, i) => `<span class="s" style="--k:${i}">${esc(s)} </span>`).join('')}</p></div>`
+      + `<div class="acts"><button class="pill" type="button" data-put="n3">계획서에 넣기</button><button class="pill ghost" type="button" data-ask>다시 고르기</button></div>`;
+  }
+  return `<div class="acts"><button class="pill" type="button" data-ask>같이 쓰기</button><span class="lab">세 가지를 여쭤보고 초안을 써 드립니다.</span></div>`;
+}
+/* 메모를 그 문단 옆에 놓는다. 종이와 메모가 나란히 설 때만이고, 좁으면 메모가 종이 아래로 쌓인다 */
+function placeNotes() {
+  const box = document.getElementById('notes'), sheet = room.querySelector('.sheet:not(.blank)');
+  if (!box || !sheet) return;
+  const side = box.getBoundingClientRect().left >= sheet.getBoundingClientRect().right - 1;
+  box.classList.toggle('side', side);
+  const list = [...box.children];
+  if (!side) { box.style.height = ''; list.forEach(el => el.style.top = ''); return; }
+  const base = sheet.getBoundingClientRect().top; let y = 0;
+  for (const el of list) {
+    const sec = el.dataset.for && sheet.querySelector(`[data-sec="${el.dataset.for}"]`);
+    const top = Math.max(sec ? sec.getBoundingClientRect().top - base : y, y);
+    el.style.top = top + 'px'; y = top + el.offsetHeight + 14;
+  }
+  box.style.height = Math.max(y, sheet.offsetHeight) + 'px';
 }
 /* 설정: 사무실을 보는 각도를 고른다. 비스듬히(3D)와 위에서(2D)를 둘 다 지원한다 */
 function cfgHTML(snap) {
@@ -450,6 +703,13 @@ function render(snap) {
   h += `<p class="read"><span>방금 읽었습니다. 이름과 일은 모두 예시입니다.</span><button class="reread" type="button" data-noop>부서 더하기</button></p>`;
   rowsEl.innerHTML = h;
   officeObj.classList.toggle('news', staff.some(alerting));
+  // 사업계획서 작업 화면에서는 사무실 그림과 줄을 접고 계획서 한 장을 크게 둔다
+  officeEl.hidden = planView; workEl.hidden = !planView; stage.classList.toggle('planning', planView);
+  if (planView) {
+    workEl.innerHTML = workHTML(); placeNotes();
+    // 고른 메모가 바뀌면 그 메모와 문단이 보이게 방을 내린다
+    if (pv.scroll) { pv.scroll = false; const n = workEl.querySelector('.note.sel'); if (n) n.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'}); }
+  }
   if (keep) { const el = document.getElementById(keep.id); if (el) { el.value = keep.v || ''; el.focus(); try { el.setSelectionRange(keep.a, keep.a); } catch (e) {} } }
   requestAnimationFrame(() => rowsEl.querySelectorAll('.snap').forEach(m => m.classList.remove('snap')));
   mark();
@@ -463,7 +723,6 @@ function sync() {
   for (const id of wasOpen) if (!open.has(id)) {
     if (openItem[id]) { openItem[id] = null; read = true; }          // 닫힌 부서는 다음에 열 때 기능이 접힌 채로 열린다
     if (id === 'mkt' && rivalNews) { rivalNews = 0; read = true; }
-    if (id === 'plan' && planNews) { planNews = 0; read = true; }
     for (const s of staff) if (s.dept === id && s.news) { s.news = false; read = true; }
   }
   wasOpen = new Set(open);
@@ -478,51 +737,36 @@ function mark() {
   rowsEl.querySelectorAll('button.row[data-d]').forEach(r => r.classList.toggle('hot', r.dataset.d === hotDept));
   rowsEl.querySelectorAll('.row.sub[data-s]').forEach(r => r.classList.toggle('hot', r.dataset.s === hotStaff));
 }
-/* 다가가서 잠깐 머물면 열리고, 벗어나서 잠깐 지나면 접힌다. 줄은 아래쪽만 접는다(손 밑의 줄이 달아나지 않게) */
+/* 줄은 누르면 열리고 다시 누르면 접힌다. 한 번에 한 줄만 열린다(11-23, 다가가면 열렸다 닫히던 것을 뺐다) */
 let openT = 0, closeT = 0;
-function approach(id, wait) {
-  clearTimeout(closeT); clearTimeout(openT);
-  if (!id || open.has(id)) return;
-  openT = setTimeout(() => {
-    const ids = [...DEPTS.map(d => d.id), 'pc', 'cfg'], i = ids.indexOf(id);
-    ids.forEach((x, k) => { if (k > i && x !== pinned) open.delete(x); });
-    open.add(id); sync();
-  }, wait);
-}
-function leave() {
-  clearTimeout(openT); clearTimeout(closeT);
-  closeT = setTimeout(() => { for (const id of [...open]) if (id !== pinned) open.delete(id); sync(); }, 400);
-}
 function pin(id) {
-  clearTimeout(openT); clearTimeout(closeT); pinned = id; open.add(id); sync();
+  clearTimeout(openT); clearTimeout(closeT); pinned = id; open.clear(); open.add(id); sync();   // 한 번에 한 줄만 열린다(11-23)
   // 눌러서 연 줄이 방 아래에 걸리면 안쪽이 보이게 내린다
   setTimeout(() => { const m = document.getElementById('more-' + id); if (m && pinned === id) m.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'}); }, 480);
 }
 rowsEl.addEventListener('mouseover', e => {
   const r = e.target.closest('button.row[data-d], .more');
-  if (r) { hotDept = r.dataset.d; approach(r.dataset.d, 120); }
+  if (r) hotDept = r.dataset.d;      // 다가가면 밝아지기만 하고, 여는 것은 누를 때다(11-23 유호님 「뻣뻣하다」 · 다가가면 열렸다 닫혀 화면이 움직이던 것)
   const s = e.target.closest('.row.sub[data-s]'); hotStaff = s ? s.dataset.s : null;
   mark();
 });
-rowsEl.addEventListener('mouseleave', () => { hotDept = hotStaff = null; mark(); leave(); });
+rowsEl.addEventListener('mouseleave', () => { hotDept = hotStaff = null; mark(); });
 rowsEl.addEventListener('focusin', e => { const m = e.target.closest('.more'); if (m) pin(m.dataset.d); });
 rowsEl.addEventListener('pointerdown', e => { const m = e.target.closest('.more'); if (m) pin(m.dataset.d); });
 rowsEl.addEventListener('click', e => {
   const t = e.target, it = t.closest('[data-item]'), r = t.closest('button.row[data-d]');
+  if (t.closest('[data-openplan]')) { enterPlan(); return; }
   if (it) {
     const [dep, id] = it.dataset.item.split(':'); openItem[dep] = openItem[dep] === id ? null : id; syncItems();
     if (openItem[dep]) setTimeout(() => { const f = rowsEl.querySelector(`[data-fold="${dep}:${id}"]`); if (f && openItem[dep] === id) f.scrollIntoView({block:'nearest', behavior:still ? 'auto' : 'smooth'}); }, 480);
     return;
   }
   if (t.dataset.view) { viewTo = +t.dataset.view; render(true); return; }
-  if (r) { const id = r.dataset.d; if (pinned === id) { pinned = null; open.delete(id); sync(); } else pin(id); return; }
+  if (r) { const id = r.dataset.d; if (open.has(id)) { pinned = null; open.delete(id); sync(); } else pin(id); return; }
   if (t.dataset.term) { const s = staff.find(x => x.id === t.dataset.term); if (s) { s.state = 'work'; s.say = '승인을 받아 계약서 폴더를 정리하고 있습니다'; s.act = '명령 · 폴더 정리'; s.when = '방금'; render(true); } return; }
   if (t.dataset.tool) { const id = t.closest('.more').dataset.d; toolOf[id] = t.dataset.tool; delete notes[id]; render(true); return; }
   if (t.dataset.send) { send(t.dataset.send); return; }
   if ('scout' in t.dataset) { scout(); return; }
-  if ('plan' in t.dataset) { planRead(); return; }
-  if ('make' in t.dataset) { planMakeGo(); return; }
-  if ('copy' in t.dataset) { try { navigator.clipboard.writeText(F_FIX.fix).catch(() => {}); } catch (err) {} planCopied = true; render(true); return; }
   if ('diag' in t.dataset) diagnose();
 });
 /* 사무실을 처음 열 때와 「다시 살펴보기」: PC를 읽고, 몇이 함께 일할 수 있는지 한 문장으로 말한다 */
@@ -542,7 +786,7 @@ rowsEl.addEventListener('submit', e => {
   if (!txt) { inp.focus(); return; }
   give(id, txt); inp.value = ''; render(true);
 });
-addEventListener('keydown', e => { if (e.key === 'Escape') { pinned = null; open.clear(); sync(); if (document.activeElement) document.activeElement.blur(); } });
+addEventListener('keydown', e => { if (e.key === 'Escape' && planView) { exitPlan(); return; } if (e.key === 'Escape') { pinned = null; open.clear(); sync(); if (document.activeElement) document.activeElement.blur(); } });
 
 function freeSeat(id) { const used = staff.filter(s => s.dept === id).map(s => s.seat); for (let i = 0; i < SEATS(deptOf(id)); i++) if (!used.includes(i)) return i; return -1; }
 /* 일을 맡기면 쉬던 직원이 깨어나거나, 빈 자리에 새 직원이 나타난다 */
@@ -585,36 +829,83 @@ function scout() {
   }, 1700 * steps.length + 300));
   render(true);
 }
-/* 「지금 읽기」(기획부): 손님이 고쳐 저장한 다음 판을 기획부 직원이 읽고, 공고와 회사 자료에 견준다.
-   다 읽으면 맨 위 문장과 사업계획서 줄이 결과를 말한다. 자리가 없으면 다른 일처럼 차례를 기다린다 */
-function planRead() {
-  if (planning) return;
-  const nx = PLANS[Math.min(planI + 1, PLANS.length - 1)];
-  const who = give('plan', `사업계획서 ${nx.v}판을 공고와 회사 자료에 맞춰 읽고 있습니다`);
+/* 작업 화면 열기 · 닫기 */
+function enterPlan(stage) {
+  planView = true; pinned = null; open.clear();
+  if (stage === 'review' && pv.stage === 'start') { pv.stage = 'review'; pv.read = pv.secs.length; }
+  render(true); room.scrollTop = 0;
+}
+function exitPlan() { planView = false; render(true); }
+function resetPlan() { pvTimers.forEach(clearTimeout); pvTimers = []; pv = pvNew(); delete notes.plan; }
+/* 맡기기: 기획부 직원이 한 쪽씩 읽는다. 읽은 쪽이 밝아지고, 찾은 메모가 그 문단 옆에 하나씩 놓인다.
+   자리가 없으면 다른 일처럼 차례를 기다리고, 넣는 화면에 그 까닭을 말한다 */
+function startRead() {
+  const who = give('plan', '사업계획서를 공고와 회사 자료에 맞춰 읽고 있습니다');
   if (!who) { render(true); return; }
-  planning = {who, v:nx.v};
-  const steps = [`읽기 · 사업계획서_v${nx.v}.docx`, `견주기 · ${CALL.file}`, '견주기 · 영수증_10월.xlsx, 코드\\shop'];
-  who.act = steps[0];
-  steps.slice(1).forEach((a, i) => planT.push(setTimeout(() => { who.act = a; render(true); }, 1500 * (i + 1))));
-  planT.push(setTimeout(() => {
-    planI = Math.min(planI + 1, PLANS.length - 1); planning = null; planCopied = false;
-    const r = PLANS[planI];
-    // 5판을 읽을 때 개발부가 만들던 화면은 끝난 것으로 친다(시안에서 시간이 흐른 것을 보인다)
-    if (r.v === 5 && planMake && planMake !== 'wait' && busy(planMake)) Object.assign(planMake, {state:'done', say:'휴대폰 주문 화면을 만들었습니다', act:'끝냄 · 코드\\shop', when:'방금', subs:0, news:true, newsT0:performance.now()});
-    const left = r.gaps.length + r.facts.length;
-    Object.assign(who, {state:'done', say:`사업계획서 ${r.v}판을 다 읽었습니다. ` + (left ? '고칠 곳이 남았습니다' : '고칠 곳이 없습니다'), act:`끝냄 · 계획서_검토_${r.v}판.md`, when:'방금', news:true, newsT0:performance.now()});
-    planNews = performance.now();
-    hold(r.say, 4600);
-  }, 1500 * steps.length + 300));
+  const steps = [`읽기 · ${pv.file || PLAN0.file}`, `견주기 · ${CALLS[pv.call].file}`, '견주기 · 회계부 영수증_10월.xlsx', '견주기 · 개발부 가게 코드', '견주기 · 공고의 평가 항목 넷', '메모 정리하는 중'];
+  Object.assign(pv, {stage:'reading', read:0, who, step:steps[0]}); who.act = steps[0];
+  for (let i = 1; i <= pv.secs.length; i++) pvTimers.push(setTimeout(() => {
+    pv.read = i; pv.step = steps[Math.min(i, steps.length - 1)]; who.act = pv.step;
+    const n = NOTES.find(x => x.sec === pv.secs[i - 1].id); if (n) pv.foundT[n.id] = performance.now();
+    render(true);
+  }, 800 * i));
+  pvTimers.push(setTimeout(() => {
+    pv.stage = 'review'; pv.sel = 'n1';
+    Object.assign(who, {state:'done', say:'사업계획서를 다 읽었습니다. 고칠 곳이 셋입니다', act:'끝냄 · 계획서_메모_3판.md', when:'방금'});
+    render(true);
+  }, 800 * (pv.secs.length + 1)));
   render(true);
 }
-/* 「개발부에 맡기기」: 아직 사실이 아닌 문장을 만들어서 사실로 만든다. 개발부의 자리와 구독을 따라 시작하거나 기다린다 */
+/* 고른 메모 다음의 열린 메모로 넘어간다 */
+const nextOpen = id => { const i = NOTES.findIndex(n => n.id === id), rest = [...NOTES.slice(i + 1), ...NOTES.slice(0, i)]; const n = rest.find(x => pv.st[x.id] !== 'done'); return n ? n.id : null; };
+function putNote(id) {
+  const n = NOTES.find(x => x.id === id), s = secOf(n.sec);
+  pv.prev[id] = s.p;
+  s.p = id === 'n3' ? draftOf(pv.ans.map(a => a[1])).join(' ') : s.p.replace(n.from, n.to);
+  pv.st[id] = 'done'; pv.changed = s.id; pv.changedT = performance.now(); pv.sel = nextOpen(id);
+}
+/* 「개발부에 만들어 달라기」: 아직 사실이 아닌 문장을 만들어서 사실로 만든다. 개발부의 자리와 구독을 따라 시작하거나 기다린다.
+   시안에서는 일곱 초 뒤에 개발부가 다 만든 것으로 친다 */
 function planMakeGo() {
-  const who = give('dev', F_MAKE.make);
-  planMake = who || 'wait';
-  if (who) who.fin = '휴대폰 주문 화면을 만들었습니다';
+  const who = give('dev', '휴대폰 주문 화면을 만들고 있습니다');
+  pv.make = who || 'wait'; pv.st.n2 = 'make';
+  if (who) {
+    who.fin = '휴대폰 주문 화면을 만들었습니다';
+    pvTimers.push(setTimeout(() => {
+      if (!busy(who)) return;
+      Object.assign(who, {state:'done', say:who.fin, act:'끝냄 · 코드\\shop', when:'방금', subs:0, news:true, newsT0:performance.now()});
+      if (pv.st.n2 === 'make') { pv.st.n2 = 'done'; if (pv.sel === 'n2') pv.sel = nextOpen('n2'); }
+      hold(['개발부가 휴대폰 주문 화면을 만들었습니다.', '4쪽 문장이 이제 사실입니다.'], 4200);
+    }, 7000));
+  }
   render(true);
 }
+workEl.addEventListener('click', e => {
+  const t = e.target.closest('button, [data-pick]'); if (!t || t.disabled) return;
+  const d = t.dataset;
+  if ('back' in d) return exitPlan();
+  if ('go' in d) return startRead();
+  if (d.pick) { if (pv.stage !== 'reading') pv.sel = d.pick; }
+  else if (d.prop) { pv.st[d.prop] = 'prop'; pv.sel = d.prop; }
+  else if (d.keep) pv.st[d.keep] = 'open';
+  else if (d.put) putNote(d.put);
+  else if ('make' in d) return planMakeGo();
+  else if ('ask' in d) { pv.st.n3 = 'ask'; pv.ans = []; pv.sel = 'n3'; }
+  else if (d.ans) { pv.ans.push(ASKS[pv.ans.length].opts[+d.ans]); if (pv.ans.length === ASKS.length) { pv.st.n3 = 'draft'; pv.draftT = performance.now(); } }
+  else if (d.undo) { const n = NOTES.find(x => x.id === d.undo); secOf(n.sec).p = pv.prev[d.undo]; pv.st[d.undo] = 'open'; pv.sel = d.undo; if (d.undo === 'n2') pv.make = null; }
+  else if ('save' in d) pv.saved = true;
+  else if ('again' in d) resetPlan();
+  else return;
+  pv.scroll = !('save' in d) && !('again' in d);
+  render(true);
+});
+workEl.addEventListener('change', e => {
+  if (e.target.id === 'plan-file' && e.target.files[0]) { pv.file = e.target.files[0].name; render(true); }
+  if (e.target.id === 'plan-call') { pv.call = +e.target.value; render(true); }
+});
+workEl.addEventListener('dragover', e => { const b = e.target.closest('.blank'); if (b) { e.preventDefault(); b.classList.add('drag'); } });
+workEl.addEventListener('dragleave', e => { const b = e.target.closest('.blank'); if (b && !b.contains(e.relatedTarget)) b.classList.remove('drag'); });
+workEl.addEventListener('drop', e => { const b = e.target.closest('.blank'); if (!b) return; e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) { pv.file = f.name; render(true); } });
 function send(to) {
   const s = staff.find(x => x.dept === 'lobby'); if (!s) return;
   const seat = freeSeat(to);
@@ -716,7 +1007,9 @@ let zones = [], W = 0, H = 0, last = 0;
 function resize() {
   const dpr = Math.min(2, devicePixelRatio || 1); W = stage.clientWidth; H = stage.clientHeight;
   cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (planView) render(true);        // 창 너비에 따라 메모 자리와 맨 위 문장(「오른쪽」 · 「계획서 아래」)이 바뀐다
 }
+officeObj.addEventListener('click', () => { if (planView) exitPlan(); });
 new ResizeObserver(resize).observe(stage);
 
 function frame(now) {
@@ -804,14 +1097,12 @@ let overFloor = false;
 stage.addEventListener('pointermove', e => {
   const b = stage.getBoundingClientRect(); px = e.clientX - b.left; py = e.clientY - b.top;
   const onSlot = e.target === slot;
-  if (!onSlot) { if (overFloor) { overFloor = false; slot.style.cursor = ''; if (!rowsEl.matches(':hover')) { hotDept = hotStaff = null; mark(); leave(); } } return; }
+  if (!onSlot) { if (overFloor) { overFloor = false; slot.style.cursor = ''; if (!rowsEl.matches(':hover')) { hotDept = hotStaff = null; mark(); } } return; }
   const h = hit(px, py), was = hotDept;
   overFloor = true; hotStaff = h.st ? h.st.id : null; hotDept = h.z; slot.style.cursor = h.z ? 'pointer' : '';
   mark();
-  if (h.z) { if (h.z !== was || !open.has(h.z)) approach(h.z, 180); else clearTimeout(closeT); }
-  else if (was) leave();
 });
-stage.addEventListener('pointerleave', () => { px = py = -9999; if (overFloor) { overFloor = false; hotDept = hotStaff = null; mark(); leave(); } });
+stage.addEventListener('pointerleave', () => { px = py = -9999; if (overFloor) { overFloor = false; hotDept = hotStaff = null; mark(); } });
 slot.addEventListener('click', e => { const b = stage.getBoundingClientRect(), h = hit(e.clientX - b.left, e.clientY - b.top); if (h.z) { pin(h.z); const f = document.getElementById('task-' + h.z); if (f) setTimeout(() => f.focus({preventScroll:true}), 60); } else { pinned = null; open.clear(); sync(); } });
 
 /* ── 시안 조작 막대 ──────────────────────────────────────────── */
@@ -819,11 +1110,11 @@ const meta = $('#meta'); let awayT = 0;
 function wake() { meta.classList.remove('away'); clearTimeout(awayT); awayT = setTimeout(() => { if (!meta.matches(':hover') && !meta.contains(document.activeElement)) meta.classList.add('away'); }, 4000); }
 addEventListener('pointermove', wake); addEventListener('keydown', wake); wake();
 const CASES = [['ask', '승인 물음'], ['calm', '평소'], ['rest', '모두 쉼']];
-function setCase(i) { scoutT.forEach(clearTimeout); scoutT = []; scoutI = 0; scouting = null; planT.forEach(clearTimeout); planT = []; planI = 0; planning = null; planNews = 0; planMake = null; planCopied = false; if (sayHold === lastHold) sayHold = null; wasOpen = new Set(); rivalNews = 0; for (const k in openItem) delete openItem[k]; scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
+function setCase(i) { scoutT.forEach(clearTimeout); scoutT = []; scoutI = 0; scouting = null; resetPlan(); if (sayHold === lastHold) sayHold = null; wasOpen = new Set(); rivalNews = 0; for (const k in openItem) delete openItem[k]; scene = CASES[i][0]; staff = cast(scene); for (const k in notes) delete notes[k]; open.clear(); pinned = null; $('#m-case').textContent = '상황 · ' + CASES[i][1]; render(true); }
 let ci = 0; $('#m-case').onclick = () => setCase(ci = (ci + 1) % CASES.length);
 /* 「알림 받기」: 일하던 직원 하나가 일을 끝내 알림이 오는 순간을 본다 */
 $('#m-ping').onclick = () => {
-  const c = staff.filter(s => s.state === 'work' && s.fin && s !== scouting && !(planning && s === planning.who));
+  const c = staff.filter(s => s.state === 'work' && s.fin && s !== scouting && s !== pv.who);
   const s = c.find(x => !staff.some(y => y.dept === x.dept && alerting(y))) || c[0];
   if (!s) return;
   Object.assign(s, {state:'done', say:s.fin, act:'끝냄', when:'방금', subs:0, news:true, newsT0:performance.now()});
@@ -843,7 +1134,7 @@ if (/2d/.test(location.hash)) view = viewTo = 0;
 const h0 = CASES.findIndex(c => location.hash.includes(c[0])); if (h0 > 0) ci = h0;
 resize(); setCase(ci); requestAnimationFrame(frame);
 if (/mkt/.test(location.hash)) pin('mkt');          // #mkt: 마케팅부의 줄을 연 채로 연다
-if (/plan/.test(location.hash)) { openItem.plan = 'bizplan'; render(true); pin('plan'); }   // #plan: 기획부의 사업계획서를 연 채로 연다
+if (/plan/.test(location.hash)) enterPlan(/review/.test(location.hash) ? 'review' : 'start');   // #plan: 사업계획서 넣기 화면, #plan-review: 다 읽은 뒤 메모 화면
 })();
 </script>
 </body>
