@@ -3,11 +3,12 @@
 (PULSE `드리미나내기.py`는 그림 · 소리 참고만 받는다).
 
     python -X utf8 내기.py <지시문.txt> <판 이름> --받을곳 <폴더> [--첫장 <그림>] [--그림 <그림>…] [--영상 <영상>…]
-                            [--계정 unmet23] [--길이 5] [--비율 16:9] [--상한 <크레딧>] [--실행]
+                            [--계정 unmet23] [--길이 5] [--비율 16:9] [--모델 seedance_2.5] [--해상도 720p] [--상한 <크레딧>] [--실행]
 
 - --첫장을 주고 다른 참고가 없으면 first_last_frame(첫 장 고정), 그 밖에는 m2v다.
 - 지시문의 @이미지 N · @영상 N은 올린 파일의 {{res:<id>}}로 바꾼다(차례: --그림 · --영상을 준 차례).
 - 기본은 견적만 본다(상한 1로 --run — 견적이 상한을 넘으면 서버가 내기 전에 멈춘다). --실행일 때만 --상한 안에서 낸다.
+- 첫 시험은 `--모델 seedance_2.5_flash --해상도 480p`로 낸다(11-22 얼굴 컷 연기 시험, 초당 8크레딧 · 2.5 720p는 22).
 - 받은 파일은 <받을곳>/<판 이름>.mp4, 기록은 <받을곳>/_내기.json 한 줄씩.
 """
 import json
@@ -46,6 +47,8 @@ def main():
     prof = 값("--계정", "unmet23")
     길이 = 값("--길이", "5")
     비율 = 값("--비율", "16:9")
+    모델 = 값("--모델", "seedance_2.5")
+    해상도 = 값("--해상도", "720p")
     실행 = "--실행" in sys.argv
     상한 = int(값("--상한", "0"))
     첫장 = 값("--첫장")
@@ -88,15 +91,15 @@ def main():
             return None
 
     잔액0 = 잔액()
-    made = cli(prof, "node", "create", "video", "--model", "seedance_2.5", "--mode", mode, *ref_args, "--prompt", 글,
-               "--ratio", 비율, "--resolution", "720p", "--duration", 길이, "--title", 판, "--project-id", project,
+    made = cli(prof, "node", "create", "video", "--model", 모델, "--mode", mode, *ref_args, "--prompt", 글,
+               "--ratio", 비율, "--resolution", 해상도, "--duration", 길이, "--title", 판, "--project-id", project,
                "--run", "--credit-ceiling", str(ceiling), "--wait", "--timeout", "45m")
     data = made.get("data") or made.get("partialData") or {}
     it = (data.get("items") or [data])[0]
     sub = it.get("submission") or it
     rid = next((r.get("resourceId") for r in (sub.get("resources") or []) if r.get("state") == "succeeded" or r.get("status") == "success"), None)
     잔액1 = 잔액()
-    줄 = {"판": 판, "모드": mode, "길이": 길이, "실행": 실행, "상한": ceiling, "잔액 전": 잔액0, "잔액 뒤": 잔액1,
+    줄 = {"판": 판, "모델": 모델, "해상도": 해상도, "모드": mode, "길이": 길이, "실행": 실행, "상한": ceiling, "잔액 전": 잔액0, "잔액 뒤": 잔액1,
          "submitId": sub.get("submitId"), "resourceId": rid, "상태": sub.get("state"), "걸린초": round(time.time() - t0),
          "오류": made.get("error"), "지시문": 글}
     if rid:
