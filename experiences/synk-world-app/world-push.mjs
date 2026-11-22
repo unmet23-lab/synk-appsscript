@@ -425,6 +425,18 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 로그아웃하거나 계정이 바뀌면 그 계정에서 서버가 확인하지 않은 설정 편집을 버린다 — 탭이 함께 쓰는 판 키에서도 지운다. 다시 로그인하면 서버 설정을 그대로
  // 쓰고, 서버가 이미 받은 것은 서버에 있다(설계 주인 11-23: 확인받지 못한 편집을 로그아웃 너머로 나르지 않는다).
  function dropEdits(){if(owner){try{storage?.removeItem(versionKey());}catch{}}}
+ // 이 탭 화면을 서버 설정에 맞춘다(설계 주인 11-23, r13 GA1): 다른 탭이 나눠 쓰는 편집을 지웠거나(로그아웃 · 계정 바꿈) 다시 시도할 때 보낼 것이 없는데
+ // 화면(1단 설정)이 이 탭이 마지막으로 받은 서버 설정과 다르면, 상태를 한 번 읽는다 — 맞추기가 그 서버 설정을 들인다. 1단은 탭이 함께 쓰므로 마지막으로
+ // 받은 값을 바로 들이지 않는다(다른 탭에서 방금 받힌 더 새 설정을 되돌리지 않게). 보낼 편집이 있으면 하지 않고 쓰기 요청은 내지 않는다. 이 탭이
+ // 로그아웃했거나 계정이 바뀌었으면 하지 않는다.
+ function showServer(){
+  if(!current(epoch)||closing||readEdit()||!state.versioning||!state.account.active||!state.checkedAt||!state.plan)return;
+  const live=liveSettings(null),plan=state.plan,hour=Number.isFinite(plan.hour)?plan.hour:null;
+  if(!live||(live.frequency===plan.frequency&&live.hour===hour))return;
+  void refresh();
+ }
+ const onStorage=event=>{if(event&&(event.key===null||event.key===versionKey()))showServer();};
+ try{env.addEventListener?.('storage',onStorage);}catch{}
  return {
   snapshot,refresh,
   // 상태가 바뀔 때마다 부를 함수(설정 화면의 동의 상자 단추·안내 글). 떼는 함수를 돌려준다.
@@ -617,7 +629,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   // 읽으면 맞추기가 보낸다(GA9). 보낼 것이 없거나 2단이 꺼진 계정이면 부르지 않는다(받을 수 없는 기기에서 화면을 켤 때마다 부르지 않게).
   retry(){
    const expected=epoch;if(!current(expected)||closing)return;
-   if(!readEdit()&&!owedDigest)return;
+   if(!readEdit()&&!owedDigest){showServer();return;}   // 보낼 것이 없으면 화면만 서버 설정에 맞춘다(r13 GA1)
    if(!state.checkedAt||state.phase==='error'){void refresh();return;}
    // 넘겨받을 편집 때문에 상태를 다시 읽다가 실패했으면 다시 읽는다 — 그 읽기의 응답이 정한다(r9 GA2 · GA8: 실패 뒤 편집이 묶이지 않게).
    if(claimRead&&state.seenSeq<=claimRead.after&&readEdit()?.id===claimRead.id){if(claimRead.reading)claimRead.again=true;else readClaim();return;}
@@ -651,6 +663,6 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   },
   // 로그아웃이 실패해 계정이 그대로다: 막기를 풀고 상태를 다시 읽는다(맞추기가 남은 설정을 보낸다).
   resume(){if(!closing)return Promise.resolve(snapshot());closing=false;holdPage();return owner?refresh():Promise.resolve(snapshot());},
-  dispose(){disposed=true;epoch++;releasePageHold();clearTimeout(syncTimer);syncTimer=null;clearTimeout(retryTimer);retryTimer=null;jobs.clear();binding=null;if(attempt){attempt.stop();attempt=null;}mutation=null;},
+  dispose(){disposed=true;epoch++;releasePageHold();try{env.removeEventListener?.('storage',onStorage);}catch{}clearTimeout(syncTimer);syncTimer=null;clearTimeout(retryTimer);retryTimer=null;jobs.clear();binding=null;if(attempt){attempt.stop();attempt=null;}mutation=null;},
  };
 }

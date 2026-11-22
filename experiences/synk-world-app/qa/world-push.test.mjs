@@ -1900,6 +1900,55 @@ test('판: 로그아웃은 넘겨받을 편집과 그 다시 읽기를 버린다
  a.dispose();
 });
 
+// 저장소 알림을 듣는 가짜 창: 다른 탭이 판 키를 바꾸면 브라우저가 이 탭에 storage 사건을 준다.
+const storageBus=()=>{const heard=[];return {heard,extra:{addEventListener:(type,fn)=>{if(type==='storage')heard.push(fn);},removeEventListener:(type,fn)=>{const i=heard.indexOf(fn);if(i>=0)heard.splice(i,1);}},
+ fire:event=>{for(const fn of [...heard])fn(event);}};};
+const twoTabsLeft=async()=>{
+ const s=versionedServer({settings:{frequency:2,hour:9,since:null}}),storage=memory(),locks=fakeLocks(),rem=reminderSettings({frequency:2,hour:9,since:null}),bus=storageBus(),callsB=[];
+ const requestB=(action,body,options)=>{callsB.push(action);return s.request(action,body,options);};
+ const a=on(s,{storage,browser:{locks}});a.bindSettings(rem);
+ const b=on(s,{storage,request:requestB,browser:{locks,extra:bus.extra}});b.bindSettings(rem);
+ await a.setAccount('acc-1');await b.setAccount('acc-1');await settled();
+ s.failWhen=action=>action==='sync'?fault(0,'PUSH_UNAVAILABLE'):null;   // B의 18시는 망이 끊겨 못 갔다
+ rem.set({hour:18});b.sync({settings:{frequency:2,hour:18}});await settled();
+ assert.equal(EDIT_OF(storage)?.hour,18);
+ s.failWhen=()=>null;
+ await a.logout();await settled();   // 같은 계정의 A 탭만 로그아웃 — B의 편집도 지운다(한계 13)
+ assert.equal(EDIT_OF(storage),null);
+ return {s,a,b,rem,bus,callsB,mark:callsB.length};
+};
+test('판: 같은 계정의 다른 탭이 로그아웃해 이 탭이 보내지 못한 편집이 지워지면, 이 탭 화면은 서버 시각으로 바뀌고 쓰기 요청은 없다(설계 주인 11-23 r13 GA1 (가))',async()=>{
+ const {s,a,b,rem,bus,callsB,mark}=await twoTabsLeft();
+ bus.fire({key:KEY_V,newValue:null});await settled();   // 브라우저가 B에 저장소 알림을 준다
+ assert.equal(rem.value.hour,9,'B 화면이 서버 시각으로 바뀐다');assert.equal(s.stored.settings.hour,9);
+ const after=callsB.slice(mark);
+ assert.equal(after.filter(action=>action!=='status').length,0,'쓰기 요청은 없다');assert.ok(after.length<=1,'읽기는 한 번까지');
+ a.dispose();b.dispose();
+});
+
+test('판: 다시 시도할 때 보낼 것이 없으면, 이 탭 화면이 서버 시각과 다를 때 한 번 읽어 맞추고 쓰기 요청은 없다(설계 주인 11-23 r13 GA1 (나))',async()=>{
+ const {s,a,b,rem,callsB,mark}=await twoTabsLeft();
+ b.retry();await settled();   // 저장소 알림 없이 망이 돌아온다
+ assert.equal(rem.value.hour,9,'B 화면이 서버 시각으로 바뀐다');assert.equal(s.stored.settings.hour,9);
+ const after=callsB.slice(mark);
+ assert.equal(after.filter(action=>action!=='status').length,0,'쓰기 요청은 없다');assert.equal(after.length,1,'읽기는 한 번');
+ b.retry();await settled();   // 화면이 맞으면 더 읽지 않는다
+ assert.equal(callsB.length,mark+1);
+ a.dispose();b.dispose();
+});
+
+test('판: 다른 탭의 편집이 받혀 나눠 쓰는 판 키가 비어도, 이 탭은 마지막으로 받은 옛 서버 값으로 화면을 되돌리지 않는다 — 한 번 읽어 새 값을 본다(r13 GA1)',async()=>{
+ const s=versionedServer({settings:{frequency:2,hour:9,since:null}}),storage=memory(),locks=fakeLocks(),rem=reminderSettings({frequency:2,hour:9,since:null}),bus=storageBus();
+ const a=on(s,{storage,browser:{locks}});a.bindSettings(rem);
+ const b=on(s,{storage,browser:{locks,extra:bus.extra}});b.bindSettings(rem);
+ await a.setAccount('acc-1');await b.setAccount('acc-1');await settled();
+ rem.set({hour:20});a.sync({settings:{frequency:2,hour:20}});await settled();   // A의 20시가 받혀 판 키가 빈다
+ assert.equal(s.stored.settings.hour,20);assert.equal(EDIT_OF(storage),null);
+ bus.fire({key:KEY_V,newValue:null});await settled();
+ assert.equal(rem.value.hour,20,'B가 아는 옛 9시로 되돌리지 않는다');
+ a.dispose();b.dispose();
+});
+
 test('판: 넘겨받은 닫힌 페이지의 편집이 보내는 사이 다른 기기의 쓰기로 거절되면 다시 보내지 않고 서버 것을 들인다(설계 주인 규칙 5, 섞기 시드 97)',async()=>{
  const s=versionedServer(),storage=memory(),locks=fakeLocks(),m=manual(s),rem=reminderSettings();
  const t1=on(s,{storage,browser:{locks}});t1.bindSettings(rem);
