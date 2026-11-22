@@ -29,7 +29,7 @@ const fakeTimer={unref(){return fakeTimer;},ref(){return fakeTimer;},hasRef(){re
 const timers={setInterval:()=>fakeTimer,setTimeout:()=>fakeTimer,setImmediate:()=>fakeTimer,clearInterval(){},clearTimeout(){},clearImmediate(){}};
 const load=Module._load;
 Module._load=function(request){if(request==='electron')return electron;if(request==='node:timers'||request==='timers')return timers;return load.apply(this,arguments);};
-const realImmediate=globalThis.setImmediate;
+const realImmediate=globalThis.setImmediate,realTimeout=globalThis.setTimeout;
 for(const k of ['setInterval','setTimeout','setImmediate'])globalThis[k]=()=>fakeTimer;
 // 개발 실행은 작업본의 desktop/auth-config.json(Git 밖)을 읽는다. PC마다 다르지 않게 빈 설정 파일을 직접 준다(GPT e GA2)
 const authConfig=path.join(temp,'auth-config.json');fs.writeFileSync(authConfig,'{}\n');
@@ -39,7 +39,11 @@ try{
   if(replacement===null)require(main);
   else{const m=new Module(main,module);m.filename=main;m.paths=Module._nodeModulePaths(path.dirname(main));m._compile(replacement,main);}
 }catch(e){top=e&&e.message;}
-void Promise.allSettled(pending).then(()=>new Promise(done=>realImmediate(done))).then(()=>{
+// 가짜 타이머를 기다리는 처리기처럼 끝나지 않는 약속이 있어도 2초 뒤에는 그 사실을 적고 결과를 쓴다(GPT pc-second-launch-20261122-f GA1)
+const settled=Promise.allSettled(pending).then(()=>new Promise(done=>realImmediate(done))).then(()=>true);
+const late=new Promise(done=>realTimeout(()=>done(false),2000));
+void Promise.race([settled,late]).then(ok=>{
+  if(!ok)errors.push('pending: '+pending.length+' quit handler promise(s) did not settle within 2s');
   try{fs.rmSync(temp,{recursive:true,force:true});}catch{}
   process.stdout.write(JSON.stringify({quitCalled,handlers:Object.fromEntries(Object.entries(handlers).map(([k,v])=>[k,v.length])),errors,top})+'\n',()=>process.exit(0));
 });
