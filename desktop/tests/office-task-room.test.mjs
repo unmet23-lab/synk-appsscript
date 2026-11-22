@@ -11,13 +11,13 @@ function completed(overrides = {}) {
     prompt: '제목 하나를 써 줘', previousId: null, status: 'completed', answer: '하루의 시작',
     reason: null, createdAt: 100, updatedAt: 200, canOpenTerminal: false, ...overrides };
 }
-function harness({ api = {}, tasks = [] } = {}) {
+function harness({ api = {}, tasks = [], reread = () => {} } = {}) {
   const submitted = [], actions = [];
   const bridge = {
     async submitTask(request) { submitted.push({ ...request }); return { ok: true, id: request.id }; },
     async taskAction(...args) { actions.push(args); return { ok: true }; }, ...api,
   };
-  const room = createOfficeTaskRoom({ api: bridge, changed() {}, reread() {} });
+  const room = createOfficeTaskRoom({ api: bridge, changed() {}, reread });
   let board = { tasks };
   const scene = () => room.scene(board, departments);
   const act = (act, extra = {}) => room.handle({ act, ...extra });
@@ -1183,4 +1183,156 @@ test('a missing quote original is scoped to its task and item while the ordinary
   firstMissing=false;
   await open(qaMailItemId);
   assert.equal(h.scene().mailUI.sourceItemNotes[key(qaMailItemId)],undefined);
+});
+
+// Each saved ordinary mail group owns its own page. An old receipt starts at the
+// same public page 0 as a new one, without giving the screen a provider cursor.
+const pagedMailboxes = { providers: [
+  {id: 'gmail', configured: true, connected: true, address: 'studio@example.test'},
+  {id: 'outlook', configured: true, connected: true, address: 'orders@example.test'},
+] };
+
+function pagedMail() {
+  const task = storedMail();
+  task.mailResult.groups = task.mailResult.groups.map(group => ({
+    provider: group.provider, address: group.address, items: group.items, more: true, page: 0,
+  }));
+  return task;
+}
+
+function pageClick(h, provider, expectedPage, arg = completedId) {
+  return h.act('task-mail-more', {arg, fields: {provider, expectedPage}});
+}
+
+test('mail pagination dispatches the saved task, mailbox and revision and suppresses repeat clicks independently', async () => {
+  const task = pagedMail();
+  const resolve = {};
+  const calls = [];
+  let reads = 0;
+  const h = harness({
+    api: {moreMail(...args) {
+      calls.push(args);
+      return new Promise(done => { resolve[args[1]] = done; });
+    }},
+    reread() { reads += 1; },
+  });
+  h.setBoard({tasks: [task], mail: pagedMailboxes});
+  await h.act('task-provider', {arg: 'claude'});
+  const gmail = pageClick(h, 'gmail', 0), outlook = pageClick(h, 'outlook', 0);
+  await pageClick(h, 'gmail', 0);
+  await pageClick(h, 'outlook', 0);
+  assert.deepEqual(calls, [[task.id, 'gmail', 0], [task.id, 'outlook', 0]]);
+  assert.equal(h.scene().mailUI.pageByTask[task.id].gmail.busy, true);
+  assert.equal(h.scene().mailUI.pageByTask[task.id].outlook.busy, true);
+  resolve.outlook({ok: false, code: 'MAIL_NETWORK'});
+  await outlook;
+  assert.match(h.scene().mailUI.pageByTask[task.id].outlook.notice, /네트워크|연결/);
+  assert.equal(h.scene().mailUI.pageByTask[task.id].gmail.busy, true);
+  const retry = pageClick(h, 'outlook', 0);
+  assert.deepEqual(calls[2], [task.id, 'outlook', 0]);
+  resolve.outlook({ok: true});
+  resolve.gmail({ok: true});
+  await Promise.all([gmail, retry]);
+  assert.equal(reads, 2);
+  assert.deepEqual(h.submitted, []);
+  assert.deepEqual(h.actions, []);
+});
+
+test('mail pagination admits only a saved ordinary page and preserves results following an account change', async () => {
+  const task = pagedMail();
+  const calls = [];
+  const h = harness({api: {async moreMail(...args) { calls.push(args); return {ok: true}; }}});
+  const stage = (row = task, mail = pagedMailboxes) => h.setBoard({tasks: [row], mail});
+  stage();
+  for (const [provider, page, id] of [
+    ['outlook', 2, task.id], ['gmail', -1, task.id], ['gmail', '0', task.id],
+    ['gmail', 0.5, task.id], ['other', 0, task.id], ['gmail', 0, qaMailItemId],
+  ]) await pageClick(h, provider, page, id);
+  for (const state of [{provider: 'claude'}, {status: 'running'}, {mailSearch: false}, {viaTerminal: true}, {quoteHandoff: true}]) {
+    stage({...task, ...state});
+    await pageClick(h, 'gmail', 0);
+  }
+  for (const change of [{page: undefined}, {more: false}]) {
+    const row = pagedMail();
+    Object.assign(row.mailResult.groups[0], change);
+    stage(row);
+    await pageClick(h, 'gmail', 0);
+  }
+  h.setBoard({tasks: [task]});
+  await pageClick(h, 'gmail', 0);
+  assert.deepEqual(calls, []);
+  const otherAccount = {providers: pagedMailboxes.providers.map(p => p.id === 'gmail' ? {...p, address: 'other@example.test'} : p)};
+  stage(task, otherAccount);
+  await pageClick(h, 'gmail', 0);
+  assert.deepEqual(calls, []);
+  assert.deepEqual(task.mailResult.groups[0].items.map(item => item.id), [qaMailItemId]);
+  const newTask = {...pagedMail(), id: 'feb34500-0000-4000-8000-000000000001'};
+  stage(newTask);
+  await pageClick(h, 'gmail', 0, newTask.id);
+  assert.deepEqual(calls, [[newTask.id, 'gmail', 0]]);
+});
+
+test('mail pagination follows a new revision even without new rows and discards late feedback after a member change', async () => {
+  const task = pagedMail(), calls = [];
+  let settle, reads = 0;
+  const h = harness({
+    api: {moreMail(...args) { calls.push(args); return new Promise(resolve => {settle = resolve;}); }},
+    reread() { reads += 1; },
+  });
+  h.setBoard({tasks: [task], mail: pagedMailboxes});
+  const first = pageClick(h, 'gmail', 0);
+  assert.deepEqual(calls, [[task.id, 'gmail', 0]]);
+  task.mailResult.groups[0].page += 1;
+  h.setBoard({tasks: [task], mail: pagedMailboxes});
+  settle({ok: true});
+  await first;
+  await pageClick(h, 'gmail', 0);
+  const second = pageClick(h, 'gmail', 1);
+  assert.deepEqual(calls, [[task.id, 'gmail', 0], [task.id, 'gmail', 1]]);
+  h.room.reset();
+  h.setBoard({tasks: [], mail: pagedMailboxes});
+  settle({ok: false, code: 'MAIL_CHANGED'});
+  await second;
+  assert.equal(h.scene().mailUI.pageByTask[task.id], undefined);
+  assert.equal(reads, 1);
+});
+
+test('mail pagination distinguishes an old page that cannot resume from a temporary error', async () => {
+  const task = pagedMail();
+  const h = harness({api: {async moreMail() {return {ok: false, code: 'MAIL_PAGE_RESTART'};}}});
+  h.setBoard({tasks:[task],mail:pagedMailboxes});
+  await pageClick(h, 'gmail', 0);
+  const note=h.scene().mailUI.pageByTask[task.id].gmail.notice;
+  assert.match(note,/다시/);
+  assert.match(note,/찾|검색|조회/);
+  assert.doesNotMatch(note,/MAIL_PAGE_RESTART|네트워크/);
+  assert.deepEqual(task.mailResult.groups[0].items.map(item=>item.id),[qaMailItemId]);
+  assert.deepEqual(h.submitted,[]);
+});
+
+test('mail pagination stays busy while the accepted page is being read back', async () => {
+  let finishRead;
+  let enteredRead;
+  const reading = new Promise(resolve => { enteredRead = resolve; });
+  const calls = [];
+  const task = pagedMail();
+  const h = harness({
+    api: { async moreMail(...args) { calls.push(args); return {ok: true}; } },
+    reread() {
+      enteredRead();
+      return new Promise(resolve => { finishRead = resolve; });
+    },
+  });
+  h.setBoard({tasks: [task], mail: pagedMailboxes});
+  const first = pageClick(h, 'gmail', 0);
+  await reading;
+  let duplicate;
+  try {
+    assert.equal(h.scene().mailUI.pageByTask[task.id].gmail.busy, true);
+    duplicate = pageClick(h, 'gmail', 0);
+    assert.deepEqual(calls, [[task.id, 'gmail', 0]]);
+  } finally {
+    finishRead();
+  }
+  await Promise.all([first, duplicate]);
 });

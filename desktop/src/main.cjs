@@ -962,6 +962,7 @@ function createWindow(){
     'synk:office-mail-connect':p=>officeCall((_s,a)=>officeTasks()?.mail?.connect(a,p)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-mail-disconnect':p=>officeCall((_s,a)=>officeTasks()?.mail?.disconnect(a,p)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-mail-open':(task,item)=>officeCall((_s,a)=>officeTasks()?.mail?.openResult(a,task,item)??{ok:false,code:'NOT_AVAILABLE'}),
+    'synk:office-mail-more':(task,provider,page)=>officeCall((_s,a)=>officeTasks()?.mail?.moreMail(a,task,provider,page)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-task-action':(id,action,text)=>officeCall((_service,account)=>officeTasks()?.action(account,id,action,text)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-watch':on=>officeCall((service,account)=>service.watch(on===true,account)),
     'synk:office-department-save':input=>officeCall((service,account)=>officeSaveDepartment(service,account,input)),

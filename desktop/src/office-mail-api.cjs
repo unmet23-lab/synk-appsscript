@@ -1,7 +1,7 @@
 'use strict';
 const {randomUUID}=require('node:crypto');
-const {fail,providers,addressValid,jsonRequest,bearer}=require('./office-mail-http.cjs');
-const LIMIT=10;
+const {fail,providers,addressValid,jsonRequest,bearer,current}=require('./office-mail-http.cjs');
+const {LIMIT,PAGES_PER_READ,gmailId,graphId,token,transient,outlookOriginal,identities,paging,nextGraphLink,numericGraphOffset,advance,expired}=require('./office-mail-pages.cjs');
 const GMAIL='https://gmail.googleapis.com/gmail/v1/users/me/messages';
 const GRAPH='https://graph.microsoft.com/v1.0/me';
 const fields=['terms','from','after','before','folder','provider','inherit'];
@@ -654,18 +654,13 @@ function searchScope(p) {
   const format=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
   return [range,p.after||end?[(p.after||'처음')+' ~ '+(end?format(end):'현재')]:null,p.from&&'보낸 사람 '+p.from,p.terms.join(' · '),p.attachment==='has'&&'첨부파일 있음'].filter(Boolean).join(' · ');
 }
-function within(date,p) {
-  const stamp=Date.parse(date);return Number.isFinite(stamp)&&(!p.after||stamp>=+day(p.after))&&(!p.before||stamp<+day(p.before));
+function within(date,p,asOf) {
+  const stamp=Date.parse(date);return Number.isFinite(stamp)&&(!p.after||stamp>=+day(p.after))&&(!p.before||stamp<+day(p.before))&&(!asOf||stamp<=Date.parse(asOf));
 }
 function sourceUrl(provider,address,item) {
   if(provider==='gmail' && addressValid(address) && /^[0-9a-f]{1,40}$/i.test(item.sourceId||''))
     return 'https://mail.google.com/mail/u/?authuser='+encodeURIComponent(address)+'#all/'+item.sourceId;
-  if(provider==='outlook'){
-    try {
-      const url=new URL(item.webLink);
-      if(url.protocol==='https:'&&!url.port&&!url.username&&!url.password&&['outlook.live.com','outlook.office.com','outlook.office365.com','outlook.cloud.microsoft'].includes(url.hostname)&&/^\/(?:owa|mail)(?:\/|$)/i.test(url.pathname))return url.href;
-    }catch{}
-  }
+  if(provider==='outlook')return outlookOriginal(item)?.href||null;
   return null;
 }
 function decodeSnippet(value) {
@@ -700,50 +695,93 @@ function gmailFromMatches(value,expected) {
   const envelope=/^[^<>,;:()]*<\s*([^<>\s]+)\s*>$/u.exec(mailbox);
   return (envelope?envelope[1]:mailbox).toLowerCase()===expected;
 }
-async function gmail({plan:p,get}) {
-  const exactSender=addressValid(p.from)?p.from.toLowerCase():'';
+function gmailQuery(p,asOf){
   const q=[...p.terms.map(v=>'"'+v+'"'),p.from&&'from:('+p.from+')','-in:drafts'];
   if(p.attachment==='has')q.push('has:attachment');
   if(p.folder==='inbox'||p.folder==='sent')q.push('in:'+p.folder);
   if(p.folder==='inbox_sent')q.push('{in:inbox in:sent}');
   if(p.folder==='received')q.push('-in:sent');
   if(p.after)q.push('after:'+Math.floor(+day(p.after)/1000-1));
-  if(p.before)q.push('before:'+Math.floor(+day(p.before)/1000));
+  const end=Math.min(p.before?+day(p.before):Infinity,asOf?1000*(Math.floor(Date.parse(asOf)/1000)+1):Infinity);
+  if(Number.isFinite(end))q.push('before:'+Math.floor(end/1000));
   const list=new URL(GMAIL);list.search=new URLSearchParams({q:q.filter(Boolean).join(' '),fields:'messages(id),nextPageToken',maxResults:String(LIMIT+1),includeSpamTrash:'false'});
-  const page=await get(list);
-  if(page.messages!=null&&!Array.isArray(page.messages))throw fail('MAIL_NETWORK');
-  const ids=page.messages||[],items=[];let issue;
-  for(const {id} of ids.slice(0,LIMIT)){
-    if(!/^[0-9a-f]{1,40}$/i.test(id||'')){issue='MAIL_NETWORK';continue;}
-    const headers=new URL(GMAIL+'/'+id),summary=new URL(headers);
-    headers.search=new URLSearchParams([['format','metadata'],['metadataHeaders','Subject'],['metadataHeaders','From'],['fields','id,payload/headers']]);
-    // Gmail only guarantees headers in metadata format. Request the two extra
-    // message fields separately and leave the MIME body out of both responses.
-    summary.search=new URLSearchParams({format:'full',fields:'id,internalDate,snippet'});
+  return list;
+}
+async function gmailItem(id,p,asOf,get) {
+  const headers=new URL(GMAIL+'/'+id),summary=new URL(headers);
+  headers.search=new URLSearchParams([['format','metadata'],['metadataHeaders','Subject'],['metadataHeaders','From'],['fields','id,payload/headers']]);
+  summary.search=new URLSearchParams({format:'full',fields:'id,internalDate,snippet'});
+  const meta=await get(headers);
+  if(meta.id!==id||!Array.isArray(meta.payload?.headers))throw fail('MAIL_NETWORK');
+  const from=meta.payload.headers.filter(h=>typeof h?.name==='string'&&h.name.toLowerCase()==='from');
+  if(addressValid(p.from)&&(from.length!==1||!gmailFromMatches(from[0].value,p.from.toLowerCase())))return null;
+  const m=await get(summary);
+  if(m.id!==id||typeof m.internalDate!=='string'||!/^\d{1,15}$/.test(m.internalDate))throw fail('MAIL_NETWORK');
+  const date=new Date(Number(m.internalDate)).toISOString();if(!within(date,p,asOf))return null;
+  const subject=meta.payload.headers.find(h=>typeof h?.name==='string'&&h.name.toLowerCase()==='subject');
+  return {id:randomUUID(),sourceId:id,subject:text(subject?.value),from:text(from[0]?.value),date,snippet:decodeSnippet(m.snippet)};
+}
+async function gmailPage({plan,asOf,get,positions,seen}){
+  const s=positions.streams.gmail,initial=gmailQuery(plan,asOf);
+  if(s.next && !token(s.next)||!s.pending.every(gmailId))throw fail('MAIL_PAGE_RESTART');
+  const items=[],retry=[],attempted=new Set();let issue,pages=0,reads=0,rebuilt=false;
+  while(items.length<LIMIT&&reads<50){
+    if(!s.pending.length){
+      if(s.next===null||pages>=PAGES_PER_READ)break;
+      const start=s.next,u=new URL(initial);
+      if(start)u.searchParams.set('pageToken',start);
+      pages++;
+      let data;
+      try{data=await get(u);}catch(e){
+        // A continuation advertised by Gmail may end with HTTP 204 and no JSON.
+        if(start&&e.httpStatus===204&&e.code==='MAIL_NETWORK')data={};
+        else{
+          if(start&&!rebuilt&&expired(e)){s.next='';s.history=[];rebuilt=true;continue;}
+          if(!transient(e.code)||!items.length&&!retry.length)throw e;
+          issue=e.code;break;
+        }
+      }
+      if(data.messages!=null&&!Array.isArray(data.messages))throw fail('MAIL_NETWORK');
+      const next=data.nextPageToken??null;
+      const candidates=[];
+      for(const row of data.messages||[]){
+        if(!gmailId(row?.id)){issue='MAIL_NETWORK';continue;}
+        candidates.push(row.id);
+      }
+      try{
+        if(next!==null&&!token(next))throw fail('MAIL_NETWORK');
+        advance(s,start,next);
+      }catch(e){
+        issue=e.code;pages=PAGES_PER_READ;
+      }
+      s.pending=candidates;
+      if(!s.pending.length)continue;
+    }
+    const id=s.pending.shift(),key=id.toLowerCase();
+    if(attempted.has(key)||seen.ids.has(key))continue;
+    attempted.add(key);reads++;
     try{
-      const meta=await get(headers);
-      if(meta.id!==id||!Array.isArray(meta.payload?.headers))throw fail('MAIL_NETWORK');
-      const from=meta.payload.headers.filter(h=>typeof h?.name==='string'&&h.name.toLowerCase()==='from');
-      if(exactSender&&(from.length!==1||!gmailFromMatches(from[0].value,exactSender)))continue;
-      const m=await get(summary);
-      if(m.id!==id||typeof m.internalDate!=='string'||!/^\d{1,15}$/.test(m.internalDate))throw fail('MAIL_NETWORK');
-      const date=new Date(Number(m.internalDate)).toISOString();if(!within(date,p))continue;
-      const subject=meta.payload.headers.find(h=>typeof h?.name==='string'&&h.name.toLowerCase()==='subject');
-      items.push({id:randomUUID(),sourceId:id,subject:text(subject?.value),from:text(from[0]?.value),date,snippet:decodeSnippet(m.snippet)});
+      const item=await gmailItem(id,plan,asOf,get);
+      if(item){items.push(item);seen.add(item);}
     }catch(e){
-      if(e.code==='CANCELLED')throw e;
-      if(['MAIL_NOT_FOUND','MAIL_NETWORK'].includes(e.code)){issue=e.code;continue;}
-      throw e;
+      if(!transient(e.code))throw e;
+      issue=e.code;
+      if(e.code!=='MAIL_NOT_FOUND')retry.push(id);
+      if(e.code==='MAIL_LIMIT'){
+        if(!items.length&&!s.history.length)throw e;
+        break;
+      }
     }
   }
-  return {items,more:!!page.nextPageToken||ids.length>LIMIT,...(issue?{code:issue}:{})};
+  s.pending=retry.concat(s.pending);
+  const more=s.pending.length>0||s.next!==null;
+  return {items,more,...(more?{cursor:positions}:{}),...(issue?{code:issue}:{})};
 }
-async function outlook({plan:p,get,includeGraphId=false}) {
-  const exactSender=addressValid(p.from)?p.from.toLowerCase():'';
+function outlookQuery(p,asOf,pageSize){
   const direct=['inbox','sent'].includes(p.folder);
   const path=direct?'/mailFolders/'+(p.folder==='inbox'?'inbox':'sentitems')+'/messages':'/messages';
   const url=new URL(GRAPH+path);
-  const params=new URLSearchParams({'$select':'id,subject,from,receivedDateTime,sentDateTime,bodyPreview,webLink,parentFolderId,isDraft','$top':'40'});
+  const params=new URLSearchParams({'$select':'id,subject,from,receivedDateTime,sentDateTime,bodyPreview,webLink,parentFolderId,isDraft','$top':String(pageSize)});
   if(p.attachment==='has')params.set('$select',params.get('$select')+',hasAttachments');
   const dateKey=p.folder==='sent'?'sentDateTime':'receivedDateTime';
   const phrase=value=>value.includes(' ')?'"'+value+'"':value;
@@ -757,12 +795,14 @@ async function outlook({plan:p,get,includeGraphId=false}) {
     for(const [bound,operator,delta] of [[p.after,'>=',-1],[p.before,'<=',1]]){
       if(bound){const d=day(bound);d.setDate(d.getDate()+delta);terms.push(k+operator+(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear());}
     }
+    if(asOf){const d=new Date(asOf);d.setDate(d.getDate()+1);terms.push(k+'<='+(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear());}
     // Quote the entire Graph search literal and retain KQL phrase quotes inside it.
     params.set('$search',JSON.stringify(terms.join(' AND ')));
   }else{
     const filters=[];
     if(p.after)filters.push(dateKey+' ge '+day(p.after).toISOString());
     if(p.before)filters.push(dateKey+' lt '+day(p.before).toISOString());
+    if(asOf)filters.push(dateKey+' le '+asOf);
     // Graph requires the orderby property first when combined with other filters.
     if(p.attachment==='has'){
       if(!filters.length)filters.push(dateKey+' ge 0001-01-01T00:00:00Z');
@@ -772,101 +812,300 @@ async function outlook({plan:p,get,includeGraphId=false}) {
     params.set('$orderby',dateKey+' desc');
   }
   url.search=params;
-  let page=await get(url);
-  if(!Array.isArray(page.value))throw fail('MAIL_NETWORK');
-  const items=[],messageIds=new Set(),folderErrors=new Map();let more=false,issue;
-  const excluded=new Set(),seenFolders=new Map();
-  if(!direct&&(page.value.length||page['@odata.nextLink'])){
-    const names=['deleteditems','junkemail','drafts',...(p.folder==='received'?['sentitems']:[])];
-    for(const name of [...names,'msgfolderroot']){
+  return url;
+}
+// Only the original search path and well-known folders are used. Folder ancestry is
+// checked afresh for each click, since a classified folder can be moved in Outlook.
+function folderCheck(p,get){
+  const excluded=new Set(),known=new Map();let ready=false;
+  async function prepare(){
+    if(ready)return;
+    for(const name of ['deleteditems','junkemail','drafts',...(p.folder==='received'?['sentitems']:[]),'msgfolderroot']){
       const f=await get(GRAPH+'/mailFolders/'+name+'?$select=id');
-      if(typeof f.id!=='string'||!f.id)throw fail('MAIL_NETWORK');
-      if(name==='msgfolderroot')seenFolders.set(f.id,false);
-      else excluded.add(f.id);
+      if(!graphId(f.id))throw fail('MAIL_NETWORK');
+      if(name==='msgfolderroot')known.set(f.id,false);else excluded.add(f.id);
     }
+    ready=true;
   }
-  async function omitted(id,depth=0) {
+  async function omitted(id,visited=new Set()){
     if(excluded.has(id))return true;
-    if(seenFolders.has(id))return seenFolders.get(id);
-    if(typeof id!=='string'||!id||id.length>1500||depth>12||seenFolders.size>60)throw fail('MAIL_NETWORK');
+    if(known.has(id))return known.get(id);
+    if(!graphId(id)||id==='.'||id==='..'||id.length>1500||visited.has(id)||visited.size>12)throw fail('MAIL_NETWORK');
+    visited.add(id);
     const f=await get(GRAPH+'/mailFolders/'+encodeURIComponent(id)+'?$select=id,parentFolderId');
     if(f.id!==id)throw fail('MAIL_NETWORK');
-    const result=await omitted(f.parentFolderId,depth+1);seenFolders.set(id,result);return result;
+    const skip=await omitted(f.parentFolderId,visited);known.set(id,skip);return skip;
   }
-  const visited=new Set([url.href]);
-  pages: for(let pages=1;pages<=5;pages++){
-    for(const m of page.value){
-      if(typeof m?.id!=='string'||!m.id.trim()||m.id.length>2048){issue='MAIL_NETWORK';continue;}
-      if(messageIds.has(m.id))continue;
-      const sender=m.from?.emailAddress;
-      if(exactSender&&(typeof sender?.address!=='string'||sender.address.trim().toLowerCase()!==exactSender))continue;
-      if(p.attachment==='has'&&m.hasAttachments!==true){issue='MAIL_NETWORK';continue;}
-      const date=m[dateKey];if(m.isDraft||!within(date,p))continue;
-      if(items.length>=LIMIT){more=true;break;}
-      try{
-        const skip=!direct&&await omitted(m.parentFolderId);
-        folderErrors.delete(m.id);messageIds.add(m.id);
-        if(skip)continue;
-      }catch(e){
-        if(e.code==='CANCELLED')throw e;
-        if(e.code==='MAIL_LIMIT'&&items.length){issue=e.code;more=true;break pages;}
-        if(!['MAIL_NETWORK','MAIL_NOT_FOUND'].includes(e.code))throw e;
-        folderErrors.set(m.id,e.code);continue;
+  async function omittedMessage(row){
+    try{return await omitted(row.folderId);}catch(e){if(e.code!=='MAIL_NOT_FOUND')throw e;}
+    // The old folder can disappear after its message moves. Only ask where the
+    // immutable ID from the original search lives; a missing message is final.
+    const id=row.item.graphId;
+    if(!graphId(id)||id==='.'||id==='..')throw fail('MAIL_NETWORK');
+    let message;
+    try{message=await get(GRAPH+'/messages/'+encodeURIComponent(id)+'?$select=id,parentFolderId');}
+    catch(e){if(e.code==='MAIL_NOT_FOUND')return null;throw e;}
+    if(message.id!==id||!graphId(message.parentFolderId))throw fail('MAIL_NETWORK');
+    row.folderId=message.parentFolderId;
+    return omitted(row.folderId);
+  }
+  return {prepare,omittedMessage};
+}
+function graphRow(m,p,asOf){
+  if(!graphId(m?.id))throw fail('MAIL_NETWORK');
+  const sender=m.from?.emailAddress;
+  if(addressValid(p.from)&&(typeof sender?.address!=='string'||sender.address.trim().toLowerCase()!==p.from.toLowerCase()))return null;
+  if(p.attachment==='has'&&m.hasAttachments!==true)throw fail('MAIL_NETWORK');
+  const date=p.folder==='sent'?m.sentDateTime:m.receivedDateTime;
+  if(m.isDraft||!within(date,p,asOf))return null;
+  return {rank:Date.parse(date),item:{id:randomUUID(),graphId:m.id,subject:text(m.subject),from:[text(sender?.name),text(sender?.address)].filter(Boolean).join(' '),
+    date:new Date(date).toISOString(),snippet:text(m.bodyPreview,280),webLink:typeof m.webLink==='string'&&m.webLink.length<=4096?m.webLink:''}};
+}
+function ordered(left,right){
+  if(left.rank!==right.rank)return right.rank-left.rank;
+  return left.item.graphId<right.item.graphId?-1:left.item.graphId>right.item.graphId?1:0;
+}
+async function outlookPage({plan,asOf,get,positions,seen,cursor}){
+  // A small provider page is normal. Keep reading during this operation, but
+  // checkpoint slow networks before the interactive job becomes unresponsive.
+  const scanDeadline=Date.now()+120_000;
+  const canRead=s=>s.pages<s.budget&&(!s.receiveOrder||!s.pages||Date.now()<scanDeadline);
+  const streams=Object.entries(positions.streams).map(([name,state])=>{
+    const p={...plan,folder:name};
+    if(state.pending.some(r=>!Number.isFinite(r?.rank)||!graphId(r.item?.graphId)||typeof r.item.id!=='string'))throw fail('MAIL_PAGE_RESTART');
+    const receiveOrder=plan.folder==='inbox_sent'&&name==='inbox'&&Boolean(p.terms.length||p.from);
+    if(receiveOrder&&state.receiveOrder!==2){
+      // Older cursors kept only eleven candidates. Rebuild that ranking once while
+      // excluding the stable IDs that already have a row on the card.
+      if(cursor){state.next='';state.history=[];state.pending=[];delete state.anchor;delete state.boundary;delete state.remaining;}
+      state.receiveOrder=2;
+    }
+    const base=outlookQuery(p,asOf,receiveOrder?100:LIMIT+1);
+    if(cursor&&state.next){
+      const saved=new URL(nextGraphLink(state.next,base));
+      if(numericGraphOffset(saved)){
+        if(!state.anchor||!Array.isArray(state.anchor.ids)||!state.anchor.ids.every(graphId)||
+          typeof state.anchor.page!=='string'||state.anchor.next!==undefined&&state.anchor.next!==saved.href){
+          state.next='';state.history=[];state.pending=[];delete state.anchor;delete state.boundary;
+        }else state.anchor.next=saved.href; // Former cursors stored this same link in state.next.
       }
-      items.push({id:randomUUID(),...(includeGraphId?{graphId:m.id}:{}),subject:text(m.subject),from:[text(sender?.name),text(sender?.address)].filter(Boolean).join(' '),date:new Date(date).toISOString(),snippet:text(m.bodyPreview,280),webLink:typeof m.webLink==='string'&&m.webLink.length<=4096?m.webLink:''});
     }
-    const next=page['@odata.nextLink'];if(!next)break;
-    if(items.length>=LIMIT||pages===5){more=true;break;}
-    try{
-      if(typeof next!=='string'||next.length>16384||/[\\\x00-\x20]|(?:^|\/)(?:\.|%2e){1,2}(?:\/|\?|$)/i.test(next.split('?')[0]))throw fail('MAIL_NETWORK');
-      const target=new URL(next,url);
-      if(target.origin!==url.origin||decodeURIComponent(target.pathname).toLowerCase()!==url.pathname.toLowerCase()||
-        /%2f|%5c/i.test(target.pathname)||target.username||target.password||target.hash||visited.has(target.href))throw fail('MAIL_NETWORK');
-      visited.add(target.href);page=await get(target);
-      if(!Array.isArray(page.value))throw fail('MAIL_NETWORK');
-    }catch(e){if(e.code==='CANCELLED')throw e;issue=e.code||'MAIL_NETWORK';more=true;break;}
+    const pool=receiveOrder&&state.next!==null?new Map(state.pending.map(r=>[r.item.graphId,r])):null;
+    return {p,state,receiveOrder,pool,base,budget:receiveOrder?256:PAGES_PER_READ,folders:['inbox','sent'].includes(name)?null:folderCheck(p,get),
+      folderRetry:new Set(),visited:new Set(),drawn:[],reconciliations:0,pages:0,rebuilt:false,blocked:false,verifyOffset:!!cursor};
+  });
+  const items=[],picked=new Set();
+  let issue,revision=0;
+  function rewind(stream){
+    // Only previously published IDs are immutable here. Return provisional picks
+    // to unaffected streams, then rebuild this stream from the original query.
+    for(const other of streams){
+      if(other!==stream&&other.drawn.length){
+        const rows=new Map(other.state.pending.map(r=>[r.item.graphId,r]));
+        for(const r of other.drawn)rows.set(r.item.graphId,r);
+        other.state.pending=[...rows.values()].sort(ordered);
+      }
+      other.drawn.length=0;
+    }
+    items.length=0;picked.clear();revision++;
+    const s=stream.state;
+    s.next='';s.history=[];s.pending=[];delete s.anchor;delete s.boundary;
+    stream.visited.clear();stream.folderRetry.clear();
+    if(stream.receiveOrder)stream.pool=new Map();
   }
-  issue??=folderErrors.values().next().value;
-  return {items,more,...(issue?{code:issue}:{})};
-}
-async function outlookInboxAndSent(plan,get){
-  const byMessage=new Map();
-  let more=false,issue;
-  for(const folder of ['inbox','sent']){
-    let part;
+  async function read(stream,verifyOnly=false){
+    const {p,state:s,base,folders}=stream;
+    let start=s.next;
+    if(start===null||!canRead(stream)||stream.blocked)return;
+    stream.pages++;
+    let data;
+    async function reconcile(anchor){
+      const previous=anchor.page?nextGraphLink(anchor.page,base):base;
+      const check=await get(previous);
+      if(!Array.isArray(check.value))throw fail('MAIL_NETWORK');
+      const keys=check.value.map(m=>m?.id).filter(graphId);
+      const returned=check['@odata.nextLink'];
+      const next=returned==null?null:nextGraphLink(returned,base);
+      if(next===anchor.next&&keys.length===anchor.ids.length&&keys.every((k,i)=>k===anchor.ids[i]))return false;
+      if(++stream.reconciliations>2)throw Object.assign(fail('MAIL_NETWORK'),{unstablePage:true});
+      rewind(stream);start='';
+      data=anchor.page?null:check;
+      return true;
+    }
     try{
-      part=await outlook({plan:{...plan,folder},get,includeGraphId:true});
-    }catch(error){
-      if(!['MAIL_NETWORK','MAIL_NOT_FOUND','MAIL_LIMIT'].includes(error.code))throw error;
-      part={items:[],more:true,code:error.code};
+      if(start&&stream.verifyOffset&&s.anchor){
+        stream.verifyOffset=false;
+        await reconcile(s.anchor);
+      }
+      if(stream.visited.has(start))throw fail('MAIL_NETWORK');
+      if(!data){
+        data=await get(start?nextGraphLink(start,base):base);
+        // A move can occur after the first check but before this numeric-offset
+        // GET. Verify the predecessor again before admitting any fetched row.
+        if(s.anchor&&await reconcile(s.anchor)&&!data)return;
+      }
+    }catch(e){
+      if(start&&!stream.rebuilt&&expired(e)){
+        rewind(stream);stream.rebuilt=true;return;
+      }
+      throw e;
     }
-    if(part.code&&!['MAIL_NETWORK','MAIL_NOT_FOUND','MAIL_LIMIT'].includes(part.code))throw fail(part.code);
-    for(const {graphId,...item} of part.items){
-      const existing=byMessage.get(graphId);
-      if(!existing||item.date>existing.date)byMessage.set(graphId,item);
+    if(!Array.isArray(data.value))throw fail('MAIL_NETWORK');
+    stream.visited.add(start);
+    if(folders&&(data.value.length||data['@odata.nextLink']))await folders.prepare();
+    const found=stream.pool||new Map(s.pending.map(r=>[r.item.graphId,r]));
+    let boundary;
+    for(const m of data.value){
+      const orderDate=(p.terms.length||p.from)&&m?.sentDateTime?m.sentDateTime:p.folder==='sent'?m?.sentDateTime:m?.receivedDateTime;
+      const rank=Date.parse(orderDate);
+      if(Number.isFinite(rank))boundary=boundary===undefined?rank:Math.min(boundary,rank);
+      let r;
+      try{r=graphRow(m,p,asOf);}catch(e){issue=e.code;continue;}
+      if(!r||seen.has(r.item)||verifyOnly)continue;
+      if(!stream.receiveOrder&&Number.isFinite(rank))r.rank=rank;
+      // Defer classification until the row could actually be displayed. For the
+      // eleventh candidate the next click, not this search, may inspect its folder.
+      if(folders)r.folderId=typeof m.parentFolderId==='string'?m.parentFolderId:'';
+      const old=found.get(m.id);
+      if(!old||ordered(r,old)<0)found.set(m.id,r);
     }
-    more=more||part.more||Boolean(part.code);
-    issue=issue||part.code;
-    if(part.code==='MAIL_LIMIT')break;
+    if(!stream.pool)s.pending=[...found.values()].sort(ordered);
+    if(!stream.blocked){
+      try{
+        const link=data['@odata.nextLink'];
+        const next=link==null?null:nextGraphLink(link,base);
+        advance(s,start,next);
+        if(next&&numericGraphOffset(new URL(next)))s.anchor={page:start,next,ids:data.value.map(m=>m?.id).filter(graphId)};
+        else delete s.anchor;
+        if(boundary!==undefined)s.boundary=boundary;
+      }catch(e){issue=e.code;stream.blocked=true;}
+    }
+    if(stream.pool&&(s.next===null||stream.blocked)){
+      s.pending=[...stream.pool.values()].sort(ordered);stream.pool=null;
+    }
   }
-  if(issue&&!byMessage.size)throw fail(issue);
-  const sorted=[...byMessage.values()].sort((left,right)=>right.date.localeCompare(left.date));
-  return {items:sorted.slice(0,LIMIT),more:more||sorted.length>LIMIT,...(issue?{code:issue}:{})};
+  async function head(stream){
+    const s=stream.state;
+    for(;;){
+      while(s.pending.length){
+        const row=s.pending[0];
+        if(seen.has(row.item))s.pending.shift();
+        else if(picked.has(row.item.graphId))stream.drawn.push(s.pending.shift());
+        else break;
+      }
+      const first=s.pending[0];
+      if(first&&Object.hasOwn(first,'folderId')){
+        if(stream.blocked&&stream.folderRetry.has(first.item.graphId))return;
+        try{
+          await stream.folders.prepare();
+          const skip=await stream.folders.omittedMessage(first);
+          if(skip!==false){s.pending.shift();if(skip===null)issue??='MAIL_NOT_FOUND';continue;}
+          delete first.folderId;
+        }catch(e){
+          // A folder lookup can still fail even though the immutable message is
+          // present. Only a 404 on the message itself consumes it as unavailable.
+          const code=e.code==='MAIL_NOT_FOUND'?'MAIL_NETWORK':e.code;
+          if(!transient(code))throw e;
+          // A temporary classification error is retried once while the original
+          // query has a next page. Never emit an older row beyond this unknown head.
+          if(code==='MAIL_NETWORK'&&s.next!==null&&!stream.folderRetry.has(first.item.graphId)){
+            stream.folderRetry.add(first.item.graphId);continue;
+          }
+          stream.folderRetry.add(first.item.graphId);issue=code;stream.blocked=true;return;
+        }
+      }
+      const unfinishedTie=streams.length>1&&s.pending.length&&s.pending[0].rank===s.boundary;
+      const needsDisplayOrder=stream.receiveOrder&&s.next!==null;
+      const verifySavedOffset=stream.verifyOffset&&s.anchor&&s.next;
+      if(s.pending.length&&!unfinishedTie&&!needsDisplayOrder&&!verifySavedOffset||s.next===null||!canRead(stream)||stream.blocked)return;
+      try{await read(stream);}catch(e){
+        if(!transient(e.code)||e.unstablePage)throw e;
+        issue=e.code;stream.blocked=true;
+        if(s.anchor)stream.offsetBlocked=true;
+        if(e.code==='MAIL_LIMIT')break;
+      }
+    }
+  }
+  // Old Outlook rows contain only a web link. Verify each old identity under this
+  // very query before appending anything, since moved or deleted messages can lose it.
+  if(seen.unverified.size&&(!cursor||cursor.legacyPending)){
+    if(cursor?.legacyPending){
+      if(!Array.isArray(cursor.legacyPending)||cursor.legacyPending.some(k=>!seen.unverified.has(k)))throw fail('MAIL_PAGE_RESTART');
+      for(const key of seen.unverified)if(!cursor.legacyPending.includes(key))seen.unverified.delete(key);
+    }
+    for(const s of streams){
+      while(seen.unverified.size&&s.state.next!==null&&canRead(s)&&!s.blocked)await read(s,true);
+    }
+    if(seen.unverified.size){
+      if(issue)throw fail(issue);
+      if(streams.every(s=>s.state.next===null))throw fail('MAIL_PAGE_RESTART');
+      positions.legacyPending=[...seen.unverified];
+      return {items:[],more:true,cursor:positions};
+    }
+    // Verification reads identities only. Replay with the proven immutable IDs
+    // before publishing, so no unrelated message body is stored as migration data.
+    for(const s of streams){
+      s.state.next='';s.state.history=[];s.state.pending=[];s.visited.clear();
+      if(s.receiveOrder)s.pool=new Map();
+      delete s.state.boundary;delete s.state.anchor;
+    }
+  }
+  while(items.length<LIMIT){
+    const before=revision;
+    for(const s of streams){
+      await head(s);
+      if(issue==='MAIL_LIMIT')break;
+    }
+    if(before!==revision)continue;
+    const ready=streams.filter(s=>s.state.pending.length&&!s.offsetBlocked&&!Object.hasOwn(s.state.pending[0],'folderId')&&
+      (!s.receiveOrder||s.state.next===null)).sort((a,b)=>ordered(a.state.pending[0],b.state.pending[0]));
+    if(!ready.length)break;
+    const candidate=ready[0].state.pending[0];
+    // A filtered or unavailable page may still contain a newer result. The last examined
+    // rank bounds every unseen row in that stream; equality can still change the ID order.
+    const unknown=streams.length>1&&streams.some(s=>{
+      if(s.state.next===null)return false;
+      if(s.offsetBlocked)return true;
+      if(s.receiveOrder&&(!s.blocked||cursor||s.state.history.length||s.pool?.size||s.state.pending.length))return true;
+      const stalled=!canRead(s)||s.blocked||issue==='MAIL_LIMIT'&&!s.state.pending.length;
+      if(!stalled||s.blocked&&!cursor)return false; // preserve healthy results on a partial first search
+      const bound=s.state.boundary;
+      return (!s.state.pending.length||s.state.pending[0].rank===bound)&&(!Number.isFinite(bound)||candidate.rank<=bound);
+    });
+    if(unknown)break;
+    const stream=ready[0],row=stream.state.pending.shift(),item=row.item;
+    stream.drawn.push(row);
+    if(!seen.has(item)&&!picked.has(item.graphId)){items.push(item);picked.add(item.graphId);}
+  }
+  for(const {state:s,pool} of streams){
+    if(pool)s.pending=[...pool.values()].sort(ordered);
+    s.pending=s.pending.filter(r=>!seen.has(r.item)&&!picked.has(r.item.graphId));
+  }
+  const more=streams.some(s=>s.state.pending.length||s.state.next!==null);
+  const interrupted=streams.some(s=>(s.receiveOrder||s.offsetBlocked)&&s.state.next!==null&&(s.state.history.length||s.state.pending.length));
+  if(issue&&!items.length&&!interrupted&&(!cursor||streams.every(s=>!s.state.history.length&&!s.state.pending.length)))throw fail(issue);
+  return {items,more,...(more?{cursor:positions}:{}),...(issue?{code:issue}:{})};
 }
-async function searchMailbox({provider,access,plan,fetch=globalThis.fetch,signal}) {
-  // Keep the grant's abort controller registered until every dispatched request has settled.
-  const pending=new Set();
-  const get=url=>{
-    const request=jsonRequest(fetch,url,{method:'GET',headers:bearer(access)},signal);
-    pending.add(request);
-    return request.finally(()=>pending.delete(request));
+async function searchMailbox({provider,address='',access,plan,fetch=globalThis.fetch,signal,cursor,previousItems=[],asOf=''}){
+  current(signal);
+  if(!providers.includes(provider)||!['all','received','inbox','sent','inbox_sent'].includes(plan?.folder)||!Array.isArray(previousItems)||
+    asOf&&(typeof asOf!=='string'||!Number.isFinite(Date.parse(asOf))))throw fail('MAIL_PLAN');
+  const names=provider==='gmail'?['gmail']:plan.folder==='inbox_sent'?['inbox','sent']:[plan.folder];
+  const positions=paging(provider,address,plan,asOf,cursor,names),seen=identities(provider,previousItems,cursor?.legacyIds);
+  const headers=bearer(access);if(provider==='outlook')headers.Prefer='IdType="ImmutableId"';
+  const get=async url=>{
+    let status;
+    try{
+      return await jsonRequest(async(target,options)=>{
+        const response=await fetch(target,options);status=response.status;return response;
+      },url,{method:'GET',headers},signal);
+    }catch(e){e.httpStatus=status;throw e;}
   };
-  try{
-    if(provider==='gmail')return await gmail({plan,get});
-    if(plan.folder==='inbox_sent')return await outlookInboxAndSent(plan,get);
-    return await outlook({plan,get});
-  }
-  finally{await Promise.allSettled(pending);}
+  const options={plan,asOf,get,positions,seen,cursor};
+  const result=provider==='gmail'?await gmailPage(options):await outlookPage(options);
+  current(signal);
+  if(result.cursor&&seen.verified.size)result.cursor.legacyIds=[...seen.verified];
+  return result;
 }
 function reviewMissingMailboxes(plan,bindings,prompt,proposal=null){
   // The caller supplies the accounts captured for this task, or their intersection with the previous receipt.

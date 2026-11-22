@@ -70,9 +70,9 @@ module.exports = async function checkOfficeMail({open,boot,signedIn,signedOut,su
       const form=document.querySelector(sel)?.closest('form');
       return !!form&&!form.querySelector('input[type=password],a[href],img[src^="http"],iframe,object');
     },mode));
-    check('a private GPT form offers automatic, mail search, and ordinary work',await query(s=>{
+    check('a private GPT form offers automatic, ordinary work, mail search and the existing quote handoff',await query(s=>{
       const field=document.querySelector(s);
-      return field.tagName==='SELECT'&&field.value==='auto'&&[...field.options].map(o=>o.value).sort().join(',')==='auto,general,mail';
+      return field.tagName==='SELECT'&&field.value==='auto'&&[...field.options].map(o=>o.value).sort().join(',')==='auto,general,mail,quote';
     },mode));
     const gmail=room+' [data-office-mail-connect="gmail"]',outlook=room+' [data-office-mail-connect="outlook"]',unlink=room+' [data-office-mail-disconnect="outlook"]';
     check('unconfigured Gmail gives a setup message and cannot start a connection',await query(sel=>document.querySelector(sel).innerText.includes('설정'),room)&&!await press(gmail));

@@ -619,7 +619,7 @@ export function createOfficeTaskRoom({
       }
       return mailCards.send(p.act, task, fields);
     }
-    if (p.act === 'task-mail-connect' || p.act === 'task-mail-disconnect' || p.act === 'task-mail-open') {
+    if (p.act === 'task-mail-connect' || p.act === 'task-mail-disconnect' || p.act === 'task-mail-open' || p.act === 'task-mail-more') {
       return mailActions.handle(p);
     }
     if (p.act === 'task-edit') {

@@ -1075,7 +1075,7 @@ export function createOfficeTaskView(host, dispatch) {
       } else if (rec.mailResults.element.parentNode !== rec.el) {
         rec.el.insertBefore(rec.mailResults.element, rec.noteEl);
       }
-      rec.mailResults.view.update(info.mailResult, currentMailUI?.sourceNotes?.[argId]);
+      rec.mailResults.view.update(info.mailResult, currentMailUI?.sourceNotes?.[argId], currentMailUI?.pageByTask?.[argId]);
     }
 
     const showMailReview = Boolean(hasMail && argId && info.mailReview);

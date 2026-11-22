@@ -235,6 +235,31 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
       const code=office.mailTestCodes?.open;
       return code?{ok:false,code}:{ok:true};
     },
+    moreMail:async(taskId,provider,expectedPage)=>{
+      calls.push('office-mail-more:'+JSON.stringify([taskId,provider,expectedPage]));
+      if(officeMailTestWait?.action==='more-'+provider)await officeMailTestWait.gate;
+      return officeChange(()=>{
+        const task=office.tasking?.tasks.find(row=>row.id===taskId);
+        const group=task?.mailResult?.groups?.find(row=>row.provider===provider);
+        const account=office.tasking?.mail?.providers.find(row=>row.id===provider);
+        const pages=office.mailTestPages?.[taskId]?.[provider];
+        if(!group||task.quoteHandoff||!Number.isSafeInteger(expectedPage)||!pages)return {ok:false,code:'MAIL_NOT_FOUND'};
+        if(!account?.connected||account.address!==group.address)return {ok:false,code:'MAIL_CHANGED'};
+        if(group.page!==expectedPage||!group.more)return {ok:true};
+        const code=office.mailTestPageErrors?.[taskId]?.[provider]||office.mailTestCodes?.['more-'+provider];
+        if(code)return {ok:false,code};
+        const page=pages[expectedPage];
+        if(!Array.isArray(page)||page.length>10)return {ok:false,code:'MAIL_STORAGE'};
+        group.items.push(...page);
+        group.more=expectedPage+1<pages.length;
+        if(group.more)group.page=expectedPage+1;
+        else delete group.page;
+        const count=task.mailResult.groups.reduce((sum,box)=>sum+box.items.length,0);
+        const summary=office.mailTestPageSummaries?.[count];
+        if(typeof summary==='string')task.answer=summary;
+        return {ok:true};
+      });
+    },
     submitTask:async input=>{
       calls.push('office-task-submit:'+JSON.stringify(input));
       if(officeMailTestWait?.action==='submit')await officeMailTestWait.gate;

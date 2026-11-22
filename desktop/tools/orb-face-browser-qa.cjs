@@ -617,6 +617,9 @@ if(!process.versions.electron){
         if(only('office-tasks')&&mode==='main'){
           await require('./office-task-browser-qa.cjs')({open,boot,signedIn,signedOut,subsNone,until,wait,click,capture,check,calls});
         }
+        if(only('office-mail-more')&&mode==='main'){
+          await require('./office-mail-more-browser-qa.cjs')({open,boot,signedIn,subsNone,until,wait,click,key,capture,check,calls});
+        }
         if(only('office-mail')&&mode==='main'){
           await require('./office-mail-browser-qa.cjs')({open,boot,signedIn,signedOut,subsNone,until,wait,click,capture,check,calls});
         }

@@ -193,6 +193,8 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     connectMail:p=>['gmail','outlook'].includes(p)?ipcRenderer.invoke('synk:office-mail-connect',p):officeInvalid(),
     disconnectMail:p=>['gmail','outlook'].includes(p)?ipcRenderer.invoke('synk:office-mail-disconnect',p):officeInvalid(),
     openMailResult:(task,item)=>officeTaskId(task)&&officeTaskId(item)?ipcRenderer.invoke('synk:office-mail-open',task,item):officeInvalid(),
+    moreMail:(task,provider,page)=>officeTaskId(task)&&['gmail','outlook'].includes(provider)&&Number.isSafeInteger(page)&&page>=0
+      ?ipcRenderer.invoke('synk:office-mail-more',task,provider,page):officeInvalid(),
     submitTask:input=>{const value=officeTaskInput(input);return value?ipcRenderer.invoke('synk:office-task-submit',value):officeInvalid();},
     taskAction:(id,action,text)=>{
       if(!officeTaskId(id))return officeInvalid();

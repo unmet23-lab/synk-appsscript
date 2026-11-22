@@ -18,6 +18,7 @@ const MAIL_CODE_MESSAGES = Object.freeze({
   MAIL_TIMEOUT: 'Gmail/Outlook 계정 선택이나 동의를 마치기 전에 연결 대기 시간이 지났지만, 공식 연결 창을 다시 열어 진행할 수 있습니다.',
   MAIL_NOT_FOUND: '메일 공급자에서 해당 메일을 더는 찾지 못해 저장해 둔 메일의 원문을 열 수 없습니다.',
   MAIL_CHANGED: '연결된 계정이나 보관된 메일 상태가 변경되어 다시 확인해야 합니다.',
+  MAIL_PAGE_RESTART: '이전 형식의 결과라 이어서 불러올 위치를 확인할 수 없습니다. 같은 조건으로 다시 검색해 주세요.',
   MAIL_BUSY: '이미 다른 메일 작업을 처리하고 있으니 잠시 후 다시 시도해 주세요.',
   MAIL_CHOOSE: '메일 검색이 필요한 요청인지 확인이 필요합니다. ‘일반 업무로 맡기기’와 ‘메일에서 찾기’ 중에서 선택해 주세요.',
   MAIL_NO_MAILBOX: '계정 로그인은 됐지만 이 계정의 Outlook 메일함이 없습니다. 다른 주소로 다시 연결할 수 있습니다.',
@@ -54,7 +55,340 @@ function failureNote(code, fallback) {
   return text || fallback;
 }
 
+function createMailPager({ api, current, changed, reread } = {}) {
+  const PROVIDERS = new Set(['gmail', 'outlook']);
+  const AGENT_KEYS = [
+    'agent',
+    'agentId',
+    'engine',
+    'provider',
+    'runner',
+    'runtime',
+    'cli',
+    'tool',
+    'worker',
+    'assignee',
+    'backend',
+    'executor',
+    'model',
+    'kind',
+    'type',
+    'source',
+    'vendor',
+    'adapter',
+  ];
+  const PRIMARY_KIND_KEYS = ['kind', 'type', 'taskType'];
+  const KIND_KEYS = [
+    'kind',
+    'type',
+    'taskType',
+    'subkind',
+    'subtype',
+    'mode',
+    'tool',
+    'action',
+    'intent',
+    'category',
+    'workflow',
+    'feature',
+    'skill',
+    'command',
+    'operation',
+  ];
+  const FALLBACK_TEXT = {
+    MAIL_CHANGED: '연결된 메일 계정이 바뀌었습니다. 다시 검색해 주세요.',
+  };
+
+  let generation = 0;
+  let state = {};
+
+  function isSafeKey(id) {
+    if (typeof id === 'string') {
+      return (
+        id.length > 0 &&
+        id !== '__proto__' &&
+        id !== 'constructor' &&
+        id !== 'prototype'
+      );
+    }
+    return typeof id === 'number' && Number.isFinite(id);
+  }
+
+  function matchesTag(value, target) {
+    if (value === target) return true;
+    if (value && typeof value === 'object') {
+      return (
+        value.id === target ||
+        value.name === target ||
+        value.kind === target ||
+        value.type === target ||
+        value.engine === target ||
+        value.provider === target
+      );
+    }
+    return false;
+  }
+
+  function isEligibleTask(task) {
+    if (!task || typeof task !== 'object') return false;
+    const status = task.status !== undefined ? task.status : task.state;
+    if (status !== 'completed') return false;
+    if (task.viaTerminal || task.quoteHandoff || task.quoteSource) return false;
+    if (task.codex === false || task.mailSearch === false) return false;
+
+    const isCodex =
+      task.codex === true ||
+      AGENT_KEYS.some((key) => matchesTag(task[key], 'codex'));
+    if (!isCodex) return false;
+
+    if (KIND_KEYS.some((key) => matchesTag(task[key], 'mailSearch'))) {
+      return true;
+    }
+
+    const hasOtherPrimaryKind = PRIMARY_KIND_KEYS.some((key) => {
+      const v = task[key];
+      if (v === undefined || v === null || v === '') return false;
+      return !matchesTag(v, 'codex');
+    });
+    if (hasOtherPrimaryKind) return false;
+
+    return (
+      task.mailSearch === true ||
+      Boolean(task.mailSearch && typeof task.mailSearch === 'object')
+    );
+  }
+
+  function findMailGroup(groups, p) {
+    if (Array.isArray(groups)) {
+      return (
+        groups.find((g) => g && typeof g === 'object' && g.provider === p) ||
+        null
+      );
+    }
+    if (
+      groups &&
+      typeof groups === 'object' &&
+      Object.prototype.hasOwnProperty.call(groups, p)
+    ) {
+      const g = groups[p];
+      return g && typeof g === 'object' ? g : null;
+    }
+    return null;
+  }
+
+  function findMailProvider(providers, p) {
+    if (Array.isArray(providers)) {
+      return (
+        providers.find(
+          (item) =>
+            item &&
+            typeof item === 'object' &&
+            (item.provider === p || item.id === p)
+        ) || null
+      );
+    }
+    if (
+      providers &&
+      typeof providers === 'object' &&
+      Object.prototype.hasOwnProperty.call(providers, p)
+    ) {
+      const item = providers[p];
+      return item && typeof item === 'object' ? item : null;
+    }
+    return null;
+  }
+
+  function normalizeAddress(address) {
+    return typeof address === 'string' ? address.trim().toLowerCase() : '';
+  }
+
+  function extractCodeFromObject(obj) {
+    if (!obj || typeof obj !== 'object') return '';
+    const candidates = [
+      obj.code,
+      obj.error?.code,
+      obj.data?.code,
+      obj.cause?.code,
+    ];
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        return candidate.trim();
+      }
+    }
+    if (typeof obj.error === 'string' && obj.error.trim()) {
+      return obj.error.trim();
+    }
+    if (
+      typeof obj.message === 'string' &&
+      /^[A-Z][A-Z0-9_]+$/.test(obj.message.trim())
+    ) {
+      return obj.message.trim();
+    }
+    return '';
+  }
+
+  function extractErrorCode(err) {
+    if (typeof err === 'string') return err.trim();
+    return extractCodeFromObject(err);
+  }
+
+  function inspectResult(res) {
+    if (res === false) {
+      return { failed: true, code: '' };
+    }
+    if (!res || typeof res !== 'object') {
+      return { failed: false, code: '' };
+    }
+    if (res.ok === true || res.success === true) {
+      return { failed: false, code: '' };
+    }
+    if (res.ok === false || res.success === false || Boolean(res.error)) {
+      return { failed: true, code: extractCodeFromObject(res) };
+    }
+    if (
+      typeof res.code === 'string' &&
+      res.code.trim() !== '' &&
+      res.code !== 'OK' &&
+      !('task' in res) &&
+      !('tasks' in res) &&
+      !('mailResult' in res) &&
+      !('groups' in res) &&
+      !('group' in res) &&
+      !('items' in res) &&
+      !('messages' in res)
+    ) {
+      return { failed: true, code: res.code.trim() };
+    }
+    return { failed: false, code: '' };
+  }
+
+  function resolveMailNotice(code) {
+    const normalized = typeof code === 'string' ? code : '';
+    if (typeof mailCodeText === 'function') {
+      return failureNote(normalized, '메일을 더 불러오지 못했습니다.');
+    }
+    if (typeof api?.mailCodeText === 'function') {
+      return String(api.mailCodeText(normalized) ?? '');
+    }
+    return FALLBACK_TEXT[normalized] || '메일을 더 불러오지 못했습니다.';
+  }
+
+  function setGroupUi(key, p, entry) {
+    state = {
+      ...state,
+      [key]: {
+        ...(state[key] || {}),
+        [p]: entry,
+      },
+    };
+    changed?.();
+  }
+
+  async function run(id, p, n) {
+    if (!isSafeKey(id)) return;
+    if (!PROVIDERS.has(p)) return;
+    if (!Number.isInteger(n) || n < 0) return;
+
+    const key = String(id);
+    if (state[key]?.[p]?.busy) return;
+
+    const snap = typeof current === 'function' ? current() : null;
+    const tasks = Array.isArray(snap?.tasks) ? snap.tasks : [];
+    const task = tasks.find((item) => item && item.id === id);
+    if (!isEligibleTask(task)) return;
+
+    const group = findMailGroup(task.mailResult?.groups, p);
+    if (!group || group.more !== true || group.page !== n) return;
+
+    const providerInfo = findMailProvider(snap?.mail?.providers, p);
+    const groupAddress = normalizeAddress(group.address);
+    const currentAddress = normalizeAddress(providerInfo?.address);
+    if (
+      !providerInfo ||
+      providerInfo.connected !== true ||
+      !groupAddress ||
+      groupAddress !== currentAddress
+    ) {
+      const code = 'MAIL_CHANGED';
+      setGroupUi(key, p, {
+        page: n,
+        busy: false,
+        notice: resolveMailNotice(code),
+        code,
+      });
+      return;
+    }
+
+    const runGen = generation;
+    setGroupUi(key, p, {
+      page: n,
+      busy: true,
+      notice: '',
+      code: '',
+    });
+
+    let failed = false;
+    let failCode = '';
+    try {
+      if (typeof api?.moreMail !== 'function') {
+        failed = true;
+      } else {
+        const res = await api.moreMail(id, p, n);
+        const outcome = inspectResult(res);
+        failed = outcome.failed;
+        failCode = outcome.code;
+      }
+    } catch (err) {
+      failed = true;
+      failCode = extractErrorCode(err);
+    }
+
+    if (runGen !== generation) return;
+
+    if (!failed) {
+      if (typeof reread === 'function') {
+        try {
+          await reread();
+        } catch (_err) {
+          // Keep UI state consistent even if refresh fails.
+        }
+        if (generation !== runGen) return;
+      }
+      setGroupUi(key, p, {
+        page: n,
+        busy: false,
+        notice: '',
+        code: '',
+      });
+      return;
+    }
+
+    setGroupUi(key, p, {
+      page: n,
+      busy: false,
+      notice: resolveMailNotice(failCode),
+      code: failCode,
+    });
+  }
+
+  function reset() {
+    generation += 1;
+    const hadEntries = Object.keys(state).length > 0;
+    state = {};
+    if (hadEntries) {
+      changed?.();
+    }
+  }
+
+  function ui() {
+    return state;
+  }
+
+  return { run, reset, ui };
+}
+
 export function createOfficeMailActions({ api, current, changed, reread } = {}) {
+  const pages = createMailPager({ api, current, changed, reread });
   let generation = 0;
   let pendingProvider = null;
   let providerNotes = {};
@@ -75,6 +409,7 @@ export function createOfficeMailActions({ api, current, changed, reread } = {}) 
     sourceNotes = {};
     sourceItemNotes = {};
     pendingOpenTasks.clear();
+    pages.reset();
   }
 
   function ui() {
@@ -83,6 +418,7 @@ export function createOfficeMailActions({ api, current, changed, reread } = {}) 
       providerNotes: Object.assign({}, providerNotes),
       sourceNotes: Object.assign({}, sourceNotes),
       sourceItemNotes: Object.assign({}, sourceItemNotes),
+      pageByTask: pages.ui(),
     };
   }
 
@@ -189,13 +525,19 @@ export function createOfficeMailActions({ api, current, changed, reread } = {}) 
     if (
       act !== 'task-mail-connect' &&
       act !== 'task-mail-disconnect' &&
-      act !== 'task-mail-open'
+      act !== 'task-mail-open' &&
+      act !== 'task-mail-more'
     ) {
       return;
     }
 
     const state = typeof current === 'function' ? current() : null;
     if (!Array.isArray(state?.mail?.providers)) {
+      return;
+    }
+
+    if (act === 'task-mail-more') {
+      await pages.run(arg, fields?.provider, fields?.expectedPage);
       return;
     }
 

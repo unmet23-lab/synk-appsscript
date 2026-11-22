@@ -14,6 +14,7 @@ function visibleReceipt(receipt) {
   return {scope:receipt.scope,...(receipt.omittedConditions?.length?{omittedConditions:receipt.omittedConditions}:{}),
     ...(receipt.outcome==='member-excluded'?{outcome:receipt.outcome,excludedMailboxes:receipt.excludedMailboxes}:{}),groups:receipt.groups.map(g=>({
     provider:g.provider,address:g.address,more:g.more===true,...(g.code?{code:g.code}:{}),
+    ...(g.more===true&&receipt.plan&&!receipt.quoteHandoff&&!receipt.quoteOutcome?{page:g.page??0}:{}),
     ...(receipt.quoteHandoff?{checked:g.checked||0,review:g.review||0,drafts:g.drafts||0,eligibleCount:g.eligibleCount||0}:{}),
     items:g.items.map(({id,subject,from,date,snippet})=>({id,subject,from,date,snippet}))
   }))};
@@ -36,7 +37,7 @@ function createOfficeMail({userData,secrets,current,authorized,openExternal,chan
   fetch=globalThis.fetch,authorize=oauth.authorize,refresh=oauth.refreshGrant,search=searchMailbox,
   scanQuotes=quotes.scanQuotes,confirmQuote=quotes.confirmQuote}) {
   let queue=Promise.resolve(),closed=false;
-  const pending=new Map(),refreshes=new Map(),revoked=new Set(),inUse=new Map(),versions=new Map();
+  const pending=new Map(),pages=new Map(),refreshes=new Map(),revoked=new Set(),inUse=new Map(),versions=new Map();
   function bindingState(memberId){
     if(!versions.has(memberId))versions.set(memberId,{id:randomUUID(),controller:new AbortController()});
     return versions.get(memberId);
@@ -219,6 +220,11 @@ function createOfficeMail({userData,secrets,current,authorized,openExternal,chan
     const existing=await bindings(a);
     if(!required.every(b=>existing.some(g=>g.provider===b.provider&&g.id===b.id)))throw fail('MAIL_CHANGED');
     const conf=await clients(),groups=[];
+    // A month-long search can be expanded days later. Keep its original upper time bound.
+    const asOf=spec.mailRetry&&previous
+      ?previous.asOf||(await vault.read(member(a),spec.previousId,{includeSearchTime:true}))?.asOf
+      :new Date().toISOString();
+    if(!asOf)throw fail('MAIL_STORAGE');
     let succeeded=0;
     for(const b of targets){
       if(!await hooks.checkpoint())throw fail('CANCELLED');
@@ -232,13 +238,13 @@ function createOfficeMail({userData,secrets,current,authorized,openExternal,chan
       inUse.get(b.id).add(use);
       try{
         const token=await refreshed(a,b,conf[b.provider],signal);
-        const ctx={provider:b.provider,access:token.access,address:token.address,plan,fetch,signal};
+        const ctx={provider:b.provider,access:token.access,address:token.address,plan,fetch,signal,...(spec.quoteHandoff?{}:{asOf})};
         const last=spec.quoteContinuation;
         const start=last&&JSON.stringify(last.plan)===JSON.stringify(plan)&&last.groups.find(p=>p.provider===b.provider&&p.binding===b.id)?.cursor;
         const result=spec.quoteHandoff?await scanQuotes({...ctx,subject:g.subject,known:spec.knownQuotes,start,
           renew:()=>refreshed(a,b,conf[b.provider],signal)}):await search(ctx);
         groups.push({provider:b.provider,address:token.address,...result});
-        if(!result.code||result.items.length||spec.quoteHandoff&&result.cursor)succeeded++;
+        if(!result.code||result.items.length||result.cursor&&(spec.quoteHandoff||result.more===true))succeeded++;
       }catch(e){
         if(use.signal.aborted)throw fail('MAIL_CHANGED');
         if(['CANCELLED','NOT_ALLOWED','AUTH_CHANGED','MAIL_CHANGED'].includes(e.code))throw e;
@@ -252,9 +258,67 @@ function createOfficeMail({userData,secrets,current,authorized,openExternal,chan
     await guard(a);
     const excluded=spec.mailRetry?previous.excludedMailboxes:excludedMailboxes;
     const omitted=spec.mailRetry?previous.omittedConditions:omittedConditions;
-    return {mailReceipt:{scope:searchScope(plan),groups,plan,bindings:targets,readBindings:required,availableBindings:selected,
+    return {mailReceipt:{scope:searchScope(plan),groups,plan,bindings:targets,readBindings:required,availableBindings:selected,...(spec.quoteHandoff?{}:{asOf}),
       ...(excluded?.length?{outcome:'member-excluded',excludedMailboxes:excluded}:{}),...(omitted?.length?{omittedConditions:omitted}:{}),
       ...(spec.mailBindingVersion?{mailBindingVersion:spec.mailBindingVersion}:{}),...(spec.quoteHandoff?{quoteHandoff:true}:{})},sessionId:spec.previousMail?spec.sessionId:spec.id};
+  }
+  async function readPage(a,taskId,provider,expected,controller){
+    const id=member(a),signal=controller.signal;
+    const receipt=await vault.read(id,taskId,{includeSearchTime:true});
+    if(!receipt?.plan||receipt.kind||receipt.quoteHandoff||receipt.quoteOutcome)throw fail('MAIL_NOT_FOUND');
+    const binding=receipt.bindings?.find(b=>b.provider===provider);
+    const group=receipt.groups?.find(g=>g.provider===provider);
+    if(!binding||!group)throw fail('MAIL_NOT_FOUND');
+    const client=(await clients())[provider],grant=await getGrant(a,binding,client);
+    if(!group.address||grant.address.toLowerCase()!==group.address.toLowerCase()||
+      (binding.lineage&&binding.lineage!==(grant.lineage||grant.id)))throw fail('MAIL_CHANGED');
+    const page=group.page??0;
+    if(!Number.isSafeInteger(page)||page<0||expected>page)throw fail('MAIL_CHANGED');
+    await guard(a);checkSignal(signal);if(revoked.has(grant.id))throw fail('MAIL_CHANGED');
+    if(expected<page||!group.more)return {ok:true};
+    if(!inUse.has(grant.id))inUse.set(grant.id,new Set());
+    inUse.get(grant.id).add(controller);
+    try{
+      const asOf=receipt.asOf;
+      if(!asOf)throw fail('MAIL_STORAGE');
+      const token=await refreshed(a,binding,client,signal);checkSignal(signal);
+      const result=await search({provider,...token,plan:receipt.plan,asOf,previousItems:group.items,cursor:group.cursor,fetch,signal});
+      // A candidate deleted since the last click is settled once the provider reports the end.
+      const next=result?.more===false&&result.code==='MAIL_NOT_FOUND'?{...result,code:undefined}:result;
+      if(!Array.isArray(next?.items)||next.items.length>10||typeof next.more!=='boolean')throw fail('MAIL_NETWORK');
+      const moved=next.cursor!=null&&JSON.stringify(next.cursor)!==JSON.stringify(group.cursor);
+      if(!next.items.length&&!moved&&(next.code||next.more))throw fail(next.code||'MAIL_NETWORK');
+      if(next.more&&next.cursor==null)throw fail(next.code||'MAIL_NETWORK');
+      return await serialize(async()=>{
+        await guard(a);checkSignal(signal);
+        const live=(await links(a))[provider];
+        if(live?.id!==grant.id||live.reconnect||revoked.has(grant.id))throw fail('MAIL_CHANGED');
+        await guard(a);
+        const stillCurrent=()=>present(a)&&!signal.aborted&&!revoked.has(grant.id);
+        if(!stillCurrent())throw fail('MAIL_CHANGED');
+        if(await vault.appendPage(id,taskId,provider,expected,next,stillCurrent,asOf,()=>guard(a)))changed();
+        return {ok:true};
+      });
+    }finally{
+      const active=inUse.get(grant.id);active?.delete(controller);if(!active?.size)inUse.delete(grant.id);
+    }
+  }
+  async function moreMail(a,taskId,provider,expected){
+    try{
+      await guard(a);
+      if(!goodId(taskId)||!providers.includes(provider)||!Number.isSafeInteger(expected)||expected<0)throw fail('MAIL_NOT_FOUND');
+      const key=member(a)+'/'+taskId+'/'+provider,active=pages.get(key);
+      if(active&&same(a,active.account)){
+        if(active.expected===expected)return await active.done;
+        if(expected>active.expected)throw fail('MAIL_CHANGED');
+        await active.done.catch(()=>{});
+        return await moreMail(a,taskId,provider,expected);
+      }
+      const op={account:a,expected,controller:new AbortController()};
+      pages.set(key,op);
+      op.done=readPage(a,taskId,provider,expected,op.controller).finally(()=>{if(pages.get(key)===op)pages.delete(key);});
+      return await op.done;
+    }catch(e){return problem(e);}
   }
   async function openResult(a,taskId,itemId){
     try{
@@ -268,7 +332,9 @@ function createOfficeMail({userData,secrets,current,authorized,openExternal,chan
       throw fail('MAIL_NOT_FOUND');
     }catch(e){return problem(e);}
   }
-  function accountChanged(next){for(const p of pending.values())if(!same(next,p.account))p.controller.abort();}
-  return {vault,snapshot,connect,disconnect,bindings,generation,atGeneration,run,openResult,valid,accountChanged,close(){closed=true;accountChanged(null);}};
+  function accountChanged(next){
+    for(const operations of [pending,pages])for(const op of operations.values())if(!same(next,op.account))op.controller.abort();
+  }
+  return {vault,snapshot,connect,disconnect,bindings,generation,atGeneration,run,openResult,moreMail,valid,accountChanged,close(){closed=true;accountChanged(null);}};
 }
 module.exports={createOfficeMail,visibleReceipt,summary};

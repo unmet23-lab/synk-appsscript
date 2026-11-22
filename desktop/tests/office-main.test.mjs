@@ -22,7 +22,7 @@ function source(start) {
   return lines.slice(i, end + 1).join('\n');
 }
 
-const CHANNELS = ['snapshot', 'task-submit', 'mail-connect', 'mail-disconnect', 'mail-open', 'task-action', 'watch', 'department-save', 'department-remove', 'session-assign', 'settings-save', 'roots-add', 'roots-remove', 'seen'].map(c => `synk:office-${c}`);
+const CHANNELS = ['snapshot', 'task-submit', 'mail-connect', 'mail-disconnect', 'mail-open', 'mail-more', 'task-action', 'watch', 'department-save', 'department-remove', 'session-assign', 'settings-save', 'roots-add', 'roots-remove', 'seen'].map(c => `synk:office-${c}`);
 const YUHO = { synk_user_id: 'owner-1234567890', display_name: '유호' };
 const OTHER = { synk_user_id: 'tester-1234567890', display_name: '시험 계정' };
 const S1 = '00000001-0000-4000-8000-000000000001';
@@ -313,7 +313,7 @@ function bridge() {
 test('preload exposes exactly the office bridge, frozen, and rebuilds every argument', async () => {
   const { office, calls, listeners } = bridge();
   assert.ok(Object.isFrozen(office));
-  assert.deepEqual(Object.keys(office), ['snapshot','connectMail','disconnectMail','openMailResult','submitTask', 'taskAction', 'watch', 'saveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'addRoot', 'removeRoot', 'seen', 'onChanged']);
+  assert.deepEqual(Object.keys(office), ['snapshot','connectMail','disconnectMail','openMailResult','moreMail','submitTask', 'taskAction', 'watch', 'saveDepartment', 'removeDepartment', 'assign', 'saveSettings', 'addRoot', 'removeRoot', 'seen', 'onChanged']);
   const last = () => calls.at(-1);
   const refused = async (p, why) => { const before = calls.length; assert.deepEqual(plain(await p), { ok: false, code: 'VALUE' }, why); assert.equal(calls.length, before, `${why}: nothing crosses`); };
 
@@ -322,6 +322,10 @@ test('preload exposes exactly the office bridge, frozen, and rebuilds every argu
   await office.connectMail('gmail');assert.deepEqual(last(),['synk:office-mail-connect','gmail']);
   await office.disconnectMail('outlook');assert.deepEqual(last(),['synk:office-mail-disconnect','outlook']);
   await office.openMailResult(S1,S1);assert.deepEqual(last(),['synk:office-mail-open',S1,S1]);
+  await office.moreMail(S1,'gmail',0);assert.deepEqual(last(),['synk:office-mail-more',S1,'gmail',0]);
+  for(const args of [['invalid','gmail',0],[S1,'other',0],[S1,'gmail',-1],[S1,'gmail','1'],[S1,'gmail',NaN],[S1,'gmail',Number.MAX_SAFE_INTEGER+1]]){
+    await refused(office.moreMail(...args),'invalid continuation');
+  }
   await refused(office.connectMail('other'),'unknown mail provider');
   await refused(office.openMailResult(S1,'https://example.test'),'external URL from renderer');
   const assignment={id:S1,provider:'claude',departmentId:null,prompt:'첫 줄\n둘째 줄',previousId:null};

@@ -101,7 +101,11 @@ test('Outlook은 받은편지함과 보낸편지함 경로에서 날짜순으로
   assert.deepEqual(result.items.slice(0,6).map(item=>item.subject),['out4','out3','out2','out1','out0','shared']);
   assert.equal(result.items.filter(item=>item.subject==='shared').length,1);
   assert.equal(result.items.some(item=>item.subject==='archive'),false);
-  assert.equal(result.items.some(item=>Object.hasOwn(item,'graphId')),false);
+  assert.ok(result.items.every(item=>item.graphId===item.subject));
+  const {visibleReceipt}=require('../src/office-mail.cjs');
+  const shown=visibleReceipt({groups:[{provider:'outlook',...result}]}).groups[0];
+  assert.equal(shown.items.some(item=>Object.hasOwn(item,'graphId')),false);
+  assert.equal(Object.hasOwn(shown,'cursor'),false);
 });
 test('Outlook 두 폴더 중 하나만 응답하면 확인한 결과를 남기고 인증이 취소되면 다음 폴더 요청을 멈춘다',async()=>{
   const plan=twoFolders(),calls=[];
