@@ -58,6 +58,14 @@
       "후속": [
         "쇼츠 공개 뒤 영상 칸 넣기(/31, 원고의 〔유튜브 쇼츠〕 자리 — 첫 문단 「…처음으로 사람과 로봇으로 갈라 봤습니다.」 뒤, 첫 소제목 「무슨 일이 있었나」 앞). C:/Users/q1212/ego/yb-20261119-1900/slot-gen.cjs · slot-go.js 꼴로 할 수 있다"
       ]
+    },
+    {
+      "계정": "yuhobuilds-threads",
+      "상태": "게시됨",
+      "시각": "2026-11-22T21:00+09:00",
+      "주소": "https://www.threads.com/@yuhobuilds/post/DgCwaaqEbZ9",
+      "방법": "ego 스레드 웹 바로 게시(AI 레이블) — ~/ego/threads-daily/th-post.mjs, Windows 예약 작업 「SYNK 스레드 21시 게시」(21:00, tools/스레드예약/게시.js)가 올림 · 21:38 예약 작업 synk-daily-threads가 already 확인",
+      "승인": "유호님 11-02 「묻지 말고 걸어」(상시)"
     }
   ]
 }
