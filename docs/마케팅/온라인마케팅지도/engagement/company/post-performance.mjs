@@ -3,6 +3,7 @@ import { collectChannel, collectYoutubeWindows, PLATFORM_CAPABILITIES } from './
 import { canReadChannel, canWriteChannel } from './organization.mjs';
 import { lookupPerformancePost } from './post-performance-lookup.mjs';
 import { performanceComparisons } from './post-performance-comparison.mjs';
+import { ownerFirstAdmin } from './workspace-owner.mjs';
 
 const KIND = 'postPerformanceEntries', LOCKS = 'postPerformanceLocks';
 const HOUR = 3600000, WINDOW = 6 * HOUR, LEASE = 3 * 60000;
@@ -415,7 +416,8 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
   function discover() {
     const summary = { registered: 0, skipped: 0 };
     if (!autoTrack || stopped) return summary;
-    const actor = store.all('users').find(user => user.role === 'admin' && user.active !== false);
+    // 관리자가 여럿이면 회사 주인이 등록자다(관리자 직접부여 설계 4절). 주인이 없을 때만 첫 활성 관리자다.
+    const actor = ownerFirstAdmin(store, () => store.all('users').find(user => user.role === 'admin' && user.active !== false));
     if (!actor) return summary;
     const at = stamp(), now = Date.parse(at), since = now - AUTO_TRACK_WINDOW;
     const channels = new Map(store.all('channels').filter(channel => channel.active !== false && channel.hidden !== true && AUTO_TRACK_PLATFORMS.has(channel.platform) && isConnected(channel)).map(channel => [channel.id, channel]));

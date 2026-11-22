@@ -1,5 +1,5 @@
 import { createAccountClient } from './generated/account-client.cjs';
-import { PRODUCTS, firstPartyAuthorization, trustedConsentRedirect } from './core.mjs';
+import { PRODUCTS, authorizationProduct, firstPartyAuthorization, trustedConsentRedirect } from './core.mjs';
 import { createPortalAccount } from './portal-account.mjs';
 import { createGoogleAccess } from './google-auth.mjs';
 import { createSignupConversion } from './social-signup-conversion.mjs';
@@ -53,6 +53,58 @@ const WEB_PLATFORM_SWITCH_UNCERTAIN_TEXT = '이 브라우저에서 로그아웃�
 const WEB_PLATFORM_SWITCH_FALLBACK_TEXT = '이 브라우저에서 로그아웃했어요. 플랫폼으로 돌아가 로그인 방법을 다시 골라 주세요.';
 const WEB_PLATFORM_SWITCH_EXPIRED_CANCEL_TEXT = '연결 요청 시간이 지났어요. 플랫폼으로 돌아가 로그인 방법을 다시 골라 주세요.';
 const SIGNUP_CONFIRM_KEY = 'synk.id.signup-confirm.v1', SIGNUP_CONFIRM_TTL = 600000;
+// Workspace's 「SYNK ID로 다시 로그인」 (관리자 직접 부여 설계 2절 「최근 대화형 로그인 15분」): its server sends the browser to
+// ?reauth=1&next=<authorize address>. The central counts only a real sign-in, and Auth's authorize hands this page nothing but an
+// authorization_id, so this page signs this browser out first and follows next only when it is Workspace's own authorize request.
+export const REAUTH_KEY = 'synk.id.reauth.v1', REAUTH_TTL = 300000, ADMIN_REAUTH_MARK_WAIT = 4000;
+const REAUTH_FIELDS = new Set(['client_id', 'redirect_uri', 'response_type', 'state', 'code_challenge', 'code_challenge_method', 'scope']);
+const REAUTH_LINE = 'Workspace에서 다시 확인을 요청했어요. SYNK ID로 한 번 더 로그인해 주세요.';
+const REAUTH_LEAVING_TEXT = 'Workspace에서 다시 확인을 요청했어요. 로그인 화면으로 옮기고 있어요…';
+const REAUTH_REFUSED_TEXT = '이 다시 로그인 요청이 등록된 SYNK 서비스에서 왔는지 확인하지 못해 따르지 않았어요. 사용하던 화면에서 다시 시작해 주세요.';
+const REAUTH_SIGNOUT_TEXT = '이 브라우저에서 로그아웃하지 못해 다시 로그인을 시작하지 못했어요. Workspace로 돌아가 「SYNK ID로 다시 로그인」을 한 번 더 눌러 주세요.';
+// The authorize address to leave for, or null. next was decoded once (by URLSearchParams) and is never decoded again: a doubly encoded,
+// relative or javascript: value is not an https address of this project's Auth.
+export function reauthTarget(value, config) {
+  try {
+    if (typeof value !== 'string' || !value || /[#\\\s\u0000-\u001f\u007f]/.test(value)) return null;
+    const url = new URL(value), params = url.searchParams, one = key => params.getAll(key).length === 1 ? params.get(key) : null;
+    if (url.protocol !== 'https:' || url.username || url.password || url.hash || url.origin !== new URL(config.supabaseUrl).origin || url.pathname !== '/auth/v1/oauth/authorize') return null;
+    if ([...params.keys()].some(key => !REAUTH_FIELDS.has(key) || params.getAll(key).length !== 1)) return null;
+    const clientId = one('client_id'), scopes = (one('scope') || '').split(' ');
+    if (!clientId || authorizationProduct(clientId, config) !== 'messenger' || one('response_type') !== 'code' || !one('state') || !one('code_challenge') || one('code_challenge_method') !== 'S256') return null;
+    if (!scopes.includes('openid') || new Set(scopes).size !== scopes.length || scopes.some(scope => !['openid', 'email', 'profile'].includes(scope))) return null;
+    // Exactly one of the addresses registered for this client, as the consent card will check after sign-in, and only a web one:
+    // an address on this device (a local company server or the PC app) is never the end of this trip.
+    const destination = trustedConsentRedirect(one('redirect_uri'), config, clientId);
+    if (new URL(destination).protocol !== 'https:' || deviceDestination(destination)) return null;
+    const registered = [...Object.values(config.clients || {}), ...(config.authorizationClients || [])].filter(client => client.clientId === clientId).flatMap(client => [client.redirectUri, ...(client.redirectUris || [])]).filter(Boolean);
+    return registered.some(uri => new URL(uri).href === destination) ? Object.freeze({ href: url.href, clientId }) : null;
+  } catch { return null; }
+}
+// True once this browser holds no SYNK ID session. A session that cannot be confirmed gone counts as still there: following next with it
+// would approve with the old sign-in, and Workspace would send the browser straight back here.
+async function signedOutForReauth(sdk, clock) {
+  const within = promise => { let timer;return Promise.race([promise, new Promise((_, reject) => { timer = clock.setTimeout(() => reject(new Error('timeout')), 12000); })]).finally(() => clock.clearTimeout(timer)); };
+  const remains = async () => { try { const result = await within(Promise.resolve().then(() => sdk.auth.getSession()));return !!result?.error || !!result?.data?.session; } catch { return true; } };
+  if (!await remains()) return true;
+  try { await within(Promise.resolve().then(() => sdk.auth.signOut({ scope: 'local' }))); } catch { /* the check below decides */ }
+  return !await remains();
+}
+// The mark the trip leaves in this tab. Auth sends the browser from next straight back here, so the first app request that arrives is the
+// one the trip started: the mark binds to it, a reload or a Google round trip of that request still finds it, and any other request drops it.
+// Before sign-in this page cannot read which app a request is for (Auth tells only a signed-in account), so binding stands in for the client.
+export function takeReauthMark(store, authorizationId, now) {
+  if (!store || typeof authorizationId !== 'string' || !authorizationId) return null;
+  let mark;
+  try { const raw = store.getItem(REAUTH_KEY);if (raw === null) return null;mark = JSON.parse(raw); } catch { mark = null; }
+  const live = !!mark && mark.v === 1 && typeof mark.clientId === 'string' && !!mark.clientId && Number.isFinite(mark.until) && mark.until > now && mark.until - now <= REAUTH_TTL
+    && (mark.authorizationId === null || mark.authorizationId === authorizationId);
+  try {
+    if (!live) store.removeItem(REAUTH_KEY);
+    else if (mark.authorizationId === null) store.setItem(REAUTH_KEY, JSON.stringify({ ...mark, authorizationId }));
+  } catch { /* the line is a courtesy */ }
+  return live ? Object.freeze({ clientId: mark.clientId, until: mark.until }) : null;
+}
 function isRegisteredPlatformCallbackTarget(value, config) {
   const redirectUri = config?.clients?.platform?.redirectUri;
   if (typeof redirectUri !== 'string' || !redirectUri || typeof value !== 'string' || !value) return false;
@@ -233,6 +285,23 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   if (preview) { resetPlatformBodyAttrs();$('preview-banner').hidden = false; }
   $('learning-link').href = config.learningUrl;
   if (!config.configured) { resetPlatformBodyAttrs();$('setup').hidden = false;notice('지금은 로그인할 수 없어요. 기본 학습은 로그인 없이 할 수 있어요.');return; }
+  // Workspace's 「SYNK ID로 다시 로그인」 (see reauthTarget): leave for its authorize address signed out here, or say on the usual screen why not.
+  // Either way reauth and next leave the address bar first. Only a top-level page that carries nothing else follows it.
+  let reauthProblem = null;
+  if (!preview && new URL(location.href).searchParams.has('reauth')) {
+    const entry = new URL(location.href), flags = entry.searchParams.getAll('reauth'), nexts = entry.searchParams.getAll('next');
+    entry.searchParams.delete('reauth');entry.searchParams.delete('next');window.history?.replaceState(window.history.state, '', entry.href);
+    const target = window.top === window.self && flags.length === 1 && flags[0] === '1' && nexts.length === 1 && !entry.search ? reauthTarget(nexts[0], config) : null;
+    if (!target) reauthProblem = REAUTH_REFUSED_TEXT;
+    else {
+      notice(REAUTH_LEAVING_TEXT, false, false, 'pending');
+      if (await signedOutForReauth(sdk, cooldownClock)) {
+        try { window.sessionStorage?.setItem(REAUTH_KEY, JSON.stringify({ v: 1, clientId: target.clientId, until: cooldownClock.now() + REAUTH_TTL, authorizationId: null })); } catch { /* the line is a courtesy; the trip still goes */ }
+        location.replace(target.href);return;
+      }
+      reauthProblem = REAUTH_SIGNOUT_TEXT;
+    }
+  }
   const requestedView = new URL(location.href).searchParams.get('view');
   // ?view=recover is the PC app's 「비밀번호를 잊었어요」 (and any 「비밀번호 찾기」 link): the mail form straight away.
   let mode = requestedView === 'reset' ? 'reset' : requestedView === 'signup' ? 'signup' : requestedView === 'recover' ? 'recover' : 'login', session = null, generation = 0, entryId = 0, authOperation = false, consentOperation = null, view = null, details = null, subject = null, closed = false, initializing = true, authVersion = 0, callbackBlocked = false;
@@ -262,6 +331,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   // The way this tab is signing in, set by the step that started it and written once the account is verified.
   let pendingMethod = null, sent = null, googleAvailable = typeof loginSettings?.then === 'function' ? null : !preview && loginSettings?.google === true;
   let landingNotice = emailChangeHalf ? { text: '한 주소의 확인이 끝났어요. 다른 주소로 간 메일의 「변경 확인하기」도 눌러 주세요. 둘 다 누르면 로그인 이메일이 바뀌어요.', error: false } : null;
+  if (reauthProblem && !landingNotice) landingNotice = { text: reauthProblem, error: true };
   const resetLinkStep = () => mode === 'reset' && !!recoveryLink && !recoveryReady;
   const emailChangeStep = () => mode === 'email-change' && !!emailChangeLink;
   // After a confirmed reset link a reload keeps the new-password form for ten minutes, for that account only.
@@ -353,6 +423,27 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     if (cooldownTimer !== null) cooldownClock.clearTimeout(cooldownTimer);tickCooldowns();
   };
   const authorizationId = new URL(location.href).searchParams.get('authorization_id');
+  // Left by the reauth trip in this tab (takeReauthMark): the login step says why it asks again, for that one app request, until sign-in uses it.
+  let reauthPrompt = !preview && authorizationId ? takeReauthMark(recoveryStorage, authorizationId, cooldownClock.now()) : null;
+  const useReauthPrompt = () => { if (!reauthPrompt) return;reauthPrompt = null;try { recoveryStorage?.removeItem(REAUTH_KEY); } catch { /* it ends in five minutes */ } };
+  // Workspace's admin writes count a sign-in only through this note (관리자 직접 부여, Fable 설계 검토 P1-1): once this page's own call is
+  // answered with a Workspace (Messenger) app's arrival address, and before going there, the central notes that this signed-in browser
+  // approved this request (admin-reauth-mark). The company server claims the note with the code and its verifier after the exchange.
+  // Every Messenger approval is noted, with or without the reauth trip. At most four seconds; a slow or failed note never stops the sign-in.
+  async function markMessengerApproval() {
+    const token = session?.access_token;
+    if (preview || !authorizationId || !token) return;
+    const abort = typeof AbortController === 'function' ? new AbortController() : null;let timer = null;
+    try {
+      await Promise.race([
+        Promise.resolve().then(() => fetch(`${config.accountApiUrl.replace(/\/$/, '')}/functions/v1/synk-account`, { method: 'POST', signal: abort?.signal, credentials: 'omit', cache: 'no-store',
+          headers: { apikey: config.supabasePublishableKey, Authorization: `Bearer ${token}`, 'X-SYNK-Product': 'platform', 'X-SYNK-Contract': '1', 'X-SYNK-App-Version': '0.2.0', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'admin-reauth-mark', authorizationId }) })).then(response => response.json()),
+        new Promise(resolve => { timer = cooldownClock.setTimeout(resolve, ADMIN_REAUTH_MARK_WAIT); }),
+      ]);
+    } catch { /* the sign-in goes on; Workspace asks again before a write */ }
+    finally { if (timer !== null) cooldownClock.clearTimeout(timer);abort?.abort(); }
+  }
   function abandonAuthorizationInUrl() {
     abandonedAuthorization = true;
     try {
@@ -680,7 +771,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     const [heading, copy] = MODE_COPY[key] || [];
     $('auth-heading').textContent = heading || ({ reset: '새 비밀번호를 정해 주세요.', 'email-change': '이메일 변경을 확인해요.' })[mode];
     $('auth-copy').textContent = mode === 'reset' ? resetCopy()
-      : mode === 'email-change' ? '메일에서 연 이메일 변경 확인 링크예요. 아래 단추를 누르면 이 주소를 확인해요. 두 주소로 간 메일을 모두 확인하면 로그인 이메일이 바뀌어요.' : copy;
+      : mode === 'email-change' ? '메일에서 연 이메일 변경 확인 링크예요. 아래 단추를 누르면 이 주소를 확인해요. 두 주소로 간 메일을 모두 확인하면 로그인 이메일이 바뀌어요.'
+      : mode === 'login' && reauthPrompt ? REAUTH_LINE : copy;
   }
   // The pair of buttons and the e-mail fields under them. The e-mail button says the same thing as the Google one
   // (「○○로 로그인」 / 「○○로 가입」) and tells whether its fields are open.
@@ -863,6 +955,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
     const platformStore = resolvePlatformStore();
     if (result.data?.redirect_url) {
       const target = trustedConsentRedirect(result.data.redirect_url, config);
+      // Approved before: Auth approved this request just now, in this call (see markMessengerApproval).
+      if (destinationProduct(target, config) === 'messenger') { await markMessengerApproval();check(); }
       if (!deviceDestination(target)) {
         if (!preview && isRegisteredPlatformCallbackTarget(target, config)) {
           const matchedRedirect = matchPlatformPreauthorizedRedirect({ targetUrl: target, storage: platformStore, config, now: cooldownClock.now() });
@@ -1034,6 +1128,7 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       guarded(token)();check();if (!current()) return;
       if (result.error) throw result.error;
       const target = trustedConsentRedirect(result.data.redirect_url, config, authorization.clientId);
+      if (method === 'approveAuthorization' && authorization.product === 'messenger') { await markMessengerApproval();guarded(token)();check();if (!current()) return; }
       if (activePlatformConsent) {
         if (method === 'denyAuthorization') {
           if (activePlatformConsent.intent.method === PLATFORM_RESUME_METHOD) pausePlatformAutoLogin(recentStore);
@@ -1416,6 +1511,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       // Only local pending-owner validation is awaited. Tracking never adds an authentication request.
       const conversionHeaders=await signupConversion?.confirmedHeaders(checked.data.user)||{};check();
       void signupConversion?.confirmedUser(checked.data.user);
+      // The sign-in Workspace asked for is done: the app request goes on as before, and the line is not shown again.
+      useReauthPrompt();
       if (authorizationId && !callbackBlocked) {
         // A repeated auth event for the same account shows the restart card again; the gone request is never retried.
         if (staleRecovery?.subject === verified.id) { showStaleAuthorization(staleRecovery.path, staleRecovery.device);return; }

@@ -90,7 +90,10 @@ function createInitialAdminState() {
   };
 }
 
-const directoryModes = [['workspace','Workspace 회원'],['synk','전체 SYNK ID'],['staff','직원 상세·성과']];
+// 「반」과 「이용 권한」은 관리자가 SYNK ID로 로그인했을 때만 보인다(관리자 직접부여 설계 5절, public/admin-grants.js).
+const directoryModes = [['workspace','Workspace 회원'],['synk','전체 SYNK ID'],['classes','반'],['entitlements','이용 권한'],['staff','직원 상세·성과']];
+const directoryGrantsMode = mode => typeof adminGrantsMode === 'function' && adminGrantsMode(mode);
+const directoryGrantsVisible = () => typeof adminGrantsVisible === 'function' && adminGrantsVisible();
 const directoryStatuses = {active:'이용 중',disabled:'이용 중지','deletion-requested':'탈퇴 요청'};
 function newDirectoryState() {
   return {mode:'workspace', q:'', draft:'', type:'all', company:'all', status:'all', page:1, data:null, error:'', retryable:true, busy:false, controller:null};
@@ -105,7 +108,7 @@ function clearMemberDirectory() {
 }
 
 function directoryScopeMarkup() {
-  return '<nav class="directory-scopes" aria-label="회원 관리 범위">'+directoryModes.map(([value,label]) =>
+  return '<nav class="directory-scopes" aria-label="회원 관리 범위">'+directoryModes.filter(([value])=>!directoryGrantsMode(value)||directoryGrantsVisible()).map(([value,label]) =>
     `<button type="button" class="admin-tab-btn" data-directory-scope="${value}" aria-pressed="${memberDirectory.mode===value}">${label}</button>`
   ).join('')+'</nav>';
 }
@@ -143,7 +146,7 @@ function directoryRow(row,local) {
     ${local?`<td data-label="구분">${roles.map(r=>`<span>${escape(r)}</span>`).join('')}</td>
     <td data-label="소속과 역할">${affiliations.length?affiliations.map(a=>`<span>${escape(a)}</span>`).join(''):'소속 회사 없음'}</td>`:
     `<td data-label="가입일">${escape(adminFormatDateTime(row.createdAt))}</td>`}
-    <td data-label="상태">${escape(directoryStatuses[row.status]||row.status)}</td></tr>`;
+    <td data-label="상태">${escape(directoryStatuses[row.status]||row.status)}</td>${!local&&directoryGrantsVisible()?`<td data-label="관리">${adminGrantsDirectoryButton(row)}</td>`:''}</tr>`;
 }
 
 function directoryResults() {
@@ -152,7 +155,7 @@ function directoryResults() {
   if(d.busy||!d.data)return '<p class="directory-feedback" role="status">회원 목록을 불러오는 중입니다.</p>';
   const {rows,total,page,pageSize}=d.data,local=d.mode==='workspace',pages=Math.max(1,Math.ceil(total/pageSize));
   return `<p class="directory-total" role="status" tabindex="-1">검색 결과 <strong>${adminInt(total)}명</strong></p>${rows.length?
-    `<table class="admin-table directory-table"><thead><tr><th scope="col">회원</th>${local?'<th scope="col">구분</th><th scope="col">소속과 역할</th>':'<th scope="col">가입일</th>'}<th scope="col">상태</th></tr></thead>
+    `<table class="admin-table directory-table"><thead><tr><th scope="col">회원</th>${local?'<th scope="col">구분</th><th scope="col">소속과 역할</th>':'<th scope="col">가입일</th>'}<th scope="col">상태</th>${!local&&directoryGrantsVisible()?'<th scope="col"><span class="admin-sr">관리</span></th>':''}</tr></thead>
     <tbody>${rows.map(r=>directoryRow(r,local)).join('')}</tbody></table>`:
     '<p class="directory-feedback">조건에 맞는 회원이 없습니다.</p>'}
     ${pages>1||page>1?`<nav class="directory-paging" aria-label="회원 목록 페이지"><button type="button" class="btn small" data-directory-page="-1" ${page<=1?'disabled':''}>이전</button>
@@ -161,7 +164,7 @@ function directoryResults() {
 
 async function loadMemberDirectory(focusTarget = '') {
   const d=memberDirectory;
-  if(d.mode==='staff'||state.tab!=='admin'||!adminCanUse())return;
+  if(d.mode==='staff'||directoryGrantsMode(d.mode)||state.tab!=='admin'||!adminCanUse())return;
   d.controller?.abort();
   const controller=new AbortController(),stamp=companyAuthSnapshot();
   d.controller=controller;d.busy=true;d.data=null;d.error='';d.retryable=true;
@@ -218,6 +221,7 @@ function showDirectoryMode(mode, refreshStaff = false) {
     else if(!adminState.data&&!adminState.loading)void loadAdminWorkspace();
     else adminPaint();
   }
+  else if(directoryGrantsMode(mode)){root.querySelector('[data-admin-action="refresh"]').disabled=false;directory.innerHTML=adminGrantsPanelMarkup(mode);adminGrantsLoad(mode);}
   else{root.querySelector('[data-admin-action="refresh"]').disabled=false;directory.innerHTML=directoryToolbar();void loadMemberDirectory();}
 }
 
@@ -276,6 +280,7 @@ function adminCancelInFlight() {
 
 function resetAdminWorkspace() {
   clearMemberDirectory();
+  if (typeof resetAdminGrants === 'function') resetAdminGrants();
   adminCancelInFlight();
   Object.assign(adminState, createInitialAdminState(), { request: adminState.request });
 }
@@ -305,7 +310,7 @@ function adminIsTrackedWrite(path) {
   const clean = path.split('?')[0];
   return (
     clean === '/api/members/invite'
-    || /^\/api\/members\/[^/]+\/(?:workspace-profile|organization|assignment|status)$/.test(clean)
+    || /^\/api\/members\/[^/]+\/(?:workspace-profile|organization|assignment|status|admin-role)$/.test(clean)
     || /^\/api\/channels(?:\/|$)/.test(clean)
     || clean === '/api/collect'
     || /^\/api\/teams(?:\/|$)/.test(clean)
@@ -338,7 +343,8 @@ function adminOnStateLoaded() {
   adminState.loading = true;
   adminState.refreshing = true;
   adminState.error = '';
-  if(memberDirectory.mode!=='staff'){adminState.loading=false;adminState.refreshing=false;void loadMemberDirectory();}
+  if(directoryGrantsMode(memberDirectory.mode)){adminState.loading=false;adminState.refreshing=false;adminGrantsRefresh();}
+  else if(memberDirectory.mode!=='staff'){adminState.loading=false;adminState.refreshing=false;void loadMemberDirectory();}
   else void loadAdminWorkspace({ reason: 'state-saved' });
 }
 
@@ -399,7 +405,11 @@ function adminWorkspaceSyncMount() {
   if (!adminCanUse() || state.tab !== 'admin') return;
   if (!adminState.entered) {
     adminState.entered = true;
+    if (directoryGrantsVisible()) void adminGrantsLoadAudit();
+    // SYNK ID로 다시 확인하고 돌아왔으면 하던 칸과 확인 창을 되살린다.
+    if (directoryGrantsVisible() && adminGrantsRestore()) return;
     if(memberDirectory.mode==='staff')void loadAdminWorkspace({ reason: 'enter' });
+    else if(directoryGrantsMode(memberDirectory.mode))adminGrantsLoad(memberDirectory.mode);
     else void loadMemberDirectory();
   }
 }
@@ -503,6 +513,7 @@ async function loadAdminWorkspace({ reason = 'enter' } = {}) {
 }
 
 async function adminManualRefresh() {
+  if(directoryGrantsMode(memberDirectory.mode))return adminGrantsRefresh();
   if(memberDirectory.mode!=='staff')return loadMemberDirectory();
   if (!adminCanUse() || state.tab !== 'admin') return;
   const stamp = typeof companyAuthSnapshot === 'function' ? companyAuthSnapshot() : { userId: state.user?.id || null };
@@ -725,10 +736,13 @@ function adminPulseActiveSum(stageMap) {
   );
 }
 
-function adminMemberActionsMarkup(member, { includeSelect = false } = {}) {
+function adminMemberActionsMarkup(member, { includeSelect = false, extra = null } = {}) {
   const own = member.id === state.user?.id;
   const otherAdmin = member.role === 'admin' && !own;
   const buttons = [];
+  // 관리자 올리기 · 내리기는 회사 주인(permissions.manageAdmins)에게만 보인다(관리자 직접부여 설계 5절).
+  const manageAdmins = Boolean(state.data?.permissions?.manageAdmins);
+  const roleButton = typeof adminGrantsRoleButtons === 'function' ? adminGrantsRoleButtons(member, extra) : '';
 
   if (includeSelect) {
     buttons.push(`<button type="button" class="btn small quiet" data-admin-member="${escape(member.id)}">성과와 업무</button>`);
@@ -742,9 +756,14 @@ function adminMemberActionsMarkup(member, { includeSelect = false } = {}) {
   if (!own && !otherAdmin) {
     buttons.push(`<button type="button" class="btn small quiet" data-action="member-status" data-id="${escape(member.id)}">${member.active === false ? '이용 재개' : '이용 중지'}</button>`);
   }
+  if (roleButton) buttons.push(roleButton);
 
   let guardNote = '';
-  if (otherAdmin) {
+  if (otherAdmin && manageAdmins && extra?.adminRole?.owner) {
+    guardNote = '<p class="admin-guard-note">회사 주인은 관리자에서 내릴 수 없어요.</p>';
+  } else if (otherAdmin && manageAdmins) {
+    guardNote = '<p class="admin-guard-note">다른 관리자의 팀과 이용 상태는 관리자에서 내린 뒤에 바꿀 수 있어요.</p>';
+  } else if (otherAdmin) {
     guardNote = '<p class="admin-guard-note">다른 관리자 계정의 권한과 이용 상태는 변경할 수 없어요.</p>';
   } else if (own) {
     guardNote = '<p class="admin-guard-note">내 계정의 관리자 권한 해제와 이용 중지는 허용되지 않아요.</p>';
@@ -942,7 +961,7 @@ function adminMembersPanelMarkup(allMembers, filteredMembers, extraMap) {
                   ${adminMemberSupplementarySummary(extra)}
                 </td>
                 <td data-label="관리 작업">
-                  ${adminMemberActionsMarkup(member, { includeSelect: true })}
+                  ${adminMemberActionsMarkup(member, { includeSelect: true, extra })}
                 </td>
               </tr>
             `;
@@ -1628,8 +1647,9 @@ function adminWorkspacePage() {
         </div>
       </header>
 
+      <div data-grants-audit>${typeof adminGrantsAuditMarkup==='function'?adminGrantsAuditMarkup():''}</div>
       ${directoryScopeMarkup()}
-      <section class="directory-body" data-directory-body ${memberDirectory.mode==='staff'?'hidden':''}>${memberDirectory.mode==='staff'?'':directoryToolbar()}</section>
+      <section class="directory-body" data-directory-body ${memberDirectory.mode==='staff'?'hidden':''}>${memberDirectory.mode==='staff'?'':directoryGrantsMode(memberDirectory.mode)?adminGrantsPanelMarkup(memberDirectory.mode):directoryToolbar()}</section>
       <div data-directory-staff ${memberDirectory.mode==='staff'?'':'hidden'}>
       <div class="admin-summary-grid" data-admin-summary aria-label="관리자 핵심 요약">
         ${adminSummaryMarkup(allMembers)}

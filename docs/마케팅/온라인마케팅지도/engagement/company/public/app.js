@@ -95,6 +95,7 @@ async function api(path, body, method = body === undefined ? 'GET' : 'POST', {si
     const err = new Error(content.error || '요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.');
     err.status = response.status;
     err.code = typeof content.code === 'string' ? content.code : null;
+    err.details = content.details && typeof content.details === 'object' && !Array.isArray(content.details) ? content.details : null;
     if (response.status === 401 && state.user) clearCompanySessionView();
     throw err;
   }

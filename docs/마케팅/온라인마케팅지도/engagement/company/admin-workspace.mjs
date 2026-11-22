@@ -1,5 +1,6 @@
 import {dateRange, shiftDate, METRICS} from '../analytics.mjs';
 import {hasWorkspaceFeature} from './workspace-access.mjs';
+import {workspaceOwnerId} from './workspace-owner.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status,code:'ADMIN_WORKSPACE'});
 const stages=['received','planning','producing','review','delivered','archived'];
@@ -25,6 +26,8 @@ export function createAdminWorkspace({store,clock=()=>new Date().toISOString(),r
     const metricsById=new Map(result.memberGroups.map(row=>[row.id,row]));
     const people=membersFor(live),users=new Map(store.all('users').map(row=>[row.id,row]));
     const channels=channelsFor(live),companyWork=store.all('companyWork'),projects=projectAssignments.all();
+    // 관리자 올리기는 SYNK ID가 이어진 계정만, 회사 주인은 내리지 못한다(관리자 직접부여 설계 4절). 화면이 단추를 고를 때 쓴다.
+    const synkLinked=new Set(store.db.prepare('SELECT company_user_id FROM synk_identity_links').all().map(row=>row.company_user_id)),ownerId=workspaceOwnerId(store);
     const accepted=new Map();
     for(const row of store.all('workspaceInvites')){
       if(row.status!=='accepted'||!row.userId)continue;
@@ -72,6 +75,7 @@ export function createAdminWorkspace({store,clock=()=>new Date().toISOString(),r
       }
       return {
         id:member.id,
+        adminRole:{synkLinked:synkLinked.has(member.id),owner:member.id===ownerId},
         invitation:invitation?{id:invitation.id,createdAt:invitation.createdAt||null,acceptedAt:invitation.acceptedAt||null}:null,
         channels:assigned,
         performance:{state,observedChannelCount,metrics:Object.fromEntries(METRICS.map(({key})=>[key,group?.metrics?.[key]??null]))},

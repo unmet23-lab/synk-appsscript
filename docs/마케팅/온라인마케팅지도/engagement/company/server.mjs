@@ -113,6 +113,10 @@ import {createCompanyWork} from './company-work.mjs';
 import {createWorkspaceAccessService} from './workspace-access-service.mjs';
 import {createAdminWorkspace} from './admin-workspace.mjs';
 import {createWorkspaceDirectory,directoryQuery} from './member-directory.mjs';
+import {isWorkspaceOwner,recordWorkspaceOwner,ensureWorkspaceOwnerAtBoot,ownerFirstAdmin} from './workspace-owner.mjs';
+import {parseGrantRequest,grantsError,grantMessage,GRANT_DAILY_LIMITS,GRANT_OP_LABELS,ENTITLEMENT_CHOICES,ENTITLEMENT_VIEW_ONLY} from './admin-grants.mjs';
+import {createAdminRoleService} from './admin-role.mjs';
+import {createOwnerAlertsService} from './owner-alerts.mjs';
 import {hasWorkspaceFeature,requireWorkspaceFeature,workspaceRouteFeature} from './workspace-access.mjs';
 import { createAssistantService } from './assistant-service.mjs';
 import { createClientWorkflowService } from './client-workflow.mjs';
@@ -235,7 +239,7 @@ export function createCompanyApp(options={}) {
   const messengerDataDir=options.messengerDataDir??integrationConfig.messengerDataDir??process.env.MESSENGER_DATA_DIR??((options.dataDir||options.store)?join(store.directory,'messenger'):resolve(here,'../../../../../tools/company-messenger/data'));
   // Screen files may come from a host static set (deploy/static/README.md); server-read files never do.
   const staticSet=options.staticSet??createStaticSet({root:options.staticRoot??process.env.SYNK_COMPANY_STATIC_ROOT??'',repository:resolve(here,'../../../../..')});
-  let messenger,clientNotifications,automationNotifications,socialPublishing,socialMarketing;
+  let messenger,clientNotifications,automationNotifications,socialPublishing,socialMarketing,ownerAlerts;
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
   const teaching=createTeachingService({store,origin,config:options.teachingConfig===undefined?teachingServiceConfig():options.teachingConfig,fetch:options.teachingFetch,now:options.teachingNow,clientAddress});
   const customerConfig=options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig;
@@ -244,9 +248,9 @@ export function createCompanyApp(options={}) {
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
     notifications:{
-      list:companyUserId=>{const user=store.get('users',companyUserId);return [...(hasWorkspaceFeature(user,'clients')?clientNotifications?.list(user).notifications||[]:[]),...(hasWorkspaceFeature(user,'production')?automationNotifications?.list(user).notifications||[]:[]),...(hasWorkspaceFeature(user,'social')?socialMarketing?.notifications(user,socialPublishing.summary(user))||[]:[])];},
-      read:(companyUserId,id)=>{const user=store.get('users',companyUserId);requireWorkspaceFeature(user,id.startsWith('social:')?'social':id.startsWith('automation:')?'production':'clients');return id.startsWith('social:')?socialMarketing.readNotifications(user,socialPublishing.summary(user),id):id.startsWith('automation:')?automationNotifications.read(user,id):clientNotifications.read(user,id);},
-      readAll:companyUserId=>{const user=store.get('users',companyUserId);if(hasWorkspaceFeature(user,'clients'))clientNotifications.readAll(user);if(hasWorkspaceFeature(user,'production'))automationNotifications?.readAll(user);if(hasWorkspaceFeature(user,'social'))socialMarketing?.readNotifications(user,socialPublishing.summary(user));},
+      list:companyUserId=>{const user=store.get('users',companyUserId);return [...(hasWorkspaceFeature(user,'clients')?clientNotifications?.list(user).notifications||[]:[]),...(hasWorkspaceFeature(user,'production')?automationNotifications?.list(user).notifications||[]:[]),...(hasWorkspaceFeature(user,'social')?socialMarketing?.notifications(user,socialPublishing.summary(user))||[]:[]),...(user?.active&&ownerAlerts?ownerAlerts.list(user).notifications:[])];},
+      read:(companyUserId,id)=>{const user=store.get('users',companyUserId);if(ownerAlerts?.owns(id))return ownerAlerts.read(user,id);requireWorkspaceFeature(user,id.startsWith('social:')?'social':id.startsWith('automation:')?'production':'clients');return id.startsWith('social:')?socialMarketing.readNotifications(user,socialPublishing.summary(user),id):id.startsWith('automation:')?automationNotifications.read(user,id):clientNotifications.read(user,id);},
+      readAll:companyUserId=>{const user=store.get('users',companyUserId);if(hasWorkspaceFeature(user,'clients'))clientNotifications.readAll(user);if(hasWorkspaceFeature(user,'production'))automationNotifications?.readAll(user);if(hasWorkspaceFeature(user,'social'))socialMarketing?.readNotifications(user,socialPublishing.summary(user));if(user?.active)ownerAlerts?.readAll(user);},
     },
     // 통화 초대는 45초만 산다(10-20). 30초 주기를 기다리지 않고 PULSE 변경과 같은 깨우기로 기기 알림을 바로 한 번 보낸다. 기기 알림이 꺼져 있으면 아무것도 하지 않는다.
     wakeDeviceNotifications:()=>notifyPulseDevices(),
@@ -578,6 +582,7 @@ export function createCompanyApp(options={}) {
   const automationHealthSource=createAutomationHealthService({store,studio,publicationPackages,publicationInbox,postPerformance,publicationLinks,publicationWorkflow,publicationLearning,clientProjects,clientWorkflow,clientDelivery,clientRights,weeklySummary,clock,runtime:()=>Object.fromEntries(Object.entries(automationRuntime).map(([id,row])=>[id,{...row,...(row.projects?{projects:Object.fromEntries(Object.entries(row.projects).map(([projectId,project])=>[projectId,{...project}]))}:{})}]))});
   const automationHealth={get:user=>automationReadScope.run(()=>automationHealthSource.get(user)),getForNotifications:(user,ids)=>automationReadScope.run(()=>automationHealthSource.getForNotifications(user,ids))};
   automationNotifications=createAutomationNotificationsService({store,automationHealth,clock,onChange:ids=>messenger.notifyCompanyUsers(ids)});
+  ownerAlerts=createOwnerAlertsService({store,clock,onChange:ids=>{messenger.notifyCompanyUsers(ids);notifyPulseDevices();}});
   const automationMonitor={enabled:automationHealthSchedule,lastScanAt:null,status:automationHealthSchedule?'pending':'disabled',intervalMs:60000};
   function scanAutomationHealth(){if(stopRequested)return;try{const result=automationNotifications.scan();automationMonitor.lastScanAt=clock();automationMonitor.status=result.failedUsers?'error':automationHealthSchedule?'enabled':'disabled';return result;}catch{automationMonitor.status='error';}}
   let automationHealthTick=null;
@@ -589,6 +594,7 @@ export function createCompanyApp(options={}) {
   }
   function readAutomationHealth(user){return {...automationHealth.get(user),...(user.role==='admin'?{websiteInquiries:{...websiteInquiries.health(user),schedulerEnabled:automationHealthSchedule}}:{}),monitor:{...automationMonitor,serverMustStayRunning:true,inAppOnly:true}};}
   const workspaceProfiles=createWorkspaceAccessService({store,clock});
+  const adminRoles=createAdminRoleService({store,clock,recentInteractive:row=>synkIdentity.recentInteractive(row),teamFor,ownerAlerts,onChanged:ids=>messenger.notifyCompanyUsers(ids)});
   const companyWork=createCompanyWork({store,clock});
   const readAdminWorkspace=createAdminWorkspace({store,clock,report,membersFor:user=>visibleMembers(store,user),channelsFor:user=>visibleChannels(user).map(channel=>safeChannel(channel,user)),workspaceProfiles});
   const readWorkspaceDirectory=createWorkspaceDirectory(store);
@@ -613,6 +619,8 @@ export function createCompanyApp(options={}) {
   });
   const migrationAt=clock();
   store.transaction(()=>{for(const c of store.all('channels'))seedOwnership(store,c,migrationAt);});
+  // 회사 주인 문서(관리자 직접부여 설계 4절): 비어 있고 활성 관리자가 정확히 한 명이면 부팅 때 한 번 적는다. 여럿이면 적지 않고 관리자 올리기는 닫힌다.
+  ensureWorkspaceOwnerAtBoot(store,{clock});
   for(const run of store.all('runs').filter(x=>['queued','running'].includes(x.status)))store.put('runs',run.id,{...run,status:'interrupted',finishedAt:now(),message:'서버가 다시 켜져 수집이 멈췄어요. 자동으로 다시 시도해요.'});
   for(const channel of store.all('channels').filter(x=>x.status==='collecting'))store.put('channels',channel.id,{...channel,...planFailure({code:'COLLECTION_INTERRUPTED',retryable:true},channel,clock()),status:'error',lastError:'서버가 다시 켜져 수집이 멈췄어요. 자동으로 다시 시도해요.'});
   for(const channel of store.all('channels').filter(x=>x.recentStatus==='collecting'))store.put('channels',channel.id,{...channel,...recentFields(planFailure({code:'COLLECTION_INTERRUPTED',retryable:true},recentPolicyChannel(channel),clock())),recentStatus:'error',recentLastError:'최근 게시물 수집이 멈춰서 다시 시도해요.'});
@@ -622,8 +630,29 @@ export function createCompanyApp(options={}) {
   function channelFor(user,id,mode='read') {const c=store.get('channels',id);const allowed=c&&(mode==='write'?canWriteChannel(user,c):mode==='connect'?(user.role!=='viewer'&&(canWriteChannel(user,c)||incoming(user,c))):canReadChannel(user,c)||incoming(user,c));if(!allowed)throw httpError('채널을 찾지 못했어요. 새로고침해 주세요.',404);return c;}
   function admin(user) {if(user.role!=='admin')throw httpError('관리자만 바꿀 수 있어요.',403);}
   function audit(user,action,subject,details={}) {const id=randomUUID();store.put('audit',id,{id,userId:user.id,action,subject,...details,at:clock()});}
+  // 반 · 이용 권한 쓰기의 회사 쪽 기록(관리자 직접부여 설계 4절). 하루 상한은 중앙처럼 같은 사람의 같은 op에서 실제로 바뀐(applied) 건을 요청 번호로 센다.
+  function grantWritesToday(userId,op,requestId){const since=Date.parse(clock())-86400000,seen=new Set();for(const row of store.all('audit'))if(row.action==='synk-grant'&&row.userId===userId&&row.op===op&&row.result==='ok'&&row.outcome==='applied'&&row.requestId!==requestId&&Date.parse(row.at)>since)seen.add(row.requestId);return seen.size;}
+  // 회사 주인 알림 글. 사람과 반 이름은 제어 · 방향 글자를 빼고 40자로 줄인다. 거절은 내부 코드 대신 첫 문장의 한국어 까닭을 쓴다.
+  function grantAlertName(value,fallback){const text=String(value||'').replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\u2060-\u2069\ufeff]/g,'').replace(/\s+/g,' ').trim();return !text?fallback:text.length>40?text.slice(0,39)+'…':text;}
+  function grantAlertText(actor,request,code,result){
+    const label=GRANT_OP_LABELS[request.op],payload=request.payload,cls=result?.class,name=grantAlertName(actor.name,'관리자');
+    const choice=payload.capability&&ENTITLEMENT_CHOICES.find(row=>row.product===payload.product&&row.capability===payload.capability);
+    const detail=cls?' (반 '+grantAlertName(cls.displayName||cls.classKey,'이름 없는 반')+')':payload.classKey?' (반 키 '+payload.classKey+')':payload.capability?' ('+(choice?choice.label:grantAlertName(payload.product+'.'+payload.capability,'이용 권한'))+')':payload.classId?' (반 '+payload.classId.slice(0,8)+')':'';
+    if(code==='GRANTS_UNAVAILABLE'||code==='GRANTS_UNCONFIRMED')return name+' 님의 '+label+' 요청은 결과를 확인하지 못했어요'+detail+'. 이미 반영됐을 수도 있어요.';
+    if(code!=='ok')return name+' 님의 '+label+' 요청이 거절됐어요'+detail+'. 까닭: '+(grantMessage(code,null,request.op).match(/^[^.]*\./)?.[0]||grantMessage(code,null,request.op));
+    return result?.outcome==='duplicate'?name+' 님이 관리자 화면에서 '+label+'를 눌렀지만 이미 되어 있었어요'+detail+'.':name+' 님이 관리자 화면에서 '+label+'를 했어요'+detail+'.';
+  }
+  function recordGrantWrite(actor,request,code,result){
+    const requestId=request.payload.requestId;
+    // 한 요청 번호의 같은 결과는 한 번만 남긴다. 응답을 놓친(503) 쓰기를 같은 번호로 다시 보내 중앙이 replayed로 답하면 그때 처음 성공 줄과 알림을 남긴다.
+    if(store.all('audit').some(row=>row.action==='synk-grant'&&row.requestId===requestId&&row.result===code))return;
+    const payload=request.payload,targets={synkUserId:payload.synkUserId||null,classId:payload.classId||null,learnerId:payload.learnerId||null,staffId:payload.staffId||null,entitlement:payload.capability?payload.product+'.'+payload.capability:null};
+    audit(actor,'synk-grant',targets.synkUserId||targets.classId||payload.classKey||'',{op:request.op,requestId,targets,result:code,outcome:result?.outcome||null,change:result?.change||null});
+    ownerAlerts.record({actorId:actor.id,action:'synk-grant',text:grantAlertText(actor,request,code,result)});
+  }
   function teamFor(id){if(!id)return null;const team=store.get('teams',id);if(!team?.active)throw httpError('운영 중인 팀을 골라 주세요.');return team;}
-  function permissions(user){return {manageOrganization:user.role==='admin',manageTeam:['admin','manager'].includes(user.role),readOnly:user.role==='viewer'};}
+  // manageAdmins: 다른 직원을 관리자로 올리고 내릴 수 있는 회사 주인에게만 true다. 화면은 role로 짐작하지 않는다.
+  function permissions(user){return {manageOrganization:user.role==='admin',manageTeam:['admin','manager'].includes(user.role),readOnly:user.role==='viewer',manageAdmins:isWorkspaceOwner(store,user)};}
   function connection(c) {return store.secret('channel:'+c.id);}
   function providerConfig(platform) {return {...store.secret('provider:'+platform),redirectUri:origin+`/api/oauth/${platform}/callback`};}
   function publicYouTubeReader(c){if(c.platform!=='youtube'||c.collectionDisabled||c.active===false)return null;const reader=store.secret('collection:youtube-public');return reader?.accessToken&&reader.refreshToken&&reader.clientId&&reader.clientSecret&&Array.isArray(reader.channelIds)&&reader.channelIds.includes(c.id)&&store.get('users',reader.connectedBy)?.active?reader:null;}
@@ -923,7 +952,7 @@ export function createCompanyApp(options={}) {
   async function scheduledTick(at=clock()){
     if(stopRequested||!channelCollectionEnabled)return;
     // 보관 정리(만료 자료와 끝난 수집 기록 지우기)는 배경 작업(BG=1)이 켜졌을 때만 돈다. 작업실 예약만 켠 서버(BG=0, 작업실 예약=1)는 예약 회차에서 자료를 지우지 않는다. 일반 원천의 purgeExpired 관문과 같다(11-15 검수 P1).
-    if(backgroundJobsEnabled){try{maintainCollectionRecords(at);}catch{console.error('SYNK_COMPANY_RUN_MAINTENANCE_FAILED');}}const system=store.all('users').find(u=>u.role==='admin'&&u.active);if(!system)return;
+    if(backgroundJobsEnabled){try{maintainCollectionRecords(at);}catch{console.error('SYNK_COMPANY_RUN_MAINTENANCE_FAILED');}}const system=ownerFirstAdmin(store,()=>store.all('users').find(u=>u.role==='admin'&&u.active));if(!system)return;
     if(backgroundJobsEnabled&&(options.schedule!==false||options.dailyTrendsCollector||options.dailyTrendsFetch))dailyTrends.tick(at).catch(()=>{});
     const settings=store.get('settings','company');if(!settings.enabled)return;
     for(const c of store.all('channels')){
@@ -1238,8 +1267,9 @@ export function createCompanyApp(options={}) {
     const identityControl=['/api/logout','/api/synk-id/renew','/api/synk-id/status'].includes(path);
     if(!identityControl&&(path.startsWith('/api/')||path.startsWith('/messenger/api/'))){const current=rawSession(req);if(current)await synkIdentity.validateSession(current);}
     if(method==='GET'&&path==='/api/synk-id/callback'){
-      try{await synkIdentity.callback(req,res,url,()=>session(req),setSession);res.writeHead(302,{Location:'/?tab=messenger&synkConnected=1','Cache-Control':'no-store','Referrer-Policy':'no-referrer'});return res.end();}
-      catch(error){res.writeHead(302,{Location:'/?tab=messenger&synkError='+encodeURIComponent(error.code||'SYNK_LOGIN_FAILED'),'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});return res.end();}
+      // 관리자 화면의 「SYNK ID로 다시 로그인」(returnTo admin)은 관리자 화면으로 돌아온다. 그 밖에는 지금처럼 메신저로 간다.
+      try{const result=await synkIdentity.callback(req,res,url,()=>session(req),setSession);res.writeHead(302,{Location:'/?tab='+(result?.returnTo==='admin'?'admin':'messenger')+'&synkConnected=1','Cache-Control':'no-store','Referrer-Policy':'no-referrer'});return res.end();}
+      catch(error){res.writeHead(302,{Location:'/?tab='+(error?.returnTo==='admin'?'admin':'messenger')+'&synkError='+encodeURIComponent(error.code||'SYNK_LOGIN_FAILED'),'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});return res.end();}
     }
     if(path==='/messenger'){if(!['GET','HEAD'].includes(method))throw httpError('메신저 주소를 확인해 주세요.',405);res.writeHead(302,{Location:'/messenger/'});return res.end();}
     if(path==='/pulse-app'){if(!['GET','HEAD'].includes(method))throw httpError('PULSE 주소를 확인해 주세요.',405);res.writeHead(302,{Location:'/pulse-app/'+url.search});return res.end();}
@@ -1663,10 +1693,10 @@ export function createCompanyApp(options={}) {
         if(store.all('users').length)throw httpError('이미 회사가 설정되어 있습니다.',409);
         if(!store.readToken(input.setupToken,'setup'))throw httpError('관리자 시작 링크를 다시 열어 주세요.',403);
         const checkedHash=await passwordHashAsync(input.password);
-        const u=store.transaction(()=>{if(store.all('users').length)throw httpError('이미 회사가 설정되어 있습니다.',409);if(!store.readToken(input.setupToken,'setup'))throw httpError('관리자 시작 링크를 다시 열어 주세요.',403);const created=store.createUser({...input,password:undefined,role:'admin'});const user=store.put('users',created.id,{...created,passwordHash:checkedHash});store.db.prepare('DELETE FROM tokens WHERE hash=?').run(hash(input.setupToken));store.put('settings','company',{...store.get('settings','company'),companyName:text(input.companyName,80)||'SYNK'});return user;});
+        const u=store.transaction(()=>{if(store.all('users').length)throw httpError('이미 회사가 설정되어 있습니다.',409);if(!store.readToken(input.setupToken,'setup'))throw httpError('관리자 시작 링크를 다시 열어 주세요.',403);const created=store.createUser({...input,password:undefined,role:'admin'});const user=store.put('users',created.id,{...created,passwordHash:checkedHash});recordWorkspaceOwner(store,user,{at:clock(),setBy:'setup'});audit(user,'workspace-owner-set',user.id,{via:'setup'});store.db.prepare('DELETE FROM tokens WHERE hash=?').run(hash(input.setupToken));store.put('settings','company',{...store.get('settings','company'),companyName:text(input.companyName,80)||'SYNK'});return user;});
         return send(res,201,setSession(res,u));
       }
-      if(path==='/api/launch'){const t=store.consume(input.token,'launch');const u=t&&store.get('users',t.userId);if(!u?.active||!isLocalHost(host))throw httpError('시작 링크가 만료됐습니다. 바탕화면 바로가기를 다시 열어 주세요.',403);return send(res,200,setSession(res,u));}
+      if(path==='/api/launch'){const t=store.consume(input.token,'launch');const u=t&&store.get('users',t.userId);if(!u?.active||!isLocalHost(host))throw httpError('시작 링크가 만료됐습니다. 바탕화면 바로가기를 다시 열어 주세요.',403);return send(res,200,setSession(res,u,{via:'launch'}));}
       if(path==='/api/login'){
         const email=text(input.email??input.username,254).toLowerCase(),ip=clientAddress(req),account=hash(email);
         const release=reserveAttempts([[loginPair,ip+':'+account],[loginIp,ip],[loginAccount,account],[loginGlobal,'all']]);
@@ -1720,6 +1750,39 @@ export function createCompanyApp(options={}) {
         const result=await synkIdentity.searchMemberDirectory(current,directoryQuery(input,true));
         check();
         return send(res,200,result);
+      }
+      // 반 · 명부 · 이용 권한(관리자 직접부여 설계 4절). 관리자 + CSRF + 같은 출처 + 최신 users 행 재확인. 데모 · 쿼리 · 시작 링크 세션은 거절한다.
+      // 쓰기 op는 최근 15분 안의 SYNK ID 브라우저 로그인, 회사 하루 상한, 회사 audit 한 줄, 회사 주인 알림을 더한다.
+      if(path==='/api/admin/synk-grants'){
+        if(demoRequest||url.search)throw httpError('실제 관리자 화면에서 요청해 주세요.',403);
+        const check=()=>{
+          const latest=session(req);
+          if(!latest||latest.hash!==auth.hash||latest.body.csrfToken!==req.headers['x-csrf-token'])throw httpError('로그인 상태를 확인해 주세요.',401);
+          if(latest.user.role!=='admin')throw httpError('관리자만 반과 이용 권한을 관리할 수 있어요.',403);
+          return latest;
+        };
+        let request=null,reached=false,actor=user;
+        try{
+          const current=check();actor=current.user;
+          request=parseGrantRequest(input,{now:Date.parse(clock())});
+          if(!current.body.synkIdentity||current.body.via==='launch')throw grantsError(403,'SYNK_LOGIN_REQUIRED');
+          if(request.write){
+            if(!synkIdentity.recentInteractive(current))throw grantsError(409,'REAUTH_REQUIRED');
+            const limit=GRANT_DAILY_LIMITS[request.op];
+            if(limit&&grantWritesToday(current.user.id,request.op,request.payload.requestId)>=limit){reached=true;throw grantsError(429,'DAILY_LIMIT');}
+          }
+          reached=true;
+          const result=await synkIdentity.callAdminGrants(current,request.op,request.payload);
+          if(request.write)recordGrantWrite(actor,request,'ok',result);
+          check();
+          return send(res,200,request.op==='entitlements.list'?{...result,choices:ENTITLEMENT_CHOICES,viewOnly:ENTITLEMENT_VIEW_ONLY}:result);
+        }catch(error){
+          if(!error?.grants)throw error;
+          // 중앙이 2xx로 반영했는데 응답 뒤 세션 재확인에서 막힌 쓰기(GRANTS_UNCONFIRMED + applied)는 반영으로 적는다. 화면은 같은 requestId로 다시 확인한다.
+          if(request?.write&&error.applied)recordGrantWrite(actor,request,'ok',error.applied);
+          else if(request?.write&&reached&&error.code!=='REAUTH_REQUIRED')recordGrantWrite(actor,request,error.code,null);
+          return send(res,error.status,{error:safeError(error.message),code:error.code,...(error.details?{details:error.details}:{}),...(error.retryable?{retryable:true}:{})});
+        }
       }
       if(path==='/api/computer-interpretation/delete'){
         if(url.search)throw httpError('본인의 서버 응답 인용만 삭제할 수 있어요.');
@@ -1840,6 +1903,16 @@ export function createCompanyApp(options={}) {
       if(teamRoute){admin(user);const team=store.get('teams',teamRoute[1]);if(!team)throw httpError('팀을 찾지 못했어요. 새로고침해 주세요.',404);const name=input.name===undefined?team.name:text(input.name,80);if(!name)throw httpError('팀 이름을 적어 주세요.');if(store.all('teams').some(t=>t.id!==team.id&&t.active&&t.name.toLowerCase()===name.toLowerCase()))throw httpError('같은 이름의 팀이 이미 있어요.');if(input.active===false&&(store.all('users').some(u=>u.teamId===team.id)||store.all('channels').some(c=>c.teamId===team.id)||store.all('handoffs').some(h=>h.status==='awaiting-connection'&&h.toTeamId===team.id)))throw httpError('이 팀에 크루나 채널이 남아 있어요. 먼저 다른 팀으로 옮겨 주세요.');const updated={...team,name,active:input.active===undefined?team.active:input.active===true};store.put('teams',team.id,updated);audit(user,'team-updated',team.id,{before:team,after:updated});return send(res,200,{team:updated});}
       const organizationRoute=path.match(/^\/api\/members\/([^/]+)\/organization$/);
       if(organizationRoute)return send(res,200,saveMemberOrganization(store,user,organizationRoute[1],input,{clock,audit}));
+      // 관리자 올리기와 내리기(관리자 직접부여 설계 4절 ④). 회사 주인의 SYNK ID 세션, 최근 15분 로그인, 시작 링크 세션 거절은 admin-role.mjs가 본다.
+      const adminRoleRoute=path.match(/^\/api\/members\/([^/]+)\/admin-role$/);
+      if(adminRoleRoute){
+        if(demoRequest||url.search)throw httpError('실제 관리자 화면에서 요청해 주세요.',403);
+        const latest=session(req);
+        if(!latest||latest.hash!==auth.hash||latest.body.csrfToken!==req.headers['x-csrf-token'])throw httpError('로그인 상태를 확인해 주세요.',401);
+        admin(latest.user);
+        try{return send(res,200,adminRoles.change(latest,adminRoleRoute[1],input));}
+        catch(error){if(error?.adminRole)return send(res,error.status,{error:safeError(error.message),code:error.code});throw error;}
+      }
       const membership=path.match(/^\/api\/members\/([^/]+)\/assignment$/);
       if(membership){
         admin(user);const target=store.get('users',membership[1]),selfAdmin=target?.id===user.id&&target.role==='admin';
@@ -2225,7 +2298,7 @@ export function createCompanyApp(options={}) {
     }
     const files={'/automation-health.js':['public/automation-health.js','text/javascript; charset=utf-8'],'/automation-health.css':['public/automation-health.css','text/css; charset=utf-8'],'/weekly-summary.js':['public/weekly-summary.js','text/javascript; charset=utf-8'],'/weekly-summary.css':['public/weekly-summary.css','text/css; charset=utf-8'],'/studio.js':['public/studio.js','text/javascript; charset=utf-8'],'/studio.css':['public/studio.css','text/css; charset=utf-8'],'/studio-review.js':['public/studio-review.js','text/javascript; charset=utf-8'],'/studio-review.css':['public/studio-review.css','text/css; charset=utf-8'],'/studio-board.js':['public/studio-board.js','text/javascript; charset=utf-8'],'/studio-board.css':['public/studio-board.css','text/css; charset=utf-8'],'/benchmark.js':['public/benchmark.js','text/javascript; charset=utf-8'],'/benchmark.css':['public/benchmark.css','text/css; charset=utf-8'],'/content.js':['public/content.js','text/javascript; charset=utf-8'],'/content.css':['public/content.css','text/css; charset=utf-8'],'/wordmark.svg':['public/wordmark.svg','image/svg+xml'],'/pages.css':['public/pages.css','text/css; charset=utf-8'],'/dialogs.css':['public/dialogs.css','text/css; charset=utf-8'],'/':['public/index.html','text/html; charset=utf-8'],'/app.js':['public/app.js','text/javascript; charset=utf-8'],'/style.css':['public/style.css','text/css; charset=utf-8'],'/font.woff2':['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'],'/inter.ttf':['../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf','font/ttf'],'/inter-semibold.ttf':['../../../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf','font/ttf'],'/mono.ttf':['../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf','font/ttf'],'/brand-logo.svg':['../../../../홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg','image/svg+xml']};
     if(tipShareRoutes)Object.assign(files,{'/tip-shares.js':['public/tip-shares.js','text/javascript; charset=utf-8'],'/tip-shares.css':['public/tip-shares.css','text/css; charset=utf-8']});
-    Object.assign(files,{'/admin-workspace.js':['public/admin-workspace.js','text/javascript; charset=utf-8'],'/admin-workspace.css':['public/admin-workspace.css','text/css; charset=utf-8']});
+    Object.assign(files,{'/admin-workspace.js':['public/admin-workspace.js','text/javascript; charset=utf-8'],'/admin-workspace.css':['public/admin-workspace.css','text/css; charset=utf-8'],'/admin-grants.js':['public/admin-grants.js','text/javascript; charset=utf-8'],'/admin-grants.css':['public/admin-grants.css','text/css; charset=utf-8']});
     Object.assign(files,{'/workspace.js':['public/workspace.js','text/javascript; charset=utf-8'],'/workspace.css':['public/workspace.css','text/css; charset=utf-8'],'/signal.css':['public/signal.css','text/css; charset=utf-8'],'/member-organization.js':['public/member-organization.js','text/javascript; charset=utf-8'],'/member-organization.css':['public/member-organization.css','text/css; charset=utf-8'],'/team-overview.js':['public/team-overview.js','text/javascript; charset=utf-8']});
     Object.assign(files,{'/teaching.js':['public/teaching.js','text/javascript; charset=utf-8'],'/teaching.css':['public/teaching.css','text/css; charset=utf-8'],'/teaching-host.js':['public/teaching-host.js','text/javascript; charset=utf-8'],'/teaching/host.js':['public/teaching-host.js','text/javascript; charset=utf-8']});
     if(path==='/teacher-world'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/teacher-world/'});return res.end();}

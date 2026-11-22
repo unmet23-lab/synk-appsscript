@@ -1,0 +1,115 @@
+/* 관리자 화면의 「최근 부여」 · 「반」 · 「이용 권한」 칸과 그 확인 창(관리자 직접부여 설계 5절).
+   값은 admin-workspace.css와 같은 --ws-* 토큰만 쓴다. 표는 .admin-table(920px 아래에서 카드로 바뀐다)을 그대로 쓴다. */
+
+.admin-workspace .grants-audit {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--ws-radius-md);
+  background: var(--ws-surface);
+}
+.admin-workspace .grants-audit-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.admin-workspace .grants-audit-head h2 { margin: 0 0 4px; font-size: 17px; }
+.admin-workspace .grants-audit-head p { margin: 0; color: var(--ws-ink-muted); font-size: 13px; line-height: 1.5; word-break: keep-all; overflow-wrap: anywhere; }
+.admin-workspace .grants-audit-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 0; }
+.admin-workspace .grants-audit-row {
+  display: grid;
+  grid-template-columns: minmax(8.5rem, auto) minmax(0, 1fr) auto;
+  gap: 4px 14px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-top: 1px solid var(--ws-line);
+  font-size: 13.5px;
+}
+.admin-workspace .grants-audit-row time { color: var(--ws-ink-muted); font-variant-numeric: tabular-nums; }
+.admin-workspace .grants-audit-row small { grid-column: 2 / -1; color: var(--ws-ink-muted); overflow-wrap: anywhere; }
+.admin-workspace .grants-outcome { font-weight: 620; white-space: nowrap; }
+.admin-workspace .grants-outcome.is-ok { color: var(--ws-ink); }
+.admin-workspace .grants-outcome.is-denied { color: var(--ws-danger); }
+.admin-workspace .grants-audit-more summary { margin-top: 8px; cursor: pointer; font-size: 13px; color: var(--ws-ink-muted); }
+
+.admin-workspace .grants-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 1rem 0; }
+.admin-workspace .grants-toolbar .directory-form { flex: 1 1 32rem; margin: 0; }
+.admin-workspace .grants-feedback { margin: 1rem 0; color: var(--ws-ink-muted); line-height: 1.55; overflow-wrap: anywhere; }
+.admin-workspace .grants-feedback[role="alert"] { color: var(--ws-danger); }
+.admin-workspace .grants-sub { display: block; margin-top: 3px; font-size: 12px; line-height: 1.4; color: var(--ws-ink-muted); overflow-wrap: anywhere; }
+.admin-workspace .grants-note { margin: 10px 0 0; font-size: 12.5px; color: var(--ws-ink-muted); line-height: 1.5; }
+.admin-workspace .grants-table th:nth-child(1) { width: 34%; }
+.admin-workspace .grants-detail {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ws-line);
+}
+.admin-workspace .grants-detail[hidden] { display: none; }
+.admin-workspace .grants-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.admin-workspace .grants-detail-head h3 { margin: 0 0 4px; font-size: 18px; }
+.admin-workspace .grants-detail-head h3:focus { outline: none; }
+.admin-workspace .grants-detail-head p { margin: 0; color: var(--ws-ink-muted); font-size: 13px; }
+.admin-workspace .grants-subhead { margin: 18px 0 8px; font-size: 14px; }
+.admin-workspace .grants-person,
+.grants-lines {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 8px 16px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--ws-radius-sm, 10px);
+}
+.admin-workspace .grants-person dt,
+.grants-lines dt { font-size: 12px; color: var(--ws-ink-muted); }
+.admin-workspace .grants-person dd,
+.grants-lines dd { margin: 2px 0 0; overflow-wrap: anywhere; font-weight: 600; }
+
+/* 확인 창 · 사람 고르기 창(모달은 .admin-workspace 밖에 그려진다) */
+.grants-confirm .grants-warning {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--ws-warn, #B7791F);
+  background: var(--ws-warn-bg, transparent);
+  line-height: 1.55;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.grants-confirm .grants-error { margin: 0; }
+.grants-confirm .grants-fields { display: grid; gap: inherit; min-width: 0; margin: 0; padding: 0; border: 0; }
+.grants-confirm .grants-fields:disabled { opacity: .72; }
+.grants-confirm .grants-check { display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; }
+.grants-confirm .grants-check input { margin-top: 4px; }
+.grants-reauth {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--ws-accent-line, var(--ws-line));
+  border-radius: var(--ws-radius-sm, 10px);
+}
+.grants-reauth p { margin: 0; line-height: 1.5; }
+.grants-reauth .grants-sub { font-size: 12px; color: var(--ws-ink-muted); }
+.grants-confirm .modal-actions { flex-wrap: wrap; }
+.grants-pick-form { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+.grants-pick-form .field { flex: 1 1 16rem; margin: 0; }
+.grants-pick-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 0; max-height: min(52vh, 28rem); overflow: auto; }
+.grants-pick-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 2px;
+  border-top: 1px solid var(--ws-line);
+}
+.grants-pick-list li > div { display: grid; gap: 2px; min-width: 0; }
+.grants-pick-list span, .grants-pick-list small { overflow-wrap: anywhere; color: var(--ws-ink-muted); }
+.grants-pick-list small { font-size: 12px; }
+.grants-pick-list .grants-sub { font-size: 12px; color: var(--ws-ink-muted); max-width: 11rem; text-align: right; }
+[data-grants-pick-results] .grants-feedback { margin: 12px 0 0; color: var(--ws-ink-muted); }
+[data-grants-pick-results] .grants-feedback[role="alert"] { color: var(--ws-danger); }
+
+@media (max-width: 650px) {
+  .admin-workspace .grants-audit { padding: 12px; }
+  .admin-workspace .grants-audit-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .admin-workspace .grants-audit-row time { grid-column: 1 / -1; font-size: 12px; }
+  .admin-workspace .grants-audit-row small { grid-column: 1 / -1; }
+  .admin-workspace .grants-toolbar { align-items: stretch; }
+  .grants-pick-form input, .grants-confirm input, .grants-confirm select { font-size: 16px; }
+  .grants-pick-list li { flex-wrap: wrap; }
+}

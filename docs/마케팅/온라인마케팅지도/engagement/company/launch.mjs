@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { join,dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Store } from './store.mjs';
+import { ownerFirstAdmin } from './workspace-owner.mjs';
 import { mkdirSync, openSync, closeSync, appendFileSync, writeFileSync } from 'node:fs';
 
 const here=dirname(fileURLToPath(import.meta.url));
@@ -29,7 +30,8 @@ if(!status){
 for(let i=0;i<40&&!ready(status)&&!failure;i++){await new Promise(r=>setTimeout(r,250));status=await health();}
 if(!ready(status)||failure)throw new Error(`워크스페이스를 시작하지 못했습니다. data/logs의 최신 서버 기록을 확인해 주세요.${failure?' ('+failure+')':''}`);
 const store=new Store(join(here,'data'));
-let admin=store.all('users').find(u=>u.role==='admin'&&u.active);
+// 관리자가 여럿이면 회사 주인의 시작 링크를 만든다(관리자 직접부여 설계 4절). 주인이 없을 때만 첫 활성 관리자다.
+let admin=ownerFirstAdmin(store,()=>store.all('users').find(u=>u.role==='admin'&&u.active));
 if(!admin){if(store.all('users').length)throw new Error('활성 관리자가 없습니다.');admin=store.createUser({email:'founder@synk.im',name:'유호',role:'admin'});}
 if(!store.get('settings','initialImport')){
   const response=await fetch(base+'/api/launch',{method:'POST',headers:{'Content-Type':'application/json',Origin:base},body:JSON.stringify({token:store.mint('launch',admin.id,{},5)})});

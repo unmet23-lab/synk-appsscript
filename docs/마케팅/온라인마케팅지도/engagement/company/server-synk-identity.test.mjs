@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { request as httpRequest } from 'node:http';
+import { createHash } from 'node:crypto';
 import { createCompanyApp } from './server.mjs';
 import { synkIdentityConfig, createSynkIdentity } from './synk-identity.mjs';
 
@@ -20,7 +21,7 @@ async function fixture(t,{enabled=true,browser=false,verify,fetcher,webPushEnabl
   t.after(async()=>{await app.stop();assert.ok(resolve(dir).startsWith(resolve(tmpdir())+sep));await rm(dir,{recursive:true,force:true});});
   const staff=app.store.createUser({name:'회사 크루',email:'same@example.test',password,role:'member'});
   const admin=app.store.createUser({name:'회사 관리자',email:'admin@example.test',password,role:'admin'});
-  const fx={get app(){return app;},get base(){return `http://127.0.0.1:${address.port}`;},directory:dir,sent,staff,admin,advance:ms=>stamp+=ms,revoke:()=>{rejected=true;},async restart(changes={}){await app.stop();Object.assign(options,changes);app=createCompanyApp(options);address=await app.start();},client(){
+  const fx={get app(){return app;},get base(){return `http://127.0.0.1:${address.port}`;},directory:dir,sent,staff,admin,advance:ms=>stamp+=ms,get now(){return stamp;},revoke:()=>{rejected=true;},async restart(changes={}){await app.stop();Object.assign(options,changes);app=createCompanyApp(options);address=await app.start();},client(){
     const jar=new Map();return {jar,csrf:'',async request(path,{body,token,origin=app.origin,csrf=this.csrf,method=body===undefined?'GET':'POST'}={}){
       const headers={Cookie:[...jar].map(([key,value])=>key+'='+value).join('; ')};
       if(method==='POST'){headers.Origin=origin;headers['Content-Type']='application/json';if(csrf)headers['X-CSRF-Token']=csrf;}
@@ -271,6 +272,11 @@ test('central revocation disconnects an already open messenger stream',async t=>
 });
 test('public settings reject secret keys and insecure identity endpoints',()=>{
   assert.equal(synkIdentityConfig({}),null);assert.throws(()=>synkIdentityConfig({SYNK_ID_ACCOUNT_API_URL:'http://localhost/',SYNK_ID_PUBLISHABLE_KEY:'fixture'}));assert.throws(()=>synkIdentityConfig({SYNK_ID_ACCOUNT_API_URL:'https://identity.example.test/',SYNK_ID_PUBLISHABLE_KEY:'sb_secret_bad'}));
+  // 다시 로그인에 쓰는 SYNK ID 포털 주소는 기본 synk.im/id이고, 바꿀 때도 외부 HTTPS 주소만 받는다.
+  const browserEnv={SYNK_ID_ACCOUNT_API_URL:'https://identity.example.test/functions/v1/synk-account',SYNK_ID_PUBLISHABLE_KEY:'fixture-public',SYNK_ID_SUPABASE_URL:'https://identity.example.test',SYNK_ID_MESSENGER_CLIENT_ID:'messenger-browser'};
+  assert.equal(synkIdentityConfig(browserEnv).portalUrl,'https://synk.im/id/');
+  assert.equal(synkIdentityConfig({...browserEnv,SYNK_ID_PORTAL_URL:'https://portal.example.test/id/'}).portalUrl,'https://portal.example.test/id/');
+  for(const bad of ['http://synk.im/id/','https://localhost/id/','https://synk.im/id/?next=x','https://user:pw@synk.im/id/','not a url'])assert.throws(()=>synkIdentityConfig({...browserEnv,SYNK_ID_PORTAL_URL:bad}),undefined,bad);
 });
 test('a fragment in a callback request is rejected before any token exchange',async t=>{
   const f=await fixture(t),service=createSynkIdentity({store:f.app.store,origin:f.app.origin,config:{issuer:'https://identity.example.test'},fetch:async()=>assert.fail('must not call token endpoint')});
@@ -540,4 +546,429 @@ test('admin member directory pages local members, merges only verified identitie
   await Promise.race([started,pending.then(result=>assert.fail('Central request ended early: '+result.status))]);
   store.put('users',f.admin.id,{...store.get('users',f.admin.id),role:'member'});
   release();assert.equal((await pending).status,403);
+});
+
+// 관리자 직접부여(설계 2 · 4 · 6절): 15분 대화형 로그인, 시작 링크 세션, 중앙 호출 callAdminGrants.
+// 중앙 응답 꼴은 SYNK-talk lib/synk-account-admin-grants.js(31a8e8f5)와 같다.
+const grantsPath='/api/admin/synk-grants';
+const classId='44444444-4444-4444-8444-444444444444',requestA='55555555-5555-4555-8555-555555555555';
+const classRow={id:classId,classKey:'test-evening',displayName:'시험 저녁반',active:true,test:true,seasonless:true,teachers:1,learners:3,openRows:0,createdAt:'2026-11-21T10:00:00.123456+00:00'};
+const classView={id:classId,classKey:'test-evening',displayName:'시험 저녁반',active:true,test:true};
+const page=(rows=[],total=rows.length)=>Response.json({ok:true,op:'classes.list',total,page:1,pageSize:25,rows});
+const applied=(body,data)=>Response.json({ok:true,op:body.op,requestId:body.requestId,outcome:'applied',...data});
+// 중앙 admin-reauth-claim(관리자 브라우저 로그인의 교환 직후)은 calls와 따로 claims에 모은다. 기본 답은 bound:true · loginAt 지금이다.
+async function grantsFixture(t,central=()=>page()){
+  const calls=[],claims=[],tokenCalls=[];let gate=null,f=null;
+  const control={claim:()=>Response.json({ok:true,bound:true,loginAt:new Date(f.now).toISOString()}),refreshToken:null};
+  f=await fixture(t,{browser:true,fetcher:async(url,init)=>{
+    if(String(url).endsWith('/oauth/token')){tokenCalls.push(new URLSearchParams(init.body).get('grant_type'));return Response.json({access_token:init.body.includes('second-code')?access.two:access.one,...(control.refreshToken?{refresh_token:control.refreshToken}:{})});}
+    const body=JSON.parse(init.body);
+    if(body.action==='admin-reauth-claim'){claims.push({url:String(url),headers:init.headers,body});return control.claim(body,init);}
+    calls.push({url:String(url),headers:init.headers,body});
+    if(gate){const current=gate;gate=null;current.enter();await current.released;}
+    return central(body,init);
+  }});
+  const holdNext=()=>{let enter,release;const started=new Promise(resolve=>{enter=resolve;}),released=new Promise(resolve=>{release=resolve;});gate={enter,released};return {started,release};};
+  return {f,calls,holdNext,claims,control,tokenCalls};
+}
+// 브라우저 SYNK ID 로그인(대화형)으로 세션을 만든다. 먼저 회사 비밀번호 + 교환으로 SYNK ID를 연결해 둔다.
+async function interactive(c,{expected=ids.one,code='synthetic-code'}={}){
+  const start=await c.request('/api/synk-id/start',{body:{action:'login',expectedAccountId:expected,returnTo:'admin'}});
+  assert.equal(start.status,200);
+  const state=new URL(start.data.authorizationUrl).searchParams.get('state');
+  const back=await c.request('/api/synk-id/callback?state='+state+'&code='+code);
+  assert.equal(back.status,302);assert.equal(back.headers.get('location'),'/?tab=admin&synkConnected=1');
+  const me=await c.request('/api/me');assert.equal(me.status,200);return me;
+}
+const listBody={op:'classes.list',q:'',active:'all',page:1};
+const createBody=(requestId=requestA)=>({op:'class.create',classKey:'test-evening',displayName:'시험 저녁반',test:true,requestId,confirm:true});
+const created=body=>applied(body,{class:{...classView,extra:'omit'}});
+
+test('grants route needs an administrator, CSRF, same origin, a SYNK session and never a launch session',async t=>{
+  const {f,calls}=await grantsFixture(t);
+  const member=f.client();await member.login(f.staff);
+  assert.equal((await member.request(grantsPath,{body:listBody})).status,403);
+  const password=f.client();await password.login(f.admin);
+  const company=await password.request(grantsPath,{body:listBody});assert.equal(company.status,403);assert.equal(company.data.code,'SYNK_LOGIN_REQUIRED');
+  const launch=f.client(),launched=await launch.request('/api/launch',{body:{token:f.app.store.mint('launch',f.admin.id,{},5)}});
+  assert.equal(launched.status,200);assert.ok(f.app.store.db.prepare("SELECT body FROM tokens WHERE purpose='session' AND userId=?").all(f.admin.id).some(row=>JSON.parse(row.body).via==='launch'));
+  const fromLaunch=await launch.request(grantsPath,{body:listBody});assert.equal(fromLaunch.status,403);assert.equal(fromLaunch.data.code,'SYNK_LOGIN_REQUIRED');
+  assert.equal((await launch.request(grantsPath,{body:createBody()})).status,403);
+  const c=f.client();await c.link(f.admin);
+  assert.equal((await c.request(grantsPath,{csrf:'wrong',body:listBody})).status,403);
+  assert.equal((await c.request(grantsPath,{csrf:'',body:listBody})).status,403);
+  assert.equal((await c.request(grantsPath,{origin:'https://other.example.test',body:listBody})).status,403);
+  assert.equal((await c.request(grantsPath+'?op=classes.list',{body:listBody})).status,403);
+  assert.equal((await c.request(grantsPath,{body:listBody,method:'POST'})).status,200);
+  assert.equal(calls.length,1);assert.deepEqual(calls[0].body,{action:'admin-workspace-grants',op:'classes.list',q:'',active:'all',page:1});
+});
+
+test('only a browser SYNK ID login within 15 minutes opens writes; renew, refresh, exchange and restart never raise it',async t=>{
+  const {f,calls}=await grantsFixture(t,body=>body.op==='class.create'?created(body):page());
+  const c=f.client();await c.link(f.admin);
+  assert.equal((await c.request('/api/synk-id/status')).data.reauthNeeded,true);
+  const exchanged=await c.request(grantsPath,{body:createBody()});assert.equal(exchanged.status,409);assert.equal(exchanged.data.code,'REAUTH_REQUIRED');
+  assert.equal(calls.length,0);
+  assert.equal((await c.request(grantsPath,{body:listBody})).status,200,'reads do not need a recent login');
+  await interactive(c);
+  assert.equal((await c.request('/api/synk-id/status')).data.reauthNeeded,false);
+  const ok=await c.request(grantsPath,{body:createBody()});assert.equal(ok.status,200);
+  assert.deepEqual(ok.data,{ok:true,op:'class.create',requestId:requestA,outcome:'applied',class:classView});
+  const sent=calls.at(-1);
+  assert.deepEqual(sent.body,{action:'admin-workspace-grants',op:'class.create',classKey:'test-evening',displayName:'시험 저녁반',test:true,requestId:requestA,confirm:true});
+  assert.equal(sent.headers.Authorization,'Bearer '+access.one);assert.equal(sent.headers.apikey,'fixture-public');assert.equal(sent.headers['X-SYNK-Product'],'messenger');assert.equal(sent.headers['X-SYNK-Contract'],'1');
+  f.advance(15*60_000-1000);
+  assert.equal((await c.request(grantsPath,{body:createBody('66666666-6666-4666-8666-666666666666')})).status,200);
+  f.advance(2000);
+  assert.equal((await c.request('/api/synk-id/status')).data.reauthNeeded,true);
+  const late=await c.request(grantsPath,{body:createBody('77777777-7777-4777-8777-777777777777')});assert.equal(late.status,409);assert.equal(late.data.code,'REAUTH_REQUIRED');
+  // 자동 갱신(renew)은 이전 값을 이어 받기만 한다.
+  assert.equal((await c.request('/api/synk-id/renew',{token:access.one,body:{}})).status,200);
+  assert.equal((await c.request(grantsPath,{body:createBody('77777777-7777-4777-8777-777777777777')})).data.code,'REAUTH_REQUIRED');
+  await interactive(c);
+  assert.equal((await c.request(grantsPath,{body:createBody('88888888-8888-4888-8888-888888888888')})).status,200);
+  // 다시 켜면 저장하지 않은 interactiveAt은 사라진다.
+  await f.restart();
+  assert.equal((await c.request('/api/me')).data.user.id,f.admin.id);
+  assert.equal((await c.request('/api/synk-id/status')).data.reauthNeeded,true);
+  assert.equal((await c.request(grantsPath,{body:createBody('99999999-9999-4999-8999-999999999999')})).data.code,'REAUTH_REQUIRED');
+  // 데스크톱 교환으로 다시 로그인해도 대화형으로 치지 않는다.
+  const other=f.client(),begin=await other.challenge('login',{expectedAccountId:ids.one});assert.equal((await other.exchange(begin.data.challenge)).status,200);
+  assert.equal((await other.request(grantsPath,{body:createBody('99999999-9999-4999-8999-999999999999')})).data.code,'REAUTH_REQUIRED');
+});
+
+// Fable 설계 검토(.tmp/admin-grants-20261121/설계검토_재확인과_권한쓰기_Fable.md) 회사 서버 시험 20 · 21 · 22.
+test('an administrator browser login claims the re-login with the new token, code and verifier, and interactiveAt is the central loginAt',async t=>{
+  const {f,claims,control}=await grantsFixture(t,body=>body.op==='class.create'?created(body):page());
+  const c=f.client();await c.link(f.admin);
+  const start=await c.request('/api/synk-id/start',{body:{action:'login',expectedAccountId:ids.one,returnTo:'admin'}}),authorize=new URL(start.data.authorizationUrl);
+  control.claim=()=>Response.json({ok:true,bound:true,loginAt:new Date(f.now-14*60_000).toISOString()});
+  const back=await c.request('/api/synk-id/callback?state='+authorize.searchParams.get('state')+'&code=synthetic-code');
+  assert.equal(back.status,302);assert.equal((await c.request('/api/me')).data.user.id,f.admin.id);
+  assert.equal(claims.length,1);const [claim]=claims;
+  assert.equal(claim.url,'https://identity.example.test/functions/v1/synk-account');
+  assert.equal(claim.headers.Authorization,'Bearer '+access.one,'the claim uses the new Messenger token');
+  assert.equal(claim.headers['X-SYNK-Product'],'messenger');assert.equal(claim.headers['X-SYNK-Contract'],'1');
+  assert.deepEqual(Object.keys(claim.body).sort(),['action','code','codeVerifier']);
+  assert.equal(claim.body.action,'admin-reauth-claim');assert.equal(claim.body.code,'synthetic-code');
+  assert.equal(createHash('sha256').update(claim.body.codeVerifier).digest('base64url'),authorize.searchParams.get('code_challenge'),'the verifier matches the challenge of this login');
+  assert.equal((await c.request(grantsPath,{body:createBody()})).status,200,'a login 14 minutes ago is still recent');
+  f.advance(61_000);
+  assert.equal((await c.request(grantsPath,{body:createBody('66666666-6666-4666-8666-666666666666')})).data.code,'REAUTH_REQUIRED','the window counts from the central loginAt, not from the callback');
+  // 미래 쪽 1분 안의 loginAt은 지금으로 적는다.
+  control.claim=()=>Response.json({ok:true,bound:true,loginAt:new Date(f.now+30_000).toISOString()});
+  await interactive(c);
+  assert.equal((await c.request(grantsPath,{body:createBody('77777777-7777-4777-8777-777777777777')})).status,200);
+  // 관리자가 아닌 직원의 브라우저 로그인은 claim을 부르지 않는다(그 세션은 쓰기와 ④에 들어갈 수 없다).
+  const member=f.client();await member.link(f.staff,access.two);
+  const before=claims.length;await interactive(member,{expected:ids.two,code:'second-code'});
+  assert.equal(claims.length,before);
+});
+
+test('without a bound claim the login still finishes, but writes and promotion need a SYNK ID re-login',async t=>{
+  const {f,claims,control}=await grantsFixture(t,body=>body.op==='class.create'?created(body):page());
+  await f.restart();assert.equal(f.app.store.get('settings','workspaceOwner').userId,f.admin.id);
+  const cases=[
+    ['unbound',()=>Response.json({ok:true,bound:false})],
+    ['refused',()=>Response.json({ok:false,error:{code:'REAUTH_UNAVAILABLE'}},{status:503})],
+    ['timeout',()=>{throw Object.assign(new Error('timeout'),{name:'TimeoutError'});}],
+    ['not json',()=>new Response('not json',{status:200})],
+    ['stale',()=>Response.json({ok:true,bound:true,loginAt:new Date(f.now-16*60_000).toISOString()})],
+    ['future',()=>Response.json({ok:true,bound:true,loginAt:new Date(f.now+5*60_000).toISOString()})],
+    ['no loginAt',()=>Response.json({ok:true,bound:true})],
+  ];
+  for(const [label,reply] of cases){
+    control.claim=reply;const before=claims.length;
+    const c=f.client();await c.link(f.admin);
+    const me=await interactive(c);assert.equal(me.data.user.id,f.admin.id,label+': the login itself succeeds');
+    assert.equal(claims.length,before+1,label);
+    assert.equal((await c.request('/api/synk-id/status')).data.reauthNeeded,true,label);
+    const write=await c.request(grantsPath,{body:createBody()});assert.equal(write.status,409,label);assert.equal(write.data.code,'REAUTH_REQUIRED',label);
+    const promote=await c.request(`/api/members/${f.staff.id}/admin-role`,{body:{admin:true,expectedRole:'member',confirm:true}});
+    assert.equal(promote.status,409,label);assert.equal(promote.data.code,'REAUTH_REQUIRED',label+': promotion trusts the same interactiveAt');
+  }
+  assert.equal(f.app.store.get('users',f.staff.id).role,'member');
+});
+
+test('desktop exchange, renew, automatic refresh and restart restore never call the claim',async t=>{
+  const {f,claims,control,tokenCalls}=await grantsFixture(t);
+  const c=f.client();await c.link(f.admin);
+  assert.equal(claims.length,0,'exchange');
+  assert.equal((await c.request('/api/synk-id/renew',{token:access.one,body:{}})).status,200);
+  assert.equal(claims.length,0,'renew');
+  control.refreshToken='synthetic-refresh-token';
+  const browser=f.client();await browser.link(f.admin);await interactive(browser);
+  assert.equal(claims.length,1,'only the browser login claims');
+  f.advance(3600_000-30_000);
+  assert.equal((await browser.request('/api/me')).data.user.id,f.admin.id);
+  assert.ok(tokenCalls.includes('refresh_token'),'the browser session was refreshed');
+  await f.restart();
+  assert.equal((await browser.request('/api/me')).data.user.id,f.admin.id);assert.equal((await c.request('/api/me')).data.user.id,f.admin.id);
+  f.advance(31_000);await browser.request('/api/me');
+  assert.equal(claims.length,1,'refresh, restart restore and checks never claim');
+  assert.equal((await browser.request('/api/synk-id/status')).data.reauthNeeded,true,'a restart forgets interactiveAt');
+});
+
+test('a write the central function applied while the session needed a fresh check is recorded and comes back as result unknown',async t=>{
+  const {f,holdNext}=await grantsFixture(t,body=>applied(body,{classId,staffId:ids.two,role:'teacher',change:'assigned'}));
+  await f.restart();
+  const c=f.client();await c.link(f.admin);await interactive(c);
+  const add={op:'teacher.add',classId,synkUserId:ids.two,requestId:'cccccccc-cccc-4ccc-8ccc-000000000001',confirm:true};
+  // 중앙이 답하는 사이 회사 세션 확인이 오래돼(30초) 재확인이 필요해진다.
+  const held=holdNext();const pending=c.request(grantsPath,{body:add});
+  await held.started;f.advance(31_000);held.release();
+  const unknown=await pending;
+  assert.equal(unknown.status,503);assert.equal(unknown.data.code,'GRANTS_UNCONFIRMED');assert.equal(unknown.data.retryable,true);
+  assert.equal(unknown.data.staffId,undefined,'the result is not handed to the session');
+  let rows=f.app.store.all('audit').filter(row=>row.action==='synk-grant'&&row.requestId===add.requestId);
+  assert.deepEqual(rows.map(row=>[row.result,row.outcome]),[['ok','applied']],'the company record says applied, not refused');
+  assert.ok(f.app.store.all('ownerAlerts').some(row=>row.text.includes('선생님 넣기를 했어요')));
+  assert.ok(!f.app.store.all('ownerAlerts').some(row=>row.text.includes('거절')));
+  // 같은 requestId로 다시 확인하면 중앙 재전송 답을 받고, 기록은 하나다.
+  const again=await c.request(grantsPath,{body:add});assert.equal(again.status,200);
+  rows=f.app.store.all('audit').filter(row=>row.action==='synk-grant'&&row.requestId===add.requestId);
+  assert.equal(rows.length,1);
+});
+
+test('the re-login button starts a real SYNK ID login through the portal and comes back through the same callback',async t=>{
+  const {f}=await grantsFixture(t,body=>body.op==='class.create'?created(body):page());
+  const c=f.client();await c.link(f.admin);
+  const begin={action:'login',expectedAccountId:ids.one,returnTo:'admin',reauth:true},start=(client,body,options={})=>client.request('/api/synk-id/start',{body,...options});
+  const password=f.client();await password.login(f.admin);
+  assert.equal((await start(password,begin)).status,400,'a company password session cannot ask for a SYNK ID re-login');
+  assert.equal((await start(f.client(),begin)).status,400,'nobody signed in cannot ask for a re-login');
+  for(const bad of [{...begin,reauth:'yes'},{...begin,reauth:false},{...begin,expectedAccountId:ids.two},{action:'login',returnTo:'admin',reauth:true},{...begin,action:'link'}])
+    assert.equal((await start(c,bad)).status,400,JSON.stringify(bad));
+  assert.equal((await start(c,begin,{origin:'https://other.example.test'})).status,403);
+  const plain=new URL((await start(c,{action:'login',expectedAccountId:ids.one,returnTo:'admin'})).data.authorizationUrl);
+  assert.equal(plain.origin+plain.pathname,'https://identity.example.test/auth/v1/oauth/authorize','an ordinary login is not wrapped');
+  const started=await start(c,begin);assert.equal(started.status,200);
+  const portal=new URL(started.data.authorizationUrl);
+  assert.equal(portal.origin+portal.pathname,'https://synk.im/id/');assert.deepEqual([...portal.searchParams.keys()],['reauth','next']);assert.equal(portal.searchParams.get('reauth'),'1');
+  const next=new URL(portal.searchParams.get('next'));
+  assert.equal(next.origin+next.pathname,'https://identity.example.test/auth/v1/oauth/authorize');
+  assert.equal(next.searchParams.get('client_id'),'messenger-browser');assert.equal(next.searchParams.get('redirect_uri'),f.app.origin+'/api/synk-id/callback');
+  // 포털이 실제 로그인을 받고 next로 보내면 같은 콜백으로 돌아오고, 그때부터 15분 동안 쓰기가 열린다.
+  const back=await c.request('/api/synk-id/callback?state='+next.searchParams.get('state')+'&code=synthetic-code');
+  assert.equal(back.status,302);assert.equal(back.headers.get('location'),'/?tab=admin&synkConnected=1');
+  assert.equal((await c.request('/api/me')).status,200);
+  assert.equal((await c.request('/api/synk-id/status')).data.reauthNeeded,false);
+  const written=await c.request(grantsPath,{body:createBody()});assert.equal(written.status,200,JSON.stringify(written.data));
+});
+
+test('grant requests accept only each operation\'s keys, explicit confirmation and the server allowlist',async t=>{
+  const {f,calls}=await grantsFixture(t,()=>Response.json({ok:true,rows:[]}));
+  const c=f.client();await c.link(f.admin);await interactive(c);
+  const synkUserId=ids.two,soon=days=>new Date(Date.now()+days*86400000).toISOString();
+  for(const body of [{},{op:'unknown'},{op:'classes.list',page:1},{...listBody,active:true},{...listBody,q:'x'.repeat(81)},{...listBody,page:0},{...listBody,extra:1},{op:'class.people',classId:'not-a-uuid'},
+    {...createBody(),classKey:'Upper Case'},{...createBody(),classKey:'-starts-with-dash'},{...createBody(),test:false},{...createBody(),displayName:' 앞 공백'},{...createBody(),requestId:'not-a-uuid'},
+    {op:'learner.add',classId,synkUserId,requestId:requestA,confirm:true,learnerName:'x'},{op:'audit.list',days:31},
+    {op:'toString'},{op:'constructor'},{op:'__proto__'},{op:'hasOwnProperty'},{op:'valueOf',requestId:requestA,confirm:true}])assert.equal((await c.request(grantsPath,{body})).data.code,'INVALID_GRANT_REQUEST',JSON.stringify(body));
+  const unconfirmed=await c.request(grantsPath,{body:{...createBody(),confirm:'yes'}});assert.equal(unconfirmed.status,400);assert.equal(unconfirmed.data.code,'CONFIRM_REQUIRED');
+  for(const capability of ['admin.member-directory','admin.workspace-grants','admin.workspace-staff']){
+    const denied=await c.request(grantsPath,{body:{op:'entitlement.grant',synkUserId,product:'platform',capability,requestId:requestA,confirm:true}});
+    assert.equal(denied.status,403);assert.equal(denied.data.code,'CAPABILITY_NOT_ALLOWED');
+  }
+  // 마을 체험은 학습 확인 때 자동으로 주므로 주기 · 거두기 모두 막고 까닭을 말한다(중앙 1e7685f7 GA4).
+  for(const op of ['entitlement.grant','entitlement.revoke']){
+    const trial=await c.request(grantsPath,{body:{op,synkUserId,product:'world',capability:'town.access.trial',...(op==='entitlement.grant'?{validUntil:soon(1)}:{}),requestId:requestA,confirm:true}});
+    assert.equal(trial.status,403,op);assert.equal(trial.data.code,'CAPABILITY_NOT_ALLOWED',op);assert.equal(trial.data.error,'마을 체험은 학습 확인 때 자동으로 주어져 여기서 주거나 거둘 수 없어요.');
+  }
+  for(const capability of ['town.access.subscription','town.entry.topik1'])assert.equal((await c.request(grantsPath,{body:{op:'entitlement.grant',synkUserId,product:'world',capability,validUntil:soon(1),requestId:requestA,confirm:true}})).data.code,'CAPABILITY_NOT_ALLOWED');
+  for(const validUntil of [null,soon(200),soon(-1),'2026-12-01',new Date(Date.now()+30_000).toISOString()])
+    assert.equal((await c.request(grantsPath,{body:{op:'entitlement.grant',synkUserId,product:'world',capability:'practice.plus',...(validUntil===undefined?{}:{validUntil}),requestId:requestA,confirm:true}})).data.code,'INVALID_VALID_UNTIL',String(validUntil));
+  assert.equal((await c.request(grantsPath,{body:{op:'entitlement.grant',synkUserId,product:'world',capability:'practice.plus',requestId:requestA,confirm:true}})).data.code,'INVALID_VALID_UNTIL','WORLD needs an expiry');
+  // 달력에 없는 날과 시각은 Date가 다음 날로 넘기기 전에 막는다(중앙과 같다).
+  const year=new Date().getUTCFullYear()+1;
+  for(const validUntil of [`${year}-02-30T14:59:59.000Z`,`${year}-04-31T14:59:59Z`,`${year}-01-10T24:00:00Z`,`${year}-01-10T12:00:60Z`,`${year}-13-01T00:00:00Z`,`${year}-01-10T12:00:00+15:00`]){
+    const refused=await c.request(grantsPath,{body:{op:'entitlement.grant',synkUserId,product:'platform',capability:'library.teacher',validUntil,requestId:requestA,confirm:true}});
+    assert.equal(refused.data.code,'INVALID_VALID_UNTIL',validUntil);assert.match(refused.data.error,/달력에 있는 날짜/);
+  }
+  assert.equal((await c.request(grantsPath,{body:{op:'entitlement.grant',synkUserId,product:'platform',capability:'library.teacher',validUntil:soon(-1),requestId:requestA,confirm:true}})).data.code,'INVALID_VALID_UNTIL','a library expiry must lie ahead');
+  assert.equal(calls.length,0,'rejected input never reaches the central function');
+  const grant={op:'entitlement.grant',synkUserId:synkUserId.toUpperCase(),product:'world',capability:'practice.plus',validUntil:soon(30),requestId:requestA.toUpperCase(),confirm:true};
+  await c.request(grantsPath,{body:grant});
+  assert.deepEqual(calls[0].body,{action:'admin-workspace-grants',op:'entitlement.grant',synkUserId,product:'world',capability:'practice.plus',validUntil:grant.validUntil,requestId:requestA,confirm:true});
+  await c.request(grantsPath,{body:{op:'entitlement.grant',synkUserId,product:'platform',capability:'library.teacher',validUntil:soon(400),requestId:requestA,confirm:true}});
+  assert.equal(calls[1].body.capability,'library.teacher','a library expiry may lie beyond six months');
+  await c.request(grantsPath,{body:{op:'entitlement.grant',synkUserId,product:'platform',capability:'library.teacher',requestId:requestA,confirm:true}});
+  assert.equal(Object.hasOwn(calls[2].body,'validUntil'),false,'an omitted expiry stays omitted');
+  await c.request(grantsPath,{body:{op:'audit.list'}});assert.deepEqual(calls[3].body,{action:'admin-workspace-grants',op:'audit.list'},'audit days default centrally to 7');
+});
+
+test('central answers are shape-checked, unknown fields dropped and error codes passed to the screen',async t=>{
+  let reply;
+  const {f,calls,holdNext}=await grantsFixture(t,(body,init)=>reply(body,init));
+  const c=f.client();await c.link(f.admin);await interactive(c);
+  const post=body=>c.request(grantsPath,{body});
+  reply=()=>page([{...classRow,secret:'omit'}]);
+  const listed=await post(listBody);assert.equal(listed.status,200);assert.deepEqual(listed.data,{ok:true,op:'classes.list',total:1,page:1,pageSize:25,rows:[classRow]});
+  for(const bad of [{total:2,rows:[classRow]},{page:2,rows:[classRow]},{rows:[{...classRow,id:'x'}]},{rows:[{...classRow,teachers:-1}]},{op:'class.people'},{ok:false}]){
+    reply=()=>Response.json({ok:true,op:'classes.list',total:1,page:1,pageSize:25,rows:[classRow],...bad});const response=await post(listBody);
+    assert.equal(response.status,503,JSON.stringify(bad));assert.equal(response.data.code,'GRANTS_UNAVAILABLE');assert.equal(response.data.retryable,true);
+  }
+  const teacher={staffId:ids.two,synkUserId:ids.two,name:'합성 교사',role:'teacher',active:true,assignedAt:'2026-11-21T01:00:00.000Z',email:'omit@example.test'};
+  const learner={learnerId:requestA,studentCode:'SYNK-1043',active:true,linked:false,synkUserId:null,accountStatus:null,name:null,enrolledAt:null,test:true,transcript:'omit'};
+  reply=()=>Response.json({ok:true,op:'class.people',class:{...classView,createdAt:'2026-11-21T10:00:00+00:00'},teachers:[teacher],learners:[learner]});
+  const people=await post({op:'class.people',classId});assert.equal(people.status,200);
+  assert.equal(JSON.stringify(people.data).includes('omit'),false);assert.equal(people.data.learners[0].studentCode,'SYNK-1043');assert.equal(people.data.learners[0].linked,false);
+  reply=()=>Response.json({ok:true,op:'audit.list',days:7,rows:[{id:'17',at:'2026-11-21T01:00:00.000Z',op:'learner.add',outcome:'rejected',code:'CLASS_NOT_FOUND',actorSynkUserId:ids.one,targetSynkUserId:ids.two,classId,learnerId:null,staffId:null,entitlementRef:null}]});
+  assert.equal((await post({op:'audit.list',days:7})).data.rows[0].code,'CLASS_NOT_FOUND');
+  reply=()=>Response.json({ok:true,op:'entitlements.list',synkUserId:ids.two,rows:[{product:'world',capability:'practice.plus',source:'billing',validFrom:null,validUntil:null,revokedAt:null,active:true,editable:false}]});
+  const listedEnts=(await post({op:'entitlements.list',synkUserId:ids.two})).data;
+  assert.equal(listedEnts.choices.length,8);assert.ok(!listedEnts.choices.some(row=>row.capability==='town.access.trial'),'the trial is never offered');
+  assert.deepEqual(listedEnts.viewOnly.map(row=>row.capability),['town.access.trial']);
+  // 중앙이 이 도구 밖 권한을 CAPABILITY_NOT_ALLOWED로 거절해도 같은 까닭을 말한다.
+  reply=()=>Response.json({ok:false,error:{code:'CAPABILITY_NOT_ALLOWED'}},{status:403});
+  const centralRefused=await post({op:'entitlement.revoke',synkUserId:ids.two,product:'platform',capability:'library.teacher',requestId:'55555555-5555-4555-8555-0000000000d1',confirm:true});
+  assert.equal(centralRefused.status,403);assert.equal(centralRefused.data.code,'CAPABILITY_NOT_ALLOWED');assert.equal(centralRefused.data.error,'여기서 주거나 거둘 수 없는 권한이에요.');
+  const add={op:'learner.add',classId,synkUserId:ids.two,requestId:requestA,confirm:true};
+  reply=body=>applied(body,{classId,learnerId:requestA,studentCode:'SYNK-1044',change:'moved',fromClassId:ids.one,sharing:{enabled:false,revision:'3'}});
+  const moved=await post({...add,move:true});assert.equal(moved.status,200);assert.equal(moved.data.change,'moved');assert.equal(moved.data.fromClassId,ids.one);
+  reply=body=>Response.json({ok:true,op:body.op,requestId:body.requestId,outcome:'duplicate',classId,learnerId:requestA,studentCode:'SYNK-1044',change:'none',replayed:true});
+  const replay=await post(add);assert.equal(replay.status,200);assert.equal(replay.data.replayed,true);
+  // 반이 비어 있던 명부 줄을 같은 번호로 넣으면 change는 assigned다(82eecb2f).
+  reply=body=>applied(body,{classId,learnerId:requestA,studentCode:'SYNK-1043',change:'assigned'});
+  const assigned=await post({...add,requestId:'55555555-5555-4555-8555-0000000000a1'});assert.equal(assigned.status,200);assert.equal(assigned.data.change,'assigned');
+  for(const bad of [{requestId:ids.one},{outcome:'created'},{change:'invented'},{op:'learner.remove'}]){
+    reply=body=>applied(body,{classId,learnerId:requestA,studentCode:null,change:'created',...bad});assert.equal((await post(add)).status,503,JSON.stringify(bad));
+  }
+  const cases=[
+    [401,{code:'REAUTH_REQUIRED'},409,'REAUTH_REQUIRED'],
+    [401,{code:'AUTH_REQUIRED'},403,'GRANTS_FORBIDDEN'],
+    [403,{code:'GRANTS_FORBIDDEN'},403,'GRANTS_FORBIDDEN'],
+    [403,{code:'PRODUCT_FORBIDDEN'},403,'GRANTS_FORBIDDEN'],
+    [409,{code:'ACCOUNT_ALREADY_ENROLLED',classId,className:'옛 오전반',email:'omit'},409,'ACCOUNT_ALREADY_ENROLLED'],
+    [409,{code:'REQUEST_CONFLICT'},409,'REQUEST_CONFLICT'],
+    [409,{code:'CLASS_INACTIVE'},409,'CLASS_INACTIVE'],
+    [409,{code:'TARGET_CHANGED'},409,'TARGET_CHANGED'],
+    [409,{code:'STAFF_INACTIVE'},409,'STAFF_INACTIVE'],
+    [429,{code:'DAILY_LIMIT',limit:5},429,'DAILY_LIMIT'],
+    [404,{code:'LEARNER_NOT_FOUND'},404,'LEARNER_NOT_FOUND'],
+    [400,{code:'INVALID_GRANT_REQUEST'},400,'INVALID_GRANT_REQUEST'],
+    [426,{code:'CONTRACT_UNSUPPORTED'},503,'CONTRACT_UNSUPPORTED'],
+    [409,{code:'lowercase bad'},503,'GRANTS_UNAVAILABLE'],
+    [500,{code:'INTERNAL'},503,'GRANTS_UNAVAILABLE'],
+    [503,{code:'GRANTS_UNAVAILABLE'},503,'GRANTS_UNAVAILABLE'],
+  ];
+  for(const [status,error,expected,code] of cases){
+    reply=()=>Response.json({ok:false,error},{status});const response=await post(add);
+    assert.equal(response.status,expected,code);assert.equal(response.data.code,code);
+    if(code==='ACCOUNT_ALREADY_ENROLLED')assert.deepEqual(response.data.details,{classId,className:'옛 오전반'});
+    if(code==='DAILY_LIMIT'){assert.deepEqual(response.data.details,{limit:5});assert.match(response.data.error,/5번까지/);}
+    if(code==='REAUTH_REQUIRED')assert.deepEqual(response.data.details,{source:'central'});
+  }
+  reply=()=>{throw Object.assign(new Error('timeout'),{name:'TimeoutError'});};
+  const timedOut=await post(add);assert.equal(timedOut.status,503);assert.equal(timedOut.data.retryable,true);
+  reply=()=>new Response('not json',{status:200});assert.equal((await post(add)).status,503);
+  const rejected=f.app.store.all('audit').filter(row=>row.action==='synk-grant'&&row.result!=='ok');
+  assert.ok(rejected.length>=10);assert.ok(rejected.every(row=>!JSON.stringify(row).includes('@')));
+  assert.equal(new Set(rejected.map(row=>row.result)).size,rejected.length,'one request number keeps one row per outcome');
+  assert.ok(!rejected.some(row=>row.result==='REAUTH_REQUIRED'),'a central re-login request is not an administrator action');
+  // 반 재전송은 지금 이름을 싣고(없어진 반이면 null), 원장 줄 빼기는 닫지 않고 unassigned다.
+  const setActive=requestId=>({op:'class.setActive',classId,active:true,requestId,confirm:true});
+  reply=body=>Response.json({ok:true,op:body.op,requestId:body.requestId,outcome:'applied',class:{...classView,displayName:'지금 이름'},replayed:true});
+  const renamed=await post(setActive('55555555-5555-4555-8555-0000000000b1'));assert.equal(renamed.status,200);assert.equal(renamed.data.class.displayName,'지금 이름');assert.equal(renamed.data.replayed,true);
+  reply=body=>Response.json({ok:true,op:body.op,requestId:body.requestId,outcome:'applied',class:{...classView,displayName:null},replayed:true});
+  assert.equal((await post(setActive('55555555-5555-4555-8555-0000000000b2'))).data.class.displayName,null);
+  reply=body=>applied(body,{classId,staffId:ids.two,change:'unassigned',invitesRemoved:0});
+  assert.equal((await post({op:'teacher.remove',classId,staffId:ids.two,requestId:'55555555-5555-4555-8555-0000000000b3',confirm:true})).data.change,'unassigned');
+  // ENTITLEMENT_NOT_EDITABLE은 주기와 거두기 모두에서 나고, 화면 문장은 op마다 다르다. ENTITLEMENT_CONFLICT는 반영하지 못한 경우다.
+  const ent=(op,requestId)=>({op,synkUserId:ids.two,product:'platform',capability:'library.teacher',requestId,confirm:true});
+  reply=()=>Response.json({ok:false,error:{code:'ENTITLEMENT_NOT_EDITABLE'}},{status:409});
+  const grantRefused=await post(ent('entitlement.grant','55555555-5555-4555-8555-0000000000c1'));
+  assert.equal(grantRefused.status,409);assert.equal(grantRefused.data.code,'ENTITLEMENT_NOT_EDITABLE');assert.match(grantRefused.data.error,/여기서 줄 수 없어요/);
+  const revokeRefused=await post(ent('entitlement.revoke','55555555-5555-4555-8555-0000000000c2'));
+  assert.equal(revokeRefused.data.code,'ENTITLEMENT_NOT_EDITABLE');assert.match(revokeRefused.data.error,/여기서 거둘 수 없어요/);
+  reply=()=>Response.json({ok:false,error:{code:'ENTITLEMENT_CONFLICT'}},{status:409});
+  assert.match((await post(ent('entitlement.grant','55555555-5555-4555-8555-0000000000c3'))).data.error,/반영하지 못했어요/);
+  // 응답 사이에 회사 역할이 바뀌면 결과를 넘기지 않는다.
+  const held=holdNext();
+  reply=()=>page([classRow]);
+  const pending=post(listBody);
+  await held.started;assert.equal(calls.at(-1).body.op,'classes.list');
+  f.app.store.put('users',f.admin.id,{...f.app.store.get('users',f.admin.id),role:'member'});held.release();
+  const changed=await pending;assert.equal(changed.status,403);assert.equal(changed.data.rows,undefined);
+});
+
+test('company daily limits, audit rows, replays and owner alerts follow each write',async t=>{
+  const seen=new Set();
+  const {f,calls}=await grantsFixture(t,body=>{const replayed=seen.has(body.requestId);seen.add(body.requestId);return Response.json({ok:true,op:body.op,requestId:body.requestId,outcome:'applied',classId,staffId:ids.two,role:'teacher',change:'assigned',...(replayed?{replayed:true}:{})});});
+  await f.restart();
+  assert.equal(f.app.store.get('settings','workspaceOwner').userId,f.admin.id,'boot records the only active administrator as owner');
+  const c=f.client();await c.link(f.admin);await interactive(c);
+  const teacher=index=>({op:'teacher.add',classId,synkUserId:ids.two,requestId:`aaaaaaaa-aaaa-4aaa-8aaa-${String(index).padStart(12,'0')}`,confirm:true});
+  for(let i=1;i<=5;i++)assert.equal((await c.request(grantsPath,{body:teacher(i)})).status,200);
+  const limited=await c.request(grantsPath,{body:teacher(6)});assert.equal(limited.status,429);assert.equal(limited.data.code,'DAILY_LIMIT');
+  assert.equal(calls.length,5,'the company limit stops before the central call');
+  const replay=await c.request(grantsPath,{body:teacher(3)});assert.equal(replay.status,200,'the same request may be resent');assert.equal(replay.data.replayed,true);
+  const rows=f.app.store.all('audit').filter(row=>row.action==='synk-grant');
+  assert.equal(rows.filter(row=>row.result==='ok').length,5,'a replay is not written twice');
+  assert.ok(rows.filter(row=>row.result==='ok').every(row=>row.outcome==='applied'&&row.change==='assigned'));
+  assert.equal(rows.filter(row=>row.result==='DAILY_LIMIT').length,1);
+  assert.deepEqual(Object.keys(rows[0].targets).sort(),['classId','entitlement','learnerId','staffId','synkUserId']);
+  const alerts=f.app.store.all('ownerAlerts');
+  assert.equal(alerts.length,6);assert.ok(alerts.every(row=>row.ownerId===f.admin.id));
+  assert.ok(alerts.some(row=>row.text.includes('선생님 넣기를 했어요'))&&alerts.some(row=>row.text.includes('까닭: 오늘 할 수 있는 횟수를 다 썼어요.')));
+  assert.ok(alerts.every(row=>!/DAILY_LIMIT|[A-Z]{4,}_[A-Z]/.test(row.text)),'owner alerts never show internal codes');
+  const notifications=(await c.request('/messenger/api/notifications')).data;
+  const mine=(notifications?.items||[]).filter(row=>row.kind==='admin_grant');
+  assert.equal(mine.length,6);assert.ok(mine.every(row=>row.href==='/?tab=admin'&&!row.readAt));
+  assert.equal((await c.request('/messenger/api/notifications/'+encodeURIComponent(mine[0].id)+'/read',{body:{}})).status,200);
+  assert.ok(f.app.store.get('ownerAlerts',mine[0].id.slice('owner-alert:'.length)).readAt);
+  const staff=f.client();await staff.login(f.staff);
+  assert.equal(((await staff.request('/messenger/api/notifications')).data?.items||[]).filter(row=>row.kind==='admin_grant').length,0,'only the owner sees administrator alerts');
+  // 이미 되어 있던 일(duplicate)은 상한에 세지 않는다.
+  for(const row of f.app.store.all('audit').filter(item=>item.action==='synk-grant'&&item.result==='ok').slice(0,1))f.app.store.put('audit',row.id,{...row,outcome:'duplicate'});
+  assert.equal((await c.request(grantsPath,{body:teacher(8)})).status,200,'a duplicate does not use the daily limit');
+  // 회사 상한은 회사 시계로 최근 24시간을 센다. 기록 시각을 25시간 앞으로 옮기면 다시 열린다.
+  for(const row of f.app.store.all('audit').filter(item=>item.action==='synk-grant'))f.app.store.put('audit',row.id,{...row,at:new Date(Date.now()-25*3600_000).toISOString()});
+  assert.equal((await c.request(grantsPath,{body:teacher(7)})).status,200,'the limit counts the last 24 hours');
+});
+
+test('a write whose answer was lost is recorded once it is confirmed with the same request number, and owner alerts read plainly',async t=>{
+  let mode='lost';const applied=new Set();
+  const {f}=await grantsFixture(t,body=>{
+    const replayed=applied.has(body.requestId);applied.add(body.requestId);
+    if(mode==='lost')throw Object.assign(new Error('timeout'),{name:'TimeoutError'});
+    if(mode==='refuse')return Response.json({ok:false,error:{code:'ENTITLEMENT_NOT_EDITABLE'}},{status:409});
+    if(body.op==='entitlement.grant')return Response.json({ok:true,op:body.op,requestId:body.requestId,outcome:'applied',synkUserId:body.synkUserId,entitlement:{product:body.product,capability:body.capability,validUntil:body.validUntil,revokedAt:null,active:true},change:'granted',...(replayed?{replayed:true}:{})});
+    return Response.json({ok:true,op:body.op,requestId:body.requestId,outcome:'applied',classId,staffId:ids.two,role:'teacher',change:'assigned',...(replayed?{replayed:true}:{})});
+  });
+  await f.restart();
+  const c=f.client();await c.link(f.admin);await interactive(c);
+  const add={op:'teacher.add',classId,synkUserId:ids.two,requestId:'bbbbbbbb-bbbb-4bbb-8bbb-000000000001',confirm:true};
+  const lost=await c.request(grantsPath,{body:add});assert.equal(lost.status,503);assert.equal(lost.data.code,'GRANTS_UNAVAILABLE');
+  assert.equal((await c.request(grantsPath,{body:add})).status,503,'a second lost answer adds nothing new');
+  mode='ok';
+  const confirmed=await c.request(grantsPath,{body:add});assert.equal(confirmed.status,200);assert.equal(confirmed.data.replayed,true);
+  assert.equal((await c.request(grantsPath,{body:add})).status,200);
+  const rows=f.app.store.all('audit').filter(row=>row.action==='synk-grant'&&row.requestId===add.requestId);
+  assert.deepEqual(rows.map(row=>row.result).sort(),['GRANTS_UNAVAILABLE','ok'],'the confirmed write is recorded once, after the lost answer');
+  assert.equal(rows.find(row=>row.result==='ok').outcome,'applied');
+  let alerts=f.app.store.all('ownerAlerts');
+  assert.equal(alerts.length,2);
+  assert.ok(alerts.some(row=>row.text.includes('선생님 넣기 요청은 결과를 확인하지 못했어요')&&row.text.includes('이미 반영됐을 수도 있어요')));
+  assert.ok(alerts.some(row=>row.text.includes('선생님 넣기를 했어요')));
+  assert.ok(alerts.every(row=>!row.text.includes('거절됐어요')&&!row.text.includes('GRANTS_UNAVAILABLE')));
+  // 이름의 제어 · 방향 글자는 빼고 긴 이름은 줄인다. 이용 권한은 화면의 이름으로 적는다.
+  f.app.store.put('users',f.admin.id,{...f.app.store.get('users',f.admin.id),name:'관리자'+String.fromCharCode(0x202e)+'<b>'+'가'.repeat(60)});
+  const grant={op:'entitlement.grant',synkUserId:ids.two,product:'world',capability:'practice.plus',validUntil:new Date(Date.now()+30*86400000).toISOString(),requestId:'bbbbbbbb-bbbb-4bbb-8bbb-000000000002',confirm:true};
+  assert.equal((await c.request(grantsPath,{body:grant})).status,200);
+  alerts=f.app.store.all('ownerAlerts');const text=alerts.find(row=>row.text.includes('이용 권한 주기')).text;
+  assert.ok(text.includes('(WORLD 연습 더하기)'),text);assert.ok(!text.includes('world.practice.plus'));
+  assert.ok(!text.includes(String.fromCharCode(0x202e)));
+  assert.equal(text.split(' 님')[0],'관리자<b>'+'가'.repeat(33)+'…','a long name is cut to 40 characters');
+  // 거절 까닭은 op에 맞는 첫 문장이다(주기의 ENTITLEMENT_NOT_EDITABLE).
+  mode='refuse';
+  assert.equal((await c.request(grantsPath,{body:{...grant,requestId:'bbbbbbbb-bbbb-4bbb-8bbb-000000000003'}})).status,409);
+  assert.ok(f.app.store.all('ownerAlerts').some(row=>row.text.includes('이용 권한 주기 요청이 거절됐어요 (WORLD 연습 더하기). 까닭: 같은 권한이 결제나 운영에서 준 줄로 있어 여기서 줄 수 없어요.')));
+});
+
+test('a promoted administrator\'s SYNK ID is refused by the central grants and member directory',async t=>{
+  const {f}=await grantsFixture(t,(body,init)=>init.headers.Authorization==='Bearer '+access.two?Response.json({ok:false,error:{code:body.action==='admin-member-directory'?'DIRECTORY_FORBIDDEN':'GRANTS_FORBIDDEN'}},{status:403}):page());
+  const second=f.app.store.createUser({name:'올린 관리자',email:'second-admin@example.test',password,role:'admin'});
+  const c=f.client();await c.link(second,access.two);await interactive(c,{expected:ids.two,code:'second-code'});
+  const grants=await c.request(grantsPath,{body:listBody});assert.equal(grants.status,403);assert.equal(grants.data.code,'GRANTS_FORBIDDEN');
+  assert.equal((await c.request('/api/admin/member-directory/synk',{body:{q:'',page:1,status:'all'}})).status,403);
 });

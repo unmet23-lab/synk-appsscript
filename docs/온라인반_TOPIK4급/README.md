@@ -87,12 +87,12 @@
 <a id="open-class"></a>
 ## 개강 준비 — 운영에 반 한 개 세우기
 
-2026-10-22 반 리허설([첫 연락 준비 목록 4절](../../experiences/lab-topik4/첫연락_준비목록.md#rehearsal))에서 정리했다. 반·교사 배정·명부를 만드는 화면이나 API는 아직 없다. 그래서 관리자가 운영 DB(talk 프로젝트)에 SQL로 넣고, 학생은 교사가 낸 연결 코드로 WORLD에서 자기 명부 줄에 들어온다. 운영 DB 쓰기라 유호님 허락 뒤 한 트랜잭션으로 한다. 실제 학생 이름·메일은 이 저장소에 적지 않는다.
+2026-10-22 반 리허설([첫 연락 준비 목록 4절](../../experiences/lab-topik4/첫연락_준비목록.md#rehearsal))에서 정리했다. 반, 교사 배정, 명부는 이제 대표가 Workspace 관리자 화면의 「반」 칸에서 할 수 있다. 이 화면은 2026-11-21에 구현을 마쳤고, 운영 반영 뒤부터 쓴다([관리자 화면](../마케팅/온라인마케팅지도/engagement/company/WORKSPACE_ACCESS.md#workspace-admin-grants)). 그 화면에서는 학생을 연결 코드 없이 바로 넣을 수 있다. 학생이 교사가 낸 연결 코드로 WORLD에서 자기 명부 줄에 들어오는 길도 그대로다. 아래 SQL 길은 운영 반영 전과 비상용으로 남긴다. SQL은 운영 DB 쓰기라 유호님 허락 뒤 한 트랜잭션으로 한다. 실제 학생 이름·메일은 이 저장소에 적지 않는다.
 
 | 차례 | 누가 | 무엇 |
 |---|---|---|
 | 1 | 학생·교사 | SYNK ID 가입(synk.im/world에서 Google 또는 이메일). 교사는 회사 워크스페이스 「내 수업」(`workspace.synk.im/?tab=teaching`)에 그 SYNK ID로 들어온다 |
-| 2 | 관리자(SQL) | 반(`engine.classes`), 교사(`engine.staff` — 교사 SYNK ID의 `auth.users` id, role `teacher`)와 반 배정(`engine.staff_classes`), 명부(`engine.learners` — 학생마다 한 줄, 계정 칸은 비워 둔다) |
+| 2 | 대표(관리자 화면 「반」) · 비상시 관리자(SQL) | 반(`engine.classes`), 교사(`engine.staff` — 교사 SYNK ID의 `auth.users` id, role `teacher`)와 반 배정(`engine.staff_classes`), 명부(`engine.learners` — 학생마다 한 줄, 계정 칸은 비워 둔다) |
 | 3 | 관리자(SQL) | 수업 영상 문: 반 영상 설정(`engine.classroom_channels`, 일부공개)과 학생마다 이용권(`engine.classroom_access`, 기수 기간). 「내 반 연결」로는 생기지 않는다 |
 | 4 | 관리자 | classroom-sync 비밀 `CLASSROOM_SYNC_KEYS`에 이 반 키(32자 이상)를 더하고, 교실 PC 설정은 [config.online.example.json](../../tools/classroom-media/config.online.example.json)의 `REPLACE_` 값과 환경변수(`SYNK_SUPABASE_ANON_KEY`·반 키)로 채운다([교실 송출 도구](../../tools/classroom-media/README.md#최초-연결)) |
 | 5 | 교사 | 「04 주차 과제 첨삭」에서 반 시작일(1주차 토요일)과 8주로 「과제 열기」 — 그 순간 반 학생 WORLD에 「이번 주 과제」가 열린다 |
@@ -114,7 +114,7 @@ commit;
 ```
 
 - 교사 role은 `teacher`나 `director`여야 반 기능이 열린다. 이미 그 SYNK ID에 직원 줄이 있으면 role만 확인한다.
-- 한 SYNK ID는 명부 한 줄에만 이어진다(`ACCOUNT_ALREADY_ENROLLED`). 다음 기수에 같은 학생이 오면 새 줄이 아니라 그 줄의 `class_id`를 옮길지 그때 정한다.
+- 한 SYNK ID는 명부 한 줄에만 이어진다(`ACCOUNT_ALREADY_ENROLLED`). 다음 기수에 같은 학생이 오면 새 줄을 만들지 않고 그 줄을 옮긴다. 관리자 화면의 학생 넣기가 확인 창을 거쳐 옮긴다. 옮기면 옛 반의 수업 영상 이용은 멈추므로 새 반 이용권은 위 표의 차례 3으로 다시 준다.
 - 기수가 끝나면 이용권 `ends_at`이 지난 뒤 [기수 마치기](../../tools/classroom-media/README.md#close-cohort)로 그 반 영상을 비공개로 돌린다.
 
 <a id="check"></a>

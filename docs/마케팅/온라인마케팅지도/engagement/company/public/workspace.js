@@ -469,6 +469,7 @@ window.addEventListener('message',event=>{
   if(event.origin!==location.origin||event.source!==workspaceModule.frame?.contentWindow||!event.data||typeof event.data!=='object')return;
   const type=event.data.type;
   if(type==='messenger:device-notifications'){if(state.user)void window.SynkDeviceNotifications?.open();return;}
+  if(type==='messenger:admin-open'){if(state.user&&isAdmin()){selectWorkspaceView('admin');render();window.scrollTo(0,0);}return;}
   if(type==='messenger:social-open'){if(state.user&&state.tab==='messenger'&&typeof openSocialWorkspace==='function')openSocialWorkspace('queue');return;}
   if(type==='messenger:automation-open'){
     if(state.user&&state.tab==='messenger'){if(typeof wrIdentity==='function')wrIdentity();makerTools.view='automation';selectWorkspaceView('workroom','tools');render();makerToolsEnsure();}

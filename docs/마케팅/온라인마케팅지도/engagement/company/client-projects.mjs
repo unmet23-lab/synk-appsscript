@@ -1,4 +1,5 @@
 import {hasWorkspaceFeature,requireWorkspaceFeature} from './workspace-access.mjs';
+import {workspaceOwner} from './workspace-owner.mjs';
 import {randomUUID,randomBytes,createHash} from 'node:crypto';
 import {withTranslation} from './pulse-translations.mjs';
 import {appendClientNotificationEvents} from './client-notifications.mjs';
@@ -114,7 +115,8 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
   }
   // 공개 의뢰서를 보냈을 때 서버가 스스로 만드는 프로젝트(2026-11-04). 직원 계정 없이 도는 유일한 생성 길이라 입력은 pulse-requests.mjs에서 검사한 값만 받는다.
   // 담당자는 설정값(pulseRequestSettings), 없으면 가장 먼저 만든 활성 관리자다. 담당자가 있어야 새 의뢰 알림이 간다.
-  function requestOwner(){const settings=store.get('pulseRequestSettings','main'),picked=settings?.ownerId&&store.get('users',settings.ownerId);if(canAssign(picked))return picked;const admin=store.all('users').filter(user=>user.active&&user.role==='admin').sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)))[0];if(!admin)throw fail('지금은 의뢰를 받을 수 없어요. hello@synk.im으로 알려 주세요.',409);return admin;}
+  // 설정에 담당자가 없으면 회사 주인, 주인도 맡을 수 없으면 가장 먼저 만든 활성 관리자다(관리자 직접부여 설계 4절).
+  function requestOwner(){const settings=store.get('pulseRequestSettings','main'),picked=settings?.ownerId&&store.get('users',settings.ownerId);if(canAssign(picked))return picked;const owner=workspaceOwner(store);if(owner)return owner;const admin=store.all('users').filter(user=>user.active&&user.role==='admin').sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt)))[0];if(!admin)throw fail('지금은 의뢰를 받을 수 없어요. hello@synk.im으로 알려 주세요.',409);return admin;}
   // 내 모델 다시 쓰기 의뢰(판 4, 설계 3-3): ownerId는 그 브랜드 담당(일하는 직원일 때만 — 아니면 지금처럼 requestOwner), workspaceRequest는 붙임을 옮겨 적은 것(직원이 접수 때 확인한다).
   function createFromRequest(input){
     const chosen=input.ownerId?store.get('users',input.ownerId):null,owner=canAssign(chosen)?chosen:requestOwner(),at=clock(),raw=randomBytes(32).toString('base64url'),expiresAt=new Date(Date.parse(at)+INVITE_DAYS*86400000).toISOString();
