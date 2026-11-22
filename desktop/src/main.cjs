@@ -111,7 +111,7 @@ const appLocation=createMacApplicationLocationGate({app,dialog,platform:process.
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
 // Workspace 로그인의 Suite 따라가기를 500ms 틈 없이 지금 플랫폼 기록에 묶는다. 묶지 않으면 계정을 바꾼 직후 새 계정의 뷰가 앞 계정의 로그인 상태와 계정 정보를 받는다(4단계 설계 검토 R2).
 // 따라가기를 아직 만들지 않았거나 닫은 뒤에 불려도 다음 따라가기가 다시 본다
-function followWorkspaceNow(){try{void workspaceFollower?.refresh();}catch{}}
+function followWorkspaceNow(){try{void workspaceFollower?.refresh();}catch{}try{workspaceTeacher?.refresh();}catch{}}
 function publishAuthState(state){chatgptConnection?.accountChanged();careNotifications?.syncAccount();pulseApp?.syncContext(state);followWorkspaceNow();workspaceApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
@@ -628,7 +628,10 @@ function ensureWorkspaceTeacher(){
   if(runtime.clientId!=='platform'||smoke||!runtime.auth?.clients?.teacher||!suiteStore||quittingRequested)return null;
   let config=null;try{config=configuration(runtime.auth,'teacher',runtime.mode);}catch{return null;}
   const signInReturn=createSignInReturn();
-  workspaceTeacher=createWorkspaceTeacher({config,directory:path.join(app.getPath('userData'),'WorkspaceTeacher'),scope:current.sessionScope+'.workspace-teacher',safeStorage,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),getDevice:()=>suiteDeviceId,onChange:state=>{workspaceApp?.publishTeacherAuth(state);if(signInReturn(state))bringToFront(window,{app});},suiteStore,createTokenStore,createAuthService,createSuiteFollower});
+  workspaceTeacher=createWorkspaceTeacher({config,directory:path.join(app.getPath('userData'),'WorkspaceTeacher'),scope:current.sessionScope+'.workspace-teacher',safeStorage,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),getDevice:()=>suiteDeviceId,
+    // 교사 로그인은 지금 플랫폼 계정의 것만 보이고 쓰인다(GPT pc-retire-workspace-20261123 GA1)
+    getPlatformAccount:()=>{const state=accountStatus();return state?.signedIn===true&&state.status==='signed-in'?state.account?.synk_user_id||null:null;},
+    onChange:state=>{workspaceApp?.publishTeacherAuth(state);if(signInReturn(state))bringToFront(window,{app});},suiteStore,createTokenStore,createAuthService,createSuiteFollower});
   return workspaceTeacher;
 }
 const WORKSPACE_TEACHER_NONE=Object.freeze({configured:false,signedIn:false,status:'unconfigured',sessionGeneration:0,account:null,error:null});
