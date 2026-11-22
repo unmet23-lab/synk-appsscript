@@ -131,6 +131,9 @@ function ensureFilm() {
     onState(event) { if (event.state === 'error' || event.state === 'blocked') filmFailed(); },
     onEnded(event) { clipEnded(event.id); },
   });
+  // The player paints its stage black. Until a clip's first frame is on screen the place photo below should
+  // show instead: the clip starts from that same picture, so the learner sees no black gap.
+  const stage = $('film-stage').querySelector('.film-player'); if (stage) stage.style.background = 'transparent';
   return film;
 }
 /** A clip that fails to load or play must not stop the day: this run goes on with photographs and
@@ -171,6 +174,12 @@ async function startListening(state) {
   if (!film || !id || !canPlay(id)) return;
   try { if (film.current) await film.queue(id, { loop: true }); else await film.play(id, { loop: true }); }
   catch { /* the last frame of the line stays on screen */ }
+}
+
+/** 「장면 하나에 2~3분쯤 걸려요.」 from the scene table, so each job says its own time. */
+function sceneMinutesText() {
+  const minutes = job.scenes.map((scene) => scene.minutes), low = Math.min(...minutes), high = Math.max(...minutes);
+  return `장면 하나에 ${low === high ? low : `${low}~${high}`}분쯤 걸려요.`;
 }
 
 /* ---------- place and fade ---------- */
@@ -427,8 +436,8 @@ function leave() {
 const hintOf = (value) => (hintLanguage && value?.[hintLanguage]) || '';
 const TOOL_NAMES = Object.freeze({ screen: '업무 화면', paper: '서류', phone: '전화', chat: '채팅' });
 const CHANNEL_NAMES = Object.freeze({ phone: '전화', chat: '채팅' });
-/** 「님께」 after a name, or only 「께」 when it already ends in 님 (「1208호 손님께」). */
-const honorTo = (name) => (/님$/.test(String(name || '').trim()) ? '께' : '님께');
+/** 「 님께」 after a name (님 after a name is written apart: 「Sarangerel 님께」), or only 「께」 when it already ends in 님 (「1208호 손님께」). */
+const honorTo = (name) => (/님$/.test(String(name || '').trim()) ? '께' : ' 님께');
 /** relay out: Korean words said on to a guest in the learner's own language. Nothing is transcribed. */
 const outward = (say) => say?.kind === 'relay' && say.direction === 'out';
 /** The example a turn offers: Korean, or for relay out the same words in the learner's language. */
@@ -542,7 +551,7 @@ function render() {
 }
 function renderSetup(state) {
   const started = state.progress.anyDone, upNext = state.progress.scenes.find(openScene);
-  setText('status', state.progress.allDone ? '장면을 모두 마쳤어요. 맺음에서 체험 기록을 받을 수 있어요.' : started ? '하던 곳부터 이어서 할 수 있어요. 다른 사람이 하던 것이면 「처음부터 새로 하기」를 눌러요.' : '의자에 앉아서 시작해요. 장면마다 2~3분쯤 걸려요.');
+  setText('status', state.progress.allDone ? '장면을 모두 마쳤어요. 맺음에서 체험 기록을 받을 수 있어요.' : started ? '하던 곳부터 이어서 할 수 있어요. 다른 사람이 하던 것이면 「처음부터 새로 하기」를 눌러요.' : `의자에 앉아서 시작해요. ${sceneMinutesText()}`);
   // The voice model may still be downloading: answering in writing can start at once, as the hint says.
   $('start').disabled = checkingMic || (preparingVoice && mode === 'voice');
   $('preview').disabled = checkingMic;
@@ -895,7 +904,7 @@ function hudView(state) {
     const hint = hintShown ? [hintOf(say.hint), hintOf(chosen?.hint), ...selectedHints].filter(Boolean).join(' ') : '';
     const out = outward(say), shown = exampleOf(say);
     const example = say.exampleOpen && shown ? `${say.kind === 'fork' ? '이 선택의 말' : '예시'}: ${shown.text}` : '';
-    const lead = micNote && !micActive ? micNote : heard ? `들린 말: ${heard}` : !canSpeak && !out && (say.kind !== 'fork' || say.chosen) ? '이 보기에서는 말로만 답해요. 글로 답하려면 화면으로 돌아가요.' : chosen && !example ? `고른 것: ${chosen.label}` : '';
+    const lead = micNote && !micActive ? micNote : heard ? `들린 말: ${heard}` : !canSpeak && !out && (say.kind !== 'fork' || say.chosen) ? (mode === 'voice' ? `한국어 음성 준비가 아직 안 됐어요. 「${leaveWords().button}」를 누르고 시작 화면에서 준비해요.` : '이 보기에서는 말로만 답해요. 글로 답하려면 화면으로 돌아가요.') : chosen && !example ? `고른 것: ${chosen.label}` : '';
     const foreignLine = out ? `${nameOf(say.foreign).text}${honorTo(nameOf(say.foreign).text)} 전할 말: ${say.meaning}` : say.kind === 'relay' ? `${nameOf(say.foreign).text}: ${foreignOf(say.foreign).text}` : '';
     view.body = [foreignLine, lead, example, hint].filter(Boolean).join('\n');
     if (say.kind === 'fork' && !say.chosen) for (const option of say.options) main(`opt:${option.id}`, option.label);

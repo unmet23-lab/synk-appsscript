@@ -151,7 +151,8 @@ function main() {
       const offset = brightnessOffset(reference, grayFrame(source, 0.04, cropFilter), place.live);
       const eq = Math.abs(offset) >= 1 && Math.abs(offset) <= 12 ? `eq=brightness=${(-offset / 255).toFixed(4)},` : '';
       run('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', source, '-vf', `${cropFilter ? `${cropFilter},` : ''}scale=${WIDTH}:${HEIGHT}:flags=lanczos,${eq}format=yuv420p`,
-        '-c:v', 'libx264', '-profile:v', 'high', '-crf', '21', '-preset', 'slow', '-movflags', '+faststart', ...(silent ? ['-an'] : ['-c:a', 'aac', '-b:a', '128k', '-ac', '2']), target]);
+        // -map_metadata -1: the source's tags (handler 「ISO Media file produced by Google Inc.」) are not carried over.
+        '-map_metadata', '-1', '-map_chapters', '-1', '-c:v', 'libx264', '-profile:v', 'high', '-crf', '21', '-preset', 'slow', '-movflags', '+faststart', ...(silent ? ['-an'] : ['-c:a', 'aac', '-b:a', '128k', '-ac', '2']), target]);
       const info = probe(target);
       if (!silent && !info.audio) throw new Error(`${id}: 말하는 영상에 소리 줄기가 없어요.`);
       const quiet = silent ? [] : quietSpans(target, info.duration);

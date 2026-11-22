@@ -878,6 +878,15 @@ test('the publish bundle holds only approved workday files, with the page policy
   assert.deepEqual(publicIndex(index, new Set(['care-home'])).jobs, [index.jobs[0], { id: 'hotel-front', status: 'making', title: 'C', role: 'D', summary: 'E', poster: 'hotel-front/y.jpg', posterAlt: 'Y' }, index.jobs[2]]);
   assert.deepEqual(references('workday/play.mjs', "import a from './engine/a.mjs'; import('../interview/b.mjs'); new URL('./jobs/index.json', import.meta.url);").sort(), ['interview/b.mjs', 'workday/engine/a.mjs', 'workday/jobs/index.json']);
   assert.deepEqual(references('workday/index.html', '<a href="../">x</a><link href="./workday.css?v=1"><img src="../assets/logo.webp">').sort(), ['./', 'assets/logo.webp', 'workday/workday.css']);
+  // Films are outside git (*.mp4). Where the reviewed ones are not on this computer (a new copy, CI), the bundle
+  // must refuse rather than ship a page that silently falls back to photographs; the rest is checked where they are.
+  const careManifest = JSON.parse(await readFile(path.join(JOBS, 'care-home', 'manifest.json'), 'utf8'));
+  const films = careManifest.clips.filter((clip) => clip.reviewed === true).map((clip) => path.join(JOBS, 'care-home', clip.file));
+  const present = await Promise.all(films.map((file) => stat(file).then(() => true, () => false)));
+  if (present.includes(false)) {
+    await assert.rejects(prepareWorkdayPages({ jobs: ['care-home'] }), /Reviewed film is missing from the bundle/);
+    return;
+  }
   const built = await prepareWorkdayPages({ jobs: ['care-home'] });
   assert.deepEqual(built.jobs, ['care-home']);
   assert.ok(built.files >= 20);
