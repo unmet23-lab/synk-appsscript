@@ -95,7 +95,7 @@ try {
       if (width >= 1280 && m.fold && m.fold > height) console.log(`  note ${name} ${width}: 게임 판 아래 끝 ${m.fold}px > 창 ${height}px`);
       if (name === 'practice') {
         (await text(page, '.wp-hero h2')) === '듣고 부정·변경 이해하기' ? ok('첫 판: 가장 먼저 연습할 곳') : bad('첫 판 기술 ' + await text(page, '.wp-hero h2'));
-        (await text(page, '.wp-meta')).includes('최근 혼자 푼 9문항 중 4문항 맞힘') && (await text(page, '.wp-meta b')) === '44%' ? ok('첫 판 비율 44%') : bad('첫 판 비율 ' + await text(page, '.wp-meta'));
+        (await text(page, '.wp-meta')).includes('최근 첫 시도 9문항 중 4문항 맞힘') && (await text(page, '.wp-meta b')) === '44%' ? ok('첫 판 비율 44%') : bad('첫 판 비율 ' + await text(page, '.wp-meta'));
         (await text(page, '.wp-skill[data-skill="ko.listening.word"] .wp-pct')) === '92%' && (await text(page, '.wp-skill[data-skill="ko.reading.condition"] .wp-pct')) === '' ? ok('줄 비율(푼 문항 없는 줄은 비움)') : bad('줄 비율');
         (await text(page, '[data-rec-go]')) === '바람길로 연습' ? ok('연습 단추: 바람길(부정·변경 듣기가 주된 연습인 첫 게임)') : bad('연습 단추 ' + await text(page, '[data-rec-go]'));
         (await page.getAttribute('.game-links>button >> nth=0', 'data-game')) === 'korean-runner' ? ok('첫 게임 칸: 바람길') : bad('첫 게임 칸');

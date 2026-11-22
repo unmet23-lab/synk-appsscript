@@ -476,7 +476,9 @@ html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data
 .sc .wp-bar::-webkit-progress-value{background:var(--wp-ink2);border-radius:999px}
 .sc .wp-bar::-moz-progress-bar{background:var(--wp-ink2);border-radius:999px}
 .sc .wp-skill[aria-pressed="true"] .wp-bar::-webkit-progress-value,.sc .wp-meta .wp-bar::-webkit-progress-value{background:var(--wp-yel2)}
+.sc .wp-skill[aria-pressed="true"] .wp-bar::-moz-progress-bar,.sc .wp-meta .wp-bar::-moz-progress-bar{background:var(--wp-yel2)}
 .sc .wp-skill[data-status="recent-independent"] .wp-bar::-webkit-progress-value{background:var(--ok)}
+.sc .wp-skill[data-status="recent-independent"] .wp-bar::-moz-progress-bar{background:var(--ok)}
 .sc .wp-meta{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:var(--t13);font-weight:600;color:var(--wp-ink2)}
 .sc .wp-meta .wp-bar{flex:1;max-width:200px}
 .sc .wp-meta b{color:var(--ink);font-variant-numeric:tabular-nums}
@@ -567,6 +569,10 @@ html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data
   .sc.world-app .game-links>button[data-rec]{outline:3px solid Highlight;outline-offset:-3px}
   .sc .wp-hero,.sc.world-app :is(.wp-record,.wp-skills,.wp-games),.sc.world-app #world-games>.world-preferences,.sc.world-app .account-grid>.sb-card,.sc .wp-tabs{border:1px solid CanvasText}
   .sc .wp-tag{border:1px solid CanvasText}
+  .sc .wp-bar{forced-color-adjust:none;border:1px solid CanvasText;background:Canvas}
+  .sc .wp-bar::-webkit-progress-bar{background:Canvas}
+  .sc .wp-bar::-webkit-progress-value{background:CanvasText}
+  .sc .wp-bar::-moz-progress-bar{background:CanvasText}
   .sc .wp-where::before,.sc.world-app #world-games>.wp-save::before{forced-color-adjust:none;background:CanvasText}
   .sc :is(.wp-tab,.wp-skill)[aria-pressed="true"]:focus-visible,.sc.world-app .world-preference-choices .sb-btn[aria-pressed="true"]:focus-visible,.sc.world-app .game-links>button[data-rec]:focus-visible{outline:3px solid Highlight;outline-offset:4px}
 }

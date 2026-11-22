@@ -35,6 +35,8 @@ export function ratioOf(skill) {
   if (!Number.isSafeInteger(recent) || recent < 1 || !Number.isSafeInteger(correct) || correct < 0 || correct > recent) return null;
   return { recent, correct, pct: Math.round(correct / recent * 100) };
 }
+// 셈의 범위를 그대로 말한다(카본 A1): 그 기술 전체가 아니라 연습이 필요한 한 유형 · 최근 30일 · 처음 혼자 푼 문항이다.
+export const ratioText = ratio => `연습이 필요한 유형 · 최근 첫 시도 ${ratio.recent}문항 중 ${ratio.correct}문항 맞힘`;
 /** 요약에서 쓸 수 있는 기술만(서버 차례 그대로). */
 export function practiceSkills(summary) {
   const rows = Array.isArray(summary?.practice?.skills) ? summary.practice.skills : [];
@@ -92,7 +94,7 @@ export function createWorldPractice({ element, button, games, openGame, showAcco
     const ratio = state !== 'off' && pick ? ratioOf(pick) : null;
     if (ratio) {
       const meta = element('p', null, 'wp-meta'), bar = element('progress', null, 'wp-bar');bar.setAttribute('max', '100');bar.setAttribute('value', String(ratio.pct));bar.setAttribute('aria-hidden', 'true');
-      meta.append(element('span', `최근 혼자 푼 ${ratio.recent}문항 중 ${ratio.correct}문항 맞힘`), bar, element('b', `${ratio.pct}%`));body.append(meta);
+      meta.append(element('span', ratioText(ratio)), bar, element('b', `${ratio.pct}%`));body.append(meta);
     }
     const actions = element('div', null, 'wp-acts');if (go) { go.dataset.recGo = '';actions.append(go); }
     hero.replaceChildren(art, body, actions);
@@ -103,11 +105,11 @@ export function createWorldPractice({ element, button, games, openGame, showAcco
       // 다시 그린 뒤에도 키보드 초점이 고른 줄에 남게 한다.
       const b = button('', async () => { pick = row;draw();rowButtons.get(row.id)?.focus?.({ preventScroll: true }); }, 'wp-skill');rowButtons.set(row.id, b);b.dataset.skill = row.id;b.dataset.status = row.status || '';b.dataset.word = STATUS_WORDS[row.status] || '';b.setAttribute('aria-pressed', String(row === pick));
       const ratio = ratioOf(row);b.append(element('b', row.label), element('em', ratio ? `${ratio.pct}%` : '', 'wp-pct'));
-      if (ratio) { const bar = element('progress', null, 'wp-bar');bar.setAttribute('max', '100');bar.setAttribute('value', String(ratio.pct));bar.setAttribute('aria-hidden', 'true');b.append(bar);b.setAttribute('title', `최근 혼자 푼 ${ratio.recent}문항 중 ${ratio.correct}문항 맞힘`); }
+      if (ratio) { const bar = element('progress', null, 'wp-bar');bar.setAttribute('max', '100');bar.setAttribute('value', String(ratio.pct));bar.setAttribute('aria-hidden', 'true');b.append(bar);b.setAttribute('title', ratioText(ratio)); }
       const li = element('li');li.append(b);list.append(li);
     }
     const empty = state === 'off' ? '학습 기록 연결이 꺼져 있어 계정의 연습을 보지 않아요.' : state === 'error' ? '학습 요약을 불러오지 못했어요.' : state === 'loading' ? '불러오고 있어요.' : '아직 보여 줄 연습이 없어요.';
-    skillsTile.replaceChildren(head('최근 연습', '놓친 곳부터 · 혼자 맞힌 비율'), skills.length ? list : element('p', empty, 'small'));
+    skillsTile.replaceChildren(head('최근 연습', '놓친 곳부터 · 최근 첫 시도 비율'), skills.length ? list : element('p', empty, 'small'));
   }
   function drawRecord() {
     const periods = summary?.practice?.periods, recent = periods?.recent && Number.isSafeInteger(periods.recent.answered) && periods.recent.answered > 0 ? periods.recent : null;

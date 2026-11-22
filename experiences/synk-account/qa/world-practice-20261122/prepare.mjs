@@ -28,7 +28,9 @@ const raw = rel => fetchBytes(`https://raw.githubusercontent.com/unmet23-lab/syn
 const liveJsBytes = await raw('account/dist/client.js'), liveCss = await raw('account/client.css');
 assert.deepEqual(await fetchBytes('https://synk.im/account/dist/client.js'), liveJsBytes, 'CDN and origin client.js differ; wait for convergence');
 const probe = await fetch(`https://raw.githubusercontent.com/unmet23-lab/synk-policy/${originHead}/account/assets/world/practice-room.webp`);
-assert.equal(probe.status, 404, 'practice-room.webp already public');
+// 그림은 첫 판(11-22 synk-policy 846d719)에 올랐다. 이미 있으면 바이트가 같은지만 보고 후보에서 뺀다.
+const artPublic = probe.status === 200 ? Buffer.from(await probe.arrayBuffer()) : null;
+if (!artPublic) assert.equal(probe.status, 404, 'practice-room.webp probe');
 
 const live = lf(liveJsBytes.toString('utf8'));
 const base = lf(git('show', `${baseCommit}:experiences/synk-account/dist/client.js`));
@@ -51,12 +53,13 @@ const art = fs.readFileSync(path.join(root, 'experiences/synk-account/assets/wor
 const dir = path.join(out, 'src/account');fs.mkdirSync(path.join(dir, 'dist'), { recursive: true });fs.mkdirSync(path.join(dir, 'assets/world'), { recursive: true });
 fs.writeFileSync(path.join(dir, 'dist/client.js'), candidate);
 fs.writeFileSync(path.join(dir, 'client.css'), css);
-fs.writeFileSync(path.join(dir, 'assets/world/practice-room.webp'), art);
+if (artPublic) assert.deepEqual(artPublic, art, 'public practice-room.webp differs from the source');
+else fs.writeFileSync(path.join(dir, 'assets/world/practice-room.webp'), art);
 fs.writeFileSync(path.join(out, 'account__client.before.js'), liveJsBytes);
 fs.writeFileSync(path.join(out, 'account__client.before.css'), liveCss);
 const manifest = { checkedAt: new Date().toISOString(), originHead, baseCommit, cut: { live: cutL, base: cutB, sharedTail: tail, buildPrefixSame: same },
   live: { sha256: hash(liveJsBytes), bytes: liveJsBytes.length }, candidate: { sha256: hash(Buffer.from(candidate)), bytes: Buffer.byteLength(candidate) },
   css: { before: hash(liveCss), after: hash(css), bytes: css.length }, art: { sha256: hash(art), bytes: art.length },
-  scope: ['account/dist/client.js (tail from the account view)', 'account/client.css', 'account/assets/world/practice-room.webp (new)'] };
+  scope: ['account/dist/client.js (tail from the account view)', 'account/client.css', artPublic ? 'account/assets/world/practice-room.webp (already public, same bytes)' : 'account/assets/world/practice-room.webp (new)'] };
 fs.writeFileSync(path.join(out, 'candidate.json'), JSON.stringify(manifest, null, 2) + '\n');
 console.log(JSON.stringify(manifest, null, 1));

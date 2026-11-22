@@ -82,7 +82,7 @@ test('the practice view fills from one summary and a picked row moves the hero, 
   // 유호님 11-22 「비율도 보여 줘」: 줄과 첫 판에 최근 혼자 푼 문항 중 맞힌 비율. 푼 문항이 없는 줄은 비율 없이 상태 말만.
   const pctOf = id => find(find(practice.skills, n => n.dataset.skill === id), n => n.className === 'wp-pct').textContent;
   assert.equal(pctOf('ko.listening.negation'), '44%');assert.equal(pctOf('ko.listening.word'), '92%');assert.equal(pctOf('ko.reading.condition'), '');
-  assert.equal(find(practice.hero, n => n.className === 'wp-meta').children[0].textContent, '최근 혼자 푼 9문항 중 4문항 맞힘');
+  assert.equal(find(practice.hero, n => n.className === 'wp-meta').children[0].textContent, '연습이 필요한 유형 · 최근 첫 시도 9문항 중 4문항 맞힘');
   assert.equal(find(practice.hero, n => n.tagName === 'h2').textContent, '듣고 부정·변경 이해하기');
   const go = () => find(practice.hero, n => Object.hasOwn(n.dataset, 'recGo'));
   assert.equal(go().textContent, '바람길로 연습');
