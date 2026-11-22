@@ -53,7 +53,6 @@ body.sized #stage{outline:1px solid var(--hair)}
 .obj{appearance:none;background:none;border:0;margin:0;padding:10px 8px;display:inline-flex;align-items:center;color:rgba(243,241,236,.46);border-radius:2px;text-decoration:none}
 .obj svg{width:18px;height:18px;flex:none}
 .obj-n{margin-left:9px;white-space:nowrap;font:400 13px/1.3 var(--sans);letter-spacing:.03em}
-.obj:not([aria-current]) .obj-n{display:none}
 .obj[aria-current="true"],.obj:hover{color:var(--paper)}
 
 /* 방: 맨 위 문장 두 줄, 그 아래 작업 화면 */
@@ -101,7 +100,9 @@ body.sized #stage{outline:1px solid var(--hair)}
 .ours{margin:12px 0 0;font:500 14px/1.45 var(--sans);color:var(--sheet-ink)}
 .ours small{font:400 13px/1 var(--sans);color:var(--sheet-dim);margin-right:8px}
 .quote{margin:12px 0 0;font:400 14px/1.55 var(--sans);color:var(--sheet-soft)}
-.src{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:6px 0 0;font:400 13px/1.4 var(--sans);color:var(--sheet-dim)}
+.src{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px;margin:8px 0 0;font:400 13px/1.4 var(--sans);color:var(--sheet-dim)}
+.src .where{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;min-width:0}
+.src:not(:has(a)){display:block}
 .src .url{font:400 12px/1.4 var(--sans);color:var(--sheet-dim)}
 .src a{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 11px;border:1px solid #BDB9B0;border-radius:999px;color:var(--sheet-ink);font:500 12px/1 var(--sans);text-decoration:none}
 .src a::after{content:'↗';font-weight:400}
@@ -121,9 +122,10 @@ body.sized #stage{outline:1px solid var(--hair)}
 .handed b{display:block;font-weight:600;color:var(--sheet-ink);margin-bottom:3px}
 
 /* 지금 값: 곳마다 한 줄. 넓은 창에서는 네 칸, 좁은 창에서는 한 칸씩 쌓인다 */
-.vals{margin-top:14px;display:grid;grid-template-columns:minmax(76px,auto) repeat(3,minmax(0,1fr));column-gap:18px}
-.vals > *{padding:11px 0;border-top:1px solid var(--sheet-rule);min-width:0}
-.vals .hd{padding:0 0 8px;border:0;font:400 12px/1.3 var(--sans);color:var(--sheet-dim)}
+.vals{margin-top:14px;display:grid;grid-template-columns:minmax(76px,auto) repeat(3,minmax(0,1fr))}
+.vals > *{padding:11px 18px 11px 0;border-top:1px solid var(--sheet-rule);min-width:0}
+.vals > :nth-child(4n){padding-right:0}
+.vals .hd{padding:0 18px 8px 0;border:0;font:400 12px/1.3 var(--sans);color:var(--sheet-dim)}
 .vals .nm{font:600 14px/1.4 var(--sans)}
 .vals .nm small{display:block;font:400 12px/1.3 var(--sans);color:var(--sheet-dim)}
 .vals .v{font:400 14px/1.4 var(--sans);color:var(--sheet-soft);font-variant-numeric:tabular-nums}
@@ -136,7 +138,7 @@ body.sized #stage{outline:1px solid var(--hair)}
 
 /* 시작: 주소 칸이 가운데. 아래에 「이렇게 알려 드립니다」 예시 하나를 흐리게 */
 .addr{display:flex;gap:10px;align-items:center;margin-top:18px}
-.addr input{flex:1 1 auto;min-width:0;height:44px;padding:0 14px;border:1px solid #CFCAC0;border-radius:2px;background:#fff;color:var(--sheet-ink);font:400 15px/1 var(--sans);outline:0;user-select:text;-webkit-user-select:text}
+.addr input{flex:1 1 auto;min-width:0;height:44px;padding:0 18px;border:1px solid #CFCAC0;border-radius:999px;background:#fff;color:var(--sheet-ink);font:400 15px/1 var(--sans);outline:0;user-select:text;-webkit-user-select:text}
 .addr input::placeholder{color:var(--sheet-faint)}
 .addr input:focus{border-color:var(--sheet-ink)}
 .added{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:6px}
@@ -157,15 +159,10 @@ body.sized #stage{outline:1px solid var(--hair)}
 .kinds li{display:grid;grid-template-columns:5.5em minmax(0,1fr);column-gap:14px;font:var(--small);line-height:1.55;color:var(--dim)}
 .kinds li b{font:500 14px/1.4 var(--sans);color:var(--paper)}
 .kinds li span{color:var(--soft)}
-/* 읽지 못한 페이지: 바뀐 것과 지금 값 아래 한 묶음 */
-.missed{margin-top:16px;padding:14px 0 0;border-top:1px solid var(--hair-strong)}
-.missed .cap{display:block;font:400 12px/1.3 var(--sans);color:var(--dim)}
-.missed p{margin:6px 0 0;font:var(--small);line-height:1.5;color:var(--soft)}
-.missed p b{font-weight:500;color:var(--paper)}
 
 /* 매주 읽기 줄 */
 .weekly{margin-top:22px;padding-top:18px;border-top:1px solid var(--sheet-rule);display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;font:400 15px/1.4 var(--sans)}
-.weekly select{appearance:none;-webkit-appearance:none;height:38px;padding:0 30px 0 12px;border:1px solid #CFCAC0;border-radius:2px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M.5.5 5 5 9.5.5' fill='none' stroke='%23151514' stroke-opacity='.6'/%3E%3C/svg%3E") no-repeat right 11px center;color:var(--sheet-ink);font:400 14px var(--sans);cursor:pointer}
+.weekly select{appearance:none;-webkit-appearance:none;height:38px;padding:0 32px 0 16px;border:1px solid #CFCAC0;border-radius:999px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M.5.5 5 5 9.5.5' fill='none' stroke='%23151514' stroke-opacity='.6'/%3E%3C/svg%3E") no-repeat right 14px center;color:var(--sheet-ink);font:400 14px var(--sans);cursor:pointer}
 .weekly .note{flex-basis:100%;margin:2px 0 0;font:400 13px/1.55 var(--sans);color:var(--sheet-dim)}
 
 /* 단추: 검은 방에서는 흰 알약, 흰 종이 위에서는 검은 알약이 결정 단추다 */
@@ -201,17 +198,19 @@ body.sized #stage{outline:1px solid var(--hair)}
 .pg.read .st{color:var(--soft)}
 .pg.read .st.in{animation:arrive .4s cubic-bezier(.2,.8,.2,1) both}
 .pg.miss .st{color:var(--soft)}
+.pg.changed{color:var(--paper)}
+.pg.changed .st{color:var(--paper);font-weight:500}
 .miss-why{grid-column:1 / -1;margin:3px 0 0;font:400 12px/1.45 var(--sans);color:var(--dim)}
 .side .add{display:flex;gap:10px;align-items:center;padding:14px 0 6px;border-top:1px solid var(--hair-strong)}
-.side .add input{flex:1 1 auto;min-width:0;height:36px;background:none;border:0;border-bottom:1px solid rgba(243,241,236,.34);border-radius:0;outline:0;padding:0 2px;font:400 14px/1 var(--sans);color:var(--paper);user-select:text;-webkit-user-select:text}
+.side .add input{flex:1 1 auto;min-width:0;height:36px;background:none;border:1px solid rgba(243,241,236,.34);border-radius:999px;outline:0;padding:0 16px;font:400 14px/1 var(--sans);color:var(--paper);user-select:text;-webkit-user-select:text}
 .side .add input::placeholder{color:var(--dim)}
-.side .add input:focus{border-bottom-color:var(--paper)}
+.side .add input:focus{border-color:var(--paper)}
 .go{appearance:none;flex:none;height:34px;margin:0;padding:0 16px;border:1px solid rgba(243,241,236,.42);border-radius:999px;background:var(--pit);font:500 13px/1 var(--sans);color:var(--paper);cursor:pointer}
 .go:hover{border-color:var(--paper)}
 .side .add:has(input:not(:placeholder-shown)) .go{background:var(--paper);border-color:var(--paper);color:#000}
 .facts{margin:0;padding:14px 0 0;border-top:1px solid var(--hair-strong);display:grid;gap:10px}
 .facts .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
-.facts select{appearance:none;-webkit-appearance:none;height:32px;padding:0 26px 0 10px;border:1px solid rgba(243,241,236,.34);border-radius:2px;background:var(--pit) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M.5.5 5 5 9.5.5' fill='none' stroke='%23F3F1EC' stroke-opacity='.7'/%3E%3C/svg%3E") no-repeat right 9px center;font:400 13px var(--sans);color:var(--paper)}
+.facts select{appearance:none;-webkit-appearance:none;height:32px;padding:0 28px 0 14px;border:1px solid rgba(243,241,236,.34);border-radius:999px;background:var(--pit) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M.5.5 5 5 9.5.5' fill='none' stroke='%23F3F1EC' stroke-opacity='.7'/%3E%3C/svg%3E") no-repeat right 12px center;font:400 13px var(--sans);color:var(--paper)}
 .facts p{margin:0;font:var(--small);color:var(--dim);line-height:1.55}
 .facts p b{font-weight:500;color:var(--soft)}
 .unread{margin-top:18px}
@@ -254,8 +253,8 @@ body.clean #meta{display:none}
       <span class="orb" aria-hidden="true"></span>
       <span id="here-name">SOLIO</span>
       <nav class="rail" aria-label="솔리오의 프로그램">
-        <a class="obj" href="사무실.html" aria-label="구독"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><path d="M9 9V2.5A6.5 6.5 0 0 1 15.5 9z" fill="currentColor" stroke="none"/></svg></a>
-        <a class="obj" href="사무실.html" aria-label="방문자 분석"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M14.6 12.3A6.5 6.5 0 1 1 15.5 9"/></svg></a>
+        <a class="obj" href="사무실.html"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="9" cy="9" r="6.5"/><path d="M9 9V2.5A6.5 6.5 0 0 1 15.5 9z" fill="currentColor" stroke="none"/></svg><span class="obj-n">구독</span></a>
+        <a class="obj" href="사무실.html"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M14.6 12.3A6.5 6.5 0 1 1 15.5 9"/></svg><span class="obj-n">방문자 분석</span></a>
         <a class="obj" href="사무실.html#mkt" aria-current="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="2.5" y="4" width="13" height="10" rx="1"/><path d="M6 9h1.4M10.6 9H12" stroke-linecap="round"/></svg><span class="obj-n">사무실</span></a>
       </nav>
     </div>
@@ -407,7 +406,7 @@ function headline() {
   const n = rivalCount();
   if (st.stage === 'start') return ['경쟁 가게의 주소를 넣어 주세요.', '값, 배송 조건, 새 글 제목을 매주 다시 읽고 바뀐 것만 알려 드립니다.'];
   if (st.stage === 'reading') return [st.week === 0 ? `마케팅부가 ${관수(n)} 곳을 처음 읽고 있습니다.` : `마케팅부가 ${관수(n)} 곳을 다시 읽고 있습니다.`, '오른쪽에서 어느 페이지까지 읽었는지 보입니다.'];
-  if (st.stage === 'first') return [`${관수(n)} 곳의 지금 값을 적어 두었습니다.`, st.weekly.on ? `${DAYS[st.weekly.day]} ${hh(st.weekly.hour)}부터 바뀐 것만 알려 드립니다.` : '매주 읽기를 켜면 다음 주부터 바뀐 것만 알려 드립니다.'];
+  if (st.stage === 'first') return [`${관수(n)} 곳${st.own ? '과 우리 가게' : ''}의 지금 값을 적어 두었습니다.`, st.weekly.on ? `${DAYS[st.weekly.day]} ${hh(st.weekly.hour)}부터 바뀐 것만 알려 드립니다.` : '매주 읽기를 켜면 다음 주부터 바뀐 것만 알려 드립니다.'];
   if (st.stage === 'defer') return ['이번 주 읽기를 미뤘습니다.', '구독이 12% 남았습니다. 목요일 09:00에 다시 차면 읽습니다.'];
   if (st.stage === 'fail') return ['이번 주에는 읽지 못했습니다.', '세 번 읽어 보았지만 페이지가 열리지 않았습니다. 지금 읽기로 다시 할 수 있습니다.'];
   const ch = compare(st.week);
@@ -421,8 +420,8 @@ function whoLine() {
   if (st.stage === 'start') return '주소를 기다리고 있습니다';
   if (st.stage === 'reading') { const r = st.reading, x = r && r.list[Math.min(r.i, r.list.length - 1)]; return x ? `읽기 ${Math.min(r.i + 1, r.list.length)}/${r.list.length} · ${x.shop.name} ${x.page.label}` : '읽는 중'; }
   if (st.stage === 'first') return '처음 읽기를 마쳤습니다';
-  if (st.stage === 'defer') return '이번 주 읽기를 미뤘습니다';
-  if (st.stage === 'fail') return '세 번 읽어 보았지만 열리지 않았습니다';
+  if (st.stage === 'defer') return '구독 몫이 다시 차기를 기다립니다';
+  if (st.stage === 'fail') return '다음 읽을 때를 기다립니다';
   const working = Object.values(st.handed).find(h => h.on);
   return working ? '대응을 정리하고 있습니다' : `${READ_AT[st.week]}에 다시 읽었습니다`;
 }
@@ -441,23 +440,23 @@ function render() {
 }
 function boardHTML() {
   if (st.stage === 'start') return startHTML();
-  if (st.stage === 'defer') return noticeHTML('이번 주 · 미룸', '구독이 12% 남아 이번 주 읽기를 미뤘습니다', 'Claude 구독의 이번 주 몫이 20% 아래로 남으면 매주 읽기를 미룹니다. 목요일 09:00에 몫이 다시 차면 그때 읽습니다. 다음 읽을 때가 먼저 오면 이번 주 것은 건너뜁니다.', '구독이 12% 남았습니다. 지금 읽으면 이번 주 몫에서 나갑니다.') + valsSheet('last', [], st.week) + missedHTML();
-  if (st.stage === 'fail') return noticeHTML('이번 주 · 읽지 못함', '세 번 읽어 보았지만 페이지가 열리지 않았습니다', '이 PC의 인터넷이 끊겼거나 가게 사이트가 잠시 멈췄을 수 있습니다. 지난번 값은 그대로 두었고, 다음 읽을 때에 다시 읽습니다.', '') + valsSheet('last', [], st.week) + missedHTML();
+  if (st.stage === 'defer') return noticeHTML('이번 주 · 미룸', 'Claude 구독이 20% 아래로 남으면 매주 읽기를 미룹니다', '다음 읽을 때가 몫이 차는 때보다 먼저 오면 이번 주 것은 건너뜁니다.', '지금 읽으면 이번 주 몫에서 나갑니다.') + valsSheet('last', [], st.week);
+  if (st.stage === 'fail') return noticeHTML('이번 주 · 읽지 못함', '지난번 값은 그대로 두었습니다', '이 PC의 인터넷이 끊겼거나 가게 사이트가 잠시 멈췄을 수 있습니다. 다음 읽을 때 다시 읽습니다.', '') + valsSheet('last', [], st.week);
   if (st.stage === 'reading') return valsSheet(st.week === 0 ? 'filling' : 'again', [], st.week === 0 ? 0 : st.week - 1);
-  if (st.stage === 'first') return valsSheet('first', [], 0) + missedHTML();
+  if (st.stage === 'first') return valsSheet('first', [], 0);
   const ch = compare(st.week);
   let h = '';
-  if (ch.length) h += `<article class="sheet" aria-label="바뀐 것"><small class="cap">${READ_AT[st.week]} 읽음 · 바뀐 것 ${수(ch.length)}</small>${ch.map(changeHTML).join('')}</article>`;
+  if (ch.length) h += `<article class="sheet" aria-label="바뀐 것"><small class="cap">바뀐 것 ${수(ch.length)}</small>${ch.map(changeHTML).join('')}</article>`;
   h += valsSheet(ch.length ? 'rest' : 'same', ch, st.week);
-  return h + missedHTML();
+  return h;
 }
 function noticeHTML(cap, title, lead, hint) {
   return `<article class="sheet"><small class="cap">${esc(cap)}</small><h3>${esc(title)}</h3><p class="lead">${esc(lead)}</p><div class="acts"><button class="pill" type="button" data-readnow>지금 읽기</button></div>${hint ? `<p class="hint">${esc(hint)}</p>` : ''}</article>`;
 }
 function startHTML() {
   const n = pageCount();
-  let h = `<article class="sheet"><small class="cap">경쟁사 · 시작</small><h3>경쟁 가게 페이지 주소</h3>`
-    + `<p class="lead">상품 페이지, 배송 안내 페이지, 공지 글 페이지를 넣으면 됩니다. 누구나 볼 수 있는 페이지만 읽습니다.</p>`
+  let h = `<article class="sheet">`
+    + `<p class="lead" style="margin-top:0">상품 페이지, 배송 안내 페이지, 공지 글 페이지를 넣으면 됩니다. 누구나 볼 수 있는 페이지만 읽습니다.</p>`
     + `<form class="addr" data-add="start"><label class="sr" for="addr-in">경쟁 가게 페이지 주소</label><input id="addr-in" type="text" inputmode="url" placeholder="https://" autocomplete="off"><button class="pill" type="submit">더하기</button></form>`;
   if (n) {
     h += `<ul class="added">${allPages().map(({shop, page}) => `<li><b>${esc(shop.name)}</b><span>${esc(page.label)}</span><span class="url">${esc(shop.host + page.path)}</span></li>`).join('')}</ul>`;
@@ -467,10 +466,14 @@ function startHTML() {
   }
   return h + '</article>';
 }
+/* 카드 첫 줄은 맨 위 문장을 되풀이하지 않고 바뀐 칸의 이름만 적는다(맹검 3회차) */
+function fieldOf(c) {
+  if (c.kind === 'price') return `${c.page.label} 값`;
+  if (c.kind === 'ship') return c.now.freeOver !== c.was.freeOver && c.now.freeOver !== 0 ? '무료 배송 기준' : '배송비';
+  return `${c.page.label} 새 글`;
+}
 function changeHTML(c) {
-  const [who, what] = sentence(c);
-  const tail = c.kind === 'posts' ? `에 ${what}` : `${받침(who) ? '이' : '가'} ${what}`;
-  let h = `<section class="chg${st.justRead ? ' fresh' : ''}" data-c="${c.id}"><p class="line"><b>${esc(who)}</b>${esc(tail)}</p>`;
+  let h = `<section class="chg${st.justRead ? ' fresh' : ''}" data-c="${c.id}"><p class="line"><b>${esc(c.shop.name)}</b> ${esc(fieldOf(c))}</p>`;
   const nums = (a, b) => `<div class="nums" aria-label="${esc(won(a))}에서 ${esc(won(b))}으로"><span class="was" aria-hidden="true">${esc(won(a))}</span><span class="arw" aria-hidden="true">→</span><span class="now" aria-hidden="true">${esc(won(b))}</span></div>`;
   if (c.kind === 'price') h += nums(c.was, c.now);
   if (c.kind === 'ship') { const key = c.now.freeOver !== c.was.freeOver ? 'freeOver' : 'fee'; h += nums(c.was[key], c.now[key]); }
@@ -478,7 +481,7 @@ function changeHTML(c) {
   const own = ownFor(c);
   if (own) h += `<p class="ours"><small>우리 가게</small>${esc(own)}</p>`;
   if (c.q) h += `<p class="quote">「${esc(c.q)}」</p>`;
-  h += `<p class="src"><span>${esc(c.page.label)}</span><span class="url">${esc(c.shop.host + c.page.path)}</span><span>${esc(READ_AT[st.week])} 읽음</span><a href="https://${esc(c.shop.host + c.page.path)}" target="_blank" rel="noopener">페이지 열기</a></p>`;
+  h += `<p class="src"><span class="where"><span>${esc(c.page.label)}</span><span class="url">${esc(c.shop.host + c.page.path)}</span></span><a href="https://${esc(c.shop.host + c.page.path)}" target="_blank" rel="noopener">페이지 열기</a></p>`;
   const handed = st.handed[c.id];
   if (handed) h += `<div class="handed"><b>마케팅부가 맡았습니다</b>「${esc(handed.text)}」<p class="st${handed.on ? ' on' : ''}"><i aria-hidden="true"></i>${handed.on ? '마케팅부 직원이 일하고 있습니다. 답은 마케팅부 업무 카드에 옵니다.' : '차례를 기다립니다'}</p></div>`;
   else if (st.drafts[c.id] != null) {
@@ -506,9 +509,9 @@ function valsSheet(mode, ch, w) {
   const names = same.length === 1 ? 은는(same[0]) : same.slice(0, -2).map(x => x + ', ').join('') + 과와(same.at(-2) || '') + ' ' + 은는(same.at(-1) || '');
   const HEAD = {
     filling:['처음 읽는 중', '읽은 페이지의 값이 차례로 들어옵니다'],
-    first:['처음 읽음 · ' + READ_AT[0], '지금 값'],
+    first:['처음 읽음', '지금 값'],
     again:['다시 읽는 중', '지난번 값과 견주고 있습니다'],
-    same:[READ_AT[w] + ' 읽음', `${관수(rivalCount())} 곳 모두 지난번과 같습니다`],
+    same:['바뀐 것 없음', '지금 값'],
     rest:['그 밖', same.length ? names + ' 지난번과 같습니다' : '모든 곳이 바뀌었습니다'],
     last:['지난 읽기 · ' + READ_AT[w], '지난번에 읽은 값'],
   }[mode];
@@ -519,22 +522,16 @@ function valsSheet(mode, ch, w) {
 }
 function weeklyHTML() {
   const wk = st.weekly;
-  if (wk.on) return `<div class="weekly"><span>매주 <b>${DAYS[wk.day]} ${hh(wk.hour)}</b>에 다시 읽습니다.</span><button class="quiet" type="button" data-weekly-off>끄기</button><p class="note">이 PC의 Claude Code로 읽습니다. 사용량은 내 Claude 구독에서 나갑니다. 솔리오가 꺼져 있었으면 다음에 켤 때 한 번 읽습니다.</p></div>`;
-  return `<div class="weekly"><span>매주</span>${selectsHTML('wk')}<span>에 다시 읽기</span><button class="pill" type="button" data-weekly-on>켜기</button><p class="note">켜면 매주 이때 다시 읽고, 바뀐 것이 있을 때만 알려 드립니다. 이 PC의 Claude Code로 읽고, 사용량은 내 Claude 구독에서 나갑니다.</p></div>`;
+  if (wk.on) return `<div class="weekly"><span>매주 <b>${DAYS[wk.day]} ${hh(wk.hour)}</b>에 다시 읽습니다.</span><button class="quiet" type="button" data-weekly-off>끄기</button><p class="note">사용량은 내 Claude 구독에서 나갑니다. 솔리오가 꺼져 있었으면 다음에 켤 때 한 번 읽습니다.</p></div>`;
+  return `<div class="weekly"><span>매주</span>${selectsHTML('wk')}<span>에 다시 읽기</span><button class="pill" type="button" data-weekly-on>켜기</button><p class="note">켜면 매주 이때 다시 읽고, 바뀐 것이 있을 때만 알려 드립니다. 사용량은 내 Claude 구독에서 나갑니다.</p></div>`;
 }
 const selectsHTML = id => `<label class="sr" for="${id}-day">요일</label><select id="${id}-day">${DAYS.map((d, i) => `<option value="${i}"${i === st.weekly.day ? ' selected' : ''}>${d}</option>`).join('')}</select><label class="sr" for="${id}-hour">시각</label><select id="${id}-hour">${HOURS.map(x => `<option value="${x}"${x === st.weekly.hour ? ' selected' : ''}>${hh(x)}</option>`).join('')}</select>`;
-/* 읽지 못한 페이지: 바뀐 것과 지금 값 아래 한 묶음(설계 6.3) */
-function missedHTML() {
-  const miss = allPages().filter(x => x.page.fail);
-  if (!miss.length) return '';
-  return `<div class="missed"><small class="cap">읽지 못한 페이지</small>${miss.map(({shop, page}) => `<p><b>${esc(shop.name)} ${esc(page.label)}</b> · ${esc(MISS[page.fail])}</p>`).join('')}</div>`;
-}
 function sideHTML() {
   if (st.stage === 'start') return exampleHTML() + (pageCount() ? listHTML() : '');
   return listHTML() + factsHTML();
 }
 function exampleHTML() {
-  return `<div class="example"><small class="cap">이렇게 알려 드립니다 · 예시</small><p class="line"><b>두루상점</b>이 무료 배송 기준을 낮췄습니다</p><div class="nums" aria-label="5만 원에서 3만 원으로"><span class="was" aria-hidden="true">5만 원</span><span class="arw" aria-hidden="true">→</span><span class="now" aria-hidden="true">3만 원</span></div><p class="src"><span>배송 안내 · 월요일 09:02 읽음</span></p></div>`
+  return `<div class="example"><small class="cap">이렇게 알려 드립니다 · 예시</small><p class="line"><b>두루상점</b> 무료 배송 기준</p><div class="nums" aria-label="5만 원에서 3만 원으로"><span class="was" aria-hidden="true">5만 원</span><span class="arw" aria-hidden="true">→</span><span class="now" aria-hidden="true">3만 원</span></div><p class="src"><span>배송 안내 · 월요일 09:02 읽음</span></p></div>`
     + `<ul class="kinds"><li><b>값</b><span>상품 페이지의 판매가가 바뀌면 알려 드립니다. 정가를 둔 채 할인가를 붙여도 압니다.</span></li><li><b>배송 조건</b><span>무료 배송 기준과 배송비가 바뀌면 알려 드립니다. 문구만 바뀐 것은 알리지 않습니다.</span></li><li><b>새 글</b><span>공지나 블로그에 새 글이 올라오면 제목을 알려 드립니다.</span></li></ul>`;
 }
 function listHTML() {
@@ -548,7 +545,9 @@ function listHTML() {
       if (k < st.reading.i) return ['read', '읽음'];
       return ['', '대기'];
     }
-    return page.fail ? ['miss', '읽지 못함'] : ['read', '읽음'];
+    if (page.fail) return ['miss', '읽지 못함'];
+    if (st.stage === 'done' && compare(st.week).some(c => c.page.id === page.id)) return ['changed', '바뀜'];
+    return ['read', '읽음'];
   };
   const canEdit = !busy();
   let h = '';
@@ -558,7 +557,7 @@ function listHTML() {
     for (const p of s.pages) {
       const [cls, label] = stateOf(p);
       const lastIn = busy() && order && order[st.reading.i - 1]?.page.id === p.id;
-      h += `<div class="pg ${cls}"><span class="lbl"><span>${esc(p.label)}</span><span class="url">${esc(s.host + p.path)}</span></span><span class="st${lastIn ? ' in' : ''}">${esc(label)}</span></div>`;
+      h += `<div class="pg ${cls}"><span class="lbl"><span>${esc(p.label)}</span><span class="url">${esc(s.host + p.path)}</span></span><span class="st${lastIn ? ' in' : ''}">${esc(label)}</span>${cls === 'miss' ? `<span class="miss-why">${esc(MISS[p.fail])}</span>` : ''}</div>`;
     }
     h += '</div>';
   }
