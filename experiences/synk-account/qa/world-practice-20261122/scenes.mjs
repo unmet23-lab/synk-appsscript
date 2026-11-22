@@ -109,6 +109,9 @@ try {
         await page.click('[data-rec-go]');await page.waitForTimeout(500);
         (await page.isVisible('#world-games>iframe')) && (await page.isVisible('.wp-playing')) && !(await page.isVisible('.wp-hero')) && !(await page.isVisible('#world-games>.world-preferences')) && !(await page.isVisible('.wp-games')) ? ok('게임 열림: 판 접고 게임만') : bad('게임 열기');
         await shot('-game');
+        await page.click('.wp-tab[data-tab="id"]');await page.waitForTimeout(200);await page.click('.wp-tab[data-tab="practice"]');await page.waitForTimeout(200);
+        !(await page.isVisible('#world-games>iframe')) && (await page.isVisible('.wp-hero')) ? ok('게임 연 채 보기를 옮기면 게임을 닫음') : bad('보기 옮김에 게임 닫기');
+        await page.click('[data-rec-go]');await page.waitForTimeout(400);
         await page.click('.wp-playing button');await page.waitForTimeout(200);
         (await page.isVisible('.wp-hero')) && !(await page.isVisible('#world-games>iframe')) ? ok('게임 닫고 연습으로') : bad('게임 닫기');
         await page.click('.wp-tab[data-tab="wardrobe"]');await page.waitForTimeout(300);
@@ -119,6 +122,7 @@ try {
       }
       if (name === 'practice-off') { (await text(page, '[data-rec-go]')) === '내 SYNK ID에서 켜기' ? ok('연결 꺼짐: 켜러 가기') : bad('꺼짐 단추');await page.click('[data-rec-go]');await page.waitForTimeout(200);(await page.isVisible('#account')) ? ok('켜러 가기 → 내 SYNK ID') : bad('켜러 가기'); }
       if (name === 'practice-new') (await text(page, '[data-rec-go]')) === '바람길로 시작' ? ok('첫 연습: 바람길') : bad('첫 연습 단추');
+      if (name === 'practice-oldserver') (await text(page, '.wp-hero h2')) === '연습을 골라 이어 가요' ? ok('옛 서버 줄: 이어 가기 문장') : bad('옛 서버 첫 판 ' + await text(page, '.wp-hero h2'));
       if (name === 'atlas-fail') (await text(page, '.wp-hero h2')) === '연습을 골라 시작해요' ? ok('요약 실패 문장') : bad('요약 실패');
       if (name === 'practice-class') { await shot('-class');(await page.isVisible('#world-classroom')) ? ok('반 과제가 연습 보기에') : bad('반 과제'); }
       if (external.length) console.log(`  note ${name} ${width} 바깥 요청 막음 ${external.length}`);

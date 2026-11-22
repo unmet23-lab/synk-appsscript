@@ -448,7 +448,6 @@ html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data
 .sc .wp-tag{padding:2px 10px;border-radius:999px;background:#fff4cc;color:#5c4400}
 .sc .wp-hero h2{margin-top:4px;font-size:var(--t22);font-weight:600;line-height:1.35}
 .sc .wp-why{font-size:var(--t15);color:var(--wp-ink2);text-wrap:pretty}
-.sc .wp-status{display:none}
 .sc .wp-acts{display:flex;align-items:flex-end;padding:16px 12px 12px 8px}
 .sc .sb-btn.wp-go{min-height:52px;padding:8px 26px;border-color:var(--wp-yel);background:var(--wp-yel);color:var(--ink)}
 .sc .sb-btn.wp-go:hover:not(:disabled){border-color:var(--wp-yel2);background:var(--wp-yel2)}

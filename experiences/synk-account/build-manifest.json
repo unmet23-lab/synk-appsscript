@@ -65,10 +65,10 @@
     "assets/DMMono-Medium.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
     "dist/wardrobe-three.js": "ca63e2e89a9a83c9c3ddb8641aeda6ab2aa2420e41210f1571887442ad60fe44",
     "dist/app.js": "a46afb6a6aa5d35a149ba0c8c266ed2fd99a518afce21f1153ec4385ceee3360",
-    "dist/client.js": "d2c7a6064585bbe0e52faaa6c0f4b821a05130b30c6b441e716c8dd639162749",
-    "dist/preview.js": "6b9d9769b2cbcaf3df60dace9b28793fa2ceb6e62a131ac79a4942a83a4ff199",
+    "dist/client.js": "8a6138d1a37441b1d1870a94349cee6b9a51b489af8087243c5eecf1d92729e2",
+    "dist/preview.js": "7b2dacbfde9ce510f202a3f973928169813811c5581a7d65cdabdad57ccaad13",
     "dist/platform.js": "2919602a7998aa028bb4cef1e5d31d000cb356474ef1004d738f7501dcac3287",
-    "dist/local-world.js": "c9a919decde210fc04856138e9cf10bde3170b0ea3955654325287d4d3df081a",
+    "dist/local-world.js": "732daf29f521c96ee2da04a585ed7ae508059d4d1dfc313e8a0ba87bda1fc22d",
     "dist/teacher.js": "91254d7b3ea5fdc71776db7e9eb3642d768c7e01dfc6b96618e1b8521a7e7e0a",
     "preview.html": "74c3b9e03c44497a48c01b6ed41271389bac806eee30ff0d612eda77dbec567e"
   }

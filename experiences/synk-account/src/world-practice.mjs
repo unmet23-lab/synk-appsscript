@@ -78,10 +78,10 @@ export function createWorldPractice({ element, button, games, openGame, showAcco
       if (!list.length) why = `${why} 이 연습만 하는 게임은 아직 없어요. 모든 미니게임에서 골라 주세요.`.trim();
     } else if (state === 'error') { title = '연습을 골라 시작해요';why = '학습 요약을 불러오지 못해 놓친 곳을 고르지 못했어요. 아래 게임은 그대로 할 수 있어요.'; }
     else if (state === 'loading') { title = '최근 연습을 보고 있어요';why = '놓친 곳을 찾으면 그 곳을 연습할 게임을 앞에 둘게요.'; }
+    else if (summary?.practice?.answered > 0) { title = '연습을 골라 이어 가요';why = '최근 연습에서 놓친 곳을 아직 고르지 못했어요. 아래 게임에서 골라 이어 가요.'; }
     else { title = '첫 연습을 해 봐요';why = '아직 연습 기록이 적어요. 한 판을 마치면 놓친 곳을 찾아 그 곳을 연습할 게임을 골라 드려요.';go = button('바람길로 시작', () => openGame('korean-runner'), 'sb-btn wp-go'); }
     ctx.append(where, element('span', tag, 'wp-tag'));
     body.append(ctx, element('h2', title), element('p', why, 'wp-why'));
-    if (pick && pick.status) { const status = element('p', STATUS_WORDS[pick.status] || '', 'wp-status');status.dataset.status = pick.status;if (status.textContent) body.append(status); }
     const actions = element('div', null, 'wp-acts');if (go) { go.dataset.recGo = '';actions.append(go); }
     hero.replaceChildren(art, body, actions);
   }

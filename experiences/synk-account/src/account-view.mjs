@@ -11,7 +11,7 @@ import { createTownRecords, attachTownRecords, townExport } from '../../../deskt
 import { createWorldPractice } from './world-practice.mjs';
 // WORLD 앱 창의 보기 셋. 반을 바꿔 화면을 다시 지어도 보던 보기를 잇는다.
 const WORLD_TABS = Object.freeze([['practice', '연습'], ['wardrobe', '옷장'], ['id', '내 SYNK ID']]);
-let worldTab = 'practice';
+let worldTab = 'practice', worldTabOwner = null;
 const TOWN_CLASSES = Object.freeze({ button: 'plain', note: 'small', link: 'plain link', retry: 'plain' });
 // A small modal question for the town card with a safe default (「취소」 keeps everything as it is).
 function confirmTown({ title, ok }) {
@@ -37,6 +37,8 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   let practiceView = null, lastAtlas = null, tabBar = null;
   function showTab(name) {
     if (!worldApp || !WORLD_TABS.some(([key]) => key === name)) return;
+    // 게임을 연 채 연습 보기를 떠나면 게임을 닫는다(숨은 채 소리 · 시간이 흐르지 않게).
+    if (name !== 'practice' && gameFrame && !gameFrame.hidden) { closeGame();notice('게임을 닫았어요. 연습 보기에서 다시 열 수 있어요.'); }
     worldTab = name;const body = document.body;
     for (const [key] of WORLD_TABS) body.classList.remove(`world-tab-${key}`);
     body.classList.add('world-app');body.classList.add(`world-tab-${name}`);
@@ -44,6 +46,8 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   }
   function drawTabs() {
     if (!worldApp) return;
+    // 다른 계정으로 들어오면 연습 보기부터 연다. 같은 계정이 반만 바꾸면 보던 보기를 잇는다.
+    const owner = data?.account?.synk_user_id || null;if (owner !== worldTabOwner) { worldTabOwner = owner;worldTab = 'practice'; }
     if (!tabBar) {
       tabBar = element('nav', null, 'wp-tabs');tabBar.setAttribute('aria-label', 'WORLD 보기');
       for (const [key, label] of WORLD_TABS) { const tab = element('button', label, 'wp-tab');tab.type = 'button';tab.dataset.tab = key;tab.onclick = () => showTab(key);tabBar.append(tab); }
