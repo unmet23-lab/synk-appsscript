@@ -1790,6 +1790,55 @@ test('판: 넘겨받기 전 다시 읽기가 날아가는 동안 앱의 다시 �
  a.dispose();
 });
 
+test('판: 켜기가 서버에 닿고 응답만 늦는 동안 고른 시각은, 그사이 로그아웃해도 지우지 않는다 — 같은 계정으로 돌아오면 보낸다(GPT push-versions-world-r11 GA2)',async()=>{
+ const s=versionedServer(),b=browser({registered:true}),storage=memory(),rem=reminderSettings({frequency:2,hour:9,since:null});
+ s.active=false;
+ let release=null;
+ const request=(action,body,options)=>{
+  if(action==='subscribe'&&!release){const reply=s.request(action,body,options);return new Promise(resolve=>{release=()=>resolve(reply);});}
+  return s.request(action,body,options);
+ };
+ const push=makeV(b,s,{now:()=>V0,request,storage});push.bindSettings(rem);
+ await push.setAccount('acc-1');await push.ready();
+ const turning=push.enable({settings:{frequency:2,hour:9,since:null},digest:DIGEST('2026-10-21')});await settled();   // 서버는 9시로 계획을 만들었고 응답만 늦다
+ rem.set({hour:18});push.sync({settings:{frequency:2,hour:18}});await flush();
+ assert.equal(EDIT_OF(storage)?.hour,18);
+ await push.setAccount(null);   // 로그아웃
+ release();await turning;await settled();   // 늦은 성공 응답 — 계정이 바뀌어 적지 않는다
+ assert.equal(EDIT_OF(storage)?.hour,18,'켜기가 서버에 닿았으면 그때 고른 시각을 지우지 않는다');
+ await push.setAccount('acc-1');await push.ready();await settled();   // 같은 계정으로 돌아온다
+ assert.equal(s.stored.settings.hour,18);assert.equal(rem.value.hour,18);
+ push.dispose();
+});
+
+test('판: 넘겨받기 전 다시 읽기가 날아가는 동안 온 다시 시도는, 그 읽기가 실패하면 한 번 다시 읽는다(GPT push-versions-world-r11 GA3)',async()=>{
+ const s=versionedServer(),storage=memory(),locks=fakeLocks(),m=manual(s),rem=reminderSettings();
+ let held=null;
+ const request=(action,body,options)=>{
+  if(action==='status'&&held){held.count++;const reply=s.request(action,body,options);return new Promise((resolve,reject)=>held.list.push({pass:()=>resolve(reply),fail:error=>reject(error)}));}
+  return m.request(action,body,options);
+ };
+ const a=on(s,{storage,request,browser:{locks}});a.bindSettings(rem);
+ await a.setAccount('acc-1');
+ a.sync({digest:DIGEST('2026-10-23')});await flush();
+ const answer=m.queue.shift().late();
+ await s.request('sync',{settings:{frequency:2,hour:15},versions:{settings:V0}});   // 다른 기기 15시
+ const requestB=(action,body,options)=>action==='sync'?Promise.reject(fault(0,'PUSH_UNAVAILABLE')):s.request(action,body,options);
+ const b=on(s,{storage,request:requestB,browser:{locks}});b.bindSettings(rem);
+ await b.setAccount('acc-1');await settled();
+ rem.set({hour:18});b.sync({settings:{frequency:2,hour:18}});await settled();
+ b.dispose();await settled();
+ held={count:0,list:[]};
+ answer();await settled();await settled();   // A가 낡은 응답을 받고 상태를 다시 읽는다(붙잡힘)
+ assert.equal(held.count,1);
+ a.retry();await settled();   // 망이 돌아왔다 — 날아가는 읽기가 있어 더 보내지 않는다
+ assert.equal(held.count,1);
+ const list=held.list;held=null;list.shift().fail(fault(0,'PUSH_UNAVAILABLE'));await settled();await settled();   // 그 읽기는 끊긴 망에서 실패한다
+ while(m.queue.length){m.queue.shift().pass();await settled();}
+ assert.equal(s.stored.settings.hour,18,'날아가는 동안 온 다시 시도를 잊지 않고 다시 읽어 넘겨받는다');assert.equal(rem.value.hour,18);
+ a.dispose();
+});
+
 test('판: 넘겨받은 닫힌 페이지의 편집이 보내는 사이 다른 기기의 쓰기로 거절되면 다시 보내지 않고 서버 것을 들인다(설계 주인 규칙 5, 섞기 시드 97)',async()=>{
  const s=versionedServer(),storage=memory(),locks=fakeLocks(),m=manual(s),rem=reminderSettings();
  const t1=on(s,{storage,browser:{locks}});t1.bindSettings(rem);

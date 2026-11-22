@@ -215,7 +215,12 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 가고, 그사이 다른 쓰기로 거절되면 서버 것을 들인다(닫힌 탭의 편집은 그 탭이 보지 못한 쓰기를 이기지 않는다). 주인이 살아 있으면 건드리지 않는다.
  // 한 편집에 한 번에 하나만 본다. 저장이 실패하면 거기서 멈춘다(되풀이 없음).
  // 넘겨받기 전 상태 다시 읽기 — 한 번에 하나만 보낸다(r10 GA4: 다시 시도가 겹쳐 보내면 늦게 끝난 앞 읽기의 실패가 뒤 읽기의 성공 위에 적힌다).
- function readClaim(){const mark=claimRead,done=()=>{mark.reading=false;};mark.reading=true;void refresh().then(done,done);}
+ // 날아가는 동안 온 다시 시도(온라인 · 화면 복귀)는 적어 두고, 그 읽기가 끝난 뒤에도 넘겨받기가 서지 않았으면(읽기가 실패했다) 한 번 더 읽는다(r11 GA3).
+ function readClaim(){
+  const mark=claimRead,done=()=>{mark.reading=false;if(!mark.again||claimRead!==mark)return;mark.again=false;
+   if(!closing&&state.seenSeq<=mark.after&&readEdit()?.id===mark.id)readClaim();};
+  mark.reading=true;mark.again=false;void refresh().then(done,done);
+ }
  function claim(expected,edit){
   if(claiming===edit.id)return;claiming=edit.id;
   ownerAlive(edit).then(alive=>{
@@ -463,7 +468,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    waiting.timer=setTimeout(()=>waiting.stop(),PERMISSION_WAIT_MS);
    Promise.resolve(prompt).then(late=>{if(waiting.cancelled&&late)void removeLocal(late,registration);},()=>{});
    emit({busy:true,error:null});
-   let sub=null;
+   let sub=null,saved=false;   // saved: 서버가 켜기를 받았다고 답했다(그 뒤 계정이 바뀌어 적지 못했어도 계획은 서버에 있다)
    const pending=(async()=>{
     try{
      const first=await Promise.race([prompt,stopped]);clearTimeout(waiting.timer);
@@ -495,6 +500,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
       if(!versions||Number(error?.status)!==400||error?.code!=='INVALID_ACTION')throw error;
       guard(expected);emit({versioning:false});based=false;data=await request('subscribe',payload);
      }
+     saved=data?.device?.subscribed===true;
      guard(expected);
      if(data.device?.subscribed!==true)throw Object.assign(Error('PUSH_UNAVAILABLE'),{code:'PUSH_UNAVAILABLE'});
      writeRecord({accountId:owner,deviceId:data.device.deviceId,endpoint:sub.endpoint});
@@ -522,7 +528,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
     }catch(error){
      clearTimeout(waiting.timer);if(attempt===waiting)attempt=null;
      // 켜기가 날아가는 동안 적은 편집은 지운다 — 계정은 여전히 꺼져 있고 1단 값은 다음 켜기가 보낸다. 남기면 나중에 다른 기기가 켠 계획을 덮는다(r8 GA1).
-     dropAttemptEdits(waiting);
+     // 다만 서버가 켜기를 받았다고 답했으면 계획이 서버에 있으므로 두고 간다 — 그 계정으로 돌아오면 맞추기가 보낸다(r11 GA2: 응답을 기다리며 고르고 로그아웃).
+     if(!saved)dropAttemptEdits(waiting);
      // 서버 저장 실패·응답 유실·늦은 허용: 방금 만든 구독은 지운다(서버에 남았어도 이 브라우저는 그 알림을 못 띄운다).
      const removed=await removeLocal(sub);
      const denied=error?.name==='NotAllowedError'||worldPushSupport(env).permission==='denied';
@@ -617,7 +624,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    if(!readEdit()&&!owedDigest)return;
    if(!state.checkedAt||state.phase==='error'){void refresh();return;}
    // 넘겨받을 편집 때문에 상태를 다시 읽다가 실패했으면 다시 읽는다 — 그 읽기의 응답이 정한다(r9 GA2 · GA8: 실패 뒤 편집이 묶이지 않게).
-   if(claimRead&&state.seenSeq<=claimRead.after&&readEdit()?.id===claimRead.id){if(!claimRead.reading)readClaim();return;}
+   if(claimRead&&state.seenSeq<=claimRead.after&&readEdit()?.id===claimRead.id){if(claimRead.reading)claimRead.again=true;else readClaim();return;}
    if(!state.account.active||jobs.size>0)return;
    clearTimeout(retryTimer);retryTimer=null;retryStep=0;reconcile(expected);if(jobs.size===0)resend(expected);
   },
