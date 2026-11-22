@@ -1082,12 +1082,6 @@ def 검사(편, 영상, 시작=0, 끝=None, 종류=None, 묶음="", 사람=False
             쓰기(옛)
             반박적기(공용, 잠금이름, list(다툼), 열쇠)
         elif 옛 is None:
-            if not os.environ.get("SYNK_FIRSTCUT_EYE"):
-                try:
-                    subprocess.run(["node", str(Path(__file__).parent / "lib" / "뮤즈1차.js"),
-                                    "콘텐츠", "-", str(시트)], input=주문글, encoding="utf-8", check=False)
-                except OSError as exc:
-                    print(f"뮤즈 1차 검수 미완료 · {exc}", file=sys.stderr)
             앞다시, _ = 앞기록들(편, 동일성, 뺄것=기록)
             print(f"맥락 없는 다른 눈(GPT)에게 {시작:g}~{끝:g}초와 주문을 보인다. 5~10분 걸린다.", flush=True)
             판정, 눈 = 눈부르기(영상, 시작, 끝, 주문글, 질문, 자리, "눈", 앞다시=앞다시, 연결판=연결판, 좌우=현재좌우, 장=(연결정보 or {}).get("장"))

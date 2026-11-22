@@ -2554,11 +2554,6 @@ async function main(argv = process.argv.slice(2)) {
     if (e instanceof 사용법오류) { console.error(`${e.message}\n${사용법}`); return 2; }
     r = { 결과: '실패', 이유: e.message };
   }
-  const live = r.확인 || (옵션.명령 === '확인' && r.대조 ? r : null);
-  if (live) {
-    const evidence = [r.커밋, ...확인글(live), live.오류, ...(r.빠짐 || []).map(x => x.경로)].filter(Boolean);
-    require('./lib/뮤즈1차.js').review('라이브', evidence.join('\n'));
-  }
   if (옵션.json) console.log(JSON.stringify(r, null, 2));
   else console.log(옵션.명령 === '올리기' ? 올리기글(r, argv) : 옵션.명령 === '확인' ? 확인결과글(r) : 옵션.명령 === '기준' ? 기준글(r, argv) : 채우기글(r));
   return 좋은결과.has(r.결과) ? 0 : 1;

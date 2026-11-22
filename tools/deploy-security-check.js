@@ -334,7 +334,6 @@ async function main(argv = process.argv.slice(2)) {
     if (o.후보) { console.log(`Apps Script 검수 후보: ${후보쓰기(o.후보, 배포후보읽기())}`); return; }
     if (!o.push) throw new Error('--후보 또는 --push를 준다');
     const r = await 검수반영(o);
-    require('./lib/뮤즈1차.js').review('라이브', `Apps Script 고정 버전 @${r.versionNumber}. 배포 원문과 검수 후보가 일치하고 기존 deployment의 버전을 다시 조회했다. 사용자 흐름 시험 결과는 이 기록에 없다.`);
     console.log(`Apps Script 기존 배포 반영·대조 완료 @${r.versionNumber} · 검수 ${r.검수}${r.사슬 ? `(사슬 ${r.사슬.join(' → ')})` : ''}`);
     return;
   }
