@@ -34,9 +34,28 @@ const LOOK = Object.freeze({
   quiet: { rim: 0.24, glow: 0.06, lift: 0, eye: 0.42, mode: 'closed' },
 });
 const lookOf = s => LOOK[s] || LOOK.quiet;
+/* 자리보다 직원이 많으면 승인을 물은 직원, 느낌표가 붙은 직원, 일하는 직원부터 앉힌다. 처음 본 차례로만 앉히면 오래 조용한 직원이 자리를 차지해,
+   맨 위 글은 「열둘이 일하고 있습니다」인데 그림에는 하나만 눈을 뜨고 있었다(유호님 PC 실제 확인 11-22, 직원 스물셋).
+   지난 그림에도 앉아 있던 직원은 그 자리를 그대로 쓰고, 새로 앉는 직원이 빠진 직원의 자리를 채운다. 그러지 않으면 한 명이 조용해질 때마다
+   그 사이 직원이 모두 한 칸씩 옮겨 앉는다(검수 solio-office-seats-20261122 F1). 자리 수보다 적으면 전처럼 처음 본 차례다.
+   자리 수와 같을 때는 지난 배치의 자리 수도 같으면 지난 자리를 잇는다(검수 -r2 FA1) */
+const SEAT_RANK = Object.freeze({ working: 2, done: 3, quiet: 4, resting: 5 });
+const seatRank = s => (s.status === 'asked' ? 0 : s.alert ? 1 : SEAT_RANK[s.status] ?? 9);
+function seated(staff, n, before) {
+  // 자리 수와 같아질 때도 지난 자리를 잇는다. 넘쳤다가 그림에 없던 직원이 빠져 자리 수와 같아질 때 모두가 옮겨 앉지 않게(검수 -r2 F1)
+  if (staff.length < n || (staff.length === n && !(before && before.spots?.length === n))) return staff;
+  const chosen = staff.map((s, i) => [s, i]).sort(([a, i], [b, j]) => seatRank(a) - seatRank(b) || i - j).slice(0, n).sort((a, b) => a[1] - b[1]).map(([s]) => s);
+  if (!before || before.spots?.length !== n || !Array.isArray(before.staff)) return chosen;
+  const byId = new Map(chosen.map(s => [s.id, s]));
+  const seats = Array.from({ length: n }, (_, i) => (before.staff[i] && byId.has(before.staff[i].id) ? byId.get(before.staff[i].id) : null));
+  const kept = new Set(seats.filter(Boolean).map(s => s.id));
+  const fresh = chosen.filter(s => !kept.has(s.id));
+  return seats.map(s => s || fresh.shift());
+}
 
 /* 자리 잡기: 부서는 셋씩 두 줄, 그 아래 한 띠에 「부서 없는 일」과 「그 밖」을 나란히 둔다. 빈 부서도 그린다 */
-export function floorLayout(scene) {
+export function floorLayout(scene, prev = null) {
+  const was = key => (Array.isArray(prev) ? prev.find(p => p && p.key === key) : null);
   const zones = Array.isArray(scene?.zones) ? scene.zones : [];
   const depts = zones.filter(z => z.kind === 'dept'), bottom = zones.filter(z => z.kind !== 'dept');
   const seats = Math.max(1, Math.min(3, Number(scene?.seats) || 1));
@@ -49,7 +68,7 @@ export function floorLayout(scene) {
     const spots = [];
     const line = (k, z0) => { const f = k === 1 ? [0.5] : k === 2 ? [0.34, 0.66] : [0.22, 0.5, 0.78]; for (const x of f) spots.push({ x: cx - ZW / 2 + ZW * x, z: z0 }); };
     if (n <= 3) line(n, cz - 0.18); else { line(Math.ceil(n / 2), cz - 0.55); line(n - Math.ceil(n / 2), cz + 0.35); }
-    out.push({ ...z, rect: { x0: cx - ZW / 2, x1: cx + ZW / 2, z0: cz - ZD / 2, z1: cz + ZD / 2 }, spots });
+    out.push({ ...z, staff: seated(z.staff, n, was(z.key)), rect: { x0: cx - ZW / 2, x1: cx + ZW / 2, z0: cz - ZD / 2, z1: cz + ZD / 2 }, spots });
   });
   if (bottom.length) {
     const gridHalf = depts.length ? (cols * ZW + (cols - 1) * GAP) / 2 : 0;
@@ -64,7 +83,7 @@ export function floorLayout(scene) {
       const x0 = x, x1 = x0 + width, mid = (x0 + x1) / 2, n = Math.min(8, z.staff.length);
       x = x1 + GAP;
       const spots = Array.from({ length: n }, (_, k) => ({ x: mid + (k - (n - 1) / 2) * STEP, z: z0 + STRIP / 2 - 0.05 }));
-      out.push({ ...z, rect: { x0, x1, z0, z1: z0 + STRIP }, spots });
+      out.push({ ...z, staff: seated(z.staff, n, was(z.key)), rect: { x0, x1, z0, z1: z0 + STRIP }, spots });
     });
   }
   return out;
@@ -283,7 +302,7 @@ export function createOfficeFloor(canvas, { win = globalThis, reduced = () => fa
       const want = s.view === 'top' ? 0 : 1;
       if (viewSeq === null || s.viewSeq === viewSeq || reduced()) { view = viewTo = want; } else viewTo = want;
       viewSeq = s.viewSeq;
-      layout = floorLayout(s);
+      layout = floorLayout(s, layout);
       const t = clock(), ids = new Set();
       for (const z of layout) for (const st of z.staff) {
         ids.add(st.id);

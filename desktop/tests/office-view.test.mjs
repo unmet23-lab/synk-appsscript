@@ -246,6 +246,42 @@ test('the floor draws up to six departments and bundles the rest into one 「그
   }
   const crowded = floorLayout({ seats: 1, zones: [{ key: 'd:x', kind: 'dept', name: 'x', staff: Array.from({ length: 5 }, (_, i) => ({ id: 'p' + i, status: 'working' })) }] });
   assert.equal(crowded[0].spots.length, 5);
+  // 자리보다 직원이 많으면 승인 물음 · 일하는 직원부터 앉고, 앉은 직원끼리는 처음 본 차례다(유호님 PC 실제 확인 11-22: 스물셋 가운데 처음 본 여덟만 그려 일하는 열둘 가운데 하나만 그림에 있었다)
+  const lobbyStaff = [...Array.from({ length: 8 }, (_, i) => ({ id: 'q' + i, status: 'quiet' })), { id: 'w1', status: 'working' }, { id: 'q8', status: 'quiet' }, { id: 'w2', status: 'working' }];
+  const [lobby] = floorLayout({ seats: 1, zones: [{ key: 'lobby', kind: 'lobby', name: '부서 없는 일', staff: lobbyStaff }] });
+  assert.equal(lobby.spots.length, 8);
+  assert.deepEqual(lobby.staff.map(s => s.id), ['q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'w1', 'w2'], 'the two working staff take seats from the quiet ones and keep their first-seen order');
+  const deptStaff = [...Array.from({ length: 6 }, (_, i) => ({ id: 'r' + i, status: 'resting' })), { id: 'a1', status: 'asked' }];
+  const [dept] = floorLayout({ seats: 1, zones: [{ key: 'd:y', kind: 'dept', name: 'y', staff: deptStaff }] });
+  assert.ok(dept.staff.some(s => s.id === 'a1'), 'a staff member asking for approval is always drawn in a full department');
+  assert.equal(dept.staff.length, 6);
+  const few = [{ id: 'f1', status: 'quiet' }, { id: 'f2', status: 'working' }];
+  assert.deepEqual(floorLayout({ seats: 1, zones: [{ key: 'lobby', kind: 'lobby', name: '부서 없는 일', staff: few }] })[0].staff.map(s => s.id), ['f1', 'f2'], 'under the seat count nobody moves');
+  // 한 명이 조용해지면 그 자리의 주인만 바뀐다. 남은 직원은 지난 그림의 자리를 그대로 쓴다(검수 solio-office-seats-20261122 F1)
+  const crowd = st => [{ key: 'lobby', kind: 'lobby', name: '부서 없는 일', staff: st }];
+  const busy = Array.from({ length: 23 }, (_, i) => ({ id: 's' + i, status: i >= 11 ? 'working' : 'quiet' }));
+  const first = floorLayout({ seats: 1, zones: crowd(busy) });
+  const firstIds = first[0].staff.map(s => s.id);
+  assert.deepEqual(firstIds, ['s11', 's12', 's13', 's14', 's15', 's16', 's17', 's18']);
+  const calmer = busy.map(s => (s.id === 's11' ? { ...s, status: 'quiet' } : s));
+  const nextIds = floorLayout({ seats: 1, zones: crowd(calmer) }, first)[0].staff.map(s => s.id);
+  assert.deepEqual(nextIds.map((id, i) => id === firstIds[i]), [false, true, true, true, true, true, true, true], 'only the seat of the staff member who went quiet changes hands');
+  assert.equal(nextIds[0], 's19', 'the next working staff member takes the freed seat');
+  // 넘쳤던 부서에서 그림에 없던 직원이 빠져 자리 수와 같아져도 남은 여섯은 자리를 그대로 쓴다(검수 -r2 F1)
+  const dz = st => [{ key: 'd:z', kind: 'dept', name: 'z', staff: st }];
+  const sevenDept = [...['a', 'b', 'c', 'd', 'e', 'f'].map(id => ({ id, status: 'working' })), { id: 'g', status: 'quiet' }];
+  const start7 = floorLayout({ seats: 1, zones: dz(sevenDept) });
+  // a가 조용해지고 g가 일을 시작하면 g가 a의 자리에 앉는다([g, b, c, d, e, f])
+  const swapped = sevenDept.map(s => (s.id === 'a' ? { ...s, status: 'quiet' } : s.id === 'g' ? { ...s, status: 'working' } : s));
+  const before7 = floorLayout({ seats: 1, zones: dz(swapped) }, start7);
+  assert.deepEqual(before7[0].staff.map(s => s.id), ['g', 'b', 'c', 'd', 'e', 'f']);
+  // 그림에 없던 a의 세션이 끝나 여섯이 된다
+  const after6 = floorLayout({ seats: 1, zones: dz(swapped.slice(1)) }, before7);
+  const spotOf = (layout, id) => layout[0].spots[layout[0].staff.findIndex(s => s.id === id)];
+  for (const id of ['b', 'c', 'd', 'e', 'f', 'g']) assert.deepEqual(spotOf(after6, id), spotOf(before7, id), id + ' keeps its spot when the hidden staff member leaves');
+  // 느낌표가 붙은 직원(오래 걸린 일을 끝냄)은 일하는 직원보다 먼저 앉는다(F3)
+  const doneLong = [...Array.from({ length: 8 }, (_, i) => ({ id: 'k' + i, status: 'working' })), { id: 'd1', status: 'done', alert: true }];
+  assert.ok(floorLayout({ seats: 1, zones: crowd(doneLong) })[0].staff.some(s => s.id === 'd1'), 'a finished staff member with an alert stays in the picture');
   assert.ok(FLOOR_MOTION.rimPeriod >= 2400, 'the working rim changes over at least 2.4 s');
   assert.equal(FLOOR_MOTION.fadeMs, 300, 'a new staff member fades in for 0.3 s at the seat');
 });
