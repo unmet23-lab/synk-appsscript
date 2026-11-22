@@ -7,7 +7,8 @@
 @font-face{font-family:'Reserve Inter';src:url(assets/reserve-inter-700.woff2) format('woff2');font-weight:600 900;font-display:swap}
 
 :root{
-  --ink:#1d1d1f;--paper:#fff;--warm:#FAF1ED;--hair:#E2DED9;--cap:#4a4744;--acc:#F2573F;--bad:#B42318;
+  --ink:#1d1d1f;--paper:#fff;--warm:#FAF1ED;--hair:#E2DED9;--cap:#4a4744;--bad:#B42318;
+  --acc:#C43A22; /* v11 코랄(#F2573F)을 글자에 쓸 만큼 짙게 — 따뜻한 바탕에서 4.75:1(공개 전 점검 axe color-contrast, 11-23) */
   --sans:'Reserve Sans','Reserve Inter','SUIT','Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
   --gut:clamp(20px,5vw,72px);
   --wide:max(var(--gut),calc((100vw - 1240px)/2));

@@ -1,11 +1,11 @@
 {
   "lab/topik4/index.html": {
-    "bytes": 2067,
-    "sha256": "6708b9296df9c0e019715a548c55979b36d8fb42bd88536f52c660d7e9b113cb"
+    "bytes": 2102,
+    "sha256": "d611e85ce9c81d1958026e033875ec613a14deccc0292dae918553ba6b32424a"
   },
   "reserve/app.js": {
-    "bytes": 11423,
-    "sha256": "67789cd57097859c600967c3d8a674d676cb0363f6c1884d75ac4109d2d3cfe5"
+    "bytes": 11695,
+    "sha256": "28931c6d106820a0caf6a79963651d4104b242f7a2031845c3a497cd9a3b2d92"
   },
   "reserve/assets/reserve-inter-500.woff2": {
     "bytes": 29328,
@@ -20,19 +20,19 @@
     "sha256": "075a564af9dc83fc6e429e4567a1dd782bbf787ff001741c65273d78f625cfa0"
   },
   "reserve/copy.js": {
-    "bytes": 11209,
-    "sha256": "67d719caa9203f14bd250f11aeddf4a00918d697611856f06e924b70dac0e9cb"
+    "bytes": 11362,
+    "sha256": "2fc6b47e7216017c2678f7b6d8bced8ae6eee3052616119c2f6f509a5953600a"
   },
   "reserve/index.html": {
-    "bytes": 6910,
-    "sha256": "8b77957861573f798e192500c9de5a3e6515806b52fd18ba0225bb0b164a11b6"
+    "bytes": 7003,
+    "sha256": "3e8d8177b4bc12e0253585931416f701d6cb9b7fb70d121af0300058d84fb8b4"
   },
   "reserve/og.jpg": {
     "bytes": 95001,
     "sha256": "144ca4b63d22d0fd06865dc0f6002147bdfffcac6720494f7bce5bb10008ba73"
   },
   "reserve/reserve.css": {
-    "bytes": 8119,
-    "sha256": "0eb587c9092cda7dacb98df39959f18e607195ce3a0b4c96725a0ec2fbb35989"
+    "bytes": 8258,
+    "sha256": "6c93211a887a70be483f03df0d73cede1a746ea4cd718544a1627ef1102d00b9"
   }
 }
