@@ -1943,9 +1943,9 @@ test('판: 다른 탭의 편집이 받혀 나눠 쓰는 판 키가 비어도, �
  const a=on(s,{storage,browser:{locks}});a.bindSettings(rem);
  const b=on(s,{storage,browser:{locks,extra:bus.extra}});b.bindSettings(rem);
  await a.setAccount('acc-1');await b.setAccount('acc-1');await settled();
- rem.set({hour:20});a.sync({settings:{frequency:2,hour:20}});await settled();   // A의 20시가 받혀 판 키가 빈다
+ rem.set({hour:20});a.sync({settings:{frequency:2,hour:20}});const oldValue=storage.getItem(KEY_V);await settled();   // A의 20시가 받혀 판 키가 빈다
  assert.equal(s.stored.settings.hour,20);assert.equal(EDIT_OF(storage),null);
- bus.fire({key:KEY_V,newValue:null});await settled();
+ bus.fire({key:KEY_V,oldValue,newValue:null});await settled();
  assert.equal(rem.value.hour,20,'B가 아는 옛 9시로 되돌리지 않는다');
  a.dispose();b.dispose();
 });
@@ -1957,8 +1957,8 @@ test('판: 화면 맞추기 읽기가 날아가는 동안 다른 탭이 이 브�
  const a=makeV(browser({registered:true}),s,{now:()=>V0,storage,browser:{locks}});a.bindSettings(rem);   // 이 브라우저는 아직 알림을 받지 않는다(다른 기기만 켜 둠)
  const b=makeV(browser({registered:true,locks,extra:bus.extra}),s,{now:()=>V0,storage,request:requestB,anonymous:(action,body)=>{anonB.push(action);return Promise.resolve({ok:true,removed:true});}});b.bindSettings(rem);
  await a.setAccount('acc-1');await a.ready();await b.setAccount('acc-1');await settled();
- rem.set({hour:20});a.sync({settings:{frequency:2,hour:20}});await settled();   // A의 20시가 받혀 판 키가 빈다
- hold=[];bus.fire({key:KEY_V,oldValue:null,newValue:null});await settled();   // B가 화면을 맞추려 상태를 읽는다(붙잡힘)
+ rem.set({hour:20});a.sync({settings:{frequency:2,hour:20}});const oldValue=storage.getItem(KEY_V);await settled();   // A의 20시가 받혀 판 키가 빈다
+ hold=[];bus.fire({key:KEY_V,oldValue,newValue:null});await settled();   // B가 화면을 맞추려 상태를 읽는다(붙잡힘 — 지워진 값과 함께)
  assert.equal(hold.length,1);
  await a.enable({settings:{frequency:2,hour:20,since:null}});await settled();   // 그사이 A가 이 브라우저 알림을 켠다
  const record=storage.getItem('synk.world.push.v1');assert.ok(record,'A가 기기 기록을 적었다');
@@ -1985,6 +1985,51 @@ test('판: 이 탭이 쓴 편집을 다른 탭이 지우면, 마지막으로 받
  assert.equal(rem.value.hour,9,'B 화면이 서버 시각 9시로 바뀐다');
  const after=callsB.slice(mark);assert.equal(after.filter(action=>action!=='status').length,0);assert.equal(after.length,1);
  a.dispose();b.dispose();
+});
+
+// 서버 18시에서 시작한 세 탭(B는 저장소 알림을 듣는다). 다른 기기가 9시로 바꾸고, 망이 끊긴 B가 20시를 거쳐 18시를 고른 뒤 A가 로그아웃한다.
+const threeTabsLeft=async()=>{
+ const s=versionedServer({settings:{frequency:2,hour:18,since:null}}),storage=memory(),locks=fakeLocks(),rem=reminderSettings({frequency:2,hour:18,since:null}),bus=storageBus();
+ const net={offline:false,holdNext:false,held:[],callsB:[]};
+ const requestB=(action,body,options)=>{net.callsB.push(action);
+  if(net.offline)return Promise.reject(fault(0,'PUSH_UNAVAILABLE'));
+  if(action==='status'&&net.holdNext){net.holdNext=false;const reply=s.request(action,body,options);return new Promise(resolve=>net.held.push(()=>resolve(reply)));}
+  return s.request(action,body,options);};
+ const a=on(s,{storage,browser:{locks}});a.bindSettings(rem);
+ const b=on(s,{storage,request:requestB,browser:{locks,extra:bus.extra}});b.bindSettings(rem);
+ const c=on(s,{storage,browser:{locks}});c.bindSettings(rem);
+ await a.setAccount('acc-1');await b.setAccount('acc-1');await c.setAccount('acc-1');await settled();   // 셋 다 18시를 읽었다
+ await s.request('sync',{settings:{frequency:2,hour:9},versions:{settings:V0}});   // 다른 기기가 9시로
+ net.offline=true;
+ rem.set({hour:20});b.sync({settings:{frequency:2,hour:20}});await settled();
+ rem.set({hour:18});b.sync({settings:{frequency:2,hour:18}});await settled();   // B의 화면 · 마지막으로 받은 값은 18시, 서버는 9시
+ const oldValue=storage.getItem(KEY_V);
+ await a.logout();await settled();   // A가 로그아웃해 B의 편집을 지운다
+ return {s,a,b,c,rem,bus,net,storage,oldValue};
+};
+test('판: 화면 맞추기 읽기가 늦는 사이 다른 탭이 시각을 저장해 판 키가 다시 비면, 이 탭은 한 번 더 읽어 늦은 옛 응답이 화면을 되돌리지 않는다(GPT push-versions-world-r15 GA1)',async()=>{
+ const {s,a,b,c,rem,bus,net,storage,oldValue}=await threeTabsLeft();
+ net.offline=false;net.holdNext=true;
+ bus.fire({key:KEY_V,oldValue,newValue:null});await settled();   // B가 읽는다(9시 응답이 늦다)
+ assert.equal(net.held.length,1);
+ rem.set({hour:18});c.sync({settings:{frequency:2,hour:18}});const cValue=storage.getItem(KEY_V);
+ bus.fire({key:KEY_V,oldValue:null,newValue:cValue});await settled();await settled();   // C의 18시가 판을 맞춰 받힌다
+ assert.equal(s.stored.settings.hour,18);assert.equal(EDIT_OF(storage),null);
+ bus.fire({key:KEY_V,oldValue:cValue,newValue:null});await settled();   // C가 받힌 편집을 지운 알림
+ net.held.shift()();await settled();await settled();   // B의 늦은 9시 응답
+ assert.equal(rem.value.hour,18,'늦은 옛 응답이 화면을 9시로 되돌리지 않는다');assert.equal(s.stored.settings.hour,18);
+ a.dispose();b.dispose();c.dispose();
+});
+
+test('판: 화면 맞추기 읽기가 망이 끊겨 실패하면, 망이 돌아온 다시 시도가 한 번 다시 읽어 서버 시각을 보인다(GPT push-versions-world-r15 GA3)',async()=>{
+ const {s,a,b,c,rem,bus,net,oldValue}=await threeTabsLeft();
+ bus.fire({key:KEY_V,oldValue,newValue:null});await settled();   // 읽기가 끊긴 망에서 실패한다
+ assert.equal(rem.value.hour,18);assert.ok(b.snapshot().error);
+ net.offline=false;const mark=net.callsB.length;
+ b.retry();await settled();await settled();   // 망이 돌아온다
+ assert.equal(rem.value.hour,9,'서버 시각이 보인다');assert.equal(s.stored.settings.hour,9);assert.equal(b.snapshot().error,null);
+ const after=net.callsB.slice(mark);assert.equal(after.filter(action=>action!=='status').length,0);assert.equal(after.length,1);
+ a.dispose();b.dispose();c.dispose();
 });
 
 test('판: 넘겨받은 닫힌 페이지의 편집이 보내는 사이 다른 기기의 쓰기로 거절되면 다시 보내지 않고 서버 것을 들인다(설계 주인 규칙 5, 섞기 시드 97)',async()=>{

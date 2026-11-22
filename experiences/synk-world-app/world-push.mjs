@@ -429,20 +429,18 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  function dropEdits(){if(owner){try{storage?.removeItem(versionKey());}catch{}}}
  // 이 탭 화면을 서버 설정에 맞춘다(설계 주인 11-23, r13 GA1): 다른 탭이 나눠 쓰는 편집을 지웠거나(로그아웃 · 계정 바꿈) 다시 시도할 때 보낼 것이 없는데
  // 화면(1단 설정)이 이 탭이 마지막으로 받은 서버 설정과 다르면, 상태를 한 번 읽는다 — 맞추기가 그 서버 설정을 들인다. 1단은 탭이 함께 쓰므로 마지막으로
- // 받은 값을 바로 들이지 않는다(다른 탭에서 방금 받힌 더 새 설정을 되돌리지 않게). mine: 지워진 것이 이 탭이 쓴 편집이다 — 그때는 견주지 않고 읽는다.
- // 마지막으로 받은 값이 화면과 우연히 같아도 서버는 그사이 바뀌었을 수 있다(r14 GA3). 보낼 편집이 있으면 하지 않고 쓰기 요청은 내지 않는다(정리하지 않는
- // 읽기). 이 탭이 로그아웃했거나 계정이 바뀌었으면 하지 않는다.
- function showServer(mine=false){
+ // 받은 값을 바로 들이지 않는다(다른 탭에서 방금 받힌 더 새 설정을 되돌리지 않게). force: 견주지 않고 읽는다 — 다른 탭이 판 키를 지웠을 때(받힘 ·
+ // 로그아웃 · 계정 바꿈)는 늘 그렇게 한다. 마지막으로 받은 값이 화면과 우연히 같아도 서버는 그사이 바뀌었을 수 있고(r14 GA3), 앞 화면 맞추기 읽기가 늦는
+ // 사이 다른 탭이 저장했으면 그 뒤에 보낸 읽기가 있어야 늦은 옛 응답을 판의 차례로 버린다(r15 GA1). 다시 시도는 앞 읽기가 실패했을 때 견주지 않는다(r15
+ // GA3 — 실패한 읽기 뒤 마지막으로 받은 값이 화면과 같아 묶이지 않게). 보낼 편집이 있으면 하지 않고 쓰기 요청은 내지 않는다(정리하지 않는 읽기). 이 탭이
+ // 로그아웃했거나 계정이 바뀌었으면 하지 않는다.
+ function showServer(force=false){
   if(!current(epoch)||closing||readEdit()||!state.versioning||!state.account.active||!state.checkedAt||!state.plan)return;
   const live=liveSettings(null),plan=state.plan,hour=Number.isFinite(plan.hour)?plan.hour:null;
-  if(!mine&&(!live||(live.frequency===plan.frequency&&live.hour===hour)))return;
+  if(!force&&(!live||(live.frequency===plan.frequency&&live.hour===hour)))return;
   void refresh({tidy:false});
  }
- const onStorage=event=>{
-  if(!event||(event.key!==null&&event.key!==versionKey()))return;
-  let mine=false;try{mine=event.key!==null&&settingsOf(JSON.parse(event.oldValue||'null')?.settings)?.page===page;}catch{}
-  showServer(mine);
- };
+ const onStorage=event=>{if(event&&(event.key===null||(event.key===versionKey()&&event.newValue==null)))showServer(true);};
  try{env.addEventListener?.('storage',onStorage);}catch{}
  return {
   snapshot,refresh,
@@ -636,7 +634,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   // 읽으면 맞추기가 보낸다(GA9). 보낼 것이 없거나 2단이 꺼진 계정이면 부르지 않는다(받을 수 없는 기기에서 화면을 켤 때마다 부르지 않게).
   retry(){
    const expected=epoch;if(!current(expected)||closing)return;
-   if(!readEdit()&&!owedDigest){showServer();return;}   // 보낼 것이 없으면 화면만 서버 설정에 맞춘다(r13 GA1)
+   if(!readEdit()&&!owedDigest){showServer(!!state.error);return;}   // 보낼 것이 없으면 화면만 서버 설정에 맞춘다(r13 GA1 · 앞 읽기 실패면 r15 GA3)
    if(!state.checkedAt||state.phase==='error'){void refresh();return;}
    // 넘겨받을 편집 때문에 상태를 다시 읽다가 실패했으면 다시 읽는다 — 그 읽기의 응답이 정한다(r9 GA2 · GA8: 실패 뒤 편집이 묶이지 않게).
    if(claimRead&&state.seenSeq<=claimRead.after&&readEdit()?.id===claimRead.id){if(claimRead.reading)claimRead.again=true;else readClaim();return;}
