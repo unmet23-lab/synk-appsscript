@@ -25,7 +25,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
  'greetings-expressions-name':q(
   {prompt:'자기 이름을 소개하는 말을 골라요.',context:'처음 만난 친구에게 내 이름을 말해요.',explanation:'자기 이름을 말할 때는 ‘저는 수진이에요’라고 해요. ‘안녕하세요’는 인사, ‘감사합니다’는 고마움을 전하는 말이에요.'},
   {prompt:'Choose the sentence that introduces your own name.',context:'You tell a friend you just met your name.',explanation:'To say your own name, say ‘저는 수진이에요’. ‘안녕하세요’ is a greeting, and ‘감사합니다’ is how you say thank you.'},
-  {prompt:'Өөрийгөө танилцуулах үгийг сонгоно уу.',context:'Анх уулзаж буй найздаа нэрээ хэлж байна.',explanation:'Нэрээ хэлэхдээ «저는 수진이에요» гэж хэлнэ. «안녕하세요» нь мэндчилгээ, «감사합니다» нь талархал илэрхийлэх үг.'}),
+  {prompt:'Өөрийгөө танилцуулах үгийг сонгоно уу.',context:'Анх уулзаж буй хүндээ нэрээ хэлж байна.',explanation:'Нэрээ хэлэхдээ «저는 수진이에요» гэж хэлнэ. «안녕하세요» нь мэндчилгээ, «감사합니다» нь талархал илэрхийлэх үг.'}),
  'greetings-expressions-name-transfer':q(
   {prompt:'자기 이름을 소개하는 말을 골라요.',context:'내 이름은 준영이에요.',explanation:'‘저는 준영이에요’는 자기 이름을 말하는 소개예요.'},
   {prompt:'Choose the sentence that introduces your own name.',context:'Your name is Junyoung.',explanation:'‘저는 준영이에요’ is how you say your own name.'},
@@ -45,7 +45,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
  'greetings-story-thanks-transfer':q(
   {prompt:'민지가 준호에게 ‘감사합니다’라고 했어요. 왜 그렇게 말했을까요?',context:'준호가 교실에 왔어요. 민지는 볼펜이 없어요. 준호가 민지에게 볼펜을 줬어요.',explanation:'준호가 볼펜을 준 도움에 민지가 ‘감사합니다’라고 고마움을 전했어요. ‘준호가 교실에 왔어요’는 감사 인사를 한 이유가 아니에요.'},
   {prompt:'Minji said ‘감사합니다’ to Junho. Why did she say it?',context:'Junho came into the classroom. Minji has no pen. Junho gave Minji a pen.',explanation:'Minji said ‘감사합니다’ to thank Junho for giving her a pen. ‘준호가 교실에 왔어요’ (Junho came into the classroom) is not the reason she thanked him.'},
-  {prompt:'Минжи Жүнход «감사합니다» гэж хэлсэн. Яагаад тэгж хэлсэн бэ?',context:'Жүнхо ангид ирсэн. Минжид үзэг байхгүй. Жүнхо Минжид үзэг өгсөн.',explanation:'Жүнхо үзэг өгсөнд Минжи «감사합니다» гэж талархсан. «준호가 교실에 왔어요» (Жүнхо ангид ирсэн) нь талархсан шалтгаан биш.'}),
+  {prompt:'Минжи Жүнход «감사합니다» гэж хэлсэн. Яагаад тэгж хэлсэн бэ?',context:'Жүнхо ангид ирсэн. Минжид үзэг байгаагүй. Жүнхо Минжид үзэг өгсөн.',explanation:'Жүнхо үзэг өгсөнд Минжи «감사합니다» гэж талархсан. «준호가 교실에 왔어요» (Жүнхо ангид ирсэн) нь талархсан шалтгаан биш.'}),
  'greetings-story-hello':q(
   {prompt:'학교에서 처음 만난 사람에게 먼저 할 말을 골라요.',context:'',explanation:'처음 만난 사람에게는 먼저 ‘안녕하세요’라고 인사해요.'},
   {prompt:'Choose what to say first to someone you meet at school for the first time.',context:'',explanation:'To someone you’re meeting for the first time, first say ‘안녕하세요’.'},
@@ -53,7 +53,7 @@ export const LIFE_QUESTION_TEXT=Object.freeze({
  'greetings-story-hello-transfer':q(
   {prompt:'새 동아리에서 처음 만난 친구에게 정중하게 인사해요.',context:'동아리 첫 모임에 왔어요. 처음 보는 친구가 있어요.',explanation:'처음 만난 사람에게는 ‘안녕하세요’라고 인사해요. ‘잘 먹겠습니다’는 밥을 먹기 전에, ‘다녀왔습니다’는 집에 돌아왔을 때 하는 말이에요.'},
   {prompt:'Greet a friend you meet for the first time at a new club, politely.',context:'You’ve come to the club’s first meeting. There is a friend you’ve never seen before.',explanation:'Say ‘안녕하세요’ to someone you meet for the first time. ‘잘 먹겠습니다’ is said before eating, and ‘다녀왔습니다’ when you get home.'},
-  {prompt:'Шинэ клубт анх уулзаж буй хүнтэйгээ эелдгээр мэндэлнэ үү.',context:'Та клубын анхны уулзалтад ирлээ. Анх харж буй хүн байна.',explanation:'Анх уулзаж буй хүнтэйгээ «안녕하세요» гэж мэндэлнэ. «잘 먹겠습니다» нь хоол идэхийн өмнө, «다녀왔습니다» нь гэртээ ирэхдээ хэлдэг үг.'}),
+  {prompt:'Шинэ клубт анх уулзаж буй хүнтэйгээ эелдгээр мэндэлнэ үү.',context:'Та клубын анхны уулзалтад ирлээ. Тэнд таны анх удаа уулзаж буй хүн байна.',explanation:'Анх уулзаж буй хүнтэйгээ «안녕하세요» гэж мэндэлнэ. «잘 먹겠습니다» нь хоол идэхийн өмнө, «다녀왔습니다» нь гэртээ ирэхдээ хэлдэг үг.'}),
  'greetings-apply-introduction':q(
   {prompt:'이름을 묻는 말에 답해요.',context:'“이름이 뭐예요?” 내 이름은 수진이에요.',explanation:'이름을 물었으므로 ‘저는 수진이에요’라고 소개해요.'},
   {prompt:'Answer when someone asks your name.',context:'“이름이 뭐예요?” Your name is Sujin.',explanation:'They asked your name, so you say ‘저는 수진이에요’.'},
@@ -108,15 +108,15 @@ export const LIFE_CHOICE_MEANINGS=Object.freeze({
  '하나':{en:'Hana (a name)',mn:'Хана (нэр)'},
  '태오가 이름표를 줬어요.':{en:'Taeo gave me the name tag.',mn:'Тэо надад нэрийн пайз өгсөн.'},
  '지호가 이름표를 줬어요.':{en:'Jiho gave me the name tag.',mn:'Жихо надад нэрийн пайз өгсөн.'},
- '태오가 자기 이름을 말했어요.':{en:'Taeo said his own name.',mn:'Тэо өөрийн нэрээ хэлсэн.'},
+ '태오가 자기 이름을 말했어요.':{en:'Taeo said his own name.',mn:'Тэо нэрээ хэлсэн.'},
  '준호가 볼펜을 줬어요.':{en:'Junho gave a pen.',mn:'Жүнхо үзэг өгсөн.'},
  '준호가 교실에 왔어요.':{en:'Junho came into the classroom.',mn:'Жүнхо ангид ирсэн.'},
  '민지가 볼펜을 줬어요.':{en:'Minji gave a pen.',mn:'Минжи үзэг өгсөн.'},
  '안녕히 계세요.':{en:'Goodbye. (said when you leave and the other person stays)',mn:'Баяртай. (та явж, нөгөө хүн үлдэх үед хэлдэг)'},
  '죄송합니다.':{en:'I’m sorry.',mn:'Уучлаарай.'},
  '저는 준영이에요.':{en:'I’m Junyoung.',mn:'Би Жүнёон.'},
- '준영은 어디에 있어요?':{en:'Where is Junyoung?',mn:'Жүнёон хаана байна?'},
- '준영은 학교에 가요.':{en:'Junyoung goes to school.',mn:'Жүнёон сургууль руу явна.'},
+ '준영은 어디에 있어요?':{en:'Where is Junyoung?',mn:'Жүнёон хаана байна вэ?'},
+ '준영은 학교에 가요.':{en:'Junyoung goes to school.',mn:'Жүнёон сургууль руу явж байна.'},
 });
 
 // 문제 한 개의 화면 언어 글. 이 표에 없는 문제(1판 밖의 팩)는 원문 그대로다.
