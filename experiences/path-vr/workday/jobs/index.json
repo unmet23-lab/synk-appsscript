@@ -43,7 +43,7 @@
     },
     {
       "id": "medical-coordinator",
-      "status": "making",
+      "status": "open",
       "title": "의료 코디네이터의 하루",
       "role": "의료 코디네이터",
       "minutes": 22,
