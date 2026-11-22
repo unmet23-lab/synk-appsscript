@@ -12,7 +12,8 @@ export const REGIONS = Object.freeze(['local', 'metro']);
 export const VISAS = Object.freeze(['D-2', 'D-4']);
 export const IMAGE_IDS = Object.freeze(['univ-a', 'univ-b', 'univ-c']);
 export const TONES = Object.freeze(['lapis', 'meadow', 'ink', 'coral']);
-export const MAX_TOPIK = 6;
+import { MAX_TOPIK } from './study-shape.mjs';
+export { MAX_TOPIK };
 
 // 출처는 금액을 지금 직접 읽은 문서다(2026-11-21). 금액은 2023-07-03에 시행됐다(법무부 2023-06-23 보도자료).
 // 학위 과정: 법무부 2026-10-07 보도자료 별첨의 「현행」 칸. 어학연수: 주몽골대사관 비자신청센터(KVAC) 안내(한국어 · 몽골어 쪽).

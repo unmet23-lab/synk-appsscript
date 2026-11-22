@@ -1,21 +1,12 @@
-// PATH 「내 조건」. 계정 문서와 섞지 않는다: 이 탭(sessionStorage)에만 두고 서버로 보내지 않는다.
-import { MAX_TOPIK } from './study-data.mjs';
+// PATH 「내 조건」의 탭 저장(sessionStorage). 계정에 동의한 학생의 조건은 계정의 유학 준비 문서(study-shape.mjs)에 둔다.
+import { MAX_TOPIK, EDUCATION_IDS, MAX_FUNDS_WON, MAX_COMPARE, MAX_DATES, MAX_CHANNELS_OFF, MAX_DOCS, ID_RE, DATE_ID_RE, isDay, isStamp } from './study-shape.mjs';
 
+export { EDUCATION_IDS, MAX_FUNDS_WON, MAX_COMPARE, MAX_DATES, MAX_CHANNELS_OFF, MAX_DOCS };
 export const STUDY_KEY = 'synk-path-study-v1';
 export const STUDY_VERSION = 1;
-export const EDUCATION_IDS = Object.freeze(['graduated', 'expected', 'none']);
-export const MAX_FUNDS_WON = 200000000;
-export const MAX_COMPARE = 3;
-export const MAX_DATES = 30;
-export const MAX_CHANNELS_OFF = 10;
-export const MAX_DOCS = 60;
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const intIn = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
-const ID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
-const DATE_ID_RE = /^[a-z0-9][a-z0-9-]{0,79}$/;
-const isDay = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v + 'T00:00:00Z'));
-const isStamp = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(v) && Number.isFinite(Date.parse(v));
 const cleanDoc = (d) => (isObj(d) && typeof d.id === 'string' && ID_RE.test(d.id) && isStamp(d.doneAt) ? { id: d.id, doneAt: d.doneAt } : null);
 const cleanDate = (d) => (isObj(d) && typeof d.id === 'string' && DATE_ID_RE.test(d.id) && isDay(d.start) && isDay(d.end) && d.end >= d.start ? { id: d.id, start: d.start, end: d.end } : null);
 // 조건의 주인: 'guest' 또는 계정 ID. 공용 기기에서 앞 사람의 성적과 돈이 다음 사람에게 보이지 않게 한다.
