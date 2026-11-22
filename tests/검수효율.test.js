@@ -119,8 +119,8 @@ test('GPT 작성(정책 판 5): 다시는 GPT만, Claude는 첫 판·끝 판·�
   const api = await tool(), r = 임시저장소(t, { 'a.js': 'a=1\n' }); r.쓰기('a.js', 'a=2\n');
   const 준비 = (이름, 덧 = {}) => api.준비하기({ 이름, 폴더: path.join(r.뿌리, 이름), 저장소: r.저장소, 종류: '백엔드', 작성자: 'GPT', 바탕: r.바탕, ...덧 });
   const 클로드 = async (목록, 폴더, 답) => { for (const b of 목록.묶음) api.검수받기(폴더, 'Claude', b.이름, (await 답({ prompt: fs.readFileSync(path.join(폴더, b.파일), 'utf8') })).text); };
-  // 새 묶음은 판 7(2026-11-14 — GPT 작성 백엔드의 GPT 자리를 카본이 대신, 아래 판 7 시험)이고, GPT가 막히지 않은 사슬은 판 5와 같다
-  const x = await 준비('g1'); assert.equal(x.목록.정책.판, 7); assert.deepEqual(x.목록.정책.필수, ['GPT', 'Claude']);
+  // 새 묶음은 판 8(2026-11-22 — GPT 작성은 판 7과 같다: GPT 자리를 카본이 대신, 아래 판 7 시험)이고, GPT가 막히지 않은 사슬은 판 5와 같다
+  const x = await 준비('g1'); assert.equal(x.목록.정책.판, 8); assert.deepEqual(x.목록.정책.필수, ['GPT', 'Claude']);
   await api.GPT보내기(x.폴더, x.목록, { call: 답하기([지적하나('a.js:1')]), 몫: 몫충분 });
   await 클로드(x.목록, x.폴더, 답하기());
   api.지적표고치기(x.폴더, 표 => api.처리하기(표, ['GA1=반영']));
@@ -171,7 +171,7 @@ test('GPT 작성 카본 대체(정책 판 7 · 11-14 유호님 「웅 만약에 
   const 조건 = x => api.집계하기(x.목록, api.결과들읽기(x.폴더, x.목록), api.지적표읽기(x.폴더), api.결과들읽기(x.폴더, x.목록, 'GPT'), api.결과들읽기(x.폴더, x.목록, 'Claude')).조건;
   // 정책: 필수는 그대로 GPT · Claude이고, 대신은 GPT 자리에만 있다
   const x = await 준비('p7-sub'), p = x.목록.정책;
-  assert.equal(p.판, 7); assert.deepEqual(p.필수, ['GPT', 'Claude']); assert.deepEqual(증명.실제필수(p), ['GPT', 'Claude']);
+  assert.equal(p.판, 8, '판 8(11-22)도 GPT 작성은 판 7과 같다'); assert.deepEqual(p.필수, ['GPT', 'Claude']); assert.deepEqual(증명.실제필수(p), ['GPT', 'Claude']);
   assert.equal(증명.GPT자리대체정책(p), true); assert.equal(증명.대체순서(p), null);
   assert.deepEqual(증명.대신할검수자(p, 'GPT'), ['GPT', '아르곤']); assert.deepEqual(증명.대신할검수자(p, '아르곤'), ['아르곤']); assert.deepEqual(증명.대신할검수자(p, 'Claude'), ['Claude']);
   assert.deepEqual(증명.다시검수자들(p, [{ 출처: '아르곤' }]), ['GPT'], '다시 검수자는 판 6과 같다');

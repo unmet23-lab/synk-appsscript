@@ -26,6 +26,12 @@ test('승인된 Workspace 진입과 관리자 화면 경로만 GPT 작성 사실
   }
 });
 
+test('Workspace 담당 예외는 정책 판 7부터 받는다 — 판 8(11-22 그록 전담) 기본값에서도 같고, 판 6 이하는 거절한다',()=>{
+  assert.equal(정책만들기(options,files).판,8);
+  assert.equal(정책만들기(options,files,{판:7}).판,7);
+  for(const 판 of [5,6]) assert.throws(()=>정책만들기(options,files,{판}),/Workspace 진입의 직접 승인 범위/);
+});
+
 test('Workspace 담당 예외도 지적을 낸 카본과 Fable의 화면 재검수를 유지한다',()=>{
   const policy=정책만들기(options,files);
   assert.deepEqual(다시검수자들(policy,[{출처:'아르곤'}]),['아르곤','Fable']);
