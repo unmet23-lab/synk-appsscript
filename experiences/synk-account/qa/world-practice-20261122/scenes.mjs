@@ -28,7 +28,7 @@ const periods = { days: 30, recent: { answered: 128, independent: 96, assisted: 
 const summary = (practice, shared = 'practice-and-settings') => ({ ok: true, shared, learning: { enabled: shared === 'practice-and-settings', revision: 3 }, summary: { reasons: ['travel'], presentation: { support: 'choose' }, forReasons: [], practice } });
 const SCENES = {
   practice: { ...BASE['signed-in'], atlas: summary({ answered: 128, independent: 96, assisted: 32, periods, skills: SKILLS }) },
-  'practice-new': { ...BASE['signed-in'], atlas: summary({ answered: 0, independent: 0, assisted: 0, skills: [] }) },
+  'practice-new': { ...BASE['signed-in'], atlas: summary({ answered: 0, independent: 0, assisted: 0, periods: { days: 30, recent: { answered: 0, independent: 0, assisted: 0, activeDays: 0 }, previous: { answered: 0, independent: 0, assisted: 0, activeDays: 0 }, sufficient: false }, skills: [] }) },
   'practice-off': { ...BASE['signed-in-new'], atlas: summary({ answered: 0, independent: 0, assisted: 0, skills: [] }, 'declared-only') },
   'practice-class': { ...BASE['signed-in-class'], atlas: summary({ answered: 128, independent: 96, assisted: 32, periods, skills: SKILLS }) },
   'practice-oldserver': { ...BASE['signed-in'], atlas: summary({ answered: 18, independent: 12, assisted: 4, skills: [{ line: '최근 놓친 듣고 세부 정보 찾기를 조금 더 연습해 봐요.' }] }) },
@@ -102,6 +102,8 @@ try {
         await page.click('.wp-skill[data-skill="ko.reading.condition"]');await page.waitForTimeout(150);
         (await text(page, '[data-rec-go]')) === '입장 검사로 연습' && (await page.getAttribute('.game-links>button >> nth=0', 'data-game')) === 'entry-check' ? ok('조건 읽기 고름 → 입장 검사') : bad('고른 뒤 ' + await text(page, '[data-rec-go]'));
         (await page.getAttribute('.wp-skill[data-skill="ko.reading.condition"]', 'aria-pressed')) === 'true' ? ok('고른 줄 표시') : bad('고른 줄');
+        (await page.evaluate(() => document.activeElement?.dataset?.skill)) === 'ko.reading.condition' ? ok('고른 뒤 초점 그대로') : bad('고른 뒤 초점');
+        (await text(page, '.wp-tag')) === '오늘의 연습' ? ok('놓치지 않은 곳 꼬리표') : bad('꼬리표 ' + await text(page, '.wp-tag'));
         (await text(page, '.wp-games .wp-head .small')).startsWith('노란 칸은 「조건 읽기」를') ? ok('게임 머리 글') : bad('게임 머리 글 ' + await text(page, '.wp-games .wp-head .small'));
         await shot('-pick');
         await page.click('.wp-skill[data-skill="ko.listening.word"]');(await text(page, '.wp-tag')) === '잘 이어 가는 곳' ? ok('혼자 해낸 곳 고름') : bad('혼자 해낸 곳 꼬리');
@@ -121,7 +123,7 @@ try {
         const m2 = await measure(page);if (m2.overflow > 0) bad(`ID ${width} 가로 넘침`);if (m2.odd.length) bad(`ID ${width} 글 ${m2.odd.join(' ')}`);if (m2.small.length) bad(`ID ${width} 44px 미만 ${m2.small.join(' ')}`);
       }
       if (name === 'practice-off') { (await text(page, '[data-rec-go]')) === '내 SYNK ID에서 켜기' ? ok('연결 꺼짐: 켜러 가기') : bad('꺼짐 단추');await page.click('[data-rec-go]');await page.waitForTimeout(200);(await page.isVisible('#account')) ? ok('켜러 가기 → 내 SYNK ID') : bad('켜러 가기'); }
-      if (name === 'practice-new') (await text(page, '[data-rec-go]')) === '바람길로 시작' ? ok('첫 연습: 바람길') : bad('첫 연습 단추');
+      if (name === 'practice-new') { (await text(page, '[data-rec-go]')) === '바람길로 시작' ? ok('첫 연습: 바람길') : bad('첫 연습 단추');!(await page.isVisible('.wp-big')) ? ok('새 계정: 0일 대신 빈 문장') : bad('새 계정 0일'); }
       if (name === 'practice-oldserver') (await text(page, '.wp-hero h2')) === '연습을 골라 이어 가요' ? ok('옛 서버 줄: 이어 가기 문장') : bad('옛 서버 첫 판 ' + await text(page, '.wp-hero h2'));
       if (name === 'atlas-fail') (await text(page, '.wp-hero h2')) === '연습을 골라 시작해요' ? ok('요약 실패 문장') : bad('요약 실패');
       if (name === 'practice-class') { await shot('-class');(await page.isVisible('#world-classroom')) ? ok('반 과제가 연습 보기에') : bad('반 과제'); }

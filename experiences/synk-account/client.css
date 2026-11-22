@@ -410,12 +410,12 @@ html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data
 .sc.world-tab-practice #world-games{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;
   grid-template-areas:"hero hero rec rec" "hero hero skills ways" "games games games games" "save save play play" "sacts sacts pacts pacts" "close close close close" "frame frame frame frame"}
 /* 게임 진도에 고를 일이 생기면(다시 연결 · 진도 고르기 단추) 저장 줄을 맨 위로 올린다. 평소에는 게임 판 아래에 작게 둔다 */
-.sc.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden])){
+.sc.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden],:disabled)){
   grid-template-areas:"save save play play" "sacts sacts pacts pacts" "hero hero rec rec" "hero hero skills ways" "games games games games" "close close close close" "frame frame frame frame"}
 /* 게임을 여는 동안: 판을 접고 게임만 크게 */
 .sc.world-tab-practice #world-games:has(>iframe:not([hidden])){grid-template-areas:"close close close close" "frame frame frame frame" "save save play play" "sacts sacts pacts pacts"}
-/* 게임을 연 채 고를 일이 생기면 저장 줄 → 게임 칸 차례 */
-.sc.world-app.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden])):has(>iframe:not([hidden])){grid-template-areas:"save save play play" "sacts sacts pacts pacts" "close close close close" "frame frame frame frame"}
+/* 게임을 연 채 고를 일이 생기면 저장 줄 → 게임 칸 차례(넓은 창. 좁은 창은 아래 미디어에서 같은 선택자로 다시 정한다) */
+@media (min-width:901px){.sc.world-app.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden],:disabled)):has(>iframe:not([hidden])){grid-template-areas:"save save play play" "sacts sacts pacts pacts" "close close close close" "frame frame frame frame"}}
 .sc.world-tab-practice #world-games:has(>iframe:not([hidden]))>:is(.wp-hero,.wp-record,.wp-skills,.world-preferences,.wp-games){display:none}
 .sc #world-games>.wp-hero{grid-area:hero}
 .sc #world-games>.wp-record{grid-area:rec}
@@ -515,18 +515,20 @@ html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data
 }
 @media (max-width:900px){
   .sc.world-tab-practice #world-games{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"hero hero" "skills rec" "skills ways" "games games" "save play" "sacts pacts" "close close" "frame frame"}
-  .sc.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden])){grid-template-areas:"save play" "sacts pacts" "hero hero" "skills rec" "skills ways" "games games" "close close" "frame frame"}
+  .sc.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden],:disabled)){grid-template-areas:"save play" "sacts pacts" "hero hero" "skills rec" "skills ways" "games games" "close close" "frame frame"}
   .sc.world-tab-practice #world-games:has(>iframe:not([hidden])){grid-template-areas:"close close" "frame frame" "save play" "sacts pacts"}
+  .sc.world-app.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden],:disabled)):has(>iframe:not([hidden])){grid-template-areas:"save play" "sacts pacts" "close close" "frame frame"}
   .sc .wp-hero{grid-template-rows:minmax(200px,1fr) auto}
   .sc.world-app .account-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:640px){
-  .sc.world-tab-practice #world-games,.sc.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden])),.sc.world-tab-practice #world-games:has(>iframe:not([hidden])){grid-template-columns:minmax(0,1fr);grid-template-areas:none}
+  .sc.world-tab-practice #world-games,.sc.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden],:disabled)),.sc.world-tab-practice #world-games:has(>iframe:not([hidden])){grid-template-columns:minmax(0,1fr);grid-template-areas:none}
+  .sc.world-app.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden],:disabled)):has(>iframe:not([hidden])){grid-template-columns:minmax(0,1fr);grid-template-areas:none}
   .sc.world-app.world-tab-practice #world-games>*{grid-area:auto}
   .sc.world-app.world-tab-practice #world-games>.wp-games{order:1}
   .sc.world-app.world-tab-practice #world-games>.world-preferences{order:2}
   .sc.world-app.world-tab-practice #world-games>:is(.wp-save,.wp-save-acts,.wp-play,.wp-play-acts){order:3}
-  .sc.world-app.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden]))>:is(.wp-save,.wp-save-acts,.wp-play,.wp-play-acts){order:-1}
+  .sc.world-app.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden],:disabled))>:is(.wp-save,.wp-save-acts,.wp-play,.wp-play-acts){order:-1}
   .sc .wp-hero{grid-template-columns:minmax(0,1fr)}
   .sc .wp-art{grid-column:auto;min-height:180px}
   .sc .wp-acts{padding:4px 12px 12px}
@@ -553,4 +555,5 @@ html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data
   .sc .wp-hero,.sc.world-app :is(.wp-record,.wp-skills,.wp-games),.sc.world-app #world-games>.world-preferences,.sc.world-app .account-grid>.sb-card,.sc .wp-tabs{border:1px solid CanvasText}
   .sc .wp-tag{border:1px solid CanvasText}
   .sc .wp-where::before,.sc.world-app #world-games>.wp-save::before{forced-color-adjust:none;background:CanvasText}
+  .sc :is(.wp-tab,.wp-skill)[aria-pressed="true"]:focus-visible,.sc.world-app .world-preference-choices .sb-btn[aria-pressed="true"]:focus-visible,.sc.world-app .game-links>button[data-rec]:focus-visible{outline:3px solid Highlight;outline-offset:4px}
 }

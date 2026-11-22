@@ -59,7 +59,7 @@ export function particle(word, withFinal, without) {
  * element · button은 account-view의 것을 받는다(시험의 작은 DOM에서도 같이 돈다).
  */
 export function createWorldPractice({ element, button, games, openGame, showAccount, context = '개인 학습', connected = true }) {
-  let summary = null, state = 'loading', pick = null;
+  let summary = null, state = 'loading', pick = null, rowButtons = new Map();
   const hero = element('section', null, 'wp-hero'), record = element('section', null, 'wp-record'), skillsTile = element('section', null, 'wp-skills'), gamesTile = element('section', null, 'wp-games');
   hero.setAttribute('aria-label', '오늘의 연습');skillsTile.setAttribute('aria-label', '최근 연습');record.setAttribute('aria-label', '최근 30일');gamesTile.setAttribute('aria-label', '게임');
   const paths = games.map(game => game.path), labelOf = path => games.find(game => game.path === path)?.label || path;
@@ -72,7 +72,7 @@ export function createWorldPractice({ element, button, games, openGame, showAcco
     if (state === 'off') { title = '놓친 곳에 맞춰 골라 드려요';why = '「학습 기록 연결」을 켜면 최근 연습에서 놓친 곳을 찾아 그 곳을 연습할 게임을 앞에 둬요.';go = button('내 SYNK ID에서 켜기', async () => showAccount(), 'sb-btn wp-go'); }
     else if (pick) {
       const done = pick.status === DONE, list = gamesFor(pick.id, paths);
-      tag = done ? '잘 이어 가는 곳' : '오늘은 놓친 곳부터';title = pick.label;why = typeof pick.line === 'string' && pick.line ? pick.line : STATUS_WORDS[pick.status] || '';
+      tag = done ? '잘 이어 가는 곳' : pick.status === 'practice' ? '오늘은 놓친 곳부터' : '오늘의 연습';title = pick.label;why = typeof pick.line === 'string' && pick.line ? pick.line : STATUS_WORDS[pick.status] || '';
       go = list.length ? button(`${labelOf(list[0])}${particle(labelOf(list[0]), '으로', '로')} 연습`, () => openGame(list[0]), 'sb-btn wp-go')
         : button('모든 미니게임 열기', () => openGame('learning-hub'), 'sb-btn wp-go');
       if (!list.length) why = `${why} 이 연습만 하는 게임은 아직 없어요. 모든 미니게임에서 골라 주세요.`.trim();
@@ -86,16 +86,17 @@ export function createWorldPractice({ element, button, games, openGame, showAcco
     hero.replaceChildren(art, body, actions);
   }
   function drawSkills(skills) {
-    const list = element('ul', null, 'wp-skill-list');
+    const list = element('ul', null, 'wp-skill-list');rowButtons = new Map();
     for (const row of skills.slice(0, SHOWN)) {
-      const b = button(row.label, async () => { pick = row;draw(); }, 'wp-skill');b.dataset.skill = row.id;b.dataset.status = row.status || '';b.dataset.word = STATUS_WORDS[row.status] || '';b.setAttribute('aria-pressed', String(row === pick));
+      // 다시 그린 뒤에도 키보드 초점이 고른 줄에 남게 한다.
+      const b = button(row.label, async () => { pick = row;draw();rowButtons.get(row.id)?.focus?.({ preventScroll: true }); }, 'wp-skill');rowButtons.set(row.id, b);b.dataset.skill = row.id;b.dataset.status = row.status || '';b.dataset.word = STATUS_WORDS[row.status] || '';b.setAttribute('aria-pressed', String(row === pick));
       const li = element('li');li.append(b);list.append(li);
     }
     const empty = state === 'off' ? '학습 기록 연결이 꺼져 있어 계정의 연습을 보지 않아요.' : state === 'error' ? '학습 요약을 불러오지 못했어요.' : state === 'loading' ? '불러오고 있어요.' : '아직 보여 줄 연습이 없어요.';
     skillsTile.replaceChildren(head('최근 연습', '놓친 곳부터 · 누르면 고른 곳에 맞춰 바뀌어요'), skills.length ? list : element('p', empty, 'small'));
   }
   function drawRecord() {
-    const periods = summary?.practice?.periods, recent = periods?.recent && Number.isSafeInteger(periods.recent.answered) ? periods.recent : null;
+    const periods = summary?.practice?.periods, recent = periods?.recent && Number.isSafeInteger(periods.recent.answered) && periods.recent.answered > 0 ? periods.recent : null;
     const practice = summary?.practice || {};
     const big = element('p', null, 'wp-big');
     if (state === 'off') { record.replaceChildren(head('최근 30일'), element('p', '학습 기록 연결을 켜면 연습한 날과 문항을 보여 줘요.', 'small'));return; }

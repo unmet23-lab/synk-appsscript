@@ -102,7 +102,9 @@ test('learning off, no records and a failed summary each say what to do next wit
   assert.equal(offGo.textContent, '내 SYNK ID에서 켜기');offGo.onclick();assert.equal(off.account.length, 1);
   // 연결이 꺼졌으면 게임 머리 글도 계정에 남는다고 말하지 않는다(카본 A1).
   assert.match(find(off.practice.games, n => n.className === 'small').textContent, /이 기기에만/);
-  const fresh = view();fresh.practice.setSummary({ shared: 'practice-and-settings', summary: { practice: { answered: 0, skills: [] } } });
+  const fresh = view();fresh.practice.setSummary({ shared: 'practice-and-settings', summary: { practice: { answered: 0, periods: { recent: { answered: 0, independent: 0, assisted: 0, activeDays: 0 } }, skills: [] } } });
+  // 서버는 연습이 없어도 periods.recent를 보낸다. 새 계정에 「0일 연습했어요」를 보이지 않는다(Fable F5).
+  assert.equal(find(fresh.practice.record, n => n.tagName === 'b'), undefined);
   assert.equal(find(fresh.practice.hero, n => Object.hasOwn(n.dataset, 'recGo')).textContent, '바람길로 시작');
   const failed = view();failed.practice.setSummary(null, true);
   assert.equal(failed.practice.status().state, 'error');
