@@ -461,7 +461,7 @@ export function careOf(p,now=Date.now()){
   let quiet=null;
   if(live&&ROOM_COPY[roomState(p)]?.turn==='us'){const touched=[turnSince(r),...postedTimes(p),...replies].filter(Number.isFinite);if(touched.length)quiet=weekdaysSince(Math.max(...touched),now);}
   // 인플루언서 광고 의뢰 중 담당자 차례(보냄 — 값 안내를 보낼 차례 · 동의 — 결제 요청을 보낼 차례). 보관한 건은 세지 않는다.
-  const people=p?.stage==='archived'?0:peopleRequests(p).filter(item=>['sent','agreed','posted'].includes(item.status)).length; // 담당자 차례: 값 안내 · 결제 확인 · 결과 한 줄(desk-view.mjs PPL_OURS와 같다)
+  const people=p?.stage==='archived'?0:peopleRequests(p).filter(item=>['sent','agreed','posted'].includes(item.status)).length; // 담당자 차례: 값 안내 · 결제 확인 · 결과 한 줄(직원 의뢰 확인 화면의 PPL_OURS와 같다)
   return {asks:open.length,askSince:open.length?new Date(Math.min(...open)).toISOString():'',quiet,people};
 }
 // 문의와 답(조각 B2 · 11-21): 의뢰 확인 화면 오른쪽 단 맨 위. 손님 문의와 손님에게 보이는 글(사람이 쓴 답 · 자동 안내 · 프로젝트 댓글)만 새 것부터 싣는다 —
