@@ -36,9 +36,13 @@
     },
     {
       "id": "trade-office",
-      "status": "making",
+      "status": "open",
       "title": "해외영업·무역 사무의 하루",
-      "role": "해외영업·무역 사무원",
+      "role": "해외영업원·무역 사무원",
+      "minutes": 17,
+      "scenes": 5,
+      "poster": "trade-office/places/meeting-two.jpg",
+      "posterAlt": "회의실 탁자 건너편에 해외영업팀 팀장과 대리가 나란히 앉아 있다.",
       "summary": "회의에서 지시를 받고, 해외 거래처와 연락하고, 상사에게 보고해요."
     },
     {

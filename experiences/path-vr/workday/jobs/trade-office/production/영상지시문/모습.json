@@ -1,0 +1,167 @@
+{
+  "LOOK": {
+    "meeting-two": {
+      "scene": "Two Korean office workers sit side by side on the far side of a white meeting table, facing the camera: at the left a man in his forties with short neat black hair, wearing a navy cardigan over a light blue shirt and a blank ID card on a navy lanyard, his hands clasped on a notebook; at the right a woman in her early thirties with shoulder-length dark brown hair, wearing a cream knit sweater over a white collar and a blank ID card on a teal lanyard. Both stay silent. Everything else stays exactly as in the start image: the table, the papers, the microphone, the whiteboard, the three wall clocks, the dark TV screen and the window blinds do not move or change, and the light stays the same. Nobody else appears.",
+      "pronoun": "They",
+      "her": "their"
+    },
+    "meeting-two|lead": {
+      "scene": "Two Korean office workers sit side by side on the far side of a white meeting table, facing the camera: at the left a man in his forties with short neat black hair, wearing a navy cardigan over a light blue shirt and a blank ID card on a navy lanyard, his hands clasped on a notebook; at the right a woman in her early thirties with shoulder-length dark brown hair, wearing a cream knit sweater over a white collar and a blank ID card on a teal lanyard. Only the man on the left speaks. The woman on the right stays silent with her mouth closed the whole time, listening and blinking naturally. Everything else stays exactly as in the start image: the table, the papers, the microphone, the whiteboard, the three wall clocks, the dark TV screen and the window blinds do not move or change, and the light stays the same. Nobody else appears.",
+      "pronoun": "He",
+      "her": "his"
+    },
+    "meeting-two|daeri": {
+      "scene": "Two Korean office workers sit side by side on the far side of a white meeting table, facing the camera: at the left a man in his forties with short neat black hair, wearing a navy cardigan over a light blue shirt and a blank ID card on a navy lanyard, his hands clasped on a notebook; at the right a woman in her early thirties with shoulder-length dark brown hair, wearing a cream knit sweater over a white collar and a blank ID card on a teal lanyard. Only the woman on the right speaks. The man on the left stays silent with his mouth closed the whole time, listening and blinking naturally. Everything else stays exactly as in the start image: the table, the papers, the microphone, the whiteboard, the three wall clocks, the dark TV screen and the window blinds do not move or change, and the light stays the same. Nobody else appears.",
+      "pronoun": "She",
+      "her": "her"
+    },
+    "desk-daeri": {
+      "who": "A Korean woman in her early thirties with shoulder-length dark brown hair, wearing a cream knit sweater over a white collared shirt and a blank ID card on a teal lanyard,",
+      "pose": "stands beside an office desk at the left of the frame, holding two printed sheets and looking down at them",
+      "fixed": "the monitor, the desk phone, the desk calendar, the partitions, the plants and the office behind her",
+      "pronoun": "She",
+      "her": "her"
+    },
+    "desk-close": {
+      "who": "A Korean woman in her early thirties with shoulder-length dark brown hair, wearing a cream knit sweater over a white collared shirt and a blank ID card on a teal lanyard,",
+      "pose": "leans in with her forearm resting on top of a gray office partition, looking at the camera with a slight friendly smile, in a close-up",
+      "fixed": "the partition, the window, the plant and the blurred office behind her",
+      "pronoun": "She",
+      "her": "her"
+    },
+    "daeri-desk": {
+      "who": "A Korean woman in her early thirties with shoulder-length dark brown hair, wearing a cream knit sweater over a white collared shirt and a blank ID card on a teal lanyard,",
+      "pose": "sits in a black office chair turned toward the camera beside her desk, one hand on the desk edge and a printed sheet in her other hand on her lap",
+      "fixed": "the monitor, the keyboard, the folders, the partitions and the windows behind her",
+      "pronoun": "She",
+      "her": "her"
+    },
+    "warehouse-daeri": {
+      "who": "A Korean woman in her early thirties with shoulder-length dark brown hair, wearing a cream knit sweater over a white collared shirt and a blank ID card on a teal lanyard,",
+      "pose": "stands in the aisle of a small shipping storage room holding a clipboard with printed sheets and a pen, her body angled, her face turned to the camera",
+      "fixed": "the stacked cardboard cartons, the pallets, the steel shelving, the yellow floor line and the half-open shutter door",
+      "pronoun": "She",
+      "her": "her"
+    },
+    "lead-talk": {
+      "who": "A Korean man in his forties with short neat black hair, wearing a navy cardigan over a light blue shirt and a blank ID card on a navy lanyard,",
+      "pose": "sits behind his desk leaning slightly forward with his fingers loosely laced on the desk, facing the camera, in a close-up",
+      "fixed": "the desk, the sample cabinet, the wall calendar and the window behind him",
+      "pronoun": "He",
+      "her": "his"
+    }
+  },
+  "VOICE": {
+    "lead": "in a calm, warm, low voice, like a team leader in his forties",
+    "daeri": "in a bright, clear, friendly voice, like a colleague in her early thirties"
+  },
+  "CLIP": {
+    "lead-pass": {
+      "voice": "in an easy, friendly voice with a small nod"
+    },
+    "daeri-explain": {
+      "voice": "in a kind, clear, explaining voice"
+    },
+    "daeri-confirm": {
+      "voice": "in a pleased, friendly voice with a small nod"
+    },
+    "daeri-quote-right": {
+      "voice": "in a bright, pleased voice",
+      "read": "맞아요. 이천 개에 사 달러 이십 센트면 팔천사백 달러인데, 영이 하나 더 붙었어요.",
+      "act": "she lifts her eyes from the papers to the camera as she begins and speaks to the camera, glancing at the papers once"
+    },
+    "daeri-quote-again": {
+      "voice": "in a kind, patient voice",
+      "act": "she lifts her eyes from the papers to the camera as she begins and speaks to the camera, glancing at the papers once"
+    },
+    "daeri-phone": {
+      "voice": "in a quick, friendly voice"
+    },
+    "daeri-leave": {
+      "voice": "in a quick, friendly voice, a little hurried"
+    },
+    "daeri-production": {
+      "voice": "in a calm, matter-of-fact voice",
+      "act": "she glances down at the sheet in her hand once, then looks back at the camera",
+      "read": "공장 말로는, 이번 주에 발주서랑 선금이 들어오면 십이월 사일에 생산이 끝나고 칠일에 출고된대요."
+    },
+    "daeri-ship-right": {
+      "voice": "in a pleased voice that turns a little serious on the last sentence",
+      "read": "맞아요. 칠일에 출고하면 팔일 반입 마감에 맞출 수 있어요. 십이월 삼일은 어렵겠네요."
+    },
+    "daeri-ship-again": {
+      "voice": "in a kind, patient voice"
+    },
+    "daeri-docs-right": {
+      "voice": "in a pleased, practical voice",
+      "read": "맞아요. 패킹 리스트에 삼십 밀리리터로 잘못 적혔어요. 고쳐서 다시 뽑아요."
+    },
+    "daeri-docs-again": {
+      "voice": "in a kind, patient voice",
+      "act": "she glances down at the clipboard once, then looks back at the camera",
+      "read": "다시 볼래요? 수량은 둘 다 이천 개로 같아요. 품목 줄을 한 번 더 봐요."
+    },
+    "lead-report-ask": {
+      "voice": "in a warm, calm voice"
+    },
+    "lead-thanks": {
+      "voice": "in a warm, sincere voice with a small nod"
+    },
+    "lead-ask-date": {
+      "voice": "in a calm, serious voice, not angry",
+      "read": "이 대리한테 들었는데, 십이월 삼일은 어렵다면서요? 그런 소식은 저한테 제일 먼저 말해 줘요."
+    },
+    "lead-fix": {
+      "voice": "in a calm, serious, steady voice, not angry",
+      "read": "바이어가 삼일 배로 알고 있다면서요? 오늘 바로잡아요. 지금 같이 전화해요. 제 말을 전해 줘요."
+    },
+    "lead-tomorrow": {
+      "voice": "in a calm, approving voice",
+      "read": "지금 바이어한테 전화해서 십일 배라고 먼저 알려 줘요. 단가는 제가 정해서 알려 줄게요."
+    },
+    "daeri-brief": {
+      "read": "견적은 에프오비 부산 기준이고요, 선적 서류는 반입 마감 전에 꼭 끝내야 해요."
+    },
+    "daeri-mail": {
+      "voice": "in a bright, clear, friendly voice",
+      "act": "she lifts her eyes from the papers to the camera as she begins and speaks to the camera, glancing at the papers once"
+    },
+    "daeri-mail-right": {
+      "voice": "in a bright, pleased voice",
+      "act": "she lifts her eyes from the papers to the camera as she begins and speaks to the camera, glancing at the papers once"
+    },
+    "daeri-mail-again": {
+      "voice": "in a kind, patient voice",
+      "act": "she lifts her eyes from the papers to the camera as she begins and speaks to the camera, glancing at the papers once"
+    },
+    "daeri-approval": {
+      "voice": "in a friendly, matter-of-fact voice",
+      "act": "she lifts her eyes from the papers to the camera as she begins and speaks to the camera, glancing at the papers once"
+    },
+    "daeri-cutoff-pass": {
+      "voice": "in a kind, gentle voice, not scolding"
+    },
+    "daeri-cutoff-explain": {
+      "voice": "in a kind, clear, explaining voice"
+    },
+    "lead-info": {
+      "voice": "in a calm, serious but kind voice, not angry"
+    },
+    "daeri-quote": {
+      "act": "she lifts her eyes from the papers to the camera as she begins and speaks to the camera, glancing at the papers once"
+    }
+  },
+  "LISTEN": {
+    "meeting-listen": {
+      "where": "at the meeting table",
+      "key": "Both people only listen, at the meeting table",
+      "act": "Neither person speaks in this shot. Both people only listen, at the meeting table, looking at the camera with gentle attention. They blink naturally and breathe, and the man gives one very small nod. Both mouths stay closed the whole time. The last frame returns to the same poses as the first frame."
+    },
+    "desk-listen": {
+      "where": "standing beside the desk with the printed sheets",
+      "act": "She says nothing in this shot and only listens, standing beside the desk with the printed sheets. She lifts her eyes from the papers to the camera and listens with gentle attention, blinks naturally and gives one or two very small nods. Her mouth stays closed the whole time. In the last second she lowers her eyes to the papers again, returning to the pose of the first frame."
+    },
+    "daeri-listen-close": "leaning on the partition",
+    "lead-listen": "sitting behind his desk"
+  }
+}

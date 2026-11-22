@@ -1,0 +1,2035 @@
+{
+  "schemaVersion": 1,
+  "id": "trade-office",
+  "edition": "표준판 1.0",
+  "title": "해외영업·무역 사무의 하루",
+  "role": "해외영업원·무역 사무원",
+  "summary": "화장품 수출 회사의 해외영업팀에서 하루를 보내요. 견적서와 선적 서류를 다루고, 바이어의 말을 팀에 전하고, 갈림길에서 골라요.",
+  "minutes": 17,
+  "reviewNote": "장면과 대사는 무역 현장 전문가의 검토를 받기 전입니다.",
+  "reviewNoteScreen": "장면과 대사는 무역 현장 전문가의 검토를 받기 전이에요.",
+  "hintLanguages": [
+    "mn",
+    "vi",
+    "en"
+  ],
+  "cast": {
+    "lead": {
+      "name": "박성호",
+      "role": "해외영업팀 팀장"
+    },
+    "daeri": {
+      "name": "이다은",
+      "role": "해외영업팀 대리"
+    },
+    "buyer": {
+      "name": "바이어",
+      "role": "나와 같은 말을 쓰는 거래처 구매 담당",
+      "names": {
+        "mn": "Батцэцэг",
+        "vi": "Nguyễn Thu Hà",
+        "en": "Anna Tan"
+      }
+    },
+    "friend": {
+      "name": "정우진 선배",
+      "role": "다른 수출 회사에 다니는 학교 선배"
+    },
+    "forwarder": {
+      "name": "최민수 과장",
+      "role": "포워더(운송 주선 회사)"
+    }
+  },
+  "places": {
+    "meeting": {
+      "name": "회의실",
+      "photo": "places/meeting-two.jpg",
+      "live": [
+        0.22,
+        0.2,
+        0.82,
+        0.95
+      ],
+      "alt": "회의실 탁자 건너편에 팀장과 대리가 나란히 앉아 있다. 뒤에 주간 업무 보드와 시계 세 개가 걸려 있다.",
+      "points": [
+        {
+          "id": "world-clock",
+          "x": 0.7,
+          "y": 0.2,
+          "label": "세계 시계",
+          "hint": {
+            "mn": "Дэлхийн цаг. Худалдан авагчийн орны цагийг харж, хэзээ утасдахаа шийднэ.",
+            "vi": "Đồng hồ thế giới. Xem giờ ở nước của người mua để biết lúc nào nên gọi điện.",
+            "en": "World clocks. They show the time in the buyers' countries, so you know when to call."
+          }
+        },
+        {
+          "id": "week-board",
+          "x": 0.47,
+          "y": 0.2,
+          "label": "주간 업무 보드",
+          "hint": {
+            "mn": "Долоо хоногийн ажлын самбар. Багийн энэ долоо хоногийн ажил, ачилтын өдрийг бичдэг.",
+            "vi": "Bảng công việc trong tuần. Ghi việc của nhóm và ngày giao hàng trong tuần.",
+            "en": "Weekly task board. The team's work and shipping dates for the week are written here."
+          }
+        },
+        {
+          "id": "video-screen",
+          "x": 0.07,
+          "y": 0.28,
+          "label": "화상 회의 화면",
+          "hint": {
+            "mn": "Видео хурлын дэлгэц. Гадаадын худалдан авагчтай видео хурал хийдэг.",
+            "vi": "Màn hình họp trực tuyến. Dùng để họp video với người mua ở nước ngoài.",
+            "en": "Video-call screen. Used for video meetings with overseas buyers."
+          }
+        }
+      ]
+    },
+    "desk": {
+      "name": "내 자리",
+      "photo": "places/desk.jpg",
+      "alt": "새로 온 사람의 책상. 모니터, 내선 전화, 탁상 달력, 화장품 견본이 놓여 있다.",
+      "points": [
+        {
+          "id": "mail",
+          "x": 0.52,
+          "y": 0.42,
+          "label": "업무용 모니터",
+          "hint": {
+            "mn": "Ажлын дэлгэц.",
+            "vi": "Màn hình làm việc.",
+            "en": "Work monitor."
+          }
+        },
+        {
+          "id": "desk-phone",
+          "x": 0.9,
+          "y": 0.83,
+          "label": "내선 전화",
+          "hint": {
+            "mn": "Дотуур утас. Компанийн дотоод болон гадаад дуудлагыг авдаг.",
+            "vi": "Điện thoại bàn. Dùng để nghe cuộc gọi nội bộ và cuộc gọi từ bên ngoài.",
+            "en": "Desk phone. For internal and outside calls."
+          }
+        },
+        {
+          "id": "calendar",
+          "x": 0.92,
+          "y": 0.66,
+          "label": "탁상 달력",
+          "hint": {
+            "mn": "Ширээний хуанли. Хөлөг онгоц гарах өдөр, бичиг баримтын эцсийн хугацааг тэмдэглэнэ.",
+            "vi": "Lịch để bàn. Ghi ngày tàu chạy và hạn nộp chứng từ.",
+            "en": "Desk calendar. Mark sailing dates and document deadlines on it."
+          }
+        },
+        {
+          "id": "tray",
+          "x": 0.76,
+          "y": 0.69,
+          "label": "견적서와 결재 서류",
+          "note": "fob",
+          "hint": {
+            "mn": "Үнийн санал ба батлуулах бичиг баримт. Үнийн санал дахь нийлүүлэлтийн нөхцөлийн тайлбарыг харж болно.",
+            "vi": "Báo giá và giấy tờ trình duyệt. Có thể xem giải thích về điều kiện giao hàng trên báo giá.",
+            "en": "Quotations and documents for approval. You can read about the delivery terms used on quotations."
+          }
+        },
+        {
+          "id": "samples",
+          "x": 0.6,
+          "y": 0.62,
+          "label": "견본(샘플)",
+          "hint": {
+            "mn": "Дээж. Худалдан авагчид илгээх бүтээгдэхүүний дээж.",
+            "vi": "Hàng mẫu. Mẫu sản phẩm gửi cho người mua.",
+            "en": "Samples. Product samples sent to buyers."
+          }
+        }
+      ]
+    },
+    "pantry": {
+      "name": "탕비실",
+      "photo": "places/pantry.jpg",
+      "alt": "창가에 정수기와 커피 머신이 있고 가운데에 둥근 탁자가 놓인 작은 탕비실.",
+      "points": [
+        {
+          "id": "coffee",
+          "x": 0.46,
+          "y": 0.42,
+          "label": "커피 머신",
+          "hint": {
+            "mn": "Кофе машин. Ажилтнууд хамтдаа хэрэглэдэг.",
+            "vi": "Máy pha cà phê. Nhân viên dùng chung.",
+            "en": "Coffee machine. Shared by everyone."
+          }
+        },
+        {
+          "id": "water",
+          "x": 0.6,
+          "y": 0.45,
+          "label": "정수기",
+          "hint": {
+            "mn": "Ус цэвэршүүлэгч.",
+            "vi": "Máy lọc nước.",
+            "en": "Water dispenser."
+          }
+        },
+        {
+          "id": "fridge",
+          "x": 0.08,
+          "y": 0.5,
+          "label": "공용 냉장고",
+          "hint": {
+            "mn": "Нийтийн хөргөгч. Хоолоо хөргөгчид хийхдээ нэрээ бичдэг.",
+            "vi": "Tủ lạnh chung. Khi để đồ ăn vào, nhớ ghi tên mình lên hộp hoặc bao bì.",
+            "en": "Shared fridge. Write your name on food you put in it."
+          }
+        },
+        {
+          "id": "notice-board",
+          "x": 0.3,
+          "y": 0.15,
+          "label": "사내 게시판",
+          "hint": {
+            "mn": "Компанийн мэдээллийн самбар. Дотоод мэдэгдэл, арга хэмжээний зар наадаг.",
+            "vi": "Bảng tin nội bộ. Nơi dán thông báo và thông tin sự kiện của công ty.",
+            "en": "Company notice board. Internal notices and event flyers are posted here."
+          }
+        }
+      ]
+    },
+    "warehouse": {
+      "name": "출고 창고",
+      "photo": "places/warehouse.jpg",
+      "alt": "수출 상자가 팔레트 위에 쌓여 있고 바닥에 노란 출고 구역 선이 그어진 창고.",
+      "points": [
+        {
+          "id": "cartons",
+          "x": 0.77,
+          "y": 0.3,
+          "label": "상자 겉 표시(화인)",
+          "hint": {
+            "mn": "Ачааны тэмдэглэгээ (shipping mark). Экспортын хайрцгийн гадна талд дардаг тэмдэг.",
+            "vi": "Ký mã hiệu vận chuyển (shipping mark). Ký hiệu in bên ngoài thùng hàng xuất khẩu.",
+            "en": "Shipping mark. The mark printed on the outside of an export carton."
+          }
+        },
+        {
+          "id": "pallet",
+          "x": 0.6,
+          "y": 0.84,
+          "label": "팔레트",
+          "hint": {
+            "mn": "Тавиур (палет). Хайрцгийг дээр нь өрж, сэрээт ачигчаар зөөдөг.",
+            "vi": "Pallet. Dùng để xếp thùng hàng lên trên rồi chở đi bằng xe nâng.",
+            "en": "Pallet. Cartons are stacked on it and moved with a forklift."
+          }
+        },
+        {
+          "id": "out-zone",
+          "x": 0.53,
+          "y": 0.8,
+          "label": "출고 구역",
+          "hint": {
+            "mn": "Ачаа гаргах бүс. Гаргахад бэлэн ачааг шар шугамын дотор тавьдаг.",
+            "vi": "Khu xuất hàng. Hàng sẵn sàng xuất kho được đặt trong vạch vàng.",
+            "en": "Outbound zone. Goods ready to ship are placed inside the yellow line."
+          }
+        },
+        {
+          "id": "scale",
+          "x": 0.47,
+          "y": 0.69,
+          "label": "바닥 저울",
+          "hint": {
+            "mn": "Шалны жин. Хайрцгийн жинг хэмжиж, савлагааны жагсаалтад бичдэг.",
+            "vi": "Cân sàn. Cân thùng hàng rồi ghi vào phiếu đóng gói.",
+            "en": "Floor scale. Weigh the cartons and write the weight on the packing list."
+          }
+        },
+        {
+          "id": "hand-pallet",
+          "x": 0.29,
+          "y": 0.55,
+          "label": "핸드 팔레트(자키)",
+          "hint": {
+            "mn": "Гар тэрэг (палет зөөгч). Палетыг үүгээр өргөж, гараар чирч зөөдөг.",
+            "vi": "Xe nâng tay. Dùng để kéo pallet bằng tay.",
+            "en": "Hand pallet truck. Used to move pallets by hand."
+          }
+        }
+      ]
+    },
+    "lead-desk": {
+      "name": "팀장 자리",
+      "photo": "places/lead-desk.jpg",
+      "alt": "창가의 넓은 책상 위에 결재판과 서류철이 있고, 뒤에 견본 진열장과 벽 달력이 있다.",
+      "points": [
+        {
+          "id": "approval-folder",
+          "x": 0.66,
+          "y": 0.82,
+          "label": "결재판",
+          "hint": {
+            "mn": "Батлуулах хавтас. Цаасан баримтыг багийн ахлагчаар батлуулахдаа үүнд хийж өгдөг.",
+            "vi": "Bìa trình ký. Kẹp giấy tờ vào để trình trưởng nhóm ký duyệt.",
+            "en": "Approval folder. Paper documents go in it for the team leader to sign."
+          }
+        },
+        {
+          "id": "sample-cabinet",
+          "x": 0.4,
+          "y": 0.62,
+          "label": "견본 진열장",
+          "hint": {
+            "mn": "Дээжийн шүүгээ. Компанийн бүтээгдэхүүнийг энд өрж, худалдан авагчид үзүүлдэг.",
+            "vi": "Tủ trưng bày hàng mẫu. Dùng để cho người mua xem sản phẩm của công ty.",
+            "en": "Sample cabinet. The company's products are shown to buyers here."
+          }
+        },
+        {
+          "id": "fair-calendar",
+          "x": 0.29,
+          "y": 0.3,
+          "label": "전시회 일정 달력",
+          "hint": {
+            "mn": "Үзэсгэлэнгийн хуваарийн хуанли. Гадаадын үзэсгэлэнд оролцох өдрүүдийг тэмдэглэнэ.",
+            "vi": "Lịch hội chợ triển lãm. Đánh dấu ngày tham gia các hội chợ ở nước ngoài.",
+            "en": "Trade-fair calendar. Dates of overseas trade fairs are marked on it."
+          }
+        },
+        {
+          "id": "printer",
+          "x": 0.24,
+          "y": 0.6,
+          "label": "복합기",
+          "hint": {
+            "mn": "Олон үйлдэлт хэвлэгч. Хэвлэх, хувилах, скан хийхэд хэрэглэнэ.",
+            "vi": "Máy in đa năng. Dùng để in, sao chụp và quét tài liệu.",
+            "en": "Multifunction printer. Used for printing, copying and scanning."
+          }
+        }
+      ]
+    },
+    "desk-daeri": {
+      "name": "내 자리",
+      "photo": "places/desk-daeri.jpg",
+      "live": [
+        0.04,
+        0,
+        0.52,
+        1
+      ],
+      "alt": "대리가 책상 옆에 서서 출력한 견적서를 내려다보고 있다.",
+      "points": []
+    },
+    "desk-close": {
+      "name": "내 자리",
+      "photo": "places/desk-close.jpg",
+      "live": [
+        0.18,
+        0,
+        1,
+        1
+      ],
+      "alt": "대리가 칸막이에 팔을 얹고 몸을 기울여 이쪽을 본다.",
+      "points": []
+    },
+    "daeri-desk": {
+      "name": "대리 자리",
+      "photo": "places/daeri-desk.jpg",
+      "live": [
+        0.24,
+        0.05,
+        0.9,
+        1
+      ],
+      "alt": "대리가 자기 의자를 돌려 앉아 출항 일정표를 들고 있다.",
+      "points": []
+    },
+    "warehouse-daeri": {
+      "name": "출고 창고",
+      "photo": "places/warehouse-daeri.jpg",
+      "live": [
+        0.28,
+        0.22,
+        0.7,
+        1
+      ],
+      "alt": "대리가 창고 통로에서 서류를 끼운 판을 들고 서 있다.",
+      "points": []
+    },
+    "lead-talk": {
+      "name": "팀장 자리",
+      "photo": "places/lead-talk.jpg",
+      "live": [
+        0.3,
+        0.02,
+        0.88,
+        1
+      ],
+      "alt": "팀장이 책상 건너편에 앉아 이쪽을 보고 있다.",
+      "points": []
+    }
+  },
+  "notes": {
+    "titles": {
+      "title": "회사에서 부르는 말",
+      "lead": "한 예시예요. 직급과 부르는 법은 회사마다 달라요.",
+      "rows": [
+        [
+          "직급",
+          "사원 → 주임 → 대리 → 과장 → 차장 → 부장"
+        ],
+        [
+          "팀장",
+          "직급이 아니라 팀을 맡은 자리예요"
+        ],
+        [
+          "윗사람",
+          "이름과 직급에 「님」을 붙여요. 「이다은 대리님」, 「팀장님」"
+        ],
+        [
+          "같은 직급",
+          "이름에 「씨」를 붙여요. 처음에는 직급을 붙여 부르면 무난해요"
+        ],
+        [
+          "모를 때",
+          "「어떻게 불러 드리면 될까요?」 하고 물어요"
+        ]
+      ],
+      "hint": {
+        "mn": "Компанид хүнийг хэрхэн дууддаг вэ. Нэг жишээ. Албан тушаал, дуудах арга компани бүрд өөр. Албан тушаал: савон (ажилтан) → жүим (ахлах ажилтан) → дэри (дэд менежер) → гважан (менежер) → чажан (ахлах менежер) → бүжан (хэлтсийн дарга). «Тимжан» (багийн ахлагч) бол албан тушаал биш, багийг хариуцсан үүрэг. Дээд албан тушаалтныг нэр, албан тушаалынх нь ард «-ним» залгаж дууддаг: «И Да Ын дэриним», «тимжанним». Ижил албан тушаалтай хүнийг нэрийнх нь ард «-ши» залгаж дууддаг. Эхэндээ албан тушаалаар нь дуудахад болно. Мэдэхгүй бол «Таныг яаж дуудвал зүгээр вэ?» гэж асуугаарай.",
+        "vi": "Cách xưng hô trong công ty. Đây là một ví dụ; chức danh và cách gọi mỗi công ty mỗi khác. Chức danh: nhân viên (sawon) → chủ nhiệm (juim) → daeri (trên chủ nhiệm, đã làm vài năm) → trưởng phòng (gwajang) → phó trưởng bộ phận (chajang) → trưởng bộ phận (bujang). «Timjang» (trưởng nhóm) là vị trí phụ trách nhóm, không phải chức danh. Với cấp trên, gọi tên kèm chức danh và thêm «-nim»: «Lee Da-eun daeri-nim», «timjang-nim». Với người cùng cấp, thêm «-ssi» sau tên. Lúc đầu, gọi kèm chức danh là an toàn nhất. Nếu không biết, hãy hỏi: «Em nên gọi anh/chị thế nào ạ?»",
+        "en": "How people are addressed at work. This is one example; ranks and forms of address differ from company to company. Ranks: staff (sawon) → senior staff (juim) → assistant manager (daeri) → manager (gwajang) → deputy department head (chajang) → department head (bujang). Team leader (timjang) is a role, not a rank. For someone senior, add \"-nim\" to their name and rank: \"Lee Da-eun daeri-nim\", \"timjang-nim\". For colleagues at the same rank as you, add \"-ssi\" to their name. When you have just started, though, calling colleagues by their rank is a safe choice. If you are not sure, ask: \"How should I address you?\""
+      }
+    },
+    "day": {
+      "title": "해외영업팀의 하루",
+      "lead": "한 예시예요. 시간과 순서는 회사와 거래처마다 달라요.",
+      "rows": [
+        [
+          "09:00",
+          "출근, 밤사이 온 바이어 메일 확인"
+        ],
+        [
+          "09:30",
+          "팀 회의"
+        ],
+        [
+          "10:00",
+          "견적서 쓰기, 결재 올리기"
+        ],
+        [
+          "12:00",
+          "점심"
+        ],
+        [
+          "13:00",
+          "바이어와 전화, 메일"
+        ],
+        [
+          "15:00",
+          "생산팀과 포워더에게 일정 확인"
+        ],
+        [
+          "16:00",
+          "선적 서류 만들기(인보이스, 패킹 리스트)"
+        ],
+        [
+          "17:30",
+          "팀장에게 하루 보고"
+        ],
+        [
+          "18:00",
+          "퇴근. 시차가 큰 나라와는 저녁에 통화하기도 해요"
+        ]
+      ],
+      "hint": {
+        "mn": "Гадаад борлуулалтын багийн нэг өдөр. Нэг жишээ. Цаг, дараалал нь компани, харилцагч бүрд өөр. 09:00 ажилдаа ирж, худалдан авагчаас шөнө ирсэн имэйлийг шалгана. 09:30 багийн хурал. 10:00 үнийн санал бичиж, батлуулахаар илгээнэ. 12:00 өдрийн хоол. 13:00 худалдан авагчтай утсаар ярьж, имэйл бичнэ. 15:00 үйлдвэрлэлийн хэсэг болон тээвэр зуучлагчаас хуваарийг тодруулна. 16:00 ачилтын бичиг баримт бэлдэнэ (инвойс, савлагааны жагсаалт). 17:30 багийн ахлагчид өдрийн тайлангаа өгнө. 18:00 ажил тарна. Цагийн зөрүү ихтэй орны худалдан авагчтай орой утсаар ярих тохиолдол ч бий.",
+        "vi": "Một ngày của nhóm kinh doanh quốc tế. Đây là một ví dụ, giờ giấc và thứ tự khác nhau tùy công ty và đối tác. 09:00 đến công ty, kiểm tra email người mua gửi trong đêm. 09:30 họp nhóm. 10:00 soạn báo giá, trình duyệt. 12:00 ăn trưa. 13:00 gọi điện, gửi email cho người mua. 15:00 xác nhận lịch với bộ phận sản xuất và công ty giao nhận. 16:00 làm chứng từ giao hàng (hóa đơn thương mại, phiếu đóng gói). 17:30 báo cáo công việc trong ngày cho trưởng nhóm. 18:00 tan làm. Với những nước lệch múi giờ nhiều, đôi khi phải gọi điện vào buổi tối.",
+        "en": "A day in the overseas sales team. This is one example; the timing and order differ by company and by client. 09:00 arrive and check buyer emails that came in overnight. 09:30 team meeting. 10:00 write quotations and submit them for approval. 12:00 lunch. 13:00 calls and emails with buyers. 15:00 check schedules with the production team and the freight forwarder. 16:00 prepare shipping documents (commercial invoice, packing list). 17:30 give the team leader an end-of-day report. 18:00 leave work. When buyers are in very different time zones, you may also have calls in the evening."
+      }
+    },
+    "fob": {
+      "title": "FOB 부산",
+      "lead": "견적서의 인도 조건이에요.",
+      "body": [
+        "물건을 부산항에서 배에 실을 때까지는 우리 회사가 맡아요.",
+        "배에 실은 뒤의 운임과 보험, 위험은 바이어가 맡아요. 그래서 견적서의 단가에 바다 운임이 들어 있지 않아요.",
+        "FOB에서는 배와 포워더를 바이어 쪽에서 정하는 일이 많아요. 우리는 언제 실을 수 있는지를 바이어에게 알려 줘요.",
+        "몽골처럼 바다가 없는 나라로 가는 물건은 중국 항구를 거쳐 철도로 가서 더 오래 걸려요."
+      ],
+      "hint": {
+        "mn": "FOB Пусан. Үнийн саналд бичдэг нийлүүлэлтийн нөхцөл. Барааг Пусан боомтод хөлөгт ачих хүртэл манай компани хариуцна. Хөлөгт ачсанаас хойших тээврийн зардал, даатгал, эрсдэлийг худалдан авагч хариуцна. Тиймээс үнийн саналын нэгжийн үнэд далайн тээврийн зардал ороогүй байдаг. FOB нөхцөлд хөлөг онгоц болон тээвэр зуучлагчийг худалдан авагч тал сонгох нь элбэг. Бид барааг хэзээ ачиж чадахаа худалдан авагчид мэдэгддэг. Монгол шиг далайд гарцгүй улс руу явах бараа Хятадын боомтоор дамжаад төмөр замаар явдаг тул илүү их хугацаа шаарддаг.",
+        "vi": "FOB Busan. Đây là điều kiện giao hàng ghi trên báo giá. Công ty mình chịu trách nhiệm về hàng cho đến khi hàng được xếp lên tàu tại cảng Busan. Sau khi hàng đã lên tàu, cước vận chuyển, bảo hiểm và rủi ro do người mua chịu. Vì vậy, đơn giá trên báo giá không bao gồm cước biển. Với FOB, bên người mua thường là bên chọn tàu và công ty giao nhận. Còn bên mình báo cho người mua biết khi nào có thể xếp hàng lên tàu. Hàng đi đến những nước không có biển như Mông Cổ phải qua cảng Trung Quốc rồi đi tiếp bằng đường sắt nên mất nhiều thời gian hơn.",
+        "en": "FOB Busan. This is the delivery term on the quotation. Our company is responsible for the goods until they are loaded on the ship at Busan port. After loading, the buyer pays for the freight and insurance and bears the risk. That is why the unit price on the quotation does not include ocean freight. Under FOB, the buyer often chooses the ship and the freight forwarder. We tell the buyer when the goods can be loaded. Goods going to a landlocked country like Mongolia pass through a Chinese port and continue by rail, so they take longer."
+      }
+    },
+    "quote-words": {
+      "title": "견적서의 말",
+      "lead": "처음 보면 헷갈리는 말이에요.",
+      "rows": [
+        [
+          "인도 조건",
+          "물건을 어디서 넘겨주는지예요. 나라 이름 「인도」가 아니에요"
+        ],
+        [
+          "FOB Busan",
+          "부산항에서 배에 실을 때까지 우리 회사가 맡아요"
+        ],
+        [
+          "결제 조건",
+          "돈을 언제 어떻게 받는지예요. T/T는 은행 송금이고, 30% in advance는 먼저 30%를 받는다는 뜻이에요"
+        ],
+        [
+          "결재",
+          "윗사람이 문서를 보고 승인하는 일이에요. 돈을 내는 「결제」와 달라요"
+        ],
+        [
+          "PCS · CTNS",
+          "개수(pieces)와 상자 수(cartons)예요"
+        ]
+      ],
+      "hint": {
+        "mn": "Үнийн саналын үг хэллэг. Анх харахад андуурч болох үгс. Нийлүүлэлтийн нөхцөл (indo jogeon): барааг хаана хүлээлгэж өгөхийг хэлнэ. Энд «indo» нь Энэтхэг улсын нэр биш. FOB Busan: Пусан боомтод хөлөгт ачих хүртэл манай компани хариуцна. Төлбөрийн нөхцөл (gyeolje jogeon): мөнгийг хэзээ, яаж авахыг хэлнэ. T/T бол банкны шилжүүлэг, «30% in advance» гэдэг нь 30%-ийг урьдчилж авна гэсэн үг. Батлуулах (gyeoljae): баримтаа дээд албан тушаалтандаа үзүүлж зөвшөөрөл авахыг хэлнэ. Мөнгө төлөх «gyeolje»-гээс өөр үг. PCS · CTNS: ширхгийн тоо (pieces) ба хайрцгийн тоо (cartons).",
+        "vi": "Các từ trên báo giá. Đây là những từ dễ nhầm khi mới thấy lần đầu. Điều kiện giao hàng (indo jogeon): hàng được giao ở đâu. «Indo» ở đây không phải là tên nước Ấn Độ. FOB Busan: công ty mình chịu trách nhiệm đến khi hàng được xếp lên tàu tại cảng Busan. Điều kiện thanh toán (gyeolje jogeon): nhận tiền khi nào và bằng cách nào. T/T là chuyển khoản qua ngân hàng, còn «30% in advance» nghĩa là nhận trước 30%. Phê duyệt (gyeoljae): cấp trên xem tài liệu rồi chấp thuận. Từ này khác với «gyeolje», nghĩa là thanh toán tiền. PCS · CTNS: số lượng tính theo cái (pieces) và số thùng (cartons).",
+        "en": "Words on a quotation. These can be confusing the first time you see them. Delivery terms (indo jogeon): where the goods are handed over. Here \"indo\" is not the country India. FOB Busan: our company is responsible until the goods are loaded on the ship at Busan port. Payment terms (gyeolje jogeon): when and how the money is received. T/T is a bank transfer, and \"30% in advance\" means 30% is paid first. Approval (gyeoljae): a senior person reads a document and approves it. This word is different from \"gyeolje\", which means payment. PCS · CTNS: the number of pieces and the number of cartons."
+      }
+    },
+    "ship-docs": {
+      "title": "선적 서류",
+      "lead": "물건 하나가 나갈 때 오가는 서류예요. 회사마다 맡는 사람이 달라요.",
+      "rows": [
+        [
+          "인보이스",
+          "무엇을 얼마에 몇 개 파는지 적은 서류(상업 송장)예요"
+        ],
+        [
+          "패킹 리스트",
+          "상자마다 무엇이 몇 개 들었고 무게가 얼마인지 적은 서류예요"
+        ],
+        [
+          "수출 신고",
+          "관세사가 인보이스와 패킹 리스트를 보고 세관에 신고해요. 서류끼리 숫자가 다르면 다시 물어봐요"
+        ],
+        [
+          "B/L(선하 증권)",
+          "물건을 배에 실었다는 증서예요. 배가 떠난 뒤 포워더가 보내 줘요"
+        ],
+        [
+          "원산지 증명서",
+          "어느 나라에서 만들었는지 증명해요. 바이어가 관세 혜택을 받을 때 써요"
+        ]
+      ],
+      "hint": {
+        "mn": "Ачилтын бичиг баримт. Нэг ачаа гарах бүрд солилцдог баримтууд. Хариуцах хүн нь компани бүрд өөр. Инвойс: юуг, ямар үнээр, хэдэн ширхэг зарж байгааг бичсэн баримт (худалдааны нэхэмжлэх). Савлагааны жагсаалт: хайрцаг бүрд юу, хэдэн ширхэг байгаа, жин нь хэд болохыг бичсэн баримт. Экспортын мэдүүлэг: гаалийн зуучлагч инвойс, савлагааны жагсаалтыг үзээд гаальд мэдүүлнэ. Баримтууд дээрх тоо хоорондоо зөрвөл гаалийн зуучлагч эргэж лавладаг. B/L (коносамент): барааг хөлөгт ачсаныг гэрчлэх баримт. Хөлөг гарсны дараа тээвэр зуучлагч илгээдэг. Гарал үүслийн гэрчилгээ: аль улсад үйлдвэрлэснийг гэрчилнэ. Худалдан авагч гаалийн татварын хөнгөлөлт авахдаа хэрэглэдэг.",
+        "vi": "Chứng từ giao hàng. Đây là những giấy tờ được trao đổi qua lại mỗi khi xuất một lô hàng. Mỗi công ty có người phụ trách khác nhau. Hóa đơn thương mại (invoice): chứng từ ghi bán hàng gì, giá bao nhiêu, bao nhiêu cái. Phiếu đóng gói (packing list): chứng từ ghi mỗi thùng có gì, bao nhiêu cái và nặng bao nhiêu. Khai báo xuất khẩu: đại lý hải quan xem hóa đơn thương mại và phiếu đóng gói rồi khai với hải quan. Nếu số liệu giữa các chứng từ khác nhau, họ sẽ hỏi lại. B/L (vận đơn đường biển): giấy chứng nhận hàng đã được xếp lên tàu. Sau khi tàu chạy, công ty giao nhận sẽ gửi cho mình. Giấy chứng nhận xuất xứ: chứng minh hàng được sản xuất ở nước nào. Người mua dùng nó để được ưu đãi thuế nhập khẩu.",
+        "en": "Shipping documents. These are the documents that go back and forth when a shipment goes out. Who handles each one differs by company. Invoice (commercial invoice): the document that lists the goods being sold, their quantity, and their price. Packing list: the document that says what each carton contains, how many pieces, and how much it weighs. Export declaration: a customs broker reads the invoice and the packing list and declares the goods to customs. If the numbers differ between documents, the broker comes back to you with questions. B/L (bill of lading): the document confirming that the goods were loaded on the ship. The forwarder sends it after the ship leaves. Certificate of origin: the document that proves which country the goods were made in. The buyer uses it to get a lower customs duty."
+      }
+    }
+  },
+  "scenes": [
+    {
+      "id": "meeting",
+      "title": "아침 회의",
+      "minutes": 3,
+      "place": "meeting",
+      "steps": [
+        {
+          "type": "line",
+          "clip": "lead-welcome",
+          "who": "lead",
+          "text": "좋은 아침이에요. 해외영업팀 팀장 박성호예요. 오늘부터 같이 일하게 돼서 반가워요.",
+          "hint": {
+            "mn": "Өглөөний мэнд. Би гадаад борлуулалтын багийн ахлагч Пак Сон Хо байна. Өнөөдрөөс хамт ажиллах болсондоо баяртай байна.",
+            "vi": "Chào buổi sáng. Anh là Park Seong-ho, trưởng nhóm kinh doanh quốc tế. Rất vui vì từ hôm nay em về làm cùng nhóm.",
+            "en": "Good morning. I'm Park Seong-ho, leader of the overseas sales team. I'm glad you're starting with us today."
+          }
+        },
+        {
+          "type": "say",
+          "id": "intro",
+          "listen": "meeting-listen",
+          "prompt": "팀장님과 대리님께 자기소개를 해 보세요.",
+          "example": "안녕하세요. 오늘부터 해외영업팀에서 일하게 된 ○○○입니다. 잘 부탁드립니다.",
+          "hint": {
+            "mn": "Багийн ахлагч болон дэд менежерт өөрийгөө танилцуулаарай. Нэрээ хэлээд, өнөөдрөөс энэ багт ажиллах болсноо хэлээрэй.",
+            "vi": "Hãy tự giới thiệu với trưởng nhóm và chị «daeri» (cấp trên trực tiếp của bạn). Hãy nói tên mình và cho biết từ hôm nay bạn làm ở nhóm này.",
+            "en": "Introduce yourself to the team leader and the assistant manager. Say your name and that you are joining the team today."
+          },
+          "record": "자기소개 차례"
+        },
+        {
+          "type": "line",
+          "clip": "lead-plan",
+          "who": "lead",
+          "text": "오늘은 이다은 대리가 옆에서 알려 줄 거예요. 오전엔 견적서, 오후엔 선적 서류예요.",
+          "hint": {
+            "mn": "Өнөөдөр дэд менежер И Да Ын таны хажууд байж зааж өгнө. Үдээс өмнө үнийн санал, үдээс хойш ачилтын бичиг баримт дээр ажиллана.",
+            "vi": "Hôm nay chị Lee Da-eun, chức danh «daeri», sẽ ở bên cạnh hướng dẫn em. Buổi sáng em làm báo giá, buổi chiều làm chứng từ giao hàng.",
+            "en": "Today Assistant Manager Lee Da-eun will sit with you and show you how things work. Quotations this morning, shipping documents this afternoon."
+          }
+        },
+        {
+          "type": "note",
+          "note": "titles"
+        },
+        {
+          "type": "line",
+          "clip": "daeri-brief",
+          "who": "daeri",
+          "text": "견적은 FOB 부산 기준이고요, 선적 서류는 반입 마감 전에 꼭 끝내야 해요.",
+          "hint": {
+            "mn": "Үнийн саналыг FOB Пусан нөхцөлөөр гаргана. Ачилтын бичиг баримтыг боомтын агуулахад ачаа оруулах эцсийн хугацаанаас өмнө заавал дуусгах ёстой.",
+            "vi": "Báo giá theo điều kiện FOB Busan. Chứng từ giao hàng thì nhất định phải xong trước hạn chót đưa hàng vào cảng.",
+            "en": "Quotations are on an FOB Busan basis, and the shipping documents must be done before the cargo cut-off."
+          }
+        },
+        {
+          "type": "say",
+          "id": "meeting",
+          "listen": "meeting-listen",
+          "prompt": "처음 듣는 말이 있었어요. 어떻게 할까요?",
+          "hint": {
+            "mn": "Өмнө нь сонсож байгаагүй үг таарлаа. Яах вэ?",
+            "vi": "Có một từ bạn mới nghe lần đầu. Bạn sẽ làm gì?",
+            "en": "There was a word you hadn't heard before. What will you do?"
+          },
+          "options": [
+            {
+              "id": "ask",
+              "label": "모르는 말을 되묻는다",
+              "example": "죄송한데, '반입 마감'이 무슨 뜻이에요?",
+              "hint": {
+                "mn": "Мэдэхгүй солонгос үгээ лавлаж асуух. «Уучлаарай, ‘banip magam’ гэж юу гэсэн үг вэ?»",
+                "vi": "Hỏi lại từ mình chưa hiểu. «Em xin lỗi, ‘banip magam’ (từ tiếng Hàn) nghĩa là gì ạ?»",
+                "en": "Ask about the word you didn't know. \"Sorry, what does 'banip magam' mean?\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-explain",
+                  "who": "daeri",
+                  "text": "출항 이틀쯤 전, 물건을 항만 창고에 들여놓는 마지막 날이에요. 클로징이라고도 해요.",
+                  "hint": {
+                    "mn": "Бараагаа боомтын агуулахад оруулах сүүлийн өдөр бөгөөд хөлөг онгоц гарахаас хоёр орчим хоногийн өмнө байдаг. «Клоузинг» гэж ч хэлдэг.",
+                    "vi": "Là ngày cuối cùng đưa hàng vào kho ở cảng, khoảng hai ngày trước khi tàu chạy. Người ta cũng gọi là «closing».",
+                    "en": "It's the last day to bring the goods into the port warehouse, about two days before the ship leaves. It's also called \"cargo closing\"."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "confirm",
+              "label": "들은 것을 다시 말해 확인한다",
+              "example": "견적은 FOB 부산 기준이고, 선적 서류는 반입 마감 전에 끝내는 거, 맞을까요?",
+              "hint": {
+                "mn": "Сонссоноо давтан хэлж баталгаажуулах. «Үнийн санал FOB Пусан нөхцөлөөр, ачилтын бичиг баримтыг боомтын агуулахад ачаа оруулах эцсийн хугацаанаас өмнө дуусгана. Зөв үү?»",
+                "vi": "Nhắc lại những gì vừa nghe để xác nhận. «Báo giá theo FOB Busan, chứng từ giao hàng xong trước hạn chót đưa hàng vào cảng, đúng không ạ?»",
+                "en": "Repeat what you heard to check. \"Quotations on an FOB Busan basis, and shipping documents done before the cargo cut-off. Is that right?\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-confirm",
+                  "who": "daeri",
+                  "text": "네, 맞아요. 그렇게 다시 말해 주니까 좋네요.",
+                  "hint": {
+                    "mn": "Тийм ээ, зөв. Ингэж давтаж хэлсэн нь сайн боллоо.",
+                    "vi": "Đúng rồi. Em nhắc lại như vậy là rất tốt.",
+                    "en": "Yes, that's right. It's good that you repeated it back."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "pass",
+              "label": "회의가 빠르니 일단 '네' 하고 넘어간다",
+              "example": "네, 알겠습니다.",
+              "hint": {
+                "mn": "Хурал хурдан өрнөж байгаа тул одоохондоо «за» гээд өнгөрөөх. «За, ойлголоо.»",
+                "vi": "Cuộc họp diễn ra nhanh nên cứ nói «vâng» rồi cho qua. «Vâng, em hiểu rồi.»",
+                "en": "The meeting is moving fast, so say \"yes\" for now and move on. \"Yes, I understand.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "lead-pass",
+                  "who": "lead",
+                  "text": "좋아요. 모르는 말은 그때그때 물어봐요.",
+                  "hint": {
+                    "mn": "Сайн байна. Мэдэхгүй үг гарвал тухай бүрт нь асуугаарай.",
+                    "vi": "Tốt. Có từ nào không hiểu thì cứ hỏi ngay lúc đó nhé.",
+                    "en": "Good. Whenever you hear a word you don't know, just ask."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tour",
+          "home": "meeting",
+          "board": [
+            "desk",
+            "pantry",
+            "warehouse",
+            "lead-desk"
+          ],
+          "prompt": "일하기 전에 사무실을 둘러봐요. 가고 싶은 자리를 고르고, 점을 눌러 이름을 확인해 보세요.",
+          "hint": {
+            "mn": "Ажил эхлэхээс өмнө оффисоо тойрч үзээрэй. Очихыг хүссэн газраа сонгоод, цэг дээр дарж нэрийг нь хараарай.",
+            "vi": "Trước khi bắt đầu làm việc, hãy đi một vòng quanh văn phòng. Chọn nơi bạn muốn đến rồi bấm vào dấu chấm để xem tên.",
+            "en": "Look around the office before you start. Pick a place, then tap the dots to see what each thing is called."
+          }
+        }
+      ]
+    },
+    {
+      "id": "quote",
+      "title": "견적서",
+      "minutes": 3,
+      "place": "desk-daeri",
+      "steps": [
+        {
+          "type": "line",
+          "clip": "daeri-mail",
+          "who": "daeri",
+          "text": "오늘 아침에 온 바이어 메일이에요. 무엇을 보내 달라는지 먼저 찾아봐요.",
+          "hint": {
+            "mn": "Энэ бол худалдан авагчаас өнөө өглөө ирсэн имэйл. Юу илгээхийг хүссэнийг нь эхлээд олоорой.",
+            "vi": "Đây là email người mua gửi sáng nay. Trước tiên hãy tìm xem họ muốn mình gửi gì.",
+            "en": "This is the buyer's email from this morning. First, find out what they're asking us to send."
+          }
+        },
+        {
+          "type": "work",
+          "id": "mail-read",
+          "record": "영어 메일에서 바이어가 바라는 것을 찾는 차례",
+          "tool": {
+            "kind": "screen",
+            "title": "받은 메일",
+            "lines": [
+              "From: Purchasing Team",
+              "Subject: Request for Quotation – Moisture Cream 50ml",
+              "Dear Sales Team,",
+              "Please send us your best price for 2,000 pcs of Moisture Cream 50ml, FOB Busan.",
+              "We also need the ingredient list in English.",
+              "Best regards,"
+            ],
+            "note": "오늘은 11월 23일 월요일이에요."
+          },
+          "prompt": "바이어가 보내 달라는 것을 골라요.",
+          "hint": {
+            "mn": "Худалдан авагчийн манайхаас авахыг хүссэн зүйлсийг сонгоорой.",
+            "vi": "Hãy chọn những thứ người mua muốn mình gửi.",
+            "en": "Choose what the buyer is asking us to send."
+          },
+          "options": [
+            {
+              "id": "quote-list",
+              "label": "견적서와 영어 성분표",
+              "hint": {
+                "mn": "Үнийн санал ба англи хэл дээрх найрлагын жагсаалт",
+                "vi": "Báo giá và bảng thành phần bằng tiếng Anh",
+                "en": "A quotation and the ingredient list in English"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-mail-right",
+                  "who": "daeri",
+                  "text": "맞아요. 견적서랑 영어 성분표, 두 가지예요. 성분표는 제가 찾아 둘게요.",
+                  "hint": {
+                    "mn": "Зөв. Үнийн санал, англи хэл дээрх найрлагын жагсаалт гэсэн хоёр зүйл. Найрлагын жагсаалтыг би олж бэлдье.",
+                    "vi": "Đúng rồi. Có hai thứ: báo giá và bảng thành phần tiếng Anh. Bảng thành phần thì để chị tìm.",
+                    "en": "That's right. Two things: the quotation and the English ingredient list. I'll find the ingredient list."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "samples",
+              "label": "견본 2,000개",
+              "hint": {
+                "mn": "2,000 ширхэг дээж",
+                "vi": "2.000 sản phẩm mẫu",
+                "en": "2,000 samples"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-mail-again",
+                  "who": "daeri",
+                  "text": "다시 볼래요? 메일에서 보내 달라는 게 두 가지예요.",
+                  "hint": {
+                    "mn": "Та дахиад харах уу? Имэйлд хоёр зүйл илгээхийг хүссэн байгаа шүү.",
+                    "vi": "Em xem lại nhé? Trong email, họ nhờ gửi hai thứ đấy.",
+                    "en": "Want to look again? The email asks us to send two things."
+                  }
+                }
+              ],
+              "retry": true
+            },
+            {
+              "id": "quote-only",
+              "label": "견적서만",
+              "hint": {
+                "mn": "Зөвхөн үнийн санал",
+                "vi": "Chỉ có báo giá",
+                "en": "Only the quotation"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-mail-again",
+                  "who": "daeri",
+                  "text": "다시 볼래요? 메일에서 보내 달라는 게 두 가지예요.",
+                  "hint": {
+                    "mn": "Та дахиад харах уу? Имэйлд хоёр зүйл илгээхийг хүссэн байгаа шүү.",
+                    "vi": "Em xem lại nhé? Trong email, họ nhờ gửi hai thứ đấy.",
+                    "en": "Want to look again? The email asks us to send two things."
+                  }
+                }
+              ],
+              "retry": true
+            }
+          ]
+        },
+        {
+          "type": "line",
+          "clip": "daeri-quote",
+          "who": "daeri",
+          "text": "이건 견적서 초안이에요. 결재 올리기 전에 팀장님 메모랑 숫자부터 맞춰 봐요.",
+          "hint": {
+            "mn": "Энэ бол үнийн саналын төсөл. Батлуулахаар илгээхээсээ өмнө тоонуудаа багийн ахлагчийн тэмдэглэлтэй тулгаж үзье.",
+            "vi": "Đây là bản nháp báo giá. Trước khi trình lên duyệt, em đối chiếu các con số với ghi chú của trưởng nhóm đã nhé.",
+            "en": "Here's the draft quotation. Before submitting it for approval, let's check the numbers against the team leader's note."
+          }
+        },
+        {
+          "type": "note",
+          "note": "quote-words"
+        },
+        {
+          "type": "work",
+          "id": "quote-check",
+          "record": "견적서의 숫자를 메모와 맞춰 보는 차례",
+          "tool": {
+            "kind": "paper",
+            "title": "Quotation(견적서) 초안",
+            "rows": [
+              [
+                "Item(품목)",
+                "Moisture Cream 50ml"
+              ],
+              [
+                "Quantity(수량)",
+                "2,000 PCS"
+              ],
+              [
+                "Unit Price(단가)",
+                "USD 4.20"
+              ],
+              [
+                "Amount(금액)",
+                "USD 84,000.00"
+              ],
+              [
+                "Delivery Term(인도 조건)",
+                "FOB Busan"
+              ],
+              [
+                "Payment(결제 조건)",
+                "T/T 30% in advance, 70% before shipment"
+              ],
+              [
+                "Validity(유효 기간)",
+                "30 days"
+              ]
+            ],
+            "note": "팀장님 메모: 수분 크림 2,000개. 단가는 9월 견적과 같게 USD 4.20. 합계 USD 8,400. FOB 부산."
+          },
+          "prompt": "메모와 맞지 않는 줄을 골라요.",
+          "hint": {
+            "mn": "Тэмдэглэлтэй таарахгүй мөрийг сонгоорой.",
+            "vi": "Hãy chọn dòng không khớp với ghi chú.",
+            "en": "Choose the line that doesn't match the note."
+          },
+          "options": [
+            {
+              "id": "quantity",
+              "label": "Quantity(수량)",
+              "hint": {
+                "mn": "Тоо хэмжээ",
+                "vi": "Số lượng",
+                "en": "Quantity"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-quote-again",
+                  "who": "daeri",
+                  "text": "그 줄은 메모랑 같아요. 수량이랑 단가를 곱해 볼래요?",
+                  "hint": {
+                    "mn": "Тэр мөр тэмдэглэлтэй адилхан байна. Та тоо хэмжээг нэгж үнээр үржүүлээд үзэх үү?",
+                    "vi": "Dòng đó giống với ghi chú rồi. Em thử nhân số lượng với đơn giá xem nhé?",
+                    "en": "That line matches the memo. Want to try multiplying the quantity by the unit price?"
+                  }
+                }
+              ],
+              "retry": true
+            },
+            {
+              "id": "price",
+              "label": "Unit Price(단가)",
+              "hint": {
+                "mn": "Нэгжийн үнэ",
+                "vi": "Đơn giá",
+                "en": "Unit price"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-quote-again",
+                  "who": "daeri",
+                  "text": "그 줄은 메모랑 같아요. 수량이랑 단가를 곱해 볼래요?",
+                  "hint": {
+                    "mn": "Тэр мөр тэмдэглэлтэй адилхан байна. Та тоо хэмжээг нэгж үнээр үржүүлээд үзэх үү?",
+                    "vi": "Dòng đó giống với ghi chú rồi. Em thử nhân số lượng với đơn giá xem nhé?",
+                    "en": "That line matches the memo. Want to try multiplying the quantity by the unit price?"
+                  }
+                }
+              ],
+              "retry": true
+            },
+            {
+              "id": "amount",
+              "label": "Amount(금액)",
+              "hint": {
+                "mn": "Нийт дүн",
+                "vi": "Thành tiền",
+                "en": "Amount"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-quote-right",
+                  "who": "daeri",
+                  "text": "맞아요. 2,000개에 4달러 20센트면 8,400달러인데, 영이 하나 더 붙었어요.",
+                  "hint": {
+                    "mn": "Зөв. 2,000 ширхгийг 4 доллар 20 центээр бодвол 8,400 доллар, гэтэл нэг тэг илүү байна.",
+                    "vi": "Đúng rồi. 2.000 sản phẩm nhân 4 đô 20 xu là 8.400 đô, nhưng ở đây bị thừa một số 0.",
+                    "en": "That's right. 2,000 units at $4.20 is $8,400, but there's one zero too many."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "terms",
+              "label": "Delivery Term(인도 조건)",
+              "hint": {
+                "mn": "Нийлүүлэлтийн нөхцөл",
+                "vi": "Điều kiện giao hàng",
+                "en": "Delivery terms"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-quote-again",
+                  "who": "daeri",
+                  "text": "그 줄은 메모랑 같아요. 수량이랑 단가를 곱해 볼래요?",
+                  "hint": {
+                    "mn": "Тэр мөр тэмдэглэлтэй адилхан байна. Та тоо хэмжээг нэгж үнээр үржүүлээд үзэх үү?",
+                    "vi": "Dòng đó giống với ghi chú rồi. Em thử nhân số lượng với đơn giá xem nhé?",
+                    "en": "That line matches the memo. Want to try multiplying the quantity by the unit price?"
+                  }
+                }
+              ],
+              "retry": true
+            }
+          ]
+        },
+        {
+          "type": "line",
+          "clip": "daeri-approval",
+          "who": "daeri",
+          "text": "고쳤으면 결재 올려요. 우리 팀은 저한테 먼저 오고, 그다음 팀장님께 가요.",
+          "hint": {
+            "mn": "Зассан бол батлуулахаар илгээгээрэй. Манай багт эхлээд над дээр ирээд, дараа нь багийн ахлагч руу очдог.",
+            "vi": "Sửa xong thì em trình lên để duyệt nhé. Ở nhóm mình, giấy tờ qua chị trước rồi mới lên trưởng nhóm.",
+            "en": "Once it's fixed, submit it for approval. In our team it comes to me first, then goes to the team leader."
+          }
+        },
+        {
+          "type": "say",
+          "id": "submitted",
+          "listen": "desk-listen",
+          "prompt": "결재를 올렸어요. 대리님께 알려 보세요.",
+          "example": "대리님, 견적서 결재 올렸습니다. 검토 부탁드립니다.",
+          "hint": {
+            "mn": "Батлуулахаар илгээлээ. Дэд менежерт мэдэгдээрэй. «Үнийн саналыг батлуулахаар илгээлээ, хянаж өгнө үү» гэж хэлээрэй.",
+            "vi": "Bạn đã trình báo giá lên để duyệt. Hãy báo cho chị Lee Da-eun biết là bạn đã trình báo giá, rồi nhờ chị ấy xem giúp.",
+            "en": "You've submitted the quotation for approval. Let the assistant manager know and ask her to review it."
+          },
+          "record": "결재를 올리고 알리는 차례"
+        }
+      ]
+    },
+    {
+      "id": "call",
+      "title": "바이어 전화",
+      "minutes": 3,
+      "place": "desk-close",
+      "steps": [
+        {
+          "type": "line",
+          "clip": "daeri-phone",
+          "who": "daeri",
+          "text": "아까 견적서, 팀장님 승인 나서 보냈어요. 그 바이어 전화예요. 그 나라 말로 받아 볼래요?",
+          "hint": {
+            "mn": "Түрүүний үнийн саналыг багийн ахлагч баталсан тул илгээчихсэн. Нөгөө худалдан авагч утасдаж байна. Та утсыг нь аваад, өөрийнх нь хэлээр ярих уу?",
+            "vi": "Báo giá lúc nãy trưởng nhóm đã duyệt, chị gửi cho khách rồi. Bây giờ khách đang gọi đến. Em thử nghe máy và nói chuyện bằng ngôn ngữ của khách nhé.",
+            "en": "The quotation from earlier was approved by the team leader and sent. The buyer is on the phone now. Do you want to take the call in the buyer's language?"
+          }
+        },
+        {
+          "type": "relay",
+          "id": "buyer-relay",
+          "who": "buyer",
+          "listen": "daeri-listen-close",
+          "record": "바이어의 말을 한국어로 전하는 차례",
+          "foreign": {
+            "mn": "Сайн байна уу. Үнийн саналыг тань хүлээн авлаа, баярлалаа. Хэрэв бид тоо хэмжээг 3,000 ширхэг болгож нэмбэл нэгжийн үнийг бага зэрэг бууруулах боломжтой юу? Мөн манайх шинэ жилийн урамшуулал хийх гэж байгаа тул бараагаа 12-р сарын 3-нд Пусан боомтоос гарах хөлөг онгоцонд ачуулмаар байна.",
+            "vi": "Chào em. Bên chị đã nhận được báo giá rồi, cảm ơn bên em. Nếu bên chị tăng số lượng lên 3.000 sản phẩm thì bên em có thể giảm đơn giá một chút được không? Ngoài ra, vì có chương trình khuyến mãi cuối năm, bên chị muốn hàng được xếp lên tàu rời cảng Busan ngày 3 tháng 12.",
+            "en": "Hello. We received your quotation, thank you. If we increase the quantity to 3,000 units, could you lower the unit price a little? Also, because of our year-end promotion, we'd like the goods loaded on a ship leaving Busan on December 3."
+          },
+          "meaning": "견적서 잘 받았어요. 수량을 3,000개로 늘리면 단가를 조금 낮춰 줄 수 있는지 물어요. 그리고 연말 행사 때문에 12월 3일 부산에서 출항하는 배에 실어 달라고 해요.",
+          "prompt": "바이어의 말을 대리님께 한국어로 전해요.",
+          "example": "대리님, 바이어가 견적서를 잘 받았다고 합니다. 수량을 3,000개로 늘리면 단가를 낮춰 줄 수 있는지 물었습니다. 그리고 연말 행사 때문에 12월 3일 부산 출항 배에 실어 달라고 합니다.",
+          "hint": {
+            "mn": "Худалдан авагчийн хэлснийг дэд менежерт солонгос хэлээр дамжуулж хэлээрэй. Тоо хэмжээ, үнэ, огноо гурвууланг нь хэлээрэй.",
+            "vi": "Hãy chuyển lời của người mua cho chị Lee Da-eun bằng tiếng Hàn. Nói đủ ba thông tin: số lượng, đơn giá và ngày tàu chạy.",
+            "en": "Pass on to the assistant manager, in Korean, what the buyer said. Include all three: the quantity, the price and the date."
+          },
+          "channel": "phone"
+        },
+        {
+          "type": "line",
+          "clip": "daeri-leave",
+          "who": "daeri",
+          "text": "저는 지금 회의에 들어가야 해서요. 남은 통화는 부탁해요.",
+          "hint": {
+            "mn": "Би одоо хуралд орох хэрэгтэй байна. Худалдан авагчтай та ярьж дуусгаад өгөөч.",
+            "vi": "Bây giờ chị phải vào họp. Em trao đổi nốt với khách giúp chị nhé.",
+            "en": "I have to go into a meeting now. Could you handle the rest of the call?"
+          }
+        },
+        {
+          "type": "move",
+          "place": "desk",
+          "caption": "바이어와 통화하는 중"
+        },
+        {
+          "type": "line",
+          "who": "buyer",
+          "channel": "phone",
+          "foreign": {
+            "mn": "Өнөөдөр шууд хариу өгч чадах уу? Өнөөдөр болохгүй бол өөр компаниас ч асуух хэрэгтэй болно.",
+            "vi": "Hôm nay em trả lời chị ngay được không? Nếu hôm nay không được thì bên chị phải hỏi cả công ty khác nữa.",
+            "en": "Can you give me an answer today? If not, we'll have to ask other companies too."
+          },
+          "text": "오늘 바로 답해 줄 수 있어요? 오늘 안 되면 다른 회사에도 물어봐야 해서요."
+        },
+        {
+          "type": "say",
+          "id": "call",
+          "prompt": "어떻게 답할까요? 실제 통화에서는 바이어의 말로 답해요. 여기서는 같은 뜻을 한국어로 말해 봐요.",
+          "hint": {
+            "mn": "Яаж хариулах вэ? Бодит байдал дээр утсаар ярихдаа худалдан авагчийн хэлээр хариулна. Харин энд хэлэх гэсэн зүйлээ солонгос хэлээр хэлж үзээрэй.",
+            "vi": "Bạn sẽ trả lời thế nào? Trong cuộc gọi thật, bạn trả lời bằng ngôn ngữ của người mua. Còn ở đây, hãy thử diễn đạt ý đó bằng tiếng Hàn.",
+            "en": "How will you reply? On a real call you'd answer in the buyer's language. Here, say the same thing in Korean."
+          },
+          "options": [
+            {
+              "id": "check",
+              "label": "확인하고 내일 오전까지 답하겠다고 한다",
+              "example": "단가와 날짜는 확인하고 내일 오전까지 꼭 답 드리겠습니다. 오늘 통화 내용은 메일로도 보내 드릴게요.",
+              "hint": {
+                "mn": "Шалгаад маргааш үдээс өмнө хариу өгнө гэж хэлэх. «Нэгжийн үнэ болон огноог шалгаад маргааш үдээс өмнө заавал хариу өгье. Өнөөдрийн ярианы агуулгыг имэйлээр бас илгээе.»",
+                "vi": "Nói rằng sẽ kiểm tra rồi trả lời trước trưa mai. «Về đơn giá và ngày tàu chạy, em sẽ kiểm tra và nhất định trả lời chị trước trưa mai. Nội dung cuộc gọi hôm nay em cũng sẽ gửi qua email ạ.»",
+                "en": "Say you'll check and answer by noon tomorrow. \"I'll check the unit price and the date and get back to you by noon tomorrow without fail. I'll also send you a summary of today's call by email.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "who": "buyer",
+                  "channel": "phone",
+                  "foreign": {
+                    "mn": "Ойлголоо. Маргааш үд хүртэл хүлээе.",
+                    "vi": "Ừ, chị hiểu rồi. Chị sẽ chờ đến trưa mai nhé.",
+                    "en": "All right. I'll wait until noon tomorrow."
+                  },
+                  "text": "알겠어요. 내일 오전까지 기다릴게요."
+                }
+              ]
+            },
+            {
+              "id": "promise",
+              "label": "다른 회사로 가지 않게 12월 3일은 된다고 먼저 답한다",
+              "example": "네, 12월 3일 출항으로 맞춰 드리겠습니다. 단가는 확인해서 말씀드릴게요.",
+              "hint": {
+                "mn": "Худалдан авагчийг өөр компанид алдахгүйн тулд 12-р сарын 3-нд амжина гэж эхлээд хариулах. «За, 12-р сарын 3-нд гарах хөлөг онгоцонд амжуулж өгье. Нэгжийн үнийг шалгаад хэлье.»",
+                "vi": "Để người mua không chuyển sang hỏi công ty khác, bạn trả lời ngay là hàng sẽ kịp chuyến tàu ngày 3 tháng 12. «Vâng, bên em sẽ sắp xếp để hàng kịp chuyến tàu ngày 3 tháng 12. Về đơn giá, em sẽ kiểm tra rồi báo lại chị ạ.»",
+                "en": "To keep the buyer from going to another company, say right away that December 3 will work. \"Yes, we'll make the December 3 sailing. I'll check the unit price and let you know.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "who": "buyer",
+                  "channel": "phone",
+                  "foreign": {
+                    "mn": "Үнэхээр баярлалаа! Тэгвэл урамшууллынхаа өдрийг тэгж товлоё.",
+                    "vi": "Cảm ơn em nhiều lắm! Vậy bên chị sẽ xếp lịch chương trình khuyến mãi theo ngày đó nhé.",
+                    "en": "Thank you so much! Then we'll set our promotion dates around that."
+                  },
+                  "text": "정말 고마워요! 그럼 행사 날짜를 그렇게 잡을게요."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "afternoon",
+      "title": "오후",
+      "minutes": 3,
+      "place": "pantry",
+      "requires": [
+        "meeting"
+      ],
+      "steps": [
+        {
+          "type": "line",
+          "who": "friend",
+          "channel": "phone",
+          "text": "어, 나 우진이야. 잘 지내지? 우리 회사도 이번에 너희 나라 쪽으로 수출을 시작하거든.",
+          "hint": {
+            "mn": "Байна уу, би Ү Жин байна. Сайн байгаа биз дээ? Манай компани ч бас одоо танай улс руу экспорт хийж эхэлж байгаа юм.",
+            "vi": "A lô, anh Woo-jin đây. Em khỏe chứ? Đợt này công ty anh cũng bắt đầu xuất khẩu sang nước em đấy.",
+            "en": "Hey, it's Woo-jin. How are you? My company is starting to export to your country too."
+          }
+        },
+        {
+          "type": "line",
+          "who": "friend",
+          "channel": "phone",
+          "text": "취업 준비할 때 내가 자기소개서 봐 줬잖아. 너희 회사 가격표 한 장만 보여 줄 수 있어? 참고만 하고 밖에는 안 돌릴게.",
+          "hint": {
+            "mn": "Чамайг ажилд орохоор бэлдэж байхад өөрийгөө танилцуулж бичсэн эссэг чинь би хянаж өгсөн шүү дээ. Танай компанийн үнийн жагсаалтаас ганц хуудас үзүүлж болох уу? Зөвхөн өөрөө л харна, гадагш тараахгүй.",
+            "vi": "Hồi em chuẩn bị xin việc, anh đã xem giúp em bản giới thiệu bản thân còn gì. Em cho anh xem một trang trong bảng giá của công ty em được không? Anh chỉ tham khảo thôi, không đưa ra ngoài đâu.",
+            "en": "I helped you with your cover letter when you were job hunting, remember? Could you show me just one page of your company's price list? I'll only use it for reference and won't pass it around."
+          }
+        },
+        {
+          "type": "say",
+          "id": "info",
+          "prompt": "학교 선배가 우리 회사 가격표를 보여 달라고 해요. 어떻게 할까요?",
+          "hint": {
+            "mn": "Их сургуулийн дээд курсийн ах тань танай компанийн үнийн жагсаалтыг үзүүлээч гэж байна. Яах вэ?",
+            "vi": "Một anh khóa trên thời đại học xin xem bảng giá của công ty bạn. Bạn sẽ làm gì?",
+            "en": "Someone who was a few years ahead of you at school asks you to show him your company's price list. What will you do?"
+          },
+          "options": [
+            {
+              "id": "refuse",
+              "label": "회사 자료라서 보여 줄 수 없다고 한다",
+              "example": "선배, 미안해요. 가격표는 회사 자료라서 보여 드릴 수 없어요.",
+              "hint": {
+                "mn": "Компанийн дотоод баримт учир үзүүлж болохгүй гэж хэлэх. «Ах аа, уучлаарай. Үнийн жагсаалт компанийн дотоод баримт учраас үзүүлж чадахгүй.»",
+                "vi": "Nói rằng đó là tài liệu công ty nên không cho xem được. «Anh ơi, em xin lỗi. Bảng giá là tài liệu của công ty nên em không cho anh xem được.»",
+                "en": "Say you can't show him the price list because it's an internal company document. \"Sorry. The price list is an internal company document, so I can't show it to you.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "who": "friend",
+                  "channel": "phone",
+                  "text": "한 장인데 그것도 안 돼? …알았어, 내가 괜히 물었다.",
+                  "hint": {
+                    "mn": "Ганцхан хуудас шүү дээ, тэр ч болохгүй юм уу? …За ойлголоо, би дэмий асуужээ.",
+                    "vi": "Có một trang thôi mà cũng không được à? …Thôi được, coi như anh chưa hỏi.",
+                    "en": "It's just one page, and even that's a no? …All right, I shouldn't have asked."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "send",
+              "label": "취업 때 도와준 선배라 가격표 한 장만 보내 준다",
+              "example": "선배가 도와주셨으니까… 한 장만 보내 드릴게요. 밖에는 돌리지 마세요.",
+              "hint": {
+                "mn": "Ажилд ороход тусалсан ах учраас үнийн жагсаалтаас ганц хуудас явуулах. «Та надад тусалсан болохоор… Ганц хуудас явуулъя. Бусдад битгий тараагаарай.»",
+                "vi": "Vì anh ấy đã giúp bạn lúc xin việc nên bạn gửi cho anh ấy một trang trong bảng giá. «Dù sao anh cũng từng giúp em… Em gửi anh một trang thôi. Anh đừng đưa cho ai khác nhé.»",
+                "en": "Because he helped you get your job, you send him just one page of the price list. \"You helped me, so… I'll send you one page. Please don't pass it on.\""
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "who": "friend",
+                  "channel": "phone",
+                  "text": "고마워! 다음엔 바이어 담당자 연락처도 좀 부탁할게.",
+                  "hint": {
+                    "mn": "Баярлалаа! Дараагийн удаа худалдан авагч талын хариуцсан ажилтны холбоо барих дугаарыг ч бас хэлж өгөөрэй.",
+                    "vi": "Cảm ơn em! Lần sau cho anh xin cả số liên lạc của người phụ trách bên khách hàng nhé.",
+                    "en": "Thanks! Next time, I'll ask you for the buyer's contact details too."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "move",
+          "place": "daeri-desk",
+          "caption": "대리님 자리에서"
+        },
+        {
+          "type": "line",
+          "clip": "daeri-production",
+          "who": "daeri",
+          "text": "공장 말로는, 이번 주에 발주서랑 선금이 들어오면 12월 4일에 생산이 끝나고 7일에 출고된대요.",
+          "hint": {
+            "mn": "Үйлдвэрийнхний хэлж байгаагаар, энэ долоо хоногт захиалгын хуудас болон урьдчилгаа төлбөр орж ирвэл 12-р сарын 4-нд үйлдвэрлэл дуусаад, 7-нд бараа үйлдвэрээс гарна гэнэ.",
+            "vi": "Bên nhà máy nói, nếu tuần này nhận được đơn đặt hàng và tiền trả trước thì ngày 4 tháng 12 sản xuất xong, ngày 7 xuất kho.",
+            "en": "The factory says that if the purchase order and the advance payment come in this week, production finishes on December 4 and the goods leave the warehouse on the 7th."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "daeri-cutoff-recall",
+          "who": "daeri",
+          "when": {
+            "meeting": "ask"
+          },
+          "text": "아침에 물어본 반입 마감, 기억나죠? 그걸 보고 실을 수 있는 배를 골라 봐요.",
+          "hint": {
+            "mn": "Өглөө асуусан боомтын агуулахад ачаа оруулах эцсийн хугацааг санаж байгаа биз дээ? Тэр хугацааг харгалзан бараагаа ачиж амжих хөлөг онгоцыг сонгоорой.",
+            "vi": "Em còn nhớ hạn chót đưa hàng vào cảng mà sáng nay em hỏi chứ? Em dựa vào đó để chọn chuyến tàu mà hàng bên mình đi kịp nhé.",
+            "en": "Remember the cargo cut-off you asked about this morning? Use it to choose a ship we can get the goods on."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "daeri-cutoff-explain",
+          "who": "daeri",
+          "when": {
+            "meeting": "confirm"
+          },
+          "text": "아침에 말한 반입 마감이 이거예요. 항만 창고에 들여놓는 마지막 날이라 출항보다 빨라요.",
+          "hint": {
+            "mn": "Өглөө хэлсэн «ачаа оруулах эцсийн хугацаа» гэдэг нь энэ. Боомтын агуулахад ачаагаа оруулах сүүлийн өдөр тул хөлөг гарахаас өмнө байдаг.",
+            "vi": "Đây là hạn chót đưa hàng vào cảng mà sáng nay chị nói. Đó là ngày cuối cùng đưa hàng vào kho ở cảng nên sớm hơn ngày tàu chạy.",
+            "en": "This is the cargo cut-off I mentioned this morning. It's the last day to bring goods into the port warehouse, so it comes before the sailing date."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "daeri-cutoff-pass",
+          "who": "daeri",
+          "when": {
+            "meeting": "pass"
+          },
+          "text": "아침에 빨리 지나간 반입 마감이 이거예요. 항만 창고에 물건을 들여놓는 마지막 날이에요.",
+          "hint": {
+            "mn": "Өглөө хурдан яриад өнгөрсөн «ачаа оруулах эцсийн хугацаа» гэдэг нь энэ. Бараагаа боомтын агуулахад оруулах сүүлийн өдөр.",
+            "vi": "Đây là hạn chót đưa hàng vào cảng mà sáng nay chị chỉ nhắc lướt qua. Đó là ngày cuối cùng đưa hàng vào kho ở cảng.",
+            "en": "This is the cargo cut-off that was mentioned only briefly this morning. It's the last day to bring the goods into the port warehouse."
+          }
+        },
+        {
+          "type": "work",
+          "id": "ship-pick",
+          "record": "출항 일정표에서 실을 배를 고르는 차례",
+          "tool": {
+            "kind": "screen",
+            "title": "부산 출항 일정 · 12월",
+            "rows": [
+              [
+                "12월 3일 출항",
+                "화물 반입 마감 12월 1일"
+              ],
+              [
+                "12월 8일 출항",
+                "화물 반입 마감 12월 4일"
+              ],
+              [
+                "12월 10일 출항",
+                "화물 반입 마감 12월 8일"
+              ],
+              [
+                "12월 15일 출항",
+                "화물 반입 마감 12월 11일"
+              ]
+            ],
+            "note": "이번 주에 발주서와 선금이 들어오면: 생산 완료 12월 4일(금) 오후 · 출고 12월 7일(월) 아침"
+          },
+          "prompt": "바이어에게 알려 줄, 물건을 실을 수 있는 가장 빠른 배를 골라요.",
+          "hint": {
+            "mn": "Худалдан авагчид мэдэгдэхийн тулд бараагаа ачиж амжих, хамгийн эрт гарах хөлөг онгоцыг сонгоорой.",
+            "vi": "Hãy chọn chuyến tàu sớm nhất mà hàng có thể đi kịp, để báo cho người mua.",
+            "en": "Choose the earliest ship we can get the goods on, so we can let the buyer know."
+          },
+          "options": [
+            {
+              "id": "dec3",
+              "label": "12월 3일 출항",
+              "hint": {
+                "mn": "12-р сарын 3-нд гарах",
+                "vi": "Tàu chạy ngày 3 tháng 12",
+                "en": "Sails December 3"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-ship-again",
+                  "who": "daeri",
+                  "text": "그 배는 반입 마감이 출고보다 빨라요. 다른 배를 볼래요?",
+                  "hint": {
+                    "mn": "Тэр хөлөг онгоцны ачаа хүлээн авах эцсийн хугацаа нь бараа агуулахаас гарах өдрөөс өмнө байна. Та өөр хөлөг онгоц харах уу?",
+                    "vi": "Tàu đó có hạn chót nhận hàng vào cảng sớm hơn ngày hàng xuất kho. Em xem tàu khác nhé?",
+                    "en": "That ship's cargo cut-off comes before the goods leave the warehouse. Want to look at another ship?"
+                  }
+                }
+              ],
+              "retry": true
+            },
+            {
+              "id": "dec8",
+              "label": "12월 8일 출항",
+              "hint": {
+                "mn": "12-р сарын 8-нд гарах",
+                "vi": "Tàu chạy ngày 8 tháng 12",
+                "en": "Sails December 8"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-ship-again",
+                  "who": "daeri",
+                  "text": "그 배는 반입 마감이 출고보다 빨라요. 다른 배를 볼래요?",
+                  "hint": {
+                    "mn": "Тэр хөлөг онгоцны ачаа хүлээн авах эцсийн хугацаа нь бараа агуулахаас гарах өдрөөс өмнө байна. Та өөр хөлөг онгоц харах уу?",
+                    "vi": "Tàu đó có hạn chót nhận hàng vào cảng sớm hơn ngày hàng xuất kho. Em xem tàu khác nhé?",
+                    "en": "That ship's cargo cut-off comes before the goods leave the warehouse. Want to look at another ship?"
+                  }
+                }
+              ],
+              "retry": true
+            },
+            {
+              "id": "dec10",
+              "label": "12월 10일 출항",
+              "hint": {
+                "mn": "12-р сарын 10-нд гарах",
+                "vi": "Tàu chạy ngày 10 tháng 12",
+                "en": "Sails December 10"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-ship-right",
+                  "who": "daeri",
+                  "text": "맞아요. 7일에 출고하면 8일 반입 마감에 맞출 수 있어요. 12월 3일은 어렵겠네요.",
+                  "hint": {
+                    "mn": "Зөв. 7-нд агуулахаас гаргавал 8-ны эцсийн хугацаанд амжина. 12-р сарын 3 бол хэцүү юм байна.",
+                    "vi": "Đúng rồi. Xuất kho ngày 7 thì kịp hạn chót ngày 8. Ngày 3 tháng 12 thì khó rồi.",
+                    "en": "That's right. If the goods leave on the 7th, we can make the cut-off on the 8th. December 3 looks difficult."
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wrapup",
+      "title": "서류와 하루 보고",
+      "minutes": 3,
+      "place": "warehouse-daeri",
+      "requires": [
+        "call",
+        "afternoon"
+      ],
+      "steps": [
+        {
+          "type": "line",
+          "clip": "daeri-docs",
+          "who": "daeri",
+          "text": "이건 지난달 주문이라 이번 주에 나가요. 인보이스랑 패킹 리스트가 서로 맞는지 봐 줘요.",
+          "hint": {
+            "mn": "Энэ бол өнгөрсөн сарын захиалга, энэ долоо хоногт гарна. Инвойс болон савлагааны жагсаалт хоорондоо таарч байгаа эсэхийг шалгаад өгөөч.",
+            "vi": "Đây là đơn hàng tháng trước, tuần này sẽ xuất. Em xem giúp hóa đơn thương mại và phiếu đóng gói có khớp với nhau không nhé.",
+            "en": "This is last month's order, and it ships this week. Please check that the invoice and the packing list match."
+          }
+        },
+        {
+          "type": "work",
+          "id": "docs-check",
+          "record": "인보이스와 패킹 리스트를 맞춰 보는 차례",
+          "tool": {
+            "kind": "paper",
+            "title": "Commercial Invoice · Packing List(인보이스 · 패킹 리스트)",
+            "rows": [
+              [
+                "Invoice · Description(품목)",
+                "Moisture Cream 50ml"
+              ],
+              [
+                "Invoice · Quantity(수량)",
+                "2,000 PCS"
+              ],
+              [
+                "Packing List · Description(품목)",
+                "Moisture Cream 30ml"
+              ],
+              [
+                "Packing List · Quantity(수량)",
+                "40 CTNS × 50 PCS = 2,000 PCS"
+              ]
+            ]
+          },
+          "prompt": "두 서류에서 서로 다른 곳을 골라요.",
+          "hint": {
+            "mn": "Хоёр баримтын хооронд зөрүүтэй байгаа хэсгийг сонгоорой.",
+            "vi": "Hãy chọn chỗ khác nhau giữa hai chứng từ.",
+            "en": "Choose the part where the two documents differ."
+          },
+          "options": [
+            {
+              "id": "size",
+              "label": "Description(품목)",
+              "hint": {
+                "mn": "Барааны нэр",
+                "vi": "Tên hàng",
+                "en": "Description (item)"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-docs-right",
+                  "who": "daeri",
+                  "text": "맞아요. 패킹 리스트에 30ml로 잘못 적혔어요. 고쳐서 다시 뽑아요.",
+                  "hint": {
+                    "mn": "Зөв. Савлагааны жагсаалтад 30ml гэж буруу бичигдсэн байна. Засаад дахин хэвлэе.",
+                    "vi": "Đúng rồi. Phiếu đóng gói ghi nhầm là 30ml. Sửa lại rồi in lại nhé.",
+                    "en": "That's right. The packing list wrongly says 30ml. Let's fix it and print it again."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "count",
+              "label": "Quantity(수량)",
+              "hint": {
+                "mn": "Тоо хэмжээ",
+                "vi": "Số lượng",
+                "en": "Quantity"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-docs-again",
+                  "who": "daeri",
+                  "text": "다시 볼래요? 수량은 둘 다 2,000개로 같아요. 품목 줄을 한 번 더 봐요.",
+                  "hint": {
+                    "mn": "Дахиад нэг хараад үзэх үү? Тоо хэмжээ хоёуланд нь адилхан 2,000 ширхэг байна. Барааны нэрийн мөрийг дахиад нэг хараарай.",
+                    "vi": "Em thử xem lại xem. Số lượng ở cả hai chứng từ giống nhau, đều là 2.000 sản phẩm. Em nhìn kỹ dòng tên hàng thêm một lần nữa đi.",
+                    "en": "Want to look again? The quantity is the same on both, 2,000. Take one more look at the item line."
+                  }
+                }
+              ],
+              "retry": true
+            },
+            {
+              "id": "same",
+              "label": "다른 곳이 없다",
+              "hint": {
+                "mn": "Зөрүү байхгүй",
+                "vi": "Không có chỗ nào khác",
+                "en": "There's no difference"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "daeri-docs-again",
+                  "who": "daeri",
+                  "text": "다시 볼래요? 수량은 둘 다 2,000개로 같아요. 품목 줄을 한 번 더 봐요.",
+                  "hint": {
+                    "mn": "Дахиад нэг хараад үзэх үү? Тоо хэмжээ хоёуланд нь адилхан 2,000 ширхэг байна. Барааны нэрийн мөрийг дахиад нэг хараарай.",
+                    "vi": "Em thử xem lại xem. Số lượng ở cả hai chứng từ giống nhau, đều là 2.000 sản phẩm. Em nhìn kỹ dòng tên hàng thêm một lần nữa đi.",
+                    "en": "Want to look again? The quantity is the same on both, 2,000. Take one more look at the item line."
+                  }
+                }
+              ],
+              "retry": true
+            }
+          ]
+        },
+        {
+          "type": "note",
+          "note": "ship-docs"
+        },
+        {
+          "type": "line",
+          "who": "forwarder",
+          "channel": "phone",
+          "text": "안녕하세요, 바이어 쪽에서 정한 포워딩 회사 최민수 과장입니다. 이 대리님이 물어보신 12월 10일 배, 자리 있습니다. 주문이 확정되면 부킹할게요. 서류는 8일 오전까지 주세요.",
+          "hint": {
+            "mn": "Сайн байна уу, би худалдан авагч талын сонгосон тээвэр зуучийн компанийн менежер Чой Мин Сү байна. Танай дэд менежер И Да Ыны асууж байсан 12-р сарын 10-ны хөлөг онгоцонд зай байгаа. Захиалга баталгаажмагц хөлөг онгоцонд зай захиалж өгье. Бичиг баримтаа 8-ны үдээс өмнө өгөөрэй.",
+            "vi": "Xin chào, tôi là Choi Min-su, trưởng phòng (gwajang) của công ty giao nhận do bên người mua chỉ định. Tàu ngày 10 tháng 12 mà chị Lee Da-eun hỏi hôm trước vẫn còn chỗ. Khi đơn hàng được xác nhận, tôi sẽ đặt chỗ. Chứng từ xin anh chị gửi trước trưa ngày 8.",
+            "en": "Hello, this is Choi Min-su, a manager at the freight forwarder appointed by the buyer. There is space on the December 10 ship that Assistant Manager Lee asked about. I'll book it once the order is confirmed. Please send the documents by noon on the 8th."
+          }
+        },
+        {
+          "type": "say",
+          "id": "forwarder",
+          "prompt": "포워더에게 답해 보세요. 아직 주문이 확정되지 않았다는 것을 말해요.",
+          "example": "네, 감사합니다. 팀장님께 보고드리고, 주문이 확정되면 바로 연락드리겠습니다.",
+          "hint": {
+            "mn": "Тээвэр зуучлагчид хариулаарай. Захиалга хараахан баталгаажаагүй гэдгийг хэлээрэй. «Баярлалаа. Багийн ахлагчдаа тайлагнаад, захиалга баталгаажмагц шууд холбогдъё.»",
+            "vi": "Hãy trả lời công ty giao nhận. Nói rằng đơn hàng vẫn chưa được xác nhận. «Vâng, cảm ơn anh. Tôi sẽ báo cáo với trưởng nhóm, khi nào đơn hàng được xác nhận tôi sẽ liên lạc với anh ngay.»",
+            "en": "Answer the forwarder. Say that the order is not confirmed yet. \"Thank you. I'll let my team leader know and contact you as soon as the order is confirmed.\""
+          },
+          "record": "포워더와 통화하는 차례"
+        },
+        {
+          "type": "move",
+          "place": "lead-talk",
+          "caption": "퇴근 전, 팀장님 자리"
+        },
+        {
+          "type": "line",
+          "clip": "lead-report-ask",
+          "who": "lead",
+          "text": "첫날 수고 많았어요. 오늘 있었던 일, 있었던 그대로 말해 줘요.",
+          "hint": {
+            "mn": "Чи эхний өдрөө сайн ажиллалаа шүү. Өнөөдөр болсон зүйлийг яг болсноор нь хэлээд өгөөч.",
+            "vi": "Ngày đầu đi làm chắc em vất vả lắm. Hôm nay có chuyện gì, em cứ kể lại đúng những gì đã xảy ra nhé.",
+            "en": "Well done on your first day. Tell me what happened today, just as it happened."
+          }
+        },
+        {
+          "type": "report",
+          "id": "report",
+          "listen": "lead-listen",
+          "prompt": "오늘 있었던 일 가운데 팀장님께 보고할 것을 고르고, 그대로 말해 보세요.",
+          "hint": {
+            "mn": "Өнөөдөр болсон зүйлсээс багийн ахлагчид тайлагнах зүйлээ сонгоод, яг байгаагаар нь хэлээрэй.",
+            "vi": "Trong những việc hôm nay, hãy chọn điều cần báo cáo với trưởng nhóm, rồi kể lại đúng những gì đã xảy ra.",
+            "en": "Out of everything that happened today, choose what to report to the team leader, and describe it just as it happened."
+          },
+          "items": [
+            {
+              "id": "docs",
+              "text": "지난달 주문 건의 패킹 리스트에 용량이 잘못 적혀서 고쳤습니다.",
+              "hint": {
+                "mn": "Өнгөрсөн сарын захиалгын савлагааны жагсаалтад багтаамж буруу бичигдсэн байсныг зассан.",
+                "vi": "Phiếu đóng gói của đơn hàng tháng trước ghi sai dung tích, em đã sửa lại.",
+                "en": "The packing list for last month's order had the wrong volume on it, so I corrected it."
+              }
+            },
+            {
+              "id": "price",
+              "text": "바이어가 수량을 3,000개로 늘리면 단가를 낮춰 줄 수 있는지 물었습니다.",
+              "hint": {
+                "mn": "Худалдан авагч тоо хэмжээг 3,000 болгож нэмбэл нэгжийн үнийг бууруулж болох эсэхийг асуусан.",
+                "vi": "Khách hỏi nếu tăng số lượng lên 3.000 sản phẩm thì bên mình có giảm đơn giá được không.",
+                "en": "The buyer asked whether we could lower the unit price if they increase the quantity to 3,000."
+              }
+            },
+            {
+              "id": "date",
+              "key": true,
+              "text": "바이어가 12월 3일 출항을 원했는데, 이번 주에 발주서와 선금이 들어와도 생산이 4일에 끝나서 실을 수 있는 가장 빠른 배는 10일 배입니다.",
+              "hint": {
+                "mn": "Худалдан авагч барааг 12-р сарын 3-нд гарах хөлөг онгоцоор явуулахыг хүссэн. Гэвч энэ долоо хоногт захиалгын хуудас, урьдчилгаа төлбөр орж ирсэн ч үйлдвэрлэл 4-нд дуусна. Тиймээс бараагаа ачиж амжих хамгийн эрт гарах хөлөг онгоц нь 10-ны хөлөг онгоц юм.",
+                "vi": "Khách muốn hàng đi chuyến tàu ngày 3 tháng 12, nhưng dù tuần này nhận được đơn đặt hàng và tiền trả trước thì ngày 4 mới sản xuất xong, nên chuyến tàu sớm nhất mà hàng đi kịp là chuyến ngày 10.",
+                "en": "The buyer wanted the December 3 sailing, but even if the purchase order and the advance payment come in this week, production won't finish until the 4th, so the earliest sailing we can make is the one on the 10th."
+              }
+            },
+            {
+              "id": "answer",
+              "when": {
+                "call": "check"
+              },
+              "text": "바이어에게는 확인하고 내일 오전까지 답하겠다고 했습니다.",
+              "hint": {
+                "mn": "Худалдан авагчид шалгаад маргааш үдээс өмнө хариу өгнө гэж хэлсэн.",
+                "vi": "Em đã nói với khách là sẽ kiểm tra rồi trả lời trước trưa mai.",
+                "en": "I told the buyer I would check and get back to them by noon tomorrow."
+              }
+            },
+            {
+              "id": "answer",
+              "when": {
+                "call": "promise"
+              },
+              "text": "바이어에게 12월 3일 출항이 된다고 말했습니다.",
+              "hint": {
+                "mn": "Худалдан авагчид барааг 12-р сарын 3-нд гарах хөлөг онгоцонд ачиж амжина гэж хэлсэн.",
+                "vi": "Em đã nói với khách là hàng đi kịp chuyến tàu ngày 3 tháng 12.",
+                "en": "I told the buyer the December 3 sailing would work."
+              }
+            },
+            {
+              "id": "friend",
+              "when": {
+                "info": "refuse"
+              },
+              "text": "다른 회사에 다니는 학교 선배가 우리 가격표를 달라고 해서, 드릴 수 없다고 했습니다.",
+              "hint": {
+                "mn": "Өөр компанид ажилладаг их сургуулийн дээд курсийн ах маань манай үнийн жагсаалтыг гуйхаар нь өгч чадахгүй гэж хэлсэн.",
+                "vi": "Một anh khóa trên làm ở công ty khác xin bảng giá của công ty mình, em đã nói là không thể đưa.",
+                "en": "Someone who was a few years ahead of me at school and now works at another company asked for our price list, and I said I couldn't give it to him."
+              }
+            },
+            {
+              "id": "friend",
+              "when": {
+                "info": "send"
+              },
+              "text": "다른 회사에 다니는 학교 선배에게 우리 가격표 한 장을 보냈습니다.",
+              "hint": {
+                "mn": "Өөр компанид ажилладаг их сургуулийн дээд курсийн ахдаа манай үнийн жагсаалтаас нэг хуудас явуулсан.",
+                "vi": "Em đã gửi một trang trong bảng giá của công ty mình cho anh khóa trên làm ở công ty khác.",
+                "en": "I sent one page of our price list to someone who was a few years ahead of me at school and now works at another company."
+              }
+            }
+          ],
+          "record": {
+            "included": "12월 3일이 어렵다는 것까지 보고함",
+            "omitted": "12월 3일이 어렵다는 것은 빼고 보고함"
+          },
+          "then": {
+            "included": [
+              {
+                "type": "line",
+                "clip": "lead-thanks",
+                "who": "lead",
+                "text": "말해 줘서 고마워요. 날짜가 안 맞는 건 빨리 알수록 바이어도 준비할 수 있어요.",
+                "hint": {
+                  "mn": "Хэлсэнд баярлалаа. Огноо таарахгүйг хэдий чинээ эрт мэдвэл худалдан авагч ч төдий чинээ эрт бэлдэж чадна.",
+                  "vi": "Cảm ơn em đã nói với anh. Chuyện lịch giao hàng không khớp thì mình báo càng sớm, khách càng có thời gian chuẩn bị.",
+                  "en": "Thank you for telling me. The sooner we know a date doesn't work, the sooner the buyer can prepare."
+                }
+              },
+              {
+                "type": "line",
+                "clip": "lead-info",
+                "who": "lead",
+                "when": {
+                  "info": "send"
+                },
+                "text": "가격표나 바이어 연락처는 회사의 영업 비밀이에요. 밖으로 보낸 게 있으면 지금 말해 줘요. 같이 회수해요.",
+                "hint": {
+                  "mn": "Үнийн жагсаалт, худалдан авагчийн холбоо барих мэдээлэл бол компанийн худалдааны нууц. Гадагш явуулсан зүйл байвал одоо хэлээрэй. Хамтдаа буцааж авъя.",
+                  "vi": "Bảng giá hay thông tin liên lạc của khách hàng là bí mật kinh doanh của công ty. Nếu em đã gửi gì ra ngoài thì nói với anh ngay bây giờ. Anh em mình sẽ cùng tìm cách thu hồi lại nhé.",
+                  "en": "Price lists and buyer contact details are the company's trade secrets. If you've sent anything outside the company, tell me now. We'll work together to get it back."
+                }
+              }
+            ],
+            "omitted": [
+              {
+                "type": "line",
+                "clip": "lead-ask-date",
+                "who": "lead",
+                "text": "이 대리한테 들었는데, 12월 3일은 어렵다면서요? 그런 소식은 저한테 제일 먼저 말해 줘요.",
+                "hint": {
+                  "mn": "Дэд менежер И Да Ынаас сонсоход 12-р сарын 3-нд амжуулахад хэцүү гэсэн, тийм үү? Ийм мэдээг надад хамгийн түрүүнд хэлээрэй.",
+                  "vi": "Anh nghe chị Da-eun nói là khó kịp chuyến ngày 3 tháng 12, phải không? Những việc như vậy thì em nhớ báo cho anh đầu tiên nhé.",
+                  "en": "I heard from Assistant Manager Lee that December 3 looks difficult. Is that right? Please bring news like that to me first."
+                }
+              },
+              {
+                "type": "line",
+                "clip": "lead-info",
+                "who": "lead",
+                "when": {
+                  "info": "send"
+                },
+                "text": "가격표나 바이어 연락처는 회사의 영업 비밀이에요. 밖으로 보낸 게 있으면 지금 말해 줘요. 같이 회수해요.",
+                "hint": {
+                  "mn": "Үнийн жагсаалт, худалдан авагчийн холбоо барих мэдээлэл бол компанийн худалдааны нууц. Гадагш явуулсан зүйл байвал одоо хэлээрэй. Хамтдаа буцааж авъя.",
+                  "vi": "Bảng giá hay thông tin liên lạc của khách hàng là bí mật kinh doanh của công ty. Nếu em đã gửi gì ra ngoài thì nói với anh ngay bây giờ. Anh em mình sẽ cùng tìm cách thu hồi lại nhé.",
+                  "en": "Price lists and buyer contact details are the company's trade secrets. If you've sent anything outside the company, tell me now. We'll work together to get it back."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "line",
+          "clip": "lead-fix",
+          "who": "lead",
+          "when": {
+            "call": "promise"
+          },
+          "text": "바이어가 3일 배로 알고 있다면서요? 오늘 바로잡아요. 지금 같이 전화해요. 제 말을 전해 줘요.",
+          "hint": {
+            "mn": "Худалдан авагч барааг 3-ны хөлөг онгоцоор явна гэж бодож байгаа гэсэн, тийм үү? Үүнийг өнөөдөр хоёулаа залруулна. Одоо хоёулаа худалдан авагчтай утсаар ярья. Миний хэлэхийг худалдан авагчид дамжуулаад өгөөрэй.",
+            "vi": "Anh nghe nói khách vẫn nghĩ là hàng đi chuyến tàu ngày 3, phải không em? Hôm nay anh em mình phải đính chính lại. Bây giờ anh và em cùng gọi điện nhé. Anh nói gì, em truyền đạt lại cho khách giúp anh.",
+            "en": "I hear the buyer still thinks the goods are shipping on the 3rd. Is that right? Let's correct that today. Let's call her together now, and please interpret what I say for her."
+          }
+        },
+        {
+          "type": "relay",
+          "direction": "out",
+          "id": "fix-relay",
+          "when": {
+            "call": "promise"
+          },
+          "record": "팀장님의 말을 바이어에게 모국어로 전하는 차례",
+          "who": "buyer",
+          "channel": "phone",
+          "meaning": "죄송합니다. 확인해 보니 12월 3일 배는 어렵습니다. 가장 빠른 배는 12월 10일 부산 출항입니다.",
+          "prompt": "팀장님의 말을 바이어에게 내 나라 말로 전해요.",
+          "foreign": {
+            "mn": "Уучлаарай. Шалгаж үзэхэд 12-р сарын 3-ны хөлөг онгоцонд ачиж амжихад хүндрэлтэй байна. Бараагаа ачиж амжих хамгийн ойрын хөлөг онгоц 12-р сарын 10-нд Пусанаас хөдөлнө.",
+            "vi": "Em xin lỗi chị. Em đã kiểm tra lại thì hàng bên em không kịp chuyến tàu ngày 3 tháng 12 ạ. Chuyến sớm nhất hàng kịp đi là tàu rời Busan ngày 10 tháng 12 ạ.",
+            "en": "I'm sorry. I've checked, and we won't be able to make the December 3 sailing. The earliest ship we can make leaves Busan on December 10."
+          },
+          "hint": {
+            "mn": "Багийн ахлагчийн хэлэхийг худалдан авагчид төрөлх хэлээрээ дамжуулаарай. Худалдан авагч таны төрөлх хэлээр ярьдаг.",
+            "vi": "Hãy truyền đạt lời của trưởng nhóm cho người mua bằng tiếng mẹ đẻ của bạn, cũng là ngôn ngữ của họ.",
+            "en": "Interpret what the team leader says into your native language for the buyer. The buyer speaks it too."
+          }
+        },
+        {
+          "type": "line",
+          "who": "buyer",
+          "channel": "phone",
+          "when": {
+            "call": "promise"
+          },
+          "foreign": {
+            "mn": "Аа, тийм үү. Гэсэн ч өнөөдөр хэлж өгсөн нь сайн боллоо. 10-нд гарах хөлөг онгоцны хуваарьт тааруулж урамшууллын арга хэмжээнийхээ өдрийг дахин товлоё.",
+            "vi": "À, ra vậy. Nhưng may là em báo cho chị ngay hôm nay. Bên chị sẽ xếp lại lịch chương trình khuyến mãi theo chuyến tàu ngày 10.",
+            "en": "Oh, I see. Still, I'm glad you told me today. We'll reschedule the promotion around the December 10 sailing."
+          },
+          "text": "아, 그렇군요. 그래도 오늘 알려 주셔서 다행이에요. 10일 배에 맞춰 행사를 다시 잡을게요."
+        },
+        {
+          "type": "line",
+          "clip": "lead-tomorrow",
+          "who": "lead",
+          "when": {
+            "call": "check"
+          },
+          "text": "지금 바이어한테 전화해서 10일 배라고 먼저 알려 줘요. 단가는 제가 정해서 알려 줄게요.",
+          "hint": {
+            "mn": "Одоо худалдан авагч руу утасдаад бараа 10-нд гарах хөлөг онгоцоор явна гэдгийг эхлээд мэдэгдээрэй. Нэгжийн үнийг би тогтоогоод чамд хэлж өгье.",
+            "vi": "Bây giờ em gọi cho khách, báo trước là hàng sẽ đi chuyến tàu ngày 10 nhé. Còn đơn giá thì anh sẽ quyết định rồi báo cho em.",
+            "en": "Call the buyer now and start by telling her the goods will go on the December 10 sailing. I'll decide on the unit price and let you know."
+          }
+        },
+        {
+          "type": "relay",
+          "direction": "out",
+          "id": "answer-relay",
+          "when": {
+            "call": "check"
+          },
+          "record": "확인한 날짜를 바이어에게 모국어로 전하는 차례",
+          "who": "buyer",
+          "channel": "phone",
+          "meaning": "확인해 보니 가장 빠른 배는 12월 10일 부산 출항입니다. 단가는 내일 오전까지 알려 드리겠습니다.",
+          "prompt": "확인한 것을 바이어에게 내 나라 말로 전해요.",
+          "foreign": {
+            "mn": "Шалгаж үзэхэд бараагаа ачиж амжих хамгийн ойрын хөлөг онгоц 12-р сарын 10-нд Пусанаас хөдөлнө. Нэгжийн үнийг маргааш үдээс өмнө танд мэдэгдье.",
+            "vi": "Em đã kiểm tra rồi ạ, chuyến sớm nhất hàng kịp đi là tàu rời Busan ngày 10 tháng 12. Về đơn giá, em sẽ báo chị trước trưa mai ạ.",
+            "en": "I've checked, and the earliest vessel we can ship on leaves Busan on December 10. We'll let you know the unit price by noon tomorrow."
+          },
+          "hint": {
+            "mn": "Шалгаж мэдсэн зүйлээ худалдан авагчид төрөлх хэлээрээ дамжуулаарай. Худалдан авагч таны төрөлх хэлээр ярьдаг.",
+            "vi": "Hãy dùng tiếng mẹ đẻ của bạn, cũng là ngôn ngữ của người mua, để báo cho họ thông tin bạn vừa kiểm tra.",
+            "en": "Tell the buyer what you found out, in your native language. The buyer speaks it too."
+          }
+        },
+        {
+          "type": "line",
+          "who": "buyer",
+          "channel": "phone",
+          "when": {
+            "call": "check"
+          },
+          "foreign": {
+            "mn": "10-нд юм байна. Шууд мэдэгдсэнд баярлалаа. Манайх тэр өдөрт тааруулж урамшууллаа бэлдэнэ.",
+            "vi": "Vậy là ngày 10. Cảm ơn em đã báo ngay nhé. Bên chị sẽ chuẩn bị chương trình khuyến mãi theo ngày đó.",
+            "en": "The 10th, I see. Thanks for letting me know right away. We'll plan our promotion around that date."
+          },
+          "text": "10일이군요. 바로 알려 줘서 고마워요. 그 날짜에 맞춰 행사를 준비할게요."
+        }
+      ]
+    }
+  ],
+  "closing": {
+    "place": "meeting",
+    "lead": "맞고 틀린 답을 가리는 자리가 아니에요. 내가 고른 것과 해외영업원·무역 사무원이 지키는 것을 나란히 봐요.",
+    "principles": [
+      {
+        "id": "together",
+        "title": "모르는 말은 그 자리에서 묻는다",
+        "body": "회의가 빨라도 모르는 말은 그 자리에서 묻고, 들은 것은 다시 말해 확인해요. 무역에서는 낱말 하나가 날짜와 돈을 바꿔요.",
+        "hint": {
+          "mn": "Мэдэхгүй үгээ тэр дор нь асуух: Хурал хурдан өрнөж байсан ч мэдэхгүй үгээ тэр дор нь асууж, сонссоноо дахин хэлж нягтлаарай. Гадаад худалдаанд ганцхан үг огноо, мөнгөн дүнг өөрчилдөг.",
+          "vi": "Từ nào không hiểu thì hỏi ngay lúc đó: Dù cuộc họp diễn ra nhanh, từ nào không hiểu thì bạn hỏi ngay tại chỗ, và nhắc lại điều mình nghe được để xác nhận nhé. Trong thương mại quốc tế, chỉ một từ cũng làm thay đổi ngày tháng và số tiền.",
+          "en": "Ask about unfamiliar words on the spot: Even when a meeting moves fast, ask right away about any word you don't know, and repeat back what you heard to confirm it. In trade, a single word can change a date or the amount of money involved."
+        }
+      },
+      {
+        "id": "promise",
+        "title": "확인하지 않은 날짜와 가격은 약속하지 않는다",
+        "body": "바이어에게 한 말은 회사의 약속이 돼요. 생산, 배, 단가를 확인한 뒤 답하고, 그 전에는 언제까지 답할지를 말해요. 전화로 한 말은 메일로 다시 남겨요.",
+        "hint": {
+          "mn": "Шалгаагүй огноо, үнийг амлахгүй байх: Худалдан авагчид хэлсэн үг тань компанийн амлалт болдог. Үйлдвэрлэл, хөлөг онгоцны хуваарь, нэгжийн үнийг шалгасны дараа хариулж, түүнээс өмнө хэзээ хариу өгөхөө хэлээрэй. Утсаар ярьсан зүйлээ имэйлээр бичиж баталгаажуулаарай.",
+          "vi": "Không hứa hẹn về ngày giao hàng và giá khi chưa kiểm tra: Lời bạn nói với người mua sẽ thành lời hứa của công ty. Hãy kiểm tra tiến độ sản xuất, lịch tàu và đơn giá rồi mới trả lời; còn trước đó thì nói rõ khi nào mình sẽ trả lời. Những gì đã trao đổi qua điện thoại thì gửi email xác nhận lại nhé.",
+          "en": "Don't promise dates or prices you haven't checked: What you tell a buyer becomes the company's promise. Check production, the shipping schedule, and the unit price before you answer; until then, tell the buyer when you'll get back to them. Follow up by email on what was said on the phone."
+        }
+      },
+      {
+        "id": "secret",
+        "title": "회사와 거래처의 정보는 밖으로 내보내지 않는다",
+        "body": "가격표, 바이어 목록, 담당자 연락처는 회사의 영업 비밀이고 개인정보예요. 가까운 사람이 물어도 보내지 않아요.",
+        "hint": {
+          "mn": "Компани болон харилцагч байгууллагын мэдээллийг гадагш гаргахгүй байх: Үнийн жагсаалт, худалдан авагчдын жагсаалт, хариуцсан ажилтнуудын холбоо барих мэдээлэл бол компанийн худалдааны нууц бөгөөд хувь хүний мэдээлэл юм. Ойр дотнын хүн гуйсан ч өгч болохгүй.",
+          "vi": "Không đưa thông tin của công ty và đối tác ra ngoài: Bảng giá, danh sách người mua, thông tin liên lạc của người phụ trách là bí mật kinh doanh của công ty và cũng là thông tin cá nhân. Dù là người thân quen có hỏi, bạn cũng đừng gửi nhé.",
+          "en": "Don't let company or partner information leave the company: Price lists, buyer lists, and the contact details of the people who handle each account are the company's trade secrets, and they include personal information. Don't send them even if someone close to you asks."
+        }
+      },
+      {
+        "id": "share",
+        "title": "안 좋은 소식일수록 먼저 보고한다",
+        "body": "날짜가 안 맞거나 내가 실수한 일은 빨리 알릴수록 팀과 바이어가 바로잡을 시간이 생겨요.",
+        "hint": {
+          "mn": "Муу мэдээг хамгийн түрүүнд мэдэгдэх: Огноо таарахгүй байгааг эсвэл өөрөө алдаа гаргаснаа хэдий чинээ хурдан мэдэгдэнэ, баг болон худалдан авагчид арга хэмжээ авах цаг төдий чинээ их гарна.",
+          "vi": "Tin càng xấu càng phải báo cáo sớm: Khi không kịp lịch giao hàng hoặc khi bạn làm sai, bạn báo càng sớm thì nhóm và người mua càng có thêm thời gian để xử lý.",
+          "en": "The worse the news, the sooner you report it: When a date doesn't work or you've made a mistake, the sooner you say so, the more time the team and the buyer have to fix it."
+        }
+      }
+    ],
+    "forks": [
+      {
+        "id": "meeting",
+        "scene": "아침 회의",
+        "principle": "together",
+        "mine": {
+          "ask": "모르는 말을 되물었어요.",
+          "confirm": "들은 것을 다시 말해 확인했어요.",
+          "pass": "회의가 빨라서 일단 '네' 하고 넘어갔어요."
+        },
+        "say": "죄송한데, '반입 마감'이 무슨 뜻이에요?"
+      },
+      {
+        "id": "call",
+        "scene": "바이어 전화",
+        "principle": "promise",
+        "mine": {
+          "check": "확인하고 내일 오전까지 답하겠다고 했어요.",
+          "promise": "다른 회사로 가지 않게 12월 3일은 된다고 먼저 답했어요."
+        },
+        "say": "확인하고 내일 오전까지 꼭 답 드리겠습니다. 통화 내용은 메일로도 보내 드릴게요."
+      },
+      {
+        "id": "info",
+        "scene": "오후",
+        "principle": "secret",
+        "mine": {
+          "refuse": "회사 자료라서 보여 줄 수 없다고 했어요.",
+          "send": "취업 때 도와준 선배라서 가격표 한 장을 보냈어요."
+        },
+        "say": "미안해요. 회사 자료라서 보여 드릴 수 없어요."
+      },
+      {
+        "id": "report",
+        "scene": "하루 보고",
+        "principle": "share",
+        "mine": {
+          "included": "12월 3일이 어렵다는 것을 보고에 넣었어요.",
+          "omitted": "12월 3일이 어렵다는 것을 보고에 넣지 않았어요."
+        },
+        "say": "바이어가 12월 3일 출항을 원했는데, 가장 빠른 배는 10일 배입니다."
+      }
+    ],
+    "conditions": {
+      "lead": "좋게만 보여 주지 않아요. 지원하기 전에 알아 둘 것들이에요.",
+      "items": [
+        {
+          "title": "첫 연봉",
+          "body": "외국인 사무직을 뽑은 수출기업이 준 첫 연봉은 2,500만~3,000만 원이 가장 많았어요(42.5%). 그다음이 3,000만~3,500만 원(30.5%)이에요.",
+          "source": "한국무역협회 국제무역통상연구원, 수출기업 659곳 조사(2025년 4월), 2026-11-22 대조",
+          "hint": {
+            "mn": "Анхны жилийн цалин: Гадаад иргэнийг оффисын ажилд авсан экспортын компаниудын дунд анхны жилийн цалинд 25~30 сая вон өгсөн нь хамгийн олон байсан (42.5%). Удаах нь 30~35 сая вон (30.5%) байв.",
+            "vi": "Lương năm đầu tiên: Ở các doanh nghiệp xuất khẩu đã tuyển người nước ngoài làm việc văn phòng, mức lương năm đầu tiên phổ biến nhất là 25~30 triệu won (42,5%). Tiếp theo là 30~35 triệu won (30,5%).",
+            "en": "Starting salary: Among export companies that hired foreign nationals for office jobs, the most common starting annual salary was 25–30 million won (42.5%). Next was 30–35 million won (30.5%)."
+          }
+        },
+        {
+          "title": "회사 안에서는 한국어",
+          "body": "바이어와는 영어나 그 나라 말로, 회사 안에서는 한국어로 일해요. 수출기업들이 외국인 사무직에게 가장 바란 것도 업무 한국어였어요(68.6%, 영어는 21.5%).",
+          "source": "한국무역협회 국제무역통상연구원(2025년 4월), 2026-11-22 대조",
+          "hint": {
+            "mn": "Компани дотроо солонгос хэлээр: Худалдан авагчтай англиар эсвэл тухайн орных нь хэлээр харилцаж, компани дотроо солонгос хэлээр ажилладаг. Оффисын ажилд гадаад хүн авсан экспортын компаниуд судалгаанд гадаад ажилтнаасаа хамгийн их хүсдэг зүйл нь ажил хэргийн солонгос хэл гэж хариулсан (68.6%, англи хэл 21.5%).",
+            "vi": "Trong công ty thì dùng tiếng Hàn: Với người mua, bạn làm việc bằng tiếng Anh hoặc tiếng của nước họ; còn trong công ty thì làm việc bằng tiếng Hàn. Điều các doanh nghiệp xuất khẩu mong muốn nhất ở nhân viên văn phòng người nước ngoài cũng là tiếng Hàn dùng trong công việc (68,6%, tiếng Anh là 21,5%).",
+            "en": "Korean inside the company: With buyers you work in English or their language; inside the company you work in Korean. Export companies that hired foreign nationals for office jobs said the skill they most wanted from those hires was workplace Korean (68.6%; English, 21.5%)."
+          }
+        },
+        {
+          "title": "메신저와 시차",
+          "body": "동남아와 몽골은 한국과 시차가 1~2시간이라 바이어의 메신저 메시지가 한국의 퇴근 시간 뒤에 오기도 해요. 급한 일이면 주말에도 와요. 유럽이나 미국 바이어의 메일은 밤사이에 와서 아침에 먼저 확인해요.",
+          "hint": {
+            "mn": "Мессенжер ба цагийн зөрүү: Зүүн өмнөд Ази болон Монгол нь Солонгостой 1~2 цагийн зөрүүтэй учраас худалдан авагчийн мессеж Солонгост ажил тарсны дараа ирэх нь бий. Яаралтай ажил гарвал амралтын өдрөөр ч ирдэг. Европ, Америкийн худалдан авагчийн имэйл шөнийн цагаар ирсэн байдаг тул өглөө хамгийн түрүүнд шалгадаг.",
+            "vi": "Tin nhắn và chênh lệch múi giờ: Đông Nam Á và Mông Cổ lệch múi giờ với Hàn Quốc 1~2 giờ, nên tin nhắn của người mua có khi đến sau giờ tan làm ở Hàn Quốc. Nếu có việc gấp thì cuối tuần họ cũng nhắn. Email của người mua ở châu Âu hay Mỹ thì đến trong đêm, nên buổi sáng việc đầu tiên bạn cần làm là kiểm tra email.",
+            "en": "Messaging apps and time differences: Southeast Asia and Mongolia are 1–2 hours behind Korea, so buyers' messages sometimes arrive after the working day in Korea has ended. If something is urgent, buyers send messages on weekends too. Emails from buyers in Europe or the US arrive overnight, so you check them first thing in the morning."
+          }
+        },
+        {
+          "title": "실적과 출장",
+          "body": "실적에 따라 성과급과 승진이 달라져요. 누액이나 파손 같은 클레임을 처리하고 대금을 챙기는 것도 이 일이에요. 해외 전시회와 바이어 방문 출장도 있어요.",
+          "source": "고용노동부·한국고용정보원 직업정보 「해외영업원」, 2026-11-22 대조",
+          "hint": {
+            "mn": "Ажлын үр дүн ба томилолт: Урамшуулал (үр дүнгээр нэмж өгдөг мөнгө) болон албан тушаал ахих нь ажлын үр дүнгээс хамаарч ялгаатай байдаг. Бүтээгдэхүүн гоожсон, эвдэрсэн гэх мэт гомдлыг шийдвэрлэх, барааны төлбөрийг хөөцөлдөж авах нь ч энэ ажилд багтдаг. Гадаадад үзэсгэлэнд оролцох, худалдан авагчтай очиж уулзах томилолт ч бий.",
+            "vi": "Thành tích và đi công tác: Tiền thưởng và việc thăng chức tùy thuộc vào thành tích của bạn. Xử lý khiếu nại như hàng bị rò rỉ hay hư hỏng và theo dõi thu tiền hàng cũng thuộc công việc này. Ngoài ra, bạn còn đi công tác để dự hội chợ ở nước ngoài và đến thăm người mua.",
+            "en": "Results and business trips: Performance bonuses and promotions depend on your sales results. Handling claims about problems such as leaks or damage, and making sure payments come in, are also part of this job. There are also business trips to overseas trade shows and to visit buyers."
+          }
+        },
+        {
+          "title": "작은 회사에서는",
+          "body": "견본 포장과 발송, 선적 서류, 통역을 함께 맡는 일이 많아요. 수출기업에 들어간 유학생 졸업자들은 잦은 야근을 아쉬운 점으로 꼽았어요. 첫 주에는 제품과 지난 메일부터 익혀요.",
+          "source": "한국무역협회 2024년 무역업계 외국인 인력 활용 실태조사(유학생 졸업자 면담), 2026-11-22 대조",
+          "hint": {
+            "mn": "Жижиг компанид: Дээж савлаж илгээх, ачилтын бичиг баримт, аман орчуулга зэргийг хамт хариуцах нь элбэг. Солонгост сурч төгсөөд экспортын компанид ажилд орсон гадаад төгсөгчид судалгаанд ойр ойрхон илүү цагаар ажилладагт сэтгэл дундуур байдаг гэж хариулсан. Эхний долоо хоногт бүтээгдэхүүнтэйгээ танилцаж, өмнөх имэйлүүдийг уншихаас эхэлдэг.",
+            "vi": "Ở công ty nhỏ: Bạn thường phải kiêm nhiều việc: đóng gói và gửi hàng mẫu, làm chứng từ giao hàng, phiên dịch. Những du học sinh đã tốt nghiệp và vào làm ở doanh nghiệp xuất khẩu cho biết điểm họ chưa hài lòng là thường xuyên phải làm thêm buổi tối. Tuần đầu tiên, bạn bắt đầu bằng việc làm quen với sản phẩm và đọc lại các email cũ.",
+            "en": "At a small company: You often also handle packing and sending samples, shipping documents, and interpreting. Former international students who joined export companies named frequent overtime as a downside. In your first week, you start by getting to know the products and reading through past emails."
+          }
+        },
+        {
+          "title": "이 일로 가는 길",
+          "body": "채용 공고에서 두 가지를 봐요. 직무가 해외영업인지, 연봉이 3,112만 원(2026년 기준) 이상인지예요. 해외영업원은 전문인력(E-7-1) 직종이라 국내 대학 학사는 전공과 경력을 보지 않고, 국내 전문학사는 전공이 이 일과 관련 있으면 경력을 보지 않아요. 첫 연봉은 3,112만 원보다 낮은 자리가 많아요. 오늘 한 일 가운데 메일, 견적, 바이어 응대는 해외영업원의 일이에요. 서류 맞추기만 하는 무역 사무원은 E-7 허용 직종이 아니에요.",
+          "source": "법무부 체류민원 자격별 안내 매뉴얼(2026-11-16판), 법무부 공고 제2025-406호, 2026-11-22 대조",
+          "hint": {
+            "mn": "Энэ ажилд орох зам: Ажлын зараас хоёр зүйлийг хараарай. Ажлын чиглэл нь гадаад борлуулалт мөн эсэх, жилийн цалин нь 31 сая 120 мянган вон (2026 оны байдлаар) буюу түүнээс дээш эсэх. Гадаад борлуулалтын ажил нь мэргэжлийн ажилтны (E-7-1) визээр ажиллаж болох ажил мэргэжил учраас Солонгосын их сургуулийн бакалаврын зэрэгтэй бол ямар мэргэжлээр төгссөн, ажлын туршлагатай эсэхийг харгалзахгүй, харин Солонгосын коллежийн дипломтой бол төгссөн мэргэжил нь энэ ажилтай холбоотой байвал ажлын туршлага шаардахгүй. Гэхдээ анхны жилийн цалин нь 31 сая 120 мянган воноос бага ажлын байр олон байдаг. Өнөөдөр хийсэн зүйлсээс имэйл бичих, үнийн санал гаргах, худалдан авагчтай харилцах нь гадаад борлуулалтын ажилтны үүрэг юм. Зөвхөн бичиг баримт тулгадаг гадаад худалдааны оффисын ажил нь E-7 виз олгодог ажил мэргэжилд ордоггүй.",
+            "vi": "Đường đến với nghề này: Trong tin tuyển dụng, bạn cần xem hai điều: công việc có phải là kinh doanh quốc tế không, và lương năm có từ 31 triệu 120 nghìn won (mức của năm 2026) trở lên không. Kinh doanh quốc tế thuộc nhóm nghề được cấp visa lao động chuyên môn (E-7-1), nên nếu bạn có bằng cử nhân của một trường đại học ở Hàn Quốc thì không yêu cầu chuyên ngành hay kinh nghiệm làm việc, còn nếu có bằng cao đẳng của một trường ở Hàn Quốc thì chỉ cần chuyên ngành liên quan đến công việc này là không yêu cầu kinh nghiệm làm việc. Tuy vậy, nhiều vị trí lại có mức lương năm đầu tiên thấp hơn 31 triệu 120 nghìn won. Trong những việc hôm nay bạn đã làm, việc viết email, làm báo giá và làm việc với người mua là việc của nhân viên kinh doanh quốc tế. Công việc văn phòng xuất nhập khẩu chỉ đối chiếu chứng từ thì không thuộc nhóm nghề được cấp E-7.",
+            "en": "The path to this job: Check two things in a job posting: whether the role is overseas sales, and whether the annual salary is 31.12 million won (the 2026 threshold) or more. Overseas sales is an occupation under the professional worker visa (E-7-1), so with a bachelor's degree from a Korean university no specific major or work experience is required, while with an associate degree from a Korean college there is no work experience requirement as long as your major is related to this job. Many starting salaries, though, are below 31.12 million won. Of the tasks you did today, handling emails, preparing the quotation and dealing with the buyer count as overseas sales work. A trade office clerk who only checks documents against each other is not in an occupation eligible for the E-7 visa."
+          }
+        },
+        {
+          "title": "회사의 조건",
+          "body": "회사도 조건을 갖춰야 해요. 한국인 직원이 5명이 안 되는 내수 위주 회사는 원칙적으로 뽑기 어렵고, 외국인은 한국인 직원의 20%까지예요. 졸업한 뒤에는 구직(D-10) 자격으로 일자리를 찾을 수 있어요.",
+          "source": "법무부 체류민원 자격별 안내 매뉴얼(2026-11-16판), 2026-11-22 대조",
+          "hint": {
+            "mn": "Компанид тавигдах шаардлага: Компани ч гэсэн нөхцөл хангасан байх ёстой. Ерөнхий зарчмаар бол 5-аас цөөн солонгос ажилтантай бөгөөд бараагаа голчлон Солонгос дотроо зардаг компанид гадаад ажилтан ажилд авахад хүндрэлтэй. Мөн аль ч компанид гадаад ажилтны тоо солонгос ажилтны тооны 20%-иас хэтэрч болохгүй. Төгссөний дараа ажил хайх (D-10) визээр ажлын байр хайж болно.",
+            "vi": "Điều kiện của công ty: Công ty cũng phải đáp ứng điều kiện. Công ty nào vừa có chưa đến 5 nhân viên người Hàn, vừa chủ yếu bán hàng ở thị trường nội địa Hàn Quốc thì về nguyên tắc khó tuyển được người nước ngoài. Ngoài ra, số nhân viên người nước ngoài không được vượt quá 20% số nhân viên người Hàn. Sau khi tốt nghiệp, bạn có thể ở lại tìm việc theo diện visa D-10 dành cho người tìm việc.",
+            "en": "Company requirements: The company has to meet certain requirements too. As a general rule, a company that both has fewer than 5 Korean employees and sells mainly inside Korea has a hard time hiring foreign staff. A company's foreign staff may not exceed 20% of its Korean employees. After you graduate, you can look for a job on a job-seeker (D-10) visa."
+          }
+        }
+      ]
+    },
+    "reflection": {
+      "hardLabel": "이 일에서 힘들 것 같은 점",
+      "hardHelp": "한국어로 쓰기 어려우면 모국어로 써도 돼요.",
+      "decisionLabel": "오늘 해 보니",
+      "decisions": [
+        {
+          "id": "more",
+          "label": "이 일을 더 알아보겠다",
+          "hint": {
+            "mn": "Энэ ажлын талаар илүү судалж үзнэ",
+            "vi": "Mình sẽ tìm hiểu thêm về nghề này",
+            "en": "I'll look into this job more"
+          }
+        },
+        {
+          "id": "unsure",
+          "label": "아직 모르겠다",
+          "hint": {
+            "mn": "Одоохондоо мэдэхгүй байна",
+            "vi": "Mình vẫn chưa biết",
+            "en": "I'm not sure yet"
+          }
+        },
+        {
+          "id": "not-me",
+          "label": "나와 맞지 않는다",
+          "hint": {
+            "mn": "Надад тохирохгүй",
+            "vi": "Không hợp với mình",
+            "en": "It's not for me"
+          }
+        }
+      ],
+      "decisionNote": "「나와 맞지 않는다」도 좋은 결과예요. 미리 알고 고르려고 하는 체험이에요."
+    },
+    "ladder": {
+      "lead": "준비한 것을 본인이 적어요. 증빙은 지원할 때 본인이 따로 내요.",
+      "items": [
+        {
+          "id": "degree",
+          "label": "학위와 졸업 시기",
+          "placeholder": "예: 국제통상학 학사, 2027년 2월 졸업 예정",
+          "hint": {
+            "mn": "Боловсролын зэрэг ба төгсөх хугацаа — ямар зэрэгтэй, хэзээ төгсөхөө бичнэ. Жишээ: Олон улсын худалдааны бакалавр, 2027 оны 2-р сард төгсөнө",
+            "vi": "Bằng cấp và thời điểm tốt nghiệp — ghi bằng cấp và thời gian tốt nghiệp của bạn. Ví dụ: Cử nhân Thương mại quốc tế, dự kiến tốt nghiệp tháng 2 năm 2027",
+            "en": "Degree and graduation date — write your degree and when you graduate. Example: Bachelor's in International Trade, graduating February 2027"
+          }
+        },
+        {
+          "id": "topik",
+          "label": "TOPIK 급수와 성적 날짜",
+          "placeholder": "예: 5급, 2026년 10월",
+          "hint": {
+            "mn": "TOPIK-ийн түвшин ба дүн гарсан огноо — хэддүгээр түвшин авсан, дүн хэзээ гарсныг бичнэ. Жишээ: 5-р түвшин, 2026 оны 10-р сар",
+            "vi": "Cấp TOPIK và thời gian đạt được — ghi cấp bạn đạt được và tháng, năm có kết quả. Ví dụ: cấp 5, tháng 10 năm 2026",
+            "en": "TOPIK level and score date — write your level and when you got the score. Example: Level 5, October 2026"
+          }
+        },
+        {
+          "id": "trade",
+          "label": "무역 자격과 공부",
+          "placeholder": "예: 무역영어 2급(대한상공회의소) 준비 중, 국제무역사 취득",
+          "hint": {
+            "mn": "Гадаад худалдааны гэрчилгээ ба суралцаж буй зүйл — авсан эсвэл авахаар бэлдэж буй гэрчилгээгээ бичнэ. Жишээ: Солонгосын Худалдаа аж үйлдвэрийн танхимын «Худалдааны англи хэл» 2-р зэргийн шалгалтад бэлдэж байгаа, Олон улсын худалдааны мэргэжилтний (국제무역사) гэрчилгээ авсан",
+            "vi": "Chứng chỉ thương mại và việc ôn thi — ghi chứng chỉ bạn đã có hoặc kỳ thi bạn đang ôn. Ví dụ: đang ôn thi Tiếng Anh thương mại cấp 2 (Phòng Thương mại và Công nghiệp Hàn Quốc), đã có chứng chỉ Chuyên viên thương mại quốc tế (국제무역사)",
+            "en": "Qualifications in international trade — write the ones you hold or are studying for. Example: studying for Trade English Level 2 (Korea Chamber of Commerce and Industry); already hold the International Trade Specialist certificate (국제무역사)"
+          }
+        },
+        {
+          "id": "english",
+          "label": "영어와 다른 외국어",
+          "placeholder": "예: 영어 메일 쓰기 가능, 모국어 몽골어",
+          "hint": {
+            "mn": "Англи хэл ба бусад гадаад хэл — ямар хэлээр юу хийж чаддагаа бичнэ. Жишээ: англиар имэйл бичиж чадна, төрөлх хэл монгол",
+            "vi": "Tiếng Anh và ngoại ngữ khác — ghi rõ bạn có thể làm gì bằng từng ngôn ngữ. Ví dụ: viết được email bằng tiếng Anh, tiếng mẹ đẻ là tiếng Việt",
+            "en": "English and other languages — write what you can do in each language. Example: I can write emails in English; my native language is Mongolian"
+          }
+        },
+        {
+          "id": "visa",
+          "label": "체류자격",
+          "placeholder": "예: D-2",
+          "hint": {
+            "mn": "Оршин суух зөвшөөрлийн ангилал — одоогийн визийн ангиллаа бичнэ. Жишээ: D-2",
+            "vi": "Tư cách lưu trú — ghi loại visa hiện tại của bạn. Ví dụ: D-2",
+            "en": "Residence status — write your current visa type. Example: D-2"
+          }
+        }
+      ]
+    }
+  }
+}

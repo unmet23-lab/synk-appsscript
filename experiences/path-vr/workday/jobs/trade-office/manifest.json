@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "workday-trade-office",
+  "status": "making",
+  "title": "해외영업·무역 사무의 하루",
+  "projection": "rectilinear-mono",
+  "stereo": false,
+  "source": {
+    "status": "making",
+    "provider": "Google Flow",
+    "model": "Omni 1.2 Flash",
+    "generationDate": "2026-11-21",
+    "reviewScope": "인물 영상은 아직 만들지 않았다. 모든 걸음이 사진과 자막으로 나간다."
+  },
+  "notice": "인물과 장소는 AI로 만든 그림과 영상이에요. 실제 사람이나 시설이 아니에요.",
+  "clips": []
+}
