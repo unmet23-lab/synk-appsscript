@@ -179,6 +179,82 @@ test('a session without hook news says working within 90 seconds, quiet up to 30
   assert.equal(one(fold([rec(T0), rec(T0 + 5 * M), rec(T0 + M)]), T0 + 5 * M + 30 * S).status, 'working');
 });
 
+test('4.5 · the last record line: a finished turn is quiet at once, counted from that line, and a later non-turn touch does not make it look busy', () => {
+  // 차례가 끝난 기록은 고친 지 10초여도 조용하다(90초 늦음을 없앰). 분은 끝 줄의 때부터 센다
+  const ended = fold([rec(T0 + 10 * M, { turn: 'ended', turnAt: T0 + 2 * M })]);
+  assert.deepEqual(shape(one(ended, T0 + 10 * M + 10 * S)), ['quiet', '8분째 조용합니다', false]);
+  assert.equal(one(ended, T0 + 40 * M), null, 'dropping still follows the last change of the file');
+  // 끝 줄의 때가 고친 때보다 늦게 적혀 있으면(시계가 어긋남) 고친 때부터 센다
+  assert.deepEqual(shape(one(fold([rec(T0, { turn: 'ended', turnAt: T0 + 5 * M })]), T0 + 3 * M)), ['quiet', '3분째 조용합니다', false]);
+  // 손님의 답을 기다리는 세션도 일하는 중이라고 하지 않는다
+  assert.deepEqual(shape(one(fold([rec(T0, { turn: 'waiting', turnAt: T0 })]), T0 + 20 * S)), ['quiet', '1분째 조용합니다', false]);
+});
+
+test('4.5 · a turn still running is working while a long command runs, up to 12 minutes of an unchanged record', () => {
+  const st = fold([rec(T0, { turn: 'working', turnAt: T0 })]);
+  assert.deepEqual(shape(one(st, T0 + 5 * M)), ['working', '일하는 중', false]);
+  assert.deepEqual(shape(one(st, T0 + OFFICE_TIMES.recordBusy - 1)), ['working', '일하는 중', false]);
+  assert.deepEqual(shape(one(st, T0 + OFFICE_TIMES.recordBusy)), ['quiet', '12분째 조용합니다', false]);
+  assert.equal(one(st, T0 + 30 * M), null);
+  assert.equal(OFFICE_TIMES.recordBusy, 12 * M);
+});
+
+test('4.5 · a finished turn whose helper record changed within 90 seconds is working; an unknown line keeps the 90-second rule', () => {
+  const helper = fold([rec(T0 + M, { turn: 'ended', turnAt: T0, helperAt: T0 + M })]);
+  assert.deepEqual(shape(one(helper, T0 + M + 89 * S)), ['working', '일하는 중', false]);
+  assert.deepEqual(shape(one(helper, T0 + M + 90 * S)), ['quiet', '2분째 조용합니다', false]);
+  for (const turn of [null, undefined, 'busy', 7]) {
+    const st = fold([rec(T0, { turn })]);
+    assert.deepEqual(shape(one(st, T0 + 89 * S)), ['working', '일하는 중', false], String(turn));
+    assert.deepEqual(shape(one(st, T0 + 90 * S)), ['quiet', '1분째 조용합니다', false], String(turn));
+  }
+});
+
+test('4.5 · the scan that arrives last decides the line kind: scans come one at a time and in order (office.cjs)', () => {
+  let st = fold([rec(T0 + 5 * M, { turn: 'working', turnAt: T0 + 5 * M }), rec(T0 + 5 * M, { turn: 'ended', turnAt: T0 + 5 * M })]);
+  assert.deepEqual(shape(one(st, T0 + 5 * M + 10 * S)), ['quiet', '1분째 조용합니다', false]);
+  st = officeReduce(st, rec(T0 + 5 * M, { turn: 'working', turnAt: T0 + 5 * M }));
+  assert.deepEqual(shape(one(st, T0 + 7 * M)), ['working', '일하는 중', false]);
+  // 받은 갈래는 상태에만 남고, 화면의 줄에는 실리지 않는다
+  assert.deepEqual(Object.keys(one(st, T0 + 7 * M)).filter(k => /turn|helper/i.test(k)), []);
+});
+
+test('설계 검토 solio-office-turn 고칠 것 1: a known line kind is timed from that line, so a non-turn line touching an old record neither wakes a cut turn nor shows a turn ended days ago', () => {
+  const D = 24 * H, now = T0 + 3 * D;
+  // 3일 전에 끊긴 차례(끝 줄이 도구 호출)에 지금 차례 밖의 줄이 붙었다
+  assert.equal(one(fold([rec(now - 5 * S, { turn: 'working', turnAt: T0 })]), now), null);
+  // 3일 전에 끝난 차례도 「4320분째 조용합니다」로 서지 않는다
+  assert.equal(one(fold([rec(now - 5 * S, { turn: 'ended', turnAt: T0 })]), now), null);
+  assert.equal(one(fold([rec(now - 5 * S, { turn: 'waiting', turnAt: T0 })]), now), null);
+  // 차례 중: 끝 줄로부터 12분 안은 일하는 중, 30분까지는 조용, 그 뒤는 세우지 않는다(고친 때가 그 뒤여도)
+  const cut = fold([rec(T0 + 20 * M, { turn: 'working', turnAt: T0 })]);
+  assert.deepEqual(shape(one(cut, T0 + 20 * M + S)), ['quiet', '20분째 조용합니다', false]);
+  assert.equal(one(cut, T0 + 30 * M), null);
+  // 도우미가 더 늦게 적었으면 그때부터 잰다
+  const helped = fold([rec(T0 + 15 * M, { turn: 'working', turnAt: T0, helperAt: T0 + 15 * M })]);
+  assert.deepEqual(shape(one(helped, T0 + 26 * M)), ['working', '일하는 중', false]);
+  assert.deepEqual(shape(one(helped, T0 + 28 * M)), ['quiet', '13분째 조용합니다', false]);
+  // 끝 줄의 때가 없으면 고친 때로 잰다
+  assert.deepEqual(shape(one(fold([rec(T0, { turn: 'working', turnAt: null })]), T0 + 11 * M)), ['working', '일하는 중', false]);
+});
+
+test('GPT 검수 solio-office-turn GA2 · GA3 · -r2 GA2: a helper counts only when it wrote after the turn ended, and the scan that arrives last wins', () => {
+  // 도우미가 9초 전에 적고 본 차례가 5초 전에 끝났다: 도우미의 결과를 본 차례가 끝냈으니 조용하다
+  const before = fold([rec(T0 + 55 * S, { turn: 'ended', turnAt: T0 + 55 * S, helperAt: T0 + 51 * S })]);
+  assert.deepEqual(shape(one(before, T0 + M)), ['quiet', '1분째 조용합니다', false]);
+  // 본 차례가 끝난 뒤에 도우미가 적었으면(뒤에서 도는 도우미) 일하는 중이다
+  const after = fold([rec(T0 + 55 * S, { turn: 'ended', turnAt: T0 + 50 * S, helperAt: T0 + 55 * S })]);
+  assert.deepEqual(shape(one(after, T0 + M)), ['working', '일하는 중', false]);
+  // 도우미 파일이 지워져 고친 때가 앞으로 돌아간 새 살피기도 살핀 때가 늦으면 이긴다
+  let st = fold([rec(T0 + 2 * M, { turn: 'ended', turnAt: T0, helperAt: T0 + 2 * M, seenAt: T0 + 2 * M })]);
+  assert.deepEqual(shape(one(st, T0 + 2 * M + 10 * S)), ['working', '일하는 중', false]);
+  st = officeReduce(st, rec(T0, { turn: 'ended', turnAt: T0, helperAt: null, seenAt: T0 + 2 * M + 15 * S }));
+  assert.deepEqual(shape(one(st, T0 + 2 * M + 20 * S)), ['quiet', '2분째 조용합니다', false]);
+  // 시계를 뒤로 돌려 살핀 때가 앞선 살피기보다 일러도, 마지막으로 닿은 살피기가 이긴다(-r2 GA2)
+  st = officeReduce(st, rec(T0 + 2 * M + 20 * S, { turn: 'working', turnAt: T0 + 2 * M + 20 * S, seenAt: T0 + M }));
+  assert.deepEqual(shape(one(st, T0 + 2 * M + 25 * S)), ['working', '일하는 중', false]);
+});
+
 test('a session without hook news never says approval or done and never gets an alert', () => {
   const st = fold([rec(T0, { sessionId: 'cx', tool: 'codex', cwd: 'D:\\apps\\pay' })]);
   for (let t = T0; t < T0 + 30 * M; t += 30 * S) {
@@ -386,7 +462,7 @@ test('reset drops everything, prune keeps ended sessions long enough, the reduce
 });
 
 test('the time limits are the design values', () => {
-  assert.deepEqual({ ...OFFICE_TIMES }, { recordWork: 90 * S, silent: 12 * M, longTurn: 2 * M, stopGrace: 10 * S, drop: 30 * M, askKeep: 12 * H });
+  assert.deepEqual({ ...OFFICE_TIMES }, { recordWork: 90 * S, recordBusy: 12 * M, silent: 12 * M, longTurn: 2 * M, stopGrace: 10 * S, drop: 30 * M, askKeep: 12 * H });
 });
 
 /* ── GPT 검수(solio-office-be-20261120) ── */

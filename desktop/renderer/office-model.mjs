@@ -7,6 +7,7 @@ const SEC = 1e3, MIN = 60e3, HOUR = 3600e3;
 /* 경계 시간(설계의 표 그대로). 본체의 기록 살피기도 drop을 쓴다 */
 export const OFFICE_TIMES = Object.freeze({
   recordWork: 90 * SEC, // 기록이 이보다 짧게 그대로면 일하는 중(4.1, 4.2)
+  recordBusy: 12 * MIN, // 기록 끝이 차례 중(도구 결과를 기다림 · 답을 쓰는 중)이면 기록이 이만큼 그대로일 때까지 일하는 중(4.5)
   silent: 12 * MIN, // 일하는 중인데 훅과 기록이 둘 다 이만큼 조용하면 「소식이 없습니다」(4.1)
   longTurn: 2 * MIN, // 이보다 오래 걸린 차례만 끝냄 느낌표를 붙인다(D12)
   stopGrace: 10 * SEC, // Stop 뒤 이 안의 기록 바뀜은 그 차례의 마무리다(4.1)
@@ -17,6 +18,8 @@ const T = OFFICE_TIMES;
 const TOOLS = ['claude', 'codex'];
 const HOOK_EVENTS = new Set(['SessionStart', 'PostToolUse', 'Notification', 'Stop', 'SubagentStart', 'SubagentStop', 'SessionEnd']);
 const UNKNOWN_NOTE = '승인 물음은 모릅니다';
+const RECORD_TURNS = new Set(['ended', 'waiting', 'working']);
+const timeOrNull = v => (v != null && v !== '' && Number.isFinite(Number(v)) ? Number(v) : null);
 
 const own = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
 const later = (a, b) => (a == null ? b : Math.max(a, b));
@@ -69,6 +72,7 @@ export const officeState = () => ({ sessions: {}, ignored: {} });
 const fresh = (id, tool) => ({
   id, tool, cwd: null, model: null, modelAt: null, hooked: false,
   firstAt: null, hookedAt: null, lastHookAt: null, lastRecordAt: null,
+  recordTurn: null, recordTurnAt: null, recordHelperAt: null, // 마지막으로 닿은 기록 살피기가 읽은 끝 줄의 갈래 · 그 줄의 때 · 도우미 기록의 고친 때(4.5)
   postAt: null, // 마지막 PostToolUse(도우미 것까지)
   askAt: null, clearAt: null, // 승인 물음과 그것을 푸는 소식(도우미 것이 아닌 PostToolUse, Stop)의 마지막 때. 끝(SessionEnd)은 그 앞의 물음을 지운다
   idleAt: null, stopAt: null, turnStartAt: null, seenAt: null,
@@ -133,7 +137,8 @@ function dropUpTo(s, t) {
 
 /* 소식 하나를 접는다. 들어오는 것:
    { kind:'hook', event, sessionId, cwd, at, toolName?, toolDetail?, notificationType?, agentId?, model? }
-   { kind:'record', sessionId, cwd, tool:'claude'|'codex', changedAt } — changedAt은 도우미 기록까지 본 가장 늦은 고친 때
+   { kind:'record', sessionId, cwd, tool:'claude'|'codex', changedAt, turn?, turnAt?, helperAt?, seenAt? } — changedAt은 도우미 기록까지 본 가장 늦은 고친 때,
+     turn은 본 기록 끝 줄의 갈래('ended' · 'waiting' · 'working', 모르면 null), turnAt은 그 줄의 때, helperAt은 도우미 기록의 고친 때, seenAt은 살핀 때(4.5)
    { kind:'seen', departmentId, at } — 그 부서의 줄을 열었다 닫음. departmentId null은 「부서 없는 일」. ctx의 부서로 직원을 고른다
    { kind:'reset' } — 계정이 바뀌면 다 비운다
    늦게 닿은 소식도 있으므로 순서가 아니라 때(at)로 견준다. 주어진 상태는 고치지 않고 새 상태를 돌려준다.
@@ -164,6 +169,12 @@ export function officeReduce(state, event, ctx = {}) {
   if (cwd && (!isRecord || !s.hooked || !s.cwd)) s.cwd = cwd;
   if (isRecord) {
     if (event.tool === 'codex' || event.tool === 'claude') s.tool = event.tool;
+    // 끝 줄의 갈래는 마지막으로 닿은 살피기의 것을 쓴다(4.5). 본체는 기록을 한 번에 하나씩 살피고 그 차례대로 접는다(office.cjs).
+    // 그래서 고친 때나 살핀 때로 견주지 않는다. 도우미 파일이 지워져 고친 때가 앞으로 돌아가도, 시계를 뒤로 돌려도 새 살피기가 이긴다
+    // (GPT 검수 solio-office-turn GA3, -r2 GA2)
+    s.recordTurn = RECORD_TURNS.has(event.turn) ? event.turn : null;
+    s.recordTurnAt = timeOrNull(event.turnAt);
+    s.recordHelperAt = timeOrNull(event.helperAt);
     s.lastRecordAt = later(s.lastRecordAt, at);
     // 훅을 받기 전의 기록은 모른다(4.1 「훅을 중간에 켠 세션」). Stop 뒤 10초 안의 바뀜은 새 차례가 아니다
     if (s.hooked && at >= s.hookedAt && afterStop(s, at, T.stopGrace)) turnNews(s, at);
@@ -260,6 +271,25 @@ function statusOf(s, now) {
     // 훅 소식이 없는 세션은 기록만 안다. 승인 · 끝냄을 말하지 않고 느낌표도 없다
     const age = now - s.lastRecordAt;
     if (!(age < T.drop)) return null;
+    const turn = s.recordTurn;
+    if (turn) {
+      // 갈래를 아는 세션은 파일의 고친 때가 아니라 끝 줄의 때로 잰다(4.5). 차례와 상관없는 줄(대기열 · 제목 · 비용)이 오래된 기록을 고쳐도
+      // 끊긴 차례가 일하는 중이 되거나 며칠 전에 끝난 차례가 서지 않는다(설계 검토 solio-office-turn-20261123 고칠 것 1).
+      // 끝 줄의 때가 없거나 고친 때보다 늦게 적혀 있으면 고친 때로 잰다
+      const turnFrom = s.recordTurnAt != null && s.recordTurnAt <= s.lastRecordAt ? s.recordTurnAt : s.lastRecordAt;
+      if (turn === 'ended' || turn === 'waiting') {
+        // 차례가 끝났거나 손님의 답을 기다린다. 끝 줄보다 늦게 도우미 기록이 바뀌었고 그것이 90초 안이면 도우미가 일하는 중이다.
+        // 끝 줄 앞에 적은 도우미는 그 결과를 본 차례가 이미 끝냈다(GPT 검수 solio-office-turn GA2)
+        if (s.recordHelperAt != null && s.recordHelperAt > turnFrom && now - s.recordHelperAt < T.recordWork) return view('working', '일하는 중');
+        if (!(now - turnFrom < T.drop)) return null;
+        return view('quiet', minutes(now - turnFrom) + '분째 조용합니다');
+      }
+      // 차례 중이면 긴 명령이 도는 동안에도 일하는 중이다. 도우미가 적으면 그때부터 다시 잰다.
+      // 12분 넘게 아무것도 적히지 않았으면 멈췄거나 승인을 기다릴 수 있어 조용하다고 한다
+      const busyFrom = Math.max(turnFrom, s.recordHelperAt ?? -Infinity);
+      if (!(now - busyFrom < T.drop)) return null;
+      return now - busyFrom < T.recordBusy ? view('working', '일하는 중') : view('quiet', minutes(now - busyFrom) + '분째 조용합니다');
+    }
     return age < T.recordWork ? view('working', '일하는 중') : view('quiet', minutes(age) + '분째 조용합니다');
   }
   if (!(quiet < keepFor(s))) return null;
