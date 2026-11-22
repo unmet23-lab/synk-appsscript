@@ -27,7 +27,7 @@ function fixture({saved=false,config=CONFIG,suiteStore={},follower='restore',fol
     createAuthService:options=>{log.push(['auth',options.device]);onChange=options.onChange;return auth;},
     createSuiteFollower:({store,auth:wrapped})=>{assert.equal(store,suiteStore);assert.notEqual(wrapped,auth,'the follower gets a wrapped sign-in');given=wrapped;log.push('follower');
       const pass=async()=>{if(follower==='restore')state=signedIn(platform);else if(follower==='sign-in'){await wrapped.signOut();await wrapped.signIn();}};
-      return {start:()=>{log.push('start');return followerStart?followerStart(wrapped):pass();},refresh:()=>{log.push('refresh');return pass();},dispose:()=>log.push('follower-dispose')};},
+      return {start:()=>{log.push('start');return followerStart?followerStart(wrapped):pass();},refresh:()=>{log.push('refresh');return Promise.resolve();},dispose:()=>log.push('follower-dispose')};},
     exists:file=>{log.push(['exists',file]);return saved&&file===path.join(DIR,WORKSPACE_TEACHER_SESSION_FILE);}});
   return {teacher,log,changes,get given(){return given;},set state(value){state=value;},get state(){return state;},set platform(value){platform=value;},emit:value=>onChange(value)};
 }
@@ -54,7 +54,6 @@ test('with no saved teacher login, asking the status or signing out (a company l
   assert.deepEqual(await f.teacher.signOut(),{ok:true,status:IDLE});
   assert.equal((await f.teacher.accountRequest('classroom',{operation:'classes'})).error.code,'AUTH_REQUIRED');
   assert.deepEqual(await f.teacher.cancelSignIn(),IDLE);
-  f.teacher.refresh();
   assert.equal(made(f.log),0,'no auth service');assert.equal(f.log.includes('start'),false,'no Suite following');assert.equal(f.log.includes('refresh'),false);assert.equal(f.teacher.started(),false);
 });
 
@@ -116,7 +115,9 @@ test('GA1: a teacher login of another SYNK ID is neither shown nor used, and a p
   assert.equal((await f.teacher.accountRequest('classroom',{operation:'classes'})).error.code,'AUTH_CHANGED');
   assert.equal(f.log.slice(before).some(entry=>Array.isArray(entry)&&entry[0]==='accountRequest'),false,'no request with the old token');
   f.emit(signedIn(A));assert.equal(f.changes.at(-1).signedIn,false,'a change notice for the old account is masked too');assert.equal(f.changes.at(-1).account,null);
-  f.teacher.refresh();assert.equal(f.log.at(-1),'refresh');
+  // 상태를 묻거나 요청할 때마다 Suite 기록을 다시 읽어 따라가기가 앞 계정의 로그인을 바로 끊게 한다
+  const reads=f.log.filter(entry=>entry==='refresh').length;f.teacher.status();await f.teacher.accountRequest('classroom',{operation:'classes'});
+  assert.equal(f.log.filter(entry=>entry==='refresh').length,reads+2);
   f.platform=null;assert.equal(f.teacher.status().signedIn,false,'no platform account, no teacher login');
 });
 
@@ -124,11 +125,11 @@ test('classroom requests go through only after following started and for the pla
   const f=fixture();await f.teacher.signIn();
   assert.deepEqual(await f.teacher.accountRequest('classroom',{operation:'classes'}),{ok:true,classes:[]});
   assert.deepEqual(f.log.at(-1),['accountRequest','classroom',{operation:'classes'}]);
-  const before=f.log.length;
+  const requests=()=>f.log.filter(entry=>Array.isArray(entry)&&entry[0]==='accountRequest').length,before=requests();
   for(const [operation,params] of [['load',{}],['revokeAll',{}],['classroom',null],['classroom',[]],['classroom',{operation:'deleteEverything'}]]){
     const result=await f.teacher.accountRequest(operation,params);assert.equal(result.ok,false,String(operation));assert.equal(result.error.code,'INVALID_REQUEST',String(operation));
   }
-  assert.equal(f.log.length,before,'nothing reached the auth service');
+  assert.equal(requests(),before,'nothing reached the auth service');
   f.state={...signedOut};assert.equal((await f.teacher.accountRequest('classroom',{operation:'classes'})).error.code,'AUTH_REQUIRED');
 });
 
@@ -138,5 +139,5 @@ test('it forwards login changes until it is disposed, then answers unconfigured'
   f.teacher.dispose();assert.ok(f.log.includes('follower-dispose')&&f.log.includes('auth-dispose'));
   f.emit(signedOut);assert.equal(f.changes.length,count);
   assert.deepEqual(f.teacher.status(),NONE);assert.deepEqual(await f.teacher.signIn(),NONE);
-  f.teacher.refresh();assert.equal(f.log.includes('refresh'),false);
+  const reads=f.log.filter(entry=>entry==='refresh').length;f.teacher.status();assert.equal(f.log.filter(entry=>entry==='refresh').length,reads,'nothing follows after dispose');
 });

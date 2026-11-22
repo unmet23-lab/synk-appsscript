@@ -10,7 +10,8 @@ const {teacherAccountRequest}=require('./teacher-account.cjs');
   - 시스템 브라우저 로그인은 사람이 내 수업에서 로그인을 누른 직후 한 번만 연다(표 한 장). 따라가기가 혼자서는 브라우저를 열지 않는다.
     회사 업무 로그아웃이 교사 상태를 묻고 로그아웃할 때(teaching.js logoutTeachingForCompany), 내 수업에서 로그아웃한 뒤 플랫폼에 다시 로그인할 때
     브라우저가 뜻밖에 뜨지 않게 한다(GPT pc-retire-workspace-20261123 GA2 · GA3).
-  - 교사 로그인의 SYNK ID가 지금 플랫폼 계정과 다르면 보이지도 쓰이지도 않는다. 따라가기가 끊을 때까지의 틈도 막는다(같은 검수 GA1).
+  - 교사 로그인의 SYNK ID가 지금 플랫폼 계정과 다르면 보이지도 쓰이지도 않는다. 상태를 묻거나 요청하거나 로그인을 누를 때마다 Suite 기록을
+    다시 읽어(500ms 감시를 기다리지 않고) 따라가기가 앞 계정의 로그인을 바로 끊게 한다(같은 검수 GA1).
   - 수업 요청은 classroom 하나만 받는다.
 */
 const SESSION_FILE='auth-session.enc'; // auth-store.cjs가 쓰는 금고 파일 이름
@@ -42,18 +43,20 @@ function createWorkspaceTeacher({config,directory,scope,safeStorage,openExternal
   function saved(){try{return exists(path.join(directory,SESSION_FILE))===true;}catch{return false;}}
   // 따라가기를 켠다. 저장된 로그인을 되살리고, 플랫폼과 같은 SYNK ID가 아니면 끊는다
   function start(){if(!make())return null;if(!firstPass)firstPass=Promise.resolve(follower.start()).catch(()=>{});return auth;}
+  // Suite 기록을 지금 다시 읽는다. 바뀐 것이 없으면 따라가기가 바로 돌아온다
+  function follow(){if(!firstPass||!follower||disposed)return Promise.resolve();try{return Promise.resolve(follower.refresh()).catch(()=>{});}catch{return Promise.resolve();}}
   return Object.freeze({
     environment:()=>({clientId:'teacher',authProduct:'world',embedded:true,hostClientId:'platform'}),
     status(){
       if(!usable())return NONE;
       if(!firstPass&&!saved())return IDLE;
-      return view(start().status());
+      const service=start();void follow();return view(service.status());
     },
     // 사람이 누른 로그인. 따라가기의 첫 차례를 기다린 뒤에도 이 계정으로 서지 않았으면 브라우저로 한 번 로그인한다
     async signIn(){
       const service=start();if(!service)return NONE;
       ticket=true;
-      await firstPass;if(disposed){ticket=false;return NONE;}
+      await firstPass;await follow();if(disposed){ticket=false;return NONE;}
       const now=service.status();
       if(owned(now)||now.status==='signing-in'||now.status==='restoring'){ticket=false;return view(now);}
       ticket=false;await service.signIn();return view(service.status());
@@ -69,11 +72,9 @@ function createWorkspaceTeacher({config,directory,scope,safeStorage,openExternal
     async accountRequest(operation,params){
       if(operation!=='classroom'||!params||typeof params!=='object'||Array.isArray(params))return INVALID;
       if(!firstPass||!auth)return NOT_SIGNED_IN;
-      const now=auth.status();if(!now.signedIn)return NOT_SIGNED_IN;if(!owned(now))return CHANGED;
+      void follow();const now=auth.status();if(!now.signedIn)return NOT_SIGNED_IN;if(!owned(now))return CHANGED;
       return teacherAccountRequest(auth,operation,params);
     },
-    // 플랫폼 로그인이 바뀐 순간 Suite 기록을 다시 읽는다. 500ms 틈 없이 앞 계정의 교사 로그인을 막는다(GA1)
-    refresh(){if(firstPass&&follower&&!disposed){try{void follower.refresh();}catch{}}},
     started:()=>!!firstPass,
     dispose(){disposed=true;ticket=false;follower?.dispose();auth?.dispose();},
   });
