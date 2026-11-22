@@ -31,12 +31,12 @@ WORLD는 `data-mode="overlay" data-anchor=".synk-opening"`을 붙인다. 띠는 
 | `/nombre/` · `/rl/` | flow | `docs/마케팅/맞춤도구/nombre/index.html` · `rl/index.html` |
 | `/care/` · `/try/travel/` · `/try/learning-hub/` | flow | `experiences/relationship-care` · `path-travel` · `learning-hub`의 `index.html` |
 | `/try/` 게임 9곳(blank-slice · entry-check · order-rush · racing · rhythm · runner · story-classroom · talk-rally · word-magic) | flow(게임 화면이 보이는 동안 접힘) | `experiences/<게임>/index.html`(racing · rhythm · runner는 `korean-` 앞붙이) |
-| `/path/app/` · `/path/interview/film/rehearsal.html`(11-22) | flow | `experiences/path-app/index.html` · `experiences/path-vr/interview/film/rehearsal.html`(path-vr 시험은 이 자산을 묶음 밖 공용으로 뺀다) |
+| `/path/interview/film/rehearsal.html`(11-22) | flow | `experiences/path-vr/interview/film/rehearsal.html`(path-vr 시험은 이 자산을 묶음 밖 공용으로 뺀다) |
 | `/try/learning-hub/collection.html` · `/try/order-rush/beginner.html`(11-22) | flow | `experiences/learning-hub/collection.html` · `experiences/order-rush/beginner.html` |
 | `/world/invite/` · `/world/invite/en/` · `/world/invite/mn/`(11-22, WORLD 드라마 말하기 대기 명단) | flow | `experiences/drama/invite/pages.mjs`(쪽을 만드는 생성기) |
 | `/mn/` · `/name/` | flow · `/mn/`만 `.bar{top:calc(14px + var(--synk-launch-h,0px))}.bar-panel{top:calc(70px + var(--synk-launch-h,0px))}@media (max-width:900px){.bar{top:calc(10px + var(--synk-launch-h,0px))}}`(site.css의 휴대폰 기준 10px을 따름) | 공개본에만 있다. `/mn/`은 SYNK-website `site-v10`, `/name/`은 원본을 못 찾았다 — 다시 만들면 한 줄을 다시 넣는다 |
 
-띠를 넣지 않은 곳(11-22 판단): 지금 돈을 받는 PULSE(캐스팅북과 workspace의 PULSE 앱), yuhobuilds · synkbrief가 SNS로 나눠 주는 도구(`/prompts/` · `/builds/` · `/brief/`), 가족에게 보내는 소개 한 장(`/name/family/`), WORLD 안에서만 여는 화면(`/world/town/day.html` · `/synk-town/linked.html`), 쉬는 중인 `/fortune/` · `/listen/`, 「내 홈」(`/account/platform.html`, 글 없이 검정 구만 보이는 첫 화면은 유호님 11-16 방향).
+띠를 넣지 않은 곳(11-22 판단): 지금 돈을 받는 PULSE(캐스팅북과 workspace의 PULSE 앱), yuhobuilds · synkbrief가 SNS로 나눠 주는 도구(`/prompts/` · `/builds/` · `/brief/`), 가족에게 보내는 소개 한 장(`/name/family/`), WORLD 안에서만 여는 화면(`/world/town/day.html` · `/synk-town/linked.html`), 쉬는 중인 `/fortune/` · `/listen/`, 「내 홈」(`/account/platform.html`, 글 없이 검정 구만 보이는 첫 화면은 유호님 11-16 방향). `/path/app/`은 아직 없다: PATH 공개 빌드(`tools/prepare-path-app-public.mjs`)가 그 쪽에 `app.mjs` 스크립트 하나만 받아, 빌드가 공용 띠 자산을 받게 고친 뒤 넣는다.
 
 ## 글을 바꾸거나 걷을 때
 
