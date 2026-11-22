@@ -97,6 +97,17 @@
         }
       },
       {
+        "계정": "lab-jp-instagram",
+        "채널": "인스타 @synk.jp",
+        "주소": "https://www.instagram.com/reel/DgB5fiiPI30/",
+        "형식": "instagram-reels",
+        "게시": "2026-11-22T04:00:05.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-instagram",
         "채널": "인스타 @synk.mn",
         "주소": "https://www.instagram.com/reel/DfhSFPohykp/",
@@ -369,6 +380,28 @@
         }
       },
       {
+        "계정": "lab-vn-youtube",
+        "채널": "유튜브 @synklabvietnam",
+        "주소": "https://www.youtube.com/watch?v=Yr1ed8XHgc8",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-22T06:00:09.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
+        "계정": "lab-jp-youtube",
+        "채널": "유튜브 @synklabjapan",
+        "주소": "https://www.youtube.com/watch?v=wSqrwP5DJ2M",
+        "형식": "youtube-shorts",
+        "게시": "2026-11-22T04:00:24.000Z",
+        "훅": null,
+        "역할": "유입",
+        "시점": {},
+        "화면필요": []
+      },
+      {
         "계정": "lab-au-youtube",
         "채널": "유튜브 @synklabaustralia",
         "주소": "https://www.youtube.com/watch?v=ZlwP2QdNDQA",
@@ -398,7 +431,30 @@
         "게시": "2026-11-21T05:00:12.000Z",
         "훅": null,
         "역할": "유입",
-        "시점": {},
+        "시점": {
+          "24시간": {
+            "관측": "2026-11-22T05:00:20.350Z",
+            "지표": {
+              "views": 0,
+              "likes": 0,
+              "comments": 0
+            },
+            "평소대비": {
+              "배수": null,
+              "중앙값": 0,
+              "편수": 6,
+              "기준": "앞선 편 같은 나이"
+            },
+            "위치": {
+              "조회": "보통 · 6편",
+              "좋아요": "보통 · 6편",
+              "댓글": "보통 · 6편"
+            },
+            "판정": "자료 부족",
+            "다음": null,
+            "까닭": "네 숫자(초반 유지·평균 시청·보내기와 저장·맞춤 도구 유입)가 아직 없다"
+          }
+        },
         "화면필요": []
       },
       {
