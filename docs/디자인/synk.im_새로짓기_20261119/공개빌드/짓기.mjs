@@ -157,6 +157,13 @@ function 링크고침(글, lang, 이쪽) {
   글 = 글.replace(/href="index\.html(#[\w-]+)?"/g, (m, h = '') => `href="${앞}/${h}"`);
   글 = 글.replace(/href="en\/index\.html"/g, 'href="/en/"').replace(/href="\.\.\/index\.html"/g, 'href="/"');
   글 = 글.replace(/href="en\/detail\.html"/g, `href="${쪽주소('en', 이쪽)}"`).replace(/href="\.\.\/detail\.html"/g, `href="${쪽주소('ko', 이쪽)}"`);
+  if (en) {
+    // 영어로 열리지 않는 곳은 링크 글에 언어를 적는다. WORLD는 lang=en을 받는다(11-22 unmet23 세션).
+    글 = 글.replace(/href="\/world\/"/g, 'href="/world/?lang=en"');
+    글 = 글.replace(/(<a class="me" href="[^"]*">)My home</g, '$1My home (Korean)<');
+    글 = 글.replace(/>(Commission an ad|Open on the web|Click through a sample project|See all twenty-one in the casting book) <span class="arr"/g, '>$1 (Korean) <span class="arr"');
+    글 = 글.replace(/(href="\/ub\/">)Register your interest </g, '$1Register your interest (Korean · Mongolian) <');
+  }
   return 글;
 }
 
@@ -326,6 +333,8 @@ function 상세짓기(lang) {
     // 「PC 앱 받기」는 홈과 같이 설치 파일이 있는 홈의 받기 자리로(Opus 대체 최종 검수 F3)
     if (id === 'ai') 글 = 바꿈(글, '<a class="pill" href="https://synk.im/account/platform.html">', `<a class="pill" href="${lang === 'en' ? '/en' : ''}/#platform">`, 1, 'PC 앱 받기 단추');
     if (id === 'study') 글 = 바꿈(글, '<div class="shots" style="--n:2">', `<div class="shots" style="--n:2" tabindex="0" role="region" aria-label="${lang === 'en' ? 'App screens' : '앱 화면'}">`, 1, '유학 화면 줄');
+    // 출시 안내 띠는 체험 화면에만 둔다. 돈을 받는 AI 강의 · 광고 쪽은 뺀다(결정 11-21 출시 시기)
+    if (id === 'ai' || id === 'ad') 글 = 바꿈(글, '<style id="synk-launch-offset">.nav{top:var(--synk-launch-h,0px)}</style>\n<script src="/assets/launch-notice.js" defer></script>\n', '', 1, '출시 띠 빼기');
     글 = 링크고침(글, lang, id);
     글 = 그림자리(글);
     // 머리
