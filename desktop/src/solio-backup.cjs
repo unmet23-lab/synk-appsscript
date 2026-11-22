@@ -18,6 +18,8 @@ const path = require('node:path');
 const https = require('node:https');
 const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
+// Electron(BoringSSL)에는 BLAKE2b가 없다. minisign이 서명하는 BLAKE2b-512는 직접 셈한다(11-23 T30 실패의 원인)
+const { createBlake2b512 } = require('./blake2b.cjs');
 
 const FORMAT = 1;
 const STATUS_MAX = 64 * 1024;
@@ -184,11 +186,17 @@ async function readEngine({ run = runPowerShell, fsImpl = fsp } = {}) {
 }
 
 /* ── minisign(Tauri 업데이터 서명) ── */
-function publicKey(pub) {
+/* 공개 열쇠 글을 열쇠 번호(8바이트)와 Ed25519 열쇠(32바이트)로 나눈다. 꼴이 틀리면 던진다 */
+function keyParts(pub) {
   const line = Buffer.from(pub, 'base64').toString('utf8').split('\n').map(l => l.trim()).find(l => l && !l.startsWith('untrusted comment:'));
   const raw = Buffer.from(line || '', 'base64');
   if (raw.length !== 42 || raw.toString('latin1', 0, 2) !== 'Ed') throw Error('not a minisign public key');
-  return { id: raw.subarray(2, 10), key: crypto.createPublicKey({ key: { kty: 'OKP', crv: 'Ed25519', x: raw.subarray(10).toString('base64url') }, format: 'jwk' }) };
+  return { id: raw.subarray(2, 10), raw: raw.subarray(10) };
+}
+const importKey = raw => crypto.createPublicKey({ key: { kty: 'OKP', crv: 'Ed25519', x: raw.toString('base64url') }, format: 'jwk' });
+function publicKey(pub) {
+  const { id, raw } = keyParts(pub);
+  return { id, key: importKey(raw) };
 }
 /* 서명 글(base64)을 나눈다. 미리 해시하는 「ED」만 받는다(Tauri signer가 만드는 꼴). 아니면 null */
 function parseSignature(signature) {
@@ -202,16 +210,21 @@ function parseSignature(signature) {
   const fields = Object.fromEntries(comment.split('\t').map(f => { const i = f.indexOf(':'); return i > 0 ? [f.slice(0, i), f.slice(i + 1)] : [f, '']; }));
   return { keyId: raw.subarray(2, 10), value: raw.subarray(10), comment, fields, global };
 }
-/* 받은 파일의 BLAKE2b-512와 서명을 견준다. 맞는 열쇠의 역할(operating · recovery)이나 null */
+/* 받은 파일의 BLAKE2b-512와 서명을 견준다. 맞는 열쇠의 역할(operating · recovery)이나 null.
+   열쇠 번호가 맞는데 열쇠를 들이거나 서명을 견주는 일 자체가 던지면 VERIFY_ERROR다. 이 실행 환경이 그 셈을 못 하는 것이지
+   파일이 틀린 것이 아니므로 「파일이 다르다」(null → VERIFY_FAILED)로 보이지 않게 한다(11-23 T30) */
 function verifySignature(blake, parsed, keys = ENGINE_KEYS) {
   if (!parsed || !Buffer.isBuffer(blake)) return null;
   for (const entry of keys) {
-    let key;
-    try { key = publicKey(entry.pub); } catch { continue; }
-    if (!key.id.equals(parsed.keyId)) continue;
+    let parts;
+    try { parts = keyParts(entry.pub); } catch { continue; }
+    if (!parts.id.equals(parsed.keyId)) continue;
+    let ok;
     try {
-      if (crypto.verify(null, blake, key.key, parsed.value) && crypto.verify(null, Buffer.concat([parsed.value, Buffer.from(parsed.comment, 'utf8')]), key.key, parsed.global)) return entry.role;
-    } catch {}
+      const key = importKey(parts.raw);
+      ok = crypto.verify(null, blake, key, parsed.value) && crypto.verify(null, Buffer.concat([parsed.value, Buffer.from(parsed.comment, 'utf8')]), key, parsed.global);
+    } catch { throw fault('VERIFY_ERROR'); }
+    if (ok) return entry.role;
   }
   return null;
 }
@@ -239,11 +252,15 @@ function requestHttps(url, { signal } = {}) {
   });
 }
 const discard = response => { try { response?.body?.destroy?.(); } catch {} };
+/* 부호가 없는 오류에 부호를 붙인다. 네트워크(NETWORK)와 디스크(STORAGE)는 오류가 난 그 자리에서만 붙인다.
+   그래서 나중에 부호 없이 올라온 오류는 네트워크 문제가 아니다(11-23 T30: 확인 단계의 오류가 「받지 못했습니다」로 보였다) */
+const coded = (error, code) => (error?.backupCode ? error : Object.assign(fault(code), { cause: error }));
 /* 피드는 넘겨주기를 따라가지 않는다. 설치 파일은 GitHub Releases가 주는 release-assets 한 곳만 따라간다 */
 async function responseFor(url, { request, signal, artifact = false }) {
   for (let redirects = 0; redirects <= 3; redirects++) {
     if (signal?.aborted) throw fault('CANCELLED');
-    const response = await request(url, { signal });
+    let response;
+    try { response = await request(url, { signal }); } catch (error) { throw coded(error, 'NETWORK'); }
     if ([301, 302, 303, 307, 308].includes(response.status)) {
       const location = response.headers?.location; discard(response);
       if (!artifact || redirects === 3 || typeof location !== 'string') throw fault('UNTRUSTED_REDIRECT');
@@ -263,6 +280,7 @@ async function fetchFeed({ request = requestHttps, signal } = {}) {
   const response = await responseFor(FEED_URL, { request, signal });
   const pieces = []; let size = 0;
   try { for await (const piece of response.body) { const chunk = Buffer.from(piece); size += chunk.length; if (size > FEED_MAX) throw fault('FEED_INVALID'); pieces.push(chunk); } }
+  catch (error) { throw coded(error, 'NETWORK'); }
   finally { discard(response); }
   let value; try { value = JSON.parse(Buffer.concat(pieces).toString('utf8')); } catch { throw fault('FEED_INVALID'); }
   return validateFeed(value);
@@ -387,10 +405,26 @@ function holdSetup(file, { spawnImpl = spawn, timeout = 30000 } = {}) {
 async function digestFile(file, limit, fsImpl = fs) {
   const stat = await fsImpl.promises.lstat(file);
   if (!stat.isFile() || stat.isSymbolicLink()) throw fault('VERIFY_FAILED');
-  const sha = crypto.createHash('sha256'), blake = crypto.createHash('blake2b512');
+  const sha = crypto.createHash('sha256'), blake = createBlake2b512();
   let size = 0;
   for await (const chunk of fsImpl.createReadStream(file)) { size += chunk.length; if (size > limit) throw fault('VERIFY_FAILED'); sha.update(chunk); blake.update(chunk); }
   return { size, sha256: sha.digest('hex'), blake: blake.digest() };
+}
+
+/* 누름이 실패했을 때 화면에 넘길 부호. 부호가 있으면 그대로다. 없으면 실패한 일(step)로 가른다.
+   네트워크 오류는 받는 자리에서 NETWORK가 붙어 오므로, 여기서 부호 없는 오류를 NETWORK로 접지 않는다(11-23 T30).
+   디스크 오류는 Node가 붙이는 syscall · code로 안다 */
+function failureCode(error, step) {
+  if (typeof error?.backupCode === 'string') return error.backupCode;
+  const disk = typeof error?.syscall === 'string' && typeof error?.code === 'string';
+  switch (step) {
+    case 'prepare': case 'download': return disk ? 'STORAGE' : 'UNEXPECTED';
+    case 'hold': return 'LOCK_FAILED';
+    // 받은 파일을 읽지 못함(백신이 쥠 따위)과 확인하는 셈 자체가 실패함(이 실행 환경에 없는 셈 따위)을 가른다
+    case 'verify': return disk ? 'READ_FAILED' : 'VERIFY_ERROR';
+    case 'request': return 'REQUEST_FAILED';
+    default: return 'UNEXPECTED';
+  }
 }
 
 async function download({ feed, file, request, signal, onProgress }) {
@@ -398,11 +432,15 @@ async function download({ feed, file, request, signal, onProgress }) {
   const length = Number(response.headers?.['content-length']);
   if (Number.isFinite(length) && length !== feed.size) { discard(response); throw fault('VERIFY_FAILED'); }
   const out = fs.createWriteStream(file, { flags: 'wx' });
+  // 쓰기 스트림의 오류와 닫힘을 만들 때부터 적는다. 받기가 끝나기 전에 이미 오류로 닫혔어도 아래 기다림이 놓치지 않는다(GPT -c GA1)
+  let outError = null;
+  out.on('error', error => { outError = outError || error; });
+  const outClosed = new Promise(resolve => out.once('close', resolve));
   let size = 0, shown = -1;
   try {
     await new Promise((resolve, reject) => {
-      out.once('error', reject);
-      response.body.once('error', reject);
+      out.once('error', error => reject(coded(error, 'STORAGE')));
+      response.body.once('error', error => reject(coded(error, 'NETWORK')));
       response.body.on('data', chunk => {
         size += chunk.length;
         if (size > feed.size) { reject(fault('VERIFY_FAILED')); return; }
@@ -419,7 +457,10 @@ async function download({ feed, file, request, signal, onProgress }) {
   }
   discard(response);
   // 마지막 쓰기의 오류(디스크 가득 참 따위)를 놓치지 않는다(GPT 검수 GA6)
-  await new Promise((resolve, reject) => out.end(error => (error ? reject(error) : resolve())));
+  // 파일을 닫을 때의 오류까지 기다린다. end의 콜백은 닫기 전(finish)에 불려 닫기 실패를 놓친다(GPT GA3)
+  if (!out.destroyed) out.end();
+  await outClosed;
+  if (outError) throw coded(outError, 'STORAGE');
   if (size !== feed.size) throw fault('VERIFY_FAILED');
 }
 
@@ -433,9 +474,11 @@ function createSolioBackup({
   // 엔진이 있는지는 어디에도 기억해 두지 않는다. 방의 표시 · 누르기 · 열기 · 설치기 띄우기가 모두 그때마다 새로 확인하고 제 답만 쓴다.
   // 그래서 확인들이 끝나는 차례가 어떻든 옛 답이 보이거나 쓰이는 일이 없다(GPT 셋째 ~ 여덟째 검수의 캐시 경합을 설계로 없앰, 11-20).
   // 확인이 실패하면 방은 「확인하지 못함」을 보이고, 누르기 · 열기는 아무것도 띄우지 않는다
-  let feedState = { state: 'unknown', version: null, at: 0 }, feedLoading = null;
+  let feedState = { state: 'unknown', version: null, at: 0, code: null }, feedLoading = null;
   let install = { phase: 'idle', progress: 0, code: null, mode: null };
   let busy = null, mode = null, swept = false;
+  /* 지금 누름이 하는 일(feed · prepare · download · hold · verify · request · install). 부호 없는 오류를 이 일로 가른다(failureCode) */
+  let step = null;
 
   const allowed = account => (!packaged || inRelease === true) && previewAllowed(account, previewAccounts);
   /* 지금 엔진 확인 하나. 실패하면 error를 그대로 돌려줘 「깔려 있지 않음」과 가른다(GPT 다시 검수 GA5) */
@@ -446,8 +489,13 @@ function createSolioBackup({
   function refreshFeed(force = false) {
     if (feedLoading || (!force && feedState.state !== 'unknown' && now() - feedState.at < FEED_AGE)) return feedLoading;
     feedLoading = fetchFeed({ request })
-      .then(feed => { feedState = { state: 'available', version: feed.version, at: now() }; return feed; })
-      .catch(error => { feedState = { state: error?.backupCode === 'FEED_MISSING' ? 'missing' : error?.backupCode === 'FEED_INVALID' ? 'invalid' : 'error', version: null, at: now() }; return null; })
+      .then(feed => { feedState = { state: 'available', version: feed.version, at: now(), code: null }; return feed; })
+      .catch(error => {
+        // 받기의 부호(NETWORK · UNTRUSTED_REDIRECT · FEED_*)를 그대로 둔다. 부호가 없으면 네트워크가 아닌 이 앱의 오류다
+        const code = error?.backupCode || 'UNEXPECTED';
+        feedState = { state: code === 'FEED_MISSING' ? 'missing' : code === 'FEED_INVALID' ? 'invalid' : 'error', version: null, at: now(), code };
+        return null;
+      })
       .finally(() => { feedLoading = null; });
     return feedLoading;
   }
@@ -487,7 +535,8 @@ function createSolioBackup({
      다른 파일을 같은 경로로 보이게 할 수 있다. 쥔 동안 실제 조상 폴더는 바꿀 수 없으므로 이 확인 한 번이면 닫힌다(설계 검토 P1, 11-20) */
   async function sameRealPath(file) {
     let real;
-    try { real = await fsImpl.promises.realpath(file); } catch { return false; }
+    // 실제 경로를 읽지 못한 것은 「다른 파일」이 아니라 읽기 실패다(GPT solio-backup-blake2b-20261123-b GA2)
+    try { real = await fsImpl.promises.realpath(file); } catch (error) { throw coded(error, 'READ_FAILED'); }
     return samePath(real, file);
   }
   /* 막 받은 파일을 백신이 잠깐 쥐면 읽기 공유 핸들이 열리지 않는다. 세 번까지 다시 쥐어 본다 */
@@ -668,6 +717,7 @@ function createSolioBackup({
   /* 엔진이 이미 있는 길: setup 요청만 쓰고 엔진 창을 연다 */
   async function openSetup(mode) {
     setInstall('opening');
+    step = 'request';
     let name;
     if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
     try { name = await writeRequest(mode); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('REQUEST_FAILED'); }
@@ -697,10 +747,12 @@ function createSolioBackup({
 
   async function installEngine(mode) {
     setInstall('feed');
+    step = 'feed';
     const feed = await refreshFeed(true);
     // 피드를 받지 못했어도 그사이 엔진이 깔렸으면 엔진 창을 연다(GPT 여섯째 검수 GA2)
     if (!feed && await openIfInstalled(mode)) return;
-    if (!feed) throw fault(feedState.state === 'missing' ? 'FEED_MISSING' : feedState.state === 'invalid' ? 'FEED_INVALID' : 'NETWORK');
+    if (!feed) throw fault(feedState.code || 'NETWORK');
+    step = 'prepare';
     if (typeof cacheRoot !== 'string' || !path.isAbsolute(cacheRoot)) throw fault('STORAGE');
     await fsImpl.promises.mkdir(cacheRoot, { recursive: true });
     await sweep();
@@ -713,12 +765,16 @@ function createSolioBackup({
     try {
       try {
         setInstall('download');
+        step = 'download';
         // 받기 전체에 30분 기한을 둔다. 조금씩 이어지는 느린 응답이 누름을 끝없이 붙잡지 않게 한다(GPT 검수 GA8)
         const signal = AbortSignal.timeout(DOWNLOAD_FOR);
         try { await download({ feed, file, request, signal, onProgress: progress => { install = { ...install, progress }; } }); }
-        catch (error) { throw signal.aborted ? fault('NETWORK') : error; }
+        // 기한이 지나 끊긴 받기만 NETWORK로 바꾼다. 이미 부호가 붙은 실패(디스크 쓰기의 STORAGE 따위)는 기한이 함께 지났어도 그대로 둔다(GPT GA1)
+        catch (error) { throw signal.aborted && (!error?.backupCode || error.backupCode === 'CANCELLED') ? fault('NETWORK') : error; }
         setInstall('verify');
+        step = 'hold';
         holder = await holdWithRetry(file);
+        step = 'verify';
         // 쥔 핸들이 가리키는 실제 파일이 받은 경로의 그 파일이어야 한다. 연결점을 거쳐 다른 파일을 쥐었거나, 쥔 뒤 경로가 다른 곳을
         // 가리키게 바뀌었으면 여기서 멈춘다(설계 검토 P1, GPT 검수 GA1)
         if (!samePath(holder.finalPath, file) || !(await sameRealPath(file))) throw fault('VERIFY_FAILED');
@@ -742,10 +798,13 @@ function createSolioBackup({
       // 엔진 확인은 요청을 쓰기 전에 한다. 요청이 놓인 뒤에는 기다리는 일 없이 바로 설치기를 띄운다(GPT 일곱째 검수 GA5).
       // 지금 확인이 실패하면 깔렸는지 모르므로 띄우지 않는다(GPT 다시 검수 GA5)
       if (await openIfInstalled(mode, releaseHolder)) return;
-      // 요청 쓰기는 로그인 확인과 함께 동기로 한다. 쓴 뒤 로그인이 바뀌면 치우기(sweepRequests)가 그 자리에서 지운다
-      requestName = await writeRequest(mode);
+      // 요청 쓰기는 로그인 확인과 함께 동기로 한다. 쓴 뒤 로그인이 바뀌면 치우기(sweepRequests)가 그 자리에서 지운다.
+      // 쓰지 못하면 엔진이 이미 있는 길(openSetup)과 같은 REQUEST_FAILED다. 설치 파일 저장 실패(STORAGE)로 보이지 않게 한다
+      step = 'request';
+      try { requestName = await writeRequest(mode); } catch (error) { throw error?.backupCode === 'ACCOUNT_CHANGED' ? error : fault('REQUEST_FAILED'); }
       if (!stillCurrent()) throw fault('ACCOUNT_CHANGED');
       setInstall('admin');
+      step = 'install';
       let started = false;
       const ran = await holder.run(() => { started = true; setInstall('install'); });
       holder = null;
@@ -789,6 +848,7 @@ function createSolioBackup({
     if (fresh?.error) { busy = null; release(); return { ok: false, code: 'ENGINE_UNKNOWN' }; }
     if (!['no-engine', 'engine-removed', 'needs-setup'].includes(view)) { busy = null; release(); return { ok: false, code: 'NOT_NEEDED' }; }
     mode = asked;
+    step = null;
     stillCurrent = () => { try { return isCurrent() === true; } catch { return false; } };
     sameLogin = () => isSameLogin() === true;
     busy = (async () => {
@@ -796,8 +856,8 @@ function createSolioBackup({
       // 앞 로그인의 주소가 남는다. 앱 쪽 고침으로 닫히지 않는 틈이라 주소 자체를 보내지 않는다(GPT solio-backup-be-20261121 GA1, 11-21)
       if (view === 'needs-setup') { await openSetup(mode); return; }
       await installEngine(mode);
-    })().catch(error => { setInstall('error', { code: error?.backupCode || (['ENOSPC', 'EACCES', 'EPERM', 'EROFS', 'EIO'].includes(error?.code) ? 'STORAGE' : 'NETWORK') }); })
-      .finally(() => { busy = null; release(); sweepRequests(); });
+    })().catch(error => { setInstall('error', { code: failureCode(error, step) }); })
+      .finally(() => { busy = null; step = null; release(); sweepRequests(); });
     return { ok: true };
   }
 
@@ -820,6 +880,6 @@ function createSolioBackup({
 
 module.exports = {
   createSolioBackup, previewAllowed, statusPaths, normalizeStatus, readStatus, decideView, readEngine, parseSignature, verifySignature,
-  validateFeed, fetchFeed, writeSetupRequest, holdSetup, digestFile, publicKey,
+  validateFeed, fetchFeed, writeSetupRequest, holdSetup, digestFile, publicKey, failureCode,
   FORMAT, FEED_URL, STATES, ATTENTION, OPEN_TOPICS, ENGINE_KEYS, PREVIEW_SALT, PREVIEW_ACCOUNTS, UNINSTALL_KEY, CHECKING_AFTER, HOLDER_SCRIPT, ENGINE_SCRIPT,
 };

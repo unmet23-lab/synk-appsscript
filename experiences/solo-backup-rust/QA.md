@@ -731,6 +731,17 @@ restic 단독(같은 자료, 새 저장소): 첫 백업 2.2초 · 최대 342.7MB
 - **앞 빌드:** 11-21에 f4d65a554 빌드(SHA-256 dbb3d63e…)를 같은 판 번호로 약 30분 공개했다가 초안으로 돌리고 파일을 바꿨다. 그때는 피드가 없어 업데이터와 솔리오가 받을 길이 없었다.
 - **확인 안 함:** 이 PC에서 솔리오 백업 방으로 받아 깔기와 관리자 확인(T30), 실제 Tauri 업데이터가 이 피드를 읽는 것(CI `update` 갈래는 같은 꼴의 시험 피드로 본다).
 
+## 1단계 솔리오 백업 방의 설치 파일 확인을 Electron 안에서 고침(T30 첫 시도 실패) — 2026-11-23
+
+유호님이 11-23에 이 PC(PC 앱 0.5.6)에서 솔리오 백업 방으로 0.7.0을 받아 깔아 보셨고, 받은 파일을 확인하는 단계에서 「설치 파일을 받지 못했습니다」로 끝났다.
+
+- **원인:** 받은 파일의 BLAKE2b-512를 `crypto.createHash('blake2b512')`로 셈했다. PC 앱은 Electron(BoringSSL)이라 이 셈이 없어 「Digest method not supported」를 던진다. 그 오류에 부호가 없어 화면에는 네트워크 실패(NETWORK)로 나왔다. 게시 파일과 피드는 맞았다.
+- **놓친 까닭:** 확인 길을 Node(OpenSSL)에서만 시험했다. Electron 44에서 같은 모듈의 다른 암호 호출(SHA-256, Ed25519 JWK 열쇠 들이기, `crypto.verify`, `randomBytes`)은 된다.
+- **고침:** BLAKE2b-512를 RFC 7693대로 순수 JS로 셈한다(`desktop/src/blake2b.cjs`, 의존성 없음, 37MB에 1.3초). 네트워크 · 디스크 부호는 오류가 난 자리에서만 붙이고, 부호 없는 오류는 단계별로 READ_FAILED · VERIFY_ERROR · REQUEST_FAILED · UNEXPECTED로 가른다. 확인하는 셈 자체가 실패하면 「파일이 다르다」가 아니라 VERIFY_ERROR다.
+- **Electron 안의 시험:** `desktop/tests/solio-backup-electron.test.cjs`가 자기 자신을 Electron으로 띄워 BLAKE2b, 엔진 열쇠 둘, 파일 셈, 피드 · 서명 확인, 받기부터 관리자 확인 직전까지의 설치 길을 돈다. 옛 코드는 「Digest method not supported」로 실패한다. `SYNK_SOLIO_BACKUP_LIVE=1`로 실제 게시본을 Electron 44.5.1에서 받았다. 37,613,104바이트, SHA-256 6d0e1004…5188, 진짜 쥐기의 SHA-256도 같고, 운영 열쇠(operating)로 서명이 맞았다. 설치기는 띄우지 않았다.
+- **검수:** GPT `solio-backup-blake2b-20261123-b` 4건(P2, 반영 4) → `-c` 2건(P2, 반영 2. 받기가 끝난 직후 쓰기가 실패하면 기다림이 끝나지 않던 길 포함) → `-d` 0건. desktop 시험 2506개 통과.
+- **확인 안 함:** 고친 PC 판에서 유호님이 다시 하는 T30(관리자 확인 한 번과 실제 설치).
+
 ## 1단계 지금 연결된 Wi-Fi 이름을 화면이 읽기(화면 세션 E30) — 2026-11-17
 
 - **무엇:** 엔진 창 메서드 `wifiName`을 두었다. 작업자가 창 host의 `wifi.name`(설치 세션 907a0d02f)을 불러, Wi-Fi 이름이 될 수 있는 글이면 그 이름을, 아니면 null을 돌려준다. 화면은 host 메서드를 직접 부를 수 없어서 이 길이 필요했다. 「쉬는 Wi-Fi」 화면이 열릴 때 한 번 불러 「지금 연결된 Wi-Fi」를 보이고, null이면 직접 적는 칸을 보인다.

@@ -1227,3 +1227,182 @@ test('GPT solio-backup-be-20261121-r2 GA1: a failed folder check keeps an expire
   for (let i = 0; i < 30 && marksIn(env).length; i++) await new Promise(r => setTimeout(r, 50));
   assert.deepEqual(marksIn(env), [], 'the timed retry reads both folders and then removes it');
 });
+
+/* ── 11-23 T30: Electron(BoringSSL)에 BLAKE2b가 없어 확인이 던졌고, 부호 없는 그 오류가 「받지 못했습니다」(NETWORK)로 보였다 ── */
+function installWith(options = {}) {
+  const key = options.key || minisignKey(), data = options.data || crypto.randomBytes(3000), log = [], engineState = {};
+  const env = options.env || appdata(temp());
+  const service = createBackup({
+    platform: 'win32', env, cacheRoot: temp(), run: fakeEngine(engineState), request: options.request || fakeNet({ feed: options.feed || release(key, data), file: data }),
+    hold: options.hold || fakeHold(log, { engineState }), keys: [{ role: 'operating', pub: key.pub }], previewAccounts: MINE, ...quiet, ...(options.fsImpl ? { fsImpl: options.fsImpl } : {}),
+  });
+  return { service, log, env };
+}
+async function installCode(options) {
+  const { service, log, env } = installWith(options);
+  assert.deepEqual(await service.start(ME, 'protect'), { ok: true });
+  await service.whenIdle();
+  const snap = await service.snapshot(ME);
+  return { phase: snap.install.phase, code: snap.install.code, log: log.map(x => x[0]), requests: requestsIn(env) };
+}
+
+test('T30: the install path finishes where the crypto library has no blake2b512 (as in Electron)', async t => {
+  // 서명은 Node의 BLAKE2b로 먼저 만들고, 그 뒤 blake2b512를 막는다
+  const key = minisignKey(), data = crypto.randomBytes(5000), feed = release(key, data);
+  const createHash = crypto.createHash;
+  t.mock.method(crypto, 'createHash', (name, ...rest) => {
+    if (/blake2b/i.test(String(name))) throw Error('Digest method not supported');
+    return createHash.call(crypto, name, ...rest);
+  });
+  assert.throws(() => crypto.createHash('blake2b512'), /not supported/);
+  const result = await installCode({ key, data, feed });
+  assert.deepEqual([result.phase, result.code, result.log], ['done', null, ['hold', 'run']]);
+});
+
+test('T30: digestFile gives the same BLAKE2b-512 as OpenSSL, across block edges and a multi-megabyte file', async () => {
+  const dir = temp();
+  for (const size of [0, 127, 128, 129, 3 * 1024 * 1024 + 5]) {
+    const data = crypto.randomBytes(size), file = path.join(dir, `f${size}.exe`);
+    fs.writeFileSync(file, data);
+    const digest = await B.digestFile(file, size + 1);
+    assert.equal(digest.size, size);
+    assert.equal(digest.sha256, crypto.createHash('sha256').update(data).digest('hex'));
+    assert.equal(digest.blake.toString('hex'), crypto.createHash('blake2b512').update(data).digest('hex'), `${size} bytes`);
+  }
+});
+
+test('T30: when the signature check itself cannot run, the screen says the check failed, not that the file is wrong or the network is down', async t => {
+  t.mock.method(crypto, 'verify', () => { throw Error('Unsupported key type'); });
+  const result = await installCode();
+  assert.deepEqual([result.phase, result.code], ['error', 'VERIFY_ERROR']);
+  assert.deepEqual(result.log, ['hold', 'release'], 'never run');
+  assert.deepEqual(result.requests, []);
+});
+
+test('T30: a disk error while reading the held file is READ_FAILED; any other error in the check is VERIFY_ERROR', async () => {
+  const busy = Object.assign(Error('EBUSY: resource busy or locked, open'), { code: 'EBUSY', syscall: 'open', errno: -4082 });
+  const reading = { ...fs, createReadStream: () => new Readable({ read() { this.destroy(busy); } }) };
+  assert.equal((await installCode({ fsImpl: reading })).code, 'READ_FAILED');
+  const odd = { ...fs, createReadStream: () => new Readable({ read() { this.destroy(new TypeError('surprise')); } }) };
+  assert.equal((await installCode({ fsImpl: odd })).code, 'VERIFY_ERROR');
+});
+
+test('T30: real network failures stay NETWORK — the request, the feed body and the installer body', async () => {
+  const reset = () => Object.assign(Error('socket hang up'), { code: 'ECONNRESET', syscall: 'read' });
+  const key = minisignKey(), data = crypto.randomBytes(3000), base = fakeNet({ feed: release(key, data), file: data });
+  const down = await installCode({ request: async () => { throw reset(); } });
+  assert.deepEqual([down.code, down.log], ['NETWORK', []]);
+  const feedBody = await installCode({ request: async (url, options) => (url === B.FEED_URL ? { status: 200, headers: {}, body: new Readable({ read() { this.destroy(reset()); } }) } : base(url, options)) });
+  assert.equal(feedBody.code, 'NETWORK');
+  const fileBody = await installCode({ key, data, request: async (url, options) => (url.startsWith('https://release-assets.') ? { status: 200, headers: {}, body: new Readable({ read() { this.push(data.subarray(0, 100)); this.destroy(reset()); } }) } : base(url, options)) });
+  assert.equal(fileBody.code, 'NETWORK');
+});
+
+test('T30: a feed that redirects shows UNTRUSTED_REDIRECT, and a broken feed shows FEED_INVALID, not NETWORK', async () => {
+  const moved = await installCode({ request: async () => ({ status: 302, headers: { location: 'https://elsewhere.example/feed.json' }, body: Readable.from([]) }) });
+  assert.equal(moved.code, 'UNTRUSTED_REDIRECT');
+  const broken = await installCode({ request: async () => ({ status: 200, headers: {}, body: Readable.from([Buffer.from('{not json')]) }) });
+  assert.equal(broken.code, 'FEED_INVALID');
+});
+
+test('T30: disk failures while preparing the download are STORAGE whatever their code; a request that cannot be written is REQUEST_FAILED', async () => {
+  const locked = { ...fs, promises: { ...fs.promises, mkdtemp: async () => { throw Object.assign(Error('EBUSY'), { code: 'EBUSY', syscall: 'mkdtemp' }); } } };
+  assert.equal((await installCode({ fsImpl: locked })).code, 'STORAGE');
+  // 앱 데이터의 SynkWorkBackup 자리가 폴더가 아니면 요청을 쓰지 못한다. 설치 파일 저장 실패(STORAGE)가 아니다
+  const dir = temp();
+  fs.writeFileSync(path.join(dir, 'SynkWorkBackup'), 'not a folder');
+  const result = await installCode({ env: { APPDATA: dir } });
+  assert.deepEqual([result.code, result.log], ['REQUEST_FAILED', ['hold', 'release']]);
+});
+
+test('T30: an unexpected error while the installer runs is UNEXPECTED, not NETWORK', async () => {
+  const hold = async file => ({ finalPath: file, sha256: shaOf(file), release() {}, async run() { throw new TypeError('surprise'); } });
+  assert.equal((await installCode({ hold })).code, 'UNEXPECTED');
+});
+
+test('T30: failureCode never folds an uncoded error into NETWORK', () => {
+  const disk = Object.assign(Error('x'), { code: 'EBUSY', syscall: 'open' }), plain = Error('Digest method not supported');
+  for (const step of [null, 'feed', 'prepare', 'download', 'hold', 'verify', 'request', 'install']) {
+    assert.notEqual(B.failureCode(plain, step), 'NETWORK', String(step));
+    assert.notEqual(B.failureCode(disk, step), 'NETWORK', String(step));
+    assert.equal(B.failureCode(Object.assign(Error('x'), { backupCode: 'NETWORK' }), step), 'NETWORK', 'a coded error keeps its code');
+  }
+  const steps = ['prepare', 'download', 'hold', 'verify', 'request', 'install'];
+  assert.deepEqual(steps.map(s => B.failureCode(disk, s)), ['STORAGE', 'STORAGE', 'LOCK_FAILED', 'READ_FAILED', 'REQUEST_FAILED', 'UNEXPECTED']);
+  assert.deepEqual(steps.map(s => B.failureCode(plain, s)), ['UNEXPECTED', 'UNEXPECTED', 'LOCK_FAILED', 'VERIFY_ERROR', 'REQUEST_FAILED', 'UNEXPECTED']);
+});
+
+test('T30: every failure code the main module can hand the screen has its own words', async () => {
+  const { solioBackupView } = await import('../renderer/solio-backup-model.mjs');
+  const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'solio-backup.cjs'), 'utf8');
+  const codes = new Set([...src.matchAll(/(?:fault|coded)\([^)]*?'([A-Z_]+)'\)/g)].map(m => m[1]));
+  for (const m of B.failureCode.toString().matchAll(/'([A-Z_]{4,})'/g)) codes.add(m[1]);
+  // INVALID는 시작 전에 걸러지고(start가 mode를 본다) CANCELLED는 받기의 기한이 NETWORK로 바꾼다
+  for (const never of ['INVALID', 'CANCELLED']) codes.delete(never);
+  for (const expected of ['NETWORK', 'STORAGE', 'READ_FAILED', 'VERIFY_ERROR', 'VERIFY_FAILED', 'UNEXPECTED', 'REQUEST_FAILED']) assert.ok(codes.has(expected), expected);
+  const sayFor = code => solioBackupView({ ok: true, available: true, view: 'no-engine', engine: { installed: false }, feed: { state: 'available' }, install: { phase: 'error', code, mode: 'protect' } }).say;
+  const fallback = sayFor('SOMETHING_ELSE'), network = sayFor('NETWORK');
+  for (const code of codes) {
+    assert.notEqual(sayFor(code), fallback, `${code} has words of its own`);
+    if (code !== 'NETWORK') assert.notEqual(sayFor(code), network, `${code} does not read as a network failure`);
+  }
+});
+
+/* ── GPT solio-backup-blake2b-20261123-b의 P2 셋 ── */
+function closeFailing(t, onClose = () => {}) {
+  const { Writable } = require('node:stream');
+  const createWriteStream = fs.createWriteStream;
+  t.mock.method(fs, 'createWriteStream', (file, options) => {
+    const real = createWriteStream.call(fs, file, options);
+    return new Writable({
+      write(chunk, encoding, callback) { real.write(chunk, callback); },
+      final(callback) { real.end(callback); },
+      destroy(error, callback) { onClose(); callback(error || Object.assign(Error('EIO: i/o error, close'), { code: 'EIO', syscall: 'close' })); },
+    });
+  });
+}
+
+test('GPT GA3: a failure while closing the downloaded file is STORAGE, and nothing is checked or run', async t => {
+  closeFailing(t);
+  const result = await installCode();
+  assert.deepEqual([result.code, result.log], ['STORAGE', []]);
+});
+
+test('GPT GA1: a disk failure that lands as the download deadline passes stays STORAGE', async t => {
+  const controller = new AbortController();
+  t.mock.method(AbortSignal, 'timeout', () => controller.signal);
+  closeFailing(t, () => controller.abort());
+  const result = await installCode();
+  assert.deepEqual([result.code, result.log], ['STORAGE', []]);
+});
+
+test('GPT GA2: when the real path of the held file cannot be read, it is a read failure, not a different file', async () => {
+  const denied = { ...fs, promises: { ...fs.promises, realpath: async (file, ...rest) => {
+    if (String(file).endsWith('-setup.exe')) throw Object.assign(Error('EACCES: permission denied, realpath'), { code: 'EACCES', syscall: 'realpath' });
+    return fs.promises.realpath(file, ...rest);
+  } } };
+  const result = await installCode({ fsImpl: denied });
+  assert.deepEqual([result.code, result.log], ['READ_FAILED', ['hold', 'release']]);
+});
+
+test('GPT -c GA1: a write that fails just after the download ends is STORAGE and does not leave the press waiting', { timeout: 10000 }, async t => {
+  // 받기 본문의 end 바로 뒤에 쓰기가 실패하게 한다. 쓰기 스트림은 error와 close를 다음 nextTick에 내보내고, 그것은 받기를 기다리던
+  // await가 이어지기(마이크로태스크) 전이다. 닫힘을 그 뒤에 기다리기 시작하면 영영 오지 않는다
+  const { Writable } = require('node:stream'), { EventEmitter } = require('node:events');
+  let pending = null;
+  t.mock.method(fs, 'createWriteStream', () => new Writable({ write(chunk, encoding, callback) { pending = callback; } }));
+  const key = minisignKey(), data = crypto.randomBytes(3000), base = fakeNet({ feed: release(key, data), file: data });
+  const body = () => {
+    const e = new EventEmitter();
+    Object.assign(e, { pause() {}, resume() {}, destroy() {} });
+    setImmediate(() => {
+      e.emit('data', data);
+      e.emit('end');
+      pending(Object.assign(Error('EIO: i/o error, write'), { code: 'EIO', syscall: 'write' }));
+    });
+    return e;
+  };
+  const request = async (url, options) => (url.startsWith('https://release-assets.') ? { status: 200, headers: {}, body: body() } : base(url, options));
+  const result = await installCode({ key, data, request });
+  assert.deepEqual([result.code, result.log], ['STORAGE', []]);
+});
