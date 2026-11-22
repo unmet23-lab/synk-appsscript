@@ -480,7 +480,8 @@ html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data
 .sc .wp-skill[data-status="recent-independent"] .wp-bar::-webkit-progress-value{background:var(--ok)}
 .sc .wp-skill[data-status="recent-independent"] .wp-bar::-moz-progress-bar{background:var(--ok)}
 .sc .wp-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:6px;font-size:var(--t13);font-weight:600;color:var(--wp-ink2)}
-.sc .wp-meta .wp-bar{flex:1 0 96px;max-width:200px}
+.sc .wp-meta .wp-meter{display:flex;align-items:center;gap:10px;flex:1 0 150px;max-width:260px}
+.sc .wp-meta .wp-bar{flex:1 1 auto;min-width:0}
 .sc .wp-meta b{color:var(--ink);font-variant-numeric:tabular-nums}
 .sc .wp-skill[data-status="practice"]::after{color:var(--wp-miss);font-weight:600}
 .sc .wp-skill[data-status="recent-independent"]::after{color:var(--ok)}

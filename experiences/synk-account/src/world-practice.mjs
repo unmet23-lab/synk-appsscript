@@ -1,7 +1,8 @@
 // WORLD 앱 창 「연습」 보기(2026-11-22 유호님 「사용자 실력을 빗대어봤을때 부족한부분 위주로 추천해주도록」).
 // 최근 연습에서 놓친 곳을 첫 판에 세우고, 그 곳을 연습하는 게임을 노란 칸으로 앞에 둔다.
 // 쓰는 자료는 Atlas 요약의 기술 목록(summary.practice.skills) 하나다. 서버가 연습이 필요한 차례(priority)로 보낸다.
-// 요약은 실력 · 등급 · 비율을 말하지 않는다(atlas/account-summary.js). 이 화면도 최근 연습에서 일어난 일만 말한다.
+// 요약은 실력 · 등급을 말하지 않는다(atlas/account-summary.js, abilityClaim:false). 화면의 비율은 한 기술 안 한 유형의 최근 첫 시도 셈이고(ratioOf),
+// 그 밖에는 최근 연습에서 일어난 일만 말한다(Fable F4, 11-23).
 // 게임마다 연습하는 기술은 각 게임 문항의 기술 꼬리표(packages/atlas/map/index.json의 bank별 기술)를 줄였다.
 // main은 그 게임의 주된 연습, also는 문항 몇 개만 닿는 기술이다. 추천은 main을 먼저 본다.
 export const GAME_SKILLS = Object.freeze({
@@ -37,7 +38,12 @@ export function ratioOf(skill) {
 }
 // 셈의 범위를 그대로 말한다(카본 A1): 그 기술 전체가 아니라 연습이 필요한 한 유형 · 최근 30일 · 처음 혼자 푼 문항이다.
 // 혼자 해낸 기술은 「연습이 필요한」이라 부르지 않는다(Fable F2) — 같은 셈을 「한 유형」으로 말한다.
-export const ratioText = (ratio, status) => `${status === DONE ? '한 유형' : '연습이 필요한 유형'} · 최근 첫 시도 ${ratio.recent}문항 중 ${ratio.correct}문항 맞힘`;
+// 혼자 해낸 뒤 7일이 지나 다시 볼 때가 된 기술(review)은 「다시 볼 유형」이다(Fable F3, 11-23).
+export const ratioText = (ratio, status) => `${status === DONE ? '한 유형' : status === 'review' ? '다시 볼 유형' : '연습이 필요한 유형'} · 최근 첫 시도 ${ratio.recent}문항 중 ${ratio.correct}문항 맞힘`;
+/** 퍼센트와 막대를 보이는 최소 문항 수. 서버가 혼자 해냈다고 판정하는 표본(atlas/learning.js POLICY.sample)과 같다.
+ *  그보다 적으면 1문항짜리 100%가 12문항짜리 92%보다 앞서 보이지 않게 문항 수만 쓴다(Fable F2, 11-23). */
+export const RATIO_MIN = 4;
+export const ratioShown = ratio => Boolean(ratio) && ratio.recent >= RATIO_MIN;
 /** 요약에서 쓸 수 있는 기술만(서버 차례 그대로). */
 export function practiceSkills(summary) {
   const rows = Array.isArray(summary?.practice?.skills) ? summary.practice.skills : [];
@@ -69,6 +75,7 @@ export function particle(word, withFinal, without) {
  * element · button은 account-view의 것을 받는다(시험의 작은 DOM에서도 같이 돈다).
  */
 export function createWorldPractice({ element, button, games, openGame, showAccount, context = '개인 학습', connected = true }) {
+  const ratioBar = ratio => { const bar = element('progress', null, 'wp-bar');bar.setAttribute('max', '100');bar.setAttribute('value', String(ratio.pct));bar.setAttribute('aria-hidden', 'true');return bar; };
   let summary = null, state = 'loading', pick = null, rowButtons = new Map();
   const hero = element('section', null, 'wp-hero'), record = element('section', null, 'wp-record'), skillsTile = element('section', null, 'wp-skills'), gamesTile = element('section', null, 'wp-games');
   hero.setAttribute('aria-label', '오늘의 연습');skillsTile.setAttribute('aria-label', '최근 연습');record.setAttribute('aria-label', '최근 30일');gamesTile.setAttribute('aria-label', '게임');
@@ -94,8 +101,10 @@ export function createWorldPractice({ element, button, games, openGame, showAcco
     body.append(ctx, element('h2', title), element('p', why, 'wp-why'));
     const ratio = state !== 'off' && pick ? ratioOf(pick) : null;
     if (ratio) {
-      const meta = element('p', null, 'wp-meta'), bar = element('progress', null, 'wp-bar');bar.setAttribute('max', '100');bar.setAttribute('value', String(ratio.pct));bar.setAttribute('aria-hidden', 'true');
-      meta.append(element('span', ratioText(ratio, pick.status)), bar, element('b', `${ratio.pct}%`));body.append(meta);
+      // 막대와 퍼센트는 한 묶음(wp-meter)이라 줄이 바뀌어도 함께 내려간다(카본 A1 · Fable F1, 11-23). 문항이 적으면 문장만.
+      const meta = element('p', null, 'wp-meta');meta.append(element('span', ratioText(ratio, pick.status)));
+      if (ratioShown(ratio)) { const meter = element('span', null, 'wp-meter');meter.append(ratioBar(ratio), element('b', `${ratio.pct}%`));meta.append(meter); }
+      body.append(meta);
     }
     const actions = element('div', null, 'wp-acts');if (go) { go.dataset.recGo = '';actions.append(go); }
     hero.replaceChildren(art, body, actions);
@@ -105,8 +114,9 @@ export function createWorldPractice({ element, button, games, openGame, showAcco
     for (const row of skills.slice(0, SHOWN)) {
       // 다시 그린 뒤에도 키보드 초점이 고른 줄에 남게 한다.
       const b = button('', async () => { pick = row;draw();rowButtons.get(row.id)?.focus?.({ preventScroll: true }); }, 'wp-skill');rowButtons.set(row.id, b);b.dataset.skill = row.id;b.dataset.status = row.status || '';b.dataset.word = STATUS_WORDS[row.status] || '';b.setAttribute('aria-pressed', String(row === pick));
-      const ratio = ratioOf(row);b.append(element('b', row.label), element('em', ratio ? `${ratio.pct}%` : '', 'wp-pct'));
-      if (ratio) { const bar = element('progress', null, 'wp-bar');bar.setAttribute('max', '100');bar.setAttribute('value', String(ratio.pct));bar.setAttribute('aria-hidden', 'true');b.append(bar);b.setAttribute('title', ratioText(ratio, row.status)); }
+      const ratio = ratioOf(row), shown = ratioShown(ratio);b.append(element('b', row.label), element('em', shown ? `${ratio.pct}%` : ratio ? `${ratio.correct}/${ratio.recent}문항` : '', 'wp-pct'));
+      if (shown) b.append(ratioBar(ratio));
+      if (ratio) b.setAttribute('title', ratioText(ratio, row.status));
       const li = element('li');li.append(b);list.append(li);
     }
     const empty = state === 'off' ? '학습 기록 연결이 꺼져 있어 계정의 연습을 보지 않아요.' : state === 'error' ? '학습 요약을 불러오지 못했어요.' : state === 'loading' ? '불러오고 있어요.' : '아직 보여 줄 연습이 없어요.';

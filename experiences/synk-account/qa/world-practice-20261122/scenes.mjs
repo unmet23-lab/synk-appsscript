@@ -21,7 +21,7 @@ const skill = (id, label, status, line, recent = 0, correct = 0) => ({ id, label
 const SKILLS = [
   skill('ko.listening.negation', '듣고 부정·변경 이해하기', 'practice', '최근 놓친 「듣고 부정·변경 이해하기」를 조금 더 연습해 봐요.', 9, 4),
   skill('ko.reading.condition', '읽고 조건 이해하기', 'supported', '「읽고 조건 이해하기」를 도움과 함께 해냈어요. 이어서 살펴봐요.'),
-  skill('ko.reading.grammar', '조사·문형 읽기', 'review', '「조사·문형 읽기」를 다시 살펴볼 때예요.'),
+  skill('ko.reading.grammar', '조사·문형 읽기', 'review', '「조사·문형 읽기」를 다시 살펴볼 때예요.', 2, 2),
   skill('ko.listening.word', '낱말 듣기', 'recent-independent', '「낱말 듣기」를 최근 혼자 해냈어요. 가볍게 이어가요.', 12, 11),
 ];
 const periods = { days: 30, recent: { answered: 128, independent: 96, assisted: 32, activeDays: 9 }, previous: { answered: 60, independent: 40, assisted: 20, activeDays: 5 }, sufficient: true };
@@ -97,7 +97,11 @@ try {
         (await text(page, '.wp-hero h2')) === '듣고 부정·변경 이해하기' ? ok('첫 판: 가장 먼저 연습할 곳') : bad('첫 판 기술 ' + await text(page, '.wp-hero h2'));
         (await text(page, '.wp-meta')).includes('최근 첫 시도 9문항 중 4문항 맞힘') && (await text(page, '.wp-meta b')) === '44%' ? ok('첫 판 비율 44%') : bad('첫 판 비율 ' + await text(page, '.wp-meta'));
         (await page.evaluate(() => document.querySelector('.wp-meta .wp-bar')?.getBoundingClientRect().width || 0)) >= 90 ? ok('첫 판 막대 보임') : bad('첫 판 막대 폭');
+        // 막대와 퍼센트가 한 줄에 선다(카본 A1 · Fable F1 — 1280에서 퍼센트만 다음 줄로 떨어졌다).
+        const apart = await page.evaluate(() => { const mid = el => { const r = el?.getBoundingClientRect();return r ? r.top + r.height / 2 : NaN; };return Math.abs(mid(document.querySelector('.wp-meta .wp-bar')) - mid(document.querySelector('.wp-meta .wp-meter>b'))); });
+        apart < 6 ? ok('첫 판 막대와 퍼센트가 한 줄') : bad(`첫 판 막대와 퍼센트가 떨어짐 ${apart}px`);
         (await text(page, '.wp-skill[data-skill="ko.listening.word"] .wp-pct')) === '92%' && (await text(page, '.wp-skill[data-skill="ko.reading.condition"] .wp-pct')) === '' ? ok('줄 비율(푼 문항 없는 줄은 비움)') : bad('줄 비율');
+        (await text(page, '.wp-skill[data-skill="ko.reading.grammar"] .wp-pct')) === '2/2문항' && (await page.locator('.wp-skill[data-skill="ko.reading.grammar"] .wp-bar').count()) === 0 ? ok('문항이 적은 줄은 문항 수만') : bad('문항이 적은 줄 ' + await text(page, '.wp-skill[data-skill="ko.reading.grammar"] .wp-pct'));
         (await text(page, '[data-rec-go]')) === '바람길로 연습' ? ok('연습 단추: 바람길(부정·변경 듣기가 주된 연습인 첫 게임)') : bad('연습 단추 ' + await text(page, '[data-rec-go]'));
         (await page.getAttribute('.game-links>button >> nth=0', 'data-game')) === 'korean-runner' ? ok('첫 게임 칸: 바람길') : bad('첫 게임 칸');
         (await page.locator('.game-links>button[data-rec]').count()) === 3 ? ok('노란 칸 셋') : bad('노란 칸 수 ' + await page.locator('.game-links>button[data-rec]').count());
@@ -109,7 +113,8 @@ try {
         (await text(page, '.wp-tag')) === '오늘의 연습' ? ok('놓치지 않은 곳 꼬리표') : bad('꼬리표 ' + await text(page, '.wp-tag'));
         (await text(page, '.wp-games .wp-head .small')).startsWith('노란 칸은 「조건 읽기」를') ? ok('게임 머리 글') : bad('게임 머리 글 ' + await text(page, '.wp-games .wp-head .small'));
         await shot('-pick');
-        await page.click('.wp-skill[data-skill="ko.listening.word"]');(await text(page, '.wp-tag')) === '잘 이어 가는 곳' && (await text(page, '.wp-meta span')).startsWith('한 유형 · ') ? ok('혼자 해낸 곳 고름(앞말 「한 유형」)') : bad('혼자 해낸 곳 꼬리 · 앞말');
+        await page.click('.wp-skill[data-skill="ko.listening.word"]');(await text(page, '.wp-tag')) === '잘 이어 가는 곳' && (await text(page, '.wp-meta>span')).startsWith('한 유형 · ') ? ok('혼자 해낸 곳 고름(앞말 「한 유형」)') : bad('혼자 해낸 곳 꼬리 · 앞말');
+        await page.click('.wp-skill[data-skill="ko.reading.grammar"]');(await text(page, '.wp-meta>span')).startsWith('다시 볼 유형 · 최근 첫 시도 2문항 중 2문항') && (await page.locator('.wp-meta .wp-meter').count()) === 0 ? ok('다시 볼 곳 고름(앞말 「다시 볼 유형」, 문항이 적어 막대 없음)') : bad('다시 볼 곳 앞말 ' + await text(page, '.wp-meta'));
         await page.click('.wp-skill[data-skill="ko.listening.negation"]');
         await page.click('[data-rec-go]');await page.waitForTimeout(500);
         (await page.isVisible('#world-games>iframe')) && (await page.isVisible('.wp-playing')) && !(await page.isVisible('.wp-hero')) && !(await page.isVisible('#world-games>.world-preferences')) && !(await page.isVisible('.wp-games')) ? ok('게임 열림: 판 접고 게임만') : bad('게임 열기');

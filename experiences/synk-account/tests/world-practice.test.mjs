@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WORLD_GAMES } from '../src/atlas-words.mjs';
-import { GAME_SKILLS, SKILL_SHORT, STATUS_WORDS, practiceSkills, firstPick, gamesFor, orderGames, particle, ratioOf, createWorldPractice } from '../src/world-practice.mjs';
+import { GAME_SKILLS, SKILL_SHORT, STATUS_WORDS, practiceSkills, firstPick, gamesFor, orderGames, particle, ratioOf, ratioText, ratioShown, RATIO_MIN, createWorldPractice } from '../src/world-practice.mjs';
 
 const paths = WORLD_GAMES.map(game => game.path);
 const skill = (id, status, label = SKILL_SHORT[id]) => ({ id, label, status, line: `${label} 줄` });
@@ -50,6 +50,10 @@ test('the ratio is correct over recent first tries alone, and only when there we
   assert.deepEqual(ratioOf({ recent: 9, correct: 4 }), { recent: 9, correct: 4, pct: 44 });
   assert.deepEqual(ratioOf({ recent: 12, correct: 11 }), { recent: 12, correct: 11, pct: 92 });
   for (const bad of [{ recent: 0, correct: 0 }, { recent: 3, correct: 4 }, { recent: 2 }, { recent: 2.5, correct: 1 }, {}, null]) assert.equal(ratioOf(bad), null);
+  // 퍼센트는 서버가 혼자 해냈다고 판정하는 표본(4문항)부터(Fable F2). 앞말은 상태를 따른다(Fable F3).
+  assert.equal(RATIO_MIN, 4);assert.equal(ratioShown(ratioOf({ recent: 3, correct: 3 })), false);assert.equal(ratioShown(ratioOf({ recent: 4, correct: 1 })), true);assert.equal(ratioShown(null), false);
+  const full = ratioOf({ recent: 12, correct: 12 });
+  assert.match(ratioText(full, 'practice'), /^연습이 필요한 유형 · /);assert.match(ratioText(full, 'review'), /^다시 볼 유형 · /);assert.match(ratioText(full, 'recent-independent'), /^한 유형 · /);
 });
 
 test('particles follow the final consonant', () => {
@@ -78,11 +82,17 @@ const view = () => { const opened = [], account = [];const practice = createWorl
 test('the practice view fills from one summary and a picked row moves the hero, the button and the yellow games', async () => {
   const { practice, opened } = view();
   assert.equal(practice.status().state, 'loading');
-  practice.setSummary({ shared: 'practice-and-settings', summary: { practice: { answered: 10, independent: 7, assisted: 3, periods: { recent: { answered: 10, independent: 7, assisted: 3, activeDays: 4 } }, skills: [{ ...SKILLS[0], recent: 9, correct: 4 }, SKILLS[1], SKILLS[2], { ...SKILLS[3], recent: 12, correct: 11 }] } } });
+  practice.setSummary({ shared: 'practice-and-settings', summary: { practice: { answered: 10, independent: 7, assisted: 3, periods: { recent: { answered: 10, independent: 7, assisted: 3, activeDays: 4 } }, skills: [{ ...SKILLS[0], recent: 9, correct: 4 }, SKILLS[1], { ...SKILLS[2], recent: 2, correct: 2 }, { ...SKILLS[3], recent: 12, correct: 11 }] } } });
   // 유호님 11-22 「비율도 보여 줘」: 줄과 첫 판에 최근 혼자 푼 문항 중 맞힌 비율. 푼 문항이 없는 줄은 비율 없이 상태 말만.
   const pctOf = id => find(find(practice.skills, n => n.dataset.skill === id), n => n.className === 'wp-pct').textContent;
   assert.equal(pctOf('ko.listening.negation'), '44%');assert.equal(pctOf('ko.listening.word'), '92%');assert.equal(pctOf('ko.reading.condition'), '');
-  assert.equal(find(practice.hero, n => n.className === 'wp-meta').children[0].textContent, '연습이 필요한 유형 · 최근 첫 시도 9문항 중 4문항 맞힘');
+  // 2문항뿐인 줄은 퍼센트 · 막대 대신 문항 수(Fable F2).
+  const grammar = find(practice.skills, n => n.dataset.skill === 'ko.reading.grammar');
+  assert.equal(pctOf('ko.reading.grammar'), '2/2문항');assert.equal(find(grammar, n => n.tagName === 'progress'), undefined);assert.equal(grammar.getAttribute('title'), '다시 볼 유형 · 최근 첫 시도 2문항 중 2문항 맞힘');
+  const meta = find(practice.hero, n => n.className === 'wp-meta');
+  assert.equal(meta.children[0].textContent, '연습이 필요한 유형 · 최근 첫 시도 9문항 중 4문항 맞힘');
+  // 막대와 퍼센트는 한 묶음이라 함께 줄바꿈된다(카본 A1 · Fable F1).
+  assert.equal(meta.children[1].className, 'wp-meter');assert.deepEqual(meta.children[1].children.map(n => n.tagName), ['progress', 'b']);assert.equal(meta.children[1].children[1].textContent, '44%');
   assert.equal(find(practice.hero, n => n.tagName === 'h2').textContent, '듣고 부정·변경 이해하기');
   const go = () => find(practice.hero, n => Object.hasOwn(n.dataset, 'recGo'));
   assert.equal(go().textContent, '바람길로 연습');
