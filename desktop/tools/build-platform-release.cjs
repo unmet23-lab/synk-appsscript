@@ -74,8 +74,9 @@ async function buildTarget(options){
   if(platform==='win32')for(const leaf of ['baseline-content','baseline-backend.exe']){const target=path.resolve(out,leaf);assert(path.dirname(target)===out&&target!==out,'Cleanup escaped the build output');fs.rmSync(target,{recursive:leaf==='baseline-content',force:false});}
   const stage=path.join(out,'stage');fs.cpSync(path.join(root,'source'),stage,{recursive:true});
   for(const legacy of spec.additionalLegacyPins||[]){
-    assert(!legacy.installer&&BUNDLED_CHILDREN.includes(legacy.id)&&legacy.mode==='development'&&/^\d+\.\d+\.\d+$/.test(legacy.version)&&/^[a-f0-9]{64}$/.test(legacy.executableSHA256)&&/^[a-f0-9]{64}$/.test(legacy.asarSHA256),'Invalid reviewed legacy pin');
-    if(legacy.platform!==platform||legacy.arch!==arch)continue;
+    assert(!legacy.installer&&[...BUNDLED_CHILDREN,...RETIRED_CHILDREN].includes(legacy.id)&&legacy.mode==='development'&&/^\d+\.\d+\.\d+$/.test(legacy.version)&&/^[a-f0-9]{64}$/.test(legacy.executableSHA256)&&/^[a-f0-9]{64}$/.test(legacy.asarSHA256),'Invalid reviewed legacy pin');
+    // 공개 release-input에 남은 거둔 앱(Workspace 0.4.0)의 옛 판 승인은 싣지 않는다(4단계 구현 설계 14절)
+    if(RETIRED_CHILDREN.includes(legacy.id)||legacy.platform!==platform||legacy.arch!==arch)continue;
     const same=runtime.releases.find(row=>row.id===legacy.id&&row.version===legacy.version);
     assert(!same||same.executableSHA256===legacy.executableSHA256&&same.asarSHA256===legacy.asarSHA256,'Conflicting existing approval for '+legacy.id+' '+legacy.version);
     if(!same)runtime.releases.push(legacy);

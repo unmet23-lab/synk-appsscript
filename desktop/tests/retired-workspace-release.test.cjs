@@ -31,7 +31,9 @@ test('a later baseline without Workspace still works; a baseline without WORLD o
 test('the build uses the selection for the copy, the legacy pins and the Mac signing exception',()=>{
   const source=fs.readFileSync(path.join(__dirname,'..','tools','build-platform-release.cjs'),'utf8');
   assert.match(source,/\(\{children,releases:runtime\.releases\}=selectBundledChildren\(runtime\.releases\)\);/);
-  assert.match(source,/assert\(!legacy\.installer&&BUNDLED_CHILDREN\.includes\(legacy\.id\)/);
+  // 공개 release-input의 additionalLegacyPins에는 Workspace 0.4.0 승인이 남아 있다. 받되 싣지 않는다
+  assert.match(source,/assert\(!legacy\.installer&&\[\.\.\.BUNDLED_CHILDREN,\.\.\.RETIRED_CHILDREN\]\.includes\(legacy\.id\)/);
+  assert.match(source,/if\(RETIRED_CHILDREN\.includes\(legacy\.id\)\|\|legacy\.platform!==platform\|\|legacy\.arch!==arch\)continue;/);
   assert.match(source,/signIgnore:\['\/Contents\/Resources\/clients\/world\\\\\.dmg\$'\]/);
   assert.doesNotMatch(source,/'messenger'\]\.includes|children\.some\(row=>row\.id==='messenger'\)/);
   assert.match(fs.readFileSync(path.join(__dirname,'..','tools','mac-icon-native-qa.cjs'),'utf8'),/for\(const client of \['platform','world'\]\)\{/);
