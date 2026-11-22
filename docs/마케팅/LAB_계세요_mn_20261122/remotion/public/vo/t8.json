@@ -1,0 +1,45 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "t8",
+ "text": "숙제님이 계셔?!",
+ "dur": 0.852,
+ "words": [
+  {
+   "text": "숙제님이",
+   "start": 0.02,
+   "end": 0.447
+  },
+  {
+   "text": "계셔?!",
+   "start": 0.508,
+   "end": 0.852
+  }
+ ],
+ "source": {
+  "key": "e3af73220791d110d7512600fb12ea20",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "normal",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 474
+ }
+}

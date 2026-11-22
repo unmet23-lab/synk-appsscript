@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s1",
+ "text": "내일 학교에 있어?",
+ "dur": 1.128,
+ "words": [
+  {
+   "text": "내일",
+   "start": 0.02,
+   "end": 0.242
+  },
+  {
+   "text": "학교에",
+   "start": 0.302,
+   "end": 0.624
+  },
+  {
+   "text": "있어?",
+   "start": 0.685,
+   "end": 1.128
+  }
+ ],
+ "source": {
+  "key": "098aa2388f8734ffa152a08a45e0c8af",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "교무실에서 학생이 선생님에게, 친구에게 하듯 밝고 가볍게 묻는다.",
+   "next": "내일 학교에 있어요?"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 503
+ }
+}

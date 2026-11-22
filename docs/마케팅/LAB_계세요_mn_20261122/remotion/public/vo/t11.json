@@ -1,0 +1,50 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "t11",
+ "text": "내일 꼭 가져와~",
+ "dur": 1.051,
+ "words": [
+  {
+   "text": "내일",
+   "start": 0.02,
+   "end": 0.244
+  },
+  {
+   "text": "꼭",
+   "start": 0.305,
+   "end": 0.467
+  },
+  {
+   "text": "가져와~",
+   "start": 0.528,
+   "end": 1.051
+  }
+ ],
+ "source": {
+  "key": "a66c8b4ed1a2c24b80dfc73f4ca755b8",
+  "voice": {
+   "id": "tc_62e8f21e979b3860fe2f6a24",
+   "name": "혜리"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "happy",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_62e8f21e979b3860fe2f6a24"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 420
+ }
+}

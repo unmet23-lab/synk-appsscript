@@ -1,0 +1,20 @@
+{
+  "id": "02-youtube-mn",
+  "brand": "LAB",
+  "platform": "youtube",
+  "account": "@synkkorean",
+  "format": "shorts",
+  "language": "mn",
+  "audioLanguage": "mn",
+  "title": "Багшид «있어요» биш «계세요» гэж хэлдэг 👩‍🏫",
+  "caption": "Багшид «있어요» биш «계세요» гэж хэлдэг 👩‍🏫\r\nГэхдээ даалгаварт «계세요» гэвэл… 😂\r\n\r\n있어? (иссо?) — найздаа\r\n있어요? (иссоё?) — эелдэг\r\n계세요? (гэсэё?) — багш, ахмад хүнд\r\n\r\n💡 «계시다» нь «있다» (байх) гэдэг үгийн хүндэтгэлийн хэлбэр. Зөвхөн хүнд хэрэглэнэ. Даалгавар, ном, утас гэх мэт эд зүйлд «있어요»-г хэрэглэдэг.\r\n\r\nТа даалгавраа мартаад багшдаа юу гэж хэлж байсан бэ? 👇\r\n\r\nБид SYNK LAB — монгол сурагч, оюутнуудад солонгос хэл заадаг баг.\r\n#солонгосхэл #한국어 #learnkorean #mongolia",
+  "pinnedComment": "🎮 Солонгос хэлний сонсгол, уншлагын тоглоом (англи, солонгос хэлээр): synk.im/try/learning-hub/",
+  "alt": [
+    "A needle-felt diorama of a cozy school teachers' office. The coral felt mascot Mongle, a student with a tiny navy backpack, stands on the teacher's desk and asks her three times, each more politely: 내일 학교에 있어? → 있어요? → 계세요? The teacher beams, then holds out her hand: 숙제는? Mongle forgot its homework at home, straightens up solemnly and bows deeply: 숙제는… 집에 계세요! — using the honorific meant only for people. The teacher freezes and imagines the homework notebook wearing a tiny golden crown, resting in a little bed with a teacup (숙제님이 계셔?!). Laughing, she corrects: 숙제는 「있어요」! Mongle sheepishly repeats 숙제는 집에 있어요. The next morning Mongle brings the crowned notebook on a red velvet cushion: 숙제 가져왔어요! while the teacher laughs."
+  ],
+  "madeForKids": false,
+  "alteredContent": false,
+  "category": "Education",
+  "_비고": "영상은 01-ig-fb-mn/video.mp4(인스타 판과 같은 파일), 표지는 01-ig-fb-mn/cover.png. 제목 = 캡션_mn.txt 첫 줄, 설명 = 캡션_mn.txt 전문, 고정 댓글 = 첫댓글_mn.txt(셋 다 몽골어 세 겹 검수를 거친 글). 동영상 언어는 나라별 유튜브 판 관례대로 그 판 말 mn(결정 11-11 · 게시경로 2-1). 합성 표시는 인스타 판과 같게 켜지 않음.",
+  "version": "m72-mn-v1"
+}

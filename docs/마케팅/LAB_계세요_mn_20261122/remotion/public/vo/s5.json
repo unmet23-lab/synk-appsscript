@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s5",
+ "text": "그게요...",
+ "dur": 1.089,
+ "words": [
+  {
+   "text": "그게요...",
+   "start": 0.23,
+   "end": 1.089
+  }
+ ],
+ "source": {
+  "key": "2414ffd0a44a53d4de2480e8c8f0febd",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "응~ 숙제는? 숙제를 집에 두고 온 학생이 당황해서 말끝을 흐린다.",
+   "next": "숙제는요..."
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 369
+ }
+}

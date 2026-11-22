@@ -1,0 +1,129 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "plan": "../../../음성/계획.json",
+ "version": null,
+ "voice": {
+  "id": "tc_666a9871abcf27a5169850d0",
+  "name": "소진"
+ },
+ "defaults": {
+  "model": "ssfm-v30",
+  "lang": "ko",
+  "emotion": "smart",
+  "intensity": 1,
+  "tempo": 1,
+  "seed": 1122,
+  "lufs": -16
+ },
+ "made": "2026-11-22T06:51:10.057Z",
+ "lines": [
+  {
+   "id": "s1",
+   "text": "내일 학교에 있어?",
+   "dur": 1.128,
+   "syllablesPerSec": 6.21,
+   "src": "s1.wav",
+   "key": "098aa2388f8734ffa152a08a45e0c8af",
+   "words": 3
+  },
+  {
+   "id": "s2",
+   "text": "내일 학교에 있어요?",
+   "dur": 1.441,
+   "syllablesPerSec": 5.55,
+   "src": "s2.wav",
+   "key": "7881b7f19d515914228c77d9b4334ca3",
+   "words": 3
+  },
+  {
+   "id": "s3",
+   "text": "내일 학교에 계세요?",
+   "dur": 1.209,
+   "syllablesPerSec": 6.62,
+   "src": "s3.wav",
+   "key": "8a7edac6a1d6f4aea8b73cb7ac3f6b62",
+   "words": 3
+  },
+  {
+   "id": "t4",
+   "text": "응~ 숙제는?",
+   "dur": 0.966,
+   "syllablesPerSec": 4.14,
+   "src": "t4.wav",
+   "key": "dacaa7d11eedbf591a1deb8dad878de0",
+   "words": 2
+  },
+  {
+   "id": "s5",
+   "text": "그게요...",
+   "dur": 1.089,
+   "syllablesPerSec": 2.75,
+   "src": "s5.wav",
+   "key": "2414ffd0a44a53d4de2480e8c8f0febd",
+   "words": 1
+  },
+  {
+   "id": "s6",
+   "text": "숙제는요...",
+   "dur": 0.966,
+   "syllablesPerSec": 4.14,
+   "src": "s6.wav",
+   "key": "60d3f807459fc93e86b1609f591cb046",
+   "words": 1
+  },
+  {
+   "id": "m7",
+   "text": "집에 계세요!",
+   "dur": 1.131,
+   "syllablesPerSec": 4.42,
+   "src": "m7.wav",
+   "key": "9633be7bb556564941cb9d1513dc80ff",
+   "words": 2
+  },
+  {
+   "id": "t8",
+   "text": "숙제님이 계셔?!",
+   "dur": 0.852,
+   "syllablesPerSec": 7.04,
+   "src": "t8.wav",
+   "key": "e3af73220791d110d7512600fb12ea20",
+   "words": 2
+  },
+  {
+   "id": "t9",
+   "text": "숙제는 있어요!",
+   "dur": 1.155,
+   "syllablesPerSec": 5.19,
+   "src": "t9.wav",
+   "key": "56b06cf47eac7b2e4e0426c226adc6ef",
+   "words": 2
+  },
+  {
+   "id": "s10",
+   "text": "숙제는 집에 있어요.",
+   "dur": 1.391,
+   "syllablesPerSec": 5.75,
+   "src": "s10.wav",
+   "key": "7c72df21fb19c5eaf3ca55e5df1ea300",
+   "words": 3
+  },
+  {
+   "id": "t11",
+   "text": "내일 꼭 가져와~",
+   "dur": 1.051,
+   "syllablesPerSec": 5.71,
+   "src": "t11.wav",
+   "key": "a66c8b4ed1a2c24b80dfc73f4ca755b8",
+   "words": 3
+  },
+  {
+   "id": "s12",
+   "text": "숙제 가져왔어요!",
+   "dur": 1.317,
+   "syllablesPerSec": 5.32,
+   "src": "s12.wav",
+   "key": "160e812cafb5e152139cdd5bf0c47d95",
+   "words": 2
+  }
+ ]
+}

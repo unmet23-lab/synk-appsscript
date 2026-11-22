@@ -1,0 +1,47 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "m7",
+ "text": "집에 계세요!",
+ "dur": 1.131,
+ "words": [
+  {
+   "text": "집에",
+   "start": 0.02,
+   "end": 0.261
+  },
+  {
+   "text": "계세요!",
+   "start": 0.322,
+   "end": 1.131
+  }
+ ],
+ "source": {
+  "key": "9633be7bb556564941cb9d1513dc80ff",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "숙제는요... 학생이 깊이 고개 숙여, 아주 정중하고 엄숙하게 숙제에게까지 높임말을 쓴다.",
+   "next": "숙제님이 계셔?!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 491
+ }
+}

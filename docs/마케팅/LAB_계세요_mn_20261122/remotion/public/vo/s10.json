@@ -1,0 +1,52 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s10",
+ "text": "숙제는 집에 있어요.",
+ "dur": 1.391,
+ "words": [
+  {
+   "text": "숙제는",
+   "start": 0.02,
+   "end": 0.462
+  },
+  {
+   "text": "집에",
+   "start": 0.523,
+   "end": 0.744
+  },
+  {
+   "text": "있어요.",
+   "start": 0.804,
+   "end": 1.391
+  }
+ ],
+ "source": {
+  "key": "7c72df21fb19c5eaf3ca55e5df1ea300",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "숙제는 있어요! 학생이 식은땀을 흘리며 작은 목소리로 고쳐 말한다.",
+   "next": "내일 꼭 가져와~"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 472
+ }
+}

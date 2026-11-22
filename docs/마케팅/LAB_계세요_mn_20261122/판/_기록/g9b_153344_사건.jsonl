@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a201f5-fdc1-7520-9d60-7c6251ab892e"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m using the imagegen skill to keep the fixed composition and change only the poses and thought cloud.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"A shocked teacher watches Mongle bow beneath her thought cloud of a royal notebook tucked into bed."}}
+{"type":"turn.completed","usage":{"input_tokens":176510,"cached_input_tokens":158720,"cache_write_input_tokens":0,"output_tokens":1673,"reasoning_output_tokens":329}}

@@ -1,0 +1,42 @@
+{
+ "tool": "tools/나레이션굽기.mjs",
+ "id": "s6",
+ "text": "숙제는요...",
+ "dur": 0.966,
+ "words": [
+  {
+   "text": "숙제는요...",
+   "start": 0.02,
+   "end": 0.966
+  }
+ ],
+ "source": {
+  "key": "60d3f807459fc93e86b1609f591cb046",
+  "voice": {
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진"
+  },
+  "settings": {
+   "model": "ssfm-v30",
+   "lang": "ko",
+   "emotion": "smart",
+   "intensity": 1,
+   "tempo": 1,
+   "seed": 1122,
+   "lufs": -16,
+   "voiceId": "tc_666a9871abcf27a5169850d0",
+   "prev": "그게요... 학생이 갑자기 자세를 바로 하고, 아주 점잖고 엄숙하게 말을 시작한다.",
+   "next": "집에 계세요!"
+  },
+  "speed": 1,
+  "cut": null
+ },
+ "level": {
+  "requestLufs": -26,
+  "gainDb": 10,
+  "limit": 0.89,
+  "clippedSource": 0,
+  "clippedOut": 0,
+  "topPitchHz": 499
+ }
+}
