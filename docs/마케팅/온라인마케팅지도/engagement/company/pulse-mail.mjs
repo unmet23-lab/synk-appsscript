@@ -1,5 +1,6 @@
 import {createHash,createHmac,generateKeyPairSync,randomBytes,sign} from 'node:crypto';
 import {serverText} from './pulse-locale.mjs';
+import {peopleOf} from './pulse-people-requests.mjs';
 
 // PULSE 고객 메일 알림(판 2 · 설계 docs/마케팅/PULSE_의뢰흐름_20261104/판2_메일_설계.md, 판 4에서 여덟 순간으로 — 판4_판매전_설계.md 3절).
 // 손님 차례가 오는 여덟 순간(접수 확인 · 되묻기 · 방향 제안 · 글 콘티 · 결제 안내 · 장면 이미지 · 영상 확인 · 납품)에만, 고객 알림 투영을 끌어와 함을 채우고
@@ -9,7 +10,9 @@ import {serverText} from './pulse-locale.mjs';
 // 자동 안내(auto_reply)는 메일을 보내지 않는다. 앱에서 이미 읽었거나 그 뒤 손님이 앱에서 글을 남겼으면 보내지 않고(pulseMailActed), 3분 안의 답은 한 통으로 묶는다(fill).
 // 이 순간이 함에 남은 채 서버를 조각 1 전 판으로 되돌리면 옛 조립기가 던진다 — 조각 1(조립 실패는 그 줄만 failed)이 운영에 오른 다음 판부터 싣는다.
 // 받으실 날 고침(due_changed — 운영 조각 6-A): 확인한 결제의 받으실 날을 담당자가 고친 순간. 손님 차례는 아니지만 약속한 날이 바뀌므로 알린다.
-export const PULSE_MAIL_MOMENTS=Object.freeze(['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready','staff_reply','due_changed']);
+// 인플루언서 광고 의뢰(조각 ② · 11-23): 손님 차례인 값 안내(people_quoted)와 광고가 올라간 순간(people_posted). 광고는 납품 뒤 몇 주 돌아 앱을 다시 열 일이 없는 손님에게 닿게 한다(설계 검토 P1-6).
+const PEOPLE_MOMENTS=new Set(['people_quoted','people_posted']);
+export const PULSE_MAIL_MOMENTS=Object.freeze(['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready','staff_reply','due_changed','people_quoted','people_posted']);
 // 처음 여덟 순간 뒤에 더한 순간은, 메일이 켜진 서버에 그 판이 오를 때 지난 사건(켠 뒤 ~ 그 판 전 — 옛 판은 순간이 아니라 함에 넣지 않았다)이
 // 한꺼번에 함에 들어 오래된 답 메일이 몰려 나가지 않게, 이 서버가 그 순간을 처음 알게 된 때(서비스가 뜬 때) 뒤의 사건만 받는다(카본 끝판 검수 A1).
 const FIRST_MOMENTS=new Set(['request_received','request_asked','direction_proposed','draft_ready','payment_requested','images_ready','preview_ready','final_ready']);
@@ -72,6 +75,8 @@ export function pulseMailActed(row,moment,latest){
   if(moment==='payment_requested')return request.payment?.status!=='requested';
   if(moment==='draft_ready'||moment==='images_ready'){const round=Number(String(latest?.id).split(':').at(-1)),entry=request.rounds?.[round-1];return !!(entry?.feedbackAt||entry?.approvedAt);}
   if(moment==='staff_reply')return staffReplySeen(row,latest);
+  // 의뢰: 그사이 손님이 값에 답했거나(동의 · 진행하지 않기) 의뢰가 닫혔으면 보내지 않는다. 게시 메일은 결과까지 간 뒤에도 보낸다(게시물 주소는 결과 뒤에도 그대로다).
+  if(moment==='people_quoted'||moment==='people_posted'){const item=peopleOf(row?.studio).find(entry=>entry?.id===latest?.peopleId);return !item||(moment==='people_quoted'?item.status!=='quoted':!['posted','done'].includes(item.status));}
   // 받으실 날 고침: 그 뒤 결제를 취소(환불)했으면 보낼 날이 없다. 3분 안에 또 고쳤으면 한 통으로 묶여 지금 날을 보낸다.
   // 지금 결제(마지막 확인) 뒤의 고침만 — 고친 뒤 3분 안에 환불 · 다시 확인했으면 그 사건은 앞 결제의 것이라 보내지 않는다(GPT 검수 GA1).
   // 날은 달력에 있는 날만(깨진 저장 값으로 조립이 던지거나 다른 날로 보정되어 나가지 않게 — GA2).
@@ -142,6 +147,7 @@ export function pulseMailCompose(row,moment,loc='ko',latest=null){
   const title=product?tx('{product} 광고',{product}):tx('요청하신 광고');
   const entry=moment==='draft_ready'||moment==='images_ready'?roundOf(row,latest):null,revised=revisedRound(row,entry);
   const amount=Number.isSafeInteger(request.payment?.amount)?request.payment.amount:null;
+  const person=moment==='people_quoted'||moment==='people_posted'?peopleOf(row?.studio).find(entry=>entry?.id===latest?.peopleId&&typeof entry.channel?.name==='string')||null:null;
   const copy={
     request_asked:[tx('{title}, 몇 가지만 더 여쭐게요',{title}),tx('의뢰서를 확인했어요. 빠진 몇 칸만 알려 주시면 바로 다음 단계로 넘어가요.'),tx('다음 할 일: 앱의 「이것만 더 알려 주세요」 칸에 글이나 파일로 답해 주세요.')],
     direction_proposed:[tx('{title}, 방향을 골라 주세요',{title}),tx('요청하신 내용은 그대로 두고, 무엇으로 기억에 남길지만 방향을 나눠 보내 드렸어요. 하나를 고르시면 글 콘티를 만들어 드려요.'),tx('다음 할 일: 마음에 드는 방향 하나를 골라 주세요. 둘 다 아니면 「둘 다 아니에요」에 한 줄 남겨 주세요.')],
@@ -153,6 +159,9 @@ export function pulseMailCompose(row,moment,loc='ko',latest=null){
     // 담당자 답(운영 조각 2-B): 답 글은 메일에 넣지 않는다(다른 순간처럼 앱으로 부른다 — 번역 · 고친 글이 앱 한곳에 있다).
     staff_reply:[tx('{title}, 담당자가 답을 남겼어요',{title}),tx('보내 주신 말씀에 담당자가 답을 남겼어요. 앱의 「담당자와 나눈 말」에서 보실 수 있어요.'),tx('다음 할 일: 답을 읽어 보시고, 더 궁금한 점이 있으면 앱에서 답해 주세요.')],
     // 받으실 날 고침(운영 조각 6-A): 지금 받으실 날 + 까닭 한 문장. 날을 읽을 수 없으면 날 없이 앱으로 부른다(보낼 때는 pulseMailActed가 먼저 거른다).
+    // 인플루언서 광고(조각 ②): 채널 이름은 담당자가 명단에 적은 이름이다(손님이 쓴 글은 넣지 않는다). 금액은 담당자가 보낸 값 안내 그대로. 그 의뢰를 못 찾으면 이름 없이(보낼 때는 pulseMailActed가 먼저 거른다).
+    people_quoted:[tx('{title}, 인플루언서 광고 값이 나왔어요',{title}),!person?tx('담당자가 채널과 확인한 값과 일정을 보내 드렸어요.'):Number.isSafeInteger(person.quote?.amount)?tx('「{channel}」 채널과 확인한 값({amount})과 일정을 보내 드렸어요.',{channel:person.channel.name,amount:won(person.quote.amount,loc)}):tx('「{channel}」 채널과 확인한 값과 일정을 보내 드렸어요.',{channel:person.channel.name}),tx('다음 할 일: 앱의 「인플루언서 광고」에서 값을 보시고 진행할지 골라 주세요.')],
+    people_posted:[tx('{title}, 채널에 광고가 올라갔어요',{title}),person?tx('「{channel}」 채널에 광고가 올라갔어요.',{channel:person.channel.name}):tx('채널에 광고가 올라갔어요.'),tx('다음 할 일: 앱의 「인플루언서 광고」에서 게시물을 확인해 주세요.')],
     due_changed:[tx('{title}, 받으실 날이 바뀌었어요',{title}),[realDueDay(request.payment?.dueDate)?tx('받으실 날을 {date}로 다시 정했어요.',{date:dayText(request.payment.dueDate,loc)}):tx('담당자가 받으실 날을 다시 정했어요. 바뀐 날은 앱에서 보실 수 있어요.'),...(lastDueReason(request)?[tx(DUE_REASON_TEXT[lastDueReason(request)])]:[])].join(' '),tx('다음 할 일: 따로 하실 일은 없어요.')],
   }[moment];
   if(!copy)throw fail('메일 순간을 확인해 주세요.',500);
@@ -229,7 +238,9 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
     const c=config();if(!active(c))return 0;
     const since=momentSince(c,at);
     const outbox=store.all(PULSE_MAIL_OUTBOX),known=new Set(outbox.flatMap(item=>item.eventIds||[]));
-    const open=new Map(outbox.filter(item=>item.state==='pending'&&!item.attempts&&item.lastEventAt>c.enabledAt).map(item=>[`${item.projectId}|${item.moment}`,item]));
+    // 인플루언서 광고 의뢰의 두 순간은 의뢰마다 따로 묶는다 — 다른 의뢰의 값 안내 · 게시를 한 통으로 합치면 마지막 의뢰만 나간다(GPT 검수 GA2).
+    const slotOf=(projectId,moment,peopleId)=>PEOPLE_MOMENTS.has(moment)&&typeof peopleId==='string'&&peopleId?`${projectId}|${moment}|${peopleId}`:`${projectId}|${moment}`;
+    const open=new Map(outbox.filter(item=>item.state==='pending'&&!item.attempts&&item.lastEventAt>c.enabledAt).map(item=>[slotOf(item.projectId,item.moment,item.peopleId),item]));
     let added=0;
     for(const row of store.all('clientProjects')){
       if(pulseMailEligibility(row)||!pulseMailRecipient(row).email)continue;
@@ -238,14 +249,14 @@ export function createPulseMailService({store,notificationsFor,clock=()=>new Dat
         const moment=pulseMailMoment(row,item);if(!moment)continue;
         if(since[moment]&&item.createdAt<=since[moment])continue;   // 이 서버가 그 순간을 알기 전 사건(새 판이 오르기 전)
         known.add(item.id);
-        const slot=`${row.id}|${moment}`,eventAt=Date.parse(item.createdAt),held=open.get(slot),current=held&&eventAt<=Date.parse(held.firstEventAt)+MERGE_CAP_MS?held:null;
+        const slot=slotOf(row.id,moment,item.peopleId),eventAt=Date.parse(item.createdAt),held=open.get(slot),current=held&&eventAt<=Date.parse(held.firstEventAt)+MERGE_CAP_MS?held:null;
         if(current){
           const dueAt=iso(Math.min(eventAt+MERGE_MS,Date.parse(current.firstEventAt)+MERGE_CAP_MS));
           const next={...current,eventIds:[...current.eventIds,item.id],lastEventAt:item.createdAt,dueAt,nextAttemptAt:dueAt,updatedAt:at};
           store.put(PULSE_MAIL_OUTBOX,next.id,next);open.set(slot,next);
         }else{
           const dueAt=iso(eventAt+MERGE_MS),id=`${row.id}:${moment}:${createHash('sha256').update(item.id).digest('hex').slice(0,12)}`;
-          const next={id,projectId:row.id,moment,eventIds:[item.id],firstEventAt:item.createdAt,lastEventAt:item.createdAt,dueAt,nextAttemptAt:dueAt,state:'pending',reason:null,attempts:0,sendingAt:null,sentAt:null,recipientHash:null,createdAt:at,updatedAt:at};
+          const next={id,projectId:row.id,moment,...(PEOPLE_MOMENTS.has(moment)&&typeof item.peopleId==='string'&&item.peopleId?{peopleId:item.peopleId}:{}),eventIds:[item.id],firstEventAt:item.createdAt,lastEventAt:item.createdAt,dueAt,nextAttemptAt:dueAt,state:'pending',reason:null,attempts:0,sendingAt:null,sentAt:null,recipientHash:null,createdAt:at,updatedAt:at};
           store.put(PULSE_MAIL_OUTBOX,id,next);open.set(slot,next);added++;
         }
       }

@@ -40,6 +40,9 @@ const MODULES=[
     actions:{customer:['submit_kickoff_source','confirm_delivery','feedback','approve','support'],staff:[]},
     codeHelpers:{clean:{label:2,required:3,codes:4}}},
   {file:'pulse-live.mjs',scope:['customerRead','customerState','selection']},
+  // 인플루언서 광고 의뢰(조각 ② · 11-23): 손님 동작 셋. 직원 동작(값 안내 · 결제 확인 · 게시 · 결과 · 닫기)은 직원 화면이라 세지 않는다.
+  {file:'pulse-people-requests.mjs',scope:['text','find','moved','applyPeopleAction'],
+    actions:{customer:['people_request','people_agree','people_cancel'],staff:['people_quote','people_paid','people_posted','people_done','people_close']},staffFlags:['staff'],messageArgs:{text:2}},
   // 문의 사진(운영 조각 8-B): 손님 문의 보내기(support의 photos)와 사진 올리기가 부르는 확인 — 모두 손님 길이다.
   {file:'pulse-message-photos.mjs',scope:'*'},
   {file:'pulse-feedback-rounds.mjs',scope:['text','seconds','requiredId','currentPreview','findDraft','applyFeedbackRoundAction'],

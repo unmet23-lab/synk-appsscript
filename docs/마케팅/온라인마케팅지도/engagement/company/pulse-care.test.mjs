@@ -26,7 +26,7 @@ const reply=(id,offset,extra={})=>({id,author:'staff',authorName:'김하늘',vis
 
 test('careOf counts a customer question until a person answers it where the customer can see',()=>{
   assert.equal(roomState(making()),'make');
-  assert.deepEqual(careOf(making(),NOW),{asks:0,askSince:'',quiet:4});
+  assert.deepEqual(careOf(making(),NOW),{asks:0,askSince:'',quiet:4,people:0});
   const one=making({},{messages:[ask('m1',-5)]});
   assert.equal(careOf(one,NOW).asks,1);assert.equal(careOf(one,NOW).askSince,at(-5));
   // 자동 안내만 달린 문의는 아직 답하지 않은 문의다.
@@ -70,11 +70,11 @@ test('careOf counts quiet weekdays in Korean dates only on our turn of a request
   assert.equal(careOf(making({progress:[{id:'n1',at:'2026-11-19T15:30:00.000Z',text:'한국 금요일 00:30',assets:[]}]}),Date.parse('2026-11-20T15:30:00.000Z')).quiet,0);
   // 손님 차례(영상 확인) · 끝 · 옛 흐름 · 보관은 소식 빈 날을 세지 않는다. 문의는 그대로 센다.
   const review=making({},{stage:'review',versions:[video('v1','1차 시안')],messages:[ask('m1',-5)]});
-  assert.equal(roomState(review),'review');assert.deepEqual(careOf(review,NOW),{asks:1,askSince:at(-5),quiet:null});
+  assert.equal(roomState(review),'review');assert.deepEqual(careOf(review,NOW),{asks:1,askSince:at(-5),quiet:null,people:0});
   const legacy={id:'p9',title:'옛 프로젝트',stage:'producing',createdAt:at(-300),updatedAt:at(-90),versions:[],messages:[ask('m1',-7)],studio:{comments:[]}};
-  assert.deepEqual(careOf(legacy,NOW),{asks:1,askSince:at(-7),quiet:null});
+  assert.deepEqual(careOf(legacy,NOW),{asks:1,askSince:at(-7),quiet:null,people:0});
   assert.equal(careOf(making({},{stage:'archived'}),NOW).quiet,null);
-  assert.deepEqual(careOf(null,NOW),{asks:0,askSince:'',quiet:null});
+  assert.deepEqual(careOf(null,NOW),{asks:0,askSince:'',quiet:null,people:0});
 });
 
 test('the board carries the care values, puts questions first, and takes the promised date after payment',()=>{

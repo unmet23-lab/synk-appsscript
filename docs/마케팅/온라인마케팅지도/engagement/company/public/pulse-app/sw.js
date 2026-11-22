@@ -80,7 +80,8 @@
 // v74(11-21): 다듬기 — 손님 방의 나눈 말(담당자의 말은 옅은 판, 같은 소식은 한 번만), 재생 표의 먹색 판, 눕힌 휴대폰의 인화지 크기, 담당자 화면의 머리 숫자 이름 · 닫기 알림 글 · 번역 미리 보기. 목록은 그대로이고 판만 올린다.
 // v75(11-21): 처음 보는 사람용 낱말 — 단계 이름(담당자 검토 · 영상 전 확인, 사진은 첫 장 확인), 「1차안」 문장, 머리의 「접수 번호」 이름표, 「대화만 보기」 · 「이전 기록」, 「SYNK 작품」 칸. 의뢰서 칸 정리 — 피할 말과 피할 느낌을 나눠 묻기, 「그 말을 믿게 할 사실」을 남길 말 아래로, 드문 파일 칸 둘(라벨 인쇄 파일 · 브랜드 음악)을 접힌 줄로, 음료 · 화장품의 내용물 사진 칸 이름. 목록은 그대로다.
 // v76(11-22): 인플루언서 광고 창 조각 ① — 손님 칸(people-view.mjs, 받을 때 담음) · 머리 줄 끝과 방 입구 · 끝맺음 한 줄, 직원 「채널 명단」, 글꼴 조각. 미리 받는 목록은 그대로다.
-const CACHE = 'synk-pulse-shell-v76-people-20261122';
+// v77(11-23): 인플루언서 광고 창 조각 ② — 손님 칸의 「내 의뢰」 · 의뢰 시트, 일지 줄, 끝맺음 한 줄, 직원 의뢰 확인의 의뢰 칸 · 제작 보드 꼬리표. 미리 받는 목록은 그대로다.
+const CACHE = 'synk-pulse-shell-v77-people-requests-20261123';
 const BASE = '/pulse-app/';
 const FILES = ['production.css','preview.css','production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','index.html','app.css','casting.css','casting-view.mjs','casting-catalog.mjs','films-view.mjs','assets/casting/m01.webp','assets/casting/f01.webp','assets/casting/f02.webp','assets/casting/f03.webp','assets/casting/m02.webp','assets/casting/m03.webp','app.mjs','entry-handoff.mjs','views.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','manifest.webmanifest','assets/brand-pulse.webp','assets/InterTight.woff2','assets/SYNKLatin-Regular.woff2','assets/SYNKLatin-SemiBold.woff2','assets/SYNKLatin-Bold.woff2','assets/DMMono.ttf','assets/stage/hero-camera.webp','assets/stage/stage-strategy.webp','assets/stage/stage-direction.webp','assets/stage/stage-concepts.webp','assets/stage/stage-storyboard.webp','assets/stage/stage-review.webp','assets/stage/stage-history.webp','icons/icon-192.png','icons/icon-512.png'].map(name=>BASE+name);
 FILES.push(BASE+'assets/casting/f04.webp');

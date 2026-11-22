@@ -473,6 +473,13 @@ html.view-entry .connection-banner,html.view-draft .connection-banner,#request-r
 .desk-talk-form{display:grid;gap:6px;margin-top:14px}
 .desk-talk-form label{display:grid;gap:4px;font-size:13px;font-weight:600;color:var(--ink-2)}
 .desk-talk-form textarea{width:100%;min-height:76px;padding:8px 10px;border:1px solid var(--ink);background:#fff;color:var(--ink);font:inherit;font-size:14.5px;font-weight:400;line-height:1.5;box-sizing:border-box;resize:vertical}
+/* 인플루언서 광고 의뢰(조각 ② · 11-23): 문의와 답과 같은 꼴의 칸, 의뢰마다 다음 양식 하나 */
+.desk-ppl li:focus{outline:2px solid var(--ink);outline-offset:3px}
+.desk-ppl-form{border-top:1px solid var(--line,#d9d4cc);padding-top:10px}
+.desk-ppl-form .desk-h{margin:0;font-size:13px}
+.desk-ppl-form input:not([type=checkbox]){width:100%;padding:7px 10px;border:1px solid var(--ink);background:#fff;color:var(--ink);font:inherit;font-size:14.5px;font-weight:400;box-sizing:border-box}
+.desk-ppl-form textarea{width:100%;min-height:76px;padding:8px 10px;border:1px solid var(--ink);background:#fff;color:var(--ink);font:inherit;font-size:14.5px;font-weight:400;line-height:1.5;box-sizing:border-box;resize:vertical}
+.desk-ppl .desk-files a{overflow-wrap:anywhere}
 .desk-progress-keep{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0;border:0}
 .desk-progress-keep label{display:inline-flex;align-items:center;gap:4px}
 .desk-progress-keep img{width:72px;height:54px;object-fit:cover;background:#000}

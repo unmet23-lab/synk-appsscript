@@ -14,7 +14,7 @@ import {mountRequestFlow} from './request-flow.mjs';
 import {mountEntry,mountRoom,mountDraft,mountDirection,JOURNAL_SHOWN,JOURNAL_SHEET,journalOverlay,journalSetOpen,journalFocus,sayPhotoChips,keepWhole} from './film-views.mjs';
 import {mountFilmList,leanData} from './film-home.mjs';
 import {mountReview,mountFinal} from './film-review.mjs';
-import {draftModel,deskModel,roomState,roomStage,directionModel,usesRoom,roomTab,roomRoute,journalModel,journalShownIds,journalSeenUpTo,marketingHeads} from './room-view.mjs';
+import {draftModel,deskModel,roomState,roomStage,directionModel,usesRoom,roomTab,roomRoute,journalModel,journalShownIds,journalSeenUpTo,marketingHeads,peopleRequests,openRequest} from './room-view.mjs';
 import {PACKAGES,MODEL_LINES} from './request-data.mjs';
 import {MODEL_OPTIONAL_CHOICES,personaRefOf} from './casting-choice.mjs';
 import {PERSONA_DONE} from './persona-view.mjs';
@@ -111,7 +111,7 @@ const production=productionUI({s,mutate,studioAction,notice,remember,request,opt
 function notice(message){if(demo&&/의견을 보냈|고객에게|시안을 승인했/.test(message))message='체험 기록에 남겼어요.';const box=document.querySelector('#notice');box.textContent=message;box.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>box.hidden=true,6500);} // i18n-skip
 function hideNotice(){const box=document.querySelector('#notice');if(box)box.hidden=true;clearTimeout(noticeTimer);}
 function remember(event){const field=event.target,form=field.closest?.('form[data-form]');if(!form||!field.name||['invite','login','waitlist'].includes(form.dataset.form))return;const key=draftKey(form),entry=drafts.get(key)||{values:{},revision:0};if(form.dataset.form==='feedback'&&!entry.versionId){entry.versionId=s.versionId||latestPreview()?.id||'';if(entry.versionId)s.versionId=entry.versionId;if(form.elements.action)entry.values.action=form.elements.action.value;}entry.values[field.name]=field.type==='file'?Array.from(field.files||[]):field.type==='checkbox'?Array.from(form.elements).filter(el=>el.name===field.name&&el.checked).map(el=>el.value):field.value;if(form.dataset.form==='deliverables'){entry.deliverableRows=snapshotDeliverableRows(form);entry.values.deliverableRevision??=form.elements.deliverableRevision.value;}if(/^(round-|preview-)/.test(form.dataset.form))entry.boundData??={...form.dataset};entry.revision++;drafts.set(key,entry);if(form.dataset.form==='feedback'&&s.mode!=='staff'){const submit=form.querySelector('button[type=submit]');if(submit&&!busy)submit.disabled=!!(entry.versionId&&entry.versionId!==latestPreview()?.id&&entry.values.action!=='support');}}
-function restore(scope=document){for(const form of scope.querySelectorAll('form[data-form]')){const entry=drafts.get(draftKey(form));if(!entry)continue;if(entry.boundData){Object.assign(form.dataset,entry.boundData);addProductionDraftReset(form);}if(form.dataset.form==='deliverables'&&entry.deliverableRows){restoreDeliverableRows(form,entry.deliverableRows);addProductionDraftReset(form);}for(const [name,value] of Object.entries(entry.values)){const fields=Array.from(form.elements).filter(el=>el.name===name);for(const field of fields){if(field.type==='file'){try{const transfer=new DataTransfer();for(const file of value)transfer.items.add(file);field.files=transfer.files;}catch{}}else if(field.type==='checkbox')field.checked=Array.isArray(value)&&value.includes(field.value);else if(field.type==='radio')field.checked=field.value===value;else field.value=value;const details=field.closest('details');if(details)details.open=true;}}const details=form.closest('details');if(details)details.open=true;}}
+function restore(scope=document){for(const form of scope.querySelectorAll('form[data-form]')){const entry=drafts.get(draftKey(form));if(!entry)continue;if(entry.boundData){Object.assign(form.dataset,entry.boundData);addProductionDraftReset(form);}if(form.dataset.form==='deliverables'&&entry.deliverableRows){restoreDeliverableRows(form,entry.deliverableRows);addProductionDraftReset(form);}for(const [name,value] of Object.entries(entry.values)){const fields=Array.from(form.elements).filter(el=>el.name===name);for(const field of fields){if(field.type==='file'){try{const transfer=new DataTransfer();for(const file of value)transfer.items.add(file);field.files=transfer.files;}catch{}}else if(field.type==='checkbox')field.checked=Array.isArray(value)&&value.includes(field.value);else if(field.type==='radio')field.checked=field.value===value;else field.value=value;const details=field.closest('details');if(details)details.open=true;}}const details=form.closest('details');if(details)details.open=true;}syncRosterShots(scope);}
 function clearDraft(key,revision){if(drafts.get(key)?.revision===revision)drafts.delete(key);}
 function setBusy(value){busy=value;document.documentElement.classList.toggle('is-busy',value);for(const button of document.querySelectorAll('button[type=submit],[data-mutate]')){if(value){if(button.dataset.wasDisabled===undefined)button.dataset.wasDisabled=String(button.disabled);button.disabled=true;}else if(button.dataset.wasDisabled!==undefined){button.disabled=button.dataset.wasDisabled==='true';delete button.dataset.wasDisabled;}}main.setAttribute('aria-busy',String(value));if(!value){scheduleApply();scheduleInviteNavigation();}}
 // 첫 화면이 길어 입장 칸이 화면 밖일 수 있다 — 어느 길로 왔든 새 알림이 나면 그 자리를 보인다. 같은 알림으로 다시 그릴 때는 읽던 자리를 두고 움직이지 않는다.
@@ -591,27 +591,73 @@ async function openFilmDemo(){
 // 예시를 열지 않을 때: 주소에서 예시를 지우고 처음 온 손님처럼 연다(기억한 기기면 그 프로젝트, 아니면 첫 화면).
 function leaveFilmDemo(){filmDemo=false;history.replaceState({},'',location.pathname);entryHandle?.unmount();entryHandle=null;booting=true;render();void start('');}
 // ── 인플루언서 광고 창(11-21 조각 ①, 설계 docs/디자인/PULSE고객경험_20261120/인플루언서_의뢰창_설계.md 9절) ──
-// 의뢰 흐름 손님 방에서만: 고객 방 자료의 features.people이 참일 때(서버: 스위치 켬 · 고를 채널 있음). 칸을 처음 열 때 화면 모듈과 명단을 한 번씩 읽는다.
-// 명단이 404면 서버 스위치가 꺼졌거나 채널이 빠진 것이라 칸을 거두고 방으로 돌린다. 명단은 메모리에만 둔다(셸 캐시도 API를 담지 않는다). 체험에는 없다.
+// 의뢰 흐름 손님 방에서만: 고객 방 자료의 features.people이 참일 때(서버: 스위치 켬 · 고를 채널 있음), 또는 이 프로젝트에 보낸 의뢰가 있을 때(조각 ② — 스위치를 꺼도 보낸 것은 보인다).
+// 칸을 처음 열 때 화면 모듈과 명단을 한 번씩 읽는다. 명단이 404면 서버 스위치가 꺼졌거나 채널이 빠진 것이라 명단을 거두고, 보낸 의뢰가 없으면 방으로 돌린다.
+// 명단은 메모리에만 둔다(셸 캐시도 API를 담지 않는다). 명단 판(version)은 의뢰를 보낼 때 함께 실어 그사이 바뀐 명단으로 보내지 않게 한다. 체험에는 없다.
 let peopleViewLoading=null,peopleTimer=0;
 const peopleNow=()=>s.people&&s.people.projectId===s.project?.id?s.people:null;
+const peopleSent=()=>peopleRequests(s.project).length>0;
 function peopleRedraw(p){clearTimeout(peopleTimer);if(peopleNow()!==p)return;if(canApplyRemote())render();else peopleTimer=setTimeout(()=>peopleRedraw(p),800);}
 function checkPeople(){
   if(!roomCustomer())return;
   const want=!demo&&projectFeatures?.people===true,p=peopleNow();
   if(p&&p.wanted===want)return;
-  s.people={projectId:s.project.id,wanted:want,on:want,status:want?'idle':'off',entries:[],filter:'all'};
-  if(!want&&roomTab(s.tab)==='people')s.tab='overview';
+  s.people={projectId:s.project.id,wanted:want,on:want,status:want?'idle':'off',entries:[],filter:'all',version:null,sheet:'',past:!!p?.past};
+  if(!want&&!peopleSent()&&roomTab(s.tab)==='people')s.tab='overview';
 }
+function loadPeopleView(p){if(!s.peopleView&&!peopleViewLoading&&!s.peopleViewFailed)peopleViewLoading=import('./people-view.mjs').then(module=>{s.peopleView=module.peopleScreen;},()=>{s.peopleViewFailed=true;}).then(()=>{peopleViewLoading=null;peopleRedraw(p);});}
 function loadPeople(){
-  const p=peopleNow();if(!p||p.on!==true||roomTab(s.tab)!=='people')return;
-  if(!s.peopleView&&!peopleViewLoading&&!s.peopleViewFailed)peopleViewLoading=import('./people-view.mjs').then(module=>{s.peopleView=module.peopleScreen;},()=>{s.peopleViewFailed=true;}).then(()=>{peopleViewLoading=null;peopleRedraw(p);});
-  if(p.status!=='idle')return;
+  const p=peopleNow();if(!p||roomTab(s.tab)!=='people'||p.on!==true&&!peopleSent())return;
+  loadPeopleView(p);
+  if(p.on!==true||p.status!=='idle')return;
   p.status='loading';
-  peopleList().then(result=>{if(peopleNow()!==p)return;p.entries=Array.isArray(result?.entries)?result.entries:[];p.status='ready';},error=>{
-    if(peopleNow()!==p)return;if(error?.status===404){p.on=false;p.status='off';if(roomTab(s.tab)==='people')s.tab='overview';}else p.status='error';
+  peopleList().then(result=>{if(peopleNow()!==p)return;p.entries=Array.isArray(result?.entries)?result.entries:[];p.version=Number.isSafeInteger(result?.version)?result.version:null;p.status='ready';},error=>{
+    if(peopleNow()!==p)return;if(error?.status===404){p.on=false;p.status='off';if(roomTab(s.tab)==='people'&&!peopleSent())s.tab='overview';}else p.status='error';
   }).then(()=>peopleRedraw(p));
 }
+// 의뢰 동작(조각 ②): 보내기 · 동의 · 진행하지 않기 · 거두기는 손님 studio 동작 길(판 번호를 싣는다)로 간다. 판 번호가 어긋난 409(그사이 담당자가 소식을 올림)면
+// 새 판을 받아 한 번만 다시 보낸다 — 쓰던 한마디는 폼에 그대로 있다. 동의는 본 금액을 함께 보내므로, 그사이 값이 바뀌었으면 서버가 다시 막는다.
+// 그 밖의 409(그사이 대표가 명단을 고침 · 같은 채널에 열린 의뢰)는 명단을 다시 읽는다.
+// 문장은 부를 때 고른다(맨 위에서 가져온 함수를 부르지 않는다 — vm 시험이 import 없이 이 줄까지 돈다).
+const studioStale=error=>{const stale=k('그사이 프로젝트가 바뀌었어요. 최신 내용을 불러온 뒤 다시 저장해 주세요.');return error?.status===409&&!error.code&&(error.message===stale||error.message===t(stale));};
+async function peopleSend(action,values,{form=null,message,after}={}){
+  let rosterStale=false;
+  const ok=await mutate(async()=>{
+    try{return await studioAction(action,values);}
+    catch(error){
+      if(!studioStale(error)){if(error?.status===409&&action==='people_request')rosterStale=true;throw error;}
+      accept(await request('/pulse/api/project'));
+      // 다시 보낸 것도 명단 409면 명단을 다시 읽는다(첫 시도에서만 보면 손님이 같은 409를 한 번 더 겪는다 — 최종 검수 P2-2).
+      try{return await studioAction(action,values);}catch(again){if(again?.status===409&&action==='people_request'&&!studioStale(again))rosterStale=true;throw again;}
+    }
+  },{form,message,after});
+  const p=peopleNow();if(!ok&&rosterStale&&p&&p.on===true){p.status='idle';render();}
+  return ok;
+}
+// 의뢰 카드에 초점을 옮긴다(보낸 뒤 · 알림으로 왔을 때). 지난 의뢰면 펴 둔다.
+function focusPeopleRequest(id){
+  const p=peopleNow(),r=peopleRequests(s.project).find(item=>item.id===id);if(!p||!r)return null;
+  if(!openRequest(r)&&!p.past){p.past=true;render();}
+  const card=Array.from(main.querySelectorAll('[data-ppl-request]')).find(node=>node.dataset.pplRequest===id);
+  if(card){card.focus({preventScroll:true});card.scrollIntoView?.({block:'center'});}
+  return card||null;
+}
+main.addEventListener('click',event=>{
+  const button=event.target.closest('[data-ppl-do]');if(!button||!roomCustomer()||button.disabled)return;
+  const act=button.dataset.pplDo,id=button.dataset.id||'',p=peopleNow();if(!p||act==='retry')return;
+  const opener=key=>main.querySelector(`[data-ppl-do="open"][data-id="${CSS.escape(key)}"]`);
+  if(act==='open'){p.sheet=p.sheet===id?'':id;render();if(p.sheet)main.querySelector(`form[data-form="people-request"][data-id="${CSS.escape(id)}"] textarea`)?.focus();else opener(id)?.focus({preventScroll:true});return;}
+  if(act==='close'){p.sheet='';render();opener(id)?.focus({preventScroll:true});return;}
+  if(act==='past'){p.past=!p.past;render();main.querySelector('[data-ppl-do="past"]')?.focus({preventScroll:true});return;}
+  const r=peopleRequests(s.project).find(item=>item.id===id);if(!r)return;
+  const name=String(r.channel?.name||'');
+  if(act==='agree'){const amount=Number(button.dataset.amount);void peopleSend('people_agree',{requestId:id,amount},{message:t('값에 동의했어요. 크몽 메시지로 결제 요청을 보내 드려요.')}).then(ok=>{if(ok)focusPeopleRequest(id);});return;}
+  if(act==='decline'||act==='cancel'){
+    const decline=act==='decline';
+    confirmAction=()=>peopleSend('people_cancel',{requestId:id},{message:decline?t('진행하지 않기로 했어요. 담당자에게 알려 드렸어요.'):t('의뢰를 거뒀어요. 담당자에게 알려 드렸어요.'),after:closeDialog}).then(ok=>{if(ok)focusPeopleRequest(id);});
+    openDialog('confirm',{title:decline?t('「{name}」 광고를 진행하지 않을까요?',{name}):t('「{name}」 광고 의뢰를 거둘까요?',{name}),text:t('담당자에게 알림이 가요. 다시 하시려면 새로 의뢰해 주세요.'),button:decline?t('진행하지 않기'):t('의뢰 거두기')});
+  }
+});
 // 거르개 칩 · 다시 불러오기(손님 칸), 미리 보기의 거르개(직원 「채널 명단」).
 main.addEventListener('click',event=>{
   const chip=event.target.closest('[data-ppl-filter]');
@@ -624,7 +670,7 @@ main.addEventListener('click',event=>{
 let rosterViewLoading=null;
 const rosterView=()=>s.rosterView?s.rosterView(s.roster,{top:s.error?`<div class="sx-alert" role="alert"><strong>처리하지 못했어요.</strong><div>${esc(s.error)}</div></div>`:''}):`<section class="staff-home" aria-label="채널 명단">${s.error?`<div class="sx-alert" role="alert"><strong>채널 명단을 불러오지 못했어요.</strong><div>${esc(s.error)}</div></div>`:'<div class="loading" role="status"><span class="loading-mark"></span>채널 명단을 불러오고 있어요.</div>'}</section>`;
 async function loadRoster(){
-  rosterViewLoading||=import('./people-roster-view.mjs').then(module=>{s.rosterView=module.rosterDesk;s.rosterEntry=module.entryFrom;s.rosterBlank=module.blankEntry;},error=>{rosterViewLoading=null;throw error;});
+  rosterViewLoading||=import('./people-roster-view.mjs').then(module=>{s.rosterView=module.rosterDesk;s.rosterEntry=module.entryFrom;s.rosterBlank=module.blankEntry;s.rosterSrc=module.rosterSrc;},error=>{rosterViewLoading=null;throw error;});
   const ask=s.roster,[data]=await Promise.all([request('/api/pulse-people',options()),rosterViewLoading]);
   if(s.roster!==ask)return;s.roster={...data,editing:null,preview:!!ask?.preview,previewFilter:ask?.previewFilter||'all'};
 }
@@ -717,6 +763,39 @@ main.addEventListener('change',event=>{
   const select=event.target?.closest?.('select[data-mk-run]'),m=marketingNow();if(!select||!m)return;
   const kind=select.dataset.mkRun,run=select.value;if(!m.heads.some(head=>head.kind===kind&&head.runId===run))return;
   m.picks={...m.picks,[kind]:run};marketingFocus=kind;loadMarketingReports(m);render({remote:true});
+});
+// 고치기 칸의 「고른 그림」 줄은 지금 고른 칸 값(초안 포함)으로 그린다 — 저장 전에 고르거나 올린 그림도 바로 보이게(카본 A2). 다시 그린 뒤(restore)와 칸을 바꿀 때 부른다.
+function syncRosterShots(scope=document){
+  if(s.mode!=='staff'||!s.roster||typeof s.rosterSrc!=='function')return;
+  for(const form of scope.querySelectorAll?.('form[data-form="people-entry"]')||[]){
+    const picked=['image','sample0','sample1','sample2'].map(name=>form.elements[name]?.value||'').filter(Boolean);
+    let row=form.querySelector('.ppl-shots-now');
+    if(!picked.length){row?.remove();continue;}
+    if(!row){row=document.createElement('div');row.className='ppl-shots-now';row.setAttribute('aria-label','고른 그림');form.querySelector('.ppl-edit-grid')?.append(row);} // i18n-skip
+    row.replaceChildren(...picked.map(src=>{const img=document.createElement('img');img.src=s.rosterSrc(src);img.alt='';img.loading='lazy';img.decoding='async';return img;}));
+  }
+}
+main.addEventListener('change',event=>{const select=event.target;if(select?.matches?.('form[data-form="people-entry"] select')&&/^(image|sample[0-2])$/.test(select.name))syncRosterShots(select.form.parentElement||document);});
+// desk 값 안내 금액: 쉼표 · 칸 · 끝의 「원」을 빼고 「천 · 만 · 억」을 읽는다(채널 명단 숫자 칸과 같은 규칙). 못 읽으면 NaN. // i18n-skip
+const wonAmount=raw=>{const text=String(raw??'').replace(/[,\s]/g,'').replace(/원$/,''),m=/^(\d+(?:\.\d+)?)(천|만|억)?$/.exec(text);return m?Math.round(Number(m[1])*({'':1,'천':1e3,'만':1e4,'억':1e8}[m[2]||''])):NaN;}; // i18n-skip
+// 채널 명단 그림 올리기(조각 ③ · 11-23, 직원 화면): 고치기 칸의 파일 칸을 고르면 바로 올리고, 빈 그림 칸(대표 → 장면 1~3)에 넣는다. 명단에는 「저장」을 눌러야 남는다. // i18n-skip
+main.addEventListener('change',async event=>{
+  const input=event.target?.closest?.('[data-ppl-upload]');if(!input||s.mode!=='staff'||!s.roster)return;
+  const file=input.files?.[0],form=input.form,forget=()=>{input.value='';const entry=form?drafts.get(draftKey(form)):null;if(entry)delete entry.values.upload;};
+  if(!file)return;
+  if(!['image/png','image/jpeg'].includes(file.type)){forget();notice('PNG · JPEG 그림만 올릴 수 있어요.');return;} // i18n-skip
+  if(file.size>2*1024*1024){forget();notice('그림은 한 장에 2MB까지 올릴 수 있어요.');return;} // i18n-skip
+  if(busy){forget();return;}
+  setBusy(true);
+  try{
+    const result=await request('/api/pulse-people/media',{...options(),file,headers:{'Content-Type':file.type,'X-File-Name':encodeURIComponent(file.name)}});
+    if(!s.roster)return;
+    s.roster.uploads=[{ref:result.ref,url:result.url,at:new Date().toISOString()},...(s.roster.uploads||[])];
+    const slot=['image','sample0','sample1','sample2'].map(name=>form?.elements[name]).find(select=>select&&!select.value);
+    if(slot){slot.append(new Option('',result.ref));slot.value=result.ref;slot.dispatchEvent(new Event('change',{bubbles:true}));}
+    forget();render();
+    notice(slot?'그림을 올려 빈 그림 칸에 넣었어요. 「저장」을 눌러야 명단에 남아요.':'그림을 올렸어요. 그림 칸에서 골라 주세요.'); // i18n-skip
+  }catch(error){forget();notice(error.message);}finally{setBusy(false);}
 });
 main.addEventListener('click',event=>{
   const jump=event.target?.closest?.('[data-mk-jump]');
@@ -1097,6 +1176,16 @@ document.addEventListener('submit',async event=>{
   if(type==='new-project'){await mutate(()=>request('/api/client-projects',{...options(),body:{...values,ownerId:s.user.id}}),{form,message:'프로젝트를 만들었어요.',after:async result=>{s.newProject=false;accept(result);if(!s.project&&result.id)await loadProject(result.id);if(s.project)await loadProject(s.project.id);s.tab='strategy';}});return;} // i18n-skip
   if(!s.project)return;
   if(await production.submit(form))return;
+  // 인플루언서 광고 의뢰 보내기(조각 ②): 채널 하나 · 한마디 · 손님이 본 명단 판. 보낸 뒤에는 시트를 닫고 「내 의뢰」의 그 카드로 초점을 옮긴다.
+  if(type==='people-request'){
+    const p=peopleNow();if(s.mode!=='customer'||!p)return;
+    const channelId=String(form.dataset.id||''),note=String(values.note||'').trim();
+    if(!Number.isSafeInteger(p.version)){notice(t('채널 명단을 다시 불러온 뒤 보내 주세요.'));p.status='idle';render();return;}
+    const before=new Set(peopleRequests(s.project).map(item=>item.id));
+    const ok=await peopleSend('people_request',{channelId,note,rosterVersion:p.version},{form,message:t('의뢰를 보냈어요. 담당자가 채널과 값 · 일정을 확인해 알려 드려요.'),after:()=>{p.sheet='';}});
+    if(ok){const made=peopleRequests(s.project).find(item=>!before.has(item.id)&&item.channel?.id===channelId);if(made)focusPeopleRequest(made.id);}
+    return;
+  }
   if(type==='kickoff-source'){await mutate(()=>request('/pulse/api/action',{...options(),body:kickoffSubmission(s,form.dataset,values.sourceKey)}),{form,message:t('자료를 보냈어요. 담당자가 제작에 쓸 수 있는지 확인해요.')});return;}
   if(type==='confirm-delivery'){if(s.mode!=='customer'||!s.project.closeout?.canConfirm||values.confirmed!=='yes')return;if(form.dataset.id!==s.project.closeout.deliveryKey||Number(form.dataset.revision)!==s.project.revision){drafts.delete(draftKey(form));closeDialog();notice(t('납품 내용이 바뀌었어요. 최신 파일과 안내를 다시 확인해 주세요.'));return;}await mutate(()=>request('/pulse/api/action',{...options(),body:{action:'confirm_delivery',confirmed:true,revision:Number(form.dataset.revision),deliveryKey:form.dataset.id}}),{form,message:t('수령 확인을 남겼어요.'),after:closeDialog});return;}
   if(type==='strategy'){const fromCode=castingCodeSave;castingCodeSave=null;values.castingSelection=takeCastingValues(values);values.channels=new FormData(form).getAll('channels');for(const key of ['durationSeconds','budgetProduction','budgetMedia'])values[key]=values[key]===''||values[key]===undefined?null:Number(values[key]);const before=s.project.studio?.strategy;await mutate(()=>studioAction('save_strategy',{strategy:values}),{form,message:()=>fromCode?castingCodeSaveMessage(fromCode.item,before,s.project?.studio?.strategy,{otherEdits:fromCode.otherEdits}):strategySaveMessage(before,s.mode,s.project?.studio?.strategy),after:()=>{if(fromCode)s.castingCode=fromCode.text;}});return;}
@@ -1117,6 +1206,12 @@ document.addEventListener('submit',async event=>{
   // 빈 글이면 그림을 올리기 전에 멈추고, 올린 그림은 파일마다(이름 · 크기 · 고친 때) 창에 적어 두어 중간에 실패한 뒤 다시 눌러도 같은 파일을 또 올리지 않는다
   // (화면 검수 A2 · F3 — 못 붙인 그림은 서버가 한 시간 뒤 정리). 넷까지 셈은 붙인 그림 + 지금 고른 파일이다.
   if(type==='desk-progress'){const text=String(values.text||'').trim();if(!text){form.elements.text?.focus();notice('손님에게 보일 소식 글을 적어 주세요.');return;}await mutate(async()=>{const tr=staffLocale();if(tr)needEnglish([[text,values.textTr,'손님에게 보일 글']]);const keep=new FormData(form).getAll('keep').map(String),files=Array.from(form.elements.files?.files||[]),sign=file=>[file.name,file.size,file.lastModified].join('|');let done={};try{done=JSON.parse(form.dataset.uploaded||'{}')||{};}catch{done={};}if(keep.length+files.length>4)throw new PulseError('그림은 넷까지 붙일 수 있어요. 붙인 그림의 체크를 풀거나 고른 파일을 줄여 주세요.');if(files.some(file=>!['image/png','image/jpeg'].includes(file.type)))throw new PulseError('작업 소식에는 PNG · JPG 그림만 붙일 수 있어요.');const ids=[...keep];for(const file of files){const key=sign(file);if(!done[key]){done[key]=await uploadStaffMedia(file,{purpose:'progress'});form.dataset.uploaded=JSON.stringify(done);}if(!ids.includes(done[key]))ids.push(done[key]);}return studioAction('progress_save',{...(form.dataset.id?{id:form.dataset.id}:{}),text,stage:values.stage||'',assets:ids,...(tr?{translation:{text:trText(values.textTr)}}:{})});},{form,message:'초안을 저장했어요. 「손님에게 올리기」를 눌러야 손님에게 보여요.',after:closeDialog});return;} // i18n-skip
+  // 인플루언서 광고 의뢰(조각 ②): desk 칸의 양식 다섯 — 값 안내 · 결제 확인 · 게시 · 결과 · 닫기. 영어 프로젝트면 손님에게 보일 글의 영어를 함께 보낸다.
+  if(type==='desk-people-quote'){const amount=wonAmount(values.amount),includes=String(values.includes||'').trim();if(!Number.isSafeInteger(amount)||amount<10000||amount>100000000){notice('금액은 1만 원에서 1억 원 사이로 적어 주세요(예: 350000 · 35만).');form.querySelector('[name=amount]')?.focus();return;}await mutate(()=>{const tr=staffLocale();if(tr)needEnglish([[includes,values.includesTr,'포함된 것']]);return studioAction('people_quote',{requestId:form.dataset.id,amount,includes,postBy:String(values.postBy||''),...(tr?{translation:{includes:trText(values.includesTr)}}:{})});},{form,message:'손님에게 값을 보냈어요. 알림과 메일이 가요.'});return;} // i18n-skip
+  if(type==='desk-people-paid'){await mutate(()=>studioAction('people_paid',{requestId:form.dataset.id,ref:String(values.ref||'').trim()}),{form,message:'결제를 확인했어요. 채널에 영상을 넘겨 주세요.'});return;} // i18n-skip
+  if(type==='desk-people-posted'){const posts=String(values.posts||'').split(/\r?\n/).map(line=>line.trim()).filter(Boolean);if(!posts.length||posts.length>5){notice('게시물 주소를 한 줄에 하나씩, 다섯까지 적어 주세요.');return;}if(values.disclosed!=='on'){notice('게시물에 「광고」 표시가 붙은 것을 확인해 주세요.');return;}await mutate(()=>studioAction('people_posted',{requestId:form.dataset.id,posts,disclosed:true}),{form,message:'손님에게 게시를 알렸어요. 알림과 메일이 가요.'});return;} // i18n-skip
+  if(type==='desk-people-done'){const result=String(values.result||'').trim();await mutate(()=>{const tr=staffLocale();if(tr)needEnglish([[result,values.resultTr,'결과']]);return studioAction('people_done',{requestId:form.dataset.id,result,...(tr?{translation:{result:trText(values.resultTr)}}:{})});},{form,message:'결과를 보내고 의뢰를 마쳤어요.'});return;} // i18n-skip
+  if(type==='desk-people-close'){const why=String(values.why||'').trim();if(!why){form.querySelector('[name=why]')?.focus();return;}await mutate(()=>{const tr=staffLocale();if(tr)needEnglish([[why,values.whyTr,'닫는 까닭']]);return studioAction('people_close',{requestId:form.dataset.id,why,...(tr?{translation:{why:trText(values.whyTr)}}:{})});},{form,message:'의뢰를 닫았어요. 손님에게 알림이 가요.'});return;} // i18n-skip
   if(type==='desk-pay-cancel'){await mutate(()=>studioAction('payment_cancel',{note:String(values.note||'').trim()}),{form,message:'결제 취소를 적었어요.',after:closeDialog});return;} // i18n-skip
   // 카본 화면 검수 A2: 지금 받으실 날 그대로 보내면 서버가 400을 내므로 보내기 전에 날짜 칸으로 돌려보낸다.
   if(type==='desk-due'){const note=String(values.note||'').trim();if(String(values.dueDate||'')===String(s.project?.studio?.request?.payment?.dueDate||'')){showMutationError('지금 받으실 날과 같아요. 바꿀 날을 골라 주세요.');form.querySelector('[name=dueDate]')?.focus();return;}await mutate(()=>studioAction('due_change',{dueDate:String(values.dueDate||''),reason:String(values.reason||''),...(note?{note}:{})}),{form,message:'받으실 날을 고쳤어요. 손님에게 알림이 가요.',after:closeDialog});return;} // i18n-skip
@@ -1189,8 +1284,11 @@ document.addEventListener('click',async event=>{
       const versionId=routed?routed.versionId:item.versionId;if(versionId)s.versionId=versionId;
       // 의뢰 확인 화면 모듈을 아직 안 받았으면 받은 뒤에 그린다 — 알림이 가리키는 문의 줄에 바로 초점이 가게.
       if(s.tab==='desk'&&!s.deskView){loadDesk();if(deskLoading)await deskLoading;if(moveEpoch!==epoch||s.project?.id!==item.projectId)return;}
+      // 인플루언서 광고 의뢰 소식: 창 모듈을 받은 뒤 그 의뢰 카드로(지난 의뢰면 펴서).
+      if(s.tab==='people'){checkPeople();const p=peopleNow();if(p){const r=peopleRequests(s.project).find(row=>row.id===routed?.peopleId);if(r&&!openRequest(r))p.past=true;loadPeopleView(p);}if(peopleViewLoading)await peopleViewLoading;if(moveEpoch!==epoch||s.project?.id!==item.projectId)return;}
       render();
       if(routed?.journal){openJournal({target:routed.journal});return;}
+      if(routed?.peopleId&&focusPeopleRequest(routed.peopleId))return;
       const pointer=item.messageId||item.commentId;
       const target=pointer&&Array.from(main.querySelectorAll('[data-message-id]')).find(node=>node.dataset.messageId===pointer&&(node.matches('article')||node.matches('[data-desk-talk] li')))
         ||item.requestId&&Array.from(main.querySelectorAll('[data-scene-request-id]')).find(node=>node.dataset.sceneRequestId===item.requestId)

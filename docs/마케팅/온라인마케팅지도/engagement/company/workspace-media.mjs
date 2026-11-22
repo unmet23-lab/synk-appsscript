@@ -5,6 +5,7 @@
 //   pulsePersonaSources   — 고객이 보낸 사진 하나에 문서 하나(diskName)
 //   pulsePersonaRevisions — 제작팀이 만든 판 하나에 문서 하나(assets[].diskName)
 // 이 목록은 인물 문서를 처음 쓰는 판보다 먼저 운영에 오른다(한 판 되돌려도 백업 · 복원 대조가 인물 파일을 센다).
+import {peopleMediaName} from './pulse-people-media.mjs';
 export const PERSONA_MEDIA_KINDS=Object.freeze(['pulsePersonaSources','pulsePersonaRevisions']);
 export function personaMediaOf(kind,doc){
   if(!doc||typeof doc!=='object'||Array.isArray(doc))throw new Error('전용 인물 파일 기록을 확인해 주세요.');
@@ -60,5 +61,7 @@ export function workspaceMediaNames(database){
     for(const item of draft.items)if(item.media)names.push(item.media.diskName);
   }
   for(const kind of PERSONA_MEDIA_KINDS)for(const row of database.prepare('SELECT body FROM documents WHERE kind=?').all(kind))names.push(...personaMediaOf(kind,JSON.parse(row.body)));
+  // PULSE 채널 명단 그림(조각 ③ · pulse-people-media.mjs): 그림 하나에 문서 하나. 명단이 가리키지 않아도 문서가 있는 동안은 센다(올린 뒤 저장 전 한 시간 유예).
+  for(const row of database.prepare("SELECT body FROM documents WHERE kind='pulsePeopleMedia'").all()){const name=peopleMediaName(JSON.parse(row.body));if(name)names.push(name);}
   return [...new Set(names)];
 }

@@ -9,6 +9,7 @@ import {feedbackRoundActions,applyFeedbackRoundAction,feedbackRoundsView} from '
 import {previewActions,applyPreviewAction,previewsView,visiblePreviewAssetIds} from './pulse-previews.mjs';
 import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 import {requestActions,applyRequestAction,requestView,usesRequestFlow} from './pulse-requests.mjs';
+import {peopleActions,applyPeopleAction,peopleRequestsView} from './pulse-people-requests.mjs';
 import {createPersonaGuard,requestClock} from './pulse-personas.mjs';
 import {withTranslation,staffSources,translationStaffView,localizeCustomerProject,inlineObject} from './pulse-translations.mjs';
 import {serverText,staffDisplayName,createStaffNames} from './pulse-locale.mjs';
@@ -36,7 +37,8 @@ function studioOf(row){if(!row.studio)return empty();if(row.studio.schemaVersion
 // 프로젝트 길 의뢰서를 보낼 때(request_submit) 같은 트랜잭션에서 인물을 만들거나 거둔다. 인물 문서가 없으면 두 보기 모두 키가 없다(판 3 전과 같은 모양).
 // seats(운영 조각 6-B): 제작 정원(pulse-capacity.mjs createPulseCapacity — seatFor · seatsNow). 손님 · 직원 보기에 그 프로젝트의 자리(project.seat — 결제 전이고 자리가 모자랄 때만),
 // 직원 보기에 종류별 자리 수(project.seats)를 싣고, 의뢰서 동작(방향 제안)에 seat를 넘긴다. 없으면(옛 조립 · 시험) 싣지 않는다.
-export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null,localeOf=()=>'ko',personaService=null,seats=null}){
+// people(조각 ② · 11-23): 인플루언서 채널 명단(pulse-people.mjs createPulsePeople — visible · read). 새 의뢰를 보낼 때 같은 트랜잭션에서 스위치 · 칸 · 명단 판을 본다. 없으면 새 의뢰만 막힌다.
+export function createPulseStudioService({store,clientProjects,clock=()=>new Date().toISOString(),mailState=null,localeOf=()=>'ko',personaService=null,seats=null,people=null}){
   // 의뢰서 액션이 전용 인물로 가는 프로젝트의 인물 판을 다시 볼 때 쓴다(방향 제안 · 제작 시작, pulse-requests.mjs).
   const personas=createPersonaGuard(store,{clock});
   function customer(token){return clientProjects.session(token);}
@@ -64,7 +66,8 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
     const concepts=studio.concepts.filter(value=>staff||value.visibility==='customer'),scenes=studio.scenes.filter(value=>staff||value.visibility==='customer');
     const publicTarget=(type,target)=>type==='project'||(type==='concept'?concepts:scenes).some(value=>value.id===target);
     const selection=value=>value?{...card(value),current:concepts.some(item=>item.id===value.conceptId&&item.revision===value.conceptRevision&&item.visibility==='customer')}:null;
-    return {schemaVersion:1,request:requestView(studio,{staff}),preferences:studio.preferences,strategy:strategyView(studio.strategy),deliverables:deliverableView(studio,row,staff),feedbackRounds:feedbackRoundsView(studio,row,staff),previews:previewsView(studio,row,staff),assets:[...assetMap.values()],references:studio.references.map(card),concepts:concepts.map(card),scenes:scenes.map(card),selectedConcept:selection(studio.selectedConcept),conceptSelections:studio.conceptSelections.map(selection),sceneReviews:studio.sceneReviews.filter(value=>staff||scenes.some(scene=>scene.id===value.sceneId)).map(value=>({...card(value),current:scenes.some(item=>item.id===value.sceneId&&item.revision===value.sceneRevision&&item.visibility==='customer')})),comments:studio.comments.filter(value=>staff||value.visibility==='customer'&&publicTarget(value.targetType,value.targetId)).map(card),cardRevisions:studio.history.filter(value=>staff||value.visibility==='customer').map(card)};
+    const peopleView=peopleRequestsView(studio,{staff});
+    return {schemaVersion:1,request:requestView(studio,{staff}),...(peopleView?{people:peopleView}:{}),preferences:studio.preferences,strategy:strategyView(studio.strategy),deliverables:deliverableView(studio,row,staff),feedbackRounds:feedbackRoundsView(studio,row,staff),previews:previewsView(studio,row,staff),assets:[...assetMap.values()],references:studio.references.map(card),concepts:concepts.map(card),scenes:scenes.map(card),selectedConcept:selection(studio.selectedConcept),conceptSelections:studio.conceptSelections.map(selection),sceneReviews:studio.sceneReviews.filter(value=>staff||scenes.some(scene=>scene.id===value.sceneId)).map(value=>({...card(value),current:scenes.some(item=>item.id===value.sceneId&&item.revision===value.sceneRevision&&item.visibility==='customer')})),comments:studio.comments.filter(value=>staff||value.visibility==='customer'&&publicTarget(value.targetType,value.targetId)).map(card),cardRevisions:studio.history.filter(value=>staff||value.visibility==='customer').map(card)};
   }
   // 메일 알림(판 2): 손님 보기에는 켜졌는지와 가린 주소만, 직원 보기에는 연결 · 순간별 상태.
   const customerMail=row=>{try{return mailState?.customer?.(row)||null;}catch{return null;}};
@@ -96,12 +99,12 @@ export function createPulseStudioService({store,clientProjects,clock=()=>new Dat
   function mutate(row,input,user=null){
     const base=['action','revision'],studio=studioOf(row),who=actor(row,user),at=clock(),stamp={...who,at};revision(row,input?.revision);
     const fields={save_translation:['key','text','status'],save_strategy:['strategy'],request_strategy_review:[],confirm_strategy:['strategyRevision'],save_preferences:['preferences'],save_reference:['id','label','url','assetId','preference','reason'],remove_reference:['id'],select_concept:['conceptId','conceptRevision','text'],review_scene:['sceneId','sceneRevision','status','text'],comment:['targetType','targetId','targetRevision','text'],save_concept:['id','title','description','tagline','imageUrl','assetId','visibility'],save_scene:['id','title','description','narration','screenText','duration','imageUrl','assetId','visibility','purpose','valueNumbers','translation'],reorder_scenes:['ids']};
-    const extensions=[{fields:deliverableActions,apply:applyDeliverableAction},{fields:feedbackRoundActions,apply:applyFeedbackRoundAction},{fields:previewActions,apply:applyPreviewAction},{fields:requestActions,apply:applyRequestAction}];
+    const extensions=[{fields:deliverableActions,apply:applyDeliverableAction},{fields:feedbackRoundActions,apply:applyFeedbackRoundAction},{fields:previewActions,apply:applyPreviewAction},{fields:requestActions,apply:applyRequestAction},{fields:peopleActions,apply:applyPeopleAction}];
     const extension=object(input)?extensions.find(value=>value.fields(input.action)):null;
     if(!object(input)||!Object.hasOwn(fields,input.action)&&!extension)throw fail('기획 요청을 확인해 주세요.');keys(input,[...base,...(extension?extension.fields(input.action):fields[input.action])]);
     const action=input.action;
     // 확장 동작이 돌려준 removed(작업 소식에서 거둔 그림의 파일 이름)는 커밋 뒤에 지우도록 부른 쪽으로 넘긴다.
-    if(extension){const outcome=extension.apply({studio,row,input,staff:!!user,stamp,personas,locale:localeOf(row),seat:seats?seatRow=>seats.seatFor(seatRow):null});if(action==='request_submit'&&personaService)personaService.afterProjectSubmit(row,studio.request.answers);commit(row,studio,'PULSE 제작 '+action,who);return Array.isArray(outcome?.removed)&&outcome.removed.length?{removed:outcome.removed}:undefined;}
+    if(extension){const outcome=extension.apply({studio,row,input,staff:!!user,stamp,personas,locale:localeOf(row),seat:seats?seatRow=>seats.seatFor(seatRow):null,people});if(action==='request_submit'&&personaService)personaService.afterProjectSubmit(row,studio.request.answers);commit(row,studio,'PULSE 제작 '+action,who);return Array.isArray(outcome?.removed)&&outcome.removed.length?{removed:outcome.removed}:undefined;}
     // 담당자 글 번역 하나 넣기 · 고치기(다국어 판 2). 키는 지금 손님에게 보이는 직원 글 칸이어야 하고, 빈 글자면 그 번역을 지운다.
     if(action==='save_translation'){
       if(!user)throw fail('담당자 화면에서만 할 수 있어요.',403);

@@ -463,8 +463,9 @@ function payCard(p){
   </section>`;
 }
 // 끝맺음(판 4 B4): 수령 확인 뒤. 크몽 구매확정 · 후기 · 같은 모델로 다음 편, 방이 닫히기 전에 파일을 따로 두라는 말.
+// 진행 중인 인플루언서 광고 의뢰가 있으면(peopleOpen) 서버가 보관을 막으므로 방이 광고가 끝날 때까지 열려 있다고 쓴다(조각 ②).
 function doneCard(p){
-  return `<section class="sx-done" data-room-in><ol class="sx-pay-steps sx-body"><li><span>${esc(t('크몽에서 작업물을 확인하시고 「구매확정」을 눌러 주세요'))}</span></li><li><span>${esc(t('마음에 드셨다면 크몽 후기 한 줄이 다음 손님께 큰 도움이 돼요'))}</span></li><li><span>${esc(p?.photo?t('같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요'):t('같은 모델 · 같은 자막 규격으로 다음 편을 이어 만들 수 있어요. 담당자에게 알려 주세요'))}</span></li></ol>${p?.people?`<p class="sx-done-next"><button type="button" class="sx-quiet" data-room-go="people">${esc(t('이 영상을 다른 채널에도 실어 보기'))}</button></p>`:''}<p class="sx-done-next"><button type="button" class="sx-quiet" data-room-do="journal" data-journal-say="${esc(p?.photo?t('다음 사진을 이어 만들고 싶어요.'):t('다음 편을 이어 만들고 싶어요.'))}">${esc(p?.photo?t('다음 사진 묻기'):t('다음 편 묻기'))}</button></p><p class="sx-small">${esc(t('프로젝트를 마치면 이 방이 닫혀요. 받은 파일은 따로 보관해 주세요.'))}</p></section>`;
+  return `<section class="sx-done" data-room-in><ol class="sx-pay-steps sx-body"><li><span>${esc(t('크몽에서 작업물을 확인하시고 「구매확정」을 눌러 주세요'))}</span></li><li><span>${esc(t('마음에 드셨다면 크몽 후기 한 줄이 다음 손님께 큰 도움이 돼요'))}</span></li><li><span>${esc(p?.photo?t('같은 모델로 다음 사진을 이어 만들 수 있어요. 담당자에게 알려 주세요'):t('같은 모델 · 같은 자막 규격으로 다음 편을 이어 만들 수 있어요. 담당자에게 알려 주세요'))}</span></li></ol>${p?.people?`<p class="sx-done-next"><button type="button" class="sx-quiet" data-room-go="people">${esc(t('이 영상을 다른 채널에도 실어 보기'))}</button></p>`:''}<p class="sx-done-next"><button type="button" class="sx-quiet" data-room-do="journal" data-journal-say="${esc(p?.photo?t('다음 사진을 이어 만들고 싶어요.'):t('다음 편을 이어 만들고 싶어요.'))}">${esc(p?.photo?t('다음 사진 묻기'):t('다음 편 묻기'))}</button></p><p class="sx-small">${esc(p?.peopleOpen?t('광고가 끝날 때까지 이 방은 열려 있어요. 받은 파일은 따로 보관해 주세요.'):t('프로젝트를 마치면 이 방이 닫혀요. 받은 파일은 따로 보관해 주세요.'))}</p></section>`;
 }
 // 고른 방향: 이름 · 한 문장 · 값 · 받으실 날 · 수정 · 다음 길. 판이 오기 전까지 다시 고를 수 있다.
 function chosenCard(d){

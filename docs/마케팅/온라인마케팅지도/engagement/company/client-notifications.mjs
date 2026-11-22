@@ -4,6 +4,7 @@ import {buildCustomerPreviewApproval} from './client-preview-approval.mjs';
 import {serverText} from './pulse-locale.mjs';
 import {progressOf} from './pulse-progress.mjs';
 import {requestClock,stoppedClock} from './pulse-personas.mjs';
+import {peopleEvents} from './pulse-people-requests.mjs';
 
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const titles={customer_feedback:'고객이 시안을 고쳐 달래요',customer_support:'고객이 물어봤어요',customer_approval:'고객이 시안을 승인했어요',review_requested:'고친 시안 검토를 부탁했어요',changes_requested:'고친 시안에 더 고칠 게 있대요',review_accepted:'고친 시안 검토가 끝났어요',work_started:'고객 요청을 처리하기 시작했어요',work_completed:'고객 요청 처리를 끝냈어요',work_reopened:'고객 요청을 다시 열었어요',assigned:'고객 프로젝트 담당자가 됐어요',reviewer_assigned:'고객 프로젝트 검토자가 됐어요'};
@@ -36,12 +37,15 @@ function staleRetention(store,project,event,now){
 Object.assign(titles,{payment_requested:'크몽에서 결제해 주세요',payment_confirmed:'결제를 확인했어요',payment_cancelled:'결제가 취소됐어요'});
 // 받으실 날 고치기(운영 조각 6-A): 담당자가 확인한 결제의 받으실 날을 고쳤을 때 손님에게(앱 안 · 기기 알림 · 메일 순간 due_changed).
 titles.due_changed='받으실 날이 바뀌었어요';
+// 인플루언서 광고 의뢰(조각 ② · 11-23): 손님 동작은 담당자에게(desk로 연다), 담당자 동작은 손님에게(창 people). 손님 쪽 본문은 pulse-live.mjs customerBodies.
+Object.assign(titles,{customer_people_request:'고객이 인플루언서 광고를 의뢰했어요',customer_people_agree:'고객이 인플루언서 광고 값에 동의했어요',customer_people_cancel:'고객이 인플루언서 광고 의뢰를 거뒀어요',people_quoted:'인플루언서 광고 값이 나왔어요',people_paid:'인플루언서 광고 결제를 확인했어요',people_posted:'채널에 광고가 올라갔어요',people_done:'인플루언서 광고 결과가 왔어요',people_closed:'인플루언서 광고 의뢰가 닫혔어요'});
+const PEOPLE_STAFF={sent:'customer_people_request',agreed:'customer_people_agree',closed:'customer_people_cancel'},PEOPLE_CUSTOMER={quoted:'people_quoted',paid:'people_paid',posted:'people_posted',done:'people_done',closed:'people_closed'};
 // 작업 소식(운영 조각 4): 담당자가 소식을 올렸을 때 손님에게(앱 안 · 기기 알림만 — 메일 순간이 아니다). 거두면 손님 알림함에서 빠진다(pulse-live.mjs).
 titles.progress_posted='작업 중인 화면이 올라왔어요';
 // 의뢰서 흐름(2026-11-04): 새 의뢰 → 내부 확인 → 되묻기 · 모델 → 1차안. 고객 쪽 본문은 pulse-live.mjs customerBodies.
 Object.assign(titles,{request_received:'새 의뢰가 들어왔어요',customer_request_answer:'고객이 되물은 내용에 답했어요',customer_request_file:'고객이 자료를 더 보냈어요',customer_request_edit:'고객이 의뢰서를 고쳤어요',customer_model_answer:'고객이 모델 제안에 답했어요',customer_direction_answer:'고객이 방향 제안에 답했어요',customer_draft_review:'고객이 1차안에 의견을 보냈어요',customer_draft_approved:'고객이 1차안을 확인했어요',request_asked:'몇 가지만 더 여쭤봐요',model_proposed:'모델을 확인해 주세요',direction_proposed:'방향 제안이 도착했어요',draft_ready:'확인하실 것이 도착했어요'});
 Object.assign(titles,{customer_preferences:'고객이 취향을 알려 줬어요',customer_reference:'고객이 참고 자료에 의견을 남겼어요',customer_strategy:'고객이 제작 설계를 썼어요',customer_strategy_confirmed:'고객이 제작 설계를 확인했어요',customer_concept:'고객이 콘셉트를 골랐어요',customer_scene:'고객이 장면을 보고 의견을 남겼어요',customer_comment:'고객이 기획에 의견을 남겼어요',preview_ready:'새 시안이 왔어요',final_ready:'최종본이 왔어요',staff_reply:'제작팀이 답했어요',strategy_ready:'제작 설계를 확인해 주세요',concept_ready:'콘셉트가 바뀌었어요',scene_ready:'장면 구성이 바뀌었어요',reference_ready:'참고 자료가 바뀌었어요'});
-const studioNewsBodies={request_received:'새 의뢰서가 왔어요. 내부 확인에서 빠진 것을 보고 다음을 정해 주세요.',customer_request_answer:'되물은 내용의 답을 내부 확인에서 봐 주세요.',customer_request_file:'고객이 더 보낸 자료를 내부 확인에서 봐 주세요.',customer_request_edit:'고객이 고친 의뢰서를 내부 확인에서 봐 주세요.',customer_model_answer:'모델 제안에 대한 답을 내부 확인에서 봐 주세요.',customer_direction_answer:'방향 제안에 대한 답(고른 안 · 한마디 · 둘 다 아니에요)을 내부 확인에서 봐 주세요.',customer_draft_review:'컷마다 남긴 의견을 봐 주세요.',customer_draft_approved:'고객이 확인한 판으로 다음 단계를 이어 주세요.',customer_preferences:'고객이 남긴 취향을 PULSE에서 봐 주세요.',customer_reference:'고객이 참고 자료에 남긴 의견을 PULSE에서 봐 주세요.',customer_strategy:'고객이 쓴 제작 설계를 PULSE에서 봐 주세요.',customer_strategy_confirmed:'고객이 확인한 제작 설계를 PULSE에서 봐 주세요.',customer_concept:'고객이 고른 콘셉트를 PULSE에서 봐 주세요.',customer_scene:'고객이 장면에 남긴 의견을 PULSE에서 봐 주세요.',customer_comment:'고객이 기획에 남긴 의견을 PULSE에서 봐 주세요.'};
+const studioNewsBodies={customer_people_request:'고객이 채널 하나를 골라 광고를 의뢰했어요. 채널과 값 · 일정을 확인해 값 안내를 보내 주세요.',customer_people_agree:'고객이 값에 동의했어요. 크몽 결제 요청을 보내고, 결제를 확인하면 적어 주세요.',customer_people_cancel:'고객이 결제 전에 의뢰를 거뒀어요. 채널에 이미 연락했다면 알려 주세요.',request_received:'새 의뢰서가 왔어요. 내부 확인에서 빠진 것을 보고 다음을 정해 주세요.',customer_request_answer:'되물은 내용의 답을 내부 확인에서 봐 주세요.',customer_request_file:'고객이 더 보낸 자료를 내부 확인에서 봐 주세요.',customer_request_edit:'고객이 고친 의뢰서를 내부 확인에서 봐 주세요.',customer_model_answer:'모델 제안에 대한 답을 내부 확인에서 봐 주세요.',customer_direction_answer:'방향 제안에 대한 답(고른 안 · 한마디 · 둘 다 아니에요)을 내부 확인에서 봐 주세요.',customer_draft_review:'컷마다 남긴 의견을 봐 주세요.',customer_draft_approved:'고객이 확인한 판으로 다음 단계를 이어 주세요.',customer_preferences:'고객이 남긴 취향을 PULSE에서 봐 주세요.',customer_reference:'고객이 참고 자료에 남긴 의견을 PULSE에서 봐 주세요.',customer_strategy:'고객이 쓴 제작 설계를 PULSE에서 봐 주세요.',customer_strategy_confirmed:'고객이 확인한 제작 설계를 PULSE에서 봐 주세요.',customer_concept:'고객이 고른 콘셉트를 PULSE에서 봐 주세요.',customer_scene:'고객이 장면에 남긴 의견을 PULSE에서 봐 주세요.',customer_comment:'고객이 기획에 남긴 의견을 PULSE에서 봐 주세요.'};
 Object.assign(titles,{deliverables_ready:'납품 규격을 확인해 주세요',feedback_classified:'보낸 의견의 수정 범위와 일정이 정리됐어요',kickoff_updated:'준비할 자료에 새 소식이 있어요',scene_review_ready:'고친 장면을 확인해 주세요',preview_review_ready:'수정본 검토가 끝났어요. 시안을 확인해 주세요'});
 
 // Hash only the customer-visible preparation state. Private waiver notes and
@@ -120,6 +124,11 @@ export function appendClientNotificationEvents(previous,row){
   if(committed&&/^PULSE (?:기획|제작) /.test(history.action||'')){
     const studio=row.studio||{},before=previous?.studio||{};
     const customerActions={request_submit:['request_received','desk'],request_answer:['customer_request_answer','desk'],request_file:['customer_request_file','desk'],answer_model:['customer_model_answer','desk'],answer_direction:['customer_direction_answer','desk'],submit_draft_review:['customer_draft_review','desk'],approve_draft:['customer_draft_approved','desk'],save_preferences:['customer_preferences','direction'],save_reference:['customer_reference','direction'],remove_reference:['customer_reference','direction'],save_strategy:['customer_strategy','strategy'],confirm_strategy:['customer_strategy_confirmed','strategy'],select_concept:['customer_concept','concepts'],review_scene:['customer_scene','storyboard'],comment:['customer_comment','history']};
+    // 인플루언서 광고 의뢰: 앞뒤 문서를 견줘 상태가 바뀐 의뢰마다 하나(손님이 한 일은 담당자에게, 담당자가 한 일은 손님에게).
+    if(/^people_/.test(action||''))for(const {kind,item} of peopleEvents(before,studio)){
+      if(actorId==='customer'&&PEOPLE_STAFF[kind]&&(kind!=='closed'||item.closed?.by==='customer'))add(PEOPLE_STAFF[kind],item.id,['owner','reviewer'],{tab:'desk',actorId:'customer'});
+      if(actorId!=='customer'&&PEOPLE_CUSTOMER[kind]&&(kind!=='closed'||item.closed?.by==='staff'))add(PEOPLE_CUSTOMER[kind],item.id,['customer'],{tab:'people',peopleId:item.id});
+    }
     if(actorId==='customer'&&customerActions[action]){const [type,tab]=customerActions[action];add(action==='request_submit'&&before.request?.submittedAt?'customer_request_edit':type,String(row.revision),['owner','reviewer'],{tab});}
     if(actorId!=='customer'){
       if(action==='request_ask')add('request_asked',String(row.revision),['customer'],{tab:'overview'});
@@ -187,7 +196,7 @@ export function createClientNotificationsService({store,clientProjects,clientWor
         const query=new URLSearchParams({tab:'workroom',section:'clients',project:source.id});
         if(event.type==='customer_delivery_receipt')query.set('closeout','1');
         if(event.versionId)query.set('version',event.versionId);if(event.messageId)query.set('message',event.messageId);if(Number.isFinite(message?.seconds))query.set('seconds',String(message.seconds));
-        const studioEvent=['customer_preferences','customer_reference','customer_strategy','customer_strategy_confirmed','customer_concept','customer_scene','customer_comment','request_received','customer_request_answer','customer_request_file','customer_request_edit','customer_model_answer','customer_draft_review','customer_draft_approved'].includes(event.type)&&['direction','strategy','concepts','storyboard','history','desk'].includes(event.tab);
+        const studioEvent=['customer_people_request','customer_people_agree','customer_people_cancel','customer_preferences','customer_reference','customer_strategy','customer_strategy_confirmed','customer_concept','customer_scene','customer_comment','request_received','customer_request_answer','customer_request_file','customer_request_edit','customer_model_answer','customer_draft_review','customer_draft_approved'].includes(event.type)&&['direction','strategy','concepts','storyboard','history','desk'].includes(event.tab);
         // The existing messenger consumes workroom links only. Project news has
         // its own source opener, so use the exact PULSE tab for this projection.
         const href=RETENTION_TYPES.has(event.type)?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:'desk'}):projectId&&studioEvent?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:event.tab}):'/?'+query;

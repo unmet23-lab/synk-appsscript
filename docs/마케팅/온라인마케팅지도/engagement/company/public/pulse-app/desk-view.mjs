@@ -145,6 +145,42 @@ function talkBlock(r){
   const row=item=>`<li data-message-id="${esc(item.id)}" tabindex="-1"><i class="led ${item.open?'is-wait':'is-ok'}"></i><div><b>${esc(who(item))} · ${esc(mailAt(item.at))}${item.open?' · 답을 기다려요':item.closed?' · 답 없이 닫음':''}</b><small class="desk-progress-text">${esc(item.text)}</small>${item.pictures.length?`<span class="desk-progress-shots">${item.pictures.map((src,index)=>`<img src="${esc(src)}" alt="손님이 붙인 사진 ${index+1}" width="64" height="48" loading="lazy">`).join('')}</span>`:''}${edit&&item.open?`<span class="desk-progress-act">${line('답 없이 닫기','resolve',`data-id="${esc(item.id)}"`)}</span>`:''}</div></li>`;
   return `<section class="desk-talk" data-desk-talk><h2>문의와 답${talk.open?` <span class="desk-talk-n">답할 문의 ${talk.open}</span>`:''}</h2>${talk.items.length?`<ul class="checks">${talk.items.map(row).join('')}</ul>${talk.more?`<p class="desk-at">앞선 글 ${talk.more}개는 「영상 확인」의 대화에 있어요.</p>`:''}`:'<p class="desk-at">아직 문의가 없어요.</p>'}${edit?`<form class="desk-talk-form" data-form="desk-reply"><label><span>손님에게 답하기</span><textarea name="text" rows="3" maxlength="3000" required placeholder="예) 첫 영상은 내일 오전에 올려 드릴게요."></textarea></label><p class="desk-at">손님에게 보여요. 보내면 손님 방의 「담당자와 나눈 말」에 뜨고 알림이 가요.</p><div class="desk-pay-act"><button type="submit" class="btn-line">답 보내기</button></div></form>`:''}</section>`;
 }
+// 인플루언서 광고 의뢰(조각 ② · 11-23, 설계 docs/디자인/PULSE고객경험_20261120/인플루언서_의뢰창_설계.md 9절): 의뢰 하나에 채널 하나.
+// 손님 보냄 → 값 안내(금액 · 포함된 것 · 게시 예정일) → 손님 동의 → 크몽 결제 요청을 보내고 결제 확인 → 게시(주소 · 「광고」 표시 확인) → 결과 한 줄. 열린 의뢰는 언제든 까닭과 함께 닫는다.
+// 상태마다 다음 양식 하나만 연다. 영어 프로젝트면 손님에게 보일 글(포함된 것 · 결과 · 닫은 까닭)의 영어 칸을 함께 채워야 보내진다(서버 409).
+const PPL_PLATFORM={instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok',blog:'블로그'};
+const PPL_STATE={sent:'손님이 보냄 · 값 안내를 보낼 차례',quoted:'값 안내 보냄 · 손님 답을 기다려요',agreed:'손님이 값에 동의 · 크몽 결제 요청을 보내고 결제를 확인할 차례',paid:'결제 확인 · 채널 게시를 기다려요',posted:'게시 · 결과 한 줄을 쓸 차례',done:'마침',closed:'닫힘'};
+const PPL_OURS=['sent','agreed','posted'];
+const pplInput=(name,label,{max=200,type='text',required=false,value='',area=false,mode=''}={})=>`<label><span>${esc(label)}</span>${area?`<textarea name="${name}" rows="3" maxlength="${max}" ${required?'required':''}>${esc(value)}</textarea>`:`<input name="${name}" type="${type}" ${type==='text'?`maxlength="${max}"`:''} ${mode?`inputmode="${mode}"`:''} value="${esc(value)}" ${required?'required':''} autocomplete="off">`}</label>`;
+function pplForm(item,english,said={}){
+  const id=esc(item.id),en=english?'영어':'';
+  if(item.status==='sent'||item.status==='quoted'){const q=item.quote||{};return `<form class="desk-talk-form desk-ppl-form" data-form="desk-people-quote" data-id="${id}"><h3 class="desk-h">${item.status==='quoted'?'값 다시 보내기':'값 안내 보내기'}</h3>${pplInput('amount','금액(원 · 크몽 결제 요청과 같은 값)',{max:12,mode:'numeric',required:true,value:Number.isSafeInteger(q.amount)?String(q.amount):''})}${pplInput('includes','포함된 것(손님에게 보여요 · 예: 게시 1회 · 직접 찍은 후기 포함)',{value:q.includes||''})}${english?pplInput('includesTr',`포함된 것 · ${en}`,{max:400,value:said[`people:${item.id}:includes`]?.text||''}):''}${pplInput('postBy','게시 예정일(비워도 돼요)',{type:'date',value:q.postBy||''})}<p class="desk-at">손님 방에 값 · 포함된 것 · 게시 예정일이 뜨고 알림과 메일이 가요. 손님이 동의하면 크몽 결제 요청을 보내 주세요.</p><div class="desk-pay-act"><button type="submit" class="btn-line">${item.status==='quoted'?'고친 값 보내기':'손님에게 값 보내기'}</button></div></form>`;}
+  if(item.status==='agreed')return `<form class="desk-talk-form desk-ppl-form" data-form="desk-people-paid" data-id="${id}"><h3 class="desk-h">결제 확인</h3>${pplInput('ref','크몽 주문 메모(직원만 봐요)',{max:80})}<p class="desk-at">크몽에서 안전결제요청을 보내고, 결제가 들어오면 눌러요. 그다음 채널에 영상을 넘겨요.</p><div class="desk-pay-act"><button type="submit" class="btn-line">결제를 확인했어요</button></div></form>`;
+  if(item.status==='paid')return `<form class="desk-talk-form desk-ppl-form" data-form="desk-people-posted" data-id="${id}"><h3 class="desk-h">게시 알리기</h3>${pplInput('posts','게시물 주소(https · 한 줄에 하나, 다섯까지)',{max:5200,area:true,required:true})}<label class="desk-mail-off"><input type="checkbox" name="disclosed" required> 게시물에 「광고」 표시가 붙은 것을 확인했어요</label><p class="desk-at">손님 방에 게시물 링크가 뜨고 알림과 메일이 가요.</p><div class="desk-pay-act"><button type="submit" class="btn-line">손님에게 게시 알리기</button></div></form>`;
+  if(item.status==='posted')return `<form class="desk-talk-form desk-ppl-form" data-form="desk-people-done" data-id="${id}"><h3 class="desk-h">결과 한 줄</h3>${pplInput('result','결과(손님에게 보여요 · 예: 3일 동안 조회 1.2만 · 댓글 문의 14건)',{max:300,required:true})}${english?pplInput('resultTr',`결과 · ${en}`,{max:600}):''}<div class="desk-pay-act"><button type="submit" class="btn-line">결과 보내고 마치기</button></div></form>`;
+  return '';
+}
+function pplItem(item,{edit,english,said}){
+  const ch=item.channel||{},open=!['done','closed'].includes(item.status),q=item.quote;
+  const price=Number.isSafeInteger(ch.price)?`명단 값 ${won(ch.price)}`:'명단 값 없음';
+  const facts=[q&&Number.isSafeInteger(q.amount)?`값 안내 ${won(q.amount)}${q.includes?` · ${q.includes}`:''}${q.postBy?` · 게시 예정 ${q.postBy}`:''}`:'',item.agreedAt?`손님 동의 ${mailAt(item.agreedAt)}`:'',item.paid?`결제 확인 ${mailAt(item.paid.at)}${item.paid.ref?` · ${item.paid.ref}`:''}`:'',item.status==='closed'&&item.closed?`${item.closed.by==='customer'?'손님이 거둠':'담당자가 닫음'} ${mailAt(item.closed.at)}${item.closed.why?` · ${item.closed.why}`:''}`:'',item.status==='done'&&item.result?`결과 · ${item.result}`:''].filter(Boolean);
+  const posts=(Array.isArray(item.posts)?item.posts:[]).filter(href=>/^https:\/\//.test(href));
+  // 보낼 때 복사해 둔 계정 이름 · 채널 주소 — 대표가 같은 채널을 두 칸에 넣었을 때 담당자가 겹친 의뢰를 알아보게(설계 9절 「같은 채널」 · 설계 검토 P2-3).
+  const chUrl=typeof ch.url==='string'&&/^https:\/\//.test(ch.url)?ch.url:'',chLine=ch.handle||chUrl?`<small class="desk-progress-text">${ch.handle?esc(ch.handle):''}${ch.handle&&chUrl?' · ':''}${chUrl?`<a href="${esc(chUrl)}" target="_blank" rel="noopener noreferrer">${esc(chUrl)}</a>`:''}</small>`:'';
+  return `<li data-ppl-desk="${esc(item.id)}" tabindex="-1"><i class="led ${item.status==='done'?'is-ok':PPL_OURS.includes(item.status)?'is-wait':''}"></i><div><b>${esc(ch.name||'')} · ${esc(PPL_PLATFORM[ch.platform]||ch.platform||'')}${ch.virtual?' · 가상 인물':''}</b><small>${esc(PPL_STATE[item.status]||item.status)} · 보냄 ${esc(mailAt(item.at))} · ${esc(price)}</small>
+    ${chLine}${item.note?`<small class="desk-progress-text">손님 한마디: ${esc(item.note)}</small>`:''}${facts.map(line=>`<small class="desk-progress-text">${esc(line)}</small>`).join('')}
+    ${posts.length?`<ul class="desk-files">${posts.map(href=>`<li><a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(href)}</a></li>`).join('')}</ul>`:''}
+    ${edit&&open?`${pplForm(item,english,said)}<details class="desk-persona-more"><summary>의뢰 닫기</summary><form class="desk-talk-form desk-ppl-form" data-form="desk-people-close" data-id="${esc(item.id)}">${pplInput('why','닫는 까닭(손님에게 보여요)',{max:300,required:true})}${english?pplInput('whyTr','닫는 까닭 · 영어',{max:600}):''}<p class="desk-at">${item.status==='paid'||item.status==='posted'?'결제한 의뢰예요. 환불은 크몽에서 따로 처리해 주세요. ':''}손님에게 알림이 가요.</p><div class="desk-pay-act"><button type="submit" class="btn-line">의뢰 닫기</button></div></form></details>`:''}</div></li>`;
+}
+function peopleBlock(r){
+  const list=Array.isArray(r.people)?r.people:[];if(!list.length)return '';
+  const edit=r.canEdit!==false,english=!!r.translation,said=r.translation?.entries||{},order=items=>[...items].sort((a,b)=>String(b.at||'').localeCompare(String(a.at||'')));
+  const open=order(list.filter(item=>!['done','closed'].includes(item.status))),gone=order(list.filter(item=>['done','closed'].includes(item.status)));
+  const ours=open.filter(item=>PPL_OURS.includes(item.status)).length;
+  return `<section class="desk-talk desk-ppl" data-desk-people><h2>인플루언서 광고 의뢰${ours?` <span class="desk-talk-n">우리 차례 ${ours}</span>`:''}</h2><p class="desk-at">의뢰 하나에 채널 하나예요. 값 안내 → 손님 동의 → 크몽 결제 확인 → 게시 → 결과 차례로 가고, 열린 의뢰가 있으면 프로젝트를 보관할 수 없어요.</p>
+    ${open.length?`<ul class="checks">${open.map(item=>pplItem(item,{edit,english,said})).join('')}</ul>`:'<p class="desk-at">진행 중인 의뢰가 없어요.</p>'}
+    ${gone.length?`<details class="desk-persona-more"><summary>지난 의뢰 ${gone.length}</summary><ul class="checks">${gone.map(item=>pplItem(item,{edit,english,said})).join('')}</ul></details>`:''}</section>`;
+}
 function actions(r){
   if(r.canEdit===false)return '<p class="desk-sum">이 프로젝트는 보기만 할 수 있어요.</p>';
   if(r.status==='retired')return '<p class="desk-sum">보존 기한이 끝나 자료를 지운 의뢰예요.</p>';
@@ -179,6 +215,7 @@ export function deskView(r,{bar=true,top=''}={}){
         ${r.rounds?.length?`<section><h2>보낸 판</h2><ul class="checks">${r.rounds.map(round=>`<li><i class="led ${round.approvedAt?'is-ok':'is-wait'}"></i><div><b>${round.round}판 · ${round.kind==='images'?(r.photo?'첫 장':'장면 이미지'):'글 콘티'}</b><small>${esc(ROUND_STATE(round))}</small></div></li>`).join('')}</ul></section>`:''}
         ${paymentBlock(r)}
         ${progressBlock(r)}
+        ${peopleBlock(r)}
         <section class="desk-actions">${actions(r)}</section>
       </aside>
     </div>

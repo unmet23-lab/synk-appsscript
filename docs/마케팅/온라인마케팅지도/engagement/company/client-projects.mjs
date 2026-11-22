@@ -1,3 +1,4 @@
+import {openPeopleRequests} from './pulse-people-requests.mjs';
 import {hasWorkspaceFeature,requireWorkspaceFeature} from './workspace-access.mjs';
 import {workspaceOwner} from './workspace-owner.mjs';
 import {randomUUID,randomBytes,createHash} from 'node:crypto';
@@ -107,6 +108,8 @@ export function createClientProjectsService({store,clock=()=>new Date().toISOStr
     const reviewerId=input.reviewerId===undefined?(previous?.reviewerId||null):(input.reviewerId||null),reviewer=reviewerId&&store.get('users',reviewerId);if(reviewerId===ownerId)throw fail('담당자와 검토자는 서로 다른 사람으로 골라 주세요.',403);if(reviewerId&&(!canAssign(reviewer)||!(reviewer.role==='admin'||owner.teamId&&reviewer.teamId===owner.teamId)))throw fail('검토자는 고객 업무를 맡을 수 있는 같은 팀 사람이어야 해요.',403);
     const stage=input.stage||previous?.stage||'received';if(!stages.includes(stage))throw fail('단계 값이 이상해요.');
     if(stage==='delivered'&&previous?.messages.some(m=>m.author==='customer'&&m.action==='feedback'&&!m.resolved))throw fail('남은 고객 수정 요청과 검토를 먼저 끝내 주세요.',409);
+    // 인플루언서 광고 의뢰(조각 ② · 설계 검토 P1-6): 보관하면 손님 세션이 끊기고 직원 쓰기가 막혀 진행 중인 광고가 양쪽에서 멈춘다. 열린 의뢰를 마치거나 닫은 뒤에 보관한다.
+    if(stage==='archived'&&previous?.stage!=='archived'&&openPeopleRequests(previous?.studio).length)throw fail('진행 중인 인플루언서 광고 의뢰가 있어요. 의뢰를 마치거나 닫은 뒤에 보관해 주세요.',409);
     if(stage==='delivered'&&(!previous?.versions.some(v=>v.kind==='final'&&v.approvedPreviewId===latestPreview(previous)?.id)||!latestPreview(previous)?.approvedAt))throw fail('고객이 승인한 시안과 최종본을 먼저 올려 주세요.',409);
     const at=clock(),base=previous||{id:randomUUID(),createdAt:at,revision:0,versions:[],messages:[],history:[],inviteRevision:0,inviteHash:null,inviteExpiresAt:null,receiptId:''};
     const row={...append(base,previous?'프로젝트 수정':'프로젝트 접수',user.id),ownerId,reviewerId,teamId:owner.teamId||null,title:clean(input.title,160,'프로젝트 이름',true),customerName:clean(input.customerName,100,'고객 이름',true),contact:clean(input.contact||'',300,'연락처'),summary:clean(input.summary||'',3000,'고객이 부탁한 일'),terms:clean(input.terms||'',3000,'합의한 범위와 조건'),nextStep:clean(input.nextStep||'',600,'다음 할 일'),internalNotes:clean(input.internalNotes||'',3000,'내부 메모'),dueDate:date(input.dueDate),nextContactDate:date(input.nextContactDate),stage};

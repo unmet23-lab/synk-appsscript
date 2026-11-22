@@ -55,6 +55,7 @@ import { createPulseAutoReplyService } from './pulse-auto-reply.mjs';
 import { createPulseFeatures } from './pulse-features.mjs';
 import { createPulsePeople } from './pulse-people.mjs';
 import { createPulsePeopleRoutes } from './pulse-people-routes.mjs';
+import { receivePeopleImage, commitPeopleImage, discardPeopleImage, removePeopleImageFile } from './pulse-people-media.mjs';
 import { createPulseCapacity } from './pulse-capacity.mjs';
 import { createPersonaService } from './pulse-personas.mjs';
 import { createWorkspaceService } from './pulse-workspaces.mjs';
@@ -334,7 +335,9 @@ export function createCompanyApp(options={}) {
   // 제작 자리 · 대기(운영 조각 6-B): 영상 · 사진이 모두 대기까지 차면 새 의뢰서 시작을 막고(intakeFull), 손님 · 직원 보기에 그 프로젝트의 자리(seat)를,
   // 방향 제안에는 보내는 순간의 자리를 굳힌다(pulse-studio.mjs seats → pulse-requests.mjs propose_direction).
   const pulseCapacity=createPulseCapacity({store,clock});
-  const pulseStudio=createPulseStudioService({store,clientProjects,clock,localeOf:projectLocale,personaService:pulsePersonas,seats:pulseCapacity,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
+  // 채널 명단(조각 ①)은 스튜디오보다 먼저 짓는다 — 인플루언서 광고 의뢰(조각 ②)가 보낼 때 같은 트랜잭션에서 명단을 읽는다.
+  const pulsePeople=createPulsePeople({store,clientProjects,features:pulseFeatures,clock,...(typeof options.pulsePeopleMediaWrites==='boolean'?{mediaWrites:options.pulsePeopleMediaWrites}:{})});
+  const pulseStudio=createPulseStudioService({store,clientProjects,clock,localeOf:projectLocale,personaService:pulsePersonas,seats:pulseCapacity,people:pulsePeople,mailState:{customer:row=>pulseMail?.customerState(row),staff:row=>pulseMail?.staffState(row)}});
   const pulseRequests=createPulseRequests({store,clientProjects,clock,freeBytes:options.pulseRequestFreeBytes,personas:pulsePersonas,workspaces:pulseWorkspaces,intakePaused:()=>pulseCapacity.paused(),intakeFull:()=>pulseCapacity.full()});
   // PULSE 고객 문의 자동 안내(2026-10-19). 관리자가 설정 화면에서 Claude 키를 넣고 켰을 때만 답한다. 업무실 예약 작업과 같은 스위치를 따르고,
   // 문의가 들어오면 1.5초 뒤 바로 한 번, 그 밖에는 15초마다 남은 문의를 본다.
@@ -342,7 +345,6 @@ export function createCompanyApp(options={}) {
   // 마케팅 성과(11-16, pulse-marketing.mjs): 직원이 올린 리포트를 프로젝트마다 둔다. 고객 방의 features.marketing은 스위치가 켜져 있고 그 프로젝트에 리포트가 있을 때만 참이다.
   const pulseMarketing=pulseMarketingModules?createPulseMarketing({store,clientProjects,features:pulseFeatures,clock}):null;
   // 인플루언서 광고 창(11-21 조각 ①): 스위치가 켜졌고 고를 수 있는 채널이 있을 때만 손님 방에 people이 참이다(pulse-people.mjs).
-  const pulsePeople=createPulsePeople({store,clientProjects,features:pulseFeatures,clock});
   const customerStateWithFeatures=token=>{const state=pulseStudio.customerState(token);return {...state,features:{...pulseFeatures.projectView(state.project?.studio?.request?.answers),...(pulseMarketing?{marketing:pulseMarketing.visible(state.project?.id)}:{}),people:pulsePeople.visible()}};};
   const pulseAutoReplySchedule=options.pulseAutoReplySchedule??(workroomScheduleEnabled&&options.schedule!==false);
   let pulseAutoReplyTimer=null,pulseAutoReplySoonTimer=null;
@@ -350,7 +352,9 @@ export function createCompanyApp(options={}) {
   let pulseRequestTimer=null;
   // 6시간마다: 보관 기간 뒤 지우기 → 공개 의뢰서 90일 정리. 서버 시작 직후 회차는 예고만 낸다(판 4 설계 11-6 · Fable 5.2 설계 검토 P3 — 복원 직후 바로 지우지 않게).
   // 같은 회차에 문의 사진(운영 조각 8-B): 붙지 않은 채 한 시간 지난 올려 둔 사진을 거두고 커밋 뒤 파일을 지운다(서버 끝판 카본 A2).
-  const sweepPulseMessageUploads=async()=>{let removed=[];try{removed=pulseStudio.sweepMessageUploads();}catch{return;}for(const file of removed)await pulseRequests.discardProjectFile(file).catch(()=>{});};
+  // 채널 명단 그림 정리(조각 ③)도 같은 6시간 예약에 싣는다 — 명단을 아무도 고치지 않아도 지우는 중인 그림의 파일이 하루 뒤 지워진다.
+  const sweepPeopleMedia=async()=>{let names=[];try{names=pulsePeople.sweep();}catch{return;}const done=[];for(const name of names){try{await removePeopleImageFile(store.directory,name);done.push(name);}catch{}}if(done.length)try{pulsePeople.forgetMedia(done);}catch{}};
+  const sweepPulseMessageUploads=async()=>{await sweepPeopleMedia();let removed=[];try{removed=pulseStudio.sweepMessageUploads();}catch{return;}for(const file of removed)await pulseRequests.discardProjectFile(file).catch(()=>{});};
   const retirePulseRequests=()=>pulseRequests.retireUnconfirmed().catch(()=>{}).then(sweepPulseMessageUploads);
   clientProjects.subscribeChanges(()=>{if(!pulseAutoReplyTimer||pulseAutoReplySoonTimer)return;pulseAutoReplySoonTimer=setTimeout(()=>{pulseAutoReplySoonTimer=null;void scanPulseAutoReplies();},1500);pulseAutoReplySoonTimer.unref?.();});
   const clientStartupTemplates=createClientStartupTemplatesService({store,clientProjects,clock});
@@ -533,7 +537,8 @@ export function createCompanyApp(options={}) {
   // 공유한 게시물(11-16, TIP-SHARES.md): 관리자 화면과 PC 팁 장부 동기 도구가 쓰는 줄 묶음 · 단추 요청.
   const tipShareRoutes=tipShareModules?createTipShareRoutes({service:createTipSharesService({store,clock}),body,send,session,origin,isStopped:()=>stopRequested}):null;
   const pulseMarketingRoutes=pulseMarketing?createPulseMarketingRoutes({service:pulseMarketing,body,send,session,origin,audit,isStopped:()=>stopRequested}):null;
-  const pulsePeopleRoutes=createPulsePeopleRoutes({service:pulsePeople,body,send,session,origin,audit,isStopped:()=>stopRequested});
+  // 명단 그림(조각 ③): 작업실 파일 자리(studio-media)에 두고 같은 내주기(serveStudioMedia — 버킷에서 받아 놓기 · nosniff · sandbox)를 쓴다.
+  const pulsePeopleRoutes=createPulsePeopleRoutes({service:pulsePeople,body,send,session,origin,audit,isStopped:()=>stopRequested,media:{receive:req=>receivePeopleImage(req,store.directory),commit:upload=>commitPeopleImage(upload,store.directory),discard:upload=>discardPeopleImage(upload,store.directory),remove:name=>removePeopleImageFile(store.directory,name),serve:(req,res,doc,authorize)=>serveStudioMedia(req,res,store.directory,doc,authorize)}});
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   // Validated with the other schedule options before opening data.
   const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
@@ -1246,6 +1251,9 @@ export function createCompanyApp(options={}) {
       if(pulseMarketing&&method==='GET'&&path==='/pulse/api/marketing/report')return send(res,200,pulseMarketing.customerReport(customerToken,url.searchParams));
       // 인플루언서 광고 창(11-21): 읽기만 한다. 스위치가 꺼졌거나 고를 채널이 없으면 없는 주소다(pulse-people.mjs).
       if(method==='GET'&&path==='/pulse/api/people')return send(res,200,pulsePeople.customerList(customerToken,url.search));
+      // 명단 그림(조각 ③): 공개 주소가 아니다 — 요청마다 스위치 · 손님 세션 · 그 그림을 가리키는 켜진 칸을 본다(pulse-people.mjs customerMedia).
+      const peopleMedia=/^\/pulse\/api\/people\/media\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/.exec(path);
+      if(['GET','HEAD'].includes(method)&&peopleMedia){if(url.search)throw httpError('주소를 확인해 주세요.');return await serveStudioMedia(req,res,store.directory,pulsePeople.customerMedia(customerToken,peopleMedia[1]),()=>pulsePeople.customerMedia(customerToken,peopleMedia[1]));}
       const personaMedia=path.match(/^\/pulse\/api\/persona\/media\/([a-f0-9-]{36})$/);
       if(['GET','HEAD'].includes(method)&&personaMedia)return await serveStudioMedia(req,res,store.directory,pulsePersonas.customerMedia(customerToken,personaMedia[1]),()=>pulsePersonas.customerMedia(customerToken,personaMedia[1]));
       const studioMedia=path.match(/^\/pulse\/api\/studio\/media\/([a-f0-9-]{36})$/);

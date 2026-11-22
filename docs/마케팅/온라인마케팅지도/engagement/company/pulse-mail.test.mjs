@@ -534,3 +534,15 @@ test('담당자 답 메일 · 새 판이 오를 때: 그 전에 단 답은 함�
   assert.equal(f.store.get(PULSE_MAIL_SETTINGS,'main').momentSince.staff_reply,deployedAt);
   assert.equal(f.outbox().filter(item=>item.moment==='staff_reply').length,2,'재시작 전에 단 답도 함에 든다');
 });
+
+test('인플루언서 광고 의뢰: 다른 의뢰의 값 안내는 따로 묶어 둘 다 보낸다(GPT 검수 GA2)',async t=>{
+  const first='11111111-1111-4111-8111-111111111111',second='22222222-2222-4222-8222-222222222222';
+  const quote=(id,name)=>({id,status:'quoted',channel:{id:'ch_'+id.slice(0,6),name},quote:{amount:300000,includes:'',postBy:'',at:'2026-11-08T03:00:00.000Z'}});
+  const f=await fixture(t);f.advance(1);await f.connect();f.advance(1);
+  const row=f.project({studio:{request:{answers:{name:'오미톡',contactName:'김손님',email:'client@example.com',package:'standard'},rounds:[]},people:{schemaVersion:1,requests:[quote(first,'합성 첫 채널'),quote(second,'합성 둘째 채널')]}}});
+  f.event(row,'people_quoted',{peopleId:first,resource:first});f.advance(1);f.event(row,'people_quoted',{peopleId:second,resource:second});
+  assert.equal((await f.service.tick()).added,2,'의뢰마다 한 통');
+  f.advance(3);assert.equal((await f.service.tick()).sent,2);
+  assert.deepEqual(f.relay.sent.map(mail=>/합성 (첫|둘째) 채널/.exec(mail.body)?.[0]).sort(),['합성 둘째 채널','합성 첫 채널']);
+  assert.deepEqual(f.outbox().map(item=>item.peopleId).sort(),[first,second]);
+});

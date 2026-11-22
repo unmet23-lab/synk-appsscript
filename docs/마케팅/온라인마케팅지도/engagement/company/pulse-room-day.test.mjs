@@ -211,7 +211,7 @@ test('the day look is switched on and off in one place and never leaks to other 
     for(const one of selector.split(/,(?![^(]*\))/).map(part=>part.trim()).filter(Boolean))assert.ok(/\[data-day\]|sx-day|^\.sx-room-(due|say)\b|^\.sx-done-next\b/.test(one),one);
   }
   // 캐시 판을 올렸다(바뀐 화면 모듈과 스타일을 새로 받게).
-  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v76-people-20261122';/);
+  assert.match(read('sw.js'),/const CACHE = 'synk-pulse-shell-v77-people-requests-20261123';/);
 });
 
 // 처음 보는 사람용 낱말(유호님 11-21 「처음 보는 사람이 더 이해하기 좋게」): 맹검이 모른다고 짚은 말을 바꿨다.

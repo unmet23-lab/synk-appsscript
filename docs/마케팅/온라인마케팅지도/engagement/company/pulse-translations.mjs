@@ -32,6 +32,8 @@ export function staffSources(studio,row=null){
   for(const scene of studio?.scenes||[])if(scene.visibility==='customer'){put(`scene:${scene.id}:title`,scene.title,160);put(`scene:${scene.id}:description`,scene.description,3000);}
   // 작업 소식(운영 조각 4 — studio.progress): 거두지 않은 소식 글(초안 포함 — 올리기 전에 번역을 붙인다). 키 꼴은 pulse-progress.mjs progressKey와 같다.
   for(const item of Array.isArray(studio?.progress)?studio.progress:[])if(object(item)&&typeof item.id==='string'&&item.state!=='withdrawn')put(`progress:${item.id}:text`,item.text,600);
+  // 인플루언서 광고 의뢰(조각 ② · studio.people): 값 안내의 포함된 것 · 결과 한 줄 · 담당자가 닫은 까닭. 손님이 거둔 까닭은 손님 글이라 번역하지 않는다. 키 꼴은 pulse-people-requests.mjs와 같다.
+  for(const item of Array.isArray(studio?.people?.requests)?studio.people.requests:[])if(object(item)&&typeof item.id==='string'){put(`people:${item.id}:includes`,item.quote?.includes,200);put(`people:${item.id}:result`,item.result,300);if(item.closed?.by==='staff')put(`people:${item.id}:why`,item.closed.why,300);}
   if(row){
     for(const field of Object.keys(PROJECT_MAX))put(`project:${field}`,row[field],PROJECT_MAX[field]);
     for(const message of row.messages||[])if(message.author==='staff'&&message.visibility==='customer'&&!message.automated)put(`message:${message.id}:text`,message.text,3000);
@@ -127,6 +129,14 @@ export function localizeCustomerProject(project,{map,locale,text:tx,producer,sta
       if(request.confirmedBy!==undefined)r.confirmedBy=staffName(request.confirmedBy);
       next.request=r;
     }
+    if(object(studio.people)&&Array.isArray(studio.people.requests))next.people={...studio.people,requests:studio.people.requests.map(item=>{
+      if(!object(item))return item;
+      const r={...item};
+      if(object(item.quote))r.quote={...item.quote,includes:pick(`people:${item.id}:includes`,item.quote.includes)};
+      if(typeof item.result==='string')r.result=pick(`people:${item.id}:result`,item.result);
+      if(object(item.closed)&&item.closed.by==='staff')r.closed={...item.closed,why:pick(`people:${item.id}:why`,item.closed.why)};
+      return r;
+    })};
     out.studio=next;
   }
   return out;

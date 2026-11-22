@@ -385,6 +385,10 @@ html.is-staff .ppl-row-act{display:flex;flex-wrap:wrap;gap:6px;justify-content:f
 html.is-staff .ppl-edit{margin:0 0 8px;padding:20px;background:var(--st-sheet);border:1px solid var(--st-line)}
 html.is-staff .ppl-edit h3{font:600 17px/1.3 var(--st-sans);margin:0 0 14px}
 html.is-staff .ppl-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;align-items:start}
+/* 그림 올리기(조각 ③): 고른 그림 줄은 칸 전체 너비, 작은 정사각 넷까지 */
+html.is-staff .ppl-shots-now{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+html.is-staff .ppl-shots-now img{width:56px;height:56px;object-fit:cover;display:block;background:var(--st-paper-2)}
+html.is-staff .ppl-upload input[type=file]{font:inherit;max-width:100%}
 html.is-staff .ppl-topics{display:flex;flex-wrap:wrap;gap:6px 14px;grid-column:1/-1;border:0;padding:0;margin:0}
 html.is-staff .ppl-topics legend{width:100%;margin-bottom:6px}
 html.is-staff .ppl-check{display:flex;align-items:center;gap:8px}html.is-staff .ppl-topics .ppl-check{white-space:nowrap}

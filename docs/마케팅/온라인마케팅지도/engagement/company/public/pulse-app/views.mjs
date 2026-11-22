@@ -11,7 +11,7 @@ import {strategyView,strategySummary,strategyHistory,strategyConfirmDialog,strat
 import {FINISHED_FILMS,filmLine,filmNote,filmsView,hasFinishedFilms,filmTitle} from './films-view.mjs';
 import {arrow} from './film-home.mjs';
 import {entryView,roomView,roomHead,exampleHead,draftView,directionView as directionScreen,journalView,journalAsk} from './film-views.mjs';
-import {usesRoom,roomModel,roomState,roomStage,roomTab,draftModel,deskModel,deskQueue,journalModel,journalNew,staffBoard,marketingLine} from './room-view.mjs';
+import {usesRoom,roomModel,roomState,roomStage,roomTab,draftModel,deskModel,deskQueue,journalModel,journalNew,staffBoard,marketingLine,peopleRequests,openRequest} from './room-view.mjs';
 import {CASTING_MODELS} from './casting-catalog.mjs';
 import {personaModelsLine} from './persona-view.mjs';
 import {MODEL_LINES,PACKAGES,BOLD,noticeLabel} from './request-data.mjs';
@@ -150,10 +150,11 @@ function staffAgo(at,now=Date.now()){
 }
 // 문의가 기다린 시간(돌봄 꼬리표): 「12분째 · 3시간째 · 2일째」.
 function staffSince(at,now=Date.now()){const ms=Date.parse(at||'');if(!Number.isFinite(ms))return '';const minutes=Math.max(1,Math.round((now-ms)/60000));return minutes<60?`${minutes}분째`:minutes<1440?`${Math.floor(minutes/60)}시간째`:`${Math.floor(minutes/1440)}일째`;}
-// 돌봄 꼬리표 둘(room-view careOf): 답할 문의는 어느 차례든, 소식 없이 지난 평일은 우리 차례에 이틀부터(새 의뢰는 접수 시각이 이미 보인다).
+// 돌봄 꼬리표(room-view careOf): 답할 문의는 어느 차례든, 소식 없이 지난 평일은 우리 차례에 이틀부터(새 의뢰는 접수 시각이 이미 보인다),
+// 인플루언서 의뢰는 담당자 차례(값 안내 · 결제 요청을 보낼 차례)인 의뢰가 있을 때 — 납품한 건에서도 선다.
 function staffCares(item){
   const since=item.asks?staffSince(item.askSince):'';
-  return [item.asks?`<span class="staff-care is-ask">답할 문의 ${item.asks}${since?` · ${esc(since)}`:''}</span>`:'',item.turn==='us'&&!item.fresh&&item.quiet>=2?`<span class="staff-care is-quiet">소식 없이 평일 ${item.quiet}일째</span>`:''].filter(Boolean).join('');
+  return [item.asks?`<span class="staff-care is-ask">답할 문의 ${item.asks}${since?` · ${esc(since)}`:''}</span>`:'',item.people>0?`<span class="staff-care is-ask">인플루언서 의뢰 ${item.people}</span>`:'',item.turn==='us'&&!item.fresh&&item.quiet>=2?`<span class="staff-care is-quiet">소식 없이 평일 ${item.quiet}일째</span>`:''].filter(Boolean).join('');
 }
 const staffDue=item=>item.left===null||item.turn==='done'?'':item.left<0?`${-item.left}일 지남`:item.left===0?'오늘 전달':`D-${item.left}`;
 const STAGE_SHORT={check:'확인',draft:'1차안',make:'제작',review:'영상',deliver:'납품'};
@@ -175,7 +176,7 @@ const staffLegacyTurn=p=>{const next=nextDecision(p,true);if(next.title!=='광�
 export function picker(s){
   const projects=s.workspace?.projects||[],b=staffBoard(projects,Date.now(),{legacyTurn:staffLegacyTurn}),intake=intakeParts(s),seats=seatParts(s),canWrite=!!s.workspace?.canWrite;
   // 끝난 프로젝트는 2주 동안만 납품 칸에 남기고, 그 뒤는 보관과 함께 접는다(칸이 끝없이 길어지지 않게).
-  const recent=item=>item.turn!=='done'||item.asks>0||(item.waited??99)<=14,cols=b.stages.map(stage=>({...stage,items:stage.items.filter(recent)}));
+  const recent=item=>item.turn!=='done'||item.asks>0||item.people>0||(item.waited??99)<=14,cols=b.stages.map(stage=>({...stage,items:stage.items.filter(recent)}));
   const older=b.done.filter(item=>!recent(item)),folded=[...older,...b.archived];
   const active=cols.some(col=>col.id===s.staffStage)?s.staffStage:b.fresh.length?'check':cols.find(col=>col.items.length)?.id||'check';
   const soon=b.soon[0],asking=b.asking[0],meters=[[b.fresh.length,'새 의뢰','의뢰서를 확인할 차례',b.fresh.length?' is-hot':''],[b.asks,'답할 문의',asking?`${asking.title}${b.asking.length>1?` 외 ${b.asking.length-1}`:''}`:'없어요',b.asks?' is-hot':''],[b.ours.length,'우리 차례','만들거나 고칠 것',''],[b.soon.length,'사흘 안 전달',soon?`${soon.title}${b.soon.length>1?` 외 ${b.soon.length-1}`:''}`:'없어요','']];
@@ -371,16 +372,17 @@ function roomPreview(p){
   return pickPlayable(first)||pickFallback(first)||pickPlayable(second)||pickFallback(second);
 }
 // keep(판 4): 「내 모델로 모아 두기」 회원 상태(app.mjs가 그 프로젝트에서 읽은 것만 — 스위치가 꺼져 있으면 없다).
-const roomInfo=s=>{const preview=roomPreview(s.project);return {...roomModel(s.project),...(preview?{preview}:{}),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{}),...(marketingOn(s)?{marketing:true}:{}),...(peopleOn(s)?{people:true}:{})};};
+const roomInfo=s=>{const preview=roomPreview(s.project);return {...roomModel(s.project),...(preview?{preview}:{}),films:hasFinishedFilms(),...(s.keep?.projectId===s.project?.id&&s.keep?.state?{keep:s.keep}:{}),...(marketingOn(s)?{marketing:true}:{}),...(peopleOn(s)?{people:true}:{}),...(peopleRequests(s.project).some(openRequest)?{peopleOpen:true}:{})};};
 // 마케팅 성과(11-16 계약): 스위치(features.marketing)를 읽어 켜져 있는 의뢰 흐름 손님에게만 칸을 그린다. 상태는 app.mjs가 프로젝트마다 s.marketing에 둔다.
 const marketingOn=s=>isCustomerRoom(s)&&s.marketing?.projectId===s.project?.id&&s.marketing.on===true;
-// 인플루언서 광고(11-21 조각 ①): 스위치(features.people — 서버가 고를 채널이 있을 때만 참)가 켜진 손님 방에서, 결제를 마친 뒤(제작 · 영상 단계)에만. 상태는 app.mjs의 s.people.
-const peopleOn=s=>isCustomerRoom(s)&&s.people?.projectId===s.project?.id&&s.people.on===true&&['make','review'].includes(roomModel(s.project).stage);
-function peopleEntry(){return `<section class="sx-extra sx-ppl-entry" data-room-in><div><h2>${esc(t('인플루언서 광고'))}</h2><p class="sx-small">${esc(t('이 영상을 다른 채널에도 실어 보세요. 채널을 보고 담당자에게 물어보시면 돼요.'))}</p></div><button type="button" class="sx-go" data-room-go="people"><span>${esc(t('채널 보기',null,'list'))}</span>${arrow}</button></section>`;}
+// 인플루언서 광고(11-21 조각 ① · 11-23 조각 ②): 스위치(features.people — 서버가 고를 채널이 있을 때만 참)가 켜진 손님 방에서 결제를 마친 뒤(제작 · 영상 단계),
+// 또는 보낸 의뢰가 있으면 단계 · 스위치와 상관없이(보낸 것을 잃지 않게). 상태는 app.mjs의 s.people.
+const peopleOn=s=>isCustomerRoom(s)&&s.people?.projectId===s.project?.id&&(s.people.on===true&&['make','review'].includes(roomModel(s.project).stage)||peopleRequests(s.project).length>0);
+function peopleEntry(s){const open=peopleRequests(s.project).filter(openRequest).length;return `<section class="sx-extra sx-ppl-entry" data-room-in><div><h2>${esc(t('인플루언서 광고'))}</h2><p class="sx-small">${esc(open?t('진행 중인 의뢰 {count}건 · 어디까지 왔는지 보세요.',{count:open}):t('이 영상을 다른 채널에도 실어 보세요. 채널을 골라 의뢰하시면 담당자가 값과 일정을 확인해 드려요.'))}</p></div><button type="button" class="sx-go" data-room-go="people"><span>${esc(t('채널 보기',null,'list'))}</span>${arrow}</button></section>`;}
 // 인플루언서 광고 칸: 화면 모듈(people-view.mjs)은 처음 열 때 app.mjs가 불러 s.peopleView로 둔다. 오기 전에는 기다림 한 줄.
 function peopleRoom(s){
   const p=s.people,status=p.status==='ready'?'ready':p.status==='error'||s.peopleViewFailed?'error':'loading';
-  const body=s.peopleView?s.peopleView({status,entries:p.entries,kind:s.project.studio?.request?.answers?.kind||'',filter:p.filter}):status==='error'?`<div class="sx-ppl-page"><p class="sx-kicker">${esc(t('인플루언서 광고'))}</p><h1 class="sx-display" data-room-title>${esc(t('채널을 불러오지 못했어요'))}</h1><p class="sx-body">${esc(t('인터넷 연결을 확인한 뒤 다시 불러와 주세요.'))}</p><button type="button" class="sx-go is-solid" data-ppl-do="retry"><span>${esc(t('다시 불러오기'))}</span>${arrow}</button></div>`:`<div class="sx-ppl-page"><p class="sx-kicker">${esc(t('인플루언서 광고'))}</p><p class="sx-small" role="status">${esc(t('채널을 불러오고 있어요.'))}</p></div>`;
+  const body=s.peopleView?s.peopleView({status,entries:p.entries,kind:s.project.studio?.request?.answers?.kind||'',filter:p.filter,requests:peopleRequests(s.project),hasVideo:(s.project.versions||[]).length>0,sheet:p.sheet||'',past:!!p.past,rosterOn:p.on===true}):status==='error'?`<div class="sx-ppl-page"><p class="sx-kicker">${esc(t('인플루언서 광고'))}</p><h1 class="sx-display" data-room-title>${esc(t('채널을 불러오지 못했어요'))}</h1><p class="sx-body">${esc(t('인터넷 연결을 확인한 뒤 다시 불러와 주세요.'))}</p><button type="button" class="sx-go is-solid" data-ppl-do="retry"><span>${esc(t('다시 불러오기'))}</span>${arrow}</button></div>`:`<div class="sx-ppl-page"><p class="sx-kicker">${esc(t('인플루언서 광고'))}</p><p class="sx-small" role="status">${esc(t('채널을 불러오고 있어요.'))}</p></div>`;
   return `<div class="sx-shell sx-room sx-ppl" data-mode="customer" data-tab="people" data-state="people">${body}${journalOf(s,'drawer',{tab:'people'})}</div>`;
 }
 // 고객 방 왼쪽 단의 입구 한 줄: 이번 달 한 장의 결론(없으면 가장 최근 리포트의 한 문장)과 「리포트 보기」. 휴대폰은 머리의 칸 이름이 숨으므로 이 줄이 입구다.
@@ -417,7 +419,7 @@ function customerRoom(s){
   // 제안이 바뀌었으면(안 id가 다르면) 옛 화면 상태(모델 · 펼침 · 둘 다 아니에요)를 그리기 전에 버린다(11-07 검수).
   const info=roomInfo(s);if(info.direction&&(info.state==='direction'||s.tab==='pick'&&info.direction.canPick)){const key=info.direction.options.map(o=>o.id).join(',');return directionScreen(info,{top:alertBox(s),ui:s.directionUi?.key===key?s.directionUi:{},journal:journalOf(s,'drawer',{tab:'pick'})});}
   const extras=roomExtras(p);
-  const after=`${extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(t(item.title))}</h2><p class="sx-small">${esc(t(item.text))}</p></div><button type="button" class="sx-go" data-room-do="paper" data-paper="${esc(item.paper)}"><span>${esc(t(item.button))}</span>${arrow}</button></section>`).join('')}${info.marketing?marketingEntry(s):''}${info.people?peopleEntry():''}`;
+  const after=`${extras.map(item=>`<section class="sx-extra" data-room-in><div><h2>${esc(t(item.title))}</h2><p class="sx-small">${esc(t(item.text))}</p></div><button type="button" class="sx-go" data-room-do="paper" data-paper="${esc(item.paper)}"><span>${esc(t(item.button))}</span>${arrow}</button></section>`).join('')}${info.marketing?marketingEntry(s):''}${info.people?peopleEntry(s):''}`;
   // 기기 기억 안내는 왼쪽 단(지금 할 일) 한가운데가 아니라 그림 아래 띠로 — 맹검 11-07 「시스템 안내가 내용 자리에 들어옴」.
   // 내 모델 입구(판 4 운영 시험 P3): 스위치 myModels가 켜진 손님 방에서, 위 인물 칸이 이미 「내 모델 열기」를 둔 방(브랜드 회원 · 다시 쓰기)이 아니면 아래 띠에 한 줄.
   // 위 인물 칸이 실제로 「내 모델 열기」를 그린 방만 뺀다 — 인물이 끝난 방(turn end)은 personaKeep이 아무것도 그리지 않는다(최종 검수 F4).

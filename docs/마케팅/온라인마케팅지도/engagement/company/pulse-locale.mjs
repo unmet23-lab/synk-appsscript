@@ -152,6 +152,26 @@ const EN=Object.freeze({
   '말씀 나눈 날로 맞췄어요.':'It now matches the date we agreed on with you.',
   '저희 쪽 사정으로 날을 다시 잡았어요. 양해 부탁드려요.':'We had to reschedule on our side. Thank you for your understanding.',
   '다음 할 일: 따로 하실 일은 없어요.':'Next: there’s nothing you need to do.',
+  // 조각 ②(11-23): 인플루언서 광고 의뢰 — 앱 알림 제목 · 본문, 메일(people_quoted · people_posted)
+  '인플루언서 광고 값이 나왔어요':'Your influencer ad quote is ready',
+  '인플루언서 광고 결제를 확인했어요':'We’ve confirmed your influencer ad payment',
+  '채널에 광고가 올라갔어요':'Your ad is live on the channel',
+  '인플루언서 광고 결과가 왔어요':'Your influencer ad results are in',
+  '인플루언서 광고 의뢰가 닫혔어요':'Your influencer ad request was closed',
+  '담당자가 채널과 확인한 값과 일정을 보내 드렸어요. 「인플루언서 광고」에서 보시고 진행할지 골라 주세요.':'Your producer checked the price and schedule with the channel and sent them to you. Open “Influencer ads” to review them and decide whether to go ahead.',
+  '결제를 확인했어요. 채널에 넘겨 게시를 준비해요.':'We’ve confirmed your payment. We’re passing it on to the channel so they can prepare the post.',
+  '채널에 광고가 올라갔어요. 「인플루언서 광고」에서 게시물을 확인해 주세요.':'Your ad is now live on the channel. Open “Influencer ads” to see the post.',
+  '담당자가 광고 결과를 정리해 보내 드렸어요.':'Your producer has summarized the results of your ad.',
+  '담당자가 인플루언서 광고 의뢰를 닫았어요. 까닭을 확인해 주세요.':'Your producer closed your influencer ad request. Please take a look at the reason.',
+  '{title}, 인플루언서 광고 값이 나왔어요':'{title}: your influencer ad quote is ready',
+  '「{channel}」 채널과 확인한 값({amount})과 일정을 보내 드렸어요.':'We checked the price ({amount}) and schedule with “{channel}” and sent them to you.',
+  '「{channel}」 채널과 확인한 값과 일정을 보내 드렸어요.':'We checked the price and schedule with “{channel}” and sent them to you.',
+  '담당자가 채널과 확인한 값과 일정을 보내 드렸어요.':'Your producer checked the price and schedule with the channel and sent them to you.',
+  '다음 할 일: 앱의 「인플루언서 광고」에서 값을 보시고 진행할지 골라 주세요.':'Next: open “Influencer ads” in the app, review the price, and decide whether to go ahead.',
+  '{title}, 채널에 광고가 올라갔어요':'{title}: your ad is live on the channel',
+  '「{channel}」 채널에 광고가 올라갔어요.':'Your ad is now live on “{channel}”.',
+  '채널에 광고가 올라갔어요.':'Your ad is now live on the channel.',
+  '다음 할 일: 앱의 「인플루언서 광고」에서 게시물을 확인해 주세요.':'Next: open “Influencer ads” in the app to see the post.',
 });
 export const SERVER_DICTIONARIES=Object.freeze({en:EN});
 // 서버 문구를 그 언어로. 사전에 없거나 한국어면 원문.

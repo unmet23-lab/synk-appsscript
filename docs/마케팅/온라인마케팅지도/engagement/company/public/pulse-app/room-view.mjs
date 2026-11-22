@@ -50,6 +50,12 @@ export const roomStage=state=>STAGE_OF[state]||'check';
 // 단계 id · 옛 탭 이름을 고객 방의 화면 하나로. 머리의 단계 줄 · 방 안 이동 · 알림 이동이 이것만 쓴다.
 // 묻기(contact)는 판 3b부터 화면이 아니라 일지다 — 옛 이름으로 오면 고객 방(app.mjs가 일지를 연다).
 export const roomTab=id=>id==='history'||id==='review'?'review':['draft','films','pick','marketing','people'].includes(id)?id:'overview';
+// 인플루언서 광고 의뢰(조각 ② · 11-23, 설계 docs/디자인/PULSE고객경험_20261120/인플루언서_의뢰창_설계.md 9절): 프로젝트 문서 studio.people.requests.
+// 단계는 보냄 → 값 안내 → 동의 → 결제 확인 → 게시 → 결과, 또는 닫힘. 열린 의뢰는 프로젝트마다 한 건, 모두 스물까지(서버와 같은 수).
+export const PEOPLE_STEPS=Object.freeze(['sent','quoted','agreed','paid','posted','done']);
+export const PEOPLE_OPEN_MAX=1,PEOPLE_TOTAL_MAX=20; // 열린 의뢰는 프로젝트마다 한 건(서버 pulse-people-requests.mjs와 같다)
+export const openRequest=item=>!!item&&PEOPLE_STEPS.includes(item.status)&&item.status!=='done';
+export const peopleRequests=p=>(Array.isArray(p?.studio?.people?.requests)?p.studio.people.requests:[]).filter(item=>item&&typeof item==='object'&&typeof item.id==='string'&&(PEOPLE_STEPS.includes(item.status)||item.status==='closed'));
 // 마케팅 성과(11-16 계약): GET /pulse/api/marketing의 reports를 화면이 믿는 꼴로만 남긴다(최신 회차가 앞). 종류마다 앞의 것이 그 종류의 최신이다.
 // 문자열은 평문이고 화면은 esc로만 넣는다. 꼴이 어긋난 줄은 버린다.
 const MARKETING_KIND_IDS=['memo','ai-search','competitor-ads','label-review'];
@@ -76,6 +82,8 @@ export function roomRoute(item,p){
     return {tab:'review',versionId:item.versionId||''};
   }
   if(item?.tab==='draft')return {tab:lastRound(requestOf(p))?'draft':'overview',versionId:''};
+  // 인플루언서 광고 의뢰의 소식(값 안내 · 결제 확인 · 게시 · 결과 · 닫힘): 그 창의 그 의뢰 카드로.
+  if(item?.tab==='people')return {tab:'people',versionId:'',peopleId:typeof item.peopleId==='string'?item.peopleId:''};
   return {tab:'overview',versionId:''};
 }
 // 영상 전 세 번 확인 중 몇 번째인지. 손님이 지금 어디쯤인지 한눈에 보이게 한다.
@@ -359,12 +367,31 @@ export function journalModel(p){
   if(receipt?.confirmedAt)add({id:'k:'+(p.closeout.deliveryKey||'now'),at:receipt.confirmedAt,who:'me',name:me,kind:'event',what:t('파일과 안내를 확인했어요')});
   // 고객 전용 인물(판 3)의 일 — 요청 · 사진 · 견적 · 기준 얼굴 · 동작 시안 · 사용 범위와 그 확인. 인물이 없으면 줄이 없다.
   for(const item of personaJournal(p,{me,owner}))add(item);
+  // 인플루언서 광고 의뢰(조각 ②): 서버가 의뢰마다 남긴 줄(trail — 종류 · 때 · 누가)을 채널 이름과 함께. 줄 id는 g:<의뢰 id>:<종류>:<때>.
+  for(const item of peopleRequests(p)){
+    const name=String(item.channel?.name||'');
+    for(const step of Array.isArray(item.trail)?item.trail:[]){
+      const what=PEOPLE_JOURNAL[step?.kind]?.(name,step,item);if(!what||timeOf(step.at)===null)continue;
+      const mineStep=step.by==='customer';
+      add({id:`g:${item.id}:${step.kind}:${step.at}`,at:step.at,who:mineStep?'me':'staff',name:mineStep?me:owner,kind:'event',what,...(step.kind==='done'&&item.result?{kind:'quote',text:item.result}:step.kind==='closed'&&item.closed?.why?{kind:'quote',text:item.closed.why}:{}),go:{tab:'people'}});
+    }
+  }
   // 새 것이 위. 시각이 같으면 받은 것 → 내 것 차례, 시각을 못 읽는 줄은 맨 아래.
   items.sort((a,b)=>(b.t??-Infinity)-(a.t??-Infinity)||(a.who==='me')-(b.who==='me'));
   const asks=(r?.asks||[]).filter(ask=>ask.status==='open').map(ask=>({id:ask.id,label:ask.label,why:ask.why||'',at:ask.at,t:timeOf(ask.at)}));
   const latestAt=Math.max(0,...items.map(item=>item.t||0),...asks.map(ask=>ask.t||0));
   return {pinned:{asks,next:String(p?.nextStep||'').trim()},items,latestAt,...(r?.answers?.package==='photo'?{photo:true}:{})};
 }
+// 인플루언서 광고 의뢰의 일지 줄 글(문장 하나씩 — 채널 이름은 직원이 쓴 그대로).
+const PEOPLE_JOURNAL={
+  sent:name=>t('「{name}」 채널에 광고를 의뢰했어요',{name}),
+  quoted:name=>t('「{name}」 광고 값을 알려 드렸어요',{name}),
+  agreed:name=>t('「{name}」 광고 값에 동의했어요',{name}),
+  paid:name=>t('「{name}」 광고 결제를 확인했어요',{name}),
+  posted:name=>t('「{name}」 채널에 광고가 올라갔어요',{name}),
+  done:name=>t('「{name}」 광고 결과를 알려 드렸어요',{name}),
+  closed:(name,step)=>step.by==='customer'?t('「{name}」 광고 의뢰를 거뒀어요',{name}):t('「{name}」 광고 의뢰를 닫았어요',{name}),
+};
 // 조사 도우미(한국어 문장에만 — 번역하지 않는다).
 const josaOf=word=>{const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);if(code>=0xAC00&&code<=0xD7A3)return (code-0xAC00)%28?'이':'가';return /[0-9]/.test(last)?('013678'.includes(last)?'이':'가'):'이';}; // i18n-skip
 function withRoOf(word){const last=String(word).trim().replace(/[^0-9A-Za-z가-힣]+$/,'').slice(-1),code=last.charCodeAt(0);const batchim=code>=0xAC00&&code<=0xD7A3?(code-0xAC00)%28:/[0-9]/.test(last)?('013678'.includes(last)?1:0):1;return batchim&&batchim!==8?'으로':'로';} // i18n-skip
@@ -433,7 +460,9 @@ export function careOf(p,now=Date.now()){
   const r=requestOf(p),live=!!r&&r.status!=='retired'&&p.stage!=='archived';
   let quiet=null;
   if(live&&ROOM_COPY[roomState(p)]?.turn==='us'){const touched=[turnSince(r),...postedTimes(p),...replies].filter(Number.isFinite);if(touched.length)quiet=weekdaysSince(Math.max(...touched),now);}
-  return {asks:open.length,askSince:open.length?new Date(Math.min(...open)).toISOString():'',quiet};
+  // 인플루언서 광고 의뢰 중 담당자 차례(보냄 — 값 안내를 보낼 차례 · 동의 — 결제 요청을 보낼 차례). 보관한 건은 세지 않는다.
+  const people=p?.stage==='archived'?0:peopleRequests(p).filter(item=>['sent','agreed','posted'].includes(item.status)).length; // 담당자 차례: 값 안내 · 결제 확인 · 결과 한 줄(desk-view.mjs PPL_OURS와 같다)
+  return {asks:open.length,askSince:open.length?new Date(Math.min(...open)).toISOString():'',quiet,people};
 }
 // 문의와 답(조각 B2 · 11-21): 의뢰 확인 화면 오른쪽 단 맨 위. 손님 문의와 손님에게 보이는 글(사람이 쓴 답 · 자동 안내 · 프로젝트 댓글)만 새 것부터 싣는다 —
 // 내부 메모와 영상 의견은 싣지 않는다. open은 답하지 않은 문의(careOf와 같은 조건), closed는 답 없이 닫은 문의. 앞선 글은 수만 싣는다(영상 확인의 대화에 있다).
@@ -530,6 +559,8 @@ export function deskModel(p){
     canSettle:direction?.status==='declined'&&direction.round>=2&&!(r.rounds||[]).length,
     // 문의와 답(조각 B2): 손님 문의와 손님에게 보이는 답 · 답할 문의 수(제작 보드와 같은 값).
     talk:deskTalk(p),
+    // 인플루언서 광고 의뢰(조각 ②): 직원 보기의 의뢰 그대로(paid.ref 포함). 납품한 프로젝트에서도 desk가 이 칸을 그린다.
+    people:peopleRequests(p),
     // 사진 상품: 내부 확인 화면이 판 이름 · 단계 이름 · 결제 안내를 사진 말로 쓴다(영상 상품은 키가 없다).
     ...(a.package==='photo'?{photo:true}:{})};
 }
