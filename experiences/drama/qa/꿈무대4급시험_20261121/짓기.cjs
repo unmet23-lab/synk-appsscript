@@ -79,10 +79,6 @@ async function main() {
       쓴것.push(`글꼴 ${이름}`);
     } catch (e) { console.error(`${이름}: 글꼴을 줄이지 못했다(python fontTools 필요) — 화면은 SUIT로 대신한다`); }
   }
-  // 제목 명조: PULSE 시사실 판이 쓰는 Noto Serif KR 300(한글 2,459자로 줄인 판)을 그대로 옮긴다.
-  const 명조 = path.join(자리.저장소, 'docs', '마케팅', '온라인마케팅지도', 'engagement', 'company', 'public', 'pulse-app', 'assets', 'NotoSerifKR-300.woff2');
-  if (fs.existsSync(명조)) { fs.copyFileSync(명조, path.join(글꼴밖, 'NotoSerifKR-300.woff2')); 쓴것.push('글꼴 NotoSerifKR-300.woff2'); }
-  else console.error(`제목 명조가 없다: ${명조} — 제목은 기기 명조로 대신한다`);
   // 화면
   const { html } = 폰트.심기(fs.readFileSync(path.join(__dirname, '원고.htm'), 'utf8'));
   fs.writeFileSync(path.join(밖, 'index.html'), html);
