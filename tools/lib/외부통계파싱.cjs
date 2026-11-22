@@ -51,13 +51,17 @@
  * periodSummaries(dailyRows[{date, views|null}], endDay, durations=[7,30,60,90])
  *   끝날까지의 현재 기간과 바로 앞 같은 길이 기간(겹치지 않음)만 셈한다. 모든 날이 있어야 합계, 앞 기간이 0이면 성장률 null·newActivity.
  */
+const 계정시간=require('./계정시간.js');
 const MAX_ROWS=200,MAX_INPUT_ROWS=1000; // 한 묶음 관측 한도와 읽은 줄 상한(서비스 줄·예약 노트 포함)은 따로 센다.
 const ISO=/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2})(?::([0-9]{2})(?:[.][0-9]{1,3})?)?(Z|[+-]([0-9]{2}):([0-9]{2}))$/;
 const XHS_SOURCES=Object.freeze(['https://creator.rednote.com/new/note-manager','https://creator.xiaohongshu.com/new/note-manager']);
 // 한 줄 전체가 게시 시각인 줄만 받는다(앞에 发布于 가능). 예약 노트는 「定时发布」 줄과 「… （GMT+8:00 北京时间）」 예약 시각 줄을 쓴다.
-const XHS_DATE_LINE=/^(?:发布于 ?)?([0-9]{4})(?:年([0-9]{1,2})月([0-9]{1,2})日|-([0-9]{2})-([0-9]{2})) ?([0-9]{1,2}):([0-9]{2})$/;
-const XHS_PLAN_LINE=/^(?:定时发布 ?)?([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}) ?（GMT[+]8:00 北京时间）$/;
+// 11-20부터 관리 화면은 「2026/11/9 21:00」(빗금, 달 · 날 앞 0 없음)으로 쓰고, 예약 시각 줄에 「（GMT+8:00 北京时间）」을 붙이지 않는다.
+// 꼬리표 없는 예약 시각은 보는 PC의 시각으로 보인다(같은 노트가 예약 때 22:00, 게시 뒤 21:00). 읽는 코드가 브라우저의 시간대 이름을 viewerTimeZone으로 함께 남긴다.
+const XHS_DATE_LINE=/^(?:发布于 ?)?([0-9]{4})(?:年([0-9]{1,2})月([0-9]{1,2})日|-([0-9]{2})-([0-9]{2})|[/]([0-9]{1,2})[/]([0-9]{1,2})) ?([0-9]{1,2}):([0-9]{2})$/;
+const XHS_PLAN_LINE=/^(?:定时发布 ?)?([0-9]{4})(?:-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}) ?（GMT[+]8:00 北京时间）|[/]([0-9]{1,2})[/]([0-9]{1,2}) ([0-9]{1,2}):([0-9]{2})( ?（GMT[+]8:00 北京时间）)?)$/;
 const XHS_METRICS=Object.freeze(['조회','댓글','좋아요','저장','공유']);
+const XHS_PLAN_GRACE_MS=15*60*1000;
 // 기간 양끝은 숫자 경계여야 한다(「2026.11.121」·「12026.11.10」의 일부를 기간으로 읽지 않는다).
 const RANGE=/(?<![0-9])([0-9]{4})[.-]([0-9]{1,2})[.-]([0-9]{1,2})[.]? ?[~∼～] ?([0-9]{4})[.-]([0-9]{1,2})[.-]([0-9]{1,2})(?![0-9])/g;
 const DATE_CELL=/^([0-9]{4})[.-]([0-9]{1,2})[.-]([0-9]{1,2})[.]?(?: ?[(]([월화수목금토일])[)])?$/;
@@ -80,6 +84,16 @@ const column=letters=>[...letters].reduce((n,c)=>n*26+c.charCodeAt(0)-64,0)-1;
 function beijing(y,month,day,hour,minute,label){
   if(!realDay(y,month,day)||hour>23||minute>59)throw fail('ROW',`${label}: 실제 달력 시각이 아니에요.`);
   return `${y}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00+08:00`;
+}
+// 그 시간대 이름(IANA)의 벽시계 시각이 가리킬 수 있는 가장 늦은 순간을 ISO로 쓴다. 일광 절약이 끝나는 날 같은 시각이 두 번이면
+// 화면만으로는 어느 쪽인지 모르므로 뒤의 것을 고른다. 예약 확인은 「확실히 지났을 때」만 거절한다. 건너뛴 시각(시작하는 날)도 후보 가운데 늦은 쪽이다.
+function latestInZone(y,month,day,hour,minute,timeZone,label){
+  if(!realDay(y,month,day)||hour>23||minute>59)throw fail('ROW',`${label}: 실제 달력 시각이 아니에요.`);
+  const wall=Date.UTC(y,month-1,day,hour,minute),date=`${y}-${pad(month)}-${pad(day)}`,time=`${pad(hour)}:${pad(minute)}`;
+  const candidates=[...new Set([-1,0,1].map(k=>계정시간.offsetMinutes(wall+k*86400000,timeZone)))].map(o=>wall-o*60000);
+  const exact=candidates.filter(ms=>계정시간.localDate(ms,timeZone)===date&&계정시간.localTime(ms,timeZone)===time);
+  const ms=Math.max(...(exact.length?exact:candidates));
+  return 계정시간.isoAt(ms,timeZone);
 }
 
 function known(value,keys,where){
@@ -131,8 +145,9 @@ function parseXhs(evidence,identity){
   const accountId=accountIdOf(identity);
   if(!accountId||typeof identity.expectedAccountName!=='string'||!identity.expectedAccountName.trim()||typeof identity.externalId!=='string'||!/^[0-9a-f]{24}$/.test(identity.externalId))
     throw fail('IDENTITY','샤오훙수 설정에 accountId·화면 계정 이름(expectedAccountName)·공식 프로필 번호(externalId 24자리)가 있어야 해요.');
-  known(evidence,['observedAt','accountName','profileId','paginationComplete','expectedCount','rows','sourceUrl','screenTitle'],'샤오훙수 증거');
-  const observedAt=instant(evidence.observedAt,'관측 시각(observedAt)');
+  known(evidence,['observedAt','accountName','profileId','paginationComplete','expectedCount','rows','sourceUrl','screenTitle','viewerTimeZone'],'샤오훙수 증거');
+  const observedAt=instant(evidence.observedAt,'관측 시각(observedAt)'),viewerZone=evidence.viewerTimeZone;
+  if(viewerZone!==undefined&&(typeof viewerZone!=='string'||viewerZone.length>64||!계정시간.validZone(viewerZone)))throw fail('SHAPE','보는 PC의 시간대(viewerTimeZone)는 IANA 시간대 이름이어야 해요.');
   if(typeof evidence.accountName!=='string'||evidence.accountName.trim()!==identity.expectedAccountName.trim())throw fail('IDENTITY','화면의 계정 이름이 설정과 정확히 같지 않아요. 다른 계정 화면일 수 있어요.');
   // 공식 프로필 번호는 캡처에서 실제로 읽은 값(profileId)이어야 한다. 화면 이름만 같은 다른 프로필로 묶이지 않게 설정 값으로 채우지 않는다.
   if(typeof evidence.profileId!=='string'||!/^[0-9a-f]{24}$/.test(evidence.profileId))
@@ -161,17 +176,23 @@ function parseXhs(evidence,identity){
     const lines=all.filter((line,k)=>line&&k!==titleAt);
     const dates=lines.map(line=>XHS_DATE_LINE.exec(line)).filter(Boolean),noMetrics=blank(row.metrics)||(Array.isArray(row.metrics)&&!row.metrics.length);
     if(lines.some(line=>/^(?:定时发布|未发布)/.test(line))){
-      const plans=lines.map(line=>XHS_PLAN_LINE.exec(line)).filter(Boolean);
-      if(dates.length||!noMetrics||plans.length!==1)throw fail('ROW',`${where}: 예약 표시(定时发布·未发布)가 있으면 수치가 비고 「YYYY-MM-DD HH:mm （GMT+8:00 北京时间）」 예약 시각 줄이 하나뿐이어야 해요.`);
-      const p=plans[0],plannedAt=beijing(Number(p[1]),Number(p[2]),Number(p[3]),Number(p[4]),Number(p[5]),`${where} 예약 시각`);
-      if(Date.parse(plannedAt)<=Date.parse(observedAt))throw fail('ROW',`${where}: 예약 시각이 관측 시각보다 앞인데 아직 예약으로 보여요.`);
+      // 빗금 꼴 예약 시각 줄은 게시 시각 꼴과 같다. 예약 시각 줄이 아닌 날짜 줄이 남으면 거절한다.
+      const plans=lines.map(line=>XHS_PLAN_LINE.exec(line)).filter(Boolean),stray=lines.filter(line=>XHS_DATE_LINE.test(line)&&!XHS_PLAN_LINE.test(line)).length;
+      if(stray||!noMetrics||plans.length!==1)throw fail('ROW',`${where}: 예약 표시(定时发布·未发布)가 있으면 수치가 비고 「YYYY-MM-DD HH:mm （GMT+8:00 北京时间）」 예약 시각 줄이 하나뿐이어야 해요.`);
+      // 꼬리표 없는 빗금 예약 시각은 보는 PC의 시각이다. 증거의 viewerTimeZone(읽은 브라우저의 시간대 이름)으로 읽고, 없으면 거절한다.
+      const p=plans[0],local=Boolean(p[6])&&!p[10];
+      if(local&&viewerZone===undefined)throw fail('ROW',`${where}: 꼬리표 없는 예약 시각은 보는 PC의 시간대(viewerTimeZone)가 있어야 읽어요.`);
+      const at=[Number(p[1]),Number(p[2]||p[6]),Number(p[3]||p[7]),Number(p[4]||p[8]),Number(p[5]||p[9])];
+      const plannedAt=local?latestInZone(...at,viewerZone,`${where} 예약 시각`):beijing(...at,`${where} 예약 시각`);
+      // 플랫폼이 예약 글을 몇 분 늦게 올릴 수 있어, 예약 시각에서 15분이 지나도 예약으로 보일 때만 거절한다(Fable 설계 검토 P2).
+      if(Date.parse(plannedAt)+XHS_PLAN_GRACE_MS<=Date.parse(observedAt))throw fail('ROW',`${where}: 예약 시각에서 15분이 지났는데 아직 예약으로 보여요.`);
       scheduled++;
       return;
     }
     if(dates.length!==1)throw fail('ROW',`${where}: 한 줄 전체가 게시 시각(YYYY-MM-DD HH:mm, 앞에 发布于 가능)인 줄이 꼭 하나여야 하는데 ${dates.length}개예요. 제목·글 속 날짜는 세지 않아요.`);
     if(!Array.isArray(row.metrics)||row.metrics.length!==5)throw fail('ROW',`${where}: 수치는 조회·댓글·좋아요·저장·공유 다섯 칸이어야 해요.`);
     const [views,comments,likes,saves,shares]=row.metrics.map((value,k)=>count(value,`${where} ${XHS_METRICS[k]}`));
-    const d=dates[0],publishedAt=beijing(Number(d[1]),Number(d[2]||d[4]),Number(d[3]||d[5]),Number(d[6]),Number(d[7]),`${where} 게시 시각`);
+    const d=dates[0],publishedAt=beijing(Number(d[1]),Number(d[2]||d[4]||d[6]),Number(d[3]||d[5]||d[7]),Number(d[8]),Number(d[9]),`${where} 게시 시각`);
     if(Date.parse(publishedAt)>Date.parse(observedAt))throw fail('ROW',`${where}: 게시 시각이 관측 시각보다 뒤예요.`);
     observations.push({kind:'post-lifetime',post:{externalId:row.noteId,url:`https://www.rednote.com/user/profile/${identity.externalId}/${row.noteId}`,publishedAt,title:optionalText(row.title,300,`${where} 제목`)},
       metrics:{views,comments,likes,saves,shares}});

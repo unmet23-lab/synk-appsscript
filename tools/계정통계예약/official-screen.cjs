@@ -7,6 +7,8 @@ const {promisify}=require('node:util');
 const exec=promisify(execFile);
 
 // Executed by the designated Ego profile. The live "Me" link must identify the registered owner before reading manager data.
+// The manager screen's account name is read from its top bar (`.user-info .name-box`). The default 「小红薯…」 name is the fallback;
+// a renamed account must be re-registered as profile.observedName (11-23: the account was renamed and every read ended need_owner).
 async function readRednote(p, account, profile) {
   const id=profile.expectedExternalId;
   if(!/^[a-f0-9]{24}$/.test(id)||!profile.observedName)return {reason:'need_owner'};
@@ -18,7 +20,7 @@ async function readRednote(p, account, profile) {
   await p.goto('https://creator.rednote.com/new/note-manager',{waitUntil:'domcontentloaded',timeout:28000});
   await p.snapshot();
   await p.waitForFunction(()=>document.querySelector('.note-card')||/暂无笔记|还没有发布笔记/.test(document.body.innerText),undefined,{timeout:18000}).catch(()=>{});
-  const meta=await p.evaluate(()=>({name:document.body.innerText.match(/小红薯[A-F0-9]+/)?.[0],total:document.body.innerText.match(/全部\s*(\d+)/)?.[1]}));
+  const meta=await p.evaluate(()=>({name:(document.querySelector('.d-topbar .user-info .name-box')?.textContent.trim()||document.body.innerText.match(/小红薯[A-F0-9]+/)?.[0]),total:document.body.innerText.match(/全部\s*(\d+)/)?.[1]}));
   if(meta.name!==profile.observedName)return {reason:'need_owner'};
   const total=Number(meta.total);
   if(total===0)return {reason:await p.evaluate(()=>/暂无笔记|还没有发布笔记/.test(document.body.innerText))?'no_posts':'retry'};
@@ -36,7 +38,7 @@ async function readRednote(p, account, profile) {
     await p.waitForFunction(n=>document.querySelectorAll('.note-card').length>n,count,{timeout:5000}).catch(()=>{});
     if(await p.evaluate(()=>document.querySelectorAll('.note-card').length)<=count)return {reason:'format',at:'pagination',count,total};
   }
-  const x=await p.evaluate(()=>({observedAt:new Date().toISOString(),sourceUrl:location.origin+location.pathname,accountName:document.body.innerText.match(/小红薯[A-F0-9]+/)?.[0],expectedCount:Number(document.body.innerText.match(/全部\s*(\d+)/)?.[1]),
+  const x=await p.evaluate(()=>({observedAt:new Date().toISOString(),viewerTimeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,sourceUrl:location.origin+location.pathname,accountName:(document.querySelector('.d-topbar .user-info .name-box')?.textContent.trim()||document.body.innerText.match(/小红薯[A-F0-9]+/)?.[0]),expectedCount:Number(document.body.innerText.match(/全部\s*(\d+)/)?.[1]),
     rows:[...document.querySelectorAll('.note-card')].map(n=>({noteId:JSON.parse(n.getAttribute('data-impression')||'{}')?.noteTarget?.value?.noteId,title:n.querySelector('.note-card__title')?.textContent,text:n.innerText,metrics:[...n.querySelectorAll('.note-card__stat')].map(m=>m.textContent.trim())}))}));
   if(x.rows.length!==total||x.accountName!==meta.name)return {reason:'format',at:'end',count:x.rows.length,total};
   return {evidence:{...x,paginationComplete:true,profileId:owner}};

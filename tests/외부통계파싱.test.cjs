@@ -52,6 +52,54 @@ test('샤오훙수 실제 꼴: 한 줄 전체인 날짜만 게시 시각으로 �
   assert.throws(()=>parseXhs(xhs([{...plan,text:plan.text.replace(' （GMT+8:00 北京时间）','')}]),XHS),code('ROW'),'예약 표시와 게시 시각 줄이 함께');
 });
 
+// 11-20부터 바뀐 꼴(11-23 실제 회차 증거): 빗금 날짜 · 달과 날 앞 0 없음 · 예약 시각 줄에 GMT+8 꼬리표 없음
+const SLASH_XHS=[{noteId:'6aff0001000000001903ad01',title:'脱口而出“아이고！”？',text:'00:11\n脱口而出“아이고！”？\n2026/11/20 21:00\n1\n0\n1\n0\n0',metrics:['1','0','1','0','0']},
+  {noteId:'6aff0002000000001903ad02',title:'在韩国餐厅叫服务员',text:'00:22\n在韩国餐厅叫服务员\n2026/11/9 21:00\n264\n0\n9\n2\n2',metrics:['264','0','9','2','2']},
+  {noteId:'6aff0003000000001903ad03',title:'韩国餐厅怎么叫服务员？',text:'00:19\n韩国餐厅怎么叫服务员？\n定时发布\n2026/11/23 22:00',metrics:[]}];
+test('샤오훙수 빗금 꼴: 「2026/11/9 21:00」을 게시 시각으로 읽고, 꼬리표 없는 빗금 예약 줄은 예약으로 건너뛴다',()=>{
+  const KST={observedAt:'2026-11-20T21:13:18+08:00',viewerTimeZone:'Asia/Seoul'};
+  const {envelope,summary}=parseXhs(xhs(SLASH_XHS,KST),XHS);
+  assert.deepEqual(summary,{rows:3,published:2,scheduled:1});
+  assert.deepEqual(envelope.observations.map(o=>o.post.publishedAt),['2026-11-20T21:00:00+08:00','2026-11-09T21:00:00+08:00']);
+  const [live,second,plan]=SLASH_XHS;
+  assert.throws(()=>parseXhs(xhs([second,{...plan,text:plan.text+'\n2026/11/20 21:00'}],KST),XHS),code('ROW'),'예약 줄 말고 날짜 줄이 하나 더');
+  assert.throws(()=>parseXhs(xhs([second,plan],{...KST,observedAt:'2026-11-24T09:00:00+08:00'}),XHS),code('ROW'),'지난 예약 시각');
+  for(const text of ['00:11\n脱口而出\n2026/13/20 21:00\n1\n0\n1\n0\n0','00:11\n脱口而出\n2026/11-20 21:00\n1\n0\n1\n0\n0','00:11\n脱口而出\n2026/11/20 21:00\n2026/11/19 21:00\n1\n0\n1\n0\n0'])
+    assert.throws(()=>parseXhs(xhs([{...live,text}],KST),XHS),code('ROW'),text);
+});
+test('샤오훙수 빗금 예약 시각은 보는 PC의 시간대로 읽는다(GPT GA1): 한국 22:00 예약을 한국 22:30에 보면 지난 예약이다',()=>{
+  const [,second,plan]=SLASH_XHS;
+  // 2026/11/23 22:00(한국) = 13:00Z. 13:30Z에 아직 예약으로 보이면 거절한다. 베이징으로 읽으면 14:00Z라 통과하던 경우다.
+  assert.throws(()=>parseXhs(xhs([second,plan],{observedAt:'2026-11-23T13:30:00Z',viewerTimeZone:'Asia/Seoul'}),XHS),code('ROW'),'한 시간 늦게 보지 않는다');
+  assert.equal(parseXhs(xhs([second,plan],{observedAt:'2026-11-23T12:30:00Z',viewerTimeZone:'Asia/Seoul'}),XHS).summary.scheduled,1);
+  assert.throws(()=>parseXhs(xhs([second,plan],{observedAt:'2026-11-23T12:30:00Z'}),XHS),code('ROW'),'시간대 없이 꼬리표 없는 예약 시각');
+  for(const viewerTimeZone of ['Mars/Base',540,null,''])
+    assert.throws(()=>parseXhs(xhs([second],{observedAt:'2026-11-20T21:13:18+08:00',viewerTimeZone}),XHS),code('SHAPE'),String(viewerTimeZone));
+  // 일광 절약 시간이 끝나는 날(GPT 다시 검수 GA1): 시드니 2027/4/4 02:15는 관측 때의 UTC+11이 아니라 그 시각의 UTC+10으로 읽는다
+  const sydney={...plan,text:plan.text.replace('2026/11/23 22:00','2027/4/4 02:15')};
+  assert.equal(parseXhs(xhs([second,sydney],{observedAt:'2027-04-03T15:45:00Z',viewerTimeZone:'Australia/Sydney'}),XHS).summary.scheduled,1);
+  assert.throws(()=>parseXhs(xhs([second,sydney],{observedAt:'2027-04-03T16:35:00Z',viewerTimeZone:'Australia/Sydney'}),XHS),code('ROW'));
+  // 같은 시각이 두 번인 날은 어느 쪽인지 모르므로 뒤의 순간까지 지나야 거절한다(GPT 셋째 검수 GA1 · GA2): 뉴욕 2027/11/7 01:30은 05:30Z와 06:30Z
+  const ny={...plan,text:plan.text.replace('2026/11/23 22:00','2027/11/7 01:30')};
+  for(const observedAt of ['2027-11-07T05:45:00Z','2027-11-07T06:15:00Z'])
+    assert.equal(parseXhs(xhs([second,ny],{observedAt,viewerTimeZone:'America/New_York'}),XHS).summary.scheduled,1,observedAt);
+  assert.throws(()=>parseXhs(xhs([second,ny],{observedAt:'2027-11-07T06:50:00Z',viewerTimeZone:'America/New_York'}),XHS),code('ROW'));
+  // 건너뛴 시각(시작하는 날 02:30)은 후보(06:30Z · 07:30Z) 가운데 늦은 쪽
+  const gap={...plan,text:plan.text.replace('2026/11/23 22:00','2027/3/14 02:30')};
+  assert.equal(parseXhs(xhs([second,gap],{observedAt:'2027-03-14T07:00:00Z',viewerTimeZone:'America/New_York'}),XHS).summary.scheduled,1);
+  assert.throws(()=>parseXhs(xhs([second,gap],{observedAt:'2027-03-14T07:50:00Z',viewerTimeZone:'America/New_York'}),XHS),code('ROW'));
+  // 예약 시각 뒤 15분까지는 늦게 올라가는 중으로 보고 거절하지 않는다(Fable P2). 시는 한 자리도 받는다(Fable P2)
+  for(const observedAt of ['2026-11-23T13:00:00Z','2026-11-23T13:10:00Z'])
+    assert.equal(parseXhs(xhs([second,plan],{observedAt,viewerTimeZone:'Asia/Seoul'}),XHS).summary.scheduled,1,observedAt);
+  assert.throws(()=>parseXhs(xhs([second,plan],{observedAt:'2026-11-23T13:15:00Z',viewerTimeZone:'Asia/Seoul'}),XHS),code('ROW'),'15분째부터 거절');
+  const nine={...plan,text:plan.text.replace('2026/11/23 22:00','2026/11/24 9:00')};
+  assert.equal(parseXhs(xhs([second,nine],{observedAt:'2026-11-23T13:00:00Z',viewerTimeZone:'Asia/Seoul'}),XHS).summary.scheduled,1);
+  // 꼬리표가 있는 빗금 예약 줄은 베이징 시각이다
+  const tagged={...plan,text:plan.text.replace('2026/11/23 22:00','2026/11/23 21:00 （GMT+8:00 北京时间）')};
+  assert.equal(parseXhs(xhs([second,tagged],{observedAt:'2026-11-23T12:30:00Z'}),XHS).summary.scheduled,1);
+  assert.throws(()=>parseXhs(xhs([second,tagged],{observedAt:'2026-11-23T13:30:00Z'}),XHS),code('ROW'));
+});
+
 const TG={accountId:'lab-telegram',handle:'synkmn'};
 const post=(n,extra={})=>({post:`synkmn/${n}`,url:`https://t.me/synkmn/${n}`,datetime:'2026-11-13T12:00:00+00:00',views:'345',text:'몽골 교실 소식',...extra});
 const tg=(rows,extra={})=>({sourceUrl:'https://t.me/s/synkmn',observedAt:'2026-11-14T03:00:00Z',accountHandle:'@synkmn',rows,...extra});
