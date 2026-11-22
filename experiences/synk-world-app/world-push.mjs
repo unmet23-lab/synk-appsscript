@@ -60,11 +60,13 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // jobs: 진행 중인 sync(토큰 갱신을 기다리는 요청은 sent가 거짓). closing: 로그아웃 중 — 계정이 바뀔 때까지 새 요청과 판 키 쓰기를 막는다. leavingNow: flush 안.
  // legacyPending: 판을 모르는 옛 서버에 보낼, 앞 설정 요청의 응답을 기다리는 이 페이지의 설정(판 키에 적지 않는다 — 지금 라이브처럼).
  let binding=null,retryTimer=null,retryStep=0,owedDigest=null,closing=false,leavingNow=false,legacyPending=null,claiming=null,claimRead=null;
- // noted: 이 페이지가 적은 편집마다 적은 때의 요청 차례(order). attemptEdits: 켜기가 날아가는 동안 적은 편집(켜기가 실패하면 지운다).
- const noted=new Map(),attemptEdits=new Set();
+ // noted: 이 페이지가 적은 편집마다 적은 때의 요청 차례(order). 켜기가 날아가는 동안 적은 편집은 그 켜기(attempt.edits — 계정과 함께)에 적는다.
+ const noted=new Map();
  const jobs=new Set(),listeners=new Set([onChange]);
  let state={phase:'signed-out',enabled:false,device:{subscribed:false},account:{active:false,devices:0},plan:null,checkedAt:0,error:null,busy:false,versions:null,versioning:false,planId:null,seenSeq:0};
- const emit=patch=>{state={...state,...patch};const value=snapshot();for(const listener of listeners){try{listener(value);}catch{}}return value;};
+ // 계정이 꺼진 상태를 적으면 미뤄 둔 옛 서버 설정은 끝난 계획의 것이라 버린다 — 상태 읽기 · 켜기 · 끄기 어디서 적든 같다(r6 GA6 · r8 GA4 · r9 GA9 ·
+ // r10 GA3 · GA6). 미뤄 두는 것은 켜진 계정에 설정을 보내는 동안뿐이라, 그 뒤 다시 켜진 계획에서 새로 미룬 설정은 그 계획의 것이다(r9 GA3).
+ const emit=patch=>{state={...state,...patch};if(!state.account.active)legacyPending=null;const value=snapshot();for(const listener of listeners){try{listener(value);}catch{}}return value;};
  // publicReady: 서비스 워커가 떠 있고 서버 공개 키를 받아 「동의하고 켜기」가 그 동작 안에서 바로 subscribe를 부를 수 있다.
  const snapshot=()=>({...state,support:worldPushSupport(env),owner,waiting:!!attempt,publicReady:!!registration&&!!publicKey&&!state.busy});
  const current=expected=>expected===epoch&&!!owner&&!disposed;
@@ -123,9 +125,10 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 지금 적힌 상태보다 뒤에 처리한 응답이고(1), 더 작으면 앞에 처리한 응답이다(-1). 같은 계획 안에서 빈 판(null — 아직 쓰지 않은 부분)은 어떤 숫자보다
  // 앞이다(r4 GA1). 새 계획의 판은 옛 계획의 판보다 크다. 보낸 차례(seq)와 서버에 닿은 차례는 다를 수 있다 — 둘 다 켜진 계정이고 판이 있으면 판으로
  // 가리고, 모르면(0) 보낸 차례를 따른다.
+ const comparable=data=>state.versioning&&data?.versioning==='base'&&!!serverVersions(data)&&!!state.versions&&state.account.active&&accountOf(data).active;
  function progress(data){
+  if(!comparable(data))return 0;
   const v=serverVersions(data),mine=state.versions;
-  if(!state.versioning||data?.versioning!=='base'||!v||!mine||!state.account.active||!accountOf(data).active)return 0;
   let more=false,less=false;
   for(const key of ['settings','digest','reviews']){const a=v[key],b=mine[key];if(a===b)continue;if(b===null||(a!==null&&a>b))more=true;else less=true;}
   // 같은 계획 안에서는 모든 부분이 함께 커져 섞이지 않는다. 섞였으면 계획이 바뀐 것이다 — 새 계획의 판은 옛 계획의 어느 판보다 크므로 가장 큰 판이 큰
@@ -147,7 +150,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   const id=newId();
   writeEdit({frequency:value.frequency,hour:Number.isFinite(value.hour)?value.hour:null,base,known,tries:0,id,page,at:now(),planId:known?state.planId:null});
   noted.set(id,order);if(noted.size>20)noted.delete(noted.keys().next().value);
-  if(known&&!state.account.active)attemptEdits.add(id);
+  if(known&&!state.account.active)attempt.edits.add(id);
  }
  // 보낼 설정: 이 페이지가 쓴 편집이고, 바탕이 지금 아는 서버 판과 같다(그사이 다른 쓰기가 없었다). 한 페이지 안에서는 설정을 실은 요청을 하나씩
  // 보낸다 — 앞 응답이 오면 자기 쓰기 사슬로 바탕을 옮긴 뒤 보낸다(자기 요청끼리 거절하지 않게, 설계 검토 3). 떠날 때는 fetch가 나간 요청만 센다 — 토큰
@@ -211,6 +214,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 보내고, 다르거나 모르면 지우고 서버 것을 들인다(설계 검토 1 · 2). 넘겨받은 편집은 다시 보내기를 이미 쓴 것으로 적는다 — 닫힌 탭의 뜻은 한 번만
  // 가고, 그사이 다른 쓰기로 거절되면 서버 것을 들인다(닫힌 탭의 편집은 그 탭이 보지 못한 쓰기를 이기지 않는다). 주인이 살아 있으면 건드리지 않는다.
  // 한 편집에 한 번에 하나만 본다. 저장이 실패하면 거기서 멈춘다(되풀이 없음).
+ // 넘겨받기 전 상태 다시 읽기 — 한 번에 하나만 보낸다(r10 GA4: 다시 시도가 겹쳐 보내면 늦게 끝난 앞 읽기의 실패가 뒤 읽기의 성공 위에 적힌다).
+ function readClaim(){const mark=claimRead,done=()=>{mark.reading=false;};mark.reading=true;void refresh().then(done,done);}
  function claim(expected,edit){
   if(claiming===edit.id)return;claiming=edit.id;
   ownerAlive(edit).then(alive=>{
@@ -222,7 +227,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    // 이 편집 때문에 상태를 다시 읽기 시작했으면, 그 앞에 보낸 요청의 응답(늦은 응답 · 옛 서버 응답)으로는 정하지 않고 다시 읽기나 그 뒤에 보낸 요청의
    // 응답을 기다린다. 다시 읽기가 실패해도 편집은 남는다(r7 GA6 · r8 GA3 · GA6). 그 뒤에도 바탕이 크면(DB 복원 따위) 아래에서 서버 것을 들인다.
    if(claimRead?.id===edit.id&&state.seenSeq<=claimRead.after)return;
-   if(claimRead?.id!==edit.id&&edit.known&&edit.base!=null&&server!=null&&edit.base>server&&!otherPlan(edit,state.planId)){claimRead={id:edit.id,after:order};void refresh();return;}
+   if(claimRead?.id!==edit.id&&edit.known&&edit.base!=null&&server!=null&&edit.base>server&&!otherPlan(edit,state.planId)){claimRead={id:edit.id,after:order};readClaim();return;}
    // 바탕이 서버 판과 다르면 서버 판이 바탕보다 한 칸 위이고 서버 값이 그 탭의 앞 설정과 같아도 들인다 — 그 탭의 앞 요청이 받힌 것인지 다른 기기가 같은
    // 값을 먼저 쓴 것인지 기기만으로는 가를 수 없고, 잘못 짐작하면 다른 기기의 쓰기를 덮는다(설계 주인 11-22 규칙 5 (가), GPT world-r6 GA1 · GA5).
    if(state.versioning&&edit.known&&edit.base===server)rewrite(edit,rebase(edit,server,{page,at:now(),tries:1}));
@@ -382,7 +387,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  function applyRead(seq,data,expected,phase){
   const fresh=seq>shown.device;if(fresh)shown.device=seq;
   if(newer(seq,data)){shown.account=Math.max(shown.account,seq);applyStatus(data,expected,{phase,device:fresh,seq});}
-  else{guard(expected);if(fresh)emit({device:deviceOf(data)});reconcile(expected);}
+  // 판으로 견줄 수 있는데 상태로 적지 않은 읽기는 판이 지금 상태보다 크지 않다 — 지금 상태는 서버에서 그 읽기와 같거나 뒤에 처리됐다. 그 읽기를 보낸
+  // 때까지 본 것으로 센다(r10 GA1 · GA8: 켜기의 늦은 응답이 차례를 올려 같은 판의 넘겨받기 전 다시 읽기를 적지 않아도 편집이 묶이지 않게).
+  else{guard(expected);if(fresh)emit({device:deviceOf(data)});if(seq>state.seenSeq&&comparable(data))emit({seenSeq:seq});reconcile(expected);}
   return fresh;
  }
  // 계정의 2단 상태를 다시 읽는다. 이 브라우저 구독이 이 계정 것인데 서버에 없으면(정리·404·다른 기기에서 로그아웃시킴) 이 브라우저 구독도 지운다.
@@ -407,6 +414,14 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    return snapshot();
   }catch(error){if(current(expected))emit({phase:state.phase==='ready'?'ready':'error',error:error.code||'PUSH_UNAVAILABLE'});return snapshot();}
  }
+ // 실패한 켜기가 날아가는 동안 적은 편집을 그 켜기의 계정 키에서 지운다(r8 GA1). 계정을 바꿨으면 지금 계정의 편집은 두고(r9 GA1), 다른 계정을 거쳐
+ // 돌아왔어도 그 켜기 때 적은 편집은 지운다(r10 GA2 — 남기면 나중에 다른 기기가 켠 계획을 덮는다). 그 뒤에 적은 편집(다른 id)은 둔다.
+ function dropAttemptEdits(run){
+  if(!run.account||!run.edits.size)return;
+  const key=`${PUSH_VERSION_KEY}.${run.account}`;
+  try{const left=settingsOf(JSON.parse(storage?.getItem(key)||'null')?.settings);if(left&&run.edits.has(left.id))storage?.removeItem(key);}catch{}
+  run.edits.clear();
+ }
  // 판 키는 보낼 것이 없을 때만(편집이 없을 때) 지운다 — 같은 계정의 다른 탭이 아직 보내지 못한 편집을 지우지 않는다(설계 검토 5).
  function forget(){if(!readEdit()){try{storage?.removeItem(versionKey());}catch{}}}
  return {
@@ -416,7 +431,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   // 이 탭의 계정. 바뀌면 상태를 새로 읽는다(이 브라우저 구독은 지우지 않는다 — 지우는 것은 끄기·로그아웃·다른 계정이 켤 때뿐).
   setAccount(accountId){
    const next=typeof accountId==='string'&&accountId?accountId:null;if(next===owner&&!closing)return Promise.resolve(snapshot());
-   epoch++;owner=next;closing=false;publicKey=null;lastSync=null;clearTimeout(syncTimer);syncTimer=null;pendingSync=null;holdPage();attemptEdits.clear();claimRead=null;
+   epoch++;owner=next;closing=false;publicKey=null;lastSync=null;clearTimeout(syncTimer);syncTimer=null;pendingSync=null;holdPage();claimRead=null;
    // 앞 계정의 다시 보내기는 거둔다(그 계정의 설정 편집은 그 계정 키에 남아 다음에 그 계정으로 열 때 맞춘다).
    clearTimeout(retryTimer);retryTimer=null;retryStep=0;owedDigest=null;legacyPending=null;claiming=null;jobs.clear();
    // 앞 계정이 띄운 권한 창 기다리기는 끝낸다(늦게 허용돼도 지운다) — 새 계정이 바로 켤 수 있게.
@@ -433,7 +448,6 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   enable({settings,digest,handover=[]}={}){
    const expected=epoch;
    if(!current(expected)||closing||mutation||attempt)return Promise.resolve(snapshot());
-   const legacyAtPress=legacyPending;
    // 요약 바탕은 누를 때(요약을 지은 때) 잡는다 — 권한 창 사이에 읽은 새 판이 누를 때의 요약에 붙지 않게(r4 GA11).
    const pressed=digest?digestBase():null;
    if(!registration||!publicKey)return Promise.resolve(emit({error:'PUSH_NOT_READY'}));
@@ -444,7 +458,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    // 권한 창 기다리기: 30초가 지나거나 계정이 바뀌면(stop) 기다림을 끝내 켜기를 바로 「응답 없음」으로 마치고 단추를 다시 쓸 수 있게 한다.
    // 그 뒤에 허용된 구독은 받는 대로 지운다(10-22 화면 검수 — 끝나지 않는 권한 창에 켜기가 영영 묶였다).
    const STOP=Symbol('stop');let stopWait;
-   const waiting={cancelled:false,timer:null,stop:()=>{waiting.cancelled=true;clearTimeout(waiting.timer);stopWait(STOP);}};attempt=waiting;
+   const waiting={cancelled:false,timer:null,account:owner,edits:new Set(),stop:()=>{waiting.cancelled=true;clearTimeout(waiting.timer);stopWait(STOP);}};attempt=waiting;
    const stopped=new Promise(resolve=>{stopWait=resolve;});
    waiting.timer=setTimeout(()=>waiting.stop(),PERMISSION_WAIT_MS);
    Promise.resolve(prompt).then(late=>{if(waiting.cancelled&&late)void removeLocal(late,registration);},()=>{});
@@ -493,12 +507,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
      // 사이 1단이 바뀌었으면(학생이 이 탭이나 다른 탭에서 바꿨다 — 꺼진 계정이라 편집으로 적히지 않았다) 새 판을 바탕으로 편집으로 적어 결과를 적으며
      // 맞추기가 보낸다(r3 GA1).
      // 다른 페이지가 새 계획을 읽고 쓴 편집(바탕이 새 계획의 판 이상)은 그 페이지 것이라 두고, 1단이 바뀐 것도 그 페이지가 보낸다(r5 GA6). 이 탭이 켜기를
-     // 기다리며 바꾼 설정은 편집으로 적혀 있다(r7 GA4). 꺼져 있던 계정을 켰으면 켜기가 1단 값을 보냈으므로 옛 서버에 미뤄 둔 설정은 지난 것이다(r6 GA6 —
-     // 옛 서버는 applied를 주지 않아 켤 때의 계정 상태로 가린다, r8 GA4). 이미 켠 계정에 이 기기를 더한 켜기는 설정을 보내지 않으므로 두고 간다(r7 GA1).
-     // 켜기 응답을 적기 직전에 계정이 꺼져 있었으면(옛 서버는 applied를 주지 않는다) 미뤄 둔 설정은 끝난 계획의 것이다(r8 GA4 · r9 GA9 — 누른 뒤 꺼졌어도).
-     // 다만 누른 뒤 새 계획을 읽고 새로 미뤄 둔 설정은 새 계획의 것이라 둔다(r9 GA3).
-     if((applied.settings===true||!state.account.active)&&legacyPending===legacyAtPress)legacyPending=null;
-     attemptEdits.clear();
+     // 기다리며 바꾼 설정은 편집으로 적혀 있다(r7 GA4). 미뤄 둔 옛 서버 설정은 여기서 버리지 않는다 — 계정이 꺼진 상태를 적을 때 버렸고(emit), 이미 켠 계정에
+     // 이 기기를 더한 켜기는 설정을 보내지 않으므로 두고 간다(r7 GA1).
      const kept=readEdit(),after=liveSettings(null),theirs=!!kept&&kept.page!==page&&kept.known&&kept.base!=null&&v?.settings!=null&&kept.base>=v.settings;
      if(applied.settings===true&&!theirs){
       const moved=data.versioning==='base'&&!!v?.settings&&!!after&&!!sent&&(after.frequency!==sent.frequency||after.hour!==sent.hour);
@@ -512,7 +522,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
     }catch(error){
      clearTimeout(waiting.timer);if(attempt===waiting)attempt=null;
      // 켜기가 날아가는 동안 적은 편집은 지운다 — 계정은 여전히 꺼져 있고 1단 값은 다음 켜기가 보낸다. 남기면 나중에 다른 기기가 켠 계획을 덮는다(r8 GA1).
-     if(current(expected)){const left=readEdit();if(left&&attemptEdits.has(left.id))rewrite(left,null);attemptEdits.clear();}   // 앞 계정의 실패는 지금 계정 편집을 건드리지 않는다(r9 GA1)
+     dropAttemptEdits(waiting);
      // 서버 저장 실패·응답 유실·늦은 허용: 방금 만든 구독은 지운다(서버에 남았어도 이 브라우저는 그 알림을 못 띄운다).
      const removed=await removeLocal(sub);
      const denied=error?.name==='NotAllowedError'||worldPushSupport(env).permission==='denied';
@@ -542,7 +552,6 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
       // 마지막 기기였다 — 기기 쪽이 서버 설정을 1단에 넣는다. 그때 이 브라우저에 보내지 못한 편집이 있으면(끄기 직전의 편집 · 다른 탭의 편집) 편집을
       // 두고 서버 설정을 돌려주지 않는다 — 1단이 그 편집을 지킨다(설계 검토 6 · r2 GA4).
       keep=!account.active&&!!result.settings&&!!readEdit();
-      if(!account.active)legacyPending=null;   // 2단이 꺼졌다 — 미뤄 둔 옛 서버 설정을 보낼 계획이 없다(r6 GA6)
      }
     }
     const {settings:returned,...rest}=result||{};
@@ -608,7 +617,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    if(!readEdit()&&!owedDigest)return;
    if(!state.checkedAt||state.phase==='error'){void refresh();return;}
    // 넘겨받을 편집 때문에 상태를 다시 읽다가 실패했으면 다시 읽는다 — 그 읽기의 응답이 정한다(r9 GA2 · GA8: 실패 뒤 편집이 묶이지 않게).
-   if(claimRead&&state.seenSeq<=claimRead.after&&readEdit()?.id===claimRead.id){void refresh();return;}
+   if(claimRead&&state.seenSeq<=claimRead.after&&readEdit()?.id===claimRead.id){if(!claimRead.reading)readClaim();return;}
    if(!state.account.active||jobs.size>0)return;
    clearTimeout(retryTimer);retryTimer=null;retryStep=0;reconcile(expected);if(jobs.size===0)resend(expected);
   },
