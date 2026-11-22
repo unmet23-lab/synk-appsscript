@@ -189,14 +189,14 @@
   "lang": "vi",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.15,
-  "title": "",
-  "titleSize": 37,
+  "title": "Tiếng Việt cần 4 từ, tiếng Hàn chỉ cần 1",
+  "titleSize": 34,
   "lines": [
-    "",
-    "",
-    "",
-    "",
-    ""
+    "Bạn tớ đến rồi",
+    "Trời đổ mưa rồi",
+    "Tuyết rơi rồi",
+    "Buồn ngủ quá",
+    "Có cuộc gọi đến"
   ],
   "lineSizes": [
     52,
@@ -214,23 +214,23 @@
   ],
   "readSize": 40,
   "meanSize": 34,
-  "endHead": "",
+  "endHead": "Tiếng Việt:",
   "endHeadSize": 46,
   "verbs": [
-    "",
-    "",
-    "",
-    ""
+    "đến",
+    "đổ",
+    "rơi",
+    "buồn ngủ"
   ],
   "verbSize": 50,
   "nouns": [
-    "",
-    "",
-    "",
-    ""
+    "bạn · cuộc gọi",
+    "mưa",
+    "tuyết",
+    "giấc ngủ"
   ],
   "nounSize": 32,
-  "endKo": "",
+  "endKo": "Tiếng Hàn: chỉ 1 từ",
   "endKoSize": 44,
   "wayoRead": "wa-yo",
   "wayoReadSize": 44,
@@ -241,21 +241,21 @@
   "helloVo": "",
   "helloSec": 1,
   "_원문": {
-    "title": "(이 나라 말)로는 N 낱말, 한국어로는 딱 한 낱말",
-    "lines.0": "친구가 오고 있어요",
-    "lines.1": "비가 내리고 있어요",
-    "lines.2": "눈이 내리고 있어요",
-    "lines.3": "잠이 와요(졸려요)",
-    "lines.4": "전화가 울리고 있어요",
-    "endHead": "(이 나라 말)로는:",
-    "verbs.0": "(친구가 「오다」에 쓰는 이 나라 말 동사의 한국어 뜻)",
-    "verbs.1": "(비 · 눈에 쓰는 동사의 한국어 뜻)",
-    "verbs.2": "(잠 · 졸림에 쓰는 동사의 한국어 뜻)",
-    "verbs.3": "(전화에 쓰는 동사의 한국어 뜻)",
-    "nouns.0": "친구",
-    "nouns.1": "비 · 눈",
-    "nouns.2": "잠",
-    "nouns.3": "전화",
-    "endKo": "한국어로는: 딱 하나"
+    "title": "베트남어는 4개 낱말이 필요하고, 한국어는 1개면 된다",
+    "lines.0": "내 친구 왔어",
+    "lines.1": "비가 쏟아지기 시작했어",
+    "lines.2": "눈이 내려",
+    "lines.3": "너무 졸려",
+    "lines.4": "전화가 걸려 와(걸려 온 전화가 있어)",
+    "endHead": "베트남어로는:",
+    "verbs.0": "오다(베트남어도 친구와 걸려 온 전화에는 같은 동사 「오다」를 쓴다)",
+    "verbs.1": "쏟아지다(비가)",
+    "verbs.2": "(눈이) 떨어지다 · 내리다",
+    "verbs.3": "졸리다",
+    "nouns.0": "친구 · 통화(걸려 온 전화)",
+    "nouns.1": "비",
+    "nouns.2": "눈",
+    "nouns.3": "잠",
+    "endKo": "한국어로는: 딱 1개 낱말"
   }
 }

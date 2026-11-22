@@ -189,7 +189,7 @@
   "lang": "zh-Hans",
   "font": "'Inter Tight', 'Microsoft YaHei', 'SUIT', sans-serif",
   "lineH": 1.25,
-  "title": "中文要换好几个词，韩语一个词就搞定",
+  "title": "中文说法不同，韩语都用同一个词",
   "titleSize": 37,
   "lines": [
     "朋友来啦",
@@ -226,11 +226,11 @@
   "nouns": [
     "朋友",
     "雨、雪",
-    "睡意",
+    "我",
     "电话"
   ],
   "nounSize": 32,
-  "endKo": "韩语里：只用一个",
+  "endKo": "韩语里只用一个词",
   "endKoSize": 44,
   "wayoRead": "wa-yo",
   "wayoReadSize": 44,
@@ -241,7 +241,7 @@
   "helloVo": "",
   "helloSec": 1,
   "_원문": {
-    "title": "중국어는 낱말을 여러 개 바꿔 써야 하는데, 한국어는 한 낱말로 다 된다",
+    "title": "중국어는 말하는 법이 서로 다른데, 한국어는 다 같은 낱말 하나를 쓴다",
     "lines.0": "친구 왔다",
     "lines.1": "비가 와",
     "lines.2": "눈이 와",
@@ -254,8 +254,8 @@
     "verbs.3": "울리다",
     "nouns.0": "친구",
     "nouns.1": "비 · 눈",
-    "nouns.2": "졸음(잠)",
+    "nouns.2": "나(好困啊 — 「나 너무 졸려」의 숨은 주어)",
     "nouns.3": "전화",
-    "endKo": "한국어로는: 하나만 쓴다"
+    "endKo": "한국어로는 낱말 하나만 쓴다"
   }
 }

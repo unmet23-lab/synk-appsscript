@@ -189,21 +189,21 @@
   "lang": "fil",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.15,
-  "title": "",
-  "titleSize": 37,
+  "title": "Tagalog: 4 na salita, Korean: 1 lang",
+  "titleSize": 34,
   "lines": [
-    "",
-    "",
-    "",
-    "",
-    ""
+    "Dumating si bes",
+    "Umuulan",
+    "Umuulan ng niyebe",
+    "Inaantok ako",
+    "Tumutunog ang phone"
   ],
   "lineSizes": [
     52,
     52,
     52,
     52,
-    46
+    42
   ],
   "reads": [
     "chin-gu-ga wa-yo",
@@ -214,23 +214,23 @@
   ],
   "readSize": 40,
   "meanSize": 34,
-  "endHead": "",
+  "endHead": "Sa Tagalog:",
   "endHeadSize": 46,
   "verbs": [
-    "",
-    "",
-    "",
-    ""
+    "dumating",
+    "umulan",
+    "inantok",
+    "tumunog"
   ],
   "verbSize": 50,
   "nouns": [
-    "",
-    "",
-    "",
-    ""
+    "bes",
+    "ulan · niyebe",
+    "antok",
+    "phone"
   ],
   "nounSize": 32,
-  "endKo": "",
+  "endKo": "Sa Korean: isa lang",
   "endKoSize": 44,
   "wayoRead": "wa-yo",
   "wayoReadSize": 44,
@@ -241,21 +241,21 @@
   "helloVo": "",
   "helloSec": 1,
   "_원문": {
-    "title": "(이 나라 말)로는 N 낱말, 한국어로는 딱 한 낱말",
-    "lines.0": "친구가 오고 있어요",
-    "lines.1": "비가 내리고 있어요",
-    "lines.2": "눈이 내리고 있어요",
-    "lines.3": "잠이 와요(졸려요)",
-    "lines.4": "전화가 울리고 있어요",
-    "endHead": "(이 나라 말)로는:",
-    "verbs.0": "(친구가 「오다」에 쓰는 이 나라 말 동사의 한국어 뜻)",
-    "verbs.1": "(비 · 눈에 쓰는 동사의 한국어 뜻)",
-    "verbs.2": "(잠 · 졸림에 쓰는 동사의 한국어 뜻)",
-    "verbs.3": "(전화에 쓰는 동사의 한국어 뜻)",
-    "nouns.0": "친구",
+    "title": "타갈로그어: 낱말 4개, 한국어: 1개뿐",
+    "lines.0": "베프(가장 친한 친구)가 왔어",
+    "lines.1": "비가 오고 있어",
+    "lines.2": "눈이 내리고 있어(눈이 비처럼 오고 있어)",
+    "lines.3": "나 졸려",
+    "lines.4": "폰이 울리고 있어",
+    "endHead": "타갈로그어로는:",
+    "verbs.0": "오다(도착하다)",
+    "verbs.1": "비가 오다(비 · 눈 — 타갈로그어는 눈도 「비가 오다」 동사로 말한다)",
+    "verbs.2": "졸렸다(졸음이 왔다 — 판 줄 Inaantok ako와 같은 낱말의 끝난 꼴)",
+    "verbs.3": "울리다(소리가 나다)",
+    "nouns.0": "베프(친구)",
     "nouns.1": "비 · 눈",
-    "nouns.2": "잠",
-    "nouns.3": "전화",
-    "endKo": "한국어로는: 딱 하나"
+    "nouns.2": "졸음",
+    "nouns.3": "폰(전화)",
+    "endKo": "한국어로는: 하나뿐"
   }
 }

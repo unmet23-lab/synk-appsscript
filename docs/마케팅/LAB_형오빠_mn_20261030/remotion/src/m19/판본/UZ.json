@@ -140,39 +140,39 @@
   "lang": "uz",
   "font": "'Inter Tight', 'SUIT', sans-serif",
   "lineH": 1.14,
-  "hook": "",
+  "hook": "«Aka» va «opa»ning\nkoreyschasi nima?",
   "hookSize": 56,
-  "reveal": "",
+  "reveal": "Bitta aka —\nikki xil soʻz!",
   "revealSize": 72,
-  "colA": "",
-  "colB": "",
+  "colA": "Aka",
+  "colB": "Opa",
   "headSize": 52,
   "reads": [
-    "",
-    "",
-    "",
-    ""
+    "hyeong",
+    "oppa",
+    "nuna",
+    "eonni"
   ],
   "readSize": 56,
   "means": [
-    "",
-    "",
-    "",
-    ""
+    "Oʻgʻil bolaning akasi",
+    "Qiz bolaning akasi",
+    "Oʻgʻil bolaning opasi",
+    "Qiz bolaning opasi"
   ],
   "meanSize": 50,
   "meanLineH": 1.2,
   "meanOneLine": false,
   "revealMeanSize": 50,
   "why": [
-    "",
-    ""
+    "Qiz bola «형» demaydi!",
+    "Oʻgʻil bola «언니» demaydi!"
   ],
   "whySize": 50,
-  "rowM": "",
-  "rowF": "",
+  "rowM": "Oʻgʻil bola aytsa",
+  "rowF": "Qiz bola aytsa",
   "rowSize": 64,
-  "end": "",
+  "end": "Kim aytishiga bogʻliq!",
   "endSize": 62,
   "endLineNormal": false,
   "coverAt": 9.33,
@@ -180,5 +180,20 @@
   "helloName": "",
   "helloRead": "",
   "helloVo": "",
-  "helloSec": 1
+  "helloSec": 1,
+  "_원문": {
+    "hook": "「아카(손위 남자 형제)」와 「오파(손위 여자 형제)」\n한국어로는 뭐야?",
+    "reveal": "손위 남자 형제는 한 명 —\n말은 두 가지!",
+    "colA": "손위 남자 형제",
+    "colB": "손위 여자 형제",
+    "means.0": "남자아이의 손위 남자 형제",
+    "means.1": "여자아이의 손위 남자 형제",
+    "means.2": "남자아이의 손위 여자 형제",
+    "means.3": "여자아이의 손위 여자 형제",
+    "why.0": "여자아이는 「형」이라고 안 해!",
+    "why.1": "남자아이는 「언니」라고 안 해!",
+    "rowM": "남자아이가 말하면",
+    "rowF": "여자아이가 말하면",
+    "end": "누가 말하느냐에 달려 있어!"
+  }
 }
