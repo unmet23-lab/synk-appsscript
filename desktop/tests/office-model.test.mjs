@@ -325,7 +325,7 @@ test('capacity: one per two cores, one per 4 GB, the smaller, at least one', () 
   assert.equal(pc(24, 3), 1);
   assert.equal(pc(0, 0), 1);
   const none = officeCapacity({ cores: 16, totalMemGb: 32 });
-  assert.deepEqual(none, { pcCap: 8, toolCaps: { claude: 8, codex: 8 }, cap: 8, source: 'auto', missing: ['claude', 'codex'], note: '구독 방에 계정을 이으면 남은 양도 봅니다.' });
+  assert.deepEqual(none, { pcCap: 8, toolCaps: { claude: 8, codex: 8 }, cap: 8, source: 'auto', memKnown: true, missing: ['claude', 'codex'], note: '구독 방에 계정을 이으면 남은 양도 봅니다.' });
 });
 
 test('capacity: subscription left at 50, 49, 20, 19 and 0 percent', () => {
@@ -346,6 +346,18 @@ test('capacity: a number the user set wins when it is between one and the core c
   assert.deepEqual([run(3).cap, run(3).source], [3, 'manual']);
   assert.deepEqual([run(16).cap, run(1).cap], [16, 1]);
   for (const bad of [0, 17, 2.5, null, '', 'x']) assert.deepEqual([run(bad).cap, run(bad).source], [2, 'auto'], String(bad));
+  // 메모리를 못 읽으면 PC 한도는 하나다. 직접 정한 수가 있으면 도구별 수도 그 수에서 센다(P2 묶음 GA1, 검수 solio-office-ga1-20261122 F2)
+  for (const totalMemGb of [null, '', undefined]) {
+    const mine = officeCapacity({ cores: 8, totalMemGb, manual: 4 }), auto = officeCapacity({ cores: 8, totalMemGb });
+    assert.deepEqual([mine.memKnown, mine.pcCap, mine.cap, mine.toolCaps.claude, mine.toolCaps.codex], [false, 1, 4, 4, 4], String(totalMemGb));
+    assert.deepEqual([auto.pcCap, auto.cap, auto.source], [1, 1, 'auto'], String(totalMemGb));
+  }
+  assert.equal(officeCapacity({ cores: 8, totalMemGb: 0 }).memKnown, true, '0 GB that was read is a reading, not unknown');
+  // 메모리를 읽은 PC에서도 직접 정한 수가 PC 한도를 대신한다: 8코어 4GB(PC 한도 하나)에서 넷으로 정하면 도구별 수도 넷이다(설계 검토 solio-office-model-20261122 고칠 것 1)
+  const small = officeCapacity({ cores: 8, totalMemGb: 4, manual: 4 });
+  assert.deepEqual([small.pcCap, small.cap, small.toolCaps.claude, small.toolCaps.codex], [1, 4, 4, 4]);
+  const halfLeft = officeCapacity({ cores: 8, totalMemGb: 4, manual: 4, subscriptions: { claude: { leftPercent: 30 }, codex: { leftPercent: 10 } } });
+  assert.deepEqual([halfLeft.toolCaps.claude, halfLeft.toolCaps.codex], [2, 1], 'the subscription rule still applies on top of the hand-set number');
   assert.deepEqual([officeSeats(1), officeSeats(3), officeSeats(4), officeSeats(8), officeSeats(12), officeSeats(0)], [1, 1, 2, 3, 3, 1]);
 });
 

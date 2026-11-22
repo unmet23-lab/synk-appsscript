@@ -352,17 +352,23 @@ export function officeHeadline(list, { cap = null, hooksOn = true } = {}) {
    합친 인원은 PC 한도와 도구별 인원의 합 가운데 적은 쪽이고 가장 적어도 하나다. 직접 정한 값(1~논리 코어 수)이 이긴다 */
 export function officeCapacity({ cores, totalMemGb, subscriptions = {}, manual = null } = {}) {
   const c = Math.max(1, Math.floor(Number(cores) || 0));
+  const m = Number(manual), mine = manual != null && manual !== '' && Number.isInteger(m) && m >= 1 && m <= c;
+  // 본체가 메모리를 읽지 못하면 null을 보낸다. 그때 PC 한도는 셀 수 없어 하나로 둔다(못 읽은 메모리를 0GB로 셈하지 않는다).
+  const memKnown = totalMemGb != null && totalMemGb !== '' && Number.isFinite(Number(totalMemGb));
   // Windows는 16GB PC의 메모리를 15.7쯤으로 알려 준다. GB로 반올림해 셈해야 「8코어 16GB는 넷」이 맞는다
-  const pcCap = Math.max(1, Math.min(Math.floor(c / 2), Math.floor(Math.round(Math.max(0, Number(totalMemGb) || 0)) / 4)));
+  const pcCap = memKnown ? Math.max(1, Math.min(Math.floor(c / 2), Math.floor(Math.round(Math.max(0, Number(totalMemGb))) / 4))) : 1;
+  // 직접 정한 수는 메모리를 읽었든 못 읽었든 PC 한도를 대신하고, 도구별 수도 그 수에서 구독 규칙으로 센다. 그래서 메모리와 직접 정한 수에 대해서는
+  // 화면(수용 인원 줄)과 일 맡기기 실행(office-task-runtime.cjs)이 이 함수로 같은 수를 쓴다(P2 묶음 GA1, 검수 solio-office-ga1 F2, 설계 검토 solio-office-model-20261122 고칠 것 1).
+  // 구독 남은 양은 지금 실행이 넘기지 않아 그 몫은 다를 수 있다(같은 검토 고칠 것 3, 구현설계 6절)
+  const base = mine ? m : pcCap;
   const toolCaps = {}, missing = [];
   for (const tool of TOOLS) {
     const left = subscriptions?.[tool]?.leftPercent;
-    if (typeof left !== 'number' || !Number.isFinite(left)) { toolCaps[tool] = pcCap; missing.push(tool); continue; }
-    toolCaps[tool] = left >= 50 ? pcCap : left >= 20 ? Math.ceil(pcCap / 2) : left > 0 ? 1 : 0;
+    if (typeof left !== 'number' || !Number.isFinite(left)) { toolCaps[tool] = base; missing.push(tool); continue; }
+    toolCaps[tool] = left >= 50 ? base : left >= 20 ? Math.ceil(base / 2) : left > 0 ? 1 : 0;
   }
   const auto = Math.max(1, Math.min(pcCap, TOOLS.reduce((sum, t) => sum + toolCaps[t], 0)));
-  const m = Number(manual), mine = manual != null && manual !== '' && Number.isInteger(m) && m >= 1 && m <= c;
-  return { pcCap, toolCaps, cap: mine ? m : auto, source: mine ? 'manual' : 'auto', missing, note: missing.length ? '구독 방에 계정을 이으면 남은 양도 봅니다.' : '' };
+  return { pcCap, toolCaps, cap: mine ? m : auto, source: mine ? 'manual' : 'auto', memKnown, missing, note: missing.length ? '구독 방에 계정을 이으면 남은 양도 봅니다.' : '' };
 }
 /* 부서 하나의 자리: 수용 인원을 셋으로 나눠 올린 수, 하나부터 셋까지 */
 export const officeSeats = cap => Math.min(3, Math.max(1, Math.ceil((Number(cap) || 0) / 3)));

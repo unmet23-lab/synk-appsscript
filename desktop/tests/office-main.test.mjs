@@ -428,6 +428,12 @@ test('main and preload have no hooks: no hooks module, no hooks channel or bridg
   // 훅 소식의 입구(office.cjs ingest)는 첫 조각에서 부르는 곳이 없다. 넷째 검수의 GA8 · GA11(늦은 SessionEnd)을 둘째 조각으로 미룬 근거다.
   // 둘째 조각에서 이을 때는 그 둘을 먼저 고치고 이 줄을 바꾼다(구현설계 8절)
   assert.doesNotMatch(main, /\.ingest\(/, 'nothing in main feeds hook news to the office');
+  // 일 맡기기 실행(office-task-*.cjs)도 사무실 서비스를 통째로 받으므로 본체의 모든 .cjs를 본다(설계 검토 solio-office-model-20261122 고칠 것 2)
+  const srcDir = new URL('../src/', import.meta.url);
+  for (const name of fs.readdirSync(srcDir).filter(n => n.endsWith('.cjs') && n !== 'office.cjs')) {
+    const text = fs.readFileSync(new URL(name, srcDir), 'utf8');
+    assert.doesNotMatch(text, /\.ingest\(|officeReduce/, name + ' does not feed hook news into the office state');
+  }
   assert.doesNotMatch(preloadSource, /ingest/);
   assert.doesNotMatch(preloadSource, /office-hooks|hooksSet|hooksOff|hooksStatus/);
   assert.equal(fs.existsSync(new URL('../src/office-hooks.cjs', import.meta.url)), false);

@@ -2,10 +2,10 @@
 // 세션 상태는 실제 상태 규칙(office-model.mjs)에 훅 소식과 기록을 넣어 만든다. 화면(DOM)은 흐름 시험(orb-face-browser-qa.cjs 22번)이 본다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { officeState, officeReduce } from '../renderer/office-model.mjs';
+import { officeState, officeReduce, officeCapacity } from '../renderer/office-model.mjs';
 import { officeRoom, officeSubscriptions, officeCapacityRow, officeGroupStatus, officeFloorScene, createOfficeRoom, OFFICE_REST_SAY, OFFICE_FLOOR_DEPTS, folderTail, modelWord,
   officeSettingsRow, officeRo } from '../renderer/office-room.mjs';
-import { floorLayout, FLOOR_MOTION } from '../renderer/office-floor.mjs';
+import { floorLayout, floorZoneLabel, floorShortForm, FLOOR_MOTION } from '../renderer/office-floor.mjs';
 import { createOrbRooms } from '../renderer/orb-rooms.mjs';
 
 const NOW = Date.UTC(2026, 10, 20, 3, 0, 0);
@@ -173,14 +173,48 @@ test('with both subscriptions used up the row says it rests until they fill agai
 test('P2 묶음 카본 A1: memory the main process could not read (null) is unknown, not 0 GB — no capacity is counted from it', () => {
   for (const pc of [{ cores: 8, totalMemGb: null, freeMemGb: null, cpuPercent: null }, { cores: null, totalMemGb: 16 }, { cores: 8, totalMemGb: '' }]) {
     const row = officeCapacityRow({ pc, now: NOW });
-    assert.equal(row.mid, '이 PC의 프로세서와 메모리를 아직 읽지 못했습니다', JSON.stringify(pc));
-    assert.equal(row.val, '');
+    assert.equal(row.mid, pc.cores ? '8코어 · 메모리를 읽지 못했습니다' : '이 PC의 프로세서와 메모리를 아직 읽지 못했습니다', JSON.stringify(pc));
+    assert.equal(row.val, '', 'no automatic number from an unknown memory');
+    if (pc.cores) {
+      assert.equal(row.more.find(m => m[1] === '합쳐서')[2].split(' 지금')[0], '메모리를 읽지 못해 자동으로는 세지 않습니다. 직접 정할 수 있습니다.');
+      assert.equal(row.more.find(m => m[1] === '합쳐서')[3], '', 'the right column does not show an automatic number either (검수 -r2 FA1)');
+      // 일 맡기기가 켜진 판에서는 실행이 한 번에 하나씩 맡긴다고 말한다(설계 검토 solio-office-model-20261122 고칠 것 4)
+      const taskRow = officeCapacityRow({ pc, now: NOW, tasking: true });
+      assert.equal(taskRow.more.find(m => m[1] === '합쳐서')[2].split(' 지금')[0], '메모리를 읽지 못해 한 번에 하나씩 맡깁니다. 직접 정할 수 있습니다.');
+      // 일 맡기기가 켜진 판의 설명 글은 「보이기만 합니다」를 쓰지 않는다(검수 solio-office-ga1b F1)
+      assert.ok(!taskRow.more.some(m => m[0] === 'note' && /보이기만/.test(m[1])));
+      assert.ok(row.more.some(m => m[0] === 'note' && /보이기만/.test(m[1])), 'the first-piece build still says it only shows');
+      assert.ok(row.more.some(m => m[0] === 'pick' && m[5] === 'cap-mode'), 'the user can still set the number by hand (검수 solio-office-ga1 F3)');
+      assert.deepEqual(row.more.filter(m => m[1] === 'Claude Code' || m[1] === 'Codex').map(m => m[3]), ['', '']);
+    }
   }
   const busy = [record('sess-mem-0001', MKT, 'claude', NOW - 20 * S), record('sess-mem-0002', SHOP, 'claude', NOW - 30 * S)];
   const room = officeRoom(snapOf({ state: stateOf(busy), pc: { cores: 8, totalMemGb: null, freeMemGb: null, cpuPercent: null } }), {}, NOW, {});
   assert.ok(!/까지인데/.test(room.say), 'the headline does not count 「up to one」 from an unknown memory');
   const known = officeCapacityRow({ pc: { cores: 8, totalMemGb: 15.7, freeMemGb: null, cpuPercent: null }, now: NOW });
   assert.ok(!/비어 있음|쓰는 중/.test(known.more.map(m => m[2]).join(' ')), 'unknown free memory and CPU say nothing');
+});
+
+test('P2 묶음 GA1: with unreadable memory a number set by hand still shows; the automatic count stays unread (카본 A1)', () => {
+  const used = officeSubscriptions({ rows: [weekly('claude', 100), weekly('gpt', 100)] }, NOW);
+  const pc = { cores: 8, totalMemGb: null, freeMemGb: null, cpuPercent: null };
+  const mine = officeCapacityRow({ pc, subscriptions: used, manualCap: 4, now: NOW });
+  assert.equal(mine.val, '넷까지', 'the hand-set number is not hidden by the unreadable memory');
+  assert.equal(mine.mid, '8코어 · 메모리를 읽지 못했습니다 · Claude 0% · Codex 0%');
+  assert.deepEqual(mine.more.find(m => m[1] === '메모리').slice(2, 4), ['읽지 못했습니다', '']);
+  assert.deepEqual(mine.more.filter(m => m[1] === 'Claude Code' || m[1] === 'Codex').map(m => m[3]), ['쉬는 중', '쉬는 중'], 'used-up subscriptions still rest per tool');
+  assert.ok(/^직접 정한 수입니다\./.test(mine.more.find(m => m[1] === '합쳐서')[2]));
+  assert.ok(mine.more.some(m => m[0] === 'note' && m[1].startsWith('구독이 절반 넘게 남으면 정한 수까지')), 'with a hand-set number the rule speaks of that number, not the PC limit');
+  // 메모리를 몰라도 직접 정한 수가 PC 한도를 대신해 도구별 수도 그 수로 센다. 메모리와 직접 정한 수에 대해서는 일 맡기기 실행(office-task-runtime.cjs)도 같은 officeCapacity로 같은 수를 쓴다(검수 solio-office-ga1 F2, 설계 검토 solio-office-model 고칠 것 3)
+  const plenty = officeSubscriptions({ rows: [weekly('claude', 20), weekly('gpt', 20)] }, NOW);
+  assert.deepEqual(officeCapacityRow({ pc, subscriptions: plenty, manualCap: 4, now: NOW }).more.filter(m => m[1] === 'Claude Code' || m[1] === 'Codex').map(m => m[3]), ['넷까지', '넷까지']);
+  const runtime = officeCapacity({ ...pc, manual: 4 });
+  assert.deepEqual([runtime.cap, runtime.toolCaps.claude, runtime.toolCaps.codex], [4, 4, 4], 'the task runtime gets the same four, not one per tool');
+  // 직접 정한 수가 코어 수를 넘거나 없으면 자동 수를 말하지 않는다
+  for (const manualCap of [null, 9]) assert.equal(officeCapacityRow({ pc, subscriptions: {}, manualCap, now: NOW }).val, '');
+  const busy = Array.from({ length: 6 }, (_, i) => record('sess-ga1-000' + i, MKT, 'claude', NOW - 20 * S));
+  const room = officeRoom(snapOf({ state: stateOf(busy), pc, settings: { manualCap: 4 } }), {}, NOW, {});
+  assert.ok(/넷까지인데/.test(room.say), 'the headline counts over the hand-set number: ' + room.say);
 });
 
 test('0.5.2 공개 검수 A4: a number set by hand wins over resting, and while resting the headline does not count 「up to」', () => {
@@ -279,6 +313,25 @@ test('the floor draws up to six departments and bundles the rest into one 「그
   const after6 = floorLayout({ seats: 1, zones: dz(swapped.slice(1)) }, before7);
   const spotOf = (layout, id) => layout[0].spots[layout[0].staff.findIndex(s => s.id === id)];
   for (const id of ['b', 'c', 'd', 'e', 'f', 'g']) assert.deepEqual(spotOf(after6, id), spotOf(before7, id), id + ' keeps its spot when the hidden staff member leaves');
+  // 자리를 넘어 그림에 없는 직원 수를 구역 이름 뒤에 적는다(검수 F2)
+  const full = floorLayout({ seats: 1, zones: crowd(busy) })[0];
+  assert.equal(full.hidden, 15);
+  const wide = () => true, upTo = n => t => t.length <= n;
+  assert.deepEqual(floorZoneLabel(full, wide), { text: '부서 없는 일 · 열다섯 더', clip: false, form: 'long' });
+  // 이름이 먼저다: 짧은 표시(+15)로 바꾸고, 그래도 안 들어가면 이름만 둔다(검수 solio-office-ga1 F1)
+  assert.deepEqual(floorZoneLabel(full, upTo(11)), { text: '부서 없는 일 +15', clip: false, form: 'short' });
+  assert.deepEqual(floorZoneLabel(full, upTo(6)), { text: '부서 없는 일', clip: true, form: 'none' });
+  assert.deepEqual(floorZoneLabel(floorLayout({ seats: 1, zones: crowd(few) })[0], wide), { text: '부서 없는 일', clip: true, form: 'none' }, 'nothing is added when everyone has a seat');
+  // 한 장면이 짧은 꼴이면 넓은 구역도 짧은 꼴로 쓴다(검수 solio-office-ga1b F2)
+  assert.deepEqual(floorZoneLabel(full, wide, true), { text: '부서 없는 일 +15', clip: false, form: 'short' });
+  // 「그 밖 셋」의 셋은 부서 수라 빠진 것이 직원임을 적는다(F4)
+  assert.equal(floorZoneLabel({ name: '그 밖 셋', kind: 'other', hidden: 6 }, wide).text, '그 밖 셋 · 직원 여섯 더');
+  assert.equal(floorZoneLabel({ name: '그 밖 셋', kind: 'other', hidden: 6 }, wide, true).text, '그 밖 셋 · 직원 +6', 'the short form keeps 「직원」 too (검수 -r2 FA1)');
+  // 장면의 꼴: 긴 꼴이 안 들어가고 짧은 꼴은 들어가는 구역이 있으면 짧은 꼴. 어느 꼴도 안 들어가는 구역은 판단에서 뺀다
+  const longName = { name: '아주아주긴부서이름', kind: 'dept', hidden: 2 }, roomy = { name: '개발', kind: 'dept', hidden: 1 };
+  assert.equal(floorShortForm([longName, roomy], z => (z === longName ? upTo(3) : wide)), false, 'a zone that cannot show any count does not switch the scene');
+  assert.equal(floorShortForm([longName, roomy], z => (z === longName ? upTo(12) : wide)), true, 'a zone that fits only the short form switches the scene');
+  assert.equal(floorShortForm([{ name: 'x', kind: 'dept', hidden: 0 }], () => () => false), false);
   // 느낌표가 붙은 직원(오래 걸린 일을 끝냄)은 일하는 직원보다 먼저 앉는다(F3)
   const doneLong = [...Array.from({ length: 8 }, (_, i) => ({ id: 'k' + i, status: 'working' })), { id: 'd1', status: 'done', alert: true }];
   assert.ok(floorLayout({ seats: 1, zones: crowd(doneLong) })[0].staff.some(s => s.id === 'd1'), 'a finished staff member with an alert stays in the picture');

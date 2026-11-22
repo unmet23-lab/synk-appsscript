@@ -115,32 +115,39 @@ export const OFFICE_REST_SAY = '구독을 다 써서 다시 찰 때까지 쉽니
 const known = v => v != null && v !== '' && Number.isFinite(Number(v));
 /* 쉬는 때: 두 구독의 남은 양을 다 알고 둘 다 0이며, 손님이 수를 직접 정하지 않았을 때. 직접 정한 수가 이긴다(0.5.2 공개 검수 A4) */
 export const officeResting = c => !!c && c.source !== 'manual' && c.missing.length === 0 && c.toolCaps.claude === 0 && c.toolCaps.codex === 0;
-export function officeCapacityRow({ pc = null, subscriptions = {}, manualCap = null, active = 0, ui = {}, now = Date.now() } = {}) {
+/* 수용 인원: 코어를 못 읽었으면 null이다. counted는 화면이 수를 말해도 되는가 — 메모리까지 읽었거나 손님이 수를 직접 정했을 때다.
+   못 읽은 메모리로 자동 수를 말하지 않는다(카본 A1). 메모리를 못 읽었어도 직접 정한 수는 보이고(P2 묶음 GA1), 직접 정하는 칸은 늘 둔다(검수 solio-office-ga1 F3) */
+function countableCapacity(pc, subscriptions, manual) {
+  if (!pc || !known(pc.cores)) return null;
+  const c = officeCapacity({ cores: pc.cores, totalMemGb: known(pc.totalMemGb) ? pc.totalMemGb : null, subscriptions, manual });
+  return { ...c, counted: c.memKnown || c.source === 'manual' };
+}
+export function officeCapacityRow({ pc = null, subscriptions = {}, manualCap = null, active = 0, ui = {}, now = Date.now(), tasking = false } = {}) {
   const note = ui.notes?.get?.('cap') || '';
-  if (!pc || !known(pc.cores) || !known(pc.totalMemGb)) {
+  const c = countableCapacity(pc, subscriptions, manualCap);
+  if (!c) {
     return { key: 'cap', gap: true, nm: '수용 인원', mid: '이 PC의 프로세서와 메모리를 아직 읽지 못했습니다', val: '', when: '', label: rowLabel(['수용 인원', '이 PC의 프로세서와 메모리를 아직 읽지 못했습니다']), more: [['note', '사무실을 열어 두면 곧 다시 읽습니다.'], ['live', note]] };
   }
-  const c = officeCapacity({ cores: pc.cores, totalMemGb: pc.totalMemGb, subscriptions, manual: manualCap });
-  const cores = Math.max(1, Math.floor(Number(pc.cores))), mem = Math.round(Math.max(0, Number(pc.totalMemGb)));
+  const cores = Math.max(1, Math.floor(Number(pc.cores))), mem = c.memKnown ? Math.round(Math.max(0, Number(pc.totalMemGb))) : null;
   const resting = officeResting(c);
   const low = ['claude', 'codex'].filter(t => subscriptions[t] && subscriptions[t].leftPercent < 50).map(t => ` · ${t === 'codex' ? 'Codex' : 'Claude'} ${subscriptions[t].leftPercent}%`).join('');
-  const mid = resting ? OFFICE_REST_SAY : `${cores}코어 · ${mem}GB${low}`;
-  const val = resting ? '' : countWord(c.cap) + '까지';
+  const mid = resting ? OFFICE_REST_SAY : `${cores}코어 · ${mem == null ? '메모리를 읽지 못했습니다' : mem + 'GB'}${low}`;
+  const val = resting || !c.counted ? '' : countWord(c.cap) + '까지';
   const per = n => (n >= 1 ? countWord(n) : '없음');
   const cpu = known(pc.cpuPercent) ? ` · 지금 ${Math.round(pc.cpuPercent)}% 쓰는 중` : '';
   const free = known(pc.freeMemGb) ? ` · 지금 ${Math.round(pc.freeMemGb * 10) / 10}GB 비어 있음` : '';
   const toolRow = tool => {
     const s = subscriptions[tool], name = TOOL_NAME[tool];
-    if (!s) return ['row', name, '남은 양을 모릅니다', countWord(c.toolCaps[tool]) + '까지', ''];
+    if (!s) return ['row', name, '남은 양을 모릅니다', c.counted ? countWord(c.toolCaps[tool]) + '까지' : '', ''];
     const again = s.resetsAt ? ` · ${whenWords(s.resetsAt, now, { withTime: true })}에 다시 찹니다` : '';
-    return ['row', name, `${s.leftPercent}% 남음${again}`, c.toolCaps[tool] ? countWord(c.toolCaps[tool]) + '까지' : '쉬는 중', ''];
+    return ['row', name, `${s.leftPercent}% 남음${again}`, !c.counted ? '' : c.toolCaps[tool] ? countWord(c.toolCaps[tool]) + '까지' : '쉬는 중', ''];
   };
   const manualOpen = c.source === 'manual' || ui.grps?.has?.('cap:manual');
   const more = [
     ['row', '프로세서', `논리 코어 ${cores}개${cpu}`, '둘마다 하나 · ' + per(Math.floor(cores / 2)), ''],
-    ['row', '메모리', `${mem}GB${free}`, '4GB마다 하나 · ' + per(Math.floor(mem / 4)), ''],
+    mem == null ? ['row', '메모리', '읽지 못했습니다', '', ''] : ['row', '메모리', `${mem}GB${free}`, '4GB마다 하나 · ' + per(Math.floor(mem / 4)), ''],
     toolRow('claude'), toolRow('codex'),
-    ['row', '합쳐서', resting ? OFFICE_REST_SAY + '.' : `${c.source === 'manual' ? '직접 정한 수입니다.' : 'PC와 구독 가운데 적은 쪽입니다.'} ${active ? '지금 ' + ga(countWord(active)) + ' 일하고 있습니다.' : '지금은 아무도 일하지 않습니다.'}`, resting ? '' : (c.source === 'manual' ? '직접 정함 · ' : '') + '동시에 ' + countWord(c.cap) + '까지', ''],
+    ['row', '합쳐서', resting ? OFFICE_REST_SAY + '.' : `${c.source === 'manual' ? '직접 정한 수입니다.' : !c.counted ? (tasking ? '메모리를 읽지 못해 한 번에 하나씩 맡깁니다. 직접 정할 수 있습니다.' : '메모리를 읽지 못해 자동으로는 세지 않습니다. 직접 정할 수 있습니다.') : 'PC와 구독 가운데 적은 쪽입니다.'} ${active ? '지금 ' + ga(countWord(active)) + ' 일하고 있습니다.' : '지금은 아무도 일하지 않습니다.'}`, resting || !c.counted ? '' : (c.source === 'manual' ? '직접 정함 · ' : '') + '동시에 ' + countWord(c.cap) + '까지', ''],
   ];
   if (c.note) more.push(['note', c.note]);
   more.push(['pick', '정하는 방법', [['자동', 'auto'], ['직접 정하기', 'manual']], manualOpen ? 'manual' : 'auto', '', 'cap-mode']);
@@ -148,7 +155,8 @@ export function officeCapacityRow({ pc = null, subscriptions = {}, manualCap = n
     ['fld', '함께 일할 수', String(manualCap ?? c.cap), `1에서 ${cores}까지`, 'cap', 'number'],
     ['acts', [['저장', 'cap-save', '', flags('enter', ui.busy && 'off')]]],
   ], !manualOpen]);
-  more.push(['note', '구독이 절반 넘게 남으면 PC 한도까지, 절반 아래면 그 절반, 20% 아래면 한 사람이 일합니다. 다 쓰면 다시 찰 때까지 쉽니다. 지금은 이 PC에서 도는 일을 세어 보이기만 합니다. 이 값은 계정과 PC마다 따로 기억합니다.']);
+  // 직접 정했으면 구독 규칙은 정한 수에 걸린다. 일 맡기기가 켜진 판에서는 실제로 맡기므로 「보이기만 합니다」를 쓰지 않는다(검수 solio-office-ga1b-20261122 F1)
+  more.push(['note', `구독이 절반 넘게 남으면 ${c.source === 'manual' ? '정한 수' : 'PC 한도'}까지, 절반 아래면 그 절반, 20% 아래면 한 사람이 일합니다. 다 쓰면 다시 찰 때까지 쉽니다.${tasking ? '' : ' 지금은 이 PC에서 도는 일을 세어 보이기만 합니다.'} 이 값은 계정과 PC마다 따로 기억합니다.`]);
   more.push(['live', note]);
   return { key: 'cap', gap: true, nm: '수용 인원', mid, val, when: '', label: rowLabel(['수용 인원', mid, val]), more };
 }
@@ -273,8 +281,8 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
   const settings = snap.settings && typeof snap.settings === 'object' ? snap.settings : {};
   const pc = snap.pc && typeof snap.pc === 'object' ? snap.pc : null;
   // 쉬는 때는 수용 인원 줄이 숫자 대신 쉰다고 말하므로, 맨 위 글도 「몇까지인데」를 세지 않는다(0.5.2 공개 검수 A4)
-  const capInfo = pc && known(pc.cores) && known(pc.totalMemGb) ? officeCapacity({ cores: pc.cores, totalMemGb: pc.totalMemGb, subscriptions, manual: settings.manualCap }) : null;
-  const cap = capInfo && !officeResting(capInfo) ? capInfo.cap : null;
+  const capInfo = countableCapacity(pc, subscriptions, settings.manualCap);
+  const cap = capInfo && capInfo.counted && !officeResting(capInfo) ? capInfo.cap : null;
   const head = officeTaskHeadline(officeHeadline(list, { cap }), list, snap.tasking);
   const view = ui.view || (settings.view === 'top' ? 'top' : 'tilted');
   const tasking = Array.isArray(snap.tasking?.tasks);
@@ -282,7 +290,7 @@ export function officeRoom(snap, ui = {}, now = Date.now(), { subs = null } = {}
   const lobby = list.filter(v => v.departmentId == null);
   if (lobby.length) rows.push(lobbyRow(lobby, departments, ui, tasking));
   // 종류가 다른 줄 앞의 틈은 위에 부서 줄이 있을 때만 둔다(세션도 부서도 없으면 수용 인원이 첫 줄이다)
-  const capRow = officeCapacityRow({ pc, subscriptions, manualCap: settings.manualCap ?? null, active: head.active, ui, now });
+  const capRow = officeCapacityRow({ pc, subscriptions, manualCap: settings.manualCap ?? null, active: head.active, ui, now, tasking });
   rows.push({ ...capRow, gap: rows.length > 0 });
   rows.push(officeSettingsRow({ view, roots: snap.roots || {}, ui }));
   rows.push(officeAddRow({ ui }));
