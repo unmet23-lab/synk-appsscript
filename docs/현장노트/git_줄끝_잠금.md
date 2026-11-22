@@ -800,6 +800,12 @@ ode_modules`로 끊고 공용 `node_modules`가 남았는지 본 뒤, 커밋이 
 - 고침: `CI=1 node --test --test-reporter=tap tests/ci-wide-dependencies.test.js`를 혼자 돌려 다 통과하면, 내 변경의 시험을 따로 돌린 숫자와 함께 `--시험건너뜀 "<그 시험 · 혼자 통과 · 내 시험 숫자>"`를 붙여 다시 올린다(까닭이 커밋 메시지에 남는다). 내 빌드처럼 무거운 일은 올리기가 끝날 때까지 멈춰 둔다.
 - 다시 확인: 세 번째 실행이 `[올림]` · `origin 확인 ✓`(`86814ae98`), 곧이어 무거운 일 없이 올린 다음 push는 관련 시험 245/245 · 71초(`aec62269b`).
 
+### 바쁜 PC에서 저장 용량 검사가 「Git inspection failed (rev-list): 」(사유 빈칸)로 멈춘다 — 전체 이력 rev-list를 한 번 돌려 캐시를 데운 뒤 다시 (2026-11-23 Claude)
+- 증상: 글 두세 파일만 올리는 `바로올리기 --실행`과 손 절차의 `git-storage-check.cjs`가 「✗ 저장 용량 검사를 돌리지 못했다 — Git inspection failed (rev-list): 」로 열 번 넘게 멈췄다. 사유가 빈칸이고 공개 검사는 통과했다.
+- 원인: 저장 용량 검사는 바탕에서 닿는 모든 객체를 `rev-list --objects --missing=print`로 센다(약 27만 개). 검사의 git 호출 제한은 120초다. 앱 재시작 직후처럼 여러 세션이 디스크를 쓸 때 이 rev-list가 5분 54초 걸려 제한을 넘겼고, 시간 초과로 끊기면 사유가 비어 나온다.
+- 고침: `git rev-list --objects --no-object-names --missing=print origin/master | wc -l`을 제한 없이 한 번 돌려 팩 색인을 캐시에 올린다. 곧바로 다시 돌린 저장 용량 검사는 30초에 통과했다. 그사이 origin이 움직였으면 바탕부터 다시 만든다.
+- 다시 확인: `node tools/git-storage-check.cjs --base <바탕> --head <커밋>`이 「PASS」를 찍는다(이번에는 `065c5790e`).
+
 ### 흔한 파일 이름(`account.cjs`)을 고치면 관련 시험이 이름만 같은 남의 시험 190개를 골라 15분을 넘기고, 그 시험이 남긴 QA 기록을 다음 `--모두`가 싣는다 (2026-11-17 Claude)
 - 증상: 업무 백업 `engine/src/account.cjs`를 고친 `--실행`이 관련 시험 215개로 900초를 넘겨 「16개 깨짐 · 끝까지 못 봄」으로 멈췄다. 그 가운데 190개는 「글에 이름: account.cjs」로만 골린 desktop · synk-account · synk-world-app · tests/atlas-dating 따위의 시험이었다. 멈춘 뒤 작업본에는 `experiences/synk-world-app/qa/classroom-*/result.json` 둘이 시각과 합성 요청 번호만 바뀐 채 남았고, 다음 `--모두 --실행`이 그 둘을 함께 올렸다(ecbb3f91d).
 - 원인: `tools/관련시험.js`의 ③ 규칙은 시험 글에 바꾼 파일 이름이 적혀 있으면 고른다. `account.cjs`처럼 여러 제품에 있는 이름이면 남의 시험이 대거 걸린다. synk-world-app의 QA 시험은 돌 때마다 추적 중인 `result.json`을 다시 쓴다.
