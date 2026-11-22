@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PATH 체험 화면 시안 — 2026-11-22</title>
+<link rel="stylesheet" href="./ui.css">
+<style>
+  main{padding:56px 0 0}
+  .pick{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:40px 0 56px}
+  .pan{display:grid;gap:14px;padding:28px;border-radius:var(--r-card);background:var(--soft)}
+  .pan.b{background:var(--stage);color:var(--on-stage)}
+  .pan.b .small{color:var(--on-stage-2)}
+  .pan p{margin:0}
+  .pan .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .pan.b .btn:not(.go){background:rgba(255,255,255,.1);color:#fff}
+  .screens{margin:0;padding:0;list-style:none;border-top:2px solid var(--ink)}
+  .screens li{display:grid;grid-template-columns:200px 1fr auto;gap:8px 32px;align-items:center;padding:22px 0;border-bottom:1px solid var(--line)}
+  .screens b{font-size:18px}
+  .screens p{margin:0;color:var(--ink-2);font-size:15px}
+  .screens .row{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .screens .btn{min-height:40px;padding:0 16px;font-size:14px}
+  @media (max-width:900px){.pick{grid-template-columns:1fr}.screens li{grid-template-columns:1fr}.screens .row{justify-content:flex-start}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="kicker">PATH 체험 화면 · 시안 · 2026-11-22</p>
+  <h1 class="display">옛 판 화면을<br>한 결로 다시 지었어요.</h1>
+  <p class="lead" style="margin-top:16px;max-width:36em">입구, 직업 고르기, 체험, 맺음과 기록, 면접 연습을 PATH 유학 앱 2판의 결로 바꿨어요. 눌러 보면 실제로 넘어가요. 장면 안의 짜임만 두 판으로 만들었어요.</p>
+
+  <section class="pick" aria-label="고르실 것">
+    <div class="pan">
+      <span class="tag">A판</span><h2 class="h2">흰 화면 안의 검은 무대</h2>
+      <p class="small">장면 사진과 자막은 검은 판 안에, 지금 할 일은 그 옆 흰 칸에 둬요. 할 일과 단추가 늘 한눈에 보여요.</p>
+      <div class="row"><a class="btn go" href="./체험.html?판=A&amp;장면=choice&amp;힌트=vi">체험 A판</a><a class="btn" href="./면접.html?판=A&amp;장면=answer">면접 A판</a></div>
+    </div>
+    <div class="pan b">
+      <span class="tag dark">B판</span><h2 class="h2">들어가면 화면 전체가 무대</h2>
+      <p class="small">시작을 누르면 화면이 어두워지고, 사진 아래에 자막, 그 아래에 할 일 카드가 와요. 영화관처럼 장면에 집중돼요.</p>
+      <div class="row"><a class="btn go" href="./체험.html?판=B&amp;장면=choice&amp;힌트=vi">체험 B판</a><a class="btn" href="./면접.html?판=B&amp;장면=answer">면접 B판</a></div>
+    </div>
+  </section>
+
+  <h2 class="h3" style="margin-bottom:12px">화면 하나씩</h2>
+  <ul class="screens">
+    <li><b>입구</b><p>로컬 첫 주소 「첫날의 연습」을 바꾼 판이에요. 일터 체험과 면접 연습 둘 중 하나를 골라요.</p><div class="row"><a class="btn" href="./입구.html">열기</a></div></li>
+    <li><b>직업 고르기</b><p>열린 일터는 사진과 결정 단추 하나로 크게, 만드는 중인 일터는 글 목록으로 물러서요.</p><div class="row"><a class="btn" href="./직업.html">열기</a></div></li>
+    <li><b>체험 · 시작 전</b><p>선배 사진, 장면 다섯, 답하는 방식과 힌트 언어, 시작하기 하나.</p><div class="row"><a class="btn" href="./체험.html?판=A">열기</a></div></li>
+    <li><b>체험 · 장면 안</b><p>듣기, 내 말 하기, 갈림길 고르기, 둘러보기, 장면 마침.</p><div class="row"><a class="btn" href="./체험.html?판=A&amp;장면=say&amp;힌트=en">A 말하기</a><a class="btn" href="./체험.html?판=A&amp;장면=tour">A 둘러보기</a><a class="btn" href="./체험.html?판=B&amp;장면=say&amp;힌트=en">B 말하기</a><a class="btn" href="./체험.html?판=B&amp;장면=tour">B 둘러보기</a><a class="btn" href="./체험.html?판=A&amp;장면=rest">장면 마침</a></div></li>
+    <li><b>맺음과 기록</b><p>내가 고른 것과 이 일이 지키는 것을 나란히, 실제 조건, 내 답, 기록 한 장.</p><div class="row"><a class="btn" href="./체험.html?장면=closing">열기</a></div></li>
+    <li><b>면접 연습</b><p>질문 듣기, 내 차례(남은 시간 줄), 내 답 확인, 끝난 뒤 두 답과 질문이 나온 까닭.</p><div class="row"><a class="btn" href="./면접.html">시작 전</a><a class="btn" href="./면접.html?판=A&amp;장면=confirm">답 확인</a><a class="btn" href="./면접.html?장면=done">끝</a></div></li>
+  </ul>
+</main>
+<footer class="foot"><div class="wrap foot-in"><span>시안이에요. 영상, 음성 인식, PDF는 흉내만 내요.</span></div></footer>
+</body>
+</html>

@@ -88,10 +88,11 @@ export function pagesRuntimeFile(file, source) {
     let text = source.toString('utf8');
     const header = /<header\b[^>]*>[\s\S]*?<\/header>/g, footer = /<footer\b[^>]*>[\s\S]*?<\/footer>/g;
     if ((text.match(header) || []).length !== 1 || (text.match(footer) || []).length !== 1) throw new Error('Rehearsal navigation source changed');
-    text = text.replace(header, '<header class="topbar"><a class="brand" href="/path/" aria-label="SYNK PATH로 돌아가기"><img src="../../assets/logo-path-320.webp" alt="SYNK PATH" width="320" height="108"></a><span class="topbar-label">QUEST / SEATED INTERVIEW</span><a class="topbar-link" href="/path/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>PATH로 돌아가기</a></header>');
-    text = text.replace(footer, '<footer><span>SYNK PATH · 생성 영상 면접관과 하는 면접 연습</span><a href="/path/">PATH로 돌아가기</a></footer>');
+    // The published page links back to the PATH introduction at /path/ and keeps the AI disclosure in the footer.
+    text = text.replace(header, '<header class="bar"><div class="bar-in"><a class="brand" href="/path/" aria-label="SYNK PATH 홈"><img src="../../assets/logo-path-320.webp" alt="SYNK PATH" width="320" height="108"></a><span class="bar-title">면접 연습</span></div></header>');
+    text = text.replace(footer, '<footer><span>SYNK PATH · 면접 연습 · 면접관과 방은 생성 영상이에요.</span><a href="/path/">SYNK PATH 홈</a></footer>');
     text = text.replace('추가 질문 영상 제작은 보류 중입니다. ', '');
-    return { data: Buffer.from(pagesDocument(text)), transform: 'public-rehearsal-navigation-disclosure-and-csp-v3' };
+    return { data: Buffer.from(pagesDocument(text)), transform: 'public-rehearsal-navigation-disclosure-and-csp-v4' };
   }
   if (file === 'interview/film/strict-manifest.json') {
     const original = JSON.parse(source.toString('utf8')), receipt = uploadReceipt();

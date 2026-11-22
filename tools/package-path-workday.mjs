@@ -6,7 +6,8 @@
 //   node tools/package-path-workday.mjs --live     바깥 참조가 synk.im에 실제로 있는지도 본다(HEAD 요청)
 //
 // --jobs에는 유호님이 공개를 허락하신 직업만 적는다. 작업 사본에서 시험하느라 open으로 둔 다른 직업은
-// 묶음의 직업 목록에 「만드는 중」 카드로만 실리고, 그 장면표와 사진과 영상은 실리지 않는다.
+// 묶음의 직업 목록에 「만드는 중」 카드로만 실리고, 그 장면표와 영상은 실리지 않는다. 사진은 직업 고르기
+// 카드에 쓰는 한 장(index.json의 poster, 그 직업의 places/ 안)만 실린다.
 //
 // 일터 체험은 synk.im/path/workday/ 에 올라간다. 싣는 파일은 experiences/path-vr/server.mjs 의 허용
 // 목록(코드 파일 이름 목록 + 직업 목록이 가리키는 장면표, 영상 목록, 사진, 영상)뿐이다. 직업의
@@ -21,7 +22,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, rm, writeFile, lstat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { publicFiles, WORKDAY_PUBLIC, workdayJobFiles } from '../experiences/path-vr/server.mjs';
+import { publicFiles, WORKDAY_PUBLIC, workdayCardPhotos, workdayJobFiles } from '../experiences/path-vr/server.mjs';
 import { pagesDocument, PAGES_CSP } from './package-path-interview.mjs';
 
 const REPOSITORY = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -48,10 +49,11 @@ export function references(file, source) {
   return [...found];
 }
 
-/** The job list as published: an open job that is not being published turns into a 「만드는 중」 card. */
+/** The job list as published: an open job that is not being published turns into a 「만드는 중」 card.
+ * The card keeps its one place photograph (the picker shows a photograph for every job). */
 export function publicIndex(index, published) {
   return { ...index, jobs: (Array.isArray(index?.jobs) ? index.jobs : []).map((entry) => (entry?.status === 'open' && !published.has(entry.id)
-    ? { id: entry.id, status: 'making', title: entry.title, role: entry.role, summary: entry.summary }
+    ? { id: entry.id, status: 'making', title: entry.title, role: entry.role, summary: entry.summary, ...(entry.poster ? { poster: entry.poster, posterAlt: entry.posterAlt } : {}) }
     : entry)) };
 }
 
@@ -62,7 +64,7 @@ export async function prepareWorkdayPages({ jobs } = {}) {
   const index = JSON.parse(await readFile(path.join(SOURCE, INDEX), 'utf8'));
   for (const id of published) if (!index.jobs?.some((entry) => entry?.id === id && entry.status === 'open')) throw new Error(`Not an open job: ${id}`);
   const approved = new Set(await publicFiles());
-  const files = [...WORKDAY_PUBLIC, ...(await workdayJobFiles()).filter((file) => published.has(file.split('/')[2]))].sort();
+  const files = [...new Set([...WORKDAY_PUBLIC, ...(await workdayJobFiles()).filter((file) => published.has(file.split('/')[2])), ...(await workdayCardPhotos())])].sort();
   for (const id of published) if (!files.includes(`workday/jobs/${id}/job.json`)) throw new Error(`Job does not pass its check: ${id}`);
   for (const file of files) if (!approved.has(file) || !file.startsWith('workday/') || /(?:^|\/)(?:production|docs)\//.test(file)) throw new Error(`Not an approved workday file: ${file}`);
   // A film the list calls reviewed must be in the bundle: a missing file would only show up as a

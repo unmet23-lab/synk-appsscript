@@ -96,7 +96,7 @@ function render() {
   ui.vr.disabled = !vrSupported || !state.voiceReady || mode !== 'voice' || busy || !!vr?.active;
   ui.vr.textContent = vrSupported ? 'Quest 면접실 입장' : 'Quest에서 VR 입장';
   const messages = {
-    idle: mode === 'voice' ? state.voiceReady ? vrSupported ? '마이크 확인을 마쳤어요. 의자에 앉아 「Quest 면접실 입장」을 눌러 주세요.' : '마이크 확인을 마쳤어요. 준비되면 「면접 시작」을 눌러 주세요.' : checkingMic ? '한 문장을 말해 보세요. 그만두려면 「마이크 확인 취소」를 눌러 주세요.' : voice?.ready ? '「마이크 확인」을 누르고 한 문장을 말해 주세요.' : '「한국어 음성 준비」와 「마이크 확인」을 차례로 눌러 주세요.' : '답은 글로 써도 되고, 마이크로 말해도 돼요.', preparing: settling ? '자리에 앉아 정면을 봐 주세요. 곧 첫 질문이 나와요.' : '면접 영상을 불러오고 있어요.',
+    idle: mode === 'voice' ? state.voiceReady ? vrSupported ? '마이크 확인을 마쳤어요. 의자에 앉아 「Quest 면접실 입장」을 눌러 주세요.' : '마이크 확인을 마쳤어요. 준비되면 「면접 시작」을 눌러 주세요.' : checkingMic ? '한 문장을 말해 보세요. 그만두려면 「마이크 확인 취소」를 눌러 주세요.' : voice?.ready ? '「마이크 확인」을 누르고 한 문장을 말해 주세요.' : '「한국어 음성 준비」와 「마이크 확인」을 차례로 눌러 주세요.' : '「면접 시작」을 누르면 첫 질문이 나와요.', preparing: settling ? '자리에 앉아 정면을 봐 주세요. 곧 첫 질문이 나와요.' : '면접 영상을 불러오고 있어요.',
     question: '면접관의 질문을 들어 주세요.', followup: '첫 답을 들은 면접관이 이어서 묻고 있어요.',
     listening: busy ? (mode === 'voice' ? voice?.state === 'processing' ? '마이크를 껐어요. 마지막으로 한 말을 글로 바꾸고 있어요.' : '마이크를 켜고 있어요.' : '답변 칸을 여는 중이에요.') : state.clarificationPrompt || (mode === 'voice' ? '이제 말로 답해 주세요. 말을 마치면 알아서 넘어가고, 애매하게 들린 부분만 다시 물어요.' : '답을 다 쓰면 「답변 완료」를 눌러 주세요.'),
     confirming: '마이크를 껐어요. 아래 부분만 봐 주세요. 이때 걸리는 시간은 답변 시간에 들어가지 않아요.',

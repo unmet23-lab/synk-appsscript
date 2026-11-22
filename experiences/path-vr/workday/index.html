@@ -1,33 +1,20 @@
 <!doctype html>
 <html lang="ko">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#060709"><meta name="color-scheme" content="dark"><meta name="description" content="한국 일터의 하루를 미리 겪어 보는 SYNK PATH 일터 체험. 휴대폰과 PC에서 앉아서 하고, Quest에서도 같은 주소로 열려요."><title>SYNK PATH · 일터 체험</title><link rel="icon" href="../assets/logo-path-320.webp"><link rel="stylesheet" href="./workday.css?v=1"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ffffff"><meta name="description" content="한국 일터의 하루를 미리 겪어 보는 SYNK PATH 일터 체험. 휴대폰과 PC에서 앉아서 하고, Quest에서도 같은 주소로 열려요."><title>SYNK PATH · 일터 체험</title><link rel="icon" href="../assets/logo-path-320.webp"><link rel="stylesheet" href="./workday.css?v=5"></head>
 <body data-phase="idle">
-  <header class="topbar"><a class="brand" href="../" aria-label="SYNK PATH 소개"><img src="../assets/logo-path-320.webp" alt="SYNK PATH" width="320" height="108"></a><span class="topbar-label">WORKDAY / SEATED</span><a class="topbar-link" href="../interview/film/rehearsal.html">면접 연습<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></header>
+  <header class="bar"><div class="bar-in">
+    <a class="brand" href="../" aria-label="SYNK PATH 소개"><img src="../assets/logo-path-320.webp" alt="SYNK PATH" width="320" height="108"></a>
+    <nav class="bar-nav" aria-label="체험"><a href="./" aria-current="page">일터 체험</a><a href="../interview/film/rehearsal.html">면접 연습</a></nav>
+  </div></header>
   <main class="room">
-    <section class="hero" aria-labelledby="hub-title">
-      <div class="hero-copy">
-        <p class="eyebrow"><span class="eyebrow-code">PATH · WORKDAY</span><span class="eyebrow-tag">일터 체험</span></p>
-        <h1 id="hub-title"><span>한국 일터의 하루를</span> <span>미리 겪어 봐요.</span></h1>
-      </div>
-      <div class="hero-side">
-        <p class="intro">일터의 사람들이 건네는 말에 한국어로 직접 답하고, 갈림길에서 골라요. 끝나면 오늘 일어난 일을 적은 체험 기록 한 장을 받아요.</p>
-        <dl class="gauges">
-          <div><dt>하는 곳</dt><dd>휴대폰·PC</dd></div>
-          <div><dt>자세</dt><dd>앉아서</dd></div>
-          <div><dt>점수</dt><dd>없음</dd></div>
-          <div><dt>음성 처리</dt><dd>기기 안</dd></div>
-        </dl>
-      </div>
+    <section class="head" aria-labelledby="hub-title">
+      <div><h1 id="hub-title"><span>어느 일터에서</span> <span>하루를 보낼까요?</span></h1></div>
+      <p class="lead">일터를 고르면 그곳 선배와 하루를 보내요. 장면 하나는 2~3분이고, 장면마다 쉬었다가 이어서 할 수 있어요.</p>
     </section>
-    <ul class="jobs" id="jobs" aria-label="직업 고르기"></ul>
-    <p id="hub-status" class="status" role="status" hidden></p>
-    <section class="notes" aria-label="일터 체험 안내">
-      <article><span class="note-index">01</span><h2>앉아서, 천천히</h2><p>걸어 다니는 화면이 없어요. 자리를 옮길 때는 화면이 잠깐 어두워졌다가 다음 자리에서 밝아져요. 장면 하나는 2~3분이고, 장면마다 쉬었다가 이어서 할 수 있어요.</p></article>
-      <article><span class="note-index">02</span><h2>맞고 틀린 답이 없어요</h2><p>갈림길에서 무엇을 골라도 하루는 이어져요. 끝에 내가 고른 것과 그 직업이 지키는 것을 나란히 봐요. 「나와 맞지 않는다」도 좋은 결과예요.</p></article>
-      <article><span class="note-index">03</span><h2>기록은 내가 받아서 내가 내요</h2><p>체험 기록에는 점수나 등급이 없어요. 이 기기에서 만들어 PDF로 받고, 지원할 때 본인이 직접 내요. SYNK는 기록을 보관하거나 고용주에게 보내지 않아요.</p></article>
-    </section>
+    <ul class="jobs" id="jobs" aria-label="일터 고르기"></ul>
+    <p id="hub-status" class="status-line" role="status" hidden></p>
   </main>
-  <footer><span>SYNK PATH · 일터 체험</span><a href="../interview/film/rehearsal.html">면접 연습</a></footer>
-  <script type="module" src="./hub.mjs?v=1"></script>
+  <footer><span>SYNK PATH · 일터 체험 · 앉아서 해요. 말한 내용은 이 기기 안에서만 글로 바꿔요.</span><a href="../interview/film/rehearsal.html">면접 연습</a></footer>
+  <script type="module" src="./hub.mjs?v=3"></script>
 </body>
 </html>

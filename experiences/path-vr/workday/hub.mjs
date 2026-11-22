@@ -1,24 +1,36 @@
-/** 직업 고르기. The catalogue (jobs/index.json) decides what is listed and what is open:
- * a job that is still being made shows its card and cannot be entered. */
+/** 직업 고르기. The catalogue (jobs/index.json) decides what is listed and what is open.
+ * Every job is a card in one grid with its place photograph and its role name large, so the whole list
+ * reads at a glance. An open job adds the scene count, the length and one decision button; a job that is
+ * still being made carries a 「만드는 중」 flag and cannot be entered. A job without a usable photograph
+ * shows its role name on a plain panel instead. */
 const list = document.getElementById('jobs'), status = document.getElementById('hub-status');
 const make = (tag, className, text) => { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; };
+const ARROW = 'M5 12h14m-6-6 6 6-6 6';
+const PHOTO = /^[a-z0-9-]+\/places\/[a-z0-9-]+\.(?:jpg|webp)$/;
 
-function card(job) {
-  const open = job.status === 'open';
+function card(job, position) {
+  const open = job.status === 'open', name = job.role || job.title;
   const item = document.createElement('li');
   const box = make(open ? 'a' : 'div', `job ${open ? 'open' : 'making'}`);
   if (open) box.href = `./play.html?job=${encodeURIComponent(job.id)}`;
-  const photo = make('div', 'job-photo');
-  if (open && typeof job.poster === 'string' && /^[a-z0-9-]+\/places\/[a-z0-9-]+\.(?:jpg|webp)$/.test(job.poster)) {
-    const image = Object.assign(document.createElement('img'), { src: new URL(`./jobs/${job.poster}`, import.meta.url).href, alt: job.posterAlt || '', decoding: 'async', width: 1920, height: 1080 });
-    photo.append(image);
-  } else photo.append(make('span', 'job-word', job.role || job.title));
+  const visual = make('div', 'job-visual');
+  const plain = () => { box.classList.add('no-photo'); const word = make('p', 'job-word', name); word.setAttribute('aria-hidden', 'true'); visual.prepend(word); };
+  if (typeof job.poster === 'string' && PHOTO.test(job.poster) && job.poster.startsWith(`${job.id}/`)) {
+    const photo = Object.assign(document.createElement('img'), { src: new URL(`./jobs/${job.poster}`, import.meta.url).href, alt: job.posterAlt || '', decoding: 'async', loading: position < 3 ? 'eager' : 'lazy', width: 1920, height: 1080 });
+    photo.addEventListener('error', () => { photo.remove(); plain(); }, { once: true });
+    visual.append(photo);
+  } else plain();
+  visual.append(make('span', 'job-flag', open ? '지금 할 수 있어요' : '만드는 중'));
   const body = make('div', 'job-body');
-  body.append(make('span', 'job-state', open ? '지금 할 수 있어요' : '만드는 중'), make('h2', '', job.title), make('p', '', job.summary || ''));
+  body.append(make('h2', 'job-role', name), make('p', 'job-summary', job.summary || ''));
   if (open) {
-    body.append(make('p', 'job-meta', [job.role, job.scenes ? `장면 ${job.scenes}개` : '', job.minutes ? `${job.minutes}분쯤` : ''].filter(Boolean).join(' · ')), make('span', 'job-go', '이 일터로 가기'));
-  } else body.append(make('p', 'job-meta', job.role || ''));
-  box.append(photo, body); item.append(box);
+    const facts = [job.scenes ? `장면 ${job.scenes}개` : '', job.minutes ? `${job.minutes}분쯤` : ''].filter(Boolean);
+    if (facts.length) { const meta = make('p', 'job-meta'); meta.append(...facts.map((fact) => make('span', '', fact))); body.append(meta); }
+    const go = make('span', 'job-go', '이 일터로 가기');
+    go.insertAdjacentHTML('beforeend', `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${ARROW}"/></svg>`);
+    body.append(go);
+  }
+  box.append(visual, body); item.append(box);
   return item;
 }
 
@@ -27,7 +39,8 @@ try {
   if (!response.ok) throw new Error(String(response.status));
   const index = await response.json();
   const jobs = (index.jobs || []).filter((job) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(job.id || '') && typeof job.title === 'string');
-  list.replaceChildren(...jobs.map(card));
+  const ordered = [...jobs.filter((job) => job.status === 'open'), ...jobs.filter((job) => job.status !== 'open')];
+  list.replaceChildren(...ordered.map(card));
   if (!jobs.length) throw new Error('empty');
 } catch {
   status.hidden = false;

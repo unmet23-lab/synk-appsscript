@@ -1,108 +1,116 @@
 <!doctype html>
 <html lang="ko">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#060709"><meta name="color-scheme" content="dark"><title>SYNK PATH · 일터 체험</title><link rel="icon" href="../assets/logo-path-320.webp"><link rel="stylesheet" href="./workday.css?v=1"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ffffff"><title>SYNK PATH · 일터 체험</title><link rel="icon" href="../assets/logo-path-320.webp"><link rel="stylesheet" href="./workday.css?v=5"></head>
 <body data-phase="loading">
-  <header class="topbar"><a class="brand" href="./" aria-label="일터 체험 직업 고르기"><img src="../assets/logo-path-320.webp" alt="SYNK PATH" width="320" height="108"></a><span class="topbar-label">WORKDAY / SEATED</span><a class="topbar-link" href="./"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>직업 고르기</a></header>
+  <header class="bar"><div class="bar-in">
+    <a class="brand" href="./" aria-label="일터 고르기"><img src="../assets/logo-path-320.webp" alt="SYNK PATH" width="320" height="108"></a>
+    <nav class="bar-nav" aria-label="체험"><a href="./">일터 고르기</a><a href="../interview/film/rehearsal.html">면접 연습</a></nav>
+  </div></header>
   <main class="room">
-    <section class="hero" id="hero" aria-labelledby="job-title">
-      <div class="hero-copy">
-        <p class="eyebrow"><span class="eyebrow-code">PATH · WORKDAY</span><span class="eyebrow-tag" id="job-role"></span></p>
-        <h1 id="job-title"><span id="job-title-main">일터 체험</span> <span>미리 하루를 보내요.</span></h1>
-      </div>
-      <div class="hero-side">
-        <p class="intro" id="job-summary"></p>
-        <dl class="gauges">
-          <div><dt>장면</dt><dd><span id="gauge-scenes">5</span><small>개</small></dd></div>
-          <div><dt>걸리는 시간</dt><dd><span id="gauge-minutes">12</span><small>분쯤</small></dd></div>
-          <div><dt>자세</dt><dd>앉아서</dd></div>
-          <div><dt>음성 처리</dt><dd>기기 안</dd></div>
-        </dl>
-      </div>
-    </section>
     <section class="studio" aria-label="일터 체험">
-      <div class="screen" id="screen">
-        <img id="place-photo" alt="" decoding="async">
-        <div id="film-stage" aria-hidden="true"></div>
-        <div id="points" class="points"></div>
-        <div class="screen-top"><span class="chip phase"><i aria-hidden="true"></i><span id="scene-chip">시작 전</span></span><span id="place-chip" class="chip place"></span></div>
-        <div class="caption" id="caption" hidden><p class="caption-who" id="caption-who"></p><p class="caption-text" id="caption-text"></p><p class="caption-meaning" id="caption-meaning" hidden></p><p class="caption-hint" id="caption-hint" hidden></p></div>
-        <div id="pause-overlay" class="overlay" hidden><p>일시 정지</p><span>「이어서 하기」를 누르면 다시 이어져요.</span></div>
-        <div id="veil" class="veil" aria-hidden="true"><p id="veil-caption"></p></div>
-      </div>
-      <div class="console" id="console">
-        <ol class="slots" id="slots" aria-label="장면 진행"></ol>
-        <p id="status" class="status" role="status" aria-live="polite">일터를 불러오고 있어요.</p>
-
-        <div id="setup" class="panel" hidden>
-          <fieldset class="segmented"><legend>말하는 방식</legend><label><input type="radio" name="mode" value="text" checked><span>글로 답하기</span></label><label><input type="radio" name="mode" value="voice"><span>말로 답하기</span></label></fieldset>
-          <div class="voice-steps"><button id="voice-prepare" class="subtle" type="button" hidden>1. 한국어 음성 준비</button><button id="microphone-check" class="subtle" type="button" hidden>2. 마이크 확인</button></div>
-          <p id="voice-status" class="small"></p>
-          <p id="in-app-note" class="small warn" hidden>지금은 메신저나 SNS 앱 안에서 열려 있어요. 마이크와 PDF 받기가 안 될 수 있으니, 오른쪽 위 메뉴에서 「다른 브라우저로 열기」를 눌러 주세요.</p>
-          <meter id="mic-meter" min="0" max="1" value="0" aria-label="마이크 음량" hidden></meter>
-          <p class="voice-hint small" id="voice-hint" hidden>처음 한 번 한국어 음성 모델(약 103MB)을 내려받아요. 받는 동안에도 「글로 답하기」로 바로 시작할 수 있어요.</p>
-          <div class="field" id="hint-field"><label for="hint-language">힌트 언어</label><select id="hint-language"><option value="">한국어만</option></select></div>
-          <button id="start" class="primary" type="button" disabled>시작</button>
-          <button id="restart" class="subtle" type="button" hidden>처음부터 새로 하기</button>
-          <div class="row"><button id="preview" class="subtle" type="button">앉은 자리로 보기</button><button id="vr" class="subtle" type="button">VR 기기인지 확인</button></div>
-          <p id="vr-status" class="small quest">VR은 Quest 브라우저에서 이 주소를 열면 쓸 수 있어요. 화면으로도 끝까지 할 수 있어요.</p>
-          <button id="open-closing" class="subtle" type="button" hidden>맺음과 체험 기록 보기</button>
-          <ul class="privacy" aria-label="음성과 답변 처리"><li>마이크만 쓰고 카메라는 켜지 않아요.</li><li>말한 내용은 이 기기 안에서 글로 바꾸고 저장하지 않아요.</li><li><span>진행과 고른 것은 이 창을 닫으면 지워져요. 이름과 맺음에 쓴 글은 저장하지 않아요. <button id="clear-data" class="link" type="button">지금 지우기</button></span></li></ul>
-          <p id="review-note" class="small" hidden></p>
-          <p class="small">인물과 장소는 AI로 만든 그림과 영상이에요. 실제 사람이나 시설이 아니에요.</p>
+      <div class="stage">
+        <div class="screen" id="screen">
+          <img id="place-photo" alt="" decoding="async">
+          <div id="film-stage" aria-hidden="true"></div>
+          <div id="points" class="points"></div>
+          <div class="screen-top"><span class="chip phase"><span id="scene-chip">시작 전</span></span><span id="place-chip" class="chip place"></span></div>
+          <div class="caption" id="caption" hidden><p class="caption-who" id="caption-who"></p><p class="caption-text" id="caption-text"></p><p class="caption-meaning" id="caption-meaning" hidden></p><p class="caption-hint" id="caption-hint" hidden></p></div>
+          <div id="pause-overlay" class="overlay" hidden><p>잠깐 쉬어요</p><span>「이어서 하기」를 누르면 다시 이어져요.</span></div>
+          <div id="veil" class="veil" aria-hidden="true"><p id="veil-caption"></p></div>
         </div>
+      </div>
 
-        <div id="play" class="panel" hidden>
-          <div id="say-panel" hidden>
-            <div id="foreign" class="foreign" hidden><p id="foreign-who" class="foreign-who"></p><p id="foreign-text" class="foreign-text"></p></div>
-            <p class="prompt" id="say-prompt"></p>
-            <section id="tool-card" class="tool-card" aria-labelledby="tool-title" hidden><p id="tool-kind" class="tool-kind"></p><h3 id="tool-title" class="tool-title"></h3><dl id="tool-rows" class="tool-rows"></dl><div id="tool-lines" class="tool-lines"></div><p id="tool-note" class="tool-note" hidden></p></section>
-            <div id="options" class="options" role="group" aria-label="고를 수 있는 것"></div>
-            <div id="example" class="example" hidden><span class="example-label" id="example-label">예시 문장</span><p id="example-text"></p></div>
-            <p id="help-hint" class="hint" hidden></p>
-            <div id="answer-area">
-              <label for="answer" id="answer-label">내 말</label>
-              <textarea id="answer" rows="2" maxlength="300" placeholder="한국어로 써 주세요."></textarea>
-              <p id="heard" class="partial" aria-live="off"></p>
+      <div class="side">
+        <section class="hero" id="hero" aria-labelledby="job-title">
+          <p class="eyebrow"><span class="eyebrow-tag">일터 체험 · <span id="job-role"></span></span></p>
+          <h1 id="job-title"><span id="job-title-main">일터 체험</span></h1>
+          <p class="intro" id="job-summary"></p>
+          <dl class="gauges">
+            <div><dt>장면</dt><dd><span id="gauge-scenes">5</span>개</dd></div>
+            <div><dt>걸리는 시간</dt><dd><span id="gauge-minutes">12</span>분쯤</dd></div>
+            <div><dt>하는 자세</dt><dd>앉아서</dd></div>
+          </dl>
+        </section>
+
+        <div class="console" id="console">
+          <ol class="slots" id="slots" aria-label="장면 진행"></ol>
+          <p id="status" class="status" role="status" aria-live="polite">일터를 불러오고 있어요.</p>
+
+          <div id="setup" class="panel" hidden>
+            <fieldset class="segmented"><legend>말하는 방식</legend><label><input type="radio" name="mode" value="text" checked><span>글로 답하기</span></label><label><input type="radio" name="mode" value="voice"><span>말로 답하기</span></label></fieldset>
+            <div class="voice-steps"><button id="voice-prepare" class="subtle" type="button" hidden>1. 한국어 음성 준비</button><button id="microphone-check" class="subtle" type="button" hidden>2. 마이크 확인</button></div>
+            <p id="voice-status" class="small"></p>
+            <p id="in-app-note" class="small warn" hidden>지금은 메신저나 SNS 앱 안에서 열려 있어요. 마이크와 PDF 받기가 안 될 수 있으니, 오른쪽 위 메뉴에서 「다른 브라우저로 열기」를 눌러 주세요.</p>
+            <meter id="mic-meter" min="0" max="1" value="0" aria-label="마이크 음량" hidden></meter>
+            <p class="voice-hint small" id="voice-hint" hidden>처음 한 번 한국어 음성 모델(약 103MB)을 내려받아요. 받는 동안에도 「글로 답하기」로 바로 시작할 수 있어요.</p>
+            <div class="field" id="hint-field"><label for="hint-language">힌트 언어</label><select id="hint-language"><option value="">한국어만</option></select></div>
+            <button id="start" class="primary" type="button" disabled>시작하기</button>
+            <button id="restart" class="subtle" type="button" hidden>처음부터 새로 하기</button>
+            <button id="open-closing" class="subtle" type="button" hidden>맺음과 체험 기록 보기</button>
+            <p class="small setup-note">말한 내용은 저장하지 않아요. 인물과 장소는 실제 사람이나 시설이 아니에요.</p>
+            <p id="review-note" class="small setup-note" hidden></p>
+            <details class="more">
+              <summary>VR 기기로 하기, 기록 지우기</summary>
+              <div class="row"><button id="preview" class="subtle" type="button">앉은 자리로 보기</button><button id="vr" class="subtle" type="button">VR 기기인지 확인</button></div>
+              <p id="vr-status" class="small quest">VR은 Meta Quest 브라우저에서 이 주소를 열면 쓸 수 있어요. 화면으로도 끝까지 할 수 있어요.</p>
+              <ul class="privacy" aria-label="음성과 답변 처리"><li>마이크만 쓰고 카메라는 켜지 않아요.</li><li>말한 내용은 이 기기 안에서 글로 바꾸고 저장하지 않아요.</li><li><span>진행과 고른 것은 이 창을 닫으면 지워져요. 이름과 맺음에 쓴 글은 저장하지 않아요. <button id="clear-data" class="link" type="button">지금 지우기</button></span></li><li>인물과 장소는 AI로 만든 그림과 영상이에요. 실제 사람이나 시설이 아니에요.</li></ul>
+            </details>
+          </div>
+
+          <div id="play" class="panel" hidden>
+            <div id="say-panel" hidden>
+              <div id="foreign" class="foreign" hidden><p id="foreign-who" class="foreign-who"></p><p id="foreign-text" class="foreign-text"></p></div>
+              <p class="prompt" id="say-prompt"></p>
+              <section id="tool-card" class="tool-card" aria-labelledby="tool-title" hidden><p id="tool-kind" class="tool-kind"></p><h3 id="tool-title" class="tool-title"></h3><dl id="tool-rows" class="tool-rows"></dl><div id="tool-lines" class="tool-lines"></div><p id="tool-note" class="tool-note" hidden></p></section>
+              <div id="options" class="options" role="group" aria-label="고를 수 있는 것"></div>
+              <div id="example" class="example" hidden><span class="example-label" id="example-label">예시 문장</span><p id="example-text"></p></div>
+              <p id="help-hint" class="hint" hidden></p>
+              <div id="answer-area">
+                <label for="answer" id="answer-label">내 말</label>
+                <textarea id="answer" rows="2" maxlength="300" placeholder="한국어로 써 주세요."></textarea>
+                <p id="heard" class="partial" aria-live="off"></p>
+              </div>
             </div>
-          </div>
-          <div id="tour-panel" hidden>
-            <p class="prompt" id="tour-prompt"></p>
-            <div id="board" class="board" role="group" aria-label="갈 수 있는 자리"></div>
-            <div id="point-card" class="example" hidden><span class="example-label">이름</span><p id="point-label"></p><p id="point-hint" class="hint" hidden></p></div>
-          </div>
-          <div id="note-panel" class="note-card" hidden><h2 id="note-title"></h2><p id="note-lead" class="small"></p><div id="note-body"></div><p id="note-hint" class="hint" hidden></p></div>
-          <p id="film-note" class="small" hidden>영상이 열리지 않아 사진과 자막으로 이어가요. <button id="retry-film" class="link" type="button">영상 다시 받기</button></p>
-          <div id="rest-panel" class="rest" hidden><p class="rest-title" id="rest-title"></p><p class="small" id="rest-text"></p></div>
-          <div class="actions">
-            <button id="primary" class="primary" type="button">다음</button>
-            <button id="replay" type="button" hidden>다시 듣기</button>
-            <button id="example-button" type="button" hidden>예시 문장 보기</button>
-            <button id="hint-button" type="button" hidden>힌트</button>
-            <button id="use-example" class="subtle" type="button" hidden>예시 문장으로 답하기</button>
-            <button id="skip-unheard" class="subtle" type="button" hidden>이대로 넘어가기</button>
-            <button id="finish-here" class="subtle" type="button" hidden>여기까지 하고 기록 보기</button>
-            <button id="pause" class="subtle" type="button">일시 정지</button>
-            <button id="leave" class="subtle" type="button">그만하기</button>
+            <div id="tour-panel" hidden>
+              <p class="prompt" id="tour-prompt"></p>
+              <div id="board" class="board" role="group" aria-label="갈 수 있는 자리"></div>
+              <div id="point-card" class="example" hidden><span class="example-label">이름</span><p id="point-label"></p><p id="point-hint" class="hint" hidden></p></div>
+            </div>
+            <div id="note-panel" class="note-card" hidden><h2 id="note-title"></h2><p id="note-lead" class="small"></p><div id="note-body"></div><p id="note-hint" class="hint" hidden></p></div>
+            <p id="film-note" class="small" hidden>영상이 열리지 않아 사진과 자막으로 이어가요. <button id="retry-film" class="link" type="button">영상 다시 받기</button></p>
+            <div id="rest-panel" class="rest" hidden><p class="rest-title" id="rest-title"></p><p class="small" id="rest-text"></p></div>
+            <div class="actions">
+              <button id="primary" class="primary" type="button">다음</button>
+              <button id="replay" type="button" hidden>다시 듣기</button>
+              <button id="example-button" type="button" hidden>예시 문장 보기</button>
+              <button id="hint-button" type="button" hidden>힌트</button>
+              <button id="use-example" class="subtle" type="button" hidden>예시 문장으로 답하기</button>
+              <button id="skip-unheard" class="subtle" type="button" hidden>이대로 넘어가기</button>
+              <button id="finish-here" class="subtle" type="button" hidden>여기까지 하고 기록 보기</button>
+              <button id="pause" class="quiet" type="button">일시 정지</button>
+              <button id="leave" class="quiet" type="button">그만하기</button>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <section id="closing" class="closing" aria-labelledby="closing-title" hidden>
-      <div class="closing-head"><p class="kicker">CLOSING</p><h2 id="closing-title">오늘 하루를 마쳤어요.</h2><p id="closing-lead" class="lead"></p></div>
+      <ol class="close-steps" aria-label="맺음 단계"><li><button type="button" data-go="1" data-show="1,2,3">1 오늘 고른 것</button></li><li><button type="button" data-go="2" data-show="1,2,3">2 내 생각</button></li><li><button type="button" data-go="3" data-show="1,2,3">3 기록 한 장</button></li></ol>
+      <div class="closing-head"><div><p class="kicker">맺음</p><h2 id="closing-title">오늘 하루를 마쳤어요.</h2></div><p id="closing-lead" class="lead"></p></div>
       <div class="closing-grid">
-        <section class="card" aria-labelledby="forks-title"><h3 id="forks-title">내가 고른 것과 이 직업이 지키는 것</h3><div id="forks"></div></section>
-        <section class="card" aria-labelledby="conditions-title"><h3 id="conditions-title">이 일의 실제 조건</h3><p id="conditions-lead" class="small"></p><dl id="conditions"></dl></section>
-        <section class="card" aria-labelledby="reflection-title"><h3 id="reflection-title">체험 뒤 내 답</h3>
+        <section class="card step-1" aria-labelledby="forks-title"><h3 id="forks-title">내가 고른 것과 이 직업이 지키는 것</h3><div id="forks"></div></section>
+        <section class="card step-1" aria-labelledby="conditions-title"><h3 id="conditions-title">이 일의 실제 조건</h3><p id="conditions-lead" class="small"></p><dl id="conditions"></dl></section>
+        <section class="card step-2" aria-labelledby="reflection-title"><h3 id="reflection-title">체험 뒤 내 답</h3>
           <fieldset class="choices" id="decisions"><legend id="decision-label"></legend></fieldset>
           <p id="decision-note" class="small"></p>
           <div class="field"><label for="hard" id="hard-label"></label><textarea id="hard" rows="3" maxlength="300"></textarea><p id="hard-help" class="small"></p></div>
         </section>
-        <section class="card" aria-labelledby="ladder-title"><h3 id="ladder-title">준비 사다리</h3><p id="ladder-lead" class="small"></p><div id="ladder"></div>
+        <section class="card step-2" aria-labelledby="ladder-title"><h3 id="ladder-title">준비 사다리</h3><p id="ladder-lead" class="small"></p><div id="ladder"></div>
           <div class="field"><label for="name">이름</label><input id="name" type="text" maxlength="40" autocomplete="name" placeholder="기록에 적을 이름"></div>
         </section>
       </div>
-      <section class="record" aria-labelledby="record-title">
+      <section class="record step-3" aria-labelledby="record-title">
         <div class="record-side">
           <h3 id="record-title">체험 기록 한 장</h3>
           <p class="small">점수나 등급이 없어요. 체험에서 일어난 일만 적어요. 본인이 받아서 지원할 때 직접 내요.</p>
@@ -111,16 +119,17 @@
           <button id="print-record" type="button">인쇄하기</button>
           <p class="small">「인쇄하기」에서 「PDF로 저장」을 고르면 글자를 복사할 수 있는 PDF가 돼요.</p>
           <p id="pdf-status" class="small" role="status"></p>
-          <button id="wipe-record" class="subtle" type="button">이 기기에서 지우기</button>
+          <button id="wipe-record" class="link" type="button">이 기기에서 지우기</button>
           <a id="next-link" class="next" hidden><strong id="next-label"></strong><span id="next-body"></span></a>
-          <button id="back-to-scenes" class="subtle" type="button">장면으로 돌아가기</button>
         </div>
         <article id="paper" class="paper" aria-label="체험 기록 미리 보기"></article>
       </section>
+      <div class="close-nav"><button id="back-to-scenes" class="subtle" type="button">장면으로 돌아가기</button><button type="button" class="quiet" data-go="1" data-show="2">이전</button><button type="button" class="quiet" data-go="2" data-show="3">이전</button><button type="button" class="go" data-go="2" data-show="1">다음 · 내 생각</button><button type="button" class="go" data-go="3" data-show="2">다음 · 기록 한 장</button></div>
     </section>
     <div id="vr-stage" aria-hidden="true"></div>
   </main>
   <footer><span>SYNK PATH · 일터 체험</span><a href="../interview/film/rehearsal.html">면접 연습</a></footer>
   <script type="module" src="./play.mjs?v=1"></script>
+  <script type="module" src="./closing-steps.mjs?v=1"></script>
 </body>
 </html>

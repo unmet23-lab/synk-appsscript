@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SYNK PATH · 일터 체험 — 시안</title>
+<link rel="stylesheet" href="./ui.css">
+<link rel="stylesheet" href="./체험.css">
+</head>
+<body data-pans="AB" data-pan="A">
+<header class="bar"><div class="wrap bar-in">
+  <a class="brand" href="./직업.html" aria-label="직업 고르기로"><img src="../../../../experiences/path-vr/assets/logo-path-320.webp" alt="SYNK PATH" width="320" height="108"></a>
+  <nav class="bar-nav before" aria-label="체험"><a href="./직업.html">직업 고르기</a><a href="./면접.html">면접 연습</a></nav>
+  <div class="session session-bar" style="flex:1;height:auto">
+    <div style="display:flex;align-items:center;gap:20px">
+      <ol class="steps" id="steps" aria-label="장면 진행"></ol>
+      <div class="mobile-step"><b id="mobile-step"></b><ol class="steps" id="steps-m" aria-hidden="true"></ol></div>
+      <div class="acts"><button class="btn quiet" id="pause" type="button">일시 정지</button><button class="btn quiet" id="leave" type="button">그만하기</button></div>
+    </div>
+  </div>
+</div></header>
+
+<main>
+  <!-- 시작 전 -->
+  <div class="before wrap">
+    <section class="intro" aria-labelledby="job-title">
+      <div class="photo"><img id="intro-photo" alt=""></div>
+      <div class="intro-side">
+        <span class="tag open" style="justify-self:start">일터 체험 · <span id="job-role"></span></span>
+        <h1 class="display" id="job-title" style="font-size:clamp(32px,3.6vw,48px)"></h1>
+        <p class="lead" id="job-summary"></p>
+        <dl class="facts-row"><div><dt>장면</dt><dd id="f-scenes"></dd></div><div><dt>걸리는 시간</dt><dd id="f-minutes"></dd></div><div><dt>하는 자세</dt><dd>앉아서</dd></div></dl>
+        <div class="settings">
+          <fieldset class="seg" style="border:0;margin:0" aria-label="답하는 방식"><label><input type="radio" name="mode" value="text" checked><span>글로 답하기</span></label><label><input type="radio" name="mode" value="voice"><span>말로 답하기</span></label></fieldset>
+          <p class="small" id="voice-note" hidden style="margin:-6px 0 0">처음 한 번 한국어 음성 모델(약 103MB)을 받아요. 받는 동안에도 글로 시작할 수 있어요.</p>
+          <div class="field"><label for="hint-language">힌트 언어</label><select class="select" id="hint-language"><option value="">한국어만</option><option value="mn">몽골어</option><option value="vi">베트남어</option><option value="en">영어</option></select></div>
+        </div>
+        <button class="btn go big wide" id="start" type="button">시작하기</button>
+        <details class="more"><summary>말과 기록은 어디에 남나요?</summary><ul><li>마이크만 쓰고 카메라는 켜지 않아요.</li><li>말한 내용은 이 기기 안에서 글로 바꾸고 저장하지 않아요.</li><li>진행과 고른 것은 이 창을 닫으면 지워져요.</li><li>인물과 장소는 AI로 만든 그림이에요.</li></ul></details>
+      </div>
+    </section>
+    <ol class="scene-list" id="scene-list" aria-label="오늘의 장면"></ol>
+    <p class="trust"><span>VR 기기(Meta Quest) 브라우저에서 이 주소를 열면 VR로 해요. 화면으로도 끝까지 할 수 있어요.</span></p>
+  </div>
+
+  <!-- 장면 안 -->
+  <div class="session">
+    <div class="play wrap">
+      <section class="stage" aria-label="장면">
+        <div class="shot" id="shot"><img id="photo" alt=""><span class="place-chip" id="place-chip"></span><div id="points"></div><div class="paused" id="paused" hidden><b>잠깐 쉬어요</b><span>「이어서 하기」를 누르면 다시 이어져요.</span></div></div>
+        <div class="sub" id="sub" aria-live="polite"><p class="sub-who" id="sub-who"></p><p class="sub-text" id="sub-text"></p><p class="sub-hint" id="sub-hint" hidden></p></div>
+      </section>
+      <section class="task" id="task" aria-live="polite"></section>
+    </div>
+  </div>
+
+  <!-- 맺음과 기록 -->
+  <div class="closing wrap" id="closing"></div>
+</main>
+<footer class="foot"><div class="wrap foot-in"><span>SYNK PATH · 일터 체험</span><a href="./면접.html">면접 연습</a></div></footer>
+<script src="./mock.js"></script>
+<script src="./체험.js"></script>
+</body>
+</html>
