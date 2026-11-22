@@ -100,8 +100,9 @@ const trimmed = value => (typeof value === 'string' && value.trim() ? value.trim
 export function assignmentCheckLead(check) {
   if (check?.status === 'partial') return '회사 공간 가운데 일부를 확인하지 못했습니다.';
   if (check?.status === 'account_mismatch') return '회사 공간이 다른 계정으로 로그인되어 있어 확인하지 못했습니다.';
-  // 회사 서버가 이 로그인을 받지 않았다(401 AUTH_REQUIRED · 403 ACCOUNT_UNAVAILABLE). 다시 확인해도 같으니 다시 로그인하라고 말한다(0.5.4 후보 Fable F1)
-  if (check?.status === 'login_required') return '로그인 정보가 만료되어 회사 공간 배정을 확인하지 못했습니다. 로그아웃한 뒤 다시 로그인해 주세요.';
+  // 회사 서버가 이 로그인을 받지 않았다(401 AUTH_REQUIRED · 403 ACCOUNT_UNAVAILABLE). 다시 확인해도 같으니 다시 로그인하라고 말한다(0.5.4 후보 Fable F1).
+  // 403은 활성이 아닌 계정에도 오므로 「만료」라고 단정하지 않는다(pc-fan-followups Fable F1)
+  if (check?.status === 'login_required') return '회사 공간에서 이 로그인을 확인하지 못했습니다. 로그아웃한 뒤 다시 로그인해 주세요.';
   return '회사 공간 배정을 확인하지 못했습니다.';
 }
 

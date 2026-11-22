@@ -216,7 +216,7 @@ test('a company space the lookup cannot confirm does not hold sign-in: Solio sti
   let fan = made.view.scenes.at(-1).fan;
   assert.deepEqual(fan.names.map(n => n.space), ['solio']);
   // 펼침이 까닭과 「다시 확인」을 둔다(PC 검수 F1, 유호님 11-21 「다 고쳐야지」). 회사 로그인이 끊겼으면 다시 로그인하라고 말한다(0.5.4 후보 Fable F1)
-  assert.equal(fan.lead, '로그인 정보가 만료되어 회사 공간 배정을 확인하지 못했습니다. 로그아웃한 뒤 다시 로그인해 주세요.');
+  assert.equal(fan.lead, '회사 공간에서 이 로그인을 확인하지 못했습니다. 로그아웃한 뒤 다시 로그인해 주세요.');
   assert.deepEqual(fan.foot.map(f => f.action), ['recheck-spaces', 'account', 'settings', 'logout']);
   // 다시 확인이 또 실패하면 까닭이 남고, 확인되면 공간이 서고 까닭이 사라진다. 회사 공간은 열지 않고 첫 화면 경로도 건드리지 않는다
   answer = { status: 'partial', destinations: ['/'], unavailable: ['pulse'] };

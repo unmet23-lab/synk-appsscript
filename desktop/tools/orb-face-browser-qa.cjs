@@ -1416,7 +1416,7 @@ if(!process.versions.electron){
           const fan=await fanSpaces(w);check('6 '+status+' lists only confirmed spaces in the fan',JSON.stringify(fan)===JSON.stringify(want),{fan});
           // 펼침이 까닭 한 줄과 「다시 확인」을 둔다. 다시 확인이 배정을 확인하면 공간이 서고 까닭이 사라진다. 회사 공간은 열지 않는다(PC 검수 F1, 유호님 11-21 「다 고쳐야지」)
           // 회사 로그인이 끊긴 회원에게는 다시 로그인하라고 말한다(0.5.4 후보 Fable F1)
-          const lead=status==='partial'?'회사 공간 가운데 일부를 확인하지 못했습니다.':status==='account_mismatch'?'회사 공간이 다른 계정으로 로그인되어 있어 확인하지 못했습니다.':status==='login_required'?'로그인 정보가 만료되어 회사 공간 배정을 확인하지 못했습니다. 로그아웃한 뒤 다시 로그인해 주세요.':'회사 공간 배정을 확인하지 못했습니다.';
+          const lead=status==='partial'?'회사 공간 가운데 일부를 확인하지 못했습니다.':status==='account_mismatch'?'회사 공간이 다른 계정으로 로그인되어 있어 확인하지 못했습니다.':status==='login_required'?'회사 공간에서 이 로그인을 확인하지 못했습니다. 로그아웃한 뒤 다시 로그인해 주세요.':'회사 공간 배정을 확인하지 못했습니다.';
           const note=()=>w.js("(()=>{const l=document.querySelector('#portal-entry [data-fan-lead]'),b=document.querySelector('#portal-entry [data-foot=\"recheck-spaces\"]');return {lead:l?.textContent||'',leadShown:!!l&&getComputedStyle(l).display!=='none',role:l?.getAttribute('role')||'',recheck:b?.textContent||'',recheckShown:!!b&&getComputedStyle(b).display!=='none'};})()");
           const n1=await note();check('6 '+status+' shows the reason and 「다시 확인」 in the fan',n1.lead===lead&&n1.leadShown&&n1.role==='status'&&n1.recheck==='다시 확인'&&n1.recheckShown,n1);
           await captureSizes(w,'fan-check-'+status);
@@ -1454,6 +1454,31 @@ if(!process.versions.electron){
           await captureSizes(w,'room-withdrawn');
           await click(w,'[data-room=space] [data-orb-act="room-solio"]');let solio=false;for(let i=0;i<150&&!solio;i++){solio=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-room=solio]');return !!r&&!r.hidden;})()");if(!solio)await wait(40);}
           const c=await calls(w);check('6-2 「솔리오로」 goes to Solio and opens nothing more',solio&&c.filter(x=>x==='open:/').length===1&&!c.includes('workspace-open'),{solio,calls:c});
+          w.win.destroy();
+        }
+        // 6-3. 조회 중 사람이 펼침 밖으로 옮긴 초점은 끝나도 빼앗지 않는다(pc-fan-followups Fable F2).
+        // 마우스로 누른 「다시 확인」이 다 확인되어 초점이 공간 단추로 돌아가도 그 공간을 가리킨 모습이 되지 않는다(Fable F3).
+        // 이 확인 창은 초점을 갖지 않아 focusin이 돌지 않으므로, F3의 막이는 이 장면이 아니라 코드로만 확인했다
+        if(only('6-3')){
+          const w=await open();await boot(w,{assignment:{status:'unavailable',destinations:[],unavailable:['workspace','pulse']},subs:subsNone},{restore:signedIn('none')});
+          await until(w,s=>s.mode==='app'&&s.ui==='app',{timeout:12000});await wait(600);
+          await click(w,'.here-orb');await until(w,s=>s.fan);await wait(500);
+          await w.js('window.__orbFixture.holdAssignment()');
+          await w.js("document.querySelector('#portal-entry [data-foot=\"recheck-spaces\"]').focus()");await key(w,'Return');await wait(300);
+          await w.js("document.querySelector('#portal-entry .here-orb').focus()");
+          await w.js('window.__orbFixture.releaseAssignment()');await wait(700);
+          const f1=await w.js("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>{const a=document.activeElement,b=document.querySelector('#portal-entry [data-foot=\"recheck-spaces\"]');r({orb:a?.classList?.contains('here-orb')||false,cls:String(a?.className||''),recheckOn:!!b&&!b.disabled});})))");
+          check('6-3 focus moved outside the fan during the lookup stays there afterwards',f1.orb&&f1.recheckOn,f1);
+          await w.js("window.__orbFixture.setAssignment({status:'resolved',destinations:['/','/pulse-app/'],unavailable:[]})");
+          // 실제 마우스 입력으로 누른다(누르면 단추가 초점을 받는다)
+          const pt=await w.js("(()=>{const r=document.querySelector('#portal-entry [data-foot=\"recheck-spaces\"]').getBoundingClientRect();return {x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};})()");
+          for(const type of ['mouseMove','mouseDown','mouseUp'])w.win.webContents.sendInputEvent({type,x:pt.x,y:pt.y,button:'left',clickCount:1});
+          // 목록이 늘며 밀린 자리의 공간이 손 아래에 오지 않게 손을 방 쪽으로 뺀다. 그래야 초점을 돌려놓은 일만 본다
+          w.win.webContents.sendInputEvent({type:'mouseMove',x:pt.x+700,y:pt.y+500});
+          let after=null;for(let i=0;i<60;i++){after=await fanSpaces(w);if(after.length===3)break;await wait(60);}
+          await wait(200);
+          const f2=await w.js("(()=>{const a=document.activeElement,f=document.querySelector('#portal-entry [data-orb-fan]');return {inFan:!!a&&!!f&&f.contains(a),go:a?.dataset?.go||'',hot:[...document.querySelectorAll('#portal-entry .fan-go.hot')].map(b=>b.dataset.go)};})()");
+          check('6-3 a mouse 「다시 확인」 that confirms both spaces moves the focus into the fan without lighting a space',JSON.stringify(after)==='[\"solio\",\"workspace\",\"pulse\"]'&&f2.inFan&&f2.hot.length===0,{after,...f2});
           w.win.destroy();
         }
         // 8. error · enter-error, 다시 시도 뒤 checking에 글이 없다, unconfigured

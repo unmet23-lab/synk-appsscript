@@ -229,7 +229,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   const moreKeys = new WeakMap();
   let railSince = -1e9, progTimer = 0, visTimer = 0, visLeave = 0, subTimer = 0, subLeave = 0;
   /* 구 곁의 펼침(2단계 첫 조각 설계 1.3절). 다가가 머무는 판정은 화면이 하고, 열고 닫는 것은 컨트롤러에 알린다 */
-  let fanKey = '', fanTimer = 0, fanLeave = 0, fanWasOpen = false, fanReturn = null, fanRefocus = null;
+  let fanKey = '', fanTimer = 0, fanLeave = 0, fanWasOpen = false, fanReturn = null, fanRefocus = null, fanRestoring = false;
   /* 방(2단계 둘째 조각). asideReturn은 방을 연 자리(닫을 때 초점을 돌려줄 곳)다. applied는 컨트롤러가 보낸 요청(열 줄, 접을 줄, 초점)을 한 번씩만 따르려고 적어 둔다.
      stale은 입력 중이거나 누르는 중이라 다시 짓기를 미룬 안쪽이다. 손을 떼거나 초점이 그 안쪽을 떠나면 마저 짓는다 */
   let lastAside = null, asideReturn = null, pressing = false, liveSeq = 0, fldSeq = 0;
@@ -1154,11 +1154,14 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       const want = fanRefocus;
       fanRefocus = null;
       const a = doc.activeElement;
-      if (!a || a === doc.body || !app.fan.contains(a) || a.disabled) {
+      // 초점이 빠졌거나(body) 꺼진 단추에 남았을 때만 돌려놓는다. 그사이 사람이 다른 단추로 옮겼으면 그대로 둔다(pc-fan-followups Fable F2)
+      if (!a || a === doc.body || a.disabled) {
         const [kind, value] = [want.slice(0, want.indexOf(':')), want.slice(want.indexOf(':') + 1)];
         const same = [...app.fan.querySelectorAll(kind === 'go' ? '.fan-go' : '[data-foot]')].find(b => (kind === 'go' ? b.dataset.go : b.dataset.foot) === value);
         const target = same || app.fan.querySelector('.fan-go[aria-current="true"]') || app.fan.querySelector('.fan-go');
-        try { target?.focus?.({ preventScroll: true }); } catch { /* 초점은 사람이 옮길 수 있다 */ }
+        // 돌려놓는 초점은 가리킨 것이 아니다. 펼침의 톡 소리와 가리킴 모습을 내지 않는다(pc-fan-followups Fable F3)
+        fanRestoring = true;
+        try { target?.focus?.({ preventScroll: true }); } catch { /* 초점은 사람이 옮길 수 있다 */ } finally { fanRestoring = false; }
       }
     }
     if (open && !fanWasOpen) {
@@ -1249,6 +1252,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
   };
   /* 이름을 가리키면 그 공간의 별이 밝아지고 톡 소리가 한 번 난다(시안 pointAt) */
   const onFanPoint = event => {
+    if (fanRestoring) return;
     const b = event.target?.closest?.('.fan-go[data-go]');
     const on = event.type === 'pointerover' || event.type === 'focusin';
     if (b && on) { if (!b.classList.contains('hot')) sound.key(); stage.setHot(b.dataset.go); stage.setFace(b.dataset.go); for (const x of app.fan.querySelectorAll('.fan-go')) x.classList.toggle('hot', x === b); }

@@ -8,6 +8,7 @@ if(process.argv.includes('--orb-qa-no-canvas'))contextBridge.exposeInMainWorld('
 const GUEST_GEN='90000000-0000-4000-8000-000000000009';
 let auth={configured:true,status:'restoring',signedIn:false,sessionGeneration:0,accountGeneration:GUEST_GEN};
 let env={platform:'win32',arch:'x64',version:'0.4.95',mode:'development',publicAppsAvailable:[],qaGuestEntry:false};
+let assignmentHold=null,assignmentRelease=null;
 let assignment={status:'resolved',destinations:[],unavailable:[]},inviteMode='received',subs=null,subsFail=0,checkResult=null,tray=[],visits=null,health=null,backup=null;
 const listeners=new Set(),subsListeners=new Set(),calls=[];
 // 계정 관리 방(2단계 둘째 조각)이 부르는 구독 다리. 부른 것을 적고, 저장은 이 창의 합성 자료에만 고쳐 넣는다(실제 로그인 · 설치 · 브라우저 열기는 없다)
@@ -137,7 +138,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     if(auth.signedIn===true&&Object.hasOwn(accountOps,operation))return accountOps[operation](params);return {ok:false,error:{code:'QA_OPERATION_DISABLED'}};},
   accountIdentity:async()=>{calls.push('identity');if(auth.signedIn!==true)return {ok:false,error:{code:'AUTH_REQUIRED'}};return {ok:true,email:'member@example.com',newEmail:null,createdAt:'2026-03-02T00:00:00Z',identities:[{provider:'email'},{provider:'google'}]};},
   authSecurity:async section=>{calls.push('security:'+section);return {ok:true};},
-  resolveCompanyEntryDestinations:async req=>{calls.push('resolve');return echo(req,{result:assignment});},
+  resolveCompanyEntryDestinations:async req=>{calls.push('resolve');if(assignmentHold)await assignmentHold;return echo(req,{result:assignment});},
   openAssignedCompanyDestination:async req=>{calls.push('open:'+req.destination);if(req.destination==='/pulse-app/')openPulse();if(req.destination==='/')openWorkspace();return echo(req,{destination:req.destination});},
   cancelCompanyEntry:async()=>null,
   inspectCompanyInviteCode:async req=>{calls.push('invite-code');return invite(req,'/');},
@@ -332,6 +333,9 @@ contextBridge.exposeInMainWorld('__orbFixture',Object.freeze({
   holdAuth:()=>{restoring=new Promise(resolve=>{release=resolve;});},
   setAuth:snapshot=>{auth=snapshot;emit();},
   setAssignment:value=>{assignment=value;},
+  // 다음 배정 조회를 붙잡아 둔다(조회 중에 사람이 초점을 옮기는 시험). releaseAssignment가 푼다
+  holdAssignment:()=>{assignmentHold=new Promise(resolve=>{assignmentRelease=resolve;});},
+  releaseAssignment:()=>{const r=assignmentRelease;assignmentHold=null;assignmentRelease=null;r?.();},
   // 「다시 읽기」(subs.check)의 답을 정한다. null이면 지금 자료를 새로 읽은 것처럼 돌려준다
   setCheckResult:value=>{checkResult=value||null;},
   setInvite:value=>{inviteMode=value;},
