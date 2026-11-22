@@ -192,3 +192,21 @@ test('다른 자격 확인이 돌고 있으면 건너뛰고, 한 시간 넘은 �
   assert.strictEqual(r2.checked, 1);
   assert.ok(!fs.existsSync(잠금), '끝나면 잠금을 지운다');
 });
+
+test('특정 기관 수강생 · 회원만 낼 수 있으면 신청자 소속에 없을 때 안 된다(11-23 솔데스크)', () => {
+  const 조건 = { 만나이: 30, 사는곳: ['서울'], 학생: false, 직장인: false, 사업자: true, 법인: false, 가지않는곳: [] };
+  const 제한 = { 누구나: false, 지역: [], 학생만: false, 직장인만: false, 단체만: false, 소속만: '솔데스크 수강생', 최소나이: null, 최대나이: null, 현장지역: [] };
+  assert.deepStrictEqual(자격.판정하기(제한, 조건), { status: '안 됨', reason: '솔데스크 수강생만 응모할 수 있다' });
+  assert.strictEqual(자격.판정하기(제한, { ...조건, 소속: ['솔데스크'] }).status, '됨');
+  assert.strictEqual(자격.판정하기({ ...제한, 누구나: true }, 조건).status, '됨', '누구나 낼 수 있으면 소속을 보지 않는다');
+  assert.strictEqual(자격.판정하기({ ...제한, 소속만: '' }, 조건).status, '됨');
+});
+
+test('사람이 넣은 「안 됨」은 같은 공고의 자동 「됨」보다 앞선다(11-23 솔데스크)', () => {
+  const 판정 = { items: {
+    [자격.열쇠('솔데스크 SAP 온라인 과정 영상 홍보 공모전')]: { title: '솔데스크 SAP 온라인 과정 영상 홍보 공모전', status: '됨', by: '카본' },
+    '솔데스크sap온라인과정': { title: '솔데스크 SAP 온라인 과정', status: '안 됨', by: '수동' },
+  } };
+  assert.strictEqual(자격.판정찾기(판정, '솔데스크 SAP 온라인 과정 영상 홍보 공모전').status, '안 됨');
+  assert.strictEqual(자격.판정찾기(판정, '다른 공모전'), null);
+});

@@ -219,7 +219,12 @@ function 열린영상(통합, 현황, 기준일, 지금, 자격판정 = null, �
     });
   }
   const 합침 = 중복합치기(나옴);
-  for (const x of 합침) x.추천 = 추천점수(x, 기준일);
+  for (const x of 합침) {
+    x.추천 = 추천점수(x, 기준일);
+    // 추천은 마감 3일 안쪽을 빼서, 급한 공고일수록 「추천만」에서 안 보였다(11-23 세라믹 · 광명역). 맡은 세션 없는 7일 안쪽 AI 영상 공고는 「마감 임박」으로 늘 보인다.
+    const 날 = x.마감 ? Math.round((Date.parse(x.마감) - Date.parse(기준일)) / 864e5) : null;
+    x.급함 = x.값 === 'AI 영상' && 날 != null && 날 >= 0 && 날 <= 7;
+  }
   합침.sort((a, b) => (a.마감 || '9999') .localeCompare(b.마감 || '9999') || a.이름.localeCompare(b.이름, 'ko'));
   return 합침;
 }
@@ -503,9 +508,9 @@ function 판() {
 }
 
 function 열린판() {
-  const xs = 자료.열린.filter((o) => 열린보기 === 'all' || (열린보기 === 'rec' ? o.추천 && o.추천.추천 : o.값 === 'AI 영상'));
+  const xs = 자료.열린.filter((o) => 열린보기 === 'all' || (열린보기 === 'rec' ? (o.추천 && o.추천.추천) || o.급함 : o.값 === 'AI 영상'));
   const box = document.getElementById('open'); box.textContent = '';
-  if (!xs.length) box.append(el('div', 'empty', 열린보기 === 'rec' ? '지금 추천 기준(70점 이상, 마감까지 3일 넘게)을 넘는 공모가 없습니다.' : '지금 열린 AI 영상 공모가 없습니다.'));
+  if (!xs.length) box.append(el('div', 'empty', 열린보기 === 'rec' ? '지금 추천 기준(70점 이상, 마감까지 3일 넘게)을 넘는 공모도, 마감 7일 안쪽 AI 영상 공모도 없습니다.' : '지금 열린 AI 영상 공모가 없습니다.'));
   for (const o of xs) {
     const r = el('article', 'row');
     const n = o.마감 ? 남은날(o.마감) : null;
@@ -520,6 +525,7 @@ function 열린판() {
     if (o.원문확인안함) t.append(el('span', 'tag warn', '그록 보고 · 원문 확인 전'));
     if (o.자격 && o.자격 !== '됨') t.append(el('span', 'tag warn', '자격 확인 필요'));
     if (o.추천 && o.추천.추천) t.prepend(el('span', 'tag ai', '추천 ' + o.추천.점수));
+    if (o.급함) t.prepend(el('span', 'tag warn', '마감 임박 · 맡은 세션 없음'));
     if (o.마감바뀜) { const b = el('span', 'tag warn', '마감 바뀜'); b.title = o.마감바뀜; t.append(b); }
     const g = o.공고조건 || {};
     if (g.현장참석) { const b = el('span', 'tag warn', '현장 참석'); if (g.현장quote) b.title = g.현장quote; t.append(b); }

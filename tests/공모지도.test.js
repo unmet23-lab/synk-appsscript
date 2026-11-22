@@ -551,3 +551,15 @@ test('신청현황에 있는 공모는 제목 어순이 달라도 열린 공모�
   ] };
   assert.deepStrictEqual(지도.열린영상(통합, 현황, '2026-11-20', new Date('2026-11-20T03:00:00Z')).map(x => x.id), ['h']);
 });
+
+test('맡은 세션 없는 7일 안쪽 AI 영상 공고는 「마감 임박」으로 추천만에도 보인다(11-23)', () => {
+  const 열린 = 지도.열린영상(목록(), { items: [] }, '2026-11-23');
+  const 급함 = Object.fromEntries(열린.map(x => [x.id, x.급함]));
+  assert.strictEqual(급함.a, true, '오늘 마감');
+  assert.strictEqual(급함.x, true, '7일 뒤 마감');
+  assert.strictEqual(급함.y, false, 'AI 허용을 모르는 영상');
+  assert.strictEqual(급함.h, false, '7일 밖');
+  const html = 지도.페이지(지도.자료만들기({ items: [] }, 목록(), new Date('2026-11-23T00:00:00Z')));
+  assert.match(html, /o\.추천 && o\.추천\.추천\) \|\| o\.급함/);
+  assert.match(html, /마감 임박 · 맡은 세션 없음/);
+});
