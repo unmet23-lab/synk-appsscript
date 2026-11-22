@@ -1270,6 +1270,15 @@
 - 고침: 다른 도구 · 다른 꼴로 돌려 쓰지 않는다. 운영에 넣은 것이 없음을 확인하고(스크립트는 첫 요청 전에 막힘), 나머지 일을 끝낸 뒤 그 세션의 끝 보고 · 다음 단계 상자에서 「운영 시험을 진행할까요」를 유호님께 직접 여쭌다. 운영 시험이 든 일을 곁 세션에 넘길 때는 유호님이 그 곁 세션 창에서 한 줄로 시키게 하거나, 시작 세션이 직접 걷는다.
 - 다시 확인: 거절 뒤 운영 `/pulse/api/request` 쪽으로 나간 요청 0(스크립트 출력 · 상태 파일 없음). 유호님이 그 세션에서 「운영 시험 진행해」라고 한 뒤에는 같은 스크립트가 그대로 통과했다(P-1112-46DD 접수 → 직원 걸음 · 보관까지, 11-12 18:16 ~ 18:25 KST).
 
+<a id="meta-ads-mcp"></a>
+
+### Meta Ads MCP 로그인 — 판정기가 동의 「계속」을 막고, 터미널 대기는 몇 분이면 끝난다 (2026-11-22 Claude)
+- 증상: `claude mcp add --transport http meta-ads https://mcp.facebook.com/ads`로 이 작업본의 로컬 설정에 등록했다. 앱 ID는 필요 없었다(Meta가 동적 등록을 연다). 그런데 Bash에서 `claude mcp login meta-ads`를 돌리면 「stdin isn't a terminal」로 끝났다. 터미널 패널에서 `--no-browser`로 돌리면 콜백을 받는 곳이 없어 127.0.0.1 연결이 거절됐다. 기다리는 동안 유호님이 동의하셨지만 「Authentication timeout」이 두 번 났다. ego에서 제가 동의 「계속」을 누르려 하자 자동 모드 판정기가 막았다.
+- 원인: 로그인은 대화형 터미널이 있어야 한다. `--no-browser`는 주소를 붙여 넣는 방식이라 콜백 서버를 띄우지 않는다. 대기 시간은 몇 분뿐이고, 로그인을 띄울 때마다 code_challenge, state, 포트가 바뀐다. 동의 화면에는 「Claude 플랫폼이 회원님과 동일한 광고 관리 권한」이 적혀 있어서, 판정기는 유호님 말씀 없이는 누르지 않게 한다.
+- 고침: 터미널 패널에서 `claude mcp login meta-ads`(`--no-browser` 없이)를 띄운다. 출력된 주소에서 scope만 `ads_read+ads_mcp_management`로 줄여 ego Profile 5(Business Suite 페이스북 계정)에서 열고, 곧바로 「계속」을 누른다. 이 클릭은 유호님 「니가 대신 눌러」 뒤에 통과했다. 터미널에 「Authenticated with "meta-ads"」가 뜨면 끝이다. 기본 브라우저에도 같은 창이 뜨지만 닫으면 된다.
+- 다시 확인: `claude mcp list`에 `meta-ads … ✔ Connected`. 다만 등록 전에 시작한 앱 세션에는 도구가 생기지 않으니, 새 세션에서 쓴다. 이 PC의 독립 `claude` CLI는 로그인되어 있지 않아서(`claude auth status` → loggedIn false) `claude -p`로 대신 부를 수 없다. 끊을 때는 Business Suite 설정 → 통합 → 광고 MCP 서버, 또는 `claude mcp logout meta-ads`를 쓴다.
+- 덧(2026-11-22 읽기 시험, Claude): 새 세션에는 `mcp__meta-ads__*` 도구가 떴다. `ads_get_ad_accounts`는 975907755191445 하나를 돌려줬다(ACTIVE, USD, 결제 수단 없음, 소유 비즈니스 없음). `ads_get_ig_accounts`는 빈 목록이었다. 광고 계정에 인스타 계정이 이어져 있지 않거나 instagram_basic 권한이 없어서다. `ads_library_search`는 결제 수단 없이도 됐지만 광고 ID, 페이지 이름, 시작 시각, 링크 제목, 스냅샷 주소만 주고 본문과 노출은 주지 않는다. 결과는 최신순이고 낱말이 느슨하게 맞는다. KR 「AI 광고 제작」 첫 줄은 컴퓨터 학원 광고였고, MN 「한국어 수업」은 한국어로 쓴 해외 앱 광고, MN 「солонгос хэл」은 건강식품 광고였다. `ads_insights_industry_benchmark`는 「No industry benchmark data available for the given criteria.」였다. 게재한 광고가 없어서다. 쓰기 도구는 부르지 않았다. 쓸 자리는 경쟁사나 몽골 학원의 페이지 ID를 `page_ids`로 넣어 새 광고를 지켜보는 일이다. 낱말로 광고를 찾고 문구를 나누는 일은 업종 브리핑의 ego 수집(노출순, 본문 포함)이 계속 맡는다.
+
 ## Claude 앱 세션
 
 ### 스스로 보관한 세션이 부모 세션에는 「끝나기 전에 사용자가 보관했다」로 온다 (2026-10-20 Claude)
