@@ -1,0 +1,7 @@
+Generate one image with your image tool. Landscape 3:2.
+
+Style: a premium minimal 3D product render, like a high-end studio still life. Very dark charcoal background (#0C0C0B to pure black) that fades to black at all four edges so the image melts into a black app card. One soft warm-white key light from upper left, a faint cool rim light from behind. Shallow depth of field. Quiet, calm, friendly, a little playful. Monochrome palette (black, graphite, soft warm white) with at most one small warm wood or warm light accent.
+
+The characters: small round "orb employees". Each is a perfect sphere of smooth satin black material with a soft glossy highlight on the upper left and a thin bright rim of light along its edge. Each has exactly two eyes: small solid soft-white rounded dots, side by side, slightly above the middle of the face. No mouth, no arms, no legs, no other face features. The surface is smooth: no grooves, no rings, no stripes, no dot grids, no holes, no perforations, no patterns.
+
+Never draw text, letters, numbers, logos, brand marks or UI. No repeated small holes or dots anywhere (no speaker grilles, no perforated metal, no bubble textures). Keep the subject in the center 70% of the frame with generous dark space around it, and keep the bottom 15% calm and empty.
