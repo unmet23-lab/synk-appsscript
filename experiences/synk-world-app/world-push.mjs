@@ -389,8 +389,10 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 켜기 · 끄기가 끝났다: 그 전에 시작한 요청의 응답은 옛것이다.
  const settled=()=>{shown.account=shown.device=++order;};
  // status 응답을 차례대로 적는다. 돌려주는 값: 기기 칸이 가장 새것인가(이 브라우저 구독 정리는 그때만 한다 — 설계 검토 7).
- function applyRead(seq,data,expected,phase){
-  const fresh=seq>shown.device;if(fresh)shown.device=seq;
+ // device: 이 읽기를 기기 응답으로 세나. 화면 맞추기 읽기(정리하지 않는 읽기)는 세지 않는다 — 세면 그보다 앞서 보낸 평소 읽기가 늦게 와서 낡은
+ // 응답으로 보여 이 브라우저 구독 · 기기 기록 정리를 건너뛴다(r16 GA1: 사라진 구독의 기기 기록과 켜진 계획이 남아 1단이 쉰다).
+ function applyRead(seq,data,expected,phase,device=true){
+  const fresh=device&&seq>shown.device;if(fresh)shown.device=seq;
   if(newer(seq,data)){shown.account=Math.max(shown.account,seq);applyStatus(data,expected,{phase,device:fresh,seq});}
   // 판으로 견줄 수 있는데 상태로 적지 않은 읽기는 판이 지금 상태보다 크지 않다 — 지금 상태는 서버에서 그 읽기와 같거나 뒤에 처리됐다. 그 읽기를 보낸
   // 때까지 본 것으로 센다(r10 GA1 · GA8: 켜기의 늦은 응답이 차례를 올려 같은 판의 넘겨받기 전 다시 읽기를 적지 않아도 편집이 묶이지 않게).
@@ -414,7 +416,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    const reg=install?await register(expected):await existing();guard(expected);
    const sub=reg?await bounded(reg.pushManager.getSubscription()):null;guard(expected);subscription=sub;
    const seq=++order,data=await request('status',sub?{endpoint:sub.endpoint}:{});
-   if(!applyRead(seq,data,expected,'ready')||!tidy)return snapshot();
+   if(!applyRead(seq,data,expected,'ready',tidy))return snapshot();   // 화면 맞추기 읽기는 기기 응답이 아니라 여기서 멈춘다(정리하지 않는다)
    const next=snapshot(),record=readRecord();
    if(sub&&!next.device.subscribed&&record?.accountId===owner&&record.endpoint===sub.endpoint){await removeLocal(sub,reg);writeRecord(null);}
    else if(!sub&&record?.accountId===owner){writeRecord(null);try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}

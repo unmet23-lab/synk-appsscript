@@ -2032,6 +2032,26 @@ test('판: 화면 맞추기 읽기가 망이 끊겨 실패하면, 망이 돌아�
  a.dispose();b.dispose();c.dispose();
 });
 
+test('판: 화면 맞추기 읽기가 늦은 평소 읽기보다 먼저 끝나도, 평소 읽기는 사라진 구독의 기기 기록을 정리한다(GPT push-versions-world-r16 GA1)',async()=>{
+ const s=versionedServer({settings:{frequency:2,hour:9,since:null}}),storage=memory(),locks=fakeLocks(),rem=reminderSettings({frequency:2,hour:9,since:null}),bus=storageBus();
+ const net={holdNext:false,held:[]},anonB=[];
+ const requestB=(action,body,options)=>{if(action==='status'&&net.holdNext){net.holdNext=false;const reply=s.request(action,body,options);return new Promise(resolve=>net.held.push(()=>resolve(reply)));}return s.request(action,body,options);};
+ const a=on(s,{storage,browser:{locks}});a.bindSettings(rem);
+ const b=makeV(browser({registered:true,locks,extra:bus.extra}),s,{now:()=>V0,storage,request:requestB,anonymous:(action,body)=>{anonB.push(action);return Promise.resolve({ok:true,removed:true});}});b.bindSettings(rem);
+ await a.setAccount('acc-1');await b.setAccount('acc-1');await settled();
+ const record=JSON.stringify({accountId:'acc-1',deviceId:'dev-1',endpoint:'https://fcm.googleapis.com/fcm/send/gone'});
+ storage.setItem('synk.world.push.v1',record);   // 이 브라우저의 구독은 사라졌고 기기 기록만 남았다
+ net.holdNext=true;const ordinary=b.refresh();await settled();   // 평소 읽기(정리함)가 늦다
+ assert.equal(net.held.length,1);
+ rem.set({hour:18});a.sync({settings:{frequency:2,hour:18}});const oldValue=storage.getItem(KEY_V);await settled();   // A의 18시가 받혀 판 키가 빈다
+ bus.fire({key:KEY_V,oldValue,newValue:null});await settled();await settled();   // B의 화면 맞추기 읽기가 먼저 끝난다
+ assert.equal(storage.getItem('synk.world.push.v1'),record,'화면 맞추기 읽기는 정리하지 않는다');
+ net.held.shift()();await ordinary;await settled();   // 늦은 평소 읽기
+ assert.equal(storage.getItem('synk.world.push.v1'),null,'평소 읽기가 사라진 구독의 기기 기록을 지운다');
+ assert.deepEqual(anonB,['unsubscribe'],'서버의 기기 기록도 끈다');
+ a.dispose();b.dispose();
+});
+
 test('판: 넘겨받은 닫힌 페이지의 편집이 보내는 사이 다른 기기의 쓰기로 거절되면 다시 보내지 않고 서버 것을 들인다(설계 주인 규칙 5, 섞기 시드 97)',async()=>{
  const s=versionedServer(),storage=memory(),locks=fakeLocks(),m=manual(s),rem=reminderSettings();
  const t1=on(s,{storage,browser:{locks}});t1.bindSettings(rem);
