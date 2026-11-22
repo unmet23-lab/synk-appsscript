@@ -127,8 +127,15 @@ pub fn write(root: &Path, value: &Value) -> Result<(), String> {
     let bytes = serde_json::to_vec(value).map_err(|_| "UPDATE_RECORD")?;
     // A failed write or move takes its temporary file away too, so none piles up (GPT -b GA3).
     let fail = |_| { let _ = fs::remove_file(&temp); "UPDATE_RECORD".to_string() };
-    fs::write(&temp, bytes).map_err(fail)?;
+    write_new(&temp, &bytes).map_err(fail)?;
     fs::rename(&temp, root.join(STATE_FILE)).map_err(fail)
+}
+/// A temporary file made new: a name already there — a link to anything, say — is taken away first, never written through
+/// (GPT run-check GA1).
+fn write_new(temp: &Path, bytes: &[u8]) -> std::io::Result<()> {
+    let _ = fs::remove_file(temp);
+    let mut file = fs::OpenOptions::new().write(true).create_new(true).open(temp)?;
+    std::io::Write::write_all(&mut file, bytes)
 }
 
 /// The last record, or `{}` when there is none or it is not ours.
@@ -138,6 +145,61 @@ pub fn read(root: &Path) -> Value {
         Ok(m) if m.is_file() && m.len() <= 4096 => fs::read(&path).ok().and_then(|b| serde_json::from_slice::<Value>(&b).ok()).filter(|v| v["v"] == 1).unwrap_or_else(|| json!({})),
         _ => json!({}),
     }
+}
+
+/// What the run executable saw of the last check it started (4.10): `{"v":1,"at":<ms the run started it>,"result":
+/// "exit <n>"|"CHECK_START"|"CHECK_TIMEOUT"}`. update.json says what a check found; this says whether the check ran at all.
+/// One that could not start writes nothing in update.json; one ended past the run's wait may have left its try there
+/// (`triedAt` with `CHECK_UNFINISHED`, which its 3 hours count from) and nothing more (GPT run-check-main GA2). The window
+/// app's codes: 0 checked, 4 not due after all (another check had just tried — GPT run-check GA2), 75 another check held
+/// the lock, 1 a failed check. update.json tells why only when its `triedAt` is this run's: a window app that could not
+/// start ends with 1 before it writes anything (GPT run-check -c GA1). The run writes it after the check, when it no longer
+/// holds the engine lock, as update.json is written (its own temporary file, moved into place) and without the check lock,
+/// so it never makes a check wait or fail. Of two runs that overlap, the one that writes last stays and its `at` says which
+/// check it tells of: a record of whether a check ran, read by people, which nothing acts on (GPT run-check-main -b). The
+/// next run puts it in its record as `updateCheck`.
+pub const RUN_CHECK_FILE: &str = "update-run.json";
+/// `--update-check-due`'s exit code when it found under the lock that the check was not due after all.
+pub const NOT_DUE_EXIT: i32 = 4;
+/// The words a run may write as the result.
+fn run_check_result(text: &str) -> bool {
+    matches!(text, "CHECK_START" | "CHECK_TIMEOUT") || text.strip_prefix("exit ").is_some_and(|n| n.parse::<i32>().is_ok_and(|v| v.to_string() == n))
+}
+/// Temporary files of runs that ended between writing and moving them, an hour old or more, go (GPT run-check GA4).
+fn clear_run_temps(root: &Path) {
+    let prefix = format!("{RUN_CHECK_FILE}.");
+    for entry in fs::read_dir(root).into_iter().flatten().flatten() {
+        let name = entry.file_name().to_string_lossy().into_owned();
+        let old = entry.metadata().ok().and_then(|m| m.modified().ok()).and_then(|t| t.elapsed().ok()).is_some_and(|age| age.as_secs() >= 3600);
+        // Only the shape the runs make, `update-run.json.<process number>.tmp` (GPT run-check -b GA1).
+        let pid = name.strip_prefix(&prefix).and_then(|rest| rest.strip_suffix(".tmp")).is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()));
+        if pid && old && entry.file_type().is_ok_and(|t| t.is_file()) { let _ = fs::remove_file(entry.path()); }
+    }
+}
+pub fn write_run_check(root: &Path, at: u64, result: &str) -> Result<(), String> {
+    if !run_check_result(result) { return Err("UPDATE_RUN_RECORD".into()); }
+    clear_run_temps(root);
+    let temp = root.join(format!("{RUN_CHECK_FILE}.{}.tmp", std::process::id()));
+    let fail = |_| { let _ = fs::remove_file(&temp); "UPDATE_RUN_RECORD".to_string() };
+    write_new(&temp, &serde_json::to_vec(&json!({"v": 1, "at": at, "result": result})).unwrap_or_default()).map_err(fail)?;
+    fs::rename(&temp, root.join(RUN_CHECK_FILE)).map_err(fail)
+}
+/// The last of them as `{at, result}`, or nothing when there is none or it is not that shape.
+pub fn read_run_check(root: &Path) -> Option<Value> {
+    // One handle for the checks and the read, opened on a link itself rather than where it points (GPT run-check GA3).
+    let mut open = fs::OpenOptions::new();
+    open.read(true);
+    #[cfg(windows)]
+    { use std::os::windows::fs::OpenOptionsExt; open.custom_flags(0x0020_0000); } // FILE_FLAG_OPEN_REPARSE_POINT
+    let file = open.open(root.join(RUN_CHECK_FILE)).ok()?;
+    let meta = file.metadata().ok()?;
+    if !meta.is_file() || reparse(&meta) || meta.len() > 256 { return None; }
+    let mut bytes = Vec::new();
+    std::io::Read::read_to_end(&mut std::io::Read::take(&file, 257), &mut bytes).ok()?;
+    if bytes.len() > 256 { return None; }
+    let value: Value = serde_json::from_slice(&bytes).ok()?;
+    let (at, result) = (value["at"].as_u64()?, value["result"].as_str()?);
+    (value["v"] == 1 && run_check_result(result)).then(|| json!({"at": at, "result": result}))
 }
 
 /// Whether the run executable should check again: never tried; 20 hours after a check that reached the feed; 3 hours
@@ -355,6 +417,74 @@ fn launch(_bytes: &[u8], _version: &str, _install_folder: &Path, _started: impl 
 
 #[cfg(test)]
 mod tests {
+    #[test] fn the_run_writes_whether_its_check_ran() {
+        let root = std::env::temp_dir().join(format!("swb-update-run-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root); fs::create_dir_all(&root).unwrap();
+        assert_eq!(read_run_check(&root), None, "none yet");
+        for result in ["exit 0", "exit 75", "exit 1", "exit -1", "exit 2147483647", "CHECK_START", "CHECK_TIMEOUT"] {
+            write_run_check(&root, 7, result).unwrap();
+            assert_eq!(read_run_check(&root), Some(json!({"at": 7, "result": result})));
+        }
+        for result in ["", "ok", "exit ", "exit -", "exit 1x", "exit 2147483648", "exit 01", "exit +1", "exit --1", "fine", "CHECK_LOCK"] {
+            assert!(write_run_check(&root, 8, result).is_err(), "{result:?} is not written");
+        }
+        assert_eq!(read_run_check(&root), Some(json!({"at": 7, "result": "CHECK_TIMEOUT"})), "a refused one leaves the last");
+        let leftovers: Vec<_> = fs::read_dir(&root).unwrap().flatten().map(|e| e.file_name().to_string_lossy().into_owned()).filter(|n| n.ends_with(".tmp")).collect();
+        assert!(leftovers.is_empty(), "no temporary file is left: {leftovers:?}");
+        // Not that shape, too long, or a folder in its place: nothing.
+        // Each wrong in one field only, the others as written (GPT run-check-main GA4).
+        for text in [r#"{"v":1,"at":"7","result":"exit 0"}"#, r#"{"v":2,"at":7,"result":"exit 0"}"#, r#"{"v":1,"at":7,"result":"done"}"#, r#"{"at":7,"result":"exit 0"}"#, "not json"] {
+            fs::write(root.join(RUN_CHECK_FILE), text).unwrap();
+            assert_eq!(read_run_check(&root), None, "{text}");
+        }
+        let padded = |n: usize| format!(r#"{{"v":1,"at":7,"result":"exit 0","pad":"{}"}}"#, "x".repeat(n));
+        let fits = 256 - padded(0).len();
+        fs::write(root.join(RUN_CHECK_FILE), padded(fits)).unwrap();
+        assert_eq!(read_run_check(&root), Some(json!({"at": 7, "result": "exit 0"})), "256 bytes");
+        fs::write(root.join(RUN_CHECK_FILE), padded(fits + 1)).unwrap();
+        assert_eq!(read_run_check(&root), None, "257 bytes");
+        fs::remove_file(root.join(RUN_CHECK_FILE)).unwrap(); fs::create_dir(root.join(RUN_CHECK_FILE)).unwrap();
+        assert_eq!(read_run_check(&root), None, "a folder");
+        let _ = fs::remove_dir_all(&root);
+    }
+    #[test] fn a_name_left_where_the_run_writes_is_never_written_through() {
+        let root = std::env::temp_dir().join(format!("swb-update-run-link-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root); fs::create_dir_all(&root).unwrap();
+        // A hard link to the run log where this process's temporary file goes: the log stays as it was.
+        fs::write(root.join("runs.jsonl"), "{\"v\":1}\n").unwrap();
+        fs::hard_link(root.join("runs.jsonl"), root.join(format!("{RUN_CHECK_FILE}.{}.tmp", std::process::id()))).unwrap();
+        write_run_check(&root, 9, "exit 0").unwrap();
+        assert_eq!(fs::read_to_string(root.join("runs.jsonl")).unwrap(), "{\"v\":1}\n");
+        assert_eq!(read_run_check(&root), Some(json!({"at": 9, "result": "exit 0"})));
+        fs::hard_link(root.join("runs.jsonl"), root.join(format!("{STATE_FILE}.{}.tmp", std::process::id()))).unwrap();
+        write(&root, &json!({"v": 1})).unwrap();
+        assert_eq!(fs::read_to_string(root.join("runs.jsonl")).unwrap(), "{\"v\":1}\n", "nor update.json's");
+        // Another run's temporary file an hour old goes; a fresh one stays.
+        let stale = root.join(format!("{RUN_CHECK_FILE}.1.tmp")); let fresh = root.join(format!("{RUN_CHECK_FILE}.2.tmp"));
+        let copy = root.join(format!("{RUN_CHECK_FILE}.backup.tmp"));
+        let hour_ago = std::time::SystemTime::now() - std::time::Duration::from_secs(7200);
+        for file in [&stale, &fresh, &copy] { fs::write(file, "x").unwrap(); }
+        for file in [&stale, &copy] { fs::File::options().write(true).open(file).unwrap().set_modified(hour_ago).unwrap(); }
+        write_run_check(&root, 10, "CHECK_TIMEOUT").unwrap();
+        assert!(!stale.exists() && fresh.exists(), "an hour-old run's temporary file goes, a fresh one stays");
+        assert!(copy.exists(), "a file of another shape stays");
+        let _ = fs::remove_dir_all(&root);
+    }
+    #[test] fn the_last_write_stays_and_a_held_check_lock_does_not_stop_it() {
+        let root = std::env::temp_dir().join(format!("swb-update-run-order-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root); fs::create_dir_all(&root).unwrap();
+        // The one written last stays, whatever its time (a clock set back included); `at` tells which check it is.
+        write_run_check(&root, 20, "exit 4").unwrap();
+        write_run_check(&root, 10, "exit 0").unwrap();
+        assert_eq!(read_run_check(&root), Some(json!({"at": 10, "result": "exit 0"})));
+        // A check holding its lock — a person's, say — neither waits for the run's write nor is made to wait by it.
+        let held = check_lock(&root).unwrap().expect("the check lock");
+        write_run_check(&root, 30, "exit 75").unwrap();
+        assert_eq!(read_run_check(&root), Some(json!({"at": 30, "result": "exit 75"})));
+        drop(held);
+        let _ = fs::remove_dir_all(&root);
+    }
+
     use super::*;
 
     #[test] fn a_later_version_is_only_a_plain_one_above_the_installed() {

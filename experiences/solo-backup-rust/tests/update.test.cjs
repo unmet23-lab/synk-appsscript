@@ -35,6 +35,14 @@ test('the window app takes the update switches alone, and the release still take
   assert.match(main, /if let \[mode\]=std::env::args\(\)\.skip\(1\)\.collect::<Vec<_>>\(\)\.as_slice\(\)\{\n\s+if mode=="--update-check"\|\|mode=="--update-check-due"\|\|mode=="--update-install"/);
   // The run executable starts the check that looks at its due time again under the check lock.
   assert.match(read('src-tauri/src/bin/run.rs'), /Command::new\(app\)\.arg\("--update-check-due"\)/);
+  // Not due after all ends with its own exit code, which the run's record keeps apart from a check (GPT run-check GA2):
+  // 4, which no other ending of the window app uses (GPT run-check-main GA3).
+  assert.match(read('src-tauri/src/update.rs'), /pub const NOT_DUE_EXIT: i32 = 4;/);
+  const endings = main.slice(main.indexOf('match outcome{'), main.indexOf('match outcome{') + 900);
+  const codes = [...endings.matchAll(/(?:=>\s*|\);\s*)(-?\d+)\b/g)].map(m => Number(m[1]));
+  assert.ok(codes.includes(3) && codes.includes(75) && !codes.includes(4), `the window app's other exit codes: ${codes}`);
+  assert.match(main, /due_for\(&update::read\(&root\),epoch_ms\(\),own\.as_deref\(\)\)\{return Err\("NOT_DUE"\);\}/);
+  assert.match(main, /Err\("NOT_DUE"\)=>\{println!\("\{\}",json!\(\{"ok":true,"result":\{"due":false\}\}\)\);update::NOT_DUE_EXIT\}/);
   assert.match(main, /let switches:&\[&str\]=if cfg!\(debug_assertions\)\{&\["--background","--test-mode","--smoke"\]\}else\{&\["--background"\]\};/);
   // The notice's click asks first (cancel is the first button), and installing holds the engine lock.
   assert.match(main, /OkCancelCustom\("나중에"\.into\(\),"업데이트"\.into\(\)\)/);

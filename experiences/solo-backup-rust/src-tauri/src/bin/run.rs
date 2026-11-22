@@ -409,6 +409,9 @@ fn run() -> i32 {
         // Only a plain version number from the record goes into the run's record (GPT -b GA2).
         let available = record["available"].as_str().and_then(update::version_text);
         line["updateNotice"] = json!({"installed": installed, "available": available, "notice": found.first().map(|n| n.problem)});
+        // Whether the check an earlier run started ran at all (4.10): one that could not start or ran past the wait leaves
+        // update.json as it was, so it is told here.
+        if let Some(seen) = update::read_run_check(&root) { line["updateCheck"] = seen; }
         if !judged.is_empty() {
             // Today as of telling, once the ledger is held — not as of the run's start (GPT GA3 · -b GA6).
             let records = notify::deliver_now(&root, &found, &judged, || schedule::local_now().chars().take(10).collect(), notify::show);
@@ -426,7 +429,10 @@ fn run() -> i32 {
         if update::due_for(&update::read(&root), epoch_ms(), installed.as_deref()) {
             drop(worker.take());
             drop(guard.take());
-            let _ = check_update(&app);
+            // When this run started the check: the record says which check it tells of (GPT run-check-main GA1).
+            let at = epoch_ms();
+            let result = run_check_text(check_update(&app));
+            let _ = update::write_run_check(&root, at, &result);
         }
     }
     drop(worker); // the state lock goes with the worker and the guard, after the record is written
@@ -448,17 +454,22 @@ const UPDATE_CHECK_WAIT: Duration = Duration::from_secs(120);
 /// Starts the window app's `--update-check-due` and waits for it, ended if it takes longer than UPDATE_CHECK_WAIT. What it
 /// found, or its error code, is in update.json — written by the check alone; it counts its try before it asks the feed,
 /// so one ended here still waits its 3 hours. One that could not be started is tried again by the next run.
-fn check_update(app: &Path) -> Result<(), &'static str> {
+fn check_update(app: &Path) -> Result<i32, &'static str> {
     use std::process::{Command, Stdio};
     let started = Instant::now();
     let mut child = Command::new(app).arg("--update-check-due").stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null()).spawn().map_err(|_| "CHECK_START")?;
     loop {
         match child.try_wait() {
-            Ok(Some(_)) => return Ok(()),
+            Ok(Some(status)) => return Ok(status.code().unwrap_or(-1)),
             Ok(None) if started.elapsed() < UPDATE_CHECK_WAIT => std::thread::sleep(Duration::from_millis(250)),
             _ => { let _ = child.kill(); let _ = child.wait(); return Err("CHECK_TIMEOUT"); }
         }
     }
+}
+
+/// What a run writes of the check it started: the window app's exit code, or why it did not finish.
+fn run_check_text(result: Result<i32, &'static str>) -> String {
+    match result { Ok(code) => format!("exit {code}"), Err(why) => why.into() }
 }
 
 /// 「업데이트 준비됨」 (2.2 · 4.10) from the last check's record and the installed window app's version: a later version
@@ -534,6 +545,14 @@ fn main() { std::process::exit(run()); }
     #[test] fn a_check_that_cannot_start_says_so() {
         let root = std::env::temp_dir().join(format!("swb-update-check-{}", std::process::id()));
         assert_eq!(check_update(&root.join("missing").join(WINDOW_APP)), Err("CHECK_START"));
+        assert_eq!(run_check_text(Err("CHECK_START")), "CHECK_START");
+        assert_eq!(run_check_text(Err("CHECK_TIMEOUT")), "CHECK_TIMEOUT");
+        assert_eq!(run_check_text(Ok(0)), "exit 0", "checked");
+        assert_eq!(run_check_text(Ok(update::NOT_DUE_EXIT)), "exit 4", "not due after all");
+        // Its own code, apart from a check (0), a held lock (75), a failure (1), a bad signature (3) and no feed (78).
+        assert!(![0, 1, 3, 75, 78].contains(&update::NOT_DUE_EXIT), "GPT run-check-main GA3");
+        assert_eq!(run_check_text(Ok(75)), "exit 75", "another check held the lock");
+        assert_eq!(run_check_text(Ok(1)), "exit 1");
     }
     #[test] fn the_request_task_does_not_wait_for_the_feed() {
         assert!(!checks_update("request"));

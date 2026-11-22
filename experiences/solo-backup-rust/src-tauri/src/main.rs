@@ -244,7 +244,8 @@ fn update_mode(mode:&str)->i32{
         // another finds the fresh record and asks the feed no second time (GPT -d GA4). This app's own file version
         // counts as in the run (update::due_for).
         let own=std::env::current_exe().ok().and_then(|exe|update::installed_version(&exe));
-        if mode=="--update-check-due"&&!update::due_for(&update::read(&root),epoch_ms(),own.as_deref()){return Ok(json!({"due":false}));}
+        // Not due after all ends with its own code, so the run's record tells it from a check (GPT run-check GA2).
+        if mode=="--update-check-due"&&!update::due_for(&update::read(&root),epoch_ms(),own.as_deref()){return Err("NOT_DUE");}
         let app=updater_app().map_err(|_|"APP_BUILD")?;let handle=app.handle().clone();
         let current=handle.package_info().version.to_string();
         tauri::async_runtime::block_on(async{
@@ -264,6 +265,7 @@ fn update_mode(mode:&str)->i32{
     match outcome{
         Ok(value)=>{println!("{}",json!({"ok":true,"result":value}));0},
         Err("UP_TO_DATE")=>{println!("{}",json!({"ok":true,"result":{"available":null}}));0},
+        Err("NOT_DUE")=>{println!("{}",json!({"ok":true,"result":{"due":false}}));update::NOT_DUE_EXIT},
         Err(code)=>{println!("{}",json!({"ok":false,"error":code}));match code{"UPDATE_SIGNATURE"=>3,"RUN_ACTIVE"|"CHECK_BUSY"=>75,"UPDATE_NOT_CONFIGURED"=>78,_=>1}}
     }
 }

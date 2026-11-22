@@ -714,6 +714,36 @@ function 더한줄(옛, 새) {
 const 글조각 = (t, i, 길이) => t.slice(Math.max(0, i - 30), i + 길이 + 30).replace(/\s+/g, ' ');
 
 /** 바뀐 파일의 검사. 항목들: [{경로, 버퍼|null(지움), 공개버퍼|null}] → {걸림, 알림, 요약} */
+// 업무 백업 엔진 피드: 공개된 판보다 높은 판으로만 덮고 지우지 않는다(experiences/solo-backup-rust/STAGE1_DESIGN.md 4.10
+// 운영 규칙 · 11-23 게시 도구 설계 검토). 게시 도구는 피드를 쓰지 않으므로 이 규칙은 피드를 쓰는 이 도구만 지킬 수 있다.
+// 후보는 push 직전 origin이 움직이면 새 판 위에서 다시 만들어지므로, 이 검사도 그 판의 공개본과 다시 견준다.
+const 판내리지않는피드 = new Set(['desktop/releases/workbackup.json']);
+// 판의 꼴은 솔리오가 피드를 읽는 꼴과 같다(desktop/src/solio-backup.cjs VERSION — 자리마다 0 또는 1~6자리). 솔리오가 거절할
+// 판이 올라가면 그 위로 덮을 판도 없어진다(GPT publish-feed GA1).
+const 피드판꼴 = /^(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})\.(0|[1-9]\d{0,5})$/;
+function 피드판(버퍼) {
+  try {
+    const v = JSON.parse(버퍼.toString('utf8')).version;
+    return typeof v === 'string' && 피드판꼴.test(v) ? v : null;
+  } catch { return null; }
+}
+function 판높은가(새, 옛) {
+  const a = 새.split('.').map(Number), b = 옛.split('.').map(Number);
+  for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] > b[i];
+  return false;
+}
+function 피드판검사(x) {
+  const 항 = (이유) => ({ 경로: x.경로, 검사: '피드 판', 이유 });
+  if (!x.버퍼) return x.공개있음 ? 항('업무 백업 피드는 지우지 않는다 — 판을 거둘 때는 더 높은 판으로 덮는다') : null;
+  if (x.공개버퍼 && x.공개버퍼.equals(x.버퍼)) return null;
+  const 새 = 피드판(x.버퍼);
+  if (!새) return 항('올릴 피드의 판(version, 숫자.숫자.숫자)을 읽지 못했다');
+  if (!x.공개버퍼) return x.공개있음 ? 항('공개된 피드를 읽지 못해 판을 견주지 못했다') : null;
+  const 옛 = 피드판(x.공개버퍼);
+  if (!옛) return 항('공개된 피드의 판을 읽지 못해 견주지 못했다');
+  return 판높은가(새, 옛) ? null : 항(`올릴 판 ${새}이 공개된 판 ${옛}보다 높지 않다 — 피드의 판은 내리지 않는다`);
+}
+
 function 검사하기(항목들, 규칙, 옵션 = {}) {
   const 걸림 = [], 알림 = [];
   const 허용 = new Set((옵션.허용 || []).map((p) => 공개경로(p)));
@@ -721,6 +751,8 @@ function 검사하기(항목들, 규칙, 옵션 = {}) {
   const 낱말 = 목록(규칙.낱말), 태그 = 목록(규칙.태그);
   const 요약 = { 글: 0, mp3: 0, 미디어: 0, 더한줄: 0, 경로줄: 0, 새바이트: 0, 새blob: 0 };
   for (const x of 항목들) {
+    // 0) 업무 백업 피드의 판 — --허용으로 넘기지 않는다
+    if (판내리지않는피드.has(x.경로)) { const 항 = 피드판검사(x); if (항) 걸림.push(항); }
     if (!x.버퍼) continue;
     const p = x.경로;
     const 숨김 = p.startsWith('.github/');
@@ -1145,7 +1177,7 @@ function 후보검사(계획) {
   else if (규칙.낱말 !== 점검규칙사본.낱말 || 규칙.태그 !== 점검규칙사본.태그) {
     알림.push({ 검사: '도구 이름', 이유: '배포 점검 목록(check.mjs)이 도구에 든 사본과 다르다 — 이 도구의 점검규칙사본과 WORLD 공개 빌드 publicToolName을 check.mjs 목록에 맞춘다' });
   }
-  const 검사대상 = [...항목.values()].map((x) => ({ 경로: x.경로, 버퍼: x.버퍼, 공개버퍼: x.전 && x.버퍼 && !이진인가(x.버퍼) ? 블롭(git, 저장, x.전) : null }));
+  const 검사대상 = [...항목.values()].map((x) => ({ 경로: x.경로, 버퍼: x.버퍼, 공개있음: Boolean(x.전), 공개버퍼: x.전 && x.버퍼 && !이진인가(x.버퍼) ? 블롭(git, 저장, x.전) : null }));
   const 검사 = 검사하기(검사대상, 규칙, 옵션);
   걸림.push(...검사.걸림);
   알림.push(...검사.알림);

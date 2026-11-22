@@ -481,6 +481,51 @@ test('도구 이름: 후보의 check.mjs 규칙·MP3 태그·그림 제작 표�
   assert.ok(허용.알림.some((x) => x.경로 === 'app.js' && /--허용으로 넘김/.test(x.이유)));
 });
 
+test('업무 백업 피드의 판(11-23 게시 도구 설계 검토): 공개된 판보다 높을 때만 덮고, 지우거나 낮추면 --허용이 있어도 막는다', () => {
+  const 규칙 = 속.점검규칙읽기(점검원문('suno'));
+  const F = 'desktop/releases/workbackup.json';
+  const 피드 = (version) => JSON.stringify({ version, notes: '', platforms: {} }, null, 2);
+  const 검사 = (새, 옛, 옵션) => 속.검사하기([{ 경로: F, 버퍼: 새 === null ? null : 글(새), 공개있음: 옛 !== undefined, 공개버퍼: 옛 === undefined || 새 === null ? null : 글(옛) }], 규칙, 옵션);
+  const 걸린 = (r) => r.걸림.filter((x) => x.검사 === '피드 판').map((x) => x.이유);
+  assert.deepEqual(걸린(검사(피드('0.7.1'), 피드('0.7.0'))), [], '높은 판');
+  assert.deepEqual(걸린(검사(피드('0.10.0'), 피드('0.9.9'))), [], '자리마다 숫자로 견준다');
+  assert.deepEqual(걸린(검사(피드('0.7.0'))), [], '공개본이 없으면 첫 판');
+  assert.deepEqual(걸린(검사(피드('0.7.0'), 피드('0.7.0'))), [], '바이트가 같으면 올릴 것이 없다');
+  assert.match(걸린(검사(피드('0.7.0').replace('""', '"다시"'), 피드('0.7.0')))[0], /0\.7\.0이 공개된 판 0\.7\.0보다 높지 않다/, '같은 판의 다른 내용');
+  assert.match(걸린(검사(피드('0.6.9'), 피드('0.7.0'), { 허용: [F] }))[0], /높지 않다/, '낮은 판은 --허용으로도 넘기지 않는다');
+  assert.match(걸린(검사(null, 피드('0.7.0')))[0], /지우지 않는다/);
+  assert.match(걸린(검사('{', 피드('0.7.0')))[0], /올릴 피드의 판/);
+  assert.match(걸린(검사(피드('0.7.01'), 피드('0.7.0')))[0], /올릴 피드의 판/, '앞자리 0은 판으로 읽지 않는다');
+  assert.deepEqual(걸린(검사(피드('999999.999999.999999'), 피드('0.7.0'))), [], '솔리오가 읽는 가장 큰 판');
+  assert.match(걸린(검사(피드('1000000.0.0'), 피드('0.7.0')))[0], /올릴 피드의 판/, '솔리오가 거절하는 일곱 자리');
+  // 솔리오가 피드의 판을 읽는 꼴과 글자 그대로 같다
+  const 꼴 = (파일, 이름) => fs.readFileSync(path.join(REPO, ...파일), 'utf8').match(new RegExp(`const ${이름} = (/\\^[^\\n]*\\$/);`))?.[1];
+  assert.ok(꼴(['desktop', 'src', 'solio-backup.cjs'], 'VERSION'));
+  assert.equal(꼴(['tools', '공개.js'], '피드판꼴'), 꼴(['desktop', 'src', 'solio-backup.cjs'], 'VERSION'));
+  assert.match(걸린(검사(피드('0.7.1'), '{'))[0], /공개된 피드의 판/);
+  assert.match(걸린(속.검사하기([{ 경로: F, 버퍼: 글(피드('0.7.1')), 공개있음: true, 공개버퍼: null }], 규칙))[0], /공개된 피드를 읽지 못해/);
+  assert.deepEqual(걸린(속.검사하기([{ 경로: 'desktop/releases/preview.json', 버퍼: 글(피드('0.1.0')), 공개있음: true, 공개버퍼: 글(피드('0.2.0')) }], 규칙)), [], 'PC 앱 피드는 이 검사 밖');
+});
+
+test('업무 백업 피드의 판 — 실제 후보: 공개본보다 낮은 판 · 지움은 걸리고 높은 판은 실제로 올라간다', async (t) => {
+  const F = 'desktop/releases/workbackup.json';
+  const 피드 = (version) => JSON.stringify({ version, notes: '', platforms: {} }, null, 2) + '\n';
+  const 공 = 새공개본(t, { [F]: 피드('0.7.2') });
+  const 낮은 = await 도구.올리기(공.옵션({ 원본: 공.로컬('낮은', { 'workbackup.json': 피드('0.7.1') }), 공개폴더: 'desktop/releases', 항목: ['workbackup.json'], 허용: [F] }));
+  assert.equal(낮은.결과, '걸림');
+  assert.deepEqual(낮은.걸림.map((x) => `${x.경로}:${x.검사}`), [`${F}:피드 판`]);
+  const 지움 = await 도구.올리기(공.옵션({ 지움: [F] }));
+  assert.deepEqual(지움.걸림.map((x) => `${x.경로}:${x.검사}`), [`${F}:피드 판`]);
+  assert.equal(공.머리(), 공.바탕, '걸리면 아무것도 올리지 않는다');
+  const 높은원본 = 공.로컬('높은', { 'workbackup.json': 피드('0.7.3') });
+  const 높은 = await 도구.올리기(공.옵션({ 원본: 높은원본, 공개폴더: 'desktop/releases', 항목: ['workbackup.json'] }));
+  assert.deepEqual(높은.걸림, []);
+  // 실제로 올린다(GPT publish-feed GA5)
+  const 올림 = await 도구.올리기(공.옵션({ 원본: 높은원본, 공개폴더: 'desktop/releases', 항목: ['workbackup.json'], 실행: true, 계획: 높은.계획, 메시지: '피드 0.7.3', 기다림: 0.01, 간격: 0.1 }));
+  assert.match(올림.결과, /^올림/);
+  assert.equal(JSON.parse(공.파일(F).toString('utf8')).version, '0.7.3');
+});
+
 test('거둔 말(11-06): 결정 표로 거둔 화면 말이 더한 줄에 다시 실리면 막고, 이미 있던 줄 · 코드 안 이름 · --허용은 넘긴다', () => {
   const 규칙 = 속.점검규칙읽기(점검원문('suno'));
   const 검사 = (줄들, 옵션) => 속.검사하기(줄들.map(([경로, 새, 옛]) => ({ 경로, 버퍼: 글(새), 공개버퍼: 옛 === undefined ? null : 글(옛) })), 규칙, 옵션);
