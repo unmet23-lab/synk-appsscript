@@ -345,6 +345,10 @@ test('real HTTP portal bearer reads its own assignments with readable CORS, no c
   const r=await f.request(web,{input:{expectedAccountId:id},bearer:f.browserToken(),cookie:true,originHeader:portal});
   assert.equal(r.status,200);assert.equal(r.headers.get('access-control-allow-origin'),portal);assert.deepEqual(r.headers.getSetCookie(),[]);
   assert.deepEqual(r.data,{version:1,accountMatch:true,workspace:{state:'assigned',destination:'/'},pulse:{state:'assigned',destination:'/pulse-app/'}});
+  // 웹 화면처럼 쿠키를 싣지 않은 요청(credentials: 'omit')도 실제 HTTP에서 같은 답을 받는다(검수 company-portal-bearer-20261121-b GPT GA1)
+  const bare=await f.request(web,{input:{expectedAccountId:id},bearer:f.browserToken(),cookie:false,originHeader:portal});
+  assert.equal(bare.status,200);assert.equal(bare.headers.get('access-control-allow-origin'),portal);assert.deepEqual(bare.headers.getSetCookie(),[]);
+  assert.deepEqual(bare.data,r.data);
   const nativeToken=await f.request(web,{input:{expectedAccountId:id},bearer:f.token(),cookie:false,originHeader:portal});
   assert.equal(nativeToken.status,403);assert.deepEqual(nativeToken.data,{error:{code:'CLIENT_FORBIDDEN',retryable:false}});
   assert.equal(f.snapshot(),before);
