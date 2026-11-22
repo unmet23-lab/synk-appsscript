@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TOPIK 4급 온라인 반은 열지 않습니다 · SYNK</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://synk.im/reserve/">
+<meta http-equiv="refresh" content="3; url=/reserve/?from=lab-topik4&amp;notice=topik4">
+<script>
+/* TOPIK 4급 온라인 반은 2026-11-23에 철수했다(유호님 「온라인 반 계획은 철수하자. 앱 오픈을 집중해서 사전예약 받자」).
+ * 대학 · 모임에 보낸 안내문의 QR과 링크(?from=univ-…-qr 등)가 이 주소로 오므로, 들어온 곳을 「topik4-」를 붙여 사전예약으로 넘긴다.
+ * 원본: SYNK-appsscript/experiences/synk-reserve/src/lab-topik4.html */
+(function () {
+  var q = new URLSearchParams(location.search);
+  var raw = String(q.get('from') || '').trim().toLowerCase();
+  var from = /^[a-z0-9][a-z0-9-]{0,39}$/.test(raw) ? ('topik4-' + raw).slice(0, 40).replace(/-+$/, '') : 'lab-topik4';
+  var out = new URLSearchParams();
+  out.set('from', from);
+  var lang = q.get('lang');
+  if (lang === 'ko' || lang === 'mn' || lang === 'en') out.set('lang', lang);
+  out.set('notice', 'topik4');
+  location.replace('/reserve/?' + out.toString());
+})();
+</script>
+<style>body{margin:0;padding:48px 24px;font:500 17px/1.6 system-ui,'Malgun Gothic',sans-serif;color:#1d1d1f;background:#FAF1ED;word-break:keep-all}main{max-width:560px;margin:0 auto}a{color:inherit;font-weight:700}</style>
+</head>
+<body>
+<main>
+<p>TOPIK 4급 온라인 반은 열지 않기로 했습니다. 관심을 보내 주셔서 감사합니다. SYNK는 2027년 2월에 정식으로 문을 엽니다.</p>
+<p lang="mn">TOPIK 4-р түвшний онлайн ангийг нээхгүй байхаар шийдлээ. SYNK 2027 оны 2-р сард албан ёсоор нээгдэнэ.</p>
+<p><a href="/reserve/?from=lab-topik4&amp;notice=topik4">SYNK 사전예약 · Урьдчилан бүртгүүлэх →</a></p>
+</main>
+</body>
+</html>

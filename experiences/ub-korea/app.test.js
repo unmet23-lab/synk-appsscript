@@ -179,8 +179,8 @@ test('꼭 고를 칸은 fieldset의 aria-required로 알리고, 입력에 requir
 
 test('친구에게 보낼 주소는 from=friend, TOPIK 4급 반 연결은 from=ub-page로 화면 언어를 지킨다', () => {
   assert.equal(A.shareUrl('https://synk.im/ub/?from=ub-msue&lang=mn#signup', 'ko'), 'https://synk.im/ub/?from=friend&lang=ko');
-  assert.equal(A.topikUrl('mn'), 'https://synk.im/lab/topik4/?from=ub-page&lang=mn');
-  assert.equal(A.topikUrl('ko'), 'https://synk.im/lab/topik4/?from=ub-page&lang=ko');
+  assert.equal(A.topikUrl('mn'), 'https://synk.im/world/?exam=topik2&lang=mn');
+  assert.equal(A.topikUrl('ko'), 'https://synk.im/world/?exam=topik2&lang=ko');
 });
 
 test('묶음: 「·」 말, 몽골어 서수 「3-р」, 요일 묶음 「Даваа–Баасан」은 줄이 갈리지 않게 한 칸으로', () => {

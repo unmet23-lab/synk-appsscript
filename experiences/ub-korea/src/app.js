@@ -144,9 +144,9 @@
     return u.toString();
   }
 
-  /** 한국에 있는 유학생용 TOPIK 4급 반 — 이 페이지에서 건너간 것을 따로 센다. */
+  /** 한국에 있는 유학생은 SYNK WORLD의 무료 TOPIK II 연습으로 보낸다(TOPIK 4급 온라인 반은 2026-11-23 철수). */
   function topikUrl(lang) {
-    return `https://synk.im/lab/topik4/?from=ub-page&lang=${lang === 'ko' ? 'ko' : 'mn'}`;
+    return `https://synk.im/world/?exam=topik2&lang=${lang === 'ko' ? 'ko' : 'mn'}`;
   }
 
   const api = { pickLang, fromKey, validEmail, validate, selectedBranches, pendingBranches, buildBody, buildPayload, answerKey, doneKey, shareUrl, topikUrl, keepDots };

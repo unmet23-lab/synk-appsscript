@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SYNK 사전예약 — 2027년 2월 출시</title>
+<meta name="description" content="SYNK가 2027년 2월에 정식으로 문을 엽니다. 이메일을 남기시면 출시 때 가장 먼저 알려 드립니다.">
+<link rel="canonical" href="https://synk.im/reserve/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://synk.im/reserve/">
+<meta property="og:title" content="SYNK 사전예약 — 2027년 2월 출시">
+<meta property="og:description" content="한국어 공부부터 한국 유학과 취업 준비까지. 이메일을 남기시면 출시 때 가장 먼저 알려 드립니다.">
+<meta property="og:image" content="https://synk.im/reserve/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SYNK 사전예약 — 길 하나가 한 바퀴로 이어진 작은 마을 위에 「2027년 2월 정식 출시」라고 적혀 있다.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAF1ED">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-synk-20260919-32.png">
+<link rel="preload" href="/reserve/assets/reserve-sans.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="reserve.css?v=0eb587c9092c">
+<script src="copy.js?v=67d719caa920" defer></script>
+<script src="app.js?v=67789cd57097" defer></script>
+</head>
+<body>
+<header class="rs-bar">
+  <a class="rs-logo" href="/" aria-label="SYNK 홈">synk</a>
+  <div class="rs-langs" role="group" aria-label="화면 언어" data-t-attr="aria-label:langLabel">
+    <button type="button" data-lang="ko" lang="ko" aria-pressed="true">한국어</button>
+    <button type="button" data-lang="en" lang="en" aria-pressed="false">English</button>
+    <button type="button" data-lang="mn" lang="mn" aria-pressed="false">Монгол</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="rs-hero" aria-labelledby="h1">
+    <img class="rs-art" src="/assets/v11/town-road.webp" width="1536" height="1024" alt="길 하나가 한 바퀴로 이어진 작은 마을. 길을 따라 집, 교실, 대학 정문, 회사, 카페가 차례로 서 있고 아침 해가 떠오른다. 3D로 그린 그림이다." data-t-attr="alt:imgAlt" fetchpriority="high">
+    <div class="rs-say">
+      <p class="rs-notice" id="notice" role="note" hidden data-t="notice">TOPIK 4급 온라인 반은 열지 않기로 했습니다. 관심을 보내 주셔서 감사합니다. 대신 SYNK가 2027년 2월에 정식으로 문을 엽니다.</p>
+      <p class="rs-tag" data-t="tag">2027년 2월 정식 출시</p>
+      <h1 id="h1" data-t="h1">SYNK 사전예약</h1>
+      <p class="rs-lead" data-t="lead">한국어 공부부터 한국 유학과 취업 준비까지, SYNK가 2027년 2월에 정식으로 문을 엽니다. 이메일을 남기시면 출시 때 가장 먼저 알려 드립니다.</p>
+
+      <div class="rs-card" id="signup">
+        <form id="form" novalidate aria-labelledby="form-title">
+          <h2 class="rs-card-title" id="form-title" data-t="formTitle">이메일로 사전예약</h2>
+          <div class="rs-field" data-field="email">
+            <label for="f-email" data-t="emailLabel">이메일</label>
+            <input id="f-email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="254" placeholder="name@example.com" aria-describedby="err-email">
+            <p class="rs-err" id="err-email" hidden></p>
+          </div>
+          <fieldset class="rs-field">
+            <legend data-t="interestLabel">관심 있는 것</legend>
+            <p class="rs-hint" id="interest-hint" data-t="interestHint">출시 안내를 준비할 때 참고합니다. 고르지 않아도 됩니다.</p>
+            <div class="rs-chips" id="opt-interest" aria-describedby="interest-hint"></div>
+          </fieldset>
+          <div class="rs-field rs-consent" data-field="consent">
+            <p class="rs-privacy"><span data-t="privacy">모으는 것은 이메일과 고른 관심입니다. 출시 안내 메일을 보내는 데만 쓰고, 안내를 보낸 뒤 지웁니다. 그 전에 지워 달라고 하시면 바로 지웁니다.</span> <a href="https://synk.im/privacy/#website-contact" target="_blank" rel="noopener" data-t="privacyLink">개인정보 처리방침</a></p>
+            <label class="rs-check"><input id="f-consent" name="consent" type="checkbox" required aria-describedby="err-consent"><span data-t="consent">위 안내를 읽고, 문의 답변을 위한 개인정보 수집·이용에 동의합니다.</span></label>
+            <p class="rs-err" id="err-consent" hidden></p>
+          </div>
+          <button class="rs-submit" id="f-submit" type="submit" data-t="submit">사전예약하기</button>
+          <p class="rs-err rs-send-err" id="send-error" role="alert" hidden></p>
+          <p class="rs-note" data-t="note">확인 메일은 따로 보내지 않습니다. 광고 메일도 보내지 않습니다.</p>
+          <noscript><p class="rs-note">이 화면은 JavaScript가 필요합니다. hello@synk.im으로 「SYNK 사전예약」이라고 메일을 보내 주셔도 됩니다.</p></noscript>
+        </form>
+        <div class="rs-done" id="done" hidden>
+          <h2 class="rs-card-title" id="done-title" tabindex="-1" data-t="doneTitle">사전예약이 접수되었습니다</h2>
+          <p class="rs-done-body" id="done-body"></p>
+          <div class="rs-done-acts">
+            <button class="rs-pill" id="share" type="button" data-t="share">친구에게 보내기</button>
+            <button class="rs-text" id="again" type="button" data-t="again">이메일을 잘못 적었다면 다시 적기</button>
+          </div>
+          <p class="rs-note" id="share-state" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rs-now" aria-labelledby="now-title">
+    <p class="rs-now-tag" data-t="nowTag">지금 해 볼 수 있는 것</p>
+    <h2 id="now-title" data-t="nowTitle">말하기 연습은 지금도 열려 있습니다</h2>
+    <p data-t="nowBody">SYNK WORLD에서 한국어 말하기와 TOPIK 연습을 무료로 해 볼 수 있습니다.</p>
+    <a class="rs-pill" id="world-go" href="/world/?lang=ko"><span data-t="nowGo">SYNK WORLD 열기</span> <span aria-hidden="true">→</span></a>
+  </section>
+</main>
+
+<footer class="rs-foot">
+  <p>SYNK · <span data-t="contact">문의</span> <a href="mailto:hello@synk.im">hello@synk.im</a> · <a href="https://synk.im/privacy/" data-t="privacyFoot">개인정보 처리방침</a> · <a href="https://synk.im/terms/" data-t="terms">이용약관</a></p>
+</footer>
+<p class="sr" id="live" aria-live="assertive"></p>
+</body>
+</html>

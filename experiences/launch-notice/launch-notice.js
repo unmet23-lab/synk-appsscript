@@ -1,5 +1,7 @@
-// 출시 안내 띠 — 체험 화면 맨 위에 「2027년 2월 정식 출시 · 지금은 사전 모집 등록만」을 보인다.
+// 출시 안내 띠 — 체험 화면 맨 위에 「2027년 2월 정식 출시 · 지금은 사전예약만」과 사전예약 링크(/reserve/)를 보인다.
 // 2026-11-21 유호님: 「지금 체험할수있는거 전부 맨 윗단에 27년 2월에 출시한다고 써주고 지금은 사전모집등록만 진행중이다」.
+// 2026-11-23 유호님: 「온라인 반 계획은 철수하자. 앱 오픈을 집중해서 사전예약 받자」 — 둘째 문장을 사전예약으로 맞추고 링크를 붙였다.
+// 링크는 /reserve/?lang=<띠 언어>&from=bar-<쪽 경로>로 간다(어느 쪽에서 들어왔는지 사전예약 집계가 센다).
 // 공개 경로는 /assets/launch-notice.js 하나다. 쪽마다 <script src="/assets/launch-notice.js" defer></script> 한 줄을 붙인다.
 // 글을 바꾸거나 띠를 걷을 때는 이 파일만 고쳐 다시 공개한다.
 //
@@ -25,10 +27,16 @@
   const root = document.documentElement;
 
   const TEXT = {
-    ko: { body: 'SYNK는 2027년 2월에 정식 출시합니다. 지금은 사전 모집 등록만 진행하고 있습니다.', label: '출시 안내', close: '안내 닫기' },
-    en: { body: 'SYNK officially launches in February 2027. For now, we are only taking pre-registrations.', label: 'Launch notice', close: 'Close notice' },
-    mn: { body: 'SYNK 2027 оны 2-р сард албан ёсоор нээлтээ хийнэ. Одоогоор зөвхөн урьдчилсан бүртгэл авч байна.', label: 'Нээлтийн мэдэгдэл', close: 'Мэдэгдлийг хаах' },
-    es: { body: 'SYNK se lanza oficialmente en febrero de 2027. Por ahora, solo aceptamos preinscripciones.', label: 'Aviso de lanzamiento', close: 'Cerrar aviso' },
+    ko: { body: 'SYNK는 2027년 2월에 정식 출시합니다. 지금은 사전예약만 받고 있습니다.', cta: '사전예약하기', label: '출시 안내', close: '안내 닫기' },
+    en: { body: 'SYNK officially launches in February 2027. For now, we are only taking pre-registrations.', cta: 'Pre-register', label: 'Launch notice', close: 'Close notice' },
+    mn: { body: 'SYNK 2027 оны 2-р сард албан ёсоор нээлтээ хийнэ. Одоогоор зөвхөн урьдчилсан бүртгэл авч байна.', cta: 'Урьдчилан бүртгүүлэх', label: 'Нээлтийн мэдэгдэл', close: 'Мэдэгдлийг хаах' },
+    es: { body: 'SYNK se lanza oficialmente en febrero de 2027. Por ahora, solo aceptamos preinscripciones.', cta: 'Preinscribirme', label: 'Aviso de lanzamiento', close: 'Cerrar aviso' },
+  };
+  // 사전예약 쪽(/reserve/)은 en · ko · mn만 있다. 스페인어 띠는 영어 쪽으로 보낸다.
+  const RESERVE_LANG = { ko: 'ko', en: 'en', mn: 'mn', es: 'en' };
+  const fromKey = () => {
+    const slug = location.pathname.toLowerCase().replace(/index\.html$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return ('bar-' + (slug || 'home')).slice(0, 40).replace(/-+$/, '');
   };
   const lang = () => {
     const l = (root.getAttribute('lang') || '').trim().toLowerCase().slice(0, 2);
@@ -48,6 +56,9 @@
   -webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere}
 .overlay{padding:calc(10px + env(safe-area-inset-top,0px)) 52px 10px}
 p{margin:0;padding:0}
+a{color:#fff;font-weight:700;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;white-space:nowrap}
+a:hover{text-decoration-thickness:2px}
+a:focus-visible{outline:2px solid #fff;outline-offset:2px;border-radius:2px}
 button{position:absolute;top:calc(50% + env(safe-area-inset-top,0px) / 2);right:8px;transform:translateY(-50%);width:36px;height:36px;margin:0;padding:0;
   border:0;border-radius:50%;background:transparent;color:#fff;font:inherit;font-size:20px;line-height:36px;cursor:pointer}
 button:hover{background:rgba(255,255,255,.16)}
@@ -74,6 +85,14 @@ button:focus-visible{outline:2px solid #fff;outline-offset:2px}
     bar.setAttribute('role', 'region');
     bar.style.fontFamily = getComputedStyle(document.body).fontFamily || 'system-ui, sans-serif';
     const p = document.createElement('p');
+    const text = document.createTextNode('');
+    const link = document.createElement('a');
+    const linkText = document.createTextNode('');
+    const arrow = document.createElement('span');
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = ' →';
+    link.append(linkText, arrow);
+    p.append(text, link);
     bar.append(p);
     let btn = null;
     if (mode === 'overlay') {
@@ -87,7 +106,9 @@ button:focus-visible{outline:2px solid #fff;outline-offset:2px}
       const l = lang(), t = TEXT[l];
       bar.lang = l;
       bar.setAttribute('aria-label', t.label);
-      p.textContent = t.body;
+      text.nodeValue = t.body + ' ';
+      linkText.nodeValue = t.cta;
+      link.href = '/reserve/?lang=' + RESERVE_LANG[l] + '&from=' + fromKey();
       if (btn) btn.setAttribute('aria-label', t.close);
     };
     render();

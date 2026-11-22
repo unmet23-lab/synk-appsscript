@@ -1,6 +1,6 @@
 # 출시 안내 띠 · /assets/launch-notice.js
 
-2026-11-21 유호님 결정이다. 지금 체험할 수 있는 공개 화면 맨 위에 「SYNK는 2027년 2월에 정식 출시합니다. 지금은 사전 모집 등록만 진행하고 있습니다.」를 보인다. 근거는 [결정](../../docs/_ops/결정.md) 11-21 행이다.
+2026-11-21 유호님 결정이다. 지금 체험할 수 있는 공개 화면 맨 위에 「SYNK는 2027년 2월에 정식 출시합니다. 지금은 사전예약만 받고 있습니다.」와 「사전예약하기 →」 링크를 보인다. 근거는 [결정](../../docs/_ops/결정.md) 11-21 행과 11-23 행이다. 둘째 문장은 11-23에 「사전 모집 등록만 진행하고 있습니다」에서 바꿨고(유호님 「앱 오픈을 집중해서 사전예약 받자」), 링크는 [SYNK 사전예약](../synk-reserve/README.md) `/reserve/?lang=<띠 언어>&from=bar-<쪽 경로>`로 간다. 스페인어 띠는 영어 쪽으로 보낸다.
 
 | 무엇 | 어디 |
 |---|---|
@@ -27,7 +27,7 @@ WORLD는 `data-mode="overlay" data-anchor=".synk-opening"`을 붙인다. 띠는 
 |---|---|---|
 | `/world/` · `world/desktop.html` · `world/mobile.html` | overlay(첫 화면이 떠 있는 동안만) · `opening.css` 여덟 자리 | `experiences/synk-world-app/document.mjs`(첫 화면 위 단추는 `experiences/brand-opening/opening.css`가 `--synk-launch-h`로 내림) |
 | `/korean/` · `/classroom/` · `/study-abroad/` · `/job/` · `/community/`와 `/en/` 다섯 | flow · `<style id="synk-launch-offset">.nav{top:var(--synk-launch-h,0px)}</style>` | `docs/디자인/synk.im_새로짓기_20261119/시안/detail.html` · `시안/en/detail.html` |
-| `/lab/topik4/` · `/ub/` | flow | `experiences/lab-topik4/src/index.html` · `experiences/ub-korea/src/index.html` |
+| `/ub/` | flow | `experiences/ub-korea/src/index.html` (`/lab/topik4/`는 11-23 철수 뒤 사전예약으로 넘기는 쪽이라 띠가 없다) |
 | `/nombre/` · `/rl/` | flow | `docs/마케팅/맞춤도구/nombre/index.html` · `rl/index.html` |
 | `/care/` · `/try/travel/` · `/try/learning-hub/` | flow | `experiences/relationship-care` · `path-travel` · `learning-hub`의 `index.html` |
 | `/try/` 게임 9곳(blank-slice · entry-check · order-rush · racing · rhythm · runner · story-classroom · talk-rally · word-magic) | flow(게임 화면이 보이는 동안 접힘) | `experiences/<게임>/index.html`(racing · rhythm · runner는 `korean-` 앞붙이) |
