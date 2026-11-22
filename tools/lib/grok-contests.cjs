@@ -34,8 +34,8 @@ function 사이트(url) {
   return new URL(url).hostname.replace(/^www\./i, '').toLowerCase();
 }
 
-function 비교글(value) {
-  return 글(value).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+function 비교글(value, limit) {
+  return 글(value, limit).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 }
 
 function 날짜(value) {
@@ -149,7 +149,34 @@ async function 가져오기(folder, input, fetchPage = 공개쪽읽기) {
   return { already: false, items };
 }
 
-function 동일공고(a, b) {
+function 지도대회명(value) {
+  // '2026년 도시문학'의 공백과 '[2026] 제3회'의 괄호는 연도 표기가 끝나는 자리다.
+  const raw = 글(value, Infinity).normalize('NFKC').replace(/[\s\p{P}\p{S}\p{Cf}]+/gu, ' ').trim();
+  const boundary = /^(?: |제 *\d+ *회)/u;
+  let name = raw;
+  if (/^20\d{2}(?!\p{N})/u.test(raw)) {
+    const rest = raw.slice(4);
+    if (rest.startsWith('년도')) {
+      // '2026년도시문학'은 '년 + 도시문학'과 '년도 + 시문학'을 가를 수 없다.
+      name = rest.slice(2);
+      if (!boundary.test(name)) return null;
+    } else if (rest.startsWith('년')) {
+      name = rest.slice(1);
+    } else if (boundary.test(rest)) {
+      name = rest;
+    }
+  }
+  return { name: 비교글(name, Infinity), hasYear: name !== raw };
+}
+
+function 지도연도별칭(left, right) {
+  const a = 지도대회명(left), b = 지도대회명(right);
+  if (!a || !b || a.hasYear === b.hasYear || a.name !== b.name) return false;
+  const withoutEdition = a.name.replace(/제\d+회/gu, '');
+  return Boolean(withoutEdition) && withoutEdition !== a.name;
+}
+
+function 동일공고(a, b, { 지도대조 = false } = {}) {
   const 주최 = (value) => 비교글(글(value).replace(/^\((?:주|사|재)\)\s*/, '').replace(/\s+[（(].*$/, ''));
   const hostA = 주최(a.organizer), hostB = 주최(b.organizer);
   const editionA = 비교글(a.edition), editionB = 비교글(b.edition);
@@ -171,8 +198,14 @@ function 동일공고(a, b) {
   if (urls(b).some((url) => left.includes(url) && official.includes(url))) return true;
   if (hostA && hostB && hostA !== hostB) return false;
   if (idA && idB) return !!(hostA || hostB);
-  const title = 비교글(a.title);
-  return title.length >= 6 && title === 비교글(b.title);
+  const title = 비교글(a.title), otherTitle = 비교글(b.title);
+  if (title.length >= 6 && title === otherTitle) return true;
+  if (!지도대조 || !지도연도별칭(a.title, b.title)) return false;
+  return official.some(url => {
+    const page = new URL(url);
+    if (page.pathname !== '/' || page.search || 모음사이트.test(사이트(url))) return false;
+    return [a, b].every(item => [item.officialUrl, ...(item.urls || [])].some(value => 주소(value) === url));
+  });
 }
 
 function 기존공고(item) {
@@ -260,4 +293,4 @@ function 합치기(통합, reports) {
   return { ...통합, items };
 }
 
-module.exports = { 가져오기, 보고서읽기, 합치기, 동일공고, 주소, 사이트, 모음사이트, 본문, 날짜, 한국마감, 회차시각 };
+module.exports = { 가져오기, 보고서읽기, 합치기, 기존공고, 동일공고, 비교글, 주소, 사이트, 모음사이트, 본문, 날짜, 한국마감, 회차시각 };

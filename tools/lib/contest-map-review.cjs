@@ -8,7 +8,7 @@ const { 주소, 사이트, 모음사이트, 회차시각 } = require('./grok-con
 const slotName = /^\d{4}-\d{2}-\d{2}_(?:0830|1430|2000)$/;
 
 function mapRow(group) {
-  if (group.carbon?.model !== 'gemini-4-carbon-high' || group.carbon.dataVersion !== 2) return null;
+  if (group.carbon?.model !== 'gemini-4-carbon-high' || group.carbon.dataVersion !== 2 || !Array.isArray(group.carbon.findings)) return null;
   const fields = Object.fromEntries(group.carbon.findings.flatMap(f => {
     const u = 주소(f.url);
     return u && !모음사이트.test(사이트(u)) && f.quote ? [[f.field, f]] : [];
@@ -56,4 +56,4 @@ function includeReviews(folder, grokReports) {
   return [...grokReports, ...reviewed].sort((a, b) => 회차시각(a) - 회차시각(b));
 }
 
-module.exports = { storeRound, includeReviews };
+module.exports = { mapRow, storeRound, includeReviews };

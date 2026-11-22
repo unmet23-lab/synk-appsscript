@@ -202,6 +202,93 @@ test('앞선 수신이 길어져 카본 시한이 임박하면 원문·모델을
   assert.equal(groups[0].carbon.status, 'queued');
 });
 
+test('별칭이 다른 공고는 공식 접수처와 지도에 있는 카드만 세고 PC·웹의 실제 값은 따로 비교한다', async t => {
+  const { folder, trial, report } = fixture(t);
+  const urls = ['https://song.example.com/notice/114', 'https://film.example.com/form/405', 'https://award.example.com/'];
+  const titles = ['지역노래 뮤직쇼츠 모집', '보일러 영상 챌린지', '2026 제3회 창작 광고 대상'];
+  const rows = titles.map((title, i) => ({ ...notice, title, noticeId: '', video: true,
+    officialUrl: i === 2 ? urls[i] : '', discoveryUrl: 'https://wevity.com/news/' + i }));
+  const song = { id: 'song', 전체이름: '지역노래전', 단계: '결과 기다림' };
+  const ad = { id: 'ad', 전체이름: '제3회 창작 광고대상', 단계: '준비 중' };
+  const other = { id: 'earlier', 전체이름: '제2회 창작 광고대상', 단계: '준비 중' };
+  const form = { 이름: '보일러 숏폼 공모', 주소: urls[1] };
+  const items = [song, ad, other].map((c, i) => ({ id: c.id, title: c.전체이름, latest_review: { url: i ? urls[2] : urls[0] } }));
+  save(path.join(folder, '통합목록.json'), { items });
+  const html = (열린, 진행) => 'const 자료 = ' + JSON.stringify({ 열린, 진행 }) + ';';
+  const map = path.join(folder, '공모지도.html');
+  fs.writeFileSync(map, html([form], [song, ad, other]));
+  const options = { now: new Date(at), rawGrok: [grok([])], receive: () => [gemini(rows)],
+    settle: (_dir, groups) => {
+      for (const g of groups) {
+        g.carbon = { model: 'gemini-4-carbon-high', dataVersion: 2, status: 'confirmed',
+          findings: [{ field: 'presence', code: 'open', url: urls[titles.indexOf(g.title)], quote: '본 공모에 접수할 수 있습니다.' }] };
+      }
+    },
+    map: { pc: 'rendered', map, artifact: { status: 'deferred' } },
+    remoteMap: { version: 'old', html: html([], [{ ...song, AI허용: '조건부 허용' }, { ...other, id: ad.id }]) },
+  };
+  const result = await runTrial(trial, options);
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(report().rounds[0].notices.map(g => g.map), [
+    { pcMatches: 1, webMatches: 1, sameFields: false }, { pcMatches: 1, webMatches: 0 }, { pcMatches: 1, webMatches: 0 },
+  ]);
+  fs.writeFileSync(path.join(folder, '통합목록.json'), '{"items":');
+  const fallback = await runTrial(trial, options);
+  assert.match(fallback.errors.join(' '), /통합목록을 읽지 못해/);
+  assert.deepEqual(report().rounds[0].notices.map(g => g.map.pcMatches), [0, 1, 0]);
+});
+
+test('전용 홈페이지의 연도 별칭은 지도 대조에서만 쓰고 다른 회차·연도·모음 사이트를 구분한다', () => {
+  const { 동일공고 } = require('../tools/lib/grok-contests.cjs');
+  const home = 'https://award.example.com/';
+  const a = { title: '2026 제3회 창작 광고 대상', officialUrl: home };
+  const b = { title: '제3회 창작 광고대상', urls: [home] };
+  const match = (row, card) => 동일공고(row, card, { 지도대조: true });
+  assert.equal(동일공고(a, b), false);
+  assert.equal(match(a, b), true);
+  for (const name of ['제3회 사진공모전', '전국 사진 공모전 제3회']) {
+    const dated = { ...a, title: '2026년 ' + name };
+    const plain = { ...b, title: name };
+    assert.equal(match(dated, plain), true);
+    assert.equal(match(plain, dated), true);
+  }
+  for (const name of ['사진공모전', '제3회']) {
+    assert.equal(match({ ...a, title: '2026 ' + name }, { ...b, title: name }), false);
+  }
+  const city = { ...b, title: '도시문학 공모전 제3회' };
+  const poetry = { ...b, title: '시문학 공모전 제3회' };
+  for (const prefix of ['2026년 ', '2026년도 ', '2026 · ']) {
+    const dated = { ...a, title: prefix + city.title };
+    assert.equal(match(dated, city), true);
+    assert.equal(match(dated, poetry), false);
+  }
+  assert.equal(match({ ...a, title: '2026년도시문학 공모전 제3회' }, poetry), false);
+  assert.equal(match({ ...a, title: '2026년도시문학 공모전 제3회' }, city), false);
+  for (const prefix of ['2026', '2026년', '2026년도']) {
+    const dated = { ...a, title: prefix + '제3회 창작 광고 대상' };
+    assert.equal(match(dated, b), true, dated.title);
+    assert.equal(match(b, dated), true, dated.title);
+  }
+  for (const title of ['제3회 사진공모전', '전국 사진 공모전 제3회', '2030세대 수기 공모전 제3회']) {
+    for (const prefix of ['[2026년] ', '(2026)', '【２０２６】', '2026｜', '2026★', '2026\u200b', '2026년']) {
+      const plain = { ...b, title };
+      const dated = { ...a, title: prefix + title };
+      assert.equal(match(dated, plain), true, dated.title);
+      assert.equal(match(plain, dated), true, dated.title);
+    }
+  }
+  for (const prefix of ['20260 ', '2026회 ', '2026-2027 ', '2026.03 ', '[공지] 2026 ']) {
+    assert.equal(match({ ...a, title: prefix + b.title }, b), false, prefix);
+  }
+  for (const title of ['제4회 창작 광고대상', '2025 제3회 창작 광고대상', '제3회 창작 광고대상 청소년부']) {
+    assert.equal(match(a, { ...b, title }), false);
+  }
+  assert.equal(match(a, { ...b, urls: ['https://other.example.com/'] }), false);
+  assert.equal(match({ ...a, organizer: '가 기관' }, { ...b, organizer: '나 기관' }), false);
+  const aggregator = 'https://www.wevity.com/';
+  assert.equal(match({ ...a, officialUrl: aggregator }, { ...b, urls: [aggregator] }), false);
+});
+
 test('아홉 쌍 모두 일치하면 카본을 부르지 않고 같은 공고가 다른 날 나와도 회차 중복으로 세지 않는다', async t => {
   const { folder, trial, report } = fixture(t);
   const map = path.join(folder, '공모지도.html');

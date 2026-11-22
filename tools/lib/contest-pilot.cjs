@@ -5,9 +5,9 @@ const path = require('node:path');
 const os = require('node:os');
 const { createHash, randomUUID } = require('node:crypto');
 const { spawnSync } = require('node:child_process');
-const { 동일공고 } = require('./grok-contests.cjs');
+const { 기존공고, 동일공고, 비교글, 주소, 사이트, 모음사이트 } = require('./grok-contests.cjs');
 const { settleDisputes } = require('./contest-carbon.cjs');
-const { storeRound } = require('./contest-map-review.cjs');
+const { mapRow, storeRound } = require('./contest-map-review.cjs');
 const { atomicJson, acquireLock, replaceFile } = require('./backup-primitives.cjs');
 
 const times = ['0830', '1430', '2000'];
@@ -217,25 +217,61 @@ function needsReceipt(trial, slot, provider) {
   return !value || !isAvailable(value);
 }
 
-function cardsFrom(html) {
+function cardsFrom(html, catalog) {
   const line = /^const 자료 = (.+);$/m.exec(html || '');
   if (!line) return null;
   const map = JSON.parse(line[1]);
-  return [...map.열린, ...map.진행].map(c => ({ title: c.전체이름 || c.이름, officialUrl: c.원문확인안함 ? '' : c.주소,
-    ...(c.원문확인안함 && { discoveryUrl: c.주소 }),
-    ...(c.단계 && c.이름 && c.이름 !== c.전체이름 && { applicationTitle: c.이름 }),
-    ai: c.AI허용, deadline: c.마감글 || c.마감, deliverables: c.제출물, evidence: [c.AI주소, c.마감주소, c.제출물주소] }));
+  return [...map.열린, ...map.진행].map(c => {
+    const fields = { title: c.전체이름 || c.이름, officialUrl: c.원문확인안함 ? '' : c.주소,
+      ...(c.원문확인안함 && { discoveryUrl: c.주소 }),
+      ...(c.단계 && c.이름 && c.이름 !== c.전체이름 && { applicationTitle: c.이름 }),
+      ai: c.AI허용, deadline: c.마감글 || c.마감, deliverables: c.제출물, evidence: [c.AI주소, c.마감주소, c.제출물주소] };
+    // 주소가 없는 옛 신청 카드도 지도에 실린 번호와 원제목이 모두 맞을 때만 원장에 연결한다.
+    const record = catalog.get(c.id);
+    const title = 비교글(fields.title, Infinity);
+    const source = record && title && title === 비교글(record.title, Infinity) ? record : null;
+    return { fields, source };
+  });
 }
 
-function checkMaps(summary, groups, remote) {
+function catalogForCards(folder, errors) {
+  const catalog = new Map();
+  const file = path.join(folder, '통합목록.json');
+  if (!fs.existsSync(file)) return catalog;
+  try {
+    const { items } = read(file);
+    if (!Array.isArray(items)) throw Error('공고 목록이 없습니다.');
+    for (const item of items) {
+      if (typeof item?.id !== 'string' || !item.id || typeof item.title !== 'string') continue;
+      catalog.set(item.id, catalog.has(item.id) ? null : 기존공고(item));
+    }
+  } catch {
+    errors.push('통합목록을 읽지 못해 지도에 표시된 이름과 주소로만 카드를 대조했습니다.');
+    catalog.clear();
+  }
+  return catalog;
+}
+
+function checkMaps(summary, groups, remote, folder, errors) {
   if (!summary) return;
-  const pc = summary.pc === 'rendered' ? cardsFrom(fs.readFileSync(summary.map, 'utf8')) : null;
+  const catalog = catalogForCards(folder, errors);
+  const pc = summary.pc === 'rendered' ? cardsFrom(fs.readFileSync(summary.map, 'utf8'), catalog) : null;
   const web = summary.artifact?.status || 'unchecked';
-  const live = remote ? cardsFrom(remote.html) : ['current', 'updated'].includes(web) ? pc : null;
+  const live = remote ? cardsFrom(remote.html, catalog) : ['current', 'updated'].includes(web) ? pc : null;
   for (const group of groups) {
-    const matches = c => [...group.grok, ...group.gemini].some(row =>
-      동일공고(row, c) || normal(row.title) === normal(c.title) || c.applicationTitle && normal(row.title) === normal(c.applicationTitle));
-    const localCards = pc?.filter(matches), webCards = live?.filter(matches);
+    const rows = [...group.grok, ...group.gemini];
+    const verified = mapRow(group);
+    if (verified?.officialUrl && typeof verified.accepting === 'boolean') rows.push(verified);
+    const officialRows = rows.filter(row => {
+      const url = 주소(row.officialUrl);
+      return url && !모음사이트.test(사이트(url));
+    });
+    const matches = ({ fields, source }) => rows.some(row =>
+      동일공고(row, fields, { 지도대조: true }) || normal(row.title) === normal(fields.title) ||
+      fields.applicationTitle && normal(row.title) === normal(fields.applicationTitle)) ||
+      source && officialRows.some(row => 동일공고(row, source, { 지도대조: true }));
+    const matchingFields = cards => cards?.filter(matches).map(card => card.fields);
+    const localCards = matchingFields(pc), webCards = matchingFields(live);
     group.map = { pcMatches: localCards?.length ?? null, webMatches: webCards?.length ?? null };
     if (localCards?.length && webCards?.length) {
       group.map.sameFields = JSON.stringify(localCards) === JSON.stringify(webCards);
@@ -384,7 +420,7 @@ async function runLocked(trial, { rawGrok = [], now = new Date(), receive = rece
   }
   try {
     if (syncMaps) ({ map, remoteMap } = await syncMaps());
-    status.maps = checkMaps(map, allGroups, remoteMap);
+    status.maps = checkMaps(map, allGroups, remoteMap, path.dirname(trial.dir), errors);
     if (status.maps) status.mapCheck = 'checked';
   } catch { errors.push('지도 원문을 대조하지 못했습니다. 두 조사 원본과 비교 결과는 저장했습니다.'); }
   // 조사 기간 뒤에도 늦게 도착한 원본과 웹 결과를 회수한다. 출처에 없는 요건은 그대로 미확인으로 끝낸다.
