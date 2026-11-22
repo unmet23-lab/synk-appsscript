@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path');
-const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,MESSENGER_CLOUD_PREVIEW_ENTRY,WORLD_CLOUD_PREVIEW_ENTRY,identity}=require('../src/catalog.cjs');
+const {CLIENTS,INSTALLABLE_CLIENTS,DEV_URLS,PLATFORM_ENTRY,MESSENGER_CLOUD_PREVIEW_ENTRY,WORLD_CLOUD_PREVIEW_ENTRY,identity}=require('../src/catalog.cjs');
 const {safeEntry,inside}=require('../src/security.cjs');
 const {configuration}=require('../src/auth-config.cjs');
 const root=path.resolve(__dirname,'..');
@@ -59,7 +59,8 @@ function verifyMemberActivity(desktopRoot=root){
 }
 function previewReleases(options) {
   const entries=[];
-  for(const id of ['world','messenger']) {
+  // 플랫폼 꾸러미에는 플랫폼이 깔 수 있는 하위 앱만 싣는다. Workspace 앱은 11-23에 거뒀다(4단계 구현 설계 14절)
+  for(const id of INSTALLABLE_CLIENTS) {
     const c=identity(id,'development'),output=configFor(id,options).directories.output;
     const dir=options.platform==='win32'?path.join(output,options.arch==='arm64'?'win-arm64-unpacked':'win-unpacked'):path.join(output,options.arch==='arm64'?'mac-arm64':'mac',c.executableName+'.app');
     const resources=options.platform==='win32'?path.join(dir,'resources'):path.join(dir,'Contents','Resources');
