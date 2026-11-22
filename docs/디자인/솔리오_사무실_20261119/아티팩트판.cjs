@@ -13,13 +13,23 @@ const fs = require('node:fs');
 const path = require('node:path');
 const 폰트 = require('../../../tools/lib/브랜드폰트.js');
 
-const 문서로 = process.argv.includes('--문서');
-const 나갈곳 = process.argv.slice(2).find(a => a !== '--문서');
-if (!나갈곳) {
-  console.error('나갈 파일 경로를 적어 주세요.');
+const 인자 = process.argv.slice(2);
+const 문서로 = 인자.includes('--문서');
+// --원고 <같은 폴더의 html>: 사무실.html 말고 다른 시안(경쟁사.html 등)을 굽는다(2026-11-23)
+const 원고자리 = 인자.indexOf('--원고');
+const 원고이름 = 원고자리 >= 0 ? 인자[원고자리 + 1] : '사무실.html';
+const 나갈곳 = 인자.find((a, i) => a !== '--문서' && a !== '--원고' && !(원고자리 >= 0 && i === 원고자리 + 1));
+if (!나갈곳 || !원고이름 || /[\\/]/.test(원고이름)) {
+  console.error('나갈 파일 경로를 적어 주세요. 원고는 같은 폴더의 파일 이름만 받습니다.');
   process.exit(1);
 }
-const 원고 = fs.readFileSync(path.join(__dirname, '사무실.html'), 'utf8');
+let 원고 = fs.readFileSync(path.join(__dirname, 원고이름), 'utf8');
+// DM Mono를 상대 경로로 부르는 원고는 그 글꼴도 파일 안에 심는다(아티팩트는 바깥 글꼴을 막는다)
+const 모노면 = /url\(\.\.\/\.\.\/브랜드_폰트\/DM_Mono\/DMMono-Regular\.ttf\) format\('truetype'\)/;
+if (모노면.test(원고)) {
+  const 모노 = fs.readFileSync(path.join(__dirname, '..', '..', '브랜드_폰트', 'DM_Mono', 'DMMono-Regular.ttf')).toString('base64');
+  원고 = 원고.replace(모노면, () => `url(data:font/ttf;base64,${모노}) format('truetype')`);
+}
 const 머리 = 원고.match(/<head>([\s\S]*?)<\/head>/i)[1]
   .replace(/<meta charset[^>]*>\s*/i, '')
   .replace(/<meta name="viewport"[^>]*>\s*/i, '');
