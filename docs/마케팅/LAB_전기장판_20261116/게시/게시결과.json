@@ -17,12 +17,16 @@
     },
     {
       "계정": "lab-us-youtube",
-      "상태": "거는 중",
-      "거는중": "2026-11-22T05:28:09.186Z",
+      "상태": "예약됨",
       "시각": "2026-11-22T21:00:00-05:00",
       "지문": "e41f2b22ae6cb908f332976fd94b2d77a430db420f4d4a718ca0b09d210301f7",
       "게시글지문": "93b9c973c45e3183dae2a23b6b3d7bc3e2e7fc360e3e839939c983c2714ef0f5",
-      "방법": "ego"
+      "방법": "ego",
+      "게시물ID": "BFNa6JctsOk",
+      "주소": "https://youtube.com/shorts/BFNa6JctsOk",
+      "확인": "예약 한국 시각 2026-11-23 11:00 = 현지 21:00 · Korean winter survival item: 전기장판 🥶→🫠 #learnkorean · 쇼츠 목록(SYNK LAB USA | Korean Made Fun): 「Korean winter survival item: 전기장판 🥶→🫠 #learnkorean」 · 예약됨 · 2026. 11. 23. 예약 날짜 · 예약 창 2026. 11. 23. 오전 11:00 현지 시간대(GMT+0900)로 기본 설정됨 · 제목 및 설명 언어: 영어로 저장됨 · 동영상 언어: 영어 · 방법 ego Profile 7(unmet23) · 공간 「게시 1122-1400 youtube」 · 채널 전환 C:/Users/q1212/ego/publish-20261122-1400/youtube/sw.mjs → 올리기 C:/Users/q1212/ego/publish-20261122-1400/youtube/yt.mjs → 제목 및 설명 언어 C:/Users/q1212/ego/publish-20261122-1400/youtube/editlang.mjs",
+      "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과(11-22 14시 회차 — 띠 · 음량 · 올리기 전 검사)",
+      "기록시각": "2026-11-22T05:49:22.039Z"
     }
   ]
 }

@@ -11,11 +11,11 @@
     },
     {
       "계정": "lab-instagram",
-      "상태": "예약됨",
+      "상태": "게시됨",
       "시각": "2026-11-11T21:00:00+09:00",
       "편ID": "LAB_읽씹_mn_20261107",
       "방법": "11-08 14:1x~14:2x 14시 게시 회차 Claude가 ego 「유호 (Chrome)」(Profile 2) Business Suite 릴스 작성기 — 게시할 위치 「SYNK, synk.mn」 교차 · 원본 01-ig-fb-mn/video.mp4 · 캡션 캡션_mn.txt + 첫댓글_mn.txt 한 문단(일치) · 표지 cover.png · 예약 2026-11-11 오후 9:00(Asia/Jayapura = UTC+9) → 「릴스 예약됨」. 스크립트 C:/Users/q1212/ego/plates-20261108-1400/bs-a · b · c.js(판 cur.json, 기록 bs.steps.txt) · 표지 칸이 화면 아래(y 1043)라 화면 안으로 옮겨 누름(bs-b3.js)",
-      "확인": "「릴스가 처리 완료 후 Facebook에서 2026. 11. 11.에, Instagram에서 2026. 11. 11.에 게시되도록 예약되었습니다」 · 예약됨 목록 「2026년 11월 11일 수요일 9:00」 SYNK · synk.mn 두 줄",
+      "확인": "「릴스가 처리 완료 후 Facebook에서 2026. 11. 11.에, Instagram에서 2026. 11. 11.에 게시되도록 예약되었습니다」 · 예약됨 목록 「2026년 11월 11일 수요일 9:00」 SYNK · synk.mn 두 줄 · 11-22 14시 회차: 서버 관측 2026-11-11 21:01 instagram synk.mn https://www.instagram.com/p/DfmbqzDjKkE/ (docs/_ops/qa/게시성과연결_20261118/서버관측.md 22줄) · 게시 성과 판정 24h · 72h · 7d 기록(docs/_ops/게시성과.jsonl) — 공개된 판",
       "승인": "유호님 11-02 「묻지 말고 걸어」(상시) · 자체검수 통과",
       "주소": "https://www.instagram.com/p/DfmbqzDjKkE/",
       "플랫폼": "instagram",
