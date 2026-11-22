@@ -356,6 +356,33 @@
       "확인": "TikTok Studio 콘텐츠 목록(@synklab.id) 줄 「Nov 25, 3:00 PM (GMT+9) Seoul Everyone」 · 글 첫 줄 「Bahasa Indonesia punya tiga kata yang beda: perut, pir, dan perahu. Bahasa Korea cuma punya satu: 배 (bae).」(목록 줄 글에 원고 첫 줄 있음) · 그 날짜 · 시각 줄 1개 · 누르기 전 칸 Nov 25, 2026 15:00 input:(GMT+9) Local Time · 캡션 일치 true · AI 표시 끔",
       "승인": "유호님 11-02 묻지 말고 걸어(상시) · 자체검수 통과",
       "기록시각": "2026-11-21T06:25:27.274Z"
+    },
+    {
+      "계정": "lab-kz-tiktok",
+      "상태": "거는 중",
+      "거는중": "2026-11-22T05:28:20.976Z",
+      "시각": "2026-11-26T13:00:00+05:00",
+      "지문": "0bbc95f43213f66a25259d3c0c9f1b6c425618a22f1b9fcf63febf479c405d41",
+      "게시글지문": "6f5b51d7f5733b95eb999ebf99a47b9f2e4e6c16c11e3a0a7a7032adee56ac43",
+      "방법": "ego"
+    },
+    {
+      "계정": "lab-ru-rutube",
+      "상태": "거는 중",
+      "거는중": "2026-11-22T05:28:22.663Z",
+      "시각": "2026-11-23T13:00:00+03:00",
+      "지문": "eb859e6d80d3daae8a1b385425ee27099a134dc3c23b1953de8f9a8b5181e6e8",
+      "게시글지문": "eafa5156e30ba8d8f6652edf3394e13d32f64cbda53f8fb8b49540c7cc29ab08",
+      "방법": "ego"
+    },
+    {
+      "계정": "lab-ru-vk",
+      "상태": "거는 중",
+      "거는중": "2026-11-22T05:28:23.139Z",
+      "시각": "2026-11-23T13:00:00+03:00",
+      "지문": "eb859e6d80d3daae8a1b385425ee27099a134dc3c23b1953de8f9a8b5181e6e8",
+      "게시글지문": "70b029438b22cf8bd72c33aea9d0fc05570de42026bb552c46cf3cb756c14631",
+      "방법": "ego"
     }
   ]
 }
