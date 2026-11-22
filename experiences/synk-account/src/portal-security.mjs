@@ -5,6 +5,9 @@
 // Auth itself accepts a change from any valid session (production: require_current_password off).
 // Changing a password ends every other session of the account (GoTrue keeps only the one that asked), so
 // the form says so before the button.
+// With security_update_password_require_reauthentication on (11-23), Auth answers reauthentication_needed when
+// the session is older than a day. The form then asks Auth to mail a code (reauthenticate), shows a code field,
+// and sends the code with the next press (updateUser({ password, nonce })). A fresh session needs no code.
 const $ = id => document.getElementById(id);
 export const PASSWORD_MIN = 8;
 // bcrypt, which Auth hashes passwords with, reads at most 72 bytes.
@@ -13,13 +16,16 @@ const PASSWORD_FIELDS = ['current-password', 'new-password', 'new-password-confi
 const SECURITY_MESSAGES = {
   invalid_credentials: '현재 비밀번호가 맞지 않아요. 다시 입력해 주세요.',
   same_password: '지금 비밀번호와 다른 새 비밀번호를 정해 주세요.',
-  reauthentication_needed: '보안을 위해 메일로 비밀번호를 다시 정해 주세요. 아래 「재설정 메일 보내기」를 눌러 주세요.',
+  reauthentication_needed: '보안을 위해 메일로 받은 확인 번호가 필요해요. 「번호 다시 받기」를 눌러 주세요.',
+  reauthentication_not_valid: '확인 번호가 맞지 않거나 시간이 지났어요. 번호를 다시 넣거나 「번호 다시 받기」를 눌러 주세요.',
   email_exists: '다른 SYNK 계정이 쓰는 이메일이에요. 다른 주소를 넣어 주세요.',
   user_already_exists: '다른 SYNK 계정이 쓰는 이메일이에요. 다른 주소를 넣어 주세요.',
   email_address_invalid: '이메일 주소 형식이 맞지 않아요. 다시 입력해 주세요.',
   ACCOUNT_CHANGED: '이 브라우저의 로그인 계정이 바뀌었어요. 페이지를 새로 고친 뒤 다시 해 주세요.',
 };
 const fault = (code, message) => Object.assign(new Error(message || code), { code });
+// Auth's code is the string one; a raw reply may also carry the HTTP status as a numeric `code`.
+const codeOf = error => [error?.code, error?.error_code].find(value => typeof value === 'string');
 export function passwordProblem({ current = '', next = '', confirm = '', needsCurrent = true }) {
   if (needsCurrent && !current) return '현재 비밀번호를 넣어 주세요.';
   if (next.length < PASSWORD_MIN) return `새 비밀번호는 ${PASSWORD_MIN}자 이상으로 정해 주세요.`;
@@ -51,7 +57,7 @@ export function googleAddresses(user) {
 export function createPortalSecurity({ config, sdk, bounded, notice, errorMessage, rateLimit, preview = false,
   setBusy = () => {}, hostBusy = () => false, onPasswordChanged = () => {}, fetcher = (...args) => globalThis.fetch(...args) }) {
   // Both forms start folded under their buttons (10-27): the card reads as three lines — e-mail, ways, password.
-  let user = null, generation = 0, busy = false, formOpen = false, emailOpen = false, closed = false;
+  let user = null, generation = 0, busy = false, formOpen = false, emailOpen = false, closed = false, codeSent = false;
   // A failure shown in its row clears an earlier success still at the top (「로그인됐어요」 · 「…바꿨어요」), as the account rows do (11-12).
   const status = (text, kind = 'info') => { if (kind === 'error' && $('notice')?.getAttribute?.('data-kind') === 'success') notice('', false, false, 'idle');
     const node = $('security-status');node.textContent = text;node.setAttribute('data-kind', kind);node.className = `small security-status${kind === 'error' ? ' error' : ''}`;if (text && kind !== 'pending') node.scrollIntoView?.({ block: 'nearest' }); };
@@ -63,7 +69,7 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
   const seat = () => { const node = $('security-status'), anchor = lastRow === 'email' ? $('email-change-form') : lastRow === 'password' ? $('password-change-form') : $('password-mail')?.parentElement;
     if (node && anchor && anchor !== node && anchor.nextElementSibling !== node) anchor.after?.(node); };
   const message = error => {
-    const code = error?.code || error?.error_code;
+    const code = codeOf(error);
     if (SECURITY_MESSAGES[code]) return SECURITY_MESSAGES[code];
     // An Auth reply whose code the browser could not read still says it in words.
     if (/already (?:been registered|exists)/i.test(error?.message || '')) return SECURITY_MESSAGES.email_exists;
@@ -74,10 +80,19 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
     return errorMessage(error);
   };
   const current = token => () => { if (closed || token !== generation || !user) throw fault('ACCOUNT_CHANGED'); };
-  const clearFields = () => { for (const id of [...PASSWORD_FIELDS, 'new-email']) $(id).value = '';for (const id of PASSWORD_FIELDS) $(id).type = 'password';$('password-visible').checked = false; };
+  // The code row may be missing for a moment after a release (an older cached page with this script): every use of it is guarded.
+  const clearCode = () => { const node = $('password-code');if (node) node.value = ''; };
+  const clearFields = () => { for (const id of [...PASSWORD_FIELDS, 'new-email']) $(id).value = '';clearCode();for (const id of PASSWORD_FIELDS) $(id).type = 'password';$('password-visible').checked = false; };
   function lock(value) {
     busy = value;setBusy(value);
-    for (const id of ['password-change-submit', 'password-mail', 'password-form-toggle', 'email-change-submit', 'email-form-toggle']) { const node = $(id);if (node) node.disabled = value; }
+    for (const id of ['password-change-submit', 'password-mail', 'password-form-toggle', 'email-change-submit', 'email-form-toggle', 'password-code-resend']) { const node = $(id);if (node) node.disabled = value; }
+  }
+  // Auth mails the code to the login address (reauthentication template); the field shows from then on.
+  async function mailCode(check) {
+    const result = await bounded(sdk.auth.reauthenticate());check();
+    if (result?.error) throw result.error;
+    codeSent = true;clearCode();render();
+    status(`${user.email} 주소로 확인 번호를 보냈어요. 메일의 번호를 넣고 「비밀번호 바꾸기」를 다시 눌러 주세요. 안 보이면 스팸함도 봐 주세요.`, 'info');
   }
   // Starts one operation at a time, never while the page signs in or out; returns its account check.
   function begin(pending) {
@@ -99,6 +114,7 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
     $('security-pending-email').textContent = pending ? `새 이메일 ${pending} 확인을 기다리고 있어요. 두 주소로 간 메일의 「변경 확인하기」를 모두 누르면 바뀌어요.` : '';
     // A Google-only account starts from the mail that sets a password; the current-password form stays one tap away.
     $('password-change-form').hidden = !formOpen;
+    if ($('password-code-row')) $('password-code-row').hidden = !codeSent;
     $('password-form-toggle').textContent = formOpen ? '접기' : methods.email ? '비밀번호 바꾸기' : '이미 만든 비밀번호 바꾸기';
     $('password-form-toggle').setAttribute('aria-expanded', String(formOpen));
     $('email-change-form').hidden = !emailOpen;
@@ -134,23 +150,42 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
   async function changePassword(event) {
     event?.preventDefault?.();lastRow = 'password';seat();
     const values = { current: $('current-password').value, next: $('new-password').value, confirm: $('new-password-confirm').value };
-    const problem = !closed && user ? passwordProblem(values) : null;
+    const code = codeSent ? String($('password-code')?.value || '').replace(/\s+/g, '') : '';
+    const problem = !closed && user ? passwordProblem(values) || (codeSent && !/^\d{6,10}$/.test(code) ? '메일로 받은 확인 번호를 넣어 주세요.' : null) : null;
     if (problem) { status(problem, 'error');return; }
     if (user && !user.email) { status('이 계정에는 로그인 이메일이 없어 비밀번호를 바꿀 수 없어요. hello@synk.im으로 알려 주세요.', 'error');return; }
     const check = begin('현재 비밀번호를 확인하고 있어요…');if (!check) return;
-    let collapsed = false;
+    let collapsed = false, codeField = false;
     try {
       await checkCurrent(user.email, values.current, check);
       status('새 비밀번호를 저장하고 있어요…', 'pending');
-      const result = await bounded(sdk.auth.updateUser({ password: values.next }));check();
-      if (result.error) throw result.error;
-      clearFields();formOpen = false;render();collapsed = true;
+      const result = await bounded(sdk.auth.updateUser(code ? { password: values.next, nonce: code } : { password: values.next }));check();
+      // An older session: Auth wants a mailed code first. The typed passwords stay for the next press.
+      if (result.error && codeOf(result.error) === 'reauthentication_needed' && !code) {
+        status('확인 번호를 메일로 보내고 있어요…', 'pending');
+        try { await mailCode(check); }
+        catch (error) {
+          // A code mailed a moment ago (before a reload, or a send that timed out here) still works; Auth only refuses a new one for a while.
+          const limited = !closed && rateLimit?.(error);if (!limited) throw error;
+          codeSent = true;render();
+          status(`조금 전에 보낸 확인 번호가 있으면 넣고 「비밀번호 바꾸기」를 다시 눌러 주세요. 새 번호는 ${limited.waitSeconds ? `${limited.waitSeconds}초 뒤에` : '잠시 뒤에'} 「번호 다시 받기」로 받을 수 있어요.`, 'info');
+        }
+        codeField = true;return;
+      }
+      if (result.error) { codeField = codeSent;throw result.error; }
+      codeSent = false;clearFields();formOpen = false;render();collapsed = true;
       status('비밀번호를 바꿨어요. 다른 기기와 앱(PC 앱·WORLD 포함)에서는 새 비밀번호로 다시 로그인해 주세요.', 'success');
       notice('비밀번호를 바꿨어요. 이 브라우저는 로그인된 채예요.', false, false, 'success');
       onPasswordChanged();
     } catch (error) { if (!closed) status(message(error), 'error'); }
     // The submit button left with the folded form; the toggle takes focus only once unlocked (a disabled control cannot).
-    finally { lock(false);if (collapsed && !closed) $('password-form-toggle').focus?.(); }
+    finally { lock(false);if (closed) return;if (collapsed) $('password-form-toggle').focus?.();else if (codeField) $('password-code')?.focus?.(); }
+  }
+  async function resendCode() {
+    lastRow = 'password';seat();
+    const check = begin('확인 번호를 메일로 보내고 있어요…');if (!check) return;
+    try { await mailCode(check); } catch (error) { if (!closed) status(message(error), 'error'); }
+    finally { lock(false);if (!closed && codeSent) $('password-code')?.focus?.(); }
   }
   async function sendReset() {
     lastRow = 'reset';seat();
@@ -184,7 +219,8 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
   $('password-change-form').onsubmit = event => { void changePassword(event); };
   $('email-change-form').onsubmit = event => { void changeEmail(event); };
   $('password-mail').onclick = () => { void sendReset(); };
-  $('password-form-toggle').onclick = () => { formOpen = !formOpen;lastRow = 'password';status('');if (!formOpen) for (const id of PASSWORD_FIELDS) $(id).value = '';render();if (formOpen) $('current-password').focus?.(); };
+  if ($('password-code-resend')) $('password-code-resend').onclick = () => { void resendCode(); };
+  $('password-form-toggle').onclick = () => { formOpen = !formOpen;lastRow = 'password';status('');if (!formOpen) { for (const id of PASSWORD_FIELDS) $(id).value = '';clearCode(); }render();if (formOpen) $('current-password').focus?.(); };
   $('email-form-toggle').onclick = () => { emailOpen = !emailOpen;lastRow = 'email';status('');if (!emailOpen) $('new-email').value = '';render();if (emailOpen) $('new-email').focus?.(); };
   $('password-visible').onchange = () => { for (const id of PASSWORD_FIELDS) $(id).type = $('password-visible').checked ? 'text' : 'password'; };
   return Object.freeze({
@@ -192,7 +228,7 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
     // (password · email · google, from ?view=security&focus=…, e.g. the PC app's buttons) opens that line.
     show(value, { focus = false, section = null } = {}) {
       if (closed) return;
-      if (user?.id !== value?.id) { generation++;formOpen = false;emailOpen = false;status('');clearFields(); }
+      if (user?.id !== value?.id) { generation++;formOpen = false;emailOpen = false;codeSent = false;status('');clearFields(); }
       user = value?.id ? value : null;
       if (focus && user && section === 'password') { formOpen = true;lastRow = 'password'; }
       if (focus && user && section === 'email') { emailOpen = true;lastRow = 'email'; }
@@ -203,8 +239,8 @@ export function createPortalSecurity({ config, sdk, bounded, notice, errorMessag
         (target || $('account-security-heading')).focus?.({ preventScroll: true });
       }
     },
-    hide() { generation++;user = null;formOpen = false;emailOpen = false;status('');clearFields();render(); },
+    hide() { generation++;user = null;formOpen = false;emailOpen = false;codeSent = false;status('');clearFields();render(); },
     // The page is going away: forget the account without touching the document.
-    stop() { closed = true;generation++;user = null; },
+    stop() { closed = true;generation++;user = null;codeSent = false; },
   });
 }

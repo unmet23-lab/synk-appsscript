@@ -32,7 +32,7 @@ function clock() {
 const waitError = seconds => ({ code: 'over_email_send_rate_limit', status: 429, message: `For security purposes, you can only request this after ${seconds} seconds.` });
 const settled = async () => { for (let n = 0; n < 4; n++) await new Promise(resolve => setImmediate(resolve)); };
 function deferred() { let resolve;const promise = new Promise(done => { resolve = done; });return { promise, resolve }; }
-async function fixture(t, { initial = null, reset = false, consent = false, preview = consent, redirectUri = 'https://app.example.test/', consentDetails = null, consentError = null, authorizationClients = [], initialReplies = {}, verifiedUser = null, defaultClock = false, callbackQuery = '', initializeError = null, sessionError = null, accountResponse = null, onInitialize = null, duringGetSession = null, beforeMountComplete = null, sessionStorage = undefined, localStorage = undefined, deviceWait = undefined, framed = false } = {}) {
+async function fixture(t, { initial = null, reset = false, consent = false, preview = consent, redirectUri = 'https://app.example.test/', consentDetails = null, consentError = null, authorizationClients = [], initialReplies = {}, verifiedUser = null, defaultClock = false, callbackQuery = '', initializeError = null, sessionError = null, accountResponse = null, onInitialize = null, duringGetSession = null, beforeMountComplete = null, sessionStorage = undefined, localStorage = undefined, deviceWait = undefined, framed = false, onGetUser = null } = {}) {
   // Older manual-consent/rate-limit cases use the retained synthetic preview.
   // Automatic first-party login cases below explicitly exercise production mode.
   const ids = new Map(), events = new Map(), calls = [], replies = { ...initialReplies }, modes = ['login', 'signup', 'recover'].map(value => Object.assign(new Element('button'), { dataset: { view: value } })), time = clock();
@@ -60,10 +60,10 @@ async function fixture(t, { initial = null, reset = false, consent = false, prev
   const sdk = { auth: {
     initialize: async () => { await onInitialize?.({ emit: (event, value) => { saved = value;listener(event, value); }, setUrl: url => { location.href = url; } });return { error: initializeError }; },
     getSession: async () => { const snapshot = saved;await duringGetSession?.({ emit: (event, value) => { saved = value;listener(event, value); } });return { data: { session: snapshot }, error: sessionError }; },
-    getUser: async () => { metrics.userChecks++;metrics.checkedUsers.push(saved?.user?.id || null);return { data: { user: verifiedUser || saved?.user } }; },
+    getUser: async () => { metrics.userChecks++;metrics.checkedUsers.push(saved?.user?.id || null);if (onGetUser) { const answer = await onGetUser({ emit: (event, value) => { saved = value;listener(event, value); } });if (answer) return answer; }return { data: { user: verifiedUser || saved?.user } }; },
     onAuthStateChange: fn => { listener = fn;return {}; },
     signUp: args => invoke('signUp', args), signInWithPassword: args => invoke('signInWithPassword', args),
-    resetPasswordForEmail: (...args) => invoke('resetPasswordForEmail', args), updateUser: (attributes, options) => invoke('updateUser', options === undefined ? attributes : [attributes, options]), verifyOtp: args => invoke('verifyOtp', args),
+    resetPasswordForEmail: (...args) => invoke('resetPasswordForEmail', args), reauthenticate: () => invoke('reauthenticate', null), updateUser: (attributes, options) => invoke('updateUser', options === undefined ? attributes : [attributes, options]), verifyOtp: args => invoke('verifyOtp', args),
     oauth: { getAuthorizationDetails: async () => { metrics.consentLoads++;if (consentError) return { error: consentError };return { data: consentDetails || { client: { id: 'synthetic-client', name: '합성 앱' }, redirect_uri: redirectUri, scope: 'openid email profile' } }; },
       approveAuthorization: (...args) => invoke('approveAuthorization', args), denyAuthorization: (...args) => invoke('denyAuthorization', args) },
   } };
@@ -1152,6 +1152,105 @@ test('「로그인과 보안」 checks the current password with a separate, end
   for (const id of ['current-password', 'new-password', 'new-password-confirm']) assert.equal(page.get(id).value, '');
   // The submit button folded away with the form: focus lands on the (unlocked) toggle, not on the page top.
   assert.equal(page.get('password-change-form').hidden, true);assert.equal(page.get('password-form-toggle').disabled, false);assert.equal(page.get('password-form-toggle').focusCount, 1);
+});
+
+test('an older session gets a mailed code first: the typed passwords stay, the code goes with the next press', async t => {
+  const page = await fixture(t, { initial: member('owner', 'owner@example.test'), accountResponse: syntheticAccount('owner') });
+  stubFetch(t, url => url.includes('/auth/v1/token') ? reply(200, { access_token: 'synthetic-check', user: { id: 'owner' } }) : reply(200, {}));
+  let saves = 0;page.replies.updateUser = args => (++saves === 1 ? { data: { user: null }, error: { code: 'reauthentication_needed', status: 400, message: 'Password update requires reauthentication' } } : { data: { user: { id: 'owner' } }, error: null });
+  page.replies.reauthenticate = { data: { user: null, session: null }, error: null };
+  page.get('password-form-toggle').onclick();assert.equal(page.get('password-code-row').hidden, true);
+  page.get('current-password').value = 'synthetic-old';page.get('new-password').value = page.get('new-password-confirm').value = 'synthetic-next';
+  await submitForm(page, 'password-change-form');await settled();
+  assert.deepEqual(page.calls.slice(-2).map(call => call.method), ['updateUser', 'reauthenticate']);assert.deepEqual(page.calls.at(-2).args, { password: 'synthetic-next' });
+  assert.equal(page.get('password-code-row').hidden, false);assert.match(page.get('security-status').textContent, /owner@example\.test 주소로 확인 번호를 보냈어요/);
+  assert.equal(page.get('new-password').value, 'synthetic-next');assert.equal(page.get('password-change-form').hidden, false);assert.equal(page.get('password-code').focusCount, 1);
+  // No code yet: nothing is sent.
+  const before = page.calls.length;await submitForm(page, 'password-change-form');assert.match(page.get('security-status').textContent, /확인 번호를 넣어 주세요/);assert.equal(page.calls.length, before);
+  page.get('password-code').value = ' 1234 5678 ';await submitForm(page, 'password-change-form');await settled();
+  assert.deepEqual(page.calls.at(-1), { method: 'updateUser', args: { password: 'synthetic-next', nonce: '12345678' } });assert.match(page.get('security-status').textContent, /비밀번호를 바꿨어요/);
+  assert.equal(page.get('password-code-row').hidden, true);assert.equal(page.get('password-code').value, '');assert.equal(page.get('password-change-form').hidden, true);
+});
+
+test('a wrong or late code keeps the field and says so; 「번호 다시 받기」 mails a new one', async t => {
+  const page = await fixture(t, { initial: member('owner', 'owner@example.test'), accountResponse: syntheticAccount('owner') });
+  stubFetch(t, url => url.includes('/auth/v1/token') ? reply(200, { access_token: 'synthetic-check', user: { id: 'owner' } }) : reply(200, {}));
+  page.replies.updateUser = args => (args.nonce ? { data: { user: null }, error: { code: 'reauthentication_not_valid', status: 422, message: 'Verification code is invalid' } } : { data: { user: null }, error: { code: 400, error_code: 'reauthentication_needed', msg: 'Password update requires reauthentication' } });
+  page.replies.reauthenticate = { data: {}, error: null };
+  page.get('password-form-toggle').onclick();page.get('current-password').value = 'synthetic-old';page.get('new-password').value = page.get('new-password-confirm').value = 'synthetic-next';
+  await submitForm(page, 'password-change-form');await settled();
+  page.get('password-code').value = '87654321';await submitForm(page, 'password-change-form');await settled();
+  assert.match(page.get('security-status').textContent, /확인 번호가 맞지 않거나 시간이 지났어요/);assert.equal(page.get('password-code-row').hidden, false);assert.equal(page.get('new-password').value, 'synthetic-next');
+  assert.equal(page.calls.filter(call => call.method === 'reauthenticate').length, 1);
+  // Folding the form empties the typed code too; the field comes back with the form, since the mailed code still works.
+  page.get('password-form-toggle').onclick();assert.equal(page.get('password-code').value, '');page.get('password-form-toggle').onclick();assert.equal(page.get('password-code-row').hidden, false);
+  await page.get('password-code-resend').onclick();await settled();
+  assert.equal(page.calls.filter(call => call.method === 'reauthenticate').length, 2);assert.match(page.get('security-status').textContent, /확인 번호를 보냈어요/);
+  // A limited resend says when to try again, in words.
+  page.replies.reauthenticate = { data: {}, error: waitError(37) };await page.get('password-code-resend').onclick();await settled();
+  assert.match(page.get('security-status').textContent, /37초 뒤에 다시 눌러 주세요/);assert.equal(page.get('password-code-resend').disabled, false);
+});
+
+test('a new code refused for a while still opens the field for the code mailed a moment ago', async t => {
+  const page = await fixture(t, { initial: member('owner', 'owner@example.test'), accountResponse: syntheticAccount('owner') });
+  stubFetch(t, url => url.includes('/auth/v1/token') ? reply(200, { access_token: 'synthetic-check', user: { id: 'owner' } }) : reply(200, {}));
+  page.replies.updateUser = args => (args.nonce ? { data: { user: { id: 'owner' } }, error: null } : { data: { user: null }, error: { code: 'reauthentication_needed', status: 400 } });
+  page.replies.reauthenticate = { data: {}, error: waitError(52) };
+  page.get('password-form-toggle').onclick();page.get('current-password').value = 'synthetic-old';page.get('new-password').value = page.get('new-password-confirm').value = 'synthetic-next';
+  await submitForm(page, 'password-change-form');await settled();
+  assert.equal(page.get('password-code-row').hidden, false);assert.match(page.get('security-status').textContent, /조금 전에 보낸 확인 번호가 있으면/);assert.match(page.get('security-status').textContent, /52초 뒤에/);
+  assert.equal(page.get('password-code').focusCount, 1);assert.equal(page.get('password-change-submit').disabled, false);
+  page.get('password-code').value = '11223344';await submitForm(page, 'password-change-form');await settled();
+  assert.deepEqual(page.calls.at(-1), { method: 'updateUser', args: { password: 'synthetic-next', nonce: '11223344' } });assert.match(page.get('security-status').textContent, /비밀번호를 바꿨어요/);
+});
+
+test('the code state goes with the account: another sign-in or a sign-out folds the field and empties it', async t => {
+  const page = await fixture(t, { initial: member('owner', 'owner@example.test'), accountResponse: syntheticAccount('owner') });
+  stubFetch(t, url => url.includes('/auth/v1/token') ? reply(200, { access_token: 'synthetic-check', user: { id: 'owner' } }) : reply(200, {}));
+  page.replies.updateUser = { data: { user: null }, error: { code: 'reauthentication_needed', status: 400 } };page.replies.reauthenticate = { data: {}, error: null };
+  const openCode = async () => { page.get('password-form-toggle').onclick();page.get('current-password').value = 'synthetic-old';page.get('new-password').value = page.get('new-password-confirm').value = 'synthetic-next';
+    await submitForm(page, 'password-change-form');await settled();assert.equal(page.get('password-code-row').hidden, false);page.get('password-code').value = '55667788'; };
+  await openCode();
+  await page.emit('SIGNED_IN', member('other', 'other@example.test'));await settled();
+  assert.equal(page.get('password-code-row').hidden, true);assert.equal(page.get('password-code').value, '');
+  await page.emit('SIGNED_IN', member('owner', 'owner@example.test'));await settled();await openCode();
+  // Signed out, the whole card hides and the code empties; signing back in shows the card without the code field.
+  await page.emit('SIGNED_OUT', null);await settled();
+  assert.equal(page.get('account-security').hidden, true);assert.equal(page.get('password-code').value, '');
+  await page.emit('SIGNED_IN', member('owner', 'owner@example.test'));await settled();
+  assert.equal(page.get('account-security').hidden, false);assert.equal(page.get('password-code-row').hidden, true);
+});
+
+test('a signed-in browser opening ?view=recover lands on 「로그인과 보안」 instead of an empty mail form', async t => {
+  const page = await fixture(t, { callbackQuery: 'view=recover', initial: member('owner', 'owner@example.test'), accountResponse: syntheticAccount('owner') });
+  assert.equal(page.get('account-security').hidden, false);assert.ok(page.get('account-security').scrollCount > 0);assert.equal(page.get('auth-panel').hidden, true);
+  assert.match(page.notice.textContent, /owner@example\.test 계정에 로그인돼 있어요/);assert.match(page.notice.textContent, /재설정 메일/);
+});
+
+test('?view=recover with a stored session Auth has already ended falls back to the mail form, with no signed-in line', async t => {
+  let ended = false;
+  const page = await fixture(t, { callbackQuery: 'view=recover', initial: member('owner', 'owner@example.test'), accountResponse: syntheticAccount('owner'),
+    onGetUser: async ({ emit }) => { if (ended) return null;ended = true;emit('SIGNED_OUT', null);return { data: { user: null }, error: { code: 'session_not_found', status: 403, message: 'Session from session_id claim in JWT does not exist' } }; } });
+  await settled();
+  assert.equal(page.get('auth-panel').hidden, false);assert.equal(page.get('password-label').hidden, true);assert.equal(page.get('account-security').hidden, true);
+  assert.doesNotMatch(page.notice.textContent, /로그인돼 있어요/);
+  // A later sign-in in this tab is not the landing either.
+  await page.emit('SIGNED_IN', member('owner', 'owner@example.test'));await settled();
+  assert.doesNotMatch(page.notice.textContent, /로그인돼 있어요/);
+});
+
+test('a mail form opened by a tap, then signed in from another tab, does not point back to a reset', async t => {
+  const page = await fixture(t, { accountResponse: syntheticAccount('owner') });
+  page.mode('recover');assert.equal(page.get('password-label').hidden, true);
+  await page.emit('SIGNED_IN', member('owner', 'owner@example.test'));await settled();
+  assert.equal(page.get('account-security').hidden, false);assert.equal(page.get('account-security').scrollCount || 0, 0);assert.doesNotMatch(page.notice.textContent, /로그인돼 있어요/);
+});
+
+test('?view=recover opened signed out, then signed in from another tab, does not point back to a reset either', async t => {
+  const opened = await fixture(t, { callbackQuery: 'view=recover', accountResponse: syntheticAccount('owner') });
+  assert.equal(opened.get('password-label').hidden, true);
+  await opened.emit('SIGNED_IN', member('owner', 'owner@example.test'));await settled();
+  assert.doesNotMatch(opened.notice.textContent, /로그인돼 있어요/);
 });
 
 test('a wrong current password, another account in the check, or unmatched fields never change the password', async t => {

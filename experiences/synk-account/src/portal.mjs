@@ -322,6 +322,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
   const linkFragment = new URLSearchParams(new URL(location.href).hash.slice(1)), emailChangeHalf = requestedView === 'security' && (linkParams.has('message') || linkFragment.has('message')) && !linkParams.has('code');
   if (emailChangeHalf) { const clean = cleanAuthCallbackUrl(location.href);if (clean !== location.href) window.history?.replaceState(window.history.state, '', clean); }
   let recoveryReady = false, recoveredOver = null, focusSecurity = requestedView === 'security';
+  // ?view=recover counts once: until a signed-out page is drawn or the signed-in landing is shown (see enter()).
+  let recoverLanding = requestedView === 'recover';
   // ?view=security&focus=password|email|google opens that line of 「로그인과 보안」 (the PC app's three buttons).
   const securitySection = focusSecurity && ['password', 'email', 'google'].includes(linkParams.get('focus')) ? linkParams.get('focus') : null;
   // 「지난번 이 기기 로그인」 (recent-login.mjs): only this browser, never in the synthetic preview.
@@ -1423,7 +1425,13 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       if (recoveryGrace(session.user?.id)) recoveryReady = true;
       else { mode = 'login';focusSecurity = true; }
     }
+    // A signed-in browser that opens ?view=recover (a security mail's 「비밀번호 다시 정하기」, the PC app's 「비밀번호를 잊었어요」)
+    // has nothing to fill in the mail form: once Auth confirms the session it lands on 「로그인과 보안」 (below, at security.show).
+    // A stored session Auth has already ended signs out and falls back to the mail form. Only the address this page opened with
+    // counts, until a signed-out page is drawn or the landing is shown: a mail form opened by a tap and then signed in from another tab stays quiet.
+    const recoverSignedIn = recoverLanding && mode === 'recover' && Boolean(session);
     if (!session || mode === 'reset' || mode === 'email-change') {
+      if (!session) recoverLanding = false;
       if (!session && mode === 'login' && !preview && window.top === window.self && authorizationId && !abandonedAuthorization && !callbackBlocked && !hadCallback && !startupError) {
         const platformStore = resolvePlatformStore();
         const boundResume = readBoundPlatformLoginIntent({ storage: platformStore, config, now: cooldownClock.now() });
@@ -1531,7 +1539,8 @@ export async function mountPortal({ config, sdk, accountFactory = createAccountC
       notice(preview ? '합성 계정 화면 예시 · 실제 로그인이나 서버 연결이 아니에요.' : '로그인됐어요. 아래에서 내 계정을 보고 바꿀 수 있어요.', false, false, 'success');
       if ($('account-next')) $('account-next').hidden = preview || callbackBlocked;
       google.showAccount(!preview);
-      security.show(verified, { focus: focusSecurity, section: securitySection });focusSecurity = false;
+      if (recoverSignedIn) { recoverLanding = false;mode = 'login';landingNotice ??= { text: `이 브라우저는 ${verified.email || '다른'} 계정에 로그인돼 있어요. 이 계정이면 아래 「로그인과 보안」에서 비밀번호를 바꾸거나 재설정 메일을 받고, 다른 계정이면 로그아웃한 뒤 「비밀번호를 잊었어요」로 메일을 받아 주세요.`, error: false }; }
+      security.show(verified, { focus: focusSecurity || recoverSignedIn, section: securitySection });focusSecurity = false;
       if (landingNotice) { const { text, error } = landingNotice;landingNotice = null;notice(text, error, true, error ? 'error' : 'success'); }
       else if (addedGoogle) notice('Google 계정을 더했어요. 이제 그 Google로도 로그인할 수 있어요.', false, true, 'success');
     } catch (error) {

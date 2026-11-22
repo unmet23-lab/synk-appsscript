@@ -100,6 +100,7 @@
         <label>현재 비밀번호<input id="current-password" type="password" autocomplete="current-password" required></label>
         <label>새 비밀번호 <span class="muted">(8자 이상)</span><input id="new-password" type="password" autocomplete="new-password" minlength="8" required></label>
         <label>새 비밀번호 확인<input id="new-password-confirm" type="password" autocomplete="new-password" minlength="8" required></label>
+        <div id="password-code-row" class="security-code" hidden><label>메일로 받은 확인 번호<input id="password-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" spellcheck="false"></label><button id="password-code-resend" class="link-button" type="button">번호 다시 받기</button></div>
         <label class="toggle"><input id="password-visible" type="checkbox"><span>입력한 비밀번호 보기</span></label>
         <p class="small">다른 기기와 앱에서는 새 비밀번호로 다시 로그인해 주세요.</p>
         <button id="password-change-submit" class="sb-btn" type="submit">비밀번호 바꾸기</button>
