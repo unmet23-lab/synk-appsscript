@@ -4,6 +4,7 @@
 
 - 움직이는 시안: [`_src_시안.html`](_src_시안.html)(원고) — `node docs/디자인/드라마_장면/굽기.mjs`로 글꼴을 심어 `.tmp/drama-scene-design/시안.html`에 내보낸다(장면 사진은 승인 칸 그림이라 저장소 밖에서 복사). 보기용: [시안 페이지](https://claude.ai/artifact/2DkV2e9wDtytriVkboSqYe)(77unmet 계정).
 - 네 갈래 비교와 근거: [비교 페이지](https://claude.ai/artifact/ApkzQTyk1UzxdCSu2vpnfY)(77unmet 계정). 크롤링 원자료는 저장소 밖 `.tmp/drama-design-ref-20261102/`(남의 그림이라 저장소에 넣지 않는다).
+- 정본 요소 넷(음성 구 · 자막과 유리 대사 카드 · 보라 빈칸 · 코치 카드의 고칠 꼴)을 바꾼 판을 11-22 꿈 무대 4급 시험판에서 시험했다. 미학 맹검이 4 · 2 · 3으로 정본 판(4 · 5 · 5)보다 낮아, 유호님 11-23 「일곱째 판 유지」로 정본을 그대로 둔다([시험판 README](../../../experiences/drama/qa/꿈무대4급시험_20261121/README.md) 「화면 디자인」 · [결정](../../_ops/결정.md) 11-23).
 
 ## 왜 이 결인가 (11-02 크롤링)
 
