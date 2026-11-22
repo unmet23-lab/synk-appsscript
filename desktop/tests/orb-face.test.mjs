@@ -1684,6 +1684,14 @@ test('공간 지도 검수 c FA2: with reduced motion, opening a department row 
   assert.match(src, /records\.some\(r => r\.target\?\.parentElement === app\.offRows && r\.target\.matches\?\.\('button\.row'\)\)\) officeFloor\.redraw\(\);/, 'only a row button changing its class redraws');
 });
 
+test('a focus the fan puts back after 「다시 확인」 makes no tick and lights no space, and only a focus that fell to the page is put back (pc-fan-p3 Fable F1 · F2)', () => {
+  // 확인 창은 OS 초점을 갖지 않아 focusin이 돌지 않는다. 그래서 막이를 소스로 지킨다(실제 창 장면 6-3은 초점 자리만 본다)
+  const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
+  assert.match(src, /const onFanPoint = event => \{\r?\n    if \(fanRestoring\) return;/, 'onFanPoint ignores the focus the fan puts back');
+  assert.match(src, /fanRestoring = true;\r?\n        try \{ target\?\.focus\?\.\(\{ preventScroll: true \}\); \} catch \{[^}]*\} finally \{ fanRestoring = false; \}/, 'the guard wraps the put-back focus and always comes down');
+  assert.match(src, /if \(!a \|\| a === doc\.body\) \{/, 'a focus the person moved elsewhere is left alone');
+});
+
 test('a redraw keeps focus on 「계정 관리」 inside an open row instead of dropping it to the page (카본 A4)', () => {
   const src = fs.readFileSync(new URL('../renderer/orb-face-view.mjs', import.meta.url), 'utf8');
   assert.match(src, /keepAct = fa && inner\.contains\(fa\) \? fa\.dataset\?\.orbAct \|\| '' : null, keepRoom = /);

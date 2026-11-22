@@ -1154,8 +1154,9 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
       const want = fanRefocus;
       fanRefocus = null;
       const a = doc.activeElement;
-      // 초점이 빠졌거나(body) 꺼진 단추에 남았을 때만 돌려놓는다. 그사이 사람이 다른 단추로 옮겼으면 그대로 둔다(pc-fan-followups Fable F2)
-      if (!a || a === doc.body || a.disabled) {
+      // 초점이 body로 빠졌을 때만 돌려놓는다. 그사이 사람이 다른 단추로 옮겼으면 그대로 둔다(pc-fan-followups Fable F2).
+      // 꺼졌던 단추에 초점이 남았으면 바로 위에서 다시 켜져 그대로 초점을 가지므로 따로 보지 않는다(pc-fan-p3 Fable F2)
+      if (!a || a === doc.body) {
         const [kind, value] = [want.slice(0, want.indexOf(':')), want.slice(want.indexOf(':') + 1)];
         const same = [...app.fan.querySelectorAll(kind === 'go' ? '.fan-go' : '[data-foot]')].find(b => (kind === 'go' ? b.dataset.go : b.dataset.foot) === value);
         const target = same || app.fan.querySelector('.fan-go[aria-current="true"]') || app.fan.querySelector('.fan-go');

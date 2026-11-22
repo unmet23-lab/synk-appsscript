@@ -1481,7 +1481,7 @@ if(!process.versions.electron){
           let after=null;for(let i=0;i<60;i++){after=await fanSpaces(w);if(after.length===3)break;await wait(60);}
           await wait(200);
           const f2=await w.js("(()=>{const a=document.activeElement,f=document.querySelector('#portal-entry [data-orb-fan]');return {inFan:!!a&&!!f&&f.contains(a),go:a?.dataset?.go||'',hot:[...document.querySelectorAll('#portal-entry .fan-go.hot')].map(b=>b.dataset.go)};})()");
-          check('6-3 a mouse 「다시 확인」 that confirms both spaces moves the focus into the fan without lighting a space',JSON.stringify(after)==='[\"solio\",\"workspace\",\"pulse\"]'&&f2.inFan&&f2.hot.length===0,{after,...f2});
+          check('6-3 a mouse 「다시 확인」 that confirms both spaces moves the focus into the fan (the no-light guard is held by a source test: this window gets no focusin)',JSON.stringify(after)==='[\"solio\",\"workspace\",\"pulse\"]'&&f2.inFan&&f2.hot.length===0,{after,...f2});
           w.win.destroy();
         }
         // 8. error · enter-error, 다시 시도 뒤 checking에 글이 없다, unconfigured
