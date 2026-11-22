@@ -2215,6 +2215,10 @@ Claude Code의 입력 대기 알림은 사용자가 키를 누르면 늦어진�
 - 고침: 계정과 사용량 확인을 각각 최대 60초 기다린다. 사용량 조회에서는 표준입력을 즉시 닫고 스트림에서 Claude Code의 결과를 받는다. 소유 계정 확인에 시간이 초과되면 그 상태를 따로 기록한다.
 - 다시 확인: `SYNK 공모 지도 갱신`의 `그록공모전/예약실행.log`에서 `artifact` 결과를 본다. 주간 한도가 차면 `deferred`와 초기화 시각이 나온다. 실제 게시를 마치면 `updated`와 원문을 대조한 버전이 나온다.
 
+11월 22일에는 편집 초대를 수락한 뒤 소유 계정의 원문을 읽지 못했고, 편집 계정의 게시 도구는 파일 읽기가 막혔다. 공동 편집 때 서비스가 머리말 앞에 붙이는 안내를 인식하도록 고쳤다. 편집자가 지도 번호와 버전, 편집 권한을 확인하면 이번 회차에 저장한 지도 파일 하나를 읽고 게시할 수 있다. 게시 후 소유 계정에서 HTML을 다시 읽고 브라우저에서 카드 세 장을 확인했다.
+
+게시 호출 뒤 CLI가 끊기고 웹에 이전 판이 남으면 예약 로그에 원문 확인 실패가 남는다. 이때 CLI의 시간 초과와 연결 종료도 구분해 남기는 일은 다음 로그 개선에 포함한다.
+
 ## OpenAI 실시간 음성(GPT-Live · Realtime)
 
 판: `gpt-live-1`(`wss://api.openai.com/v1/live/sessions`) · `gpt-realtime-2.1`(`wss://api.openai.com/v1/realtime?model=…`) · Node 24 내장 WebSocket(`new WebSocket(주소, { headers })`로 Authorization을 실을 수 있어 `ws` 패키지가 필요 없다). 쓰는 곳: [듣기 시험 녹음 도구](../../experiences/synk-world-app/qa/realtime-roleplay-20261029/듣기시험/녹음.mjs).
