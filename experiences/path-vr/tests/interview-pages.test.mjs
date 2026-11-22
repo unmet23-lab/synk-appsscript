@@ -143,11 +143,13 @@ test('Pages rebuild refuses to overwrite an unexpected PATH introduction', filmM
   assert.equal((await verifyPagesInterview()).preservedIntroduction, true);
 });
 
+// 사이트 전체가 같이 쓰는 출시 안내 띠(experiences/launch-notice, 11-21 결정) — 이 묶음 밖의 공개 자산이라 묶음 안 확인에서 뺀다.
+const SITE_SHARED = new Set(['/assets/launch-notice.js']);
 test('published imports, stylesheet URLs and fixed room textures resolve inside the minimal overlay', filmMedia, async () => {
   const report = JSON.parse(await readFile(path.join(PAGES_OUTPUT, 'pages-manifest.json'))), files = new Set(report.files.map((row) => row.file));
   function present(ref, from) {
     const url = new URL(ref, 'https://synk.im/' + from);
-    if (url.pathname === '/path/') return;
+    if (url.pathname === '/path/' || SITE_SHARED.has(url.pathname)) return;
     assert.equal(url.origin, 'https://synk.im');
     if (url.pathname.endsWith('/')) {
       assert.ok([...files].some((file) => file.startsWith(url.pathname.slice(1))), `${from} -> ${ref}`);

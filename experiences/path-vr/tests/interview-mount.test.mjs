@@ -6,6 +6,8 @@ import { resolveFilmClipUrl } from '../interview/film-player.mjs';
 import { hostingHeaders, normalizeMountPath } from '../../../tools/package-path-interview.mjs';
 
 const root = new URL('../', import.meta.url);
+// 사이트 전체가 같이 쓰는 출시 안내 띠(experiences/launch-notice, 11-21 결정) — 이 묶음 밖의 공개 자산이라 묶음 안 확인에서 뺀다.
+const SITE_SHARED = new Set(['/assets/launch-notice.js']);
 // PATH 면접 영상(*.mp4)·음성 모델(*.tar.gz)은 .gitignore에 걸려 공용 작업본에만 있다 — CI 체크아웃에서는 그 파일을 재는 시험을 이름 대고 건너뛴다.
 const gitOutside = (file) => Boolean(process.env.CI) && !existsSync(new URL(file, root)) && `CI 체크아웃에는 없다 — experiences/path-vr/${file} (git 밖 PATH 면접 미디어)`;
 const origin = 'https://synk.example';
@@ -42,7 +44,7 @@ test('room and comparison pages keep images, styles and media under the deployme
     const refs = [...source.matchAll(/(?:src|href)="([^"]+)"|url\(['"]?([^)'"\s]+)['"]?\)/g)].map((match) => match[1] || match[2]);
     for (const mount of ['/', '/path/']) {
       for (const ref of refs) {
-        if (ref.startsWith('#') || ref.endsWith('/')) continue;
+        if (ref.startsWith('#') || ref.endsWith('/') || SITE_SHARED.has(ref)) continue;
         await bundledFile(new URL(ref, `${origin}${mount}${file}`), mount);
       }
     }

@@ -132,6 +132,7 @@ function renderDocument({
   <meta name="twitter:description" content="${escapedDescription}">
   <meta name="twitter:image" content="${HERO_IMAGE_URL}">
   <link rel="stylesheet" href="${STYLESHEET_HREF}">
+  <script src="/assets/launch-notice.js" defer></script>
 </head>
 <body class="${bodyClass}">
 ${bodyHtml}

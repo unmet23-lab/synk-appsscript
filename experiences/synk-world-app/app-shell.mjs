@@ -141,6 +141,8 @@ let screen='',draftRun=null,answers=[],questionIndex=0,lastCompletion=null,wardr
 const wardrobeRequested=new URLSearchParams(location.search).get('wardrobe')==='1';
 // 주소의 ?exam=topik1|topik2(10-22, 메일·신청 페이지의 무료 연습 링크): 첫 실행을 마치고 들어온 뒤 그 시험을 채운 학습 목표 창(이미 그 목표면 이번 주 계획)을 연다 — openExamLink.
 const examRequested=(value=>['topik1','topik2'].includes(value)?value:null)(new URLSearchParams(location.search).get('exam'));
+// ?exam=topik2&practice=writing(11-22, LAB TOPIK 4급 쪽 「TOPIK II 쓰기 51~54번」 링크): 첫 실행을 마치고 들어온 뒤 목표 창 대신 쓰기 연습(51~54 고르기)을 바로 연다. 손님도 쓴다.
+const writingRequested=examRequested==='topik2'&&new URLSearchParams(location.search).get('practice')==='writing';
 // ?drama=1(11-02, 드라마 말하기 코호트 링크): 로그인은 전체 페이지 이동이고 돌아오는 주소에 쿼리가 없어, 이 탭에 30분 동안 남겨 두었다가
 // 로그인한 상태로 들어왔을 때 한 번 연다(로그인 전에는 launchGame이 로그인 창을 열고 표시는 남는다).
 const DRAMA_PENDING='synk.world.drama.pending';
@@ -1239,6 +1241,7 @@ entryGate=createWorldEntryGate({
    }
    // 한 번만 도는 바로가기라 계정이 바뀌어 멈춘 것(코드 없는 오류)은 알리지 않는다 — 「다시 시도」할 일이 아니다.
    else if(me2Requested){if(client.snapshot)try{sessionStorage.removeItem(ME2_PENDING);}catch{}void openMe2().catch(error=>{if(error?.code)home.toast(errorText(error));});}
+   else if(writingRequested)void openWriting();
    else if(examRequested)void openExamLink().catch(error=>{if(error?.code)home.toast(errorText(error));});
    else openReminderLink();
   });

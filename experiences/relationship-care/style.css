@@ -348,3 +348,6 @@ dialog p{font-size:15px;color:var(--ink-2)}
 body[data-mood="quiet"] .felt-button:hover{box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
 @media (max-width:760px){.people-panel{order:2}}
 @media print{.people-panel,.bar,.tabbar{display:none!important}}
+
+/* 출시 안내 띠(2026-11-21)가 휴대폰 첫 화면을 내리면 아래 메뉴가 집계 칸을 가린다 — 띠가 있을 때만 맨 위 그림을 줄인다 */
+@media (max-width:599px){body:has(>synk-launch-notice) .intro .poster{min-height:260px;height:260px}}
