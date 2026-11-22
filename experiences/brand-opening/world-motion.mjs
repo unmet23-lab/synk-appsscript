@@ -162,6 +162,28 @@ export function wash(button,point){
  const w=document.createElement('span');w.className='w-wash';w.setAttribute('aria-hidden','true');button.prepend(w);
  animate(w,[{clipPath:`circle(0px at ${tx}% ${ty}%)`},{clipPath:`circle(160% at ${tx}% ${ty}%)`}],{duration:620,easing:'cubic-bezier(.2,.7,.2,1)',fill:'forwards'});
 }
+// 가상 요소(::after) 움직임을 모르는 브라우저는 그 옵션을 버리고 요소 전체를 잘라 버리므로, 될 때만 쓴다.
+const pseudoOk=()=>typeof KeyframeEffect!=='undefined'&&'pseudoElement' in KeyframeEffect.prototype;
+/** 답한 뒤 보기 속 한 줄: 접힌 칸이 내려오며 글이 뜬다(한 번). */
+export function drawer(el,{delay=160}={}){
+ if(!el||!motionOn())return;const h=el.scrollHeight;if(!h)return;
+ animate(el,[{height:'0px',opacity:0},{height:`${h}px`,opacity:1}],{duration:380,delay,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'});
+}
+/** 틀린 뒤 맞는 보기: 잠시 다른 보기처럼 있다가 제 색으로 돌아오고, 테두리 빛이 한 번 밝아졌다 가라앉는다. from은 다른 보기 하나. */
+export function reveal(el,from,{delay=800}={}){
+ if(!el||!motionOn())return;const f=from?getComputedStyle(from):null;
+ if(f)animate(el,[{backgroundColor:f.backgroundColor,color:f.color,boxShadow:f.boxShadow},{}],{duration:420,delay,easing:'ease-out',fill:'backwards'});
+ if(pseudoOk())animate(el,[{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0 0 0)'}],{pseudoElement:'::after',duration:340,delay:delay+200,easing:'cubic-bezier(.3,.7,.3,1)',fill:'backwards'});
+ animate(el,[{outline:'0 solid rgba(125,180,90,0)',outlineOffset:'0px'},{outline:'5px solid rgba(125,180,90,.28)',outlineOffset:'0px',offset:.45},{outline:'0 solid rgba(125,180,90,0)',outlineOffset:'4px'}],{duration:900,delay:delay+120,easing:'ease-out'});
+}
+/** 판정 띠의 답 낱말: 밑줄이 왼쪽부터 그어진다(밑줄은 CSS가 그리고, 여기서는 길이만 늘린다). */
+export function underline(el,{delay=850}={}){
+ if(!el||!motionOn())return;animate(el,[{backgroundSize:'0% 2px'},{backgroundSize:'100% 2px'}],{duration:500,delay,easing:'ease-out',fill:'backwards'});
+}
+/** 맞힌 보기의 체크: 왼쪽부터 그려진다. */
+export function markIn(el,{delay=220}={}){
+ if(!el||!motionOn()||!pseudoOk())return;animate(el,[{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0 0 0)'}],{pseudoElement:'::after',duration:340,delay,easing:'cubic-bezier(.3,.7,.3,1)',fill:'backwards'});
+}
 export function shake(el){if(!el||!motionOn())return;animate(el,[{transform:'none'},{transform:'translateX(-8px)'},{transform:'translateX(7px)'},{transform:'translateX(-5px)'},{transform:'translateX(3px)'},{transform:'none'}],{duration:440,easing:'ease-out'});}
 /** 누르면 불빛: 그 자리에 따뜻한 빛이 번졌다 사라진다. */
 export function glow(host,x,y,{size=190}={}){

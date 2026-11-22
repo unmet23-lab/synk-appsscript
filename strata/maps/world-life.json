@@ -1,9 +1,9 @@
 {
-  "layer_ver": "world-life-1-81514d0dfb6b",
+  "layer_ver": "world-life-1-6c27fb699030",
   "sources": {
     "world-life": {
       "path": "strata/world-life.json",
-      "sha256": "81514d0dfb6b2473f2c354f4063bd441c0067b42392403c246fcf8c75056f182"
+      "sha256": "6c27fb69903017a19f90fa7e806252ce3c52ba7e5e7fc424577ef32ea35ea1b5"
     }
   },
   "nodes": [

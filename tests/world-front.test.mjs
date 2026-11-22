@@ -81,7 +81,8 @@ test('할 일: 레슨은 사진 · 다루는 것 · 세 마디, 마스코트 이
   assert.equal(greet.topic, '만남 · 감사 · 소개 · {m}분');
   assert.deepEqual(greet.says, ['안녕하세요.', '감사합니다.', '저는 수진이에요.']);
   const story = itemOf({id: 'x', label: '이름표를 찾아서', route: 'lesson', lessonId: 'greetings-story', minutes: 3});
-  assert.equal(story.says, null, '「저는 몽글이에요」가 든 이야기 레슨은 세 마디를 보이지 않는다');
+  // 11-22 생활 원고 2단: 이야기 레슨의 소개가 「저는 서하예요」(서울행 정문에서 만난 사람)가 되어 세 마디를 그대로 보인다.
+  assert.deepEqual(story.says, ['안녕하세요.', '감사합니다.', '저는 서하예요.']);
   const hangul = itemOf({id: 'g', label: '한글 만나기 · 소리와 글자', route: 'game', gameId: 'hangul', minutes: 5});
   assert.equal(hangul.title, '한글 만나기');
   assert.equal(hangul.kind, '한글 · {m}분');

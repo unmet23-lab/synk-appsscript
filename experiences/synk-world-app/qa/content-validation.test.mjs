@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PACKS, LESSONS, CONTENT_VERSION, lessonById, packById } from '../life-content.mjs';
+import { PACKS, LESSONS, CONTENT_VERSION, lessonById, packById, LIFE_PEOPLE, PEOPLE_STORY } from '../life-content.mjs';
 
 const slug = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 const questions = LESSONS.flatMap(item => item.questions);
@@ -87,11 +87,15 @@ test('all reviews change the supplied situation rather than only shuffling answe
   }
 });
 
+// 앞면 뒤 생활 원고 2단(2026-11-22): 사람 이야기 팩은 학교 사람 셋과 「나」, 아직 옮기지 않은 팩은 펠트 세 친구.
+const PEOPLE_PACKS = Object.keys(PEOPLE_STORY);
+
 test('six story episodes contain a complete scene and all three distinct friends', () => {
   for (const item of LESSONS.filter(item => item.type === 'story')) {
-    assert.ok(item.scenes.length >= 8, item.id);
+    const people = PEOPLE_PACKS.includes(item.packId);
+    assert.ok(item.scenes.length >= (people ? 7 : 8), item.id);
     const speakers = new Set(item.scenes.map(scene => scene.speaker));
-    assert.deepEqual([...speakers].sort(), ['kkamong', 'marine', 'mongle', 'narrator']);
+    assert.deepEqual([...speakers].sort(), people ? ['jiho', 'me', 'narrator', 'seoha', 'taeo'] : ['kkamong', 'marine', 'mongle', 'narrator']);
     assert.equal(item.scenes[0].speaker, 'narrator', item.id);
     assert.ok(item.scenes.at(-1).text.length, item.id);
   }
@@ -99,8 +103,10 @@ test('six story episodes contain a complete scene and all three distinct friends
 
 test('character dialogue preserves the approved text voice and contains no added narration channel', () => {
   for (const item of LESSONS) {
+    // 사람 이야기 팩의 표현 · 적용 레슨은 잡담 장면 없이 바로 표현부터 연다.
+    if (PEOPLE_PACKS.includes(item.packId) && item.type !== 'story') assert.equal(item.scenes.length, 0, item.id);
     for (const scene of item.scenes) {
-      assert.ok(['mongle', 'kkamong', 'marine', 'narrator'].includes(scene.speaker), item.id);
+      assert.ok((PEOPLE_PACKS.includes(item.packId) ? [...Object.keys(LIFE_PEOPLE), 'narrator'] : ['mongle', 'kkamong', 'marine', 'narrator']).includes(scene.speaker), item.id);
       assert.ok(scene.text.trim().length, item.id);
       assert.equal('audio' in scene, false, item.id);
       assert.equal('voice' in scene, false, item.id);

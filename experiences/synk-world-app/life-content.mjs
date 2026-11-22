@@ -3,7 +3,7 @@
  * 읽고 고르는 연습이며, 음성 전달이나 TOPIK 성과를 전제하지 않는다.
  * ID는 진도/복습 저장 키이므로 내용 변경 시 CONTENT_VERSION도 함께 변경한다.
  */
-export const CONTENT_VERSION = 'life-ko-20261010-v3';
+export const CONTENT_VERSION = 'life-ko-20261122-v4';
 
 const choices = texts => texts.map((text, index) => ({ id: ['a', 'b', 'c'][index], text }));
 const scene = (speaker, text) => ({ speaker, text });
@@ -23,11 +23,11 @@ const lesson = (id, type, title, goal, expressions, scenes, questions) => ({
 const greetingExpressions = [
   expression('greet-hello', '안녕하세요.', '처음 만난 사람이나 아는 사람에게 정중하게 인사해요.'),
   expression('greet-thanks', '감사합니다.', '도움을 받았을 때 정중하게 고마움을 전해요.'),
-  expression('greet-name', '저는 수진이에요.', '자기 이름을 소개해요. 이름 끝에 받침이 있으면 ‘이에요’를 써요.'),
+  expression('greet-name', '저는 수진이에요.', '자기 이름을 소개해요. 이름 끝에 받침이 있으면 ‘이에요’, 없으면 ‘예요’를 써요.'),
 ];
 // 이야기 레슨은 몽글이 자기 이름을 말하는 장면을 형광펜으로 잇는다 — 그 레슨만 소개 표현을 「저는 몽글이에요.」로 둔다(11-15).
 // 표현 · 적용 레슨의 문항은 작성 기준 §8(마스코트 이름을 쓰지 않음)에 따라 흔한 이름 「수진」을 쓴다. 이야기 자체에서 마스코트를 뺄지는 따로 정한다.
-const greetingStoryExpressions = greetingExpressions.map(e => e.id === 'greet-name' ? { ...e, korean: '저는 몽글이에요.' } : e);
+const greetingStoryExpressions = greetingExpressions.map(e => e.id === 'greet-name' ? { ...e, korean: '저는 서하예요.' } : e);
 const cafeExpressions = [
   expression('cafe-order', '따뜻한 차 한 잔 주세요.', '음료의 종류·온도·수를 함께 말하며 주문해요.'),
   expression('cafe-here', '여기서 마실게요.', '카페 안에서 마시겠다고 말해요.'),
@@ -77,38 +77,29 @@ export const PACKS = [
     level: '기초 생활 한국어',
     skills: [skill('greet-response', '상황에 맞게 인사하기'), skill('greet-gratitude', '고마움 전하기'), skill('greet-introduction', '이름 소개 이해하기')],
     lessons: [
-      lesson('greetings-expressions', 'expressions', '첫 인사 세 마디', '만남·감사·소개에 맞는 표현을 골라요.', greetingExpressions, [
-        scene('mongle', '우와! 처음 만난 친구야! 같이 인사해 볼까?'),
-        scene('kkamong', '이 몸은 이름만 말해도 다 알아보지. …처음이면 인사부터 하는 거야.'),
-        scene('marine', '첫 만남 확인. 인사, 이름, 고마움. 준비 완료.'),
-      ], [
+      lesson('greetings-expressions', 'expressions', '첫 인사 세 마디', '만남·감사·소개에 맞는 표현을 골라요.', greetingExpressions, [], [
         question('greetings-expressions-hello', 'greet-response', 'greet-hello', '처음 만난 선생님에게 어떤 인사를 할까요?', '교실에 들어가 선생님을 처음 만났어요.', ['안녕하세요.', '감사합니다.', '다녀왔어요.'], 'a', '새로 만난 사람에게는 ‘안녕하세요’라고 인사해요.', transfer('처음 만난 직원에게 어떤 인사를 할까요?', '학교 사무실에 처음 가서 직원을 만났어요.', ['다녀왔어요.', '안녕하세요.', '감사합니다.'], 'b', '처음 만난 사람에게는 ‘안녕하세요’라고 인사해요. ‘다녀왔어요’는 밖에 나갔다가 집이나 회사에 돌아왔을 때 하는 말이에요. ‘감사합니다’는 고마운 일이 있을 때 하는 말이에요.')),
-        question('greetings-expressions-thanks', 'greet-gratitude', 'greet-thanks', '도움을 받았어요. 어떤 말을 할까요?', '친구가 떨어진 책을 주워 줬어요.', ['저는 수진이에요.', '안녕하세요.', '감사합니다.'], 'c', '도움을 받은 뒤에는 ‘감사합니다’로 고마움을 전해요.', transfer('직원이 잃어버린 우산을 찾아 줬어요.', '도움을 준 직원에게 고마움을 전하려고 해요.', ['감사합니다.', '처음 뵙겠습니다.', '저는 마린이에요.'], 'a', '우산을 찾아 준 도움에 ‘감사합니다’라고 말해요.')),
-        question('greetings-expressions-name', 'greet-introduction', 'greet-name', '자기 이름을 소개하는 말을 골라요.', '내 이름은 수진이에요.', ['저는 학교에 가요.', '저는 수진이에요.', '수진은 어디에 있어요?'], 'b', '‘저는 수진이에요’는 내가 수진이라는 소개예요.', transfer('자기 이름을 소개하는 말을 골라요.', '내 이름은 마린이에요.', ['마린은 어디에 있어요?', '저는 마린이에요.', '마린은 학교에 가요.'], 'b', '‘저는 마린이에요’는 자기 이름을 말하는 소개예요.')),
+        question('greetings-expressions-thanks', 'greet-gratitude', 'greet-thanks', '도움을 받았어요. 어떤 말을 할까요?', '친구가 떨어진 책을 주워 줬어요.', ['저는 수진이에요.', '안녕하세요.', '감사합니다.'], 'c', '도움을 받은 뒤에는 ‘감사합니다’로 고마움을 전해요.', transfer('도움을 준 직원에게 고마움을 전하려고 해요. 어떤 말을 할까요?', '직원이 잃어버린 우산을 찾아 줬어요.', ['감사합니다.', '처음 뵙겠습니다.', '안녕히 계세요.'], 'a', '우산을 찾아 준 도움에 ‘감사합니다’라고 말해요.')),
+        question('greetings-expressions-name', 'greet-introduction', 'greet-name', '자기 이름을 소개하는 말을 골라요.', '처음 만난 친구에게 내 이름을 말해요.', ['안녕하세요.', '저는 수진이에요.', '감사합니다.'], 'b', '자기 이름을 말할 때는 ‘저는 수진이에요’라고 해요. ‘안녕하세요’는 인사, ‘감사합니다’는 고마움을 전하는 말이에요.', transfer('자기 이름을 소개하는 말을 골라요.', '내 이름은 준영이에요.', ['준영은 어디에 있어요?', '저는 준영이에요.', '준영은 학교에 가요.'], 'b', '‘저는 준영이에요’는 자기 이름을 말하는 소개예요.')),
       ]),
       lesson('greetings-story', 'story', '이름표를 찾아서', '이야기를 읽고 인사와 소개의 뜻을 확인해요.', greetingStoryExpressions, [
-        scene('narrator', '한강 마루의 첫 모임 날이에요. 입구에는 이름표 세 장이 놓여 있어요.'),
-        scene('mongle', '우와! 우리 이름이 있네! 같이 인사부터 할까?'),
-        scene('mongle', '안녕하세요! 저는 몽글이에요!'),
-        scene('kkamong', '이 몸의 이름표는 당연히 제일 큰… 어, 내 이름표 어디 갔지.'),
-        scene('narrator', '까몽의 이름표가 까몽의 뒤에 붙어 있어요. 마린이 조심히 떼어 줘요.'),
-        scene('marine', '이름표 발견. 까몽. 확인 완료.'),
-        scene('kkamong', '내가 뒤까지 볼 수 있게 붙인 거지. …그래도 감사합니다.'),
-        scene('mongle', '우와! 이제 세 이름이 다 보여! 같이 앉자!'),
-        scene('marine', '전원 확인. 자리, 셋. …네 자리도 여기다.'),
+        scene('narrator', '학교에 처음 온 날이에요. 학교 문 앞에서 세 사람이 나를 보고 웃어요.'),
+        scene('seoha', '안녕하세요! 저는 서하예요.'),
+        scene('jiho', '저는 지호예요. 여기에서 이름표를 찾으세요.'),
+        scene('narrator', '그런데 내 이름표가 없어요.'),
+        scene('taeo', '이 이름표가 책상 아래에 있었어요. 이름이 맞아요?'),
+        scene('narrator', '내 이름이에요! 태오가 나에게 이름표를 줘요.'),
+        scene('me', '감사합니다!'),
+        scene('seoha', '이제 같이 교실에 가요.'),
       ], [
-        question('greetings-story-name', 'greet-introduction', 'greet-name', '처음에 ‘저는 몽글이에요’라고 소개한 친구는 누구예요?', '', ['까몽', '몽글', '마린'], 'b', '몽글이 자기 이름을 말하며 인사했어요.', transfer('‘저는 까몽이에요.’라고 쓴 이름표의 주인은 누구예요?', '새 모임의 이름표를 읽고 있어요.', ['마린', '몽글', '까몽'], 'c', '‘저는 까몽이에요’에서 소개한 이름은 까몽이에요.')),
-        question('greetings-story-thanks', 'greet-gratitude', 'greet-thanks', '까몽이 ‘감사합니다’라고 한 이유는 무엇이에요?', '', ['마린이 이름표를 찾아 줬어요.', '몽글이 먼저 집에 갔어요.', '까몽이 자기 이름을 잊었어요.'], 'a', '마린이 뒤에 붙은 이름표를 떼어 준 도움에 고마움을 전했어요.', transfer('몽글이 ‘감사합니다’라고 했어요. 어떤 일이 있었을까요?', '마린이 몽글에게 떨어진 이름표를 건네줬어요.', ['마린이 이름표를 찾아 줬어요.', '마린이 자기 이름을 소개했어요.', '마린이 모임 시간을 물었어요.'], 'a', '이름표를 건네준 도움을 받아서 고마움을 전했어요.')),
-        question('greetings-story-hello', 'greet-response', 'greet-hello', '모임에서 처음 만난 사람에게 먼저 할 말을 골라요.', '', ['잘 먹겠습니다.', '다녀왔습니다.', '안녕하세요.'], 'c', '모임에서 처음 만난 사람에게는 ‘안녕하세요’라고 인사해요.', transfer('새 동아리에서 처음 만난 친구에게 정중하게 인사해요.', '지금은 식사하거나 외출했다 돌아온 상황이 아니에요.', ['안녕하세요.', '잘 먹겠습니다.', '다녀왔습니다.'], 'a', '처음 만난 자리의 인사는 ‘안녕하세요’예요.')),
+        question('greetings-story-name', 'greet-introduction', 'greet-name', '처음 인사한 사람의 이름은 무엇이에요?', '', ['서하', '지호', '태오'], 'a', '서하가 가장 먼저 ‘안녕하세요! 저는 서하예요.’라고 인사했어요. 지호와 태오는 그다음에 말했어요.', transfer('자기 이름을 소개한 사람은 누구예요?', '준호: “안녕하세요.” 민지: “저는 민지예요.” 하나: “감사합니다.”', ['준호', '민지', '하나'], 'b', '‘저는 민지예요’는 자기 이름을 소개하는 말이에요. 준호는 인사했고, 하나는 고마움을 전했어요.')),
+        question('greetings-story-thanks', 'greet-gratitude', 'greet-thanks', '내가 ‘감사합니다’라고 한 이유는 무엇이에요?', '', ['태오가 이름표를 줬어요.', '지호가 이름표를 줬어요.', '태오가 자기 이름을 말했어요.'], 'a', '태오가 내 이름표를 찾아서 줬어요. 그래서 고마움을 전했어요.', transfer('민지가 준호에게 ‘감사합니다’라고 했어요. 왜 그렇게 말했을까요?', '준호가 교실에 왔어요. 민지는 볼펜이 없어요. 준호가 민지에게 볼펜을 줬어요.', ['준호가 볼펜을 줬어요.', '준호가 교실에 왔어요.', '민지가 볼펜을 줬어요.'], 'a', '준호가 볼펜을 준 도움에 민지가 ‘감사합니다’라고 고마움을 전했어요. ‘준호가 교실에 왔어요’는 감사 인사를 한 이유가 아니에요.')),
+        question('greetings-story-hello', 'greet-response', 'greet-hello', '학교에서 처음 만난 사람에게 먼저 할 말을 골라요.', '', ['감사합니다.', '다녀왔습니다.', '안녕하세요.'], 'c', '처음 만난 사람에게는 먼저 ‘안녕하세요’라고 인사해요.', transfer('새 동아리에서 처음 만난 친구에게 정중하게 인사해요.', '동아리 첫 모임에 왔어요. 처음 보는 친구가 있어요.', ['안녕하세요.', '잘 먹겠습니다.', '다녀왔습니다.'], 'a', '처음 만난 사람에게는 ‘안녕하세요’라고 인사해요. ‘잘 먹겠습니다’는 밥을 먹기 전에, ‘다녀왔습니다’는 집에 돌아왔을 때 하는 말이에요.')),
       ]),
-      lesson('greetings-apply', 'apply', '내 첫 모임', '새로운 만남에서 필요한 말을 직접 골라요.', greetingExpressions, [
-        scene('mongle', '오! 이번에는 네 차례야! 같이 첫 인사 해 볼까?'),
-        scene('kkamong', '내 첫 모임은 완벽했지. 이름표가 뒤에 붙은 것만 빼면.'),
-        scene('marine', '상황 확인. 상대에게 전할 말을 선택하라.'),
-      ], [
+      lesson('greetings-apply', 'apply', '내 첫 모임', '새로운 만남에서 필요한 말을 직접 골라요.', greetingExpressions, [], [
         question('greetings-apply-introduction', 'greet-introduction', 'greet-name', '이름을 묻는 말에 답해요.', '“이름이 뭐예요?” 내 이름은 수진이에요.', ['학교에 있어요.', '저는 수진이에요.', '감사합니다.'], 'b', '이름을 물었으므로 ‘저는 수진이에요’라고 소개해요.', transfer('이름을 묻는 말에 답해요.', '“성함이 어떻게 되세요?” 내 이름은 지훈이에요.', ['저는 지훈이에요.', '지훈은 집에 있어요.', '안녕하세요.'], 'a', '‘성함’은 이름을 높여 말한 표현이에요. 자기 이름을 답해요.')),
-        question('greetings-apply-thanks', 'greet-gratitude', 'greet-thanks', '필요한 말을 골라요.', '처음 온 학교에서 직원이 교실 위치를 알려 줬어요. 고마움을 전하려고 해요.', ['저는 학생이에요.', '안녕하세요.', '감사합니다.'], 'c', '위치를 알려 준 도움에 ‘감사합니다’라고 해요.', transfer('지금 필요한 말을 골라요.', '카페 직원이 두고 온 가방을 찾아 줬어요. 도움에 고마움을 전하려고 해요.', ['안녕하세요.', '감사합니다.', '저는 마린이에요.'], 'b', '가방을 찾아 준 도움에 고마움을 전하는 말은 ‘감사합니다’예요.')),
-        question('greetings-apply-hello', 'greet-response', 'greet-hello', '교실 문을 열고 처음 만난 선생님에게 말해요.', '아직 대화를 시작하기 전이에요.', ['안녕하세요.', '저는 식사했어요.', '감사합니다.'], 'a', '대화를 시작하기 전에 ‘안녕하세요’로 정중하게 인사해요.', transfer('처음 방문한 가게의 직원에게 말을 시작해요.', '아직 상품을 고르거나 도움을 받기 전이에요.', ['감사합니다.', '잘 먹겠습니다.', '안녕하세요.'], 'c', '처음 대화를 시작할 때 정중한 인사는 ‘안녕하세요’예요.')),
+        question('greetings-apply-thanks', 'greet-gratitude', 'greet-thanks', '필요한 말을 골라요.', '처음 온 학교에서 직원이 교실 위치를 알려 줬어요. 고마움을 전하려고 해요.', ['저는 학생이에요.', '안녕하세요.', '감사합니다.'], 'c', '위치를 알려 준 도움에 ‘감사합니다’라고 해요.', transfer('지금 필요한 말을 골라요.', '카페 직원이 두고 온 가방을 찾아 줬어요. 도움에 고마움을 전하려고 해요.', ['안녕하세요.', '감사합니다.', '죄송합니다.'], 'b', '가방을 찾아 준 도움에 고마움을 전하는 말은 ‘감사합니다’예요.')),
+        question('greetings-apply-hello', 'greet-response', 'greet-hello', '교실 문을 열고 처음 만난 선생님에게 말해요.', '아직 대화를 시작하기 전이에요.', ['안녕하세요.', '안녕히 계세요.', '감사합니다.'], 'a', '대화를 시작하기 전에 ‘안녕하세요’로 정중하게 인사해요.', transfer('처음 방문한 가게의 직원에게 말을 시작해요.', '아직 상품을 고르거나 도움을 받기 전이에요.', ['감사합니다.', '잘 먹겠습니다.', '안녕하세요.'], 'c', '처음 대화를 시작할 때 정중한 인사는 ‘안녕하세요’예요.')),
       ]),
     ],
   },
@@ -363,3 +354,18 @@ export const PACKS = [
 export const LESSONS = PACKS.flatMap(pack => pack.lessons.map(item => ({ ...item, packId: pack.id })));
 export const packById = id => PACKS.find(pack => pack.id === id) || null;
 export const lessonById = id => LESSONS.find(item => item.id === id) || null;
+
+// 레슨 이야기의 학교 사람(2026-11-22 생활 원고 2단). 서하 · 지호는 서울행 정문에서, 태오는 1화에서 이미 만난 사람이다.
+// 만나기 전 사람은 이야기에 쓰지 않는다. 「나」는 학생 자신이다(이야기 사진은 내 어깨 너머로 세 사람을 본다).
+export const LIFE_PEOPLE=Object.freeze({seoha:{name:'서하'},jiho:{name:'지호'},taeo:{name:'태오'},me:{name:'나'}});
+
+// 팩마다 사진 한 장. at은 그 사람이 사진에서 선 가로 자리(%)로, 말풍선 꼬리가 그쪽을 가리킨다. 해설과 「나」에는 꼬리가 없다.
+// 파일 경로는 brand-opening/assets/ 기준, ?v=는 파일 sha256 앞 12자리.
+export const PEOPLE_STORY=Object.freeze({
+ greetings:{file:'life-people/greetings.webp?v=4dea5fb82788',alt:'학교 정문 앞 신입생 부스에서 서하, 지호, 태오가 나를 보고 웃는 장면',at:{seoha:36,jiho:59,taeo:79}},
+});
+
+export const peopleStory=packId=>PEOPLE_STORY[packId]||null;
+
+// 레슨 소개 · 문제 · 배우기의 팩 그림: 펠트 물건 대신 같은 이야기의 사진(정사각형).
+export const PACK_PRINTS=Object.freeze({greetings:'life-people/greetings-print.webp?v=a78ef737caaf'});

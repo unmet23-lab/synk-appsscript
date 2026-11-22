@@ -1,15 +1,15 @@
-import {PACKS,LESSONS,lessonById,packById} from './life-content.mjs';
+import {PACKS,LESSONS,lessonById,packById,LIFE_PEOPLE,peopleStory,PACK_PRINTS} from './life-content.mjs';
 import {CAFE_LESSON_ID,CAFE_COMPOSE_ID,CAFE_LESSON_IDS,CAFE_VISITS,isCafeLesson,resumeCafe,chooseCafe,advanceCafe,chooseCafeSeat,cafeQuestion,updateCafeOrder,submitCafeOrder} from './cafe-activity.mjs';
 import {cafeMarkup,cafeCompletionMarkup,createCafeSpeech,cafeSpeechLabel} from './cafe-ui.mjs';
 import {play,haptic,verdict,getPref} from '../brand-opening/world-sound.mjs'
 import {storyPhotoFile,hasStoryPhoto,cafePhotoFile,hasCafePhoto} from '../brand-opening/tutor-photos.mjs';
 import {storySigns} from '../brand-opening/story-signs.mjs';
 import {storyLineMarkup,storySteps,createStoryDetail} from './life-story.mjs';
-import {motionOn,ink,typeLabel,roll,drop,bindTilt,stitch,wash,shake,spring,stamp,confetti,slam,develop} from '../brand-opening/world-motion.mjs';
+import {motionOn,ink,typeLabel,roll,drop,bindTilt,stitch,wash,shake,spring,stamp,confetti,slam,develop,drawer,reveal,underline,markIn} from '../brand-opening/world-motion.mjs';
 // 화면 언어(10-19 1판): 레슨 화면의 글(단추·안내·결과)은 고른 언어, 학습 내용(보기·표현·이야기 대사·포스터의 큰 한글)은 한국어 그대로.
 // 인사 팩(첫 레슨들)의 문제 지시·상황·해설과 「뜻 보기」는 life-content-lang.mjs. 다른 팩의 문제 글은 2판까지 원문 그대로다.
 import {t,tMessage,currentLang,formatDate,hasString} from '../brand-opening/world-lang.mjs';
-import {lifeQuestionText,lifeExpressionText,lifeChoiceMeanings} from './life-content-lang.mjs';
+import {lifeQuestionText,lifeExpressionText,lifeChoiceMeanings,lifeChoiceNote} from './life-content-lang.mjs';
 if(!document.querySelector('[data-life-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('./life-ui.css',import.meta.url).href;style.dataset.lifeStyle='true';document.head.append(style);}
 // 거울 부품이 없을 때(묶음 없이 화면만 시험할 때)의 빈 거울.
 const NO_TRAIL=Object.freeze({shown:()=>null,help(){},delivery(){},answer:()=>null,guided(){},release(){},metrics:()=>({slots:0,presented:0,answered:0}),dispose(){}});
@@ -82,7 +82,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  for(const [variable,file]of Object.entries({'--cafe-room':'home/cafe-room-v1.webp','--cafe-drinks':'home/cafe-drinks-v2.png','--cafe-ice':'home/cafe-ice.webp','--life-print-goals':'world-felt/goals.webp','--life-print-position':'world-felt/complete.webp','--life-print-hangul':'world-felt/hangul.webp'}))panel.style.setProperty(variable,`url("${asset(file)}")`);
  for(const kind of ['counter','window','garden'])if(hasCafePhoto(kind))panel.style.setProperty('--cafe-'+kind,`url("${asset(cafePhotoFile(kind))}")`);
  // 흰 인화지에 붙인 펠트 사진(assets/world-felt). 한 화면에 같은 사진은 한 번만 쓴다.
- const print=(name,className='')=>`<span class="w-print ${className}" aria-hidden="true"><img src="${asset('world-felt/'+name+'.webp')}" alt="" width="640" height="640" decoding="async"></span>`;
+ const print=(name,className='')=>`<span class="w-print ${className}${PACK_PRINTS[name]?' is-photo':''}" aria-hidden="true"><img src="${asset(PACK_PRINTS[name]||'world-felt/'+name+'.webp')}" alt="" width="640" height="640" decoding="async"></span>`;
  // helpBy: 지금 문제의 도움을 누가 열었나. 'setting'은 「한 단계씩 도움받기」가 답하기 전에 스스로 펼친 것, 'user'는 사람이 연 것.
  let screenView=null,reviewMark=null,context=null,shown=false,rendering=false,ended=false,reviewRun=null,lastFeedback=null,helped=false,helpBy=null,generation=0,timer,cafeRun=null,cafeView='',companion=null,place='life',signClip=null,viewPhase=null;
  const practised=new Set();
@@ -265,7 +265,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   }
   if(type==='life-question'&&answered&&lastFeedback){
    const chosen=content.querySelector('.life-choice.is-chosen'),band=content.querySelector('.life-feedback');
-   if(lastFeedback.correct)wash(chosen,lastPoint);else shake(chosen);
+   if(lastFeedback.correct){wash(chosen,lastPoint);markIn(chosen,{delay:220});}else{shake(chosen);drawer(chosen?.querySelector('.life-choice-note:not([hidden])'),{delay:160});reveal(content.querySelector('.life-choice.is-correct'),content.querySelector('.life-choice:not(.is-correct):not(.is-chosen)'),{delay:800});}
+   band?.querySelectorAll('.life-quote').forEach(el=>underline(el,{delay:lastFeedback.correct?850:1100}));
    spring(band,[{opacity:0,transform:'translateY(46px)'},{opacity:1,transform:'translateY(-6px)',offset:.62},{transform:'translateY(2px)',offset:.82},{transform:'none'}],{duration:620,delay:120});
    if(lastFeedback.correct&&!lastFeedback.helped&&reward&&band)stamp(band,{size:92,rot:-12,top:-40,right:4,delay:640,shake:content});
   }
@@ -474,13 +475,15 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   }
   if(context.phase==='story'){
    const scene=l.scenes[context.sceneIndex];if(!scene){context.phase='questions';persistStage();renderLesson();return;}
-   const friend=friends[scene.speaker],speaker=friend?scene.speaker:'narrator',last=context.sceneIndex+1===l.scenes.length;
+   // 사람 이야기 팩(life-content.mjs PEOPLE_STORY)은 세 사람이 함께 있는 사진 한 장을 두고, 말풍선 꼬리가 말하는 사람을 가리킨다.
+   const people=peopleStory(l.packId),person=people?LIFE_PEOPLE[scene.speaker]:null,friend=people?null:friends[scene.speaker],who=friend||person;
+   const speaker=who?scene.speaker:'narrator',last=context.sceneIndex+1===l.scenes.length,at=people?.at?.[speaker];
    // 이야기 장소에서 세 친구를 함께 구운 사진. 말하는 친구가 바뀌면 같은 장면의 그 순간 사진으로 바꾼다. 대사는 흰 말풍선. 저절로 넘어가지 않는다.
-   if(hasStoryPhoto(l.packId))for(const who of ['narrator','mongle','kkamong','marine']){const img=new Image();img.src=asset(storyPhotoFile(l.packId,who));}
-   const photo=hasStoryPhoto(l.packId),signs=photo?storySigns(l.packId):[];
+   if(!people&&hasStoryPhoto(l.packId))for(const one of ['narrator','mongle','kkamong','marine']){const img=new Image();img.src=asset(storyPhotoFile(l.packId,one));}
+   const photo=Boolean(people)||hasStoryPhoto(l.packId),signs=photo&&!people?storySigns(l.packId):[];
    // 같은 레슨의 앞 장면 사진(말하는 친구가 바뀌면 0.18초 겹쳐 바꾼다)
    const previousSrc=content.querySelector('.life-session-meta')?.dataset.lifeLessonId===l.id?content.querySelector('.life-story-photo>img')?.src||null:null;
-   paint(l.title,`${header}<div class="life-story-stage" data-speaker="${speaker}">${photo?`<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId,speaker))}" alt="${friend?`${friend.name} 차례 · `:''}몽글·까몽·마린이 함께 있는 이야기 장면${signs.length?` · ${escape(signs.map(s=>s.text).join(', '))}`:''}" width="768" height="512" decoding="async">${signs.map(s=>`<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${t('life.signListen',{text:escape(s.text)})}" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2]-s.box[0]}%;--h:${s.box[3]-s.box[1]}%">${escape(s.text)}</button>`).join('')}</figure>`:`<div class="life-cast">${Object.keys(friends).map(f=>`<div class="${f===scene.speaker?'is-speaking':''}">${cut(f)}<small>${friends[f].name}</small></div>`).join('')}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small${friend?` class="w-name" data-who="${speaker}"`:''}>${friend?friend.name:'이야기'}</small><p>${storyLineMarkup(scene.text,l.expressions)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${t(last?'life.toQuestions':'life.next')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-pause>${t('life.later')}</button></div>`,{type:'life-story',tutorSlot:photo?'.life-story-photo':null});story.enter({who:speaker,previousSrc,first:context.sceneIndex===0,signs});return;
+   paint(l.title,`${header}<div class="life-story-stage" data-speaker="${speaker}">${photo?`<figure class="life-story-photo"><img src="${asset(people?people.file:storyPhotoFile(l.packId,speaker))}" alt="${people?`${person&&speaker!=='me'?`${person.name} 차례 · `:''}${people.alt}`:`${friend?`${friend.name} 차례 · `:''}몽글·까몽·마린이 함께 있는 이야기 장면${signs.length?` · ${escape(signs.map(s=>s.text).join(', '))}`:''}`}" width="768" height="512" decoding="async">${signs.map(s=>`<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${t('life.signListen',{text:escape(s.text)})}" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2]-s.box[0]}%;--h:${s.box[3]-s.box[1]}%">${escape(s.text)}</button>`).join('')}</figure>`:`<div class="life-cast">${Object.keys(friends).map(f=>`<div class="${f===scene.speaker?'is-speaking':''}">${cut(f)}<small>${friends[f].name}</small></div>`).join('')}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"${at!=null?` data-at style="--life-at:${at}%"`:''}><small${friend?` class="w-name" data-who="${speaker}"`:person?` class="w-name" data-who="person"`:''}>${who?who.name:'이야기'}</small><p>${storyLineMarkup(scene.text,l.expressions)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${t(last?'life.toQuestions':'life.next')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-pause>${t('life.later')}</button></div>`,{type:'life-story',tutorSlot:photo?'.life-story-photo':null});story.enter({who:speaker,previousSrc,first:context.sceneIndex===0,signs});return;
   }
   renderQuestion();
  }
@@ -497,14 +500,18 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  }
  // 문제: 장면(팩 사진 + 상황) → 묻는 말 → 큰 선택지(56px+, 고르면 흰 바탕). 판정은 아래 흰 알약 위에 붙는 어두운 띠 하나.
  function questionMarkup(q,feedback,{lesson=null,packId=null,origin='',rest=''}={}){
-  const choiceButtons=q.choices.map(c=>`<button class="life-choice ${feedback&&c.id===feedback.choiceId?'is-chosen':''} ${feedback&&c.id===q.answerId?'is-correct':''}" data-life-choice="${c.id}" ${feedback?'disabled':''}><span lang="ko">${escape(c.text)}</span></button>`).join('');
+  const lang=currentLang(),noteOf=c=>feedback&&c.id!==q.answerId?lifeChoiceNote(q,c.id,lang):null;
+  const choiceButtons=q.choices.map(c=>{const chosen=feedback&&c.id===feedback.choiceId,note=noteOf(c);
+   return `<button class="life-choice ${chosen?'is-chosen':''} ${feedback&&c.id===q.answerId?'is-correct':''}" data-life-choice="${c.id}" ${feedback?'disabled':''}><span class="life-choice-copy"><span lang="ko">${escape(c.text)}</span>${note?`<span class="life-choice-note" lang="${lang}" ${chosen?'':'hidden'}>${escape(note)}</span>`:''}</span></button>`;}).join('');
+  const chosenNote=feedback&&!feedback.correct?noteOf(q.choices.find(c=>c.id===feedback.choiceId)||{}):null,others=feedback?.correct&&q.choices.some(c=>noteOf(c));
+  // 해설 속 ‘한국어’ · «한국어»는 답 낱말: 밑줄이 그어진다.
+  const why=text=>escape(text).replace(/‘([^’]+)’/g,'‘<b class="life-quote">$1</b>’').replace(/«([^»]+)»/g,'«<b class="life-quote">$1</b>»');
   // 「뜻 보기」(10-19 1판): 답한 뒤에만, 눌러서 보기마다의 뜻을 화면 언어로 연다. 한국어 화면과 1판 밖 문제에는 없다.
   const meanings=feedback?lifeChoiceMeanings(q,currentLang()):null;
   const meaningBox=meanings?`<details class="life-meanings"><summary>${t('life.meanings')}</summary><ul aria-label="${t('life.meaningsLabel')}">${meanings.map(row=>`<li data-choice="${row.id}"><span lang="ko">${escape(row.text)}</span><small>${escape(row.meaning)}</small></li>`).join('')}</ul></details>`:'';
   // guided: 설정이 펼쳐 둔 도움과 함께 맞힘 — 기록은 「도움」이지만 다음 복습은 평소대로 하루 뒤라 「조금 뒤」라고 하지 않는다.
   const result=!feedback?'':!feedback.correct?'retry':!feedback.helped?'ok':feedback.helpBy==='setting'?'guided':'assisted';
-  const answer=q.choices.find(c=>c.id===q.answerId)?.text||'';
-  const band=feedback?`<div class="life-feedback" role="status" data-result="${result}"><strong>${t(result==='ok'?'life.feedback.ok':result==='guided'?'life.feedback.guided':result==='assisted'?'life.feedback.assisted':'life.feedback.retry')}</strong>${result==='retry'?`<p class="life-feedback-answer" lang="ko">${escape(answer)}</p>`:''}<details class="life-explanation" ${result==='ok'&&preferences().explanation==='brief'?'':'open'}><summary>${t('life.why')}</summary><p>${escape(qText(q,'explanation'))}</p></details>${result!=='ok'?`<div class="life-feedback-foot"><small>${t(result==='guided'?'life.guidedNext':'life.comesBack')}</small>${retryButton(q)}</div>`:''}</div>`:'';
+  const band=feedback?`<div class="life-feedback" role="status" data-result="${result}"><strong>${t(result==='ok'?'life.feedback.ok':result==='guided'?'life.feedback.guided':result==='assisted'?'life.feedback.assisted':'life.feedback.retry')}</strong>${chosenNote?`<span class="life-sr">${escape(chosenNote)}</span>`:''}<details class="life-explanation" ${result==='ok'&&preferences().explanation==='brief'?'':'open'}><summary>${t('life.why')}</summary><p>${why(qText(q,'explanation'))}</p></details>${others?`<button class="quiet-button life-other-notes" data-life-notes>${t('life.otherNotes')}</button>`:''}${result!=='ok'?`<div class="life-feedback-foot"><small>${t(result==='guided'?'life.guidedNext':'life.comesBack')}</small>${retryButton(q)}</div>`:''}</div>`:'';
   const scene=packId?`<div class="life-scene">${print(packId,'life-scene-print')}<p class="life-context">${escape(qText(q,'context')||lesson?.title||'')}</p></div>`:'';
   return `<div class="life-question-layout"><section class="life-question-copy">${scene}<div class="life-question-title" tabindex="-1">${origin?`<small>${escape(origin)}</small>`:''}<h3>${escape(qText(q,'prompt'))}</h3></div><button class="quiet-button life-help" data-life-help aria-expanded="${helped}" ${feedback?'disabled':''}>${t('life.help')}</button><p class="life-hint" ${helped?'':'hidden'}>${escape(qText(q,'explanation'))}</p>${rest}</section><section class="life-answer-area" aria-label="${t('life.chooseAnswer')}"><div class="life-choices">${choiceButtons}</div>${meaningBox}</section></div><div class="life-actions">${band}<button class="felt-button" data-life-question-next ${feedback?'':'disabled'}>${t(feedback?'life.next':'life.pickAnswer')} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-pause>${t('life.later')}</button></div>`;
  }
@@ -622,6 +629,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   begin:()=>{context.phase='story';context.sceneIndex=0;persistStage();renderLesson();},
   'scene-next':()=>turnScene(1),
   choice:el=>context.phase==='review'?chooseReview(el.dataset.lifeChoice):choose(el.dataset.lifeChoice),
+  notes:el=>{content.querySelectorAll('.life-choice:not(.is-correct) .life-choice-note[hidden]').forEach(n=>{n.hidden=false;drawer(n,{delay:0});});el.remove();},
   'question-next':()=>{if(context.phase==='review'){lastFeedback=null;helped=false;helpBy=null;renderReview();}else{context.questionIndex++;lastFeedback=null;helped=false;helpBy=null;persistStage();renderLesson();}},
   'review-start':()=>reviewStart(),'review-lesson':el=>reviewStart(el.dataset.lifeReviewLesson,(el.dataset.lifeReviewIds||'').split(',').filter(Boolean),{soon:true}),pause,
   'cafe-choice':el=>cafeChoose(el.dataset.lifeCafeChoice),'cafe-next':cafeNext,
