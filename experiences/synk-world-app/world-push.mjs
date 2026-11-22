@@ -60,7 +60,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // jobs: 진행 중인 sync(토큰 갱신을 기다리는 요청은 sent가 거짓). closing: 로그아웃 중 — 계정이 바뀔 때까지 새 요청과 판 키 쓰기를 막는다. leavingNow: flush 안.
  // legacyPending: 판을 모르는 옛 서버에 보낼, 앞 설정 요청의 응답을 기다리는 이 페이지의 설정(판 키에 적지 않는다 — 지금 라이브처럼).
  let binding=null,retryTimer=null,retryStep=0,owedDigest=null,closing=false,leavingNow=false,legacyPending=null,claiming=null,claimRead=null;
- // noted: 이 페이지가 적은 편집마다 적은 때의 요청 차례(order). 켜기가 날아가는 동안 적은 편집은 그 켜기(attempt.edits — 계정과 함께)에 적는다.
+ // noted: 이 페이지가 적은 편집마다 적은 때의 요청 차례(order). 켜기가 날아가는 동안 적은 편집은 그 켜기(attempt.edits)에 적는다.
  const noted=new Map();
  const jobs=new Set(),listeners=new Set([onChange]);
  let state={phase:'signed-out',enabled:false,device:{subscribed:false},account:{active:false,devices:0},plan:null,checkedAt:0,error:null,busy:false,versions:null,versioning:false,planId:null,seenSeq:0};
@@ -419,16 +419,12 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    return snapshot();
   }catch(error){if(current(expected))emit({phase:state.phase==='ready'?'ready':'error',error:error.code||'PUSH_UNAVAILABLE'});return snapshot();}
  }
- // 실패한 켜기가 날아가는 동안 적은 편집을 그 켜기의 계정 키에서 지운다(r8 GA1). 계정을 바꿨으면 지금 계정의 편집은 두고(r9 GA1), 다른 계정을 거쳐
- // 돌아왔어도 그 켜기 때 적은 편집은 지운다(r10 GA2 — 남기면 나중에 다른 기기가 켠 계획을 덮는다). 그 뒤에 적은 편집(다른 id)은 둔다.
- function dropAttemptEdits(run){
-  if(!run.account||!run.edits.size)return;
-  const key=`${PUSH_VERSION_KEY}.${run.account}`;
-  try{const left=settingsOf(JSON.parse(storage?.getItem(key)||'null')?.settings);if(left&&run.edits.has(left.id))storage?.removeItem(key);}catch{}
-  run.edits.clear();
- }
- // 판 키는 보낼 것이 없을 때만(편집이 없을 때) 지운다 — 같은 계정의 다른 탭이 아직 보내지 못한 편집을 지우지 않는다(설계 검토 5).
- function forget(){if(!readEdit()){try{storage?.removeItem(versionKey());}catch{}}}
+ // 실패한 켜기가 날아가는 동안 적은 편집을 지운다(r8 GA1 — 남기면 나중에 다른 기기가 켠 계획을 덮는다). 그 뒤에 적은 편집(다른 id)은 둔다. 그사이 로그아웃했거나
+ // 계정을 바꿨으면 그 계정의 편집은 그때 이미 버렸다(dropEdits) — 지금 계정 키에는 이 켜기의 편집이 없다.
+ function dropAttemptEdits(run){const left=readEdit();if(left&&run.edits.has(left.id))writeEdit(null);run.edits.clear();}
+ // 로그아웃하거나 계정이 바뀌면 그 계정에서 서버가 확인하지 않은 설정 편집을 버린다 — 탭이 함께 쓰는 판 키에서도 지운다. 다시 로그인하면 서버 설정을 그대로
+ // 쓰고, 서버가 이미 받은 것은 서버에 있다(설계 주인 11-23: 확인받지 못한 편집을 로그아웃 너머로 나르지 않는다).
+ function dropEdits(){if(owner){try{storage?.removeItem(versionKey());}catch{}}}
  return {
   snapshot,refresh,
   // 상태가 바뀔 때마다 부를 함수(설정 화면의 동의 상자 단추·안내 글). 떼는 함수를 돌려준다.
@@ -436,8 +432,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   // 이 탭의 계정. 바뀌면 상태를 새로 읽는다(이 브라우저 구독은 지우지 않는다 — 지우는 것은 끄기·로그아웃·다른 계정이 켤 때뿐).
   setAccount(accountId){
    const next=typeof accountId==='string'&&accountId?accountId:null;if(next===owner&&!closing)return Promise.resolve(snapshot());
+   if(next!==owner)dropEdits();   // 앞 계정에서 확인받지 못한 편집은 버린다(설계 주인 11-23)
    epoch++;owner=next;closing=false;publicKey=null;lastSync=null;clearTimeout(syncTimer);syncTimer=null;pendingSync=null;holdPage();claimRead=null;
-   // 앞 계정의 다시 보내기는 거둔다(그 계정의 설정 편집은 그 계정 키에 남아 다음에 그 계정으로 열 때 맞춘다).
+   // 앞 계정의 다시 보내기 · 넘겨받기 읽기도 거둔다.
    clearTimeout(retryTimer);retryTimer=null;retryStep=0;owedDigest=null;legacyPending=null;claiming=null;jobs.clear();
    // 앞 계정이 띄운 권한 창 기다리기는 끝낸다(늦게 허용돼도 지운다) — 새 계정이 바로 켤 수 있게.
    if(attempt){attempt.stop();attempt=null;}mutation=null;
@@ -463,12 +460,12 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    // 권한 창 기다리기: 30초가 지나거나 계정이 바뀌면(stop) 기다림을 끝내 켜기를 바로 「응답 없음」으로 마치고 단추를 다시 쓸 수 있게 한다.
    // 그 뒤에 허용된 구독은 받는 대로 지운다(10-22 화면 검수 — 끝나지 않는 권한 창에 켜기가 영영 묶였다).
    const STOP=Symbol('stop');let stopWait;
-   const waiting={cancelled:false,timer:null,account:owner,edits:new Set(),stop:()=>{waiting.cancelled=true;clearTimeout(waiting.timer);stopWait(STOP);}};attempt=waiting;
+   const waiting={cancelled:false,timer:null,edits:new Set(),stop:()=>{waiting.cancelled=true;clearTimeout(waiting.timer);stopWait(STOP);}};attempt=waiting;
    const stopped=new Promise(resolve=>{stopWait=resolve;});
    waiting.timer=setTimeout(()=>waiting.stop(),PERMISSION_WAIT_MS);
    Promise.resolve(prompt).then(late=>{if(waiting.cancelled&&late)void removeLocal(late,registration);},()=>{});
    emit({busy:true,error:null});
-   let sub=null,saved=false;   // saved: 서버가 켜기를 받았다고 답했다(그 뒤 계정이 바뀌어 적지 못했어도 계획은 서버에 있다)
+   let sub=null;
    const pending=(async()=>{
     try{
      const first=await Promise.race([prompt,stopped]);clearTimeout(waiting.timer);
@@ -500,7 +497,6 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
       if(!versions||Number(error?.status)!==400||error?.code!=='INVALID_ACTION')throw error;
       guard(expected);emit({versioning:false});based=false;data=await request('subscribe',payload);
      }
-     saved=data?.device?.subscribed===true;
      guard(expected);
      if(data.device?.subscribed!==true)throw Object.assign(Error('PUSH_UNAVAILABLE'),{code:'PUSH_UNAVAILABLE'});
      writeRecord({accountId:owner,deviceId:data.device.deviceId,endpoint:sub.endpoint});
@@ -528,8 +524,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
     }catch(error){
      clearTimeout(waiting.timer);if(attempt===waiting)attempt=null;
      // 켜기가 날아가는 동안 적은 편집은 지운다 — 계정은 여전히 꺼져 있고 1단 값은 다음 켜기가 보낸다. 남기면 나중에 다른 기기가 켠 계획을 덮는다(r8 GA1).
-     // 다만 서버가 켜기를 받았다고 답했으면 계획이 서버에 있으므로 두고 간다 — 그 계정으로 돌아오면 맞추기가 보낸다(r11 GA2: 응답을 기다리며 고르고 로그아웃).
-     if(!saved)dropAttemptEdits(waiting);
+     // 계정이 바뀌었으면 그 계정의 편집은 바꿀 때 이미 버렸다(dropEdits).
+     dropAttemptEdits(waiting);
      // 서버 저장 실패·응답 유실·늦은 허용: 방금 만든 구독은 지운다(서버에 남았어도 이 브라우저는 그 알림을 못 띄운다).
      const removed=await removeLocal(sub);
      const denied=error?.name==='NotAllowedError'||worldPushSupport(env).permission==='denied';
@@ -640,7 +636,8 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
   // 요청이나 늦은 응답이 판 키를 다시 쓰지 않게(GA12 · 설계 검토 4). 앞서 시작한 요청의 응답은 버린다. 로그아웃이 실패하면 resume()이 막기를 푼다.
   async logout(){
    if(!owner)return {ok:true};
-   forget();closing=true;epoch++;releasePageHold();
+   // 확인받지 못한 편집 · 다시 보내기 · 넘겨받기 읽기를 버리고, 계정이 바뀌거나 resume()까지 그 계정으로 요청을 내지 않는다(설계 주인 11-23).
+   dropEdits();closing=true;epoch++;releasePageHold();claimRead=null;
    clearTimeout(retryTimer);retryTimer=null;owedDigest=null;legacyPending=null;clearTimeout(syncTimer);syncTimer=null;pendingSync=null;jobs.clear();
    if(attempt){attempt.stop();attempt=null;}
    const record=readRecord();if(record?.accountId!==owner)return {ok:true};
