@@ -1,0 +1,33 @@
+{
+  "도구": "tools/작업실예약.js",
+  "작업실": "https://workspace.synk.im",
+  "시작": "2026-11-22T16:59:39.141Z",
+  "자산": {
+    "docs/마케팅/yuhobuilds_PDF사용량_20261121/최종.mp4": "c4618dfa-2b2d-4859-8699-55ae804511f8",
+    "docs/마케팅/yuhobuilds_PDF사용량_20261121/최종_게시글판.mp4": "c808f104-71a9-4577-9458-0a0a8162cfb6"
+  },
+  "판": [
+    {
+      "계정": "yuhobuilds-instagram",
+      "채널": "8d6d4d37-5a44-47ce-a757-9411ed15523c",
+      "작업": "4adb0b729483b76f879b8f53b6ca1e990b026a665d1ed9f43f2e4c431ef0c3dd",
+      "시각": "2026-11-26T21:00+09:00",
+      "영상": "docs/마케팅/yuhobuilds_PDF사용량_20261121/최종.mp4",
+      "지문": "5edc1a3972561342ecceb3606612afe78e123c3cb49f32f3f65dcc2cc930eea3"
+    },
+    {
+      "계정": "yuhobuilds-youtube",
+      "채널": "452a3e17-7ec1-4f1e-8dbb-fe5d34380a9f",
+      "작업": "eca67759a010843861d1e7bdf26447ecf3fa8ae7e17027f3e9e4c1898089f351",
+      "시각": "2026-11-26T21:00+09:00",
+      "영상": "docs/마케팅/yuhobuilds_PDF사용량_20261121/최종_게시글판.mp4",
+      "지문": "885b9382d2c36eb4494e63af1e07b7b3f4e724c8bd9848bb9b0c85a12fca12d0"
+    }
+  ],
+  "postId": "a7c445b0-f5fe-48f4-bfe7-96bca2d46fac",
+  "링크": {
+    "id": "c565eeaa-2ac3-49e9-976c-1a23ac77f69e",
+    "만료": "2026-11-27T12:01:17.744Z"
+  },
+  "끝": "2026-11-22T17:01:17.867Z"
+}
