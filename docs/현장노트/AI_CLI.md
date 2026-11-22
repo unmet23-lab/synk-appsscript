@@ -1280,6 +1280,7 @@
 - 고침: 터미널 패널에서 `claude mcp login meta-ads`(`--no-browser` 없이)를 띄운다. 출력된 주소에서 scope만 `ads_read+ads_mcp_management`로 줄여 ego Profile 5(Business Suite 페이스북 계정)에서 열고, 곧바로 「계속」을 누른다. 이 클릭은 유호님 「니가 대신 눌러」 뒤에 통과했다. 터미널에 「Authenticated with "meta-ads"」가 뜨면 끝이다. 기본 브라우저에도 같은 창이 뜨지만 닫으면 된다.
 - 다시 확인: `claude mcp list`에 `meta-ads … ✔ Connected`. 다만 등록 전에 시작한 앱 세션에는 도구가 생기지 않으니, 새 세션에서 쓴다. 이 PC의 독립 `claude` CLI는 로그인되어 있지 않아서(`claude auth status` → loggedIn false) `claude -p`로 대신 부를 수 없다. 끊을 때는 Business Suite 설정 → 통합 → 광고 MCP 서버, 또는 `claude mcp logout meta-ads`를 쓴다.
 - 덧(2026-11-22 읽기 시험, Claude): 새 세션에는 `mcp__meta-ads__*` 도구가 떴다. `ads_get_ad_accounts`는 975907755191445 하나를 돌려줬다(ACTIVE, USD, 결제 수단 없음, 소유 비즈니스 없음). `ads_get_ig_accounts`는 빈 목록이었다. 광고 계정에 인스타 계정이 이어져 있지 않거나 instagram_basic 권한이 없어서다. `ads_library_search`는 결제 수단 없이도 됐지만 광고 ID, 페이지 이름, 시작 시각, 링크 제목, 스냅샷 주소만 주고 본문과 노출은 주지 않는다. 결과는 최신순이고 낱말이 느슨하게 맞는다. KR 「AI 광고 제작」 첫 줄은 컴퓨터 학원 광고였고, MN 「한국어 수업」은 한국어로 쓴 해외 앱 광고, MN 「солонгос хэл」은 건강식품 광고였다. `ads_insights_industry_benchmark`는 「No industry benchmark data available for the given criteria.」였다. 게재한 광고가 없어서다. 쓰기 도구는 부르지 않았다. 쓸 자리는 경쟁사나 몽골 학원의 페이지 ID를 `page_ids`로 넣어 새 광고를 지켜보는 일이다. 낱말로 광고를 찾고 문구를 나누는 일은 업종 브리핑의 ego 수집(노출순, 본문 포함)이 계속 맡는다.
+- 덧(2026-11-23, Claude): 유호님이 Meta를 접어 `claude mcp remove meta-ads -s local`로 연결을 뺐다. 다시 쓰려면 위 절차로 등록과 로그인부터 새로 한다.
 
 ## Claude 앱 세션
 
