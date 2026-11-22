@@ -2087,7 +2087,7 @@ test('the launcher hands the settings room its bridges: preferences, no drafts, 
   assert.match(launcher, /confirmInstall:\(\)=>confirmUpdateInstall\(\)/, 'the install asks about unsaved writing first, as the old screen did');
   assert.match(launcher, /convenience\?\.notifications/, 'notices go through convenience, never straight to storage');
   // 쓰던 글 되살리기는 지킬 편집기가 없어 다리를 두지 않는다(PC 0.5.0 설계 4.2-4). 플레저 PC 알림은 설정 방이 켜고 끈다(4.5 R7)
-  assert.match(launcher, /desktop,drafts:null,notices,care,updates,environment:\(\)=>environment,copyDiagnostics\}/);
+  assert.match(launcher, /desktop,drafts:null,notices,care,chatgpt:bridge\?\.chatgptConnection\|\|null,updates,environment:\(\)=>environment,copyDiagnostics\}/);
   assert.match(launcher, /safeDiagnostics\(\{environment,auth,clients,view:'settings',online:navigator\.onLine\}\)/);
 });
 

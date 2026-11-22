@@ -181,6 +181,13 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
     dismiss:()=>ipcRenderer.invoke('synk:solio-backup-dismiss'),
   }),
   // 솔리오 「사무실」(11-20): 세션 모음의 모습을 받고, 부서 · 보낼 부서 · 설정 · 보는 폴더를 고친다. 인자는 위의 꼴로 다시 만든 것만 건너간다.
+  chatgptConnection:Object.freeze({
+    status:()=>ipcRenderer.invoke('synk:chatgpt-status'),
+    connect:()=>ipcRenderer.invoke('synk:chatgpt-connect'),
+    cancel:()=>ipcRenderer.invoke('synk:chatgpt-cancel'),
+    disconnect:()=>ipcRenderer.invoke('synk:chatgpt-disconnect'),
+    onChange:callback=>subscribe('synk:chatgpt-changed',callback),
+  }),
   office:Object.freeze({
     snapshot:()=>ipcRenderer.invoke('synk:office-snapshot'),
     connectMail:p=>['gmail','outlook'].includes(p)?ipcRenderer.invoke('synk:office-mail-connect',p):officeInvalid(),

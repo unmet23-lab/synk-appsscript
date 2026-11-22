@@ -1466,6 +1466,7 @@ export function createOrbFaceView(root, { options = {}, look = {}, onAction = ()
     const f = flagsOf(fl);
     const q = el('button', ['quiet', f.includes('far') ? 'far' : '', f.includes('warn') ? 'warn' : ''].filter(Boolean).join(' '), text);
     q.type = 'button';
+    if (act === 'chatgpt-connect') q.setAttribute('data-oai-siwc-button', '');
     if (f.includes('top')) q.dataset.orbAct = act;
     else { q.dataset.roomAct = act || ''; q.dataset.roomArg = arg == null ? '' : String(arg); }
     if (f.includes('off')) q.setAttribute('aria-disabled', 'true');

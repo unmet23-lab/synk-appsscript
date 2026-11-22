@@ -182,7 +182,7 @@ function orbRoomOptions(){
   const care=['status','configure','onChanged'].every(name=>typeof bridge?.careNotifications?.[name]==='function')?{status:()=>bridge.careNotifications.status(),configure:patch=>bridge.careNotifications.configure(patch),onChange:fn=>bridge.careNotifications.onChanged(fn)}:null;
   const copyDiagnostics=async()=>{const summary=safeDiagnostics({environment,auth,clients,view:'settings',online:navigator.onLine});try{if(bridge?.copyPlatformDiagnostics)return (await bridge.copyPlatformDiagnostics(summary))?.ok===true;await navigator.clipboard.writeText(JSON.stringify(summary,null,2));return true;}catch{return false;}};
   // 모든 곳에서 로그아웃 전의 쓰던 글 확인은 펼침의 「로그아웃」과 같은 대화상자다(설계 8.3)
-  return {account,confirmLeave:()=>confirmDraftExit(SIGN_OUT_DRAFT),bind:api=>{orbRooms=api||null;},desktop,drafts:null,notices,care,updates,environment:()=>environment,copyDiagnostics};
+  return {account,confirmLeave:()=>confirmDraftExit(SIGN_OUT_DRAFT),bind:api=>{orbRooms=api||null;},desktop,drafts:null,notices,care,chatgpt:bridge?.chatgptConnection||null,updates,environment:()=>environment,copyDiagnostics};
 }
 function syncMaximizeButton(button,maximized){if(!button)return;button.setAttribute('aria-label',maximized?'창 크기 복원':'최대화');button.dataset.maximized=String(Boolean(maximized));}
 function windowState(state){windowMaximized=Boolean(state?.maximized);portalWindowChrome?.syncMaximize(windowMaximized);hostFallback?.syncMaximize(windowMaximized);}

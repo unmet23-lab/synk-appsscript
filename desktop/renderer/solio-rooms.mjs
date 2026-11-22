@@ -1211,12 +1211,112 @@ export function settingsRoom(s = {}, st = {}, now = Date.now()) {
   // 업데이트 상태를 아직 받지 못한 동안(다리는 있음)에는 「받을 수 없다」고 하지 않는다. 방을 열면 낭독기가 맨 위 문장을 먼저 읽는다(검수)
   const loading = s.loading === true && !s.update;
   const desk = s.desktop?.ok === true ? s.desktop : null, p = desk?.preferences || {}, cap = desk?.capabilities || {};
-  const rows = [loading ? null : updateRow(u, env, st), startRow(p, cap, st), keyRow(desk, env, st), viewRow(desk, st), noticeRow(s, st, now), draftRow(s, st)].filter(Boolean);
+  const rows = [loading ? null : updateRow(u, env, st), startRow(p, cap, st), keyRow(desk, env, st), viewRow(desk, st), noticeRow(s, st, now), chatgptRow(s, st, now), draftRow(s, st)].filter(Boolean);
   // 둘째 줄은 켜지는 방식이다(시안 세 갈래). 자동 시작을 바꿀 수 없는 판이면 비운다
   const then = cap.launchAtLogin ? (!p.launchAtLogin ? '컴퓨터를 켤 때 함께 켜지 않습니다.' : p.startHidden && cap.tray ? '컴퓨터를 켜면 창 없이 함께 켜집니다.' : '컴퓨터를 켜면 창과 함께 켜집니다.') : '';
   const version = verOf(u.currentVersion) || verOf(env.version);
   const foot = st.roomNote || ['SYNK Platform' + (version ? ' ' + version : ''), env.mode && env.mode !== 'release' ? '시험판' : '', OS_NAME[env.platform] || ''].filter(Boolean).join(' · ');
   return { say: loading ? '설정을 불러오고 있습니다.' : updateSay(u), then, rows, foot, act: ['문제 알리기용 정보 복사', 'diag-copy', st.busy === 'settings:diag-copy' ? 'off' : ''] };
+}
+const CHATGPT_RECHECK_MS = 30 * 24 * 60 * 60 * 1000;
+const CHATGPT_STATES = {
+  'pending-approval': [
+    '연결 준비 중',
+    'OpenAI 연결 승인을 준비하고 있습니다. 등록이 완료되면 여기에서 내 ChatGPT 계정을 연결할 수 있습니다.'
+  ],
+  disconnected: [
+    '연결 안 됨',
+    '기본 브라우저에서 ChatGPT에 로그인하면 이 기기의 SYNK 계정에 연결됩니다.'
+  ],
+  connecting: [
+    '로그인 중',
+    '열린 브라우저에서 ChatGPT 로그인을 마치면 이곳에 연결 결과가 표시됩니다.'
+  ],
+  connected: [
+    '연결됨',
+    '내 ChatGPT 계정이 연결되었습니다. ChatGPT 요금제를 쓰는 업무는 아직 이용할 수 없습니다.'
+  ],
+  recheck: [
+    '다시 확인 필요',
+    '연결 확인 후 30일이 지나 다시 로그인해 계정을 확인해 주세요. 다른 계정을 쓰려면 먼저 이 기기의 연결을 해제해 주세요.'
+  ],
+  'storage-error': [
+    '저장소 확인 필요',
+    'Windows 보안 저장소에서 이 기기의 연결 기록을 읽지 못했습니다. 저장소 상태를 확인하거나 이 기기의 연결을 해제해 주세요.'
+  ],
+  unavailable: [
+    '상태 확인 필요',
+    '지금은 ChatGPT 연결 상태를 확인하지 못했습니다. 잠시 후 설정을 다시 열어 주세요.'
+  ]
+};
+const CHATGPT_CODE_NOTES = {
+  NETWORK: 'OpenAI에 연결하지 못했습니다. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.',
+  TIMEOUT: '로그인 시간이 지났습니다. 다시 시도해 주세요.',
+  BROWSER_UNAVAILABLE: '기본 브라우저를 열지 못했습니다. Windows 기본 앱 설정을 확인한 뒤 다시 시도해 주세요.',
+  CALLBACK_UNAVAILABLE: '로그인 응답 주소를 열지 못했습니다. 잠시 후 다시 시도해 주세요.',
+  IDENTITY_INVALID: 'ChatGPT 계정 정보를 확인하지 못했습니다. 다시 로그인해 주세요.',
+  DIFFERENT_ACCOUNT: '이전에 연결한 ChatGPT 계정과 다릅니다. 같은 계정으로 로그인하거나 먼저 이 기기의 연결을 해제해 주세요.',
+  SIGN_IN_FAILED: 'OpenAI에서 로그인을 마치지 못했습니다. 다시 시도해 주세요.',
+  CONSENT_DENIED: '로그인을 취소했거나 동의를 마치지 않았습니다. 다시 시도할 수 있습니다.',
+  STORAGE_UNAVAILABLE: 'Windows 보안 저장소를 사용할 수 없습니다. 저장소 상태를 확인한 뒤 다시 시도해 주세요.',
+  STORAGE_CORRUPTED: 'Windows 보안 저장소의 연결 기록이 손상되었습니다. 이 기기의 연결을 해제한 뒤 다시 연결해 주세요.',
+  STORAGE_READ_FAILED: 'Windows 보안 저장소에서 연결 기록을 읽지 못했습니다. 이 기기의 연결을 해제한 뒤 다시 시도해 주세요.',
+  STORAGE_WRITE_FAILED: 'Windows 보안 저장소에 연결 기록을 저장하지 못했습니다. 저장소 상태를 확인한 뒤 다시 시도해 주세요.',
+  DPAPI_FAILED: 'Windows 암호화 저장소를 처리하지 못했습니다. Windows 로그인 상태를 확인한 뒤 다시 시도해 주세요.',
+  STATE_MISMATCH: '로그인 보안 확인이 일치하지 않습니다. 다시 시도해 주세요.',
+  OAUTH_STATE_MISMATCH: '로그인 보안 확인이 일치하지 않습니다. 다시 시도해 주세요.',
+  TOKEN_EXCHANGE_FAILED: 'OpenAI 인증 확인을 마치지 못했습니다. 잠시 후 다시 시도해 주세요.',
+  BUSY: '이미 연결 작업이 진행 중입니다. 잠시만 기다려 주세요.',
+  INVALID_STATE: '연결 상태가 바뀌었습니다. 현재 상태를 확인한 뒤 다시 시도해 주세요.'
+};
+function chatgptTimeMs(v) {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v === 'string' && v.trim()) {
+    const parsed = Date.parse(v);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+function chatgptDateText(ms) {
+  return new Date(ms).toLocaleDateString('ko-KR');
+}
+function chatgptVerifyLine(state, model, nowMs) {
+  const verifiedMs = chatgptTimeMs(model.verifiedAt);
+  const dueMs = chatgptTimeMs(model.recheckAt ?? model.expiresAt) ?? (verifiedMs != null ? verifiedMs + CHATGPT_RECHECK_MS : null);
+  if (state === 'connected') {
+    const policy = '연결 상태를 유지하려면 30일마다 직접 로그인해 계정을 다시 확인해야 합니다';
+    if (verifiedMs == null) return policy + '.';
+    if (dueMs != null && Number.isFinite(nowMs) && dueMs > nowMs) {
+      return '마지막 확인 ' + chatgptDateText(verifiedMs) + ' · ' + policy + '(다음 확인 ' + chatgptDateText(dueMs) + ').';
+    }
+    return '마지막 확인 ' + chatgptDateText(verifiedMs) + ' · ' + policy + '.';
+  }
+  if (state === 'recheck') {
+    if (verifiedMs != null) return '마지막 확인 ' + chatgptDateText(verifiedMs) + ' · ChatGPT 요금제를 쓰는 업무는 아직 이용할 수 없습니다.';
+    return 'ChatGPT 요금제를 쓰는 업무는 아직 이용할 수 없습니다.';
+  }
+  return '';
+}
+function chatgptRow(s, st = {}, now = Date.now()) {
+  if (!s.member || s.chatgpt?.ok !== true) return null;
+  const { state } = s.chatgpt;
+  const copy = CHATGPT_STATES[state];
+  if (!copy) return null;
+  const [mid, detail] = copy;
+  const code = s.chatgpt.code || s.chatgpt.errorCode || '';
+  const busy = typeof st.busy === 'string' ? st.busy : '';
+  const off = busy.startsWith('chatgpt:') ? 'off' : '';
+  const more = [['say', detail]];
+  const acts = [];
+  if (state === 'disconnected' || state === 'recheck') acts.push(['Sign in with ChatGPT', 'chatgpt-connect', '', off]);
+  if (state === 'connecting') acts.push(['로그인 취소', 'chatgpt-cancel', '', busy === 'chatgpt:cancel' ? 'off' : '']);
+  if (state === 'connected' || state === 'recheck' || state === 'storage-error') acts.push(['이 기기의 연결 해제', 'chatgpt-disconnect', '', off]);
+  if (acts.length) more.push(['acts', acts]);
+  const verifyLine = chatgptVerifyLine(state, s.chatgpt, now);
+  if (verifyLine) more.push(['say', verifyLine]);
+  const codeNote = state !== 'connected' && state !== 'connecting' && state !== 'pending-approval' ? (CHATGPT_CODE_NOTES[code] || '') : '';
+  more.push(['live', st.notes?.get?.('chatgpt') || codeNote]);
+  return { key: 'chatgpt', nm: 'ChatGPT 연결', mid, val: '', when: '', label: rowLabel(['ChatGPT 연결', mid]), more };
 }
 function updateRow(u, env, st) {
   const platform = env.platform || '', state = u.state, auto = updateAuto(u, platform);

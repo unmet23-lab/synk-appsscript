@@ -260,16 +260,18 @@ test('roots: adding opens the chooser and hands over the one chosen folder; remo
 
 test('an account change or sign-out reaches the office, a same-account renewal does not clear it, and quitting closes it', () => {
   const changed = [];
+  let identityRefreshes = 0;
   const ctx = {
     careNotifications: null, pulseApp: null, workspaceApp: null, followWorkspaceNow() {}, syncCompanyEntry() {}, scheduleHiddenAuthRetry() {}, syncTrayApps: async () => {},
     window: null, trustedEntry: () => false, entry: '', runtime: { clientId: 'platform' },
     renewing: null, renewingAccount: () => ctx.renewing,
-    officeService: null, officeEmployeeTasks:null, solioBackupService: null, solioBackupSweep: () => {},
+    officeService: null, officeEmployeeTasks:null, chatgptConnection: null, solioBackupService: null, solioBackupSweep: () => {},
   };
   vm.runInNewContext([source('const officeAccountOf='), source('const officeLoginOf='), source('function publishAuthState(state){')].join('\n'), ctx);
   ctx.publishAuthState(signedIn(YUHO));
   assert.deepEqual(changed, [], 'nothing to tell before the office exists');
   ctx.officeService = { accountChanged: a => changed.push(a === null ? null : plain(a)) };
+  ctx.chatgptConnection = { accountChanged: () => { identityRefreshes++; } };
   ctx.publishAuthState(signedIn(YUHO));
   ctx.publishAuthState(signedIn(OTHER));
   ctx.renewing = OTHER.synk_user_id;
@@ -281,6 +283,7 @@ test('an account change or sign-out reaches the office, a same-account renewal d
   ctx.publishAuthState({ signedIn: true, sessionGeneration: 2, account: YUHO });
   // 계정에 로그인 회차를 실어 알린다. 같은 계정의 토큰 갱신은 회차가 그대로다
   assert.deepEqual(changed, [{ ...YUHO, sessionGeneration: 1 }, { ...OTHER, sessionGeneration: 1 }, { synk_user_id: OTHER.synk_user_id, sessionGeneration: 1 }, null, null, { ...YUHO, sessionGeneration: 2 }]);
+  assert.equal(identityRefreshes, changed.length, 'each published account transition reaches the identity connection');
 
   const quit = [];
   const closed = [];

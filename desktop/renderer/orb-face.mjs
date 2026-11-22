@@ -279,6 +279,7 @@ export function createOrbFaceController({ view, options = {}, env = {} } = {}) {
     pc: {
       desktop: roomPart('desktop', ['get', 'update']),
       drafts: roomPart('drafts', ['status', 'set']),
+      chatgpt: roomPart('chatgpt', ['status', 'connect', 'cancel', 'disconnect']),
       notices: roomPart('notices', ['get', 'set']),
       // 플레저 PC 알림 켜고 끄기(PC 0.5.0 설계 4.5 R7). 옛 설정 화면에만 있던 칸이다
       care: roomPart('care', ['status', 'configure']),

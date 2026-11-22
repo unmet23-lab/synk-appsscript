@@ -52,6 +52,7 @@ const {createAiSubscriptions}=require('./ai-subscriptions.cjs');
 const {createLocalServerGate}=require('./local-server-owner.cjs');
 const {createOffice,loadOfficeModel}=require('./office.cjs');
 const {enabled:officeTasksEnabled,createTaskRuntime}=require('./office-task-runtime.cjs');
+const {createChatGPTConnection}=require('./chatgpt-connection.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
@@ -110,7 +111,7 @@ const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
 // Workspace 로그인의 Suite 따라가기를 500ms 틈 없이 지금 플랫폼 기록에 묶는다. 묶지 않으면 계정을 바꾼 직후 새 계정의 뷰가 앞 계정의 로그인 상태와 계정 정보를 받는다(4단계 설계 검토 R2).
 // 따라가기를 아직 만들지 않았거나 닫은 뒤에 불려도 다음 따라가기가 다시 본다
 function followWorkspaceNow(){try{void workspaceFollower?.refresh();}catch{}}
-function publishAuthState(state){careNotifications?.syncAccount();pulseApp?.syncContext(state);followWorkspaceNow();workspaceApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){chatgptConnection?.accountChanged();careNotifications?.syncAccount();pulseApp?.syncContext(state);followWorkspaceNow();workspaceApp?.syncContext(state);syncCompanyEntry();officeService?.accountChanged(officeLoginOf(state));officeEmployeeTasks?.accountChanged(officeLoginOf(state));solioBackupSweep();scheduleHiddenAuthRetry(state);void syncTrayApps();if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 // 설치 생명주기는 창 밖에서 만든다. 숨은 시작의 트레이 메뉴도 설치 여부를 본다(PC 0.5.0 설계 1.5)
 function ensureInstallations(){
   if(installations)return installations;
@@ -268,6 +269,20 @@ function solioBackupCall(work){if(runtime.clientId!=='platform'||smoke)return {o
 // 끄는 자리는 officeShipped 한 줄이다. 꺼 둔 포장 판은 사무실 채널이 모두 NOT_AVAILABLE로 답해 오브제와 방이 서지 않는다. 소스 실행은 그대로 열린다
 const officeShipped=true;
 const officeOff=()=>packaged&&!officeShipped;
+let chatgptConnection;
+function chatgptCall(op) {
+  if (runtime.clientId !== 'platform' || process.platform !== 'win32' || smoke) return {ok:false,code:'NOT_AVAILABLE'};
+  const login = () => {
+    const state = accountStatus();
+    return state?.signedIn ? {owner:state.account?.synk_user_id, generation:state.sessionGeneration} : null;
+  };
+  if (!login()) return {ok:false,code:'SIGN_IN_REQUIRED'};
+  chatgptConnection ??= createChatGPTConnection({registration:require('./chatgpt-partner.json'), userData:app.getPath('userData'),
+    safeStorage, session:login, openExternal:url=>shell.openExternal(url),
+    fetcher:(url,options)=>session.fromPartition('solio-chatgpt-identity',{cache:false}).fetch(url,options),
+    changed:()=>sendDesktop('synk:chatgpt-changed')});
+  return chatgptConnection[op]();
+}
 let officeService=null,officeLoading=null;
 const officeTaskSource=officeTasksEnabled({packaged,mode:runtime.mode,clientId:runtime.clientId,platform:process.platform,smoke});
 let officeEmployeeTasks=null;
@@ -334,6 +349,7 @@ const subscriptionBoardFile=()=>path.join(app.getPath('userData'),'AiSubscriptio
 require('node:timers').setInterval(()=>{if(quittingRequested||runtime.clientId!=='platform'||smoke||accountStatus()?.signedIn!==true||(!aiSubscriptions&&!fs.existsSync(subscriptionBoardFile())&&!fs.existsSync(path.join(app.getPath('userData'),'AiSubscriptions','token-usage.json'))))return;void Promise.resolve(subscriptions()?.autoTick()).catch(()=>{});void Promise.resolve(subscriptions()?.tokensAuto?.()).catch(()=>{});},2*60*1000).unref?.();
 app.on('before-quit',()=>{quittingRequested=true;startupWindow?.prepareForQuit();handoffCover?.prepareForQuit();});
 app.on('before-quit',()=>aiSubscriptions?.dispose());
+app.on('before-quit',()=>{chatgptConnection?.close();chatgptConnection=undefined;});
 app.on('before-quit',()=>officeService?.close());
 app.on('before-quit',()=>officeEmployeeTasks?.close());
 app.on('browser-window-focus',(_event,focused)=>{if(officeTaskSource&&focused===window)sendDesktop('synk:office-changed');});
@@ -938,6 +954,10 @@ function createWindow(){
     'synk:solio-backup-dismiss':()=>solioBackupCall((service,account)=>service.dismiss(account)),
     // 솔리오 「사무실」(구현설계.md 13절): 모두 officeCall을 거친다. 폴더는 본체가 고르기 창이나 지금 선 세션에서 받는다
     'synk:office-snapshot':()=>officeCall(officeWithTasks),
+    'synk:chatgpt-status':()=>chatgptCall('status'),
+    'synk:chatgpt-connect':()=>chatgptCall('connect'),
+    'synk:chatgpt-cancel':()=>chatgptCall('cancel'),
+    'synk:chatgpt-disconnect':()=>chatgptCall('disconnect'),
     'synk:office-task-submit':input=>officeCall((_service,account)=>officeTasks()?.submit(account,input)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-mail-connect':p=>officeCall((_s,a)=>officeTasks()?.mail?.connect(a,p)??{ok:false,code:'NOT_AVAILABLE'}),
     'synk:office-mail-disconnect':p=>officeCall((_s,a)=>officeTasks()?.mail?.disconnect(a,p)??{ok:false,code:'NOT_AVAILABLE'}),
