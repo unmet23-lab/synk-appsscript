@@ -1,7 +1,7 @@
 'use strict';
 // 검정 구 4단계 구현 설계 3.2 · 3.4 · 4절: 플랫폼 창 안의 Workspace 관리자. 가짜 겉(뷰 자리의 겉과 같은 이름)과 가짜 세션으로 본다.
 const test=require('node:test'),assert=require('node:assert/strict'),{EventEmitter}=require('node:events'),{createHash}=require('node:crypto'),path=require('node:path');
-const {createWorkspaceApp,workspaceAccessToken,workspaceScopeOf,workspaceAppPartition,workspaceNavigationAllowed,workspaceRequestAllowed,workspaceExternalDestination,workspaceFrame,WORKSPACE_ORIGIN:ORIGIN,WORKSPACE_ENTRY:ENTRY,WORKSPACE_VIEW_PRELOAD,WORKSPACE_BACKGROUND,NATIVE_CHANNEL}=require('../src/workspace-app.cjs');
+const {createWorkspaceApp,workspaceAccessToken,workspaceScopeOf,workspaceAppPartition,workspaceNavigationAllowed,workspaceRequestAllowed,workspaceExternalDestination,workspaceFrame,WORKSPACE_ORIGIN:ORIGIN,WORKSPACE_ENTRY:ENTRY,WORKSPACE_VIEW_PRELOAD,WORKSPACE_BACKGROUND,NATIVE_CHANNEL,TEACHER_CHANNEL}=require('../src/workspace-app.cjs');
 const {WORKSPACE_EXIT_TEXT}=require('../src/draft-exit.cjs');
 
 const SRC=path.join(__dirname,'..','src');
@@ -398,7 +398,8 @@ test('surfaceForInvite answers null when the account changes while asking or the
 test('the native link: six handled channels on this surface\'s own ipc, answered only for its main frame at the company /',async()=>{
   const f=fixture();await f.app.open();const s=f.surface,c=s.webContents,jar=f.session(A);
   const handled=Object.entries(NATIVE_CHANNEL).filter(([name])=>name!=='changed').map(([,channel])=>channel);
-  assert.deepEqual([...c.handlers.keys()].sort(),handled.sort());assert.equal(Object.keys(NATIVE_CHANNEL).length,7);
+  const teacherHandled=Object.entries(TEACHER_CHANNEL).filter(([name])=>name!=='changed').map(([,channel])=>channel);
+  assert.deepEqual([...c.handlers.keys()].sort(),[...handled,...teacherHandled].sort());assert.equal(Object.keys(NATIVE_CHANNEL).length,7);assert.equal(Object.keys(TEACHER_CHANNEL).length,7);
   assert.deepEqual(f.log.filter(entry=>entry[0]==='companyRequest'),[['companyRequest',jar]],'company requests use this surface\'s jar');
   assert.deepEqual(await c.call(NATIVE_CHANNEL.status),{configured:true,signedIn:true,status:'signed-in',account:{synk_user_id:A}});
   assert.deepEqual(await c.call(NATIVE_CHANNEL.account,{},'load'),{ok:true,account:{display_name:'합성'}});
@@ -424,6 +425,40 @@ test('the native link answers a failure code when its work throws or is missing'
   assert.deepEqual(await c.call(NATIVE_CHANNEL.company,{},'status',{}),{ok:false,error:{code:'COMPANY_UNAVAILABLE'}});
   assert.equal(await c.call(NATIVE_CHANNEL.signIn),null);assert.equal(await c.call(NATIVE_CHANNEL.cancel),null);assert.deepEqual(await c.call(NATIVE_CHANNEL.signOut),{ok:false});
   const none=fixture({native:{}});await none.app.open();assert.deepEqual(await none.surface.webContents.call(NATIVE_CHANNEL.account,{},'load'),{ok:false,code:'INVALID_REQUEST'});
+});
+test('the teacher link (내 수업, 14.3): its six channels sit on the same surface ipc, guarded the same way; sign-in and classroom only for the current account',async()=>{
+  const log=[],work=(name,value)=>(...args)=>{log.push([name,...args]);return value;};
+  const teacher={environment:()=>({clientId:'teacher',authProduct:'world',embedded:true,hostClientId:'platform'}),status:work('status',{configured:true,signedIn:false,status:'signed-out'}),signIn:work('signIn',{status:'signing-in'}),
+    cancelSignIn:work('cancel',{status:'signed-out'}),signOut:work('signOut',{ok:true}),accountRequest:work('classroom',{ok:true,classes:[]})};
+  const f=fixture({native:{teacher}});await f.app.open();const c=f.surface.webContents;
+  assert.deepEqual(await c.call(TEACHER_CHANNEL.environment),{clientId:'teacher',authProduct:'world',embedded:true,hostClientId:'platform'});
+  assert.deepEqual(await c.call(TEACHER_CHANNEL.status),{configured:true,signedIn:false,status:'signed-out'});
+  assert.deepEqual(await c.call(TEACHER_CHANNEL.signIn),{status:'signing-in'});assert.deepEqual(await c.call(TEACHER_CHANNEL.cancel),{status:'signed-out'});assert.deepEqual(await c.call(TEACHER_CHANNEL.signOut),{ok:true});
+  assert.deepEqual(await c.call(TEACHER_CHANNEL.account,{},'classroom',{operation:'classes'}),{ok:true,classes:[]});assert.deepEqual(log.at(-1),['classroom','classroom',{operation:'classes'}]);
+  const invalid=log.length;
+  for(const [operation,params] of [['load',{}],['classroom',null],['classroom',[]],['classroom','classes'],[undefined,{operation:'classes'}]])assert.equal((await c.call(TEACHER_CHANNEL.account,{},operation,params)).error.code,'INVALID_REQUEST',String(operation));
+  assert.equal(log.length,invalid,'an unsupported request reaches no teacher work');
+  const untrusted={ok:false,code:'UNTRUSTED_SENDER'};
+  assert.deepEqual(await c.call(TEACHER_CHANNEL.status,{senderFrame:frameAt(ORIGIN+'/messenger/',c.mainFrame)}),untrusted,'the messenger iframe');
+  assert.deepEqual(await c.call(TEACHER_CHANNEL.signOut,{sender:fakeContents()}),untrusted,'another contents');
+  c.mainFrame.url='https://evil.invalid/';assert.deepEqual(await c.call(TEACHER_CHANNEL.account,{},'classroom',{operation:'classes'}),untrusted);c.mainFrame.url=ENTRY;
+  assert.equal(log.length,invalid,'no teacher work for an untrusted sender');
+  // 플랫폼 계정이 바뀐 뒤 아직 닫히지 않은 겉은 로그인을 시작하지 않고 수업 요청도 받지 않는다
+  f.setAccount(member(B),{notify:false});
+  assert.deepEqual(await c.call(TEACHER_CHANNEL.signIn),{configured:true,signedIn:false,status:'signed-out'});assert.equal(log.at(-1)[0],'status','a stale surface reads the status instead of signing in');
+  assert.equal((await c.call(TEACHER_CHANNEL.account,{},'classroom',{operation:'classes'})).error.code,'AUTH_CHANGED');assert.notEqual(log.at(-1)[0],'classroom');
+  // 교사 연결이 없는 본체는 준비 안 됨으로 답한다
+  const none=fixture({native:{}});await none.app.open();const n=none.surface.webContents;
+  assert.deepEqual(await n.call(TEACHER_CHANNEL.status),{configured:false,signedIn:false,status:'unconfigured',sessionGeneration:0,account:null,error:null});
+  assert.equal((await n.call(TEACHER_CHANNEL.environment)).clientId,'teacher');assert.equal((await n.call(TEACHER_CHANNEL.signOut)).ok,true);
+  assert.equal((await n.call(TEACHER_CHANNEL.account,{},'classroom',{operation:'classes'})).error.code,'AUTH_UNAVAILABLE');
+});
+test('publishTeacherAuth reaches only the current surface\'s company / document',async()=>{
+  const f=fixture();const state={signedIn:true,status:'signed-in'};f.app.publishTeacherAuth(state);
+  await f.app.open();const c=f.surface.webContents;f.app.publishTeacherAuth(state);assert.deepEqual(c.sent,[[TEACHER_CHANNEL.changed,state]]);
+  c.url=ORIGIN+'/messenger/';f.app.publishTeacherAuth(state);c.url='https://evil.invalid/';f.app.publishTeacherAuth(state);assert.equal(c.sent.length,1);
+  c.url=ENTRY;c.send=()=>{throw Error('합성');};f.app.publishTeacherAuth(state);
+  f.surface.destroy();delete c.send;f.app.publishTeacherAuth(state);assert.equal(c.sent.length,1);
 });
 test('publishAuth reaches only the current surface\'s company / document',async()=>{
   const f=fixture();const state={signedIn:true,status:'signed-in'};f.app.publishAuth(state);

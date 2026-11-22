@@ -21,6 +21,10 @@ const WORKSPACE_BACKGROUND='#ffffff';
 const LIVEKIT_HOST=/^[a-z0-9-]+\.livekit\.cloud$/;
 // 뷰의 native 연결 통로(workspace-view-preload.cjs와 같은 이름). 이 뷰의 webContents.ipc에만 단다
 const NATIVE_CHANNEL=Object.freeze({status:'synk:workspace-native-auth-status',changed:'synk:workspace-native-auth-changed',account:'synk:workspace-native-account-request',signIn:'synk:workspace-native-sign-in',cancel:'synk:workspace-native-sign-in-cancel',signOut:'synk:workspace-native-sign-out',company:'synk:workspace-native-company-request'});
+// 「내 수업」 교사 로그인 통로(workspace-view-preload.cjs와 같은 이름, 4단계 구현 설계 14.3). 이 뷰의 webContents.ipc에만 단다
+const TEACHER_CHANNEL=Object.freeze({environment:'synk:workspace-teacher-environment',status:'synk:workspace-teacher-auth-status',changed:'synk:workspace-teacher-auth-changed',signIn:'synk:workspace-teacher-sign-in',cancel:'synk:workspace-teacher-sign-in-cancel',signOut:'synk:workspace-teacher-sign-out',account:'synk:workspace-teacher-account-request'});
+const TEACHER_NONE=Object.freeze({configured:false,signedIn:false,status:'unconfigured',sessionGeneration:0,account:null,error:null});
+const TEACHER_ENVIRONMENT=Object.freeze({clientId:'teacher',authProduct:'world',embedded:true,hostClientId:'platform'});
 const EXTERNAL_GAP_MS=1500;
 // 화면 공유에서 사람이 고른 것이 뒤따르는 표시 처리기에 쓰일 수 있는 시간
 const SHARE_TICKET_MS=10000;
@@ -195,6 +199,15 @@ function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRe
     handle(NATIVE_CHANNEL.cancel,()=>native.cancelSignIn?.()??null);
     handle(NATIVE_CHANNEL.signOut,()=>native.signOut?.()??{ok:false});
     handle(NATIVE_CHANNEL.company,(operation,params)=>companyRequest?companyRequest(operation,params):{ok:false,error:{code:'COMPANY_UNAVAILABLE'}});
+    // 「내 수업」 교사 로그인(14.3). 로그인과 수업 요청은 이 겉의 계정이 지금 플랫폼 계정일 때만 받는다. 수업 요청은 classroom 하나다
+    const teacher=native.teacher&&typeof native.teacher==='object'?native.teacher:null;
+    const teacherChanged={ok:false,error:{code:'AUTH_CHANGED',message:'로그인한 계정이 바뀌었어요. 내 수업을 다시 열어 주세요.',retryable:false}};
+    handle(TEACHER_CHANNEL.environment,()=>teacher?.environment?.()??TEACHER_ENVIRONMENT);
+    handle(TEACHER_CHANNEL.status,()=>teacher?teacher.status():TEACHER_NONE);
+    handle(TEACHER_CHANNEL.signIn,()=>!teacher?TEACHER_NONE:current()?teacher.signIn():teacher.status());
+    handle(TEACHER_CHANNEL.cancel,()=>teacher?teacher.cancelSignIn():TEACHER_NONE);
+    handle(TEACHER_CHANNEL.signOut,()=>teacher?teacher.signOut():{ok:true,status:TEACHER_NONE});
+    handle(TEACHER_CHANNEL.account,(operation,params)=>operation!=='classroom'||!params||typeof params!=='object'||Array.isArray(params)?{ok:false,error:{code:'INVALID_REQUEST',message:'내 수업에서 지원하는 수업 요청을 확인해 주세요.',retryable:false}}:!teacher?{ok:false,error:{code:'AUTH_UNAVAILABLE',message:'내 수업 로그인을 준비하지 못했어요.',retryable:false}}:current()?teacher.accountRequest('classroom',params):teacherChanged);
   }
   function createWorkspaceSurface(isolated){
     const surface=createSurface({backgroundColor:WORKSPACE_BACKGROUND,webPreferences:{session:isolated,preload:WORKSPACE_VIEW_PRELOAD,sandbox:true,contextIsolation:true,nodeIntegration:false,nodeIntegrationInWorker:false,nodeIntegrationInSubFrames:false,webviewTag:false,webSecurity:true,allowRunningInsecureContent:false,experimentalFeatures:false,devTools:false}});
@@ -300,8 +313,13 @@ function createWorkspaceApp({clientId,platform=process.platform,getAccount,getRe
     if(!alive())return;
     try{const contents=activeSurface.webContents;if(workspaceNavigationAllowed(contents.getURL()))contents.send(NATIVE_CHANNEL.changed,state);}catch{}
   }
-  return {open,surfaceForInvite,syncContext,publishAuth,busy,hasSurface:alive,
+  // 「내 수업」 교사 로그인의 알림(14.3). 지금 겉의 회사 문서에만 보낸다
+  function publishTeacherAuth(state){
+    if(!alive())return;
+    try{const contents=activeSurface.webContents;if(workspaceNavigationAllowed(contents.getURL()))contents.send(TEACHER_CHANNEL.changed,state);}catch{}
+  }
+  return {open,surfaceForInvite,syncContext,publishAuth,publishTeacherAuth,busy,hasSurface:alive,
     dispose(){disposed=true;++epoch;pending=null;closeSurface();activeSession=null;}};
 }
 
-module.exports={createWorkspaceApp,workspaceAccessToken,workspaceScopeOf,workspaceAppPartition,workspaceNavigationAllowed,workspaceRequestAllowed,workspaceExternalDestination,workspaceFrame,WORKSPACE_ORIGIN,WORKSPACE_ENTRY,WORKSPACE_VIEW_PRELOAD,WORKSPACE_BACKGROUND,NATIVE_CHANNEL};
+module.exports={createWorkspaceApp,workspaceAccessToken,workspaceScopeOf,workspaceAppPartition,workspaceNavigationAllowed,workspaceRequestAllowed,workspaceExternalDestination,workspaceFrame,WORKSPACE_ORIGIN,WORKSPACE_ENTRY,WORKSPACE_VIEW_PRELOAD,WORKSPACE_BACKGROUND,NATIVE_CHANNEL,TEACHER_CHANNEL};

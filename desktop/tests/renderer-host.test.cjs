@@ -161,33 +161,23 @@ test('with no editor left nothing asks before sign-out, update or closing, and l
   assert.equal(f.element('leave-dialog').open,false);
 });
 
-test('the old account page opens an installed Workspace and says why it cannot otherwise',async()=>{
-  const launched=[];
-  const installed=await fixture({initialAuth:account('member-f'),clients:[{id:'messenger',status:'installed',canLaunch:true}],bridgeOverrides:{launch:async id=>{launched.push(id);return {ok:true};}}});
-  await installed.run('launchWorkspace()');
-  assert.deepEqual(launched,['messenger']);assert.deepEqual(installed.toasts,['Workspace를 열었습니다.']);
-  const missing=await fixture({initialAuth:account('member-g'),clients:[{id:'messenger',status:'not-installed',canLaunch:false,installer:{}}]});
-  await missing.run('launchWorkspace()');
-  // synk.im에는 Workspace 설치 파일이 없어 웹 계정 화면과 같은 말로 브라우저의 Workspace 주소를 안내한다(0.5.0 최종 검수 F5)
-  assert.equal(missing.toasts[0],'이 PC에 Workspace 앱이 설치돼 있지 않습니다. 회사에서 안내받은 Workspace 주소로 브라우저에서 열어 주세요.');
-  // 설치된 Workspace가 열리지 않을 때도 다시 설치하라고 하지 않고 같은 길을 안내한다(후속 검수 F2)
-  const broken=await fixture({initialAuth:account('member-k'),clients:[{id:'messenger',status:'installed',canLaunch:true}],bridgeOverrides:{launch:async()=>({ok:false})}});
-  await broken.run('launchWorkspace()');
-  assert.deepEqual(broken.toasts,['Workspace를 열지 못했습니다. 다시 눌러 보고, 계속 안 되면 회사에서 안내받은 Workspace 주소로 브라우저에서 열어 주세요.']);
+test('the old account page opens Workspace inside the platform window, never a separately installed app (4단계 구현 설계 14.1)',async()=>{
+  const launched=[],seen=[];
+  const f=await fixture({initialAuth:account('member-f'),clients:[{id:'messenger',status:'installed',canLaunch:true}],bridgeOverrides:{launch:async id=>{launched.push(id);return {ok:true};},onDesktopAction:callback=>{seen.push(callback);return ()=>{};}}});
+  const actions=[];
+  const off=f.portal.options.faceOptions.onDesktopAction(action=>actions.push(action));
+  assert.equal(seen.length,1,'the main process actions (tray) still reach the face');
+  await f.run('launchWorkspace()');
+  assert.equal(JSON.stringify(actions),JSON.stringify([{type:'open-space',space:'workspace'}]));
+  assert.deepEqual(launched,[],'the installed Workspace app is not launched');
+  assert.deepEqual(f.toasts,[]);
+  off();await f.run('launchWorkspace()');
+  assert.equal(actions.length,1,'an unsubscribed face gets nothing');
+  assert.deepEqual(f.toasts,['Workspace를 열지 못했습니다. 앱을 끄고 다시 열어 주세요.']);
   const denied=await fixture({initialAuth:account('member-h',['pulse'])});
+  const deniedActions=[];denied.portal.options.faceOptions.onDesktopAction(action=>deniedActions.push(action));
   await denied.run('launchWorkspace()');
-  assert.match(denied.toasts[0],/열 수 없습니다/);
-  // 카본 검수 B1: 여는 중에 다시 누르면 아무 말도 하지 않고, 앱 줄을 아직 못 읽었으면 확인 중이라고 말한다
-  let release;const slow=[];
-  const pending=await fixture({initialAuth:account('member-i'),clients:[{id:'messenger',status:'installed',canLaunch:true}],bridgeOverrides:{launch:id=>{slow.push(id);return new Promise(resolve=>{release=resolve;});}}});
-  const first=pending.run('launchWorkspace()');await settle();
-  await pending.run('launchWorkspace()');
-  assert.deepEqual(slow,['messenger']);assert.deepEqual(pending.toasts,[],'a second press while opening says nothing');
-  release({ok:true});await first;
-  assert.deepEqual(pending.toasts,['Workspace를 열었습니다.']);
-  const loading=await fixture({initialAuth:account('member-j')});
-  await loading.run('launchWorkspace()');
-  assert.match(loading.toasts[0],/확인하는 중입니다/);
+  assert.match(denied.toasts[0],/열 수 없습니다/);assert.deepEqual(deniedActions,[]);
 });
 
 test('a face that fails to mount leaves window buttons and one line instead of an empty frameless window',async()=>{

@@ -24,15 +24,15 @@ test('a second launch quits while main.cjs loads without a quit-handler error',(
 
 test('the probe catches a quit-handler name declared after the lock (the 0.5.5 error)',()=>{
   const source=fs.readFileSync(MAIN,'utf8');
-  const decl=source.match(/^let workspaceAuth=null,workspaceFollower=null;\r?\n/m);
+  const decl=source.match(/^let workspaceAuth=null,workspaceFollower=null,workspaceTeacher=null;\r?\n/m);
   assert.ok(decl,'the Workspace auth declaration is where this test expects');
   const lock='else if(!app.requestSingleInstanceLock())app.quit();';
   assert.ok(source.includes(lock),'the single-instance lock line is present');
   // 0.5.5처럼 선언을 잠금보다 아래로 옮긴다
-  const broken=source.replace(decl[0],'').replace(/\n$/,'')+'\nlet workspaceAuth=null,workspaceFollower=null;\n';
+  const broken=source.replace(decl[0],'').replace(/\n$/,'')+'\nlet workspaceAuth=null,workspaceFollower=null,workspaceTeacher=null;\n';
   const result=secondLaunch(broken);
   assert.equal(result.quitCalled,true);
-  assert.ok(result.errors.some(e=>/^will-quit: Cannot access 'workspace(Follower|Auth)' before initialization$/.test(e)),result.errors.join(' | ')||'no error');
+  assert.ok(result.errors.some(e=>/^will-quit: Cannot access 'workspace(Follower|Auth|Teacher)' before initialization$/.test(e)),result.errors.join(' | ')||'no error');
 });
 
 // GPT pc-second-launch-20261122-e GA1: async 처리기는 첫 await 전까지 그 자리에서 돈다. 거기서 선언 전 이름을 만지면 오류가 약속의 거부로 나온다. 그것도 잡는다

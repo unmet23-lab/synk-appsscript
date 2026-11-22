@@ -13,7 +13,7 @@
 // - 가장 나중에 시작한 조회의 성공만 메모리에 기록한다. 기록에는 그 요청 ID, 계정 세대, 숫자 epoch, SYNK ID, 물어본 창과
 //   프레임, 확인된 고정 목적지만 든다. 새 조회, 그 요청의 취소, 다른 계정·세대·epoch, 물어본 문서의 교체가 기록을 지운다.
 // - 열기는 정확히 {destination,requestId,accountGeneration}을 받아 기록에 든 고정 목적지 하나만 main이 넘긴 기존 제품 기능으로
-//   연다. '/'는 Workspace 앱 실행(installations.launch('messenger')), '/pulse-app/'는 PULSE 창 열기(pulseApp.open())다.
+//   연다. '/'는 플랫폼 창 안의 Workspace 열기(workspaceApp.open(), 4단계부터), '/pulse-app/'는 PULSE 창 열기(pulseApp.open())다.
 //   partial 결과도 확인된 목적지는 열 수 있다. 여는 앞뒤로 계정, 세대, epoch, 청한 창과 프레임을 다시 확인한다.
 //   주소나 partition은 받지 않고, 입장 권한이나 세션을 새로 만들지 않는다.
 // - 열기 기능을 부른 뒤에는 제품 창이 이미 열렸을 수 있다. 그 사이 기록이 끝났으면 열기 기능의 답이 무엇이든 성공으로 알리지

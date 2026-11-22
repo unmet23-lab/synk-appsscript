@@ -3,7 +3,7 @@
 // a virtual directory and returns ENOENT when hashing the archive itself.
 const physicalFs=process.versions.electron?require('original-fs'):require('node:fs'),fs=physicalFs.promises;
 const path=require('node:path'),crypto=require('node:crypto');
-const {CLIENTS,identity}=require('./catalog.cjs');
+const {CLIENTS,INSTALLABLE_CLIENTS,identity}=require('./catalog.cjs');
 const {inside}=require('./security.cjs');
 const {releasesFor,compareVersions,installerPath}=require('./release-catalog.cjs');
 // Executables can exceed 200 MiB. Bounded chunks keep integrity checks from
@@ -21,6 +21,8 @@ function createInstallations({clientId,mode,platform,arch,programRoot,releases=[
     if(!Object.hasOwn(CLIENTS,id))return {id,status:'unavailable',canLaunch:false,reason:'UNKNOWN_CLIENT'};
     const c=identity(id,mode),base={id,name:c.name,canLaunch:false};
     if(id===clientId)return {...base,status:'current',reason:'CURRENT_CLIENT'};
+    // 거둔 하위 앱(Workspace)은 깔려 있어도 보지도 띄우지도 않는다(4단계 구현 설계 14절)
+    if(id!=='platform'&&!INSTALLABLE_CLIENTS.includes(id))return {...base,status:'unavailable',reason:'RETIRED_CLIENT'};
     const candidates=releasesFor(releases,{platform,arch,mode}).filter(r=>r.id===id),latest=candidates.find(r=>installerPath(r,programRoot))||candidates[0];
     if(!latest)return {...base,status:'unavailable',reason:'RELEASE_UNAVAILABLE'};
     if(!['win32','darwin'].includes(platform))return {...base,status:'unavailable',reason:'UNSUPPORTED_PLATFORM'};

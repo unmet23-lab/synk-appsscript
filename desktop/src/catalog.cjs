@@ -4,6 +4,9 @@ const CLIENTS=Object.freeze({
   world:Object.freeze({id:'world',name:'SYNK WORLD',appId:'im.synk.world',executable:'SYNKWorld'}),
   messenger:Object.freeze({id:'messenger',name:'SYNK Workspace',appId:'im.synk.messenger',executable:'SYNKMessenger'}),
 });
+// 플랫폼이 깔고 띄우는 하위 앱. Workspace 앱(messenger)은 11-23에 거뒀다. Workspace는 플랫폼 창 안의 뷰로만 연다(4단계 구현 설계 14절).
+// messenger는 CLIENTS에 남는다. 소스 실행(--client=messenger)과 Workspace 로그인 설정이 그 이름을 쓴다
+const INSTALLABLE_CLIENTS=Object.freeze(['world']);
 const MESSENGER_CLOUD_PREVIEW_ENTRY='https://workspace.synk.im/?tab=messenger';
 const WORLD_CLOUD_PREVIEW_ENTRY='https://synk.im/world/';
 const WORLD_ACCOUNT_ENTRY='https://synk.im/account/client.html?product=world';
@@ -16,4 +19,4 @@ function client(id) { if(typeof id!=='string'||!Object.hasOwn(CLIENTS,id))throw 
 // 둘이 같이 켜질 수 있게 됐으니 이름(트레이 툴팁·창 제목)도 갈라, 늘 켜 둬야 하는 설치 앱을 잘못 끄지 않게 한다.
 function sourceScope(value,packaged) { return packaged===false?value+'.source':value; }
 function identity(id,mode,{packaged=true}={}) { const c=client(id),preview=mode==='development',appId=sourceScope(c.appId+(preview?'.preview':''),packaged);return {...c,appId,productName:c.name+(preview?' Preview':'')+(packaged===false?' (소스 실행)':''),executableName:c.executable+(preview?'Preview':''),sessionScope:appId}; }
-module.exports={CLIENTS,DEV_URLS,PLATFORM_ENTRY,MESSENGER_CLOUD_PREVIEW_ENTRY,WORLD_CLOUD_PREVIEW_ENTRY,WORLD_ACCOUNT_ENTRY,client,identity,sourceScope};
+module.exports={CLIENTS,INSTALLABLE_CLIENTS,DEV_URLS,PLATFORM_ENTRY,MESSENGER_CLOUD_PREVIEW_ENTRY,WORLD_CLOUD_PREVIEW_ENTRY,WORLD_ACCOUNT_ENTRY,client,identity,sourceScope};

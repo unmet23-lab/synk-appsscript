@@ -36,6 +36,7 @@ const {copyDiagnostics}=require('./diagnostics-clipboard.cjs');
 const {createPulseApp,pulseInviteRefusal}=require('./pulse-app.cjs');
 const {createSpaceViewHost}=require('./space-view.cjs');
 const {createWorkspaceApp,workspaceAccessToken,WORKSPACE_ENTRY}=require('./workspace-app.cjs');
+const {createWorkspaceTeacher}=require('./workspace-teacher.cjs');
 const {createCompanyEntryManager,createCompanyEntryPartitions,companyAnswerFromPulse,entryRefusal,bindingFromAuth}=require('./company-entry.cjs');
 const {createCompanyEntryDestinations}=require('./company-entry-destinations.cjs');
 const {createPlatformUpdater}=require('./platform-update.cjs');
@@ -85,7 +86,7 @@ if(process.platform==='win32')app.setAppUserModelId(current.appId);
 let window,platformTray,trayMemory,desktopPreferences,careNotifications,windowPlacement,draftRecovery,draftRecoveryRequests,pulseApp,pulseView,workspaceApp,workspaceView,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
 // Workspace 로그인 금고와 Suite 따라가기. will-quit이 정리하므로 단일 실행 잠금(app.requestSingleInstanceLock)보다 위에 선언한다.
 // 이미 켜진 앱을 한 번 더 켜면 그 실행은 모듈을 읽는 도중 app.quit()으로 끝나고, 창이 없어 Electron이 will-quit을 바로 부른다(0.5.5 설치본, 사무실 세션 11-22 보고)
-let workspaceAuth=null,workspaceFollower=null;
+let workspaceAuth=null,workspaceFollower=null,workspaceTeacher=null;
 // 켜짐부터 열림까지(1-가 구현 설계 2절). orbBoot는 구가 드러나기 시작한 시각과 움직임 종류다. 본체가 정해 시작 창과 앱 창에 같은 값을 준다.
 // startupHandoff는 시작 창에서 앱 창으로 겹쳐 넘기는 동안의 상태, unseenFailure는 숨은 채 시작한 길에서 아직 보이지 않은 실패다.
 let orbBoot=null,startupHandoff=null,unseenFailure=null;
@@ -141,7 +142,7 @@ async function syncTrayApps(){
 // 설치 파일 준비의 진행처럼 몰려 오는 알림은 0.3초 묶어 한 번 본다
 function scheduleTrayApps(){if(!platformTray?.isActive())return;clearTimeout(trayAppsTimer);trayAppsTimer=setTimeout(()=>{trayAppsTimer=null;void syncTrayApps();},300);trayAppsTimer.unref?.();}
 // 트레이의 Workspace 줄은 따로 설치한 앱을 실행하지 않는다. 플랫폼 창을 부르고 화면이 창 안의 Workspace를 연다(4단계 구현 설계 3.5).
-// 줄은 Workspace가 배정된 회원에게 보인다. 따로 설치한 앱을 거둘지는 유호님 답으로 정한다. 권한이 없어졌으면 창만 연다
+// 줄은 Workspace가 배정된 회원에게 보인다. 따로 설치하는 Workspace 앱은 11-23에 거뒀다(14절). 권한이 없어졌으면 창만 연다
 async function launchFromTray(id){
   if(quittingRequested)return;
   if(!trayAppAllowed(id)){requestPlatformWindow();return;}
@@ -377,7 +378,7 @@ app.on('will-quit',event=>{
         endHandoffWhenShown();}}
     });return;
   }
-  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();companyEntry?.dispose();companyDestinations?.dispose();pulseApp?.dispose();workspaceApp?.dispose();workspaceFollower?.dispose();workspaceAuth?.dispose();careNotifications?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();if(trayAppsTick)clearInterval(trayAppsTick);if(trayAppsTimer)clearTimeout(trayAppsTimer);if(hiddenAuthRetry)clearTimeout(hiddenAuthRetry);
+  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();companyEntry?.dispose();companyDestinations?.dispose();pulseApp?.dispose();workspaceApp?.dispose();workspaceFollower?.dispose();workspaceAuth?.dispose();workspaceTeacher?.dispose();careNotifications?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();if(trayAppsTick)clearInterval(trayAppsTick);if(trayAppsTimer)clearTimeout(trayAppsTimer);if(hiddenAuthRetry)clearTimeout(hiddenAuthRetry);
 });
 // 장치 1(1-가 구현 설계 2절): 설치기가 이 앱을 바꾸는 중이면 창과 서비스를 만들기 전에 설치기에 창을 보이라고 청하고 끝난다. 옛 실행 파일이 켜져 바꾸기를 막지 않게 한다
 // 9ae0365423부터 이 저장소에서 구운 설치기(공개하지 않았다)는 앱을 지울 때 --office-unhook으로 한 번 돌렸다. 공개 판의 지우는 프로그램은 이 인자를 부르지 않는다.
@@ -618,6 +619,19 @@ function ensureWorkspaceAuth(){
   void workspaceFollower.start();
   return workspaceAuth;
 }
+/*
+  Workspace 뷰의 「내 수업」 교사 로그인(4단계 구현 설계 14.3). 따로 설치하던 Workspace 앱이 주던 교사 연결을 뷰에 준다. 금고는 userData/WorkspaceTeacher,
+  플랫폼 Suite 기록을 따라 같은 SYNK ID로만 선다. 만들기만 하고 따라가기는 사람이 로그인을 누르거나 저장된 교사 로그인이 있을 때 켠다(workspace-teacher.cjs)
+*/
+function ensureWorkspaceTeacher(){
+  if(workspaceTeacher)return workspaceTeacher;
+  if(runtime.clientId!=='platform'||smoke||!runtime.auth?.clients?.teacher||!suiteStore||quittingRequested)return null;
+  let config=null;try{config=configuration(runtime.auth,'teacher',runtime.mode);}catch{return null;}
+  const signInReturn=createSignInReturn();
+  workspaceTeacher=createWorkspaceTeacher({config,directory:path.join(app.getPath('userData'),'WorkspaceTeacher'),scope:current.sessionScope+'.workspace-teacher',safeStorage,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),getDevice:()=>suiteDeviceId,onChange:state=>{workspaceApp?.publishTeacherAuth(state);if(signInReturn(state))bringToFront(window,{app});},suiteStore,createTokenStore,createAuthService,createSuiteFollower});
+  return workspaceTeacher;
+}
+const WORKSPACE_TEACHER_NONE=Object.freeze({configured:false,signedIn:false,status:'unconfigured',sessionGeneration:0,account:null,error:null});
 const WORKSPACE_AUTH_NONE=Object.freeze({configured:false,signedIn:false,status:'unconfigured',account:null,error:null});
 // 뷰의 native 연결 일곱 이름의 실제 일. 모두 Workspace 로그인으로 한다. 로그아웃도 Workspace 로그인만 끊는다(검토 R2)
 function workspaceNative(){
@@ -629,6 +643,13 @@ function workspaceNative(){
     signOut:async()=>{const service=ensureWorkspaceAuth();return service?service.signOut():{ok:false};},
     // 직원 초대가 Workspace 로그인을 기다릴 때 Suite 따라가기를 한 번 더 돌린다(GPT 엔진 검수 c GA1 · GA5)
     retryLogin:()=>{ensureWorkspaceAuth();return workspaceFollower?.retry?.();},
+    // 「내 수업」 교사 로그인(14.3). 화면이 부를 때 만든다
+    teacher:{environment:()=>({...(ensureWorkspaceTeacher()?.environment()||{clientId:'teacher',authProduct:'world',embedded:true,hostClientId:'platform'}),mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}),
+      status:()=>ensureWorkspaceTeacher()?.status()??WORKSPACE_TEACHER_NONE,
+      signIn:async()=>{const service=ensureWorkspaceTeacher();return service?service.signIn():WORKSPACE_TEACHER_NONE;},
+      cancelSignIn:async()=>{const service=ensureWorkspaceTeacher();return service?service.cancelSignIn():WORKSPACE_TEACHER_NONE;},
+      signOut:async()=>{const service=ensureWorkspaceTeacher();return service?service.signOut():{ok:true,status:WORKSPACE_TEACHER_NONE};},
+      accountRequest:async(operation,params)=>{const service=ensureWorkspaceTeacher();return service?service.accountRequest(operation,params):{ok:false,error:{code:'AUTH_UNAVAILABLE',message:'내 수업 로그인을 준비하지 못했어요.',retryable:false}};}},
     // 토큰은 그 겉의 SYNK ID 것만, 그 겉이 살아 있을 때만 싣는다. Suite 따라가기가 아직 못 따라왔으면 깨우고 거절한다(GPT 엔진 검수 b GA1 · c GA4)
     companyRequest:(jar,{accountId,current}={})=>createCompanyRequests({entry:WORKSPACE_ENTRY,clientId:'messenger',session:jar,auth:{getAccessToken:()=>workspaceAccessToken(ensureWorkspaceAuth(),accountId,{refresh:()=>workspaceFollower?.refresh?.(),current}),current:()=>{try{return typeof current!=='function'||current()===true;}catch{return false;}}}})};
 }
@@ -769,7 +790,7 @@ function createWindow(){
   // as exactly {token,requestId,accountGeneration}, and PULSE's answer returns in the contract's codes; cancelling that
   // request cancels the same PULSE invite by the same two IDs. Keeping an unsaved company draft while quitting cancels
   // the quit, as for PULSE. A destination the lookup confirmed opens only through the existing product functions: the
-  // Workspace app launch and the PULSE window opening, each with its own sign-in and access checks.
+  // in-window Workspace view and the PULSE window opening, each with its own sign-in and access checks.
   if(runtime.clientId==='platform'&&!companyEntry){
     companyPartitions=createCompanyEntryPartitions({session,getBinding:companyBinding});
     companyEntry=createCompanyEntryManager({BrowserWindow,session,getBinding:companyBinding,selectCompanyPartition:binding=>companyPartitions.select(binding),openEmployeeSurface:binding=>workspaceApp.surfaceForInvite(binding),deliverCustomer:request=>Promise.resolve(pulseApp.openInvite(request)).then(companyAnswerFromPulse),cancelCustomer:request=>companyAnswerFromPulse(pulseApp.cancelInvite(request)),dialog,onUnloadKept:()=>{if(!quittingRequested)return;quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});

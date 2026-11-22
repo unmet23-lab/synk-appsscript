@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs/promises'),streams=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {Transform}=require('node:stream'),{pipeline}=require('node:stream/promises');
-const {CLIENTS}=require('./catalog.cjs');
+const {CLIENTS,INSTALLABLE_CLIENTS}=require('./catalog.cjs');
 const {inside}=require('./security.cjs');
 const {createInstallations}=require('./installations.cjs');
 const {installerPath,releasesFor}=require('./release-catalog.cjs');
@@ -12,7 +12,7 @@ function createClientLifecycle(options) {
   const installations=createInstallations({...options,releases}),jobs=new Map();
   let disposed=false,installCache=null,installCacheAt=0,inspectPending=null;
   const notify=()=>{if(!disposed){try{onChange();}catch{}}};
-  function denied(id) {if(typeof id!=='string'||!Object.hasOwn(CLIENTS,id))return 'UNKNOWN_CLIENT';if(clientId!=='platform')return 'LAUNCHER_ONLY';if(id==='platform')return 'CURRENT_CLIENT';return null;}
+  function denied(id) {if(typeof id!=='string'||!Object.hasOwn(CLIENTS,id))return 'UNKNOWN_CLIENT';if(clientId!=='platform')return 'LAUNCHER_ONLY';if(id==='platform')return 'CURRENT_CLIENT';if(!INSTALLABLE_CLIENTS.includes(id))return 'RETIRED_CLIENT';return null;}
   function latest(id) {return releases.find(r=>r.id===id&&installerPath(r,packageRoot))||releases.find(r=>r.id===id);}
   function availability(id) {const r=latest(id);return !denied(id)&&!disposed&&mode==='development'&&!!installerPath(r,packageRoot);}
   function state(id) {

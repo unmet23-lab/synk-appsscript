@@ -8,6 +8,16 @@ const {sourceHash}=require('./source-hash.cjs');
 const {verifyArchive}=require('./archive-verification.cjs');
 const {inventory,audit}=require('./freeze-platform-release.cjs');
 const assert=(value,message)=>{if(!value)throw Error(message);};
+// 플랫폼이 싣는 하위 앱 설치 파일. 따로 설치하는 Workspace 앱(messenger)은 11-23에 거뒀다(4단계 구현 설계 14절).
+// 고정 바탕 설치본에는 아직 Workspace 설치 파일이 있어도 옮겨 싣지 않고, 실행 정보의 판 목록에서도 Workspace 줄을 모두 뺀다
+const BUNDLED_CHILDREN=Object.freeze(['world']),RETIRED_CHILDREN=Object.freeze(['messenger']);
+// 바탕 실행 정보의 판 목록에서 실을 하위 앱 설치 파일을 고르고, 거둔 앱의 줄(설치 파일과 옛 판 승인 모두)을 뺀 목록을 돌려준다
+function selectBundledChildren(releases){
+  assert(Array.isArray(releases),'Baseline releases missing');
+  const pinned=releases.filter(row=>row?.installer);
+  assert(pinned.length>=1&&pinned.length<=2&&pinned.some(row=>row.id==='world')&&pinned.every(row=>[...BUNDLED_CHILDREN,...RETIRED_CHILDREN].includes(row.id))&&new Set(pinned.map(row=>row.id)).size===pinned.length,'Expected the WORLD child installer');
+  return {children:pinned.filter(row=>BUNDLED_CHILDREN.includes(row.id)),releases:releases.filter(row=>!RETIRED_CHILDREN.includes(row?.id))};
+}
 const sha=file=>{const hash=crypto.createHash('sha256'),buffer=Buffer.allocUnsafe(8<<20),fd=fs.openSync(file,'r');try{let count;while((count=fs.readSync(fd,buffer,0,buffer.length,null))>0)hash.update(buffer.subarray(0,count));}finally{fs.closeSync(fd);}return hash.digest('hex');};
 const json=(file,value)=>{fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(value,null,2)+'\n');};
 // Pinned installers can still contain OAuth registrations for retired products.
@@ -56,7 +66,7 @@ async function buildTarget(options){
   try{
     assert(sha(path.join(oldResources,'app.asar'))===pin.asarSHA256,'Baseline archive changed');runtime=JSON.parse(asar.extractFile(path.join(oldResources,'app.asar'),'runtime.json'));
     assert(runtime.clientId==='platform'&&runtime.mode==='development'&&runtime.entry==='synk-desktop://platform/index.html','Unexpected baseline runtime');
-    children=runtime.releases.filter(row=>row.installer);assert(children.length===2&&children.some(row=>row.id==='world')&&children.some(row=>row.id==='messenger'),'Expected two child installers');
+    ({children,releases:runtime.releases}=selectBundledChildren(runtime.releases));
     fs.mkdirSync(path.join(out,'children'));
     for(const child of children){assert(child.platform===platform&&child.arch===arch&&child.installer.relativePath===child.id+(platform==='win32'?'.exe':'.dmg'),'Invalid child pin');const src=path.join(oldResources,'clients',child.installer.relativePath);assert(sha(src)===child.installer.sha256&&fs.statSync(src).size===child.installer.bytes,'Bundled child changed');fs.copyFileSync(src,path.join(out,'children',child.installer.relativePath));}
   }finally{if(mounted)command('hdiutil',['detach',baselineRoot]);}
@@ -64,7 +74,7 @@ async function buildTarget(options){
   if(platform==='win32')for(const leaf of ['baseline-content','baseline-backend.exe']){const target=path.resolve(out,leaf);assert(path.dirname(target)===out&&target!==out,'Cleanup escaped the build output');fs.rmSync(target,{recursive:leaf==='baseline-content',force:false});}
   const stage=path.join(out,'stage');fs.cpSync(path.join(root,'source'),stage,{recursive:true});
   for(const legacy of spec.additionalLegacyPins||[]){
-    assert(!legacy.installer&&['world','messenger'].includes(legacy.id)&&legacy.mode==='development'&&/^\d+\.\d+\.\d+$/.test(legacy.version)&&/^[a-f0-9]{64}$/.test(legacy.executableSHA256)&&/^[a-f0-9]{64}$/.test(legacy.asarSHA256),'Invalid reviewed legacy pin');
+    assert(!legacy.installer&&BUNDLED_CHILDREN.includes(legacy.id)&&legacy.mode==='development'&&/^\d+\.\d+\.\d+$/.test(legacy.version)&&/^[a-f0-9]{64}$/.test(legacy.executableSHA256)&&/^[a-f0-9]{64}$/.test(legacy.asarSHA256),'Invalid reviewed legacy pin');
     if(legacy.platform!==platform||legacy.arch!==arch)continue;
     const same=runtime.releases.find(row=>row.id===legacy.id&&row.version===legacy.version);
     assert(!same||same.executableSHA256===legacy.executableSHA256&&same.asarSHA256===legacy.asarSHA256,'Conflicting existing approval for '+legacy.id+' '+legacy.version);
@@ -81,7 +91,7 @@ async function buildTarget(options){
     if(options.electronChecksums){const name='electron-v'+spec.electronVersion+'-win32-x64.zip',line=fs.readFileSync(options.electronChecksums,'utf8').split(/\r?\n/).find(row=>row.endsWith(' '+name)||row.endsWith(' *'+name));assert(line,'Electron official checksum missing');const expected=line.split(/\s+/)[0],cache=path.join(process.env.LOCALAPPDATA,'electron/Cache'),zips=fs.readdirSync(cache).map(dir=>path.join(cache,dir,name)).filter(file=>fs.existsSync(file));assert(zips.length&&zips.every(file=>sha(file)===expected),'Cached Electron checksum mismatch');config.electronDownload={isVerifyChecksum:false};}
   }else{
     const background=path.resolve(options.background||path.join(builder,'mac-dmg-signal/background.png'));assert(fs.existsSync(background),'Signal background required');
-    config.mac={target:[{target:'dmg',arch:[arch]}],icon:path.join(stage,'assets/platform.icns'),category:'public.app-category.productivity',minimumSystemVersion:'13.0',identity:'-',hardenedRuntime:false,preAutoEntitlements:false,gatekeeperAssess:false,strictVerify:true,notarize:false,signIgnore:['/Contents/Resources/clients/(world|messenger)\\.dmg$']};
+    config.mac={target:[{target:'dmg',arch:[arch]}],icon:path.join(stage,'assets/platform.icns'),category:'public.app-category.productivity',minimumSystemVersion:'13.0',identity:'-',hardenedRuntime:false,preAutoEntitlements:false,gatekeeperAssess:false,strictVerify:true,notarize:false,signIgnore:['/Contents/Resources/clients/world\\.dmg$']};
     config.dmg={format:'UDZO',sign:false,writeUpdateInfo:false,title:'SYNK Platform Preview '+spec.version+' '+arch,background,icon:path.join(stage,'assets/platform.icns'),window:{width:660,height:448},iconSize:112,iconTextSize:13,contents:[{x:180,y:200,type:'file'},{x:480,y:200,type:'link',path:'/Applications'}]};
     if(arch==='x64')config.afterPack=context=>{const source=path.join(builder,'native-libs/x64'),provenance=JSON.parse(fs.readFileSync(path.join(source,'provenance.json'))),library=path.join(source,'libvulkan.dylib');assert(sha(library)===provenance.sha256,'Intel graphics loader mismatch');const app=path.join(context.appOutDir,'SYNKPlatformPreview.app');fs.copyFileSync(library,path.join(app,'Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libvulkan.dylib'));const notices=path.join(app,'Contents/Resources/Vulkan-Loader');fs.mkdirSync(notices,{recursive:true});for(const name of ['provenance.json','Vulkan-Loader-LICENSE.txt','LICENSES'])fs.cpSync(path.join(source,name),path.join(notices,name),{recursive:true});};
   }
@@ -122,4 +132,4 @@ async function buildTarget(options){
   const report={ok:true,schemaVersion:1,product:'platform',channel:spec.channel,version:spec.version,releaseId:spec.releaseId,buildId:spec.buildId,builtAt:new Date().toISOString(),sourceHash:spec.sourceHash,artifact:descriptor,artifactFile:artifact,memberCount,bundled:children.map(child=>({id:child.id,version:child.version,platform:child.platform,arch:child.arch,installer:child.installer,asarSHA256:child.asarSHA256})),metadata,unsignedPreview:platform==='win32',adHocSigned:platform==='darwin',notarized:false,installedStateTouched:false,published:false};json(path.join(out,'build-report.json'),report);json(path.join(out,'artifact.json'),descriptor);fs.writeFileSync(path.join(out,'SHA256SUMS.txt'),descriptor.sha256+'  '+path.basename(artifact)+'\n');validateSnapshot(root);return report;
 }
 if(require.main===module){const options={};for(const arg of process.argv.slice(2)){const match=/^--([a-z-]+)=(.+)$/.exec(arg);assert(match,'Unsupported argument');options[match[1].replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())]=match[2];}buildTarget(options).then(report=>console.log(JSON.stringify(report))).catch(error=>{console.error(error.stack);process.exitCode=1;});}
-module.exports={buildTarget,validateSnapshot,verifyArchive,verifySignalPackage,removeRetiredAuthClients,sha,command};
+module.exports={buildTarget,validateSnapshot,verifyArchive,verifySignalPackage,removeRetiredAuthClients,selectBundledChildren,BUNDLED_CHILDREN,sha,command};

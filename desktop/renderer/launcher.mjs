@@ -1,4 +1,4 @@
-import {clientRows,primaryAction} from './state.mjs';
+import {clientRows} from './state.mjs';
 import {createPlatformPersonalization,PERSONAL_KEY,PLATFORM_SCOPE} from './personalization.mjs';
 import {resolveLibrary,accountStorageKey,displayLibraryAppIds} from './library.mjs';
 import {mountConvenience} from './convenience.mjs';
@@ -15,7 +15,7 @@ const $=id=>document.getElementById(id),bridge=globalThis.synkDesktop;
 const localStore={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)};
 let auth={status:bridge?'restoring':'unconfigured',configured:false,signedIn:false},library=resolveLibrary(auth),authRevision=0,ownerEpoch=0;
 let personal=createPersonal();
-let clients=clientRows([],{native:!!bridge}),environment=null,view=null,busy=new Set(),toastTimer,toastSeq=0,environmentRevision=0,leaveDecision=null;
+let clients=clientRows([],{native:!!bridge}),environment=null,view=null,toastTimer,toastSeq=0,environmentRevision=0,leaveDecision=null;
 let convenience=null,portalHost=null,signUpPending=false,signOutPending=false,signInLanding=false;
 // Screens register their account-change reset, render and draft hooks here.
 // ownerEpoch mirrors the registry's ownership generation so every existing guard keeps reading one variable.
@@ -33,7 +33,6 @@ function openAccount(){if(bridge&&auth.signedIn){showView('account');return;}if(
 // Account lifecycle participants. Registration order is the order every phase runs in: identity updates,
 // resets after an account change, renders, unsaved-draft checks (first hit wins), discards and flushes.
 accountLifecycle.register('personalization',{render:()=>applyPersonalization()});
-accountLifecycle.register('commands',{onAccountChange:()=>{busy=new Set();}});
 accountLifecycle.register('dialogs-and-toast',{onAccountChange:({ownerChanged})=>{
   if($('leave-dialog').open)$('leave-dialog').close('keep');
   // A notice belongs to the person it was said to: only a change of person clears it.
@@ -75,22 +74,19 @@ async function refreshAuth({reload=false}={}){
     const snapshot=await bridge.authStatus();if(revision===authRevision){setAuth(snapshot);return authRevision;}
   }catch{if(revision===authRevision){setAuth({...auth,library:{status:'unavailable',appIds:[]},error:{...auth.error,message:'앱 목록을 불러오지 못했습니다. 잠시 뒤 다시 해 주세요.'}});return authRevision;}}
 }
-function client(id){return clients.find(row=>row.id===id);}
-function getAppAction(id){const action=primaryAction(client(id),{native:!!bridge,busy:false});return busy.has(id)?{...action,disabled:true,pending:true}:action;}
-// 옛 내 계정의 「작업실 열기」. 설치된 Workspace 앱만 연다.
-// synk.im에는 Workspace 설치 파일을 받는 곳이 없어, 없을 때는 웹 계정 화면과 같은 말로 브라우저의 Workspace 주소를 안내한다(0.5.0 최종 검수 F5)
-async function launchWorkspace(){
-  const id='messenger';
-  if(!bridge||!allowed(id)){toast('이 계정에서는 Workspace를 열 수 없습니다.');return;}
-  // 여는 중에 다시 누르면 아무것도 하지 않는다. 앱 줄을 아직 못 읽었으면 「설치 안 됨」이 아니라 확인 중이라고 말한다(카본 검수 B1)
-  if(busy.has(id))return;
-  if(client(id)?.reason==='CHECKING'){toast('Workspace 설치 상태를 확인하는 중입니다. 잠시 뒤 다시 눌러 주세요.');return;}
-  const action=getAppAction(id);
-  if(action.disabled||action.action!=='launch'){toast('이 PC에 Workspace 앱이 설치돼 있지 않습니다. 회사에서 안내받은 Workspace 주소로 브라우저에서 열어 주세요.');return;}
-  const epoch=ownerEpoch;busy.add(id);
-  try{const result=await bridge.launch(id);if(epoch!==ownerEpoch)return;toast(result?.ok?'Workspace를 열었습니다.':'Workspace를 열지 못했습니다. 다시 눌러 보고, 계속 안 되면 회사에서 안내받은 Workspace 주소로 브라우저에서 열어 주세요.');}
-  catch{if(epoch===ownerEpoch)toast('Workspace를 열지 못했습니다. 잠시 뒤 다시 눌러 주세요.');}
-  finally{busy.delete(id);}
+// 옛 내 계정 화면의 「작업실 열기」. 트레이 줄처럼 플랫폼 창 안의 Workspace를 연다. 얼굴이 옛 화면을 닫고, 배정이 없으면 펼침에서 까닭을 말한다.
+// 따로 설치하는 Workspace 앱은 11-23에 거뒀다(4단계 구현 설계 14.1)
+function launchWorkspace(){
+  if(!bridge||!allowed('messenger')){toast('이 계정에서는 Workspace를 열 수 없습니다.');return;}
+  if(!desktopActions.size){toast('Workspace를 열지 못했습니다. 앱을 끄고 다시 열어 주세요.');return;}
+  for(const callback of [...desktopActions]){try{callback({type:'open-space',space:'workspace'});}catch{}}
+}
+// 얼굴이 받는 단축 동작. 본체가 보내는 것(트레이 줄)과 이 화면이 보내는 것(작업실 열기)이 같은 길로 간다
+const desktopActions=new Set();
+function subscribeDesktopAction(callback){
+  desktopActions.add(callback);
+  let off=null;try{off=typeof bridge?.onDesktopAction==='function'?bridge.onDesktopAction(callback):null;}catch{off=null;}
+  return ()=>{desktopActions.delete(callback);try{if(typeof off==='function')off();}catch{}};
 }
 function hasUnsavedDrafts(){return accountLifecycle.hasUnsavedDrafts();}
 // 쓰던 글 확인의 틀. 지금 얼굴에는 지킬 글이 없어 묻지 않고 넘어간다. 글을 쓰는 방이 생기면 그 방이 생명주기에 등록한다
@@ -265,7 +261,7 @@ try{
     root:$('portal-entry'),
     mountFace:mountOrbFace,
     // PC 쪽 옵션(설계 4절). 검사 실행 길은 본체가 열어 준 때만 열린다(설계 11절). embed는 창 안의 PULSE 뷰다(3단계 구현 설계 4절)
-    faceOptions:{orbBoot:typeof bridge?.orbBoot==='function'?()=>bridge.orbBoot():null,onFirstFrame:typeof bridge?.orbFirstFrame==='function'?()=>bridge.orbFirstFrame():null,onOpenLegacy:openOrbLegacy,onCloseLegacy:()=>hideAccount(),onSignOut:()=>signOut(),subscriptions:bridge?.subscriptions||null,solioBackup:bridge?.solioBackup||null,rooms:orbRoomOptions(),siteVisits:bridge?.siteVisits||null,snsHealth:bridge?.snsHealth||null,office:bridge?.office||null,embed:bridge?.pulseView||null,workspaceEmbed:bridge?.workspaceView||null,onDesktopAction:typeof bridge?.onDesktopAction==='function'?callback=>bridge.onDesktopAction(callback):null,allowGuestEntry:()=>environment?.qaGuestEntry===true,look:ORB_LOOK},
+    faceOptions:{orbBoot:typeof bridge?.orbBoot==='function'?()=>bridge.orbBoot():null,onFirstFrame:typeof bridge?.orbFirstFrame==='function'?()=>bridge.orbFirstFrame():null,onOpenLegacy:openOrbLegacy,onCloseLegacy:()=>hideAccount(),onSignOut:()=>signOut(),subscriptions:bridge?.subscriptions||null,solioBackup:bridge?.solioBackup||null,rooms:orbRoomOptions(),siteVisits:bridge?.siteVisits||null,snsHealth:bridge?.snsHealth||null,office:bridge?.office||null,embed:bridge?.pulseView||null,workspaceEmbed:bridge?.workspaceView||null,onDesktopAction:bridge?subscribeDesktopAction:null,allowGuestEntry:()=>environment?.qaGuestEntry===true,look:ORB_LOOK},
     hostElements:[document.querySelector('.launcher')].filter(Boolean),
     bridge,
     getAuth:()=>auth,

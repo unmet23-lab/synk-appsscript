@@ -51,6 +51,22 @@ test('unknown IDs, non-platform clients and absent channels never install or lau
   const absent=await fixture(t,{releases:[]});assert.equal((await absent.service.prepareClient('world')).code,'RELEASE_UNAVAILABLE');assert.equal((await absent.service.getClients()).find(c=>c.id==='world').installer.status,'unavailable');
   const production=await fixture(t,{mode:'release'});assert.equal((await production.service.prepareClient('world')).code,'RELEASE_UNAVAILABLE');
 });
+test('the retired Workspace app is never prepared, opened or launched even with an approved local installer (4단계 구현 설계 14절)',async t=>{
+  const root=await fs.mkdtemp(path.join(os.tmpdir(),'synk-lifecycle-retired-'));t.after(()=>fs.rm(root,{recursive:true,force:true}));
+  const source=Buffer.alloc(4096,7),relativePath='preview/win32/x64/messenger/SYNK Workspace Preview-0.3.0-win-x64.exe',packageRoot=path.join(root,'dist'),sourcePath=path.join(packageRoot,...relativePath.split('/'));
+  await fs.mkdir(path.dirname(sourcePath),{recursive:true});await fs.writeFile(sourcePath,source);
+  const release={id:'messenger',mode:'development',platform:'win32',arch:'x64',version:'0.3.0',executableSHA256:hash('exe'),asarSHA256:hash('asar'),installer:{relativePath,sha256:hash(source),bytes:source.length}};
+  const opened=[],spawned=[];
+  const service=createClientLifecycle({clientId:'platform',mode:'development',platform:'win32',arch:'x64',programRoot:path.join(root,'Programs'),packageRoot,cacheRoot:path.join(root,'cache'),releases:[release],spawn:file=>{spawned.push(file);throw Error('NO_PROCESS_ALLOWED');},openPath:async file=>{opened.push(file);return '';}});t.after(()=>service.dispose());
+  for(const method of ['prepareClient','cancelPreparation','openInstaller','launch'])assert.equal((await service[method]('messenger')).code,'RETIRED_CLIENT',method);
+  const row=(await service.getClients()).find(c=>c.id==='messenger');
+  assert.equal(row.status,'unavailable');assert.equal(row.reason,'RETIRED_CLIENT');assert.equal(row.canLaunch,false);assert.equal(row.installer.available,false);assert.equal(row.installer.canPrepare,false);
+  assert.deepEqual(await service.probe('messenger'),{id:'messenger',installed:false,reason:'RETIRED_CLIENT'});
+  assert.deepEqual(opened,[]);assert.deepEqual(spawned,[]);assert.deepEqual(await fs.readdir(root),['dist'],'no installer copy was made');
+  // 개발용 판 목록도 Workspace 설치 파일을 싣지 않는다
+  await fs.mkdir(path.join(root,'artifacts'));await fs.writeFile(path.join(root,'artifacts','client-releases.json'),JSON.stringify({version:1,approved:true,source:'verified-local-builds',releases:[release]}));
+  assert.deepEqual(loadDevelopmentReleases({root,platform:'win32',arch:'x64'}),[]);
+});
 test('missing or altered local installer reports an error without fake readiness',async t=>{
   const f=await fixture(t);await fs.writeFile(f.sourcePath,Buffer.alloc(f.release.installer.bytes,1));await f.service.prepareClient('world');
   assert.equal((await waitFor(f.service,'error')).installer.error,'PACKAGE_HASH_MISMATCH');assert.equal((await f.service.openInstaller('world')).code,'PACKAGE_NOT_READY');assert.equal(f.opened.length,0);

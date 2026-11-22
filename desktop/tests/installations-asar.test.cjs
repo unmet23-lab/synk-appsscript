@@ -14,7 +14,10 @@ async function electronProbe(){
     let patchedReadCode;try{await require('node:fs/promises').readFile(world.asar);}catch(error){patchedReadCode=error.code;}
     assert.equal(patchedReadCode,'ENOENT','the regression must exercise Electron ASAR virtualization');
     const before=await service.getClients();
-    for(const id of ['world','messenger']){const row=before.find(item=>item.id===id);assert.equal(row.status,'installed');assert.equal(row.canLaunch,true);}
+    {const row=before.find(item=>item.id==='world');assert.equal(row.status,'installed');assert.equal(row.canLaunch,true);}
+    // 거둔 Workspace 앱은 바르게 깔려 있어도 보지도 띄우지도 않는다(4단계 구현 설계 14절)
+    {const row=before.find(item=>item.id==='messenger');assert.equal(row.status,'unavailable');assert.equal(row.canLaunch,false);assert.equal(row.reason,'RETIRED_CLIENT');assert.equal(row.version,undefined);}
+    assert.equal((await service.launch('messenger')).code,'RETIRED_CLIENT');assert.deepEqual(await service.probe('messenger'),{id:'messenger',installed:false,reason:'RETIRED_CLIENT'});assert.equal(spawnAttempts.length,0);
     // A previous good list result must never authorize launch from cached hashes,
     // even for a replacement with identical size and restored modification time.
     const executableStat=await fs.stat(world.executable),replacement=Buffer.from(executable);replacement[0]^=1;
@@ -32,8 +35,8 @@ async function electronProbe(){
     const outside=path.join(root,'outside.asar');await fs.writeFile(outside,archive);
     const escaped=createInstallations({...options,realpath:async file=>file===world.asar?outside:fs.realpath(file)});
     assert.equal((await escaped.getClients()).find(item=>item.id==='world').reason,'INVALID_INSTALLATION');
-    const messenger=installationPaths('messenger',options);await fs.unlink(messenger.asar);assert.equal((await service.getClients()).find(item=>item.id==='messenger').reason,'NOT_INSTALLED');
-    assert.equal((await service.launch('messenger')).code,'NOT_INSTALLED');assert.equal(spawnAttempts.length,0);
+    await fs.unlink(world.executable);assert.equal((await service.getClients()).find(item=>item.id==='world').reason,'NOT_INSTALLED');
+    assert.equal((await service.launch('world')).code,'NOT_INSTALLED');assert.equal(spawnAttempts.length,0);
     assert.equal(BrowserWindow.getAllWindows().length,0);assert.notEqual(process.noAsar,true);
     await fs.writeFile(path.join(root,'result.json'),JSON.stringify({ok:true,electron:process.versions.electron,windowCount:0,patchedReadCode,installedIds:before.filter(item=>item.canLaunch).map(item=>item.id),tamperedExecutableRejected:true,tamperedArchiveRejected:true,wrongMetadataRejected:true,outsideRealpathRejected:true,missingArchiveRejected:true,freshLaunchVerification:true,sameSizeReplacementRejected:true,concurrentInspectionSafe:true,globalAsarSupportUnchanged:true}));app.exit(0);
   }catch(error){await fs.writeFile(path.join(root,'result.json'),JSON.stringify({ok:false,message:error.message,stack:error.stack}));app.exit(1);}
@@ -59,6 +62,6 @@ else {
     const child=spawn(require('electron'),[__filename,root],{env,windowsHide:true,stdio:['ignore','pipe','pipe'],timeout:15000});let output='';
     child.stdout.on('data',data=>output+=data);child.stderr.on('data',data=>output+=data);
     const code=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',resolve);});
-    const result=JSON.parse(await fs.readFile(path.join(root,'result.json'),'utf8'));assert.equal(code,0,result.stack||output);assert.equal(result.ok,true);assert.deepEqual(result.installedIds,['world','messenger']);assert.equal(result.windowCount,0);
+    const result=JSON.parse(await fs.readFile(path.join(root,'result.json'),'utf8'));assert.equal(code,0,result.stack||output);assert.equal(result.ok,true);assert.deepEqual(result.installedIds,['world']);assert.equal(result.windowCount,0);
   });
 }

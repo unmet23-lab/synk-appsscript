@@ -20,7 +20,8 @@ async function main(){
   const shot=async(name)=>{await pause(2200);const file=path.join(out,name+'.png');run('screencapture',['-x','-t','png',file]);assert(fs.statSync(file).size>10000,'Empty screenshot: '+name);report.screenshots.push({file:path.basename(file),bytes:fs.statSync(file).size,sha256:hash(file)});};
   const showFolder=folder=>osa(`tell application "Finder"\nactivate\nopen (POSIX file ${JSON.stringify(folder)} as alias)\nend tell`);
   try{
-    for(const client of ['platform','world','messenger']){
+    // 거둔 Workspace 앱은 싣지 않는다(4단계 구현 설계 14절)
+    for(const client of ['platform','world']){
       const item=manifest.packages.find(row=>row.client===client);assert(item?.installer,'Missing package '+client);const dmg=path.resolve(root,item.installer.path);assert(hash(dmg)===item.installer.sha256&&fs.statSync(dmg).size===item.installer.bytes,'DMG digest mismatch '+client);
       const mount=path.join(out,'mount-'+client);fs.mkdirSync(mount);run('hdiutil',['attach','-readonly','-nobrowse','-noautoopen','-mountpoint',mount,dmg]);mounts.push(mount);
       const apps=fs.readdirSync(mount).filter(name=>name.endsWith('.app'));assert(apps.length===1,'Expected one delivered app');const app=path.join(mount,apps[0]),info=path.join(app,'Contents/Info.plist');let iconName=run('plutil',['-extract','CFBundleIconFile','raw','-o','-',info]).trim();if(!iconName.endsWith('.icns'))iconName+='.icns';

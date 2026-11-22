@@ -1,10 +1,12 @@
 'use strict';
 // 검정 구 4단계 구현 설계 3.3: 플랫폼 창 안의 Workspace 뷰 preload. 회사 출처의 최상위 / 문서에만 window.synkDesktop의 일곱 이름을 준다.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const {installWorkspaceViewPreload,CHANNEL}=require('../src/workspace-view-preload.cjs');
-const {NATIVE_CHANNEL,WORKSPACE_VIEW_PRELOAD}=require('../src/workspace-app.cjs');
+const {installWorkspaceViewPreload,CHANNEL,TEACHER_CHANNEL}=require('../src/workspace-view-preload.cjs');
+const {NATIVE_CHANNEL,TEACHER_CHANNEL:MAIN_TEACHER_CHANNEL,WORKSPACE_VIEW_PRELOAD}=require('../src/workspace-app.cjs');
 
-const NAMES=['accountRequest','authCancelSignIn','authSignIn','authSignOut','authStatus','companyRequest','onAuthChanged'];
+// 회사 화면이 부르는 일곱 이름과 「내 수업」의 teacher 하나(4단계 구현 설계 14.3)
+const NAMES=['accountRequest','authCancelSignIn','authSignIn','authSignOut','authStatus','companyRequest','onAuthChanged','teacher'];
+const TEACHER_NAMES=['accountRequest','authCancelSignIn','authSignIn','authSignOut','authStatus','getEnvironment','onAuthChanged'];
 const OPERATIONS=['status','challenge','exchange','renew','logout'];
 function pageAt(href,{framed=false}={}){const win={location:{href}};win.top=framed?{location:{href:'https://workspace.synk.im/'}}:win;return win;}
 function rendererIpc(){
@@ -21,14 +23,32 @@ const refused={ok:false,error:{code:'INVALID_REQUEST',message:'회사 요청을 
 test('the preload is the one main loads into the view and uses main\'s channel names',()=>{
   assert.equal(WORKSPACE_VIEW_PRELOAD,path.join(__dirname,'..','src','workspace-view-preload.cjs'));
   assert.deepEqual(CHANNEL,NATIVE_CHANNEL);assert.equal(Object.isFrozen(CHANNEL),true);
+  assert.deepEqual(TEACHER_CHANNEL,MAIN_TEACHER_CHANNEL);assert.equal(Object.isFrozen(TEACHER_CHANNEL),true);
 });
-test('the company top document at / exposes exactly the seven names, frozen',()=>{
+test('the company top document at / exposes exactly the seven names and teacher, frozen',()=>{
   for(const href of ['https://workspace.synk.im/','https://workspace.synk.im/?tab=messenger','https://workspace.synk.im/?tab=social&section=inbox#x']){
     const {api,exposed}=install(href);
     assert.equal(exposed.length,1,href);assert.equal(exposed[0][0],'synkDesktop');assert.equal(exposed[0][1],api);
     assert.deepEqual(Object.keys(api).sort(),NAMES);assert.equal(Object.isFrozen(api),true);
-    for(const name of NAMES)assert.equal(typeof api[name],'function',name);
+    for(const name of NAMES.filter(name=>name!=='teacher'))assert.equal(typeof api[name],'function',name);
+    assert.deepEqual(Object.keys(api.teacher).sort(),TEACHER_NAMES);assert.equal(Object.isFrozen(api.teacher),true);
+    for(const name of TEACHER_NAMES)assert.equal(typeof api.teacher[name],'function','teacher.'+name);
   }
+});
+test('teacher (내 수업) sends classroom only with plain object params; its auth calls send their own channel with no page arguments',async()=>{
+  const {api,ipc}=install('https://workspace.synk.im/?tab=teaching');const t=api.teacher;
+  await t.accountRequest('classroom',{operation:'classes'});assert.deepEqual(ipc.invoked.at(-1),[TEACHER_CHANNEL.account,'classroom',{operation:'classes'}]);
+  await t.accountRequest('classroom');assert.deepEqual(ipc.invoked.at(-1),[TEACHER_CHANNEL.account,'classroom',{}],'no params is an empty object');
+  const sent=ipc.invoked.length;
+  for(const operation of ['load','CLASSROOM','revokeAll',undefined,null,{toString:()=>'classroom'}])assert.equal((await t.accountRequest(operation,{})).error.code,'INVALID_REQUEST',String(operation));
+  for(const params of [[],null,'x',5,()=>{}])assert.equal((await t.accountRequest('classroom',params)).error.code,'INVALID_REQUEST',String(params));
+  assert.equal(ipc.invoked.length,sent);
+  await t.getEnvironment('x');await t.authStatus('x');await t.authSignIn('x');await t.authCancelSignIn('x');await t.authSignOut('x');
+  assert.deepEqual(ipc.invoked.slice(-5),[[TEACHER_CHANNEL.environment],[TEACHER_CHANNEL.status],[TEACHER_CHANNEL.signIn],[TEACHER_CHANNEL.cancel],[TEACHER_CHANNEL.signOut]]);
+  for(const bad of [undefined,null,'f',{}])assert.throws(()=>t.onAuthChanged(bad),TypeError);
+  const seen=[];const off=t.onAuthChanged(value=>seen.push(value));
+  ipc.emit(TEACHER_CHANNEL.changed,{signedIn:true});ipc.emit(CHANNEL.changed,{signedIn:false});assert.deepEqual(seen,[{signedIn:true}],'only the teacher notices');
+  off();ipc.emit(TEACHER_CHANNEL.changed,{signedIn:false});assert.deepEqual(seen,[{signedIn:true}]);assert.equal(ipc.listeners.get(TEACHER_CHANNEL.changed).size,0);
 });
 test('a frame, another path, another origin, http or user info exposes nothing',()=>{
   const pages=[['https://workspace.synk.im/?tab=messenger',{framed:true}],['https://workspace.synk.im/messenger/'],['https://workspace.synk.im/messenger/?tab=messenger'],['https://workspace.synk.im/entry/'],
