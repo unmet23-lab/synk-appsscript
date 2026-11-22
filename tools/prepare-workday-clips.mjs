@@ -45,7 +45,7 @@ export function clipPlan(job) {
       for (const step of steps) {
         if (step.type === 'move') here = step.place;
         if (step.type === 'line') { if (step.place) here = step.place; add(step.clip, { kind: 'speaking', place: here, action: step.action === true, text: step.text, who: step.who }); }
-        if (step.type === 'say' || step.type === 'report') add(step.listen, { kind: 'listening', place: here, action: false, text: '', who: '' });
+        if (step.type === 'say' || step.type === 'report' || step.type === 'relay') add(step.listen, { kind: 'listening', place: here, action: false, text: '', who: '' });
         for (const option of step.options || []) walk(option.then, here);
         if (step.type === 'report') { walk(step.then.included, here); walk(step.then.omitted, here); }
       }

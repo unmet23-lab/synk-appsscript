@@ -6,7 +6,7 @@
  * (voice / text / example / unheard — the device could not make out the speech, which is never
  * counted against the learner). Name, reasons and reflections are never part of this data. */
 export const SESSION_DATA_VERSION = 2;
-export const SAY_MODES = Object.freeze(['voice', 'text', 'example', 'unheard']);
+export const SAY_MODES = Object.freeze(['voice', 'text', 'example', 'unheard', 'own-voice', 'own-text']);
 const clone = (value) => JSON.parse(JSON.stringify(value));
 // works: tool steps the learner handled (id → scene). The option picked lives in forks, so `when` can use it.
 const blankData = (job) => ({ v: SESSION_DATA_VERSION, job: job.id, edition: job.edition, forks: {}, forkScene: {}, scenes: {}, says: {}, works: {}, counts: { replays: 0, hints: 0, examples: 0 }, hinted: [], tour: { places: [], points: [] } });

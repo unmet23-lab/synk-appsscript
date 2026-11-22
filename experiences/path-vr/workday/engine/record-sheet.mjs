@@ -4,7 +4,7 @@
  * it still does not fit, it continues on a second sheet instead of becoming too small to read. */
 export const SHEET = Object.freeze({ width: 1654, height: 2339, margin: 130 });
 export const SHEET_FONT = '"PATH Sans UI", "PATH Sans Rest", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif';
-const INK = '#16181C', SOFT = '#5B5F66', LINE = '#C9C6BC', PAPER = '#FBFAF6', GREEN = '#526956';
+const INK = '#16181C', SOFT = '#5B5F66', LINE = '#C9C6BC', PAPER = '#FFFFFF', GREEN = '#526956';
 const SCALES = Object.freeze([1, 0.92, 0.85]);
 
 // Split by what a reader sees as one letter, so combining marks and emoji never break apart.

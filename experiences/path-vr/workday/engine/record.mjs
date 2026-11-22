@@ -106,7 +106,7 @@ export function recordLines(record) {
   ].filter((section) => section.rows.length);
   return {
     heading: `체험 기록 — ${record.job.title}`,
-    edition: `${record.job.role} · ${record.job.edition}`,
+    edition: `PATH 일터 체험 · ${record.job.role}`,
     meta: [record.name ? `이름 ${record.name}` : '', `체험한 날 ${record.issuedAt}`, `본 방식 ${record.view}`, record.speak ? `답한 방식 ${record.speak}` : ''].filter(Boolean),
     sections: sections.map((section, index) => ({ ...section, title: `${index + 1}. ${section.title}` })),
     notice: record.notice,

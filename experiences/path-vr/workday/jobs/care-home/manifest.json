@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "id": "workday-care-home",
-  "status": "making",
+  "status": "ready",
   "title": "요양보호사의 하루",
   "projection": "rectilinear-mono",
   "stereo": false,
   "source": {
-    "status": "making",
+    "status": "verified",
     "provider": "Google Flow",
     "model": "Omni 1.2 Flash",
     "generationDate": "2026-11-21",
@@ -21,7 +21,7 @@
       "status": "ready",
       "kind": "speaking",
       "audio": "native",
-      "reviewed": false,
+      "reviewed": true,
       "dialogue": "어서 와요. 오늘 첫 출근이죠? 저는 정미경이에요. 오늘 하루 같이 다닐 거예요.",
       "place": "office",
       "loop": false,
@@ -36,13 +36,779 @@
       "transition": {
         "headHoldMs": 744,
         "tailHoldMs": 429,
-        "validated": false
+        "validated": true
       },
       "still": {
         "outside": 4.29,
         "shift": 0
       },
       "brightnessTakenOut": 3.4
+    },
+    {
+      "id": "senior-listen-office",
+      "src": "clips/senior-listen-office.mp4",
+      "file": "clips/senior-listen-office.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "place": "office",
+      "loop": true,
+      "durationSeconds": 5,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 399791,
+      "sha256": "aecd95904e6900d8a25d38cbd44eb8ed3eb737e73bfaf03a7705fb4db9c2b2fc",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 250,
+        "validated": true
+      },
+      "still": {
+        "outside": 4.52,
+        "shift": 0
+      },
+      "brightnessTakenOut": 3.1
+    },
+    {
+      "id": "senior-assign",
+      "src": "clips/senior-assign.mp4",
+      "file": "clips/senior-assign.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "반가워요. 오늘은 햇살방을 맡아요. 김순자 어르신, 최옥분 어르신 두 분이에요.",
+      "place": "office",
+      "loop": false,
+      "durationSeconds": 8.04,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 782153,
+      "sha256": "ea0cf9eceb68f76573bbdb3fe22a3525a08719a4330aa8bc5c7166c01d18c41b",
+      "speechEndSeconds": 7.56,
+      "answerStartSeconds": 7.89,
+      "transition": {
+        "headHoldMs": 813,
+        "tailHoldMs": 478,
+        "validated": true
+      },
+      "still": {
+        "outside": 4.27,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.9
+    },
+    {
+      "id": "night-report-1",
+      "src": "clips/night-report-1.mp4",
+      "file": "clips/night-report-1.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "김순자 어르신은 밤에 두 번 깨셨어요. 아침 약은 간호사 선생님이 드려요.",
+      "place": "nurse-morning",
+      "loop": false,
+      "durationSeconds": 7.04,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 705549,
+      "sha256": "c869f75e92be62d6617b8e80e2ef36365550b0cec2591a19d06caefae33a1188",
+      "speechEndSeconds": 6.87,
+      "answerStartSeconds": 6.89,
+      "transition": {
+        "headHoldMs": 1153,
+        "tailHoldMs": 168,
+        "validated": true
+      },
+      "still": {
+        "outside": 5.1,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.7
+    },
+    {
+      "id": "night-report-2",
+      "src": "clips/night-report-2.mp4",
+      "file": "clips/night-report-2.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "식사는 다진 식으로 나가요. 왼쪽이 불편하시니까, 일어나실 때 잘 봐 주세요.",
+      "place": "nurse-morning",
+      "loop": false,
+      "durationSeconds": 7.04,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 716693,
+      "sha256": "b75411b3cb7f691f0c2afdc3f1d64b8482268f6e4948aa8ef855e1ea231d6598",
+      "speechEndSeconds": 6.54,
+      "answerStartSeconds": 6.89,
+      "transition": {
+        "headHoldMs": 396,
+        "tailHoldMs": 500,
+        "validated": true
+      },
+      "still": {
+        "outside": 5.07,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.9
+    },
+    {
+      "id": "night-listen",
+      "src": "clips/night-listen.mp4",
+      "file": "clips/night-listen.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "place": "nurse-morning",
+      "loop": true,
+      "durationSeconds": 5,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 415358,
+      "sha256": "7810a9fcd964b79315c42f1f6b4d32a6bedd8e13a1c5df6f6ff63483373bb06c",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 250,
+        "validated": true
+      },
+      "still": {
+        "outside": 4.83,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.8
+    },
+    {
+      "id": "night-explain",
+      "src": "clips/night-explain.mp4",
+      "file": "clips/night-explain.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "음식을 잘게 다져서 드리는 식사예요. 씹기 힘드신 분께 드려요. 물어봐 줘서 고마워요.",
+      "place": "nurse-morning",
+      "loop": false,
+      "durationSeconds": 8.04,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 789608,
+      "sha256": "ca2fcc7e411a6175ba19e66a06a8f53c1c887db7a11455e2085e8d863fb5c0c8",
+      "speechEndSeconds": 7.39,
+      "answerStartSeconds": 7.74,
+      "transition": {
+        "headHoldMs": 815,
+        "tailHoldMs": 653,
+        "validated": true
+      },
+      "still": {
+        "outside": 4.55,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.6
+    },
+    {
+      "id": "night-confirm",
+      "src": "clips/night-confirm.mp4",
+      "file": "clips/night-confirm.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "네, 맞아요. 그렇게 다시 말해 주니까 저도 마음이 놓여요.",
+      "place": "nurse-morning",
+      "loop": false,
+      "durationSeconds": 6.04,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 639765,
+      "sha256": "9406991695661b8211b62bf0c181d130c022a18fad0099513910b79f759748e4",
+      "speechEndSeconds": 5.4,
+      "answerStartSeconds": 5.75,
+      "transition": {
+        "headHoldMs": 840,
+        "tailHoldMs": 642,
+        "validated": true
+      },
+      "still": {
+        "outside": 5.17,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.8
+    },
+    {
+      "id": "night-pass",
+      "src": "clips/night-pass.mp4",
+      "file": "clips/night-pass.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "그래요. 모르는 말이 있으면 언제든 물어봐요.",
+      "place": "nurse-morning",
+      "loop": false,
+      "durationSeconds": 5.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 539908,
+      "sha256": "2f448ca31a8d5d222b37226263d0d5aab75f358f3d50ca99d09524f58e89f7a3",
+      "speechEndSeconds": 4.55,
+      "answerStartSeconds": 4.88,
+      "transition": {
+        "headHoldMs": 931,
+        "tailHoldMs": 481,
+        "validated": true
+      },
+      "still": {
+        "outside": 2.54,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.5
+    },
+    {
+      "id": "soonja-sleepy",
+      "src": "clips/soonja-sleepy.mp4",
+      "file": "clips/soonja-sleepy.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "아이고… 조금만 더 잘게. 간밤에 잠을 통 못 잤어.",
+      "place": "room-bed",
+      "loop": false,
+      "durationSeconds": 5.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 597759,
+      "sha256": "be63779190b126e5b2ab8d49919a52ed194d080656a1b0a308f975a8c69a5027",
+      "speechEndSeconds": 4.84,
+      "answerStartSeconds": 4.88,
+      "transition": {
+        "headHoldMs": 530,
+        "tailHoldMs": 194,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.03,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.4
+    },
+    {
+      "id": "soonja-listen-bed",
+      "src": "clips/soonja-listen-bed.mp4",
+      "file": "clips/soonja-listen-bed.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "place": "room-bed",
+      "loop": true,
+      "durationSeconds": 5,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 513314,
+      "sha256": "9facdb84f8826db16c8bd37fc9f39be8854710a086b45d8f47fd9688c2ec2430",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 250,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.22,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2
+    },
+    {
+      "id": "soonja-thanks",
+      "src": "clips/soonja-thanks.mp4",
+      "file": "clips/soonja-thanks.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "그래, 고마워. 조금만 더 누워 있을게.",
+      "place": "room-bed",
+      "loop": false,
+      "durationSeconds": 4.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 494502,
+      "sha256": "1e7a7f3ec314dddb6781592b70ef4733af51669d53beefc56e4a011c383788cc",
+      "speechEndSeconds": 3.66,
+      "answerStartSeconds": 3.88,
+      "transition": {
+        "headHoldMs": 442,
+        "tailHoldMs": 367,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.33,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.5
+    },
+    {
+      "id": "soonja-reluctant",
+      "src": "clips/soonja-reluctant.mp4",
+      "file": "clips/soonja-reluctant.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "…알았어, 알았어. 일어나면 되잖아.",
+      "place": "room-bed",
+      "loop": false,
+      "durationSeconds": 4.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 495949,
+      "sha256": "42967290270f8ee8a51caba6437b9149078a1b45c68d0ff23f5a82c0dbfbdda1",
+      "speechEndSeconds": 3.85,
+      "answerStartSeconds": 3.88,
+      "transition": {
+        "headHoldMs": 893,
+        "tailHoldMs": 186,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.2,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.1
+    },
+    {
+      "id": "soonja-slow",
+      "src": "clips/soonja-slow.mp4",
+      "file": "clips/soonja-slow.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "내가 숟가락질이 느려서… 기다리게 해서 미안해.",
+      "place": "room-table",
+      "loop": false,
+      "durationSeconds": 5.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 767467,
+      "sha256": "cfd7478e0faac2e9161c235b7a34df58b89029adc715594c390c53788d07e000",
+      "speechEndSeconds": 4.78,
+      "answerStartSeconds": 4.88,
+      "transition": {
+        "headHoldMs": 966,
+        "tailHoldMs": 251,
+        "validated": true
+      },
+      "still": {
+        "outside": 5.2,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.6
+    },
+    {
+      "id": "soonja-listen-table",
+      "src": "clips/soonja-listen-table.mp4",
+      "file": "clips/soonja-listen-table.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "place": "room-table",
+      "loop": true,
+      "durationSeconds": 5,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 613965,
+      "sha256": "da3ddbceffe3f724b6977ac3e85de0f1a83bcba821bee8f20eebd67fcf86ed05",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 250,
+        "validated": true
+      },
+      "still": {
+        "outside": 2.88,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.6
+    },
+    {
+      "id": "soonja-proud",
+      "src": "clips/soonja-proud.mp4",
+      "file": "clips/soonja-proud.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "고마워. 내 손으로 먹으니까 밥맛이 좋네.",
+      "place": "room-table",
+      "loop": false,
+      "durationSeconds": 5.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 732196,
+      "sha256": "60d7efd9887eb3bc149410f1d1a932e789662104d26bf468c0ee4f28f99aedec",
+      "speechEndSeconds": 4.47,
+      "answerStartSeconds": 4.82,
+      "transition": {
+        "headHoldMs": 741,
+        "tailHoldMs": 562,
+        "validated": true
+      },
+      "still": {
+        "outside": 5.04,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.7
+    },
+    {
+      "id": "soonja-hesitate",
+      "src": "clips/soonja-hesitate.mp4",
+      "file": "clips/soonja-hesitate.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "…아니야, 내가 할 수 있는데.",
+      "place": "room-table",
+      "loop": false,
+      "durationSeconds": 4.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 606333,
+      "sha256": "f5d5c1a1bf2023bd21eafa037596cbfe56dd4d427d9935c15b2afa7a2ef88d32",
+      "speechEndSeconds": 3.11,
+      "answerStartSeconds": 3.46,
+      "transition": {
+        "headHoldMs": 1337,
+        "tailHoldMs": 923,
+        "validated": true
+      },
+      "still": {
+        "outside": 5.07,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.6
+    },
+    {
+      "id": "okbun-home",
+      "src": "clips/okbun-home.mp4",
+      "file": "clips/okbun-home.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "나 이제 집에 가야 돼. 애들 저녁 해 줘야지. 문 좀 열어 줘.",
+      "place": "dining-okbun",
+      "loop": false,
+      "durationSeconds": 6.04,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 799288,
+      "sha256": "2f889af1f29baae28d1f7a0e3d48c33f913dff43a48f46cd7f9bbaa28668bcd1",
+      "speechEndSeconds": 5.73,
+      "answerStartSeconds": 5.89,
+      "transition": {
+        "headHoldMs": 535,
+        "tailHoldMs": 309,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.37,
+        "shift": 0
+      },
+      "brightnessTakenOut": 1.5
+    },
+    {
+      "id": "okbun-listen",
+      "src": "clips/okbun-listen.mp4",
+      "file": "clips/okbun-listen.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "place": "dining-okbun",
+      "loop": true,
+      "durationSeconds": 5,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 592504,
+      "sha256": "21bef6478c3e89649ca6218edc48c29919d376b965565116f537b5ac0b588a1d",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 250,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.65,
+        "shift": 0
+      },
+      "brightnessTakenOut": 1.6
+    },
+    {
+      "id": "okbun-story",
+      "src": "clips/okbun-story.mp4",
+      "file": "clips/okbun-story.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "우리 막내가 된장찌개를 제일 좋아해. 밥을 두 그릇씩 먹었어.",
+      "place": "dining-okbun",
+      "loop": false,
+      "durationSeconds": 6.04,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 827575,
+      "sha256": "2dcb4ff746ee47fe7796cc6187be82c7ca5a271e603b3e209e57a1fb5ef8a301",
+      "speechEndSeconds": 5.78,
+      "answerStartSeconds": 5.89,
+      "transition": {
+        "headHoldMs": 691,
+        "tailHoldMs": 255,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.31,
+        "shift": 0
+      },
+      "brightnessTakenOut": 1.9
+    },
+    {
+      "id": "okbun-upset",
+      "src": "clips/okbun-upset.mp4",
+      "file": "clips/okbun-upset.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": false,
+      "dialogue": "왜 못 가! 애들이 기다린단 말이야!",
+      "place": "dining-okbun",
+      "loop": false,
+      "durationSeconds": 4.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 608333,
+      "sha256": "2dcdf434fcd8bc25c838394a1c883cd1766399af5cbc3ef10096eee1a39d5edf",
+      "speechEndSeconds": 4.03,
+      "answerStartSeconds": 3.88,
+      "transition": {
+        "headHoldMs": 584,
+        "tailHoldMs": 0,
+        "validated": false
+      },
+      "still": {
+        "outside": 3.34,
+        "shift": 0
+      },
+      "brightnessTakenOut": 1.7
+    },
+    {
+      "id": "soonja-listen-dining",
+      "src": "clips/soonja-listen-dining.mp4",
+      "file": "clips/soonja-listen-dining.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "place": "dining-soonja",
+      "loop": true,
+      "durationSeconds": 5,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 526454,
+      "sha256": "6ceb02547dd7738a905fa47b781ef09ad11c13ea1fa937280771bd2f1ede50a7",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 250,
+        "validated": true
+      },
+      "still": {
+        "outside": 2.87,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.4
+    },
+    {
+      "id": "soonja-ok",
+      "src": "clips/soonja-ok.mp4",
+      "file": "clips/soonja-ok.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": false,
+      "dialogue": "괜찮아, 괜찮아. 조금 어지러웠어.",
+      "place": "dining-soonja",
+      "loop": false,
+      "durationSeconds": 4.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 607053,
+      "sha256": "f6ca98446c39b5f9081e9c389b2a9bc385764f04093db8ed8ed958d567560a21",
+      "speechEndSeconds": 4.03,
+      "answerStartSeconds": 3.88,
+      "transition": {
+        "headHoldMs": 745,
+        "tailHoldMs": 0,
+        "validated": false
+      },
+      "still": {
+        "outside": 4.73,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.7
+    },
+    {
+      "id": "senior-ask",
+      "src": "clips/senior-ask.mp4",
+      "file": "clips/senior-ask.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "오늘 하루 수고 많았어요. 두 분 어르신, 오늘 어떠셨어요? 본 대로 말해 줘요.",
+      "place": "nurse-evening",
+      "loop": false,
+      "durationSeconds": 7.04,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 702044,
+      "sha256": "542e4260a9da27ab7afbf5910c0e0492f80f30848c02139dedf43253a87fde0e",
+      "speechEndSeconds": 6.89,
+      "answerStartSeconds": 6.89,
+      "transition": {
+        "headHoldMs": 827,
+        "tailHoldMs": 153,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.2,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.2
+    },
+    {
+      "id": "senior-listen-nurse",
+      "src": "clips/senior-listen-nurse.mp4",
+      "file": "clips/senior-listen-nurse.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "place": "nurse-evening",
+      "loop": true,
+      "durationSeconds": 5,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 409229,
+      "sha256": "969f5e0ae05b2edbffba1d49a150da54556e7ecad7bdcfd5e7e9cdf09accfb20",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 250,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.02,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2
+    },
+    {
+      "id": "senior-thanks-report",
+      "src": "clips/senior-thanks-report.mp4",
+      "file": "clips/senior-thanks-report.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "비틀거리신 걸 말해 줘서 고마워요. 넘어지지 않으셔도 꼭 알려 줘야 해요. 다음에는 그 자리에서 바로 간호사 선생님께 말해 줘요.",
+      "place": "nurse-evening",
+      "loop": false,
+      "durationSeconds": 12.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 1189281,
+      "sha256": "e5f4c945dcc478d656f0389b67bd41f48dcb35ddbfb33e9508b976f72b865f4c",
+      "speechEndSeconds": 10.28,
+      "answerStartSeconds": 10.63,
+      "transition": {
+        "headHoldMs": 483,
+        "tailHoldMs": 1754,
+        "validated": true
+      },
+      "still": {
+        "outside": 3.64,
+        "shift": 0
+      },
+      "brightnessTakenOut": 1.6
+    },
+    {
+      "id": "senior-ask-stumble",
+      "src": "clips/senior-ask-stumble.mp4",
+      "file": "clips/senior-ask-stumble.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "김순자 어르신이 오후에 비틀거리셨다면서요. 넘어지지 않으셔도 꼭 알려야 해요. 다음에는 그 자리에서 바로 간호사 선생님께 말해 줘요.",
+      "place": "nurse-evening",
+      "loop": false,
+      "durationSeconds": 12.03,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "bytes": 1171382,
+      "sha256": "c01353e1f913558c0d3b977eb5f3de3d3c7a458d7f746bf4906d77a0da8ad51a",
+      "speechEndSeconds": 10.69,
+      "answerStartSeconds": 11.04,
+      "transition": {
+        "headHoldMs": 881,
+        "tailHoldMs": 1346,
+        "validated": true
+      },
+      "still": {
+        "outside": 2.81,
+        "shift": 0
+      },
+      "brightnessTakenOut": 2.2
     }
   ]
 }

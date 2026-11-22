@@ -7,6 +7,7 @@
   "summary": "요양원에서 어르신 두 분을 맡아 하루를 보내요. 건네는 말에 답하고, 갈림길에서 골라요.",
   "minutes": 15,
   "reviewNote": "장면과 대사는 요양 현장 전문가의 검토를 받기 전입니다.",
+  "reviewNoteScreen": "장면과 대사는 요양 현장 전문가의 검토를 받기 전이에요.",
   "hintLanguages": ["mn", "vi", "en"],
   "cast": {
     "senior": { "name": "정미경", "role": "선배 요양보호사" },

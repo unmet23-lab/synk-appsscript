@@ -133,6 +133,8 @@ test('a broken scene table is refused with a reason for each fault', () => {
     ['when uses another scene without requiring it', (job) => { job.scenes[4].requires = ['afternoon']; }, /requires에 morning/],
     ['requires names a later scene', (job) => { job.scenes[0].requires = ['evening']; }, /앞에 있는 장면/],
     ['alternatives do not cover every option', (job) => { job.scenes[4].steps[1].items[1].when = { wake: 'later' }; }, /보기마다 꼭 한 항목/],
+    ['empty screen review note', (job) => { job.reviewNoteScreen = ' '; }, /화면에 보일 검토 상태 글/],
+    ['screen review note without the record note', (job) => { delete job.reviewNote; }, /reviewNote를 함께/],
     ['an alternative without a condition', (job) => { delete job.scenes[4].steps[1].items[1].when; }, /같은 갈림길 하나/],
     ['fork missing from the closing', (job) => { job.closing.forks.pop(); }, /맺음에 없어요/],
     ['closing forks written as an object', (job) => { job.closing.forks = { handover: {} }; }, /배열이에요/],
@@ -411,6 +413,8 @@ test('the record lists what happened and never a score, grade or recommendation'
   const lines = recordLines(record);
   assert.equal(lines.sections.length, 5);
   assert.equal(lines.heading, '체험 기록 — 요양보호사의 하루');
+  // The second line names the service and the job, not the scene table's edition.
+  assert.equal(lines.edition, 'PATH 일터 체험 · 요양보호사');
   assert.equal(lines.sections[1].rows[0], '말로 답한 것 7번');
   assert.match(lines.serial, /^기록 번호\(본인 기기에서 만듦\) PW-/);
   const everything = JSON.stringify(lines);
@@ -559,7 +563,7 @@ test('only files the catalogue points at are served, and the styles keep still',
   assert.ok(!jobTexts(careHome).some((value) => /^[a-z0-9-]+$/.test(value) && ['senior', 'office', 'room'].includes(value)), 'plain ids stay out of the text list');
 });
 
-test('a tool step and a relay step run on data alone, and the sheet lists the tool without right or wrong', () => {
+test('a tool step and a relay step run on data alone, and the sheet lists the tool without right or wrong', async () => {
   const hint = { mn: 'туслах', vi: 'gợi ý', en: 'hint' };
   const job = fresh();
   job.cast.guest = { name: '바트', role: '손님' };
@@ -570,6 +574,10 @@ test('a tool step and a relay step run on data alone, and the sheet lists the to
     foreign: { mn: 'Нэмэлт хөнжил авч болох уу?', vi: 'Cho tôi thêm một cái chăn được không?', en: 'Could I have one more blanket?' },
     meaning: '담요를 하나 더 받고 싶대요.', prompt: '손님의 말을 선배에게 한국어로 전해요.', example: '선배님, 손님이 담요를 하나 더 받고 싶으시대요.' };
   job.scenes[0].steps.splice(1, 0, tool, relay);
+  relay.listen = 'guest-listen';
+  // The clip tool plans the guest's listening film too, so it is trimmed and listed like any other.
+  const { clipPlan } = await import('../../../tools/prepare-workday-clips.mjs');
+  assert.equal(clipPlan(job).get('guest-listen')?.kind, 'listening');
   // The day goes on from the pick: a later line appears only after the other room number was picked.
   job.scenes[0].steps.push({ type: 'line', who: 'senior', channel: 'phone', clip: 'room-call', hint, text: '아까 방 번호는 다시 확인했어요.', when: { 'find-room': 'r320' } });
   assert.deepEqual(validateJob(job).errors, [], 'a tool pick is not a value fork, so the closing does not list it');
@@ -743,6 +751,44 @@ test('a guest who speaks English to every learner is written once in English and
     const result = validateJob(copy);
     assert.ok(result.errors.some((error) => expected.test(error)), `${name}: ${result.errors.join(' | ')}`);
   }
+});
+
+test('scene-table holes found in review are closed, and an own-language answer survives a reload', () => {
+  const broken = [
+    ['a forbidden word allowed on its own', (copy) => { copy.allowedTerms = ['등급']; }, /allowedTerms: 「등급」/],
+    ['allowed terms that are not a list of words', (copy) => { copy.allowedTerms = '요양등급'; }, /allowedTerms: 허용하는 낱말은/],
+    ['a next link through a backslash', (copy) => { copy.closing.next = { label: '다음', href: '/\\evil.com' }; }, /closing\.next/],
+    ['a next link with a hidden scheme', (copy) => { copy.closing.next = { label: '다음', href: 'java\tscript:alert(1)' }; }, /closing\.next/],
+    ['an empty note', (copy) => { copy.notes = { ...copy.notes, empty: { title: '빈 글', body: [] } }; }, /notes\.empty: body는 글이 한 줄 이상/],
+    ['notes that are not an object', (copy) => { copy.notes = []; }, /notes: 알림 글 목록은/],
+    ['a condition item id of the wrong form', (copy) => { copy.closing.conditions.items[0].id = 'Pay Day'; }, /closing\.conditions\.items\[0\]: id는/],
+  ];
+  for (const [name, breakIt, expected] of broken) {
+    const copy = fresh(); breakIt(copy);
+    const result = validateJob(copy);
+    assert.ok(result.errors.some((error) => expected.test(error)), `${name}: ${result.errors.join(' | ')}`);
+  }
+  // A report keeps two items whatever was chosen before: a lone conditional item does not count.
+  const report = fresh(), step = report.scenes.flatMap((scene) => scene.steps).find((item) => item.type === 'report');
+  const key = step.items.find((item) => item.key === true && item.when === undefined);
+  const fork = Object.keys(step.items.find((item) => item.when)?.when || {})[0];
+  assert.ok(key && fork, 'the care-home report has a key item and a conditional one');
+  const option = step.items.find((item) => item.when)?.when[fork];
+  step.items = [key, { id: 'extra', text: '더 한 일', hint: key.hint, when: { [fork]: Array.isArray(option) ? option[0] : option } }];
+  assert.ok(validateJob(report).errors.some((error) => /늘 보이는 보고할 일이 둘 이상/.test(error)));
+
+  // relay out: an answer in the learner's own language is kept when the page is opened again.
+  const job = fresh();
+  job.cast.guest = { name: '바트', role: '손님' };
+  const hint = { mn: 'туслах', vi: 'gợi ý', en: 'hint' };
+  job.scenes[0].steps.splice(1, 0, { type: 'relay', direction: 'out', id: 'tell-guest', who: 'guest', record: '손님께 전하는 차례', hint,
+    meaning: '십 분 안에 간대요.', prompt: '손님께 내 나라 말로 전해요.', foreign: { mn: 'Арван минутад ирнэ.', vi: 'Mười phút nữa sẽ đến.', en: 'Someone will come in ten minutes.' } });
+  assert.deepEqual(validateJob(job).errors, []);
+  const first = createWorkdaySession(job);
+  first.startScene('arrival'); first.advance();
+  first.submitSay({ mode: 'own-voice' });
+  const again = createWorkdaySession(job, { saved: first.serialize() });
+  assert.equal(again.serialize().says['tell-guest']?.produced, 'own-voice');
 });
 
 test('a tool pick off the mark comes back for another try, and closing items carry hints', () => {

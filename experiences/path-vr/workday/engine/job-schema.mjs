@@ -31,6 +31,8 @@ function check(job, manifest, fail) {
   for (const key of ['edition', 'title', 'role', 'summary']) if (!text(job[key])) fail(key, '빈 글이에요.');
   if (!(Number.isFinite(job.minutes) && job.minutes > 0)) fail('minutes', '걸리는 분을 숫자로 적어요.');
   if (job.reviewNote !== undefined && !text(job.reviewNote)) fail('reviewNote', '검토 상태 글이 비었어요.');
+  if (job.reviewNoteScreen !== undefined && !text(job.reviewNoteScreen)) fail('reviewNoteScreen', '화면에 보일 검토 상태 글이 비었어요.');
+  if (job.reviewNoteScreen !== undefined && job.reviewNote === undefined) fail('reviewNoteScreen', '기록에 들어갈 reviewNote를 함께 적어요.');
   const languages = list(job.hintLanguages);
   if (!Array.isArray(job.hintLanguages) || languages.some((code) => !/^[a-z]{2}$/.test(code)) || new Set(languages).size !== languages.length) fail('hintLanguages', '두 글자 언어 코드를 겹치지 않게 적어요.');
   const hinted = (where, hint) => {
@@ -56,11 +58,13 @@ function check(job, manifest, fail) {
   const spoken = (who) => (typeof cast[who]?.language === 'string' ? [cast[who].language] : everyLanguage);
   const places = plain(job.places) ? job.places : {};
   if (!plain(job.places) || !Object.keys(places).length) fail('places', '자리가 없어요.');
+  if (job.notes !== undefined && !plain(job.notes)) fail('notes', '알림 글 목록은 id와 글의 짝이에요.');
   const notes = plain(job.notes) ? job.notes : {};
   for (const [id, note] of Object.entries(notes)) {
     if (!ID.test(id) || !text(note?.title)) fail(`notes.${id}`, '제목이 필요해요.');
-    if (!Array.isArray(note?.body) && !Array.isArray(note?.rows)) fail(`notes.${id}`, 'body나 rows가 필요해요.');
-    if (list(note?.body).some((row) => !text(row)) || list(note?.rows).some((row) => !Array.isArray(row) || row.length !== 2 || !row.every(text))) fail(`notes.${id}`, 'body는 글, rows는 글 두 칸의 줄이에요.');
+    if (note?.body === undefined && note?.rows === undefined) fail(`notes.${id}`, 'body나 rows가 필요해요.');
+    if (note?.body !== undefined && (!Array.isArray(note.body) || !note.body.length || note.body.some((row) => !text(row)))) fail(`notes.${id}`, 'body는 글이 한 줄 이상인 배열이에요.');
+    if (note?.rows !== undefined && (!Array.isArray(note.rows) || !note.rows.length || note.rows.some((row) => !Array.isArray(row) || row.length !== 2 || !row.every(text)))) fail(`notes.${id}`, 'rows는 글 두 칸의 줄이 한 줄 이상인 배열이에요.');
     hinted(`notes.${id}`, note?.hint);
   }
   for (const [id, place] of Object.entries(places)) {
@@ -234,6 +238,11 @@ function check(job, manifest, fail) {
         hinted(at, item?.hint);
         when(at, item?.when);
       }
+      // Whatever was chosen before, two items or more stay on the list: an id counts when one of its items has no
+      // condition, or when its alternatives (checked below) cover every option. A lone conditional item may be missing.
+      const ids = [...new Set(items.map((item) => item?.id))];
+      const always = ids.filter((id) => { const group = items.filter((item) => item?.id === id); return group.length > 1 || group.some((item) => item?.when === undefined); });
+      if (items.length >= 2 && always.length < 2) fail(where, '앞의 고름과 상관없이 늘 보이는 보고할 일이 둘 이상 필요해요.');
       // Items sharing an id are alternatives: every earlier choice must show exactly one of them.
       for (const id of new Set(items.map((item) => item?.id))) {
         const group = items.filter((item) => item?.id === id);
@@ -303,7 +312,10 @@ function check(job, manifest, fail) {
     const conditions = closing.conditions;
     if (!text(conditions?.lead) || !Array.isArray(conditions?.items) || !conditions.items.length || conditions.items.some((item) => !text(item?.title) || !text(item?.body))) fail('closing.conditions', '실제 조건의 첫 글과 항목이 필요해요.');
     // The closing is what a learner decides on: each item may carry a hint, always shown in the chosen language.
-    list(conditions?.items).forEach((item, index) => { if (item?.hint !== undefined) hinted(`closing.conditions.items[${index}]`, item.hint); });
+    list(conditions?.items).forEach((item, index) => {
+      if (item?.id !== undefined && !ID.test(item.id)) fail(`closing.conditions.items[${index}]`, 'id는 소문자, 숫자, 하이픈으로 적어요.');
+      if (item?.hint !== undefined) hinted(`closing.conditions.items[${index}]`, item.hint);
+    });
     const reflection = closing.reflection;
     const decisions = list(reflection?.decisions);
     if (!text(reflection?.hardLabel) || !text(reflection?.decisionLabel) || decisions.length !== 3 || decisions.some((item) => !ID.test(item?.id || '') || !text(item?.label))) fail('closing.reflection', '소감 물음과 세 가지 답이 필요해요.');
@@ -311,10 +323,13 @@ function check(job, manifest, fail) {
     const ladder = closing.ladder;
     if (!text(ladder?.lead) || !Array.isArray(ladder?.items) || !ladder.items.length || ladder.items.some((item) => !ID.test(item?.id || '') || !text(item?.label))) fail('closing.ladder', '준비 사다리 항목이 필요해요.');
     for (const item of list(ladder?.items)) if (item?.hint !== undefined) hinted(`closing.ladder.items.${item?.id}`, item.hint);
-    if (closing.next !== undefined && (!text(closing.next?.label) || !text(closing.next?.href) || closing.next.href !== closing.next.href.trim() || /^[a-z]+:|^\/\//i.test(closing.next.href))) fail('closing.next', '다음 칸은 같은 사이트 안의 상대 주소여야 해요.');
+    if (closing.next !== undefined && (!text(closing.next?.label) || !text(closing.next?.href) || /^[a-z][a-z0-9+.-]*:|^\/\/|\\|[\u0000-\u0020\u007f]/i.test(closing.next.href))) fail('closing.next', '다음 칸은 같은 사이트 안의 상대 주소여야 해요.');
   }
   // Nothing a learner reads may sound like a grade or a recommendation.
-  const allowed = list(job.allowedTerms).filter(text);
+  if (job.allowedTerms !== undefined && (!Array.isArray(job.allowedTerms) || job.allowedTerms.some((term) => !text(term)))) fail('allowedTerms', '허용하는 낱말은 글의 배열이에요.');
+  const whole = (term) => text(term) && FORBIDDEN_RECORD_WORDS.some((word) => term.includes(word) && term.trim().length > word.length) && !FORBIDDEN_RECORD_WORDS.includes(term.trim());
+  for (const term of list(job.allowedTerms).filter(text)) if (!whole(term)) fail('allowedTerms', `「${term}」는 금지 낱말을 품은 일터 용어 전체로 적어요.`);
+  const allowed = list(job.allowedTerms).filter(whole);
   for (const value of jobTexts(job)) {
     const bare = allowed.reduce((rest, term) => rest.split(term).join(' '), value);
     for (const word of FORBIDDEN_RECORD_WORDS) if (bare.includes(word)) fail('글', `「${word}」를 쓰지 않아요: ${value}`);
@@ -328,7 +343,7 @@ function check(job, manifest, fail) {
 export function jobTexts(job) {
   const out = [], references = new Set(['id', 'photo', 'audio', 'clip', 'listen', 'who', 'place', 'home', 'note', 'principle', 'href', 'type', 'hintLanguages', 'board', 'requires', 'when']);
   const walk = (value, key) => {
-    if (key === 'allowedTerms') return;
+    if (key === 'allowedTerms' || key === 'when') return;
     if (typeof value === 'string') { if (!references.has(key) || /[^\x20-\x7e]/.test(value)) out.push(value); }
     else if (Array.isArray(value)) value.forEach((item) => walk(item, key));
     else if (plain(value)) for (const [name, item] of Object.entries(value)) walk(item, name);

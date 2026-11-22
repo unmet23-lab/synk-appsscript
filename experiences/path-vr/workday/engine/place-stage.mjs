@@ -173,7 +173,7 @@ export async function buildWorkdayStage({ mount, getFrameState = () => [], getSt
   fade.renderOrder = 999; fade.visible = false; scene.add(fade);
 
   const raycaster = new THREE.Raycaster(), rotation = new THREE.Matrix4();
-  const pointerMaterial = keep(new THREE.LineBasicMaterial({ color: 0xb6c7b0, transparent: true, opacity: 0.55 }));
+  const pointerMaterial = keep(new THREE.LineBasicMaterial({ color: 0xb6c7b0, transparent: true, opacity: 0.55, depthTest: false, depthWrite: false }));
   const pointerGeometry = keep(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -1)]));
   const videoTextures = new Map();
   let running = false, previewing = false, firstFrame = true, disposed = false, lastSelect = 0, lastHudKey = '', lastPointKey = '';
@@ -250,7 +250,7 @@ export async function buildWorkdayStage({ mount, getFrameState = () => [], getSt
   }
   const controllers = [0, 1].map((index) => {
     const controller = renderer.xr.getController(index);
-    const line = new THREE.Line(pointerGeometry, pointerMaterial); line.scale.z = 4; controller.add(line); scene.add(controller);
+    const line = new THREE.Line(pointerGeometry, pointerMaterial); line.scale.z = 4; line.renderOrder = 1001; controller.add(line); scene.add(controller);
     const select = () => {
       const now = performance.now();
       if (!running || previewing || now - lastSelect < 250) return;

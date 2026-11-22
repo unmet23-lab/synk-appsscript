@@ -28,7 +28,7 @@ const jobId = new URLSearchParams(location.search).get('job') || '';
 
 let job = null, session = null, jobBase = null, manifest = null, film = null, readyClips = new Set();
 let mode = 'text', hintLanguage = '', closingForm = { name: '', hard: '', decision: '', reasons: {}, ladder: {}, serial: '' };
-let voice = null, preparingVoice = false, checkingMic = false, microphoneReady = false, micActive = false, micLevel = 0, micPeak = 0, heard = '', micNote = '';
+let micWanted = false, voice = null, preparingVoice = false, checkingMic = false, microphoneReady = false, micActive = false, micLevel = 0, micPeak = 0, heard = '', micNote = '';
 let epoch = 0, busy = false, moving = false, lineDone = false, replaying = false, hintShown = false, shownSerial = -1, lastTick = performance.now();
 let fade = { from: 0, to: 0, start: 0 }, vr = null, stageRef = null, vrChecked = false, vrSupported = false, vrEnteredAt = 0, vrScenes = 0, questFirstVisit = false, usedQuest = false;
 let filmOff = false, unheard = false, placeNote = '', loadError = '', held = false, transcribing = false, notePage = { key: '', index: 0 };
@@ -145,7 +145,7 @@ function retryFilm() {
   filmOff = false; film?.dispose(); film = null;
   const state = session.snapshot();
   if (state.phase === 'line' && !state.paused && canPlay(state.line.clip)) void playLine(state, epoch).catch(report);
-  else if (state.phase === 'say' && !state.paused) void startListening(state);
+  else if (state.phase === 'say' && !state.paused) { if (state.say?.listen && canPlay(state.say.listen)) ensureFilm(); void startListening(state); }
   render();
 }
 function clipEnded(id) {
@@ -159,7 +159,7 @@ function finishLine() {
   void drive(token).catch(report);
 }
 async function playLine(state, token) {
-  lineDone = false; hintShown = false; heard = ''; render();
+  replaying = false; lineDone = false; hintShown = false; heard = ''; render();
   const id = state.line.clip;
   if (!canPlay(id)) { film?.pause(); lineDone = true; render(); return; }
   try { await ensureFilm().play(id); guard(token); }
@@ -291,7 +291,7 @@ async function checkMicrophone() {
   } catch (error) { $('voice-status').textContent = voiceError(error).message; }
   finally { checkingMic = false; heard = ''; render(); }
 }
-function stopMic() { if (micActive) { micActive = false; silence.reset(); gateState = 'waiting'; void voice?.stop().catch(() => {}); } }
+function stopMic() { micWanted = false; if (micActive) { micActive = false; silence.reset(); gateState = 'waiting'; void voice?.stop().catch(() => {}); } }
 async function toggleMic() {
   const state = session.snapshot();
   if (state.phase !== 'say' || state.paused || !state.say.ready || busy) return;
@@ -299,8 +299,13 @@ async function toggleMic() {
   if (!micActive) {
     if (!voice?.ready) { micNote = '말로 답하려면 먼저 시작 화면에서 「한국어 음성 준비」를 눌러 주세요. 지금은 글로 답할 수 있어요.'; mode = vr?.active ? mode : 'text'; render(); return; }
     heard = ''; micNote = ''; unheard = false; busy = true; render();
-    try { await getVoice().start(); guard(token); silence.reset(); gateState = 'waiting'; micActive = true; }
-    catch (error) { if (current(token)) micNote = voiceError(error).message; }
+    micWanted = true;
+    try {
+      await getVoice().start();
+      // Paused, left or wiped while the microphone was starting: close it again instead of listening.
+      if (!current(token) || !micWanted || session.snapshot().paused) { void voice?.stop().catch(() => {}); throw abortError(); }
+      silence.reset(); gateState = 'waiting'; micActive = true;
+    } catch (error) { if (current(token) && micWanted && error?.name !== 'AbortError') micNote = voiceError(error).message; }
     busy = false; render(); return;
   }
   const spoke = silence.heardSpeech();
@@ -319,7 +324,7 @@ async function toggleMic() {
 }
 function submit(kind, text = '') {
   if (!session.canSubmit(kind, text)) return;
-  const token = ++epoch; stopMic();
+  const token = ++epoch; stopMic(); replaying = false;
   film?.cancelQueued();
   session.submitSay({ mode: kind, text }); save();
   void drive(token).catch(report);
@@ -346,9 +351,9 @@ async function action(name) {
       if (state.phase === 'scene-end') return nextScene();
       return;
     }
-    if (kind === 'opt') { stopMic(); session.choose(id); hintShown = false; return render(); }
-    if (kind === 'work') { const token = ++epoch; stopMic(); session.choose(id); hintShown = false; save(); return void drive(token).catch(report); }
-    if (kind === 'item') { session.toggleItem(id); return render(); }
+    if (kind === 'opt') { stopMic(); session.choose(id); hintShown = false; unheard = false; micNote = ''; heard = ''; return render(); }
+    if (kind === 'work') { const token = ++epoch; stopMic(); replaying = false; session.choose(id); hintShown = false; save(); return void drive(token).catch(report); }
+    if (kind === 'item') { stopMic(); session.toggleItem(id); return render(); }
     if (kind === 'example') { session.openExample(); save(); return render(); }
     if (kind === 'use-example') return submit('example');
     if (kind === 'skip-unheard') return unheard ? submit('unheard') : undefined;
@@ -422,6 +427,8 @@ function leave() {
 const hintOf = (value) => (hintLanguage && value?.[hintLanguage]) || '';
 const TOOL_NAMES = Object.freeze({ screen: '업무 화면', paper: '서류', phone: '전화', chat: '채팅' });
 const CHANNEL_NAMES = Object.freeze({ phone: '전화', chat: '채팅' });
+/** 「님께」 after a name, or only 「께」 when it already ends in 님 (「1208호 손님께」). */
+const honorTo = (name) => (/님$/.test(String(name || '').trim()) ? '께' : '님께');
 /** relay out: Korean words said on to a guest in the learner's own language. Nothing is transcribed. */
 const outward = (say) => say?.kind === 'relay' && say.direction === 'out';
 /** The example a turn offers: Korean, or for relay out the same words in the learner's language. */
@@ -468,7 +475,7 @@ function fillStatic() {
   document.title = `SYNK PATH · ${job.title}`;
   setText('job-role', job.role); setText('job-title-main', job.title); setText('job-summary', job.summary);
   setText('gauge-scenes', String(job.scenes.length)); setText('gauge-minutes', String(job.minutes));
-  setText('review-note', job.reviewNote || ''); $('review-note').hidden = !job.reviewNote;
+  const screenNote = job.reviewNoteScreen || job.reviewNote || ''; setText('review-note', screenNote); $('review-note').hidden = !screenNote;
   $('in-app-note').hidden = !IN_APP;
   const select = $('hint-language');
   for (const code of job.hintLanguages) { const option = document.createElement('option'); option.value = code; option.textContent = LANGUAGE_NAMES[code] || code; select.append(option); }
@@ -508,7 +515,7 @@ function render() {
     node.setAttribute('aria-label', `장면 ${index + 1} ${scene.title}${scene.done ? ' · 마침' : ''}${waits ? ` · ${waits}` : ''}`);
     if (waits) node.title = waits;
     item.append(node); return item;
-  }), (() => { const item = document.createElement('li'); item.className = `last${state.phase === 'closing' ? ' now' : ''}`; const node = button('맺음', () => openClosing()); node.disabled = active || !state.progress.anyDone; item.append(node); return item; })()]);
+  }), (() => { const item = document.createElement('li'); item.className = `last${state.phase === 'closing' ? ' now' : ''}`; const node = button('맺음', () => openClosing()); node.disabled = active || !state.progress.anyDone || checkingMic; item.append(node); return item; })()]);
   setText('scene-chip', state.scene ? `장면 ${state.scene.index + 1} / ${state.scene.total} · ${state.scene.title}` : state.phase === 'closing' ? '맺음' : '시작 전');
   $('pause-overlay').hidden = !state.paused;
   // caption: never over the dark while the place changes
@@ -541,7 +548,7 @@ function renderSetup(state) {
   $('preview').disabled = checkingMic;
   // With every scene finished the main button leads to the closing; a scene is run again from its slot.
   setText('start', !upNext ? '맺음과 체험 기록 보기' : started ? `이어서 하기 · ${upNext.title}` : '시작');
-  $('restart').hidden = !started;
+  $('restart').hidden = !started; $('restart').disabled = checkingMic;
   $('voice-prepare').hidden = mode !== 'voice' || !!voice?.ready; $('voice-prepare').disabled = preparingVoice;
   setText('voice-prepare', preparingVoice ? '한국어 음성 준비 중…' : '1. 한국어 음성 준비');
   $('microphone-check').hidden = mode !== 'voice' || !voice?.ready; $('microphone-check').disabled = checkingMic;
@@ -550,7 +557,7 @@ function renderSetup(state) {
   $('mic-meter').hidden = !checkingMic;
   $('open-closing').hidden = !started || !upNext; $('open-closing').disabled = checkingMic;
   // The headset stage is built only on a headset browser, or after the learner asks for the check.
-  $('vr').disabled = vrChecked ? (!vrSupported || mode !== 'voice' || !voice?.ready || !microphoneReady || !!vr?.active) : false;
+  $('vr').disabled = checkingMic || (vrChecked ? (!vrSupported || mode !== 'voice' || !voice?.ready || !microphoneReady || !!vr?.active) : false);
   setText('vr', !vrChecked ? 'VR 기기인지 확인' : vrSupported ? 'Quest로 들어가기' : 'Quest에서 VR 입장');
   for (const input of document.querySelectorAll('input[name="mode"]')) { input.disabled = checkingMic; input.checked = input.value === mode; }
 }
@@ -587,7 +594,7 @@ function renderPlay(state) {
     $('foreign').hidden = !foreign;
     $('foreign').classList.toggle('out', out);
     if (foreign) {
-      setWho('foreign-who', say.foreign, out ? `님께 전할 말${say.channel === 'phone' ? ' · 전화' : ''}` : ` · ${say.foreign.role}${say.channel === 'phone' ? ' · 전화' : ''}`);
+      setWho('foreign-who', say.foreign, out ? `${honorTo(nameOf(say.foreign).text)} 전할 말${say.channel === 'phone' ? ' · 전화' : ''}` : ` · ${say.foreign.role}${say.channel === 'phone' ? ' · 전화' : ''}`);
       setText('foreign-text', foreign.text); $('foreign-text').lang = foreign.code;
     }
     renderList($('options'), JSON.stringify([say.id, list]), () => list.map((item) => button(item.label, () => void action(item.id), { pressed: item.pressed, disabled: item.disabled, className: say.kind === 'report' ? 'check' : 'option' })));
@@ -818,13 +825,16 @@ async function makePdf() {
 /** Phones: hand the same file to the device's own share sheet (files, mail, messenger). The
  * learner picks where it goes; nothing is sent by this page. */
 async function shareRecord() {
-  const status = $('pdf-status');
+  const status = $('pdf-status'), trigger = $('share-record');
+  if (trigger.disabled) return;
+  trigger.disabled = true; status.textContent = '체험 기록을 만들고 있어요.';
   try {
     const file = await recordPdfFile();
     if (!navigator.canShare?.({ files: [file] })) { status.textContent = '이 기기에서는 보내기를 쓸 수 없어요. 「PDF로 받기」를 눌러 주세요.'; return; }
     await navigator.share({ files: [file], title: file.name });
-    status.textContent = '체험 기록을 넘겼어요.';
-  } catch (error) { if (error?.name !== 'AbortError') status.textContent = '보내지 못했어요. 「PDF로 받기」를 눌러 주세요.'; }
+    status.textContent = '체험 기록을 넘겼어요.'; save();
+  } catch (error) { status.textContent = error?.name === 'AbortError' ? '' : '보내지 못했어요. 「PDF로 받기」를 눌러 주세요.'; }
+  finally { trigger.disabled = false; }
 }
 
 /* ---------- Quest and the seated window ---------- */
@@ -859,9 +869,9 @@ function hudView(state) {
     if (upNext && !plan.open) rest();
     else {
       view.status = job.title; view.title = upNext ? '의자에 앉아 정면을 봐 주세요.' : '장면을 모두 마쳤어요.';
-      view.body = upNext ? '준비되면 「시작」을 눌러 주세요.' : 'VR에서 나가 화면에서 맺음과 체험 기록을 봐요.';
+      view.body = upNext ? '준비되면 「시작」을 눌러 주세요.' : `${leaveWords().place} 맺음과 체험 기록을 봐요.`;
       if (upNext) main(`start:${upNext.id}`, state.progress.anyDone ? `이어서 하기 · ${upNext.title}` : '시작', { primary: true });
-      else main('exit', 'VR에서 나가기', { primary: true });
+      else main('exit', leaveWords().button, { primary: true });
     }
   } else if (state.phase === 'line') {
     const channel = CHANNEL_NAMES[state.line.channel] ? ` · ${CHANNEL_NAMES[state.line.channel]}` : '';
@@ -886,7 +896,7 @@ function hudView(state) {
     const out = outward(say), shown = exampleOf(say);
     const example = say.exampleOpen && shown ? `${say.kind === 'fork' ? '이 선택의 말' : '예시'}: ${shown.text}` : '';
     const lead = micNote && !micActive ? micNote : heard ? `들린 말: ${heard}` : !canSpeak && !out && (say.kind !== 'fork' || say.chosen) ? '이 보기에서는 말로만 답해요. 글로 답하려면 화면으로 돌아가요.' : chosen && !example ? `고른 것: ${chosen.label}` : '';
-    const foreignLine = out ? `${nameOf(say.foreign).text}님께 전할 말: ${say.meaning}` : say.kind === 'relay' ? `${nameOf(say.foreign).text}: ${foreignOf(say.foreign).text}` : '';
+    const foreignLine = out ? `${nameOf(say.foreign).text}${honorTo(nameOf(say.foreign).text)} 전할 말: ${say.meaning}` : say.kind === 'relay' ? `${nameOf(say.foreign).text}: ${foreignOf(say.foreign).text}` : '';
     view.body = [foreignLine, lead, example, hint].filter(Boolean).join('\n');
     if (say.kind === 'fork' && !say.chosen) for (const option of say.options) main(`opt:${option.id}`, option.label);
     else {
@@ -898,7 +908,7 @@ function hudView(state) {
       if (shown && !say.exampleOpen) main('example', say.kind === 'fork' ? '이 선택의 말 보기' : '예시 문장 보기');
       // The same rule as the page: a report can be sent without speaking, an example once it is open.
       if (say.ready && !micActive && (say.exampleOpen || say.kind === 'report')) main('use-example', useExampleLabel(say), { primary: !canSpeak && !out });
-      if (!canSpeak && !out) main('exit', vr?.previewing ? '화면으로 돌아가기' : 'VR에서 나가기');
+      if (!canSpeak && !out) main('exit', leaveWords().button);
     }
   } else if (state.phase === 'tour') {
     const tour = state.tour, point = tour.openPoint;
@@ -920,12 +930,14 @@ function hudView(state) {
     else {
       view.status = '한 장면을 마쳤어요'; view.dot = '#4E8A3A';
       view.title = upNext ? `「${state.scene.title}」 장면을 마쳤어요.` : '장면을 모두 마쳤어요.';
-      view.body = upNext ? '쉬었다가 이어서 해도 돼요.' : 'VR에서 나가 화면에서 맺음과 체험 기록을 봐요.';
-      if (upNext) main('next', `다음 장면 · ${upNext.title}`, { primary: true }); else main('exit', 'VR에서 나가기', { primary: true });
+      view.body = upNext ? '쉬었다가 이어서 해도 돼요.' : `${leaveWords().place} 맺음과 체험 기록을 봐요.`;
+      if (upNext) main('next', `다음 장면 · ${upNext.title}`, { primary: true }); else main('exit', leaveWords().button, { primary: true });
     }
   }
   return finishHud(view, state, system);
 }
+/** The seated window on a screen and a headset leave in different words. */
+function leaveWords() { return vr?.previewing ? { button: '화면으로 돌아가기', place: '화면으로 돌아가' } : { button: 'VR에서 나가기', place: 'VR에서 나가 화면에서' }; }
 /** The parts every desk card shares: the place note and the system row. */
 function finishHud(view, state, system) {
   // While the view is dark for a place change, the card says what it is waiting for.
@@ -1019,6 +1031,10 @@ const timer = setInterval(() => {
   }
   if (micActive && state.phase === 'say' && gateState === 'done') void toggleMic();
 }, 100);
-addEventListener('pagehide', () => { clearInterval(timer); save(); ++epoch; film?.dispose(); void voice?.dispose(); void vr?.dispose(); }, { once: true });
+addEventListener('pagehide', (event) => {
+  save(); stopMic();
+  if (event.persisted) { film?.pause(); return; }
+  clearInterval(timer); ++epoch; film?.dispose(); void voice?.dispose(); void vr?.dispose();
+});
 render();
 void boot();
