@@ -1,0 +1,39 @@
+{
+  "판": [
+    {
+      "계정": "pulse-youtube",
+      "상태": "예약됨",
+      "시각": "2026-11-27T08:00+09:00",
+      "지문": "08dbfd336a0aed66acd0b593c871f5cae5beab48ca620efd91fc333012b4aee1",
+      "게시글지문": "3da003f61045a440ac9f3d35e70d2c2695771c0ee0b2ea40a070bd75f6eacd4b",
+      "방법": "ego",
+      "게시물ID": "BHbfUKxqEsk",
+      "주소": "https://youtube.com/shorts/BHbfUKxqEsk",
+      "확인": "11-23 스튜디오 완료 창 「동영상 예약됨 2026년 11월 27일 8:00에 동영상이 공개 상태로 설정됩니다」 · 0:27 쇼츠 · 제목 · 설명 원고와 같음 · 아동용 아님 · 변경/합성 예 · 영어 · 현지 시간 GMT+0900",
+      "승인": "유호님 11-23 「Current end screen」(11-27 08:00 네 곳 게시 — 결정 표 11-23)",
+      "기록시각": "2026-11-22T21:20:58.059Z"
+    },
+    {
+      "계정": "yuho-linkedin-primary",
+      "상태": "예약됨",
+      "시각": "2026-11-27T08:00+09:00",
+      "지문": "08dbfd336a0aed66acd0b593c871f5cae5beab48ca620efd91fc333012b4aee1",
+      "게시글지문": "7bd5b5992d2f3913d9fcc3c7f1c93141f2320144c5ba4902b69135652e2df64e",
+      "방법": "ego",
+      "확인": "링크드인 share/management 예약함 목록에 「금, 2026년 11월 27일 오전 8:00」과 첫 줄 「Noise cancelling, tested at the hardest level」이 함께 보임(11-23 06:23)",
+      "승인": "유호님 11-23 「Current end screen」(11-27 08:00 네 곳 게시 — 결정 표 11-23)",
+      "기록시각": "2026-11-22T21:24:37.197Z"
+    },
+    {
+      "계정": "yuhobuilds-x",
+      "상태": "예약됨",
+      "시각": "2026-11-27T08:00+09:00",
+      "지문": "08dbfd336a0aed66acd0b593c871f5cae5beab48ca620efd91fc333012b4aee1",
+      "게시글지문": "b29122895e1293f95c406b313843ed3e4d40e89641cc76775e6e965f194718c9",
+      "방법": "ego",
+      "확인": "compose/post/unsent/scheduled 「Will send on Fri, Nov 27, 2026 at 8:00 AM Noise cancelling, tested at the hardest level…」 · 영상 붙음 · Made with AI 켬(11-23 06:26). 타래 둘째 · 셋째 글은 첫 글이 나간 뒤 답글로 단다",
+      "승인": "유호님 11-23 「Current end screen」(11-27 08:00 네 곳 게시 — 결정 표 11-23)",
+      "기록시각": "2026-11-22T21:26:19.709Z"
+    }
+  ]
+}

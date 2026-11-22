@@ -232,7 +232,8 @@ def compose(base, ov, plan, out_v):
           f"fade=t=in:st={e:.3f}:d=0.5:alpha=1[bd];[a][bd]overlay=format=auto[s];"
           f"[1:v]format=rgba[o];[s][o]overlay=format=auto,format=yuv420p[v]")
     sh("ffmpeg", "-y", "-loglevel", "error", "-i", base, "-framerate", "24", "-i", ov, "-filter_complex", fc,
-       "-map", "[v]", "-c:v", "libx264", "-crf", "14", "-preset", "slow", "-r", "24", "-pix_fmt", "yuv420p", out_v)
+       "-map", "[v]", "-c:v", "libx264", "-crf", "14", "-preset", "slow", "-r", "24", "-pix_fmt", "yuv420p",
+       "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv", out_v)   # 올리기 전 검사: 색 공간 BT.709 표시
 
 
 # ---------- 소리 ----------
@@ -375,6 +376,11 @@ def sound(cs, total, plan, tmp):
     return p
 
 
+# 올리기 전 검사: 스테레오 실측 320kbps 이상. 단순한 소리는 -b:a 384k로도 263kbps라 tools/음량마감.mjs처럼 품질 모드로 담는다
+#   품질 모드도 313kbps에서 멈춰(고요 구간이 길어 넣을 것이 적다) M/S · 세기 스테레오 · PNS를 끄고 384k로 담는다 — 실측 338kbps(11-23)
+AAC = ["-aac_coder", "twoloop", "-b:a", "384k", "-aac_ms", "0", "-aac_is", "0", "-aac_pns", "0"]
+
+
 def loudnorm(src_v, mix, out):
     st =subprocess.run(["ffmpeg", "-hide_banner", "-i", mix, "-af", "loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json",
                          "-f", "null", "-"], capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
@@ -382,7 +388,7 @@ def loudnorm(src_v, mix, out):
     af = (f"loudnorm=I=-14:TP=-1.5:LRA=11:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
           f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
     sh("ffmpeg", "-y", "-loglevel", "error", "-i", src_v, "-i", mix, "-map", "0:v", "-map", "1:a", "-c:v", "copy",
-       "-af", af + ",aresample=48000", "-c:a", "aac", "-b:a", "256k", "-shortest", "-movflags", "+faststart", out)
+       "-af", af + ",aresample=48000", "-c:a", "aac", *AAC, "-shortest", "-movflags", "+faststart", out)
 
 
 def strip(out):
