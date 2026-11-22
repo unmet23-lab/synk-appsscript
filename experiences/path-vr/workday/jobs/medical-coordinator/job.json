@@ -1,0 +1,2156 @@
+{
+  "schemaVersion": 1,
+  "id": "medical-coordinator",
+  "edition": "표준판 1.0",
+  "title": "의료 코디네이터의 하루",
+  "role": "의료 코디네이터",
+  "summary": "국제진료센터에서 외국인 환자 한 분의 건강검진 하루를 맡아요. 환자의 말과 의료진의 말을 잇고, 갈림길에서 골라요.",
+  "minutes": 22,
+  "reviewNote": "장면과 대사는 의료 코디네이터 현직자의 검토를 받기 전입니다. 검사와 병에 관한 말은 일반적인 안내이고 진료 정보가 아닙니다.",
+  "hintLanguages": [
+    "mn",
+    "vi",
+    "en"
+  ],
+  "allowedTerms": [
+    "고용추천"
+  ],
+  "cast": {
+    "senior": {
+      "name": "한지원",
+      "role": "선배 코디네이터"
+    },
+    "nurse": {
+      "name": "김은숙",
+      "role": "내시경실 간호사"
+    },
+    "doctor": {
+      "name": "오성훈",
+      "role": "내과 과장"
+    },
+    "patient": {
+      "name": "환자분",
+      "role": "건강검진 환자",
+      "names": {
+        "mn": "Сарантуяа",
+        "vi": "Nguyễn Thị Hoa",
+        "en": "Sarantuya Batbayar"
+      }
+    },
+    "agency": {
+      "name": "정 실장",
+      "role": "환자분을 모시고 온 유치업체(에이전시) 직원"
+    }
+  },
+  "places": {
+    "desk-senior": {
+      "name": "국제진료센터 데스크",
+      "photo": "places/desk-senior.jpg",
+      "live": [
+        0.27,
+        0.1,
+        0.56,
+        1
+      ],
+      "alt": "국제진료센터 접수 데스크 앞에 남색 정장을 입은 선배 코디네이터가 태블릿을 들고 서 있다.",
+      "points": [
+        {
+          "id": "counter",
+          "x": 0.75,
+          "y": 0.68,
+          "label": "접수 창구",
+          "hint": {
+            "mn": "Хүлээн авах цонх. Гадаад өвчтөнүүд энд бүртгүүлдэг.",
+            "vi": "Quầy tiếp nhận. Bệnh nhân nước ngoài làm thủ tục ở đây.",
+            "en": "Check-in desk. International patients register here."
+          }
+        },
+        {
+          "id": "board",
+          "x": 0.73,
+          "y": 0.25,
+          "label": "코디네이터 근무 일정판",
+          "note": "schedule",
+          "hint": {
+            "mn": "Координаторуудын ажлын хуваарийн самбар.",
+            "vi": "Bảng lịch làm việc của các điều phối viên.",
+            "en": "Board with the coordinators' work schedule."
+          }
+        },
+        {
+          "id": "leaflets",
+          "x": 0.655,
+          "y": 0.47,
+          "label": "다국어 안내서",
+          "hint": {
+            "mn": "Олон хэлээр бичсэн танилцуулга.",
+            "vi": "Tờ hướng dẫn bằng nhiều thứ tiếng.",
+            "en": "Information leaflets in several languages."
+          }
+        },
+        {
+          "id": "wheelchair",
+          "x": 0.08,
+          "y": 0.58,
+          "label": "휠체어",
+          "hint": {
+            "mn": "Тэргэнцэр.",
+            "vi": "Xe lăn.",
+            "en": "Wheelchair."
+          }
+        },
+        {
+          "id": "waiting",
+          "x": 0.12,
+          "y": 0.8,
+          "label": "외국인 환자 대기석",
+          "hint": {
+            "mn": "Гадаад өвчтөний хүлээлгийн суудал.",
+            "vi": "Ghế chờ dành cho bệnh nhân nước ngoài.",
+            "en": "Waiting area for international patients."
+          }
+        }
+      ]
+    },
+    "clinic-front": {
+      "name": "진료실 앞",
+      "photo": "places/clinic-front.jpg",
+      "alt": "진료실 문이 왼쪽에 나란히 있는 복도. 문 옆에 대기 화면이 있고 오른쪽에 대기 의자가 줄지어 있다.",
+      "points": [
+        {
+          "id": "clinic-door",
+          "x": 0.1,
+          "y": 0.55,
+          "label": "진료실 문",
+          "hint": {
+            "mn": "Эмчийн үзлэгийн өрөөний хаалга. Энэ өрөөнд эмч өвчтөн үздэг.",
+            "vi": "Cửa phòng khám. Bác sĩ khám bệnh ở bên trong.",
+            "en": "Door to the doctor's office. The doctor sees patients inside."
+          }
+        },
+        {
+          "id": "queue-screen",
+          "x": 0.225,
+          "y": 0.4,
+          "label": "진료 대기 화면",
+          "hint": {
+            "mn": "Дарааллын дэлгэц. Хэний ээлж ирснийг харуулдаг.",
+            "vi": "Màn hình chờ khám. Trên đó hiển thị đến lượt ai vào khám.",
+            "en": "Waiting room screen. It shows whose turn it is to see the doctor."
+          }
+        },
+        {
+          "id": "sanitizer",
+          "x": 0.34,
+          "y": 0.53,
+          "label": "손 소독제",
+          "hint": {
+            "mn": "Гар ариутгагч.",
+            "vi": "Nước rửa tay sát khuẩn.",
+            "en": "Hand sanitizer."
+          }
+        }
+      ]
+    },
+    "exam-front": {
+      "name": "내시경실 앞",
+      "photo": "places/exam-front.jpg",
+      "alt": "내시경실로 들어가는 두 짝 문 앞. 왼쪽에 커튼이 달린 탈의실과 사물함이, 오른쪽에 회복실 문이 있다.",
+      "points": [
+        {
+          "id": "changing",
+          "x": 0.1,
+          "y": 0.5,
+          "label": "탈의실",
+          "hint": {
+            "mn": "Хувцас солих өрөө. Өвчтөн энд шинжилгээний хувцас өмсдөг.",
+            "vi": "Phòng thay đồ. Bệnh nhân thay trang phục khám bệnh ở đây.",
+            "en": "Changing room. Patients put on an exam gown here."
+          }
+        },
+        {
+          "id": "lockers",
+          "x": 0.29,
+          "y": 0.45,
+          "label": "사물함",
+          "hint": {
+            "mn": "Өвчтөний хувцас, цүнх хийх шүүгээ.",
+            "vi": "Tủ đựng quần áo và túi xách của bệnh nhân.",
+            "en": "Lockers for patients' clothes and bags."
+          }
+        },
+        {
+          "id": "exam-door",
+          "x": 0.5,
+          "y": 0.5,
+          "label": "내시경실 문",
+          "note": "inside",
+          "hint": {
+            "mn": "Дурангийн шинжилгээний өрөөний хаалга.",
+            "vi": "Cửa phòng nội soi.",
+            "en": "Endoscopy room door."
+          }
+        },
+        {
+          "id": "recovery",
+          "x": 0.8,
+          "y": 0.6,
+          "label": "회복실",
+          "hint": {
+            "mn": "Амрах өрөө. Унтуулгатай дурангийн дараа өвчтөн энд сэртлээ амардаг.",
+            "vi": "Phòng hồi tỉnh. Sau khi nội soi gây mê, bệnh nhân nghỉ ở đây.",
+            "en": "Recovery room. After a sedated endoscopy, patients rest here."
+          }
+        }
+      ]
+    },
+    "consult": {
+      "name": "상담실",
+      "photo": "places/consult.jpg",
+      "alt": "작은 상담실. 나무 탁자 위에 서류 한 장과 펜, 휴지, 물컵이 있고 벽에 화면이 걸려 있다.",
+      "points": [
+        {
+          "id": "form",
+          "x": 0.65,
+          "y": 0.92,
+          "label": "문진표",
+          "hint": {
+            "mn": "Асуумжийн хуудас. Өвчтөн өвчний түүх, одоо ууж буй эм, хамгийн сүүлд юу идсэнээ бичдэг.",
+            "vi": "Bảng câu hỏi sức khỏe. Bệnh nhân ghi tiền sử bệnh, thuốc đang dùng và bữa ăn gần nhất.",
+            "en": "Health questionnaire. The patient writes down past illnesses, the medicine she takes and when she last ate."
+          }
+        },
+        {
+          "id": "explain-screen",
+          "x": 0.4,
+          "y": 0.36,
+          "label": "설명용 화면",
+          "hint": {
+            "mn": "Шинжилгээний хариуг тайлбарлахад ашигладаг дэлгэц.",
+            "vi": "Màn hình dùng để giải thích kết quả khám.",
+            "en": "A screen used to explain test results."
+          }
+        },
+        {
+          "id": "tissue",
+          "x": 0.88,
+          "y": 0.86,
+          "label": "휴지와 물",
+          "hint": {
+            "mn": "Салфетка, ус.",
+            "vi": "Khăn giấy và nước.",
+            "en": "Tissues and water."
+          }
+        }
+      ]
+    },
+    "billing": {
+      "name": "수납 창구",
+      "photo": "places/billing.jpg",
+      "alt": "유리 칸막이가 있는 병원 수납 창구. 왼쪽 끝에 안내서 꽂이, 오른쪽에 증명서 발급기가 있다.",
+      "points": [
+        {
+          "id": "pay-window",
+          "x": 0.35,
+          "y": 0.4,
+          "label": "수납 창구",
+          "hint": {
+            "mn": "Төлбөрийн касс.",
+            "vi": "Quầy thu ngân.",
+            "en": "Payment counter."
+          }
+        },
+        {
+          "id": "card-terminal",
+          "x": 0.46,
+          "y": 0.52,
+          "label": "카드 결제기",
+          "hint": {
+            "mn": "Карт уншигч төхөөрөмж.",
+            "vi": "Máy thanh toán thẻ.",
+            "en": "Card payment machine."
+          }
+        },
+        {
+          "id": "price-guide",
+          "x": 0.05,
+          "y": 0.48,
+          "label": "진료비 안내서",
+          "hint": {
+            "mn": "Эмчилгээний төлбөрийн мэдээллийн хуудас. Урьдчилан тогтоосон үнийг бичсэн байдаг.",
+            "vi": "Tờ thông tin chi phí khám chữa bệnh. Trên đó có ghi các mức phí bệnh viện đã quy định sẵn.",
+            "en": "Price list. It shows the hospital's fixed prices."
+          }
+        },
+        {
+          "id": "kiosk",
+          "x": 0.855,
+          "y": 0.45,
+          "label": "증명서 발급기",
+          "hint": {
+            "mn": "Баримт бичиг хэвлэх автомат төхөөрөмж. Өвчтөн төлбөрийн баримт, нарийвчилсан задаргаагаа эндээс хэвлэж авдаг.",
+            "vi": "Máy cấp giấy tờ tự động. Bệnh nhân in hóa đơn và bảng kê chi tiết ở đây.",
+            "en": "Self-service document machine. Patients print receipts and detailed bills here."
+          }
+        }
+      ]
+    },
+    "consult-patient": {
+      "name": "상담실",
+      "photo": "places/consult-patient.jpg",
+      "live": [
+        0.3,
+        0.12,
+        0.82,
+        1
+      ],
+      "alt": "상담실 탁자 건너편에 분홍 카디건을 입은 외국인 환자가 문진표를 앞에 두고 앉아 있다.",
+      "points": []
+    },
+    "exam-nurse": {
+      "name": "내시경실 앞",
+      "photo": "places/exam-nurse.jpg",
+      "live": [
+        0.4,
+        0.12,
+        0.72,
+        1
+      ],
+      "alt": "내시경실 문 앞에 남색 근무복을 입은 간호사가 서류판을 들고 서 있다.",
+      "points": []
+    },
+    "clinic-two": {
+      "name": "진료실",
+      "photo": "places/clinic-two.jpg",
+      "live": [
+        0.07,
+        0.12,
+        0.99,
+        1
+      ],
+      "alt": "진료실 책상 앞에 흰 가운을 입은 의사가 앉아 있고, 맞은편에 분홍 카디건을 입은 환자가 앉아 있다.",
+      "points": []
+    },
+    "clinic-patient": {
+      "name": "진료실",
+      "photo": "places/clinic-patient.jpg",
+      "live": [
+        0.05,
+        0,
+        0.8,
+        1
+      ],
+      "alt": "진료실 의자에 앉은 환자가 종이 한 장을 들고 걱정스러운 얼굴로 이쪽을 보고 있다.",
+      "points": []
+    },
+    "billing-senior": {
+      "name": "수납 창구",
+      "photo": "places/billing-senior.jpg",
+      "live": [
+        0.32,
+        0.06,
+        0.74,
+        1
+      ],
+      "alt": "수납 창구 앞에 선배 코디네이터가 한 손을 창구에 얹고 서 있다.",
+      "points": []
+    },
+    "billing-two": {
+      "name": "수납 창구",
+      "photo": "places/billing-two.jpg",
+      "live": [
+        0.14,
+        0.08,
+        0.76,
+        1
+      ],
+      "alt": "수납 창구 앞에 선배 코디네이터와 환자가 나란히 서 있다.",
+      "points": []
+    }
+  },
+  "notes": {
+    "schedule": {
+      "title": "코디네이터의 하루",
+      "lead": "한 예시예요. 시간과 순서는 병원마다 달라요.",
+      "rows": [
+        [
+          "07:30",
+          "출근, 오늘 오실 환자 확인"
+        ],
+        [
+          "08:00",
+          "접수와 문진, 검사 동행"
+        ],
+        [
+          "12:00",
+          "점심, 내일 예약 확인"
+        ],
+        [
+          "15:30",
+          "결과 상담 통역"
+        ],
+        [
+          "16:30",
+          "수납과 귀가 안내"
+        ],
+        [
+          "17:00",
+          "결과지 정리, 출국한 환자에게 연락"
+        ],
+        [
+          "17:30",
+          "퇴근(환자 메신저 연락은 그 뒤에도 와요)"
+        ]
+      ],
+      "hint": {
+        "mn": "Координаторын нэг өдрийн жишээ. Цаг, дараалал нь эмнэлэг бүрт өөр өөр. 07:30 ажилдаа ирж, өнөөдөр ирэх өвчтөнүүдээ шалгана. 08:00 өвчтөнийг бүртгэж, асуумж авч, шинжилгээнд дагуулж явна. 12:00 үдийн хоол идээд, маргаашийн захиалгыг шалгана. 15:30 шинжилгээний хариуг тайлбарлах үед орчуулна. 16:30 төлбөр тооцоо хийлгэж, өвчтөнд буцах үеийн зааварчилгаа өгнө. 17:00 шинжилгээний хариуг цэгцэлж, эх орондоо буцсан өвчтөнтэй холбогдоно. 17:30 ажил тарна (өвчтөний мессеж түүнээс хойш ч ирдэг).",
+        "vi": "Một ví dụ về một ngày của điều phối viên. Giờ giấc và thứ tự khác nhau tùy bệnh viện. 07:30 bắt đầu làm việc, xem danh sách bệnh nhân hôm nay. 08:00 tiếp nhận và hỏi bệnh, đi cùng bệnh nhân khi khám. 12:00 ăn trưa, kiểm tra lịch hẹn ngày mai. 15:30 phiên dịch khi bác sĩ giải thích kết quả. 16:30 thanh toán và hướng dẫn ra về. 17:00 sắp xếp phiếu kết quả, liên lạc với bệnh nhân đã về nước. 17:30 tan làm (tin nhắn của bệnh nhân vẫn có thể đến sau giờ đó).",
+        "en": "One example of a coordinator's day. Times and order differ from hospital to hospital. 07:30 arrive, check today's patients. 08:00 check-in, health questionnaire, go with patients to their tests. 12:00 lunch, check tomorrow's bookings. 15:30 interpret when the doctor explains the results. 16:30 payment and instructions before patients go home. 17:00 prepare result reports, contact patients who have returned to their country. 17:30 leave work (patients still send messages after that)."
+      }
+    },
+    "inside": {
+      "title": "선배의 말",
+      "lead": "검사실 안은 화면으로 보여 주지 않아요.",
+      "body": [
+        "코디네이터는 탈의실과 검사실 문 앞까지 함께 가요.",
+        "검사 중에 통역이 필요하면, 환자분이 원하실 때만 안에 들어가요.",
+        "옷을 갈아입거나 몸을 보는 검사 때는 환자분의 뜻을 먼저 여쭤요."
+      ],
+      "hint": {
+        "mn": "Ахлах координаторын үг. Шинжилгээний өрөөний дотор талыг энд дэлгэцээр харуулахгүй. Координатор өвчтөнтэй хамт хувцас солих өрөө, шинжилгээний өрөөний үүд хүртэл явна. Шинжилгээний үеэр орчуулга хэрэгтэй бол өвчтөн хүссэн үед л дотогш орно. Хувцас солих эсвэл биеийг нь харж шалгадаг шинжилгээний үед эхлээд өвчтөнөөс юу хүсэж байгааг нь асууна.",
+        "vi": "Lời chị hướng dẫn. Ở đây không chiếu cảnh bên trong phòng khám. Em đi cùng bệnh nhân đến phòng thay đồ và trước cửa phòng khám. Nếu cần phiên dịch trong lúc khám, thì chỉ khi bệnh nhân đồng ý, em mới vào trong phòng. Với những lần khám cần thay đồ hoặc cần để lộ cơ thể, em phải hỏi ý kiến bệnh nhân trước.",
+        "en": "From a senior coordinator: The inside of the exam room is not shown here. You go with the patient as far as the changing room and the exam room door. If interpreting is needed during a test, you go in only if the patient wants you to. For tests where the patient changes clothes or her body is examined, you first ask her whether she wants you there."
+      }
+    }
+  },
+  "scenes": [
+    {
+      "id": "arrival",
+      "title": "출근",
+      "minutes": 4,
+      "place": "desk-senior",
+      "steps": [
+        {
+          "type": "line",
+          "clip": "senior-welcome",
+          "who": "senior",
+          "text": "어서 와요. 국제진료센터 코디네이터 한지원이에요. 오늘 하루 같이 다닐 거예요.",
+          "hint": {
+            "mn": "Тавтай морил. Би олон улсын эмчилгээний төвийн координатор Хан Живон байна. Өнөөдөр өдөржин хамт явна.",
+            "vi": "Chào em. Chị là Han Ji-won, điều phối viên của Trung tâm Khám chữa bệnh Quốc tế. Hôm nay chị sẽ đi cùng em cả ngày.",
+            "en": "Welcome. I'm Han Ji-won, a coordinator at the International Patient Center. I'll be with you all day today."
+          }
+        },
+        {
+          "type": "say",
+          "id": "intro",
+          "listen": "senior-listen-desk",
+          "prompt": "선배에게 자기소개를 해 보세요.",
+          "example": "안녕하세요. 저는 ○○○입니다. 오늘부터 국제진료센터에서 일하게 됐습니다. 잘 부탁드립니다.",
+          "hint": {
+            "mn": "Ахлах координаторт өөрийгөө танилцуул. Нэрээ хэлээд, өнөөдрөөс төвд ажиллах болсноо хэл.",
+            "vi": "Hãy tự giới thiệu với chị hướng dẫn. Nói tên và nói rằng em bắt đầu làm ở trung tâm từ hôm nay.",
+            "en": "Introduce yourself to your senior colleague. Say your name and that you are starting work at the center today."
+          },
+          "record": "자기소개 차례"
+        },
+        {
+          "type": "line",
+          "clip": "senior-assign",
+          "who": "senior",
+          "text": "반가워요. 오늘은 건강검진 받으시는 환자 한 분을 같이 맡아요. 말이 통하는 분이라 많이 의지하실 거예요.",
+          "hint": {
+            "mn": "Танилцсандаа баяртай байна. Өнөөдөр эрүүл мэндийн үзлэгт орох нэг өвчтөнийг хамт хариуцна. Өвчтөн чамтай нэг хэлээр ярьдаг болохоор чамд их найдна.",
+            "vi": "Rất vui được gặp em. Hôm nay chị em mình cùng phụ trách một bệnh nhân đến khám sức khỏe tổng quát. Bệnh nhân nói cùng thứ tiếng với em, nên chắc sẽ trông cậy vào em nhiều đấy.",
+            "en": "Nice to meet you. Today we'll look after one patient who is having a health checkup. She speaks your language, so she'll rely on you a lot."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "senior-passport",
+          "who": "senior",
+          "text": "에이전시에서 환자분 서류를 미리 보내 줬어요. 예약한 분과 같은 분인지 먼저 비교해 봐요.",
+          "hint": {
+            "mn": "Агентлагаас өвчтөний бичиг баримтыг урьдчилан явуулсан. Цаг захиалсан хүн мөн эсэхийг эхлээд харьцуулж шалгая.",
+            "vi": "Công ty du lịch y tế đã gửi trước giấy tờ của bệnh nhân. Trước hết mình đối chiếu xem có đúng là người đã đặt lịch không nhé.",
+            "en": "The agency sent the patient's documents in advance. First, let's compare them with the booking to check it's the same person."
+          }
+        },
+        {
+          "type": "work",
+          "id": "id-check",
+          "record": "여권 사본과 예약을 비교하는 차례",
+          "tool": {
+            "kind": "screen",
+            "title": "검진 예약 조회 · 여권 사본",
+            "rows": [
+              [
+                "예약 이름",
+                {
+                  "mn": "SARANTUYA BATBAYAR",
+                  "vi": "THI HOA NGUYEN",
+                  "en": "SARANTUYA BATBAYAR"
+                }
+              ],
+              [
+                "예약 생년월일",
+                "1979-03-14"
+              ],
+              [
+                "여권 성(Surname)",
+                {
+                  "mn": "BATBAYAR",
+                  "vi": "NGUYEN",
+                  "en": "BATBAYAR"
+                }
+              ],
+              [
+                "여권 이름(Given names)",
+                {
+                  "mn": "SARANTUYA",
+                  "vi": "THI HOA",
+                  "en": "SARANTUYA"
+                }
+              ],
+              [
+                "여권 생년월일",
+                "14 MAR 1979"
+              ],
+              [
+                "예약",
+                "종합건강검진 08:00 · 결과 상담 15:30"
+              ]
+            ],
+            "note": "금식(NPO) 전날 21시부터 · 수면 위내시경 · 내일 저녁 출국"
+          },
+          "prompt": "에이전시가 보낸 여권 사본과 예약을 비교해요. 어떤가요?",
+          "hint": {
+            "mn": "Агентлагийн явуулсан паспортын хуулбар, цаг захиалгыг харьцуул. Ямар байна? 예약 이름 = захиалсан нэр, 생년월일 = төрсөн он сар өдөр, 성 = овог, 이름 = нэр, 금식(NPO) = өлөн байх, 출국 = эх орондоо буцах.",
+            "vi": "Hãy đối chiếu bản sao hộ chiếu mà công ty du lịch y tế gửi với lịch hẹn. Em thấy thế nào? 예약 이름 = tên trong lịch hẹn, 생년월일 = ngày sinh, 성 = họ, 이름 = tên, 금식(NPO) = nhịn ăn, 출국 = xuất cảnh, về nước.",
+            "en": "Compare the passport copy from the agency with the booking. What do you find? 예약 이름 = name on the booking, 생년월일 = date of birth, 성 = surname, 이름 = given name, 금식(NPO) = fasting, 출국 = leaving Korea."
+          },
+          "options": [
+            {
+              "id": "same",
+              "label": "같은 분이다. 이름 순서와 날짜 쓰는 법만 다르다",
+              "hint": {
+                "mn": "Нэг хүн байна. Зөвхөн нэрийн дараалал, огноо бичих арга нь өөр.",
+                "vi": "Là cùng một người. Chỉ khác thứ tự họ tên và cách viết ngày tháng.",
+                "en": "It's the same person. Only the name order and the date format are different."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-id-ok",
+                  "who": "senior",
+                  "text": "맞아요. 나라마다 이름 순서와 날짜 쓰는 법이 달라요. 결과지 이름은 여권대로 써요.",
+                  "hint": {
+                    "mn": "Зөв. Нэрийн дараалал, огноо бичих арга улс бүрт өөр өөр. Шинжилгээний хариун дээрх нэрийг паспортынх шиг бичнэ.",
+                    "vi": "Đúng rồi. Mỗi nước có thứ tự họ tên và cách viết ngày tháng khác nhau. Tên trên phiếu kết quả phải ghi đúng như hộ chiếu.",
+                    "en": "Right. Each country puts names in a different order and writes dates differently. The name on the results must match the passport."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "differ",
+              "label": "이름 칸의 글자 순서가 다르니, 다른 분일 수 있다",
+              "hint": {
+                "mn": "Нэрийн хэсэгт овог, нэрийн дараалал өөр байна. Тиймээс өөр хүн байж магадгүй.",
+                "vi": "Thứ tự chữ trong ô tên khác nhau, nên có thể là người khác.",
+                "en": "The parts of the name are in a different order, so it may be a different person."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-id-again",
+                  "who": "senior",
+                  "text": "꼼꼼히 봤네요. 그런데 성과 이름 칸을 따로 보면 같은 분이에요.",
+                  "hint": {
+                    "mn": "Анхааралтай харжээ. Гэхдээ овог, нэрийн нүдийг тус тусад нь харвал нэг хүн байна.",
+                    "vi": "Em xem kỹ thật đấy. Nhưng nếu nhìn riêng ô họ và ô tên thì là cùng một người.",
+                    "en": "You looked carefully. But if you look at the surname and given-name boxes separately, it's the same person."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "tour",
+          "home": "desk-senior",
+          "board": [
+            "clinic-front",
+            "exam-front",
+            "consult",
+            "billing"
+          ],
+          "prompt": "환자분이 오시기 전에 한 바퀴 둘러봐요. 가고 싶은 자리를 고르고, 점을 눌러 이름을 확인해 보세요.",
+          "hint": {
+            "mn": "Өвчтөн ирэхээс өмнө нэг тойроод үз. Очих газраа сонгоод, цэг дээр дарж нэрийг нь хар.",
+            "vi": "Trước khi bệnh nhân đến, hãy đi xem một vòng. Chọn nơi muốn đến và bấm vào dấu chấm để xem tên.",
+            "en": "Take a look around before the patient arrives. Pick a place, then tap a dot to see what it is called."
+          }
+        }
+      ]
+    },
+    {
+      "id": "intake",
+      "title": "접수와 문진",
+      "minutes": 4,
+      "place": "desk-senior",
+      "steps": [
+        {
+          "type": "line",
+          "clip": "senior-form",
+          "who": "senior",
+          "text": "환자분 오셨어요. 문진표를 미리 써 오셨네요. 다시 여쭤볼 칸이 없는지 같이 봐요.",
+          "hint": {
+            "mn": "Өвчтөн ирлээ. Асуумжийн хуудсаа урьдчилан бөглөөд ирсэн байна. Дахин асуух зүйл байгаа эсэхийг хамт харъя.",
+            "vi": "Bệnh nhân đến rồi. Bệnh nhân đã điền sẵn bảng câu hỏi sức khỏe. Mình cùng xem có ô nào cần hỏi lại không nhé.",
+            "en": "The patient is here. She filled in the health questionnaire in advance. Let's look at it together and see if there's any box we need to ask her about again."
+          }
+        },
+        {
+          "type": "work",
+          "id": "form-check",
+          "record": "문진표에서 다시 여쭐 칸을 찾는 차례",
+          "tool": {
+            "kind": "paper",
+            "title": "건강검진 문진표",
+            "rows": [
+              [
+                "복용 중인 약",
+                "혈압약 (아침 1알)"
+              ],
+              [
+                "알레르기",
+                "없음"
+              ],
+              [
+                "위내시경 받은 적",
+                "처음"
+              ],
+              [
+                "마지막 식사",
+                "어제 저녁"
+              ]
+            ]
+          },
+          "prompt": "내시경 전에 다시 여쭤봐야 할 칸을 골라요.",
+          "hint": {
+            "mn": "Дуранд орохын өмнө дахин асуух ёстой нүдийг сонго. 복용 중인 약 = одоо ууж буй эм, 혈압약 = даралтын эм, 알레르기 = харшил, 없음 = байхгүй, 위내시경 받은 적 = ходоодны дуранд орж байсан эсэх, 처음 = анх удаа, 마지막 식사 = сүүлийн хоол, 어제 저녁 = өчигдөр орой.",
+            "vi": "Hãy chọn ô cần hỏi lại trước khi nội soi. 복용 중인 약 = thuốc đang dùng, 혈압약 = thuốc huyết áp, 알레르기 = dị ứng, 없음 = không có, 위내시경 받은 적 = đã từng nội soi dạ dày chưa, 처음 = lần đầu, 마지막 식사 = bữa ăn gần nhất, 어제 저녁 = tối qua.",
+            "en": "Choose the box you should ask about again before the endoscopy. 복용 중인 약 = medicine she takes, 혈압약 = blood pressure medicine, 알레르기 = allergies, 없음 = none, 위내시경 받은 적 = had a stomach endoscopy before, 처음 = first time, 마지막 식사 = last meal, 어제 저녁 = yesterday evening."
+          },
+          "options": [
+            {
+              "id": "last-meal",
+              "label": "마지막 식사. 오늘 아침 이야기가 없다",
+              "hint": {
+                "mn": "Сүүлийн хоол. Өнөө өглөөний тухай бичээгүй.",
+                "vi": "Bữa ăn gần nhất. Không ghi gì về sáng nay.",
+                "en": "Last meal. Nothing is written about this morning."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-form-ok",
+                  "who": "senior",
+                  "text": "맞아요, '어제 저녁'만 적혀 있어요. 오늘 아침에 마신 것도 상담실에서 여쭤봐요.",
+                  "hint": {
+                    "mn": "Зөв, зөвхөн «өчигдөр орой» гэж бичсэн байна. Өнөө өглөө юу уусныг нь бас зөвлөгөө өгөх өрөөнд асуугаарай.",
+                    "vi": "Đúng rồi, chỉ ghi mỗi “tối qua”. Lúc ở phòng tư vấn, em hỏi thêm xem sáng nay bệnh nhân có uống gì không nhé.",
+                    "en": "Right, it only says “yesterday evening.” In the consultation room, also ask whether she drank anything this morning."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "allergy",
+              "label": "알레르기. 내시경 때 쓰는 약에 탈이 날 수 있다",
+              "hint": {
+                "mn": "Харшил. Дурангийн үед хэрэглэх эм тохирохгүй байж магадгүй.",
+                "vi": "Dị ứng. Thuốc dùng khi nội soi có thể gây phản ứng.",
+                "en": "Allergies. The medicine used in the endoscopy could cause an allergic reaction."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-form-again",
+                  "who": "senior",
+                  "text": "알레르기는 '없음'이라고 쓰셨어요. 마지막 식사엔 '어제 저녁'만 있어요.",
+                  "hint": {
+                    "mn": "Харшил дээр «байхгүй» гэж бичсэн байна. Сүүлийн хоол дээр зөвхөн «өчигдөр орой» гэж байна.",
+                    "vi": "Ở ô dị ứng, bệnh nhân đã ghi là “không có”. Ở ô bữa ăn gần nhất chỉ ghi “tối qua”.",
+                    "en": "For allergies she wrote “none.” The last-meal box only says “yesterday evening.”"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "move",
+          "place": "consult-patient",
+          "caption": "상담실"
+        },
+        {
+          "type": "say",
+          "id": "lastmeal",
+          "listen": "patient-listen-consult",
+          "prompt": "환자분께 마지막으로 드신 것을 여쭤봐야 해요. 검진 시작까지 10분 남았어요. 어떻게 할까요? 실제로는 환자분의 모국어로 여쭙지만, 여기서는 같은 뜻을 한국어로 말해 봐요.",
+          "hint": {
+            "mn": "Өвчтөнөөс хамгийн сүүлд юу идэж уусныг асуух хэрэгтэй. Үзлэг эхлэхэд 10 минут үлдлээ. Яах вэ? Бодит ажил дээр өвчтөний эх хэлээр асуудаг. Энд харин яг тэр асуултыг солонгосоор хэлж үз.",
+            "vi": "Em cần hỏi xem lần gần nhất bệnh nhân đã ăn uống gì. Còn 10 phút nữa là bắt đầu khám. Em sẽ làm gì? Thực tế em sẽ hỏi bằng tiếng mẹ đẻ của bệnh nhân, nhưng ở đây hãy nói lại ý đó bằng tiếng Hàn.",
+            "en": "You need to ask the patient what she last ate or drank. The checkup starts in 10 minutes. What will you do? In real life, you would ask in her language, but here, say the same thing in Korean."
+          },
+          "options": [
+            {
+              "id": "open",
+              "label": "시간이 빠듯해도, 어제 저녁부터 드신 것을 하나씩 여쭤본다",
+              "example": "어제 저녁부터 오늘 아침까지 드신 것을 다 말씀해 주세요. 물이나 차도요.",
+              "hint": {
+                "mn": "Цаг давчуу ч өчигдөр оройноос хойш юу идэж уусныг нэг бүрчлэн асуух. «Өчигдөр оройноос өнөө өглөө хүртэл идэж уусан бүхнээ хэлж өгнө үү. Ус, цай уусан ч гэсэн хэлээрэй.»",
+                "vi": "Dù thời gian gấp, vẫn hỏi lần lượt từng thứ bệnh nhân đã ăn uống từ tối qua. “Chị cho em biết hết những gì chị đã ăn uống từ tối qua đến sáng nay được không ạ, cả nước lọc hay trà nữa ạ.”",
+                "en": "Even though time is short, ask about each thing she has eaten or drunk since yesterday evening, one at a time. “Please tell me everything you've eaten or drunk from yesterday evening until this morning. Water and tea too.”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-think",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분이 잠깐 생각하시더니, 모국어로 천천히 말씀하신다.",
+                  "hint": {
+                    "mn": "Өвчтөн хэсэг бодсоноо эх хэлээрээ аажуухан ярьж эхэллээ.",
+                    "vi": "Bệnh nhân nghĩ một lát rồi chậm rãi nói bằng tiếng mẹ đẻ.",
+                    "en": "The patient thinks for a moment, then speaks slowly in her own language."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "closed",
+              "label": "예약 때 금식 안내를 받으셨으니, '금식하셨죠?' 하고 확인한다",
+              "example": "어젯밤부터 금식하셨죠?",
+              "hint": {
+                "mn": "Цаг захиалах үед өлөн ирэх зааварчилгаа авсан тул «Өлөн ирсэн биз дээ?» гэж лавлах. «Өчигдөр шөнөөс хойш юм идээгүй биз дээ?»",
+                "vi": "Lúc đặt lịch, bệnh nhân đã được dặn nhịn ăn, nên em hỏi lại “Chị nhịn ăn rồi phải không ạ?” để xác nhận. “Chị đã nhịn ăn từ tối qua rồi đúng không ạ?”",
+                "en": "She was told to fast when she booked, so check that she has been fasting. “You've been fasting since last night, right?”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-nod",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분이 고개를 끄덕이신다.",
+                  "hint": {
+                    "mn": "Өвчтөн толгой дохилоо.",
+                    "vi": "Bệnh nhân gật đầu.",
+                    "en": "The patient nods."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "relay",
+          "id": "relay-open",
+          "when": {
+            "lastmeal": "open"
+          },
+          "record": "어제부터 드신 것을 간호사에게 전하는 차례",
+          "who": "patient",
+          "listen": "patient-listen-consult",
+          "foreign": {
+            "mn": "Өчигдөр орой найман цагийн үед хоолоо идсэн. Өнөө өглөө даралтын эмээ жаахан усаар даруулж уусан. Өө тийм, бас долоон цагт нэг аяга сүүтэй цай уусан. Энэ асуудал болох уу?",
+            "vi": "Tối qua chị ăn tối lúc khoảng tám giờ. Sáng nay chị uống thuốc huyết áp với một chút nước. À, lúc bảy giờ chị có uống một cốc trà pha sữa. Như vậy có sao không em?",
+            "en": "Last night I had dinner around eight. This morning I took my blood pressure pill with a little water. Oh, and at seven I had a cup of tea with milk. Is that a problem?"
+          },
+          "meaning": "어젯밤 여덟 시쯤 저녁을 드셨고, 오늘 아침에 혈압약을 물 조금과 드셨대요. 일곱 시에 우유 넣은 차를 한 잔 드셨는데, 괜찮은지 물으세요.",
+          "prompt": "환자분의 말을 내시경실 간호사 선생님께 전화로 전해요.",
+          "example": "선생님, 국제진료센터입니다. 10482257 환자분인데요, 어젯밤 여덟 시에 저녁을 드셨고, 아침에 혈압약을 물 조금과 드셨습니다. 일곱 시에 우유 넣은 차도 한 잔 드셨는데, 괜찮은지 물으십니다.",
+          "hint": {
+            "mn": "Өвчтөний хэлснийг дурангийн өрөөний сувилагчид утсаар солонгосоор хэл. Эхлээд өвчтөний бүртгэлийн дугаарыг хэл. Дараа нь дөрвөн зүйлийг бүгдийг нь дамжуул: оройн хоол идсэн цаг, эмээ усаар даруулж уусан тухай, сүүтэй цай уусан тухай, өвчтөний асуулт.",
+            "vi": "Hãy gọi điện cho y tá phòng nội soi và nói lại bằng tiếng Hàn những gì bệnh nhân nói. Trước hết hãy báo mã bệnh nhân, rồi nói đủ bốn ý: giờ ăn tối, việc uống thuốc với nước, cốc trà pha sữa và câu hỏi của bệnh nhân.",
+            "en": "Phone the endoscopy nurse and tell her in Korean what the patient said. Give the patient number first. Then include all four things: when she ate dinner, the pill she took with water, the tea with milk, and her question."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "lastmeal": "open"
+          },
+          "clip": "nurse-phone-tea",
+          "who": "nurse",
+          "channel": "phone",
+          "text": "알려 줘서 고마워요. 우유가 들어갔으면 피검사, 복부 초음파, 위내시경은 오전에 못 해요. 과장님께 말씀드리고 다시 전화할게요.",
+          "hint": {
+            "mn": "Хэлж өгсөнд баярлалаа. Сүүтэй юм уусан бол цусны шинжилгээ, хэвлийн хэт авиан шинжилгээ, ходоодны дуранг үдээс өмнө хийх боломжгүй. Эмчид хэлээд эргээд залгая.",
+            "vi": "Cảm ơn em đã báo. Đã uống trà có sữa thì không làm được xét nghiệm máu, siêu âm bụng và nội soi dạ dày vào buổi sáng. Chị sẽ báo bác sĩ phụ trách rồi gọi lại cho em.",
+            "en": "Thanks for telling me. If she had milk, we can't do the blood test, the abdominal ultrasound or the stomach endoscopy this morning. I'll tell the doctor and call you back."
+          }
+        },
+        {
+          "type": "relay",
+          "id": "relay-closed",
+          "when": {
+            "lastmeal": "closed"
+          },
+          "record": "어제부터 드신 것을 간호사에게 전하는 차례",
+          "who": "patient",
+          "listen": "patient-listen-consult",
+          "foreign": {
+            "mn": "Тийм, тийм. Өчигдөр оройноос хойш юу ч идээгүй.",
+            "vi": "Ừ, ừ. Từ tối qua chị chưa ăn gì cả.",
+            "en": "Yes, yes. I haven't eaten anything since last night."
+          },
+          "meaning": "어젯밤부터 아무것도 안 드셨대요.",
+          "prompt": "환자분의 대답을 내시경실 간호사 선생님께 전화로 전해요.",
+          "example": "선생님, 국제진료센터입니다. 10482257 환자분이 어젯밤부터 금식하셨다고 합니다.",
+          "hint": {
+            "mn": "Өвчтөний хариултыг дурангийн өрөөний сувилагчид утсаар солонгосоор хэл. Эхлээд өвчтөний бүртгэлийн дугаарыг хэл.",
+            "vi": "Hãy gọi điện cho y tá phòng nội soi và nói lại câu trả lời của bệnh nhân bằng tiếng Hàn. Trước hết hãy báo mã bệnh nhân.",
+            "en": "Phone the endoscopy nurse and tell her the patient's answer in Korean. Give the patient number first."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "lastmeal": "closed"
+          },
+          "clip": "nurse-phone-ok",
+          "who": "nurse",
+          "channel": "phone",
+          "text": "네, 그럼 바로 피검사부터 시작할게요. 위내시경은 열 시예요.",
+          "hint": {
+            "mn": "За, тэгвэл шууд цусны шинжилгээнээс эхэлье. Ходоодны дуран арван цагт.",
+            "vi": "Vâng, vậy mình bắt đầu ngay bằng xét nghiệm máu nhé. Nội soi dạ dày sẽ làm lúc mười giờ.",
+            "en": "All right, then we'll start with the blood test right away. The stomach endoscopy is at ten."
+          }
+        }
+      ]
+    },
+    {
+      "id": "exam",
+      "title": "내시경실 앞",
+      "minutes": 4,
+      "place": "exam-nurse",
+      "requires": [
+        "intake"
+      ],
+      "steps": [
+        {
+          "type": "line",
+          "when": {
+            "lastmeal": "closed"
+          },
+          "clip": "nurse-ask-food",
+          "who": "nurse",
+          "text": "들어가시기 전에 한 번만 더 여쭤볼게요. 오늘 아침에 드신 거 정말 없으세요? 물이나 차도요.",
+          "hint": {
+            "mn": "Орохын өмнө дахиад нэг удаа асууя. Өнөө өглөө үнэхээр юу ч идэж уугаагүй юу? Ус, цай ч уугаагүй юу?",
+            "vi": "Trước khi vào, cho tôi hỏi lại một lần nữa. Sáng nay chị thật sự chưa ăn uống gì chứ ạ? Kể cả nước lọc hay trà ạ?",
+            "en": "Before you go in, let me ask once more. You really haven't had anything this morning? Not even water or tea?"
+          }
+        },
+        {
+          "type": "relay",
+          "id": "relay-late",
+          "when": {
+            "lastmeal": "closed"
+          },
+          "record": "검사 직전 환자분의 물음을 간호사에게 전하는 차례",
+          "who": "patient",
+          "listen": "nurse-listen",
+          "foreign": {
+            "mn": "Өглөө долоон цагт ганц аяга сүүтэй цай л уусан. Цай чинь хоол биш биз дээ?",
+            "vi": "Chị chỉ uống một cốc trà pha sữa lúc bảy giờ thôi. Trà đâu phải đồ ăn, đúng không em?",
+            "en": "Only one cup of tea with milk at seven. Tea isn't food, is it?"
+          },
+          "meaning": "아침 일곱 시에 우유 넣은 차를 한 잔만 드셨대요. 차는 음식이 아니지 않냐고 물으세요.",
+          "prompt": "환자분의 말을 간호사 선생님께 전해요.",
+          "example": "선생님, 환자분이 일곱 시에 우유 넣은 차를 한 잔 드셨다고 합니다. 차도 안 되는지 물으십니다.",
+          "hint": {
+            "mn": "Өвчтөний хэлснийг сувилагчид солонгосоор хэл. Сүүтэй цай уусан тухай, өвчтөний асуулт хоёуланг нь дамжуул.",
+            "vi": "Hãy nói lại bằng tiếng Hàn cho y tá những gì bệnh nhân nói. Nói cả chuyện cốc trà pha sữa lẫn câu hỏi của bệnh nhân.",
+            "en": "Tell the nurse in Korean what the patient said. Include both the tea with milk and her question."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "lastmeal": "closed"
+          },
+          "clip": "nurse-delay",
+          "who": "nurse",
+          "text": "아, 벌써 뽑은 피검사는 다시 해야 할 수도 있어요. 내시경은 과장님께 말씀드려 오후 끝으로 옮길게요.",
+          "hint": {
+            "mn": "Аа, аль хэдийн хийсэн цусны шинжилгээг дахин хийх шаардлагатай байж магадгүй. Эмчид мэдэгдээд, дурангийн шинжилгээг үдээс хойших хамгийн сүүлийн ээлжид шилжүүлье.",
+            "vi": "À, máu đã lấy rồi thì có thể phải lấy lại. Nội soi thì chị sẽ báo bác sĩ phụ trách để dời sang cuối buổi chiều.",
+            "en": "Oh, we may have to do the blood test again. I'll tell the doctor and move the endoscopy to the end of the afternoon."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "lastmeal": "open"
+          },
+          "clip": "nurse-reorder",
+          "who": "nurse",
+          "text": "미리 알려 줘서 갑상선 초음파부터 해요. 금식이 필요한 검사는 과장님과 오후로 옮겼어요.",
+          "hint": {
+            "mn": "Чи урьдчилан хэлж өгсөн болохоор бамбай булчирхайн хэт авиан шинжилгээнээс эхэлнэ. Өлөн байх шаардлагатай шинжилгээнүүдийг эмчтэй ярилцаад үдээс хойш хийхээр шилжүүлсэн.",
+            "vi": "Nhờ em báo sớm nên mình làm siêu âm tuyến giáp trước. Các xét nghiệm cần nhịn ăn thì chị đã trao đổi với bác sĩ phụ trách và chuyển sang buổi chiều rồi.",
+            "en": "Since you told me in advance, we'll start with the thyroid ultrasound. The doctor and I moved the tests that require fasting to the afternoon."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "nurse-consent",
+          "who": "nurse",
+          "text": "수면 내시경 동의서예요. 제가 설명할 테니 끝까지 통역해 주세요. 통역한 사람 칸에는 선생님 이름을 써요.",
+          "hint": {
+            "mn": "Энэ бол унтуулгатай дурангийн зөвшөөрлийн хуудас. Би тайлбарлая, чи эцэс хүртэл нь орчуулаарай. «Орчуулсан хүн» гэсэн хэсэгт өөрийнхөө нэрийг бичээрэй.",
+            "vi": "Đây là giấy cam đoan nội soi gây mê. Chị sẽ giải thích, em dịch hết cho bệnh nhân từ đầu đến cuối nhé. Ở ô người phiên dịch thì em ghi tên mình.",
+            "en": "This is the consent form for the sedated endoscopy. I'll explain it, so please interpret all of it. Write your name in the box for the interpreter."
+          }
+        },
+        {
+          "type": "work",
+          "id": "consent-read",
+          "record": "동의서에서 검사 뒤 주의를 찾는 차례",
+          "tool": {
+            "kind": "paper",
+            "title": "수면 위내시경 동의서 (안내)",
+            "lines": [
+              "검사 중에 졸린 상태가 되는 약을 써요.",
+              "검사가 끝나면 회복실에서 30분쯤 쉬어요.",
+              "검사한 날은 운전하지 않아요.",
+              "중요한 계약이나 결정은 다음 날로 미뤄요.",
+              "함께 온 사람과 가시거나 택시를 타요.",
+              "통역한 사람: ________ (이름, 서명)"
+            ],
+            "note": "체험용으로 줄인 안내예요. 실제 동의서는 병원마다 달라요."
+          },
+          "prompt": "간호사 선생님이 설명한 것 가운데, 검사한 날 하면 안 되는 일을 골라요.",
+          "hint": {
+            "mn": "Сувилагчийн тайлбарласан зүйлсээс шинжилгээ хийлгэсэн өдөр хийж болохгүй зүйлийг сонго. 졸린 상태가 되는 약 = нойрмоглуулах эм, 회복실에서 30분쯤 쉬어요 = амрах өрөөнд 30 минут орчим амарна, 운전하지 않아요 = машин барихгүй, 중요한 계약이나 결정은 다음 날로 = чухал гэрээ, шийдвэрээ маргааш болгож хойшлуулна, 함께 온 사람과 가시거나 택시를 타요 = хамт ирсэн хүнтэйгээ явах эсвэл такси барина, 통역한 사람 = орчуулсан хүн.",
+            "vi": "Trong những điều y tá giải thích, hãy chọn việc không được làm trong ngày nội soi. 졸린 상태가 되는 약 = thuốc làm buồn ngủ, 회복실에서 30분쯤 쉬어요 = nghỉ ở phòng hồi tỉnh khoảng 30 phút, 운전하지 않아요 = không lái xe, 중요한 계약이나 결정은 다음 날로 = dời việc ký hợp đồng hay đưa ra quyết định quan trọng sang ngày hôm sau, 함께 온 사람과 가시거나 택시를 타요 = về cùng người đi kèm hoặc đi taxi, 통역한 사람 = người phiên dịch.",
+            "en": "Based on the nurse's explanation, choose what the patient must not do on the day of the test. 졸린 상태가 되는 약 = medicine that makes you sleepy, 회복실에서 30분쯤 쉬어요 = rest in the recovery room for about 30 minutes, 운전하지 않아요 = do not drive, 중요한 계약이나 결정은 다음 날로 = leave important contracts or decisions until the next day, 함께 온 사람과 가시거나 택시를 타요 = go home with the person who came with you, or take a taxi, 통역한 사람 = interpreter."
+          },
+          "options": [
+            {
+              "id": "no-sign",
+              "label": "계약서에 서명하기. 졸린 약 기운이 남아 있다",
+              "hint": {
+                "mn": "Гэрээнд гарын үсэг зурах. Нойрмоглуулах эмийн нөлөө үлдсэн байж болно.",
+                "vi": "Ký hợp đồng. Thuốc gây buồn ngủ vẫn còn tác dụng.",
+                "en": "Signing a contract. She will still be sleepy from the medicine."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "nurse-drive-ok",
+                  "who": "nurse",
+                  "text": "네, 계약도 운전도 내일로요. 이건 꼭 끝까지 통역해 주세요.",
+                  "hint": {
+                    "mn": "Тийм, гэрээнд гарын үсэг зурах, машин барихыг хоёуланг нь маргааш болгож хойшлуулна. Үүнийг заавал эцэс хүртэл нь орчуулаарай.",
+                    "vi": "Đúng rồi, ký hợp đồng hay lái xe đều phải để sang ngày mai. Phần này em nhất định phải dịch hết cho bệnh nhân nhé.",
+                    "en": "Yes, signing contracts and driving must both wait until tomorrow. Please be sure to interpret all of this."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "rest",
+              "label": "회복실에서 오래 쉬기. 오후 결과 상담에 늦을 수 있다",
+              "hint": {
+                "mn": "Амрах өрөөнд удаан байх. Үдээс хойших хариуны зөвлөгөөнд хоцорч магадгүй.",
+                "vi": "Nghỉ lâu ở phòng hồi tỉnh. Có thể bị trễ buổi tư vấn kết quả buổi chiều.",
+                "en": "Resting a long time in the recovery room. She might be late for her appointment this afternoon to hear the results."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "nurse-drive-again",
+                  "who": "nurse",
+                  "text": "회복실에서 쉬는 건 하셔야 해요. 안 되는 건 운전과 계약 서명이에요.",
+                  "hint": {
+                    "mn": "Дурангийн дараа амрах өрөөнд хэсэг амрах ёстой. Хийж болохгүй нь машин барих, гэрээнд гарын үсэг зурах.",
+                    "vi": "Bệnh nhân phải nghỉ ở phòng hồi tỉnh. Nhưng không được lái xe và ký hợp đồng.",
+                    "en": "She has to rest in the recovery room. What she must not do is drive or sign a contract."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "line",
+          "clip": "nurse-called",
+          "who": "nurse",
+          "action": true,
+          "text": "간호사 선생님이 전화를 받으러 검사실로 들어가신다. 뒤에는 기다리는 환자가 세 분 있다.",
+          "hint": {
+            "mn": "Сувилагч утсаар ярихаар шинжилгээний өрөө рүү орлоо. Ард нь хүлээж буй гурван өвчтөн байна.",
+            "vi": "Y tá đi vào phòng nội soi để nghe điện thoại. Phía sau có ba bệnh nhân đang chờ.",
+            "en": "The nurse goes back into the endoscopy room to answer a phone call. Three patients are waiting behind you."
+          }
+        },
+        {
+          "type": "move",
+          "place": "exam-front",
+          "caption": "내시경실 앞, 환자분과 둘이"
+        },
+        {
+          "type": "say",
+          "id": "consent",
+          "prompt": "환자분이 서툰 한국어로 「한국어 조금 알아요. 사인 어디예요?」 하세요. 어떻게 할까요?",
+          "hint": {
+            "mn": "Өвчтөн солонгосоор тааруухан ярьж, «Солонгос хэл жаахан мэднэ. Гарын үсэг хаана?» гэж байна. Яах вэ?",
+            "vi": "Bệnh nhân nói bằng tiếng Hàn bập bẹ: “Chị biết chút tiếng Hàn. Ký ở đâu?” Em sẽ làm gì?",
+            "en": "The patient says in simple, broken Korean, “I know a little Korean. Where do I sign?” What will you do?"
+          },
+          "options": [
+            {
+              "id": "explain",
+              "label": "뒤에 세 분이 기다려도, 검사 뒤 주의를 끝까지 통역하고 궁금한 것을 여쭤본 뒤 서명하시게 한다",
+              "example": "서명하시기 전에 꼭 전할 게 있어요. 오늘은 운전도, 계약서 서명도 하시면 안 돼요. 궁금한 것 있으세요?",
+              "hint": {
+                "mn": "Ард гурван хүн хүлээж байгаа ч шинжилгээний дараах анхааруулгыг эцэс хүртэл орчуулж, асуух зүйл байгаа эсэхийг асуусны дараа гарын үсэг зуруулах. «Гарын үсэг зурахын өмнө танд заавал хэлэх зүйл байна. Өнөөдөр машин барьж болохгүй, гэрээнд гарын үсэг ч зурж болохгүй. Асуух зүйл байна уу?»",
+                "vi": "Dù phía sau có ba người đang chờ, em vẫn dịch hết các điều cần lưu ý sau khi nội soi, hỏi bệnh nhân có thắc mắc gì không, rồi mới để bệnh nhân ký. “Trước khi chị ký, có điều này em nhất định phải nói với chị. Hôm nay chị không được lái xe, cũng không được ký hợp đồng. Chị có thắc mắc gì không ạ?”",
+                "en": "Even with three people waiting, interpret everything she needs to be careful about after the test, ask if she has questions, and only then let her sign. “Before you sign, there's something I must tell you. Today you must not drive or sign any contracts. Do you have any questions?”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-explained",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분이 놀라신다. 오늘 저녁 딸의 원룸 계약서에 서명하기로 했다며, 내일 아침으로 미루겠다고 하신다.",
+                  "hint": {
+                    "mn": "Өвчтөн гайхлаа. Өнөө орой охиныхоо түрээсийн байрны гэрээнд гарын үсэг зурахаар болсон байсан гэнэ. Үүнийгээ маргааш өглөө болгож хойшлуулна гэлээ.",
+                    "vi": "Bệnh nhân ngạc nhiên. Bệnh nhân nói tối nay định ký hợp đồng thuê phòng cho con gái, giờ sẽ dời sang sáng mai.",
+                    "en": "The patient is surprised. She says she was going to sign the rental contract for her daughter's studio apartment this evening, and that she'll move it to tomorrow morning."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "sign",
+              "label": "한국어를 아신다고 하고 뒤에 세 분이 기다리니, 서명할 곳을 알려 드린다",
+              "example": "여기에 서명하시면 돼요.",
+              "hint": {
+                "mn": "Солонгос хэл мэднэ гэж байгаа бөгөөд ард гурван хүн хүлээж байгаа тул гарын үсэг зурах хэсгийг зааж өгөх. «Энд гарын үсэг зурна уу.»",
+                "vi": "Bệnh nhân nói mình biết tiếng Hàn, phía sau lại có ba người đang chờ, nên em chỉ chỗ ký cho bệnh nhân luôn. “Chị ký vào đây là được ạ.”",
+                "en": "She says she knows Korean, and three people are waiting, so show her where to sign. “Please sign here.”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-signed",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분이 바로 서명하신다. 통역한 사람 칸에 내 이름이 들어간다.",
+                  "hint": {
+                    "mn": "Өвчтөн шууд гарын үсгээ зурлаа. «Орчуулсан хүн» гэсэн хэсэгт чиний нэр орлоо.",
+                    "vi": "Bệnh nhân ký ngay. Tên em được ghi vào ô người phiên dịch.",
+                    "en": "The patient signs right away. Your name goes in the interpreter's box."
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "results",
+      "title": "결과 상담",
+      "minutes": 5,
+      "place": "clinic-two",
+      "steps": [
+        {
+          "type": "line",
+          "clip": "doctor-result-1",
+          "who": "doctor",
+          "text": "오늘 검사는 대부분 괜찮았어요. 위내시경에서 가벼운 위염이 보였는데, 식사만 조심하시면 돼요.",
+          "hint": {
+            "mn": "Өнөөдрийн шинжилгээний ихэнх нь хэвийн гарлаа. Ходоодны дурангаар ходоодны хөнгөн үрэвсэл харагдсан ч хоол ундандаа л анхаарвал болно.",
+            "vi": "Kết quả hôm nay phần lớn đều ổn. Nội soi dạ dày thấy viêm dạ dày nhẹ, chị chỉ cần chú ý ăn uống là được.",
+            "en": "Most of today's results are fine. The stomach endoscopy showed mild gastritis; you just need to be careful about what you eat."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "doctor-result-2",
+          "who": "doctor",
+          "text": "그리고 갑상선 초음파에서 작은 혹이 하나 보였어요. 크기가 작아서 6개월 뒤에 초음파로 다시 봐요.",
+          "hint": {
+            "mn": "Мөн бамбай булчирхайн хэт авиан шинжилгээнд нэг жижиг зангилаа харагдсан. Хэмжээ нь жижиг болохоор 6 сарын дараа хэт авиагаар дахин харна.",
+            "vi": "Ngoài ra, siêu âm tuyến giáp thấy một nhân nhỏ. Vì kích thước nhỏ nên 6 tháng sau sẽ siêu âm lại.",
+            "en": "Also, the thyroid ultrasound showed one small lump. It's small, so we'll check it again with an ultrasound in six months."
+          }
+        },
+        {
+          "type": "work",
+          "id": "relay-result",
+          "record": "과장님 말씀을 통역할 문장을 고르는 차례",
+          "tool": {
+            "kind": "paper",
+            "title": "통역 메모",
+            "lines": [
+              "위내시경: 가벼운 위염, 식사 조심",
+              "갑상선 초음파: 작은 혹 1개",
+              "6개월 뒤 초음파로 다시 보기"
+            ]
+          },
+          "prompt": "과장님 말씀을 환자분께 통역해요. 어느 쪽이 과장님 말씀 그대로예요?",
+          "hint": {
+            "mn": "Эмчийн хэлснийг өвчтөнд орчуулна. Аль нь эмчийн хэлсэнтэй яг адилхан бэ? 가벼운 위염 = ходоодны хөнгөн үрэвсэл, 식사 조심 = хоол ундандаа анхаарах, 작은 혹 1개 = нэг жижиг зангилаа, 6개월 뒤 초음파로 다시 보기 = 6 сарын дараа хэт авиагаар дахин харах.",
+            "vi": "Hãy phiên dịch lời bác sĩ cho bệnh nhân. Câu nào đúng nguyên văn lời bác sĩ? 가벼운 위염 = viêm dạ dày nhẹ, 식사 조심 = chú ý ăn uống, 작은 혹 1개 = một nhân nhỏ, 6개월 뒤 초음파로 다시 보기 = 6 tháng sau siêu âm lại.",
+            "en": "You'll interpret the doctor's words for the patient. Which one is exactly what the doctor said? 가벼운 위염 = mild gastritis, 식사 조심 = be careful about food, 작은 혹 1개 = one small lump, 6개월 뒤 초음파로 다시 보기 = another ultrasound in six months."
+          },
+          "options": [
+            {
+              "id": "as-said",
+              "label": "놀라실 수 있어도, 갑상선에 작은 혹이 하나 있고 6개월 뒤에 초음파로 다시 본다고 전한다",
+              "hint": {
+                "mn": "Цочирдож магадгүй ч бамбай булчирхайд нэг жижиг зангилаа байгаа, 6 сарын дараа хэт авиагаар дахин харна гэж дамжуулах.",
+                "vi": "Dù bệnh nhân có thể hoảng sợ, em vẫn nói là tuyến giáp có một nhân nhỏ và 6 tháng sau sẽ siêu âm lại.",
+                "en": "Even though it may scare her, say there is one small lump in the thyroid and it will be checked again by ultrasound in six months."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-hears-lump",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분 얼굴이 굳으신다. 모국어로 무언가 되물으신다.",
+                  "hint": {
+                    "mn": "Өвчтөний царай барайлаа. Эх хэлээрээ ямар нэг юм дахин асуулаа.",
+                    "vi": "Gương mặt bệnh nhân cứng lại. Bệnh nhân hỏi lại điều gì đó bằng tiếng mẹ đẻ.",
+                    "en": "The patient looks tense. She replies with a question in her own language."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "softened",
+              "label": "'혹'이라는 말에 겁먹지 않게, 혹이 있지만 괜찮다고 전한다",
+              "hint": {
+                "mn": "«Зангилаа» гэдэг үг өвчтөнийг айлгахгүйн тулд «зангилаа байгаа ч зүгээр» гэж дамжуулах.",
+                "vi": "Để bệnh nhân không sợ khi nghe chữ “nhân”, em nói là có nhân nhưng không sao.",
+                "en": "So she won't be frightened by the word “lump,” say there is a lump but it's fine."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-hears-fine",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분이 안심하신 얼굴로 모국어로 무언가 물으신다. 과장님은 환자분의 말을 알아듣지 못하신다.",
+                  "hint": {
+                    "mn": "Өвчтөн тайвширсан царайтай эх хэлээрээ ямар нэг юм асуулаа. Эмч өвчтөний хэлийг ойлгохгүй.",
+                    "vi": "Với vẻ mặt yên tâm, bệnh nhân hỏi điều gì đó bằng tiếng mẹ đẻ. Bác sĩ không hiểu bệnh nhân nói gì.",
+                    "en": "Looking relieved, the patient asks something in her own language. The doctor can't understand her language."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "relay",
+          "id": "ask-doctor",
+          "when": {
+            "relay-result": "as-said"
+          },
+          "record": "환자분의 물음을 의사에게 전하는 차례",
+          "who": "patient",
+          "listen": "doctor-listen",
+          "foreign": {
+            "mn": "Зангилаа гэж үү? Хорт хавдар уу? Хагалгаанд орох хэрэгтэй юү?",
+            "vi": "Có nhân à? Có phải ung thư không em? Chị có phải mổ không?",
+            "en": "A lump? Is it cancer? Do I need an operation?"
+          },
+          "meaning": "혹이 암인지, 수술을 해야 하는지 물으세요.",
+          "prompt": "환자분의 물음을 과장님께 그대로 전해요.",
+          "example": "과장님, 환자분이 혹이 암인지, 수술을 해야 하는지 물으십니다.",
+          "hint": {
+            "mn": "Өвчтөний асуултыг эмчид солонгосоор яг хэвээр нь дамжуул. Өөрөө хариулах гэж бүү оролд.",
+            "vi": "Hãy chuyển nguyên câu hỏi của bệnh nhân sang tiếng Hàn cho bác sĩ. Đừng tự trả lời thay bác sĩ.",
+            "en": "Pass on the patient's questions to the doctor in Korean, exactly as she asked them. Don't try to answer them yourself."
+          }
+        },
+        {
+          "type": "relay",
+          "id": "ask-skip",
+          "when": {
+            "relay-result": "softened"
+          },
+          "record": "환자분의 물음을 의사에게 전하는 차례",
+          "who": "patient",
+          "listen": "doctor-listen",
+          "foreign": {
+            "mn": "Зүгээр юм бол зургаан сарын дараа дахиж ирэх шаардлагагүй биз дээ?",
+            "vi": "Không sao thì sáu tháng nữa chị không cần quay lại đâu nhỉ?",
+            "en": "If it's fine, I don't need to come back in six months, do I?"
+          },
+          "meaning": "괜찮다면 6개월 뒤에 다시 안 와도 되지 않냐고 물으세요.",
+          "prompt": "환자분의 물음을 과장님께 그대로 전해요.",
+          "example": "과장님, 환자분이 괜찮다면 6개월 뒤에 다시 안 와도 되냐고 물으십니다.",
+          "hint": {
+            "mn": "Өвчтөний асуултыг эмчид солонгосоор яг хэвээр нь дамжуул.",
+            "vi": "Hãy chuyển nguyên câu hỏi của bệnh nhân sang tiếng Hàn cho bác sĩ.",
+            "en": "Pass on the patient's question to the doctor in Korean, exactly as she asked it."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "relay-result": "softened"
+          },
+          "clip": "doctor-correct",
+          "who": "doctor",
+          "text": "괜찮다고 말씀드린 적은 없어요. 6개월 뒤 초음파는 꼭 보셔야 해요. 다시 정확히 전해 주세요.",
+          "hint": {
+            "mn": "Би зүгээр гэж хэлээгүй. 6 сарын дараах хэт авиан шинжилгээг заавал хийлгэх ёстой. Дахин яг зөв дамжуулаарай.",
+            "vi": "Tôi chưa hề nói là không sao. Sáu tháng sau nhất định phải siêu âm lại. Em hãy dịch lại cho chính xác.",
+            "en": "I never said it was fine. She must have the ultrasound in six months. Please tell her again exactly what I said."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "doctor-answer",
+          "who": "doctor",
+          "text": "지금 모양으로는 암을 의심하지 않아요. 크기도 작아서 수술할 단계가 아니고요. 6개월 뒤에 다시 봐요.",
+          "hint": {
+            "mn": "Одоогийн хэлбэрийг нь харахад хорт хавдар гэж сэжиглэхгүй байна. Хэмжээ нь ч жижиг тул хагалгаа хийх шатанд хүрээгүй. 6 сарын дараа дахин харъя.",
+            "vi": "Với hình dạng hiện tại thì tôi không nghi ngờ là ung thư. Kích thước cũng nhỏ nên chưa đến mức phải phẫu thuật. Sáu tháng sau mình xem lại.",
+            "en": "Judging by its current shape, we don't suspect cancer. It's also small, so it doesn't need surgery now. We'll check again in six months."
+          }
+        },
+        {
+          "type": "line",
+          "clip": "doctor-abroad",
+          "who": "doctor",
+          "text": "돌아가셔서 다니시는 병원에서 받으셔도 돼요.",
+          "hint": {
+            "mn": "Эх орондоо буцаад үзүүлдэг эмнэлэгтээ хийлгэж ч болно.",
+            "vi": "Chị về nước rồi siêu âm ở bệnh viện chị hay khám cũng được.",
+            "en": "You can also have it done at your usual hospital back home."
+          }
+        },
+        {
+          "type": "relay",
+          "direction": "out",
+          "id": "tell-patient",
+          "record": "과장님 말씀을 환자분께 모국어로 전하는 차례",
+          "who": "patient",
+          "listen": "doctor-listen",
+          "meaning": "지금 모양으로는 암을 의심하지 않고, 크기도 작아서 수술할 단계가 아니래요. 6개월 뒤에 초음파로 다시 보시는데, 돌아가셔서 다니시는 병원에서 받으셔도 된대요.",
+          "prompt": "과장님 말씀을 환자분께 모국어로 전해요. 빼거나 보태지 않아요.",
+          "foreign": {
+            "mn": "Эмчийн хэлснээр одоогийн хэлбэрийг нь харахад хорт хавдар гэж сэжиглэхгүй байна. Хэмжээ нь ч жижиг тул хагалгаа хийх шатанд хүрээгүй. Та 6 сарын дараа хэт авиагаар дахин үзүүлээрэй. Эх орондоо үзүүлдэг эмнэлэгтээ хийлгэж ч болно гэсэн.",
+            "vi": "Bác sĩ nói là với hình dạng hiện tại thì không nghi ngờ ung thư. Kích thước cũng nhỏ nên chưa cần phẫu thuật. Sáu tháng nữa chị siêu âm lại ạ. Chị siêu âm ở bệnh viện chị hay khám bên nhà cũng được ạ.",
+            "en": "The doctor says that, based on its current shape, cancer is not suspected. It's also small, so you don't need surgery now. Please have another ultrasound in six months. You can have it at your usual hospital back home."
+          },
+          "hint": {
+            "mn": "Эмчийн хэлснийг өвчтөнд түүний эх хэлээр дамжуул. Хасч, нэмж болохгүй.",
+            "vi": "Hãy truyền đạt lời bác sĩ cho bệnh nhân bằng tiếng của bệnh nhân. Không thêm, không bớt.",
+            "en": "Pass on the doctor's words to the patient in her language. Don't leave anything out or add anything."
+          }
+        },
+        {
+          "type": "move",
+          "place": "clinic-patient",
+          "caption": "과장님이 전화를 받으러 잠깐 나가신 사이"
+        },
+        {
+          "type": "say",
+          "id": "judge",
+          "listen": "patient-listen-close",
+          "prompt": "환자분이 모국어로 물으세요. 「솔직히 코디네이터님 생각은 어때요? 별것 아니죠?」 어떻게 할까요?",
+          "hint": {
+            "mn": "Өвчтөн эх хэлээрээ «Дүү минь, үнэнийг хэлэхэд чи юу гэж бодож байна? Ноцтой юм биш биз дээ?» гэж асууж байна. Яах вэ?",
+            "vi": "Bệnh nhân hỏi bằng tiếng mẹ đẻ: “Nói thật đi em, em nghĩ sao? Không có gì nghiêm trọng đúng không?” Em sẽ làm gì?",
+            "en": "The patient asks in her own language, “Honestly, what do you think? It's nothing serious, right?” What will you do?"
+          },
+          "options": [
+            {
+              "id": "doctor",
+              "label": "서운해하실 수 있어도, 판단은 의사가 한다고 말씀드리고 물을 것을 적게 돕는다",
+              "example": "많이 걱정되시죠. 그 마음 알아요. 그래도 제 생각을 말씀드릴 수는 없어요. 과장님은 6개월 뒤 초음파로 다시 보자고 하셨어요. 궁금하신 건 같이 적어서 여쭤봐요.",
+              "hint": {
+                "mn": "Гомдож магадгүй ч дүгнэлтийг эмч гаргадаг гэж хэлээд асуух зүйлээ бичихэд нь туслах. «Их санаа зовж байгаа байх. Би ойлгож байна. Гэхдээ би өөрийнхөө бодлыг хэлж чадахгүй. Эмч 6 сарын дараа хэт авиагаар дахин харъя гэсэн. Асуух зүйлээ хамт бичээд эмчээс асууя.»",
+                "vi": "Dù bệnh nhân có thể buồn lòng, vẫn nói rằng việc đánh giá là của bác sĩ, rồi giúp bệnh nhân ghi lại thắc mắc. “Chắc chị lo lắm. Em hiểu mà. Nhưng em không thể nói ý kiến của em được. Bác sĩ dặn 6 tháng sau siêu âm lại. Mình cùng ghi lại những điều chị muốn hỏi rồi hỏi bác sĩ nhé.”",
+                "en": "Even if she is disappointed, say that the doctor is the one who decides, and help her write down her questions. “You must be very worried. I understand. But I can't give you my own opinion. The doctor said to check again with an ultrasound in six months. Let's write down your questions together and ask him.”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-writes",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분이 궁금한 것 두 가지를 적으신다. 과장님이 돌아오셔서 하나씩 답해 주신다.",
+                  "hint": {
+                    "mn": "Өвчтөн асуух хоёр зүйлээ бичлээ. Эмч эргэж ирээд нэг нэгээр нь хариуллаа.",
+                    "vi": "Bệnh nhân ghi lại hai điều muốn hỏi. Bác sĩ quay lại và trả lời từng điều.",
+                    "en": "The patient writes down two questions. The doctor comes back and answers them one by one."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "comfort",
+              "label": "많이 불안해 보이시니 '별것 아닐 거예요'라고 안심시킨다",
+              "example": "걱정하지 마세요. 별것 아닐 거예요.",
+              "hint": {
+                "mn": "Их санаа зовсон харагдаж байгаа тул «Ноцтой юм биш байх» гэж тайвшруулах. «Санаа бүү зов. Ноцтой юм биш байх.»",
+                "vi": "Bệnh nhân trông rất lo lắng, nên trấn an rằng “chắc không sao đâu”. “Chị đừng lo. Chắc không có gì đâu ạ.”",
+                "en": "She looks very anxious, so reassure her that it's probably nothing. “Don't worry. It's probably nothing.”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-relieved",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분 얼굴이 밝아지신다. 「그럼 다시 검사 안 해도 되겠네요」 하고 웃으신다.",
+                  "hint": {
+                    "mn": "Өвчтөний царай гэрэлтлээ. «Тэгвэл дахиж шинжилгээ өгөх хэрэггүй юм байна» гэж инээмсэглэлээ.",
+                    "vi": "Gương mặt bệnh nhân tươi lên. Bệnh nhân cười và nói: “Vậy là chị không cần kiểm tra lại nữa rồi.”",
+                    "en": "The patient's face brightens. She smiles and says, “Then I don't need another test.”"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "family",
+              "label": "말이 통하는 사이니, 내 가족 이야기를 들려주며 마음을 놓으시게 한다",
+              "example": "제 어머니도 갑상선에 혹이 있었는데, 괜찮으셨어요.",
+              "hint": {
+                "mn": "Нэг хэлээр ярьдаг хүмүүс болохоор гэр бүлийнхнийхээ тухай ярьж сэтгэлийг нь тайвшруулах. «Манай ээжийн бамбай булчирхайд ч зангилаа байсан, гэхдээ зүгээр байсан.»",
+                "vi": "Vì nói cùng thứ tiếng, nên kể chuyện người nhà mình để bệnh nhân yên tâm. “Mẹ em cũng từng có nhân ở tuyến giáp, mà không sao cả.”",
+                "en": "Since you speak the same language, tell her about your own family to help her feel calm. “My mother had a lump in her thyroid too, and she was fine.”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-relieved-2",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분이 한숨을 돌리신다. 「그럼 나도 괜찮겠네요」 하신다.",
+                  "hint": {
+                    "mn": "Өвчтөний санаа амарлаа. «Тэгвэл би ч бас зүгээр байх нь» гэлээ.",
+                    "vi": "Bệnh nhân thở phào: “Vậy chắc chị cũng không sao.”",
+                    "en": "The patient sighs with relief. “Then I'll be fine too,” she says."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "move",
+          "place": "clinic-front",
+          "caption": "진료실 밖 복도. 전화가 온다"
+        },
+        {
+          "type": "line",
+          "clip": "agency-call",
+          "who": "agency",
+          "channel": "phone",
+          "text": "안녕하세요, 환자분 모시고 온 에이전시 정 실장이에요. 검사 결과 나왔죠? 가족분들이 자꾸 물어보셔서요. 뭐라고 나왔어요?",
+          "hint": {
+            "mn": "Сайн байна уу, өвчтөнийг дагуулж ирсэн агентлагийн менежер Чон байна. Шинжилгээний хариу гарсан биз дээ? Гэр бүлийнхэн нь байнга асуугаад байна. Юу гэж гарсан бэ?",
+            "vi": "Chào em, chị là chị Jeong, quản lý bên công ty du lịch y tế đưa bệnh nhân sang. Có kết quả khám rồi phải không? Người nhà bệnh nhân cứ hỏi mãi. Kết quả thế nào?",
+            "en": "Hello, this is Jeong, a manager at the agency that brought the patient. The results are out, right? Her family keeps asking. What do the results say?"
+          }
+        },
+        {
+          "type": "say",
+          "id": "privacy",
+          "prompt": "에이전시 직원이 환자분의 검사 결과를 물어요. 어떻게 할까요?",
+          "hint": {
+            "mn": "Агентлагийн ажилтан өвчтөний шинжилгээний хариуг асууж байна. Яах вэ?",
+            "vi": "Nhân viên công ty du lịch y tế hỏi kết quả khám của bệnh nhân. Em sẽ làm gì?",
+            "en": "The agency worker is asking for the patient's test results. What will you do?"
+          },
+          "options": [
+            {
+              "id": "ask-first",
+              "label": "재촉을 받아도, 환자분 동의 없이는 말할 수 없다고 하고 먼저 여쭙겠다고 한다",
+              "example": "죄송하지만 환자분 동의 없이는 검사 결과를 말씀드릴 수 없습니다. 환자분께 먼저 여쭤보겠습니다.",
+              "hint": {
+                "mn": "Шахаж байгаа ч өвчтөний зөвшөөрөлгүйгээр хэлж болохгүй гэж хэлээд, эхлээд өвчтөнөөс асууна гэх. «Уучлаарай, өвчтөний зөвшөөрөлгүйгээр шинжилгээний хариуг хэлж чадахгүй. Эхлээд өвчтөнөөс асууя.»",
+                "vi": "Dù bị hối thúc, vẫn nói rằng không thể cho biết nếu bệnh nhân chưa đồng ý, và sẽ hỏi bệnh nhân trước. “Xin lỗi, nếu bệnh nhân chưa đồng ý thì em không thể cho biết kết quả. Em sẽ hỏi bệnh nhân trước ạ.”",
+                "en": "Even if they keep asking, say you can't share anything without the patient's consent, and that you'll ask her first. “I'm sorry, I can't share test results without the patient's consent. I'll ask her first.”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "agency-ok",
+                  "who": "agency",
+                  "channel": "phone",
+                  "text": "아, 네. 그럼 환자분께 여쭤보고 연락 주세요.",
+                  "hint": {
+                    "mn": "Аа, за. Тэгвэл өвчтөнөөс асуугаад холбогдоорой.",
+                    "vi": "À, vâng. Vậy em hỏi bệnh nhân rồi liên lạc lại nhé.",
+                    "en": "Oh, okay. Then ask her and get back to me."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "tell",
+              "label": "환자분을 모시고 온 에이전시이고 가족도 걱정하니, 결과를 짧게 알려 준다",
+              "example": "가벼운 위염이 있고, 갑상선에 작은 혹이 있어서 6개월 뒤에 다시 보신대요.",
+              "hint": {
+                "mn": "Өвчтөнийг дагуулж ирсэн агентлаг бөгөөд гэр бүл нь ч санаа зовж байгаа тул хариуг товч хэлж өгөх. «Ходоодны хөнгөн үрэвсэлтэй, бамбай булчирхайд жижиг зангилаа байгаа тул 6 сарын дараа дахин үзүүлнэ гэсэн.»",
+                "vi": "Vì là công ty du lịch y tế đưa bệnh nhân sang, người nhà cũng đang lo, nên nói ngắn gọn kết quả. “Bệnh nhân bị viêm dạ dày nhẹ, và có một nhân nhỏ ở tuyến giáp nên 6 tháng sau sẽ kiểm tra lại ạ.”",
+                "en": "It's the agency that brought her, and her family is worried too, so tell them the results briefly. “She has mild gastritis and a small lump in her thyroid, so she'll be checked again in six months.”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "agency-spread",
+                  "who": "agency",
+                  "channel": "phone",
+                  "text": "혹이요? 알겠어요. 가족분들께 바로 전해 드릴게요.",
+                  "hint": {
+                    "mn": "Зангилаа гэнэ ээ? Ойлголоо. Гэр бүлийнхэнд нь шууд дамжуулъя.",
+                    "vi": "Có nhân à? Chị biết rồi. Chị sẽ báo ngay cho người nhà bệnh nhân.",
+                    "en": "A lump? Got it. I'll tell her family right away."
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "checkout",
+      "title": "수납과 귀가",
+      "minutes": 5,
+      "place": "billing-senior",
+      "requires": [
+        "exam",
+        "results"
+      ],
+      "steps": [
+        {
+          "type": "line",
+          "clip": "senior-billing",
+          "who": "senior",
+          "text": "기본 검진비는 아침에 내셨어요. 지금은 더해진 것만 정산하고 귀가 안내를 해요.",
+          "hint": {
+            "mn": "Өвчтөн үндсэн үзлэгийн төлбөрөө өглөө төлсөн. Одоо зөвхөн нэмэгдсэн зүйлийн төлбөр тооцоог хийгээд, өвчтөнд буцах үеийн зааварчилгаа өгнө.",
+            "vi": "Phí khám cơ bản thì bệnh nhân đã trả từ sáng rồi. Bây giờ mình chỉ cần làm thủ tục thanh toán các khoản thêm, rồi hướng dẫn bệnh nhân ra về.",
+            "en": "She paid the basic checkup fee this morning. Now she only needs to pay for the added items. Then we'll give her instructions before she goes home."
+          }
+        },
+        {
+          "type": "work",
+          "id": "cost-check",
+          "record": "계산서에서 더해진 항목을 찾는 차례",
+          "tool": {
+            "kind": "paper",
+            "title": "진료비 계산서",
+            "rows": [
+              [
+                "종합건강검진 기본(아침에 냄)",
+                "650,000원"
+              ],
+              [
+                "갑상선 초음파(추가)",
+                "80,000원"
+              ],
+              [
+                "수면 내시경(추가)",
+                "100,000원"
+              ],
+              [
+                "지금 낼 돈",
+                "180,000원"
+              ]
+            ],
+            "note": "값은 체험용 예시예요. 예약 때 보낸 견적서(예상 진료비 안내)에 같은 값이 있어요."
+          },
+          "prompt": "환자분이 모국어로 「실장님은 65만 원이면 된다고 하셨는데요」 하세요. 지금 더 내는 것을 골라요.",
+          "hint": {
+            "mn": "Өвчтөн эх хэлээрээ «Менежер 650 мянган вон л болно гэсэн шүү дээ» гэж байна. Одоо нэмж төлөх зүйлийг сонго. 기본 = үндсэн, 아침에 냄 = өглөө төлсөн, 추가 = нэмэлт, 지금 낼 돈 = одоо төлөх мөнгө, 견적서 = урьдчилсан үнийн тооцоо.",
+            "vi": "Bệnh nhân nói bằng tiếng mẹ đẻ: “Quản lý bảo chị chỉ cần 650.000 won thôi mà.” Hãy chọn khoản phải trả thêm bây giờ. 기본 = cơ bản, 아침에 냄 = đã trả buổi sáng, 추가 = thêm, 지금 낼 돈 = số tiền trả bây giờ, 견적서 = bảng báo giá.",
+            "en": "The patient says in her own language, “The agency manager told me 650,000 won would be enough.” Choose the extra costs that she must pay now. 기본 = basic, 아침에 냄 = paid this morning, 추가 = added, 지금 낼 돈 = amount to pay now, 견적서 = price estimate."
+          },
+          "options": [
+            {
+              "id": "added",
+              "label": "갑상선 초음파와 수면 내시경. '추가' 줄이 둘이다",
+              "hint": {
+                "mn": "Бамбай булчирхайн хэт авиа ба унтуулгатай дуран. «Нэмэлт» мөр хоёр байна.",
+                "vi": "Siêu âm tuyến giáp và nội soi gây mê. Có hai dòng ghi “thêm”.",
+                "en": "The thyroid ultrasound and the sedated endoscopy. There are two “added” lines."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-cost-ok",
+                  "who": "senior",
+                  "text": "맞아요. 예약 때 보낸 견적서에도 적혀 있어요. 같이 보여 드려요.",
+                  "hint": {
+                    "mn": "Зөв. Цаг захиалах үед явуулсан урьдчилсан үнийн тооцоонд ч бичсэн байгаа. Түүнийг нь хамт үзүүлээрэй.",
+                    "vi": "Đúng rồi. Trong bảng báo giá gửi lúc đặt lịch cũng có ghi. Em cho bệnh nhân xem cùng nhé.",
+                    "en": "Right. It's also in the price estimate we sent when she booked. Show her that too."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "sedation-only",
+              "label": "수면 내시경만. 초음파는 기본 검진에 들어 있을 것 같다",
+              "hint": {
+                "mn": "Зөвхөн унтуулгатай дуран. Хэт авиа үндсэн үзлэгт багтсан байх.",
+                "vi": "Chỉ có nội soi gây mê thôi. Siêu âm chắc đã có trong gói khám cơ bản.",
+                "en": "Only the sedated endoscopy. The ultrasound is probably part of the basic checkup."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-cost-again",
+                  "who": "senior",
+                  "text": "더해진 줄이 둘이에요. 갑상선 초음파와 수면 내시경이요.",
+                  "hint": {
+                    "mn": "«Нэмэлт» гэсэн мөр хоёр байна: бамбай булчирхайн хэт авиа, унтуулгатай дуран.",
+                    "vi": "Có hai dòng ghi “thêm”: siêu âm tuyến giáp và nội soi gây mê.",
+                    "en": "Two lines say “added”: the thyroid ultrasound and the sedated endoscopy."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "say",
+          "id": "refer",
+          "listen": "senior-listen-billing",
+          "prompt": "환자분이 모국어로 물으세요. 「다음 달에 동생이랑 친구 둘을 데려오면 할인해 주나요? 다른 병원은 소개하면 소개비를 준대요」 어떻게 할까요?",
+          "hint": {
+            "mn": "Өвчтөн эх хэлээрээ «Дараа сард дүүгээ, хоёр найзаа дагуулж ирвэл хөнгөлөлт үзүүлэх үү? Өөр эмнэлгүүд хүн зуучилбал зуучлалын хөлс өгдөг гэсэн» гэж асууж байна. Яах вэ?",
+            "vi": "Bệnh nhân hỏi bằng tiếng mẹ đẻ: “Tháng sau nếu chị dẫn em gái và hai người bạn đến thì có được giảm giá không? Nghe nói ở bệnh viện khác, ai giới thiệu người đến thì được tiền hoa hồng đấy.” Em sẽ làm gì?",
+            "en": "The patient asks in her own language, “If I bring my sister and two friends next month, will you give me a discount? I heard another hospital pays a referral fee.” What will you do?"
+          },
+          "options": [
+            {
+              "id": "official",
+              "label": "서운해하실 수 있어도, 내가 정할 수 없다고 하고 병원에 정해진 할인이 있는지 확인해 드린다",
+              "example": "할인이나 소개비는 제가 정할 수 없어요. 병원에 정해진 할인이 있는지 확인해 드릴게요.",
+              "hint": {
+                "mn": "Гомдож магадгүй ч өөрөө шийдэж чадахгүй гэж хэлээд, эмнэлэгт тогтоосон хөнгөлөлт байгаа эсэхийг шалгаж өгөх. «Хөнгөлөлт, зуучлалын хөлсийг би шийдэж чадахгүй. Эмнэлэгт тогтоосон хөнгөлөлт байгаа эсэхийг шалгаж өгье.»",
+                "vi": "Dù bệnh nhân có thể buồn lòng, em vẫn nói là mình không tự quyết được, và sẽ kiểm tra giúp xem bệnh viện có quy định giảm giá nào không. “Giảm giá hay tiền hoa hồng thì em không tự quyết được. Em sẽ kiểm tra giúp chị xem bệnh viện có quy định giảm giá nào không ạ.”",
+                "en": "Even if she's disappointed, say it isn't up to you, and that you'll check whether the hospital has an official discount. “It's not up to me to give discounts or referral fees. I'll check whether the hospital has an official discount.”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-guide",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분이 조금 서운한 얼굴로 고개를 끄덕이신다.",
+                  "hint": {
+                    "mn": "Өвчтөн жаахан гомдсон царайтай толгой дохилоо.",
+                    "vi": "Bệnh nhân gật đầu, vẻ mặt hơi thất vọng.",
+                    "en": "The patient nods, looking a little disappointed."
+                  }
+                },
+                {
+                  "type": "line",
+                  "clip": "senior-official",
+                  "who": "senior",
+                  "text": "비용과 할인은 병원이 정해서 미리 알린 대로만 안내해요.",
+                  "hint": {
+                    "mn": "Үнэ, хөнгөлөлтийн талаар эмнэлгийн тогтоож урьдчилан мэдэгдсэн зүйлийг л хэлж өгнө.",
+                    "vi": "Về chi phí và giảm giá, mình chỉ báo đúng theo những gì bệnh viện đã quy định và thông báo trước thôi.",
+                    "en": "For costs and discounts, we only tell patients what the hospital has set and announced in advance."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "promise",
+              "label": "환자를 더 모실 기회이니 '팀장님께 말해서 할인해 드릴게요'라고 한다",
+              "example": "친구분들 오시면 제가 팀장님께 말해서 할인해 드릴게요.",
+              "hint": {
+                "mn": "Илүү олон өвчтөн ирэх боломж гэж үзээд «Багийн ахлагчид хэлээд хөнгөлөлт үзүүлье» гэх. «Найзууд тань ирвэл би багийн ахлагчид хэлээд хөнгөлөлт үзүүлье.»",
+                "vi": "Đây là cơ hội có thêm bệnh nhân, nên em hứa sẽ xin trưởng nhóm giảm giá. “Nếu bạn bè của chị đến, em sẽ xin trưởng nhóm giảm giá cho ạ.”",
+                "en": "It's a chance to get more patients, so promise to ask your team leader for a discount. “If your friends come, I'll talk to my team leader and get you a discount.”"
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "patient-tell-friends",
+                  "who": "patient",
+                  "action": true,
+                  "text": "환자분이 「친구들한테 할인된다고 말할게요」 하신다.",
+                  "hint": {
+                    "mn": "Өвчтөн «Найзууддаа хөнгөлөлттэй гэж хэлье» гэлээ.",
+                    "vi": "Bệnh nhân nói: “Chị sẽ bảo bạn bè chị là họ được giảm giá.”",
+                    "en": "The patient says, “I'll tell my friends they'll get a discount.”"
+                  }
+                },
+                {
+                  "type": "line",
+                  "clip": "senior-promise",
+                  "who": "senior",
+                  "text": "할인은 우리가 정하는 게 아니에요. 소개비도 유치업 등록을 한 곳에만 줄 수 있어요. 제가 다시 말씀드릴게요.",
+                  "hint": {
+                    "mn": "Хөнгөлөлтийг бид шийддэггүй. Зуучлалын хөлсийг ч зөвхөн гадаад өвчтөн татахаар бүртгүүлсэн газарт өгч болно. Би өвчтөнд дахин тайлбарлая.",
+                    "vi": "Giảm giá không phải do chúng ta quyết định. Tiền hoa hồng cũng chỉ được trả cho nơi đã đăng ký làm đơn vị thu hút bệnh nhân nước ngoài. Chị sẽ nói lại với bệnh nhân.",
+                    "en": "Discounts aren't up to us. And referral fees can only go to agencies registered to bring in foreign patients. I'll explain this to her again."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "move",
+          "place": "billing-two",
+          "caption": "귀가 안내"
+        },
+        {
+          "type": "relay",
+          "id": "relay-contract",
+          "when": {
+            "consent": "sign"
+          },
+          "record": "환자분의 저녁 일정을 선배에게 전하는 차례",
+          "who": "patient",
+          "listen": "two-listen-billing",
+          "foreign": {
+            "mn": "Одоо охинтойгоо уулзахаар явна. Өнөө орой охиныхоо түрээсийн байрны гэрээнд гарын үсэг зурна.",
+            "vi": "Bây giờ chị đi gặp con gái. Tối nay chị ký hợp đồng thuê phòng cho con.",
+            "en": "Now I'm going to meet my daughter. This evening I'm signing the rental contract for her studio apartment."
+          },
+          "meaning": "지금 따님을 만나러 가서, 오늘 저녁 따님의 원룸 계약서에 서명하신대요.",
+          "prompt": "환자분의 말을 한 선생님께 전해요.",
+          "example": "한 선생님, 환자분이 오늘 저녁 따님 원룸 계약서에 서명하신다고 합니다.",
+          "hint": {
+            "mn": "Өвчтөний хэлснийг ахлах координатор Ханд солонгосоор хэл.",
+            "vi": "Hãy nói lại bằng tiếng Hàn cho chị Han những gì bệnh nhân nói.",
+            "en": "Tell Ms. Han, your senior colleague, in Korean what the patient said."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "consent": "sign"
+          },
+          "clip": "senior-contract-stop",
+          "who": "senior",
+          "text": "오늘은 서명을 미루셔야 해요. 수면 내시경 하신 날이에요. 다시 설명해 드리고, 따님께 데리러 오시라고 해요.",
+          "hint": {
+            "mn": "Өнөөдөр гарын үсэг зурахыг хойшлуулах хэрэгтэй. Унтуулгатай дуранд орсон өдөр шүү дээ. Өвчтөнд дахин тайлбарлаж өгөөд, охиноос нь ирж авахыг хүсээрэй.",
+            "vi": "Bệnh nhân phải hoãn việc ký hợp đồng hôm nay lại. Hôm nay bệnh nhân đã nội soi gây mê mà. Em giải thích lại cho bệnh nhân rồi nhờ con gái bệnh nhân đến đón nhé.",
+            "en": "She needs to put the signing off until another day. She had a sedated endoscopy today. Explain this to her again, and ask her daughter to come and pick her up."
+          }
+        },
+        {
+          "type": "relay",
+          "id": "relay-daughter",
+          "when": {
+            "consent": "explain"
+          },
+          "record": "환자분의 저녁 일정을 선배에게 전하는 차례",
+          "who": "patient",
+          "listen": "two-listen-billing",
+          "foreign": {
+            "mn": "Чиний хэлснээр гэрээнд гарын үсэг зурахаа маргааш өглөө болгож хойшлуулсан. Охин маань намайг авахаар ирж байна.",
+            "vi": "Như em dặn, chị đã dời việc ký hợp đồng sang sáng mai rồi. Con gái chị đang đến đón chị.",
+            "en": "I did what you said and moved the signing to tomorrow morning. My daughter is coming to pick me up."
+          },
+          "meaning": "말씀드린 대로 계약은 내일 아침으로 미루셨고, 따님이 데리러 오고 있대요.",
+          "prompt": "환자분의 말을 한 선생님께 전해요.",
+          "example": "한 선생님, 환자분이 계약은 내일 아침으로 미루셨고, 따님이 데리러 오신다고 합니다.",
+          "hint": {
+            "mn": "Өвчтөний хэлснийг ахлах координатор Ханд солонгосоор хэл.",
+            "vi": "Hãy nói lại bằng tiếng Hàn cho chị Han những gì bệnh nhân nói.",
+            "en": "Tell Ms. Han, your senior colleague, in Korean what the patient said."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "consent": "explain"
+          },
+          "clip": "senior-wait-daughter",
+          "who": "senior",
+          "text": "그럼 따님 오실 때까지 대기석에서 쉬시게 해요.",
+          "hint": {
+            "mn": "Тэгвэл охиныг нь иртэл хүлээлгийн хэсэгт суулгаж амраагаарай.",
+            "vi": "Vậy em mời bệnh nhân ngồi nghỉ ở ghế chờ cho đến khi con gái đến nhé.",
+            "en": "Then have her rest in the waiting area until her daughter arrives."
+          }
+        },
+        {
+          "type": "relay",
+          "id": "relay-recheck",
+          "when": {
+            "judge": [
+              "comfort",
+              "family"
+            ]
+          },
+          "record": "다시 검사에 대한 환자분의 물음을 선배에게 전하는 차례",
+          "who": "patient",
+          "listen": "two-listen-billing",
+          "foreign": {
+            "mn": "Ноцтой юм биш болохоор зургаан сарын дараах шинжилгээнд орох шаардлагагүй биз дээ?",
+            "vi": "Vì không có gì nghiêm trọng nên sáu tháng nữa chị không cần đi siêu âm lại, đúng không em?",
+            "en": "Since it's nothing serious, I don't need the follow-up test in six months, do I?"
+          },
+          "meaning": "별것 아니니 6개월 뒤 검사는 안 받아도 되지 않냐고 물으세요.",
+          "prompt": "환자분의 물음을 한 선생님께 전해요.",
+          "example": "한 선생님, 환자분이 6개월 뒤 검사는 안 받아도 되냐고 물으십니다.",
+          "hint": {
+            "mn": "Өвчтөний асуултыг ахлах координатор Ханд солонгосоор дамжуул.",
+            "vi": "Hãy nói lại câu hỏi của bệnh nhân bằng tiếng Hàn cho chị Han.",
+            "en": "Tell Ms. Han, your senior colleague, in Korean what the patient asked."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "judge": [
+              "comfort",
+              "family"
+            ]
+          },
+          "clip": "senior-recheck-fix",
+          "who": "senior",
+          "text": "6개월 뒤 검사는 과장님이 정하신 거예요. 괜찮다는 말은 우리가 못 해요. 다시 전해 드려요.",
+          "hint": {
+            "mn": "6 сарын дараа шинжилгээ хийлгэхийг эмч шийдсэн. Зүгээр гэж бид хэлж чадахгүй. Өвчтөнд дахин дамжуулаарай.",
+            "vi": "Việc kiểm tra lại sau 6 tháng là do bác sĩ quyết định. Chúng ta không thể nói là không sao. Em truyền đạt lại nhé.",
+            "en": "The doctor is the one who decided on the follow-up test in six months. We can't tell her it's fine. Explain this to her again."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "judge": "doctor"
+          },
+          "clip": "senior-recheck-ok",
+          "who": "senior",
+          "text": "6개월 뒤 검사 때 가져가실 영문 결과지와 초음파 영상 CD도 챙겨 드려요.",
+          "hint": {
+            "mn": "6 сарын дараах шинжилгээнд авч явах англи хэлээрх хариу, хэт авиан зургийн CD-г ч бэлдэж өгөөрэй.",
+            "vi": "Em chuẩn bị cho bệnh nhân cả phiếu kết quả tiếng Anh và đĩa CD hình ảnh siêu âm để mang theo khi đi kiểm tra lại sau 6 tháng nhé.",
+            "en": "Also prepare a copy of her results in English and a CD of the ultrasound images for her to take to the follow-up test in six months."
+          }
+        },
+        {
+          "type": "work",
+          "id": "mail-check",
+          "record": "결과지 보낼 메일을 비교하는 차례",
+          "tool": {
+            "kind": "chat",
+            "title": "결과지 보낼 곳",
+            "rows": [
+              [
+                "예약에 등록된 메일",
+                "healthmom77@example.com"
+              ],
+              [
+                "환자분이 메신저로 보낸 주소",
+                "healthmom71@example.com"
+              ]
+            ],
+            "note": "결과지는 환자분 본인에게만 보내요."
+          },
+          "prompt": "최종 결과지는 며칠 뒤 메일로 보내요. 두 주소를 비교하고 어떻게 할지 골라요.",
+          "hint": {
+            "mn": "Шинжилгээний эцсийн хариуг хэд хоногийн дараа и-мэйлээр явуулна. Хоёр хаягийг харьцуулаад яахаа сонго. 예약에 등록된 메일 = захиалгад бүртгэлтэй и-мэйл, 메신저로 보낸 주소 = мессежээр илгээсэн хаяг, 본인에게만 = зөвхөн өөрт нь.",
+            "vi": "Phiếu kết quả cuối cùng sẽ được gửi qua email sau vài ngày. Hãy so sánh hai địa chỉ rồi chọn cách xử lý. 예약에 등록된 메일 = email đã đăng ký khi đặt lịch, 메신저로 보낸 주소 = địa chỉ bệnh nhân gửi qua tin nhắn, 본인에게만 = chỉ gửi cho chính bệnh nhân.",
+            "en": "The final results will be emailed in a few days. Compare the two addresses and choose what to do. 예약에 등록된 메일 = email on the booking, 메신저로 보낸 주소 = address she sent in a chat message, 본인에게만 = only to the patient herself."
+          },
+          "options": [
+            {
+              "id": "ask",
+              "label": "끝 숫자가 다르니, 환자분께 어느 주소가 맞는지 여쭤본다",
+              "hint": {
+                "mn": "Хамгийн сүүлийн цифр нь өөр тул аль хаяг нь зөв болохыг өвчтөнөөс асуух.",
+                "vi": "Chữ số cuối khác nhau, nên hỏi bệnh nhân địa chỉ nào đúng.",
+                "en": "The last digit is different, so ask the patient which address is right."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-mail-ok",
+                  "who": "senior",
+                  "text": "맞아요, 끝의 숫자가 달라요. 결과지가 다른 사람에게 가면 안 되니 꼭 여쭤봐요.",
+                  "hint": {
+                    "mn": "Зөв, хамгийн сүүлийн цифр нь өөр. Шинжилгээний хариу өөр хүнд очиж болохгүй тул заавал асуугаарай.",
+                    "vi": "Đúng rồi, chữ số cuối khác nhau. Phiếu kết quả không được gửi nhầm cho người khác, nên em nhất định phải hỏi nhé.",
+                    "en": "Right, the last digit is different. The results must not go to the wrong person, so be sure to ask."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "booking",
+              "label": "병원 기록이 먼저이니, 예약에 등록된 주소로 보낸다",
+              "hint": {
+                "mn": "Эмнэлгийн бүртгэлийг баримтлах ёстой тул захиалгад бүртгэлтэй хаяг руу явуулах.",
+                "vi": "Hồ sơ của bệnh viện được ưu tiên, nên em gửi phiếu kết quả đến email đã đăng ký khi đặt lịch.",
+                "en": "The hospital's record matters more, so send the results to the email on the booking."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-mail-again",
+                  "who": "senior",
+                  "text": "끝 숫자가 달라요. 보내기 전에 환자분께 꼭 여쭤봐요.",
+                  "hint": {
+                    "mn": "Хамгийн сүүлийн цифр нь өөр байна. Явуулахаасаа өмнө өвчтөнөөс заавал асуугаарай.",
+                    "vi": "Chữ số cuối khác nhau. Trước khi gửi, em nhất định phải hỏi bệnh nhân nhé.",
+                    "en": "The last digit is different. Before sending, be sure to ask the patient."
+                  }
+                }
+              ]
+            },
+            {
+              "id": "chat",
+              "label": "환자분이 방금 직접 보냈으니, 메신저로 받은 주소로 보낸다",
+              "hint": {
+                "mn": "Өвчтөн саяхан өөрөө явуулсан тул мессежээр ирсэн хаяг руу явуулах.",
+                "vi": "Bệnh nhân vừa tự nhắn địa chỉ, nên em gửi phiếu kết quả đến địa chỉ nhận được qua tin nhắn.",
+                "en": "She just sent her address herself in a chat message, so send the results to that address."
+              },
+              "then": [
+                {
+                  "type": "line",
+                  "clip": "senior-mail-again",
+                  "who": "senior",
+                  "text": "끝 숫자가 달라요. 보내기 전에 환자분께 꼭 여쭤봐요.",
+                  "hint": {
+                    "mn": "Хамгийн сүүлийн цифр нь өөр байна. Явуулахаасаа өмнө өвчтөнөөс заавал асуугаарай.",
+                    "vi": "Chữ số cuối khác nhau. Trước khi gửi, em nhất định phải hỏi bệnh nhân nhé.",
+                    "en": "The last digit is different. Before sending, be sure to ask the patient."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "line",
+          "when": {
+            "privacy": "tell"
+          },
+          "clip": "patient-message",
+          "who": "patient",
+          "action": true,
+          "text": "환자분 휴대폰에 남편의 메시지가 온다. 에이전시에서 혹 이야기를 들었다고 한다. 환자분 얼굴이 굳으신다.",
+          "hint": {
+            "mn": "Өвчтөний утсанд нөхрөөс нь мессеж ирлээ. Агентлагаас зангилааны тухай сонссон гэнэ. Өвчтөний царай барайлаа.",
+            "vi": "Điện thoại của bệnh nhân có tin nhắn từ chồng. Anh ấy nói đã nghe công ty du lịch y tế cho biết về nhân ở tuyến giáp. Gương mặt bệnh nhân cứng lại.",
+            "en": "A message from the patient's husband arrives on her phone. He says he heard about the lump from the agency. She looks tense."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "privacy": "tell"
+          },
+          "clip": "senior-privacy-fix",
+          "who": "senior",
+          "text": "결과는 환자분이 정하신 분께만 알려요. 팀장님께 보고하고, 에이전시에도 다시 말할게요.",
+          "hint": {
+            "mn": "Шинжилгээний хариуг зөвхөн өвчтөний зөвшөөрсөн хүнд л хэлнэ. Багийн ахлагчид мэдэгдээд, агентлагт ч дахин хэлье.",
+            "vi": "Kết quả chỉ được báo cho người mà bệnh nhân cho phép thôi. Chị sẽ báo cáo trưởng nhóm và nói lại với công ty du lịch y tế.",
+            "en": "Results go only to the people the patient chooses. I'll report this to the team leader and speak to the agency again."
+          }
+        },
+        {
+          "type": "line",
+          "when": {
+            "privacy": "ask-first"
+          },
+          "clip": "senior-privacy-ok",
+          "who": "senior",
+          "text": "가족께는 환자분이 직접 말씀하시겠대요. 에이전시에는 귀가 시간만 알렸어요.",
+          "hint": {
+            "mn": "Өвчтөн гэр бүлийнхэндээ өөрөө хэлнэ гэсэн. Агентлагт зөвхөн өвчтөний эмнэлгээс гарах цагийг мэдэгдсэн.",
+            "vi": "Bệnh nhân nói sẽ tự báo cho gia đình. Với công ty du lịch y tế, mình chỉ báo giờ bệnh nhân ra về.",
+            "en": "She says she'll tell her family herself. We only told the agency what time she's leaving the hospital."
+          }
+        },
+        {
+          "type": "move",
+          "place": "billing-senior",
+          "caption": "하루를 마치며"
+        },
+        {
+          "type": "line",
+          "clip": "senior-bye",
+          "who": "senior",
+          "text": "오늘 수고 많았어요. 결과지는 다 나오면 메일로 보내요. 출국하신 뒤에도 연락은 우리가 이어 가요.",
+          "hint": {
+            "mn": "Өнөөдөр сайн ажиллалаа. Шинжилгээний хариу бүрэн гармагц и-мэйлээр явуулна. Өвчтөн эх орондоо буцсаны дараа ч бид түүнтэй холбоо барьсаар байна.",
+            "vi": "Hôm nay em vất vả rồi. Khi có đủ kết quả, mình sẽ gửi phiếu kết quả qua email. Kể cả sau khi bệnh nhân về nước, mình vẫn tiếp tục liên lạc.",
+            "en": "Thanks for all your work today. When all the results are ready, we'll email them. Even after she goes back to her country, we'll keep in touch with her."
+          }
+        }
+      ]
+    }
+  ],
+  "closing": {
+    "place": "desk-senior",
+    "lead": "맞고 틀린 답을 가리는 자리가 아니에요. 내가 고른 것과 의료 코디네이터가 지키는 것을 나란히 봐요. 환자분께 한 말은 실제로는 모국어로 하는 말이에요.",
+    "principles": [
+      {
+        "id": "exact",
+        "title": "빼거나 보태지 않는다",
+        "body": "환자의 말도 의사의 말도 들은 그대로 전해요. 확인할 것은 예, 아니요로 넘기지 않고 끝까지 여쭤요. 모르는 말은 아는 척하지 않고 되물어요.",
+        "hint": {
+          "mn": "Хасахгүй, нэмэхгүй. Өвчтөний үгийг ч, эмчийн үгийг ч сонссон ёсоор нь дамжуулна. Шалгах зүйлийг «тийм», «үгүй» гэсэн хариугаар өнгөрөөлгүй, бүрэн тодруулж асууна. Мэдэхгүй үг гарвал мэдэж байгаа юм шиг дүр эсгэлгүй дахин асууна.",
+          "vi": "Không thêm, không bớt. Lời bệnh nhân hay lời bác sĩ đều truyền đạt đúng như đã nghe. Điều cần xác nhận thì không chỉ hỏi “có hay không” cho qua, mà phải hỏi cặn kẽ. Từ nào không biết thì không giả vờ hiểu mà hỏi lại.",
+          "en": "Don't leave things out or add to them. Pass on both the patient's and the doctor's words exactly as you heard them. Don't accept just a yes or no when something needs checking. Ask until you are sure. If you don't know a word, don't pretend you do. Ask what it means."
+        }
+      },
+      {
+        "id": "doctor",
+        "title": "의료 판단은 의사가 한다",
+        "body": "병이 무엇인지, 괜찮은지는 의사가 말해요. 내 한마디를 믿고 환자가 다음 검사를 건너뛸 수 있어요. 환자의 물음은 의사에게 잇고, 의사의 답을 그대로 전해요.",
+        "hint": {
+          "mn": "Эмнэлгийн дүгнэлтийг эмч гаргана. Ямар өвчин болохыг, зүгээр эсэхийг эмч хэлнэ. Чиний ганц үгэнд итгээд өвчтөн дараагийн шинжилгээгээ алгасаж магадгүй. Өвчтөний асуултыг эмчид дамжуулж, эмчийн хариуг яг хэвээр нь хэлнэ.",
+          "vi": "Bác sĩ là người đưa ra đánh giá y khoa. Bệnh gì, có sao không là do bác sĩ nói. Bệnh nhân có thể tin một câu của em mà bỏ qua lần kiểm tra tiếp theo. Câu hỏi của bệnh nhân thì chuyển cho bác sĩ, câu trả lời của bác sĩ thì truyền đạt nguyên văn.",
+          "en": "Medical judgments belong to the doctor. The doctor is the one who says what the illness is and whether the patient is all right. A patient may skip the next test because of one thing you said. Take the patient's questions to the doctor, and pass on the doctor's answers exactly."
+        }
+      },
+      {
+        "id": "consent",
+        "title": "환자가 알아들은 뒤에 서명한다",
+        "body": "의료진의 설명을 환자가 알아듣는 말로 끝까지 통역하고, 물음에 답을 들은 뒤에 서명하시게 해요. 통역한 사람으로 내 이름도 그 종이에 남아요.",
+        "hint": {
+          "mn": "Өвчтөн ойлгосны дараа гарын үсэг зурна. Эмч, сувилагчийн тайлбарыг өвчтөний ойлгох хэлээр эцэс хүртэл орчуулж, асуултад нь хариулсны дараа гарын үсэг зуруулна. Тэр цаасан дээр «орчуулсан хүн» хэсэгт чиний нэр ч үлдэнэ.",
+          "vi": "Bệnh nhân ký sau khi đã hiểu. Dịch hết lời giải thích của nhân viên y tế sang ngôn ngữ mà bệnh nhân hiểu, và chỉ để bệnh nhân ký sau khi các câu hỏi đã được trả lời. Tên em cũng được ghi trên tờ giấy đó với tư cách người phiên dịch.",
+          "en": "The patient signs only after she understands. Interpret the medical staff's explanation fully in a language the patient understands, and let her sign only after her questions are answered. As the interpreter, you put your name on that form too."
+        }
+      },
+      {
+        "id": "privacy",
+        "title": "환자의 정보는 환자의 것",
+        "body": "가족, 회사, 에이전시라도 환자의 동의 없이 진료 내용을 말하지 않아요. 결과지도 본인에게만 보내요(의료법 제19조와 제21조, 개인정보 보호법).",
+        "hint": {
+          "mn": "Өвчтөний мэдээлэл өвчтөнийх. Гэр бүл, компани, агентлаг ч байсан өвчтөний зөвшөөрөлгүйгээр эмчилгээний мэдээллийг хэлэхгүй. Шинжилгээний хариуг ч зөвхөн өөрт нь явуулна (Солонгосын Эмнэлгийн тухай хууль, Хувийн мэдээлэл хамгаалах тухай хууль).",
+          "vi": "Thông tin của bệnh nhân là của bệnh nhân. Kể cả với gia đình, nơi làm việc của bệnh nhân hay công ty du lịch y tế, cũng không được nói nội dung khám chữa bệnh khi bệnh nhân chưa đồng ý. Phiếu kết quả cũng chỉ gửi cho chính bệnh nhân (Luật Y tế, Luật Bảo vệ thông tin cá nhân của Hàn Quốc).",
+          "en": "A patient's information belongs to the patient. Don't share anything about her care without her consent, even with family, a company or an agency. Send the results only to her (Korea's Medical Service Act and Personal Information Protection Act)."
+        }
+      },
+      {
+        "id": "fair",
+        "title": "비용과 소개는 정해진 길로",
+        "body": "예상 진료비는 진료 전에 알리고, 할인을 내가 약속하지 않아요. 유치업 등록을 하지 않은 사람에게 환자 소개의 대가를 주지 않아요(의료 해외진출 및 외국인환자 유치 지원에 관한 법률).",
+        "hint": {
+          "mn": "Төлбөр, зуучлал тогтсон журмаар. Төлбөр хэд гарахыг эмчилгээний өмнө мэдэгдэж, хөнгөлөлтийг өөрөө амлахгүй. Гадаад өвчтөн татахаар бүртгүүлээгүй хүнд зуучлалын хөлс өгөхгүй (Солонгосын Эрүүл мэндийн үйлчилгээг гадаадад гаргах, гадаад өвчтөн татахыг дэмжих тухай хууль).",
+          "vi": "Chi phí và việc giới thiệu bệnh nhân phải theo đúng quy định. Báo chi phí dự kiến trước khi khám, và không tự ý hứa giảm giá. Không trả tiền giới thiệu bệnh nhân cho người chưa đăng ký làm đơn vị thu hút bệnh nhân nước ngoài (luật của Hàn Quốc về thu hút bệnh nhân nước ngoài).",
+          "en": "Follow the rules for costs and referrals. Tell patients the estimated cost before treatment, and don't promise discounts yourself. Don't pay anyone for bringing patients unless they are registered to do so (Korea's law on attracting foreign patients)."
+        }
+      }
+    ],
+    "forks": [
+      {
+        "id": "lastmeal",
+        "scene": "접수와 문진",
+        "principle": "exact",
+        "mine": {
+          "open": "시간이 빠듯해도 어제 저녁부터 드신 것을 하나씩 여쭤봤어요.",
+          "closed": "'금식하셨죠?' 하고 확인했어요."
+        },
+        "say": "어제 저녁부터 오늘 아침까지 드신 것을 다 말씀해 주세요. 물이나 차도요."
+      },
+      {
+        "id": "consent",
+        "scene": "내시경실 앞",
+        "principle": "consent",
+        "mine": {
+          "explain": "기다리는 분이 있어도 검사 뒤 주의를 끝까지 통역하고 궁금한 것을 여쭤봤어요.",
+          "sign": "서명할 곳을 알려 드렸어요."
+        },
+        "say": "서명하시기 전에 꼭 전할 게 있어요. 오늘은 운전도, 계약서 서명도 하시면 안 돼요."
+      },
+      {
+        "id": "judge",
+        "scene": "결과 상담",
+        "principle": "doctor",
+        "mine": {
+          "doctor": "판단은 의사가 한다고 말씀드리고, 물을 것을 적게 도왔어요.",
+          "comfort": "'별것 아닐 거예요'라고 안심시켜 드렸어요.",
+          "family": "내 가족 이야기로 마음을 놓으시게 했어요."
+        },
+        "say": "많이 걱정되시죠. 제 생각을 말씀드릴 수는 없어요. 궁금하신 건 같이 적어서 과장님께 여쭤봐요."
+      },
+      {
+        "id": "privacy",
+        "scene": "결과 상담",
+        "principle": "privacy",
+        "mine": {
+          "ask-first": "환자분 동의 없이는 말할 수 없다고 했어요.",
+          "tell": "에이전시에 결과를 짧게 알려 줬어요."
+        },
+        "say": "죄송하지만 환자분 동의 없이는 검사 결과를 말씀드릴 수 없습니다."
+      },
+      {
+        "id": "refer",
+        "scene": "수납과 귀가",
+        "principle": "fair",
+        "mine": {
+          "official": "내가 정할 수 없다고 하고 병원에 정해진 할인을 확인해 드리겠다고 했어요.",
+          "promise": "'할인해 드릴게요'라고 약속했어요."
+        },
+        "say": "할인이나 소개비는 제가 정할 수 없어요. 병원에 정해진 할인이 있는지 확인해 드릴게요."
+      }
+    ],
+    "conditions": {
+      "lead": "좋게만 보여 주지 않아요. 지원하기 전에 알아 둘 것들이에요.",
+      "items": [
+        {
+          "title": "통역만 하는 일이 아니에요",
+          "body": "예약, 환자 확인, 검사 동행, 비용 안내와 수납, 서류, 출국한 뒤의 연락까지 맡아요.",
+          "source": "의료 해외진출 및 외국인환자 유치 지원에 관한 법률 제2조, 체류민원 자격별 안내 매뉴얼(2026-11-16판)의 직종 설명",
+          "hint": {
+            "mn": "Зөвхөн орчуулга биш. Цаг захиалах, өвчтөн хэн болохыг шалгах, шинжилгээнд дагуулж явах, төлбөрийн талаар тайлбарлаж тооцоо хийх, бичиг баримт бүрдүүлэх, өвчтөн эх орондоо буцсаны дараа холбоо барих хүртэл хариуцна.",
+            "vi": "Không chỉ là phiên dịch. Em phụ trách cả đặt lịch, xác nhận bệnh nhân, đi cùng khi khám, hướng dẫn chi phí và thanh toán, giấy tờ, và liên lạc sau khi bệnh nhân về nước.",
+            "en": "It's not just interpreting. You handle bookings, checking patient identity, going with patients to tests, costs and payment, paperwork, and keeping in touch after they return to their country."
+          }
+        },
+        {
+          "title": "두 언어의 의료 낱말",
+          "body": "검사, 병, 약 이름을 한국어와 모국어로 익혀야 해요. 병원에서는 금식(NPO), 위내시경(EGD) 같은 줄임말도 써요. 잘못 옮기면 환자가 다칠 수 있어요.",
+          "hint": {
+            "mn": "Хоёр хэлээрх анагаах ухааны нэр томьёо. Шинжилгээ, өвчин, эмийн нэрийг солонгос болон эх хэлээрээ сурах хэрэгтэй. Эмнэлэгт NPO (өлөн), EGD (ходоодны дуран) гэх мэт товчлол ч хэрэглэдэг. Буруу орчуулбал өвчтөн хохирч болно.",
+            "vi": "Từ ngữ y khoa bằng hai thứ tiếng. Em phải học tên xét nghiệm, bệnh và thuốc bằng cả tiếng Hàn lẫn tiếng mẹ đẻ. Bệnh viện còn dùng các chữ viết tắt như NPO (nhịn ăn), EGD (nội soi dạ dày). Dịch sai có thể làm hại bệnh nhân.",
+            "en": "Medical words in two languages. You need to learn the names of tests, illnesses and medicines in both Korean and your own language. Hospitals also use abbreviations like NPO (fasting) and EGD (stomach endoscopy). A wrong translation can harm a patient."
+          }
+        },
+        {
+          "title": "대신할 사람이 적어요",
+          "body": "병원 한 곳이 외국인 코디네이터를 E-7으로 둘 수 있는 수는 보통 2명까지예요(유치업자는 1명). 내가 쉬면 그 말을 옮길 사람이 없을 수 있어요.",
+          "source": "체류민원 자격별 안내 매뉴얼 2026-11-16판(2026-11-22 대조)",
+          "hint": {
+            "mn": "Орлох хүн цөөн. Нэг эмнэлэг E-7 визээр ажиллуулж болох гадаад координаторын тоо ихэвчлэн 2 хүртэл байдаг (агентлагт 1 хүртэл). Чи амарвал тэр хэлээр орчуулах хүн байхгүй байж магадгүй.",
+            "vi": "Ít người thay thế. Một bệnh viện thường chỉ được tuyển tối đa 2 điều phối viên nước ngoài theo visa E-7 (công ty du lịch y tế: 1 người). Khi em nghỉ, có thể không có ai dịch được thứ tiếng đó.",
+            "en": "Few people can do your work when you're away. A hospital can usually employ at most 2 foreign coordinators on an E-7 visa (an agency can employ 1). When you're off, there may be no one else who can interpret in your language."
+          }
+        },
+        {
+          "title": "퇴근 뒤에도 연락이 와요",
+          "body": "환자가 메신저로 약 사진을 보내며 괜찮은지 묻기도 해요. 어떻게 답하는지는 병원마다 다르지만, 그때도 판단은 의사에게 맡겨요.",
+          "hint": {
+            "mn": "Ажлын дараа ч холбогддог. Өвчтөн мессежээр эмийнхээ зургийг явуулаад зүгээр эсэхийг асуух нь бий. Хэрхэн хариулах нь эмнэлэг бүрт өөр ч энэ үед ч асуултыг эмчид дамжуулж, дүгнэлтийг эмчээр гаргуулна.",
+            "vi": "Sau giờ làm vẫn có người liên lạc. Có khi bệnh nhân gửi ảnh thuốc qua tin nhắn và hỏi có sao không. Cách trả lời thì mỗi bệnh viện mỗi khác, nhưng lúc đó em vẫn phải để bác sĩ đánh giá.",
+            "en": "Messages come after work too. A patient may send a photo of her medicine and ask if it's OK. How you answer these messages differs by hospital, but the doctor always makes the medical judgment."
+          }
+        },
+        {
+          "title": "옮기기 어려운 자리예요",
+          "body": "의료 코디네이터 비자는 한 번에 최대 2년이고, 일하는 곳을 바꾸거나 더하려면 미리 허가를 받아야 해요.",
+          "source": "체류민원 자격별 안내 매뉴얼 2026-11-16판(2026-11-22 대조)",
+          "hint": {
+            "mn": "Ажлын байраа солиход хэцүү. Эмнэлгийн координаторын визийг нэг удаад хамгийн ихдээ 2 жилээр олгодог. Ажлын газраа солих эсвэл нэмэх бол урьдчилан зөвшөөрөл авах ёстой.",
+            "vi": "Khó chuyển chỗ làm. Thời hạn visa điều phối viên y tế mỗi lần cấp hoặc gia hạn tối đa 2 năm, và muốn đổi hay thêm nơi làm việc phải xin phép trước.",
+            "en": "It's hard to change jobs. The medical coordinator visa lasts up to 2 years at a time, and you need permission in advance to change or add a workplace."
+          }
+        },
+        {
+          "title": "이 일로 가는 길(E-7-2 의료 코디네이터)",
+          "body": "첫째, 외국인환자 유치기관으로 등록된 병원이나 유치업자에 취업해요. 둘째, 보건복지부 고용추천을 꼭 받아요(신청 절차는 고용할 곳과 함께 확인해요). 셋째, 다음 넷 가운데 하나가 있어야 해요. 보건의료 자격증이나 관련 학과 전문학사 이상, 국내 대학 학사와 한국보건복지인재원 국제의료코디네이터 또는 의료통역 전문과정 이수, 국제의료관광코디네이터 자격, 의료통역능력검정 인증서. 넷째, 비자를 받으려면 연 2,589만 원 이상을 받아야 해요(2026년 최저 조건). 졸업 뒤 바로 취업하지 못하면 구직(D-10) 비자로 일자리를 찾을 수 있어요.",
+          "source": "체류민원 자격별 안내 매뉴얼 2026-11-16판(2026-11-22 대조)",
+          "hint": {
+            "mn": "Энэ ажилд хүрэх зам (E-7-2 эмнэлгийн координатор). Нэгт, гадаад өвчтөн татахаар бүртгүүлсэн эмнэлэг эсвэл агентлагт ажилд орно. Хоёрт, Эрүүл мэнд, халамжийн яамнаас ажилд авахыг санал болгосон албан бичгийг заавал авна (хүсэлт гаргах журмыг ажил олгогчтойгоо хамт тодруулна). Гуравт, дараах дөрвийн аль нэг нь байх ёстой: эрүүл мэндийн мэргэжлийн үнэмлэх, эсвэл холбогдох мэргэжлээр коллеж буюу түүнээс дээш түвшний диплом; Солонгосын их сургуулийн бакалаврын зэрэг, мөн Солонгосын Эрүүл мэнд, халамжийн хүний нөөцийг хөгжүүлэх хүрээлэнгийн олон улсын эмнэлгийн координаторын эсвэл эмнэлгийн орчуулгын тусгай сургалтыг төгссөн гэрчилгээ; олон улсын эмнэлгийн аялал жуулчлалын координаторын үнэмлэх; эмнэлгийн орчуулгын чадварын шалгалтын гэрчилгээ. Дөрөвт, виз авахын тулд жилийн цалин 25 сая 890 мянган воноос доошгүй байх ёстой (2026 оны доод шаардлага). Сургуулиа төгсөөд шууд ажилд орж чадахгүй бол D-10 (ажил хайх) визээр ажил хайж болно.",
+            "vi": "Con đường đến với công việc này (điều phối viên y tế, visa E-7-2). Thứ nhất, làm việc ở bệnh viện hoặc công ty đã đăng ký thu hút bệnh nhân nước ngoài. Thứ hai, nhất định phải có thư giới thiệu tuyển dụng của Bộ Y tế và Phúc lợi Hàn Quốc (thủ tục xin thì hỏi nơi tuyển dụng). Thứ ba, phải có một trong bốn điều kiện sau: chứng chỉ hành nghề y tế hoặc bằng cao đẳng trở lên ngành liên quan; bằng cử nhân của trường đại học Hàn Quốc và đã hoàn thành khóa chuyên sâu điều phối viên y tế quốc tế hoặc phiên dịch y tế của Viện Phát triển Nhân lực Y tế và Phúc lợi Hàn Quốc; chứng chỉ điều phối viên du lịch y tế quốc tế; giấy chứng nhận đạt kỳ thi năng lực phiên dịch y tế. Thứ tư, để được cấp visa, lương phải từ 25,89 triệu won/năm trở lên (mức tối thiểu năm 2026). Nếu tốt nghiệp mà chưa tìm được việc ngay, em có thể tìm việc bằng visa tìm việc D-10.",
+            "en": "The path to this job (E-7-2 medical coordinator). First, get a job at a hospital or agency registered to bring in foreign patients. Second, you must get an employment recommendation from Korea's Ministry of Health and Welfare (check the application steps with your employer). Third, you need one of these four: (1) a health-care license, or a junior college degree or higher in a related field; (2) a bachelor's degree from a Korean university plus the international medical coordinator or medical interpreting course at the Korea Health and Welfare Personnel Development Institute; (3) the international medical tourism coordinator certificate; (4) the medical interpreting proficiency test certificate. Fourth, the visa requires a salary of at least 25.89 million won a year (the 2026 minimum). If you can't find a job right after graduating, you can look for one on a D-10 job-seeker visa."
+          }
+        },
+        {
+          "title": "학교 다니며 준비할 수 있는 것",
+          "body": "인재원 외국인 국제의료코디네이터 전문과정은 한 해 두 번 모집해요(2026년은 2월과 7월). 토요일 100시간, 자부담 30만 원이고 몽골어와 베트남어 반이 있어요. TOPIK 4급 이상이나 국내 전문학사 이상이면 지원할 수 있어요. 의료통역능력검정은 한 해 한 번이고 응시 자격 제한이 없으며, 2025년에는 몽골어와 베트남어로도 치렀어요. 국제의료관광코디네이터 자격의 어학 기준에는 몽골어와 TOPIK이 없어서 영어 같은 다른 외국어 성적이 필요해요.",
+          "source": "한국보건복지인재원 2026년 모집 안내, 한국보건산업진흥원 2025년 의료통역능력검정 공고, 큐넷 공인어학성적 기준(2026-11-22 확인)",
+          "hint": {
+            "mn": "Сургуульд сурч байхдаа бэлдэж болох зүйл. Солонгосын Эрүүл мэнд, халамжийн хүний нөөцийг хөгжүүлэх хүрээлэнгийн гадаад иргэдэд зориулсан олон улсын эмнэлгийн координаторын тусгай сургалт жилд хоёр удаа элсэлт авдаг (2026 онд 2, 7-р сард). Хичээл бямба гарагт ордог бөгөөд нийт 100 цаг үргэлжилнэ. Суралцагч өөрөө 300 мянган вон төлнө. Монгол, вьетнам хэлний анги бий. TOPIK-ийн 4 ба түүнээс дээш түвшинтэй, эсвэл Солонгост коллеж буюу түүнээс дээш түвшинд төгссөн бол хүсэлт гаргаж болно. Эмнэлгийн орчуулгын чадварын шалгалт жилд нэг удаа болдог. Хэн ч шалгалт өгч болно. 2025 онд монгол, вьетнам хэлээр ч шалгалт зохион байгуулсан. Олон улсын эмнэлгийн аялал жуулчлалын координаторын үнэмлэхийн хэлний шаардлагад монгол хэл, TOPIK ороогүй. Тиймээс англи гэх мэт өөр гадаад хэлний оноо хэрэгтэй.",
+            "vi": "Những gì có thể chuẩn bị khi còn đi học. Viện Phát triển Nhân lực Y tế và Phúc lợi Hàn Quốc mở tuyển sinh khóa chuyên sâu điều phối viên y tế quốc tế cho người nước ngoài mỗi năm hai lần (năm 2026 tuyển vào tháng 2 và tháng 7). Học vào thứ Bảy, tổng cộng 100 giờ, tự trả 300.000 won, có lớp tiếng Mông Cổ và tiếng Việt. Có TOPIK cấp 4 trở lên hoặc bằng cao đẳng trở lên của Hàn Quốc là có thể đăng ký. Kỳ thi năng lực phiên dịch y tế tổ chức mỗi năm một lần, không giới hạn điều kiện dự thi, năm 2025 có thi bằng tiếng Mông Cổ và tiếng Việt. Tiêu chuẩn ngoại ngữ của chứng chỉ điều phối viên du lịch y tế quốc tế không có tiếng Mông Cổ và TOPIK, nên cần điểm thi một ngoại ngữ khác như tiếng Anh.",
+            "en": "What you can prepare while still at university. The Korea Health and Welfare Personnel Development Institute's international medical coordinator course for foreigners takes applicants twice a year (February and July in 2026). It's 100 hours on Saturdays, costs you 300,000 won, and has Mongolian and Vietnamese classes. You can apply with TOPIK level 4 or above, or a junior college degree or higher from Korea. The medical interpreting proficiency test is held once a year, anyone can take it, and in 2025 it was also given in Mongolian and Vietnamese. The international medical tourism coordinator certificate requires a foreign language test score. Mongolian tests and TOPIK are not accepted, so you need a score in another foreign language, such as English."
+          }
+        }
+      ]
+    },
+    "reflection": {
+      "hardLabel": "이 일에서 힘들 것 같은 점",
+      "hardHelp": "한국어로 쓰기 어려우면 모국어로 써도 돼요.",
+      "decisionLabel": "오늘 해 보니",
+      "decisions": [
+        {
+          "id": "more",
+          "label": "이 일을 더 알아보겠다"
+        },
+        {
+          "id": "unsure",
+          "label": "아직 모르겠다"
+        },
+        {
+          "id": "not-me",
+          "label": "나와 맞지 않는다"
+        }
+      ],
+      "decisionNote": "「나와 맞지 않는다」도 좋은 결과예요. 미리 알고 고르려고 하는 체험이에요."
+    },
+    "ladder": {
+      "lead": "준비한 것을 본인이 적어요. 증빙은 지원할 때 본인이 따로 내요.",
+      "items": [
+        {
+          "id": "degree",
+          "label": "학위",
+          "placeholder": "예: 국내 대학 학사, 2027년 2월 졸업 예정"
+        },
+        {
+          "id": "course",
+          "label": "의료 코디네이터 과정이나 자격",
+          "placeholder": "예: 국제의료코디네이터 전문과정 2027년 2월 모집에 지원 예정"
+        },
+        {
+          "id": "topik",
+          "label": "TOPIK 급수와 성적 날짜",
+          "placeholder": "예: 4급, 2026년 10월"
+        },
+        {
+          "id": "languages",
+          "label": "모국어 말고 쓰는 말",
+          "placeholder": "예: 영어 TOEIC 700점, 러시아어 읽기"
+        },
+        {
+          "id": "employer",
+          "label": "지원할 곳",
+          "placeholder": "예: 유치의료기관 등록증이 게시된 병원인지 확인함"
+        },
+        {
+          "id": "visa",
+          "label": "체류자격",
+          "placeholder": "예: D-2"
+        }
+      ]
+    },
+    "next": {
+      "label": "다른 일터의 하루 보기",
+      "body": "다른 일터도 하루를 겪어 보고 나와 맞는지 견줘 봐요.",
+      "href": "index.html"
+    }
+  }
+}

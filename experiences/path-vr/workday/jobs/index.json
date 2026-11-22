@@ -38,6 +38,10 @@
       "status": "making",
       "title": "의료 코디네이터의 하루",
       "role": "의료 코디네이터",
+      "minutes": 22,
+      "scenes": 5,
+      "poster": "medical-coordinator/places/desk-senior.jpg",
+      "posterAlt": "국제진료센터 접수 데스크 앞에 남색 정장을 입은 선배 코디네이터가 태블릿을 들고 서 있다.",
       "summary": "외국인 환자를 안내하고, 의사와 환자 사이의 말을 이어요."
     },
     {
