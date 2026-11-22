@@ -400,7 +400,9 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  // 계정의 2단 상태를 다시 읽는다. 이 브라우저 구독이 이 계정 것인데 서버에 없으면(정리·404·다른 기기에서 로그아웃시킴) 이 브라우저 구독도 지운다.
  // 이 브라우저가 받을 수 없어도(아이폰·푸시 없는 브라우저) 설정을 열 때와 1단이 띄우기 직전에는 계정 상태만 읽는다 — 다른 기기에서 켜 두었으면
  // 1단이 쉬고 설정에 그 기기로 간다고 적는다. 계정이 바뀐 직후(initial)에는 읽지 않는다(받을 수 없는 기기에서 열 때마다 부르지 않게).
- async function refresh({install=false,initial=false}={}){
+ // tidy: 이 브라우저 구독 · 기기 기록을 정리하는 읽기인가. 화면 맞추기 읽기는 정리하지 않는다 — 읽기가 날아가는 동안 다른 탭이 이 브라우저 알림을 켜면,
+ // 늦은 응답이 그 새 구독을 지난 것으로 보고 지운다(r14 GA1). 정리는 평소 읽기(설정 열기 · 1단이 띄우기 직전)가 한다.
+ async function refresh({install=false,initial=false,tidy=true}={}){
   const expected=epoch;if(!current(expected)||closing)return snapshot();
   const support=worldPushSupport(env);
   if(!support.supported){
@@ -412,7 +414,7 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
    const reg=install?await register(expected):await existing();guard(expected);
    const sub=reg?await bounded(reg.pushManager.getSubscription()):null;guard(expected);subscription=sub;
    const seq=++order,data=await request('status',sub?{endpoint:sub.endpoint}:{});
-   if(!applyRead(seq,data,expected,'ready'))return snapshot();
+   if(!applyRead(seq,data,expected,'ready')||!tidy)return snapshot();
    const next=snapshot(),record=readRecord();
    if(sub&&!next.device.subscribed&&record?.accountId===owner&&record.endpoint===sub.endpoint){await removeLocal(sub,reg);writeRecord(null);}
    else if(!sub&&record?.accountId===owner){writeRecord(null);try{await anonymous('unsubscribe',{endpoint:record.endpoint,deviceId:record.deviceId});}catch{}}
@@ -427,15 +429,20 @@ export function createWorldPush({request,anonymous=()=>Promise.reject(Object.ass
  function dropEdits(){if(owner){try{storage?.removeItem(versionKey());}catch{}}}
  // 이 탭 화면을 서버 설정에 맞춘다(설계 주인 11-23, r13 GA1): 다른 탭이 나눠 쓰는 편집을 지웠거나(로그아웃 · 계정 바꿈) 다시 시도할 때 보낼 것이 없는데
  // 화면(1단 설정)이 이 탭이 마지막으로 받은 서버 설정과 다르면, 상태를 한 번 읽는다 — 맞추기가 그 서버 설정을 들인다. 1단은 탭이 함께 쓰므로 마지막으로
- // 받은 값을 바로 들이지 않는다(다른 탭에서 방금 받힌 더 새 설정을 되돌리지 않게). 보낼 편집이 있으면 하지 않고 쓰기 요청은 내지 않는다. 이 탭이
- // 로그아웃했거나 계정이 바뀌었으면 하지 않는다.
- function showServer(){
+ // 받은 값을 바로 들이지 않는다(다른 탭에서 방금 받힌 더 새 설정을 되돌리지 않게). mine: 지워진 것이 이 탭이 쓴 편집이다 — 그때는 견주지 않고 읽는다.
+ // 마지막으로 받은 값이 화면과 우연히 같아도 서버는 그사이 바뀌었을 수 있다(r14 GA3). 보낼 편집이 있으면 하지 않고 쓰기 요청은 내지 않는다(정리하지 않는
+ // 읽기). 이 탭이 로그아웃했거나 계정이 바뀌었으면 하지 않는다.
+ function showServer(mine=false){
   if(!current(epoch)||closing||readEdit()||!state.versioning||!state.account.active||!state.checkedAt||!state.plan)return;
   const live=liveSettings(null),plan=state.plan,hour=Number.isFinite(plan.hour)?plan.hour:null;
-  if(!live||(live.frequency===plan.frequency&&live.hour===hour))return;
-  void refresh();
+  if(!mine&&(!live||(live.frequency===plan.frequency&&live.hour===hour)))return;
+  void refresh({tidy:false});
  }
- const onStorage=event=>{if(event&&(event.key===null||event.key===versionKey()))showServer();};
+ const onStorage=event=>{
+  if(!event||(event.key!==null&&event.key!==versionKey()))return;
+  let mine=false;try{mine=event.key!==null&&settingsOf(JSON.parse(event.oldValue||'null')?.settings)?.page===page;}catch{}
+  showServer(mine);
+ };
  try{env.addEventListener?.('storage',onStorage);}catch{}
  return {
   snapshot,refresh,
