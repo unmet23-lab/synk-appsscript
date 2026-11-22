@@ -23,6 +23,9 @@ async function 시나리오(t, 옵션 = {}) {
     '.clasp.json': '{"scriptId":"fixture-script","rootDir":"","scriptExtensions":[".js"]}\n',
     '.claspignore': '**/*\n!Code.js\n!appsscript.json\n' };
   for (const [p, b] of Object.entries(파일)) fs.writeFileSync(path.join(root, p), b);
+  const 검수도구 = 'tools/lib/뮤즈1차.js';
+  fs.mkdirSync(path.dirname(path.join(root, 검수도구)), { recursive: true });
+  fs.copyFileSync(path.resolve(__dirname, '..', 검수도구), path.join(root, 검수도구));
   const git = args => cp.execFileSync('git', ['-C', root, '-c', 'core.autocrlf=false', ...args], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
   git(['init', '-q', '-b', 'master']); git(['add', '-A']); git(['commit', '-q', '-m', 'fixture']);
   git(['update-ref', 'refs/remotes/origin/master', 'HEAD']);
