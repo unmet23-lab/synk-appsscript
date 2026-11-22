@@ -1,4 +1,4 @@
-// PATH 「내 길」 서류 자료. 대학 요강과 KVAC 몽골 쪽에서 2026-11-22에 직접 읽은 것만 적는다.
+// PATH 「내 길」 서류 자료. 대학 요강과 KVAC 몽골 누리집에서 2026-11-22에 직접 읽은 것만 적는다.
 // 확인하지 못한 것은 적지 않고, 요강이 둘로 읽히는 곳은 unclear로 그대로 보인다. 학생의 「준비했어요」는 확인이 아니다.
 
 const L = (ko, en) => Object.freeze({ ko, en });
@@ -9,8 +9,8 @@ export const DOC_STAGES = Object.freeze(['apply', 'admitted', 'visa']);
 const KVAC_D2 = freeze({ title: L('KVAC 몽골 「유학(D-2-1~D-2-4)」 서류 목록', 'KVAC Mongolia student visa (D-2) document list'), url: 'https://www.visaforkorea.mn/ko/study-visa-d-2-1d-2-4' });
 const KVAC_D4 = freeze({ title: L('KVAC 몽골 「한국어연수(D-4-1)」 서류 목록', 'KVAC Mongolia language trainee visa (D-4-1) document list'), url: 'https://www.visaforkorea.mn/ko/korean-language-trainee-d-4-1' });
 
-// only: 출처가 「해당자만」이라고 적은 서류({ cond: 원문 조건 }). topikHolder: 「가진 사람만」(TOPIK 「없음」을 넣은 사람에게만 접는다).
-const doc = (id, stage, name, extra = {}) => freeze({ id, stage, name, from: null, when: null, note: null, unclear: null, only: null, topikHolder: false, ...extra });
+// only: 출처가 「해당자만」이나 「가진 사람만」이라고 적은 서류({ cond: 원문 조건 }). 화면은 그 묶음 안에 접어 둔다.
+const doc = (id, stage, name, extra = {}) => freeze({ id, stage, name, from: null, when: null, note: null, unclear: null, only: null, ...extra });
 const only = (ko, en) => freeze({ cond: L(ko, en) });
 
 /* ── 과정별 원서 · 합격 뒤 서류 ── */
@@ -64,8 +64,8 @@ const JBNU_LANG = freeze({
   source: freeze({ title: L('전북대학교 한국어학당 입학신청 · 제출서류', 'Jeonbuk National University Korean Language Institute: application and documents'), url: 'https://wz3.jbnu.ac.kr/lec_korean/10899/subview.do' }),
   id: 'docs-jbnu-lang',
   checkedAt: '2026-11-22',
-  term: L('2027 봄학기 접수 기준(학당 쪽)', 'Based on the spring 2027 intake (institute pages)'),
-  how: L('온라인으로 접수하고 서류는 스캔해서 올려요. 전형료 금액은 쪽에 적혀 있지 않아요.', 'Apply online and upload scanned documents. The page does not state the application fee.'),
+  term: L('2027 봄학기 접수 기준(학당 누리집)', 'Based on the spring 2027 intake (institute pages)'),
+  how: L('온라인으로 접수하고 서류는 스캔해서 올려요. 전형료는 70,000원이에요(2027년 봄학기부터 오른 금액). 낸 서류와 전형료는 돌려주지 않아요.', 'Apply online and upload scanned documents. The application fee is ₩70,000 (raised from spring 2027). Documents and the fee are not returned.'),
   rules: [L('모든 서류에 국문이나 영문 번역본, 또는 공증본을 붙여요. 번역본이면 번역자 확인서를 더 내요.', 'Attach a Korean or English translation, or a notarized copy, to every document. With a translation, add the translator confirmation form.')],
   unclear: [],
   docs: [
@@ -73,7 +73,7 @@ const JBNU_LANG = freeze({
     doc('jbnu-lang-passport', 'apply', L('여권 사본', 'Passport copy')),
     doc('jbnu-lang-grad', 'apply', L('최종학력 학교 졸업증명서', 'Graduation certificate from your last school'), {
       note: L('원본을 스캔해 올려요.', 'Upload a scan of the original.'),
-      unclear: L('한국어 쪽에는 이 줄에 「(중국)」 표기가 붙어 있고, 영어 쪽에는 없이 모든 지원자 서류로 적혀 있어요. 졸업예정자가 무엇을 내는지도 쪽에 없어요.', 'The Korean page marks this line “(China)”, while the English page lists it for all applicants. The page also does not say what students who have not yet graduated submit.')
+      unclear: L('한국어 안내에는 이 줄에 「(중국)」 표기가 붙어 있고, 영어 안내에는 없이 모든 지원자 서류로 적혀 있어요. 졸업예정자가 무엇을 내는지도 학당 누리집에 없어요.', 'The Korean page marks this line “(China)”, while the English page lists it for all applicants. The page also does not say what students who have not yet graduated submit.')
     }),
     doc('jbnu-lang-transcript', 'apply', L('최종학력 학교 성적증명서', 'Transcript from your last school'), { note: L('원본을 스캔해 올려요.', 'Upload a scan of the original.') }),
     doc('jbnu-lang-verify', 'apply', L('최종학력 인증서류(아포스티유)', 'Diploma verification (apostille)'), { note: L('원본이에요. 아포스티유나, 한국 영사관 · 주한 자국 공관의 영사인증을 받아요.', 'Original, with an apostille or consular confirmation.') }),
@@ -110,7 +110,7 @@ const WKU_UG = freeze({
     doc('wku-ug-parents-id', 'apply', L('부 · 모 신분증 사본', 'Copies of parents’ ID cards')),
     doc('wku-ug-translator', 'apply', L('번역자 확인서와 번역자 신분증 사본', 'Translator confirmation form and translator’s ID copy'), { only: only('번역본을 내는 사람만', 'Only if you submit translations') }),
     doc('wku-ug-arc', 'apply', L('외국인등록증 사본', 'Alien registration card copy'), { only: only('한국에 살고 있는 사람만', 'Only if you live in Korea') }),
-    doc('wku-ug-language', 'apply', L('어학(한국어 · 영어) 입증 서류', 'Language proof (Korean or English)'), { topikHolder: true, note: L('가진 사람만 내요. 입학할 때는 필수가 아니에요.', 'Only if you have one; it is not required for admission.') }),
+    doc('wku-ug-language', 'apply', L('어학(한국어 · 영어) 입증 서류', 'Language proof (Korean or English)'), { only: only('한국어나 영어 성적이 있는 사람만', 'Only if you have a Korean or English score'), note: L('입학할 때는 필수가 아니에요.', 'It is not required for admission.') }),
     doc('wku-ug-bank', 'admitted', L('재정능력 입증서류', 'Proof of funds'), {
       when: L('발급일부터 1개월 안. 합격 통보 뒤 등록 기간 안에 발급받아요.', 'Within 1 month of issue; get it after the admission notice, during registration.'),
       note: L('원본 2부(출입국 · 재외공관용과 대학용)예요. 본인 명의로 1,600만 원 이상이고, 통장 앞뒤 사본과 은행 연락처가 있는 서식이 필요해요. 비자 묶음의 예치증명서와는 명의 · 기한 · 부수가 다를 수 있어요.', 'Two originals (one for immigration, one for the university), in your own name, ₩16,000,000 or more, with copies of both sides of the bankbook and a bank form showing the bank’s contact. Owner, validity and copies can differ from the visa deposit certificate.')
@@ -139,7 +139,7 @@ const WKU_LANG = freeze({
     doc('wku-lang-transcript', 'apply', L('최종학력 성적증명서', 'Transcript from your last school'), { note: L('원본과 사본이에요.', 'Original and copy.') }),
     doc('wku-lang-verify', 'apply', L('학력인증보고서(아포스티유)', 'Diploma verification report (apostille)'), { when: L('비자 신청일부터 3개월 안에 발급된 것', 'Issued within 3 months of the visa application'), note: L('아포스티유 원본이에요.', 'Original apostille.') }),
     doc('wku-lang-translator', 'apply', L('번역자 확인서(출입국 서식)', 'Translator confirmation form (immigration form)'), { only: only('번역본을 내는 사람만', 'Only if you submit translations') }),
-    doc('wku-lang-bank', 'admitted', L('은행잔고증명서', 'Bank balance certificate'), { when: L('사증발급신청일 기준 30일 안에 발급된 것', 'Issued within 30 days of the visa application'), note: L('원본이에요. 본인 명의로 800만 원(6,500달러) 이상이에요. 합격한 뒤에 내요. 비자 묶음의 예치증명서와는 명의 · 기한 · 부수가 다를 수 있어요.', 'Original, in your own name, ₩8,000,000 (USD 6,500) or more. Submit after admission. Owner, validity and copies can differ from the visa deposit certificate.') })
+    doc('wku-lang-bank', 'admitted', L('은행잔고증명서', 'Bank balance certificate'), { when: L('비자 신청일 기준 30일 안에 발급된 것', 'Issued within 30 days of the visa application'), note: L('원본이에요. 본인 명의로 800만 원(6,500달러) 이상이에요. 합격한 뒤에 내요. 비자 묶음의 예치증명서와는 명의 · 기한 · 부수가 다를 수 있어요.', 'Original, in your own name, ₩8,000,000 (USD 6,500) or more. Submit after admission. Owner, validity and copies can differ from the visa deposit certificate.') })
   ],
   deadlines: []
 });
@@ -182,21 +182,22 @@ export const PROGRAM_DOCS = freeze({ 'jbnu-ug': JBNU_UG, 'jbnu-lang': JBNU_LANG,
 
 /* ── 비자 서류(KVAC 몽골, 번호대로) ── */
 
-const EXEMPT = L('KVAC 쪽에 「우수 인증 대학은 해당되지 않음」이라고 적혀 있어요. 내 대학이 해당되는지는 KVAC에 물어보세요.', 'KVAC says this does not apply to top-certified universities. Ask KVAC whether your university counts.');
+const SPONSOR_CHECK = L('KVAC 누리집에 「우수 인증 대학은 해당되지 않음」이라고 적혀 있어요. 97만 원이 한 달 소득인지 다른 기준인지도 문장만으로는 확실하지 않아요. 둘 다 KVAC에 물어보세요.', 'KVAC says this does not apply to top-certified universities. The text also does not make clear whether ₩970,000 is a monthly income or another measure. Ask KVAC about both.');
+const EXEMPT = L('KVAC 누리집에 「우수 인증 대학은 해당되지 않음」이라고 적혀 있어요. 내 대학이 해당되는지는 KVAC에 물어보세요.', 'KVAC says this does not apply to top-certified universities. Ask KVAC whether your university counts.');
 const visaCommon = (p, src) => [
-  doc(`${p}-form`, 'visa', L('사증발급신청서', 'Visa application form')),
+  doc(`${p}-form`, 'visa', L('사증발급신청서(비자 신청서)', 'Visa application form')),
   doc(`${p}-photo`, 'visa', L('컬러사진(3.5 × 4.5cm)', 'Colour photo (3.5 × 4.5 cm)'), { when: L('최근 6개월 안에 찍은 것', 'Taken within the last 6 months'), note: L('흰색이나 황백색 배경, 정면, 선글라스 · 모자 없이 눈과 귀가 보여야 해요.', 'White or off-white background, facing forward, no sunglasses or hat, eyes and ears visible.') }),
   doc(`${p}-passport`, 'visa', L('여권과 여권 사본 1매', 'Passport and one copy'), { when: L('접수일부터 6개월 이상 남아 있어야 해요.', 'At least 6 months of validity from the application date.') }),
-  doc(`${p}-essay`, 'visa', L('자기소개서(KVAC 서식, 본인 서명)', 'Self-introduction (KVAC form, signed by you)'), { note: L('전액 장학생과 우수 인증 대학은 해당되지 않아요.', 'Not required for full scholarship holders and top-certified universities.') }),
+  doc(`${p}-essay`, 'visa', L('자기소개서(KVAC 서식, 본인 서명)', 'Self-introduction (KVAC form, signed by you)'), { unclear: L('KVAC 누리집에 「전액 장학생 및 우수 인증 대학은 해당되지 않음」이라고 적혀 있어요. 내가 해당되는지는 KVAC에 물어보세요.', 'KVAC says this does not apply to full scholarship holders and top-certified universities. Ask KVAC whether that includes you.') }),
   doc(`${p}-admission`, 'visa', L('표준입학허가서', 'Standard certificate of admission'), { from: L('합격한 대학이 보내 줘요.', 'Sent by the university after admission.'), when: L('유효기간 3개월', 'Valid for 3 months') }),
   doc(`${p}-bizreg`, 'visa', L('교육기관 사업자등록증 사본', 'Copy of the school’s business registration'), { from: L('대학에서 받아요.', 'From the university.'), when: L('최근 6개월 안에 발급된 것', 'Issued within the last 6 months') })
 ];
 const visaTail = (p) => [
-  doc(`${p}-sponsor`, 'visa', L('유학경비 부담능력 입증자료', 'Proof that your sponsor can pay'), { note: L('기본은 부모가 입증해요(부모가 없을 때만 형제자매). 유학경비 지원확인서, 신분증과 관계 증명, 사업자는 납세증명서(etax.mta.mn 영문)와 법인상세조회서(E-Mongolia), 직장인은 사회보험료 납부확인서와 재직증명서 원본, 그 밖에는 최근 3개월 은행거래내역서예요. 재정능력 총액이 97만 원(250만 투그릭) 이상이어야 해요.', 'Usually your parents (siblings only if there are no parents): a support confirmation, IDs and proof of relationship; business owners add a tax certificate (in English from etax.mta.mn) and a company record (E-Mongolia); employees add social insurance records and an original employment certificate; otherwise 3 months of bank statements. The total must be at least ₩970,000 (MNT 2,500,000).'), unclear: EXEMPT }),
+  doc(`${p}-sponsor`, 'visa', L('유학경비 부담능력 입증자료', 'Proof that your sponsor can pay'), { note: L('기본은 부모가 입증해요(부모가 없을 때만 형제자매). 유학경비 지원확인서, 신분증과 관계 증명, 사업자는 납세증명서(etax.mta.mn 영문)와 법인상세조회서(E-Mongolia), 직장인은 사회보험료 납부확인서와 재직증명서 원본, 그 밖에는 최근 3개월 은행거래내역서예요. KVAC 누리집에는 「재정능력 총액이 97만 원(250만 투그릭) 이상」이고 최근 6개월 사회보험료 납부내역으로 월평균 소득을 계산한다고 적혀 있어요. 입증하는 사람의 소득 조건이고, 예치증명서 금액과는 따로예요.', 'Usually your parents (siblings only if there are no parents): a support confirmation, IDs and proof of relationship; business owners add a tax certificate (in English from etax.mta.mn) and a company record (E-Mongolia); employees add social insurance records and an original employment certificate; otherwise 3 months of bank statements. KVAC says the “total financial ability” must be at least ₩970,000 (MNT 2,500,000), with average monthly income worked out from the last 6 months of social insurance payments. This is about the sponsor’s income and is separate from the deposit amount.'), unclear: SPONSOR_CHECK }),
   doc(`${p}-civil`, 'visa', L('혼인관계증명서(만 19세 미만은 출생등록증명서)', 'Marriage record (under 19: birth registration certificate)'), { from: L('E-Mongolia에서 외국어로 발급해요.', 'Issued in a foreign language from E-Mongolia.') }),
   doc(`${p}-birth`, 'visa', L('출생증명서', 'Birth certificate')),
   doc(`${p}-crime`, 'visa', L('범죄경력증명서', 'Criminal record certificate'), { from: L('E-Mongolia에서 외국어로 발급해요.', 'Issued in a foreign language from E-Mongolia.'), only: only('만 18세 이상이고 처음 신청하는 사람만', 'Only if you are 18 or older and applying for the first time') }),
-  doc(`${p}-tb`, 'visa', L('결핵진단서', 'Tuberculosis test certificate'), { note: L('KVAC가 지정한 기관에서 받아요. 지정기관 목록 링크는 KVAC 쪽에서 열리지 않아 KVAC에 물어보세요.', 'From a KVAC-designated clinic. The list link on the KVAC page does not open, so ask KVAC.') }),
+  doc(`${p}-tb`, 'visa', L('결핵진단서', 'Tuberculosis test certificate'), { note: L('KVAC가 지정한 기관에서 받아요. 지정기관 목록 링크는 KVAC 누리집에서 열리지 않아 KVAC에 물어보세요.', 'From a KVAC-designated clinic. The list link on the KVAC page does not open, so ask KVAC.') }),
   doc(`${p}-school`, 'visa', L('최종학교 졸업 · 성적증명서 원본(아포스티유)', 'Original graduation certificate and transcript (apostille)'), { note: L('아포스티유를 받은 학력 서류, 또는 영사확인을 받은 서류예요.', 'Apostilled education documents, or documents with consular confirmation.') }),
   doc(`${p}-language`, 'visa', L('어학능력 입증서류', 'Language proof'), { only: only('어학능력 요건이 있는 대학에 가는 사람만', 'Only if your university has a language requirement') })
 ];
@@ -204,7 +205,7 @@ const visaTail = (p) => [
 export const VISA_DOCS = freeze({
   'D-2': freeze({
     id: 'docs-visa-d2', name: L('유학(D-2)', 'Student (D-2)'), source: KVAC_D2, checkedAt: '2026-11-22',
-    rules: [L('몽골어 서류는 번역본 원본에 번역자 신분증 사본과 번역자 확인서를 붙여요. 신청은 비자신청센터나 공인대행법인에 본인이 직접 가는 것이 원칙이에요.', 'Mongolian documents need an original translation with the translator’s ID copy and the translator confirmation form. You apply in person at the visa center or an authorized agency as a rule.')],
+    rules: [L('몽골어 서류는 번역본 원본에 번역자 신분증 사본과 번역자 확인서를 붙여요. 신청은 비자신청센터(KVAC)나 공인대행법인에 본인이 직접 가는 것이 원칙이에요.', 'Mongolian documents need an original translation with the translator’s ID copy and the translator confirmation form. You apply in person at the visa center (KVAC) or an authorized agency as a rule.')],
     docs: [
       ...visaCommon('visa-d2'),
       doc('visa-d2-deposit', 'visa', L('예치증명서와 몽골 계좌 거래내역서', 'Deposit certificate and Mongolian bank statement'), { when: L('비자 신청일 기준 14일 안에 발급, 같은 금액을 30일 이상 유지', 'Issued within 14 days of the visa application; keep the amount for at least 30 days'), note: L('수도권 대학 2,000만 원, 비수도권 대학 1,600만 원 이상이에요. 본인이나 부모의 몽골 은행 계좌 거래내역서를 함께 내요. 대학에 내는 잔고 증명과는 명의 · 기한 · 부수가 다를 수 있어요.', '₩20,000,000 for Seoul-area universities, ₩16,000,000 elsewhere, plus the statement of your own or a parent’s Mongolian bank account. Owner, validity and copies can differ from the bank certificate the university asks for.'), unclear: EXEMPT }),
@@ -213,11 +214,11 @@ export const VISA_DOCS = freeze({
   }),
   'D-4-1': freeze({
     id: 'docs-visa-d4-1', name: L('어학연수(D-4-1)', 'Language trainee (D-4-1)'), source: KVAC_D4, checkedAt: '2026-11-22',
-    rules: [L('몽골어 서류는 번역본 원본에 번역자 신분증 사본과 번역자 확인서를 붙여요. 신청은 비자신청센터나 공인대행법인에 본인이 직접 가는 것이 원칙이에요.', 'Mongolian documents need an original translation with the translator’s ID copy and the translator confirmation form. You apply in person at the visa center or an authorized agency as a rule.')],
+    rules: [L('몽골어 서류는 번역본 원본에 번역자 신분증 사본과 번역자 확인서를 붙여요. 신청은 비자신청센터(KVAC)나 공인대행법인에 본인이 직접 가는 것이 원칙이에요.', 'Mongolian documents need an original translation with the translator’s ID copy and the translator confirmation form. You apply in person at the visa center (KVAC) or an authorized agency as a rule.')],
     docs: [
       ...visaCommon('visa-d4'),
       doc('visa-d4-plan', 'visa', L('연수계획서와 연수과정 운영 현황', 'Training plan and program overview'), { from: L('대학이 준비해요.', 'Prepared by the university.') }),
-      doc('visa-d4-deposit', 'visa', L('예치증명서와 몽골 은행잔고증명서', 'Deposit certificate and Mongolian bank balance certificate'), { when: L('사증 신청일 기준 2주 안에 발급, 같은 금액을 30일 이상 유지', 'Issued within 2 weeks of the visa application; keep the amount for at least 30 days'), note: L('수도권 대학 1,000만 원, 비수도권 대학 800만 원 이상이에요. KVAC 쪽 문장이 「800만원 이상(비」에서 끊겨 있어요. 대학에 내는 잔고 증명과는 명의 · 기한 · 부수가 다를 수 있어요.', '₩10,000,000 for Seoul-area universities, ₩8,000,000 elsewhere. The KVAC sentence is cut off after “₩8,000,000 or more (non-”. Owner, validity and copies can differ from the bank certificate the university asks for.'), unclear: EXEMPT }),
+      doc('visa-d4-deposit', 'visa', L('예치증명서와 몽골 은행잔고증명서', 'Deposit certificate and Mongolian bank balance certificate'), { when: L('비자 신청일 기준 2주 안에 발급, 같은 금액을 30일 이상 유지', 'Issued within 2 weeks of the visa application; keep the amount for at least 30 days'), note: L('수도권 대학 1,000만 원, 비수도권 대학 800만 원 이상이에요. KVAC 누리집의 문장이 「800만원 이상(비」에서 끊겨 있어요. 대학에 내는 잔고 증명과는 명의 · 기한 · 부수가 다를 수 있어요.', '₩10,000,000 for Seoul-area universities, ₩8,000,000 elsewhere. The KVAC sentence is cut off after “₩8,000,000 or more (non-”. Owner, validity and copies can differ from the bank certificate the university asks for.'), unclear: EXEMPT }),
       ...visaTail('visa-d4')
     ]
   })
@@ -226,13 +227,13 @@ export const VISA_DOCS = freeze({
 /** 과정의 비자: 학부는 D-2, 어학연수는 D-4-1. */
 export const visaFor = (program) => (program && program.level === 'language' ? 'D-4-1' : 'D-2');
 
-/** 과정의 서류 묶음. 없으면 null. only로 조건에 맞지 않는 서류를 따로 둔다(빼지 않는다). */
-export function docsFor(program, profile = {}) {
+/** 과정의 서류 묶음. 없으면 null. only가 달린 서류를 따로 둔다(빼지 않는다). */
+export function docsFor(program) {
   const pd = program && PROGRAM_DOCS[program.id];
   if (!pd) return null;
   const visa = VISA_DOCS[visaFor(program)];
-  // 접는 것은 출처가 「해당자만」이라고 적은 서류와 「가진 사람만」(TOPIK 「없음」을 넣은 사람)뿐이다. 필수 서류는 늘 보인다.
-  const fits = (d) => !d.only && !(d.topikHolder && profile.topik === 0);
+  // 접는 것은 출처가 「해당자만」 · 「가진 사람만」이라고 적은 서류뿐이다. 필수 서류는 내 조건과 상관없이 늘 보인다.
+  const fits = (d) => !d.only;
   const all = [...pd.docs, ...visa.docs];
   return { program: pd, visa, all, mine: all.filter(fits), notMine: all.filter((d) => !fits(d)) };
 }
@@ -251,7 +252,7 @@ export function validateDocsData(programDocs = PROGRAM_DOCS, visaDocs = VISA_DOC
   const checkDoc = (d, where) => {
     if (!isObj(d) || !ID_RE.test(d.id) || ids.has(d.id) || !DOC_STAGES.includes(d.stage) || !isPair(d.name, 200)) fail('doc ' + where + ' ' + (d && d.id));
     for (const k of ['from', 'when', 'note', 'unclear']) if (!(d[k] === null || isPair(d[k]))) fail('doc text ' + d.id + ' ' + k);
-    if (!(d.only === null || (isObj(d.only) && isPair(d.only.cond, 200))) || typeof d.topikHolder !== 'boolean' || (d.only && d.topikHolder)) fail('doc only ' + d.id);
+    if (!(d.only === null || (isObj(d.only) && isPair(d.only.cond, 200)))) fail('doc only ' + d.id);
     if (!(d.changedAt === undefined || isDate(d.changedAt))) fail('doc changedAt ' + d.id);
     ids.add(d.id);
   };

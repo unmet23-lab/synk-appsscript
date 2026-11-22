@@ -503,7 +503,9 @@ function render(focus = true) {
   document.documentElement.lang = state.lang;
   const main = S.page === 'onboard' ? onboard() : S.page === 'today' ? today() : S.page === 'editor' ? editor()
     : `<main class="content" id="main">${notices(S.page === 'profile')}${PAGES[S.page]()}</main>`;
+  const openFolds = focus ? [] : [...root.querySelectorAll('[data-fold]')].filter((d) => d.open).map((d) => d.getAttribute('data-fold'));
   root.innerHTML = shell(main);
+  for (const f of openFolds) { const d = root.querySelector(`[data-fold="${f}"]`); if (d) d.open = true; }
   S.drop = false;
   if (!accSt.canEdit) {
     root.querySelectorAll('[data-action]').forEach((c) => { if (LOCKED_ACTIONS.includes(c.dataset.action) && 'disabled' in c) c.disabled = true; });
@@ -679,8 +681,11 @@ const ACT = {
     if (r.full) { S.docFull = true; render(false); root.querySelector(`[data-action="docToggle"][data-id="${id}"]`)?.focus(); say(accL('표시가 예순 개라 더 넣을 수 없어요. 다른 과정의 표시를 뺀 뒤 넣어 주세요.', 'You already have 60 marks. Remove some from another program first.')); return; }
     S.docFull = false;
     const next = studyWrite(r.profile), t = pathTarget({ ...channelView(), profile: next });
-    render(false); root.querySelector(`[data-action="docToggle"][data-id="${id}"]`)?.focus();
-    const doc = t && t.set.all.find((d) => d.id === id), c = t && doc ? stageCounts(t.set, next)[doc.stage] : null;
+    render(false);
+    const btn = root.querySelector(`[data-action="docToggle"][data-id="${id}"]`), fold = btn && btn.closest('details');
+    if (fold) fold.open = true;
+    btn?.focus();
+    const doc = t && t.set.mine.find((d) => d.id === id), c = doc ? stageCounts(t.set, next)[doc.stage] : null;
     const count = c ? accL(` 이 묶음 ${c.n}/${c.total}.`, ` ${c.n} of ${c.total} in this group.`) : '';
     say((r.on ? accL('준비했어요로 표시했어요.', 'Marked as ready.') : accL('표시를 뺐어요.', 'Mark removed.')) + count);
   },

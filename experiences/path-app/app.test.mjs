@@ -701,9 +701,17 @@ test('내 길: 대학 자세히에서 과정을 고르면 오늘에 카드가 �
   app.click('nav', '[data-page="path"]');
   assert.match(app.root.querySelector('h1').textContent, /원광대학교 학부/);
   assert.ok(app.root.querySelectorAll('button[data-page="today"]').some(b => b.getAttribute('aria-current') === 'page'), '내 길은 오늘 탭 아래 화면이다');
+  assert.equal(app.root.querySelector('button[data-action="pathPick"]').getAttribute('aria-pressed'), null, '「준비 그만하기」는 켜고 끄는 단추가 아니다');
   app.click('docToggle', '[data-id="wku-ug-passport"]');
-  assert.match(app.announcer.textContent, /준비했어요로 표시했어요\. 이 묶음 1\/8\./);
+  assert.match(app.announcer.textContent, /준비했어요로 표시했어요\. 이 묶음 1\/7\./);
   assert.equal(app.document.activeElement.getAttribute('data-id'), 'wku-ug-passport', '누른 단추로 초점이 돌아온다');
+  app.root.querySelector('[data-fold="docs-apply"]').open = true;
+  app.click('docToggle', '[data-id="wku-ug-translator"]');
+  assert.match(app.announcer.textContent, /준비했어요로 표시했어요/);
+  assert.doesNotMatch(app.announcer.textContent, /이 묶음/, '접힌 서류는 묶음 수에 들지 않아 수를 붙이지 않는다');
+  assert.equal(app.root.querySelector('[data-fold="docs-apply"]').open, true, '펼쳐 둔 접힘은 다시 그려도 펼친 채다');
+  assert.equal(app.document.activeElement.getAttribute('data-id'), 'wku-ug-translator', '접힌 서류를 눌러도 초점이 그 단추에 남는다');
+  app.click('docToggle', '[data-id="wku-ug-translator"]');
   app.click('docToggle', '[data-id="visa-d2-photo"]');
   assert.deepEqual(JSON.parse(app.record(STUDY_KEY)).docs.map(d => d.id), ['wku-ug-passport', 'visa-d2-photo']);
   // 다른 과정으로 바꾸면 그 과정에 없는 표시를 지운다. 묻고, 아니라고 하면 그대로 둔다.
