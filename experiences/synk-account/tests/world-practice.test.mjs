@@ -81,6 +81,7 @@ test('the practice view fills from one summary and a picked row moves the hero, 
   assert.equal(games()[0].textContent, '바람길');
   assert.equal(games().at(-1).dataset.game, 'learning-hub');
   assert.equal(find(practice.record, n => n.tagName === 'b').textContent, '4');
+  assert.equal(practice.record.getAttribute('aria-label'), '최근 30일');
   const row = find(practice.skills, n => n.dataset.skill === 'ko.reading.condition');
   await row.onclick();
   assert.equal(practice.status().pick, 'ko.reading.condition');
@@ -99,6 +100,8 @@ test('learning off, no records and a failed summary each say what to do next wit
   const off = view();off.practice.setSummary({ shared: 'declared-only', summary: { practice: { skills: [] } } });
   const offGo = find(off.practice.hero, n => Object.hasOwn(n.dataset, 'recGo'));
   assert.equal(offGo.textContent, '내 SYNK ID에서 켜기');offGo.onclick();assert.equal(off.account.length, 1);
+  // 연결이 꺼졌으면 게임 머리 글도 계정에 남는다고 말하지 않는다(카본 A1).
+  assert.match(find(off.practice.games, n => n.className === 'small').textContent, /이 기기에만/);
   const fresh = view();fresh.practice.setSummary({ shared: 'practice-and-settings', summary: { practice: { answered: 0, skills: [] } } });
   assert.equal(find(fresh.practice.hero, n => Object.hasOwn(n.dataset, 'recGo')).textContent, '바람길로 시작');
   const failed = view();failed.practice.setSummary(null, true);

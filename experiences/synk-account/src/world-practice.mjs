@@ -101,10 +101,10 @@ export function createWorldPractice({ element, button, games, openGame, showAcco
     if (state === 'off') { record.replaceChildren(head('최근 30일'), element('p', '학습 기록 연결을 켜면 연습한 날과 문항을 보여 줘요.', 'small'));return; }
     if (recent) {
       big.append(element('b', String(recent.activeDays || 0)), element('span', '일 연습했어요'));
-      record.replaceChildren(head('최근 30일'), big, element('p', `혼자 푼 문항 ${recent.independent || 0} · 도움 받은 문항 ${recent.assisted || 0}`, 'wp-counts'));
+      record.setAttribute('aria-label', '최근 30일');record.replaceChildren(head('최근 30일'), big, element('p', `혼자 맞힌 문항 ${recent.independent || 0} · 도움 받은 문항 ${recent.assisted || 0}`, 'wp-counts'));
     } else if (Number.isSafeInteger(practice.answered) && practice.answered > 0) {
       big.append(element('b', String(practice.answered)), element('span', '문항 연습했어요'));
-      record.replaceChildren(head('지금까지'), big, element('p', `혼자 푼 문항 ${practice.independent || 0} · 도움 받은 문항 ${practice.assisted || 0}`, 'wp-counts'));
+      record.setAttribute('aria-label', '지금까지');record.replaceChildren(head('지금까지'), big, element('p', `혼자 맞힌 문항 ${practice.independent || 0} · 도움 받은 문항 ${practice.assisted || 0}`, 'wp-counts'));
     } else record.replaceChildren(head('최근 30일'), element('p', state === 'loading' ? '불러오고 있어요.' : state === 'error' ? '연습 기록을 불러오지 못했어요.' : '아직 저장된 연습이 없어요.', 'small'));
   }
   function drawGames(skills) {
@@ -114,7 +114,7 @@ export function createWorldPractice({ element, button, games, openGame, showAcco
       const rec = chosen.includes(path), b = button(labelOf(path), () => openGame(path), 'sb-glass');
       b.dataset.game = path;b.dataset.skills = rec ? shortName(pick) : GAME_SKILLS[path]?.text || '';if (rec) b.dataset.rec = '';links.append(b);
     }
-    const note = !pick ? '누르면 바로 열려요. 기록은 계정에 남아요.' : !chosen.length ? `「${shortName(pick)}」만 하는 게임은 아직 없어요. 모든 미니게임에서 골라 주세요.`
+    const note = !pick ? (connected && state !== 'off' ? '누르면 바로 열려요. 기록은 계정에 남아요.' : '누르면 바로 열려요. 기록은 이 기기에만 남아요.') : !chosen.length ? `「${shortName(pick)}」만 하는 게임은 아직 없어요. 모든 미니게임에서 골라 주세요.`
       : pick.status === DONE ? `노란 칸에서 「${shortName(pick)}」${particle(shortName(pick), '을', '를')} 가볍게 이어 가요.` : `노란 칸은 「${shortName(pick)}」${particle(shortName(pick), '을', '를')} 연습하는 게임이에요.`;
     gamesTile.replaceChildren(head('게임', note), links);
   }

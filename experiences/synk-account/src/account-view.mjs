@@ -72,8 +72,9 @@ export function createAccountView({ client, product, guard, notice, logout, prev
   const list = (rows, empty) => { const ul = element('ul', null, 'details');for (const value of rows.length ? rows : [empty]) ul.append(typeof value === 'string' ? element('li', value) : value);return ul; };
   // The host owns local credentials and reports server revocation separately.
   // Do not make local sign-out depend on a successful account API request here.
-  const signOut = (scope = 'current') => logout(undefined, { scope,
-    sessionId: (data.sessions || []).find(session => session.current && !session.revoked)?.id || null });
+  // 로그아웃한 뒤 다시 들어오면 연습 보기부터 연다(로그아웃 단추는 내 SYNK ID 보기에 있다).
+  const signOut = (scope = 'current') => { worldTab = 'practice';return logout(undefined, { scope,
+    sessionId: (data.sessions || []).find(session => session.current && !session.revoked)?.id || null }); };
   function games() {
     stopWorld();if (product !== 'world' || !data.account?.synk_user_id) return;
     world.hidden = false;world.append(element('h2', 'WORLD 게임', worldApp ? 'visually-hidden' : null));

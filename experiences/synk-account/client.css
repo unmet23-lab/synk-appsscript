@@ -414,6 +414,8 @@ html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data
   grid-template-areas:"save save play play" "sacts sacts pacts pacts" "hero hero rec rec" "hero hero skills ways" "games games games games" "close close close close" "frame frame frame frame"}
 /* 게임을 여는 동안: 판을 접고 게임만 크게 */
 .sc.world-tab-practice #world-games:has(>iframe:not([hidden])){grid-template-areas:"close close close close" "frame frame frame frame" "save save play play" "sacts sacts pacts pacts"}
+/* 게임을 연 채 고를 일이 생기면 저장 줄 → 게임 칸 차례 */
+.sc.world-app.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden])):has(>iframe:not([hidden])){grid-template-areas:"save save play play" "sacts sacts pacts pacts" "close close close close" "frame frame frame frame"}
 .sc.world-tab-practice #world-games:has(>iframe:not([hidden]))>:is(.wp-hero,.wp-record,.wp-skills,.world-preferences,.wp-games){display:none}
 .sc #world-games>.wp-hero{grid-area:hero}
 .sc #world-games>.wp-record{grid-area:rec}
@@ -524,6 +526,7 @@ html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data
   .sc.world-app.world-tab-practice #world-games>.wp-games{order:1}
   .sc.world-app.world-tab-practice #world-games>.world-preferences{order:2}
   .sc.world-app.world-tab-practice #world-games>:is(.wp-save,.wp-save-acts,.wp-play,.wp-play-acts){order:3}
+  .sc.world-app.world-tab-practice #world-games:has(>.wp-play-acts>:is([data-play-action="retry"],[data-play-action="remote"]):not([hidden]))>:is(.wp-save,.wp-save-acts,.wp-play,.wp-play-acts){order:-1}
   .sc .wp-hero{grid-template-columns:minmax(0,1fr)}
   .sc .wp-art{grid-column:auto;min-height:180px}
   .sc .wp-acts{padding:4px 12px 12px}
@@ -543,3 +546,11 @@ html[data-platform-portal-boot="true"] .client-portal-orb:empty::after,html[data
 .sc.world-app .game-links>button[data-game="blank-slice"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 16h5M16 16h5'/%3E%3Cpath d='M10 18h4'/%3E%3Cpath d='M12 5v9'/%3E%3Cpath d='M10 5h4'/%3E%3C/svg%3E")}
 .sc.world-app .game-links>button[data-game="talk-rally"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5h10v7H8l-4 3z'/%3E%3Cpath d='M10 15v2h6l4 3v-8h-3'/%3E%3C/svg%3E")}
 .sc.world-app .game-links>button[data-game="learning-hub"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8h14l-1 12H6z'/%3E%3Cpath d='M9 8V6a3 3 0 0 1 6 0v2'/%3E%3C/svg%3E")}
+/* WORLD 앱 창 — 강제 색 모드: 고른 탭 · 고른 기술 · 고른 방식은 선으로, 추천 게임은 강조 색 선으로, 판은 테두리로 가른다 */
+@media (forced-colors:active){
+  .sc .wp-tab[aria-pressed="true"],.sc .wp-skill[aria-pressed="true"],.sc.world-app .world-preference-choices .sb-btn[aria-pressed="true"]{outline:2px solid CanvasText;outline-offset:-2px}
+  .sc.world-app .game-links>button[data-rec]{outline:3px solid Highlight;outline-offset:-3px}
+  .sc .wp-hero,.sc.world-app :is(.wp-record,.wp-skills,.wp-games),.sc.world-app #world-games>.world-preferences,.sc.world-app .account-grid>.sb-card,.sc .wp-tabs{border:1px solid CanvasText}
+  .sc .wp-tag{border:1px solid CanvasText}
+  .sc .wp-where::before,.sc.world-app #world-games>.wp-save::before{forced-color-adjust:none;background:CanvasText}
+}
